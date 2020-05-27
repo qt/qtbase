@@ -201,14 +201,14 @@ void ensureSharedResources(QRhiRenderPassDescriptor *rp)
 {
     if (!d.vbuf) {
         d.vbuf = r.r->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(vertexData));
-        d.vbuf->build();
+        d.vbuf->create();
         d.initialUpdates = r.r->nextResourceUpdateBatch();
         d.initialUpdates->uploadStaticBuffer(d.vbuf, vertexData);
     }
 
     if (!d.ubuf) {
         d.ubuf = r.r->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 68);
-        d.ubuf->build();
+        d.ubuf->create();
     }
 
     if (!d.srb) {
@@ -216,7 +216,7 @@ void ensureSharedResources(QRhiRenderPassDescriptor *rp)
         d.srb->setBindings({
                                QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage, d.ubuf)
                            });
-        d.srb->build();
+        d.srb->create();
     }
 
     if (!d.ps) {
@@ -251,7 +251,7 @@ void ensureSharedResources(QRhiRenderPassDescriptor *rp)
         d.ps->setShaderResourceBindings(d.srb);
         d.ps->setRenderPassDescriptor(rp);
 
-        d.ps->build();
+        d.ps->create();
     }
 }
 
@@ -427,7 +427,7 @@ void Window::releaseResources()
 
 void Window::resizeSwapChain()
 {
-    m_hasSwapChain = m_sc->buildOrResize();
+    m_hasSwapChain = m_sc->createOrResize();
 
     const QSize outputSize = m_sc->currentPixelSize();
     m_proj = r.r->clipSpaceCorrMatrix();
@@ -439,7 +439,7 @@ void Window::releaseSwapChain()
 {
     if (m_hasSwapChain) {
         m_hasSwapChain = false;
-        m_sc->release();
+        m_sc->destroy();
     }
 }
 

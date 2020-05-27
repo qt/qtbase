@@ -453,21 +453,21 @@ void Renderer::init()
 
     m_vbuf = r->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(cube));
     m_releasePool << m_vbuf;
-    m_vbuf->build();
+    m_vbuf->create();
 
     m_ubuf = r->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 64 + 4);
     m_releasePool << m_ubuf;
-    m_ubuf->build();
+    m_ubuf->create();
 
     QImage image = QImage(QLatin1String(":/qt256.png")).convertToFormat(QImage::Format_RGBA8888);
     m_tex = r->newTexture(QRhiTexture::RGBA8, image.size());
     m_releasePool << m_tex;
-    m_tex->build();
+    m_tex->create();
 
     m_sampler = r->newSampler(QRhiSampler::Linear, QRhiSampler::Linear, QRhiSampler::None,
                                 QRhiSampler::ClampToEdge, QRhiSampler::ClampToEdge);
     m_releasePool << m_sampler;
-    m_sampler->build();
+    m_sampler->create();
 
     m_srb = r->newShaderResourceBindings();
     m_releasePool << m_srb;
@@ -475,7 +475,7 @@ void Renderer::init()
         QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage, m_ubuf),
         QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, m_tex, m_sampler)
     });
-    m_srb->build();
+    m_srb->create();
 
     m_ps = r->newGraphicsPipeline();
     m_releasePool << m_ps;
@@ -506,7 +506,7 @@ void Renderer::init()
     m_ps->setShaderResourceBindings(m_srb);
     m_ps->setRenderPassDescriptor(m_rp);
 
-    m_ps->build();
+    m_ps->create();
 
     m_initialUpdates = r->nextResourceUpdateBatch();
 
@@ -522,7 +522,7 @@ void Renderer::releaseSwapChain()
 {
     if (m_hasSwapChain) {
         m_hasSwapChain = false;
-        m_sc->release();
+        m_sc->destroy();
     }
 }
 
@@ -543,7 +543,7 @@ void Renderer::render(bool newlyExposed, bool wakeBeforePresent)
 
     auto buildOrResizeSwapChain = [this] {
         qDebug() << "renderer" << this << "build or resize swapchain for window" << window;
-        m_hasSwapChain = m_sc->buildOrResize();
+        m_hasSwapChain = m_sc->createOrResize();
         const QSize outputSize = m_sc->currentPixelSize();
         qDebug() << "  size is" << outputSize;
         m_proj = r->clipSpaceCorrMatrix();

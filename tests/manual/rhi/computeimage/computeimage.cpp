@@ -100,17 +100,17 @@ void Window::customInit()
     const QImage image = QImage(QLatin1String(":/qt256.png")).convertToFormat(QImage::Format_RGBA8888);
     d.imageSize = image.size();
     d.texIn = m_r->newTexture(QRhiTexture::RGBA8, d.imageSize, 1, QRhiTexture::UsedWithLoadStore);
-    d.texIn->build();
+    d.texIn->create();
     d.releasePool << d.texIn;
 
     d.texOut = m_r->newTexture(QRhiTexture::RGBA8, d.imageSize, 1, QRhiTexture::UsedWithLoadStore);
-    d.texOut->build();
+    d.texOut->create();
     d.releasePool << d.texOut;
 
     d.initialUpdates->uploadTexture(d.texIn, image);
 
     d.computeUBuf = m_r->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 4);
-    d.computeUBuf->build();
+    d.computeUBuf->create();
     d.releasePool << d.computeUBuf;
 
     d.computeBindings = m_r->newShaderResourceBindings();
@@ -119,31 +119,31 @@ void Window::customInit()
                                        QRhiShaderResourceBinding::imageLoad(1, QRhiShaderResourceBinding::ComputeStage, d.texIn, 0),
                                        QRhiShaderResourceBinding::imageStore(2, QRhiShaderResourceBinding::ComputeStage, d.texOut, 0)
                                    });
-    d.computeBindings->build();
+    d.computeBindings->create();
     d.releasePool << d.computeBindings;
 
     d.computePipeline = m_r->newComputePipeline();
     d.computePipeline->setShaderResourceBindings(d.computeBindings);
     d.computePipeline->setShaderStage({ QRhiShaderStage::Compute, getShader(QLatin1String(":/image.comp.qsb")) });
-    d.computePipeline->build();
+    d.computePipeline->create();
     d.releasePool << d.computePipeline;
 
     // graphics pass
 
     d.vbuf = m_r->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(quadVertexData));
-    d.vbuf->build();
+    d.vbuf->create();
     d.releasePool << d.vbuf;
 
     d.initialUpdates->uploadStaticBuffer(d.vbuf, quadVertexData);
 
     d.ibuf = m_r->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::IndexBuffer, sizeof(quadIndexData));
-    d.ibuf->build();
+    d.ibuf->create();
     d.releasePool << d.ibuf;
 
     d.initialUpdates->uploadStaticBuffer(d.ibuf, quadIndexData);
 
     d.ubuf = m_r->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 68);
-    d.ubuf->build();
+    d.ubuf->create();
     d.releasePool << d.ubuf;
 
     qint32 flip = 0; // regardless of isYUpInFramebuffer() since the input is not flipped so the end result is good for GL too
@@ -152,7 +152,7 @@ void Window::customInit()
     d.sampler = m_r->newSampler(QRhiSampler::Linear, QRhiSampler::Linear, QRhiSampler::None,
                                 QRhiSampler::ClampToEdge, QRhiSampler::ClampToEdge);
     d.releasePool << d.sampler;
-    d.sampler->build();
+    d.sampler->create();
 
     d.srb = m_r->newShaderResourceBindings();
     d.releasePool << d.srb;
@@ -160,7 +160,7 @@ void Window::customInit()
         QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage, d.ubuf),
         QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, d.texOut, d.sampler)
     });
-    d.srb->build();
+    d.srb->create();
 
     d.ps = m_r->newGraphicsPipeline();
     d.releasePool << d.ps;
@@ -179,7 +179,7 @@ void Window::customInit()
     d.ps->setVertexInputLayout(inputLayout);
     d.ps->setShaderResourceBindings(d.srb);
     d.ps->setRenderPassDescriptor(m_rp);
-    d.ps->build();
+    d.ps->create();
 }
 
 void Window::customRelease()

@@ -78,12 +78,12 @@ void TriangleOnCubeRenderer::initResources(QRhiRenderPassDescriptor *rp)
 {
     m_vbuf = m_r->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(cube));
     m_vbuf->setName(QByteArrayLiteral("Cube vbuf (textured with offscreen)"));
-    m_vbuf->build();
+    m_vbuf->create();
     m_vbufReady = false;
 
     m_ubuf = m_r->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 64 + 4);
     m_ubuf->setName(QByteArrayLiteral("Cube ubuf (textured with offscreen)"));
-    m_ubuf->build();
+    m_ubuf->create();
 
     if (IMAGE_UNDER_OFFSCREEN_RENDERING) {
         m_image = QImage(QLatin1String(":/qt256.png")).scaled(OFFSCREEN_SIZE).convertToFormat(QImage::Format_RGBA8888);
@@ -93,34 +93,34 @@ void TriangleOnCubeRenderer::initResources(QRhiRenderPassDescriptor *rp)
 
     m_tex = m_r->newTexture(QRhiTexture::RGBA8, OFFSCREEN_SIZE, 1, QRhiTexture::RenderTarget);
     m_tex->setName(QByteArrayLiteral("Texture for offscreen content"));
-    m_tex->build();
+    m_tex->create();
 
     if (MRT) {
         m_tex2 = m_r->newTexture(QRhiTexture::RGBA8, OFFSCREEN_SIZE, 1, QRhiTexture::RenderTarget);
-        m_tex2->build();
+        m_tex2->create();
     }
 
     if (DS_ATT) {
         m_offscreenTriangle.setDepthWrite(true);
         m_ds = m_r->newRenderBuffer(QRhiRenderBuffer::DepthStencil, m_tex->pixelSize());
-        m_ds->build();
+        m_ds->create();
     }
 
     if (DEPTH_TEXTURE) {
         m_offscreenTriangle.setDepthWrite(true);
         m_depthTex = m_r->newTexture(QRhiTexture::D32F, OFFSCREEN_SIZE, 1, QRhiTexture::RenderTarget);
-        m_depthTex->build();
+        m_depthTex->create();
     }
 
     m_sampler = m_r->newSampler(QRhiSampler::Linear, QRhiSampler::Linear, QRhiSampler::None, QRhiSampler::ClampToEdge, QRhiSampler::ClampToEdge);
-    m_sampler->build();
+    m_sampler->create();
 
     m_srb = m_r->newShaderResourceBindings();
     m_srb->setBindings({
         QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage, m_ubuf),
         QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, m_tex, m_sampler)
     });
-    m_srb->build();
+    m_srb->create();
 
     m_ps = m_r->newGraphicsPipeline();
 
@@ -156,7 +156,7 @@ void TriangleOnCubeRenderer::initResources(QRhiRenderPassDescriptor *rp)
     m_ps->setShaderResourceBindings(m_srb);
     m_ps->setRenderPassDescriptor(rp);
 
-    m_ps->build();
+    m_ps->create();
 
     QRhiTextureRenderTarget::Flags rtFlags;
     if (IMAGE_UNDER_OFFSCREEN_RENDERING)
@@ -184,7 +184,7 @@ void TriangleOnCubeRenderer::initResources(QRhiRenderPassDescriptor *rp)
     m_rp = m_rt->newCompatibleRenderPassDescriptor();
     m_rt->setRenderPassDescriptor(m_rp);
 
-    m_rt->build();
+    m_rt->create();
 
     m_offscreenTriangle.setRhi(m_r);
     m_offscreenTriangle.initResources(m_rp);

@@ -1526,7 +1526,7 @@ void QRhiGles2::enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cb
         cbD->commands.append(cmd);
     } else if (!rawData.isEmpty() && isCompressed) {
         if (!texD->compressedAtlasBuilt && (texD->flags() & QRhiTexture::UsedAsCompressedAtlas)) {
-            // Build on first upload since glCompressedTexImage2D cannot take nullptr data
+            // Create on first upload since glCompressedTexImage2D cannot take nullptr data
             quint32 byteSize = 0;
             compressedFormatInfo(texD->m_format, texD->m_pixelSize, nullptr, &byteSize, nullptr);
             QByteArray zeroBuf(byteSize, 0);
@@ -3514,10 +3514,10 @@ QGles2Buffer::QGles2Buffer(QRhiImplementation *rhi, Type type, UsageFlags usage,
 
 QGles2Buffer::~QGles2Buffer()
 {
-    release();
+    destroy();
 }
 
-void QGles2Buffer::release()
+void QGles2Buffer::destroy()
 {
     if (!buffer)
         return;
@@ -3536,10 +3536,10 @@ void QGles2Buffer::release()
     rhiD->unregisterResource(this);
 }
 
-bool QGles2Buffer::build()
+bool QGles2Buffer::create()
 {
     if (buffer)
-        release();
+        destroy();
 
     QRHI_RES_RHI(QRhiGles2);
     QRHI_PROF;
@@ -3593,10 +3593,10 @@ QGles2RenderBuffer::QGles2RenderBuffer(QRhiImplementation *rhi, Type type, const
 
 QGles2RenderBuffer::~QGles2RenderBuffer()
 {
-    release();
+    destroy();
 }
 
-void QGles2RenderBuffer::release()
+void QGles2RenderBuffer::destroy()
 {
     if (!renderbuffer)
         return;
@@ -3617,10 +3617,10 @@ void QGles2RenderBuffer::release()
     rhiD->unregisterResource(this);
 }
 
-bool QGles2RenderBuffer::build()
+bool QGles2RenderBuffer::create()
 {
     if (renderbuffer)
-        release();
+        destroy();
 
     QRHI_RES_RHI(QRhiGles2);
     QRHI_PROF;
@@ -3719,10 +3719,10 @@ QGles2Texture::QGles2Texture(QRhiImplementation *rhi, Format format, const QSize
 
 QGles2Texture::~QGles2Texture()
 {
-    release();
+    destroy();
 }
 
-void QGles2Texture::release()
+void QGles2Texture::destroy()
 {
     if (!texture)
         return;
@@ -3744,10 +3744,10 @@ void QGles2Texture::release()
     rhiD->unregisterResource(this);
 }
 
-bool QGles2Texture::prepareBuild(QSize *adjustedSize)
+bool QGles2Texture::prepareCreate(QSize *adjustedSize)
 {
     if (texture)
-        release();
+        destroy();
 
     QRHI_RES_RHI(QRhiGles2);
     if (!rhiD->ensureContext())
@@ -3790,10 +3790,10 @@ bool QGles2Texture::prepareBuild(QSize *adjustedSize)
     return true;
 }
 
-bool QGles2Texture::build()
+bool QGles2Texture::create()
 {
     QSize size;
-    if (!prepareBuild(&size))
+    if (!prepareCreate(&size))
         return false;
 
     QRHI_RES_RHI(QRhiGles2);
@@ -3843,13 +3843,13 @@ bool QGles2Texture::build()
     return true;
 }
 
-bool QGles2Texture::buildFrom(QRhiTexture::NativeTexture src)
+bool QGles2Texture::createFrom(QRhiTexture::NativeTexture src)
 {
     const uint textureId = uint(src.object);
     if (textureId == 0)
         return false;
 
-    if (!prepareBuild())
+    if (!prepareCreate())
         return false;
 
     texture = textureId;
@@ -3880,15 +3880,15 @@ QGles2Sampler::QGles2Sampler(QRhiImplementation *rhi, Filter magFilter, Filter m
 
 QGles2Sampler::~QGles2Sampler()
 {
-    release();
+    destroy();
 }
 
-void QGles2Sampler::release()
+void QGles2Sampler::destroy()
 {
     // nothing to do here
 }
 
-bool QGles2Sampler::build()
+bool QGles2Sampler::create()
 {
     d.glminfilter = toGlMinFilter(m_minFilter, m_mipmapMode);
     d.glmagfilter = toGlMagFilter(m_magFilter);
@@ -3909,10 +3909,10 @@ QGles2RenderPassDescriptor::QGles2RenderPassDescriptor(QRhiImplementation *rhi)
 
 QGles2RenderPassDescriptor::~QGles2RenderPassDescriptor()
 {
-    release();
+    destroy();
 }
 
-void QGles2RenderPassDescriptor::release()
+void QGles2RenderPassDescriptor::destroy()
 {
     // nothing to do here
 }
@@ -3931,10 +3931,10 @@ QGles2ReferenceRenderTarget::QGles2ReferenceRenderTarget(QRhiImplementation *rhi
 
 QGles2ReferenceRenderTarget::~QGles2ReferenceRenderTarget()
 {
-    release();
+    destroy();
 }
 
-void QGles2ReferenceRenderTarget::release()
+void QGles2ReferenceRenderTarget::destroy()
 {
     // nothing to do here
 }
@@ -3964,10 +3964,10 @@ QGles2TextureRenderTarget::QGles2TextureRenderTarget(QRhiImplementation *rhi,
 
 QGles2TextureRenderTarget::~QGles2TextureRenderTarget()
 {
-    release();
+    destroy();
 }
 
-void QGles2TextureRenderTarget::release()
+void QGles2TextureRenderTarget::destroy()
 {
     if (!framebuffer)
         return;
@@ -3990,12 +3990,12 @@ QRhiRenderPassDescriptor *QGles2TextureRenderTarget::newCompatibleRenderPassDesc
     return new QGles2RenderPassDescriptor(m_rhi);
 }
 
-bool QGles2TextureRenderTarget::build()
+bool QGles2TextureRenderTarget::create()
 {
     QRHI_RES_RHI(QRhiGles2);
 
     if (framebuffer)
-        release();
+        destroy();
 
     const bool hasColorAttachments = m_desc.cbeginColorAttachments() != m_desc.cendColorAttachments();
     Q_ASSERT(hasColorAttachments || m_desc.depthTexture());
@@ -4114,15 +4114,15 @@ QGles2ShaderResourceBindings::QGles2ShaderResourceBindings(QRhiImplementation *r
 
 QGles2ShaderResourceBindings::~QGles2ShaderResourceBindings()
 {
-    release();
+    destroy();
 }
 
-void QGles2ShaderResourceBindings::release()
+void QGles2ShaderResourceBindings::destroy()
 {
     // nothing to do here
 }
 
-bool QGles2ShaderResourceBindings::build()
+bool QGles2ShaderResourceBindings::create()
 {
     generation += 1;
     return true;
@@ -4135,10 +4135,10 @@ QGles2GraphicsPipeline::QGles2GraphicsPipeline(QRhiImplementation *rhi)
 
 QGles2GraphicsPipeline::~QGles2GraphicsPipeline()
 {
-    release();
+    destroy();
 }
 
-void QGles2GraphicsPipeline::release()
+void QGles2GraphicsPipeline::destroy()
 {
     if (!program)
         return;
@@ -4158,12 +4158,12 @@ void QGles2GraphicsPipeline::release()
     rhiD->unregisterResource(this);
 }
 
-bool QGles2GraphicsPipeline::build()
+bool QGles2GraphicsPipeline::create()
 {
     QRHI_RES_RHI(QRhiGles2);
 
     if (program)
-        release();
+        destroy();
 
     if (!rhiD->ensureContext())
         return false;
@@ -4236,10 +4236,10 @@ QGles2ComputePipeline::QGles2ComputePipeline(QRhiImplementation *rhi)
 
 QGles2ComputePipeline::~QGles2ComputePipeline()
 {
-    release();
+    destroy();
 }
 
-void QGles2ComputePipeline::release()
+void QGles2ComputePipeline::destroy()
 {
     if (!program)
         return;
@@ -4259,12 +4259,12 @@ void QGles2ComputePipeline::release()
     rhiD->unregisterResource(this);
 }
 
-bool QGles2ComputePipeline::build()
+bool QGles2ComputePipeline::create()
 {
     QRHI_RES_RHI(QRhiGles2);
 
     if (program)
-        release();
+        destroy();
 
     if (!rhiD->ensureContext())
         return false;
@@ -4310,10 +4310,10 @@ QGles2CommandBuffer::QGles2CommandBuffer(QRhiImplementation *rhi)
 
 QGles2CommandBuffer::~QGles2CommandBuffer()
 {
-    release();
+    destroy();
 }
 
-void QGles2CommandBuffer::release()
+void QGles2CommandBuffer::destroy()
 {
     // nothing to do here
 }
@@ -4327,10 +4327,10 @@ QGles2SwapChain::QGles2SwapChain(QRhiImplementation *rhi)
 
 QGles2SwapChain::~QGles2SwapChain()
 {
-    release();
+    destroy();
 }
 
-void QGles2SwapChain::release()
+void QGles2SwapChain::destroy()
 {
     QRHI_PROF;
     QRHI_PROF_F(releaseSwapChain(this));
@@ -4357,7 +4357,7 @@ QRhiRenderPassDescriptor *QGles2SwapChain::newCompatibleRenderPassDescriptor()
     return new QGles2RenderPassDescriptor(m_rhi);
 }
 
-bool QGles2SwapChain::buildOrResize()
+bool QGles2SwapChain::createOrResize()
 {
     surface = m_window;
     m_currentPixelSize = surfacePixelSize();
@@ -4367,7 +4367,7 @@ bool QGles2SwapChain::buildOrResize()
             && m_depthStencil->pixelSize() != pixelSize)
     {
         m_depthStencil->setPixelSize(pixelSize);
-        m_depthStencil->build();
+        m_depthStencil->create();
     }
 
     rt.d.rp = QRHI_RES(QGles2RenderPassDescriptor, m_renderPassDesc);

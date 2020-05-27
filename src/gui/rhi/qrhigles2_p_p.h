@@ -62,8 +62,8 @@ struct QGles2Buffer : public QRhiBuffer
 {
     QGles2Buffer(QRhiImplementation *rhi, Type type, UsageFlags usage, int size);
     ~QGles2Buffer();
-    void release() override;
-    bool build() override;
+    void destroy() override;
+    bool create() override;
     QRhiBuffer::NativeBuffer nativeBuffer() override;
 
     GLuint buffer = 0;
@@ -92,8 +92,8 @@ struct QGles2RenderBuffer : public QRhiRenderBuffer
                        int sampleCount, QRhiRenderBuffer::Flags flags,
                        QRhiTexture::Format backingFormatHint);
     ~QGles2RenderBuffer();
-    void release() override;
-    bool build() override;
+    void destroy() override;
+    bool create() override;
     QRhiTexture::Format backingFormat() const override;
 
     GLuint renderbuffer = 0;
@@ -132,12 +132,12 @@ struct QGles2Texture : public QRhiTexture
     QGles2Texture(QRhiImplementation *rhi, Format format, const QSize &pixelSize,
                   int sampleCount, Flags flags);
     ~QGles2Texture();
-    void release() override;
-    bool build() override;
-    bool buildFrom(NativeTexture src) override;
+    void destroy() override;
+    bool create() override;
+    bool createFrom(NativeTexture src) override;
     NativeTexture nativeTexture() override;
 
-    bool prepareBuild(QSize *adjustedSize = nullptr);
+    bool prepareCreate(QSize *adjustedSize = nullptr);
 
     GLuint texture = 0;
     bool owns = true;
@@ -175,8 +175,8 @@ struct QGles2Sampler : public QRhiSampler
     QGles2Sampler(QRhiImplementation *rhi, Filter magFilter, Filter minFilter, Filter mipmapMode,
                   AddressMode u, AddressMode v, AddressMode w);
     ~QGles2Sampler();
-    void release() override;
-    bool build() override;
+    void destroy() override;
+    bool create() override;
 
     QGles2SamplerData d;
     uint generation = 0;
@@ -187,7 +187,7 @@ struct QGles2RenderPassDescriptor : public QRhiRenderPassDescriptor
 {
     QGles2RenderPassDescriptor(QRhiImplementation *rhi);
     ~QGles2RenderPassDescriptor();
-    void release() override;
+    void destroy() override;
     bool isCompatible(const QRhiRenderPassDescriptor *other) const override;
 };
 
@@ -208,7 +208,7 @@ struct QGles2ReferenceRenderTarget : public QRhiRenderTarget
 {
     QGles2ReferenceRenderTarget(QRhiImplementation *rhi);
     ~QGles2ReferenceRenderTarget();
-    void release() override;
+    void destroy() override;
 
     QSize pixelSize() const override;
     float devicePixelRatio() const override;
@@ -221,14 +221,14 @@ struct QGles2TextureRenderTarget : public QRhiTextureRenderTarget
 {
     QGles2TextureRenderTarget(QRhiImplementation *rhi, const QRhiTextureRenderTargetDescription &desc, Flags flags);
     ~QGles2TextureRenderTarget();
-    void release() override;
+    void destroy() override;
 
     QSize pixelSize() const override;
     float devicePixelRatio() const override;
     int sampleCount() const override;
 
     QRhiRenderPassDescriptor *newCompatibleRenderPassDescriptor() override;
-    bool build() override;
+    bool create() override;
 
     QGles2RenderTargetData d;
     GLuint framebuffer = 0;
@@ -239,8 +239,8 @@ struct QGles2ShaderResourceBindings : public QRhiShaderResourceBindings
 {
     QGles2ShaderResourceBindings(QRhiImplementation *rhi);
     ~QGles2ShaderResourceBindings();
-    void release() override;
-    bool build() override;
+    void destroy() override;
+    bool create() override;
 
     uint generation = 0;
     friend class QRhiGles2;
@@ -270,8 +270,8 @@ struct QGles2GraphicsPipeline : public QRhiGraphicsPipeline
 {
     QGles2GraphicsPipeline(QRhiImplementation *rhi);
     ~QGles2GraphicsPipeline();
-    void release() override;
-    bool build() override;
+    void destroy() override;
+    bool create() override;
 
     GLuint program = 0;
     GLenum drawMode = GL_TRIANGLES;
@@ -285,8 +285,8 @@ struct QGles2ComputePipeline : public QRhiComputePipeline
 {
     QGles2ComputePipeline(QRhiImplementation *rhi);
     ~QGles2ComputePipeline();
-    void release() override;
-    bool build() override;
+    void destroy() override;
+    bool create() override;
 
     GLuint program = 0;
     QVector<QGles2UniformDescription> uniforms;
@@ -299,7 +299,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
 {
     QGles2CommandBuffer(QRhiImplementation *rhi);
     ~QGles2CommandBuffer();
-    void release() override;
+    void destroy() override;
 
     struct Command {
         enum Cmd {
@@ -662,7 +662,7 @@ struct QGles2SwapChain : public QRhiSwapChain
 {
     QGles2SwapChain(QRhiImplementation *rhi);
     ~QGles2SwapChain();
-    void release() override;
+    void destroy() override;
 
     QRhiCommandBuffer *currentFrameCommandBuffer() override;
     QRhiRenderTarget *currentFrameRenderTarget() override;
@@ -670,7 +670,7 @@ struct QGles2SwapChain : public QRhiSwapChain
     QSize surfacePixelSize() override;
 
     QRhiRenderPassDescriptor *newCompatibleRenderPassDescriptor() override;
-    bool buildOrResize() override;
+    bool createOrResize() override;
 
     QSurface *surface = nullptr;
     QSize pixelSize;

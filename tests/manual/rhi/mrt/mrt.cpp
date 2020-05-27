@@ -107,27 +107,27 @@ void Window::customInit()
         qWarning("MRT is not supported");
 
     d.vbuf = m_r->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(quadVertexData) + sizeof(triangleData));
-    d.vbuf->build();
+    d.vbuf->create();
     d.releasePool << d.vbuf;
 
     d.ibuf = m_r->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::IndexBuffer, sizeof(quadIndexData));
-    d.ibuf->build();
+    d.ibuf->create();
     d.releasePool << d.ibuf;
 
     const int oneRoundedUniformBlockSize = m_r->ubufAligned(68);
     d.ubuf = m_r->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, oneRoundedUniformBlockSize * ATTCOUNT);
-    d.ubuf->build();
+    d.ubuf->create();
     d.releasePool << d.ubuf;
 
     d.sampler = m_r->newSampler(QRhiSampler::Linear, QRhiSampler::Linear, QRhiSampler::None,
                                 QRhiSampler::ClampToEdge, QRhiSampler::ClampToEdge);
     d.releasePool << d.sampler;
-    d.sampler->build();
+    d.sampler->create();
 
     for (int i = 0; i < ATTCOUNT; ++i) {
         QRhiTexture *tex = m_r->newTexture(QRhiTexture::RGBA8, QSize(512, 512), 1, QRhiTexture::RenderTarget);
         d.releasePool << tex;
-        tex->build();
+        tex->create();
 
         QRhiShaderResourceBindings *srb = m_r->newShaderResourceBindings();
         d.releasePool << srb;
@@ -136,7 +136,7 @@ void Window::customInit()
                              d.ubuf, i * oneRoundedUniformBlockSize, 68),
             QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, tex, d.sampler)
         });
-        srb->build();
+        srb->create();
 
         d.colData[i].tex = tex;
         d.colData[i].srb = srb;
@@ -152,7 +152,7 @@ void Window::customInit()
     d.rtRp = d.rt->newCompatibleRenderPassDescriptor();
     d.releasePool << d.rtRp;
     d.rt->setRenderPassDescriptor(d.rtRp);
-    d.rt->build();
+    d.rt->create();
 
     d.ps = m_r->newGraphicsPipeline();
     d.releasePool << d.ps;
@@ -171,7 +171,7 @@ void Window::customInit()
     d.ps->setVertexInputLayout(inputLayout);
     d.ps->setShaderResourceBindings(d.colData[0].srb); // all of them are layout-compatible
     d.ps->setRenderPassDescriptor(m_rp);
-    d.ps->build();
+    d.ps->create();
 
     d.initialUpdates = m_r->nextResourceUpdateBatch();
     d.initialUpdates->uploadStaticBuffer(d.vbuf, 0, sizeof(quadVertexData), quadVertexData);
@@ -185,14 +185,14 @@ void Window::customInit()
     // triangle
     d.triUbuf = m_r->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 68);
     d.releasePool << d.triUbuf;
-    d.triUbuf->build();
+    d.triUbuf->create();
 
     d.triSrb = m_r->newShaderResourceBindings();
     d.releasePool << d.triSrb;
     d.triSrb->setBindings({
         QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage, d.triUbuf)
     });
-    d.triSrb->build();
+    d.triSrb->create();
 
     d.triPs = m_r->newGraphicsPipeline();
     d.releasePool << d.triPs;
@@ -214,7 +214,7 @@ void Window::customInit()
     d.triPs->setVertexInputLayout(inputLayout);
     d.triPs->setShaderResourceBindings(d.triSrb);
     d.triPs->setRenderPassDescriptor(d.rtRp);
-    d.triPs->build();
+    d.triPs->create();
 
     d.triBaseMvp = m_r->clipSpaceCorrMatrix();
     d.triBaseMvp.perspective(45.0f, d.rt->pixelSize().width() / float(d.rt->pixelSize().height()), 0.01f, 1000.0f);

@@ -115,12 +115,12 @@ struct {
 void initializePerFaceRendering(QRhi *rhi)
 {
     d.cubemap1 = rhi->newTexture(QRhiTexture::RGBA8, cubemapSize, 1, QRhiTexture::CubeMap | QRhiTexture::RenderTarget);
-    d.cubemap1->build();
+    d.cubemap1->create();
     d.releasePool << d.cubemap1;
 
     d.ubufSizePerFace = rhi->ubufAligned(64 + 12);
     d.oneface_ubuf = rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, d.ubufSizePerFace * 6);
-    d.oneface_ubuf->build();
+    d.oneface_ubuf->create();
     d.releasePool << d.oneface_ubuf;
 
     for (int face = 0; face < 6; ++face) {
@@ -133,7 +133,7 @@ void initializePerFaceRendering(QRhi *rhi)
             d.releasePool << d.oneface_rp;
         }
         d.oneface_rt[face]->setRenderPassDescriptor(d.oneface_rp);
-        d.oneface_rt[face]->build();
+        d.oneface_rt[face]->create();
         d.releasePool << d.oneface_rt[face];
     }
 
@@ -143,7 +143,7 @@ void initializePerFaceRendering(QRhi *rhi)
     d.oneface_srb->setBindings({
         QRhiShaderResourceBinding::uniformBufferWithDynamicOffset(0, visibility, d.oneface_ubuf, 64 + 12)
     });
-    d.oneface_srb->build();
+    d.oneface_srb->create();
     d.releasePool << d.oneface_srb;
 
     d.oneface_ps = rhi->newGraphicsPipeline();
@@ -161,7 +161,7 @@ void initializePerFaceRendering(QRhi *rhi)
     d.oneface_ps->setVertexInputLayout(inputLayout);
     d.oneface_ps->setShaderResourceBindings(d.oneface_srb);
     d.oneface_ps->setRenderPassDescriptor(d.oneface_rp);
-    d.oneface_ps->build();
+    d.oneface_ps->create();
     d.releasePool << d.oneface_ps;
 
     // wasteful to duplicate the mvp as well but will do for now
@@ -217,11 +217,11 @@ void renderPerFace(QRhiCommandBuffer *cb)
 void initializeMrtRendering(QRhi *rhi)
 {
     d.cubemap2 = rhi->newTexture(QRhiTexture::RGBA8, cubemapSize, 1, QRhiTexture::CubeMap | QRhiTexture::RenderTarget);
-    d.cubemap2->build();
+    d.cubemap2->create();
     d.releasePool << d.cubemap2;
 
     d.mrt_ubuf = rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 64 + 6 * 16); // note that vec3 is aligned to 16 bytes
-    d.mrt_ubuf->build();
+    d.mrt_ubuf->create();
     d.releasePool << d.mrt_ubuf;
 
     QVarLengthArray<QRhiColorAttachment, 6> attachments;
@@ -236,7 +236,7 @@ void initializeMrtRendering(QRhi *rhi)
     d.mrt_rp = d.mrt_rt->newCompatibleRenderPassDescriptor();
     d.releasePool << d.mrt_rp;
     d.mrt_rt->setRenderPassDescriptor(d.mrt_rp);
-    d.mrt_rt->build();
+    d.mrt_rt->create();
     d.releasePool << d.mrt_rt;
 
     d.mrt_srb = rhi->newShaderResourceBindings();
@@ -245,7 +245,7 @@ void initializeMrtRendering(QRhi *rhi)
     d.mrt_srb->setBindings({
         QRhiShaderResourceBinding::uniformBuffer(0, visibility, d.mrt_ubuf)
     });
-    d.mrt_srb->build();
+    d.mrt_srb->create();
     d.releasePool << d.mrt_srb;
 
     d.mrt_ps = rhi->newGraphicsPipeline();
@@ -267,7 +267,7 @@ void initializeMrtRendering(QRhi *rhi)
     d.mrt_ps->setVertexInputLayout(inputLayout);
     d.mrt_ps->setShaderResourceBindings(d.mrt_srb);
     d.mrt_ps->setRenderPassDescriptor(d.mrt_rp);
-    d.mrt_ps->build();
+    d.mrt_ps->create();
     d.releasePool << d.mrt_ps;
 
     QMatrix4x4 identity;
@@ -321,11 +321,11 @@ void renderWithMrt(QRhiCommandBuffer *cb)
 void Window::customInit()
 {
     d.half_quad_vbuf = m_r->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(halfQuadVertexData));
-    d.half_quad_vbuf->build();
+    d.half_quad_vbuf->create();
     d.releasePool << d.half_quad_vbuf;
 
     d.half_quad_ibuf = m_r->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::IndexBuffer, sizeof(halfQuadIndexData));
-    d.half_quad_ibuf->build();
+    d.half_quad_ibuf->create();
     d.releasePool << d.half_quad_ibuf;
 
     d.initialUpdates = m_r->nextResourceUpdateBatch();
@@ -343,17 +343,17 @@ void Window::customInit()
 
     // onscreen stuff
     d.vbuf = m_r->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(cube));
-    d.vbuf->build();
+    d.vbuf->create();
     d.releasePool << d.vbuf;
     d.initialUpdates->uploadStaticBuffer(d.vbuf, cube);
 
     d.ubuf = m_r->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 64);
-    d.ubuf->build();
+    d.ubuf->create();
     d.releasePool << d.ubuf;
 
     d.sampler = m_r->newSampler(QRhiSampler::Linear, QRhiSampler::Linear, QRhiSampler::None,
                                 QRhiSampler::Repeat, QRhiSampler::Repeat);
-    d.sampler->build();
+    d.sampler->create();
     d.releasePool << d.sampler;
 
     d.srb = m_r->newShaderResourceBindings();
@@ -361,7 +361,7 @@ void Window::customInit()
         QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage, d.ubuf),
         QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, d.cubemap1, d.sampler)
     });
-    d.srb->build();
+    d.srb->create();
     d.releasePool << d.srb;
 
     d.ps = m_r->newGraphicsPipeline();
@@ -388,7 +388,7 @@ void Window::customInit()
     d.ps->setVertexInputLayout(inputLayout);
     d.ps->setShaderResourceBindings(d.srb);
     d.ps->setRenderPassDescriptor(m_rp);
-    d.ps->build();
+    d.ps->create();
     d.releasePool << d.ps;
 
     if (d.canDoMrt)
@@ -446,7 +446,7 @@ void Window::keyPressEvent(QKeyEvent *e)
             QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage, d.ubuf),
             QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, d.cubemap1, d.sampler)
         });
-        d.srb->build();
+        d.srb->create();
         break;
     case Qt::Key_Right:
     case Qt::Key_Down:
@@ -456,7 +456,7 @@ void Window::keyPressEvent(QKeyEvent *e)
                 QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage, d.ubuf),
                 QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, d.cubemap2, d.sampler)
             });
-            d.srb->build();
+            d.srb->create();
         }
         break;
     default:

@@ -73,32 +73,32 @@ void Window::customInit()
         qFatal("This backend does not support BC1");
 
     d.vbuf = m_r->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(cube));
-    d.vbuf->build();
+    d.vbuf->create();
     d.vbufReady = false;
 
     d.ubuf = m_r->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 68);
-    d.ubuf->build();
+    d.ubuf->create();
 
     QSize imageSize;
     d.compressedData = loadBC1(QLatin1String(":/qt256_bc1_9mips.dds"), &imageSize);
     Q_ASSERT(imageSize == QSize(256, 256));
 
     d.tex = m_r->newTexture(QRhiTexture::BC1, imageSize);
-    d.tex->build();
+    d.tex->create();
 
     d.compressedData2 = loadBC1(QLatin1String(":/bwqt224_64_nomips.dds"), &imageSize);
     Q_ASSERT(imageSize == QSize(224, 64));
 
     d.sampler = m_r->newSampler(QRhiSampler::Linear, QRhiSampler::Linear, QRhiSampler::None, // no mipmapping here
                                 QRhiSampler::ClampToEdge, QRhiSampler::ClampToEdge);
-    d.sampler->build();
+    d.sampler->create();
 
     d.srb = m_r->newShaderResourceBindings();
     d.srb->setBindings({
         QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage, d.ubuf),
         QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, d.tex, d.sampler)
     });
-    d.srb->build();
+    d.srb->create();
 
     d.ps = m_r->newGraphicsPipeline();
 
@@ -135,7 +135,7 @@ void Window::customInit()
     d.ps->setShaderResourceBindings(d.srb);
     d.ps->setRenderPassDescriptor(m_rp);
 
-    d.ps->build();
+    d.ps->create();
 }
 
 void Window::customRelease()

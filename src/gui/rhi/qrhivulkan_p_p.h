@@ -74,8 +74,8 @@ struct QVkBuffer : public QRhiBuffer
 {
     QVkBuffer(QRhiImplementation *rhi, Type type, UsageFlags usage, int size);
     ~QVkBuffer();
-    void release() override;
-    bool build() override;
+    void destroy() override;
+    bool create() override;
     QRhiBuffer::NativeBuffer nativeBuffer() override;
 
     VkBuffer buffers[QVK_FRAMES_IN_FLIGHT];
@@ -101,8 +101,8 @@ struct QVkRenderBuffer : public QRhiRenderBuffer
                     int sampleCount, Flags flags,
                     QRhiTexture::Format backingFormatHint);
     ~QVkRenderBuffer();
-    void release() override;
-    bool build() override;
+    void destroy() override;
+    bool create() override;
     QRhiTexture::Format backingFormat() const override;
 
     VkDeviceMemory memory = VK_NULL_HANDLE;
@@ -120,14 +120,14 @@ struct QVkTexture : public QRhiTexture
     QVkTexture(QRhiImplementation *rhi, Format format, const QSize &pixelSize,
                int sampleCount, Flags flags);
     ~QVkTexture();
-    void release() override;
-    bool build() override;
-    bool buildFrom(NativeTexture src) override;
+    void destroy() override;
+    bool create() override;
+    bool createFrom(NativeTexture src) override;
     NativeTexture nativeTexture() override;
     void setNativeLayout(int layout) override;
 
-    bool prepareBuild(QSize *adjustedSize = nullptr);
-    bool finishBuild();
+    bool prepareCreate(QSize *adjustedSize = nullptr);
+    bool finishCreate();
     VkImageView imageViewForLevel(int level);
 
     VkImage image = VK_NULL_HANDLE;
@@ -159,8 +159,8 @@ struct QVkSampler : public QRhiSampler
     QVkSampler(QRhiImplementation *rhi, Filter magFilter, Filter minFilter, Filter mipmapMode,
                AddressMode u, AddressMode v, AddressMode w);
     ~QVkSampler();
-    void release() override;
-    bool build() override;
+    void destroy() override;
+    bool create() override;
 
     VkSampler sampler = VK_NULL_HANDLE;
     int lastActiveFrameSlot = -1;
@@ -172,7 +172,7 @@ struct QVkRenderPassDescriptor : public QRhiRenderPassDescriptor
 {
     QVkRenderPassDescriptor(QRhiImplementation *rhi);
     ~QVkRenderPassDescriptor();
-    void release() override;
+    void destroy() override;
     bool isCompatible(const QRhiRenderPassDescriptor *other) const override;
     const QRhiNativeHandles *nativeHandles() override;
 
@@ -204,7 +204,7 @@ struct QVkReferenceRenderTarget : public QRhiRenderTarget
 {
     QVkReferenceRenderTarget(QRhiImplementation *rhi);
     ~QVkReferenceRenderTarget();
-    void release() override;
+    void destroy() override;
 
     QSize pixelSize() const override;
     float devicePixelRatio() const override;
@@ -217,14 +217,14 @@ struct QVkTextureRenderTarget : public QRhiTextureRenderTarget
 {
     QVkTextureRenderTarget(QRhiImplementation *rhi, const QRhiTextureRenderTargetDescription &desc, Flags flags);
     ~QVkTextureRenderTarget();
-    void release() override;
+    void destroy() override;
 
     QSize pixelSize() const override;
     float devicePixelRatio() const override;
     int sampleCount() const override;
 
     QRhiRenderPassDescriptor *newCompatibleRenderPassDescriptor() override;
-    bool build() override;
+    bool create() override;
 
     QVkRenderTargetData d;
     VkImageView rtv[QVkRenderTargetData::MAX_COLOR_ATTACHMENTS];
@@ -237,8 +237,8 @@ struct QVkShaderResourceBindings : public QRhiShaderResourceBindings
 {
     QVkShaderResourceBindings(QRhiImplementation *rhi);
     ~QVkShaderResourceBindings();
-    void release() override;
-    bool build() override;
+    void destroy() override;
+    bool create() override;
 
     QVarLengthArray<QRhiShaderResourceBinding, 8> sortedBindings;
     int poolIndex = -1;
@@ -290,8 +290,8 @@ struct QVkGraphicsPipeline : public QRhiGraphicsPipeline
 {
     QVkGraphicsPipeline(QRhiImplementation *rhi);
     ~QVkGraphicsPipeline();
-    void release() override;
-    bool build() override;
+    void destroy() override;
+    bool create() override;
 
     VkPipelineLayout layout = VK_NULL_HANDLE;
     VkPipeline pipeline = VK_NULL_HANDLE;
@@ -304,8 +304,8 @@ struct QVkComputePipeline : public QRhiComputePipeline
 {
     QVkComputePipeline(QRhiImplementation *rhi);
     ~QVkComputePipeline();
-    void release() override;
-    bool build() override;
+    void destroy() override;
+    bool create() override;
 
     VkPipelineLayout layout = VK_NULL_HANDLE;
     VkPipeline pipeline = VK_NULL_HANDLE;
@@ -318,7 +318,7 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
 {
     QVkCommandBuffer(QRhiImplementation *rhi);
     ~QVkCommandBuffer();
-    void release() override;
+    void destroy() override;
 
     const QRhiNativeHandles *nativeHandles();
 
@@ -576,7 +576,7 @@ struct QVkSwapChain : public QRhiSwapChain
 {
     QVkSwapChain(QRhiImplementation *rhi);
     ~QVkSwapChain();
-    void release() override;
+    void destroy() override;
 
     QRhiCommandBuffer *currentFrameCommandBuffer() override;
     QRhiRenderTarget *currentFrameRenderTarget() override;
@@ -584,7 +584,7 @@ struct QVkSwapChain : public QRhiSwapChain
     QSize surfacePixelSize() override;
 
     QRhiRenderPassDescriptor *newCompatibleRenderPassDescriptor() override;
-    bool buildOrResize() override;
+    bool createOrResize() override;
 
     bool ensureSurface();
 

@@ -228,27 +228,27 @@ int main(int argc, char **argv)
         qFatal("Failed to initialize RHI");
 
     QRhiTexture *tex = r->newTexture(QRhiTexture::RGBA8, QSize(1280, 720), 1, QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource);
-    tex->build();
+    tex->create();
     QRhiTextureRenderTarget *rt = r->newTextureRenderTarget({ tex });
     QRhiRenderPassDescriptor *rp = rt->newCompatibleRenderPassDescriptor();
     rt->setRenderPassDescriptor(rp);
-    rt->build();
+    rt->create();
 
     QMatrix4x4 proj = r->clipSpaceCorrMatrix();
     proj.perspective(45.0f, 1280 / 720.f, 0.01f, 1000.0f);
     proj.translate(0, 0, -4);
 
     QRhiBuffer *vbuf = r->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(vertexData));
-    vbuf->build();
+    vbuf->create();
 
     QRhiBuffer *ubuf = r->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 68);
-    ubuf->build();
+    ubuf->create();
 
     QRhiShaderResourceBindings *srb = r->newShaderResourceBindings();
     srb->setBindings({
         QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage, ubuf)
     });
-    srb->build();
+    srb->create();
 
     QRhiGraphicsPipeline *ps = r->newGraphicsPipeline();
 
@@ -280,7 +280,7 @@ int main(int argc, char **argv)
     ps->setVertexInputLayout(inputLayout);
     ps->setShaderResourceBindings(srb);
     ps->setRenderPassDescriptor(rp);
-    ps->build();
+    ps->create();
 
     int frame = 0;
     for (; frame < 20; ++frame) {

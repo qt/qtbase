@@ -347,7 +347,7 @@ void Window::releaseResources()
 
 void Window::resizeSwapChain()
 {
-    m_hasSwapChain = m_sc->buildOrResize(); // also handles m_ds
+    m_hasSwapChain = m_sc->createOrResize(); // also handles m_ds
 
     m_frameCount = 0;
     m_timer.restart();
@@ -362,7 +362,7 @@ void Window::releaseSwapChain()
 {
     if (m_hasSwapChain) {
         m_hasSwapChain = false;
-        m_sc->release();
+        m_sc->destroy();
     }
 }
 

@@ -77,18 +77,18 @@ void TriangleRenderer::initResources(QRhiRenderPassDescriptor *rp)
     m_vbuf = m_r->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(vertexData));
 #endif
     m_vbuf->setName(QByteArrayLiteral("Triangle vbuf"));
-    m_vbuf->build();
+    m_vbuf->create();
     m_vbufReady = false;
 
     m_ubuf = m_r->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 68);
     m_ubuf->setName(QByteArrayLiteral("Triangle ubuf"));
-    m_ubuf->build();
+    m_ubuf->create();
 
     m_srb = m_r->newShaderResourceBindings();
     m_srb->setBindings({
         QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage, m_ubuf)
     });
-    m_srb->build();
+    m_srb->create();
 
     m_ps = m_r->newGraphicsPipeline();
 
@@ -129,7 +129,7 @@ void TriangleRenderer::initResources(QRhiRenderPassDescriptor *rp)
     m_ps->setShaderResourceBindings(m_srb);
     m_ps->setRenderPassDescriptor(rp);
 
-    m_ps->build();
+    m_ps->create();
 }
 
 void TriangleRenderer::resize(const QSize &pixelSize)
@@ -162,7 +162,7 @@ void TriangleRenderer::queueResourceUpdates(QRhiResourceUpdateBatch *resourceUpd
     // to exercise setShaderResources' built-in smartness
     if (!(messWithBufferTrigger & 1)) {
         m_ubuf->release();
-        m_ubuf->build();
+        m_ubuf->create();
     }
     ++messWithBufferTrigger;
 #endif

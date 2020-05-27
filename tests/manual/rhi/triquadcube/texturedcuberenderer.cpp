@@ -70,12 +70,12 @@ void TexturedCubeRenderer::initResources(QRhiRenderPassDescriptor *rp)
 {
     m_vbuf = m_r->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(cube));
     m_vbuf->setName(QByteArrayLiteral("Cube vbuf (textured)"));
-    m_vbuf->build();
+    m_vbuf->create();
     m_vbufReady = false;
 
     m_ubuf = m_r->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 64 + 4);
     m_ubuf->setName(QByteArrayLiteral("Cube ubuf (textured)"));
-    m_ubuf->build();
+    m_ubuf->create();
 
     m_image = QImage(QLatin1String(":/qt256.png")).convertToFormat(QImage::Format_RGBA8888);
     QRhiTexture::Flags texFlags;
@@ -85,18 +85,18 @@ void TexturedCubeRenderer::initResources(QRhiRenderPassDescriptor *rp)
         texFlags |= QRhiTexture::UsedWithGenerateMips;
     m_tex = m_r->newTexture(QRhiTexture::RGBA8, QSize(m_image.width(), m_image.height()), 1, texFlags);
     m_tex->setName(QByteArrayLiteral("Qt texture"));
-    m_tex->build();
+    m_tex->create();
 
     m_sampler = m_r->newSampler(QRhiSampler::Linear, QRhiSampler::Linear, MIPMAP ? QRhiSampler::Linear : QRhiSampler::None,
                                 QRhiSampler::ClampToEdge, QRhiSampler::ClampToEdge);
-    m_sampler->build();
+    m_sampler->create();
 
     m_srb = m_r->newShaderResourceBindings();
     m_srb->setBindings({
         QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage, m_ubuf),
         QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, m_tex, m_sampler)
     });
-    m_srb->build();
+    m_srb->create();
 
     m_ps = m_r->newGraphicsPipeline();
 
@@ -139,7 +139,7 @@ void TexturedCubeRenderer::initResources(QRhiRenderPassDescriptor *rp)
     m_ps->setShaderResourceBindings(m_srb);
     m_ps->setRenderPassDescriptor(rp);
 
-    m_ps->build();
+    m_ps->create();
 }
 
 void TexturedCubeRenderer::resize(const QSize &pixelSize)

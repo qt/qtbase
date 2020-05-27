@@ -78,18 +78,18 @@ void Window::customInit()
     d.initialUpdates = m_r->nextResourceUpdateBatch();
 
     d.vbuf = m_r->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(cube));
-    d.vbuf->build();
+    d.vbuf->create();
     d.releasePool << d.vbuf;
 
     d.initialUpdates->uploadStaticBuffer(d.vbuf, cube);
 
     // translation + color (vec3 + vec3), interleaved, for each instance
     d.instBuf = m_r->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, INSTANCE_COUNT * 6 * sizeof(float));
-    d.instBuf->build();
+    d.instBuf->create();
     d.releasePool << d.instBuf;
 
     d.ubuf = m_r->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 64 + 12);
-    d.ubuf->build();
+    d.ubuf->create();
     d.releasePool << d.ubuf;
 
     d.srb = m_r->newShaderResourceBindings();
@@ -97,7 +97,7 @@ void Window::customInit()
     d.srb->setBindings({
         QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage, d.ubuf)
     });
-    d.srb->build();
+    d.srb->create();
 
     d.ps = m_r->newGraphicsPipeline();
     d.releasePool << d.ps;
@@ -118,7 +118,7 @@ void Window::customInit()
     d.ps->setVertexInputLayout(inputLayout);
     d.ps->setShaderResourceBindings(d.srb);
     d.ps->setRenderPassDescriptor(m_rp);
-    d.ps->build();
+    d.ps->create();
 
     QByteArray instData;
     instData.resize(INSTANCE_COUNT * 6 * sizeof(float));

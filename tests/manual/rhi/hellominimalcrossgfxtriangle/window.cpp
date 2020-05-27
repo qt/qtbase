@@ -189,7 +189,7 @@ void Window::init()
 
 void Window::resizeSwapChain()
 {
-    m_hasSwapChain = m_sc->buildOrResize(); // also handles m_ds
+    m_hasSwapChain = m_sc->createOrResize(); // also handles m_ds
 
     const QSize outputSize = m_sc->currentPixelSize();
     m_proj = m_rhi->clipSpaceCorrMatrix();
@@ -201,7 +201,7 @@ void Window::releaseSwapChain()
 {
     if (m_hasSwapChain) {
         m_hasSwapChain = false;
-        m_sc->release();
+        m_sc->destroy();
     }
 }
 

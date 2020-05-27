@@ -2508,10 +2508,10 @@ QD3D11Buffer::QD3D11Buffer(QRhiImplementation *rhi, Type type, UsageFlags usage,
 
 QD3D11Buffer::~QD3D11Buffer()
 {
-    release();
+    destroy();
 }
 
-void QD3D11Buffer::release()
+void QD3D11Buffer::destroy()
 {
     if (!buffer)
         return;
@@ -2546,10 +2546,10 @@ static inline uint toD3DBufferUsage(QRhiBuffer::UsageFlags usage)
     return uint(u);
 }
 
-bool QD3D11Buffer::build()
+bool QD3D11Buffer::create()
 {
     if (buffer)
-        release();
+        destroy();
 
     if (m_usage.testFlag(QRhiBuffer::UniformBuffer) && m_type != Dynamic) {
         qWarning("UniformBuffer must always be combined with Dynamic on D3D11");
@@ -2637,10 +2637,10 @@ QD3D11RenderBuffer::QD3D11RenderBuffer(QRhiImplementation *rhi, Type type, const
 
 QD3D11RenderBuffer::~QD3D11RenderBuffer()
 {
-    release();
+    destroy();
 }
 
-void QD3D11RenderBuffer::release()
+void QD3D11RenderBuffer::destroy()
 {
     if (!tex)
         return;
@@ -2664,10 +2664,10 @@ void QD3D11RenderBuffer::release()
     rhiD->unregisterResource(this);
 }
 
-bool QD3D11RenderBuffer::build()
+bool QD3D11RenderBuffer::create()
 {
     if (tex)
-        release();
+        destroy();
 
     if (m_pixelSize.isEmpty())
         return false;
@@ -2755,10 +2755,10 @@ QD3D11Texture::QD3D11Texture(QRhiImplementation *rhi, Format format, const QSize
 
 QD3D11Texture::~QD3D11Texture()
 {
-    release();
+    destroy();
 }
 
-void QD3D11Texture::release()
+void QD3D11Texture::destroy()
 {
     if (!tex)
         return;
@@ -2812,10 +2812,10 @@ static inline DXGI_FORMAT toD3DDepthTextureDSVFormat(QRhiTexture::Format format)
     }
 }
 
-bool QD3D11Texture::prepareBuild(QSize *adjustedSize)
+bool QD3D11Texture::prepareCreate(QSize *adjustedSize)
 {
     if (tex)
-        release();
+        destroy();
 
     const QSize size = m_pixelSize.isEmpty() ? QSize(1, 1) : m_pixelSize;
     const bool isDepth = isDepthTextureFormat(m_format);
@@ -2847,7 +2847,7 @@ bool QD3D11Texture::prepareBuild(QSize *adjustedSize)
     return true;
 }
 
-bool QD3D11Texture::finishBuild()
+bool QD3D11Texture::finishCreate()
 {
     QRHI_RES_RHI(QRhiD3D11);
     const bool isDepth = isDepthTextureFormat(m_format);
@@ -2878,10 +2878,10 @@ bool QD3D11Texture::finishBuild()
     return true;
 }
 
-bool QD3D11Texture::build()
+bool QD3D11Texture::create()
 {
     QSize size;
-    if (!prepareBuild(&size))
+    if (!prepareCreate(&size))
         return false;
 
     const bool isDepth = isDepthTextureFormat(m_format);
@@ -2925,7 +2925,7 @@ bool QD3D11Texture::build()
         return false;
     }
 
-    if (!finishBuild())
+    if (!finishCreate())
         return false;
 
     if (!m_objectName.isEmpty())
@@ -2939,18 +2939,18 @@ bool QD3D11Texture::build()
     return true;
 }
 
-bool QD3D11Texture::buildFrom(QRhiTexture::NativeTexture src)
+bool QD3D11Texture::createFrom(QRhiTexture::NativeTexture src)
 {
     ID3D11Texture2D *srcTex = reinterpret_cast<ID3D11Texture2D *>(src.object);
     if (srcTex == nullptr)
         return false;
 
-    if (!prepareBuild())
+    if (!prepareCreate())
         return false;
 
     tex = srcTex;
 
-    if (!finishBuild())
+    if (!finishCreate())
         return false;
 
     QRHI_PROF;
@@ -3006,10 +3006,10 @@ QD3D11Sampler::QD3D11Sampler(QRhiImplementation *rhi, Filter magFilter, Filter m
 
 QD3D11Sampler::~QD3D11Sampler()
 {
-    release();
+    destroy();
 }
 
-void QD3D11Sampler::release()
+void QD3D11Sampler::destroy()
 {
     if (!samplerState)
         return;
@@ -3093,10 +3093,10 @@ static inline D3D11_COMPARISON_FUNC toD3DTextureComparisonFunc(QRhiSampler::Comp
     }
 }
 
-bool QD3D11Sampler::build()
+bool QD3D11Sampler::create()
 {
     if (samplerState)
-        release();
+        destroy();
 
     D3D11_SAMPLER_DESC desc;
     memset(&desc, 0, sizeof(desc));
@@ -3130,10 +3130,10 @@ QD3D11RenderPassDescriptor::QD3D11RenderPassDescriptor(QRhiImplementation *rhi)
 
 QD3D11RenderPassDescriptor::~QD3D11RenderPassDescriptor()
 {
-    release();
+    destroy();
 }
 
-void QD3D11RenderPassDescriptor::release()
+void QD3D11RenderPassDescriptor::destroy()
 {
     // nothing to do here
 }
@@ -3152,10 +3152,10 @@ QD3D11ReferenceRenderTarget::QD3D11ReferenceRenderTarget(QRhiImplementation *rhi
 
 QD3D11ReferenceRenderTarget::~QD3D11ReferenceRenderTarget()
 {
-    release();
+    destroy();
 }
 
-void QD3D11ReferenceRenderTarget::release()
+void QD3D11ReferenceRenderTarget::destroy()
 {
     // nothing to do here
 }
@@ -3189,10 +3189,10 @@ QD3D11TextureRenderTarget::QD3D11TextureRenderTarget(QRhiImplementation *rhi,
 
 QD3D11TextureRenderTarget::~QD3D11TextureRenderTarget()
 {
-    release();
+    destroy();
 }
 
-void QD3D11TextureRenderTarget::release()
+void QD3D11TextureRenderTarget::destroy()
 {
     QRHI_RES_RHI(QRhiD3D11);
 
@@ -3221,10 +3221,10 @@ QRhiRenderPassDescriptor *QD3D11TextureRenderTarget::newCompatibleRenderPassDesc
     return new QD3D11RenderPassDescriptor(m_rhi);
 }
 
-bool QD3D11TextureRenderTarget::build()
+bool QD3D11TextureRenderTarget::create()
 {
     if (rtv[0] || dsv)
-        release();
+        destroy();
 
     const bool hasColorAttachments = m_desc.cbeginColorAttachments() != m_desc.cendColorAttachments();
     Q_ASSERT(hasColorAttachments || m_desc.depthTexture());
@@ -3345,19 +3345,19 @@ QD3D11ShaderResourceBindings::QD3D11ShaderResourceBindings(QRhiImplementation *r
 
 QD3D11ShaderResourceBindings::~QD3D11ShaderResourceBindings()
 {
-    release();
+    destroy();
 }
 
-void QD3D11ShaderResourceBindings::release()
+void QD3D11ShaderResourceBindings::destroy()
 {
     sortedBindings.clear();
     boundResourceData.clear();
 }
 
-bool QD3D11ShaderResourceBindings::build()
+bool QD3D11ShaderResourceBindings::create()
 {
     if (!sortedBindings.isEmpty())
-        release();
+        destroy();
 
     std::copy(m_bindings.cbegin(), m_bindings.cend(), std::back_inserter(sortedBindings));
     std::sort(sortedBindings.begin(), sortedBindings.end(),
@@ -3382,10 +3382,10 @@ QD3D11GraphicsPipeline::QD3D11GraphicsPipeline(QRhiImplementation *rhi)
 
 QD3D11GraphicsPipeline::~QD3D11GraphicsPipeline()
 {
-    release();
+    destroy();
 }
 
-void QD3D11GraphicsPipeline::release()
+void QD3D11GraphicsPipeline::destroy()
 {
     QRHI_RES_RHI(QRhiD3D11);
 
@@ -3703,10 +3703,10 @@ static QByteArray compileHlslShaderSource(const QShader &shader, QShader::Varian
     return result;
 }
 
-bool QD3D11GraphicsPipeline::build()
+bool QD3D11GraphicsPipeline::create()
 {
     if (dsState)
-        release();
+        destroy();
 
     QRHI_RES_RHI(QRhiD3D11);
     if (!rhiD->sanityCheckGraphicsPipeline(this))
@@ -3888,10 +3888,10 @@ QD3D11ComputePipeline::QD3D11ComputePipeline(QRhiImplementation *rhi)
 
 QD3D11ComputePipeline::~QD3D11ComputePipeline()
 {
-    release();
+    destroy();
 }
 
-void QD3D11ComputePipeline::release()
+void QD3D11ComputePipeline::destroy()
 {
     QRHI_RES_RHI(QRhiD3D11);
 
@@ -3905,10 +3905,10 @@ void QD3D11ComputePipeline::release()
     rhiD->unregisterResource(this);
 }
 
-bool QD3D11ComputePipeline::build()
+bool QD3D11ComputePipeline::create()
 {
     if (cs.shader)
-        release();
+        destroy();
 
     QRHI_RES_RHI(QRhiD3D11);
 
@@ -3955,10 +3955,10 @@ QD3D11CommandBuffer::QD3D11CommandBuffer(QRhiImplementation *rhi)
 
 QD3D11CommandBuffer::~QD3D11CommandBuffer()
 {
-    release();
+    destroy();
 }
 
-void QD3D11CommandBuffer::release()
+void QD3D11CommandBuffer::destroy()
 {
     // nothing to do here
 }
@@ -3982,7 +3982,7 @@ QD3D11SwapChain::QD3D11SwapChain(QRhiImplementation *rhi)
 
 QD3D11SwapChain::~QD3D11SwapChain()
 {
-    release();
+    destroy();
 }
 
 void QD3D11SwapChain::releaseBuffers()
@@ -4007,7 +4007,7 @@ void QD3D11SwapChain::releaseBuffers()
     }
 }
 
-void QD3D11SwapChain::release()
+void QD3D11SwapChain::destroy()
 {
     if (!swapChain)
         return;
@@ -4095,17 +4095,17 @@ bool QD3D11SwapChain::newColorBuffer(const QSize &size, DXGI_FORMAT format, DXGI
     return true;
 }
 
-bool QD3D11SwapChain::buildOrResize()
+bool QD3D11SwapChain::createOrResize()
 {
     // Can be called multiple times due to window resizes - that is not the
-    // same as a simple release+build (as with other resources). Just need to
+    // same as a simple destroy+create (as with other resources). Just need to
     // resize the buffers then.
 
     const bool needsRegistration = !window || window != m_window;
 
     // except if the window actually changes
     if (window && window != m_window)
-        release();
+        destroy();
 
     window = m_window;
     m_currentPixelSize = surfacePixelSize();
@@ -4252,7 +4252,7 @@ bool QD3D11SwapChain::buildOrResize()
     if (m_depthStencil && m_depthStencil->pixelSize() != pixelSize) {
         if (m_depthStencil->flags().testFlag(QRhiRenderBuffer::UsedWithSwapChainOnly)) {
             m_depthStencil->setPixelSize(pixelSize);
-            if (!m_depthStencil->build())
+            if (!m_depthStencil->create())
                 qWarning("Failed to rebuild swapchain's associated depth-stencil buffer for size %dx%d",
                          pixelSize.width(), pixelSize.height());
         } else {

@@ -141,45 +141,45 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
 
     \badcode
         vbuf = rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(vertexData));
-        if (!vbuf->build()) { error }
+        if (!vbuf->create()) { error }
         ...
         delete vbuf;
     \endcode
 
     \list
 
-    \li The returned value from both create() and functions like newBuffer() is
-    owned by the caller.
+    \li The returned value from functions like newBuffer() is always owned by
+    the caller.
 
     \li Just creating a QRhiResource subclass never allocates or initializes any
-    native resources. That is only done when calling the \c build function of a
-    subclass, for example, QRhiBuffer::build() or QRhiTexture::build().
+    native resources. That is only done when calling the \c create() function of a
+    subclass, for example, QRhiBuffer::create() or QRhiTexture::create().
 
     \li The exception is
     QRhiTextureRenderTarget::newCompatibleRenderPassDescriptor() and
-    QRhiSwapChain::newCompatibleRenderPassDescriptor(). There is no \c build
+    QRhiSwapChain::newCompatibleRenderPassDescriptor(). There is no \c create()
     operation for these and the returned object is immediately active.
 
     \li The resource objects themselves are treated as immutable: once a
-    resource is built, changing any parameters via the setters, such as,
+    resource has create() called, changing any parameters via the setters, such as,
     QRhiTexture::setPixelSize(), has no effect, unless the underlying native
-    resource is released and \c build is called again. See more about resource
+    resource is released and \c create() is called again. See more about resource
     reuse in the sections below.
 
     \li The underlying native resources are scheduled for releasing by the
-    QRhiResource destructor, or by calling QRhiResource::release(). Backends
+    QRhiResource destructor, or by calling QRhiResource::destroy(). Backends
     often queue release requests and defer executing them to an unspecified
     time, this is hidden from the applications. This way applications do not
     have to worry about releasing native resources that may still be in use by
     an in-flight frame.
 
     \li Note that this does not mean that a QRhiResource can freely be
-    destroyed or release()'d within a frame (that is, in a
+    destroy()'ed or deleted within a frame (that is, in a
     \l{QRhiCommandBuffer::beginFrame()}{beginFrame()} -
     \l{QRhiCommandBuffer::endFrame()}{endFrame()} section). As a general rule,
     all referenced QRhiResource objects must stay unchanged until the frame is
     submitted by calling \l{QRhiCommandBuffer::endFrame()}{endFrame()}. To ease
-    this, QRhiResource::releaseAndDestroyLater() is provided as a convenience.
+    this, QRhiResource::deleteLater() is provided as a convenience.
 
     \endlist
 
@@ -201,9 +201,9 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     relative to a draw call.
 
     Furthermore, instances of QRhiResource subclasses must be treated immutable
-    within a frame in which they are referenced in any way. Create or rebuild
+    within a frame in which they are referenced in any way. Create
     all resources upfront, before starting to record commands for the next
-    frame. Reusing a QRhiResource instance within a frame (by rebuilding it and
+    frame. Reusing a QRhiResource instance within a frame (by calling \c create()
     then referencing it again in the same \c{beginFrame - endFrame} section)
     should be avoided as it may lead to unexpected results, depending on the
     backend.
@@ -211,14 +211,14 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     As a general rule, all referenced QRhiResource objects must stay valid and
     unmodified until the frame is submitted by calling
     \l{QRhiCommandBuffer::endFrame()}{endFrame()}. On the other hand, calling
-    \l{QRhiResource::release()}{release()} or destroying the QRhiResource are
+    \l{QRhiResource::destroy()}{destroy()} or deleting the QRhiResource are
     always safe once the frame is submitted, regardless of the status of the
     underlying native resources (which may still be in use by the GPU - but
     that is taken care of internally).
 
     Unlike APIs like OpenGL, upload and copy type of commands cannot be mixed
     with draw commands. The typical renderer will involve a sequence similar to
-    the following: \c{(re)build resources} - \c{begin frame} - \c{record
+    the following: \c{(re)create resources} - \c{begin frame} - \c{record
     uploads and copies} - \c{start renderpass} - \c{record draw calls} - \c{end
     renderpass} - \c{end frame}. Recording copy type of operations happens via
     QRhiResourceUpdateBatch. Such operations are committed typically on
@@ -292,8 +292,8 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     \section3 Resource reuse
 
     From the user's point of view a QRhiResource is reusable immediately after
-    calling QRhiResource::release(). With the exception of swapchains, calling
-    \c build() on an already built object does an implicit \c release(). This
+    calling QRhiResource::destroy(). With the exception of swapchains, calling
+    \c create() on an already created object does an implicit \c destroy(). This
     provides a handy shortcut to reuse a QRhiResource instance with different
     parameters, with a new native graphics object underneath.
 
@@ -304,26 +304,26 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     needs changing, destroying and creating a whole new QRhiBuffer or
     QRhiSampler would invalidate all references to the old instance. By just
     changing the appropriate parameters via QRhiBuffer::setSize() or similar
-    and then calling QRhiBuffer::build(), everything works as expected and
+    and then calling QRhiBuffer::create(), everything works as expected and
     there is no need to touch the QRhiShaderResourceBindings at all, even
     though there is a good chance that under the hood the QRhiBuffer is now
     backed by a whole new native buffer.
 
     \badcode
         ubuf = rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 256);
-        ubuf->build();
+        ubuf->create();
 
         srb = rhi->newShaderResourceBindings()
         srb->setBindings({
             QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage, ubuf)
         });
-        srb->build();
+        srb->create();
 
         ...
 
         // now in a later frame we need to grow the buffer to a larger size
         ubuf->setSize(512);
-        ubuf->build(); // same as ubuf->release(); ubuf->build();
+        ubuf->create(); // same as ubuf->destroy(); ubuf->create();
 
         // that's it, srb needs no changes whatsoever
     \endcode
@@ -338,7 +338,7 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     QRhiCommandBuffer::beginPass() or QRhiCommandBuffer::endPass(). These
     functions take care of returning the batch to the pool. Alternatively, a
     batch can be "canceled" and returned to the pool without processing by
-    calling QRhiResourceUpdateBatch::release().
+    calling QRhiResourceUpdateBatch::destroy().
 
     A typical pattern is thus:
 
@@ -362,15 +362,15 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
 
     \list
 
-    \li It has no \c build but rather a QRhiSwapChain::buildOrResize().
+    \li It has no \c create() but rather a QRhiSwapChain::createOrResize().
     Repeatedly calling this function is \b not the same as calling
-    QRhiSwapChain::release() followed by QRhiSwapChain::buildOrResize(). This
+    QRhiSwapChain::destroy() followed by QRhiSwapChain::createOrResize(). This
     is because swapchains often have ways to handle the case where buffers need
     to be resized in a manner that is more efficient than a brute force
     destroying and recreating from scratch.
 
     \li An active QRhiSwapChain must be released by calling
-    \l{QRhiSwapChain::release()}{release()}, or by destroying the object, before
+    \l{QRhiSwapChain::destroy()}{destroy()}, or by destroying the object, before
     the QWindow's underlying QPlatformWindow, and so the associated native
     window object, is destroyed. It should not be postponed because releasing
     the swapchain may become problematic (and with some APIs, like Vulkan, is
@@ -585,7 +585,7 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
 
     \value RenderToNonBaseMipLevel Indicates that specifying a mip level other
     than 0 is supported when creating a QRhiTextureRenderTarget with a
-    QRhiTexture as its color attachment. When not supported, build() will fail
+    QRhiTexture as its color attachment. When not supported, create() will fail
     whenever the target mip level is not zero. In practice this feature will be
     unsupported with OpenGL ES 2.0, while it will likely be supported everywhere
     else.
@@ -1807,23 +1807,23 @@ QRhiResource::QRhiResource(QRhiImplementation *rhi)
     \note Resources referenced by commands for the current frame should not be
     released until the frame is submitted by QRhi::endFrame().
 
-    \sa release()
+    \sa destroy()
  */
 QRhiResource::~QRhiResource()
 {
-    // release() cannot be called here, it being virtual; it is up to the
+    // destroy() cannot be called here, due to virtuals; it is up to the
     // subclasses to do that.
 }
 
 /*!
-    \fn void QRhiResource::release()
+    \fn void QRhiResource::destroy()
 
     Releases (or requests deferred releasing of) the underlying native graphics
     resources. Safe to call multiple times, subsequent invocations will be a
     no-op then.
 
-    Once release() is called, the QRhiResource instance can be reused, by
-    calling \c build() again. That will then result in creating new native
+    Once destroy() is called, the QRhiResource instance can be reused, by
+    calling \c create() again. That will then result in creating new native
     graphics resources underneath.
 
     \note Resources referenced by commands for the current frame should not be
@@ -1832,7 +1832,7 @@ QRhiResource::~QRhiResource()
     The QRhiResource destructor also performs the same task, so calling this
     function is not necessary before destroying a QRhiResource.
 
-    \sa releaseAndDestroyLater()
+    \sa deleteLater()
  */
 
 /*!
@@ -1843,11 +1843,11 @@ QRhiResource::~QRhiResource()
     requirement of not altering QRhiResource objects that are referenced by the
     frame being recorded.
 
-    \sa release()
+    \sa destroy()
  */
-void QRhiResource::releaseAndDestroyLater()
+void QRhiResource::deleteLater()
 {
-    m_rhi->addReleaseAndDestroyLater(this);
+    m_rhi->addDeleteLater(this);
 }
 
 /*!
@@ -1962,7 +1962,7 @@ quint64 QRhiResource::globalResourceId() const
     Sets the size of the buffer in bytes. The size is normally specified in
     QRhi::newBuffer() so this function is only used when the size has to be
     changed. As with other setters, the size only takes effect when calling
-    build(), and for already built buffers this involves releasing the previous
+    create(), and for already created buffers this involves releasing the previous
     native resource and creating new ones under the hood.
 
     Backends may choose to allocate buffers bigger than \a sz in order to
@@ -2022,14 +2022,14 @@ QRhiResource::Type QRhiBuffer::resourceType() const
 }
 
 /*!
-    \fn bool QRhiBuffer::build()
+    \fn bool QRhiBuffer::create()
 
     Creates the corresponding native graphics resources. If there are already
-    resources present due to an earlier build() with no corresponding
-    release(), then release() is called implicitly first.
+    resources present due to an earlier create() with no corresponding
+    destroy(), then destroy() is called implicitly first.
 
     \return \c true when successful, \c false when a graphics operation failed.
-    Regardless of the return value, calling release() is always safe.
+    Regardless of the return value, calling destroy() is always safe.
  */
 
 /*!
@@ -2095,7 +2095,7 @@ QRhiBuffer::NativeBuffer QRhiBuffer::nativeBuffer()
     UsedWithSwapChainOnly flag set. This serves a double purpose: such buffers,
     depending on the backend and the underlying APIs, be more efficient, and
     QRhi provides automatic sizing behavior to match the color buffers, which
-    means calling setPixelSize() and build() are not necessary for such
+    means calling setPixelSize() and create() are not necessary for such
     renderbuffers.
  */
 
@@ -2114,7 +2114,7 @@ QRhiBuffer::NativeBuffer QRhiBuffer::nativeBuffer()
     \value UsedWithSwapChainOnly For DepthStencil renderbuffers this indicates
     that the renderbuffer is only used in combination with a QRhiSwapChain, and
     never in any other way. This provides automatic sizing and resource
-    rebuilding, so calling setPixelSize() or build() is not needed whenever
+    rebuilding, so calling setPixelSize() or create() is not needed whenever
     this flag is set. This flag value may also trigger backend-specific
     behavior, for example with OpenGL, where a separate windowing system
     interface API is in use (EGL, GLX, etc.), the flag is especially important
@@ -2144,14 +2144,14 @@ QRhiResource::Type QRhiRenderBuffer::resourceType() const
 }
 
 /*!
-    \fn bool QRhiRenderBuffer::build()
+    \fn bool QRhiRenderBuffer::create()
 
     Creates the corresponding native graphics resources. If there are already
-    resources present due to an earlier build() with no corresponding
-    release(), then release() is called implicitly first.
+    resources present due to an earlier create() with no corresponding
+    destroy(), then destroy() is called implicitly first.
 
     \return \c true when successful, \c false when a graphics operation failed.
-    Regardless of the return value, calling release() is always safe.
+    Regardless of the return value, calling destroy() is always safe.
  */
 
 /*!
@@ -2171,7 +2171,7 @@ QRhiResource::Type QRhiRenderBuffer::resourceType() const
     \enum QRhiTexture::Flag
 
     Flag values to specify how the texture is going to be used. Not honoring
-    the flags set before build() and attempting to use the texture in ways that
+    the flags set before create() and attempting to use the texture in ways that
     was not declared upfront can lead to unspecified behavior or decreased
     performance depending on the backend and the underlying graphics API.
 
@@ -2304,14 +2304,14 @@ QRhiResource::Type QRhiTexture::resourceType() const
 }
 
 /*!
-    \fn bool QRhiTexture::build()
+    \fn bool QRhiTexture::create()
 
     Creates the corresponding native graphics resources. If there are already
-    resources present due to an earlier build() with no corresponding
-    release(), then release() is called implicitly first.
+    resources present due to an earlier create() with no corresponding
+    destroy(), then destroy() is called implicitly first.
 
     \return \c true when successful, \c false when a graphics operation failed.
-    Regardless of the return value, calling release() is always safe.
+    Regardless of the return value, calling destroy() is always safe.
  */
 
 /*!
@@ -2319,7 +2319,7 @@ QRhiResource::Type QRhiTexture::resourceType() const
     will be empty if exposing the underlying native resources is not supported by
     the backend.
 
-    \sa buildFrom()
+    \sa createFrom()
  */
 QRhiTexture::NativeTexture QRhiTexture::nativeTexture()
 {
@@ -2327,7 +2327,7 @@ QRhiTexture::NativeTexture QRhiTexture::nativeTexture()
 }
 
 /*!
-    Similar to build() except that no new native textures are created. Instead,
+    Similar to create() except that no new native textures are created. Instead,
     the native texture resources specified by \a src is used.
 
     This allows importing an existing native texture object (which must belong
@@ -2336,18 +2336,18 @@ QRhiTexture::NativeTexture QRhiTexture::nativeTexture()
 
     \note format(), pixelSize(), sampleCount(), and flags() must still be set
     correctly. Passing incorrect sizes and other values to QRhi::newTexture()
-    and then following it with a buildFrom() expecting that the native texture
+    and then following it with a createFrom() expecting that the native texture
     object alone is sufficient to deduce such values is \b wrong and will lead
     to problems.
 
-    \note QRhiTexture does not take ownership of the texture object. release()
+    \note QRhiTexture does not take ownership of the texture object. destroy()
     does not free the object or any associated memory.
 
     The opposite of this operation, exposing a QRhiTexture-created native
     texture object to a foreign engine, is possible via nativeTexture().
 
 */
-bool QRhiTexture::buildFrom(QRhiTexture::NativeTexture src)
+bool QRhiTexture::createFrom(QRhiTexture::NativeTexture src)
 {
     Q_UNUSED(src);
     return false;
@@ -2550,11 +2550,11 @@ QRhiResource::Type QRhiRenderTarget::resourceType() const
 
     \badcode
         texture = rhi->newTexture(QRhiTexture::RGBA8, size, 1, QRhiTexture::RenderTarget);
-        texture->build();
+        texture->create();
         rt = rhi->newTextureRenderTarget({ texture });
         rp = rt->newCompatibleRenderPassDescriptor();
         rt->setRenderPassDescriptor(rt);
-        rt->build();
+        rt->create();
         // rt can now be used with beginPass()
     \endcode
  */
@@ -2622,21 +2622,21 @@ QRhiResource::Type QRhiTextureRenderTarget::resourceType() const
     QRhiTextureRenderTarget intances.
 
     \note resources, such as QRhiTexture instances, referenced in description()
-    must already be built
+    must already have create() called on them.
 
-    \sa build()
+    \sa create()
  */
 
 /*!
-    \fn bool QRhiTextureRenderTarget::build()
+    \fn bool QRhiTextureRenderTarget::create()
 
     Creates the corresponding native graphics resources. If there are already
-    resources present due to an earlier build() with no corresponding
-    release(), then release() is called implicitly first.
+    resources present due to an earlier create() with no corresponding
+    destroy(), then destroy() is called implicitly first.
 
-    \note renderPassDescriptor() must be set before calling build(). To obtain
+    \note renderPassDescriptor() must be set before calling create(). To obtain
     a QRhiRenderPassDescriptor compatible with the render target, call
-    newCompatibleRenderPassDescriptor() before build() but after setting all
+    newCompatibleRenderPassDescriptor() before create() but after setting all
     other parameters, such as description() and flags(). To save resources,
     reuse the same QRhiRenderPassDescriptor with multiple
     QRhiTextureRenderTarget instances, whenever possible. Sharing the same
@@ -2645,10 +2645,10 @@ QRhiResource::Type QRhiTextureRenderTarget::resourceType() const
     the same flags.
 
     \note resources, such as QRhiTexture instances, referenced in description()
-    must already be built
+    must already have create() called on them.
 
     \return \c true when successful, \c false when a graphics operation failed.
-    Regardless of the return value, calling release() is always safe.
+    Regardless of the return value, calling destroy() is always safe.
  */
 
 /*!
@@ -2681,12 +2681,12 @@ QRhiResource::Type QRhiTextureRenderTarget::resourceType() const
             QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage, ubuf),
             QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, texture, sampler)
         });
-        srb->build();
+        srb->create();
         ...
         ps = rhi->newGraphicsPipeline();
         ...
         ps->setShaderResourceBindings(srb);
-        ps->build();
+        ps->create();
         ...
         cb->setGraphicsPipeline(ps);
         cb->setShaderResources(); // binds srb
@@ -2705,7 +2705,7 @@ QRhiResource::Type QRhiTextureRenderTarget::resourceType() const
     This is why QRhiCommandBuffer::setShaderResources() allows specifying a \a
     srb argument. As long as the layouts (so the number of bindings and the
     binding points) match between two QRhiShaderResourceBindings, they can both
-    be used with the same pipeline, assuming the pipeline was built with one of
+    be used with the same pipeline, assuming the pipeline was created with one of
     them in the first place.
 
     \badcode
@@ -2744,7 +2744,7 @@ QRhiResource::Type QRhiShaderResourceBindings::resourceType() const
     then safely be passed to QRhiCommandBuffer::setShaderResources(), and so
     be used with the pipeline in place of this QRhiShaderResourceBindings.
 
-    This function can be called before build() as well. The bindings must
+    This function can be called before create() as well. The bindings must
     already be set via setBindings() however.
  */
 bool QRhiShaderResourceBindings::isLayoutCompatible(const QRhiShaderResourceBindings *other) const
@@ -3298,9 +3298,10 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBindings &srb)
     stage, and there must be a vertex stage.
 
     \note Setting the shader resource bindings is mandatory. The referenced
-    QRhiShaderResourceBindings must already be built by the time build() is
-    called. Associating with a QRhiShaderResourceBindings that has no bindings
-    is also valid, as long as no shader in any stage expects any resources.
+    QRhiShaderResourceBindings must already have create() called on it by the
+    time create() is called. Associating with a QRhiShaderResourceBindings that
+    has no bindings is also valid, as long as no shader in any stage expects
+    any resources.
 
     \note Setting the render pass descriptor is mandatory. To obtain a
     QRhiRenderPassDescriptor that can be passed to setRenderPassDescriptor(),
@@ -3482,14 +3483,14 @@ QRhiResource::Type QRhiGraphicsPipeline::resourceType() const
 }
 
 /*!
-    \fn bool QRhiGraphicsPipeline::build()
+    \fn bool QRhiGraphicsPipeline::create()
 
     Creates the corresponding native graphics resources. If there are already
-    resources present due to an earlier build() with no corresponding
-    release(), then release() is called implicitly first.
+    resources present due to an earlier create() with no corresponding
+    destroy(), then destroy() is called implicitly first.
 
     \return \c true when successful, \c false when a graphics operation failed.
-    Regardless of the return value, calling release() is always safe.
+    Regardless of the return value, calling destroy() is always safe.
  */
 
 /*!
@@ -3544,7 +3545,7 @@ QRhiResource::Type QRhiGraphicsPipeline::resourceType() const
 
       void resizeSwapChain()
       {
-          hasSwapChain = sc->buildOrResize();
+          hasSwapChain = sc->createOrResize();
       }
 
       void render()
@@ -3577,7 +3578,7 @@ QRhiResource::Type QRhiGraphicsPipeline::resourceType() const
         void releaseSwapChain()
         {
             if (hasSwapChain) {
-                sc->release();
+                sc->destroy();
                 hasSwapChain = false;
             }
         }
@@ -3724,7 +3725,7 @@ QRhiResource::Type QRhiSwapChain::resourceType() const
     \fn QSize QRhiSwapChain::currentPixelSize() const
 
     \return the size with which the swapchain was last successfully built. Use
-    this to decide if buildOrResize() needs to be called again: if
+    this to decide if createOrResize() needs to be called again: if
     \c{currentPixelSize() != surfacePixelSize()} then the swapchain needs to be
     resized.
 
@@ -3759,7 +3760,7 @@ QRhiResource::Type QRhiSwapChain::resourceType() const
     (such as, viewports) on the size reported from QRhiSwapChain, and never on
     the size queried from QWindow.
 
-    \note Can also be called before buildOrResize(), if at least window() is
+    \note Can also be called before createOrResize(), if at least window() is
     already set) This in combination with currentPixelSize() allows to detect
     when a swapchain needs to be resized. However, watch out for the fact that
     the size of the underlying native object (surface, layer, or similar) is
@@ -3768,7 +3769,7 @@ QRhiResource::Type QRhiSwapChain::resourceType() const
     Therefore, using this function to determine pixel sizes for graphics
     resources that are used in a frame is strongly discouraged. Rely on
     currentPixelSize() instead which returns a size that is atomic and will not
-    change between buildOrResize() invocations.
+    change between createOrResize() invocations.
 
     \note For depth-stencil buffers used in combination with the swapchain's
     color buffers, it is strongly recommended to rely on the automatic sizing
@@ -3803,19 +3804,19 @@ QRhiResource::Type QRhiSwapChain::resourceType() const
  */
 
 /*!
-    \fn bool QRhiSwapChain::buildOrResize()
+    \fn bool QRhiSwapChain::createOrResize()
 
     Creates the swapchain if not already done and resizes the swapchain buffers
     to match the current size of the targeted surface. Call this whenever the
     size of the target surface is different than before.
 
-    \note call release() only when the swapchain needs to be released
+    \note call destroy() only when the swapchain needs to be released
     completely, typically upon
     QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed. To perform resizing, just
-    call buildOrResize().
+    call createOrResize().
 
     \return \c true when successful, \c false when a graphics operation failed.
-    Regardless of the return value, calling release() is always safe.
+    Regardless of the return value, calling destroy() is always safe.
  */
 
 /*!
@@ -3825,8 +3826,8 @@ QRhiResource::Type QRhiSwapChain::resourceType() const
     \brief Compute pipeline state resource.
 
     \note Setting the shader resource bindings is mandatory. The referenced
-    QRhiShaderResourceBindings must already be built by the time build() is
-    called.
+    QRhiShaderResourceBindings must already have created() called on it by the
+    time create() is called.
 
     \note Setting the shader is mandatory.
  */
@@ -4210,8 +4211,8 @@ QRhi::~QRhi()
     if (!d)
         return;
 
-    qDeleteAll(d->pendingReleaseAndDestroyResources);
-    d->pendingReleaseAndDestroyResources.clear();
+    qDeleteAll(d->pendingDeleteResources);
+    d->pendingDeleteResources.clear();
 
     runCleanup();
 
@@ -4396,7 +4397,7 @@ QRhiResourceUpdateBatch::~QRhiResourceUpdateBatch()
     \return the batch to the pool. This should only be used when the batch is
     not passed to one of QRhiCommandBuffer::beginPass(),
     QRhiCommandBuffer::endPass(), or QRhiCommandBuffer::resourceUpdate()
-    because these implicitly call release().
+    because these implicitly call destroy().
 
     \note QRhiResourceUpdateBatch instances must never by \c deleted by
     applications.
@@ -4410,7 +4411,7 @@ void QRhiResourceUpdateBatch::release()
     Copies all queued operations from the \a other batch into this one.
 
     \note \a other is not changed in any way, typically it will still need a
-    release()
+    destroy()
 
     This allows for a convenient pattern where resource updates that are
     already known during the initialization step are collected into a batch
@@ -4433,7 +4434,7 @@ void QRhiResourceUpdateBatch::release()
         QRhiResourceUpdateBatch *resUpdates = rhi->nextResourceUpdateBatch();
         if (initialUpdates) {
             resUpdates->merge(initialUpdates);
-            initialUpdates->release();
+            initialUpdates->destroy();
             initialUpdates = nullptr;
         }
         resUpdates->updateDynamicBuffer(...);
@@ -4645,7 +4646,7 @@ void QRhiResourceUpdateBatch::generateMips(QRhiTexture *tex, int layer)
    destroyed. Instead, the batch is returned the pool for reuse by passing
    it to QRhiCommandBuffer::beginPass(), QRhiCommandBuffer::endPass(), or
    QRhiCommandBuffer::resourceUpdate(), or by calling
-   QRhiResourceUpdateBatch::release() on it.
+   QRhiResourceUpdateBatch::destroy() on it.
 
    \note Can be called outside beginFrame() - endFrame() as well since a batch
    instance just collects data on its own, it does not perform any operations.
@@ -4791,11 +4792,11 @@ void QRhiCommandBuffer::setGraphicsPipeline(QRhiGraphicsPipeline *ps)
     \l{QRhiShaderResourceBindings::isLayoutCompatible()}{layout-compatible},
     meaning the layout (number of bindings, the type and binding number of each
     binding) must fully match the QRhiShaderResourceBindings that was
-    associated with the pipeline at the time of calling the pipeline's build().
+    associated with the pipeline at the time of calling the pipeline's create().
 
     There are cases when a seemingly unnecessary setShaderResources() call is
     mandatory: when rebuilding a resource referenced from \a srb, for example
-    changing the size of a QRhiBuffer followed by a QRhiBuffer::build(), this
+    changing the size of a QRhiBuffer followed by a QRhiBuffer::create(), this
     is the place where associated native objects (such as descriptor sets in
     case of Vulkan) are updated to refer to the current native resources that
     back the QRhiBuffer, QRhiTexture, QRhiSampler objects referenced from \a
@@ -5397,9 +5398,9 @@ void QRhi::releaseCachedResources()
     \return true if the graphics device was lost.
 
     The loss of the device is typically detected in beginFrame(), endFrame() or
-    QRhiSwapChain::buildOrResize(), depending on the backend and the underlying
+    QRhiSwapChain::createOrResize(), depending on the backend and the underlying
     native APIs. The most common is endFrame() because that is where presenting
-    happens. With some backends QRhiSwapChain::buildOrResize() can also fail
+    happens. With some backends QRhiSwapChain::createOrResize() can also fail
     due to a device loss. Therefore this function is provided as a generic way
     to check if a device loss was detected by a previous operation.
 
@@ -5443,7 +5444,7 @@ bool QRhi::isDeviceLost() const
 /*!
     \return a new graphics pipeline resource.
 
-    \sa QRhiResource::release()
+    \sa QRhiResource::destroy()
  */
 QRhiGraphicsPipeline *QRhi::newGraphicsPipeline()
 {
@@ -5456,7 +5457,7 @@ QRhiGraphicsPipeline *QRhi::newGraphicsPipeline()
     \note Compute is only available when the \l{QRhi::Compute}{Compute} feature
     is reported as supported.
 
-    \sa QRhiResource::release()
+    \sa QRhiResource::destroy()
  */
 QRhiComputePipeline *QRhi::newComputePipeline()
 {
@@ -5466,7 +5467,7 @@ QRhiComputePipeline *QRhi::newComputePipeline()
 /*!
     \return a new shader resource binding collection resource.
 
-    \sa QRhiResource::release()
+    \sa QRhiResource::destroy()
  */
 QRhiShaderResourceBindings *QRhi::newShaderResourceBindings()
 {
@@ -5485,7 +5486,7 @@ QRhiShaderResourceBindings *QRhi::newShaderResourceBindings()
     the value of \a size. QRhiBuffer::size() will always report back the value
     that was requested in \a size.
 
-    \sa QRhiResource::release()
+    \sa QRhiResource::destroy()
  */
 QRhiBuffer *QRhi::newBuffer(QRhiBuffer::Type type,
                             QRhiBuffer::UsageFlags usage,
@@ -5512,7 +5513,7 @@ QRhiBuffer *QRhi::newBuffer(QRhiBuffer::Type type,
     break later on due to attempting to set up RGBA8->RGBA32F multisample
     resolve in the color attachment(s) of the QRhiTextureRenderTarget.
 
-    \sa QRhiResource::release()
+    \sa QRhiResource::destroy()
  */
 QRhiRenderBuffer *QRhi::newRenderBuffer(QRhiRenderBuffer::Type type,
                                         const QSize &pixelSize,
@@ -5532,7 +5533,7 @@ QRhiRenderBuffer *QRhi::newRenderBuffer(QRhiRenderBuffer::Type type,
     compatible format, while the native texture may (but is not guaranteed to,
     in case of OpenGL at least) use this format internally.
 
-    \sa QRhiResource::release()
+    \sa QRhiResource::destroy()
  */
 QRhiTexture *QRhi::newTexture(QRhiTexture::Format format,
                               const QSize &pixelSize,
@@ -5547,7 +5548,7 @@ QRhiTexture *QRhi::newTexture(QRhiTexture::Format format,
     minification filter \a minFilter, mipmapping mode \a mipmapMode, and the
     addressing (wrap) modes \a addressU, \a addressV, and \a addressW.
 
-    \sa QRhiResource::release()
+    \sa QRhiResource::destroy()
  */
 QRhiSampler *QRhi::newSampler(QRhiSampler::Filter magFilter,
                               QRhiSampler::Filter minFilter,
@@ -5563,7 +5564,7 @@ QRhiSampler *QRhi::newSampler(QRhiSampler::Filter magFilter,
     \return a new texture render target with color and depth/stencil
     attachments given in \a desc, and with the specified \a flags.
 
-    \sa QRhiResource::release()
+    \sa QRhiResource::destroy()
  */
 
 QRhiTextureRenderTarget *QRhi::newTextureRenderTarget(const QRhiTextureRenderTargetDescription &desc,
@@ -5575,7 +5576,7 @@ QRhiTextureRenderTarget *QRhi::newTextureRenderTarget(const QRhiTextureRenderTar
 /*!
     \return a new swapchain.
 
-    \sa QRhiResource::release(), QRhiSwapChain::buildOrResize()
+    \sa QRhiResource::destroy(), QRhiSwapChain::createOrResize()
  */
 QRhiSwapChain *QRhi::newSwapChain()
 {
@@ -5598,10 +5599,10 @@ QRhiSwapChain *QRhi::newSwapChain()
 
     \li Create a swapchain.
 
-    \li Call QRhiSwapChain::buildOrResize() whenever the surface size is
+    \li Call QRhiSwapChain::createOrResize() whenever the surface size is
     different than before.
 
-    \li Call QRhiSwapChain::release() on
+    \li Call QRhiSwapChain::destroy() on
     QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed.
 
     \li Then on every frame:
@@ -5623,7 +5624,7 @@ QRhiSwapChain *QRhi::newSwapChain()
     value on failure. Some of these should be treated as soft, "try again
     later" type of errors: When QRhi::FrameOpSwapChainOutOfDate is returned,
     the swapchain is to be resized or updated by calling
-    QRhiSwapChain::buildOrResize(). The application should then attempt to
+    QRhiSwapChain::createOrResize(). The application should then attempt to
     generate a new frame. QRhi::FrameOpDeviceLost means the graphics device is
     lost but this may also be recoverable by releasing all resources, including
     the QRhi itself, and then recreating all resources. See isDeviceLost() for
@@ -5658,7 +5659,7 @@ QRhi::FrameOpResult QRhi::beginFrame(QRhiSwapChain *swapChain, BeginFrameFlags f
     value on failure. Some of these should be treated as soft, "try again
     later" type of errors: When QRhi::FrameOpSwapChainOutOfDate is returned,
     the swapchain is to be resized or updated by calling
-    QRhiSwapChain::buildOrResize(). The application should then attempt to
+    QRhiSwapChain::createOrResize(). The application should then attempt to
     generate a new frame. QRhi::FrameOpDeviceLost means the graphics device is
     lost but this may also be recoverable by releasing all resources, including
     the QRhi itself, and then recreating all resources. See isDeviceLost() for
@@ -5673,10 +5674,10 @@ QRhi::FrameOpResult QRhi::endFrame(QRhiSwapChain *swapChain, EndFrameFlags flags
 
     QRhi::FrameOpResult r = d->inFrame ? d->endFrame(swapChain, flags) : FrameOpSuccess;
     d->inFrame = false;
-    // releaseAndDestroyLater is a high level QRhi concept the backends know
+    // deleteLater is a high level QRhi concept the backends know
     // nothing about - handle it here.
-    qDeleteAll(d->pendingReleaseAndDestroyResources);
-    d->pendingReleaseAndDestroyResources.clear();
+    qDeleteAll(d->pendingDeleteResources);
+    d->pendingDeleteResources.clear();
 
     return r;
 }
@@ -5800,8 +5801,8 @@ QRhi::FrameOpResult QRhi::endOffscreenFrame(EndFrameFlags flags)
 
     QRhi::FrameOpResult r = d->inFrame ? d->endOffscreenFrame(flags) : FrameOpSuccess;
     d->inFrame = false;
-    qDeleteAll(d->pendingReleaseAndDestroyResources);
-    d->pendingReleaseAndDestroyResources.clear();
+    qDeleteAll(d->pendingDeleteResources);
+    d->pendingDeleteResources.clear();
 
     return r;
 }

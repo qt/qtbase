@@ -57,8 +57,8 @@ struct QNullBuffer : public QRhiBuffer
 {
     QNullBuffer(QRhiImplementation *rhi, Type type, UsageFlags usage, int size);
     ~QNullBuffer();
-    void release() override;
-    bool build() override;
+    void destroy() override;
+    bool create() override;
 
     QByteArray data;
 };
@@ -69,8 +69,8 @@ struct QNullRenderBuffer : public QRhiRenderBuffer
                       int sampleCount, QRhiRenderBuffer::Flags flags,
                       QRhiTexture::Format backingFormatHint);
     ~QNullRenderBuffer();
-    void release() override;
-    bool build() override;
+    void destroy() override;
+    bool create() override;
     QRhiTexture::Format backingFormat() const override;
 };
 
@@ -79,9 +79,9 @@ struct QNullTexture : public QRhiTexture
     QNullTexture(QRhiImplementation *rhi, Format format, const QSize &pixelSize,
                   int sampleCount, Flags flags);
     ~QNullTexture();
-    void release() override;
-    bool build() override;
-    bool buildFrom(NativeTexture src) override;
+    void destroy() override;
+    bool create() override;
+    bool createFrom(NativeTexture src) override;
 
     QImage image[QRhi::MAX_LAYERS][QRhi::MAX_LEVELS];
 };
@@ -91,15 +91,15 @@ struct QNullSampler : public QRhiSampler
     QNullSampler(QRhiImplementation *rhi, Filter magFilter, Filter minFilter, Filter mipmapMode,
                  AddressMode u, AddressMode v, AddressMode w);
     ~QNullSampler();
-    void release() override;
-    bool build() override;
+    void destroy() override;
+    bool create() override;
 };
 
 struct QNullRenderPassDescriptor : public QRhiRenderPassDescriptor
 {
     QNullRenderPassDescriptor(QRhiImplementation *rhi);
     ~QNullRenderPassDescriptor();
-    void release() override;
+    void destroy() override;
     bool isCompatible(const QRhiRenderPassDescriptor *other) const override;
 };
 
@@ -116,7 +116,7 @@ struct QNullReferenceRenderTarget : public QRhiRenderTarget
 {
     QNullReferenceRenderTarget(QRhiImplementation *rhi);
     ~QNullReferenceRenderTarget();
-    void release() override;
+    void destroy() override;
 
     QSize pixelSize() const override;
     float devicePixelRatio() const override;
@@ -129,14 +129,14 @@ struct QNullTextureRenderTarget : public QRhiTextureRenderTarget
 {
     QNullTextureRenderTarget(QRhiImplementation *rhi, const QRhiTextureRenderTargetDescription &desc, Flags flags);
     ~QNullTextureRenderTarget();
-    void release() override;
+    void destroy() override;
 
     QSize pixelSize() const override;
     float devicePixelRatio() const override;
     int sampleCount() const override;
 
     QRhiRenderPassDescriptor *newCompatibleRenderPassDescriptor() override;
-    bool build() override;
+    bool create() override;
 
     QNullRenderTargetData d;
 };
@@ -145,38 +145,38 @@ struct QNullShaderResourceBindings : public QRhiShaderResourceBindings
 {
     QNullShaderResourceBindings(QRhiImplementation *rhi);
     ~QNullShaderResourceBindings();
-    void release() override;
-    bool build() override;
+    void destroy() override;
+    bool create() override;
 };
 
 struct QNullGraphicsPipeline : public QRhiGraphicsPipeline
 {
     QNullGraphicsPipeline(QRhiImplementation *rhi);
     ~QNullGraphicsPipeline();
-    void release() override;
-    bool build() override;
+    void destroy() override;
+    bool create() override;
 };
 
 struct QNullComputePipeline : public QRhiComputePipeline
 {
     QNullComputePipeline(QRhiImplementation *rhi);
     ~QNullComputePipeline();
-    void release() override;
-    bool build() override;
+    void destroy() override;
+    bool create() override;
 };
 
 struct QNullCommandBuffer : public QRhiCommandBuffer
 {
     QNullCommandBuffer(QRhiImplementation *rhi);
     ~QNullCommandBuffer();
-    void release() override;
+    void destroy() override;
 };
 
 struct QNullSwapChain : public QRhiSwapChain
 {
     QNullSwapChain(QRhiImplementation *rhi);
     ~QNullSwapChain();
-    void release() override;
+    void destroy() override;
 
     QRhiCommandBuffer *currentFrameCommandBuffer() override;
     QRhiRenderTarget *currentFrameRenderTarget() override;
@@ -184,7 +184,7 @@ struct QNullSwapChain : public QRhiSwapChain
     QSize surfacePixelSize() override;
 
     QRhiRenderPassDescriptor *newCompatibleRenderPassDescriptor() override;
-    bool buildOrResize() override;
+    bool createOrResize() override;
 
     QNullReferenceRenderTarget rt;
     QNullCommandBuffer cb;

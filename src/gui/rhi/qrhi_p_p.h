@@ -196,10 +196,10 @@ public:
         return resources;
     }
 
-    void addReleaseAndDestroyLater(QRhiResource *res)
+    void addDeleteLater(QRhiResource *res)
     {
         if (inFrame)
-            pendingReleaseAndDestroyResources.insert(res);
+            pendingDeleteResources.insert(res);
         else
             delete res;
     }
@@ -227,7 +227,7 @@ private:
     QVarLengthArray<QRhiResourceUpdateBatch *, 4> resUpdPool;
     QBitArray resUpdPoolMap;
     QSet<QRhiResource *> resources;
-    QSet<QRhiResource *> pendingReleaseAndDestroyResources;
+    QSet<QRhiResource *> pendingDeleteResources;
     QVector<QRhi::CleanupCallback> cleanupCallbacks;
 
     friend class QRhi;

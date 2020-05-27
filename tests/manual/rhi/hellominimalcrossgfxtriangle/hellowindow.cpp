@@ -76,18 +76,18 @@ QShader HelloWindow::getShader(const QString &name)
 void HelloWindow::customInit()
 {
     m_vbuf.reset(m_rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(vertexData)));
-    m_vbuf->build();
+    m_vbuf->create();
     m_vbufReady = false;
 
     m_ubuf.reset(m_rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 68));
-    m_ubuf->build();
+    m_ubuf->create();
 
     m_srb.reset(m_rhi->newShaderResourceBindings());
     m_srb->setBindings({
             QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage,
                                                      m_ubuf.get())
     });
-    m_srb->build();
+    m_srb->create();
 
     m_ps.reset(m_rhi->newGraphicsPipeline());
 
@@ -120,7 +120,7 @@ void HelloWindow::customInit()
     m_ps->setShaderResourceBindings(m_srb.get());
     m_ps->setRenderPassDescriptor(m_rp.get());
 
-    m_ps->build();
+    m_ps->create();
 }
 
 // called once per frame

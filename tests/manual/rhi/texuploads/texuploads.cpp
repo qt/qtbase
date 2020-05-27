@@ -76,16 +76,16 @@ void Window::customInit()
 {
     d.vbuf = m_r->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(cube));
     d.releasePool << d.vbuf;
-    d.vbuf->build();
+    d.vbuf->create();
 
     d.ubuf = m_r->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 68);
     d.releasePool << d.ubuf;
-    d.ubuf->build();
+    d.ubuf->create();
 
     QImage baseImage(QLatin1String(":/qt256.png"));
     d.tex = m_r->newTexture(QRhiTexture::RGBA8, baseImage.size(), 1, QRhiTexture::UsedAsTransferSource);
     d.releasePool << d.tex;
-    d.tex->build();
+    d.tex->create();
 
     // As an alternative to what some of the other examples do, prepare an
     // update batch right here instead of relying on vbufReady and similar flags.
@@ -98,7 +98,7 @@ void Window::customInit()
     d.sampler = m_r->newSampler(QRhiSampler::Linear, QRhiSampler::Linear, QRhiSampler::None,
                                 QRhiSampler::ClampToEdge, QRhiSampler::ClampToEdge);
     d.releasePool << d.sampler;
-    d.sampler->build();
+    d.sampler->create();
 
     d.srb = m_r->newShaderResourceBindings();
     d.releasePool << d.srb;
@@ -106,7 +106,7 @@ void Window::customInit()
     d.bindings[0] = QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage, d.ubuf);
     d.bindings[1] = QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, d.tex, d.sampler);
     d.srb->setBindings(d.bindings, d.bindings + 2);
-    d.srb->build();
+    d.srb->create();
 
     d.ps = m_r->newGraphicsPipeline();
     d.releasePool << d.ps;
@@ -144,7 +144,7 @@ void Window::customInit()
     d.ps->setShaderResourceBindings(d.srb);
     d.ps->setRenderPassDescriptor(m_rp);
 
-    d.ps->build();
+    d.ps->create();
 
     d.customImage = QImage(128, 64, QImage::Format_RGBA8888);
     d.customImage.fill(Qt::red);
@@ -197,7 +197,7 @@ void Window::customRender()
             const QSize sz = d.tex->pixelSize();
             d.newTex = m_r->newTexture(QRhiTexture::RGBA8, sz);
             d.releasePool << d.newTex;
-            d.newTex->build();
+            d.newTex->create();
 
             QImage empty(sz.width(), sz.height(), QImage::Format_RGBA8888);
             empty.fill(Qt::blue);
@@ -218,7 +218,7 @@ void Window::customRender()
             // "rebuild", whatever that means for a given backend. This srb is
             // already live as the ps in the setGraphicsPipeline references it,
             // but that's fine. Changes will be picked up automatically.
-            d.srb->build();
+            d.srb->create();
         }
 
         // Exercise simple, full texture copy.
@@ -253,7 +253,7 @@ void Window::customRender()
 
                 d.importedTex = m_r->newTexture(QRhiTexture::RGBA8, d.tex->pixelSize());
                 d.releasePool << d.importedTex;
-                if (!d.importedTex->buildFrom(nativeTexture))
+                if (!d.importedTex->createFrom(nativeTexture))
                     qWarning("Texture import failed");
 
                 // now d.tex and d.importedTex use the same MTLTexture
@@ -262,7 +262,7 @@ void Window::customRender()
                 // switch to showing d.importedTex
                 d.bindings[1] = QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, d.importedTex, d.sampler);
                 d.srb->setBindings(d.bindings, d.bindings + 2);
-                d.srb->build();
+                d.srb->create();
             } else {
                 qWarning("Accessing native texture object is not supported");
             }
@@ -272,7 +272,7 @@ void Window::customRender()
         if (d.testStage == 7) {
             d.bindings[1] = QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, d.newTex, d.sampler);
             d.srb->setBindings(d.bindings, d.bindings + 2);
-            d.srb->build();
+            d.srb->create();
 
             const QSize sz(221, 139);
             QByteArray data;

@@ -97,25 +97,25 @@ struct {
 void Window::customInit()
 {
     d.vbuf = m_r->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(vertexData) + sizeof(triangleData));
-    d.vbuf->build();
+    d.vbuf->create();
     d.releasePool << d.vbuf;
 
     d.ibuf = m_r->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::IndexBuffer, sizeof(indexData));
-    d.ibuf->build();
+    d.ibuf->create();
     d.releasePool << d.ibuf;
 
     d.ubuf = m_r->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 68);
-    d.ubuf->build();
+    d.ubuf->create();
     d.releasePool << d.ubuf;
 
     d.rb = m_r->newRenderBuffer(QRhiRenderBuffer::Color, QSize(512, 512), 4); // 4x MSAA
-    d.rb->build();
+    d.rb->create();
     d.releasePool << d.rb;
 
     // the non-msaa texture that will be the destination in the resolve
     d.tex = m_r->newTexture(QRhiTexture::RGBA8, d.rb->pixelSize(), 1, QRhiTexture::RenderTarget);
     d.releasePool << d.tex;
-    d.tex->build();
+    d.tex->create();
 
     // rb is multisample, instead of writing out the msaa data into it,
     // resolve into d.tex at the end of each render pass
@@ -129,18 +129,18 @@ void Window::customInit()
     d.rtRp = d.rt->newCompatibleRenderPassDescriptor();
     d.releasePool << d.rtRp;
     d.rt->setRenderPassDescriptor(d.rtRp);
-    d.rt->build();
+    d.rt->create();
 
     d.triUbuf = m_r->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 68);
     d.releasePool << d.triUbuf;
-    d.triUbuf->build();
+    d.triUbuf->create();
 
     d.triSrb = m_r->newShaderResourceBindings();
     d.releasePool << d.triSrb;
     d.triSrb->setBindings({
         QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage, d.triUbuf)
     });
-    d.triSrb->build();
+    d.triSrb->create();
 
     d.triPs = m_r->newGraphicsPipeline();
     d.releasePool << d.triPs;
@@ -160,12 +160,12 @@ void Window::customInit()
     d.triPs->setVertexInputLayout(inputLayout);
     d.triPs->setShaderResourceBindings(d.triSrb);
     d.triPs->setRenderPassDescriptor(d.rtRp);
-    d.triPs->build();
+    d.triPs->create();
 
     d.sampler = m_r->newSampler(QRhiSampler::Linear, QRhiSampler::Linear, QRhiSampler::None,
                                 QRhiSampler::ClampToEdge, QRhiSampler::ClampToEdge);
     d.releasePool << d.sampler;
-    d.sampler->build();
+    d.sampler->create();
 
     d.srb = m_r->newShaderResourceBindings();
     d.releasePool << d.srb;
@@ -173,7 +173,7 @@ void Window::customInit()
         QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage, d.ubuf),
         QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, d.tex, d.sampler)
     });
-    d.srb->build();
+    d.srb->create();
 
     d.ps = m_r->newGraphicsPipeline();
     d.releasePool << d.ps;
@@ -191,7 +191,7 @@ void Window::customInit()
     d.ps->setVertexInputLayout(inputLayout);
     d.ps->setShaderResourceBindings(d.srb);
     d.ps->setRenderPassDescriptor(m_rp);
-    d.ps->build();
+    d.ps->create();
 
     d.initialUpdates = m_r->nextResourceUpdateBatch();
     d.initialUpdates->uploadStaticBuffer(d.vbuf, 0, sizeof(vertexData), vertexData);

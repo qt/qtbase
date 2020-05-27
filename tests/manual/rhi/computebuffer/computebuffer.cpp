@@ -99,11 +99,11 @@ void Window::customInit()
     d.sbuf = m_r->newBuffer(QRhiBuffer::Immutable,
                             QRhiBuffer::StorageBuffer | QRhiBuffer::VertexBuffer,
                             sizeof(Data) * DATA_COUNT);
-    d.sbuf->build();
+    d.sbuf->create();
     d.releasePool << d.sbuf;
 
     d.computeUniBuf = m_r->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, COMPUTE_UBUF_SIZE);
-    d.computeUniBuf->build();
+    d.computeUniBuf->create();
     d.releasePool << d.computeUniBuf;
 
     d.initialUpdates = m_r->nextResourceUpdateBatch();
@@ -130,19 +130,19 @@ void Window::customInit()
                                        QRhiShaderResourceBinding::bufferLoadStore(0, QRhiShaderResourceBinding::ComputeStage, d.sbuf),
                                        QRhiShaderResourceBinding::uniformBuffer(1, QRhiShaderResourceBinding::ComputeStage, d.computeUniBuf)
                                    });
-    d.computeBindings->build();
+    d.computeBindings->create();
     d.releasePool << d.computeBindings;
 
     d.computePipeline = m_r->newComputePipeline();
     d.computePipeline->setShaderResourceBindings(d.computeBindings);
     d.computePipeline->setShaderStage({ QRhiShaderStage::Compute, getShader(QLatin1String(":/buffer.comp.qsb")) });
-    d.computePipeline->build();
+    d.computePipeline->create();
     d.releasePool << d.computePipeline;
 
     // graphics pass
 
     d.graphicsBindings = m_r->newShaderResourceBindings();
-    d.graphicsBindings->build();
+    d.graphicsBindings->create();
     d.releasePool << d.graphicsBindings;
 
     d.graphicsPipeline = m_r->newGraphicsPipeline();
@@ -161,7 +161,7 @@ void Window::customInit()
     d.graphicsPipeline->setVertexInputLayout(inputLayout);
     d.graphicsPipeline->setShaderResourceBindings(d.graphicsBindings);
     d.graphicsPipeline->setRenderPassDescriptor(m_rp);
-    d.graphicsPipeline->build();
+    d.graphicsPipeline->create();
     d.releasePool << d.graphicsPipeline;
 }
 
