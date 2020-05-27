@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qvector.h>
+#include <QtCore/qlist.h>
 
 #ifndef QBYTEARRAYLIST_H
 #define QBYTEARRAYLIST_H
@@ -49,12 +49,12 @@
 QT_BEGIN_NAMESPACE
 
 #if !defined(QT_NO_JAVA_STYLE_ITERATORS)
-typedef QVectorIterator<QByteArray> QByteArrayListIterator;
-typedef QMutableVectorIterator<QByteArray> QMutableByteArrayListIterator;
+typedef QListIterator<QByteArray> QByteArrayListIterator;
+typedef QMutableListIterator<QByteArray> QMutableByteArrayListIterator;
 #endif
 
 #ifndef Q_CLANG_QDOC
-typedef QVector<QByteArray> QByteArrayList;
+typedef QList<QByteArray> QByteArrayList;
 
 namespace QtPrivate {
     QByteArray Q_CORE_EXPORT QByteArrayList_join(const QByteArrayList *that, const char *separator, int separatorLength);
@@ -63,14 +63,14 @@ namespace QtPrivate {
 #endif
 
 #ifdef Q_CLANG_QDOC
-class QByteArrayList : public QVector<QByteArray>
+class QByteArrayList : public QList<QByteArray>
 #else
-template <> struct QVectorSpecialMethods<QByteArray>
+template <> struct QListSpecialMethods<QByteArray>
 #endif
 {
 #ifndef Q_CLANG_QDOC
 protected:
-    ~QVectorSpecialMethods() = default;
+    ~QListSpecialMethods() = default;
 #endif
 public:
     inline QByteArray join() const
@@ -81,7 +81,7 @@ public:
     { return QtPrivate::QByteArrayList_join(self(), &sep, 1); }
 
 private:
-    typedef QVector<QByteArray> Self;
+    typedef QList<QByteArray> Self;
     Self *self() { return static_cast<Self *>(this); }
     const Self *self() const { return static_cast<const Self *>(this); }
 };

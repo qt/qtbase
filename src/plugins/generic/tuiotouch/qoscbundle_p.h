@@ -43,7 +43,7 @@
 
 #include "qoscmessage_p.h"
 
-#include <QtCore/QVector>
+#include <QtCore/QList>
 
 QT_BEGIN_NAMESPACE
 
@@ -51,22 +51,22 @@ class QByteArray;
 
 class QOscBundle
 {
-    QOscBundle(); // for QVector, don't use
-    friend class QVector<QOscBundle>;
+    QOscBundle(); // for QList, don't use
+    friend class QList<QOscBundle>;
 public:
     explicit QOscBundle(const QByteArray &data);
 
     bool isValid() const { return m_isValid; }
-    QVector<QOscBundle> bundles() const { return m_bundles; }
-    QVector<QOscMessage> messages() const { return m_messages; }
+    QList<QOscBundle> bundles() const { return m_bundles; }
+    QList<QOscMessage> messages() const { return m_messages; }
 
 private:
     bool m_isValid;
     bool m_immediate;
     quint32 m_timeEpoch;
     quint32 m_timePico;
-    QVector<QOscBundle> m_bundles;
-    QVector<QOscMessage> m_messages;
+    QList<QOscBundle> m_bundles;
+    QList<QOscMessage> m_messages;
 };
 Q_DECLARE_TYPEINFO(QOscBundle, Q_MOVABLE_TYPE);
 

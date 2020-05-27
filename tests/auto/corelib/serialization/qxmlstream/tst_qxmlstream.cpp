@@ -240,7 +240,7 @@ public:
      */
     class MissedBaseline
     {
-        friend class QVector<MissedBaseline>;
+        friend class QList<MissedBaseline>;
         MissedBaseline() {} // for QVector, don't use
     public:
         MissedBaseline(const QString &aId,

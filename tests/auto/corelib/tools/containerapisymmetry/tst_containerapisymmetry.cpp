@@ -564,7 +564,7 @@ template<typename ... T>
 struct ContainerDuplicatedValuesStrategy<std::vector<T...>> : ContainerAcceptsDuplicateValues {};
 
 template<typename ... T>
-struct ContainerDuplicatedValuesStrategy<QVector<T...>> : ContainerAcceptsDuplicateValues {};
+struct ContainerDuplicatedValuesStrategy<QList<T...>> : ContainerAcceptsDuplicateValues {};
 
 template<typename ... T>
 struct ContainerDuplicatedValuesStrategy<QVarLengthArray<T...>> : ContainerAcceptsDuplicateValues {};

@@ -40,7 +40,7 @@
     "qconfig.h" => "QtConfig",
     "qplugin.h" => "QtPlugin",
     "qalgorithms.h" => "QtAlgorithms",
-    "qlist.h" => "QList",
+    "qvector.h" => "QVector",
     "qcontainerfwd.h" => "QtContainerFwd",
     "qdebug.h" => "QtDebug",
     "qevent.h" => "QtEvents",

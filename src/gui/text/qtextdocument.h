@@ -47,6 +47,7 @@
 #include <QtCore/qvariant.h>
 #include <QtGui/qfont.h>
 #include <QtCore/qurl.h>
+#include <QtCore/qcontainerfwd.h>
 Q_MOC_INCLUDE(<QtGui/qtextcursor.h>)
 
 QT_BEGIN_NAMESPACE
@@ -68,7 +69,6 @@ class QRectF;
 class QTextOption;
 class QTextCursor;
 
-template<typename T> class QVector;
 
 namespace Qt
 {

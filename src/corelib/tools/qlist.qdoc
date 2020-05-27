@@ -28,82 +28,87 @@
 /*!
     \class QVector
     \inmodule QtCore
-    \brief The QVector class is a template class that provides a dynamic array.
+    \brief QVector is an alias for QList.
+
+    Please see the QList documentation for details.
+*/
+
+/*!
+    \class QList
+    \inmodule QtCore
+    \brief The QList class is a template class that provides a dynamic array.
 
     \ingroup tools
     \ingroup shared
 
     \reentrant
 
-    QVector\<T\> is one of Qt's generic \l{container classes}. It
+    QList\<T\> is one of Qt's generic \l{container classes}. It
     stores its items in adjacent memory locations and provides fast
-    index-based access.
+    index-based access. QVector\<T\> used to be a different class in
+    Qt 5, but is now a simple alias to QList.
 
-    QList\<T\>, QVector\<T\>, and QVarLengthArray\<T\>
+    QList\<T\> and QVarLengthArray\<T\>
     provide similar APIs and functionality. They are often interchangeable,
     but there are performance consequences. Here is an overview of use cases:
 
     \list
-    \li QVector should be your default first choice.
-        QVector\<T\> will usually give better performance than QList\<T\>,
-        because QVector\<T\> always stores its items sequentially in memory,
-        where QList\<T\> will allocate its items on the heap unless
-        \c {sizeof(T) <= sizeof(void*)} and T has been declared to be
-        either a \c{Q_MOVABLE_TYPE} or a \c{Q_PRIMITIVE_TYPE} using
-        \l {Q_DECLARE_TYPEINFO}. See the \l {Pros and Cons of Using QList}
-        for an explanation.
-    \li However, QList is used throughout the Qt APIs for passing
-        parameters and for returning values. Use QList to interface with
-        those APIs.
+    \li QList should be your default first choice.
+    \li QVarLengthArray provides an array that reserves space on the stack,
+        but can dynamically grow onto the heap if required. It's good to
+        use for short lived containers that are usually small.
     \li If you need a real linked list, which guarantees
         \l{Algorithmic Complexity}{constant time} insertions mid-list and
         uses iterators to items rather than indexes, use std::list.
     \endlist
 
-    \note QVector and QVarLengthArray both guarantee C-compatible
-    array layout. QList does not. This might be important if your
-    application must interface with a C API.
+    \note QList and QVarLengthArray both guarantee C-compatible
+    array layout.
+    \note QList in Qt 5 did not always have a C-compatible array layout and
+    we often recommended to use QVector instead for more predictable
+    performance. This is not the case in Qt 6 anymore, where both classes
+    now share an implementation and can be used interchangeably.
 
-    Here's an example of a QVector that stores integers and a QVector
+    Here's an example of a QList that stores integers and a QList
     that stores QString values:
 
-    \snippet code/src_corelib_tools_qvector.cpp 0
+    \snippet code/src_corelib_tools_qlist.cpp 0
 
-    QVector stores its items in a vector (array). Typically, vectors
+    QList stores its items in a vector (array). Typically, vectors
     are created with an initial size. For example, the following code
-    constructs a QVector with 200 elements:
+    constructs a QList with 200 elements:
 
-    \snippet code/src_corelib_tools_qvector.cpp 1
+    \snippet code/src_corelib_tools_qlist.cpp 1
 
     The elements are automatically initialized with a
     \l{default-constructed value}. If you want to initialize the
     vector with a different value, pass that value as the second
     argument to the constructor:
 
-    \snippet code/src_corelib_tools_qvector.cpp 2
+    \snippet code/src_corelib_tools_qlist.cpp 2
 
     You can also call fill() at any time to fill the vector with a
     value.
 
-    QVector uses 0-based indexes, just like C++ arrays. To access the
+    QList uses 0-based indexes, just like C++ arrays. To access the
     item at a particular index position, you can use operator[](). On
     non-const vectors, operator[]() returns a reference to the item
     that can be used on the left side of an assignment:
 
-    \snippet code/src_corelib_tools_qvector.cpp 3
+    \snippet code/src_corelib_tools_qlist.cpp 3
 
     For read-only access, an alternative syntax is to use at():
 
-    \snippet code/src_corelib_tools_qvector.cpp 4
+    \snippet code/src_corelib_tools_qlist.cpp 4
 
     at() can be faster than operator[](), because it never causes a
     \l{deep copy} to occur.
 
-    Another way to access the data stored in a QVector is to call
+    Another way to access the data stored in a QList is to call
     data(). The function returns a pointer to the first item in the
     vector. You can use the pointer to directly access and modify the
     elements stored in the vector. The pointer is also useful if you
-    need to pass a QVector to a function that accepts a plain C++
+    need to pass a QList to a function that accepts a plain C++
     array.
 
     If you want to find all occurrences of a particular value in a
@@ -112,13 +117,13 @@
     backward. Both return the index of the matching item if they found
     one; otherwise, they return -1. For example:
 
-    \snippet code/src_corelib_tools_qvector.cpp 5
+    \snippet code/src_corelib_tools_qlist.cpp 5
 
     If you simply want to check whether a vector contains a
     particular value, use contains(). If you want to find out how
     many times a particular value occurs in the vector, use count().
 
-    QVector provides these basic functions to add, move, and remove
+    QList provides these basic functions to add, move, and remove
     items: insert(), replace(), remove(), prepend(), append(). With
     the exception of append() and replace(), these functions can be slow
     (\l{linear time}) for large vectors, because they require moving many
@@ -126,22 +131,22 @@
     class that provides fast insertion/removal in the middle, use
     std::list instead.
 
-    Unlike plain C++ arrays, QVectors can be resized at any time by
+    Unlike plain C++ arrays, QLists can be resized at any time by
     calling resize(). If the new size is larger than the old size,
-    QVector might need to reallocate the whole vector. QVector tries
+    QList might need to reallocate the whole vector. QList tries
     to reduce the number of reallocations by preallocating up to twice
     as much memory as the actual data needs.
 
-    If you know in advance approximately how many items the QVector
-    will contain, you can call reserve(), asking QVector to
+    If you know in advance approximately how many items the QList
+    will contain, you can call reserve(), asking QList to
     preallocate a certain amount of memory. You can also call
-    capacity() to find out how much memory QVector actually
+    capacity() to find out how much memory QList actually
     allocated.
 
     Note that using non-const operators and functions can cause
-    QVector to do a deep copy of the data. This is due to \l{implicit sharing}.
+    QList to do a deep copy of the data. This is due to \l{implicit sharing}.
 
-    QVector's value type must be an \l{assignable data type}. This
+    QList's value type must be an \l{assignable data type}. This
     covers most data types that are commonly used, but the compiler
     won't let you, for example, store a QWidget as a value; instead,
     store a QWidget *. A few functions have additional requirements;
@@ -149,17 +154,17 @@
     support \c operator==().  These requirements are documented on a
     per-function basis.
 
-    Like the other container classes, QVector provides \l{Java-style
-    iterators} (QVectorIterator and QMutableVectorIterator) and
-    \l{STL-style iterators} (QVector::const_iterator and
-    QVector::iterator). In practice, these are rarely used, because
-    you can use indexes into the QVector.
+    Like the other container classes, QList provides \l{Java-style
+    iterators} (QListIterator and QMutableVectorIterator) and
+    \l{STL-style iterators} (QList::const_iterator and
+    QList::iterator). In practice, these are rarely used, because
+    you can use indexes into the QList.
 
-    In addition to QVector, Qt also provides QVarLengthArray, a very
+    In addition to QList, Qt also provides QVarLengthArray, a very
     low-level class with little functionality that is optimized for
     speed.
 
-    QVector does \e not support inserting, prepending, appending or replacing
+    QList does \e not support inserting, prepending, appending or replacing
     with references to its own values. Doing so will cause your application to
     abort with an error message.
 
@@ -170,13 +175,13 @@
 
     \section1 Maximum size and out-of-memory conditions
 
-    The current version of QVector is limited to just under 2 GB (2^31 bytes)
+    The current version of QList is limited to just under 2 GB (2^31 bytes)
     in size. The exact value is architecture-dependent, since it depends on the
     overhead required for managing the data block, but is no more than 32
-    bytes. The number of elements that can be stored in a QVector is that size
+    bytes. The number of elements that can be stored in a QList is that size
     divided by the size of each element.
 
-    In case memory allocation fails, QVector will use the \l Q_CHECK_PTR macro,
+    In case memory allocation fails, QList will use the \l Q_CHECK_PTR macro,
     which will throw a \c std::bad_alloc exception if the application is being
     compiled with exception support. If exceptions are disabled, then running
     out of memory is undefined behavior.
@@ -188,7 +193,7 @@
 */
 
 /*!
-    \fn template <typename T> QVector<T> QVector<T>::mid(int pos, int length = -1) const
+    \fn template <typename T> QList<T> QList<T>::mid(int pos, int length = -1) const
 
     Returns a sub-vector which contains elements from this vector,
     starting at position \a pos. If \a length is -1 (the default), all
@@ -198,7 +203,7 @@
 */
 
 
-/*! \fn template <typename T> QVector<T>::QVector()
+/*! \fn template <typename T> QList<T>::QList()
 
     Constructs an empty vector.
 
@@ -206,15 +211,15 @@
 */
 
 /*!
-    \fn template <typename T> QVector<T>::QVector(QVector<T> &&other)
+    \fn template <typename T> QList<T>::QList(QList<T> &&other)
 
-    Move-constructs a QVector instance, making it point at the same
+    Move-constructs a QList instance, making it point at the same
     object that \a other was pointing to.
 
     \since 5.2
 */
 
-/*! \fn template <typename T> QVector<T>::QVector(int size)
+/*! \fn template <typename T> QList<T>::QList(int size)
 
     Constructs a vector with an initial size of \a size elements.
 
@@ -224,7 +229,7 @@
     \sa resize()
 */
 
-/*! \fn template <typename T> QVector<T>::QVector(int size, const T &value)
+/*! \fn template <typename T> QList<T>::QList(int size, const T &value)
 
     Constructs a vector with an initial size of \a size elements.
     Each element is initialized with \a value.
@@ -232,20 +237,20 @@
     \sa resize(), fill()
 */
 
-/*! \fn template <typename T> QVector<T>::QVector(const QVector<T> &other)
+/*! \fn template <typename T> QList<T>::QList(const QList<T> &other)
 
     Constructs a copy of \a other.
 
     This operation takes \l{Algorithmic Complexity}{constant time},
-    because QVector is \l{implicitly shared}. This makes returning
-    a QVector from a function very fast. If a shared instance is
+    because QList is \l{implicitly shared}. This makes returning
+    a QList from a function very fast. If a shared instance is
     modified, it will be copied (copy-on-write), and that takes
     \l{Algorithmic Complexity}{linear time}.
 
     \sa operator=()
 */
 
-/*! \fn template <typename T> QVector<T>::QVector(std::initializer_list<T> args)
+/*! \fn template <typename T> QList<T>::QList(std::initializer_list<T> args)
     \since 4.8
 
     Constructs a vector from the std::initializer_list given by \a args.
@@ -254,7 +259,7 @@
     lists.
 */
 
-/*! \fn template <typename T> template<typename InputIterator> QVector<T>::QVector(InputIterator first, InputIterator last)
+/*! \fn template <typename T> template<typename InputIterator> QList<T>::QList(InputIterator first, InputIterator last)
     \since 5.14
 
     Constructs a vector with the contents in the iterator range [\a first, \a last).
@@ -263,33 +268,33 @@
 */
 
 /*!
-    \fn template <typename T> QVector<T>::QVector(QArrayDataPointerRef<T> ref)
+    \fn template <typename T> QList<T>::QList(QArrayDataPointerRef<T> ref)
     \internal
 */
 
-/*! \fn template <typename T> QVector<T>::~QVector()
+/*! \fn template <typename T> QList<T>::~QList()
 
-    Destroys the vector.
+    Destroys the list.
 */
 
-/*! \fn template <typename T> QVector<T> &QVector<T>::operator=(const QVector<T> &other)
+/*! \fn template <typename T> QList<T> &QList<T>::operator=(const QList<T> &other)
 
     Assigns \a other to this vector and returns a reference to this
     vector.
 */
 
 /*!
-    \fn template <typename T> QVector<T> &QVector<T>::operator=(QVector<T> &&other)
+    \fn template <typename T> QList<T> &QList<T>::operator=(QList<T> &&other)
 
-    Move-assigns \a other to this QVector instance.
+    Move-assigns \a other to this QList instance.
 
     \since 5.2
 */
 
 /*!
-    \fn template <typename T> QVector<T> &QVector<T>::operator=(std::initializer_list<T> args)
+    \fn template <typename T> QList<T> &QList<T>::operator=(std::initializer_list<T> args)
 
-    Assigns the collection of values in \a args to this QVector instance.
+    Assigns the collection of values in \a args to this QList instance.
 
     This operator is only enabled if the compiler supports C++11 initializer
     lists.
@@ -297,14 +302,14 @@
     \since 5.14
 */
 
-/*! \fn template <typename T> void QVector<T>::swap(QVector<T> &other)
+/*! \fn template <typename T> void QList<T>::swap(QList<T> &other)
     \since 4.8
 
     Swaps vector \a other with this vector. This operation is very fast and
     never fails.
 */
 
-/*! \fn template <typename T> void QVector<T>::swapItemsAt(int i, int j)
+/*! \fn template <typename T> void QList<T>::swapItemsAt(int i, int j)
     \since 5.14
 
     Exchange the item at index position \a i with the item at index
@@ -314,7 +319,7 @@
 */
 
 
-/*! \fn template <typename T> bool QVector<T>::operator==(const QVector<T> &other) const
+/*! \fn template <typename T> bool QList<T>::operator==(const QList<T> &other) const
 
     Returns \c true if \a other is equal to this vector; otherwise
     returns \c false.
@@ -328,7 +333,7 @@
     \sa operator!=()
 */
 
-/*! \fn template <typename T> bool QVector<T>::operator!=(const QVector<T> &other) const
+/*! \fn template <typename T> bool QList<T>::operator!=(const QList<T> &other) const
 
     Returns \c true if \a other is not equal to this vector; otherwise
     returns \c false.
@@ -342,9 +347,9 @@
     \sa operator==()
 */
 
-/*! \fn template <typename T> bool operator<(const QVector<T> &lhs, const QVector<T> &rhs)
+/*! \fn template <typename T> bool operator<(const QList<T> &lhs, const QList<T> &rhs)
     \since 5.6
-    \relates QVector
+    \relates QList
 
     Returns \c true if vector \a lhs is
     \l{http://en.cppreference.com/w/cpp/algorithm/lexicographical_compare}
@@ -354,9 +359,9 @@
     of \c operator<().
 */
 
-/*! \fn template <typename T> bool operator<=(const QVector<T> &lhs, const QVector<T> &rhs)
+/*! \fn template <typename T> bool operator<=(const QList<T> &lhs, const QList<T> &rhs)
     \since 5.6
-    \relates QVector
+    \relates QList
 
     Returns \c true if vector \a lhs is
     \l{http://en.cppreference.com/w/cpp/algorithm/lexicographical_compare}
@@ -366,9 +371,9 @@
     of \c operator<().
 */
 
-/*! \fn template <typename T> bool operator>(const QVector<T> &lhs, const QVector<T> &rhs)
+/*! \fn template <typename T> bool operator>(const QList<T> &lhs, const QList<T> &rhs)
     \since 5.6
-    \relates QVector
+    \relates QList
 
     Returns \c true if vector \a lhs is
     \l{http://en.cppreference.com/w/cpp/algorithm/lexicographical_compare}
@@ -378,9 +383,9 @@
     of \c operator<().
 */
 
-/*! \fn template <typename T> bool operator>=(const QVector<T> &lhs, const QVector<T> &rhs)
+/*! \fn template <typename T> bool operator>=(const QList<T> &lhs, const QList<T> &rhs)
     \since 5.6
-    \relates QVector
+    \relates QList
 
     Returns \c true if vector \a lhs is
     \l{http://en.cppreference.com/w/cpp/algorithm/lexicographical_compare}
@@ -391,9 +396,9 @@
 */
 
 /*!
-    \fn template <typename T> size_t qHash(const QVector<T> &key, size_t seed = 0)
+    \fn template <typename T> size_t qHash(const QList<T> &key, size_t seed = 0)
     \since 5.6
-    \relates QVector
+    \relates QList
 
     Returns the hash value for \a key,
     using \a seed to seed the calculation.
@@ -401,21 +406,21 @@
     This function requires qHash() to be overloaded for the value type \c T.
 */
 
-/*! \fn template <typename T> int QVector<T>::size() const
+/*! \fn template <typename T> int QList<T>::size() const
 
     Returns the number of items in the vector.
 
     \sa isEmpty(), resize()
 */
 
-/*! \fn template <typename T> bool QVector<T>::isEmpty() const
+/*! \fn template <typename T> bool QList<T>::isEmpty() const
 
     Returns \c true if the vector has size 0; otherwise returns \c false.
 
     \sa size(), resize()
 */
 
-/*! \fn template <typename T> void QVector<T>::resize(int size)
+/*! \fn template <typename T> void QList<T>::resize(int size)
 
     Sets the size of the vector to \a size. If \a size is greater than the
     current size, elements are added to the end; the new elements are
@@ -428,13 +433,13 @@
     \sa size()
 */
 
-/*! \fn template <typename T> int QVector<T>::capacity() const
+/*! \fn template <typename T> int QList<T>::capacity() const
 
     Returns the maximum number of items that can be stored in the
     vector without forcing a reallocation.
 
     The sole purpose of this function is to provide a means of fine
-    tuning QVector's memory usage. In general, you will rarely ever
+    tuning QList's memory usage. In general, you will rarely ever
     need to call this function. If you want to know how many items are
     in the vector, call size().
 
@@ -444,15 +449,15 @@
     \sa reserve(), squeeze()
 */
 
-/*! \fn template <typename T> void QVector<T>::reserve(int size)
+/*! \fn template <typename T> void QList<T>::reserve(int size)
 
     Attempts to allocate memory for at least \a size elements. If you
     know in advance how large the vector will be, you should call this
     function to prevent reallocations and memory fragmentation.
 
     If \a size is an underestimate, the worst that will happen is that
-    the QVector will be a bit slower. If \a size is an overestimate, you
-    may have used more memory than the normal QVector growth strategy
+    the QList will be a bit slower. If \a size is an overestimate, you
+    may have used more memory than the normal QList growth strategy
     would have allocated—or you may have used less.
 
     An alternative to reserve() is calling resize(). Whether or not that is
@@ -469,44 +474,44 @@
     \sa squeeze(), capacity()
 */
 
-/*! \fn template <typename T> void QVector<T>::squeeze()
+/*! \fn template <typename T> void QList<T>::squeeze()
 
     Releases any memory not required to store the items.
 
     The sole purpose of this function is to provide a means of fine
-    tuning QVector's memory usage. In general, you will rarely ever
+    tuning QList's memory usage. In general, you will rarely ever
     need to call this function.
 
     \sa reserve(), capacity()
 */
 
-/*! \fn template <typename T> void QVector<T>::detach()
+/*! \fn template <typename T> void QList<T>::detach()
 
     \internal
 */
 
-/*! \fn template <typename T> bool QVector<T>::isDetached() const
+/*! \fn template <typename T> bool QList<T>::isDetached() const
 
     \internal
 */
 
-/*! \fn template <typename T> void QVector<T>::setSharable(bool sharable)
+/*! \fn template <typename T> void QList<T>::setSharable(bool sharable)
 
     \internal
 */
 
-/*! \fn template <typename T> bool QVector<T>::isSharedWith(const QVector<T> &other) const
+/*! \fn template <typename T> bool QList<T>::isSharedWith(const QList<T> &other) const
 
     \internal
 */
 
-/*! \fn template <typename T> T *QVector<T>::data()
+/*! \fn template <typename T> T *QList<T>::data()
 
     Returns a pointer to the data stored in the vector. The pointer
     can be used to access and modify the items in the vector.
 
     Example:
-    \snippet code/src_corelib_tools_qvector.cpp 6
+    \snippet code/src_corelib_tools_qlist.cpp 6
 
     The pointer remains valid as long as the vector isn't
     reallocated.
@@ -517,12 +522,12 @@
     \sa constData(), operator[]()
 */
 
-/*! \fn template <typename T> const T *QVector<T>::data() const
+/*! \fn template <typename T> const T *QList<T>::data() const
 
     \overload
 */
 
-/*! \fn template <typename T> const T *QVector<T>::constData() const
+/*! \fn template <typename T> const T *QList<T>::constData() const
 
     Returns a const pointer to the data stored in the vector. The
     pointer can be used to access the items in the vector.
@@ -535,7 +540,7 @@
     \sa data(), operator[]()
 */
 
-/*! \fn template <typename T> void QVector<T>::clear()
+/*! \fn template <typename T> void QList<T>::clear()
 
     Removes all the elements from the vector.
 
@@ -543,8 +548,8 @@
     the vector. From Qt 5.7, the capacity is preserved. To shed
     all capacity, swap with a default-constructed vector:
     \code
-    QVector<T> v ...;
-    QVector<T>().swap(v);
+    QList<T> v ...;
+    QList<T>().swap(v);
     Q_ASSERT(v.capacity() == 0);
     \endcode
     or call squeeze().
@@ -552,7 +557,7 @@
     \sa squeeze()
 */
 
-/*! \fn template <typename T> const T &QVector<T>::at(int i) const
+/*! \fn template <typename T> const T &QList<T>::at(int i) const
 
     Returns the item at index position \a i in the vector.
 
@@ -562,20 +567,20 @@
     \sa value(), operator[]()
 */
 
-/*! \fn template <typename T> T &QVector<T>::operator[](int i)
+/*! \fn template <typename T> T &QList<T>::operator[](int i)
 
     Returns the item at index position \a i as a modifiable reference.
 
     \a i must be a valid index position in the vector (i.e., 0 <= \a i
     < size()).
 
-    Note that using non-const operators can cause QVector to do a deep
+    Note that using non-const operators can cause QList to do a deep
     copy.
 
     \sa at(), value()
 */
 
-/*! \fn template <typename T> const T &QVector<T>::operator[](int i) const
+/*! \fn template <typename T> const T &QList<T>::operator[](int i) const
 
     \overload
 
@@ -583,17 +588,17 @@
 */
 
 /*!
-    \fn template <typename T> void QVector<T>::append(const T &value)
+    \fn template <typename T> void QList<T>::append(const T &value)
 
     Inserts \a value at the end of the vector.
 
     Example:
-    \snippet code/src_corelib_tools_qvector.cpp 7
+    \snippet code/src_corelib_tools_qlist.cpp 7
 
     This is the same as calling resize(size() + 1) and assigning \a
     value to the new last element in the vector.
 
-    This operation is relatively fast, because QVector typically
+    This operation is relatively fast, because QList typically
     allocates more memory than necessary, so it can grow without
     reallocating the entire vector each time.
 
@@ -601,16 +606,16 @@
 */
 
 /*!
-    \fn template <typename T> void QVector<T>::append(T &&value)
+    \fn template <typename T> void QList<T>::append(T &&value)
     \since 5.6
 
     \overload
 
     Example:
-    \snippet code/src_corelib_tools_qvector.cpp move-append
+    \snippet code/src_corelib_tools_qlist.cpp move-append
 */
 
-/*! \fn template <typename T> void QVector<T>::append(const QVector<T> &value)
+/*! \fn template <typename T> void QList<T>::append(const QList<T> &value)
 
     \overload
 
@@ -623,13 +628,13 @@
 
 
 /*!
-    \fn template <typename T> void QVector<T>::prepend(const T &value)
-    \fn template <typename T> void QVector<T>::prepend(T &&value)
+    \fn template <typename T> void QList<T>::prepend(const T &value)
+    \fn template <typename T> void QList<T>::prepend(T &&value)
 
     Inserts \a value at the beginning of the vector.
 
     Example:
-    \snippet code/src_corelib_tools_qvector.cpp 8
+    \snippet code/src_corelib_tools_qlist.cpp 8
 
     This is the same as vector.insert(0, \a value).
 
@@ -643,8 +648,8 @@
 */
 
 /*!
-    \fn template <typename T> template <typename ...Args> T &QVector<T>::emplaceBack(Args&&... args)
-    \fn template <typename T> template <typename ...Args> T &QVector<T>::emplace_back(Args&&... args)
+    \fn template <typename T> template <typename ...Args> T &QList<T>::emplaceBack(Args&&... args)
+    \fn template <typename T> template <typename ...Args> T &QList<T>::emplace_back(Args&&... args)
 
     Adds a new element to the end for the container. This new element
     is constructed in-place using \a args as the arguments for its
@@ -653,26 +658,26 @@
     Returns a reference to the new element.
 
     Example:
-    \snippet code/src_corelib_tools_qvector.cpp emplace-back
+    \snippet code/src_corelib_tools_qlist.cpp emplace-back
 
     It is also possible to access a newly created object by using
     returned reference:
-    \snippet code/src_corelib_tools_qvector.cpp emplace-back-ref
+    \snippet code/src_corelib_tools_qlist.cpp emplace-back-ref
 
     This is the same as vector.emplace(vector.size(), \a args).
 
     \sa emplace
 */
 
-/*! \fn template <typename T> void QVector<T>::insert(int i, const T &value)
-    \fn template <typename T> void QVector<T>::insert(int i, T &&value)
+/*! \fn template <typename T> void QList<T>::insert(int i, const T &value)
+    \fn template <typename T> void QList<T>::insert(int i, T &&value)
 
     Inserts \a value at index position \a i in the vector. If \a i is
     0, the value is prepended to the vector. If \a i is size(), the
     value is appended to the vector.
 
     Example:
-    \snippet code/src_corelib_tools_qvector.cpp 9
+    \snippet code/src_corelib_tools_qlist.cpp 9
 
     For large vectors, this operation can be slow (\l{linear time}),
     because it requires moving all the items at indexes \a i and
@@ -683,7 +688,7 @@
     \sa append(), prepend(), remove()
 */
 
-/*! \fn template <typename T> void QVector<T>::insert(int i, int count, const T &value)
+/*! \fn template <typename T> void QList<T>::insert(int i, int count, const T &value)
 
     \overload
 
@@ -691,12 +696,12 @@
     vector.
 
     Example:
-    \snippet code/src_corelib_tools_qvector.cpp 10
+    \snippet code/src_corelib_tools_qlist.cpp 10
 */
 
 /*!
-    \fn template <typename T> QVector<T>::iterator QVector<T>::insert(iterator before, const T &value)
-    \fn template <typename T> QVector<T>::iterator QVector<T>::insert(iterator before, T &&value)
+    \fn template <typename T> QList<T>::iterator QList<T>::insert(iterator before, const T &value)
+    \fn template <typename T> QList<T>::iterator QList<T>::insert(iterator before, T &&value)
 
     \overload
 
@@ -704,7 +709,7 @@
     \a before. Returns an iterator pointing at the inserted item.
 */
 
-/*! \fn template <typename T> QVector<T>::iterator QVector<T>::insert(iterator before, int count, const T &value)
+/*! \fn template <typename T> QList<T>::iterator QList<T>::insert(iterator before, int count, const T &value)
 
     Inserts \a count copies of \a value in front of the item pointed to
     by the iterator \a before. Returns an iterator pointing at the
@@ -712,7 +717,7 @@
 */
 
 /*!
-    \fn template <typename T> template <typename ...Args> QVector<T>::iterator QVector<T>::emplace(int i, Args&&... args)
+    \fn template <typename T> template <typename ...Args> QList<T>::iterator QList<T>::emplace(int i, Args&&... args)
 
     Extends the container by inserting a new element at position \a i.
     This new element is constructed in-place using \a args as the
@@ -721,7 +726,7 @@
     Returns an iterator to the new element.
 
     Example:
-    \snippet code/src_corelib_tools_qvector.cpp emplace
+    \snippet code/src_corelib_tools_qlist.cpp emplace
 
     \note It is garanteed that the element will be created in place
           at the beginning, but after that it might be copied or
@@ -731,7 +736,7 @@
 */
 
 
-/*! \fn template <typename T> void QVector<T>::replace(int i, const T &value)
+/*! \fn template <typename T> void QList<T>::replace(int i, const T &value)
 
     Replaces the item at index position \a i with \a value.
 
@@ -741,7 +746,7 @@
     \sa operator[](), remove()
 */
 
-/*! \fn template <typename T> void QVector<T>::remove(int i)
+/*! \fn template <typename T> void QList<T>::remove(int i)
 
     \overload
 
@@ -750,7 +755,7 @@
     \sa insert(), replace(), fill()
 */
 
-/*! \fn template <typename T> void QVector<T>::remove(int i, int count)
+/*! \fn template <typename T> void QList<T>::remove(int i, int count)
 
     \overload
 
@@ -760,7 +765,7 @@
     \sa insert(), replace(), fill()
 */
 
-/*! \fn template <typename T> void QVector<T>::removeAt(int i)
+/*! \fn template <typename T> void QList<T>::removeAt(int i)
     \since 5.2
 
     Removes the element at index position \a i.
@@ -774,7 +779,7 @@
     \sa remove(), QList::removeAt()
 */
 
-/*! \fn template <typename T> int QVector<T>::removeAll(const T &t)
+/*! \fn template <typename T> int QList<T>::removeAll(const T &t)
     \since 5.4
 
     Removes all elements that compare equal to \a t from the
@@ -785,7 +790,7 @@
     \sa removeOne(), QList::removeAll()
 */
 
-/*! \fn template <typename T> bool QVector<T>::removeOne(const T &t)
+/*! \fn template <typename T> bool QList<T>::removeOne(const T &t)
     \since 5.4
 
     Removes the first element that compares equal to \a t from the
@@ -796,7 +801,7 @@
     \sa removeAll(), QList::removeOne()
 */
 
-/*! \fn template <typename T> int QVector<T>::length() const
+/*! \fn template <typename T> int QList<T>::length() const
     \since 5.2
 
     Same as size() and count().
@@ -806,7 +811,7 @@
     \sa size(), count(), QList::length()
 */
 
-/*! \fn template <typename T> T QVector<T>::takeAt(int i)
+/*! \fn template <typename T> T QList<T>::takeAt(int i)
     \since 5.2
 
     Removes the element at index position \a i and returns it.
@@ -823,7 +828,7 @@
     \sa takeFirst(), takeLast(), QList::takeAt()
 */
 
-/*! \fn template <typename T> void QVector<T>::move(int from, int to)
+/*! \fn template <typename T> void QList<T>::move(int from, int to)
     \since 5.6
 
     Moves the item at index position \a from to index position \a to.
@@ -833,7 +838,7 @@
     \sa QList::move()
 */
 
-/*! \fn template <typename T> void QVector<T>::removeFirst()
+/*! \fn template <typename T> void QList<T>::removeFirst()
     \since 5.1
     Removes the first item in the vector. Calling this function is
     equivalent to calling remove(0). The vector must not be empty. If
@@ -843,7 +848,7 @@
     \sa remove(), takeFirst(), isEmpty()
 */
 
-/*! \fn template <typename T> void QVector<T>::removeLast()
+/*! \fn template <typename T> void QList<T>::removeLast()
     \since 5.1
     Removes the last item in the vector. Calling this function is
     equivalent to calling remove(size() - 1). The vector must not be
@@ -853,7 +858,7 @@
     \sa remove(), takeLast(), removeFirst(), isEmpty()
 */
 
-/*! \fn template <typename T> T QVector<T>::takeFirst()
+/*! \fn template <typename T> T QList<T>::takeFirst()
     \since 5.1
 
     Removes the first item in the vector and returns it. This function
@@ -863,7 +868,7 @@
     \sa takeLast(), removeFirst()
 */
 
-/*! \fn template <typename T> T QVector<T>::takeLast()
+/*! \fn template <typename T> T QList<T>::takeLast()
     \since 5.1
 
     Removes the last item in the list and returns it. This function
@@ -877,7 +882,7 @@
 */
 
 /*!
-    \fn template <typename T> template <typename ...Args> QVector<T>::iterator QVector<T>::emplace(QVector<T>::iterator before, Args&&... args)
+    \fn template <typename T> template <typename ...Args> QList<T>::iterator QList<T>::emplace(QList<T>::iterator before, Args&&... args)
 
     \overload
 
@@ -888,26 +893,26 @@
     Returns an iterator to the new element.
 */
 
-/*! \fn template <typename T> QVector<T> &QVector<T>::fill(const T &value, int size = -1)
+/*! \fn template <typename T> QList<T> &QList<T>::fill(const T &value, int size = -1)
 
     Assigns \a value to all items in the vector. If \a size is
     different from -1 (the default), the vector is resized to size \a
     size beforehand.
 
     Example:
-    \snippet code/src_corelib_tools_qvector.cpp 11
+    \snippet code/src_corelib_tools_qlist.cpp 11
 
     \sa resize()
 */
 
-/*! \fn template <typename T> int QVector<T>::indexOf(const T &value, int from = 0) const
+/*! \fn template <typename T> int QList<T>::indexOf(const T &value, int from = 0) const
 
     Returns the index position of the first occurrence of \a value in
     the vector, searching forward from index position \a from.
     Returns -1 if no item matched.
 
     Example:
-    \snippet code/src_corelib_tools_qvector.cpp 12
+    \snippet code/src_corelib_tools_qlist.cpp 12
 
     This function requires the value type to have an implementation of
     \c operator==().
@@ -915,7 +920,7 @@
     \sa lastIndexOf(), contains()
 */
 
-/*! \fn template <typename T> int QVector<T>::lastIndexOf(const T &value, int from = -1) const
+/*! \fn template <typename T> int QList<T>::lastIndexOf(const T &value, int from = -1) const
 
     Returns the index position of the last occurrence of the value \a
     value in the vector, searching backward from index position \a
@@ -923,7 +928,7 @@
     last item. Returns -1 if no item matched.
 
     Example:
-    \snippet code/src_corelib_tools_qvector.cpp 13
+    \snippet code/src_corelib_tools_qlist.cpp 13
 
     This function requires the value type to have an implementation of
     \c operator==().
@@ -931,7 +936,7 @@
     \sa indexOf()
 */
 
-/*! \fn template <typename T> bool QVector<T>::contains(const T &value) const
+/*! \fn template <typename T> bool QList<T>::contains(const T &value) const
 
     Returns \c true if the vector contains an occurrence of \a value;
     otherwise returns \c false.
@@ -942,7 +947,7 @@
     \sa indexOf(), count()
 */
 
-/*! \fn template <typename T> bool QVector<T>::startsWith(const T &value) const
+/*! \fn template <typename T> bool QList<T>::startsWith(const T &value) const
     \since 4.5
 
     Returns \c true if this vector is not empty and its first
@@ -951,7 +956,7 @@
     \sa isEmpty(), first()
 */
 
-/*! \fn template <typename T> bool QVector<T>::endsWith(const T &value) const
+/*! \fn template <typename T> bool QList<T>::endsWith(const T &value) const
     \since 4.5
 
     Returns \c true if this vector is not empty and its last
@@ -961,7 +966,7 @@
 */
 
 
-/*! \fn template <typename T> int QVector<T>::count(const T &value) const
+/*! \fn template <typename T> int QList<T>::count(const T &value) const
 
     Returns the number of occurrences of \a value in the vector.
 
@@ -971,14 +976,14 @@
     \sa contains(), indexOf()
 */
 
-/*! \fn template <typename T> int QVector<T>::count() const
+/*! \fn template <typename T> int QList<T>::count() const
 
     \overload
 
     Same as size().
 */
 
-/*! \fn template <typename T> QVector<T>::iterator QVector<T>::begin()
+/*! \fn template <typename T> QList<T>::iterator QList<T>::begin()
 
     Returns an \l{STL-style iterators}{STL-style iterator} pointing to the first item in
     the vector.
@@ -986,12 +991,12 @@
     \sa constBegin(), end()
 */
 
-/*! \fn template <typename T> QVector<T>::const_iterator QVector<T>::begin() const
+/*! \fn template <typename T> QList<T>::const_iterator QList<T>::begin() const
 
     \overload
 */
 
-/*! \fn template <typename T> QVector<T>::const_iterator QVector<T>::cbegin() const
+/*! \fn template <typename T> QList<T>::const_iterator QList<T>::cbegin() const
     \since 5.0
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first item
@@ -1000,7 +1005,7 @@
     \sa begin(), cend()
 */
 
-/*! \fn template <typename T> QVector<T>::const_iterator QVector<T>::constBegin() const
+/*! \fn template <typename T> QList<T>::const_iterator QList<T>::constBegin() const
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first item
     in the vector.
@@ -1008,7 +1013,7 @@
     \sa begin(), constEnd()
 */
 
-/*! \fn template <typename T> QVector<T>::iterator QVector<T>::end()
+/*! \fn template <typename T> QList<T>::iterator QList<T>::end()
 
     Returns an \l{STL-style iterators}{STL-style iterator} pointing to the imaginary item
     after the last item in the vector.
@@ -1016,12 +1021,12 @@
     \sa begin(), constEnd()
 */
 
-/*! \fn template <typename T> QVector<T>::const_iterator QVector<T>::end() const
+/*! \fn template <typename T> QList<T>::const_iterator QList<T>::end() const
 
     \overload
 */
 
-/*! \fn template <typename T> QVector<T>::const_iterator QVector<T>::cend() const
+/*! \fn template <typename T> QList<T>::const_iterator QList<T>::cend() const
     \since 5.0
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
@@ -1030,7 +1035,7 @@
     \sa cbegin(), end()
 */
 
-/*! \fn template <typename T> QVector<T>::const_iterator QVector<T>::constEnd() const
+/*! \fn template <typename T> QList<T>::const_iterator QList<T>::constEnd() const
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     item after the last item in the vector.
@@ -1038,7 +1043,7 @@
     \sa constBegin(), end()
 */
 
-/*! \fn template <typename T> QVector<T>::reverse_iterator QVector<T>::rbegin()
+/*! \fn template <typename T> QList<T>::reverse_iterator QList<T>::rbegin()
     \since 5.6
 
     Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
@@ -1047,12 +1052,12 @@
     \sa begin(), crbegin(), rend()
 */
 
-/*! \fn template <typename T> QVector<T>::const_reverse_iterator QVector<T>::rbegin() const
+/*! \fn template <typename T> QList<T>::const_reverse_iterator QList<T>::rbegin() const
     \since 5.6
     \overload
 */
 
-/*! \fn template <typename T> QVector<T>::const_reverse_iterator QVector<T>::crbegin() const
+/*! \fn template <typename T> QList<T>::const_reverse_iterator QList<T>::crbegin() const
     \since 5.6
 
     Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
@@ -1061,7 +1066,7 @@
     \sa begin(), rbegin(), rend()
 */
 
-/*! \fn template <typename T> QVector<T>::reverse_iterator QVector<T>::rend()
+/*! \fn template <typename T> QList<T>::reverse_iterator QList<T>::rend()
     \since 5.6
 
     Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to one past
@@ -1070,12 +1075,12 @@
     \sa end(), crend(), rbegin()
 */
 
-/*! \fn template <typename T> QVector<T>::const_reverse_iterator QVector<T>::rend() const
+/*! \fn template <typename T> QList<T>::const_reverse_iterator QList<T>::rend() const
     \since 5.6
     \overload
 */
 
-/*! \fn template <typename T> QVector<T>::const_reverse_iterator QVector<T>::crend() const
+/*! \fn template <typename T> QList<T>::const_reverse_iterator QList<T>::crend() const
     \since 5.6
 
     Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to one
@@ -1084,7 +1089,7 @@
     \sa end(), rend(), rbegin()
 */
 
-/*! \fn template <typename T> QVector<T>::iterator QVector<T>::erase(iterator pos)
+/*! \fn template <typename T> QList<T>::iterator QList<T>::erase(iterator pos)
 
     Removes the item pointed to by the iterator \a pos from the
     vector, and returns an iterator to the next item in the vector
@@ -1093,7 +1098,7 @@
     \sa insert(), remove()
 */
 
-/*! \fn template <typename T> QVector<T>::iterator QVector<T>::erase(iterator begin, iterator end)
+/*! \fn template <typename T> QList<T>::iterator QList<T>::erase(iterator begin, iterator end)
 
     \overload
 
@@ -1102,7 +1107,7 @@
     before the call.
 */
 
-/*! \fn template <typename T> T& QVector<T>::first()
+/*! \fn template <typename T> T& QList<T>::first()
 
     Returns a reference to the first item in the vector. This
     function assumes that the vector isn't empty.
@@ -1110,12 +1115,12 @@
     \sa last(), isEmpty(), constFirst()
 */
 
-/*! \fn template <typename T> const T& QVector<T>::first() const
+/*! \fn template <typename T> const T& QList<T>::first() const
 
     \overload
 */
 
-/*! \fn template <typename T> const T& QVector<T>::constFirst() const
+/*! \fn template <typename T> const T& QList<T>::constFirst() const
     \since 5.6
 
     Returns a const reference to the first item in the vector. This
@@ -1124,7 +1129,7 @@
     \sa constLast(), isEmpty(), first()
 */
 
-/*! \fn template <typename T> T& QVector<T>::last()
+/*! \fn template <typename T> T& QList<T>::last()
 
     Returns a reference to the last item in the vector. This function
     assumes that the vector isn't empty.
@@ -1132,12 +1137,12 @@
     \sa first(), isEmpty(), constLast()
 */
 
-/*! \fn template <typename T> const T& QVector<T>::last() const
+/*! \fn template <typename T> const T& QList<T>::last() const
 
     \overload
 */
 
-/*! \fn template <typename T> const T& QVector<T>::constLast() const
+/*! \fn template <typename T> const T& QList<T>::constLast() const
     \since 5.6
 
     Returns a const reference to the last item in the vector. This function
@@ -1146,7 +1151,7 @@
     \sa constFirst(), isEmpty(), last()
 */
 
-/*! \fn template <typename T> T QVector<T>::value(int i) const
+/*! \fn template <typename T> T QList<T>::value(int i) const
 
     Returns the value at index position \a i in the vector.
 
@@ -1158,7 +1163,7 @@
     \sa at(), operator[]()
 */
 
-/*! \fn template <typename T> T QVector<T>::value(int i, const T &defaultValue) const
+/*! \fn template <typename T> T QList<T>::value(int i, const T &defaultValue) const
 
     \overload
 
@@ -1166,74 +1171,74 @@
     \a defaultValue.
 */
 
-/*! \fn template <typename T> void QVector<T>::push_back(const T &value)
+/*! \fn template <typename T> void QList<T>::push_back(const T &value)
 
     This function is provided for STL compatibility. It is equivalent
     to append(\a value).
 */
 
-/*! \fn template <typename T> void QVector<T>::push_back(T &&value)
+/*! \fn template <typename T> void QList<T>::push_back(T &&value)
     \since 5.6
     \overload
 */
 
 /*!
-    \fn template <typename T> void QVector<T>::push_front(const T &value)
-    \fn template <typename T> void QVector<T>::push_front(T &&value)
+    \fn template <typename T> void QList<T>::push_front(const T &value)
+    \fn template <typename T> void QList<T>::push_front(T &&value)
 
     This function is provided for STL compatibility. It is equivalent
     to prepend(\a value).
 */
 
-/*! \fn template <typename T> void QVector<T>::pop_front()
+/*! \fn template <typename T> void QList<T>::pop_front()
 
     This function is provided for STL compatibility. It is equivalent
     to removeFirst().
 */
 
-/*! \fn template <typename T> void QVector<T>::pop_back()
+/*! \fn template <typename T> void QList<T>::pop_back()
 
     This function is provided for STL compatibility. It is equivalent
     to removeLast().
 */
 
-/*! \fn template <typename T> T& QVector<T>::front()
+/*! \fn template <typename T> T& QList<T>::front()
 
     This function is provided for STL compatibility. It is equivalent
     to first().
 */
 
-/*! \fn template <typename T> QVector<T>::const_reference QVector<T>::front() const
+/*! \fn template <typename T> QList<T>::const_reference QList<T>::front() const
 
     \overload
 */
 
-/*! \fn template <typename T> QVector<T>::reference QVector<T>::back()
+/*! \fn template <typename T> QList<T>::reference QList<T>::back()
 
     This function is provided for STL compatibility. It is equivalent
     to last().
 */
 
-/*! \fn template <typename T> QVector<T>::const_reference QVector<T>::back() const
+/*! \fn template <typename T> QList<T>::const_reference QList<T>::back() const
 
     \overload
 */
 
-/*! \fn template <typename T> void QVector<T>::shrink_to_fit()
+/*! \fn template <typename T> void QList<T>::shrink_to_fit()
     \since 5.10
 
     This function is provided for STL compatibility. It is equivalent
     to squeeze().
 */
 
-/*! \fn template <typename T> bool QVector<T>::empty() const
+/*! \fn template <typename T> bool QList<T>::empty() const
 
     This function is provided for STL compatibility. It is equivalent
     to isEmpty(), returning \c true if the vector is empty; otherwise
     returns \c false.
 */
 
-/*! \fn template <typename T> QVector<T> &QVector<T>::operator+=(const QVector<T> &other)
+/*! \fn template <typename T> QList<T> &QList<T>::operator+=(const QList<T> &other)
 
     Appends the items of the \a other vector to this vector and
     returns a reference to this vector.
@@ -1241,7 +1246,7 @@
     \sa operator+(), append()
 */
 
-/*! \fn template <typename T> void QVector<T>::operator+=(const T &value)
+/*! \fn template <typename T> void QList<T>::operator+=(const T &value)
 
     \overload
 
@@ -1250,7 +1255,7 @@
     \sa append(), operator<<()
 */
 
-/*! \fn template <typename T> void QVector<T>::operator+=(T &&value)
+/*! \fn template <typename T> void QList<T>::operator+=(T &&value)
     \since 5.11
 
     \overload
@@ -1258,7 +1263,7 @@
     \sa append(), operator<<()
 */
 
-/*! \fn template <typename T> QVector<T> QVector<T>::operator+(const QVector<T> &other) const
+/*! \fn template <typename T> QList<T> QList<T>::operator+(const QList<T> &other) const
 
     Returns a vector that contains all the items in this vector
     followed by all the items in the \a other vector.
@@ -1266,7 +1271,7 @@
     \sa operator+=()
 */
 
-/*! \fn template <typename T> QVector<T> &QVector<T>::operator<<(const T &value)
+/*! \fn template <typename T> QList<T> &QList<T>::operator<<(const T &value)
 
     Appends \a value to the vector and returns a reference to this
     vector.
@@ -1274,7 +1279,7 @@
     \sa append(), operator+=()
 */
 
-/*! \fn template <typename T> QVector<T> &QVector<T>::operator<<(T &&value)
+/*! \fn template <typename T> QList<T> &QList<T>::operator<<(T &&value)
     \since 5.11
 
     \overload
@@ -1283,18 +1288,18 @@
 */
 
 
-/*! \fn template <typename T> QVector<T> &QVector<T>::operator<<(const QVector<T> &other)
+/*! \fn template <typename T> QList<T> &QList<T>::operator<<(const QList<T> &other)
 
     Appends \a other to the vector and returns a reference to the
     vector.
 */
 
-/*! \typedef QVector::iterator
+/*! \typedef QList::iterator
 
-    The QVector::iterator typedef provides an STL-style non-const
-    iterator for QVector and QStack.
+    The QList::iterator typedef provides an STL-style non-const
+    iterator for QList and QStack.
 
-    QVector provides both \l{STL-style iterators} and \l{Java-style
+    QList provides both \l{STL-style iterators} and \l{Java-style
     iterators}. The STL-style non-const iterator is simply a typedef
     for "T *" (pointer to T).
 
@@ -1303,15 +1308,15 @@
     while iterators are active on that container. For more information,
     read \l{Implicit sharing iterator problem}.
 
-    \sa QVector::begin(), QVector::end(), QVector::const_iterator, QMutableVectorIterator
+    \sa QList::begin(), QList::end(), QList::const_iterator, QMutableVectorIterator
 */
 
-/*! \typedef QVector::const_iterator
+/*! \typedef QList::const_iterator
 
-    The QVector::const_iterator typedef provides an STL-style const
-    iterator for QVector and QStack.
+    The QList::const_iterator typedef provides an STL-style const
+    iterator for QList and QStack.
 
-    QVector provides both \l{STL-style iterators} and \l{Java-style
+    QList provides both \l{STL-style iterators} and \l{Java-style
     iterators}. The STL-style const iterator is simply a typedef for
     "const T *" (pointer to const T).
 
@@ -1320,14 +1325,14 @@
     while iterators are active on that container. For more information,
     read \l{Implicit sharing iterator problem}.
 
-    \sa QVector::constBegin(), QVector::constEnd(), QVector::iterator, QVectorIterator
+    \sa QList::constBegin(), QList::constEnd(), QList::iterator, QListIterator
 */
 
-/*! \typedef QVector::reverse_iterator
+/*! \typedef QList::reverse_iterator
     \since 5.6
 
-    The QVector::reverse_iterator typedef provides an STL-style non-const
-    reverse iterator for QVector.
+    The QList::reverse_iterator typedef provides an STL-style non-const
+    reverse iterator for QList.
 
     It is simply a typedef for \c{std::reverse_iterator<T*>}.
 
@@ -1336,14 +1341,14 @@
     while iterators are active on that container. For more information,
     read \l{Implicit sharing iterator problem}.
 
-    \sa QVector::rbegin(), QVector::rend(), QVector::const_reverse_iterator, QVector::iterator
+    \sa QList::rbegin(), QList::rend(), QList::const_reverse_iterator, QList::iterator
 */
 
-/*! \typedef QVector::const_reverse_iterator
+/*! \typedef QList::const_reverse_iterator
     \since 5.6
 
-    The QVector::const_reverse_iterator typedef provides an STL-style const
-    reverse iterator for QVector.
+    The QList::const_reverse_iterator typedef provides an STL-style const
+    reverse iterator for QList.
 
     It is simply a typedef for \c{std::reverse_iterator<const T*>}.
 
@@ -1352,108 +1357,102 @@
     while iterators are active on that container. For more information,
     read \l{Implicit sharing iterator problem}.
 
-    \sa QVector::rbegin(), QVector::rend(), QVector::reverse_iterator, QVector::const_iterator
+    \sa QList::rbegin(), QList::rend(), QList::reverse_iterator, QList::const_iterator
 */
 
-/*! \typedef QVector::Iterator
+/*! \typedef QList::Iterator
 
-    Qt-style synonym for QVector::iterator.
+    Qt-style synonym for QList::iterator.
 */
 
-/*! \typedef QVector::ConstIterator
+/*! \typedef QList::ConstIterator
 
-    Qt-style synonym for QVector::const_iterator.
+    Qt-style synonym for QList::const_iterator.
 */
 
-/*! \typedef QVector::const_pointer
+/*! \typedef QList::const_pointer
 
     Typedef for const T *. Provided for STL compatibility.
 */
 
-/*! \typedef QVector::const_reference
+/*! \typedef QList::const_reference
 
     Typedef for T &. Provided for STL compatibility.
 */
 
-/*! \typedef QVector::difference_type
+/*! \typedef QList::difference_type
 
     Typedef for ptrdiff_t. Provided for STL compatibility.
 */
 
-/*! \typedef QVector::pointer
+/*! \typedef QList::pointer
 
     Typedef for T *. Provided for STL compatibility.
 */
 
-/*! \typedef QVector::reference
+/*! \typedef QList::reference
 
     Typedef for T &. Provided for STL compatibility.
 */
 
-/*! \typedef QVector::size_type
+/*! \typedef QList::size_type
 
     Typedef for int. Provided for STL compatibility.
 */
 
-/*! \typedef QVector::value_type
+/*! \typedef QList::value_type
 
     Typedef for T. Provided for STL compatibility.
 */
 
-/*! \fn template <typename T> QList<T> QVector<T>::toList() const
+/*! \fn template <typename T> QList<T> QList<T>::toList() const
+    \fn template <typename T> QList<T> QList<T>::toVector() const
+    \obsolete
 
-    Returns a QList object with the data contained in this QVector.
+    A no-op in Qt 6. Provided for backwards compatibility with
+    Qt 5, where QList and QVector where two different types.
 
-    Example:
-
-    \snippet code/src_corelib_tools_qvector.cpp 14
-
-    \include containers-range-constructor.qdocinc
-
-    \sa fromList(), QList::fromVector()
+    Returns this list.
 */
 
-/*! \fn template <typename T> QVector<T> QVector<T>::fromList(const QList<T> &list)
+/*! \fn template <typename T> QList<T> QList<T>::fromList(const QList<T> &list)
+    \fn template <typename T> QList<T> QList<T>::fromVector(const QList<T> &list)
+    \obsolete
 
-    Returns a QVector object with the data contained in \a list.
+    A no-op in Qt 6. Provided for backwards compatibility with
+    Qt 5, where QList and QVector where two different types.
 
-    Example:
-
-    \snippet code/src_corelib_tools_qvector.cpp 15
-
-    \include containers-range-constructor.qdocinc
-
-    \sa toList(), QList::toVector()
+    Returns this list.
 */
 
-/*! \fn template <typename T> QVector<T> QVector<T>::fromStdVector(const std::vector<T> &vector)
+/*! \fn template <typename T> QList<T> QList<T>::fromStdVector(const std::vector<T> &vector)
 
-    Returns a QVector object with the data contained in \a vector. The
-    order of the elements in the QVector is the same as in \a vector.
+    Returns a QList object with the data contained in \a vector. The
+    order of the elements in the QList is the same as in \a vector.
 
     Example:
 
-    \snippet code/src_corelib_tools_qvector.cpp 16
+    \snippet code/src_corelib_tools_qlist.cpp 16
 
     \include containers-range-constructor.qdocinc
 
     \sa toStdVector(), QList::fromStdList()
 */
 
-/*! \fn template <typename T> std::vector<T> QVector<T>::toStdVector() const
+/*! \fn template <typename T> std::vector<T> QList<T>::toStdVector() const
 
-    Returns a std::vector object with the data contained in this QVector.
+    Returns a std::vector object with the data contained in this QList.
     Example:
 
-    \snippet code/src_corelib_tools_qvector.cpp 17
+    \snippet code/src_corelib_tools_qlist.cpp 17
 
     \include containers-range-constructor.qdocinc
 
     \sa fromStdVector(), QList::toStdList()
 */
 
-/*! \fn template <typename T> QDataStream &operator<<(QDataStream &out, const QVector<T> &vector)
-    \relates QVector
+/*! \fn template <typename T> QDataStream &operator<<(QDataStream &out, const QList<T> &vector)
+    \relates QList
 
     Writes the vector \a vector to stream \a out.
 
@@ -1462,8 +1461,8 @@
     \sa{Serializing Qt Data Types}{Format of the QDataStream operators}
 */
 
-/*! \fn template <typename T> QDataStream &operator>>(QDataStream &in, QVector<T> &vector)
-    \relates QVector
+/*! \fn template <typename T> QDataStream &operator>>(QDataStream &in, QList<T> &vector)
+    \relates QList
 
     Reads a vector from stream \a in into \a vector.
 

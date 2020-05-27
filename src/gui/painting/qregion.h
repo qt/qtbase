@@ -44,6 +44,7 @@
 #include <QtCore/qatomic.h>
 #include <QtCore/qrect.h>
 #include <QtGui/qwindowdefs.h>
+#include <QtCore/qcontainerfwd.h>
 
 #ifndef QT_NO_DATASTREAM
 #include <QtCore/qdatastream.h>
@@ -52,7 +53,6 @@
 QT_BEGIN_NAMESPACE
 
 
-template <class T> class QVector;
 class QVariant;
 
 struct QRegionPrivate;

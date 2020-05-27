@@ -40,11 +40,11 @@
 #define QSTRINGTOKENIZER_H
 
 #include <QtCore/qnamespace.h>
+#include <QtCore/qcontainerfwd.h>
 
 QT_BEGIN_NAMESPACE
 
 template <typename, typename> class QStringBuilder;
-template <typename> class QVector;
 
 #if defined(Q_QDOC) || 1 || (defined(__cpp_range_based_for) && __cpp_range_based_for >= 201603)
 #  define Q_STRINGTOKENIZER_USE_SENTINEL

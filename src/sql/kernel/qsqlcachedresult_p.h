@@ -54,11 +54,11 @@
 #include <QtSql/private/qtsqlglobal_p.h>
 #include "QtSql/qsqlresult.h"
 #include "QtSql/private/qsqlresult_p.h"
+#include <QtCore/qcontainerfwd.h>
 
 QT_BEGIN_NAMESPACE
 
 class QVariant;
-template <typename T> class QVector;
 
 class QSqlCachedResultPrivate;
 

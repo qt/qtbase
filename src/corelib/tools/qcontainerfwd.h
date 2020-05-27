@@ -56,8 +56,8 @@ template <class T> class QQueue;
 template <class T> class QSet;
 template <class T> class QStack;
 template<class T, qsizetype Prealloc = 256> class QVarLengthArray;
-template <class T> class QVector;
-template<typename T> using QList = QVector<T>;
+template <class T> class QList;
+template<typename T> using QVector = QList<T>;
 
 QT_END_NAMESPACE
 

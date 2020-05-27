@@ -4,9 +4,9 @@
 ## tst_qvector Test:
 #####################################################################
 
-qt_add_test(tst_qvector
+qt_add_test(tst_qlist
     SOURCES
-        tst_qvector.cpp
+        tst_qlist.cpp
 )
 
 ## Scopes:

@@ -1251,7 +1251,7 @@
                         "required": false,
                         "scriptable": true,
                         "stored": true,
-                        "type": "QVector<Foo::Bar::Flags>",
+                        "type": "QList<Foo::Bar::Flags>",
                         "user": false,
                         "write": "setFlagsList"
                     }
@@ -2699,7 +2699,7 @@
                         "access": "public",
                         "arguments": [
                             {
-                                "type": "QVector<QVector<int>>"
+                                "type": "QList<QList<int>>"
                             }
                         ],
                         "name": "foo",
@@ -2709,7 +2709,7 @@
                         "access": "public",
                         "arguments": [
                             {
-                                "type": "QVector<QVector<int>>"
+                                "type": "QList<QList<int>>"
                             }
                         ],
                         "name": "foo2",
@@ -2719,7 +2719,7 @@
                         "access": "public",
                         "arguments": [
                             {
-                                "type": "QVector<::AAA::BaseA*>"
+                                "type": "QList<::AAA::BaseA*>"
                             }
                         ],
                         "name": "bar",
@@ -2729,7 +2729,7 @@
                         "access": "public",
                         "arguments": [
                             {
-                                "type": "QVector<::AAA::BaseA*>"
+                                "type": "QList<::AAA::BaseA*>"
                             }
                         ],
                         "name": "bar2",
@@ -2739,7 +2739,7 @@
                         "access": "public",
                         "arguments": [
                             {
-                                "type": "QVector<const ::AAA::BaseA*>"
+                                "type": "QList<const ::AAA::BaseA*>"
                             }
                         ],
                         "name": "bar3",

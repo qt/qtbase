@@ -583,11 +583,11 @@ void tst_QMetaType::typeName_data()
     // automatic registration
     QTest::newRow("QHash<int,int>") << ::qMetaTypeId<QHash<int, int> >() << QString::fromLatin1("QHash<int,int>");
     QTest::newRow("QMap<int,int>") << ::qMetaTypeId<QMap<int, int> >() << QString::fromLatin1("QMap<int,int>");
-    QTest::newRow("QVector<QMap<int,int>>") << ::qMetaTypeId<QVector<QMap<int, int> > >() << QString::fromLatin1("QVector<QMap<int,int>>");
+    QTest::newRow("QVector<QMap<int,int>>") << ::qMetaTypeId<QVector<QMap<int, int> > >() << QString::fromLatin1("QList<QMap<int,int>>");
 
     // automatic registration with automatic QList to QVector aliasing
-    QTest::newRow("QList<int>") << ::qMetaTypeId<QList<int> >() << QString::fromLatin1("QVector<int>");
-    QTest::newRow("QVector<QList<int>>") << ::qMetaTypeId<QVector<QList<int> > >() << QString::fromLatin1("QVector<QVector<int>>");
+    QTest::newRow("QList<int>") << ::qMetaTypeId<QList<int> >() << QString::fromLatin1("QList<int>");
+    QTest::newRow("QVector<QList<int>>") << ::qMetaTypeId<QVector<QList<int> > >() << QString::fromLatin1("QList<QList<int>>");
 
     QTest::newRow("CustomQObject*") << ::qMetaTypeId<CustomQObject*>() << QString::fromLatin1("CustomQObject*");
     QTest::newRow("CustomGadget") << ::qMetaTypeId<CustomGadget>() << QString::fromLatin1("CustomGadget");

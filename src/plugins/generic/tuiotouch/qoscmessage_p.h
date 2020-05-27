@@ -43,7 +43,6 @@
 
 #include <QtCore/QByteArray>
 #include <QtCore/QVariant>
-#include <QtCore/QVector>
 #include <QtCore/QList>
 
 
@@ -51,8 +50,8 @@ QT_BEGIN_NAMESPACE
 
 class QOscMessage
 {
-    QOscMessage(); // for QVector, don't use
-    friend class QVector<QOscMessage>;
+    QOscMessage(); // for QList, don't use
+    friend class QList<QOscMessage>;
 public:
     explicit QOscMessage(const QByteArray &data);
 

@@ -347,12 +347,12 @@ struct QScriptItem
     int glyph_data_offset;
     Q_DECL_CONSTEXPR QFixed height() const noexcept { return ascent + descent; }
 private:
-    friend class QVector<QScriptItem>;
-    QScriptItem() {} // for QVector, don't use
+    friend class QList<QScriptItem>;
+    QScriptItem() {} // for QList, don't use
 };
 Q_DECLARE_TYPEINFO(QScriptItem, Q_PRIMITIVE_TYPE);
 
-typedef QVector<QScriptItem> QScriptItemArray;
+typedef QList<QScriptItem> QScriptItemArray;
 
 struct Q_AUTOTEST_EXPORT QScriptLine
 {

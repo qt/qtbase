@@ -223,7 +223,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QItemSelectionModel::SelectionFlags)
 #   define Q_TEMPLATE_EXTERN extern
 #  endif
 # endif
-Q_TEMPLATE_EXTERN template class Q_CORE_EXPORT QVector<QItemSelectionRange>;
+Q_TEMPLATE_EXTERN template class Q_CORE_EXPORT QList<QItemSelectionRange>;
 #endif // Q_CC_MSVC
 
 class Q_CORE_EXPORT QItemSelection : public QList<QItemSelectionRange>

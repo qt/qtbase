@@ -1804,32 +1804,16 @@ signals:
 class QTBUG12260_defaultTemplate_Object : public QObject
 { Q_OBJECT
 public slots:
-#if !(defined(Q_CC_GNU) && __GNUC__ == 4 && __GNUC_MINOR__ <= 3) || defined(Q_MOC_RUN)
     void doSomething(QHash<QString, QVariant> values = QHash<QString, QVariant>() ) { Q_UNUSED(values); }
     void doSomethingElse(QSharedPointer<QVarLengthArray<QString, (16 >> 2)> > val
             = QSharedPointer<QVarLengthArray<QString, (16 >> 2)> >() )
     { Q_UNUSED(val); }
-#else
-    // we want to test the previous function, but gcc < 4.4 seemed to have a bug similar to the one moc has.
-    typedef QHash<QString, QVariant> WorkaroundGCCBug;
-    void doSomething(QHash<QString, QVariant> values = WorkaroundGCCBug() ) { Q_UNUSED(values); }
-    void doSomethingElse(QSharedPointer<QVarLengthArray<QString, (16 >> 2)> > val
-            = (QSharedPointer<QVarLengthArray<QString, (16 >> 2)> >()) )
-    { Q_UNUSED(val); }
-#endif
 
     void doAnotherThing(bool a = (1 < 3), bool b = (1 > 4)) { Q_UNUSED(a); Q_UNUSED(b); }
 
-#if defined(Q_MOC_RUN) || (defined(Q_COMPILER_AUTO_TYPE) && !(defined(Q_CC_CLANG) && Q_CC_CLANG < 304))
-    // There is no Q_COMPILER_>>  but if compiler support auto, it should also support >>
-    void performSomething(QVector<QList<QString>> e = QVector<QList<QString>>(8 < 1),
-                          QHash<int, QVector<QString>> h = QHash<int, QVector<QString>>())
+    void performSomething(QList<QList<QString>> e = QList<QList<QString>>(8 < 1),
+                          QHash<int, QList<QString>> h = QHash<int, QList<QString>>())
     { Q_UNUSED(e); Q_UNUSED(h); }
-#else
-    void performSomething(QVector<QList<QString> > e = QVector<QList<QString> >(),
-                          QHash<int, QVector<QString> > h = (QHash<int, QVector<QString> >()))
-    { Q_UNUSED(e); Q_UNUSED(h); }
-#endif
 };
 
 
@@ -1838,7 +1822,7 @@ void tst_Moc::QTBUG12260_defaultTemplate()
     QVERIFY(QTBUG12260_defaultTemplate_Object::staticMetaObject.indexOfSlot("doSomething(QHash<QString,QVariant>)") != -1);
     QVERIFY(QTBUG12260_defaultTemplate_Object::staticMetaObject.indexOfSlot("doAnotherThing(bool,bool)") != -1);
     QVERIFY(QTBUG12260_defaultTemplate_Object::staticMetaObject.indexOfSlot("doSomethingElse(QSharedPointer<QVarLengthArray<QString,(16>>2)>>)") != -1);
-    QVERIFY(QTBUG12260_defaultTemplate_Object::staticMetaObject.indexOfSlot("performSomething(QVector<QList<QString>>,QHash<int,QVector<QString>>)") != -1);
+    QVERIFY(QTBUG12260_defaultTemplate_Object::staticMetaObject.indexOfSlot("performSomething(QList<QList<QString>>,QHash<int,QList<QString>>)") != -1);
 }
 
 void tst_Moc::notifyError()

@@ -49,6 +49,7 @@
 #include <QtCore/qbytearray.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qstring.h>
+#include <QtCore/qcontainerfwd.h>
 
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
 Q_FORWARD_DECLARE_MUTABLE_CG_TYPE(CGImage);
@@ -63,7 +64,6 @@ class QIODevice;
 class QStringList;
 class QTransform;
 class QVariant;
-template <class T> class QVector;
 
 struct QImageData;
 

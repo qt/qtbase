@@ -54,10 +54,9 @@
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "QtWidgets/qlayoutitem.h"
 #include "QtWidgets/qstyle.h"
+#include <QtCore/qcontainerfwd.h>
 
 QT_BEGIN_NAMESPACE
-
-template <typename T> class QVector;
 
 struct QLayoutStruct
 {

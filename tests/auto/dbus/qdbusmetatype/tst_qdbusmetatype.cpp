@@ -402,7 +402,7 @@ void tst_QDBusMetaType::invalidTypes()
     else if (qstrcmp(QTest::currentDataTag(), "Invalid7") == 0)
         QTest::ignoreMessage(QtWarningMsg, "QDBusMarshaller: type `Invalid7' produces invalid D-BUS signature `()' (Did you forget to call beginStructure() ?)");
     else if (qstrcmp(QTest::currentDataTag(), "QList<Invalid0>") == 0)
-        QTest::ignoreMessage(QtWarningMsg, "QDBusMarshaller: type `QVector<Invalid0>' produces invalid D-BUS signature `a' (Did you forget to call beginStructure() ?)");
+        QTest::ignoreMessage(QtWarningMsg, "QDBusMarshaller: type `QList<Invalid0>' produces invalid D-BUS signature `a' (Did you forget to call beginStructure() ?)");
 
     staticTypes();
     staticTypes();              // run twice: the error messages should be printed once only

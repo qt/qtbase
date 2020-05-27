@@ -16,6 +16,7 @@ SUBDIRS=\
     qhash \
     qhashfunctions \
     qline \
+    qlist \
     qmakearray \
     qmap \
     qmargins \
@@ -38,7 +39,6 @@ SUBDIRS=\
     qstl \
     qtimeline \
     qvarlengtharray \
-    qvector \
     qversionnumber
 
 darwin: SUBDIRS += qmacautoreleasepool

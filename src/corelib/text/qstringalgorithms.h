@@ -41,7 +41,7 @@
 #define QSTRINGALGORITHMS_H
 
 #include <QtCore/qnamespace.h>
-
+#include <QtCore/qcontainerfwd.h>
 #if 0
 #pragma qt_class(QStringAlgorithms)
 #endif
@@ -52,7 +52,6 @@ class QByteArray;
 class QLatin1String;
 class QStringView;
 class QChar;
-template <typename T> class QVector;
 
 namespace QtPrivate {
 

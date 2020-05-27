@@ -47,6 +47,7 @@
 
 #include <QtCore/qcryptographichash.h>
 #include <QtCore/qobject.h>
+#include <QtCore/qcontainerfwd.h>
 
 Q_MOC_INCLUDE(<QtNetwork/QSslPreSharedKeyAuthenticator>)
 
@@ -109,7 +110,6 @@ private:
 };
 
 class QSslPreSharedKeyAuthenticator;
-template<class> class QVector;
 class QSslConfiguration;
 class QSslCipher;
 class QSslError;

@@ -49,18 +49,18 @@
 ****************************************************************************/
 
 //! [0]
-QVector<int> integerVector;
-QVector<QString> stringVector;
+QList<int> integerVector;
+QList<QString> stringVector;
 //! [0]
 
 
 //! [1]
-QVector<QString> vector(200);
+QList<QString> vector(200);
 //! [1]
 
 
 //! [2]
-QVector<QString> vector(200, "Pass");
+QList<QString> vector(200, "Pass");
 //! [2]
 
 
@@ -86,7 +86,7 @@ if (i != -1)
 
 
 //! [6]
-QVector<int> vector(10);
+QList<int> vector(10);
 int *data = vector.data();
 for (int i = 0; i < 10; ++i)
     data[i] = 2 * i;
@@ -94,7 +94,7 @@ for (int i = 0; i < 10; ++i)
 
 
 //! [7]
-QVector<QString> vector;
+QList<QString> vector;
 vector.append("one");
 vector.append("two");
 QString three = "three";
@@ -105,7 +105,7 @@ vector.append(three);
 
 
 //! [move-append]
-QVector<QString> vector;
+QList<QString> vector;
 vector.append("one");
 vector.append("two");
 QString three = "three";
@@ -116,14 +116,14 @@ vector.append(std::move(three));
 
 
 //! [emplace]
-QVector<QString> vector{"a", "ccc"};
+QList<QString> vector{"a", "ccc"};
 vector.emplace(1, 2, 'b');
 // vector: ["a", "bb", "ccc"]
 //! [emplace]
 
 
 //! [emplace-back]
-QVector<QString> vector{"one", "two"};
+QList<QString> vector{"one", "two"};
 vector.emplaceBack(3, 'a');
 qDebug() << vector;
 // vector: ["one", "two", "aaa"]
@@ -131,7 +131,7 @@ qDebug() << vector;
 
 
 //! [emplace-back-ref]
-QVector<QString> vector;
+QList<QString> vector;
 auto &ref = vector.emplaceBack();
 ref = "one";
 // vector: ["one"]
@@ -139,7 +139,7 @@ ref = "one";
 
 
 //! [8]
-QVector<QString> vector;
+QList<QString> vector;
 vector.prepend("one");
 vector.prepend("two");
 vector.prepend("three");
@@ -148,7 +148,7 @@ vector.prepend("three");
 
 
 //! [9]
-QVector<QString> vector;
+QList<QString> vector;
 vector << "alpha" << "beta" << "delta";
 vector.insert(2, "gamma");
 // vector: ["alpha", "beta", "gamma", "delta"]
@@ -156,7 +156,7 @@ vector.insert(2, "gamma");
 
 
 //! [10]
-QVector<double> vector;
+QList<double> vector;
 vector << 2.718 << 1.442 << 0.4342;
 vector.insert(1, 3, 9.9);
 // vector: [2.718, 9.9, 9.9, 9.9, 1.442, 0.4342]
@@ -164,7 +164,7 @@ vector.insert(1, 3, 9.9);
 
 
 //! [11]
-QVector<QString> vector(3);
+QList<QString> vector(3);
 vector.fill("Yes");
 // vector: ["Yes", "Yes", "Yes"]
 
@@ -174,7 +174,7 @@ vector.fill("oh", 5);
 
 
 //! [12]
-QVector<QString> vector;
+QList<QString> vector;
 vector << "A" << "B" << "C" << "B" << "A";
 vector.indexOf("B");            // returns 1
 vector.indexOf("B", 1);         // returns 1
@@ -192,37 +192,18 @@ vector.lastIndexOf("B", 2);     // returns 1
 vector.lastIndexOf("X");        // returns -1
 //! [13]
 
-
-//! [14]
-QVector<double> vect;
-vect << "red" << "green" << "blue" << "black";
-
-QList<double> list = vect.toList();
-// list: ["red", "green", "blue", "black"]
-//! [14]
-
-
-//! [15]
-QStringList list;
-list << "Sven" << "Kim" << "Ola";
-
-QVector<QString> vect = QVector<QString>::fromList(list);
-// vect: ["Sven", "Kim", "Ola"]
-//! [15]
-
-
 //! [16]
 std::vector<double> stdvector;
 vector.push_back(1.2);
 vector.push_back(0.5);
 vector.push_back(3.14);
 
-QVector<double> vector = QVector<double>::fromStdVector(stdvector);
+QList<double> vector = QList<double>::fromStdVector(stdvector);
 //! [16]
 
 
 //! [17]
-QVector<double> vector;
+QList<double> vector;
 vector << 1.2 << 0.5 << 3.14;
 
 std::vector<double> stdvector = vector.toStdVector();

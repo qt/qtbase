@@ -232,7 +232,7 @@ inline Q_DECL_CONSTEXPR int qMetaTypeId();
     TypeName = Id,
 
 #define QT_FOR_EACH_AUTOMATIC_TEMPLATE_1ARG(F) \
-    F(QVector) \
+    F(QList) \
     F(QQueue) \
     F(QStack) \
     F(QSet) \
@@ -2014,7 +2014,7 @@ typedef QHash<QString, QVariant> QVariantHash;
 #ifdef Q_CLANG_QDOC
 class QByteArrayList;
 #else
-typedef QVector<QByteArray> QByteArrayList;
+using QByteArrayList = QList<QByteArray>;
 #endif
 
 #define Q_DECLARE_METATYPE_TEMPLATE_1ARG(SINGLE_ARG_TEMPLATE) \
@@ -2515,9 +2515,9 @@ public:
         }
 #endif
 
-        if (skipToken(begin, end, "QList")) {
-            // Replace QList by QVector
-            appendStr("QVector");
+        if (skipToken(begin, end, "QVector")) {
+            // Replace QVector by QList
+            appendStr("QList");
         }
 
         if (skipToken(begin, end, "QPair")) {

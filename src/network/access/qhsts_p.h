@@ -61,12 +61,11 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qpair.h>
 #include <QtCore/qurl.h>
+#include <QtCore/qcontainerfwd.h>
 
 #include <map>
 
 QT_BEGIN_NAMESPACE
-
-template <typename T> class QVector;
 
 class Q_AUTOTEST_EXPORT QHstsCache
 {

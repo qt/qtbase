@@ -77,7 +77,6 @@ class QRegularExpressionMatch;
 class QString;
 class QStringList;
 class QStringRef;
-template <typename T> class QVector;
 
 namespace QtPrivate {
 template <bool...B> class BoolList;
