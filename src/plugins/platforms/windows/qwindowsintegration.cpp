@@ -167,7 +167,7 @@ bool parseIntOption(const QString &parameter,const QLatin1String &option,
     if (valueLength < 1 || !parameter.startsWith(option) || parameter.at(option.size()) != u'=')
         return false;
     bool ok;
-    const QStringRef valueRef = parameter.rightRef(valueLength);
+    const auto valueRef = QStringView{parameter}.right(valueLength);
     const int value = valueRef.toInt(&ok);
     if (ok) {
         if (value >= minimumValue && value <= maximumValue)

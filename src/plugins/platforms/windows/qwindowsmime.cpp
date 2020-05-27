@@ -1413,7 +1413,7 @@ static QString customMimeType(const QString &mimeType, int *lindex = nullptr)
         const int endPos = mimeType.indexOf(u';', beginPos + 1);
         const int indexStartPos = beginPos + 7;
         if (lindex)
-            *lindex = mimeType.midRef(indexStartPos, endPos == -1 ? endPos : endPos - indexStartPos).toInt();
+            *lindex = QStringView{mimeType}.mid(indexStartPos, endPos == -1 ? endPos : endPos - indexStartPos).toInt();
     } else {
         if (lindex)
             *lindex = -1;

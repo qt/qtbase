@@ -136,7 +136,7 @@ static inline int getContextCapabilities(const QStringList &paramList)
     int contextCapabilities = SCREEN_APPLICATION_CONTEXT;
     for (const QString &param : paramList) {
         if (param.startsWith(contextCapabilitiesPrefix)) {
-            QStringRef value = param.midRef(contextCapabilitiesPrefix.length());
+            auto value = QStringView{param}.mid(contextCapabilitiesPrefix.length());
             bool ok = false;
             contextCapabilities = value.toInt(&ok, 0);
             if (!ok)

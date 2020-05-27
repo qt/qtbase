@@ -195,10 +195,10 @@ QVariant QXcbMime::mimeConvertToFormat(QXcbConnection *connection, xcb_atom_t a,
                   reinterpret_cast<const char16_t *>(data.constData()), data.size() / 2);
             if (!str.isNull()) {
                 if (format == QLatin1String("text/uri-list")) {
-                    const auto urls = str.splitRef(QLatin1Char('\n'));
+                    const auto urls = QStringView{str}.split(QLatin1Char('\n'));
                     QList<QVariant> list;
                     list.reserve(urls.size());
-                    for (const QStringRef &s : urls) {
+                    for (const QStringView &s : urls) {
                         const QUrl url(s.trimmed().toString());
                         if (url.isValid())
                             list.append(url);

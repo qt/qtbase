@@ -14,6 +14,8 @@ INCLUDEPATH += \
     $$PWD \
     $$QT_SOURCE_TREE/src/3rdparty/android
 
+DEFINES += QT_USE_QSTRINGBUILDER
+
 SOURCES += $$PWD/main.cpp \
            $$PWD/androidcontentfileengine.cpp \
            $$PWD/androiddeadlockprotector.cpp \

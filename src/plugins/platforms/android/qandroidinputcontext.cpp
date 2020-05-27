@@ -1224,7 +1224,7 @@ jint QAndroidInputContext::getCursorCapsMode(jint /*reqModes*/)
         QString surroundingText = query->value(Qt::ImSurroundingText).toString();
         surroundingText.truncate(localPos);
         if (focusObjectIsComposing())
-            surroundingText += m_composingText.leftRef(m_composingCursor - m_composingTextStart);
+            surroundingText += QStringView{m_composingText}.left(m_composingCursor - m_composingTextStart);
         // Add a character to see if it is at the end of the sentence or not
         QTextBoundaryFinder finder(QTextBoundaryFinder::Sentence, surroundingText + QLatin1Char('A'));
         finder.setPosition(surroundingText.length());
@@ -1330,7 +1330,7 @@ QString QAndroidInputContext::getTextAfterCursor(jint length, jint /*flags*/)
     if (focusObjectIsComposing()) {
         // Controls do not report preedit text, so we have to add it
         const int cursorPosInsidePreedit = m_composingCursor - m_composingTextStart;
-        text = m_composingText.midRef(cursorPosInsidePreedit) + text;
+        text = QStringView{m_composingText}.mid(cursorPosInsidePreedit) + text;
     } else {
         // We must not return selected text if there is any
         QSharedPointer<QInputMethodQueryEvent> query =
@@ -1370,7 +1370,7 @@ QString QAndroidInputContext::getTextBeforeCursor(jint length, jint /*flags*/)
     if (focusObjectIsComposing()) {
         // Controls do not report preedit text, so we have to add it
         const int cursorPosInsidePreedit = m_composingCursor - m_composingTextStart;
-        text += m_composingText.leftRef(cursorPosInsidePreedit);
+        text += QStringView{m_composingText}.left(cursorPosInsidePreedit);
     } else {
         // We must not return selected text if there is any
         QSharedPointer<QInputMethodQueryEvent> query =
@@ -1529,7 +1529,7 @@ jboolean QAndroidInputContext::setComposingRegion(jint start, jint end)
             const int additionalSuffixLen = after.length() - (text.length() - cursorPos);
 
             if (additionalSuffixLen > 0)
-                text += after.rightRef(additionalSuffixLen);
+                text += QStringView{after}.right(additionalSuffixLen);
         }
 
         if (start < textOffset) {
