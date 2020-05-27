@@ -10,7 +10,7 @@ instructions:
     directory: "{{.BuildDir}}"
   - type: EnvironmentVariable
     variableName: COIN_CMAKE_ARGS
-    variableValue: "-DQT_BUILD_STANDALONE_TESTS=ON -S {{.SourceDir}} -B ."
+    variableValue: "-DQT_BUILD_STANDALONE_TESTS=ON -DCMAKE_AUTOGEN_VERBOSE=ON -S {{.SourceDir}} -B ."
   - !include "{{qt/qtbase}}/call_cmake_for_standalone_tests.yaml"
   - type: ExecuteCommand
     command: "{{.Env.TESTS_ENV_PREFIX}} cmake --build . --parallel -v"
