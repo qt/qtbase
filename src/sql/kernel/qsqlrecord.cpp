@@ -232,12 +232,12 @@ QString QSqlRecord::fieldName(int index) const
 
 int QSqlRecord::indexOf(const QString& name) const
 {
-    QStringRef tableName;
-    QStringRef fieldName(&name);
+    QStringView tableName;
+    QStringView fieldName(name);
     const int idx = name.indexOf(QLatin1Char('.'));
     if (idx != -1) {
-        tableName = name.leftRef(idx);
-        fieldName = name.midRef(idx + 1);
+        tableName = fieldName.left(idx);
+        fieldName = fieldName.mid(idx + 1);
     }
     const int cnt = count();
     for (int i = 0; i < cnt; ++i) {
