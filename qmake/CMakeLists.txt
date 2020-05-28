@@ -1,10 +1,10 @@
 # Generated from qmake.pro.
 
 #####################################################################
-## qmake Binary:
+## qmake Tool:
 #####################################################################
 
-qt_add_tool(qmake # special case
+qt_add_tool(qmake
     NO_QT # special case
     TOOLS_TARGET Core # special case
     # GUI # special case: remove this

@@ -1,10 +1,10 @@
 # Generated from qmake.pro.
 
 #####################################################################
-## qmake Binary:
+## qmake Tool:
 #####################################################################
 
-qt_add_executable(qmake
+qt_add_tool(qmake
     SOURCES
         ../src/3rdparty/pcre2/src/config.h
         ../src/3rdparty/pcre2/src/pcre2.h

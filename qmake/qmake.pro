@@ -261,3 +261,5 @@ unix {
     mingw: LIBS += -luuid
     clang: QMAKE_CXXFLAGS += -fms-compatibility-version=19.00.23506 -Wno-microsoft-enum-value
 }
+
+load(qt_tool)
