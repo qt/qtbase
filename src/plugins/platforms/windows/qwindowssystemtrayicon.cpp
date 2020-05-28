@@ -108,8 +108,8 @@ static void setIconContents(NOTIFYICONDATA &tnd, const QString &tip, HICON hIcon
 static void setIconVisibility(NOTIFYICONDATA &tnd, bool v)
 {
     tnd.uFlags |= NIF_STATE;
-    tnd.dwStateMask = NIS_HIDDEN;
     tnd.dwState = v ? 0 : NIS_HIDDEN;
+    tnd.dwStateMask = NIS_HIDDEN;
 }
 
 // Match the HWND of the dummy window to the instances
