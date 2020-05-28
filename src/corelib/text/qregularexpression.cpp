@@ -328,7 +328,7 @@ QT_BEGIN_NAMESPACE
     match is found, then this one should be reported, and the input string
     accepted as fully valid.
 
-    This behaviour is implemented by the PartialPreferCompleteMatch match type.
+    This behavior is implemented by the PartialPreferCompleteMatch match type.
     For instance:
 
     \snippet code/src_corelib_tools_qregularexpression.cpp 15
@@ -338,7 +338,7 @@ QT_BEGIN_NAMESPACE
 
     \snippet code/src_corelib_tools_qregularexpression.cpp 16
 
-    Another example with a different pattern, showing the behaviour of
+    Another example with a different pattern, showing the behavior of
     preferring a complete match over a partial one:
 
     \snippet code/src_corelib_tools_qregularexpression.cpp 17
@@ -369,7 +369,7 @@ QT_BEGIN_NAMESPACE
     is not to be taken literally -- the engine will never try to access
     any character after the last one in the subject.
 
-    QRegularExpression implements this behaviour when using the
+    QRegularExpression implements this behavior when using the
     PartialPreferFirstMatch match type. This match type reports a partial match
     as soon as it is found, and other match alternatives are not tried
     (even if they could lead to a complete match). For instance:
@@ -382,7 +382,7 @@ QT_BEGIN_NAMESPACE
 
     \snippet code/src_corelib_tools_qregularexpression.cpp 20
 
-    This shows what could seem a counterintuitve behaviour of quantifiers:
+    This shows what could seem a counterintuitive behavior of quantifiers:
     since \c{?} is greedy, then the engine tries first to continue the match
     after having matched \c{"abc"}; but then the matching reaches the end of the
     subject string, and therefore a partial match is reported. This is
@@ -390,7 +390,7 @@ QT_BEGIN_NAMESPACE
 
     \snippet code/src_corelib_tools_qregularexpression.cpp 21
 
-    It's easy to understand this behaviour if we remember that the engine
+    It's easy to understand this behavior if we remember that the engine
     expects the subject string to be only a substring of the whole text we're
     looking for a match into (that is, how we said before, that the engine
     assumes that there are other characters beyond the end of the subject
@@ -427,7 +427,7 @@ QT_BEGIN_NAMESPACE
     QRegularExpression does not support all the features available in
     Perl-compatible regular expressions. The most notable one is the fact that
     duplicated names for capturing groups are not supported, and using them can
-    lead to undefined behaviour.
+    lead to undefined behavior.
 
     This may change in a future version of Qt.
 
@@ -614,7 +614,7 @@ QT_BEGIN_NAMESPACE
 
     The convenience function capturedTexts() will return \e{all} the captured
     substrings at once (including the substring matched by the entire pattern)
-    in the order they have been captured by captring groups; that is,
+    in the order they have been captured by capturing groups; that is,
     \c{captured(i) == capturedTexts().at(i)}.
 
     You can retrieve the QRegularExpression object the subject string was
@@ -707,7 +707,7 @@ QT_BEGIN_NAMESPACE
         outside a character class causes all the following characters, until
         the first newline (included), to be ignored. This can be used to
         increase the readability of a pattern string as well as put comments
-        inside regular expressions; this is particulary useful if the pattern
+        inside regular expressions; this is particularly useful if the pattern
         string is loaded from a file or written by the user, because in C++
         code it is always possible to use the rules for string literals to put
         comments outside the pattern string. This option corresponds to the \c{/x}
