@@ -43,8 +43,8 @@ sources     += ../../corelib/kernel/qtestsupport_core.cpp \
                ../../widgets/kernel/qtestsupport_widgets.cpp
 
 exampledirs += ../../../examples/qtestlib \
-               ../ \
-               . / \
+               .. \
+               . \
                snippets
 
 excludedirs += ../../../examples/widgets/doc
