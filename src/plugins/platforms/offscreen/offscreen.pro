@@ -3,7 +3,7 @@ TARGET = qoffscreen
 QT += \
     core-private gui-private
 
-!darwin: QT += fontdatabase_support-private
+!darwin:!win32: QT += fontdatabase_support-private
 
 DEFINES += QT_NO_FOREACH
 

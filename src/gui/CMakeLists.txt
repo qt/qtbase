@@ -395,6 +395,15 @@ qt_extend_target(Gui CONDITION WIN32
         platform/windows/qwindowsguieventdispatcher.cpp platform/windows/qwindowsguieventdispatcher_p.h
         rhi/qrhid3d11.cpp rhi/qrhid3d11_p.h
         rhi/qrhid3d11_p_p.h
+        text/windows/qwindowsfontdatabase.cpp text/windows/qwindowsfontdatabase_p.h
+        text/windows/qwindowsfontdatabasebase.cpp text/windows/qwindowsfontdatabasebase_p.h
+        text/windows/qwindowsfontengine.cpp text/windows/qwindowsfontengine_p.h
+        text/windows/qwindowsnativeimage.cpp text/windows/qwindowsnativeimage_p.h
+    LIBRARIES
+        advapi32
+        gdi32
+        ole32
+        user32
     PUBLIC_LIBRARIES
         d3d11
         dxgi
@@ -659,6 +668,52 @@ qt_extend_target(Gui CONDITION APPLE AND QT_FEATURE_freetype
         WrapFreetype::WrapFreetype
 )
 
+qt_extend_target(Gui CONDITION QT_FEATURE_freetype AND WIN32
+    SOURCES
+        text/windows/qwindowsfontdatabase_ft.cpp text/windows/qwindowsfontdatabase_ft_p.h
+    LIBRARIES
+        WrapFreetype::WrapFreetype
+)
+
+qt_extend_target(Gui CONDITION QT_FEATURE_direct2d AND QT_FEATURE_directwrite AND WIN32
+    SOURCES
+        text/windows/qwindowsfontenginedirectwrite.cpp text/windows/qwindowsfontenginedirectwrite_p.h
+    LIBRARIES
+        d2d1
+)
+
+qt_extend_target(Gui CONDITION QT_FEATURE_direct2d AND QT_FEATURE_directwrite AND QT_FEATURE_directwrite3 AND WIN32
+    SOURCES
+        text/windows/qwindowsdirectwritefontdatabase.cpp text/windows/qwindowsdirectwritefontdatabase_p.h
+    DEFINES
+        QT_USE_DIRECTWRITE2
+        QT_USE_DIRECTWRITE3
+    LIBRARIES
+        dwrite_3
+)
+
+qt_extend_target(Gui CONDITION QT_FEATURE_direct2d AND QT_FEATURE_directwrite AND QT_FEATURE_directwrite2 AND WIN32 AND NOT QT_FEATURE_directwrite3
+    DEFINES
+        QT_USE_DIRECTWRITE2
+    LIBRARIES
+        dwrite_2
+)
+
+qt_extend_target(Gui CONDITION QT_FEATURE_direct2d AND QT_FEATURE_directwrite AND WIN32 AND NOT QT_FEATURE_directwrite2 AND NOT QT_FEATURE_directwrite3
+    LIBRARIES
+        dwrite
+)
+
+qt_extend_target(Gui CONDITION WIN32 AND (NOT QT_FEATURE_direct2d OR NOT QT_FEATURE_directwrite)
+    DEFINES
+        QT_NO_DIRECTWRITE
+)
+
+qt_extend_target(Gui CONDITION MINGW AND WIN32
+    LIBRARIES
+        uuid
+)
+
 qt_extend_target(Gui CONDITION UNIX AND NOT ANDROID AND NOT INTEGRITY AND NOT (TEST_architecture_arch STREQUAL "arm64") AND NOT UIKIT
     DEFINES
         ENABLE_PIXMAN_DRAWHELPERS
@@ -724,7 +779,7 @@ qt_extend_target(Gui CONDITION QT_FEATURE_vulkan
         Vulkan::Vulkan_nolink
 )
 
-#### Keys ignored in scope 89:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vkgen:
+#### Keys ignored in scope 99:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vkgen:
 # special case begin
 # We must always generate syncqt-injected header files,
 # because we added a custom command earlier for those for framework builds.
@@ -780,10 +835,10 @@ add_custom_command(
 # qvkgen_pimpl.input = "QMAKE_QVKGEN_INPUT"
 # qvkgen_pimpl.output = "$$OUT_PWD/vulkan/qvulkanfunctions_p.cpp"
 
-#### Keys ignored in scope 90:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
+#### Keys ignored in scope 100:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
 # qvkgen_h.variable_out = "HEADERS"
 
-#### Keys ignored in scope 91:.:vulkan:vulkan/vulkan.pri:else:
+#### Keys ignored in scope 101:.:vulkan:vulkan/vulkan.pri:else:
 # qvkgen_h.CONFIG = "target_predeps" "no_link"
 
 qt_extend_target(Gui CONDITION WASM

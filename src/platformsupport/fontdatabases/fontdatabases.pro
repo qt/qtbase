@@ -15,8 +15,4 @@ qtConfig(fontconfig) {
     include($$PWD/fontconfig/fontconfig.pri)
 }
 
-win32 {
-    include($$PWD/windows/windows.pri)
-}
-
 load(qt_module)

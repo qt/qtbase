@@ -174,13 +174,18 @@ QDebug operator<<(QDebug d, const QFontDef &def)
     return d;
 }
 
+void QWindowsFontDatabase::debugFormat(QDebug &d, const LOGFONT &lf)
+{
+    d << "LOGFONT(\"" << QString::fromWCharArray(lf.lfFaceName)
+        << "\", lfWidth=" << lf.lfWidth << ", lfHeight=" << lf.lfHeight << ')';
+}
+
 QDebug operator<<(QDebug d, const LOGFONT &lf)
 {
     QDebugStateSaver saver(d);
     d.nospace();
     d.noquote();
-    d << "LOGFONT(\"" << QString::fromWCharArray(lf.lfFaceName)
-        << "\", lfWidth=" << lf.lfWidth << ", lfHeight=" << lf.lfHeight << ')';
+    QWindowsFontDatabase::debugFormat(d, lf);
     return d;
 }
 #endif // !QT_NO_DEBUG_STREAM
@@ -815,13 +820,12 @@ QT_WARNING_POP
                         static_cast<QWindowsFontEngine *>(fontEngine)->setUniqueFamilyName(uniqueFamilyName);
                         fontEngine->fontDef.family = actualFontName;
                         break;
-
-#if !defined(QT_NO_DIRECTWRITE)
+#if QT_CONFIG(directwrite) && QT_CONFIG(direct2d)
                     case QFontEngine::DirectWrite:
                         static_cast<QWindowsFontEngineDirectWrite *>(fontEngine)->setUniqueFamilyName(uniqueFamilyName);
                         fontEngine->fontDef.family = actualFontName;
                         break;
-#endif // !QT_NO_DIRECTWRITE
+#endif // directwrite && direct2d
 
                     default:
                         Q_ASSERT_X(false, Q_FUNC_INFO, "Unhandled font engine.");
@@ -841,11 +845,11 @@ QT_WARNING_POP
         if (fontEngine != nullptr)
             font.updateFromOS2Table(fontEngine);
     }
-#if !defined(QT_NO_DIRECTWRITE)
+#if QT_CONFIG(directwrite) && QT_CONFIG(direct2d)
     else {
         fontEngine = QWindowsFontDatabaseBase::fontEngine(fontData, pixelSize, hintingPreference);
     }
-#endif
+#endif // directwrite && direct2d
 
     qCDebug(lcQpaFonts) << __FUNCTION__ << "FONTDATA" << fontData << pixelSize << hintingPreference << fontEngine;
     return fontEngine;
@@ -1145,7 +1149,7 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request, const Q
         DeleteObject(hfont);
     }
 
-#if !defined(QT_NO_DIRECTWRITE)
+#if QT_CONFIG(directwrite) && QT_CONFIG(direct2d)
     if (data->directWriteFactory != nullptr) {
         const QString fam = QString::fromWCharArray(lf.lfFaceName);
         const QString nameSubstitute = QWindowsFontEngineDirectWrite::fontNameSubstitute(fam);
@@ -1169,7 +1173,7 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request, const Q
             HRESULT hr = data->directWriteGdiInterop->CreateFontFaceFromHdc(data->hdc, &directWriteFontFace);
             if (SUCCEEDED(hr)) {
                 bool isColorFont = false;
-#if defined(QT_USE_DIRECTWRITE2)
+#if QT_CONFIG(direct2d)
                 IDWriteFontFace2 *directWriteFontFace2 = nullptr;
                 if (SUCCEEDED(directWriteFontFace->QueryInterface(__uuidof(IDWriteFontFace2),
                                                                   reinterpret_cast<void **>(&directWriteFontFace2)))) {
@@ -1178,7 +1182,7 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request, const Q
 
                     directWriteFontFace2->Release();
                 }
-#endif
+#endif // direct2d
                 useDw = useDw || useDirectWrite(hintingPreference, fam, isColorFont);
                 qCDebug(lcQpaFonts) << __FUNCTION__ << request.family << request.pointSize
                     << "pt" << "hintingPreference=" << hintingPreference << "color=" << isColorFont
@@ -1210,7 +1214,7 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request, const Q
             DeleteObject(hfont);
         }
     }
-#endif // QT_NO_DIRECTWRITE
+#endif // directwrite direct2d
 
     if (!fe) {
         QWindowsFontEngine *few = new QWindowsFontEngine(request.family, lf, data);

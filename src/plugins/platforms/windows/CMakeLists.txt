@@ -51,7 +51,6 @@ qt_internal_add_plugin(QWindowsIntegrationPlugin
     PUBLIC_LIBRARIES
         Qt::Core
         Qt::CorePrivate
-        Qt::FontDatabaseSupportPrivate
         Qt::Gui
         Qt::GuiPrivate
         dwmapi

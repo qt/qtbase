@@ -61,7 +61,9 @@
 
 QT_BEGIN_NAMESPACE
 
-class QWindowsFontDatabase : public QWindowsFontDatabaseBase
+class QDebug;
+
+class Q_GUI_EXPORT QWindowsFontDatabase : public QWindowsFontDatabaseBase
 {
     Q_DISABLE_COPY_MOVE(QWindowsFontDatabase)
 public:
@@ -99,6 +101,10 @@ public:
 
     static void setFontOptions(unsigned options);
     static unsigned fontOptions();
+
+#ifndef QT_NO_DEBUG_STREAM
+    static void debugFormat(QDebug &d, const LOGFONT &lf);
+#endif // !QT_NO_DEBUG_STREAM
 
 private:
     void removeApplicationFonts();

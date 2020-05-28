@@ -49,11 +49,12 @@
 #include "qwindowstheme.h"
 #include "qwindowsservices.h"
 #ifdef QT_USE_DIRECTWRITE3
-#include <QtFontDatabaseSupport/private/qwindowsdirectwritefontdatabase_p.h>
+#include <QtGui/private/qwindowsdirectwritefontdatabase_p.h>
 #endif
 #ifndef QT_NO_FREETYPE
-#  include <QtFontDatabaseSupport/private/qwindowsfontdatabase_ft_p.h>
+#  include <QtGui/private/qwindowsfontdatabase_ft_p.h>
 #endif
+#include <QtGui/private/qwindowsfontdatabase_p.h>
 #if QT_CONFIG(clipboard)
 #  include "qwindowsclipboard.h"
 #  if QT_CONFIG(draganddrop)

@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSFONTDATABASEFT_H
-#define QWINDOWSFONTDATABASEFT_H
+#ifndef QWINDOWSNATIVEIMAGE_H
+#define QWINDOWSNATIVEIMAGE_H
 
 //
 //  W A R N I N G
@@ -51,29 +51,39 @@
 // We mean it.
 //
 
-#include <QtGui/private/qfreetypefontdatabase_p.h>
-#include <QtCore/QSharedPointer>
+#include <QtCore/QtGlobal>
 #include <QtCore/qt_windows.h>
+#include <QtGui/QImage>
 
 QT_BEGIN_NAMESPACE
 
-class QWindowsFontDatabaseFT : public QFreeTypeFontDatabase
+class Q_GUI_EXPORT QWindowsNativeImage
 {
+    Q_DISABLE_COPY_MOVE(QWindowsNativeImage)
 public:
-    void populateFontDatabase() override;
-    void populateFamily(const QString &familyName) override;
-    QFontEngine *fontEngine(const QFontDef &fontDef, void *handle) override;
-    QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize,
-                            QFont::HintingPreference hintingPreference) override;
+    QWindowsNativeImage(int width, int height,
+                        QImage::Format format);
 
-    QStringList fallbacksForFamily(const QString &family, QFont::Style style,
-                                   QFont::StyleHint styleHint,
-                                   QChar::Script script) const override;
+    ~QWindowsNativeImage();
 
-    QString fontDir() const override;
-    QFont defaultFont() const override;
+    inline int width() const  { return m_image.width(); }
+    inline int height() const { return m_image.height(); }
+
+    QImage &image() { return m_image; }
+    const QImage &image() const { return m_image; }
+
+    HDC hdc() const { return m_hdc; }
+
+    static QImage::Format systemFormat();
+
+private:
+    const HDC m_hdc;
+    QImage m_image;
+
+    HBITMAP m_bitmap = 0;
+    HBITMAP m_null_bitmap = 0;
 };
 
 QT_END_NAMESPACE
 
-#endif // QWINDOWSFONTDATABASEFT_H
+#endif // QWINDOWSNATIVEIMAGE_H

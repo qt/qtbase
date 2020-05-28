@@ -29,7 +29,7 @@ qt_internal_add_plugin(QMinimalIntegrationPlugin
 ## Scopes:
 #####################################################################
 
-qt_extend_target(QMinimalIntegrationPlugin CONDITION NOT APPLE
+qt_extend_target(QMinimalIntegrationPlugin CONDITION UNIX AND NOT APPLE
     PUBLIC_LIBRARIES
         Qt::FontDatabaseSupportPrivate
 )

@@ -28,7 +28,7 @@ qt_internal_add_plugin(QOffscreenIntegrationPlugin
 ## Scopes:
 #####################################################################
 
-qt_extend_target(QOffscreenIntegrationPlugin CONDITION NOT APPLE
+qt_extend_target(QOffscreenIntegrationPlugin CONDITION UNIX AND NOT APPLE
     PUBLIC_LIBRARIES
         Qt::FontDatabaseSupportPrivate
 )

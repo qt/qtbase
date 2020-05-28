@@ -45,8 +45,7 @@
 #include "qwindowsdirect2dbitmap.h"
 #include "qwindowsdirect2ddevicecontext.h"
 
-#include <QtFontDatabaseSupport/private/qwindowsfontdatabase_p.h>
-#include <QtFontDatabaseSupport/private/qwindowsfontengine_p.h>
+#include <QtGui/private/qwindowsfontdatabase_p.h>
 #include "qwindowsintegration.h"
 
 #include <QtCore/qmath.h>

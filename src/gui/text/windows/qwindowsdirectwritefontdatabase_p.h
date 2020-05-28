@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSNATIVEIMAGE_H
-#define QWINDOWSNATIVEIMAGE_H
+#ifndef QWINDOWSDIRECTWRITEFONTDATABASE_P_H
+#define QWINDOWSDIRECTWRITEFONTDATABASE_P_H
 
 //
 //  W A R N I N G
@@ -51,39 +51,46 @@
 // We mean it.
 //
 
-#include <QtCore/QtGlobal>
-#include <QtCore/qt_windows.h>
-#include <QtGui/QImage>
+#include "qwindowsfontdatabasebase_p.h"
+
+#include <qpa/qplatformfontdatabase.h>
+#include <QtCore/qloggingcategory.h>
+
+struct IDWriteFactory;
+struct IDWriteFont;
+struct IDWriteFontFamily;
+struct IDWriteLocalizedStrings;
 
 QT_BEGIN_NAMESPACE
 
-class QWindowsNativeImage
+#ifdef QT_USE_DIRECTWRITE3
+
+class Q_GUI_EXPORT QWindowsDirectWriteFontDatabase : public QWindowsFontDatabaseBase
 {
-    Q_DISABLE_COPY_MOVE(QWindowsNativeImage)
+    Q_DISABLE_COPY_MOVE(QWindowsDirectWriteFontDatabase)
 public:
-    QWindowsNativeImage(int width, int height,
-                        QImage::Format format);
+    QWindowsDirectWriteFontDatabase();
+    ~QWindowsDirectWriteFontDatabase() override;
 
-    ~QWindowsNativeImage();
+    void populateFontDatabase() override;
+    void populateFamily(const QString &familyName) override;
+    QFontEngine *fontEngine(const QFontDef &fontDef, void *handle) override;
+    QStringList fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const override;
+    QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName, QFontDatabasePrivate::ApplicationFont *font = nullptr) override;
+    void releaseHandle(void *handle) override;
+    QFont defaultFont() const override;
 
-    inline int width() const  { return m_image.width(); }
-    inline int height() const { return m_image.height(); }
-
-    QImage &image() { return m_image; }
-    const QImage &image() const { return m_image; }
-
-    HDC hdc() const { return m_hdc; }
-
-    static QImage::Format systemFormat();
+    bool fontsAlwaysScalable() const override;
+    bool isPrivateFontFamily(const QString &family) const override;
 
 private:
-    const HDC m_hdc;
-    QImage m_image;
+    static QString localeString(IDWriteLocalizedStrings *names, wchar_t localeName[]);
 
-    HBITMAP m_bitmap = 0;
-    HBITMAP m_null_bitmap = 0;
+    QHash<QString, IDWriteFontFamily *> m_populatedFonts;
 };
+
+#endif // QT_USE_DIRECTWRITE3
 
 QT_END_NAMESPACE
 
-#endif // QWINDOWSNATIVEIMAGE_H
+#endif // QWINDOWSDIRECTWRITEFONTDATABASE_P_H

@@ -84,7 +84,7 @@ public:
 #endif
 };
 
-class QWindowsFontDatabaseBase : public QPlatformFontDatabase
+class Q_GUI_EXPORT QWindowsFontDatabaseBase : public QPlatformFontDatabase
 {
 public:
     QWindowsFontDatabaseBase();

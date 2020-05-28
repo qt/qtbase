@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSDIRECTWRITEFONTDATABASE_P_H
-#define QWINDOWSDIRECTWRITEFONTDATABASE_P_H
+#ifndef QWINDOWSFONTDATABASEFT_H
+#define QWINDOWSFONTDATABASEFT_H
 
 //
 //  W A R N I N G
@@ -51,46 +51,29 @@
 // We mean it.
 //
 
-#include "qwindowsfontdatabasebase_p.h"
-
-#include <qpa/qplatformfontdatabase.h>
-#include <QtCore/qloggingcategory.h>
-
-struct IDWriteFactory;
-struct IDWriteFont;
-struct IDWriteFontFamily;
-struct IDWriteLocalizedStrings;
+#include <QtGui/private/qfreetypefontdatabase_p.h>
+#include <QtCore/QSharedPointer>
+#include <QtCore/qt_windows.h>
 
 QT_BEGIN_NAMESPACE
 
-#ifdef QT_USE_DIRECTWRITE3
-
-class QWindowsDirectWriteFontDatabase : public QWindowsFontDatabaseBase
+class Q_GUI_EXPORT QWindowsFontDatabaseFT : public QFreeTypeFontDatabase
 {
-    Q_DISABLE_COPY_MOVE(QWindowsDirectWriteFontDatabase)
 public:
-    QWindowsDirectWriteFontDatabase();
-    ~QWindowsDirectWriteFontDatabase() override;
-
     void populateFontDatabase() override;
     void populateFamily(const QString &familyName) override;
     QFontEngine *fontEngine(const QFontDef &fontDef, void *handle) override;
-    QStringList fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const override;
-    QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName, QFontDatabasePrivate::ApplicationFont *font = nullptr) override;
-    void releaseHandle(void *handle) override;
+    QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize,
+                            QFont::HintingPreference hintingPreference) override;
+
+    QStringList fallbacksForFamily(const QString &family, QFont::Style style,
+                                   QFont::StyleHint styleHint,
+                                   QChar::Script script) const override;
+
+    QString fontDir() const override;
     QFont defaultFont() const override;
-
-    bool fontsAlwaysScalable() const override;
-    bool isPrivateFontFamily(const QString &family) const override;
-
-private:
-    static QString localeString(IDWriteLocalizedStrings *names, wchar_t localeName[]);
-
-    QHash<QString, IDWriteFontFamily *> m_populatedFonts;
 };
-
-#endif // QT_USE_DIRECTWRITE3
 
 QT_END_NAMESPACE
 
-#endif // QWINDOWSDIRECTWRITEFONTDATABASE_P_H
+#endif // QWINDOWSFONTDATABASEFT_H

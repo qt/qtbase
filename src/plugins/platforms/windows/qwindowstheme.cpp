@@ -77,7 +77,7 @@
 #include <QtGui/qpixmapcache.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <QtGui/private/qabstractfileiconengine_p.h>
-#include <QtFontDatabaseSupport/private/qwindowsfontdatabase_p.h>
+#include <QtGui/private/qwindowsfontdatabase_p.h>
 #include <private/qhighdpiscaling_p.h>
 #include <private/qsystemlibrary_p.h>
 #include <private/qwinregistry_p.h>
@@ -566,18 +566,23 @@ void QWindowsTheme::refresh()
 }
 
 #ifndef QT_NO_DEBUG_STREAM
-QDebug operator<<(QDebug d, const LOGFONT &lf); // in platformsupport
-
 QDebug operator<<(QDebug d, const NONCLIENTMETRICS &m)
 {
     QDebugStateSaver saver(d);
     d.nospace();
     d.noquote();
     d << "NONCLIENTMETRICS(iMenu=" << m.iMenuWidth  << 'x' << m.iMenuHeight
-      << ", lfCaptionFont=" << m.lfCaptionFont << ", lfSmCaptionFont="
-      << m.lfSmCaptionFont << ", lfMenuFont=" << m.lfMenuFont
-      <<  ", lfMessageFont=" << m.lfMessageFont << ", lfStatusFont="
-      << m.lfStatusFont << ')';
+      << ", lfCaptionFont=";
+    QWindowsFontDatabase::debugFormat(d, m.lfCaptionFont);
+    d << ", lfSmCaptionFont=";
+    QWindowsFontDatabase::debugFormat(d, m.lfSmCaptionFont);
+    d << ", lfMenuFont=";
+    QWindowsFontDatabase::debugFormat(d, m.lfMenuFont);
+    d <<  ", lfMessageFont=";
+    QWindowsFontDatabase::debugFormat(d, m.lfMessageFont);
+    d <<", lfStatusFont=";
+    QWindowsFontDatabase::debugFormat(d, m.lfStatusFont);
+    d << ')';
     return d;
 }
 #endif // QT_NO_DEBUG_STREAM

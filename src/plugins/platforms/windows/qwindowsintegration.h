@@ -43,7 +43,7 @@
 
 #include <qpa/qplatformintegration.h>
 #include <QtCore/qscopedpointer.h>
-#include <QtFontDatabaseSupport/private/qwindowsfontdatabase_p.h>
+#include <QtGui/private/qwindowsfontdatabase_p.h>
 
 QT_BEGIN_NAMESPACE
 

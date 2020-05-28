@@ -1,8 +1,7 @@
 TARGET = qwindows
 
 QT += \
-    core-private gui-private \
-    fontdatabase_support-private
+    core-private gui-private
 
 qtConfig(opengl): QT += opengl-private
 

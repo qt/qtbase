@@ -54,7 +54,7 @@
 #include <QtGui/qopenglcontext.h>
 #include <QtGui/qscreen.h>
 #include <qpa/qplatformscreen.h>
-#include <QtFontDatabaseSupport/private/qwindowsfontdatabase_p.h>
+#include <QtGui/private/qwindowsfontdatabase_p.h>
 
 QT_BEGIN_NAMESPACE
 

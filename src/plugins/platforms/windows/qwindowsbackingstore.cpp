@@ -43,7 +43,7 @@
 
 #include <QtGui/qwindow.h>
 #include <QtGui/qpainter.h>
-#include <QtFontDatabaseSupport/private/qwindowsnativeimage_p.h>
+#include <QtGui/private/qwindowsnativeimage_p.h>
 #include <private/qhighdpiscaling_p.h>
 #include <private/qimage_p.h>
 

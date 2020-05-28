@@ -47,9 +47,9 @@
 
 #include <QtGui/private/qfreetypefontdatabase_p.h>
 #if defined(Q_OS_WIN)
-#  include <QtFontDatabaseSupport/private/qwindowsfontdatabase_p.h>
+#  include <QtGui/private/qwindowsfontdatabase_p.h>
 #  if QT_CONFIG(freetype)
-#    include <QtFontDatabaseSupport/private/qwindowsfontdatabase_ft_p.h>
+#    include <QtGui/private/qwindowsfontdatabase_ft_p.h>
 #  endif
 #elif defined(Q_OS_DARWIN)
 #  include <QtGui/private/qcoretextfontdatabase_p.h>

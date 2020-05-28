@@ -303,7 +303,7 @@ QString QWindowsFontDatabaseBase::EmbeddedFont::changeFamilyName(const QString &
     return oldFamilyName;
 }
 
-#if !defined(QT_NO_DIRECTWRITE)
+#if QT_CONFIG(directwrite) && QT_CONFIG(direct2d)
 
 namespace {
     class DirectWriteFontFileStream: public IDWriteFontFileStream
@@ -522,7 +522,7 @@ namespace {
     };
 } // Anonymous namespace
 
-#endif // !defined(QT_NO_DIRECTWRITE)
+#endif // directwrite && direct2d
 
 
 QWindowsFontEngineData::~QWindowsFontEngineData()
@@ -530,7 +530,7 @@ QWindowsFontEngineData::~QWindowsFontEngineData()
     if (hdc)
         DeleteDC(hdc);
 
-#if !defined(QT_NO_DIRECTWRITE)
+#if QT_CONFIG(directwrite) && QT_CONFIG(direct2d)
     if (directWriteGdiInterop)
         directWriteGdiInterop->Release();
     if (directWriteFactory)
@@ -564,7 +564,7 @@ QSharedPointer<QWindowsFontEngineData> QWindowsFontDatabaseBase::data()
 
 bool QWindowsFontDatabaseBase::init(QSharedPointer<QWindowsFontEngineData> d)
 {
-#if !defined(QT_NO_DIRECTWRITE)
+#if QT_CONFIG(directwrite) && QT_CONFIG(direct2d)
     if (!d->directWriteFactory) {
         createDirectWriteFactory(&d->directWriteFactory);
         if (!d->directWriteFactory)
@@ -577,11 +577,11 @@ bool QWindowsFontDatabaseBase::init(QSharedPointer<QWindowsFontEngineData> d)
             return false;
         }
     }
-#endif
+#endif // directwrite && direct2d
     return true;
 }
 
-#if !defined(QT_NO_DIRECTWRITE)
+#if QT_CONFIG(directwrite) && QT_CONFIG(direct2d)
 // ### Qt 6: Link directly to dwrite instead
 typedef HRESULT (WINAPI *DWriteCreateFactoryType)(DWRITE_FACTORY_TYPE, const IID &, IUnknown **);
 static inline DWriteCreateFactoryType resolveDWriteCreateFactory()
@@ -622,7 +622,7 @@ void QWindowsFontDatabaseBase::createDirectWriteFactory(IDWriteFactory **factory
 
     *factory = static_cast<IDWriteFactory *>(result);
 }
-#endif // !defined(QT_NO_DIRECTWRITE)
+#endif // directwrite && direct2d
 
 static int s_defaultVerticalDPI = 96; // Native Pixels
 
@@ -757,30 +757,16 @@ HFONT QWindowsFontDatabaseBase::systemFont()
 
 QFont QWindowsFontDatabaseBase::systemDefaultFont()
 {
-#if QT_VERSION >= 0x060000
     // Qt 6: Obtain default GUI font (typically "Segoe UI, 9pt", see QTBUG-58610)
     NONCLIENTMETRICS ncm;
     ncm.cbSize = FIELD_OFFSET(NONCLIENTMETRICS, lfMessageFont) + sizeof(LOGFONT);
     SystemParametersInfo(SPI_GETNONCLIENTMETRICS, ncm.cbSize , &ncm, 0);
     const QFont systemFont = QWindowsFontDatabase::LOGFONT_to_QFont(ncm.lfMessageFont);
-#else
-    LOGFONT lf;
-    GetObject(systemFont(), sizeof(lf), &lf);
-    QFont systemFont =  LOGFONT_to_QFont(lf);
-    // "MS Shell Dlg 2" is the correct system font >= Win2k
-    if (systemFont.family() == QLatin1String("MS Shell Dlg"))
-        systemFont.setFamily(QStringLiteral("MS Shell Dlg 2"));
-    // Qt 5 by (Qt 4) legacy uses GetStockObject(DEFAULT_GUI_FONT) to
-    // obtain the default GUI font (typically "MS Shell Dlg 2, 8pt"). This has been
-    // long deprecated; the message font of the NONCLIENTMETRICS structure obtained by
-    // SystemParametersInfo(SPI_GETNONCLIENTMETRICS) should be used instead (see
-    // QWindowsTheme::refreshFonts(), typically "Segoe UI, 9pt"), which is larger.
-#endif // Qt 5
     qCDebug(lcQpaFonts) << __FUNCTION__ << systemFont;
     return systemFont;
 }
 
-#if !defined(QT_NO_DIRECTWRITE)
+#if QT_CONFIG(directwrite) && QT_CONFIG(direct2d)
 IDWriteFontFace *QWindowsFontDatabaseBase::createDirectWriteFace(const QByteArray &fontData) const
 {
     QSharedPointer<QWindowsFontEngineData> fontEngineData = data();
@@ -831,13 +817,13 @@ IDWriteFontFace *QWindowsFontDatabaseBase::createDirectWriteFace(const QByteArra
     fontFile->Release();
     return directWriteFontFace;
 }
-#endif // !defined(QT_NO_DIRECTWRITE)
+#endif // directwrite && direct2d
 
 QFontEngine *QWindowsFontDatabaseBase::fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference)
 {
     QFontEngine *fontEngine = nullptr;
 
-#if !defined(QT_NO_DIRECTWRITE)
+#if QT_CONFIG(directwrite) && QT_CONFIG(direct2d)
     QSharedPointer<QWindowsFontEngineData> fontEngineData = data();
     if (fontEngineData->directWriteFactory == nullptr)
         return nullptr;
@@ -854,7 +840,7 @@ QFontEngine *QWindowsFontDatabaseBase::fontEngine(const QByteArray &fontData, qr
     fontEngine->fontDef.hintingPreference = hintingPreference;
 
     directWriteFontFace->Release();
-#else // !defined(QT_NO_DIRECTWRITE)
+#else // directwrite && direct2d
     Q_UNUSED(fontData);
     Q_UNUSED(pixelSize);
     Q_UNUSED(hintingPreference);

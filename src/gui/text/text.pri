@@ -131,3 +131,8 @@ qtConfig(freetype) {
 darwin {
     include($$PWD/coretext/coretext.pri)
 }
+
+win32 {
+    include($$PWD/windows/windows.pri)
+}
+
