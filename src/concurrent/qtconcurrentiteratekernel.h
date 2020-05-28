@@ -159,10 +159,11 @@ public:
     typedef T ResultType;
 
     IterateKernel(QThreadPool *pool, Iterator _begin, Iterator _end)
-        : ThreadEngine<T>(pool), begin(_begin), end(_end), current(_begin), currentIndex(0),
-           forIteration(selectIteration(typename std::iterator_traits<Iterator>::iterator_category())), progressReportingEnabled(true)
+        : ThreadEngine<T>(pool), begin(_begin), end(_end), current(_begin), currentIndex(0)
+        , forIteration(selectIteration(typename std::iterator_traits<Iterator>::iterator_category()))
+        , iterationCount(forIteration ? std::distance(_begin, _end) : 0)
+        , progressReportingEnabled(true)
     {
-        iterationCount =  forIteration ? std::distance(_begin, _end) : 0;
     }
 
     virtual ~IterateKernel() { }
@@ -288,9 +289,9 @@ public:
     const Iterator end;
     Iterator current;
     QAtomicInt currentIndex;
-    bool forIteration;
+    const bool forIteration;
     QAtomicInt iteratorThreads;
-    int iterationCount;
+    const int iterationCount;
 
     bool progressReportingEnabled;
     QAtomicInt completed;
