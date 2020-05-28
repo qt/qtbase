@@ -686,17 +686,10 @@ QMAKE_DEPENDS_${uclib}_LD = ${deps}
     set(${out_var} "${content}" PARENT_SCOPE)
 endfunction()
 
-# Retrieves the direct Qt module dependencies of the given Qt module.
-# By default, the private dependencies are returned.
-# Pass the PUBLIC option to return the public dependencies.
+# Retrieves the public Qt module dependencies of the given Qt module or Qt Private module.
 function(qt_get_direct_module_dependencies target out_var)
-    cmake_parse_arguments(arg "PUBLIC" "" "" ${ARGN})
     set(dependencies "")
-    if(arg_PUBLIC)
-        get_target_property(libs ${target} INTERFACE_LINK_LIBRARIES)
-    else()
-        get_target_property(libs ${target} LINK_LIBRARIES)
-    endif()
+    get_target_property(libs ${target} INTERFACE_LINK_LIBRARIES)
     if(NOT libs)
         set(libs "")
     endif()
@@ -810,8 +803,8 @@ function(qt_generate_module_pri_file target)
             endif()
         endif()
 
-        qt_get_direct_module_dependencies(${target} public_dependencies PUBLIC)
-        list(JOIN public_dependencies " " public_dependencies)
+        qt_get_direct_module_dependencies(${target} public_module_dependencies)
+        list(JOIN public_module_dependencies " " public_module_dependencies)
 
         qt_path_join(pri_file_name "${target_path}" "qt_lib_${config_module_name}.pri")
         list(APPEND pri_files "${pri_file_name}")
@@ -827,7 +820,7 @@ QT.${config_module_name}.includes = $$QT_MODULE_INCLUDE_BASE $$QT_MODULE_INCLUDE
 QT.${config_module_name}.frameworks =
 QT.${config_module_name}.bins = $$QT_MODULE_BIN_BASE
 QT.${config_module_name}.plugin_types = ${module_plugin_types}
-QT.${config_module_name}.depends = ${public_dependencies}
+QT.${config_module_name}.depends = ${public_module_dependencies}
 QT.${config_module_name}.uses =
 QT.${config_module_name}.module_config = ${joined_module_internal_config}
 QT.${config_module_name}.DEFINES = QT_${module_define}_LIB
@@ -849,11 +842,11 @@ QT_MODULES += ${config_module_name}
         qt_get_qmake_libraries_pri_content(libraries_content ${config_module_name})
     endif()
 
-    set(private_dependencies "")
+    set(private_module_dependencies "")
     if(NOT arg_HEADER_MODULE)
-        qt_get_direct_module_dependencies(${target}Private private_dependencies PUBLIC)
+        qt_get_direct_module_dependencies(${target}Private private_module_dependencies)
     endif()
-    list(JOIN private_dependencies " " private_dependencies)
+    list(JOIN private_module_dependencies " " private_module_dependencies)
 
     file(GENERATE
         OUTPUT "${private_pri_file}"
@@ -864,7 +857,7 @@ QT.${config_module_name}_private.module =
 QT.${config_module_name}_private.libs = $$QT_MODULE_LIB_BASE
 QT.${config_module_name}_private.includes = $$QT_MODULE_INCLUDE_BASE/${module}/${PROJECT_VERSION} $$QT_MODULE_INCLUDE_BASE/${module}/${PROJECT_VERSION}/${module}
 QT.${config_module_name}_private.frameworks =
-QT.${config_module_name}_private.depends = ${private_dependencies}
+QT.${config_module_name}_private.depends = ${private_module_dependencies}
 QT.${config_module_name}_private.uses =
 QT.${config_module_name}_private.module_config = ${joined_module_internal_config}
 QT.${config_module_name}_private.enabled_features = ${enabled_private_features}
