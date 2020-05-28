@@ -78,15 +78,30 @@ qt_add_tool(qmake # special case
         ../src/corelib/serialization/qjsonvalue.cpp ../src/corelib/serialization/qjsonvalue.h
         ../src/corelib/serialization/qjsonwriter_p.h
         ../src/corelib/serialization/qtextstream.cpp ../src/corelib/serialization/qtextstream.h
-        ../src/corelib/serialization/qxmlutils.cpp ../src/corelib/serialization/qxmlutils_p.h
-        ../src/corelib/tools/qarraydata.cpp ../src/corelib/tools/qarraydata.h
-        ../src/corelib/tools/qarraydataops.h
-        ../src/corelib/tools/qarraydatapointer.h
-        ../src/corelib/tools/qbitarray.cpp ../src/corelib/tools/qbitarray.h
         ../src/corelib/text/qbytearray.cpp ../src/corelib/text/qbytearray.h
         ../src/corelib/text/qbytearraylist.cpp ../src/corelib/text/qbytearraylist.h # special case
         ../src/corelib/text/qbytearraymatcher.cpp ../src/corelib/text/qbytearraymatcher.h
         ../src/corelib/text/qchar.h
+        ../src/corelib/text/qlocale.cpp ../src/corelib/text/qlocale.h
+        ../src/corelib/text/qlocale_tools.cpp ../src/corelib/text/qlocale_tools_p.h
+        ../src/corelib/text/qregexp.cpp ../src/corelib/text/qregexp.h
+        ../src/corelib/text/qregularexpression.cpp ../src/corelib/text/qregularexpression.h
+        ../src/corelib/text/qstring.cpp ../src/corelib/text/qstring.h
+        ../src/corelib/text/qstringbuilder.cpp ../src/corelib/text/qstringbuilder.h
+        ../src/corelib/text/qstringconverter.cpp ../src/corelib/text/qstringconverter.h ../src/corelib/text/qstringconverter_p.h
+        ../src/corelib/text/qstringlist.cpp ../src/corelib/text/qstringlist.h
+        ../src/corelib/text/qstringmatcher.h
+        ../src/corelib/text/qvsnprintf.cpp
+        ../src/corelib/time/qcalendar.cpp ../src/corelib/time/qcalendar.h
+        ../src/corelib/time/qcalendarbackend_p.h
+        ../src/corelib/time/qcalendarmath_p.h
+        ../src/corelib/time/qdatetime.cpp ../src/corelib/time/qdatetime.h ../src/corelib/time/qdatetime_p.h
+        ../src/corelib/time/qgregoriancalendar.cpp ../src/corelib/time/qgregoriancalendar_p.h
+        ../src/corelib/time/qromancalendar.cpp ../src/corelib/time/qromancalendar_p.h
+        ../src/corelib/tools/qarraydata.cpp ../src/corelib/tools/qarraydata.h
+        ../src/corelib/tools/qarraydataops.h
+        ../src/corelib/tools/qarraydatapointer.h
+        ../src/corelib/tools/qbitarray.cpp ../src/corelib/tools/qbitarray.h
         ../src/corelib/tools/qcryptographichash.cpp ../src/corelib/tools/qcryptographichash.h
         ../src/corelib/time/qcalendar.cpp ../src/corelib/time/qcalendar.h # special case
         ../src/corelib/time/qcalendarbackend_p.h ../src/corelib/time/qcalendarmath_p.h # special case
@@ -139,6 +154,8 @@ qt_add_tool(qmake # special case
         project.cpp project.h
         property.cpp property.h
     DEFINES
+        HAVE_CONFIG_H
+        PCRE2_DISABLE_JIT
         PROEVALUATOR_FULL
         QT_BOOTSTRAPPED
         QT_BUILD_QMAKE
@@ -178,8 +195,8 @@ qt_extend_target(qmake CONDITION WIN32
         ../src/corelib/io/qfsfileengine_win.cpp
         ../src/corelib/io/qsettings_win.cpp
         ../src/corelib/plugin/qsystemlibrary.cpp
-        ../src/corelib/text/qlocale_win.cpp # special case
-        library/registry.cpp # special case
+        ../src/corelib/text/qlocale_win.cpp
+        library/registry.cpp
     DEFINES
         UNICODE
         _CRT_SECURE_NO_WARNINGS
@@ -234,7 +251,7 @@ extend_target(qmake CONDITION WIN32
         ole32 advapi32 kernel32 netapi32
 )
 
-qt_extend_target(qmake CONDITION WIN32 AND mingw
+qt_extend_target(qmake CONDITION MINGW AND WIN32
     PUBLIC_LIBRARIES
         uuid
 )

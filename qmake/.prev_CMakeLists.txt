@@ -37,7 +37,6 @@ qt_add_executable(qmake
         ../src/3rdparty/pcre2/src/pcre2_ucp.h
         ../src/3rdparty/pcre2/src/pcre2_valid_utf.c
         ../src/3rdparty/pcre2/src/pcre2_xclass.c
-        ../src/corelib/codecs/qutfcodec.cpp ../src/corelib/codecs/qutfcodec_p.h
         ../src/corelib/global/qglobal.cpp ../src/corelib/global/qglobal.h
         ../src/corelib/global/qlibraryinfo.cpp
         ../src/corelib/global/qlogging.cpp
@@ -72,8 +71,25 @@ qt_add_executable(qmake
         ../src/corelib/serialization/qjsonvalue.cpp ../src/corelib/serialization/qjsonvalue.h
         ../src/corelib/serialization/qjsonwriter_p.h
         ../src/corelib/serialization/qtextstream.cpp ../src/corelib/serialization/qtextstream.h
-        ../src/corelib/serialization/qxmlstream.cpp ../src/corelib/serialization/qxmlstream.h
-        ../src/corelib/serialization/qxmlutils.cpp ../src/corelib/serialization/qxmlutils_p.h
+        ../src/corelib/text/qbytearray.cpp ../src/corelib/text/qbytearray.h
+        ../src/corelib/text/qbytearraymatcher.cpp ../src/corelib/text/qbytearraymatcher.h
+        ../src/corelib/text/qchar.h
+        ../src/corelib/text/qlocale.cpp ../src/corelib/text/qlocale.h
+        ../src/corelib/text/qlocale_tools.cpp ../src/corelib/text/qlocale_tools_p.h
+        ../src/corelib/text/qregexp.cpp ../src/corelib/text/qregexp.h
+        ../src/corelib/text/qregularexpression.cpp ../src/corelib/text/qregularexpression.h
+        ../src/corelib/text/qstring.cpp ../src/corelib/text/qstring.h
+        ../src/corelib/text/qstringbuilder.cpp ../src/corelib/text/qstringbuilder.h
+        ../src/corelib/text/qstringconverter.cpp ../src/corelib/text/qstringconverter.h ../src/corelib/text/qstringconverter_p.h
+        ../src/corelib/text/qstringlist.cpp ../src/corelib/text/qstringlist.h
+        ../src/corelib/text/qstringmatcher.h
+        ../src/corelib/text/qvsnprintf.cpp
+        ../src/corelib/time/qcalendar.cpp ../src/corelib/time/qcalendar.h
+        ../src/corelib/time/qcalendarbackend_p.h
+        ../src/corelib/time/qcalendarmath_p.h
+        ../src/corelib/time/qdatetime.cpp ../src/corelib/time/qdatetime.h ../src/corelib/time/qdatetime_p.h
+        ../src/corelib/time/qgregoriancalendar.cpp ../src/corelib/time/qgregoriancalendar_p.h
+        ../src/corelib/time/qromancalendar.cpp ../src/corelib/time/qromancalendar_p.h
         ../src/corelib/tools/qarraydata.cpp ../src/corelib/tools/qarraydata.h
         ../src/corelib/tools/qarraydataops.h
         ../src/corelib/tools/qarraydatapointer.h
@@ -113,30 +129,15 @@ qt_add_executable(qmake
         option.cpp option.h
         project.cpp project.h
         property.cpp property.h
-        qbytearray.cpp-NOTFOUND qbytearray.h-NOTFOUND
-        qbytearraymatcher.cpp-NOTFOUND qbytearraymatcher.h-NOTFOUND
-        qcalendar.cpp-NOTFOUND qcalendar.h-NOTFOUND
-        qcalendarbackend_p.h-NOTFOUND
-        qcalendarmath_p.h-NOTFOUND
-        qchar.h-NOTFOUND
-        qdatetime.cpp-NOTFOUND qdatetime.h-NOTFOUND qdatetime_p.h-NOTFOUND
-        qgregoriancalendar.cpp-NOTFOUND qgregoriancalendar_p.h-NOTFOUND
-        qlocale.cpp-NOTFOUND qlocale.h-NOTFOUND
-        qlocale_tools.cpp-NOTFOUND qlocale_tools_p.h-NOTFOUND
-        qregexp.cpp-NOTFOUND qregexp.h-NOTFOUND
-        qregularexpression.cpp-NOTFOUND qregularexpression.h-NOTFOUND
-        qromancalendar.cpp-NOTFOUND qromancalendar_p.h-NOTFOUND
-        qstring.cpp-NOTFOUND qstring.h-NOTFOUND
-        qstringlist.cpp-NOTFOUND qstringlist.h-NOTFOUND
-        qstringmatcher.h-NOTFOUND
-        qvsnprintf.cpp-NOTFOUND
     DEFINES
         (QT_VERSION_STR=\"\")
         HAVE_CONFIG_H
+        PCRE2_DISABLE_JIT
         PROEVALUATOR_FULL
         QT_BOOTSTRAPPED
         QT_BUILD_QMAKE
         QT_NO_FOREACH
+        QT_USE_QSTRINGBUILDER
         QT_VERSION_MAJOR=
         QT_VERSION_MINOR=
         QT_VERSION_PATCH=
@@ -176,8 +177,8 @@ qt_extend_target(qmake CONDITION WIN32
         ../src/corelib/io/qfsfileengine_win.cpp
         ../src/corelib/io/qsettings_win.cpp
         ../src/corelib/plugin/qsystemlibrary.cpp
-        qlocale_win.cpp-NOTFOUND
-        registry.cpp-NOTFOUND
+        ../src/corelib/text/qlocale_win.cpp
+        library/registry.cpp
     DEFINES
         UNICODE
         _CRT_SECURE_NO_WARNINGS
@@ -198,7 +199,7 @@ qt_extend_target(qmake CONDITION UNIX
         ../src/corelib/io/qfilesystemiterator_unix.cpp
         ../src/corelib/io/qfsfileengine_unix.cpp
         ../src/corelib/kernel/qcore_unix.cpp
-        qlocale_unix.cpp-NOTFOUND
+        ../src/corelib/text/qlocale_unix.cpp
 )
 
 qt_extend_target(qmake CONDITION MACOS
@@ -215,7 +216,7 @@ qt_extend_target(qmake CONDITION MACOS
         -fconstant-cfstrings
 )
 
-qt_extend_target(qmake CONDITION WIN32 AND mingw
+qt_extend_target(qmake CONDITION MINGW AND WIN32
     PUBLIC_LIBRARIES
         uuid
 )
