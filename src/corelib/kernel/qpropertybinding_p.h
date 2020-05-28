@@ -66,14 +66,24 @@ class Q_CORE_EXPORT QPropertyBindingPrivate : public QSharedData
 private:
     friend struct QPropertyBasePointer;
 
+    using ObserverArray = std::array<QPropertyObserver, 4>;
+
+    // QSharedData is 4 bytes. Use the padding for the bools as we need 8 byte alignment below.
+    bool dirty = false;
+    bool updating = false;
+    bool hasStaticObserver = false;
+
     QUntypedPropertyBinding::BindingEvaluationFunction evaluationFunction;
 
     QPropertyObserverPointer firstObserver;
-    std::array<QPropertyObserver, 4> inlineDependencyObservers;
+    union {
+        ObserverArray inlineDependencyObservers;
+        struct {
+            void *staticObserver;
+            void (*staticObserverCallback)(void*);
+        };
+    };
     QScopedPointer<std::vector<QPropertyObserver>> heapObservers;
-    // ### merge with inline dependency observer storage
-    void *staticObserver = nullptr;
-    void (*staticObserverCallback)(void*) = nullptr;
 
     void *propertyDataPtr = nullptr;
 
@@ -82,9 +92,6 @@ private:
 
     QMetaType metaType;
 
-    bool dirty = false;
-    bool updating = false;
-
 public:
     // public because the auto-tests access it, too.
     size_t dependencyObserverCount = 0;
@@ -92,6 +99,7 @@ public:
     QPropertyBindingPrivate(const QMetaType &metaType, QUntypedPropertyBinding::BindingEvaluationFunction evaluationFunction,
                             const QPropertyBindingSourceLocation &location)
         : evaluationFunction(std::move(evaluationFunction))
+        , inlineDependencyObservers() // Explicit initialization required because of union
         , location(location)
         , metaType(metaType)
     {}
@@ -99,7 +107,31 @@ public:
 
     void setDirty(bool d) { dirty = d; }
     void setProperty(void *propertyPtr) { propertyDataPtr = propertyPtr; }
-    void setStaticObserver(void *observer, void (*callback)(void*)) { staticObserver = observer; staticObserverCallback = callback; }
+    void setStaticObserver(void *observer, void (*callback)(void*))
+    {
+        if (observer) {
+            if (!hasStaticObserver) {
+                if (dependencyObserverCount > 0) {
+                    if (!heapObservers)
+                        heapObservers.reset(new std::vector<QPropertyObserver>());
+                    for (int i = 0, end = qMin(dependencyObserverCount, inlineDependencyObservers.size()); i < end; ++i)
+                        heapObservers->push_back(std::move(inlineDependencyObservers[i]));
+                }
+                inlineDependencyObservers.~ObserverArray();
+            }
+
+            hasStaticObserver = true;
+            staticObserver = observer;
+            staticObserverCallback = callback;
+        } else if (hasStaticObserver) {
+            hasStaticObserver = false;
+            new (&inlineDependencyObservers) ObserverArray();
+            for (int i = 0, end = qMin(dependencyObserverCount, inlineDependencyObservers.size()); i < end; ++i) {
+                inlineDependencyObservers[i] = std::move(heapObservers->back());
+                heapObservers->pop_back();
+            }
+        }
+    }
     void prependObserver(QPropertyObserverPointer observer) {
         observer.ptr->prev = const_cast<QPropertyObserver **>(&firstObserver.ptr);
         firstObserver = observer;
@@ -113,16 +145,18 @@ public:
     }
 
     void clearDependencyObservers() {
-        for (size_t i = 0; i < inlineDependencyObservers.size(); ++i) {
-            QPropertyObserver empty;
-            qSwap(inlineDependencyObservers[i], empty);
+        if (!hasStaticObserver) {
+            for (size_t i = 0; i < inlineDependencyObservers.size(); ++i) {
+                QPropertyObserver empty;
+                qSwap(inlineDependencyObservers[i], empty);
+            }
         }
         if (heapObservers)
             heapObservers->clear();
         dependencyObserverCount = 0;
     }
     QPropertyObserverPointer allocateDependencyObserver() {
-        if (dependencyObserverCount < inlineDependencyObservers.size()) {
+        if (!hasStaticObserver && dependencyObserverCount < inlineDependencyObservers.size()) {
             ++dependencyObserverCount;
             return {&inlineDependencyObservers[dependencyObserverCount - 1]};
         }

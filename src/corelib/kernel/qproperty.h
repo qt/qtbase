@@ -590,6 +590,17 @@ public:
     {
         setSource(property);
     }
+
+    template <typename PropertyType, typename Class, void(Class::*Callback)()>
+    QPropertyChangeHandler(const QNotifiedProperty<PropertyType, Callback> &property, Functor handler)
+        : QPropertyObserver([](QPropertyObserver *self, void *) {
+              auto This = static_cast<QPropertyChangeHandler<Functor>*>(self);
+              This->m_handler();
+          })
+        , m_handler(handler)
+    {
+        setSource(property);
+    }
 };
 
 template <typename T>
@@ -605,6 +616,27 @@ QPropertyChangeHandler<Functor> QProperty<T>::onValueChanged(Functor f)
 template <typename T>
 template<typename Functor>
 QPropertyChangeHandler<Functor> QProperty<T>::subscribe(Functor f)
+{
+#if defined(__cpp_lib_is_invocable) && (__cpp_lib_is_invocable >= 201703L)
+    static_assert(std::is_invocable_v<Functor>, "Functor callback must be callable without any parameters");
+#endif
+    f();
+    return onValueChanged(f);
+}
+
+template <typename T, typename Class, void(Class::*Callback)()>
+template<typename Functor>
+QPropertyChangeHandler<Functor> QNotifiedProperty<T, Callback>::onValueChanged(Functor f)
+{
+#if defined(__cpp_lib_is_invocable) && (__cpp_lib_is_invocable >= 201703L)
+    static_assert(std::is_invocable_v<Functor>, "Functor callback must be callable without any parameters");
+#endif
+    return QPropertyChangeHandler<Functor>(*this, f);
+}
+
+template <typename T, typename Class, void(Class::*Callback)()>
+template<typename Functor>
+QPropertyChangeHandler<Functor> QNotifiedProperty<T, Callback>::subscribe(Functor f)
 {
 #if defined(__cpp_lib_is_invocable) && (__cpp_lib_is_invocable >= 201703L)
     static_assert(std::is_invocable_v<Functor>, "Functor callback must be callable without any parameters");

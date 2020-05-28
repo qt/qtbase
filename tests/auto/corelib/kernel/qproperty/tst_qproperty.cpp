@@ -782,29 +782,76 @@ struct ClassWithNotifiedProperty
 void tst_QProperty::notifiedProperty()
 {
     ClassWithNotifiedProperty instance;
+    std::array<QProperty<int>, 5> otherProperties = {
+        QProperty<int>([&]() { return instance.property + 1; }),
+        QProperty<int>([&]() { return instance.property + 2; }),
+        QProperty<int>([&]() { return instance.property + 3; }),
+        QProperty<int>([&]() { return instance.property + 4; }),
+        QProperty<int>([&]() { return instance.property + 5; }),
+    };
+
+    auto check = [&] {
+        const int val = instance.property.value();
+        for (int i = 0; i < int(otherProperties.size()); ++i)
+            QCOMPARE(otherProperties[i].value(), val + i + 1);
+    };
+
     QVERIFY(instance.recordedValues.isEmpty());
+    check();
 
     instance.property.setValue(&instance, 42);
     QCOMPARE(instance.recordedValues.count(), 1);
     QCOMPARE(instance.recordedValues.at(0), 42);
     instance.recordedValues.clear();
+    check();
 
     instance.property.setValue(&instance, 42);
     QVERIFY(instance.recordedValues.isEmpty());
+    check();
 
+    int subscribedCount = 0;
     QProperty<int> injectedValue(100);
     instance.property.setBinding(&instance, [&injectedValue]() { return injectedValue.value(); });
+    auto subscriber = [&] { ++subscribedCount; };
+    std::array<QPropertyChangeHandler<decltype (subscriber)>, 10> subscribers = {
+            instance.property.subscribe(subscriber),
+            instance.property.subscribe(subscriber),
+            instance.property.subscribe(subscriber),
+            instance.property.subscribe(subscriber),
+            instance.property.subscribe(subscriber),
+            instance.property.subscribe(subscriber),
+            instance.property.subscribe(subscriber),
+            instance.property.subscribe(subscriber),
+            instance.property.subscribe(subscriber),
+            instance.property.subscribe(subscriber)
+    };
+
+    QCOMPARE(subscribedCount, 10);
+    subscribedCount = 0;
 
     QCOMPARE(instance.property.value(), 100);
     QCOMPARE(instance.recordedValues.count(), 1);
     QCOMPARE(instance.recordedValues.at(0), 100);
     instance.recordedValues.clear();
+    check();
+    QCOMPARE(subscribedCount, 0);
 
     injectedValue = 200;
     QCOMPARE(instance.property.value(), 200);
     QCOMPARE(instance.recordedValues.count(), 1);
     QCOMPARE(instance.recordedValues.at(0), 200);
     instance.recordedValues.clear();
+    check();
+    QCOMPARE(subscribedCount, 10);
+    subscribedCount = 0;
+
+    injectedValue = 400;
+    QCOMPARE(instance.property.value(), 400);
+    QCOMPARE(instance.recordedValues.count(), 1);
+    QCOMPARE(instance.recordedValues.at(0), 400);
+    instance.recordedValues.clear();
+    check();
+    QCOMPARE(subscribedCount, 10);
 }
 
 QTEST_MAIN(tst_QProperty);
