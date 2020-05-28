@@ -111,6 +111,24 @@
     \value EmailAddress The email address associated with the certificate
 */
 
+/*!
+    \enum QSslCertificate::PatternSyntax
+    \since 5.15
+
+    The syntax used to interpret the meaning of the pattern.
+
+    \value RegularExpression A rich Perl-like pattern matching syntax.
+
+    \value Wildcard This provides a simple pattern matching syntax
+    similar to that used by shells (command interpreters) for "file
+    globbing". See \l{QRegularExpression Wildcard matching}.
+
+    \value FixedString The pattern is a fixed string. This is
+    equivalent to using the RegularExpression pattern on a string in
+    which all metacharacters are escaped using escape(). This is the
+    default.
+*/
+
 #include <QtNetwork/qtnetworkglobal.h>
 #ifndef QT_NO_OPENSSL
 #include "qsslsocket_openssl_symbols_p.h"
