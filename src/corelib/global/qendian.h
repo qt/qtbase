@@ -87,17 +87,9 @@ template <typename T> Q_ALWAYS_INLINE T qFromUnaligned(const void *src)
     return dest;
 }
 
-/*
- * T qbswap(T source).
- * Changes the byte order of a value from big endian to little endian or vice versa.
- * This function can be used if you are not concerned about alignment issues,
- * and it is therefore a bit more convenient and in most cases more efficient.
-*/
-template <typename T> Q_DECL_CONSTEXPR T qbswap(T source);
-
 // These definitions are written so that they are recognized by most compilers
 // as bswap and replaced with single instruction builtins if available.
-template <> inline Q_DECL_CONSTEXPR quint64 qbswap<quint64>(quint64 source)
+inline Q_DECL_CONSTEXPR quint64 qbswap_helper(quint64 source)
 {
     return 0
         | ((source & Q_UINT64_C(0x00000000000000ff)) << 56)
@@ -110,7 +102,7 @@ template <> inline Q_DECL_CONSTEXPR quint64 qbswap<quint64>(quint64 source)
         | ((source & Q_UINT64_C(0xff00000000000000)) >> 56);
 }
 
-template <> inline Q_DECL_CONSTEXPR quint32 qbswap<quint32>(quint32 source)
+inline Q_DECL_CONSTEXPR quint32 qbswap_helper(quint32 source)
 {
     return 0
         | ((source & 0x000000ff) << 24)
@@ -119,48 +111,28 @@ template <> inline Q_DECL_CONSTEXPR quint32 qbswap<quint32>(quint32 source)
         | ((source & 0xff000000) >> 24);
 }
 
-template <> inline Q_DECL_CONSTEXPR quint16 qbswap<quint16>(quint16 source)
+inline Q_DECL_CONSTEXPR quint16 qbswap_helper(quint16 source)
 {
     return quint16( 0
                     | ((source & 0x00ff) << 8)
                     | ((source & 0xff00) >> 8) );
 }
 
-template <> inline Q_DECL_CONSTEXPR quint8 qbswap<quint8>(quint8 source)
+inline Q_DECL_CONSTEXPR quint8 qbswap_helper(quint8 source)
 {
     return source;
 }
 
-// charNN_t specializations
-template <> inline Q_DECL_CONSTEXPR char32_t qbswap<char32_t>(char32_t source)
+/*
+ * T qbswap(T source).
+ * Changes the byte order of a value from big endian to little endian or vice versa.
+ * This function can be used if you are not concerned about alignment issues,
+ * and it is therefore a bit more convenient and in most cases more efficient.
+*/
+template <typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
+inline Q_DECL_CONSTEXPR T qbswap(T source)
 {
-    return qbswap(quint32(source));
-}
-
-template <> inline Q_DECL_CONSTEXPR char16_t qbswap<char16_t>(char16_t source)
-{
-    return qbswap(quint16(source));
-}
-
-// signed specializations
-template <> inline Q_DECL_CONSTEXPR qint64 qbswap<qint64>(qint64 source)
-{
-    return qbswap<quint64>(quint64(source));
-}
-
-template <> inline Q_DECL_CONSTEXPR qint32 qbswap<qint32>(qint32 source)
-{
-    return qbswap<quint32>(quint32(source));
-}
-
-template <> inline Q_DECL_CONSTEXPR qint16 qbswap<qint16>(qint16 source)
-{
-    return qbswap<quint16>(quint16(source));
-}
-
-template <> inline Q_DECL_CONSTEXPR qint8 qbswap<qint8>(qint8 source)
-{
-    return source;
+    return T(qbswap_helper(typename QIntegerForSizeof<T>::Unsigned(source)));
 }
 
 // floating specializations
