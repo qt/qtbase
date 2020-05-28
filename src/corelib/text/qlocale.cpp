@@ -1225,8 +1225,16 @@ void QLocale::setDefault(const QLocale &locale)
 {
     default_data = locale.d->m_data;
 
-    if (defaultLocalePrivate.exists()) // update the cached private
-        *defaultLocalePrivate = locale.d;
+    if (defaultLocalePrivate.isDestroyed())
+        return; // avoid crash on exit
+    if (!defaultLocalePrivate.exists()) {
+        // Force it to exist; see QTBUG-83016
+        QLocale ignoreme;
+        Q_ASSERT(defaultLocalePrivate.exists());
+    }
+
+    // update the cached private
+    *defaultLocalePrivate = locale.d;
 }
 
 /*!
