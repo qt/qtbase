@@ -108,7 +108,8 @@ class ReduceKernel
     const ReduceOptions reduceOptions;
 
     QMutex mutex;
-    int progress, resultsMapSize, threadCount;
+    int progress, resultsMapSize;
+    const int threadCount;
     ResultsMap resultsMap;
 
     bool canReduce(int begin) const
