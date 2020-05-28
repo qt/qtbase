@@ -3816,7 +3816,10 @@ def handle_app_or_lib(
     # that is not a qml plugin
     if "qmltypes" in scope.get("CONFIG") and "qml_plugin" not in scope.get("_LOADED"):
         cm_fh.write(f"\n{spaces(indent)}set_target_properties({target} PROPERTIES\n")
-        cm_fh.write(f"{spaces(indent+1)}QT_QML_MODULE_INSTALL_QMLTYPES TRUE\n")
+
+        install_dir = scope.expandString("QMLTYPES_INSTALL_DIR")
+        if install_dir:
+            cm_fh.write(f"{spaces(indent+1)}QT_QML_MODULE_INSTALL_QMLTYPES TRUE\n")
 
         import_version = get_qml_import_version(scope, target)
         if import_version:
@@ -3834,7 +3837,6 @@ def handle_app_or_lib(
         if target_path:
             cm_fh.write(f"{spaces(indent+1)}QT_QML_MODULE_TARGET_PATH {target_path}\n")
 
-        install_dir = scope.expandString("QMLTYPES_INSTALL_DIR")
         if install_dir:
             install_dir = install_dir.replace("$$[QT_INSTALL_QML]", "${INSTALL_QMLDIR}")
             cm_fh.write(f'{spaces(indent+1)}QT_QML_MODULE_INSTALL_DIR "{install_dir}"\n')
