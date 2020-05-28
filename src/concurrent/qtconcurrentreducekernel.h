@@ -140,9 +140,9 @@ class ReduceKernel
     }
 
 public:
-    ReduceKernel(ReduceOptions _reduceOptions)
+    ReduceKernel(QThreadPool *pool, ReduceOptions _reduceOptions)
         : reduceOptions(_reduceOptions), progress(0), resultsMapSize(0),
-          threadCount(QThreadPool::globalInstance()->maxThreadCount())
+          threadCount(pool->maxThreadCount())
     { }
 
     void runReduce(ReduceFunctor &reduce,

@@ -93,7 +93,7 @@ public:
           sequence(_sequence),
           keep(_keep),
           reduce(_reduce),
-          reducer(OrderedReduce)
+          reducer(pool, OrderedReduce)
     { }
 
     bool runIteration(typename Sequence::const_iterator it, int index, T *) override
@@ -173,7 +173,7 @@ public:
                           ReduceFunctor _reduce,
                           ReduceOptions reduceOption)
         : IterateKernelType(pool, begin, end), reducedResult(), keep(_keep), reduce(_reduce),
-          reducer(reduceOption)
+          reducer(pool, reduceOption)
     { }
 
     FilteredReducedKernel(QThreadPool *pool, Iterator begin, Iterator end, KeepFunctor _keep,
@@ -183,7 +183,7 @@ public:
           reducedResult(std::forward<ReducedResultType>(initialValue)),
           keep(_keep),
           reduce(_reduce),
-          reducer(reduceOption)
+          reducer(pool, reduceOption)
     {
     }
 

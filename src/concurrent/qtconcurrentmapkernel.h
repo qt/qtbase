@@ -103,7 +103,7 @@ public:
     MappedReducedKernel(QThreadPool *pool, Iterator begin, Iterator end, MapFunctor _map,
                         ReduceFunctor _reduce, ReduceOptions reduceOptions)
         : IterateKernel<Iterator, ReducedResultType>(pool, begin, end), reducedResult(),
-          map(_map), reduce(_reduce), reducer(reduceOptions)
+          map(_map), reduce(_reduce), reducer(pool, reduceOptions)
     { }
 
     MappedReducedKernel(QThreadPool *pool, Iterator begin, Iterator end, MapFunctor _map,
@@ -113,7 +113,7 @@ public:
           reducedResult(std::forward<ReducedResultType>(initialValue)),
           map(_map),
           reduce(_reduce),
-          reducer(reduceOptions)
+          reducer(pool, reduceOptions)
     {
     }
 
