@@ -47,7 +47,11 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QDBusInterface>
+#include <QDBusReply>
 
+void DBusInterface_main()
+{
 //! [0]
 QDBusInterface remoteApp( "com.example.Calculator", "/Calculator/Operations",
                           "org.mathematics.RPNCalculator" );
@@ -59,3 +63,4 @@ QDBusReply<int> reply = remoteApp.call( "PopOperand" );
 if ( reply.isValid() )
     printf( "%d", reply.value() );          // prints 4
 //! [0]
+}

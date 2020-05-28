@@ -188,7 +188,9 @@ bool QDBusArgumentPrivate::checkReadAndDetach(QDBusArgumentPrivate *&d)
     integer and a string can be constructed using the \l
     {qdbustypesystem.html}{Qt D-Bus type system}:
 
-    \snippet code/src_qdbus_qdbusargument.cpp 0
+    \snippet code/src_qdbus_qdbusargument.cpp 0-0
+    \codeline
+    \snippet code/src_qdbus_qdbusargument.cpp 0-1
 
     The type has to be registered with qDBusRegisterMetaType() before
     it can be used with QDBusArgument. Therefore, somewhere in your

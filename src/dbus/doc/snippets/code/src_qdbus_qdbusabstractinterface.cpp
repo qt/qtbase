@@ -48,6 +48,35 @@
 **
 ****************************************************************************/
 
+#include <QString>
+#include <QDBusMessage>
+#include <QDBusReply>
+#include <QDBusInterface>
+
+class Abstract_DBus_Interface : public QObject
+{
+    Q_OBJECT
+
+public:
+    Abstract_DBus_Interface(QObject *parent = nullptr)
+    : QObject(parent) {
+        interface = new QDBusInterface("org.example.Interface", "/Example/Methods");
+    }
+
+    ~Abstract_DBus_Interface() {  delete interface; }
+    void interfaceMain();
+    void asyncCall();
+    QString retrieveValue() { return QString(); }
+
+public slots:
+    void callFinishedSlot();
+
+private:
+    QDBusInterface *interface;
+};
+
+void Abstract_DBus_Interface::interfaceMain()
+{
 //! [0]
 QString value = retrieveValue();
 QDBusMessage reply;
@@ -58,13 +87,17 @@ if (api >= 14)
 else
   reply = interface->call(QLatin1String("ProcessWork"), QLatin1String("UTF-8"), value.toUtf8());
 //! [0]
+}
 
+void Abstract_DBus_Interface::asyncCall()
+{
 //! [1]
 QString value = retrieveValue();
 QDBusPendingCall pcall = interface->asyncCall(QLatin1String("Process"), value);
 
-QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(pcall, this);
+QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(pcall);
 
 QObject::connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                 this, SLOT(callFinishedSlot(QDBusPendingCallWatcher*)));
+                this, SLOT(callFinishedSlot(QDBusPendingCallWatcher*)));
 //! [1]
+}

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -48,7 +48,14 @@
 **
 ****************************************************************************/
 
-//! [0]
+#include <QtCore/qlist.h>
+typedef QList<QString> MyClass;
+
+//! [0-0]
 #include <QDBusMetaType>
+//! [0-0]
+void dbus() {
+//! [0-1]
 qDBusRegisterMetaType<MyClass>();
-//! [0]
+//! [0-1]
+}

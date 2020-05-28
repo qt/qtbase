@@ -48,15 +48,23 @@
 **
 ****************************************************************************/
 
+#include <QString>
+#include <QDBusConnection>
+#include <QDBusArgument>
+#include <QDBusMetaType>
+#include <QDBusMessage>
+#include <QDBusContext>
+
 //! [0]
 class MyObject: public QObject,
                 protected QDBusContext
 {
     Q_OBJECT
+
     QDBusConnection conn;
     QDBusMessage msg;
 
-...
+    //...
 
 protected slots:
     void process();

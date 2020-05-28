@@ -47,6 +47,12 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QString>
+#include <QDBusMessage>
+#include <QDBusConnection>
+
+struct RequestData;
+void appendRequest(RequestData *) {}; // stub
 
 //! [10]
 struct RequestData
@@ -73,7 +79,7 @@ QString processRequest(const QString &request, const QDBusMessage &message)
 void sendReply(RequestData *data)
 {
     // data->processedData has been initialized with the request's reply
-    QDBusMessage &reply = &data->reply;
+    QDBusMessage &reply = data->reply;
 
     // send the reply over D-Bus:
     reply << data->processedData;

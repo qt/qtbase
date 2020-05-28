@@ -47,7 +47,32 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QDBusPendingCall>
+#include <QDBusInterface>
+#include <QDBusPendingReply>
+#include <QDBusReply>
 
+class DBus_Process_String_Interface : public QObject
+{
+    Q_OBJECT
+
+public:
+    DBus_Process_String_Interface(QObject *parent = nullptr)
+    : QObject(parent) {
+        interface = new QDBusInterface("org.example.Interface", "/Example/Methods");
+    }
+
+    ~DBus_Process_String_Interface() {  delete interface; }
+    void QDBus_reply();
+    void useValue(QVariant);
+    void showError(const QDBusError&);
+public slots:
+
+private:
+    QDBusInterface *interface;
+};
+void DBus_Process_String_Interface::QDBus_reply()
+{
 //! [0]
 QDBusReply<QString> reply = interface->call("RemoteMethod");
 if (reply.isValid())
@@ -60,5 +85,6 @@ else
 
 
 //! [1]
-QString reply = interface->call("RemoteMethod");
+reply = interface->call("RemoteMethod");
 //! [1]
+}

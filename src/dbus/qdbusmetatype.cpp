@@ -175,7 +175,9 @@ Q_GLOBAL_STATIC(QReadWriteLock, customTypesLock)
     Q_DECLARE_METATYPE() macro, and then registered as in the
     following example:
 
-    \snippet code/src_qdbus_qdbusmetatype.cpp 0
+    \snippet code/src_qdbus_qdbusmetatype.cpp 0-0
+    \codeline
+    \snippet code/src_qdbus_qdbusmetatype.cpp 0-1
 
     If \c{T} isn't one of
     Qt's \l{container classes}, the \c{operator<<} and
