@@ -24,7 +24,10 @@ moc_json_source.depends = $${MOC_JSON_CPP_BASE}${QMAKE_FILE_BASE}$${QMAKE_EXT_CP
 moc_json_source.commands = $$escape_expand(\\n)  # force creation of rule
 moc_json_source.variable_out = MOC_JSON_FILES
 
-MOC_COLLECT_JSON_OUTPUT = $$lower($$basename(TARGET))_metatypes.json
+TARGET_BASENAME = $$lower($$basename(TARGET))
+TARGET_BASENAME ~= s/\s/_/g
+
+MOC_COLLECT_JSON_OUTPUT = $${TARGET_BASENAME}_metatypes.json
 
 moc_collect_json.CONFIG += no_link combine target_predeps
 moc_collect_json.commands = $$MOC_COLLECT_JSON --collect-json -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_IN}

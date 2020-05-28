@@ -131,7 +131,10 @@ import_plugins:qtConfig(static) {
             else: \
                 warning("Plugin class name could not be determined for plugin '$$plug'.")
         }
-        IMPORT_CPP = $$OUT_PWD/$$lower($$basename(TARGET))_plugin_import.cpp
+        TARGET_BASENAME = $$lower($$basename(TARGET))
+        TARGET_BASENAME ~= s/\s/_/g
+
+        IMPORT_CPP = $$OUT_PWD/$${TARGET_BASENAME}_plugin_import.cpp
         write_file($$IMPORT_CPP, IMPORT_FILE_CONT)|error()
         GENERATED_SOURCES += $$IMPORT_CPP
         QMAKE_DISTCLEAN += $$IMPORT_CPP
@@ -331,7 +334,10 @@ contains(all_qt_module_deps, qml): \
                 }
             }
         }
-        QML_IMPORT_CPP = $$OUT_PWD/$$lower($$basename(TARGET))_qml_plugin_import.cpp
+        TARGET_BASENAME = $$lower($$basename(TARGET))
+        TARGET_BASENAME ~= s/\s/_/g
+
+        QML_IMPORT_CPP = $$OUT_PWD/$${TARGET_BASENAME}_qml_plugin_import.cpp
         write_file($$QML_IMPORT_CPP, IMPORT_FILE_CONT)|error()
         GENERATED_SOURCES += $$QML_IMPORT_CPP
         QMAKE_DISTCLEAN += $$QML_IMPORT_CPP
