@@ -4088,6 +4088,20 @@ QByteArray QByteArray::toBase64(Base64Options options) const
 */
 
 /*!
+    \fn QByteArray &QByteArray::setNum(long n, int base)
+    \overload
+
+    \sa toLong()
+*/
+
+/*!
+    \fn QByteArray &QByteArray::setNum(ulong n, int base)
+    \overload
+
+    \sa toULong()
+*/
+
+/*!
     \fn QByteArray &QByteArray::setNum(short n, int base)
     \overload
 
@@ -4258,6 +4272,30 @@ QByteArray QByteArray::number(int n, int base)
     \sa toUInt()
 */
 QByteArray QByteArray::number(uint n, int base)
+{
+    QByteArray s;
+    s.setNum(n, base);
+    return s;
+}
+
+/*!
+    \overload
+
+    \sa toLong()
+*/
+QByteArray QByteArray::number(long n, int base)
+{
+    QByteArray s;
+    s.setNum(n, base);
+    return s;
+}
+
+/*!
+    \overload
+
+    \sa toULong()
+*/
+QByteArray QByteArray::number(ulong n, int base)
 {
     QByteArray s;
     s.setNum(n, base);
