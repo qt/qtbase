@@ -67,7 +67,7 @@ namespace QtConcurrent {
 class Q_CONCURRENT_EXPORT BlockSizeManager
 {
 public:
-    explicit BlockSizeManager(int iterationCount);
+    explicit BlockSizeManager(QThreadPool *pool, int iterationCount);
 
     void timeBeforeUser();
     void timeAfterUser();
@@ -198,7 +198,7 @@ public:
 
     ThreadFunctionResult forThreadFunction()
     {
-        BlockSizeManager blockSizeManager(iterationCount);
+        BlockSizeManager blockSizeManager(ThreadEngineBase::threadPool, iterationCount);
         ResultReporter<T> resultReporter(this);
 
         for(;;) {

@@ -102,8 +102,8 @@ namespace QtConcurrent {
 /*! \internal
 
 */
-BlockSizeManager::BlockSizeManager(int iterationCount)
-    : maxBlockSize(iterationCount / (QThreadPool::globalInstance()->maxThreadCount() * 2)),
+BlockSizeManager::BlockSizeManager(QThreadPool *pool, int iterationCount)
+    : maxBlockSize(iterationCount / (pool->maxThreadCount() * 2)),
       beforeUser(0), afterUser(0),
       m_blockSize(1)
 { }
