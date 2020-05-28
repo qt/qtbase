@@ -256,7 +256,7 @@ unix {
         qoperatingsystemversion_win.cpp \
         qsettings_win.cpp \
         qsystemlibrary.cpp \
-        registry.cpp
+        library/registry.cpp
     LIBS += -lole32 -ladvapi32 -lkernel32 -lnetapi32
     mingw: LIBS += -luuid
     clang: QMAKE_CXXFLAGS += -fms-compatibility-version=19.00.23506 -Wno-microsoft-enum-value
