@@ -52,10 +52,11 @@
 //
 
 #include <QtCore/private/qeventdispatcher_win_p.h>
+#include <QtGui/qtguiglobal.h>
 
 QT_BEGIN_NAMESPACE
 
-class QWindowsGuiEventDispatcher : public QEventDispatcherWin32
+class Q_GUI_EXPORT QWindowsGuiEventDispatcher : public QEventDispatcherWin32
 {
     Q_OBJECT
 public:

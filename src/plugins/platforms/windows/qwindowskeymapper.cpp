@@ -49,7 +49,7 @@
 #include <private/qguiapplication_p.h>
 #include <private/qhighdpiscaling_p.h>
 #include <QtGui/qevent.h>
-#include <QtEventDispatcherSupport/private/qwindowsguieventdispatcher_p.h>
+#include <QtGui/private/qwindowsguieventdispatcher_p.h>
 #include <QtCore/private/qdebug_p.h>
 
 #if defined(WM_APPCOMMAND)

@@ -2,7 +2,6 @@ TARGET = qdirect2d
 
 QT += \
     core-private gui-private \
-    eventdispatcher_support-private \
     fontdatabase_support-private
 
 LIBS += -ldwmapi -lversion -ld3d11 -ldxgi -ldxguid

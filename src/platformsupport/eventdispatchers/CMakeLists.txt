@@ -31,11 +31,6 @@ qt_extend_target(EventDispatcherSupport CONDITION UNIX
         qunixeventdispatcher_qpa_p.h
 )
 
-qt_extend_target(EventDispatcherSupport CONDITION WIN32
-    SOURCES
-        qwindowsguieventdispatcher.cpp qwindowsguieventdispatcher_p.h
-)
-
 qt_extend_target(EventDispatcherSupport CONDITION QT_FEATURE_glib
     SOURCES
         qeventdispatcher_glib.cpp qeventdispatcher_glib_p.h

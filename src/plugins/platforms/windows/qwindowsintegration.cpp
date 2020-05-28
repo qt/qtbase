@@ -77,7 +77,7 @@
 #include <QtGui/qpa/qplatforminputcontextfactory_p.h>
 #include <QtGui/qpa/qplatformcursor.h>
 
-#include <QtEventDispatcherSupport/private/qwindowsguieventdispatcher_p.h>
+#include <QtGui/private/qwindowsguieventdispatcher_p.h>
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qvariant.h>

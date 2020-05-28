@@ -50,11 +50,9 @@ qt_internal_add_plugin(QWindowsIntegrationPlugin
     PUBLIC_LIBRARIES
         Qt::Core
         Qt::CorePrivate
-        Qt::EventDispatcherSupportPrivate
         Qt::FontDatabaseSupportPrivate
         Qt::Gui
         Qt::GuiPrivate
-        Qt::ThemeSupportPrivate
         dwmapi
         imm32
         oleaut32
@@ -93,38 +91,13 @@ qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_opengl
         Qt::OpenGLPrivate
 )
 
-qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_accessibility
-    SOURCES
-        uiautomation/qwindowsuiaaccessibility.cpp uiautomation/qwindowsuiaaccessibility.h
-        uiautomation/qwindowsuiabaseprovider.cpp uiautomation/qwindowsuiabaseprovider.h
-        uiautomation/qwindowsuiaexpandcollapseprovider.cpp uiautomation/qwindowsuiaexpandcollapseprovider.h
-        uiautomation/qwindowsuiagriditemprovider.cpp uiautomation/qwindowsuiagriditemprovider.h
-        uiautomation/qwindowsuiagridprovider.cpp uiautomation/qwindowsuiagridprovider.h
-        uiautomation/qwindowsuiainvokeprovider.cpp uiautomation/qwindowsuiainvokeprovider.h
-        uiautomation/qwindowsuiamainprovider.cpp uiautomation/qwindowsuiamainprovider.h
-        uiautomation/qwindowsuiaprovidercache.cpp uiautomation/qwindowsuiaprovidercache.h
-        uiautomation/qwindowsuiarangevalueprovider.cpp uiautomation/qwindowsuiarangevalueprovider.h
-        uiautomation/qwindowsuiaselectionitemprovider.cpp uiautomation/qwindowsuiaselectionitemprovider.h
-        uiautomation/qwindowsuiaselectionprovider.cpp uiautomation/qwindowsuiaselectionprovider.h
-        uiautomation/qwindowsuiatableitemprovider.cpp uiautomation/qwindowsuiatableitemprovider.h
-        uiautomation/qwindowsuiatableprovider.cpp uiautomation/qwindowsuiatableprovider.h
-        uiautomation/qwindowsuiatextprovider.cpp uiautomation/qwindowsuiatextprovider.h
-        uiautomation/qwindowsuiatextrangeprovider.cpp uiautomation/qwindowsuiatextrangeprovider.h
-        uiautomation/qwindowsuiatoggleprovider.cpp uiautomation/qwindowsuiatoggleprovider.h
-        uiautomation/qwindowsuiautils.cpp uiautomation/qwindowsuiautils.h
-        uiautomation/qwindowsuiavalueprovider.cpp uiautomation/qwindowsuiavalueprovider.h
-        uiautomation/qwindowsuiawindowprovider.cpp uiautomation/qwindowsuiawindowprovider.h
-    PUBLIC_LIBRARIES
-        Qt::AccessibilitySupportPrivate
-)
-
 qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_directwrite3
     DEFINES
         QT_USE_DIRECTWRITE2
         QT_USE_DIRECTWRITE3
 )
 
-#### Keys ignored in scope 5:.:.:windows.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
+#### Keys ignored in scope 4:.:.:windows.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
 # PLUGIN_EXTENDS = "-"
 
 qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_opengl AND NOT QT_FEATURE_dynamicgl
@@ -202,6 +175,29 @@ if(QT_FEATURE_imageformat_png)
             ${cursors_resource_files}
     )
 endif()
+
+qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_accessibility
+    SOURCES
+        uiautomation/qwindowsuiaaccessibility.cpp uiautomation/qwindowsuiaaccessibility.h
+        uiautomation/qwindowsuiabaseprovider.cpp uiautomation/qwindowsuiabaseprovider.h
+        uiautomation/qwindowsuiaexpandcollapseprovider.cpp uiautomation/qwindowsuiaexpandcollapseprovider.h
+        uiautomation/qwindowsuiagriditemprovider.cpp uiautomation/qwindowsuiagriditemprovider.h
+        uiautomation/qwindowsuiagridprovider.cpp uiautomation/qwindowsuiagridprovider.h
+        uiautomation/qwindowsuiainvokeprovider.cpp uiautomation/qwindowsuiainvokeprovider.h
+        uiautomation/qwindowsuiamainprovider.cpp uiautomation/qwindowsuiamainprovider.h
+        uiautomation/qwindowsuiaprovidercache.cpp uiautomation/qwindowsuiaprovidercache.h
+        uiautomation/qwindowsuiarangevalueprovider.cpp uiautomation/qwindowsuiarangevalueprovider.h
+        uiautomation/qwindowsuiaselectionitemprovider.cpp uiautomation/qwindowsuiaselectionitemprovider.h
+        uiautomation/qwindowsuiaselectionprovider.cpp uiautomation/qwindowsuiaselectionprovider.h
+        uiautomation/qwindowsuiatableitemprovider.cpp uiautomation/qwindowsuiatableitemprovider.h
+        uiautomation/qwindowsuiatableprovider.cpp uiautomation/qwindowsuiatableprovider.h
+        uiautomation/qwindowsuiatextprovider.cpp uiautomation/qwindowsuiatextprovider.h
+        uiautomation/qwindowsuiatextrangeprovider.cpp uiautomation/qwindowsuiatextrangeprovider.h
+        uiautomation/qwindowsuiatoggleprovider.cpp uiautomation/qwindowsuiatoggleprovider.h
+        uiautomation/qwindowsuiautils.cpp uiautomation/qwindowsuiautils.h
+        uiautomation/qwindowsuiavalueprovider.cpp uiautomation/qwindowsuiavalueprovider.h
+        uiautomation/qwindowsuiawindowprovider.cpp uiautomation/qwindowsuiawindowprovider.h
+)
 
 qt_extend_target(QWindowsIntegrationPlugin CONDITION MINGW AND QT_FEATURE_accessibility
     PUBLIC_LIBRARIES

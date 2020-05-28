@@ -15,12 +15,6 @@ unix {
     HEADERS += \
         qunixeventdispatcher_qpa_p.h \
         qgenericunixeventdispatcher_p.h
-} else {
-    SOURCES += \
-        qwindowsguieventdispatcher.cpp
-
-    HEADERS += \
-        qwindowsguieventdispatcher_p.h
 }
 
 qtConfig(glib) {
