@@ -185,12 +185,10 @@ public:
 #endif
 
     void projectedRotate(float angle, float x, float y, float z);
-private:
-    float m[4][4];          // Column-major order to match OpenGL.
-    int flagBits;           // Flag bits from the enum below.
 
     // When matrices are multiplied, the flag bits are or-ed together.
-    enum {
+    // Note that the ordering of the bit values matters. (ident < t < s < r2d < r < p)
+    enum Flag {
         Identity        = 0x0000, // Identity matrix
         Translation     = 0x0001, // Contains a translation
         Scale           = 0x0002, // Contains a scale
@@ -199,12 +197,21 @@ private:
         Perspective     = 0x0010, // Last row is different from (0, 0, 0, 1)
         General         = 0x001f  // General matrix, unknown contents
     };
+    Q_DECLARE_FLAGS(Flags, Flag)
+
+    Flags flags() const { return flagBits; }
+
+private:
+    float m[4][4];          // Column-major order to match OpenGL.
+    Flags flagBits;
 
     // Construct without initializing identity matrix.
     explicit QMatrix4x4(int) { }
 
     QMatrix4x4 orthonormalInverse() const;
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QMatrix4x4::Flags)
 
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_CLANG("-Wfloat-equal")
@@ -627,7 +634,7 @@ inline QMatrix4x4 operator-(const QMatrix4x4& m1, const QMatrix4x4& m2)
 
 inline QMatrix4x4 operator*(const QMatrix4x4& m1, const QMatrix4x4& m2)
 {
-    int flagBits = m1.flagBits | m2.flagBits;
+    QMatrix4x4::Flags flagBits = m1.flagBits | m2.flagBits;
     if (flagBits < QMatrix4x4::Rotation2D) {
         QMatrix4x4 m = m1;
         m.m[3][0] += m.m[0][0] * m2.m[3][0];

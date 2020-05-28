@@ -1280,6 +1280,23 @@ void QMatrix4x4::projectedRotate(float angle, float x, float y, float z)
     *this *= rot;
 }
 
+/*!
+    \fn int QMatrix4x4::flags() const
+    \internal
+*/
+
+/*!
+    \enum QMatrix4x4::Flags
+    \internal
+    \omitvalue Identity
+    \omitvalue Translation
+    \omitvalue Scale
+    \omitvalue Rotation2D
+    \omitvalue Rotation
+    \omitvalue Perspective
+    \omitvalue General
+*/
+
 #ifndef QT_NO_QUATERNION
 
 /*!
