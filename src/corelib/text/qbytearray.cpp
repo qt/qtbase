@@ -3562,19 +3562,19 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 /*!
     \fn QByteArray QByteArray::simplified() const
 
-    Returns a byte array that has whitespace removed from the start
-    and the end, and which has each sequence of internal whitespace
-    replaced with a single space.
+    Returns a copy of this byte array that has spacing characters removed from
+    the start and end, and in which each sequence of internal spacing characters
+    is replaced with a single space.
 
-    Whitespace means any character for which the standard C++
-    \c isspace() function returns \c true in the C locale. This includes the ASCII
-    isspace() function returns \c true in the C locale. This includes the ASCII
-    characters '\\t', '\\n', '\\v', '\\f', '\\r', and ' '.
+    The spacing characters are those for which the standard C++ \c isspace()
+    function returns \c true in the C locale; these are the ASCII characters
+    tabulation '\\t', line feed '\\n', carriage return '\\r', vertical
+    tabulation '\\v', form feed '\\f', and space ' '.
 
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 32
 
-    \sa trimmed()
+    \sa trimmed(), QChar::SpecialCharacter
 */
 QByteArray QByteArray::simplified_helper(const QByteArray &a)
 {
@@ -3589,19 +3589,21 @@ QByteArray QByteArray::simplified_helper(QByteArray &a)
 /*!
     \fn QByteArray QByteArray::trimmed() const
 
-    Returns a byte array that has whitespace removed from the start
-    and the end.
+    Returns a copy of this byte array with spacing characters removed from the
+    start and end.
 
-    Whitespace means any character for which the standard C++
-    \c isspace() function returns \c true in the C locale. This includes the ASCII
-    characters '\\t', '\\n', '\\v', '\\f', '\\r', and ' '.
+    The spacing characters are those for which the standard C++ \c isspace()
+    function returns \c true in the C locale; these are the ASCII characters
+    tabulation '\\t', line feed '\\n', carriage return '\\r', vertical
+    tabulation '\\v', form feed '\\f', and space ' '.
 
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 33
 
-    Unlike simplified(), \l {QByteArray::trimmed()}{trimmed()} leaves internal whitespace alone.
+    Unlike simplified(), \l {QByteArray::trimmed()}{trimmed()} leaves internal
+    spacing unchanged.
 
-    \sa simplified()
+    \sa simplified(), QChar::SpecialCharacter
 */
 QByteArray QByteArray::trimmed_helper(const QByteArray &a)
 {
