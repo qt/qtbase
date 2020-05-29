@@ -58,6 +58,12 @@ inline QString capString(int caps)
 }
 #endif
 
+#if Q_PROCESSOR_WORDSIZE == 8
+typedef qint64 FDot16;
+#else
+typedef int FDot16;
+#endif
+
 #define toF26Dot6(x) ((int)((x)*64.))
 
 static inline uint sourceOver(uint d, uint color)
@@ -65,11 +71,15 @@ static inline uint sourceOver(uint d, uint color)
     return color + BYTE_MUL(d, qAlpha(~color));
 }
 
-inline static int F16Dot16FixedDiv(int x, int y)
+inline static FDot16 FDot16FixedDiv(int x, int y)
 {
+#if Q_PROCESSOR_WORDSIZE == 8
+    return FDot16(x) * (1<<16) / y;
+#else
     if (qAbs(x) > 0x7fff)
         return qlonglong(x) * (1<<16) / y;
     return x * (1<<16) / y;
+#endif
 }
 
 typedef void (*DrawPixel)(QCosmeticStroker *stroker, int x, int y, int coverage);
@@ -157,7 +167,7 @@ inline void drawPixel(QCosmeticStroker *stroker, int x, int y, int coverage)
         }
     }
 
-    stroker->spans[stroker->current_span].x = ushort(x);
+    stroker->spans[stroker->current_span].x = x;
     stroker->spans[stroker->current_span].len = 1;
     stroker->spans[stroker->current_span].y = y;
     stroker->spans[stroker->current_span].coverage = coverage*stroker->opacity >> 8;
@@ -441,8 +451,8 @@ void QCosmeticStroker::calculateLastPoint(qreal rx1, qreal ry1, qreal rx2, qreal
             qSwap(y1, y2);
             qSwap(x1, x2);
         }
-        int xinc = F16Dot16FixedDiv(x2 - x1, y2 - y1);
-        int x = x1 * (1<<10);
+        FDot16 xinc = FDot16FixedDiv(x2 - x1, y2 - y1);
+        FDot16 x = FDot16(x1) * (1<<10);
 
         int y = (y1 + 32) >> 6;
         int ys = (y2 + 32) >> 6;
@@ -473,8 +483,8 @@ void QCosmeticStroker::calculateLastPoint(qreal rx1, qreal ry1, qreal rx2, qreal
             qSwap(x1, x2);
             qSwap(y1, y2);
         }
-        int yinc = F16Dot16FixedDiv(y2 - y1, x2 - x1);
-        int y = y1 * (1 << 10);
+        FDot16 yinc = FDot16FixedDiv(y2 - y1, x2 - x1);
+        FDot16 y = FDot16(y1) * (1 << 10);
 
         int x = (x1 + 32) >> 6;
         int xs = (x2 + 32) >> 6;
@@ -715,7 +725,7 @@ static inline int swapCaps(int caps)
 }
 
 // adjust line by half a pixel
-static inline void capAdjust(int caps, int &x1, int &x2, int &y, int yinc)
+static inline void capAdjust(int caps, int &x1, int &x2, FDot16 &y, FDot16 yinc)
 {
     if (caps & QCosmeticStroker::CapBegin) {
         x1 -= 32;
@@ -763,8 +773,8 @@ static bool drawLine(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx2,
             caps = swapCaps(caps);
             dir = QCosmeticStroker::BottomToTop;
         }
-        int xinc = F16Dot16FixedDiv(x2 - x1, y2 - y1);
-        int x = x1 * (1<<10);
+        FDot16 xinc = FDot16FixedDiv(x2 - x1, y2 - y1);
+        FDot16 x = FDot16(x1) * (1<<10);
 
         if ((stroker->lastDir ^ QCosmeticStroker::VerticalMask) == dir)
             caps |= swapped ? QCosmeticStroker::CapEnd : QCosmeticStroker::CapBegin;
@@ -853,8 +863,8 @@ static bool drawLine(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx2,
             caps = swapCaps(caps);
             dir = QCosmeticStroker::RightToLeft;
         }
-        int yinc = F16Dot16FixedDiv(y2 - y1, x2 - x1);
-        int y = y1 * (1<<10);
+        FDot16 yinc = FDot16FixedDiv(y2 - y1, x2 - x1);
+        FDot16 y = FDot16(y1) * (1<<10);
 
         if ((stroker->lastDir ^ QCosmeticStroker::HorizontalMask) == dir)
             caps |= swapped ? QCosmeticStroker::CapEnd : QCosmeticStroker::CapBegin;
@@ -950,7 +960,7 @@ static bool drawLineAA(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx
     if (qAbs(dx) < qAbs(dy)) {
         // vertical
 
-        int xinc = F16Dot16FixedDiv(dx, dy);
+        FDot16 xinc = FDot16FixedDiv(dx, dy);
 
         bool swapped = false;
         if (y1 > y2) {
@@ -960,7 +970,7 @@ static bool drawLineAA(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx
             caps = swapCaps(caps);
         }
 
-        int x = (x1 - 32) * (1<<10);
+        FDot16 x = FDot16(x1 - 32) * (1<<10);
         x -= ( ((y1 & 63) - 32)  * xinc ) >> 6;
 
         capAdjust(caps, y1, y2, x, xinc);
@@ -1013,7 +1023,7 @@ static bool drawLineAA(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx
         if (!dx)
             return true;
 
-        int yinc = F16Dot16FixedDiv(dy, dx);
+        FDot16 yinc = FDot16FixedDiv(dy, dx);
 
         bool swapped = false;
         if (x1 > x2) {
@@ -1023,7 +1033,7 @@ static bool drawLineAA(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx
             caps = swapCaps(caps);
         }
 
-        int y = (y1 - 32) * (1<<10);
+        FDot16 y = FDot16(y1 - 32) * (1<<10);
         y -= ( ((x1 & 63) - 32)  * yinc ) >> 6;
 
         capAdjust(caps, x1, x2, y, yinc);

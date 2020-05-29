@@ -240,6 +240,9 @@ private slots:
 
     void wideImage();
 
+    void largeFillScale();
+    void largeRasterScale();
+
 #if defined(Q_OS_WIN)
     void toWinHBITMAP_data();
     void toWinHBITMAP();
@@ -3835,6 +3838,67 @@ void tst_QImage::wideImage()
     painter.drawImage(0, 0, i2);
 
     // Qt6: Test that it actually works on 64bit architectures.
+}
+
+void tst_QImage::largeFillScale()
+{
+#if Q_PROCESSOR_WORDSIZE < 8
+    QSKIP("Test fails on 32-bit builds");
+#endif
+    // Test from QTBUG-84428
+    QImage input(QSize(std::numeric_limits<qint16>::max() + 10, 1), QImage::Format_ARGB32_Premultiplied);
+    input.fill(Qt::white);
+
+    const int scaleFactor = 2;
+    QImage scaled = input.scaled(input.width(), input.height() * scaleFactor);
+
+    for (int x = 0, w = input.width(); x < w; ++x) {
+        const auto inputPixel = input.pixel(x, 0);
+        auto scaledPixel = scaled.pixel(x, 0);
+        QCOMPARE(scaledPixel, inputPixel);
+        scaledPixel = scaled.pixel(x, 1);
+        QCOMPARE(scaledPixel, inputPixel);
+    }
+}
+
+void tst_QImage::largeRasterScale()
+{
+#if Q_PROCESSOR_WORDSIZE < 8
+    QSKIP("Test fails on 32-bit builds");
+#endif
+    // Now test that qgrayraster still works at these ranges
+    QImage image(QSize(40000, 200), QImage::Format_RGB32);
+    image.fill(Qt::white);
+
+    QPainter painter(&image);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+    painter.setBrush(Qt::black);
+    painter.drawEllipse(QPoint(33000, 100), 6990, 99);
+    painter.end();
+    QCOMPARE(image.pixelColor(27000, 10), Qt::white);
+    QCOMPARE(image.pixelColor(33000, 10), Qt::black);
+    QCOMPARE(image.pixelColor(39000, 10), Qt::white);
+    QCOMPARE(image.pixelColor(27000, 100), Qt::black);
+    QCOMPARE(image.pixelColor(33000, 100), Qt::black);
+    QCOMPARE(image.pixelColor(39000, 100), Qt::black);
+    QCOMPARE(image.pixelColor(27000, 190), Qt::white);
+    QCOMPARE(image.pixelColor(33000, 190), Qt::black);
+    QCOMPARE(image.pixelColor(39000, 190), Qt::white);
+
+    // Now check grayscale antialiasing takes place in the higher coords
+    bool grayObserved = false;
+    for (int x = 33000; x < 39000; ++x) {
+        QRgb pixel = image.pixel(x, 20);
+        if (pixel == 0xff000000)
+            continue; // still black
+        if (pixel == 0xffffffff) {
+            QVERIFY(grayObserved);
+            break;
+        }
+        grayObserved = true;
+    }
+
+//    image.save("largeRasterScale.png", "PNG");
 }
 
 #if defined(Q_OS_WIN)

@@ -66,10 +66,13 @@
 
 QT_BEGIN_NAMESPACE
 
-// This limitations comes from qgrayraster.c. Any higher and
-// rasterization of shapes will produce incorrect results.
-const int QT_RASTER_COORD_LIMIT = 32767;
-
+// These limitations comes from qrasterizer.cpp, qcosmeticstroker.cpp, and qgrayraster.c.
+// Any higher and rasterization of shapes will produce incorrect results.
+#if Q_PROCESSOR_WORDSIZE == 8
+constexpr int QT_RASTER_COORD_LIMIT = ((1<<23) - 1); // F24dot8 in qgrayraster.c
+#else
+constexpr int QT_RASTER_COORD_LIMIT = ((1<<15) - 1); // F16dot16 in qrasterizer.cpp and qcosmeticstroker.cpp
+#endif
 //#define QT_DEBUG_CONVERT
 
 Q_GUI_EXPORT bool qt_scaleForTransform(const QTransform &transform, qreal *scale);

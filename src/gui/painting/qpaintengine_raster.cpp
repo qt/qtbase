@@ -4142,10 +4142,10 @@ static void qt_span_fill_clipped(int spanCount, const QSpan *spans, void *userDa
 static int qt_intersect_spans(QT_FT_Span *&spans, int numSpans,
                               const QRect &clip)
 {
-    const short minx = clip.left();
-    const short miny = clip.top();
-    const short maxx = clip.right();
-    const short maxy = clip.bottom();
+    const int minx = clip.left();
+    const int miny = clip.top();
+    const int maxx = clip.right();
+    const int maxy = clip.bottom();
 
     QT_FT_Span *end = spans + numSpans;
     while (spans < end) {
@@ -4167,7 +4167,7 @@ static int qt_intersect_spans(QT_FT_Span *&spans, int numSpans,
             s->len = qMin(s->len - (minx - s->x), maxx - minx + 1);
             s->x = minx;
         } else {
-            s->len = qMin(s->len, ushort(maxx - s->x + 1));
+            s->len = qMin(s->len, (maxx - s->x + 1));
         }
         ++s;
     }

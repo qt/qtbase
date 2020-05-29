@@ -1101,7 +1101,7 @@ QT_FT_END_STMNT
       L = QT_FT_HYPOT( dx_, dy_ );
 
       /* Avoid possible arithmetic overflow below by splitting. */
-      if ( L > 32767 )
+      if ( L >= (1 << 23) )
         goto Split;
 
       /* Max deviation may be as much as (s/L) * 3/4 (if Hain's v = 1). */
@@ -1251,13 +1251,13 @@ QT_FT_END_STMNT
     y += (TCoord)ras.min_ey;
     x += (TCoord)ras.min_ex;
 
-    /* QT_FT_Span.x is a 16-bit short, so limit our coordinates appropriately */
-    if ( x >= 32767 )
-      x = 32767;
+    /* QT_FT_Span.x is an int, so limit our coordinates appropriately */
+    if ( x >= (1 << 23) )
+      x = (1 << 23) - 1;
 
-    /* QT_FT_Span.y is a 16-bit short, so limit our coordinates appropriately */
-    if ( y >= 32767 )
-      y = 32767;
+    /* QT_FT_Span.y is an int, so limit our coordinates appropriately */
+    if ( y >= (1 << 23) )
+      y = (1 << 23) - 1;
 
     if ( coverage )
     {
@@ -1271,10 +1271,10 @@ QT_FT_END_STMNT
       span  = ras.gray_spans + count - 1;
       if ( count > 0                          &&
            span->y == y                       &&
-           (int)span->x + span->len == (int)x &&
+           span->x + span->len == x           &&
            span->coverage == coverage         )
       {
-        span->len = (unsigned short)( span->len + acount );
+        span->len = span->len + acount;
         return;
       }
 
@@ -1317,9 +1317,9 @@ QT_FT_END_STMNT
         span++;
 
       /* add a gray span to the current list */
-      span->x        = (short)x;
-      span->len      = (unsigned short)acount;
-      span->y        = (short)y;
+      span->x        = x;
+      span->len      = acount;
+      span->y        = y;
       span->coverage = (unsigned char)coverage;
 
       ras.num_gray_spans++;
@@ -1895,10 +1895,10 @@ QT_FT_END_STMNT
     }
     else
     {
-      ras.clip_box.xMin = -32768L;
-      ras.clip_box.yMin = -32768L;
-      ras.clip_box.xMax =  32767L;
-      ras.clip_box.yMax =  32767L;
+      ras.clip_box.xMin = -(1 << 23);
+      ras.clip_box.yMin = -(1 << 23);
+      ras.clip_box.xMax =  (1 << 23) - 1;
+      ras.clip_box.yMax =  (1 << 23) - 1;
     }
 
     gray_init_cells( worker, raster->buffer, raster->buffer_size );
