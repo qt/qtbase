@@ -132,6 +132,7 @@ qt_add_module(Gui
         painting/qpdf.cpp painting/qpdf_p.h
         painting/qpdfwriter.cpp painting/qpdfwriter.h
         painting/qpen.cpp painting/qpen.h
+        painting/qpixellayout.cpp painting/qpixellayout_p.h
         painting/qplatformbackingstore.cpp painting/qplatformbackingstore.h
         painting/qpolygon.cpp painting/qpolygon.h
         painting/qpolygonclipper_p.h
@@ -279,8 +280,17 @@ qt_extend_target(Gui CONDITION APPLE
     SOURCES
         image/qimage_darwin.mm
         painting/qcoregraphics.mm painting/qcoregraphics_p.h
+        painting/qrasterbackingstore.cpp painting/qrasterbackingstore_p.h
+        platform/darwin/qmacmime.mm platform/darwin/qmacmime_p.h
+        text/coretext/qcoretextfontdatabase.mm text/coretext/qcoretextfontdatabase_p.h
+        text/coretext/qfontengine_coretext.mm text/coretext/qfontengine_coretext_p.h
     LIBRARIES
+        ${FWCoreFoundation}
         ${FWCoreGraphics}
+        ${FWCoreText}
+        ${FWFoundation}
+    PUBLIC_LIBRARIES
+        ${FWImageIO}
 )
 
 qt_extend_target(Gui CONDITION QT_FEATURE_animation
@@ -354,6 +364,21 @@ qt_extend_target(Gui CONDITION APPLE AND QT_FEATURE_accessibility
         ${FWFoundation}
 )
 
+qt_extend_target(Gui CONDITION QT_FEATURE_accessibility AND WIN32 AND NOT WINRT
+    SOURCES
+        accessible/windows/apisupport/qwindowsuiawrapper.cpp accessible/windows/apisupport/qwindowsuiawrapper_p.h
+        accessible/windows/apisupport/uiaattributeids_p.h
+        accessible/windows/apisupport/uiaclientinterfaces_p.h
+        accessible/windows/apisupport/uiacontroltypeids_p.h
+        accessible/windows/apisupport/uiaerrorids_p.h
+        accessible/windows/apisupport/uiaeventids_p.h
+        accessible/windows/apisupport/uiageneralids_p.h
+        accessible/windows/apisupport/uiapatternids_p.h
+        accessible/windows/apisupport/uiapropertyids_p.h
+        accessible/windows/apisupport/uiaserverinterfaces_p.h
+        accessible/windows/apisupport/uiatypes_p.h
+)
+
 qt_extend_target(Gui CONDITION QT_FEATURE_action
     SOURCES
         kernel/qaction.cpp kernel/qaction.h kernel/qaction_p.h
@@ -393,7 +418,7 @@ qt_extend_target(Gui CONDITION QT_FEATURE_png
         WrapPNG::WrapPNG
 )
 
-#### Keys ignored in scope 35:.:image:image/image.pri:WIN32 AND MINGW:
+#### Keys ignored in scope 38:.:image:image/image.pri:WIN32 AND MINGW:
 # GCC_VERSION = "$${QMAKE_GCC_MAJOR_VERSION}.$${QMAKE_GCC_MINOR_VERSION}.$${QMAKE_GCC_PATCH_VERSION}"
 
 qt_extend_target(Gui CONDITION ((QT_FEATURE_png) AND (WIN32 AND MINGW)) AND (GCC_VERSION___equals___8.1.0)
@@ -509,6 +534,24 @@ qt_extend_target(Gui CONDITION QT_FEATURE_cssparser
         text/qcssparser.cpp text/qcssparser_p.h
 )
 
+qt_extend_target(Gui CONDITION QT_FEATURE_freetype
+    SOURCES
+        text/freetype/qfontengine_ft.cpp text/freetype/qfontengine_ft_p.h
+        text/freetype/qfreetypefontdatabase.cpp text/freetype/qfreetypefontdatabase_p.h
+    LIBRARIES
+        WrapFreetype::WrapFreetype
+)
+
+qt_extend_target(Gui CONDITION APPLE AND NOT MACOS
+    LIBRARIES
+        ${FWUIKit}
+)
+
+qt_extend_target(Gui CONDITION APPLE AND QT_FEATURE_freetype
+    LIBRARIES
+        WrapFreetype::WrapFreetype
+)
+
 qt_extend_target(Gui CONDITION UNIX AND NOT ANDROID AND NOT INTEGRITY AND NOT (TEST_architecture_arch STREQUAL "arm64") AND NOT UIKIT
     DEFINES
         ENABLE_PIXMAN_DRAWHELPERS
@@ -565,6 +608,7 @@ qt_extend_target(Gui CONDITION QT_FEATURE_vulkan
     SOURCES
         rhi/qrhivulkan.cpp rhi/qrhivulkan_p.h
         rhi/qrhivulkan_p_p.h
+        vulkan/qbasicvulkanplatforminstance.cpp vulkan/qbasicvulkanplatforminstance_p.h
         vulkan/qplatformvulkaninstance.cpp vulkan/qplatformvulkaninstance.h
         vulkan/qvulkanfunctions.cpp
         vulkan/qvulkaninstance.cpp vulkan/qvulkaninstance.h
@@ -573,7 +617,7 @@ qt_extend_target(Gui CONDITION QT_FEATURE_vulkan
         Vulkan::Vulkan_nolink
 )
 
-#### Keys ignored in scope 79:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vkgen:
+#### Keys ignored in scope 89:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vkgen:
 # QMAKE_EXTRA_COMPILERS = "qvkgen_h" "qvkgen_ph" "qvkgen_pimpl"
 # QMAKE_QVKGEN_INPUT = "vulkan/vk.xml"
 # QMAKE_QVKGEN_LICENSE_HEADER = "$$QT_SOURCE_TREE/header.LGPL"
@@ -589,10 +633,10 @@ qt_extend_target(Gui CONDITION QT_FEATURE_vulkan
 # qvkgen_pimpl.input = "QMAKE_QVKGEN_INPUT"
 # qvkgen_pimpl.output = "$$OUT_PWD/vulkan/qvulkanfunctions_p.cpp"
 
-#### Keys ignored in scope 80:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
+#### Keys ignored in scope 90:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
 # qvkgen_h.variable_out = "HEADERS"
 
-#### Keys ignored in scope 81:.:vulkan:vulkan/vulkan.pri:else:
+#### Keys ignored in scope 91:.:vulkan:vulkan/vulkan.pri:else:
 # qvkgen_h.CONFIG = "target_predeps" "no_link"
 
 qt_extend_target(Gui CONDITION WASM
