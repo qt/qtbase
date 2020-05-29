@@ -1520,10 +1520,10 @@ void QTextEngine::shapeText(int item) const
             if (QChar::isHighSurrogate(string[i])
                     && i + 1 < itemLength
                     && QChar::isLowSurrogate(string[i + 1])) {
+                initialGlyphs.attributes[glyph_pos].dontPrint = !QChar::isPrint(QChar::surrogateToUcs4(string[i], string[i + 1]));
                 ++i;
                 log_clusters[i] = glyph_pos;
 
-                initialGlyphs.attributes[glyph_pos].dontPrint = !QChar::isPrint(QChar::surrogateToUcs4(string[i], string[i + 1]));
             } else {
                 initialGlyphs.attributes[glyph_pos].dontPrint = !QChar::isPrint(string[i]);
             }
