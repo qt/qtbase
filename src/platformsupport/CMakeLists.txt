@@ -10,7 +10,7 @@ if (QT_FEATURE_dbus)
     add_subdirectory(linuxofono)
 endif()
 # special case end
-if(APPLE OR QT_FEATURE_freetype OR WIN32)
+if(WIN32 OR (QT_FEATURE_freetype AND NOT APPLE))
     add_subdirectory(fontdatabases)
 endif()
 if(QT_FEATURE_evdev OR QT_FEATURE_integrityhid OR QT_FEATURE_libinput OR QT_FEATURE_tslib OR QT_FEATURE_xkbcommon)

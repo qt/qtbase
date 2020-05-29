@@ -4,7 +4,7 @@
 ## LinuxOfonoSupport Module:
 #####################################################################
 
-add_qt_module(LinuxOfonoSupport
+qt_add_module(LinuxOfonoSupport
     STATIC
     INTERNAL_MODULE
     SOURCES

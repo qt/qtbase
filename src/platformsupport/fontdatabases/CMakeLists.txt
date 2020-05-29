@@ -25,11 +25,6 @@ qt_add_module(FontDatabaseSupport
 ## Scopes:
 #####################################################################
 
-qt_extend_target(FontDatabaseSupport CONDITION QT_FEATURE_freetype
-    LIBRARIES
-        WrapFreetype::WrapFreetype
-)
-
 qt_extend_target(FontDatabaseSupport CONDITION UNIX
     SOURCES
         genericunix/qgenericunixfontdatabase_p.h
@@ -42,6 +37,15 @@ qt_extend_target(FontDatabaseSupport CONDITION QT_FEATURE_fontconfig
     LIBRARIES
         Fontconfig::Fontconfig
 )
+
+# special case begin
+if(TARGET WrapFreetype::WrapFreetype)
+   qt_extend_target(FontDatabaseSupport CONDITION QT_FEATURE_fontconfig
+       LIBRARIES
+           WrapFreetype::WrapFreetype
+)
+endif()
+# special case end
 
 qt_extend_target(FontDatabaseSupport CONDITION WIN32 AND NOT WINRT
     SOURCES
@@ -61,6 +65,8 @@ qt_extend_target(FontDatabaseSupport CONDITION WIN32 AND NOT WINRT
 qt_extend_target(FontDatabaseSupport CONDITION QT_FEATURE_freetype AND WIN32 AND NOT WINRT
     SOURCES
         windows/qwindowsfontdatabase_ft.cpp windows/qwindowsfontdatabase_ft_p.h
+    LIBRARIES
+        WrapFreetype::WrapFreetype
 )
 
 qt_extend_target(FontDatabaseSupport CONDITION QT_FEATURE_direct2d AND QT_FEATURE_directwrite AND WIN32 AND NOT WINRT
@@ -97,7 +103,7 @@ qt_extend_target(FontDatabaseSupport CONDITION WIN32 AND NOT WINRT AND (NOT QT_F
         QT_NO_DIRECTWRITE
 )
 
-qt_extend_target(FontDatabaseSupport CONDITION WIN32 AND mingw AND NOT WINRT
+qt_extend_target(FontDatabaseSupport CONDITION MINGW AND WIN32 AND NOT WINRT
     LIBRARIES
         uuid
 )
