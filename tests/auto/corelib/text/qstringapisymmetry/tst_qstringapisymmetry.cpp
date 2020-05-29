@@ -972,7 +972,7 @@ void tst_QStringApiSymmetry::compare_data(bool hasConceptOfNullAndEmpty)
                                        << 0 << 0;
     }
 
-#define ROW(lhs, rhs) \
+#define ROW(lhs, rhs, caseless) \
     do { \
         static const QString pinned[] = { \
             QString(QLatin1String(lhs)), \
@@ -981,16 +981,19 @@ void tst_QStringApiSymmetry::compare_data(bool hasConceptOfNullAndEmpty)
         QTest::newRow(qUtf8Printable(QLatin1String("'" lhs "' <> '" rhs "': "))) \
             << QStringRef(&pinned[0]) << QLatin1String(lhs) \
             << QStringRef(&pinned[1]) << QLatin1String(rhs) \
-            << sign(qstrcmp(lhs, rhs)) << sign(qstricmp(lhs, rhs)); \
+            << sign(qstrcmp(lhs, rhs)) << caseless; \
     } while (false)
-    ROW("", "0");
-    ROW("0", "");
-    ROW("0", "1");
-    ROW("0", "0");
-    ROW("10", "0");
-    ROW("01", "1");
-    ROW("\xE4", "\xE4"); // ä <> ä
-    ROW("\xE4", "\xC4"); // ä <> Ä
+#define ASCIIROW(lhs, rhs) ROW(lhs, rhs, sign(qstricmp(lhs, rhs)))
+    ASCIIROW("", "0");
+    ASCIIROW("0", "");
+    ASCIIROW("0", "1");
+    ASCIIROW("0", "0");
+    ASCIIROW("10", "0");
+    ASCIIROW("01", "1");
+    ASCIIROW("e", "e");
+    ASCIIROW("e", "E");
+    ROW("\xE4", "\xE4", 0); // ä <> ä
+    ROW("\xE4", "\xC4", 0); // ä <> Ä
 #undef ROW
 }
 
