@@ -1211,6 +1211,10 @@ function(qt6_add_plugin target)
             # but Qt plugins are actually suffixed with .dylib.
             set_property(TARGET "${target}" PROPERTY SUFFIX ".dylib")
         endif()
+        if(WIN32)
+            # CMake sets for Windows-GNU platforms the suffix "lib"
+            set_property(TARGET "${target}" PROPERTY PREFIX "")
+        endif()
     endif()
 
     set(output_name ${target})
