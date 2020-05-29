@@ -43,7 +43,7 @@
 
     Example:
 
-    \snippet code/src_corelib_tools_qlocale.cpp 0
+    \snippet code/src_corelib_text_qlocale.cpp 0
 
     QLocale supports the concept of a default locale, which is
     determined from the system's locale settings at application
@@ -64,7 +64,7 @@
 
     The following example illustrates how to use QLocale directly:
 
-    \snippet code/src_corelib_tools_qlocale.cpp 1
+    \snippet code/src_corelib_text_qlocale.cpp 1
 
     When a language/country pair is specified in the constructor, one
     of three things can happen:
@@ -84,7 +84,7 @@
     An alternative method for constructing a QLocale object is by
     specifying the locale name.
 
-    \snippet code/src_corelib_tools_qlocale.cpp 2
+    \snippet code/src_corelib_text_qlocale.cpp 2
 
     This constructor converts the locale name to a language/country
     pair; it does not use the system locale database.

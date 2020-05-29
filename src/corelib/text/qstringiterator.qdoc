@@ -45,14 +45,14 @@
     You can create a QStringIterator that iterates over a given
     QStringView by passing the string to the QStringIterator's constructor:
 
-    \snippet code/src_corelib_tools_qstringiterator.cpp 0
+    \snippet code/src_corelib_text_qstringiterator.cpp 0
 
     A newly created QStringIterator will point before the first position in the
     string. It is possible to check whether the iterator can be advanced by
     calling hasNext(), and actually advance it (and obtain the next code point)
     by calling next():
 
-    \snippet code/src_corelib_tools_qstringiterator.cpp 1
+    \snippet code/src_corelib_text_qstringiterator.cpp 1
 
     Similarly, the hasPrevious() and previous() functions can be used to iterate backwards.
 
@@ -76,7 +76,7 @@
 
     For instance:
 
-    \snippet code/src_corelib_tools_qstringiterator.cpp 2
+    \snippet code/src_corelib_text_qstringiterator.cpp 2
 
     If the iterator is not able to decode the next code point (or the previous
     one, when iterating backwards), then it will return \c{0xFFFD}, that is,

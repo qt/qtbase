@@ -1601,14 +1601,14 @@ const QString::Null QString::null = { };
     One way to define these preprocessor symbols globally for your
     application is to add the following entry to your \l {Creating Project Files}{qmake project file}:
 
-    \snippet code/src_corelib_tools_qstring.cpp 0
+    \snippet code/src_corelib_text_qstring.cpp 0
 
     You then need to explicitly call fromUtf8(), fromLatin1(),
     or fromLocal8Bit() to construct a QString from an
     8-bit string, or use the lightweight QLatin1String class, for
     example:
 
-    \snippet code/src_corelib_tools_qstring.cpp 1
+    \snippet code/src_corelib_text_qstring.cpp 1
 
     Similarly, you must call toLatin1(), toUtf8(), or
     toLocal8Bit() explicitly to convert the QString to an 8-bit
@@ -7555,7 +7555,7 @@ QVector<QStringRef> QString::splitRef(const QRegularExpression &re, SplitBehavio
 
     Example:
 
-    \snippet code/src_corelib_tools_qstring.cpp 8
+    \snippet code/src_corelib_text_qstring.cpp 8
 */
 QString QString::repeated(int times) const
 {
@@ -8269,7 +8269,7 @@ QString QString::arg(char a, int fieldWidth, QChar fillChar) const
   value produces right-aligned text; a negative value produces
   left-aligned text.
 
-  \snippet code/src_corelib_tools_qstring.cpp 2
+  \snippet code/src_corelib_text_qstring.cpp 2
 
   The '%' can be followed by an 'L', in which case the sequence is
   replaced with a localized representation of \a a. The conversion
@@ -8838,11 +8838,11 @@ QString &QString::setRawData(const QChar *unicode, int size)
     the \c{const char *} data. For example, assuming \c str is a
     QString,
 
-    \snippet code/src_corelib_tools_qstring.cpp 3
+    \snippet code/src_corelib_text_qstring.cpp 3
 
     is much faster than
 
-    \snippet code/src_corelib_tools_qstring.cpp 4
+    \snippet code/src_corelib_text_qstring.cpp 4
 
     because it doesn't construct four temporary QString objects and
     make a deep copy of the character data.
@@ -8854,7 +8854,7 @@ QString &QString::setRawData(const QChar *unicode, int size)
     just a very thin wrapper around a \c{const char *}. Using
     QLatin1String, the example code above becomes
 
-    \snippet code/src_corelib_tools_qstring.cpp 5
+    \snippet code/src_corelib_text_qstring.cpp 5
 
     This is a bit longer to type, but it provides exactly the same
     benefits as the first version of the code, and is faster than
@@ -8864,7 +8864,7 @@ QString &QString::setRawData(const QChar *unicode, int size)
     QLatin1String can be used everywhere a QString is expected. For
     example:
 
-    \snippet code/src_corelib_tools_qstring.cpp 6
+    \snippet code/src_corelib_text_qstring.cpp 6
 
     \note If the function you're calling with a QLatin1String
     argument isn't actually overloaded to take QLatin1String, the
@@ -12093,7 +12093,7 @@ float QStringRef::toFloat(bool *ok) const
 
     Example:
 
-    \snippet code/src_corelib_tools_qstring.cpp 7
+    \snippet code/src_corelib_text_qstring.cpp 7
 */
 QString QString::toHtmlEscaped() const
 {
@@ -12127,7 +12127,7 @@ QString QString::toHtmlEscaped() const
 
   If you have code that looks like this:
 
-  \snippet code/src_corelib_tools_qstring.cpp 9
+  \snippet code/src_corelib_text_qstring.cpp 9
 
   then a temporary QString will be created to be passed as the \c{hasAttribute}
   function parameter. This can be quite expensive, as it involves a memory
@@ -12136,7 +12136,7 @@ QString QString::toHtmlEscaped() const
 
   This cost can be avoided by using QStringLiteral instead:
 
-  \snippet code/src_corelib_tools_qstring.cpp 10
+  \snippet code/src_corelib_text_qstring.cpp 10
 
   In this case, QString's internal data will be generated at compile time; no
   conversion or allocation will occur at runtime.
@@ -12151,7 +12151,7 @@ QString QString::toHtmlEscaped() const
   instance, QString::operator==() can compare to a QLatin1String
   directly:
 
-  \snippet code/src_corelib_tools_qstring.cpp 11
+  \snippet code/src_corelib_text_qstring.cpp 11
 
   \note Some compilers have bugs encoding strings containing characters outside
   the US-ASCII character set. Make sure you prefix your string with \c{u} in

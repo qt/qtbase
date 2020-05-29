@@ -75,14 +75,14 @@ QT_BEGIN_NAMESPACE
     string literal.
 
     QStringViews should be passed by value, not by reference-to-const:
-    \snippet code/src_corelib_tools_qstringview.cpp 0
+    \snippet code/src_corelib_text_qstringview.cpp 0
 
     If you want to give your users maximum freedom in what strings they can pass
     to your function, accompany the QStringView overload with overloads for
 
     \list
         \li \e QChar: this overload can delegate to the QStringView version:
-            \snippet code/src_corelib_tools_qstringview.cpp 1
+            \snippet code/src_corelib_text_qstringview.cpp 1
             even though, for technical reasons, QStringView cannot provide a
             QChar constructor by itself.
         \li \e QString: if you store an unmodified copy of the string and thus would
@@ -286,7 +286,7 @@ QT_BEGIN_NAMESPACE
     If you need the full array, use the constructor from pointer and
     size instead:
 
-    \snippet code/src_corelib_tools_qstringview.cpp 2
+    \snippet code/src_corelib_text_qstringview.cpp 2
 
     \a string must remain valid for the lifetime of this string view
     object.

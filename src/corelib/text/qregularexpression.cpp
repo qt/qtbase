@@ -127,23 +127,23 @@ QT_BEGIN_NAMESPACE
     You can set the pattern string by passing a string to the QRegularExpression
     constructor:
 
-    \snippet code/src_corelib_tools_qregularexpression.cpp 0
+    \snippet code/src_corelib_text_qregularexpression.cpp 0
 
     This sets the pattern string to \c{a pattern}. You can also use the
     setPattern() function to set a pattern on an existing QRegularExpression
     object:
 
-    \snippet code/src_corelib_tools_qregularexpression.cpp 1
+    \snippet code/src_corelib_text_qregularexpression.cpp 1
 
     Note that due to C++ literal strings rules, you must escape all backslashes
     inside the pattern string with another backslash:
 
-    \snippet code/src_corelib_tools_qregularexpression.cpp 2
+    \snippet code/src_corelib_text_qregularexpression.cpp 2
 
     The pattern() function returns the pattern that is currently set for a
     QRegularExpression object:
 
-    \snippet code/src_corelib_tools_qregularexpression.cpp 3
+    \snippet code/src_corelib_text_qregularexpression.cpp 3
 
     \section1 Pattern Options
 
@@ -154,17 +154,17 @@ QT_BEGIN_NAMESPACE
     You can set the options by passing them to the QRegularExpression
     constructor, as in:
 
-    \snippet code/src_corelib_tools_qregularexpression.cpp 4
+    \snippet code/src_corelib_text_qregularexpression.cpp 4
 
     Alternatively, you can use the setPatternOptions() function on an existing
     QRegularExpressionObject:
 
-    \snippet code/src_corelib_tools_qregularexpression.cpp 5
+    \snippet code/src_corelib_text_qregularexpression.cpp 5
 
     It is possible to get the pattern options currently set on a
     QRegularExpression object by using the patternOptions() function:
 
-    \snippet code/src_corelib_tools_qregularexpression.cpp 6
+    \snippet code/src_corelib_text_qregularexpression.cpp 6
 
     Please refer to the QRegularExpression::PatternOption enum documentation for
     more information about each pattern option.
@@ -192,20 +192,20 @@ QT_BEGIN_NAMESPACE
     QRegularExpressionMatch object that can be used to inspect the results of
     the match. For instance:
 
-    \snippet code/src_corelib_tools_qregularexpression.cpp 7
+    \snippet code/src_corelib_text_qregularexpression.cpp 7
 
     If a match is successful, the (implicit) capturing group number 0 can be
     used to retrieve the substring matched by the entire pattern (see also the
     section about \l{extracting captured substrings}):
 
-    \snippet code/src_corelib_tools_qregularexpression.cpp 8
+    \snippet code/src_corelib_text_qregularexpression.cpp 8
 
     It's also possible to start a match at an arbitrary offset inside the
     subject string by passing the offset as an argument of the
     match() function. In the following example \c{"12 abc"}
     is not matched because the match is started at offset 1:
 
-    \snippet code/src_corelib_tools_qregularexpression.cpp 9
+    \snippet code/src_corelib_text_qregularexpression.cpp 9
 
     \target extracting captured substrings
     \section2 Extracting captured substrings
@@ -215,7 +215,7 @@ QT_BEGIN_NAMESPACE
     \l{QRegularExpressionMatch::}{captured()} function will return the string
     captured by the n-th capturing group:
 
-    \snippet code/src_corelib_tools_qregularexpression.cpp 10
+    \snippet code/src_corelib_text_qregularexpression.cpp 10
 
     Capturing groups in the pattern are numbered starting from 1, and the
     implicit capturing group 0 is used to capture the substring that matched
@@ -226,12 +226,12 @@ QT_BEGIN_NAMESPACE
     \l{QRegularExpressionMatch::}{capturedStart()} and the
     \l{QRegularExpressionMatch::}{capturedEnd()} functions:
 
-    \snippet code/src_corelib_tools_qregularexpression.cpp 11
+    \snippet code/src_corelib_text_qregularexpression.cpp 11
 
     All of these functions have an overload taking a QString as a parameter
     in order to extract \e{named} captured substrings. For instance:
 
-    \snippet code/src_corelib_tools_qregularexpression.cpp 12
+    \snippet code/src_corelib_text_qregularexpression.cpp 12
 
     \target global matching
     \section1 Global Matching
@@ -245,7 +245,7 @@ QT_BEGIN_NAMESPACE
     which is a Java-like forward iterator that can be used to iterate over the
     results. For instance:
 
-    \snippet code/src_corelib_tools_qregularexpression.cpp 13
+    \snippet code/src_corelib_text_qregularexpression.cpp 13
 
     Since it's a Java-like iterator, the QRegularExpressionMatchIterator will
     point immediately before the first result. Every result is returned as a
@@ -255,7 +255,7 @@ QT_BEGIN_NAMESPACE
     \l{QRegularExpressionMatchIterator::}{next()} will return the next result
     and advance the iterator. Continuing from the previous example:
 
-    \snippet code/src_corelib_tools_qregularexpression.cpp 14
+    \snippet code/src_corelib_text_qregularexpression.cpp 14
 
     You can also use \l{QRegularExpressionMatchIterator::}{peekNext()} to get
     the next result without advancing the iterator.
@@ -331,17 +331,17 @@ QT_BEGIN_NAMESPACE
     This behavior is implemented by the PartialPreferCompleteMatch match type.
     For instance:
 
-    \snippet code/src_corelib_tools_qregularexpression.cpp 15
+    \snippet code/src_corelib_text_qregularexpression.cpp 15
 
     If matching the same regular expression against the subject string leads to
     a complete match, it is reported as usual:
 
-    \snippet code/src_corelib_tools_qregularexpression.cpp 16
+    \snippet code/src_corelib_text_qregularexpression.cpp 16
 
     Another example with a different pattern, showing the behavior of
     preferring a complete match over a partial one:
 
-    \snippet code/src_corelib_tools_qregularexpression.cpp 17
+    \snippet code/src_corelib_text_qregularexpression.cpp 17
 
     In this case, the subpattern \c{abc\\w+X} partially matches the subject
     string; however, the subpattern \c{def} matches the subject string
@@ -351,7 +351,7 @@ QT_BEGIN_NAMESPACE
     match), then the QRegularExpressionMatch object will report the first one
     that is found. For instance:
 
-    \snippet code/src_corelib_tools_qregularexpression.cpp 18
+    \snippet code/src_corelib_text_qregularexpression.cpp 18
 
     \section2 Incremental/multi-segment matching
 
@@ -374,13 +374,13 @@ QT_BEGIN_NAMESPACE
     as soon as it is found, and other match alternatives are not tried
     (even if they could lead to a complete match). For instance:
 
-    \snippet code/src_corelib_tools_qregularexpression.cpp 19
+    \snippet code/src_corelib_text_qregularexpression.cpp 19
 
     This happens because when matching the first branch of the alternation
     operator a partial match is found, and therefore matching stops, without
     trying the second branch. Another example:
 
-    \snippet code/src_corelib_tools_qregularexpression.cpp 20
+    \snippet code/src_corelib_text_qregularexpression.cpp 20
 
     This shows what could seem a counterintuitive behavior of quantifiers:
     since \c{?} is greedy, then the engine tries first to continue the match
@@ -388,7 +388,7 @@ QT_BEGIN_NAMESPACE
     subject string, and therefore a partial match is reported. This is
     even more surprising in the following example:
 
-    \snippet code/src_corelib_tools_qregularexpression.cpp 21
+    \snippet code/src_corelib_text_qregularexpression.cpp 21
 
     It's easy to understand this behavior if we remember that the engine
     expects the subject string to be only a substring of the whole text we're
@@ -409,13 +409,13 @@ QT_BEGIN_NAMESPACE
     syntax errors in the pattern string. The isValid() function will return
     true if the regular expression is valid, or false otherwise:
 
-    \snippet code/src_corelib_tools_qregularexpression.cpp 22
+    \snippet code/src_corelib_text_qregularexpression.cpp 22
 
     You can get more information about the specific error by calling the
     errorString() function; moreover, the patternErrorOffset() function
     will return the offset inside the pattern string
 
-    \snippet code/src_corelib_tools_qregularexpression.cpp 23
+    \snippet code/src_corelib_text_qregularexpression.cpp 23
 
     If a match is attempted with an invalid QRegularExpression, then the
     returned QRegularExpressionMatch object will be invalid as well (that is,
@@ -479,7 +479,7 @@ QT_BEGIN_NAMESPACE
     returns each substring captured, either by the capturing group's index or
     by its name:
 
-    \snippet code/src_corelib_tools_qregularexpression.cpp 29
+    \snippet code/src_corelib_text_qregularexpression.cpp 29
 
     For each captured substring it is possible to query its starting and ending
     offsets in the subject string by calling the capturedStart() and the
@@ -530,7 +530,7 @@ QT_BEGIN_NAMESPACE
 
     For instance:
 
-    \snippet code/src_corelib_tools_qregularexpression.cpp 30
+    \snippet code/src_corelib_text_qregularexpression.cpp 30
 
     Moreover, QRegularExpressionMatchIterator offers a peekNext() function
     to get the next result \e{without} advancing the iterator.
@@ -1441,11 +1441,11 @@ int QRegularExpression::captureCount() const
 
     For instance, given the regular expression
 
-    \snippet code/src_corelib_tools_qregularexpression.cpp 32
+    \snippet code/src_corelib_text_qregularexpression.cpp 32
 
     namedCaptureGroups() will return the following list:
 
-    \snippet code/src_corelib_tools_qregularexpression.cpp 33
+    \snippet code/src_corelib_text_qregularexpression.cpp 33
 
     which corresponds to the fact that the capturing group #0 (corresponding to
     the whole match) has no name, the capturing group #1 has name "day", the
@@ -1731,11 +1731,11 @@ size_t qHash(const QRegularExpression &key, size_t seed) noexcept
     meaning when used as a regular expression pattern string, and returns
     the escaped string. For instance:
 
-    \snippet code/src_corelib_tools_qregularexpression.cpp 26
+    \snippet code/src_corelib_text_qregularexpression.cpp 26
 
     This is very convenient in order to build patterns from arbitrary strings:
 
-    \snippet code/src_corelib_tools_qregularexpression.cpp 27
+    \snippet code/src_corelib_text_qregularexpression.cpp 27
 
     \note This function implements Perl's quotemeta algorithm and escapes with
     a backslash all characters in \a str, except for the characters in the
@@ -1810,7 +1810,7 @@ QString QRegularExpression::escape(QStringView str)
     that path separators receive special treatment. This implies that it is not
     just a basic translation from "*" to ".*".
 
-    \snippet code/src_corelib_tools_qregularexpression.cpp 31
+    \snippet code/src_corelib_text_qregularexpression.cpp 31
 
     By default, the returned regular expression is fully anchored. In other
     words, there is no need of calling anchoredPattern() again on the
@@ -2086,7 +2086,7 @@ QRegularExpression::MatchOptions QRegularExpressionMatch::matchOptions() const
     including the implicit capturing group 0. This can be used to extract all
     the substrings that were captured:
 
-    \snippet code/src_corelib_tools_qregularexpression.cpp 28
+    \snippet code/src_corelib_text_qregularexpression.cpp 28
 
     Note that some of the capturing groups with an index less than
     lastCapturedIndex() could have not matched, and therefore captured nothing.

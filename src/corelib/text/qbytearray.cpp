@@ -799,7 +799,7 @@ QByteArray qUncompress(const uchar* data, int nbytes)
     char *} to its constructor. For example, the following code
     creates a byte array of size 5 containing the data "Hello":
 
-    \snippet code/src_corelib_tools_qbytearray.cpp 0
+    \snippet code/src_corelib_text_qbytearray.cpp 0
 
     Although the size() is 5, the byte array also maintains an extra
     '\\0' character at the end so that if a function is used that
@@ -818,11 +818,11 @@ QByteArray qUncompress(const uchar* data, int nbytes)
     operator[](). On non-const byte arrays, operator[]() returns a reference to
     a byte that can be used on the left side of an assignment. For example:
 
-    \snippet code/src_corelib_tools_qbytearray.cpp 1
+    \snippet code/src_corelib_text_qbytearray.cpp 1
 
     For read-only access, an alternative syntax is to use at():
 
-    \snippet code/src_corelib_tools_qbytearray.cpp 2
+    \snippet code/src_corelib_text_qbytearray.cpp 2
 
     at() can be faster than operator[](), because it never causes a
     \l{deep copy} to occur.
@@ -834,7 +834,7 @@ QByteArray qUncompress(const uchar* data, int nbytes)
     bytes, but excluding the terminating '\\0' added by QByteArray.
     For example:
 
-    \snippet code/src_corelib_tools_qbytearray.cpp 48
+    \snippet code/src_corelib_text_qbytearray.cpp 48
 
     If you want to obtain the length of the data up to and
     excluding the first '\\0' character, call qstrlen() on the byte
@@ -855,7 +855,7 @@ QByteArray qUncompress(const uchar* data, int nbytes)
     the byte data: append(), prepend(), insert(), replace(), and
     remove(). For example:
 
-    \snippet code/src_corelib_tools_qbytearray.cpp 3
+    \snippet code/src_corelib_text_qbytearray.cpp 3
 
     The replace() and remove() functions' first two arguments are the
     position from which to start erasing and the number of bytes that
@@ -883,7 +883,7 @@ QByteArray qUncompress(const uchar* data, int nbytes)
     For example, here's a typical loop that finds all occurrences of a
     particular substring:
 
-    \snippet code/src_corelib_tools_qbytearray.cpp 4
+    \snippet code/src_corelib_text_qbytearray.cpp 4
 
     If you simply want to check whether a QByteArray contains a
     particular character or substring, use contains(). If you want to
@@ -907,7 +907,7 @@ QByteArray qUncompress(const uchar* data, int nbytes)
     array is always empty, but an empty byte array isn't necessarily
     null:
 
-    \snippet code/src_corelib_tools_qbytearray.cpp 5
+    \snippet code/src_corelib_text_qbytearray.cpp 5
 
     All functions except isNull() treat null byte arrays the same as
     empty byte arrays. For example, data() returns a valid pointer
@@ -1240,7 +1240,7 @@ QByteArray &QByteArray::operator=(const char *str)
     automaticall unless the \l{deep copy} is created.
 
     Example:
-    \snippet code/src_corelib_tools_qbytearray.cpp 6
+    \snippet code/src_corelib_text_qbytearray.cpp 6
 
     \sa isEmpty(), resize()
 */
@@ -1250,7 +1250,7 @@ QByteArray &QByteArray::operator=(const char *str)
     Returns \c true if the byte array has size 0; otherwise returns \c false.
 
     Example:
-    \snippet code/src_corelib_tools_qbytearray.cpp 7
+    \snippet code/src_corelib_text_qbytearray.cpp 7
 
     \sa size()
 */
@@ -1340,7 +1340,7 @@ QByteArray &QByteArray::operator=(const char *str)
     '\\0' terminator.
 
     Example:
-    \snippet code/src_corelib_tools_qbytearray.cpp 8
+    \snippet code/src_corelib_text_qbytearray.cpp 8
 
     The pointer remains valid as long as the byte array isn't
     reallocated or destroyed. For read-only access, constData() is
@@ -1353,11 +1353,11 @@ QByteArray &QByteArray::operator=(const char *str)
     data(), but it will corrupt the heap and cause a crash because it
     does not allocate a byte for the '\\0' at the end:
 
-    \snippet code/src_corelib_tools_qbytearray.cpp 46
+    \snippet code/src_corelib_text_qbytearray.cpp 46
 
     This one allocates the correct amount of space:
 
-    \snippet code/src_corelib_tools_qbytearray.cpp 47
+    \snippet code/src_corelib_text_qbytearray.cpp 47
 
     Note: A QByteArray can store any byte values including '\\0's,
     but most functions that take \c{char *} arguments assume that the
@@ -1423,7 +1423,7 @@ QByteArray &QByteArray::operator=(const char *str)
     place.
 
     Example:
-    \snippet code/src_corelib_tools_qbytearray.cpp 9
+    \snippet code/src_corelib_text_qbytearray.cpp 9
 
     \sa at()
 */
@@ -1526,7 +1526,7 @@ QByteArray &QByteArray::operator=(const char *str)
     If \a pos is beyond the end of the array, nothing happens.
 
     Example:
-    \snippet code/src_corelib_tools_qbytearray.cpp 10
+    \snippet code/src_corelib_text_qbytearray.cpp 10
 
     \sa chop(), resize(), left()
 */
@@ -1544,7 +1544,7 @@ void QByteArray::truncate(int pos)
     array.
 
     Example:
-    \snippet code/src_corelib_tools_qbytearray.cpp 11
+    \snippet code/src_corelib_text_qbytearray.cpp 11
 
     \sa truncate(), resize(), left()
 */
@@ -1562,7 +1562,7 @@ void QByteArray::chop(int n)
     returns a reference to this byte array.
 
     Example:
-    \snippet code/src_corelib_tools_qbytearray.cpp 12
+    \snippet code/src_corelib_text_qbytearray.cpp 12
 
     Note: QByteArray is an \l{implicitly shared} class. Consequently,
     if you append to an empty byte array, then the byte array will just
@@ -1620,7 +1620,7 @@ void QByteArray::chop(int n)
     Returns \c true if this byte array is null; otherwise returns \c false.
 
     Example:
-    \snippet code/src_corelib_tools_qbytearray.cpp 13
+    \snippet code/src_corelib_text_qbytearray.cpp 13
 
     Qt makes a distinction between null byte arrays and empty byte
     arrays for historical reasons. For most applications, what
@@ -1726,7 +1726,7 @@ void QByteArray::resize(int size)
     size \a size beforehand.
 
     Example:
-    \snippet code/src_corelib_tools_qbytearray.cpp 14
+    \snippet code/src_corelib_text_qbytearray.cpp 14
 
     \sa resize()
 */
@@ -1781,7 +1781,7 @@ QByteArray QByteArray::nulTerminated() const
     reference to this byte array.
 
     Example:
-    \snippet code/src_corelib_tools_qbytearray.cpp 15
+    \snippet code/src_corelib_text_qbytearray.cpp 15
 
     This is the same as insert(0, \a ba).
 
@@ -1869,7 +1869,7 @@ QByteArray &QByteArray::prepend(char ch)
     Appends the byte array \a ba onto the end of this byte array.
 
     Example:
-    \snippet code/src_corelib_tools_qbytearray.cpp 16
+    \snippet code/src_corelib_text_qbytearray.cpp 16
 
     This is the same as insert(size(), \a ba).
 
@@ -2015,7 +2015,7 @@ static inline QByteArray &qbytearray_insert(QByteArray *ba,
     reference to this byte array.
 
     Example:
-    \snippet code/src_corelib_tools_qbytearray.cpp 17
+    \snippet code/src_corelib_text_qbytearray.cpp 17
 
     \sa append(), prepend(), replace(), remove()
 */
@@ -2123,7 +2123,7 @@ QByteArray &QByteArray::insert(int i, int count, char ch)
     array is truncated at position \a pos.
 
     Example:
-    \snippet code/src_corelib_tools_qbytearray.cpp 18
+    \snippet code/src_corelib_text_qbytearray.cpp 18
 
     \sa insert(), replace()
 */
@@ -2147,7 +2147,7 @@ QByteArray &QByteArray::remove(int pos, int len)
     array \a after, and returns a reference to this byte array.
 
     Example:
-    \snippet code/src_corelib_tools_qbytearray.cpp 19
+    \snippet code/src_corelib_text_qbytearray.cpp 19
 
     \sa insert(), remove()
 */
@@ -2211,7 +2211,7 @@ QByteArray &QByteArray::replace(int pos, int len, const char *after, int alen)
     byte array \a after.
 
     Example:
-    \snippet code/src_corelib_tools_qbytearray.cpp 20
+    \snippet code/src_corelib_text_qbytearray.cpp 20
 */
 
 QByteArray &QByteArray::replace(const QByteArray &before, const QByteArray &after)
@@ -2477,7 +2477,7 @@ QList<QByteArray> QByteArray::split(char sep) const
 
     Example:
 
-    \snippet code/src_corelib_tools_qbytearray.cpp 49
+    \snippet code/src_corelib_text_qbytearray.cpp 49
 */
 QByteArray QByteArray::repeated(int times) const
 {
@@ -2525,7 +2525,7 @@ QByteArray QByteArray::repeated(int times) const
     position \a from. Returns -1 if \a ba could not be found.
 
     Example:
-    \snippet code/src_corelib_tools_qbytearray.cpp 21
+    \snippet code/src_corelib_text_qbytearray.cpp 21
 
     \sa lastIndexOf(), contains(), count()
 */
@@ -2593,7 +2593,7 @@ int QByteArray::indexOf(const char *c, int from) const
     position \a from. Returns -1 if \a ch could not be found.
 
     Example:
-    \snippet code/src_corelib_tools_qbytearray.cpp 22
+    \snippet code/src_corelib_text_qbytearray.cpp 22
 
     \sa lastIndexOf(), contains()
 */
@@ -2655,7 +2655,7 @@ static int lastIndexOfHelper(const char *haystack, int l, const char *needle, in
     starts at the last byte. Returns -1 if \a ba could not be found.
 
     Example:
-    \snippet code/src_corelib_tools_qbytearray.cpp 23
+    \snippet code/src_corelib_text_qbytearray.cpp 23
 
     \sa indexOf(), contains(), count()
 */
@@ -2713,7 +2713,7 @@ int QByteArray::lastIndexOf(const char *str, int from) const
     last (size() - 1) byte. Returns -1 if \a ch could not be found.
 
     Example:
-    \snippet code/src_corelib_tools_qbytearray.cpp 24
+    \snippet code/src_corelib_text_qbytearray.cpp 24
 
     \sa indexOf(), contains()
 */
@@ -2825,7 +2825,7 @@ int QByteArray::count(char ch) const
     otherwise returns \c false.
 
     Example:
-    \snippet code/src_corelib_tools_qbytearray.cpp 25
+    \snippet code/src_corelib_text_qbytearray.cpp 25
 
     \sa endsWith(), left()
 */
@@ -2870,7 +2870,7 @@ bool QByteArray::startsWith(char ch) const
     otherwise returns \c false.
 
     Example:
-    \snippet code/src_corelib_tools_qbytearray.cpp 26
+    \snippet code/src_corelib_text_qbytearray.cpp 26
 
     \sa startsWith(), right()
 */
@@ -2990,7 +2990,7 @@ bool QByteArray::endsWith(char ch) const
     size().
 
     Example:
-    \snippet code/src_corelib_tools_qbytearray.cpp 27
+    \snippet code/src_corelib_text_qbytearray.cpp 27
 
     \sa startsWith(), right(), mid(), chopped(), chop(), truncate()
 */
@@ -3012,7 +3012,7 @@ QByteArray QByteArray::left(int len)  const
     size().
 
     Example:
-    \snippet code/src_corelib_tools_qbytearray.cpp 28
+    \snippet code/src_corelib_text_qbytearray.cpp 28
 
     \sa endsWith(), left(), mid(), chopped(), chop(), truncate()
 */
@@ -3035,7 +3035,7 @@ QByteArray QByteArray::right(int len) const
     pos until the end of the byte array.
 
     Example:
-    \snippet code/src_corelib_tools_qbytearray.cpp 29
+    \snippet code/src_corelib_text_qbytearray.cpp 29
 
     \sa left(), right(), chopped(), chop(), truncate()
 */
@@ -3080,7 +3080,7 @@ QByteArray QByteArray::mid(int pos, int len) const
     interpreted as a Latin-1 encoded string.
 
     Example:
-    \snippet code/src_corelib_tools_qbytearray.cpp 30
+    \snippet code/src_corelib_text_qbytearray.cpp 30
 
     \sa isLower(), toUpper(), {8-bit Character Comparisons}
 */
@@ -3134,7 +3134,7 @@ QByteArray QByteArray::toLower_helper(QByteArray &a)
     interpreted as a Latin-1 encoded string.
 
     Example:
-    \snippet code/src_corelib_tools_qbytearray.cpp 31
+    \snippet code/src_corelib_text_qbytearray.cpp 31
 
     \sa isUpper(), toLower(), {8-bit Character Comparisons}
 */
@@ -3572,7 +3572,7 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     characters '\\t', '\\n', '\\v', '\\f', '\\r', and ' '.
 
     Example:
-    \snippet code/src_corelib_tools_qbytearray.cpp 32
+    \snippet code/src_corelib_text_qbytearray.cpp 32
 
     \sa trimmed()
 */
@@ -3597,7 +3597,7 @@ QByteArray QByteArray::simplified_helper(QByteArray &a)
     characters '\\t', '\\n', '\\v', '\\f', '\\r', and ' '.
 
     Example:
-    \snippet code/src_corelib_tools_qbytearray.cpp 33
+    \snippet code/src_corelib_text_qbytearray.cpp 33
 
     Unlike simplified(), \l {QByteArray::trimmed()}{trimmed()} leaves internal whitespace alone.
 
@@ -3627,7 +3627,7 @@ QByteArray QByteArray::trimmed_helper(QByteArray &a)
     after position \a width are removed, and the copy is returned.
 
     Example:
-    \snippet code/src_corelib_tools_qbytearray.cpp 34
+    \snippet code/src_corelib_text_qbytearray.cpp 34
 
     \sa rightJustified()
 */
@@ -3664,7 +3664,7 @@ QByteArray QByteArray::leftJustified(int width, char fill, bool truncate) const
     position \a width.
 
     Example:
-    \snippet code/src_corelib_tools_qbytearray.cpp 35
+    \snippet code/src_corelib_text_qbytearray.cpp 35
 
     \sa leftJustified()
 */
@@ -3790,7 +3790,7 @@ qulonglong QByteArray::toULongLong(bool *ok, int base) const
     If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
-    \snippet code/src_corelib_tools_qbytearray.cpp 36
+    \snippet code/src_corelib_text_qbytearray.cpp 36
 
     \note The conversion of the number is performed in the default C locale,
     irrespective of the user's locale.
@@ -3844,7 +3844,7 @@ uint QByteArray::toUInt(bool *ok, int base) const
     If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
-    \snippet code/src_corelib_tools_qbytearray.cpp 37
+    \snippet code/src_corelib_text_qbytearray.cpp 37
 
     \note The conversion of the number is performed in the default C locale,
     irrespective of the user's locale.
@@ -3942,7 +3942,7 @@ ushort QByteArray::toUShort(bool *ok, int base) const
     If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
-    \snippet code/src_corelib_tools_qbytearray.cpp 38
+    \snippet code/src_corelib_text_qbytearray.cpp 38
 
     \warning The QByteArray content may only contain valid numerical characters
     which includes the plus/minus sign, the character e used in scientific
@@ -3977,7 +3977,7 @@ double QByteArray::toDouble(bool *ok) const
     If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
-    \snippet code/src_corelib_tools_qbytearray.cpp 38float
+    \snippet code/src_corelib_text_qbytearray.cpp 38float
 
     \warning The QByteArray content may only contain valid numerical characters
     which includes the plus/minus sign, the character e used in scientific
@@ -4002,7 +4002,7 @@ float QByteArray::toFloat(bool *ok) const
 
     Returns a copy of the byte array, encoded using the options \a options.
 
-    \snippet code/src_corelib_tools_qbytearray.cpp 39
+    \snippet code/src_corelib_text_qbytearray.cpp 39
 
     The algorithm used to encode Base64-encoded data is defined in \l{RFC 4648}.
 
@@ -4071,7 +4071,7 @@ QByteArray QByteArray::toBase64(Base64Options options) const
     as an unsigned integer.
 
     Example:
-    \snippet code/src_corelib_tools_qbytearray.cpp 40
+    \snippet code/src_corelib_text_qbytearray.cpp 40
 
     \note The format of the number is not localized; the default C locale
     is used irrespective of the user's locale.
@@ -4251,7 +4251,7 @@ QByteArray &QByteArray::setNum(double n, char f, int prec)
     any value between 2 and 36.
 
     Example:
-    \snippet code/src_corelib_tools_qbytearray.cpp 41
+    \snippet code/src_corelib_text_qbytearray.cpp 41
 
     \note The format of the number is not localized; the default C locale
     is used irrespective of the user's locale.
@@ -4347,7 +4347,7 @@ QByteArray QByteArray::number(qulonglong n, int base)
     decimal point. With 'g' and 'G', \a prec is the maximum number of
     significant digits (trailing zeroes are omitted).
 
-    \snippet code/src_corelib_tools_qbytearray.cpp 42
+    \snippet code/src_corelib_text_qbytearray.cpp 42
 
     \note The format of the number is not localized; the default C locale
     is used irrespective of the user's locale.
@@ -4384,7 +4384,7 @@ QByteArray QByteArray::number(double n, char f, int prec)
     Here is an example of how to read data using a QDataStream on raw
     data in memory without copying the raw data into a QByteArray:
 
-    \snippet code/src_corelib_tools_qbytearray.cpp 43
+    \snippet code/src_corelib_text_qbytearray.cpp 43
 
     \warning A byte array created with fromRawData() is \e not
     '\\0'-terminated, unless the raw data contains a 0 character at
@@ -4527,7 +4527,7 @@ fromBase64_helper_result fromBase64_helper(const char *input, qsizetype inputSiz
 
     For example:
 
-    \snippet code/src_corelib_tools_qbytearray.cpp 44ter
+    \snippet code/src_corelib_text_qbytearray.cpp 44ter
 
     The algorithm used to decode Base64-encoded data is defined in \l{RFC 4648}.
 
@@ -4580,7 +4580,7 @@ QByteArray::FromBase64Result QByteArray::fromBase64Encoding(const QByteArray &ba
 
     For example:
 
-    \snippet code/src_corelib_tools_qbytearray.cpp 44
+    \snippet code/src_corelib_text_qbytearray.cpp 44
 
     The algorithm used to decode Base64-encoded data is defined in \l{RFC 4648}.
 
@@ -4605,7 +4605,7 @@ QByteArray QByteArray::fromBase64(const QByteArray &base64, Base64Options option
 
     For example:
 
-    \snippet code/src_corelib_tools_qbytearray.cpp 45
+    \snippet code/src_corelib_text_qbytearray.cpp 45
 
     \sa toHex()
 */
@@ -4640,7 +4640,7 @@ QByteArray QByteArray::fromHex(const QByteArray &hexEncoded)
     If \a separator is not '\0', the separator character is inserted between the hex bytes.
 
     Example:
-    \snippet code/src_corelib_tools_qbytearray.cpp 50
+    \snippet code/src_corelib_text_qbytearray.cpp 50
 
     \since 5.9
     \sa fromHex()
@@ -4717,7 +4717,7 @@ void q_fromPercentEncoding(QByteArray *ba)
     another (for instance, '_' or '=').
 
     For example:
-    \snippet code/src_corelib_tools_qbytearray.cpp 51
+    \snippet code/src_corelib_text_qbytearray.cpp 51
 
     \note Given invalid input (such as a string containing the sequence "%G5",
     which is not a valid hexadecimal number) the output will be invalid as
@@ -4839,7 +4839,7 @@ void q_normalizePercentEncoding(QByteArray *ba, const char *exclude)
 
     Example:
 
-    \snippet code/src_corelib_tools_qbytearray.cpp 52
+    \snippet code/src_corelib_text_qbytearray.cpp 52
 
     The hex encoding uses the numbers 0-9 and the uppercase letters A-F.
 
@@ -4957,7 +4957,7 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
 
     For instance:
 
-    \snippet code/src_corelib_tools_qbytearray.cpp 53
+    \snippet code/src_corelib_text_qbytearray.cpp 53
 
     Using QByteArrayLiteral instead of a double quoted plain C++ string literal
     can significantly speed up creation of QByteArray instances from data known
@@ -4980,12 +4980,12 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
     conversion operators defined for QByteArray::FromBase64Result make
     its usage straightforward:
 
-    \snippet code/src_corelib_tools_qbytearray.cpp 44ter
+    \snippet code/src_corelib_text_qbytearray.cpp 44ter
 
     Alternatively, it is possible to access the conversion status
     and the decoded data directly:
 
-    \snippet code/src_corelib_tools_qbytearray.cpp 44quater
+    \snippet code/src_corelib_text_qbytearray.cpp 44quater
 
     \sa QByteArray::fromBase64
 */

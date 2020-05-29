@@ -1562,7 +1562,7 @@ float QLocale::toFloat(const QString &s, bool *ok) const
     This function does not fall back to the 'C' locale if the string
     cannot be interpreted in this locale.
 
-    \snippet code/src_corelib_tools_qlocale.cpp 3
+    \snippet code/src_corelib_text_qlocale.cpp 3
 
     Notice that the last conversion returns 1234.0, because '.' is the
     thousands group separator in the German locale.
@@ -1777,7 +1777,7 @@ float QLocale::toFloat(const QStringRef &s, bool *ok) const
     This function does not fall back to the 'C' locale if the string
     cannot be interpreted in this locale.
 
-    \snippet code/src_corelib_tools_qlocale.cpp 3
+    \snippet code/src_corelib_text_qlocale.cpp 3
 
     Notice that the last conversion returns 1234.0, because '.' is the
     thousands group separator in the German locale.
@@ -1993,7 +1993,7 @@ float QLocale::toFloat(QStringView s, bool *ok) const
     the "C" locale if the string cannot be interpreted in this
     locale.
 
-    \snippet code/src_corelib_tools_qlocale.cpp 3-qstringview
+    \snippet code/src_corelib_text_qlocale.cpp 3-qstringview
 
     Notice that the last conversion returns 1234.0, because '.' is the
     thousands group separator in the German locale.
