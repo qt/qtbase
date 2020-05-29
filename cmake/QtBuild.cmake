@@ -3692,6 +3692,14 @@ function(qt_add_test name)
         set_tests_properties(${name} PROPERTIES TIMEOUT ${arg_TIMEOUT})
     endif()
 
+    # Add a ${target}/check makefile target, to more easily test one test.
+    add_custom_target("${name}_check"
+        VERBATIM
+        COMMENT "Running ${CMAKE_CTEST_COMMAND} -V -R \"^${name}$\""
+        COMMAND "${CMAKE_CTEST_COMMAND}" -V -R "^${name}$"
+        )
+    add_dependencies("${name}_check" "${name}")
+
     # Get path to <qt_relocatable_install_prefix>/bin, as well as CMAKE_INSTALL_PREFIX/bin, then
     # prepend them to the PATH environment variable.
     # It's needed on Windows to find the shared libraries and plugins.
