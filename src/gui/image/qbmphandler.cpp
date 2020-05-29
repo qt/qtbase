@@ -262,9 +262,13 @@ static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, qint64 offset, 
             depth = 8;
             format = QImage::Format_Indexed8;
             break;
-        default:
+        case 1:
             depth = 1;
             format = QImage::Format_Mono;
+            break;
+        default:
+            return false;
+            break;
     }
 
     if (depth != 32) {
