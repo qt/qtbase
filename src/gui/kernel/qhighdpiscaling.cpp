@@ -649,34 +649,77 @@ QDpi QHighDpiScaling::logicalDpi(const QScreen *screen)
     return effectiveLogicalDpi(screen->handle(), scaleFactor, roundedScaleFactor);
 }
 
-QHighDpiScaling::ScaleAndOrigin QHighDpiScaling::scaleAndOrigin(const QPlatformScreen *platformScreen, QPoint *nativePosition)
+// Returns the screen containing \a position, using \a guess as a starting point
+// for the search. \a guess might be nullptr. Returns nullptr if \a position is outside
+// of all screens.
+QScreen *QHighDpiScaling::screenForPosition(QHighDpiScaling::Point position, QScreen *guess)
 {
+    if (position.kind == QHighDpiScaling::Point::Invalid)
+        return nullptr;
+
+    auto getPlatformScreenGuess = [](QScreen *maybeScreen) -> QPlatformScreen * {
+        if (maybeScreen)
+            return maybeScreen->handle();
+        if (QScreen *primary = QGuiApplication::primaryScreen())
+            return primary->handle();
+        return nullptr;
+    };
+
+    QPlatformScreen *platformGuess = getPlatformScreenGuess(guess);
+    if (!platformGuess)
+        return nullptr;
+
+    auto onScreen = [](QHighDpiScaling::Point position, const QPlatformScreen *platformScreen) -> bool {
+        return position.kind == Point::Native
+          ?  platformScreen->geometry().contains(position.point)
+          :  platformScreen->screen()->geometry().contains(position.point);
+    };
+
+    // is the guessed screen correct?
+    if (onScreen(position, platformGuess))
+        return platformGuess->screen();
+
+    // search sibling screens
+    const auto screens = platformGuess->virtualSiblings();
+    for (const QPlatformScreen *screen : screens) {
+        if (onScreen(position, screen))
+            return screen->screen();
+    }
+
+    return nullptr;
+}
+
+QHighDpiScaling::ScaleAndOrigin QHighDpiScaling::scaleAndOrigin(const QPlatformScreen *platformScreen, QHighDpiScaling::Point position)
+{
+    Q_UNUSED(position)
     if (!m_active)
         return { qreal(1), QPoint() };
     if (!platformScreen)
         return { m_factor, QPoint() }; // the global factor
-    const QPlatformScreen *actualScreen = nativePosition ?
-        platformScreen->screenForPosition(*nativePosition) : platformScreen;
-    return { m_factor * screenSubfactor(actualScreen), actualScreen->geometry().topLeft() };
+    return { m_factor * screenSubfactor(platformScreen), platformScreen->geometry().topLeft() };
 }
 
-QHighDpiScaling::ScaleAndOrigin QHighDpiScaling::scaleAndOrigin(const QScreen *screen, QPoint *nativePosition)
+QHighDpiScaling::ScaleAndOrigin QHighDpiScaling::scaleAndOrigin(const QScreen *screen, QHighDpiScaling::Point position)
 {
+    Q_UNUSED(position)
     if (!m_active)
         return { qreal(1), QPoint() };
     if (!screen)
         return { m_factor, QPoint() }; // the global factor
-    return scaleAndOrigin(screen->handle(), nativePosition);
+    return scaleAndOrigin(screen->handle(), position);
 }
 
-QHighDpiScaling::ScaleAndOrigin QHighDpiScaling::scaleAndOrigin(const QWindow *window, QPoint *nativePosition)
+QHighDpiScaling::ScaleAndOrigin QHighDpiScaling::scaleAndOrigin(const QWindow *window, QHighDpiScaling::Point position)
 {
     if (!m_active)
         return { qreal(1), QPoint() };
 
+    // Determine correct screen; use the screen which contains the given
+    // position if a valid position is passed.
     QScreen *screen = window ? window->screen() : QGuiApplication::primaryScreen();
-    const bool searchScreen = !window || window->isTopLevel();
-    return scaleAndOrigin(screen, searchScreen ? nativePosition : nullptr);
+    QScreen *overrideScreen = QHighDpiScaling::screenForPosition(position, screen);
+    QScreen *targetScreen = overrideScreen ? overrideScreen : screen;
+    return scaleAndOrigin(targetScreen, position);
 }
 
 #else

@@ -96,18 +96,29 @@ public:
 
     static bool isActive() { return m_active; }
 
+    struct Point {
+        enum Kind {
+            Invalid,
+            DeviceIndependent,
+            Native
+        };
+        Kind kind;
+        QPoint point;
+    };
+
     struct ScaleAndOrigin
     {
         qreal factor;
         QPoint origin;
     };
-    static ScaleAndOrigin scaleAndOrigin(const QPlatformScreen *platformScreen, QPoint *nativePosition = nullptr);
-    static ScaleAndOrigin scaleAndOrigin(const QScreen *screen, QPoint *nativePosition = nullptr);
-    static ScaleAndOrigin scaleAndOrigin(const QWindow *platformScreen, QPoint *nativePosition = nullptr);
+
+    static ScaleAndOrigin scaleAndOrigin(const QPlatformScreen *platformScreen, Point position = Point{ Point::Invalid, QPoint() });
+    static ScaleAndOrigin scaleAndOrigin(const QScreen *screen, Point position = Point{ Point::Invalid, QPoint() });
+    static ScaleAndOrigin scaleAndOrigin(const QWindow *platformScreen, Point position = Point{ Point::Invalid, QPoint() });
 
     template<typename C>
-    static qreal factor(C *context, QPoint *nativePosition = nullptr) {
-        return scaleAndOrigin(context, nativePosition).factor;
+    static qreal factor(C *context) {
+        return scaleAndOrigin(context).factor;
     }
 
     static QPoint mapPositionFromNative(const QPoint &pos, const QPlatformScreen *platformScreen);
@@ -121,6 +132,7 @@ private:
     static qreal roundScaleFactor(qreal rawFactor);
     static QDpi effectiveLogicalDpi(const QPlatformScreen *screen, qreal rawFactor, qreal roundedFactor);
     static qreal screenSubfactor(const QPlatformScreen *screen);
+    static QScreen *screenForPosition(Point position, QScreen *guess);
 
     static qreal m_factor;
     static bool m_active;
@@ -209,11 +221,21 @@ inline QRegion scale(const QRegion &region, qreal scaleFactor, QPoint origin = Q
 }
 
 template <typename T>
-inline QPoint position(T) { return QPoint(); }
-inline QPoint position(QPoint point) { return point; }
-inline QPoint position(QPointF point) { return point.toPoint(); }
-inline QPoint position(QRect rect) { return rect.center(); }
-inline QPoint position(QRectF rect) { return rect.center().toPoint(); }
+inline QHighDpiScaling::Point position(T, QHighDpiScaling::Point::Kind) {
+    return QHighDpiScaling::Point{ QHighDpiScaling::Point::Invalid, QPoint() };
+}
+inline QHighDpiScaling::Point position(QPoint point, QHighDpiScaling::Point::Kind kind) {
+    return QHighDpiScaling::Point{ kind, point };
+}
+inline QHighDpiScaling::Point position(QPointF point, QHighDpiScaling::Point::Kind kind) {
+    return QHighDpiScaling::Point{ kind, point.toPoint() };
+}
+inline QHighDpiScaling::Point position(QRect rect, QHighDpiScaling::Point::Kind kind) {
+    return QHighDpiScaling::Point{ kind, rect.topLeft() };
+}
+inline QHighDpiScaling::Point position(QRectF rect, QHighDpiScaling::Point::Kind kind) {
+    return QHighDpiScaling::Point{ kind, rect.topLeft().toPoint() };
+}
 
 template <typename T, typename C>
 T fromNativePixels(const T &value, const C *context)
