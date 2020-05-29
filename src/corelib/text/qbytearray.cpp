@@ -3728,13 +3728,14 @@ T toIntegral_helper(const char *data, bool *ok, int base)
 }
 
 /*!
-    Returns the byte array converted to a \c {long long} using base \a
-    base, which is 10 by default and must be between 2 and 36, or 0.
+    Returns the byte array converted to a \c {long long} using base \a base,
+    which is ten by default. Bases 0 and 2 through 36 are supported, using
+    letters for digits beyond 9; A is ten, B is eleven and so on.
 
-    If \a base is 0, the base is determined automatically using the
-    following rules: If the byte array begins with "0x", it is assumed to
-    be hexadecimal; if it begins with "0", it is assumed to be octal;
-    otherwise it is assumed to be decimal.
+    If \a base is 0, the base is determined automatically using the following
+    rules: If the byte array begins with "0x", it is assumed to be hexadecimal
+    (base 16); otherwise, if it begins with "0", it is assumed to be octal (base
+    8); otherwise it is assumed to be decimal.
 
     Returns 0 if the conversion fails.
 
@@ -3742,7 +3743,8 @@ T toIntegral_helper(const char *data, bool *ok, int base)
     to \c false, and success by setting *\a{ok} to \c true.
 
     \note The conversion of the number is performed in the default C locale,
-    irrespective of the user's locale.
+    regardless of the user's locale. Use QLocale to perform locale-aware
+    conversions between numbers and strings.
 
     \sa number()
 */
@@ -3753,14 +3755,14 @@ qlonglong QByteArray::toLongLong(bool *ok, int base) const
 }
 
 /*!
-    Returns the byte array converted to an \c {unsigned long long}
-    using base \a base, which is 10 by default and must be between 2
-    and 36, or 0.
+    Returns the byte array converted to an \c {unsigned long long} using base \a
+    base, which is ten by default. Bases 0 and 2 through 36 are supported, using
+    letters for digits beyond 9; A is ten, B is eleven and so on.
 
-    If \a base is 0, the base is determined automatically using the
-    following rules: If the byte array begins with "0x", it is assumed to
-    be hexadecimal; if it begins with "0", it is assumed to be octal;
-    otherwise it is assumed to be decimal.
+    If \a base is 0, the base is determined automatically using the following
+    rules: If the byte array begins with "0x", it is assumed to be hexadecimal
+    (base 16); otherwise, if it begins with "0", it is assumed to be octal (base
+    8); otherwise it is assumed to be decimal.
 
     Returns 0 if the conversion fails.
 
@@ -3768,7 +3770,8 @@ qlonglong QByteArray::toLongLong(bool *ok, int base) const
     to \c false, and success by setting *\a{ok} to \c true.
 
     \note The conversion of the number is performed in the default C locale,
-    irrespective of the user's locale.
+    regardless of the user's locale. Use QLocale to perform locale-aware
+    conversions between numbers and strings.
 
     \sa number()
 */
@@ -3779,13 +3782,14 @@ qulonglong QByteArray::toULongLong(bool *ok, int base) const
 }
 
 /*!
-    Returns the byte array converted to an \c int using base \a
-    base, which is 10 by default and must be between 2 and 36, or 0.
+    Returns the byte array converted to an \c int using base \a base, which is
+    ten by default. Bases 0 and 2 through 36 are supported, using letters for
+    digits beyond 9; A is ten, B is eleven and so on.
 
-    If \a base is 0, the base is determined automatically using the
-    following rules: If the byte array begins with "0x", it is assumed to
-    be hexadecimal; if it begins with "0", it is assumed to be octal;
-    otherwise it is assumed to be decimal.
+    If \a base is 0, the base is determined automatically using the following
+    rules: If the byte array begins with "0x", it is assumed to be hexadecimal
+    (base 16); otherwise, if it begins with "0", it is assumed to be octal (base
+    8); otherwise it is assumed to be decimal.
 
     Returns 0 if the conversion fails.
 
@@ -3795,7 +3799,8 @@ qulonglong QByteArray::toULongLong(bool *ok, int base) const
     \snippet code/src_corelib_text_qbytearray.cpp 36
 
     \note The conversion of the number is performed in the default C locale,
-    irrespective of the user's locale.
+    regardless of the user's locale. Use QLocale to perform locale-aware
+    conversions between numbers and strings.
 
     \sa number()
 */
@@ -3806,13 +3811,14 @@ int QByteArray::toInt(bool *ok, int base) const
 }
 
 /*!
-    Returns the byte array converted to an \c {unsigned int} using base \a
-    base, which is 10 by default and must be between 2 and 36, or 0.
+    Returns the byte array converted to an \c {unsigned int} using base \a base,
+    which is ten by default. Bases 0 and 2 through 36 are supported, using
+    letters for digits beyond 9; A is ten, B is eleven and so on.
 
-    If \a base is 0, the base is determined automatically using the
-    following rules: If the byte array begins with "0x", it is assumed to
-    be hexadecimal; if it begins with "0", it is assumed to be octal;
-    otherwise it is assumed to be decimal.
+    If \a base is 0, the base is determined automatically using the following
+    rules: If the byte array begins with "0x", it is assumed to be hexadecimal
+    (base 16); otherwise, if it begins with "0", it is assumed to be octal (base
+    8); otherwise it is assumed to be decimal.
 
     Returns 0 if the conversion fails.
 
@@ -3820,7 +3826,8 @@ int QByteArray::toInt(bool *ok, int base) const
     to \c false, and success by setting *\a{ok} to \c true.
 
     \note The conversion of the number is performed in the default C locale,
-    irrespective of the user's locale.
+    regardless of the user's locale. Use QLocale to perform locale-aware
+    conversions between numbers and strings.
 
     \sa number()
 */
@@ -3833,13 +3840,14 @@ uint QByteArray::toUInt(bool *ok, int base) const
 /*!
     \since 4.1
 
-    Returns the byte array converted to a \c long int using base \a
-    base, which is 10 by default and must be between 2 and 36, or 0.
+    Returns the byte array converted to a \c long int using base \a base, which
+    is ten by default. Bases 0 and 2 through 36 are supported, using letters for
+    digits beyond 9; A is ten, B is eleven and so on.
 
-    If \a base is 0, the base is determined automatically using the
-    following rules: If the byte array begins with "0x", it is assumed to
-    be hexadecimal; if it begins with "0", it is assumed to be octal;
-    otherwise it is assumed to be decimal.
+    If \a base is 0, the base is determined automatically using the following
+    rules: If the byte array begins with "0x", it is assumed to be hexadecimal
+    (base 16); otherwise, if it begins with "0", it is assumed to be octal (base
+    8); otherwise it is assumed to be decimal.
 
     Returns 0 if the conversion fails.
 
@@ -3849,7 +3857,8 @@ uint QByteArray::toUInt(bool *ok, int base) const
     \snippet code/src_corelib_text_qbytearray.cpp 37
 
     \note The conversion of the number is performed in the default C locale,
-    irrespective of the user's locale.
+    regardless of the user's locale. Use QLocale to perform locale-aware
+    conversions between numbers and strings.
 
     \sa number()
 */
@@ -3862,12 +3871,13 @@ long QByteArray::toLong(bool *ok, int base) const
     \since 4.1
 
     Returns the byte array converted to an \c {unsigned long int} using base \a
-    base, which is 10 by default and must be between 2 and 36, or 0.
+    base, which is ten by default. Bases 0 and 2 through 36 are supported, using
+    letters for digits beyond 9; A is ten, B is eleven and so on.
 
-    If \a base is 0, the base is determined automatically using the
-    following rules: If the byte array begins with "0x", it is assumed to
-    be hexadecimal; if it begins with "0", it is assumed to be octal;
-    otherwise it is assumed to be decimal.
+    If \a base is 0, the base is determined automatically using the following
+    rules: If the byte array begins with "0x", it is assumed to be hexadecimal
+    (base 16); otherwise, if it begins with "0", it is assumed to be octal (base
+    8); otherwise it is assumed to be decimal.
 
     Returns 0 if the conversion fails.
 
@@ -3875,7 +3885,8 @@ long QByteArray::toLong(bool *ok, int base) const
     to \c false, and success by setting *\a{ok} to \c true.
 
     \note The conversion of the number is performed in the default C locale,
-    irrespective of the user's locale.
+    regardless of the user's locale. Use QLocale to perform locale-aware
+    conversions between numbers and strings.
 
     \sa number()
 */
@@ -3885,13 +3896,14 @@ ulong QByteArray::toULong(bool *ok, int base) const
 }
 
 /*!
-    Returns the byte array converted to a \c short using base \a
-    base, which is 10 by default and must be between 2 and 36, or 0.
+    Returns the byte array converted to a \c short using base \a base, which is
+    ten by default. Bases 0 and 2 through 36 are supported, using letters for
+    digits beyond 9; A is ten, B is eleven and so on.
 
-    If \a base is 0, the base is determined automatically using the
-    following rules: If the byte array begins with "0x", it is assumed to
-    be hexadecimal; if it begins with "0", it is assumed to be octal;
-    otherwise it is assumed to be decimal.
+    If \a base is 0, the base is determined automatically using the following
+    rules: If the byte array begins with "0x", it is assumed to be hexadecimal;
+    otherwise, if it begins with "0", it is assumed to be octal; otherwise it is
+    assumed to be decimal.
 
     Returns 0 if the conversion fails.
 
@@ -3899,7 +3911,8 @@ ulong QByteArray::toULong(bool *ok, int base) const
     to \c false, and success by setting *\a{ok} to \c true.
 
     \note The conversion of the number is performed in the default C locale,
-    irrespective of the user's locale.
+    regardless of the user's locale. Use QLocale to perform locale-aware
+    conversions between numbers and strings.
 
     \sa number()
 */
@@ -3911,12 +3924,13 @@ short QByteArray::toShort(bool *ok, int base) const
 
 /*!
     Returns the byte array converted to an \c {unsigned short} using base \a
-    base, which is 10 by default and must be between 2 and 36, or 0.
+    base, which is ten by default. Bases 0 and 2 through 36 are supported, using
+    letters for digits beyond 9; A is ten, B is eleven and so on.
 
-    If \a base is 0, the base is determined automatically using the
-    following rules: If the byte array begins with "0x", it is assumed to
-    be hexadecimal; if it begins with "0", it is assumed to be octal;
-    otherwise it is assumed to be decimal.
+    If \a base is 0, the base is determined automatically using the following
+    rules: If the byte array begins with "0x", it is assumed to be hexadecimal;
+    otherwise, if it begins with "0", it is assumed to be octal; otherwise it is
+    assumed to be decimal.
 
     Returns 0 if the conversion fails.
 
@@ -3924,7 +3938,8 @@ short QByteArray::toShort(bool *ok, int base) const
     to \c false, and success by setting *\a{ok} to \c true.
 
     \note The conversion of the number is performed in the default C locale,
-    irrespective of the user's locale.
+    regardless of the user's locale. Use QLocale to perform locale-aware
+    conversions between numbers and strings.
 
     \sa number()
 */
@@ -3952,7 +3967,8 @@ ushort QByteArray::toUShort(bool *ok, int base) const
     leads to a conversion error.
 
     \note The conversion of the number is performed in the default C locale,
-    irrespective of the user's locale.
+    regardless of the user's locale. Use QLocale to perform locale-aware
+    conversions between numbers and strings.
 
     This function ignores leading and trailing whitespace.
 
@@ -3987,7 +4003,8 @@ double QByteArray::toDouble(bool *ok) const
     leads to a conversion error.
 
     \note The conversion of the number is performed in the default C locale,
-    irrespective of the user's locale.
+    regardless of the user's locale. Use QLocale to perform locale-aware
+    conversions between numbers and strings.
 
     This function ignores leading and trailing whitespace.
 
@@ -4067,16 +4084,17 @@ QByteArray QByteArray::toBase64(Base64Options options) const
 /*!
     \fn QByteArray &QByteArray::setNum(int n, int base)
 
-    Sets the byte array to the printed value of \a n in base \a base (10
-    by default) and returns a reference to the byte array. The \a base can
-    be any value between 2 and 36. For bases other than 10, n is treated
-    as an unsigned integer.
+    Sets the byte array to the printed value of \a n in base \a base (ten by
+    default) and returns a reference to the byte array. Bases 2 through 36 are
+    supported, using letters for digits beyond 9; A is ten, B is eleven and so
+    on. For bases other than ten, n is treated as an unsigned integer.
 
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 40
 
-    \note The format of the number is not localized; the default C locale
-    is used irrespective of the user's locale.
+    \note The format of the number is not localized; the default C locale is
+    used regardless of the user's locale. Use QLocale to perform locale-aware
+    conversions between numbers and strings.
 
     \sa number(), toInt()
 */
@@ -4196,8 +4214,9 @@ QByteArray &QByteArray::setNum(qulonglong n, int base)
     decimal point. With 'g' and 'G', \a prec is the maximum number of
     significant digits (trailing zeroes are omitted).
 
-    \note The format of the number is not localized; the default C locale
-    is used irrespective of the user's locale.
+    \note The format of the number is not localized; the default C locale is
+    used regardless of the user's locale. Use QLocale to perform locale-aware
+    conversions between numbers and strings.
 
     \sa toDouble()
 */
@@ -4241,22 +4260,24 @@ QByteArray &QByteArray::setNum(double n, char f, int prec)
     \a f with precision \a prec, and returns a reference to the
     byte array.
 
-    \note The format of the number is not localized; the default C locale
-    is used irrespective of the user's locale.
+    \note The format of the number is not localized; the default C locale is
+    used regardless of the user's locale. Use QLocale to perform locale-aware
+    conversions between numbers and strings.
 
     \sa toFloat()
 */
 
 /*!
-    Returns a byte array containing the string equivalent of the
-    number \a n to base \a base (10 by default). The \a base can be
-    any value between 2 and 36.
+    Returns a byte array containing the string equivalent of the number \a n to
+    base \a base (ten by default). Bases 2 through 36 are supported, using
+    letters for digits beyond 9: A is ten, B is eleven and so on.
 
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 41
 
-    \note The format of the number is not localized; the default C locale
-    is used irrespective of the user's locale.
+    \note The format of the number is not localized; the default C locale is
+    used regardless of the user's locale. Use QLocale to perform locale-aware
+    conversions between numbers and strings.
 
     \sa setNum(), toInt()
 */
@@ -4351,8 +4372,9 @@ QByteArray QByteArray::number(qulonglong n, int base)
 
     \snippet code/src_corelib_text_qbytearray.cpp 42
 
-    \note The format of the number is not localized; the default C locale
-    is used irrespective of the user's locale.
+    \note The format of the number is not localized; the default C locale is
+    used regardless of the user's locale. Use QLocale to perform locale-aware
+    conversions between numbers and strings.
 
     \sa toDouble()
 */
