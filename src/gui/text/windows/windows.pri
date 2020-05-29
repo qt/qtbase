@@ -19,22 +19,16 @@ qtConfig(freetype) {
 qtConfig(directwrite):qtConfig(direct2d) {
     qtConfig(directwrite3) {
         QMAKE_USE_PRIVATE += dwrite_3
-        DEFINES *= QT_USE_DIRECTWRITE3 QT_USE_DIRECTWRITE2
 
         SOURCES += text/windows/qwindowsdirectwritefontdatabase.cpp
         HEADERS += text/windows/qwindowsdirectwritefontdatabase_p.h
-    } else: qtConfig(directwrite2) {
-        QMAKE_USE_PRIVATE += dwrite_2
-        DEFINES *= QT_USE_DIRECTWRITE2
     } else {
-        QMAKE_USE_PRIVATE += dwrite
+        QMAKE_USE_PRIVATE += dwrite_2
     }
     QMAKE_USE_PRIVATE += d2d1
 
     SOURCES += text/windows/qwindowsfontenginedirectwrite.cpp
     HEADERS += text/windows/qwindowsfontenginedirectwrite_p.h
-} else {
-    DEFINES *= QT_NO_DIRECTWRITE
 }
 
 QMAKE_USE_PRIVATE += advapi32 ole32 user32 gdi32

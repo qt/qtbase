@@ -16,7 +16,7 @@ osx: SUBDIRS += cocoa
 
 win32: SUBDIRS += windows
 
-qtConfig(direct2d1_1):qtConfig(directwrite1) {
+qtConfig(direct2d1_1):qtConfig(directwrite) {
     SUBDIRS += direct2d
 }
 

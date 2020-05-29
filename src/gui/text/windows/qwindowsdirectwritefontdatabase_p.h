@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtGui/qtguiglobal.h>
 #include <QtGui/private/qtgui-config_p.h>
 
 QT_REQUIRE_CONFIG(directwrite3);

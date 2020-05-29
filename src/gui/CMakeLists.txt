@@ -698,28 +698,13 @@ qt_extend_target(Gui CONDITION QT_FEATURE_direct2d AND QT_FEATURE_directwrite AN
 qt_extend_target(Gui CONDITION QT_FEATURE_direct2d AND QT_FEATURE_directwrite AND QT_FEATURE_directwrite3 AND WIN32
     SOURCES
         text/windows/qwindowsdirectwritefontdatabase.cpp text/windows/qwindowsdirectwritefontdatabase_p.h
-    DEFINES
-        QT_USE_DIRECTWRITE2
-        QT_USE_DIRECTWRITE3
     LIBRARIES
-        dwrite_3
+        dwrite # special case
 )
 
-qt_extend_target(Gui CONDITION QT_FEATURE_direct2d AND QT_FEATURE_directwrite AND QT_FEATURE_directwrite2 AND WIN32 AND NOT QT_FEATURE_directwrite3
-    DEFINES
-        QT_USE_DIRECTWRITE2
+qt_extend_target(Gui CONDITION QT_FEATURE_direct2d AND QT_FEATURE_directwrite AND WIN32 AND NOT QT_FEATURE_directwrite3
     LIBRARIES
-        dwrite_2
-)
-
-qt_extend_target(Gui CONDITION QT_FEATURE_direct2d AND QT_FEATURE_directwrite AND WIN32 AND NOT QT_FEATURE_directwrite2 AND NOT QT_FEATURE_directwrite3
-    LIBRARIES
-        dwrite
-)
-
-qt_extend_target(Gui CONDITION WIN32 AND (NOT QT_FEATURE_direct2d OR NOT QT_FEATURE_directwrite)
-    DEFINES
-        QT_NO_DIRECTWRITE
+        dwrite # special case
 )
 
 qt_extend_target(Gui CONDITION MINGW AND WIN32
@@ -848,10 +833,10 @@ add_custom_command(
 # qvkgen_pimpl.input = "QMAKE_QVKGEN_INPUT"
 # qvkgen_pimpl.output = "$$OUT_PWD/vulkan/qvulkanfunctions_p.cpp"
 
-#### Keys ignored in scope 103:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
+#### Keys ignored in scope 100:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
 # qvkgen_h.variable_out = "HEADERS"
 
-#### Keys ignored in scope 104:.:vulkan:vulkan/vulkan.pri:else:
+#### Keys ignored in scope 101:.:vulkan:vulkan/vulkan.pri:else:
 # qvkgen_h.CONFIG = "target_predeps" "no_link"
 
 qt_extend_target(Gui CONDITION WASM

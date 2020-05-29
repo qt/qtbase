@@ -532,68 +532,6 @@ xcb_xkb_get_kbd_by_name_replies_key_names_value_list_sizeof(nullptr, 0, 0, 0, 0,
 }
 ")
 
-# special case begin
-# directwrite (assumes DirectWrite2)
-qt_config_compile_test(directwrite
-    LABEL "WINDOWS directwrite"
-    LIBRARIES
-        dwrite
-    CODE
-"#include <dwrite_2.h>
-int main(int, char **)
-{
-    IUnknown *factory = nullptr;
-    DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory2),
-                        &factory);
-    return 0;
-}
-")
-
-# directwrite3 (not present in MinGW)
-qt_config_compile_test(directwrite3
-    LABEL "WINDOWS directwrite3"
-    LIBRARIES
-        dwrite
-    CODE
-"#include <dwrite_3.h>
-int main(int, char **)
-{
-    IUnknown *factory = nullptr;
-    DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory3),
-                        &factory);
-    return 0;
-}
-")
-
-qt_config_compile_test(d2d1
-    LABEL "WINDOWS Direct2D"
-    LIBRARIES
-        d2d1
-    CODE
-"#include <d2d1.h>
-int main(int, char **)
-{
-    void *factory = nullptr;
-    D2D1_FACTORY_OPTIONS options{0};
-    D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, GUID{}, &options, &factory);
-    return 0;
-}
-")
-
-qt_config_compile_test(d2d1_1
-    LABEL "WINDOWS Direct2D 1.1"
-    LIBRARIES
-        d2d1
-    CODE
-"#include <d2d1_1.h>
-int main(int, char **)
-{
-    ID2D1Factory1 *d2dFactory;
-    D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &d2dFactory);
-    return 0;
-}
-")
-# special case end
 
 
 #### Features
@@ -611,21 +549,21 @@ qt_feature("directfb" PRIVATE
 )
 qt_feature("directwrite" PRIVATE
     LABEL "DirectWrite"
-    CONDITION TEST_directwrite # special case
+    CONDITION libs.dwrite_2 OR FIXME
     EMIT_IF WIN32
 )
 qt_feature("directwrite3" PRIVATE
     LABEL "DirectWrite 3"
-    CONDITION QT_FEATURE_directwrite AND TEST_directwrite3 # special case
+    CONDITION QT_FEATURE_directwrite AND libs.dwrite_3 OR FIXME
     EMIT_IF WIN32
 )
 qt_feature("direct2d" PRIVATE
     LABEL "Direct 2D"
-    CONDITION WIN32 AND NOT WINRT AND TEST_d2d1 # special case
+    CONDITION WIN32 AND libs.d2d1 OR FIXME
 )
 qt_feature("direct2d1_1" PRIVATE
     LABEL "Direct 2D 1.1"
-    CONDITION QT_FEATURE_direct2d AND TEST_d2d1_1 # special case
+    CONDITION QT_FEATURE_direct2d AND libs.d2d1_1 OR FIXME
 )
 qt_feature("evdev" PRIVATE
     LABEL "evdev"
@@ -864,10 +802,6 @@ qt_feature("system-png" PRIVATE
     ENABLE INPUT_libpng STREQUAL 'system'
     DISABLE INPUT_libpng STREQUAL 'qt'
 )
-qt_feature("imageio-text-loading" PRIVATE
-    LABEL "Image Text section loading"
-)
-qt_feature_definition("imageio-text-loading" "QT_NO_IMAGEIO_TEXT_LOADING" NEGATE)
 qt_feature("sessionmanager" PUBLIC
     SECTION "Kernel"
     LABEL "Session Management"
@@ -1271,7 +1205,6 @@ qt_configure_end_summary_section() # end of "GL integrations" section
 qt_configure_end_summary_section() # end of "XCB" section
 qt_configure_add_summary_section(NAME "Windows")
 qt_configure_add_summary_entry(ARGS "direct2d")
-qt_configure_add_summary_entry(ARGS "direct2d1_1") ### special case
 qt_configure_add_summary_entry(ARGS "directwrite")
 qt_configure_add_summary_entry(ARGS "directwrite3")
 qt_configure_end_summary_section() # end of "Windows" section

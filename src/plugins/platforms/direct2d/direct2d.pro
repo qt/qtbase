@@ -4,7 +4,7 @@ QT += \
     core-private gui-private
 
 LIBS += -ldwmapi -lversion -ld3d11 -ldxgi -ldxguid
-QMAKE_USE_PRIVATE += gdi32 dwrite_1 d2d1_1
+QMAKE_USE_PRIVATE += gdi32 dwrite_2 d2d1_1
 
 include(../windows/windows.pri)
 

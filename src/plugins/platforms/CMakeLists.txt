@@ -21,7 +21,7 @@ endif()
 if(WIN32)
     add_subdirectory(windows)
 endif()
-if(QT_FEATURE_direct2d1_1 AND QT_FEATURE_directwrite1)
+if(QT_FEATURE_direct2d1_1 AND QT_FEATURE_directwrite)
     # add_subdirectory(direct2d) # special case TODO
 endif()
 if(QNX)

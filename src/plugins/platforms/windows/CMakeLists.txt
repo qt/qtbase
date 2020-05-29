@@ -91,13 +91,7 @@ qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_opengl
         Qt::OpenGLPrivate
 )
 
-qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_directwrite3
-    DEFINES
-        QT_USE_DIRECTWRITE2
-        QT_USE_DIRECTWRITE3
-)
-
-#### Keys ignored in scope 4:.:.:windows.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
+#### Keys ignored in scope 3:.:.:windows.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
 # PLUGIN_EXTENDS = "-"
 
 qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_opengl AND NOT QT_FEATURE_dynamicgl

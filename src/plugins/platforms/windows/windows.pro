@@ -5,8 +5,6 @@ QT += \
 
 qtConfig(opengl): QT += opengl-private
 
-qtConfig(directwrite3): DEFINES *= QT_USE_DIRECTWRITE2 QT_USE_DIRECTWRITE3
-
 LIBS += -ldwmapi
 QMAKE_USE_PRIVATE += gdi32
 

@@ -96,27 +96,6 @@
                 { "type": "pkgConfig", "args": "directfb" }
             ]
         },
-        "dwrite": {
-            "label": "DirectWrite",
-            "test": {
-                "main": [
-                    "IDWriteFactory *factory = 0;",
-                    "DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),",
-                    "                    (IUnknown **)(&factory));"
-                ]
-            },
-            "headers": "dwrite.h",
-            "sources": [
-                "-ldwrite"
-            ]
-        },
-        "dwrite_1": {
-            "label": "DirectWrite 1",
-            "headers": "dwrite_1.h",
-            "sources": [
-                "-ldwrite"
-            ]
-        },
         "dwrite_2": {
             "label": "DirectWrite 2",
             "test": {
@@ -1046,25 +1025,13 @@
         "directwrite": {
             "label": "DirectWrite",
             "emitIf": "config.win32",
-            "condition": "libs.dwrite",
-            "output": [ "privateFeature" ]
-        },
-        "directwrite1": {
-            "label": "DirectWrite 1",
-            "emitIf": "config.win32",
-            "condition": "libs.dwrite_1",
+            "condition": "libs.dwrite_2",
             "output": [ "privateFeature" ]
         },
         "directwrite3": {
             "label": "DirectWrite 3",
             "emitIf": "config.win32",
-            "condition": "features.directwrite1 && libs.dwrite_3",
-            "output": [ "privateFeature" ]
-        },
-        "directwrite2": {
-            "label": "DirectWrite 2",
-            "emitIf": "config.win32",
-            "condition": "features.directwrite1 && libs.dwrite_2",
+            "condition": "features.directwrite && libs.dwrite_3",
             "output": [ "privateFeature" ]
         },
         "direct2d": {
@@ -1874,7 +1841,7 @@
                     "section": "Windows",
                     "condition": "config.win32",
                     "entries": [
-                        "direct2d", "directwrite", "directwrite2"
+                        "direct2d", "directwrite", "directwrite3"
                     ]
                 }
             ]
