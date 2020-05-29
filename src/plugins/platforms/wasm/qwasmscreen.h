@@ -78,6 +78,8 @@ public:
 
     void invalidateSize();
     void updateQScreenAndCanvasRenderSize();
+    void installCanvasResizeObserver();
+    static void canvasResizeObserverCallback(emscripten::val entries, emscripten::val);
 
 public slots:
     void setGeometry(const QRect &rect);
@@ -90,6 +92,7 @@ private:
     int m_depth = 32;
     QImage::Format m_format = QImage::Format_RGB32;
     QWasmCursor m_cursor;
+    static const char * m_canvasResizeObserverCallbackContextPropertyName;
 };
 
 QT_END_NAMESPACE

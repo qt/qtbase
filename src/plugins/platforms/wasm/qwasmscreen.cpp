@@ -50,17 +50,21 @@ using namespace emscripten;
 
 QT_BEGIN_NAMESPACE
 
+const char * QWasmScreen::m_canvasResizeObserverCallbackContextPropertyName = "data-qtCanvasResizeObserverCallbackContext";
+
 QWasmScreen::QWasmScreen(const emscripten::val &canvas)
     : m_canvas(canvas)
 {
     m_compositor = new QWasmCompositor(this);
     m_eventTranslator = new QWasmEventTranslator(this);
+    installCanvasResizeObserver();
     updateQScreenAndCanvasRenderSize();
     m_canvas.call<void>("focus");
 }
 
 QWasmScreen::~QWasmScreen()
 {
+    m_canvas.set(m_canvasResizeObserverCallbackContextPropertyName, emscripten::val(intptr_t(0)));
     destroy();
 }
 
@@ -214,6 +218,44 @@ void QWasmScreen::updateQScreenAndCanvasRenderSize()
 
     setGeometry(QRect(position, cssSize.toSize()));
     m_compositor->redrawWindowContent();
+}
+
+void QWasmScreen::canvasResizeObserverCallback(emscripten::val entries, emscripten::val)
+{
+    int count = entries["length"].as<int>();
+    if (count == 0)
+        return;
+    emscripten::val entry = entries[0];
+    QWasmScreen *screen =
+        reinterpret_cast<QWasmScreen *>(entry["target"][m_canvasResizeObserverCallbackContextPropertyName].as<intptr_t>());
+    if (!screen) {
+        qWarning() << "QWasmScreen::canvasResizeObserverCallback: missing screen pointer";
+        return;
+    }
+
+    // We could access contentBoxSize|contentRect|devicePixelContentBoxSize on the entry here, but
+    // these are not universally supported across all browsers. Get the sizes from the canvas instead.
+    screen->updateQScreenAndCanvasRenderSize();
+}
+
+EMSCRIPTEN_BINDINGS(qtCanvasResizeObserverCallback) {
+    emscripten::function("qtCanvasResizeObserverCallback", &QWasmScreen::canvasResizeObserverCallback);
+}
+
+void QWasmScreen::installCanvasResizeObserver()
+{
+    emscripten::val ResizeObserver = emscripten::val::global("ResizeObserver");
+    if (ResizeObserver == emscripten::val::undefined())
+        return; // ResizeObserver API is not available
+    emscripten::val resizeObserver = ResizeObserver.new_(emscripten::val::module_property("qtCanvasResizeObserverCallback"));
+    if (resizeObserver == emscripten::val::undefined())
+        return; // Something went horribly wrong
+
+    // We need to get back to this instance from the (static) resize callback;
+    // set a "data-" property on the canvas element.
+    m_canvas.set(m_canvasResizeObserverCallbackContextPropertyName, emscripten::val(intptr_t(this)));
+
+    resizeObserver.call<void>("observe", m_canvas);
 }
 
 QT_END_NAMESPACE
