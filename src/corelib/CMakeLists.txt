@@ -169,8 +169,8 @@ qt_add_module(Core
         text/qstring.cpp text/qstring.h
         text/qstring_compat.cpp
         text/qstringalgorithms.h text/qstringalgorithms_p.h
-        text/qstringconverter.cpp text/qstringconverter.h text/qstringconverter_p.h
         text/qstringbuilder.cpp text/qstringbuilder.h
+        text/qstringconverter.cpp text/qstringconverter.h text/qstringconverter_p.h
         text/qstringiterator_p.h
         text/qstringlist.cpp text/qstringlist.h
         text/qstringliteral.h
@@ -248,7 +248,7 @@ qt_add_module(Core
         # ../3rdparty/sha3 # special case remove
         ../3rdparty/tinycbor/src
     PRECOMPILED_HEADER
-        global/qt_pch.h
+        "global/qt_pch.h"
     NO_PCH_SOURCES
         "text/qstring_compat.cpp"
     LIBRARIES

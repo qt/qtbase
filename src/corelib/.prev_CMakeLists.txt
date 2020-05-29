@@ -152,6 +152,7 @@ qt_add_module(Core
         text/qstring_compat.cpp
         text/qstringalgorithms.h text/qstringalgorithms_p.h
         text/qstringbuilder.cpp text/qstringbuilder.h
+        text/qstringconverter.cpp text/qstringconverter.h text/qstringconverter_p.h
         text/qstringiterator_p.h
         text/qstringlist.cpp text/qstringlist.h
         text/qstringliteral.h
@@ -573,7 +574,7 @@ qt_extend_target(Core CONDITION QT_FEATURE_future
 
 qt_extend_target(Core CONDITION QT_FEATURE_std_atomic64
     PUBLIC_LIBRARIES
-        Atomic
+        WrapAtomic::WrapAtomic
 )
 
 qt_extend_target(Core CONDITION ICC
@@ -972,7 +973,7 @@ qt_extend_target(Core CONDITION QT_FEATURE_glib AND UNIX
 
 qt_extend_target(Core CONDITION QT_FEATURE_clock_gettime AND UNIX
     LIBRARIES
-        WrapRt
+        WrapRt::WrapRt
 )
 
 qt_extend_target(Core CONDITION UNIX AND NOT ANDROID
