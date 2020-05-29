@@ -30,9 +30,8 @@ qt_add_module(OpenGL
         qopenglversionprofile.cpp qopenglversionprofile.h
         qopenglvertexarrayobject.cpp qopenglvertexarrayobject.h
         qopenglwindow.cpp qopenglwindow.h
-        qtopenglglobal.h
         qplatformbackingstoreopenglsupport.cpp qplatformbackingstoreopenglsupport.h
-
+        qtopenglglobal.h
     DEFINES
         QT_NO_FOREACH
         QT_NO_USING_NAMESPACE
@@ -96,10 +95,9 @@ qt_extend_target(OpenGL CONDITION QT_FEATURE_vulkan
 
 qt_extend_target(OpenGL CONDITION QT_FEATURE_egl
     SOURCES
-        qopenglcompositorbackingstore.cpp qopenglcompositorbackingstore_p.h
         qopenglcompositor.cpp qopenglcompositor_p.h
+        qopenglcompositorbackingstore.cpp qopenglcompositorbackingstore_p.h
 )
-
 qt_add_docs(OpenGL
     doc/qtopengl.qdocconf
 )
