@@ -491,8 +491,12 @@ QImage ICOReader::iconAt(int index)
                 case 4:
                     icoAttrib.depth = 8;
                     break;
-                default:
+                case 1:
                     icoAttrib.depth = 1;
+                    break;
+                default:
+                    return img;
+                    break;
                 }
                 if (icoAttrib.depth == 32)                // there's no colormap
                     icoAttrib.ncolors = 0;
