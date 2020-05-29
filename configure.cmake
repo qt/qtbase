@@ -308,6 +308,25 @@ int main(int argc, char **argv)
 }
 ")
 
+# intelcet
+qt_config_compile_test(intelcet
+    LABEL "Support for Intel Control-flow Enforcement Technology"
+    CODE
+"
+
+
+int main(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    /* BEGIN TEST: */
+#if !defined(__CET__)
+#  error Intel CET not available
+#endif
+    /* END TEST: */
+    return 0;
+}
+")
+
 
 
 #### Features
@@ -811,6 +830,10 @@ qt_feature("relocatable" PRIVATE
     PURPOSE "Enable the Qt installation to be relocated."
     AUTODETECT QT_FEATURE_shared
     CONDITION QT_FEATURE_dlopen OR WIN32 OR NOT QT_FEATURE_shared
+)
+qt_feature("intelcet" PRIVATE
+    LABEL "Using Intel CET"
+    CONDITION TEST_intelcet
 )
 qt_configure_add_summary_build_type_and_config()
 qt_configure_add_summary_section(NAME "Build options")

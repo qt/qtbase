@@ -16,11 +16,11 @@ qt_config_compile_test(openssl_headers
 "
 #include <openssl/ssl.h>
 #include <openssl/opensslv.h>
-#if !defined(OPENSSL_VERSION_NUMBER) || OPENSSL_VERSION_NUMBER-0 < 0x10100000L
-#  error OpenSSL >= 1.1.0 is required
+#if !defined(OPENSSL_VERSION_NUMBER) || OPENSSL_VERSION_NUMBER-0 < 0x10101000L
+#  error OpenSSL >= 1.1.1 is required
 #endif
 #if !defined(OPENSSL_NO_EC) && !defined(SSL_CTRL_SET_CURVES)
-#  error OpenSSL was reported as >= 1.1.0 but is missing required features, possibly it's libressl which is unsupported
+#  error OpenSSL was reported as >= 1.1.1 but is missing required features, possibly it's libressl which is unsupported
 #endif
 int main(int argc, char **argv)
 {
@@ -41,11 +41,11 @@ qt_config_compile_test(openssl
 "
 #include <openssl/ssl.h>
 #include <openssl/opensslv.h>
-#if !defined(OPENSSL_VERSION_NUMBER) || OPENSSL_VERSION_NUMBER-0 < 0x10100000L
-#  error OpenSSL >= 1.1.0 is required
+#if !defined(OPENSSL_VERSION_NUMBER) || OPENSSL_VERSION_NUMBER-0 < 0x10101000L
+#  error OpenSSL >= 1.1.1 is required
 #endif
 #if !defined(OPENSSL_NO_EC) && !defined(SSL_CTRL_SET_CURVES)
-#  error OpenSSL was reported as >= 1.1.0 but is missing required features, possibly it's libressl which is unsupported
+#  error OpenSSL was reported as >= 1.1.1 but is missing required features, possibly it's libressl which is unsupported
 #endif
 int main(int argc, char **argv)
 {
