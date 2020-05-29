@@ -812,12 +812,11 @@ QByteArray qUncompress(const uchar* data, int nbytes)
     performance reasons you don't want to take a deep copy of the
     character data, use QByteArray::fromRawData() instead.)
 
-    Another approach is to set the size of the array using resize()
-    and to initialize the data byte per byte. QByteArray uses 0-based
-    indexes, just like C++ arrays. To access the byte at a particular
-    index position, you can use operator[](). On non-const byte
-    arrays, operator[]() returns a reference to a byte that can be
-    used on the left side of an assignment. For example:
+    Another approach is to set the size of the array using resize() and to
+    initialize the data byte by byte. QByteArray uses 0-based indexes, just like
+    C++ arrays. To access the byte at a particular index position, you can use
+    operator[](). On non-const byte arrays, operator[]() returns a reference to
+    a byte that can be used on the left side of an assignment. For example:
 
     \snippet code/src_corelib_tools_qbytearray.cpp 1
 
@@ -848,7 +847,7 @@ QByteArray qUncompress(const uchar* data, int nbytes)
     constData(). These functions return a pointer to the beginning of the data.
     The pointer is guaranteed to remain valid until a non-const function is
     called on the QByteArray. It is also guaranteed that the data ends with a
-    '\\0' byte unless the QByteArray was created from a \l{fromRawData()}{raw
+    '\\0' byte unless the QByteArray was created from \l{fromRawData()}{raw
     data}. This '\\0' byte is automatically provided by QByteArray and is not
     counted in size().
 
