@@ -3,8 +3,9 @@
 # special case begin
 if (NOT CMAKE_PROJECT_NAME STREQUAL "QtBase" AND NOT CMAKE_PROJECT_NAME STREQUAL "Qt")
     cmake_minimum_required(VERSION 3.17)
+    include(.cmake.conf)
     project(QSQLiteDriverPlugins
-        VERSION 6.0.0
+        VERSION "${QT_REPO_MODULE_VERSION}"
         DESCRIPTION "Qt6 SQL driver plugins"
         HOMEPAGE_URL "https://qt.io/"
         LANGUAGES CXX C ASM

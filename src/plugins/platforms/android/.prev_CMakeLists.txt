@@ -61,17 +61,9 @@ qt_internal_add_plugin(QAndroidIntegrationPlugin
 ## Scopes:
 #####################################################################
 
-qt_extend_target(QAndroidIntegrationPlugin CONDITION QT_FEATURE_vulkan
-    SOURCES
-        qandroidplatformvulkaninstance.cpp qandroidplatformvulkaninstance.h
-        qandroidplatformvulkanwindow.cpp qandroidplatformvulkanwindow.h
+qt_extend_target(QAndroidIntegrationPlugin CONDITION QT_FEATURE_opengl
     PUBLIC_LIBRARIES
-        Qt::VulkanSupportPrivate
-)
-
-qt_extend_target(QAndroidIntegrationPlugin CONDITION TARGET Qt::PlatformCompositorSupportPrivate
-    PUBLIC_LIBRARIES
-        Qt::PlatformCompositorSupportPrivate
+        Qt::OpenGLPrivate
 )
 
 qt_extend_target(QAndroidIntegrationPlugin CONDITION QT_FEATURE_android_style_assets
@@ -82,4 +74,10 @@ qt_extend_target(QAndroidIntegrationPlugin CONDITION QT_FEATURE_android_style_as
 qt_extend_target(QAndroidIntegrationPlugin CONDITION NOT QT_FEATURE_android_style_assets
     SOURCES
         extract-dummy.cpp
+)
+
+qt_extend_target(QAndroidIntegrationPlugin CONDITION QT_FEATURE_vulkan
+    SOURCES
+        qandroidplatformvulkaninstance.cpp qandroidplatformvulkaninstance.h
+        qandroidplatformvulkanwindow.cpp qandroidplatformvulkanwindow.h
 )

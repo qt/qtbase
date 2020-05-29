@@ -45,21 +45,27 @@ qt_extend_target(EglFSDeviceIntegration CONDITION TARGET Qt::InputSupportPrivate
 )
 
 qt_extend_target(EglFSDeviceIntegration CONDITION QT_FEATURE_opengl
+    SOURCES
+        api/qeglfscontext.cpp api/qeglfscontext_p.h
+        api/qeglfscursor.cpp api/qeglfscursor_p.h
     PUBLIC_LIBRARIES
         Qt::OpenGLPrivate
 )
 
-qt_extend_target(EglFSDeviceIntegration CONDITION QT_FEATURE_vulkan
-    SOURCES
-        api/vulkan/qeglfsvulkaninstance.cpp api/vulkan/qeglfsvulkaninstance_p.h
-        api/vulkan/qeglfsvulkanwindow.cpp api/vulkan/qeglfsvulkanwindow_p.h
-)
+# special case begin
+# comment out
+#qt_extend_target(EglFSDeviceIntegration CONDITION NOT EGLFS_PLATFORM_HOOKS_SOURCES_ISEMPTY
+    #DEFINES
+        #EGLFS_PLATFORM_HOOKS
+#)
 
-# special case:
-# extend_target(EglFSDeviceIntegration CONDITION NOT EGLFS_PLATFORM_HOOKS_SOURCES_ISEMPTY ...
-# extend_target(EglFSDeviceIntegration CONDITION NOT EGLFS_DEVICE_INTEGRATION_ISEMPTY ...
+#qt_extend_target(EglFSDeviceIntegration CONDITION NOT EGLFS_DEVICE_INTEGRATION_ISEMPTY
+    #DEFINES
+        #EGLFS_PREFERRED_PLUGIN=
+#)
+# special case end
 
-if(QT_FEATURE_cursor) # special case
+if(QT_FEATURE_cursor)
     # Resources:
     set(cursor_resource_files
         "cursor-atlas.png"
@@ -74,18 +80,16 @@ if(QT_FEATURE_cursor) # special case
     )
 endif()
 
-qt_extend_target(EglFSDeviceIntegration CONDITION QT_FEATURE_opengl
+qt_extend_target(EglFSDeviceIntegration CONDITION QT_FEATURE_vulkan
     SOURCES
-        api/qeglfscontext.cpp api/qeglfscontext_p.h
-        api/qeglfscursor.cpp api/qeglfscursor_p.h
-    PUBLIC_LIBRARIES
-        Qt::OpenGLPrivate
+        api/vulkan/qeglfsvulkaninstance.cpp api/vulkan/qeglfsvulkaninstance_p.h
+        api/vulkan/qeglfsvulkanwindow.cpp api/vulkan/qeglfsvulkanwindow_p.h
 )
 #####################################################################
 ## QEglFSIntegrationPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(QEglFSIntegrationPlugin
+qt_internal_add_plugin(QEglFSIntegrationPlugin
     OUTPUT_NAME qeglfs
     TYPE platforms
     DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES eglfs # special case
@@ -101,12 +105,12 @@ qt_add_plugin(QEglFSIntegrationPlugin
         EGL::EGL # special case
 )
 
-#### Keys ignored in scope 13:.:.:eglfs-plugin.pro:<TRUE>:
+#### Keys ignored in scope 12:.:.:eglfs-plugin.pro:<TRUE>:
 # OTHER_FILES = "$$PWD/eglfs.json"
 
 ## Scopes:
 #####################################################################
 
-#### Keys ignored in scope 14:.:.:eglfs-plugin.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
+#### Keys ignored in scope 13:.:.:eglfs-plugin.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
 # PLUGIN_EXTENDS = "-"
 add_subdirectory(deviceintegration)

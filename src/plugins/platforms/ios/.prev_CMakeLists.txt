@@ -4,7 +4,7 @@
 ## QIOSIntegrationPlugin Plugin:
 #####################################################################
 
-add_qt_plugin(QIOSIntegrationPlugin
+qt_internal_add_plugin(QIOSIntegrationPlugin
     OUTPUT_NAME qios
     TYPE platforms
     SOURCES
@@ -31,10 +31,7 @@ add_qt_plugin(QIOSIntegrationPlugin
         ${FWFoundation}
         ${FWQuartzCore}
         ${FWUIKit}
-        Qt::ClipboardSupportPrivate
         Qt::CorePrivate
-        Qt::FontDatabaseSupportPrivate
-        Qt::GraphicsSupportPrivate
         Qt::GuiPrivate
 )
 
@@ -44,12 +41,12 @@ add_qt_plugin(QIOSIntegrationPlugin
 ## Scopes:
 #####################################################################
 
-extend_target(QIOSIntegrationPlugin CONDITION TARGET Qt::PlatformCompositorSupportPrivate
+qt_extend_target(QIOSIntegrationPlugin CONDITION QT_FEATURE_opengl
     PUBLIC_LIBRARIES
-        Qt::PlatformCompositorSupportPrivate
+        Qt::OpenGLPrivate
 )
 
-extend_target(QIOSIntegrationPlugin CONDITION NOT TVOS
+qt_extend_target(QIOSIntegrationPlugin CONDITION NOT TVOS
     SOURCES
         qiosclipboard.h qiosclipboard.mm
         qiosdocumentpickercontroller.h qiosdocumentpickercontroller.mm

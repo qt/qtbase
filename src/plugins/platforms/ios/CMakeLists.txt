@@ -1,10 +1,10 @@
-# Generated from kernel.pro.
+# Generated from ios.pro.
 
 #####################################################################
 ## QIOSIntegrationPlugin Plugin:
 #####################################################################
 
-add_qt_plugin(QIOSIntegrationPlugin
+qt_internal_add_plugin(QIOSIntegrationPlugin
     OUTPUT_NAME qios
     TYPE platforms
     SOURCES
@@ -31,28 +31,25 @@ add_qt_plugin(QIOSIntegrationPlugin
         ${FWFoundation}
         ${FWQuartzCore}
         ${FWUIKit}
-        Qt::Core
         Qt::CorePrivate
-        Qt::Gui
         Qt::GuiPrivate
 )
 
 # special case begin
 qt_disable_apple_app_extension_api_only(QIOSIntegrationPlugin)
 # special case end
-
-#### Keys ignored in scope 1:.:.:kernel.pro:<TRUE>:
+#### Keys ignored in scope 2:.:.:kernel.pro:<TRUE>:
 # OTHER_FILES = "quiview_textinput.mm" "quiview_accessibility.mm"
 
 ## Scopes:
 #####################################################################
 
-extend_target(QIOSIntegrationPlugin CONDITION QT_FEATURE_opengl
+qt_extend_target(QIOSIntegrationPlugin CONDITION QT_FEATURE_opengl
     PUBLIC_LIBRARIES
         Qt::OpenGLPrivate
 )
 
-extend_target(QIOSIntegrationPlugin CONDITION NOT TVOS
+qt_extend_target(QIOSIntegrationPlugin CONDITION NOT TVOS
     SOURCES
         qiosclipboard.h qiosclipboard.mm
         qiosdocumentpickercontroller.h qiosdocumentpickercontroller.mm
@@ -64,5 +61,6 @@ extend_target(QIOSIntegrationPlugin CONDITION NOT TVOS
         ${FWAssetsLibrary}
 )
 
-#### Keys ignored in scope 5:.:.:kernel.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
+#### Keys ignored in scope 6:.:.:kernel.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
 # PLUGIN_EXTENDS = "-"
+add_subdirectory(optional)

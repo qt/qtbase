@@ -87,6 +87,9 @@ qt_add_resource(QWindowsIntegrationPlugin "openglblacklists"
 #####################################################################
 
 qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_opengl
+    SOURCES
+        qwindowsglcontext.cpp qwindowsglcontext.h
+        qwindowsopenglcontext.h
     PUBLIC_LIBRARIES
         Qt::OpenGLPrivate
 )
@@ -116,18 +119,13 @@ qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_accessibility
         Qt::AccessibilitySupportPrivate
 )
 
-qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_vulkan
-    SOURCES
-        qwindowsvulkaninstance.cpp qwindowsvulkaninstance.h
-)
-
 qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_directwrite3
     DEFINES
         QT_USE_DIRECTWRITE2
         QT_USE_DIRECTWRITE3
 )
 
-#### Keys ignored in scope 6:.:.:windows.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
+#### Keys ignored in scope 5:.:.:windows.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
 # PLUGIN_EXTENDS = "-"
 
 qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_opengl AND NOT QT_FEATURE_dynamicgl
@@ -140,15 +138,14 @@ qt_extend_target(QWindowsIntegrationPlugin CONDITION MINGW
         uuid
 )
 
-qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_opengl
-    SOURCES
-        qwindowsglcontext.cpp qwindowsglcontext.h
-        qwindowsopenglcontext.h
-)
-
 qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_systemtrayicon
     SOURCES
         qwindowssystemtrayicon.cpp qwindowssystemtrayicon.h
+)
+
+qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_vulkan
+    SOURCES
+        qwindowsvulkaninstance.cpp qwindowsvulkaninstance.h
 )
 
 qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_clipboard
@@ -206,11 +203,6 @@ if(QT_FEATURE_imageformat_png)
             ${cursors_resource_files}
     )
 endif()
-
-qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_accessibility AND TARGET Qt::WindowsUIAutomationSupportPrivate
-    PUBLIC_LIBRARIES
-        Qt::WindowsUIAutomationSupportPrivate
-)
 
 qt_extend_target(QWindowsIntegrationPlugin CONDITION MINGW AND QT_FEATURE_accessibility
     PUBLIC_LIBRARIES
