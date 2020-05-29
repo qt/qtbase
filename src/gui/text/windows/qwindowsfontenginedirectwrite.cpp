@@ -37,8 +37,6 @@
 **
 ****************************************************************************/
 
-#ifndef QT_NO_DIRECTWRITE
-
 #include "qwindowsfontenginedirectwrite_p.h"
 #include "qwindowsfontdatabase_p.h"
 
@@ -53,11 +51,7 @@
 #include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtGui/qpainterpath.h>
 
-#if defined(QT_USE_DIRECTWRITE2)
-#  include <dwrite_2.h>
-#else
-#  include <dwrite.h>
-#endif
+#include <dwrite_2.h>
 
 #include <d2d1.h>
 
@@ -705,7 +699,6 @@ QImage QWindowsFontEngineDirectWrite::imageForGlyph(glyph_t t,
         const int height = boundingRect.height() - 1;
 
         QImage image;
-#if defined(QT_USE_DIRECTWRITE2)
         HRESULT hr = DWRITE_E_NOCOLOR;
         IDWriteColorGlyphRunEnumerator *enumerator = 0;
         IDWriteFactory2 *factory2 = nullptr;
@@ -722,14 +715,11 @@ QImage QWindowsFontEngineDirectWrite::imageForGlyph(glyph_t t,
                                                   &enumerator);
             image = QImage(width, height, QImage::Format_ARGB32_Premultiplied);
             image.fill(0);
-        } else
-#endif
-        {
+        } else  {
             image = QImage(width, height, QImage::Format_RGB32);
             image.fill(0xffffffff);
         }
 
-#if defined(QT_USE_DIRECTWRITE2)
         BOOL ok = true;
 
         if (SUCCEEDED(hr)) {
@@ -786,9 +776,7 @@ QImage QWindowsFontEngineDirectWrite::imageForGlyph(glyph_t t,
                     break;
                 }
             }
-        } else
-#endif
-        {
+        } else {
             float r, g, b, a;
             if (glyphFormat == QFontEngine::Format_ARGB) {
                 r = float(color.redF());
@@ -1026,5 +1014,3 @@ QImage QWindowsFontEngineDirectWrite::bitmapForGlyph(glyph_t glyph, QFixed subPi
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_DIRECTWRITE

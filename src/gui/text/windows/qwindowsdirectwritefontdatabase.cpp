@@ -51,8 +51,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifdef QT_USE_DIRECTWRITE3
-
 // Defined in gui/text/qfontdatabase.cpp
 Q_GUI_EXPORT QFontDatabase::WritingSystem qt_writing_system_for_script(int script);
 
@@ -472,7 +470,5 @@ QFont QWindowsDirectWriteFontDatabase::defaultFont() const
 {
     return QFont(QStringLiteral("Segoe UI"));
 }
-
-#endif // QT_USE_DIRECTWRITE3
 
 QT_END_NAMESPACE

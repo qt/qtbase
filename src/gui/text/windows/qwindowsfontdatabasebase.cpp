@@ -44,13 +44,11 @@
 #include <QtCore/QThreadStorage>
 #include <QtCore/QtEndian>
 
-#if !defined(QT_NO_DIRECTWRITE)
-#  if defined(QT_USE_DIRECTWRITE3)
+#if QT_CONFIG(directwrite)
+#  if QT_CONFIG(directwrite3)
 #    include <dwrite_3.h>
-#  elif defined(QT_USE_DIRECTWRITE2)
-#    include <dwrite_2.h>
 #  else
-#    include <dwrite.h>
+#    include <dwrite_2.h>
 #  endif
 #  include <d2d1.h>
 #  include "qwindowsfontenginedirectwrite_p.h"
@@ -604,14 +602,11 @@ void QWindowsFontDatabaseBase::createDirectWriteFactory(IDWriteFactory **factory
         return;
 
     IUnknown *result = nullptr;
-#  if defined(QT_USE_DIRECTWRITE3)
+#  if QT_CONFIG(directwrite3)
     dWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory3), &result);
 #  endif
-
-#  if defined(QT_USE_DIRECTWRITE2)
     if (result == nullptr)
         dWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory2), &result);
-#  endif
 
     if (result == nullptr) {
         if (FAILED(dWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &result))) {

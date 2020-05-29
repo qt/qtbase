@@ -51,9 +51,11 @@
 // We mean it.
 //
 
-#include "qwindowsfontdatabasebase_p.h"
+#include <QtGui/private/qtgui-config_p.h>
 
-#include <qpa/qplatformfontdatabase.h>
+QT_REQUIRE_CONFIG(directwrite3);
+
+#include "qwindowsfontdatabasebase_p.h"
 #include <QtCore/qloggingcategory.h>
 
 struct IDWriteFactory;
@@ -62,8 +64,6 @@ struct IDWriteFontFamily;
 struct IDWriteLocalizedStrings;
 
 QT_BEGIN_NAMESPACE
-
-#ifdef QT_USE_DIRECTWRITE3
 
 class Q_GUI_EXPORT QWindowsDirectWriteFontDatabase : public QWindowsFontDatabaseBase
 {
@@ -88,8 +88,6 @@ private:
 
     QHash<QString, IDWriteFontFamily *> m_populatedFonts;
 };
-
-#endif // QT_USE_DIRECTWRITE3
 
 QT_END_NAMESPACE
 

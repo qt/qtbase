@@ -48,7 +48,8 @@
 #include "qwindowsscreen.h"
 #include "qwindowstheme.h"
 #include "qwindowsservices.h"
-#ifdef QT_USE_DIRECTWRITE3
+#include <QtGui/private/qtgui-config_p.h>
+#if QT_CONFIG(directwrite3)
 #include <QtGui/private/qwindowsdirectwritefontdatabase_p.h>
 #endif
 #ifndef QT_NO_FREETYPE
@@ -490,7 +491,7 @@ QWindowsStaticOpenGLContext *QWindowsIntegration::staticOpenGLContext()
 QPlatformFontDatabase *QWindowsIntegration::fontDatabase() const
 {
     if (!d->m_fontDatabase) {
-#ifdef QT_USE_DIRECTWRITE3
+#if QT_CONFIG(directwrite3)
         if (d->m_options & QWindowsIntegration::FontDatabaseDirectWrite)
             d->m_fontDatabase = new QWindowsDirectWriteFontDatabase;
         else

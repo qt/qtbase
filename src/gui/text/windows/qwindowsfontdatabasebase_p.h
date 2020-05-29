@@ -52,11 +52,12 @@
 //
 
 #include <qpa/qplatformfontdatabase.h>
+#include <QtGui/private/qtgui-config_p.h>
 #include <QtCore/QSharedPointer>
 #include <QtCore/QLoggingCategory>
 #include <QtCore/qt_windows.h>
 
-#if !defined(QT_NO_DIRECTWRITE)
+#if QT_CONFIG(directwrite)
     struct IDWriteFactory;
     struct IDWriteGdiInterop;
     struct IDWriteFontFace;
@@ -78,7 +79,7 @@ public:
     bool clearTypeEnabled = false;
     qreal fontSmoothingGamma;
     HDC hdc = 0;
-#if !defined(QT_NO_DIRECTWRITE)
+#if QT_CONFIG(directwrite)
     IDWriteFactory *directWriteFactory = nullptr;
     IDWriteGdiInterop *directWriteGdiInterop = nullptr;
 #endif
@@ -96,7 +97,7 @@ public:
     static void setDefaultVerticalDPI(int d);
 
     static QSharedPointer<QWindowsFontEngineData> data();
-#if !defined(QT_NO_DIRECTWRITE)
+#if QT_CONFIG(directwrite)
     static void createDirectWriteFactory(IDWriteFactory **factory);
 #endif
     static QFont systemDefaultFont();
@@ -125,7 +126,7 @@ public:
 
 protected:
 
-#if !defined(QT_NO_DIRECTWRITE)
+#if QT_CONFIG(directwrite)
     IDWriteFontFace *createDirectWriteFace(const QByteArray &fontData) const;
 #endif
 

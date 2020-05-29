@@ -51,9 +51,10 @@
 // We mean it.
 //
 
-#include <QtCore/qglobal.h>
+#include <QtGui/qtguiglobal.h>
+#include <QtGui/private/qtgui-config_p.h>
 
-#ifndef QT_NO_DIRECTWRITE
+QT_REQUIRE_CONFIG(directwrite);
 
 #include <QtGui/private/qfontengine_p.h>
 #include <QtCore/QSharedPointer>
@@ -146,7 +147,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_DIRECTWRITE
 
 #endif // QWINDOWSFONTENGINEDIRECTWRITE_H

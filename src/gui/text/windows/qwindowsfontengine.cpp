@@ -41,8 +41,9 @@
 #include "qwindowsnativeimage_p.h"
 #include "qwindowsfontdatabase_p.h"
 #include <QtCore/qt_windows.h>
-#include "qwindowsfontenginedirectwrite_p.h"
-
+#if QT_CONFIG(directwrite)
+#  include "qwindowsfontenginedirectwrite_p.h"
+#endif
 #include <QtGui/qpa/qplatformintegration.h>
 #include <QtGui/private/qtextengine_p.h> // glyph_metrics_t
 #include <QtGui/private/qguiapplication_p.h>
@@ -52,6 +53,7 @@
 #include <QtGui/private/qpainter_p.h>
 #include <QtGui/QPaintEngine>
 #include <QtGui/private/qpaintengine_raster_p.h>
+#include <QtGui/private/qtgui-config_p.h>
 
 #include <QtCore/QtEndian>
 #include <QtCore/QFile>
@@ -65,7 +67,7 @@
 
 #include <limits.h>
 
-#if !defined(QT_NO_DIRECTWRITE)
+#if QT_CONFIG(directwrite)
 #  include <dwrite.h>
 #  include <comdef.h>
 #endif

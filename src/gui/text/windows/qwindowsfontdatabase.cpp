@@ -40,12 +40,12 @@
 #include "qwindowsfontdatabase_p.h"
 #include "qwindowsfontdatabase_ft_p.h" // for default font
 #include "qwindowsfontengine_p.h"
-#include "qwindowsfontenginedirectwrite_p.h"
 #include <QtCore/qt_windows.h>
 
 #include <QtGui/QFont>
 #include <QtGui/QGuiApplication>
 #include <QtGui/private/qhighdpiscaling_p.h>
+#include <QtGui/private/qtgui-config_p.h>
 
 #include <QtCore/qmath.h>
 #include <QtCore/QDebug>
@@ -56,21 +56,20 @@
 
 #include <wchar.h>
 
-#if !defined(QT_NO_DIRECTWRITE)
-#  if defined(QT_USE_DIRECTWRITE2)
-#    include <dwrite_2.h>
-#  else
-#    include <dwrite.h>
+#if QT_CONFIG(directwrite)
+#  if QT_CONFIG(directwrite3)
+#    include "qwindowsdirectwritefontdatabase_p.h"
 #  endif
+#  include <dwrite_2.h>
 #  include <d2d1.h>
-#  include "qwindowsdirectwritefontdatabase_p.h"
+#  include "qwindowsfontenginedirectwrite_p.h"
 #endif
 
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcQpaFonts, "qt.qpa.fonts")
 
-#ifndef QT_NO_DIRECTWRITE
+#if QT_CONFIG(directwrite)
 // ### fixme: Consider direct linking of dwrite.dll once Windows Vista pre SP2 is dropped (QTBUG-49711)
 
 typedef HRESULT (WINAPI *DWriteCreateFactoryType)(DWRITE_FACTORY_TYPE, const IID &, IUnknown **);
@@ -758,7 +757,7 @@ QFontEngine *QWindowsFontDatabase::fontEngine(const QByteArray &fontData, qreal 
     EmbeddedFont font(fontData);
     QFontEngine *fontEngine = 0;
 
-#if !defined(QT_NO_DIRECTWRITE)
+#if QT_CONFIG(directwrite)
     if (!useDirectWrite(hintingPreference))
 #endif
     {
