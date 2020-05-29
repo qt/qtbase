@@ -252,10 +252,13 @@ qt_extend_target(Bootstrap CONDITION QT_FEATURE_system_zlib AND NOT CMAKE_CROSSC
         ZLIB::ZLIB
 )
 
-qt_extend_target(Bootstrap CONDITION WIN32 AND mingw
+qt_extend_target(Bootstrap CONDITION MINGW AND WIN32
     PUBLIC_LIBRARIES
         uuid
 )
+
+#### Keys ignored in scope 22:.:../../3rdparty/pcre2:../../3rdparty/pcre2/pcre2.pri:QT_FEATURE_intelcet:
+# QMAKE_CFLAGS = "$$QMAKE_CFLAGS_SHSTK"
 
 # special case begin
 qt_internal_add_link_flags_gc_sections(Bootstrap PUBLIC)

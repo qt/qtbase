@@ -71,3 +71,6 @@ qt_extend_target(BundledPcre2 CONDITION WIN32
     PUBLIC_DEFINES
         PCRE2_STATIC
 )
+
+#### Keys ignored in scope 7:.:.:pcre2.pri:QT_FEATURE_intelcet:
+# QMAKE_CFLAGS = "$$QMAKE_CFLAGS_SHSTK"
