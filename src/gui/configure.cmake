@@ -672,7 +672,7 @@ qt_feature("mtdev" PRIVATE
 )
 qt_feature("opengles2" PUBLIC
     LABEL "OpenGL ES 2.0"
-    CONDITION NOT WIN32 AND ( NOT WATCHOS AND NOT QT_FEATURE_opengl_desktop AND GLESv2_FOUND )
+    CONDITION NOT WIN32 AND NOT WATCHOS AND NOT QT_FEATURE_opengl_desktop AND GLESv2_FOUND
     ENABLE INPUT_opengl STREQUAL 'es2'
     DISABLE INPUT_opengl STREQUAL 'desktop' OR INPUT_opengl STREQUAL 'dynamic' OR INPUT_opengl STREQUAL 'no'
 )
@@ -689,6 +689,13 @@ qt_feature("opengles32" PUBLIC
     LABEL "OpenGL ES 3.2"
     CONDITION QT_FEATURE_opengles31 AND TEST_opengles32
 )
+qt_feature("opengl-desktop"
+    LABEL "Desktop OpenGL"
+    AUTODETECT NOT WIN32
+    CONDITION ( WIN32 AND NOT WINRT AND ( MSVC OR OpenGL_FOUND ) ) OR ( NOT WATCHOS AND NOT WIN32 AND NOT WASM AND OpenGL_FOUND )
+    ENABLE INPUT_opengl STREQUAL 'desktop'
+    DISABLE INPUT_opengl STREQUAL 'es2' OR INPUT_opengl STREQUAL 'dynamic' OR INPUT_opengl STREQUAL 'no'
+)
 qt_feature("opengl-dynamic"
     LABEL "Dynamic OpenGL"
     CONDITION WIN32 AND NOT WINRT
@@ -700,12 +707,6 @@ qt_feature("dynamicgl" PUBLIC
     DISABLE INPUT_opengl STREQUAL 'no' OR INPUT_opengl STREQUAL 'desktop'
 )
 qt_feature_definition("opengl-dynamic" "QT_OPENGL_DYNAMIC")
-qt_feature("opengl-desktop"
-    LABEL "Desktop OpenGL"
-    CONDITION ( WIN32 AND NOT WINRT AND NOT QT_FEATURE_opengl_dynamic AND ( MSVC OR OpenGL_OpenGL_FOUND ) ) OR ( NOT WATCHOS AND NOT WIN32 AND NOT WASM AND OpenGL_OpenGL_FOUND )
-    ENABLE INPUT_opengl STREQUAL 'desktop'
-    DISABLE INPUT_opengl STREQUAL 'es2' OR INPUT_opengl STREQUAL 'dynamic' OR INPUT_opengl STREQUAL 'no'
-)
 qt_feature("opengl" PUBLIC
     LABEL "OpenGL"
     CONDITION QT_FEATURE_opengl_desktop OR QT_FEATURE_opengl_dynamic OR QT_FEATURE_opengles2
@@ -725,7 +726,7 @@ qt_feature("openvg" PUBLIC
 )
 qt_feature("egl" PUBLIC PRIVATE
     LABEL "EGL"
-    CONDITION ( QT_FEATURE_opengl OR QT_FEATURE_openvg ) AND ( EGL_FOUND ) AND ( QT_FEATURE_dlopen OR NOT UNIX OR INTEGRITY )
+    CONDITION ( QT_FEATURE_opengl OR QT_FEATURE_openvg ) AND EGL_FOUND AND ( QT_FEATURE_dlopen OR NOT UNIX OR INTEGRITY )
 )
 qt_feature_definition("egl" "QT_NO_EGL" NEGATE VALUE "1")
 qt_feature("egl_x11" PRIVATE
@@ -1156,18 +1157,10 @@ qt_configure_add_summary_entry(
     ARGS "opengl-dynamic"
     CONDITION WIN32
 )
-qt_configure_add_summary_entry(
-    ARGS "opengles2"
-    CONDITION NOT WIN32)
-qt_configure_add_summary_entry(
-    ARGS "opengles3"
-    CONDITION NOT WIN32)
-qt_configure_add_summary_entry(
-    ARGS "opengles31"
-    CONDITION NOT WIN32)
-qt_configure_add_summary_entry(
-    ARGS "opengles32"
-    CONDITION NOT WIN32)
+qt_configure_add_summary_entry(ARGS "opengles2")
+qt_configure_add_summary_entry(ARGS "opengles3")
+qt_configure_add_summary_entry(ARGS "opengles31")
+qt_configure_add_summary_entry(ARGS "opengles32")
 qt_configure_end_summary_section() # end of "OpenGL" section
 qt_configure_add_summary_entry(ARGS "vulkan")
 qt_configure_add_summary_entry(ARGS "sessionmanager")

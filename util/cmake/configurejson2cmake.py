@@ -884,13 +884,6 @@ def get_feature_mapping():
         "msvc_mp": None,
         "optimize_debug": None,
         "optimize_size": None,
-        # special case to enable implicit feature on WIN32, until ANGLE is ported
-        "opengl-desktop": {"autoDetect": ""},
-        # special case to disable implicit feature on WIN32, until ANGLE is ported
-        "opengl-dynamic": {"autoDetect": "OFF"},
-        "opengles2": {  # special case to disable implicit feature on WIN32, until ANGLE is ported
-            "condition": "NOT WIN32 AND ( NOT WATCHOS AND NOT QT_FEATURE_opengl_desktop AND GLESv2_FOUND )"
-        },
         "simulator_and_device": {"condition": "UIKIT AND NOT QT_UIKIT_SDK"},
         "pkg-config": {"condition": "PKG_CONFIG_FOUND"},
         "posix-libiconv": {

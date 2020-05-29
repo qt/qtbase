@@ -431,7 +431,7 @@ _library_map = [
     LibraryMapping("mysql", "MySQL", "MySQL::MySQL"),
     LibraryMapping("odbc", "ODBC", "ODBC::ODBC"),
     LibraryMapping("opengl_es2", "GLESv2", "GLESv2::GLESv2"),
-    LibraryMapping("opengl", "OpenGL", "OpenGL::GL", resultVariable="OpenGL_OpenGL"),
+    LibraryMapping("opengl", "OpenGL", "OpenGL::GL", resultVariable="OpenGL"),
     LibraryMapping(
         "openssl_headers",
         "WrapOpenSSLHeaders",
