@@ -2682,25 +2682,76 @@ struct BuiltinMetaType<T, std::enable_if_t<QMetaTypeId2<T>::IsBuiltIn>>
 {
 };
 
-template<typename T>
+template<typename S>
 class QMetaTypeForType
 {
-    static const decltype(typenameHelper<T>()) name;
+    static const decltype(typenameHelper<S>()) name;
+
+    template<typename T>
+    static constexpr QMetaTypeInterface::DefaultCtrFn getDefaultCtr()
+    {
+      if constexpr (std::is_default_constructible_v<T>) {
+        return [](const QMetaTypeInterface *, void *addr) { new (addr) T(); };
+      } else {
+        return nullptr;
+      }
+    }
+
+    template<typename T>
+    static constexpr QMetaTypeInterface::CopyCtrFn getCopyCtr()
+    {
+      if constexpr (std::is_copy_constructible_v<T>) {
+        return [](const QMetaTypeInterface *, void *addr, const void *other) {
+          new (addr) T(*reinterpret_cast<const T *>(other));
+        };
+      } else {
+        return nullptr;
+      }
+    }
+
+    template<typename T>
+    static constexpr QMetaTypeInterface::MoveCtrFn getMoveCtr()
+    {
+      if constexpr (std::is_move_constructible_v<T>) {
+        return [](const QMetaTypeInterface *, void *addr, void *other) {
+          new (addr) T(std::move(*reinterpret_cast<T *>(other)));
+        };
+      } else {
+        return nullptr;
+      }
+    }
+
+    template<typename T>
+    static constexpr QMetaTypeInterface::DtorFn getDtor()
+    {
+      if constexpr (std::is_destructible_v<T>)
+        return [](const QMetaTypeInterface *, void *addr) { reinterpret_cast<T *>(addr)->~T(); };
+      else
+        return nullptr;
+    }
+
+    template<typename T>
+    static constexpr QMetaTypeInterface::LegacyRegisterOp getLegacyRegister()
+    {
+      if constexpr (QMetaTypeId2<T>::Defined && !QMetaTypeId2<T>::IsBuiltIn) {
+        return []() { QMetaTypeId2<T>::qt_metatype_id(); };
+      } else {
+        return nullptr;
+      }
+    }
+
+    static constexpr const char *getName()
+    {
+        if constexpr (bool(QMetaTypeId2<S>::IsBuiltIn)) {
+            return QMetaTypeId2<S>::name;
+        } else {
+            return name.data();
+        }
+    }
 
 public:
     static QMetaTypeInterface metaType;
 };
-
-#ifdef Q_CC_CLANG
-// Workaround for https://bugs.llvm.org/show_bug.cgi?id=44554 : Every lambda used for initializing
-// static members need a different signature for explicit instentiation
-#define QT_METATYPE_CONSTEXPRLAMDA(...) [](std::integral_constant<int, __COUNTER__> = {}) constexpr __VA_ARGS__ ()
-#elif defined(Q_CC_MSVC)
-// Workaround a bug with 'if constexpr' not working in lambda that are not generic in MSVC
-#define QT_METATYPE_CONSTEXPRLAMDA(...) [](auto) constexpr __VA_ARGS__ (0)
-#else
-#define QT_METATYPE_CONSTEXPRLAMDA(...) []() constexpr __VA_ARGS__ ()
-#endif
 
 template<typename T>
 QMetaTypeInterface QMetaTypeForType<T>::metaType = {
@@ -2709,54 +2760,15 @@ QMetaTypeInterface QMetaTypeForType<T>::metaType = {
     /*.alignment=*/ alignof(T),
     /*.flags=*/ QMetaTypeTypeFlags<T>::Flags,
     /*.metaObject=*/ MetaObjectForType<T>::value(),
-    /*.name=*/ QT_METATYPE_CONSTEXPRLAMDA( -> const char * {
-        if constexpr (bool(QMetaTypeId2<T>::IsBuiltIn)) {
-            return QMetaTypeId2<T>::name;
-        } else {
-            return name.data();
-        }
-    }),
+    /*.name=*/ getName(),
     /*.typeId=*/ BuiltinMetaType<T>::value,
     /*.ref=*/ Q_REFCOUNT_INITIALIZE_STATIC,
     /*.deleteSelf=*/ nullptr,
-    /*.defaultCtr=*/ QT_METATYPE_CONSTEXPRLAMDA( -> QMetaTypeInterface::DefaultCtrFn {
-        if constexpr (std::is_default_constructible_v<T>) {
-            return [](const QMetaTypeInterface *, void *addr) { new (addr) T(); };
-        } else {
-            return nullptr;
-        }
-    }),
-    /*.copyCtr=*/ QT_METATYPE_CONSTEXPRLAMDA( -> QMetaTypeInterface::CopyCtrFn {
-        if constexpr (std::is_copy_constructible_v<T>) {
-            return [](const QMetaTypeInterface *, void *addr, const void *other) {
-                new (addr) T(*reinterpret_cast<const T *>(other));
-            };
-        } else {
-            return nullptr;
-        }
-    }),
-    /*.moveCtr=*/ QT_METATYPE_CONSTEXPRLAMDA( -> QMetaTypeInterface::MoveCtrFn {
-        if constexpr (std::is_move_constructible_v<T>) {
-            return [](const QMetaTypeInterface *, void *addr, void *other) {
-                new (addr) T(std::move(*reinterpret_cast<T *>(other)));
-            };
-        } else {
-            return nullptr;
-        }
-    }),
-    /*.dtor=*/ QT_METATYPE_CONSTEXPRLAMDA( -> QMetaTypeInterface::DtorFn {
-        if constexpr (std::is_destructible_v<T>)
-            return [](const QMetaTypeInterface *, void *addr) { reinterpret_cast<T *>(addr)->~T(); };
-        else
-            return nullptr;
-    }),
-    /*.legacyRegisterOp=*/ QT_METATYPE_CONSTEXPRLAMDA( -> QMetaTypeInterface::LegacyRegisterOp {
-        if constexpr (QMetaTypeId2<T>::Defined && !QMetaTypeId2<T>::IsBuiltIn) {
-            return []() { QMetaTypeId2<T>::qt_metatype_id(); };
-        } else {
-            return nullptr;
-        }
-    })
+    /*.defaultCtr=*/ getDefaultCtr<T>(),
+    /*.copyCtr=*/ getCopyCtr<T>(),
+    /*.moveCtr=*/ getMoveCtr<T>(),
+    /*.dtor=*/ getDtor<T>(),
+    /*.legacyRegisterOp=*/ getLegacyRegister<T>()
 };
 
 template<typename T>
