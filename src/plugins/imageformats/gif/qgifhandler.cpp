@@ -629,7 +629,8 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
             count++;
             if (count==hold[0]+1) {
                 disposePrevious(image);
-                disposal=Disposal((hold[1]>>2)&0x7);
+                uint dBits = (hold[1] >> 2) & 0x7;
+                disposal = (dBits <= RestoreImage) ? Disposal(dBits) : NoDisposal;
                 //UNUSED: waitforuser=!!((hold[1]>>1)&0x1);
                 int delay=count>3 ? LM(hold[2], hold[3]) : 1;
                 // IE and mozilla use a minimum delay of 10. With the minimum delay of 10
