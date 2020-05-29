@@ -7530,11 +7530,8 @@ void QGraphicsItem::prepareGeometryChange()
     \internal
 
     Highlights \a item as selected.
-
-    NOTE: This function is a duplicate of qt_graphicsItem_highlightSelected() in
-          qgraphicssvgitem.cpp!
 */
-static void qt_graphicsItem_highlightSelected(
+void Q_WIDGETS_EXPORT qt_graphicsItem_highlightSelected(
     QGraphicsItem *item, QPainter *painter, const QStyleOptionGraphicsItem *option)
 {
     const QRectF murect = painter->transform().mapRect(QRectF(0, 0, 1, 1));
