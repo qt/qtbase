@@ -4101,7 +4101,8 @@ void QGraphicsScene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent)
     // Remove all popups after the one found, or all or them if no popup is under the mouse.
     // Then continue with the event.
     QList<QGraphicsWidget *>::const_iterator iter = d->popupWidgets.constEnd();
-    while (--iter >= d->popupWidgets.constBegin() && !wheelCandidates.isEmpty()) {
+    while (iter > d->popupWidgets.constBegin() && !wheelCandidates.isEmpty()) {
+        --iter;
         if (wheelCandidates.first() == *iter || (*iter)->isAncestorOf(wheelCandidates.first()))
             break;
         d->removePopup(*iter);
