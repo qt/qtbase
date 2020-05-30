@@ -74,7 +74,7 @@ public:
     ProString &operator=(const QStringBuilder<A, B> &str)
     { return *this = QString(str); }
     ProString(const QString &str);
-    PROITEM_EXPLICIT ProString(const QStringRef &str);
+    PROITEM_EXPLICIT ProString(QStringView str);
     PROITEM_EXPLICIT ProString(const char *str);
     template<typename A, typename B>
     ProString(const QStringBuilder<A, B> &str)
@@ -107,16 +107,16 @@ public:
     void chop(int n) { Q_ASSERT(n <= m_length); m_length -= n; }
     void chopFront(int n) { Q_ASSERT(n <= m_length); m_offset += n; m_length -= n; }
 
-    bool operator==(const ProString &other) const { return toQStringRef() == other.toQStringRef(); }
-    bool operator==(const QString &other) const { return toQStringRef() == other; }
-    bool operator==(const QStringRef &other) const { return toQStringRef() == other; }
-    bool operator==(QLatin1String other) const  { return toQStringRef() == other; }
-    bool operator==(const char *other) const { return toQStringRef() == QLatin1String(other); }
+    bool operator==(const ProString &other) const { return toQStringView() == other.toQStringView(); }
+    bool operator==(const QString &other) const { return toQStringView() == other; }
+    bool operator==(QStringView other) const { return toQStringView() == other; }
+    bool operator==(QLatin1String other) const  { return toQStringView() == other; }
+    bool operator==(const char *other) const { return toQStringView() == QLatin1String(other); }
     bool operator!=(const ProString &other) const { return !(*this == other); }
     bool operator!=(const QString &other) const { return !(*this == other); }
     bool operator!=(QLatin1String other) const { return !(*this == other); }
     bool operator!=(const char *other) const { return !(*this == other); }
-    bool operator<(const ProString &other) const { return toQStringRef() < other.toQStringRef(); }
+    bool operator<(const ProString &other) const { return toQStringView() < other.toQStringView(); }
     bool isNull() const { return m_string.isNull(); }
     bool isEmpty() const { return !m_length; }
     int length() const { return m_length; }
@@ -127,38 +127,37 @@ public:
     ProString left(int len) const { return mid(0, len); }
     ProString right(int len) const { return mid(qMax(0, size() - len)); }
     ProString trimmed() const;
-    int compare(const ProString &sub, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return toQStringRef().compare(sub.toQStringRef(), cs); }
-    int compare(const QString &sub, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return toQStringRef().compare(sub, cs); }
-    int compare(const char *sub, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return toQStringRef().compare(QLatin1String(sub), cs); }
-    bool startsWith(const ProString &sub, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return toQStringRef().startsWith(sub.toQStringRef(), cs); }
-    bool startsWith(const QString &sub, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return toQStringRef().startsWith(sub, cs); }
-    bool startsWith(const char *sub, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return toQStringRef().startsWith(QLatin1String(sub), cs); }
-    bool startsWith(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return toQStringRef().startsWith(c, cs); }
+    int compare(const ProString &sub, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return toQStringView().compare(sub.toQStringView(), cs); }
+    int compare(const QString &sub, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return toQStringView().compare(sub, cs); }
+    int compare(const char *sub, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return toQStringView().compare(QLatin1String(sub), cs); }
+    bool startsWith(const ProString &sub, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return toQStringView().startsWith(sub.toQStringView(), cs); }
+    bool startsWith(const QString &sub, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return toQStringView().startsWith(sub, cs); }
+    bool startsWith(const char *sub, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return toQStringView().startsWith(QLatin1String(sub), cs); }
+    bool startsWith(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return toQStringView().startsWith(c, cs); }
     template<typename A, typename B>
     bool startsWith(const QStringBuilder<A, B> &str) { return startsWith(QString(str)); }
-    bool endsWith(const ProString &sub, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return toQStringRef().endsWith(sub.toQStringRef(), cs); }
-    bool endsWith(const QString &sub, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return toQStringRef().endsWith(sub, cs); }
-    bool endsWith(const char *sub, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return toQStringRef().endsWith(QLatin1String(sub), cs); }
+    bool endsWith(const ProString &sub, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return toQStringView().endsWith(sub.toQStringView(), cs); }
+    bool endsWith(const QString &sub, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return toQStringView().endsWith(sub, cs); }
+    bool endsWith(const char *sub, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return toQStringView().endsWith(QLatin1String(sub), cs); }
     template<typename A, typename B>
     bool endsWith(const QStringBuilder<A, B> &str) { return endsWith(QString(str)); }
-    bool endsWith(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return toQStringRef().endsWith(c, cs); }
-    int indexOf(const QString &s, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return toQStringRef().indexOf(s, from, cs); }
-    int indexOf(const char *s, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return toQStringRef().indexOf(QLatin1String(s), from, cs); }
-    int indexOf(QChar c, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return toQStringRef().indexOf(c, from, cs); }
-    int lastIndexOf(const QString &s, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return toQStringRef().lastIndexOf(s, from, cs); }
-    int lastIndexOf(const char *s, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return toQStringRef().lastIndexOf(QLatin1String(s), from, cs); }
-    int lastIndexOf(QChar c, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return toQStringRef().lastIndexOf(c, from, cs); }
+    bool endsWith(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return toQStringView().endsWith(c, cs); }
+    int indexOf(const QString &s, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return toQStringView().indexOf(s, from, cs); }
+    int indexOf(const char *s, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return toQStringView().indexOf(QLatin1String(s), from, cs); }
+    int indexOf(QChar c, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return toQStringView().indexOf(c, from, cs); }
+    int lastIndexOf(const QString &s, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return toQStringView().lastIndexOf(s, from, cs); }
+    int lastIndexOf(const char *s, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return toQStringView().lastIndexOf(QLatin1String(s), from, cs); }
+    int lastIndexOf(QChar c, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return toQStringView().lastIndexOf(c, from, cs); }
     bool contains(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return indexOf(s, 0, cs) >= 0; }
     bool contains(const char *s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return indexOf(QLatin1String(s), 0, cs) >= 0; }
     bool contains(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return indexOf(c, 0, cs) >= 0; }
-    qlonglong toLongLong(bool *ok = nullptr, int base = 10) const { return toQStringRef().toLongLong(ok, base); }
-    int toInt(bool *ok = nullptr, int base = 10) const { return toQStringRef().toInt(ok, base); }
-    short toShort(bool *ok = nullptr, int base = 10) const { return toQStringRef().toShort(ok, base); }
+    qlonglong toLongLong(bool *ok = nullptr, int base = 10) const { return toQStringView().toLongLong(ok, base); }
+    int toInt(bool *ok = nullptr, int base = 10) const { return toQStringView().toInt(ok, base); }
+    short toShort(bool *ok = nullptr, int base = 10) const { return toQStringView().toShort(ok, base); }
 
     uint hash() const { return m_hash; }
     static uint hash(const QChar *p, int n);
 
-    ALWAYS_INLINE QStringRef toQStringRef() const { return QStringRef(&m_string, m_offset, m_length); }
     ALWAYS_INLINE QStringView toQStringView() const { return QStringView(m_string).mid(m_offset, m_length); }
 
     ALWAYS_INLINE ProKey &toKey() { return *(ProKey *)this; }
@@ -167,7 +166,7 @@ public:
     QString toQString() const;
     QString &toQString(QString &tmp) const;
 
-    QByteArray toLatin1() const { return toQStringRef().toLatin1(); }
+    QByteArray toLatin1() const { return toQStringView().toLatin1(); }
 
 private:
     ProString(const ProKey &other);
@@ -258,7 +257,7 @@ template <> struct QConcatenable<ProKey> : private QAbstractConcatenable
 size_t qHash(const ProString &str);
 
 inline QString &operator+=(QString &that, const ProString &other)
-    { return that += other.toQStringRef(); }
+    { return that += other.toQStringView(); }
 
 QTextStream &operator<<(QTextStream &t, const ProString &str);
 template<typename A, typename B>
@@ -341,7 +340,7 @@ public:
     void removeDuplicates();
 
     bool contains(const ProString &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    bool contains(const QStringRef &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    bool contains(QStringView str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     bool contains(const QString &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
         { return contains(ProString(str), cs); }
     bool contains(const char *str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;

@@ -857,29 +857,29 @@ MakefileGenerator::processPrlFile(QString &file, bool baseOnly)
     QString f = fileFixify(file, FileFixifyBackwards);
     // Explicitly given full .prl name
     if (!baseOnly && f.endsWith(Option::prl_ext))
-        return processPrlFileCore(file, QStringRef(), f);
+        return processPrlFileCore(file, QStringView(), f);
     // Explicitly given or derived (from -l) base name
-    if (processPrlFileCore(file, QStringRef(), f + Option::prl_ext))
+    if (processPrlFileCore(file, QStringView(), f + Option::prl_ext))
         return true;
     if (!baseOnly) {
         // Explicitly given full library name
         int off = qMax(f.lastIndexOf('/'), f.lastIndexOf('\\')) + 1;
-        int ext = f.midRef(off).lastIndexOf('.');
+        int ext = QStringView(f).mid(off).lastIndexOf('.');
         if (ext != -1)
-            return processPrlFileBase(file, f.midRef(off), f.leftRef(off + ext), off);
+            return processPrlFileBase(file, QStringView(f).mid(off), QStringView{f}.left(off + ext), off);
     }
     return false;
 }
 
 bool
-MakefileGenerator::processPrlFileBase(QString &origFile, const QStringRef &origName,
-                                      const QStringRef &fixedBase, int /*slashOff*/)
+MakefileGenerator::processPrlFileBase(QString &origFile, QStringView origName,
+                                      QStringView fixedBase, int /*slashOff*/)
 {
     return processPrlFileCore(origFile, origName, fixedBase + Option::prl_ext);
 }
 
 bool
-MakefileGenerator::processPrlFileCore(QString &origFile, const QStringRef &origName,
+MakefileGenerator::processPrlFileCore(QString &origFile, QStringView origName,
                                       const QString &fixedFile)
 {
     const QString meta_file = QMakeMetaInfo::checkLib(fixedFile);
@@ -1516,7 +1516,7 @@ MakefileGenerator::createObjectList(const ProStringList &sources)
 
             int lastDirSepPosition = sourceRelativePath.lastIndexOf(Option::dir_sep);
             if (lastDirSepPosition != -1)
-                dir += sourceRelativePath.leftRef(lastDirSepPosition + 1);
+                dir += QStringView{sourceRelativePath}.left(lastDirSepPosition + 1);
 
             if (!noIO()) {
                 // Ensure that the final output directory of each object exists
@@ -1840,8 +1840,8 @@ QString MakefileGenerator::resolveDependency(const QDir &outDir, const QString &
             int cut = file.indexOf('/');
             if (cut < 0 || cut + 1 >= file.size())
                 continue;
-            QStringRef framework = file.leftRef(cut);
-            QStringRef include = file.midRef(cut + 1);
+            QStringView framework = QStringView{file}.left(cut);
+            QStringView include = QStringView(file).mid(cut + 1);
             if (local.endsWith('/' + framework + ".framework/Headers")) {
                 lf = outDir.absoluteFilePath(local + '/' + include);
                 if (exists(lf))

@@ -40,8 +40,8 @@ public:
 
     TokenStream &operator<<(ushort n) { ts += QChar(n); return *this; }
     TokenStream &operator<<(uint n) { ts += QChar(n & 0xffff); ts += QChar(n >> 16); return *this; }
-    TokenStream &operator<<(const QStringRef &s) { ts += s; return *this; }
-    TokenStream &operator<<(const ProString &s) { return *this << ushort(s.length()) << s.toQStringRef(); }
+    TokenStream &operator<<(QStringView s) { ts += s; return *this; }
+    TokenStream &operator<<(const ProString &s) { return *this << ushort(s.length()) << s.toQStringView(); }
     TokenStream &operator<<(const ProKey &s) { return *this << s.hash() << s.toString(); }
 
 private:

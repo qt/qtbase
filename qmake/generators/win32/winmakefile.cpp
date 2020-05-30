@@ -194,8 +194,8 @@ Win32MakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
     return true;
 }
 
-bool Win32MakefileGenerator::processPrlFileBase(QString &origFile, const QStringRef &origName,
-                                                const QStringRef &fixedBase, int slashOff)
+bool Win32MakefileGenerator::processPrlFileBase(QString &origFile, QStringView origName,
+                                                QStringView fixedBase, int slashOff)
 {
     if (MakefileGenerator::processPrlFileBase(origFile, origName, fixedBase, slashOff))
         return true;

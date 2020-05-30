@@ -55,7 +55,7 @@ public:
     ProString expand(const QString &v, const QString &file, int line);
     QStringList expand(const ProKey &func, const QList<ProStringList> &args);
     bool test(const QString &v, const QString &file, int line)
-        { m_current.clear(); return evaluateConditional(QStringRef(&v), file, line) == ReturnTrue; }
+        { m_current.clear(); return evaluateConditional(QStringView(v), file, line) == ReturnTrue; }
     bool test(const ProKey &func, const QList<ProStringList> &args);
 
     bool isSet(const ProKey &v) const { return m_valuemapStack.front().contains(v); }
@@ -65,7 +65,7 @@ public:
     const ProValueMap &variables() const { return m_valuemapStack.front(); }
     ProValueMap &variables() { return m_valuemapStack.front(); }
     bool isActiveConfig(const QString &config, bool regex = false)
-        { return QMakeEvaluator::isActiveConfig(QStringRef(&config), regex); }
+        { return QMakeEvaluator::isActiveConfig(QStringView(config), regex); }
 
     void dump() const;
 

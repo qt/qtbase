@@ -76,10 +76,8 @@ void tst_qmakelib::proString()
     QCOMPARE(ProString(qs2, 3, 13).trimmed().toQString(), QStringLiteral("spacy  string"));
     QCOMPARE(ProString(qs2, 1, 17).trimmed().toQString(), QStringLiteral("spacy  string"));
 
-    QVERIFY(s2.toQStringRef().string()->isSharedWith(qs1));
     s2.prepend(ProString("there "));
     QCOMPARE(s2.toQString(), QStringLiteral("there is a str"));
-    QVERIFY(!s2.toQStringRef().string()->isSharedWith(qs1));
 
     ProString s3("this is a longish string with bells and whistles");
     s3 = s3.mid(18, 17);
@@ -129,7 +127,6 @@ void tst_qmakelib::proString()
     ProString s5;
     s5.append(sl2);
     QCOMPARE(s5.toQString(), QStringLiteral("foo"));
-    QVERIFY(s5.toQStringRef().string()->isSharedWith(*sl2.first().toQStringRef().string()));
 
     QCOMPARE(ProString("one") + ProString(" more"), QStringLiteral("one more"));
 }

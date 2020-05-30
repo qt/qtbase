@@ -56,8 +56,8 @@ protected:
 
     LibFlagType parseLibFlag(const ProString &flag, ProString *arg) override;
     ProString fixLibFlag(const ProString &lib) override;
-    bool processPrlFileBase(QString &origFile, const QStringRef &origName,
-                            const QStringRef &fixedBase, int slashOff) override;
+    bool processPrlFileBase(QString &origFile, QStringView origName,
+                            QStringView fixedBase, int slashOff) override;
 
     void processVars();
     void fixTargetExt();

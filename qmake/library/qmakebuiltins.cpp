@@ -673,7 +673,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinExpand(
         bool leftalign = false;
         enum { DefaultSign, PadSign, AlwaysSign } sign = DefaultSign;
         if (args.count() >= 2) {
-            const auto opts = split_value_list(args.at(1).toQStringRef());
+            const auto opts = split_value_list(args.at(1).toQStringView());
             for (const ProString &opt : opts) {
                 if (opt.startsWith(QLatin1String("ibase="))) {
                     ibase = opt.mid(6).toInt();
@@ -776,7 +776,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinExpand(
         const auto vars = values(map(args.at(0)));
         for (const ProString &var : vars) {
             // FIXME: this is inconsistent with the "there are no empty strings" dogma.
-            const auto splits = var.toQStringRef().split(sep, Qt::KeepEmptyParts);
+            const auto splits = var.toQStringView().split(sep, Qt::KeepEmptyParts);
             for (const auto &splt : splits)
                 ret << ProString(splt).setSource(var);
         }
@@ -866,7 +866,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinExpand(
                         ret += ProString(stream.readLine());
                     } else {
                         const QString &line = stream.readLine();
-                        ret += split_value_list(QStringRef(&line).trimmed());
+                        ret += split_value_list(QStringView(line).trimmed());
                         if (!singleLine)
                             ret += ProString("\n");
                     }
@@ -890,7 +890,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinExpand(
         ret = ProStringList(ProString(tmp));
         ProStringList lst;
         for (const ProString &arg : args)
-            lst += split_value_list(arg.toQStringRef(), arg.sourceFile()); // Relies on deep copy
+            lst += split_value_list(arg.toQStringView(), arg.sourceFile()); // Relies on deep copy
         m_valuemapStack.top()[ret.at(0).toKey()] = lst;
         break; }
     case E_FIND: {
@@ -939,7 +939,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinExpand(
                 output.replace(QLatin1Char('\t'), QLatin1Char(' '));
                 if (singleLine)
                     output.replace(QLatin1Char('\n'), QLatin1Char(' '));
-                ret += split_value_list(QStringRef(&output));
+                ret += split_value_list(QStringView(output));
             }
         }
         break;
@@ -1092,7 +1092,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinExpand(
                 evalError(fL1S("Unexpected EOF."));
                 return ReturnError;
             }
-            ret = split_value_list(QStringRef(&line));
+            ret = split_value_list(QStringView(line));
         }
         break;
     }
@@ -1125,7 +1125,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinExpand(
         ProString priosfx = args.count() < 4 ? ProString(".priority") : args.at(3);
         populateDeps(orgList, prefix,
                      args.count() < 3 ? ProStringList(ProString(".depends"))
-                                      : split_value_list(args.at(2).toQStringRef()),
+                                      : split_value_list(args.at(2).toQStringView()),
                      priosfx, dependencies, dependees, rootSet);
         while (!rootSet.isEmpty()) {
             QMultiMap<int, ProString>::iterator it = rootSet.begin();
@@ -1283,7 +1283,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::testFunc_cache(const ProStringList &
     enum { CacheSet, CacheAdd, CacheSub } mode = CacheSet;
     ProKey srcvar;
     if (args.count() >= 2) {
-        const auto opts = split_value_list(args.at(1).toQStringRef());
+        const auto opts = split_value_list(args.at(1).toQStringView());
         for (const ProString &opt : opts) {
             if (opt == QLatin1String("transient")) {
                 persist = false;
@@ -1576,7 +1576,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
     case T_EVAL: {
         VisitReturn ret = ReturnFalse;
         QString contents = args.join(statics.field_sep);
-        ProFile *pro = m_parser->parsedProBlock(QStringRef(&contents),
+        ProFile *pro = m_parser->parsedProBlock(QStringView(contents),
                                                 0, m_current.pro->fileName(), m_current.line);
         if (m_cumulative || pro->isOk()) {
             m_locationStack.push(m_current);
@@ -1588,19 +1588,19 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
         return ret;
     }
     case T_IF: {
-        return evaluateConditional(args.at(0).toQStringRef(),
+        return evaluateConditional(args.at(0).toQStringView(),
                                    m_current.pro->fileName(), m_current.line);
     }
     case T_CONFIG: {
         if (args.count() == 1)
-            return returnBool(isActiveConfig(args.at(0).toQStringRef()));
-        const auto mutuals = args.at(1).toQStringRef().split(QLatin1Char('|'),
+            return returnBool(isActiveConfig(args.at(0).toQStringView()));
+        const auto mutuals = args.at(1).toQStringView().split(QLatin1Char('|'),
                                                              Qt::SkipEmptyParts);
         const ProStringList &configs = values(statics.strCONFIG);
 
         for (int i = configs.size() - 1; i >= 0; i--) {
             for (int mut = 0; mut < mutuals.count(); mut++) {
-                if (configs[i].toQStringRef() == mutuals[mut].trimmed())
+                if (configs[i].toQStringView() == mutuals[mut].trimmed())
                     return returnBool(configs[i] == args[0]);
             }
         }
@@ -1631,12 +1631,12 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
                 }
             }
         } else {
-            const auto mutuals = args.at(2).toQStringRef().split(QLatin1Char('|'),
+            const auto mutuals = args.at(2).toQStringView().split(QLatin1Char('|'),
                                                                  Qt::SkipEmptyParts);
             for (int i = l.size() - 1; i >= 0; i--) {
                 const ProString &val = l[i];
                 for (int mut = 0; mut < mutuals.count(); mut++) {
-                    if (val.toQStringRef() == mutuals[mut].trimmed()) {
+                    if (val.toQStringView() == mutuals[mut].trimmed()) {
                         if (val == qry)
                             return ReturnTrue;
                         if (!regx.pattern().isEmpty()) {
@@ -1689,8 +1689,8 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
             }
         }
         if (func_t == T_GREATERTHAN)
-            return returnBool(lhs > rhs.toQStringRef());
-        return returnBool(lhs < rhs.toQStringRef());
+            return returnBool(lhs > rhs.toQStringView());
+        return returnBool(lhs < rhs.toQStringView());
     }
     case T_EQUALS:
         return returnBool(values(map(args.at(0))).join(statics.field_sep)
@@ -1881,7 +1881,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
             if (!vals.isEmpty())
                 contents = vals.join(QLatin1Char('\n')) + QLatin1Char('\n');
             if (args.count() >= 3) {
-                const auto opts = split_value_list(args.at(2).toQStringRef());
+                const auto opts = split_value_list(args.at(2).toQStringView());
                 for (const ProString &opt : opts) {
                     if (opt == QLatin1String("append")) {
                         mode = QIODevice::Append;

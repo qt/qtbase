@@ -74,8 +74,8 @@ ProString::ProString(const QString &str) :
 {
 }
 
-ProString::ProString(const QStringRef &str) :
-    m_string(*str.string()), m_offset(str.position()), m_length(str.size()), m_file(0), m_hash(0x80000000)
+ProString::ProString(QStringView str) :
+    m_string(str.toString()), m_offset(0), m_length(str.size()), m_file(0), m_hash(0x80000000)
 {
 }
 
@@ -341,7 +341,7 @@ ProString ProString::trimmed() const
 
 QTextStream &operator<<(QTextStream &t, const ProString &str)
 {
-    t << str.toQStringRef();
+    t << str.toQStringView();
     return t;
 }
 
@@ -466,10 +466,10 @@ bool ProStringList::contains(const ProString &str, Qt::CaseSensitivity cs) const
     return false;
 }
 
-bool ProStringList::contains(const QStringRef &str, Qt::CaseSensitivity cs) const
+bool ProStringList::contains(QStringView str, Qt::CaseSensitivity cs) const
 {
     for (int i = 0; i < size(); i++)
-        if (!at(i).toQStringRef().compare(str, cs))
+        if (!at(i).toQStringView().compare(str, cs))
             return true;
     return false;
 }

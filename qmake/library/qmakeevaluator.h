@@ -180,7 +180,7 @@ public:
 
     void setTemplate();
 
-    ProStringList split_value_list(const QStringRef &vals, int source = 0);
+    ProStringList split_value_list(QStringView vals, int source = 0);
     VisitReturn expandVariableReferences(const ushort *&tokPtr, int sizeHint, ProStringList *ret, bool joined);
 
     QString currentFileName() const;
@@ -224,7 +224,7 @@ public:
     VisitReturn evaluateBuiltinConditional(const QMakeInternal::QMakeBuiltin &adef,
                                            const ProKey &function, const ProStringList &args);
 
-    VisitReturn evaluateConditional(const QStringRef &cond, const QString &where, int line = -1);
+    VisitReturn evaluateConditional(QStringView cond, const QString &where, int line = -1);
 #ifdef PROEVALUATOR_FULL
     VisitReturn checkRequirements(const ProStringList &deps);
 #endif
@@ -232,7 +232,7 @@ public:
     void updateMkspecPaths();
     void updateFeaturePaths();
 
-    bool isActiveConfig(const QStringRef &config, bool regex = false);
+    bool isActiveConfig(QStringView config, bool regex = false);
 
     void populateDeps(
             const ProStringList &deps, const ProString &prefix, const ProStringList &suffixes,
