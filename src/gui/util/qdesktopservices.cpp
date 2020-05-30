@@ -182,7 +182,7 @@ void QOpenUrlHandlerRegistry::handlerDestroyed(QObject *handler)
     \warning URLs passed to this function on iOS will not load unless their schemes are
     listed in the \c LSApplicationQueriesSchemes key of the application's Info.plist file.
     For more information, see the Apple Developer Documentation for
-    \l{https://developer.apple.com/documentation/uikit/uiapplication/1622952-canopenurl}{canOpenURL(_:)}.
+    \l {iOS: canOpenURL:}{canOpenURL:}.
     For example, the following lines enable URLs with the HTTPS scheme:
 
     \snippet code/src_gui_util_qdesktopservices.cpp 3
@@ -244,14 +244,25 @@ bool QDesktopServices::openUrl(const QUrl &url)
 
     \snippet code/src_gui_util_qdesktopservices.cpp 0
 
+    If setUrlHandler() is used to set a new handler for a scheme which already
+    has a handler, the existing handler is simply replaced with the new one.
+    Since QDesktopServices does not take ownership of handlers, no objects are
+    deleted when a handler is replaced.
+
+    Note that the handler will always be called from within the same thread that
+    calls QDesktopServices::openUrl().
+
+    \section1 iOS
+
     To use this function for receiving data from other apps on iOS you also need to
     add the custom scheme to the \c CFBundleURLSchemes list in your Info.plist file:
 
     \snippet code/src_gui_util_qdesktopservices.cpp 4
 
     For more information, see the Apple Developer Documentation for
-    \l{https://developer.apple.com/documentation/uikit/core_app/allowing_apps_and_websites_to_link_to_your_content/communicating_with_other_apps_using_custom_urls?language=objc}{Communicating with Other Apps Using Custom URLs}.
-    \warning It is not possible to claim support for some well known URL schemes, including http and https. This is only allowed for Universal Links.
+    \l {iOS: Defining a Custom URL Scheme for Your App}{Defining a Custom URL Scheme for Your App}.
+    \warning It is not possible to claim support for some well known URL schemes, including http and
+    https. This is only allowed for Universal Links.
 
     To claim support for http and https the above entry in the Info.plist file
     is not allowed. This is only possible when you add your domain to the
@@ -261,21 +272,39 @@ bool QDesktopServices::openUrl(const QUrl &url)
 
     iOS will search for /.well-known/apple-app-site-association on your domain,
     when the application is installed. If you want to listen to
-    https://your.domain.com/help?topic=ABCDEF you need to provide the following
+    \c{https://your.domain.com/help?topic=ABCDEF} you need to provide the following
     content there:
 
     \snippet code/src_gui_util_qdesktopservices.cpp 8
 
     For more information, see the Apple Developer Documentation for
-    \l{https://developer.apple.com/documentation/safariservices/supporting_associated_domains_in_your_app}[Supporting Associated Domains}.
+    \l {iOS: Supporting Associated Domains}{Supporting Associated Domains}.
 
-    If setUrlHandler() is used to set a new handler for a scheme which already
-    has a handler, the existing handler is simply replaced with the new one.
-    Since QDesktopServices does not take ownership of handlers, no objects are
-    deleted when a handler is replaced.
+    \section1 Android
 
-    Note that the handler will always be called from within the same thread that
-    calls QDesktopServices::openUrl().
+    To use this function for receiving data from other apps on Android, you
+    need to add one or more intent filter to the \c activity in your app manifest:
+
+    \snippet code/src_gui_util_qdesktopservices.cpp 9
+
+    For more information, see the Android Developer Documentation for
+    \l {Android: Create Deep Links to App Content}{Create Deep Links to App Content}.
+
+    To immediately open the corresponding content in your Android app, without
+    requiring the user to select the app, you need to verify your link. To
+    enable the verification, add an additional parameter to your intent filter:
+
+    \snippet code/src_gui_util_qdesktopservices.cpp 10
+
+    Android will look for \c{https://your.domain.com/.well-known/assetlinks.json},
+    when the application is installed. If you want to listen to
+    \c{https://your.domain.com:1337/help}, you need to provide the following
+    content there:
+
+    \snippet code/src_gui_util_qdesktopservices.cpp 11
+
+    For more information, see the Android Developer Documentation for
+    \l {Android: Verify Android App Links}{Verify Android App Links}.
 
     \sa openUrl(), unsetUrlHandler()
 */

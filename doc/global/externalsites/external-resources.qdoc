@@ -45,6 +45,26 @@
     \title Android: Query for devices
 */
 /*!
+    \externalpage https://developer.android.com/training/app-links/deep-linking
+    \title Android: Create Deep Links to App Content
+*/
+/*!
+    \externalpage https://developer.android.com/training/app-links/verify-site-associations
+    \title Android: Verify Android App Links
+*/
+/*!
+    \externalpage https://developer.apple.com/documentation/uikit/uiapplication/1622952-canopenurl
+    \title iOS: canOpenURL:
+*/
+/*!
+    \externalpage https://developer.apple.com/documentation/xcode/defining-a-custom-url-scheme-for-your-app
+    \title iOS: Defining a Custom URL Scheme for Your App
+*/
+/*!
+    \externalpage https://developer.apple.com/documentation/xcode/supporting-associated-domains
+    \title iOS: Supporting Associated Domains
+*/
+/*!
     \externalpage http://www.freedesktop.org/
     \title freedesktop.org
 */
