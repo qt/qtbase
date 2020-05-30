@@ -608,9 +608,9 @@ bool QRawFont::glyphIndexesForChars(const QChar *chars, int numChars, quint32 *g
 */
 bool QRawFont::advancesForGlyphIndexes(const quint32 *glyphIndexes, QPointF *advances, int numGlyphs, LayoutFlags layoutFlags) const
 {
-    Q_ASSERT(glyphIndexes && advances);
     if (!d->isValid() || numGlyphs <= 0)
         return false;
+    Q_ASSERT(glyphIndexes && advances);
 
     QVarLengthArray<QFixed> tmpAdvances(numGlyphs);
 
