@@ -1066,14 +1066,14 @@ static QPSQLDriver::Protocol qFindPSQLVersion(const QString &versionString)
         // increasing the first part of the version, e.g. 10 to 11.
         // Before version 10, a major release was indicated by increasing either
         // the first or second part of the version number, e.g. 9.5 to 9.6.
-        int vMaj = match.capturedRef(1).toInt();
+        int vMaj = match.capturedView(1).toInt();
         int vMin;
         if (vMaj >= 10) {
             vMin = 0;
         } else {
-            if (match.capturedRef(2).isEmpty())
+            if (match.capturedView(2).isEmpty())
                 return QPSQLDriver::VersionUnknown;
-            vMin = match.capturedRef(2).toInt();
+            vMin = match.capturedView(2).toInt();
         }
         return qMakePSQLVersion(vMaj, vMin);
     }

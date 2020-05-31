@@ -162,7 +162,7 @@ void MainWindow::findCodecs()
         } else if (sortKey.startsWith(QLatin1String("UTF-16"))) {
             rank = 2;
         } else if ((match = iso8859RegExp.match(sortKey)).hasMatch()) {
-            if (match.capturedRef(1).size() == 1)
+            if (match.capturedView(1).size() == 1)
                 rank = 3;
             else
                 rank = 4;

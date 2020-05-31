@@ -217,7 +217,6 @@ void consistencyCheck(const QRegularExpressionMatch &match)
                 int endPos = match.capturedEnd(i);
                 int length = match.capturedLength(i);
                 QString captured = match.captured(i);
-                QStringRef capturedRef = match.capturedRef(i);
                 QStringView capturedView = match.capturedView(i);
 
                 if (!captured.isNull()) {
@@ -226,13 +225,11 @@ void consistencyCheck(const QRegularExpressionMatch &match)
                     QVERIFY(length >= 0);
                     QVERIFY(endPos >= startPos);
                     QVERIFY((endPos - startPos) == length);
-                    QVERIFY(captured == capturedRef);
                     QVERIFY(captured == capturedView);
                 } else {
                     QVERIFY(startPos == -1);
                     QVERIFY(endPos == -1);
                     QVERIFY((endPos - startPos) == length);
-                    QVERIFY(capturedRef.isNull());
                     QVERIFY(capturedView.isNull());
                 }
             }
@@ -344,10 +341,10 @@ static void testMatch(const QRegularExpression &regexp,
     // test with QString as subject type
     testMatchImpl<QREMatch>(regexp, matchingMethodForString, subject, offset, matchType, matchOptions, result);
 
-    // test with QStringRef as subject type
+    // test with QStringView as subject type
     testMatchImpl<QREMatch>(regexp,
                             matchingMethodForStringRef,
-                            QStringRef(&subject, 0, subject.length()),
+                            QStringView(subject),
                             offset,
                             matchType,
                             matchOptions,
@@ -355,9 +352,9 @@ static void testMatch(const QRegularExpression &regexp,
 }
 
 typedef QRegularExpressionMatch (QRegularExpression::*QREMatchStringPMF)(const QString &, int, QRegularExpression::MatchType, QRegularExpression::MatchOptions) const;
-typedef QRegularExpressionMatch (QRegularExpression::*QREMatchStringRefPMF)(const QStringRef &, int, QRegularExpression::MatchType, QRegularExpression::MatchOptions) const;
+typedef QRegularExpressionMatch (QRegularExpression::*QREMatchStringViewPMF)(QStringView, int, QRegularExpression::MatchType, QRegularExpression::MatchOptions) const;
 typedef QRegularExpressionMatchIterator (QRegularExpression::*QREGlobalMatchStringPMF)(const QString &, int, QRegularExpression::MatchType, QRegularExpression::MatchOptions) const;
-typedef QRegularExpressionMatchIterator (QRegularExpression::*QREGlobalMatchStringRefPMF)(const QStringRef &, int, QRegularExpression::MatchType, QRegularExpression::MatchOptions) const;
+typedef QRegularExpressionMatchIterator (QRegularExpression::*QREGlobalMatchStringViewPMF)(QStringView, int, QRegularExpression::MatchType, QRegularExpression::MatchOptions) const;
 
 void tst_QRegularExpression::provideRegularExpressions()
 {
@@ -866,7 +863,7 @@ void tst_QRegularExpression::normalMatch()
 
     testMatch<QRegularExpressionMatch>(regexp,
                                        static_cast<QREMatchStringPMF>(&QRegularExpression::match),
-                                       static_cast<QREMatchStringRefPMF>(&QRegularExpression::match),
+                                       static_cast<QREMatchStringViewPMF>(&QRegularExpression::match),
                                        subject,
                                        offset,
                                        QRegularExpression::NormalMatch,
@@ -1138,7 +1135,7 @@ void tst_QRegularExpression::partialMatch()
 
     testMatch<QRegularExpressionMatch>(regexp,
                                        static_cast<QREMatchStringPMF>(&QRegularExpression::match),
-                                       static_cast<QREMatchStringRefPMF>(&QRegularExpression::match),
+                                       static_cast<QREMatchStringViewPMF>(&QRegularExpression::match),
                                        subject,
                                        offset,
                                        matchType,
@@ -1415,7 +1412,7 @@ void tst_QRegularExpression::globalMatch()
 
     testMatch<QRegularExpressionMatchIterator>(regexp,
                                                static_cast<QREGlobalMatchStringPMF>(&QRegularExpression::globalMatch),
-                                               static_cast<QREGlobalMatchStringRefPMF>(&QRegularExpression::globalMatch),
+                                               static_cast<QREGlobalMatchStringViewPMF>(&QRegularExpression::globalMatch),
                                                subject,
                                                offset,
                                                matchType,

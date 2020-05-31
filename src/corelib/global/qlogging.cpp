@@ -1210,7 +1210,7 @@ void QMessagePattern::setPattern(const QString &pattern)
                 static const QRegularExpression separatorRx(QStringLiteral(" separator=(?|\"([^\"]*)\"|([^ }]*))"));
                 QRegularExpressionMatch m = depthRx.match(lexeme);
                 if (m.hasMatch()) {
-                    int depth = m.capturedRef(1).toInt();
+                    int depth = m.capturedView(1).toInt();
                     if (depth <= 0)
                         error += QLatin1String("QT_MESSAGE_PATTERN: %{backtrace} depth must be a number greater than 0\n");
                     else

@@ -737,14 +737,10 @@ struct QRegularExpressionPrivate : QSharedData
         DontCheckSubjectString
     };
 
-    QRegularExpressionMatchPrivate *doMatch(const QString &subject,
-                                            int subjectStartPos,
-                                            int subjectLength,
-                                            int offset,
-                                            QRegularExpression::MatchType matchType,
-                                            QRegularExpression::MatchOptions matchOptions,
-                                            CheckSubjectStringOption checkSubjectStringOption = CheckSubjectString,
-                                            const QRegularExpressionMatchPrivate *previous = nullptr) const;
+    void doMatch(QRegularExpressionMatchPrivate *priv,
+                 int offset,
+                 CheckSubjectStringOption checkSubjectStringOption = CheckSubjectString,
+                 const QRegularExpressionMatchPrivate *previous = nullptr) const;
 
     int captureIndexForName(QStringView name) const;
 
@@ -771,31 +767,33 @@ struct QRegularExpressionPrivate : QSharedData
 struct QRegularExpressionMatchPrivate : QSharedData
 {
     QRegularExpressionMatchPrivate(const QRegularExpression &re,
-                                   const QString &subject,
-                                   int subjectStart,
-                                   int subjectLength,
+                                   const QString &subjectStorage,
+                                   QStringView subject,
                                    QRegularExpression::MatchType matchType,
                                    QRegularExpression::MatchOptions matchOptions);
 
     QRegularExpressionMatch nextMatch() const;
 
     const QRegularExpression regularExpression;
-    const QString subject;
-    // the capturedOffsets vector contains pairs of (start, end) positions
-    // for each captured substring
-    QVector<int> capturedOffsets;
 
-    const int subjectStart;
-    const int subjectLength;
+    // subject is what we match upon. If we've been asked to match over
+    // a QString, then subjectStorage is a copy of that string
+    // (so that it's kept alive by us)
+    const QString subjectStorage;
+    const QStringView subject;
 
     const QRegularExpression::MatchType matchType;
     const QRegularExpression::MatchOptions matchOptions;
 
-    int capturedCount;
+    // the capturedOffsets vector contains pairs of (start, end) positions
+    // for each captured substring
+    QVector<int> capturedOffsets;
 
-    bool hasMatch;
-    bool hasPartialMatch;
-    bool isValid;
+    int capturedCount = 0;
+
+    bool hasMatch = false;
+    bool hasPartialMatch = false;
+    bool isValid = false;
 };
 
 struct QRegularExpressionMatchIteratorPrivate : QSharedData
@@ -1057,7 +1055,7 @@ int QRegularExpressionPrivate::captureIndexForName(QStringView name) const
     and re-run pcre2_match_16.
 */
 static int safe_pcre2_match_16(const pcre2_code_16 *code,
-                               const unsigned short *subject, int length,
+                               PCRE2_SPTR16 subject, int length,
                                int startOffset, int options,
                                pcre2_match_data_16 *matchData,
                                pcre2_match_context_16 *matchContext)
@@ -1079,20 +1077,19 @@ static int safe_pcre2_match_16(const pcre2_code_16 *code,
 /*!
     \internal
 
-    Performs a match on the substring of the given \a subject string,
-    substring which starts from \a subjectStart and up to
-    (but not including) \a subjectStart + \a subjectLength. The match
-    will be of type \a matchType and using the options \a matchOptions;
-    the matching \a offset is relative the substring,
-    and if negative, it's taken as an offset from the end of the substring.
+    Performs a match on the subject string view held by \a priv. The
+    match will be of type priv->matchType and using the options
+    priv->matchOptions; the matching \a offset is relative the
+    substring, and if negative, it's taken as an offset from the end of
+    the substring.
 
     It also advances a match if a previous result is given as \a
-    previous. The \a subject string goes a Unicode validity check if
+    previous. The subject string goes a Unicode validity check if
     \a checkSubjectString is CheckSubjectString and the match options don't
     include DontCheckSubjectStringMatchOption (PCRE doesn't like illegal
     UTF-16 sequences).
 
-    Returns the QRegularExpressionMatchPrivate of the result.
+    \a priv is modified to hold the results of the match.
 
     Advancing a match is a tricky algorithm. If the previous match matched a
     non-empty string, we just do an ordinary match at the offset position.
@@ -1105,43 +1102,38 @@ static int safe_pcre2_match_16(const pcre2_code_16 *code,
     the new advanced offset is pointing to the beginning of a CRLF sequence, we
     must advance over it.
 */
-QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString &subject,
-                                                                   int subjectStart,
-                                                                   int subjectLength,
-                                                                   int offset,
-                                                                   QRegularExpression::MatchType matchType,
-                                                                   QRegularExpression::MatchOptions matchOptions,
-                                                                   CheckSubjectStringOption checkSubjectStringOption,
-                                                                   const QRegularExpressionMatchPrivate *previous) const
+void QRegularExpressionPrivate::doMatch(QRegularExpressionMatchPrivate *priv,
+                                        int offset,
+                                        CheckSubjectStringOption checkSubjectStringOption,
+                                        const QRegularExpressionMatchPrivate *previous) const
 {
+    Q_ASSERT(priv);
+    Q_ASSUME(priv != previous);
+
+    const int subjectLength = priv->subject.length();
+
     if (offset < 0)
         offset += subjectLength;
 
-    QRegularExpression re(*const_cast<QRegularExpressionPrivate *>(this));
-
-    QRegularExpressionMatchPrivate *priv = new QRegularExpressionMatchPrivate(re, subject,
-                                                                              subjectStart, subjectLength,
-                                                                              matchType, matchOptions);
-
     if (offset < 0 || offset > subjectLength)
-        return priv;
+        return;
 
     if (Q_UNLIKELY(!compiledPattern)) {
         qWarning("QRegularExpressionPrivate::doMatch(): called on an invalid QRegularExpression object");
-        return priv;
+        return;
     }
 
     // skip doing the actual matching if NoMatch type was requested
-    if (matchType == QRegularExpression::NoMatch) {
+    if (priv->matchType == QRegularExpression::NoMatch) {
         priv->isValid = true;
-        return priv;
+        return;
     }
 
-    int pcreOptions = convertToPcreOptions(matchOptions);
+    int pcreOptions = convertToPcreOptions(priv->matchOptions);
 
-    if (matchType == QRegularExpression::PartialPreferCompleteMatch)
+    if (priv->matchType == QRegularExpression::PartialPreferCompleteMatch)
         pcreOptions |= PCRE2_PARTIAL_SOFT;
-    else if (matchType == QRegularExpression::PartialPreferFirstMatch)
+    else if (priv->matchType == QRegularExpression::PartialPreferFirstMatch)
         pcreOptions |= PCRE2_PARTIAL_HARD;
 
     if (checkSubjectStringOption == DontCheckSubjectString)
@@ -1157,7 +1149,7 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
     pcre2_jit_stack_assign_16(matchContext, &qtPcreCallback, nullptr);
     pcre2_match_data_16 *matchData = pcre2_match_data_create_from_pattern_16(compiledPattern, nullptr);
 
-    const unsigned short * const subjectUtf16 = subject.utf16() + subjectStart;
+    const char16_t * const subjectUtf16 = priv->subject.utf16();
 
     int result;
 
@@ -1194,9 +1186,8 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
 
 #ifdef QREGULAREXPRESSION_DEBUG
     qDebug() << "Matching" <<  pattern << "against" << subject
-             << "starting at" << subjectStart << "len" << subjectLength
              << "offset" << offset
-             << matchType << matchOptions << previousMatchWasEmpty
+             << priv->matchType << priv->matchOptions << previousMatchWasEmpty
              << "result" << result;
 #endif
 
@@ -1254,27 +1245,23 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
 
     pcre2_match_data_free_16(matchData);
     pcre2_match_context_free_16(matchContext);
-
-    return priv;
 }
 
 /*!
     \internal
 */
 QRegularExpressionMatchPrivate::QRegularExpressionMatchPrivate(const QRegularExpression &re,
-                                                               const QString &subject,
-                                                               int subjectStart,
-                                                               int subjectLength,
+                                                               const QString &subjectStorage,
+                                                               QStringView subject,
                                                                QRegularExpression::MatchType matchType,
                                                                QRegularExpression::MatchOptions matchOptions)
-    : regularExpression(re), subject(subject),
-      subjectStart(subjectStart), subjectLength(subjectLength),
-      matchType(matchType), matchOptions(matchOptions),
-      capturedCount(0),
-      hasMatch(false), hasPartialMatch(false), isValid(false)
+    : regularExpression(re),
+      subjectStorage(subjectStorage),
+      subject(subject),
+      matchType(matchType),
+      matchOptions(matchOptions)
 {
 }
-
 
 /*!
     \internal
@@ -1284,18 +1271,20 @@ QRegularExpressionMatch QRegularExpressionMatchPrivate::nextMatch() const
     Q_ASSERT(isValid);
     Q_ASSERT(hasMatch || hasPartialMatch);
 
+    auto nextPrivate = new QRegularExpressionMatchPrivate(regularExpression,
+                                                          subjectStorage,
+                                                          subject,
+                                                          matchType,
+                                                          matchOptions);
+
     // Note the DontCheckSubjectString passed for the check of the subject string:
     // if we're advancing a match on the same subject,
     // then that subject was already checked at least once (when this object
     // was created, or when the object that created this one was created, etc.)
-    QRegularExpressionMatchPrivate *nextPrivate = regularExpression.d->doMatch(subject,
-                                                                               subjectStart,
-                                                                               subjectLength,
-                                                                               capturedOffsets.at(1),
-                                                                               matchType,
-                                                                               matchOptions,
-                                                                               QRegularExpressionPrivate::DontCheckSubjectString,
-                                                                               this);
+    regularExpression.d->doMatch(nextPrivate,
+                                 capturedOffsets.at(1),
+                                 QRegularExpressionPrivate::DontCheckSubjectString,
+                                 this);
     return QRegularExpressionMatch(*nextPrivate);
 }
 
@@ -1577,34 +1566,43 @@ QRegularExpressionMatch QRegularExpression::match(const QString &subject,
                                                   MatchOptions matchOptions) const
 {
     d.data()->compilePattern();
-
-    QRegularExpressionMatchPrivate *priv = d->doMatch(subject, 0, subject.length(), offset, matchType, matchOptions);
+    auto priv = new QRegularExpressionMatchPrivate(*this,
+                                                   subject,
+                                                   qToStringViewIgnoringNull(subject),
+                                                   matchType,
+                                                   matchOptions);
+    d->doMatch(priv, offset);
     return QRegularExpressionMatch(*priv);
 }
 
 /*!
-    \since 5.5
+    \since 6.0
     \overload
 
-    Attempts to match the regular expression against the given \a subjectRef
-    string reference, starting at the position \a offset inside the subject, using a
+    Attempts to match the regular expression against the given \a subjectView
+    string view, starting at the position \a offset inside the subject, using a
     match of type \a matchType and honoring the given \a matchOptions.
 
     The returned QRegularExpressionMatch object contains the results of the
     match.
 
+    \note The data referenced by \a subjectView must remain valid as long
+    as there are QRegularExpressionMatch objects using it.
+
     \sa QRegularExpressionMatch, {normal matching}
 */
-QRegularExpressionMatch QRegularExpression::match(const QStringRef &subjectRef,
+QRegularExpressionMatch QRegularExpression::match(QStringView subjectView,
                                                   int offset,
                                                   MatchType matchType,
                                                   MatchOptions matchOptions) const
 {
     d.data()->compilePattern();
-
-    const QString subject = subjectRef.string() ? *subjectRef.string() : QString();
-
-    QRegularExpressionMatchPrivate *priv = d->doMatch(subject, subjectRef.position(), subjectRef.length(), offset, matchType, matchOptions);
+    auto priv = new QRegularExpressionMatchPrivate(*this,
+                                                   QString(),
+                                                   subjectView,
+                                                   matchType,
+                                                   matchOptions);
+    d->doMatch(priv, offset);
     return QRegularExpressionMatch(*priv);
 }
 
@@ -1634,20 +1632,24 @@ QRegularExpressionMatchIterator QRegularExpression::globalMatch(const QString &s
 }
 
 /*!
-    \since 5.5
+    \since 6.0
     \overload
 
     Attempts to perform a global match of the regular expression against the
-    given \a subjectRef string reference, starting at the position \a offset inside the
+    given \a subjectView string view, starting at the position \a offset inside the
     subject, using a match of type \a matchType and honoring the given \a
     matchOptions.
 
     The returned QRegularExpressionMatchIterator is positioned before the
     first match result (if any).
 
+    \note The data referenced by \a subjectView must remain valid as
+    long as there are QRegularExpressionMatchIterator or
+    QRegularExpressionMatch objects using it.
+
     \sa QRegularExpressionMatchIterator, {global matching}
 */
-QRegularExpressionMatchIterator QRegularExpression::globalMatch(const QStringRef &subjectRef,
+QRegularExpressionMatchIterator QRegularExpression::globalMatch(QStringView subjectView,
                                                                 int offset,
                                                                 MatchType matchType,
                                                                 MatchOptions matchOptions) const
@@ -1656,7 +1658,7 @@ QRegularExpressionMatchIterator QRegularExpression::globalMatch(const QStringRef
             new QRegularExpressionMatchIteratorPrivate(*this,
                                                        matchType,
                                                        matchOptions,
-                                                       match(subjectRef, offset, matchType, matchOptions));
+                                                       match(subjectView, offset, matchType, matchOptions));
 
     return QRegularExpressionMatchIterator(*priv);
 }
@@ -1987,8 +1989,7 @@ QString QRegularExpression::anchoredPattern(QStringView expression)
 QRegularExpressionMatch::QRegularExpressionMatch()
     : d(new QRegularExpressionMatchPrivate(QRegularExpression(),
                                            QString(),
-                                           0,
-                                           0,
+                                           QStringView(),
                                            QRegularExpression::NoMatch,
                                            QRegularExpression::NoMatchOption))
 {
@@ -2108,45 +2109,12 @@ int QRegularExpressionMatch::lastCapturedIndex() const
     \note The implicit capturing group number 0 captures the substring matched
     by the entire pattern.
 
-    \sa capturedRef(), capturedView(), lastCapturedIndex(), capturedStart(), capturedEnd(),
+    \sa capturedView(), lastCapturedIndex(), capturedStart(), capturedEnd(),
     capturedLength(), QString::isNull()
 */
 QString QRegularExpressionMatch::captured(int nth) const
 {
-    if (nth < 0 || nth > lastCapturedIndex())
-        return QString();
-
-    int start = capturedStart(nth);
-
-    if (start == -1) // didn't capture
-        return QString();
-
-    return d->subject.mid(start + d->subjectStart, capturedLength(nth));
-}
-
-/*!
-    Returns a reference to the substring captured by the \a nth capturing group.
-
-    If the \a nth capturing group did not capture a string, or if there is no
-    such capturing group, returns a null QStringRef.
-
-    \note The implicit capturing group number 0 captures the substring matched
-    by the entire pattern.
-
-    \sa captured(), capturedView(), lastCapturedIndex(), capturedStart(), capturedEnd(),
-    capturedLength(), QStringRef::isNull()
-*/
-QStringRef QRegularExpressionMatch::capturedRef(int nth) const
-{
-    if (nth < 0 || nth > lastCapturedIndex())
-        return QStringRef();
-
-    int start = capturedStart(nth);
-
-    if (start == -1) // didn't capture
-        return QStringRef();
-
-    return d->subject.midRef(start + d->subjectStart, capturedLength(nth));
+    return capturedView(nth).toString();
 }
 
 /*!
@@ -2160,12 +2128,20 @@ QStringRef QRegularExpressionMatch::capturedRef(int nth) const
     \note The implicit capturing group number 0 captures the substring matched
     by the entire pattern.
 
-    \sa captured(), capturedRef(), lastCapturedIndex(), capturedStart(), capturedEnd(),
+    \sa captured(), lastCapturedIndex(), capturedStart(), capturedEnd(),
     capturedLength(), QStringView::isNull()
 */
 QStringView QRegularExpressionMatch::capturedView(int nth) const
 {
-    return capturedRef(nth);
+    if (nth < 0 || nth > lastCapturedIndex())
+        return QStringView();
+
+    int start = capturedStart(nth);
+
+    if (start == -1) // didn't capture
+        return QStringView();
+
+    return d->subject.mid(start, capturedLength(nth));
 }
 
 #if QT_STRINGVIEW_LEVEL < 2
@@ -2175,27 +2151,12 @@ QStringView QRegularExpressionMatch::capturedView(int nth) const
     If the named capturing group \a name did not capture a string, or if
     there is no capturing group named \a name, returns a null QString.
 
-    \sa capturedRef(), capturedView(), capturedStart(), capturedEnd(), capturedLength(),
+    \sa capturedView(), capturedStart(), capturedEnd(), capturedLength(),
     QString::isNull()
 */
 QString QRegularExpressionMatch::captured(const QString &name) const
 {
     return captured(qToStringViewIgnoringNull(name));
-}
-
-/*!
-    Returns a reference to the string captured by the capturing group named \a
-    name.
-
-    If the named capturing group \a name did not capture a string, or if
-    there is no capturing group named \a name, returns a null QStringRef.
-
-    \sa captured(), capturedView(), capturedStart(), capturedEnd(), capturedLength(),
-    QStringRef::isNull()
-*/
-QStringRef QRegularExpressionMatch::capturedRef(const QString &name) const
-{
-    return capturedRef(qToStringViewIgnoringNull(name));
 }
 #endif // QT_STRINGVIEW_LEVEL < 2
 
@@ -2207,7 +2168,7 @@ QStringRef QRegularExpressionMatch::capturedRef(const QString &name) const
     If the named capturing group \a name did not capture a string, or if
     there is no capturing group named \a name, returns a null QString.
 
-    \sa capturedRef(), capturedView(), capturedStart(), capturedEnd(), capturedLength(),
+    \sa capturedView(), capturedStart(), capturedEnd(), capturedLength(),
     QString::isNull()
 */
 QString QRegularExpressionMatch::captured(QStringView name) const
@@ -2216,34 +2177,8 @@ QString QRegularExpressionMatch::captured(QStringView name) const
         qWarning("QRegularExpressionMatch::captured: empty capturing group name passed");
         return QString();
     }
-    int nth = d->regularExpression.d->captureIndexForName(name);
-    if (nth == -1)
-        return QString();
-    return captured(nth);
-}
 
-/*!
-    \since 5.10
-
-    Returns a reference to the string captured by the capturing group named \a
-    name.
-
-    If the named capturing group \a name did not capture a string, or if
-    there is no capturing group named \a name, returns a null QStringRef.
-
-    \sa captured(), capturedView(), capturedStart(), capturedEnd(), capturedLength(),
-    QStringRef::isNull()
-*/
-QStringRef QRegularExpressionMatch::capturedRef(QStringView name) const
-{
-    if (name.isEmpty()) {
-        qWarning("QRegularExpressionMatch::capturedRef: empty capturing group name passed");
-        return QStringRef();
-    }
-    int nth = d->regularExpression.d->captureIndexForName(name);
-    if (nth == -1)
-        return QStringRef();
-    return capturedRef(nth);
+    return capturedView(name).toString();
 }
 
 /*!
@@ -2255,7 +2190,7 @@ QStringRef QRegularExpressionMatch::capturedRef(QStringView name) const
     If the named capturing group \a name did not capture a string, or if
     there is no capturing group named \a name, returns a null QStringView.
 
-    \sa captured(), capturedRef(), capturedStart(), capturedEnd(), capturedLength(),
+    \sa captured(), capturedStart(), capturedEnd(), capturedLength(),
     QStringRef::isNull()
 */
 QStringView QRegularExpressionMatch::capturedView(QStringView name) const
