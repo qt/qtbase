@@ -268,7 +268,15 @@ public:
     QPaintDevice *device;
     QPaintDevice *original_device;
     QPaintDevice *helper_device;
-    QPaintEngine *engine;
+    struct QPaintEngineDestructor {
+        void operator()(QPaintEngine *pe) const noexcept
+        {
+            if (pe && pe->autoDestruct())
+                delete pe;
+        }
+    };
+
+    std::unique_ptr<QPaintEngine, QPaintEngineDestructor> engine;
     QEmulationPaintEngine *emulationEngine;
     QPaintEngineEx *extended;
     QBrush colorBrush;          // for fill with solid color

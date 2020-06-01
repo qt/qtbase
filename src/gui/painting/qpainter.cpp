@@ -1545,7 +1545,7 @@ QPaintDevice *QPainter::device() const
 bool QPainter::isActive() const
 {
     Q_D(const QPainter);
-    return d->engine;
+    return d->engine != nullptr;
 }
 
 void QPainterPrivate::initFrom(const QPaintDevice *device)
@@ -1744,7 +1744,7 @@ bool QPainter::begin(QPaintDevice *pd)
     else if (pd->devType() == QInternal::Image)
         static_cast<QImage *>(pd)->detach();
 
-    d->engine = pd->paintEngine();
+    d->engine.reset(pd->paintEngine());
 
     if (!d->engine) {
         qWarning("QPainter::begin: Paint device returned engine == 0, type: %d", pd->devType());
@@ -1753,7 +1753,7 @@ bool QPainter::begin(QPaintDevice *pd)
 
     d->device = pd;
 
-    d->extended = d->engine->isExtended() ? static_cast<QPaintEngineEx *>(d->engine) : nullptr;
+    d->extended = d->engine->isExtended() ? static_cast<QPaintEngineEx *>(d->engine.get()) : nullptr;
     if (d->emulationEngine)
         d->emulationEngine->real_engine = d->extended;
 
@@ -1911,9 +1911,7 @@ bool QPainter::end()
         qWarning("QPainter::end: Painter ended with %d saved states", int(d->savedStates.size()));
     }
 
-    if (d->engine->autoDestruct()) {
-        delete d->engine;
-    }
+    d->engine.reset();
 
     if (d->emulationEngine) {
         delete d->emulationEngine;
@@ -1939,7 +1937,7 @@ bool QPainter::end()
 QPaintEngine *QPainter::paintEngine() const
 {
     Q_D(const QPainter);
-    return d->engine;
+    return d->engine.get();
 }
 
 /*!
