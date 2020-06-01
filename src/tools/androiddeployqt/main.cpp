@@ -44,6 +44,10 @@
 
 #include <algorithm>
 
+#if defined(Q_OS_WIN32)
+#include <qt_windows.h>
+#endif
+
 #ifdef Q_CC_MSVC
 #define popen _popen
 #define QT_POPEN_READ "rb"
@@ -2298,6 +2302,27 @@ static bool mergeGradleProperties(const QString &path, GradleProperties properti
     return true;
 }
 
+#if defined(Q_OS_WIN32)
+void checkAndWarnGradleLongPaths(const QString &outputDirectory)
+{
+    QStringList longFileNames;
+    QDirIterator it(outputDirectory, QStringList(QStringLiteral("*.java")), QDir::Files,
+                    QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        if (it.next().size() >= MAX_PATH)
+            longFileNames.append(it.next());
+    }
+
+    if (!longFileNames.isEmpty()) {
+        fprintf(stderr,
+                "The maximum path length that can be processed by Gradle on Windows is %d characters.\n"
+                "Consider moving your project to reduce its path length.\n"
+                "The following files have too long paths:\n%s.\n",
+                MAX_PATH, qPrintable(longFileNames.join(QLatin1Char('\n'))));
+    }
+}
+#endif
+
 bool buildAndroidProject(const Options &options)
 {
     GradleProperties localProperties;
@@ -2362,6 +2387,10 @@ bool buildAndroidProject(const Options &options)
         fprintf(stderr, "Building the android package failed!\n");
         if (!options.verbose)
             fprintf(stderr, "  -- For more information, run this command with --verbose.\n");
+
+#if defined(Q_OS_WIN32)
+        checkAndWarnGradleLongPaths(options.outputDirectory);
+#endif
         return false;
     }
 
