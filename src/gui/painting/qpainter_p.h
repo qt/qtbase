@@ -272,7 +272,7 @@ public:
     };
     std::unique_ptr<QPaintEngine, QPaintEngineDestructor> engine;
 
-    QEmulationPaintEngine *emulationEngine = nullptr;
+    std::unique_ptr<QEmulationPaintEngine> emulationEngine;
     QPaintEngineEx *extended = nullptr;
     QBrush colorBrush;          // for fill with solid color
 };

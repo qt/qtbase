@@ -206,29 +206,24 @@ void QPainterPrivate::checkEmulation()
         return;
 
     if (doEmulation) {
-        if (extended != emulationEngine) {
+        if (extended != emulationEngine.get()) {
             if (!emulationEngine)
-                emulationEngine = new QEmulationPaintEngine(extended);
-            extended = emulationEngine;
+                emulationEngine = std::make_unique<QEmulationPaintEngine>(extended);
+            extended = emulationEngine.get();
             extended->setState(state.get());
         }
-    } else if (emulationEngine == extended) {
+    } else if (emulationEngine.get() == extended) {
         extended = emulationEngine->real_engine;
     }
 }
 
-
 QPainterPrivate::QPainterPrivate(QPainter *painter)
     : q_ptr(painter), txinv(0), inDestructor(false)
 {
-
 }
 
 QPainterPrivate::~QPainterPrivate()
-{
-    delete emulationEngine;
-}
-
+    = default;
 
 QTransform QPainterPrivate::viewTransform() const
 {
@@ -346,7 +341,6 @@ void QPainterPrivate::detachPainterPrivate(QPainter *q)
 
     if (emulationEngine) {
         extended = emulationEngine->real_engine;
-        delete emulationEngine;
         emulationEngine = nullptr;
     }
 }
@@ -1918,15 +1912,8 @@ bool QPainter::end()
     }
 
     d->engine.reset();
-
-    if (d->emulationEngine) {
-        delete d->emulationEngine;
-        d->emulationEngine = nullptr;
-    }
-
-    if (d->extended) {
-        d->extended = nullptr;
-    }
+    d->emulationEngine = nullptr;
+    d->extended = nullptr;
 
     qt_cleanup_painter_state(d);
 
