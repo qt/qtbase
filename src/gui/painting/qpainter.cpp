@@ -267,20 +267,8 @@ bool QPainterPrivate::attachPainterPrivate(QPainter *q, QPaintDevice *pdev)
     // Save the current state of the shared painter and assign
     // the current d_ptr to the shared painter's d_ptr.
     sp->save();
-    if (!sp->d_ptr->d_ptrs) {
-        // Allocate space for 4 d-pointers (enough for up to 4 sub-sequent
-        // redirections within the same paintEvent(), which should be enough
-        // in 99% of all cases). E.g: A renders B which renders C which renders D.
-        sp->d_ptr->d_ptrs_size = 4;
-        sp->d_ptr->d_ptrs = (QPainterPrivate **)malloc(4 * sizeof(QPainterPrivate *));
-        Q_CHECK_PTR(sp->d_ptr->d_ptrs);
-    } else if (sp->d_ptr->refcount - 1 == sp->d_ptr->d_ptrs_size) {
-        // However, to support corner cases we grow the array dynamically if needed.
-        sp->d_ptr->d_ptrs_size <<= 1;
-        const int newSize = sp->d_ptr->d_ptrs_size * sizeof(QPainterPrivate *);
-        sp->d_ptr->d_ptrs = q_check_ptr((QPainterPrivate **)realloc(sp->d_ptr->d_ptrs, newSize));
-    }
-    sp->d_ptr->d_ptrs[++sp->d_ptr->refcount - 2] = q->d_ptr.data();
+    ++sp->d_ptr->refcount;
+    sp->d_ptr->d_ptrs.push_back(q->d_ptr.data());
     q->d_ptr.take();
     q->d_ptr.reset(sp->d_ptr.data());
 
@@ -325,7 +313,9 @@ void QPainterPrivate::detachPainterPrivate(QPainter *q)
     Q_ASSERT(refcount > 1);
     Q_ASSERT(q);
 
-    QPainterPrivate *original = d_ptrs[--refcount - 1];
+    --refcount;
+    QPainterPrivate *original = d_ptrs.back();
+    d_ptrs.pop_back();
     if (inDestructor) {
         inDestructor = false;
         if (original)
@@ -334,7 +324,6 @@ void QPainterPrivate::detachPainterPrivate(QPainter *q)
         original = new QPainterPrivate(q);
     }
 
-    d_ptrs[refcount - 1] = nullptr;
     q->restore();
     q->d_ptr.take();
     q->d_ptr.reset(original);
@@ -1515,8 +1504,6 @@ QPainter::~QPainter()
         Q_ASSERT(d_ptr->inDestructor);
         d_ptr->inDestructor = false;
         Q_ASSERT(d_ptr->refcount == 1);
-        if (d_ptr->d_ptrs)
-            free(d_ptr->d_ptrs);
     }
 }
 
