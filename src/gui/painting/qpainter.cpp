@@ -222,7 +222,6 @@ QPainterPrivate::~QPainterPrivate()
 {
     delete emulationEngine;
     qDeleteAll(states);
-    delete dummyState;
 }
 
 

@@ -65,6 +65,8 @@
 
 #include <private/qpen_p.h>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 class QPaintEngine;
@@ -206,7 +208,7 @@ public:
     QPainterState *state;
     QVarLengthArray<QPainterState *, 8> states;
 
-    mutable QPainterDummyState *dummyState;
+    mutable std::unique_ptr<QPainterDummyState> dummyState;
 
     QTransform invMatrix;
     uint txinv:1;
@@ -221,8 +223,8 @@ public:
 
     QPainterDummyState *fakeState() const {
         if (!dummyState)
-            dummyState = new QPainterDummyState();
-        return dummyState;
+            dummyState = std::make_unique<QPainterDummyState>();
+        return dummyState.get();
     }
 
     void updateEmulationSpecifier(QPainterState *s);
