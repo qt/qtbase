@@ -433,20 +433,21 @@ Qt::Key QWasmEventTranslator::translateEmscriptKey(const EmscriptenKeyboardEvent
 {
     Qt::Key qtKey = Qt::Key_unknown;
 
-    if (qstrncmp(emscriptKey->code, "Key", 3) == 0 || qstrncmp(emscriptKey->code, "Numpad", 6) == 0 ||
-        qstrncmp(emscriptKey->code, "Digit", 5) == 0) {
+    if (qstrncmp(emscriptKey->key, "Dead", 4) == 0 ) {
+        emkb2qt_t searchKey1{emscriptKey->code, 0};
+        for (auto it1 = KeyTbl.cbegin(); it1 != KeyTbl.end(); ++it1)
+            if (it1 != KeyTbl.end() && (qstrcmp(searchKey1.em, it1->em) == 0)) {
+                qtKey = static_cast<Qt::Key>(it1->qt);
+            }
+
+    } else if (qstrncmp(emscriptKey->code, "Key", 3) == 0 || qstrncmp(emscriptKey->code, "Numpad", 6) == 0 ||
+                 qstrncmp(emscriptKey->code, "Digit", 5) == 0) {
 
         emkb2qt_t searchKey{emscriptKey->code, 0}; // search emcsripten code
         auto it1 = std::lower_bound(KeyTbl.cbegin(), KeyTbl.cend(), searchKey);
         if (it1 != KeyTbl.end() && !(searchKey < *it1)) {
             qtKey = static_cast<Qt::Key>(it1->qt);
         }
-    } else if (qstrncmp(emscriptKey->key, "Dead", 4) == 0 ) {
-        emkb2qt_t searchKey1{emscriptKey->code, 0};
-        for (auto it1 = KeyTbl.cbegin(); it1 != KeyTbl.end(); ++it1)
-            if (it1 != KeyTbl.end() && (qstrcmp(searchKey1.em, it1->em) == 0)) {
-                qtKey = static_cast<Qt::Key>(it1->qt);
-            }
     }
 
     if (qtKey == Qt::Key_unknown) {
