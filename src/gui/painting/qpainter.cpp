@@ -210,7 +210,7 @@ void QPainterPrivate::checkEmulation()
             if (!emulationEngine)
                 emulationEngine = new QEmulationPaintEngine(extended);
             extended = emulationEngine;
-            extended->setState(state);
+            extended->setState(state.get());
         }
     } else if (emulationEngine == extended) {
         extended = emulationEngine->real_engine;
@@ -221,7 +221,6 @@ void QPainterPrivate::checkEmulation()
 QPainterPrivate::~QPainterPrivate()
 {
     delete emulationEngine;
-    qDeleteAll(states);
 }
 
 
@@ -1588,15 +1587,19 @@ void QPainter::save()
         return;
     }
 
+    std::unique_ptr<QPainterState> prev;
     if (d->extended) {
-        d->state = d->extended->createState(d->states.back());
-        d->extended->setState(d->state);
+        // separate the creation of a new state from the update of d->state, since some
+        // engines access d->state directly (not via createState()'s argument)
+        std::unique_ptr<QPainterState> next(d->extended->createState(d->state.get()));
+        prev = std::exchange(d->state, std::move(next));
+        d->extended->setState(d->state.get());
     } else {
         d->updateState(d->state);
-        d->state = new QPainterState(d->states.back());
-        d->engine->state = d->state;
+        prev = std::exchange(d->state, std::make_unique<QPainterState>(d->state.get()));
+        d->engine->state = d->state.get();
     }
-    d->states.push_back(d->state);
+    d->savedStates.push(std::move(prev));
 }
 
 /*!
@@ -1613,7 +1616,7 @@ void QPainter::restore()
         printf("QPainter::restore()\n");
 #endif
     Q_D(QPainter);
-    if (d->states.size()<=1) {
+    if (d->savedStates.empty()) {
         qWarning("QPainter::restore: Unbalanced save/restore");
         return;
     } else if (!d->engine) {
@@ -1621,15 +1624,13 @@ void QPainter::restore()
         return;
     }
 
-    QPainterState *tmp = d->state;
-    d->states.pop_back();
-    d->state = d->states.back();
+    const auto tmp = std::exchange(d->state, std::move(d->savedStates.top()));
+    d->savedStates.pop();
     d->txinv = false;
 
     if (d->extended) {
         d->checkEmulation();
-        d->extended->setState(d->state);
-        delete tmp;
+        d->extended->setState(d->state.get());
         return;
     }
 
@@ -1667,8 +1668,7 @@ void QPainter::restore()
         tmp->changeFlags |= QPaintEngine::DirtyTransform;
     }
 
-    d->updateState(d->state);
-    delete tmp;
+    d->updateState(d->state.get());
 }
 
 
@@ -1701,8 +1701,7 @@ void QPainter::restore()
 
 static inline void qt_cleanup_painter_state(QPainterPrivate *d)
 {
-    qDeleteAll(d->states);
-    d->states.clear();
+    d->savedStates.clear();
     d->state = nullptr;
     d->engine = nullptr;
     d->device = nullptr;
@@ -1760,18 +1759,17 @@ bool QPainter::begin(QPaintDevice *pd)
 
     // Setup new state...
     Q_ASSERT(!d->state);
-    d->state = d->extended ? d->extended->createState(nullptr) : new QPainterState;
+    d->state.reset(d->extended ? d->extended->createState(nullptr) : new QPainterState);
     d->state->painter = this;
-    d->states.push_back(d->state);
 
     d->state->redirectionMatrix.translate(-redirectionOffset.x(), -redirectionOffset.y());
     d->state->brushOrigin = QPointF();
 
     // Slip a painter state into the engine before we do any other operations
     if (d->extended)
-        d->extended->setState(d->state);
+        d->extended->setState(d->state.get());
     else
-        d->engine->state = d->state;
+        d->engine->state = d->state.get();
 
     switch (pd->devType()) {
         case QInternal::Pixmap:
@@ -1909,8 +1907,8 @@ bool QPainter::end()
         }
     }
 
-    if (d->states.size() > 1) {
-        qWarning("QPainter::end: Painter ended with %d saved states", int(d->states.size()));
+    if (d->savedStates.size() > 0) {
+        qWarning("QPainter::end: Painter ended with %d saved states", int(d->savedStates.size()));
     }
 
     if (d->engine->autoDestruct()) {

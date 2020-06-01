@@ -66,6 +66,7 @@
 #include <private/qpen_p.h>
 
 #include <memory>
+#include <stack>
 
 QT_BEGIN_NAMESPACE
 
@@ -205,8 +206,12 @@ public:
     QPainter *q_ptr;
     QPainterPrivate **d_ptrs;
 
-    QPainterState *state;
-    QVarLengthArray<QPainterState *, 8> states;
+    std::unique_ptr<QPainterState> state;
+    template <typename T, std::size_t N = 8>
+    struct SmallStack : std::stack<T, QVarLengthArray<T, N>> {
+        void clear() { this->c.clear(); }
+    };
+    SmallStack<std::unique_ptr<QPainterState>> savedStates;
 
     mutable std::unique_ptr<QPainterDummyState> dummyState;
 
@@ -230,6 +235,7 @@ public:
     void updateEmulationSpecifier(QPainterState *s);
     void updateStateImpl(QPainterState *state);
     void updateState(QPainterState *state);
+    void updateState(std::unique_ptr<QPainterState> &state) { updateState(state.get()); }
 
     void draw_helper(const QPainterPath &path, DrawOperation operation = StrokeAndFillDraw);
     void drawStretchedGradient(const QPainterPath &path, DrawOperation operation);
