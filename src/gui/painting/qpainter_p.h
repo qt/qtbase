@@ -194,17 +194,11 @@ class QPainterPrivate
 {
     Q_DECLARE_PUBLIC(QPainter)
 public:
-    QPainterPrivate(QPainter *painter)
-    : q_ptr(painter), d_ptrs(nullptr), state(nullptr), dummyState(nullptr), txinv(0), inDestructor(false), d_ptrs_size(0),
-        refcount(1), device(nullptr), original_device(nullptr), helper_device(nullptr), engine(nullptr), emulationEngine(nullptr),
-        extended(nullptr)
-    {
-    }
-
+    explicit QPainterPrivate(QPainter *painter);
     ~QPainterPrivate();
 
     QPainter *q_ptr;
-    QPainterPrivate **d_ptrs;
+    QPainterPrivate **d_ptrs = nullptr;
 
     std::unique_ptr<QPainterState> state;
     template <typename T, std::size_t N = 8>
@@ -218,8 +212,8 @@ public:
     QTransform invMatrix;
     uint txinv:1;
     uint inDestructor : 1;
-    uint d_ptrs_size;
-    uint refcount;
+    uint d_ptrs_size = 0;
+    uint refcount = 1;
 
     enum DrawOperation { StrokeDraw        = 0x1,
                          FillDraw          = 0x2,
@@ -265,9 +259,10 @@ public:
     void detachPainterPrivate(QPainter *q);
     void initFrom(const QPaintDevice *device);
 
-    QPaintDevice *device;
-    QPaintDevice *original_device;
-    QPaintDevice *helper_device;
+    QPaintDevice *device = nullptr;
+    QPaintDevice *original_device = nullptr;
+    QPaintDevice *helper_device = nullptr;
+
     struct QPaintEngineDestructor {
         void operator()(QPaintEngine *pe) const noexcept
         {
@@ -275,10 +270,10 @@ public:
                 delete pe;
         }
     };
-
     std::unique_ptr<QPaintEngine, QPaintEngineDestructor> engine;
-    QEmulationPaintEngine *emulationEngine;
-    QPaintEngineEx *extended;
+
+    QEmulationPaintEngine *emulationEngine = nullptr;
+    QPaintEngineEx *extended = nullptr;
     QBrush colorBrush;          // for fill with solid color
 };
 

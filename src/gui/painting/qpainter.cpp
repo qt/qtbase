@@ -218,6 +218,12 @@ void QPainterPrivate::checkEmulation()
 }
 
 
+QPainterPrivate::QPainterPrivate(QPainter *painter)
+    : q_ptr(painter), txinv(0), inDestructor(false)
+{
+
+}
+
 QPainterPrivate::~QPainterPrivate()
 {
     delete emulationEngine;
