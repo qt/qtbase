@@ -1046,6 +1046,9 @@ glyph_metrics_t QWindowsFontEngineDirectWrite::alphaMapBoundingBox(glyph_t glyph
 
         int margin = glyphMargin(format);
 
+        if (rect.left == rect.right || rect.top == rect.bottom)
+            return glyph_metrics_t();
+
         return glyph_metrics_t(rect.left,
                                rect.top,
                                rect.right - rect.left + margin * 2,
