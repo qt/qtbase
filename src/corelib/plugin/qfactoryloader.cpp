@@ -296,6 +296,7 @@ void QFactoryLoader::update()
             }
             if (keyUsageCount || keys.isEmpty()) {
                 library->setLoadHints(QLibrary::PreventUnloadHint); // once loaded, don't unload
+                QMutexLocker locker(&d->mutex);
                 d->libraryList += library;
             } else {
                 library->release();
