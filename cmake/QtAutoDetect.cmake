@@ -185,6 +185,16 @@ function(qt_auto_detect_cmake_config)
     endif()
 endfunction()
 
+function(qt_auto_detect_cyclic_toolchain)
+    if(CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "/qt.toolchain.cmake$")
+        message(FATAL_ERROR
+                "Woah there! You can't use the Qt generated qt.toolchain.cmake file to configure "
+                "qtbase, because that will create a toolchain file that includes itself!\n"
+                "Did you accidentally use qt-cmake to configure qtbase? Make sure to remove the "
+                "CMakeCache.txt file, and configure qtbase with 'cmake' instead of 'qt-cmake'.")
+    endif()
+endfunction()
+
 function(qt_auto_detect_darwin)
     if(APPLE)
         # If no CMAKE_OSX_DEPLOYMENT_TARGET is provided, default to a value that Qt defines.
@@ -230,6 +240,7 @@ function(qt_auto_detect_pch)
     option(BUILD_WITH_PCH "Build Qt using precompiled headers?" "${default_value}")
 endfunction()
 
+qt_auto_detect_cyclic_toolchain()
 qt_auto_detect_cmake_config()
 qt_auto_detect_darwin()
 qt_auto_detect_ios()

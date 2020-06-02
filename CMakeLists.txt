@@ -1,8 +1,11 @@
 # special case skip regeneration
 cmake_minimum_required(VERSION 3.15.0)
 
-# Run auto detection routines
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtAutoDetect.cmake)
+# Run auto detection routines, but not when doing stnadalone tests. In that case the detection
+# results are takend from either QtBuildInternals or the qt.toolchain.cmake file.
+if(NOT QT_BUILD_STANDALONE_TESTS)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtAutoDetect.cmake)
+endif()
 
 if (CMAKE_CROSSCOMPILING AND CMAKE_SYSROOT)
     # When cross compiling with CMake any calls to pkg_check_modules() will

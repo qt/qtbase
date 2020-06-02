@@ -116,7 +116,7 @@ if(QT_HOST_PATH)
 endif()
 
 if(CMAKE_TOOLCHAIN_FILE)
-    set(init_original_toolchain_file "set(qt_chainload_toolchain_file \"${CMAKE_TOOLCHAIN_FILE}\")")
+    set(init_original_toolchain_file "set(__qt_chainload_toolchain_file \"${CMAKE_TOOLCHAIN_FILE}\")")
 endif()
 
 if(VCPKG_CHAINLOAD_TOOLCHAIN_FILE)
