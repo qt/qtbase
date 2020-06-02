@@ -52,7 +52,9 @@
 //
 
 #include <QtGui/private/qaction_p.h>
+#if QT_CONFIG(menu)
 #include <QtWidgets/qmenu.h>
+#endif
 
 QT_REQUIRE_CONFIG(action);
 
@@ -73,10 +75,12 @@ public:
     QShortcutMap::ContextMatcher contextMatcher() const override;
 #endif
 
+#if QT_CONFIG(menu)
     QPointer<QMenu> m_menu;
 
     QObject *menu() const override;
     void setMenu(QObject *menu) override;
+#endif
 };
 
 QT_END_NAMESPACE

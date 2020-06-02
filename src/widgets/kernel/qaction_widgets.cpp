@@ -40,6 +40,7 @@
 #include "qaction.h"
 
 #include <private/qapplication_p.h>
+#include <private/qwidget_p.h>
 #include "qaction_widgets_p.h"
 #if QT_CONFIG(menu)
 #include <private/qmenu_p.h>
