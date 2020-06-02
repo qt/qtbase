@@ -5042,15 +5042,16 @@ void QImage::applyColorTransform(const QColorTransform &transform)
         };
     }
 
-#if QT_CONFIG(thread)
+#if QT_CONFIG(thread) && !defined(Q_OS_WASM)
     int segments = sizeInBytes() / (1<<16);
     segments = std::min(segments, height());
-    if (segments > 1) {
+    QThreadPool *threadPool = QThreadPool::globalInstance();
+    if (segments > 1 && !threadPool->contains(QThread::currentThread())) {
         QSemaphore semaphore;
         int y = 0;
         for (int i = 0; i < segments; ++i) {
             int yn = (height() - y) / (segments - i);
-            QThreadPool::globalInstance()->start([&, y, yn]() {
+            threadPool->start([&, y, yn]() {
                 transformSegment(y, y + yn);
                 semaphore.release(1);
             });
