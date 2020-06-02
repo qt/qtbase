@@ -51,6 +51,7 @@ private slots:
     void consumeMouseEvents();
     void consumeSocketEvents();
     void deliverEventsInLivelock();
+    void postingWithNoYieldFlag();
 };
 
 class Window : public QRasterWindow
@@ -339,6 +340,43 @@ void tst_NoQtEventLoop::deliverEventsInLivelock()
     }
 
     QVERIFY(!livelockTimer.isActive());
+}
+
+void tst_NoQtEventLoop::postingWithNoYieldFlag()
+{
+    int argc = 1;
+    char *argv[] = { const_cast<char *>("test"), 0 };
+    QGuiApplication app(argc, argv);
+
+    bool signalReceived = false;
+    // Post a message to the queue
+    QMetaObject::invokeMethod(this, [&signalReceived]() {
+        signalReceived = true;
+    }, Qt::QueuedConnection);
+
+    // Post some system messages
+    QWindow mainWindow;
+    mainWindow.show();
+
+    QElapsedTimer elapsedTimer;
+    elapsedTimer.start();
+
+    // Exec own message loop
+    MSG msg;
+    forever {
+        if (elapsedTimer.hasExpired(3000) || signalReceived)
+            break;
+
+        if (!::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE | PM_NOYIELD)) {
+            QThread::msleep(100);
+            continue;
+        }
+
+        ::TranslateMessage(&msg);
+        ::DispatchMessage(&msg);
+    }
+
+    QVERIFY(signalReceived);
 }
 
 #include <tst_noqteventloop.moc>
