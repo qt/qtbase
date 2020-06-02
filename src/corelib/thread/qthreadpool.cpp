@@ -52,6 +52,7 @@ Q_GLOBAL_STATIC(QThreadPool, theInstance)
 */
 class QThreadPoolThread : public QThread
 {
+    Q_OBJECT
 public:
     QThreadPoolThread(QThreadPoolPrivate *manager);
     void run() override;
@@ -763,6 +764,28 @@ void QThreadPool::clear()
     d->clear();
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+/*!
+    \internal
+
+    Returns \c true if \a thread is a thread managed by this thread pool.
+*/
+#else
+/*!
+    \since 6.0
+
+    Returns \c true if \a thread is a thread managed by this thread pool.
+*/
+#endif
+bool QThreadPool::contains(const QThread *thread) const
+{
+    Q_D(const QThreadPool);
+    const QThreadPoolThread *poolThread = qobject_cast<const QThreadPoolThread *>(thread);
+    if (!poolThread)
+        return false;
+    return d->allThreads.contains(const_cast<QThreadPoolThread *>(poolThread));
+}
+
 #if QT_DEPRECATED_SINCE(5, 9)
 /*!
     \since 5.5
@@ -784,3 +807,4 @@ void QThreadPool::cancel(QRunnable *runnable)
 QT_END_NAMESPACE
 
 #include "moc_qthreadpool.cpp"
+#include "qthreadpool.moc"
