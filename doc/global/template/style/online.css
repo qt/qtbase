@@ -1299,7 +1299,7 @@ table.gsc-search-box td.gsc-input {
   padding-right: 0px !important;
 }
 table.gsc-search-box td.gsc-input input {
-  background-position: 10px center !important;
+  background-position: 10px top !important;
 }
 
 td.gsc-search-button {
