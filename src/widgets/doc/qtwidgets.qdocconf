@@ -39,8 +39,8 @@ sourcedirs  += .. \
 
 exampledirs += ../../../examples/widgets \
                ../../../doc/src/snippets \
-               ../ \
-               . / \
+               .. \
+               . \
                snippets
 
 excludedirs += snippets
