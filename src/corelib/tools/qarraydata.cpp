@@ -281,33 +281,4 @@ void QArrayData::deallocate(QArrayData *data, size_t objectSize,
     ::free(data);
 }
 
-namespace QtPrivate {
-/*!
-  \internal
-*/
-QContainerImplHelper::CutResult QContainerImplHelper::mid(int originalLength, int *_position, int *_length)
-{
-    int &position = *_position;
-    int &length = *_length;
-    if (position > originalLength)
-        return Null;
-
-    if (position < 0) {
-        if (length < 0 || length + position >= originalLength)
-            return Full;
-        if (length + position <= 0)
-            return Null;
-        length += position;
-        position = 0;
-    } else if (uint(length) > uint(originalLength - position)) {
-        length = originalLength - position;
-    }
-
-    if (position == 0 && length == originalLength)
-        return Full;
-
-    return length > 0 ? Subset : Empty;
-}
-}
-
 QT_END_NAMESPACE

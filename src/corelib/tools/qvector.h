@@ -710,8 +710,10 @@ int QVector<T>::lastIndexOf(const T &t, int from) const noexcept
 template <typename T>
 inline QVector<T> QVector<T>::mid(int pos, int len) const
 {
+    qsizetype p = pos;
+    qsizetype l = len;
     using namespace QtPrivate;
-    switch (QContainerImplHelper::mid(d.size, &pos, &len)) {
+    switch (QContainerImplHelper::mid(d.size, &p, &l)) {
     case QContainerImplHelper::Null:
     case QContainerImplHelper::Empty:
         return QVector();
@@ -722,8 +724,8 @@ inline QVector<T> QVector<T>::mid(int pos, int len) const
     }
 
     // Allocate memory
-    DataPointer copied(Data::allocate(len));
-    copied->copyAppend(constBegin() + pos, constBegin() + pos + len);
+    DataPointer copied(Data::allocate(l));
+    copied->copyAppend(constBegin() + p, constBegin() + p + l);
     return copied;
 }
 

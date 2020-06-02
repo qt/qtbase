@@ -4530,12 +4530,14 @@ QString QString::section(const QRegularExpression &re, int start, int end, Secti
     Returns a substring that contains the \a n leftmost characters
     of the string.
 
+    \obsolete Use first() instead in new code.
+
     The entire string is returned if \a n is greater than or equal
     to size(), or less than zero.
 
     \snippet qstring/main.cpp 31
 
-    \sa right(), mid(), startsWith(), chopped(), chop(), truncate()
+    \sa first(), last(), startsWith(), chopped(), chop(), truncate()
 */
 QString QString::left(int n)  const
 {
@@ -4548,12 +4550,14 @@ QString QString::left(int n)  const
     Returns a substring that contains the \a n rightmost characters
     of the string.
 
+    \obsolete Use last() instead in new code.
+
     The entire string is returned if \a n is greater than or equal
     to size(), or less than zero.
 
     \snippet qstring/main.cpp 48
 
-    \sa left(), mid(), endsWith(), chopped(), chop(), truncate()
+    \sa endsWith(), last(), first(), slice(), chopped(), chop(), truncate()
 */
 QString QString::right(int n) const
 {
@@ -4566,6 +4570,8 @@ QString QString::right(int n) const
     Returns a string that contains \a n characters of this string,
     starting at the specified \a position index.
 
+    \obsolete Use slice() instead in new code.
+
     Returns a null string if the \a position index exceeds the
     length of the string. If there are less than \a n characters
     available in the string starting at the given \a position, or if
@@ -4576,13 +4582,15 @@ QString QString::right(int n) const
 
     \snippet qstring/main.cpp 34
 
-    \sa left(), right(), chopped(), chop(), truncate()
+    \sa first(), last(), slice(), chopped(), chop(), truncate()
 */
 
 QString QString::mid(int position, int n) const
 {
+    qsizetype p = position;
+    qsizetype l = n;
     using namespace QtPrivate;
-    switch (QContainerImplHelper::mid(size(), &position, &n)) {
+    switch (QContainerImplHelper::mid(size(), &p, &l)) {
     case QContainerImplHelper::Null:
         return QString();
     case QContainerImplHelper::Empty:
@@ -4594,7 +4602,7 @@ QString QString::mid(int position, int n) const
     case QContainerImplHelper::Full:
         return *this;
     case QContainerImplHelper::Subset:
-        return QString(constData() + position, n);
+        return QString(constData() + p, l);
     }
     Q_UNREACHABLE();
     return QString();
@@ -9375,28 +9383,17 @@ QString &QString::setRawData(const QChar *unicode, int size)
     \sa crbegin(), rend(), cend()
 */
 
-/*! \fn QLatin1String QLatin1String::mid(int start) const
-    \since 5.8
-
-    Returns the substring starting at position \a start in this object,
-    and extending to the end of the string.
-
-    \note This function performs no error checking.
-    The behavior is undefined when \a start < 0 or \a start > size().
-
-    \sa left(), right(), chopped(), chop(), truncate()
-*/
-
 /*! \fn QLatin1String QLatin1String::mid(int start, int length) const
     \since 5.8
-    \overload
 
     Returns the substring of length \a length starting at position
     \a start in this object.
 
-    \note This function performs no error checking.
-    The behavior is undefined when \a start < 0, \a length < 0,
-    or \a start + \a length > size().
+    Returns a null string if the \a start index exceeds the
+    length of the string. If there are less than \a length characters
+    available in the string starting at \a start, or if
+    \a length is negative (default), the function returns all characters
+    that are available from \a start.
 
     \sa left(), right(), chopped(), chop(), truncate()
 */
@@ -9407,8 +9404,8 @@ QString &QString::setRawData(const QChar *unicode, int size)
     Returns the substring of length \a length starting at position
     0 in this object.
 
-    \note This function performs no error checking.
-    The behavior is undefined when \a length < 0 or \a length > size().
+    The entire string is returned if \a length is greater than or equal
+    to size(), or less than zero.
 
     \sa mid(), right(), chopped(), chop(), truncate()
 */
@@ -9419,8 +9416,8 @@ QString &QString::setRawData(const QChar *unicode, int size)
     Returns the substring of length \a length starting at position
     size() - \a length in this object.
 
-    \note This function performs no error checking.
-    The behavior is undefined when \a length < 0 or \a length > size().
+    The entire string is returned if \a length is greater than or equal
+    to size(), or less than zero.
 
     \sa mid(), left(), chopped(), chop(), truncate()
 */
@@ -10777,8 +10774,10 @@ QStringRef QString::rightRef(int n) const
 */
 QStringRef QStringRef::mid(int pos, int n) const
 {
+    qsizetype p = pos;
+    qsizetype l = n;
     using namespace QtPrivate;
-    switch (QContainerImplHelper::mid(m_size, &pos, &n)) {
+    switch (QContainerImplHelper::mid(m_size, &p, &l)) {
     case QContainerImplHelper::Null:
         return QStringRef();
     case QContainerImplHelper::Empty:
@@ -10786,7 +10785,7 @@ QStringRef QStringRef::mid(int pos, int n) const
     case QContainerImplHelper::Full:
         return *this;
     case QContainerImplHelper::Subset:
-        return QStringRef(m_string, pos + m_position, n);
+        return QStringRef(m_string, p + m_position, l);
     }
     Q_UNREACHABLE();
     return QStringRef();

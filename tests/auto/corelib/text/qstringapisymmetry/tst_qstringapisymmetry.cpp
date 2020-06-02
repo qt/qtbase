@@ -644,9 +644,6 @@ private:
     void chop_data();
     template <typename String> void chop_impl();
 
-    void truncate_data() { left_data(); }
-    template <typename String> void truncate_impl();
-
 private Q_SLOTS:
 
     void mid_QString_data() { mid_data(); }
@@ -660,16 +657,16 @@ private Q_SLOTS:
     void mid_QByteArray_data() { mid_data(); }
     void mid_QByteArray() { mid_impl<QByteArray>(); }
 
-    void left_truncate_QString_data() { left_data(); }
-    void left_truncate_QString() { left_impl<QString>(); }
-    void left_truncate_QStringRef_data() { left_data(); }
-    void left_truncate_QStringRef() { left_impl<QStringRef>(); }
-    void left_truncate_QStringView_data() { left_data(); }
-    void left_truncate_QStringView() { left_impl<QStringView>(); }
-    void left_truncate_QLatin1String_data() { left_data(); }
-    void left_truncate_QLatin1String() { left_impl<QLatin1String>(); }
-    void left_truncate_QByteArray_data() { left_data(); }
-    void left_truncate_QByteArray() { left_impl<QByteArray>(); }
+    void left_QString_data() { left_data(); }
+    void left_QString() { left_impl<QString>(); }
+    void left_QStringRef_data() { left_data(); }
+    void left_QStringRef() { left_impl<QStringRef>(); }
+    void left_QStringView_data() { left_data(); }
+    void left_QStringView() { left_impl<QStringView>(); }
+    void left_QLatin1String_data() { left_data(); }
+    void left_QLatin1String() { left_impl<QLatin1String>(); }
+    void left_QByteArray_data();
+    void left_QByteArray() { left_impl<QByteArray>(); }
 
     void right_QString_data() { right_data(); }
     void right_QString() { right_impl<QString>(); }
@@ -679,7 +676,7 @@ private Q_SLOTS:
     void right_QStringView() { right_impl<QStringView>(); }
     void right_QLatin1String_data() { right_data(); }
     void right_QLatin1String() { right_impl<QLatin1String>(); }
-    void right_QByteArray_data() { right_data(); }
+    void right_QByteArray_data();
     void right_QByteArray() { right_impl<QByteArray>(); }
 
     void slice_QString_data() { slice_data(); }
@@ -1533,6 +1530,37 @@ void tst_QStringApiSymmetry::tok_impl() const
 void tst_QStringApiSymmetry::mid_data()
 {
     slice_data();
+
+    // mid() has a wider contract compared to slize(), so test those cases here:
+#define ROW(base, p, n, r1, r2) \
+    QTest::addRow("%s %d %d", #base, p, n) << QStringRef(&base) << QLatin1String(#base) << p << n << QStringRef(&r1) << QStringRef(&r2)
+
+    ROW(a, -1, 0, a, null);
+    ROW(a, -1, 2, a, a);
+    ROW(a, -1, 3, a, a);
+    ROW(a, 0, -1, a, a);
+    ROW(a, 0, 2, a, a);
+    ROW(a, -1, -1, a, a);
+    ROW(a, 1, -1, empty, empty);
+    ROW(a, 1, 1, empty, empty);
+    ROW(a, 2, -1, null, null);
+    ROW(a, 2, 1, null, null);
+
+    ROW(abc, -1, -1, abc, abc);
+    ROW(abc, -1, 0, abc, null);
+    ROW(abc, -1, 2, abc, a);
+    ROW(abc, -1, 3, abc, ab);
+    ROW(abc, -1, 5, abc, abc);
+    ROW(abc, 0, -1, abc, abc);
+    ROW(abc, 0, 5, abc, abc);
+    ROW(abc, -1, 1, abc, null);
+    ROW(abc, -1, 2, abc, a);
+    ROW(abc, -1, 4, abc, abc);
+    ROW(abc, 1, -1, bc, bc);
+    ROW(abc, 1, 1, bc, b);
+    ROW(abc, 3, -1, empty, empty);
+    ROW(abc, 3, 1, empty, empty);
+#undef ROW
 }
 
 template <typename String>
@@ -1578,6 +1606,35 @@ void tst_QStringApiSymmetry::mid_impl()
 void tst_QStringApiSymmetry::left_data()
 {
     first_data();
+
+    // specific data testing out of bounds cases
+#define ROW(base, n, res) \
+    QTest::addRow("%s%d", #base, n) << QStringRef(&base) << QLatin1String(#base) << n << QStringRef(&res);
+
+    ROW(a, -1, a);
+    ROW(a, 2, a);
+
+    ROW(ab, -100, ab);
+    ROW(ab, 100, ab);
+#undef ROW
+}
+
+// This is different from the rest for historical reasons. As we're replacing
+// left() with first() as the recommended API, there's no point fixing this anymore
+void tst_QStringApiSymmetry::left_QByteArray_data()
+{
+    first_data();
+
+    // specific data testing out of bounds cases
+#define ROW(base, n, res) \
+    QTest::addRow("%s%d", #base, n) << QStringRef(&base) << QLatin1String(#base) << n << QStringRef(&res);
+
+    ROW(a, -1, empty);
+    ROW(a, 2, a);
+
+    ROW(ab, -100, empty);
+    ROW(ab, 100, ab);
+#undef ROW
 }
 
 template <typename String>
@@ -1606,19 +1663,40 @@ void tst_QStringApiSymmetry::left_impl()
         QCOMPARE(left.isNull(), result.isNull());
         QCOMPARE(left.isEmpty(), result.isEmpty());
     }
-    {
-        auto left = s;
-        left.truncate(n);
-
-        QCOMPARE(left, result);
-        QCOMPARE(left.isNull(), result.isNull());
-        QCOMPARE(left.isEmpty(), result.isEmpty());
-    }
 }
 
 void tst_QStringApiSymmetry::right_data()
 {
     last_data();
+
+    // specific data testing out of bounds cases
+#define ROW(base, n, res) \
+    QTest::addRow("%s%d", #base, n) << QStringRef(&base) << QLatin1String(#base) << n << QStringRef(&res);
+
+    ROW(a, -1, a);
+    ROW(a, 2, a);
+
+    ROW(ab, -100, ab);
+    ROW(ab, 100, ab);
+#undef ROW
+}
+
+// This is different from the rest for historical reasons. As we're replacing
+// left() with first() as the recommended API, there's no point fixing this anymore
+void tst_QStringApiSymmetry::right_QByteArray_data()
+{
+    last_data();
+
+    // specific data testing out of bounds cases
+#define ROW(base, n, res) \
+    QTest::addRow("%s%d", #base, n) << QStringRef(&base) << QLatin1String(#base) << n << QStringRef(&res);
+
+    ROW(a, -1, empty);
+    ROW(a, 2, a);
+
+    ROW(ab, -100, empty);
+    ROW(ab, 100, ab);
+#undef ROW
 }
 
 template <typename String>
@@ -1661,8 +1739,6 @@ void tst_QStringApiSymmetry::slice_data()
 //    QTest::addRow("null") << QStringRef() << QLatin1String() << 0 << 0 << QStringRef() << QStringRef();
     QTest::addRow("empty") << QStringRef(&empty) << QLatin1String("") << 0 << 0 << QStringRef(&empty) << QStringRef(&empty);
 
-    // Some classes' mid() implementations have a wide contract, others a narrow one
-    // so only test valid arguents here:
 #define ROW(base, p, n, r1, r2) \
     QTest::addRow("%s%d%d", #base, p, n) << QStringRef(&base) << QLatin1String(#base) << p << n << QStringRef(&r1) << QStringRef(&r2)
 

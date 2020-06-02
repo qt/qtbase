@@ -257,14 +257,24 @@ public:
 
     Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QChar at(qsizetype n) const { return (*this)[n]; }
 
-    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QStringView mid(qsizetype pos) const
-    { return Q_ASSERT(pos >= 0), Q_ASSERT(pos <= size()), QStringView(m_data + pos, m_size - pos); }
-    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QStringView mid(qsizetype pos, qsizetype n) const
-    { return Q_ASSERT(pos >= 0), Q_ASSERT(n >= 0), Q_ASSERT(pos + n <= size()), QStringView(m_data + pos, n); }
-    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QStringView left(qsizetype n) const
-    { return Q_ASSERT(n >= 0), Q_ASSERT(n <= size()), QStringView(m_data, n); }
-    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QStringView right(qsizetype n) const
-    { return Q_ASSERT(n >= 0), Q_ASSERT(n <= size()), QStringView(m_data + m_size - n, n); }
+    Q_REQUIRED_RESULT constexpr QStringView mid(qsizetype pos, qsizetype n = -1) const
+    {
+        using namespace QtPrivate;
+        auto result = QContainerImplHelper::mid(size(), &pos, &n);
+        return result == QContainerImplHelper::Null ? QStringView() : QStringView(m_data + pos, n);
+    }
+    Q_REQUIRED_RESULT constexpr QStringView left(qsizetype n) const
+    {
+        if (size_t(n) >= size_t(size()))
+            n = size();
+        return QStringView(m_data, n);
+    }
+    Q_REQUIRED_RESULT constexpr QStringView right(qsizetype n) const
+    {
+        if (size_t(n) >= size_t(size()))
+            n = size();
+        return QStringView(m_data + m_size - n, n);
+    }
 
     Q_REQUIRED_RESULT constexpr QStringView first(qsizetype n) const
     { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); return QStringView(m_data, int(n)); }

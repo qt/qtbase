@@ -2914,13 +2914,17 @@ bool QByteArray::isLower() const
     Returns a byte array that contains the first \a len bytes of this byte
     array.
 
+    \obsolete Use first() instead in new code.
+
     The entire byte array is returned if \a len is greater than
     size().
+
+    Returns an empty QByteArray if \a len is smaller than 0.
 
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 27
 
-    \sa startsWith(), right(), mid(), chopped(), chop(), truncate()
+    \sa first(), last(), startsWith(), chopped(), chop(), truncate()
 */
 
 QByteArray QByteArray::left(int len)  const
@@ -2935,15 +2939,18 @@ QByteArray QByteArray::left(int len)  const
 /*!
     Returns a byte array that contains the last \a len bytes of this byte array.
 
+    \obsolete Use last() instead in new code.
+
     The entire byte array is returned if \a len is greater than
     size().
+
+    Returns an empty QByteArray if \a len is smaller than 0.
 
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 28
 
-    \sa endsWith(), left(), mid(), chopped(), chop(), truncate()
+    \sa endsWith(), last(), first(), slice(), chopped(), chop(), truncate()
 */
-
 QByteArray QByteArray::right(int len) const
 {
     if (len >= size())
@@ -2957,6 +2964,8 @@ QByteArray QByteArray::right(int len) const
     Returns a byte array containing \a len bytes from this byte array,
     starting at position \a pos.
 
+    \obsolete Use slice() instead in new code.
+
     If \a len is -1 (the default), or \a pos + \a len >= size(),
     returns a byte array containing all bytes starting at position \a
     pos until the end of the byte array.
@@ -2964,13 +2973,15 @@ QByteArray QByteArray::right(int len) const
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 29
 
-    \sa left(), right(), chopped(), chop(), truncate()
+    \sa first(), last(), slice(), chopped(), chop(), truncate()
 */
 
 QByteArray QByteArray::mid(int pos, int len) const
 {
+    qsizetype p = pos;
+    qsizetype l = len;
     using namespace QtPrivate;
-    switch (QContainerImplHelper::mid(size(), &pos, &len)) {
+    switch (QContainerImplHelper::mid(size(), &p, &l)) {
     case QContainerImplHelper::Null:
         return QByteArray();
     case QContainerImplHelper::Empty:
@@ -2982,7 +2993,7 @@ QByteArray QByteArray::mid(int pos, int len) const
     case QContainerImplHelper::Full:
         return *this;
     case QContainerImplHelper::Subset:
-        return QByteArray(d.data() + pos, len);
+        return QByteArray(d.data() + p, l);
     }
     Q_UNREACHABLE();
     return QByteArray();

@@ -179,14 +179,26 @@ public:
     const_reverse_iterator rend() const noexcept { return const_reverse_iterator(begin()); }
     const_reverse_iterator crend() const noexcept { return const_reverse_iterator(begin()); }
 
-    Q_DECL_CONSTEXPR QLatin1String mid(int pos) const
-    { return Q_ASSERT(pos >= 0), Q_ASSERT(pos <= size()), QLatin1String(m_data + pos, m_size - pos); }
-    Q_DECL_CONSTEXPR QLatin1String mid(int pos, int n) const
-    { return Q_ASSERT(pos >= 0), Q_ASSERT(n >= 0), Q_ASSERT(pos + n <= size()), QLatin1String(m_data + pos, n); }
-    Q_DECL_CONSTEXPR QLatin1String left(int n) const
-    { return Q_ASSERT(n >= 0), Q_ASSERT(n <= size()), QLatin1String(m_data, n); }
-    Q_DECL_CONSTEXPR QLatin1String right(int n) const
-    { return Q_ASSERT(n >= 0), Q_ASSERT(n <= size()), QLatin1String(m_data + m_size - n, n); }
+    constexpr QLatin1String mid(int pos, int n = -1) const
+    {
+        qsizetype p = pos;
+        qsizetype l = n;
+        using namespace QtPrivate;
+        auto result = QContainerImplHelper::mid(size(), &p, &l);
+        return result == QContainerImplHelper::Null ? QLatin1String() : QLatin1String(m_data + p, l);
+    }
+    constexpr QLatin1String left(int n) const
+    {
+        if (size_t(n) >= size_t(size()))
+            n = size();
+        return QLatin1String(m_data, n);
+    }
+    constexpr QLatin1String right(int n) const
+    {
+        if (size_t(n) >= size_t(size()))
+            n = size();
+        return QLatin1String(m_data + m_size - n, n);
+    }
     Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QLatin1String chopped(int n) const
     { return Q_ASSERT(n >= 0), Q_ASSERT(n <= size()), QLatin1String(m_data, m_size - n); }
 

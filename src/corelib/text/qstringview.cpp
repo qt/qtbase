@@ -611,49 +611,48 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringView QStringView::mid(qsizetype start) const
-
-    Returns the substring starting at position \a start in this object,
-    and extending to the end of the string.
-
-    \note The behavior is undefined when \a start < 0 or \a start > size().
-
-    \sa left(), right(), chopped(), chop(), truncate()
-*/
-
-/*!
     \fn QStringView QStringView::mid(qsizetype start, qsizetype length) const
-    \overload
 
     Returns the substring of length \a length starting at position
     \a start in this object.
 
-    \note The behavior is undefined when \a start < 0, \a length < 0,
-    or \a start + \a length > size().
+    \obsolete Use slice() instead in new code.
 
-    \sa left(), right(), chopped(), chop(), truncate()
+    Returns an empty string view if \a start exceeds the
+    length of the string. If there are less than \a length characters
+    available in the string starting at \a start, or if
+    \a length is negative (default), the function returns all characters that
+    are available from \a start.
+
+    \sa first(), last(), slice(), chopped(), chop(), truncate()
 */
 
 /*!
     \fn QStringView QStringView::left(qsizetype length) const
 
+    \obsolete Use first() instead in new code.
+
     Returns the substring of length \a length starting at position
     0 in this object.
 
-    \note The behavior is undefined when \a length < 0 or \a length > size().
+    The entire string is returned if \a length is greater than or equal
+    to size(), or less than zero.
 
-    \sa mid(), right(), chopped(), chop(), truncate()
+    \sa first(), last(), slice(), startsWith(), chopped(), chop(), truncate()
 */
 
 /*!
     \fn QStringView QStringView::right(qsizetype length) const
 
+    \obsolete Use last() instead in new code.
+
     Returns the substring of length \a length starting at position
     size() - \a length in this object.
 
-    \note The behavior is undefined when \a length < 0 or \a length > size().
+    The entire string is returned if \a length is greater than or equal
+    to size(), or less than zero.
 
-    \sa mid(), left(), chopped(), chop(), truncate()
+    \sa first(), last(), slice(), endsWith(), chopped(), chop(), truncate()
 */
 
 /*!
