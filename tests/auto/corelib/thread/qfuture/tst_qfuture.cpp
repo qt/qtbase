@@ -112,7 +112,10 @@ private slots:
     void implicitConversions();
     void iterators();
     void iteratorsThread();
+#if QT_DEPRECATED_SINCE(6, 0)
     void pause();
+    void suspendCheckPaused();
+#endif
     void suspend();
     void throttling();
     void voidConversions();
@@ -1315,6 +1318,9 @@ public:
     QSet<int> reportedProgress;
 };
 
+#if QT_DEPRECATED_SINCE(6, 0)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 void tst_QFuture::pause()
 {
     QFutureInterface<void> Interface;
@@ -1335,39 +1341,98 @@ void tst_QFuture::pause()
     Interface.reportFinished();
 }
 
+void tst_QFuture::suspendCheckPaused()
+{
+    QFutureInterface<void> interface;
+
+    interface.reportStarted();
+    QFuture<void> f = interface.future();
+    QVERIFY(!f.isSuspended());
+
+    interface.reportSuspended();
+    QVERIFY(!f.isSuspended());
+
+    f.pause();
+    QVERIFY(!f.isSuspended());
+    QVERIFY(f.isPaused());
+
+    // resume when still pausing
+    f.resume();
+    QVERIFY(!f.isSuspended());
+    QVERIFY(!f.isPaused());
+
+    // pause again
+    f.pause();
+    QVERIFY(!f.isSuspended());
+    QVERIFY(f.isPaused());
+
+    interface.reportSuspended();
+    QVERIFY(f.isSuspended());
+    QVERIFY(f.isPaused());
+
+    // resume after suspended
+    f.resume();
+    QVERIFY(!f.isSuspended());
+    QVERIFY(!f.isPaused());
+
+    // pause again and cancel
+    f.pause();
+    interface.reportSuspended();
+
+    interface.reportCanceled();
+    QVERIFY(!f.isSuspended());
+    QVERIFY(!f.isPaused());
+    QVERIFY(f.isCanceled());
+
+    interface.reportFinished();
+}
+
+QT_WARNING_POP
+#endif // QT_DEPRECATED_SINCE(6, 0)
+
 void tst_QFuture::suspend()
 {
     QFutureInterface<void> interface;
 
     interface.reportStarted();
     QFuture<void> f = interface.future();
-    QVERIFY(!interface.isSuspended());
+    QVERIFY(!f.isSuspended());
 
     interface.reportSuspended();
-    QVERIFY(!interface.isSuspended());
+    QVERIFY(!f.isSuspended());
+    QVERIFY(!f.isSuspending());
 
-    // pause
-    interface.togglePaused();
-    QVERIFY(!interface.isSuspended());
-    QVERIFY(interface.isPaused());
+    f.suspend();
+    QVERIFY(f.isSuspending());
+    QVERIFY(!f.isSuspended());
+
+    // resume when still suspending
+    f.resume();
+    QVERIFY(!f.isSuspending());
+    QVERIFY(!f.isSuspended());
+
+    // suspend again
+    f.suspend();
+    QVERIFY(f.isSuspending());
+    QVERIFY(!f.isSuspended());
 
     interface.reportSuspended();
-    QVERIFY(interface.isSuspended());
-    QVERIFY(interface.isPaused());
+    QVERIFY(!f.isSuspending());
+    QVERIFY(f.isSuspended());
 
-    // resume
-    interface.togglePaused();
-    QVERIFY(!interface.isSuspended());
-    QVERIFY(!interface.isPaused());
+    // resume after suspended
+    f.resume();
+    QVERIFY(!f.isSuspending());
+    QVERIFY(!f.isSuspended());
 
-    // pause again
-    interface.togglePaused();
+    // suspend again and cancel
+    f.suspend();
     interface.reportSuspended();
 
     interface.reportCanceled();
-    QVERIFY(!interface.isSuspended());
-    QVERIFY(!interface.isPaused());
-    QVERIFY(interface.isCanceled());
+    QVERIFY(!f.isSuspending());
+    QVERIFY(!f.isSuspended());
+    QVERIFY(f.isCanceled());
 
     interface.reportFinished();
 }
@@ -2715,7 +2780,14 @@ void tst_QFuture::testFutureTaken(QFuture<T> &noMoreFuture)
     QCOMPARE(noMoreFuture.resultCount(), 0);
     QCOMPARE(noMoreFuture.isStarted(), false);
     QCOMPARE(noMoreFuture.isRunning(), false);
+    QCOMPARE(noMoreFuture.isSuspending(), false);
+    QCOMPARE(noMoreFuture.isSuspended(), false);
+#if QT_DEPRECATED_SINCE(6, 0)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     QCOMPARE(noMoreFuture.isPaused(), false);
+QT_WARNING_POP
+#endif
     QCOMPARE(noMoreFuture.isFinished(), false);
     QCOMPARE(noMoreFuture.progressValue(), 0);
 }

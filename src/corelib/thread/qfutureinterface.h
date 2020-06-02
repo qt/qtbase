@@ -77,16 +77,16 @@ class Q_CORE_EXPORT QFutureInterfaceBase
 {
 public:
     enum State {
-        NoState   = 0x00,
-        Running   = 0x01,
-        Started   = 0x02,
-        Finished  = 0x04,
-        Canceled  = 0x08,
-        Paused    = 0x10,
-        Throttled = 0x20,
+        NoState    = 0x00,
+        Running    = 0x01,
+        Started    = 0x02,
+        Finished   = 0x04,
+        Canceled   = 0x08,
+        Suspending = 0x10,
+        Suspended  = 0x20,
+        Throttled  = 0x40,
         // Pending means that the future depends on another one, which is not finished yet
-        Pending   = 0x40,
-        Suspended = 0x80
+        Pending    = 0x80,
     };
 
     QFutureInterfaceBase(State initialState = NoState);
@@ -125,15 +125,25 @@ public:
     bool isStarted() const;
     bool isCanceled() const;
     bool isFinished() const;
+#if QT_DEPRECATED_SINCE(6, 0)
+    QT_DEPRECATED_VERSION_X_6_0("Use isSuspending() or isSuspended() instead.")
     bool isPaused() const;
+
+    QT_DEPRECATED_VERSION_X_6_0("Use setSuspended() instead.")
+    void setPaused(bool paused) { setSuspended(paused); }
+
+    QT_DEPRECATED_VERSION_X_6_0("Use toggleSuspended() instead.")
+    void togglePaused() { toggleSuspended(); }
+#endif
+    bool isSuspending() const;
     bool isSuspended() const;
     bool isThrottled() const;
     bool isResultReadyAt(int index) const;
     bool isValid() const;
 
     void cancel();
-    void setPaused(bool paused);
-    void togglePaused();
+    void setSuspended(bool suspend);
+    void toggleSuspended();
     void reportSuspended() const;
     void setThrottled(bool enable);
 

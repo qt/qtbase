@@ -70,12 +70,12 @@ public:
         Started,
         Finished,
         Canceled,
-        Paused,
+        Suspending,
+        Suspended,
         Resumed,
         Progress,
         ProgressRange,
-        ResultsReady,
-        Suspended
+        ResultsReady
     };
 
     QFutureCallOutEvent()

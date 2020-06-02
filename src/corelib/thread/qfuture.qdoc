@@ -104,11 +104,11 @@
 
     QFuture also offers ways to interact with a runnning computation. For
     instance, the computation can be canceled with the cancel() function. To
-    pause the computation, use the setPaused() function or one of the pause(),
-    resume(), or togglePaused() convenience functions. Be aware that not all
-    running asynchronous computations can be canceled or paused. For example,
-    the future returned by QtConcurrent::run() cannot be canceled; but the
-    future returned by QtConcurrent::mappedReduced() can.
+    suspend or resume the computation, use the setSuspended() function or one of
+    the suspend(), resume(), or toggleSuspended() convenience functions. Be aware
+    that not all running asynchronous computations can be canceled or suspended.
+    For example, the future returned by QtConcurrent::run() cannot be canceled;
+    but the future returned by QtConcurrent::mappedReduced() can.
 
     Progress information is provided by the progressValue(),
     progressMinimum(), progressMaximum(), and progressText() functions. The
@@ -116,7 +116,7 @@
     the computation to finish, ensuring that all results are available.
 
     The state of the computation represented by a QFuture can be queried using
-    the isCanceled(), isStarted(), isFinished(), isRunning(), isPaused()
+    the isCanceled(), isStarted(), isFinished(), isRunning(), isSuspending()
     or isSuspended() functions.
 
     QFuture is a lightweight reference counted class that can be passed by
@@ -204,7 +204,12 @@
     function returns \c true. See cancel() for more details.
 */
 
+
+#if QT_DEPRECATED_SINCE(6, 0)
 /*! \fn template <typename T> void QFuture<T>::setPaused(bool paused)
+
+    \obsolete
+    Use setSuspended() instead.
 
     If \a paused is true, this function pauses the asynchronous computation
     represented by the future. If the computation is  already paused, this
@@ -225,6 +230,9 @@
 
 /*! \fn template <typename T> bool QFuture<T>::isPaused() const
 
+    \obsolete
+    Use isSuspending() or isSuspended() instead.
+
     Returns \c true if the asynchronous computation has been paused with the
     pause() function; otherwise returns \c false.
 
@@ -235,15 +243,10 @@
     \sa setPaused(), togglePaused(), isSuspended()
 */
 
-/*! \fn template <typename T> bool QFuture<T>::isSuspended() const
-
-    Returns \c true if a paused asynchronous computation has been suspended,
-    and no more results or progress changes are expected.
-
-    \sa setPaused(), togglePaused(), isPaused()
-*/
-
 /*! \fn template <typename T> void QFuture<T>::pause()
+
+    \obsolete
+    Use suspend() instead.
 
     Pauses the asynchronous computation represented by this future. This is a
     convenience method that simply calls setPaused(true).
@@ -251,15 +254,10 @@
     \sa resume()
 */
 
-/*! \fn template <typename T> void QFuture<T>::resume()
-
-    Resumes the asynchronous computation represented by this future. This is a
-    convenience method that simply calls setPaused(false).
-
-    \sa pause()
-*/
-
 /*! \fn template <typename T> void QFuture<T>::togglePaused()
+
+    \obsolete
+    Use toggleSuspended() instead.
 
     Toggles the paused state of the asynchronous computation. In other words,
     if the computation is currently paused, calling this function resumes it;
@@ -267,6 +265,82 @@
     for calling setPaused(!isPaused()).
 
     \sa setPaused(), pause(), resume()
+*/
+#endif // QT_DEPRECATED_SINCE(6, 0)
+
+/*! \fn template <typename T> void QFuture<T>::setSuspended(bool suspend)
+
+    \since 6.0
+
+    If \a suspend is true, this function suspends the asynchronous computation
+    represented by the future(). If the computation is already suspended, this
+    function does nothing. QFutureWatcher will not immediately stop delivering
+    progress and result ready signals when the future is suspended. At the moment
+    of suspending there may still be computations that are in progress and cannot
+    be stopped. Signals for such computations will still be delivered.
+
+    If \a suspend is false, this function resumes the asynchronous computation.
+    If the computation was not previously suspended, this function does nothing.
+
+    Be aware that not all computations can be suspended. For example, the
+    QFuture returned by QtConcurrent::run() cannot be suspended; but the QFuture
+    returned by QtConcurrent::mappedReduced() can.
+
+    \sa suspend(), resume(), toggleSuspended()
+*/
+
+/*! \fn template <typename T> bool QFuture<T>::isSuspending() const
+
+    \since 6.0
+
+    Returns \c true if the asynchronous computation has been suspended with the
+    suspend() function, but the work is not yet suspended, and computation is still
+    running. Returns \c false otherwise.
+
+    To check if suspension is actually in effect, use isSuspended() instead.
+
+    \sa setSuspended(), toggleSuspended(), isSuspended()
+*/
+
+/*! \fn template <typename T> bool QFuture<T>::isSuspended() const
+
+    \since 6.0
+
+    Returns \c true if a suspension of the asynchronous computation has been
+    requested, and it is in effect, meaning that no more results or progress
+    changes are expected.
+
+    \sa setSuspended(), toggleSuspended(), isSuspending()
+*/
+
+/*! \fn template <typename T> void QFuture<T>::suspend()
+
+    \since 6.0
+
+    Suspends the asynchronous computation represented by this future. This is a
+    convenience method that simply calls setSuspended(true).
+
+    \sa resume()
+*/
+
+/*! \fn template <typename T> void QFuture<T>::resume()
+
+    Resumes the asynchronous computation represented by the future(). This is
+    a convenience method that simply calls setSuspended(false).
+
+    \sa suspend()
+*/
+
+/*! \fn template <typename T> void QFuture<T>::toggleSuspended()
+
+    \since 6.0
+
+    Toggles the suspended state of the asynchronous computation. In other words,
+    if the computation is currently suspending or suspended, calling this
+    function resumes it; if the computation is running, it is suspended. This is a
+    convenience method for calling setSuspended(!(isSuspending() || isSuspended())).
+
+    \sa setSuspended(), suspend(), resume()
 */
 
 /*! \fn template <typename T> bool QFuture<T>::isStarted() const

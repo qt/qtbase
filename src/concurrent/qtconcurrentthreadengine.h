@@ -99,14 +99,19 @@ public:
     void setProgressValue(int progress);
     void setProgressRange(int minimum, int maximum);
     void acquireBarrierSemaphore();
-    void reportIfPausedDone() const;
+    void reportIfSuspensionDone() const;
 
 protected: // The user overrides these:
     virtual void start() {}
     virtual void finish() {}
     virtual ThreadFunctionResult threadFunction() { return ThreadFinished; }
-    virtual bool shouldStartThread() { return futureInterface ? !futureInterface->isPaused() : true; }
-    virtual bool shouldThrottleThread() { return futureInterface ? futureInterface->isPaused() : false; }
+    virtual bool shouldStartThread() { return !shouldThrottleThread(); }
+    virtual bool shouldThrottleThread()
+    {
+        return futureInterface ? (futureInterface->isSuspending() || futureInterface->isSuspended())
+                               : false;
+    }
+
 private:
     bool startThreadInternal();
     void startThreads();

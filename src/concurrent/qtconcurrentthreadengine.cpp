@@ -219,9 +219,9 @@ void ThreadEngineBase::acquireBarrierSemaphore()
     barrier.acquire();
 }
 
-void ThreadEngineBase::reportIfPausedDone() const
+void ThreadEngineBase::reportIfSuspensionDone() const
 {
-    if (futureInterface && futureInterface->isPaused())
+    if (futureInterface && futureInterface->isSuspending())
         futureInterface->reportSuspended();
 }
 
@@ -313,11 +313,11 @@ void ThreadEngineBase::run() // implements QRunnable.
             if (threadThrottleExit()) {
                 return;
             } else {
-                // If the last worker thread is throttled and the state is paused,
-                // it means that pause has been requested, and it is already
+                // If the last worker thread is throttled and the state is "suspending",
+                // it means that suspension has been requested, and it is already
                 // in effect (because all previous threads have already exited).
                 // Report the "Suspended" state.
-                reportIfPausedDone();
+                reportIfSuspensionDone();
             }
         }
 

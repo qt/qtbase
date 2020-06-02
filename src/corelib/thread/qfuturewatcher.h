@@ -69,7 +69,11 @@ public:
     bool isFinished() const;
     bool isRunning() const;
     bool isCanceled() const;
+#if QT_DEPRECATED_SINCE(6, 0)
+    QT_DEPRECATED_VERSION_X_6_0("Use isSuspending() or isSuspended() instead.")
     bool isPaused() const;
+#endif
+    bool isSuspending() const;
     bool isSuspended() const;
 
     void waitForFinished();
@@ -82,7 +86,11 @@ Q_SIGNALS:
     void started();
     void finished();
     void canceled();
+#if QT_DEPRECATED_SINCE(6, 0)
+    QT_DEPRECATED_VERSION_X_6_0("Use suspending() instead.")
     void paused();
+#endif
+    void suspending();
     void suspended();
     void resumed();
     void resultReadyAt(int resultIndex);
@@ -93,10 +101,21 @@ Q_SIGNALS:
 
 public Q_SLOTS:
     void cancel();
-    void setPaused(bool paused);
-    void pause();
+    void setSuspended(bool suspend);
+    void suspend();
     void resume();
+    void toggleSuspended();
+
+#if QT_DEPRECATED_SINCE(6, 0)
+    QT_DEPRECATED_VERSION_X_6_0("Use setSuspended() instead.")
+    void setPaused(bool paused);
+
+    QT_DEPRECATED_VERSION_X_6_0("Use suspended() instead.")
+    void pause();
+
+    QT_DEPRECATED_VERSION_X_6_0("Use toggleSuspended() instead.")
     void togglePaused();
+#endif
 
 protected:
     void connectNotify (const QMetaMethod &signal) override;
@@ -148,8 +167,11 @@ public:
     bool isFinished() const;
     bool isRunning() const;
     bool isCanceled() const;
+#if QT_DEPRECATED_SINCE(6, 0)
     bool isPaused() const;
-    bool isSuspended() const
+#endif
+    bool isSuspending() const;
+    bool isSuspended() const;
 
     void waitForFinished();
 
@@ -159,7 +181,10 @@ Q_SIGNALS:
     void started();
     void finished();
     void canceled();
+#if QT_DEPRECATED_SINCE(6, 0)
     void paused();
+#endif
+    void suspending();
     void suspended();
     void resumed();
     void resultReadyAt(int resultIndex);
@@ -170,11 +195,17 @@ Q_SIGNALS:
 
 public Q_SLOTS:
     void cancel();
+    void setSuspended(bool suspend);
+    void suspend();
+    void resume();
+    void toggleSuspended();
+#if QT_DEPRECATED_SINCE(6, 0)
     void setPaused(bool paused);
     void pause();
-    void resume();
     void togglePaused();
-#endif
+#endif // QT_DEPRECATED_SINCE(6, 0)
+
+#endif // Q_QDOC
 
 private:
     QFuture<T> m_future;

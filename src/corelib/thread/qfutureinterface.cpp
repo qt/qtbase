@@ -65,6 +65,10 @@ public:
     ~ThreadPoolThreadReleaser()
     { if (m_pool) m_pool->reserveThread(); }
 };
+
+const auto suspendingOrSuspended =
+        QFutureInterfaceBase::Suspending | QFutureInterfaceBase::Suspended;
+
 } // unnamed namespace
 
 
@@ -110,36 +114,36 @@ void QFutureInterfaceBase::cancel()
     if (d->state.loadRelaxed() & Canceled)
         return;
 
-    switch_from_to(d->state, Paused | Suspended, Canceled);
+    switch_from_to(d->state, suspendingOrSuspended, Canceled);
     d->waitCondition.wakeAll();
     d->pausedWaitCondition.wakeAll();
     d->sendCallOut(QFutureCallOutEvent(QFutureCallOutEvent::Canceled));
     d->isValid = false;
 }
 
-void QFutureInterfaceBase::setPaused(bool paused)
+void QFutureInterfaceBase::setSuspended(bool suspend)
 {
     QMutexLocker locker(&d->m_mutex);
-    if (paused) {
-        switch_on(d->state, Paused);
-        d->sendCallOut(QFutureCallOutEvent(QFutureCallOutEvent::Paused));
+    if (suspend) {
+        switch_on(d->state, Suspending);
+        d->sendCallOut(QFutureCallOutEvent(QFutureCallOutEvent::Suspending));
     } else {
-        switch_off(d->state, Paused | Suspended);
+        switch_off(d->state, suspendingOrSuspended);
         d->pausedWaitCondition.wakeAll();
         d->sendCallOut(QFutureCallOutEvent(QFutureCallOutEvent::Resumed));
     }
 }
 
-void QFutureInterfaceBase::togglePaused()
+void QFutureInterfaceBase::toggleSuspended()
 {
     QMutexLocker locker(&d->m_mutex);
-    if (d->state.loadRelaxed() & Paused) {
-        switch_off(d->state, Paused | Suspended);
+    if (d->state.loadRelaxed() & suspendingOrSuspended) {
+        switch_off(d->state, suspendingOrSuspended);
         d->pausedWaitCondition.wakeAll();
         d->sendCallOut(QFutureCallOutEvent(QFutureCallOutEvent::Resumed));
     } else {
-        switch_on(d->state, Paused);
-        d->sendCallOut(QFutureCallOutEvent(QFutureCallOutEvent::Paused));
+        switch_on(d->state, Suspending);
+        d->sendCallOut(QFutureCallOutEvent(QFutureCallOutEvent::Suspending));
     }
 }
 
@@ -150,10 +154,10 @@ void QFutureInterfaceBase::reportSuspended() const
 
     QMutexLocker locker(&d->m_mutex);
     const int state = d->state;
-    if (!(state & Paused) || (state & Suspended))
+    if (!(state & Suspending) || (state & Suspended))
         return;
 
-    switch_on(d->state, Suspended);
+    switch_from_to(d->state, Suspending, Suspended);
     d->sendCallOut(QFutureCallOutEvent(QFutureCallOutEvent::Suspended));
 }
 
@@ -164,7 +168,7 @@ void QFutureInterfaceBase::setThrottled(bool enable)
         switch_on(d->state, Throttled);
     } else {
         switch_off(d->state, Throttled);
-        if (!(d->state.loadRelaxed() & Paused))
+        if (!(d->state.loadRelaxed() & suspendingOrSuspended))
             d->pausedWaitCondition.wakeAll();
     }
 }
@@ -190,10 +194,17 @@ bool QFutureInterfaceBase::isFinished() const
     return queryState(Finished);
 }
 
+bool QFutureInterfaceBase::isSuspending() const
+{
+    return queryState(Suspending);
+}
+
+#if QT_DEPRECATED_SINCE(6, 0)
 bool QFutureInterfaceBase::isPaused() const
 {
-    return queryState(Paused);
+    return queryState(static_cast<State>(suspendingOrSuspended));
 }
+#endif
 
 bool QFutureInterfaceBase::isSuspended() const
 {
@@ -233,13 +244,13 @@ void QFutureInterfaceBase::waitForResume()
     // return early if possible to avoid taking the mutex lock.
     {
         const int state = d->state.loadRelaxed();
-        if (!(state & Paused) || (state & Canceled))
+        if (!(state & suspendingOrSuspended) || (state & Canceled))
             return;
     }
 
     QMutexLocker lock(&d->m_mutex);
     const int state = d->state.loadRelaxed();
-    if (!(state & Paused) || (state & Canceled))
+    if (!(state & suspendingOrSuspended) || (state & Canceled))
         return;
 
     // decrease active thread count since this thread will wait.
@@ -576,7 +587,7 @@ void QFutureInterfaceBasePrivate::internal_setThrottled(bool enable)
         switch_on(state, QFutureInterfaceBase::Throttled);
     } else {
         switch_off(state, QFutureInterfaceBase::Throttled);
-        if (!(state.loadRelaxed() & QFutureInterfaceBase::Paused))
+        if (!(state.loadRelaxed() & suspendingOrSuspended))
             pausedWaitCondition.wakeAll();
     }
 }
@@ -611,7 +622,8 @@ void QFutureInterfaceBasePrivate::connectOutputInterface(QFutureCallOutInterface
 {
     QMutexLocker locker(&m_mutex);
 
-    if (state.loadRelaxed() & QFutureInterfaceBase::Started) {
+    const auto currentState = state.loadRelaxed();
+    if (currentState & QFutureInterfaceBase::Started) {
         interface->postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Started));
         interface->postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::ProgressRange,
                                                         m_progressMinimum,
@@ -631,15 +643,15 @@ void QFutureInterfaceBasePrivate::connectOutputInterface(QFutureCallOutInterface
         it.batchedAdvance();
     }
 
-    if (state.loadRelaxed() & QFutureInterfaceBase::Suspended)
+    if (currentState & QFutureInterfaceBase::Suspended)
         interface->postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Suspended));
-    else if (state.loadRelaxed() & QFutureInterfaceBase::Paused)
-        interface->postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Paused));
+    else if (currentState & QFutureInterfaceBase::Suspending)
+        interface->postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Suspending));
 
-    if (state.loadRelaxed() & QFutureInterfaceBase::Canceled)
+    if (currentState & QFutureInterfaceBase::Canceled)
         interface->postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Canceled));
 
-    if (state.loadRelaxed() & QFutureInterfaceBase::Finished)
+    if (currentState & QFutureInterfaceBase::Finished)
         interface->postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Finished));
 
     outputConnections.append(interface);

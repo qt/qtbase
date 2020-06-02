@@ -109,12 +109,31 @@ public:
     void cancel() { d.cancel(); }
     bool isCanceled() const { return d.isCanceled(); }
 
-    void setPaused(bool paused) { d.setPaused(paused); }
-    bool isPaused() const { return d.isPaused(); }
+#if QT_DEPRECATED_SINCE(6, 0)
+    QT_DEPRECATED_VERSION_X_6_0("Use setSuspended() instead.")
+    void setPaused(bool paused) { d.setSuspended(paused); }
+
+    QT_DEPRECATED_VERSION_X_6_0("Use isSuspending() or isSuspended() instead.")
+    bool isPaused() const
+    {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+        return d.isPaused();
+QT_WARNING_POP
+    }
+
+    QT_DEPRECATED_VERSION_X_6_0("Use toggleSuspended() instead.")
+    void togglePaused() { d.toggleSuspended(); }
+
+    QT_DEPRECATED_VERSION_X_6_0("Use suspend() instead.")
+    void pause() { suspend(); }
+#endif
+    bool isSuspending() const { return d.isSuspending(); }
     bool isSuspended() const { return d.isSuspended(); }
-    void pause() { setPaused(true); }
-    void resume() { setPaused(false); }
-    void togglePaused() { d.togglePaused(); }
+    void setSuspended(bool suspend) { d.setSuspended(suspend); }
+    void suspend() { setSuspended(true); }
+    void resume() { setSuspended(false); }
+    void toggleSuspended() { d.toggleSuspended(); }
 
     bool isStarted() const { return d.isStarted(); }
     bool isFinished() const { return d.isFinished(); }

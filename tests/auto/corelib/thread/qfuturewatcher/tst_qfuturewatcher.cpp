@@ -57,9 +57,13 @@ private slots:
     void sharedFutureInterface();
     void changeFuture();
     void cancelEvents();
+#if QT_DEPRECATED_SINCE(6, 0)
     void pauseEvents();
+    void pausedSuspendedOrder();
+#endif
+    void suspendEvents();
     void suspended();
-    void suspendedEvents();
+    void suspendedEventsOrder();
     void finishedState();
     void throttling();
     void incrementalMapResults();
@@ -548,12 +552,21 @@ void callInterface(T &obj)
     obj.isFinished();
     obj.isRunning();
     obj.isCanceled();
-    obj.isPaused();
+    obj.isSuspended();
+    obj.isSuspending();
 
     obj.cancel();
-    obj.pause();
+    obj.suspend();
     obj.resume();
+    obj.toggleSuspended();
+#if QT_DEPRECATED_SINCE(6, 0)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+    obj.isPaused();
+    obj.pause();
     obj.togglePaused();
+QT_WARNING_POP
+#endif
     obj.waitForFinished();
 
     const T& objConst = obj;
@@ -566,7 +579,14 @@ void callInterface(T &obj)
     objConst.isFinished();
     objConst.isRunning();
     objConst.isCanceled();
+    objConst.isSuspending();
+    objConst.isSuspended();
+#if QT_DEPRECATED_SINCE(6, 0)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     objConst.isPaused();
+QT_WARNING_POP
+#endif
 }
 
 template <typename T>
@@ -665,6 +685,9 @@ void tst_QFutureWatcher::cancelEvents()
     QCOMPARE(resultReadySpy.count(), 0);
 }
 
+#if QT_DEPRECATED_SINCE(6, 0)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 // Tests that events from paused futures are saved and
 // delivered on resume.
 void tst_QFutureWatcher::pauseEvents()
@@ -725,11 +748,120 @@ void tst_QFutureWatcher::pauseEvents()
     }
 }
 
+void tst_QFutureWatcher::pausedSuspendedOrder()
+{
+    QFutureInterface<void> iface;
+    iface.reportStarted();
+
+    QFutureWatcher<void> watcher;
+
+    QSignalSpy pausedSpy(&watcher, &QFutureWatcher<void>::paused);
+    QVERIFY(pausedSpy.isValid());
+
+    QSignalSpy suspendedSpy(&watcher, &QFutureWatcher<void>::suspended);
+    QVERIFY(suspendedSpy.isValid());
+
+    bool pausedBeforeSuspended = false;
+    bool notSuspendedBeforePaused = false;
+    connect(&watcher, &QFutureWatcher<void>::paused,
+            [&] { notSuspendedBeforePaused = (suspendedSpy.count() == 0); });
+    connect(&watcher, &QFutureWatcher<void>::suspended,
+            [&] { pausedBeforeSuspended = (pausedSpy.count() == 1); });
+
+    watcher.setFuture(iface.future());
+    iface.reportSuspended();
+
+    // Make sure reportPaused() is ignored if the state is not paused
+    pausedSpy.wait(100);
+    QCOMPARE(pausedSpy.count(), 0);
+    QCOMPARE(suspendedSpy.count(), 0);
+
+    iface.setPaused(true);
+    iface.reportSuspended();
+
+    QTRY_COMPARE(suspendedSpy.count(), 1);
+    QCOMPARE(pausedSpy.count(), 1);
+    QVERIFY(notSuspendedBeforePaused);
+    QVERIFY(pausedBeforeSuspended);
+
+    iface.reportFinished();
+}
+QT_WARNING_POP
+#endif // QT_DEPRECATED_SINCE(6, 0)
+
+// Tests that events from suspended futures are saved and
+// delivered on resume.
+void tst_QFutureWatcher::suspendEvents()
+{
+    {
+        QFutureInterface<int> iface;
+        iface.reportStarted();
+
+        QFutureWatcher<int> watcher;
+
+        SignalSlotObject object;
+        connect(&watcher, &QFutureWatcher<int>::resultReadyAt, &object,
+                &SignalSlotObject::resultReadyAt);
+        QSignalSpy resultReadySpy(&watcher, &QFutureWatcher<int>::resultReadyAt);
+        QVERIFY(resultReadySpy.isValid());
+
+        QSignalSpy suspendingSpy(&watcher, &QFutureWatcher<int>::suspending);
+        QVERIFY(suspendingSpy.isValid());
+
+        watcher.setFuture(iface.future());
+        watcher.suspend();
+
+        QTRY_COMPARE(suspendingSpy.count(), 1);
+
+        int value = 0;
+        iface.reportFinished(&value);
+
+        // A result is reported, although the watcher is paused.
+        // The corresponding event should be also reported.
+        QTRY_COMPARE(resultReadySpy.count(), 1);
+
+        watcher.resume();
+    }
+    {
+        QFutureInterface<int> iface;
+        iface.reportStarted();
+
+        QFuture<int> a = iface.future();
+
+        QFutureWatcher<int> watcher;
+
+        SignalSlotObject object;
+        connect(&watcher, &QFutureWatcher<int>::resultReadyAt, &object,
+                &SignalSlotObject::resultReadyAt);
+        QSignalSpy resultReadySpy(&watcher, &QFutureWatcher<int>::resultReadyAt);
+        QVERIFY(resultReadySpy.isValid());
+
+        watcher.setFuture(a);
+        a.suspend();
+
+        int value = 0;
+        iface.reportFinished(&value);
+
+        QFuture<int> b;
+        watcher.setFuture(b); // If we watch b instead, resuming a
+        a.resume();           // should give us no results.
+
+        QTest::qWait(10);
+        QCOMPARE(resultReadySpy.count(), 0);
+    }
+}
+
 void tst_QFutureWatcher::suspended()
 {
     QFutureWatcher<void> watcher;
     QSignalSpy resultReadySpy(&watcher, &QFutureWatcher<int>::resultReadyAt);
+#if QT_DEPRECATED_SINCE(6, 0)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     QSignalSpy pausedSpy(&watcher, &QFutureWatcher<int>::paused);
+QT_WARNING_POP
+#endif
+    QSignalSpy suspendingSpy(&watcher, &QFutureWatcher<int>::suspending);
     QSignalSpy suspendedSpy(&watcher, &QFutureWatcher<int>::suspended);
     QSignalSpy finishedSpy(&watcher, &QFutureWatcher<int>::finished);
 
@@ -748,13 +880,16 @@ void tst_QFutureWatcher::suspended()
     });
     watcher.setFuture(future);
 
-    // Allow some threads to start before pausing.
+    // Allow some threads to start before suspending.
     QThread::msleep(200);
 
-    watcher.pause();
-    watcher.pause();
+    watcher.suspend();
+    watcher.suspend();
     QTRY_COMPARE(suspendedSpy.count(), 1); // suspended() should be emitted only once
+    QCOMPARE(suspendingSpy.count(), 2); // suspending() is emitted as many times as requested
+#if QT_DEPRECATED_SINCE(6, 0)
     QCOMPARE(pausedSpy.count(), 2); // paused() is emitted as many times as requested
+#endif
 
     // Make sure QFutureWatcher::resultReadyAt() is emitted only for already started threads.
     const auto resultReadyAfterPaused = resultReadySpy.count();
@@ -775,41 +910,41 @@ void tst_QFutureWatcher::suspended()
     QCOMPARE(resultReadySpy.count(), numValues - resultReadyAfterPaused);
 }
 
-void tst_QFutureWatcher::suspendedEvents()
+void tst_QFutureWatcher::suspendedEventsOrder()
 {
     QFutureInterface<void> iface;
     iface.reportStarted();
 
     QFutureWatcher<void> watcher;
 
-    QSignalSpy pausedSpy(&watcher, &QFutureWatcher<void>::paused);
-    QVERIFY(pausedSpy.isValid());
+    QSignalSpy suspendingSpy(&watcher, &QFutureWatcher<void>::suspending);
+    QVERIFY(suspendingSpy.isValid());
 
     QSignalSpy suspendedSpy(&watcher, &QFutureWatcher<void>::suspended);
     QVERIFY(suspendedSpy.isValid());
 
-    bool pausedBeforeSuspended = false;
-    bool notSuspendedBeforePasused = false;
-    connect(&watcher, &QFutureWatcher<void>::paused,
-            [&] { notSuspendedBeforePasused = (suspendedSpy.count() == 0); });
+    bool suspendingBeforeSuspended = false;
+    bool notSuspendedBeforeSuspending = false;
+    connect(&watcher, &QFutureWatcher<void>::suspending,
+            [&] { notSuspendedBeforeSuspending = (suspendedSpy.count() == 0); });
     connect(&watcher, &QFutureWatcher<void>::suspended,
-            [&] { pausedBeforeSuspended = (pausedSpy.count() == 1); });
+            [&] { suspendingBeforeSuspended = (suspendingSpy.count() == 1); });
 
     watcher.setFuture(iface.future());
     iface.reportSuspended();
 
     // Make sure reportPaused() is ignored if the state is not paused
-    pausedSpy.wait(100);
-    QCOMPARE(pausedSpy.count(), 0);
+    suspendingSpy.wait(100);
+    QCOMPARE(suspendingSpy.count(), 0);
     QCOMPARE(suspendedSpy.count(), 0);
 
-    iface.setPaused(true);
+    iface.setSuspended(true);
     iface.reportSuspended();
 
     QTRY_COMPARE(suspendedSpy.count(), 1);
-    QCOMPARE(pausedSpy.count(), 1);
-    QVERIFY(notSuspendedBeforePasused);
-    QVERIFY(pausedBeforeSuspended);
+    QCOMPARE(suspendingSpy.count(), 1);
+    QVERIFY(notSuspendedBeforeSuspending);
+    QVERIFY(suspendingBeforeSuspended);
 
     iface.reportFinished();
 }
