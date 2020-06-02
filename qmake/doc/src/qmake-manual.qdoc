@@ -999,10 +999,41 @@
 
     \note This variable applies only to Android targets.
 
-    Specifies different resources that your application has to bundle but that
-    cannot be delivered through the assets system, such as QML plugins. With this
-    variable, \l androiddeployqt will make sure everything is packaged and
-    deployed properly.
+    Specifies a path to C++ plugins or resources that your application has to bundle
+    but that cannot be delivered through the assets system, such as QML plugins.
+    With this variable, \l androiddeployqt will make sure everything is packaged
+    and deployed properly.
+
+    \c ANDROID_EXTRA_PLUGINS must point to the directory where the extra plugin(s)
+    are built. In addition, the build directory structure must follow a naming
+    convention similar to Qt plugins, that is, \e {plugins/<plugin name>}.
+
+    The plugins libraries should have the name format \e {libplugins_<type>_<name>_<abi>.so}.
+    To achieve that the plugin pro file could be defined as follows:
+
+    \badcode
+    TEMPLATE = lib
+    CONFIG += plugin
+
+    PLUGIN_TYPE = imageformats
+    DESTDIR = $$top_builddir/plugins/myplugin
+    TARGET = $$qt5LibraryTarget(myplugin, "plugins/$$PLUGIN_TYPE/")
+    \endcode
+
+    with top_builddir defined in .qmake.conf as:
+    \badcode
+    top_builddir=$$shadowed($$PWD)
+    \endcode
+
+    This will ensure that the correct name mangling is applied to the plugin
+    library (\e plugins/myplugin/libplugins_imageformats_myplugin_armeabi-v7a.so).
+
+    Then, assuming an extra image format plugin \e myplugin is built as
+    \e {$$DESTDIR/plugins/myplugin/}, the following ensures it is packaged correctly:
+
+    \badcode
+    ANDROID_EXTRA_PLUGINS += $$top_builddir/plugins
+    \endcode
 
     \target ANDROID_FEATURES
     \section1 ANDROID_FEATURES
