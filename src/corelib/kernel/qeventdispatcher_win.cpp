@@ -277,9 +277,13 @@ LRESULT QT_WIN_CALLBACK qt_GetMessageHook(int code, WPARAM wp, LPARAM lp)
     Q_ASSERT(q != 0);
     QEventDispatcherWin32Private *d = q->d_func();
     MSG *msg = reinterpret_cast<MSG *>(lp);
+    // Windows unexpectedly passes PM_NOYIELD flag to the hook procedure,
+    // if ::PeekMessage(..., PM_REMOVE | PM_NOYIELD) is called from the event loop.
+    // So, retrieve 'removed' tag as a bit field.
+    const bool messageRemoved = (wp & PM_REMOVE) != 0;
 
     if (msg->hwnd == d->internalHwnd && msg->message == WM_QT_SENDPOSTEDEVENTS
-        && wp == PM_REMOVE && d->sendPostedEventsTimerId == 0) {
+        && messageRemoved && d->sendPostedEventsTimerId == 0) {
         // Start a timer to deliver posted events when the message queue is emptied.
         d->sendPostedEventsTimerId = SetTimer(d->internalHwnd, SendPostedEventsTimerId,
                                               USER_TIMER_MINIMUM, NULL);
