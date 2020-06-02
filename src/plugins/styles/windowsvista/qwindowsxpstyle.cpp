@@ -972,7 +972,7 @@ bool QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
 
         // Fix alpha values, if needed
         if (potentialInvalidAlpha)
-            wasAlphaFixed = fixAlphaChannel(rect);
+            wasAlphaFixed = fixAlphaChannel(drawRect);
 
         QImage::Format format;
         if ((partIsTransparent && !wasAlphaSwapped) || (!partIsTransparent && hasAlpha)) {
