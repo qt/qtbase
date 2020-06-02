@@ -130,16 +130,16 @@ const QStringList& qt_mac_enabledDraggedTypes()
 
   Qt has predefined support for the following UTIs:
   \list
-    \i public.utf8-plain-text - converts to "text/plain"
-    \i public.utf16-plain-text - converts to "text/plain"
-    \i public.text - converts to "text/plain"
-    \i public.html - converts to "text/html"
-    \i public.url - converts to "text/uri-list"
-    \i public.file-url - converts to "text/uri-list"
-    \i public.tiff - converts to "application/x-qt-image"
-    \i public.vcard - converts to "text/plain"
-    \i com.apple.traditional-mac-plain-text - converts to "text/plain"
-    \i com.apple.pict - converts to "application/x-qt-image"
+    \li public.utf8-plain-text - converts to "text/plain"
+    \li public.utf16-plain-text - converts to "text/plain"
+    \li public.text - converts to "text/plain"
+    \li public.html - converts to "text/html"
+    \li public.url - converts to "text/uri-list"
+    \li public.file-url - converts to "text/uri-list"
+    \li public.tiff - converts to "application/x-qt-image"
+    \li public.vcard - converts to "text/plain"
+    \li com.apple.traditional-mac-plain-text - converts to "text/plain"
+    \li com.apple.pict - converts to "application/x-qt-image"
   \endlist
 
   When working with MIME data, Qt will interate through all instances of QMacPasteboardMime to
