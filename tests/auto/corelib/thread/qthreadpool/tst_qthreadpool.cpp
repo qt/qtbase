@@ -93,9 +93,6 @@ private slots:
     void priorityStart();
     void waitForDone();
     void clear();
-#if QT_DEPRECATED_SINCE(5, 9)
-    void cancel();
-#endif
     void tryTake();
     void waitForDoneTimeout();
     void destroyingWaitsForTasksToFinish();
@@ -975,80 +972,6 @@ void tst_QThreadPool::clear()
     threadPool.waitForDone();
     QCOMPARE(count.loadRelaxed(), threadPool.maxThreadCount());
 }
-
-#if QT_DEPRECATED_SINCE(5, 9)
-void tst_QThreadPool::cancel()
-{
-    QSemaphore sem(0);
-    QSemaphore startedThreads(0);
-
-    class BlockingRunnable : public QRunnable
-    {
-    public:
-        QSemaphore & sem;
-        QSemaphore &startedThreads;
-        QAtomicInt &dtorCounter;
-        QAtomicInt &runCounter;
-        int dummy;
-
-        explicit BlockingRunnable(QSemaphore &s, QSemaphore &started, QAtomicInt &c, QAtomicInt &r)
-            : sem(s), startedThreads(started), dtorCounter(c), runCounter(r){}
-
-        ~BlockingRunnable()
-        {
-            dtorCounter.fetchAndAddRelaxed(1);
-        }
-
-        void run()
-        {
-            startedThreads.release();
-            runCounter.fetchAndAddRelaxed(1);
-            sem.acquire();
-            count.ref();
-        }
-    };
-
-    enum {
-        MaxThreadCount = 3,
-        OverProvisioning = 2,
-        runs = MaxThreadCount * OverProvisioning
-    };
-
-    QThreadPool threadPool;
-    threadPool.setMaxThreadCount(MaxThreadCount);
-    BlockingRunnable *runnables[runs];
-
-    // ensure that the QThreadPool doesn't deadlock if any of the checks fail
-    // and cause an early return:
-    const QSemaphoreReleaser semReleaser(sem, runs);
-
-    count.storeRelaxed(0);
-    QAtomicInt dtorCounter = 0;
-    QAtomicInt runCounter = 0;
-    for (int i = 0; i < runs; i++) {
-        runnables[i] = new BlockingRunnable(sem, startedThreads, dtorCounter, runCounter);
-        runnables[i]->setAutoDelete(i != 0 && i != (runs-1)); //one which will run and one which will not
-        threadPool.cancel(runnables[i]); //verify NOOP for jobs not in the queue
-        threadPool.start(runnables[i]);
-    }
-    // wait for all worker threads to have started up:
-    QVERIFY(startedThreads.tryAcquire(MaxThreadCount, 60*1000 /* 1min */));
-
-    for (int i = 0; i < runs; i++) {
-        threadPool.cancel(runnables[i]);
-    }
-    runnables[0]->dummy = 0; //valgrind will catch this if cancel() is crazy enough to delete currently running jobs
-    runnables[runs-1]->dummy = 0;
-    QCOMPARE(dtorCounter.loadRelaxed(), runs - threadPool.maxThreadCount() - 1);
-    sem.release(threadPool.maxThreadCount());
-    threadPool.waitForDone();
-    QCOMPARE(runCounter.loadRelaxed(), threadPool.maxThreadCount());
-    QCOMPARE(count.loadRelaxed(), threadPool.maxThreadCount());
-    QCOMPARE(dtorCounter.loadRelaxed(), runs - 2);
-    delete runnables[0]; //if the pool deletes them then we'll get double-free crash
-    delete runnables[runs-1];
-}
-#endif
 
 void tst_QThreadPool::tryTake()
 {

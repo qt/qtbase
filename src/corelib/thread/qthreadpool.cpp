@@ -786,24 +786,6 @@ bool QThreadPool::contains(const QThread *thread) const
     return d->allThreads.contains(const_cast<QThreadPoolThread *>(poolThread));
 }
 
-#if QT_DEPRECATED_SINCE(5, 9)
-/*!
-    \since 5.5
-    \obsolete use tryTake() instead, but note the different deletion rules.
-
-    Removes the specified \a runnable from the queue if it is not yet started.
-    The runnables for which \l{QRunnable::autoDelete()}{runnable->autoDelete()}
-    returns \c true are deleted.
-
-    \sa start(), tryTake()
-*/
-void QThreadPool::cancel(QRunnable *runnable)
-{
-    if (tryTake(runnable) && runnable->autoDelete() && !runnable->ref) // tryTake already deref'ed
-        delete runnable;
-}
-#endif
-
 QT_END_NAMESPACE
 
 #include "moc_qthreadpool.cpp"

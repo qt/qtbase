@@ -95,10 +95,6 @@ public:
 
     bool contains(const QThread *thread) const;
 
-#if QT_DEPRECATED_SINCE(5, 9)
-    QT_DEPRECATED_X("use tryTake(), but note the different deletion rules")
-    void cancel(QRunnable *runnable);
-#endif
     Q_REQUIRED_RESULT bool tryTake(QRunnable *runnable);
 };
 

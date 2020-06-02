@@ -52,9 +52,7 @@ class Q_CORE_EXPORT QRunnable
     friend class QThreadPool;
     friend class QThreadPoolPrivate;
     friend class QThreadPoolThread;
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     Q_DISABLE_COPY(QRunnable)
-#endif
 public:
     virtual void run() = 0;
 
