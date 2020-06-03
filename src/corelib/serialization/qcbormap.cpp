@@ -1764,11 +1764,13 @@ QDebug operator<<(QDebug dbg, const QCborMap &m)
 #endif
 
 #ifndef QT_NO_DATASTREAM
+#if QT_CONFIG(cborstreamwriter)
 QDataStream &operator<<(QDataStream &stream, const QCborMap &value)
 {
     stream << value.toCborValue().toCbor();
     return stream;
 }
+#endif
 
 QDataStream &operator>>(QDataStream &stream, QCborMap &value)
 {

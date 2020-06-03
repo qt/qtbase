@@ -337,6 +337,7 @@ bool QShaderDescription::isValid() const
         || !d->combinedImageSamplers.isEmpty() || !d->storageImages.isEmpty();
 }
 
+#if QT_CONFIG(cborstreamwriter)
 /*!
    \return a serialized binary version of the data in CBOR (Concise Binary
    Object Representation) format.
@@ -347,6 +348,7 @@ QByteArray QShaderDescription::toCbor() const
 {
     return QCborValue::fromJsonValue(d->makeDoc().object()).toCbor();
 }
+#endif
 
 /*!
     \return a serialized JSON text version of the data.

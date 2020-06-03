@@ -69,7 +69,9 @@ public:
 
     bool isValid() const;
 
+#if QT_CONFIG(cborstreamwriter)
     QByteArray toCbor() const;
+#endif
     void serialize(QDataStream *stream) const;
     QByteArray toJson() const;
 

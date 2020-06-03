@@ -487,7 +487,9 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, const QCborValue &v);
 #endif
 
 #ifndef QT_NO_DATASTREAM
+#if QT_CONFIG(cborstreamwriter)
 Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QCborValue &);
+#endif
 Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QCborValue &);
 #endif
 

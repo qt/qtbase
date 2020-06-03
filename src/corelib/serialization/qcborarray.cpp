@@ -1220,11 +1220,13 @@ QDebug operator<<(QDebug dbg, const QCborArray &a)
 #endif
 
 #ifndef QT_NO_DATASTREAM
+#if QT_CONFIG(cborstreamwriter)
 QDataStream &operator<<(QDataStream &stream, const QCborArray &value)
 {
     stream << value.toCborValue().toCbor();
     return stream;
 }
+#endif
 
 QDataStream &operator>>(QDataStream &stream, QCborArray &value)
 {
