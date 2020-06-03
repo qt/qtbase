@@ -52,29 +52,10 @@ write_basic_package_version_file(
     COMPATIBILITY AnyNewerVersion
 )
 
-# Generate and install Qt6Tools config file.
-configure_package_config_file(
-    "${PROJECT_SOURCE_DIR}/cmake/QtToolsConfig.cmake.in"
-    "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}ToolsConfig.cmake"
-    INSTALL_DESTINATION "${__GlobalConfig_install_dir}"
-)
-write_basic_package_version_file(
-    ${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}ToolsConfigVersion.cmake
-    VERSION ${PROJECT_VERSION}
-    COMPATIBILITY AnyNewerVersion
-)
-
 qt_install(FILES
     "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}Config.cmake"
     "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}ConfigVersion.cmake"
     DESTINATION "${__GlobalConfig_install_dir}"
-    COMPONENT Devel
-)
-
-qt_install(FILES
-    "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}ToolsConfig.cmake"
-    "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}ToolsConfigVersion.cmake"
-    DESTINATION "${__GlobalConfig_install_dir}Tools"
     COMPONENT Devel
 )
 
