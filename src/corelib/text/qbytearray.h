@@ -224,8 +224,17 @@ public:
     Q_REQUIRED_RESULT QByteArray left(int len) const;
     Q_REQUIRED_RESULT QByteArray right(int len) const;
     Q_REQUIRED_RESULT QByteArray mid(int index, int len = -1) const;
+
+    Q_REQUIRED_RESULT QByteArray first(qsizetype n) const
+    { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); return QByteArray(data(), int(n)); }
+    Q_REQUIRED_RESULT QByteArray last(qsizetype n) const
+    { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); return QByteArray(data() + size() - n, int(n)); }
+    Q_REQUIRED_RESULT QByteArray from(qsizetype pos) const
+    { Q_ASSERT(pos >= 0); Q_ASSERT(pos <= size()); return QByteArray(data() + pos, size() - int(pos)); }
+    Q_REQUIRED_RESULT QByteArray slice(qsizetype pos, qsizetype n) const
+    { Q_ASSERT(pos >= 0); Q_ASSERT(n >= 0); Q_ASSERT(size_t(pos) + size_t(n) <= size_t(size())); return QByteArray(data() + pos, int(n)); }
     Q_REQUIRED_RESULT QByteArray chopped(int len) const
-    { Q_ASSERT(len >= 0); Q_ASSERT(len <= size()); return left(size() - len); }
+    { Q_ASSERT(len >= 0); Q_ASSERT(len <= size()); return first(size() - len); }
 
     bool startsWith(const QByteArray &a) const;
     bool startsWith(char c) const;

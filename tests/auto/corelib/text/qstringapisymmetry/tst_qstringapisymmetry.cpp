@@ -632,6 +632,15 @@ private:
     void right_data();
     template <typename String> void right_impl();
 
+    void slice_data();
+    template <typename String> void slice_impl();
+
+    void first_data();
+    template <typename String> void first_impl();
+
+    void last_data();
+    template <typename String> void last_impl();
+
     void chop_data();
     template <typename String> void chop_impl();
 
@@ -672,6 +681,27 @@ private Q_SLOTS:
     void right_QLatin1String() { right_impl<QLatin1String>(); }
     void right_QByteArray_data() { right_data(); }
     void right_QByteArray() { right_impl<QByteArray>(); }
+
+    void slice_QString_data() { slice_data(); }
+    void slice_QString() { slice_impl<QString>(); }
+    void slice_QStringView_data() { slice_data(); }
+    void slice_QStringView() { slice_impl<QStringView>(); }
+    void slice_QByteArray_data() { slice_data(); }
+    void slice_QByteArray() { slice_impl<QByteArray>(); }
+
+    void first_truncate_QString_data() { first_data(); }
+    void first_truncate_QString() { first_impl<QString>(); }
+    void first_truncate_QStringView_data() { first_data(); }
+    void first_truncate_QStringView() { first_impl<QStringView>(); }
+    void first_truncate_QByteArray_data() { first_data(); }
+    void first_truncate_QByteArray() { first_impl<QByteArray>(); }
+
+    void last_QString_data() { last_data(); }
+    void last_QString() { last_impl<QString>(); }
+    void last_QStringView_data() { last_data(); }
+    void last_QStringView() { last_impl<QStringView>(); }
+    void last_QByteArray_data() { last_data(); }
+    void last_QByteArray() { last_impl<QByteArray>(); }
 
     void chop_QString_data() { chop_data(); }
     void chop_QString() { chop_impl<QString>(); }
@@ -1502,43 +1532,7 @@ void tst_QStringApiSymmetry::tok_impl() const
 
 void tst_QStringApiSymmetry::mid_data()
 {
-    QTest::addColumn<QStringRef>("unicode");
-    QTest::addColumn<QLatin1String>("latin1");
-    QTest::addColumn<int>("pos");
-    QTest::addColumn<int>("n");
-    QTest::addColumn<QStringRef>("result");
-    QTest::addColumn<QStringRef>("result2");
-
-    QTest::addRow("null") << QStringRef() << QLatin1String() << 0 << 0 << QStringRef() << QStringRef();
-    QTest::addRow("empty") << QStringRef(&empty) << QLatin1String("") << 0 << 0 << QStringRef(&empty) << QStringRef(&empty);
-
-    // Some classes' mid() implementations have a wide contract, others a narrow one
-    // so only test valid arguents here:
-#define ROW(base, p, n, r1, r2) \
-    QTest::addRow("%s%d%d", #base, p, n) << QStringRef(&base) << QLatin1String(#base) << p << n << QStringRef(&r1) << QStringRef(&r2)
-
-    ROW(a, 0, 0, a, empty);
-    ROW(a, 0, 1, a, a);
-    ROW(a, 1, 0, empty, empty);
-
-    ROW(ab, 0, 0, ab, empty);
-    ROW(ab, 0, 1, ab, a);
-    ROW(ab, 0, 2, ab, ab);
-    ROW(ab, 1, 0, b,  empty);
-    ROW(ab, 1, 1, b,  b);
-    ROW(ab, 2, 0, empty, empty);
-
-    ROW(abc, 0, 0, abc, empty);
-    ROW(abc, 0, 1, abc, a);
-    ROW(abc, 0, 2, abc, ab);
-    ROW(abc, 0, 3, abc, abc);
-    ROW(abc, 1, 0, bc,  empty);
-    ROW(abc, 1, 1, bc,  b);
-    ROW(abc, 1, 2, bc,  bc);
-    ROW(abc, 2, 0, c,   empty);
-    ROW(abc, 2, 1, c,   c);
-    ROW(abc, 3, 0, empty, empty);
-#undef ROW
+    slice_data();
 }
 
 template <typename String>
@@ -1583,31 +1577,7 @@ void tst_QStringApiSymmetry::mid_impl()
 
 void tst_QStringApiSymmetry::left_data()
 {
-    QTest::addColumn<QStringRef>("unicode");
-    QTest::addColumn<QLatin1String>("latin1");
-    QTest::addColumn<int>("n");
-    QTest::addColumn<QStringRef>("result");
-
-    QTest::addRow("null") << QStringRef() << QLatin1String() << 0 << QStringRef();
-    QTest::addRow("empty") << QStringRef(&empty) << QLatin1String("") << 0 << QStringRef(&empty);
-
-    // Some classes' left() implementations have a wide contract, others a narrow one
-    // so only test valid arguents here:
-#define ROW(base, n, res) \
-    QTest::addRow("%s%d", #base, n) << QStringRef(&base) << QLatin1String(#base) << n << QStringRef(&res);
-
-    ROW(a, 0, empty);
-    ROW(a, 1, a);
-
-    ROW(ab, 0, empty);
-    ROW(ab, 1, a);
-    ROW(ab, 2, ab);
-
-    ROW(abc, 0, empty);
-    ROW(abc, 1, a);
-    ROW(abc, 2, ab);
-    ROW(abc, 3, abc);
-#undef ROW
+    first_data();
 }
 
 template <typename String>
@@ -1648,31 +1618,7 @@ void tst_QStringApiSymmetry::left_impl()
 
 void tst_QStringApiSymmetry::right_data()
 {
-    QTest::addColumn<QStringRef>("unicode");
-    QTest::addColumn<QLatin1String>("latin1");
-    QTest::addColumn<int>("n");
-    QTest::addColumn<QStringRef>("result");
-
-    QTest::addRow("null") << QStringRef() << QLatin1String() << 0 << QStringRef();
-    QTest::addRow("empty") << QStringRef(&empty) << QLatin1String("") << 0 << QStringRef(&empty);
-
-    // Some classes' right() implementations have a wide contract, others a narrow one
-    // so only test valid arguents here:
-#define ROW(base, n, res) \
-    QTest::addRow("%s%d", #base, n) << QStringRef(&base) << QLatin1String(#base) << n << QStringRef(&res);
-
-    ROW(a, 0, empty);
-    ROW(a, 1, a);
-
-    ROW(ab, 0, empty);
-    ROW(ab, 1, b);
-    ROW(ab, 2, ab);
-
-    ROW(abc, 0, empty);
-    ROW(abc, 1, c);
-    ROW(abc, 2, bc);
-    ROW(abc, 3, abc);
-#undef ROW
+    last_data();
 }
 
 template <typename String>
@@ -1703,6 +1649,209 @@ void tst_QStringApiSymmetry::right_impl()
     }
 }
 
+void tst_QStringApiSymmetry::slice_data()
+{
+    QTest::addColumn<QStringRef>("unicode");
+    QTest::addColumn<QLatin1String>("latin1");
+    QTest::addColumn<int>("pos");
+    QTest::addColumn<int>("n");
+    QTest::addColumn<QStringRef>("result");
+    QTest::addColumn<QStringRef>("result2");
+
+//    QTest::addRow("null") << QStringRef() << QLatin1String() << 0 << 0 << QStringRef() << QStringRef();
+    QTest::addRow("empty") << QStringRef(&empty) << QLatin1String("") << 0 << 0 << QStringRef(&empty) << QStringRef(&empty);
+
+    // Some classes' mid() implementations have a wide contract, others a narrow one
+    // so only test valid arguents here:
+#define ROW(base, p, n, r1, r2) \
+    QTest::addRow("%s%d%d", #base, p, n) << QStringRef(&base) << QLatin1String(#base) << p << n << QStringRef(&r1) << QStringRef(&r2)
+
+    ROW(a, 0, 0, a, empty);
+    ROW(a, 0, 1, a, a);
+    ROW(a, 1, 0, empty, empty);
+
+    ROW(ab, 0, 0, ab, empty);
+    ROW(ab, 0, 1, ab, a);
+    ROW(ab, 0, 2, ab, ab);
+    ROW(ab, 1, 0, b,  empty);
+    ROW(ab, 1, 1, b,  b);
+    ROW(ab, 2, 0, empty, empty);
+
+    ROW(abc, 0, 0, abc, empty);
+    ROW(abc, 0, 1, abc, a);
+    ROW(abc, 0, 2, abc, ab);
+    ROW(abc, 0, 3, abc, abc);
+    ROW(abc, 1, 0, bc,  empty);
+    ROW(abc, 1, 1, bc,  b);
+    ROW(abc, 1, 2, bc,  bc);
+    ROW(abc, 2, 0, c,   empty);
+    ROW(abc, 2, 1, c,   c);
+    ROW(abc, 3, 0, empty, empty);
+#undef ROW
+}
+
+template <typename String>
+void tst_QStringApiSymmetry::slice_impl()
+{
+    QFETCH(const QStringRef, unicode);
+    QFETCH(const QLatin1String, latin1);
+    QFETCH(const int, pos);
+    QFETCH(const int, n);
+    QFETCH(const QStringRef, result);
+    QFETCH(const QStringRef, result2);
+
+    const auto utf8 = unicode.toUtf8();
+
+    const auto s = make<String>(unicode, latin1, utf8);
+
+    {
+        const auto from = s.from(pos);
+        const auto slice = s.slice(pos, n);
+
+        QCOMPARE(from, result);
+        QCOMPARE(from.isNull(), result.isNull());
+        QCOMPARE(from.isEmpty(), result.isEmpty());
+
+        QCOMPARE(slice, result2);
+        QCOMPARE(slice.isNull(), result2.isNull());
+        QCOMPARE(slice.isEmpty(), result2.isEmpty());
+    }
+    {
+        const auto from = detached(s).from(pos);
+        const auto slice = detached(s).slice(pos, n);
+
+        QCOMPARE(from, result);
+        QCOMPARE(from.isNull(), result.isNull());
+        QCOMPARE(from.isEmpty(), result.isEmpty());
+
+        QCOMPARE(slice, result2);
+        QCOMPARE(slice.isNull(), result2.isNull());
+        QCOMPARE(slice.isEmpty(), result2.isEmpty());
+    }
+}
+
+void tst_QStringApiSymmetry::first_data()
+{
+    QTest::addColumn<QStringRef>("unicode");
+    QTest::addColumn<QLatin1String>("latin1");
+    QTest::addColumn<int>("n");
+    QTest::addColumn<QStringRef>("result");
+
+//    QTest::addRow("null") << QStringRef() << QLatin1String() << 0 << QStringRef();
+    QTest::addRow("empty") << QStringRef(&empty) << QLatin1String("") << 0 << QStringRef(&empty);
+
+    // Some classes' left() implementations have a wide contract, others a narrow one
+    // so only test valid arguents here:
+#define ROW(base, n, res) \
+    QTest::addRow("%s%d", #base, n) << QStringRef(&base) << QLatin1String(#base) << n << QStringRef(&res);
+
+    ROW(a, 0, empty);
+    ROW(a, 1, a);
+
+    ROW(ab, 0, empty);
+    ROW(ab, 1, a);
+    ROW(ab, 2, ab);
+
+    ROW(abc, 0, empty);
+    ROW(abc, 1, a);
+    ROW(abc, 2, ab);
+    ROW(abc, 3, abc);
+#undef ROW
+}
+
+template <typename String>
+void tst_QStringApiSymmetry::first_impl()
+{
+    QFETCH(const QStringRef, unicode);
+    QFETCH(const QLatin1String, latin1);
+    QFETCH(const int, n);
+    QFETCH(const QStringRef, result);
+
+    const auto utf8 = unicode.toUtf8();
+
+    const auto s = make<String>(unicode, latin1, utf8);
+
+    {
+        const auto first = s.first(n);
+
+        QCOMPARE(first, result);
+        QCOMPARE(first.isNull(), result.isNull());
+        QCOMPARE(first.isEmpty(), result.isEmpty());
+    }
+    {
+        const auto first = detached(s).first(n);
+
+        QCOMPARE(first, result);
+        QCOMPARE(first.isNull(), result.isNull());
+        QCOMPARE(first.isEmpty(), result.isEmpty());
+    }
+    {
+        auto first = s;
+        first.truncate(n);
+
+        QCOMPARE(first, result);
+        QCOMPARE(first.isNull(), result.isNull());
+        QCOMPARE(first.isEmpty(), result.isEmpty());
+    }
+}
+
+void tst_QStringApiSymmetry::last_data()
+{
+    QTest::addColumn<QStringRef>("unicode");
+    QTest::addColumn<QLatin1String>("latin1");
+    QTest::addColumn<int>("n");
+    QTest::addColumn<QStringRef>("result");
+
+//    QTest::addRow("null") << QStringRef() << QLatin1String() << 0 << QStringRef();
+    QTest::addRow("empty") << QStringRef(&empty) << QLatin1String("") << 0 << QStringRef(&empty);
+
+    // Some classes' last() implementations have a wide contract, others a narrow one
+    // so only test valid arguents here:
+#define ROW(base, n, res) \
+    QTest::addRow("%s%d", #base, n) << QStringRef(&base) << QLatin1String(#base) << n << QStringRef(&res);
+
+    ROW(a, 0, empty);
+    ROW(a, 1, a);
+
+    ROW(ab, 0, empty);
+    ROW(ab, 1, b);
+    ROW(ab, 2, ab);
+
+    ROW(abc, 0, empty);
+    ROW(abc, 1, c);
+    ROW(abc, 2, bc);
+    ROW(abc, 3, abc);
+#undef ROW
+}
+
+template <typename String>
+void tst_QStringApiSymmetry::last_impl()
+{
+    QFETCH(const QStringRef, unicode);
+    QFETCH(const QLatin1String, latin1);
+    QFETCH(const int, n);
+    QFETCH(const QStringRef, result);
+
+    const auto utf8 = unicode.toUtf8();
+
+    const auto s = make<String>(unicode, latin1, utf8);
+
+    {
+        const auto last = s.last(n);
+
+        QCOMPARE(last, result);
+        QCOMPARE(last.isNull(), result.isNull());
+        QCOMPARE(last.isEmpty(), result.isEmpty());
+    }
+    {
+        const auto last = detached(s).last(n);
+
+        QCOMPARE(last, result);
+        QCOMPARE(last.isNull(), result.isNull());
+        QCOMPARE(last.isEmpty(), result.isEmpty());
+    }
+}
+
 void tst_QStringApiSymmetry::chop_data()
 {
     QTest::addColumn<QStringRef>("unicode");
@@ -1710,7 +1859,7 @@ void tst_QStringApiSymmetry::chop_data()
     QTest::addColumn<int>("n");
     QTest::addColumn<QStringRef>("result");
 
-    QTest::addRow("null") << QStringRef() << QLatin1String() << 0 << QStringRef();
+//    QTest::addRow("null") << QStringRef() << QLatin1String() << 0 << QStringRef();
     QTest::addRow("empty") << QStringRef(&empty) << QLatin1String("") << 0 << QStringRef(&empty);
 
     // Some classes' truncate() implementations have a wide contract, others a narrow one

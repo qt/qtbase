@@ -4601,10 +4601,58 @@ QString QString::mid(int position, int n) const
 }
 
 /*!
+    \fn QString QString::first(qsizetype n) const
+    \since 6.0
+
+    Returns a string that contains the first \a n characters
+    of this string.
+
+    \note The behavior is undefined when \a n < 0 or \a n > size().
+
+    \sa last(), slice(), from(), startsWith(), chopped(), chop(), truncate()
+*/
+
+/*!
+    \fn QString QString::last(qsizetype n) const
+    \since 6.0
+
+    Returns the string that contains the last \a n characters of this string.
+
+    \note The behavior is undefined when \a n < 0 or \a n > size().
+
+    \sa first(), slice(), from(), endsWith(), chopped(), chop(), truncate()
+*/
+
+/*!
+    \fn QString QString::slice(qsizetype pos, qsizetype n) const
+    \since 6.0
+
+    Returns a string that contains \a n characters of this string,
+    starting at position \a pos.
+
+    \note The behavior is undefined when \a pos < 0, \a n < 0,
+    or \a pos + \a n > size().
+
+    \sa first(), last(), chopped(), chop(), truncate()
+*/
+
+/*!
+    \fn QString QString::from(qsizetype pos) const
+    \since 6.0
+
+    Returns a string that contains the portion of this string starting at
+    position \a pos and extending to its end.
+
+    \note The behavior is undefined when \a pos < 0 or \a pos > size().
+
+    \sa first(), last(), slice(), chopped(), chop(), truncate()
+*/
+
+/*!
     \fn QString QString::chopped(int len) const
     \since 5.10
 
-    Returns a substring that contains the size() - \a len leftmost characters
+    Returns a string that contains the size() - \a len leftmost characters
     of this string.
 
     \note The behavior is undefined if \a len is negative or greater than size().

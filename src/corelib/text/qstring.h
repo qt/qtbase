@@ -455,8 +455,17 @@ public:
     Q_REQUIRED_RESULT QString left(int n) const;
     Q_REQUIRED_RESULT QString right(int n) const;
     Q_REQUIRED_RESULT QString mid(int position, int n = -1) const;
+
+    Q_REQUIRED_RESULT QString first(qsizetype n) const
+    { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); return QString(data(), int(n)); }
+    Q_REQUIRED_RESULT QString last(qsizetype n) const
+    { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); return QString(data() + size() - n, int(n)); }
+    Q_REQUIRED_RESULT QString from(qsizetype pos) const
+    { Q_ASSERT(pos >= 0); Q_ASSERT(pos <= size()); return QString(data() + pos, size() - int(pos)); }
+    Q_REQUIRED_RESULT QString slice(qsizetype pos, qsizetype n) const
+    { Q_ASSERT(pos >= 0); Q_ASSERT(n >= 0); Q_ASSERT(size_t(pos) + size_t(n) <= size_t(size())); return QString(data() + pos, int(n)); }
     Q_REQUIRED_RESULT QString chopped(int n) const
-    { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); return left(size() - n); }
+    { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); return first(size() - n); }
 
 
     Q_REQUIRED_RESULT QStringRef leftRef(int n) const;

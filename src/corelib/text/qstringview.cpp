@@ -657,6 +657,54 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn QStringView QStringView::first(qsizetype n) const
+    \since 6.0
+
+    Returns a string view that points to the first \a n characters
+    of this string.
+
+    \note The behavior is undefined when \a n < 0 or \a n > size().
+
+    \sa last(), subString(), startsWith(), chopped(), chop(), truncate()
+*/
+
+/*!
+    \fn QStringView QStringView::last(qsizetype n) const
+    \since 6.0
+
+    Returns a string view that points to the last \a n characters of this string.
+
+    \note The behavior is undefined when \a n < 0 or \a n > size().
+
+    \sa first(), subString(), endsWith(), chopped(), chop(), truncate()
+*/
+
+/*!
+    \fn QStringView QStringView::slice(qsizetype pos, qsizetype n) const
+    \since 6.0
+
+    Returns a string view that points to \a n characters of this string,
+    starting at position \a pos.
+
+    \note The behavior is undefined when \a pos < 0, \a n < 0,
+    or \a pos + \a n > size().
+
+    \sa first(), last(), chopped(), chop(), truncate()
+*/
+
+/*!
+    \fn QStringView QStringView::from(qsizetype pos) const
+    \since 6.0
+
+    Returns a string view starting at position \a pos in this object,
+    and extending to its end.
+
+    \note The behavior is undefined when \a pos < 0 or \a pos > size().
+
+    \sa first(), last(), chopped(), chop(), truncate()
+*/
+
+/*!
     \fn QStringView QStringView::chopped(qsizetype length) const
 
     Returns the substring of length size() - \a length starting at the

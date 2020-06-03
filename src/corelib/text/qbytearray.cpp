@@ -2989,6 +2989,53 @@ QByteArray QByteArray::mid(int pos, int len) const
 }
 
 /*!
+    \fn QByteArray QByteArray::first(qsizetype n) const
+    \since 6.0
+
+    Returns the first \a n bytes of the byte array.
+
+    \note The behavior is undefined when \a n < 0 or \a n > size().
+
+    \sa last(), slice(), from(), startsWith(), chopped(), chop(), truncate()
+*/
+
+/*!
+    \fn QByteArray QByteArray::last(qsizetype n) const
+    \since 6.0
+
+    Returns the last \a n bytes of the byte array.
+
+    \note The behavior is undefined when \a n < 0 or \a n > size().
+
+    \sa first(), slice(), from(), endsWith(), chopped(), chop(), truncate()
+*/
+
+/*!
+    \fn QByteArray QByteArray::slice(qsizetype pos, qsizetype n) const
+    \since 6.0
+
+    Returns a byte array containing the \a n bytes of this object starting
+    at position \a pos.
+
+    \note The behavior is undefined when \a pos < 0, \a n < 0,
+    or \a pos + \a n > size().
+
+    \sa first(), last(), from(), chopped(), chop(), truncate()
+*/
+
+/*!
+    \fn QByteArray QByteArray::from(qsizetype pos) const
+    \since 6.0
+
+    Returns a byte array containing the bytes starting at position \a pos
+    in this object, and extending to the end of this object.
+
+    \note The behavior is undefined when \a pos < 0 or \a pos > size().
+
+    \sa first(), last(), slice(), chopped(), chop(), truncate()
+*/
+
+/*!
     \fn QByteArray::chopped(int len) const
     \since 5.10
 
