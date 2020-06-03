@@ -303,6 +303,15 @@ public:
     static inline void setGlobalFactor(qreal) {}
     static inline void setScreenFactor(QScreen *, qreal) {}
 
+    struct ScaleAndOrigin
+    {
+        qreal factor;
+        QPoint origin;
+    };
+    static ScaleAndOrigin scaleAndOrigin(const QPlatformScreen *platformScreen, QPoint *nativePosition = nullptr);
+    static ScaleAndOrigin scaleAndOrigin(const QScreen *screen, QPoint *nativePosition = nullptr);
+    static ScaleAndOrigin scaleAndOrigin(const QWindow *platformScreen, QPoint *nativePosition = nullptr);
+
     static inline bool isActive() { return false; }
     static inline qreal factor(const QWindow *) { return 1.0; }
     static inline qreal factor(const QScreen *) { return 1.0; }

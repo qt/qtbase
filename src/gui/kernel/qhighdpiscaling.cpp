@@ -720,5 +720,20 @@ QHighDpiScaling::ScaleAndOrigin QHighDpiScaling::scaleAndOrigin(const QWindow *w
     return scaleAndOrigin(screen, searchScreen ? nativePosition : nullptr);
 }
 
+#else
+QHighDpiScaling::ScaleAndOrigin QHighDpiScaling::scaleAndOrigin(const QPlatformScreen *, QPoint *)
+{
+    return { qreal(1), QPoint() };
+}
+
+QHighDpiScaling::ScaleAndOrigin QHighDpiScaling::scaleAndOrigin(const QScreen *, QPoint *)
+{
+    return { qreal(1), QPoint() };
+}
+
+QHighDpiScaling::ScaleAndOrigin QHighDpiScaling::scaleAndOrigin(const QWindow *, QPoint *)
+{
+    return { qreal(1), QPoint() };
+}
 #endif //QT_NO_HIGHDPISCALING
 QT_END_NAMESPACE
