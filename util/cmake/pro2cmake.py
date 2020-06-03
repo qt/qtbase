@@ -576,6 +576,7 @@ class QmlDir:
     def __init__(self) -> None:
         self.module = ""
         self.plugin_name = ""
+        self.plugin_optional = False
         self.plugin_path = ""
         self.classname = ""
         self.imports: List[str] = []
@@ -589,7 +590,7 @@ class QmlDir:
         imports_line = "    \n".join(self.imports)
         string = f"""\
             module: {self.module}
-            plugin: {self.plugin_name} {self.plugin_path}
+            plugin: {self.plugin_optional} {self.plugin_name} {self.plugin_path}
             classname: {self.classname}
             type_infos:{type_infos_line}
             imports:{imports_line}
@@ -664,6 +665,13 @@ class QmlDir:
             self.plugin_name = entries[1]
             if len(entries) > 2:
                 self.plugin_path = entries[2]
+        elif entries[0] == "optional":
+            if entries[1] != "plugin":
+                raise RuntimeError("Only plugins can be optional in qmldir files")
+            self.plugin_name = entries[2]
+            self.plugin_optional = True
+            if len(entries) > 3:
+                self.plugin_path = entries[3]
         elif entries[0] == "classname":
             self.classname = entries[1]
         elif entries[0] == "typeinfo":
@@ -3427,6 +3435,8 @@ def write_example(
                     add_target += f"    IMPORTS\n{qml_dir_imports_line}"
                 if qml_dir_dynamic_imports:
                     add_target += "    IMPORTS ${module_dynamic_qml_imports}\n"
+                if qml_dir.plugin_optional:
+                    add_target += "    PLUGIN_OPTIONAL\n"
 
             add_target += "    INSTALL_LOCATION ${INSTALL_EXAMPLEDIR}\n)\n\n"
             add_target += f"target_sources({binary_name} PRIVATE"
@@ -3720,6 +3730,8 @@ def write_qml_plugin(
             extra_lines.append("IMPORTS\n        " f"{qml_dir_imports_line}")
         if qml_dir_dynamic_imports:
             extra_lines.append("IMPORTS ${module_dynamic_qml_imports}")
+        if qml_dir.plugin_optional:
+            extra_lines.append("PLUGIN_OPTIONAL")
 
     return qml_dir
 
