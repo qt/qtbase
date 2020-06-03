@@ -6,8 +6,7 @@
 # done when initially configuring qtbase.
 
 function(qt_auto_detect_android)
-    if(DEFINED CMAKE_TOOLCHAIN_FILE AND NOT DEFINED QT_AUTODETECT_ANDROID
-            AND NOT QT_BUILD_STANDALONE_TESTS)
+    if(DEFINED CMAKE_TOOLCHAIN_FILE AND NOT DEFINED QT_AUTODETECT_ANDROID)
 
         file(READ ${CMAKE_TOOLCHAIN_FILE} toolchain_file_content OFFSET 0 LIMIT 80)
         string(FIND ${toolchain_file_content} "The Android Open Source Project" find_result REVERSE)
@@ -34,7 +33,7 @@ function(qt_auto_detect_android)
 endfunction()
 
 function(qt_auto_detect_vpckg)
-    if(DEFINED ENV{VCPKG_ROOT} AND NOT QT_BUILD_STANDALONE_TESTS)
+    if(DEFINED ENV{VCPKG_ROOT})
         set(vcpkg_toolchain_file "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
         get_filename_component(vcpkg_toolchain_file "${vcpkg_toolchain_file}" ABSOLUTE)
 
