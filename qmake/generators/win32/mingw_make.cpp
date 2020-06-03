@@ -200,17 +200,12 @@ void MingwMakefileGenerator::writeIncPart(QTextStream &t)
 {
     t << "INCPATH       = ";
 
-    QString isystem = var("QMAKE_CFLAGS_ISYSTEM");
     const ProStringList &incs = project->values("INCLUDEPATH");
     for (ProStringList::ConstIterator incit = incs.begin(); incit != incs.end(); ++incit) {
         QString inc = (*incit).toQString();
         inc.replace(QRegExp("\\\\$"), "");
 
-        if (!isystem.isEmpty() && isSystemInclude(inc))
-            t << isystem << ' ';
-        else
-            t << "-I";
-        t << escapeFilePath(inc) << ' ';
+        t << "-I" << escapeFilePath(inc) << ' ';
     }
     t << Qt::endl;
 }
