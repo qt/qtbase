@@ -92,7 +92,9 @@
 #include <private/qthread_p.h>
 
 #include <private/qfont_p.h>
+#if QT_CONFIG(action)
 #include <private/qaction_p.h>
+#endif
 
 #include <stdlib.h>
 

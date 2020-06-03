@@ -45,7 +45,6 @@
 #if QT_CONFIG(menubar)
 #include <qmenubar.h>
 #endif
-#include <QtGui/QAction>
 #include <qstyle.h>
 #include <private/qwidget_p.h>
 
