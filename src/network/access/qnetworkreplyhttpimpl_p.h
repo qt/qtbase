@@ -98,7 +98,6 @@ public:
 
     Q_DECLARE_PRIVATE(QNetworkReplyHttpImpl)
     Q_PRIVATE_SLOT(d_func(), void _q_startOperation())
-    Q_PRIVATE_SLOT(d_func(), bool start(const QNetworkRequest &))
     Q_PRIVATE_SLOT(d_func(), void _q_cacheLoadReadyRead())
     Q_PRIVATE_SLOT(d_func(), void _q_bufferOutgoingData())
     Q_PRIVATE_SLOT(d_func(), void _q_bufferOutgoingDataFinished())
@@ -164,7 +163,6 @@ public:
     QNetworkReplyHttpImplPrivate();
     ~QNetworkReplyHttpImplPrivate();
 
-    bool start(const QNetworkRequest &newHttpRequest);
     void _q_startOperation();
 
     void _q_cacheLoadReadyRead();

@@ -1180,8 +1180,8 @@ void QNetworkReplyHttpImplPrivate::followRedirect()
     if (managerPrivate->thread)
         managerPrivate->thread->disconnect();
 
-    QMetaObject::invokeMethod(q, "start", Qt::QueuedConnection,
-                              Q_ARG(QNetworkRequest, redirectRequest));
+    QMetaObject::invokeMethod(
+            q, [this]() { postRequest(redirectRequest); }, Qt::QueuedConnection);
 }
 
 void QNetworkReplyHttpImplPrivate::checkForRedirect(const int statusCode)
@@ -1731,33 +1731,14 @@ void QNetworkReplyHttpImplPrivate::setResumeOffset(quint64 offset)
     resumeOffset = offset;
 }
 
-/*!
-    Starts the backend.  Returns \c true if the backend is started.  Returns \c false if the backend
-    could not be started due to an unopened or roaming session.  The caller should recall this
-    function once the session has been opened or the roaming process has finished.
-*/
-bool QNetworkReplyHttpImplPrivate::start(const QNetworkRequest &newHttpRequest)
-{
-    postRequest(newHttpRequest);
-    return true;
-}
-
 void QNetworkReplyHttpImplPrivate::_q_startOperation()
 {
-    Q_Q(QNetworkReplyHttpImpl);
     if (state == Working) // ensure this function is only being called once
         return;
 
     state = Working;
 
-    if (!start(request)) { // @todo next commit: cleanup, start now always returns true
-        qWarning("Backend start failed");
-        QMetaObject::invokeMethod(q, "_q_error", synchronous ? Qt::DirectConnection : Qt::QueuedConnection,
-            Q_ARG(QNetworkReply::NetworkError, QNetworkReply::UnknownNetworkError),
-            Q_ARG(QString, QCoreApplication::translate("QNetworkReply", "backend start error.")));
-        QMetaObject::invokeMethod(q, "_q_finished", synchronous ? Qt::DirectConnection : Qt::QueuedConnection);
-        return;
-    }
+    postRequest(request);
 
     setupTransferTimeout();
     if (synchronous) {
