@@ -41,11 +41,6 @@ qtConfig(datawidgetmapper) {
     SOURCES += itemviews/qdatawidgetmapper.cpp
 }
 
-qtConfig(dirmodel) {
-    HEADERS += itemviews/qdirmodel.h
-    SOURCES += itemviews/qdirmodel.cpp
-}
-
 qtConfig(listview) {
     HEADERS += \
         itemviews/qlistview.h \

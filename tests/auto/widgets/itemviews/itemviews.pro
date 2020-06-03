@@ -3,7 +3,6 @@ SUBDIRS=\
    qabstractitemview \
    qcolumnview \
    qdatawidgetmapper \
-   qdirmodel \
    qfileiconprovider \
    qheaderview \
    qitemdelegate \

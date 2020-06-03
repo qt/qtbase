@@ -35,7 +35,6 @@
 #include <qsharedpointer.h>
 #include <qfiledialog.h>
 #include <qabstractitemdelegate.h>
-#include <qdirmodel.h>
 #include <qitemdelegate.h>
 #include <qlistview.h>
 #include <qcombobox.h>

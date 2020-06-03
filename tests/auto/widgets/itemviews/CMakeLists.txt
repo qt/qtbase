@@ -2,7 +2,6 @@
 
 add_subdirectory(qabstractitemview)
 add_subdirectory(qdatawidgetmapper)
-add_subdirectory(qdirmodel)
 add_subdirectory(qfileiconprovider)
 add_subdirectory(qheaderview)
 add_subdirectory(qitemdelegate)

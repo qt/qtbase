@@ -493,8 +493,7 @@
             \li  QStandardItemModel
             \li  Stores arbitrary hierarchical items
         \row
-            \li  QFileSystemModel\br
-                QDirModel
+            \li  QFileSystemModel
             \li  Encapsulate the local file system
         \row
             \li  QSqlQueryModel
@@ -627,12 +626,6 @@
             \li
             \li  Book 1, Chapter 10, Figure 10.6
         \row
-            \li  Directory Viewer
-            \li  QTreeView
-            \li  QDirModel
-            \li
-            \li  Book 1, Chapter 10, Figure 10.7
-        \row
             \li  Color Names
             \li  QListView
             \li  QSortFilterProxyModel
@@ -666,14 +659,6 @@
             \li  Custom delegate providing a custom editor
             \li  Book 1, Chapter 10, Figure 10.15
 
-        \row
-            \li  Four directory views
-            \li  QListView
-                QTableView
-                QTreeView
-            \li  QDirModel
-            \li  Demonstrates the use of multiple views
-            \li  Book2, Chapter 8.2
         \row
             \li  Address Book
             \li  QListView

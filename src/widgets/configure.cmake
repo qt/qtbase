@@ -440,7 +440,7 @@ qt_feature("filedialog" PUBLIC
     SECTION "Dialogs"
     LABEL "QFileDialog"
     PURPOSE "Provides a dialog widget for selecting files or directories."
-    CONDITION ( QT_FEATURE_buttongroup ) AND ( QT_FEATURE_combobox ) AND ( QT_FEATURE_dialog ) AND ( QT_FEATURE_dialogbuttonbox ) AND ( QT_FEATURE_dirmodel ) AND ( QT_FEATURE_label ) AND ( QT_FEATURE_proxymodel ) AND ( QT_FEATURE_splitter ) AND ( QT_FEATURE_stackedwidget ) AND ( QT_FEATURE_treeview ) AND ( QT_FEATURE_toolbutton )
+    CONDITION ( QT_FEATURE_buttongroup ) AND ( QT_FEATURE_combobox ) AND ( QT_FEATURE_dialog ) AND ( QT_FEATURE_dialogbuttonbox ) AND ( QT_FEATURE_label ) AND ( QT_FEATURE_proxymodel ) AND ( QT_FEATURE_splitter ) AND ( QT_FEATURE_stackedwidget ) AND ( QT_FEATURE_treeview ) AND ( QT_FEATURE_toolbutton )
 )
 qt_feature_definition("filedialog" "QT_NO_FILEDIALOG" NEGATE VALUE "1")
 qt_feature("fontdialog" PUBLIC
@@ -478,13 +478,6 @@ qt_feature("wizard" PUBLIC
     CONDITION ( QT_FEATURE_dialog ) AND ( QT_FEATURE_pushbutton ) AND ( QT_FEATURE_properties ) AND ( QT_FEATURE_label )
 )
 qt_feature_definition("wizard" "QT_NO_WIZARD" NEGATE VALUE "1")
-qt_feature("dirmodel" PUBLIC
-    SECTION "ItemViews"
-    LABEL "QDirModel"
-    PURPOSE "Provides a data model for the local filesystem."
-    CONDITION QT_FEATURE_itemviews AND QT_FEATURE_filesystemmodel
-)
-qt_feature_definition("dirmodel" "QT_NO_DIRMODEL" NEGATE VALUE "1")
 qt_feature("listview" PUBLIC
     SECTION "ItemViews"
     LABEL "QListView"

@@ -83,16 +83,13 @@ private:
     Add new tests, they can be the same model, but in a different state.
 
     The name of the model is passed to createModel
-    If readOnly is true the remove tests will be skipped.  Example: QDirModel is disabled.
-    If createModel returns an empty model.  Example: QDirModel does not
+    If readOnly is true the remove tests will be skipped.  Example: QSqlQueryModel is disabled.
+    If createModel returns an empty model.
  */
 ModelsToTest::ModelsToTest()
 {
     setupDatabase();
 
-#if QT_CONFIG(dirmodel) && QT_DEPRECATED_SINCE(5, 15)
-    tests.append(test("QDirModel", ReadOnly, HasData));
-#endif
     tests.append(test("QStringListModel", ReadWrite, HasData));
     tests.append(test("QStringListModelEmpty", ReadWrite, Empty));
 
@@ -166,17 +163,6 @@ QAbstractItemModel *ModelsToTest::createModel(const QString &modelType)
         populateTestArea(model);
         return model;
     }
-
-#if QT_CONFIG(dirmodel) && QT_DEPRECATED_SINCE(5, 15)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    if (modelType == "QDirModel") {
-        QDirModel *model = new QDirModel();
-        model->setReadOnly(false);
-        return model;
-    }
-QT_WARNING_POP
-#endif
 
     if (modelType == "QSqlQueryModel") {
         QSqlQueryModel *model = new QSqlQueryModel();
@@ -294,25 +280,6 @@ QModelIndex ModelsToTest::populateTestArea(QAbstractItemModel *model)
         return returnIndex;
     }
 
-#if QT_CONFIG(dirmodel) && QT_DEPRECATED_SINCE(5, 15)
-    if (QDirModel *dirModel = qobject_cast<QDirModel *>(model)) {
-        m_dirModelTempDir.reset(new QTemporaryDir);
-        if (!m_dirModelTempDir->isValid())
-            qFatal("Cannot create temporary directory \"%s\": %s",
-                   qPrintable(QDir::toNativeSeparators(m_dirModelTempDir->path())),
-                   qPrintable(m_dirModelTempDir->errorString()));
-
-        QDir tempDir(m_dirModelTempDir->path());
-        for (int i = 0; i < 26; ++i) {
-            const QString subdir = QLatin1String("foo_") + QString::number(i);
-            if (!tempDir.mkdir(subdir))
-                qFatal("Cannot create directory %s",
-                       qPrintable(QDir::toNativeSeparators(tempDir.path() + QLatin1Char('/') +subdir)));
-        }
-        return dirModel->index(tempDir.path());
-    }
-#endif // QT_CONFIG(dirmodel) && QT_DEPRECATED_SINCE(5, 15)
-
     if (QSqlQueryModel *queryModel = qobject_cast<QSqlQueryModel *>(model)) {
         QSqlQuery q;
         q.exec("CREATE TABLE test(id int primary key, name varchar(30))");
@@ -370,10 +337,6 @@ void ModelsToTest::cleanupTestArea(QAbstractItemModel *model)
 {
     if (qobject_cast<QSqlQueryModel *>(model))
         QSqlQuery q("DROP TABLE test");
-#if QT_CONFIG(dirmodel) && QT_DEPRECATED_SINCE(5, 15)
-    if (qobject_cast<QDirModel *>(model))
-        m_dirModelTempDir.reset();
-#endif
 }
 
 void ModelsToTest::setupDatabase()

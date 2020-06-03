@@ -496,7 +496,6 @@
                 "features.combobox",
                 "features.dialog",
                 "features.dialogbuttonbox",
-                "features.dirmodel",
                 "features.label",
                 "features.proxymodel",
                 "features.splitter",
@@ -575,13 +574,6 @@
                 "features.properties",
                 "features.label"
             ],
-            "output": [ "publicFeature", "feature" ]
-        },
-        "dirmodel": {
-            "label": "QDirModel",
-            "purpose": "Provides a data model for the local filesystem.",
-            "section": "ItemViews",
-            "condition": "features.itemviews && features.filesystemmodel",
             "output": [ "publicFeature", "feature" ]
         },
         "listview": {

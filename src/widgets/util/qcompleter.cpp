@@ -148,9 +148,6 @@
 #if QT_CONFIG(stringlistmodel)
 #include "QtCore/qstringlistmodel.h"
 #endif
-#if QT_CONFIG(dirmodel)
-#include "QtWidgets/qdirmodel.h"
-#endif
 #if QT_CONFIG(filesystemmodel)
 #include "QtWidgets/qfilesystemmodel.h"
 #endif
@@ -473,12 +470,6 @@ QMatchData QCompletionEngine::filterHistory()
     if (curParts.count() <= 1 || c->proxy->showAll || !source)
         return QMatchData();
 
-#if QT_CONFIG(dirmodel) && QT_DEPRECATED_SINCE(5, 15)
-    const bool isDirModel = (qobject_cast<QDirModel *>(source) != nullptr);
-#else
-    const bool isDirModel = false;
-#endif
-    Q_UNUSED(isDirModel)
 #if QT_CONFIG(filesystemmodel)
     const bool isFsModel = (qobject_cast<QFileSystemModel *>(source) != nullptr);
 #else
@@ -493,7 +484,7 @@ QMatchData QCompletionEngine::filterHistory()
         QString str = source->index(i, c->column).data().toString();
         if (str.startsWith(c->prefix, c->cs)
 #if !defined(Q_OS_WIN)
-            && ((!isFsModel && !isDirModel) || QDir::toNativeSeparators(str) != QDir::separator())
+            && (!isFsModel || QDir::toNativeSeparators(str) != QDir::separator())
 #endif
             )
             m.indices.append(i);
@@ -903,13 +894,6 @@ void QCompleterPrivate::_q_complete(QModelIndex index, bool highlighted)
         QModelIndex si = proxy->mapToSource(index);
         si = si.sibling(si.row(), column); // for clicked()
         completion = q->pathFromIndex(si);
-#if QT_CONFIG(dirmodel) && QT_DEPRECATED_SINCE(5, 15)
-        // add a trailing separator in inline
-        if (mode == QCompleter::InlineCompletion) {
-            if (qobject_cast<QDirModel *>(proxy->sourceModel()) && QFileInfo(completion).isDir())
-                completion += QDir::separator();
-        }
-#endif
 #if QT_CONFIG(filesystemmodel)
         // add a trailing separator in inline
         if (mode == QCompleter::InlineCompletion) {
@@ -1125,15 +1109,6 @@ void QCompleter::setModel(QAbstractItemModel *model)
         setPopup(d->popup); // set the model and make new connections
     if (oldModel && oldModel->QObject::parent() == this)
         delete oldModel;
-#if QT_CONFIG(dirmodel) && QT_DEPRECATED_SINCE(5, 15)
-    if (qobject_cast<QDirModel *>(model)) {
-#if defined(Q_OS_WIN)
-        setCaseSensitivity(Qt::CaseInsensitive);
-#else
-        setCaseSensitivity(Qt::CaseSensitive);
-#endif
-    }
-#endif // QT_CONFIG(dirmodel)
 #if QT_CONFIG(filesystemmodel)
     QFileSystemModel *fsModel = qobject_cast<QFileSystemModel *>(model);
     if (fsModel) {
@@ -1844,26 +1819,19 @@ QString QCompleter::pathFromIndex(const QModelIndex& index) const
     QAbstractItemModel *sourceModel = d->proxy->sourceModel();
     if (!sourceModel)
         return QString();
-    bool isDirModel = false;
     bool isFsModel = false;
-#if QT_CONFIG(dirmodel) && QT_DEPRECATED_SINCE(5, 15)
-    isDirModel = qobject_cast<QDirModel *>(d->proxy->sourceModel()) != nullptr;
-#endif
 #if QT_CONFIG(filesystemmodel)
     isFsModel = qobject_cast<QFileSystemModel *>(d->proxy->sourceModel()) != nullptr;
 #endif
-    if (!isDirModel && !isFsModel)
+    if (!isFsModel)
         return sourceModel->data(index, d->role).toString();
 
     QModelIndex idx = index;
     QStringList list;
     do {
         QString t;
-        if (isDirModel)
-            t = sourceModel->data(idx, Qt::EditRole).toString();
 #if QT_CONFIG(filesystemmodel)
-        else
-            t = sourceModel->data(idx, QFileSystemModel::FileNameRole).toString();
+        t = sourceModel->data(idx, QFileSystemModel::FileNameRole).toString();
 #endif
         list.prepend(t);
         QModelIndex parent = idx.parent();
@@ -1893,20 +1861,13 @@ QString QCompleter::pathFromIndex(const QModelIndex& index) const
 */
 QStringList QCompleter::splitPath(const QString& path) const
 {
-    bool isDirModel = false;
     bool isFsModel = false;
-#if QT_CONFIG(dirmodel) && QT_DEPRECATED_SINCE(5, 15)
-    Q_D(const QCompleter);
-    isDirModel = qobject_cast<QDirModel *>(d->proxy->sourceModel()) != nullptr;
-#endif
 #if QT_CONFIG(filesystemmodel)
-#if !QT_CONFIG(dirmodel)
     Q_D(const QCompleter);
-#endif
     isFsModel = qobject_cast<QFileSystemModel *>(d->proxy->sourceModel()) != nullptr;
 #endif
 
-    if ((!isDirModel && !isFsModel) || path.isEmpty())
+    if (!isFsModel || path.isEmpty())
         return QStringList(completionPrefix());
 
     QString pathCopy = QDir::toNativeSeparators(path);

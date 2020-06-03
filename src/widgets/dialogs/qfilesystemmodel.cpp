@@ -122,10 +122,9 @@ QT_BEGIN_NAMESPACE
     is called.  This will prevent any unnecessary querying on the file system
     until that point such as listing the drives on Windows.
 
-    Unlike QDirModel, QFileSystemModel uses a separate thread to populate
-    itself so it will not cause the main thread to hang as the file system
-    is being queried.  Calls to rowCount() will return 0 until the model
-    populates a directory.
+    QFileSystemModel uses a separate thread to populate itself so it will not
+    cause the main thread to hang as the file system is being queried.
+    Calls to rowCount() will return 0 until the model populates a directory.
 
     QFileSystemModel keeps a cache with file information. The cache is
     automatically kept up to date using the QFileSystemWatcher.

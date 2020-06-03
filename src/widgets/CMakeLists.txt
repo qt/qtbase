@@ -719,11 +719,6 @@ qt_extend_target(Widgets CONDITION QT_FEATURE_datawidgetmapper
         itemviews/qdatawidgetmapper.cpp itemviews/qdatawidgetmapper.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_dirmodel
-    SOURCES
-        itemviews/qdirmodel.cpp itemviews/qdirmodel.h
-)
-
 qt_extend_target(Widgets CONDITION QT_FEATURE_listview
     SOURCES
         itemviews/qlistview.cpp itemviews/qlistview.h itemviews/qlistview_p.h

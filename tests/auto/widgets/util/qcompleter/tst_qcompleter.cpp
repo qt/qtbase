@@ -107,10 +107,6 @@ private slots:
     void csMatchingOnCiSortedModel_data();
     void csMatchingOnCiSortedModel();
 
-#if QT_CONFIG(dirmodel) && QT_DEPRECATED_SINCE(5, 15)
-    void directoryModel_data();
-    void directoryModel();
-#endif
     void fileSystemModel_data();
     void fileSystemModel();
 
@@ -153,7 +149,6 @@ private:
     enum ModelType {
         CASE_SENSITIVELY_SORTED_MODEL,
         CASE_INSENSITIVELY_SORTED_MODEL,
-        DIRECTORY_MODEL,
         HISTORY_MODEL,
         FILESYSTEM_MODEL
     };
@@ -224,16 +219,6 @@ void tst_QCompleter::setSourceModel(ModelType type)
         parent->setText(completionColumn, QLatin1String("p3,c3p3"));
         parent = new QTreeWidgetItem(treeWidget);
         parent->setText(completionColumn, QLatin1String("p2,c4p2"));
-        break;
-    case DIRECTORY_MODEL:
-#if QT_CONFIG(dirmodel) && QT_DEPRECATED_SINCE(5, 15)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-        completer->setCsvCompletion(false);
-        completer->setModel(new QDirModel(completer));
-        completer->setCompletionColumn(0);
-QT_WARNING_POP
-#endif // QT_CONFIG(dirmodel) && QT_DEPRECATED_SINCE(5, 15)
         break;
     case FILESYSTEM_MODEL:
         completer->setCsvCompletion(false);
@@ -596,58 +581,6 @@ void tst_QCompleter::csMatchingOnCiSortedModel()
 {
     filter();
 }
-
-#if QT_CONFIG(dirmodel) && QT_DEPRECATED_SINCE(5, 15)
-void tst_QCompleter::directoryModel_data()
-{
-    delete completer;
-
-    completer = new CsvCompleter;
-    completer->setModelSorting(QCompleter::CaseSensitivelySortedModel);
-    setSourceModel(DIRECTORY_MODEL);
-    completer->setCaseSensitivity(Qt::CaseInsensitive);
-
-    QTest::addColumn<QString>("filterText");
-    QTest::addColumn<QString>("step");
-    QTest::addColumn<QString>("completion");
-    QTest::addColumn<QString>("completionText");
-
-    // NOTE: Add tests carefully, ensurely the paths exist on all systems
-    // Output is the sourceText; currentCompletionText()
-
-    for (int i = 0; i < 2; i++) {
-        if (i == 1)
-            QTest::newRow("FILTERING_OFF") << "FILTERING_OFF" << "" << "" << "";
-
-#if defined(Q_OS_WIN)
-        QTest::newRow("()") << "C" << "" << "C:" << "C:";
-        QTest::newRow("()") << "C:\\Program" << "" << "Program Files" << "C:\\Program Files";
-#elif defined (Q_OS_MAC)
-        QTest::newRow("()") << "" << "" << "/" << "/";
-        QTest::newRow("(/a)") << "/a" << "" << "Applications" << "/Applications";
-        QTest::newRow("(/u)") << "/u" << "" << "Users" << "/Users";
-#elif defined(Q_OS_ANDROID)
-        QTest::newRow("()") << "" << "" << "/" << "/";
-        QTest::newRow("(/et)") << "/et" << "" << "etc" << "/etc";
-#else
-        QTest::newRow("()") << "" << "" << "/" << "/";
-#if !defined(Q_OS_AIX) && !defined(Q_OS_HPUX) && !defined(Q_OS_QNX)
-        QTest::newRow("(/h)") << "/h" << "" << "home" << "/home";
-#endif
-        QTest::newRow("(/et)") << "/et" << "" << "etc" << "/etc";
-        QTest::newRow("(/etc/passw)") << "/etc/passw" << "" << "passwd" << "/etc/passwd";
-#endif
-    }
-}
-
-void tst_QCompleter::directoryModel()
-{
-#ifdef Q_OS_WINRT
-    QSKIP("WinRT cannot access directories outside of the application's sandbox");
-#endif
-    filter();
-}
-#endif // QT_CONFIG(dirmodel) && QT_DEPRECATED_SINCE(5, 15)
 
 void tst_QCompleter::fileSystemModel_data()
 {
