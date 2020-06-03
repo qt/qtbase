@@ -898,6 +898,10 @@ void QSslSocket::close()
     qCDebug(lcSsl) << "QSslSocket::close()";
 #endif
     Q_D(QSslSocket);
+
+    // We don't want any CA roots fetched anymore.
+    d->caToFetch = QSslCertificate{};
+
     if (encryptedBytesToWrite() || !d->writeBuffer.isEmpty())
         flush();
     if (d->plainSocket)
@@ -947,6 +951,11 @@ void QSslSocket::abort()
 #ifdef QSSLSOCKET_DEBUG
     qCDebug(lcSsl) << "QSslSocket::abort()";
 #endif
+    // On Windows, CertGetCertificateChain is probably still doing its
+    // job, if the socket is re-used, we want to ignore its reported
+    // root CA.
+    d->caToFetch = QSslCertificate{};
+
     if (d->plainSocket)
         d->plainSocket->abort();
     close();
@@ -1768,6 +1777,9 @@ void QSslSocket::disconnectFromHost()
         d->pendingClose = true;
         return;
     }
+    // Make sure we don't process any signal from the CA fetcher
+    // (Windows):
+    d->caToFetch = QSslCertificate{};
 
     // Perhaps emit closing()
     if (d->state != ClosingState) {
@@ -1884,6 +1896,7 @@ void QSslSocketPrivate::init()
     configuration.peerCertificate.clear();
     configuration.peerCertificateChain.clear();
     fetchAuthorityInformation = false;
+    caToFetch = QSslCertificate{};
 }
 
 /*!

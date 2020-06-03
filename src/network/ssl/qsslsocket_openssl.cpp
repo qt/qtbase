@@ -1736,8 +1736,13 @@ void QSslSocketBackendPrivate::fetchCaRootForCert(const QSslCertificate &cert)
     if (fetchAuthorityInformation)
         customRoots = configuration.caCertificates;
 
+    //Remember we are fetching and what we are fetching:
+    caToFetch = cert;
+
     QWindowsCaRootFetcher *fetcher = new QWindowsCaRootFetcher(cert, mode, customRoots, q->peerVerifyName());
-    QObject::connect(fetcher, SIGNAL(finished(QSslCertificate,QSslCertificate)), q, SLOT(_q_caRootLoaded(QSslCertificate,QSslCertificate)), Qt::QueuedConnection);
+    QObjectPrivate::connect(fetcher,  &QWindowsCaRootFetcher::finished,
+                            this, &QSslSocketBackendPrivate::_q_caRootLoaded,
+                            Qt::QueuedConnection);
     QMetaObject::invokeMethod(fetcher, "start", Qt::QueuedConnection);
     pauseSocketNotifiers(q);
     paused = true;
@@ -1746,6 +1751,14 @@ void QSslSocketBackendPrivate::fetchCaRootForCert(const QSslCertificate &cert)
 //This is the callback from QWindowsCaRootFetcher, trustedRoot will be invalid (default constructed) if it failed.
 void QSslSocketBackendPrivate::_q_caRootLoaded(QSslCertificate cert, QSslCertificate trustedRoot)
 {
+    if (caToFetch != cert) {
+        //Ooops, something from the previous connection attempt, ignore!
+        return;
+    }
+
+    //Done, fetched already:
+    caToFetch = QSslCertificate{};
+
     if (fetchAuthorityInformation) {
         if (!configuration.caCertificates.contains(trustedRoot))
             trustedRoot = QSslCertificate{};

@@ -222,6 +222,7 @@ protected:
     QList<QOcspResponse> ocspResponses;
     bool handshakeInterrupted = false;
     bool fetchAuthorityInformation = false;
+    QSslCertificate caToFetch;
 };
 
 #if QT_CONFIG(securetransport) || QT_CONFIG(schannel)
