@@ -86,7 +86,7 @@ for(mod, MODULE_INCNAME) {
             MODULE$${sfwd}$${prv}_INCLUDES += $$mbibase/$$VERSION $$mbibase/$$VERSION/$$mod
     }
     prefix_build:module_frameworks {
-        mfbase = \$\$QT_MODULE_LIB_BASE/$${mod}.framework/Headers
+        mfbase = \$\$QT_MODULE_LIB_BASE/$${mod}$${QT_LIBINFIX}.framework/Headers
         MODULE_INCLUDES += $$mfbase
         MODULE$${prv}_INCLUDES += $$mfbase/$$VERSION $$mfbase/$$VERSION/$$mod
     }
