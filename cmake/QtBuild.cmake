@@ -3699,12 +3699,16 @@ function(qt_add_test name)
     endif()
 
     # Add a ${target}/check makefile target, to more easily test one test.
-    add_custom_target("${name}_check"
-        VERBATIM
-        COMMENT "Running ${CMAKE_CTEST_COMMAND} -V -R \"^${name}$\""
-        COMMAND "${CMAKE_CTEST_COMMAND}" -V -R "^${name}$"
-        )
-    add_dependencies("${name}_check" "${name}")
+    if(TEST "${name}")
+        add_custom_target("${name}_check"
+            VERBATIM
+            COMMENT "Running ${CMAKE_CTEST_COMMAND} -V -R \"^${name}$\""
+            COMMAND "${CMAKE_CTEST_COMMAND}" -V -R "^${name}$"
+            )
+        if(TARGET "${name}")
+            add_dependencies("${name}_check" "${name}")
+        endif()
+    endif()
 
     # Get path to <qt_relocatable_install_prefix>/bin, as well as CMAKE_INSTALL_PREFIX/bin, then
     # prepend them to the PATH environment variable.
