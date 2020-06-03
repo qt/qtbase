@@ -809,15 +809,28 @@ function(qt_generate_module_pri_file target)
         qt_path_join(pri_file_name "${target_path}" "qt_lib_${config_module_name}.pri")
         list(APPEND pri_files "${pri_file_name}")
 
+        if(is_fw)
+            set(framework_base_path "$$QT_MODULE_LIB_BASE/${module}.framework/Headers")
+            set(public_module_includes "${framework_base_path}")
+            set(public_module_frameworks "$$QT_MODULE_LIB_BASE")
+            set(private_module_includes "${framework_base_path}/${PROJECT_VERSION} ${framework_base_path}/${PROJECT_VERSION}/${module}")
+            set(module_name_in_pri "${module}")
+        else()
+            set(public_module_includes "$$QT_MODULE_INCLUDE_BASE $$QT_MODULE_INCLUDE_BASE/${module}")
+            set(public_module_frameworks "")
+            set(private_module_includes "$$QT_MODULE_INCLUDE_BASE/${module}/${PROJECT_VERSION} $$QT_MODULE_INCLUDE_BASE/${module}/${PROJECT_VERSION}/${module}")
+            set(module_name_in_pri "${module_versioned}")
+        endif()
+
         file(GENERATE
             OUTPUT "${pri_file_name}"
             CONTENT
         "QT.${config_module_name}.VERSION = ${PROJECT_VERSION}
 QT.${config_module_name}.name = ${module}
-QT.${config_module_name}.module = ${module_versioned}
+QT.${config_module_name}.module = ${module_name_in_pri}
 QT.${config_module_name}.libs = $$QT_MODULE_LIB_BASE
-QT.${config_module_name}.includes = $$QT_MODULE_INCLUDE_BASE $$QT_MODULE_INCLUDE_BASE/${module}
-QT.${config_module_name}.frameworks =
+QT.${config_module_name}.includes = ${public_module_includes}
+QT.${config_module_name}.frameworks = ${public_module_frameworks}
 QT.${config_module_name}.bins = $$QT_MODULE_BIN_BASE
 QT.${config_module_name}.plugin_types = ${module_plugin_types}
 QT.${config_module_name}.depends = ${public_module_dependencies}
@@ -855,7 +868,7 @@ QT_MODULES += ${config_module_name}
 QT.${config_module_name}_private.name = ${module}
 QT.${config_module_name}_private.module =
 QT.${config_module_name}_private.libs = $$QT_MODULE_LIB_BASE
-QT.${config_module_name}_private.includes = $$QT_MODULE_INCLUDE_BASE/${module}/${PROJECT_VERSION} $$QT_MODULE_INCLUDE_BASE/${module}/${PROJECT_VERSION}/${module}
+QT.${config_module_name}_private.includes = ${private_module_includes}
 QT.${config_module_name}_private.frameworks =
 QT.${config_module_name}_private.depends = ${private_module_dependencies}
 QT.${config_module_name}_private.uses =
@@ -2797,7 +2810,11 @@ function(qt_collect_libs target out_var)
                     endif()
                 endif()
             else()
-                qt_merge_libs(libs "${lib_target}")
+                set(final_lib_name_to_merge "${lib_target}")
+                if(lib_target MATCHES "/([^/]+).framework$")
+                    set(final_lib_name_to_merge "-framework ${CMAKE_MATCH_1}")
+                endif()
+                qt_merge_libs(libs "${final_lib_name_to_merge}")
             endif()
         endforeach()
         set_target_properties(qt_collect_libs_dict PROPERTIES INTERFACE_${target} "${libs}")
