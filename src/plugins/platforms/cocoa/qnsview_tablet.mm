@@ -41,20 +41,13 @@
 
 #ifndef QT_NO_TABLETEVENT
 
-#include "qpointingdevice.h"
+#include <QtGui/qpointingdevice.h>
+#include <QtCore/private/qflatmap_p.h>
 
 Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 
-struct QCocoaTabletDeviceData
-{
-    QInputDevice::DeviceType device;
-    QPointingDevice::PointerType pointerType;
-    uint capabilityMask;
-    qint64 uid;
-};
-
-typedef QHash<uint, QCocoaTabletDeviceData> QCocoaTabletDeviceDataHash;
-Q_GLOBAL_STATIC(QCocoaTabletDeviceDataHash, tabletDeviceDataHash)
+using QCocoaTabletDeviceMap = QFlatMap<qint64, const QPointingDevice*>;
+Q_GLOBAL_STATIC(QCocoaTabletDeviceMap, devicesInProximity)
 
 @implementation QNSView (Tablet)
 
@@ -75,14 +68,15 @@ Q_GLOBAL_STATIC(QCocoaTabletDeviceDataHash, tabletDeviceDataHash)
     QPointF screenPoint;
     [self convertFromScreen:[self screenMousePoint:theEvent] toWindowPoint: &windowPoint andScreenPoint: &screenPoint];
 
-    uint deviceId = [theEvent deviceID];
-    if (!tabletDeviceDataHash->contains(deviceId)) {
+    // We use devicesInProximity because deviceID is typically 0,
+    // so QInputDevicePrivate::fromId() won't work.
+    const auto *device = devicesInProximity->value(theEvent.deviceID);
+    if (!device) {
         // Error: Unknown tablet device. Qt also gets into this state
         // when running on a VM. This appears to be harmless; don't
         // print a warning.
         return false;
     }
-    const QCocoaTabletDeviceData &deviceData = tabletDeviceDataHash->value(deviceId);
 
     bool down = (eventType != NSEventTypeMouseMoved);
 
@@ -99,10 +93,10 @@ Q_GLOBAL_STATIC(QCocoaTabletDeviceDataHash, tabletDeviceDataHash)
     qreal tangentialPressure = 0;
     qreal rotation = 0;
     int z = 0;
-    if (deviceData.capabilityMask & 0x0200)
+    if (device->hasCapability(QInputDevice::Capability::ZPosition))
         z = [theEvent absoluteZ];
 
-    if (deviceData.capabilityMask & 0x0800)
+    if (device->hasCapability(QInputDevice::Capability::TangentialPressure))
         tangentialPressure = ([theEvent tangentialPressure] * 2.0) - 1.0;
 
     rotation = 360.0 - [theEvent rotation];
@@ -112,15 +106,8 @@ Q_GLOBAL_STATIC(QCocoaTabletDeviceDataHash, tabletDeviceDataHash)
     Qt::KeyboardModifiers keyboardModifiers = QAppleKeyMapper::fromCocoaModifiers(theEvent.modifierFlags);
     Qt::MouseButtons buttons = ignoreButtonMapping ? static_cast<Qt::MouseButtons>(static_cast<uint>([theEvent buttonMask])) : m_buttons;
 
-    qCDebug(lcQpaTablet, "event on tablet %d with tool %d type %d unique ID %lld pos %6.1f, %6.1f root pos %6.1f, %6.1f buttons 0x%x pressure %4.2lf tilt %d, %d rotation %6.2lf",
-        deviceId, deviceData.device, deviceData.pointerType, deviceData.uid,
-        windowPoint.x(), windowPoint.y(), screenPoint.x(), screenPoint.y(),
-        static_cast<uint>(buttons), pressure, xTilt, yTilt, rotation);
-
-    QWindowSystemInterface::handleTabletEvent(m_platformWindow->window(), timestamp, windowPoint, screenPoint,
-                                              int(deviceData.device), int(deviceData.pointerType), buttons, pressure, xTilt, yTilt,
-                                              tangentialPressure, rotation, z, deviceData.uid,
-                                              keyboardModifiers);
+    QWindowSystemInterface::handleTabletEvent(m_platformWindow->window(), timestamp, device, windowPoint, screenPoint,
+                                              buttons, pressure, xTilt, yTilt, tangentialPressure, rotation, z,  keyboardModifiers);
     return true;
 }
 
@@ -132,10 +119,17 @@ Q_GLOBAL_STATIC(QCocoaTabletDeviceDataHash, tabletDeviceDataHash)
     [self handleTabletEvent: theEvent];
 }
 
-static QInputDevice::DeviceType wacomTabletDevice(NSEvent *theEvent)
+/*!
+    \internal
+    Find the existing QPointingDevice instance representing a particular tablet or stylus;
+    or create and register a new instance if it was not found.
+
+    An instance can be uniquely identified by various properties taken from \a theEvent.
+*/
+static const QPointingDevice *tabletToolInstance(NSEvent *theEvent)
 {
-    qint64 uid = [theEvent uniqueID];
-    uint bits = [theEvent vendorPointingDeviceType];
+    qint64 uid = theEvent.uniqueID;
+    uint bits = theEvent.vendorPointingDeviceType;
     if (bits == 0 && uid != 0) {
         // Fallback. It seems that the driver doesn't always include all the information.
         // High-End Wacom devices store their "type" in the uper bits of the Unique ID.
@@ -143,33 +137,79 @@ static QInputDevice::DeviceType wacomTabletDevice(NSEvent *theEvent)
         bits = uid >> 32;
     }
 
-    QInputDevice::DeviceType device;
     // Defined in the "EN0056-NxtGenImpGuideX"
     // on Wacom's Developer Website (www.wacomeng.com)
-    if (((bits & 0x0006) == 0x0002) && ((bits & 0x0F06) != 0x0902)) {
+    static const quint32 CursorTypeBitMask = 0x0F06;
+    quint32 toolId = bits & CursorTypeBitMask;
+    QInputDevice::Capabilities caps = QInputDevice::Capability::Position |
+            QInputDevice::Capability::Pressure | QInputDevice::Capability::Hover;
+    QInputDevice::DeviceType device;
+    int buttonCount = 3; // the tip, plus two barrel buttons
+    if (((bits & 0x0006) == 0x0002) && (toolId != 0x0902)) {
         device = QInputDevice::DeviceType::Stylus;
     } else {
-        switch (bits & 0x0F06) {
-            case 0x0802:
-                device = QInputDevice::DeviceType::Stylus;
-                break;
-            case 0x0902:
-                device = QInputDevice::DeviceType::Airbrush;
-                break;
-            case 0x0004:
-                device = QInputDevice::DeviceType::Mouse; // TODO set capabilities
-                break;
-            case 0x0006:
-                device = QInputDevice::DeviceType::Puck;
-                break;
-            case 0x0804:
-                device = QInputDevice::DeviceType::Stylus; // TODO set capability rotation
-                break;
-            default:
-                device = QInputDevice::DeviceType::Unknown;
+        switch (toolId) {
+        // TODO same cases as in qxcbconnection_xi2.cpp? then we could share this function
+        case 0x0802:
+            device = QInputDevice::DeviceType::Stylus;
+            break;
+        case 0x0902:
+            device = QInputDevice::DeviceType::Airbrush;
+            caps.setFlag(QInputDevice::Capability::TangentialPressure);
+            buttonCount = 2;
+            break;
+        case 0x0004:
+            device = QInputDevice::DeviceType::Mouse;
+            caps.setFlag(QInputDevice::Capability::Scroll);
+            break;
+        case 0x0006:
+            device = QInputDevice::DeviceType::Puck;
+            break;
+        case 0x0804:
+            device = QInputDevice::DeviceType::Stylus; // Art Pen
+            caps.setFlag(QInputDevice::Capability::Rotation);
+            buttonCount = 1;
+            break;
+        default:
+            device = QInputDevice::DeviceType::Unknown;
         }
     }
-    return device;
+
+    uint capabilityMask = theEvent.capabilityMask;
+    if (capabilityMask & 0x0200)
+        caps.setFlag(QInputDevice::Capability::ZPosition);
+    if (capabilityMask & 0x0800)
+        Q_ASSERT(caps.testFlag(QInputDevice::Capability::TangentialPressure));
+
+    QPointingDevice::PointerType pointerType = QPointingDevice::PointerType::Unknown;
+    switch (theEvent.pointingDeviceType) {
+    case NSPointingDeviceTypeUnknown:
+    default:
+        break;
+    case NSPointingDeviceTypePen:
+        pointerType = QPointingDevice::PointerType::Pen;
+        break;
+    case NSPointingDeviceTypeCursor:
+        pointerType = QPointingDevice::PointerType::Cursor;
+        break;
+    case NSPointingDeviceTypeEraser:
+        pointerType = QPointingDevice::PointerType::Eraser;
+        break;
+    }
+
+    const auto uniqueID = QPointingDeviceUniqueId::fromNumericId(uid);
+    auto windowSystemId = theEvent.deviceID;
+    const QPointingDevice *ret = QPointingDevicePrivate::queryTabletDevice(device, pointerType, uniqueID, caps, windowSystemId);
+    if (!ret) {
+        // TODO get the device name? (first argument)
+        // TODO associate each stylus with a "master" device representing the tablet itself
+        ret = new QPointingDevice(QString(), windowSystemId, device, pointerType,
+                                  caps, 1, buttonCount, QString(), uniqueID, QCocoaIntegration::instance());
+        QWindowSystemInterface::registerInputDevice(ret);
+    }
+    QPointingDevicePrivate *devPriv = QPointingDevicePrivate::get(const_cast<QPointingDevice *>(ret));
+    devPriv->toolId = toolId;
+    return ret;
 }
 
 - (void)tabletProximity:(NSEvent *)theEvent
@@ -177,48 +217,16 @@ static QInputDevice::DeviceType wacomTabletDevice(NSEvent *theEvent)
     if ([self isTransparentForUserInput])
         return [super tabletProximity:theEvent];
 
-    ulong timestamp = [theEvent timestamp] * 1000;
-
-    QCocoaTabletDeviceData deviceData;
-    deviceData.uid = [theEvent uniqueID];
-    deviceData.capabilityMask = [theEvent capabilityMask];
-
-    switch ([theEvent pointingDeviceType]) {
-        case NSPointingDeviceTypeUnknown:
-        default:
-            deviceData.pointerType = QPointingDevice::PointerType::Unknown;
-            break;
-        case NSPointingDeviceTypePen:
-            deviceData.pointerType = QPointingDevice::PointerType::Pen;
-            break;
-        case NSPointingDeviceTypeCursor:
-            deviceData.pointerType = QPointingDevice::PointerType::Cursor;
-            break;
-        case NSPointingDeviceTypeEraser:
-            deviceData.pointerType = QPointingDevice::PointerType::Eraser;
-            break;
-    }
-
-    deviceData.device = wacomTabletDevice(theEvent);
-
-    // The deviceID is "unique" while in the proximity, it's a key that we can use for
-    // linking up QCocoaTabletDeviceData to an event (especially if there are two devices in action).
-    bool entering = [theEvent isEnteringProximity];
-    uint deviceId = [theEvent deviceID];
-    if (entering) {
-        tabletDeviceDataHash->insert(deviceId, deviceData);
-    } else {
-        tabletDeviceDataHash->remove(deviceId);
-    }
-
-    qCDebug(lcQpaTablet, "proximity change on tablet %d: current tool %d type %d unique ID %lld",
-        deviceId, deviceData.device, deviceData.pointerType, deviceData.uid);
-
-    if (entering) {
-        QWindowSystemInterface::handleTabletEnterProximityEvent(timestamp, int(deviceData.device), int(deviceData.pointerType), deviceData.uid);
-    } else {
-        QWindowSystemInterface::handleTabletLeaveProximityEvent(timestamp, int(deviceData.device), int(deviceData.pointerType), deviceData.uid);
-    }
+    const ulong timestamp = theEvent.timestamp * 1000;
+    const qint64 windowSystemId = theEvent.deviceID;
+    const QPointingDevice *device = tabletToolInstance(theEvent);
+    // TODO which window?
+    QWindowSystemInterface::handleTabletEnterLeaveProximityEvent(nullptr, timestamp, device, theEvent.isEnteringProximity);
+    // The windowSystemId starts at 0, but is "unique" while in proximity
+    if (theEvent.isEnteringProximity)
+        devicesInProximity->insert(windowSystemId, device);
+    else
+        devicesInProximity->remove(windowSystemId);
 }
 @end
 
