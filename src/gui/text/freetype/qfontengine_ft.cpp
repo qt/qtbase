@@ -1326,10 +1326,7 @@ void QFontEngineFT::doKerning(QGlyphLayout *g, QFontEngine::ShaperFlags flags) c
         }
     }
 
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    if (shouldUseDesignMetrics(flags) && !(fontDef.styleStrategy & QFont::ForceIntegerMetrics))
-QT_WARNING_POP
+    if (shouldUseDesignMetrics(flags))
         flags |= DesignMetrics;
     else
         flags &= ~DesignMetrics;
@@ -1662,14 +1659,6 @@ void QFontEngineFT::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::ShaperFlag
     }
     if (face)
         unlockFace();
-
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    if (fontDef.styleStrategy & QFont::ForceIntegerMetrics) {
-QT_WARNING_POP
-        for (int i = 0; i < glyphs->numGlyphs; ++i)
-            glyphs->advances[i] = glyphs->advances[i].round();
-    }
 }
 
 glyph_metrics_t QFontEngineFT::boundingBox(const QGlyphLayout &glyphs)
@@ -1749,11 +1738,6 @@ glyph_metrics_t QFontEngineFT::boundingBox(glyph_t glyph)
         overall.width = g->width;
         overall.height = g->height;
         overall.xoff = g->advance;
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-        if (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
-QT_WARNING_POP
-            overall.xoff = overall.xoff.round();
         if (!cacheEnabled && g != &emptyGlyph)
             delete g;
     } else {

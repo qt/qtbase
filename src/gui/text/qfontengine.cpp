@@ -495,7 +495,7 @@ QFixed QFontEngine::leading() const
     if (!m_heightMetricsQueried)
         initializeHeightMetrics();
 
-    return (fontDef.styleStrategy & QFont::ForceIntegerMetrics) ? m_leading.round() : m_leading;
+    return m_leading;
 }
 
 QFixed QFontEngine::ascent() const
@@ -503,7 +503,7 @@ QFixed QFontEngine::ascent() const
     if (!m_heightMetricsQueried)
         initializeHeightMetrics();
 
-    return (fontDef.styleStrategy & QFont::ForceIntegerMetrics) ? m_ascent.round() : m_ascent;
+    return m_ascent;
 }
 
 QFixed QFontEngine::descent() const
@@ -511,7 +511,7 @@ QFixed QFontEngine::descent() const
     if (!m_heightMetricsQueried)
         initializeHeightMetrics();
 
-    return (fontDef.styleStrategy & QFont::ForceIntegerMetrics) ? m_descent.round() : m_descent;
+    return m_descent;
 }
 
 qreal QFontEngine::minLeftBearing() const
@@ -1483,13 +1483,13 @@ bool QFontEngine::hasUnreliableGlyphOutline() const
     return glyphFormat == QFontEngine::Format_ARGB;
 }
 
-QFixed QFontEngine::lastRightBearing(const QGlyphLayout &glyphs, bool round)
+QFixed QFontEngine::lastRightBearing(const QGlyphLayout &glyphs)
 {
     if (glyphs.numGlyphs >= 1) {
         glyph_t glyph = glyphs.glyphs[glyphs.numGlyphs - 1];
         glyph_metrics_t gi = boundingBox(glyph);
         if (gi.isValid())
-            return round ? qRound(gi.rightBearing()) : gi.rightBearing();
+            return gi.rightBearing();
     }
     return 0;
 }

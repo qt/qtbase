@@ -597,7 +597,6 @@
     \value TextJustificationForced Ensures that text lines are justified.
 
     \omitvalue TextLongestVariant
-    \omitvalue TextBypassShaping
     \omitvalue TextForceLeftToRight
     \omitvalue TextForceRightToLeft
 

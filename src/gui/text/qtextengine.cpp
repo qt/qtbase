@@ -1736,10 +1736,7 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si,
                 g.glyphs[i] |= (engineIdx << 24);
         }
 
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-        if (!actualFontEngine->supportsSubPixelPositions() || (actualFontEngine->fontDef.styleStrategy & QFont::ForceIntegerMetrics)) {
-QT_WARNING_POP
+        if (!actualFontEngine->supportsSubPixelPositions()) {
             for (uint i = 0; i < num_glyphs; ++i)
                 g.advances[i] = g.advances[i].round();
         }

@@ -364,7 +364,7 @@ public:
 protected:
     explicit QFontEngine(Type type);
 
-    QFixed lastRightBearing(const QGlyphLayout &glyphs, bool round = false);
+    QFixed lastRightBearing(const QGlyphLayout &glyphs);
 
     inline void setUserData(const QVariant &userData) { m_userData = userData; }
     QFixed calculatedCapHeight() const;

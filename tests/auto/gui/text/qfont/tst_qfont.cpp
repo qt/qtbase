@@ -109,8 +109,6 @@ void tst_QFont::getSetCheck()
     QCOMPARE(QFont::StyleStrategy(QFont::PreferAntialias), obj1.styleStrategy());
     obj1.setStyleStrategy(QFont::StyleStrategy(QFont::NoAntialias));
     QCOMPARE(QFont::StyleStrategy(QFont::NoAntialias), obj1.styleStrategy());
-    obj1.setStyleStrategy(QFont::StyleStrategy(QFont::OpenGLCompatible));
-    QCOMPARE(QFont::StyleStrategy(QFont::OpenGLCompatible), obj1.styleStrategy());
 }
 
 void tst_QFont::exactMatch()

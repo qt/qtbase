@@ -1355,8 +1355,6 @@ QFont::StyleHint QFont::styleHint() const
     \value NoAntialias don't antialias the fonts.
     \value NoSubpixelAntialias avoid subpixel antialiasing on the fonts if possible.
     \value PreferAntialias antialias if possible.
-    \value OpenGLCompatible This style strategy has been deprecated. All fonts are
-           OpenGL-compatible by default.
     \value NoFontMerging If the font selected for a certain writing system
            does not contain a character requested to draw, then Qt automatically chooses a similar
            looking font that contains the character. The NoFontMerging flag disables this feature.
@@ -1375,8 +1373,6 @@ QFont::StyleHint QFont::styleHint() const
     \value PreferQuality prefer the best quality font. The font matcher
            will use the nearest standard point size that the font
            supports.
-    \value ForceIntegerMetrics This style strategy has been deprecated. Use \l QFontMetrics to
-           retrieve rounded font metrics.
 */
 
 /*!
