@@ -198,18 +198,13 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     t << "CXXFLAGS      = " << var("QMAKE_CXXFLAGS") << " $(DEFINES)\n";
     t << "INCPATH       =";
     {
-        QString isystem = var("QMAKE_CFLAGS_ISYSTEM");
         const ProStringList &incs = project->values("INCLUDEPATH");
         for(int i = 0; i < incs.size(); ++i) {
             const ProString &inc = incs.at(i);
             if (inc.isEmpty())
                 continue;
 
-            if (!isystem.isEmpty() && isSystemInclude(inc.toQString()))
-                t << ' ' << isystem << ' ';
-            else
-                t << " -I";
-            t << escapeFilePath(inc);
+            t << " -I" << escapeFilePath(inc);
         }
     }
     if(!project->isEmpty("QMAKE_FRAMEWORKPATH_FLAGS"))
@@ -1393,8 +1388,7 @@ void UnixMakefileGenerator::init2()
     }
 
     if (include_deps && project->isActiveConfig("gcc_MD_depends")) {
-        // use -MMD if we know about -isystem too
-        ProString MD_flag(project->values("QMAKE_CFLAGS_ISYSTEM").isEmpty() ? "-MD" : "-MMD");
+        ProString MD_flag("-MD");
         project->values("QMAKE_CFLAGS") += MD_flag;
         project->values("QMAKE_CXXFLAGS") += MD_flag;
     }
