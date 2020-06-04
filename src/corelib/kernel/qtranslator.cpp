@@ -911,7 +911,7 @@ static QString getMessage(const uchar *m, const uchar *end, const char *context,
             goto end;
         case Tag_Translation: {
             int len = read32(m);
-            if (len % 1)
+            if (len & 1)
                 return QString();
             m += 4;
             if (!numerus--) {
