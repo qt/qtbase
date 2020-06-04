@@ -53,8 +53,7 @@ QT_BEGIN_NAMESPACE
 #define Q_TRANSPARENT 0x00ffffff
 
 // avoid going through QImage::scanLine() which calls detach
-#define FAST_SCAN_LINE(bits, bpl, y) (bits + (y) * bpl)
-
+#define FAST_SCAN_LINE(bits, bpl, y) (bits + qptrdiff(y) * bpl)
 
 /*
   Incremental image decoder for GIF image format.
@@ -491,6 +490,10 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
             break;
           case ImageDataBlock:
             count++;
+            if (bitcount < 0 || bitcount > 31) {
+                state = Error;
+                return -1;
+            }
             accum|=(ch<<bitcount);
             bitcount+=8;
             while (bitcount>=code_size && state==ImageDataBlock) {
