@@ -53,6 +53,7 @@
 #include <QtCore/qstringliteral.h>
 #include <QtCore/qstringalgorithms.h>
 #include <QtCore/qstringview.h>
+#include <QtCore/qstringtokenizer.h>
 
 #include <string>
 #include <iterator>
