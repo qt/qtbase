@@ -1290,3 +1290,19 @@ endif()
 function(qt_disable_utf8_sources target)
     set_target_properties("${target}" PROPERTIES QT_NO_UTF8_SOURCE TRUE)
 endfunction()
+
+function(_qt_internal_apply_strict_cpp target)
+    # Disable C, Obj-C and C++ GNU extensions aka no "-std=gnu++11".
+    # Similar to mkspecs/features/default_post.prf's CONFIG += strict_cpp.
+    # Allow opt-out via variable.
+    if(NOT QT_ENABLE_CXX_EXTENSIONS)
+        get_target_property(target_type "${target}" TYPE)
+        if(NOT target_type STREQUAL "INTERFACE_LIBRARY")
+            set_target_properties("${target}" PROPERTIES
+                CXX_EXTENSIONS OFF
+                C_EXTENSIONS OFF
+                OBJC_EXTENSIONS OFF
+                OBJCXX_EXTENSIONS OFF)
+        endif()
+    endif()
+endfunction()

@@ -2686,6 +2686,7 @@ function(qt_add_module target)
     endif()
     qt_internal_add_target_aliases("${target}")
     qt_skip_warnings_are_errors_when_repo_unclean("${target}")
+    _qt_internal_apply_strict_cpp("${target}")
 
     # Add _private target to link against the private headers:
     if(NOT ${arg_NO_PRIVATE_MODULE})
@@ -3764,6 +3765,7 @@ function(qt_internal_add_plugin target)
     endif()
     qt_internal_add_target_aliases("${target}")
     qt_skip_warnings_are_errors_when_repo_unclean("${target}")
+    _qt_internal_apply_strict_cpp("${target}")
 
     # Disable linking of plugins against other plugins during static regular and
     # super builds. The latter causes cyclic dependencies otherwise.
@@ -4654,6 +4656,7 @@ function(qt_add_3rdparty_library target)
 
     qt_internal_add_qt_repo_known_module(${target})
     qt_internal_add_target_aliases(${target})
+    _qt_internal_apply_strict_cpp(${target})
 
     if (ANDROID)
         qt_android_apply_arch_suffix("${target}")
@@ -4970,6 +4973,7 @@ function(qt_add_tool target_name)
         TARGET_COPYRIGHT "${arg_TARGET_COPYRIGHT}"
     )
     qt_internal_add_target_aliases("${target_name}")
+    _qt_internal_apply_strict_cpp("${target_name}")
 
     if (NOT target_name STREQUAL name)
         set_target_properties(${target_name} PROPERTIES

@@ -38,6 +38,7 @@ function(qt_internal_add_app target)
         TARGET_COPYRIGHT "${arg_TARGET_COPYRIGHT}"
     )
     qt_internal_add_target_aliases("${target}")
+    _qt_internal_apply_strict_cpp("${target}")
 
     # To mimic the default behaviors of qt_app.prf, we by default enable GUI Windows applications,
     # but don't enable macOS bundles.
