@@ -209,8 +209,7 @@ char *qstrncpy(char *dst, const char *src, uint len)
     Special case 2: Returns an arbitrary non-zero value if \a str1 is
     \nullptr or \a str2 is \nullptr (but not both).
 
-    \sa qstrncmp(), qstricmp(), qstrnicmp(), {8-bit Character Comparisons},
-        QByteArray::compare()
+    \sa qstrncmp(), qstricmp(), qstrnicmp(), {Character Case}, QByteArray::compare()
 */
 int qstrcmp(const char *str1, const char *str2)
 {
@@ -235,8 +234,7 @@ int qstrcmp(const char *str1, const char *str2)
     Special case 2: Returns a random non-zero value if \a str1 is \nullptr
     or \a str2 is \nullptr (but not both).
 
-    \sa qstrcmp(), qstricmp(), qstrnicmp(), {8-bit Character Comparisons},
-        QByteArray::compare()
+    \sa qstrcmp(), qstricmp(), qstrnicmp(), {Character Case}, QByteArray::compare()
 */
 
 /*! \relates QByteArray
@@ -255,8 +253,7 @@ int qstrcmp(const char *str1, const char *str2)
     Special case 2: Returns a random non-zero value if \a str1 is \nullptr
     or \a str2 is \nullptr (but not both).
 
-    \sa qstrcmp(), qstrncmp(), qstrnicmp(), {8-bit Character Comparisons},
-        QByteArray::compare()
+    \sa qstrcmp(), qstrncmp(), qstrnicmp(), {Character Case}, QByteArray::compare()
 */
 
 int qstricmp(const char *str1, const char *str2)
@@ -346,8 +343,7 @@ int qstricmp(const char *str1, const char *str2)
     Special case 2: Returns a random non-zero value if \a str1 is \nullptr
     or \a str2 is \nullptr (but not both).
 
-    \sa qstrcmp(), qstrncmp(), qstricmp(), {8-bit Character Comparisons},
-        QByteArray::compare()
+    \sa qstrcmp(), qstrncmp(), qstricmp(), {Character Case}, QByteArray::compare()
 */
 
 int qstrnicmp(const char *str1, const char *str2, uint len)
@@ -3016,7 +3012,7 @@ QByteArray QByteArray::mid(int pos, int len) const
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 30
 
-    \sa isLower(), toUpper(), {8-bit Character Comparisons}
+    \sa isLower(), toUpper(), {Character Case}
 */
 
 // prevent the compiler from inlining the function in each of
@@ -3069,7 +3065,7 @@ QByteArray QByteArray::toLower_helper(QByteArray &a)
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 31
 
-    \sa isUpper(), toLower(), {8-bit Character Comparisons}
+    \sa isUpper(), toLower(), {Character Case}
 */
 
 QByteArray QByteArray::toUpper_helper(const QByteArray &a)
