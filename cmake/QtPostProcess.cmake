@@ -423,6 +423,16 @@ endif()\n")
                 "set(QT_EXTRA_RPATHS \"${QT_EXTRA_RPATHS}\" CACHE STRING \"\")\n")
         endif()
 
+        # The OpenSSL root dir needs to be saved so that repos other than qtbase (like qtopcua) can
+        # still successfully find_package(WrapOpenSSL) in the CI.
+        # qmake saves any additional include paths passed via the configure like '-I/foo'
+        # in mkspecs/qmodule.pri, so this file is the closest equivalent.
+        if(DEFINED OPENSSL_ROOT_DIR)
+            file(TO_CMAKE_PATH "${OPENSSL_ROOT_DIR}" openssl_root_cmake_path)
+            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
+                   "set(OPENSSL_ROOT_DIR \"${openssl_root_cmake_path}\" CACHE STRING \"\")\n")
+        endif()
+
         qt_generate_install_prefixes(install_prefix_content)
 
         string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS "${install_prefix_content}")
