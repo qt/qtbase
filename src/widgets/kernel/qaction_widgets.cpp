@@ -75,10 +75,12 @@ void QtWidgetsActionPrivate::destroy()
     }
 }
 
+#if QT_CONFIG(shortcut)
 QShortcutMap::ContextMatcher QtWidgetsActionPrivate::contextMatcher() const
 {
     return qWidgetShortcutContextMatcher;
 }
+#endif
 
 #if QT_CONFIG(menu)
 QObject *QtWidgetsActionPrivate::menu() const

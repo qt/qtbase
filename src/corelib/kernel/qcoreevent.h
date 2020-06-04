@@ -323,7 +323,9 @@ private:
     friend class QCoreApplicationPrivate;
     friend class QThreadData;
     friend class QApplication;
+#if QT_CONFIG(shortcut)
     friend class QShortcutMap;
+#endif
     friend class QGraphicsView;
     friend class QGraphicsScene;
     friend class QGraphicsScenePrivate;
