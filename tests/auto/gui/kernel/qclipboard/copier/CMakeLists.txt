@@ -5,14 +5,11 @@
 #####################################################################
 
 # special case begin
-set(win32_args)
-if (WIN32)
-    set(win32_args OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
-endif()
+set(args OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
 # special case end
 
-add_qt_executable(copier
-    ${win32_args} # special case
+qt_add_executable(copier
+    ${args} # special case
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

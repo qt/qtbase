@@ -4,7 +4,7 @@
 ## paster Binary:
 #####################################################################
 
-add_qt_executable(paster
+qt_add_executable(paster
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES
