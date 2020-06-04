@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -74,10 +74,6 @@ private slots:
     void qstrnlen();
     void qstrcpy();
     void qstrncpy();
-    void qstricmp_data();
-    void qstricmp();
-    void qstricmp_singularities();
-    void qstrnicmp_singularities();
     void chop_data();
     void chop();
     void prepend();
@@ -122,6 +118,9 @@ private slots:
     void toPercentEncoding2_data();
     void toPercentEncoding2();
 
+    void qstrcmp_data();
+    void qstrcmp();
+    void compare_singular();
     void compare_data();
     void compare();
     void compareCharStar_data();
@@ -913,80 +912,6 @@ void tst_QByteArray::qstrncpy()
     dst.resize(128*1024);
     QCOMPARE(QByteArray(::qstrncpy(dst.data(), src.data(), dst.size())),
             QByteArray("Tumdelidum"));
-}
-
-void tst_QByteArray::qstricmp_data()
-{
-    QTest::addColumn<QString>("str1");
-    QTest::addColumn<QString>("str2");
-
-    QTest::newRow("equal   1") << "abcEdb"  << "abcEdb";
-    QTest::newRow("equal   2") << "abcEdb"  << "ABCeDB";
-    QTest::newRow("equal   3") << "ABCEDB"  << "abcedb";
-    QTest::newRow("less    1") << "abcdef"  << "abcdefg";
-    QTest::newRow("less    2") << "abcdeF"  << "abcdef";
-    QTest::newRow("greater 1") << "abcdef"  << "abcdeF";
-    QTest::newRow("greater 2") << "abcdefg" << "abcdef";
-}
-
-void tst_QByteArray::qstricmp()
-{
-    QFETCH(QString, str1);
-    QFETCH(QString, str2);
-
-    int expected = strcmp(str1.toUpper().toUtf8(),
-                          str2.toUpper().toUtf8());
-    if ( expected != 0 ) {
-        expected = (expected < 0 ? -1 : 1);
-    }
-    int actual = ::qstricmp(str1.toUtf8(), str2.toUtf8());
-    if ( actual != 0 ) {
-        actual = (actual < 0 ? -1 : 1);
-    }
-    QCOMPARE(actual, expected);
-
-    actual = ::qstricmp("012345679abcd" + str1.toUtf8(), "012345679AbCd" + str2.toUtf8());
-    if ( actual != 0 ) {
-        actual = (actual < 0 ? -1 : 1);
-    }
-    QCOMPARE(actual, expected);
-
-    actual = str1.toUtf8().compare(str2.toUtf8(), Qt::CaseInsensitive);
-    if ( actual != 0 ) {
-        actual = (actual < 0 ? -1 : 1);
-    }
-    QCOMPARE(actual, expected);
-
-    actual = str1.toUtf8().compare(str2.toUtf8().constData(), Qt::CaseInsensitive);
-    if ( actual != 0 ) {
-        actual = (actual < 0 ? -1 : 1);
-    }
-    QCOMPARE(actual, expected);
-}
-
-void tst_QByteArray::qstricmp_singularities()
-{
-    QCOMPARE(::qstricmp(0, 0), 0);
-    QVERIFY(::qstricmp(0, "a") < 0);
-    QVERIFY(::qstricmp("a", 0) > 0);
-    QCOMPARE(::qstricmp("", ""), 0);
-    QCOMPARE(QByteArray().compare(nullptr, Qt::CaseInsensitive), 0);
-    QCOMPARE(QByteArray().compare("", Qt::CaseInsensitive), 0);
-    QVERIFY(QByteArray("a").compare(nullptr, Qt::CaseInsensitive) > 0);
-    QVERIFY(QByteArray("a").compare("", Qt::CaseInsensitive) > 0);
-    QVERIFY(QByteArray().compare("a", Qt::CaseInsensitive) < 0);
-}
-
-void tst_QByteArray::qstrnicmp_singularities()
-{
-    QCOMPARE(::qstrnicmp(0, 0, 123), 0);
-    QVERIFY(::qstrnicmp(0, "a", 123) != 0);
-    QVERIFY(::qstrnicmp("a", 0, 123) != 0);
-    QCOMPARE(::qstrnicmp("", "", 123), 0);
-    QCOMPARE(::qstrnicmp("a", "B", 0), 0);
-    QCOMPARE(QByteArray().compare(QByteArray(), Qt::CaseInsensitive), 0);
-    QVERIFY(QByteArray().compare(QByteArray("a"), Qt::CaseInsensitive) < 0);
-    QVERIFY(QByteArray("a").compare(QByteArray(), Qt::CaseInsensitive) > 0);
 }
 
 void tst_QByteArray::chop_data()
@@ -1865,6 +1790,83 @@ void tst_QByteArray::toPercentEncoding2()
     QByteArray encodedData = original.toPercentEncoding(excludeInEncoding, includeInEncoding);
     QCOMPARE(encodedData.constData(), encoded.constData());
     QCOMPARE(original, QByteArray::fromPercentEncoding(encodedData));
+}
+
+struct StringComparisonData
+{
+    const char *const left;
+    const char *const right;
+    const unsigned int clip;
+    const int cmp, icmp, ncmp, nicmp;
+    static int sign(int val) { return val < 0 ? -1 : val > 0 ? +1 : 0; }
+};
+Q_DECLARE_METATYPE(StringComparisonData);
+
+void tst_QByteArray::qstrcmp_data()
+{
+    QTest::addColumn<StringComparisonData>("data");
+
+    QTest::newRow("equal")
+        << StringComparisonData{"abcEdb", "abcEdb", 3, 0, 0, 0, 0};
+    QTest::newRow("upper")
+        << StringComparisonData{"ABCedb", "ABCEDB", 3, 1, 0, 0, 0};
+    QTest::newRow("lower")
+        << StringComparisonData{"ABCEDB", "abcedb", 3, -1, 0, -1, 0};
+    QTest::newRow("upper-late")
+        << StringComparisonData{"abcEdb", "abcEDB", 3, 1, 0, 0, 0};
+    QTest::newRow("lower-late")
+        << StringComparisonData{"ABCEDB", "ABCedb", 3, -1, 0, 0, 0};
+    QTest::newRow("longer")
+        << StringComparisonData{"abcdef", "abcdefg", 6, -1, -1, 0, 0};
+    QTest::newRow("long-up")
+        << StringComparisonData{"abcdef", "abcdeFg", 6, 1, -1, 1, 0};
+    QTest::newRow("long-down")
+        << StringComparisonData{"abcdeF", "abcdefg", 6, -1, -1, -1, 0};
+    QTest::newRow("shorter")
+        << StringComparisonData{"abcdefg", "abcdef", 6, 1, 1, 0, 0};
+    QTest::newRow("short-up")
+        << StringComparisonData{"abcdefg", "abcdeF", 6, 1, 1, 1, 0};
+    QTest::newRow("short-down")
+        << StringComparisonData{"abcdeFg", "abcdef", 6, -1, 1, -1, 0};
+    QTest::newRow("zero-length")
+        << StringComparisonData{"abcdefg", "T", 0, 1, -1, 0, 0};
+    QTest::newRow("null-null")
+        << StringComparisonData{nullptr, nullptr, 6, 0, 0, 0, 0};
+    QTest::newRow("null-empty")
+        << StringComparisonData{nullptr, "", 0, -1, -1, -1, -1};
+    QTest::newRow("empty-null")
+        << StringComparisonData{"", nullptr, 0, 1, 1, 1, 1};
+    QTest::newRow("empty-empty")
+        << StringComparisonData{"", "", 0, 0, 0, 0, 0};
+    QTest::newRow("null-some")
+        << StringComparisonData{nullptr, "some", 0, -1, -1, -1, -1};
+    QTest::newRow("some-null")
+        << StringComparisonData{"some", nullptr, 0, 1, 1, 1, 1};
+    QTest::newRow("empty-some")
+        << StringComparisonData{"", "some", 0, -1, -1, 0, 0};
+    QTest::newRow("some-empty")
+        << StringComparisonData{"some", "", 0, 1, 1, 0, 0};
+}
+
+void tst_QByteArray::qstrcmp()
+{
+    QFETCH(StringComparisonData, data);
+    QCOMPARE(data.sign(::qstrcmp(data.left, data.right)), data.cmp);
+    QCOMPARE(data.sign(::qstricmp(data.left, data.right)), data.icmp);
+    QCOMPARE(data.sign(::qstrncmp(data.left, data.right, data.clip)), data.ncmp);
+    QCOMPARE(data.sign(::qstrnicmp(data.left, data.right, data.clip)), data.nicmp);
+}
+
+void tst_QByteArray::compare_singular()
+{
+    QCOMPARE(QByteArray().compare(nullptr, Qt::CaseInsensitive), 0);
+    QCOMPARE(QByteArray().compare("", Qt::CaseInsensitive), 0);
+    QVERIFY(QByteArray("a").compare(nullptr, Qt::CaseInsensitive) > 0);
+    QVERIFY(QByteArray("a").compare("", Qt::CaseInsensitive) > 0);
+    QVERIFY(QByteArray().compare("a", Qt::CaseInsensitive) < 0);
+    QCOMPARE(QByteArray().compare(QByteArray(), Qt::CaseInsensitive), 0);
+    QVERIFY(QByteArray().compare(QByteArray("a"), Qt::CaseInsensitive) < 0);
+    QVERIFY(QByteArray("a").compare(QByteArray(), Qt::CaseInsensitive) > 0);
 }
 
 void tst_QByteArray::compare_data()
