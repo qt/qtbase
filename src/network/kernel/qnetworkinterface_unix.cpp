@@ -45,6 +45,8 @@
 #include "qnetworkinterface_unix_p.h"
 #include "qalgorithms.h"
 
+#include <QtCore/private/qduplicatetracker_p.h>
+
 #ifndef QT_NO_NETWORKINTERFACE
 
 #if defined(QT_NO_CLOCK_MONOTONIC)
@@ -344,8 +346,8 @@ static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
 {
     Q_UNUSED(getMtu)
     QList<QNetworkInterfacePrivate *> interfaces;
-    QSet<QString> seenInterfaces;
-    QVarLengthArray<int, 16> seenIndexes;   // faster than QSet<int>
+    QDuplicateTracker<QString> seenInterfaces;
+    QDuplicateTracker<int> seenIndexes;
 
     // On Linux, glibc, uClibc and MUSL obtain the address listing via two
     // netlink calls: first an RTM_GETLINK to obtain the interface listing,
@@ -364,9 +366,9 @@ static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
             iface->flags = convertFlags(ptr->ifa_flags);
             iface->hardwareAddress = iface->makeHwAddress(sll->sll_halen, (uchar*)sll->sll_addr);
 
-            Q_ASSERT(!seenIndexes.contains(iface->index));
-            seenIndexes.append(iface->index);
-            seenInterfaces.insert(iface->name);
+            const bool sawIfaceIndex = seenIndexes.hasSeen(iface->index);
+            Q_ASSERT(!sawIfaceIndex);
+            (void)seenInterfaces.hasSeen(iface->name);
         }
     }
 
@@ -376,15 +378,12 @@ static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
     for (ifaddrs *ptr = rawList; ptr; ptr = ptr->ifa_next) {
         if (!ptr->ifa_addr || ptr->ifa_addr->sa_family != AF_PACKET) {
             QString name = QString::fromLatin1(ptr->ifa_name);
-            if (seenInterfaces.contains(name))
+            if (seenInterfaces.hasSeen(name))
                 continue;
 
             int ifindex = if_nametoindex(ptr->ifa_name);
-            if (seenIndexes.contains(ifindex))
+            if (seenIndexes.hasSeen(ifindex))
                 continue;
-
-            seenInterfaces.insert(name);
-            seenIndexes.append(ifindex);
 
             QNetworkInterfacePrivate *iface = new QNetworkInterfacePrivate;
             interfaces << iface;
