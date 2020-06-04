@@ -202,7 +202,7 @@ namespace QtAndroidInput
             QMetaObject::invokeMethod(inputContext, "longPress", Q_ARG(int, x), Q_ARG(int, y));
 
         //### TODO: add proper API for Qt 5.2
-        static bool rightMouseFromLongPress = qEnvironmentVariableIntValue("QT_NECESSITAS_COMPATIBILITY_LONG_PRESS");
+        static bool rightMouseFromLongPress = qEnvironmentVariableIntValue("QT_ANDROID_ENABLE_RIGHT_MOUSE_FROM_LONG_PRESS");
         if (!rightMouseFromLongPress)
             return;
         m_ignoreMouseEvents = true;
@@ -210,15 +210,15 @@ namespace QtAndroidInput
         QWindow *tlw = topLevelWindowAt(globalPos);
         QPoint localPos = tlw ? (globalPos-tlw->position()) : globalPos;
 
-        // Release left button
-        QWindowSystemInterface::handleMouseEvent(tlw, localPos, globalPos,
-                                                 Qt::MouseButtons(Qt::NoButton), Qt::LeftButton,
-                                                 QEvent::MouseButtonRelease);
-
-        // Press right button
-        QWindowSystemInterface::handleMouseEvent(tlw, localPos, globalPos,
-                                                 Qt::MouseButtons(Qt::RightButton), Qt::RightButton,
-                                                 QEvent::MouseButtonPress);
+        // Click right button if no other button is already pressed.
+        if (!m_mouseGrabber) {
+            QWindowSystemInterface::handleMouseEvent(tlw, localPos, globalPos,
+                                                     Qt::MouseButtons(Qt::RightButton), Qt::RightButton,
+                                                     QEvent::MouseButtonPress);
+            QWindowSystemInterface::handleMouseEvent(tlw, localPos, globalPos,
+                                                     Qt::MouseButtons(Qt::NoButton), Qt::RightButton,
+                                                     QEvent::MouseButtonRelease);
+        }
     }
 
     static void touchBegin(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/)
