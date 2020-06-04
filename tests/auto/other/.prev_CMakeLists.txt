@@ -2,14 +2,14 @@
 
 if(NOT CMAKE_CROSSCOMPILING)
     add_subdirectory(compiler)
-    # add_subdirectory(atwrapper) <- does not exist # special case
+    add_subdirectory(atwrapper)
 endif()
 if(TARGET Qt::Widgets)
     add_subdirectory(gestures)
     add_subdirectory(languagechange)
     add_subdirectory(qfocusevent)
     add_subdirectory(qsharedpointer_and_qwidget)
-    # add_subdirectory(windowsmobile) <- does not exist # special case
+    add_subdirectory(windowsmobile)
 endif()
 if(TARGET Qt::Network AND TARGET Qt::Widgets AND NOT WINRT)
     add_subdirectory(lancelot)
@@ -30,13 +30,13 @@ if(QT_FEATURE_accessibility AND TARGET Qt::Gui AND TARGET Qt::Widgets AND NOT WI
     add_subdirectory(qaccessibility)
 endif()
 if(QT_FEATURE_accessibility_atspi_bridge AND TARGET Qt::Gui AND TARGET Qt::Widgets)
-    #add_subdirectory(qaccessibilitylinux) # special case # This test is broken
+    add_subdirectory(qaccessibilitylinux)
 endif()
 if(TARGET Qt::Network AND NOT WINRT)
     add_subdirectory(networkselftest)
 endif()
 if(MACOS AND TARGET Qt::Gui)
-    # add_subdirectory(macnativeevents) # special case it's disabled in qmake too
+    add_subdirectory(macnativeevents)
 endif()
 if(embedded)
     add_subdirectory(qdirectpainter)
