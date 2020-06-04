@@ -113,7 +113,7 @@ void QFbCursor::pointerEvent(const QMouseEvent &e)
 {
     if (e.type() != QEvent::MouseMove)
         return;
-    m_pos = e.screenPos().toPoint();
+    m_pos = e.globalPosition().toPoint();
     if (!mVisible)
         return;
     mCurrentRect = getCurrentRect();

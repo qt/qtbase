@@ -209,7 +209,7 @@ void LightMaps::mousePressEvent(QMouseEvent *event)
     if (event->buttons() != Qt::LeftButton)
         return;
     pressed = snapped = true;
-    pressPos = dragPos = event->pos();
+    pressPos = dragPos = event->position().toPoint();
     tapTimer.stop();
     tapTimer.start(HOLD_TIME, this);
 }
@@ -220,13 +220,13 @@ void LightMaps::mouseMoveEvent(QMouseEvent *event)
         return;
     if (!zoomed) {
         if (!pressed || !snapped) {
-            QPoint delta = event->pos() - pressPos;
-            pressPos = event->pos();
+            QPoint delta = event->position().toPoint() - pressPos;
+            pressPos = event->position().toPoint();
             m_normalMap->pan(delta);
             return;
         } else {
             const int threshold = 10;
-            QPoint delta = event->pos() - pressPos;
+            QPoint delta = event->position().toPoint() - pressPos;
             if (snapped) {
                 snapped &= delta.x() < threshold;
                 snapped &= delta.y() < threshold;
@@ -237,7 +237,7 @@ void LightMaps::mouseMoveEvent(QMouseEvent *event)
                 tapTimer.stop();
         }
     } else {
-        dragPos = event->pos();
+        dragPos = event->position().toPoint();
         update();
     }
 }

@@ -1177,7 +1177,7 @@ bool QItemDelegate::editorEvent(QEvent *event,
         QRect emptyRect;
         doLayout(option, &checkRect, &emptyRect, &emptyRect, false);
         QMouseEvent *me = static_cast<QMouseEvent*>(event);
-        if (me->button() != Qt::LeftButton || !checkRect.contains(me->pos()))
+        if (me->button() != Qt::LeftButton || !checkRect.contains(me->position().toPoint()))
             return false;
 
         // eat the double click events inside the check rect

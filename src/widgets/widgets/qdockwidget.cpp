@@ -918,7 +918,7 @@ bool QDockWidgetPrivate::mousePressEvent(QMouseEvent *event)
         QDockWidgetGroupWindow *floatingTab = qobject_cast<QDockWidgetGroupWindow*>(parent);
 
         if (event->button() != Qt::LeftButton ||
-            !titleArea.contains(event->pos()) ||
+            !titleArea.contains(event->position().toPoint()) ||
             // check if the tool window is movable... do nothing if it
             // is not (but allow moving if the window is floating)
             (!hasFeature(this, QDockWidget::DockWidgetMovable) && !q->isFloating()) ||
@@ -927,7 +927,7 @@ bool QDockWidgetPrivate::mousePressEvent(QMouseEvent *event)
             return false;
         }
 
-        initDrag(event->pos(), false);
+        initDrag(event->position().toPoint(), false);
 
         if (state)
             state->ctrlDrag = (hasFeature(this, QDockWidget::DockWidgetFloatable) && event->modifiers() & Qt::ControlModifier) ||
@@ -947,7 +947,7 @@ bool QDockWidgetPrivate::mouseDoubleClickEvent(QMouseEvent *event)
     if (!dwLayout->nativeWindowDeco()) {
         QRect titleArea = dwLayout->titleArea();
 
-        if (event->button() == Qt::LeftButton && titleArea.contains(event->pos()) &&
+        if (event->button() == Qt::LeftButton && titleArea.contains(event->position().toPoint()) &&
             hasFeature(this, QDockWidget::DockWidgetFloatable)) {
             _q_toggleTopLevel();
             return true;
@@ -971,7 +971,7 @@ bool QDockWidgetPrivate::mouseMoveEvent(QMouseEvent *event)
     if (!dwlayout->nativeWindowDeco()) {
         if (!state->dragging
             && mwlayout->pluggingWidget == nullptr
-            && (event->pos() - state->pressPos).manhattanLength()
+            && (event->position().toPoint() - state->pressPos).manhattanLength()
                 > QApplication::startDragDistance()) {
             startDrag();
             q->grabMouse();
@@ -982,7 +982,7 @@ bool QDockWidgetPrivate::mouseMoveEvent(QMouseEvent *event)
     if (state->dragging && !state->nca) {
         QMargins windowMargins = q->window()->windowHandle()->frameMargins();
         QPoint windowMarginOffset = QPoint(windowMargins.left(), windowMargins.top());
-        QPoint pos = event->globalPos() - state->pressPos - windowMarginOffset;
+        QPoint pos = event->globalPosition().toPoint() - state->pressPos - windowMarginOffset;
 
         QDockWidgetGroupWindow *floatingTab = qobject_cast<QDockWidgetGroupWindow*>(parent);
         if (floatingTab && !q->isFloating())
@@ -991,7 +991,7 @@ bool QDockWidgetPrivate::mouseMoveEvent(QMouseEvent *event)
             q->move(pos);
 
         if (state && !state->ctrlDrag)
-            mwlayout->hover(state->widgetItem, event->globalPos());
+            mwlayout->hover(state->widgetItem, event->globalPosition().toPoint());
 
         ret = true;
     }
@@ -1031,7 +1031,7 @@ void QDockWidgetPrivate::nonClientAreaMouseEvent(QMouseEvent *event)
 
     switch (event->type()) {
         case QEvent::NonClientAreaMouseButtonPress:
-            if (!titleRect.contains(event->globalPos()))
+            if (!titleRect.contains(event->globalPosition().toPoint()))
                 break;
             if (state != nullptr)
                 break;
@@ -1039,7 +1039,7 @@ void QDockWidgetPrivate::nonClientAreaMouseEvent(QMouseEvent *event)
                 break;
             if (isAnimating())
                 break;
-            initDrag(event->pos(), true);
+            initDrag(event->position().toPoint(), true);
             if (state == nullptr)
                 break;
             state->ctrlDrag = (event->modifiers() & Qt::ControlModifier) ||

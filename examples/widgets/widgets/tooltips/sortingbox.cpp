@@ -159,10 +159,10 @@ void SortingBox::paintEvent(QPaintEvent * /* event */)
 void SortingBox::mousePressEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton) {
-        int index = itemAt(event->pos());
+        int index = itemAt(event->position().toPoint());
         if (index != -1) {
             itemInMotion = &shapeItems[index];
-            previousPosition = event->pos();
+            previousPosition = event->position().toPoint();
             shapeItems.move(index, shapeItems.size() - 1);
             update();
         }
@@ -174,7 +174,7 @@ void SortingBox::mousePressEvent(QMouseEvent *event)
 void SortingBox::mouseMoveEvent(QMouseEvent *event)
 {
     if ((event->buttons() & Qt::LeftButton) && itemInMotion)
-        moveItemTo(event->pos());
+        moveItemTo(event->position().toPoint());
 }
 //! [12]
 
@@ -182,7 +182,7 @@ void SortingBox::mouseMoveEvent(QMouseEvent *event)
 void SortingBox::mouseReleaseEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton && itemInMotion) {
-        moveItemTo(event->pos());
+        moveItemTo(event->position().toPoint());
         itemInMotion = nullptr;
     }
 }

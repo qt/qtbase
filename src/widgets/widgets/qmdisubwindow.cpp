@@ -613,7 +613,7 @@ void ControllerWidget::mousePressEvent(QMouseEvent *event)
         event->ignore();
         return;
     }
-    activeControl = getSubControl(event->pos());
+    activeControl = getSubControl(event->position().toPoint());
     update();
 }
 
@@ -627,7 +627,7 @@ void ControllerWidget::mouseReleaseEvent(QMouseEvent *event)
         return;
     }
 
-    QStyle::SubControl under_mouse = getSubControl(event->pos());
+    QStyle::SubControl under_mouse = getSubControl(event->position().toPoint());
     if (under_mouse == activeControl) {
         switch (activeControl) {
         case QStyle::SC_MdiCloseButton:
@@ -653,7 +653,7 @@ void ControllerWidget::mouseReleaseEvent(QMouseEvent *event)
 */
 void ControllerWidget::mouseMoveEvent(QMouseEvent *event)
 {
-    QStyle::SubControl under_mouse = getSubControl(event->pos());
+    QStyle::SubControl under_mouse = getSubControl(event->position().toPoint());
     //test if hover state changes
     if (hoverControl != under_mouse) {
         hoverControl = under_mouse;
@@ -2659,12 +2659,12 @@ bool QMdiSubWindow::eventFilter(QObject *object, QEvent *event)
     if (d->systemMenu && d->systemMenu == object) {
         if (event->type() == QEvent::MouseButtonDblClick) {
             const QMouseEvent *mouseEvent = static_cast<const QMouseEvent *>(event);
-            const QAction *action = d->systemMenu->actionAt(mouseEvent->pos());
+            const QAction *action = d->systemMenu->actionAt(mouseEvent->position().toPoint());
             if (!action || action->isEnabled())
                 close();
         } else if (event->type() == QEvent::MouseMove) {
             QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
-            d->hoveredSubControl = d->getSubControl(mapFromGlobal(mouseEvent->globalPos()));
+            d->hoveredSubControl = d->getSubControl(mapFromGlobal(mouseEvent->globalPosition().toPoint()));
         } else if (event->type() == QEvent::Hide) {
             d->activeSubControl = QStyle::SC_None;
             update(QRegion(0, 0, width(), d->titleBarHeight()));
@@ -2678,7 +2678,7 @@ bool QMdiSubWindow::eventFilter(QObject *object, QEvent *event)
         if (event->type() != QEvent::MouseButtonPress || !testOption(QMdiSubWindow::RubberBandResize))
             return QWidget::eventFilter(object, event);
         const QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
-        d->mousePressPosition = parentWidget()->mapFromGlobal(mouseEvent->globalPos());
+        d->mousePressPosition = parentWidget()->mapFromGlobal(mouseEvent->globalPosition().toPoint());
         d->oldGeometry = geometry();
         d->currentOperation = isLeftToRight() ? QMdiSubWindowPrivate::BottomRightResize
                                               : QMdiSubWindowPrivate::BottomLeftResize;
@@ -3173,7 +3173,7 @@ void QMdiSubWindow::mousePressEvent(QMouseEvent *mouseEvent)
 
     if (d->currentOperation != QMdiSubWindowPrivate::None) {
         d->updateCursor();
-        d->mousePressPosition = mapToParent(mouseEvent->pos());
+        d->mousePressPosition = mapToParent(mouseEvent->position().toPoint());
         if (d->resizeEnabled || d->moveEnabled)
             d->oldGeometry = geometry();
 #if QT_CONFIG(rubberband)
@@ -3264,10 +3264,10 @@ void QMdiSubWindow::mouseReleaseEvent(QMouseEvent *mouseEvent)
             d->oldGeometry = geometry();
     }
 
-    d->currentOperation = d->getOperation(mouseEvent->pos());
+    d->currentOperation = d->getOperation(mouseEvent->position().toPoint());
     d->updateCursor();
 
-    d->hoveredSubControl = d->getSubControl(mouseEvent->pos());
+    d->hoveredSubControl = d->getSubControl(mouseEvent->position().toPoint());
     if (d->activeSubControl != QStyle::SC_None
             && d->activeSubControl == d->hoveredSubControl) {
         d->processClickedSubControl();
@@ -3292,7 +3292,7 @@ void QMdiSubWindow::mouseMoveEvent(QMouseEvent *mouseEvent)
         // Find previous and current hover region.
         const QStyleOptionTitleBar options = d->titleBarOptions();
         QStyle::SubControl oldHover = d->hoveredSubControl;
-        d->hoveredSubControl = d->getSubControl(mouseEvent->pos());
+        d->hoveredSubControl = d->getSubControl(mouseEvent->position().toPoint());
         QRegion hoverRegion;
         if (isHoverControl(oldHover) && oldHover != d->hoveredSubControl)
             hoverRegion += style()->subControlRect(QStyle::CC_TitleBar, &options, oldHover, this);
@@ -3312,13 +3312,13 @@ void QMdiSubWindow::mouseMoveEvent(QMouseEvent *mouseEvent)
         if ((d->isResizeOperation() && d->resizeEnabled) || (d->isMoveOperation() && d->moveEnabled)) {
             // As setNewGeometry moves the window, it invalidates the pos() value of any mouse move events that are
             // currently queued in the event loop. Map to parent using globalPos() instead.
-            d->setNewGeometry(parentWidget()->mapFromGlobal(mouseEvent->globalPos()));
+            d->setNewGeometry(parentWidget()->mapFromGlobal(mouseEvent->globalPosition().toPoint()));
         }
         return;
     }
 
     // Do not resize/move if not allowed.
-    d->currentOperation = d->getOperation(mouseEvent->pos());
+    d->currentOperation = d->getOperation(mouseEvent->position().toPoint());
     if ((d->isResizeOperation() && !d->resizeEnabled) || (d->isMoveOperation() && !d->moveEnabled))
         d->currentOperation = QMdiSubWindowPrivate::None;
     d->updateCursor();

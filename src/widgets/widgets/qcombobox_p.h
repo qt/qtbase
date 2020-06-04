@@ -178,8 +178,8 @@ protected:
     void mouseMoveEvent(QMouseEvent *e) override
     {
         // Enable fast scrolling if the cursor is directly above or below the popup.
-        const int mouseX = e->pos().x();
-        const int mouseY = e->pos().y();
+        const int mouseX = e->position().toPoint().x();
+        const int mouseY = e->position().toPoint().y();
         const bool horizontallyInside = pos().x() < mouseX && mouseX < rect().right() + 1;
         const bool verticallyOutside = (sliderAction == QAbstractSlider::SliderSingleStepAdd) ?
                                         rect().bottom() + 1 < mouseY : mouseY < pos().y();

@@ -2091,7 +2091,7 @@ void QPlainTextEdit::mouseMoveEvent(QMouseEvent *e)
 {
     Q_D(QPlainTextEdit);
     d->inDrag = false; // paranoia
-    const QPoint pos = e->pos();
+    const QPoint pos = e->position().toPoint();
     d->sendControlEvent(e);
     if (!(e->buttons() & Qt::LeftButton))
         return;
@@ -2115,7 +2115,7 @@ void QPlainTextEdit::mouseReleaseEvent(QMouseEvent *e)
         d->ensureCursorVisible();
     }
 
-    if (!isReadOnly() && rect().contains(e->pos()))
+    if (!isReadOnly() && rect().contains(e->position().toPoint()))
         d->handleSoftwareInputPanel(e->button(), d->clickCausedFocus);
     d->clickCausedFocus = 0;
 }
@@ -2186,7 +2186,7 @@ void QPlainTextEdit::dragLeaveEvent(QDragLeaveEvent *e)
 void QPlainTextEdit::dragMoveEvent(QDragMoveEvent *e)
 {
     Q_D(QPlainTextEdit);
-    d->autoScrollDragPos = e->pos();
+    d->autoScrollDragPos = e->position().toPoint();
     if (!d->autoScrollTimer.isActive())
         d->autoScrollTimer.start(100, this);
     d->sendControlEvent(e);

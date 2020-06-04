@@ -76,7 +76,7 @@ static QPointF panOffset(const QList<QTouchEvent::TouchPoint> &touchPoints, int 
     QPointF result;
     const int count = qMin(touchPoints.size(), maxCount);
     for (int p = 0; p < count; ++p)
-        result += touchPoints.at(p).pos() - touchPoints.at(p).startPos();
+        result += touchPoints.at(p).position() - touchPoints.at(p).pressPosition();
     return result / qreal(count);
 }
 
@@ -117,7 +117,7 @@ QGestureRecognizer::Result QPanGestureRecognizer::recognize(QGesture *state,
             d->offset = panOffset(ev->touchPoints(), d->pointCount);
             if (d->offset.x() > 10  || d->offset.y() > 10 ||
                 d->offset.x() < -10 || d->offset.y() < -10) {
-                q->setHotSpot(ev->touchPoints().first().startScreenPos());
+                q->setHotSpot(ev->touchPoints().first().globalPressPosition());
                 result = QGestureRecognizer::TriggerGesture;
             } else {
                 result = QGestureRecognizer::MayBeGesture;
@@ -188,13 +188,13 @@ QGestureRecognizer::Result QPinchGestureRecognizer::recognize(QGesture *state,
             QTouchEvent::TouchPoint p1 = ev->touchPoints().at(0);
             QTouchEvent::TouchPoint p2 = ev->touchPoints().at(1);
 
-            d->hotSpot = p1.screenPos();
+            d->hotSpot = p1.globalPosition();
             d->isHotSpotSet = true;
 
-            QPointF centerPoint = (p1.screenPos() + p2.screenPos()) / 2.0;
+            QPointF centerPoint = (p1.globalPosition() + p2.globalPosition()) / 2.0;
             if (d->isNewSequence) {
-                d->startPosition[0] = p1.screenPos();
-                d->startPosition[1] = p2.screenPos();
+                d->startPosition[0] = p1.globalPosition();
+                d->startPosition[1] = p2.globalPosition();
                 d->lastCenterPoint = centerPoint;
             } else {
                 d->lastCenterPoint = d->centerPoint;
@@ -208,7 +208,7 @@ QGestureRecognizer::Result QPinchGestureRecognizer::recognize(QGesture *state,
                 d->lastScaleFactor = 1.0;
             } else {
                 d->lastScaleFactor = d->scaleFactor;
-                QLineF line(p1.screenPos(), p2.screenPos());
+                QLineF line(p1.globalPosition(), p2.globalPosition());
                 QLineF lastLine(p1.lastScreenPos(),  p2.lastScreenPos());
                 qreal newScaleFactor = line.length() / lastLine.length();
                 if (newScaleFactor > kSingleStepScaleMax || newScaleFactor < kSingleStepScaleMin)
@@ -218,10 +218,10 @@ QGestureRecognizer::Result QPinchGestureRecognizer::recognize(QGesture *state,
             d->totalScaleFactor = d->totalScaleFactor * d->scaleFactor;
             d->changeFlags |= QPinchGesture::ScaleFactorChanged;
 
-            qreal angle = QLineF(p1.screenPos(), p2.screenPos()).angle();
+            qreal angle = QLineF(p1.globalPosition(), p2.globalPosition()).angle();
             if (angle > 180)
                 angle -= 360;
-            qreal startAngle = QLineF(p1.startScreenPos(), p2.startScreenPos()).angle();
+            qreal startAngle = QLineF(p1.globalPressPosition(), p2.globalPressPosition()).angle();
             if (startAngle > 180)
                 startAngle -= 360;
             const qreal rotationAngle = startAngle - angle;
@@ -320,34 +320,34 @@ QGestureRecognizer::Result QSwipeGestureRecognizer::recognize(QGesture *state,
             QTouchEvent::TouchPoint p3 = ev->touchPoints().at(2);
 
             if (d->lastPositions[0].isNull()) {
-                d->lastPositions[0] = p1.startScreenPos().toPoint();
-                d->lastPositions[1] = p2.startScreenPos().toPoint();
-                d->lastPositions[2] = p3.startScreenPos().toPoint();
+                d->lastPositions[0] = p1.globalPressPosition().toPoint();
+                d->lastPositions[1] = p2.globalPressPosition().toPoint();
+                d->lastPositions[2] = p3.globalPressPosition().toPoint();
             }
-            d->hotSpot = p1.screenPos();
+            d->hotSpot = p1.globalPosition();
             d->isHotSpotSet = true;
 
-            int xDistance = (p1.screenPos().x() - d->lastPositions[0].x() +
-                             p2.screenPos().x() - d->lastPositions[1].x() +
-                             p3.screenPos().x() - d->lastPositions[2].x()) / 3;
-            int yDistance = (p1.screenPos().y() - d->lastPositions[0].y() +
-                             p2.screenPos().y() - d->lastPositions[1].y() +
-                             p3.screenPos().y() - d->lastPositions[2].y()) / 3;
+            int xDistance = (p1.globalPosition().x() - d->lastPositions[0].x() +
+                             p2.globalPosition().x() - d->lastPositions[1].x() +
+                             p3.globalPosition().x() - d->lastPositions[2].x()) / 3;
+            int yDistance = (p1.globalPosition().y() - d->lastPositions[0].y() +
+                             p2.globalPosition().y() - d->lastPositions[1].y() +
+                             p3.globalPosition().y() - d->lastPositions[2].y()) / 3;
 
             const int distance = xDistance >= yDistance ? xDistance : yDistance;
             int elapsedTime = d->time.restart();
             if (!elapsedTime)
                 elapsedTime = 1;
             d->velocityValue = 0.9 * d->velocityValue + (qreal) distance / elapsedTime;
-            d->swipeAngle = QLineF(p1.startScreenPos(), p1.screenPos()).angle();
+            d->swipeAngle = QLineF(p1.globalPressPosition(), p1.globalPosition()).angle();
 
             static const int MoveThreshold = 50;
             static const int directionChangeThreshold = MoveThreshold / 8;
             if (qAbs(xDistance) > MoveThreshold || qAbs(yDistance) > MoveThreshold) {
                 // measure the distance to check if the direction changed
-                d->lastPositions[0] = p1.screenPos().toPoint();
-                d->lastPositions[1] = p2.screenPos().toPoint();
-                d->lastPositions[2] = p3.screenPos().toPoint();
+                d->lastPositions[0] = p1.globalPosition().toPoint();
+                d->lastPositions[1] = p2.globalPosition().toPoint();
+                d->lastPositions[2] = p3.globalPosition().toPoint();
                 result = QGestureRecognizer::TriggerGesture;
                 // QTBUG-46195, small changes in direction should not cause the gesture to be canceled.
                 if (d->verticalDirection == QSwipeGesture::NoDirection || qAbs(yDistance) > directionChangeThreshold) {
@@ -439,8 +439,8 @@ QGestureRecognizer::Result QTapGestureRecognizer::recognize(QGesture *state,
 
     switch (event->type()) {
     case QEvent::TouchBegin: {
-        d->position = ev->touchPoints().at(0).pos();
-        q->setHotSpot(ev->touchPoints().at(0).screenPos());
+        d->position = ev->touchPoints().at(0).position();
+        q->setHotSpot(ev->touchPoints().at(0).globalPosition());
         result = QGestureRecognizer::TriggerGesture;
         break;
     }
@@ -448,7 +448,7 @@ QGestureRecognizer::Result QTapGestureRecognizer::recognize(QGesture *state,
     case QEvent::TouchEnd: {
         if (q->state() != Qt::NoGesture && ev->touchPoints().size() == 1) {
             QTouchEvent::TouchPoint p = ev->touchPoints().at(0);
-            QPoint delta = p.pos().toPoint() - p.startPos().toPoint();
+            QPoint delta = p.position().toPoint() - p.pressPosition().toPoint();
             enum { TapRadius = 40 };
             if (delta.manhattanLength() <= TapRadius) {
                 if (event->type() == QEvent::TouchEnd)
@@ -526,7 +526,7 @@ QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
 #endif
     case QEvent::MouseButtonPress: {
         const QMouseEvent *me = static_cast<const QMouseEvent *>(event);
-        d->position = me->globalPos();
+        d->position = me->globalPosition().toPoint();
         q->setHotSpot(d->position);
         if (d->timerId)
             q->killTimer(d->timerId);
@@ -535,7 +535,7 @@ QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
     }
     case QEvent::TouchBegin: {
         const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
-        d->position = ev->touchPoints().at(0).startScreenPos();
+        d->position = ev->touchPoints().at(0).globalPressPosition();
         q->setHotSpot(d->position);
         if (d->timerId)
             q->killTimer(d->timerId);
@@ -552,7 +552,7 @@ QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
         const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
         if (d->timerId && ev->touchPoints().size() == 1) {
             QTouchEvent::TouchPoint p = ev->touchPoints().at(0);
-            QPoint delta = p.pos().toPoint() - p.startPos().toPoint();
+            QPoint delta = p.position().toPoint() - p.pressPosition().toPoint();
             if (delta.manhattanLength() <= TapRadius)
                 return QGestureRecognizer::MayBeGesture;
         }
@@ -560,7 +560,7 @@ QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
     }
     case QEvent::MouseMove: {
         const QMouseEvent *me = static_cast<const QMouseEvent *>(event);
-        QPoint delta = me->globalPos() - d->position.toPoint();
+        QPoint delta = me->globalPosition().toPoint() - d->position.toPoint();
         if (d->timerId && delta.manhattanLength() <= TapRadius)
             return QGestureRecognizer::MayBeGesture;
         return QGestureRecognizer::CancelGesture;

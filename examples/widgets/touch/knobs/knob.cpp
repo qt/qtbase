@@ -82,7 +82,7 @@ bool Knob::sceneEvent(QEvent *event)
             const QTouchEvent::TouchPoint &touchPoint2 = touchEvent->touchPoints().last();
 
             QLineF line1(touchPoint1.lastScenePos(), touchPoint2.lastScenePos());
-            QLineF line2(touchPoint1.scenePos(), touchPoint2.scenePos());
+            QLineF line2(touchPoint1.scenePosition(), touchPoint2.scenePosition());
 
             setTransform(QTransform().rotate(line2.angleTo(line1)), true);
         }

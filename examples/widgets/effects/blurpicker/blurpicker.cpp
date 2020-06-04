@@ -152,7 +152,7 @@ void BlurPicker::resizeEvent(QResizeEvent * /* event */)
 void BlurPicker::mousePressEvent(QMouseEvent *event)
 {
     int delta = 0;
-    if(event->x() > (width() / 2))
+    if (event->position().x() > (width() / 2))
     {
         delta = 1;
     }

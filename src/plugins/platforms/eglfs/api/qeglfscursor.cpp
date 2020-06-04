@@ -323,7 +323,7 @@ void QEglFSCursor::pointerEvent(const QMouseEvent &event)
     if (event.type() != QEvent::MouseMove)
         return;
     const QRect oldCursorRect = cursorRect();
-    m_cursor.pos = event.screenPos().toPoint();
+    m_cursor.pos = event.globalPosition().toPoint();
     update(oldCursorRect | cursorRect(), false);
     for (QPlatformScreen *screen : m_screen->virtualSiblings())
         static_cast<QEglFSScreen *>(screen)->handleCursorMove(m_cursor.pos);

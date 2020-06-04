@@ -158,14 +158,14 @@ void Flickable::handleMousePress(QMouseEvent *event)
     case FlickablePrivate::Steady:
         event->accept();
         d->state = FlickablePrivate::Pressed;
-        d->pressPos = event->pos();
+        d->pressPos = event->position().toPoint();
         break;
 
     case FlickablePrivate::AutoScroll:
         event->accept();
         d->state = FlickablePrivate::Stop;
         d->speed = QPoint(0, 0);
-        d->pressPos = event->pos();
+        d->pressPos = event->position().toPoint();
         d->offset = scrollOffset();
         d->ticker->stop();
         break;
@@ -206,14 +206,14 @@ void Flickable::handleMouseRelease(QMouseEvent *event)
 
     case FlickablePrivate::ManualScroll:
         event->accept();
-        delta = event->pos() - d->pressPos;
+        delta = event->position().toPoint() - d->pressPos;
         if (d->timeStamp.elapsed() > 100) {
             d->timeStamp.start();
             d->speed = delta - d->delta;
             d->delta = delta;
         }
         d->offset = scrollOffset();
-        d->pressPos = event->pos();
+        d->pressPos = event->position().toPoint();
         if (d->speed == QPoint(0, 0)) {
             d->state = FlickablePrivate::Steady;
         } else {
@@ -250,20 +250,20 @@ void Flickable::handleMouseMove(QMouseEvent *event)
 
     case FlickablePrivate::Pressed:
     case FlickablePrivate::Stop:
-        delta = event->pos() - d->pressPos;
+        delta = event->position().toPoint() - d->pressPos;
         if (delta.x() > d->threshold || delta.x() < -d->threshold ||
                 delta.y() > d->threshold || delta.y() < -d->threshold) {
             d->timeStamp.start();
             d->state = FlickablePrivate::ManualScroll;
             d->delta = QPoint(0, 0);
-            d->pressPos = event->pos();
+            d->pressPos = event->position().toPoint();
             event->accept();
         }
         break;
 
     case FlickablePrivate::ManualScroll:
         event->accept();
-        delta = event->pos() - d->pressPos;
+        delta = event->position().toPoint() - d->pressPos;
         setScrollOffset(d->offset - delta);
         if (d->timeStamp.elapsed() > 100) {
             d->timeStamp.start();

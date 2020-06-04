@@ -279,7 +279,7 @@ void QSizeGrip::mousePressEvent(QMouseEvent * e)
 
     Q_D(QSizeGrip);
     QWidget *tlw = qt_sizegrip_topLevelWidget(this);
-    d->p = e->globalPos();
+    d->p = e->globalPosition().toPoint();
     d->gotMousePress = true;
     d->r = tlw->geometry();
 
@@ -373,7 +373,7 @@ void QSizeGrip::mouseMoveEvent(QMouseEvent * e)
     if (!d->gotMousePress || tlw->testAttribute(Qt::WA_WState_ConfigPending))
         return;
 
-    QPoint np(e->globalPos());
+    QPoint np(e->globalPosition().toPoint());
 
     // Don't extend beyond the available geometry; bound to dyMax and dxMax.
     QSize ns;

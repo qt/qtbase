@@ -336,15 +336,15 @@ protected:
     }
 
     void mousePressEvent(QMouseEvent *event) {
-        qreal dx = centerPad.x() - event->pos().x();
-        qreal dy = centerPad.y() - event->pos().y();
+        qreal dx = centerPad.x() - event->position().toPoint().x();
+        qreal dy = centerPad.y() - event->position().toPoint().y();
         angleDelta = dx * 2 * M_PI / width();
         moveDelta = dy * 10 / height();
     }
 
     void mouseMoveEvent(QMouseEvent *event) {
-        qreal dx = centerPad.x() - event->pos().x();
-        qreal dy = centerPad.y() - event->pos().y();
+        qreal dx = centerPad.x() - event->position().toPoint().x();
+        qreal dy = centerPad.y() - event->position().toPoint().y();
         angleDelta = dx * 2 * M_PI / width();
         moveDelta = dy * 10 / height();
     }

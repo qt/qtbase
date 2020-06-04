@@ -318,8 +318,8 @@ void QGraphicsViewPrivate::translateTouchEvent(QGraphicsViewPrivate *d, QTouchEv
         const QSizeF ellipseDiameters = touchPoint.ellipseDiameters();
         // the scene will set the item local pos, startPos, lastPos, and rect before delivering to
         // an item, but for now those functions are returning the view's local coordinates
-        touchPoint.setScenePos(d->mapToScene(touchPoint.pos()));
-        touchPoint.setStartScenePos(d->mapToScene(touchPoint.startPos()));
+        touchPoint.setScenePos(d->mapToScene(touchPoint.position()));
+        touchPoint.setStartScenePos(d->mapToScene(touchPoint.pressPosition()));
         touchPoint.setLastScenePos(d->mapToScene(touchPoint.lastPos()));
         touchPoint.setEllipseDiameters(ellipseDiameters);
 
@@ -647,7 +647,7 @@ void QGraphicsViewPrivate::replayLastMouseEvent()
 void QGraphicsViewPrivate::storeMouseEvent(QMouseEvent *event)
 {
     useLastMouseEvent = true;
-    lastMouseEvent = QMouseEvent(QEvent::MouseMove, event->localPos(), event->windowPos(), event->screenPos(),
+    lastMouseEvent = QMouseEvent(QEvent::MouseMove, event->position(), event->scenePosition(), event->globalPosition(),
                                  event->button(), event->buttons(), event->modifiers());
 }
 
@@ -673,8 +673,8 @@ void QGraphicsViewPrivate::mouseMoveEventHandler(QMouseEvent *event)
     mouseEvent.setWidget(viewport);
     mouseEvent.setButtonDownScenePos(mousePressButton, mousePressScenePoint);
     mouseEvent.setButtonDownScreenPos(mousePressButton, mousePressScreenPoint);
-    mouseEvent.setScenePos(q->mapToScene(event->pos()));
-    mouseEvent.setScreenPos(event->globalPos());
+    mouseEvent.setScenePos(q->mapToScene(event->position().toPoint()));
+    mouseEvent.setScreenPos(event->globalPosition().toPoint());
     mouseEvent.setLastScenePos(lastMouseMoveScenePoint);
     mouseEvent.setLastScreenPos(lastMouseMoveScreenPoint);
     mouseEvent.setButtons(event->buttons());
@@ -753,7 +753,7 @@ void QGraphicsViewPrivate::updateRubberBand(const QMouseEvent *event)
     if (dragMode != QGraphicsView::RubberBandDrag || !sceneInteractionAllowed || !rubberBanding)
         return;
     // Check for enough drag distance
-    if ((mousePressViewPoint - event->pos()).manhattanLength() < QApplication::startDragDistance())
+    if ((mousePressViewPoint - event->position().toPoint()).manhattanLength() < QApplication::startDragDistance())
         return;
 
     // Update old rubberband
@@ -780,7 +780,7 @@ void QGraphicsViewPrivate::updateRubberBand(const QMouseEvent *event)
 
     // Update rubberband position
     const QPoint mp = q->mapFromScene(mousePressScenePoint);
-    const QPoint ep = event->pos();
+    const QPoint ep = event->position().toPoint();
     rubberBandRect = QRect(qMin(mp.x(), ep.x()), qMin(mp.y(), ep.y()),
                            qAbs(mp.x() - ep.x()) + 1, qAbs(mp.y() - ep.y()) + 1);
 
@@ -848,7 +848,7 @@ void QGraphicsViewPrivate::_q_setViewportCursor(const QCursor &cursor)
 void QGraphicsViewPrivate::_q_unsetViewportCursor()
 {
     Q_Q(QGraphicsView);
-    const auto items = q->items(lastMouseEvent.pos());
+    const auto items = q->items(lastMouseEvent.position().toPoint());
     for (QGraphicsItem *item : items) {
         if (item->isEnabled() && item->hasCursor()) {
             _q_setViewportCursor(item->cursor());
@@ -894,10 +894,10 @@ void QGraphicsViewPrivate::populateSceneDragDropEvent(QGraphicsSceneDragDropEven
 {
 #if QT_CONFIG(draganddrop)
     Q_Q(QGraphicsView);
-    dest->setScenePos(q->mapToScene(source->pos()));
-    dest->setScreenPos(q->mapToGlobal(source->pos()));
-    dest->setButtons(source->mouseButtons());
-    dest->setModifiers(source->keyboardModifiers());
+    dest->setScenePos(q->mapToScene(source->position().toPoint()));
+    dest->setScreenPos(q->mapToGlobal(source->position().toPoint()));
+    dest->setButtons(source->buttons());
+    dest->setModifiers(source->modifiers());
     dest->setPossibleActions(source->possibleActions());
     dest->setProposedAction(source->proposedAction());
     dest->setDropAction(source->dropAction());
@@ -3179,9 +3179,9 @@ void QGraphicsView::mouseDoubleClickEvent(QMouseEvent *event)
         return;
 
     d->storeMouseEvent(event);
-    d->mousePressViewPoint = event->pos();
+    d->mousePressViewPoint = event->position().toPoint();
     d->mousePressScenePoint = mapToScene(d->mousePressViewPoint);
-    d->mousePressScreenPoint = event->globalPos();
+    d->mousePressScreenPoint = event->globalPosition().toPoint();
     d->lastMouseMoveScenePoint = d->mousePressScenePoint;
     d->lastMouseMoveScreenPoint = d->mousePressScreenPoint;
     d->mousePressButton = event->button();
@@ -3228,9 +3228,9 @@ void QGraphicsView::mousePressEvent(QMouseEvent *event)
 
     if (d->sceneInteractionAllowed) {
         // Store some of the event's button-down data.
-        d->mousePressViewPoint = event->pos();
+        d->mousePressViewPoint = event->position().toPoint();
         d->mousePressScenePoint = mapToScene(d->mousePressViewPoint);
-        d->mousePressScreenPoint = event->globalPos();
+        d->mousePressScreenPoint = event->globalPosition().toPoint();
         d->lastMouseMoveScenePoint = d->mousePressScenePoint;
         d->lastMouseMoveScreenPoint = d->mousePressScreenPoint;
         d->mousePressButton = event->button();
@@ -3310,7 +3310,7 @@ void QGraphicsView::mouseMoveEvent(QMouseEvent *event)
         if (d->handScrolling) {
             QScrollBar *hBar = horizontalScrollBar();
             QScrollBar *vBar = verticalScrollBar();
-            QPoint delta = event->pos() - d->lastMouseEvent.pos();
+            QPoint delta = event->position().toPoint() - d->lastMouseEvent.position().toPoint();
             hBar->setValue(hBar->value() + (isRightToLeft() ? delta.x() : -delta.x()));
             vBar->setValue(vBar->value() - delta.y());
 
@@ -3364,8 +3364,8 @@ void QGraphicsView::mouseReleaseEvent(QMouseEvent *event)
     mouseEvent.setWidget(viewport());
     mouseEvent.setButtonDownScenePos(d->mousePressButton, d->mousePressScenePoint);
     mouseEvent.setButtonDownScreenPos(d->mousePressButton, d->mousePressScreenPoint);
-    mouseEvent.setScenePos(mapToScene(event->pos()));
-    mouseEvent.setScreenPos(event->globalPos());
+    mouseEvent.setScenePos(mapToScene(event->position().toPoint()));
+    mouseEvent.setScreenPos(event->globalPosition().toPoint());
     mouseEvent.setLastScenePos(d->lastMouseMoveScenePoint);
     mouseEvent.setLastScreenPos(d->lastMouseMoveScreenPoint);
     mouseEvent.setButtons(event->buttons());

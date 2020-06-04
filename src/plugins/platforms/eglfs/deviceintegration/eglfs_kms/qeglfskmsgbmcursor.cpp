@@ -151,7 +151,7 @@ void QEglFSKmsGbmCursorDeviceListener::onDeviceListChanged(QInputDeviceManager::
 
 void QEglFSKmsGbmCursor::pointerEvent(const QMouseEvent &event)
 {
-    setPos(event.screenPos().toPoint());
+    setPos(event.globalPosition().toPoint());
 }
 
 #ifndef QT_NO_CURSOR

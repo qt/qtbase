@@ -339,7 +339,7 @@ bool QGroupBox::event(QEvent *e)
     case QEvent::HoverEnter:
     case QEvent::HoverMove: {
         QStyle::SubControl control = style()->hitTestComplexControl(QStyle::CC_GroupBox, &box,
-                                                                    static_cast<QHoverEvent *>(e)->pos(),
+                                                                    static_cast<QHoverEvent *>(e)->position().toPoint(),
                                                                     this);
         bool oldHover = d->hover;
         d->hover = d->checkable && (control == QStyle::SC_GroupBoxLabel || control == QStyle::SC_GroupBoxCheckBox);
@@ -702,7 +702,7 @@ void QGroupBox::mousePressEvent(QMouseEvent *event)
     QStyleOptionGroupBox box;
     initStyleOption(&box);
     d->pressedControl = style()->hitTestComplexControl(QStyle::CC_GroupBox, &box,
-                                                       event->pos(), this);
+                                                       event->position().toPoint(), this);
     if (d->checkable && (d->pressedControl & (QStyle::SC_GroupBoxCheckBox | QStyle::SC_GroupBoxLabel))) {
         d->overCheckBox = true;
         update(style()->subControlRect(QStyle::CC_GroupBox, &box, QStyle::SC_GroupBoxCheckBox, this));
@@ -718,7 +718,7 @@ void QGroupBox::mouseMoveEvent(QMouseEvent *event)
     QStyleOptionGroupBox box;
     initStyleOption(&box);
     QStyle::SubControl pressed = style()->hitTestComplexControl(QStyle::CC_GroupBox, &box,
-                                                                event->pos(), this);
+                                                                event->position().toPoint(), this);
     bool oldOverCheckBox = d->overCheckBox;
     d->overCheckBox = (pressed == QStyle::SC_GroupBoxCheckBox || pressed == QStyle::SC_GroupBoxLabel);
     if (d->checkable && (d->pressedControl == QStyle::SC_GroupBoxCheckBox || d->pressedControl == QStyle::SC_GroupBoxLabel)
@@ -744,7 +744,7 @@ void QGroupBox::mouseReleaseEvent(QMouseEvent *event)
     QStyleOptionGroupBox box;
     initStyleOption(&box);
     QStyle::SubControl released = style()->hitTestComplexControl(QStyle::CC_GroupBox, &box,
-                                                                 event->pos(), this);
+                                                                 event->position().toPoint(), this);
     bool toggle = d->checkable && (released == QStyle::SC_GroupBoxLabel
                                    || released == QStyle::SC_GroupBoxCheckBox);
     d->pressedControl = QStyle::SC_None;

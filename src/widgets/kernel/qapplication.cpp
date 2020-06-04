@@ -2380,7 +2380,7 @@ bool QApplicationPrivate::sendMouseEvent(QWidget *receiver, QMouseEvent *event,
 
     const bool graphicsWidget = nativeWidget->testAttribute(Qt::WA_DontShowOnScreen);
 
-    bool widgetUnderMouse = QRectF(receiver->rect()).contains(event->localPos());
+    bool widgetUnderMouse = QRectF(receiver->rect()).contains(event->position());
 
     // Clear the obsolete leaveAfterRelease value, if mouse button has been released but
     // leaveAfterRelease has not been updated.
@@ -2406,9 +2406,9 @@ bool QApplicationPrivate::sendMouseEvent(QWidget *receiver, QMouseEvent *event,
             || (isAlien(lastMouseReceiver) && !alienWidget)) {
             if (activePopupWidget) {
                 if (!QWidget::mouseGrabber())
-                    dispatchEnterLeave(alienWidget ? alienWidget : nativeWidget, lastMouseReceiver, event->screenPos());
+                    dispatchEnterLeave(alienWidget ? alienWidget : nativeWidget, lastMouseReceiver, event->globalPosition());
             } else {
-                dispatchEnterLeave(receiver, lastMouseReceiver, event->screenPos());
+                dispatchEnterLeave(receiver, lastMouseReceiver, event->globalPosition());
             }
 
         }
@@ -2416,7 +2416,7 @@ bool QApplicationPrivate::sendMouseEvent(QWidget *receiver, QMouseEvent *event,
 
 #ifdef ALIEN_DEBUG
     qDebug() << "QApplicationPrivate::sendMouseEvent: receiver:" << receiver
-             << "pos:" << event->pos() << "alien" << alienWidget << "button down"
+             << "pos:" << event->position() << "alien" << alienWidget << "button down"
              << *buttonDown << "last" << lastMouseReceiver << "leave after release"
              << leaveAfterRelease;
 #endif
@@ -2445,8 +2445,8 @@ bool QApplicationPrivate::sendMouseEvent(QWidget *receiver, QMouseEvent *event,
         if (nativeGuard)
             enter = alienGuard ? alienWidget : nativeWidget;
         else // The receiver is typically deleted on mouse release with drag'n'drop.
-            enter = QApplication::widgetAt(event->globalPos());
-        dispatchEnterLeave(enter, leaveAfterRelease, event->screenPos());
+            enter = QApplication::widgetAt(event->globalPosition().toPoint());
+        dispatchEnterLeave(enter, leaveAfterRelease, event->globalPosition());
         leaveAfterRelease = nullptr;
         lastMouseReceiver = enter;
     } else if (!wasLeaveAfterRelease) {
@@ -2454,7 +2454,7 @@ bool QApplicationPrivate::sendMouseEvent(QWidget *receiver, QMouseEvent *event,
             if (!QWidget::mouseGrabber())
                 lastMouseReceiver = alienGuard ? alienWidget : (nativeGuard ? nativeWidget : nullptr);
         } else {
-            lastMouseReceiver = receiverGuard ? receiver : QApplication::widgetAt(event->globalPos());
+            lastMouseReceiver = receiverGuard ? receiver : QApplication::widgetAt(event->globalPosition().toPoint());
         }
     }
 
@@ -2904,7 +2904,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             QWidget* w = static_cast<QWidget *>(receiver);
 
             QMouseEvent* mouse = static_cast<QMouseEvent*>(e);
-            QPoint relpos = mouse->pos();
+            QPoint relpos = mouse->position().toPoint();
 
             if (e->spontaneous()) {
                 if (e->type() != QEvent::MouseMove)
@@ -2921,7 +2921,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                     && w->rect().contains(relpos)) { // Outside due to mouse grab?
                     d->toolTipWidget = w;
                     d->toolTipPos = relpos;
-                    d->toolTipGlobalPos = mouse->globalPos();
+                    d->toolTipGlobalPos = mouse->globalPosition().toPoint();
                     QStyle *s = d->toolTipWidget->style();
                     int wakeDelay = s->styleHint(QStyle::SH_ToolTip_WakeUpDelay, nullptr, d->toolTipWidget, nullptr);
                     d->toolTipWakeUp.start(d->toolTipFallAsleep.isActive() ? 20 : wakeDelay, this);
@@ -2932,7 +2932,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 
             QPointer<QWidget> pw = w;
             while (w) {
-                QMouseEvent me(mouse->type(), relpos, mouse->windowPos(), mouse->globalPos(),
+                QMouseEvent me(mouse->type(), relpos, mouse->scenePosition(), mouse->globalPosition().toPoint(),
                                mouse->button(), mouse->buttons(), mouse->modifiers(), mouse->source());
                 me.spont = mouse->spontaneous();
                 me.setTimestamp(mouse->timestamp());
@@ -2964,7 +2964,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                     break;
 
                 w = static_cast<QWidget *>(receiver);
-                relpos = mouse->pos();
+                relpos = mouse->position().toPoint();
                 QPoint diff = relpos - w->mapFromGlobal(d->hoverGlobalPos);
                 while (w) {
                     if (w->testAttribute(Qt::WA_Hover) &&
@@ -2979,7 +2979,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 }
             }
 
-            d->hoverGlobalPos = mouse->globalPos();
+            d->hoverGlobalPos = mouse->globalPosition().toPoint();
         }
         break;
 #if QT_CONFIG(wheelevent)
@@ -3109,10 +3109,10 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         {
             QWidget *w = static_cast<QWidget *>(receiver);
             QTabletEvent *tablet = static_cast<QTabletEvent*>(e);
-            QPointF relpos = tablet->posF();
+            QPointF relpos = tablet->position();
             bool eventAccepted = tablet->isAccepted();
             while (w) {
-                QTabletEvent te(tablet->type(), relpos, tablet->globalPosF(),
+                QTabletEvent te(tablet->type(), relpos, tablet->globalPosition(),
                                 tablet->deviceType(), tablet->pointerType(),
                                 tablet->pressure(), tablet->xTilt(), tablet->yTilt(),
                                 tablet->tangentialPressure(), tablet->rotation(), tablet->z(),
@@ -3246,7 +3246,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         bool acceptTouchEvents = widget->testAttribute(Qt::WA_AcceptTouchEvents);
 
         if (acceptTouchEvents && e->spontaneous()) {
-            const QPoint localPos = touchEvent->touchPoints()[0].pos().toPoint();
+            const QPoint localPos = touchEvent->touchPoints()[0].position().toPoint();
             QApplicationPrivate::giveFocusAccordingToFocusPolicy(widget, e, localPos);
         }
 
@@ -3286,8 +3286,8 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             touchEvent->setTarget(widget);
             for (int i = 0; i < touchEvent->_touchPoints.size(); ++i) {
                 QTouchEvent::TouchPoint &pt = touchEvent->_touchPoints[i];
-                pt.d->pos = pt.pos() + offset;
-                pt.d->startPos = pt.startPos() + offset;
+                pt.d->pos = pt.position() + offset;
+                pt.d->startPos = pt.pressPosition() + offset;
                 pt.d->lastPos = pt.lastPos() + offset;
             }
         }
@@ -3936,11 +3936,11 @@ bool QApplicationPrivate::updateTouchPointsForWidget(QWidget *widget, QTouchEven
         QTouchEvent::TouchPoint &touchPoint = touchEvent->_touchPoints[i];
 
         // preserve the sub-pixel resolution
-        const QPointF screenPos = touchPoint.screenPos();
+        const QPointF screenPos = touchPoint.globalPosition();
         const QPointF delta = screenPos - screenPos.toPoint();
 
         touchPoint.d->pos = widget->mapFromGlobal(screenPos.toPoint()) + delta;
-        touchPoint.d->startPos = widget->mapFromGlobal(touchPoint.startScreenPos().toPoint()) + delta;
+        touchPoint.d->startPos = widget->mapFromGlobal(touchPoint.globalPressPosition().toPoint()) + delta;
         touchPoint.d->lastPos = widget->mapFromGlobal(touchPoint.lastScreenPos().toPoint()) + delta;
 
         if (touchPoint.state() == Qt::TouchPointPressed)
@@ -3969,7 +3969,7 @@ void QApplicationPrivate::cleanupMultitouch_sys()
 
 QWidget *QApplicationPrivate::findClosestTouchPointTarget(QTouchDevice *device, const QTouchEvent::TouchPoint &touchPoint)
 {
-    const QPointF screenPos = touchPoint.screenPos();
+    const QPointF screenPos = touchPoint.globalPosition();
     int closestTouchPointId = -1;
     QObject *closestTarget = nullptr;
     qreal closestDistance = qreal(0.);
@@ -3978,8 +3978,8 @@ QWidget *QApplicationPrivate::findClosestTouchPointTarget(QTouchDevice *device, 
     while (it != ite) {
         if (it.key().device == device && it.key().touchPointId != touchPoint.id()) {
             const QTouchEvent::TouchPoint &touchPoint = it->touchPoint;
-            qreal dx = screenPos.x() - touchPoint.screenPos().x();
-            qreal dy = screenPos.y() - touchPoint.screenPos().y();
+            qreal dx = screenPos.x() - touchPoint.globalPosition().x();
+            qreal dy = screenPos.y() - touchPoint.globalPosition().y();
             qreal distance = dx * dx + dy * dy;
             if (closestTouchPointId == -1 || distance < closestDistance) {
                 closestTouchPointId = touchPoint.id();
@@ -4034,10 +4034,10 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
             if (!target) {
                 // determine which widget this event will go to
                 if (!window)
-                    window = QApplication::topLevelAt(touchPoint.screenPos().toPoint());
+                    window = QApplication::topLevelAt(touchPoint.globalPosition().toPoint());
                 if (!window)
                     continue;
-                target = window->childAt(window->mapFromGlobal(touchPoint.screenPos().toPoint()));
+                target = window->childAt(window->mapFromGlobal(touchPoint.globalPosition().toPoint()));
                 if (!target)
                     target = window;
             }

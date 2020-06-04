@@ -40,7 +40,7 @@
 #include "qevent.h"
 #include "qcursor.h"
 #include "private/qguiapplication_p.h"
-#include "private/qtouchdevice_p.h"
+#include "qtouchdevice.h"
 #include "qpa/qplatformintegration.h"
 #include "private/qevent_p.h"
 #include "qfile.h"
@@ -3585,13 +3585,13 @@ static void formatDropEvent(QDebug d, const QDropEvent *e)
     d << ", possibleActions=";
     QtDebugUtils::formatQFlags(d, e->possibleActions());
     d << ", posF=";
-    QtDebugUtils::formatQPoint(d,  e->posF());
+    QtDebugUtils::formatQPoint(d,  e->position());
     if (type == QEvent::DragMove || type == QEvent::DragEnter)
         d << ", answerRect=" << static_cast<const QDragMoveEvent *>(e)->answerRect();
     d << ", formats=" << e->mimeData()->formats();
-    QtDebugUtils::formatNonNullQFlags(d, ", keyboardModifiers=", e->keyboardModifiers());
+    QtDebugUtils::formatNonNullQFlags(d, ", keyboardModifiers=", e->modifiers());
     d << ", ";
-    QtDebugUtils::formatQFlags(d, e->mouseButtons());
+    QtDebugUtils::formatQFlags(d, e->buttons());
 }
 
 #  endif // QT_CONFIG(draganddrop)
@@ -3609,7 +3609,7 @@ static void formatTabletEvent(QDebug d, const QTabletEvent *e)
     d << ", pointerType=";
     QtDebugUtils::formatQEnum(d, e->pointerType());
     d << ", uniqueId=" << e->uniqueId()
-      << ", pos=" << e->posF()
+      << ", pos=" << e->position()
       << ", z=" << e->z()
       << ", xTilt=" << e->xTilt()
       << ", yTilt=" << e->yTilt()
@@ -3630,7 +3630,7 @@ QDebug operator<<(QDebug dbg, const QTouchEvent::TouchPoint &tp)
     QDebugStateSaver saver(dbg);
     dbg.nospace();
     dbg << "TouchPoint(" << Qt::hex << tp.id() << Qt::dec << " (";
-    QtDebugUtils::formatQPoint(dbg, tp.pos());
+    QtDebugUtils::formatQPoint(dbg, tp.position());
     dbg << ") ";
     QtDebugUtils::formatQEnum(dbg, tp.state());
     dbg << " pressure " << tp.pressure() << " ellipse ("
@@ -3638,11 +3638,11 @@ QDebug operator<<(QDebug dbg, const QTouchEvent::TouchPoint &tp)
         << " angle " << tp.rotation() << ") vel (";
     QtDebugUtils::formatQPoint(dbg, tp.velocity().toPointF());
     dbg << ") start (";
-    QtDebugUtils::formatQPoint(dbg, tp.startPos());
+    QtDebugUtils::formatQPoint(dbg, tp.pressPosition());
     dbg << ") last (";
     QtDebugUtils::formatQPoint(dbg, tp.lastPos());
     dbg << ") delta (";
-    QtDebugUtils::formatQPoint(dbg, tp.pos() - tp.lastPos());
+    QtDebugUtils::formatQPoint(dbg, tp.position() - tp.lastPos());
     dbg << ')';
     return dbg;
 }
@@ -3688,9 +3688,9 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
         }
         QtDebugUtils::formatNonNullQFlags(dbg, ", ", me->modifiers());
         dbg << ", localPos=";
-        QtDebugUtils::formatQPoint(dbg, me->localPos());
+        QtDebugUtils::formatQPoint(dbg, me->position());
         dbg << ", screenPos=";
-        QtDebugUtils::formatQPoint(dbg, me->screenPos());
+        QtDebugUtils::formatQPoint(dbg, me->globalPosition());
         QtDebugUtils::formatNonNullQEnum(dbg, ", ", me->source());
         QtDebugUtils::formatNonNullQFlags(dbg, ", flags=", me->flags());
         dbg << ')';
@@ -3791,7 +3791,7 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
         dbg << "QNativeGestureEvent(";
         QtDebugUtils::formatQEnum(dbg, ne->gestureType());
         dbg << ", localPos=";
-        QtDebugUtils::formatQPoint(dbg, ne->localPos());
+        QtDebugUtils::formatQPoint(dbg, ne->position());
         dbg << ", value=" << ne->value() << ')';
     }
          break;
@@ -3816,7 +3816,7 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
         break;
 #  endif // QT_CONFIG(tabletevent)
     case QEvent::Enter:
-        dbg << "QEnterEvent(" << static_cast<const QEnterEvent *>(e)->pos() << ')';
+        dbg << "QEnterEvent(" << static_cast<const QEnterEvent *>(e)->position() << ')';
         break;
     case QEvent::Timer:
         dbg << "QTimerEvent(id=" << static_cast<const QTimerEvent *>(e)->timerId() << ')';

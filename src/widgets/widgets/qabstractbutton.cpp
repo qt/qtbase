@@ -976,7 +976,7 @@ void QAbstractButton::mousePressEvent(QMouseEvent *e)
         e->ignore();
         return;
     }
-    if (hitButton(e->pos())) {
+    if (hitButton(e->position().toPoint())) {
         setDown(true);
         d->pressed = true;
         repaint();
@@ -1006,7 +1006,7 @@ void QAbstractButton::mouseReleaseEvent(QMouseEvent *e)
         return;
     }
 
-    if (hitButton(e->pos())) {
+    if (hitButton(e->position().toPoint())) {
         d->repeatTimer.stop();
         d->click();
         e->accept();
@@ -1025,7 +1025,7 @@ void QAbstractButton::mouseMoveEvent(QMouseEvent *e)
         return;
     }
 
-    if (hitButton(e->pos()) != d->down) {
+    if (hitButton(e->position().toPoint()) != d->down) {
         setDown(!d->down);
         repaint();
         if (d->down)
@@ -1033,7 +1033,7 @@ void QAbstractButton::mouseMoveEvent(QMouseEvent *e)
         else
             d->emitReleased();
         e->accept();
-    } else if (!hitButton(e->pos())) {
+    } else if (!hitButton(e->position().toPoint())) {
         e->ignore();
     }
 }

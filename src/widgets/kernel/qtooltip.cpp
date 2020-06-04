@@ -264,7 +264,7 @@ void QTipLabel::resizeEvent(QResizeEvent *e)
 void QTipLabel::mouseMoveEvent(QMouseEvent *e)
 {
     if (!rect.isNull()) {
-        QPoint pos = e->globalPos();
+        QPoint pos = e->globalPosition().toPoint();
         if (widget)
             pos = widget->mapFromGlobal(pos);
         if (!rect.contains(pos))
@@ -358,7 +358,7 @@ bool QTipLabel::eventFilter(QObject *o, QEvent *e)
         break;
 
     case QEvent::MouseMove:
-        if (o == widget && !rect.isNull() && !rect.contains(static_cast<QMouseEvent*>(e)->pos()))
+        if (o == widget && !rect.isNull() && !rect.contains(static_cast<QMouseEvent*>(e)->position().toPoint()))
             hideTip();
     default:
         break;

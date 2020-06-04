@@ -149,7 +149,7 @@ void QColumnViewGrip::mouseDoubleClickEvent(QMouseEvent *event)
 void QColumnViewGrip::mousePressEvent(QMouseEvent *event)
 {
     Q_D(QColumnViewGrip);
-    d->originalXLocation = event->globalX();
+    d->originalXLocation = event->globalPosition().toPoint().x();
     event->accept();
 }
 
@@ -160,7 +160,7 @@ void QColumnViewGrip::mousePressEvent(QMouseEvent *event)
 void QColumnViewGrip::mouseMoveEvent(QMouseEvent *event)
 {
     Q_D(QColumnViewGrip);
-    int offset = event->globalX() - d->originalXLocation;
+    int offset = event->globalPosition().toPoint().x() - d->originalXLocation;
     d->originalXLocation = moveGrip(offset) + d->originalXLocation;
     event->accept();
 }

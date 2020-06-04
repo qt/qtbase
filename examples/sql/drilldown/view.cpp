@@ -115,7 +115,7 @@ void View::addItems()
 //! [5]
 void View::mouseReleaseEvent(QMouseEvent *event)
 {
-    if (QGraphicsItem *item = itemAt(event->pos())) {
+    if (QGraphicsItem *item = itemAt(event->position().toPoint())) {
         if (ImageItem *image = qgraphicsitem_cast<ImageItem *>(item))
             showInformation(image);
     }

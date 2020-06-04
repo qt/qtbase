@@ -120,7 +120,7 @@ void DragWidget::dropEvent(QDropEvent *event)
 
         QLabel *newIcon = new QLabel(this);
         newIcon->setPixmap(pixmap);
-        newIcon->move(event->pos() - offset);
+        newIcon->move(event->position().toPoint() - offset);
         newIcon->show();
         newIcon->setAttribute(Qt::WA_DeleteOnClose);
 
@@ -138,7 +138,7 @@ void DragWidget::dropEvent(QDropEvent *event)
 //! [1]
 void DragWidget::mousePressEvent(QMouseEvent *event)
 {
-    QLabel *child = static_cast<QLabel*>(childAt(event->pos()));
+    QLabel *child = static_cast<QLabel*>(childAt(event->position().toPoint()));
     if (!child)
         return;
 
@@ -146,7 +146,7 @@ void DragWidget::mousePressEvent(QMouseEvent *event)
 
     QByteArray itemData;
     QDataStream dataStream(&itemData, QIODevice::WriteOnly);
-    dataStream << pixmap << QPoint(event->pos() - child->pos());
+    dataStream << pixmap << QPoint(event->position().toPoint() - child->pos());
 //! [1]
 
 //! [2]
@@ -158,7 +158,7 @@ void DragWidget::mousePressEvent(QMouseEvent *event)
     QDrag *drag = new QDrag(this);
     drag->setMimeData(mimeData);
     drag->setPixmap(pixmap);
-    drag->setHotSpot(event->pos() - child->pos());
+    drag->setHotSpot(event->position().toPoint() - child->pos());
 //! [3]
 
     QPixmap tempPixmap = pixmap;

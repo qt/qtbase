@@ -284,13 +284,13 @@ void GLWidget::resizeGL(int w, int h)
 
 void GLWidget::mousePressEvent(QMouseEvent *event)
 {
-    m_lastPos = event->pos();
+    m_lastPos = event->position().toPoint();
 }
 
 void GLWidget::mouseMoveEvent(QMouseEvent *event)
 {
-    int dx = event->x() - m_lastPos.x();
-    int dy = event->y() - m_lastPos.y();
+    int dx = event->position().toPoint().x() - m_lastPos.x();
+    int dy = event->position().toPoint().y() - m_lastPos.y();
 
     if (event->buttons() & Qt::LeftButton) {
         setXRotation(m_xRot + 8 * dy);
@@ -299,5 +299,5 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
         setXRotation(m_xRot + 8 * dy);
         setZRotation(m_zRot + 8 * dx);
     }
-    m_lastPos = event->pos();
+    m_lastPos = event->position().toPoint();
 }

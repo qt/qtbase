@@ -2842,15 +2842,15 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             if (!w) {
                 // determine which window this event will go to
                 if (!window)
-                    window = QGuiApplication::topLevelAt(touchPoint.screenPos().toPoint());
+                    window = QGuiApplication::topLevelAt(touchPoint.globalPosition().toPoint());
                 if (!window)
                     continue;
                 w = window;
             }
 
             touchInfo.window = w;
-            touchPoint.d->startScreenPos = touchPoint.screenPos();
-            touchPoint.d->lastScreenPos = touchPoint.screenPos();
+            touchPoint.d->startScreenPos = touchPoint.globalPosition();
+            touchPoint.d->lastScreenPos = touchPoint.globalPosition();
             touchPoint.d->startNormalizedPos = touchPoint.normalizedPos();
             touchPoint.d->lastNormalizedPos = touchPoint.normalizedPos();
             if (touchPoint.pressure() < qreal(0.))
@@ -2865,10 +2865,10 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                 continue;
 
             previousTouchPoint = touchInfo.touchPoint;
-            touchPoint.d->startScreenPos = previousTouchPoint.startScreenPos();
-            touchPoint.d->lastScreenPos = previousTouchPoint.screenPos();
-            touchPoint.d->startPos = previousTouchPoint.startPos();
-            touchPoint.d->lastPos = previousTouchPoint.pos();
+            touchPoint.d->startScreenPos = previousTouchPoint.globalPressPosition();
+            touchPoint.d->lastScreenPos = previousTouchPoint.globalPosition();
+            touchPoint.d->startPos = previousTouchPoint.pressPosition();
+            touchPoint.d->lastPos = previousTouchPoint.position();
             touchPoint.d->startNormalizedPos = previousTouchPoint.startNormalizedPos();
             touchPoint.d->lastNormalizedPos = previousTouchPoint.normalizedPos();
             if (touchPoint.pressure() < qreal(0.))
@@ -2882,10 +2882,10 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                 continue;
 
             previousTouchPoint = touchInfo.touchPoint;
-            touchPoint.d->startScreenPos = previousTouchPoint.startScreenPos();
-            touchPoint.d->lastScreenPos = previousTouchPoint.screenPos();
-            touchPoint.d->startPos = previousTouchPoint.startPos();
-            touchPoint.d->lastPos = previousTouchPoint.pos();
+            touchPoint.d->startScreenPos = previousTouchPoint.globalPressPosition();
+            touchPoint.d->lastScreenPos = previousTouchPoint.globalPosition();
+            touchPoint.d->startPos = previousTouchPoint.pressPosition();
+            touchPoint.d->lastPos = previousTouchPoint.position();
             touchPoint.d->startNormalizedPos = previousTouchPoint.startNormalizedPos();
             touchPoint.d->lastNormalizedPos = previousTouchPoint.normalizedPos();
             if (touchPoint.pressure() < qreal(0.))
@@ -2916,8 +2916,8 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
         // Note: touchPoint is a reference to the one from activeTouchPoints,
         // so we can modify it as long as we're careful NOT to call setters and
         // otherwise NOT to cause the d-pointer to be detached.
-        touchPoint.d->scenePos = touchPoint.screenPos();
-        touchPoint.d->startScenePos = touchPoint.startScreenPos();
+        touchPoint.d->scenePos = touchPoint.globalPosition();
+        touchPoint.d->startScenePos = touchPoint.globalPressPosition();
         touchPoint.d->lastScenePos = touchPoint.lastScreenPos();
 
         StatesAndTouchPoints &maskAndPoints = windowsNeedingEvents[w.data()];
@@ -2981,7 +2981,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             QTouchEvent::TouchPoint &touchPoint = touchEvent._touchPoints[i];
 
             // preserve the sub-pixel resolution
-            const QPointF screenPos = touchPoint.screenPos();
+            const QPointF screenPos = touchPoint.globalPosition();
             const QPointF delta = screenPos - screenPos.toPoint();
 
             touchPoint.d->pos = w->mapFromGlobal(screenPos.toPoint()) + delta;
@@ -2989,7 +2989,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                 // touchPoint is actually a reference to one that is stored in activeTouchPoints,
                 // and we are now going to store the startPos and lastPos there, for the benefit
                 // of future moves and releases.  It's important that the d-pointer is NOT detached.
-                touchPoint.d->startPos = w->mapFromGlobal(touchPoint.startScreenPos().toPoint()) + delta;
+                touchPoint.d->startPos = w->mapFromGlobal(touchPoint.globalPressPosition().toPoint()) + delta;
                 touchPoint.d->lastPos = w->mapFromGlobal(touchPoint.lastScreenPos().toPoint()) + delta;
             }
         }
@@ -3023,12 +3023,12 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                     if (touchPoint.id() == m_fakeMouseSourcePointId) {
                         if (eventType != QEvent::TouchEnd)
                             self->synthesizedMousePoints.insert(w, SynthesizedMouseData(
-                                                                    touchPoint.pos(), touchPoint.screenPos(), w));
+                                                                    touchPoint.position(), touchPoint.globalPosition(), w));
                         // All touch events that are not accepted by the application will be translated to
                         // left mouse button events instead (see AA_SynthesizeMouseForUnhandledTouchEvents docs).
                         QWindowSystemInterfacePrivate::MouseEvent fake(w, e->timestamp,
-                                                                       touchPoint.pos(),
-                                                                       touchPoint.screenPos(),
+                                                                       touchPoint.position(),
+                                                                       touchPoint.globalPosition(),
                                                                        buttons,
                                                                        e->modifiers,
                                                                        button,

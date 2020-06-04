@@ -628,7 +628,7 @@ void BlueTitleBar::paintEvent(QPaintEvent*)
 
 void BlueTitleBar::mouseReleaseEvent(QMouseEvent *event)
 {
-    QPoint pos = event->pos();
+    QPoint pos = event->position().toPoint();
 
     QRect rect = this->rect();
 

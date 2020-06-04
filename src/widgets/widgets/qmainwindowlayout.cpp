@@ -1713,7 +1713,7 @@ void QMainWindowTabBar::mouseMoveEvent(QMouseEvent *e)
         int offset = QApplication::startDragDistance() + 1;
         offset *= 3;
         QRect r = rect().adjusted(-offset, -offset, offset, offset);
-        if (d->dragInProgress && !r.contains(e->pos()) && d->validIndex(d->pressedIndex)) {
+        if (d->dragInProgress && !r.contains(e->position().toPoint()) && d->validIndex(d->pressedIndex)) {
             QMainWindowLayout* mlayout = qt_mainwindow_layout(mainWindow);
             QDockAreaLayoutInfo *info = mlayout->dockInfo(this);
             Q_ASSERT(info);
@@ -1743,7 +1743,7 @@ void QMainWindowTabBar::mouseMoveEvent(QMouseEvent *e)
     if (draggingDock) {
         QDockWidgetPrivate *dockPriv = static_cast<QDockWidgetPrivate *>(QObjectPrivate::get(draggingDock));
         if (dockPriv->state && dockPriv->state->dragging) {
-            QPoint pos = e->globalPos() - dockPriv->state->pressPos;
+            QPoint pos = e->globalPosition().toPoint() - dockPriv->state->pressPos;
             draggingDock->move(pos);
             // move will call QMainWindowLayout::hover
         }

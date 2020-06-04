@@ -2099,7 +2099,7 @@ public:
         switch(event->type()) {
         case QEvent::MouseButtonPress:
             if (me->button() == mouseButton && gesture->state() == Qt::NoGesture) {
-                gesture->setHotSpot(QPointF(me->globalPos()));
+                gesture->setHotSpot(QPointF(me->globalPosition().toPoint()));
                 if (m_type == RmbAndCancelAllType)
                     gesture->setGestureCancelPolicy(QGesture::CancelAllInContext);
                 return QGestureRecognizer::TriggerGesture;

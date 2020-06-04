@@ -82,7 +82,7 @@ void VulkanWindow::meshSwitched(bool enable)
 void VulkanWindow::mousePressEvent(QMouseEvent *e)
 {
     m_pressed = true;
-    m_lastPos = e->pos();
+    m_lastPos = e->position().toPoint();
 }
 
 void VulkanWindow::mouseReleaseEvent(QMouseEvent *)
@@ -95,8 +95,8 @@ void VulkanWindow::mouseMoveEvent(QMouseEvent *e)
     if (!m_pressed)
         return;
 
-    int dx = e->pos().x() - m_lastPos.x();
-    int dy = e->pos().y() - m_lastPos.y();
+    int dx = e->position().toPoint().x() - m_lastPos.x();
+    int dy = e->position().toPoint().y() - m_lastPos.y();
 
     if (dy)
         m_renderer->pitch(dy / 10.0f);
@@ -104,7 +104,7 @@ void VulkanWindow::mouseMoveEvent(QMouseEvent *e)
     if (dx)
         m_renderer->yaw(dx / 10.0f);
 
-    m_lastPos = e->pos();
+    m_lastPos = e->position().toPoint();
 }
 
 void VulkanWindow::keyPressEvent(QKeyEvent *e)

@@ -10489,7 +10489,7 @@ protected:
         case QEvent::MouseMove:
         case QEvent::MouseButtonRelease: {
             QMouseEvent *me = static_cast<QMouseEvent *>(e);
-            m_log->push_back(mouseEventLogEntry(objectName(), me->type(), me->pos(), me->buttons()));
+            m_log->push_back(mouseEventLogEntry(objectName(), me->type(), me->position().toPoint(), me->buttons()));
             me->accept();
             return true;
         }
@@ -10613,7 +10613,7 @@ protected:
         case QEvent::MouseMove:
         case QEvent::MouseButtonRelease:
             ++m_mouseEventCount;
-            m_lastMouseEventPos = static_cast<QMouseEvent *>(e)->localPos();
+            m_lastMouseEventPos = static_cast<QMouseEvent *>(e)->position();
             if (m_acceptMouse)
                 e->accept();
             else

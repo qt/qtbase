@@ -795,7 +795,7 @@ bool QAbstractSpinBox::event(QEvent *event)
     case QEvent::HoverEnter:
     case QEvent::HoverLeave:
     case QEvent::HoverMove:
-        d->updateHoverControl(static_cast<const QHoverEvent *>(event)->pos());
+        d->updateHoverControl(static_cast<const QHoverEvent *>(event)->position().toPoint());
         break;
     case QEvent::ShortcutOverride:
         if (d->edit->event(event))
@@ -1359,7 +1359,7 @@ void QAbstractSpinBox::mouseMoveEvent(QMouseEvent *event)
 {
     Q_D(QAbstractSpinBox);
 
-    d->updateHoverControl(event->pos());
+    d->updateHoverControl(event->position().toPoint());
 
     // If we have a timer ID, update the state
     if (d->spinClickTimerId != -1 && d->buttonSymbols != NoButtons) {
@@ -1386,7 +1386,7 @@ void QAbstractSpinBox::mousePressEvent(QMouseEvent *event)
         return;
     }
 
-    d->updateHoverControl(event->pos());
+    d->updateHoverControl(event->position().toPoint());
     event->accept();
 
     const StepEnabled se = (d->buttonSymbols == NoButtons) ? StepEnabled(StepNone) : stepEnabled();

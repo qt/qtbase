@@ -132,7 +132,7 @@ void ScribbleArea::mousePressEvent(QMouseEvent *event)
 //! [11] //! [12]
 {
     if (event->button() == Qt::LeftButton) {
-        lastPoint = event->pos();
+        lastPoint = event->position().toPoint();
         scribbling = true;
     }
 }
@@ -140,13 +140,13 @@ void ScribbleArea::mousePressEvent(QMouseEvent *event)
 void ScribbleArea::mouseMoveEvent(QMouseEvent *event)
 {
     if ((event->buttons() & Qt::LeftButton) && scribbling)
-        drawLineTo(event->pos());
+        drawLineTo(event->position().toPoint());
 }
 
 void ScribbleArea::mouseReleaseEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton && scribbling) {
-        drawLineTo(event->pos());
+        drawLineTo(event->position().toPoint());
         scribbling = false;
     }
 }

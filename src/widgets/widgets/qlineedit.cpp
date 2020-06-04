@@ -1513,7 +1513,7 @@ void QLineEdit::mousePressEvent(QMouseEvent* e)
 {
     Q_D(QLineEdit);
 
-    d->mousePressPos = e->pos();
+    d->mousePressPos = e->position().toPoint();
 
     if (d->sendMouseEventToInputContext(e))
         return;
@@ -1527,7 +1527,7 @@ void QLineEdit::mousePressEvent(QMouseEvent* e)
             d->control->completer()->complete();
     }
 #endif
-    if (d->tripleClickTimer.isActive() && (e->pos() - d->tripleClick).manhattanLength() <
+    if (d->tripleClickTimer.isActive() && (e->position().toPoint() - d->tripleClick).manhattanLength() <
          QApplication::startDragDistance()) {
         selectAll();
         return;
@@ -1536,10 +1536,10 @@ void QLineEdit::mousePressEvent(QMouseEvent* e)
 #ifdef Q_OS_ANDROID
     mark = mark && (d->imHints & Qt::ImhNoPredictiveText);
 #endif // Q_OS_ANDROID
-    int cursor = d->xToPos(e->pos().x());
+    int cursor = d->xToPos(e->position().toPoint().x());
 #if QT_CONFIG(draganddrop)
     if (!mark && d->dragEnabled && d->control->echoMode() == Normal &&
-         e->button() == Qt::LeftButton && d->inSelection(e->pos().x())) {
+         e->button() == Qt::LeftButton && d->inSelection(e->position().toPoint().x())) {
         if (!d->dndTimer.isActive())
             d->dndTimer.start(QApplication::startDragTime(), this);
     } else
@@ -1558,7 +1558,7 @@ void QLineEdit::mouseMoveEvent(QMouseEvent * e)
     if (e->buttons() & Qt::LeftButton) {
 #if QT_CONFIG(draganddrop)
         if (d->dndTimer.isActive()) {
-            if ((d->mousePressPos - e->pos()).manhattanLength() > QApplication::startDragDistance())
+            if ((d->mousePressPos - e->position().toPoint()).manhattanLength() > QApplication::startDragDistance())
                 d->drag();
         } else
 #endif
@@ -1569,26 +1569,26 @@ void QLineEdit::mouseMoveEvent(QMouseEvent * e)
             const bool select = (d->imHints & Qt::ImhNoPredictiveText);
 #endif
 #ifndef QT_NO_IM
-            if (d->mouseYThreshold > 0 && e->pos().y() > d->mousePressPos.y() + d->mouseYThreshold) {
+            if (d->mouseYThreshold > 0 && e->position().toPoint().y() > d->mousePressPos.y() + d->mouseYThreshold) {
                 if (layoutDirection() == Qt::RightToLeft)
                     d->control->home(select);
                 else
                     d->control->end(select);
-            } else if (d->mouseYThreshold > 0 && e->pos().y() + d->mouseYThreshold < d->mousePressPos.y()) {
+            } else if (d->mouseYThreshold > 0 && e->position().toPoint().y() + d->mouseYThreshold < d->mousePressPos.y()) {
                 if (layoutDirection() == Qt::RightToLeft)
                     d->control->end(select);
                 else
                     d->control->home(select);
             } else if (d->control->composeMode() && select) {
                 int startPos = d->xToPos(d->mousePressPos.x());
-                int currentPos = d->xToPos(e->pos().x());
+                int currentPos = d->xToPos(e->position().toPoint().x());
                 if (startPos != currentPos)
                     d->control->setSelection(startPos, currentPos - startPos);
 
             } else
 #endif
             {
-                d->control->moveCursor(d->xToPos(e->pos().x()), select);
+                d->control->moveCursor(d->xToPos(e->position().toPoint().x()), select);
             }
         }
     }
@@ -1623,7 +1623,7 @@ void QLineEdit::mouseReleaseEvent(QMouseEvent* e)
     }
 #endif
 
-    if (!isReadOnly() && rect().contains(e->pos()))
+    if (!isReadOnly() && rect().contains(e->position().toPoint()))
         d->handleSoftwareInputPanel(e->button(), d->clickCausedFocus);
     d->clickCausedFocus = 0;
 }
@@ -1635,7 +1635,7 @@ void QLineEdit::mouseDoubleClickEvent(QMouseEvent* e)
     Q_D(QLineEdit);
 
     if (e->button() == Qt::LeftButton) {
-        int position = d->xToPos(e->pos().x());
+        int position = d->xToPos(e->position().toPoint().x());
 
         // exit composition mode
 #ifndef QT_NO_IM
@@ -1669,7 +1669,7 @@ void QLineEdit::mouseDoubleClickEvent(QMouseEvent* e)
             d->control->selectWordAtPos(position);
 
         d->tripleClickTimer.start(QApplication::doubleClickInterval(), this);
-        d->tripleClick = e->pos();
+        d->tripleClick = e->position().toPoint();
     } else {
         d->sendMouseEventToInputContext(e);
     }
@@ -2075,7 +2075,7 @@ void QLineEdit::dragMoveEvent(QDragMoveEvent *e)
     Q_D(QLineEdit);
     if (!d->control->isReadOnly() && e->mimeData()->hasFormat(QLatin1String("text/plain"))) {
         e->acceptProposedAction();
-        d->control->moveCursor(d->xToPos(e->pos().x()), false);
+        d->control->moveCursor(d->xToPos(e->position().toPoint().x()), false);
         d->cursorVisible = true;
         update();
     }
@@ -2106,7 +2106,7 @@ void QLineEdit::dropEvent(QDropEvent* e)
     if (!str.isNull() && !d->control->isReadOnly()) {
         if (e->source() == this && e->dropAction() == Qt::CopyAction)
             deselect();
-        int cursorPos = d->xToPos(e->pos().x());
+        int cursorPos = d->xToPos(e->position().toPoint().x());
         int selStart = cursorPos;
         int oldSelStart = d->control->selectionStart();
         int oldSelEnd = d->control->selectionEnd();

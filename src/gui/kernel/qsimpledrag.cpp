@@ -114,7 +114,7 @@ void QBasicDrag::disableEventFilter()
 
 static inline QPoint getNativeMousePos(QEvent *e, QWindow *window)
 {
-    return QHighDpi::toNativePixels(static_cast<QMouseEvent *>(e)->globalPos(), window);
+    return QHighDpi::toNativePixels(static_cast<QMouseEvent *>(e)->globalPosition().toPoint(), window);
 }
 
 bool QBasicDrag::eventFilter(QObject *o, QEvent *e)
@@ -176,13 +176,13 @@ bool QBasicDrag::eventFilter(QObject *o, QEvent *e)
             // If there is no such window (belonging to this Qt application),
             // make the event relative to the window where the drag started. (QTBUG-66103)
             const QMouseEvent *release = static_cast<QMouseEvent *>(e);
-            const QWindow *releaseWindow = topLevelAt(release->globalPos());
-            qCDebug(lcDnd) << "mouse released over" << releaseWindow << "after drag from" << m_sourceWindow << "globalPos" << release->globalPos();
+            const QWindow *releaseWindow = topLevelAt(release->globalPosition().toPoint());
+            qCDebug(lcDnd) << "mouse released over" << releaseWindow << "after drag from" << m_sourceWindow << "globalPos" << release->globalPosition().toPoint();
             if (!releaseWindow)
                 releaseWindow = m_sourceWindow;
-            QPoint releaseWindowPos = (releaseWindow ? releaseWindow->mapFromGlobal(release->globalPos()) : release->globalPos());
+            QPoint releaseWindowPos = (releaseWindow ? releaseWindow->mapFromGlobal(release->globalPosition().toPoint()) : release->globalPosition().toPoint());
             QMouseEvent *newRelease = new QMouseEvent(release->type(),
-                releaseWindowPos, releaseWindowPos, release->screenPos(),
+                releaseWindowPos, releaseWindowPos, release->globalPosition(),
                 release->button(), release->buttons(),
                 release->modifiers(), release->source());
             QCoreApplication::postEvent(o, newRelease);

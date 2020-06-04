@@ -589,7 +589,7 @@ void QMdiAreaTabBar::mousePressEvent(QMouseEvent *event)
         return;
     }
 
-    QMdiSubWindow *subWindow = subWindowFromIndex(tabAt(event->pos()));
+    QMdiSubWindow *subWindow = subWindowFromIndex(tabAt(event->position().toPoint()));
     if (!subWindow) {
         event->ignore();
         return;

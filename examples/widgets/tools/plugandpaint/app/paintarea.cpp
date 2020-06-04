@@ -137,7 +137,7 @@ void PaintArea::mousePressEvent(QMouseEvent *event)
             gradient.setColorAt(1.0, QColor(color.red(), color.green(),
                                             color.blue(), 191));
             painter.setBrush(gradient);
-            painter.translate(event->pos() - boundingRect.center());
+            painter.translate(event->position().toPoint() - boundingRect.center());
             painter.drawPath(pendingPath);
 
             pendingPath = QPainterPath();
@@ -150,11 +150,11 @@ void PaintArea::mousePressEvent(QMouseEvent *event)
                 QPainter painter(&theImage);
                 setupPainter(painter);
                 const QRect rect = brushInterface->mousePress(brush, painter,
-                                                              event->pos());
+                                                              event->position().toPoint());
                 update(rect);
             }
 
-            lastPos = event->pos();
+            lastPos = event->position().toPoint();
         }
     }
 }
@@ -167,11 +167,11 @@ void PaintArea::mouseMoveEvent(QMouseEvent *event)
             QPainter painter(&theImage);
             setupPainter(painter);
             const QRect rect = brushInterface->mouseMove(brush, painter, lastPos,
-                                                         event->pos());
+                                                         event->position().toPoint());
             update(rect);
         }
 
-        lastPos = event->pos();
+        lastPos = event->position().toPoint();
     }
 }
 //! [1]
@@ -183,7 +183,7 @@ void PaintArea::mouseReleaseEvent(QMouseEvent *event)
             QPainter painter(&theImage);
             setupPainter(painter);
             QRect rect = brushInterface->mouseRelease(brush, painter,
-                                                      event->pos());
+                                                      event->position().toPoint());
             update(rect);
         }
 

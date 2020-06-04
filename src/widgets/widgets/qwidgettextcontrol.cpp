@@ -1040,23 +1040,23 @@ void QWidgetTextControl::processEvent(QEvent *e, const QTransform &transform, QW
             break;
         case QEvent::MouseButtonPress: {
             QMouseEvent *ev = static_cast<QMouseEvent *>(e);
-            d->mousePressEvent(ev, ev->button(), transform.map(ev->pos()), ev->modifiers(),
-                               ev->buttons(), ev->globalPos());
+            d->mousePressEvent(ev, ev->button(), transform.map(ev->position().toPoint()), ev->modifiers(),
+                               ev->buttons(), ev->globalPosition().toPoint());
             break; }
         case QEvent::MouseMove: {
             QMouseEvent *ev = static_cast<QMouseEvent *>(e);
-            d->mouseMoveEvent(ev, ev->button(), transform.map(ev->pos()), ev->modifiers(),
-                              ev->buttons(), ev->globalPos());
+            d->mouseMoveEvent(ev, ev->button(), transform.map(ev->position().toPoint()), ev->modifiers(),
+                              ev->buttons(), ev->globalPosition().toPoint());
             break; }
         case QEvent::MouseButtonRelease: {
             QMouseEvent *ev = static_cast<QMouseEvent *>(e);
-            d->mouseReleaseEvent(ev, ev->button(), transform.map(ev->pos()), ev->modifiers(),
-                                 ev->buttons(), ev->globalPos());
+            d->mouseReleaseEvent(ev, ev->button(), transform.map(ev->position().toPoint()), ev->modifiers(),
+                                 ev->buttons(), ev->globalPosition().toPoint());
             break; }
         case QEvent::MouseButtonDblClick: {
             QMouseEvent *ev = static_cast<QMouseEvent *>(e);
-            d->mouseDoubleClickEvent(ev, ev->button(), transform.map(ev->pos()), ev->modifiers(),
-                                     ev->buttons(), ev->globalPos());
+            d->mouseDoubleClickEvent(ev, ev->button(), transform.map(ev->position().toPoint()), ev->modifiers(),
+                                     ev->buttons(), ev->globalPosition().toPoint());
             break; }
         case QEvent::InputMethod:
             d->inputMethodEvent(static_cast<QInputMethodEvent *>(e));
@@ -1096,13 +1096,13 @@ void QWidgetTextControl::processEvent(QEvent *e, const QTransform &transform, QW
             break;
         case QEvent::DragMove: {
             QDragMoveEvent *ev = static_cast<QDragMoveEvent *>(e);
-            if (d->dragMoveEvent(e, ev->mimeData(), transform.map(ev->pos())))
+            if (d->dragMoveEvent(e, ev->mimeData(), transform.map(ev->position().toPoint())))
                 ev->acceptProposedAction();
             break;
         }
         case QEvent::Drop: {
             QDropEvent *ev = static_cast<QDropEvent *>(e);
-            if (d->dropEvent(ev->mimeData(), transform.map(ev->pos()), ev->dropAction(), ev->source()))
+            if (d->dropEvent(ev->mimeData(), transform.map(ev->position().toPoint()), ev->dropAction(), ev->source()))
                 ev->acceptProposedAction();
             break;
         }

@@ -106,7 +106,7 @@ void Window::initialize()
 
 void Window::mousePressEvent(QMouseEvent *event)
 {
-    m_lastPos = event->pos();
+    m_lastPos = event->position().toPoint();
 }
 
 void Window::mouseMoveEvent(QMouseEvent *event)
@@ -114,8 +114,8 @@ void Window::mouseMoveEvent(QMouseEvent *event)
     if (m_lastPos != QPoint(-1, -1)) {
         QPainter p(&m_image);
         p.setRenderHint(QPainter::Antialiasing);
-        p.drawLine(m_lastPos, event->pos());
-        m_lastPos = event->pos();
+        p.drawLine(m_lastPos, event->position().toPoint());
+        m_lastPos = event->position().toPoint();
 
         scheduleRender();
     }
@@ -126,7 +126,7 @@ void Window::mouseReleaseEvent(QMouseEvent *event)
     if (m_lastPos != QPoint(-1, -1)) {
         QPainter p(&m_image);
         p.setRenderHint(QPainter::Antialiasing);
-        p.drawLine(m_lastPos, event->pos());
+        p.drawLine(m_lastPos, event->position().toPoint());
         m_lastPos = QPoint(-1, -1);
 
         scheduleRender();

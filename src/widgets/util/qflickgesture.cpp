@@ -75,7 +75,7 @@ static QMouseEvent *copyMouseEvent(QEvent *e)
     case QEvent::MouseButtonRelease:
     case QEvent::MouseMove: {
         QMouseEvent *me = static_cast<QMouseEvent *>(e);
-        QMouseEvent *cme = new QMouseEvent(me->type(), QPoint(0, 0), me->windowPos(), me->screenPos(),
+        QMouseEvent *cme = new QMouseEvent(me->type(), QPoint(0, 0), me->scenePosition(), me->globalPosition(),
                                            me->button(), me->buttons(), me->modifiers(), me->source());
         return cme;
     }
@@ -159,7 +159,7 @@ public:
         if (!pressDelayEvent) {
             pressDelayEvent.reset(copyMouseEvent(e));
             pressDelayTimer = startTimer(delay);
-            mouseTarget = QApplication::widgetAt(pressDelayEvent->globalPos());
+            mouseTarget = QApplication::widgetAt(pressDelayEvent->globalPosition().toPoint());
             mouseButton = pressDelayEvent->button();
             mouseEventSource = pressDelayEvent->source();
             qFGDebug("QFG: consuming/delaying mouse press");
@@ -297,8 +297,8 @@ protected:
 #endif // QT_CONFIG(graphicsview)
 
             if (me) {
-                QMouseEvent copy(me->type(), mouseTarget->mapFromGlobal(me->globalPos()),
-                                 mouseTarget->topLevelWidget()->mapFromGlobal(me->globalPos()), me->screenPos(),
+                QMouseEvent copy(me->type(), mouseTarget->mapFromGlobal(me->globalPosition().toPoint()),
+                                 mouseTarget->topLevelWidget()->mapFromGlobal(me->globalPosition().toPoint()), me->globalPosition(),
                                  me->button(), me->buttons(), me->modifiers(), me->source());
                 qt_sendSpontaneousEvent(mouseTarget, &copy);
             }
@@ -437,7 +437,7 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
             return Ignore;
         if (button != Qt::NoButton) {
             me = static_cast<const QMouseEvent *>(event);
-            globalPos = me->globalPos();
+            globalPos = me->globalPosition().toPoint();
         }
         break;
 #if QT_CONFIG(graphicsview)
@@ -458,7 +458,7 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
         if (button == Qt::NoButton) {
             te = static_cast<const QTouchEvent *>(event);
             if (!te->touchPoints().isEmpty())
-                globalPos = te->touchPoints().at(0).screenPos().toPoint();
+                globalPos = te->touchPoints().at(0).globalPosition().toPoint();
         }
         break;
 
@@ -492,7 +492,7 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
     switch (event->type()) {
     case QEvent::MouseButtonPress:
         if (me && me->button() == button && me->buttons() == button) {
-            point = me->globalPos();
+            point = me->globalPosition().toPoint();
             inputType = QScroller::InputPress;
         } else if (me) {
             scroller->stop();
@@ -501,13 +501,13 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
         break;
     case QEvent::MouseButtonRelease:
         if (me && me->button() == button) {
-            point = me->globalPos();
+            point = me->globalPosition().toPoint();
             inputType = QScroller::InputRelease;
         }
         break;
     case QEvent::MouseMove:
         if (me && me->buttons() == button) {
-            point = me->globalPos();
+            point = me->globalPosition().toPoint();
             inputType = QScroller::InputMove;
         }
         break;
@@ -551,14 +551,14 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
             if (te->touchPoints().count() != 2)  // 2 fingers on pad
                 return Ignore;
 
-            point = te->touchPoints().at(0).startScenePos() +
-                    ((te->touchPoints().at(0).scenePos() - te->touchPoints().at(0).startScenePos()) +
-                     (te->touchPoints().at(1).scenePos() - te->touchPoints().at(1).startScenePos())) / 2;
+            point = te->touchPoints().at(0).scenePressPosition() +
+                    ((te->touchPoints().at(0).scenePosition() - te->touchPoints().at(0).scenePressPosition()) +
+                     (te->touchPoints().at(1).scenePosition() - te->touchPoints().at(1).scenePressPosition())) / 2;
         } else { // TouchScreen
             if (te->touchPoints().count() != 1) // 1 finger on screen
                 return Ignore;
 
-            point = te->touchPoints().at(0).scenePos();
+            point = te->touchPoints().at(0).scenePosition();
         }
         break;
 

@@ -243,9 +243,9 @@ void QWhatsThat::showEvent(QShowEvent *)
 void QWhatsThat::mousePressEvent(QMouseEvent* e)
 {
     pressed = true;
-    if (e->button() == Qt::LeftButton && rect().contains(e->pos())) {
+    if (e->button() == Qt::LeftButton && rect().contains(e->position().toPoint())) {
         if (doc)
-            anchor = doc->documentLayout()->anchorAt(e->pos() -  QPoint(hMargin, vMargin));
+            anchor = doc->documentLayout()->anchorAt(e->position().toPoint() -  QPoint(hMargin, vMargin));
         return;
     }
     close();
@@ -255,8 +255,8 @@ void QWhatsThat::mouseReleaseEvent(QMouseEvent* e)
 {
     if (!pressed)
         return;
-    if (widget && e->button() == Qt::LeftButton && doc && rect().contains(e->pos())) {
-        QString a = doc->documentLayout()->anchorAt(e->pos() -  QPoint(hMargin, vMargin));
+    if (widget && e->button() == Qt::LeftButton && doc && rect().contains(e->position().toPoint())) {
+        QString a = doc->documentLayout()->anchorAt(e->position().toPoint() -  QPoint(hMargin, vMargin));
         QString href;
         if (anchor == a)
             href = a;
@@ -277,7 +277,7 @@ void QWhatsThat::mouseMoveEvent(QMouseEvent* e)
 #else
     if (!doc)
         return;
-    QString a = doc->documentLayout()->anchorAt(e->pos() -  QPoint(hMargin, vMargin));
+    QString a = doc->documentLayout()->anchorAt(e->position().toPoint() -  QPoint(hMargin, vMargin));
     if (!a.isEmpty())
         setCursor(Qt::PointingHandCursor);
     else
@@ -438,7 +438,7 @@ bool QWhatsThisPrivate::eventFilter(QObject *o, QEvent *e)
         QMouseEvent *me = static_cast<QMouseEvent*>(e);
         if (me->button() == Qt::RightButton || customWhatsThis)
             return false;
-        QHelpEvent e(QEvent::WhatsThis, me->pos(), me->globalPos());
+        QHelpEvent e(QEvent::WhatsThis, me->position().toPoint(), me->globalPosition().toPoint());
         if (!QCoreApplication::sendEvent(w, &e) || !e.isAccepted())
             leaveOnMouseRelease = true;
 
@@ -447,7 +447,7 @@ bool QWhatsThisPrivate::eventFilter(QObject *o, QEvent *e)
     case QEvent::MouseMove:
     {
         QMouseEvent *me = static_cast<QMouseEvent*>(e);
-        QHelpEvent e(QEvent::QueryWhatsThis, me->pos(), me->globalPos());
+        QHelpEvent e(QEvent::QueryWhatsThis, me->position().toPoint(), me->globalPosition().toPoint());
         const bool sentEvent = QCoreApplication::sendEvent(w, &e);
 #ifdef QT_NO_CURSOR
         Q_UNUSED(sentEvent);

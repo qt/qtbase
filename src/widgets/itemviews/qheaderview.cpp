@@ -2371,7 +2371,7 @@ bool QHeaderView::event(QEvent *e)
     switch (e->type()) {
     case QEvent::HoverEnter: {
         QHoverEvent *he = static_cast<QHoverEvent*>(e);
-        d->hover = logicalIndexAt(he->pos());
+        d->hover = logicalIndexAt(he->position().toPoint());
         if (d->hover != -1)
             updateSection(d->hover);
         break; }
@@ -2384,7 +2384,7 @@ bool QHeaderView::event(QEvent *e)
     case QEvent::HoverMove: {
         QHoverEvent *he = static_cast<QHoverEvent*>(e);
         int oldHover = d->hover;
-        d->hover = logicalIndexAt(he->pos());
+        d->hover = logicalIndexAt(he->position().toPoint());
         if (d->hover != oldHover) {
             if (oldHover != -1)
                 updateSection(oldHover);
@@ -2524,7 +2524,7 @@ void QHeaderView::mousePressEvent(QMouseEvent *e)
     Q_D(QHeaderView);
     if (d->state != QHeaderViewPrivate::NoState || e->button() != Qt::LeftButton)
         return;
-    int pos = d->orientation == Qt::Horizontal ? e->x() : e->y();
+    int pos = d->orientation == Qt::Horizontal ? e->position().toPoint().x() : e->position().toPoint().y();
     int handle = d->sectionHandleAt(pos);
     d->originalSize = -1; // clear the stored original size
     if (handle == -1) {
@@ -2566,7 +2566,7 @@ void QHeaderView::mousePressEvent(QMouseEvent *e)
 void QHeaderView::mouseMoveEvent(QMouseEvent *e)
 {
     Q_D(QHeaderView);
-    int pos = d->orientation == Qt::Horizontal ? e->x() : e->y();
+    int pos = d->orientation == Qt::Horizontal ? e->position().toPoint().x() : e->position().toPoint().y();
     if (pos < 0 && d->state != QHeaderViewPrivate::SelectSections)
         return;
     if (e->buttons() == Qt::NoButton) {
@@ -2594,7 +2594,7 @@ void QHeaderView::mouseMoveEvent(QMouseEvent *e)
             return;
         }
         case QHeaderViewPrivate::MoveSection: {
-            if (d->shouldAutoScroll(e->pos()))
+            if (d->shouldAutoScroll(e->position().toPoint()))
                 d->startAutoScroll();
             if (qAbs(pos - d->firstPos) >= QApplication::startDragDistance()
 #if QT_CONFIG(label)
@@ -2678,7 +2678,7 @@ void QHeaderView::mouseMoveEvent(QMouseEvent *e)
 void QHeaderView::mouseReleaseEvent(QMouseEvent *e)
 {
     Q_D(QHeaderView);
-    int pos = d->orientation == Qt::Horizontal ? e->x() : e->y();
+    int pos = d->orientation == Qt::Horizontal ? e->position().toPoint().x() : e->position().toPoint().y();
     switch (d->state) {
     case QHeaderViewPrivate::MoveSection:
         if (true
@@ -2731,7 +2731,7 @@ void QHeaderView::mouseReleaseEvent(QMouseEvent *e)
 void QHeaderView::mouseDoubleClickEvent(QMouseEvent *e)
 {
     Q_D(QHeaderView);
-    int pos = d->orientation == Qt::Horizontal ? e->x() : e->y();
+    int pos = d->orientation == Qt::Horizontal ? e->position().toPoint().x() : e->position().toPoint().y();
     int handle = d->sectionHandleAt(pos);
     if (handle > -1 && sectionResizeMode(handle) == Interactive) {
         emit sectionHandleDoubleClicked(handle);
@@ -2746,7 +2746,7 @@ void QHeaderView::mouseDoubleClickEvent(QMouseEvent *e)
         }
 #endif
     } else {
-        emit sectionDoubleClicked(logicalIndexAt(e->pos()));
+        emit sectionDoubleClicked(logicalIndexAt(e->position().toPoint()));
     }
 }
 

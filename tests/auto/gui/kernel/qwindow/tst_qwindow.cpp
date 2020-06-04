@@ -911,8 +911,8 @@ public:
             ++mousePressedCount;
             mouseSequenceSignature += 'p';
             mousePressButton = event->button();
-            mousePressScreenPos = event->screenPos();
-            mousePressLocalPos = event->localPos();
+            mousePressScreenPos = event->globalPosition();
+            mousePressLocalPos = event->position();
             if (spinLoopWhenPressed)
                 QCoreApplication::processEvents();
         }
@@ -935,7 +935,7 @@ public:
         } else {
             ++mouseMovedCount;
             mouseMoveButton = event->button();
-            mouseMoveScreenPos = event->screenPos();
+            mouseMoveScreenPos = event->globalPosition();
         }
     }
     void mouseDoubleClickEvent(QMouseEvent *event) override
@@ -1697,8 +1697,8 @@ public:
     void tabletEvent(QTabletEvent *ev) override
     {
         eventType = ev->type();
-        eventGlobal = ev->globalPosF();
-        eventLocal = ev->posF();
+        eventGlobal = ev->globalPosition();
+        eventLocal = ev->position();
         eventDevice = ev->deviceType();
     }
 

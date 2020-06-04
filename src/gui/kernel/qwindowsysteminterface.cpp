@@ -709,7 +709,7 @@ QList<QWindowSystemInterface::TouchPoint>
         p.flags = pt.flags();
         p.normalPosition = QHighDpi::toNativeLocalPosition(pt.normalizedPos(), window);
         QRectF area(QPointF(), pt.ellipseDiameters());
-        area.moveCenter(pt.screenPos());
+        area.moveCenter(pt.globalPosition());
         // TODO store ellipseDiameters in QWindowSystemInterface::TouchPoint or just use QTouchEvent::TouchPoint
         p.area = QHighDpi::toNativePixels(area, window);
         p.pressure = pt.pressure();

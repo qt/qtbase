@@ -82,7 +82,7 @@ ShapedClock::ShapedClock(QWidget *parent)
 void ShapedClock::mousePressEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton) {
-        dragPosition = event->globalPos() - frameGeometry().topLeft();
+        dragPosition = event->globalPosition().toPoint() - frameGeometry().topLeft();
         event->accept();
     }
 }
@@ -92,7 +92,7 @@ void ShapedClock::mousePressEvent(QMouseEvent *event)
 void ShapedClock::mouseMoveEvent(QMouseEvent *event)
 {
     if (event->buttons() & Qt::LeftButton) {
-        move(event->globalPos() - dragPosition);
+        move(event->globalPosition().toPoint() - dragPosition);
         event->accept();
     }
 }

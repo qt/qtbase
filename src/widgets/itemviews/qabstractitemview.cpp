@@ -1693,7 +1693,7 @@ bool QAbstractItemView::viewportEvent(QEvent *event)
     switch (event->type()) {
     case QEvent::HoverMove:
     case QEvent::HoverEnter:
-        d->setHoverIndex(indexAt(static_cast<QHoverEvent*>(event)->pos()));
+        d->setHoverIndex(indexAt(static_cast<QHoverEvent*>(event)->position().toPoint()));
         break;
     case QEvent::HoverLeave:
         d->setHoverIndex(QModelIndex());
@@ -1756,7 +1756,7 @@ void QAbstractItemView::mousePressEvent(QMouseEvent *event)
 {
     Q_D(QAbstractItemView);
     d->delayedAutoScroll.stop(); //any interaction with the view cancel the auto scrolling
-    QPoint pos = event->pos();
+    QPoint pos = event->position().toPoint();
     QPersistentModelIndex index = indexAt(pos);
 
     if (!d->selectionModel
@@ -1822,7 +1822,7 @@ void QAbstractItemView::mouseMoveEvent(QMouseEvent *event)
 {
     Q_D(QAbstractItemView);
     QPoint topLeft;
-    QPoint bottomRight = event->pos();
+    QPoint bottomRight = event->position().toPoint();
 
     if (state() == ExpandingState || state() == CollapsingState)
         return;
@@ -1901,7 +1901,7 @@ void QAbstractItemView::mouseReleaseEvent(QMouseEvent *event)
 {
     Q_D(QAbstractItemView);
 
-    QPoint pos = event->pos();
+    QPoint pos = event->position().toPoint();
     QPersistentModelIndex index = indexAt(pos);
 
     if (state() == EditingState) {
@@ -1949,12 +1949,12 @@ void QAbstractItemView::mouseDoubleClickEvent(QMouseEvent *event)
 {
     Q_D(QAbstractItemView);
 
-    QModelIndex index = indexAt(event->pos());
+    QModelIndex index = indexAt(event->position().toPoint());
     if (!index.isValid()
         || !d->isIndexEnabled(index)
         || (d->pressedIndex != index)) {
         QMouseEvent me(QEvent::MouseButtonPress,
-                       event->localPos(), event->windowPos(), event->screenPos(),
+                       event->position(), event->scenePosition(), event->globalPosition(),
                        event->button(), event->buttons(), event->modifiers(), event->source());
         mousePressEvent(&me);
         return;
@@ -2009,14 +2009,14 @@ void QAbstractItemView::dragMoveEvent(QDragMoveEvent *event)
     // ignore by default
     event->ignore();
 
-    QModelIndex index = indexAt(event->pos());
+    QModelIndex index = indexAt(event->position().toPoint());
     d->hover = index;
     if (!d->droppingOnItself(event, index)
         && d->canDrop(event)) {
 
         if (index.isValid() && d->showDropIndicator) {
             QRect rect = visualRect(index);
-            d->dropIndicatorPosition = d->position(event->pos(), rect, index);
+            d->dropIndicatorPosition = d->position(event->position().toPoint(), rect, index);
             switch (d->dropIndicatorPosition) {
             case AboveItem:
                 if (d->isIndexDropEnabled(index.parent())) {
@@ -2059,7 +2059,7 @@ void QAbstractItemView::dragMoveEvent(QDragMoveEvent *event)
         d->viewport->update();
     } // can drop
 
-    if (d->shouldAutoScroll(event->pos()))
+    if (d->shouldAutoScroll(event->position().toPoint()))
         startAutoScroll();
 }
 
@@ -2156,9 +2156,9 @@ bool QAbstractItemViewPrivate::dropOn(QDropEvent *event, int *dropRow, int *drop
 
     QModelIndex index;
     // rootIndex() (i.e. the viewport) might be a valid index
-    if (viewport->rect().contains(event->pos())) {
-        index = q->indexAt(event->pos());
-        if (!index.isValid() || !q->visualRect(index).contains(event->pos()))
+    if (viewport->rect().contains(event->position().toPoint())) {
+        index = q->indexAt(event->position().toPoint());
+        if (!index.isValid() || !q->visualRect(index).contains(event->position().toPoint()))
             index = root;
     }
 
@@ -2167,7 +2167,7 @@ bool QAbstractItemViewPrivate::dropOn(QDropEvent *event, int *dropRow, int *drop
         int row = -1;
         int col = -1;
         if (index != root) {
-            dropIndicatorPosition = position(event->pos(), q->visualRect(index), index);
+            dropIndicatorPosition = position(event->position().toPoint(), q->visualRect(index), index);
             switch (dropIndicatorPosition) {
             case QAbstractItemView::AboveItem:
                 row = index.row();

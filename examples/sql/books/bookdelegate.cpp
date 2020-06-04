@@ -116,7 +116,7 @@ bool BookDelegate::editorEvent(QEvent *event, QAbstractItemModel *model,
 
     if (event->type() == QEvent::MouseButtonPress) {
         QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
-        int stars = qBound(0, int(0.7 + qreal(mouseEvent->pos().x()
+        int stars = qBound(0, int(0.7 + qreal(mouseEvent->position().toPoint().x()
             - option.rect.x()) / star.width()), 5);
         model->setData(index, QVariant(stars));
         // So that the selection can change:

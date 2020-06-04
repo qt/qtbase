@@ -280,7 +280,7 @@ void QDial::mousePressEvent(QMouseEvent *e)
         return;
     }
     e->accept();
-    setSliderPosition(d->valueFromPoint(e->pos()));
+    setSliderPosition(d->valueFromPoint(e->position().toPoint()));
     // ### This isn't quite right,
     // we should be doing a hit test and only setting this if it's
     // the actual dial thingie (similar to what QSlider does), but we have no
@@ -302,7 +302,7 @@ void QDial::mouseReleaseEvent(QMouseEvent * e)
         return;
     }
     e->accept();
-    setValue(d->valueFromPoint(e->pos()));
+    setValue(d->valueFromPoint(e->position().toPoint()));
     setSliderDown(false);
 }
 
@@ -320,7 +320,7 @@ void QDial::mouseMoveEvent(QMouseEvent * e)
     }
     e->accept();
     d->doNotEmit = true;
-    setSliderPosition(d->valueFromPoint(e->pos()));
+    setSliderPosition(d->valueFromPoint(e->position().toPoint()));
     d->doNotEmit = false;
 }
 

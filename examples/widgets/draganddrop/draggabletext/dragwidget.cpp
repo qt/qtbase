@@ -114,7 +114,7 @@ void DragWidget::dropEvent(QDropEvent *event)
         const QMimeData *mime = event->mimeData();
         QStringList pieces = mime->text().split(QRegularExpression(QStringLiteral("\\s+")),
                                                 Qt::SkipEmptyParts);
-        QPoint position = event->pos();
+        QPoint position = event->position().toPoint();
         QPoint hotSpot;
 
         QByteArrayList hotSpotPos = mime->data(hotSpotMimeDataKey()).split(' ');
@@ -149,11 +149,11 @@ void DragWidget::dropEvent(QDropEvent *event)
 
 void DragWidget::mousePressEvent(QMouseEvent *event)
 {
-    QLabel *child = qobject_cast<QLabel*>(childAt(event->pos()));
+    QLabel *child = qobject_cast<QLabel*>(childAt(event->position().toPoint()));
     if (!child)
         return;
 
-    QPoint hotSpot = event->pos() - child->pos();
+    QPoint hotSpot = event->position().toPoint() - child->pos();
 
     QMimeData *mimeData = new QMimeData;
     mimeData->setText(child->text());

@@ -338,7 +338,7 @@ bool QSlider::event(QEvent *event)
     case QEvent::HoverLeave:
     case QEvent::HoverMove:
         if (const QHoverEvent *he = static_cast<const QHoverEvent *>(event))
-            d->updateHoverControl(he->pos());
+            d->updateHoverControl(he->position().toPoint());
         break;
     case QEvent::StyleChange:
     case QEvent::MacSizeChange:
@@ -372,7 +372,7 @@ void QSlider::mousePressEvent(QMouseEvent *ev)
         const QPoint center = sliderRect.center() - sliderRect.topLeft();
         // to take half of the slider off for the setSliderPosition call we use the center - topLeft
 
-        setSliderPosition(d->pixelPosToRangeValue(d->pick(ev->pos() - center)));
+        setSliderPosition(d->pixelPosToRangeValue(d->pick(ev->position().toPoint() - center)));
         triggerAction(SliderMove);
         setRepeatAction(SliderNoAction);
         d->pressedControl = QStyle::SC_SliderHandle;
@@ -381,11 +381,11 @@ void QSlider::mousePressEvent(QMouseEvent *ev)
         QStyleOptionSlider opt;
         initStyleOption(&opt);
         d->pressedControl = style()->hitTestComplexControl(QStyle::CC_Slider,
-                                                           &opt, ev->pos(), this);
+                                                           &opt, ev->position().toPoint(), this);
         SliderAction action = SliderNoAction;
         if (d->pressedControl == QStyle::SC_SliderGroove) {
             const QRect sliderRect = style()->subControlRect(QStyle::CC_Slider, &opt, QStyle::SC_SliderHandle, this);
-            int pressValue = d->pixelPosToRangeValue(d->pick(ev->pos() - sliderRect.center() + sliderRect.topLeft()));
+            int pressValue = d->pixelPosToRangeValue(d->pick(ev->position().toPoint() - sliderRect.center() + sliderRect.topLeft()));
             d->pressValue = pressValue;
             if (pressValue > d->value)
                 action = SliderPageStepAdd;
@@ -406,7 +406,7 @@ void QSlider::mousePressEvent(QMouseEvent *ev)
         initStyleOption(&opt);
         setRepeatAction(SliderNoAction);
         QRect sr = style()->subControlRect(QStyle::CC_Slider, &opt, QStyle::SC_SliderHandle, this);
-        d->clickOffset = d->pick(ev->pos() - sr.topLeft());
+        d->clickOffset = d->pick(ev->position().toPoint() - sr.topLeft());
         update(sr);
         setSliderDown(true);
     }
@@ -423,7 +423,7 @@ void QSlider::mouseMoveEvent(QMouseEvent *ev)
         return;
     }
     ev->accept();
-    int newPosition = d->pixelPosToRangeValue(d->pick(ev->pos()) - d->clickOffset);
+    int newPosition = d->pixelPosToRangeValue(d->pick(ev->position().toPoint()) - d->clickOffset);
     QStyleOptionSlider opt;
     initStyleOption(&opt);
     setSliderPosition(newPosition);

@@ -102,7 +102,7 @@ bool HoverPoints::eventFilter(QObject *object, QEvent *event)
                 return true;
             QMouseEvent *me = (QMouseEvent *) event;
 
-            QPointF clickPos = me->pos();
+            QPointF clickPos = me->position().toPoint();
             int index = -1;
             for (int i=0; i<m_points.size(); ++i) {
                 QPainterPath path;
@@ -170,7 +170,7 @@ bool HoverPoints::eventFilter(QObject *object, QEvent *event)
             if (!m_fingerPointMapping.isEmpty())
                 return true;
             if (m_currentIndex >= 0)
-                movePoint(m_currentIndex, ((QMouseEvent *)event)->pos());
+                movePoint(m_currentIndex, ((QMouseEvent *)event)->position().toPoint());
             break;
         case QEvent::TouchBegin:
         case QEvent::TouchUpdate:
@@ -197,7 +197,7 @@ bool HoverPoints::eventFilter(QObject *object, QEvent *event)
                                     if (activePoints.contains(i))
                                         continue;
 
-                                    qreal d = QLineF(touchPoint.pos(), m_points.at(i)).length();
+                                    qreal d = QLineF(touchPoint.position(), m_points.at(i)).length();
                                     if ((distance < 0 && d < 12 * pointSize) || d < distance) {
                                         distance = d;
                                         activePoint = i;
@@ -207,7 +207,7 @@ bool HoverPoints::eventFilter(QObject *object, QEvent *event)
                             }
                             if (activePoint != -1) {
                                 m_fingerPointMapping.insert(touchPoint.id(), activePoint);
-                                movePoint(activePoint, touchPoint.pos());
+                                movePoint(activePoint, touchPoint.position());
                             }
                         }
                         break;
@@ -215,7 +215,7 @@ bool HoverPoints::eventFilter(QObject *object, QEvent *event)
                         {
                             // move the point and release
                             QHash<int,int>::iterator it = m_fingerPointMapping.find(id);
-                            movePoint(it.value(), touchPoint.pos());
+                            movePoint(it.value(), touchPoint.position());
                             m_fingerPointMapping.erase(it);
                         }
                         break;
@@ -224,7 +224,7 @@ bool HoverPoints::eventFilter(QObject *object, QEvent *event)
                             // move the point
                             const int pointIdx = m_fingerPointMapping.value(id, -1);
                             if (pointIdx >= 0) // do we track this point?
-                                movePoint(pointIdx, touchPoint.pos());
+                                movePoint(pointIdx, touchPoint.position());
                         }
                         break;
                     default:

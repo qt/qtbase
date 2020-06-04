@@ -468,7 +468,7 @@ bool QScrollBar::event(QEvent *event)
     case QEvent::HoverLeave:
     case QEvent::HoverMove:
         if (const QHoverEvent *he = static_cast<const QHoverEvent *>(event))
-            d_func()->updateHoverControl(he->pos());
+            d_func()->updateHoverControl(he->position().toPoint());
         break;
     case QEvent::StyleChange:
         d_func()->setTransient(style()->styleHint(QStyle::SH_ScrollBar_Transient, nullptr, this));
@@ -559,12 +559,12 @@ void QScrollBar::mousePressEvent(QMouseEvent *e)
         || !(e->button() == Qt::LeftButton || (midButtonAbsPos && e->button() == Qt::MidButton)))
         return;
 
-    d->pressedControl = style()->hitTestComplexControl(QStyle::CC_ScrollBar, &opt, e->pos(), this);
+    d->pressedControl = style()->hitTestComplexControl(QStyle::CC_ScrollBar, &opt, e->position().toPoint(), this);
     d->pointerOutsidePressedControl = false;
 
     QRect sr = style()->subControlRect(QStyle::CC_ScrollBar, &opt,
                                        QStyle::SC_ScrollBarSlider, this);
-    QPoint click = e->pos();
+    QPoint click = e->position().toPoint();
     QPoint pressValue = click - sr.center() + sr.topLeft();
     d->pressValue = d->orientation == Qt::Horizontal ? d->pixelPosToRangeValue(pressValue.x()) :
         d->pixelPosToRangeValue(pressValue.y());
@@ -579,8 +579,8 @@ void QScrollBar::mousePressEvent(QMouseEvent *e)
             || (style()->styleHint(QStyle::SH_ScrollBar_LeftClickAbsolutePosition, &opt, this)
                 && e->button() == Qt::LeftButton))) {
         int sliderLength = HORIZONTAL ? sr.width() : sr.height();
-        setSliderPosition(d->pixelPosToRangeValue((HORIZONTAL ? e->pos().x()
-                                                              : e->pos().y()) - sliderLength / 2));
+        setSliderPosition(d->pixelPosToRangeValue((HORIZONTAL ? e->position().toPoint().x()
+                                                              : e->position().toPoint().y()) - sliderLength / 2));
         d->pressedControl = QStyle::SC_ScrollBarSlider;
         d->clickOffset = sliderLength / 2;
     }
@@ -636,13 +636,13 @@ void QScrollBar::mouseMoveEvent(QMouseEvent *e)
         return;
 
     if (d->pressedControl == QStyle::SC_ScrollBarSlider) {
-        QPoint click = e->pos();
+        QPoint click = e->position().toPoint();
         int newPosition = d->pixelPosToRangeValue((HORIZONTAL ? click.x() : click.y()) -d->clickOffset);
         int m = style()->pixelMetric(QStyle::PM_MaximumDragDistance, &opt, this);
         if (m >= 0) {
             QRect r = rect();
             r.adjust(-m, -m, m, m);
-            if (! r.contains(e->pos()))
+            if (! r.contains(e->position().toPoint()))
                 newPosition = d->snapBackPosition;
         }
         setSliderPosition(newPosition);
@@ -650,7 +650,7 @@ void QScrollBar::mouseMoveEvent(QMouseEvent *e)
 
         if (style()->styleHint(QStyle::SH_ScrollBar_RollBetweenButtons, &opt, this)
                 && d->pressedControl & (QStyle::SC_ScrollBarAddLine | QStyle::SC_ScrollBarSubLine)) {
-            QStyle::SubControl newSc = style()->hitTestComplexControl(QStyle::CC_ScrollBar, &opt, e->pos(), this);
+            QStyle::SubControl newSc = style()->hitTestComplexControl(QStyle::CC_ScrollBar, &opt, e->position().toPoint(), this);
             if (newSc == d->pressedControl && !d->pointerOutsidePressedControl)
                 return; // nothing to do
             if (newSc & (QStyle::SC_ScrollBarAddLine | QStyle::SC_ScrollBarSubLine)) {
@@ -667,7 +667,7 @@ void QScrollBar::mouseMoveEvent(QMouseEvent *e)
         // stop scrolling when the mouse pointer leaves a control
         // similar to push buttons
         QRect pr = style()->subControlRect(QStyle::CC_ScrollBar, &opt, d->pressedControl, this);
-        if (pr.contains(e->pos()) == d->pointerOutsidePressedControl) {
+        if (pr.contains(e->position().toPoint()) == d->pointerOutsidePressedControl) {
             if ((d->pointerOutsidePressedControl = !d->pointerOutsidePressedControl)) {
                 d->pointerOutsidePressedControl = true;
                 setRepeatAction(SliderNoAction);

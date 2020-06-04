@@ -127,7 +127,7 @@ void Images::open()
         }
     }
 
-    std::function<QImage(const QString&)> scale = [imageSize](const QString &imageFileName) {
+    std::function<QImage(const QString&)> scale = [](const QString &imageFileName) {
         QImage image(imageFileName);
         return image.scaled(QSize(imageSize, imageSize), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
     };

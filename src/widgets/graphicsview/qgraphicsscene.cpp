@@ -5830,8 +5830,8 @@ void QGraphicsScenePrivate::updateTouchPointsForItem(QGraphicsItem *item, QTouch
         item->d_ptr->genericMapFromSceneTransform(static_cast<const QWidget *>(touchEvent->target()));
 
     for (auto &touchPoint : touchEvent->_touchPoints) {
-        touchPoint.setPos(mapFromScene.map(touchPoint.scenePos()));
-        touchPoint.setStartPos(mapFromScene.map(touchPoint.startScenePos()));
+        touchPoint.setPos(mapFromScene.map(touchPoint.scenePosition()));
+        touchPoint.setStartPos(mapFromScene.map(touchPoint.scenePressPosition()));
         touchPoint.setLastPos(mapFromScene.map(touchPoint.lastScenePos()));
     }
 }
@@ -5841,7 +5841,7 @@ int QGraphicsScenePrivate::findClosestTouchPointId(const QPointF &scenePos)
     int closestTouchPointId = -1;
     qreal closestDistance = qreal(0.);
     for (const QTouchEvent::TouchPoint &touchPoint : qAsConst(sceneCurrentTouchPoints)) {
-        qreal distance = QLineF(scenePos, touchPoint.scenePos()).length();
+        qreal distance = QLineF(scenePos, touchPoint.scenePosition()).length();
         if (closestTouchPointId == -1|| distance < closestDistance) {
             closestTouchPointId = touchPoint.id();
             closestDistance = distance;
@@ -5869,15 +5869,15 @@ void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
 
             if (!item) {
                 // determine which item this touch point will go to
-                cachedItemsUnderMouse = itemsAtPosition(touchPoint.screenPos().toPoint(),
-                                                        touchPoint.scenePos(),
+                cachedItemsUnderMouse = itemsAtPosition(touchPoint.globalPosition().toPoint(),
+                                                        touchPoint.scenePosition(),
                                                         static_cast<QWidget *>(sceneTouchEvent->target()));
                 item = cachedItemsUnderMouse.isEmpty() ? 0 : cachedItemsUnderMouse.constFirst();
             }
 
             if (sceneTouchEvent->device()->type() == QTouchDevice::TouchScreen) {
                 // on touch-screens, combine this touch point with the closest one we find
-                int closestTouchPointId = findClosestTouchPointId(touchPoint.scenePos());
+                int closestTouchPointId = findClosestTouchPointId(touchPoint.scenePosition());
                 QGraphicsItem *closestItem = itemForTouchPointId.value(closestTouchPointId);
                 if (!item || (closestItem && cachedItemsUnderMouse.contains(closestItem)))
                     item = closestItem;
@@ -5985,8 +5985,8 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
     if (focusOnTouch) {
         if (cachedItemsUnderMouse.isEmpty() || cachedItemsUnderMouse.constFirst() != origin) {
             const QTouchEvent::TouchPoint &firstTouchPoint = touchEvent->touchPoints().first();
-            cachedItemsUnderMouse = itemsAtPosition(firstTouchPoint.screenPos().toPoint(),
-                                                    firstTouchPoint.scenePos(),
+            cachedItemsUnderMouse = itemsAtPosition(firstTouchPoint.globalPosition().toPoint(),
+                                                    firstTouchPoint.scenePosition(),
                                                     static_cast<QWidget *>(touchEvent->target()));
         }
 

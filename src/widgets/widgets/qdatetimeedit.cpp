@@ -1528,7 +1528,7 @@ void QDateTimeEdit::mousePressEvent(QMouseEvent *event)
         QAbstractSpinBox::mousePressEvent(event);
         return;
     }
-    d->updateHoverControl(event->pos());
+    d->updateHoverControl(event->position().toPoint());
     if (d->hoverControl == QStyle::SC_ComboBoxArrow) {
         event->accept();
         if (d->readOnly) {
@@ -2712,7 +2712,7 @@ void QCalendarPopup::mousePressEvent(QMouseEvent *event)
         QRect arrowRect = dateTime->style()->subControlRect(QStyle::CC_ComboBox, &opt,
                                                             QStyle::SC_ComboBoxArrow, dateTime);
         arrowRect.moveTo(dateTime->mapToGlobal(arrowRect .topLeft()));
-        if (arrowRect.contains(event->globalPos()) || rect().contains(event->pos()))
+        if (arrowRect.contains(event->globalPosition().toPoint()) || rect().contains(event->position().toPoint()))
             setAttribute(Qt::WA_NoMouseReplay);
     }
     QWidget::mousePressEvent(event);

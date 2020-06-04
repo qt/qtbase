@@ -325,7 +325,7 @@ void QCheckBox::mouseMoveEvent(QMouseEvent *e)
     if (testAttribute(Qt::WA_Hover)) {
         bool hit = false;
         if (underMouse())
-            hit = hitButton(e->pos());
+            hit = hitButton(e->position().toPoint());
 
         if (hit != d->hovering) {
             update(rect());

@@ -120,14 +120,14 @@ QSize CharacterWidget::sizeHint() const
 //! [4]
 void CharacterWidget::mouseMoveEvent(QMouseEvent *event)
 {
-    QPoint widgetPosition = mapFromGlobal(event->globalPos());
+    QPoint widgetPosition = mapFromGlobal(event->globalPosition().toPoint());
     uint key = (widgetPosition.y() / squareSize) * columns + widgetPosition.x() / squareSize;
 
     QString text = QString::fromLatin1("<p>Character: <span style=\"font-size: 24pt; font-family: %1\">").arg(displayFont.family())
                   + QChar(key)
                   + QString::fromLatin1("</span><p>Value: 0x")
                   + QString::number(key, 16);
-    QToolTip::showText(event->globalPos(), text, this);
+    QToolTip::showText(event->globalPosition().toPoint(), text, this);
 }
 //! [4]
 
@@ -135,7 +135,7 @@ void CharacterWidget::mouseMoveEvent(QMouseEvent *event)
 void CharacterWidget::mousePressEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton) {
-        lastKey = (event->y() / squareSize) * columns + event->x() / squareSize;
+        lastKey = (event->position().toPoint().y() / squareSize) * columns + event->position().toPoint().x() / squareSize;
         if (QChar(lastKey).category() != QChar::Other_NotAssigned)
             emit characterSelected(QString(QChar(lastKey)));
         update();

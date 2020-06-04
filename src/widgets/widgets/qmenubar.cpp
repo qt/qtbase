@@ -1053,12 +1053,12 @@ void QMenuBar::mousePressEvent(QMouseEvent *e)
 
     d->mouseDown = true;
 
-    QAction *action = d->actionAt(e->pos());
+    QAction *action = d->actionAt(e->position().toPoint());
     if (!action || !d->isVisible(action) || !action->isEnabled()) {
         d->setCurrentAction(nullptr);
 #if QT_CONFIG(whatsthis)
         if (QWhatsThis::inWhatsThisMode())
-            QWhatsThis::showText(e->globalPos(), d->whatsThis, this);
+            QWhatsThis::showText(e->globalPosition().toPoint(), d->whatsThis, this);
 #endif
         return;
     }
@@ -1084,7 +1084,7 @@ void QMenuBar::mouseReleaseEvent(QMouseEvent *e)
         return;
 
     d->mouseDown = false;
-    QAction *action = d->actionAt(e->pos());
+    QAction *action = d->actionAt(e->position().toPoint());
 
     // do noting if the action is hidden
     if (!d->isVisible(action))
@@ -1222,7 +1222,7 @@ void QMenuBar::mouseMoveEvent(QMouseEvent *e)
     }
 
     bool popupState = d->popupState || d->mouseDown;
-    QAction *action = d->actionAt(e->pos());
+    QAction *action = d->actionAt(e->position().toPoint());
     if ((action && d->isVisible(action)) || !popupState)
         d->setCurrentAction(action, popupState);
 }

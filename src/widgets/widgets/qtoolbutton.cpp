@@ -603,7 +603,7 @@ void QToolButton::mousePressEvent(QMouseEvent *e)
     if (e->button() == Qt::LeftButton && (d->popupMode == MenuButtonPopup)) {
         QRect popupr = style()->subControlRect(QStyle::CC_ToolButton, &opt,
                                                QStyle::SC_ToolButtonMenu, this);
-        if (popupr.isValid() && popupr.contains(e->pos())) {
+        if (popupr.isValid() && popupr.contains(e->position().toPoint())) {
             d->buttonPressed = QToolButtonPrivate::MenuButtonPressed;
             showMenu();
             return;
@@ -1004,7 +1004,7 @@ bool QToolButton::event(QEvent *event)
     case QEvent::HoverLeave:
     case QEvent::HoverMove:
         if (const QHoverEvent *he = static_cast<const QHoverEvent *>(event))
-            d_func()->updateHoverControl(he->pos());
+            d_func()->updateHoverControl(he->position().toPoint());
         break;
     default:
         break;

@@ -251,7 +251,7 @@ int PieView::horizontalOffset() const
 void PieView::mousePressEvent(QMouseEvent *event)
 {
     QAbstractItemView::mousePressEvent(event);
-    origin = event->pos();
+    origin = event->position().toPoint();
     if (!rubberBand)
         rubberBand = new QRubberBand(QRubberBand::Rectangle, viewport());
     rubberBand->setGeometry(QRect(origin, QSize()));
@@ -261,7 +261,7 @@ void PieView::mousePressEvent(QMouseEvent *event)
 void PieView::mouseMoveEvent(QMouseEvent *event)
 {
     if (rubberBand)
-        rubberBand->setGeometry(QRect(origin, event->pos()).normalized());
+        rubberBand->setGeometry(QRect(origin, event->position().toPoint()).normalized());
     QAbstractItemView::mouseMoveEvent(event);
 }
 

@@ -1297,8 +1297,8 @@ bool QTreeView::viewportEvent(QEvent *event)
     case QEvent::HoverMove: {
         QHoverEvent *he = static_cast<QHoverEvent*>(event);
         int oldBranch = d->hoverBranch;
-        d->hoverBranch = d->itemDecorationAt(he->pos());
-        QModelIndex newIndex = indexAt(he->pos());
+        d->hoverBranch = d->itemDecorationAt(he->position().toPoint());
+        QModelIndex newIndex = indexAt(he->position().toPoint());
         if (d->hover != newIndex || d->hoverBranch != oldBranch) {
             // Update the whole hovered over row. No need to update the old hovered
             // row, that is taken care in superclass hover handling.
@@ -1907,8 +1907,8 @@ void QTreeView::mousePressEvent(QMouseEvent *event)
     Q_D(QTreeView);
     bool handled = false;
     if (style()->styleHint(QStyle::SH_ListViewExpand_SelectMouseType, nullptr, this) == QEvent::MouseButtonPress)
-        handled = d->expandOrCollapseItemAtPos(event->pos());
-    if (!handled && d->itemDecorationAt(event->pos()) == -1)
+        handled = d->expandOrCollapseItemAtPos(event->position().toPoint());
+    if (!handled && d->itemDecorationAt(event->position().toPoint()) == -1)
         QAbstractItemView::mousePressEvent(event);
     else
         d->pressedIndex = QModelIndex();
@@ -1920,13 +1920,13 @@ void QTreeView::mousePressEvent(QMouseEvent *event)
 void QTreeView::mouseReleaseEvent(QMouseEvent *event)
 {
     Q_D(QTreeView);
-    if (d->itemDecorationAt(event->pos()) == -1) {
+    if (d->itemDecorationAt(event->position().toPoint()) == -1) {
         QAbstractItemView::mouseReleaseEvent(event);
     } else {
         if (state() == QAbstractItemView::DragSelectingState || state() == QAbstractItemView::DraggingState)
             setState(QAbstractItemView::NoState);
         if (style()->styleHint(QStyle::SH_ListViewExpand_SelectMouseType, nullptr, this) == QEvent::MouseButtonRelease)
-            d->expandOrCollapseItemAtPos(event->pos());
+            d->expandOrCollapseItemAtPos(event->position().toPoint());
     }
 }
 
@@ -1936,17 +1936,17 @@ void QTreeView::mouseReleaseEvent(QMouseEvent *event)
 void QTreeView::mouseDoubleClickEvent(QMouseEvent *event)
 {
     Q_D(QTreeView);
-    if (state() != NoState || !d->viewport->rect().contains(event->pos()))
+    if (state() != NoState || !d->viewport->rect().contains(event->position().toPoint()))
         return;
 
-    int i = d->itemDecorationAt(event->pos());
+    int i = d->itemDecorationAt(event->position().toPoint());
     if (i == -1) {
-        i = d->itemAtCoordinate(event->y());
+        i = d->itemAtCoordinate(event->position().toPoint().y());
         if (i == -1)
             return; // user clicked outside the items
 
         const QPersistentModelIndex firstColumnIndex = d->viewItems.at(i).index;
-        const QPersistentModelIndex persistent = indexAt(event->pos());
+        const QPersistentModelIndex persistent = indexAt(event->position().toPoint());
 
         if (d->pressedIndex != persistent) {
             mousePressEvent(event);
@@ -1995,7 +1995,7 @@ void QTreeView::mouseDoubleClickEvent(QMouseEvent *event)
 void QTreeView::mouseMoveEvent(QMouseEvent *event)
 {
     Q_D(QTreeView);
-    if (d->itemDecorationAt(event->pos()) == -1) // ### what about expanding/collapsing state ?
+    if (d->itemDecorationAt(event->position().toPoint()) == -1) // ### what about expanding/collapsing state ?
         QAbstractItemView::mouseMoveEvent(event);
 }
 

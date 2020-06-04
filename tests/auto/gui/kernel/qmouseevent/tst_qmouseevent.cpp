@@ -117,15 +117,15 @@ void tst_QMouseEvent::mouseEventBasic()
     QCOMPARE(me.isAccepted(), true);
     QCOMPARE(me.button(), Qt::LeftButton);
     QCOMPARE(me.buttons(), Qt::LeftButton);
-    QCOMPARE(me.localPos(), local);
-    QCOMPARE(me.windowPos(), scene);
-    QCOMPARE(me.screenPos(), screen);
+    QCOMPARE(me.position(), local);
+    QCOMPARE(me.scenePosition(), scene);
+    QCOMPARE(me.globalPosition(), screen);
 
     QPointF changedLocal(33, 66);
     me.setLocalPos(changedLocal);
-    QCOMPARE(me.localPos(), changedLocal);
-    QCOMPARE(me.windowPos(), scene);
-    QCOMPARE(me.screenPos(), screen);
+    QCOMPARE(me.position(), changedLocal);
+    QCOMPARE(me.scenePosition(), scene);
+    QCOMPARE(me.globalPosition(), screen);
 }
 
 void tst_QMouseEvent::checkMousePressEvent_data()

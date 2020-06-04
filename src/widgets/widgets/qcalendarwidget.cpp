@@ -1485,7 +1485,7 @@ QDate QCalendarView::handleMouseEvent(QMouseEvent *event)
     if (!calendarModel)
         return QDate();
 
-    QPoint pos = event->pos();
+    QPoint pos = event->position().toPoint();
     QModelIndex index = indexAt(pos);
     QDate date = calendarModel->dateForCell(index.row(), index.column());
     if (date.isValid() && date >= calendarModel->m_minimumDate
@@ -3145,7 +3145,7 @@ bool QCalendarWidget::eventFilter(QObject *watched, QEvent *event)
         if (!widget || widget->window() != tlw)
             return QWidget::eventFilter(watched, event);
 
-        QPoint mousePos = widget->mapTo(tlw, static_cast<QMouseEvent *>(event)->pos());
+        QPoint mousePos = widget->mapTo(tlw, static_cast<QMouseEvent *>(event)->position().toPoint());
         QRect geom = QRect(d->yearEdit->mapTo(tlw, QPoint(0, 0)), d->yearEdit->size());
         if (!geom.contains(mousePos)) {
             event->accept();

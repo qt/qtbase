@@ -210,7 +210,7 @@ bool QMainWindowLayoutSeparatorHelper<Layout>::windowEvent(QEvent *event)
 
 #if QT_CONFIG(cursor)
     case QEvent::HoverMove: {
-        adjustCursor(static_cast<QHoverEvent *>(event)->pos());
+        adjustCursor(static_cast<QHoverEvent *>(event)->position().toPoint());
         break;
     }
 
@@ -228,7 +228,7 @@ bool QMainWindowLayoutSeparatorHelper<Layout>::windowEvent(QEvent *event)
 
     case QEvent::MouseButtonPress: {
         QMouseEvent *e = static_cast<QMouseEvent *>(event);
-        if (e->button() == Qt::LeftButton && startSeparatorMove(e->pos())) {
+        if (e->button() == Qt::LeftButton && startSeparatorMove(e->position().toPoint())) {
             // The click was on a separator, eat this event
             e->accept();
             return true;
@@ -240,10 +240,10 @@ bool QMainWindowLayoutSeparatorHelper<Layout>::windowEvent(QEvent *event)
         QMouseEvent *e = static_cast<QMouseEvent *>(event);
 
 #if QT_CONFIG(cursor)
-        adjustCursor(e->pos());
+        adjustCursor(e->position().toPoint());
 #endif
         if (e->buttons() & Qt::LeftButton) {
-            if (separatorMove(e->pos())) {
+            if (separatorMove(e->position().toPoint())) {
                 // We're moving a separator, eat this event
                 e->accept();
                 return true;
@@ -255,7 +255,7 @@ bool QMainWindowLayoutSeparatorHelper<Layout>::windowEvent(QEvent *event)
 
     case QEvent::MouseButtonRelease: {
         QMouseEvent *e = static_cast<QMouseEvent *>(event);
-        if (endSeparatorMove(e->pos())) {
+        if (endSeparatorMove(e->position().toPoint())) {
             // We've released a separator, eat this event
             e->accept();
             return true;

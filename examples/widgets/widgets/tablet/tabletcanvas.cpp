@@ -99,7 +99,7 @@ void TabletCanvas::tabletEvent(QTabletEvent *event)
         case QEvent::TabletPress:
             if (!m_deviceDown) {
                 m_deviceDown = true;
-                lastPoint.pos = event->posF();
+                lastPoint.pos = event->position();
                 lastPoint.pressure = event->pressure();
                 lastPoint.rotation = event->rotation();
             }
@@ -113,7 +113,7 @@ void TabletCanvas::tabletEvent(QTabletEvent *event)
                 updateBrush(event);
                 QPainter painter(&m_pixmap);
                 paintPixmap(painter, event);
-                lastPoint.pos = event->posF();
+                lastPoint.pos = event->position();
                 lastPoint.pressure = event->pressure();
                 lastPoint.rotation = event->rotation();
             }
@@ -173,8 +173,8 @@ void TabletCanvas::paintPixmap(QPainter &painter, QTabletEvent *event)
                 grad.setColorAt(0.5, Qt::transparent);
                 painter.setBrush(grad);
                 qreal radius = grad.radius();
-                painter.drawEllipse(event->posF(), radius, radius);
-                update(QRect(event->pos() - QPoint(radius, radius), QSize(radius * 2, radius * 2)));
+                painter.drawEllipse(event->position(), radius, radius);
+                update(QRect(event->position().toPoint() - QPoint(radius, radius), QSize(radius * 2, radius * 2)));
             }
             break;
         case QTabletEvent::RotationStylus:
@@ -191,8 +191,8 @@ void TabletCanvas::paintPixmap(QPainter &painter, QTabletEvent *event)
                 halfWidth = m_pen.widthF();
                 brushAdjust = QPointF(qSin(qDegreesToRadians(-event->rotation())) * halfWidth,
                                       qCos(qDegreesToRadians(-event->rotation())) * halfWidth);
-                poly << event->posF() - brushAdjust;
-                poly << event->posF() + brushAdjust;
+                poly << event->position() - brushAdjust;
+                poly << event->position() + brushAdjust;
                 painter.drawConvexPolygon(poly);
                 update(poly.boundingRect().toRect());
             }
@@ -223,8 +223,8 @@ void TabletCanvas::paintPixmap(QPainter &painter, QTabletEvent *event)
             Q_FALLTHROUGH();
         case QTabletEvent::Stylus:
             painter.setPen(m_pen);
-            painter.drawLine(lastPoint.pos, event->posF());
-            update(QRect(lastPoint.pos.toPoint(), event->pos()).normalized()
+            painter.drawLine(lastPoint.pos, event->position());
+            update(QRect(lastPoint.pos.toPoint(), event->position().toPoint()).normalized()
                    .adjusted(-maxPenRadius, -maxPenRadius, maxPenRadius, maxPenRadius));
             break;
     }

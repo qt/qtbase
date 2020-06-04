@@ -90,12 +90,12 @@ void PuzzleWidget::dragLeaveEvent(QDragLeaveEvent *event)
 
 void PuzzleWidget::dragMoveEvent(QDragMoveEvent *event)
 {
-    QRect updateRect = highlightedRect.united(targetSquare(event->pos()));
+    QRect updateRect = highlightedRect.united(targetSquare(event->position().toPoint()));
 
     if (event->mimeData()->hasFormat(PiecesList::puzzleMimeType())
-        && findPiece(targetSquare(event->pos())) == -1) {
+        && findPiece(targetSquare(event->position().toPoint())) == -1) {
 
-        highlightedRect = targetSquare(event->pos());
+        highlightedRect = targetSquare(event->position().toPoint());
         event->setDropAction(Qt::MoveAction);
         event->accept();
     } else {
@@ -109,12 +109,12 @@ void PuzzleWidget::dragMoveEvent(QDragMoveEvent *event)
 void PuzzleWidget::dropEvent(QDropEvent *event)
 {
     if (event->mimeData()->hasFormat(PiecesList::puzzleMimeType())
-        && findPiece(targetSquare(event->pos())) == -1) {
+        && findPiece(targetSquare(event->position().toPoint())) == -1) {
 
         QByteArray pieceData = event->mimeData()->data(PiecesList::puzzleMimeType());
         QDataStream dataStream(&pieceData, QIODevice::ReadOnly);
         Piece piece;
-        piece.rect = targetSquare(event->pos());
+        piece.rect = targetSquare(event->position().toPoint());
         dataStream >> piece.pixmap >> piece.location;
 
         pieces.append(piece);
@@ -147,7 +147,7 @@ int PuzzleWidget::findPiece(const QRect &pieceRect) const
 
 void PuzzleWidget::mousePressEvent(QMouseEvent *event)
 {
-    QRect square = targetSquare(event->pos());
+    QRect square = targetSquare(event->position().toPoint());
     const int found = findPiece(square);
 
     if (found == -1)
@@ -170,12 +170,12 @@ void PuzzleWidget::mousePressEvent(QMouseEvent *event)
 
     QDrag *drag = new QDrag(this);
     drag->setMimeData(mimeData);
-    drag->setHotSpot(event->pos() - square.topLeft());
+    drag->setHotSpot(event->position().toPoint() - square.topLeft());
     drag->setPixmap(piece.pixmap);
 
     if (drag->exec(Qt::MoveAction) != Qt::MoveAction) {
         pieces.insert(found, piece);
-        update(targetSquare(event->pos()));
+        update(targetSquare(event->position().toPoint()));
 
         if (piece.location == square.topLeft() / pieceSize())
             inPlace++;

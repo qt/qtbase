@@ -612,7 +612,7 @@ bool QStyledItemDelegate::editorEvent(QEvent *event,
         initStyleOption(&viewOpt, index);
         QRect checkRect = style->subElementRect(QStyle::SE_ItemViewItemCheckIndicator, &viewOpt, widget);
         QMouseEvent *me = static_cast<QMouseEvent*>(event);
-        if (me->button() != Qt::LeftButton || !checkRect.contains(me->pos()))
+        if (me->button() != Qt::LeftButton || !checkRect.contains(me->position().toPoint()))
             return false;
 
         if ((event->type() == QEvent::MouseButtonPress)

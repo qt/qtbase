@@ -190,7 +190,7 @@ void MandelbrotWidget::wheelEvent(QWheelEvent *event)
 void MandelbrotWidget::mousePressEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton)
-        lastDragPos = event->pos();
+        lastDragPos = event->position().toPoint();
 }
 //! [13]
 
@@ -198,8 +198,8 @@ void MandelbrotWidget::mousePressEvent(QMouseEvent *event)
 void MandelbrotWidget::mouseMoveEvent(QMouseEvent *event)
 {
     if (event->buttons() & Qt::LeftButton) {
-        pixmapOffset += event->pos() - lastDragPos;
-        lastDragPos = event->pos();
+        pixmapOffset += event->position().toPoint() - lastDragPos;
+        lastDragPos = event->position().toPoint();
         update();
     }
 }
@@ -209,7 +209,7 @@ void MandelbrotWidget::mouseMoveEvent(QMouseEvent *event)
 void MandelbrotWidget::mouseReleaseEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton) {
-        pixmapOffset += event->pos() - lastDragPos;
+        pixmapOffset += event->position().toPoint() - lastDragPos;
         lastDragPos = QPoint();
 
         const auto pixmapSize = pixmap.size() / pixmap.devicePixelRatioF();

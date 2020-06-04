@@ -533,7 +533,7 @@ private:
 
 void DnDEventLoggerWidget::formatDropEvent(const char *function, const QDropEvent *e, QTextStream &str) const
 {
-    str << objectName() << "::" << function  << " at " << e->pos().x() << ',' << e->pos().y()
+    str << objectName() << "::" << function  << " at " << e->position().toPoint().x() << ',' << e->position().toPoint().y()
         << " action=" << e->dropAction()
         << ' ' << quintptr(e->mimeData()) << " '" << e->mimeData()->text() << '\'';
 }
@@ -577,7 +577,7 @@ static QString msgEventAccepted(const QDropEvent &e)
 {
     QString message;
     QTextStream str(&message);
-    str << "Event at " << e.pos().x() << ',' << e.pos().y() << ' ' << (e.isAccepted() ? "accepted" : "ignored");
+    str << "Event at " << e.position().toPoint().x() << ',' << e.position().toPoint().y() << ' ' << (e.isAccepted() ? "accepted" : "ignored");
     return message;
 }
 

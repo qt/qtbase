@@ -1303,7 +1303,7 @@ void QMenuPrivate::scrollMenu(QMenuScroller::ScrollDirection direction, bool pag
 bool QMenuPrivate::mouseEventTaken(QMouseEvent *e)
 {
     Q_Q(QMenu);
-    QPoint pos = q->mapFromGlobal(e->globalPos());
+    QPoint pos = q->mapFromGlobal(e->globalPosition().toPoint());
 
     QStyle *style = q->style();
     QStyleOption opt(0);
@@ -1342,7 +1342,7 @@ bool QMenuPrivate::mouseEventTaken(QMouseEvent *e)
         if (scroll && scroll->scrollFlags & QMenuPrivate::QMenuScroller::ScrollUp)
             tearRect.translate(0, scrollerHeight());
         q->update(tearRect);
-        if (tearRect.contains(pos) && hasMouseMoved(e->globalPos())) {
+        if (tearRect.contains(pos) && hasMouseMoved(e->globalPosition().toPoint())) {
             setCurrentAction(nullptr);
             tearoffHighlighted = 1;
             if (e->type() == QEvent::MouseButtonRelease) {
@@ -1357,13 +1357,13 @@ bool QMenuPrivate::mouseEventTaken(QMouseEvent *e)
         tearoffHighlighted = 0;
     }
 
-    if (q->frameGeometry().contains(e->globalPos()))
+    if (q->frameGeometry().contains(e->globalPosition().toPoint()))
         return false; //otherwise if the event is in our rect we want it..
 
     for(QWidget *caused = causedPopup.widget; caused;) {
         bool passOnEvent = false;
         QWidget *next_widget = nullptr;
-        QPoint cpos = caused->mapFromGlobal(e->globalPos());
+        QPoint cpos = caused->mapFromGlobal(e->globalPosition().toPoint());
 #if QT_CONFIG(menubar)
         if (QMenuBar *mb = qobject_cast<QMenuBar*>(caused)) {
             passOnEvent = mb->rect().contains(cpos);
@@ -1375,7 +1375,7 @@ bool QMenuPrivate::mouseEventTaken(QMouseEvent *e)
         }
         if (passOnEvent) {
             if (e->type() != QEvent::MouseButtonRelease || mouseDown == caused) {
-                QMouseEvent new_e(e->type(), cpos, caused->mapTo(caused->topLevelWidget(), cpos), e->screenPos(),
+                QMouseEvent new_e(e->type(), cpos, caused->mapTo(caused->topLevelWidget(), cpos), e->globalPosition(),
                                   e->button(), e->buttons(), e->modifiers(), e->source());
                 QCoreApplication::sendEvent(caused, &new_e);
                 return true;
@@ -2934,9 +2934,9 @@ void QMenu::mousePressEvent(QMouseEvent *e)
     // and mouse clicks on second screen, e->pos() is QPoint(0,0) and the menu doesn't hide. This trick makes
     // possible to hide the menu when mouse clicks on another screen (e->screenPos() returns correct value).
     // Only when mouse clicks in QPoint(0,0) on second screen, the menu doesn't hide.
-    if ((e->pos().isNull() && !e->screenPos().isNull()) || !rect().contains(e->pos())) {
+    if ((e->position().toPoint().isNull() && !e->globalPosition().isNull()) || !rect().contains(e->position().toPoint())) {
          if (d->noReplayFor
-             && QRect(d->noReplayFor->mapToGlobal(QPoint()), d->noReplayFor->size()).contains(e->globalPos()))
+             && QRect(d->noReplayFor->mapToGlobal(QPoint()), d->noReplayFor->size()).contains(e->globalPosition().toPoint()))
              setAttribute(Qt::WA_NoMouseReplay);
          if (d->eventLoop) // synchronous operation
              d->syncAction = nullptr;
@@ -2945,7 +2945,7 @@ void QMenu::mousePressEvent(QMouseEvent *e)
     }
     QMenuPrivate::mouseDown = this;
 
-    QAction *action = d->actionAt(e->pos());
+    QAction *action = d->actionAt(e->position().toPoint());
     d->setCurrentAction(action, 20);
     update();
 }
@@ -2965,7 +2965,7 @@ void QMenu::mouseReleaseEvent(QMouseEvent *e)
 
     QMenuPrivate::mouseDown = nullptr;
     d->setSyncAction();
-    QAction *action = d->actionAt(e->pos());
+    QAction *action = d->actionAt(e->position().toPoint());
 
     if (action && action == d->currentAction) {
         if (!action->menu()){
@@ -2975,7 +2975,7 @@ void QMenu::mouseReleaseEvent(QMouseEvent *e)
 #endif
                 d->activateAction(action, QAction::Trigger);
         }
-    } else if ((!action || action->isEnabled()) && d->hasMouseMoved(e->globalPos())) {
+    } else if ((!action || action->isEnabled()) && d->hasMouseMoved(e->globalPosition().toPoint())) {
         d->hideUpToMenuBar();
     }
 }
@@ -3485,9 +3485,9 @@ void QMenu::mouseMoveEvent(QMouseEvent *e)
     if (d->motions == 0)
         return;
 
-    d->hasHadMouse = d->hasHadMouse || rect().contains(e->pos());
+    d->hasHadMouse = d->hasHadMouse || rect().contains(e->position().toPoint());
 
-    QAction *action = d->actionAt(e->pos());
+    QAction *action = d->actionAt(e->position().toPoint());
     if ((!action || action->isSeparator()) && !d->sloppyState.enabled()) {
         if (d->hasHadMouse
             || (!d->currentAction || !d->currentAction->menu() || !d->currentAction->menu()->isVisible())) {
@@ -3502,7 +3502,7 @@ void QMenu::mouseMoveEvent(QMouseEvent *e)
     if (d->activeMenu)
         d->activeMenu->d_func()->setCurrentAction(nullptr);
 
-    QMenuSloppyState::MouseEventResult sloppyEventResult = d->sloppyState.processMouseEvent(e->localPos(), action, d->currentAction);
+    QMenuSloppyState::MouseEventResult sloppyEventResult = d->sloppyState.processMouseEvent(e->position(), action, d->currentAction);
     if (sloppyEventResult == QMenuSloppyState::EventShouldBePropagated) {
         d->setCurrentAction(action, d->mousePopupDelay);
     } else if (sloppyEventResult == QMenuSloppyState::EventDiscardsSloppyState) {

@@ -559,7 +559,7 @@ void PathStrokeRenderer::mousePressEvent(QMouseEvent *e)
     m_activePoint = -1;
     qreal distance = -1;
     for (int i = 0; i < m_points.size(); ++i) {
-        qreal d = QLineF(e->pos(), m_points.at(i)).length();
+        qreal d = QLineF(e->position().toPoint(), m_points.at(i)).length();
         if ((distance < 0 && d < 8 * m_pointSize) || d < distance) {
             distance = d;
             m_activePoint = i;
@@ -574,7 +574,7 @@ void PathStrokeRenderer::mousePressEvent(QMouseEvent *e)
 
     // If we're not running in small screen mode, always assume we're dragging
     m_mouseDrag = !m_smallScreen;
-    m_mousePress = e->pos();
+    m_mousePress = e->position().toPoint();
 }
 
 void PathStrokeRenderer::mouseMoveEvent(QMouseEvent *e)
@@ -582,11 +582,11 @@ void PathStrokeRenderer::mouseMoveEvent(QMouseEvent *e)
     if (!m_fingerPointMapping.isEmpty())
         return;
     // If we've moved more then 25 pixels, assume user is dragging
-    if (!m_mouseDrag && QPoint(m_mousePress - e->pos()).manhattanLength() > 25)
+    if (!m_mouseDrag && QPoint(m_mousePress - e->position().toPoint()).manhattanLength() > 25)
         m_mouseDrag = true;
 
     if (m_mouseDrag && m_activePoint >= 0 && m_activePoint < m_points.size()) {
-        m_points[m_activePoint] = e->pos();
+        m_points[m_activePoint] = e->position().toPoint();
         update();
     }
 }
@@ -638,7 +638,7 @@ bool PathStrokeRenderer::event(QEvent *e)
                     if (activePoints.contains(i))
                         continue;
 
-                    qreal d = QLineF(touchPoint.pos(), m_points.at(i)).length();
+                    qreal d = QLineF(touchPoint.position(), m_points.at(i)).length();
                     if ((distance < 0 && d < 12 * m_pointSize) || d < distance) {
                         distance = d;
                         activePoint = i;
@@ -646,7 +646,7 @@ bool PathStrokeRenderer::event(QEvent *e)
                 }
                 if (activePoint != -1) {
                     m_fingerPointMapping.insert(touchPoint.id(), activePoint);
-                    m_points[activePoint] = touchPoint.pos();
+                    m_points[activePoint] = touchPoint.position();
                 }
                 break;
             }
@@ -654,7 +654,7 @@ bool PathStrokeRenderer::event(QEvent *e)
             {
                 // move the point and release
                 QHash<int,int>::iterator it = m_fingerPointMapping.find(id);
-                m_points[it.value()] = touchPoint.pos();
+                m_points[it.value()] = touchPoint.position();
                 m_fingerPointMapping.erase(it);
                 break;
             }
@@ -663,7 +663,7 @@ bool PathStrokeRenderer::event(QEvent *e)
                 // move the point
                 const int pointIdx = m_fingerPointMapping.value(id, -1);
                 if (pointIdx >= 0)
-                    m_points[pointIdx] = touchPoint.pos();
+                    m_points[pointIdx] = touchPoint.position();
                 break;
             }
             default:

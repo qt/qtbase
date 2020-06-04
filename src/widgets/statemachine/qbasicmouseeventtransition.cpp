@@ -191,7 +191,7 @@ bool QBasicMouseEventTransition::eventTest(QEvent *event)
         QMouseEvent *me = static_cast<QMouseEvent*>(event);
         return (me->button() == d->button)
             && ((me->modifiers() & d->modifierMask) == d->modifierMask)
-            && (d->path.isEmpty() || d->path.contains(me->pos()));
+            && (d->path.isEmpty() || d->path.contains(me->position().toPoint()));
     }
     return false;
 }

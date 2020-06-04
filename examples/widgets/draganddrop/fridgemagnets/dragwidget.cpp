@@ -151,7 +151,7 @@ void DragWidget::dropEvent(QDropEvent *event)
 //! [10]
 //! [11]
         DragLabel *newLabel = new DragLabel(text, this);
-        newLabel->move(event->pos() - offset);
+        newLabel->move(event->position().toPoint() - offset);
         newLabel->show();
         newLabel->setAttribute(Qt::WA_DeleteOnClose);
 
@@ -165,7 +165,7 @@ void DragWidget::dropEvent(QDropEvent *event)
     } else if (event->mimeData()->hasText()) {
         QStringList pieces = event->mimeData()->text().split(
             QRegularExpression(QStringLiteral("\\s+")), Qt::SkipEmptyParts);
-        QPoint position = event->pos();
+        QPoint position = event->position().toPoint();
 
         for (const QString &piece : pieces) {
             DragLabel *newLabel = new DragLabel(piece, this);
@@ -188,11 +188,11 @@ void DragWidget::mousePressEvent(QMouseEvent *event)
 {
 //! [13]
 //! [14]
-    DragLabel *child = static_cast<DragLabel*>(childAt(event->pos()));
+    DragLabel *child = static_cast<DragLabel*>(childAt(event->position().toPoint()));
     if (!child)
         return;
 
-    QPoint hotSpot = event->pos() - child->pos();
+    QPoint hotSpot = event->position().toPoint() - child->pos();
 
     QByteArray itemData;
     QDataStream dataStream(&itemData, QIODevice::WriteOnly);

@@ -1685,12 +1685,12 @@ bool QTabBar::event(QEvent *event)
     case QEvent::HoverMove:
     case QEvent::HoverEnter: {
         QHoverEvent *he = static_cast<QHoverEvent *>(event);
-        if (!d->hoverRect.contains(he->pos())) {
+        if (!d->hoverRect.contains(he->position().toPoint())) {
             QRect oldHoverRect = d->hoverRect;
             bool cursorOverTabs = false;
             for (int i = 0; i < d->tabList.count(); ++i) {
                 QRect area = tabRect(i);
-                if (area.contains(he->pos())) {
+                if (area.contains(he->position().toPoint())) {
                     d->hoverIndex = i;
                     d->hoverRect = area;
                     cursorOverTabs = true;
@@ -1766,7 +1766,7 @@ bool QTabBar::event(QEvent *event)
         break;
     case QEvent::DragMove:
         if (d->changeCurrentOnDrag) {
-            const int tabIndex = tabAt(static_cast<QDragMoveEvent *>(event)->pos());
+            const int tabIndex = tabAt(static_cast<QDragMoveEvent *>(event)->position().toPoint());
             if (isTabEnabled(tabIndex) && d->switchTabCurrentIndex != tabIndex) {
                 d->switchTabCurrentIndex = tabIndex;
                 if (d->switchTabTimerId)
@@ -2100,7 +2100,7 @@ void QTabBar::mousePressEvent(QMouseEvent *event)
 {
     Q_D(QTabBar);
 
-    const QPoint pos = event->pos();
+    const QPoint pos = event->position().toPoint();
     const bool isEventInCornerButtons = (!d->leftB->isHidden() && d->leftB->geometry().contains(pos))
                                      || (!d->rightB->isHidden() && d->rightB->geometry().contains(pos));
     if (!isEventInCornerButtons) {
@@ -2116,7 +2116,7 @@ void QTabBar::mousePressEvent(QMouseEvent *event)
     if (d->pressedIndex != -1 && d->movable)
         d->moveTabFinished(d->pressedIndex);
 
-    d->pressedIndex = d->indexAtPos(event->pos());
+    d->pressedIndex = d->indexAtPos(event->position().toPoint());
 
     if (d->validIndex(d->pressedIndex)) {
         QStyleOptionTabBarBase optTabBase;
@@ -2127,7 +2127,7 @@ void QTabBar::mousePressEvent(QMouseEvent *event)
         else
             repaint(tabRect(d->pressedIndex));
         if (d->movable) {
-            d->dragStartPosition = event->pos();
+            d->dragStartPosition = event->position().toPoint();
         }
     }
 }
@@ -2145,7 +2145,7 @@ void QTabBar::mouseMoveEvent(QMouseEvent *event)
 
         // Start drag
         if (!d->dragInProgress && d->pressedIndex != -1) {
-            if ((event->pos() - d->dragStartPosition).manhattanLength() > QApplication::startDragDistance()) {
+            if ((event->position().toPoint() - d->dragStartPosition).manhattanLength() > QApplication::startDragDistance()) {
                 d->dragInProgress = true;
                 d->setupMovableTab();
             }
@@ -2157,9 +2157,9 @@ void QTabBar::mouseMoveEvent(QMouseEvent *event)
             bool vertical = verticalTabs(d->shape);
             int dragDistance;
             if (vertical) {
-                dragDistance = (event->pos().y() - d->dragStartPosition.y());
+                dragDistance = (event->position().toPoint().y() - d->dragStartPosition.y());
             } else {
-                dragDistance = (event->pos().x() - d->dragStartPosition.x());
+                dragDistance = (event->position().toPoint().x() - d->dragStartPosition.x());
             }
             d->tabList[d->pressedIndex].dragOffset = dragDistance;
 
@@ -2304,7 +2304,7 @@ void QTabBar::mouseReleaseEvent(QMouseEvent *event)
         d->dragStartPosition = QPoint();
     }
 
-    int i = d->indexAtPos(event->pos()) == d->pressedIndex ? d->pressedIndex : -1;
+    int i = d->indexAtPos(event->position().toPoint()) == d->pressedIndex ? d->pressedIndex : -1;
     d->pressedIndex = -1;
     QStyleOptionTabBarBase optTabBase;
     optTabBase.initFrom(this);
@@ -2322,7 +2322,7 @@ void QTabBar::mouseReleaseEvent(QMouseEvent *event)
 void QTabBar::mouseDoubleClickEvent(QMouseEvent *event)
 {
     Q_D(QTabBar);
-    const QPoint pos = event->pos();
+    const QPoint pos = event->position().toPoint();
     const bool isEventInCornerButtons = (!d->leftB->isHidden() && d->leftB->geometry().contains(pos))
                                         || (!d->rightB->isHidden() && d->rightB->geometry().contains(pos));
     if (!isEventInCornerButtons)

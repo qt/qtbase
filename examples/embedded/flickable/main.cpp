@@ -185,7 +185,7 @@ protected:
             return;
 
         if (event->button() == Qt::LeftButton) {
-            int y = event->pos().y() + m_offset;
+            int y = event->position().toPoint().y() + m_offset;
             int i = y / m_height;
             if (i != m_highlight) {
                 m_highlight = i;

@@ -9175,7 +9175,7 @@ void QWidget::mousePressEvent(QMouseEvent *event)
             if (QApplication::activePopupWidget() == w) // widget does not want to disappear
                 w->hide(); // hide at least
         }
-        if (!rect().contains(event->pos())){
+        if (!rect().contains(event->position().toPoint())){
             close();
         }
     }

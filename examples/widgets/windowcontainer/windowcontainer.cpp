@@ -100,7 +100,7 @@ public:
         if (!m_mouseDown) {
             m_mouseDown = true;
             m_polygon.clear();
-            m_polygon.append(e->pos());
+            m_polygon.append(e->position().toPoint());
             renderLater();
         }
     }
@@ -108,7 +108,7 @@ public:
     void mouseMoveEvent(QMouseEvent *e) override
     {
         if (m_mouseDown) {
-            m_polygon.append(e->pos());
+            m_polygon.append(e->position().toPoint());
             renderLater();
         }
     }
@@ -117,7 +117,7 @@ public:
     {
         if (m_mouseDown) {
             m_mouseDown = false;
-            m_polygon.append(e->pos());
+            m_polygon.append(e->position().toPoint());
             renderLater();
         }
     }

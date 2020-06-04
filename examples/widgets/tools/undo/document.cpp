@@ -283,17 +283,17 @@ int Document::indexAt(const QPoint &pos) const
 void Document::mousePressEvent(QMouseEvent *event)
 {
     event->accept();
-    int index = indexAt(event->pos());;
+    int index = indexAt(event->position().toPoint());;
     if (index != -1) {
         setCurrentShape(index);
 
         const Shape &shape = m_shapeList.at(index);
-        m_resizeHandlePressed = shape.resizeHandle().contains(event->pos());
+        m_resizeHandlePressed = shape.resizeHandle().contains(event->position().toPoint());
 
         if (m_resizeHandlePressed)
-            m_mousePressOffset = shape.rect().bottomRight() - event->pos();
+            m_mousePressOffset = shape.rect().bottomRight() - event->position().toPoint();
         else
-            m_mousePressOffset = event->pos() - shape.rect().topLeft();
+            m_mousePressOffset = event->position().toPoint() - shape.rect().topLeft();
     }
     m_mousePressIndex = index;
 }
@@ -315,10 +315,10 @@ void Document::mouseMoveEvent(QMouseEvent *event)
 
     QRect rect;
     if (m_resizeHandlePressed) {
-        rect = QRect(shape.rect().topLeft(), event->pos() + m_mousePressOffset);
+        rect = QRect(shape.rect().topLeft(), event->position().toPoint() + m_mousePressOffset);
     } else {
         rect = shape.rect();
-        rect.moveTopLeft(event->pos() - m_mousePressOffset);
+        rect.moveTopLeft(event->position().toPoint() - m_mousePressOffset);
     }
 
     QSize size = rect.size().expandedTo(Shape::minSize);
