@@ -2630,7 +2630,7 @@ QDataStream& operator<<(QDataStream &s, const QVariant::Type p)
 */
 
 template<typename T>
-inline T qVariantToHelper(const QVariant::Private &d, HandlersManager &)
+inline T qVariantToHelper(const QVariant::Private &d)
 {
     QMetaType targetType = QMetaType::fromType<T>();
     if (d.type() == targetType)
@@ -2659,7 +2659,7 @@ inline T qVariantToHelper(const QVariant::Private &d, HandlersManager &)
 */
 QStringList QVariant::toStringList() const
 {
-    return qVariantToHelper<QStringList>(d, handlerManager);
+    return qVariantToHelper<QStringList>(d);
 }
 
 /*!
@@ -2679,7 +2679,7 @@ QStringList QVariant::toStringList() const
 */
 QString QVariant::toString() const
 {
-    return qVariantToHelper<QString>(d, handlerManager);
+    return qVariantToHelper<QString>(d);
 }
 
 /*!
@@ -2690,7 +2690,7 @@ QString QVariant::toString() const
 */
 QVariantMap QVariant::toMap() const
 {
-    return qVariantToHelper<QVariantMap>(d, handlerManager);
+    return qVariantToHelper<QVariantMap>(d);
 }
 
 /*!
@@ -2701,7 +2701,7 @@ QVariantMap QVariant::toMap() const
 */
 QVariantHash QVariant::toHash() const
 {
-    return qVariantToHelper<QVariantHash>(d, handlerManager);
+    return qVariantToHelper<QVariantHash>(d);
 }
 
 /*!
@@ -2718,7 +2718,7 @@ QVariantHash QVariant::toHash() const
 */
 QDate QVariant::toDate() const
 {
-    return qVariantToHelper<QDate>(d, handlerManager);
+    return qVariantToHelper<QDate>(d);
 }
 
 /*!
@@ -2735,7 +2735,7 @@ QDate QVariant::toDate() const
 */
 QTime QVariant::toTime() const
 {
-    return qVariantToHelper<QTime>(d, handlerManager);
+    return qVariantToHelper<QTime>(d);
 }
 
 /*!
@@ -2752,7 +2752,7 @@ QTime QVariant::toTime() const
 */
 QDateTime QVariant::toDateTime() const
 {
-    return qVariantToHelper<QDateTime>(d, handlerManager);
+    return qVariantToHelper<QDateTime>(d);
 }
 
 /*!
@@ -2767,7 +2767,7 @@ QDateTime QVariant::toDateTime() const
 #if QT_CONFIG(easingcurve)
 QEasingCurve QVariant::toEasingCurve() const
 {
-    return qVariantToHelper<QEasingCurve>(d, handlerManager);
+    return qVariantToHelper<QEasingCurve>(d);
 }
 #endif
 
@@ -2782,7 +2782,7 @@ QEasingCurve QVariant::toEasingCurve() const
 */
 QByteArray QVariant::toByteArray() const
 {
-    return qVariantToHelper<QByteArray>(d, handlerManager);
+    return qVariantToHelper<QByteArray>(d);
 }
 
 #ifndef QT_NO_GEOM_VARIANT
@@ -2797,7 +2797,7 @@ QByteArray QVariant::toByteArray() const
 */
 QPoint QVariant::toPoint() const
 {
-    return qVariantToHelper<QPoint>(d, handlerManager);
+    return qVariantToHelper<QPoint>(d);
 }
 
 /*!
@@ -2810,7 +2810,7 @@ QPoint QVariant::toPoint() const
 */
 QRect QVariant::toRect() const
 {
-    return qVariantToHelper<QRect>(d, handlerManager);
+    return qVariantToHelper<QRect>(d);
 }
 
 /*!
@@ -2823,7 +2823,7 @@ QRect QVariant::toRect() const
 */
 QSize QVariant::toSize() const
 {
-    return qVariantToHelper<QSize>(d, handlerManager);
+    return qVariantToHelper<QSize>(d);
 }
 
 /*!
@@ -2836,7 +2836,7 @@ QSize QVariant::toSize() const
 */
 QSizeF QVariant::toSizeF() const
 {
-    return qVariantToHelper<QSizeF>(d, handlerManager);
+    return qVariantToHelper<QSizeF>(d);
 }
 
 /*!
@@ -2850,7 +2850,7 @@ QSizeF QVariant::toSizeF() const
 */
 QRectF QVariant::toRectF() const
 {
-    return qVariantToHelper<QRectF>(d, handlerManager);
+    return qVariantToHelper<QRectF>(d);
 }
 
 /*!
@@ -2863,7 +2863,7 @@ QRectF QVariant::toRectF() const
 */
 QLineF QVariant::toLineF() const
 {
-    return qVariantToHelper<QLineF>(d, handlerManager);
+    return qVariantToHelper<QLineF>(d);
 }
 
 /*!
@@ -2876,7 +2876,7 @@ QLineF QVariant::toLineF() const
 */
 QLine QVariant::toLine() const
 {
-    return qVariantToHelper<QLine>(d, handlerManager);
+    return qVariantToHelper<QLine>(d);
 }
 
 /*!
@@ -2890,7 +2890,7 @@ QLine QVariant::toLine() const
 */
 QPointF QVariant::toPointF() const
 {
-    return qVariantToHelper<QPointF>(d, handlerManager);
+    return qVariantToHelper<QPointF>(d);
 }
 
 #endif // QT_NO_GEOM_VARIANT
@@ -2906,7 +2906,7 @@ QPointF QVariant::toPointF() const
 */
 QUrl QVariant::toUrl() const
 {
-    return qVariantToHelper<QUrl>(d, handlerManager);
+    return qVariantToHelper<QUrl>(d);
 }
 #endif
 
@@ -2920,7 +2920,7 @@ QUrl QVariant::toUrl() const
 */
 QLocale QVariant::toLocale() const
 {
-    return qVariantToHelper<QLocale>(d, handlerManager);
+    return qVariantToHelper<QLocale>(d);
 }
 
 #if QT_CONFIG(regularexpression)
@@ -2935,7 +2935,7 @@ QLocale QVariant::toLocale() const
 */
 QRegularExpression QVariant::toRegularExpression() const
 {
-    return qVariantToHelper<QRegularExpression>(d, handlerManager);
+    return qVariantToHelper<QRegularExpression>(d);
 }
 #endif // QT_CONFIG(regularexpression)
 
@@ -2950,7 +2950,7 @@ QRegularExpression QVariant::toRegularExpression() const
 */
 QModelIndex QVariant::toModelIndex() const
 {
-    return qVariantToHelper<QModelIndex>(d, handlerManager);
+    return qVariantToHelper<QModelIndex>(d);
 }
 
 /*!
@@ -2963,7 +2963,7 @@ QModelIndex QVariant::toModelIndex() const
 */
 QPersistentModelIndex QVariant::toPersistentModelIndex() const
 {
-    return qVariantToHelper<QPersistentModelIndex>(d, handlerManager);
+    return qVariantToHelper<QPersistentModelIndex>(d);
 }
 #endif // QT_CONFIG(itemmodel)
 
@@ -2978,7 +2978,7 @@ QPersistentModelIndex QVariant::toPersistentModelIndex() const
 */
 QUuid QVariant::toUuid() const
 {
-    return qVariantToHelper<QUuid>(d, handlerManager);
+    return qVariantToHelper<QUuid>(d);
 }
 
 #ifndef QT_BOOTSTRAPPED
@@ -2992,7 +2992,7 @@ QUuid QVariant::toUuid() const
 */
 QJsonValue QVariant::toJsonValue() const
 {
-    return qVariantToHelper<QJsonValue>(d, handlerManager);
+    return qVariantToHelper<QJsonValue>(d);
 }
 
 /*!
@@ -3005,7 +3005,7 @@ QJsonValue QVariant::toJsonValue() const
 */
 QJsonObject QVariant::toJsonObject() const
 {
-    return qVariantToHelper<QJsonObject>(d, handlerManager);
+    return qVariantToHelper<QJsonObject>(d);
 }
 
 /*!
@@ -3018,7 +3018,7 @@ QJsonObject QVariant::toJsonObject() const
 */
 QJsonArray QVariant::toJsonArray() const
 {
-    return qVariantToHelper<QJsonArray>(d, handlerManager);
+    return qVariantToHelper<QJsonArray>(d);
 }
 
 /*!
@@ -3031,7 +3031,7 @@ QJsonArray QVariant::toJsonArray() const
 */
 QJsonDocument QVariant::toJsonDocument() const
 {
-    return qVariantToHelper<QJsonDocument>(d, handlerManager);
+    return qVariantToHelper<QJsonDocument>(d);
 }
 #endif // QT_BOOTSTRAPPED
 
@@ -3046,7 +3046,7 @@ QJsonDocument QVariant::toJsonDocument() const
 */
 QChar QVariant::toChar() const
 {
-    return qVariantToHelper<QChar>(d, handlerManager);
+    return qVariantToHelper<QChar>(d);
 }
 
 /*!
@@ -3057,7 +3057,7 @@ QChar QVariant::toChar() const
 */
 QBitArray QVariant::toBitArray() const
 {
-    return qVariantToHelper<QBitArray>(d, handlerManager);
+    return qVariantToHelper<QBitArray>(d);
 }
 
 template <typename T>
@@ -3246,7 +3246,7 @@ qreal QVariant::toReal(bool *ok) const
 */
 QVariantList QVariant::toList() const
 {
-    return qVariantToHelper<QVariantList>(d, handlerManager);
+    return qVariantToHelper<QVariantList>(d);
 }
 
 
