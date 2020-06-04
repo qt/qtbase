@@ -10,7 +10,3 @@ qt_add_executable(testProcessUniqueness
     SOURCES
         main.cpp
 )
-
-# special case begin
-set_target_properties(testProcessUniqueness PROPERTIES MACOSX_BUNDLE TRUE)
-# special case end
