@@ -51,6 +51,8 @@
 #if QT_CONFIG(regularexpression)
 #include <QtCore/QRegularExpression>
 #endif
+#include <QtCore/private/qduplicatetracker_p.h>
+
 #include <QtGui/QGuiApplication>
 #include <QtGui/QFontDatabase>
 
@@ -318,11 +320,9 @@ static int QT_WIN_CALLBACK storeFont(const LOGFONT *logFont, const TEXTMETRIC *t
         signature = &reinterpret_cast<const NEWTEXTMETRICEX *>(textmetric)->ntmFontSig;
         // We get a callback for each script-type supported, but we register them all
         // at once using the signature, so we only need one call to addFontToDatabase().
-        QSet<FontAndStyle> *foundFontAndStyles = reinterpret_cast<QSet<FontAndStyle> *>(lparam);
-        FontAndStyle fontAndStyle = {faceName, styleName};
-        if (foundFontAndStyles->contains(fontAndStyle))
+        auto foundFontAndStyles = reinterpret_cast<QDuplicateTracker<FontAndStyle> *>(lparam);
+        if (foundFontAndStyles->hasSeen({faceName, styleName}))
             return 1;
-        foundFontAndStyles->insert(fontAndStyle);
     }
     addFontToDatabase(faceName, styleName, fullName, *logFont, textmetric, signature, type);
 
@@ -352,7 +352,7 @@ void QWindowsFontDatabaseFT::populateFamily(const QString &familyName)
     lf.lfFaceName[familyName.size()] = 0;
     lf.lfCharSet = DEFAULT_CHARSET;
     lf.lfPitchAndFamily = 0;
-    QSet<FontAndStyle> foundFontAndStyles;
+    QDuplicateTracker<FontAndStyle> foundFontAndStyles;
     EnumFontFamiliesEx(dummy, &lf, storeFont, reinterpret_cast<intptr_t>(&foundFontAndStyles), 0);
     ReleaseDC(0, dummy);
 }
