@@ -40,7 +40,7 @@ function(qt_get_android_sdk_jar_for_api api out_jar_location)
 endfunction()
 
 # Minimum recommend android SDK api version
-set(QT_ANDROID_API_VERSION "android-21")
+set(QT_ANDROID_API_VERSION "android-28")
 
 # Locate android.jar
 set(QT_ANDROID_JAR "${ANDROID_SDK_ROOT}/platforms/${QT_ANDROID_API_VERSION}/android.jar")
