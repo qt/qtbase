@@ -352,7 +352,11 @@ QVector<QPointer<QWidget> > QMenuPrivate::calcCausedStack() const
 
 bool QMenuPrivate::isContextMenu() const
 {
+#if QT_CONFIG(menubar)
     return qobject_cast<const QMenuBar *>(topCausedWidget()) == nullptr;
+#else
+    return true;
+#endif
 }
 
 void QMenuPrivate::updateActionRects() const
@@ -3566,7 +3570,10 @@ void QMenu::actionEvent(QActionEvent *e)
     if (e->type() == QEvent::ActionAdded) {
 
         if (!d->tornoff
-            && !qobject_cast<QMenuBar*>(e->action()->parent())) {
+#if QT_CONFIG(menubar)
+            && !qobject_cast<QMenuBar*>(e->action()->parent())
+#endif
+           ) {
             // Only connect if the action was not directly added by QMenuBar::addAction(const QString &text)
             // to avoid the signal being emitted twice
             connect(e->action(), SIGNAL(triggered()), this, SLOT(_q_actionTriggered()), Qt::UniqueConnection);

@@ -52,6 +52,7 @@
 //
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
+#include "QtWidgets/qmenu.h"
 #if QT_CONFIG(menubar)
 #include "QtWidgets/qmenubar.h"
 #endif
