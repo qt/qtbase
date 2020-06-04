@@ -137,6 +137,10 @@ private slots:
 
 void tst_QSocks5SocketEngine::initTestCase()
 {
+    if (qEnvironmentVariable("QT_QPA_PLATFORM").contains("offscreen")
+          && !qEnvironmentVariableIsEmpty("QEMU_LD_PREFIX"))
+        QSKIP("Not support yet for B2Qt");
+
 #ifdef QT_TEST_SERVER
      QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::socksProxyServerName(), 1080));
      QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::httpServerName(), 80));

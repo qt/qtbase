@@ -1,9 +1,5 @@
 TEMPLATE = subdirs
 
-# Tests with developer-build started failing on qemu-armv7/armv8 after commit
-# b88acae7a8e773c307e44f84da037d01d19e60f7 in qt5.
-boot2qt:qtConfig(private_tests): return()
-
 uikit {
     SUBDIRS = corelib
     qtHaveModule(gui): SUBDIRS += gui

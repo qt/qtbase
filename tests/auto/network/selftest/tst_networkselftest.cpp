@@ -44,6 +44,10 @@ void tst_NetworkSelftest::testServerIsAvailableInCI()
     if (!qEnvironmentVariable("QTEST_ENVIRONMENT").split(' ').contains("ci"))
         QSKIP("Not running in the CI");
 
+    if (qEnvironmentVariable("QT_QPA_PLATFORM").contains("offscreen")
+          && !qEnvironmentVariableIsEmpty("QEMU_LD_PREFIX"))
+        QSKIP("Not support yet for B2Qt");
+
 #if !defined(QT_TEST_SERVER)
     QVERIFY2(QtNetworkSettings::verifyTestNetworkSettings(),
         "Test server must be available when running in the CI");
