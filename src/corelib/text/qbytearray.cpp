@@ -739,16 +739,15 @@ QByteArray qUncompress(const uchar* data, int nbytes)
 
     \snippet code/src_corelib_text_qbytearray.cpp 0
 
-    Although the size() is 5, the byte array also maintains an extra
-    '\\0' character at the end so that if a function is used that
-    asks for a pointer to the underlying data (e.g. a call to
-    data()), the data pointed to is guaranteed to be
-    '\\0'-terminated.
+    Although the size() is 5, the byte array also maintains an extra '\\0' byte
+    at the end so that if a function is used that asks for a pointer to the
+    underlying data (e.g. a call to data()), the data pointed to is guaranteed
+    to be '\\0'-terminated.
 
-    QByteArray makes a deep copy of the \c{const char *} data, so you
-    can modify it later without experiencing side effects. (If for
-    performance reasons you don't want to take a deep copy of the
-    character data, use QByteArray::fromRawData() instead.)
+    QByteArray makes a deep copy of the \c{const char *} data, so you can modify
+    it later without experiencing side effects. (If, for example for performance
+    reasons, you don't want to take a deep copy of the data, use
+    QByteArray::fromRawData() instead.)
 
     Another approach is to set the size of the array using resize() and to
     initialize the data byte by byte. QByteArray uses 0-based indexes, just like
@@ -774,20 +773,19 @@ QByteArray qUncompress(const uchar* data, int nbytes)
 
     \snippet code/src_corelib_text_qbytearray.cpp 48
 
-    If you want to obtain the length of the data up to and
-    excluding the first '\\0' character, call qstrlen() on the byte
-    array.
+    If you want to obtain the length of the data up to and excluding the first
+    '\\0' byte, call qstrlen() on the byte array.
 
     After a call to resize(), newly allocated bytes have undefined
     values. To set all the bytes to a particular value, call fill().
 
-    To obtain a pointer to the actual character data, call data() or
-    constData(). These functions return a pointer to the beginning of the data.
-    The pointer is guaranteed to remain valid until a non-const function is
-    called on the QByteArray. It is also guaranteed that the data ends with a
-    '\\0' byte unless the QByteArray was created from \l{fromRawData()}{raw
-    data}. This '\\0' byte is automatically provided by QByteArray and is not
-    counted in size().
+    To obtain a pointer to the actual bytes, call data() or constData(). These
+    functions return a pointer to the beginning of the data. The pointer is
+    guaranteed to remain valid until a non-const function is called on the
+    QByteArray. It is also guaranteed that the data ends with a '\\0' byte
+    unless the QByteArray was created from \l{fromRawData()}{raw data}. This
+    '\\0' byte is automatically provided by QByteArray and is not counted in
+    size().
 
     QByteArray provides the following basic functions for modifying
     the byte data: append(), prepend(), insert(), replace(), and
@@ -806,29 +804,27 @@ QByteArray qUncompress(const uchar* data, int nbytes)
     memory QByteArray actually allocated. Data appended to an empty
     array is not copied.
 
-    If you want to find all occurrences of a particular character or
-    substring in a QByteArray, use indexOf() or lastIndexOf(). The
-    former searches forward starting from a given index position, the
-    latter searches backward. Both return the index position of the
-    character or substring if they find it; otherwise, they return -1.
-    For example, here's a typical loop that finds all occurrences of a
-    particular substring:
+    If you want to find all occurrences of a particular byte or sequence of
+    bytes in a QByteArray, use indexOf() or lastIndexOf(). The former searches
+    forward starting from a given index position, the latter searches
+    backward. Both return the index position of the byte sequence if they find
+    it; otherwise, they return -1. For example, here's a typical loop that finds
+    all occurrences of a particular string:
 
     \snippet code/src_corelib_text_qbytearray.cpp 4
 
-    If you simply want to check whether a QByteArray contains a
-    particular character or substring, use contains(). If you want to
-    find out how many times a particular character or substring
-    occurs in the byte array, use count(). If you want to replace all
-    occurrences of a particular value with another, use one of the
-    two-parameter replace() overloads.
+    If you simply want to check whether a QByteArray contains a particular byte
+    sequence, use contains(). If you want to find out how many times a
+    particular byte sequence occurs in the byte array, use count(). If you want
+    to replace all occurrences of a particular value with another, use one of
+    the two-parameter replace() overloads.
 
     \l{QByteArray}s can be compared using overloaded operators such as
-    operator<(), operator<=(), operator==(), operator>=(), and so on.
-    The comparison is based exclusively on the numeric values
-    of the characters and is very fast, but is not what a human would
-    expect. QString::localeAwareCompare() is a better choice for
-    sorting user-interface strings.
+    operator<(), operator<=(), operator==(), operator>=(), and so on. The
+    comparison is based exclusively on the numeric values of the bytes and is
+    very fast, but is not what a human would
+    expect. QString::localeAwareCompare() is a better choice for sorting
+    user-interface strings.
 
     For historical reasons, QByteArray distinguishes between a null
     byte array and an empty byte array. A \e null byte array is a
@@ -840,11 +836,11 @@ QByteArray qUncompress(const uchar* data, int nbytes)
 
     \snippet code/src_corelib_text_qbytearray.cpp 5
 
-    All functions except isNull() treat null byte arrays the same as
-    empty byte arrays. For example, data() returns a valid pointer
-    (\e not nullptr) to a '\\0' character for a byte array
-    and QByteArray() compares equal to QByteArray(""). We recommend
-    that you always use isEmpty() and avoid isNull().
+    All functions except isNull() treat null byte arrays the same as empty byte
+    arrays. For example, data() returns a valid pointer (\e not nullptr) to a
+    '\\0' byte for a null byte array and QByteArray() compares equal to
+    QByteArray(""). We recommend that you always use isEmpty() and avoid
+    isNull().
 
     \section1 Maximum size and out-of-memory conditions
 
@@ -871,14 +867,30 @@ QByteArray qUncompress(const uchar* data, int nbytes)
     supported using QStringEncoder and QStringDecoder to convert to Unicode. For
     locale-specific interpretation of text, use QLocale or QString.
 
+    \section2 C Strings
+
+    Traditional C strings, also known as '\\0'-terminated strings, are sequences
+    of bytes, specified by a start-point and implicitly including each byte up
+    to, but not including, the first '\\0' byte thereafter. Methods that accept
+    such a pointer, without a length, will interpret it as this sequence of
+    bytes. Such a sequence, by construction, cannot contain a '\\0' byte.
+
+    Other overloads accept a start-pointer and a byte-count; these use the given
+    number of bytes, following the start address, regardless of whether any of
+    them happen to be '\\0' bytes. In some cases, where there is no overload
+    taking only a pointer, passing a length of -1 will cause the method to use
+    the offset of the first '\\0' byte after the pointer as the length; a length
+    of -1 should only be passed if the method explicitly says it does this (in
+    which case it is typically a default argument).
+
     \section2 Spacing Characters
 
     A frequent requirement is to remove spacing characters from a byte array
     ('\\n', '\\t', ' ', etc.). If you want to remove spacing from both ends of a
-    QByteArray, use trimmed(). If you want to remove spacing from both ends and
-    replace each run of spacing characters with a single space character within
-    the byte array, use simplified(). Only ASCII spacing characters are
-    recognized for these purposes.
+    QByteArray, use trimmed(). If you want to also replace each run of spacing
+    characters with a single space character within the byte array, use
+    simplified(). Only ASCII spacing characters are recognized for these
+    purposes.
 
     \section2 Number-String Conversions
 
@@ -897,6 +909,16 @@ QByteArray qUncompress(const uchar* data, int nbytes)
 
     This issue does not apply to \l{QString}s since they represent characters
     using Unicode.
+
+    \section2 QString matching and insertion
+
+    Some methods search for the content of a QString or insert a copy of it in a
+    QByteArray; these invariably use the UTF-8 encoding of the QString, making
+    them equivalent to passing \c str.toUtf8(), in place of the string \c str,
+    to the matching method taking a QByteArray. The overloads taking QString can
+    be disabled by defining \c QT_NO_CAST_TO_ASCII and \c QT_NO_CAST_FROM_ASCII,
+    to help catch places where unintended operations between QByteArray and
+    QString may cause bugs.
 
     \sa QString, QBitArray
 */
@@ -934,8 +956,8 @@ QByteArray qUncompress(const uchar* data, int nbytes)
 
 /*! \fn QByteArray::iterator QByteArray::begin()
 
-    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the first character in
-    the byte-array.
+    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the first
+    byte in the byte-array.
 
     \sa constBegin(), end()
 */
@@ -948,24 +970,24 @@ QByteArray qUncompress(const uchar* data, int nbytes)
 /*! \fn QByteArray::const_iterator QByteArray::cbegin() const
     \since 5.0
 
-    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first character
-    in the byte-array.
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the
+    first byte in the byte-array.
 
     \sa begin(), cend()
 */
 
 /*! \fn QByteArray::const_iterator QByteArray::constBegin() const
 
-    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first character
-    in the byte-array.
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the
+    first byte in the byte-array.
 
     \sa begin(), constEnd()
 */
 
 /*! \fn QByteArray::iterator QByteArray::end()
 
-    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the imaginary character
-    after the last character in the byte-array.
+    Returns an \l{STL-style iterators}{STL-style iterator} pointing just after
+    the last byte in the byte-array.
 
     \sa begin(), constEnd()
 */
@@ -978,16 +1000,16 @@ QByteArray qUncompress(const uchar* data, int nbytes)
 /*! \fn QByteArray::const_iterator QByteArray::cend() const
     \since 5.0
 
-    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
-    character after the last character in the list.
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing just
+    after the last byte in the byte-array.
 
     \sa cbegin(), end()
 */
 
 /*! \fn QByteArray::const_iterator QByteArray::constEnd() const
 
-    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
-    character after the last character in the list.
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing just
+    after the last byte in the byte-array.
 
     \sa constBegin(), end()
 */
@@ -996,7 +1018,7 @@ QByteArray qUncompress(const uchar* data, int nbytes)
     \since 5.6
 
     Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
-    character in the byte-array, in reverse order.
+    byte in the byte-array, in reverse order.
 
     \sa begin(), crbegin(), rend()
 */
@@ -1010,7 +1032,7 @@ QByteArray qUncompress(const uchar* data, int nbytes)
     \since 5.6
 
     Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
-    character in the byte-array, in reverse order.
+    byte in the byte-array, in reverse order.
 
     \sa begin(), rbegin(), rend()
 */
@@ -1019,7 +1041,7 @@ QByteArray qUncompress(const uchar* data, int nbytes)
     \since 5.6
 
     Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to one past
-    the last character in the byte-array, in reverse order.
+    the last byte in the byte-array, in reverse order.
 
     \sa end(), crend(), rbegin()
 */
@@ -1033,7 +1055,7 @@ QByteArray qUncompress(const uchar* data, int nbytes)
     \since 5.6
 
     Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to one
-    past the last character in the byte-array, in reverse order.
+    past the last byte in the byte-array, in reverse order.
 
     \sa end(), rend(), rbegin()
 */
@@ -1174,12 +1196,12 @@ QByteArray &QByteArray::operator=(const char *str)
     Returns the number of bytes in this byte array.
 
     The last byte in the byte array is at position size() - 1. In addition,
-    QByteArray ensures that the byte at position size() is always '\\0', so
-    that you can use the return value of data() and constData() as arguments to
-    functions that expect '\\0'-terminated strings. If the QByteArray object
-    was created from a \l{fromRawData()}{raw data} that didn't include the
-    trailing null-termination character then QByteArray doesn't add it
-    automaticall unless the \l{deep copy} is created.
+    QByteArray ensures that the byte at position size() is always '\\0', so that
+    you can use the return value of data() and constData() as arguments to
+    functions that expect '\\0'-terminated strings. If the QByteArray object was
+    created from a \l{fromRawData()}{raw data} that didn't include the trailing
+    '\\0'-termination byte, then QByteArray doesn't add it automaticall unless a
+    \l{deep copy} is created.
 
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 6
@@ -1275,11 +1297,10 @@ QByteArray &QByteArray::operator=(const char *str)
 
 /*! \fn char *QByteArray::data()
 
-    Returns a pointer to the data stored in the byte array. The
-    pointer can be used to access and modify the bytes that compose
-    the array. The data is '\\0'-terminated, i.e. the number of
-    bytes in the returned character string is size() + 1 for the
-    '\\0' terminator.
+    Returns a pointer to the data stored in the byte array. The pointer can be
+    used to access and modify the bytes that compose the array. The data is
+    '\\0'-terminated, i.e. the number of bytes you can access following the
+    returned pointer is size() + 1, including the '\\0' terminator.
 
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 8
@@ -1348,7 +1369,7 @@ QByteArray &QByteArray::operator=(const char *str)
 
 /*! \fn char QByteArray::at(int i) const
 
-    Returns the character at index position \a i in the byte array.
+    Returns the byte at index position \a i in the byte array.
 
     \a i must be a valid index position in the byte array (i.e., 0 <=
     \a i < size()).
@@ -1381,7 +1402,7 @@ QByteArray &QByteArray::operator=(const char *str)
     \fn char QByteArray::front() const
     \since 5.10
 
-    Returns the first character in the byte array.
+    Returns the first byte in the byte array.
     Same as \c{at(0)}.
 
     This function is provided for STL compatibility.
@@ -1396,7 +1417,7 @@ QByteArray &QByteArray::operator=(const char *str)
     \fn char QByteArray::back() const
     \since 5.10
 
-    Returns the last character in the byte array.
+    Returns the last byte in the byte array.
     Same as \c{at(size() - 1)}.
 
     This function is provided for STL compatibility.
@@ -1411,7 +1432,7 @@ QByteArray &QByteArray::operator=(const char *str)
     \fn char &QByteArray::front()
     \since 5.10
 
-    Returns a reference to the first character in the byte array.
+    Returns a reference to the first byte in the byte array.
     Same as \c{operator[](0)}.
 
     This function is provided for STL compatibility.
@@ -1426,7 +1447,7 @@ QByteArray &QByteArray::operator=(const char *str)
     \fn char &QByteArray::back()
     \since 5.10
 
-    Returns a reference to the last character in the byte array.
+    Returns a reference to the last byte in the byte array.
     Same as \c{operator[](size() - 1)}.
 
     This function is provided for STL compatibility.
@@ -1449,15 +1470,15 @@ QByteArray &QByteArray::operator=(const char *str)
 
     \overload
 
-    Returns \c true if the byte array contains the string \a str;
-    otherwise returns \c false.
+    Returns \c true if the byte array contains the '\\0'-terminated string \a
+    str; otherwise returns \c false.
 */
 
 /*! \fn bool QByteArray::contains(char ch) const
 
     \overload
 
-    Returns \c true if the byte array contains the character \a ch;
+    Returns \c true if the byte array contains the byte \a ch;
     otherwise returns \c false.
 */
 
@@ -1526,9 +1547,8 @@ void QByteArray::chop(int n)
 
     \overload
 
-    Appends the string \a str onto the end of this byte array and
-    returns a reference to this byte array. The Unicode data is
-    converted into 8-bit characters using QString::toUtf8().
+    Appends the UTF-8 encoding of \a str onto the end of this byte array and
+    returns a reference to this byte array.
 
     You can disable this function by defining \c QT_NO_CAST_TO_ASCII when you
     compile your applications. You then need to call QString::toUtf8() (or
@@ -1540,16 +1560,16 @@ void QByteArray::chop(int n)
 
     \overload
 
-    Appends the string \a str onto the end of this byte array and
-    returns a reference to this byte array.
+    Appends the '\\0'-terminated string \a str onto the end of this byte array
+    and returns a reference to this byte array.
 */
 
 /*! \fn QByteArray &QByteArray::operator+=(char ch)
 
     \overload
 
-    Appends the character \a ch onto the end of this byte array and
-    returns a reference to this byte array.
+    Appends the byte \a ch onto the end of this byte array and returns a
+    reference to this byte array.
 */
 
 /*! \fn int QByteArray::length() const
@@ -1585,10 +1605,8 @@ void QByteArray::chop(int n)
 
     If \a data is 0, a null byte array is constructed.
 
-    If \a size is negative, \a data is assumed to point to a
-    '\\0'-terminated string and its length is determined dynamically.
-    The terminating \\0 character is not considered part of the
-    byte array.
+    If \a size is negative, \a data is assumed to point to a '\\0'-terminated
+    string and its length is determined dynamically.
 
     QByteArray makes a deep copy of the string data.
 
@@ -1609,8 +1627,7 @@ QByteArray::QByteArray(const char *data, int size)
 }
 
 /*!
-    Constructs a byte array of size \a size with every byte set to
-    character \a ch.
+    Constructs a byte array of size \a size with every byte set to \a ch.
 
     \sa fill()
 */
@@ -1663,9 +1680,8 @@ void QByteArray::resize(int size)
 }
 
 /*!
-    Sets every byte in the byte array to character \a ch. If \a size
-    is different from -1 (the default), the byte array is resized to
-    size \a size beforehand.
+    Sets every byte in the byte array to \a ch. If \a size is different from -1
+    (the default), the byte array is resized to size \a size beforehand.
 
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 14
@@ -1754,7 +1770,7 @@ QByteArray &QByteArray::prepend(const QByteArray &ba)
 /*!
     \overload
 
-    Prepends the string \a str to this byte array.
+    Prepends the '\\0'-terminated string \a str to this byte array.
 */
 
 QByteArray &QByteArray::prepend(const char *str)
@@ -1766,7 +1782,8 @@ QByteArray &QByteArray::prepend(const char *str)
     \overload
     \since 4.6
 
-    Prepends \a len bytes of the string \a str to this byte array.
+    Prepends \a len bytes starting at \a str to this byte array.
+    The bytes prepended may include '\\0' bytes.
 */
 
 QByteArray &QByteArray::prepend(const char *str, int len)
@@ -1787,13 +1804,13 @@ QByteArray &QByteArray::prepend(const char *str, int len)
     \overload
     \since 5.7
 
-    Prepends \a count copies of character \a ch to this byte array.
+    Prepends \a count copies of byte \a ch to this byte array.
 */
 
 /*!
     \overload
 
-    Prepends the character \a ch to this byte array.
+    Prepends the byte \a ch to this byte array.
 */
 
 QByteArray &QByteArray::prepend(char ch)
@@ -1849,8 +1866,7 @@ QByteArray &QByteArray::append(const QByteArray &ba)
 
     \overload
 
-    Appends the string \a str to this byte array. The Unicode data is
-    converted into 8-bit characters using QString::toUtf8().
+    Appends the UTF-8 encoding of \a str to this byte array.
 
     You can disable this function by defining \c QT_NO_CAST_TO_ASCII when you
     compile your applications. You then need to call QString::toUtf8() (or
@@ -1861,7 +1877,7 @@ QByteArray &QByteArray::append(const QByteArray &ba)
 /*!
     \overload
 
-    Appends the string \a str to this byte array.
+    Appends the '\\0'-terminated string \a str to this byte array.
 */
 
 QByteArray& QByteArray::append(const char *str)
@@ -1879,13 +1895,16 @@ QByteArray& QByteArray::append(const char *str)
 /*!
     \overload append()
 
-    Appends the first \a len characters of the string \a str to this byte
-    array and returns a reference to this byte array.
+    Appends the first \a len bytes starting at \a str to this byte array and
+    returns a reference to this byte array. The bytes appended may include '\\0'
+    bytes.
 
-    If \a len is negative, the length of the string will be determined
-    automatically using qstrlen(). If \a len is zero or \a str is
-    null, nothing is appended to the byte array. Ensure that \a len is
-    \e not longer than \a str.
+    If \a len is negative, \a str will be assumed to be a '\\0'-terminated
+    string and the length to be copied will be determined automatically using
+    qstrlen().
+
+    If \a len is zero or \a str is null, nothing is appended to the byte
+    array. Ensure that \a len is \e not longer than \a str.
 */
 
 QByteArray &QByteArray::append(const char *str, int len)
@@ -1907,8 +1926,8 @@ QByteArray &QByteArray::append(const char *str, int len)
     \overload
     \since 5.7
 
-    Appends \a count copies of character \a ch to this byte
-    array and returns a reference to this byte array.
+    Appends \a count copies of byte \a ch to this byte array and returns a
+    reference to this byte array.
 
     If \a count is negative or zero nothing is appended to the byte array.
 */
@@ -1916,7 +1935,7 @@ QByteArray &QByteArray::append(const char *str, int len)
 /*!
     \overload
 
-    Appends the character \a ch to this byte array.
+    Appends the byte \a ch to this byte array.
 */
 
 QByteArray& QByteArray::append(char ch)
@@ -1973,11 +1992,8 @@ QByteArray &QByteArray::insert(int i, const QByteArray &ba)
 
     \overload
 
-    Inserts the string \a str at index position \a i in the byte
-    array. The Unicode data is converted into 8-bit characters using
-    QString::toUtf8().
-
-    If \a i is greater than size(), the array is first extended using
+    Inserts the UTF-8 encoding of \a str at index position \a i in the byte
+    array. If \a i is greater than size(), the array is first extended using
     resize().
 
     You can disable this function by defining \c QT_NO_CAST_TO_ASCII when you
@@ -1989,7 +2005,8 @@ QByteArray &QByteArray::insert(int i, const QByteArray &ba)
 /*!
     \overload
 
-    Inserts the string \a str at position \a i in the byte array.
+    Inserts the '\\0'-terminated string \a str at position \a i in the byte
+    array.
 
     If \a i is greater than size(), the array is first extended using
     resize().
@@ -2004,8 +2021,8 @@ QByteArray &QByteArray::insert(int i, const char *str)
     \overload
     \since 4.6
 
-    Inserts \a len bytes of the string \a str at position
-    \a i in the byte array.
+    Inserts \a len bytes, starting at \a str, at position \a i in the byte
+    array.
 
     If \a i is greater than size(), the array is first extended using
     resize().
@@ -2019,9 +2036,8 @@ QByteArray &QByteArray::insert(int i, const char *str, int len)
 /*!
     \overload
 
-    Inserts character \a ch at index position \a i in the byte array.
-    If \a i is greater than size(), the array is first extended using
-    resize().
+    Inserts byte \a ch at index position \a i in the byte array. If \a i is
+    greater than size(), the array is first extended using resize().
 */
 
 QByteArray &QByteArray::insert(int i, char ch)
@@ -2034,8 +2050,8 @@ QByteArray &QByteArray::insert(int i, char ch)
     \overload
     \since 5.7
 
-    Inserts \a count copies of character \a ch at index position \a i in the
-    byte array.
+    Inserts \a count copies of byte \a ch at index position \a i in the byte
+    array.
 
     If \a i is greater than size(), the array is first extended using resize().
 */
@@ -2126,8 +2142,8 @@ QByteArray &QByteArray::replace(int pos, int len, const char *after)
 
     \overload
 
-    Replaces \a len bytes from index position \a pos with \a alen bytes
-    from the string \a after. \a after is allowed to have '\\0' characters.
+    Replaces \a len bytes from index position \a pos with \a alen bytes starting
+    at position \a after. The bytes inserted may include '\\0' bytes.
 
     \since 4.7
 */
@@ -2165,7 +2181,7 @@ QByteArray &QByteArray::replace(const QByteArray &before, const QByteArray &afte
     \fn QByteArray &QByteArray::replace(const char *before, const QByteArray &after)
     \overload
 
-    Replaces every occurrence of the string \a before with the
+    Replaces every occurrence of the '\\0'-terminated string \a before with the
     byte array \a after.
 */
 
@@ -2178,9 +2194,10 @@ QByteArray &QByteArray::replace(const char *c, const QByteArray &after)
     \fn QByteArray &QByteArray::replace(const char *before, int bsize, const char *after, int asize)
     \overload
 
-    Replaces every occurrence of the string \a before with the string \a after.
-    Since the sizes of the strings are given by \a bsize and \a asize, they
-    may contain zero characters and do not need to be '\\0'-terminated.
+    Replaces every occurrence of the \a bsize bytes starting at \a before with
+    the \asize bytes starting at \a after. Since the sizes of the strings are
+    given by \a bsize and \a asize, they may contain '\\0' bytes and do not need
+    to be '\\0'-terminated.
 */
 
 QByteArray &QByteArray::replace(const char *before, int bsize, const char *after, int asize)
@@ -2246,7 +2263,7 @@ QByteArray &QByteArray::replace(const char *before, int bsize, const char *after
         }
     } else {
         // the most complex case. We don't want to lose performance by doing repeated
-        // copies and reallocs of the string.
+        // copies and reallocs of the data.
         while (index != -1) {
             uint indices[4096];
             uint pos = 0;
@@ -2303,7 +2320,7 @@ QByteArray &QByteArray::replace(const char *before, int bsize, const char *after
     \fn QByteArray &QByteArray::replace(const QByteArray &before, const char *after)
     \overload
 
-    Replaces every occurrence of the byte array \a before with the
+    Replaces every occurrence of the byte in \a before with the '\\0'-terminated
     string \a after.
 */
 
@@ -2311,9 +2328,8 @@ QByteArray &QByteArray::replace(const char *before, int bsize, const char *after
 
     \overload
 
-    Replaces every occurrence of the string \a before with the byte
-    array \a after. The Unicode data is converted into 8-bit
-    characters using QString::toUtf8().
+    Replaces every occurrence of the UTF-8 encoding of \a before with the byte
+    array \a after.
 
     You can disable this function by defining \c QT_NO_CAST_TO_ASCII when you
     compile your applications. You then need to call QString::toUtf8() (or
@@ -2324,23 +2340,23 @@ QByteArray &QByteArray::replace(const char *before, int bsize, const char *after
 /*! \fn QByteArray &QByteArray::replace(const QString &before, const char *after)
     \overload
 
-    Replaces every occurrence of the string \a before with the string
-    \a after.
+    Replaces every occurrence of the UTF-8 encoding of \a before with the
+    '\\0'-terminated string \a after.
 */
 
 /*! \fn QByteArray &QByteArray::replace(const char *before, const char *after)
 
     \overload
 
-    Replaces every occurrence of the string \a before with the string
-    \a after.
+    Replaces every occurrence of the '\\0'-terminated string \a before with the
+    '\\0'-terminated string \a after.
 */
 
 /*!
     \overload
 
-    Replaces every occurrence of the character \a before with the
-    byte array \a after.
+    Replaces every occurrence of the byte \a before with the byte array \a
+    after.
 */
 
 QByteArray &QByteArray::replace(char before, const QByteArray &after)
@@ -2353,9 +2369,8 @@ QByteArray &QByteArray::replace(char before, const QByteArray &after)
 
     \overload
 
-    Replaces every occurrence of the character \a before with the
-    string \a after. The Unicode data is converted into 8-bit
-    characters using QString::toUtf8().
+    Replaces every occurrence of the byte \a before with the UTF-8 encoding of
+    \a after.
 
     You can disable this function by defining \c QT_NO_CAST_TO_ASCII when you
     compile your applications. You then need to call QString::toUtf8() (or
@@ -2367,15 +2382,14 @@ QByteArray &QByteArray::replace(char before, const QByteArray &after)
 
     \overload
 
-    Replaces every occurrence of the character \a before with the
+    Replaces every occurrence of the byte \a before with the '\\0'-terminated
     string \a after.
 */
 
 /*!
     \overload
 
-    Replaces every occurrence of the character \a before with the
-    character \a after.
+    Replaces every occurrence of the byte \a before with the byte \a after.
 */
 
 QByteArray &QByteArray::replace(char before, char after)
@@ -2491,12 +2505,9 @@ int QByteArray::indexOf(const QByteArray &ba, int from) const
 
     \overload
 
-    Returns the index position of the first occurrence of the string
-    \a str in the byte array, searching forward from index position
-    \a from. Returns -1 if \a str could not be found.
-
-    The Unicode data is converted into 8-bit characters using
-    QString::toUtf8().
+    Returns the index position of the first occurrence of the UTF-8 encoding of
+    \a str in the byte array, searching forward from index position \a
+    from. Returns -1 if \a str could not be found.
 
     You can disable this function by defining \c QT_NO_CAST_TO_ASCII when you
     compile your applications. You then need to call QString::toUtf8() (or
@@ -2508,8 +2519,8 @@ int QByteArray::indexOf(const QByteArray &ba, int from) const
 
     \overload
 
-    Returns the index position of the first occurrence of the string
-    \a str in the byte array, searching forward from index position \a
+    Returns the index position of the first occurrence of the '\\0'-terminated
+    string \a str in the byte array, searching forward from index position \a
     from. Returns -1 if \a str could not be found.
 */
 int QByteArray::indexOf(const char *c, int from) const
@@ -2530,9 +2541,9 @@ int QByteArray::indexOf(const char *c, int from) const
 /*!
     \overload
 
-    Returns the index position of the first occurrence of the
-    character \a ch in the byte array, searching forward from index
-    position \a from. Returns -1 if \a ch could not be found.
+    Returns the index position of the first occurrence of the byte \a ch in the
+    byte array, searching forward from index position \a from. Returns -1 if \a
+    ch could not be found.
 
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 22
@@ -2553,7 +2564,6 @@ int QByteArray::indexOf(char ch, int from) const
     }
     return -1;
 }
-
 
 static int lastIndexOfHelper(const char *haystack, int l, const char *needle, int ol, int from)
 {
@@ -2591,10 +2601,10 @@ static int lastIndexOfHelper(const char *haystack, int l, const char *needle, in
 /*!
     \fn int QByteArray::lastIndexOf(const QByteArray &ba, int from) const
 
-    Returns the index position of the last occurrence of the byte
-    array \a ba in this byte array, searching backward from index
-    position \a from. If \a from is -1 (the default), the search
-    starts at the last byte. Returns -1 if \a ba could not be found.
+    Returns the index position of the last occurrence of the byte array \a ba in
+    this byte array, searching backward from index position \a from. If \a from
+    is -1 (the default), the search starts at the last byte (at index size() -
+    1). Returns -1 if \a ba could not be found.
 
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 23
@@ -2615,13 +2625,10 @@ int QByteArray::lastIndexOf(const QByteArray &ba, int from) const
 
     \overload
 
-    Returns the index position of the last occurrence of the string \a
-    str in the byte array, searching backward from index position \a
-    from. If \a from is -1 (the default), the search starts at the
-    last (size() - 1) byte. Returns -1 if \a str could not be found.
-
-    The Unicode data is converted into 8-bit characters using
-    QString::toUtf8().
+    Returns the index position of the last occurrence of the UTF-8 encoding of
+    \a str in the byte array, searching backward from index position \a from. If
+    \a from is -1 (the default), the search starts at the last byte (at index
+    size() - 1). Returns -1 if \a str could not be found.
 
     You can disable this function by defining \c QT_NO_CAST_TO_ASCII when you
     compile your applications. You then need to call QString::toUtf8() (or
@@ -2632,10 +2639,10 @@ int QByteArray::lastIndexOf(const QByteArray &ba, int from) const
 /*! \fn int QByteArray::lastIndexOf(const char *str, int from) const
     \overload
 
-    Returns the index position of the last occurrence of the string \a
-    str in the byte array, searching backward from index position \a
-    from. If \a from is -1 (the default), the search starts at the
-    last (size() - 1) byte. Returns -1 if \a str could not be found.
+    Returns the index position of the last occurrence of the '\\0'-terminated
+    string \a str in the byte array, searching backward from index position \a
+    from. If \a from is -1 (the default), the search starts at the last byte (at
+    index size() - 1). Returns -1 if \a str could not be found.
 */
 int QByteArray::lastIndexOf(const char *str, int from) const
 {
@@ -2649,10 +2656,10 @@ int QByteArray::lastIndexOf(const char *str, int from) const
 /*!
     \overload
 
-    Returns the index position of the last occurrence of character \a
-    ch in the byte array, searching backward from index position \a
-    from. If \a from is -1 (the default), the search starts at the
-    last (size() - 1) byte. Returns -1 if \a ch could not be found.
+    Returns the index position of the last occurrence of byte \a ch in the byte
+    array, searching backward from index position \a from. If \a from is -1 (the
+    default), the search starts at the last byte (at index size() - 1). Returns
+    -1 if \a ch could not be found.
 
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 24
@@ -2702,7 +2709,7 @@ int QByteArray::count(const QByteArray &ba) const
     \overload
 
     Returns the number of (potentially overlapping) occurrences of
-    string \a str in the byte array.
+    '\\0'-terminated string \a str in the byte array.
 */
 
 int QByteArray::count(const char *str) const
@@ -2713,8 +2720,7 @@ int QByteArray::count(const char *str) const
 /*!
     \overload
 
-    Returns the number of occurrences of character \a ch in the byte
-    array.
+    Returns the number of occurrences of byte \a ch in the byte array.
 
     \sa contains(), indexOf()
 */
@@ -2742,8 +2748,8 @@ int QByteArray::count(char ch) const
     \since 5.12
 
     Returns an integer less than, equal to, or greater than zero depending on
-    whether this QByteArray sorts before, at the same position, or after the
-    string pointed to by \a c. The comparison is performed according to case
+    whether this QByteArray sorts before, at the same position as, or after the
+    '\\0'-terminated string \a c. The comparison is performed according to case
     sensitivity \a cs.
 
     \sa operator==
@@ -2755,7 +2761,7 @@ int QByteArray::count(char ch) const
     \since 5.12
 
     Returns an integer less than, equal to, or greater than zero depending on
-    whether this QByteArray sorts before, at the same position, or after the
+    whether this QByteArray sorts before, at the same position as, or after the
     QByteArray \a a. The comparison is performed according to case sensitivity
     \a cs.
 
@@ -2782,8 +2788,8 @@ bool QByteArray::startsWith(const QByteArray &ba) const
 
 /*! \overload
 
-    Returns \c true if this byte array starts with string \a str;
-    otherwise returns \c false.
+    Returns \c true if this byte array starts with '\\0'-terminated string \a
+    str; otherwise returns \c false.
 */
 bool QByteArray::startsWith(const char *str) const
 {
@@ -2797,8 +2803,8 @@ bool QByteArray::startsWith(const char *str) const
 
 /*! \overload
 
-    Returns \c true if this byte array starts with character \a ch;
-    otherwise returns \c false.
+    Returns \c true if this byte array starts with byte \a ch; otherwise returns
+    \c false.
 */
 bool QByteArray::startsWith(char ch) const
 {
@@ -2827,8 +2833,8 @@ bool QByteArray::endsWith(const QByteArray &ba) const
 
 /*! \overload
 
-    Returns \c true if this byte array ends with string \a str; otherwise
-    returns \c false.
+    Returns \c true if this byte array ends with '\\0'-terminated string \a str;
+    otherwise returns \c false.
 */
 bool QByteArray::endsWith(const char *str) const
 {
@@ -2838,6 +2844,18 @@ bool QByteArray::endsWith(const char *str) const
     if (size() < len)
         return false;
     return qstrncmp(end() - len, str, len) == 0;
+}
+
+/*! \overload
+
+    Returns \c true if this byte array ends with byte \a ch;
+    otherwise returns \c false.
+*/
+bool QByteArray::endsWith(char ch) const
+{
+    if (size() == 0)
+        return false;
+    return data()[size() - 1] == ch;
 }
 
 /*
@@ -2900,21 +2918,9 @@ bool QByteArray::isLower() const
     return true;
 }
 
-/*! \overload
-
-    Returns \c true if this byte array ends with character \a ch;
-    otherwise returns \c false.
-*/
-bool QByteArray::endsWith(char ch) const
-{
-    if (size() == 0)
-        return false;
-    return data()[size() - 1] == ch;
-}
-
 /*!
-    Returns a byte array that contains the leftmost \a len bytes of
-    this byte array.
+    Returns a byte array that contains the first \a len bytes of this byte
+    array.
 
     The entire byte array is returned if \a len is greater than
     size().
@@ -2935,8 +2941,7 @@ QByteArray QByteArray::left(int len)  const
 }
 
 /*!
-    Returns a byte array that contains the rightmost \a len bytes of
-    this byte array.
+    Returns a byte array that contains the last \a len bytes of this byte array.
 
     The entire byte array is returned if \a len is greater than
     size().
@@ -3145,11 +3150,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
 /*! \fn bool QByteArray::operator==(const QString &str) const
 
-    Returns \c true if this byte array is equal to string \a str;
+    Returns \c true if this byte array is equal to the UTF-8 encoding of \a str;
     otherwise returns \c false.
-
-    The Unicode data is converted into 8-bit characters using
-    QString::toUtf8().
 
     The comparison is case sensitive.
 
@@ -3162,11 +3164,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
 /*! \fn bool QByteArray::operator!=(const QString &str) const
 
-    Returns \c true if this byte array is not equal to string \a str;
-    otherwise returns \c false.
-
-    The Unicode data is converted into 8-bit characters using
-    QString::toUtf8().
+    Returns \c true if this byte array is not equal to the UTF-8 encoding of \a
+    str; otherwise returns \c false.
 
     The comparison is case sensitive.
 
@@ -3179,11 +3178,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
 /*! \fn bool QByteArray::operator<(const QString &str) const
 
-    Returns \c true if this byte array is lexically less than string \a
-    str; otherwise returns \c false.
-
-    The Unicode data is converted into 8-bit characters using
-    QString::toUtf8().
+    Returns \c true if this byte array is lexically less than the UTF-8 encoding
+    of \a str; otherwise returns \c false.
 
     The comparison is case sensitive.
 
@@ -3196,11 +3192,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
 /*! \fn bool QByteArray::operator>(const QString &str) const
 
-    Returns \c true if this byte array is lexically greater than string
-    \a str; otherwise returns \c false.
-
-    The Unicode data is converted into 8-bit characters using
-    QString::toUtf8().
+    Returns \c true if this byte array is lexically greater than the UTF-8
+    encoding of \a str; otherwise returns \c false.
 
     The comparison is case sensitive.
 
@@ -3213,11 +3206,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
 /*! \fn bool QByteArray::operator<=(const QString &str) const
 
-    Returns \c true if this byte array is lexically less than or equal
-    to string \a str; otherwise returns \c false.
-
-    The Unicode data is converted into 8-bit characters using
-    QString::toUtf8().
+    Returns \c true if this byte array is lexically less than or equal to the
+    UTF-8 encoding of \a str; otherwise returns \c false.
 
     The comparison is case sensitive.
 
@@ -3230,11 +3220,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
 /*! \fn bool QByteArray::operator>=(const QString &str) const
 
-    Returns \c true if this byte array is greater than or equal to string
-    \a str; otherwise returns \c false.
-
-    The Unicode data is converted into 8-bit characters using
-    QString::toUtf8().
+    Returns \c true if this byte array is greater than or equal to the UTF-8
+    encoding of \a str; otherwise returns \c false.
 
     The comparison is case sensitive.
 
@@ -3261,8 +3248,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     \overload
 
-    Returns \c true if byte array \a a1 is equal to string \a a2;
-    otherwise returns \c false.
+    Returns \c true if byte array \a a1 is equal to the '\\0'-terminated string
+    \a a2; otherwise returns \c false.
 
     \sa QByteArray::compare()
 */
@@ -3272,8 +3259,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     \overload
 
-    Returns \c true if string \a a1 is equal to byte array \a a2;
-    otherwise returns \c false.
+    Returns \c true if '\\0'-terminated string \a a1 is equal to byte array \a
+    a2; otherwise returns \c false.
 
     \sa QByteArray::compare()
 */
@@ -3294,8 +3281,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     \overload
 
-    Returns \c true if byte array \a a1 is not equal to string \a a2;
-    otherwise returns \c false.
+    Returns \c true if byte array \a a1 is not equal to the '\\0'-terminated
+    string \a a2; otherwise returns \c false.
 
     \sa QByteArray::compare()
 */
@@ -3305,8 +3292,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     \overload
 
-    Returns \c true if string \a a1 is not equal to byte array \a a2;
-    otherwise returns \c false.
+    Returns \c true if '\\0'-terminated string \a a1 is not equal to byte array
+    \a a2; otherwise returns \c false.
 
     \sa QByteArray::compare()
 */
@@ -3327,8 +3314,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     \overload
 
-    Returns \c true if byte array \a a1 is lexically less than string
-    \a a2; otherwise returns \c false.
+    Returns \c true if byte array \a a1 is lexically less than the
+    '\\0'-terminated string \a a2; otherwise returns \c false.
 
     \sa QByteArray::compare()
 */
@@ -3338,8 +3325,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     \overload
 
-    Returns \c true if string \a a1 is lexically less than byte array
-    \a a2; otherwise returns \c false.
+    Returns \c true if '\\0'-terminated string \a a1 is lexically less than byte
+    array \a a2; otherwise returns \c false.
 
     \sa QByteArray::compare()
 */
@@ -3360,8 +3347,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     \overload
 
-    Returns \c true if byte array \a a1 is lexically less than or equal
-    to string \a a2; otherwise returns \c false.
+    Returns \c true if byte array \a a1 is lexically less than or equal to the
+    '\\0'-terminated string \a a2; otherwise returns \c false.
 
     \sa QByteArray::compare()
 */
@@ -3371,8 +3358,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     \overload
 
-    Returns \c true if string \a a1 is lexically less than or equal
-    to byte array \a a2; otherwise returns \c false.
+    Returns \c true if '\\0'-terminated string \a a1 is lexically less than or
+    equal to byte array \a a2; otherwise returns \c false.
 
     \sa QByteArray::compare()
 */
@@ -3393,8 +3380,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     \overload
 
-    Returns \c true if byte array \a a1 is lexically greater than string
-    \a a2; otherwise returns \c false.
+    Returns \c true if byte array \a a1 is lexically greater than the
+    '\\0'-terminated string \a a2; otherwise returns \c false.
 
     \sa QByteArray::compare()
 */
@@ -3404,8 +3391,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     \overload
 
-    Returns \c true if string \a a1 is lexically greater than byte array
-    \a a2; otherwise returns \c false.
+    Returns \c true if '\\0'-terminated string \a a1 is lexically greater than
+    byte array \a a2; otherwise returns \c false.
 
     \sa QByteArray::compare()
 */
@@ -3426,8 +3413,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     \overload
 
-    Returns \c true if byte array \a a1 is lexically greater than or
-    equal to string \a a2; otherwise returns \c false.
+    Returns \c true if byte array \a a1 is lexically greater than or equal to
+    the '\\0'-terminated string \a a2; otherwise returns \c false.
 
     \sa QByteArray::compare()
 */
@@ -3437,8 +3424,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     \overload
 
-    Returns \c true if string \a a1 is lexically greater than or
-    equal to byte array \a a2; otherwise returns \c false.
+    Returns \c true if '\\0'-terminated string \a a1 is lexically greater than
+    or equal to byte array \a a2; otherwise returns \c false.
 
     \sa QByteArray::compare()
 */
@@ -3457,8 +3444,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     \overload
 
-    Returns a byte array that is the result of concatenating byte
-    array \a a1 and string \a a2.
+    Returns a byte array that is the result of concatenating byte array \a a1
+    and '\\0'-terminated string \a a2.
 */
 
 /*! \fn const QByteArray operator+(const QByteArray &a1, char a2)
@@ -3467,7 +3454,7 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     \overload
 
     Returns a byte array that is the result of concatenating byte
-    array \a a1 and character \a a2.
+    array \a a1 and byte \a a2.
 */
 
 /*! \fn const QByteArray operator+(const char *a1, const QByteArray &a2)
@@ -3475,8 +3462,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     \overload
 
-    Returns a byte array that is the result of concatenating string
-    \a a1 and byte array \a a2.
+    Returns a byte array that is the result of concatenating '\\0'-terminated
+    string \a a1 and byte array \a a2.
 */
 
 /*! \fn const QByteArray operator+(char a1, const QByteArray &a2)
@@ -3484,8 +3471,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     \overload
 
-    Returns a byte array that is the result of concatenating character
-    \a a1 and byte array \a a2.
+    Returns a byte array that is the result of concatenating byte \a a1 and byte
+    array \a a2.
 */
 
 /*!
@@ -3503,7 +3490,7 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 32
 
-    \sa trimmed(), QChar::SpecialCharacter
+    \sa trimmed(), QChar::SpecialCharacter, {Spacing Characters}
 */
 QByteArray QByteArray::simplified_helper(const QByteArray &a)
 {
@@ -3532,7 +3519,7 @@ QByteArray QByteArray::simplified_helper(QByteArray &a)
     Unlike simplified(), \l {QByteArray::trimmed()}{trimmed()} leaves internal
     spacing unchanged.
 
-    \sa simplified(), QChar::SpecialCharacter
+    \sa simplified(), QChar::SpecialCharacter, {Spacing Characters}
 */
 QByteArray QByteArray::trimmed_helper(const QByteArray &a)
 {
@@ -3546,8 +3533,8 @@ QByteArray QByteArray::trimmed_helper(QByteArray &a)
 
 
 /*!
-    Returns a byte array of size \a width that contains this byte
-    array padded by the \a fill character.
+    Returns a byte array of size \a width that contains this byte array padded
+    with the \a fill byte.
 
     If \a truncate is false and the size() of the byte array is more
     than \a width, then the returned byte array is a copy of this byte
@@ -3583,8 +3570,8 @@ QByteArray QByteArray::leftJustified(int width, char fill, bool truncate) const
 }
 
 /*!
-    Returns a byte array of size \a width that contains the \a fill
-    character followed by this byte array.
+    Returns a byte array of size \a width that contains the \a fill byte
+    followed by this byte array.
 
     If \a truncate is false and the size of the byte array is more
     than \a width, then the returned byte array is a copy of this byte
@@ -4197,9 +4184,9 @@ QByteArray &QByteArray::setNum(double n, char f, int prec)
 */
 
 /*!
-    Returns a byte array containing the string equivalent of the number \a n to
-    base \a base (ten by default). Bases 2 through 36 are supported, using
-    letters for digits beyond 9: A is ten, B is eleven and so on.
+    Returns a byte array containing the printed value of the number \a n to base
+    \a base (ten by default). Bases 2 through 36 are supported, using letters
+    for digits beyond 9: A is ten, B is eleven and so on.
 
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 41
@@ -4339,12 +4326,11 @@ QByteArray QByteArray::number(double n, char f, int prec)
 
     \snippet code/src_corelib_text_qbytearray.cpp 43
 
-    \warning A byte array created with fromRawData() is \e not
-    '\\0'-terminated, unless the raw data contains a 0 character at
-    position \a size. While that does not matter for QDataStream or
-    functions like indexOf(), passing the byte array to a function
-    accepting a \c{const char *} expected to be '\\0'-terminated will
-    fail.
+    \warning A byte array created with fromRawData() is \e not '\\0'-terminated,
+    unless the raw data contains a '\\0' byte at position \a size. While that
+    does not matter for QDataStream or functions like indexOf(), passing the
+    byte array to a function accepting a \c{const char *} expected to be
+    '\\0'-terminated will fail.
 
     \sa setRawData(), data(), constData()
 */
@@ -4781,14 +4767,14 @@ void q_normalizePercentEncoding(QByteArray *ba, const char *exclude)
     \a percent parameter allows you to override the default '%'
     character for another.
 
-    By default, this function will encode all characters that are not
-    one of the following:
+    By default, this function will encode all bytes that are not one of the
+    following:
 
         ALPHA ("a" to "z" and "A" to "Z") / DIGIT (0 to 9) / "-" / "." / "_" / "~"
 
-    To prevent characters from being encoded pass them to \a
-    exclude. To force characters to be encoded pass them to \a
-    include. The \a percent character is always encoded.
+    To prevent bytes from being encoded pass them to \a exclude. To force bytes
+    to be encoded pass them to \a include. The \a percent character is always
+    encoded.
 
     Example:
 
@@ -4903,8 +4889,8 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
     \macro QByteArrayLiteral(ba)
     \relates QByteArray
 
-    The macro generates the data for a QByteArray out of the string literal
-    \a ba at compile time. Creating a QByteArray from it is free in this case, and
+    The macro generates the data for a QByteArray out of the string literal \a
+    ba at compile time. Creating a QByteArray from it is free in this case, and
     the generated byte array data is stored in the read-only segment of the
     compiled object file.
 
