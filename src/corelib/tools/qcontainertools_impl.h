@@ -47,12 +47,33 @@
 #define QCONTAINERTOOLS_IMPL_H
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qtypeinfo.h>
+
 #include <iterator>
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 
 namespace QtPrivate
 {
+
+template <typename T, typename N>
+void q_uninitialized_relocate_n(T* first, N n, T* out)
+{
+    if constexpr (QTypeInfoQuery<T>::isRelocatable) {
+        if (n != N(0)) { // even if N == 0, out == nullptr or first == nullptr are UB for memmove()
+            memmove(static_cast<void*>(out),
+                    static_cast<const void*>(first),
+                    n * sizeof(T));
+        }
+    } else {
+        std::uninitialized_move_n(first, n, out);
+        if constexpr (QTypeInfoQuery<T>::isComplex)
+            std::destroy_n(first, n);
+    }
+}
+
+
 template <typename Iterator>
 using IfIsInputIterator = typename std::enable_if<
     std::is_convertible<typename std::iterator_traits<Iterator>::iterator_category, std::input_iterator_tag>::value,

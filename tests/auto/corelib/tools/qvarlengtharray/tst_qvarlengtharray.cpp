@@ -29,14 +29,55 @@
 #include <QtTest/QtTest>
 #include <qvarlengtharray.h>
 #include <qvariant.h>
+#include <qscopeguard.h>
 
 #include <memory>
+
+struct Tracker
+{
+    static int count;
+    Tracker() { ++count; }
+    Tracker(const Tracker &) { ++count; }
+    Tracker(Tracker &&) { ++count; }
+
+    Tracker &operator=(const Tracker &) = default;
+    Tracker &operator=(Tracker &&) = default;
+
+    ~Tracker() { --count; }
+
+};
+
+int Tracker::count = 0;
+
+template <typename T>
+class ValueTracker
+{
+    Tracker m_tracker;
+public:
+    ValueTracker() = default;
+    ValueTracker(T value) : value{std::move(value)} {}
+    T value;
+
+    friend bool operator==(const ValueTracker &lhs, const ValueTracker &rhs) noexcept
+    { return lhs.value == rhs.value; }
+    friend bool operator!=(const ValueTracker &lhs, const ValueTracker &rhs) noexcept
+    { return !operator==(lhs, rhs); }
+};
 
 class tst_QVarLengthArray : public QObject
 {
     Q_OBJECT
 private slots:
     void append();
+    void move_int_1() { move_int<1>(); }
+    void move_int_2() { move_int<2>(); }
+    void move_int_3() { move_int<3>(); }
+    void move_QString_1() { move_QString<1>(); }
+    void move_QString_2() { move_QString<2>(); }
+    void move_QString_3() { move_QString<3>(); }
+    void move_Tracker_1() { move_Tracker<1>(); }
+    void move_Tracker_2() { move_Tracker<2>(); }
+    void move_Tracker_3() { move_Tracker<3>(); }
     void removeLast();
     void oldTests();
     void appendCausingRealloc();
@@ -61,24 +102,17 @@ private slots:
     void implicitDefaultCtor();
 
 private:
+    template <qsizetype N, typename T>
+    void move(T t1, T t2);
+    template <qsizetype N>
+    void move_int() { move<N, int>(42, 24); }
+    template <qsizetype N>
+    void move_QString() { move<N, QString>("Hello", "World"); }
+    template <qsizetype N>
+    void move_Tracker();
     template<typename T>
     void initializeList();
 };
-
-struct Tracker
-{
-    static int count;
-    Tracker() { ++count; }
-    Tracker(const Tracker &) { ++count; }
-    Tracker(Tracker &&) { ++count; }
-
-    Tracker &operator=(const Tracker &) = default;
-    Tracker &operator=(Tracker &&) = default;
-
-    ~Tracker() { --count; }
-};
-
-int Tracker::count = 0;
 
 void tst_QVarLengthArray::append()
 {
@@ -100,6 +134,34 @@ void tst_QVarLengthArray::append()
 
     QVarLengthArray<int> v2; // rocket!
     v2.append(5);
+}
+
+template <qsizetype N>
+void tst_QVarLengthArray::move_Tracker()
+{
+    const auto reset = qScopeGuard([] { Tracker::count = 0; });
+    move<N, ValueTracker<int>>({24}, {24});
+    QCOMPARE(Tracker::count, 0);
+}
+
+template <qsizetype N, typename T>
+void tst_QVarLengthArray::move(T t1, T t2)
+{
+    {
+        QVarLengthArray<T, N> v;
+        v.append(t1);
+        v.append(t2);
+
+        auto moved = std::move(v);
+        QCOMPARE(moved.size(), 2);
+        QCOMPARE(moved[0], t1);
+        QCOMPARE(moved[1], t2);
+
+        v = std::move(moved);
+        QCOMPARE(v.size(), 2);
+        QCOMPARE(v[0], t1);
+        QCOMPARE(v[1], t2);
+    }
 }
 
 void tst_QVarLengthArray::removeLast()

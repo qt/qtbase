@@ -71,6 +71,26 @@ public:
         append(other.constData(), other.size());
     }
 
+    QVarLengthArray(QVarLengthArray &&other)
+            noexcept(std::is_nothrow_move_constructible_v<T>)
+        : a{other.a},
+          s{other.s},
+          ptr{other.ptr}
+    {
+        const auto otherInlineStorage = reinterpret_cast<T*>(other.array);
+        if (ptr == otherInlineStorage) {
+            // inline buffer - move into our inline buffer:
+            ptr = reinterpret_cast<T*>(array);
+            QtPrivate::q_uninitialized_relocate_n(otherInlineStorage, s, ptr);
+        } else {
+            // heap buffer - we just stole the memory
+        }
+        // reset other to internal storage:
+        other.a = Prealloc;
+        other.s = 0;
+        other.ptr = otherInlineStorage;
+    }
+
     QVarLengthArray(std::initializer_list<T> args)
         : QVarLengthArray(args.begin(), args.end())
     {
@@ -99,6 +119,27 @@ public:
             clear();
             append(other.constData(), other.size());
         }
+        return *this;
+    }
+
+    QVarLengthArray &operator=(QVarLengthArray &&other)
+        noexcept(std::is_nothrow_move_constructible_v<T>)
+    {
+        // we're only required to be self-move-assignment-safe
+        // when we're in the moved-from state (Hinnant criterion)
+        // the moved-from state is the empty state, so we're good with the clear() here:
+        clear();
+        Q_ASSERT(capacity() >= Prealloc);
+        const auto otherInlineStorage = reinterpret_cast<T*>(other.array);
+        if (other.ptr != otherInlineStorage) {
+            // heap storage: steal the external buffer, reset other to otherInlineStorage
+            a = std::exchange(other.a, Prealloc);
+            ptr = std::exchange(other.ptr, otherInlineStorage);
+        } else {
+            // inline storage: move into our storage (doesn't matter whether inline or external)
+            QtPrivate::q_uninitialized_relocate_n(other.ptr, other.s, ptr);
+        }
+        s = std::exchange(other.s, 0);
         return *this;
     }
 
