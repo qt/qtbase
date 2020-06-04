@@ -36,7 +36,7 @@ if(TARGET Qt::Network AND NOT WINRT)
     add_subdirectory(networkselftest)
 endif()
 if(MACOS AND TARGET Qt::Gui)
-    add_subdirectory(macnativeevents)
+    # add_subdirectory(macnativeevents) # special case it's disabled in qmake too
 endif()
 if(embedded)
     add_subdirectory(qdirectpainter)
