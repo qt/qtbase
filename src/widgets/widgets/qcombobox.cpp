@@ -1843,6 +1843,7 @@ void QComboBox::setLineEdit(QLineEdit *edit)
     d->lineEdit->setFocusProxy(this);
     d->lineEdit->setAttribute(Qt::WA_MacShowFocusRect, false);
 
+#if QT_CONFIG(completer)
     // create a default completer
     if (!d->lineEdit->completer()) {
         QCompleter *completer = new QCompleter(d->model, d->lineEdit);
@@ -1860,6 +1861,7 @@ void QComboBox::setLineEdit(QLineEdit *edit)
         // sets up connections
         setCompleter(completer);
     }
+#endif
 
     setAttribute(Qt::WA_InputMethodEnabled);
     d->updateLayoutDirection();
