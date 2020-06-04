@@ -26,7 +26,8 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+// Do not include anything in this file. We are being #included with
+// a bunch of defines that may break other legitimate code.
 
 #define LITERAL "some literal"
 #define LITERAL_LEN (sizeof(LITERAL)-1)
@@ -46,7 +47,6 @@
 
 #ifndef P
 # error You need to define P
-# define P +
 #endif
 
 //fix for gcc4.0: if the operator+ does not exist without QT_USE_FAST_OPERATOR_PLUS

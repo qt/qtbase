@@ -30,13 +30,14 @@
 // SCENARIO 3
 // this is the "no harm done" version. Only operator% is active,
 // with NO_CAST * _not_ defined
-#define P %
 #undef QT_USE_QSTRINGBUILDER
 #undef QT_NO_CAST_FROM_ASCII
 #undef QT_NO_CAST_TO_ASCII
 
-
-#include <QtTest/QtTest>
+#include <QtCore/QObject>
+#include <QtCore/QString>
+#include <QtCore/QStringBuilder>
+#include <QtTest/QTest>
 
 #define LITERAL "some literal"
 
@@ -50,7 +51,10 @@ private slots:
     void scenario() { runScenario(); }
 };
 
+#define P %
 #include "../qstringbuilder1/stringbuilder.cpp"
+#undef P
+
 #include "tst_qstringbuilder3.moc"
 
 QTEST_APPLESS_MAIN(tst_QStringBuilder3)
