@@ -56,6 +56,7 @@
 #include <qpa/qplatformfontdatabase.h>
 #include <QtCore/QSharedPointer>
 #include <QtCore/QLoggingCategory>
+#include <QtCore/qhashfunctions.h>
 #include <QtCore/qt_windows.h>
 
 QT_BEGIN_NAMESPACE
@@ -153,6 +154,20 @@ struct QFontValues
 bool qt_localizedName(const QString &name);
 QString qt_getEnglishName(const QString &familyName, bool includeStyle = false);
 QFontNames qt_getCanonicalFontNames(const LOGFONT &lf);
+
+struct FontAndStyle {
+    QString font;
+    QString style;
+
+    friend inline bool operator==(const FontAndStyle &lhs, const FontAndStyle &rhs) noexcept
+    { return lhs.font == rhs.font && lhs.style == rhs.style; }
+    friend inline bool operator!=(const FontAndStyle &lhs, const FontAndStyle &rhs) noexcept
+    { return !operator==(lhs, rhs); }
+};
+inline size_t qHash(const FontAndStyle &key, size_t seed) noexcept
+{
+    return qHashMulti(seed, key.font, key.style);
+}
 
 QT_END_NAMESPACE
 

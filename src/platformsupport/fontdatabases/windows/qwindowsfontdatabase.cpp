@@ -496,7 +496,7 @@ namespace {
         {}
 
         QString populatedFontFamily;
-        QSet<QPair<QString,QString> > foundFontAndStyles;
+        QSet<FontAndStyle> foundFontAndStyles;
         QWindowsFontDatabase *windowsFontDatabase;
     };
 }
@@ -637,7 +637,7 @@ static int QT_WIN_CALLBACK storeFont(const LOGFONT *logFont, const TEXTMETRIC *t
         signature = &reinterpret_cast<const NEWTEXTMETRICEX *>(textmetric)->ntmFontSig;
         // We get a callback for each script-type supported, but we register them all
         // at once using the signature, so we only need one call to addFontToDatabase().
-        QPair<QString,QString> fontAndStyle(familyName, styleName);
+        FontAndStyle fontAndStyle = {familyName, styleName};
         if (sfp->foundFontAndStyles.contains(fontAndStyle))
             return 1;
         sfp->foundFontAndStyles.insert(fontAndStyle);
