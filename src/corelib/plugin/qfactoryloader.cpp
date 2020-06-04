@@ -57,6 +57,7 @@
 #include "qjsonvalue.h"
 #include "qjsonobject.h"
 #include "qjsonarray.h"
+#include "private/qduplicatetracker_p.h"
 
 #include <qtcore_tracepoints_p.h>
 
@@ -165,7 +166,7 @@ public:
     QMap<QString,QLibraryPrivate*> keyMap;
     QString suffix;
     Qt::CaseSensitivity cs;
-    QStringList loadedPaths;
+    QDuplicateTracker<QString> loadedPaths;
 #endif
 };
 
@@ -192,9 +193,8 @@ void QFactoryLoader::update()
     for (int i = 0; i < paths.count(); ++i) {
         const QString &pluginDir = paths.at(i);
         // Already loaded, skip it...
-        if (d->loadedPaths.contains(pluginDir))
+        if (d->loadedPaths.hasSeen(pluginDir))
             continue;
-        d->loadedPaths << pluginDir;
 
 #ifdef Q_OS_ANDROID
         QString path = pluginDir;
