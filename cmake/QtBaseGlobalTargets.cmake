@@ -211,6 +211,14 @@ set(__qt_cmake_private_path
     "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_BINDIR}/qt-cmake-private")
 set(__qt_cmake_standalone_test_path
     "${__build_internals_install_dir}/${__build_internals_standalone_test_template_dir}")
+
+if(QT_WILL_INSTALL)
+    # Need to prepend the install prefix when doing prefix builds, because the build internals
+    # install dir is relative in that case..
+    qt_path_join(__qt_cmake_standalone_test_path
+                 "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}"
+                 "${__qt_cmake_standalone_test_path}")
+endif()
 if(UNIX)
     string(PREPEND __qt_cmake_private_path "exec ")
     set(__qt_cmake_standalone_passed_args "\"$@\" -DPWD=\"$PWD\"")

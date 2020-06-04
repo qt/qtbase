@@ -223,6 +223,12 @@ endmacro()
 
 function(qt_get_standalone_tests_confg_files_path out_var)
     set(path "${QT_CONFIG_INSTALL_DIR}/${INSTALL_CMAKE_NAMESPACE}BuildInternals/StandaloneTests")
+
+    # QT_CONFIG_INSTALL_DIR is relative in prefix builds.
+    if(QT_WILL_INSTALL)
+        qt_path_join(path "${CMAKE_INSTALL_PREFIX}" "${path}")
+    endif()
+
     set("${out_var}" "${path}" PARENT_SCOPE)
 endfunction()
 
@@ -231,10 +237,6 @@ macro(qt_build_tests)
         # Find location of TestsConfig.cmake. These contain the modules that need to be
         # find_package'd when testing.
         qt_get_standalone_tests_confg_files_path(_qt_build_tests_install_prefix)
-        if(QT_WILL_INSTALL)
-            qt_path_join(_qt_build_tests_install_prefix
-                         ${CMAKE_INSTALL_PREFIX} ${_qt_build_tests_install_prefix})
-        endif()
         include("${_qt_build_tests_install_prefix}/${PROJECT_NAME}TestsConfig.cmake" OPTIONAL)
 
         # Of course we always need the test module as well.
@@ -246,9 +248,9 @@ macro(qt_build_tests)
         qt_set_language_standards()
 
         if(NOT QT_SUPERBUILD)
-            # Restore original install prefix. For super builds it needs to be done in
-            # qt5/CMakeLists.txt.
-            qt_restore_backed_up_install_prefix()
+            # Set up fake standalone tests install prefix, so we don't pollute the Qt install
+            # prefix. For super builds it needs to be done in qt5/CMakeLists.txt.
+            qt_set_up_fake_standalone_tests_install_prefix()
         endif()
     endif()
 
@@ -297,16 +299,15 @@ function(qt_get_relocatable_install_prefix out_var)
     set(${out_var} "${CMAKE_INSTALL_PREFIX}" PARENT_SCOPE)
 endfunction()
 
-function(qt_restore_backed_up_install_prefix)
-    # Restore the CMAKE_INSTALL_PREFIX that was set before loading BuildInternals.
-    # Useful for standalone tests, we don't want to accidentally install a test into the Qt prefix.
-    get_property(helpstring CACHE CMAKE_INSTALL_PREFIX PROPERTY HELPSTRING)
-
+function(qt_set_up_fake_standalone_tests_install_prefix)
+    # Set a fake local (non-cache) CMAKE_INSTALL_PREFIX.
+    # Needed for standalone tests, we don't want to accidentally install a test into the Qt prefix.
+    #
     # If CMAKE_INSTALL_PREFIX was default initialized, that means it points to something
     # like /usr/local which we don't want. Why? When metatype json files are created
     # during standalone tests configuration, the folder creation might fail due to missing
     # permissions in the /usr/local (which is the wrong place anyway).
-    # Instead specify a dummy install prefix in the current build dir.
+    #
     # If the prefix was specified by the user at the command line, honor it, hoping that the
     # user knows what they are doing.
     if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
@@ -315,7 +316,11 @@ function(qt_restore_backed_up_install_prefix)
         set(new_install_prefix "${QT_BACKUP_CMAKE_INSTALL_PREFIX_BEFORE_EXTRA_INCLUDE}")
     endif()
 
-    set(CMAKE_INSTALL_PREFIX "${new_install_prefix}" CACHE STRING "${helpstring}" FORCE)
+    # It's IMPORTANT that this is not a cache variable. Otherwise
+    # qt_get_standalone_tests_confg_files_path() will not work on re-configuration.
+    message(STATUS
+            "Setting local standalone test install prefix (non-cached) to '${new_install_prefix}'.")
+    set(CMAKE_INSTALL_PREFIX "${new_install_prefix}" PARENT_SCOPE)
 endfunction()
 
 macro(qt_examples_build_begin)
