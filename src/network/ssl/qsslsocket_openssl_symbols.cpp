@@ -68,6 +68,7 @@
 #include <QtCore/qdir.h>
 #endif
 #include <QtCore/private/qmemory_p.h>
+#include <QtCore/private/qduplicatetracker_p.h>
 #if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)
 #include <link.h>
 #endif
@@ -569,13 +570,13 @@ static int dlIterateCallback(struct dl_phdr_info *info, size_t size, void *data)
 {
     if (size < sizeof (info->dlpi_addr) + sizeof (info->dlpi_name))
         return 1;
-    QSet<QString> *paths = (QSet<QString> *)data;
+    QDuplicateTracker<QString> *paths = (QDuplicateTracker<QString> *)data;
     QString path = QString::fromLocal8Bit(info->dlpi_name);
     if (!path.isEmpty()) {
         QFileInfo fi(path);
         path = fi.absolutePath();
         if (!path.isEmpty())
-            paths->insert(path);
+            (void)paths->hasSeen(std::move(path));
     }
     return 0;
 }
@@ -608,9 +609,9 @@ static QStringList libraryPathList()
     paths << QLatin1String("/system/lib");
 #elif defined(Q_OS_LINUX)
     // discover paths of already loaded libraries
-    QSet<QString> loadedPaths;
+    QDuplicateTracker<QString> loadedPaths;
     dl_iterate_phdr(dlIterateCallback, &loadedPaths);
-    paths.append(loadedPaths.values());
+    std::move(loadedPaths).appendTo(paths);
 #endif
 
     return paths;
