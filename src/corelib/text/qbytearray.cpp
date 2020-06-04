@@ -150,10 +150,6 @@ char *qstrcpy(char *dst, const char *src)
 
     \note If \a dst and \a src overlap, the behavior is undefined.
 
-    \note When compiling with Visual C++ compiler version 14.00
-    (Visual C++ 2005) or later, internally the function strncpy_s
-    will be used.
-
     \sa qstrcpy()
 */
 
@@ -204,10 +200,9 @@ char *qstrncpy(char *dst, const char *src, uint len)
     is less than \a str2, 0 if \a str1 is equal to \a str2 or a
     positive value if \a str1 is greater than \a str2.
 
-    Special case 1: Returns 0 if \a str1 and \a str2 are both \nullptr.
-
-    Special case 2: Returns an arbitrary non-zero value if \a str1 is
-    \nullptr or \a str2 is \nullptr (but not both).
+    If both strings are \nullptr, they are deemed equal; otherwise, if either is
+    \nullptr, it is treated as less than the other (even if the other is an
+    empty string).
 
     \sa qstrncmp(), qstricmp(), qstrnicmp(), {Character Case}, QByteArray::compare()
 */
@@ -229,10 +224,9 @@ int qstrcmp(const char *str1, const char *str2)
     str1 is equal to \a str2 or a positive value if \a str1 is greater
     than \a str2.
 
-    Special case 1: Returns 0 if \a str1 and \a str2 are both \nullptr.
-
-    Special case 2: Returns a random non-zero value if \a str1 is \nullptr
-    or \a str2 is \nullptr (but not both).
+    If both strings are \nullptr, they are deemed equal; otherwise, if either is
+    \nullptr, it is treated as less than the other (even if the other is an
+    empty string or \a len is 0).
 
     \sa qstrcmp(), qstricmp(), qstrnicmp(), {Character Case}, QByteArray::compare()
 */
@@ -248,10 +242,9 @@ int qstrcmp(const char *str1, const char *str2)
     str1 is equal to \a str2 or a positive value if \a str1 is greater
     than \a str2.
 
-    Special case 1: Returns 0 if \a str1 and \a str2 are both \nullptr.
-
-    Special case 2: Returns a random non-zero value if \a str1 is \nullptr
-    or \a str2 is \nullptr (but not both).
+    If both strings are \nullptr, they are deemed equal; otherwise, if either is
+    \nullptr, it is treated as less than the other (even if the other is an
+    empty string).
 
     \sa qstrcmp(), qstrncmp(), qstrnicmp(), {Character Case}, QByteArray::compare()
 */
@@ -338,10 +331,9 @@ int qstricmp(const char *str1, const char *str2)
     is equal to \a str2 or a positive value if \a str1 is greater than \a
     str2.
 
-    Special case 1: Returns 0 if \a str1 and \a str2 are both \nullptr.
-
-    Special case 2: Returns a random non-zero value if \a str1 is \nullptr
-    or \a str2 is \nullptr (but not both).
+    If both strings are \nullptr, they are deemed equal; otherwise, if either is
+    \nullptr, it is treated as less than the other (even if the other is an
+    empty string or \a len is 0).
 
     \sa qstrcmp(), qstrncmp(), qstricmp(), {Character Case}, QByteArray::compare()
 */
