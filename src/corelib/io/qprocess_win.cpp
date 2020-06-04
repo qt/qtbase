@@ -620,7 +620,8 @@ qint64 QProcessPrivate::bytesAvailableInChannel(const Channel *channel) const
 
     DWORD bytesAvail = channel->reader->bytesAvailable();
 #if defined QPROCESS_DEBUG
-    qDebug("QProcessPrivate::bytesAvailableInChannel(%d) == %d", channel - &stdinChannel, bytesAvail);
+    qDebug("QProcessPrivate::bytesAvailableInChannel(%d) == %lld",
+           int(channel - &stdinChannel), qint64(bytesAvail));
 #endif
     return bytesAvail;
 }
