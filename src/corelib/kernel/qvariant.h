@@ -448,23 +448,13 @@ class Q_CORE_EXPORT QVariant
     };
  public:
     typedef bool (*f_null)(const Private *);
-#ifndef QT_NO_DATASTREAM
-    typedef void (*f_load)(Private *, QDataStream &);
-    typedef void (*f_save)(const Private *, QDataStream &);
-#endif
     typedef bool (*f_compare)(const Private *, const Private *);
     typedef bool (*f_convert)(const QVariant::Private *d, int t, void *, bool *);
-    typedef bool (*f_canConvert)(const QVariant::Private *d, int t);
     typedef void (*f_debugStream)(QDebug, const QVariant &);
     struct Handler {
         f_null isNull;
-#ifndef QT_NO_DATASTREAM
-        f_load load;
-        f_save save;
-#endif
         f_compare compare;
         f_convert convert;
-        f_canConvert canConvert;
         f_debugStream debugStream;
     };
 

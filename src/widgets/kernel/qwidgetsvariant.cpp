@@ -92,17 +92,12 @@ static void streamDebug(QDebug dbg, const QVariant &v)
 
 static const QVariant::Handler widgets_handler = {
     isNull,
-#ifndef QT_NO_DATASTREAM
-    nullptr,
-    nullptr,
-#endif
     compare,
     convert,
-    nullptr,
 #if !defined(QT_NO_DEBUG_STREAM)
     streamDebug
 #else
-    0
+    nullptr
 #endif
 };
 

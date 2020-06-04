@@ -1390,13 +1390,8 @@ static void streamDebug(QDebug dbg, const QVariant &v)
 
 const QVariant::Handler qt_kernel_variant_handler = {
     isNull,
-#ifndef QT_NO_DATASTREAM
-    nullptr,
-    nullptr,
-#endif
     compare,
     convert,
-    nullptr,
 #if !defined(QT_NO_DEBUG_STREAM)
     streamDebug
 #else
@@ -1412,13 +1407,8 @@ static void dummyStreamDebug(QDebug, const QVariant &) { Q_ASSERT_X(false, "QVar
 #endif
 const QVariant::Handler qt_dummy_variant_handler = {
     dummyIsNull,
-#ifndef QT_NO_DATASTREAM
-    nullptr,
-    nullptr,
-#endif
     dummyCompare,
     dummyConvert,
-    nullptr,
 #if !defined(QT_NO_DEBUG_STREAM)
     dummyStreamDebug
 #else
@@ -1516,13 +1506,8 @@ static void customStreamDebug(QDebug dbg, const QVariant &variant) {
 
 const QVariant::Handler qt_custom_variant_handler = {
     customIsNull,
-#ifndef QT_NO_DATASTREAM
-    nullptr,
-    nullptr,
-#endif
     customCompare,
     customConvert,
-    nullptr,
 #if !defined(QT_NO_DEBUG_STREAM)
     customStreamDebug
 #else
