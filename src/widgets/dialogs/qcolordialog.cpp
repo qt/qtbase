@@ -1521,7 +1521,7 @@ void QColorDialogPrivate::setCurrentQColor(const QColor &color)
 // size of standard and custom color selector
 enum {
     colorColumns = 8,
-    standardColorRows = 3,
+    standardColorRows = 6,
     customColorRows = 2
 };
 
@@ -1597,7 +1597,7 @@ void QColorDialogPrivate::_q_newCustom(int r, int c)
 
 void QColorDialogPrivate::_q_newStandard(int r, int c)
 {
-    setCurrentRgbColor(QColorDialogOptions::standardColor(r + c * standardColorRows));
+    setCurrentRgbColor(QColorDialogOptions::standardColor(r + c * 6));
     if (custom)
         custom->setSelected(-1,-1);
 }
