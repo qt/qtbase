@@ -1049,8 +1049,8 @@ bool QProcessPrivate::tryReadFromChannel(Channel *channel)
         return false;
     }
 #if defined QPROCESS_DEBUG
-    qDebug("QProcessPrivate::tryReadFromChannel(%d), read %d bytes from the process' output",
-           int(channel - &stdinChannel), int(readBytes));
+    qDebug("QProcessPrivate::tryReadFromChannel(%d), read %lld bytes from the process' output",
+           int(channel - &stdinChannel), readBytes);
 #endif
 
     if (channel->closed) {
