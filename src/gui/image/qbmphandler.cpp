@@ -280,17 +280,8 @@ static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, qint64 offset, 
     if (bi.biHeight < 0)
         h = -h;                  // support images with negative height
 
-    if (image.size() != QSize(w, h) || image.format() != format) {
-        image = QImage(w, h, format);
-        if (image.isNull())                        // could not create image
-            return false;
-        if (ncols)
-            image.setColorCount(ncols);            // Ensure valid QImage
-    }
-
-    image.setDotsPerMeterX(bi.biXPelsPerMeter);
-    image.setDotsPerMeterY(bi.biYPelsPerMeter);
-
+    if (!QImageIOHandler::allocateImage(QSize(w, h), format, &image))
+        return false;
     if (ncols > 0) {                                // read color table
         image.setColorCount(ncols);
         uchar rgb[4];
@@ -338,6 +329,9 @@ static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, qint64 offset, 
         green_scale = 1;
         blue_scale = 8;
     }
+
+    image.setDotsPerMeterX(bi.biXPelsPerMeter);
+    image.setDotsPerMeterY(bi.biYPelsPerMeter);
 
 #if 0
     qDebug("Rmask: %08x Rshift: %08x Rscale:%08x", red_mask, red_shift, red_scale);

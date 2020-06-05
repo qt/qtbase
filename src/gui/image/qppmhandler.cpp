@@ -160,11 +160,8 @@ static bool read_pbm_body(QIODevice *device, char type, int w, int h, int mcc, Q
     }
     raw = type >= '4';
 
-    if (outImage->size() != QSize(w, h) || outImage->format() != format) {
-        *outImage = QImage(w, h, format);
-        if (outImage->isNull())
-            return false;
-    }
+    if (!QImageIOHandler::allocateImage(QSize(w, h), format, outImage))
+        return false;
 
     pbm_bpl = (qsizetype(w) * nbits + 7) / 8;   // bytes per scanline in PBM
 

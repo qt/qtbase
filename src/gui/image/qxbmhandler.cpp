@@ -147,11 +147,8 @@ static bool read_xbm_body(QIODevice *device, int w, int h, QImage *outImage)
         p = strstr(buf, "0x");
     } while (!p);
 
-    if (outImage->size() != QSize(w, h) || outImage->format() != QImage::Format_MonoLSB) {
-        *outImage = QImage(w, h, QImage::Format_MonoLSB);
-        if (outImage->isNull())
-            return false;
-    }
+    if (!QImageIOHandler::allocateImage(QSize(w, h), QImage::Format_MonoLSB, outImage))
+        return false;
 
     outImage->fill(Qt::color0);       // in case the image data does not cover the full image
 

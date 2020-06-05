@@ -358,7 +358,10 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
                         state = Error;
                         return -1;
                     }
-                    (*image) = QImage(swidth, sheight, format);
+                    if (!QImageIOHandler::allocateImage(QSize(swidth, sheight), format, image)) {
+                        state = Error;
+                        return -1;
+                    }
                     bpl = image->bytesPerLine();
                     bits = image->bits();
                     if (bits)
@@ -425,10 +428,9 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
                             return -1;
                         }
                         // We just use the backing store as a byte array
-                        backingstore = QImage(qMax(backingstore.width(), w),
-                                              qMax(backingstore.height(), h),
-                                              QImage::Format_RGB32);
-                        if (backingstore.isNull()) {
+                        QSize bsSize(qMax(backingstore.width(), w), qMax(backingstore.height(), h));
+                        if (!QImageIOHandler::allocateImage(bsSize, QImage::Format_RGB32,
+                                                            &backingstore)) {
                             state = Error;
                             return -1;
                         }

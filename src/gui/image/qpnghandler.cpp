@@ -239,7 +239,7 @@ void qpiw_flush_fn(png_structp /* png_ptr */)
 }
 
 static
-void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, QSize scaledSize, bool *doScaledRead)
+bool setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, QSize scaledSize, bool *doScaledRead)
 {
     png_uint_32 width = 0;
     png_uint_32 height = 0;
@@ -252,6 +252,7 @@ void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, QSize scal
     int num_palette;
     int interlace_method = PNG_INTERLACE_LAST;
     png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, &interlace_method, nullptr, nullptr);
+    QSize size(width, height);
     png_set_interlace_handling(png_ptr);
 
     if (color_type == PNG_COLOR_TYPE_GRAY) {
@@ -259,11 +260,8 @@ void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, QSize scal
         if (bit_depth == 1 && png_get_channels(png_ptr, info_ptr) == 1) {
             png_set_invert_mono(png_ptr);
             png_read_update_info(png_ptr, info_ptr);
-            if (image.size() != QSize(width, height) || image.format() != QImage::Format_Mono) {
-                image = QImage(width, height, QImage::Format_Mono);
-                if (image.isNull())
-                    return;
-            }
+            if (!QImageIOHandler::allocateImage(size, QImage::Format_Mono, &image))
+                return false;
             image.setColorCount(2);
             image.setColor(1, qRgb(0,0,0));
             image.setColor(0, qRgb(255,255,255));
@@ -279,12 +277,8 @@ void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, QSize scal
         } else if (bit_depth == 16
                    && png_get_channels(png_ptr, info_ptr) == 1
                    && !png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
-            if (image.size() != QSize(width, height) || image.format() != QImage::Format_Grayscale16) {
-                image = QImage(width, height, QImage::Format_Grayscale16);
-                if (image.isNull())
-                    return;
-            }
-
+            if (!QImageIOHandler::allocateImage(size, QImage::Format_Grayscale16, &image))
+                return false;
             png_read_update_info(png_ptr, info_ptr);
             if (QSysInfo::ByteOrder == QSysInfo::LittleEndian)
                 png_set_swap(png_ptr);
@@ -296,33 +290,23 @@ void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, QSize scal
                 png_set_expand(png_ptr);
             png_set_gray_to_rgb(png_ptr);
             QImage::Format format = hasMask ? QImage::Format_RGBA64 : QImage::Format_RGBX64;
-            if (image.size() != QSize(width, height) || image.format() != format) {
-                image = QImage(width, height, format);
-                if (image.isNull())
-                    return;
-            }
+            if (!QImageIOHandler::allocateImage(size, format, &image))
+                return false;
             png_read_update_info(png_ptr, info_ptr);
             if (QSysInfo::ByteOrder == QSysInfo::LittleEndian)
                 png_set_swap(png_ptr);
         } else if (bit_depth == 8 && !png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
             png_set_expand(png_ptr);
-            if (image.size() != QSize(width, height) || image.format() != QImage::Format_Grayscale8) {
-                image = QImage(width, height, QImage::Format_Grayscale8);
-                if (image.isNull())
-                    return;
-            }
-
+            if (!QImageIOHandler::allocateImage(size, QImage::Format_Grayscale8, &image))
+                return false;
             png_read_update_info(png_ptr, info_ptr);
         } else {
             if (bit_depth < 8)
                 png_set_packing(png_ptr);
             int ncols = bit_depth < 8 ? 1 << bit_depth : 256;
             png_read_update_info(png_ptr, info_ptr);
-            if (image.size() != QSize(width, height) || image.format() != QImage::Format_Indexed8) {
-                image = QImage(width, height, QImage::Format_Indexed8);
-                if (image.isNull())
-                    return;
-            }
+            if (!QImageIOHandler::allocateImage(size, QImage::Format_Indexed8, &image))
+                return false;
             image.setColorCount(ncols);
             for (int i=0; i<ncols; i++) {
                 int c = i*255/(ncols-1);
@@ -344,12 +328,10 @@ void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, QSize scal
             png_set_packing(png_ptr);
         png_read_update_info(png_ptr, info_ptr);
         png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, nullptr, nullptr, nullptr);
+        size = QSize(width, height);
         QImage::Format format = bit_depth == 1 ? QImage::Format_Mono : QImage::Format_Indexed8;
-        if (image.size() != QSize(width, height) || image.format() != format) {
-            image = QImage(width, height, format);
-            if (image.isNull())
-                return;
-        }
+        if (!QImageIOHandler::allocateImage(size, format, &image))
+            return false;
         png_get_PLTE(png_ptr, info_ptr, &palette, &num_palette);
         image.setColorCount((format == QImage::Format_Mono) ? 2 : num_palette);
         int i = 0;
@@ -387,11 +369,8 @@ void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, QSize scal
         }
         if (!(color_type & PNG_COLOR_MASK_COLOR))
             png_set_gray_to_rgb(png_ptr);
-        if (image.size() != QSize(width, height) || image.format() != format) {
-            image = QImage(width, height, format);
-            if (image.isNull())
-                return;
-        }
+        if (!QImageIOHandler::allocateImage(size, format, &image))
+            return false;
         png_read_update_info(png_ptr, info_ptr);
         if (QSysInfo::ByteOrder == QSysInfo::LittleEndian)
             png_set_swap(png_ptr);
@@ -422,11 +401,8 @@ void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, QSize scal
             if (doScaledRead)
                 *doScaledRead = true;
         }
-        if (image.size() != outSize || image.format() != format) {
-            image = QImage(outSize, format);
-            if (image.isNull())
-                return;
-        }
+        if (!QImageIOHandler::allocateImage(outSize, format, &image))
+            return false;
 
         if (QSysInfo::ByteOrder == QSysInfo::BigEndian)
             png_set_swap_alpha(png_ptr);
@@ -438,6 +414,7 @@ void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, QSize scal
 
         png_read_update_info(png_ptr, info_ptr);
     }
+    return true;
 }
 
 static void read_image_scaled(QImage *outImage, png_structp png_ptr, png_infop info_ptr,
@@ -689,9 +666,7 @@ bool QPngHandlerPrivate::readPngImage(QImage *outImage)
     }
 
     bool doScaledRead = false;
-    setup_qt(*outImage, png_ptr, info_ptr, scaledSize, &doScaledRead);
-
-    if (outImage->isNull()) {
+    if (!setup_qt(*outImage, png_ptr, info_ptr, scaledSize, &doScaledRead)) {
         png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
         png_ptr = nullptr;
         amp.deallocate();

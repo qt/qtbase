@@ -521,8 +521,9 @@ QImage ICOReader::iconAt(int index)
                 else if (icoAttrib.ncolors > 0)
                     format = QImage::Format_Indexed8;
 
-                QImage image(icoAttrib.w, icoAttrib.h, format);
-                if (!image.isNull()) {
+                QImage image;
+                const QSize size(icoAttrib.w, icoAttrib.h);
+                if (QImageIOHandler::allocateImage(size, format, &image)) {
                     findColorInfo(image);
                     if (!image.isNull()) {
                         readBMP(image);

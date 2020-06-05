@@ -240,10 +240,7 @@ static bool ensureValidImage(QImage *dest, struct jpeg_decompress_struct *info,
         return false; // unsupported format
     }
 
-    if (dest->size() != size || dest->format() != format)
-        *dest = QImage(size, format);
-
-    return !dest->isNull();
+    return QImageIOHandler::allocateImage(size, format, dest);
 }
 
 static bool read_jpeg_image(QImage *outImage,
