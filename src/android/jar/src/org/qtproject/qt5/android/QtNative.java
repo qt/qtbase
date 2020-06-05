@@ -167,9 +167,11 @@ public class QtNative
         try {
             Uri parsedUri = Uri.parse(uri);
             String scheme = parsedUri.getScheme();
-            // We only want to check permissions for files and content Uris
-            if (scheme.compareTo("file") != 0 && scheme.compareTo("content") != 0)
+
+            // We only want to check permissions for content Uris
+            if (scheme.compareTo("content") != 0)
                 return parsedUri;
+
             List<UriPermission> permissions = context.getContentResolver().getPersistedUriPermissions();
             String uriStr = parsedUri.getPath();
 
@@ -215,7 +217,7 @@ public class QtNative
         } catch (UnsupportedOperationException e) {
             Log.e(QtTAG, "openURL(): Unsupported operation for given Uri");
             return false;
-        } catch (ActivityNotFoundException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
