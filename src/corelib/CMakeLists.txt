@@ -14,7 +14,7 @@ else()
     get_filename_component(_clean_prefix "${QT_CONFIG_BUILD_DIR}" ABSOLUTE)
 endif()
 file(RELATIVE_PATH QT_INVERSE_CONFIG_INSTALL_DIR
-    ${_clean_prefix} ${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX})
+    "${_clean_prefix}" "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}")
 
 # special case end
 

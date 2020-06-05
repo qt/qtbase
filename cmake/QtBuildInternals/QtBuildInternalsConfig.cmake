@@ -283,7 +283,7 @@ function(qt_compute_relative_path_from_cmake_config_dir_to_prefix)
     endif()
     file(RELATIVE_PATH
          qt_path_from_cmake_config_dir_to_prefix
-         ${clean_config_prefix} ${CMAKE_INSTALL_PREFIX})
+         "${clean_config_prefix}" "${CMAKE_INSTALL_PREFIX}")
      set(qt_path_from_cmake_config_dir_to_prefix "${qt_path_from_cmake_config_dir_to_prefix}"
          PARENT_SCOPE)
 endfunction()
