@@ -4499,7 +4499,7 @@ protected:
             break;
         case QGraphicsItem::ItemTransformChange: {
             QVariant variant;
-            variant.setValue<QTransform>(transform());
+            variant.setValue(transform());
             oldValues << variant;
         }
             break;
@@ -4616,7 +4616,7 @@ void tst_QGraphicsItem::itemChange()
     }
     {
         // ItemTransformChange / ItemTransformHasChanged
-        tester.itemChangeReturnValue.setValue<QTransform>(QTransform().rotate(90));
+        tester.itemChangeReturnValue.setValue(QTransform().rotate(90));
         tester.setTransform(QTransform::fromTranslate(50, 0), true);
         ++changeCount; // notification sent too
         ++changeCount;
@@ -4628,7 +4628,7 @@ void tst_QGraphicsItem::itemChange()
         QCOMPARE(qvariant_cast<QTransform>(tester.values.at(tester.values.size() - 1)),
                  QTransform().rotate(90));
         QVariant variant;
-        variant.setValue<QTransform>(QTransform());
+        variant.setValue(QTransform());
         QCOMPARE(tester.oldValues.constLast(), variant);
         QCOMPARE(tester.transform(), QTransform().rotate(90));
     }
@@ -4763,7 +4763,7 @@ void tst_QGraphicsItem::itemChange()
     }
     {
         // ItemParentChange
-        tester.itemChangeReturnValue.setValue<QGraphicsItem *>(nullptr);
+        tester.itemChangeReturnValue.setValue(static_cast<QGraphicsItem *>(nullptr));
         tester.setParentItem(&testerHelper);
         QCOMPARE(tester.changes.size(), ++changeCount);
         QCOMPARE(tester.changes.constLast(), QGraphicsItem::ItemParentChange);

@@ -4019,7 +4019,7 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 #endif
 
 
-/*! \fn template<typename T> void QVariant::setValue(const T &value)
+/*! \fn template<typename T> void QVariant::setValue(T &&value)
 
     Stores a copy of \a value. If \c{T} is a type that QVariant
     doesn't support, QMetaType is used to store the value. A compile
@@ -4031,6 +4031,18 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 
     \sa value(), fromValue(), canConvert()
  */
+
+/*! \fn template<typename T> void QVariant::setValue(const QVariant &value)
+
+    Copies \a value over this QVariant. It is equivalent to simply
+    assigning \a value to this QVariant.
+*/
+
+/*! \fn template<typename T> void QVariant::setValue(QVariant &&value)
+
+    Moves \a value over this QVariant. It is equivalent to simply
+    move assigning \a value to this QVariant.
+*/
 
 /*! \fn template<typename T> T QVariant::value() const
 

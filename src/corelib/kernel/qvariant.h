@@ -356,8 +356,28 @@ class Q_CORE_EXPORT QVariant
     const void *constData() const;
     inline const void *data() const { return constData(); }
 
-    template<typename T>
-    inline void setValue(const T &value);
+    template<typename T, typename = std::enable_if_t<!std::is_same_v<std::decay_t<T>, QVariant>>>
+    void setValue(T &&avalue)
+    {
+        using VT = std::decay_t<T>;
+        QMetaType metaType = QMetaType::fromType<VT>();
+        // If possible we reuse the current QVariant private.
+        if (isDetached() && d.type() == metaType) {
+            *reinterpret_cast<VT *>(const_cast<void *>(constData())) = std::forward<T>(avalue);
+        } else {
+            *this = QVariant::fromValue<VT>(std::forward<T>(avalue));
+        }
+    }
+
+    void setValue(const QVariant &avalue)
+    {
+        *this = avalue;
+    }
+
+    void setValue(QVariant &&avalue)
+    {
+        *this = std::move(avalue);
+    }
 
     template<typename T>
     inline T value() const
@@ -531,24 +551,6 @@ inline QVariant QVariant::fromValue(const std::monostate &)
 inline bool QVariant::isValid() const
 {
     return d.type().isValid();
-}
-
-template<typename T>
-inline void QVariant::setValue(const T &avalue)
-{
-    QMetaType metaType = QMetaType::fromType<T>();
-    // If possible we reuse the current QVariant private.
-    if (isDetached() && d.type() == metaType) {
-        *reinterpret_cast<T *>(data()) = avalue;
-    } else {
-        *this = QVariant::fromValue<T>(avalue);
-    }
-}
-
-template<>
-inline void QVariant::setValue(const QVariant &avalue)
-{
-    *this = avalue;
 }
 
 #ifndef QT_NO_DATASTREAM

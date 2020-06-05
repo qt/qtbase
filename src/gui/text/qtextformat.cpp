@@ -2122,7 +2122,7 @@ void QTextBlockFormat::setTabPositions(const QList<QTextOption::Tab> &tabs)
     QList<QTextOption::Tab>::ConstIterator iter = tabs.constBegin();
     while (iter != tabs.constEnd()) {
         QVariant v;
-        v.setValue<QTextOption::Tab>(*iter);
+        v.setValue(*iter);
         list.append(v);
         ++iter;
     }

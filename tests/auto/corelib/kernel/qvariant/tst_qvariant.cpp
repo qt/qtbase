@@ -327,7 +327,7 @@ void tst_QVariant::constructor()
     QVERIFY(var7.isValid());
     QVERIFY(!var7.isNull());
     QVariant var8;
-    var8.setValue<int>(5);
+    var8.setValue(5);
     QVERIFY(var8.isValid());
     QVERIFY(!var8.isNull());
 }
