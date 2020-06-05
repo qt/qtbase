@@ -894,7 +894,6 @@ void QProcessPrivate::cleanup()
 #endif
     pid = 0;
     sequenceNumber = 0;
-    dying = false;
 
     if (stdoutChannel.notifier) {
         delete stdoutChannel.notifier;
@@ -2148,6 +2147,7 @@ void QProcessPrivate::start(QIODevice::OpenMode mode)
     stderrChannel.closed = false;
 
     exitCode = 0;
+    dying = false;
     exitStatus = QProcess::NormalExit;
     processError = QProcess::UnknownError;
     errorString.clear();
