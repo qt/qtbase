@@ -53,6 +53,8 @@
 #include <QtCore/qbytearraylist.h>
 #endif
 
+#include <memory>
+
 #if __has_include(<variant>) && __cplusplus >= 201703L
 #include <variant>
 #elif defined(Q_CLANG_QDOC)
@@ -362,7 +364,7 @@ class Q_CORE_EXPORT QVariant
     template<typename T>
     static inline QVariant fromValue(const T &value)
     {
-        return QVariant(QMetaType::fromType<T>(), &value);
+        return QVariant(QMetaType::fromType<T>(), std::addressof(value));
     }
 
 #if (__has_include(<variant>) && __cplusplus >= 201703L) || defined(Q_CLANG_QDOC)
