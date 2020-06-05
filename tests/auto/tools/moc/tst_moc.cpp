@@ -75,6 +75,7 @@
 #include "cxx-attributes.h"
 
 #include "moc_include.h"
+#include "pointery_to_incomplete.h"
 #include "fwdclass1.h"
 #include "fwdclass2.h"
 #include "fwdclass3.h"

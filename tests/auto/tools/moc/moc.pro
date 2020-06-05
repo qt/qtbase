@@ -32,6 +32,7 @@ HEADERS += using-namespaces.h no-keywords.h task87883.h c-comments.h backslash-n
            namespace.h cxx17-namespaces.h \
            cxx-attributes.h \
            enum_inc.h enum_with_include.h \
+           pointery_to_incomplete.h \
            moc_include.h
 
 # No platform specifics in the JSON files, so that we can compare them

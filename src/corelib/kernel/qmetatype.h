@@ -2839,11 +2839,29 @@ struct is_complete_helper {
 template <typename T, typename ODR_VIOLATION_PREVENTER>
 struct is_complete : detail::is_complete_helper<T, ODR_VIOLATION_PREVENTER>::type {};
 
+template<typename T>
+struct qRemovePointerLike
+{
+    using type = std::remove_pointer_t<T>;
+};
+
+#define Q_REMOVE_POINTER_LIKE_IMPL(Pointer) \
+template <typename T> \
+struct qRemovePointerLike<Pointer<T>> \
+{ \
+    using type = T; \
+};
+
+QT_FOR_EACH_AUTOMATIC_TEMPLATE_SMART_POINTER(Q_REMOVE_POINTER_LIKE_IMPL)
+template<typename T>
+using qRemovePointerLike_t = typename qRemovePointerLike<T>::type;
+#undef Q_REMOVE_POINTER_LIKE_IMPL
+
 template<typename Unique, typename T>
 constexpr QMetaTypeInterface *qTryMetaTypeInterfaceForType()
 {
     using Ty = std::remove_cv_t<std::remove_reference_t<T>>;
-    using Tz = std::remove_pointer_t<Ty>;
+    using Tz = qRemovePointerLike_t<Ty>;
     if constexpr (!is_complete<Tz, Unique>::value) {
         return nullptr;
     } else {

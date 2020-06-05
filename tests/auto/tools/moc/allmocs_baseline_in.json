@@ -1593,6 +1593,23 @@
         "outputRevision": 67
     },
     {
+         "classes": [
+             {
+                "className": "TestPointeeCanBeIncomplete",
+                "object": true,
+                "qualifiedClassName": "TestPointeeCanBeIncomplete",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "pointery_to_incomplete.h",
+        "outputRevision": 67
+    },
+    {
         "classes": [
             {
                 "className": "PureVirtualSignalsTest",
