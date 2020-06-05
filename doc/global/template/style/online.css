@@ -849,7 +849,17 @@ li a.active {
   font-size:1.35em
 }
 .context h4 {
-  font-size:1.15em
+  font-size:1.15em;
+  color:#222840;
+}
+.context h5 {
+  font-size:1.07em;
+  color:#53586b;
+}
+.context h4, .context h5 {
+    border-bottom-width: thick;
+    border-bottom-style: inset;
+    border-color: #f3f3f4;
 }
 .context p img {
   margin-top:0.75em;
