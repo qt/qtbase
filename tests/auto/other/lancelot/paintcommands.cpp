@@ -297,8 +297,8 @@ void PaintCommands::staticInit()
                       "setCompositionMode <composition mode enum>",
                       "setCompositionMode SourceOver");
     DECL_PAINTCOMMAND("setFont", command_setFont,
-                      "^setFont\\s+\"([\\w\\s]*)\"\\s*(\\w*)\\s*(\\w*)\\s*(\\w*)\\s*(\\w*)$",
-                      "setFont <fontFace> [size] [font weight|font weight enum] [italic] [hinting enum]\n  - font weight is an integer between 0 and 99",
+                      "^setFont\\s+\"([\\w\\s]*)\"\\s*(\\w*)\\s*(\\w*)\\s*(\\w*)\\s*(\\w*)\\s*(\\w*)\\s*(\\w*)\\s*(\\w*)$",
+                      "setFont <fontFace> [size] [font weight|font weight enum] [italic] [hinting enum] [underline] [strikeout] [overline]\n  - font weight is an integer between 0 and 99",
                       "setFont \"times\" 12");
     DECL_PAINTCOMMAND("setPen", command_setPen,
                       "^setPen\\s+#?(\\w*)$",
@@ -444,6 +444,10 @@ void PaintCommands::staticInit()
                       "^drawStaticText\\s+(-?\\w*)\\s+(-?\\w*)\\s+\"(.*)\"$",
                       "drawStaticText <x> <y> <text>",
                       "drawStaticText 10 10 \"my text\"");
+    DECL_PAINTCOMMAND("drawGlyphRun", command_drawGlyphRun,
+                      "^drawGlyphRun\\s+(-?\\w*)\\s+(-?\\w*)\\s+\"(.*)\"$",
+                      "drawGlyphRun <x> <y> <text> - Will create glyph run using QTextLayout and draw this",
+                      "drawGlyphRun 10 10 \"my text\"");
     DECL_PAINTCOMMAND("drawTextDocument", command_drawTextDocument,
                       "^drawTextDocument\\s+(-?\\w*)\\s+(-?\\w*)\\s+\"(.*)\"$",
                       "drawTextDocument <x> <y> <html>",
@@ -1328,6 +1332,38 @@ void PaintCommands::command_drawStaticText(QRegularExpressionMatch re)
     m_painter->drawStaticText(x, y, QStaticText(txt));
 }
 
+void PaintCommands::command_drawGlyphRun(QRegularExpressionMatch re)
+{
+    if (!m_shouldDrawText)
+        return;
+    QStringList caps = re.capturedTexts();
+    int x = convertToInt(caps.at(1));
+    int y = convertToInt(caps.at(2));
+    QString txt = caps.at(3);
+
+    if (m_verboseMode)
+        printf(" -(lance) drawGlyphRun(%d, %d, %s)\n", x, y, qPrintable(txt));
+
+    QTextLayout layout;
+    layout.setFont(m_painter->font());
+    layout.setText(txt);
+    layout.beginLayout();
+    qreal lineY = 0.0;
+    forever {
+        QTextLine line = layout.createLine();
+        if (!line.isValid())
+            break;
+        line.setPosition(QPointF(0.0, lineY));
+        lineY += line.height();
+    }
+    layout.endLayout();
+
+    QList<QGlyphRun> glyphRuns = layout.glyphRuns();
+
+    for (const QGlyphRun &glyphRun : glyphRuns)
+        m_painter->drawGlyphRun(QPointF(x, y), glyphRun);
+}
+
 void PaintCommands::command_drawTextDocument(QRegularExpressionMatch re)
 {
     if (!m_shouldDrawText)
@@ -2070,6 +2106,14 @@ void PaintCommands::command_setFont(QRegularExpressionMatch re)
         hinting = 0;
     else
         font.setHintingPreference(QFont::HintingPreference(hinting));
+
+    bool underline = caps.at(6).toLower() == "true" || caps.at(6).toLower() == "underline";
+    bool strikeOut = caps.at(7).toLower() == "true" || caps.at(7).toLower() == "strikeout";
+    bool overline = caps.at(8).toLower() == "true" || caps.at(8).toLower() == "overline";
+    font.setUnderline(underline);
+    font.setStrikeOut(strikeOut);
+    font.setOverline(overline);
+
     if (m_verboseMode)
         printf(" -(lance) setFont(family=%s, size=%d, weight=%d, italic=%d hinting=%s\n",
                qPrintable(family), size, weight, italic, fontHintingTable[hinting]);
