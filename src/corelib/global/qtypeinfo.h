@@ -432,6 +432,11 @@ struct has_operator_less_than : detail::expand_operator_less_than<T> {};
 template<typename T>
 constexpr bool has_operator_less_than_v = has_operator_less_than<T>::value;
 
+template <typename ...T>
+using compare_eq_result = std::enable_if_t<std::conjunction_v<QTypeTraits::has_operator_equal<T>...>, bool>;
+
+template <typename ...T>
+using compare_lt_result = std::enable_if_t<std::conjunction_v<QTypeTraits::has_operator_less_than<T>...>, bool>;
 
 }
 

@@ -97,8 +97,25 @@ public:
     inline QContiguousCache<T> &operator=(QContiguousCache<T> &&other) noexcept
     { qSwap(d, other.d); return *this; }
     inline void swap(QContiguousCache<T> &other) noexcept { qSwap(d, other.d); }
-    bool operator==(const QContiguousCache<T> &other) const;
-    inline bool operator!=(const QContiguousCache<T> &other) const { return !(*this == other); }
+
+    template <typename U = T>
+    QTypeTraits::compare_eq_result<U> operator==(const QContiguousCache<T> &other) const
+    {
+        if (other.d == d)
+            return true;
+        if (other.d->start != d->start
+                || other.d->count != d->count
+                || other.d->offset != d->offset
+                || other.d->alloc != d->alloc)
+            return false;
+        for (qsizetype i = firstIndex(); i <= lastIndex(); ++i)
+            if (!(at(i) == other.at(i)))
+                return false;
+        return true;
+    }
+    template <typename U = T>
+    QTypeTraits::compare_eq_result<U> operator!=(const QContiguousCache<T> &other) const
+    { return !(*this == other); }
 
     inline qsizetype capacity() const {return d->alloc; }
     inline qsizetype count() const { return d->count; }
@@ -269,22 +286,6 @@ QContiguousCache<T> &QContiguousCache<T>::operator=(const QContiguousCache<T> &o
         freeData(d);
     d = other.d;
     return *this;
-}
-
-template <typename T>
-bool QContiguousCache<T>::operator==(const QContiguousCache<T> &other) const
-{
-    if (other.d == d)
-        return true;
-    if (other.d->start != d->start
-            || other.d->count != d->count
-            || other.d->offset != d->offset
-            || other.d->alloc != d->alloc)
-        return false;
-    for (qsizetype i = firstIndex(); i <= lastIndex(); ++i)
-        if (!(at(i) == other.at(i)))
-            return false;
-    return true;
 }
 
 template <typename T>

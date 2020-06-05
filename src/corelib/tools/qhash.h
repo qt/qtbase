@@ -782,7 +782,8 @@ public:
 #endif
     void swap(QHash &other) noexcept { qSwap(d, other.d); }
 
-    bool operator==(const QHash &other) const noexcept
+    template <typename U = T>
+    QTypeTraits::compare_eq_result<U> operator==(const QHash &other) const noexcept
     {
         if (d == other.d)
             return true;
@@ -797,7 +798,9 @@ public:
         // all values must be the same as size is the same
         return true;
     }
-    bool operator!=(const QHash &other) const noexcept { return !(*this == other); }
+    template <typename U = T>
+    QTypeTraits::compare_eq_result<U> operator!=(const QHash &other) const noexcept
+    { return !(*this == other); }
 
     inline qsizetype size() const noexcept { return d ? qsizetype(d->size) : 0; }
     inline bool isEmpty() const noexcept { return !d || d->size == 0; }

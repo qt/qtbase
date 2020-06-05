@@ -347,8 +347,28 @@ public:
     explicit QMap(const typename std::map<Key, T> &other);
     std::map<Key, T> toStdMap() const;
 
-    bool operator==(const QMap<Key, T> &other) const;
-    inline bool operator!=(const QMap<Key, T> &other) const { return !(*this == other); }
+    template <typename U = T>
+    QTypeTraits::compare_eq_result<U> operator==(const QMap<Key, T> &other) const
+    {
+        if (size() != other.size())
+            return false;
+        if (d == other.d)
+            return true;
+
+        const_iterator it1 = begin();
+        const_iterator it2 = other.begin();
+
+        while (it1 != end()) {
+            if (!(it1.value() == it2.value()) || qMapLessThanKey(it1.key(), it2.key()) || qMapLessThanKey(it2.key(), it1.key()))
+                return false;
+            ++it2;
+            ++it1;
+        }
+        return true;
+    }
+    template <typename U = T>
+    QTypeTraits::compare_eq_result<U> operator!=(const QMap<Key, T> &other) const
+    { return !(*this == other); }
 
     inline qsizetype size() const { return d->size; }
 
@@ -1042,26 +1062,6 @@ Q_INLINE_TEMPLATE typename QMap<Key, T>::iterator QMap<Key, T>::upperBound(const
     if (!ub)
         ub = d->end();
     return iterator(ub);
-}
-
-template <class Key, class T>
-Q_OUTOFLINE_TEMPLATE bool QMap<Key, T>::operator==(const QMap<Key, T> &other) const
-{
-    if (size() != other.size())
-        return false;
-    if (d == other.d)
-        return true;
-
-    const_iterator it1 = begin();
-    const_iterator it2 = other.begin();
-
-    while (it1 != end()) {
-        if (!(it1.value() == it2.value()) || qMapLessThanKey(it1.key(), it2.key()) || qMapLessThanKey(it2.key(), it1.key()))
-            return false;
-        ++it2;
-        ++it1;
-    }
-    return true;
 }
 
 template <class Key, class T>

@@ -162,7 +162,8 @@ public:
 
     void swap(QList<T> &other) noexcept { qSwap(d, other.d); }
 
-    friend bool operator==(const QList &l, const QList &r)
+    template <typename U = T>
+    friend QTypeTraits::compare_eq_result<U> operator==(const QList &l, const QList &r)
     {
         if (l.size() != r.size())
             return false;
@@ -172,7 +173,8 @@ public:
         // do element-by-element comparison
         return l.d->compare(l.begin(), r.begin(), l.size());
     }
-    friend bool operator!=(const QList &l, const QList &r)
+    template <typename U = T>
+    friend QTypeTraits::compare_eq_result<U> operator!=(const QList &l, const QList &r)
     {
         return !(l == r);
     }

@@ -605,7 +605,7 @@ Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthA
 }
 
 template <typename T, qsizetype Prealloc1, qsizetype Prealloc2>
-bool operator==(const QVarLengthArray<T, Prealloc1> &l, const QVarLengthArray<T, Prealloc2> &r)
+QTypeTraits::compare_eq_result<T> operator==(const QVarLengthArray<T, Prealloc1> &l, const QVarLengthArray<T, Prealloc2> &r)
 {
     if (l.size() != r.size())
         return false;
@@ -616,13 +616,13 @@ bool operator==(const QVarLengthArray<T, Prealloc1> &l, const QVarLengthArray<T,
 }
 
 template <typename T, qsizetype Prealloc1, qsizetype Prealloc2>
-bool operator!=(const QVarLengthArray<T, Prealloc1> &l, const QVarLengthArray<T, Prealloc2> &r)
+QTypeTraits::compare_eq_result<T> operator!=(const QVarLengthArray<T, Prealloc1> &l, const QVarLengthArray<T, Prealloc2> &r)
 {
     return !(l == r);
 }
 
 template <typename T, qsizetype Prealloc1, qsizetype Prealloc2>
-bool operator<(const QVarLengthArray<T, Prealloc1> &lhs, const QVarLengthArray<T, Prealloc2> &rhs)
+QTypeTraits::compare_lt_result<T> operator<(const QVarLengthArray<T, Prealloc1> &lhs, const QVarLengthArray<T, Prealloc2> &rhs)
     noexcept(noexcept(std::lexicographical_compare(lhs.begin(), lhs.end(),
                                                                rhs.begin(), rhs.end())))
 {
@@ -631,21 +631,21 @@ bool operator<(const QVarLengthArray<T, Prealloc1> &lhs, const QVarLengthArray<T
 }
 
 template <typename T, qsizetype Prealloc1, qsizetype Prealloc2>
-inline bool operator>(const QVarLengthArray<T, Prealloc1> &lhs, const QVarLengthArray<T, Prealloc2> &rhs)
+QTypeTraits::compare_lt_result<T> operator>(const QVarLengthArray<T, Prealloc1> &lhs, const QVarLengthArray<T, Prealloc2> &rhs)
     noexcept(noexcept(lhs < rhs))
 {
     return rhs < lhs;
 }
 
 template <typename T, qsizetype Prealloc1, qsizetype Prealloc2>
-inline bool operator<=(const QVarLengthArray<T, Prealloc1> &lhs, const QVarLengthArray<T, Prealloc2> &rhs)
+QTypeTraits::compare_lt_result<T> operator<=(const QVarLengthArray<T, Prealloc1> &lhs, const QVarLengthArray<T, Prealloc2> &rhs)
     noexcept(noexcept(lhs < rhs))
 {
     return !(lhs > rhs);
 }
 
 template <typename T, qsizetype Prealloc1, qsizetype Prealloc2>
-inline bool operator>=(const QVarLengthArray<T, Prealloc1> &lhs, const QVarLengthArray<T, Prealloc2> &rhs)
+QTypeTraits::compare_lt_result<T> operator>=(const QVarLengthArray<T, Prealloc1> &lhs, const QVarLengthArray<T, Prealloc2> &rhs)
     noexcept(noexcept(lhs < rhs))
 {
     return !(lhs < rhs);
