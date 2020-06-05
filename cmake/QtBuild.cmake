@@ -611,12 +611,13 @@ function(qt_re_escape out_var str)
     set(${out_var} ${regex} PARENT_SCOPE)
 endfunction()
 
-# Extracts the 3rdparty libraries for the module ${module_name} in module .pri file format
-# and stores the content in ${out_var}.
+# Extracts the 3rdparty libraries for the module ${module_name}
+# and stores the information in cmake language in
+# ${output_root_dir}/$<CONFIG>/${output_file_name}.
 #
 # This function "follows" INTERFACE_LIBRARY targets to "real" targets
 # and collects defines, include dirs and lib dirs on the way.
-function(qt_get_qmake_libraries_pri_content out_var module_name)
+function(qt_generate_qmake_libraries_pri_content module_name output_root_dir output_file_name)
     set(content "")
 
     # Set up a regular expression that matches all implicit include dirs
@@ -665,25 +666,24 @@ function(qt_get_qmake_libraries_pri_content out_var module_name)
         string(PREPEND lib_incdir "$<FILTER:")
         string(APPEND lib_incdir ",EXCLUDE,${implicit_include_dirs_regex}>")
 
-        # Wrap in $<JOIN:..., > to create qmake-style lists.
-        foreach(sfx libs libdir incdir defines)
-            string(PREPEND lib_${sfx} "$<JOIN:")
-            string(APPEND lib_${sfx} ", >")
-        endforeach()
-
-        string(APPEND content "QMAKE_LIBS_${uclib} = ${lib_libs}
-QMAKE_LIBDIR_${uclib} = ${lib_libdir}
-QMAKE_INCDIR_${uclib} = ${lib_incdir}
-QMAKE_DEFINES_${uclib} = ${lib_defines}
+        set(uccfg $<UPPER_CASE:$<CONFIG>>)
+        string(APPEND content "list(APPEND known_libs ${uclib})
+set(QMAKE_LIBS_${uclib}_${uccfg} \"${lib_libs}\")
+set(QMAKE_LIBDIR_${uclib}_${uccfg} \"${lib_libdir}\")
+set(QMAKE_INCDIR_${uclib}_${uccfg} \"${lib_incdir}\")
+set(QMAKE_DEFINES_${uclib}_${uccfg} \"${lib_defines}\")
 ")
         if(QT_QMAKE_LIB_DEPS_${lib})
-            list(JOIN QT_QMAKE_LIB_DEPS_${lib} " " deps)
-            string(APPEND content "QMAKE_DEPENDS_${uclib}_CC = ${deps}
-QMAKE_DEPENDS_${uclib}_LD = ${deps}
+            string(APPEND content "set(QMAKE_DEPENDS_${uclib}_CC, ${deps})
+set(QMAKE_DEPENDS_${uclib}_LD, ${deps})
 ")
         endif()
     endforeach()
-    set(${out_var} "${content}" PARENT_SCOPE)
+
+    file(GENERATE
+        OUTPUT "${output_root_dir}/$<CONFIG>/${output_file_name}"
+        CONTENT "${content}"
+    )
 endfunction()
 
 # Retrieves the public Qt module dependencies of the given Qt module or Qt Private module.
@@ -849,15 +849,11 @@ QT_MODULES += ${config_module_name}
         )
     endif()
 
-    qt_path_join(private_pri_file "${target_path}" "qt_lib_${config_module_name}_private.pri")
-    list(APPEND pri_files "${private_pri_file}")
+    set(pri_data_cmake_file "qt_lib_${config_module_name}_private.cmake")
+    qt_generate_qmake_libraries_pri_content(${config_module_name} "${CMAKE_CURRENT_BINARY_DIR}"
+        ${pri_data_cmake_file})
 
-    if(CMAKE_GENERATOR STREQUAL "Ninja Multi-Config")
-        ### FIXME QTBUG-84348
-        set(libraries_content "")
-    else()
-        qt_get_qmake_libraries_pri_content(libraries_content ${config_module_name})
-    endif()
+    set(private_pri_file_name "qt_lib_${config_module_name}_private.pri")
 
     set(private_module_dependencies "")
     if(NOT arg_HEADER_MODULE)
@@ -865,8 +861,9 @@ QT_MODULES += ${config_module_name}
     endif()
     list(JOIN private_module_dependencies " " private_module_dependencies)
 
+    # Generate a preliminary qt_lib_XXX_private.pri file
     file(GENERATE
-        OUTPUT "${private_pri_file}"
+        OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${private_pri_file_name}"
         CONTENT
         "QT.${config_module_name}_private.VERSION = ${PROJECT_VERSION}
 QT.${config_module_name}_private.name = ${module}
@@ -878,10 +875,34 @@ QT.${config_module_name}_private.depends = ${private_module_dependencies}
 QT.${config_module_name}_private.uses =
 QT.${config_module_name}_private.module_config = ${joined_module_internal_config}
 QT.${config_module_name}_private.enabled_features = ${enabled_private_features}
-QT.${config_module_name}_private.disabled_features = ${disabled_private_features}
-${libraries_content}"
+QT.${config_module_name}_private.disabled_features = ${disabled_private_features}"
     )
 
+    if(QT_GENERATOR_IS_MULTI_CONFIG)
+        set(configs ${CMAKE_CONFIGURATION_TYPES})
+    else()
+        set(configs ${CMAKE_BUILD_TYPE})
+    endif()
+    set(inputs "${CMAKE_CURRENT_BINARY_DIR}/${private_pri_file_name}")
+    foreach(cfg ${configs})
+        list(APPEND inputs "${CMAKE_CURRENT_BINARY_DIR}/${cfg}/${pri_data_cmake_file}")
+    endforeach()
+
+    qt_path_join(private_pri_file_path "${target_path}" "${private_pri_file_name}")
+    list(APPEND pri_files "${private_pri_file_path}")
+    add_custom_command(
+        OUTPUT "${private_pri_file_path}"
+        DEPENDS ${inputs}
+        COMMAND ${CMAKE_COMMAND} "-DIN_FILES=${inputs}" "-DOUT_FILE=${private_pri_file_path}"
+                "-DCONFIGS=${configs}"
+                -P "${QT_CMAKE_DIR}/QtGenerateLibPri.cmake"
+        VERBATIM)
+    add_custom_target(${target}_lib_pri DEPENDS "${private_pri_file_path}")
+    if(arg_HEADER_MODULE)
+        add_dependencies(${target}_timestamp ${target}_lib_pri)
+    else()
+        add_dependencies(${target} ${target}_lib_pri)
+    endif()
     qt_install(FILES "${pri_files}" DESTINATION ${INSTALL_MKSPECSDIR}/modules)
 endfunction()
 
@@ -1145,13 +1166,35 @@ CONFIG += ${private_config_joined}
     string(REPLACE ";" " " build_parts "${build_parts}")
     string(APPEND content "QT_BUILD_PARTS = ${build_parts}\n")
 
-    qt_get_qmake_libraries_pri_content(libraries_content global)
-    string(APPEND content "${libraries_content}")
+    set(preliminary_pri_root "${CMAKE_CURRENT_BINARY_DIR}/mkspecs/preliminary")
+    set(pri_data_cmake_file "qmodule.cmake")
+    qt_generate_qmake_libraries_pri_content(global ${preliminary_pri_root} ${pri_data_cmake_file})
 
+    # Generate a preliminary qmodule.pri file
+    set(preliminary_pri_file_path "${preliminary_pri_root}/qmodule.pri")
     file(GENERATE
-        OUTPUT "${qmodule_pri_target_path}"
+        OUTPUT ${preliminary_pri_file_path}
         CONTENT "${content}"
     )
+
+    if(QT_GENERATOR_IS_MULTI_CONFIG)
+        set(configs ${CMAKE_CONFIGURATION_TYPES})
+    else()
+        set(configs ${CMAKE_BUILD_TYPE})
+    endif()
+    set(inputs ${preliminary_pri_file_path})
+    foreach(cfg ${configs})
+        list(APPEND inputs "${preliminary_pri_root}/${cfg}/${pri_data_cmake_file}")
+    endforeach()
+
+    add_custom_command(
+        OUTPUT "${qmodule_pri_target_path}"
+        DEPENDS ${inputs}
+        COMMAND ${CMAKE_COMMAND} "-DIN_FILES=${inputs}" "-DOUT_FILE=${qmodule_pri_target_path}"
+                "-DCONFIGS=${configs}"
+                -P "${QT_CMAKE_DIR}/QtGenerateLibPri.cmake"
+        VERBATIM)
+    add_custom_target(qmodule_pri DEPENDS "${qmodule_pri_target_path}")
     qt_install(FILES "${qmodule_pri_target_path}" DESTINATION ${INSTALL_MKSPECSDIR})
 endfunction()
 
@@ -2468,6 +2511,14 @@ function(qt_add_module target)
     set(header_module)
     if(arg_HEADER_MODULE)
         set(header_module "HEADER_MODULE")
+
+        # Provide a *_timestamp target that can be used to trigger the build of custom_commands.
+        set(timestamp_file "${CMAKE_CURRENT_BINARY_DIR}/timestamp")
+        add_custom_command(OUTPUT "${timestamp_file}"
+            COMMAND ${CMAKE_COMMAND} -E touch "${timestamp_file}"
+            DEPENDS ${module_headers_public}
+            VERBATIM)
+        add_custom_target(${target}_timestamp ALL DEPENDS "${timestamp_file}")
     endif()
 
     qt_extend_target("${target}"
