@@ -2865,15 +2865,15 @@ void tst_QVariant::compareCustomTypes() const
 {
     qRegisterMetaType<WontCompare>("WontCompare");
 
-    WontCompare f1;
+    WontCompare f1 = {};
     f1.x = 0;
     const QVariant variant1(QVariant::fromValue(f1));
 
-    WontCompare f2;
-    f2.x = 0;
+    WontCompare f2 = {};
+    f2.x = 1;
     const QVariant variant2(QVariant::fromValue(f2));
 
-    /* We compare pointers. */
+    /* We compare via memcmp. */
     QVERIFY(variant1 != variant2);
     QCOMPARE(variant1, variant1);
     QCOMPARE(variant2, variant2);
