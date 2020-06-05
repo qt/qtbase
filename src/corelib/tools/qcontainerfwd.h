@@ -42,8 +42,11 @@
 
 #include <QtCore/qglobal.h>
 
-QT_BEGIN_NAMESPACE
+// std headers can unfortunately not be forward declared
+#include <tuple>
+#include <variant>
 
+QT_BEGIN_NAMESPACE
 
 template <class Key, class T> class QCache;
 template <class Key, class T> class QHash;

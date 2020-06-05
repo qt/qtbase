@@ -39,6 +39,8 @@
 ****************************************************************************/
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qcontainerfwd.h>
+#include <variant>
 
 #ifndef QTYPEINFO_H
 #define QTYPEINFO_H
@@ -321,6 +323,118 @@ Q_DECLARE_TYPEINFO(char32_t, Q_RELOCATABLE_TYPE);
 Q_DECLARE_TYPEINFO(wchar_t, Q_RELOCATABLE_TYPE);
 #  endif
 #endif // Qt 6
+
+namespace QTypeTraits
+{
+
+/*
+    The templates below aim to find out whether one can safely instantiate an operator==() or
+    operator<() for a type.
+
+    This is tricky for containers, as most containers have unconstrained comparison operators, even though they
+    rely on the corresponding operators for its content.
+    This is especially true for all of the STL template classes that have a comparison operator defined, and
+    leads to the situation, that the compiler would try to instantiate the operator, and fail if any
+    of its template arguments does not have the operator implemented.
+
+    The code tries to cover the relevant cases for Qt and the STL, by checking (recusrsively) the value_type
+    of a container (if it exists), and checking the template arguments of pair, tuple and variant.
+*/
+namespace detail {
+
+// find out whether T has a value_type typedef
+// this is required to check the value type of containers for the existence of the comparison operator
+template <typename, typename = void>
+struct has_value_type : std::false_type {};
+template <typename T>
+struct has_value_type<T, std::void_t<typename T::value_type>> : std::true_type {};
+
+// Checks the existence of the comparison operator for the class itself
+template <typename, typename = void>
+struct has_operator_equal : std::false_type {};
+template <typename T>
+struct has_operator_equal<T, std::void_t<decltype(bool(std::declval<const T&>() == std::declval<const T&>()))>>
+        : std::true_type {};
+
+// Two forward declarations
+template<typename T, bool = has_value_type<T>::value>
+struct expand_operator_equal_container;
+template<typename T>
+struct expand_operator_equal_tuple;
+
+// the entry point for the public method
+template<typename T>
+using expand_operator_equal = expand_operator_equal_container<T>;
+
+// if T doesn't have a value_type member check if it's a tuple like object
+template<typename T, bool>
+struct expand_operator_equal_container : expand_operator_equal_tuple<T> {};
+// if T::value_type exists, check first T::value_type, then T itself
+template<typename T>
+struct expand_operator_equal_container<T, true> :
+        std::conjunction<expand_operator_equal<typename T::value_type>, expand_operator_equal_tuple<T>> {};
+
+// recursively check the template arguments of a tuple like object
+template<typename ...T>
+using expand_operator_equal_recursive = std::conjunction<expand_operator_equal<T>...>;
+
+template<typename T>
+struct expand_operator_equal_tuple : has_operator_equal<T> {};
+template<typename T1, typename T2>
+struct expand_operator_equal_tuple<std::pair<T1, T2>> : expand_operator_equal_recursive<T1, T2> {};
+template<typename ...T>
+struct expand_operator_equal_tuple<std::tuple<T...>> : expand_operator_equal_recursive<T...> {};
+template<typename ...T>
+struct expand_operator_equal_tuple<std::variant<T...>> : expand_operator_equal_recursive<T...> {};
+
+// the same for operator<(), see above for explanations
+template <typename, typename = void>
+struct has_operator_less_than : std::false_type{};
+template <typename T>
+struct has_operator_less_than<T, std::void_t<decltype(bool(std::declval<const T&>() < std::declval<const T&>()))>>
+        : std::true_type{};
+
+template<typename T, bool = has_value_type<T>::value>
+struct expand_operator_less_than_container;
+template<typename T>
+struct expand_operator_less_than_tuple;
+
+template<typename T>
+using expand_operator_less_than = expand_operator_less_than_container<T>;
+
+template<typename T, bool>
+struct expand_operator_less_than_container : expand_operator_less_than_tuple<T> {};
+template<typename T>
+struct expand_operator_less_than_container<T, true> :
+        std::conjunction<expand_operator_less_than<typename T::value_type>, expand_operator_less_than_tuple<T>> {};
+
+template<typename ...T>
+using expand_operator_less_than_recursive = std::conjunction<expand_operator_less_than<T>...>;
+
+template<typename T>
+struct expand_operator_less_than_tuple : has_operator_less_than<T> {};
+template<typename T1, typename T2>
+struct expand_operator_less_than_tuple<std::pair<T1, T2>> : expand_operator_less_than_recursive<T1, T2> {};
+template<typename ...T>
+struct expand_operator_less_than_tuple<std::tuple<T...>> : expand_operator_less_than_recursive<T...> {};
+template<typename ...T>
+struct expand_operator_less_than_tuple<std::variant<T...>> : expand_operator_less_than_recursive<T...> {};
+
+}
+
+template<typename T>
+struct has_operator_equal : detail::expand_operator_equal<T> {};
+template<typename T>
+constexpr bool has_operator_equal_v = has_operator_equal<T>::value;
+
+template<typename T>
+struct has_operator_less_than : detail::expand_operator_less_than<T> {};
+template<typename T>
+constexpr bool has_operator_less_than_v = has_operator_less_than<T>::value;
+
+
+}
+
 
 QT_END_NAMESPACE
 #endif // QTYPEINFO_H

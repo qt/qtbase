@@ -567,6 +567,7 @@ public:
     // STL compatibility
     typedef Key key_type;
     typedef T mapped_type;
+    typedef T value_type;
     typedef qptrdiff difference_type;
     typedef qsizetype size_type;
     inline bool empty() const { return isEmpty(); }

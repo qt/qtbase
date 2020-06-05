@@ -48,6 +48,103 @@
 
 Q_DECLARE_METATYPE(QMetaType::Type)
 
+namespace CheckTypeTraits
+{
+struct NoOperators
+{
+    int x;
+};
+using Nested = QVector<std::pair<int, QMap<QStringList, QVariant>>>;
+using Nested2 = QVector<std::pair<int, QVector<QPair<QStringList, QVariant>>>>;
+
+// basic types
+static_assert(QTypeTraits::has_operator_equal_v<bool>);
+static_assert(QTypeTraits::has_operator_less_than_v<bool>);
+static_assert(QTypeTraits::has_operator_equal_v<int>);
+static_assert(QTypeTraits::has_operator_less_than_v<int>);
+static_assert(QTypeTraits::has_operator_equal_v<double>);
+static_assert(QTypeTraits::has_operator_less_than_v<double>);
+
+// no comparison operators
+static_assert(!QTypeTraits::has_operator_equal_v<NoOperators>);
+static_assert(!QTypeTraits::has_operator_less_than_v<NoOperators>);
+
+// standard Qt types
+static_assert(QTypeTraits::has_operator_equal_v<QString>);
+static_assert(QTypeTraits::has_operator_less_than_v<QString>);
+static_assert(QTypeTraits::has_operator_equal_v<QVariant>);
+static_assert(!QTypeTraits::has_operator_less_than_v<QVariant>);
+
+// QList
+static_assert(QTypeTraits::has_operator_equal_v<QStringList>);
+static_assert(QTypeTraits::has_operator_less_than_v<QStringList>);
+static_assert(!QTypeTraits::has_operator_equal_v<QList<NoOperators>>);
+static_assert(!QTypeTraits::has_operator_less_than_v<QList<NoOperators>>);
+static_assert(QTypeTraits::has_operator_equal_v<QList<QVariant>>);
+static_assert(!QTypeTraits::has_operator_less_than_v<QList<QVariant>>);
+
+// QPair
+static_assert(QTypeTraits::has_operator_equal_v<QPair<int, QString>>);
+static_assert(QTypeTraits::has_operator_less_than_v<QPair<int, QString>>);
+static_assert(!QTypeTraits::has_operator_equal_v<QPair<int, NoOperators>>);
+static_assert(!QTypeTraits::has_operator_less_than_v<QPair<int, NoOperators>>);
+
+// QMap
+static_assert(QTypeTraits::has_operator_equal_v<QMap<int, QString>>);
+static_assert(!QTypeTraits::has_operator_less_than_v<QMap<int, QString>>);
+static_assert(!QTypeTraits::has_operator_equal_v<QMap<int, NoOperators>>);
+static_assert(!QTypeTraits::has_operator_less_than_v<QMap<int, NoOperators>>);
+
+// QHash
+static_assert(QTypeTraits::has_operator_equal_v<QHash<int, QString>>);
+static_assert(!QTypeTraits::has_operator_less_than_v<QHash<int, QString>>);
+static_assert(!QTypeTraits::has_operator_equal_v<QHash<int, NoOperators>>);
+static_assert(!QTypeTraits::has_operator_less_than_v<QHash<int, NoOperators>>);
+
+// std::vector
+static_assert(QTypeTraits::has_operator_equal_v<std::vector<QString>>);
+static_assert(QTypeTraits::has_operator_less_than_v<std::vector<QString>>);
+static_assert(!QTypeTraits::has_operator_equal_v<std::vector<NoOperators>>);
+static_assert(!QTypeTraits::has_operator_less_than_v<std::vector<NoOperators>>);
+static_assert(QTypeTraits::has_operator_equal_v<std::vector<QVariant>>);
+static_assert(!QTypeTraits::has_operator_less_than_v<std::vector<QVariant>>);
+
+// std::pair
+static_assert(QTypeTraits::has_operator_equal_v<std::pair<int, QString>>);
+static_assert(QTypeTraits::has_operator_less_than_v<std::pair<int, QString>>);
+static_assert(!QTypeTraits::has_operator_equal_v<std::pair<int, NoOperators>>);
+static_assert(!QTypeTraits::has_operator_less_than_v<std::pair<int, NoOperators>>);
+
+// std::tuple
+static_assert(QTypeTraits::has_operator_equal_v<std::tuple<int, QString, double>>);
+static_assert(QTypeTraits::has_operator_less_than_v<std::tuple<int, QString, double>>);
+static_assert(!QTypeTraits::has_operator_equal_v<std::tuple<int, QString, NoOperators>>);
+static_assert(!QTypeTraits::has_operator_less_than_v<std::tuple<int, QString, NoOperators>>);
+
+// std::map
+static_assert(QTypeTraits::has_operator_equal_v<std::map<int, QString>>);
+static_assert(QTypeTraits::has_operator_less_than_v<std::map<int, QString>>);
+static_assert(!QTypeTraits::has_operator_equal_v<std::map<int, NoOperators>>);
+static_assert(!QTypeTraits::has_operator_less_than_v<std::map<int, NoOperators>>);
+
+// nested types
+static_assert(QTypeTraits::has_operator_equal_v<Nested>);
+static_assert(!QTypeTraits::has_operator_less_than_v<Nested>);
+static_assert(QTypeTraits::has_operator_equal_v<std::tuple<int, Nested>>);
+static_assert(!QTypeTraits::has_operator_less_than_v<std::tuple<int, Nested>>);
+static_assert(QTypeTraits::has_operator_equal_v<std::tuple<int, Nested>>);
+static_assert(!QTypeTraits::has_operator_less_than_v<std::tuple<int, Nested>>);
+
+static_assert(QTypeTraits::has_operator_equal_v<Nested2>);
+static_assert(!QTypeTraits::has_operator_less_than_v<Nested2>);
+static_assert(QTypeTraits::has_operator_equal_v<std::tuple<int, Nested2>>);
+static_assert(!QTypeTraits::has_operator_less_than_v<std::tuple<int, Nested2>>);
+static_assert(QTypeTraits::has_operator_equal_v<std::tuple<int, Nested2>>);
+static_assert(!QTypeTraits::has_operator_less_than_v<std::tuple<int, Nested2>>);
+
+}
+
+
 class tst_QMetaType: public QObject
 {
     Q_OBJECT
