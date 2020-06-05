@@ -51,9 +51,7 @@
 #ifndef FLICKABLE_H
 #define FLICKABLE_H
 
-class QMouseEvent;
-class QPoint;
-class QWidget;
+#include <QWidget>
 
 class FlickableTicker;
 class FlickablePrivate;
