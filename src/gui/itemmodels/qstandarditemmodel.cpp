@@ -2853,14 +2853,6 @@ bool QStandardItemModel::hasChildren(const QModelIndex &parent) const
 /*!
   \reimp
 */
-QModelIndex QStandardItemModel::sibling(int row, int column, const QModelIndex &idx) const
-{
-    return QAbstractItemModel::sibling(row, column, idx);
-}
-
-/*!
-  \reimp
-*/
 QVariant QStandardItemModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     Q_D(const QStandardItemModel);

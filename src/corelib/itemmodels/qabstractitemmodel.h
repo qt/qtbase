@@ -68,9 +68,6 @@ public:
     inline QModelIndex sibling(int row, int column) const;
     inline QModelIndex siblingAtColumn(int column) const;
     inline QModelIndex siblingAtRow(int row) const;
-#if QT_DEPRECATED_SINCE(5, 8)
-    QT_DEPRECATED_X("Use QAbstractItemModel::index") inline QModelIndex child(int row, int column) const;
-#endif
     inline QVariant data(int role = Qt::DisplayRole) const;
     inline Qt::ItemFlags flags() const;
     Q_DECL_CONSTEXPR inline const QAbstractItemModel *model() const noexcept { return m; }
@@ -134,9 +131,6 @@ public:
     quintptr internalId() const;
     QModelIndex parent() const;
     QModelIndex sibling(int row, int column) const;
-#if QT_DEPRECATED_SINCE(5, 8)
-    QT_DEPRECATED_X("Use QAbstractItemModel::index") QModelIndex child(int row, int column) const;
-#endif
     QVariant data(int role = Qt::DisplayRole) const;
     Qt::ItemFlags flags() const;
     const QAbstractItemModel *model() const;
@@ -199,9 +193,7 @@ public:
 
     virtual QMap<int, QVariant> itemData(const QModelIndex &index) const;
     virtual bool setItemData(const QModelIndex &index, const QMap<int, QVariant> &roles);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     virtual bool clearItemData(const QModelIndex &index);
-#endif
 
     virtual QStringList mimeTypes() const;
     virtual QMimeData *mimeData(const QModelIndexList &indexes) const;
@@ -210,12 +202,7 @@ public:
     virtual bool dropMimeData(const QMimeData *data, Qt::DropAction action,
                               int row, int column, const QModelIndex &parent);
     virtual Qt::DropActions supportedDropActions() const;
-
     virtual Qt::DropActions supportedDragActions() const;
-#if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED void setSupportedDragActions(Qt::DropActions actions)
-    { doSetSupportedDragActions(actions); }
-#endif
 
     virtual bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex());
     virtual bool insertColumns(int column, int count, const QModelIndex &parent = QModelIndex());
@@ -301,10 +288,7 @@ public Q_SLOTS:
     virtual void revert();
 
 protected Q_SLOTS:
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    virtual
-#endif
-    void resetInternalData();
+    virtual void resetInternalData();
 
 protected:
     QAbstractItemModel(QAbstractItemModelPrivate &dd, QObject *parent = nullptr);
@@ -333,15 +317,6 @@ protected:
     bool beginMoveColumns(const QModelIndex &sourceParent, int sourceFirst, int sourceLast, const QModelIndex &destinationParent, int destinationColumn);
     void endMoveColumns();
 
-
-#if QT_DEPRECATED_SINCE(5,0)
-    QT_DEPRECATED void reset()
-    {
-        beginResetModel();
-        endResetModel();
-    }
-#endif
-
     void beginResetModel();
     void endResetModel();
 
@@ -350,8 +325,6 @@ protected:
     QModelIndexList persistentIndexList() const;
 
 private:
-    void doSetSupportedDragActions(Qt::DropActions actions);
-
     Q_DECLARE_PRIVATE(QAbstractItemModel)
     Q_DISABLE_COPY(QAbstractItemModel)
 };
@@ -443,11 +416,6 @@ inline QModelIndex QModelIndex::siblingAtColumn(int acolumn) const
 
 inline QModelIndex QModelIndex::siblingAtRow(int arow) const
 { return m ? (r == arow) ? *this : m->sibling(arow, c, *this) : QModelIndex(); }
-
-#if QT_DEPRECATED_SINCE(5, 8)
-inline QModelIndex QModelIndex::child(int arow, int acolumn) const
-{ return m ? m->index(arow, acolumn, *this) : QModelIndex(); }
-#endif
 
 inline QVariant QModelIndex::data(int arole) const
 { return m ? m->data(*this, arole) : QVariant(); }
