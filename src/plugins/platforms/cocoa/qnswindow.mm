@@ -227,14 +227,12 @@ static bool isMouseEvent(NSEvent *ev)
 
 - (BOOL)canBecomeMainWindow
 {
-    BOOL canBecomeMain = YES; // By default, windows can become the main window
-
     // Windows with a transient parent (such as combobox popup windows)
     // cannot become the main window:
     if (!m_platformWindow || m_platformWindow->window()->transientParent())
-        canBecomeMain = NO;
+        return NO;
 
-    return canBecomeMain;
+    return [super canBecomeMainWindow];
 }
 
 - (BOOL)worksWhenModal
