@@ -126,9 +126,10 @@ EMSCRIPTEN_BINDINGS(qtClipboardModule) {
 QWasmClipboard::QWasmClipboard()
 {
     val clipboard = val::global("navigator")["clipboard"];
-    hasClipboardApi = (!clipboard.isUndefined() && !clipboard["readText"].isUndefined());
-
-    initClipboardEvents();
+    val permissions = val::global("navigator")["permissions"];
+    hasClipboardApi = (!clipboard.isUndefined() && !permissions.isUndefined() && !clipboard["readText"].isUndefined());
+    if (hasClipboardApi)
+        initClipboardEvents();
 }
 
 QWasmClipboard::~QWasmClipboard()
