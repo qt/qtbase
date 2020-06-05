@@ -518,8 +518,7 @@ Q_GLOBAL_STATIC(QEmptyItemModel, qEmptyModel)
 
 QAbstractItemModelPrivate::QAbstractItemModelPrivate()
     : QObjectPrivate(),
-      supportedDragActions(-1),
-      roleNames(defaultRoleNames())
+      supportedDragActions(-1)
 {
 }
 
@@ -2486,30 +2485,6 @@ QSize QAbstractItemModel::span(const QModelIndex &) const
 }
 
 /*!
-    \fn void QAbstractItemModel::setRoleNames(const QHash<int,QByteArray> &roleNames)
-    \since 4.6
-    \obsolete
-
-    This function is obsolete. Reimplement roleNames() instead.
-
-    Sets the model's role names to \a roleNames.
-
-    This function allows mapping of role identifiers to role property names in
-    scripting languages.
-
-    \sa roleNames()
-*/
-
-/*!
-    \internal
- */
-void QAbstractItemModel::doSetRoleNames(const QHash<int,QByteArray> &roleNames)
-{
-    Q_D(QAbstractItemModel);
-    d->roleNames = roleNames;
-}
-
-/*!
     \since 4.6
 
     Returns the model's role names.
@@ -2542,8 +2517,7 @@ void QAbstractItemModel::doSetRoleNames(const QHash<int,QByteArray> &roleNames)
 */
 QHash<int,QByteArray> QAbstractItemModel::roleNames() const
 {
-    Q_D(const QAbstractItemModel);
-    return d->roleNames;
+    return QAbstractItemModelPrivate::defaultRoleNames();
 }
 
 /*!

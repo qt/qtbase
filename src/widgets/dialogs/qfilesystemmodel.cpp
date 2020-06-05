@@ -1264,6 +1264,20 @@ Qt::DropActions QFileSystemModel::supportedDropActions() const
 }
 
 /*!
+    \reimp
+*/
+QHash<int, QByteArray> QFileSystemModel::roleNames() const
+{
+    auto ret = QAbstractItemModel::roleNames();
+    ret.insert(QFileSystemModel::FileIconRole,
+               QByteArrayLiteral("fileIcon")); // == Qt::decoration
+    ret.insert(QFileSystemModel::FilePathRole, QByteArrayLiteral("filePath"));
+    ret.insert(QFileSystemModel::FileNameRole, QByteArrayLiteral("fileName"));
+    ret.insert(QFileSystemModel::FilePermissions, QByteArrayLiteral("filePermissions"));
+    return ret;
+}
+
+/*!
     \enum QFileSystemModel::Option
     \since 5.14
 
@@ -2075,12 +2089,6 @@ void QFileSystemModelPrivate::init()
                q, SIGNAL(directoryLoaded(QString)));
 #endif // filesystemwatcher
     q->connect(&delayedSortTimer, SIGNAL(timeout()), q, SLOT(_q_performDelayedSort()), Qt::QueuedConnection);
-
-    roleNames.insert(QFileSystemModel::FileIconRole,
-                     QByteArrayLiteral("fileIcon")); // == Qt::decoration
-    roleNames.insert(QFileSystemModel::FilePathRole, QByteArrayLiteral("filePath"));
-    roleNames.insert(QFileSystemModel::FileNameRole, QByteArrayLiteral("fileName"));
-    roleNames.insert(QFileSystemModel::FilePermissions, QByteArrayLiteral("filePermissions"));
 }
 
 /*!

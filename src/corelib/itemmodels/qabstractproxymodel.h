@@ -98,16 +98,10 @@ public:
     QStringList mimeTypes() const override;
     Qt::DropActions supportedDragActions() const override;
     Qt::DropActions supportedDropActions() const override;
+    QHash<int, QByteArray> roleNames() const override;
 
 Q_SIGNALS:
     void sourceModelChanged(QPrivateSignal);
-
-protected Q_SLOTS:
-    void resetInternalData()
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    override
-#endif
-    ;
 
 protected:
     QAbstractProxyModel(QAbstractProxyModelPrivate &, QObject *parent);

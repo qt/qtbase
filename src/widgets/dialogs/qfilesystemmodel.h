@@ -115,6 +115,7 @@ public:
     bool dropMimeData(const QMimeData *data, Qt::DropAction action,
                       int row, int column, const QModelIndex &parent) override;
     Qt::DropActions supportedDropActions() const override;
+    QHash<int, QByteArray> roleNames() const override;
 
     // QFileSystemModel specific API
     QModelIndex setRootPath(const QString &path);

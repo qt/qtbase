@@ -2233,6 +2233,15 @@ void QStandardItemModel::setItemRoleNames(const QHash<int,QByteArray> &roleNames
 }
 
 /*!
+  reimp
+*/
+QHash<int, QByteArray> QStandardItemModel::roleNames() const
+{
+    Q_D(const QStandardItemModel);
+    return d->roleNames;
+}
+
+/*!
     Removes all items (including header items) from the model and sets the
     number of rows and columns to zero.
 

@@ -349,15 +349,7 @@ protected:
     void changePersistentIndexList(const QModelIndexList &from, const QModelIndexList &to);
     QModelIndexList persistentIndexList() const;
 
-#if QT_DEPRECATED_SINCE(5,0)
-    QT_DEPRECATED void setRoleNames(const QHash<int,QByteArray> &theRoleNames)
-    {
-        doSetRoleNames(theRoleNames);
-    }
-#endif
-
 private:
-    void doSetRoleNames(const QHash<int,QByteArray> &roleNames);
     void doSetSupportedDragActions(Qt::DropActions actions);
 
     Q_DECLARE_PRIVATE(QAbstractItemModel)

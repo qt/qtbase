@@ -321,6 +321,7 @@ public:
     ~QStandardItemModel();
 
     void setItemRoleNames(const QHash<int,QByteArray> &roleNames);
+    QHash<int, QByteArray> roleNames() const override;
 
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
     QModelIndex parent(const QModelIndex &child) const override;

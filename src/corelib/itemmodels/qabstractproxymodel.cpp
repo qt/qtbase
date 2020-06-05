@@ -138,18 +138,8 @@ void QAbstractProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
         } else {
             d->model = QAbstractItemModelPrivate::staticEmptyModel();
         }
-        d->roleNames = d->model->roleNames();
         emit sourceModelChanged(QPrivateSignal());
     }
-}
-
-/*!
-    Clears the roleNames of this proxy model.
-*/
-void QAbstractProxyModel::resetInternalData()
-{
-    Q_D(QAbstractProxyModel);
-    d->roleNames = d->model->roleNames();
 }
 
 /*!
@@ -476,6 +466,16 @@ Qt::DropActions QAbstractProxyModel::supportedDropActions() const
     Q_D(const QAbstractProxyModel);
     return d->model->supportedDropActions();
 }
+
+/*!
+    \reimp
+ */
+QHash<int,QByteArray> QAbstractProxyModel::roleNames() const
+{
+  Q_D(const QAbstractProxyModel);
+  return d->model->roleNames();
+}
+
 
 QT_END_NAMESPACE
 

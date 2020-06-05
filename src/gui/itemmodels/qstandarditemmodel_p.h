@@ -245,6 +245,7 @@ public:
 
     QVector<QStandardItem*> columnHeaderItems;
     QVector<QStandardItem*> rowHeaderItems;
+    QHash<int, QByteArray> roleNames;
     QScopedPointer<QStandardItem> root;
     const QStandardItem *itemPrototype;
     int sortRole;
