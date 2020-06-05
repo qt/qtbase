@@ -40,7 +40,7 @@ InteractiveWidget::InteractiveWidget()
 
     QWidget *panelContent = new QWidget();
     QVBoxLayout *vlayout = new QVBoxLayout(panelContent);
-    vlayout->setMargin(0);
+    vlayout->setContentsMargins(0, 0, 0, 0);
     vlayout->setSpacing(0);
 
     // create and populate the command toolbox
