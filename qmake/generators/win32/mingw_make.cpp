@@ -201,11 +201,26 @@ void MingwMakefileGenerator::writeIncPart(QTextStream &t)
     t << "INCPATH       = ";
 
     const ProStringList &incs = project->values("INCLUDEPATH");
-    for (ProStringList::ConstIterator incit = incs.begin(); incit != incs.end(); ++incit) {
-        QString inc = (*incit).toQString();
+    QFile responseFile;
+    QTextStream responseStream;
+    QChar sep(' ');
+    int totalLength = std::accumulate(incs.constBegin(), incs.constEnd(), 0,
+                                      [](int total, const ProString &inc) {
+        return total + inc.size() + 2;
+    });
+    if (totalLength > project->intValue("QMAKE_RESPONSEFILE_THRESHOLD", 8000)) {
+        const QString fileName = createResponseFile("incpath", incs, "-I");
+        if (!fileName.isEmpty()) {
+            t << '@' + fileName;
+            t << Qt::endl;
+            return;
+        }
+    }
+    for (const ProString &incit: qAsConst(incs)) {
+        QString inc = incit.toQString();
         inc.replace(QRegularExpression("\\\\$"), "");
-
-        t << "-I" << escapeFilePath(inc) << ' ';
+        inc.replace('\\', '/');
+        t << "-I" << escapeFilePath(inc) << sep;
     }
     t << Qt::endl;
 }

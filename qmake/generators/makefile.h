@@ -36,6 +36,7 @@
 #include <qlist.h>
 #include <qhash.h>
 #include <qfileinfo.h>
+#include <functional>
 
 QT_BEGIN_NAMESPACE
 
@@ -264,7 +265,9 @@ protected:
                                     QStringView fixedBase, int slashOff);
     bool processPrlFileCore(QString &origFile, QStringView origName,
                             const QString &fixedFile);
-    QString createResponseFile(const QString &baseName, const ProStringList &objList);
+    QString createResponseFile(const QString &baseName,
+                               const ProStringList &objList,
+                               const QString &prefix = QString());
 
 public:
     QMakeProject *projectFile() const;

@@ -3456,7 +3456,10 @@ ProKey MakefileGenerator::fullTargetVariable() const
     return "TARGET";
 }
 
-QString MakefileGenerator::createResponseFile(const QString &baseName, const ProStringList &objList)
+QString MakefileGenerator::createResponseFile(
+        const QString &baseName,
+        const ProStringList &objList,
+        const QString &prefix)
 {
     QString fileName = baseName + '.' + fileVar("QMAKE_ORIG_TARGET");
     if (!var("BUILD_NAME").isEmpty())
@@ -3479,7 +3482,7 @@ QString MakefileGenerator::createResponseFile(const QString &baseName, const Pro
             .replace(QLatin1Char('\t'), QLatin1String("\\\t"))
             .replace(QLatin1Char('"'), QLatin1String("\\\""))
             .replace(QLatin1Char('\''), QLatin1String("\\'"));
-        t << path << Qt::endl;
+        t << prefix << path << Qt::endl;
     }
     t.flush();
     file.close();
