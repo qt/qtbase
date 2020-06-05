@@ -302,19 +302,11 @@ endfunction()
 function(qt_set_up_fake_standalone_tests_install_prefix)
     # Set a fake local (non-cache) CMAKE_INSTALL_PREFIX.
     # Needed for standalone tests, we don't want to accidentally install a test into the Qt prefix.
-    #
-    # If CMAKE_INSTALL_PREFIX was default initialized, that means it points to something
-    # like /usr/local which we don't want. Why? When metatype json files are created
-    # during standalone tests configuration, the folder creation might fail due to missing
-    # permissions in the /usr/local (which is the wrong place anyway).
-    #
-    # If the prefix was specified by the user at the command line, honor it, hoping that the
-    # user knows what they are doing.
-    if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-        set(new_install_prefix "${CMAKE_BINARY_DIR}/standalone_tests_fake_install_prefix")
-    else()
-        set(new_install_prefix "${QT_BACKUP_CMAKE_INSTALL_PREFIX_BEFORE_EXTRA_INCLUDE}")
+    # Allow opt-out, if a user knows what they're doing.
+    if(QT_NO_FAKE_STANDALONE_TESTS_INSTALL_PREFIX)
+        return()
     endif()
+    set(new_install_prefix "${CMAKE_BINARY_DIR}/fake_prefix")
 
     # It's IMPORTANT that this is not a cache variable. Otherwise
     # qt_get_standalone_tests_confg_files_path() will not work on re-configuration.
