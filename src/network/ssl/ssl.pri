@@ -42,16 +42,6 @@ qtConfig(ssl) {
                ssl/qsslpresharedkeyauthenticator.cpp \
                ssl/qocspresponse.cpp
 
-    winrt {
-        HEADERS += ssl/qsslsocket_winrt_p.h
-        SOURCES += ssl/qsslcertificate_winrt.cpp \
-                   ssl/qssldiffiehellmanparameters_dummy.cpp \
-                   ssl/qsslkey_qt.cpp \
-                   ssl/qsslkey_winrt.cpp \
-                   ssl/qsslsocket_winrt.cpp \
-                   ssl/qsslellipticcurve_dummy.cpp
-    }
-
     qtConfig(schannel) {
         HEADERS += ssl/qsslsocket_schannel_p.h
         SOURCES += ssl/qsslsocket_schannel.cpp \

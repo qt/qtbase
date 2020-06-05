@@ -54,7 +54,7 @@ if(ANDROID AND NOT ANDROID_EMBEDDED)
     )
 endif()
 
-extend_target(tst_qimage CONDITION WIN32 AND NOT WINRT
+extend_target(tst_qimage CONDITION WIN32
     PUBLIC_LIBRARIES
         gdi32
         user32

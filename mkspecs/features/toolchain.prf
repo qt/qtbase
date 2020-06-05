@@ -153,10 +153,10 @@ msvc {
         arch = amd64
     else: !equals(arch, arm):!equals(arch, arm64): \  # may be "win32" or undefined
         arch = x86
-    # Consider only WinRT and ARM64 desktop builds to be cross-builds -
+    # Consider only ARM64 desktop builds to be cross-builds -
     # the host is assumed to be Intel and capable of running the target
     # executables (so building for x64 on x86 will break).
-    winrt|equals(arch, arm64): \
+    equals(arch, arm64): \
         CONFIG += msvc_cross
 }
 
@@ -337,7 +337,6 @@ isEmpty($${target_prefix}.INCDIRS) {
                 error("Failed to find the Visual C installation directory.")
             cmd += $$system_quote($$dir\\vcvarsall.bat) $$arch
         }
-        winrt: cmd += store
 
         isEmpty(WINSDK_VER): \
             error("Mkspec does not specify WINSDK_VER. Cannot continue.")

@@ -783,16 +783,12 @@ void tst_QSplitter::replaceWidget()
         const int expectedResizeCount = visible ? 1 : 0; // new widget only
         const int expectedPaintCount = visible && !collapsed ? 2 : 0; // splitter and new widget
         QTRY_COMPARE(ef.resizeCount, expectedResizeCount);
-#ifndef Q_OS_WINRT // QTBUG-68297
         QTRY_COMPARE(ef.paintCount, expectedPaintCount);
-#endif
         QCOMPARE(newWidget->parentWidget(), &sp);
         QCOMPARE(newWidget->isVisible(), visible);
         if (visible && !collapsed)
             QCOMPARE(newWidget->geometry(), oldGeom);
-#ifndef Q_OS_WINRT // QTBUG-68297
         QCOMPARE(newWidget->size().isEmpty(), !visible || collapsed);
-#endif
         delete res;
     }
     QCOMPARE(sp.count(), count);
@@ -844,9 +840,7 @@ void tst_QSplitter::replaceWidgetWithSplitterChild()
         QTRY_VERIFY(ef.resizeCount > 0);
         QTRY_VERIFY(ef.paintCount > 0);
         QCOMPARE(sp.count(), count + 1);
-#ifndef Q_OS_WINRT // QTBUG-68297
         QCOMPARE(sp.sizes().mid(0, count), sizes);
-#endif
         QCOMPARE(sp.sizes().last(), sibling->width());
     } else {
         // No-op for the rest

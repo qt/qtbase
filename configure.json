@@ -807,7 +807,7 @@
         "appstore-compliant": {
             "label": "App store compliance",
             "purpose": "Disables code that is not allowed in platform app stores",
-            "autoDetect": "config.uikit || config.android || config.winrt",
+            "autoDetect": "config.uikit || config.android",
             "output": [ "publicFeature" ]
         },
         "simulator_and_device": {
@@ -859,7 +859,7 @@
         },
         "largefile": {
             "label": "Large file support",
-            "condition": "!config.android && !config.integrity && !config.winrt && !config.rtems",
+            "condition": "!config.android && !config.integrity && !config.rtems",
             "output": [
                 "privateConfig",
                 { "type": "define", "name": "QT_LARGEFILE_SUPPORT", "value": 64 }
@@ -1302,7 +1302,7 @@
         },
         "dbus": {
             "label": "Qt D-Bus",
-            "autoDetect": "!config.uikit && !config.android && !config.winrt",
+            "autoDetect": "!config.uikit && !config.android",
             "condition": "features.thread",
             "output": [ "privateFeature", "feature" ]
         },
@@ -1628,7 +1628,7 @@
                 {
                     "type": "feature",
                     "args": "appstore-compliant",
-                    "condition": "config.darwin || config.android || config.winrt || config.win32"
+                    "condition": "config.darwin || config.android || config.win32"
                 }
             ]
         }, {

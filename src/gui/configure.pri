@@ -60,7 +60,6 @@ defineTest(qtConfTest_qpaDefaultPlatform) {
     name =
     !isEmpty(config.input.qpa_default_platform): name = $$config.input.qpa_default_platform
     else: !isEmpty(QT_QPA_DEFAULT_PLATFORM): name = $$QT_QPA_DEFAULT_PLATFORM
-    else: winrt: name = winrt
     else: win32: name = windows
     else: android: name = android
     else: macos: name = cocoa

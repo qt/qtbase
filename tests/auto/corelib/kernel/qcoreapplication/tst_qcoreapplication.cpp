@@ -155,9 +155,7 @@ void tst_QCoreApplication::qAppName()
 
 void tst_QCoreApplication::qAppVersion()
 {
-#if defined(Q_OS_WINRT)
-    const char appVersion[] = "1.0.0.0";
-#elif defined(Q_OS_WIN)
+#if defined(Q_OS_WIN)
     const char appVersion[] = "1.2.3.4";
 #elif defined(Q_OS_DARWIN) || defined(Q_OS_ANDROID)
     const char appVersion[] = "1.2.3";
@@ -192,9 +190,6 @@ void tst_QCoreApplication::qAppVersion()
 
 void tst_QCoreApplication::argc()
 {
-#if defined(Q_OS_WINRT)
-    QSKIP("QCoreApplication::arguments() parses arguments from actual command line on this platform.");
-#endif
     {
         int argc = 1;
         char *argv[] = { const_cast<char*>(QTest::currentAppName()) };

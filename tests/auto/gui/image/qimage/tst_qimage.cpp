@@ -44,7 +44,7 @@
 #include <CoreGraphics/CoreGraphics.h>
 #endif
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
 #  include <qt_windows.h>
 #endif
 
@@ -238,11 +238,11 @@ private slots:
 
     void wideImage();
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
     void toWinHBITMAP_data();
     void toWinHBITMAP();
     void fromMonoHBITMAP();
-#endif // Q_OS_WIN && !Q_OS_WINRT
+#endif // Q_OS_WIN
 
 private:
     const QString m_prefix;
@@ -3776,7 +3776,7 @@ void tst_QImage::wideImage()
     // Qt6: Test that it actually works on 64bit architectures.
 }
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
 QT_BEGIN_NAMESPACE
 Q_GUI_EXPORT HBITMAP qt_imageToWinHBITMAP(const QImage &p, int hbitmapFormat = 0);
 Q_GUI_EXPORT QImage qt_imageFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat = 0);
@@ -3890,7 +3890,7 @@ void tst_QImage::fromMonoHBITMAP() // QTBUG-72343, corruption for mono bitmaps
     DeleteObject(hbitmap);
 }
 
-#endif // Q_OS_WIN && !Q_OS_WINRT
+#endif // Q_OS_WIN
 
 QTEST_GUILESS_MAIN(tst_QImage)
 #include "tst_qimage.moc"

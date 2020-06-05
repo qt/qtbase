@@ -39,11 +39,7 @@
 
 #include "qabstractsocketengine_p.h"
 
-#ifndef Q_OS_WINRT
 #include "qnativesocketengine_p.h"
-#else
-#include "qnativesocketengine_winrt_p.h"
-#endif
 
 #include "qmutex.h"
 #include "qnetworkproxy.h"

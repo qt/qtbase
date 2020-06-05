@@ -1,5 +1,5 @@
 TEMPLATE = subdirs
 
-!winrt:SUBDIRS += echo
+SUBDIRS += echo
 test.depends += $$SUBDIRS
 SUBDIRS += test

@@ -53,18 +53,14 @@
 #include <direct.h>
 #include <winioctl.h>
 #include <objbase.h>
-#ifndef Q_OS_WINRT
-#  include <shlobj.h>
-#  include <accctrl.h>
-#endif
+#include <shlobj.h>
+#include <accctrl.h>
 #include <initguid.h>
 #include <ctype.h>
 #include <limits.h>
 #include <stdio.h>
-#ifndef Q_OS_WINRT
-#  define SECURITY_WIN32
-#  include <security.h>
-#endif
+#define SECURITY_WIN32
+#include <security.h>
 
 #ifndef PATH_MAX
 #define PATH_MAX FILENAME_MAX
@@ -88,16 +84,12 @@ QString QFSFileEnginePrivate::longFileName(const QString &path)
         return path;
 
     QString absPath = QFileSystemEngine::nativeAbsoluteFilePath(path);
-#if !defined(Q_OS_WINRT)
     QString prefix = QLatin1String("\\\\?\\");
     if (isUncPath(absPath)) {
         prefix.append(QLatin1String("UNC\\")); // "\\\\?\\UNC\\"
         absPath.remove(0, 2);
     }
     return prefix + absPath;
-#else
-    return absPath;
-#endif
 }
 
 /*
@@ -123,7 +115,6 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
                                 ? OPEN_ALWAYS
                                 : OPEN_EXISTING;
     // Create the file handle.
-#ifndef Q_OS_WINRT
     SECURITY_ATTRIBUTES securityAtts = { sizeof(SECURITY_ATTRIBUTES), NULL, FALSE };
     fileHandle = CreateFile((const wchar_t*)fileEntry.nativeFilePath().utf16(),
                             accessRights,
@@ -132,13 +123,6 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
                             creationDisp,
                             FILE_ATTRIBUTE_NORMAL,
                             NULL);
-#else // !Q_OS_WINRT
-    fileHandle = CreateFile2((const wchar_t*)fileEntry.nativeFilePath().utf16(),
-                             accessRights,
-                             shareMode,
-                             creationDisp,
-                             NULL);
-#endif // Q_OS_WINRT
 
     // Bail out on error.
     if (fileHandle == INVALID_HANDLE_VALUE) {
@@ -428,7 +412,6 @@ int QFSFileEnginePrivate::nativeHandle() const
 */
 bool QFSFileEnginePrivate::nativeIsSequential() const
 {
-#if !defined(Q_OS_WINRT)
     HANDLE handle = fileHandle;
     if (fh || fd != -1)
         handle = (HANDLE)_get_osfhandle(fh ? QT_FILENO(fh) : fd);
@@ -438,9 +421,6 @@ bool QFSFileEnginePrivate::nativeIsSequential() const
     DWORD fileType = GetFileType(handle);
     return (fileType == FILE_TYPE_CHAR)
             || (fileType == FILE_TYPE_PIPE);
-#else
-    return false;
-#endif
 }
 
 bool QFSFileEngine::caseSensitive() const
@@ -450,7 +430,6 @@ bool QFSFileEngine::caseSensitive() const
 
 QString QFSFileEngine::currentPath(const QString &fileName)
 {
-#if !defined(Q_OS_WINRT)
     QString ret;
     //if filename is a drive: then get the pwd of that drive
     if (fileName.length() >= 2 &&
@@ -469,13 +448,8 @@ QString QFSFileEngine::currentPath(const QString &fileName)
     if (ret.length() >= 2 && ret[1] == QLatin1Char(':'))
         ret[0] = ret.at(0).toUpper(); // Force uppercase drive letters.
     return ret;
-#else // !Q_OS_WINRT
-    Q_UNUSED(fileName);
-    return QFileSystemEngine::currentPath().filePath();
-#endif // Q_OS_WINRT
 }
 
-#if !defined(Q_OS_WINRT)
 // cf QStorageInfo::isReady
 static inline bool isDriveReady(const wchar_t *path)
 {
@@ -485,12 +459,10 @@ static inline bool isDriveReady(const wchar_t *path)
         || GetVolumeInformation(path, nullptr, 0, nullptr, nullptr,
                                 &fileSystemFlags, nullptr, 0) == TRUE;
 }
-#endif // !Q_OS_WINRT
 
 QFileInfoList QFSFileEngine::drives()
 {
     QFileInfoList ret;
-#if !defined(Q_OS_WINRT)
     const UINT oldErrorMode = ::SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
     quint32 driveBits = (quint32) GetLogicalDrives() & 0x3ffffff;
     wchar_t driveName[] = L"A:\\";
@@ -503,10 +475,6 @@ QFileInfoList QFSFileEngine::drives()
     }
     ::SetErrorMode(oldErrorMode);
     return ret;
-#else // !Q_OS_WINRT
-    ret.append(QFileInfo(QLatin1String("/")));
-    return ret;
-#endif // Q_OS_WINRT
 }
 
 bool QFSFileEnginePrivate::doStat(QFileSystemMetaData::MetaDataFlags flags) const
@@ -529,7 +497,6 @@ bool QFSFileEnginePrivate::doStat(QFileSystemMetaData::MetaDataFlags flags) cons
 
 bool QFSFileEngine::link(const QString &newName)
 {
-#if !defined(Q_OS_WINRT)
     bool ret = false;
 
     QString linkName = newName;
@@ -574,11 +541,6 @@ bool QFSFileEngine::link(const QString &newName)
         CoUninitialize();
 
     return ret;
-#else // !Q_OS_WINRT
-    Q_UNUSED(newName);
-    Q_UNIMPLEMENTED();
-    return false;
-#endif // Q_OS_WINRT
 }
 
 /*!
@@ -891,11 +853,7 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size,
 
         // first create the file mapping handle
         DWORD protection = (openMode & QIODevice::WriteOnly) ? PAGE_READWRITE : PAGE_READONLY;
-#ifndef Q_OS_WINRT
         mapHandle = ::CreateFileMapping(handle, 0, protection, 0, 0, 0);
-#else
-        mapHandle = ::CreateFileMappingFromApp(handle, 0, protection, 0, 0);
-#endif
         if (mapHandle == NULL) {
             q->setError(QFile::PermissionsError, qt_error_string());
 #ifdef Q_USE_DEPRECATED_MAP_API
@@ -908,24 +866,15 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size,
     DWORD offsetHi = offset >> 32;
     DWORD offsetLo = offset & Q_UINT64_C(0xffffffff);
     SYSTEM_INFO sysinfo;
-#ifndef Q_OS_WINRT
     ::GetSystemInfo(&sysinfo);
-#else
-    ::GetNativeSystemInfo(&sysinfo);
-#endif
     DWORD mask = sysinfo.dwAllocationGranularity - 1;
     DWORD extra = offset & mask;
     if (extra)
         offsetLo &= ~mask;
 
     // attempt to create the map
-#ifndef Q_OS_WINRT
     LPVOID mapAddress = ::MapViewOfFile(mapHandle, access,
                                       offsetHi, offsetLo, size + extra);
-#else
-    LPVOID mapAddress = ::MapViewOfFileFromApp(mapHandle, access,
-                                               (ULONG64(offsetHi) << 32) + offsetLo, size + extra);
-#endif
     if (mapAddress) {
         uchar *address = extra + static_cast<uchar*>(mapAddress);
         maps[address] = extra;

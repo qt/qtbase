@@ -4332,7 +4332,7 @@ const QPalette &QWidget::palette() const
     if (!isEnabled()) {
         data->pal.setCurrentColorGroup(QPalette::Disabled);
     } else if ((!isVisible() || isActiveWindow())
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
         && !QApplicationPrivate::isBlockedByModal(const_cast<QWidget *>(this))
 #endif
         ) {

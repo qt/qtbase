@@ -524,17 +524,13 @@ void tst_QSpinBox::setReadOnly()
     QTest::keyClick(&spin, Qt::Key_Up);
     QCOMPARE(spin.value(), 1);
     spin.setReadOnly(true);
-#ifndef Q_OS_WINRT // QTBUG-68297
     QCOMPARE(spin.readOnlyChangeEventCount, 1);
-#endif
     QTest::keyClick(&spin, Qt::Key_Up);
     QCOMPARE(spin.value(), 1);
     spin.stepBy(1);
     QCOMPARE(spin.value(), 2);
     spin.setReadOnly(false);
-#ifndef Q_OS_WINRT // QTBUG-68297
     QCOMPARE(spin.readOnlyChangeEventCount, 2);
-#endif
     QTest::keyClick(&spin, Qt::Key_Up);
     QCOMPARE(spin.value(), 3);
 }

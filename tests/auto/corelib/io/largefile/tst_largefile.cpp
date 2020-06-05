@@ -62,7 +62,7 @@ public:
         , fd_(-1)
         , stream_(0)
     {
-    #if defined(QT_LARGEFILE_SUPPORT) && !defined(Q_OS_MAC) && !defined(Q_OS_WINRT)
+    #if defined(QT_LARGEFILE_SUPPORT) && !defined(Q_OS_MAC)
         maxSizeBits = 36; // 64 GiB
     #elif defined(Q_OS_MAC)
         // HFS+ does not support sparse files, so we limit file size for the test

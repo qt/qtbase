@@ -1276,9 +1276,6 @@ void tst_QUdpSocket::multicastTtlOption_data()
 
 void tst_QUdpSocket::multicastTtlOption()
 {
-#ifdef Q_OS_WINRT
-    QSKIP("WinRT does not support multicast.");
-#endif
     QFETCH_GLOBAL(bool, setProxy);
     QFETCH(QHostAddress, bindAddress);
     QFETCH(int, ttl);
@@ -1326,9 +1323,6 @@ void tst_QUdpSocket::multicastLoopbackOption_data()
 
 void tst_QUdpSocket::multicastLoopbackOption()
 {
-#ifdef Q_OS_WINRT
-    QSKIP("WinRT does not support multicast.");
-#endif
     QFETCH_GLOBAL(bool, setProxy);
     QFETCH(QHostAddress, bindAddress);
     QFETCH(int, loopback);
@@ -1365,9 +1359,6 @@ void tst_QUdpSocket::multicastJoinBeforeBind_data()
 
 void tst_QUdpSocket::multicastJoinBeforeBind()
 {
-#ifdef Q_OS_WINRT
-    QSKIP("WinRT does not support multicast.");
-#endif
     QFETCH(QHostAddress, groupAddress);
 
     QUdpSocket udpSocket;
@@ -1387,9 +1378,6 @@ void tst_QUdpSocket::multicastLeaveAfterClose_data()
 
 void tst_QUdpSocket::multicastLeaveAfterClose()
 {
-#ifdef Q_OS_WINRT
-    QSKIP("WinRT does not support multicast.");
-#endif
     QFETCH_GLOBAL(bool, setProxy);
     QFETCH(QHostAddress, groupAddress);
     if (setProxy)
@@ -1434,9 +1422,6 @@ void tst_QUdpSocket::setMulticastInterface_data()
 
 void tst_QUdpSocket::setMulticastInterface()
 {
-#ifdef Q_OS_WINRT
-    QSKIP("WinRT does not support multicast.");
-#endif
     QFETCH_GLOBAL(bool, setProxy);
     QFETCH(QNetworkInterface, iface);
     QFETCH(QHostAddress, address);
@@ -1494,9 +1479,6 @@ void tst_QUdpSocket::multicast_data()
 
 void tst_QUdpSocket::multicast()
 {
-#ifdef Q_OS_WINRT
-    QSKIP("WinRT does not support multicast.");
-#endif
     QFETCH_GLOBAL(bool, setProxy);
     QFETCH(QHostAddress, bindAddress);
     QFETCH(bool, bindResult);

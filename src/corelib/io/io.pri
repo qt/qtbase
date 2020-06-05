@@ -111,7 +111,7 @@ qtConfig(processenvironment) {
         io/qprocess.h \
         io/qprocess_p.h
 
-    win32:!winrt: \
+    win32: \
         SOURCES += io/qprocess_win.cpp
     else: unix: \
         SOURCES += io/qprocess_unix.cpp
@@ -125,11 +125,7 @@ qtConfig(settings) {
         io/qsettings_p.h
 
     win32 {
-        !winrt {
-            SOURCES += io/qsettings_win.cpp
-        } else {
-            SOURCES += io/qsettings_winrt.cpp
-        }
+        SOURCES += io/qsettings_win.cpp
     } else: darwin:!nacl {
         SOURCES += io/qsettings_mac.cpp
     }
@@ -137,32 +133,26 @@ qtConfig(settings) {
 }
 
 win32 {
-        SOURCES += io/qfsfileengine_win.cpp
-        SOURCES += io/qlockfile_win.cpp
-        SOURCES += io/qfilesystemengine_win.cpp
+    SOURCES += io/qfsfileengine_win.cpp
+    SOURCES += io/qlockfile_win.cpp
+    SOURCES += io/qfilesystemengine_win.cpp
 
-        qtConfig(filesystemiterator) {
-            SOURCES += io/qfilesystemiterator_win.cpp
-        }
-
-    !winrt {
-        HEADERS += \
-            io/qwindowspipereader_p.h \
-            io/qwindowspipewriter_p.h
-
-        SOURCES += \
-            io/qstandardpaths_win.cpp \
-            io/qstorageinfo_win.cpp \
-            io/qwindowspipereader.cpp \
-            io/qwindowspipewriter.cpp
-
-        LIBS += -lmpr -luserenv
-        QMAKE_USE_PRIVATE += netapi32
-    } else {
-        SOURCES += \
-                io/qstandardpaths_winrt.cpp \
-                io/qstorageinfo_stub.cpp
+    qtConfig(filesystemiterator) {
+        SOURCES += io/qfilesystemiterator_win.cpp
     }
+
+    HEADERS += \
+        io/qwindowspipereader_p.h \
+        io/qwindowspipewriter_p.h
+
+    SOURCES += \
+        io/qstandardpaths_win.cpp \
+        io/qstorageinfo_win.cpp \
+        io/qwindowspipereader.cpp \
+        io/qwindowspipewriter.cpp
+
+    LIBS += -lmpr -luserenv
+    QMAKE_USE_PRIVATE += netapi32
 } else:unix {
         SOURCES += \
                 io/qfsfileengine_unix.cpp \

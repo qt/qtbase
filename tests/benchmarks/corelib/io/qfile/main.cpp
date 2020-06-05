@@ -297,11 +297,7 @@ void tst_qfile::readBigFile()
             // ensure we don't account string conversion
             wchar_t* cfilename = (wchar_t*)filename.utf16();
 
-#ifndef Q_OS_WINRT
             hndl = CreateFile(cfilename, GENERIC_READ, 0, 0, OPEN_EXISTING, 0, 0);
-#else
-            hndl = CreateFile2(cfilename, GENERIC_READ, 0, OPEN_EXISTING, 0);
-#endif
             Q_ASSERT(hndl);
             wchar_t* nativeBuffer = new wchar_t[BUFSIZE];
             DWORD numberOfBytesRead;
@@ -310,12 +306,7 @@ void tst_qfile::readBigFile()
                 do {
                    ReadFile(hndl, nativeBuffer, blockSize, &numberOfBytesRead, NULL);
                 } while(numberOfBytesRead != 0);
-#ifndef Q_OS_WINRT
                 SetFilePointer(hndl, 0, NULL, FILE_BEGIN);
-#else
-                LARGE_INTEGER offset = { 0 };
-                SetFilePointerEx(hndl, offset, NULL, FILE_BEGIN);
-#endif
             }
             delete[] nativeBuffer;
             CloseHandle(hndl);
@@ -396,20 +387,11 @@ void tst_qfile::seek()
             // ensure we don't account string conversion
             wchar_t* cfilename = (wchar_t*)filename.utf16();
 
-#ifndef Q_OS_WINRT
             hndl = CreateFile(cfilename, GENERIC_READ, 0, 0, OPEN_EXISTING, 0, 0);
-#else
-            hndl = CreateFile2(cfilename, GENERIC_READ, 0, OPEN_EXISTING, 0);
-#endif
             Q_ASSERT(hndl);
             QBENCHMARK {
                 i=(i+1)%sp_size;
-#ifndef Q_OS_WINRT
                 SetFilePointer(hndl, seekpos[i], NULL, 0);
-#else
-                LARGE_INTEGER offset = { seekpos[i] };
-                SetFilePointerEx(hndl, offset, NULL, FILE_BEGIN);
-#endif
             }
             CloseHandle(hndl);
 #else
@@ -494,11 +476,7 @@ void tst_qfile::open()
             wchar_t* cfilename = (wchar_t*)filename.utf16();
 
             QBENCHMARK {
-#ifndef Q_OS_WINRT
                 hndl = CreateFile(cfilename, GENERIC_READ, 0, 0, OPEN_EXISTING, 0, 0);
-#else
-                hndl = CreateFile2(cfilename, GENERIC_READ, 0, OPEN_EXISTING, 0);
-#endif
                 Q_ASSERT(hndl);
                 CloseHandle(hndl);
             }
@@ -702,11 +680,7 @@ void tst_qfile::readSmallFiles()
             // ensure we don't account string conversion
             wchar_t* cfilename = (wchar_t*)filename.utf16();
 
-#ifndef Q_OS_WINRT
             hndl = CreateFile(cfilename, GENERIC_READ, 0, 0, OPEN_EXISTING, 0, 0);
-#else
-            hndl = CreateFile2(cfilename, GENERIC_READ, 0, OPEN_EXISTING, 0);
-#endif
             Q_ASSERT(hndl);
             wchar_t* nativeBuffer = new wchar_t[BUFSIZE];
             DWORD numberOfBytesRead;

@@ -489,8 +489,7 @@ void QProcessPrivate::Channel::clear()
     You can also call error() to find the type of error that occurred
     last, and state() to find the current process state.
 
-    \note QProcess is not supported on VxWorks, iOS, tvOS, watchOS,
-    or the Universal Windows Platform.
+    \note QProcess is not supported on VxWorks, iOS, tvOS, or watchOS.
 
     \section1 Communicating via Channels
 

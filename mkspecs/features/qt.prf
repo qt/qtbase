@@ -226,15 +226,6 @@ for(ever) {
             }
         }
         QMAKE_USE$$var_sfx += $$MODULE_USES
-        # Add capabilities as defined by modules used in the project
-        winrt {
-            MODULE_WINRT_CAPABILITIES = $$eval(QT.$${QTLIB}.winrt_capabilities)
-            !isEmpty(MODULE_WINRT_CAPABILITIES): \
-                WINRT_MANIFEST.capabilities_default += $$MODULE_WINRT_CAPABILITIES
-            MODULE_WINRT_CAPABILITIES_DEVICE = $$eval(QT.$${QTLIB}.winrt_capabilities_device)
-            !isEmpty(MODULE_WINRT_CAPABILITIES_DEVICE): \
-                WINRT_MANIFEST.capabilities_device_default += $$MODULE_WINRT_CAPABILITIES_DEVICE
-        }
     }
     !isEmpty(BAD_QT):error("Unknown module(s) in QT$$var_sfx: $$replace(BAD_QT, _private$, -private)")
 

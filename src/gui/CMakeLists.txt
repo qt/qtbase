@@ -13,9 +13,7 @@ qt_find_package(WrapPNG PROVIDED_TARGETS WrapPNG::WrapPNG)
 qt_find_package(WrapFreetype PROVIDED_TARGETS WrapFreetype::WrapFreetype)
 
 if (QT_FEATURE_gui)
-    if (WINRT)
-        set(_default_platform "winrt")
-    elseif(WIN32)
+    if(WIN32)
         set(_default_platform "windows")
     elseif(ANDROID)
         set(_default_platform "android")
@@ -392,6 +390,7 @@ qt_extend_target(Gui CONDITION QT_FEATURE_animation
 
 qt_extend_target(Gui CONDITION WIN32
     SOURCES
+        image/qpixmap_win.cpp
         kernel/qwindowdefs_win.h
         rhi/qrhid3d11.cpp rhi/qrhid3d11_p.h
         rhi/qrhid3d11_p_p.h
@@ -457,7 +456,7 @@ qt_extend_target(Gui CONDITION APPLE AND QT_FEATURE_accessibility
         ${FWFoundation}
 )
 
-qt_extend_target(Gui CONDITION QT_FEATURE_accessibility AND WIN32 AND NOT WINRT
+qt_extend_target(Gui CONDITION QT_FEATURE_accessibility AND WIN32
     SOURCES
         accessible/windows/apisupport/qwindowsuiawrapper.cpp accessible/windows/apisupport/qwindowsuiawrapper_p.h
         accessible/windows/apisupport/uiaattributeids_p.h
@@ -497,11 +496,6 @@ qt_extend_target(Gui CONDITION QT_FEATURE_shortcut
 qt_extend_target(Gui CONDITION QT_FEATURE_movie
     SOURCES
         image/qmovie.cpp image/qmovie.h
-)
-
-qt_extend_target(Gui CONDITION WIN32 AND NOT WINRT
-    SOURCES
-        image/qpixmap_win.cpp
 )
 
 qt_extend_target(Gui CONDITION QT_FEATURE_png

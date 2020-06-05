@@ -471,8 +471,8 @@ void tst_QThread::start()
 
 void tst_QThread::terminate()
 {
-#if defined(Q_OS_WINRT) || defined(Q_OS_ANDROID)
-    QSKIP("Thread termination is not supported on WinRT or Android.");
+#if defined(Q_OS_ANDROID)
+    QSKIP("Thread termination is not supported on Android.");
 #endif
     Terminate_Thread thread;
     {
@@ -537,8 +537,8 @@ void tst_QThread::finished()
 
 void tst_QThread::terminated()
 {
-#if defined(Q_OS_WINRT) || defined(Q_OS_ANDROID)
-    QSKIP("Thread termination is not supported on WinRT or Android.");
+#if defined(Q_OS_ANDROID)
+    QSKIP("Thread termination is not supported on Android.");
 #endif
     SignalRecorder recorder;
     Terminate_Thread thread;
@@ -674,8 +674,6 @@ void NativeThreadWrapper::start(FunctionPointer functionPointer, void *data)
 #if defined Q_OS_UNIX
     const int state = pthread_create(&nativeThreadHandle, 0, NativeThreadWrapper::runUnix, this);
     Q_UNUSED(state);
-#elif defined(Q_OS_WINRT)
-        nativeThreadHandle = CreateThread(NULL, 0 , (LPTHREAD_START_ROUTINE)NativeThreadWrapper::runWin , this, 0, NULL);
 #elif defined Q_OS_WIN
     unsigned thrdid = 0;
     nativeThreadHandle = (Qt::HANDLE) _beginthreadex(NULL, 0, NativeThreadWrapper::runWin, this, 0, &thrdid);

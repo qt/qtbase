@@ -48,11 +48,7 @@
 
 #define PLATFORMSOCKETENGINE QNativeSocketEngine
 #define PLATFORMSOCKETENGINESTRING "QNativeSocketEngine"
-#ifndef Q_OS_WINRT
-#  include <private/qnativesocketengine_p.h>
-#else
-#  include <private/qnativesocketengine_winrt_p.h>
-#endif
+#include <private/qnativesocketengine_p.h>
 
 #include <qstringlist.h>
 
@@ -79,9 +75,7 @@ private slots:
     void networkError();
     void setSocketDescriptor();
     void invalidSend();
-#ifndef Q_OS_WINRT
     void receiveUrgentData();
-#endif
     void tooManySockets();
 };
 
@@ -582,9 +576,7 @@ void tst_PlatformSocketEngine::networkError()
     QCOMPARE(client.state(), QAbstractSocket::ConnectedState);
 
     // An unexpected network error!
-#ifdef Q_OS_WINRT
-    client.close();
-#elif defined(Q_OS_WIN)
+#if defined(Q_OS_WIN)
     // could use shutdown to produce different errors
     ::closesocket(client.socketDescriptor());
 #else
@@ -617,7 +609,6 @@ void tst_PlatformSocketEngine::invalidSend()
 }
 
 //---------------------------------------------------------------------------
-#ifndef Q_OS_WINRT
 void tst_PlatformSocketEngine::receiveUrgentData()
 {
     PLATFORMSOCKETENGINE server;
@@ -680,7 +671,6 @@ void tst_PlatformSocketEngine::receiveUrgentData()
     QCOMPARE(response.at(0), msg);
 #endif
 }
-#endif // !Q_OS_WINRT
 
 QTEST_MAIN(tst_PlatformSocketEngine)
 #include "tst_platformsocketengine.moc"

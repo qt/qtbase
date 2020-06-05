@@ -147,11 +147,7 @@ QRhiD3D11::QRhiD3D11(QRhiD3D11InitParams *params, QRhiD3D11NativeHandles *import
 
 static QString comErrorMessage(HRESULT hr)
 {
-#ifndef Q_OS_WINRT
     const _com_error comError(hr);
-#else
-    const _com_error comError(hr, nullptr);
-#endif
     QString result = QLatin1String("Error 0x") + QString::number(ulong(hr), 16);
     if (const wchar_t *msg = comError.ErrorMessage())
         result += QLatin1String(": ") + QString::fromWCharArray(msg);

@@ -37,7 +37,7 @@
 
 #include <QtCore/private/qfsfileengine_p.h>
 
-#if defined(Q_OS_VXWORKS) || defined(Q_OS_WINRT)
+#if defined(Q_OS_VXWORKS)
 #define Q_NO_SYMLINKS
 #endif
 
@@ -220,11 +220,6 @@ void tst_QDirIterator::cleanupTestCase()
 
     Q_FOREACH(QString dirName, createdDirectories)
         currentDir.rmdir(dirName);
-
-#ifdef Q_OS_WINRT
-    QDir::setCurrent(QCoreApplication::applicationDirPath());
-#endif // Q_OS_WINRT
-
 }
 
 void tst_QDirIterator::iterateRelativeDirectory_data()

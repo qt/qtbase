@@ -4,18 +4,11 @@
 ## testProcessLoopback Binary:
 #####################################################################
 
-add_qt_benchmark(testProcessLoopback
+# add_qt_executable(testProcessLoopback # special case
+add_qt_benchmark(testProcessLoopback # special case
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES
         Qt::Gui
-)
-
-## Scopes:
-#####################################################################
-
-extend_target(testProcessLoopback CONDITION WINRT
-    LINK_OPTIONS
-        "/ENTRY:mainCRTStartup"
 )

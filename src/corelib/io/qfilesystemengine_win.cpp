@@ -61,33 +61,16 @@
 #include <direct.h>
 #include <winioctl.h>
 #include <objbase.h>
-#ifndef Q_OS_WINRT
-#  include <shlobj.h>
-#  include <shobjidl.h>
-#  include <shellapi.h>
-#  include <lm.h>
-#  include <accctrl.h>
-#endif
+#include <shlobj.h>
+#include <shobjidl.h>
+#include <shellapi.h>
+#include <lm.h>
+#include <accctrl.h>
 #include <initguid.h>
 #include <ctype.h>
 #include <limits.h>
-#ifndef Q_OS_WINRT
-#  define SECURITY_WIN32
-#  include <security.h>
-#else // !Q_OS_WINRT
-#  include "qstandardpaths.h"
-#  include "qthreadstorage.h"
-#  include <wrl.h>
-#  include <windows.foundation.h>
-#  include <windows.storage.h>
-#  include <Windows.ApplicationModel.h>
-
-using namespace Microsoft::WRL;
-using namespace Microsoft::WRL::Wrappers;
-using namespace ABI::Windows::Foundation;
-using namespace ABI::Windows::Storage;
-using namespace ABI::Windows::ApplicationModel;
-#endif // Q_OS_WINRT
+#define SECURITY_WIN32
+#include <security.h>
 
 #ifndef SPI_GETPLATFORMTYPE
 #define SPI_GETPLATFORMTYPE 257
@@ -153,11 +136,11 @@ typedef struct _REPARSE_DATA_BUFFER {
 #  define FSCTL_GET_REPARSE_POINT CTL_CODE(FILE_DEVICE_FILE_SYSTEM, 42, METHOD_BUFFERED, FILE_ANY_ACCESS)
 #endif
 
-#if defined(Q_OS_WINRT) || defined(QT_BOOTSTRAPPED)
+#if defined(QT_BOOTSTRAPPED)
 #  define QT_FEATURE_fslibs -1
 #else
 #  define QT_FEATURE_fslibs 1
-#endif // Q_OS_WINRT
+#endif // QT_BOOTSTRAPPED
 
 #if QT_CONFIG(fslibs)
 #include <aclapi.h>
@@ -291,7 +274,6 @@ static inline bool toFileTime(const QDateTime &date, FILETIME *fileTime)
 static QString readSymLink(const QFileSystemEntry &link)
 {
     QString result;
-#if !defined(Q_OS_WINRT)
     HANDLE handle = CreateFile((wchar_t*)link.nativeFilePath().utf16(),
                                FILE_READ_EA,
                                FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
@@ -346,9 +328,6 @@ static QString readSymLink(const QFileSystemEntry &link)
         }
 #endif // QT_CONFIG(fslibs)
     }
-#else
-    Q_UNUSED(link);
-#endif // Q_OS_WINRT
     return result;
 }
 
@@ -416,11 +395,7 @@ static inline bool getFindData(QString path, WIN32_FIND_DATA &findData)
 
     // can't handle drives
     if (!path.endsWith(QLatin1Char(':'))) {
-#ifndef Q_OS_WINRT
         HANDLE hFind = ::FindFirstFile((wchar_t*)path.utf16(), &findData);
-#else
-        HANDLE hFind = ::FindFirstFileEx((const wchar_t*)path.utf16(), FindExInfoStandard, &findData, FindExSearchNameMatch, NULL, 0);
-#endif
         if (hFind != INVALID_HANDLE_VALUE) {
             ::FindClose(hFind);
             return true;
@@ -531,7 +506,6 @@ private:
 bool QFileSystemEngine::uncListSharesOnServer(const QString &server, QStringList *list)
 {
     DWORD res = ERROR_NOT_SUPPORTED;
-#ifndef Q_OS_WINRT
     SHARE_INFO_1 *BufPtr, *p;
     DWORD er = 0, tr = 0, resume = 0, i;
     do {
@@ -546,10 +520,6 @@ bool QFileSystemEngine::uncListSharesOnServer(const QString &server, QStringList
         }
         NetApiBufferFree(BufPtr);
     } while (res == ERROR_MORE_DATA);
-#else
-    Q_UNUSED(server);
-    Q_UNUSED(list);
-#endif
     return res == ERROR_SUCCESS;
 }
 
@@ -615,16 +585,6 @@ QString QFileSystemEngine::nativeAbsoluteFilePath(const QString &path)
     }
     if (retLen != 0)
         absPath = QString::fromWCharArray(buf.data(), retLen);
-#  if defined(Q_OS_WINRT)
-    // Win32 returns eg C:/ as root directory with a trailing /.
-    // WinRT returns the sandbox root without /.
-    // Also C:/../.. returns C:/ on Win32, while for WinRT it steps outside the package
-    // and goes beyond package root. Hence force the engine to stay inside
-    // the package.
-    const QString rootPath = QDir::toNativeSeparators(QDir::rootPath());
-    if (absPath.size() < rootPath.size() && rootPath.startsWith(absPath))
-        absPath = rootPath;
-#  endif // Q_OS_WINRT
 
     // This is really ugly, but GetFullPathName strips off whitespace at the end.
     // If you for instance write ". " in the lineedit of QFileDialog,
@@ -652,7 +612,6 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
         ret = QDir::cleanPath(QDir::currentPath() + QLatin1Char('/') + entry.filePath());
     }
 
-#ifndef Q_OS_WINRT
     // The path should be absolute at this point.
     // From the docs :
     // Absolute paths begin with the directory separator "/"
@@ -665,7 +624,6 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
         // Force uppercase drive letters.
         ret[0] = ret.at(0).toUpper();
     }
-#endif // !Q_OS_WINRT
     return QFileSystemEntry(ret, QFileSystemEntry::FromInternalPath());
 }
 
@@ -681,7 +639,6 @@ typedef struct _FILE_ID_INFO {
 // File ID for Windows up to version 7 and FAT32 drives
 static inline QByteArray fileId(HANDLE handle)
 {
-#ifndef Q_OS_WINRT
     BY_HANDLE_FILE_INFORMATION info;
     if (GetFileInformationByHandle(handle, &info)) {
         char buffer[sizeof "01234567:0123456701234567"];
@@ -691,10 +648,6 @@ static inline QByteArray fileId(HANDLE handle)
                   info.nFileIndexLow);
         return buffer;
     }
-#else // !Q_OS_WINRT
-    Q_UNUSED(handle);
-    Q_UNIMPLEMENTED();
-#endif // Q_OS_WINRT
     return QByteArray();
 }
 
@@ -727,23 +680,10 @@ QByteArray QFileSystemEngine::id(const QFileSystemEntry &entry)
 
     QByteArray result;
 
-#ifndef Q_OS_WINRT
     const HANDLE handle =
         CreateFile((wchar_t*)entry.nativeFilePath().utf16(), 0,
                    FILE_SHARE_READ, NULL, OPEN_EXISTING,
                    FILE_FLAG_BACKUP_SEMANTICS, NULL);
-#else // !Q_OS_WINRT
-    CREATEFILE2_EXTENDED_PARAMETERS params;
-    params.dwSize = sizeof(params);
-    params.dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
-    params.dwFileFlags = FILE_FLAG_BACKUP_SEMANTICS;
-    params.dwSecurityQosFlags = SECURITY_ANONYMOUS;
-    params.lpSecurityAttributes = NULL;
-    params.hTemplateFile = NULL;
-    const HANDLE handle =
-        CreateFile2((const wchar_t*)entry.nativeFilePath().utf16(), 0,
-                    FILE_SHARE_READ, OPEN_EXISTING, &params);
-#endif // Q_OS_WINRT
     if (handle != INVALID_HANDLE_VALUE) {
         result = id(handle);
         CloseHandle(handle);
@@ -994,7 +934,6 @@ static bool tryDriveUNCFallback(const QFileSystemEntry &fname, QFileSystemMetaDa
 {
     bool entryExists = false;
     DWORD fileAttrib = 0;
-#if !defined(Q_OS_WINRT)
     if (fname.isDriveRoot()) {
         // a valid drive ??
         const UINT oldErrorMode = ::SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
@@ -1006,7 +945,6 @@ static bool tryDriveUNCFallback(const QFileSystemEntry &fname, QFileSystemMetaDa
             entryExists = true;
         }
     } else {
-#endif
         const QString &path = fname.nativeFilePath();
         bool is_dir = false;
         if (path.startsWith(QLatin1String("\\\\?\\UNC"))) {
@@ -1037,9 +975,7 @@ static bool tryDriveUNCFallback(const QFileSystemEntry &fname, QFileSystemMetaDa
             fileAttrib = FILE_ATTRIBUTE_DIRECTORY;
             entryExists = true;
         }
-#if !defined(Q_OS_WINRT)
     }
-#endif
     if (entryExists)
         data.fillFromFileAttribute(fileAttrib);
     return entryExists;
@@ -1078,34 +1014,12 @@ bool QFileSystemEngine::fillMetaData(HANDLE fHandle, QFileSystemMetaData &data,
 {
     data.entryFlags &= ~what;
     clearWinStatData(data);
-#ifndef Q_OS_WINRT
     BY_HANDLE_FILE_INFORMATION fileInfo;
     UINT oldmode = SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
     if (GetFileInformationByHandle(fHandle , &fileInfo)) {
         data.fillFromFindInfo(fileInfo);
     }
     SetErrorMode(oldmode);
-#else // !Q_OS_WINRT
-    FILE_BASIC_INFO fileBasicInfo;
-    if (GetFileInformationByHandleEx(fHandle, FileBasicInfo, &fileBasicInfo, sizeof(fileBasicInfo))) {
-        data.fillFromFileAttribute(fileBasicInfo.FileAttributes);
-        data.birthTime_.dwHighDateTime = fileBasicInfo.CreationTime.HighPart;
-        data.birthTime_.dwLowDateTime = fileBasicInfo.CreationTime.LowPart;
-        data.changeTime_.dwHighDateTime = fileBasicInfo.ChangeTime.HighPart;
-        data.changeTime_.dwLowDateTime = fileBasicInfo.ChangeTime.LowPart;
-        data.lastAccessTime_.dwHighDateTime = fileBasicInfo.LastAccessTime.HighPart;
-        data.lastAccessTime_.dwLowDateTime = fileBasicInfo.LastAccessTime.LowPart;
-        data.lastWriteTime_.dwHighDateTime = fileBasicInfo.LastWriteTime.HighPart;
-        data.lastWriteTime_.dwLowDateTime = fileBasicInfo.LastWriteTime.LowPart;
-        if (!(data.fileAttribute_ & FILE_ATTRIBUTE_DIRECTORY)) {
-            FILE_STANDARD_INFO fileStandardInfo;
-            if (GetFileInformationByHandleEx(fHandle, FileStandardInfo, &fileStandardInfo, sizeof(fileStandardInfo)))
-                data.size_ = fileStandardInfo.EndOfFile.QuadPart;
-        } else
-            data.size_ = 0;
-        data.knownFlagsMask |=  QFileSystemMetaData::Times | QFileSystemMetaData::SizeAttribute;
-    }
-#endif // Q_OS_WINRT
     return data.hasFlags(what);
 }
 
@@ -1138,9 +1052,7 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
     }
 
     if (what & QFileSystemMetaData::WinStatFlags) {
-#ifndef Q_OS_WINRT
         UINT oldmode = SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
-#endif
         clearWinStatData(data);
         WIN32_FIND_DATA findData;
         // The memory structure for WIN32_FIND_DATA is same as WIN32_FILE_ATTRIBUTE_DATA
@@ -1153,15 +1065,11 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
         } else {
             if (!tryFindFallback(fname, data))
                 if (!tryDriveUNCFallback(fname, data)) {
-#ifndef Q_OS_WINRT
                     SetErrorMode(oldmode);
-#endif
                     return false;
                 }
         }
-#ifndef Q_OS_WINRT
         SetErrorMode(oldmode);
-#endif
     }
 
     if (what & QFileSystemMetaData::Permissions)
@@ -1201,16 +1109,7 @@ static bool isDirPath(const QString &dirPath, bool *existed)
         path += QLatin1Char('\\');
 
     const QString longPath = QFSFileEnginePrivate::longFileName(path);
-#ifndef Q_OS_WINRT
     DWORD fileAttrib = ::GetFileAttributes(reinterpret_cast<const wchar_t*>(longPath.utf16()));
-#else // Q_OS_WINRT
-    DWORD fileAttrib = INVALID_FILE_ATTRIBUTES;
-    WIN32_FILE_ATTRIBUTE_DATA data;
-    if (::GetFileAttributesEx(reinterpret_cast<const wchar_t*>(longPath.utf16()),
-                              GetFileExInfoStandard, &data)) {
-        fileAttrib = data.dwFileAttributes;
-    }
-#endif // Q_OS_WINRT
     if (fileAttrib == INVALID_FILE_ATTRIBUTES) {
         int errorCode = GetLastError();
         if (errorCode == ERROR_ACCESS_DENIED || errorCode == ERROR_SHARING_VIOLATION) {
@@ -1314,36 +1213,10 @@ bool QFileSystemEngine::removeDirectory(const QFileSystemEntry &entry, bool remo
 //static
 QString QFileSystemEngine::rootPath()
 {
-#if defined(Q_OS_WINRT)
-    // We specify the package root as root directory
-    QString ret = QLatin1String("/");
-    // Get package location
-    ComPtr<IPackageStatics> statics;
-    if (FAILED(GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Package).Get(), &statics)))
-        return ret;
-    ComPtr<IPackage> package;
-    if (FAILED(statics->get_Current(&package)))
-        return ret;
-    ComPtr<IStorageFolder> installedLocation;
-    if (FAILED(package->get_InstalledLocation(&installedLocation)))
-        return ret;
-
-    ComPtr<IStorageItem> item;
-    if (FAILED(installedLocation.As(&item)))
-        return ret;
-
-    HString finalWinPath;
-    if (FAILED(item->get_Path(finalWinPath.GetAddressOf())))
-        return ret;
-
-    const QString qtWinPath = QDir::fromNativeSeparators(QString::fromWCharArray(finalWinPath.GetRawBuffer(nullptr)));
-    ret = qtWinPath.endsWith(QLatin1Char('/')) ? qtWinPath : qtWinPath + QLatin1Char('/');
-#else
     QString ret = QString::fromLatin1(qgetenv("SystemDrive"));
     if (ret.isEmpty())
         ret = QLatin1String("c:");
     ret.append(QLatin1Char('/'));
-#endif
     return ret;
 }
 
@@ -1391,7 +1264,6 @@ QString QFileSystemEngine::homePath()
 QString QFileSystemEngine::tempPath()
 {
     QString ret;
-#ifndef Q_OS_WINRT
     wchar_t tempPath[MAX_PATH];
     const DWORD len = GetTempPath(MAX_PATH, tempPath);
     if (len) { // GetTempPath() can return short names, expand.
@@ -1406,24 +1278,6 @@ QString QFileSystemEngine::tempPath()
             ret.chop(1);
         ret = QDir::fromNativeSeparators(ret);
     }
-#else // !Q_OS_WINRT
-    ComPtr<IApplicationDataStatics> applicationDataStatics;
-    if (FAILED(GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Storage_ApplicationData).Get(), &applicationDataStatics)))
-        return ret;
-    ComPtr<IApplicationData> applicationData;
-    if (FAILED(applicationDataStatics->get_Current(&applicationData)))
-        return ret;
-    ComPtr<IStorageFolder> tempFolder;
-    if (FAILED(applicationData->get_TemporaryFolder(&tempFolder)))
-        return ret;
-    ComPtr<IStorageItem> tempFolderItem;
-    if (FAILED(tempFolder.As(&tempFolderItem)))
-        return ret;
-    HString path;
-    if (FAILED(tempFolderItem->get_Path(path.GetAddressOf())))
-        return ret;
-    ret = QDir::fromNativeSeparators(QString::fromWCharArray(path.GetRawBuffer(nullptr)));
-#endif // Q_OS_WINRT
     if (ret.isEmpty()) {
         ret = QLatin1String("C:/tmp");
     } else if (ret.length() >= 2 && ret[1] == QLatin1Char(':'))
@@ -1478,17 +1332,8 @@ bool QFileSystemEngine::createLink(const QFileSystemEntry &source, const QFileSy
 //static
 bool QFileSystemEngine::copyFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error)
 {
-#ifndef Q_OS_WINRT
     bool ret = ::CopyFile((wchar_t*)source.nativeFilePath().utf16(),
                           (wchar_t*)target.nativeFilePath().utf16(), true) != 0;
-#else // !Q_OS_WINRT
-    COPYFILE2_EXTENDED_PARAMETERS copyParams = {
-        sizeof(copyParams), COPY_FILE_FAIL_IF_EXISTS, NULL, NULL, NULL
-    };
-    HRESULT hres = ::CopyFile2((const wchar_t*)source.nativeFilePath().utf16(),
-                           (const wchar_t*)target.nativeFilePath().utf16(), &copyParams);
-    bool ret = SUCCEEDED(hres);
-#endif // Q_OS_WINRT
     if(!ret)
         error = QSystemError(::GetLastError(), QSystemError::NativeError);
     return ret;
@@ -1500,13 +1345,8 @@ bool QFileSystemEngine::renameFile(const QFileSystemEntry &source, const QFileSy
     Q_CHECK_FILE_NAME(source, false);
     Q_CHECK_FILE_NAME(target, false);
 
-#ifndef Q_OS_WINRT
     bool ret = ::MoveFile((wchar_t*)source.nativeFilePath().utf16(),
                           (wchar_t*)target.nativeFilePath().utf16()) != 0;
-#else // !Q_OS_WINRT
-    bool ret = ::MoveFileEx((const wchar_t*)source.nativeFilePath().utf16(),
-                            (const wchar_t*)target.nativeFilePath().utf16(), 0) != 0;
-#endif // Q_OS_WINRT
     if(!ret)
         error = QSystemError(::GetLastError(), QSystemError::NativeError);
     return ret;
@@ -1547,7 +1387,6 @@ bool QFileSystemEngine::removeFile(const QFileSystemEntry &entry, QSystemError &
 bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
                                         QFileSystemEntry &newLocation, QSystemError &error)
 {
-#ifndef Q_OS_WINRT
     // we need the "display name" of the file, so can't use nativeAbsoluteFilePath
     const QString sourcePath = QDir::toNativeSeparators(absoluteName(source).filePath());
 
@@ -1626,12 +1465,6 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
     }
     return true;
 
-#else // Q_OS_WINRT
-    Q_UNUSED(source);
-    Q_UNUSED(newLocation);
-    Q_UNUSED(error);
-    return false;
-#endif
 }
 
 //static

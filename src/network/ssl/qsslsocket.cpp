@@ -456,9 +456,6 @@
 #ifndef QT_NO_OPENSSL
 #include "qsslsocket_openssl_p.h"
 #endif
-#ifdef Q_OS_WINRT
-#include "qsslsocket_winrt_p.h"
-#endif
 #ifdef QT_SECURETRANSPORT
 #include "qsslsocket_mac_p.h"
 #endif

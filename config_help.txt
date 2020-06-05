@@ -117,7 +117,7 @@ Build options:
   -appstore-compliant .. Disable code that is not allowed in platform app stores.
                          This is on by default for platforms which require distribution
                          through an app store by default, in particular Android,
-                         iOS, tvOS, watchOS, and Universal Windows Platform. [auto]
+                         iOS, tvOS, and watchOS. [auto]
 
   -qtnamespace <name> .. Wrap all Qt library code in 'namespace <name> {...}'.
   -qtlibinfix <infix> .. Rename all libQt5*.so to libQt5*<infix>.so.
@@ -254,7 +254,7 @@ Core options:
 Network options:
 
   -ssl ................. Enable either SSL support method [auto]
-  -no-openssl .......... Do not use OpenSSL [default on Apple and WinRT]
+  -no-openssl .......... Do not use OpenSSL [default on Apple]
   -openssl-linked ...... Use OpenSSL and link to libssl [no]
   -openssl-runtime ..... Use OpenSSL and dynamically load libssl [auto]
   -schannel ............ Use Secure Channel [no] (Windows only)

@@ -32,12 +32,7 @@ extend_target(qtLibraryTarget$$TARGET$$QT_LIBINFIX CONDITION mingw
         QT_NEEDS_QMAIN
 )
 
-extend_target(qtLibraryTarget$$TARGET$$QT_LIBINFIX CONDITION WINRT
-    SOURCES
-        qtmain_winrt.cpp
-)
-
-extend_target(qtLibraryTarget$$TARGET$$QT_LIBINFIX CONDITION NOT WINRT
+extend_target(qtLibraryTarget$$TARGET$$QT_LIBINFIX
     SOURCES
         qtmain_win.cpp
     LIBRARIES

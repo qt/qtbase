@@ -26,8 +26,8 @@ qtHaveModule(dbus):!cross_compile:!boot2qt {
     }
 }
 qtHaveModule(gui): SUBDIRS += gui
-qtHaveModule(network):!winrt: SUBDIRS += network
-qtHaveModule(opengl):!winrt: SUBDIRS += opengl
+qtHaveModule(network): SUBDIRS += network
+qtHaveModule(opengl): SUBDIRS += opengl
 qtHaveModule(printsupport): SUBDIRS += printsupport
 qtHaveModule(sql): SUBDIRS += sql
 qtHaveModule(widgets): SUBDIRS += widgets

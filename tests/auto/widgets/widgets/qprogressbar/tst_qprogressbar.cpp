@@ -255,9 +255,6 @@ void tst_QProgressBar::setMinMaxRepaint()
     pbar.repainted = false;
     pbar.setMinimum(0);
     QTest::qWait(50);
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "Broken on WinRT - QTBUG-68297", Abort);
-#endif
     QTRY_VERIFY(!pbar.repainted);
 
     // No repaint when setting maximum to the current maximum

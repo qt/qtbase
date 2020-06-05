@@ -340,14 +340,7 @@ bool tst_QFileSystemModel::createFiles(QFileSystemModel *model, const QString &t
         if (initial_file[0] == '.') {
             const QString hiddenFile = QDir::toNativeSeparators(file.fileName());
             const auto nativeHiddenFile = reinterpret_cast<const wchar_t *>(hiddenFile.utf16());
-#ifndef Q_OS_WINRT
             DWORD currentAttributes = ::GetFileAttributes(nativeHiddenFile);
-#else // !Q_OS_WINRT
-            WIN32_FILE_ATTRIBUTE_DATA attributeData;
-            if (!::GetFileAttributesEx(nativeHiddenFile, GetFileExInfoStandard, &attributeData))
-                attributeData.dwFileAttributes = 0xFFFFFFFF;
-            DWORD currentAttributes = attributeData.dwFileAttributes;
-#endif // Q_OS_WINRT
             if (currentAttributes == 0xFFFFFFFF) {
                 qErrnoWarning("failed to get file attributes: %s", qPrintable(hiddenFile));
                 return false;

@@ -125,7 +125,7 @@ private slots:
     void scrollBarAsNeeded();
     void moveItems();
     void wordWrap();
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
     void setCurrentIndexAfterAppendRowCrash();
 #endif
     void emptyItemSize();
@@ -1415,13 +1415,10 @@ void tst_QListView::wordWrap()
     lv.showNormal();
 
     QTRY_COMPARE(lv.horizontalScrollBar()->isVisible(), false);
-#ifdef Q_OS_WINRT
-QSKIP("setFixedSize does not work on WinRT. Vertical scroll bar will not be visible.");
-#endif
     QTRY_COMPARE(lv.verticalScrollBar()->isVisible(), true);
 }
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
 class SetCurrentIndexAfterAppendRowCrashDialog : public QDialog
 {
     Q_OBJECT
@@ -1473,7 +1470,7 @@ void tst_QListView::setCurrentIndexAfterAppendRowCrash()
     SetCurrentIndexAfterAppendRowCrashDialog w;
     w.exec();
 }
-#endif // Q_OS_WIN && !Q_OS_WINRT
+#endif // Q_OS_WIN
 
 void tst_QListView::emptyItemSize()
 {
@@ -2058,9 +2055,6 @@ void tst_QListView::taskQTBUG_21115_scrollToAndHiddenItems_data()
 void tst_QListView::taskQTBUG_21115_scrollToAndHiddenItems()
 {
     QFETCH(QListView::Flow, flow);
-#ifdef Q_OS_WINRT
-    QSKIP("Fails on WinRT - QTBUG-68297");
-#endif
 
     ScrollPerItemListView lv;
     lv.setUniformItemSizes(true);
@@ -2253,9 +2247,6 @@ void tst_QListView::testScrollToWithHidden()
 
     lv.scrollTo(model.index(26, 0));
     int expectedScrollBarValue = lv.verticalScrollBar()->value();
-#ifdef Q_OS_WINRT
-    QSKIP("Might fail on WinRT - QTBUG-68297");
-#endif
     QVERIFY(expectedScrollBarValue != 0);
 
     lv.scrollTo(model.index(25, 0));

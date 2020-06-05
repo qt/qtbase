@@ -29,14 +29,14 @@ add_qt_manual_test(foreignwindows
 ## Scopes:
 #####################################################################
 
-extend_target(foreignwindows CONDITION WIN32 AND NOT WINRT
+extend_target(foreignwindows CONDITION WIN32
     SOURCES
         ../diaglib/nativewindowdump_win.cpp
     PUBLIC_LIBRARIES
         user32
 )
 
-extend_target(foreignwindows CONDITION UNIX OR WINRT
+extend_target(foreignwindows CONDITION UNIX
     SOURCES
         ../diaglib/nativewindowdump.cpp
 )

@@ -68,9 +68,6 @@ win32:!qtConfig(private_tests): SUBDIRS -= \
 !qtConfig(settings): SUBDIRS -= \
     qsettings
 
-winrt: SUBDIRS -= \
-    qstorageinfo
-
 android: SUBDIRS -= \
     qprocess \
     qdir \

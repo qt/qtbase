@@ -13,5 +13,5 @@ SUBDIRS=\
     qglobalstatic \
     qhooks
 
-win32:!winrt: SUBDIRS += \
+win32: SUBDIRS += \
     qwinregistry

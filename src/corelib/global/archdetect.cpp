@@ -95,7 +95,7 @@
 #endif
 
 // pointer type
-#if defined(Q_OS_WIN64) || (defined(Q_OS_WINRT) && defined(_M_X64))
+#if defined(Q_OS_WIN64)
 #  define ARCH_POINTER "llp64"
 #elif defined(__LP64__) || QT_POINTER_SIZE - 0 == 8
 #  define ARCH_POINTER "lp64"

@@ -226,10 +226,6 @@ static bool isDefaultCategory(const char *category)
 */
 static bool systemHasStderr()
 {
-#if defined(Q_OS_WINRT)
-    return false; // WinRT has no stderr
-#endif
-
     return true;
 }
 
@@ -268,7 +264,7 @@ static bool stderrHasConsoleAttached()
         if (qEnvironmentVariableIntValue("QT_ASSUME_STDERR_HAS_CONSOLE"))
             return true;
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
         return GetConsoleWindow();
 #elif defined(Q_OS_UNIX)
 #       ifndef _PATH_TTY
@@ -1851,10 +1847,7 @@ static void qt_message_print(QtMsgType msgType, const QMessageLogContext &contex
 
 static void qt_message_print(const QString &message)
 {
-#if defined(Q_OS_WINRT)
-    win_outputDebugString_helper(message);
-    return;
-#elif defined(Q_OS_WIN) && !defined(QT_BOOTSTRAPPED)
+#if defined(Q_OS_WIN) && !defined(QT_BOOTSTRAPPED)
     if (!shouldLogToStderr()) {
         win_outputDebugString_helper(message);
         return;

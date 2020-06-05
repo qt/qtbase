@@ -167,16 +167,6 @@ void QFileSystemEntry::resolveNativeFilePath() const
 #else
         m_nativeFilePath = QFile::encodeName(QDir::toNativeSeparators(m_filePath));
 #endif
-#ifdef Q_OS_WINRT
-        while (m_nativeFilePath.startsWith(QLatin1Char('\\')))
-            m_nativeFilePath.remove(0,1);
-        if (m_nativeFilePath.isEmpty())
-            m_nativeFilePath.append(QLatin1Char('.'));
-        // WinRT/MSVC2015 allows a maximum of 256 characters for a filepath
-        // unless //?/ is prepended which extends the rule to have a maximum
-        // of 256 characters in the filename plus the preprending path
-        m_nativeFilePath.prepend("\\\\?\\");
-#endif
     }
 }
 
@@ -302,13 +292,9 @@ bool QFileSystemEntry::isDriveRoot() const
 
 bool QFileSystemEntry::isDriveRootPath(const QString &path)
 {
-#ifndef Q_OS_WINRT
     return (path.length() == 3
            && path.at(0).isLetter() && path.at(1) == QLatin1Char(':')
            && path.at(2) == QLatin1Char('/'));
-#else // !Q_OS_WINRT
-    return path == QDir::rootPath();
-#endif // !Q_OS_WINRT
 }
 #endif // Q_OS_WIN
 

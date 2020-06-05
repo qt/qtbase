@@ -16,11 +16,7 @@ qt_add_module(WinMain
 
 set_property(TARGET WinMain PROPERTY OUTPUT_NAME qtmain)
 
-qt_extend_target(WinMain CONDITION WINRT
-    SOURCES qtmain_winrt.cpp
-)
-
-qt_extend_target(WinMain CONDITION NOT WINRT
+qt_extend_target(WinMain CONDITION
     SOURCES qtmain_win.cpp
     LIBRARIES shell32
 )

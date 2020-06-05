@@ -41,7 +41,7 @@ class qfileinfo : public QObject
 private slots:
     void existsTemporary();
     void existsStatic();
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
     void symLinkTargetPerformanceLNK();
     void symLinkTargetPerformanceMounpoint();
 #endif
@@ -71,7 +71,7 @@ void qfileinfo::existsStatic()
     QBENCHMARK { QFileInfo::exists(appPath); }
 }
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
 void qfileinfo::symLinkTargetPerformanceLNK()
 {
     QVERIFY(QFile::link("file","link.lnk"));

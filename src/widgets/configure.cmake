@@ -32,7 +32,7 @@ qt_feature("style-windows" PRIVATE
 )
 qt_feature("style-windowsvista" PRIVATE
     LABEL "WindowsVista"
-    CONDITION QT_FEATURE_style_windows AND QT_FEATURE_animation AND WIN32 AND NOT WINRT
+    CONDITION QT_FEATURE_style_windows AND QT_FEATURE_animation AND WIN32
 )
 qt_feature("style-android" PRIVATE
     LABEL "Android"

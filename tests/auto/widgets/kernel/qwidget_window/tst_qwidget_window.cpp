@@ -192,9 +192,6 @@ void tst_QWidget_window::tst_move_show()
     const QPoint pos(100, 100);
     w.move(pos);
     w.show();
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "Winrt does not support move", Abort);
-#endif
     QVERIFY2(qFuzzyCompareWindowPosition(w.pos(), pos, m_fuzz),
              qPrintable(msgPointMismatch(w.pos(), pos)));
 }
@@ -226,9 +223,6 @@ void tst_QWidget_window::tst_resize_show()
     QWidget w;
     w.resize(m_testWidgetSize);
     w.show();
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "Winrt does not support resize", Abort);
-#endif
     QCOMPARE(w.size(), m_testWidgetSize);
 }
 
@@ -418,8 +412,7 @@ void tst_QWidget_window::tst_exposeObscuredMapped_QTBUG39220()
 
     const auto integration = QGuiApplicationPrivate::platformIntegration();
     if (!integration->hasCapability(QPlatformIntegration::MultipleWindows)
-        || !integration->hasCapability(QPlatformIntegration::NonFullScreenWindows)
-        || QGuiApplication::platformName() == QLatin1String("winrt")) {
+        || !integration->hasCapability(QPlatformIntegration::NonFullScreenWindows)) {
         QSKIP("The platform does not have the required capabilities");
     }
     // QTBUG-39220: Fully obscured parent widgets may not receive expose
@@ -631,9 +624,6 @@ void tst_QWidget_window::tst_dnd()
     QWidget *dropsAcceptingWidget3 = new DnDEventLoggerWidget(&log, &dndTestWidget, true);
     dropsAcceptingWidget3->setAcceptDrops(true);
     dropsAcceptingWidget3->setObjectName(QLatin1String("acceptingDropsWidget3"));
-    // 260 + 40 = 300 = widget size, must not be more than that.
-    // otherwise it will break WinRT because there the tlw is maximized every time
-    // and this window will receive one more event
     dropsAcceptingWidget3->resize(180, 40);
     dropsAcceptingWidget3->move(10, 260);
 
@@ -994,9 +984,6 @@ void tst_QWidget_window::tst_resize_count()
         resize.setWindowFlags(Qt::X11BypassWindowManagerHint);
         resize.show();
         QVERIFY(QTest::qWaitForWindowExposed(&resize));
-#ifdef Q_OS_WINRT
-        QEXPECT_FAIL("", "Winrt does not support resize", Abort);
-#endif
         QCOMPARE(resize.resizeCount, 1);
         resize.resizeCount = 0;
         QSize size = resize.size();
@@ -1274,11 +1261,6 @@ void tst_QWidget_window::setWindowState()
     w.setWindowState(state);
     QCOMPARE(w.windowState(), state);
     w.show();
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("0", "Winrt windows are maximized by default", Abort);
-    QEXPECT_FAIL("Qt::WindowMinimized", "Winrt windows are maximized by default", Abort);
-    QEXPECT_FAIL("Qt::WindowFullScreen", "Winrt windows are maximized by default", Abort);
-#endif
     QCOMPARE(w.windowState(), state);
     QCOMPARE(w.windowHandle()->windowStates(), state);
     if (!(state & Qt::WindowMinimized))

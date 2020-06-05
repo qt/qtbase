@@ -557,9 +557,6 @@
 #if defined(WIN32) || defined(_Windows) || defined(_WINDOWS) || \
     defined(_WIN32) || defined(__WIN32__)
 #  include <windows.h>  /* defines _WINDOWS_ macro */
-#  if defined(WINAPI_FAMILY) && (WINAPI_FAMILY==WINAPI_FAMILY_APP || WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP)
-#    define _WINRT_ /* Define a macro for Windows Runtime builds */
-#  endif
 #endif
 #endif /* PNG_VERSION_INFO_ONLY */
 
@@ -570,7 +567,7 @@
 
 /* Memory model/platform independent fns */
 #ifndef PNG_ABORT
-#  if (defined(_WINDOWS_) || defined(_WIN32_WCE)) && !defined(_WINRT_)
+#  if (defined(_WINDOWS_) || defined(_WIN32_WCE))
 #    define PNG_ABORT() ExitProcess(0)
 #  else
 #    define PNG_ABORT() abort()

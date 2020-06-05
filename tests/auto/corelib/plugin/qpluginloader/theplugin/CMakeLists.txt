@@ -19,13 +19,4 @@ add_cmake_library(theplugin
 # TEMPLATE = "lib"
 # target.path = "$$[QT_INSTALL_TESTS]/tst_qpluginloader/bin"
 
-## Scopes:
-#####################################################################
-
-#### Keys ignored in scope 5:.:..:../winrt.pri:(CMAKE_BUILD_TYPE STREQUAL Debug):
-# DESTDIR = "../debug/bin"
-
-#### Keys ignored in scope 6:.:..:../winrt.pri:else:
-# DESTDIR = "../release/bin"
-
 qt_autogen_tools_initial_setup(theplugin)

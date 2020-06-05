@@ -104,9 +104,6 @@ void tst_QIODevice::getSetCheck()
 //----------------------------------------------------------------------------------
 void tst_QIODevice::constructing_QTcpSocket()
 {
-#if defined(Q_OS_WINRT)
-    QSKIP("Synchronous socket calls are broken on winrt. See QTBUG-40922");
-#endif
     if (!QtNetworkSettings::verifyTestNetworkSettings())
         QSKIP("No network test server available");
 
@@ -263,9 +260,6 @@ void tst_QIODevice::unget()
     buffer.ungetChar('Q');
     QCOMPARE(buffer.readLine(buf, 3), qint64(1));
 
-#if defined(Q_OS_WINRT)
-    QSKIP("Synchronous socket calls are broken on winrt. See QTBUG-40922");
-#endif
     for (int i = 0; i < 2; ++i) {
         QTcpSocket socket;
         QIODevice *dev;

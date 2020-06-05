@@ -43,10 +43,8 @@ qtConfig(sctp) {
                 socket/qsctpsocket.cpp
 }
 
-!winrt {
-    SOURCES += socket/qnativesocketengine.cpp
-    HEADERS += socket/qnativesocketengine_p.h
-}
+SOURCES += socket/qnativesocketengine.cpp
+HEADERS += socket/qnativesocketengine_p.h
 
 unix {
     SOURCES += socket/qnativesocketengine_unix.cpp
@@ -57,13 +55,8 @@ unix {
 # invalid C/C++ code otherwise.
 msvc: QMAKE_MOC_OPTIONS += -D_WINSOCK_DEPRECATED_NO_WARNINGS
 
-win32:!winrt:SOURCES += socket/qnativesocketengine_win.cpp
-win32:!winrt: QMAKE_USE_PRIVATE += advapi32
-
-winrt {
-    SOURCES += socket/qnativesocketengine_winrt.cpp
-    HEADERS += socket/qnativesocketengine_winrt_p.h
-}
+win32: SOURCES += socket/qnativesocketengine_win.cpp
+win32: QMAKE_USE_PRIVATE += advapi32
 
 qtConfig(localserver) {
     HEADERS += socket/qlocalserver.h \
@@ -73,7 +66,7 @@ qtConfig(localserver) {
     SOURCES += socket/qlocalsocket.cpp \
                socket/qlocalserver.cpp
 
-    integrity|winrt {
+    integrity {
         SOURCES += socket/qlocalsocket_tcp.cpp \
                    socket/qlocalserver_tcp.cpp
         DEFINES += QT_LOCALSOCKET_TCP

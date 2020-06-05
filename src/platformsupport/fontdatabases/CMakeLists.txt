@@ -47,7 +47,7 @@ if(TARGET WrapFreetype::WrapFreetype)
 endif()
 # special case end
 
-qt_extend_target(FontDatabaseSupport CONDITION WIN32 AND NOT WINRT
+qt_extend_target(FontDatabaseSupport CONDITION WIN32
     SOURCES
         windows/qwindowsfontdatabase.cpp windows/qwindowsfontdatabase_p.h
         windows/qwindowsfontdatabasebase.cpp windows/qwindowsfontdatabasebase_p.h
@@ -62,21 +62,21 @@ qt_extend_target(FontDatabaseSupport CONDITION WIN32 AND NOT WINRT
         Qt::GuiPrivate
 )
 
-qt_extend_target(FontDatabaseSupport CONDITION QT_FEATURE_freetype AND WIN32 AND NOT WINRT
+qt_extend_target(FontDatabaseSupport CONDITION QT_FEATURE_freetype AND WIN32
     SOURCES
         windows/qwindowsfontdatabase_ft.cpp windows/qwindowsfontdatabase_ft_p.h
     LIBRARIES
         WrapFreetype::WrapFreetype
 )
 
-qt_extend_target(FontDatabaseSupport CONDITION QT_FEATURE_direct2d AND QT_FEATURE_directwrite AND WIN32 AND NOT WINRT
+qt_extend_target(FontDatabaseSupport CONDITION QT_FEATURE_direct2d AND QT_FEATURE_directwrite AND WIN32
     SOURCES
         windows/qwindowsfontenginedirectwrite.cpp windows/qwindowsfontenginedirectwrite_p.h
     LIBRARIES
         d2d1
 )
 
-qt_extend_target(FontDatabaseSupport CONDITION QT_FEATURE_direct2d AND QT_FEATURE_directwrite AND QT_FEATURE_directwrite3 AND WIN32 AND NOT WINRT
+qt_extend_target(FontDatabaseSupport CONDITION QT_FEATURE_direct2d AND QT_FEATURE_directwrite AND QT_FEATURE_directwrite3 AND WIN32
     SOURCES
         windows/qwindowsdirectwritefontdatabase.cpp windows/qwindowsdirectwritefontdatabase_p.h
     DEFINES
@@ -86,36 +86,24 @@ qt_extend_target(FontDatabaseSupport CONDITION QT_FEATURE_direct2d AND QT_FEATUR
         dwrite_3
 )
 
-qt_extend_target(FontDatabaseSupport CONDITION QT_FEATURE_direct2d AND QT_FEATURE_directwrite AND QT_FEATURE_directwrite2 AND WIN32 AND NOT QT_FEATURE_directwrite3 AND NOT WINRT
+qt_extend_target(FontDatabaseSupport CONDITION QT_FEATURE_direct2d AND QT_FEATURE_directwrite AND QT_FEATURE_directwrite2 AND WIN32 AND NOT QT_FEATURE_directwrite3
     DEFINES
         QT_USE_DIRECTWRITE2
     LIBRARIES
         dwrite_2
 )
 
-qt_extend_target(FontDatabaseSupport CONDITION QT_FEATURE_direct2d AND QT_FEATURE_directwrite AND WIN32 AND NOT QT_FEATURE_directwrite2 AND NOT QT_FEATURE_directwrite3 AND NOT WINRT
+qt_extend_target(FontDatabaseSupport CONDITION QT_FEATURE_direct2d AND QT_FEATURE_directwrite AND WIN32 AND NOT QT_FEATURE_directwrite2 AND NOT QT_FEATURE_directwrite3
     LIBRARIES
         dwrite
 )
 
-qt_extend_target(FontDatabaseSupport CONDITION WIN32 AND NOT WINRT AND (NOT QT_FEATURE_direct2d OR NOT QT_FEATURE_directwrite)
+qt_extend_target(FontDatabaseSupport CONDITION WIN32 AND (NOT QT_FEATURE_direct2d OR NOT QT_FEATURE_directwrite)
     DEFINES
         QT_NO_DIRECTWRITE
 )
 
-qt_extend_target(FontDatabaseSupport CONDITION MINGW AND WIN32 AND NOT WINRT
+qt_extend_target(FontDatabaseSupport CONDITION MINGW AND WIN32
     LIBRARIES
         uuid
-)
-
-qt_extend_target(FontDatabaseSupport CONDITION WINRT
-    SOURCES
-        winrt/qwinrtfontdatabase.cpp winrt/qwinrtfontdatabase_p.h
-    DEFINES
-        __WRL_NO_DEFAULT_LIB__
-    LIBRARIES
-        dwrite_1
-        ws2_32
-    PUBLIC_LIBRARIES
-        Qt::GuiPrivate
 )

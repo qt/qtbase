@@ -70,7 +70,7 @@ public:
 private slots:
     void initTestCase();
     void cleanupTestCase();
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
     void windowsDefaultLocale();
 #endif
 #ifdef Q_OS_MAC
@@ -2016,7 +2016,7 @@ void tst_QLocale::macDefaultLocale()
 }
 #endif // Q_OS_MAC
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
 #include <qt_windows.h>
 
 static QString getWinLocaleInfo(LCTYPE type)
@@ -2126,7 +2126,7 @@ void tst_QLocale::windowsDefaultLocale()
     QCOMPARE(locale.toString(QDateTime(QDate(1974, 12, 1), QTime(1,2,3)), QLocale::LongFormat),
              QStringLiteral("1@12@1974 ") + expectedFormattedLongTime);
 }
-#endif // Q_OS_WIN but !Q_OS_WINRT
+#endif // Q_OS_WIN
 
 void tst_QLocale::numberOptions()
 {

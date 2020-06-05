@@ -2596,9 +2596,6 @@ void tst_QWizard::task161658_alignments()
 
 void tst_QWizard::task177022_setFixedSize()
 {
-#ifdef Q_OS_WINRT
-    QSKIP("Widgets cannot have a fixed size on WinRT.");
-#endif
     int width = 300;
     int height = 200;
     QWizard wiz;

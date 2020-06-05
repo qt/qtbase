@@ -62,16 +62,10 @@ android:qtConfig(dnslookup) {
 }
 
 win32: {
-    SOURCES += kernel/qhostinfo_win.cpp
-
-    !winrt {
-        SOURCES += kernel/qnetworkinterface_win.cpp
-        qtConfig(dnslookup): SOURCES += kernel/qdnslookup_win.cpp
-        LIBS_PRIVATE += -ldnsapi -liphlpapi
-    } else {
-        SOURCES += kernel/qnetworkinterface_winrt.cpp
-        qtConfig(dnslookup): SOURCES += kernel/qdnslookup_winrt.cpp
-    }
+    SOURCES += kernel/qhostinfo_win.cpp \
+               kernel/qnetworkinterface_win.cpp
+    qtConfig(dnslookup): SOURCES += kernel/qdnslookup_win.cpp
+    LIBS_PRIVATE += -ldnsapi -liphlpapi
 }
 
 mac {
@@ -94,7 +88,7 @@ qtConfig(gssapi): QMAKE_USE_PRIVATE += gssapi
 
 uikit:HEADERS += kernel/qnetworkinterface_uikit_p.h
 osx:SOURCES += kernel/qnetworkproxy_mac.cpp
-else:win32:!winrt: SOURCES += kernel/qnetworkproxy_win.cpp
+else:win32: SOURCES += kernel/qnetworkproxy_win.cpp
 else: qtConfig(libproxy) {
     SOURCES += kernel/qnetworkproxy_libproxy.cpp
     QMAKE_USE_PRIVATE += libproxy libdl

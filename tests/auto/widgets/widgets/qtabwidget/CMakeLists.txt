@@ -18,7 +18,7 @@ add_qt_test(tst_qtabwidget
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qtabwidget CONDITION WIN32 AND NOT WINRT
+extend_target(tst_qtabwidget CONDITION WIN32
     PUBLIC_LIBRARIES
         user32
 )

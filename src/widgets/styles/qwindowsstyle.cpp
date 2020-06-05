@@ -267,7 +267,7 @@ void QWindowsStyle::polish(QApplication *app)
     d->inactiveCaptionColor = d->inactiveGradientCaptionColor;
     d->inactiveCaptionText = palette.window().color();
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT) //fetch native title bar colors
+#if defined(Q_OS_WIN) //fetch native title bar colors
     if(app->desktopSettingsAware()){
         DWORD activeCaption = GetSysColor(COLOR_ACTIVECAPTION);
         DWORD gradientActiveCaption = GetSysColor(COLOR_GRADIENTACTIVECAPTION);
@@ -312,7 +312,7 @@ void QWindowsStyle::polish(QPalette &pal)
 
 int QWindowsStylePrivate::pixelMetricFromSystemDp(QStyle::PixelMetric pm, const QStyleOption *, const QWidget *widget)
 {
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
     switch (pm) {
     case QStyle::PM_DockWidgetFrameWidth:
         return GetSystemMetrics(SM_CXFRAME);
@@ -339,7 +339,7 @@ int QWindowsStylePrivate::pixelMetricFromSystemDp(QStyle::PixelMetric pm, const 
     default:
         break;
     }
-#else // Q_OS_WIN && !Q_OS_WINRT
+#else // Q_OS_WIN
     Q_UNUSED(pm);
     Q_UNUSED(widget);
 #endif
@@ -498,7 +498,7 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
 QPixmap QWindowsStyle::standardPixmap(StandardPixmap standardPixmap, const QStyleOption *opt,
                                       const QWidget *widget) const
 {
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
     QPixmap desktopIcon;
     switch(standardPixmap) {
     case SP_DriveCDIcon:
@@ -537,7 +537,7 @@ QPixmap QWindowsStyle::standardPixmap(StandardPixmap standardPixmap, const QStyl
     if (!desktopIcon.isNull()) {
         return desktopIcon;
     }
-#endif // Q_OS_WIN && !Q_OS_WINRT
+#endif // Q_OS_WIN
     return QCommonStyle::standardPixmap(standardPixmap, opt, widget);
 }
 
@@ -577,7 +577,7 @@ int QWindowsStyle::styleHint(StyleHint hint, const QStyleOption *opt, const QWid
         ret = 0;
         break;
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT) // Option not used on WinRT -> common style
+#if defined(Q_OS_WIN)
     case SH_UnderlineShortcut:
     {
         ret = 1;
@@ -613,15 +613,15 @@ int QWindowsStyle::styleHint(StyleHint hint, const QStyleOption *opt, const QWid
 #endif // QT_NO_ACCESSIBILITY
         break;
     }
-#endif // Q_OS_WIN && !Q_OS_WINRT
+#endif // Q_OS_WIN
     case SH_Menu_SubMenuSloppyCloseTimeout:
     case SH_Menu_SubMenuPopupDelay: {
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
         DWORD delay;
         if (SystemParametersInfo(SPI_GETMENUSHOWDELAY, 0, &delay, 0))
             ret = delay;
         else
-#endif // Q_OS_WIN && !Q_OS_WINRT
+#endif // Q_OS_WIN
             ret = 400;
         break;
     }

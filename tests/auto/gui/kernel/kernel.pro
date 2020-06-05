@@ -31,7 +31,7 @@ SUBDIRS=\
    qrasterwindow \
    qaddpostroutine
 
-win32:!winrt:qtHaveModule(network): SUBDIRS += noqteventloop
+win32:qtHaveModule(network): SUBDIRS += noqteventloop
 
 !qtConfig(shortcut): SUBDIRS -= \
    qkeysequence \

@@ -45,7 +45,7 @@
 #include <qhash.h>
 #include <qvector.h>
 #include <qdebug.h>
-#if defined(Q_OS_WIN) && !defined(QT_BOOTSTRAPPED) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(QT_BOOTSTRAPPED)
 #  include <qt_windows.h>
 #endif
 #include <stdio.h>
@@ -542,7 +542,7 @@ QString QCommandLineParser::errorText() const
 
 enum MessageType { UsageMessage, ErrorMessage };
 
-#if defined(Q_OS_WIN) && !defined(QT_BOOTSTRAPPED) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(QT_BOOTSTRAPPED)
 // Return whether to use a message box. Use handles if a console can be obtained
 // or we are run with redirected handles (for example, by QProcess).
 static inline bool displayMessageBox()
@@ -554,17 +554,11 @@ static inline bool displayMessageBox()
     GetStartupInfo(&startupInfo);
     return !(startupInfo.dwFlags & STARTF_USESTDHANDLES);
 }
-#endif // Q_OS_WIN && !QT_BOOTSTRAPPED && !Q_OS_WIN && !Q_OS_WINRT
+#endif // Q_OS_WIN && !QT_BOOTSTRAPPED
 
 static void showParserMessage(const QString &message, MessageType type)
 {
-#if defined(Q_OS_WINRT)
-    if (type == UsageMessage)
-        qInfo("%ls", qUtf16Printable(message));
-    else
-        qCritical("%ls", qUtf16Printable(message));
-    return;
-#elif defined(Q_OS_WIN) && !defined(QT_BOOTSTRAPPED)
+#if defined(Q_OS_WIN) && !defined(QT_BOOTSTRAPPED)
     if (displayMessageBox()) {
         const UINT flags = MB_OK | MB_TOPMOST | MB_SETFOREGROUND
             | (type == UsageMessage ? MB_ICONINFORMATION : MB_ICONERROR);

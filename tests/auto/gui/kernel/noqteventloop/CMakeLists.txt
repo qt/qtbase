@@ -17,7 +17,7 @@ add_qt_test(tst_noqteventloop
 ## Scopes:
 #####################################################################
 
-extend_target(tst_noqteventloop CONDITION QT_FEATURE_dynamicgl AND WIN32 AND NOT WINRT
+extend_target(tst_noqteventloop CONDITION QT_FEATURE_dynamicgl AND WIN32
     PUBLIC_LIBRARIES
         user32
 )

@@ -1,4 +1,4 @@
 TEMPLATE = subdirs
 
-SUBDIRS += test
-!winrt: SUBDIRS+=syslocaleapp
+SUBDIRS += test \
+           syslocaleapp

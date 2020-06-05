@@ -71,7 +71,7 @@ add_qt_resource(tst_qgraphicsscene "testdata"
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qgraphicsscene CONDITION WIN32 AND NOT WINRT
+extend_target(tst_qgraphicsscene CONDITION WIN32
     PUBLIC_LIBRARIES
         user32
 )

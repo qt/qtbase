@@ -890,9 +890,6 @@ void tst_QDockWidget::task169808_setFloating()
     mw.show();
     QVERIFY(QTest::qWaitForWindowExposed(&mw));
 
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "Widgets are maximized on WinRT by default", Abort);
-#endif
     QCOMPARE(dw->widget()->size(), dw->widget()->sizeHint());
 
     //and now we try to test if the contents margin is taken into account
@@ -935,9 +932,6 @@ void tst_QDockWidget::task248604_infiniteResize()
     d.setContentsMargins(2, 2, 2, 2);
     d.setMinimumSize(320, 240);
     d.showNormal();
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "Widgets are maximized on WinRT by default", Abort);
-#endif
     QTRY_COMPARE(d.size(), QSize(320, 240));
 }
 

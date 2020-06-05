@@ -19,7 +19,7 @@ add_qt_test(tst_qlistview
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qlistview CONDITION WIN32 AND NOT WINRT
+extend_target(tst_qlistview CONDITION WIN32
     PUBLIC_LIBRARIES
         user32
 )

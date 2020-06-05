@@ -1,7 +1,6 @@
 # Generated from qsharedmemory.pro.
 
-
-if(QT_FEATURE_sharedmemory)
+if(QT_FEATURE_sharedmemory) # special case
     #####################################################################
     ## tst_qsharedmemory Test:
     #####################################################################
@@ -9,12 +8,9 @@ if(QT_FEATURE_sharedmemory)
     add_qt_test(tst_qsharedmemory
         SOURCES
             tst_qsharedmemory.cpp
-        LIBRARIES
+        PUBLIC_LIBRARIES
             Qt::CorePrivate
     )
-
-#### Keys ignored in scope 4:.:.:test.pro:<TRUE>:
-    # CONFIG = "testcase"
 
     ## Scopes:
     #####################################################################
@@ -23,8 +19,6 @@ if(QT_FEATURE_sharedmemory)
     PUBLIC_LIBRARIES
         rt
     )
-
-    if(NOT WINRT)
-        add_subdirectory(producerconsumer)
-    endif()
+# if(QT_FEATURE_sharedmemory) # special case
+    add_subdirectory(producerconsumer)
 endif()

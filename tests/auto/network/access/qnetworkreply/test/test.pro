@@ -13,7 +13,7 @@ RESOURCES += ../qnetworkreply.qrc
 TESTDATA += ../empty ../rfc3252.txt ../resource ../bigfile ../*.jpg ../certs \
             ../index.html ../smb-file.txt
 
-!android:!winrt: TEST_HELPER_INSTALLS = ../echo/echo
+!android: TEST_HELPER_INSTALLS = ../echo/echo
 
 CONFIG += unsupported/testserver
 QT_TEST_SERVER_LIST = vsftpd apache2 ftp-proxy danted squid

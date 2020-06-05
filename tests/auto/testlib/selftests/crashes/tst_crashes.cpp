@@ -44,7 +44,7 @@ private slots:
 
 void tst_Crashes::crash()
 {
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
    //we avoid the error dialogbox to appear on windows
    SetErrorMode( SEM_NOGPFAULTERRORBOX | SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
 #endif

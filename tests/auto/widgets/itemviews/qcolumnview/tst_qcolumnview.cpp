@@ -924,10 +924,9 @@ void tst_QColumnView::parentCurrentIndex()
     QTRY_COMPARE(view.createdColumns[0]->currentIndex(), first);
     QTRY_COMPARE(view.createdColumns[1]->currentIndex(), second);
 
-#ifndef Q_OS_WINRT
     // The next two lines should be removed when QTBUG-22707 is resolved.
     QEXPECT_FAIL("", "QTBUG-22707", Abort);
-#endif
+
     QVERIFY(view.createdColumns[2]);
 
     QTRY_COMPARE(view.createdColumns[2]->currentIndex(), third);

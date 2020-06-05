@@ -14,8 +14,7 @@ qtConfig(xcb) {
 uikit:!watchos: SUBDIRS += ios
 osx: SUBDIRS += cocoa
 
-win32:!winrt: SUBDIRS += windows
-winrt: SUBDIRS += winrt
+win32: SUBDIRS += windows
 
 qtConfig(direct2d1_1):qtConfig(directwrite1) {
     SUBDIRS += direct2d

@@ -40,14 +40,12 @@ private slots:
     void defaultValues();
     void dump();
     void operatorEqual();
-#ifndef Q_OS_WINRT
     void operatorNotEqual();
     void root();
     void currentStorage();
     void storageList();
     void tempFile();
     void caching();
-#endif
 };
 
 void tst_QStorageInfo::defaultValues()
@@ -113,7 +111,6 @@ void tst_QStorageInfo::operatorEqual()
     }
 }
 
-#ifndef Q_OS_WINRT
 void tst_QStorageInfo::operatorNotEqual()
 {
     QStorageInfo storage1 = QStorageInfo::root();
@@ -230,7 +227,6 @@ void tst_QStorageInfo::caching()
     }
     QVERIFY(free != storage2.bytesFree());
 }
-#endif
 
 QTEST_MAIN(tst_QStorageInfo)
 

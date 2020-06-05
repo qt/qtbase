@@ -507,13 +507,6 @@ static QString prefixFromQtCoreLibraryHelper(const QString &qtCoreLibraryPath)
 #endif
 
 #if defined(Q_OS_WIN)
-#if defined(Q_OS_WINRT)
-EXTERN_C IMAGE_DOS_HEADER __ImageBase;
-static HMODULE getWindowsModuleHandle()
-{
-    return reinterpret_cast<HMODULE>(&__ImageBase);
-}
-#else  // Q_OS_WINRT
 static HMODULE getWindowsModuleHandle()
 {
     HMODULE hModule = NULL;
@@ -522,7 +515,6 @@ static HMODULE getWindowsModuleHandle()
         (LPCTSTR)&QLibraryInfo::isDebugBuild, &hModule);
     return hModule;
 }
-#endif // !Q_OS_WINRT
 #endif // Q_OS_WIN
 
 static QString getRelocatablePrefix()

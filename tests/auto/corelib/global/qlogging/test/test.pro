@@ -4,14 +4,14 @@ qtConfig(c++14): CONFIG += c++14
 debug_and_release {
     CONFIG(debug, debug|release) {
         TARGET = ../../debug/tst_qlogging
-        !android:!winrt: TEST_HELPER_INSTALLS = ../debug/helper
+        !android: TEST_HELPER_INSTALLS = ../debug/helper
     } else {
         TARGET = ../../release/tst_qlogging
-        !android:!winrt: TEST_HELPER_INSTALLS = ../release/helper
+        !android: TEST_HELPER_INSTALLS = ../release/helper
     }
 } else {
     TARGET = ../tst_qlogging
-    !android:!winrt: TEST_HELPER_INSTALLS = ../helper
+    !android: TEST_HELPER_INSTALLS = ../helper
 }
 
 QT = core testlib

@@ -18,13 +18,9 @@ msvc: QMAKE_CFLAGS_DEBUG *= -Z7
 msvc: QMAKE_CXXFLAGS_DEBUG *= -Z7
 mingw: DEFINES += QT_NEEDS_QMAIN
 
-winrt {
-    SOURCES = qtmain_winrt.cpp
-} else {
-    CONFIG -= qt
-    SOURCES = qtmain_win.cpp
-    QMAKE_USE_PRIVATE += shell32
-}
+CONFIG -= qt
+SOURCES = qtmain_win.cpp
+QMAKE_USE_PRIVATE += shell32
 
 load(qt_installs)
 

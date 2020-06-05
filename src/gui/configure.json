@@ -1069,7 +1069,7 @@
         },
         "direct2d": {
             "label": "Direct 2D",
-            "condition": "config.win32 && !config.winrt && libs.d2d1",
+            "condition": "config.win32 && libs.d2d1",
             "output": [ "privateFeature" ]
         },
         "direct2d1_1": {
@@ -1224,12 +1224,12 @@
             "autoDetect": "!config.win32",
             "enable": "input.opengl == 'desktop'",
             "disable": "input.opengl == 'es2' || input.opengl == 'dynamic' || input.opengl == 'no'",
-            "condition": "(config.win32 && !config.winrt && (config.msvc || libs.opengl)) || (!config.watchos && !config.win32 && !config.wasm && libs.opengl)"
+            "condition": "(config.win32 && (config.msvc || libs.opengl)) || (!config.watchos && !config.win32 && !config.wasm && libs.opengl)"
         },
         "opengl-dynamic": {
             "label": "Dynamic OpenGL",
             "disable": "input.opengl == 'no' || input.opengl == 'desktop'",
-            "condition": "config.win32 && !config.winrt",
+            "condition": "config.win32",
             "output": [
                 { "type": "publicFeature", "name": "dynamicgl" },
                 { "type": "define", "name": "QT_OPENGL_DYNAMIC" }

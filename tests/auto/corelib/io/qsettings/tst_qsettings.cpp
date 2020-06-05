@@ -56,9 +56,7 @@
 
 #if defined(Q_OS_WIN)
 #include <QtCore/qt_windows.h>
-#ifndef Q_OS_WINRT
-#  include <private/qwinregistry_p.h>
-#endif
+#include <private/qwinregistry_p.h>
 #else
 #include <unistd.h>
 #endif
@@ -77,7 +75,7 @@ QT_FORWARD_DECLARE_CLASS(QSettings)
 
 static inline bool canWriteNativeSystemSettings()
 {
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
     HKEY key;
     const LONG result = RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"Software", 0, KEY_WRITE, &key);
     if (result == ERROR_SUCCESS)
@@ -159,7 +157,7 @@ private slots:
 #if !defined(Q_OS_WIN) && !defined(QT_QSETTINGS_ALWAYS_CASE_SENSITIVE_AND_FORGET_ORIGINAL_KEY_ORDER)
     void dontReorderIniKeysNeedlessly();
 #endif
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
     void consistentRegistryStorage();
 #endif
 
@@ -214,12 +212,7 @@ void tst_QSettings::getSetCheck()
 static QString settingsPath(const char *path = nullptr)
 {
     // Temporary path for files that are specified explicitly in the constructor.
-#ifndef Q_OS_WINRT
     static const QString tempPath = QDir::tempPath() + QLatin1String("/tst_QSettings");
-#else
-    static const QString tempPath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation)
-        + QLatin1String("/tst_QSettings");
-#endif
     return path && *path ? tempPath + QLatin1Char('/') + QLatin1String(path) : tempPath;
 }
 
@@ -324,7 +317,7 @@ void tst_QSettings::cleanupTestFiles()
     if (settingsDir.exists())
         QVERIFY(settingsDir.removeRecursively());
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
     QSettings("HKEY_CURRENT_USER\\Software\\software.org", QSettings::NativeFormat).clear();
     QSettings("HKEY_CURRENT_USER\\Software\\other.software.org", QSettings::NativeFormat).clear();
     QSettings("HKEY_CURRENT_USER\\Software\\foo", QSettings::NativeFormat).clear();
@@ -339,7 +332,7 @@ void tst_QSettings::cleanupTestFiles()
         QSettings("HKEY_LOCAL_MACHINE\\Software\\bat", QSettings::NativeFormat).clear();
         QSettings("HKEY_LOCAL_MACHINE\\Software\\baz", QSettings::NativeFormat).clear();
     }
-#elif defined(Q_OS_DARWIN) || defined(Q_OS_WINRT)
+#elif defined(Q_OS_DARWIN)
     QSettings(QSettings::UserScope, "software.org", "KillerAPP").clear();
     QSettings(QSettings::SystemScope, "software.org", "KillerAPP").clear();
     QSettings(QSettings::UserScope, "other.software.org", "KillerAPP").clear();
@@ -352,12 +345,7 @@ void tst_QSettings::cleanupTestFiles()
 
     const QString foo(QLatin1String("foo"));
 
-#if defined(Q_OS_WINRT)
-    QSettings(foo, QSettings::NativeFormat).clear();
-    QFile fooFile(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) + QLatin1Char('/') + foo);
-#else
     QFile fooFile(foo);
-#endif
     if (fooFile.exists())
         QVERIFY2(fooFile.remove(), qPrintable(fooFile.errorString()));
 }
@@ -540,7 +528,7 @@ void tst_QSettings::ctor()
         } else {
             caseSensitive = pathconf(settings5.fileName().toLatin1().constData(), _PC_CASE_SENSITIVE);
         }
-#elif defined(Q_OS_WIN32) || defined(Q_OS_WINRT)
+#elif defined(Q_OS_WIN32)
         caseSensitive = false;
 #endif
         if (caseSensitive)
@@ -614,8 +602,8 @@ void tst_QSettings::ctor()
             QCoreApplication::instance()->setOrganizationName("");
             QCoreApplication::instance()->setApplicationName("");
             QSettings settings;
-#if defined(Q_OS_MAC) || defined(Q_OS_WINRT)
-            QEXPECT_FAIL("native", "Default settings on Mac/WinRT are valid, despite organization domain, name, and app name being null", Continue);
+#if defined(Q_OS_MAC)
+            QEXPECT_FAIL("native", "Default settings on Mac are valid, despite organization domain, name, and app name being null", Continue);
 #endif
             QCOMPARE(settings.status(), QSettings::AccessError);
             QCoreApplication::instance()->setOrganizationName("software.org");
@@ -629,8 +617,8 @@ void tst_QSettings::ctor()
         }
 
         QSettings settings(format, QSettings::UserScope, "", "");
-#if defined(Q_OS_MAC) || defined(Q_OS_WINRT)
-        QEXPECT_FAIL("native", "Default settings on Mac/WinRT are valid, despite organization domain, name, and app name being null", Continue);
+#if defined(Q_OS_MAC)
+        QEXPECT_FAIL("native", "Default settings on Mac are valid, despite organization domain, name, and app name being null", Continue);
 #endif
         QCOMPARE(settings.status(), QSettings::AccessError);
         QSettings settings2(format, QSettings::UserScope, "software.org", "KillerAPP");
@@ -1724,14 +1712,9 @@ void tst_QSettings::sync()
 
     // Now "some other app" will change other.software.org.ini
     QString userConfDir = settingsPath("__user__") + QDir::separator();
-#if !defined(Q_OS_WINRT)
     unlink((userConfDir + "other.software.org.ini").toLatin1());
     rename((userConfDir + "software.org.ini").toLatin1(),
            (userConfDir + "other.software.org.ini").toLatin1());
-#else
-    QFile::remove(userConfDir + "other.software.org.ini");
-    QFile::rename(userConfDir + "software.org.ini" , userConfDir + "other.software.org.ini");
-#endif
 
     settings2.sync();
 
@@ -2265,7 +2248,7 @@ void tst_QSettings::testRegistryShortRootNames()
 
 void tst_QSettings::testRegistry32And64Bit()
 {
-#if !defined (Q_OS_WIN) || defined(Q_OS_WINRT)
+#if !defined (Q_OS_WIN)
     QSKIP("This test is specific to the Windows registry.", SkipAll);
 #else
 
@@ -2346,7 +2329,7 @@ void tst_QSettings::fromFile()
 
     QString path = "foo";
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
     if (format == QSettings::NativeFormat)
         path = "\\HKEY_CURRENT_USER\\Software\\foo";
 #endif
@@ -3491,7 +3474,7 @@ void tst_QSettings::rainersSyncBugOnMac()
 {
     QFETCH(QSettings::Format, format);
 
-#if defined(Q_OS_DARWIN) || defined(Q_OS_WINRT)
+#if defined(Q_OS_DARWIN)
     if (format == QSettings::NativeFormat)
         QSKIP("Apple OSes do not support direct reads from and writes to .plist files, due to caching and background syncing. See QTBUG-34899.");
 #endif
@@ -3526,7 +3509,7 @@ void tst_QSettings::recursionBug()
     }
 }
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
 
 static DWORD readKeyType(HKEY handle, QStringView rSubKey)
 {

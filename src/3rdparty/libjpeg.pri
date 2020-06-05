@@ -1,5 +1,3 @@
-winrt: DEFINES += NO_GETENV
-
 # Disable warnings in 3rdparty code due to unused arguments
 gcc: QMAKE_CFLAGS_WARN_ON += -Wno-unused-parameter -Wno-main
 

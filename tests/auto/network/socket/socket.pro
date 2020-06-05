@@ -20,7 +20,3 @@ SUBDIRS=\
 
 !qtConfig(sctp): SUBDIRS -= \
    qsctpsocket \
-
-winrt: SUBDIRS -= \
-   qhttpsocketengine \
-   qsocks5socketengine \

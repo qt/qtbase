@@ -4851,9 +4851,6 @@ void tst_QLineEdit::testQuickSelectionWithMouse()
     QTest::mousePress(lineEdit.windowHandle(), Qt::LeftButton, Qt::NoModifier, center);
     QTest::mouseMove(lineEdit.windowHandle(), center + QPoint(20, 0));
     qCDebug(lcTests) << "Selected text:" << lineEdit.selectedText();
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "WinRT does not support QTest::mousePress/-Move", Abort);
-#endif
     QVERIFY(!lineEdit.selectedText().isEmpty());
     QVERIFY(!lineEdit.selectedText().endsWith(suffix));
 

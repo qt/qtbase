@@ -16,6 +16,6 @@ add_qt_test(tst_qthreadstorage
 ## Scopes:
 #####################################################################
 
-if(NOT ANDROID AND NOT WINRT)
+if(NOT ANDROID)
     add_subdirectory(crashonexit)
 endif()

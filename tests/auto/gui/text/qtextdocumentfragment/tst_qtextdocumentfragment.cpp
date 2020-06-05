@@ -1709,9 +1709,6 @@ void tst_QTextDocumentFragment::html_bodyBackground()
     const char html[] = "<body background=\"foo.png\">Foo</body>";
     doc->setHtml(html);
 
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "Fails on winrt. Investigate - QTBUG-68297", Continue);
-#endif
     QCOMPARE(doc->rootFrame()->frameFormat().background().style(), Qt::TexturePattern);
 }
 
@@ -1726,9 +1723,6 @@ void tst_QTextDocumentFragment::html_tableCellBackground()
     QVERIFY(table);
 
     QTextTableCell cell = table->cellAt(0, 0);
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "Fails on winrt. Investigate - QTBUG-68297", Continue);
-#endif
     QCOMPARE(cell.format().background().style(), Qt::TexturePattern);
 }
 
@@ -1737,9 +1731,6 @@ void tst_QTextDocumentFragment::css_bodyBackground()
     const char html[] = "<body style=\"background-image:url('foo.png')\">Foo</body>";
     doc->setHtml(html);
 
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "Fails on winrt. Investigate - QTBUG-68297", Continue);
-#endif
     QCOMPARE(doc->rootFrame()->frameFormat().background().style(), Qt::TexturePattern);
 }
 
@@ -1754,9 +1745,6 @@ void tst_QTextDocumentFragment::css_tableCellBackground()
     QVERIFY(table);
 
     QTextTableCell cell = table->cellAt(0, 0);
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "Fails on winrt. Investigate - QTBUG-68297", Continue);
-#endif
     QCOMPARE(cell.format().background().style(), Qt::TexturePattern);
 }
 

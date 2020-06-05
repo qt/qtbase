@@ -1,4 +1,4 @@
 TEMPLATE = subdirs
-!winrt: SUBDIRS = copier paster
+SUBDIRS = copier paster
 test.depends += $$SUBDIRS
 SUBDIRS += test

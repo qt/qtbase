@@ -53,10 +53,8 @@
 
 #if defined(Q_OS_WIN)
 #  include <qt_windows.h>
-#  ifndef Q_OS_WINRT
-#    include <commctrl.h>
-#    include <objbase.h>
-#  endif
+#  include <commctrl.h>
+#  include <objbase.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -250,7 +248,7 @@ QIcon QFileIconProvider::icon(const QFileInfo &info) const
 
     const QString &path = info.absoluteFilePath();
     if (path.isEmpty() || QFileSystemEntry::isRootPath(path))
-#if defined (Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined (Q_OS_WIN)
     {
         UINT type = GetDriveType(reinterpret_cast<const wchar_t *>(path.utf16()));
 

@@ -79,9 +79,6 @@ const CollatorType NoCollator = 0;
 typedef QString CollatorKeyType;
 typedef int CollatorType;
 const CollatorType NoCollator = 0;
-#  ifdef Q_OS_WINRT
-#    define USE_COMPARESTRINGEX
-#  endif
 
 #else // posix - ignores CollatorType collator, only handles system locale
 typedef QVector<wchar_t> CollatorKeyType;

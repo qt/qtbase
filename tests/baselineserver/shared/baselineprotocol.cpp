@@ -66,11 +66,7 @@ const QString PI_PulseTestrBranch(QLS("PulseTestrBranch"));
 void BaselineProtocol::sysSleep(int ms)
 {
 #if defined(Q_OS_WIN)
-#  ifndef Q_OS_WINRT
     Sleep(DWORD(ms));
-#  else
-    WaitForSingleObjectEx(GetCurrentThread(), ms, false);
-#  endif
 #else
     struct timespec ts = { ms / 1000, (ms % 1000) * 1000 * 1000 };
     nanosleep(&ts, NULL);

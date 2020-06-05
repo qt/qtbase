@@ -75,9 +75,7 @@ class QSslContext;
 #elif defined(Q_OS_WIN)
 #include <QtCore/qt_windows.h>
 #include <memory>
-#ifndef Q_OS_WINRT
 #include <wincrypt.h>
-#endif // !Q_OS_WINRT
 #ifndef HCRYPTPROV_LEGACY
 #define HCRYPTPROV_LEGACY HCRYPTPROV
 #endif // !HCRYPTPROV_LEGACY
@@ -184,7 +182,7 @@ public:
     void _q_flushWriteBuffer();
     void _q_flushReadBuffer();
     void _q_resumeImplementation();
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT) && !QT_CONFIG(schannel)
+#if defined(Q_OS_WIN) && !QT_CONFIG(schannel)
     virtual void _q_caRootLoaded(QSslCertificate,QSslCertificate) = 0;
 #endif
 

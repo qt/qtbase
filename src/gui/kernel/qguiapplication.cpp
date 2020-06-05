@@ -1256,12 +1256,12 @@ static void init_platform(const QString &pluginNamesWithArguments, const QString
         if (!availablePlugins.isEmpty())
             fatalMessage += QStringLiteral("\nAvailable platform plugins are: %1.\n").arg(availablePlugins.join(QLatin1String(", ")));
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
         // Windows: Display message box unless it is a console application
         // or debug build showing an assert box.
         if (!QLibraryInfo::isDebugBuild() && !GetConsoleWindow())
             MessageBox(0, (LPCTSTR)fatalMessage.utf16(), (LPCTSTR)(QCoreApplication::applicationName().utf16()), MB_OK | MB_ICONERROR);
-#endif // Q_OS_WIN && !Q_OS_WINRT
+#endif // Q_OS_WIN
         qFatal("%s", qPrintable(fatalMessage));
 
         return;

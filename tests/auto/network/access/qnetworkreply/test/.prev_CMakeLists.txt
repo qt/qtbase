@@ -55,5 +55,5 @@ add_qt_resource(tst_qnetworkreply "qnetworkreply"
 ## Scopes:
 #####################################################################
 
-#### Keys ignored in scope 2:.:.:test.pro:NOT ANDROID AND NOT WINRT:
+#### Keys ignored in scope 2:.:.:test.pro:NOT ANDROID:
 # TEST_HELPER_INSTALLS = "../echo/echo"

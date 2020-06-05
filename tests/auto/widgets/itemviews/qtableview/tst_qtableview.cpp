@@ -2329,14 +2329,6 @@ void tst_QTableView::rowViewportPosition()
     view.setVerticalScrollMode(verticalScrollMode);
     view.verticalScrollBar()->setValue(verticalScrollValue);
 
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("row 1, scroll per item, 1", "Fails on WinRT - QTBUG-68297", Abort);
-    QEXPECT_FAIL("row 5, scroll per item, 5", "Fails on WinRT - QTBUG-68297", Abort);
-    QEXPECT_FAIL("row 9, scroll per item, 5", "Fails on WinRT - QTBUG-68297", Abort);
-    QEXPECT_FAIL("row 1, scroll per pixel, 1", "Fails on WinRT - QTBUG-68297", Abort);
-    QEXPECT_FAIL("row 5, scroll per pixel, 5", "Fails on WinRT - QTBUG-68297", Abort);
-    QEXPECT_FAIL("row 9, scroll per pixel, 5", "Fails on WinRT - QTBUG-68297", Abort);
-#endif
     QCOMPARE(view.rowViewportPosition(row), rowViewportPosition);
 }
 
@@ -2500,13 +2492,6 @@ void tst_QTableView::columnViewportPosition()
     view.setHorizontalScrollMode(horizontalScrollMode);
     view.horizontalScrollBar()->setValue(horizontalScrollValue);
 
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("column 5, scroll per item, 5", "Fails on WinRT - QTBUG-68297", Abort);
-    QEXPECT_FAIL("column 9, scroll per item, 5", "Fails on WinRT - QTBUG-68297", Abort);
-    QEXPECT_FAIL("column 1, scroll per pixel 1", "Fails on WinRT - QTBUG-68297", Abort);
-    QEXPECT_FAIL("column 5, scroll per pixel 5", "Fails on WinRT - QTBUG-68297", Abort);
-    QEXPECT_FAIL("column 9, scroll per pixel 5", "Fails on WinRT - QTBUG-68297", Abort);
-#endif
     QCOMPARE(view.columnViewportPosition(column), columnViewportPosition);
 }
 

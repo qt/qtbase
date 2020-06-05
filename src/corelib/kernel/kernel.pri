@@ -88,27 +88,15 @@ win32 {
                 kernel/qsystemsemaphore_win.cpp
         HEADERS += \
                 kernel/qwineventnotifier.h \
-                kernel/qwineventnotifier_p.h
+                kernel/qwineventnotifier_p.h \
+                kernel/qfunctions_winrt_p.h
 
-        winrt {
-            SOURCES += kernel/qeventdispatcher_winrt.cpp
-            HEADERS += kernel/qeventdispatcher_winrt_p.h
-        } else {
-            SOURCES += kernel/qeventdispatcher_win.cpp \
-                       kernel/qwinregistry.cpp
-            HEADERS += kernel/qeventdispatcher_win_p.h \
-                       kernel/qwinregistry_p.h
-        }
+        SOURCES += kernel/qeventdispatcher_win.cpp \
+                   kernel/qwinregistry.cpp
+        HEADERS += kernel/qeventdispatcher_win_p.h \
+                   kernel/qwinregistry_p.h
 
-        !winrt: LIBS_PRIVATE += -lversion
-}
-
-winrt {
-        SOURCES += \
-                kernel/qfunctions_winrt.cpp
-        HEADERS += \
-                kernel/qfunctions_fake_env_p.h \
-                kernel/qfunctions_winrt.h
+        LIBS_PRIVATE += -lversion
 }
 
 mac {

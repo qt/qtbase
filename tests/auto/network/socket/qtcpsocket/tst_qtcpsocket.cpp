@@ -126,9 +126,7 @@ private slots:
     void bindThenResolveHost_data();
     void bindThenResolveHost();
     void setInvalidSocketDescriptor();
-#ifndef Q_OS_WINRT
     void setSocketDescriptor();
-#endif
     void socketDescriptor();
     void blockingIMAP();
     void nonBlockingIMAP();
@@ -738,7 +736,6 @@ void tst_QTcpSocket::setInvalidSocketDescriptor()
 
 //----------------------------------------------------------------------------------
 
-#ifndef Q_OS_WINRT
 void tst_QTcpSocket::setSocketDescriptor()
 {
     QFETCH_GLOBAL(bool, setProxy);
@@ -782,7 +779,6 @@ void tst_QTcpSocket::setSocketDescriptor()
     delete dummy;
 #endif
 }
-#endif // !Q_OS_WINRT
 
 //----------------------------------------------------------------------------------
 

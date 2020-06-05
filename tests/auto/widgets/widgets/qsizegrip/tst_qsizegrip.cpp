@@ -97,9 +97,6 @@ void tst_QSizeGrip::hideAndShowOnWindowStateChange_data()
 void tst_QSizeGrip::hideAndShowOnWindowStateChange()
 {
     QFETCH(Qt::WindowType, windowType);
-#ifdef Q_OS_WINRT
-    QSKIP("Broken on WinRT - QTBUG-68297");
-#endif
 
     QScopedPointer<QWidget> parentWidget;
     if (windowType != Qt::Window)
@@ -144,9 +141,6 @@ void tst_QSizeGrip::hideAndShowOnWindowStateChange()
 
 void tst_QSizeGrip::orientation()
 {
-#ifdef Q_OS_WINRT
-    QSKIP("Broken on WinRT - QTBUG-68297");
-#endif
 
     TestWidget widget;
     widget.setLayout(new QVBoxLayout);
@@ -194,9 +188,6 @@ void tst_QSizeGrip::dontCrashOnTLWChange()
 
     // the above setup causes a change of TLW for the size grip,
     // and it must not crash.
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "Broken on WinRT - QTBUG-68297", Abort);
-#endif
     QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
     QVERIFY(QTest::qWaitForWindowExposed(mw.data()));
 }

@@ -126,9 +126,7 @@ signals:
 
 private:
     QList<QWindowsFileSystemWatcherEngineThread *> threads;
-#ifndef Q_OS_WINRT
     QWindowsRemovableDriveListener *m_driveListener = nullptr;
-#endif
 };
 
 class QFileSystemWatcherPathKey : public QString

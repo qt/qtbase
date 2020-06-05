@@ -10,7 +10,7 @@ HEADERS += \
     $$PWD/qwindowdump.h \
     $$PWD/nativewindowdump.h
 
-win32:!winrt:  {
+win32:  {
     SOURCES += $$PWD/nativewindowdump_win.cpp
     QMAKE_USE += user32
 } else {

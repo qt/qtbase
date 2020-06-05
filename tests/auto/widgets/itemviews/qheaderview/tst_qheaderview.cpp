@@ -706,8 +706,6 @@ void tst_QHeaderView::sectionSize()
 {
 #if defined Q_OS_QNX
     QSKIP("The section size is dpi dependent on QNX");
-#elif defined Q_OS_WINRT
-    QSKIP("Fails on WinRT - QTBUG-68297");
 #endif
     QFETCH(const IntList, boundsCheck);
     QFETCH(const IntList, defaultSizes);
@@ -809,8 +807,6 @@ void tst_QHeaderView::visualIndexAt()
 {
 #if defined Q_OS_QNX
     QSKIP("The section size is dpi dependent on QNX");
-#elif defined Q_OS_WINRT
-    QSKIP("Fails on WinRT - QTBUG-68297");
 #endif
     QFETCH(const IntList, hidden);
     QFETCH(const IntList, from);
@@ -1843,10 +1839,6 @@ void tst_QHeaderView::restoreBeforeSetModel()
 
 void tst_QHeaderView::defaultSectionSizeTest()
 {
-#if defined Q_OS_WINRT
-    QSKIP("Fails on WinRT - QTBUG-73309");
-#endif
-
     // Setup
     QTableView qtv;
     QHeaderView *hv = qtv.verticalHeader();
@@ -2169,9 +2161,6 @@ void tst_QHeaderView::preserveHiddenSectionWidth()
 
 void tst_QHeaderView::invisibleStretchLastSection()
 {
-#ifdef Q_OS_WINRT
-    QSKIP("Fails on WinRT - QTBUG-68297");
-#endif
     int count = 6;
     QStandardItemModel model(1, count);
     QHeaderView view(Qt::Horizontal);

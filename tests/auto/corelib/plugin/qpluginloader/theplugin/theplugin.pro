@@ -6,7 +6,6 @@ SOURCES       = theplugin.cpp
 #TARGET        = $$qtLibraryTarget(theplugin)
 TARGET        = theplugin
 DESTDIR       = ../bin
-winrt:include(../winrt.pri)
 QT = core
 
 # This is testdata for the tst_qpluginloader test.

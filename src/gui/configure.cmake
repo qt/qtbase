@@ -569,7 +569,7 @@ qt_feature("directwrite2" PRIVATE
 )
 qt_feature("direct2d" PRIVATE
     LABEL "Direct 2D"
-    CONDITION WIN32 AND NOT WINRT AND libs.d2d1 OR FIXME
+    CONDITION WIN32 AND libs.d2d1 OR FIXME
 )
 qt_feature("direct2d1_1" PRIVATE
     LABEL "Direct 2D 1.1"
@@ -692,13 +692,13 @@ qt_feature("opengles32" PUBLIC
 qt_feature("opengl-desktop"
     LABEL "Desktop OpenGL"
     AUTODETECT NOT WIN32
-    CONDITION ( WIN32 AND NOT WINRT AND ( MSVC OR OpenGL_FOUND ) ) OR ( NOT WATCHOS AND NOT WIN32 AND NOT WASM AND OpenGL_FOUND )
+    CONDITION ( WIN32 AND ( MSVC OR OpenGL_FOUND ) ) OR ( NOT WATCHOS AND NOT WIN32 AND NOT WASM AND OpenGL_FOUND )
     ENABLE INPUT_opengl STREQUAL 'desktop'
     DISABLE INPUT_opengl STREQUAL 'es2' OR INPUT_opengl STREQUAL 'dynamic' OR INPUT_opengl STREQUAL 'no'
 )
 qt_feature("opengl-dynamic"
     LABEL "Dynamic OpenGL"
-    CONDITION WIN32 AND NOT WINRT
+    CONDITION WIN32
     DISABLE INPUT_opengl STREQUAL 'no' OR INPUT_opengl STREQUAL 'desktop'
 )
 qt_feature("dynamicgl" PUBLIC

@@ -53,9 +53,6 @@ qt_extend_target(PrintSupport CONDITION QT_FEATURE_printpreviewwidget
 qt_extend_target(PrintSupport CONDITION WIN32
     SOURCES
         kernel/qprintengine_win.cpp kernel/qprintengine_win_p.h
-)
-
-qt_extend_target(PrintSupport CONDITION WIN32 AND NOT WINRT
     LIBRARIES
         comdlg32
         gdi32

@@ -106,7 +106,7 @@ static QSet<QByteArray> keywords()
             << "osx"
             << "macos"
 #endif
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
             << "windows"
 #endif
 #ifdef Q_OS_IOS
@@ -123,9 +123,6 @@ static QSet<QByteArray> keywords()
 #endif
 #ifdef Q_OS_QNX
             << "qnx"
-#endif
-#ifdef Q_OS_WINRT
-            << "winrt"
 #endif
 
 #if QT_POINTER_SIZE == 8

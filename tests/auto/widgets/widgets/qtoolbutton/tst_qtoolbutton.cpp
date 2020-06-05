@@ -278,9 +278,6 @@ void tst_QToolButton::qtbug_34759_sizeHintResetWhenSettingMenu()
     button1.show();
     button2.show();
 
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "Winrt does not support more than 1 native top level widget.", Abort);
-#endif
     QVERIFY(QTest::qWaitForWindowExposed(&button1));
     QVERIFY(QTest::qWaitForWindowExposed(&button2));
 

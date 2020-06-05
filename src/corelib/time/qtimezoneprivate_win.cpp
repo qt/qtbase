@@ -46,11 +46,7 @@
 
 #include <algorithm>
 
-#ifndef Q_OS_WINRT
 #include <private/qwinregistry_p.h>
-// The registry-based timezone backend is not available on WinRT, which falls back to equivalent APIs.
-#define QT_USE_REGISTRY_TIMEZONE 1
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -71,10 +67,8 @@ QT_BEGIN_NAMESPACE
 
 // Vista introduced support for historic data, see MSDN docs on DYNAMIC_TIME_ZONE_INFORMATION
 // http://msdn.microsoft.com/en-gb/library/windows/desktop/ms724253%28v=vs.85%29.aspx
-#ifdef QT_USE_REGISTRY_TIMEZONE
 static const wchar_t tzRegPath[] = LR"(SOFTWARE\Microsoft\Windows NT\CurrentVersion\Time Zones)";
 static const wchar_t currTzRegPath[] = LR"(SYSTEM\CurrentControlSet\Control\TimeZoneInformation)";
-#endif
 
 enum {
     MIN_YEAR = -292275056,
@@ -138,8 +132,6 @@ bool equalTzi(const TIME_ZONE_INFORMATION &tzi1, const TIME_ZONE_INFORMATION &tz
            && wcscmp(tzi1.DaylightName, tzi2.DaylightName) == 0);
 }
 
-#ifdef QT_USE_REGISTRY_TIMEZONE
-
 QWinTimeZonePrivate::QWinTransitionRule readRegistryRule(const HKEY &key,
                                                          const wchar_t *value, bool *ok)
 {
@@ -189,73 +181,6 @@ TIME_ZONE_INFORMATION getRegistryTzi(const QByteArray &windowsId, bool *ok)
 
     return tzi;
 }
-#else // QT_USE_REGISTRY_TIMEZONE
-struct QWinDynamicTimeZone
-{
-    QString standardName;
-    QString daylightName;
-    QString timezoneName;
-    qint32 bias;
-    bool daylightTime;
-};
-
-typedef QHash<QByteArray, QWinDynamicTimeZone> QWinRTTimeZoneHash;
-
-Q_GLOBAL_STATIC(QWinRTTimeZoneHash, gTimeZones)
-
-void enumerateTimeZones()
-{
-    DYNAMIC_TIME_ZONE_INFORMATION dtzInfo;
-    quint32 index = 0;
-    QString prevTimeZoneKeyName;
-    while (SUCCEEDED(EnumDynamicTimeZoneInformation(index++, &dtzInfo))) {
-        QWinDynamicTimeZone item;
-        item.timezoneName = QString::fromWCharArray(dtzInfo.TimeZoneKeyName);
-        // As soon as key name repeats, break. Some systems continue to always
-        // return the last item independent of index being out of range
-        if (item.timezoneName == prevTimeZoneKeyName)
-            break;
-        item.standardName = QString::fromWCharArray(dtzInfo.StandardName);
-        item.daylightName = QString::fromWCharArray(dtzInfo.DaylightName);
-        item.daylightTime = !dtzInfo.DynamicDaylightTimeDisabled;
-        item.bias = dtzInfo.Bias;
-        gTimeZones->insert(item.timezoneName.toUtf8(), item);
-        prevTimeZoneKeyName = item.timezoneName;
-    }
-}
-
-DYNAMIC_TIME_ZONE_INFORMATION dynamicInfoForId(const QByteArray &windowsId)
-{
-    DYNAMIC_TIME_ZONE_INFORMATION dtzInfo;
-    quint32 index = 0;
-    QString prevTimeZoneKeyName;
-    while (SUCCEEDED(EnumDynamicTimeZoneInformation(index++, &dtzInfo))) {
-        const QString timeZoneName = QString::fromWCharArray(dtzInfo.TimeZoneKeyName);
-        if (timeZoneName == QLatin1String(windowsId))
-            break;
-        if (timeZoneName == prevTimeZoneKeyName)
-            break;
-        prevTimeZoneKeyName = timeZoneName;
-    }
-    return dtzInfo;
-}
-
-QWinTimeZonePrivate::QWinTransitionRule
-readDynamicRule(DYNAMIC_TIME_ZONE_INFORMATION &dtzi, int year, bool *ok)
-{
-    TIME_ZONE_INFORMATION tzi;
-    QWinTimeZonePrivate::QWinTransitionRule rule;
-    *ok = GetTimeZoneInformationForYear(year, &dtzi, &tzi);
-    if (*ok) {
-        rule.startYear = 0;
-        rule.standardTimeBias = tzi.Bias + tzi.StandardBias;
-        rule.daylightTimeBias = tzi.Bias + tzi.DaylightBias - rule.standardTimeBias;
-        rule.standardTimeRule = tzi.StandardDate;
-        rule.daylightTimeRule = tzi.DaylightDate;
-    }
-    return rule;
-}
-#endif // QT_USE_REGISTRY_TIMEZONE
 
 bool isSameRule(const QWinTimeZonePrivate::QWinTransitionRule &last,
                        const QWinTimeZonePrivate::QWinTransitionRule &rule)
@@ -273,7 +198,6 @@ bool isSameRule(const QWinTimeZonePrivate::QWinTransitionRule &last,
 
 QList<QByteArray> availableWindowsIds()
 {
-#ifdef QT_USE_REGISTRY_TIMEZONE
     // TODO Consider caching results in a global static, very unlikely to change.
     QList<QByteArray> list;
     QWinRegistryKey key(HKEY_LOCAL_MACHINE, tzRegPath);
@@ -290,16 +214,10 @@ QList<QByteArray> availableWindowsIds()
         }
     }
     return list;
-#else // QT_USE_REGISTRY_TIMEZONE
-    if (gTimeZones->isEmpty())
-        enumerateTimeZones();
-    return gTimeZones->keys();
-#endif // QT_USE_REGISTRY_TIMEZONE
 }
 
 QByteArray windowsSystemZoneId()
 {
-#ifdef QT_USE_REGISTRY_TIMEZONE
     // On Vista and later is held in the value TimeZoneKeyName in key currTzRegPath
     const QString id = QWinRegistryKey(HKEY_LOCAL_MACHINE, currTzRegPath)
                        .stringValue(L"TimeZoneKeyName");
@@ -316,11 +234,6 @@ QByteArray windowsSystemZoneId()
         if (equalTzi(getRegistryTzi(winId, &ok), sysTzi))
             return winId;
     }
-#else // QT_USE_REGISTRY_TIMEZONE
-    DYNAMIC_TIME_ZONE_INFORMATION dtzi;
-    if (SUCCEEDED(GetDynamicTimeZoneInformation(&dtzi)))
-        return QString::fromWCharArray(dtzi.TimeZoneKeyName).toLocal8Bit();
-#endif // QT_USE_REGISTRY_TIMEZONE
 
     // If we can't determine the current ID use UTC
     return QTimeZonePrivate::utcQByteArray();
@@ -544,7 +457,6 @@ void QWinTimeZonePrivate::init(const QByteArray &ianaId)
 
     bool badMonth = false; // Only warn once per zone, if at all.
     if (!m_windowsId.isEmpty()) {
-#ifdef QT_USE_REGISTRY_TIMEZONE
         // Open the base TZI for the time zone
         const QString baseKeyPath = QString::fromWCharArray(tzRegPath) + QLatin1Char('\\')
                                    + QString::fromUtf8(m_windowsId);
@@ -591,50 +503,6 @@ void QWinTimeZonePrivate::init(const QByteArray &ianaId)
                     m_tranRules.append(rule);
             }
         }
-#else // QT_USE_REGISTRY_TIMEZONE
-        if (gTimeZones->isEmpty())
-            enumerateTimeZones();
-        QWinRTTimeZoneHash::const_iterator it = gTimeZones->find(m_windowsId);
-        if (it != gTimeZones->constEnd()) {
-            m_displayName = it->timezoneName;
-            m_standardName = it->standardName;
-            m_daylightName = it->daylightName;
-            DWORD firstYear = 0;
-            DWORD lastYear = 0;
-            DYNAMIC_TIME_ZONE_INFORMATION dtzi = dynamicInfoForId(m_windowsId);
-            if (GetDynamicTimeZoneInformationEffectiveYears(&dtzi, &firstYear, &lastYear)
-                == ERROR_SUCCESS && firstYear < lastYear) {
-                for (DWORD year = firstYear; year <= lastYear; ++year) {
-                    bool ok = false;
-                    QWinTransitionRule rule = readDynamicRule(dtzi, year, &ok);
-                    if (ok
-                        // Don't repeat a recurrent rule
-                        && (m_tranRules.isEmpty()
-                            || !isSameRule(m_tranRules.last(), rule))) {
-                        if (!badMonth
-                            && (rule.standardTimeRule.wMonth == 0)
-                            != (rule.daylightTimeRule.wMonth == 0)) {
-                            badMonth = true;
-                            qWarning("MS dynamic TZ API violated its wMonth constraint;"
-                                     "this may cause mistakes for %s from %d",
-                                     ianaId.constData(), year);
-                        }
-                        rule.startYear = m_tranRules.isEmpty() ? MIN_YEAR : year;
-                        m_tranRules.append(rule);
-                    }
-                }
-            } else {
-                // At least try to get the non-dynamic data:
-                dtzi.DynamicDaylightTimeDisabled = false;
-                bool ok = false;
-                QWinTransitionRule rule = readDynamicRule(dtzi, 1970, &ok);
-                if (ok) {
-                    rule.startYear = MIN_YEAR;
-                    m_tranRules.append(rule);
-                }
-            }
-        }
-#endif // QT_USE_REGISTRY_TIMEZONE
     }
 
     // If there are no rules then we failed to find a windowsId or any tzi info

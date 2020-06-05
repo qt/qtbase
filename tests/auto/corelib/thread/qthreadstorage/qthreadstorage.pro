@@ -1,6 +1,6 @@
 TEMPLATE = subdirs
 
-!android:!winrt {
+!android {
     test.depends = crashonexit
     SUBDIRS += crashonexit
 }

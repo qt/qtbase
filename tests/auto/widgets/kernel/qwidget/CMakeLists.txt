@@ -51,7 +51,7 @@ extend_target(tst_qwidget CONDITION APPLE
         ${FWSecurity}
 )
 
-extend_target(tst_qwidget CONDITION WIN32 AND NOT WINRT
+extend_target(tst_qwidget CONDITION WIN32
     PUBLIC_LIBRARIES
         gdi32
         user32

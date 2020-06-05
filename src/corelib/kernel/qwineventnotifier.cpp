@@ -39,11 +39,7 @@
 
 #include "qwineventnotifier_p.h"
 
-#ifdef Q_OS_WINRT
-#include "qeventdispatcher_winrt_p.h"
-#else
 #include "qeventdispatcher_win_p.h"
-#endif
 #include "qcoreapplication.h"
 
 #include <private/qthread_p.h>
@@ -235,21 +231,6 @@ bool QWinEventNotifier::event(QEvent * e)
     return false;
 }
 
-#if defined(Q_OS_WINRT)
-
-bool QWinEventNotifierPrivate::registerWaitObject()
-{
-    Q_UNIMPLEMENTED();
-    return false;
-}
-
-void QWinEventNotifierPrivate::unregisterWaitObject()
-{
-    Q_UNIMPLEMENTED();
-}
-
-#else // defined(Q_OS_WINRT)
-
 static void CALLBACK wfsoCallback(void *context, BOOLEAN /*ignore*/)
 {
     QWinEventNotifierPrivate *nd = reinterpret_cast<QWinEventNotifierPrivate *>(context);
@@ -286,7 +267,5 @@ void QWinEventNotifierPrivate::unregisterWaitObject()
     else
         qErrnoWarning("QWinEventNotifier: UnregisterWaitEx failed.");
 }
-
-#endif // !defined(Q_OS_WINRT)
 
 QT_END_NAMESPACE

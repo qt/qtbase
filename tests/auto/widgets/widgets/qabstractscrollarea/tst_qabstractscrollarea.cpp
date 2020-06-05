@@ -340,10 +340,6 @@ void tst_QAbstractScrollArea::task214488_layoutDirection()
 
     int refValue = hbar->value();
     qApp->sendEvent(&scrollArea, new QKeyEvent(QEvent::KeyPress, key, Qt::NoModifier));
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "WinRT: Scrollbar is not guaranteed to be visible, as QWidget::resize does not"
-                 "work", Abort);
-#endif
     QVERIFY(lessThan ? (hbar->value() < refValue) : (hbar->value() > refValue));
 }
 

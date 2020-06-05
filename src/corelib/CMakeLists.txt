@@ -446,27 +446,22 @@ qt_extend_target(Core CONDITION WIN32
         io/qfilesystemengine_win.cpp
         io/qfsfileengine_win.cpp
         io/qlockfile_win.cpp
-        kernel/qcoreapplication_win.cpp
-        kernel/qelapsedtimer_win.cpp
-        kernel/qsharedmemory_win.cpp
-        kernel/qsystemsemaphore_win.cpp
-        kernel/qwineventnotifier.cpp kernel/qwineventnotifier.h kernel/qwineventnotifier_p.h
-        plugin/qsystemlibrary.cpp plugin/qsystemlibrary_p.h
-        thread/qatomic_msvc.h
-        thread/qthread_win.cpp
-    # DEFINES # special case: remove
-    LIBRARIES
-        ws2_32
-)
-
-qt_extend_target(Core CONDITION WIN32 AND NOT WINRT
-    SOURCES
         io/qstandardpaths_win.cpp
         io/qstorageinfo_win.cpp
         io/qwindowspipereader.cpp io/qwindowspipereader_p.h
         io/qwindowspipewriter.cpp io/qwindowspipewriter_p.h
+        kernel/qcoreapplication_win.cpp
+        kernel/qelapsedtimer_win.cpp
         kernel/qeventdispatcher_win.cpp kernel/qeventdispatcher_win_p.h
+        kernel/qfunctions_winrt_p.h
+        kernel/qsharedmemory_win.cpp
+        kernel/qsystemsemaphore_win.cpp
+        kernel/qwineventnotifier.cpp kernel/qwineventnotifier.h kernel/qwineventnotifier_p.h
         kernel/qwinregistry.cpp kernel/qwinregistry_p.h
+        plugin/qsystemlibrary.cpp plugin/qsystemlibrary_p.h
+        thread/qatomic_msvc.h
+        thread/qthread_win.cpp
+    # DEFINES # special case: remove
     LIBRARIES
         advapi32
         kernel32
@@ -477,6 +472,7 @@ qt_extend_target(Core CONDITION WIN32 AND NOT WINRT
         uuid
         version
         winmm
+        ws2_32
     PUBLIC_LIBRARIES
         mpr
         userenv
@@ -520,27 +516,27 @@ qt_extend_target(Core CONDITION INTEGRITY
         --pending_instantiations=128
 )
 
-#### Keys ignored in scope 15:.:.:corelib.pro:pathIsAbsolute(_ss_CMAKE_HOST_DATA_DIR):
+#### Keys ignored in scope 14:.:.:corelib.pro:pathIsAbsolute(_ss_CMAKE_HOST_DATA_DIR):
 # CMAKE_HOST_DATA_DIR = "$$[QT_HOST_DATA/src]/"
 # CMAKE_HOST_DATA_DIR_IS_ABSOLUTE = "True"
 
-#### Keys ignored in scope 16:.:.:corelib.pro:pathIsAbsolute(_ss_CMAKE_INSTALL_DATA_DIR):
+#### Keys ignored in scope 15:.:.:corelib.pro:pathIsAbsolute(_ss_CMAKE_INSTALL_DATA_DIR):
 # CMAKE_INSTALL_DATA_DIR = "$$[QT_HOST_DATA]/"
 # CMAKE_INSTALL_DATA_DIR_IS_ABSOLUTE = "True"
 
-#### Keys ignored in scope 21:.:global:global/global.pri:QT_CPU_FEATURES__ss_QT_ARCH___contains___f16c:
+#### Keys ignored in scope 20:.:global:global/global.pri:QT_CPU_FEATURES__ss_QT_ARCH___contains___f16c:
 # f16c_cxx = "true"
 
-#### Keys ignored in scope 23:.:global:global/global.pri:CLANG OR intel_icl OR ICC:
+#### Keys ignored in scope 22:.:global:global/global.pri:CLANG OR intel_icl OR ICC:
 # f16c_cxx = "false"
 
-#### Keys ignored in scope 25:.:global:global/global.pri:GCC AND f16c AND x86SimdAlways:
+#### Keys ignored in scope 24:.:global:global/global.pri:GCC AND f16c AND x86SimdAlways:
 # f16c_cxx = "true"
 
-#### Keys ignored in scope 27:.:global:global/global.pri:MSVC AND QT_CPU_FEATURES__ss_QT_ARCH___contains___avx:
+#### Keys ignored in scope 26:.:global:global/global.pri:MSVC AND QT_CPU_FEATURES__ss_QT_ARCH___contains___avx:
 # f16c_cxx = "true"
 
-#### Keys ignored in scope 28:.:global:global/global.pri:else:
+#### Keys ignored in scope 27:.:global:global/global.pri:else:
 # f16c_cxx = "false"
 
 # extend_target(Core CONDITION _ss_f16c_cxx ... # special case remove: Handled manually
@@ -560,7 +556,7 @@ qt_extend_target(Core CONDITION LINUX AND NOT static
         global/minimum-linux_p.h
 )
 
-#### Keys ignored in scope 35:.:global:global/global.pri:precompile_header:
+#### Keys ignored in scope 34:.:global:global/global.pri:precompile_header:
 # NO_PCH_ASM = "global/minimum-linux.S"
 # QMAKE_EXTRA_COMPILERS = "no_pch_assembler"
 # no_pch_assembler.commands = "$$QMAKE_CC" "-c" "$(CFLAGS)" "$(INCPATH)" "${QMAKE_FILE_IN}" "-o" "${QMAKE_FILE_OUT}"
@@ -569,7 +565,7 @@ qt_extend_target(Core CONDITION LINUX AND NOT static
 # no_pch_assembler.name = "compiling[no_pch]" "${QMAKE_FILE_IN}"
 # no_pch_assembler.output = "${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${firstQMAKE_EXT_OBJ}"
 
-#### Keys ignored in scope 36:.:global:global/global.pri:silent:
+#### Keys ignored in scope 35:.:global:global/global.pri:silent:
 # no_pch_assembler.commands = "@echo" "compiling[no_pch]" "${QMAKE_FILE_IN}" "&&"
 
 qt_extend_target(Core CONDITION LINUX AND NOT precompile_header AND NOT static
@@ -587,7 +583,7 @@ qt_extend_target(Core CONDITION QT_FEATURE_journald
         PkgConfig::Libsystemd
 )
 
-#### Keys ignored in scope 40:.:global:global/global.pri:GCC AND ltcg:
+#### Keys ignored in scope 39:.:global:global/global.pri:GCC AND ltcg:
 # QMAKE_EXTRA_COMPILERS = "versiontagging_compiler"
 # versiontagging_compiler.commands = "$$QMAKE_CXX" "-c" "$(CXXFLAGS)" "$(INCPATH)" "-fno-lto" "-o" "${QMAKE_FILE_OUT}" "${QMAKE_FILE_IN}"
 # versiontagging_compiler.dependency_type = "TYPE_C"
@@ -596,7 +592,7 @@ qt_extend_target(Core CONDITION QT_FEATURE_journald
 # versiontagging_compiler.output = "${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${firstQMAKE_EXT_OBJ}"
 # versiontagging_compiler.variable_out = "OBJECTS"
 
-#### Keys ignored in scope 41:.:global:global/global.pri:silent:
+#### Keys ignored in scope 40:.:global:global/global.pri:silent:
 # versiontagging_compiler.commands = "@echo" "compiling[versiontagging]" "${QMAKE_FILE_IN}" "&&"
 
 qt_extend_target(Core CONDITION NOT GCC OR NOT ltcg
@@ -897,7 +893,7 @@ qt_extend_target(Core CONDITION QT_FEATURE_processenvironment
         io/qprocess.cpp io/qprocess.h io/qprocess_p.h
 )
 
-qt_extend_target(Core CONDITION QT_FEATURE_processenvironment AND WIN32 AND NOT WINRT
+qt_extend_target(Core CONDITION QT_FEATURE_processenvironment AND WIN32
     SOURCES
         io/qprocess_win.cpp
 )
@@ -912,14 +908,9 @@ qt_extend_target(Core CONDITION QT_FEATURE_settings
         io/qsettings.cpp io/qsettings.h io/qsettings_p.h
 )
 
-qt_extend_target(Core CONDITION QT_FEATURE_settings AND WIN32 AND NOT WINRT
+qt_extend_target(Core CONDITION QT_FEATURE_settings AND WIN32
     SOURCES
         io/qsettings_win.cpp
-)
-
-qt_extend_target(Core CONDITION QT_FEATURE_settings AND WINRT
-    SOURCES
-        io/qsettings_winrt.cpp
 )
 
 qt_extend_target(Core CONDITION APPLE AND QT_FEATURE_settings AND NOT NACL
@@ -935,15 +926,6 @@ qt_extend_target(Core CONDITION QT_FEATURE_settings AND WASM
 qt_extend_target(Core CONDITION QT_FEATURE_filesystemiterator AND WIN32
     SOURCES
         io/qfilesystemiterator_win.cpp
-)
-
-qt_extend_target(Core CONDITION WINRT
-    SOURCES
-        io/qstandardpaths_winrt.cpp
-        io/qstorageinfo_stub.cpp
-        kernel/qeventdispatcher_winrt.cpp kernel/qeventdispatcher_winrt_p.h
-        kernel/qfunctions_fake_env_p.h
-        kernel/qfunctions_winrt.cpp kernel/qfunctions_winrt.h
 )
 
 qt_extend_target(Core CONDITION QT_FEATURE_process AND UNIX
@@ -1176,7 +1158,7 @@ qt_extend_target(Core CONDITION QT_FEATURE_mimetype
         mimetypes/qmimetypeparser.cpp mimetypes/qmimetypeparser_p.h
 )
 
-#### Keys ignored in scope 197:.:mimetypes:mimetypes/mimetypes.pri:QT_FEATURE_mimetype:
+#### Keys ignored in scope 188:.:mimetypes:mimetypes/mimetypes.pri:QT_FEATURE_mimetype:
 # MIME_DATABASE = "mimetypes/mime/packages/freedesktop.org.xml"
 # OTHER_FILES = "$$MIME_DATABASE"
 
@@ -1187,7 +1169,7 @@ qt_extend_target(Core CONDITION QT_FEATURE_mimetype
 #)
 # special case end
 
-#### Keys ignored in scope 198:.:mimetypes:mimetypes/mimetypes.pri:QT_FEATURE_mimetype_database:
+#### Keys ignored in scope 189:.:mimetypes:mimetypes/mimetypes.pri:QT_FEATURE_mimetype_database:
 # QMAKE_EXTRA_COMPILERS = "mimedb"
 # mimedb.commands = "${QMAKE_FILE_IN}" ">" "${QMAKE_FILE_OUT}"
 # mimedb.depends = "$$PWD/mime/generate.pl"
@@ -1195,23 +1177,23 @@ qt_extend_target(Core CONDITION QT_FEATURE_mimetype
 # mimedb.output = "$$outpath/qmimeprovider_database.cpp"
 # mimedb.variable_out = "INCLUDED_SOURCES"
 
-#### Keys ignored in scope 199:.:mimetypes:mimetypes/mimetypes.pri:ANDROID:
+#### Keys ignored in scope 190:.:mimetypes:mimetypes/mimetypes.pri:ANDROID:
 # outpath = "$$outpath/$${QT_ARCH}"
 
-#### Keys ignored in scope 201:.:mimetypes:mimetypes/mimetypes.pri:(CMAKE_BUILD_TYPE STREQUAL Debug):
+#### Keys ignored in scope 192:.:mimetypes:mimetypes/mimetypes.pri:(CMAKE_BUILD_TYPE STREQUAL Debug):
 # outpath = "$$outpath/debug"
 
-#### Keys ignored in scope 202:.:mimetypes:mimetypes/mimetypes.pri:else:
+#### Keys ignored in scope 193:.:mimetypes:mimetypes/mimetypes.pri:else:
 # outpath = "$$outpath/release"
 
-#### Keys ignored in scope 203:.:mimetypes:mimetypes/mimetypes.pri:MAKEFILE_GENERATOR___equals___MSVC.NET OR MAKEFILE_GENERATOR___equals___MSBUILD OR QMAKE_SH_ISEMPTY:
+#### Keys ignored in scope 194:.:mimetypes:mimetypes/mimetypes.pri:MAKEFILE_GENERATOR___equals___MSVC.NET OR MAKEFILE_GENERATOR___equals___MSBUILD OR QMAKE_SH_ISEMPTY:
 # mimedb.commands = "cmd" "/c" "$$shell_path($$PWD/mime/generate.bat)"
 # mimedb.depends = "$$PWD/mime/generate.bat" "$$PWD/mime/hexdump.ps1"
 
-#### Keys ignored in scope 204:.:mimetypes:mimetypes/mimetypes.pri:else:
+#### Keys ignored in scope 195:.:mimetypes:mimetypes/mimetypes.pri:else:
 # mimedb.commands = "perl" "$${mimedb.depends}"
 
-#### Keys ignored in scope 205:.:mimetypes:mimetypes/mimetypes.pri:QT_FEATURE_zstd:
+#### Keys ignored in scope 196:.:mimetypes:mimetypes/mimetypes.pri:QT_FEATURE_zstd:
 # mimedb.commands = "--zstd"
 # Resources:
 # special case begin

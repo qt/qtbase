@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -37,18 +37,32 @@
 **
 ****************************************************************************/
 
-#ifndef QFUNCTIONS_WINRT_H
-#define QFUNCTIONS_WINRT_H
+#ifndef QFUNCTIONS_WINRT_P_H
+#define QFUNCTIONS_WINRT_P_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
 #include <QtCore/qglobal.h>
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && defined(Q_CC_MSVC)
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QThread>
 #include <QtCore/QAbstractEventDispatcher>
 #include <QtCore/QElapsedTimer>
 #include <QtCore/qt_windows.h>
+
+#include <wrl.h>
+#include <windows.foundation.h>
 
 // Convenience macros for handling HRESULT values
 #define RETURN_IF_FAILED(msg, ret) \
@@ -75,86 +89,6 @@
 #define Q_ASSERT_SUCCEEDED(hr) \
     Q_ASSERT_X(SUCCEEDED(hr), Q_FUNC_INFO, qPrintable(qt_error_string(hr)));
 
-#ifdef Q_OS_WINRT
-
-QT_BEGIN_NAMESPACE
-
-#ifdef QT_BUILD_CORE_LIB
-#endif
-
-// Environment ------------------------------------------------------
-errno_t qt_fake_getenv_s(size_t*, char*, size_t, const char*);
-errno_t qt_fake__putenv_s(const char*, const char*);
-void qt_winrt_tzset();
-void qt_winrt__tzset();
-
-QT_END_NAMESPACE
-
-// As Windows Runtime lacks some standard functions used in Qt, these got
-// reimplemented. Other projects do this as well. Inline functions are used
-// that there is a central place to disable functions for newer versions if
-// they get available. There are no defines used anymore, because this
-// will break member functions of classes which are called like these
-// functions.
-// The other declarations available in this file are being used per
-// define inside qplatformdefs.h of the corresponding WinRT mkspec.
-
-#define generate_inline_return_func0(funcname, returntype) \
-        inline returntype funcname() \
-        { \
-            return QT_PREPEND_NAMESPACE(qt_winrt_##funcname)(); \
-        }
-#define generate_inline_return_func1(funcname, returntype, param1) \
-        inline returntype funcname(param1 p1) \
-        { \
-            return QT_PREPEND_NAMESPACE(qt_winrt_##funcname)(p1); \
-        }
-#define generate_inline_return_func2(funcname, returntype, prependnamespace, param1, param2) \
-        inline returntype funcname(param1 p1, param2 p2) \
-        { \
-            return QT_PREPEND_NAMESPACE(prependnamespace##funcname)(p1,  p2); \
-        }
-#define generate_inline_return_func3(funcname, returntype, param1, param2, param3) \
-        inline returntype funcname(param1 p1, param2 p2, param3 p3) \
-        { \
-            return QT_PREPEND_NAMESPACE(qt_winrt_##funcname)(p1,  p2, p3); \
-        }
-#define generate_inline_return_func4(funcname, returntype, prependnamespace, param1, param2, param3, param4) \
-        inline returntype funcname(param1 p1, param2 p2, param3 p3, param4 p4) \
-        { \
-            return QT_PREPEND_NAMESPACE(prependnamespace##funcname)(p1,  p2, p3, p4); \
-        }
-#define generate_inline_return_func5(funcname, returntype, param1, param2, param3, param4, param5) \
-        inline returntype funcname(param1 p1, param2 p2, param3 p3, param4 p4, param5 p5) \
-        { \
-            return QT_PREPEND_NAMESPACE(qt_winrt_##funcname)(p1,  p2, p3, p4, p5); \
-        }
-#define generate_inline_return_func6(funcname, returntype, param1, param2, param3, param4, param5, param6) \
-        inline returntype funcname(param1 p1, param2 p2, param3 p3, param4 p4, param5 p5, param6 p6) \
-        { \
-            return QT_PREPEND_NAMESPACE(qt_winrt_##funcname)(p1,  p2, p3, p4, p5, p6); \
-        }
-#define generate_inline_return_func7(funcname, returntype, param1, param2, param3, param4, param5, param6, param7) \
-        inline returntype funcname(param1 p1, param2 p2, param3 p3, param4 p4, param5 p5, param6 p6, param7 p7) \
-        { \
-            return QT_PREPEND_NAMESPACE(qt_winrt_##funcname)(p1,  p2, p3, p4, p5, p6, p7); \
-        }
-
-typedef unsigned (__stdcall *StartAdressExFunc)(void *);
-typedef void(*StartAdressFunc)(void *);
-typedef int ( __cdecl *CompareFunc ) (const void *, const void *) ;
-
-generate_inline_return_func4(getenv_s, errno_t, qt_fake_, size_t *, char *, size_t, const char *)
-generate_inline_return_func2(_putenv_s, errno_t, qt_fake_, const char *, const char *)
-generate_inline_return_func0(tzset, void)
-generate_inline_return_func0(_tzset, void)
-
-namespace Microsoft {
-    namespace WRL {
-        template <typename T> class ComPtr;
-    }
-}
-
 QT_BEGIN_NAMESPACE
 
 namespace QWinRTFunctions {
@@ -170,7 +104,7 @@ enum AwaitStyle
 template <typename T>
 static inline HRESULT _await_impl(const Microsoft::WRL::ComPtr<T> &asyncOp, AwaitStyle awaitStyle, uint timeout)
 {
-    Microsoft::WRL::ComPtr<IAsyncInfo> asyncInfo;
+    Microsoft::WRL::ComPtr<ABI::Windows::Foundation::IAsyncInfo> asyncInfo;
     HRESULT hr = asyncOp.As(&asyncInfo);
     if (FAILED(hr))
         return hr;
@@ -245,8 +179,6 @@ static inline HRESULT await(const Microsoft::WRL::ComPtr<T> &asyncOp, U *results
 
 QT_END_NAMESPACE
 
-#endif // Q_OS_WINRT
+#endif // Q_OS_WIN && Q_CC_MSVC
 
-#endif // Q_OS_WIN
-
-#endif // QFUNCTIONS_WINRT_H
+#endif // QFUNCTIONS_WINRT_P_H

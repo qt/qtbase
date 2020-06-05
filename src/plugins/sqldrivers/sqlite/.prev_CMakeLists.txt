@@ -61,20 +61,12 @@ qt_extend_target(QSQLiteDriverPlugin CONDITION QT_FEATURE_posix_fallocate AND NO
         HAVE_POSIX_FALLOCATE=1
 )
 
-qt_extend_target(QSQLiteDriverPlugin CONDITION WINRT AND NOT QT_FEATURE_system_sqlite
-    DEFINES
-        SQLITE_OS_WINRT
-)
-
-#### Keys ignored in scope 8:.:../../../3rdparty:../../../3rdparty/sqlite.pri:WINRT:
-# QMAKE_CFLAGS = "-Gy"
-
 qt_extend_target(QSQLiteDriverPlugin CONDITION QNX AND NOT QT_FEATURE_system_sqlite
     DEFINES
         _QNX_SOURCE
 )
 
-qt_extend_target(QSQLiteDriverPlugin CONDITION UNIX AND NOT QT_FEATURE_system_sqlite AND NOT WINRT AND NOT winphone
+qt_extend_target(QSQLiteDriverPlugin CONDITION UNIX AND NOT QT_FEATURE_system_sqlite
     DEFINES
         HAVE_USLEEP=1
 )
@@ -89,5 +81,5 @@ qt_extend_target(QSQLiteDriverPlugin CONDITION NOT QT_FEATURE_dlopen AND NOT QT_
         SQLITE_OMIT_LOAD_EXTENSION
 )
 
-#### Keys ignored in scope 13:.:../../../3rdparty:../../../3rdparty/sqlite.pri:INTEGRITY:
+#### Keys ignored in scope 12:.:../../../3rdparty:../../../3rdparty/sqlite.pri:INTEGRITY:
 # QMAKE_CFLAGS = "-include" "qplatformdefs.h"

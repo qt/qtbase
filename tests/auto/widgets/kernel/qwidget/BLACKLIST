@@ -39,9 +39,6 @@ rhel-7.6
 centos
 opensuse-leap
 ubuntu
-[windowState]
-# QTBUG-75270
-winrt
 
 [syntheticEnterLeave]
 macos # Can't move cursor (QTBUG-76312)

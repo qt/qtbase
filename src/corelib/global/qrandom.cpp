@@ -167,19 +167,13 @@ struct QRandomGenerator::SystemGenerator
         return qMax<qsizetype>(n, 0);        // ignore any errors
     }
 
-#elif defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#elif defined(Q_OS_WIN)
     qsizetype fillBuffer(void *buffer, qsizetype count) noexcept
     {
         auto RtlGenRandom = SystemFunction036;
         return RtlGenRandom(buffer, ULONG(count)) ? count: 0;
     }
-#elif defined(Q_OS_WINRT)
-    qsizetype fillBuffer(void *, qsizetype) noexcept
-    {
-        // always use the fallback
-        return 0;
-    }
-#endif // Q_OS_WINRT
+#endif // Q_OS_WIN
 
     static SystemGenerator &self();
     typedef quint32 result_type;

@@ -6,14 +6,9 @@ SOURCES = tst_qmetatype.cpp
 TESTDATA=./typeFlags.bin
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0
 
-msvc|winrt {
+msvc {
     # Prevents "fatal error C1128: number of sections exceeded object file format limit".
     QMAKE_CXXFLAGS += /bigobj
-    # Reduce compile time
-    winrt {
-        QMAKE_CXXFLAGS_RELEASE -= -O2
-        QMAKE_CFLAGS_RELEASE -= -O2
-    }
 }
 
 clang {

@@ -22,12 +22,6 @@ add_cmake_library(plugin2
 ## Scopes:
 #####################################################################
 
-#### Keys ignored in scope 6:.:..:../winrt.pri:(CMAKE_BUILD_TYPE STREQUAL Debug):
-# DESTDIR = "../debug/bin"
-
-#### Keys ignored in scope 7:.:..:../winrt.pri:else:
-# DESTDIR = "../release/bin"
-
 extend_target(plugin2 CONDITION NOT QT_FEATURE_library
     DEFINES
         QT_STATICPLUGIN

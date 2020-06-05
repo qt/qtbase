@@ -87,16 +87,7 @@
 # include "qeventdispatcher_unix_p.h"
 #endif
 #ifdef Q_OS_WIN
-# ifdef Q_OS_WINRT
-#  include "qeventdispatcher_winrt_p.h"
-#  include "qfunctions_winrt.h"
-#  include <wrl.h>
-#  include <Windows.ApplicationModel.core.h>
-   using namespace ABI::Windows::ApplicationModel::Core;
-   using namespace Microsoft::WRL;
-# else
-#  include "qeventdispatcher_win_p.h"
-# endif
+#include "qeventdispatcher_win_p.h"
 #endif
 #endif // QT_NO_QOBJECT
 
@@ -397,7 +388,7 @@ Q_GLOBAL_STATIC(QCoreApplicationData, coreappdata)
 static bool quitLockRefEnabled = true;
 #endif
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
 // Check whether the command line arguments match those passed to main()
 // by comparing to the global __argv/__argc (MS extension).
 // Deep comparison is required since argv/argc is rebuilt by WinMain for
@@ -423,7 +414,7 @@ static inline bool contains(int argc, char **argv, const char *needle)
     }
     return false;
 }
-#endif // Q_OS_WIN && !Q_OS_WINRT
+#endif // Q_OS_WIN
 
 QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint flags)
     :
@@ -432,7 +423,7 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
 #endif
       argc(aargc)
     , argv(aargv)
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
     , origArgc(0)
     , origArgv(nullptr)
 #endif
@@ -451,13 +442,13 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
         argc = 0;
         argv = const_cast<char **>(&empty);
     }
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
     if (!isArgvModified(argc, argv)) {
         origArgc = argc;
         origArgv = new char *[argc];
         std::copy(argv, argv + argc, QT_MAKE_CHECKED_ARRAY_ITERATOR(origArgv, argc));
     }
-#endif // Q_OS_WIN && !Q_OS_WINRT
+#endif // Q_OS_WIN
 
 #ifndef QT_NO_QOBJECT
     QCoreApplicationPrivate::is_app_closing = false;
@@ -466,10 +457,6 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
     if (Q_UNLIKELY(!setuidAllowed && (geteuid() != getuid())))
         qFatal("FATAL: The application binary appears to be running setuid, this is a security hole.");
 #  endif // Q_OS_UNIX
-
-#ifdef Q_OS_WINRT
-    QThreadData::setMainThread();
-#endif
 
     QThread *cur = QThread::currentThread(); // note: this may end up setting theMainThread!
     if (cur != theMainThread.loadAcquire())
@@ -482,7 +469,7 @@ QCoreApplicationPrivate::~QCoreApplicationPrivate()
 #ifndef QT_NO_QOBJECT
     cleanupThreadData();
 #endif
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
     delete [] origArgv;
 #endif
     QCoreApplicationPrivate::clearApplicationFilePath();
@@ -570,10 +557,6 @@ void QCoreApplicationPrivate::appendApplicationPathToLibraryPaths()
         coreappdata()->app_libpaths.reset(app_libpaths = new QStringList);
     QString app_location = QCoreApplication::applicationFilePath();
     app_location.truncate(app_location.lastIndexOf(QLatin1Char('/')));
-#ifdef Q_OS_WINRT
-    if (app_location.isEmpty())
-        app_location.append(QLatin1Char('/'));
-#endif
     app_location = QDir(app_location).canonicalPath();
     if (QFile::exists(app_location) && !app_libpaths->contains(app_location))
         app_libpaths->append(app_location);
@@ -2466,7 +2449,7 @@ QStringList QCoreApplication::arguments()
     char ** const av = self->d_func()->argv;
     list.reserve(ac);
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
     // On Windows, it is possible to pass Unicode arguments on
     // the command line. To restore those, we split the command line
     // and filter out arguments that were deleted by derived application
@@ -2483,7 +2466,7 @@ QStringList QCoreApplication::arguments()
         }
         return list;
     } // Fall back to rebuilding from argv/argc when a modified argv was passed.
-#endif // defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#endif // defined(Q_OS_WIN)
 
     for (int a = 0; a < ac; ++a) {
         list << QString::fromLocal8Bit(av[a]);
@@ -2622,9 +2605,6 @@ QString QCoreApplication::applicationName()
     \row
         \li Windows (classic desktop)
         \li PRODUCTVERSION parameter of the VERSIONINFO resource
-    \row
-        \li Universal Windows Platform
-        \li version attribute of the application package manifest
     \row
         \li macOS, iOS, tvOS, watchOS
         \li CFBundleVersion property of the information property list

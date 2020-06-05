@@ -25,5 +25,5 @@ qt_extend_target(tst_qlocale CONDITION NOT QT_FEATURE_doubleconversion AND NOT Q
         QT_NO_DOUBLECONVERSION
 )
 
-#### Keys ignored in scope 7:.:.:test.pro:NOT ANDROID AND NOT WINRT:
+#### Keys ignored in scope 7:.:.:test.pro:NOT ANDROID:
 # TEST_HELPER_INSTALLS = "../syslocaleapp/syslocaleapp"

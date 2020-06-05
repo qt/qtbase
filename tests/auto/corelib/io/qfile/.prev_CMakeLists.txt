@@ -79,11 +79,9 @@ extend_target(tst_qfile CONDITION CONFIG___contains___builtin_testdata
         BUILTIN_TESTDATA
 )
 
-extend_target(tst_qfile CONDITION WIN32 AND NOT WINRT
+extend_target(tst_qfile CONDITION WIN32
     PUBLIC_LIBRARIES
         ole32
         uuid
 )
-if(NOT WINRT)
-    add_subdirectory(stdinprocess)
-endif()
+add_subdirectory(stdinprocess)

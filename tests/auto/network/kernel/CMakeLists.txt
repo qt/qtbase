@@ -5,11 +5,6 @@ add_subdirectory(qnetworkdatagram)
 add_subdirectory(qnetworkaddressentry)
 add_subdirectory(qhostaddress)
 
-if(NOT WINRT)
-    add_subdirectory(qnetworkproxy)
-    add_subdirectory(qnetworkproxyfactory)
-endif()
-
 if(QT_FEATURE_private_tests)
     add_subdirectory(qauthenticator)
 

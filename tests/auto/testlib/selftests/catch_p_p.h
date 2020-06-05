@@ -235,13 +235,7 @@ namespace Catch {
 #    define CATCH_INTERNAL_CONFIG_CPP17_UNCAUGHT_EXCEPTIONS
 #  endif
 
-// Universal Windows platform does not support SEH
-// Or console colours (or console at all...)
-#  if defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_APP)
-#    define CATCH_CONFIG_COLOUR_NONE
-#  else
-#    define CATCH_INTERNAL_CONFIG_WINDOWS_SEH
-#  endif
+#  define CATCH_INTERNAL_CONFIG_WINDOWS_SEH
 
 // MSVC traditional preprocessor needs some workaround for __VA_ARGS__
 // _MSVC_TRADITIONAL == 0 means new conformant preprocessor

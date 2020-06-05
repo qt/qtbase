@@ -1832,9 +1832,6 @@ int QFileDialogPrivate::maxNameLength(const QString &path)
 {
 #if defined(Q_OS_UNIX)
     return ::pathconf(QFile::encodeName(path).data(), _PC_NAME_MAX);
-#elif defined(Q_OS_WINRT)
-    Q_UNUSED(path);
-    return MAX_PATH;
 #elif defined(Q_OS_WIN)
     DWORD maxLength;
     const QString drive = path.left(3);

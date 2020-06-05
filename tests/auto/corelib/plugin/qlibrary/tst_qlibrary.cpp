@@ -159,12 +159,10 @@ void tst_QLibrary::initTestCase()
     }
     directory = tempDir->path();
     temporaryDir = std::move(tempDir);
-#elif !defined(Q_OS_WINRT)
+#else
     // chdir to our testdata directory, and use relative paths in some tests.
     QString testdatadir = QFileInfo(QFINDTESTDATA("library_path")).absolutePath();
     QVERIFY2(QDir::setCurrent(testdatadir), qPrintable("Could not chdir to " + testdatadir));
-    directory = QCoreApplication::applicationDirPath();
-#elif defined(Q_OS_WINRT)
     directory = QCoreApplication::applicationDirPath();
 #endif
 }
@@ -434,7 +432,7 @@ void tst_QLibrary::loadHints_data()
     QString appDir = directory;
 
     lh |= QLibrary::ResolveAllSymbolsHint;
-# if defined(Q_OS_WIN32) || defined(Q_OS_WINRT)
+# if defined(Q_OS_WIN32)
     QTest::newRow( "ok01 (with suffix)" ) << appDir + "/mylib.dll" << int(lh) << true;
     QTest::newRow( "ok02 (with non-standard suffix)" ) << appDir + "/mylib.dl2" << int(lh) << true;
     QTest::newRow( "ok03 (with many dots)" ) << appDir + "/system.qt.test.mylib.dll" << int(lh) << true;
@@ -486,7 +484,7 @@ void tst_QLibrary::fileName_data()
 
     QTest::newRow( "ok02" ) << sys_qualifiedLibraryName(QLatin1String("mylib"))
                             << sys_qualifiedLibraryName(QLatin1String("mylib"));
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
     QTest::newRow( "ok03" ) << "user32"
                             << "USER32.dll";
 #endif

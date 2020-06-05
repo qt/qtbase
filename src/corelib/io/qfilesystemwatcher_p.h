@@ -108,14 +108,14 @@ public:
     void _q_fileChanged(const QString &path, bool removed);
     void _q_directoryChanged(const QString &path, bool removed);
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
     void _q_winDriveLockForRemoval(const QString &);
     void _q_winDriveLockForRemovalFailed(const QString &);
     void _q_winDriveRemoved(const QString &);
 
 private:
     QHash<QChar, QStringList> temporarilyRemovedPaths;
-#endif // Q_OS_WIN && !Q_OS_WINRT
+#endif // Q_OS_WIN
 };
 
 

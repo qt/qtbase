@@ -95,12 +95,7 @@ static int posix_helper(const wchar_t *dirpath, size_t length)
     Q_ASSERT(MAX_PATH > length + 3);
     wcsncpy(appendedPath, dirpath, length);
     wcscpy(appendedPath + length, L"\\*");
-#ifndef Q_OS_WINRT
     hSearch = FindFirstFile(appendedPath, &fd);
-#else
-    hSearch = FindFirstFileEx(appendedPath, FindExInfoStandard, &fd,
-                              FindExSearchNameMatch, NULL, FIND_FIRST_EX_LARGE_FETCH);
-#endif
 
     if (hSearch == INVALID_HANDLE_VALUE) {
         qWarning("FindFirstFile failed");

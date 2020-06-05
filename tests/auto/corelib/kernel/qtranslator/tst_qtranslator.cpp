@@ -86,15 +86,15 @@ void tst_QTranslator::initTestCase()
 
     // chdir into the directory containing our testdata,
     // to make the code simpler (load testdata via relative paths)
-#ifdef Q_OS_WINRT
+#if 0
     // ### TODO: Use this for all platforms in 5.7
     dataDir = QEXTRACTTESTDATA(QStringLiteral("/"));
     QVERIFY2(!dataDir.isNull(), qPrintable("Could not extract test data"));
     QVERIFY2(QDir::setCurrent(dataDir->path()), qPrintable("Could not chdir to " + dataDir->path()));
-#else // !Q_OS_WINRT
+#else
     QString testdata_dir = QFileInfo(QFINDTESTDATA("hellotr_la.qm")).absolutePath();
     QVERIFY2(QDir::setCurrent(testdata_dir), qPrintable("Could not chdir to " + testdata_dir));
-#endif // !Q_OS_WINRT
+#endif
 
 }
 

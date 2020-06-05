@@ -46,11 +46,9 @@
 #include "qdatetime.h"
 #include "qoperatingsystemversion.h"
 #include "qoperatingsystemversion_p.h"
-#if defined(Q_OS_WIN) || defined(Q_OS_CYGWIN) || defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) || defined(Q_OS_CYGWIN)
 #  include "qoperatingsystemversion_win_p.h"
-#  ifndef Q_OS_WINRT
-#    include "private/qwinregistry_p.h"
-#  endif
+#  include "private/qwinregistry_p.h"
 #endif // Q_OS_WIN || Q_OS_CYGWIN
 #include <private/qlocale_tools_p.h>
 
@@ -71,10 +69,6 @@
 #if defined(Q_CC_MSVC)
 #  include <crtdbg.h>
 #endif
-
-#ifdef Q_OS_WINRT
-#include <Ws2tcpip.h>
-#endif // Q_OS_WINRT
 
 #ifdef Q_OS_WIN
 #  include <qt_windows.h>
@@ -1463,7 +1457,7 @@ bool qSharedBuild() noexcept
     \relates <QtGlobal>
 
     Defined on all supported versions of Windows. That is, if
-    \l Q_OS_WIN32, \l Q_OS_WIN64, or \l Q_OS_WINRT is defined.
+    \l Q_OS_WIN32 or \l Q_OS_WIN64 is defined.
 */
 
 /*!
@@ -1485,14 +1479,6 @@ bool qSharedBuild() noexcept
     \relates <QtGlobal>
 
     Defined on 64-bit versions of Windows.
-*/
-
-/*!
-    \macro Q_OS_WINRT
-    \relates <QtGlobal>
-
-    Defined for Windows Runtime (Windows Store apps) on Windows 8, Windows RT,
-    and Windows Phone 8.
 */
 
 /*!
@@ -2165,7 +2151,7 @@ static const char *osVer_helper(QOperatingSystemVersion version = QOperatingSyst
 }
 #endif
 
-#elif defined(Q_OS_WIN) || defined(Q_OS_CYGWIN) || defined(Q_OS_WINRT)
+#elif defined(Q_OS_WIN) || defined(Q_OS_CYGWIN)
 
 QT_BEGIN_INCLUDE_NAMESPACE
 #include "qt_windows.h"
@@ -2223,7 +2209,7 @@ QT_WARNING_POP
 
 static QString readVersionRegistryString(const wchar_t *subKey)
 {
-#if !defined(QT_BUILD_QMAKE) && !defined(Q_OS_WINRT)
+#if !defined(QT_BUILD_QMAKE)
      return QWinRegistryKey(HKEY_LOCAL_MACHINE, LR"(SOFTWARE\Microsoft\Windows NT\CurrentVersion)")
             .stringValue(subKey);
 #else
@@ -2834,8 +2820,7 @@ QString QSysInfo::kernelVersion()
     \b{FreeBSD note}: this function returns "debian" for Debian/kFreeBSD and
     "unknown" otherwise.
 
-    \b{Windows note}: this function "winrt" for WinRT builds, and "windows"
-    for normal desktop builds.
+    \b{Windows note}: this function return "windows"
 
     For other Unix-type systems, this function usually returns "unknown".
 
@@ -2844,9 +2829,7 @@ QString QSysInfo::kernelVersion()
 QString QSysInfo::productType()
 {
     // similar, but not identical to QFileSelectorPrivate::platformSelectors
-#if defined(Q_OS_WINRT)
-    return QStringLiteral("winrt");
-#elif defined(Q_OS_WIN)
+#if defined(Q_OS_WIN)
     return QStringLiteral("windows");
 
 #elif defined(Q_OS_QNX)
@@ -2968,7 +2951,7 @@ QString QSysInfo::prettyProductName()
     if (!name)
         return result + versionString;
     result += QLatin1String(name);
-#  if !defined(Q_OS_WIN) || defined(Q_OS_WINRT)
+#  if !defined(Q_OS_WIN)
     return result + QLatin1String(" (") + versionString + QLatin1Char(')');
 #  else
     // (resembling winver.exe): Windows 10 "Windows 10 Version 1809"
@@ -3104,7 +3087,7 @@ QByteArray QSysInfo::machineUniqueId()
         if (len != -1)
             return QByteArray(buffer, len);
     }
-#elif defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#elif defined(Q_OS_WIN)
     // Let's poke at the registry
     // ### Qt 6: Use new helpers from qwinregistry.cpp (once bootstrap builds are obsolete)
     HKEY key = NULL;
@@ -3537,7 +3520,7 @@ QByteArray qgetenv(const char *varName)
 */
 QString qEnvironmentVariable(const char *varName, const QString &defaultValue)
 {
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
     const auto locker = qt_scoped_lock(environmentMutex);
     QVarLengthArray<wchar_t, 32> wname(int(strlen(varName)) + 1);
     for (int i = 0; i < wname.size(); ++i) // wname.size() is correct: will copy terminating null

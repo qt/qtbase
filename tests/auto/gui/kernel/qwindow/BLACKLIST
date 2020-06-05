@@ -3,7 +3,6 @@ opensuse-leap
 [positioning:default]
 linux
 macos ci
-winrt
 [positioning:fake]
 macos ci
 [modalWithChildWindow]

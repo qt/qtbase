@@ -895,14 +895,14 @@
             "label": "QProcess",
             "purpose": "Supports external process invocation.",
             "section": "File I/O",
-            "condition": "features.processenvironment && (features.thread || !config.unix) && !config.winrt && !config.uikit && !config.integrity && !config.vxworks && !config.rtems",
+            "condition": "features.processenvironment && (features.thread || !config.unix) && !config.uikit && !config.integrity && !config.vxworks && !config.rtems",
             "output": [ "publicFeature", "feature" ]
         },
         "processenvironment": {
             "label": "QProcessEnvironment",
             "purpose": "Provides a higher-level abstraction of environment variables.",
             "section": "File I/O",
-            "condition": "!config.winrt && !config.integrity && !config.rtems",
+            "condition": "!config.integrity && !config.rtems",
             "output": [ "publicFeature" ]
         },
         "temporaryfile": {
@@ -928,7 +928,6 @@
             "label": "QFileSystemWatcher",
             "purpose": "Provides an interface for monitoring files and directories for modifications.",
             "section": "File I/O",
-            "condition": "!config.winrt",
             "output": [ "publicFeature", "feature" ]
         },
         "filesystemiterator": {

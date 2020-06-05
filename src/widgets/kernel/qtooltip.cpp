@@ -217,11 +217,7 @@ void QTipLabel::reuseTip(const QString &text, int msecDisplayTime, const QPoint 
 
 void  QTipLabel::updateSize(const QPoint &pos)
 {
-#ifndef Q_OS_WINRT
-    // ### The code below does not always work well on WinRT
-    // (e.g COIN fails an auto test - tst_QToolTip::qtbug64550_stylesheet - QTBUG-72652)
     d_func()->setScreenForPoint(pos);
-#endif
     // Ensure that we get correct sizeHints by placing this window on the right screen.
     QFontMetrics fm(font());
     QSize extra(1, 0);
@@ -230,8 +226,7 @@ void  QTipLabel::updateSize(const QPoint &pos)
         ++extra.rheight();
     setWordWrap(Qt::mightBeRichText(text()));
     QSize sh = sizeHint();
-    // ### When the above WinRT code is fixed, windowhandle should be used to find the screen.
-    QScreen *screen = QGuiApplication::screenAt(pos);
+    QScreen *screen = windowHandle() ? windowHandle()->screen() : QGuiApplication::screenAt(pos);
     if (!screen)
         screen = QGuiApplication::primaryScreen();
     if (screen) {

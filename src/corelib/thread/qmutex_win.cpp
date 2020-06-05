@@ -46,11 +46,7 @@ QT_BEGIN_NAMESPACE
 
 QMutexPrivate::QMutexPrivate()
 {
-#ifndef Q_OS_WINRT
     event = CreateEvent(0, FALSE, FALSE, 0);
-#else
-    event = CreateEventEx(0, NULL, 0, EVENT_ALL_ACCESS);
-#endif
 
     if (!event)
         qWarning("QMutexData::QMutexData: Cannot create event");

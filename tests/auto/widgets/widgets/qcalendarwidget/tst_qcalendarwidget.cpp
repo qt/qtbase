@@ -153,9 +153,6 @@ void tst_QCalendarWidget::getSetCheck()
 
 void tst_QCalendarWidget::buttonClickCheck()
 {
-#ifdef Q_OS_WINRT
-    QSKIP("Fails on WinRT - QTBUG-68297");
-#endif
     if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This fails. Figure out why.");
 
@@ -288,10 +285,6 @@ void tst_QCalendarWidget::showPrevNext()
     QFETCH(ShowFunc, function);
     QFETCH(QDate, dateOrigin);
     QFETCH(QDate, expectedDate);
-
-#ifdef Q_OS_WINRT
-    QSKIP("Fails on WinRT - QTBUG-68297");
-#endif
 
     QCalendarWidget calWidget;
     calWidget.show();

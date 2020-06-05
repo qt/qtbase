@@ -65,7 +65,6 @@ QLockFile::LockError QLockFilePrivate::tryLock_sys()
     // but Windows doesn't allow recreating it while this handle is open anyway,
     // so this would only create confusion (can't lock, but no lock file to read from).
     const DWORD dwShareMode = FILE_SHARE_READ;
-#ifndef Q_OS_WINRT
     SECURITY_ATTRIBUTES securityAtts = { sizeof(SECURITY_ATTRIBUTES), NULL, FALSE };
     HANDLE fh = CreateFile((const wchar_t*)fileEntry.nativeFilePath().utf16(),
                            GENERIC_READ | GENERIC_WRITE,
@@ -74,13 +73,6 @@ QLockFile::LockError QLockFilePrivate::tryLock_sys()
                            CREATE_NEW, // error if already exists
                            FILE_ATTRIBUTE_NORMAL,
                            NULL);
-#else // !Q_OS_WINRT
-    HANDLE fh = CreateFile2((const wchar_t*)fileEntry.nativeFilePath().utf16(),
-                            GENERIC_READ | GENERIC_WRITE,
-                            dwShareMode,
-                            CREATE_NEW, // error if already exists
-                            NULL);
-#endif // Q_OS_WINRT
     if (fh == INVALID_HANDLE_VALUE) {
         const DWORD lastError = GetLastError();
         switch (lastError) {
@@ -118,9 +110,6 @@ bool QLockFilePrivate::removeStaleLock()
 
 bool QLockFilePrivate::isProcessRunning(qint64 pid, const QString &appname)
 {
-    // On WinRT there seems to be no way of obtaining information about other
-    // processes due to sandboxing
-#ifndef Q_OS_WINRT
     HANDLE procHandle = ::OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
     if (!procHandle)
         return false;
@@ -137,17 +126,11 @@ bool QLockFilePrivate::isProcessRunning(qint64 pid, const QString &appname)
     if (!processName.isEmpty() && processName != appname)
         return false; // PID got reused by a different application.
 
-#else // !Q_OS_WINRT
-    Q_UNUSED(pid);
-    Q_UNUSED(appname);
-#endif // Q_OS_WINRT
-
     return true;
 }
 
 QString QLockFilePrivate::processNameByPid(qint64 pid)
 {
-#if !defined(Q_OS_WINRT)
     typedef DWORD (WINAPI *GetModuleFileNameExFunc)(HANDLE, HMODULE, LPTSTR, DWORD);
 
     HMODULE hPsapi = LoadLibraryA("psapi");
@@ -179,10 +162,6 @@ QString QLockFilePrivate::processNameByPid(qint64 pid)
     if (i >= 0)
         name.truncate(i);
     return name;
-#else
-    Q_UNUSED(pid);
-    return QString();
-#endif
 }
 
 void QLockFile::unlock()

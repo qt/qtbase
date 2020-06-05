@@ -53,7 +53,7 @@
             "label": "QPrinter",
             "purpose": "Provides a printer backend of QPainter.",
             "section": "Painting",
-            "condition": "!config.uikit && !config.winrt && features.picture && features.temporaryfile && features.pdf",
+            "condition": "!config.uikit && features.picture && features.temporaryfile && features.pdf",
             "output": [ "publicFeature", "feature" ]
         },
         "printpreviewwidget": {

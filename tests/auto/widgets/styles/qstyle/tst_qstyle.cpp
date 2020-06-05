@@ -75,7 +75,7 @@ private slots:
     void testFusionStyle();
 #endif
     void testWindowsStyle();
-#if defined(Q_OS_WIN) && !defined(QT_NO_STYLE_WINDOWSVISTA) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(QT_NO_STYLE_WINDOWSVISTA)
     void testWindowsVistaStyle();
 #endif
 #ifdef Q_OS_MAC
@@ -183,9 +183,6 @@ void tst_QStyle::drawItemPixmap()
     QVERIFY(image.reinterpretAsFormat(QImage::Format_RGB32));
     const QRgb *bits = reinterpret_cast<const QRgb *>(image.constBits());
     const QRgb *end = bits + image.sizeInBytes() / sizeof(QRgb);
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "QWidget::resize does not work on WinRT", Continue);
-#endif
     QVERIFY(std::all_of(bits, end, [green] (QRgb r) { return r == green; }));
 }
 
@@ -319,7 +316,7 @@ void tst_QStyle::testWindowsStyle()
     wstyle->drawControl(QStyle::CE_ProgressBar, &pb, &painter, nullptr);
 }
 
-#if defined(Q_OS_WIN) && !defined(QT_NO_STYLE_WINDOWSVISTA) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(QT_NO_STYLE_WINDOWSVISTA)
 void tst_QStyle::testWindowsVistaStyle()
 {
     QScopedPointer<QStyle> vistastyle(QStyleFactory::create("WindowsVista"));
@@ -515,9 +512,6 @@ void tst_QStyle::testFrameOnlyAroundContents()
     area.verticalScrollBar()->setStyle(&frameStyle);
     area.setStyle(&frameStyle);
     // Test that we reserve space for scrollbar spacing
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "QWidget::setGeometry does not work on WinRT", Continue);
-#endif
     QCOMPARE(viewPortWidth, area.viewport()->width() + SCROLLBAR_SPACING);
 }
 

@@ -100,7 +100,7 @@ extend_target(tst_qpixmap CONDITION TARGET Qt::Widgets
         Qt::WidgetsPrivate
 )
 
-extend_target(tst_qpixmap CONDITION WIN32 AND NOT WINRT
+extend_target(tst_qpixmap CONDITION WIN32
     PUBLIC_LIBRARIES
         gdi32
         user32

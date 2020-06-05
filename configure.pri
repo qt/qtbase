@@ -211,9 +211,7 @@ defineReplace(qtConfFunc_licenseCheck) {
         showWhat = "Type 'L' to view the GNU Lesser General Public License version 3 (LGPLv3)."
         gpl2Ok = false
         gpl3Ok = false
-        winrt {
-            notTheLicense = "Note: GPL version 2 is not available on WinRT."
-        } else: wasm {
+        wasm {
             gpl3Ok = true
             theLicense = "GNU General Public License (GPL) version 3"
             showWhat = "Type 'G' to view the GNU General Public License version 3 (GPLv3)."

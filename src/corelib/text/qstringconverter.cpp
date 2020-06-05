@@ -1115,7 +1115,6 @@ static QString convertToUnicodeCharByChar(const char *chars, qsizetype length, Q
         state->remainingChars = 0;
     }
     const char *mb = mbcs;
-#if !defined(Q_OS_WINRT)
     const char *next = 0;
     QString s;
     while ((next = CharNextExA(CP_ACP, mb, 0)) != mb) {
@@ -1134,21 +1133,6 @@ static QString convertToUnicodeCharByChar(const char *chars, qsizetype length, Q
         }
         mb = next;
     }
-#else
-    QString s;
-    size_t size = mbstowcs(NULL, mb, length);
-    if (size == size_t(-1)) {
-        Q_ASSERT("Error in CE TextCodec");
-        return QString();
-    }
-    wchar_t* ws = new wchar_t[size + 2];
-    ws[size +1] = 0;
-    ws[size] = 0;
-    size = mbstowcs(ws, mb, length);
-    for (size_t i = 0; i < size; i++)
-        s.append(QChar(ws[i]));
-    delete [] ws;
-#endif
     delete [] mbcs;
     return s;
 }

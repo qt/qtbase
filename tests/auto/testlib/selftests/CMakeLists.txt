@@ -52,7 +52,7 @@ qt_add_resource(tst_selftests "qmake_expected_files"
 ## Scopes:
 #####################################################################
 
-#### Keys ignored in scope 5:.:.:test.pro:NOT ANDROID AND NOT WINRT AND for(file,SUBPROGRAMS):
+#### Keys ignored in scope 5:.:.:test.pro:NOT ANDROID AND for(file,SUBPROGRAMS):
 # TEST_HELPER_INSTALLS = "../$${file}/$${file}"
 
 #### Keys ignored in scope 7:.:..:../selftests.pri:TARGET Qt::Gui:
@@ -63,71 +63,69 @@ qt_apply_testlib_coverage_options(tst_selftests)
 # ------------- Sub tests -------------
 
 # special case begin
-if(NOT WINRT)
-    set(subprograms
-        assert
-        badxml
-        benchlibcallgrind
-        benchlibcounting
-        benchlibeventcounter
-        benchliboptions
-        benchlibtickcounter
-        benchlibwalltime
-        blacklisted
-        cmptest
-        commandlinedata
-        counting
-        crashes
-        datatable
-        datetime
-        deleteLater
-        deleteLater_noApp
-        differentexec
-        exceptionthrow
-        expectfail
-        failcleanup
-        faildatatype
-        failfetchtype
-        failinit
-        failinitdata
-        fetchbogus
-        findtestdata
-        float
-        globaldata
-        longstring
-        maxwarnings
-        multiexec
-        pass
-        pairdiagnostics
-        printdatatags
-        printdatatagswithglobaltags
-        qexecstringlist
-        silent
-        signaldumper
-        singleskip
-        skip
-        skipcleanup
-        skipinit
-        skipinitdata
-        sleep
-        strcmp
-        subtest
-        testlib
-        tuplediagnostics
-        verbose1
-        verbose2
-        verifyexceptionthrown
-        warnings
-        watchdog
-        xunit
-    )
+set(subprograms
+    assert
+    badxml
+    benchlibcallgrind
+    benchlibcounting
+    benchlibeventcounter
+    benchliboptions
+    benchlibtickcounter
+    benchlibwalltime
+    blacklisted
+    cmptest
+    commandlinedata
+    counting
+    crashes
+    datatable
+    datetime
+    deleteLater
+    deleteLater_noApp
+    differentexec
+    exceptionthrow
+    expectfail
+    failcleanup
+    faildatatype
+    failfetchtype
+    failinit
+    failinitdata
+    fetchbogus
+    findtestdata
+    float
+    globaldata
+    longstring
+    maxwarnings
+    multiexec
+    pass
+    pairdiagnostics
+    printdatatags
+    printdatatagswithglobaltags
+    qexecstringlist
+    silent
+    signaldumper
+    singleskip
+    skip
+    skipcleanup
+    skipinit
+    skipinitdata
+    sleep
+    strcmp
+    subtest
+    testlib
+    tuplediagnostics
+    verbose1
+    verbose2
+    verifyexceptionthrown
+    warnings
+    watchdog
+    xunit
+)
 
-    if(TARGET Qt::Gui)
-        list(APPEND subprograms
-            keyboard
-            mouse
-        )
-    endif()
+if(TARGET Qt::Gui)
+    list(APPEND subprograms
+        keyboard
+        mouse
+    )
 endif()
 
 foreach(subprogram IN LISTS subprograms)
@@ -149,6 +147,6 @@ qt_extend_target(tst_selftests
 ## Scopes:
 #####################################################################
 
-#### Keys ignored in scope 5:.:.:test.pro:NOT ANDROID AND NOT WINRT AND for(file,SUBPROGRAMS):
+#### Keys ignored in scope 5:.:.:test.pro:NOT ANDROID AND for(file,SUBPROGRAMS):
 # TEST_HELPER_INSTALLS = "../$${file}/$${file}"
 # special case end

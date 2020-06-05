@@ -52,7 +52,7 @@ include(platform/platform.pri)
 
 win32 {
     QMAKE_USE_PRIVATE += ws2_32
-    !winrt: QMAKE_USE_PRIVATE += advapi32 kernel32 ole32 shell32 uuid user32 winmm
+    QMAKE_USE_PRIVATE += advapi32 kernel32 ole32 shell32 uuid user32 winmm
 }
 
 darwin {

@@ -58,7 +58,7 @@
 
 Q_DECLARE_METATYPE(QAbstractItemDelegate::EndEditHint)
 
-#if defined (Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined (Q_OS_WIN)
 #include <windows.h>
 #define Q_CHECK_PAINTEVENTS \
     if (::SwitchDesktop(::GetThreadDesktop(::GetCurrentThreadId())) == 0) \

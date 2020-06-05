@@ -40,7 +40,7 @@ SUBDIRS=\
    qaccessibilitylinux \
    qaccessibilitymac \
 
-winrt|!qtHaveModule(network): SUBDIRS -= \
+!qtHaveModule(network): SUBDIRS -= \
    lancelot \
    networkselftest \
    qnetworkaccessmanager_and_qprogressdialog \
@@ -49,7 +49,7 @@ cross_compile: SUBDIRS -= \
    atwrapper \
    compiler
 
-winrt|!qtHaveModule(gui)|!qtConfig(accessibility): SUBDIRS -= qaccessibility
+!qtHaveModule(gui)|!qtConfig(accessibility): SUBDIRS -= qaccessibility
 
 !qtHaveModule(gui)|!qtConfig(accessibility-atspi-bridge): SUBDIRS -= qaccessibilitylinux
 

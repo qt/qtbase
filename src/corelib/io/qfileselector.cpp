@@ -346,9 +346,6 @@ QStringList QFileSelectorPrivate::platformSelectors()
 #if defined(Q_OS_WIN)
     ret << QStringLiteral("windows");
     ret << QSysInfo::kernelType();  // "winnt"
-#  if defined(Q_OS_WINRT)
-    ret << QStringLiteral("winrt");
-#  endif
 #elif defined(Q_OS_UNIX)
     ret << QStringLiteral("unix");
 #  if !defined(Q_OS_ANDROID) && !defined(Q_OS_QNX)

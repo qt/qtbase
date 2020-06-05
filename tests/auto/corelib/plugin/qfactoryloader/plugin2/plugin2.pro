@@ -5,7 +5,6 @@ HEADERS       = plugin2.h
 SOURCES       = plugin2.cpp
 TARGET        = $$qtLibraryTarget(plugin2)
 DESTDIR       = ../bin
-winrt:include(../winrt.pri)
 
 !qtConfig(library): DEFINES += QT_STATICPLUGIN
 

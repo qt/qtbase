@@ -21,9 +21,4 @@ include(ssl/ssl.pri)
 
 QMAKE_LIBS += $$QMAKE_LIBS_NETWORK
 
-MODULE_WINRT_CAPABILITIES = \
-    internetClient \
-    internetClientServer \
-    privateNetworkClientServer
-
 load(qt_module)

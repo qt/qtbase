@@ -39,11 +39,7 @@
 #endif
 #if defined(Q_OS_WIN)
 #  include <qt_windows.h>
-#  ifndef Q_OS_WINRT
-#    define sleep(X) Sleep(X)
-#  else
-#    define sleep(X) WaitForSingleObjectEx(GetCurrentThread(), X, FALSE);
-#  endif
+#  define sleep(X) Sleep(X)
 #endif
 
 //on solaris, threads that loop on the release bool variable

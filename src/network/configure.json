@@ -272,7 +272,7 @@
             ]
         },
         "openssl-runtime": {
-            "autoDetect": "!config.winrt && !config.wasm",
+            "autoDetect": "!config.wasm",
             "enable": "input.openssl == 'yes' || input.openssl == 'runtime'",
             "disable": "input.openssl == 'no' || input.openssl == 'linked' || input.ssl == 'no'",
             "condition": "!features.securetransport && !features.schannel && libs.openssl_headers"
@@ -299,7 +299,7 @@
         "schannel": {
             "label": "Schannel",
             "disable": "input.schannel == 'no' || input.ssl == 'no'",
-            "condition": "input.schannel == 'yes' && config.win32 && !config.winrt && (input.openssl == '' || input.openssl == 'no')",
+            "condition": "input.schannel == 'yes' && config.win32 && (input.openssl == '' || input.openssl == 'no')",
             "output": [
                 "publicFeature",
                 { "type": "define", "name": "QT_SCHANNEL" }
@@ -307,7 +307,7 @@
         },
         "ssl": {
             "label": "SSL",
-            "condition": "config.winrt || features.securetransport || features.openssl || features.schannel",
+            "condition": "features.securetransport || features.openssl || features.schannel",
             "output": [ "publicFeature", "feature" ]
         },
         "dtls": {
@@ -411,7 +411,7 @@
             "label": "SSPI",
             "purpose": "Enable NTLM/SPNEGO authentication through SSPI",
             "section": "Networking",
-            "condition": "config.win32 && !config.winrt",
+            "condition": "config.win32",
             "output": [ "publicFeature", "feature" ]
         },
         "netlistmgr": {
@@ -469,7 +469,7 @@ For example:
                 {
                     "type": "feature",
                     "args": "schannel",
-                    "condition": "config.win32 && !config.winrt"
+                    "condition": "config.win32"
                 },
                 "openssl",
                 "openssl-linked",

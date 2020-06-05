@@ -204,7 +204,7 @@ void QFileInfoGatherer::createWatcher()
     m_watcher = new QFileSystemWatcher(this);
     connect(m_watcher, &QFileSystemWatcher::directoryChanged, this, &QFileInfoGatherer::list);
     connect(m_watcher, &QFileSystemWatcher::fileChanged, this, &QFileInfoGatherer::updateFile);
-#  if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#  if defined(Q_OS_WIN)
     const QVariant listener = m_watcher->property("_q_driveListener");
     if (listener.canConvert<QObject *>()) {
         if (QObject *driveListener = listener.value<QObject *>()) {
@@ -212,7 +212,7 @@ void QFileInfoGatherer::createWatcher()
             connect(driveListener, SIGNAL(driveRemoved()), this, SLOT(driveRemoved()));
         }
     }
-#  endif // Q_OS_WIN && !Q_OS_WINRT
+#  endif // Q_OS_WIN
 #endif
 }
 

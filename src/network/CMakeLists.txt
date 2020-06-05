@@ -35,6 +35,7 @@ qt_add_module(Network
         kernel/qtnetworkglobal.h kernel/qtnetworkglobal_p.h
         socket/qabstractsocket.cpp socket/qabstractsocket.h socket/qabstractsocket_p.h
         socket/qabstractsocketengine.cpp socket/qabstractsocketengine_p.h
+        socket/qnativesocketengine.cpp socket/qnativesocketengine_p.h
         socket/qtcpserver.cpp socket/qtcpserver.h socket/qtcpserver_p.h
         socket/qtcpsocket.cpp socket/qtcpsocket.h socket/qtcpsocket_p.h
         socket/qudpsocket.cpp socket/qudpsocket.h
@@ -59,7 +60,6 @@ qt_add_module(Network
 )
 
 #### Keys ignored in scope 1:.:.:network.pro:<TRUE>:
-# MODULE_WINRT_CAPABILITIES = "internetClient" "internetClientServer" "privateNetworkClientServer"
 # QMAKE_LIBS = "$$QMAKE_LIBS_NETWORK"
 
 ## Scopes:
@@ -178,10 +178,6 @@ qt_extend_target(Network CONDITION ANDROID AND QT_FEATURE_dnslookup
 qt_extend_target(Network CONDITION WIN32
     SOURCES
         kernel/qhostinfo_win.cpp
-)
-
-qt_extend_target(Network CONDITION WIN32 AND NOT WINRT
-    SOURCES
         kernel/qnetworkinterface_win.cpp
         kernel/qnetworkproxy_win.cpp
         socket/qnativesocketengine_win.cpp
@@ -191,20 +187,9 @@ qt_extend_target(Network CONDITION WIN32 AND NOT WINRT
         iphlpapi
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_dnslookup AND WIN32 AND NOT WINRT
+qt_extend_target(Network CONDITION QT_FEATURE_dnslookup AND WIN32
     SOURCES
         kernel/qdnslookup_win.cpp
-)
-
-qt_extend_target(Network CONDITION WINRT
-    SOURCES
-        kernel/qnetworkinterface_winrt.cpp
-        socket/qnativesocketengine_winrt.cpp socket/qnativesocketengine_winrt_p.h
-)
-
-qt_extend_target(Network CONDITION QT_FEATURE_dnslookup AND WINRT
-    SOURCES
-        kernel/qdnslookup_winrt.cpp
 )
 
 qt_extend_target(Network CONDITION APPLE AND NOT UIKIT
@@ -245,7 +230,7 @@ qt_extend_target(Network CONDITION MACOS
         kernel/qnetworkproxy_mac.cpp
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_libproxy AND NOT MACOS AND (UNIX OR WINRT)
+qt_extend_target(Network CONDITION QT_FEATURE_libproxy AND UNIX AND NOT MACOS
     SOURCES
         kernel/qnetworkproxy_libproxy.cpp
     LIBRARIES
@@ -253,7 +238,7 @@ qt_extend_target(Network CONDITION QT_FEATURE_libproxy AND NOT MACOS AND (UNIX O
         PkgConfig::Libproxy
 )
 
-qt_extend_target(Network CONDITION NOT MACOS AND NOT QT_FEATURE_libproxy AND (UNIX OR WINRT)
+qt_extend_target(Network CONDITION UNIX AND NOT MACOS AND NOT QT_FEATURE_libproxy
     SOURCES
         kernel/qnetworkproxy_generic.cpp
 )
@@ -269,11 +254,6 @@ qt_extend_target(Network CONDITION QT_FEATURE_sctp
         socket/qsctpsocket.cpp socket/qsctpsocket.h socket/qsctpsocket_p.h
 )
 
-qt_extend_target(Network CONDITION NOT WINRT
-    SOURCES
-        socket/qnativesocketengine.cpp socket/qnativesocketengine_p.h
-)
-
 qt_extend_target(Network CONDITION MSVC
     MOC_OPTIONS
         "-D_WINSOCK_DEPRECATED_NO_WARNINGS"
@@ -285,7 +265,7 @@ qt_extend_target(Network CONDITION QT_FEATURE_localserver
         socket/qlocalsocket.cpp socket/qlocalsocket.h socket/qlocalsocket_p.h
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_localserver AND (INTEGRITY OR WINRT)
+qt_extend_target(Network CONDITION INTEGRITY AND QT_FEATURE_localserver
     SOURCES
         socket/qlocalserver_tcp.cpp
         socket/qlocalsocket_tcp.cpp
@@ -293,13 +273,13 @@ qt_extend_target(Network CONDITION QT_FEATURE_localserver AND (INTEGRITY OR WINR
         QT_LOCALSOCKET_TCP
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_localserver AND UNIX AND NOT INTEGRITY AND NOT WINRT
+qt_extend_target(Network CONDITION QT_FEATURE_localserver AND UNIX AND NOT INTEGRITY
     SOURCES
         socket/qlocalserver_unix.cpp
         socket/qlocalsocket_unix.cpp
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_localserver AND WIN32 AND NOT WINRT
+qt_extend_target(Network CONDITION QT_FEATURE_localserver AND WIN32
     SOURCES
         socket/qlocalserver_win.cpp
         socket/qlocalsocket_win.cpp
@@ -326,16 +306,6 @@ qt_extend_target(Network CONDITION QT_FEATURE_ssl
         ssl/qsslkey.h ssl/qsslkey_p.cpp ssl/qsslkey_p.h
         ssl/qsslpresharedkeyauthenticator.cpp ssl/qsslpresharedkeyauthenticator.h ssl/qsslpresharedkeyauthenticator_p.h
         ssl/qsslsocket.cpp ssl/qsslsocket.h ssl/qsslsocket_p.h
-)
-
-qt_extend_target(Network CONDITION QT_FEATURE_ssl AND WINRT
-    SOURCES
-        ssl/qsslcertificate_winrt.cpp
-        ssl/qssldiffiehellmanparameters_dummy.cpp
-        ssl/qsslellipticcurve_dummy.cpp
-        ssl/qsslkey_qt.cpp
-        ssl/qsslkey_winrt.cpp
-        ssl/qsslsocket_winrt.cpp ssl/qsslsocket_winrt_p.h
 )
 
 qt_extend_target(Network CONDITION QT_FEATURE_schannel AND QT_FEATURE_ssl

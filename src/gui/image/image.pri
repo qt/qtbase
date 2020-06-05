@@ -55,7 +55,7 @@ qtConfig(movie) {
     SOURCES += image/qmovie.cpp
 }
 
-win32:!winrt: SOURCES += image/qpixmap_win.cpp
+win32: SOURCES += image/qpixmap_win.cpp
 
 darwin: OBJECTIVE_SOURCES += image/qimage_darwin.mm
 

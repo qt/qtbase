@@ -40,7 +40,7 @@ SUBDIRS=\
     qproperty
 
 # This test is only applicable on Windows
-!win32*|winrt: SUBDIRS -= qwineventnotifier
+!win32*: SUBDIRS -= qwineventnotifier
 
 android|uikit: SUBDIRS -= qobject qsharedmemory qsystemsemaphore
 

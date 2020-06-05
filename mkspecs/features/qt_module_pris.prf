@@ -154,9 +154,6 @@ defineReplace(qtExportLibsForModule) {
         "QT_CONFIG +=$$join(QT.$${MODULE_ID}.QT_CONFIG, " ", " ")" \
         "" \
         "QT_MODULES += $$MODULE"
-    winrt: MODULE_PRI_CONT += \
-        "QT.$${MODULE_ID}.winrt_capabilities =$$join(MODULE_WINRT_CAPABILITIES, " ", " ")" \
-        "QT.$${MODULE_ID}.winrt_capabilities_device =$$join(MODULE_WINRT_CAPABILITIES_DEVICE, " ", " ")"
     write_file($$MODULE_PRI, MODULE_PRI_CONT)|error()
     !internal_module:!no_private_module {
         module_build_type += internal_module
@@ -233,7 +230,6 @@ defineReplace(qtExportLibsForModule) {
         for(var, $$list(VERSION MAJOR_VERSION MINOR_VERSION PATCH_VERSION \
                         name module depends run_depends plugin_types module_config CONFIG DEFINES \
                         priority includes bins libs frameworks \
-                        winrt_capabilities winrt_capabilities_device \
                 )):defined(QT.$${mod}.$$var, var):cache(QT.$${mod}.$$var, transient)
     }
     cache(QT_MODULES, transient)

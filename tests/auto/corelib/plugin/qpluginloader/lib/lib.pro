@@ -4,7 +4,6 @@ CONFIG -= staticlib
 SOURCES		= mylib.c
 TARGET = tst_qpluginloaderlib
 DESTDIR = ../bin
-winrt:include(../winrt.pri)
 QT = core
 
 msvc: DEFINES += WIN32_MSVC

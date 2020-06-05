@@ -15,6 +15,6 @@ SUBDIRS = \
     itemmodels \
     rhi
 
-!qtConfig(opengl)|winrt: SUBDIRS -= qopengl qopenglconfig
+!qtConfig(opengl): SUBDIRS -= qopengl qopenglconfig
 
 !qtConfig(vulkan): SUBDIRS -= qvulkan

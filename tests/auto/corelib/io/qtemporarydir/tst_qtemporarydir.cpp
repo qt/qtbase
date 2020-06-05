@@ -332,7 +332,7 @@ void tst_QTemporaryDir::nonWritableCurrentDir()
 
 void tst_QTemporaryDir::openOnRootDrives()
 {
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
     unsigned int lastErrorMode = SetErrorMode(SEM_FAILCRITICALERRORS);
 #endif
     // If it's possible to create a file in the root directory, it
@@ -346,7 +346,7 @@ void tst_QTemporaryDir::openOnRootDrives()
             QVERIFY(dir.isValid());
         }
     }
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
     SetErrorMode(lastErrorMode);
 #endif
 }

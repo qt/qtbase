@@ -22,12 +22,6 @@ add_cmake_library(tst_qpluginloaderlib
 ## Scopes:
 #####################################################################
 
-#### Keys ignored in scope 6:.:..:../winrt.pri:(CMAKE_BUILD_TYPE STREQUAL Debug):
-# DESTDIR = "../debug/bin"
-
-#### Keys ignored in scope 7:.:..:../winrt.pri:else:
-# DESTDIR = "../release/bin"
-
 extend_target(tst_qpluginloaderlib CONDITION MSVC
     DEFINES
         WIN32_MSVC

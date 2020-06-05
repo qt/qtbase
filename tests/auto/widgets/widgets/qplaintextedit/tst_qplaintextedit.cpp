@@ -1369,9 +1369,6 @@ void tst_QPlainTextEdit::adjustScrollbars()
     QLatin1String txt("\nabc def ghi jkl mno pqr stu vwx");
     ed->setPlainText(txt + txt + txt + txt);
 
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "WinRT does not support setMinimum/MaximumSize", Abort);
-#endif
     QVERIFY(ed->verticalScrollBar()->maximum() > 0);
 
     ed->moveCursor(QTextCursor::End);

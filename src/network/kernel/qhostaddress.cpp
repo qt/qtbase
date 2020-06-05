@@ -479,14 +479,10 @@ QHostAddress::QHostAddress(const QString &address)
 QHostAddress::QHostAddress(const struct sockaddr *sockaddr)
     : d(new QHostAddressPrivate)
 {
-#ifndef Q_OS_WINRT
     if (sockaddr->sa_family == AF_INET)
         setAddress(htonl(((const sockaddr_in *)sockaddr)->sin_addr.s_addr));
     else if (sockaddr->sa_family == AF_INET6)
         setAddress(((const sockaddr_in6 *)sockaddr)->sin6_addr.s6_addr);
-#else
-    Q_UNUSED(sockaddr)
-#endif
 }
 
 /*!
@@ -659,15 +655,11 @@ bool QHostAddress::setAddress(const QString &address)
 void QHostAddress::setAddress(const struct sockaddr *sockaddr)
 {
     d.detach();
-#ifndef Q_OS_WINRT
     clear();
     if (sockaddr->sa_family == AF_INET)
         setAddress(htonl(((const sockaddr_in *)sockaddr)->sin_addr.s_addr));
     else if (sockaddr->sa_family == AF_INET6)
         setAddress(((const sockaddr_in6 *)sockaddr)->sin6_addr.s6_addr);
-#else
-    Q_UNUSED(sockaddr)
-#endif
 }
 
 /*!

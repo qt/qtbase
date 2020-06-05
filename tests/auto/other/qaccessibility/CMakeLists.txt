@@ -39,13 +39,9 @@ extend_target(tst_qaccessibility CONDITION UNIX AND NOT APPLE AND NOT HAIKU AND 
 
 extend_target(tst_qaccessibility CONDITION WIN32
     PUBLIC_LIBRARIES
+        Qt::WindowsUIAutomationSupportPrivate
         ole32
         oleacc
         oleaut32
         uuid
-)
-
-extend_target(tst_qaccessibility CONDITION WIN32 AND NOT WINRT
-    PUBLIC_LIBRARIES
-        Qt::WindowsUIAutomationSupportPrivate
 )

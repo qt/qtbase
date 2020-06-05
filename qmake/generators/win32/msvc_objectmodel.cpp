@@ -2166,8 +2166,7 @@ VCPreLinkEventTool::VCPreLinkEventTool()
 // VCConfiguration --------------------------------------------------
 
 VCConfiguration::VCConfiguration()
-    :   WinRT(false),
-        ATLMinimizesCRunTimeLibraryUsage(unset),
+    :   ATLMinimizesCRunTimeLibraryUsage(unset),
         BuildBrowserInformation(unset),
         CharacterSet(charSetNotSet),
         ConfigurationType(typeApplication),

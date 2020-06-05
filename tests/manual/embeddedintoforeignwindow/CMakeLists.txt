@@ -28,14 +28,14 @@ add_qt_manual_test(embeddedintoforeignwindow
 ## Scopes:
 #####################################################################
 
-extend_target(embeddedintoforeignwindow CONDITION WIN32 AND NOT WINRT
+extend_target(embeddedintoforeignwindow CONDITION WIN32
     SOURCES
         ../diaglib/nativewindowdump_win.cpp
     PUBLIC_LIBRARIES
         user32
 )
 
-extend_target(embeddedintoforeignwindow CONDITION UNIX OR WINRT
+extend_target(embeddedintoforeignwindow CONDITION UNIX
     SOURCES
         ../diaglib/nativewindowdump.cpp
 )

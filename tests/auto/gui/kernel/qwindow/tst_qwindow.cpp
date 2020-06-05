@@ -41,15 +41,9 @@
 
 #if defined(Q_OS_QNX)
 #include <QOpenGLContext>
-#elif defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#elif defined(Q_OS_WIN)
 #  include <QtCore/qt_windows.h>
 #endif
-
-static bool isPlatformWinRT()
-{
-    static const bool isWinRT = !QGuiApplication::platformName().compare(QLatin1String("winrt"), Qt::CaseInsensitive);
-    return isWinRT;
-}
 
 class tst_QWindow: public QObject
 {
@@ -239,8 +233,6 @@ void tst_QWindow::setVisible()
     QVERIFY(h.handle());
     i.setParent(&h);
     QVERIFY2(i.handle(), "Making a visible but not created child window child of a created window should create it");
-    if (isPlatformWinRT())
-        QEXPECT_FAIL("", "Child windows are unsupported on winrt", Continue);
     QVERIFY(QTest::qWaitForWindowExposed(&i));
 }
 
@@ -407,15 +399,11 @@ void tst_QWindow::resizeEventAfterResize()
     // Make sure we get a resizeEvent after calling resize
     window.resize(m_testWindowSize);
 
-    if (isPlatformWinRT())
-        QEXPECT_FAIL("", "Winrt windows are fullscreen by default.", Continue);
     QTRY_COMPARE(window.received(QEvent::Resize), 2);
 }
 
 void tst_QWindow::exposeEventOnShrink_QTBUG54040()
 {
-    if (isPlatformWinRT())
-        QSKIP("", "WinRT does not support non-maximized/non-fullscreen top level windows. QTBUG-54528", Continue);
     Window window;
     window.setGeometry(QRect(m_availableTopLeft + QPoint(80, 80), m_testWindowSize));
     window.setTitle(QTest::currentTestFunction());
@@ -603,8 +591,6 @@ void tst_QWindow::childWindowPositioning()
 {
     if (isPlatformWayland())
         QSKIP("Wayland: This is flaky (protocol errors for xdg-shell v6). See QTBUG-67648.");
-    else if (isPlatformWinRT())
-        QSKIP("WinRT does not support child windows.");
 
     const QPoint topLeftOrigin(0, 0);
 
@@ -796,8 +782,6 @@ void tst_QWindow::isExposed()
 
     QCoreApplication::processEvents();
     QTRY_VERIFY(window.received(QEvent::Expose) > 1);
-    if (isPlatformWinRT())
-        QEXPECT_FAIL("", "WinRT does not destroy the window. Figure out why. QTBUG-68297", Continue);
     QTRY_VERIFY(!window.isExposed());
 }
 
@@ -832,8 +816,6 @@ void tst_QWindow::isActive()
     child.setGeometry(10, 10, 20, 20);
     child.show();
 
-    if (isPlatformWinRT())
-        QEXPECT_FAIL("", "WinRT does not support native child windows.", Abort);
     QTRY_VERIFY(child.isExposed());
 
     child.requestActivate();
@@ -1894,8 +1876,6 @@ void tst_QWindow::initialSize()
     w.setTitle(QLatin1String(QTest::currentTestFunction()));
     w.setWidth(m_testWindowSize.width());
     w.showNormal();
-    if (isPlatformWinRT())
-        QEXPECT_FAIL("", "WinRT shows windows as fullscreen by default.", Continue);
     QTRY_COMPARE(w.width(), m_testWindowSize.width());
     QTRY_VERIFY(w.height() > 0);
     }
@@ -1907,8 +1887,6 @@ void tst_QWindow::initialSize()
     w.showNormal();
 
     const QSize expectedSize = testSize;
-    if (isPlatformWinRT())
-        QEXPECT_FAIL("", "WinRT shows windows as fullscreen by default.", Continue);
     QTRY_COMPARE(w.size(), expectedSize);
     }
 }
@@ -1953,8 +1931,6 @@ void tst_QWindow::modalDialog()
         return;
     }
 
-    if (isPlatformWinRT())
-        QEXPECT_FAIL("", "WinRT only support one native window.", Continue);
     QTRY_COMPARE(QGuiApplication::focusWindow(), &dialog);
 }
 
@@ -2001,8 +1977,6 @@ void tst_QWindow::modalDialogClosingOneOfTwoModal()
         return;
     }
 
-    if (isPlatformWinRT())
-        QEXPECT_FAIL("", "WinRT only support one native window.", Continue);
     QTRY_COMPARE(QGuiApplication::focusWindow(), &first_dialog);
 }
 
@@ -2031,8 +2005,6 @@ void tst_QWindow::modalWithChildWindow()
 
     tlw_dialog.show();
     QVERIFY(QTest::qWaitForWindowExposed(&tlw_dialog));
-    if (isPlatformWinRT())
-        QEXPECT_FAIL("", "WinRT only support one native window.", Abort);
     QVERIFY(QTest::qWaitForWindowExposed(&sub_window));
 
     QTRY_COMPARE(QGuiApplication::focusWindow(), &tlw_dialog);
@@ -2087,8 +2059,6 @@ void tst_QWindow::modalWindowPosition()
     window.setModality(Qt::WindowModal);
     window.show();
     QVERIFY(QTest::qWaitForWindowExposed(&window));
-    if (isPlatformWinRT())
-        QEXPECT_FAIL("", "WinRT windows are fullscreen by default.", Continue);
     QCOMPARE(window.geometry(), origGeo);
 }
 
@@ -2149,9 +2119,6 @@ void tst_QWindow::modalWindowEnterEventOnHide_QTBUG35109()
         root.resetCounters();
         modal.close();
 
-        if (isPlatformWinRT())
-            QEXPECT_FAIL("", "WinRT does not trigger the enter event correctly"
-                         "- QTBUG-68297.", Abort);
         // Check for the enter event
         QTRY_COMPARE(root.enterEventCount, 1);
     }
@@ -2282,8 +2249,6 @@ void tst_QWindow::spuriousMouseMove()
     const QString &platformName = QGuiApplication::platformName();
     if (platformName == QLatin1String("offscreen") || platformName == QLatin1String("cocoa"))
         QSKIP("No enter events sent");
-    if (isPlatformWayland() || isPlatformWinRT())
-        QSKIP("QCursor::setPos() is not supported on this platform");
     const QRect screenGeometry = QGuiApplication::primaryScreen()->geometry();
     const QPoint center = screenGeometry.center();
     QCursor::setPos(center);
@@ -2321,7 +2286,7 @@ void tst_QWindow::spuriousMouseMove()
 
 static bool isNativeWindowVisible(const QWindow *window)
 {
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
     return IsWindowVisible(reinterpret_cast<HWND>(window->winId()));
 #else
     Q_UNIMPLEMENTED();

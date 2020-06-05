@@ -58,4 +58,4 @@ SUBDIRS=\
            qtextedit \
            qtoolbar \
 
-!winrt:qtConfig(opengl): SUBDIRS += qopenglwidget
+qtConfig(opengl): SUBDIRS += qopenglwidget

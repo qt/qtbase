@@ -71,7 +71,7 @@ Q_DECLARE_METATYPE(QPainterPath)
 Q_DECLARE_METATYPE(QSizeF)
 Q_DECLARE_METATYPE(QTransform)
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
 #include <windows.h>
 #define Q_CHECK_PAINTEVENTS \
     if (::SwitchDesktop(::GetThreadDesktop(::GetCurrentThreadId())) == 0) \
@@ -6959,9 +6959,6 @@ void tst_QGraphicsItem::opacityZeroUpdates()
     QRegion expectedRegion = parentDeviceBoundingRect.adjusted(-2, -2, 2, 2);
     expectedRegion += childDeviceBoundingRect.adjusted(-2, -2, 2, 2);
 
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "Fails on WinRT. Figure out why - QTBUG-68297", Abort);
-#endif
     COMPARE_REGIONS(view.paintedRegion, expectedRegion);
 }
 
@@ -8196,9 +8193,6 @@ void tst_QGraphicsItem::moveLineItem()
 
     // Make sure the calculated region is correct.
     item->update();
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "Fails on WinRT. Figure out why - QTBUG-68297", Abort);
-#endif
     QTRY_COMPARE(view.paintedRegion, expectedRegion);
     view.reset();
 
@@ -11482,10 +11476,6 @@ void tst_QGraphicsItem::QTBUG_7714_fullUpdateDiscardingOpacityUpdate2()
     origView.reset();
 
     childYellow->setOpacity(1.0);
-
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "Fails on WinRT. Figure out why - QTBUG-68297", Abort);
-#endif
 
     QTRY_VERIFY(origView.repaints > 0);
     QTRY_VERIFY(view.repaints > 0);

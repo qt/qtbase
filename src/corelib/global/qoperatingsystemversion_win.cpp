@@ -46,50 +46,17 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifdef Q_OS_WINRT
-static inline HMODULE moduleHandleForFunction(LPCVOID address)
-{
-    // This is a widely used, decades-old technique for retrieving the handle
-    // of a module and is effectively equivalent to GetModuleHandleEx
-    // (which is unavailable on WinRT)
-    MEMORY_BASIC_INFORMATION mbi = { 0, 0, 0, 0, 0, 0, 0 };
-    if (VirtualQuery(address, &mbi, sizeof(mbi)) == 0)
-        return 0;
-    return reinterpret_cast<HMODULE>(mbi.AllocationBase);
-}
-#endif
-
 static inline OSVERSIONINFOEX determineWinOsVersion()
 {
     OSVERSIONINFOEX result = { sizeof(OSVERSIONINFOEX), 0, 0, 0, 0, {'\0'}, 0, 0, 0, 0, 0};
 
 #define GetProcAddressA GetProcAddress
-
-    // GetModuleHandle is not supported in WinRT and linking to it at load time
-    // will not pass the Windows App Certification Kit... but it exists and is functional,
-    // so use some unusual but widely used techniques to get a pointer to it
-#ifdef Q_OS_WINRT
-    // 1. Get HMODULE of kernel32.dll, using the address of some function exported by that DLL
-    HMODULE kernelModule = moduleHandleForFunction(reinterpret_cast<LPCVOID>(VirtualQuery));
-    if (Q_UNLIKELY(!kernelModule))
-        return result;
-
-    // 2. Get pointer to GetModuleHandle so we can then load other arbitrary modules (DLLs)
-    typedef HMODULE(WINAPI *GetModuleHandleFunction)(LPCWSTR);
-    GetModuleHandleFunction pGetModuleHandle = reinterpret_cast<GetModuleHandleFunction>(
-        GetProcAddressA(kernelModule, "GetModuleHandleW"));
-    if (Q_UNLIKELY(!pGetModuleHandle))
-        return result;
-#else
 #define pGetModuleHandle GetModuleHandleW
-#endif
 
     HMODULE ntdll = pGetModuleHandle(L"ntdll.dll");
     if (Q_UNLIKELY(!ntdll))
         return result;
 
-    // NTSTATUS is not defined on WinRT
-    typedef LONG NTSTATUS;
     typedef NTSTATUS (NTAPI *RtlGetVersionFunction)(LPOSVERSIONINFO);
 
     // RtlGetVersion is documented public API but we must load it dynamically

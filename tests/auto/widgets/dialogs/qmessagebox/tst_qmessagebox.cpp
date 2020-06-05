@@ -150,8 +150,6 @@ void tst_QMessageBox::sanityTest()
         QSKIP("Test hangs on macOS 10.12 -- QTQAINFRA-1362");
         return;
     }
-#elif defined(Q_OS_WINRT)
-    QSKIP("Test hangs on winrt -- QTBUG-68297");
 #endif
     QMessageBox msgBox;
     msgBox.setText("This is insane");

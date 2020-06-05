@@ -419,7 +419,7 @@ qt_feature_config("separate_debug_info" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("appstore-compliant" PUBLIC
     LABEL "App store compliance"
     PURPOSE "Disables code that is not allowed in platform app stores"
-    AUTODETECT UIKIT OR ANDROID OR WINRT
+    AUTODETECT UIKIT OR ANDROID
 )
 qt_feature("simulator_and_device" PUBLIC
     LABEL "Build for both simulator and device"
@@ -455,7 +455,7 @@ qt_feature_config("framework" QMAKE_PUBLIC_CONFIG
 )
 qt_feature("largefile"
     LABEL "Large file support"
-    CONDITION NOT ANDROID AND NOT INTEGRITY AND NOT WINRT AND NOT rtems
+    CONDITION NOT ANDROID AND NOT INTEGRITY AND NOT rtems
 )
 qt_feature_definition("largefile" "QT_LARGEFILE_SUPPORT" VALUE "64")
 qt_feature_config("largefile" QMAKE_PRIVATE_CONFIG)
@@ -756,7 +756,7 @@ qt_feature("concurrent" PUBLIC
 qt_feature_definition("concurrent" "QT_NO_CONCURRENT" NEGATE VALUE "1")
 qt_feature("dbus" PUBLIC PRIVATE
     LABEL "Qt D-Bus"
-    AUTODETECT NOT UIKIT AND NOT ANDROID AND NOT WINRT
+    AUTODETECT NOT UIKIT AND NOT ANDROID
     CONDITION QT_FEATURE_thread
 )
 qt_feature_definition("dbus" "QT_NO_DBUS" NEGATE VALUE "1")
@@ -930,7 +930,7 @@ qt_configure_add_summary_entry(
 qt_configure_add_summary_build_parts("Build parts")
 qt_configure_add_summary_entry(
     ARGS "appstore-compliant"
-    CONDITION APPLE OR ANDROID OR WINRT OR WIN32
+    CONDITION APPLE OR ANDROID OR WIN32
 )
 qt_configure_end_summary_section() # end of "Build options" section
 qt_configure_add_summary_section(NAME "Qt modules and options")

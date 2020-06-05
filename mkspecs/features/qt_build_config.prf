@@ -85,7 +85,7 @@ CONFIG = qt_build_extra $$CONFIG
 cross_compile: \
     CONFIG += force_bootstrap
 
-android|uikit|winrt: \
+android|uikit: \
     CONFIG += builtin_testdata
 
 # Prevent warnings about object files without any symbols

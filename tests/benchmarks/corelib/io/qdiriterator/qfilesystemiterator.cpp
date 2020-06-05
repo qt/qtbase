@@ -221,12 +221,7 @@ void QFileSystemIteratorPrivate::pushSubDirectory(const QByteArray &path)
     const int end = QString::fromLatin1(path + "\\*").toWCharArray(szSearchPath);
     Q_ASSERT(end < MAX_PATH);
     szSearchPath[end] = L'\0';
-#ifndef Q_OS_WINRT
     HANDLE dir = FindFirstFile(szSearchPath, &m_fileSearchResult);
-#else
-    HANDLE dir = FindFirstFileEx(szSearchPath, FindExInfoStandard, &m_fileSearchResult,
-                                 FindExSearchLimitToDirectories, NULL, FIND_FIRST_EX_LARGE_FETCH);
-#endif
     m_bFirstSearchResult = true;
 #else
     DIR *dir = ::opendir(path.constData());

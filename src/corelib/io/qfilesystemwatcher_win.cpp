@@ -52,7 +52,6 @@
 
 #include <qt_windows.h>
 
-#ifndef Q_OS_WINRT
 #  include <qabstractnativeeventfilter.h>
 #  include <qcoreapplication.h>
 #  include <qdir.h>
@@ -61,7 +60,6 @@
 #  include <dbt.h>
 #  include <algorithm>
 #  include <vector>
-#endif // !Q_OS_WINRT
 
 QT_BEGIN_NAMESPACE
 
@@ -85,7 +83,6 @@ static Qt::HANDLE createChangeNotification(const QString &path, uint flags)
     return result;
 }
 
-#ifndef Q_OS_WINRT
 ///////////
 // QWindowsRemovableDriveListener
 // Listen for the various WM_DEVICECHANGE message indicating drive addition/removal
@@ -330,7 +327,6 @@ void QWindowsRemovableDriveListener::addPath(const QString &p)
 
     m_removableDrives.push_back(re);
 }
-#endif // !Q_OS_WINRT
 
 ///////////
 // QWindowsFileSystemWatcherEngine
@@ -343,7 +339,6 @@ QWindowsFileSystemWatcherEngine::Handle::Handle()
 QWindowsFileSystemWatcherEngine::QWindowsFileSystemWatcherEngine(QObject *parent)
     : QFileSystemWatcherEngine(parent)
 {
-#ifndef Q_OS_WINRT
     if (QAbstractEventDispatcher *eventDispatcher = QAbstractEventDispatcher::instance()) {
         m_driveListener = new QWindowsRemovableDriveListener(this);
         eventDispatcher->installNativeEventFilter(m_driveListener);
@@ -360,7 +355,6 @@ QWindowsFileSystemWatcherEngine::QWindowsFileSystemWatcherEngine(QObject *parent
         qWarning("QFileSystemWatcher: Removable drive notification will not work"
                  " if there is no QCoreApplication instance.");
     }
-#endif // !Q_OS_WINRT
 }
 
 QWindowsFileSystemWatcherEngine::~QWindowsFileSystemWatcherEngine()
@@ -524,14 +518,12 @@ QStringList QWindowsFileSystemWatcherEngine::addPaths(const QStringList &paths,
         }
     }
 
-#ifndef Q_OS_WINRT
     if (Q_LIKELY(m_driveListener)) {
         for (const QString &path : paths) {
             if (!unhandled.contains(path))
                 m_driveListener->addPath(path);
         }
     }
-#endif // !Q_OS_WINRT
     return unhandled;
 }
 
@@ -763,6 +755,4 @@ void QWindowsFileSystemWatcherEngineThread::wakeup()
 
 QT_END_NAMESPACE
 
-#ifndef Q_OS_WINRT
 #  include "qfilesystemwatcher_win.moc"
-#endif

@@ -562,9 +562,6 @@ void tst_QXmlSimpleReader::inputFromSocket_data()
 void tst_QXmlSimpleReader::inputFromSocket()
 {
     QFETCH(QString, file_name);
-#ifdef Q_OS_WINRT
-    QSKIP("WinRT does not support connecting to localhost");
-#endif
 
     if (!server->threadStarted.tryAcquire(1, 15000)) {
         // If something is wrong with QThreads, it's not a reason to fail

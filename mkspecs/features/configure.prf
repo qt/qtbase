@@ -39,12 +39,6 @@ defineTest(qtCompileTest) {
     # Disable qmake features which are typically counterproductive for tests
     qmake_configs = "\"CONFIG -= qt debug_and_release app_bundle lib_bundle\""
 
-    # On WinRT we need to change the entry point as we cannot create windows
-    # applications
-    winrt {
-        qmake_configs += " \"QMAKE_LFLAGS+=/ENTRY:main\""
-    }
-
     # Clean up after previous run
     exists($$test_out_dir/Makefile):qtRunLoggedCommand("$$test_cmd_base $$QMAKE_MAKE distclean")
 

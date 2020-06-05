@@ -948,7 +948,7 @@ void QAbstractSocketPrivate::resolveProxy(const QString &hostname, quint16 port)
 }
 #endif // !QT_NO_NETWORKPROXY
 
-#if !defined(QT_NO_NETWORKPROXY) || defined(Q_OS_WINRT)
+#if !defined(QT_NO_NETWORKPROXY)
 /*!
     \internal
 
@@ -990,7 +990,7 @@ void QAbstractSocketPrivate::startConnectingByName(const QString &host)
     emit q->stateChanged(state);
 }
 
-#endif // !QT_NO_NETWORKPROXY || Q_OS_WINRT
+#endif // !QT_NO_NETWORKPROXY
 
 /*! \internal
 
@@ -1713,7 +1713,6 @@ void QAbstractSocket::connectToHost(const QString &hostName, quint16 port,
     QIODevice::open(openMode);
     d->readChannelCount = d->writeChannelCount = 0;
 
-#ifndef Q_OS_WINRT
     d->state = HostLookupState;
     emit stateChanged(d->state);
 
@@ -1750,10 +1749,6 @@ void QAbstractSocket::connectToHost(const QString &hostName, quint16 port,
            (d->state == ConnectedState) ? "true" : "false",
            (d->state == ConnectingState || d->state == HostLookupState)
            ? " (connection in progress)" : "");
-#endif
-#else // !Q_OS_WINRT
-    // On WinRT we should always connect by name. Lookup and proxy handling are done by the API.
-    d->startConnectingByName(hostName);
 #endif
 }
 

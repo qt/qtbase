@@ -88,9 +88,7 @@ private slots:
     void maxPendingConnections();
     void listenError();
     void waitForConnectionTest();
-#ifndef Q_OS_WINRT
     void setSocketDescriptor();
-#endif
     void listenWhileListening();
     void addressReusable();
     void setNewSocketDescriptorBlocking();
@@ -527,7 +525,6 @@ void tst_QTcpServer::waitForConnectionTest()
 }
 
 //----------------------------------------------------------------------------------
-#ifndef Q_OS_WINRT
 void tst_QTcpServer::setSocketDescriptor()
 {
     QTcpServer server;
@@ -557,7 +554,6 @@ void tst_QTcpServer::setSocketDescriptor()
     WSACleanup();
 #endif
 }
-#endif // !Q_OS_WINRT
 
 //----------------------------------------------------------------------------------
 void tst_QTcpServer::listenWhileListening()
@@ -579,7 +575,6 @@ public:
     bool ok;
 
 protected:
-#ifndef Q_OS_WINRT
     void incomingConnection(qintptr socketDescriptor)
     {
         // how a user woulddo it (qabstractsocketengine is not public)
@@ -592,7 +587,6 @@ protected:
         ::close(socketDescriptor);
 #endif
     }
-#endif // !Q_OS_WINRT
 };
 
 void tst_QTcpServer::addressReusable()

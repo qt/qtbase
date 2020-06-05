@@ -11,10 +11,6 @@ SUBDIRS=\
    qnetworkaddressentry \
    qhostaddress \
 
-winrt: SUBDIRS -= \
-   qnetworkproxy \
-   qnetworkproxyfactory \
-
 osx: SUBDIRS -= \ # QTBUG-41847
     qhostinfo \
 

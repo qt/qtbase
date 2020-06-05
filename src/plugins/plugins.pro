@@ -9,5 +9,5 @@ qtHaveModule(gui) {
 }
 qtHaveModule(widgets): SUBDIRS += styles
 
-!winrt:qtHaveModule(printsupport): \
+qtHaveModule(printsupport): \
     SUBDIRS += printsupport

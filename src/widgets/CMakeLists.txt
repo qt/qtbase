@@ -308,7 +308,7 @@ qt_extend_target(Widgets CONDITION MACOS
         z
 )
 
-qt_extend_target(Widgets CONDITION WIN32 AND NOT WINRT
+qt_extend_target(Widgets CONDITION WIN32
     LIBRARIES
         dwmapi
         shell32

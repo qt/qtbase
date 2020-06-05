@@ -1716,9 +1716,6 @@ void tst_QTextEdit::adjustScrollbars()
     QLatin1String txt("\nabc def ghi jkl mno pqr stu vwx");
     ed->setText(txt + txt + txt + txt);
 
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "setMinimum/MaximumSize does not work on WinRT", Abort);
-#endif
     QVERIFY(ed->verticalScrollBar()->maximum() > 0);
 
     ed->moveCursor(QTextCursor::End);
@@ -1902,9 +1899,6 @@ void tst_QTextEdit::copyPasteBackgroundImage()
     QBrush ba = a->cellAt(0, 0).format().background();
     QBrush bb = b->cellAt(0, 0).format().background();
 
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "Fails on WinRT - QTBUG-68297", Abort);
-#endif
     QCOMPARE(ba.style(), Qt::TexturePattern);
     QCOMPARE(ba.style(), bb.style());
 

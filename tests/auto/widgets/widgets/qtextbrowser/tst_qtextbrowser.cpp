@@ -211,9 +211,6 @@ void tst_QTextBrowser::forwardButton()
 
     browser->setSource(QUrl(QFINDTESTDATA("pagewithoutbg.html")));
 
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "Fails on WinRT - QTBUG-68297", Abort);
-#endif
     QVERIFY(!forwardEmissions.isEmpty());
     val = forwardEmissions.takeLast()[0];
     QCOMPARE(val.type(), QVariant::Bool);
@@ -438,9 +435,6 @@ void tst_QTextBrowser::clearHistory()
 
 void tst_QTextBrowser::sourceInsideLoadResource()
 {
-#ifdef Q_OS_WINRT
-    QSKIP("Paths cannot be compared if applications are sandboxed.");
-#endif
     QUrl url = QUrl::fromLocalFile("pagewithimage.html"); // "file://pagewithimage.html"
     browser->setSource(url);
     QCOMPARE(browser->lastResource, QUrl::fromLocalFile(QDir::current().filePath("foobar.png")));

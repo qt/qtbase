@@ -40,7 +40,7 @@ add_qt_resource(tst_qfileinfo "testdata"
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qfileinfo CONDITION WIN32 AND NOT WINRT
+extend_target(tst_qfileinfo CONDITION WIN32
     PUBLIC_LIBRARIES
         advapi32
         netapi32

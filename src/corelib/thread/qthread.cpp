@@ -184,9 +184,7 @@ QThreadPrivate::QThreadPrivate(QThreadData *d)
 
 #if defined (Q_OS_WIN)
     handle = 0;
-#  ifndef Q_OS_WINRT
     id = 0;
-#  endif
     waiters = 0;
     terminationEnabled = true;
     terminatePending = false;

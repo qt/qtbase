@@ -22,16 +22,12 @@ add_qt_test(tst_qmetatype
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qmetatype CONDITION MSVC OR WINRT
+extend_target(tst_qmetatype CONDITION MSVC
     COMPILE_OPTIONS
         /bigobj
 )
 
-#### Keys ignored in scope 3:.:.:qmetatype.pro:WINRT:
-# QMAKE_CFLAGS_RELEASE = "--O2"
-# QMAKE_CXXFLAGS_RELEASE = "--O2"
-
-#### Keys ignored in scope 4:.:.:qmetatype.pro:CLANG:
+#### Keys ignored in scope 3:.:.:qmetatype.pro:CLANG:
 # QMAKE_CFLAGS_RELEASE = "--O2" "--g"
 # QMAKE_CXXFLAGS_RELEASE = "--O2" "--g"
 

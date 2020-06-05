@@ -612,16 +612,6 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
         << tag("ItemGroup")
         << attrTag("Label", "ProjectConfigurations");
 
-    bool isWinRT = false;
-    for (int i = 0; i < tool.SingleProjects.count(); ++i) {
-        xml << tag("ProjectConfiguration")
-            << attrTag("Include" , tool.SingleProjects.at(i).Configuration.Name)
-            << tagValue("Configuration", tool.SingleProjects.at(i).Configuration.ConfigurationName)
-            << tagValue("Platform", tool.SingleProjects.at(i).PlatformName)
-            << closetag();
-        isWinRT = isWinRT || tool.SingleProjects.at(i).Configuration.WinRT;
-    }
-
     xml << closetag()
         << tag("PropertyGroup")
         << attrTag("Label", "Globals")
@@ -629,13 +619,6 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
         << tagValue("RootNamespace", tool.Name)
         << tagValue("Keyword", tool.Keyword);
 
-    if (isWinRT) {
-        xml << tagValue("MinimumVisualStudioVersion", tool.Version)
-            << tagValue("DefaultLanguage", "en")
-            << tagValue("AppContainerApplication", "true")
-            << tagValue("ApplicationType", "Windows Store")
-            << tagValue("ApplicationTypeRevision", tool.SdkVersion);
-    }
     if (!tool.WindowsTargetPlatformVersion.isEmpty())
         xml << tagValue("WindowsTargetPlatformVersion", tool.WindowsTargetPlatformVersion);
     if (!tool.WindowsTargetPlatformMinVersion.isEmpty())
@@ -824,41 +807,6 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
         outputFilter(tool, xml, xmlFilter, tool.ExtraCompilers.at(x));
     }
     outputFilter(tool, xml, xmlFilter, "Root Files");
-
-    // App manifest
-    if (isWinRT) {
-        const QString manifest = QStringLiteral("Package.appxmanifest");
-
-        // Find all icons referenced in the manifest
-        QSet<QString> icons;
-        QFile manifestFile(Option::output_dir + QLatin1Char('/') + manifest);
-        if (manifestFile.open(QFile::ReadOnly)) {
-            const QString contents = manifestFile.readAll();
-            QRegularExpression regexp("[\\\\/a-zA-Z0-9_\\-\\!]*\\.(png|jpg|jpeg)");
-            int pos = 0;
-            while (pos > -1) {
-                QRegularExpressionMatch m;
-                pos = contents.indexOf(regexp, pos, &m);
-                if (pos >= 0) {
-                    const QString match = m.captured(0);
-                    icons.insert(match);
-                    pos += match.length();
-                }
-            }
-        }
-
-        // Write out manifest + icons as content items
-        xml << tag(_ItemGroup)
-            << tag("AppxManifest")
-            << attrTag("Include", manifest)
-            << closetag();
-        for (const QString &icon : qAsConst(icons)) {
-            xml << tag("Image")
-                << attrTag("Include", icon)
-                << closetag();
-        }
-        xml << closetag();
-    }
 
     xml << import("Project", "$(VCTargetsPath)\\Microsoft.Cpp.targets")
         << tag("ImportGroup")

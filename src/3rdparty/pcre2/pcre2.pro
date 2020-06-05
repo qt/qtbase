@@ -8,7 +8,7 @@ CONFIG += \
 include(pcre2.pri)
 
 # platform/compiler specific definitions
-uikit|qnx|winrt: DEFINES += PCRE2_DISABLE_JIT
+uikit|qnx: DEFINES += PCRE2_DISABLE_JIT
 win32:contains(QT_ARCH, "arm"): DEFINES += PCRE2_DISABLE_JIT
 win32:contains(QT_ARCH, "arm64"): DEFINES += PCRE2_DISABLE_JIT
 

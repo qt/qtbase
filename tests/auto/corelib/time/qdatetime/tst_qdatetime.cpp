@@ -3697,9 +3697,6 @@ void tst_QDateTime::timeZones() const
 
 void tst_QDateTime::systemTimeZoneChange() const
 {
-#ifdef Q_OS_WINRT
-    QSKIP("UWP applications cannot change the system`s time zone (sandboxing)");
-#endif
     // Set the timezone to Brisbane time
     TimeZoneRollback useZone(QByteArray("AEST-10:00"));
 

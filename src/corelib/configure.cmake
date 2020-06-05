@@ -788,14 +788,14 @@ qt_feature("process" PUBLIC
     SECTION "File I/O"
     LABEL "QProcess"
     PURPOSE "Supports external process invocation."
-    CONDITION QT_FEATURE_processenvironment AND ( QT_FEATURE_thread OR NOT UNIX ) AND NOT WINRT AND NOT UIKIT AND NOT INTEGRITY AND NOT VXWORKS AND NOT rtems
+    CONDITION QT_FEATURE_processenvironment AND ( QT_FEATURE_thread OR NOT UNIX ) AND NOT UIKIT AND NOT INTEGRITY AND NOT VXWORKS AND NOT rtems
 )
 qt_feature_definition("process" "QT_NO_PROCESS" NEGATE VALUE "1")
 qt_feature("processenvironment" PUBLIC
     SECTION "File I/O"
     LABEL "QProcessEnvironment"
     PURPOSE "Provides a higher-level abstraction of environment variables."
-    CONDITION NOT WINRT AND NOT INTEGRITY AND NOT rtems
+    CONDITION NOT INTEGRITY AND NOT rtems
 )
 qt_feature("temporaryfile" PUBLIC
     SECTION "File I/O"
@@ -820,7 +820,6 @@ qt_feature("filesystemwatcher" PUBLIC
     SECTION "File I/O"
     LABEL "QFileSystemWatcher"
     PURPOSE "Provides an interface for monitoring files and directories for modifications."
-    CONDITION NOT WINRT
 )
 qt_feature_definition("filesystemwatcher" "QT_NO_FILESYSTEMWATCHER" NEGATE VALUE "1")
 qt_feature("filesystemiterator" PUBLIC

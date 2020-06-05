@@ -167,9 +167,9 @@ void tst_QSslKey::createPlainTestRows(bool pemOnly)
     foreach (KeyInfo keyInfo, keyInfoList) {
         if (pemOnly && keyInfo.format != QSsl::EncodingFormat::Pem)
             continue;
-#if defined(Q_OS_WINRT) || QT_CONFIG(schannel)
+#if QT_CONFIG(schannel)
         if (keyInfo.fileInfo.fileName().contains("RC2-64"))
-            continue; // WinRT/Schannel treats RC2 as 128 bit
+            continue; // Schannel treats RC2 as 128 bit
 #endif
 #if !defined(QT_NO_SSL) && defined(QT_NO_OPENSSL) // generic backend
         if (keyInfo.fileInfo.fileName().contains(QRegularExpression("-aes\\d\\d\\d-")))
@@ -702,11 +702,11 @@ void tst_QSslKey::encrypt()
     QFETCH(QByteArray, cipherText);
     QFETCH(QByteArray, iv);
 
-#if defined(Q_OS_WINRT) || QT_CONFIG(schannel)
-    QEXPECT_FAIL("RC2-40-CBC, length 0", "WinRT/Schannel treats RC2 as 128-bit", Abort);
-    QEXPECT_FAIL("RC2-40-CBC, length 8", "WinRT/Schannel treats RC2 as 128-bit", Abort);
-    QEXPECT_FAIL("RC2-64-CBC, length 0", "WinRT/Schannel treats RC2 as 128-bit", Abort);
-    QEXPECT_FAIL("RC2-64-CBC, length 8", "WinRT/Schannel treats RC2 as 128-bit", Abort);
+#if QT_CONFIG(schannel)
+    QEXPECT_FAIL("RC2-40-CBC, length 0", "Schannel treats RC2 as 128-bit", Abort);
+    QEXPECT_FAIL("RC2-40-CBC, length 8", "Schannel treats RC2 as 128-bit", Abort);
+    QEXPECT_FAIL("RC2-64-CBC, length 0", "Schannel treats RC2 as 128-bit", Abort);
+    QEXPECT_FAIL("RC2-64-CBC, length 8", "Schannel treats RC2 as 128-bit", Abort);
 #endif
     QByteArray encrypted = QSslKeyPrivate::encrypt(cipher, plainText, key, iv);
     QCOMPARE(encrypted, cipherText);

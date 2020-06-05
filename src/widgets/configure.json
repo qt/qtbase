@@ -48,7 +48,7 @@
         },
         "style-windowsvista": {
             "label": "WindowsVista",
-            "condition": "features.style-windows && features.animation && config.win32 && !config.winrt",
+            "condition": "features.style-windows && features.animation && config.win32",
             "output": [ "privateFeature", "styles" ]
         },
         "style-android": {

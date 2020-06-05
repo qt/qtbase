@@ -26,6 +26,3 @@ extend_target(tst_qhostinfo CONDITION WIN32
     PUBLIC_LIBRARIES
         ws2_32
 )
-
-#### Keys ignored in scope 3:.:.:qhostinfo.pro:WINRT:
-# WINRT_MANIFEST.capabilities = "internetClientServer"

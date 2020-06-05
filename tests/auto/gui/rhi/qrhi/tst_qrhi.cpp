@@ -2116,11 +2116,6 @@ void tst_QRhi::renderToWindowSimple()
     QFETCH(QRhi::Implementation, impl);
     QFETCH(QRhiInitParams *, initParams);
 
-#ifdef Q_OS_WINRT
-    if (impl == QRhi::D3D11)
-        QSKIP("Skipping window-based QRhi rendering on WinRT as the platform and the D3D11 backend are not prepared for this yet");
-#endif
-
     QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing rendering");
@@ -2255,11 +2250,6 @@ void tst_QRhi::finishWithinSwapchainFrame()
 {
     QFETCH(QRhi::Implementation, impl);
     QFETCH(QRhiInitParams *, initParams);
-
-#ifdef Q_OS_WINRT
-    if (impl == QRhi::D3D11)
-        QSKIP("Skipping window-based QRhi rendering on WinRT as the platform and the D3D11 backend are not prepared for this yet");
-#endif
 
     QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
     if (!rhi)

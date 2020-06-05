@@ -135,7 +135,7 @@ QT_BEGIN_NAMESPACE
         \l{https://msdn.microsoft.com/en-us/library/windows/desktop/ms740522(v=vs.85).aspx}
         {Winsock 2 Socket Handle}.
 
-        \li With WinRT and on INTEGRITY, the returned value is the
+        \li On INTEGRITY, the returned value is the
         QTcpSocket socket descriptor and the type is defined by
         \l{QTcpSocket::socketDescriptor}{socketDescriptor}.
 

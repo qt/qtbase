@@ -1787,9 +1787,6 @@ void tst_QMainWindow::centralWidgetSize()
     mainWindow.setCentralWidget(&widget);
 
     mainWindow.show();
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "Widgets are maximized by default on WinRT - QTBUG-68297", Abort);
-#endif
     QTRY_COMPARE(widget.size(), widget.sizeHint());
 }
 
@@ -1834,9 +1831,6 @@ void tst_QMainWindow::fixedSizeCentralWidget()
 
     // finally verify that we get the space back when we resize to the old size
     mainWindow.resize(mwSize);
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "QMainWindow::resize does not work on WinRT", Continue);
-#endif
     QTRY_COMPARE(child->height(), childHeight);
 }
 

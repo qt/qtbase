@@ -1,4 +1,4 @@
 TEMPLATE = subdirs
 
-SUBDIRS += test.pro
-!winrt: SUBDIRS += signalbug
+SUBDIRS += test.pro \
+           signalbug

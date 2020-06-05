@@ -358,9 +358,6 @@ void tst_QMdiArea::subWindowActivated()
         QMdiSubWindow *window = windows.at(i);
         window->showNormal();
         qApp->processEvents();
-#ifdef Q_OS_WINRT
-        QEXPECT_FAIL("data2", "Broken on WinRT - QTBUG-68297", Abort);
-#endif
         QVERIFY( window == activeWindow );
         QVERIFY( activeWindow == workspace->activeSubWindow() );
     }
@@ -521,9 +518,6 @@ void tst_QMdiArea::subWindowActivated2()
     mdiArea.showNormal();
     mdiArea.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&mdiArea));
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "Broken on WinRT - QTBUG-68297", Abort);
-#endif
     QTRY_COMPARE(spy.count(), 1);
     QCOMPARE(mdiArea.activeSubWindow(), activeSubWindow);
     spy.clear();
@@ -1201,9 +1195,6 @@ void tst_QMdiArea::addAndRemoveWindows()
     // Don't occupy space.
     QMdiSubWindow *window3 = workspace.addSubWindow(new QWidget);
     window3->show();
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "Windows are maximized by default on WinRT", Abort);
-#endif
     QCOMPARE(window3->geometry().topLeft(), QPoint(window2RestoreGeometry.right() + 1, 0));
 }
 
@@ -1467,9 +1458,6 @@ void tst_QMdiArea::subWindowList()
     QList<QMdiSubWindow *> widgets = workspace.subWindowList(windowOrder);
     QCOMPARE(widgets.count(), windowCount);
     if (windowOrder == QMdiArea::StackingOrder) {
-#ifdef Q_OS_WINRT
-        QEXPECT_FAIL("", "Broken on WinRT - QTBUG-68297", Abort);
-#endif
         QCOMPARE(widgets.at(widgets.count() - 1), windows[staysOnTop2]);
         QCOMPARE(widgets.at(widgets.count() - 2), windows[staysOnTop1]);
         QCOMPARE(widgets.at(widgets.count() - 3), windows[activeSubWindow]);
@@ -1688,9 +1676,6 @@ void tst_QMdiArea::tileSubWindows()
     // Re-tile.
     workspace.tileSubWindows();
     workspace.setActiveSubWindow(0);
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "Broken on WinRT - QTBUG-68297", Abort);
-#endif
     QCOMPARE(workspace.viewport()->childrenRect(), workspace.viewport()->rect());
 
     // Cascade and verify that the views are not tiled anymore.
@@ -1999,9 +1984,6 @@ void tst_QMdiArea::dontMaximizeSubWindowOnActivation()
     // Verify that new windows are not maximized.
     mdiArea.addSubWindow(new QWidget)->show();
     QVERIFY(mdiArea.activeSubWindow());
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "Broken on WinRT - QTBUG-68297", Abort);
-#endif
     QVERIFY(!mdiArea.activeSubWindow()->isMaximized());
 }
 
@@ -2023,9 +2005,6 @@ void tst_QMdiArea::delayedPlacement()
     QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
 
     QCOMPARE(window1->geometry().topLeft(), QPoint(0, 0));
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "Broken on WinRT - QTBUG-68297", Abort);
-#endif
     QCOMPARE(window2->geometry().topLeft(), window1->geometry().topRight() + QPoint(1, 0));
     QCOMPARE(window3->geometry().topLeft(), window2->geometry().topRight() + QPoint(1, 0));
 }
@@ -2160,10 +2139,6 @@ void tst_QMdiArea::updateScrollBars()
     subWindow1->showNormal();
     qApp->processEvents();
     QVERIFY(!subWindow1->isMaximized());
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "Widgets are maximized by default on WinRT, so scroll bars might not be"
-                 "visible", Abort);
-#endif
     QVERIFY(hbar->style()->styleHint(QStyle::SH_ScrollBar_Transient) || hbar->isVisible());
     QVERIFY(vbar->style()->styleHint(QStyle::SH_ScrollBar_Transient) || vbar->isVisible());
         if (i == 0) {
@@ -2365,10 +2340,6 @@ void tst_QMdiArea::setViewMode()
     QList<QMdiSubWindow *> subWindows = mdiArea.subWindowList();
 
     // Default.
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "Widgets are maximized by default on WinRT, so scroll bars might not be"
-                 "visible", Abort);
-#endif
     QVERIFY(!activeSubWindow->isMaximized());
     QTabBar *tabBar = mdiArea.findChild<QTabBar *>();
     QVERIFY(!tabBar);

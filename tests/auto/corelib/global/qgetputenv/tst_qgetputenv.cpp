@@ -135,9 +135,7 @@ void tst_QGetPutEnv::encoding()
     static const wchar_t rawvalue[] = { 'a', 0x00E1, 0x03B1, 0x0430, 0 };
     QString value = QString::fromWCharArray(rawvalue);
 
-#if defined(Q_OS_WINRT)
-    QSKIP("Test cannot be run on this platform");
-#elif defined(Q_OS_WIN)
+#if defined(Q_OS_WIN)
     const wchar_t wvarName[] = L"should_not_exist";
     _wputenv_s(wvarName, rawvalue);
 #else

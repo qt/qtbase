@@ -78,19 +78,7 @@
 
 #ifdef Q_OS_WIN // for homedirpath reading from registry
 #  include <qt_windows.h>
-#  ifndef Q_OS_WINRT
-#    include <shlobj.h>
-#  endif
-#endif
-
-#ifdef Q_OS_WINRT
-#include <wrl.h>
-#include <windows.foundation.h>
-#include <windows.storage.h>
-using namespace Microsoft::WRL;
-using namespace Microsoft::WRL::Wrappers;
-using namespace ABI::Windows::Foundation;
-using namespace ABI::Windows::Storage;
+#  include <shlobj.h>
 #endif
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(Q_OS_ANDROID)
@@ -286,7 +274,7 @@ after_loop:
     return result;
 }
 
-// see also qsettings_win.cpp, qsettings_winrt.cpp and qsettings_mac.cpp
+// see also qsettings_win.cpp and qsettings_mac.cpp
 
 #if !defined(Q_OS_WIN) && !defined(Q_OS_MAC) && !defined(Q_OS_WASM)
 QSettingsPrivate *QSettingsPrivate::create(QSettings::Format format, QSettings::Scope scope,
@@ -945,7 +933,7 @@ void QConfFileSettingsPrivate::initAccess()
     sync();       // loads the files the first time
 }
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
 static QString windowsConfigPath(const KNOWNFOLDERID &type)
 {
     QString result;
@@ -966,44 +954,7 @@ static QString windowsConfigPath(const KNOWNFOLDERID &type)
 
     return result;
 }
-#elif defined(Q_OS_WINRT) // Q_OS_WIN && !Q_OS_WINRT
-
-enum ConfigPathType {
-    ConfigPath_CommonAppData,
-    ConfigPath_UserAppData
-};
-
-static QString windowsConfigPath(ConfigPathType type)
-{
-    static QString result;
-    while (result.isEmpty()) {
-        ComPtr<IApplicationDataStatics> applicationDataStatics;
-        if (FAILED(GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Storage_ApplicationData).Get(), &applicationDataStatics)))
-            return result;
-        ComPtr<IApplicationData> applicationData;
-        if (FAILED(applicationDataStatics->get_Current(&applicationData)))
-            return result;
-        ComPtr<IStorageFolder> localFolder;
-        if (FAILED(applicationData->get_LocalFolder(&localFolder)))
-            return result;
-        ComPtr<IStorageItem> localFolderItem;
-        if (FAILED(localFolder.As(&localFolderItem)))
-            return result;
-        HString path;
-        if (FAILED(localFolderItem->get_Path(path.GetAddressOf())))
-            return result;
-        result = QString::fromWCharArray(path.GetRawBuffer(nullptr));
-    }
-
-    switch (type) {
-    case ConfigPath_CommonAppData:
-        return result + QLatin1String("\\qt-common");
-    case ConfigPath_UserAppData:
-        return result + QLatin1String("\\qt-user");
-    }
-    return result;
-}
-#endif // Q_OS_WINRT
+#endif // Q_OS_WIN
 
 static inline int pathHashKey(QSettings::Format format, QSettings::Scope scope)
 {
@@ -1056,14 +1007,8 @@ static std::unique_lock<QBasicMutex> initDefaultPaths(std::unique_lock<QBasicMut
            Windows registry and the Mac CFPreferences.)
        */
 #ifdef Q_OS_WIN
-
-#  ifdef Q_OS_WINRT
-        const QString roamingAppDataFolder = windowsConfigPath(ConfigPath_UserAppData);
-        const QString programDataFolder = windowsConfigPath(ConfigPath_CommonAppData);
-#  else
         const QString roamingAppDataFolder = windowsConfigPath(FOLDERID_RoamingAppData);
         const QString programDataFolder = windowsConfigPath(FOLDERID_ProgramData);
-#  endif
         pathHash->insert(pathHashKey(QSettings::IniFormat, QSettings::UserScope),
                          Path(roamingAppDataFolder + QDir::separator(), false));
         pathHash->insert(pathHashKey(QSettings::IniFormat, QSettings::SystemScope),

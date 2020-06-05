@@ -54,7 +54,6 @@
      WATCHOS  - watchOS
      TVOS     - tvOS
      WIN32    - Win32 (Windows 2000/XP/Vista/7 and Windows Server 2003/2008)
-     WINRT    - WinRT (Windows Runtime)
      CYGWIN   - Cygwin
      SOLARIS  - Sun Solaris
      HPUX     - HP-UX
@@ -124,20 +123,7 @@
 #  define Q_OS_WIN32
 #  define Q_OS_WIN64
 #elif !defined(SAG_COM) && (defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__))
-#  if defined(WINAPI_FAMILY)
-#    ifndef WINAPI_FAMILY_PC_APP
-#      define WINAPI_FAMILY_PC_APP WINAPI_FAMILY_APP
-#    endif
-#    if defined(WINAPI_FAMILY_PHONE_APP) && WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP
-#      define Q_OS_WINRT
-#    elif WINAPI_FAMILY==WINAPI_FAMILY_PC_APP
-#      define Q_OS_WINRT
-#    else
-#      define Q_OS_WIN32
-#    endif
-#  else
 #    define Q_OS_WIN32
-#  endif
 #elif defined(__sun) || defined(sun)
 #  define Q_OS_SOLARIS
 #elif defined(hpux) || defined(__hpux)
@@ -184,7 +170,7 @@
 #  error "Qt has not been ported to this OS - see http://www.qt-project.org/"
 #endif
 
-#if defined(Q_OS_WIN32) || defined(Q_OS_WIN64) || defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN32) || defined(Q_OS_WIN64)
 #  define Q_OS_WINDOWS
 #  define Q_OS_WIN
 #  if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)

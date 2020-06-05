@@ -53,16 +53,6 @@
 #include <ctype.h>
 #include <qt_windows.h>
 
-#ifdef Q_OS_WINRT
-#include <qfunctions_winrt.h>
-#include <wrl.h>
-#include <Windows.ApplicationModel.core.h>
-#include <windows.foundation.h>
-using namespace ABI::Windows::ApplicationModel;
-using namespace Microsoft::WRL;
-using namespace Microsoft::WRL::Wrappers;
-#endif
-
 QT_BEGIN_NAMESPACE
 
 Q_CORE_EXPORT QString qAppFileName()                // get application file name
@@ -105,33 +95,6 @@ QString QCoreApplicationPrivate::appVersion() const
 {
     QString applicationVersion;
 #ifndef QT_BOOTSTRAPPED
-#  ifdef Q_OS_WINRT
-    HRESULT hr;
-
-    ComPtr<IPackageStatics> packageFactory;
-    hr = RoGetActivationFactory(
-        HString::MakeReference(RuntimeClass_Windows_ApplicationModel_Package).Get(),
-        IID_PPV_ARGS(&packageFactory));
-    RETURN_IF_FAILED("Failed to create package instance", return QString());
-
-    ComPtr<IPackage> package;
-    packageFactory->get_Current(&package);
-    RETURN_IF_FAILED("Failed to get current application package", return QString());
-
-    ComPtr<IPackageId> packageId;
-    package->get_Id(&packageId);
-    RETURN_IF_FAILED("Failed to get current application package ID", return QString());
-
-    PackageVersion version;
-    packageId->get_Version(&version);
-    RETURN_IF_FAILED("Failed to get current application package version", return QString());
-
-    applicationVersion = QStringLiteral("%1.%2.%3.%4")
-            .arg(version.Major)
-            .arg(version.Minor)
-            .arg(version.Build)
-            .arg(version.Revision);
-#  else
     const QString appFileName = qAppFileName();
     QVarLengthArray<wchar_t> buffer(appFileName.size() + 1);
     buffer[appFileName.toWCharArray(buffer.data())] = 0;
@@ -154,12 +117,9 @@ QString QCoreApplicationPrivate::appVersion() const
             }
         }
     }
-#  endif
 #endif
     return applicationVersion;
 }
-
-#ifndef Q_OS_WINRT
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 Q_CORE_EXPORT HINSTANCE qWinAppInst()                // get Windows app handle
@@ -912,8 +872,6 @@ QDebug operator<<(QDebug dbg, const MSG &msg)
 #endif
 
 #endif // QT_NO_QOBJECT
-
-#endif // !defined(Q_OS_WINRT)
 
 #ifndef QT_NO_QOBJECT
 void QCoreApplicationPrivate::removePostedTimerEvent(QObject *object, int timerId)

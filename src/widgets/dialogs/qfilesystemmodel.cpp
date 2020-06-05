@@ -57,9 +57,7 @@
 #ifdef Q_OS_WIN
 #  include <QtCore/QVarLengthArray>
 #  include <qt_windows.h>
-#  ifndef Q_OS_WINRT
-#      include <shlobj.h>
-#  endif
+#  include <shlobj.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -1777,7 +1775,7 @@ void QFileSystemModelPrivate::_q_directoryChanged(const QString &directory, cons
         removeNode(parentNode, toRemove[i]);
 }
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
 static QString volumeName(const QString &path)
 {
     IShellItem *item = nullptr;
@@ -1796,7 +1794,7 @@ static QString volumeName(const QString &path)
     item->Release();
     return result;
 }
-#endif // Q_OS_WIN && !Q_OS_WINRT
+#endif // Q_OS_WIN
 
 /*!
     \internal
@@ -1814,7 +1812,7 @@ QFileSystemModelPrivate::QFileSystemNode* QFileSystemModelPrivate::addNode(QFile
 #else
     Q_UNUSED(info)
 #endif
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
     //The parentNode is "" so we are listing the drives
     if (parentNode->fileName.isEmpty())
         node->volumeName = volumeName(fileName);

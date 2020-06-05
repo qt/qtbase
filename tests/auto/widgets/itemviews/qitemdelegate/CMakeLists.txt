@@ -16,7 +16,7 @@ add_qt_test(tst_qitemdelegate
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qitemdelegate CONDITION WIN32 AND NOT WINRT
+extend_target(tst_qitemdelegate CONDITION WIN32
     PUBLIC_LIBRARIES
         user32
 )

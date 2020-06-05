@@ -63,9 +63,6 @@
 #include <time.h>
 #ifdef Q_OS_WIN
 #  include <qt_windows.h>
-#  ifdef Q_OS_WINRT
-#    include "qfunctions_winrt.h"
-#  endif
 #endif
 
 #if defined(Q_OS_MAC)

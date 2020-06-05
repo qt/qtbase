@@ -33,7 +33,7 @@
 #include <qfileinfo.h>
 #include <qsysinfo.h>
 #include <qregularexpression.h>
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
 #  include <qt_windows.h>
 #endif
 
@@ -131,7 +131,7 @@ static const char * const enumNames[MaxStandardLocation + 1 - int(QStandardPaths
 
 void tst_qstandardpaths::initTestCase()
 {
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
     // Disable WOW64 redirection, see testFindExecutable()
     if (QSysInfo::buildCpuArchitecture() != QSysInfo::currentCpuArchitecture()) {
         void *oldMode;
@@ -140,7 +140,7 @@ void tst_qstandardpaths::initTestCase()
             qErrnoWarning("Wow64DisableWow64FsRedirection() failed");
         QVERIFY(disabledDisableWow64FsRedirection);
     }
-#endif // Q_OS_WIN && !Q_OS_WINRT
+#endif // Q_OS_WIN
     QVERIFY2(m_localConfigTempDir.isValid(), qPrintable(m_localConfigTempDir.errorString()));
     QVERIFY2(m_globalConfigTempDir.isValid(), qPrintable(m_globalConfigTempDir.errorString()));
     QVERIFY2(m_localAppTempDir.isValid(), qPrintable(m_localAppTempDir.errorString()));
@@ -308,9 +308,9 @@ void tst_qstandardpaths::testDataLocation()
 {
     // On all platforms, DataLocation should be GenericDataLocation / organization name / app name
     // This allows one app to access the data of another app.
-    // Android and WinRT are an exception to this case, owing to the fact that
+    // Android is an exception to this case, owing to the fact that
     // applications are sandboxed.
-#if !defined(Q_OS_ANDROID) && !defined(Q_OS_WINRT)
+#if !defined(Q_OS_ANDROID)
     const QString base = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
     QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation), base + "/tst_qstandardpaths");
     QCoreApplication::instance()->setOrganizationName("Qt");
@@ -339,7 +339,7 @@ void tst_qstandardpaths::testAppConfigLocation()
 {
     // On all platforms where applications are not sandboxed,
     // AppConfigLocation should be GenericConfigLocation / organization name / app name
-#if !defined(Q_OS_ANDROID) && !defined(Q_OS_WINRT)
+#if !defined(Q_OS_ANDROID)
     const QString base = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
     QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation), base + "/tst_qstandardpaths");
     QCoreApplication::setOrganizationName("Qt");
@@ -381,7 +381,6 @@ void tst_qstandardpaths::testFindExecutable_data()
     QTest::addColumn<QString>("needle");
     QTest::addColumn<QString>("expected");
 #ifdef Q_OS_WIN
-# ifndef Q_OS_WINRT
     const QFileInfo cmdFi = QFileInfo(QDir::cleanPath(QString::fromLocal8Bit(qgetenv("COMSPEC"))));
     const QString cmdPath = cmdFi.absoluteFilePath();
 
@@ -406,7 +405,6 @@ void tst_qstandardpaths::testFindExecutable_data()
         QTest::newRow("win8-logo-nosuffix")
             << QString() << logo << logoPath;
     }
-# endif // Q_OS_WINRT
 #else
     const QFileInfo shFi = findSh();
     Q_ASSERT(shFi.exists());
@@ -448,8 +446,6 @@ void tst_qstandardpaths::testFindExecutable()
 
 void tst_qstandardpaths::testFindExecutableLinkToDirectory()
 {
-    // WinRT has no link support
-#ifndef Q_OS_WINRT
     // link to directory
     const QString target = QDir::tempPath() + QDir::separator() + QLatin1String("link.lnk");
     QFile::remove(target);
@@ -457,7 +453,6 @@ void tst_qstandardpaths::testFindExecutableLinkToDirectory()
     QVERIFY(appFile.link(target));
     QVERIFY(QStandardPaths::findExecutable(target).isEmpty());
     QFile::remove(target);
-#endif
 }
 
 void tst_qstandardpaths::testRuntimeDirectory()

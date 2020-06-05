@@ -3487,9 +3487,8 @@ void tst_QTreeWidget::taskQTBUG_34717_collapseAtBottom()
 
 void tst_QTreeWidget::task20345_sortChildren()
 {
-    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive)
-        || !QGuiApplication::platformName().compare(QLatin1String("winrt"), Qt::CaseInsensitive))
-        QSKIP("Wayland/WinRT: This causes a crash triggered by setVisible(false)");
+    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: This causes a crash triggered by setVisible(false)");
 
     // This test case is considered successful if it is executed (no crash in sorting)
     QTreeWidget tw;

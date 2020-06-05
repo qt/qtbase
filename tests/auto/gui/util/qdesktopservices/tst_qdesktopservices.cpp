@@ -44,7 +44,7 @@ void tst_qdesktopservices::openUrl()
 {
     // At the bare minimum check that they return false for invalid url's
     QCOMPARE(QDesktopServices::openUrl(QUrl()), false);
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
     // this test is only valid on windows on other systems it might mean open a new document in the application handling .file
     const QRegularExpression messagePattern("ShellExecute 'file://invalid\\.file' failed \\(error \\d+\\)\\.");
     QVERIFY(messagePattern.isValid());

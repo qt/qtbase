@@ -71,7 +71,7 @@ public:
     static QStorageInfo root();
 
 protected:
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
     void retrieveVolumeInfo();
     void retrieveDiskFreeSpace();
 #elif defined(Q_OS_MAC)

@@ -51,11 +51,7 @@
 #endif
 #elif defined(Q_OS_WIN)
 #include <QtGui/private/qfreetypefontdatabase_p.h>
-#ifndef Q_OS_WINRT
 #include <QtCore/private/qeventdispatcher_win_p.h>
-#else
-#include <QtCore/private/qeventdispatcher_winrt_p.h>
-#endif
 #endif
 
 #include <QtGui/private/qpixmap_raster_p.h>
@@ -166,11 +162,7 @@ QAbstractEventDispatcher *QOffscreenIntegration::createEventDispatcher() const
 #if defined(Q_OS_UNIX)
     return createUnixEventDispatcher();
 #elif defined(Q_OS_WIN)
-#ifndef Q_OS_WINRT
     return new QOffscreenEventDispatcher<QEventDispatcherWin32>();
-#else // !Q_OS_WINRT
-    return new QOffscreenEventDispatcher<QEventDispatcherWinRT>();
-#endif // Q_OS_WINRT
 #else
     return 0;
 #endif

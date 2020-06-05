@@ -640,7 +640,6 @@ QHttpNetworkReply* QHttpNetworkConnectionPrivate::queueRequest(const QHttpNetwor
         channels[0].h2RequestsToSend.insert(request.priority(), pair);
     }
 
-#ifndef Q_OS_WINRT
     // For Happy Eyeballs the networkLayerState is set to Unknown
     // until we have started the first connection attempt. So no
     // request will be started until we know if IPv4 or IPv6
@@ -648,13 +647,6 @@ QHttpNetworkReply* QHttpNetworkConnectionPrivate::queueRequest(const QHttpNetwor
     if (networkLayerState == Unknown || networkLayerState == HostLookupPending) {
         startHostInfoLookup();
     } else if ( networkLayerState == IPv4 || networkLayerState == IPv6 ) {
-#else // !Q_OS_WINRT
-    {
-        // Skip the host lookup part for winrt. Host lookup and proxy handling are done by Windows
-        // internally and networkLayerPreference is ignored on this platform. Instead of refactoring
-        // the whole approach we just pretend that everything important is known here.
-        networkLayerState = IPv4;
-#endif
         // this used to be called via invokeMethod and a QueuedConnection
         // It is the only place _q_startNextRequest is called directly without going
         // through the event loop using a QueuedConnection.

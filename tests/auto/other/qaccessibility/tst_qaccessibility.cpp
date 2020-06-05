@@ -30,10 +30,8 @@
 #include <QtCore/qglobal.h>
 #ifdef Q_OS_WIN
 # include <QtCore/qt_windows.h>
-#ifndef Q_OS_WINRT
 # include <oleacc.h>
 # include <QtGui/private/qwindowsuiawrapper_p.h>
-#endif
 # include <servprov.h>
 # include <winuser.h>
 #endif
@@ -3774,7 +3772,7 @@ void tst_QAccessibility::bridgeTest()
 {
     // For now this is a simple test to see if the bridge is working at all.
     // Ideally it should be extended to test all aspects of the bridge.
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
 
     QWidget window;
     QVBoxLayout *lay = new QVBoxLayout(&window);

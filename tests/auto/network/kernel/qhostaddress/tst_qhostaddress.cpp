@@ -38,9 +38,6 @@
 #include <qdatastream.h>
 #ifdef Q_OS_WIN
 #  include <qt_windows.h>
-#  if defined(Q_OS_WINRT)
-#    include <winsock2.h>
-#  endif
 #endif
 
 #ifdef Q_OS_ANDROID
@@ -384,15 +381,12 @@ void tst_QHostAddress::assignment()
     QCOMPARE(address, QHostAddress("::1"));
 #endif
 
-    // WinRT does not support sockaddr_in
-#ifndef Q_OS_WINRT
     QHostAddress addr("4.2.2.1");
     sockaddr_in sockAddr;
     sockAddr.sin_family = AF_INET;
     sockAddr.sin_addr.s_addr = htonl(addr.toIPv4Address());
     address.setAddress((sockaddr *)&sockAddr);
     QCOMPARE(address, addr);
-#endif // !Q_OS_WINRT
 }
 
 QT_WARNING_POP

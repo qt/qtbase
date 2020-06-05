@@ -7,7 +7,5 @@ macos
 macos
 [tearOff]
 macos
-[activeSubMenuPosition]
-winrt
 [submenuTearOffDontClose]
 macos # Can't move cursor (QTBUG-76312)

@@ -67,16 +67,6 @@
 #include <algorithm>
 #include <atomic>
 
-#ifdef Q_OS_WINRT
-namespace ABI {
-    namespace Windows {
-        namespace Foundation {
-            struct IAsyncAction;
-        }
-    }
-}
-#endif // Q_OS_WINRT
-
 QT_BEGIN_NAMESPACE
 
 class QAbstractEventDispatcher;
@@ -246,9 +236,6 @@ public:
     ~QThreadData();
 
     static Q_AUTOTEST_EXPORT QThreadData *current(bool createIfNecessary = true);
-#ifdef Q_OS_WINRT
-    static void setMainThread();
-#endif
     static void clearCurrentThreadData();
     static QThreadData *get2(QThread *thread)
     { Q_ASSERT_X(thread != nullptr, "QThread", "internal error"); return thread->d_func()->data; }

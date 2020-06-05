@@ -16,7 +16,7 @@ add_qt_test(tst_qwindow
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qwindow CONDITION QT_FEATURE_dynamicgl AND WIN32 AND NOT WINRT
+extend_target(tst_qwindow CONDITION QT_FEATURE_dynamicgl AND WIN32
     PUBLIC_LIBRARIES
         user32
 )

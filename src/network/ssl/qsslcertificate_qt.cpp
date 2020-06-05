@@ -141,7 +141,7 @@ QDateTime QSslCertificate::expiryDate() const
     return d->notValidAfter;
 }
 
-#if !defined(Q_OS_WINRT) && !QT_CONFIG(schannel) // implemented in qsslcertificate_{winrt,schannel}.cpp
+#if !QT_CONFIG(schannel) // implemented in qsslcertificate_schannel.cpp
 Qt::HANDLE QSslCertificate::handle() const
 {
     Q_UNIMPLEMENTED();

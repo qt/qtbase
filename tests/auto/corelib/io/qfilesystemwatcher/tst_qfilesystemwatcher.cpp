@@ -34,7 +34,7 @@
 #include <QElapsedTimer>
 #include <QTextStream>
 #include <QDir>
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
 #include <windows.h>
 #endif
 
@@ -82,7 +82,7 @@ private slots:
     void signalsEmittedAfterFileMoved();
 
     void watchUnicodeCharacters();
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
     void watchDirectoryAttributeChanges();
 #endif
 
@@ -819,7 +819,7 @@ void tst_QFileSystemWatcher::watchUnicodeCharacters()
     QTRY_COMPARE(changedSpy.count(), 1);
 }
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
 void tst_QFileSystemWatcher::watchDirectoryAttributeChanges()
 {
     QTemporaryDir temporaryDirectory(m_tempDirPattern);

@@ -83,7 +83,7 @@ static QString driveSpec(const QString &path)
 #endif
 
 enum {
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
     OSSupportsUncPaths = true
 #else
     OSSupportsUncPaths = false
@@ -100,11 +100,6 @@ static int rootLength(const QString &name, bool allowUncPaths)
         const int nextSlash = name.indexOf(QLatin1Char('/'), 2);
         return nextSlash >= 0 ? nextSlash + 1 : len;
     }
-#if defined(Q_OS_WINRT)
-    const QString rootPath = QDir::rootPath(); // rootPath contains the trailing slash
-    if (name.startsWith(rootPath, Qt::CaseInsensitive))
-        return rootPath.size();
-#endif // Q_OS_WINRT
 #if defined(Q_OS_WIN)
     if (len >= 2 && name.at(1) == QLatin1Char(':')) {
         // Handle a possible drive letter
@@ -196,11 +191,7 @@ inline void QDirPrivate::setPath(const QString &path)
     if (p.endsWith(QLatin1Char('/'))
             && p.length() > 1
 #if defined(Q_OS_WIN)
-#  if defined (Q_OS_WINRT)
-        && (!(p.toLower() == QDir::rootPath().toLower()))
-#  else
         && (!(p.length() == 3 && p.at(1).unicode() == ':' && p.at(0).isLetter()))
-#  endif
 #endif
     ) {
             p.truncate(p.length() - 1);
@@ -2373,11 +2364,7 @@ static QString qt_cleanPath(const QString &path, bool *ok)
     // Strip away last slash except for root directories
     if (ret.length() > 1 && ret.endsWith(QLatin1Char('/'))) {
 #if defined (Q_OS_WIN)
-#  if defined(Q_OS_WINRT)
-        if (!((ret.length() == 3 || ret.length() == QDir::rootPath().length()) && ret.at(1) == QLatin1Char(':')))
-#  else
         if (!(ret.length() == 3 && ret.at(1) == QLatin1Char(':')))
-#  endif
 #endif
             ret.chop(1);
     }

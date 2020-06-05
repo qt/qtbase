@@ -14,7 +14,7 @@ osx
 linux
 # QTBUG-71953
 [getFromHttp]
-* !android !winrt
+* !android
 [getFromHttpIntoBuffer]
 osx
 [getFromHttpIntoBuffer2]

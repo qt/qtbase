@@ -15,12 +15,8 @@ qtConfig(fontconfig) {
     include($$PWD/fontconfig/fontconfig.pri)
 }
 
-win32:!winrt {
+win32 {
     include($$PWD/windows/windows.pri)
-}
-
-winrt {
-    include($$PWD/winrt/winrt.pri)
 }
 
 load(qt_module)

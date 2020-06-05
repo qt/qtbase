@@ -715,11 +715,6 @@ static EncryptionData readPbes1(const QVector<QAsn1Element> &element, const QByt
     key.truncate(8); // first 8 bytes are used for the key
 
     QSslKeyPrivate::Cipher cipher = oidCipherMap[encryptionScheme];
-#ifdef Q_OS_WINRT
-    // @todo: document this instead? find some other solution?
-    if (cipher == QSslKeyPrivate::Cipher::Rc2Cbc)
-        qWarning("PBES1 with RC2_CBC doesn't work properly on WinRT.");
-#endif
     // Steps 4-6 are done after returning
     return {cipher, key, iv};
 }

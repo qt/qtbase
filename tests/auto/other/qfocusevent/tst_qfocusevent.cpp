@@ -357,10 +357,9 @@ void tst_QFocusEvent::checkReason_ActiveWindow()
     d->hide();
 
     if (!QGuiApplication::platformName().compare(QLatin1String("offscreen"), Qt::CaseInsensitive)
-        || !QGuiApplication::platformName().compare(QLatin1String("minimal"), Qt::CaseInsensitive)
-        || !QGuiApplication::platformName().compare(QLatin1String("winrt"), Qt::CaseInsensitive)) {
+        || !QGuiApplication::platformName().compare(QLatin1String("minimal"), Qt::CaseInsensitive)) {
         // Activate window of testFocusWidget, focus in that window goes to childFocusWidgetOne
-        QWARN("Platforms offscreen, minimal, and winrt require explicit activateWindow()");
+        QWARN("Platforms offscreen and minimal require explicit activateWindow()");
         testFocusWidget->activateWindow();
     }
 

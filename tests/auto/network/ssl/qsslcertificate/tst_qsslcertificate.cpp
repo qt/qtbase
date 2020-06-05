@@ -819,7 +819,7 @@ void tst_QSslCertificate::task256066toPem()
 
 void tst_QSslCertificate::nulInCN()
 {
-#if QT_CONFIG(securetransport) || defined(Q_OS_WINRT) || QT_CONFIG(schannel)
+#if QT_CONFIG(securetransport) || QT_CONFIG(schannel)
     QSKIP("Generic QSslCertificatePrivate fails this test");
 #endif
     QList<QSslCertificate> certList =
@@ -838,7 +838,7 @@ void tst_QSslCertificate::nulInCN()
 
 void tst_QSslCertificate::nulInSan()
 {
-#if QT_CONFIG(securetransport) || defined(Q_OS_WINRT) || QT_CONFIG(schannel)
+#if QT_CONFIG(securetransport) || QT_CONFIG(schannel)
     QSKIP("Generic QSslCertificatePrivate fails this test");
 #endif
     QList<QSslCertificate> certList =
@@ -934,7 +934,7 @@ void tst_QSslCertificate::toText()
     QString txtcert = cert.toText();
 
 #ifdef QT_NO_OPENSSL
-    QEXPECT_FAIL("", "QTBUG-40884: QSslCertificate::toText is not implemented on WinRT", Continue);
+    QEXPECT_FAIL("", "QSslCertificate::toText is not implemented on platforms which do not use openssl", Continue);
 #endif
     QVERIFY(QString::fromLatin1(txt098) == txtcert ||
             QString::fromLatin1(txt100) == txtcert ||
@@ -990,7 +990,7 @@ void tst_QSslCertificate::verify()
     )
 
 #ifdef QT_NO_OPENSSL
-    QEXPECT_FAIL("", "QTBUG-40884: WinRT API does not yet support verifying a chain", Abort);
+    QEXPECT_FAIL("", "Verifying a chain is not supported without openssl", Abort); // TODO?
 #endif
     // Empty chain is unspecified error
     errors = QSslCertificate::verify(toVerify);
@@ -1323,7 +1323,7 @@ void tst_QSslCertificate::pkcs12()
     QList<QSslCertificate> caCerts;
 
 #ifdef QT_NO_OPENSSL
-    QEXPECT_FAIL("", "QTBUG-40884: WinRT API does not support pkcs12 imports", Abort);
+    QEXPECT_FAIL("", "pkcs12 imports are only supported when openssl is used", Abort); // TODO?
 #endif
     ok = QSslCertificate::importPkcs12(&f, &key, &cert, &caCerts);
     QVERIFY(ok);

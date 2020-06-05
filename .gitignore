@@ -274,8 +274,6 @@ tags
 *.exe.embed.manifest
 *.exe_manifest.rc
 *.exe_manifest.res
-*.appxmanifest
-.qmake.winrt_uuid_*
 
 # Visual Studio Code generated files
 .vscode

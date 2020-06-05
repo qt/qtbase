@@ -20,5 +20,5 @@ extend_target(tst_qclipboard CONDITION MACOS
         ${FWAppKit}
 )
 
-#### Keys ignored in scope 6:.:.:test.pro:NOT ANDROID AND NOT WINRT:
+#### Keys ignored in scope 6:.:.:test.pro:NOT ANDROID:
 # TEST_HELPER_INSTALLS = "../copier/copier" "../paster/paster"

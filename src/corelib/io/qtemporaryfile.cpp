@@ -219,17 +219,10 @@ static bool createFileFromTemplate(NativeFileHandle &file, QTemporaryFileName &t
         const DWORD shareMode = (flags & QTemporaryFileEngine::Win32NonShared)
                                 ? 0u : (FILE_SHARE_READ | FILE_SHARE_WRITE);
 
-#  ifndef Q_OS_WINRT
         file = CreateFile((const wchar_t *)path.constData(),
                 GENERIC_READ | GENERIC_WRITE,
                 shareMode, NULL, CREATE_NEW,
                 FILE_ATTRIBUTE_NORMAL, NULL);
-#  else // !Q_OS_WINRT
-        file = CreateFile2((const wchar_t *)path.constData(),
-                GENERIC_READ | GENERIC_WRITE,
-                shareMode, CREATE_NEW,
-                NULL);
-#  endif // Q_OS_WINRT
 
         if (file != INVALID_HANDLE_VALUE)
             return true;
@@ -380,7 +373,7 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
         return false;
     }
 
-#if !defined(Q_OS_WIN) || defined(Q_OS_WINRT)
+#if !defined(Q_OS_WIN)
     d->closeFileHandle = true;
 #endif
 
