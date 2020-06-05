@@ -138,3 +138,38 @@ save
   setPen black
   repeat_block text_drawing
 restore
+
+translate 150 0
+save
+  setPen black
+  setFont "sansserif" 16 normal
+  drawStaticText 0 40 "e😃m😇o😍j😜i😸!"
+restore
+
+translate 0 55
+save
+    setPen black
+    setFont "sansserif" 12 normal normal default underline
+    drawStaticText 0 20 "Underlined text drawing"
+restore
+
+translate 0 35
+save
+    setPen black
+    setFont "sansserif" 12 normal normal default normal strikeout
+    drawStaticText 0 20 "Struck out text drawing"
+restore
+
+translate 0 35
+save
+    setPen black
+    setFont "sansserif" 12 normal normal default normal normal overline
+    drawStaticText 0 20 "Overlined text drawing"
+restore
+
+translate 0 35
+save
+    setPen black
+    setFont "sansserif" 12 normal normal default underline strikeout overline
+    drawStaticText 0 20 "All the effects text drawing"
+restore
