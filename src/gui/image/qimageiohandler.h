@@ -41,6 +41,7 @@
 #define QIMAGEIOHANDLER_H
 
 #include <QtGui/qtguiglobal.h>
+#include <QtGui/qimage.h>
 #include <QtCore/qiodevice.h>
 #include <QtCore/qplugin.h>
 #include <QtCore/qfactoryinterface.h>
@@ -122,6 +123,8 @@ public:
     virtual int nextImageDelay() const;
     virtual int currentImageNumber() const;
     virtual QRect currentImageRect() const;
+
+    static bool allocateImage(QSize size, QImage::Format format, QImage *image);
 
 protected:
     QImageIOHandler(QImageIOHandlerPrivate &dd);

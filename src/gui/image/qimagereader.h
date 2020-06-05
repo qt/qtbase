@@ -142,6 +142,8 @@ public:
     static QList<QByteArray> supportedImageFormats();
     static QList<QByteArray> supportedMimeTypes();
     static QList<QByteArray> imageFormatsForMimeType(const QByteArray &mimeType);
+    static int allocationLimit();
+    static void setAllocationLimit(int mbLimit);
 
 private:
     Q_DISABLE_COPY(QImageReader)

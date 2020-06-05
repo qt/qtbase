@@ -492,7 +492,11 @@ public:
     QString errorString;
 
     QImageReader *q;
+
+    static int maxAlloc;
 };
+
+int QImageReaderPrivate::maxAlloc = 128; // 128 MB is enough for an 8K 32bpp image
 
 /*!
     \internal
@@ -1573,6 +1577,36 @@ QList<QByteArray> QImageReader::imageFormatsForMimeType(const QByteArray &mimeTy
 {
     return QImageReaderWriterHelpers::imageFormatsForMimeType(mimeType,
                                                               QImageReaderWriterHelpers::CanRead);
+}
+
+/*!
+    \since 6.0
+
+    Returns the current allocation limit, in megabytes.
+
+    \sa setAllocationLimit()
+*/
+int QImageReader::allocationLimit()
+{
+    return QImageReaderPrivate::maxAlloc;
+}
+
+/*!
+    \since 6.0
+
+    Sets the allocation limit to \a mbLimit megabytes. Images that would
+    require a QImage memory allocation above this limit will be rejected.
+
+    This limit helps applications avoid unexpectedly large memory usage from
+    loading corrupt image files. It is normally not needed to change it. The
+    default limit is large enough for all commonly used image sizes.
+
+    \sa allocationLimit()
+*/
+void QImageReader::setAllocationLimit(int mbLimit)
+{
+    if (mbLimit >= 0)
+        QImageReaderPrivate::maxAlloc = mbLimit;
 }
 
 QT_END_NAMESPACE
