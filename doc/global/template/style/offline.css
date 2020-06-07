@@ -586,13 +586,7 @@ ol.a > li{
     padding: 20px 20px 20px 20px;
 }
 
-.qmldefault {
-    padding-left: 5px;
-    float: right;
-    color: red;
-}
-
-.qmlreadonly {
+.qmlextra {
     padding-left: 5px;
     float: right;
     color: #254117;

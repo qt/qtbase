@@ -17,9 +17,14 @@ ignorewords += \
     WebChannel \
     OpenGL
 
+# Omit \since information for items introduced before Qt 5
+ignoresince = 5.0
+
 sourcedirs += includes $$BUILDDIR
 
-url = http://doc.qt.io/qt-5
+url = https://doc.qt.io/qt
+
+defines += qt6
 
 # Uncomment the following two lines to generate documentation marked as \internal
 # alias.internal = disable

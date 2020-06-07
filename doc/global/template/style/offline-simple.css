@@ -102,7 +102,7 @@ h3.fn .name, h3.fn .type {
   font-weight: 400;
 }
 
-.qmlreadonly, .qmldefault {
+.qmlextra {
   font-family: Courier, monospace;
   margin-right: 6px;
 }

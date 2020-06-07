@@ -489,17 +489,12 @@ h1,h2,h3,h4,h5,h6 {
   text-align:left;
   padding:5px 0 0 0
 }
-.qmlreadonly,.qmldefault {
+.qmlreadonly,.qmldefault,.qmlextra {
+  color:#414141;
   padding:0 5px 0 5px;
   font-size:0.75em;
   background-color:#eee;
   float:right
-}
-.qmlreadonly {
-  color:#414141
-}
-.qmldefault {
-  color:#D14141
 }
 .rightAlign {
   padding:3px 5px 3px 10px;
