@@ -44,9 +44,6 @@
 #include <QtSql/qsqlrecord.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qvector.h>
-#if QT_DEPRECATED_SINCE(5,6)
-#include <QtCore/qlist.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 

@@ -42,7 +42,6 @@
 
 #include <QtSql/qtsqlglobal.h>
 #include <QtCore/qvariant.h>
-#include <QtCore/qvector.h>
 
 // for testing:
 class tst_QSqlQuery;
@@ -53,7 +52,6 @@ QT_BEGIN_NAMESPACE
 class QString;
 class QSqlRecord;
 template <typename T> class QVector;
-class QVariant;
 class QSqlDriver;
 class QSqlError;
 class QSqlResultPrivate;
