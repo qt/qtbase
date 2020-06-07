@@ -154,8 +154,10 @@ qt_add_module(Core
         statemachine/qstate.cpp statemachine/qstate.h statemachine/qstate_p.h
         statemachine/qstatemachine.cpp statemachine/qstatemachine.h statemachine/qstatemachine_p.h
         text/qbytearray.cpp text/qbytearray.h text/qbytearray_p.h
+        text/qbytearrayalgorithms.h
         text/qbytearraylist.cpp text/qbytearraylist.h
         text/qbytearraymatcher.cpp text/qbytearraymatcher.h
+        text/qbytearrayview.h
         text/qbytedata_p.h
         text/qchar.h
         text/qcollator.cpp text/qcollator.h text/qcollator_p.h

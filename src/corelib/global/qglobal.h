@@ -598,8 +598,6 @@ using qsizetype = QIntegerForSizeof<std::size_t>::Signed;
 #  define QT_WIN_CALLBACK CALLBACK QT_ENSURE_STACK_ALIGNED_FOR_SSE
 #endif
 
-typedef int QNoImplicitBoolCast;
-
 /*
    Utility macros and inline functions
 */

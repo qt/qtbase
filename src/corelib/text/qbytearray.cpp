@@ -408,47 +408,16 @@ int qstrnicmp(const char *str1, qsizetype len1, const char *str2, qsizetype len2
 
 /*!
     \internal
-    ### Qt6: replace the QByteArray parameter with [pointer,len] pair
  */
-int qstrcmp(const QByteArray &str1, const char *str2)
+int QtPrivate::compareMemory(QByteArrayView lhs, QByteArrayView rhs)
 {
-    if (!str2)
-        return str1.isEmpty() ? 0 : +1;
-
-    const char *str1data = str1.constData();
-    const char *str1end = str1data + str1.length();
-    for ( ; str1data < str1end && *str2; ++str1data, ++str2) {
-        int diff = int(uchar(*str1data)) - uchar(*str2);
-        if (diff)
-            // found a difference
-            return diff;
-    }
-
-    // Why did we stop?
-    if (*str2 != '\0')
-        // not the null, so we stopped because str1 is shorter
-        return -1;
-    if (str1data < str1end)
-        // we haven't reached the end, so str1 must be longer
-        return +1;
-    return 0;
-}
-
-/*!
-    \internal
-    ### Qt6: replace the QByteArray parameter with [pointer,len] pair
- */
-int qstrcmp(const QByteArray &str1, const QByteArray &str2)
-{
-    int l1 = str1.length();
-    int l2 = str2.length();
-    int ret = memcmp(str1.constData(), str2.constData(), qMin(l1, l2));
+    int ret = memcmp(lhs.data(), rhs.data(), qMin(lhs.size(), rhs.size()));
     if (ret != 0)
         return ret;
 
     // they matched qMin(l1, l2) bytes
     // so the longer one is lexically after the shorter one
-    return l1 - l2;
+    return lhs.size() == rhs.size() ? 0 : lhs.size() > rhs.size() ? 1 : -1;
 }
 
 // the CRC table below is created by the following piece of code
@@ -911,7 +880,7 @@ QByteArray qUncompress(const uchar* data, int nbytes)
     This issue does not apply to \l{QString}s since they represent characters
     using Unicode.
 
-    \sa QString, QBitArray
+    \sa  QByteArrayView, QString, QBitArray
 */
 
 /*!
@@ -1446,20 +1415,13 @@ QByteArray &QByteArray::operator=(const char *str)
     \sa front(), at(), operator[]()
 */
 
-/*! \fn bool QByteArray::contains(const QByteArray &ba) const
+/*! \fn bool QByteArray::contains(QByteArrayView bv) const
+    \since 6.0
 
-    Returns \c true if the byte array contains an occurrence of the byte
-    array \a ba; otherwise returns \c false.
+    Returns \c true if this byte array contains an occurrence of the
+    sequence of bytes viewed by \a bv; otherwise returns \c false.
 
     \sa indexOf(), count()
-*/
-
-/*! \fn bool QByteArray::contains(const char *str) const
-
-    \overload
-
-    Returns \c true if the byte array contains the '\\0'-terminated string \a
-    str; otherwise returns \c false.
 */
 
 /*! \fn bool QByteArray::contains(char ch) const
@@ -2388,10 +2350,41 @@ QByteArray QByteArray::repeated(int times) const
         hashHaystack -= (a) << ol_minus_1; \
     hashHaystack <<= 1
 
-/*!
-    Returns the index position of the first occurrence of the byte
-    array \a ba in this byte array, searching forward from index
-    position \a from. Returns -1 if \a ba could not be found.
+static inline qsizetype findCharHelper(QByteArrayView haystack, qsizetype from, char needle) noexcept
+{
+    if (from < 0)
+        from = qMax(from + haystack.size(), qsizetype(0));
+    if (from < haystack.size()) {
+        const char *const b = haystack.data();
+        if (const auto n = static_cast<const char *>(
+                    memchr(b + from, needle, static_cast<size_t>(haystack.size() - from)))) {
+            return n - b;
+        }
+    }
+    return -1;
+}
+
+qsizetype QtPrivate::findByteArray(QByteArrayView haystack, qsizetype from, QByteArrayView needle) noexcept
+{
+    const auto ol = needle.size();
+    if (ol == 0)
+        return from;
+    if (ol == 1)
+        return findCharHelper(haystack, from, needle.front());
+
+    const auto l = haystack.size();
+    if (from > l || ol + from > l)
+        return -1;
+
+    return qFindByteArray(haystack.data(), haystack.size(), from, needle.data(), ol);
+}
+
+/*! \fn int QByteArray::indexOf(QByteArrayView bv, int from) const
+    \since 6.0
+
+    Returns the index position of the start of the first occurrence of the
+    sequence of bytes viewed by \a bv in this byte array, searching forward
+    from index position \a from. Returns -1 if no match is found.
 
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 21
@@ -2399,50 +2392,12 @@ QByteArray QByteArray::repeated(int times) const
     \sa lastIndexOf(), contains(), count()
 */
 
-int QByteArray::indexOf(const QByteArray &ba, int from) const
-{
-    const int ol = ba.size();
-    if (ol == 0)
-        return from;
-    if (ol == 1)
-        return indexOf(ba[0], from);
-
-    const int l = size();
-    if (from > l || ol + from > l)
-        return -1;
-
-    return static_cast<int>(qFindByteArray(data(), size(), from, ba.data(), ol));
-}
-
-/*! \fn int QByteArray::indexOf(const char *str, int from) const
-
-    \overload
-
-    Returns the index position of the first occurrence of the '\\0'-terminated
-    string \a str in the byte array, searching forward from index position \a
-    from. Returns -1 if \a str could not be found.
-*/
-int QByteArray::indexOf(const char *c, int from) const
-{
-    const int ol = qstrlen(c);
-    if (ol == 1)
-        return indexOf(*c, from);
-
-    const int l = size();
-    if (from > l || ol + from > l)
-        return -1;
-    if (ol == 0)
-        return from;
-
-    return static_cast<int>(qFindByteArray(data(), size(), from, c, ol));
-}
-
 /*!
     \overload
 
-    Returns the index position of the first occurrence of the byte \a ch in the
-    byte array, searching forward from index position \a from. Returns -1 if \a
-    ch could not be found.
+    Returns the index position of the start of the first occurrence of the
+    byte \a ch in this byte array, searching forward from index position \a from.
+    Returns -1 if no match is found.
 
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 22
@@ -2452,16 +2407,7 @@ int QByteArray::indexOf(const char *c, int from) const
 
 int QByteArray::indexOf(char ch, int from) const
 {
-    if (from < 0)
-        from = qMax(from + size(), 0);
-    if (from < size()) {
-        const char *n = data() + from - 1;
-        const char *e = end();
-        while (++n != e)
-        if (*n == ch)
-            return  n - data();
-    }
-    return -1;
+    return static_cast<int>(findCharHelper(*this, from, ch));
 }
 
 static qsizetype lastIndexOfHelper(const char *haystack, qsizetype l, const char *needle,
@@ -2498,13 +2444,41 @@ static qsizetype lastIndexOfHelper(const char *haystack, qsizetype l, const char
 
 }
 
-/*!
-    \fn int QByteArray::lastIndexOf(const QByteArray &ba, int from) const
+static inline qsizetype lastIndexOfCharHelper(QByteArrayView haystack, qsizetype from, char needle) noexcept
+{
+    if (from < 0)
+        from += haystack.size();
+    else if (from > haystack.size())
+        from = haystack.size() - 1;
+    if (from >= 0) {
+        const char *b = haystack.data();
+        const char *n = b + from + 1;
+        while (n-- != b) {
+            if (*n == needle)
+                return n - b;
+        }
+    }
+    return -1;
+}
 
-    Returns the index position of the last occurrence of the byte array \a ba in
-    this byte array, searching backward from index position \a from. If \a from
-    is -1 (the default), the search starts at the last byte (at index size() -
-    1). Returns -1 if \a ba could not be found.
+qsizetype QtPrivate::lastIndexOf(QByteArrayView haystack, qsizetype from, QByteArrayView needle) noexcept
+{
+    if (haystack.isEmpty())
+        return !needle.size() ? 0 : -1;
+    const auto ol = needle.size();
+    if (ol == 1)
+        return lastIndexOfCharHelper(haystack, from, needle.front());
+
+    return lastIndexOfHelper(haystack.data(), haystack.size(), needle.data(), ol, from);
+}
+
+/*! \fn int QByteArray::lastIndexOf(QByteArrayView bv, int from) const
+    \since 6.0
+
+    Returns the index position of the start of the last occurrence of the sequence
+    of bytes viewed by \a bv in this byte array, searching backward from index
+    position \a from. If \a from is -1 (the default), the search starts from the
+    end of the byte array. Returns -1 if no match is found.
 
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 23
@@ -2512,43 +2486,13 @@ static qsizetype lastIndexOfHelper(const char *haystack, qsizetype l, const char
     \sa indexOf(), contains(), count()
 */
 
-int QByteArray::lastIndexOf(const QByteArray &ba, int from) const
-{
-    if (isEmpty())
-        return !ba.size() ? 0 : -1;
-    const int ol = ba.size();
-    if (ol == 1)
-        return lastIndexOf(ba[0], from);
-
-    return lastIndexOfHelper(data(), size(), ba.data(), ol, from);
-}
-
-/*! \fn int QByteArray::lastIndexOf(const char *str, int from) const
-    \overload
-
-    Returns the index position of the last occurrence of the '\\0'-terminated
-    string \a str in the byte array, searching backward from index position \a
-    from. If \a from is -1 (the default), the search starts at the last byte (at
-    index size() - 1). Returns -1 if \a str could not be found.
-*/
-int QByteArray::lastIndexOf(const char *str, int from) const
-{
-    if (isEmpty())
-        return (str && *str) ? -1 : 0;
-    const int ol = qstrlen(str);
-    if (ol == 1)
-        return lastIndexOf(*str, from);
-
-    return lastIndexOfHelper(data(), size(), str, ol, from);
-}
-
 /*!
     \overload
 
-    Returns the index position of the last occurrence of byte \a ch in the byte
-    array, searching backward from index position \a from. If \a from is -1 (the
-    default), the search starts at the last byte (at index size() - 1). Returns
-    -1 if \a ch could not be found.
+    Returns the index position of the start of the last occurrence of byte \a ch in
+    this byte array, searching backward from index position \a from. If \a from is -1
+    (the default), the search starts at the last byte (at index size() - 1). Returns
+    -1 if no match is found.
 
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 24
@@ -2558,53 +2502,45 @@ int QByteArray::lastIndexOf(const char *str, int from) const
 
 int QByteArray::lastIndexOf(char ch, int from) const
 {
-    if (from < 0)
-        from += size();
-    else if (from > size())
-        from = size()-1;
-    if (from >= 0) {
-        const char *b = data();
-        const char *n = b + from + 1;
-        while (n-- != b)
-            if (*n == ch)
-                return  n - b;
-    }
-    return -1;
+    return static_cast<int>(lastIndexOfCharHelper(*this, from, ch));
 }
 
-/*!
-    Returns the number of (potentially overlapping) occurrences of
-    byte array \a ba in this byte array.
-
-    \sa contains(), indexOf()
-*/
-
-int QByteArray::count(const QByteArray &ba) const
+static inline qsizetype countCharHelper(QByteArrayView haystack, char needle) noexcept
 {
-    int num = 0;
-    int i = -1;
-    if (size() > 500 && ba.size() > 5) {
-        QByteArrayMatcher matcher(ba);
-        while ((i = matcher.indexIn(*this, i + 1)) != -1)
-            ++num;
-    } else {
-        while ((i = indexOf(ba, i + 1)) != -1)
+    qsizetype num = 0;
+    for (char ch : haystack) {
+        if (ch == needle)
             ++num;
     }
     return num;
 }
 
-/*!
-    \overload
-
-    Returns the number of (potentially overlapping) occurrences of
-    '\\0'-terminated string \a str in the byte array.
-*/
-
-int QByteArray::count(const char *str) const
+qsizetype QtPrivate::count(QByteArrayView haystack, QByteArrayView needle) noexcept
 {
-    return count(fromRawData(str, qstrlen(str)));
+    if (needle.size() == 1)
+        return countCharHelper(haystack, needle[0]);
+
+    qsizetype num = 0;
+    qsizetype i = -1;
+    if (haystack.size() > 500 && needle.size() > 5) {
+        QByteArrayMatcher matcher(needle.data());
+        while ((i = matcher.indexIn(haystack.data(), i + 1)) != -1)
+            ++num;
+    } else {
+        while ((i = haystack.indexOf(needle, i + 1)) != -1)
+            ++num;
+    }
+    return num;
 }
+
+/*! \fn int QByteArray::count(QByteArrayView &bv) const
+    \since 6.0
+
+    Returns the number of (potentially overlapping) occurrences of the
+    sequence of bytes viewed by \a bv in this byte array.
+
+    \sa contains(), indexOf()
+*/
 
 /*!
     \overload
@@ -2616,13 +2552,7 @@ int QByteArray::count(const char *str) const
 
 int QByteArray::count(char ch) const
 {
-    int num = 0;
-    const char *i = end();
-    const char *b = begin();
-    while (i != b)
-        if (*--i == ch)
-            ++num;
-    return num;
+    return static_cast<int>(countCharHelper(*this, ch));
 }
 
 /*! \fn int QByteArray::count() const
@@ -2633,119 +2563,75 @@ int QByteArray::count(char ch) const
 */
 
 /*!
-    \fn int QByteArray::compare(const char *c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
-    \since 5.12
+    \fn int QByteArray::compare(const QByteArrayView &bv, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    \since 6.0
 
     Returns an integer less than, equal to, or greater than zero depending on
     whether this QByteArray sorts before, at the same position as, or after the
-    '\\0'-terminated string \a c. The comparison is performed according to case
-    sensitivity \a cs.
-
-    \sa operator==
-*/
-
-/*!
-    \fn int QByteArray::compare(const QByteArray &a, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
-    \overload
-    \since 5.12
-
-    Returns an integer less than, equal to, or greater than zero depending on
-    whether this QByteArray sorts before, at the same position as, or after the
-    QByteArray \a a. The comparison is performed according to case sensitivity
+    QByteArrayView \a bv. The comparison is performed according to case sensitivity
     \a cs.
 
-    \sa operator==
+    \sa operator==, {Character Case}
 */
 
-/*!
-    Returns \c true if this byte array starts with byte array \a ba;
-    otherwise returns \c false.
+bool QtPrivate::startsWith(QByteArrayView haystack, QByteArrayView needle) noexcept
+{
+    if (haystack.size() < needle.size())
+        return false;
+    if (haystack.data() == needle.data() || needle.size() == 0)
+        return true;
+    return memcmp(haystack.data(), needle.data(), needle.size()) == 0;
+}
+
+/*! \fn bool QByteArray::startsWith(QByteArrayView bv) const
+    \since 6.0
+
+    Returns \c true if this byte array starts with the sequence of bytes
+    viewed by \a bv; otherwise returns \c false.
 
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 25
 
     \sa endsWith(), left()
 */
-bool QByteArray::startsWith(const QByteArray &ba) const
-{
-    if (size() < ba.size())
-        return false;
-    if (data() == ba.data() || ba.size() == 0)
-        return true;
-    return memcmp(data(), ba.data(), ba.size()) == 0;
-}
 
-/*! \overload
-
-    Returns \c true if this byte array starts with '\\0'-terminated string \a
-    str; otherwise returns \c false.
-*/
-bool QByteArray::startsWith(const char *str) const
-{
-    if (!str || !*str)
-        return true;
-    const int len = int(strlen(str));
-    if (size() < len)
-        return false;
-    return qstrncmp(data(), str, len) == 0;
-}
-
-/*! \overload
+/*!
+    \fn bool QByteArray::startsWith(char ch) const
+    \overload
 
     Returns \c true if this byte array starts with byte \a ch; otherwise returns
     \c false.
 */
-bool QByteArray::startsWith(char ch) const
+
+bool QtPrivate::endsWith(QByteArrayView haystack, QByteArrayView needle) noexcept
 {
-    if (size() == 0)
+    if (haystack.size() < needle.size())
         return false;
-    return data()[0] == ch;
+    if (haystack.end() == needle.end() || needle.size() == 0)
+        return true;
+    return memcmp(haystack.end() - needle.size(), needle.data(), needle.size()) == 0;
 }
 
 /*!
-    Returns \c true if this byte array ends with byte array \a ba;
-    otherwise returns \c false.
+    \fn bool QByteArray::endsWith(QByteArrayView bv) const
+    \since 6.0
+
+    Returns \c true if this byte array ends with the sequence of bytes
+    viewed by \a bv; otherwise returns \c false.
 
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 26
 
     \sa startsWith(), right()
 */
-bool QByteArray::endsWith(const QByteArray &ba) const
-{
-    if (size() < ba.size())
-        return false;
-    if (end() == ba.end() || ba.size() == 0)
-        return true;
-    return memcmp(end() - ba.size(), ba.data(), ba.size()) == 0;
-}
 
-/*! \overload
-
-    Returns \c true if this byte array ends with '\\0'-terminated string \a str;
-    otherwise returns \c false.
-*/
-bool QByteArray::endsWith(const char *str) const
-{
-    if (!str || !*str)
-        return true;
-    const int len = int(strlen(str));
-    if (size() < len)
-        return false;
-    return qstrncmp(end() - len, str, len) == 0;
-}
-
-/*! \overload
+/*!
+    \fn bool QByteArray::endsWith(char ch) const
+    \overload
 
     Returns \c true if this byte array ends with byte \a ch;
     otherwise returns \c false.
 */
-bool QByteArray::endsWith(char ch) const
-{
-    if (size() == 0)
-        return false;
-    return data()[size() - 1] == ch;
-}
 
 /*
     Returns true if \a c is an uppercase ASCII letter.

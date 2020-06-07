@@ -400,6 +400,11 @@ size_t qHash(const QByteArray &key, size_t seed) noexcept
     return qHashBits(key.constData(), size_t(key.size()), seed);
 }
 
+size_t qHash(const QByteArrayView &key, size_t seed) noexcept
+{
+    return qHashBits(key.constData(), size_t(key.size()), seed);
+}
+
 size_t qHash(QStringView key, size_t seed) noexcept
 {
     return qHashBits(key.data(), key.size()*sizeof(QChar), seed);
@@ -882,6 +887,13 @@ size_t qHash(long double key, size_t seed) noexcept
 /*! \fn size_t qHash(const QByteArray &key, size_t seed = 0)
     \relates QHash
     \since 5.0
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+*/
+
+/*! \fn size_t qHash(const QByteArrayView &key, size_t seed = 0)
+    \relates QHash
+    \since 6.0
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */

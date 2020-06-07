@@ -3,8 +3,10 @@
 HEADERS +=  \
         text/qbytearray.h \
         text/qbytearray_p.h \
+        text/qbytearrayalgorithms.h \
         text/qbytearraylist.h \
         text/qbytearraymatcher.h \
+        text/qbytearrayview.h \
         text/qbytedata_p.h \
         text/qchar.h \
         text/qcollator.h \

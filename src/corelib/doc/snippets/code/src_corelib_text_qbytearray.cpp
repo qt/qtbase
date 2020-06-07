@@ -224,7 +224,7 @@ ba.replace(QByteArray("ou"), QByteArray("o"));
 
 //! [21]
 QByteArray x("sticky question");
-QByteArray y("sti");
+QByteArrayView y("sti");
 x.indexOf(y);               // returns 0
 x.indexOf(y, 1);            // returns 10
 x.indexOf(y, 10);           // returns 10
@@ -243,7 +243,7 @@ ba.indexOf("X");            // returns -1
 
 //! [23]
 QByteArray x("crazy azimuths");
-QByteArray y("az");
+QByteArrayView y("az");
 x.lastIndexOf(y);           // returns 6
 x.lastIndexOf(y, 6);        // returns 6
 x.lastIndexOf(y, 5);        // returns 2

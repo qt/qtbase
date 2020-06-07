@@ -46,6 +46,8 @@
 #include <QtCore/qarraydata.h>
 #include <QtCore/qarraydatapointer.h>
 #include <QtCore/qcontainerfwd.h>
+#include <QtCore/qbytearrayalgorithms.h>
+#include <QtCore/qbytearrayview.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -94,10 +96,8 @@ Q_CORE_EXPORT char *qstrcpy(char *dst, const char *src);
 Q_CORE_EXPORT char *qstrncpy(char *dst, const char *src, uint len);
 
 Q_CORE_EXPORT int qstrcmp(const char *str1, const char *str2);
-Q_CORE_EXPORT int qstrcmp(const QByteArray &str1, const QByteArray &str2);
-Q_CORE_EXPORT int qstrcmp(const QByteArray &str1, const char *str2);
 static inline int qstrcmp(const char *str1, const QByteArray &str2)
-{ return -qstrcmp(str2, str1); }
+{ return -QtPrivate::compareMemory(str2, str1); }
 
 inline int qstrncmp(const char *str1, const char *str2, uint len)
 {
@@ -202,21 +202,20 @@ public:
     Q_REQUIRED_RESULT inline char &back();
 
     int indexOf(char c, int from = 0) const;
-    int indexOf(const char *c, int from = 0) const;
-    int indexOf(const QByteArray &a, int from = 0) const;
+    int indexOf(QByteArrayView bv, int from = 0) const
+    { return int(QtPrivate::findByteArray(qToByteArrayViewIgnoringNull(*this), from, bv)); }
+
     int lastIndexOf(char c, int from = -1) const;
-    int lastIndexOf(const char *c, int from = -1) const;
-    int lastIndexOf(const QByteArray &a, int from = -1) const;
+    int lastIndexOf(QByteArrayView bv, int from = -1) const
+    { return int(QtPrivate::lastIndexOf(qToByteArrayViewIgnoringNull(*this), from, bv)); }
 
     inline bool contains(char c) const;
-    inline bool contains(const char *a) const;
-    inline bool contains(const QByteArray &a) const;
+    inline bool contains(QByteArrayView bv) const;
     int count(char c) const;
-    int count(const char *a) const;
-    int count(const QByteArray &a) const;
+    int count(const QByteArrayView &bv) const
+    { return int(QtPrivate::count(qToByteArrayViewIgnoringNull(*this), bv)); }
 
-    inline int compare(const char *c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
-    inline int compare(const QByteArray &a, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
+    inline int compare(const QByteArrayView &a, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
 
     Q_REQUIRED_RESULT QByteArray left(int len) const;
     Q_REQUIRED_RESULT QByteArray right(int len) const;
@@ -233,13 +232,13 @@ public:
     Q_REQUIRED_RESULT QByteArray chopped(int len) const
     { Q_ASSERT(len >= 0); Q_ASSERT(len <= size()); return first(size() - len); }
 
-    bool startsWith(const QByteArray &a) const;
-    bool startsWith(char c) const;
-    bool startsWith(const char *c) const;
+    bool startsWith(QByteArrayView bv) const
+    { return QtPrivate::startsWith(qToByteArrayViewIgnoringNull(*this), bv); }
+    bool startsWith(char c) const { return size() > 0 && front() == c; }
 
-    bool endsWith(const QByteArray &a) const;
-    bool endsWith(char c) const;
-    bool endsWith(const char *c) const;
+    bool endsWith(char c) const { return size() > 0 && back() == c; }
+    bool endsWith(QByteArrayView bv) const
+    { return QtPrivate::endsWith(qToByteArrayViewIgnoringNull(*this), bv); }
 
     bool isUpper() const;
     bool isLower() const;
@@ -429,7 +428,6 @@ public:
     }
 
 private:
-    operator QNoImplicitBoolCast() const;
     void reallocData(uint alloc, Data::ArrayOptions options);
     void expand(int i);
     QByteArray nulTerminated() const;
@@ -553,53 +551,48 @@ inline void QByteArray::push_front(const char *c)
 { prepend(c); }
 inline void QByteArray::push_front(const QByteArray &a)
 { prepend(a); }
-inline bool QByteArray::contains(const QByteArray &a) const
-{ return indexOf(a) != -1; }
 inline bool QByteArray::contains(char c) const
 { return indexOf(c) != -1; }
-inline int QByteArray::compare(const char *c, Qt::CaseSensitivity cs) const noexcept
+inline bool QByteArray::contains(QByteArrayView bv) const
+{ return indexOf(bv) != -1; }
+inline int QByteArray::compare(const QByteArrayView &a, Qt::CaseSensitivity cs) const noexcept
 {
-    return cs == Qt::CaseSensitive ? qstrcmp(*this, c) :
-                                     qstrnicmp(data(), size(), c, -1);
-}
-inline int QByteArray::compare(const QByteArray &a, Qt::CaseSensitivity cs) const noexcept
-{
-    return cs == Qt::CaseSensitive ? qstrcmp(*this, a) :
+    return cs == Qt::CaseSensitive ? QtPrivate::compareMemory(*this, a) :
                                      qstrnicmp(data(), size(), a.data(), a.size());
 }
 Q_CORE_EXPORT bool operator==(const QByteArray &a1, const QByteArray &a2) noexcept;
 inline bool operator==(const QByteArray &a1, const char *a2) noexcept
-{ return a2 ? qstrcmp(a1,a2) == 0 : a1.isEmpty(); }
+{ return a2 ? QtPrivate::compareMemory(a1, a2) == 0 : a1.isEmpty(); }
 inline bool operator==(const char *a1, const QByteArray &a2) noexcept
 { return a1 ? qstrcmp(a1,a2) == 0 : a2.isEmpty(); }
 inline bool operator!=(const QByteArray &a1, const QByteArray &a2) noexcept
 { return !(a1==a2); }
 inline bool operator!=(const QByteArray &a1, const char *a2) noexcept
-{ return a2 ? qstrcmp(a1,a2) != 0 : !a1.isEmpty(); }
+{ return a2 ? QtPrivate::compareMemory(a1, a2) != 0 : !a1.isEmpty(); }
 inline bool operator!=(const char *a1, const QByteArray &a2) noexcept
 { return a1 ? qstrcmp(a1,a2) != 0 : !a2.isEmpty(); }
 inline bool operator<(const QByteArray &a1, const QByteArray &a2) noexcept
-{ return qstrcmp(a1, a2) < 0; }
+{ return QtPrivate::compareMemory(QByteArrayView(a1), QByteArrayView(a2)) < 0; }
  inline bool operator<(const QByteArray &a1, const char *a2) noexcept
-{ return qstrcmp(a1, a2) < 0; }
+{ return QtPrivate::compareMemory(a1, a2) < 0; }
 inline bool operator<(const char *a1, const QByteArray &a2) noexcept
 { return qstrcmp(a1, a2) < 0; }
 inline bool operator<=(const QByteArray &a1, const QByteArray &a2) noexcept
-{ return qstrcmp(a1, a2) <= 0; }
+{ return QtPrivate::compareMemory(QByteArrayView(a1), QByteArrayView(a2)) <= 0; }
 inline bool operator<=(const QByteArray &a1, const char *a2) noexcept
-{ return qstrcmp(a1, a2) <= 0; }
+{ return QtPrivate::compareMemory(a1, a2) <= 0; }
 inline bool operator<=(const char *a1, const QByteArray &a2) noexcept
 { return qstrcmp(a1, a2) <= 0; }
 inline bool operator>(const QByteArray &a1, const QByteArray &a2) noexcept
-{ return qstrcmp(a1, a2) > 0; }
+{ return QtPrivate::compareMemory(QByteArrayView(a1), QByteArrayView(a2)) > 0; }
 inline bool operator>(const QByteArray &a1, const char *a2) noexcept
-{ return qstrcmp(a1, a2) > 0; }
+{ return QtPrivate::compareMemory(a1, a2) > 0; }
 inline bool operator>(const char *a1, const QByteArray &a2) noexcept
 { return qstrcmp(a1, a2) > 0; }
 inline bool operator>=(const QByteArray &a1, const QByteArray &a2) noexcept
-{ return qstrcmp(a1, a2) >= 0; }
+{ return QtPrivate::compareMemory(QByteArrayView(a1), QByteArrayView(a2)) >= 0; }
 inline bool operator>=(const QByteArray &a1, const char *a2) noexcept
-{ return qstrcmp(a1, a2) >= 0; }
+{ return QtPrivate::compareMemory(a1, a2) >= 0; }
 inline bool operator>=(const char *a1, const QByteArray &a2) noexcept
 { return qstrcmp(a1, a2) >= 0; }
 #if !defined(QT_USE_QSTRINGBUILDER)
@@ -614,8 +607,6 @@ inline const QByteArray operator+(const char *a1, const QByteArray &a2)
 inline const QByteArray operator+(char a1, const QByteArray &a2)
 { return QByteArray(&a1, 1) += a2; }
 #endif // QT_USE_QSTRINGBUILDER
-inline bool QByteArray::contains(const char *c) const
-{ return indexOf(c) != -1; }
 inline QByteArray &QByteArray::replace(char before, const char *c)
 { return replace(&before, 1, c, qstrlen(c)); }
 inline QByteArray &QByteArray::replace(const QByteArray &before, const char *c)
@@ -703,6 +694,15 @@ inline bool operator!=(const QByteArray::FromBase64Result &lhs, const QByteArray
 }
 
 Q_CORE_EXPORT Q_DECL_PURE_FUNCTION size_t qHash(const QByteArray::FromBase64Result &key, size_t seed = 0) noexcept;
+
+//
+// QByteArrayView members that require QByteArray:
+//
+QByteArray QByteArrayView::toByteArray() const
+{
+    Q_ASSERT(size() == int(size()));
+    return QByteArray(data(), int(size()));
+}
 
 QT_END_NAMESPACE
 

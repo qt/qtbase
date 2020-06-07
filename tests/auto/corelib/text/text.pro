@@ -5,6 +5,7 @@ SUBDIRS = \
     qbytearrayapisymmetry \
     qbytearraylist \
     qbytearraymatcher \
+    qbytearrayview \
     qbytedatabuffer \
     qchar \
     qcollator \
