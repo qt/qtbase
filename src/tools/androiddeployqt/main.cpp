@@ -1744,7 +1744,7 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
     if (!options->qmlImportScannerBinaryPath.isEmpty()) {
         qmlImportScanner = options->qmlImportScannerBinaryPath;
     } else {
-        options->qtInstallDirectory + QLatin1String("/bin/qmlimportscanner");
+        qmlImportScanner = options->qtInstallDirectory + QLatin1String("/bin/qmlimportscanner");
 #if defined(Q_OS_WIN32)
         qmlImportScanner += QLatin1String(".exe");
 #endif
