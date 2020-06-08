@@ -57,8 +57,7 @@
 
 QT_BEGIN_NAMESPACE
 
-// ### unexport this class when and if QAbstractScrollAreaPrivate is unexported
-class Q_WIDGETS_EXPORT QFramePrivate : public QWidgetPrivate
+class QFramePrivate : public QWidgetPrivate
 {
     Q_DECLARE_PUBLIC(QFrame)
 public:
