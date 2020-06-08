@@ -790,8 +790,25 @@ function(qt_generate_module_pri_file target)
         set(module_build_config "")
     endif()
 
+    if(is_fw)
+        set(framework_base_path "$$QT_MODULE_LIB_BASE/${module}.framework/Headers")
+        set(public_module_includes "${framework_base_path}")
+        set(public_module_frameworks "$$QT_MODULE_LIB_BASE")
+        set(private_module_includes "${framework_base_path}/${PROJECT_VERSION} ${framework_base_path}/${PROJECT_VERSION}/${module}")
+        set(module_name_in_pri "${module}")
+    else()
+        set(public_module_includes "$$QT_MODULE_INCLUDE_BASE $$QT_MODULE_INCLUDE_BASE/${module}")
+        set(public_module_frameworks "")
+        set(private_module_includes "$$QT_MODULE_INCLUDE_BASE/${module}/${PROJECT_VERSION} $$QT_MODULE_INCLUDE_BASE/${module}/${PROJECT_VERSION}/${module}")
+        set(module_name_in_pri "${module_versioned}")
+    endif()
+
     qt_path_join(target_path ${QT_BUILD_DIR} ${INSTALL_MKSPECSDIR}/modules)
-    if (NOT ${arg_INTERNAL_MODULE})
+    if (arg_INTERNAL_MODULE)
+        string(PREPEND private_module_includes "${public_module_includes} ")
+        set(private_module_frameworks ${public_module_frameworks})
+    else()
+        unset(private_module_frameworks)
         if(arg_HEADER_MODULE)
             set(module_plugin_types "")
         else()
@@ -808,19 +825,6 @@ function(qt_generate_module_pri_file target)
 
         qt_path_join(pri_file_name "${target_path}" "qt_lib_${config_module_name}.pri")
         list(APPEND pri_files "${pri_file_name}")
-
-        if(is_fw)
-            set(framework_base_path "$$QT_MODULE_LIB_BASE/${module}.framework/Headers")
-            set(public_module_includes "${framework_base_path}")
-            set(public_module_frameworks "$$QT_MODULE_LIB_BASE")
-            set(private_module_includes "${framework_base_path}/${PROJECT_VERSION} ${framework_base_path}/${PROJECT_VERSION}/${module}")
-            set(module_name_in_pri "${module}")
-        else()
-            set(public_module_includes "$$QT_MODULE_INCLUDE_BASE $$QT_MODULE_INCLUDE_BASE/${module}")
-            set(public_module_frameworks "")
-            set(private_module_includes "$$QT_MODULE_INCLUDE_BASE/${module}/${PROJECT_VERSION} $$QT_MODULE_INCLUDE_BASE/${module}/${PROJECT_VERSION}/${module}")
-            set(module_name_in_pri "${module_versioned}")
-        endif()
 
         file(GENERATE
             OUTPUT "${pri_file_name}"
@@ -869,7 +873,7 @@ QT.${config_module_name}_private.name = ${module}
 QT.${config_module_name}_private.module =
 QT.${config_module_name}_private.libs = $$QT_MODULE_LIB_BASE
 QT.${config_module_name}_private.includes = ${private_module_includes}
-QT.${config_module_name}_private.frameworks =
+QT.${config_module_name}_private.frameworks = ${private_module_frameworks}
 QT.${config_module_name}_private.depends = ${private_module_dependencies}
 QT.${config_module_name}_private.uses =
 QT.${config_module_name}_private.module_config = ${joined_module_internal_config}
