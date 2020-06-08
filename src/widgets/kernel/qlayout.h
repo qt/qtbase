@@ -80,8 +80,8 @@ public:
     QLayout();
     ~QLayout();
 
-    int spacing() const;
-    void setSpacing(int);
+    virtual int spacing() const;
+    virtual void setSpacing(int);
 
     void setContentsMargins(int left, int top, int right, int bottom);
     void setContentsMargins(const QMargins &margins);

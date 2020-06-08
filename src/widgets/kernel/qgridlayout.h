@@ -74,8 +74,8 @@ public:
     int horizontalSpacing() const;
     void setVerticalSpacing(int spacing);
     int verticalSpacing() const;
-    void setSpacing(int spacing);
-    int spacing() const;
+    void setSpacing(int spacing) override;
+    int spacing() const override;
 
     void setRowStretch(int row, int stretch);
     void setColumnStretch(int column, int stretch);

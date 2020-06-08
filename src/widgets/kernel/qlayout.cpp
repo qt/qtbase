@@ -55,9 +55,6 @@
 #include "qvariant.h"
 #include "qwidget_p.h"
 #include "qlayout_p.h"
-#if QT_CONFIG(formlayout)
-#include "qformlayout.h"
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -301,40 +298,20 @@ bool QLayout::setAlignment(QLayout *l, Qt::Alignment alignment)
 
 int QLayout::spacing() const
 {
-    if (const QBoxLayout* boxlayout = qobject_cast<const QBoxLayout*>(this)) {
-        return boxlayout->spacing();
-    } else if (const QGridLayout* gridlayout = qobject_cast<const QGridLayout*>(this)) {
-        return gridlayout->spacing();
-#if QT_CONFIG(formlayout)
-    } else if (const QFormLayout* formlayout = qobject_cast<const QFormLayout*>(this)) {
-        return formlayout->spacing();
-#endif
+    Q_D(const QLayout);
+    if (d->insideSpacing >=0) {
+        return d->insideSpacing;
     } else {
-        Q_D(const QLayout);
-        if (d->insideSpacing >=0) {
-            return d->insideSpacing;
-        } else {
-            // arbitrarily prefer horizontal spacing to vertical spacing
-            return qSmartSpacing(this, QStyle::PM_LayoutHorizontalSpacing);
-        }
+        // arbitrarily prefer horizontal spacing to vertical spacing
+        return qSmartSpacing(this, QStyle::PM_LayoutHorizontalSpacing);
     }
 }
 
 void QLayout::setSpacing(int spacing)
 {
-    if (QBoxLayout* boxlayout = qobject_cast<QBoxLayout*>(this)) {
-        boxlayout->setSpacing(spacing);
-    } else if (QGridLayout* gridlayout = qobject_cast<QGridLayout*>(this)) {
-        gridlayout->setSpacing(spacing);
-#if QT_CONFIG(formlayout)
-    } else if (QFormLayout* formlayout = qobject_cast<QFormLayout*>(this)) {
-        formlayout->setSpacing(spacing);
-#endif
-    } else {
-        Q_D(QLayout);
-        d->insideSpacing = spacing;
-        invalidate();
-    }
+    Q_D(QLayout);
+    d->insideSpacing = spacing;
+    invalidate();
 }
 
 /*!

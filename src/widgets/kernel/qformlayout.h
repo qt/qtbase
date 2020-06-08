@@ -105,8 +105,8 @@ public:
     void setVerticalSpacing(int spacing);
     int verticalSpacing() const;
 
-    int spacing() const;
-    void setSpacing(int);
+    int spacing() const override;
+    void setSpacing(int) override;
 
     void addRow(QWidget *label, QWidget *field);
     void addRow(QWidget *label, QLayout *field);

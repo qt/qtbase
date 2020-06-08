@@ -83,8 +83,8 @@ public:
     void insertLayout(int index, QLayout *layout, int stretch = 0);
     void insertItem(int index, QLayoutItem *);
 
-    int spacing() const;
-    void setSpacing(int spacing);
+    int spacing() const override;
+    void setSpacing(int spacing) override;
 
     bool setStretchFactor(QWidget *w, int stretch);
     bool setStretchFactor(QLayout *l, int stretch);
