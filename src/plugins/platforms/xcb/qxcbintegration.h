@@ -43,6 +43,7 @@
 #include <QtGui/private/qtguiglobal_p.h>
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformscreen.h>
+#include <qpa/qplatformopenglcontext.h>
 
 #include "qxcbexport.h"
 
@@ -55,6 +56,8 @@ class QAbstractEventDispatcher;
 class QXcbNativeInterface;
 
 class Q_XCB_EXPORT QXcbIntegration : public QPlatformIntegration
+    , public QPlatformInterface::Private::QGLXIntegration
+    , public QPlatformInterface::Private::QEGLIntegration
 {
 public:
     QXcbIntegration(const QStringList &parameters, int &argc, char **argv);
@@ -65,6 +68,8 @@ public:
     QPlatformWindow *createForeignWindow(QWindow *window, WId nativeHandle) const override;
 #ifndef QT_NO_OPENGL
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const override;
+    QOpenGLContext *createOpenGLContext(GLXContext context, void *visualInfo, QOpenGLContext *shareContext) const override;
+    QOpenGLContext *createOpenGLContext(EGLContext context, EGLDisplay display, QOpenGLContext *shareContext) const override;
 #endif
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const override;
 

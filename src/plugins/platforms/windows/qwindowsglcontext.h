@@ -174,6 +174,7 @@ public:
     static QByteArray getGlString(unsigned int which);
 
     QWindowsOpenGLContext *createContext(QOpenGLContext *context) override;
+    QWindowsOpenGLContext *createContext(HGLRC context, HWND window) override;
     void *moduleHandle() const override { return opengl32.moduleHandle(); }
     QOpenGLContext::OpenGLModuleType moduleType() const override
     { return QOpenGLContext::LibGL; }
@@ -199,10 +200,12 @@ public:
     static QWindowsOpengl32DLL opengl32;
 };
 
-class QWindowsGLContext : public QWindowsOpenGLContext
+class QWindowsGLContext : public QWindowsOpenGLContext, public QPlatformInterface::QWGLContext
 {
 public:
     explicit QWindowsGLContext(QOpenGLStaticContext *staticContext, QOpenGLContext *context);
+    explicit QWindowsGLContext(QOpenGLStaticContext *staticContext, HGLRC context, HWND window);
+
     ~QWindowsGLContext() override;
     bool isSharing() const override { return context()->shareHandle(); }
     bool isValid() const override { return m_renderingContext && !m_lost; }
@@ -219,7 +222,7 @@ public:
 
     HGLRC renderingContext() const { return m_renderingContext; }
 
-    void *nativeContext() const override { return m_renderingContext; }
+    HGLRC nativeContext() const override { return m_renderingContext; }
 
 private:
     typedef GLenum (APIENTRY *GlGetGraphicsResetStatusArbType)();

@@ -49,6 +49,7 @@
 #include "qglxintegration.h"
 
 #include <QtGui/QOpenGLContext>
+#include <QtGui/private/qopenglcontext_p.h>
 
 #include "qxcbglxnativeinterfacehandler.h"
 
@@ -187,10 +188,22 @@ QXcbWindow *QXcbGlxIntegration::createWindow(QWindow *window) const
 QPlatformOpenGLContext *QXcbGlxIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
     QXcbScreen *screen = static_cast<QXcbScreen *>(context->screen()->handle());
-    QGLXContext *platformContext = new QGLXContext(screen, screen->surfaceFormatFor(context->format()),
-                                                   context->shareHandle(), context->nativeHandle());
-    context->setNativeHandle(platformContext->nativeHandle());
-    return platformContext;
+    return new QGLXContext(static_cast<Display *>(m_connection->xlib_display()),
+        screen, screen->surfaceFormatFor(context->format()), context->shareHandle());
+}
+
+QOpenGLContext *QXcbGlxIntegration::createOpenGLContext(GLXContext glxContext, void *visualInfo, QOpenGLContext *shareContext) const
+{
+    if (!glxContext)
+        return nullptr;
+
+    QPlatformOpenGLContext *shareHandle = shareContext ? shareContext->handle() : nullptr;
+
+    auto *context = new QOpenGLContext;
+    auto *contextPrivate = QOpenGLContextPrivate::get(context);
+    auto *display = static_cast<Display *>(m_connection->xlib_display());
+    contextPrivate->adopt(new QGLXContext(display, glxContext, visualInfo, shareHandle));
+    return context;
 }
 
 QPlatformOffscreenSurface *QXcbGlxIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const

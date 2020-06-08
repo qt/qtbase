@@ -303,13 +303,6 @@ private:
         return QAppleLogActivity(os_activity_create(description, parent, OS_ACTIVITY_FLAG_DEFAULT)); \
     }()
 
-#define QT_VA_ARGS_CHOOSE(_1, _2, _3, _4, _5, _6, _7, _8, _9, N, ...) N
-#define QT_VA_ARGS_COUNT(...) QT_VA_ARGS_CHOOSE(__VA_ARGS__, 9, 8, 7, 6, 5, 4, 3, 2, 1)
-
-#define QT_OVERLOADED_MACRO(MACRO, ...) _QT_OVERLOADED_MACRO(MACRO, QT_VA_ARGS_COUNT(__VA_ARGS__))(__VA_ARGS__)
-#define _QT_OVERLOADED_MACRO(MACRO, ARGC) _QT_OVERLOADED_MACRO_EXPAND(MACRO, ARGC)
-#define _QT_OVERLOADED_MACRO_EXPAND(MACRO, ARGC) MACRO##ARGC
-
 #define QT_APPLE_LOG_ACTIVITY_WITH_PARENT3(condition, description, parent) QT_APPLE_LOG_ACTIVITY_CREATE(condition, description, parent)
 #define QT_APPLE_LOG_ACTIVITY_WITH_PARENT2(description, parent) QT_APPLE_LOG_ACTIVITY_WITH_PARENT3(true, description, parent)
 #define QT_APPLE_LOG_ACTIVITY_WITH_PARENT(...) QT_OVERLOADED_MACRO(QT_APPLE_LOG_ACTIVITY_WITH_PARENT, __VA_ARGS__)

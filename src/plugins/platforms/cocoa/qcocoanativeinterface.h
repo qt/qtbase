@@ -59,17 +59,9 @@ class QCocoaNativeInterface : public QPlatformNativeInterface
 public:
     QCocoaNativeInterface();
 
-#ifndef QT_NO_OPENGL
-    void *nativeResourceForContext(const QByteArray &resourceString, QOpenGLContext *context) override;
-#endif
     void *nativeResourceForWindow(const QByteArray &resourceString, QWindow *window) override;
 
     NativeResourceForIntegrationFunction nativeResourceFunctionForIntegration(const QByteArray &resource) override;
-
-#ifndef QT_NO_OPENGL
-    static void *cglContextForContext(QOpenGLContext *context);
-    static void *nsOpenGLContextForContext(QOpenGLContext* context);
-#endif
 
     QFunctionPointer platformFunction(const QByteArray &function) const override;
 

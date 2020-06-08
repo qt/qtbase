@@ -48,6 +48,6 @@ qt_extend_target(EglSupport CONDITION NOT QT_FEATURE_egl_x11
 )
 
 qt_extend_target(EglSupport CONDITION QT_FEATURE_dlopen
-    PUBLIC_LIBRARIES
+    LIBRARIES
         ${CMAKE_DL_LIBS}
 )

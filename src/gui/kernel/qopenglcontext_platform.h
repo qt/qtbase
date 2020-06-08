@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -37,84 +37,73 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWDEFS_WIN_H
-#define QWINDOWDEFS_WIN_H
+#ifndef QOPENGLCONTEXT_PLATFORM_H
+#define QOPENGLCONTEXT_PLATFORM_H
+
+#ifndef QT_NO_OPENGL
 
 #include <QtGui/qtguiglobal.h>
+#include <QtGui/qopenglcontext.h>
+#include <QtGui/qwindowdefs.h>
+
+#if defined(Q_OS_MACOS)
+Q_FORWARD_DECLARE_OBJC_CLASS(NSOpenGLContext);
+#endif
+
+#if defined(Q_OS_LINUX)
+struct __GLXcontextRec; typedef struct __GLXcontextRec *GLXContext;
+#endif
+#if QT_CONFIG(egl)
+typedef void *EGLContext;
+typedef void *EGLDisplay;
+#endif
 
 QT_BEGIN_NAMESPACE
 
+namespace QPlatformInterface {
+
+#if defined(Q_OS_MACOS)
+struct Q_GUI_EXPORT QCocoaGLContext
+{
+    QT_DECLARE_PLATFORM_INTERFACE(QCocoaGLContext)
+    static QOpenGLContext *fromNative(QT_IGNORE_DEPRECATIONS(NSOpenGLContext) *, QOpenGLContext *shareContext = nullptr);
+    virtual QT_IGNORE_DEPRECATIONS(NSOpenGLContext) *nativeContext() const = 0;
+};
+#endif
+
+#if defined(Q_OS_WIN)
+struct Q_GUI_EXPORT QWGLContext
+{
+    QT_DECLARE_PLATFORM_INTERFACE(QWGLContext)
+    static HMODULE openGLModuleHandle();
+    static QOpenGLContext *fromNative(HGLRC context, HWND window, QOpenGLContext *shareContext = nullptr);
+    virtual HGLRC nativeContext() const = 0;
+};
+#endif
+
+#if defined(Q_OS_LINUX)
+struct Q_GUI_EXPORT QGLXContext
+{
+    QT_DECLARE_PLATFORM_INTERFACE(QGLXContext)
+    static QOpenGLContext *fromNative(GLXContext configBasedContext, QOpenGLContext *shareContext = nullptr);
+    static QOpenGLContext *fromNative(GLXContext visualBasedContext, void *visualInfo, QOpenGLContext *shareContext = nullptr);
+    virtual GLXContext nativeContext() const = 0;
+};
+#endif
+
+#if QT_CONFIG(egl)
+struct Q_GUI_EXPORT QEGLContext
+{
+    QT_DECLARE_PLATFORM_INTERFACE(QEGLContext)
+    static QOpenGLContext *fromNative(EGLContext context, EGLDisplay display, QOpenGLContext *shareContext = nullptr);
+    virtual EGLContext nativeContext() const = 0;
+};
+#endif
+
+} // QPlatformInterface
 
 QT_END_NAMESPACE
 
-#if !defined(Q_NOWINSTRICT)
-#define Q_WINSTRICT
-#endif
+#endif // QT_NO_OPENGL
 
-#if defined(Q_WINSTRICT)
-
-#if !defined(STRICT)
-#define STRICT
-#endif
-#undef NO_STRICT
-#define Q_DECLARE_HANDLE(name) struct name##__; typedef struct name##__ *name
-
-#else
-
-#if !defined(NO_STRICT)
-#define NO_STRICT
-#endif
-#undef  STRICT
-#define Q_DECLARE_HANDLE(name) typedef HANDLE name
-
-#endif
-
-#ifndef HINSTANCE
-Q_DECLARE_HANDLE(HINSTANCE);
-#endif
-#ifndef HMODULE
-typedef HINSTANCE HMODULE;
-#endif
-#ifndef HDC
-Q_DECLARE_HANDLE(HDC);
-#endif
-#ifndef HWND
-Q_DECLARE_HANDLE(HWND);
-#endif
-#ifndef HFONT
-Q_DECLARE_HANDLE(HFONT);
-#endif
-#ifndef HPEN
-Q_DECLARE_HANDLE(HPEN);
-#endif
-#ifndef HBRUSH
-Q_DECLARE_HANDLE(HBRUSH);
-#endif
-#ifndef HBITMAP
-Q_DECLARE_HANDLE(HBITMAP);
-#endif
-#ifndef HICON
-Q_DECLARE_HANDLE(HICON);
-#endif
-#ifndef HCURSOR
-typedef HICON HCURSOR;
-#endif
-#ifndef HPALETTE
-Q_DECLARE_HANDLE(HPALETTE);
-#endif
-#ifndef HRGN
-Q_DECLARE_HANDLE(HRGN);
-#endif
-#ifndef HMONITOR
-Q_DECLARE_HANDLE(HMONITOR);
-#endif
-#ifndef HGLRC
-Q_DECLARE_HANDLE(HGLRC);
-#endif
-#ifndef _HRESULT_DEFINED
-typedef long HRESULT;
-#endif
-
-typedef struct tagMSG MSG;
-
-#endif // QWINDOWDEFS_WIN_H
+#endif // QOPENGLCONTEXT_PLATFORM_H

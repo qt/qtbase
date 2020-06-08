@@ -71,8 +71,6 @@
 #include "qandroidsystemlocale.h"
 #include "qandroidplatformoffscreensurface.h"
 
-#include <QtPlatformHeaders/QEGLNativeContext>
-
 #if QT_CONFIG(vulkan)
 #include "qandroidplatformvulkanwindow.h"
 #include "qandroidplatformvulkaninstance.h"
@@ -307,9 +305,13 @@ QPlatformOpenGLContext *QAndroidPlatformIntegration::createPlatformOpenGLContext
     format.setRedBufferSize(8);
     format.setGreenBufferSize(8);
     format.setBlueBufferSize(8);
-    auto ctx = new QAndroidPlatformOpenGLContext(format, context->shareHandle(), m_eglDisplay, context->nativeHandle());
-    context->setNativeHandle(QVariant::fromValue<QEGLNativeContext>(QEGLNativeContext(ctx->eglContext(), m_eglDisplay)));
+    auto ctx = new QAndroidPlatformOpenGLContext(format, context->shareHandle(), m_eglDisplay);
     return ctx;
+}
+
+QOpenGLContext *QAndroidPlatformIntegration::createOpenGLContext(EGLContext context, EGLDisplay display, QOpenGLContext *shareContext) const
+{
+    return QEGLPlatformContext::createFrom<QAndroidPlatformOpenGLContext>(context, display, m_eglDisplay, shareContext);
 }
 
 QPlatformOffscreenSurface *QAndroidPlatformIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const

@@ -45,6 +45,7 @@
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformmenu.h>
 #include <qpa/qplatformnativeinterface.h>
+#include <qpa/qplatformopenglcontext.h>
 
 #include <EGL/egl.h>
 #include <jni.h>
@@ -73,6 +74,7 @@ protected:
 };
 
 class QAndroidPlatformIntegration : public QPlatformIntegration
+                                  , QPlatformInterface::Private::QEGLIntegration
 {
     friend class QAndroidPlatformScreen;
 
@@ -88,6 +90,7 @@ public:
     QPlatformWindow *createForeignWindow(QWindow *window, WId nativeHandle) const override;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const override;
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const override;
+    QOpenGLContext *createOpenGLContext(EGLContext context, EGLDisplay display, QOpenGLContext *shareContext) const override;
     QAbstractEventDispatcher *createEventDispatcher() const override;
     QAndroidPlatformScreen *screen() { return m_primaryScreen; }
     QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const override;

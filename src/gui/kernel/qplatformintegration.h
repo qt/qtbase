@@ -81,6 +81,30 @@ class QOffscreenSurface;
 class QPlatformVulkanInstance;
 class QVulkanInstance;
 
+namespace QPlatformInterface::Private {
+
+template <typename R, typename I, auto func, typename... Args>
+struct QInterfaceProxyImp
+{
+    template <typename T>
+    static R apply(T *obj, Args... args)
+    {
+        if (auto *iface = dynamic_cast<I*>(obj))
+            return (iface->*func)(args...);
+        else
+            return R();
+    }
+};
+
+template <auto func>
+struct QInterfaceProxy;
+template <typename R, typename I, typename... Args, R(I::*func)(Args...)>
+struct QInterfaceProxy<func> : public QInterfaceProxyImp<R, I, func, Args...> {};
+template <typename R, typename I, typename... Args, R(I::*func)(Args...) const>
+struct QInterfaceProxy<func> : public QInterfaceProxyImp<R, I, func, Args...> {};
+
+} // QPlatformInterface::Private
+
 class Q_GUI_EXPORT QPlatformIntegration
 {
 public:
@@ -199,6 +223,13 @@ public:
 #if QT_CONFIG(vulkan) || defined(Q_CLANG_QDOC)
     virtual QPlatformVulkanInstance *createPlatformVulkanInstance(QVulkanInstance *instance) const;
 #endif
+
+    template <auto func, typename... Args>
+    auto call(Args... args)
+    {
+        using namespace QPlatformInterface::Private;
+        return QInterfaceProxy<func>::apply(this, args...);
+    }
 
 protected:
     QPlatformIntegration() = default;

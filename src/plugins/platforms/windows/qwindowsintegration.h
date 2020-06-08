@@ -44,6 +44,8 @@
 #include <qpa/qplatformintegration.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtGui/private/qwindowsfontdatabase_p.h>
+#include <QtGui/private/qopenglcontext_p.h>
+#include <qpa/qplatformopenglcontext.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -52,7 +54,7 @@ struct QWindowsWindowData;
 class QWindowsWindow;
 class QWindowsStaticOpenGLContext;
 
-class QWindowsIntegration : public QPlatformIntegration
+class QWindowsIntegration : public QPlatformIntegration, public QPlatformInterface::Private::QWindowsGLIntegration
 {
     Q_DISABLE_COPY_MOVE(QWindowsIntegration)
 public:
@@ -87,6 +89,9 @@ public:
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const override;
     QOpenGLContext::OpenGLModuleType openGLModuleType() override;
     static QWindowsStaticOpenGLContext *staticOpenGLContext();
+
+    HMODULE openGLModuleHandle() const override;
+    QOpenGLContext *createOpenGLContext(HGLRC context, HWND window, QOpenGLContext *shareContext) const;
 #endif
     QAbstractEventDispatcher *createEventDispatcher() const override;
     void initialize() override;

@@ -52,15 +52,6 @@
 
 #include <QSignalSpy>
 
-#ifdef USE_GLX
-// Must be included last due to the X11 types
-#include <QtPlatformHeaders/QGLXNativeContext>
-#endif
-
-#if defined(Q_OS_WIN32) && !QT_CONFIG(opengles2)
-#include <QtPlatformHeaders/QWGLNativeContext>
-#endif
-
 Q_DECLARE_METATYPE(QImage::Format)
 
 class tst_QOpenGL : public QObject
@@ -1480,6 +1471,8 @@ void tst_QOpenGL::defaultSurfaceFormat()
     QCOMPARE(context->format(), fmt);
 }
 
+using namespace QPlatformInterface;
+
 #ifdef USE_GLX
 void tst_QOpenGL::glxContextWrap()
 {
@@ -1496,17 +1489,14 @@ void tst_QOpenGL::glxContextWrap()
     QOpenGLContext *ctx0 = new QOpenGLContext;
     ctx0->setFormat(window->format());
     QVERIFY(ctx0->create());
-    QVariant v = ctx0->nativeHandle();
-    QVERIFY(!v.isNull());
-    QVERIFY(v.canConvert<QGLXNativeContext>());
-    GLXContext context = v.value<QGLXNativeContext>().context();
+    auto *glxContextIf = ctx0->platformInterface<QGLXContext>();
+    QVERIFY(glxContextIf);
+    GLXContext context = glxContextIf->nativeContext();
     QVERIFY(context);
 
     // Then create another QOpenGLContext wrapping it.
-    QOpenGLContext *ctx = new QOpenGLContext;
-    ctx->setNativeHandle(QVariant::fromValue<QGLXNativeContext>(QGLXNativeContext(context)));
-    QVERIFY(ctx->create());
-    QCOMPARE(ctx->nativeHandle().value<QGLXNativeContext>().context(), context);
+    QOpenGLContext *ctx = QGLXContext::fromNative(context);
+    QVERIFY(ctx);
     QVERIFY(nativeIf->nativeResourceForContext(QByteArrayLiteral("glxcontext"), ctx) == (void *) context);
 
     QVERIFY(ctx->makeCurrent(window));
@@ -1533,11 +1523,9 @@ void tst_QOpenGL::wglContextWrap()
     window->show();
     QVERIFY(QTest::qWaitForWindowExposed(window.data()));
 
-    QVariant v = ctx->nativeHandle();
-    QVERIFY(!v.isNull());
-    QVERIFY(v.canConvert<QWGLNativeContext>());
-    QWGLNativeContext nativeContext = v.value<QWGLNativeContext>();
-    QVERIFY(nativeContext.context());
+    auto *wglContext = ctx->platformInterface<QWGLContext>();
+    QVERIFY(wglContext);
+    QVERIFY(wglContext->nativeContext());
 
     // Now do a makeCurrent() do make sure the pixel format on the native
     // window (the HWND we are going to retrieve below) is set.
@@ -1547,9 +1535,9 @@ void tst_QOpenGL::wglContextWrap()
     HWND wnd = (HWND) qGuiApp->platformNativeInterface()->nativeResourceForWindow(QByteArrayLiteral("handle"), window.data());
     QVERIFY(wnd);
 
-    QScopedPointer<QOpenGLContext> adopted(new QOpenGLContext);
-    adopted->setNativeHandle(QVariant::fromValue<QWGLNativeContext>(QWGLNativeContext(nativeContext.context(), wnd)));
-    QVERIFY(adopted->create());
+    QScopedPointer<QOpenGLContext> adopted(QWGLContext::fromNative(wglContext->nativeContext(), wnd));
+    QVERIFY(!adopted.isNull());
+    QVERIFY(adopted->isValid());
 
     // This tests two things: that a regular, non-adopted QOpenGLContext is
     // able to return a QSurfaceFormat containing the real values after

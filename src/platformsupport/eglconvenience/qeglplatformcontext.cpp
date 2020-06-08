@@ -42,7 +42,6 @@
 #include "qeglpbuffer_p.h"
 #include <qpa/qplatformwindow.h>
 #include <QOpenGLContext>
-#include <QtPlatformHeaders/QEGLNativeContext>
 #include <QDebug>
 
 #if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
@@ -115,25 +114,13 @@ QT_BEGIN_NAMESPACE
 #endif
 
 QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
-                                         EGLConfig *config, const QVariant &nativeHandle, Flags flags)
+                                         EGLConfig *config, Flags flags)
     : m_eglDisplay(display)
-    , m_swapInterval(-1)
-    , m_swapIntervalEnvChecked(false)
-    , m_swapIntervalFromEnv(-1)
     , m_flags(flags)
+    , m_ownsContext(true)
 {
-    if (nativeHandle.isNull()) {
-        m_eglConfig = config ? *config : q_configFromGLFormat(display, format);
-        m_ownsContext = true;
-        init(format, share);
-    } else {
-        m_ownsContext = false;
-        adopt(nativeHandle, share);
-    }
-}
+    m_eglConfig = config ? *config : q_configFromGLFormat(display, format);
 
-void QEGLPlatformContext::init(const QSurfaceFormat &format, QPlatformOpenGLContext *share)
-{
     m_format = q_glFormatFromConfig(m_eglDisplay, m_eglConfig, format);
     // m_format now has the renderableType() resolved (it cannot be Default anymore)
     // but does not yet contain version, profile, options.
@@ -212,24 +199,11 @@ void QEGLPlatformContext::init(const QSurfaceFormat &format, QPlatformOpenGLCont
     // Cannot just call updateFormatFromGL() since it relies on virtuals. Defer it to initialize().
 }
 
-void QEGLPlatformContext::adopt(const QVariant &nativeHandle, QPlatformOpenGLContext *share)
+void QEGLPlatformContext::adopt(EGLContext context, EGLDisplay display, QPlatformOpenGLContext *share)
 {
-    if (!nativeHandle.canConvert<QEGLNativeContext>()) {
-        qWarning("QEGLPlatformContext: Requires a QEGLNativeContext");
-        return;
-    }
-    QEGLNativeContext handle = qvariant_cast<QEGLNativeContext>(nativeHandle);
-    EGLContext context = handle.context();
-    if (!context) {
-        qWarning("QEGLPlatformContext: No EGLContext given");
-        return;
-    }
+    Q_ASSERT(!m_ownsContext);
 
-    // A context belonging to a given EGLDisplay cannot be used with another one.
-    if (handle.display() != m_eglDisplay) {
-        qWarning("QEGLPlatformContext: Cannot adopt context from different display");
-        return;
-    }
+    m_eglDisplay = display;
 
     // Figure out the EGLConfig.
     EGLint value = 0;

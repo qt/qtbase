@@ -161,7 +161,8 @@ qtConfig(opengl) {
     HEADERS += \
             kernel/qplatformopenglcontext.h \
             kernel/qopenglcontext.h \
-            kernel/qopenglcontext_p.h
+            kernel/qopenglcontext_p.h \
+            kernel/qopenglcontext_platform.h \
 
     SOURCES += \
             kernel/qplatformopenglcontext.cpp \

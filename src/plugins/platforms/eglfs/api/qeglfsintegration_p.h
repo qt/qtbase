@@ -57,6 +57,7 @@
 #include <QtGui/QWindow>
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformnativeinterface.h>
+#include <qpa/qplatformopenglcontext.h>
 #include <qpa/qplatformscreen.h>
 
 QT_BEGIN_NAMESPACE
@@ -67,6 +68,7 @@ class QFbVtHandler;
 class QEvdevKeyboardManager;
 
 class Q_EGLFS_EXPORT QEglFSIntegration : public QPlatformIntegration, public QPlatformNativeInterface
+                                       , public QPlatformInterface::Private::QEGLIntegration
 {
 public:
     QEglFSIntegration();
@@ -86,6 +88,7 @@ public:
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const override;
 #ifndef QT_NO_OPENGL
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const override;
+    QOpenGLContext *createOpenGLContext(EGLContext context, EGLDisplay display, QOpenGLContext *shareContext) const override;
     QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const override;
 #endif
 #if QT_CONFIG(vulkan)

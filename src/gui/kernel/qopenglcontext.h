@@ -88,6 +88,7 @@ private:
     QOpenGLContextGroup();
 
     friend class QOpenGLContext;
+    friend class QOpenGLContextPrivate;
     friend class QOpenGLContextGroupResourceBase;
     friend class QOpenGLSharedResource;
     friend class QOpenGLMultiGroupSharedResource;
@@ -107,7 +108,6 @@ public:
     void setFormat(const QSurfaceFormat &format);
     void setShareContext(QOpenGLContext *shareContext);
     void setScreen(QScreen *screen);
-    void setNativeHandle(const QVariant &handle);
 
     bool create();
     bool isValid() const;
@@ -116,7 +116,6 @@ public:
     QOpenGLContext *shareContext() const;
     QOpenGLContextGroup *shareGroup() const;
     QScreen *screen() const;
-    QVariant nativeHandle() const;
 
     GLuint defaultFramebufferObject() const;
 
@@ -141,8 +140,6 @@ public:
     QSet<QByteArray> extensions() const;
     bool hasExtension(const QByteArray &extension) const;
 
-    static void *openGLModuleHandle();
-
     enum OpenGLModuleType {
         LibGL,
         LibGLES
@@ -154,6 +151,9 @@ public:
 
     static bool supportsThreadedOpenGL();
     static QOpenGLContext *globalShareContext();
+
+    template <typename T>
+    T *platformInterface() const;
 
 Q_SIGNALS:
     void aboutToBeDestroyed();
@@ -187,6 +187,8 @@ Q_GUI_EXPORT QDebug operator<<(QDebug debug, const QOpenGLContextGroup *cg);
 #endif // !QT_NO_DEBUG_STREAM
 
 QT_END_NAMESPACE
+
+#include <QtGui/qopenglcontext_platform.h>
 
 #endif // QT_NO_OPENGL
 

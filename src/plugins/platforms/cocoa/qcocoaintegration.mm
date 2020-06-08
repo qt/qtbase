@@ -64,9 +64,8 @@
 #include <qpa/qplatformoffscreensurface.h>
 #include <QtCore/qcoreapplication.h>
 
-#include <QtPlatformHeaders/qcocoanativecontext.h>
-
 #include <QtGui/private/qcoregraphics_p.h>
+#include <QtGui/private/qopenglcontext_p.h>
 
 #include <QtGui/private/qfontengine_coretext_p.h>
 
@@ -308,6 +307,19 @@ QPlatformOpenGLContext *QCocoaIntegration::createPlatformOpenGLContext(QOpenGLCo
 {
     return new QCocoaGLContext(context);
 }
+
+QOpenGLContext *QCocoaIntegration::createOpenGLContext(NSOpenGLContext *nativeContext, QOpenGLContext *shareContext) const
+{
+    if (!nativeContext)
+        return nullptr;
+
+    auto *context = new QOpenGLContext;
+    context->setShareContext(shareContext);
+    auto *contextPrivate = QOpenGLContextPrivate::get(context);
+    contextPrivate->adopt(new QCocoaGLContext(nativeContext));
+    return context;
+}
+
 #endif
 
 QPlatformBackingStore *QCocoaIntegration::createPlatformBackingStore(QWindow *window) const

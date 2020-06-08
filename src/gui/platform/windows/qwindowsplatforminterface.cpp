@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,52 +37,28 @@
 **
 ****************************************************************************/
 
-#ifndef QGLXNATIVECONTEXT_H
-#define QGLXNATIVECONTEXT_H
-
-#include <QtCore/QMetaType>
-#include <X11/Xlib.h>
-#include <GL/glx.h>
+#include <QtGui/qopenglcontext.h>
+#include <QtGui/private/qguiapplication_p.h>
+#include <qpa/qplatformopenglcontext.h>
+#include <qpa/qplatformintegration.h>
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_CLANG_QDOC)
-typedef int GLXContext;
-typedef void Display;
-typedef int Window;
-typedef int VisualID;
-#endif
+using namespace QPlatformInterface::Private;
 
-struct QGLXNativeContext
+QT_DEFINE_PLATFORM_INTERFACE(QWGLContext, QOpenGLContext);
+QT_DEFINE_PRIVATE_PLATFORM_INTERFACE(QWindowsGLIntegration);
+
+HMODULE QPlatformInterface::QWGLContext::openGLModuleHandle()
 {
-    QGLXNativeContext()
-        : m_context(nullptr),
-          m_display(nullptr),
-          m_window(0),
-          m_visualId(0)
-    { }
+    return QGuiApplicationPrivate::platformIntegration()->call<
+        &QWindowsGLIntegration::openGLModuleHandle>();
+}
 
-    QGLXNativeContext(GLXContext ctx, Display *dpy = nullptr, Window wnd = 0, VisualID vid = 0)
-        : m_context(ctx),
-          m_display(dpy),
-          m_window(wnd),
-          m_visualId(vid)
-    { }
-
-    GLXContext context() const { return m_context; }
-    Display *display() const { return m_display; }
-    Window window() const { return m_window; }
-    VisualID visualId() const { return m_visualId; }
-
-private:
-    GLXContext m_context;
-    Display *m_display;
-    Window m_window;
-    VisualID m_visualId;
-};
+QOpenGLContext *QPlatformInterface::QWGLContext::fromNative(HGLRC context, HWND window, QOpenGLContext *shareContext)
+{
+    return QGuiApplicationPrivate::platformIntegration()->call<
+        &QWindowsGLIntegration::createOpenGLContext>(context, window, shareContext);
+}
 
 QT_END_NAMESPACE
-
-Q_DECLARE_METATYPE(QGLXNativeContext)
-
-#endif // QGLXNATIVECONTEXT_H

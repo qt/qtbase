@@ -1292,6 +1292,32 @@ template <bool B, typename T = void> struct QEnableIf;
 template <typename T> struct QEnableIf<true, T> { typedef T Type; };
 }
 
+#define QT_VA_ARGS_CHOOSE(_1, _2, _3, _4, _5, _6, _7, _8, _9, N, ...) N
+#define QT_VA_ARGS_EXPAND(...) __VA_ARGS__ // Needed for MSVC
+#define QT_VA_ARGS_COUNT(...) QT_VA_ARGS_EXPAND(QT_VA_ARGS_CHOOSE(__VA_ARGS__, 9, 8, 7, 6, 5, 4, 3, 2, 1))
+#define QT_OVERLOADED_MACRO_EXPAND(MACRO, ARGC) MACRO##ARGC
+#define QT_OVERLOADED_MACRO_IMP(MACRO, ARGC) QT_OVERLOADED_MACRO_EXPAND(MACRO, ARGC)
+#define QT_OVERLOADED_MACRO(MACRO, ...) QT_VA_ARGS_EXPAND(QT_OVERLOADED_MACRO_IMP(MACRO, QT_VA_ARGS_COUNT(__VA_ARGS__))(__VA_ARGS__))
+
+// Ensures that the interface's typeinfo is exported so that
+// dynamic casts work reliably, and protects the destructor
+// so that pointers to the interface can't be deleted.
+#define QT_DECLARE_PLATFORM_INTERFACE(InterfaceClass) \
+    protected: virtual ~InterfaceClass(); public:
+
+// Provides a definition for the interface destructor
+#define QT_DEFINE_PLATFORM_INTERFACE2(Namespace, InterfaceClass) \
+    QT_PREPEND_NAMESPACE(Namespace)::InterfaceClass::~InterfaceClass() = default
+
+// Provides a definition for the destructor, and an explicit
+// template instantiation of the platform interface accessor.
+#define QT_DEFINE_PLATFORM_INTERFACE3(Namespace, InterfaceClass, PublicClass) \
+    QT_DEFINE_PLATFORM_INTERFACE2(Namespace, InterfaceClass); \
+    template Q_DECL_EXPORT QT_PREPEND_NAMESPACE(Namespace)::InterfaceClass *PublicClass::platformInterface() const
+
+#define QT_DEFINE_PLATFORM_INTERFACE(...) QT_OVERLOADED_MACRO(QT_DEFINE_PLATFORM_INTERFACE, QPlatformInterface, __VA_ARGS__)
+#define QT_DEFINE_PRIVATE_PLATFORM_INTERFACE(...) QT_OVERLOADED_MACRO(QT_DEFINE_PLATFORM_INTERFACE, QPlatformInterface::Private, __VA_ARGS__)
+
 QT_END_NAMESPACE
 
 // We need to keep QTypeInfo, QSysInfo, QFlags, qDebug & family in qglobal.h for compatibility with Qt 4.

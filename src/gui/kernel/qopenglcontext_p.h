@@ -234,6 +234,8 @@ public:
         delete versionFunctions;
     }
 
+    void adopt(QPlatformOpenGLContext *);
+
     QSurfaceFormat requestedFormat;
     QPlatformOpenGLContext *platformGLContext;
     QOpenGLContext *shareContext;
@@ -264,7 +266,6 @@ public:
     // Saves us from querying the driver for the current FBO in most paths.
     QOpenGLFramebufferObject *qgl_current_fbo;
 
-    QVariant nativeHandle;
     GLuint defaultFboRedirect;
 
     static QOpenGLContext *setCurrentContext(QOpenGLContext *context);

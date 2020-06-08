@@ -61,8 +61,9 @@ QT_BEGIN_NAMESPACE
 class Q_EGLFS_EXPORT QEglFSContext : public QEGLPlatformContext
 {
 public:
+    using QEGLPlatformContext::QEGLPlatformContext;
     QEglFSContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
-                  EGLConfig *config, const QVariant &nativeHandle);
+                  EGLConfig *config);
     EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface) override;
     EGLSurface createTemporaryOffscreenSurface() override;
     void destroyTemporaryOffscreenSurface(EGLSurface surface) override;
@@ -72,7 +73,7 @@ public:
     QEglFSCursorData cursorData;
 
 private:
-    EGLNativeWindowType m_tempWindow;
+    EGLNativeWindowType m_tempWindow = 0;
 };
 
 QT_END_NAMESPACE

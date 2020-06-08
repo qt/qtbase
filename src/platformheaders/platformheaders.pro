@@ -3,7 +3,6 @@ TEMPLATE = subdirs
 VERSION = $$MODULE_VERSION
 MODULE_INCNAME = QtPlatformHeaders
 
-include(nativecontexts/nativecontexts.pri)
 include(xcbfunctions/xcbfunctions.pri)
 include(eglfsfunctions/eglfsfunctions.pri)
 include(windowsfunctions/windowsfunctions.pri)

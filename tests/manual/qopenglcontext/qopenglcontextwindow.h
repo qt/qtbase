@@ -31,7 +31,7 @@
 
 #include <QtGui/QWindow>
 #include <QtGui/QOpenGLContext>
-#include <QtGui/QOpenGLTextureBlitter>
+#include <QtOpenGL/QOpenGLTextureBlitter>
 #include <QtGui/QImage>
 #include <QtCore/QVariant>
 

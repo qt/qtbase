@@ -56,10 +56,12 @@
 #include <qpa/qplatformopenglcontext.h>
 #include <QtCore/QVariant>
 #include <QtEglSupport/private/qt_egl_p.h>
+#include <QtGui/private/qopenglcontext_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QEGLPlatformContext : public QPlatformOpenGLContext
+class QEGLPlatformContext : public QPlatformOpenGLContext,
+                            public QPlatformInterface::QEGLContext
 {
 public:
     enum Flag {
@@ -68,8 +70,31 @@ public:
     Q_DECLARE_FLAGS(Flags, Flag)
 
     QEGLPlatformContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
-                        EGLConfig *config = nullptr, const QVariant &nativeHandle = QVariant(),
-                        Flags flags = { });
+                        EGLConfig *config = nullptr, Flags flags = { });
+
+    template <typename T>
+    static QOpenGLContext *createFrom(EGLContext context, EGLDisplay contextDisplay,
+            EGLDisplay platformDisplay, QOpenGLContext *shareContext)
+    {
+        if (!context)
+            return nullptr;
+
+        // A context belonging to a given EGLDisplay cannot be used with another one
+        if (contextDisplay != platformDisplay) {
+            qWarning("QEGLPlatformContext: Cannot adopt context from different display");
+            return nullptr;
+        }
+
+        QPlatformOpenGLContext *shareHandle = shareContext ? shareContext->handle() : nullptr;
+
+        auto *resultingContext = new QOpenGLContext;
+        auto *contextPrivate = QOpenGLContextPrivate::get(resultingContext);
+        auto *platformContext = new T;
+        platformContext->adopt(context, contextDisplay, shareHandle);
+        contextPrivate->adopt(platformContext);
+        return resultingContext;
+    }
+
     ~QEGLPlatformContext();
 
     void initialize() override;
@@ -82,19 +107,21 @@ public:
     bool isSharing() const override { return m_shareContext != EGL_NO_CONTEXT; }
     bool isValid() const override { return m_eglContext != EGL_NO_CONTEXT; }
 
+    EGLContext nativeContext() const override { return eglContext(); }
+
     EGLContext eglContext() const;
     EGLDisplay eglDisplay() const;
     EGLConfig eglConfig() const;
 
 protected:
+    QEGLPlatformContext() {} // For adoption
     virtual EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface) = 0;
     virtual EGLSurface createTemporaryOffscreenSurface();
     virtual void destroyTemporaryOffscreenSurface(EGLSurface surface);
     virtual void runGLChecks();
 
 private:
-    void init(const QSurfaceFormat &format, QPlatformOpenGLContext *share);
-    void adopt(const QVariant &nativeHandle, QPlatformOpenGLContext *share);
+    void adopt(EGLContext context, EGLDisplay display, QPlatformOpenGLContext *shareContext);
     void updateFormatFromGL();
 
     EGLContext m_eglContext;
@@ -103,11 +130,11 @@ private:
     EGLConfig m_eglConfig;
     QSurfaceFormat m_format;
     EGLenum m_api;
-    int m_swapInterval;
-    bool m_swapIntervalEnvChecked;
-    int m_swapIntervalFromEnv;
+    int m_swapInterval = -1;
+    bool m_swapIntervalEnvChecked = false;
+    int m_swapIntervalFromEnv = -1;
     Flags m_flags;
-    bool m_ownsContext;
+    bool m_ownsContext = false;
     QVector<EGLint> m_contextAttrs;
 };
 

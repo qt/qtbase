@@ -56,12 +56,14 @@
 #include <QtCore/QScopedPointer>
 #include <qpa/qplatformintegration.h>
 #include <QtGui/private/qcoretextfontdatabase_p.h>
+#include <QtGui/private/qopenglcontext_p.h>
 
 Q_FORWARD_DECLARE_OBJC_CLASS(NSToolbar);
 
 QT_BEGIN_NAMESPACE
 
-class QCocoaIntegration : public QObject, public QPlatformIntegration
+class QCocoaIntegration : public QObject, public QPlatformIntegration,
+    public QPlatformInterface::Private::QCocoaGLIntegration
 {
     Q_OBJECT
 public:
@@ -82,6 +84,7 @@ public:
     QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const override;
 #ifndef QT_NO_OPENGL
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const override;
+    QOpenGLContext *createOpenGLContext(NSOpenGLContext *, QOpenGLContext *shareContext) const override;
 #endif
     QPlatformBackingStore *createPlatformBackingStore(QWindow *widget) const override;
 

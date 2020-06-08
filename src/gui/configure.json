@@ -1225,7 +1225,7 @@
         "egl": {
             "label": "EGL",
             "condition": "(features.opengl || features.openvg) && libs.egl && (features.dlopen || !config.unix || config.integrity)",
-            "output": [ "privateFeature", "feature" ]
+            "output": [ "publicFeature", "feature" ]
         },
         "egl_x11": {
             "label": "EGL on X11",

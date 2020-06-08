@@ -76,20 +76,6 @@ QCocoaNativeInterface::QCocoaNativeInterface()
 {
 }
 
-#ifndef QT_NO_OPENGL
-void *QCocoaNativeInterface::nativeResourceForContext(const QByteArray &resourceString, QOpenGLContext *context)
-{
-    if (!context)
-        return nullptr;
-    if (resourceString.toLower() == "nsopenglcontext")
-        return nsOpenGLContextForContext(context);
-    if (resourceString.toLower() == "cglcontextobj")
-        return cglContextForContext(context);
-
-    return nullptr;
-}
-#endif
-
 void *QCocoaNativeInterface::nativeResourceForWindow(const QByteArray &resourceString, QWindow *window)
 {
     if (!window->handle())
@@ -181,25 +167,6 @@ void QCocoaNativeInterface::onAppFocusWindowChanged(QWindow *window)
     Q_UNUSED(window);
     QCocoaMenuBar::updateMenuBarImmediately();
 }
-
-#ifndef QT_NO_OPENGL
-void *QCocoaNativeInterface::cglContextForContext(QOpenGLContext* context)
-{
-    NSOpenGLContext *nsOpenGLContext = static_cast<NSOpenGLContext*>(nsOpenGLContextForContext(context));
-    if (nsOpenGLContext)
-        return [nsOpenGLContext CGLContextObj];
-    return nullptr;
-}
-
-void *QCocoaNativeInterface::nsOpenGLContextForContext(QOpenGLContext* context)
-{
-    if (context) {
-        if (QCocoaGLContext *cocoaGLContext = static_cast<QCocoaGLContext *>(context->handle()))
-            return cocoaGLContext->nativeContext();
-    }
-    return nullptr;
-}
-#endif
 
 QFunctionPointer QCocoaNativeInterface::platformFunction(const QByteArray &function) const
 {

@@ -101,10 +101,13 @@ QPlatformOpenGLContext *QXcbEglIntegration::createPlatformOpenGLContext(QOpenGLC
     QXcbScreen *screen = static_cast<QXcbScreen *>(context->screen()->handle());
     QXcbEglContext *platformContext = new QXcbEglContext(screen->surfaceFormatFor(context->format()),
                                                          context->shareHandle(),
-                                                         eglDisplay(),
-                                                         context->nativeHandle());
-    context->setNativeHandle(platformContext->nativeHandle());
+                                                         eglDisplay());
     return platformContext;
+}
+
+QOpenGLContext *QXcbEglIntegration::createOpenGLContext(EGLContext context, EGLDisplay display, QOpenGLContext *shareContext) const
+{
+    return QEGLPlatformContext::createFrom<QXcbEglContext>(context, display, eglDisplay(), shareContext);
 }
 
 QPlatformOffscreenSurface *QXcbEglIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const

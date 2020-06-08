@@ -45,6 +45,7 @@
 #include "qxcbeglwindow.h"
 
 #include <QtGui/QOpenGLContext>
+#include <qpa/qplatformopenglcontext.h>
 #include <QtGui/qpa/qplatformscreen.h>
 #include <QtGui/QScreen>
 
@@ -57,6 +58,7 @@ QT_BEGIN_NAMESPACE
 class QXcbEglNativeInterfaceHandler;
 
 class QXcbEglIntegration : public QXcbGlIntegration
+                         , public QPlatformInterface::Private::QEGLIntegration
 {
 public:
     QXcbEglIntegration();
@@ -66,6 +68,7 @@ public:
 
     QXcbWindow *createWindow(QWindow *window) const override;
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const override;
+    QOpenGLContext *createOpenGLContext(EGLContext context, EGLDisplay display, QOpenGLContext *shareContext) const override;
     QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const override;
 
     bool supportsThreadedOpenGL() const override { return true; }

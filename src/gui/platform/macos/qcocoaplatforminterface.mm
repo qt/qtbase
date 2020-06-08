@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,42 +37,24 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLNATIVECONTEXT_H
-#define QEGLNATIVECONTEXT_H
+#include <QtGui/private/qopenglcontext_p.h>
+#include <QtGui/private/qguiapplication_p.h>
+#include <qpa/qplatformopenglcontext.h>
+#include <qpa/qplatformintegration.h>
 
-#include <QtCore/QMetaType>
-
-// Leave including egl.h with the appropriate defines to the client.
+#include <AppKit/AppKit.h>
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_CLANG_QDOC)
-typedef int EGLContext;
-typedef int EGLDisplay;
-#endif
+using namespace QPlatformInterface::Private;
 
-struct QEGLNativeContext
+QT_DEFINE_PLATFORM_INTERFACE(QCocoaGLContext, QOpenGLContext);
+QT_DEFINE_PRIVATE_PLATFORM_INTERFACE(QCocoaGLIntegration);
+
+QOpenGLContext *QPlatformInterface::QCocoaGLContext::fromNative(NSOpenGLContext *nativeContext, QOpenGLContext *shareContext)
 {
-    QEGLNativeContext()
-        : m_context(nullptr),
-          m_display(nullptr)
-    { }
-
-    QEGLNativeContext(EGLContext ctx, EGLDisplay dpy)
-        : m_context(ctx),
-          m_display(dpy)
-    { }
-
-    EGLContext context() const { return m_context; }
-    EGLDisplay display() const { return m_display; }
-
-private:
-    EGLContext m_context;
-    EGLDisplay m_display;
-};
+    return QGuiApplicationPrivate::platformIntegration()->call<
+        &QCocoaGLIntegration::createOpenGLContext>(nativeContext, shareContext);
+}
 
 QT_END_NAMESPACE
-
-Q_DECLARE_METATYPE(QEGLNativeContext)
-
-#endif // QEGLNATIVECONTEXT_H

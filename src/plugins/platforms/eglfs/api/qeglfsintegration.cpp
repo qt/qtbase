@@ -76,8 +76,6 @@
 # include <QtOpenGL/private/qopenglcompositorbackingstore_p.h>
 #endif
 
-#include <QtPlatformHeaders/QEGLNativeContext>
-
 #if QT_CONFIG(libinput)
 #include <QtInputSupport/private/qlibinputhandler_p.h>
 #endif
@@ -215,20 +213,18 @@ QPlatformOpenGLContext *QEglFSIntegration::createPlatformOpenGLContext(QOpenGLCo
 {
     EGLDisplay dpy = context->screen() ? static_cast<QEglFSScreen *>(context->screen()->handle())->display() : display();
     QPlatformOpenGLContext *share = context->shareHandle();
-    QVariant nativeHandle = context->nativeHandle();
 
     QEglFSContext *ctx;
     QSurfaceFormat adjustedFormat = qt_egl_device_integration()->surfaceFormatFor(context->format());
-    if (nativeHandle.isNull()) {
-        EGLConfig config = QEglFSDeviceIntegration::chooseConfig(dpy, adjustedFormat);
-        ctx = new QEglFSContext(adjustedFormat, share, dpy, &config, QVariant());
-    } else {
-        ctx = new QEglFSContext(adjustedFormat, share, dpy, nullptr, nativeHandle);
-    }
-    nativeHandle = QVariant::fromValue<QEGLNativeContext>(QEGLNativeContext(ctx->eglContext(), dpy));
+    EGLConfig config = QEglFSDeviceIntegration::chooseConfig(dpy, adjustedFormat);
+    ctx = new QEglFSContext(adjustedFormat, share, dpy, &config);
 
-    context->setNativeHandle(nativeHandle);
     return ctx;
+}
+
+QOpenGLContext *QEglFSIntegration::createOpenGLContext(EGLContext context, EGLDisplay contextDisplay, QOpenGLContext *shareContext) const
+{
+    return QEGLPlatformContext::createFrom<QEglFSContext>(context, contextDisplay, display(), shareContext);
 }
 
 QPlatformOffscreenSurface *QEglFSIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const

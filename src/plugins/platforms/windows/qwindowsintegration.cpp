@@ -475,6 +475,33 @@ QOpenGLContext::OpenGLModuleType QWindowsIntegration::openGLModuleType()
 #endif
 }
 
+HMODULE QWindowsIntegration::openGLModuleHandle() const
+{
+    if (QWindowsStaticOpenGLContext *staticOpenGLContext = QWindowsIntegration::staticOpenGLContext())
+        return static_cast<HMODULE>(staticOpenGLContext->moduleHandle());
+
+    return nullptr;
+}
+
+QOpenGLContext *QWindowsIntegration::createOpenGLContext(HGLRC ctx, HWND window, QOpenGLContext *shareContext) const
+{
+    if (!ctx || !window)
+        return nullptr;
+
+    if (QWindowsStaticOpenGLContext *staticOpenGLContext = QWindowsIntegration::staticOpenGLContext()) {
+        QScopedPointer<QWindowsOpenGLContext> result(staticOpenGLContext->createContext(ctx, window));
+        if (result->isValid()) {
+            auto *context = new QOpenGLContext;
+            context->setShareContext(shareContext);
+            auto *contextPrivate = QOpenGLContextPrivate::get(context);
+            contextPrivate->adopt(result.take());
+            return context;
+        }
+    }
+
+    return nullptr;
+}
+
 QWindowsStaticOpenGLContext *QWindowsIntegration::staticOpenGLContext()
 {
     QWindowsIntegration *integration = QWindowsIntegration::instance();

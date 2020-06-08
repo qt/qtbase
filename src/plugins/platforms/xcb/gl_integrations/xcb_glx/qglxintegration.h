@@ -53,11 +53,12 @@
 
 QT_BEGIN_NAMESPACE
 
-class QGLXContext : public QPlatformOpenGLContext
+class QGLXContext : public QPlatformOpenGLContext,
+                    public QPlatformInterface::QGLXContext
 {
 public:
-    QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlatformOpenGLContext *share,
-                const QVariant &nativeHandle);
+    QGLXContext(Display *display, QXcbScreen *screen, const QSurfaceFormat &format, QPlatformOpenGLContext *share);
+    QGLXContext(Display *display, GLXContext context, void *visualInfo, QPlatformOpenGLContext *share);
     ~QGLXContext();
 
     bool makeCurrent(QPlatformSurface *surface) override;
@@ -69,27 +70,24 @@ public:
     bool isSharing() const override;
     bool isValid() const override;
 
+    GLXContext nativeContext() const override { return glxContext(); }
+
     GLXContext glxContext() const { return m_context; }
     GLXFBConfig glxConfig() const { return m_config; }
-
-    QVariant nativeHandle() const;
 
     static bool supportsThreading();
     static void queryDummyContext();
 
 private:
-    void init(QXcbScreen *screen, QPlatformOpenGLContext *share);
-    void init(QXcbScreen *screen, QPlatformOpenGLContext *share, const QVariant &nativeHandle);
-
-    Display *m_display;
-    GLXFBConfig m_config;
-    GLXContext m_context;
-    GLXContext m_shareContext;
+    Display *m_display = nullptr;
+    GLXFBConfig m_config = nullptr;
+    GLXContext m_context = nullptr;
+    GLXContext m_shareContext = nullptr;
     QSurfaceFormat m_format;
-    bool m_isPBufferCurrent;
-    bool m_ownsContext;
-    GLenum (APIENTRY * m_getGraphicsResetStatus)();
-    bool m_lost;
+    bool m_isPBufferCurrent = false;
+    bool m_ownsContext = false;
+    GLenum (APIENTRY * m_getGraphicsResetStatus)() = nullptr;
+    bool m_lost = false;
     static bool m_queriedDummyContext;
     static bool m_supportsThreading;
 };

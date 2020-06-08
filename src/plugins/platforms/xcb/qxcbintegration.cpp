@@ -275,7 +275,26 @@ QPlatformOpenGLContext *QXcbIntegration::createPlatformOpenGLContext(QOpenGLCont
     }
     return glIntegration->createPlatformOpenGLContext(context);
 }
-#endif
+
+QOpenGLContext *QXcbIntegration::createOpenGLContext(GLXContext context, void *visualInfo, QOpenGLContext *shareContext) const
+{
+    using namespace QPlatformInterface::Private;
+    if (auto *glxIntegration = dynamic_cast<QGLXIntegration*>(m_connection->glIntegration()))
+        return glxIntegration->createOpenGLContext(context, visualInfo, shareContext);
+    else
+        return nullptr;
+}
+
+QOpenGLContext *QXcbIntegration::createOpenGLContext(EGLContext context, EGLDisplay display, QOpenGLContext *shareContext) const
+{
+    using namespace QPlatformInterface::Private;
+    if (auto *eglIntegration = dynamic_cast<QEGLIntegration*>(m_connection->glIntegration()))
+        return eglIntegration->createOpenGLContext(context, display, shareContext);
+    else
+        return nullptr;
+}
+
+#endif // QT_NO_OPENGL
 
 QPlatformBackingStore *QXcbIntegration::createPlatformBackingStore(QWindow *window) const
 {

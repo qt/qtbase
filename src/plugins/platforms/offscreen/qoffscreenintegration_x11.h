@@ -90,6 +90,7 @@ private:
 class QOffscreenX11GLXContextData;
 
 class QOffscreenX11GLXContext : public QPlatformOpenGLContext
+                              , public QPlatformInterface::QGLXContext
 {
 public:
     QOffscreenX11GLXContext(QOffscreenX11Info *x11, QOpenGLContext *context);
@@ -104,8 +105,10 @@ public:
     bool isSharing() const override;
     bool isValid() const override;
 
+    GLXContext nativeContext() const override { return glxContext(); }
+
     void *glxConfig() const;
-    void *glxContext() const;
+    GLXContext glxContext() const;
 
 private:
     QScopedPointer<QOffscreenX11GLXContextData> d;

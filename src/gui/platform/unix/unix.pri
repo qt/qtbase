@@ -1,6 +1,7 @@
 SOURCES += \
     platform/unix/qunixeventdispatcher.cpp \
-    platform/unix/qgenericunixeventdispatcher.cpp
+    platform/unix/qgenericunixeventdispatcher.cpp \
+    platform/unix/qunixplatforminterface.cpp
 
 HEADERS += \
     platform/unix/qunixeventdispatcher_qpa_p.h \
