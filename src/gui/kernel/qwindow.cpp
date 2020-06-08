@@ -685,17 +685,6 @@ QWindow *QWindow::parent(AncestorMode mode) const
 }
 
 /*!
-    Returns the parent window, if any.
-
-    A window without a parent is known as a top level window.
-*/
-QWindow *QWindow::parent() const
-{
-    Q_D(const QWindow);
-    return d->parentWindow;
-}
-
-/*!
     Sets the \a parent Window. This will lead to the windowing system managing
     the clip of the window, so it will be clipped to the \a parent window.
 
