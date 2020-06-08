@@ -95,14 +95,6 @@ static QPixmap getPixmap(QTextDocument *doc, const QTextImageFormat &format, con
     }
 
     if (pm.isNull()) {
-#if 0
-        QString context;
-        // ### Qt5
-        QTextBrowser *browser = qobject_cast<QTextBrowser *>(doc->parent());
-        if (browser)
-            context = browser->source().toString();
-#endif
-        // try direct loading
         QImage img;
         if (name.isEmpty() || !img.load(name))
             return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/file-16.png"));
@@ -177,15 +169,6 @@ static QImage getImage(QTextDocument *doc, const QTextImageFormat &format, const
     }
 
     if (image.isNull()) {
-#if 0
-        QString context;
-        // ### Qt5
-        QTextBrowser *browser = qobject_cast<QTextBrowser *>(doc->parent());
-        if (browser)
-            context = browser->source().toString();
-#endif
-        // try direct loading
-
         if (name.isEmpty() || !image.load(name))
             return QImage(QLatin1String(":/qt-project.org/styles/commonstyle/images/file-16.png"));
 

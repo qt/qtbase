@@ -55,14 +55,7 @@ struct QTextOptionPrivate
     using of design metrics flag is set to false.
 */
 QTextOption::QTextOption()
-    : align(Qt::AlignLeft),
-      wordWrap(QTextOption::WordWrap),
-      design(false),
-      unused(0),
-      unused2(0),
-      f(0),
-      tab(-1),
-      d(nullptr)
+    : QTextOption(Qt::AlignLeft)
 {
     direction = Qt::LayoutDirectionAuto;
 }
@@ -77,7 +70,6 @@ QTextOption::QTextOption(Qt::Alignment alignment)
       wordWrap(QTextOption::WordWrap),
       design(false),
       unused(0),
-      unused2(0),
       f(0),
       tab(-1),
       d(nullptr)
@@ -104,7 +96,6 @@ QTextOption::QTextOption(const QTextOption &o)
       design(o.design),
       direction(o.direction),
       unused(o.unused),
-      unused2(o.unused2),
       f(o.f),
       tab(o.tab),
       d(nullptr)

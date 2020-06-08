@@ -1842,20 +1842,6 @@ void QTextCharFormat::setUnderlineStyle(UnderlineStyle style)
     none has been set.
 */
 
-
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \fn void QTextCharFormat::setAnchorName(const QString &name)
-    \obsolete
-
-    This function is deprecated. Use setAnchorNames() instead.
-
-    Sets the text format's anchor \a name. For the anchor to work as a
-    hyperlink, the destination must be set with setAnchorHref() and
-    the anchor must be enabled with setAnchor().
-*/
-#endif
-
 /*!
     \fn void QTextCharFormat::setAnchorNames(const QStringList &names)
     \since 4.3
@@ -1864,28 +1850,6 @@ void QTextCharFormat::setUnderlineStyle(UnderlineStyle style)
     hyperlink, the destination must be set with setAnchorHref() and
     the anchor must be enabled with setAnchor().
 */
-
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \fn QString QTextCharFormat::anchorName() const
-    \obsolete
-
-    This function is deprecated. Use anchorNames() instead.
-
-    Returns the anchor name associated with this text format, or an empty
-    string if none has been set. If the anchor name is set, text with this
-    format can be the destination of a hypertext link.
-*/
-QString QTextCharFormat::anchorName() const
-{
-    QVariant prop = property(AnchorName);
-    if (prop.userType() == QMetaType::QStringList)
-        return prop.toStringList().value(0);
-    else if (prop.userType() != QMetaType::QString)
-        return QString();
-    return prop.toString();
-}
-#endif
 
 /*!
     \fn QStringList QTextCharFormat::anchorNames() const
@@ -1990,18 +1954,6 @@ QStringList QTextCharFormat::anchorNames() const
 
     \sa setFont()
 */
-
-/*!
-    \overload
-
-    Sets the text format's \a font.
-
-    \sa font()
-*/
-void QTextCharFormat::setFont(const QFont &font)
-{
-    setFont(font, FontPropertiesAll);
-}
 
 /*!
     \since 5.3

@@ -449,8 +449,7 @@ public:
         FontPropertiesSpecifiedOnly,
         FontPropertiesAll
     };
-    void setFont(const QFont &font, FontPropertiesInheritanceBehavior behavior);
-    void setFont(const QFont &font); // ### Qt6: Merge with above
+    void setFont(const QFont &font, FontPropertiesInheritanceBehavior behavior = FontPropertiesAll);
     QFont font() const;
 
     inline void setFontFamily(const QString &family)
@@ -579,14 +578,6 @@ public:
     { setProperty(AnchorHref, value); }
     inline QString anchorHref() const
     { return stringProperty(AnchorHref); }
-
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X("Use setAnchorNames() instead")
-    inline void setAnchorName(const QString &name)
-    { setAnchorNames(QStringList(name)); }
-    QT_DEPRECATED_X("Use anchorNames() instead")
-    QString anchorName() const;
-#endif
 
     inline void setAnchorNames(const QStringList &names)
     { setProperty(AnchorName, names); }

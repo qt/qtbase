@@ -138,7 +138,6 @@ private:
     uint design : 1;
     uint direction : 2;
     uint unused : 16;
-    uint unused2; // ### Qt 6: remove unnecessary, extra 32 bits
     uint f;
     qreal tab;
     QTextOptionPrivate *d;
