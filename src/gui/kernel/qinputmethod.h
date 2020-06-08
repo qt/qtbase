@@ -94,7 +94,7 @@ public:
     QLocale locale() const;
     Qt::LayoutDirection inputDirection() const;
 
-    static QVariant queryFocusObject(Qt::InputMethodQuery query, QVariant argument); // ### Qt 6: QVariant by const-ref
+    static QVariant queryFocusObject(Qt::InputMethodQuery query, const QVariant &argument);
 
 public Q_SLOTS:
     void show();

@@ -419,7 +419,7 @@ bool QInputMethodPrivate::objectAcceptsInputMethod(QObject *object)
 /*!
   Send \a query to the current focus object with parameters \a argument and return the result.
  */
-QVariant QInputMethod::queryFocusObject(Qt::InputMethodQuery query, QVariant argument)
+QVariant QInputMethod::queryFocusObject(Qt::InputMethodQuery query, const QVariant &argument)
 {
     QVariant retval;
     QObject *focusObject = qGuiApp->focusObject();
