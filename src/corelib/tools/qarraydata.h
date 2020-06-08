@@ -288,20 +288,12 @@ struct QTypedArrayData
         }())                                                                    \
     /**/
 
-#ifdef Q_COMPILER_CONSTEXPR
-#define Q_ARRAY_LITERAL_CHECK_LITERAL_TYPE(Type) Q_STATIC_ASSERT(std::is_literal_type<Type>::value)
-#else
-#define Q_ARRAY_LITERAL_CHECK_LITERAL_TYPE(Type) do {} while (0)
-#endif
-
 #define Q_ARRAY_LITERAL_IMPL(Type, ...)                                         \
-    Q_ARRAY_LITERAL_CHECK_LITERAL_TYPE(Type);                                   \
-                                                                                \
     /* Portable compile-time array size computation */                          \
-    static Type const data[] = { __VA_ARGS__ };                                 \
+    static constexpr Type data[] = { __VA_ARGS__ };                             \
     enum { Size = sizeof(data) / sizeof(data[0]) };                             \
                                                                                 \
-    static const QArrayData literal = { Q_BASIC_ATOMIC_INITIALIZER(-1), QArrayData::StaticDataFlags, 0 };          \
+    static constexpr QArrayData literal = { Q_BASIC_ATOMIC_INITIALIZER(-1), QArrayData::StaticDataFlags, 0 };\
                                                                                 \
     QArrayDataPointerRef<Type> ref =                                            \
         { static_cast<QTypedArrayData<Type> *>(                                 \
