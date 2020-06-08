@@ -75,6 +75,8 @@ public:
 
     inline T* data() const
     { return static_cast<T*>(wp.internalData()); }
+    inline T* get() const
+    { return data(); }
     inline T* operator->() const
     { return data(); }
     inline T& operator*() const

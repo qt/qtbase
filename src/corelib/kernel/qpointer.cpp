@@ -156,6 +156,13 @@
 */
 
 /*!
+    \fn template <class T> T* QPointer<T>::get() const
+    \since 6.0
+
+    Same as data(). This function is provided for STL compatibility.
+*/
+
+/*!
     \fn template <class T> bool QPointer<T>::isNull() const
 
     Returns \c true if the referenced object has been destroyed or if
