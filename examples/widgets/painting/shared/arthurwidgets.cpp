@@ -127,9 +127,11 @@ void ArthurFrame::createGlWindow()
     f.setStencilBufferSize(8);
     m_glWindow->setFormat(f);
     m_glWindow->setFlags(Qt::WindowTransparentForInput);
-    m_glWindow->resize(width() - 1, height() - 1);
-    m_glWindow->create();
+    m_glWindow->resize(width(), height());
     m_glWidget = QWidget::createWindowContainer(m_glWindow, this);
+    // create() must be called after createWindowContainer() otherwise
+    // an incorrect offsetting of the position will occur.
+    m_glWindow->create();
 }
 #endif
 
@@ -233,7 +235,7 @@ void ArthurFrame::resizeEvent(QResizeEvent *e)
 {
 #if QT_CONFIG(opengl)
     if (m_glWidget)
-        m_glWidget->setGeometry(0, 0, e->size().width()-1, e->size().height()-1);
+        m_glWidget->setGeometry(0, 0, e->size().width(), e->size().height());
 #endif
     QWidget::resizeEvent(e);
 }
