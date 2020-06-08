@@ -212,49 +212,6 @@ public:
     }
 };
 
-template<class Filter>
-class QVariantComparator {
-    template<typename T, bool IsAcceptedType = Filter::template Acceptor<T>::IsAccepted>
-    struct FilteredComparator {
-        static bool compare(const QVariant::Private *a, const QVariant::Private *b)
-        {
-            return *v_cast<T>(a) == *v_cast<T>(b);
-        }
-    };
-    template<typename T>
-    struct FilteredComparator<T, /* IsAcceptedType = */ false> {
-        static bool compare(const QVariant::Private *, const QVariant::Private *)
-        {
-            // It is not possible to construct a QVariant containing not fully defined type
-            Q_ASSERT(false);
-            return false;
-        }
-    };
-public:
-    QVariantComparator(const QVariant::Private *a, const QVariant::Private *b)
-        : m_a(a), m_b(b)
-    {
-        Q_ASSERT(a->type() == b->type());
-    }
-
-    template<typename T>
-    bool delegate(const T*)
-    {
-        return FilteredComparator<T>::compare(m_a, m_b);
-    }
-
-    bool delegate(const void*) { Q_ASSERT(false); return true; }
-    bool delegate(const QMetaTypeSwitcher::UnknownType*)
-    {
-        return true; // for historical reason invalid variant == invalid variant
-    }
-    bool delegate(const QMetaTypeSwitcher::NotBuiltinType*) { return false; }
-protected:
-    const QVariant::Private *m_a;
-    const QVariant::Private *m_b;
-};
-
-
 Q_CORE_EXPORT const QVariant::Handler *qcoreVariantHandler();
 
 template<class Filter>

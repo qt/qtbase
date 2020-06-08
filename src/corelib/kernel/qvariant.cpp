@@ -125,18 +125,6 @@ static bool isNull(const QVariant::Private *d)
 
 /*!
   \internal
-
-  Compares \a a to \a b. The caller guarantees that \a a and \a b
-  are of the same type.
- */
-static bool compare(const QVariant::Private *a, const QVariant::Private *b)
-{
-    QVariantComparator<CoreTypesFilter> comparator(a, b);
-    return QMetaTypeSwitcher::switcher<bool>(comparator, a->type().id());
-}
-
-/*!
-  \internal
  */
 static qlonglong qMetaTypeNumber(const QVariant::Private *d)
 {
@@ -1390,7 +1378,6 @@ static void streamDebug(QDebug dbg, const QVariant &v)
 
 const QVariant::Handler qt_kernel_variant_handler = {
     isNull,
-    compare,
     convert,
 #if !defined(QT_NO_DEBUG_STREAM)
     streamDebug
@@ -1400,14 +1387,12 @@ const QVariant::Handler qt_kernel_variant_handler = {
 };
 
 static bool dummyIsNull(const QVariant::Private *d) { Q_ASSERT_X(false, "QVariant::isNull", "Trying to call isNull on an unknown type"); return d->is_null; }
-static bool dummyCompare(const QVariant::Private *, const QVariant::Private *) { Q_ASSERT_X(false, "QVariant", "Trying to compare an unknown types"); return false; }
 static bool dummyConvert(const QVariant::Private *, int, void *, bool *) { Q_ASSERT_X(false, "QVariant", "Trying to convert an unknown type"); return false; }
 #if !defined(QT_NO_DEBUG_STREAM)
 static void dummyStreamDebug(QDebug, const QVariant &) { Q_ASSERT_X(false, "QVariant", "Trying to convert an unknown type"); }
 #endif
 const QVariant::Handler qt_dummy_variant_handler = {
     dummyIsNull,
-    dummyCompare,
     dummyConvert,
 #if !defined(QT_NO_DEBUG_STREAM)
     dummyStreamDebug
@@ -1468,17 +1453,6 @@ static bool customIsNull(const QVariant::Private *d)
     return false;
 }
 
-static bool customCompare(const QVariant::Private *a, const QVariant::Private *b)
-{
-    const void *a_ptr = a->is_shared ? a->data.shared->ptr : &(a->data);
-    const void *b_ptr = b->is_shared ? b->data.shared->ptr : &(b->data);
-
-    if (a->is_null && b->is_null)
-        return true;
-
-    return !memcmp(a_ptr, b_ptr, a->type().sizeOf());
-}
-
 static bool customConvert(const QVariant::Private *d, int t, void *result, bool *ok)
 {
     if (d->type().id() >= QMetaType::User || t >= QMetaType::User) {
@@ -1506,7 +1480,6 @@ static void customStreamDebug(QDebug dbg, const QVariant &variant) {
 
 const QVariant::Handler qt_custom_variant_handler = {
     customIsNull,
-    customCompare,
     customConvert,
 #if !defined(QT_NO_DEBUG_STREAM)
     customStreamDebug
@@ -3909,22 +3882,12 @@ static int numericCompare(const QVariant::Private *d1, const QVariant::Private *
 /*!
     \internal
  */
-bool QVariant::cmp(const QVariant &v) const
+bool QVariant::equals(const QVariant &v) const
 {
-    auto cmp_helper = [](const QVariant::Private &d1, const QVariant::Private &d2) {
-        Q_ASSERT(d1.type() == d2.type());
-        auto metatype = d1.type();
-        if (metatype.id() >= QMetaType::User)
-            return metatype.equals(QT_PREPEND_NAMESPACE(constData(d1)), QT_PREPEND_NAMESPACE(constData(d2)));
-        return handlerManager[d1.type().id()]->compare(&d1, &d2);
-    };
-
+    auto metatype = d.type();
     // try numerics first, with C++ type promotion rules (no conversion)
-    if (qIsNumericType(d.type().id()) && qIsNumericType(v.d.type().id()))
+    if (qIsNumericType(metatype.id()) && qIsNumericType(v.d.type().id()))
         return numericCompare(&d, &v.d) == 0;
-
-    if (d.type() == v.d.type())
-        return cmp_helper(d, v.d);
 
     QVariant v1 = *this;
     QVariant v2 = v;
@@ -3937,7 +3900,11 @@ bool QVariant::cmp(const QVariant &v) const
         if (!v2.convert(v1.d.type().id()))
             return false;
     }
-    return cmp_helper(v1.d, v2.d);
+    metatype = v1.metaType();
+    // For historical reasons: QVariant() == QVariant()
+    if (!metatype.isValid())
+        return true;
+    return metatype.equals(QT_PREPEND_NAMESPACE(constData(v1.d)), QT_PREPEND_NAMESPACE(constData(v2.d)));
 }
 
 /*!

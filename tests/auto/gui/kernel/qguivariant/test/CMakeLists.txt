@@ -14,17 +14,6 @@ qt_add_test(tst_qguivariant
 )
 
 # Resources:
-set(tst_qguivariant_resource_files
-    "black.png"
-    "black2.png"
-)
-
-qt_add_resource(tst_qguivariant "tst_qguivariant"
-    PREFIX
-        "/"
-    FILES
-        ${tst_qguivariant_resource_files}
-)
 set(qguivariant_resource_files
     "data"
 )

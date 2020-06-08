@@ -54,18 +54,6 @@ static bool isNull(const QVariant::Private *)
     return false;
 }
 
-static bool compare(const QVariant::Private *a, const QVariant::Private *b)
-{
-    Q_ASSERT(a->type() == b->type());
-    switch (a->type().id()) {
-    case QMetaType::QSizePolicy:
-        return *v_cast<QSizePolicy>(a) == *v_cast<QSizePolicy>(b);
-    default:
-        Q_ASSERT(false);
-    }
-    return false;
-}
-
 static bool convert(const QVariant::Private *d, int type, void *result, bool *ok)
 {
     Q_UNUSED(d);
@@ -92,7 +80,6 @@ static void streamDebug(QDebug dbg, const QVariant &v)
 
 static const QVariant::Handler widgets_handler = {
     isNull,
-    compare,
     convert,
 #if !defined(QT_NO_DEBUG_STREAM)
     streamDebug

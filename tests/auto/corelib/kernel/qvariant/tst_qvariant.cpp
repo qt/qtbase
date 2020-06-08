@@ -187,7 +187,6 @@ private slots:
 
     void operator_eq_eq_data();
     void operator_eq_eq();
-    void operator_eq_eq_rhs();
 
     void typeName_data();
     void typeName();
@@ -1674,22 +1673,6 @@ void tst_QVariant::operator_eq_eq()
     QFETCH( QVariant, right );
     QFETCH( bool, equal );
     QCOMPARE( left == right, equal );
-}
-
-void tst_QVariant::operator_eq_eq_rhs()
-{
-    QVariant v = 42;
-
-    QVERIFY(v == 42);
-    QVERIFY(42 == v);
-
-#if 0
-    /* This should _not_ compile */
-    QStringList list;
-    QDateTime dt;
-
-    QVERIFY(dt == list);
-#endif
 }
 
 void tst_QVariant::typeName_data()

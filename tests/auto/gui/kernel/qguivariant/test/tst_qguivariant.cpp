@@ -109,7 +109,6 @@ private slots:
 
     void guiVariantAtExit();
 
-    void iconEquality();
     void qt4QPolygonFDataStream();
 };
 
@@ -738,33 +737,6 @@ void tst_QGuiVariant::guiVariantAtExit()
     Q_UNUSED(image);
     Q_UNUSED(palette);
     QVERIFY(true);
-}
-
-void tst_QGuiVariant::iconEquality()
-{
-    QIcon i;
-    QVariant a = i;
-    QVariant b = i;
-    QCOMPARE(a, b);
-
-    i = QIcon(":/black.png");
-    a = i;
-    QVERIFY(a != b);
-
-    b = a;
-    QCOMPARE(a, b);
-
-    i = QIcon(":/black2.png");
-    a = i;
-    QVERIFY(a != b);
-
-    b = i;
-    QCOMPARE(a, b);
-
-    // This is a "different" QIcon
-    // even if the contents are the same
-    b = QIcon(":/black2.png");
-    QVERIFY(a != b);
 }
 
 void tst_QGuiVariant::qt4QPolygonFDataStream()

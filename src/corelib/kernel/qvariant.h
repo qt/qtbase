@@ -470,20 +470,18 @@ class Q_CORE_EXPORT QVariant
     };
  public:
     typedef bool (*f_null)(const Private *);
-    typedef bool (*f_compare)(const Private *, const Private *);
     typedef bool (*f_convert)(const QVariant::Private *d, int t, void *, bool *);
     typedef void (*f_debugStream)(QDebug, const QVariant &);
     struct Handler {
         f_null isNull;
-        f_compare compare;
         f_convert convert;
         f_debugStream debugStream;
     };
 
     inline bool operator==(const QVariant &v) const
-    { return cmp(v); }
+    { return equals(v); }
     inline bool operator!=(const QVariant &v) const
-    { return !cmp(v); }
+    { return !equals(v); }
 
 protected:
     friend inline bool operator==(const QVariant &, const QVariantComparisonHelper &);
@@ -501,7 +499,7 @@ public:
 #endif
     Private d;
     void create(int type, const void *copy);
-    bool cmp(const QVariant &other) const;
+    bool equals(const QVariant &other) const;
     bool convert(const int t, void *ptr) const; // ### Qt6: drop const
 
 private:
@@ -584,7 +582,7 @@ private:
 
 inline bool operator==(const QVariant &v1, const QVariantComparisonHelper &v2)
 {
-    return v1.cmp(*v2.v);
+    return v1.equals(*v2.v);
 }
 
 inline bool operator!=(const QVariant &v1, const QVariantComparisonHelper &v2)

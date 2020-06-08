@@ -1776,7 +1776,10 @@ void tst_QTreeWidget::setData()
                     QCOMPARE(qvariant_cast<QTreeWidgetItem*>(args.at(0)), item);
                     QCOMPARE(qvariant_cast<int>(args.at(1)), j);
                     item->setIcon(j, icon);
-                    QCOMPARE(itemChangedSpy.count(), 0);
+                    QCOMPARE(itemChangedSpy.count(), 1);
+                    args = itemChangedSpy.takeFirst();
+                    QCOMPARE(qvariant_cast<QTreeWidgetItem*>(args.at(0)), item);
+                    QCOMPARE(qvariant_cast<int>(args.at(1)), j);
 
                     const QString toolTip = QLatin1String("toolTip ") + iS;
                     item->setToolTip(j, toolTip);

@@ -121,48 +121,6 @@ static bool isNull(const QVariant::Private *d)
     return QMetaTypeSwitcher::switcher<bool>(isNull, d->type().id(), nullptr);
 }
 
-// This class is a hack that customizes access to QPixmap, QBitmap, QCursor and QIcon
-template<class Filter>
-class QGuiVariantComparator : public QVariantComparator<Filter> {
-    typedef QVariantComparator<Filter> Base;
-public:
-    QGuiVariantComparator(const QVariant::Private *a, const QVariant::Private *b)
-        : QVariantComparator<Filter>(a, b)
-    {}
-    template<typename T>
-    bool delegate(const T *p)
-    {
-        return Base::delegate(p);
-    }
-    bool delegate(const QPixmap*)
-    {
-        return v_cast<QPixmap>(Base::m_a)->cacheKey() == v_cast<QPixmap>(Base::m_b)->cacheKey();
-    }
-    bool delegate(const QBitmap*)
-    {
-        return v_cast<QBitmap>(Base::m_a)->cacheKey() == v_cast<QBitmap>(Base::m_b)->cacheKey();
-    }
-#ifndef QT_NO_CURSOR
-    bool delegate(const QCursor*)
-    {
-        return v_cast<QCursor>(Base::m_a)->shape() == v_cast<QCursor>(Base::m_b)->shape();
-    }
-#endif
-#ifndef QT_NO_ICON
-    bool delegate(const QIcon *)
-    {
-        return v_cast<QIcon>(Base::m_a)->cacheKey() == v_cast<QIcon>(Base::m_b)->cacheKey();
-    }
-#endif
-    bool delegate(const void *p) { return Base::delegate(p); }
-};
-
-static bool compare(const QVariant::Private *a, const QVariant::Private *b)
-{
-    QGuiVariantComparator<GuiTypesFilter> comparator(a, b);
-    return QMetaTypeSwitcher::switcher<bool>(comparator, a->type().id(), nullptr);
-}
-
 static bool convert(const QVariant::Private *d, int t,
                  void *result, bool *ok)
 {
@@ -306,7 +264,6 @@ static void streamDebug(QDebug dbg, const QVariant &v)
 
 const QVariant::Handler qt_gui_variant_handler = {
     isNull,
-    compare,
     convert,
 #if !defined(QT_NO_DEBUG_STREAM)
     streamDebug
