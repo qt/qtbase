@@ -1491,38 +1491,38 @@ void tst_QVariant::operator_eq_eq_data()
 
     QTest::newRow( "double_int" ) << QVariant(42.0) << QVariant(42) << true;
     QTest::newRow( "float_int" ) << QVariant(42.f) << QVariant(42) << true;
-    QTest::newRow( "mInt_mIntString" ) << mInt << mIntString << true;
-    QTest::newRow( "mIntString_mInt" ) << mIntString << mInt << true;
+    QTest::newRow( "mInt_mIntString" ) << mInt << mIntString << false;
+    QTest::newRow( "mIntString_mInt" ) << mIntString << mInt << false;
     QTest::newRow( "mInt_mIntQString" ) << mInt << mIntQString << true;
     QTest::newRow( "mIntQString_mInt" ) << mIntQString << mInt << true;
 
-    QTest::newRow( "mUInt_mUIntString" ) << mUInt << mUIntString << true;
-    QTest::newRow( "mUIntString_mUInt" ) << mUIntString << mUInt << true;
+    QTest::newRow( "mUInt_mUIntString" ) << mUInt << mUIntString << false;
+    QTest::newRow( "mUIntString_mUInt" ) << mUIntString << mUInt << false;
     QTest::newRow( "mUInt_mUIntQString" ) << mUInt << mUIntQString << true;
     QTest::newRow( "mUIntQString_mUInt" ) << mUIntQString << mUInt << true;
 
-    QTest::newRow( "mDouble_mDoubleString" ) << mDouble << mDoubleString << true;
-    QTest::newRow( "mDoubleString_mDouble" ) << mDoubleString << mDouble << true;
+    QTest::newRow( "mDouble_mDoubleString" ) << mDouble << mDoubleString << false;
+    QTest::newRow( "mDoubleString_mDouble" ) << mDoubleString << mDouble << false;
     QTest::newRow( "mDouble_mDoubleQString" ) << mDouble << mDoubleQString << true;
     QTest::newRow( "mDoubleQString_mDouble" ) << mDoubleQString << mDouble << true;
 
-    QTest::newRow( "mFloat_mFloatString" ) << mFloat << mFloatString << true;
-    QTest::newRow( "mFloatString_mFloat" ) << mFloatString << mFloat << true;
+    QTest::newRow( "mFloat_mFloatString" ) << mFloat << mFloatString << false;
+    QTest::newRow( "mFloatString_mFloat" ) << mFloatString << mFloat << false;
     QTest::newRow( "mFloat_mFloatQString" ) << mFloat << mFloatQString << true;
     QTest::newRow( "mFloatQString_mFloat" ) << mFloatQString << mFloat << true;
 
-    QTest::newRow( "mLongLong_mLongLongString" ) << mLongLong << mLongLongString << true;
-    QTest::newRow( "mLongLongString_mLongLong" ) << mLongLongString << mLongLong << true;
+    QTest::newRow( "mLongLong_mLongLongString" ) << mLongLong << mLongLongString << false;
+    QTest::newRow( "mLongLongString_mLongLong" ) << mLongLongString << mLongLong << false;
     QTest::newRow( "mLongLong_mLongLongQString" ) << mLongLong << mLongLongQString << true;
     QTest::newRow( "mLongLongQString_mLongLong" ) << mLongLongQString << mLongLong << true;
 
-    QTest::newRow( "mULongLong_mULongLongString" ) << mULongLong << mULongLongString << true;
-    QTest::newRow( "mULongLongString_mULongLong" ) << mULongLongString << mULongLong << true;
+    QTest::newRow( "mULongLong_mULongLongString" ) << mULongLong << mULongLongString << false;
+    QTest::newRow( "mULongLongString_mULongLong" ) << mULongLongString << mULongLong << false;
     QTest::newRow( "mULongLong_mULongLongQString" ) << mULongLong << mULongLongQString << true;
     QTest::newRow( "mULongLongQString_mULongLong" ) << mULongLongQString << mULongLong << true;
 
-    QTest::newRow( "mBool_mBoolString" ) << mBool << mBoolString << true;
-    QTest::newRow( "mBoolString_mBool" ) << mBoolString << mBool << true;
+    QTest::newRow( "mBool_mBoolString" ) << mBool << mBoolString << false;
+    QTest::newRow( "mBoolString_mBool" ) << mBoolString << mBool << false;
     QTest::newRow( "mBool_mBoolQString" ) << mBool << mBoolQString << true;
     QTest::newRow( "mBoolQString_mBool" ) << mBoolQString << mBool << true;
 
@@ -1531,16 +1531,16 @@ void tst_QVariant::operator_eq_eq_data()
     QTest::newRow("char_char") << QVariant(QChar('a')) << QVariant(QChar('a')) << true;
     QTest::newRow("char_char2") << QVariant(QChar('a')) << QVariant(QChar('b')) << false;
 
-    QTest::newRow("invalidConversion") << QVariant(QString("bubu")) << QVariant(0) << false;
-    QTest::newRow("invalidConversionR") << QVariant(0) << QVariant(QString("bubu")) << false;
+    QTest::newRow("invalidConversion") << QVariant(QString("bubu")) << QVariant() << false;
+    QTest::newRow("invalidConversionR") << QVariant() << QVariant(QString("bubu")) << false;
     // ### many other combinations missing
 
     {
         QUuid uuid(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-        QTest::newRow("uuidstring") << QVariant(uuid) << QVariant(uuid.toString()) << true;
-        QTest::newRow("stringuuid") << QVariant(uuid.toString()) << QVariant(uuid) << true;
-        QTest::newRow("uuidbytearray") << QVariant(uuid) << QVariant(uuid.toByteArray()) << true;
-        QTest::newRow("bytearrayuuid") << QVariant(uuid.toByteArray()) << QVariant(uuid) << true;
+        QTest::newRow("uuidstring") << QVariant(uuid) << QVariant(uuid.toString()) << false;
+        QTest::newRow("stringuuid") << QVariant(uuid.toString()) << QVariant(uuid) << false;
+        QTest::newRow("uuidbytearray") << QVariant(uuid) << QVariant(uuid.toByteArray()) << false;
+        QTest::newRow("bytearrayuuid") << QVariant(uuid.toByteArray()) << QVariant(uuid) << false;
     }
 
     {
@@ -2234,7 +2234,9 @@ void tst_QVariant::variantMap()
     QVariant v3 = QVariant(QMetaType::type("QMap<QString, QVariant>"), &map);
     QCOMPARE(qvariant_cast<QVariantMap>(v3).value("test").toInt(), 42);
 
-    QCOMPARE(v, QVariant(v.toHash()));
+    QHash<QString, QVariant> hash;
+    hash["test"] = 42;
+    QCOMPARE(hash, v.toHash());
 }
 
 void tst_QVariant::variantHash()
@@ -2257,7 +2259,9 @@ void tst_QVariant::variantHash()
     QVariant v3 = QVariant(QMetaType::type("QHash<QString, QVariant>"), &hash);
     QCOMPARE(qvariant_cast<QVariantHash>(v3).value("test").toInt(), 42);
 
-    QCOMPARE(v, QVariant(v.toMap()));
+    QMap<QString, QVariant> map;
+    map["test"] = 42;
+    QCOMPARE(map, v.toMap());
 }
 
 class CustomQObject : public QObject {

@@ -174,13 +174,28 @@ static qulonglong qMetaTypeUNumber(const QVariant::Private *d)
     return 0;
 }
 
-static qlonglong qConvertToNumber(const QVariant::Private *d, bool *ok)
+static qlonglong qConvertToNumber(const QVariant::Private *d, bool *ok, bool allowStringToBool = false)
 {
     *ok = true;
 
     switch (uint(d->type().id())) {
-    case QMetaType::QString:
-        return v_cast<QString>(d)->toLongLong(ok);
+    case QMetaType::QString: {
+        const QString *s = v_cast<QString>(d);
+        qlonglong l = s->toLongLong(ok);
+        if (*ok)
+            return l;
+        if (allowStringToBool) {
+            if (*s == QLatin1String("false") || *s == QLatin1String("0")) {
+                *ok = true;
+                return 0;
+            }
+            if (*s == QLatin1String("true") || *s == QLatin1String("1")) {
+                *ok = true;
+                return 1;
+            }
+        }
+        return 0;
+    }
     case QMetaType::QChar:
         return v_cast<QChar>(d)->unicode();
     case QMetaType::QByteArray:
@@ -238,6 +253,8 @@ static qreal qConvertToRealNumber(const QVariant::Private *d, bool *ok)
 {
     *ok = true;
     switch (uint(d->type().id())) {
+    case QMetaType::QString:
+        return v_cast<QString>(d)->toDouble(ok);
     case QMetaType::Double:
         return qreal(d->data.d);
     case QMetaType::Float:
@@ -3727,9 +3744,18 @@ bool QVariant::convert(const int type, void *ptr) const
     equal; otherwise returns \c false.
 
     QVariant uses the equality operator of the type() it contains to
-    check for equality. QVariant will try to convert() \a v if its
-    type is not the same as this variant's type. See canConvert() for
-    a list of possible conversions.
+    check for equality.
+
+    Variants of different types will always compare as not equal with a few
+    exceptions:
+
+    \list
+    \i If both types are numeric types (integers and floatins point numbers)
+    Qt will compare those types using standard C++ type promotion rules.
+    \i If one type is numeric and the other one a QString, Qt will try to
+    convert the QString to a matching numeric type and if successful compare
+    those.
+    \endlist
 */
 
 /*!
@@ -3737,11 +3763,26 @@ bool QVariant::convert(const int type, void *ptr) const
 
     Compares this QVariant with \a v and returns \c true if they are not
     equal; otherwise returns \c false.
+
+    QVariant uses the equality operator of the type() it contains to
+    check for equality.
+
+    Variants of different types will always compare as not equal with a few
+    exceptions:
+
+    \list
+    \i If both types are numeric types (integers and floatins point numbers)
+    Qt will compare those types using standard C++ type promotion rules.
+    \i If one type is numeric and the other one a QString, Qt will try to
+    convert the QString to a matching numeric type and if successful compare
+    those.
+    \endlist
 */
 
 static bool qIsNumericType(uint tp)
 {
     static const qulonglong numericTypeBits =
+            Q_UINT64_C(1) << QMetaType::QString |
             Q_UINT64_C(1) << QMetaType::Bool |
             Q_UINT64_C(1) << QMetaType::Double |
             Q_UINT64_C(1) << QMetaType::Float |
@@ -3789,6 +3830,10 @@ static int numericTypePromotion(uint t1, uint t2)
     Q_ASSERT(qIsNumericType(t1));
     Q_ASSERT(qIsNumericType(t2));
 
+    if ((t1 == QMetaType::Bool && t2 == QMetaType::QString) ||
+        (t2 == QMetaType::Bool && t1 == QMetaType::QString))
+        return QMetaType::Bool;
+
     // C++ integral ranks: (4.13 Integer conversion rank [conv.rank])
     //   bool < signed char < short < int < long < long long
     //   unsigneds have the same rank as their signed counterparts
@@ -3830,53 +3875,59 @@ static int numericTypePromotion(uint t1, uint t2)
     return QMetaType::Int;
 }
 
-static int integralCompare(uint promotedType, const QVariant::Private *d1, const QVariant::Private *d2)
+static bool integralEquals(uint promotedType, const QVariant::Private *d1, const QVariant::Private *d2)
 {
     // use toLongLong to retrieve the data, it gets us all the bits
     bool ok;
-    qlonglong l1 = qConvertToNumber(d1, &ok);
-    Q_ASSERT(ok);
+    qlonglong l1 = qConvertToNumber(d1, &ok, promotedType == QMetaType::Bool);
+    if (!ok)
+        return false;
 
-    qlonglong l2 = qConvertToNumber(d2, &ok);
-    Q_ASSERT(ok);
+    qlonglong l2 = qConvertToNumber(d2, &ok, promotedType == QMetaType::Bool);
+    if (!ok)
+        return false;
 
+    if (promotedType == QMetaType::Bool)
+        return bool(l1) == bool(l2);
     if (promotedType == QMetaType::Int)
-        return int(l1) < int(l2) ? -1 : int(l1) == int(l2) ? 0 : 1;
+        return int(l1) == int(l2);
     if (promotedType == QMetaType::UInt)
-        return uint(l1) < uint(l2) ? -1 : uint(l1) == uint(l2) ? 0 : 1;
+        return uint(l1) == uint(l2);
     if (promotedType == QMetaType::LongLong)
-        return l1 < l2 ? -1 : l1 == l2 ? 0 : 1;
+        return l1 == l2;
     if (promotedType == QMetaType::ULongLong)
-        return qulonglong(l1) < qulonglong(l2) ? -1 : qulonglong(l1) == qulonglong(l2) ? 0 : 1;
+        return qulonglong(l1) == qulonglong(l2);
 
     Q_UNREACHABLE();
     return 0;
 }
 
-static int numericCompare(const QVariant::Private *d1, const QVariant::Private *d2)
+static bool numericEquals(const QVariant::Private *d1, const QVariant::Private *d2)
 {
     uint promotedType = numericTypePromotion(d1->type().id(), d2->type().id());
     if (promotedType != QMetaType::QReal)
-        return integralCompare(promotedType, d1, d2);
+        return integralEquals(promotedType, d1, d2);
 
     // qreal comparisons
     bool ok;
     qreal r1 = qConvertToRealNumber(d1, &ok);
-    Q_ASSERT(ok);
+    if (!ok)
+        return false;
     qreal r2 = qConvertToRealNumber(d2, &ok);
-    Q_ASSERT(ok);
+    if (!ok)
+        return false;
     if (r1 == r2)
-        return 0;
+        return true;
 
     // only do fuzzy comparisons for finite, non-zero numbers
     int c1 = qFpClassify(r1);
     int c2 = qFpClassify(r2);
     if ((c1 == FP_NORMAL || c1 == FP_SUBNORMAL) && (c2 == FP_NORMAL || c2 == FP_SUBNORMAL)) {
         if (qFuzzyCompare(r1, r2))
-            return 0;
+            return true;
     }
 
-    return r1 < r2 ? -1 : 1;
+    return false;
 }
 
 /*!
@@ -3885,26 +3936,19 @@ static int numericCompare(const QVariant::Private *d1, const QVariant::Private *
 bool QVariant::equals(const QVariant &v) const
 {
     auto metatype = d.type();
-    // try numerics first, with C++ type promotion rules (no conversion)
-    if (qIsNumericType(metatype.id()) && qIsNumericType(v.d.type().id()))
-        return numericCompare(&d, &v.d) == 0;
 
-    QVariant v1 = *this;
-    QVariant v2 = v;
-    if (v2.canConvert(v1.d.type().id())) {
-        if (!v2.convert(v1.d.type().id()))
-            return false;
-    } else {
-        // try the opposite conversion, it might work
-        qSwap(v1, v2);
-        if (!v2.convert(v1.d.type().id()))
-            return false;
+    if (metatype != v.metaType()) {
+        // try numeric comparisons, with C++ type promotion rules (no conversion)
+        if (qIsNumericType(metatype.id()) && qIsNumericType(v.d.type().id()))
+            return numericEquals(&d, &v.d);
+        return false;
     }
-    metatype = v1.metaType();
+
     // For historical reasons: QVariant() == QVariant()
     if (!metatype.isValid())
         return true;
-    return metatype.equals(QT_PREPEND_NAMESPACE(constData(v1.d)), QT_PREPEND_NAMESPACE(constData(v2.d)));
+
+    return metatype.equals(QT_PREPEND_NAMESPACE(constData(d)), QT_PREPEND_NAMESPACE(constData(v.d)));
 }
 
 /*!
