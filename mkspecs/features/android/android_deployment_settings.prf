@@ -75,7 +75,7 @@ contains(TEMPLATE, ".*app"):!build_pass:!android-embedded {
         qtFlattenResources()
         NEWRESOURCES = $$RESOURCES $$QMLCACHE_RESOURCE_FILES
         for(resource, NEWRESOURCES) {
-            contains(resource, ".*\\qmake_qmake_immediate.qrc$") {
+            contains(resource, ".*qmake_qmake_immediate\\.qrc$") {
                 # They will be created for each architecture, since they could be different
                 # we need to account for all of them
                 for (arch, ANDROID_ABIS): \
