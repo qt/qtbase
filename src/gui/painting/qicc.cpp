@@ -606,8 +606,8 @@ bool parseDesc(const QByteArray &data, const TagEntry &tagEntry, QString &descNa
     // The given length shouldn't include 0-termination, but might.
     if (stringLen > 1 && unicodeString[stringLen - 1] == 0)
         --stringLen;
-    QVarLengthArray<quint16> utf16hostendian(stringLen);
-    qFromBigEndian<ushort>(unicodeString, stringLen, utf16hostendian.data());
+    QVarLengthArray<char16_t> utf16hostendian(stringLen);
+    qFromBigEndian<char16_t>(unicodeString, stringLen, utf16hostendian.data());
     descName = QString::fromUtf16(utf16hostendian.data(), stringLen);
     return true;
 }
