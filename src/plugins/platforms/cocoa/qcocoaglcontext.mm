@@ -357,6 +357,8 @@ QCocoaGLContext::~QCocoaGLContext()
 
 bool QCocoaGLContext::makeCurrent(QPlatformSurface *surface)
 {
+    QMacAutoReleasePool pool;
+
     qCDebug(lcQpaOpenGLContext) << "Making" << this << "current"
         << "in" << QThread::currentThread() << "for" << surface;
 
@@ -489,6 +491,8 @@ void QCocoaGLContext::update()
 
 void QCocoaGLContext::swapBuffers(QPlatformSurface *surface)
 {
+    QMacAutoReleasePool pool;
+
     qCDebug(lcQpaOpenGLContext) << "Swapping" << m_context
         << "in" << QThread::currentThread() << "to" << surface;
 
@@ -522,6 +526,8 @@ void QCocoaGLContext::swapBuffers(QPlatformSurface *surface)
 
 void QCocoaGLContext::doneCurrent()
 {
+    QMacAutoReleasePool pool;
+
     qCDebug(lcQpaOpenGLContext) << "Clearing current context"
         << [NSOpenGLContext currentContext] << "in" << QThread::currentThread();
 
