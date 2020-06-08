@@ -58,6 +58,7 @@ class Q_GUI_EXPORT QInputDevice : public QObject
     Q_PROPERTY(Capabilities capabilities READ capabilities CONSTANT)
     Q_PROPERTY(qint64 id READ id CONSTANT)
     Q_PROPERTY(QString seatName READ seatName CONSTANT)
+    Q_PROPERTY(QRect availableVirtualGeometry READ availableVirtualGeometry NOTIFY availableVirtualGeometryChanged)
 
 public:
     enum class DeviceType : qint16 {
@@ -106,11 +107,15 @@ public:
     bool hasCapability(Capability cap) const;
     qint64 id() const;
     QString seatName() const;
+    QRect availableVirtualGeometry() const;
 
     static QList<const QInputDevice *> devices();
     static const QInputDevice *primaryKeyboard(const QString& seatName = QString());
 
     bool operator==(const QInputDevice &other) const;
+
+Q_SIGNALS:
+    void availableVirtualGeometryChanged(QRect area);
 
 protected:
     QInputDevice(QInputDevicePrivate &d, QObject *parent = nullptr);

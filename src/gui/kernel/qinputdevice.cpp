@@ -113,6 +113,29 @@ QInputDevice::QInputDevice(QInputDevicePrivate &d, QObject *parent)
 }
 
 /*!
+    Returns the region within the \l{QScreen::availableVirtualGeometry}{virtual desktop}
+    that this device can access.
+
+    For example a \l {QInputDevice::DeviceType::TouchScreen}{TouchScreen} input
+    device is fixed in place upon a single physical screen, and usually
+    calibrated so that this area is the same as QScreen::geometry(); whereas a
+    \l {QInputDevice::DeviceType::Mouse}{Mouse} can probably access all screens
+    on the virtual desktop. A Wacom graphics tablet may be configured in a way
+    that it's mapped to all screens, or only to the screen where the user
+    prefers to create drawings, or to the window in which drawing occurs.
+    A \l {QInputDevice::DeviceType::Stylus}{Stylus} device that is integrated
+    with a touchscreen may be physically limited to that screen.
+
+    If the returned rectangle is \l {null}{QRect::isNull()}, it means this device
+    can access the entire virtual desktop.
+*/
+QRect QInputDevice::availableVirtualGeometry() const
+{
+    Q_D(const QInputDevice);
+    return d->availableVirtualGeometry;
+}
+
+/*!
     Returns the device name.
 
     This string may be empty. It is however useful on systems that have
