@@ -136,27 +136,18 @@ public:
     QTextFrame *parentFrame() const;
 
     class Q_GUI_EXPORT iterator {
-        QTextFrame *f;
-        int b;
-        int e;
-        QTextFrame *cf;
-        int cb;
+        QTextFrame *f = nullptr;
+        int b = 0;
+        int e = 0;
+        QTextFrame *cf = nullptr;
+        int cb = 0;
 
         friend class QTextFrame;
         friend class QTextTableCell;
         friend class QTextDocumentLayoutPrivate;
         iterator(QTextFrame *frame, int block, int begin, int end);
     public:
-        iterator(); // ### Qt 6: inline
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        iterator(const iterator &o) noexcept; // = default
-        iterator &operator=(const iterator &o) noexcept; // = default
-        iterator(iterator &&other) noexcept // = default
-        { memcpy(static_cast<void *>(this), static_cast<void *>(&other), sizeof(iterator)); }
-        iterator &operator=(iterator &&other) noexcept // = default
-        { memcpy(static_cast<void *>(this), static_cast<void *>(&other), sizeof(iterator)); return *this; }
-#endif
-
+        constexpr iterator() noexcept = default;
         QTextFrame *parentFrame() const { return f; }
 
         QTextFrame *currentFrame() const;
