@@ -26,8 +26,11 @@
 **
 ****************************************************************************/
 
+#include <QBuffer>
 #include <QGuiApplication>
 #include <QImage>
+#include <QImageReader>
+#include <QSize>
 #include <QtGlobal>
 
 // silence warnings
@@ -41,6 +44,12 @@ extern "C" int LLVMFuzzerTestOneInput(const char *Data, size_t Size) {
     static char arg3[] = "minimal";
     static char *argv[] = {arg1, arg2, arg3, nullptr};
     static QGuiApplication qga(argc, argv);
-    QImage().loadFromData(QByteArray::fromRawData(Data, Size));
+    QByteArray input(QByteArray::fromRawData(Data, Size));
+    QBuffer buf(&input);
+    const QSize size = QImageReader(&buf).size();
+    // Don't try to load huge valid images.
+    // They are justified in using huge memory.
+    if (!size.isValid() || uint64_t(size.width()) * size.height() < 64 * 1024 * 1024)
+        QImage().loadFromData(input);
     return 0;
 }
