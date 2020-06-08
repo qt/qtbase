@@ -1086,7 +1086,7 @@ for (auto _container_ = QtPrivate::qMakeForeachContainer(container); \
 #endif
 
 template <typename T> inline T *qGetPtrHelper(T *ptr) { return ptr; }
-template <typename Ptr> inline auto qGetPtrHelper(Ptr &ptr) -> decltype(ptr.operator->()) { return ptr.operator->(); }
+template <typename Ptr> inline auto qGetPtrHelper(Ptr &ptr) -> decltype(ptr.get()) { return ptr.get(); }
 
 // The body must be a statement:
 #define Q_CAST_IGNORE_ALIGN(body) QT_WARNING_PUSH QT_WARNING_DISABLE_GCC("-Wcast-align") body QT_WARNING_POP
