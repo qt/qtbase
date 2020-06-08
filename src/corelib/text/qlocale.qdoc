@@ -936,24 +936,25 @@
 /*!
     \enum QLocale::FormatType
 
-    This enum describes the types of format that can be used when
-    converting QDate and QTime objects to strings.
+    This enum describes the different formats that can be used when
+    converting QDate, QTime, and QDateTime objects, as well
+    as months and days, to strings specific to the locale.
 
-    \value LongFormat The long version of day and month names; for
-    example, returning "January" as a month name.
+    \value LongFormat Longer format.
 
-    \value ShortFormat The short version of day and month names; for
-    example, returning "Jan" as a month name.
+    \value ShortFormat Shorter format.
 
-    \value NarrowFormat A special version of day and month names for
-    use when space is limited; for example, returning "J" as a month
-    name. Note that the narrow format might contain the same text for
-    different months and days or it can even be an empty string if the
+    \value NarrowFormat A special version for use when space is very limited.
+
+    \note \c NarrowFormat might contain the same text for
+    different months and days. It can even be an empty string if the
     locale doesn't support narrow names, so you should avoid using it
     for date formatting. Also, for the system locale this format is
-    the same as ShortFormat.
+    the same as \c ShortFormat.
 
-    \sa QDateTime::toString(), QDate::toString(), QTime::toString()
+    \sa dateFormat(), timeFormat(), dateTimeFormat()
+    \sa monthName(), standaloneMonthName(), dayName(), standaloneDayName()
+    \sa toDate(), toTime(), toDateTime()
 */
 
 /*!
