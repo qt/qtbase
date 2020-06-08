@@ -83,7 +83,9 @@ public:
     inline operator T *() { detach(); return d; }
     inline operator const T *() const { return d; }
     inline T *data() { detach(); return d; }
+    inline T *get() { detach(); return d; }
     inline const T *data() const { return d; }
+    inline const T *get() const { return d; }
     inline const T *constData() const { return d; }
 
     inline bool operator==(const QSharedDataPointer<T> &other) const { return d == other.d; }
@@ -160,6 +162,7 @@ public:
     inline T *operator->() { return d; }
     inline T *operator->() const { return d; }
     inline T *data() const { return d; }
+    inline T *get() const { return d; }
     inline const T *constData() const { return d; }
     inline T *take() { T *x = d; d = nullptr; return x; }
 

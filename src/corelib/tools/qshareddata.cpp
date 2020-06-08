@@ -285,9 +285,21 @@ QT_BEGIN_NAMESPACE
     \sa constData()
 */
 
+/*! \fn template <class T> T* QSharedDataPointer<T>::get()
+    \since 6.0
+
+    Same as data(). This function is provided for STL compatibility.
+*/
+
 /*! \fn template <class T> const T* QSharedDataPointer<T>::data() const
     Returns a pointer to the shared data object.
     This function does \e not call detach().
+*/
+
+/*! \fn template <class T> const T* QSharedDataPointer<T>::get() const
+    \since 6.0
+
+    Same as data(). This function is provided for STL compatibility.
 */
 
 /*! \fn template <class T> const T* QSharedDataPointer<T>::constData() const
@@ -455,6 +467,12 @@ QT_BEGIN_NAMESPACE
 
 /*! \fn template <class T> T* QExplicitlySharedDataPointer<T>::data() const
     Returns a pointer to the shared data object.
+*/
+
+/*! \fn template <class T> T* QExplicitlySharedDataPointer<T>::get() const
+    \since 6.0
+
+    Same as data(). This function is provided for STL compatibility.
 */
 
 /*! \fn template <class T> const T* QExplicitlySharedDataPointer<T>::constData() const
