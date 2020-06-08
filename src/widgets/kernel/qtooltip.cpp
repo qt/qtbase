@@ -451,22 +451,14 @@ bool QTipLabel::tipChanged(const QPoint &pos, const QString &text, QObject *o)
     Otherwise this argument can be \nullptr but it is used to
     determine the appropriate screen on multi-head systems.
 
+    The \a msecDisplayTime parameter specifies for how long the tool tip
+    will be displayed, in milliseconds. With the default value of -1, the
+    time is based on the length of the text.
+
     If \a text is empty the tool tip is hidden. If the text is the
     same as the currently shown tooltip, the tip will \e not move.
     You can force moving by first hiding the tip with an empty text,
     and then showing the new tip at the new position.
-*/
-
-void QToolTip::showText(const QPoint &pos, const QString &text, QWidget *w, const QRect &rect)
-{
-    showText(pos, text, w, rect, -1);
-}
-
-/*!
-   \since 5.2
-   \overload
-   This is similar to QToolTip::showText(\a pos, \a text, \a w, \a rect) but with an extra parameter \a msecDisplayTime
-   that specifies how long the tool tip will be displayed, in milliseconds.
 */
 
 void QToolTip::showText(const QPoint &pos, const QString &text, QWidget *w, const QRect &rect, int msecDisplayTime)
@@ -521,18 +513,6 @@ void QToolTip::showText(const QPoint &pos, const QString &text, QWidget *w, cons
 #endif
     }
 }
-
-/*!
-    \overload
-
-    This is analogous to calling QToolTip::showText(\a pos, \a text, \a w, QRect())
-*/
-
-void QToolTip::showText(const QPoint &pos, const QString &text, QWidget *w)
-{
-    QToolTip::showText(pos, text, w, QRect());
-}
-
 
 /*!
     \fn void QToolTip::hideText()

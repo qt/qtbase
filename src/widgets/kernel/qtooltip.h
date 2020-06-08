@@ -50,10 +50,8 @@ class Q_WIDGETS_EXPORT QToolTip
 {
     QToolTip() = delete;
 public:
-    // ### Qt 6 - merge the three showText functions below
-    static void showText(const QPoint &pos, const QString &text, QWidget *w = nullptr);
-    static void showText(const QPoint &pos, const QString &text, QWidget *w, const QRect &rect);
-    static void showText(const QPoint &pos, const QString &text, QWidget *w, const QRect &rect, int msecShowTime);
+    static void showText(const QPoint &pos, const QString &text,
+                         QWidget *w = nullptr, const QRect &rect = {}, int msecShowTime = -1);
     static inline void hideText() { showText(QPoint(), QString()); }
 
     static bool isVisible();
