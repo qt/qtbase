@@ -36,6 +36,7 @@ class tst_QPair : public QObject
     Q_OBJECT
 private Q_SLOTS:
     void pairOfReferences();
+    void structuredBindings();
     void testConstexpr();
     void testConversions();
     void taskQTBUG_48780_pairContainingCArray();
@@ -119,6 +120,56 @@ void tst_QPair::pairOfReferences()
     q.second = QLatin1String("World");
     QCOMPARE(s, QLatin1String("World"));
     QCOMPARE(p.second, QLatin1String("World"));
+}
+
+void tst_QPair::structuredBindings()
+{
+    using PV = QPair<int, QString>;
+    using PR = QPair<int&, const QString&>;
+
+    {
+        PV pv = {42, "Hello"};
+        PR pr = {pv.first, pv.second};
+
+        auto [fv, sv] = pv;
+
+        fv = 24;
+        sv = "World";
+        QCOMPARE(fv, 24);
+        QCOMPARE(sv, "World");
+        QCOMPARE(pv.first, 42);
+        QCOMPARE(pv.second, "Hello");
+
+        auto [fr, sr] = pr;
+
+        fr = 2424;
+        // sr = "World"; // const
+        QCOMPARE(fr, 2424);
+        QCOMPARE(pv.first, 2424);
+    }
+
+    {
+        PV pv = {42, "Hello"};
+        PR pr = {pv.first, pv.second};
+
+        auto& [fv, sv] = pv;
+
+        fv = 24;
+        sv = "World";
+        QCOMPARE(fv, 24);
+        QCOMPARE(sv, "World");
+        QCOMPARE(pv.first, 24);
+        QCOMPARE(pv.second, "World");
+
+        auto& [fr, sr] = pr;
+
+        fr = 4242;
+        //sr = "2World"; // const
+
+        QCOMPARE(fr, 4242);
+        QCOMPARE(pr.first, 4242);
+        QCOMPARE(pv.first, 4242);
+    }
 }
 
 void tst_QPair::testConstexpr()
