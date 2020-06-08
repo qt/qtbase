@@ -21,6 +21,12 @@ set_target_properties(mylib PROPERTIES
     C_VISIBILITY_PRESET "default"
     CXX_VISIBILITY_PRESET "default"
 )
+
+if(WIN32)
+    # CMake sets for Windows-GNU platforms the suffix "lib"
+    set_property(TARGET mylib PROPERTY PREFIX "")
+endif()
+
 # special case end
 
 #### Keys ignored in scope 1:.:.:lib.pro:<TRUE>:

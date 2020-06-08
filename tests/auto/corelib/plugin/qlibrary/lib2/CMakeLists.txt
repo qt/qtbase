@@ -33,6 +33,12 @@ set_target_properties(mylib2 PROPERTIES
     C_VISIBILITY_PRESET "default"
     CXX_VISIBILITY_PRESET "default"
 )
+
+if(WIN32)
+    # CMake sets for Windows-GNU platforms the suffix "lib"
+    set_property(TARGET mylib2 PROPERTY PREFIX "")
+endif()
+
 if (UNIX)
     add_dependencies(mylib2 mylib)
     add_custom_command(TARGET mylib2 POST_BUILD
