@@ -190,8 +190,8 @@ Q_SIGNALS:
 #endif
     void applicationDisplayNameChanged();
 #if QT_DEPRECATED_SINCE(6, 0)
-    void paletteChanged(const QPalette &pal);
-    void fontChanged(const QFont &font);
+    QT_DEPRECATED_VERSION_X_6_0("Handle QEvent::ApplicationPaletteChange instead") void paletteChanged(const QPalette &pal);
+    QT_DEPRECATED_VERSION_X_6_0("Handle QEvent::ApplicationFontChange instead")  void fontChanged(const QFont &font);
 #endif
 protected:
     bool event(QEvent *) override;

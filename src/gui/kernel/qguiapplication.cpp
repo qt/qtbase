@@ -3363,7 +3363,10 @@ void QGuiApplicationPrivate::handlePaletteChanged(const char *className)
 {
     if (!className) {
         Q_ASSERT(app_pal);
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
         emit qGuiApp->paletteChanged(*QGuiApplicationPrivate::app_pal);
+QT_WARNING_POP
     }
 
     if (is_app_running && !is_app_closing) {
@@ -3423,7 +3426,10 @@ void QGuiApplication::setFont(const QFont &font)
     if (emitChange && qGuiApp) {
         auto font = *QGuiApplicationPrivate::app_font;
         locker.unlock();
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
         emit qGuiApp->fontChanged(font);
+QT_WARNING_POP
         QEvent event(QEvent::ApplicationFontChange);
         QGuiApplication::sendEvent(qGuiApp, &event);
     }
