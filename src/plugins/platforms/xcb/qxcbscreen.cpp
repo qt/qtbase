@@ -698,7 +698,12 @@ QDpi QXcbScreen::logicalDpi() const
     if (forcedDpi > 0)
         return QDpi(forcedDpi, forcedDpi);
 
-    return m_virtualDesktop->dpi();
+    // Fall back to physical virtual desktop DPI, but prevent
+    // using DPI values lower than 96. This ensuers that connecting
+    // to e.g. a TV works somewhat predictabilly.
+    QDpi virtualDesktopPhysicalDPi = m_virtualDesktop->dpi();
+    return QDpi(std::max(virtualDesktopPhysicalDPi.first, 96.0),
+                std::max(virtualDesktopPhysicalDPi.second, 96.0));
 }
 
 QPlatformCursor *QXcbScreen::cursor() const
