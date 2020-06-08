@@ -376,6 +376,8 @@ static int qt_gl_resolve_extensions()
         extensions |= QOpenGLExtensions::PixelBufferObject;
     if (extensionMatcher.match("GL_ARB_texture_swizzle") || extensionMatcher.match("GL_EXT_texture_swizzle"))
         extensions |= QOpenGLExtensions::TextureSwizzle;
+    if (extensionMatcher.match("GL_OES_standard_derivatives"))
+        extensions |= QOpenGLExtensions::StandardDerivatives;
 
     if (ctx->isOpenGLES()) {
         if (format.majorVersion() >= 2)
@@ -388,7 +390,8 @@ static int qt_gl_resolve_extensions()
                 | QOpenGLExtensions::MapBufferRange
                 | QOpenGLExtensions::FramebufferBlit
                 | QOpenGLExtensions::FramebufferMultisample
-                | QOpenGLExtensions::Sized8Formats;
+                | QOpenGLExtensions::Sized8Formats
+                | QOpenGLExtensions::StandardDerivatives;
 #ifndef Q_OS_WASM
             // WebGL 2.0 specification explicitly does not support texture swizzles
             // https://www.khronos.org/registry/webgl/specs/latest/2.0/#5.19
@@ -444,6 +447,9 @@ static int qt_gl_resolve_extensions()
 
         if (format.version() >= qMakePair(1, 4) || extensionMatcher.match("GL_SGIS_generate_mipmap"))
             extensions |= QOpenGLExtensions::GenerateMipmap;
+
+        if (format.majorVersion() >= 2)
+            extensions |= QOpenGLExtensions::StandardDerivatives;
 
         if (format.majorVersion() >= 3 || extensionMatcher.match("GL_ARB_framebuffer_object")) {
             extensions |= QOpenGLExtensions::FramebufferMultisample

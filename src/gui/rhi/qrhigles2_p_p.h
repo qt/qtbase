@@ -869,7 +869,8 @@ public:
               properMapBuffer(false),
               nonBaseLevelFramebufferTexture(false),
               texelFetch(false),
-              uintAttributes(true)
+              uintAttributes(true),
+              screenSpaceDerivatives(false)
         { }
         int ctxMajor;
         int ctxMinor;
@@ -904,6 +905,7 @@ public:
         uint nonBaseLevelFramebufferTexture : 1;
         uint texelFetch : 1;
         uint uintAttributes : 1;
+        uint screenSpaceDerivatives : 1;
     } caps;
     QGles2SwapChain *currentSwapChain = nullptr;
     QVector<GLint> supportedCompressedFormats;

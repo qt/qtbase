@@ -522,6 +522,7 @@ bool QRhiGles2::create(QRhi::Flags flags)
 
     caps.texelFetch = caps.ctxMajor >= 3; // 3.0 or ES 3.0
     caps.uintAttributes = caps.ctxMajor >= 3; // 3.0 or ES 3.0
+    caps.screenSpaceDerivatives = f->hasOpenGLExtension(QOpenGLExtensions::StandardDerivatives);
 
     if (!caps.gles) {
         f->glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
@@ -872,6 +873,8 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
         return caps.nonBaseLevelFramebufferTexture;
     case QRhi::UIntAttributes:
         return caps.uintAttributes;
+    case QRhi::ScreenSpaceDerivatives:
+        return caps.screenSpaceDerivatives;
     default:
         Q_UNREACHABLE();
         return false;

@@ -1456,7 +1456,8 @@ public:
         ReadBackNonBaseMipLevel,
         TexelFetch,
         RenderToNonBaseMipLevel,
-        UIntAttributes
+        UIntAttributes,
+        ScreenSpaceDerivatives
     };
 
     enum BeginFrameFlag {

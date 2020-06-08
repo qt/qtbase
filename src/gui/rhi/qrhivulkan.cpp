@@ -4050,6 +4050,8 @@ bool QRhiVulkan::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::UIntAttributes:
         return true;
+    case QRhi::ScreenSpaceDerivatives:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;

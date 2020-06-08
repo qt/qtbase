@@ -92,6 +92,7 @@ public:
         DiscardFramebuffer      = 0x00400000,
         Sized16Formats          = 0x00800000,
         TextureSwizzle          = 0x01000000,
+        StandardDerivatives     = 0x02000000,
     };
     Q_DECLARE_FLAGS(OpenGLExtensions, OpenGLExtension)
 
