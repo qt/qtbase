@@ -359,25 +359,6 @@ public:
                 QChar fillChar = QLatin1Char(' ')) const;
     Q_REQUIRED_RESULT QString arg(QLatin1String a, int fieldWidth = 0,
                 QChar fillChar = QLatin1Char(' ')) const;
-#if QT_STRINGVIEW_LEVEL < 2
-    Q_REQUIRED_RESULT QString arg(const QString &a1, const QString &a2) const;
-    Q_REQUIRED_RESULT QString arg(const QString &a1, const QString &a2, const QString &a3) const;
-    Q_REQUIRED_RESULT QString arg(const QString &a1, const QString &a2, const QString &a3,
-                const QString &a4) const;
-    Q_REQUIRED_RESULT QString arg(const QString &a1, const QString &a2, const QString &a3,
-                const QString &a4, const QString &a5) const;
-    Q_REQUIRED_RESULT QString arg(const QString &a1, const QString &a2, const QString &a3,
-                const QString &a4, const QString &a5, const QString &a6) const;
-    Q_REQUIRED_RESULT QString arg(const QString &a1, const QString &a2, const QString &a3,
-                const QString &a4, const QString &a5, const QString &a6,
-                const QString &a7) const;
-    Q_REQUIRED_RESULT QString arg(const QString &a1, const QString &a2, const QString &a3,
-                const QString &a4, const QString &a5, const QString &a6,
-                const QString &a7, const QString &a8) const;
-    Q_REQUIRED_RESULT QString arg(const QString &a1, const QString &a2, const QString &a3,
-                const QString &a4, const QString &a5, const QString &a6,
-                const QString &a7, const QString &a8, const QString &a9) const;
-#endif
 private:
     template <typename T>
     struct is_convertible_to_view_or_qstring_helper
@@ -999,7 +980,6 @@ private:
     void reallocData(uint alloc, bool grow = false);
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     void expand(int i);
-    QString multiArg(int numArgs, const QString **args) const;
 #endif
     static int compare_helper(const QChar *data1, int length1,
                               const QChar *data2, int length2,
@@ -1145,34 +1125,6 @@ inline QString QString::arg(short a, int fieldWidth, int base, QChar fillChar) c
 { return arg(qlonglong(a), fieldWidth, base, fillChar); }
 inline QString QString::arg(ushort a, int fieldWidth, int base, QChar fillChar) const
 { return arg(qulonglong(a), fieldWidth, base, fillChar); }
-
-#if QT_STRINGVIEW_LEVEL < 2
-inline QString QString::arg(const QString &a1, const QString &a2) const
-{ return qToStringViewIgnoringNull(*this).arg(a1, a2); }
-inline QString QString::arg(const QString &a1, const QString &a2, const QString &a3) const
-{ return qToStringViewIgnoringNull(*this).arg(a1, a2, a3); }
-inline QString QString::arg(const QString &a1, const QString &a2, const QString &a3,
-                            const QString &a4) const
-{ return qToStringViewIgnoringNull(*this).arg(a1, a2, a3, a4); }
-inline QString QString::arg(const QString &a1, const QString &a2, const QString &a3,
-                            const QString &a4, const QString &a5) const
-{ return qToStringViewIgnoringNull(*this).arg(a1, a2, a3, a4, a5); }
-inline QString QString::arg(const QString &a1, const QString &a2, const QString &a3,
-                            const QString &a4, const QString &a5, const QString &a6) const
-{ return qToStringViewIgnoringNull(*this).arg(a1, a2, a3, a4, a5, a6); }
-inline QString QString::arg(const QString &a1, const QString &a2, const QString &a3,
-                            const QString &a4, const QString &a5, const QString &a6,
-                            const QString &a7) const
-{ return qToStringViewIgnoringNull(*this).arg(a1, a2, a3, a4, a5, a6, a7); }
-inline QString QString::arg(const QString &a1, const QString &a2, const QString &a3,
-                            const QString &a4, const QString &a5, const QString &a6,
-                            const QString &a7, const QString &a8) const
-{ return qToStringViewIgnoringNull(*this).arg(a1, a2, a3, a4, a5, a6, a7, a8); }
-inline QString QString::arg(const QString &a1, const QString &a2, const QString &a3,
-                            const QString &a4, const QString &a5, const QString &a6,
-                            const QString &a7, const QString &a8, const QString &a9) const
-{ return qToStringViewIgnoringNull(*this).arg(a1, a2, a3, a4, a5, a6, a7, a8, a9); }
-#endif
 
 inline QString QString::section(QChar asep, int astart, int aend, SectionFlags aflags) const
 { return section(QString(asep), astart, aend, aflags); }
