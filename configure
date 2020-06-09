@@ -135,12 +135,20 @@ if [ "$CMAKE_MAKEFILES" = "no" ]; then
 -G Ninja"
 fi
 
-for i in "$@"; do
+while [ "$#" -gt 0 ]; do
+    i="$1"
+    shift
     if [ "$PASSTHRU" = "yes" ]; then
         CMAKE_CMDLINE="$CMAKE_CMDLINE
 $i"
     else
         case $i in
+            -nomake|--nomake)
+                arg_capitalized=`echo $1 | tr a-z A-Z`
+                shift
+                CMAKE_CMDLINE="$CMAKE_CMDLINE
+-DQT_NO_MAKE_${arg_capitalized}=ON"
+                ;;
             -feature-*)
                 VAR=`echo $i | sed 's,^-feature-\(.*\),\1,'`
                 CMAKE_CMDLINE="$CMAKE_CMDLINE
