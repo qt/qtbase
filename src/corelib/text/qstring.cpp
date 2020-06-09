@@ -9098,6 +9098,16 @@ QString &QString::setRawData(const QChar *unicode, int size)
     \sa latin1()
 */
 
+/*!
+    \fn QLatin1String::toString() const
+    \since 6.0
+
+    Converts this Latin-1 string into a QString. Equivalent to
+    \code
+    return QString(*this);
+    \endcode
+*/
+
 /*! \fn const char *QLatin1String::latin1() const
 
     Returns the Latin-1 string stored in this object.

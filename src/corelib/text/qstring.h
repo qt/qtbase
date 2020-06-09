@@ -93,6 +93,8 @@ public:
     Q_DECL_CONSTEXPR inline explicit QLatin1String(const char *s, int sz) noexcept : m_size(sz), m_data(s) {}
     inline explicit QLatin1String(const QByteArray &s) noexcept : m_size(int(qstrnlen(s.constData(), s.size()))), m_data(s.constData()) {}
 
+    inline QString toString() const;
+
     Q_DECL_CONSTEXPR const char *latin1() const noexcept { return m_data; }
     Q_DECL_CONSTEXPR int size() const noexcept { return m_size; }
     Q_DECL_CONSTEXPR const char *data() const noexcept { return m_data; }
@@ -1056,6 +1058,12 @@ private:
 public:
     inline DataPointer &data_ptr() { return d; }
 };
+
+//
+// QLatin1String inline members that require QString:
+//
+
+QString QLatin1String::toString() const { return *this; }
 
 //
 // QStringView inline members that require QString:
