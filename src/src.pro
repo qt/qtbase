@@ -137,10 +137,6 @@ src_openglwidgets.subdir = $$PWD/openglwidgets
 src_openglwidgets.target = sub-openglwidgets
 src_openglwidgets.depends = src_opengl src_widgets
 
-src_openglextensions.subdir = $$PWD/openglextensions
-src_openglextensions.target = sub-openglextensions
-src_openglextensions.depends = src_gui
-
 src_printsupport.subdir = $$PWD/printsupport
 src_printsupport.target = sub-printsupport
 src_printsupport.depends = src_corelib src_gui src_widgets src_tools_uic
@@ -216,7 +212,6 @@ qtConfig(gui) {
     }
     SUBDIRS += src_gui src_platformsupport src_platformheaders
     qtConfig(opengl) {
-        SUBDIRS += src_openglextensions
         SUBDIRS += src_opengl
         src_plugins.depends += src_opengl
         src_platformsupport.depends += src_opengl

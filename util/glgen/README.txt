@@ -142,10 +142,6 @@ QOpenGLExtension_<name-of-extension>
 The usage pattern for OpenGL extensions is to just use a small
 number of extensions out of the large number of those available.
 
-Rather than bloat QtGui with all possible extensions, a new static library will be
-introduced to hold these classes. That way users will only link in the code for
-the extensions that they actually use.
-
-The source and header file for these classes should be moved to
-
-$QTBASE/src/openglextensions/
+Prior to Qt 6, these classes were provided as the openglextensions
+module. Because of the new graphics architecture in Qt 6, that module
+has been removed.

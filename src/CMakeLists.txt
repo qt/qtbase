@@ -45,7 +45,6 @@ if(QT_FEATURE_gui)
 
     if(QT_FEATURE_opengl)
         add_subdirectory(opengl)
-        add_subdirectory(openglextensions)
     endif()
 
     if(QT_FEATURE_widgets)

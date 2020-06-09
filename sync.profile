@@ -27,7 +27,6 @@
     "QtLinuxOfonoSupport" => "$basedir/src/platformsupport/linuxofono",
     "QtPlatformHeaders" => "$basedir/src/platformheaders",
     "QtZlib" => "!>$basedir/src/corelib;$basedir/src/3rdparty/zlib",
-    "QtOpenGLExtensions" => "$basedir/src/openglextensions",
     "QtEglFSDeviceIntegration" => "$basedir/src/plugins/platforms/eglfs",
     "QtMockPlugins1" => "$basedir/tests/auto/cmake/mockplugins/mockplugins1",
     "QtMockPlugins2" => "$basedir/tests/auto/cmake/mockplugins/mockplugins2",
