@@ -156,7 +156,25 @@ LibResolv::LibResolv()
         }
     }
 }
-Q_GLOBAL_STATIC(LibResolv, libResolv)
+
+LibResolv* libResolv()
+{
+    static LibResolv* theLibResolv = nullptr;
+    static QBasicMutex theMutex;
+
+    const QMutexLocker locker(&theMutex);
+    if (theLibResolv == nullptr) {
+        theLibResolv = new LibResolv();
+        Q_ASSERT(QCoreApplication::instance());
+        QObject::connect(QCoreApplication::instance(), &QCoreApplication::destroyed, [] {
+            const QMutexLocker locker(&theMutex);
+            delete theLibResolv;
+            theLibResolv = nullptr;
+        });
+    }
+
+    return theLibResolv;
+}
 
 static void resolveLibrary(LibResolvFeature f)
 {
