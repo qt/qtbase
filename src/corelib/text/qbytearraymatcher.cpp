@@ -43,26 +43,26 @@
 
 QT_BEGIN_NAMESPACE
 
-static inline void bm_init_skiptable(const uchar *cc, int len, uchar *skiptable)
+static inline void bm_init_skiptable(const uchar *cc, qsizetype len, uchar *skiptable)
 {
-    int l = qMin(len, 255);
+    int l = int(qMin(len, qsizetype(255)));
     memset(skiptable, l, 256*sizeof(uchar));
     cc += len - l;
     while (l--)
         skiptable[*cc++] = l;
 }
 
-static inline int bm_find(const uchar *cc, int l, int index, const uchar *puc, uint pl,
-                          const uchar *skiptable)
+static inline qsizetype bm_find(const uchar *cc, qsizetype l, qsizetype index, const uchar *puc,
+                                qsizetype pl, const uchar *skiptable)
 {
     if (pl == 0)
         return index > l ? -1 : index;
-    const uint pl_minus_one = pl - 1;
+    const qsizetype pl_minus_one = pl - 1;
 
     const uchar *current = cc + index + pl_minus_one;
     const uchar *end = cc + l;
     while (current < end) {
-        uint skip = skiptable[*current];
+        qsizetype skip = skiptable[*current];
         if (!skip) {
             // possible match
             while (skip < pl) {
@@ -229,12 +229,12 @@ int QByteArrayMatcher::indexIn(const char *str, int len, int from) const
 */
 
 
-static int findChar(const char *str, int len, char ch, int from)
+static qsizetype findChar(const char *str, qsizetype len, char ch, qsizetype from)
 {
     const uchar *s = (const uchar *)str;
     uchar c = (uchar)ch;
     if (from < 0)
-        from = qMax(from + len, 0);
+        from = qMax(from + len, qsizetype(0));
     if (from < len) {
         const uchar *n = s + from - 1;
         const uchar *e = s + len;
@@ -248,9 +248,9 @@ static int findChar(const char *str, int len, char ch, int from)
 /*!
     \internal
  */
-static int qFindByteArrayBoyerMoore(
-    const char *haystack, int haystackLen, int haystackOffset,
-    const char *needle, int needleLen)
+static qsizetype qFindByteArrayBoyerMoore(
+    const char *haystack, qsizetype haystackLen, qsizetype haystackOffset,
+    const char *needle, qsizetype needleLen)
 {
     uchar skiptable[256];
     bm_init_skiptable((const uchar *)needle, needleLen, skiptable);
@@ -261,22 +261,22 @@ static int qFindByteArrayBoyerMoore(
 }
 
 #define REHASH(a) \
-    if (sl_minus_1 < sizeof(uint) * CHAR_BIT) \
-        hashHaystack -= uint(a) << sl_minus_1; \
+    if (sl_minus_1 < sizeof(std::size_t) * CHAR_BIT) \
+        hashHaystack -= std::size_t(a) << sl_minus_1; \
     hashHaystack <<= 1
 
 /*!
     \internal
  */
-int qFindByteArray(
-    const char *haystack0, int haystackLen, int from,
-    const char *needle, int needleLen)
+qsizetype qFindByteArray(
+    const char *haystack0, qsizetype haystackLen, qsizetype from,
+    const char *needle, qsizetype needleLen)
 {
-    const int l = haystackLen;
-    const int sl = needleLen;
+    const auto l = haystackLen;
+    const auto sl = needleLen;
     if (from < 0)
         from += l;
-    if (uint(sl + from) > (uint)l)
+    if (std::size_t(sl + from) > std::size_t(l))
         return -1;
     if (!sl)
         return from;
@@ -302,9 +302,9 @@ int qFindByteArray(
     */
     const char *haystack = haystack0 + from;
     const char *end = haystack0 + (l - sl);
-    const uint sl_minus_1 = sl - 1;
-    uint hashNeedle = 0, hashHaystack = 0;
-    int idx;
+    const auto sl_minus_1 = std::size_t(sl - 1);
+    std::size_t hashNeedle = 0, hashHaystack = 0;
+    qsizetype idx;
     for (idx = 0; idx < sl; ++idx) {
         hashNeedle = ((hashNeedle<<1) + needle[idx]);
         hashHaystack = ((hashHaystack<<1) + haystack[idx]);

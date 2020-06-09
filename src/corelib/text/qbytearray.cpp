@@ -78,9 +78,9 @@ static constexpr inline uchar asciiLower(uchar c)
     return c >= 'A' && c <= 'Z' ? c | 0x20 : c;
 }
 
-int qFindByteArray(
-    const char *haystack0, int haystackLen, int from,
-    const char *needle0, int needleLen);
+qsizetype qFindByteArray(
+        const char *haystack0, qsizetype haystackLen, qsizetype from,
+        const char *needle0, qsizetype needleLen);
 
 /*****************************************************************************
   Safe and portable C string functions; extensions to standard string.h
@@ -2463,7 +2463,7 @@ QByteArray QByteArray::repeated(int times) const
 }
 
 #define REHASH(a) \
-    if (ol_minus_1 < sizeof(uint) * CHAR_BIT) \
+    if (ol_minus_1 < sizeof(std::size_t) * CHAR_BIT) \
         hashHaystack -= (a) << ol_minus_1; \
     hashHaystack <<= 1
 
@@ -2490,7 +2490,7 @@ int QByteArray::indexOf(const QByteArray &ba, int from) const
     if (from > l || ol + from > l)
         return -1;
 
-    return qFindByteArray(data(), size(), from, ba.data(), ol);
+    return static_cast<int>(qFindByteArray(data(), size(), from, ba.data(), ol));
 }
 
 /*! \fn int QByteArray::indexOf(const QString &str, int from) const
@@ -2527,7 +2527,7 @@ int QByteArray::indexOf(const char *c, int from) const
     if (ol == 0)
         return from;
 
-    return qFindByteArray(data(), size(), from, c, ol);
+    return static_cast<int>(qFindByteArray(data(), size(), from, c, ol));
 }
 
 /*!
@@ -2557,9 +2557,10 @@ int QByteArray::indexOf(char ch, int from) const
     return -1;
 }
 
-static int lastIndexOfHelper(const char *haystack, int l, const char *needle, int ol, int from)
+static qsizetype lastIndexOfHelper(const char *haystack, qsizetype l, const char *needle,
+                                   qsizetype ol, qsizetype from)
 {
-    int delta = l - ol;
+    auto delta = l - ol;
     if (from < 0)
         from = delta;
     if (from < 0 || from > l)
@@ -2569,11 +2570,11 @@ static int lastIndexOfHelper(const char *haystack, int l, const char *needle, in
 
     const char *end = haystack;
     haystack += from;
-    const uint ol_minus_1 = ol - 1;
+    const auto ol_minus_1 = std::size_t(ol - 1);
     const char *n = needle + ol_minus_1;
     const char *h = haystack + ol_minus_1;
-    uint hashNeedle = 0, hashHaystack = 0;
-    int idx;
+    std::size_t hashNeedle = 0, hashHaystack = 0;
+    qsizetype idx;
     for (idx = 0; idx < ol; ++idx) {
         hashNeedle = ((hashNeedle<<1) + *(n-idx));
         hashHaystack = ((hashHaystack<<1) + *(h-idx));
