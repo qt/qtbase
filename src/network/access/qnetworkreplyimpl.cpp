@@ -80,7 +80,6 @@ void QNetworkReplyImplPrivate::_q_startOperation()
     // note: if that method is called directly, it cannot happen that the backend is 0,
     // because we just checked via a qobject_cast that we got a http backend (see
     // QNetworkReplyImplPrivate::setup())
-    qDebug() << "backend:" << backend; // @temp
     if (!backend) {
         error(QNetworkReplyImpl::ProtocolUnknownError,
               QCoreApplication::translate("QNetworkReply", "Protocol \"%1\" is unknown").arg(url.scheme())); // not really true!;
