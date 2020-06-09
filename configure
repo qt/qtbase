@@ -161,6 +161,16 @@ $i"
                 CMAKE_CMDLINE="$CMAKE_CMDLINE
 -DFEATURE_${VAR}=OFF"
                 ;;
+            -system-*|--system-*)
+                VAR=`echo $i | sed -E 's/-?-system-(.*)/\1/'`
+                CMAKE_CMDLINE="$CMAKE_CMDLINE
+-DFEATURE_system_${VAR}=ON"
+                ;;
+            -qt-*|--qt-*)
+                VAR=`echo $i | sed -E 's/-?-qt-(.*)/\1/'`
+                CMAKE_CMDLINE="$CMAKE_CMDLINE
+-DFEATURE_system_${VAR}=OFF"
+                ;;
             --sanitize=*)
                 VAR=`echo $i | sed 's,^--sanitize=\(.*\),\1,'`
                 CMAKE_CMDLINE="$CMAKE_CMDLINE
