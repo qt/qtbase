@@ -606,8 +606,11 @@ void QVncClientCursor::changeCursor(QCursor *widgetCursor, QWindow *window)
 
 void QVncClientCursor::addClient(QVncClient *client)
 {
-    if (!clients.contains(client))
+    if (!clients.contains(client)) {
         clients.append(client);
+        // Force a cursor update when the client connects.
+        client->setDirtyCursor();
+    }
 }
 
 uint QVncClientCursor::removeClient(QVncClient *client)
