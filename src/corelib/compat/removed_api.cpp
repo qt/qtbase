@@ -59,6 +59,31 @@ QByteArray QCryptographicHash::hash(const QByteArray &data, Algorithm method)
 
 #include "quuid.h"
 
+QUuid::QUuid(const QString &text)
+    : QUuid{qToAnyStringViewIgnoringNull(text)}
+{
+}
+
+QUuid::QUuid(const char *text)
+    : QUuid{QAnyStringView(text)}
+{
+}
+
+QUuid::QUuid(const QByteArray &text)
+    : QUuid{qToAnyStringViewIgnoringNull(text)}
+{
+}
+
+QUuid QUuid::fromString(QStringView string) noexcept
+{
+    return fromString(QAnyStringView{string});
+}
+
+QUuid QUuid::fromString(QLatin1String string) noexcept
+{
+    return fromString(QAnyStringView{string});
+}
+
 QUuid QUuid::fromRfc4122(const QByteArray &bytes)
 {
     return fromRfc4122(qToByteArrayViewIgnoringNull(bytes));

@@ -97,12 +97,17 @@ public:
                            uchar b4, uchar b5, uchar b6, uchar b7, uchar b8) noexcept
         : data1(l), data2(w1), data3(w2), data4{b1, b2, b3, b4, b5, b6, b7, b8} {}
 
+    explicit QUuid(QAnyStringView string) noexcept
+        : QUuid{fromString(string)} {}
+    static QUuid fromString(QAnyStringView string) noexcept;
+#if QT_REMOVED_SINCE(6, 3)
     explicit QUuid(const QString &);
     static QUuid fromString(QStringView string) noexcept;
     static QUuid fromString(QLatin1String string) noexcept;
     explicit QUuid(const char *);
-    QString toString(StringFormat mode = WithBraces) const;
     explicit QUuid(const QByteArray &);
+#endif
+    QString toString(StringFormat mode = WithBraces) const;
     QByteArray toByteArray(StringFormat mode = WithBraces) const;
     QByteArray toRfc4122() const;
 #if QT_REMOVED_SINCE(6, 3)

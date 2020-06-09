@@ -193,6 +193,11 @@ void tst_QUuid::fromString()
     const auto longerInputL1 = inputL1 + '5'; // the '5' makes the premature end check incorrectly succeed
     const auto inputL1S = QLatin1String(longerInputL1.data(), inputL1.size());
     QCOMPARE(expected, QUuid::fromString(inputL1S));
+
+    // for QUtf8StringView, too:
+    const auto longerInputU8 = inputU8 + '5'; // the '5' makes the premature end check incorrectly succeed
+    const auto inputU8S = QUtf8StringView(longerInputU8.data(), inputU8.size());
+    QCOMPARE(expected, QUuid::fromString(inputU8S));
 }
 
 void tst_QUuid::toByteArray()

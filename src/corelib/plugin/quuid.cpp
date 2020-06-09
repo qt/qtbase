@@ -365,6 +365,8 @@ static QUuid createFromName(const QUuid &ns, const QByteArray &baseData, QCrypto
 */
 
 /*!
+    \fn QUuid::QUuid(QAnyStringView text)
+
   Creates a QUuid object from the string \a text, which must be
   formatted as five hex fields separated by '-', e.g.,
   "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}" where each 'x' is a hex
@@ -373,14 +375,15 @@ static QUuid createFromName(const QUuid &ns, const QByteArray &baseData, QCrypto
   toString() for an explanation of how the five hex fields map to the
   public data members in QUuid.
 
+    \note In Qt versions prior to 6.3, this constructor was an overload
+    set consisting of QString, QByteArray and \c{const char*}
+    instead of one constructor taking QAnyStringView.
+
     \sa toString(), QUuid()
 */
-QUuid::QUuid(const QString &text)
-    : QUuid(fromString(text))
-{
-}
 
 /*!
+    \fn static QUuid::fromString(QAnyStringView text)
     \since 5.10
 
     Creates a QUuid object from the string \a text, which must be
@@ -391,12 +394,16 @@ QUuid::QUuid(const QString &text)
     toString() for an explanation of how the five hex fields map to the
     public data members in QUuid.
 
+    \note In Qt versions prior to 6.3, this function was an overload
+    set consisting of QStringView and QLatin1String instead of
+    one function taking QAnyStringView.
+
     \sa toString(), QUuid()
 */
-QUuid QUuid::fromString(QStringView text) noexcept
+static QUuid uuidFromString(QStringView text) noexcept
 {
     if (text.size() > MaxStringUuidLength)
-        text = text.left(MaxStringUuidLength); // text.truncate(MaxStringUuidLength);
+        text.truncate(MaxStringUuidLength);
 
     char latin1[MaxStringUuidLength + 1];
     char *dst = latin1;
@@ -409,21 +416,7 @@ QUuid QUuid::fromString(QStringView text) noexcept
     return _q_uuidFromHex(latin1);
 }
 
-/*!
-    \since 5.10
-    \overload
-
-    Creates a QUuid object from the string \a text, which must be
-    formatted as five hex fields separated by '-', e.g.,
-    "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}" where each 'x' is a hex
-    digit. The curly braces shown here are optional, but it is normal to
-    include them. If the conversion fails, a null UUID is returned.  See
-    toString() for an explanation of how the five hex fields map to the
-    public data members in QUuid.
-
-    \sa toString(), QUuid()
-*/
-QUuid QUuid::fromString(QLatin1String text) noexcept
+static QUuid uuidFromString(QLatin1String text) noexcept
 {
     if (Q_UNLIKELY(text.size() < MaxStringUuidLength - 2
                    || (text.front() == QLatin1Char('{') && text.size() < MaxStringUuidLength - 1))) {
@@ -434,30 +427,16 @@ QUuid QUuid::fromString(QLatin1String text) noexcept
     return _q_uuidFromHex(text.data());
 }
 
-/*!
-    \internal
-*/
-QUuid::QUuid(const char *text)
-    : QUuid(_q_uuidFromHex(text))
+Q_ALWAYS_INLINE
+// can treat UTF-8 the same as Latin-1:
+static QUuid uuidFromString(QUtf8StringView text) noexcept
 {
+    return uuidFromString(QLatin1String(text.data(), text.size()));
 }
 
-/*!
-  Creates a QUuid object from the QByteArray \a text, which must be
-  formatted as five hex fields separated by '-', e.g.,
-  "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}" where each 'x' is a hex
-  digit. The curly braces shown here are optional, but it is normal to
-  include them. If the conversion fails, a null UUID is created.  See
-  toByteArray() for an explanation of how the five hex fields map to the
-  public data members in QUuid.
-
-    \since 4.8
-
-    \sa toByteArray(), QUuid()
-*/
-QUuid::QUuid(const QByteArray &text)
-    : QUuid(fromString(QLatin1String(text.data(), text.size())))
+QUuid QUuid::fromString(QAnyStringView text) noexcept
 {
+    return text.visit([] (auto text) { return uuidFromString(text); });
 }
 
 /*!
