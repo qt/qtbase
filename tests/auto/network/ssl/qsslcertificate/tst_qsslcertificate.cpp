@@ -106,6 +106,8 @@ private slots:
     void version_data();
     void version();
     void pkcs12();
+    void invalidDateTime_data();
+    void invalidDateTime();
 
     // helper for verbose test failure messages
     QString toString(const QList<QSslError>&);
@@ -1368,6 +1370,45 @@ void tst_QSslCertificate::pkcs12()
     ok = QSslCertificate::importPkcs12(&nocert, &key, &cert, &caCerts);
     QVERIFY(!ok);
     nocert.close();
+}
+
+void tst_QSslCertificate::invalidDateTime_data()
+{
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<bool>("effectiveDateIsValid");
+    QTest::addColumn<bool>("expiryDateIsValid");
+
+    QTest::addRow("invalid-begin-end") << testDataDir + "more-certificates/malformed-begin-end-dates.pem"
+                                       << false
+                                       << false;
+}
+
+void tst_QSslCertificate::invalidDateTime()
+{
+    QFETCH(QString, path);
+    QFETCH(bool, effectiveDateIsValid);
+    QFETCH(bool, expiryDateIsValid);
+
+    QList<QSslCertificate> certList = QSslCertificate::fromPath(path);
+
+    // QTBUG-84676: on OpenSSL we get a valid certificate with null dates,
+    // on other backends we don't get a certificate at all.
+    switch (certList.size()) {
+    case 0:
+        break;
+
+    case 1: {
+        const QSslCertificate &cert = certList.at(0);
+        QVERIFY(!cert.isNull());
+        QCOMPARE(cert.effectiveDate().isValid(), effectiveDateIsValid);
+        QCOMPARE(cert.expiryDate().isValid(), expiryDateIsValid);
+        break;
+    }
+
+    default:
+        QFAIL("Only one certificate should have been loaded");
+        break;
+    }
 }
 
 #endif // QT_NO_SSL
