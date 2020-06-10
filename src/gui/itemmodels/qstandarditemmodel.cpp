@@ -442,6 +442,7 @@ void QStandardItemModelPrivate::init()
     Q_Q(QStandardItemModel);
     QObject::connect(q, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
                      q, SLOT(_q_emitItemChanged(QModelIndex,QModelIndex)));
+    roleNames = QAbstractItemModelPrivate::defaultRoleNames();
 }
 
 /*!

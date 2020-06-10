@@ -31,6 +31,7 @@
 
 #include <QStandardItemModel>
 #include <QTreeView>
+#include <private/qabstractitemmodel_p.h>
 #include <private/qtreeview_p.h>
 
 class tst_QStandardItemModel : public QObject
@@ -126,6 +127,7 @@ private slots:
 #endif
     void removeRowsAndColumns();
 
+    void defaultItemRoles();
     void itemRoleNames();
     void getMimeDataWithInvalidModelIndex();
     void supportedDragDropActions();
@@ -1596,6 +1598,12 @@ void tst_QStandardItemModel::removeRowsAndColumns()
         QCOMPARE(col_taken[r]->text() , row_list[r] + QLatin1Char('x') + col_list[10]);
     col_list.remove(10);
     VERIFY_MODEL
+}
+
+void tst_QStandardItemModel::defaultItemRoles()
+{
+    QStandardItemModel model;
+    QCOMPARE(model.roleNames(), QAbstractItemModelPrivate::defaultRoleNames());
 }
 
 void tst_QStandardItemModel::itemRoleNames()
