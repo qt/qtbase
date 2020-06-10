@@ -2120,8 +2120,11 @@ void QNetworkAccessManagerPrivate::_q_onlineStateChanged(bool isOnline)
     if (statusMonitor.isEnabled()) {
         auto previous = networkAccessible;
         networkAccessible = isOnline ? QNetworkAccessManager::Accessible : QNetworkAccessManager::NotAccessible;
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
         if (previous != networkAccessible)
             emit q->networkAccessibleChanged(networkAccessible);
+QT_WARNING_POP
         return;
     }
 
