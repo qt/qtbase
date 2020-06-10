@@ -30,6 +30,7 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qthread.h>
 #include <QtCore/qelapsedtimer.h>
+#include <QtCore/qrandom.h>
 #include <QtNetwork/qhostaddress.h>
 #include <QtNetwork/qhostinfo.h>
 #include <QtNetwork/qnetworkproxy.h>
@@ -2627,13 +2628,11 @@ void tst_QSslSocket::writeBigChunk()
     socket->connectToHostEncrypted(QtNetworkSettings::httpServerName(), 443);
 
     QByteArray data;
-    data.resize(1024*1024*10); // 10 MB
-    // init with garbage. needed so ssl cannot compress it in an efficient way.
-    // ### Qt 6: update to a random engine
-    for (size_t i = 0; i < data.size() / sizeof(int); i++) {
-        int r = qrand();
-        data.data()[i*sizeof(int)] = r;
-    }
+    // Originally, the test had this: '1024*1024*10; // 10 MB'
+    data.resize(1024 * 1024 * 10);
+    // Init with garbage. Needed so TLS cannot compress it in an efficient way.
+    QRandomGenerator::global()->fillRange(reinterpret_cast<quint32 *>(data.data()),
+                                          data.size() / int(sizeof(quint32)));
 
     if (!socket->waitForEncrypted(10000))
         QSKIP("Skipping flaky test - See QTBUG-29941");
