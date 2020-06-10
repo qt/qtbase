@@ -65,7 +65,7 @@ class ClipWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    ClipWindow(QWidget *parent = 0);
+    explicit ClipWindow(QWidget *parent = nullptr);
 
 public slots:
     void updateClipboard();

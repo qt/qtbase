@@ -66,7 +66,7 @@ class DragWidget : public QFrame
     Q_OBJECT
 
 public:
-    DragWidget(QWidget *parent);
+    explicit DragWidget(QWidget *parent = nullptr);
     void setData(const QString &mimetype, const QByteArray &newData);
 
 signals:

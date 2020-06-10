@@ -68,7 +68,7 @@ void mergeFormat(QTextEdit *edit)
 
 int main(int argc, char *argv[])
 {
-    QWidget *parent = 0;
+    QWidget *parent = nullptr;
     QString aStringContainingHTMLtext("<h1>Scribe Overview</h1>");
 
     QApplication app(argc, argv);
