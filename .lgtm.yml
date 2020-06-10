@@ -1,0 +1,23 @@
+extraction:
+  cpp:
+    prepare:
+      packages:
+        - libgl-dev
+        - libglu-dev
+        - libpcre2-dev
+        - libz-dev
+        - libfreetype6-dev
+        - libpng-dev
+        - libjpeg-dev
+        - libsqlite3-dev
+    after_prepare:
+      - mkdir $HOME/cmake-3.17 \
+          \ && wget -qO- "https://cmake.org/files/v3.17/cmake-3.17.3-Linux-x86_64.tar.gz" \
+            \ | tar -xzf - --strip-components=1 -C $HOME/cmake-3.17
+      - export PATH=$HOME/cmake-3.17/bin:$PATH
+
+    configure:
+      command: "./configure -cmake -opensource -confirm-license -debug -no-optimize-debug \
+        \ -nomake tests -nomake examples -no-harfbuzz -no-iconv -system-pcre -system-zlib \
+        \ -system-freetype -system-libpng -system-libjpeg -system-sqlite -- -DFEATURE_system_sqlite=ON \
+        \ -DQT_NO_MAKE_TESTS=ON -DQT_NO_MAKE_EXAMPLES=ON"
