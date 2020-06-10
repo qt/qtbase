@@ -791,6 +791,20 @@ qt_extend_target(Gui CONDITION WASM
         platform/wasm/qwasmlocalfileaccess.cpp platform/wasm/qwasmlocalfileaccess_p.h
 )
 
+qt_extend_target(Gui CONDITION UNIX
+    SOURCES
+        platform/unix/qgenericunixeventdispatcher.cpp platform/unix/qgenericunixeventdispatcher_p.h
+        platform/unix/qunixeventdispatcher.cpp
+        platform/unix/qunixeventdispatcher_qpa_p.h
+)
+
+qt_extend_target(Gui CONDITION QT_FEATURE_glib AND UNIX
+    SOURCES
+        platform/unix/qeventdispatcher_glib.cpp platform/unix/qeventdispatcher_glib_p.h
+    LIBRARIES
+        GLIB2::GLIB2
+)
+
 qt_extend_target(Gui CONDITION IOS OR MACOS
     SOURCES
         rhi/qrhimetal.mm rhi/qrhimetal_p.h

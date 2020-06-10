@@ -45,7 +45,7 @@
 #include "qdirectfbwindow.h"
 
 #include <QtFontDatabaseSupport/private/qgenericunixfontdatabase_p.h>
-#include <QtEventDispatcherSupport/private/qgenericunixeventdispatcher_p.h>
+#include <QtGui/private/qgenericunixeventdispatcher_p.h>
 #include <QtServiceSupport/private/qgenericunixservices_p.h>
 
 #include <QtGui/private/qpixmap_blitter_p.h>

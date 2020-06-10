@@ -2,7 +2,7 @@ TARGET = qminimalegl
 
 QT += \
     core-private gui-private \
-    eventdispatcher_support-private fontdatabase_support-private egl_support-private
+    fontdatabase_support-private egl_support-private
 
 #DEFINES += QEGL_EXTRA_DEBUG
 

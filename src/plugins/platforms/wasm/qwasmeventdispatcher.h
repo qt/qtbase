@@ -32,7 +32,7 @@
 
 #include <QtCore/qhash.h>
 #include <QtCore/qloggingcategory.h>
-#include <QtEventDispatcherSupport/private/qunixeventdispatcher_qpa_p.h>
+#include <QtGui/private/qunixeventdispatcher_qpa_p.h>
 
 QT_BEGIN_NAMESPACE
 

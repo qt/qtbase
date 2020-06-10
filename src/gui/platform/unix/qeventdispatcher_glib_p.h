@@ -37,39 +37,52 @@
 **
 ****************************************************************************/
 
-#ifndef QUNIXEVENTDISPATCHER_QPA_H
-#define QUNIXEVENTDISPATCHER_QPA_H
+#ifndef QEVENTDISPATCHER_GLIB_QPA_P_H
+#define QEVENTDISPATCHER_GLIB_QPA_P_H
 
 //
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
+// This file is not part of the Qt API. It exists purely as an
+// implementation detail. This header file may change from version to
 // version without notice, or even be removed.
 //
 // We mean it.
 //
 
-#include <QtCore/qglobal.h>
-#include <QtCore/private/qeventdispatcher_unix_p.h>
+#include <QtCore/private/qeventdispatcher_glib_p.h>
+#include <QtGui/qtguiglobal.h>
+
+typedef struct _GMainContext GMainContext;
 
 QT_BEGIN_NAMESPACE
+class QPAEventDispatcherGlibPrivate;
 
-class QUnixEventDispatcherQPA : public QEventDispatcherUNIX
+class Q_GUI_EXPORT QPAEventDispatcherGlib : public QEventDispatcherGlib
 {
     Q_OBJECT
+    Q_DECLARE_PRIVATE(QPAEventDispatcherGlib)
 
 public:
-    explicit QUnixEventDispatcherQPA(QObject *parent = nullptr);
-    ~QUnixEventDispatcherQPA();
+    explicit QPAEventDispatcherGlib(QObject *parent = nullptr);
+    ~QPAEventDispatcherGlib();
 
     bool processEvents(QEventLoop::ProcessEventsFlags flags) override;
-    bool hasPendingEvents() override;
-
-    void flush() override;
+    QEventLoop::ProcessEventsFlags m_flags;
 };
+
+struct GUserEventSource;
+
+class QPAEventDispatcherGlibPrivate : public QEventDispatcherGlibPrivate
+{
+    Q_DECLARE_PUBLIC(QPAEventDispatcherGlib)
+public:
+    QPAEventDispatcherGlibPrivate(GMainContext *context = nullptr);
+    GUserEventSource *userEventSource;
+};
+
 
 QT_END_NAMESPACE
 
-#endif // QUNIXEVENTDISPATCHER_QPA_H
+#endif // QEVENTDISPATCHER_GLIB_QPA_P_H

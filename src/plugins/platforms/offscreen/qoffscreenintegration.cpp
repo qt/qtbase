@@ -42,7 +42,7 @@
 #include "qoffscreencommon.h"
 
 #if defined(Q_OS_UNIX)
-#include <QtEventDispatcherSupport/private/qgenericunixeventdispatcher_p.h>
+#include <QtGui/private/qgenericunixeventdispatcher_p.h>
 #if defined(Q_OS_MAC)
 #include <qpa/qplatformfontdatabase.h>
 #include <QtGui/private/qcoretextfontdatabase_p.h>

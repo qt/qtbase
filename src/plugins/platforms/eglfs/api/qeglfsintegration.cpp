@@ -70,7 +70,7 @@
 #include <QtFontDatabaseSupport/private/qgenericunixfontdatabase_p.h>
 #include <QtServiceSupport/private/qgenericunixservices_p.h>
 #include <QtThemeSupport/private/qgenericunixthemes_p.h>
-#include <QtEventDispatcherSupport/private/qgenericunixeventdispatcher_p.h>
+#include <QtGui/private/qgenericunixeventdispatcher_p.h>
 #include <QtFbSupport/private/qfbvthandler_p.h>
 #ifndef QT_NO_OPENGL
 # include <QtOpenGL/private/qopenglcompositorbackingstore_p.h>

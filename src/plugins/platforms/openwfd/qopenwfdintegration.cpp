@@ -52,7 +52,7 @@
 #include <QtGui/QScreen>
 #include <qpa/qwindowsysteminterface.h>
 
-#include <QtEventDispatcherSupport/private/qgenericunixeventdispatcher_p.h>
+#include <QtGui/private/qgenericunixeventdispatcher_p.h>
 #include <QtFontDatabaseSupport/private/qgenericunixfontdatabase_p.h>
 
 #include <stdio.h>

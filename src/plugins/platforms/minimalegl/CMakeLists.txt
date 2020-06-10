@@ -19,7 +19,6 @@ qt_internal_add_plugin(QMinimalEglIntegrationPlugin
         Qt::Core
         Qt::CorePrivate
         Qt::EglSupportPrivate
-        Qt::EventDispatcherSupportPrivate
         Qt::FontDatabaseSupportPrivate
         Qt::Gui
         Qt::GuiPrivate

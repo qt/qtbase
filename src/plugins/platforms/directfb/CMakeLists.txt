@@ -26,7 +26,6 @@ qt_internal_add_plugin(QDirectFbIntegrationPlugin
         PkgConfig::DirectFB
         Qt::Core
         Qt::CorePrivate
-        Qt::EventDispatcherSupportPrivate
         Qt::FontDatabaseSupportPrivate
         Qt::Gui
         Qt::GuiPrivate

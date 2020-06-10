@@ -19,7 +19,6 @@ qt_internal_add_plugin(QVncIntegrationPlugin
     PUBLIC_LIBRARIES
         Qt::Core
         Qt::CorePrivate
-        Qt::EventDispatcherSupportPrivate
         Qt::FbSupportPrivate
         Qt::FontDatabaseSupportPrivate
         Qt::Gui

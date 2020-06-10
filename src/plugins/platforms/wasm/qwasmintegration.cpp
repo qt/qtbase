@@ -45,7 +45,7 @@
 #endif
 #include "qwasmfontdatabase.h"
 #if defined(Q_OS_UNIX)
-#include <QtEventDispatcherSupport/private/qgenericunixeventdispatcher_p.h>
+#include <QtGui/private/qgenericunixeventdispatcher_p.h>
 #endif
 #include <qpa/qplatformwindow.h>
 #include <QtGui/qscreen.h>

@@ -3,7 +3,6 @@ QT_FOR_CONFIG += gui-private
 
 SUBDIRS = \
     edid \
-    eventdispatchers \
     devicediscovery \
     fbconvenience
 

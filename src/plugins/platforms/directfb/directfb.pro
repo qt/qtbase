@@ -2,7 +2,7 @@ TARGET = qdirectfb
 
 QT += \
     core-private gui-private \
-    eventdispatcher_support-private service_support-private \
+    service_support-private \
     fontdatabase_support-private
 
 QMAKE_USE += directfb

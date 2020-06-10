@@ -65,7 +65,7 @@
 #endif
 
 #if !defined(Q_OS_WIN)
-#include <QtEventDispatcherSupport/private/qgenericunixeventdispatcher_p.h>
+#include <QtGui/private/qgenericunixeventdispatcher_p.h>
 #else
 #include <QtCore/private/qeventdispatcher_win_p.h>
 #endif

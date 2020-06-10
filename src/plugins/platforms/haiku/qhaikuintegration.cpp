@@ -50,7 +50,7 @@
 #include <QFileInfo>
 #include <qpa/qplatformwindow.h>
 #include <qpa/qwindowsysteminterface.h>
-#include <QtEventDispatcherSupport/private/qgenericunixeventdispatcher_p.h>
+#include <QtGui/private/qgenericunixeventdispatcher_p.h>
 
 #include <Application.h>
 

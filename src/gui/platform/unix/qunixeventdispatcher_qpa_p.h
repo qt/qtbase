@@ -37,30 +37,39 @@
 **
 ****************************************************************************/
 
+#ifndef QUNIXEVENTDISPATCHER_QPA_H
+#define QUNIXEVENTDISPATCHER_QPA_H
+
 //
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists for the convenience
-// of other Qt classes.  This header file may change from version to
+// This file is not part of the Qt API. It exists purely as an
+// implementation detail. This header file may change from version to
 // version without notice, or even be removed.
 //
 // We mean it.
 //
 
-#ifndef QGENERICUNIXEVENTDISPATCHER_P_H
-#define QGENERICUNIXEVENTDISPATCHER_P_H
-
-#include <qglobal.h>
+#include <QtGui/qtguiglobal.h>
+#include <QtCore/private/qeventdispatcher_unix_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QAbstractEventDispatcher;
-namespace QtGenericUnixDispatcher {
-QAbstractEventDispatcher* createUnixEventDispatcher();
-}
-using QtGenericUnixDispatcher::createUnixEventDispatcher;
+class Q_GUI_EXPORT QUnixEventDispatcherQPA : public QEventDispatcherUNIX
+{
+    Q_OBJECT
+
+public:
+    explicit QUnixEventDispatcherQPA(QObject *parent = nullptr);
+    ~QUnixEventDispatcherQPA();
+
+    bool processEvents(QEventLoop::ProcessEventsFlags flags) override;
+    bool hasPendingEvents() override;
+
+    void flush() override;
+};
 
 QT_END_NAMESPACE
 
-#endif // QGENERICUNIXEVENTDISPATCHER_P_H
+#endif // QUNIXEVENTDISPATCHER_QPA_H

@@ -47,7 +47,6 @@ qt_internal_add_plugin(QAndroidIntegrationPlugin
         Qt::Core
         Qt::CorePrivate
         Qt::EglSupportPrivate
-        Qt::EventDispatcherSupportPrivate
         Qt::Gui
         Qt::GuiPrivate
         android

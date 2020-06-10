@@ -2,7 +2,7 @@ TARGET = qbsdfb
 
 QT += \
     core-private gui-private \
-    service_support-private eventdispatcher_support-private \
+    service_support-private \
     fontdatabase_support-private fb_support-private
 
 qtHaveModule(input_support-private): \

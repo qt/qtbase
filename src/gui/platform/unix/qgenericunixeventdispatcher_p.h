@@ -37,51 +37,30 @@
 **
 ****************************************************************************/
 
-#ifndef QEVENTDISPATCHER_GLIB_QPA_P_H
-#define QEVENTDISPATCHER_GLIB_QPA_P_H
-
 //
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API. It exists purely as an
-// implementation detail. This header file may change from version to
+// This file is not part of the Qt API. It exists for the convenience
+// of other Qt classes. This header file may change from version to
 // version without notice, or even be removed.
 //
 // We mean it.
 //
 
-#include <QtCore/private/qeventdispatcher_glib_p.h>
+#ifndef QGENERICUNIXEVENTDISPATCHER_P_H
+#define QGENERICUNIXEVENTDISPATCHER_P_H
 
-typedef struct _GMainContext GMainContext;
+#include <QtGui/qtguiglobal.h>
 
 QT_BEGIN_NAMESPACE
-class QPAEventDispatcherGlibPrivate;
 
-class QPAEventDispatcherGlib : public QEventDispatcherGlib
-{
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QPAEventDispatcherGlib)
-
-public:
-    explicit QPAEventDispatcherGlib(QObject *parent = nullptr);
-    ~QPAEventDispatcherGlib();
-
-    bool processEvents(QEventLoop::ProcessEventsFlags flags) override;
-    QEventLoop::ProcessEventsFlags m_flags;
-};
-
-struct GUserEventSource;
-
-class QPAEventDispatcherGlibPrivate : public QEventDispatcherGlibPrivate
-{
-    Q_DECLARE_PUBLIC(QPAEventDispatcherGlib)
-public:
-    QPAEventDispatcherGlibPrivate(GMainContext *context = nullptr);
-    GUserEventSource *userEventSource;
-};
-
+class QAbstractEventDispatcher;
+namespace QtGenericUnixDispatcher {
+Q_GUI_EXPORT QAbstractEventDispatcher *createUnixEventDispatcher();
+}
+using QtGenericUnixDispatcher::createUnixEventDispatcher;
 
 QT_END_NAMESPACE
 
-#endif // QEVENTDISPATCHER_GLIB_QPA_P_H
+#endif // QGENERICUNIXEVENTDISPATCHER_P_H

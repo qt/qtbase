@@ -29,11 +29,6 @@ qt_internal_add_plugin(QMinimalIntegrationPlugin
 ## Scopes:
 #####################################################################
 
-qt_extend_target(QMinimalIntegrationPlugin CONDITION UNIX
-    PUBLIC_LIBRARIES
-        Qt::EventDispatcherSupportPrivate
-)
-
 qt_extend_target(QMinimalIntegrationPlugin CONDITION NOT APPLE
     PUBLIC_LIBRARIES
         Qt::FontDatabaseSupportPrivate
@@ -44,5 +39,5 @@ qt_extend_target(QMinimalIntegrationPlugin CONDITION QT_FEATURE_freetype
         WrapFreetype::WrapFreetype
 )
 
-#### Keys ignored in scope 5:.:.:minimal.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
+#### Keys ignored in scope 4:.:.:minimal.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
 # PLUGIN_EXTENDS = "-"
