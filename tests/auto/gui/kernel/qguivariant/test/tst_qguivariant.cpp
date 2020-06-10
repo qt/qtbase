@@ -484,7 +484,7 @@ void tst_QGuiVariant::writeToReadFromDataStream_data()
     QTest::addColumn<QVariant>("writeVariant");
     QTest::addColumn<bool>("isNull");
 
-    QTest::newRow( "bitmap_invalid" ) << QVariant::fromValue( QBitmap() ) << true;
+    QTest::newRow( "bitmap_invalid" ) << QVariant::fromValue( QBitmap() ) << false;
     QBitmap bitmap( 10, 10 );
     bitmap.fill( Qt::red );
     QTest::newRow( "bitmap_valid" ) << QVariant::fromValue( bitmap ) << false;
@@ -494,19 +494,19 @@ void tst_QGuiVariant::writeToReadFromDataStream_data()
     QTest::newRow( "cursor_valid" ) << QVariant::fromValue( QCursor( Qt::PointingHandCursor ) ) << false;
 #endif
     QTest::newRow( "font_valid" ) << QVariant::fromValue( QFont( "times", 12 ) ) << false;
-    QTest::newRow( "pixmap_invalid" ) << QVariant::fromValue( QPixmap() ) << true;
+    QTest::newRow( "pixmap_invalid" ) << QVariant::fromValue( QPixmap() ) << false;
     QPixmap pixmap( 10, 10 );
     pixmap.fill( Qt::red );
     QTest::newRow( "pixmap_valid" ) << QVariant::fromValue( pixmap ) << false;
-    QTest::newRow( "image_invalid" ) << QVariant::fromValue( QImage() ) << true;
+    QTest::newRow( "image_invalid" ) << QVariant::fromValue( QImage() ) << false;
     QTest::newRow( "keysequence_valid" ) << QVariant::fromValue( QKeySequence( Qt::CTRL + Qt::Key_A ) ) << false;
     QTest::newRow( "palette_valid" ) << QVariant::fromValue(QPalette(QColor("turquoise"))) << false;
     QTest::newRow( "pen_valid" ) << QVariant::fromValue( QPen( Qt::red ) ) << false;
-    QTest::newRow( "pointarray_invalid" ) << QVariant::fromValue( QPolygon() ) << true;
+    QTest::newRow( "pointarray_invalid" ) << QVariant::fromValue( QPolygon() ) << false;
     QTest::newRow( "pointarray_valid" ) << QVariant::fromValue( QPolygon( QRect( 10, 10, 20, 20 ) ) ) << false;
-    QTest::newRow( "region_invalid" ) << QVariant::fromValue( QRegion() ) << true;
+    QTest::newRow( "region_invalid" ) << QVariant::fromValue( QRegion() ) << false;
     QTest::newRow( "region_valid" ) << QVariant::fromValue( QRegion( 10, 10, 20, 20 ) ) << false;
-    QTest::newRow("polygonf_invalid") << QVariant::fromValue(QPolygonF()) << true;
+    QTest::newRow("polygonf_invalid") << QVariant::fromValue(QPolygonF()) << false;
     QTest::newRow("polygonf_valid") << QVariant::fromValue(QPolygonF(QRectF(10, 10, 20, 20))) << false;
 }
 

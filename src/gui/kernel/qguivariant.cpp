@@ -101,26 +101,6 @@ struct GuiTypesFilter {
     };
 };
 
-// This class is a hack that customizes access to QPolygon and QPolygonF
-template<class Filter>
-class QGuiVariantIsNull : public QVariantIsNull<Filter> {
-    typedef QVariantIsNull<Filter> Base;
-public:
-    QGuiVariantIsNull(const QVariant::Private *d)
-        : QVariantIsNull<Filter>(d)
-    {}
-    template<typename T>
-    bool delegate(const T *p) { return Base::delegate(p); }
-    bool delegate(const QPolygon*) { return v_cast<QPolygon>(Base::m_d)->isEmpty(); }
-    bool delegate(const QPolygonF*) { return v_cast<QPolygonF>(Base::m_d)->isEmpty(); }
-    bool delegate(const void *p) { return Base::delegate(p); }
-};
-static bool isNull(const QVariant::Private *d)
-{
-    QGuiVariantIsNull<GuiTypesFilter> isNull(d);
-    return QMetaTypeSwitcher::switcher<bool>(isNull, d->type().id(), nullptr);
-}
-
 static bool convert(const QVariant::Private *d, int t,
                  void *result, bool *ok)
 {
@@ -263,7 +243,6 @@ static void streamDebug(QDebug dbg, const QVariant &v)
 #endif
 
 const QVariant::Handler qt_gui_variant_handler = {
-    isNull,
     convert,
 #if !defined(QT_NO_DEBUG_STREAM)
     streamDebug

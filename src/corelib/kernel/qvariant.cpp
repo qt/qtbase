@@ -117,12 +117,6 @@ struct CoreTypesFilter {
 
 namespace { // annonymous used to hide QVariant handlers
 
-static bool isNull(const QVariant::Private *d)
-{
-    QVariantIsNull<CoreTypesFilter> isNull(d);
-    return QMetaTypeSwitcher::switcher<bool>(isNull, d->type().id());
-}
-
 /*!
   \internal
  */
@@ -1394,7 +1388,6 @@ static void streamDebug(QDebug dbg, const QVariant &v)
 #endif
 
 const QVariant::Handler qt_kernel_variant_handler = {
-    isNull,
     convert,
 #if !defined(QT_NO_DEBUG_STREAM)
     streamDebug
@@ -1403,13 +1396,11 @@ const QVariant::Handler qt_kernel_variant_handler = {
 #endif
 };
 
-static bool dummyIsNull(const QVariant::Private *d) { Q_ASSERT_X(false, "QVariant::isNull", "Trying to call isNull on an unknown type"); return d->is_null; }
 static bool dummyConvert(const QVariant::Private *, int, void *, bool *) { Q_ASSERT_X(false, "QVariant", "Trying to convert an unknown type"); return false; }
 #if !defined(QT_NO_DEBUG_STREAM)
 static void dummyStreamDebug(QDebug, const QVariant &) { Q_ASSERT_X(false, "QVariant", "Trying to convert an unknown type"); }
 #endif
 const QVariant::Handler qt_dummy_variant_handler = {
-    dummyIsNull,
     dummyConvert,
 #if !defined(QT_NO_DEBUG_STREAM)
     dummyStreamDebug
@@ -1445,7 +1436,9 @@ static void customConstruct(QVariant::Private *d, const void *copy)
         d->is_shared = true;
         d->data.shared = new (data) QVariant::PrivateShared(ptr);
     }
-    d->is_null = !copy;
+    // need to check for nullptr_t here, as this can get called by fromValue(nullptr). fromValue() uses
+    // std::addressof(value) which in this case returns the address of the nullptr object.
+    d->is_null = !copy || type == QMetaType::fromType<std::nullptr_t>();
 }
 
 static void customClear(QVariant::Private *d)
@@ -1457,17 +1450,6 @@ static void customClear(QVariant::Private *d)
         d->data.shared->~PrivateShared();
         operator delete(d->data.shared);
     }
-}
-
-static bool customIsNull(const QVariant::Private *d)
-{
-    if (d->is_null)
-        return true;
-    if (d->type().flags() & QMetaType::IsPointer) {
-        const void *d_ptr = d->is_shared ? d->data.shared->ptr : &(d->data);
-        return *static_cast<void *const *>(d_ptr) == nullptr;
-    }
-    return false;
 }
 
 static bool customConvert(const QVariant::Private *d, int t, void *result, bool *ok)
@@ -1496,7 +1478,6 @@ static void customStreamDebug(QDebug dbg, const QVariant &variant) {
 #endif
 
 const QVariant::Handler qt_custom_variant_handler = {
-    customIsNull,
     customConvert,
 #if !defined(QT_NO_DEBUG_STREAM)
     customStreamDebug
@@ -2061,7 +2042,6 @@ QVariant::QVariant(int typeId, const void *copy, uint flags)
     } else {
         create(typeId, copy);
     }
-    d.is_null = false;
 }
 
 /*!
@@ -2071,7 +2051,6 @@ QVariant::QVariant(int typeId, const void *copy, uint flags)
 QVariant::QVariant(QMetaType type, const void *copy) : d(type)
 {
     customConstruct(&d, copy);
-    d.is_null = false;
 }
 
 QVariant::QVariant(int val)
@@ -3972,25 +3951,32 @@ const void *QVariant::constData() const
 void* QVariant::data()
 {
     detach();
+    // set is_null to false, as the caller is likely to write some data into this variant
+    d.is_null = false;
     return const_cast<void *>(constData());
 }
 
 
 /*!
-    Returns \c true if this is a null variant, false otherwise. A variant is
-    considered null if it contains no initialized value, or the contained value
-    is \nullptr or is an instance of a built-in type that has an isNull
-    method, in which case the result would be the same as calling isNull on the
-    wrapped object.
+    Returns \c true if this is a null variant, false otherwise.
 
-    \warning Null variants is not a single state and two null variants may easily
-    return \c false on the == operator if they do not contain similar null values.
+    A variant is considered null if it contains no initialized value or a null pointer.
+
+    \note This behavior has been changed from Qt 5, where isNull() would also
+    return true if the variant contained an object of a builtin type with an isNull()
+    method that returned true for that object.
 
     \sa convert(int)
 */
 bool QVariant::isNull() const
 {
-    return handlerManager[d.type().id()]->isNull(&d);
+    if (d.is_null || !metaType().isValid())
+        return true;
+    if (metaType().flags() & QMetaType::IsPointer) {
+        const void *d_ptr = d.is_shared ? d.data.shared->ptr : &(d.data);
+        return *static_cast<void *const *>(d_ptr) == nullptr;
+    }
+    return false;
 }
 
 #ifndef QT_NO_DEBUG_STREAM

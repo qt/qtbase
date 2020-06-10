@@ -2265,7 +2265,7 @@ void tst_QSqlQuery::prepare_bind_exec()
         QVERIFY( q.next() );
 
         QCOMPARE( q.value( 0 ).toInt(), 6 );
-        QVERIFY( q.isNull( 1 ) );
+        QVERIFY( q.value( 1 ).toString().isEmpty() );
 
         if ( useUnicode ) {
             QVERIFY( q.next() );

@@ -469,11 +469,9 @@ class Q_CORE_EXPORT QVariant
         }
     };
  public:
-    typedef bool (*f_null)(const Private *);
     typedef bool (*f_convert)(const QVariant::Private *d, int t, void *, bool *);
     typedef void (*f_debugStream)(QDebug, const QVariant &);
     struct Handler {
-        f_null isNull;
         f_convert convert;
         f_debugStream debugStream;
     };

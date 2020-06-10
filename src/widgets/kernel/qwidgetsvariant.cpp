@@ -49,11 +49,6 @@ QT_BEGIN_NAMESPACE
 
 namespace {
 
-static bool isNull(const QVariant::Private *)
-{
-    return false;
-}
-
 static bool convert(const QVariant::Private *d, int type, void *result, bool *ok)
 {
     Q_UNUSED(d);
@@ -79,7 +74,6 @@ static void streamDebug(QDebug dbg, const QVariant &v)
 #endif
 
 static const QVariant::Handler widgets_handler = {
-    isNull,
     convert,
 #if !defined(QT_NO_DEBUG_STREAM)
     streamDebug

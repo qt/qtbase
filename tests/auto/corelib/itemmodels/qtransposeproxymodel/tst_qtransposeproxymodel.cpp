@@ -442,7 +442,8 @@ void tst_QTransposeProxyModel::insertRowBase()
     const int oldColCount = proxy.columnCount(proxy.mapFromSource(parent));
     QVERIFY(model->insertRow(1, parent));
     QCOMPARE(proxy.columnCount(proxy.mapFromSource(parent)), oldColCount + 1);
-    QVERIFY(proxy.index(0, 1, proxy.mapFromSource(parent)).data().isNull());
+    QVariant result = proxy.index(0, 1, proxy.mapFromSource(parent)).data();
+    QVERIFY(result.isNull() || (result.metaType().id() == QMetaType::QString && result.toString().isNull()));
     QCOMPARE(columnsInsertSpy.count(), 1);
     QCOMPARE(columnsAboutToBeInsertSpy.count(), 1);
     for (const auto &spyArgs : {columnsInsertSpy.takeFirst(),
@@ -540,8 +541,10 @@ void tst_QTransposeProxyModel::insertColumnProxy()
     QVERIFY(proxy.insertColumn(1, proxyParent));
     QCOMPARE(proxy.columnCount(proxyParent), oldColCount + 1);
     QCOMPARE(model->rowCount(sourceParent), oldRowCount + 1);
-    QVERIFY(proxy.index(0, 1, proxyParent).data().isNull());
-    QVERIFY(model->index(1, 0, sourceParent).data().isNull());
+    QVariant result = proxy.index(0, 1, proxyParent).data();
+    QVERIFY(result.isNull() || (result.metaType().id() == QMetaType::QString && result.toString().isNull()));
+    result = model->index(1, 0, sourceParent).data();
+    QVERIFY(result.isNull() || (result.metaType().id() == QMetaType::QString && result.toString().isNull()));
     QCOMPARE(columnsInsertSpy.count(), 1);
     QCOMPARE(columnsAboutToBeInsertSpy.count(), 1);
     QCOMPARE(rowsInsertSpy.count(), 1);
