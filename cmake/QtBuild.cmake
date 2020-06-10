@@ -2771,7 +2771,13 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
 endfunction()
 
 function(qt_finalize_module target)
-    qt_generate_prl_file(${target})
+    # Workaround to allow successful configuration of static top-level Qt builds.
+    # See QTBUG-84874.
+    if(QT_SUPERBUILD AND NOT BUILD_SHARED_LIBS)
+        # Do nothing.
+    else()
+        qt_generate_prl_file(${target})
+    endif()
     qt_generate_module_pri_file("${target}" ${ARGN})
 endfunction()
 
