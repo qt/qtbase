@@ -195,8 +195,6 @@ private slots:
     void startClientEncryption();
     void startServerEncryption();
     void addDefaultCaCertificate();
-    void addDefaultCaCertificates();
-    void addDefaultCaCertificates2();
     void defaultCaCertificates();
     void defaultCiphers();
     void resetDefaultCiphers();
@@ -546,7 +544,7 @@ void tst_QSslSocket::constructing()
     QCOMPARE(socket.proxy().type(), QNetworkProxy::DefaultProxy);
 #endif
     QCOMPARE(socket.readBufferSize(), qint64(0));
-    QCOMPARE(socket.socketDescriptor(), (qintptr)-1);
+    QCOMPARE(socket.socketDescriptor(), qintptr(-1));
     QCOMPARE(socket.socketType(), QAbstractSocket::TcpSocket);
     QVERIFY(!socket.waitForConnected(10));
     QTest::ignoreMessage(QtWarningMsg, "QSslSocket::waitForDisconnected() is not allowed in UnconnectedState");
@@ -554,23 +552,6 @@ void tst_QSslSocket::constructing()
     QCOMPARE(socket.protocol(), QSsl::SecureProtocols);
 
     QSslConfiguration savedDefault = QSslConfiguration::defaultConfiguration();
-
-    // verify that changing the default config doesn't affect this socket
-    // (on Unix, the ca certs might be empty, depending on whether we load
-    // them on demand or not, so set them explicitly)
-#if QT_DEPRECATED_SINCE(5, 5)
-    socket.setCaCertificates(QSslSocket::systemCaCertificates());
-    QSslSocket::setDefaultCaCertificates(QList<QSslCertificate>());
-    QSslSocket::setDefaultCiphers(QList<QSslCipher>());
-    QVERIFY(!socket.caCertificates().isEmpty());
-    QVERIFY(!socket.ciphers().isEmpty());
-
-    // verify the default as well:
-    QVERIFY(QSslConfiguration::defaultConfiguration().caCertificates().isEmpty());
-    QVERIFY(QSslConfiguration::defaultConfiguration().ciphers().isEmpty());
-
-    QSslConfiguration::setDefaultConfiguration(savedDefault);
-#endif
 
     auto sslConfig = socket.sslConfiguration();
     sslConfig.setCaCertificates(QSslConfiguration::systemCaCertificates());
@@ -807,21 +788,7 @@ void tst_QSslSocket::ciphers()
 {
     if (!QSslSocket::supportsSsl())
         return;
-#if QT_DEPRECATED_SINCE(5, 5)
-    {
-        QSslSocket socket;
-        QCOMPARE(socket.ciphers(), QSslSocket::defaultCiphers());
-        socket.setCiphers(QList<QSslCipher>());
-        QVERIFY(socket.ciphers().isEmpty());
-        socket.setCiphers(socket.defaultCiphers());
-        QCOMPARE(socket.ciphers(), QSslSocket::defaultCiphers());
-        socket.setCiphers(socket.defaultCiphers());
-        QCOMPARE(socket.ciphers(), QSslSocket::defaultCiphers());
 
-        // Task 164356
-        socket.setCiphers("ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH");
-    }
-#endif
     QSslSocket socket;
     QCOMPARE(socket.sslConfiguration().ciphers(), QSslConfiguration::defaultConfiguration().ciphers());
 
@@ -940,9 +907,6 @@ void tst_QSslSocket::sessionCipher()
     qDebug() << "Default Ciphers:" << QSslConfiguration::defaultConfiguration().ciphers();
     qDebug() << "Session Cipher:" << socket->sessionCipher();
 
-#if QT_DEPRECATED_SINCE(5, 5)
-    QVERIFY(QSslSocket::supportedCiphers().contains(socket->sessionCipher()));
-#endif
     QVERIFY(QSslConfiguration::supportedCiphers().contains(socket->sessionCipher()));
     socket->disconnectFromHost();
     QVERIFY(socket->waitForDisconnected());
@@ -1489,16 +1453,6 @@ void tst_QSslSocket::setCaCertificates()
     if (!QSslSocket::supportsSsl())
         return;
 
-#if QT_DEPRECATED_SINCE(5, 5)
-    {
-        QSslSocket socket;
-        QCOMPARE(socket.caCertificates(), QSslSocket::defaultCaCertificates());
-        socket.setCaCertificates(QSslCertificate::fromPath(testDataDir + "certs/qt-test-server-cacert.pem"));
-        QCOMPARE(socket.caCertificates().size(), 1);
-        socket.setCaCertificates(socket.defaultCaCertificates());
-        QCOMPARE(socket.caCertificates(), QSslSocket::defaultCaCertificates());
-    }
-#endif
     QSslSocket socket;
     QCOMPARE(socket.sslConfiguration().caCertificates(),
              QSslConfiguration::defaultConfiguration().caCertificates());
@@ -1719,24 +1673,6 @@ void tst_QSslSocket::addDefaultCaCertificate()
     if (!QSslSocket::supportsSsl())
         return;
 
-#if QT_DEPRECATED_SINCE(5, 5)
-    {
-        // Reset the global CA chain
-        QSslSocket::setDefaultCaCertificates(QSslSocket::systemCaCertificates());
-
-        QList<QSslCertificate> flukeCerts = QSslCertificate::fromPath(httpServerCertChainPath());
-        QCOMPARE(flukeCerts.size(), 1);
-        QList<QSslCertificate> globalCerts = QSslSocket::defaultCaCertificates();
-        QVERIFY(!globalCerts.contains(flukeCerts.first()));
-        QSslSocket::addDefaultCaCertificate(flukeCerts.first());
-        QCOMPARE(QSslSocket::defaultCaCertificates().size(), globalCerts.size() + 1);
-        QVERIFY(QSslSocket::defaultCaCertificates().contains(flukeCerts.first()));
-
-        // Restore the global CA chain
-        QSslSocket::setDefaultCaCertificates(QSslSocket::systemCaCertificates());
-    }
-#endif
-
     // Reset the global CA chain
     auto sslConfig = QSslConfiguration::defaultConfiguration();
     sslConfig.setCaCertificates(QSslConfiguration::systemCaCertificates());
@@ -1759,26 +1695,11 @@ void tst_QSslSocket::addDefaultCaCertificate()
     QSslConfiguration::setDefaultConfiguration(sslConfig);
 }
 
-void tst_QSslSocket::addDefaultCaCertificates()
-{
-}
-
-void tst_QSslSocket::addDefaultCaCertificates2()
-{
-}
-
 void tst_QSslSocket::defaultCaCertificates()
 {
     if (!QSslSocket::supportsSsl())
         return;
 
-#if QT_DEPRECATED_SINCE(5, 5)
-    {
-        QList<QSslCertificate> certs = QSslSocket::defaultCaCertificates();
-        QVERIFY(certs.size() > 1);
-        QCOMPARE(certs, QSslSocket::systemCaCertificates());
-    }
-#endif
     QList<QSslCertificate> certs = QSslConfiguration::defaultConfiguration().caCertificates();
     QVERIFY(certs.size() > 1);
     QCOMPARE(certs, QSslConfiguration::systemCaCertificates());
@@ -1789,16 +1710,6 @@ void tst_QSslSocket::defaultCiphers()
     if (!QSslSocket::supportsSsl())
         return;
 
-#if QT_DEPRECATED_SINCE(5, 5)
-    {
-        QList<QSslCipher> ciphers = QSslSocket::defaultCiphers();
-        QVERIFY(ciphers.size() > 1);
-
-        QSslSocket socket;
-        QCOMPARE(socket.defaultCiphers(), ciphers);
-        QCOMPARE(socket.ciphers(), ciphers);
-    }
-#endif
     QList<QSslCipher> ciphers = QSslConfiguration::defaultConfiguration().ciphers();
     QVERIFY(ciphers.size() > 1);
 
@@ -1824,16 +1735,6 @@ void tst_QSslSocket::supportedCiphers()
     if (!QSslSocket::supportsSsl())
         return;
 
-#if QT_DEPRECATED_SINCE(5, 5)
-    {
-        QList<QSslCipher> ciphers = QSslSocket::supportedCiphers();
-        QVERIFY(ciphers.size() > 1);
-
-        QSslSocket socket;
-        QCOMPARE(socket.supportedCiphers(), ciphers);
-    }
-#endif
-
     QList<QSslCipher> ciphers = QSslConfiguration::supportedCiphers();
     QVERIFY(ciphers.size() > 1);
 
@@ -1846,13 +1747,6 @@ void tst_QSslSocket::systemCaCertificates()
     if (!QSslSocket::supportsSsl())
         return;
 
-#if QT_DEPRECATED_SINCE(5, 5)
-    {
-        QList<QSslCertificate> certs = QSslSocket::systemCaCertificates();
-        QVERIFY(certs.size() > 1);
-        QCOMPARE(certs, QSslSocket::defaultCaCertificates());
-    }
-#endif
     QList<QSslCertificate> certs = QSslConfiguration::systemCaCertificates();
     QVERIFY(certs.size() > 1);
     QCOMPARE(certs, QSslConfiguration::defaultConfiguration().systemCaCertificates());
