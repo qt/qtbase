@@ -4516,7 +4516,7 @@ QString QString::left(int n)  const
 
     \snippet qstring/main.cpp 48
 
-    \sa endsWith(), last(), first(), slice(), chopped(), chop(), truncate()
+    \sa endsWith(), last(), first(), sliced(), chopped(), chop(), truncate()
 */
 QString QString::right(int n) const
 {
@@ -4529,7 +4529,7 @@ QString QString::right(int n) const
     Returns a string that contains \a n characters of this string,
     starting at the specified \a position index.
 
-    \obsolete Use slice() instead in new code.
+    \obsolete Use sliced() instead in new code.
 
     Returns a null string if the \a position index exceeds the
     length of the string. If there are less than \a n characters
@@ -4541,7 +4541,7 @@ QString QString::right(int n) const
 
     \snippet qstring/main.cpp 34
 
-    \sa first(), last(), slice(), chopped(), chop(), truncate()
+    \sa first(), last(), sliced(), chopped(), chop(), truncate()
 */
 
 QString QString::mid(int position, int n) const
@@ -4576,7 +4576,7 @@ QString QString::mid(int position, int n) const
 
     \note The behavior is undefined when \a n < 0 or \a n > size().
 
-    \sa last(), slice(), from(), startsWith(), chopped(), chop(), truncate()
+    \sa last(), sliced(), from(), startsWith(), chopped(), chop(), truncate()
 */
 
 /*!
@@ -4587,11 +4587,11 @@ QString QString::mid(int position, int n) const
 
     \note The behavior is undefined when \a n < 0 or \a n > size().
 
-    \sa first(), slice(), from(), endsWith(), chopped(), chop(), truncate()
+    \sa first(), sliced(), from(), endsWith(), chopped(), chop(), truncate()
 */
 
 /*!
-    \fn QString QString::slice(qsizetype pos, qsizetype n) const
+    \fn QString QString::sliced(qsizetype pos, qsizetype n) const
     \since 6.0
 
     Returns a string that contains \a n characters of this string,
@@ -4612,7 +4612,7 @@ QString QString::mid(int position, int n) const
 
     \note The behavior is undefined when \a pos < 0 or \a pos > size().
 
-    \sa first(), last(), slice(), chopped(), chop(), truncate()
+    \sa first(), last(), sliced(), chopped(), chop(), truncate()
 */
 
 /*!

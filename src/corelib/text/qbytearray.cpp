@@ -2949,7 +2949,7 @@ QByteArray QByteArray::left(int len)  const
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 28
 
-    \sa endsWith(), last(), first(), slice(), chopped(), chop(), truncate()
+    \sa endsWith(), last(), first(), sliced(), chopped(), chop(), truncate()
 */
 QByteArray QByteArray::right(int len) const
 {
@@ -2964,7 +2964,7 @@ QByteArray QByteArray::right(int len) const
     Returns a byte array containing \a len bytes from this byte array,
     starting at position \a pos.
 
-    \obsolete Use slice() instead in new code.
+    \obsolete Use sliced() instead in new code.
 
     If \a len is -1 (the default), or \a pos + \a len >= size(),
     returns a byte array containing all bytes starting at position \a
@@ -2973,7 +2973,7 @@ QByteArray QByteArray::right(int len) const
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 29
 
-    \sa first(), last(), slice(), chopped(), chop(), truncate()
+    \sa first(), last(), sliced(), chopped(), chop(), truncate()
 */
 
 QByteArray QByteArray::mid(int pos, int len) const
@@ -3007,7 +3007,7 @@ QByteArray QByteArray::mid(int pos, int len) const
 
     \note The behavior is undefined when \a n < 0 or \a n > size().
 
-    \sa last(), slice(), from(), startsWith(), chopped(), chop(), truncate()
+    \sa last(), sliced(), from(), startsWith(), chopped(), chop(), truncate()
 */
 
 /*!
@@ -3018,11 +3018,11 @@ QByteArray QByteArray::mid(int pos, int len) const
 
     \note The behavior is undefined when \a n < 0 or \a n > size().
 
-    \sa first(), slice(), from(), endsWith(), chopped(), chop(), truncate()
+    \sa first(), sliced(), from(), endsWith(), chopped(), chop(), truncate()
 */
 
 /*!
-    \fn QByteArray QByteArray::slice(qsizetype pos, qsizetype n) const
+    \fn QByteArray QByteArray::sliced(qsizetype pos, qsizetype n) const
     \since 6.0
 
     Returns a byte array containing the \a n bytes of this object starting
@@ -3043,7 +3043,7 @@ QByteArray QByteArray::mid(int pos, int len) const
 
     \note The behavior is undefined when \a pos < 0 or \a pos > size().
 
-    \sa first(), last(), slice(), chopped(), chop(), truncate()
+    \sa first(), last(), sliced(), chopped(), chop(), truncate()
 */
 
 /*!

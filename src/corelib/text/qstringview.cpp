@@ -616,7 +616,7 @@ QT_BEGIN_NAMESPACE
     Returns the substring of length \a length starting at position
     \a start in this object.
 
-    \obsolete Use slice() instead in new code.
+    \obsolete Use sliced() instead in new code.
 
     Returns an empty string view if \a start exceeds the
     length of the string. If there are less than \a length characters
@@ -624,7 +624,7 @@ QT_BEGIN_NAMESPACE
     \a length is negative (default), the function returns all characters that
     are available from \a start.
 
-    \sa first(), last(), slice(), chopped(), chop(), truncate()
+    \sa first(), last(), sliced(), chopped(), chop(), truncate()
 */
 
 /*!
@@ -638,7 +638,7 @@ QT_BEGIN_NAMESPACE
     The entire string is returned if \a length is greater than or equal
     to size(), or less than zero.
 
-    \sa first(), last(), slice(), startsWith(), chopped(), chop(), truncate()
+    \sa first(), last(), sliced(), startsWith(), chopped(), chop(), truncate()
 */
 
 /*!
@@ -652,7 +652,7 @@ QT_BEGIN_NAMESPACE
     The entire string is returned if \a length is greater than or equal
     to size(), or less than zero.
 
-    \sa first(), last(), slice(), endsWith(), chopped(), chop(), truncate()
+    \sa first(), last(), sliced(), endsWith(), chopped(), chop(), truncate()
 */
 
 /*!
@@ -679,7 +679,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringView QStringView::slice(qsizetype pos, qsizetype n) const
+    \fn QStringView QStringView::sliced(qsizetype pos, qsizetype n) const
     \since 6.0
 
     Returns a string view that points to \a n characters of this string,

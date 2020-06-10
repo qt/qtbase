@@ -632,8 +632,8 @@ private:
     void right_data();
     template <typename String> void right_impl();
 
-    void slice_data();
-    template <typename String> void slice_impl();
+    void sliced_data();
+    template <typename String> void sliced_impl();
 
     void first_data();
     template <typename String> void first_impl();
@@ -679,12 +679,12 @@ private Q_SLOTS:
     void right_QByteArray_data();
     void right_QByteArray() { right_impl<QByteArray>(); }
 
-    void slice_QString_data() { slice_data(); }
-    void slice_QString() { slice_impl<QString>(); }
-    void slice_QStringView_data() { slice_data(); }
-    void slice_QStringView() { slice_impl<QStringView>(); }
-    void slice_QByteArray_data() { slice_data(); }
-    void slice_QByteArray() { slice_impl<QByteArray>(); }
+    void sliced_QString_data() { sliced_data(); }
+    void sliced_QString() { sliced_impl<QString>(); }
+    void sliced_QStringView_data() { sliced_data(); }
+    void sliced_QStringView() { sliced_impl<QStringView>(); }
+    void sliced_QByteArray_data() { sliced_data(); }
+    void sliced_QByteArray() { sliced_impl<QByteArray>(); }
 
     void first_truncate_QString_data() { first_data(); }
     void first_truncate_QString() { first_impl<QString>(); }
@@ -1529,9 +1529,9 @@ void tst_QStringApiSymmetry::tok_impl() const
 
 void tst_QStringApiSymmetry::mid_data()
 {
-    slice_data();
+    sliced_data();
 
-    // mid() has a wider contract compared to slize(), so test those cases here:
+    // mid() has a wider contract compared to sliced(), so test those cases here:
 #define ROW(base, p, n, r1, r2) \
     QTest::addRow("%s %d %d", #base, p, n) << QStringRef(&base) << QLatin1String(#base) << p << n << QStringRef(&r1) << QStringRef(&r2)
 
@@ -1727,7 +1727,7 @@ void tst_QStringApiSymmetry::right_impl()
     }
 }
 
-void tst_QStringApiSymmetry::slice_data()
+void tst_QStringApiSymmetry::sliced_data()
 {
     QTest::addColumn<QStringRef>("unicode");
     QTest::addColumn<QLatin1String>("latin1");
@@ -1767,7 +1767,7 @@ void tst_QStringApiSymmetry::slice_data()
 }
 
 template <typename String>
-void tst_QStringApiSymmetry::slice_impl()
+void tst_QStringApiSymmetry::sliced_impl()
 {
     QFETCH(const QStringRef, unicode);
     QFETCH(const QLatin1String, latin1);
@@ -1782,27 +1782,27 @@ void tst_QStringApiSymmetry::slice_impl()
 
     {
         const auto from = s.from(pos);
-        const auto slice = s.slice(pos, n);
+        const auto sliced = s.sliced(pos, n);
 
         QCOMPARE(from, result);
         QCOMPARE(from.isNull(), result.isNull());
         QCOMPARE(from.isEmpty(), result.isEmpty());
 
-        QCOMPARE(slice, result2);
-        QCOMPARE(slice.isNull(), result2.isNull());
-        QCOMPARE(slice.isEmpty(), result2.isEmpty());
+        QCOMPARE(sliced, result2);
+        QCOMPARE(sliced.isNull(), result2.isNull());
+        QCOMPARE(sliced.isEmpty(), result2.isEmpty());
     }
     {
         const auto from = detached(s).from(pos);
-        const auto slice = detached(s).slice(pos, n);
+        const auto sliced = detached(s).sliced(pos, n);
 
         QCOMPARE(from, result);
         QCOMPARE(from.isNull(), result.isNull());
         QCOMPARE(from.isEmpty(), result.isEmpty());
 
-        QCOMPARE(slice, result2);
-        QCOMPARE(slice.isNull(), result2.isNull());
-        QCOMPARE(slice.isEmpty(), result2.isEmpty());
+        QCOMPARE(sliced, result2);
+        QCOMPARE(sliced.isNull(), result2.isNull());
+        QCOMPARE(sliced.isEmpty(), result2.isEmpty());
     }
 }
 

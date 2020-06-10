@@ -282,7 +282,7 @@ public:
     { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); return QStringView(m_data + size() - n, int(n)); }
     Q_REQUIRED_RESULT constexpr QStringView from(qsizetype pos) const
     { Q_ASSERT(pos >= 0); Q_ASSERT(pos <= size()); return QStringView(m_data + pos, size() - int(pos)); }
-    Q_REQUIRED_RESULT constexpr QStringView slice(qsizetype pos, qsizetype n) const
+    Q_REQUIRED_RESULT constexpr QStringView sliced(qsizetype pos, qsizetype n) const
     { Q_ASSERT(pos >= 0); Q_ASSERT(n >= 0); Q_ASSERT(size_t(pos) + size_t(n) <= size_t(size())); return QStringView(m_data + pos, int(n)); }
     Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QStringView chopped(qsizetype n) const
     { return Q_ASSERT(n >= 0), Q_ASSERT(n <= size()), QStringView(m_data, m_size - n); }
