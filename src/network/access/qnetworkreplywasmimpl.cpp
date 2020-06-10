@@ -231,11 +231,10 @@ void QNetworkReplyWasmImplPrivate::doSendRequest()
 
     if (outgoingData) { // data from post request
         // handle extra data
-        QByteArray extraData;
-        extraData = outgoingData->readAll(); // is there a size restriction here?
-        if (!extraData.isEmpty()) {
-            attr.requestData = extraData.constData();
-            attr.requestDataSize = extraData.size();
+        requestData = outgoingData->readAll(); // is there a size restriction here?
+        if (!requestData.isEmpty()) {
+            attr.requestData = requestData.data();
+            attr.requestDataSize = requestData.size();
         }
     }
 
