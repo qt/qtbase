@@ -75,8 +75,9 @@ Q_LOGGING_CATEGORY(lcQpaGestures, "qt.qpa.input.gestures")
     QPointF windowPoint;
     QPointF screenPoint;
     [self convertFromScreen:[self screenMousePoint:event] toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
-    QWindowSystemInterface::handleGestureEventWithRealValue(m_platformWindow->window(), QCocoaTouch::getTouchDevice(QInputDevice::DeviceType::TouchPad, [event deviceID]), timestamp, Qt::ZoomNativeGesture,
-                                                            [event magnification], windowPoint, screenPoint);
+    QWindowSystemInterface::handleGestureEventWithRealValue(m_platformWindow->window(), timestamp,
+                                                            QCocoaTouch::getTouchDevice(QInputDevice::DeviceType::TouchPad, [event deviceID]),
+                                                            Qt::ZoomNativeGesture, [event magnification], windowPoint, screenPoint);
 }
 
 - (void)smartMagnifyWithEvent:(NSEvent *)event
@@ -90,8 +91,9 @@ Q_LOGGING_CATEGORY(lcQpaGestures, "qt.qpa.input.gestures")
     QPointF windowPoint;
     QPointF screenPoint;
     [self convertFromScreen:[self screenMousePoint:event] toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
-    QWindowSystemInterface::handleGestureEventWithRealValue(m_platformWindow->window(), QCocoaTouch::getTouchDevice(QInputDevice::DeviceType::TouchPad, [event deviceID]), timestamp, Qt::SmartZoomNativeGesture,
-                                                            zoomIn ? 1.0f : 0.0f, windowPoint, screenPoint);
+    QWindowSystemInterface::handleGestureEventWithRealValue(m_platformWindow->window(), timestamp,
+                                                            QCocoaTouch::getTouchDevice(QInputDevice::DeviceType::TouchPad, [event deviceID]),
+                                                            Qt::SmartZoomNativeGesture, zoomIn ? 1.0f : 0.0f, windowPoint, screenPoint);
     zoomIn = !zoomIn;
 }
 
@@ -107,8 +109,9 @@ Q_LOGGING_CATEGORY(lcQpaGestures, "qt.qpa.input.gestures")
     QPointF windowPoint;
     QPointF screenPoint;
     [self convertFromScreen:[self screenMousePoint:event] toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
-    QWindowSystemInterface::handleGestureEventWithRealValue(m_platformWindow->window(), QCocoaTouch::getTouchDevice(QInputDevice::DeviceType::TouchPad, [event deviceID]), timestamp, Qt::RotateNativeGesture,
-                                                            -[event rotation], windowPoint, screenPoint);
+    QWindowSystemInterface::handleGestureEventWithRealValue(m_platformWindow->window(), timestamp,
+                                                            QCocoaTouch::getTouchDevice(QInputDevice::DeviceType::TouchPad, [event deviceID]),
+                                                            Qt::RotateNativeGesture, -[event rotation], windowPoint, screenPoint);
 }
 
 - (void)swipeWithEvent:(NSEvent *)event
@@ -132,8 +135,9 @@ Q_LOGGING_CATEGORY(lcQpaGestures, "qt.qpa.input.gestures")
     else if ([event deltaY] == -1)
         angle = 270.0f;
 
-    QWindowSystemInterface::handleGestureEventWithRealValue(m_platformWindow->window(), QCocoaTouch::getTouchDevice(QInputDevice::DeviceType::TouchPad, [event deviceID]),  timestamp, Qt::SwipeNativeGesture,
-                                                            angle, windowPoint, screenPoint);
+    QWindowSystemInterface::handleGestureEventWithRealValue(m_platformWindow->window(), timestamp,
+                                                            QCocoaTouch::getTouchDevice(QInputDevice::DeviceType::TouchPad, [event deviceID]),
+                                                            Qt::SwipeNativeGesture, angle, windowPoint, screenPoint);
 }
 
 - (void)beginGestureWithEvent:(NSEvent *)event
@@ -146,8 +150,9 @@ Q_LOGGING_CATEGORY(lcQpaGestures, "qt.qpa.input.gestures")
     QPointF screenPoint;
     [self convertFromScreen:[self screenMousePoint:event] toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
     qCDebug(lcQpaGestures) << "beginGestureWithEvent @" << windowPoint << "from device" << Qt::hex << [event deviceID];
-    QWindowSystemInterface::handleGestureEvent(m_platformWindow->window(), QCocoaTouch::getTouchDevice(QInputDevice::DeviceType::TouchPad, [event deviceID]),  timestamp, Qt::BeginNativeGesture,
-                                               windowPoint, screenPoint);
+    QWindowSystemInterface::handleGestureEvent(m_platformWindow->window(), timestamp,
+                                               QCocoaTouch::getTouchDevice(QInputDevice::DeviceType::TouchPad, [event deviceID]),
+                                               Qt::BeginNativeGesture, windowPoint, screenPoint);
 }
 
 - (void)endGestureWithEvent:(NSEvent *)event
@@ -160,8 +165,9 @@ Q_LOGGING_CATEGORY(lcQpaGestures, "qt.qpa.input.gestures")
     QPointF windowPoint;
     QPointF screenPoint;
     [self convertFromScreen:[self screenMousePoint:event] toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
-    QWindowSystemInterface::handleGestureEvent(m_platformWindow->window(), QCocoaTouch::getTouchDevice(QInputDevice::DeviceType::TouchPad, [event deviceID]),  timestamp, Qt::EndNativeGesture,
-                                               windowPoint, screenPoint);
+    QWindowSystemInterface::handleGestureEvent(m_platformWindow->window(), timestamp,
+                                               QCocoaTouch::getTouchDevice(QInputDevice::DeviceType::TouchPad, [event deviceID]),
+                                               Qt::EndNativeGesture, windowPoint, screenPoint);
 }
 
 @end

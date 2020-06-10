@@ -87,6 +87,12 @@ public:
                                  Qt::MouseButton button, QEvent::Type type,
                                  Qt::KeyboardModifiers mods = Qt::NoModifier,
                                  Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
+    template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
+    static bool handleMouseEvent(QWindow *window, ulong timestamp, const QPointingDevice *device,
+                                 const QPointF &local, const QPointF &global, Qt::MouseButtons state,
+                                 Qt::MouseButton button, QEvent::Type type,
+                                 Qt::KeyboardModifiers mods = Qt::NoModifier,
+                                 Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
 
     static bool handleFrameStrutMouseEvent(QWindow *window, const QPointF &local,
                                            const QPointF &global, Qt::MouseButtons state,
@@ -100,6 +106,11 @@ public:
                                            Qt::KeyboardModifiers mods = Qt::NoModifier,
                                            Qt::MouseEventSource source =
                                            Qt::MouseEventNotSynthesized);
+    static bool handleFrameStrutMouseEvent(QWindow *window, ulong timestamp, const QPointingDevice *device,
+                                           const QPointF &local, const QPointF &global, Qt::MouseButtons state,
+                                           Qt::MouseButton button, QEvent::Type type,
+                                           Qt::KeyboardModifiers mods = Qt::NoModifier,
+                                           Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
 
     static bool handleShortcutEvent(QWindow *window, ulong timestamp, int k, Qt::KeyboardModifiers mods, quint32 nativeScanCode,
                                       quint32 nativeVirtualKey, quint32 nativeModifiers, const QString & text = QString(), bool autorep = false, ushort count = 1);
@@ -119,12 +130,25 @@ public:
                                        quint32 nativeModifiers,
                                        const QString& text = QString(), bool autorep = false,
                                        ushort count = 1, bool tryShortcutOverride = true);
+    static bool handleExtendedKeyEvent(QWindow *window, ulong timestamp, const QInputDevice *device,
+                                       QEvent::Type type, int key, Qt::KeyboardModifiers modifiers,
+                                       quint32 nativeScanCode, quint32 nativeVirtualKey,
+                                       quint32 nativeModifiers,
+                                       const QString& text = QString(), bool autorep = false,
+                                       ushort count = 1, bool tryShortcutOverride = true);
     static bool handleWheelEvent(QWindow *window, const QPointF &local, const QPointF &global,
                                  QPoint pixelDelta, QPoint angleDelta,
                                  Qt::KeyboardModifiers mods = Qt::NoModifier,
                                  Qt::ScrollPhase phase = Qt::NoScrollPhase,
                                  Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
     static bool handleWheelEvent(QWindow *window, ulong timestamp, const QPointF &local, const QPointF &global,
+                                 QPoint pixelDelta, QPoint angleDelta,
+                                 Qt::KeyboardModifiers mods = Qt::NoModifier,
+                                 Qt::ScrollPhase phase = Qt::NoScrollPhase,
+                                 Qt::MouseEventSource source = Qt::MouseEventNotSynthesized,
+                                 bool inverted = false);
+    static bool handleWheelEvent(QWindow *window, ulong timestamp, const QPointingDevice *device,
+                                 const QPointF &local, const QPointF &global,
                                  QPoint pixelDelta, QPoint angleDelta,
                                  Qt::KeyboardModifiers mods = Qt::NoModifier,
                                  Qt::ScrollPhase phase = Qt::NoScrollPhase,
@@ -225,6 +249,10 @@ public:
     static void handleFileOpenEvent(const QString& fileName);
     static void handleFileOpenEvent(const QUrl &url);
 
+    static bool handleTabletEvent(QWindow *window, ulong timestamp, const QPointingDevice *device,
+                                  const QPointF &local, const QPointF &global,
+                                  Qt::MouseButtons buttons, qreal pressure, int xTilt, int yTilt,
+                                  qreal tangentialPressure, qreal rotation, int z, Qt::KeyboardModifiers modifiers = Qt::NoModifier);
     static bool handleTabletEvent(QWindow *window, ulong timestamp, const QPointF &local, const QPointF &global,
                                   int device, int pointerType, Qt::MouseButtons buttons, qreal pressure, int xTilt, int yTilt,
                                   qreal tangentialPressure, qreal rotation, int z, qint64 uid,
@@ -233,18 +261,23 @@ public:
                                   int device, int pointerType, Qt::MouseButtons buttons, qreal pressure, int xTilt, int yTilt,
                                   qreal tangentialPressure, qreal rotation, int z, qint64 uid,
                                   Qt::KeyboardModifiers modifiers = Qt::NoModifier);
-    static bool handleTabletEnterProximityEvent(ulong timestamp, int device, int pointerType, qint64 uid);
-    static void handleTabletEnterProximityEvent(int device, int pointerType, qint64 uid);
-    static bool handleTabletLeaveProximityEvent(ulong timestamp, int device, int pointerType, qint64 uid);
-    static void handleTabletLeaveProximityEvent(int device, int pointerType, qint64 uid);
+    static bool handleTabletEnterLeaveProximityEvent(QWindow *window, ulong timestamp, const QPointingDevice *device,
+                                                     bool inProximity, const QPointF &local = QPointF(), const QPointF &global = QPointF(),
+                                                     Qt::MouseButtons buttons = {}, int xTilt = 0, int yTilt = 0,
+                                                     qreal tangentialPressure = 0, qreal rotation = 0, int z = 0,
+                                                     Qt::KeyboardModifiers modifiers = Qt::NoModifier);
+    static bool handleTabletEnterProximityEvent(ulong timestamp, int deviceType, int pointerType, qint64 uid);
+    static void handleTabletEnterProximityEvent(int deviceType, int pointerType, qint64 uid);
+    static bool handleTabletLeaveProximityEvent(ulong timestamp, int deviceType, int pointerType, qint64 uid);
+    static void handleTabletLeaveProximityEvent(int deviceType, int pointerType, qint64 uid);
 
 #ifndef QT_NO_GESTURES
-    static bool handleGestureEvent(QWindow *window, const QPointingDevice *device,  ulong timestamp, Qt::NativeGestureType type,
-                                   QPointF &local, QPointF &global);
-    static bool handleGestureEventWithRealValue(QWindow *window, const QPointingDevice *device,  ulong timestamp, Qt::NativeGestureType type,
-                                                qreal value, QPointF &local, QPointF &global);
-    static bool handleGestureEventWithSequenceIdAndValue(QWindow *window, const QPointingDevice *device, ulong timestamp,Qt::NativeGestureType type,
-                                                         ulong sequenceId, quint64 value, QPointF &local, QPointF &global);
+    static bool handleGestureEvent(QWindow *window, ulong timestamp, const QPointingDevice *device,  Qt::NativeGestureType type,
+                                   const QPointF &local, const QPointF &global);
+    static bool handleGestureEventWithRealValue(QWindow *window, ulong timestamp, const QPointingDevice *device, Qt::NativeGestureType type,
+                                                qreal value, const QPointF &local, const QPointF &global);
+    static bool handleGestureEventWithSequenceIdAndValue(QWindow *window, ulong timestamp, const QPointingDevice *device, Qt::NativeGestureType type,
+                                                         ulong sequenceId, quint64 value, const QPointF &local, const QPointF &global);
 #endif // QT_NO_GESTURES
 
     static void handlePlatformPanelEvent(QWindow *window);

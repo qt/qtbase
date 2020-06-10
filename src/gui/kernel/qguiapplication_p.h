@@ -237,6 +237,7 @@ public:
     static bool highDpiScalingUpdated;
     static QPointer<QWindow> currentDragWindow;
 
+    // TODO remove this: QPointingDevice can store what we need directly
     struct TabletPointData {
         TabletPointData(qint64 devId = 0) : deviceId(devId), state(Qt::NoButton), target(nullptr) {}
         qint64 deviceId;

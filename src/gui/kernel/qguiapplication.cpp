@@ -2606,7 +2606,8 @@ QGuiApplicationPrivate::TabletPointData &QGuiApplicationPrivate::tabletDevicePoi
 void QGuiApplicationPrivate::processTabletEvent(QWindowSystemInterfacePrivate::TabletEvent *e)
 {
 #if QT_CONFIG(tabletevent)
-    TabletPointData &pointData = tabletDevicePoint(e->uid);
+    const auto device = static_cast<const QPointingDevice *>(e->device);
+    TabletPointData &pointData = tabletDevicePoint(device->uniqueId().numericId());
 
     QEvent::Type type = QEvent::TabletMove;
     if (e->buttons != pointData.state)
@@ -2642,6 +2643,8 @@ void QGuiApplicationPrivate::processTabletEvent(QWindowSystemInterfacePrivate::T
         QPointF delta = e->global - e->global.toPoint();
         local = window->mapFromGlobal(e->global.toPoint()) + delta;
     }
+
+    // TODO stop deducing the button state change here: rather require it from the platform plugin, as with mouse events
     Qt::MouseButtons stateChange = e->buttons ^ pointData.state;
     Qt::MouseButton button = Qt::NoButton;
     for (int check = Qt::LeftButton; check <= int(Qt::MaxMouseButton); check = check << 1) {
@@ -2650,10 +2653,11 @@ void QGuiApplicationPrivate::processTabletEvent(QWindowSystemInterfacePrivate::T
             break;
         }
     }
-    QTabletEvent tabletEvent(type, local, e->global,
-                             e->device, e->pointerType, e->pressure, e->xTilt, e->yTilt,
+
+    QTabletEvent tabletEvent(type, device, local, e->global,
+                             e->pressure, e->xTilt, e->yTilt,
                              e->tangentialPressure, e->rotation, e->z,
-                             e->modifiers, e->uid, button, e->buttons);
+                             e->modifiers, button, e->buttons);
     tabletEvent.setAccepted(false);
     tabletEvent.setTimestamp(e->timestamp);
     QGuiApplication::sendSpontaneousEvent(window, &tabletEvent);
@@ -2683,10 +2687,10 @@ void QGuiApplicationPrivate::processTabletEvent(QWindowSystemInterfacePrivate::T
 void QGuiApplicationPrivate::processTabletEnterProximityEvent(QWindowSystemInterfacePrivate::TabletEnterProximityEvent *e)
 {
 #if QT_CONFIG(tabletevent)
-    QTabletEvent ev(QEvent::TabletEnterProximity, QPointF(), QPointF(),
-                    e->device, e->pointerType, 0, 0, 0,
-                    0, 0, 0,
-                    Qt::NoModifier, e->uid, Qt::NoButton, tabletDevicePoint(e->uid).state);
+    const QPointingDevice *dev = static_cast<const QPointingDevice *>(e->device);
+    QTabletEvent ev(QEvent::TabletEnterProximity, dev, QPointF(), QPointF(),
+                    0, 0, 0, 0, 0, 0, e->modifiers, Qt::NoButton,
+                    tabletDevicePoint(dev->uniqueId().numericId()).state);
     ev.setTimestamp(e->timestamp);
     QGuiApplication::sendSpontaneousEvent(qGuiApp, &ev);
 #else
@@ -2697,10 +2701,10 @@ void QGuiApplicationPrivate::processTabletEnterProximityEvent(QWindowSystemInter
 void QGuiApplicationPrivate::processTabletLeaveProximityEvent(QWindowSystemInterfacePrivate::TabletLeaveProximityEvent *e)
 {
 #if QT_CONFIG(tabletevent)
-    QTabletEvent ev(QEvent::TabletLeaveProximity, QPointF(), QPointF(),
-                    e->device, e->pointerType, 0, 0, 0,
-                    0, 0, 0,
-                    Qt::NoModifier, e->uid, Qt::NoButton, tabletDevicePoint(e->uid).state);
+    const QPointingDevice *dev = static_cast<const QPointingDevice *>(e->device);
+    QTabletEvent ev(QEvent::TabletLeaveProximity, dev, QPointF(), QPointF(),
+                    0, 0, 0, 0, 0, 0, e->modifiers, Qt::NoButton,
+                    tabletDevicePoint(dev->uniqueId().numericId()).state);
     ev.setTimestamp(e->timestamp);
     QGuiApplication::sendSpontaneousEvent(qGuiApp, &ev);
 #else
@@ -2767,7 +2771,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
     if (e->touchType == QEvent::TouchCancel) {
         // The touch sequence has been canceled (e.g. by the compositor).
         // Send the TouchCancel to all windows with active touches and clean up.
-        QTouchEvent touchEvent(QEvent::TouchCancel, e->device, e->modifiers);
+        QTouchEvent touchEvent(QEvent::TouchCancel, static_cast<const QPointingDevice *>(e->device), e->modifiers);
         touchEvent.setTimestamp(e->timestamp);
         QHash<ActiveTouchPointsKey, ActiveTouchPointsValue>::const_iterator it
                 = self->activeTouchPoints.constBegin(), ite = self->activeTouchPoints.constEnd();
@@ -2828,7 +2832,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
         // update state
         QPointer<QWindow> w;
         QTouchEvent::TouchPoint previousTouchPoint;
-        ActiveTouchPointsKey touchInfoKey(e->device, touchPoint.id());
+        ActiveTouchPointsKey touchInfoKey(static_cast<const QPointingDevice *>(e->device), touchPoint.id());
         ActiveTouchPointsValue &touchInfo = d->activeTouchPoints[touchInfoKey];
         switch (touchPoint.state()) {
         case Qt::TouchPointPressed:
@@ -2959,7 +2963,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                 // but don't leave dangling state: e.g.
                 // QQuickWindowPrivate::itemForTouchPointId needs to be cleared.
                 QTouchEvent touchEvent(QEvent::TouchCancel,
-                                       e->device,
+                                       static_cast<const QPointingDevice *>(e->device),
                                        e->modifiers);
                 touchEvent.setTimestamp(e->timestamp);
                 touchEvent.setWindow(w);
@@ -2969,7 +2973,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
         }
 
         QTouchEvent touchEvent(eventType,
-                               e->device,
+                               static_cast<const QPointingDevice *>(e->device),
                                e->modifiers,
                                it.value().first,    // state flags
                                it.value().second);  // list of touchpoints
@@ -3050,7 +3054,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
     for (int i = 0; i < e->points.count(); ++i) {
         QTouchEvent::TouchPoint touchPoint = e->points.at(i);
         if (touchPoint.state() == Qt::TouchPointReleased)
-            d->activeTouchPoints.remove(ActiveTouchPointsKey(e->device, touchPoint.id()));
+            d->activeTouchPoints.remove(ActiveTouchPointsKey(static_cast<const QPointingDevice *>(e->device), touchPoint.id()));
     }
 }
 

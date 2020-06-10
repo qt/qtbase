@@ -1725,6 +1725,11 @@ public:
 void tst_QWindow::tabletEvents()
 {
 #if QT_CONFIG(tabletevent)
+    // the fake USB tablet device is "plugged in"
+    QPointingDevice tabletDevice("macow", 0xbeef, QInputDevice::DeviceType::Unknown, QPointingDevice::PointerType::Generic,
+                                 QInputDevice::Capability::Position, 1, 0);
+    QWindowSystemInterface::registerInputDevice(&tabletDevice);
+
     TabletTestWindow window;
     window.setGeometry(QRect(m_availableTopLeft + QPoint(10, 10), m_testWindowSize));
     qGuiApp->installEventFilter(&window);
@@ -1733,24 +1738,36 @@ void tst_QWindow::tabletEvents()
     const QPoint global = window.mapToGlobal(local);
     const QPoint deviceLocal = QHighDpi::toNativeLocalPosition(local, &window);
     const QPoint deviceGlobal = QHighDpi::toNativePixels(global, window.screen());
-    QWindowSystemInterface::handleTabletEvent(&window, deviceLocal, deviceGlobal,
-                                              1, 2, Qt::LeftButton, 0.5, 1, 2, 0.1, 0, 0, 0);
-    QCoreApplication::processEvents();
-    QTRY_VERIFY(window.eventType == QEvent::TabletPress);
-    QTRY_COMPARE(window.eventGlobal.toPoint(), global);
-    QTRY_COMPARE(window.eventLocal.toPoint(), local);
-    QWindowSystemInterface::handleTabletEvent(&window, deviceLocal, deviceGlobal, 1, 2,
-                                              {}, 0.5, 1, 2, 0.1, 0, 0, 0);
-    QCoreApplication::processEvents();
-    QTRY_COMPARE(window.eventType, QEvent::TabletRelease);
+    ulong timestamp = 1234;
 
-    QWindowSystemInterface::handleTabletEnterProximityEvent(int(QInputDevice::DeviceType::Stylus), int(QPointingDevice::PointerType::Eraser), 3);
+    // the stylus is just now seen for the first time, as it comes into proximity
+    // its QObject-parent will be the tablet device
+    QPointingDevice tabletStylus("macow stylus eraser", 0xe6a5e6, QInputDevice::DeviceType::Stylus, QPointingDevice::PointerType::Eraser,
+                                 QInputDevice::Capability::Position | QInputDevice::Capability::Pressure, 1, 3, QString(),
+                                 QPointingDeviceUniqueId::fromNumericId(42), &tabletDevice);
+    QWindowSystemInterface::registerInputDevice(&tabletStylus);
+    QWindowSystemInterface::handleTabletEnterLeaveProximityEvent(&window, timestamp++, &tabletStylus, true);
     QCoreApplication::processEvents();
     QTRY_COMPARE(window.eventType, QEvent::TabletEnterProximity);
     QCOMPARE(window.eventDevice, QInputDevice::DeviceType::Stylus);
     QCOMPARE(window.eventPointerType, QPointingDevice::PointerType::Eraser);
 
-    QWindowSystemInterface::handleTabletLeaveProximityEvent(int(QInputDevice::DeviceType::Stylus), int(QPointingDevice::PointerType::Eraser), 3);
+    // the eraser is pressed into contact with the tablet surface
+    QWindowSystemInterface::handleTabletEvent(&window, timestamp++, &tabletStylus, deviceLocal, deviceGlobal,
+                                              Qt::LeftButton, 0.5, 1, 2, 0.1, 0, 0, {});
+    QCoreApplication::processEvents();
+    QTRY_VERIFY(window.eventType == QEvent::TabletPress);
+    QTRY_COMPARE(window.eventGlobal.toPoint(), global);
+    QTRY_COMPARE(window.eventLocal.toPoint(), local);
+
+    // now it's lifted
+    QWindowSystemInterface::handleTabletEvent(&window, timestamp++, &tabletStylus, deviceLocal, deviceGlobal,
+                                              Qt::NoButton, 0, 3, 4, 0.11, 2, 1, {});
+    QCoreApplication::processEvents();
+    QTRY_COMPARE(window.eventType, QEvent::TabletRelease);
+
+    // and is taken away (goes out of proxmity)
+    QWindowSystemInterface::handleTabletEnterLeaveProximityEvent(&window, timestamp, &tabletStylus, false);
     QCoreApplication::processEvents();
     QTRY_COMPARE(window.eventType, QEvent::TabletLeaveProximity);
     QCOMPARE(window.eventDevice, QInputDevice::DeviceType::Stylus);
