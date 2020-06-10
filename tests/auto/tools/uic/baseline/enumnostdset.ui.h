@@ -24,10 +24,10 @@ public:
     void setupUi(QWidget *Form)
     {
         if (Form->objectName().isEmpty())
-            Form->setObjectName(QString::fromUtf8("Form"));
+            Form->setObjectName("Form");
         Form->resize(400, 300);
         worldTimeClock = new WorldTimeClock(Form);
-        worldTimeClock->setObjectName(QString::fromUtf8("worldTimeClock"));
+        worldTimeClock->setObjectName("worldTimeClock");
         worldTimeClock->setGeometry(QRect(100, 100, 100, 100));
         worldTimeClock->setProperty("penStyle", QVariant::fromValue(Qt::DashDotLine));
 

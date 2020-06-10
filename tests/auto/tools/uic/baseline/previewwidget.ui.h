@@ -90,7 +90,7 @@ public:
     void setupUi(QWidget *qdesigner_internal__PreviewWidget)
     {
         if (qdesigner_internal__PreviewWidget->objectName().isEmpty())
-            qdesigner_internal__PreviewWidget->setObjectName(QString::fromUtf8("qdesigner_internal__PreviewWidget"));
+            qdesigner_internal__PreviewWidget->setObjectName("qdesigner_internal__PreviewWidget");
         qdesigner_internal__PreviewWidget->resize(471, 251);
         QSizePolicy sizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
         sizePolicy.setHorizontalStretch(0);
@@ -104,7 +104,7 @@ public:
 #ifndef Q_OS_MAC
         gridLayout->setContentsMargins(9, 9, 9, 9);
 #endif
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        gridLayout->setObjectName("gridLayout");
         vboxLayout = new QVBoxLayout();
 #ifndef Q_OS_MAC
         vboxLayout->setSpacing(6);
@@ -112,15 +112,15 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout->setContentsMargins(0, 0, 0, 0);
 #endif
-        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
+        vboxLayout->setObjectName("vboxLayout");
         LineEdit1 = new QLineEdit(qdesigner_internal__PreviewWidget);
-        LineEdit1->setObjectName(QString::fromUtf8("LineEdit1"));
+        LineEdit1->setObjectName("LineEdit1");
 
         vboxLayout->addWidget(LineEdit1);
 
         ComboBox1 = new QComboBox(qdesigner_internal__PreviewWidget);
         ComboBox1->addItem(QString());
-        ComboBox1->setObjectName(QString::fromUtf8("ComboBox1"));
+        ComboBox1->setObjectName("ComboBox1");
 
         vboxLayout->addWidget(ComboBox1);
 
@@ -129,14 +129,14 @@ public:
         hboxLayout->setSpacing(6);
 #endif
         hboxLayout->setContentsMargins(0, 0, 0, 0);
-        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
+        hboxLayout->setObjectName("hboxLayout");
         SpinBox1 = new QSpinBox(qdesigner_internal__PreviewWidget);
-        SpinBox1->setObjectName(QString::fromUtf8("SpinBox1"));
+        SpinBox1->setObjectName("SpinBox1");
 
         hboxLayout->addWidget(SpinBox1);
 
         PushButton1 = new QPushButton(qdesigner_internal__PreviewWidget);
-        PushButton1->setObjectName(QString::fromUtf8("PushButton1"));
+        PushButton1->setObjectName("PushButton1");
 
         hboxLayout->addWidget(PushButton1);
 
@@ -144,19 +144,19 @@ public:
         vboxLayout->addLayout(hboxLayout);
 
         ScrollBar1 = new QScrollBar(qdesigner_internal__PreviewWidget);
-        ScrollBar1->setObjectName(QString::fromUtf8("ScrollBar1"));
+        ScrollBar1->setObjectName("ScrollBar1");
         ScrollBar1->setOrientation(Qt::Horizontal);
 
         vboxLayout->addWidget(ScrollBar1);
 
         Slider1 = new QSlider(qdesigner_internal__PreviewWidget);
-        Slider1->setObjectName(QString::fromUtf8("Slider1"));
+        Slider1->setObjectName("Slider1");
         Slider1->setOrientation(Qt::Horizontal);
 
         vboxLayout->addWidget(Slider1);
 
         listWidget = new QListWidget(qdesigner_internal__PreviewWidget);
-        listWidget->setObjectName(QString::fromUtf8("listWidget"));
+        listWidget->setObjectName("listWidget");
         listWidget->setMaximumSize(QSize(32767, 50));
 
         vboxLayout->addWidget(listWidget);
@@ -169,13 +169,13 @@ public:
         gridLayout->addItem(spacerItem, 3, 0, 1, 2);
 
         ProgressBar1 = new QProgressBar(qdesigner_internal__PreviewWidget);
-        ProgressBar1->setObjectName(QString::fromUtf8("ProgressBar1"));
+        ProgressBar1->setObjectName("ProgressBar1");
         ProgressBar1->setOrientation(Qt::Horizontal);
 
         gridLayout->addWidget(ProgressBar1, 2, 0, 1, 1);
 
         ButtonGroup2 = new QGroupBox(qdesigner_internal__PreviewWidget);
-        ButtonGroup2->setObjectName(QString::fromUtf8("ButtonGroup2"));
+        ButtonGroup2->setObjectName("ButtonGroup2");
         vboxLayout1 = new QVBoxLayout(ButtonGroup2);
 #ifndef Q_OS_MAC
         vboxLayout1->setSpacing(6);
@@ -183,15 +183,15 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout1->setContentsMargins(9, 9, 9, 9);
 #endif
-        vboxLayout1->setObjectName(QString::fromUtf8("vboxLayout1"));
+        vboxLayout1->setObjectName("vboxLayout1");
         CheckBox1 = new QCheckBox(ButtonGroup2);
-        CheckBox1->setObjectName(QString::fromUtf8("CheckBox1"));
+        CheckBox1->setObjectName("CheckBox1");
         CheckBox1->setChecked(true);
 
         vboxLayout1->addWidget(CheckBox1);
 
         CheckBox2 = new QCheckBox(ButtonGroup2);
-        CheckBox2->setObjectName(QString::fromUtf8("CheckBox2"));
+        CheckBox2->setObjectName("CheckBox2");
 
         vboxLayout1->addWidget(CheckBox2);
 
@@ -199,7 +199,7 @@ public:
         gridLayout->addWidget(ButtonGroup2, 1, 0, 1, 1);
 
         ButtonGroup1 = new QGroupBox(qdesigner_internal__PreviewWidget);
-        ButtonGroup1->setObjectName(QString::fromUtf8("ButtonGroup1"));
+        ButtonGroup1->setObjectName("ButtonGroup1");
         vboxLayout2 = new QVBoxLayout(ButtonGroup1);
 #ifndef Q_OS_MAC
         vboxLayout2->setSpacing(6);
@@ -207,20 +207,20 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout2->setContentsMargins(9, 9, 9, 9);
 #endif
-        vboxLayout2->setObjectName(QString::fromUtf8("vboxLayout2"));
+        vboxLayout2->setObjectName("vboxLayout2");
         RadioButton1 = new QRadioButton(ButtonGroup1);
-        RadioButton1->setObjectName(QString::fromUtf8("RadioButton1"));
+        RadioButton1->setObjectName("RadioButton1");
         RadioButton1->setChecked(true);
 
         vboxLayout2->addWidget(RadioButton1);
 
         RadioButton2 = new QRadioButton(ButtonGroup1);
-        RadioButton2->setObjectName(QString::fromUtf8("RadioButton2"));
+        RadioButton2->setObjectName("RadioButton2");
 
         vboxLayout2->addWidget(RadioButton2);
 
         RadioButton3 = new QRadioButton(ButtonGroup1);
-        RadioButton3->setObjectName(QString::fromUtf8("RadioButton3"));
+        RadioButton3->setObjectName("RadioButton3");
 
         vboxLayout2->addWidget(RadioButton3);
 

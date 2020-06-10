@@ -30,22 +30,22 @@ public:
     void setupUi(QWidget *Form)
     {
         if (Form->objectName().isEmpty())
-            Form->setObjectName(QString::fromUtf8("Form"));
+            Form->setObjectName("Form");
         Form->resize(400, 300);
         vboxLayout = new QVBoxLayout(Form);
-        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
+        vboxLayout->setObjectName("vboxLayout");
         Alabel = new QLabel(Form);
-        Alabel->setObjectName(QString::fromUtf8("Alabel"));
+        Alabel->setObjectName("Alabel");
 
         vboxLayout->addWidget(Alabel);
 
         groupBox = new QGroupBox(Form);
-        groupBox->setObjectName(QString::fromUtf8("groupBox"));
+        groupBox->setObjectName("groupBox");
 
         vboxLayout->addWidget(groupBox);
 
         pushButton = new QPushButton(Form);
-        pushButton->setObjectName(QString::fromUtf8("pushButton"));
+        pushButton->setObjectName("pushButton");
 
         vboxLayout->addWidget(pushButton);
 

@@ -47,47 +47,47 @@ public:
     void setupUi(QWidget *BackSide)
     {
         if (BackSide->objectName().isEmpty())
-            BackSide->setObjectName(QString::fromUtf8("BackSide"));
+            BackSide->setObjectName("BackSide");
         BackSide->resize(378, 385);
         verticalLayout_2 = new QVBoxLayout(BackSide);
-        verticalLayout_2->setObjectName(QString::fromUtf8("verticalLayout_2"));
+        verticalLayout_2->setObjectName("verticalLayout_2");
         groupBox = new QGroupBox(BackSide);
-        groupBox->setObjectName(QString::fromUtf8("groupBox"));
+        groupBox->setObjectName("groupBox");
         groupBox->setFlat(true);
         groupBox->setCheckable(true);
         gridLayout = new QGridLayout(groupBox);
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        gridLayout->setObjectName("gridLayout");
         label = new QLabel(groupBox);
-        label->setObjectName(QString::fromUtf8("label"));
+        label->setObjectName("label");
 
         gridLayout->addWidget(label, 0, 0, 1, 1);
 
         hostName = new QLineEdit(groupBox);
-        hostName->setObjectName(QString::fromUtf8("hostName"));
+        hostName->setObjectName("hostName");
 
         gridLayout->addWidget(hostName, 0, 1, 1, 1);
 
         label_2 = new QLabel(groupBox);
-        label_2->setObjectName(QString::fromUtf8("label_2"));
+        label_2->setObjectName("label_2");
 
         gridLayout->addWidget(label_2, 1, 0, 1, 1);
 
         label_3 = new QLabel(groupBox);
-        label_3->setObjectName(QString::fromUtf8("label_3"));
+        label_3->setObjectName("label_3");
 
         gridLayout->addWidget(label_3, 2, 0, 1, 1);
 
         horizontalLayout = new QHBoxLayout();
-        horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
+        horizontalLayout->setObjectName("horizontalLayout");
         horizontalSlider = new QSlider(groupBox);
-        horizontalSlider->setObjectName(QString::fromUtf8("horizontalSlider"));
+        horizontalSlider->setObjectName("horizontalSlider");
         horizontalSlider->setValue(42);
         horizontalSlider->setOrientation(Qt::Horizontal);
 
         horizontalLayout->addWidget(horizontalSlider);
 
         spinBox = new QSpinBox(groupBox);
-        spinBox->setObjectName(QString::fromUtf8("spinBox"));
+        spinBox->setObjectName("spinBox");
         spinBox->setValue(42);
 
         horizontalLayout->addWidget(spinBox);
@@ -96,7 +96,7 @@ public:
         gridLayout->addLayout(horizontalLayout, 2, 1, 1, 1);
 
         dateTimeEdit = new QDateTimeEdit(groupBox);
-        dateTimeEdit->setObjectName(QString::fromUtf8("dateTimeEdit"));
+        dateTimeEdit->setObjectName("dateTimeEdit");
 
         gridLayout->addWidget(dateTimeEdit, 1, 1, 1, 1);
 
@@ -104,11 +104,11 @@ public:
         verticalLayout_2->addWidget(groupBox);
 
         groupBox_2 = new QGroupBox(BackSide);
-        groupBox_2->setObjectName(QString::fromUtf8("groupBox_2"));
+        groupBox_2->setObjectName("groupBox_2");
         groupBox_2->setFlat(true);
         groupBox_2->setCheckable(true);
         horizontalLayout_2 = new QHBoxLayout(groupBox_2);
-        horizontalLayout_2->setObjectName(QString::fromUtf8("horizontalLayout_2"));
+        horizontalLayout_2->setObjectName("horizontalLayout_2");
         treeWidget = new QTreeWidget(groupBox_2);
         QTreeWidgetItem *__qtreewidgetitem = new QTreeWidgetItem(treeWidget);
         QTreeWidgetItem *__qtreewidgetitem1 = new QTreeWidgetItem(__qtreewidgetitem);
@@ -121,7 +121,7 @@ public:
         QTreeWidgetItem *__qtreewidgetitem4 = new QTreeWidgetItem(treeWidget);
         QTreeWidgetItem *__qtreewidgetitem5 = new QTreeWidgetItem(__qtreewidgetitem4);
         new QTreeWidgetItem(__qtreewidgetitem5);
-        treeWidget->setObjectName(QString::fromUtf8("treeWidget"));
+        treeWidget->setObjectName("treeWidget");
 
         horizontalLayout_2->addWidget(treeWidget);
 

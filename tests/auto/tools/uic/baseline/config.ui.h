@@ -118,20 +118,20 @@ public:
     void setupUi(QDialog *Config)
     {
         if (Config->objectName().isEmpty())
-            Config->setObjectName(QString::fromUtf8("Config"));
+            Config->setObjectName("Config");
         Config->resize(600, 650);
         Config->setSizeGripEnabled(true);
         vboxLayout = new QVBoxLayout(Config);
         vboxLayout->setSpacing(6);
         vboxLayout->setContentsMargins(11, 11, 11, 11);
-        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
+        vboxLayout->setObjectName("vboxLayout");
         vboxLayout->setContentsMargins(8, 8, 8, 8);
         hboxLayout = new QHBoxLayout();
         hboxLayout->setSpacing(6);
-        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
+        hboxLayout->setObjectName("hboxLayout");
         hboxLayout->setContentsMargins(0, 0, 0, 0);
         ButtonGroup1 = new QGroupBox(Config);
-        ButtonGroup1->setObjectName(QString::fromUtf8("ButtonGroup1"));
+        ButtonGroup1->setObjectName("ButtonGroup1");
         QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -140,44 +140,44 @@ public:
         vboxLayout1 = new QVBoxLayout(ButtonGroup1);
         vboxLayout1->setSpacing(6);
         vboxLayout1->setContentsMargins(11, 11, 11, 11);
-        vboxLayout1->setObjectName(QString::fromUtf8("vboxLayout1"));
+        vboxLayout1->setObjectName("vboxLayout1");
         vboxLayout1->setContentsMargins(11, 11, 11, 11);
         size_176_220 = new QRadioButton(ButtonGroup1);
-        size_176_220->setObjectName(QString::fromUtf8("size_176_220"));
+        size_176_220->setObjectName("size_176_220");
 
         vboxLayout1->addWidget(size_176_220);
 
         size_240_320 = new QRadioButton(ButtonGroup1);
-        size_240_320->setObjectName(QString::fromUtf8("size_240_320"));
+        size_240_320->setObjectName("size_240_320");
 
         vboxLayout1->addWidget(size_240_320);
 
         size_320_240 = new QRadioButton(ButtonGroup1);
-        size_320_240->setObjectName(QString::fromUtf8("size_320_240"));
+        size_320_240->setObjectName("size_320_240");
 
         vboxLayout1->addWidget(size_320_240);
 
         size_640_480 = new QRadioButton(ButtonGroup1);
-        size_640_480->setObjectName(QString::fromUtf8("size_640_480"));
+        size_640_480->setObjectName("size_640_480");
 
         vboxLayout1->addWidget(size_640_480);
 
         size_800_600 = new QRadioButton(ButtonGroup1);
-        size_800_600->setObjectName(QString::fromUtf8("size_800_600"));
+        size_800_600->setObjectName("size_800_600");
 
         vboxLayout1->addWidget(size_800_600);
 
         size_1024_768 = new QRadioButton(ButtonGroup1);
-        size_1024_768->setObjectName(QString::fromUtf8("size_1024_768"));
+        size_1024_768->setObjectName("size_1024_768");
 
         vboxLayout1->addWidget(size_1024_768);
 
         hboxLayout1 = new QHBoxLayout();
         hboxLayout1->setSpacing(6);
-        hboxLayout1->setObjectName(QString::fromUtf8("hboxLayout1"));
+        hboxLayout1->setObjectName("hboxLayout1");
         hboxLayout1->setContentsMargins(0, 0, 0, 0);
         size_custom = new QRadioButton(ButtonGroup1);
-        size_custom->setObjectName(QString::fromUtf8("size_custom"));
+        size_custom->setObjectName("size_custom");
         QSizePolicy sizePolicy1(QSizePolicy::Fixed, QSizePolicy::Fixed);
         sizePolicy1.setHorizontalStretch(0);
         sizePolicy1.setVerticalStretch(0);
@@ -187,7 +187,7 @@ public:
         hboxLayout1->addWidget(size_custom);
 
         size_width = new QSpinBox(ButtonGroup1);
-        size_width->setObjectName(QString::fromUtf8("size_width"));
+        size_width->setObjectName("size_width");
         size_width->setMinimum(1);
         size_width->setMaximum(1280);
         size_width->setSingleStep(16);
@@ -196,7 +196,7 @@ public:
         hboxLayout1->addWidget(size_width);
 
         size_height = new QSpinBox(ButtonGroup1);
-        size_height->setObjectName(QString::fromUtf8("size_height"));
+        size_height->setObjectName("size_height");
         size_height->setMinimum(1);
         size_height->setMaximum(1024);
         size_height->setSingleStep(16);
@@ -211,59 +211,59 @@ public:
         hboxLayout->addWidget(ButtonGroup1);
 
         ButtonGroup2 = new QGroupBox(Config);
-        ButtonGroup2->setObjectName(QString::fromUtf8("ButtonGroup2"));
+        ButtonGroup2->setObjectName("ButtonGroup2");
         vboxLayout2 = new QVBoxLayout(ButtonGroup2);
         vboxLayout2->setSpacing(6);
         vboxLayout2->setContentsMargins(11, 11, 11, 11);
-        vboxLayout2->setObjectName(QString::fromUtf8("vboxLayout2"));
+        vboxLayout2->setObjectName("vboxLayout2");
         vboxLayout2->setContentsMargins(11, 11, 11, 11);
         depth_1 = new QRadioButton(ButtonGroup2);
-        depth_1->setObjectName(QString::fromUtf8("depth_1"));
+        depth_1->setObjectName("depth_1");
 
         vboxLayout2->addWidget(depth_1);
 
         depth_4gray = new QRadioButton(ButtonGroup2);
-        depth_4gray->setObjectName(QString::fromUtf8("depth_4gray"));
+        depth_4gray->setObjectName("depth_4gray");
 
         vboxLayout2->addWidget(depth_4gray);
 
         depth_8 = new QRadioButton(ButtonGroup2);
-        depth_8->setObjectName(QString::fromUtf8("depth_8"));
+        depth_8->setObjectName("depth_8");
 
         vboxLayout2->addWidget(depth_8);
 
         depth_12 = new QRadioButton(ButtonGroup2);
-        depth_12->setObjectName(QString::fromUtf8("depth_12"));
+        depth_12->setObjectName("depth_12");
 
         vboxLayout2->addWidget(depth_12);
 
         depth_15 = new QRadioButton(ButtonGroup2);
-        depth_15->setObjectName(QString::fromUtf8("depth_15"));
+        depth_15->setObjectName("depth_15");
 
         vboxLayout2->addWidget(depth_15);
 
         depth_16 = new QRadioButton(ButtonGroup2);
-        depth_16->setObjectName(QString::fromUtf8("depth_16"));
+        depth_16->setObjectName("depth_16");
 
         vboxLayout2->addWidget(depth_16);
 
         depth_18 = new QRadioButton(ButtonGroup2);
-        depth_18->setObjectName(QString::fromUtf8("depth_18"));
+        depth_18->setObjectName("depth_18");
 
         vboxLayout2->addWidget(depth_18);
 
         depth_24 = new QRadioButton(ButtonGroup2);
-        depth_24->setObjectName(QString::fromUtf8("depth_24"));
+        depth_24->setObjectName("depth_24");
 
         vboxLayout2->addWidget(depth_24);
 
         depth_32 = new QRadioButton(ButtonGroup2);
-        depth_32->setObjectName(QString::fromUtf8("depth_32"));
+        depth_32->setObjectName("depth_32");
 
         vboxLayout2->addWidget(depth_32);
 
         depth_32_argb = new QRadioButton(ButtonGroup2);
-        depth_32_argb->setObjectName(QString::fromUtf8("depth_32_argb"));
+        depth_32_argb->setObjectName("depth_32_argb");
 
         vboxLayout2->addWidget(depth_32_argb);
 
@@ -275,16 +275,16 @@ public:
 
         hboxLayout2 = new QHBoxLayout();
         hboxLayout2->setSpacing(6);
-        hboxLayout2->setObjectName(QString::fromUtf8("hboxLayout2"));
+        hboxLayout2->setObjectName("hboxLayout2");
         hboxLayout2->setContentsMargins(0, 0, 0, 0);
         TextLabel1_3 = new QLabel(Config);
-        TextLabel1_3->setObjectName(QString::fromUtf8("TextLabel1_3"));
+        TextLabel1_3->setObjectName("TextLabel1_3");
 
         hboxLayout2->addWidget(TextLabel1_3);
 
         skin = new QComboBox(Config);
         skin->addItem(QString());
-        skin->setObjectName(QString::fromUtf8("skin"));
+        skin->setObjectName("skin");
         QSizePolicy sizePolicy2(QSizePolicy::Expanding, QSizePolicy::Fixed);
         sizePolicy2.setHorizontalStretch(0);
         sizePolicy2.setVerticalStretch(0);
@@ -297,12 +297,12 @@ public:
         vboxLayout->addLayout(hboxLayout2);
 
         touchScreen = new QCheckBox(Config);
-        touchScreen->setObjectName(QString::fromUtf8("touchScreen"));
+        touchScreen->setObjectName("touchScreen");
 
         vboxLayout->addWidget(touchScreen);
 
         lcdScreen = new QCheckBox(Config);
-        lcdScreen->setObjectName(QString::fromUtf8("lcdScreen"));
+        lcdScreen->setObjectName("lcdScreen");
 
         vboxLayout->addWidget(lcdScreen);
 
@@ -311,7 +311,7 @@ public:
         vboxLayout->addItem(spacerItem);
 
         TextLabel1 = new QLabel(Config);
-        TextLabel1->setObjectName(QString::fromUtf8("TextLabel1"));
+        TextLabel1->setObjectName("TextLabel1");
         sizePolicy.setHeightForWidth(TextLabel1->sizePolicy().hasHeightForWidth());
         TextLabel1->setSizePolicy(sizePolicy);
         TextLabel1->setWordWrap(true);
@@ -319,21 +319,21 @@ public:
         vboxLayout->addWidget(TextLabel1);
 
         GroupBox1 = new QGroupBox(Config);
-        GroupBox1->setObjectName(QString::fromUtf8("GroupBox1"));
+        GroupBox1->setObjectName("GroupBox1");
         gridLayout = new QGridLayout(GroupBox1);
         gridLayout->setSpacing(6);
         gridLayout->setContentsMargins(11, 11, 11, 11);
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        gridLayout->setObjectName("gridLayout");
         gridLayout->setHorizontalSpacing(6);
         gridLayout->setVerticalSpacing(6);
         gridLayout->setContentsMargins(11, 11, 11, 11);
         TextLabel3 = new QLabel(GroupBox1);
-        TextLabel3->setObjectName(QString::fromUtf8("TextLabel3"));
+        TextLabel3->setObjectName("TextLabel3");
 
         gridLayout->addWidget(TextLabel3, 6, 0, 1, 1);
 
         bslider = new QSlider(GroupBox1);
-        bslider->setObjectName(QString::fromUtf8("bslider"));
+        bslider->setObjectName("bslider");
         QPalette palette;
         QBrush brush(QColor(128, 128, 128, 255));
         brush.setStyle(Qt::SolidPattern);
@@ -416,17 +416,17 @@ public:
         gridLayout->addWidget(bslider, 6, 1, 1, 1);
 
         blabel = new QLabel(GroupBox1);
-        blabel->setObjectName(QString::fromUtf8("blabel"));
+        blabel->setObjectName("blabel");
 
         gridLayout->addWidget(blabel, 6, 2, 1, 1);
 
         TextLabel2 = new QLabel(GroupBox1);
-        TextLabel2->setObjectName(QString::fromUtf8("TextLabel2"));
+        TextLabel2->setObjectName("TextLabel2");
 
         gridLayout->addWidget(TextLabel2, 4, 0, 1, 1);
 
         gslider = new QSlider(GroupBox1);
-        gslider->setObjectName(QString::fromUtf8("gslider"));
+        gslider->setObjectName("gslider");
         QPalette palette1;
         palette1.setBrush(QPalette::Active, QPalette::WindowText, brush);
         QBrush brush11(QColor(0, 255, 0, 255));
@@ -497,22 +497,22 @@ public:
         gridLayout->addWidget(gslider, 4, 1, 1, 1);
 
         glabel = new QLabel(GroupBox1);
-        glabel->setObjectName(QString::fromUtf8("glabel"));
+        glabel->setObjectName("glabel");
 
         gridLayout->addWidget(glabel, 4, 2, 1, 1);
 
         TextLabel7 = new QLabel(GroupBox1);
-        TextLabel7->setObjectName(QString::fromUtf8("TextLabel7"));
+        TextLabel7->setObjectName("TextLabel7");
 
         gridLayout->addWidget(TextLabel7, 0, 0, 1, 1);
 
         TextLabel8 = new QLabel(GroupBox1);
-        TextLabel8->setObjectName(QString::fromUtf8("TextLabel8"));
+        TextLabel8->setObjectName("TextLabel8");
 
         gridLayout->addWidget(TextLabel8, 0, 2, 1, 1);
 
         gammaslider = new QSlider(GroupBox1);
-        gammaslider->setObjectName(QString::fromUtf8("gammaslider"));
+        gammaslider->setObjectName("gammaslider");
         QPalette palette2;
         palette2.setBrush(QPalette::Active, QPalette::WindowText, brush);
         palette2.setBrush(QPalette::Active, QPalette::Button, brush7);
@@ -577,17 +577,17 @@ public:
         gridLayout->addWidget(gammaslider, 0, 1, 1, 1);
 
         TextLabel1_2 = new QLabel(GroupBox1);
-        TextLabel1_2->setObjectName(QString::fromUtf8("TextLabel1_2"));
+        TextLabel1_2->setObjectName("TextLabel1_2");
 
         gridLayout->addWidget(TextLabel1_2, 2, 0, 1, 1);
 
         rlabel = new QLabel(GroupBox1);
-        rlabel->setObjectName(QString::fromUtf8("rlabel"));
+        rlabel->setObjectName("rlabel");
 
         gridLayout->addWidget(rlabel, 2, 2, 1, 1);
 
         rslider = new QSlider(GroupBox1);
-        rslider->setObjectName(QString::fromUtf8("rslider"));
+        rslider->setObjectName("rslider");
         QPalette palette3;
         palette3.setBrush(QPalette::Active, QPalette::WindowText, brush);
         QBrush brush18(QColor(255, 0, 0, 255));
@@ -658,12 +658,12 @@ public:
         gridLayout->addWidget(rslider, 2, 1, 1, 1);
 
         PushButton3 = new QPushButton(GroupBox1);
-        PushButton3->setObjectName(QString::fromUtf8("PushButton3"));
+        PushButton3->setObjectName("PushButton3");
 
         gridLayout->addWidget(PushButton3, 8, 0, 1, 3);
 
         MyCustomWidget1 = new GammaView(GroupBox1);
-        MyCustomWidget1->setObjectName(QString::fromUtf8("MyCustomWidget1"));
+        MyCustomWidget1->setObjectName("MyCustomWidget1");
 
         gridLayout->addWidget(MyCustomWidget1, 0, 3, 9, 1);
 
@@ -672,20 +672,20 @@ public:
 
         hboxLayout3 = new QHBoxLayout();
         hboxLayout3->setSpacing(6);
-        hboxLayout3->setObjectName(QString::fromUtf8("hboxLayout3"));
+        hboxLayout3->setObjectName("hboxLayout3");
         hboxLayout3->setContentsMargins(0, 0, 0, 0);
         spacerItem1 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
         hboxLayout3->addItem(spacerItem1);
 
         buttonOk = new QPushButton(Config);
-        buttonOk->setObjectName(QString::fromUtf8("buttonOk"));
+        buttonOk->setObjectName("buttonOk");
         buttonOk->setAutoDefault(true);
 
         hboxLayout3->addWidget(buttonOk);
 
         buttonCancel = new QPushButton(Config);
-        buttonCancel->setObjectName(QString::fromUtf8("buttonCancel"));
+        buttonCancel->setObjectName("buttonCancel");
         buttonCancel->setAutoDefault(true);
 
         hboxLayout3->addWidget(buttonCancel);

@@ -31,7 +31,7 @@ public:
     void setupUi(QWidget *Controller)
     {
         if (Controller->objectName().isEmpty())
-            Controller->setObjectName(QString::fromUtf8("Controller"));
+            Controller->setObjectName("Controller");
         Controller->resize(255, 111);
         gridLayout = new QGridLayout(Controller);
 #ifndef Q_OS_MAC
@@ -40,30 +40,30 @@ public:
 #ifndef Q_OS_MAC
         gridLayout->setContentsMargins(9, 9, 9, 9);
 #endif
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        gridLayout->setObjectName("gridLayout");
         label = new QLabel(Controller);
-        label->setObjectName(QString::fromUtf8("label"));
+        label->setObjectName("label");
         label->setAlignment(Qt::AlignCenter);
 
         gridLayout->addWidget(label, 1, 1, 1, 1);
 
         decelerate = new QPushButton(Controller);
-        decelerate->setObjectName(QString::fromUtf8("decelerate"));
+        decelerate->setObjectName("decelerate");
 
         gridLayout->addWidget(decelerate, 2, 1, 1, 1);
 
         accelerate = new QPushButton(Controller);
-        accelerate->setObjectName(QString::fromUtf8("accelerate"));
+        accelerate->setObjectName("accelerate");
 
         gridLayout->addWidget(accelerate, 0, 1, 1, 1);
 
         right = new QPushButton(Controller);
-        right->setObjectName(QString::fromUtf8("right"));
+        right->setObjectName("right");
 
         gridLayout->addWidget(right, 1, 2, 1, 1);
 
         left = new QPushButton(Controller);
-        left->setObjectName(QString::fromUtf8("left"));
+        left->setObjectName("left");
 
         gridLayout->addWidget(left, 1, 0, 1, 1);
 

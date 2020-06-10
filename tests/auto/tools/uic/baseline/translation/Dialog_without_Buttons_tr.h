@@ -23,7 +23,7 @@ public:
     void setupUi(QDialog *Dialog)
     {
         if (Dialog->objectName().isEmpty())
-            Dialog->setObjectName(QString::fromUtf8("Dialog"));
+            Dialog->setObjectName("Dialog");
         Dialog->resize(400, 300);
 
         retranslateUi(Dialog);

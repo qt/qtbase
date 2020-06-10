@@ -46,22 +46,22 @@ public:
     void setupUi(QWidget *QPrintWidget)
     {
         if (QPrintWidget->objectName().isEmpty())
-            QPrintWidget->setObjectName(QString::fromUtf8("QPrintWidget"));
+            QPrintWidget->setObjectName("QPrintWidget");
         QPrintWidget->resize(443, 175);
         horizontalLayout_2 = new QHBoxLayout(QPrintWidget);
         horizontalLayout_2->setContentsMargins(0, 0, 0, 0);
-        horizontalLayout_2->setObjectName(QString::fromUtf8("horizontalLayout_2"));
+        horizontalLayout_2->setObjectName("horizontalLayout_2");
         printerGroup = new QGroupBox(QPrintWidget);
-        printerGroup->setObjectName(QString::fromUtf8("printerGroup"));
+        printerGroup->setObjectName("printerGroup");
         gridLayout = new QGridLayout(printerGroup);
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        gridLayout->setObjectName("gridLayout");
         label = new QLabel(printerGroup);
-        label->setObjectName(QString::fromUtf8("label"));
+        label->setObjectName("label");
 
         gridLayout->addWidget(label, 0, 0, 1, 1);
 
         printers = new QComboBox(printerGroup);
-        printers->setObjectName(QString::fromUtf8("printers"));
+        printers->setObjectName("printers");
         QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
         sizePolicy.setHorizontalStretch(3);
         sizePolicy.setVerticalStretch(0);
@@ -71,7 +71,7 @@ public:
         gridLayout->addWidget(printers, 0, 1, 1, 1);
 
         properties = new QPushButton(printerGroup);
-        properties->setObjectName(QString::fromUtf8("properties"));
+        properties->setObjectName("properties");
         QSizePolicy sizePolicy1(QSizePolicy::Minimum, QSizePolicy::Fixed);
         sizePolicy1.setHorizontalStretch(1);
         sizePolicy1.setVerticalStretch(0);
@@ -81,44 +81,44 @@ public:
         gridLayout->addWidget(properties, 0, 2, 1, 1);
 
         label_2 = new QLabel(printerGroup);
-        label_2->setObjectName(QString::fromUtf8("label_2"));
+        label_2->setObjectName("label_2");
 
         gridLayout->addWidget(label_2, 1, 0, 1, 1);
 
         location = new QLabel(printerGroup);
-        location->setObjectName(QString::fromUtf8("location"));
+        location->setObjectName("location");
 
         gridLayout->addWidget(location, 1, 1, 1, 1);
 
         preview = new QCheckBox(printerGroup);
-        preview->setObjectName(QString::fromUtf8("preview"));
+        preview->setObjectName("preview");
 
         gridLayout->addWidget(preview, 1, 2, 1, 1);
 
         label_3 = new QLabel(printerGroup);
-        label_3->setObjectName(QString::fromUtf8("label_3"));
+        label_3->setObjectName("label_3");
 
         gridLayout->addWidget(label_3, 2, 0, 1, 1);
 
         type = new QLabel(printerGroup);
-        type->setObjectName(QString::fromUtf8("type"));
+        type->setObjectName("type");
 
         gridLayout->addWidget(type, 2, 1, 1, 1);
 
         lOutput = new QLabel(printerGroup);
-        lOutput->setObjectName(QString::fromUtf8("lOutput"));
+        lOutput->setObjectName("lOutput");
 
         gridLayout->addWidget(lOutput, 3, 0, 1, 1);
 
         horizontalLayout = new QHBoxLayout();
-        horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
+        horizontalLayout->setObjectName("horizontalLayout");
         filename = new QLineEdit(printerGroup);
-        filename->setObjectName(QString::fromUtf8("filename"));
+        filename->setObjectName("filename");
 
         horizontalLayout->addWidget(filename);
 
         fileBrowser = new QToolButton(printerGroup);
-        fileBrowser->setObjectName(QString::fromUtf8("fileBrowser"));
+        fileBrowser->setObjectName("fileBrowser");
 
         horizontalLayout->addWidget(fileBrowser);
 

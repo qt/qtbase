@@ -76,24 +76,24 @@ public:
     void setupUi(QDialog *Statistics)
     {
         if (Statistics->objectName().isEmpty())
-            Statistics->setObjectName(QString::fromUtf8("Statistics"));
+            Statistics->setObjectName("Statistics");
         Statistics->setObjectName(QString::fromUtf8("linguist_stats"));
         Statistics->resize(336, 164);
         gridLayout = new QGridLayout(Statistics);
         gridLayout->setSpacing(6);
         gridLayout->setContentsMargins(11, 11, 11, 11);
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        gridLayout->setObjectName("gridLayout");
         gridLayout->setObjectName(QString::fromUtf8("unnamed"));
         hboxLayout = new QHBoxLayout();
         hboxLayout->setSpacing(6);
-        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
+        hboxLayout->setObjectName("hboxLayout");
         hboxLayout->setObjectName(QString::fromUtf8("unnamed"));
         spacer4_2 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
         hboxLayout->addItem(spacer4_2);
 
         closeBtn = new QPushButton(Statistics);
-        closeBtn->setObjectName(QString::fromUtf8("closeBtn"));
+        closeBtn->setObjectName("closeBtn");
 
         hboxLayout->addWidget(closeBtn);
 
@@ -105,66 +105,66 @@ public:
         gridLayout->addLayout(hboxLayout, 1, 0, 1, 1);
 
         frame4 = new QFrame(Statistics);
-        frame4->setObjectName(QString::fromUtf8("frame4"));
+        frame4->setObjectName("frame4");
         frame4->setFrameShape(QFrame::StyledPanel);
         frame4->setFrameShadow(QFrame::Raised);
         gridLayout1 = new QGridLayout(frame4);
         gridLayout1->setSpacing(6);
         gridLayout1->setContentsMargins(11, 11, 11, 11);
-        gridLayout1->setObjectName(QString::fromUtf8("gridLayout1"));
+        gridLayout1->setObjectName("gridLayout1");
         gridLayout1->setObjectName(QString::fromUtf8("unnamed"));
         textLabel4 = new QLabel(frame4);
-        textLabel4->setObjectName(QString::fromUtf8("textLabel4"));
+        textLabel4->setObjectName("textLabel4");
 
         gridLayout1->addWidget(textLabel4, 0, 2, 1, 1);
 
         textLabel5 = new QLabel(frame4);
-        textLabel5->setObjectName(QString::fromUtf8("textLabel5"));
+        textLabel5->setObjectName("textLabel5");
 
         gridLayout1->addWidget(textLabel5, 0, 1, 1, 1);
 
         untrWords = new QLabel(frame4);
-        untrWords->setObjectName(QString::fromUtf8("untrWords"));
+        untrWords->setObjectName("untrWords");
 
         gridLayout1->addWidget(untrWords, 1, 1, 1, 1);
 
         trWords = new QLabel(frame4);
-        trWords->setObjectName(QString::fromUtf8("trWords"));
+        trWords->setObjectName("trWords");
 
         gridLayout1->addWidget(trWords, 1, 2, 1, 1);
 
         textLabel1 = new QLabel(frame4);
-        textLabel1->setObjectName(QString::fromUtf8("textLabel1"));
+        textLabel1->setObjectName("textLabel1");
 
         gridLayout1->addWidget(textLabel1, 1, 0, 1, 1);
 
         trChars = new QLabel(frame4);
-        trChars->setObjectName(QString::fromUtf8("trChars"));
+        trChars->setObjectName("trChars");
 
         gridLayout1->addWidget(trChars, 2, 2, 1, 1);
 
         untrChars = new QLabel(frame4);
-        untrChars->setObjectName(QString::fromUtf8("untrChars"));
+        untrChars->setObjectName("untrChars");
 
         gridLayout1->addWidget(untrChars, 2, 1, 1, 1);
 
         textLabel3 = new QLabel(frame4);
-        textLabel3->setObjectName(QString::fromUtf8("textLabel3"));
+        textLabel3->setObjectName("textLabel3");
 
         gridLayout1->addWidget(textLabel3, 2, 0, 1, 1);
 
         textLabel6 = new QLabel(frame4);
-        textLabel6->setObjectName(QString::fromUtf8("textLabel6"));
+        textLabel6->setObjectName("textLabel6");
 
         gridLayout1->addWidget(textLabel6, 3, 0, 1, 1);
 
         trCharsSpc = new QLabel(frame4);
-        trCharsSpc->setObjectName(QString::fromUtf8("trCharsSpc"));
+        trCharsSpc->setObjectName("trCharsSpc");
 
         gridLayout1->addWidget(trCharsSpc, 3, 2, 1, 1);
 
         untrCharsSpc = new QLabel(frame4);
-        untrCharsSpc->setObjectName(QString::fromUtf8("untrCharsSpc"));
+        untrCharsSpc->setObjectName("untrCharsSpc");
 
         gridLayout1->addWidget(untrCharsSpc, 3, 1, 1, 1);
 

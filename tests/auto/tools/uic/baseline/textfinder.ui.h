@@ -36,7 +36,7 @@ public:
     void setupUi(QWidget *Form)
     {
         if (Form->objectName().isEmpty())
-            Form->setObjectName(QString::fromUtf8("Form"));
+            Form->setObjectName("Form");
         Form->resize(378, 158);
         vboxLayout = new QVBoxLayout(Form);
 #ifndef Q_OS_MAC
@@ -45,7 +45,7 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout->setContentsMargins(9, 9, 9, 9);
 #endif
-        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
+        vboxLayout->setObjectName("vboxLayout");
         gridLayout = new QGridLayout();
 #ifndef Q_OS_MAC
         gridLayout->setSpacing(6);
@@ -53,19 +53,19 @@ public:
 #ifndef Q_OS_MAC
         gridLayout->setContentsMargins(0, 0, 0, 0);
 #endif
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        gridLayout->setObjectName("gridLayout");
         lineEdit = new QLineEdit(Form);
-        lineEdit->setObjectName(QString::fromUtf8("lineEdit"));
+        lineEdit->setObjectName("lineEdit");
 
         gridLayout->addWidget(lineEdit, 0, 1, 1, 1);
 
         searchLabel = new QLabel(Form);
-        searchLabel->setObjectName(QString::fromUtf8("searchLabel"));
+        searchLabel->setObjectName("searchLabel");
 
         gridLayout->addWidget(searchLabel, 0, 0, 1, 1);
 
         findButton = new QPushButton(Form);
-        findButton->setObjectName(QString::fromUtf8("findButton"));
+        findButton->setObjectName("findButton");
 
         gridLayout->addWidget(findButton, 0, 2, 1, 1);
 
@@ -73,7 +73,7 @@ public:
         vboxLayout->addLayout(gridLayout);
 
         textEdit = new QTextEdit(Form);
-        textEdit->setObjectName(QString::fromUtf8("textEdit"));
+        textEdit->setObjectName("textEdit");
 
         vboxLayout->addWidget(textEdit);
 

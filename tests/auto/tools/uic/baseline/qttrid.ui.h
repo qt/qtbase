@@ -67,28 +67,28 @@ public:
     void setupUi(QMainWindow *RemoteControlClass)
     {
         if (RemoteControlClass->objectName().isEmpty())
-            RemoteControlClass->setObjectName(QString::fromUtf8("RemoteControlClass"));
+            RemoteControlClass->setObjectName("RemoteControlClass");
         RemoteControlClass->resize(344, 364);
         actionQuit = new QAction(RemoteControlClass);
-        actionQuit->setObjectName(QString::fromUtf8("actionQuit"));
+        actionQuit->setObjectName("actionQuit");
         centralWidget = new QWidget(RemoteControlClass);
-        centralWidget->setObjectName(QString::fromUtf8("centralWidget"));
+        centralWidget->setObjectName("centralWidget");
         gridLayout = new QGridLayout(centralWidget);
         gridLayout->setSpacing(6);
         gridLayout->setContentsMargins(11, 11, 11, 11);
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        gridLayout->setObjectName("gridLayout");
         label = new QLabel(centralWidget);
-        label->setObjectName(QString::fromUtf8("label"));
+        label->setObjectName("label");
 
         gridLayout->addWidget(label, 0, 0, 1, 1);
 
         startUrlLineEdit = new QLineEdit(centralWidget);
-        startUrlLineEdit->setObjectName(QString::fromUtf8("startUrlLineEdit"));
+        startUrlLineEdit->setObjectName("startUrlLineEdit");
 
         gridLayout->addWidget(startUrlLineEdit, 0, 1, 1, 2);
 
         launchButton = new QPushButton(centralWidget);
-        launchButton->setObjectName(QString::fromUtf8("launchButton"));
+        launchButton->setObjectName("launchButton");
 
         gridLayout->addWidget(launchButton, 1, 1, 1, 1);
 
@@ -101,27 +101,27 @@ public:
         gridLayout->addItem(spacerItem1, 2, 1, 1, 1);
 
         actionGroupBox = new QGroupBox(centralWidget);
-        actionGroupBox->setObjectName(QString::fromUtf8("actionGroupBox"));
+        actionGroupBox->setObjectName("actionGroupBox");
         actionGroupBox->setEnabled(false);
         gridLayout1 = new QGridLayout(actionGroupBox);
         gridLayout1->setSpacing(6);
         gridLayout1->setContentsMargins(11, 11, 11, 11);
-        gridLayout1->setObjectName(QString::fromUtf8("gridLayout1"));
+        gridLayout1->setObjectName("gridLayout1");
         label_2 = new QLabel(actionGroupBox);
-        label_2->setObjectName(QString::fromUtf8("label_2"));
+        label_2->setObjectName("label_2");
 
         gridLayout1->addWidget(label_2, 0, 0, 1, 1);
 
         hboxLayout = new QHBoxLayout();
         hboxLayout->setSpacing(0);
-        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
+        hboxLayout->setObjectName("hboxLayout");
         indexLineEdit = new QLineEdit(actionGroupBox);
-        indexLineEdit->setObjectName(QString::fromUtf8("indexLineEdit"));
+        indexLineEdit->setObjectName("indexLineEdit");
 
         hboxLayout->addWidget(indexLineEdit);
 
         indexButton = new QToolButton(actionGroupBox);
-        indexButton->setObjectName(QString::fromUtf8("indexButton"));
+        indexButton->setObjectName("indexButton");
         const QIcon icon = QIcon(QString::fromUtf8(":/remotecontrol/enter.png"));
         indexButton->setIcon(icon);
 
@@ -131,20 +131,20 @@ public:
         gridLayout1->addLayout(hboxLayout, 0, 1, 1, 2);
 
         label_4 = new QLabel(actionGroupBox);
-        label_4->setObjectName(QString::fromUtf8("label_4"));
+        label_4->setObjectName("label_4");
 
         gridLayout1->addWidget(label_4, 1, 0, 1, 1);
 
         hboxLayout1 = new QHBoxLayout();
         hboxLayout1->setSpacing(0);
-        hboxLayout1->setObjectName(QString::fromUtf8("hboxLayout1"));
+        hboxLayout1->setObjectName("hboxLayout1");
         identifierLineEdit = new QLineEdit(actionGroupBox);
-        identifierLineEdit->setObjectName(QString::fromUtf8("identifierLineEdit"));
+        identifierLineEdit->setObjectName("identifierLineEdit");
 
         hboxLayout1->addWidget(identifierLineEdit);
 
         identifierButton = new QToolButton(actionGroupBox);
-        identifierButton->setObjectName(QString::fromUtf8("identifierButton"));
+        identifierButton->setObjectName("identifierButton");
         identifierButton->setIcon(icon);
 
         hboxLayout1->addWidget(identifierButton);
@@ -153,20 +153,20 @@ public:
         gridLayout1->addLayout(hboxLayout1, 1, 1, 1, 2);
 
         label_3 = new QLabel(actionGroupBox);
-        label_3->setObjectName(QString::fromUtf8("label_3"));
+        label_3->setObjectName("label_3");
 
         gridLayout1->addWidget(label_3, 2, 0, 1, 1);
 
         hboxLayout2 = new QHBoxLayout();
         hboxLayout2->setSpacing(0);
-        hboxLayout2->setObjectName(QString::fromUtf8("hboxLayout2"));
+        hboxLayout2->setObjectName("hboxLayout2");
         urlLineEdit = new QLineEdit(actionGroupBox);
-        urlLineEdit->setObjectName(QString::fromUtf8("urlLineEdit"));
+        urlLineEdit->setObjectName("urlLineEdit");
 
         hboxLayout2->addWidget(urlLineEdit);
 
         urlButton = new QToolButton(actionGroupBox);
-        urlButton->setObjectName(QString::fromUtf8("urlButton"));
+        urlButton->setObjectName("urlButton");
         urlButton->setIcon(icon);
 
         hboxLayout2->addWidget(urlButton);
@@ -175,7 +175,7 @@ public:
         gridLayout1->addLayout(hboxLayout2, 2, 1, 1, 2);
 
         syncContentsButton = new QPushButton(actionGroupBox);
-        syncContentsButton->setObjectName(QString::fromUtf8("syncContentsButton"));
+        syncContentsButton->setObjectName("syncContentsButton");
 
         gridLayout1->addWidget(syncContentsButton, 3, 1, 1, 1);
 
@@ -184,17 +184,17 @@ public:
         gridLayout1->addItem(spacerItem2, 3, 2, 1, 1);
 
         contentsCheckBox = new QCheckBox(actionGroupBox);
-        contentsCheckBox->setObjectName(QString::fromUtf8("contentsCheckBox"));
+        contentsCheckBox->setObjectName("contentsCheckBox");
 
         gridLayout1->addWidget(contentsCheckBox, 4, 0, 1, 3);
 
         indexCheckBox = new QCheckBox(actionGroupBox);
-        indexCheckBox->setObjectName(QString::fromUtf8("indexCheckBox"));
+        indexCheckBox->setObjectName("indexCheckBox");
 
         gridLayout1->addWidget(indexCheckBox, 5, 0, 1, 1);
 
         bookmarksCheckBox = new QCheckBox(actionGroupBox);
-        bookmarksCheckBox->setObjectName(QString::fromUtf8("bookmarksCheckBox"));
+        bookmarksCheckBox->setObjectName("bookmarksCheckBox");
 
         gridLayout1->addWidget(bookmarksCheckBox, 6, 0, 1, 3);
 
@@ -203,13 +203,13 @@ public:
 
         RemoteControlClass->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(RemoteControlClass);
-        menuBar->setObjectName(QString::fromUtf8("menuBar"));
+        menuBar->setObjectName("menuBar");
         menuBar->setGeometry(QRect(0, 0, 344, 21));
         menuFile = new QMenu(menuBar);
-        menuFile->setObjectName(QString::fromUtf8("menuFile"));
+        menuFile->setObjectName("menuFile");
         RemoteControlClass->setMenuBar(menuBar);
         statusBar = new QStatusBar(RemoteControlClass);
-        statusBar->setObjectName(QString::fromUtf8("statusBar"));
+        statusBar->setObjectName("statusBar");
         RemoteControlClass->setStatusBar(statusBar);
 
         menuBar->addAction(menuFile->menuAction());

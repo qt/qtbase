@@ -38,12 +38,12 @@ public:
     void setupUi(QWidget *PathPage)
     {
         if (PathPage->objectName().isEmpty())
-            PathPage->setObjectName(QString::fromUtf8("PathPage"));
+            PathPage->setObjectName("PathPage");
         PathPage->resize(417, 243);
         gridLayout = new QGridLayout(PathPage);
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        gridLayout->setObjectName("gridLayout");
         label_2 = new QLabel(PathPage);
-        label_2->setObjectName(QString::fromUtf8("label_2"));
+        label_2->setObjectName("label_2");
         QSizePolicy sizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -53,7 +53,7 @@ public:
         gridLayout->addWidget(label_2, 0, 0, 1, 1);
 
         filterLineEdit = new QLineEdit(PathPage);
-        filterLineEdit->setObjectName(QString::fromUtf8("filterLineEdit"));
+        filterLineEdit->setObjectName("filterLineEdit");
 
         gridLayout->addWidget(filterLineEdit, 0, 1, 1, 2);
 
@@ -62,17 +62,17 @@ public:
         gridLayout->addItem(spacerItem, 1, 1, 1, 1);
 
         label = new QLabel(PathPage);
-        label->setObjectName(QString::fromUtf8("label"));
+        label->setObjectName("label");
 
         gridLayout->addWidget(label, 2, 0, 1, 3);
 
         pathListWidget = new QListWidget(PathPage);
-        pathListWidget->setObjectName(QString::fromUtf8("pathListWidget"));
+        pathListWidget->setObjectName("pathListWidget");
 
         gridLayout->addWidget(pathListWidget, 3, 0, 3, 3);
 
         addButton = new QPushButton(PathPage);
-        addButton->setObjectName(QString::fromUtf8("addButton"));
+        addButton->setObjectName("addButton");
         QSizePolicy sizePolicy1(QSizePolicy::Maximum, QSizePolicy::Fixed);
         sizePolicy1.setHorizontalStretch(0);
         sizePolicy1.setVerticalStretch(0);
@@ -82,7 +82,7 @@ public:
         gridLayout->addWidget(addButton, 3, 3, 1, 1);
 
         removeButton = new QPushButton(PathPage);
-        removeButton->setObjectName(QString::fromUtf8("removeButton"));
+        removeButton->setObjectName("removeButton");
         sizePolicy1.setHeightForWidth(removeButton->sizePolicy().hasHeightForWidth());
         removeButton->setSizePolicy(sizePolicy1);
 

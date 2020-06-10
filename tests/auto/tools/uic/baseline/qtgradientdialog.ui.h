@@ -59,12 +59,12 @@ public:
     void setupUi(QDialog *QtGradientDialog)
     {
         if (QtGradientDialog->objectName().isEmpty())
-            QtGradientDialog->setObjectName(QString::fromUtf8("QtGradientDialog"));
+            QtGradientDialog->setObjectName("QtGradientDialog");
         QtGradientDialog->resize(178, 81);
         vboxLayout = new QVBoxLayout(QtGradientDialog);
-        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
+        vboxLayout->setObjectName("vboxLayout");
         gradientEditor = new QtGradientEditor(QtGradientDialog);
-        gradientEditor->setObjectName(QString::fromUtf8("gradientEditor"));
+        gradientEditor->setObjectName("gradientEditor");
         QSizePolicy sizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -74,7 +74,7 @@ public:
         vboxLayout->addWidget(gradientEditor);
 
         buttonBox = new QDialogButtonBox(QtGradientDialog);
-        buttonBox->setObjectName(QString::fromUtf8("buttonBox"));
+        buttonBox->setObjectName("buttonBox");
         buttonBox->setOrientation(Qt::Horizontal);
         buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok);
 

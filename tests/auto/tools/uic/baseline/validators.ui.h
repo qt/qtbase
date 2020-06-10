@@ -76,7 +76,7 @@ public:
     void setupUi(QWidget *ValidatorsForm)
     {
         if (ValidatorsForm->objectName().isEmpty())
-            ValidatorsForm->setObjectName(QString::fromUtf8("ValidatorsForm"));
+            ValidatorsForm->setObjectName("ValidatorsForm");
         ValidatorsForm->resize(526, 668);
         vboxLayout = new QVBoxLayout(ValidatorsForm);
 #ifndef Q_OS_MAC
@@ -85,7 +85,7 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout->setContentsMargins(9, 9, 9, 9);
 #endif
-        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
+        vboxLayout->setObjectName("vboxLayout");
         hboxLayout = new QHBoxLayout();
 #ifndef Q_OS_MAC
         hboxLayout->setSpacing(6);
@@ -93,9 +93,9 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout->setContentsMargins(0, 0, 0, 0);
 #endif
-        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
+        hboxLayout->setObjectName("hboxLayout");
         localeSelector = new LocaleSelector(ValidatorsForm);
-        localeSelector->setObjectName(QString::fromUtf8("localeSelector"));
+        localeSelector->setObjectName("localeSelector");
 
         hboxLayout->addWidget(localeSelector);
 
@@ -107,7 +107,7 @@ public:
         vboxLayout->addLayout(hboxLayout);
 
         groupBox = new QGroupBox(ValidatorsForm);
-        groupBox->setObjectName(QString::fromUtf8("groupBox"));
+        groupBox->setObjectName("groupBox");
         vboxLayout1 = new QVBoxLayout(groupBox);
 #ifndef Q_OS_MAC
         vboxLayout1->setSpacing(6);
@@ -115,7 +115,7 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout1->setContentsMargins(9, 9, 9, 9);
 #endif
-        vboxLayout1->setObjectName(QString::fromUtf8("vboxLayout1"));
+        vboxLayout1->setObjectName("vboxLayout1");
         hboxLayout1 = new QHBoxLayout();
 #ifndef Q_OS_MAC
         hboxLayout1->setSpacing(6);
@@ -123,7 +123,7 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout1->setContentsMargins(0, 0, 0, 0);
 #endif
-        hboxLayout1->setObjectName(QString::fromUtf8("hboxLayout1"));
+        hboxLayout1->setObjectName("hboxLayout1");
         gridLayout = new QGridLayout();
 #ifndef Q_OS_MAC
         gridLayout->setSpacing(6);
@@ -131,15 +131,15 @@ public:
 #ifndef Q_OS_MAC
         gridLayout->setContentsMargins(0, 0, 0, 0);
 #endif
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        gridLayout->setObjectName("gridLayout");
         label = new QLabel(groupBox);
-        label->setObjectName(QString::fromUtf8("label"));
+        label->setObjectName("label");
         label->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
 
         gridLayout->addWidget(label, 0, 0, 1, 1);
 
         minVal = new QSpinBox(groupBox);
-        minVal->setObjectName(QString::fromUtf8("minVal"));
+        minVal->setObjectName("minVal");
         QSizePolicy sizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
         sizePolicy.setHorizontalStretch(1);
         sizePolicy.setVerticalStretch(0);
@@ -151,13 +151,13 @@ public:
         gridLayout->addWidget(minVal, 0, 1, 1, 1);
 
         label_2 = new QLabel(groupBox);
-        label_2->setObjectName(QString::fromUtf8("label_2"));
+        label_2->setObjectName("label_2");
         label_2->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
 
         gridLayout->addWidget(label_2, 1, 0, 1, 1);
 
         maxVal = new QSpinBox(groupBox);
-        maxVal->setObjectName(QString::fromUtf8("maxVal"));
+        maxVal->setObjectName("maxVal");
         sizePolicy.setHeightForWidth(maxVal->sizePolicy().hasHeightForWidth());
         maxVal->setSizePolicy(sizePolicy);
         maxVal->setMinimum(-1000000);
@@ -170,7 +170,7 @@ public:
         hboxLayout1->addLayout(gridLayout);
 
         frame = new QFrame(groupBox);
-        frame->setObjectName(QString::fromUtf8("frame"));
+        frame->setObjectName("frame");
         frame->setFrameShape(QFrame::StyledPanel);
         frame->setFrameShadow(QFrame::Sunken);
         vboxLayout2 = new QVBoxLayout(frame);
@@ -180,9 +180,9 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout2->setContentsMargins(9, 9, 9, 9);
 #endif
-        vboxLayout2->setObjectName(QString::fromUtf8("vboxLayout2"));
+        vboxLayout2->setObjectName("vboxLayout2");
         ledWidget = new LEDWidget(frame);
-        ledWidget->setObjectName(QString::fromUtf8("ledWidget"));
+        ledWidget->setObjectName("ledWidget");
         QSizePolicy sizePolicy1(QSizePolicy::Preferred, QSizePolicy::Fixed);
         sizePolicy1.setHorizontalStretch(0);
         sizePolicy1.setVerticalStretch(0);
@@ -194,7 +194,7 @@ public:
         vboxLayout2->addWidget(ledWidget);
 
         label_7 = new QLabel(frame);
-        label_7->setObjectName(QString::fromUtf8("label_7"));
+        label_7->setObjectName("label_7");
 
         vboxLayout2->addWidget(label_7);
 
@@ -209,7 +209,7 @@ public:
         vboxLayout1->addItem(spacerItem1);
 
         editor = new QLineEdit(groupBox);
-        editor->setObjectName(QString::fromUtf8("editor"));
+        editor->setObjectName("editor");
 
         vboxLayout1->addWidget(editor);
 
@@ -217,7 +217,7 @@ public:
         vboxLayout->addWidget(groupBox);
 
         groupBox_2 = new QGroupBox(ValidatorsForm);
-        groupBox_2->setObjectName(QString::fromUtf8("groupBox_2"));
+        groupBox_2->setObjectName("groupBox_2");
         vboxLayout3 = new QVBoxLayout(groupBox_2);
 #ifndef Q_OS_MAC
         vboxLayout3->setSpacing(6);
@@ -225,7 +225,7 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout3->setContentsMargins(9, 9, 9, 9);
 #endif
-        vboxLayout3->setObjectName(QString::fromUtf8("vboxLayout3"));
+        vboxLayout3->setObjectName("vboxLayout3");
         hboxLayout2 = new QHBoxLayout();
 #ifndef Q_OS_MAC
         hboxLayout2->setSpacing(6);
@@ -233,7 +233,7 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout2->setContentsMargins(0, 0, 0, 0);
 #endif
-        hboxLayout2->setObjectName(QString::fromUtf8("hboxLayout2"));
+        hboxLayout2->setObjectName("hboxLayout2");
         gridLayout1 = new QGridLayout();
 #ifndef Q_OS_MAC
         gridLayout1->setSpacing(6);
@@ -241,15 +241,15 @@ public:
 #ifndef Q_OS_MAC
         gridLayout1->setContentsMargins(0, 0, 0, 0);
 #endif
-        gridLayout1->setObjectName(QString::fromUtf8("gridLayout1"));
+        gridLayout1->setObjectName("gridLayout1");
         label_3 = new QLabel(groupBox_2);
-        label_3->setObjectName(QString::fromUtf8("label_3"));
+        label_3->setObjectName("label_3");
         label_3->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
 
         gridLayout1->addWidget(label_3, 0, 0, 1, 1);
 
         doubleMinVal = new QDoubleSpinBox(groupBox_2);
-        doubleMinVal->setObjectName(QString::fromUtf8("doubleMinVal"));
+        doubleMinVal->setObjectName("doubleMinVal");
         sizePolicy.setHeightForWidth(doubleMinVal->sizePolicy().hasHeightForWidth());
         doubleMinVal->setSizePolicy(sizePolicy);
         doubleMinVal->setMinimum(-100000.000000000000000);
@@ -259,7 +259,7 @@ public:
         gridLayout1->addWidget(doubleMinVal, 0, 1, 1, 1);
 
         label_5 = new QLabel(groupBox_2);
-        label_5->setObjectName(QString::fromUtf8("label_5"));
+        label_5->setObjectName("label_5");
         label_5->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
 
         gridLayout1->addWidget(label_5, 0, 2, 1, 1);
@@ -267,18 +267,18 @@ public:
         doubleFormat = new QComboBox(groupBox_2);
         doubleFormat->addItem(QString());
         doubleFormat->addItem(QString());
-        doubleFormat->setObjectName(QString::fromUtf8("doubleFormat"));
+        doubleFormat->setObjectName("doubleFormat");
 
         gridLayout1->addWidget(doubleFormat, 0, 3, 1, 1);
 
         label_4 = new QLabel(groupBox_2);
-        label_4->setObjectName(QString::fromUtf8("label_4"));
+        label_4->setObjectName("label_4");
         label_4->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
 
         gridLayout1->addWidget(label_4, 1, 0, 1, 1);
 
         doubleMaxVal = new QDoubleSpinBox(groupBox_2);
-        doubleMaxVal->setObjectName(QString::fromUtf8("doubleMaxVal"));
+        doubleMaxVal->setObjectName("doubleMaxVal");
         sizePolicy.setHeightForWidth(doubleMaxVal->sizePolicy().hasHeightForWidth());
         doubleMaxVal->setSizePolicy(sizePolicy);
         doubleMaxVal->setMinimum(-100000.000000000000000);
@@ -288,13 +288,13 @@ public:
         gridLayout1->addWidget(doubleMaxVal, 1, 1, 1, 1);
 
         label_6 = new QLabel(groupBox_2);
-        label_6->setObjectName(QString::fromUtf8("label_6"));
+        label_6->setObjectName("label_6");
         label_6->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
 
         gridLayout1->addWidget(label_6, 1, 2, 1, 1);
 
         doubleDecimals = new QSpinBox(groupBox_2);
-        doubleDecimals->setObjectName(QString::fromUtf8("doubleDecimals"));
+        doubleDecimals->setObjectName("doubleDecimals");
         doubleDecimals->setValue(2);
 
         gridLayout1->addWidget(doubleDecimals, 1, 3, 1, 1);
@@ -303,7 +303,7 @@ public:
         hboxLayout2->addLayout(gridLayout1);
 
         frame_2 = new QFrame(groupBox_2);
-        frame_2->setObjectName(QString::fromUtf8("frame_2"));
+        frame_2->setObjectName("frame_2");
         frame_2->setFrameShape(QFrame::StyledPanel);
         frame_2->setFrameShadow(QFrame::Sunken);
         vboxLayout4 = new QVBoxLayout(frame_2);
@@ -313,16 +313,16 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout4->setContentsMargins(9, 9, 9, 9);
 #endif
-        vboxLayout4->setObjectName(QString::fromUtf8("vboxLayout4"));
+        vboxLayout4->setObjectName("vboxLayout4");
         doubleLedWidget = new LEDWidget(frame_2);
-        doubleLedWidget->setObjectName(QString::fromUtf8("doubleLedWidget"));
+        doubleLedWidget->setObjectName("doubleLedWidget");
         doubleLedWidget->setPixmap(QPixmap(QString::fromUtf8(":/ledoff.png")));
         doubleLedWidget->setAlignment(Qt::AlignCenter);
 
         vboxLayout4->addWidget(doubleLedWidget);
 
         label_8 = new QLabel(frame_2);
-        label_8->setObjectName(QString::fromUtf8("label_8"));
+        label_8->setObjectName("label_8");
 
         vboxLayout4->addWidget(label_8);
 
@@ -337,7 +337,7 @@ public:
         vboxLayout3->addItem(spacerItem2);
 
         doubleEditor = new QLineEdit(groupBox_2);
-        doubleEditor->setObjectName(QString::fromUtf8("doubleEditor"));
+        doubleEditor->setObjectName("doubleEditor");
 
         vboxLayout3->addWidget(doubleEditor);
 
@@ -353,13 +353,13 @@ public:
         hboxLayout3->setSpacing(6);
 #endif
         hboxLayout3->setContentsMargins(0, 0, 0, 0);
-        hboxLayout3->setObjectName(QString::fromUtf8("hboxLayout3"));
+        hboxLayout3->setObjectName("hboxLayout3");
         spacerItem4 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
         hboxLayout3->addItem(spacerItem4);
 
         pushButton = new QPushButton(ValidatorsForm);
-        pushButton->setObjectName(QString::fromUtf8("pushButton"));
+        pushButton->setObjectName("pushButton");
 
         hboxLayout3->addWidget(pushButton);
 

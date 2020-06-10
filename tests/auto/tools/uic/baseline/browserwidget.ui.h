@@ -46,22 +46,22 @@ public:
     void setupUi(QWidget *Browser)
     {
         if (Browser->objectName().isEmpty())
-            Browser->setObjectName(QString::fromUtf8("Browser"));
+            Browser->setObjectName("Browser");
         Browser->resize(765, 515);
         insertRowAction = new QAction(Browser);
-        insertRowAction->setObjectName(QString::fromUtf8("insertRowAction"));
+        insertRowAction->setObjectName("insertRowAction");
         insertRowAction->setEnabled(false);
         deleteRowAction = new QAction(Browser);
-        deleteRowAction->setObjectName(QString::fromUtf8("deleteRowAction"));
+        deleteRowAction->setObjectName("deleteRowAction");
         deleteRowAction->setEnabled(false);
         vboxLayout = new QVBoxLayout(Browser);
 #ifndef Q_OS_MAC
         vboxLayout->setSpacing(6);
 #endif
         vboxLayout->setContentsMargins(8, 8, 8, 8);
-        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
+        vboxLayout->setObjectName("vboxLayout");
         splitter_2 = new QSplitter(Browser);
-        splitter_2->setObjectName(QString::fromUtf8("splitter_2"));
+        splitter_2->setObjectName("splitter_2");
         QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -69,7 +69,7 @@ public:
         splitter_2->setSizePolicy(sizePolicy);
         splitter_2->setOrientation(Qt::Horizontal);
         connectionWidget = new ConnectionWidget(splitter_2);
-        connectionWidget->setObjectName(QString::fromUtf8("connectionWidget"));
+        connectionWidget->setObjectName("connectionWidget");
         QSizePolicy sizePolicy1(QSizePolicy::Ignored, QSizePolicy::Expanding);
         sizePolicy1.setHorizontalStretch(1);
         sizePolicy1.setVerticalStretch(0);
@@ -77,7 +77,7 @@ public:
         connectionWidget->setSizePolicy(sizePolicy1);
         splitter_2->addWidget(connectionWidget);
         table = new QTableView(splitter_2);
-        table->setObjectName(QString::fromUtf8("table"));
+        table->setObjectName("table");
         QSizePolicy sizePolicy2(QSizePolicy::Expanding, QSizePolicy::Expanding);
         sizePolicy2.setHorizontalStretch(2);
         sizePolicy2.setVerticalStretch(0);
@@ -90,7 +90,7 @@ public:
         vboxLayout->addWidget(splitter_2);
 
         groupBox = new QGroupBox(Browser);
-        groupBox->setObjectName(QString::fromUtf8("groupBox"));
+        groupBox->setObjectName("groupBox");
         QSizePolicy sizePolicy3(QSizePolicy::Preferred, QSizePolicy::MinimumExpanding);
         sizePolicy3.setHorizontalStretch(0);
         sizePolicy3.setVerticalStretch(0);
@@ -104,9 +104,9 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout1->setContentsMargins(9, 9, 9, 9);
 #endif
-        vboxLayout1->setObjectName(QString::fromUtf8("vboxLayout1"));
+        vboxLayout1->setObjectName("vboxLayout1");
         sqlEdit = new QTextEdit(groupBox);
-        sqlEdit->setObjectName(QString::fromUtf8("sqlEdit"));
+        sqlEdit->setObjectName("sqlEdit");
         QSizePolicy sizePolicy4(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
         sizePolicy4.setHorizontalStretch(0);
         sizePolicy4.setVerticalStretch(0);
@@ -122,18 +122,18 @@ public:
         hboxLayout->setSpacing(6);
 #endif
         hboxLayout->setContentsMargins(1, 1, 1, 1);
-        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
+        hboxLayout->setObjectName("hboxLayout");
         spacerItem = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
         hboxLayout->addItem(spacerItem);
 
         clearButton = new QPushButton(groupBox);
-        clearButton->setObjectName(QString::fromUtf8("clearButton"));
+        clearButton->setObjectName("clearButton");
 
         hboxLayout->addWidget(clearButton);
 
         submitButton = new QPushButton(groupBox);
-        submitButton->setObjectName(QString::fromUtf8("submitButton"));
+        submitButton->setObjectName("submitButton");
 
         hboxLayout->addWidget(submitButton);
 

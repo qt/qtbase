@@ -37,7 +37,7 @@ public:
     void setupUi(QDialog *NicknameDialog)
     {
         if (NicknameDialog->objectName().isEmpty())
-            NicknameDialog->setObjectName(QString::fromUtf8("NicknameDialog"));
+            NicknameDialog->setObjectName("NicknameDialog");
         NicknameDialog->resize(396, 105);
         QSizePolicy sizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
         sizePolicy.setHorizontalStretch(0);
@@ -51,7 +51,7 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout->setContentsMargins(9, 9, 9, 9);
 #endif
-        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
+        vboxLayout->setObjectName("vboxLayout");
         vboxLayout1 = new QVBoxLayout();
 #ifndef Q_OS_MAC
         vboxLayout1->setSpacing(6);
@@ -59,16 +59,16 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout1->setContentsMargins(0, 0, 0, 0);
 #endif
-        vboxLayout1->setObjectName(QString::fromUtf8("vboxLayout1"));
+        vboxLayout1->setObjectName("vboxLayout1");
         label = new QLabel(NicknameDialog);
-        label->setObjectName(QString::fromUtf8("label"));
+        label->setObjectName("label");
         sizePolicy.setHeightForWidth(label->sizePolicy().hasHeightForWidth());
         label->setSizePolicy(sizePolicy);
 
         vboxLayout1->addWidget(label);
 
         nickname = new QLineEdit(NicknameDialog);
-        nickname->setObjectName(QString::fromUtf8("nickname"));
+        nickname->setObjectName("nickname");
 
         vboxLayout1->addWidget(nickname);
 
@@ -80,18 +80,18 @@ public:
         hboxLayout->setSpacing(6);
 #endif
         hboxLayout->setContentsMargins(0, 0, 0, 0);
-        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
+        hboxLayout->setObjectName("hboxLayout");
         spacerItem = new QSpacerItem(131, 31, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
         hboxLayout->addItem(spacerItem);
 
         okButton = new QPushButton(NicknameDialog);
-        okButton->setObjectName(QString::fromUtf8("okButton"));
+        okButton->setObjectName("okButton");
 
         hboxLayout->addWidget(okButton);
 
         cancelButton = new QPushButton(NicknameDialog);
-        cancelButton->setObjectName(QString::fromUtf8("cancelButton"));
+        cancelButton->setObjectName("cancelButton");
 
         hboxLayout->addWidget(cancelButton);
 

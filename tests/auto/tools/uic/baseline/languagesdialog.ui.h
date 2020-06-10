@@ -39,20 +39,20 @@ public:
     void setupUi(QDialog *LanguagesDialog)
     {
         if (LanguagesDialog->objectName().isEmpty())
-            LanguagesDialog->setObjectName(QString::fromUtf8("LanguagesDialog"));
+            LanguagesDialog->setObjectName("LanguagesDialog");
         LanguagesDialog->resize(400, 300);
         verticalLayout = new QVBoxLayout(LanguagesDialog);
-        verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
+        verticalLayout->setObjectName("verticalLayout");
         languagesList = new QTreeWidget(LanguagesDialog);
-        languagesList->setObjectName(QString::fromUtf8("languagesList"));
+        languagesList->setObjectName("languagesList");
         languagesList->setIndentation(0);
 
         verticalLayout->addWidget(languagesList);
 
         hboxLayout = new QHBoxLayout();
-        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
+        hboxLayout->setObjectName("hboxLayout");
         upButton = new QToolButton(LanguagesDialog);
-        upButton->setObjectName(QString::fromUtf8("upButton"));
+        upButton->setObjectName("upButton");
         upButton->setEnabled(false);
         QIcon icon;
         icon.addFile(QString::fromUtf8(":/images/up.png"), QSize(), QIcon::Normal, QIcon::Off);
@@ -61,7 +61,7 @@ public:
         hboxLayout->addWidget(upButton);
 
         downButton = new QToolButton(LanguagesDialog);
-        downButton->setObjectName(QString::fromUtf8("downButton"));
+        downButton->setObjectName("downButton");
         downButton->setEnabled(false);
         QIcon icon1;
         icon1.addFile(QString::fromUtf8(":/images/down.png"), QSize(), QIcon::Normal, QIcon::Off);
@@ -70,7 +70,7 @@ public:
         hboxLayout->addWidget(downButton);
 
         removeButton = new QToolButton(LanguagesDialog);
-        removeButton->setObjectName(QString::fromUtf8("removeButton"));
+        removeButton->setObjectName("removeButton");
         removeButton->setEnabled(false);
         QIcon icon2;
         icon2.addFile(QString::fromUtf8(":/images/editdelete.png"), QSize(), QIcon::Normal, QIcon::Off);
@@ -79,7 +79,7 @@ public:
         hboxLayout->addWidget(removeButton);
 
         openFileButton = new QToolButton(LanguagesDialog);
-        openFileButton->setObjectName(QString::fromUtf8("openFileButton"));
+        openFileButton->setObjectName("openFileButton");
         openFileButton->setEnabled(true);
         QIcon icon3;
         icon3.addFile(QString::fromUtf8(":/images/mac/fileopen.png"), QSize(), QIcon::Normal, QIcon::Off);
@@ -92,7 +92,7 @@ public:
         hboxLayout->addItem(spacerItem);
 
         okButton = new QPushButton(LanguagesDialog);
-        okButton->setObjectName(QString::fromUtf8("okButton"));
+        okButton->setObjectName("okButton");
 
         hboxLayout->addWidget(okButton);
 

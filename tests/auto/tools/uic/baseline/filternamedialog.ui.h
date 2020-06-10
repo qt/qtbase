@@ -35,24 +35,24 @@ public:
     void setupUi(QDialog *FilterNameDialogClass)
     {
         if (FilterNameDialogClass->objectName().isEmpty())
-            FilterNameDialogClass->setObjectName(QString::fromUtf8("FilterNameDialogClass"));
+            FilterNameDialogClass->setObjectName("FilterNameDialogClass");
         FilterNameDialogClass->resize(312, 95);
         gridLayout = new QGridLayout(FilterNameDialogClass);
         gridLayout->setSpacing(6);
         gridLayout->setContentsMargins(9, 9, 9, 9);
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        gridLayout->setObjectName("gridLayout");
         label = new QLabel(FilterNameDialogClass);
-        label->setObjectName(QString::fromUtf8("label"));
+        label->setObjectName("label");
 
         gridLayout->addWidget(label, 0, 0, 1, 1);
 
         lineEdit = new QLineEdit(FilterNameDialogClass);
-        lineEdit->setObjectName(QString::fromUtf8("lineEdit"));
+        lineEdit->setObjectName("lineEdit");
 
         gridLayout->addWidget(lineEdit, 0, 1, 1, 2);
 
         line = new QFrame(FilterNameDialogClass);
-        line->setObjectName(QString::fromUtf8("line"));
+        line->setObjectName("line");
         line->setFrameShape(QFrame::HLine);
         line->setFrameShadow(QFrame::Sunken);
 
@@ -63,7 +63,7 @@ public:
         gridLayout->addItem(spacerItem, 2, 0, 1, 2);
 
         buttonBox = new QDialogButtonBox(FilterNameDialogClass);
-        buttonBox->setObjectName(QString::fromUtf8("buttonBox"));
+        buttonBox->setObjectName("buttonBox");
         buttonBox->setOrientation(Qt::Horizontal);
         buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok);
 

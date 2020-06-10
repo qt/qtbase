@@ -34,23 +34,23 @@ public:
     void setupUi(QWidget *FilesPage)
     {
         if (FilesPage->objectName().isEmpty())
-            FilesPage->setObjectName(QString::fromUtf8("FilesPage"));
+            FilesPage->setObjectName("FilesPage");
         FilesPage->resize(417, 242);
         gridLayout = new QGridLayout(FilesPage);
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        gridLayout->setObjectName("gridLayout");
         fileLabel = new QLabel(FilesPage);
-        fileLabel->setObjectName(QString::fromUtf8("fileLabel"));
+        fileLabel->setObjectName("fileLabel");
         fileLabel->setWordWrap(true);
 
         gridLayout->addWidget(fileLabel, 0, 0, 1, 2);
 
         fileListWidget = new QListWidget(FilesPage);
-        fileListWidget->setObjectName(QString::fromUtf8("fileListWidget"));
+        fileListWidget->setObjectName("fileListWidget");
 
         gridLayout->addWidget(fileListWidget, 1, 0, 3, 1);
 
         removeButton = new QPushButton(FilesPage);
-        removeButton->setObjectName(QString::fromUtf8("removeButton"));
+        removeButton->setObjectName("removeButton");
         QSizePolicy sizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -60,7 +60,7 @@ public:
         gridLayout->addWidget(removeButton, 1, 1, 1, 1);
 
         removeAllButton = new QPushButton(FilesPage);
-        removeAllButton->setObjectName(QString::fromUtf8("removeAllButton"));
+        removeAllButton->setObjectName("removeAllButton");
 
         gridLayout->addWidget(removeAllButton, 2, 1, 1, 1);
 

@@ -40,40 +40,40 @@ public:
     void setupUi(QGroupBox *PreviewConfigurationWidget)
     {
         if (PreviewConfigurationWidget->objectName().isEmpty())
-            PreviewConfigurationWidget->setObjectName(QString::fromUtf8("PreviewConfigurationWidget"));
+            PreviewConfigurationWidget->setObjectName("PreviewConfigurationWidget");
         PreviewConfigurationWidget->setCheckable(true);
         formLayout = new QFormLayout(PreviewConfigurationWidget);
-        formLayout->setObjectName(QString::fromUtf8("formLayout"));
+        formLayout->setObjectName("formLayout");
         m_styleLabel = new QLabel(PreviewConfigurationWidget);
-        m_styleLabel->setObjectName(QString::fromUtf8("m_styleLabel"));
+        m_styleLabel->setObjectName("m_styleLabel");
 
         formLayout->setWidget(0, QFormLayout::LabelRole, m_styleLabel);
 
         m_styleCombo = new QComboBox(PreviewConfigurationWidget);
-        m_styleCombo->setObjectName(QString::fromUtf8("m_styleCombo"));
+        m_styleCombo->setObjectName("m_styleCombo");
 
         formLayout->setWidget(0, QFormLayout::FieldRole, m_styleCombo);
 
         m_appStyleSheetLabel = new QLabel(PreviewConfigurationWidget);
-        m_appStyleSheetLabel->setObjectName(QString::fromUtf8("m_appStyleSheetLabel"));
+        m_appStyleSheetLabel->setObjectName("m_appStyleSheetLabel");
 
         formLayout->setWidget(1, QFormLayout::LabelRole, m_appStyleSheetLabel);
 
         hboxLayout = new QHBoxLayout();
-        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
+        hboxLayout->setObjectName("hboxLayout");
         m_appStyleSheetLineEdit = new qdesigner_internal::TextPropertyEditor(PreviewConfigurationWidget);
-        m_appStyleSheetLineEdit->setObjectName(QString::fromUtf8("m_appStyleSheetLineEdit"));
+        m_appStyleSheetLineEdit->setObjectName("m_appStyleSheetLineEdit");
         m_appStyleSheetLineEdit->setMinimumSize(QSize(149, 0));
 
         hboxLayout->addWidget(m_appStyleSheetLineEdit);
 
         m_appStyleSheetChangeButton = new QToolButton(PreviewConfigurationWidget);
-        m_appStyleSheetChangeButton->setObjectName(QString::fromUtf8("m_appStyleSheetChangeButton"));
+        m_appStyleSheetChangeButton->setObjectName("m_appStyleSheetChangeButton");
 
         hboxLayout->addWidget(m_appStyleSheetChangeButton);
 
         m_appStyleSheetClearButton = new QToolButton(PreviewConfigurationWidget);
-        m_appStyleSheetClearButton->setObjectName(QString::fromUtf8("m_appStyleSheetClearButton"));
+        m_appStyleSheetClearButton->setObjectName("m_appStyleSheetClearButton");
 
         hboxLayout->addWidget(m_appStyleSheetClearButton);
 
@@ -81,19 +81,19 @@ public:
         formLayout->setLayout(1, QFormLayout::FieldRole, hboxLayout);
 
         m_skinLabel = new QLabel(PreviewConfigurationWidget);
-        m_skinLabel->setObjectName(QString::fromUtf8("m_skinLabel"));
+        m_skinLabel->setObjectName("m_skinLabel");
 
         formLayout->setWidget(2, QFormLayout::LabelRole, m_skinLabel);
 
         hboxLayout1 = new QHBoxLayout();
-        hboxLayout1->setObjectName(QString::fromUtf8("hboxLayout1"));
+        hboxLayout1->setObjectName("hboxLayout1");
         m_skinCombo = new QComboBox(PreviewConfigurationWidget);
-        m_skinCombo->setObjectName(QString::fromUtf8("m_skinCombo"));
+        m_skinCombo->setObjectName("m_skinCombo");
 
         hboxLayout1->addWidget(m_skinCombo);
 
         m_skinRemoveButton = new QToolButton(PreviewConfigurationWidget);
-        m_skinRemoveButton->setObjectName(QString::fromUtf8("m_skinRemoveButton"));
+        m_skinRemoveButton->setObjectName("m_skinRemoveButton");
 
         hboxLayout1->addWidget(m_skinRemoveButton);
 

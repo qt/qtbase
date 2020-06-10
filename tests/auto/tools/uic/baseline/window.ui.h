@@ -43,17 +43,17 @@ public:
     void setupUi(QWidget *Window)
     {
         if (Window->objectName().isEmpty())
-            Window->setObjectName(QString::fromUtf8("Window"));
+            Window->setObjectName("Window");
         Window->resize(339, 353);
         gridLayout_2 = new QGridLayout(Window);
-        gridLayout_2->setObjectName(QString::fromUtf8("gridLayout_2"));
+        gridLayout_2->setObjectName("gridLayout_2");
         gridLayout_2->setSizeConstraint(QLayout::SetFixedSize);
         horizontalSpacer_2 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
         gridLayout_2->addItem(horizontalSpacer_2, 0, 0, 1, 1);
 
         displayWidget = new DisplayWidget(Window);
-        displayWidget->setObjectName(QString::fromUtf8("displayWidget"));
+        displayWidget->setObjectName("displayWidget");
         QSizePolicy sizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         sizePolicy.setHorizontalStretch(200);
         sizePolicy.setVerticalStretch(200);
@@ -69,31 +69,31 @@ public:
         gridLayout_2->addItem(horizontalSpacer_3, 0, 2, 1, 1);
 
         gridLayout = new QGridLayout();
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        gridLayout->setObjectName("gridLayout");
         label = new QLabel(Window);
-        label->setObjectName(QString::fromUtf8("label"));
+        label->setObjectName("label");
 
         gridLayout->addWidget(label, 0, 0, 1, 1);
 
         shapeComboBox = new QComboBox(Window);
         shapeComboBox->addItem(QString());
         shapeComboBox->addItem(QString());
-        shapeComboBox->setObjectName(QString::fromUtf8("shapeComboBox"));
+        shapeComboBox->setObjectName("shapeComboBox");
 
         gridLayout->addWidget(shapeComboBox, 0, 1, 1, 1);
 
         label_2 = new QLabel(Window);
-        label_2->setObjectName(QString::fromUtf8("label_2"));
+        label_2->setObjectName("label_2");
 
         gridLayout->addWidget(label_2, 1, 0, 1, 1);
 
         colorButton = new QToolButton(Window);
-        colorButton->setObjectName(QString::fromUtf8("colorButton"));
+        colorButton->setObjectName("colorButton");
 
         gridLayout->addWidget(colorButton, 1, 1, 1, 1);
 
         label_3 = new QLabel(Window);
-        label_3->setObjectName(QString::fromUtf8("label_3"));
+        label_3->setObjectName("label_3");
 
         gridLayout->addWidget(label_3, 2, 0, 1, 1);
 
@@ -101,7 +101,7 @@ public:
         shapeComboBox_2->addItem(QString());
         shapeComboBox_2->addItem(QString());
         shapeComboBox_2->addItem(QString());
-        shapeComboBox_2->setObjectName(QString::fromUtf8("shapeComboBox_2"));
+        shapeComboBox_2->setObjectName("shapeComboBox_2");
 
         gridLayout->addWidget(shapeComboBox_2, 2, 1, 1, 1);
 
@@ -109,13 +109,13 @@ public:
         gridLayout_2->addLayout(gridLayout, 1, 0, 1, 3);
 
         horizontalLayout = new QHBoxLayout();
-        horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
+        horizontalLayout->setObjectName("horizontalLayout");
         horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
         horizontalLayout->addItem(horizontalSpacer);
 
         toolButton_2 = new QToolButton(Window);
-        toolButton_2->setObjectName(QString::fromUtf8("toolButton_2"));
+        toolButton_2->setObjectName("toolButton_2");
 
         horizontalLayout->addWidget(toolButton_2);
 

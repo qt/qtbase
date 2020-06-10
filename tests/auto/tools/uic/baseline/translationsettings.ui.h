@@ -37,7 +37,7 @@ public:
     void setupUi(QDialog *TranslationSettings)
     {
         if (TranslationSettings->objectName().isEmpty())
-            TranslationSettings->setObjectName(QString::fromUtf8("TranslationSettings"));
+            TranslationSettings->setObjectName("TranslationSettings");
         TranslationSettings->resize(346, 125);
         vboxLayout = new QVBoxLayout(TranslationSettings);
 #ifndef Q_OS_MAC
@@ -46,9 +46,9 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout->setContentsMargins(9, 9, 9, 9);
 #endif
-        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
+        vboxLayout->setObjectName("vboxLayout");
         groupBox = new QGroupBox(TranslationSettings);
-        groupBox->setObjectName(QString::fromUtf8("groupBox"));
+        groupBox->setObjectName("groupBox");
         gridLayout = new QGridLayout(groupBox);
 #ifndef Q_OS_MAC
         gridLayout->setSpacing(6);
@@ -56,24 +56,24 @@ public:
 #ifndef Q_OS_MAC
         gridLayout->setContentsMargins(9, 9, 9, 9);
 #endif
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        gridLayout->setObjectName("gridLayout");
         cbLanguageList = new QComboBox(groupBox);
-        cbLanguageList->setObjectName(QString::fromUtf8("cbLanguageList"));
+        cbLanguageList->setObjectName("cbLanguageList");
 
         gridLayout->addWidget(cbLanguageList, 0, 1, 1, 1);
 
         label = new QLabel(groupBox);
-        label->setObjectName(QString::fromUtf8("label"));
+        label->setObjectName("label");
 
         gridLayout->addWidget(label, 0, 0, 1, 1);
 
         cbCountryList = new QComboBox(groupBox);
-        cbCountryList->setObjectName(QString::fromUtf8("cbCountryList"));
+        cbCountryList->setObjectName("cbCountryList");
 
         gridLayout->addWidget(cbCountryList, 1, 1, 1, 1);
 
         lblCountry = new QLabel(groupBox);
-        lblCountry->setObjectName(QString::fromUtf8("lblCountry"));
+        lblCountry->setObjectName("lblCountry");
 
         gridLayout->addWidget(lblCountry, 1, 0, 1, 1);
 
@@ -81,7 +81,7 @@ public:
         vboxLayout->addWidget(groupBox);
 
         buttonBox = new QDialogButtonBox(TranslationSettings);
-        buttonBox->setObjectName(QString::fromUtf8("buttonBox"));
+        buttonBox->setObjectName("buttonBox");
         buttonBox->setOrientation(Qt::Horizontal);
         buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok);
 

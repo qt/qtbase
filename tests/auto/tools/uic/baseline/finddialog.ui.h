@@ -77,7 +77,7 @@ public:
     void setupUi(QDialog *FindDialog)
     {
         if (FindDialog->objectName().isEmpty())
-            FindDialog->setObjectName(QString::fromUtf8("FindDialog"));
+            FindDialog->setObjectName("FindDialog");
         FindDialog->resize(414, 170);
         QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
         sizePolicy.setHorizontalStretch(0);
@@ -87,22 +87,22 @@ public:
         hboxLayout = new QHBoxLayout(FindDialog);
         hboxLayout->setSpacing(6);
         hboxLayout->setContentsMargins(11, 11, 11, 11);
-        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
+        hboxLayout->setObjectName("hboxLayout");
         vboxLayout = new QVBoxLayout();
         vboxLayout->setSpacing(6);
         vboxLayout->setContentsMargins(0, 0, 0, 0);
-        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
+        vboxLayout->setObjectName("vboxLayout");
         hboxLayout1 = new QHBoxLayout();
         hboxLayout1->setSpacing(6);
         hboxLayout1->setContentsMargins(0, 0, 0, 0);
-        hboxLayout1->setObjectName(QString::fromUtf8("hboxLayout1"));
+        hboxLayout1->setObjectName("hboxLayout1");
         findWhat = new QLabel(FindDialog);
-        findWhat->setObjectName(QString::fromUtf8("findWhat"));
+        findWhat->setObjectName("findWhat");
 
         hboxLayout1->addWidget(findWhat);
 
         led = new QLineEdit(FindDialog);
-        led->setObjectName(QString::fromUtf8("led"));
+        led->setObjectName("led");
 
         hboxLayout1->addWidget(led);
 
@@ -110,36 +110,36 @@ public:
         vboxLayout->addLayout(hboxLayout1);
 
         groupBox = new QGroupBox(FindDialog);
-        groupBox->setObjectName(QString::fromUtf8("groupBox"));
+        groupBox->setObjectName("groupBox");
         gridLayout = new QGridLayout(groupBox);
         gridLayout->setSpacing(6);
         gridLayout->setContentsMargins(9, 9, 9, 9);
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        gridLayout->setObjectName("gridLayout");
         sourceText = new QCheckBox(groupBox);
-        sourceText->setObjectName(QString::fromUtf8("sourceText"));
+        sourceText->setObjectName("sourceText");
         sourceText->setChecked(true);
 
         gridLayout->addWidget(sourceText, 1, 0, 1, 1);
 
         translations = new QCheckBox(groupBox);
-        translations->setObjectName(QString::fromUtf8("translations"));
+        translations->setObjectName("translations");
         translations->setChecked(true);
 
         gridLayout->addWidget(translations, 2, 0, 1, 1);
 
         matchCase = new QCheckBox(groupBox);
-        matchCase->setObjectName(QString::fromUtf8("matchCase"));
+        matchCase->setObjectName("matchCase");
 
         gridLayout->addWidget(matchCase, 0, 1, 1, 1);
 
         comments = new QCheckBox(groupBox);
-        comments->setObjectName(QString::fromUtf8("comments"));
+        comments->setObjectName("comments");
         comments->setChecked(true);
 
         gridLayout->addWidget(comments, 0, 0, 1, 1);
 
         ignoreAccelerators = new QCheckBox(groupBox);
-        ignoreAccelerators->setObjectName(QString::fromUtf8("ignoreAccelerators"));
+        ignoreAccelerators->setObjectName("ignoreAccelerators");
         ignoreAccelerators->setChecked(true);
 
         gridLayout->addWidget(ignoreAccelerators, 1, 1, 1, 1);
@@ -153,15 +153,15 @@ public:
         vboxLayout1 = new QVBoxLayout();
         vboxLayout1->setSpacing(6);
         vboxLayout1->setContentsMargins(0, 0, 0, 0);
-        vboxLayout1->setObjectName(QString::fromUtf8("vboxLayout1"));
+        vboxLayout1->setObjectName("vboxLayout1");
         findNxt = new QPushButton(FindDialog);
-        findNxt->setObjectName(QString::fromUtf8("findNxt"));
+        findNxt->setObjectName("findNxt");
         findNxt->setFlat(false);
 
         vboxLayout1->addWidget(findNxt);
 
         cancel = new QPushButton(FindDialog);
-        cancel->setObjectName(QString::fromUtf8("cancel"));
+        cancel->setObjectName("cancel");
 
         vboxLayout1->addWidget(cancel);
 

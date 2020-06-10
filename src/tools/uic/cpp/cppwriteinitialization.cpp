@@ -1218,7 +1218,7 @@ void WriteInitialization::writeProperties(const QString &varName,
             objectName.remove(0, language::self.size());
         m_output << m_indent << indent
             << varName << language::derefPointer << "setObjectName("
-            << language::qstring(objectName, m_dindent) << ')' << language::eol;
+            << language::charliteral(objectName, m_dindent) << ')' << language::eol;
     }
 
     int leftMargin, topMargin, rightMargin, bottomMargin;

@@ -40,33 +40,33 @@ public:
     void setupUi(QDialog *HistoryDialog)
     {
         if (HistoryDialog->objectName().isEmpty())
-            HistoryDialog->setObjectName(QString::fromUtf8("HistoryDialog"));
+            HistoryDialog->setObjectName("HistoryDialog");
         HistoryDialog->resize(758, 450);
         gridLayout = new QGridLayout(HistoryDialog);
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        gridLayout->setObjectName("gridLayout");
         spacerItem = new QSpacerItem(252, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
         gridLayout->addItem(spacerItem, 0, 0, 1, 1);
 
         search = new SearchLineEdit(HistoryDialog);
-        search->setObjectName(QString::fromUtf8("search"));
+        search->setObjectName("search");
 
         gridLayout->addWidget(search, 0, 1, 1, 1);
 
         tree = new EditTreeView(HistoryDialog);
-        tree->setObjectName(QString::fromUtf8("tree"));
+        tree->setObjectName("tree");
 
         gridLayout->addWidget(tree, 1, 0, 1, 2);
 
         hboxLayout = new QHBoxLayout();
-        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
+        hboxLayout->setObjectName("hboxLayout");
         removeButton = new QPushButton(HistoryDialog);
-        removeButton->setObjectName(QString::fromUtf8("removeButton"));
+        removeButton->setObjectName("removeButton");
 
         hboxLayout->addWidget(removeButton);
 
         removeAllButton = new QPushButton(HistoryDialog);
-        removeAllButton->setObjectName(QString::fromUtf8("removeAllButton"));
+        removeAllButton->setObjectName("removeAllButton");
 
         hboxLayout->addWidget(removeAllButton);
 
@@ -75,7 +75,7 @@ public:
         hboxLayout->addItem(spacerItem1);
 
         buttonBox = new QDialogButtonBox(HistoryDialog);
-        buttonBox->setObjectName(QString::fromUtf8("buttonBox"));
+        buttonBox->setObjectName("buttonBox");
         buttonBox->setStandardButtons(QDialogButtonBox::Ok);
 
         hboxLayout->addWidget(buttonBox);

@@ -49,7 +49,7 @@ public:
     void setupUi(QDialog *BookmarkDialog)
     {
         if (BookmarkDialog->objectName().isEmpty())
-            BookmarkDialog->setObjectName(QString::fromUtf8("BookmarkDialog"));
+            BookmarkDialog->setObjectName("BookmarkDialog");
         BookmarkDialog->resize(450, 135);
         QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
         sizePolicy.setHorizontalStretch(0);
@@ -57,18 +57,18 @@ public:
         sizePolicy.setHeightForWidth(BookmarkDialog->sizePolicy().hasHeightForWidth());
         BookmarkDialog->setSizePolicy(sizePolicy);
         verticalLayout_3 = new QVBoxLayout(BookmarkDialog);
-        verticalLayout_3->setObjectName(QString::fromUtf8("verticalLayout_3"));
+        verticalLayout_3->setObjectName("verticalLayout_3");
         horizontalLayout = new QHBoxLayout();
-        horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
+        horizontalLayout->setObjectName("horizontalLayout");
         verticalLayout_2 = new QVBoxLayout();
-        verticalLayout_2->setObjectName(QString::fromUtf8("verticalLayout_2"));
+        verticalLayout_2->setObjectName("verticalLayout_2");
         label = new QLabel(BookmarkDialog);
-        label->setObjectName(QString::fromUtf8("label"));
+        label->setObjectName("label");
 
         verticalLayout_2->addWidget(label);
 
         label_2 = new QLabel(BookmarkDialog);
-        label_2->setObjectName(QString::fromUtf8("label_2"));
+        label_2->setObjectName("label_2");
 
         verticalLayout_2->addWidget(label_2);
 
@@ -76,14 +76,14 @@ public:
         horizontalLayout->addLayout(verticalLayout_2);
 
         verticalLayout = new QVBoxLayout();
-        verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
+        verticalLayout->setObjectName("verticalLayout");
         bookmarkEdit = new QLineEdit(BookmarkDialog);
-        bookmarkEdit->setObjectName(QString::fromUtf8("bookmarkEdit"));
+        bookmarkEdit->setObjectName("bookmarkEdit");
 
         verticalLayout->addWidget(bookmarkEdit);
 
         bookmarkFolders = new QComboBox(BookmarkDialog);
-        bookmarkFolders->setObjectName(QString::fromUtf8("bookmarkFolders"));
+        bookmarkFolders->setObjectName("bookmarkFolders");
 
         verticalLayout->addWidget(bookmarkFolders);
 
@@ -94,15 +94,15 @@ public:
         verticalLayout_3->addLayout(horizontalLayout);
 
         horizontalLayout_3 = new QHBoxLayout();
-        horizontalLayout_3->setObjectName(QString::fromUtf8("horizontalLayout_3"));
+        horizontalLayout_3->setObjectName("horizontalLayout_3");
         toolButton = new QToolButton(BookmarkDialog);
-        toolButton->setObjectName(QString::fromUtf8("toolButton"));
+        toolButton->setObjectName("toolButton");
         toolButton->setMinimumSize(QSize(25, 20));
 
         horizontalLayout_3->addWidget(toolButton);
 
         line = new QFrame(BookmarkDialog);
-        line->setObjectName(QString::fromUtf8("line"));
+        line->setObjectName("line");
         line->setFrameShape(QFrame::HLine);
         line->setFrameShadow(QFrame::Sunken);
 
@@ -112,7 +112,7 @@ public:
         verticalLayout_3->addLayout(horizontalLayout_3);
 
         bookmarkWidget = new BookmarkWidget(BookmarkDialog);
-        bookmarkWidget->setObjectName(QString::fromUtf8("bookmarkWidget"));
+        bookmarkWidget->setObjectName("bookmarkWidget");
         bookmarkWidget->setEnabled(true);
         QSizePolicy sizePolicy1(QSizePolicy::Expanding, QSizePolicy::Ignored);
         sizePolicy1.setHorizontalStretch(0);
@@ -123,14 +123,14 @@ public:
         verticalLayout_3->addWidget(bookmarkWidget);
 
         horizontalLayout_4 = new QHBoxLayout();
-        horizontalLayout_4->setObjectName(QString::fromUtf8("horizontalLayout_4"));
+        horizontalLayout_4->setObjectName("horizontalLayout_4");
         newFolderButton = new QPushButton(BookmarkDialog);
-        newFolderButton->setObjectName(QString::fromUtf8("newFolderButton"));
+        newFolderButton->setObjectName("newFolderButton");
 
         horizontalLayout_4->addWidget(newFolderButton);
 
         buttonBox = new QDialogButtonBox(BookmarkDialog);
-        buttonBox->setObjectName(QString::fromUtf8("buttonBox"));
+        buttonBox->setObjectName("buttonBox");
         buttonBox->setOrientation(Qt::Horizontal);
         buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
 

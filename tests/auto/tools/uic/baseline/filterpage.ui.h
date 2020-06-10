@@ -42,37 +42,37 @@ public:
     void setupUi(QWidget *FilterPage)
     {
         if (FilterPage->objectName().isEmpty())
-            FilterPage->setObjectName(QString::fromUtf8("FilterPage"));
+            FilterPage->setObjectName("FilterPage");
         FilterPage->resize(419, 243);
         gridLayout = new QGridLayout(FilterPage);
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        gridLayout->setObjectName("gridLayout");
         label = new QLabel(FilterPage);
-        label->setObjectName(QString::fromUtf8("label"));
+        label->setObjectName("label");
 
         gridLayout->addWidget(label, 1, 0, 1, 1);
 
         filterLineEdit = new QLineEdit(FilterPage);
-        filterLineEdit->setObjectName(QString::fromUtf8("filterLineEdit"));
+        filterLineEdit->setObjectName("filterLineEdit");
 
         gridLayout->addWidget(filterLineEdit, 2, 0, 1, 1);
 
         groupBox = new QGroupBox(FilterPage);
-        groupBox->setObjectName(QString::fromUtf8("groupBox"));
+        groupBox->setObjectName("groupBox");
         gridLayout1 = new QGridLayout(groupBox);
-        gridLayout1->setObjectName(QString::fromUtf8("gridLayout1"));
+        gridLayout1->setObjectName("gridLayout1");
         customFilterWidget = new QTreeWidget(groupBox);
-        customFilterWidget->setObjectName(QString::fromUtf8("customFilterWidget"));
+        customFilterWidget->setObjectName("customFilterWidget");
         customFilterWidget->setColumnCount(2);
 
         gridLayout1->addWidget(customFilterWidget, 0, 0, 3, 1);
 
         addButton = new QPushButton(groupBox);
-        addButton->setObjectName(QString::fromUtf8("addButton"));
+        addButton->setObjectName("addButton");
 
         gridLayout1->addWidget(addButton, 0, 1, 1, 1);
 
         removeButton = new QPushButton(groupBox);
-        removeButton->setObjectName(QString::fromUtf8("removeButton"));
+        removeButton->setObjectName("removeButton");
 
         gridLayout1->addWidget(removeButton, 1, 1, 1, 1);
 

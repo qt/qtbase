@@ -39,16 +39,16 @@ public:
     void setupUi(QDialog *CertificateInfo)
     {
         if (CertificateInfo->objectName().isEmpty())
-            CertificateInfo->setObjectName(QString::fromUtf8("CertificateInfo"));
+            CertificateInfo->setObjectName("CertificateInfo");
         CertificateInfo->resize(400, 397);
         vboxLayout = new QVBoxLayout(CertificateInfo);
-        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
+        vboxLayout->setObjectName("vboxLayout");
         groupBox = new QGroupBox(CertificateInfo);
-        groupBox->setObjectName(QString::fromUtf8("groupBox"));
+        groupBox->setObjectName("groupBox");
         hboxLayout = new QHBoxLayout(groupBox);
-        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
+        hboxLayout->setObjectName("hboxLayout");
         certificationPathView = new QListWidget(groupBox);
-        certificationPathView->setObjectName(QString::fromUtf8("certificationPathView"));
+        certificationPathView->setObjectName("certificationPathView");
 
         hboxLayout->addWidget(certificationPathView);
 
@@ -56,11 +56,11 @@ public:
         vboxLayout->addWidget(groupBox);
 
         groupBox_2 = new QGroupBox(CertificateInfo);
-        groupBox_2->setObjectName(QString::fromUtf8("groupBox_2"));
+        groupBox_2->setObjectName("groupBox_2");
         hboxLayout1 = new QHBoxLayout(groupBox_2);
-        hboxLayout1->setObjectName(QString::fromUtf8("hboxLayout1"));
+        hboxLayout1->setObjectName("hboxLayout1");
         certificateInfoView = new QListWidget(groupBox_2);
-        certificateInfoView->setObjectName(QString::fromUtf8("certificateInfoView"));
+        certificateInfoView->setObjectName("certificateInfoView");
 
         hboxLayout1->addWidget(certificateInfoView);
 
@@ -68,13 +68,13 @@ public:
         vboxLayout->addWidget(groupBox_2);
 
         hboxLayout2 = new QHBoxLayout();
-        hboxLayout2->setObjectName(QString::fromUtf8("hboxLayout2"));
+        hboxLayout2->setObjectName("hboxLayout2");
         spacerItem = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
         hboxLayout2->addItem(spacerItem);
 
         buttonBox = new QDialogButtonBox(CertificateInfo);
-        buttonBox->setObjectName(QString::fromUtf8("buttonBox"));
+        buttonBox->setObjectName("buttonBox");
         buttonBox->setStandardButtons(QDialogButtonBox::Close);
 
         hboxLayout2->addWidget(buttonBox);

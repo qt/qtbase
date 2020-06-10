@@ -46,17 +46,17 @@ public:
     void setupUi(QWidget *qdesigner_internal__GridPanel)
     {
         if (qdesigner_internal__GridPanel->objectName().isEmpty())
-            qdesigner_internal__GridPanel->setObjectName(QString::fromUtf8("qdesigner_internal__GridPanel"));
+            qdesigner_internal__GridPanel->setObjectName("qdesigner_internal__GridPanel");
         qdesigner_internal__GridPanel->resize(393, 110);
         vboxLayout = new QVBoxLayout(qdesigner_internal__GridPanel);
-        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
+        vboxLayout->setObjectName("vboxLayout");
         vboxLayout->setContentsMargins(0, 0, 0, 0);
         m_gridGroupBox = new QGroupBox(qdesigner_internal__GridPanel);
-        m_gridGroupBox->setObjectName(QString::fromUtf8("m_gridGroupBox"));
+        m_gridGroupBox->setObjectName("m_gridGroupBox");
         gridLayout = new QGridLayout(m_gridGroupBox);
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        gridLayout->setObjectName("gridLayout");
         m_visibleCheckBox = new QCheckBox(m_gridGroupBox);
-        m_visibleCheckBox->setObjectName(QString::fromUtf8("m_visibleCheckBox"));
+        m_visibleCheckBox->setObjectName("m_visibleCheckBox");
         QSizePolicy sizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -66,28 +66,28 @@ public:
         gridLayout->addWidget(m_visibleCheckBox, 0, 0, 1, 1);
 
         label = new QLabel(m_gridGroupBox);
-        label->setObjectName(QString::fromUtf8("label"));
+        label->setObjectName("label");
 
         gridLayout->addWidget(label, 0, 1, 1, 1);
 
         m_deltaXSpinBox = new QSpinBox(m_gridGroupBox);
-        m_deltaXSpinBox->setObjectName(QString::fromUtf8("m_deltaXSpinBox"));
+        m_deltaXSpinBox->setObjectName("m_deltaXSpinBox");
         m_deltaXSpinBox->setMinimum(2);
         m_deltaXSpinBox->setMaximum(100);
 
         gridLayout->addWidget(m_deltaXSpinBox, 0, 2, 1, 1);
 
         m_snapXCheckBox = new QCheckBox(m_gridGroupBox);
-        m_snapXCheckBox->setObjectName(QString::fromUtf8("m_snapXCheckBox"));
+        m_snapXCheckBox->setObjectName("m_snapXCheckBox");
         sizePolicy.setHeightForWidth(m_snapXCheckBox->sizePolicy().hasHeightForWidth());
         m_snapXCheckBox->setSizePolicy(sizePolicy);
 
         gridLayout->addWidget(m_snapXCheckBox, 0, 3, 1, 1);
 
         hboxLayout = new QHBoxLayout();
-        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
+        hboxLayout->setObjectName("hboxLayout");
         m_resetButton = new QPushButton(m_gridGroupBox);
-        m_resetButton->setObjectName(QString::fromUtf8("m_resetButton"));
+        m_resetButton->setObjectName("m_resetButton");
 
         hboxLayout->addWidget(m_resetButton);
 
@@ -99,19 +99,19 @@ public:
         gridLayout->addLayout(hboxLayout, 1, 0, 1, 1);
 
         label_2 = new QLabel(m_gridGroupBox);
-        label_2->setObjectName(QString::fromUtf8("label_2"));
+        label_2->setObjectName("label_2");
 
         gridLayout->addWidget(label_2, 1, 1, 1, 1);
 
         m_deltaYSpinBox = new QSpinBox(m_gridGroupBox);
-        m_deltaYSpinBox->setObjectName(QString::fromUtf8("m_deltaYSpinBox"));
+        m_deltaYSpinBox->setObjectName("m_deltaYSpinBox");
         m_deltaYSpinBox->setMinimum(2);
         m_deltaYSpinBox->setMaximum(100);
 
         gridLayout->addWidget(m_deltaYSpinBox, 1, 2, 1, 1);
 
         m_snapYCheckBox = new QCheckBox(m_gridGroupBox);
-        m_snapYCheckBox->setObjectName(QString::fromUtf8("m_snapYCheckBox"));
+        m_snapYCheckBox->setObjectName("m_snapYCheckBox");
         sizePolicy.setHeightForWidth(m_snapYCheckBox->sizePolicy().hasHeightForWidth());
         m_snapYCheckBox->setSizePolicy(sizePolicy);
 

@@ -29,12 +29,12 @@ public:
     void setupUi(QWidget *Form)
     {
         if (Form->objectName().isEmpty())
-            Form->setObjectName(QString::fromUtf8("Form"));
+            Form->setObjectName("Form");
         Form->resize(122, 117);
         verticalLayout = new QVBoxLayout(Form);
-        verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
+        verticalLayout->setObjectName("verticalLayout");
         fileicon = new QPushButton(Form);
-        fileicon->setObjectName(QString::fromUtf8("fileicon"));
+        fileicon->setObjectName("fileicon");
         QIcon icon;
         icon.addFile(QString::fromUtf8("image1.png"), QSize(), QIcon::Normal, QIcon::Off);
         fileicon->setIcon(icon);
@@ -42,7 +42,7 @@ public:
         verticalLayout->addWidget(fileicon);
 
         fileandthemeicon = new QPushButton(Form);
-        fileandthemeicon->setObjectName(QString::fromUtf8("fileandthemeicon"));
+        fileandthemeicon->setObjectName("fileandthemeicon");
         QIcon icon1;
         QString iconThemeName = QString::fromUtf8("edit-copy");
         if (QIcon::hasThemeIcon(iconThemeName)) {
@@ -55,7 +55,7 @@ public:
         verticalLayout->addWidget(fileandthemeicon);
 
         themeicon = new QPushButton(Form);
-        themeicon->setObjectName(QString::fromUtf8("themeicon"));
+        themeicon->setObjectName("themeicon");
         QIcon icon2;
         iconThemeName = QString::fromUtf8("edit-copy");
         if (QIcon::hasThemeIcon(iconThemeName)) {

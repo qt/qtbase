@@ -55,23 +55,23 @@ public:
     void setupUi(QDialog *CookiesExceptionsDialog)
     {
         if (CookiesExceptionsDialog->objectName().isEmpty())
-            CookiesExceptionsDialog->setObjectName(QString::fromUtf8("CookiesExceptionsDialog"));
+            CookiesExceptionsDialog->setObjectName("CookiesExceptionsDialog");
         CookiesExceptionsDialog->resize(466, 446);
         vboxLayout = new QVBoxLayout(CookiesExceptionsDialog);
-        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
+        vboxLayout->setObjectName("vboxLayout");
         newExceptionGroupBox = new QGroupBox(CookiesExceptionsDialog);
-        newExceptionGroupBox->setObjectName(QString::fromUtf8("newExceptionGroupBox"));
+        newExceptionGroupBox->setObjectName("newExceptionGroupBox");
         gridLayout = new QGridLayout(newExceptionGroupBox);
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        gridLayout->setObjectName("gridLayout");
         hboxLayout = new QHBoxLayout();
-        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
+        hboxLayout->setObjectName("hboxLayout");
         label = new QLabel(newExceptionGroupBox);
-        label->setObjectName(QString::fromUtf8("label"));
+        label->setObjectName("label");
 
         hboxLayout->addWidget(label);
 
         domainLineEdit = new QLineEdit(newExceptionGroupBox);
-        domainLineEdit->setObjectName(QString::fromUtf8("domainLineEdit"));
+        domainLineEdit->setObjectName("domainLineEdit");
 
         hboxLayout->addWidget(domainLineEdit);
 
@@ -79,25 +79,25 @@ public:
         gridLayout->addLayout(hboxLayout, 0, 0, 1, 1);
 
         hboxLayout1 = new QHBoxLayout();
-        hboxLayout1->setObjectName(QString::fromUtf8("hboxLayout1"));
+        hboxLayout1->setObjectName("hboxLayout1");
         spacerItem = new QSpacerItem(81, 25, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
         hboxLayout1->addItem(spacerItem);
 
         blockButton = new QPushButton(newExceptionGroupBox);
-        blockButton->setObjectName(QString::fromUtf8("blockButton"));
+        blockButton->setObjectName("blockButton");
         blockButton->setEnabled(false);
 
         hboxLayout1->addWidget(blockButton);
 
         allowForSessionButton = new QPushButton(newExceptionGroupBox);
-        allowForSessionButton->setObjectName(QString::fromUtf8("allowForSessionButton"));
+        allowForSessionButton->setObjectName("allowForSessionButton");
         allowForSessionButton->setEnabled(false);
 
         hboxLayout1->addWidget(allowForSessionButton);
 
         allowButton = new QPushButton(newExceptionGroupBox);
-        allowButton->setObjectName(QString::fromUtf8("allowButton"));
+        allowButton->setObjectName("allowButton");
         allowButton->setEnabled(false);
 
         hboxLayout1->addWidget(allowButton);
@@ -109,30 +109,30 @@ public:
         vboxLayout->addWidget(newExceptionGroupBox);
 
         ExceptionsGroupBox = new QGroupBox(CookiesExceptionsDialog);
-        ExceptionsGroupBox->setObjectName(QString::fromUtf8("ExceptionsGroupBox"));
+        ExceptionsGroupBox->setObjectName("ExceptionsGroupBox");
         gridLayout1 = new QGridLayout(ExceptionsGroupBox);
-        gridLayout1->setObjectName(QString::fromUtf8("gridLayout1"));
+        gridLayout1->setObjectName("gridLayout1");
         spacerItem1 = new QSpacerItem(252, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
         gridLayout1->addItem(spacerItem1, 0, 0, 1, 3);
 
         search = new SearchLineEdit(ExceptionsGroupBox);
-        search->setObjectName(QString::fromUtf8("search"));
+        search->setObjectName("search");
 
         gridLayout1->addWidget(search, 0, 3, 1, 1);
 
         exceptionTable = new EditTableView(ExceptionsGroupBox);
-        exceptionTable->setObjectName(QString::fromUtf8("exceptionTable"));
+        exceptionTable->setObjectName("exceptionTable");
 
         gridLayout1->addWidget(exceptionTable, 1, 0, 1, 4);
 
         removeButton = new QPushButton(ExceptionsGroupBox);
-        removeButton->setObjectName(QString::fromUtf8("removeButton"));
+        removeButton->setObjectName("removeButton");
 
         gridLayout1->addWidget(removeButton, 2, 0, 1, 1);
 
         removeAllButton = new QPushButton(ExceptionsGroupBox);
-        removeAllButton->setObjectName(QString::fromUtf8("removeAllButton"));
+        removeAllButton->setObjectName("removeAllButton");
 
         gridLayout1->addWidget(removeAllButton, 2, 1, 1, 1);
 
@@ -144,7 +144,7 @@ public:
         vboxLayout->addWidget(ExceptionsGroupBox);
 
         buttonBox = new QDialogButtonBox(CookiesExceptionsDialog);
-        buttonBox->setObjectName(QString::fromUtf8("buttonBox"));
+        buttonBox->setObjectName("buttonBox");
         buttonBox->setOrientation(Qt::Horizontal);
         buttonBox->setStandardButtons(QDialogButtonBox::Ok);
 

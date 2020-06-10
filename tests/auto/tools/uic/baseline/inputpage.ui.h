@@ -35,16 +35,16 @@ public:
     void setupUi(QWidget *InputPage)
     {
         if (InputPage->objectName().isEmpty())
-            InputPage->setObjectName(QString::fromUtf8("InputPage"));
+            InputPage->setObjectName("InputPage");
         InputPage->resize(417, 242);
         gridLayout = new QGridLayout(InputPage);
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        gridLayout->setObjectName("gridLayout");
         spacerItem = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Fixed);
 
         gridLayout->addItem(spacerItem, 0, 2, 1, 1);
 
         label = new QLabel(InputPage);
-        label->setObjectName(QString::fromUtf8("label"));
+        label->setObjectName("label");
         QSizePolicy sizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -55,14 +55,14 @@ public:
 
         hboxLayout = new QHBoxLayout();
         hboxLayout->setSpacing(0);
-        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
+        hboxLayout->setObjectName("hboxLayout");
         fileLineEdit = new QLineEdit(InputPage);
-        fileLineEdit->setObjectName(QString::fromUtf8("fileLineEdit"));
+        fileLineEdit->setObjectName("fileLineEdit");
 
         hboxLayout->addWidget(fileLineEdit);
 
         browseButton = new QToolButton(InputPage);
-        browseButton->setObjectName(QString::fromUtf8("browseButton"));
+        browseButton->setObjectName("browseButton");
 
         hboxLayout->addWidget(browseButton);
 

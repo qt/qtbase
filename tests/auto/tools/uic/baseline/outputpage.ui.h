@@ -33,16 +33,16 @@ public:
     void setupUi(QWidget *OutputPage)
     {
         if (OutputPage->objectName().isEmpty())
-            OutputPage->setObjectName(QString::fromUtf8("OutputPage"));
+            OutputPage->setObjectName("OutputPage");
         OutputPage->resize(417, 242);
         gridLayout = new QGridLayout(OutputPage);
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        gridLayout->setObjectName("gridLayout");
         spacerItem = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Fixed);
 
         gridLayout->addItem(spacerItem, 0, 1, 1, 1);
 
         label = new QLabel(OutputPage);
-        label->setObjectName(QString::fromUtf8("label"));
+        label->setObjectName("label");
         QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -52,7 +52,7 @@ public:
         gridLayout->addWidget(label, 1, 0, 1, 1);
 
         projectLineEdit = new QLineEdit(OutputPage);
-        projectLineEdit->setObjectName(QString::fromUtf8("projectLineEdit"));
+        projectLineEdit->setObjectName("projectLineEdit");
         QSizePolicy sizePolicy1(QSizePolicy::Expanding, QSizePolicy::Fixed);
         sizePolicy1.setHorizontalStretch(0);
         sizePolicy1.setVerticalStretch(0);
@@ -62,14 +62,14 @@ public:
         gridLayout->addWidget(projectLineEdit, 1, 1, 1, 1);
 
         label_2 = new QLabel(OutputPage);
-        label_2->setObjectName(QString::fromUtf8("label_2"));
+        label_2->setObjectName("label_2");
         sizePolicy.setHeightForWidth(label_2->sizePolicy().hasHeightForWidth());
         label_2->setSizePolicy(sizePolicy);
 
         gridLayout->addWidget(label_2, 2, 0, 1, 1);
 
         collectionLineEdit = new QLineEdit(OutputPage);
-        collectionLineEdit->setObjectName(QString::fromUtf8("collectionLineEdit"));
+        collectionLineEdit->setObjectName("collectionLineEdit");
         sizePolicy1.setHeightForWidth(collectionLineEdit->sizePolicy().hasHeightForWidth());
         collectionLineEdit->setSizePolicy(sizePolicy1);
 

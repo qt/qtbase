@@ -105,28 +105,28 @@ public:
     void setupUi(QDialog *qdesigner_internal__TableWidgetEditor)
     {
         if (qdesigner_internal__TableWidgetEditor->objectName().isEmpty())
-            qdesigner_internal__TableWidgetEditor->setObjectName(QString::fromUtf8("qdesigner_internal__TableWidgetEditor"));
+            qdesigner_internal__TableWidgetEditor->setObjectName("qdesigner_internal__TableWidgetEditor");
         qdesigner_internal__TableWidgetEditor->resize(591, 455);
         gridLayout_4 = new QGridLayout(qdesigner_internal__TableWidgetEditor);
-        gridLayout_4->setObjectName(QString::fromUtf8("gridLayout_4"));
+        gridLayout_4->setObjectName("gridLayout_4");
         itemsBox = new QGroupBox(qdesigner_internal__TableWidgetEditor);
-        itemsBox->setObjectName(QString::fromUtf8("itemsBox"));
+        itemsBox->setObjectName("itemsBox");
         gridLayout = new QGridLayout(itemsBox);
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        gridLayout->setObjectName("gridLayout");
         tableWidget = new QTableWidget(itemsBox);
-        tableWidget->setObjectName(QString::fromUtf8("tableWidget"));
+        tableWidget->setObjectName("tableWidget");
 
         gridLayout->addWidget(tableWidget, 0, 0, 1, 1);
 
         horizontalLayout_5 = new QHBoxLayout();
-        horizontalLayout_5->setObjectName(QString::fromUtf8("horizontalLayout_5"));
+        horizontalLayout_5->setObjectName("horizontalLayout_5");
         label_3 = new QLabel(itemsBox);
-        label_3->setObjectName(QString::fromUtf8("label_3"));
+        label_3->setObjectName("label_3");
 
         horizontalLayout_5->addWidget(label_3);
 
         itemIconSelector = new qdesigner_internal::IconSelector(itemsBox);
-        itemIconSelector->setObjectName(QString::fromUtf8("itemIconSelector"));
+        itemIconSelector->setObjectName("itemIconSelector");
 
         horizontalLayout_5->addWidget(itemIconSelector);
 
@@ -141,14 +141,14 @@ public:
         gridLayout_4->addWidget(itemsBox, 0, 0, 1, 1);
 
         buttonBox = new QDialogButtonBox(qdesigner_internal__TableWidgetEditor);
-        buttonBox->setObjectName(QString::fromUtf8("buttonBox"));
+        buttonBox->setObjectName("buttonBox");
         buttonBox->setOrientation(Qt::Horizontal);
         buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
 
         gridLayout_4->addWidget(buttonBox, 1, 0, 1, 2);
 
         widget = new QWidget(qdesigner_internal__TableWidgetEditor);
-        widget->setObjectName(QString::fromUtf8("widget"));
+        widget->setObjectName("widget");
         QSizePolicy sizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -156,13 +156,13 @@ public:
         widget->setSizePolicy(sizePolicy);
         verticalLayout = new QVBoxLayout(widget);
         verticalLayout->setContentsMargins(0, 0, 0, 0);
-        verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
+        verticalLayout->setObjectName("verticalLayout");
         columnsBox = new QGroupBox(widget);
-        columnsBox->setObjectName(QString::fromUtf8("columnsBox"));
+        columnsBox->setObjectName("columnsBox");
         gridLayout_2 = new QGridLayout(columnsBox);
-        gridLayout_2->setObjectName(QString::fromUtf8("gridLayout_2"));
+        gridLayout_2->setObjectName("gridLayout_2");
         columnsListWidget = new QListWidget(columnsBox);
-        columnsListWidget->setObjectName(QString::fromUtf8("columnsListWidget"));
+        columnsListWidget->setObjectName("columnsListWidget");
         QSizePolicy sizePolicy1(QSizePolicy::Ignored, QSizePolicy::Expanding);
         sizePolicy1.setHorizontalStretch(0);
         sizePolicy1.setVerticalStretch(0);
@@ -173,14 +173,14 @@ public:
         gridLayout_2->addWidget(columnsListWidget, 0, 0, 1, 1);
 
         horizontalLayout_3 = new QHBoxLayout();
-        horizontalLayout_3->setObjectName(QString::fromUtf8("horizontalLayout_3"));
+        horizontalLayout_3->setObjectName("horizontalLayout_3");
         newColumnButton = new QToolButton(columnsBox);
-        newColumnButton->setObjectName(QString::fromUtf8("newColumnButton"));
+        newColumnButton->setObjectName("newColumnButton");
 
         horizontalLayout_3->addWidget(newColumnButton);
 
         deleteColumnButton = new QToolButton(columnsBox);
-        deleteColumnButton->setObjectName(QString::fromUtf8("deleteColumnButton"));
+        deleteColumnButton->setObjectName("deleteColumnButton");
 
         horizontalLayout_3->addWidget(deleteColumnButton);
 
@@ -189,12 +189,12 @@ public:
         horizontalLayout_3->addItem(spacerItem);
 
         moveColumnUpButton = new QToolButton(columnsBox);
-        moveColumnUpButton->setObjectName(QString::fromUtf8("moveColumnUpButton"));
+        moveColumnUpButton->setObjectName("moveColumnUpButton");
 
         horizontalLayout_3->addWidget(moveColumnUpButton);
 
         moveColumnDownButton = new QToolButton(columnsBox);
-        moveColumnDownButton->setObjectName(QString::fromUtf8("moveColumnDownButton"));
+        moveColumnDownButton->setObjectName("moveColumnDownButton");
 
         horizontalLayout_3->addWidget(moveColumnDownButton);
 
@@ -202,14 +202,14 @@ public:
         gridLayout_2->addLayout(horizontalLayout_3, 1, 0, 1, 1);
 
         horizontalLayout_2 = new QHBoxLayout();
-        horizontalLayout_2->setObjectName(QString::fromUtf8("horizontalLayout_2"));
+        horizontalLayout_2->setObjectName("horizontalLayout_2");
         label = new QLabel(columnsBox);
-        label->setObjectName(QString::fromUtf8("label"));
+        label->setObjectName("label");
 
         horizontalLayout_2->addWidget(label);
 
         columnIconSelector = new qdesigner_internal::IconSelector(columnsBox);
-        columnIconSelector->setObjectName(QString::fromUtf8("columnIconSelector"));
+        columnIconSelector->setObjectName("columnIconSelector");
 
         horizontalLayout_2->addWidget(columnIconSelector);
 
@@ -224,11 +224,11 @@ public:
         verticalLayout->addWidget(columnsBox);
 
         rowsBox = new QGroupBox(widget);
-        rowsBox->setObjectName(QString::fromUtf8("rowsBox"));
+        rowsBox->setObjectName("rowsBox");
         gridLayout_3 = new QGridLayout(rowsBox);
-        gridLayout_3->setObjectName(QString::fromUtf8("gridLayout_3"));
+        gridLayout_3->setObjectName("gridLayout_3");
         rowsListWidget = new QListWidget(rowsBox);
-        rowsListWidget->setObjectName(QString::fromUtf8("rowsListWidget"));
+        rowsListWidget->setObjectName("rowsListWidget");
         sizePolicy1.setHeightForWidth(rowsListWidget->sizePolicy().hasHeightForWidth());
         rowsListWidget->setSizePolicy(sizePolicy1);
         rowsListWidget->setFocusPolicy(Qt::TabFocus);
@@ -236,14 +236,14 @@ public:
         gridLayout_3->addWidget(rowsListWidget, 0, 0, 1, 1);
 
         horizontalLayout_4 = new QHBoxLayout();
-        horizontalLayout_4->setObjectName(QString::fromUtf8("horizontalLayout_4"));
+        horizontalLayout_4->setObjectName("horizontalLayout_4");
         newRowButton = new QToolButton(rowsBox);
-        newRowButton->setObjectName(QString::fromUtf8("newRowButton"));
+        newRowButton->setObjectName("newRowButton");
 
         horizontalLayout_4->addWidget(newRowButton);
 
         deleteRowButton = new QToolButton(rowsBox);
-        deleteRowButton->setObjectName(QString::fromUtf8("deleteRowButton"));
+        deleteRowButton->setObjectName("deleteRowButton");
 
         horizontalLayout_4->addWidget(deleteRowButton);
 
@@ -252,12 +252,12 @@ public:
         horizontalLayout_4->addItem(spacerItem2);
 
         moveRowUpButton = new QToolButton(rowsBox);
-        moveRowUpButton->setObjectName(QString::fromUtf8("moveRowUpButton"));
+        moveRowUpButton->setObjectName("moveRowUpButton");
 
         horizontalLayout_4->addWidget(moveRowUpButton);
 
         moveRowDownButton = new QToolButton(rowsBox);
-        moveRowDownButton->setObjectName(QString::fromUtf8("moveRowDownButton"));
+        moveRowDownButton->setObjectName("moveRowDownButton");
 
         horizontalLayout_4->addWidget(moveRowDownButton);
 
@@ -265,14 +265,14 @@ public:
         gridLayout_3->addLayout(horizontalLayout_4, 1, 0, 1, 1);
 
         horizontalLayout = new QHBoxLayout();
-        horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
+        horizontalLayout->setObjectName("horizontalLayout");
         label_2 = new QLabel(rowsBox);
-        label_2->setObjectName(QString::fromUtf8("label_2"));
+        label_2->setObjectName("label_2");
 
         horizontalLayout->addWidget(label_2);
 
         rowIconSelector = new qdesigner_internal::IconSelector(rowsBox);
-        rowIconSelector->setObjectName(QString::fromUtf8("rowIconSelector"));
+        rowIconSelector->setObjectName("rowIconSelector");
 
         horizontalLayout->addWidget(rowIconSelector);
 

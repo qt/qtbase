@@ -80,7 +80,7 @@ public:
     void setupUi(QDialog *qdesigner_internal__PaletteEditor)
     {
         if (qdesigner_internal__PaletteEditor->objectName().isEmpty())
-            qdesigner_internal__PaletteEditor->setObjectName(QString::fromUtf8("qdesigner_internal__PaletteEditor"));
+            qdesigner_internal__PaletteEditor->setObjectName("qdesigner_internal__PaletteEditor");
         qdesigner_internal__PaletteEditor->resize(365, 409);
         QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
         sizePolicy.setHorizontalStretch(0);
@@ -94,9 +94,9 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout->setContentsMargins(9, 9, 9, 9);
 #endif
-        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
+        vboxLayout->setObjectName("vboxLayout");
         advancedBox = new QGroupBox(qdesigner_internal__PaletteEditor);
-        advancedBox->setObjectName(QString::fromUtf8("advancedBox"));
+        advancedBox->setObjectName("advancedBox");
         advancedBox->setMinimumSize(QSize(0, 0));
         advancedBox->setMaximumSize(QSize(16777215, 16777215));
         gridLayout = new QGridLayout(advancedBox);
@@ -106,9 +106,9 @@ public:
 #ifndef Q_OS_MAC
         gridLayout->setContentsMargins(9, 9, 9, 9);
 #endif
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        gridLayout->setObjectName("gridLayout");
         buildButton = new QtColorButton(advancedBox);
-        buildButton->setObjectName(QString::fromUtf8("buildButton"));
+        buildButton->setObjectName("buildButton");
         QSizePolicy sizePolicy1(QSizePolicy::Expanding, QSizePolicy::Ignored);
         sizePolicy1.setHorizontalStretch(0);
         sizePolicy1.setVerticalStretch(0);
@@ -118,24 +118,24 @@ public:
         gridLayout->addWidget(buildButton, 0, 1, 1, 1);
 
         paletteView = new QTreeView(advancedBox);
-        paletteView->setObjectName(QString::fromUtf8("paletteView"));
+        paletteView->setObjectName("paletteView");
         paletteView->setMinimumSize(QSize(0, 200));
 
         gridLayout->addWidget(paletteView, 1, 0, 1, 4);
 
         detailsRadio = new QRadioButton(advancedBox);
-        detailsRadio->setObjectName(QString::fromUtf8("detailsRadio"));
+        detailsRadio->setObjectName("detailsRadio");
 
         gridLayout->addWidget(detailsRadio, 0, 3, 1, 1);
 
         computeRadio = new QRadioButton(advancedBox);
-        computeRadio->setObjectName(QString::fromUtf8("computeRadio"));
+        computeRadio->setObjectName("computeRadio");
         computeRadio->setChecked(true);
 
         gridLayout->addWidget(computeRadio, 0, 2, 1, 1);
 
         label = new QLabel(advancedBox);
-        label->setObjectName(QString::fromUtf8("label"));
+        label->setObjectName("label");
 
         gridLayout->addWidget(label, 0, 0, 1, 1);
 
@@ -143,7 +143,7 @@ public:
         vboxLayout->addWidget(advancedBox);
 
         GroupBox126 = new QGroupBox(qdesigner_internal__PaletteEditor);
-        GroupBox126->setObjectName(QString::fromUtf8("GroupBox126"));
+        GroupBox126->setObjectName("GroupBox126");
         QSizePolicy sizePolicy2(QSizePolicy::Preferred, QSizePolicy::Expanding);
         sizePolicy2.setHorizontalStretch(0);
         sizePolicy2.setVerticalStretch(0);
@@ -154,25 +154,25 @@ public:
         gridLayout1->setSpacing(6);
 #endif
         gridLayout1->setContentsMargins(8, 8, 8, 8);
-        gridLayout1->setObjectName(QString::fromUtf8("gridLayout1"));
+        gridLayout1->setObjectName("gridLayout1");
         disabledRadio = new QRadioButton(GroupBox126);
-        disabledRadio->setObjectName(QString::fromUtf8("disabledRadio"));
+        disabledRadio->setObjectName("disabledRadio");
 
         gridLayout1->addWidget(disabledRadio, 0, 2, 1, 1);
 
         inactiveRadio = new QRadioButton(GroupBox126);
-        inactiveRadio->setObjectName(QString::fromUtf8("inactiveRadio"));
+        inactiveRadio->setObjectName("inactiveRadio");
 
         gridLayout1->addWidget(inactiveRadio, 0, 1, 1, 1);
 
         activeRadio = new QRadioButton(GroupBox126);
-        activeRadio->setObjectName(QString::fromUtf8("activeRadio"));
+        activeRadio->setObjectName("activeRadio");
         activeRadio->setChecked(true);
 
         gridLayout1->addWidget(activeRadio, 0, 0, 1, 1);
 
         previewFrame = new qdesigner_internal::PreviewFrame(GroupBox126);
-        previewFrame->setObjectName(QString::fromUtf8("previewFrame"));
+        previewFrame->setObjectName("previewFrame");
         sizePolicy.setHeightForWidth(previewFrame->sizePolicy().hasHeightForWidth());
         previewFrame->setSizePolicy(sizePolicy);
 
@@ -182,7 +182,7 @@ public:
         vboxLayout->addWidget(GroupBox126);
 
         buttonBox = new QDialogButtonBox(qdesigner_internal__PaletteEditor);
-        buttonBox->setObjectName(QString::fromUtf8("buttonBox"));
+        buttonBox->setObjectName("buttonBox");
         buttonBox->setOrientation(Qt::Horizontal);
         buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok);
 

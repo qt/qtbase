@@ -93,20 +93,20 @@ public:
     void setupUi(QDialog *QFileDialog)
     {
         if (QFileDialog->objectName().isEmpty())
-            QFileDialog->setObjectName(QString::fromUtf8("QFileDialog"));
+            QFileDialog->setObjectName("QFileDialog");
         QFileDialog->resize(521, 316);
         QFileDialog->setSizeGripEnabled(true);
         gridLayout = new QGridLayout(QFileDialog);
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        gridLayout->setObjectName("gridLayout");
         lookInLabel = new QLabel(QFileDialog);
-        lookInLabel->setObjectName(QString::fromUtf8("lookInLabel"));
+        lookInLabel->setObjectName("lookInLabel");
 
         gridLayout->addWidget(lookInLabel, 0, 0, 1, 1);
 
         hboxLayout = new QHBoxLayout();
-        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
+        hboxLayout->setObjectName("hboxLayout");
         lookInCombo = new QFileDialogComboBox(QFileDialog);
-        lookInCombo->setObjectName(QString::fromUtf8("lookInCombo"));
+        lookInCombo->setObjectName("lookInCombo");
         QSizePolicy sizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
         sizePolicy.setHorizontalStretch(1);
         sizePolicy.setVerticalStretch(0);
@@ -117,32 +117,32 @@ public:
         hboxLayout->addWidget(lookInCombo);
 
         backButton = new QToolButton(QFileDialog);
-        backButton->setObjectName(QString::fromUtf8("backButton"));
+        backButton->setObjectName("backButton");
 
         hboxLayout->addWidget(backButton);
 
         forwardButton = new QToolButton(QFileDialog);
-        forwardButton->setObjectName(QString::fromUtf8("forwardButton"));
+        forwardButton->setObjectName("forwardButton");
 
         hboxLayout->addWidget(forwardButton);
 
         toParentButton = new QToolButton(QFileDialog);
-        toParentButton->setObjectName(QString::fromUtf8("toParentButton"));
+        toParentButton->setObjectName("toParentButton");
 
         hboxLayout->addWidget(toParentButton);
 
         newFolderButton = new QToolButton(QFileDialog);
-        newFolderButton->setObjectName(QString::fromUtf8("newFolderButton"));
+        newFolderButton->setObjectName("newFolderButton");
 
         hboxLayout->addWidget(newFolderButton);
 
         listModeButton = new QToolButton(QFileDialog);
-        listModeButton->setObjectName(QString::fromUtf8("listModeButton"));
+        listModeButton->setObjectName("listModeButton");
 
         hboxLayout->addWidget(listModeButton);
 
         detailModeButton = new QToolButton(QFileDialog);
-        detailModeButton->setObjectName(QString::fromUtf8("detailModeButton"));
+        detailModeButton->setObjectName("detailModeButton");
 
         hboxLayout->addWidget(detailModeButton);
 
@@ -150,7 +150,7 @@ public:
         gridLayout->addLayout(hboxLayout, 0, 1, 1, 2);
 
         splitter = new QSplitter(QFileDialog);
-        splitter->setObjectName(QString::fromUtf8("splitter"));
+        splitter->setObjectName("splitter");
         QSizePolicy sizePolicy1(QSizePolicy::Expanding, QSizePolicy::Expanding);
         sizePolicy1.setHorizontalStretch(0);
         sizePolicy1.setVerticalStretch(0);
@@ -158,38 +158,38 @@ public:
         splitter->setSizePolicy(sizePolicy1);
         splitter->setOrientation(Qt::Horizontal);
         sidebar = new QSidebar(splitter);
-        sidebar->setObjectName(QString::fromUtf8("sidebar"));
+        sidebar->setObjectName("sidebar");
         splitter->addWidget(sidebar);
         frame = new QFrame(splitter);
-        frame->setObjectName(QString::fromUtf8("frame"));
+        frame->setObjectName("frame");
         frame->setFrameShape(QFrame::NoFrame);
         frame->setFrameShadow(QFrame::Raised);
         vboxLayout = new QVBoxLayout(frame);
         vboxLayout->setSpacing(0);
-        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
+        vboxLayout->setObjectName("vboxLayout");
         vboxLayout->setContentsMargins(0, 0, 0, 0);
         stackedWidget = new QStackedWidget(frame);
-        stackedWidget->setObjectName(QString::fromUtf8("stackedWidget"));
+        stackedWidget->setObjectName("stackedWidget");
         page = new QWidget();
-        page->setObjectName(QString::fromUtf8("page"));
+        page->setObjectName("page");
         vboxLayout1 = new QVBoxLayout(page);
         vboxLayout1->setSpacing(0);
-        vboxLayout1->setObjectName(QString::fromUtf8("vboxLayout1"));
+        vboxLayout1->setObjectName("vboxLayout1");
         vboxLayout1->setContentsMargins(0, 0, 0, 0);
         listView = new QFileDialogListView(page);
-        listView->setObjectName(QString::fromUtf8("listView"));
+        listView->setObjectName("listView");
 
         vboxLayout1->addWidget(listView);
 
         stackedWidget->addWidget(page);
         page_2 = new QWidget();
-        page_2->setObjectName(QString::fromUtf8("page_2"));
+        page_2->setObjectName("page_2");
         vboxLayout2 = new QVBoxLayout(page_2);
         vboxLayout2->setSpacing(0);
-        vboxLayout2->setObjectName(QString::fromUtf8("vboxLayout2"));
+        vboxLayout2->setObjectName("vboxLayout2");
         vboxLayout2->setContentsMargins(0, 0, 0, 0);
         treeView = new QFileDialogTreeView(page_2);
-        treeView->setObjectName(QString::fromUtf8("treeView"));
+        treeView->setObjectName("treeView");
 
         vboxLayout2->addWidget(treeView);
 
@@ -202,7 +202,7 @@ public:
         gridLayout->addWidget(splitter, 1, 0, 1, 3);
 
         fileNameLabel = new QLabel(QFileDialog);
-        fileNameLabel->setObjectName(QString::fromUtf8("fileNameLabel"));
+        fileNameLabel->setObjectName("fileNameLabel");
         QSizePolicy sizePolicy2(QSizePolicy::Minimum, QSizePolicy::Preferred);
         sizePolicy2.setHorizontalStretch(0);
         sizePolicy2.setVerticalStretch(0);
@@ -213,7 +213,7 @@ public:
         gridLayout->addWidget(fileNameLabel, 2, 0, 1, 1);
 
         fileNameEdit = new QFileDialogLineEdit(QFileDialog);
-        fileNameEdit->setObjectName(QString::fromUtf8("fileNameEdit"));
+        fileNameEdit->setObjectName("fileNameEdit");
         QSizePolicy sizePolicy3(QSizePolicy::Expanding, QSizePolicy::Fixed);
         sizePolicy3.setHorizontalStretch(1);
         sizePolicy3.setVerticalStretch(0);
@@ -223,14 +223,14 @@ public:
         gridLayout->addWidget(fileNameEdit, 2, 1, 1, 1);
 
         buttonBox = new QDialogButtonBox(QFileDialog);
-        buttonBox->setObjectName(QString::fromUtf8("buttonBox"));
+        buttonBox->setObjectName("buttonBox");
         buttonBox->setOrientation(Qt::Vertical);
         buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok);
 
         gridLayout->addWidget(buttonBox, 2, 2, 2, 1);
 
         fileTypeLabel = new QLabel(QFileDialog);
-        fileTypeLabel->setObjectName(QString::fromUtf8("fileTypeLabel"));
+        fileTypeLabel->setObjectName("fileTypeLabel");
         QSizePolicy sizePolicy4(QSizePolicy::Preferred, QSizePolicy::Fixed);
         sizePolicy4.setHorizontalStretch(0);
         sizePolicy4.setVerticalStretch(0);
@@ -240,7 +240,7 @@ public:
         gridLayout->addWidget(fileTypeLabel, 3, 0, 1, 1);
 
         fileTypeCombo = new QComboBox(QFileDialog);
-        fileTypeCombo->setObjectName(QString::fromUtf8("fileTypeCombo"));
+        fileTypeCombo->setObjectName("fileTypeCombo");
         QSizePolicy sizePolicy5(QSizePolicy::Expanding, QSizePolicy::Fixed);
         sizePolicy5.setHorizontalStretch(0);
         sizePolicy5.setVerticalStretch(0);

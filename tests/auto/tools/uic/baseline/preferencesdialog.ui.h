@@ -54,21 +54,21 @@ public:
     void setupUi(QDialog *PreferencesDialog)
     {
         if (PreferencesDialog->objectName().isEmpty())
-            PreferencesDialog->setObjectName(QString::fromUtf8("PreferencesDialog"));
+            PreferencesDialog->setObjectName("PreferencesDialog");
         PreferencesDialog->resize(455, 359);
         PreferencesDialog->setModal(true);
         vboxLayout = new QVBoxLayout(PreferencesDialog);
-        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
+        vboxLayout->setObjectName("vboxLayout");
         hboxLayout = new QHBoxLayout();
-        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
+        hboxLayout->setObjectName("hboxLayout");
         vboxLayout1 = new QVBoxLayout();
-        vboxLayout1->setObjectName(QString::fromUtf8("vboxLayout1"));
+        vboxLayout1->setObjectName("vboxLayout1");
         m_uiModeGroupBox = new QGroupBox(PreferencesDialog);
-        m_uiModeGroupBox->setObjectName(QString::fromUtf8("m_uiModeGroupBox"));
+        m_uiModeGroupBox->setObjectName("m_uiModeGroupBox");
         vboxLayout2 = new QVBoxLayout(m_uiModeGroupBox);
-        vboxLayout2->setObjectName(QString::fromUtf8("vboxLayout2"));
+        vboxLayout2->setObjectName("vboxLayout2");
         m_uiModeCombo = new QComboBox(m_uiModeGroupBox);
-        m_uiModeCombo->setObjectName(QString::fromUtf8("m_uiModeCombo"));
+        m_uiModeCombo->setObjectName("m_uiModeCombo");
 
         vboxLayout2->addWidget(m_uiModeCombo);
 
@@ -76,12 +76,12 @@ public:
         vboxLayout1->addWidget(m_uiModeGroupBox);
 
         m_fontPanel = new FontPanel(PreferencesDialog);
-        m_fontPanel->setObjectName(QString::fromUtf8("m_fontPanel"));
+        m_fontPanel->setObjectName("m_fontPanel");
 
         vboxLayout1->addWidget(m_fontPanel);
 
         m_previewConfigurationWidget = new qdesigner_internal::PreviewConfigurationWidget(PreferencesDialog);
-        m_previewConfigurationWidget->setObjectName(QString::fromUtf8("m_previewConfigurationWidget"));
+        m_previewConfigurationWidget->setObjectName("m_previewConfigurationWidget");
 
         vboxLayout1->addWidget(m_previewConfigurationWidget);
 
@@ -89,23 +89,23 @@ public:
         hboxLayout->addLayout(vboxLayout1);
 
         vboxLayout3 = new QVBoxLayout();
-        vboxLayout3->setObjectName(QString::fromUtf8("vboxLayout3"));
+        vboxLayout3->setObjectName("vboxLayout3");
         m_templatePathGroupBox = new QGroupBox(PreferencesDialog);
-        m_templatePathGroupBox->setObjectName(QString::fromUtf8("m_templatePathGroupBox"));
+        m_templatePathGroupBox->setObjectName("m_templatePathGroupBox");
         gridLayout = new QGridLayout(m_templatePathGroupBox);
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        gridLayout->setObjectName("gridLayout");
         m_templatePathListWidget = new QListWidget(m_templatePathGroupBox);
-        m_templatePathListWidget->setObjectName(QString::fromUtf8("m_templatePathListWidget"));
+        m_templatePathListWidget->setObjectName("m_templatePathListWidget");
 
         gridLayout->addWidget(m_templatePathListWidget, 0, 0, 1, 3);
 
         m_addTemplatePathButton = new QToolButton(m_templatePathGroupBox);
-        m_addTemplatePathButton->setObjectName(QString::fromUtf8("m_addTemplatePathButton"));
+        m_addTemplatePathButton->setObjectName("m_addTemplatePathButton");
 
         gridLayout->addWidget(m_addTemplatePathButton, 1, 0, 1, 1);
 
         m_removeTemplatePathButton = new QToolButton(m_templatePathGroupBox);
-        m_removeTemplatePathButton->setObjectName(QString::fromUtf8("m_removeTemplatePathButton"));
+        m_removeTemplatePathButton->setObjectName("m_removeTemplatePathButton");
 
         gridLayout->addWidget(m_removeTemplatePathButton, 1, 1, 1, 1);
 
@@ -117,7 +117,7 @@ public:
         vboxLayout3->addWidget(m_templatePathGroupBox);
 
         m_gridPanel = new qdesigner_internal::GridPanel(PreferencesDialog);
-        m_gridPanel->setObjectName(QString::fromUtf8("m_gridPanel"));
+        m_gridPanel->setObjectName("m_gridPanel");
 
         vboxLayout3->addWidget(m_gridPanel);
 
@@ -128,14 +128,14 @@ public:
         vboxLayout->addLayout(hboxLayout);
 
         line = new QFrame(PreferencesDialog);
-        line->setObjectName(QString::fromUtf8("line"));
+        line->setObjectName("line");
         line->setFrameShape(QFrame::HLine);
         line->setFrameShadow(QFrame::Sunken);
 
         vboxLayout->addWidget(line);
 
         m_dialogButtonBox = new QDialogButtonBox(PreferencesDialog);
-        m_dialogButtonBox->setObjectName(QString::fromUtf8("m_dialogButtonBox"));
+        m_dialogButtonBox->setObjectName("m_dialogButtonBox");
         m_dialogButtonBox->setOrientation(Qt::Horizontal);
         m_dialogButtonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
 

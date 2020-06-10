@@ -35,7 +35,7 @@ public:
     void setupUi(QDialog *ChatDialog)
     {
         if (ChatDialog->objectName().isEmpty())
-            ChatDialog->setObjectName(QString::fromUtf8("ChatDialog"));
+            ChatDialog->setObjectName("ChatDialog");
         ChatDialog->resize(513, 349);
         vboxLayout = new QVBoxLayout(ChatDialog);
 #ifndef Q_OS_MAC
@@ -44,7 +44,7 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout->setContentsMargins(9, 9, 9, 9);
 #endif
-        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
+        vboxLayout->setObjectName("vboxLayout");
         hboxLayout = new QHBoxLayout();
 #ifndef Q_OS_MAC
         hboxLayout->setSpacing(6);
@@ -52,16 +52,16 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout->setContentsMargins(0, 0, 0, 0);
 #endif
-        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
+        hboxLayout->setObjectName("hboxLayout");
         textEdit = new QTextEdit(ChatDialog);
-        textEdit->setObjectName(QString::fromUtf8("textEdit"));
+        textEdit->setObjectName("textEdit");
         textEdit->setFocusPolicy(Qt::NoFocus);
         textEdit->setReadOnly(true);
 
         hboxLayout->addWidget(textEdit);
 
         listWidget = new QListWidget(ChatDialog);
-        listWidget->setObjectName(QString::fromUtf8("listWidget"));
+        listWidget->setObjectName("listWidget");
         listWidget->setMaximumSize(QSize(180, 16777215));
         listWidget->setFocusPolicy(Qt::NoFocus);
 
@@ -75,14 +75,14 @@ public:
         hboxLayout1->setSpacing(6);
 #endif
         hboxLayout1->setContentsMargins(0, 0, 0, 0);
-        hboxLayout1->setObjectName(QString::fromUtf8("hboxLayout1"));
+        hboxLayout1->setObjectName("hboxLayout1");
         label = new QLabel(ChatDialog);
-        label->setObjectName(QString::fromUtf8("label"));
+        label->setObjectName("label");
 
         hboxLayout1->addWidget(label);
 
         lineEdit = new QLineEdit(ChatDialog);
-        lineEdit->setObjectName(QString::fromUtf8("lineEdit"));
+        lineEdit->setObjectName("lineEdit");
 
         hboxLayout1->addWidget(lineEdit);
 
