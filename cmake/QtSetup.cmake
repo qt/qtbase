@@ -137,7 +137,7 @@ include(CTest)
 enable_testing()
 
 # Set up building of examples.
-set(QT_BUILD_EXAMPLES ON)
+set(QT_BUILD_EXAMPLES OFF)
 # Examples are not built by default with qmake for iOS and friends, and thus the overall build
 # tends to fail. Disable them by default when targeting uikit.
 if(UIKIT OR ANDROID)
