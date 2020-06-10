@@ -86,17 +86,15 @@ QString QWinRegistryKey::stringValue(QStringView subKey) const
         || (type != REG_SZ && type != REG_EXPAND_SZ) || size <= 2) {
         return result;
     }
-    // Reserve more for rare cases where trailing '\0' are missing in registry,
-    // otherwise chop off the '\0' received.
-    QString buffer(int(size / sizeof(wchar_t)), Qt::Uninitialized);
-    if (RegQueryValueEx(m_key, subKeyC, nullptr, &type,
-                        reinterpret_cast<LPBYTE>(buffer.data()), &size) == ERROR_SUCCESS) {
-        if (buffer.endsWith(QChar::Null))
-            buffer.chop(1);
-    } else {
-        buffer.clear();
-    }
-    return buffer;
+    // Reserve more for rare cases where trailing '\0' are missing in registry.
+    // Rely on 0-termination since strings of size 256 padded with 0 have been
+    // observed (QTBUG-84455).
+    size += 2;
+    QVarLengthArray<unsigned char> buffer(static_cast<int>(size));
+    std::fill(buffer.data(), buffer.data() + size, 0u);
+    if (RegQueryValueEx(m_key, subKeyC, nullptr, &type, buffer.data(), &size) == ERROR_SUCCESS)
+          result = QString::fromWCharArray(reinterpret_cast<const wchar_t *>(buffer.constData()));
+    return result;
 }
 
 QPair<DWORD, bool> QWinRegistryKey::dwordValue(QStringView subKey) const
