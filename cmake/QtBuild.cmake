@@ -3160,13 +3160,11 @@ function(qt_internal_add_plugin target)
 
     set(output_directory_default "${QT_BUILD_DIR}/${INSTALL_PLUGINSDIR}/${arg_TYPE}")
     set(install_directory_default "${INSTALL_PLUGINSDIR}/${arg_TYPE}")
-    set(archive_install_directory_default "${INSTALL_LIBDIR}/${arg_TYPE}")
 
     if (arg_QML_TARGET_PATH)
         set(target_path "${arg_QML_TARGET_PATH}")
         set(output_directory_default "${QT_BUILD_DIR}/${INSTALL_QMLDIR}/${target_path}")
         set(install_directory_default "${INSTALL_QMLDIR}/${target_path}")
-        set(archive_install_directory_default "${INSTALL_QMLDIR}/${target_path}")
     endif()
 
     # Derive the class name from the target name if it's not explicitly specified.
@@ -3185,8 +3183,9 @@ function(qt_internal_add_plugin target)
     if (NOT arg_SKIP_INSTALL)
         qt_internal_check_directory_or_type(INSTALL_DIRECTORY "${arg_INSTALL_DIRECTORY}" "${arg_TYPE}"
             "${install_directory_default}" install_directory)
-        if (NOT arg_ARCHIVE_INSTALL_DIRECTORY AND arg_INSTALL_DIRECTORY)
-            set(arg_ARCHIVE_INSTALL_DIRECTORY "${arg_INSTALL_DIRECTORY}")
+        set(archive_install_directory ${arg_ARCHIVE_INSTALL_DIRECTORY})
+        if (NOT archive_install_directory AND install_directory)
+            set(archive_install_directory "${install_directory}")
         endif()
     endif()
 
