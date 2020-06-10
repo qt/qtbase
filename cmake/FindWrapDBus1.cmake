@@ -2,7 +2,10 @@
 # Work around that:-/
 # See https://gitlab.freedesktop.org/dbus/dbus/issues/267 for more information
 
-if(DBus1_FOUND OR WrapDBus1_FOUND)
+# When doing top-level static Qt builds, we need to protect against double creation of the dbus
+# target.
+if(DBus1_FOUND OR WrapDBus1_FOUND OR TARGET dbus-1)
+    set(WrapDBus1_FOUND 1)
     return()
 endif()
 
