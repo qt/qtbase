@@ -133,6 +133,7 @@ public:
 
     QIODevice *outgoingData;
     QSharedPointer<QRingBuffer> outgoingDataBuffer;
+    QByteArray requestData;
 
     void doAbort() const;
 
