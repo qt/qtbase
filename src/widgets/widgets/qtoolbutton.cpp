@@ -805,7 +805,8 @@ void QToolButtonPrivate::popupTimerDone()
     // QTBUG-78966, Delay positioning until after aboutToShow().
     auto positionFunction = [q, horizontal](const QSize &sizeHint) {
         return positionMenu(q, horizontal, sizeHint); };
-    actualMenu->d_func()->exec({}, nullptr, positionFunction);
+    const auto initialPos = positionFunction(actualMenu->sizeHint());
+    actualMenu->d_func()->exec(initialPos, nullptr, positionFunction);
 
     if (!that)
         return;
