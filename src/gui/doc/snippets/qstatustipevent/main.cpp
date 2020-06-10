@@ -54,7 +54,7 @@
 class MainWindow : public QMainWindow
 {
 public:
-    MainWindow(QWidget *parent = 0);
+    explicit MainWindow(QWidget *parent = nullptr);
 };
 
 //! [0] //! [1]

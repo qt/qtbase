@@ -58,7 +58,7 @@ class TextEdit : public QTextEdit
     Q_OBJECT
 
 public:
-    TextEdit(QWidget *parent=0);
+    explicit TextEdit(QWidget *parent = nullptr);
     bool canInsertFromMimeData( const QMimeData *source ) const override;
     void insertFromMimeData( const QMimeData *source ) override;
 };

@@ -53,7 +53,7 @@
     {
         Q_OBJECT
     public:
-        MyGLWindow(QScreen *screen = 0);
+        explicit MyGLWindow(QScreen *screen = nullptr);
 
     protected:
         void initializeGL();
