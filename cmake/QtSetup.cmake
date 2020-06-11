@@ -144,15 +144,7 @@ unset(qt_no_make_tools_default)
 include(CTest)
 enable_testing()
 
-# Set up building of examples.
-set(QT_BUILD_EXAMPLES OFF)
-# Examples are not built by default with qmake for iOS and friends, and thus the overall build
-# tends to fail. Disable them by default when targeting uikit.
-if(UIKIT OR ANDROID)
-    set(QT_BUILD_EXAMPLES OFF)
-endif()
-
-option(BUILD_EXAMPLES "Build Qt examples" ${QT_BUILD_EXAMPLES})
+option(BUILD_EXAMPLES "Build Qt examples" OFF)
 option(QT_NO_MAKE_EXAMPLES "Should examples be built as part of the default 'all' target." OFF)
 
 # Build Benchmarks
