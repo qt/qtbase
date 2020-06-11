@@ -110,6 +110,11 @@ public:
         d.setProgressValueAndText(progressValue, progressText);
     }
 
+#if defined(Q_CLANG_QDOC)  // documentation-only simplified signatures
+    void addResult(const T &result, int index = -1) { }
+    void addResult(T &&result, int index = -1) { }
+#endif
+
 private:
     mutable QFutureInterface<T> d = QFutureInterface<T>();
 

@@ -68,6 +68,11 @@ private slots:
     void cancelWhenMoved();
     void waitUntilResumed();
     void waitUntilCanceled();
+
+    // snippets (external):
+    void snippet_basicExample();
+    void snippet_multithreadExample();
+    void snippet_suspendExample();
 };
 
 struct TrivialType { int field = 0; };
@@ -571,6 +576,23 @@ void tst_QPromise::waitUntilCanceled()
     f.waitForFinished();
 
     QCOMPARE(f.resultCount(), 0);
+}
+
+// Below is a quick and dirty hack to make snippets a part of a test suite
+#include "snippet_qpromise.cpp"
+void tst_QPromise::snippet_basicExample()
+{
+    snippet_QPromise::basicExample();
+}
+
+void tst_QPromise::snippet_multithreadExample()
+{
+    snippet_QPromise::multithreadExample();
+}
+
+void tst_QPromise::snippet_suspendExample()
+{
+    snippet_QPromise::suspendExample();
 }
 
 QTEST_MAIN(tst_QPromise)

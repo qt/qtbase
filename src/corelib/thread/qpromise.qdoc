@@ -1,0 +1,231 @@
+/****************************************************************************
+**
+** Copyright (C) 2020 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*! \class QPromise
+    \inmodule QtCore
+    \threadsafe
+    \brief The QPromise class provides a way to store computation results to be accessed by QFuture.
+    \since 6.0
+
+    \ingroup thread
+
+    QPromise provides a simple way to communicate progress and results of the
+    user-defined computation to QFuture in an asynchronous fashion. For the
+    communication to work, QFuture must be constructed by QPromise.
+
+    You can use QPromise based workloads as an alternative to \l {Qt Concurrent}
+    framework when fine-grained control is needed or high-level communication
+    primitive to accompany QFuture is sufficient.
+
+    The simplest case of promise and future collaboration would be a single
+    result communication:
+
+    \snippet snippet_qpromise.cpp basic
+
+    By design, QPromise is a move-only object. This behavior helps to ensure
+    that whenever the promise is destroyed, the associated future object is
+    notified and will not wait forever for the results to become available.
+    However, this is inconvenient if one wants to use the same promise to report
+    results from different threads. There is no specific way to do that at the
+    moment, but known mechanisms exist, such as the use of smart pointers or raw
+    pointers/references. QSharedPointer is a good default choice if you want to
+    copy your promise and use it in multiple places simultaneously. Raw pointers
+    or references are, in a sense, easier, and probably perform better (since
+    there is no need to do a resource management) but may lead to dangling.
+
+    Here is an example of how a promise can be used in multiple threads:
+
+    \snippet snippet_qpromise.cpp multithread_init
+    \codeline
+    \snippet snippet_qpromise.cpp multithread_main
+
+    \sa QFuture
+*/
+
+/*! \fn template <typename T> QPromise<T>::QPromise()
+
+    Constructs a QPromise with a default state.
+*/
+
+/*! \fn template <typename T> QPromise<T>::QPromise(QPromise<T> &&other)
+
+    Move constructs a new QPromise from \a other.
+
+    \sa operator=()
+*/
+
+/*! \fn template <typename T> QPromise<T> &QPromise<T>::operator=(QPromise<T> &&other)
+
+    Move assigns \a other to this promise and returns a reference to this
+    promise.
+*/
+
+/*! \fn template <typename T> QPromise<T>::~QPromise()
+
+    Destroys the promise.
+
+    \note The promise implicitly transitions to a cancelled state on destruction
+    unless reportFinished() is called beforehand by the user.
+*/
+
+/*! \fn template <typename T> QFuture<T> QPromise<T>::future() const
+
+    Returns a future associated with this promise.
+*/
+
+/*! \fn template <typename T> void QPromise<T>::addResult(const T &result, int index = -1)
+
+    Adds \a result to the internal result collection at \a index position. If
+    index is unspecified, \a result is added to the end of the collection.
+
+    You can get a result at a specific index by calling QFuture::resultAt().
+
+    \note It is possible to specify an arbitrary index and request result at
+    that index. However, some QFuture methods operate with continuous results.
+    For instance, iterative approaches that use QFuture::resultCount() or
+    QFuture::const_iterator. In order to get all available results without
+    thinking if there are index gaps or not, use QFuture::results().
+*/
+
+/*! \fn template <typename T> void QPromise<T>::addResult(T &&result, int index = -1)
+
+    \overload
+*/
+
+/*! \fn template<typename T> void QPromise<T>::setException(const QException &e)
+
+    Sets exception \a e to be the result of the computation.
+
+    \note You can set at most one exception throughout the computation
+    execution.
+
+    \note This method must not be used after QFuture::cancel() or
+    reportFinished().
+
+    \sa isCanceled()
+*/
+
+/*! \fn template<typename T> void QPromise<T>::setException(std::exception_ptr e)
+
+    \overload
+*/
+
+/*! \fn template<typename T> void QPromise<T>::reportStarted()
+
+    Reports that the computation is started. Calling this method is important to
+    state the beginning of the computation as QFuture methods rely on this
+    information.
+
+    \note Extra attention is required when reportStarted() is called from a
+    newly created thread. In such case, the call might naturally be delayed due
+    to the implementation details of the thread scheduling.
+
+    \sa QFuture::isStarted(), QFuture::waitForFinished(), reportFinished()
+*/
+
+/*! \fn template<typename T> void QPromise<T>::reportFinished()
+
+    Reports that the computation is finished. Once finished, no new results will
+    be added when calling addResult(). This method accompanies reportStarted().
+
+    \sa QFuture::isFinished(), QFuture::waitForFinished(), reportStarted()
+*/
+
+/*! \fn template<typename T> void QPromise<T>::suspendIfRequested()
+
+    Conditionally suspends current thread of execution and waits until resumed
+    or cancelled by the corresponding methods of QFuture. This method does not
+    block unless the computation is requested to be suspended by
+    QFuture::suspend() or another related method. If you want to check that the
+    execution has been suspended, use QFuture::isSuspended().
+
+    \note When using the same promise in multiple threads,
+    QFuture::isSuspended() becomes \c true as soon as at least one thread with
+    the promise suspends.
+
+
+    The following code snippets show the usage of suspension mechanism:
+
+    \snippet snippet_qpromise.cpp suspend_start
+
+    QFuture::suspend() requests the associated promise to suspend:
+
+    \snippet snippet_qpromise.cpp suspend_suspend
+
+    After QFuture::isSuspended() becomes \c true, you can get intermediate
+    results:
+
+    \snippet snippet_qpromise.cpp suspend_intermediateResults
+
+    When suspended, you can resume or cancel the awaiting computation:
+
+    \snippet snippet_qpromise.cpp suspend_end
+
+
+    \sa QFuture::resume(), QFuture::cancel(), QFuture::setSuspended(),
+    QFuture::toggleSuspended()
+*/
+
+/*! \fn template<typename T> bool QPromise<T>::isCanceled() const
+
+    Returns whether the computation has been cancelled with the
+    QFuture::cancel() function. The returned value \c true indicates that the
+    computation should be finished and reportFinished() called.
+
+    \note After cancellation, results currently available may still be accessed
+    by a future, but new results will not be added when calling addResult().
+*/
+
+/*! \fn template<typename T> void QPromise<T>::setProgressRange(int minimum, int maximum)
+
+    Sets the progress range of the computation to be between \a minimum and \a
+    maximum.
+
+    \sa QFuture::progressMinimum(), QFuture::progressMaximum()
+*/
+
+/*! \fn template<typename T> void QPromise<T>::setProgressValue(int progressValue)
+
+    Sets the progress value of the computation to \a progressValue. It is
+    possible to only increment the progress value. This is a convenience method
+    for calling setProgressValueAndText(progressValue, QString()).
+
+    \sa QFuture::progressValue()
+*/
+
+/*! \fn template<typename T> void QPromise<T>::setProgressValueAndText(int progressValue, const QString &progressText)
+
+    Sets the progress value and the progress text of the computation to \a
+    progressValue and \a progressText respectively. It is possible to only
+    increment the progress value.
+
+    \note This function has no effect if the promise is in cancelled or finished
+    state.
+
+    \sa QFuture::progressValue(), QFuture::progressText(), QFuture::cancel(),
+    reportFinished()
+*/

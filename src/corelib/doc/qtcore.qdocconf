@@ -37,7 +37,8 @@ exampledirs += \
                snippets \
                ../../../examples/corelib \
                ../../../examples/network/dnslookup \
-               ../../../examples/widgets/tools
+               ../../../examples/widgets/tools \
+               ../../../tests/auto/corelib/thread/qpromise/
 
 imagedirs   += images
 
