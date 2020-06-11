@@ -180,7 +180,7 @@ QSqlQueryPrivate::~QSqlQueryPrivate()
     them in the same query.
 
     You can retrieve the values of all the fields in a single variable
-    (a map) using boundValues().
+    using boundValues().
 
     \note Not all SQL operations support binding values. Refer to your database
     system's documentation to check their availability.
@@ -1144,27 +1144,24 @@ QVariant QSqlQuery::boundValue(int pos) const
 }
 
 /*!
-  Returns a map of the bound values.
+  \since 6.0
 
-  With named binding, the bound values can be examined in the
-  following ways:
+  Returns a list of bound values.
+
+  The order of the list is in binding order, irrespective of whether
+  named or positional binding is used.
+
+  The bound values can be examined in the following way:
 
   \snippet sqldatabase/sqldatabase.cpp 14
 
-  With positional binding, the code becomes:
-
-  \snippet sqldatabase/sqldatabase.cpp 15
-
   \sa boundValue(), bindValue(), addBindValue()
 */
-QMap<QString,QVariant> QSqlQuery::boundValues() const
-{
-    QMap<QString,QVariant> map;
 
-    const QVector<QVariant> values(d->sqlResult->boundValues());
-    for (int i = 0; i < values.count(); ++i)
-        map[d->sqlResult->boundValueName(i)] = values.at(i);
-    return map;
+QVariantList QSqlQuery::boundValues() const
+{
+    const QVariantList values(d->sqlResult->boundValues());
+    return values;
 }
 
 /*!

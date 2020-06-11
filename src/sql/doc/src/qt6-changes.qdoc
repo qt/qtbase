@@ -1,0 +1,66 @@
+/****************************************************************************
+**
+** Copyright (C) 2020 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \page qtsql-changes-qt6.html
+    \title Porting to Qt 6 - Qt Sql
+
+    Qt 6 is a result of the conscious effort to make the framework more
+    efficient and easy to use.
+
+    We try to maintain binary and source compatibility for all the public
+    APIs in each release. But some changes were inevitable in an effort to
+    make Qt a better framework.
+
+    In this topic we summarize those changes in Qt Sql, and provide guidance
+    to handle them.
+
+    \section1 QSqlQuery
+
+    \section2 boundValues() Signature
+
+    The return type for boundValues() has been changed from QMap<QString, QVariant>
+    to a QVariantList. The order can be relied upon so it will be in the order of the
+    binding in the prepared query. Change code like the following:
+
+    \code
+    QMap<QString, QVariant> values = boundValues();
+    int id = values[":id"].value().toInt();
+    \endcode
+
+    \code
+    QList<QVariant> values = boundValues().values();
+    int id = values.at(0).toInt();
+    \endcode
+
+    to:
+
+    \code
+    QList<QVariant> values = boundValues().values();
+    int id = values.at(0).toInt();
+    \endcode
+*/

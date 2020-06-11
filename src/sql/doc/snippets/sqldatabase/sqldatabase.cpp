@@ -50,7 +50,6 @@
 
 #include <QCoreApplication>
 #include <QtSql>
-#include <QMap>
 #include <iostream>
 
 using namespace std;
@@ -202,23 +201,12 @@ void QSqlQuery_snippets()
     QSqlQuery query;
 
     {
-    // examine with named binding
+    // examine with named or positional binding
 //! [14]
-    QMap<QString, QVariant> sqlIterator(query.boundValues());
-    for (auto i = sqlIterator.begin(); i != sqlIterator.end(); ++i) {
-        cout << i.key().toUtf8().data() << ": "
-             << i.value().toString().toUtf8().data() << "\n";
-    }
-//! [14]
-    }
-
-    {
-    // examine with positional binding
-//! [15]
-    QList<QVariant> list = query.boundValues().values();
+    QVariantList list = query.boundValues();
     for (int i = 0; i < list.size(); ++i)
         cout << i << ": " << list.at(i).toString().toUtf8().data() << "\n";
-//! [15]
+//! [14]
     }
 }
 

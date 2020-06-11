@@ -43,17 +43,17 @@
 #include <QtSql/qtsqlglobal.h>
 #include <QtSql/qsqldatabase.h>
 #include <QtCore/qstring.h>
+#include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
 
 
-class QVariant;
 class QSqlDriver;
 class QSqlError;
 class QSqlResult;
 class QSqlRecord;
-template <class Key, class T> class QMap;
 class QSqlQueryPrivate;
+
 
 class Q_SQL_EXPORT QSqlQuery
 {
@@ -107,7 +107,7 @@ public:
     void addBindValue(const QVariant& val, QSql::ParamType type = QSql::In);
     QVariant boundValue(const QString& placeholder) const;
     QVariant boundValue(int pos) const;
-    QMap<QString, QVariant> boundValues() const;
+    QVariantList boundValues() const;
     QString executedQuery() const;
     QVariant lastInsertId() const;
     void finish();
