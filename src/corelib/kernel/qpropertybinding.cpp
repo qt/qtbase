@@ -64,6 +64,8 @@ void QPropertyBindingPrivate::unlinkAndDeref()
 
 void QPropertyBindingPrivate::markDirtyAndNotifyObservers()
 {
+    if (dirty)
+        return;
     dirty = true;
     if (firstObserver)
         firstObserver.notify(this, propertyDataPtr);
@@ -81,6 +83,15 @@ bool QPropertyBindingPrivate::evaluateIfDirtyAndReturnTrueIfValueChanged()
         return false;
     }
 
+    /*
+     * Evaluating the binding might lead to the binding being broken. This can
+     * cause ref to reach zero at the end of the function.  However, the
+     * updateGuard's destructor will then still trigger, trying to set the
+     * updating bool to its old value
+     * To prevent this, we create a QPropertyBindingPrivatePtr which ensures
+     * that the object is still alive when updateGuard's dtor runs.
+     */
+    QPropertyBindingPrivatePtr keepAlive {this};
     QScopedValueRollback<bool> updateGuard(updating, true);
 
     BindingEvaluationState evaluationFrame(this);
