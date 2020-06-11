@@ -2396,13 +2396,33 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                 result->format = QRhiTexture::RGBA8;
                 // readPixels handles multisample resolving implicitly
             }
-            result->data.resize(result->pixelSize.width() * result->pixelSize.height() * 4);
+            const int w = result->pixelSize.width();
+            const int h = result->pixelSize.height();
             if (mipLevel == 0 || caps.nonBaseLevelFramebufferTexture) {
-                // With GLES (2.0?) GL_RGBA is the only mandated readback format, so stick with it.
-                f->glReadPixels(0, 0, result->pixelSize.width(), result->pixelSize.height(),
-                                GL_RGBA, GL_UNSIGNED_BYTE,
-                                result->data.data());
+                // With GLES, GL_RGBA is the only mandated readback format, so stick with it.
+                if (result->format == QRhiTexture::R8 || result->format == QRhiTexture::RED_OR_ALPHA8) {
+                    result->data.resize(w * h);
+                    QByteArray tmpBuf;
+                    tmpBuf.resize(w * h * 4);
+                    f->glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, tmpBuf.data());
+                    const quint8 *srcBase = reinterpret_cast<const quint8 *>(tmpBuf.constData());
+                    quint8 *dstBase = reinterpret_cast<quint8 *>(result->data.data());
+                    const int componentIndex = isFeatureSupported(QRhi::RedOrAlpha8IsRed) ? 0 : 3;
+                    for (int y = 0; y < h; ++y) {
+                        const quint8 *src = srcBase + y * w * 4;
+                        quint8 *dst = dstBase + y * w;
+                        int count = w;
+                        while (count-- > 0) {
+                            *dst++ = src[componentIndex];
+                            src += 4;
+                        }
+                    }
+                } else {
+                    result->data.resize(w * h * 4);
+                    f->glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, result->data.data());
+                }
             } else {
+                result->data.resize(w * h * 4);
                 result->data.fill('\0');
             }
             if (fbo) {
