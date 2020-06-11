@@ -280,11 +280,9 @@ QJsonValue qt_convertToJson(QCborContainerPrivate *d, qsizetype idx)
         return qt_convertToJson(e.flags & Element::IsContainer ? e.container : nullptr, -e.type);
 
     case QCborValue::Null:
-        return QJsonValue();
-
     case QCborValue::Undefined:
     case QCborValue::Invalid:
-        return QJsonValue::Undefined;
+        return QJsonValue();
 
     case QCborValue::False:
         return false;
@@ -375,6 +373,8 @@ QJsonValue QCborValue::toJsonValue() const
         return true;
 
     case Null:
+    case Undefined:
+    case Invalid:
         return QJsonValue();
 
     case Double:
@@ -382,10 +382,6 @@ QJsonValue QCborValue::toJsonValue() const
 
     case SimpleType:
         break;
-
-    case Undefined:
-    case Invalid:
-        return QJsonValue::Undefined;
 
     case ByteArray:
     case String:
