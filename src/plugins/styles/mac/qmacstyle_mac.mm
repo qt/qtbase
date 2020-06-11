@@ -4642,15 +4642,13 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
             auto frameRect = cw.adjustedControlFrame(btn->rect);
             if (sr == SE_PushButtonContents) {
                 frameRect -= cw.titleMargins();
-            } else {
+            } else if (cw.type != QMacStylePrivate::Button_SquareButton) {
                 auto *pb = static_cast<NSButton *>(d->cocoaControl(cw));
-                if (cw.type != QMacStylePrivate::Button_SquareButton) {
-                    frameRect = QRectF::fromCGRect([pb alignmentRectForFrame:pb.frame]);
-                    if (cw.type == QMacStylePrivate::Button_PushButton)
-                        frameRect -= pushButtonShadowMargins[cw.size];
-                    else if (cw.type == QMacStylePrivate::Button_PullDown)
-                        frameRect -= pullDownButtonShadowMargins[cw.size];
-                }
+                frameRect = QRectF::fromCGRect([pb alignmentRectForFrame:frameRect.toCGRect()]);
+                if (cw.type == QMacStylePrivate::Button_PushButton)
+                    frameRect -= pushButtonShadowMargins[cw.size];
+                else if (cw.type == QMacStylePrivate::Button_PullDown)
+                    frameRect -= pullDownButtonShadowMargins[cw.size];
             }
             rect = frameRect.toRect();
         }
