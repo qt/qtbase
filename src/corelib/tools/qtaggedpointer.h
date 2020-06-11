@@ -85,7 +85,7 @@ public:
     explicit QTaggedPointer(T *pointer, Tag tag = Tag()) noexcept
         : d(quintptr(pointer))
     {
-        Q_STATIC_ASSERT(sizeof(Type*) == sizeof(QTaggedPointer));
+        static_assert(sizeof(Type*) == sizeof(QTaggedPointer));
 
         Q_ASSERT_X((quintptr(pointer) & tagMask()) == 0,
             "QTaggedPointer<T, Tag>", "Pointer is not aligned");

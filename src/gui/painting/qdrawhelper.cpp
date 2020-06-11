@@ -487,7 +487,7 @@ static const QRgba64 *QT_FASTCALL fetchUntransformedRGBA64PM(QRgba64 *, const Op
 template<TextureBlendType blendType>
 inline void fetchTransformed_pixelBounds(int max, int l1, int l2, int &v)
 {
-    Q_STATIC_ASSERT(blendType == BlendTransformed || blendType == BlendTransformedTiled);
+    static_assert(blendType == BlendTransformed || blendType == BlendTransformedTiled);
     if (blendType == BlendTransformedTiled) {
         if (v < 0 || v >= max) {
             v %= max;
@@ -519,7 +519,7 @@ template<TextureBlendType blendType, QPixelLayout::BPP bpp, typename T>
 static void QT_FASTCALL fetchTransformed_fetcher(T *buffer, const QSpanData *data,
                                                  int y, int x, int length)
 {
-    Q_STATIC_ASSERT(blendType == BlendTransformed || blendType == BlendTransformedTiled);
+    static_assert(blendType == BlendTransformed || blendType == BlendTransformedTiled);
     const QTextureData &image = data->texture;
 
     const qreal cx = x + qreal(0.5);
@@ -683,7 +683,7 @@ template<TextureBlendType blendType, QPixelLayout::BPP bpp>
 static const uint *QT_FASTCALL fetchTransformed(uint *buffer, const Operator *, const QSpanData *data,
                                                 int y, int x, int length)
 {
-    Q_STATIC_ASSERT(blendType == BlendTransformed || blendType == BlendTransformedTiled);
+    static_assert(blendType == BlendTransformed || blendType == BlendTransformedTiled);
     const QPixelLayout *layout = &qPixelLayouts[data->texture.format];
     fetchTransformed_fetcher<blendType, bpp, uint>(buffer, data, y, x, length);
     layout->convertToARGB32PM(buffer, length, data->texture.colorTable);

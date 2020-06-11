@@ -62,34 +62,34 @@ typedef QPair<P,C> QPairPC;
 typedef QPair<P,M> QPairPM;
 typedef QPair<P,P> QPairPP;
 
-Q_STATIC_ASSERT( QTypeInfo<QPairCC>::isComplex);
-Q_STATIC_ASSERT( QTypeInfo<QPairCC>::isStatic );
+static_assert( QTypeInfo<QPairCC>::isComplex);
+static_assert( QTypeInfo<QPairCC>::isStatic );
 
-Q_STATIC_ASSERT( QTypeInfo<QPairCM>::isComplex);
-Q_STATIC_ASSERT( QTypeInfo<QPairCM>::isStatic );
+static_assert( QTypeInfo<QPairCM>::isComplex);
+static_assert( QTypeInfo<QPairCM>::isStatic );
 
-Q_STATIC_ASSERT( QTypeInfo<QPairCP>::isComplex);
-Q_STATIC_ASSERT( QTypeInfo<QPairCP>::isStatic );
+static_assert( QTypeInfo<QPairCP>::isComplex);
+static_assert( QTypeInfo<QPairCP>::isStatic );
 
-Q_STATIC_ASSERT( QTypeInfo<QPairMC>::isComplex);
-Q_STATIC_ASSERT( QTypeInfo<QPairMC>::isStatic );
+static_assert( QTypeInfo<QPairMC>::isComplex);
+static_assert( QTypeInfo<QPairMC>::isStatic );
 
-Q_STATIC_ASSERT( QTypeInfo<QPairMM>::isComplex);
-Q_STATIC_ASSERT(!QTypeInfo<QPairMM>::isStatic );
+static_assert( QTypeInfo<QPairMM>::isComplex);
+static_assert(!QTypeInfo<QPairMM>::isStatic );
 
-Q_STATIC_ASSERT( QTypeInfo<QPairMP>::isComplex);
-Q_STATIC_ASSERT(!QTypeInfo<QPairMP>::isStatic );
+static_assert( QTypeInfo<QPairMP>::isComplex);
+static_assert(!QTypeInfo<QPairMP>::isStatic );
 
-Q_STATIC_ASSERT( QTypeInfo<QPairPC>::isComplex);
-Q_STATIC_ASSERT( QTypeInfo<QPairPC>::isStatic );
+static_assert( QTypeInfo<QPairPC>::isComplex);
+static_assert( QTypeInfo<QPairPC>::isStatic );
 
-Q_STATIC_ASSERT( QTypeInfo<QPairPM>::isComplex);
-Q_STATIC_ASSERT(!QTypeInfo<QPairPM>::isStatic );
+static_assert( QTypeInfo<QPairPM>::isComplex);
+static_assert(!QTypeInfo<QPairPM>::isStatic );
 
-Q_STATIC_ASSERT(!QTypeInfo<QPairPP>::isComplex);
-Q_STATIC_ASSERT(!QTypeInfo<QPairPP>::isStatic );
+static_assert(!QTypeInfo<QPairPP>::isComplex);
+static_assert(!QTypeInfo<QPairPP>::isStatic );
 
-Q_STATIC_ASSERT(!QTypeInfo<QPairPP>::isPointer);
+static_assert(!QTypeInfo<QPairPP>::isPointer);
 
 
 void tst_QPair::pairOfReferences()

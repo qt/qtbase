@@ -1617,7 +1617,7 @@ QList<QSslCipher> QSslSocketBackendPrivate::defaultCiphers()
     const QSsl::SslProtocol protocols[] = { QSsl::TlsV1_0, QSsl::TlsV1_1,
                                             QSsl::TlsV1_2, QSsl::TlsV1_3 };
     const int size = ARRAYSIZE(protocols);
-    Q_STATIC_ASSERT(size == ARRAYSIZE(protocolStrings));
+    static_assert(size == ARRAYSIZE(protocolStrings));
     ciphers.reserve(size);
     for (int i = 0; i < size; ++i) {
         QSslCipher cipher;

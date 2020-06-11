@@ -1124,7 +1124,7 @@ void tst_QHash::keyIterator()
 
     // DefaultConstructible test
     typedef QHash<int, int>::key_iterator keyIterator;
-    Q_STATIC_ASSERT(std::is_default_constructible<keyIterator>::value);
+    static_assert(std::is_default_constructible<keyIterator>::value);
 }
 
 void tst_QHash::keyValueIterator()

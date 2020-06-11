@@ -580,7 +580,7 @@ public:
     template<typename T>
     static bool registerComparators()
     {
-        Q_STATIC_ASSERT_X((!QMetaTypeId2<T>::IsBuiltIn),
+        static_assert((!QMetaTypeId2<T>::IsBuiltIn),
             "QMetaType::registerComparators: The type must be a custom type.");
 
         const int typeId = qMetaTypeId<T>();
@@ -590,7 +590,7 @@ public:
     template<typename T>
     static bool registerEqualsComparator()
     {
-        Q_STATIC_ASSERT_X((!QMetaTypeId2<T>::IsBuiltIn),
+        static_assert((!QMetaTypeId2<T>::IsBuiltIn),
             "QMetaType::registerEqualsComparator: The type must be a custom type.");
         const int typeId = qMetaTypeId<T>();
         static const QtPrivate::BuiltInEqualsComparatorFunction<T> f;
@@ -609,7 +609,7 @@ public:
     template<typename T>
     static bool registerDebugStreamOperator()
     {
-        Q_STATIC_ASSERT_X((!QMetaTypeId2<T>::IsBuiltIn),
+        static_assert((!QMetaTypeId2<T>::IsBuiltIn),
             "QMetaType::registerDebugStreamOperator: The type must be a custom type.");
 
         const int typeId = qMetaTypeId<T>();
@@ -643,7 +643,7 @@ public:
     template<typename From, typename To>
     static bool registerConverter(To(From::*function)() const)
     {
-        Q_STATIC_ASSERT_X((!QMetaTypeId2<To>::IsBuiltIn || !QMetaTypeId2<From>::IsBuiltIn),
+        static_assert((!QMetaTypeId2<To>::IsBuiltIn || !QMetaTypeId2<From>::IsBuiltIn),
             "QMetaType::registerConverter: At least one of the types must be a custom type.");
 
         const int fromTypeId = qMetaTypeId<From>();
@@ -656,7 +656,7 @@ public:
     template<typename From, typename To>
     static bool registerConverter(To(From::*function)(bool*) const)
     {
-        Q_STATIC_ASSERT_X((!QMetaTypeId2<To>::IsBuiltIn || !QMetaTypeId2<From>::IsBuiltIn),
+        static_assert((!QMetaTypeId2<To>::IsBuiltIn || !QMetaTypeId2<From>::IsBuiltIn),
             "QMetaType::registerConverter: At least one of the types must be a custom type.");
 
         const int fromTypeId = qMetaTypeId<From>();
@@ -669,7 +669,7 @@ public:
     template<typename From, typename To, typename UnaryFunction>
     static bool registerConverter(UnaryFunction function)
     {
-        Q_STATIC_ASSERT_X((!QMetaTypeId2<To>::IsBuiltIn || !QMetaTypeId2<From>::IsBuiltIn),
+        static_assert((!QMetaTypeId2<To>::IsBuiltIn || !QMetaTypeId2<From>::IsBuiltIn),
             "QMetaType::registerConverter: At least one of the types must be a custom type.");
 
         const int fromTypeId = qMetaTypeId<From>();
@@ -1444,7 +1444,7 @@ namespace QtPrivate
         static yes_type checkType(QObject* );
 #endif
         static no_type checkType(...);
-        Q_STATIC_ASSERT_X(sizeof(T), "Type argument of Q_DECLARE_METATYPE(T*) must be fully defined");
+        static_assert(sizeof(T), "Type argument of Q_DECLARE_METATYPE(T*) must be fully defined");
         enum { Value = sizeof(checkType(static_cast<T*>(nullptr))) == sizeof(yes_type) };
     };
 

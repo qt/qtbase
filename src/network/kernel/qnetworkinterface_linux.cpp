@@ -151,8 +151,8 @@ template <typename Lambda> struct ProcessNetlinkRequest
 
     static int expectedTypeForRequest(int rtype)
     {
-        Q_STATIC_ASSERT(RTM_NEWADDR == RTM_GETADDR - 2);
-        Q_STATIC_ASSERT(RTM_NEWLINK == RTM_GETLINK - 2);
+        static_assert(RTM_NEWADDR == RTM_GETADDR - 2);
+        static_assert(RTM_NEWLINK == RTM_GETLINK - 2);
         Q_ASSERT(rtype == RTM_GETADDR || rtype == RTM_GETLINK);
         return rtype - 2;
     }

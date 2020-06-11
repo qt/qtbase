@@ -60,7 +60,7 @@ static Q_CONSTEXPR Base emptyObject = {
 
 void MutableData::compact()
 {
-    Q_STATIC_ASSERT(sizeof(Value) == sizeof(offset));
+    static_assert(sizeof(Value) == sizeof(offset));
 
     Base *base = header->root();
     int reserve = 0;

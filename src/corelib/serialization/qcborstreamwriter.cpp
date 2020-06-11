@@ -243,7 +243,7 @@ public:
 
     void createContainer(CborError (*f)(CborEncoder *, CborEncoder *, size_t), quint64 len = IndefiniteLength)
     {
-        Q_STATIC_ASSERT(size_t(IndefiniteLength) == CborIndefiniteLength);
+        static_assert(size_t(IndefiniteLength) == CborIndefiniteLength);
         if (sizeof(len) != sizeof(size_t) && len != IndefiniteLength) {
             if (Q_UNLIKELY(len >= CborIndefiniteLength)) {
                 // TinyCBOR can't do this in 32-bit mode

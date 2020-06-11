@@ -876,7 +876,7 @@ static const char *methods =
 static const int SizeOfPropertiesStruct = 20;
 
 static const QByteArray sizeOfPropertiesStructCheck =
-        "Q_STATIC_ASSERT(sizeof(Properties) == " + QByteArray::number(SizeOfPropertiesStruct) + ");\n\n";
+        "static_assert(sizeof(Properties) == " + QByteArray::number(SizeOfPropertiesStruct) + ");\n\n";
 
 struct PropertyFlags {
     bool operator==(const PropertyFlags &o) const {
@@ -1526,10 +1526,10 @@ static void readDerivedNormalizationProps()
             if (propName == "Full_Composition_Exclusion") {
                 d.excludedComposition = true;
             } else {
-                Q_STATIC_ASSERT(QString::NormalizationForm_D == 0);
-                Q_STATIC_ASSERT(QString::NormalizationForm_C == 1);
-                Q_STATIC_ASSERT(QString::NormalizationForm_KD == 2);
-                Q_STATIC_ASSERT(QString::NormalizationForm_KC == 3);
+                static_assert(QString::NormalizationForm_D == 0);
+                static_assert(QString::NormalizationForm_C == 1);
+                static_assert(QString::NormalizationForm_KD == 2);
+                static_assert(QString::NormalizationForm_KC == 3);
 
                 QString::NormalizationForm form;
                 if (propName == "NFD_QC")

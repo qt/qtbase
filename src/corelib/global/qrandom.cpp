@@ -183,7 +183,7 @@ struct QRandomGenerator::SystemGenerator
     // other than quint32 (unsigned int) to fill their buffers.
     template <typename T> void generate(T *begin, T *end)
     {
-        Q_STATIC_ASSERT(sizeof(T) >= sizeof(quint32));
+        static_assert(sizeof(T) >= sizeof(quint32));
         if (sizeof(T) == sizeof(quint32)) {
             // Microsoft Visual Studio uses unsigned long, but that's still 32-bit
             generate(reinterpret_cast<quint32 *>(begin), reinterpret_cast<quint32 *>(end));
@@ -377,14 +377,14 @@ struct QRandomGenerator::SystemAndGlobalGenerators
 
         constexpr SystemAndGlobalGenerators g = {};
         Q_UNUSED(g);
-        Q_STATIC_ASSERT(std::is_literal_type<SystemAndGlobalGenerators>::value);
+        static_assert(std::is_literal_type<SystemAndGlobalGenerators>::value);
 #endif
     }
 
     static SystemAndGlobalGenerators *self()
     {
         static SystemAndGlobalGenerators g;
-        Q_STATIC_ASSERT(sizeof(g) > sizeof(QRandomGenerator64));
+        static_assert(sizeof(g) > sizeof(QRandomGenerator64));
         return &g;
     }
 

@@ -106,7 +106,7 @@ public:
     Q_DECL_CONSTEXPR QChar(char16_t ch) noexcept : ucs(ch) {} // implicit
 #endif
 #if defined(Q_OS_WIN)
-    Q_STATIC_ASSERT(sizeof(wchar_t) == sizeof(char16_t));
+    static_assert(sizeof(wchar_t) == sizeof(char16_t));
 #endif
 #if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
 #   if !defined(_WCHAR_T_DEFINED) || defined(_NATIVE_WCHAR_T_DEFINED)

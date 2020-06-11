@@ -104,7 +104,7 @@ QT_BEGIN_NAMESPACE
 
 #if QT_CONFIG(thread)
 
-Q_STATIC_ASSERT(sizeof(pthread_t) <= sizeof(Qt::HANDLE));
+static_assert(sizeof(pthread_t) <= sizeof(Qt::HANDLE));
 
 enum { ThreadPriorityResetFlag = 0x80000000 };
 

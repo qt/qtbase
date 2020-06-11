@@ -124,7 +124,7 @@ do {\
  * in their code.
  */
 #  define QVERIFY_EXCEPTION_THROWN(expression, exceptiontype) \
-    Q_STATIC_ASSERT_X(false, "Support of exceptions is disabled")
+    static_assert(false, "Support of exceptions is disabled")
 
 #endif // !QT_NO_EXCEPTIONS
 
@@ -342,7 +342,7 @@ namespace QTest
     inline void addColumn(const char *name, T * = nullptr)
     {
         using QIsSameTConstChar = std::is_same<T, const char*>;
-        Q_STATIC_ASSERT_X(!QIsSameTConstChar::value, "const char* is not allowed as a test data format.");
+        static_assert(!QIsSameTConstChar::value, "const char* is not allowed as a test data format.");
         addColumnInternal(qMetaTypeId<T>(), name);
     }
     Q_TESTLIB_EXPORT QTestData &newRow(const char *dataTag);

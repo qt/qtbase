@@ -135,10 +135,10 @@ void tst_QFlags::signedness()
     // underlying type is implementation-defined, we need to allow for
     // a different signedness, so we only check that the relative
     // signedness of the types matches:
-    Q_STATIC_ASSERT((std::is_unsigned<typename std::underlying_type<Qt::MouseButton>::type>::value ==
+    static_assert((std::is_unsigned<typename std::underlying_type<Qt::MouseButton>::type>::value ==
                      std::is_unsigned<Qt::MouseButtons::Int>::value));
 
-    Q_STATIC_ASSERT((std::is_signed<typename std::underlying_type<Qt::AlignmentFlag>::type>::value ==
+    static_assert((std::is_signed<typename std::underlying_type<Qt::AlignmentFlag>::type>::value ==
                      std::is_signed<Qt::Alignment::Int>::value));
 }
 
@@ -149,9 +149,9 @@ Q_DECLARE_OPERATORS_FOR_FLAGS( MyStrictFlags )
 enum class MyStrictNoOpEnum { StrictZero, StrictOne, StrictTwo, StrictFour=4 };
 Q_DECLARE_FLAGS( MyStrictNoOpFlags, MyStrictNoOpEnum )
 
-Q_STATIC_ASSERT( !QTypeInfo<MyStrictFlags>::isComplex );
-Q_STATIC_ASSERT( !QTypeInfo<MyStrictFlags>::isStatic );
-Q_STATIC_ASSERT( !QTypeInfo<MyStrictFlags>::isPointer );
+static_assert( !QTypeInfo<MyStrictFlags>::isComplex );
+static_assert( !QTypeInfo<MyStrictFlags>::isStatic );
+static_assert( !QTypeInfo<MyStrictFlags>::isPointer );
 
 void tst_QFlags::classEnum()
 {
@@ -319,9 +319,9 @@ enum MyEnum { Zero, One, Two, Four=4 };
 Q_DECLARE_FLAGS( MyFlags, MyEnum )
 Q_DECLARE_OPERATORS_FOR_FLAGS( MyFlags )
 
-Q_STATIC_ASSERT( !QTypeInfo<MyFlags>::isComplex );
-Q_STATIC_ASSERT( !QTypeInfo<MyFlags>::isStatic );
-Q_STATIC_ASSERT( !QTypeInfo<MyFlags>::isPointer );
+static_assert( !QTypeInfo<MyFlags>::isComplex );
+static_assert( !QTypeInfo<MyFlags>::isStatic );
+static_assert( !QTypeInfo<MyFlags>::isPointer );
 
 QTEST_MAIN(tst_QFlags)
 #include "tst_qflags.moc"

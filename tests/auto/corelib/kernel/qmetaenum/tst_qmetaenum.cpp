@@ -109,13 +109,13 @@ void tst_QMetaEnum::defaultConstructed()
     QCOMPARE(e.name(), QByteArray());
 }
 
-Q_STATIC_ASSERT(QtPrivate::IsQEnumHelper<tst_QMetaEnum::SuperEnum>::Value);
-Q_STATIC_ASSERT(QtPrivate::IsQEnumHelper<Qt::WindowFlags>::Value);
-Q_STATIC_ASSERT(QtPrivate::IsQEnumHelper<Qt::Orientation>::Value);
-Q_STATIC_ASSERT(!QtPrivate::IsQEnumHelper<int>::Value);
-Q_STATIC_ASSERT(!QtPrivate::IsQEnumHelper<QObject>::Value);
-Q_STATIC_ASSERT(!QtPrivate::IsQEnumHelper<QObject*>::Value);
-Q_STATIC_ASSERT(!QtPrivate::IsQEnumHelper<void>::Value);
+static_assert(QtPrivate::IsQEnumHelper<tst_QMetaEnum::SuperEnum>::Value);
+static_assert(QtPrivate::IsQEnumHelper<Qt::WindowFlags>::Value);
+static_assert(QtPrivate::IsQEnumHelper<Qt::Orientation>::Value);
+static_assert(!QtPrivate::IsQEnumHelper<int>::Value);
+static_assert(!QtPrivate::IsQEnumHelper<QObject>::Value);
+static_assert(!QtPrivate::IsQEnumHelper<QObject*>::Value);
+static_assert(!QtPrivate::IsQEnumHelper<void>::Value);
 
 QTEST_MAIN(tst_QMetaEnum)
 #include "tst_qmetaenum.moc"

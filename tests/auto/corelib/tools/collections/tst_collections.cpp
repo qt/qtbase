@@ -2919,7 +2919,7 @@ public:
     inline bool operator<(const Aligned4 &other) const { return i < other.i; }
     friend inline size_t qHash(const Aligned4 &a) { return qHash(a.i); }
 };
-Q_STATIC_ASSERT(alignof(Aligned4) % 4 == 0);
+static_assert(alignof(Aligned4) % 4 == 0);
 
 #if defined(Q_PROCESSOR_ARM)
 #  if defined(Q_COMPILER_ALIGNAS) && defined(__BIGGEST_ALIGNMENT__)
@@ -2945,7 +2945,7 @@ public:
     inline bool operator<(const AlignedBiggest &other) const { return i < other.i; }
     friend inline int qHash(const AlignedBiggest &a) { return qHash(a.i); }
 };
-Q_STATIC_ASSERT(alignof(AlignedBiggest) % BIGGEST_ALIGNMENT_TO_TEST == 0);
+static_assert(alignof(AlignedBiggest) % BIGGEST_ALIGNMENT_TO_TEST == 0);
 
 template<typename C>
 void testVectorAlignment()

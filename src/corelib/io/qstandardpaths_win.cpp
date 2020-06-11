@@ -147,7 +147,7 @@ static GUID writableSpecialFolderId(QStandardPaths::StandardLocation type)
         FOLDERID_RoamingAppData,// AppDataLocation ("Roaming" path)
         FOLDERID_LocalAppData,  // AppConfigLocation ("Local" path)
     };
-    Q_STATIC_ASSERT(sizeof(folderIds) / sizeof(folderIds[0]) == size_t(QStandardPaths::AppConfigLocation + 1));
+    static_assert(sizeof(folderIds) / sizeof(folderIds[0]) == size_t(QStandardPaths::AppConfigLocation + 1));
 
     // folders for low integrity processes
     static const GUID folderIds_li[] = {
@@ -169,7 +169,7 @@ static GUID writableSpecialFolderId(QStandardPaths::StandardLocation type)
         FOLDERID_RoamingAppData, // AppDataLocation ("Roaming" path)
         FOLDERID_LocalAppDataLow,// AppConfigLocation ("Local" path)
     };
-    Q_STATIC_ASSERT(sizeof(folderIds_li) == sizeof(folderIds));
+    static_assert(sizeof(folderIds_li) == sizeof(folderIds));
 
     static bool low_integrity_process = isProcessLowIntegrity();
     if (size_t(type) < sizeof(folderIds) / sizeof(folderIds[0]))

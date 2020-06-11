@@ -320,7 +320,7 @@ private:
 
     double fp_helper() const
     {
-        Q_STATIC_ASSERT(sizeof(double) == sizeof(n));
+        static_assert(sizeof(double) == sizeof(n));
         double d;
         memcpy(&d, &n, sizeof(d));
         return d;

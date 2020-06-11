@@ -206,7 +206,7 @@ struct QTypedArrayData
     Q_REQUIRED_RESULT static QPair<QTypedArrayData *, T *> allocate(size_t capacity,
             ArrayOptions options = DefaultAllocationFlags)
     {
-        Q_STATIC_ASSERT(sizeof(QTypedArrayData) == sizeof(QArrayData));
+        static_assert(sizeof(QTypedArrayData) == sizeof(QArrayData));
         QArrayData *d;
         void *result = QArrayData::allocate(&d, sizeof(T), alignof(AlignmentDummy), capacity, options);
 #if (defined(Q_CC_GNU) && Q_CC_GNU >= 407) || QT_HAS_BUILTIN(__builtin_assume_aligned)
@@ -219,7 +219,7 @@ struct QTypedArrayData
     reallocateUnaligned(QTypedArrayData *data, T *dataPointer, size_t capacity,
             ArrayOptions options = DefaultAllocationFlags)
     {
-        Q_STATIC_ASSERT(sizeof(QTypedArrayData) == sizeof(QArrayData));
+        static_assert(sizeof(QTypedArrayData) == sizeof(QArrayData));
         QPair<QArrayData *, void *> pair =
                 QArrayData::reallocateUnaligned(data, dataPointer, sizeof(T), capacity, options);
         return qMakePair(static_cast<QTypedArrayData *>(pair.first), static_cast<T *>(pair.second));
@@ -227,14 +227,14 @@ struct QTypedArrayData
 
     static void deallocate(QArrayData *data)
     {
-        Q_STATIC_ASSERT(sizeof(QTypedArrayData) == sizeof(QArrayData));
+        static_assert(sizeof(QTypedArrayData) == sizeof(QArrayData));
         QArrayData::deallocate(data, sizeof(T), alignof(AlignmentDummy));
     }
 
     static QArrayDataPointerRef<T> fromRawData(const T *data, size_t n,
             ArrayOptions options = DefaultRawFlags)
     {
-        Q_STATIC_ASSERT(sizeof(QTypedArrayData) == sizeof(QArrayData));
+        static_assert(sizeof(QTypedArrayData) == sizeof(QArrayData));
         QArrayDataPointerRef<T> result = {
             static_cast<QTypedArrayData *>(prepareRawData(options)), const_cast<T *>(data), uint(n)
         };
@@ -246,19 +246,19 @@ struct QTypedArrayData
 
     static QTypedArrayData *sharedNull() noexcept
     {
-        Q_STATIC_ASSERT(sizeof(QTypedArrayData) == sizeof(QArrayData));
+        static_assert(sizeof(QTypedArrayData) == sizeof(QArrayData));
         return static_cast<QTypedArrayData *>(QArrayData::sharedNull());
     }
 
     static QTypedArrayData *sharedEmpty()
     {
-        Q_STATIC_ASSERT(sizeof(QTypedArrayData) == sizeof(QArrayData));
+        static_assert(sizeof(QTypedArrayData) == sizeof(QArrayData));
         return allocate(/* capacity */ 0);
     }
 
     static T *sharedNullData()
     {
-        Q_STATIC_ASSERT(sizeof(QTypedArrayData) == sizeof(QArrayData));
+        static_assert(sizeof(QTypedArrayData) == sizeof(QArrayData));
         return static_cast<T *>(QArrayData::sharedNullData());
     }
 };

@@ -49,8 +49,8 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_VECTOR2D
 
-Q_STATIC_ASSERT_X(std::is_standard_layout<QVector2D>::value, "QVector2D is supposed to be standard layout");
-Q_STATIC_ASSERT_X(sizeof(QVector2D) == sizeof(float) * 2, "QVector2D is not supposed to have padding at the end");
+static_assert(std::is_standard_layout<QVector2D>::value, "QVector2D is supposed to be standard layout");
+static_assert(sizeof(QVector2D) == sizeof(float) * 2, "QVector2D is not supposed to have padding at the end");
 
 // QVector2D used to be defined as class QVector2D { float x, y; };,
 // now instead it is defined as classs QVector2D { float v[2]; };.
@@ -69,15 +69,15 @@ struct QVector2DNew
     float v[2];
 };
 
-Q_STATIC_ASSERT_X(std::is_standard_layout<QVector2DOld>::value, "Binary compatibility break in QVector2D");
-Q_STATIC_ASSERT_X(std::is_standard_layout<QVector2DNew>::value, "Binary compatibility break in QVector2D");
+static_assert(std::is_standard_layout<QVector2DOld>::value, "Binary compatibility break in QVector2D");
+static_assert(std::is_standard_layout<QVector2DNew>::value, "Binary compatibility break in QVector2D");
 
-Q_STATIC_ASSERT_X(sizeof(QVector2DOld) == sizeof(QVector2DNew), "Binary compatibility break in QVector2D");
+static_assert(sizeof(QVector2DOld) == sizeof(QVector2DNew), "Binary compatibility break in QVector2D");
 
 // requires a constexpr offsetof
 #if !defined(Q_CC_MSVC) || (_MSC_VER >= 1910)
-Q_STATIC_ASSERT_X(offsetof(QVector2DOld, x) == offsetof(QVector2DNew, v) + sizeof(QVector2DNew::v[0]) * 0, "Binary compatibility break in QVector2D");
-Q_STATIC_ASSERT_X(offsetof(QVector2DOld, y) == offsetof(QVector2DNew, v) + sizeof(QVector2DNew::v[0]) * 1, "Binary compatibility break in QVector2D");
+static_assert(offsetof(QVector2DOld, x) == offsetof(QVector2DNew, v) + sizeof(QVector2DNew::v[0]) * 0, "Binary compatibility break in QVector2D");
+static_assert(offsetof(QVector2DOld, y) == offsetof(QVector2DNew, v) + sizeof(QVector2DNew::v[0]) * 1, "Binary compatibility break in QVector2D");
 #endif
 
 } // anonymous namespace

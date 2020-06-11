@@ -92,8 +92,8 @@ class QPixelFormat
         TotalFieldWidthByOffsets = UnusedField + UnusedFieldWidth
     };
 
-    Q_STATIC_ASSERT(uint(TotalFieldWidthByWidths) == uint(TotalFieldWidthByOffsets));
-    Q_STATIC_ASSERT(uint(TotalFieldWidthByWidths) == 8 * sizeof(quint64));
+    static_assert(uint(TotalFieldWidthByWidths) == uint(TotalFieldWidthByOffsets));
+    static_assert(uint(TotalFieldWidthByWidths) == 8 * sizeof(quint64));
 
     Q_DECL_CONSTEXPR inline uchar get(Field offset, FieldWidth width) const noexcept
     { return uchar((data >> uint(offset)) & ((Q_UINT64_C(1) << uint(width)) - Q_UINT64_C(1))); }
@@ -228,7 +228,7 @@ private:
     friend Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline bool operator!=(QPixelFormat fmt1, QPixelFormat fmt2)
     { return !(fmt1 == fmt2); }
 };
-Q_STATIC_ASSERT(sizeof(QPixelFormat) == sizeof(quint64));
+static_assert(sizeof(QPixelFormat) == sizeof(quint64));
 Q_DECLARE_TYPEINFO(QPixelFormat, Q_PRIMITIVE_TYPE);
 
 

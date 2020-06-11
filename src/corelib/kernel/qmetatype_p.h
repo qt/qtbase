@@ -94,7 +94,7 @@ public: \
         IsUnknown = !(IsCore || IsWidget || IsGui) \
     }; \
     static inline int module() { return MODULE; } \
-    Q_STATIC_ASSERT((IsUnknown && !(IsCore || IsWidget || IsGui)) \
+    static_assert((IsUnknown && !(IsCore || IsWidget || IsGui)) \
                  || (IsCore && !(IsUnknown || IsWidget || IsGui)) \
                  || (IsWidget && !(IsUnknown || IsCore || IsGui)) \
                  || (IsGui && !(IsUnknown || IsCore || IsWidget))); \

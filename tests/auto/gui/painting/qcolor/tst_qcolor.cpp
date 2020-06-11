@@ -1784,7 +1784,7 @@ void tst_QColor::qrgba64MemoryLayout()
     QCOMPARE(rgb64.alpha(), quint16(0xcdef));
 
     // Check in-memory order, so it can be used by things like SSE
-    Q_STATIC_ASSERT(sizeof(QRgba64) == sizeof(quint64));
+    static_assert(sizeof(QRgba64) == sizeof(quint64));
     quint16 memory[4];
     memcpy(memory, &rgb64, sizeof(QRgba64));
     QCOMPARE(memory[0], quint16(0x0123));

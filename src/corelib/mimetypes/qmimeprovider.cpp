@@ -630,10 +630,10 @@ static QString internalMimeFileName()
 QMimeXMLProvider::QMimeXMLProvider(QMimeDatabasePrivate *db, InternalDatabaseEnum)
     : QMimeProviderBase(db, internalMimeFileName())
 {
-    Q_STATIC_ASSERT_X(sizeof(mimetype_database), "Bundled MIME database is empty");
-    Q_STATIC_ASSERT_X(sizeof(mimetype_database) <= MimeTypeDatabaseOriginalSize,
+    static_assert(sizeof(mimetype_database), "Bundled MIME database is empty");
+    static_assert(sizeof(mimetype_database) <= MimeTypeDatabaseOriginalSize,
                       "Compressed MIME database is larger than the original size");
-    Q_STATIC_ASSERT_X(MimeTypeDatabaseOriginalSize <= 16*1024*1024,
+    static_assert(MimeTypeDatabaseOriginalSize <= 16*1024*1024,
                       "Bundled MIME database is too big");
     const char *data = reinterpret_cast<const char *>(mimetype_database);
     qsizetype size = MimeTypeDatabaseOriginalSize;

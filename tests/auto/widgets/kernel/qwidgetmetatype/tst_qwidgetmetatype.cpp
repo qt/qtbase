@@ -56,10 +56,10 @@ public:
   }
 };
 
-Q_STATIC_ASSERT(( QMetaTypeId2<QSizePolicy>::IsBuiltIn));
-Q_STATIC_ASSERT((!QMetaTypeId2<QWidget*>::IsBuiltIn));
-Q_STATIC_ASSERT((!QMetaTypeId2<QList<QSizePolicy> >::IsBuiltIn));
-Q_STATIC_ASSERT((!QMetaTypeId2<QMap<QString,QSizePolicy> >::IsBuiltIn));
+static_assert(( QMetaTypeId2<QSizePolicy>::IsBuiltIn));
+static_assert((!QMetaTypeId2<QWidget*>::IsBuiltIn));
+static_assert((!QMetaTypeId2<QList<QSizePolicy> >::IsBuiltIn));
+static_assert((!QMetaTypeId2<QMap<QString,QSizePolicy> >::IsBuiltIn));
 
 
 void tst_QWidgetMetaType::metaObject()

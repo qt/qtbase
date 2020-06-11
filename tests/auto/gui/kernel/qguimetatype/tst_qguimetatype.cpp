@@ -87,16 +87,16 @@ private slots:
 namespace {
     template <typename T>
     struct static_assert_trigger {
-        Q_STATIC_ASSERT(( QMetaTypeId2<T>::IsBuiltIn ));
+        static_assert(( QMetaTypeId2<T>::IsBuiltIn ));
         enum { value = true };
     };
 }
 
 #define CHECK_BUILTIN(TYPE, ID) static_assert_trigger< TYPE >::value &&
-Q_STATIC_ASSERT(( FOR_EACH_GUI_METATYPE(CHECK_BUILTIN) true ));
+static_assert(( FOR_EACH_GUI_METATYPE(CHECK_BUILTIN) true ));
 #undef CHECK_BUILTIN
-Q_STATIC_ASSERT((!QMetaTypeId2<QList<QPen> >::IsBuiltIn));
-Q_STATIC_ASSERT((!QMetaTypeId2<QMap<QString,QPen> >::IsBuiltIn));
+static_assert((!QMetaTypeId2<QList<QPen> >::IsBuiltIn));
+static_assert((!QMetaTypeId2<QMap<QString,QPen> >::IsBuiltIn));
 
 template <int ID>
 struct MetaEnumToType {};

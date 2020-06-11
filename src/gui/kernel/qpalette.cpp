@@ -61,7 +61,7 @@ static constexpr QPalette::ResolveMask bitPosition(QPalette::ColorGroup colorGro
     return colorRole + colorRoleOffset(colorGroup);
 }
 
-Q_STATIC_ASSERT_X(bitPosition(QPalette::ColorGroup(QPalette::NColorGroups - 1),
+static_assert(bitPosition(QPalette::ColorGroup(QPalette::NColorGroups - 1),
                               QPalette::ColorRole(QPalette::NColorRoles - 1))
                   < sizeof(QPalette::ResolveMask) * CHAR_BIT,
                   "The resolve mask type is not wide enough to fit the entire bit mask.");

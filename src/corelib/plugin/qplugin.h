@@ -207,10 +207,10 @@ void Q_CORE_EXPORT qRegisterStaticPluginFunction(QStaticPlugin staticPlugin);
 #define Q_EXPORT_PLUGIN(PLUGIN) \
             Q_EXPORT_PLUGIN2(PLUGIN, PLUGIN)
 #  define Q_EXPORT_PLUGIN2(PLUGIN, PLUGINCLASS)      \
-    Q_STATIC_ASSERT_X(false, "Old plugin system used")
+    static_assert(false, "Old plugin system used")
 
 #  define Q_EXPORT_STATIC_PLUGIN2(PLUGIN, PLUGINCLASS) \
-    Q_STATIC_ASSERT_X(false, "Old plugin system used")
+    static_assert(false, "Old plugin system used")
 
 
 QT_END_NAMESPACE

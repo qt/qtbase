@@ -47,7 +47,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_STATIC_ASSERT(QKeySequencePrivate::MaxKeyCount == 4); // assumed by the code around here
+static_assert(QKeySequencePrivate::MaxKeyCount == 4); // assumed by the code around here
 
 void QKeySequenceEditPrivate::init()
 {

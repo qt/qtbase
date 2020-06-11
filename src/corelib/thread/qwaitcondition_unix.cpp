@@ -108,7 +108,7 @@ void qt_abstime_for_timeout(timespec *ts, QDeadlineTimer deadline)
     normalizedTimespec(*ts);
 #else
     // depends on QDeadlineTimer's internals!!
-    Q_STATIC_ASSERT(QDeadlineTimerNanosecondsInT2);
+    static_assert(QDeadlineTimerNanosecondsInT2);
     ts->tv_sec = deadline._q_data().first;
     ts->tv_nsec = deadline._q_data().second;
 #endif

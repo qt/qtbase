@@ -78,7 +78,7 @@ Q_GLOBAL_STATIC(QDBusConnectionManager, _q_manager)
 
 QDBusConnectionPrivate *QDBusConnectionManager::busConnection(QDBusConnection::BusType type)
 {
-    Q_STATIC_ASSERT(int(QDBusConnection::SessionBus) + int(QDBusConnection::SystemBus) == 1);
+    static_assert(int(QDBusConnection::SessionBus) + int(QDBusConnection::SystemBus) == 1);
     Q_ASSERT(type == QDBusConnection::SessionBus || type == QDBusConnection::SystemBus);
 
     if (!qdbus_loadLibDBus())

@@ -1519,7 +1519,7 @@ const QVariant::Handler qt_custom_variant_handler = {
 
 static HandlersManager handlerManager;
 
-Q_STATIC_ASSERT_X(!QModulesPrivate::Core, "Initialization assumes that ModulesNames::Core is 0");
+static_assert(!QModulesPrivate::Core, "Initialization assumes that ModulesNames::Core is 0");
 const QVariant::Handler *HandlersManager::Handlers[QModulesPrivate::ModulesCount]
                                         = { &qt_kernel_variant_handler, &qt_dummy_variant_handler,
                                             &qt_dummy_variant_handler, &qt_custom_variant_handler };

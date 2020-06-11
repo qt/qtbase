@@ -851,7 +851,7 @@ QKeySequence::QKeySequence(const QString &key, QKeySequence::SequenceFormat form
     assign(key, format);
 }
 
-Q_STATIC_ASSERT_X(QKeySequencePrivate::MaxKeyCount == 4, "Change docs and ctor impl below");
+static_assert(QKeySequencePrivate::MaxKeyCount == 4, "Change docs and ctor impl below");
 /*!
     Constructs a key sequence with up to 4 keys \a k1, \a k2,
     \a k3 and \a k4.
@@ -915,7 +915,7 @@ void QKeySequence::setKey(int key, int index)
     d->key[index] = key;
 }
 
-Q_STATIC_ASSERT_X(QKeySequencePrivate::MaxKeyCount == 4, "Change docs below");
+static_assert(QKeySequencePrivate::MaxKeyCount == 4, "Change docs below");
 /*!
     Returns the number of keys in the key sequence.
     The maximum is 4.
@@ -1609,7 +1609,7 @@ QString QKeySequence::listToString(const QList<QKeySequence> &list, SequenceForm
 */
 QDataStream &operator<<(QDataStream &s, const QKeySequence &keysequence)
 {
-    Q_STATIC_ASSERT_X(QKeySequencePrivate::MaxKeyCount == 4, "Forgot to adapt QDataStream &operator<<(QDataStream &s, const QKeySequence &keysequence) to new QKeySequence::MaxKeyCount");
+    static_assert(QKeySequencePrivate::MaxKeyCount == 4, "Forgot to adapt QDataStream &operator<<(QDataStream &s, const QKeySequence &keysequence) to new QKeySequence::MaxKeyCount");
     const bool extended = s.version() >= 5 && keysequence.count() > 1;
     s << quint32(extended ? 4 : 1) << quint32(keysequence.d->key[0]);
     if (extended) {

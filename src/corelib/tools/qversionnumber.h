@@ -75,7 +75,7 @@ class QVersionNumber
         InlineSegmentStartIdx = !InlineSegmentMarker, // 0 for BE, 1 for LE
         InlineSegmentCount = sizeof(void*) - 1
     };
-    Q_STATIC_ASSERT(InlineSegmentCount >= 3);   // at least major, minor, micro
+    static_assert(InlineSegmentCount >= 3);   // at least major, minor, micro
 
     struct SegmentStorage {
         // Note: we alias the use of dummy and inline_segments in the use of the
@@ -454,7 +454,7 @@ inline constexpr bool operator>=(QTypeRevision lhs, QTypeRevision rhs)
     return lhs == rhs || !(lhs < rhs);
 }
 
-Q_STATIC_ASSERT(sizeof(QTypeRevision) == 2);
+static_assert(sizeof(QTypeRevision) == 2);
 Q_DECLARE_TYPEINFO(QTypeRevision, Q_MOVABLE_TYPE);
 
 #ifndef QT_NO_DEBUG_STREAM

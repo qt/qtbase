@@ -512,7 +512,7 @@ static void QT_FASTCALL rbSwap(uchar *dst, const uchar *src, int count)
     Q_CONSTEXPR uchar bWidth = blueWidth<Format>();
     Q_CONSTEXPR uchar bShift = blueShift<Format>();
 #ifdef Q_COMPILER_CONSTEXPR
-    Q_STATIC_ASSERT(rWidth == bWidth);
+    static_assert(rWidth == bWidth);
 #endif
     Q_CONSTEXPR uint redBlueMask = (1 << rWidth) - 1;
     Q_CONSTEXPR uint alphaGreenMask = (((1 << aWidth) - 1) << aShift)
@@ -1426,7 +1426,7 @@ QPixelLayout qPixelLayouts[QImage::NImageFormats] = {
     pixelLayoutRGB<QImage::Format_BGR888>(),
 };
 
-Q_STATIC_ASSERT(sizeof(qPixelLayouts) / sizeof(*qPixelLayouts) == QImage::NImageFormats);
+static_assert(sizeof(qPixelLayouts) / sizeof(*qPixelLayouts) == QImage::NImageFormats);
 
 static void QT_FASTCALL convertFromRgb64(uint *dest, const QRgba64 *src, int length)
 {

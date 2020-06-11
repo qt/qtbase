@@ -275,7 +275,7 @@ QVarLengthArray(InputIterator, InputIterator) -> QVarLengthArray<ValueType>;
 template <class T, qsizetype Prealloc>
 Q_INLINE_TEMPLATE QVarLengthArray<T, Prealloc>::QVarLengthArray(qsizetype asize)
     : s(asize) {
-    Q_STATIC_ASSERT_X(Prealloc > 0, "QVarLengthArray Prealloc must be greater than 0.");
+    static_assert(Prealloc > 0, "QVarLengthArray Prealloc must be greater than 0.");
     Q_ASSERT_X(s >= 0, "QVarLengthArray::QVarLengthArray()", "Size must be greater than or equal to 0.");
     if (s > Prealloc) {
         ptr = reinterpret_cast<T *>(malloc(s * sizeof(T)));

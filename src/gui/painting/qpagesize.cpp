@@ -385,7 +385,7 @@ static const StandardPageSize qt_pageSizes[] = {
 };
 
 static const int pageSizesCount = int(sizeof(qt_pageSizes) / sizeof(qt_pageSizes[0]));
-Q_STATIC_ASSERT(pageSizesCount == QPageSize::LastPageSize + 1);
+static_assert(pageSizesCount == QPageSize::LastPageSize + 1);
 
 // Return key name for PageSize
 static QString qt_keyForPageSizeId(QPageSize::PageSizeId id)

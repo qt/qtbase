@@ -116,7 +116,7 @@ public:
         typedef QtPrivate::FunctionPointer<Func1> SlotType;
 
         //compilation error if the slot has arguments.
-        Q_STATIC_ASSERT_X(int(SlotType::ArgumentCount) == 0,
+        static_assert(int(SlotType::ArgumentCount) == 0,
                           "The slot must not have any arguments.");
 
         singleShotImpl(interval, timerType, receiver,
@@ -152,7 +152,7 @@ public:
     {
         //compilation error if the slot has arguments.
         typedef QtPrivate::FunctionPointer<Func1> SlotType;
-        Q_STATIC_ASSERT_X(int(SlotType::ArgumentCount) <= 0,  "The slot must not have any arguments.");
+        static_assert(int(SlotType::ArgumentCount) <= 0,  "The slot must not have any arguments.");
 
         singleShotImpl(interval, timerType, context,
                        new QtPrivate::QFunctorSlotObject<Func1, 0,

@@ -390,7 +390,7 @@ static const int scriptForWritingSystem[] = {
     QChar::Script_Nko // Nko
 };
 
-Q_STATIC_ASSERT(sizeof(scriptForWritingSystem) / sizeof(scriptForWritingSystem[0]) == QFontDatabase::WritingSystemsCount);
+static_assert(sizeof(scriptForWritingSystem) / sizeof(scriptForWritingSystem[0]) == QFontDatabase::WritingSystemsCount);
 
 Q_GUI_EXPORT int qt_script_for_writing_system(QFontDatabase::WritingSystem writingSystem)
 {
@@ -1328,7 +1328,7 @@ QList<QFontDatabase::WritingSystem> QFontDatabase::writingSystems() const
     QT_PREPEND_NAMESPACE(load)();
 
     quint64 writingSystemsFound = 0;
-    Q_STATIC_ASSERT(WritingSystemsCount < 64);
+    static_assert(WritingSystemsCount < 64);
 
     for (int i = 0; i < d->count; ++i) {
         QtFontFamily *family = d->families[i];

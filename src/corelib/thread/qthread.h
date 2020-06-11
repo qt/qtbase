@@ -253,7 +253,7 @@ QThread *QThread::create(Function &&f)
 inline Qt::HANDLE QThread::currentThreadId() noexcept
 {
     Qt::HANDLE tid; // typedef to void*
-    Q_STATIC_ASSERT(sizeof(tid) == sizeof(void*));
+    static_assert(sizeof(tid) == sizeof(void*));
     // See https://akkadia.org/drepper/tls.pdf for x86 ABI
 #if defined(Q_PROCESSOR_X86_32) && defined(Q_OS_LINUX) // x86 32-bit always uses GS
     __asm__("movl %%gs:0, %0" : "=r" (tid) : : );

@@ -345,6 +345,9 @@ struct MyTemplate
 
 void tst_QGlobal::qstaticassert()
 {
+    // Test multiple Q_STATIC_ASSERT on a single line
+    Q_STATIC_ASSERT(true); Q_STATIC_ASSERT_X(!false, "");
+
     // Force compilation of these classes
     MyTrue tmp1;
     MyExpresion tmp2;
@@ -352,11 +355,6 @@ void tst_QGlobal::qstaticassert()
     Q_UNUSED(tmp1);
     Q_UNUSED(tmp2);
     Q_UNUSED(tmp3);
-#ifdef __COUNTER__
-    // if the compiler supports __COUNTER__, multiple
-    // Q_STATIC_ASSERT's on a single line should compile:
-    Q_STATIC_ASSERT(true); Q_STATIC_ASSERT_X(!false, "");
-#endif // __COUNTER__
     QVERIFY(true); // if the test compiles it has passed.
 }
 
@@ -433,15 +431,15 @@ typedef int (Empty::*memFun) ();
 void tst_QGlobal::integerForSize()
 {
     // compile-only test:
-    Q_STATIC_ASSERT(sizeof(QIntegerForSize<1>::Signed) == 1);
-    Q_STATIC_ASSERT(sizeof(QIntegerForSize<2>::Signed) == 2);
-    Q_STATIC_ASSERT(sizeof(QIntegerForSize<4>::Signed) == 4);
-    Q_STATIC_ASSERT(sizeof(QIntegerForSize<8>::Signed) == 8);
+    static_assert(sizeof(QIntegerForSize<1>::Signed) == 1);
+    static_assert(sizeof(QIntegerForSize<2>::Signed) == 2);
+    static_assert(sizeof(QIntegerForSize<4>::Signed) == 4);
+    static_assert(sizeof(QIntegerForSize<8>::Signed) == 8);
 
-    Q_STATIC_ASSERT(sizeof(QIntegerForSize<1>::Unsigned) == 1);
-    Q_STATIC_ASSERT(sizeof(QIntegerForSize<2>::Unsigned) == 2);
-    Q_STATIC_ASSERT(sizeof(QIntegerForSize<4>::Unsigned) == 4);
-    Q_STATIC_ASSERT(sizeof(QIntegerForSize<8>::Unsigned) == 8);
+    static_assert(sizeof(QIntegerForSize<1>::Unsigned) == 1);
+    static_assert(sizeof(QIntegerForSize<2>::Unsigned) == 2);
+    static_assert(sizeof(QIntegerForSize<4>::Unsigned) == 4);
+    static_assert(sizeof(QIntegerForSize<8>::Unsigned) == 8);
 }
 
 typedef QPair<const char *, const char *> stringpair;

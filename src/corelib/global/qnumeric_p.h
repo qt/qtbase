@@ -128,7 +128,7 @@ Q_DECL_CONST_FUNCTION static inline int fpclassify(float f) { return std::fpclas
 
 Q_DECL_CONSTEXPR Q_DECL_CONST_FUNCTION static inline double qt_inf() noexcept
 {
-    Q_STATIC_ASSERT_X(std::numeric_limits<double>::has_infinity,
+    static_assert(std::numeric_limits<double>::has_infinity,
                       "platform has no definition for infinity for type double");
     return std::numeric_limits<double>::infinity();
 }
@@ -136,7 +136,7 @@ Q_DECL_CONSTEXPR Q_DECL_CONST_FUNCTION static inline double qt_inf() noexcept
 #if QT_CONFIG(signaling_nan)
 Q_DECL_CONSTEXPR Q_DECL_CONST_FUNCTION static inline double qt_snan() noexcept
 {
-    Q_STATIC_ASSERT_X(std::numeric_limits<double>::has_signaling_NaN,
+    static_assert(std::numeric_limits<double>::has_signaling_NaN,
                       "platform has no definition for signaling NaN for type double");
     return std::numeric_limits<double>::signaling_NaN();
 }
@@ -145,7 +145,7 @@ Q_DECL_CONSTEXPR Q_DECL_CONST_FUNCTION static inline double qt_snan() noexcept
 // Quiet NaN
 Q_DECL_CONSTEXPR Q_DECL_CONST_FUNCTION static inline double qt_qnan() noexcept
 {
-    Q_STATIC_ASSERT_X(std::numeric_limits<double>::has_quiet_NaN,
+    static_assert(std::numeric_limits<double>::has_quiet_NaN,
                       "platform has no definition for quiet NaN for type double");
     return std::numeric_limits<double>::quiet_NaN();
 }
@@ -204,7 +204,7 @@ namespace {
 */
 template <typename T> static inline bool convertDoubleTo(double v, T *value, bool allow_precision_upgrade = true)
 {
-    Q_STATIC_ASSERT(std::numeric_limits<T>::is_integer);
+    static_assert(std::numeric_limits<T>::is_integer);
 
     // The [conv.fpint] (7.10 Floating-integral conversions) section of the C++
     // standard says only exact conversions are guaranteed. Converting

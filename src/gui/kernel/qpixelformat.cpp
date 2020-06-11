@@ -521,7 +521,7 @@ QT_BEGIN_NAMESPACE
     \internal
 */
 
-Q_STATIC_ASSERT(sizeof(QPixelFormat) == sizeof(quint64));
+static_assert(sizeof(QPixelFormat) == sizeof(quint64));
 
 
 namespace QtPrivate {

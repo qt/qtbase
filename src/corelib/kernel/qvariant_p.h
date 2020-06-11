@@ -68,9 +68,9 @@ struct QVariantIntegrator
             && ((QTypeInfoQuery<T>::isRelocatable) || std::is_enum<T>::value);
     typedef std::integral_constant<bool, CanUseInternalSpace> CanUseInternalSpace_t;
 };
-Q_STATIC_ASSERT(QVariantIntegrator<double>::CanUseInternalSpace);
-Q_STATIC_ASSERT(QVariantIntegrator<long int>::CanUseInternalSpace);
-Q_STATIC_ASSERT(QVariantIntegrator<qulonglong>::CanUseInternalSpace);
+static_assert(QVariantIntegrator<double>::CanUseInternalSpace);
+static_assert(QVariantIntegrator<long int>::CanUseInternalSpace);
+static_assert(QVariantIntegrator<qulonglong>::CanUseInternalSpace);
 
 #ifdef Q_CC_SUN // Sun CC picks the wrong overload, so introduce awful hack
 
@@ -267,7 +267,7 @@ class QVariantIsNull
     class HasIsNullMethod {
         struct Yes { char unused[1]; };
         struct No { char unused[2]; };
-        Q_STATIC_ASSERT(sizeof(Yes) != sizeof(No));
+        static_assert(sizeof(Yes) != sizeof(No));
 
         template<class C> static decltype(static_cast<const C*>(nullptr)->isNull(), Yes()) test(int);
         template<class C> static No test(...);
@@ -276,19 +276,19 @@ class QVariantIsNull
     };
 
     // TODO This part should go to autotests during HasIsNullMethod generalization.
-    Q_STATIC_ASSERT(!HasIsNullMethod<bool>::Value);
+    static_assert(!HasIsNullMethod<bool>::Value);
     struct SelfTest1 { bool isNull() const; };
-    Q_STATIC_ASSERT(HasIsNullMethod<SelfTest1>::Value);
+    static_assert(HasIsNullMethod<SelfTest1>::Value);
     struct SelfTest2 {};
-    Q_STATIC_ASSERT(!HasIsNullMethod<SelfTest2>::Value);
+    static_assert(!HasIsNullMethod<SelfTest2>::Value);
     struct SelfTest3 : public SelfTest1 {};
-    Q_STATIC_ASSERT(HasIsNullMethod<SelfTest3>::Value);
+    static_assert(HasIsNullMethod<SelfTest3>::Value);
     struct SelfTestFinal1 final { bool isNull() const; };
-    Q_STATIC_ASSERT(HasIsNullMethod<SelfTestFinal1>::Value);
+    static_assert(HasIsNullMethod<SelfTestFinal1>::Value);
     struct SelfTestFinal2 final {};
-    Q_STATIC_ASSERT(!HasIsNullMethod<SelfTestFinal2>::Value);
+    static_assert(!HasIsNullMethod<SelfTestFinal2>::Value);
     struct SelfTestFinal3 final : public SelfTest1 {};
-    Q_STATIC_ASSERT(HasIsNullMethod<SelfTestFinal3>::Value);
+    static_assert(HasIsNullMethod<SelfTestFinal3>::Value);
 
     template<typename T, bool HasIsNull = HasIsNullMethod<T>::Value>
     struct CallFilteredIsNull

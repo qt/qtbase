@@ -106,12 +106,12 @@ public:
         typedef QtPrivate::FunctionPointer<Func> SlotType;
 
         typedef QtPrivate::FunctionPointer<void (*)(QHostInfo)> SignalType;
-        Q_STATIC_ASSERT_X(int(SignalType::ArgumentCount) >= int(SlotType::ArgumentCount),
+        static_assert(int(SignalType::ArgumentCount) >= int(SlotType::ArgumentCount),
                           "The slot requires more arguments than the signal provides.");
-        Q_STATIC_ASSERT_X((QtPrivate::CheckCompatibleArguments<typename SignalType::Arguments,
+        static_assert((QtPrivate::CheckCompatibleArguments<typename SignalType::Arguments,
                            typename SlotType::Arguments>::value),
                           "Signal and slot arguments are not compatible.");
-        Q_STATIC_ASSERT_X((QtPrivate::AreArgumentsCompatible<typename SlotType::ReturnType,
+        static_assert((QtPrivate::AreArgumentsCompatible<typename SlotType::ReturnType,
                            typename SignalType::ReturnType>::value),
                           "Return type of the slot is not compatible "
                           "with the return type of the signal.");
@@ -137,7 +137,7 @@ public:
     {
         typedef QtPrivate::FunctionPointer<Func1> SlotType;
 
-        Q_STATIC_ASSERT_X(int(SlotType::ArgumentCount) <= 1,
+        static_assert(int(SlotType::ArgumentCount) <= 1,
                           "The slot must not require more than one argument");
 
         auto slotObj = new QtPrivate::QFunctorSlotObject<Func1, 1,

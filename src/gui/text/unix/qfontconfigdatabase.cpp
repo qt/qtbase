@@ -279,7 +279,7 @@ static const char specialLanguages[][6] = {
     "", // KhitanSmallScript
     "" // Yezidi
 };
-Q_STATIC_ASSERT(sizeof specialLanguages / sizeof *specialLanguages == QChar::ScriptCount);
+static_assert(sizeof specialLanguages / sizeof *specialLanguages == QChar::ScriptCount);
 
 // this could become a list of all languages used for each writing
 // system, instead of using the single most common language.
@@ -319,7 +319,7 @@ static const char languageForWritingSystem[][6] = {
     "non", // Runic
     "man" // N'Ko
 };
-Q_STATIC_ASSERT(sizeof languageForWritingSystem / sizeof *languageForWritingSystem == QFontDatabase::WritingSystemsCount);
+static_assert(sizeof languageForWritingSystem / sizeof *languageForWritingSystem == QFontDatabase::WritingSystemsCount);
 
 #if FC_VERSION >= 20297
 // Newer FontConfig let's us sort out fonts that report certain scripts support,
@@ -361,7 +361,7 @@ static const char capabilityForWritingSystem[][5] = {
     "", // Runic
     "nko " // N'Ko
 };
-Q_STATIC_ASSERT(sizeof(capabilityForWritingSystem) / sizeof(*capabilityForWritingSystem) == QFontDatabase::WritingSystemsCount);
+static_assert(sizeof(capabilityForWritingSystem) / sizeof(*capabilityForWritingSystem) == QFontDatabase::WritingSystemsCount);
 #endif
 
 static const char *getFcFamilyForStyleHint(const QFont::StyleHint style)

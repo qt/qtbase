@@ -56,11 +56,11 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_STATIC_ASSERT(QDBusMessage::InvalidMessage == DBUS_MESSAGE_TYPE_INVALID);
-Q_STATIC_ASSERT(QDBusMessage::MethodCallMessage == DBUS_MESSAGE_TYPE_METHOD_CALL);
-Q_STATIC_ASSERT(QDBusMessage::ReplyMessage == DBUS_MESSAGE_TYPE_METHOD_RETURN);
-Q_STATIC_ASSERT(QDBusMessage::ErrorMessage == DBUS_MESSAGE_TYPE_ERROR);
-Q_STATIC_ASSERT(QDBusMessage::SignalMessage == DBUS_MESSAGE_TYPE_SIGNAL);
+static_assert(QDBusMessage::InvalidMessage == DBUS_MESSAGE_TYPE_INVALID);
+static_assert(QDBusMessage::MethodCallMessage == DBUS_MESSAGE_TYPE_METHOD_CALL);
+static_assert(QDBusMessage::ReplyMessage == DBUS_MESSAGE_TYPE_METHOD_RETURN);
+static_assert(QDBusMessage::ErrorMessage == DBUS_MESSAGE_TYPE_ERROR);
+static_assert(QDBusMessage::SignalMessage == DBUS_MESSAGE_TYPE_SIGNAL);
 
 static inline const char *data(const QByteArray &arr)
 {

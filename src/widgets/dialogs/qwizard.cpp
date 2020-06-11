@@ -163,7 +163,7 @@ static const char *changed_signal(int which)
     case 5: return SIGNAL(currentRowChanged(int));
     case 6: return SIGNAL(valueChanged(int));
     };
-    Q_STATIC_ASSERT(7 == NFallbackDefaultProperties);
+    static_assert(7 == NFallbackDefaultProperties);
     Q_UNREACHABLE();
     return nullptr;
 }

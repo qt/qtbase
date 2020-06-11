@@ -190,7 +190,7 @@ bool TimeReference::addSecsAndNSecs(qint64 addSecs, qint64 addNSecs)
  */
 bool TimeReference::adjust(const qint64 t1, const unsigned t2, qint64 carrySeconds)
 {
-    Q_STATIC_ASSERT(QDeadlineTimerNanosecondsInT2);
+    static_assert(QDeadlineTimerNanosecondsInT2);
     nsecs += t2;
     if (nsecs >= ugiga) {
         nsecs -= ugiga;
@@ -291,7 +291,7 @@ inline bool TimeReference::addSecsAndNSecs(qint64 addSecs, qint64 addNSecs)
 
 inline bool TimeReference::adjust(const qint64 t1, const unsigned t2, qint64 carrySeconds)
 {
-    Q_STATIC_ASSERT(!QDeadlineTimerNanosecondsInT2);
+    static_assert(!QDeadlineTimerNanosecondsInT2);
     Q_UNUSED(t2);
     Q_UNUSED(carrySeconds);
 

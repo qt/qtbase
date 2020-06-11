@@ -116,19 +116,19 @@ QLocale::Language QLocalePrivate::codeToLanguage(QStringView code) noexcept
     if (uc3 == 0) {
         // legacy codes
         if (uc1 == 'n' && uc2 == 'o') { // no -> nb
-            Q_STATIC_ASSERT(QLocale::Norwegian == QLocale::NorwegianBokmal);
+            static_assert(QLocale::Norwegian == QLocale::NorwegianBokmal);
             return QLocale::Norwegian;
         }
         if (uc1 == 't' && uc2 == 'l') { // tl -> fil
-            Q_STATIC_ASSERT(QLocale::Tagalog == QLocale::Filipino);
+            static_assert(QLocale::Tagalog == QLocale::Filipino);
             return QLocale::Tagalog;
         }
         if (uc1 == 's' && uc2 == 'h') { // sh -> sr[_Latn]
-            Q_STATIC_ASSERT(QLocale::SerboCroatian == QLocale::Serbian);
+            static_assert(QLocale::SerboCroatian == QLocale::Serbian);
             return QLocale::SerboCroatian;
         }
         if (uc1 == 'm' && uc2 == 'o') { // mo -> ro
-            Q_STATIC_ASSERT(QLocale::Moldavian == QLocale::Romanian);
+            static_assert(QLocale::Moldavian == QLocale::Romanian);
             return QLocale::Moldavian;
         }
         // Android uses the following deprecated codes

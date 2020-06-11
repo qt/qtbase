@@ -156,12 +156,12 @@ int Complex::liveCount = 0;
 Q_DECLARE_METATYPE(Complex);
 
 // Tests depend on the fact that:
-Q_STATIC_ASSERT(!QTypeInfo<int>::isStatic);
-Q_STATIC_ASSERT(!QTypeInfo<int>::isComplex);
-Q_STATIC_ASSERT(!QTypeInfo<Movable>::isStatic);
-Q_STATIC_ASSERT(QTypeInfo<Movable>::isComplex);
-Q_STATIC_ASSERT(QTypeInfo<Complex>::isStatic);
-Q_STATIC_ASSERT(QTypeInfo<Complex>::isComplex);
+static_assert(!QTypeInfo<int>::isStatic);
+static_assert(!QTypeInfo<int>::isComplex);
+static_assert(!QTypeInfo<Movable>::isStatic);
+static_assert(QTypeInfo<Movable>::isComplex);
+static_assert(QTypeInfo<Complex>::isStatic);
+static_assert(QTypeInfo<Complex>::isComplex);
 
 class tst_QLinkedList : public QObject
 {

@@ -487,7 +487,7 @@ static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
     memset(&mediareq, 0, sizeof(mediareq));
 
     // ensure both structs start with the name field, of size IFNAMESIZ
-    Q_STATIC_ASSERT(sizeof(mediareq.ifm_name) == sizeof(req.ifr_name));
+    static_assert(sizeof(mediareq.ifm_name) == sizeof(req.ifr_name));
     Q_ASSERT(&mediareq.ifm_name == &req.ifr_name);
 
     // on NetBSD we use AF_LINK and sockaddr_dl

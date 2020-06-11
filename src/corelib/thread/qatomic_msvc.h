@@ -291,9 +291,9 @@ template <int N> struct QAtomicOpsBySize : QGenericAtomicOps<QAtomicOpsBySize<N>
 private:
     typedef typename QAtomicWindowsType<N>::Type Type;
     template <typename T> static inline Type *atomic(T *t)
-    { Q_STATIC_ASSERT(sizeof(T) == sizeof(Type)); return reinterpret_cast<Type *>(t); }
+    { static_assert(sizeof(T) == sizeof(Type)); return reinterpret_cast<Type *>(t); }
     template <typename T> static inline Type value(T t)
-    { Q_STATIC_ASSERT(sizeof(T) == sizeof(Type)); return Type(t); }
+    { static_assert(sizeof(T) == sizeof(Type)); return Type(t); }
 };
 
 template <typename T>

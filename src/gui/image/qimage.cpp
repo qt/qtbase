@@ -5265,7 +5265,7 @@ static Q_CONSTEXPR QPixelFormat pixelformats[] = {
                     /*INTERPRETATION*/    QPixelFormat::UnsignedByte,
                     /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),
 };
-Q_STATIC_ASSERT(sizeof(pixelformats) / sizeof(*pixelformats) == QImage::NImageFormats);
+static_assert(sizeof(pixelformats) / sizeof(*pixelformats) == QImage::NImageFormats);
 
 /*!
     Returns the QImage::Format as a QPixelFormat

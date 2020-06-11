@@ -201,7 +201,7 @@ private:
         const RandomEngine &engine() const { return reinterpret_cast<const RandomEngine &>(buffer); }
 #endif
 
-        Q_STATIC_ASSERT_X(std::is_trivially_destructible<RandomEngine>::value,
+        static_assert(std::is_trivially_destructible<RandomEngine>::value,
                           "std::mersenne_twister not trivially destructible as expected");
         Q_DECL_CONSTEXPR Storage();
     };

@@ -540,7 +540,7 @@ static const Qt::KeyboardModifiers ModsTbl[] = {
     Qt::NoModifier,                                             // Fall-back to raw Key_*
 };
 static const size_t NumMods = sizeof ModsTbl / sizeof *ModsTbl;
-Q_STATIC_ASSERT((NumMods == KeyboardLayoutItem::NumQtKeys));
+static_assert((NumMods == KeyboardLayoutItem::NumQtKeys));
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug d, const KeyboardLayoutItem &k)

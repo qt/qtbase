@@ -237,8 +237,8 @@ template <typename T> struct TypeInStruct { T type; };
 
 void tst_QAtomicInt::alignment()
 {
-    Q_STATIC_ASSERT(alignof(QBasicAtomicInt) == alignof(TypeInStruct<int>));
-    Q_STATIC_ASSERT(alignof(QBasicAtomicInt) == alignof(TypeInStruct<int>));
+    static_assert(alignof(QBasicAtomicInt) == alignof(TypeInStruct<int>));
+    static_assert(alignof(QBasicAtomicInt) == alignof(TypeInStruct<int>));
 
 #ifdef Q_ATOMIC_INT32_IS_SUPPORTED
     QCOMPARE(alignof(QBasicAtomicInteger<int>), alignof(TypeInStruct<int>));

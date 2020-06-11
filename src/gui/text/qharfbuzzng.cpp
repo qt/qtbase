@@ -239,7 +239,7 @@ static const hb_script_t _qtscript_to_hbscript[] = {
     hb_script_t(HB_TAG('K', 'h', 'i', 't')), // Script_KhitanSmallScript
     hb_script_t(HB_TAG('Y', 'e', 'z', 'i')), // Script_Yezidi
 };
-Q_STATIC_ASSERT(QChar::ScriptCount == sizeof(_qtscript_to_hbscript) / sizeof(_qtscript_to_hbscript[0]));
+static_assert(QChar::ScriptCount == sizeof(_qtscript_to_hbscript) / sizeof(_qtscript_to_hbscript[0]));
 
 hb_script_t hb_qt_script_to_script(QChar::Script script)
 {

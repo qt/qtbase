@@ -228,7 +228,7 @@ void tst_QNumeric::distinctNaNF() {
 template<typename F, typename Whole>
 void tst_QNumeric::generalNaN_data()
 {
-    Q_STATIC_ASSERT(sizeof(F) == sizeof(Whole));
+    static_assert(sizeof(F) == sizeof(Whole));
     QTest::addColumn<Whole>("whole");
     // Every value with every bit of the exponent set is a NaN.
     // Sign and mantissa can be anything without interfering with that.
@@ -251,7 +251,7 @@ void tst_QNumeric::generalNaN_data()
 template<typename F, typename Whole>
 void tst_QNumeric::generalNaN()
 {
-    Q_STATIC_ASSERT(sizeof(F) == sizeof(Whole));
+    static_assert(sizeof(F) == sizeof(Whole));
     QFETCH(const Whole, whole);
     F nan;
     memcpy(&nan, &whole, sizeof(F));

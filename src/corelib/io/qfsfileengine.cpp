@@ -85,7 +85,7 @@ typedef unsigned int UnsignedIOType;
 #else
 typedef ssize_t SignedIOType;
 typedef size_t UnsignedIOType;
-Q_STATIC_ASSERT_X(sizeof(SignedIOType) == sizeof(UnsignedIOType),
+static_assert(sizeof(SignedIOType) == sizeof(UnsignedIOType),
                   "Unsupported: read/write return a type with different size as the len parameter");
 #endif
 

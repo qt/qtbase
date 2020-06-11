@@ -138,7 +138,7 @@ template <uint N>
 class QStaticByteArrayMatcher : QStaticByteArrayMatcherBase
 {
     char m_pattern[N];
-    Q_STATIC_ASSERT_X(N > 2, "QStaticByteArrayMatcher makes no sense for finding a single-char pattern");
+    static_assert(N > 2, "QStaticByteArrayMatcher makes no sense for finding a single-char pattern");
 public:
     explicit Q_DECL_RELAXED_CONSTEXPR QStaticByteArrayMatcher(const char (&patternToMatch)[N]) noexcept
         : QStaticByteArrayMatcherBase(patternToMatch, N - 1), m_pattern()

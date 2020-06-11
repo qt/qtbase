@@ -1293,7 +1293,7 @@ class HasStreamOperator
 {
     struct Yes { char unused[1]; };
     struct No { char unused[2]; };
-    Q_STATIC_ASSERT(sizeof(Yes) != sizeof(No));
+    static_assert(sizeof(Yes) != sizeof(No));
 
     template<class C> static decltype(std::declval<QDataStream&>().operator>>(std::declval<C&>()), Yes()) load(int);
     template<class C> static decltype(operator>>(std::declval<QDataStream&>(), std::declval<C&>()), Yes()) load(int);
@@ -1310,9 +1310,9 @@ public:
 };
 
 // Quick sanity checks
-Q_STATIC_ASSERT(HasStreamOperator<NS(QJsonDocument)>::Value);
-Q_STATIC_ASSERT(!HasStreamOperator<void*>::Value);
-Q_STATIC_ASSERT(HasStreamOperator<qint8>::Value);
+static_assert(HasStreamOperator<NS(QJsonDocument)>::Value);
+static_assert(!HasStreamOperator<void*>::Value);
+static_assert(HasStreamOperator<qint8>::Value);
 
 template<typename T, bool IsAcceptedType = DefinedTypesFilter::Acceptor<T>::IsAccepted && HasStreamOperator<T>::Value>
 struct FilteredOperatorSwitch

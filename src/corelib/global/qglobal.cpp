@@ -133,15 +133,15 @@ Q_CORE_EXPORT void *qMemSet(void *dest, int c, size_t n);
 // in. The idea here is to error or warn if otherwise implicit Qt
 // assumptions are not fulfilled on new hardware or compilers
 // (if this list becomes too long, consider factoring into a separate file)
-Q_STATIC_ASSERT_X(UCHAR_MAX == 255, "Qt assumes that char is 8 bits");
-Q_STATIC_ASSERT_X(sizeof(int) == 4, "Qt assumes that int is 32 bits");
-Q_STATIC_ASSERT_X(QT_POINTER_SIZE == sizeof(void *), "QT_POINTER_SIZE defined incorrectly");
-Q_STATIC_ASSERT_X(sizeof(float) == 4, "Qt assumes that float is 32 bits");
-Q_STATIC_ASSERT_X(sizeof(char16_t) == 2, "Qt assumes that char16_t is 16 bits");
-Q_STATIC_ASSERT_X(sizeof(char32_t) == 4, "Qt assumes that char32_t is 32 bits");
-Q_STATIC_ASSERT_X(std::numeric_limits<int>::radix == 2,
+static_assert(UCHAR_MAX == 255, "Qt assumes that char is 8 bits");
+static_assert(sizeof(int) == 4, "Qt assumes that int is 32 bits");
+static_assert(QT_POINTER_SIZE == sizeof(void *), "QT_POINTER_SIZE defined incorrectly");
+static_assert(sizeof(float) == 4, "Qt assumes that float is 32 bits");
+static_assert(sizeof(char16_t) == 2, "Qt assumes that char16_t is 16 bits");
+static_assert(sizeof(char32_t) == 4, "Qt assumes that char32_t is 32 bits");
+static_assert(std::numeric_limits<int>::radix == 2,
                   "Qt assumes binary integers");
-Q_STATIC_ASSERT_X((std::numeric_limits<int>::max() + std::numeric_limits<int>::lowest()) == -1,
+static_assert((std::numeric_limits<int>::max() + std::numeric_limits<int>::lowest()) == -1,
                   "Qt assumes two's complement integers");
 
 // While we'd like to check for __STDC_IEC_559__, as per ISO/IEC 9899:2011
@@ -152,13 +152,13 @@ Q_STATIC_ASSERT_X((std::numeric_limits<int>::max() + std::numeric_limits<int>::l
 // On GHC the compiler reports std::numeric_limits<float>::is_iec559 as false.
 // This is all right according to our needs.
 #if !defined(Q_CC_GHS)
-Q_STATIC_ASSERT_X(std::numeric_limits<float>::is_iec559,
+static_assert(std::numeric_limits<float>::is_iec559,
                   "Qt assumes IEEE 754 floating point");
 #endif
 
 // Technically, presence of NaN and infinities are implied from the above check,
 // but double checking our environment doesn't hurt...
-Q_STATIC_ASSERT_X(std::numeric_limits<float>::has_infinity &&
+static_assert(std::numeric_limits<float>::has_infinity &&
                   std::numeric_limits<float>::has_quiet_NaN &&
                   std::numeric_limits<float>::has_signaling_NaN,
                   "Qt assumes IEEE 754 floating point");
@@ -167,13 +167,13 @@ Q_STATIC_ASSERT_X(std::numeric_limits<float>::has_infinity &&
 // but that allows for a non-binary radix. We need to recheck that.
 // Note how __STDC_IEC_559__ would instead check for IEC 60559:1989, aka
 // ANSI/IEEE 754−1985, which specifically implies binary floating point numbers.
-Q_STATIC_ASSERT_X(std::numeric_limits<float>::radix == 2,
+static_assert(std::numeric_limits<float>::radix == 2,
                   "Qt assumes binary IEEE 754 floating point");
 
 // not required by the definition of size_t, but we depend on this
-Q_STATIC_ASSERT_X(sizeof(size_t) == sizeof(void *), "size_t and a pointer don't have the same size");
-Q_STATIC_ASSERT(sizeof(size_t) == sizeof(qsizetype)); // implied by the definition
-Q_STATIC_ASSERT((std::is_same<qsizetype, qptrdiff>::value));
+static_assert(sizeof(size_t) == sizeof(void *), "size_t and a pointer don't have the same size");
+static_assert(sizeof(size_t) == sizeof(qsizetype)); // implied by the definition
+static_assert((std::is_same<qsizetype, qptrdiff>::value));
 
 /*!
     \class QFlag

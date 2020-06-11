@@ -88,10 +88,10 @@ Q_DECL_CONSTEXPR inline QIncompatibleFlag::QIncompatibleFlag(int value) noexcept
 template<typename Enum>
 class QFlags
 {
-    Q_STATIC_ASSERT_X((sizeof(Enum) <= sizeof(int)),
+    static_assert((sizeof(Enum) <= sizeof(int)),
                       "QFlags uses an int as storage, so an enum with underlying "
                       "long long will overflow.");
-    Q_STATIC_ASSERT_X((std::is_enum<Enum>::value), "QFlags is only usable on enumeration types.");
+    static_assert((std::is_enum<Enum>::value), "QFlags is only usable on enumeration types.");
 
 #if QT_DEPRECATED_SINCE(5,15)
     struct Private;

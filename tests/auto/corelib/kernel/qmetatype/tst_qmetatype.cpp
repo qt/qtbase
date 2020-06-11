@@ -677,21 +677,21 @@ void tst_QMetaType::type_fromSubString()
 namespace {
     template <typename T>
     struct static_assert_trigger {
-        Q_STATIC_ASSERT(( QMetaTypeId2<T>::IsBuiltIn ));
+        static_assert(( QMetaTypeId2<T>::IsBuiltIn ));
         enum { value = true };
     };
 }
 
 #define CHECK_BUILTIN(MetaTypeName, MetaTypeId, RealType) static_assert_trigger< RealType >::value &&
-Q_STATIC_ASSERT(( FOR_EACH_CORE_METATYPE(CHECK_BUILTIN) true ));
+static_assert(( FOR_EACH_CORE_METATYPE(CHECK_BUILTIN) true ));
 #undef CHECK_BUILTIN
-Q_STATIC_ASSERT(( QMetaTypeId2<QList<QVariant> >::IsBuiltIn));
-Q_STATIC_ASSERT(( QMetaTypeId2<QMap<QString,QVariant> >::IsBuiltIn));
-Q_STATIC_ASSERT(( QMetaTypeId2<QObject*>::IsBuiltIn));
-Q_STATIC_ASSERT((!QMetaTypeId2<tst_QMetaType*>::IsBuiltIn)); // QObject subclass
-Q_STATIC_ASSERT((!QMetaTypeId2<QList<int> >::IsBuiltIn));
-Q_STATIC_ASSERT((!QMetaTypeId2<QMap<int,int> >::IsBuiltIn));
-Q_STATIC_ASSERT((!QMetaTypeId2<QMetaType::Type>::IsBuiltIn));
+static_assert(( QMetaTypeId2<QList<QVariant> >::IsBuiltIn));
+static_assert(( QMetaTypeId2<QMap<QString,QVariant> >::IsBuiltIn));
+static_assert(( QMetaTypeId2<QObject*>::IsBuiltIn));
+static_assert((!QMetaTypeId2<tst_QMetaType*>::IsBuiltIn)); // QObject subclass
+static_assert((!QMetaTypeId2<QList<int> >::IsBuiltIn));
+static_assert((!QMetaTypeId2<QMap<int,int> >::IsBuiltIn));
+static_assert((!QMetaTypeId2<QMetaType::Type>::IsBuiltIn));
 
 void tst_QMetaType::create_data()
 {
@@ -2090,7 +2090,7 @@ void tst_QMetaType::constRefs()
     QCOMPARE(::qMetaTypeId<const CustomMovable &>(), ::qMetaTypeId<CustomMovable>());
     QCOMPARE(::qMetaTypeId<const QList<CustomMovable> &>(), ::qMetaTypeId<QList<CustomMovable> >());
 #if defined(Q_COMPILER_CONSTEXPR)
-    Q_STATIC_ASSERT(::qMetaTypeId<const int &>() == ::qMetaTypeId<int>());
+    static_assert(::qMetaTypeId<const int &>() == ::qMetaTypeId<int>());
 #endif
 }
 

@@ -188,7 +188,7 @@ template <bool> inline void booleanHelper() { }
 
 void tst_QAtomicIntegerXX::static_checks()
 {
-    Q_STATIC_ASSERT(sizeof(QAtomicInteger<T>) == sizeof(T));
+    static_assert(sizeof(QAtomicInteger<T>) == sizeof(T));
 
     // statements with no effect
     (void) QAtomicInteger<T>::isReferenceCountingNative();

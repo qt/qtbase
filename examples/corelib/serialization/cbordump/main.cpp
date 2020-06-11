@@ -231,7 +231,7 @@ template <typename T> static inline bool canConvertTo(double v)
     // integrals to floating-point with loss of precision has implementation-
     // defined behavior whether the next higher or next lower is returned;
     // converting FP to integral is UB if it can't be represented.;
-    Q_STATIC_ASSERT(std::numeric_limits<T>::is_integer);
+    static_assert(std::numeric_limits<T>::is_integer);
 
     double supremum = ldexp(1, std::numeric_limits<T>::digits);
     if (v >= supremum)

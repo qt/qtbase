@@ -50,9 +50,9 @@
 template <typename T>
 using CanConvert = std::is_convertible<T, QStringView>;
 
-Q_STATIC_ASSERT(!CanConvert<QLatin1String>::value);
-Q_STATIC_ASSERT(!CanConvert<const char*>::value);
-Q_STATIC_ASSERT(!CanConvert<QByteArray>::value);
+static_assert(!CanConvert<QLatin1String>::value);
+static_assert(!CanConvert<const char*>::value);
+static_assert(!CanConvert<QByteArray>::value);
 
 // QStringView qchar_does_not_compile() { return QStringView(QChar('a')); }
 // QStringView qlatin1string_does_not_compile() { return QStringView(QLatin1String("a")); }
@@ -63,31 +63,31 @@ Q_STATIC_ASSERT(!CanConvert<QByteArray>::value);
 // QChar
 //
 
-Q_STATIC_ASSERT(!CanConvert<QChar>::value);
+static_assert(!CanConvert<QChar>::value);
 
-Q_STATIC_ASSERT(CanConvert<QChar[123]>::value);
+static_assert(CanConvert<QChar[123]>::value);
 
-Q_STATIC_ASSERT(CanConvert<      QString >::value);
-Q_STATIC_ASSERT(CanConvert<const QString >::value);
-Q_STATIC_ASSERT(CanConvert<      QString&>::value);
-Q_STATIC_ASSERT(CanConvert<const QString&>::value);
+static_assert(CanConvert<      QString >::value);
+static_assert(CanConvert<const QString >::value);
+static_assert(CanConvert<      QString&>::value);
+static_assert(CanConvert<const QString&>::value);
 
-Q_STATIC_ASSERT(CanConvert<      QStringRef >::value);
-Q_STATIC_ASSERT(CanConvert<const QStringRef >::value);
-Q_STATIC_ASSERT(CanConvert<      QStringRef&>::value);
-Q_STATIC_ASSERT(CanConvert<const QStringRef&>::value);
+static_assert(CanConvert<      QStringRef >::value);
+static_assert(CanConvert<const QStringRef >::value);
+static_assert(CanConvert<      QStringRef&>::value);
+static_assert(CanConvert<const QStringRef&>::value);
 
 
 //
 // ushort
 //
 
-Q_STATIC_ASSERT(!CanConvert<ushort>::value);
+static_assert(!CanConvert<ushort>::value);
 
-Q_STATIC_ASSERT(CanConvert<ushort[123]>::value);
+static_assert(CanConvert<ushort[123]>::value);
 
-Q_STATIC_ASSERT(CanConvert<      ushort*>::value);
-Q_STATIC_ASSERT(CanConvert<const ushort*>::value);
+static_assert(CanConvert<      ushort*>::value);
+static_assert(CanConvert<const ushort*>::value);
 
 static_assert(CanConvert<QVector<ushort>>::value);
 static_assert(CanConvert<QVarLengthArray<ushort>>::value);
@@ -100,15 +100,15 @@ static_assert(!CanConvert<std::list<ushort>>::value);
 // char16_t
 //
 
-Q_STATIC_ASSERT(!CanConvert<char16_t>::value);
+static_assert(!CanConvert<char16_t>::value);
 
-Q_STATIC_ASSERT(CanConvert<      char16_t*>::value);
-Q_STATIC_ASSERT(CanConvert<const char16_t*>::value);
+static_assert(CanConvert<      char16_t*>::value);
+static_assert(CanConvert<const char16_t*>::value);
 
-Q_STATIC_ASSERT(CanConvert<      std::u16string >::value);
-Q_STATIC_ASSERT(CanConvert<const std::u16string >::value);
-Q_STATIC_ASSERT(CanConvert<      std::u16string&>::value);
-Q_STATIC_ASSERT(CanConvert<const std::u16string&>::value);
+static_assert(CanConvert<      std::u16string >::value);
+static_assert(CanConvert<const std::u16string >::value);
+static_assert(CanConvert<      std::u16string&>::value);
+static_assert(CanConvert<const std::u16string&>::value);
 
 static_assert(CanConvert<      std::u16string_view >::value);
 static_assert(CanConvert<const std::u16string_view >::value);
@@ -134,15 +134,15 @@ Q_CONSTEXPR bool CanConvertFromWCharT =
 #endif
         ;
 
-Q_STATIC_ASSERT(!CanConvert<wchar_t>::value);
+static_assert(!CanConvert<wchar_t>::value);
 
-Q_STATIC_ASSERT(CanConvert<      wchar_t*>::value == CanConvertFromWCharT);
-Q_STATIC_ASSERT(CanConvert<const wchar_t*>::value == CanConvertFromWCharT);
+static_assert(CanConvert<      wchar_t*>::value == CanConvertFromWCharT);
+static_assert(CanConvert<const wchar_t*>::value == CanConvertFromWCharT);
 
-Q_STATIC_ASSERT(CanConvert<      std::wstring >::value == CanConvertFromWCharT);
-Q_STATIC_ASSERT(CanConvert<const std::wstring >::value == CanConvertFromWCharT);
-Q_STATIC_ASSERT(CanConvert<      std::wstring&>::value == CanConvertFromWCharT);
-Q_STATIC_ASSERT(CanConvert<const std::wstring&>::value == CanConvertFromWCharT);
+static_assert(CanConvert<      std::wstring >::value == CanConvertFromWCharT);
+static_assert(CanConvert<const std::wstring >::value == CanConvertFromWCharT);
+static_assert(CanConvert<      std::wstring&>::value == CanConvertFromWCharT);
+static_assert(CanConvert<const std::wstring&>::value == CanConvertFromWCharT);
 
 static_assert(CanConvert<      std::wstring_view >::value == CanConvertFromWCharT);
 static_assert(CanConvert<const std::wstring_view >::value == CanConvertFromWCharT);
@@ -291,15 +291,15 @@ void tst_QStringView::constExpr() const
 #ifdef Q_COMPILER_CONSTEXPR
     {
         constexpr QStringView sv;
-        Q_STATIC_ASSERT(sv.size() == 0);
-        Q_STATIC_ASSERT(sv.isNull());
-        Q_STATIC_ASSERT(sv.empty());
-        Q_STATIC_ASSERT(sv.isEmpty());
-        Q_STATIC_ASSERT(sv.utf16() == nullptr);
+        static_assert(sv.size() == 0);
+        static_assert(sv.isNull());
+        static_assert(sv.empty());
+        static_assert(sv.isEmpty());
+        static_assert(sv.utf16() == nullptr);
 
         constexpr QStringView sv2(sv.utf16(), sv.utf16() + sv.size());
-        Q_STATIC_ASSERT(sv2.isNull());
-        Q_STATIC_ASSERT(sv2.empty());
+        static_assert(sv2.isNull());
+        static_assert(sv2.empty());
     }
     {
         constexpr QStringView sv = nullptr;
@@ -311,64 +311,64 @@ void tst_QStringView::constExpr() const
     }
     {
         constexpr QStringView sv = u"";
-        Q_STATIC_ASSERT(sv.size() == 0);
-        Q_STATIC_ASSERT(!sv.isNull());
-        Q_STATIC_ASSERT(sv.empty());
-        Q_STATIC_ASSERT(sv.isEmpty());
-        Q_STATIC_ASSERT(sv.utf16() != nullptr);
+        static_assert(sv.size() == 0);
+        static_assert(!sv.isNull());
+        static_assert(sv.empty());
+        static_assert(sv.isEmpty());
+        static_assert(sv.utf16() != nullptr);
 
         constexpr QStringView sv2(sv.utf16(), sv.utf16() + sv.size());
-        Q_STATIC_ASSERT(!sv2.isNull());
-        Q_STATIC_ASSERT(sv2.empty());
+        static_assert(!sv2.isNull());
+        static_assert(sv2.empty());
     }
     {
         constexpr QStringView sv = u"Hello";
-        Q_STATIC_ASSERT(sv.size() == 5);
-        Q_STATIC_ASSERT(!sv.empty());
-        Q_STATIC_ASSERT(!sv.isEmpty());
-        Q_STATIC_ASSERT(!sv.isNull());
-        Q_STATIC_ASSERT(*sv.utf16() == 'H');
-        Q_STATIC_ASSERT(sv[0]      == QLatin1Char('H'));
-        Q_STATIC_ASSERT(sv.at(0)   == QLatin1Char('H'));
-        Q_STATIC_ASSERT(sv.front() == QLatin1Char('H'));
-        Q_STATIC_ASSERT(sv.first() == QLatin1Char('H'));
-        Q_STATIC_ASSERT(sv[4]      == QLatin1Char('o'));
-        Q_STATIC_ASSERT(sv.at(4)   == QLatin1Char('o'));
-        Q_STATIC_ASSERT(sv.back()  == QLatin1Char('o'));
-        Q_STATIC_ASSERT(sv.last()  == QLatin1Char('o'));
+        static_assert(sv.size() == 5);
+        static_assert(!sv.empty());
+        static_assert(!sv.isEmpty());
+        static_assert(!sv.isNull());
+        static_assert(*sv.utf16() == 'H');
+        static_assert(sv[0]      == QLatin1Char('H'));
+        static_assert(sv.at(0)   == QLatin1Char('H'));
+        static_assert(sv.front() == QLatin1Char('H'));
+        static_assert(sv.first() == QLatin1Char('H'));
+        static_assert(sv[4]      == QLatin1Char('o'));
+        static_assert(sv.at(4)   == QLatin1Char('o'));
+        static_assert(sv.back()  == QLatin1Char('o'));
+        static_assert(sv.last()  == QLatin1Char('o'));
 
         constexpr QStringView sv2(sv.utf16(), sv.utf16() + sv.size());
-        Q_STATIC_ASSERT(!sv2.isNull());
-        Q_STATIC_ASSERT(!sv2.empty());
-        Q_STATIC_ASSERT(sv2.size() == 5);
+        static_assert(!sv2.isNull());
+        static_assert(!sv2.empty());
+        static_assert(sv2.size() == 5);
     }
     {
-        Q_STATIC_ASSERT(QStringView(u"Hello").size() == 5);
+        static_assert(QStringView(u"Hello").size() == 5);
         constexpr QStringView sv = u"Hello";
-        Q_STATIC_ASSERT(sv.size() == 5);
-        Q_STATIC_ASSERT(!sv.empty());
-        Q_STATIC_ASSERT(!sv.isEmpty());
-        Q_STATIC_ASSERT(!sv.isNull());
-        Q_STATIC_ASSERT(*sv.utf16() == 'H');
-        Q_STATIC_ASSERT(sv[0]      == QLatin1Char('H'));
-        Q_STATIC_ASSERT(sv.at(0)   == QLatin1Char('H'));
-        Q_STATIC_ASSERT(sv.front() == QLatin1Char('H'));
-        Q_STATIC_ASSERT(sv.first() == QLatin1Char('H'));
-        Q_STATIC_ASSERT(sv[4]      == QLatin1Char('o'));
-        Q_STATIC_ASSERT(sv.at(4)   == QLatin1Char('o'));
-        Q_STATIC_ASSERT(sv.back()  == QLatin1Char('o'));
-        Q_STATIC_ASSERT(sv.last()  == QLatin1Char('o'));
+        static_assert(sv.size() == 5);
+        static_assert(!sv.empty());
+        static_assert(!sv.isEmpty());
+        static_assert(!sv.isNull());
+        static_assert(*sv.utf16() == 'H');
+        static_assert(sv[0]      == QLatin1Char('H'));
+        static_assert(sv.at(0)   == QLatin1Char('H'));
+        static_assert(sv.front() == QLatin1Char('H'));
+        static_assert(sv.first() == QLatin1Char('H'));
+        static_assert(sv[4]      == QLatin1Char('o'));
+        static_assert(sv.at(4)   == QLatin1Char('o'));
+        static_assert(sv.back()  == QLatin1Char('o'));
+        static_assert(sv.last()  == QLatin1Char('o'));
 
         constexpr QStringView sv2(sv.utf16(), sv.utf16() + sv.size());
-        Q_STATIC_ASSERT(!sv2.isNull());
-        Q_STATIC_ASSERT(!sv2.empty());
-        Q_STATIC_ASSERT(sv2.size() == 5);
+        static_assert(!sv2.isNull());
+        static_assert(!sv2.empty());
+        static_assert(sv2.size() == 5);
 
         constexpr char16_t *null = nullptr;
         constexpr QStringView sv3(null);
-        Q_STATIC_ASSERT(sv3.isNull());
-        Q_STATIC_ASSERT(sv3.isEmpty());
-        Q_STATIC_ASSERT(sv3.size() == 0);
+        static_assert(sv3.isNull());
+        static_assert(sv3.isEmpty());
+        static_assert(sv3.size() == 0);
     }
 #endif
 }
@@ -394,7 +394,7 @@ void tst_QStringView::literals() const
     const char16_t longhello[] =
             u"Hello World. This is a much longer message, to exercise qustrlen.";
     const char16_t withnull[] = u"a\0zzz";
-    Q_STATIC_ASSERT(sizeof(longhello) >= 16);
+    static_assert(sizeof(longhello) >= 16);
 
     QCOMPARE(QStringView(hello).size(), 5);
     QCOMPARE(QStringView(hello + 0).size(), 5); // forces decay to pointer

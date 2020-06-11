@@ -1750,33 +1750,33 @@
 QT_BEGIN_NAMESPACE
 
 // The following specializations must always be defined
-Q_STATIC_ASSERT(sizeof(QAtomicInteger<unsigned>));
-Q_STATIC_ASSERT(sizeof(QAtomicInteger<long>));
-Q_STATIC_ASSERT(sizeof(QAtomicInteger<unsigned long>));
-Q_STATIC_ASSERT(sizeof(QAtomicInteger<quintptr>));
-Q_STATIC_ASSERT(sizeof(QAtomicInteger<qptrdiff>));
+static_assert(sizeof(QAtomicInteger<unsigned>));
+static_assert(sizeof(QAtomicInteger<long>));
+static_assert(sizeof(QAtomicInteger<unsigned long>));
+static_assert(sizeof(QAtomicInteger<quintptr>));
+static_assert(sizeof(QAtomicInteger<qptrdiff>));
 #ifdef Q_COMPILER_UNICODE_STRINGS
-Q_STATIC_ASSERT(sizeof(QAtomicInteger<char32_t>));
+static_assert(sizeof(QAtomicInteger<char32_t>));
 #endif
 
 #ifdef Q_ATOMIC_INT16_IS_SUPPORTED
-Q_STATIC_ASSERT(sizeof(QAtomicInteger<short>));
-Q_STATIC_ASSERT(sizeof(QAtomicInteger<unsigned short>));
+static_assert(sizeof(QAtomicInteger<short>));
+static_assert(sizeof(QAtomicInteger<unsigned short>));
 #  if WCHAR_MAX < 0x10000
-Q_STATIC_ASSERT(sizeof(QAtomicInteger<wchar_t>));
+static_assert(sizeof(QAtomicInteger<wchar_t>));
 #  endif
 #  ifdef Q_COMPILER_UNICODE_STRINGS
-Q_STATIC_ASSERT(sizeof(QAtomicInteger<char16_t>));
+static_assert(sizeof(QAtomicInteger<char16_t>));
 #  endif
 #endif
 
 #ifdef Q_ATOMIC_INT64_IS_SUPPORTED
-Q_STATIC_ASSERT(sizeof(QAtomicInteger<qint64>));
-Q_STATIC_ASSERT(sizeof(QAtomicInteger<quint64>));
+static_assert(sizeof(QAtomicInteger<qint64>));
+static_assert(sizeof(QAtomicInteger<quint64>));
 #endif
 
 #if WCHAR_MAX == INT_MAX
-Q_STATIC_ASSERT(sizeof(QAtomicInteger<wchar_t>));
+static_assert(sizeof(QAtomicInteger<wchar_t>));
 #endif
 
 QT_END_NAMESPACE

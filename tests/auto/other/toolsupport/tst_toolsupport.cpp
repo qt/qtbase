@@ -64,7 +64,7 @@ size_t pmm_to_offsetof(T K:: *pmm)
 #else
     size_t ret;
 #endif
-    Q_STATIC_ASSERT(sizeof(ret) == sizeof(pmm));
+    static_assert(sizeof(ret) == sizeof(pmm));
     memcpy(&ret, &pmm, sizeof(ret));
     return ret;
 }

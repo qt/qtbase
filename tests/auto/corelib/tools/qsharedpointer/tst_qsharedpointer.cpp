@@ -153,7 +153,7 @@ QtSharedPointer::ExternalRefCountData *refCountData(const QSharedPointer<T> &b)
         QtSharedPointer::ExternalRefCountData* data;
     };
     // sanity checks:
-    Q_STATIC_ASSERT(sizeof(QSharedPointer<T>) == sizeof(Dummy));
+    static_assert(sizeof(QSharedPointer<T>) == sizeof(Dummy));
     Q_ASSERT(static_cast<const Dummy*>(static_cast<const void*>(&b))->value == b.data());
     return static_cast<const Dummy*>(static_cast<const void*>(&b))->data;
 }
@@ -2919,7 +2919,7 @@ struct Overloaded
 
     void test()
     {
-#define QVERIFY_CALLS(expr, base) Q_STATIC_ASSERT(sizeof(call(expr)) == base##Called)
+#define QVERIFY_CALLS(expr, base) static_assert(sizeof(call(expr)) == base##Called)
         QVERIFY_CALLS(SmartPtr<Base1>{}, base1);
         QVERIFY_CALLS(SmartPtr<Base2>{}, base2);
         QVERIFY_CALLS(SmartPtr<const Base1>{}, base1);

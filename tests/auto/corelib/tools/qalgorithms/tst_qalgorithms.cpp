@@ -1065,7 +1065,7 @@ static Q_DECL_CONSTEXPR const uint bitsSetInNibble[] = {
     0, 1, 1, 2, 1, 2, 2, 3,
     1, 2, 2, 3, 2, 3, 3, 4,
 };
-Q_STATIC_ASSERT(sizeof bitsSetInNibble / sizeof *bitsSetInNibble == 16);
+static_assert(sizeof bitsSetInNibble / sizeof *bitsSetInNibble == 16);
 
 static Q_DECL_CONSTEXPR uint bitsSetInByte(quint8 byte)
 {

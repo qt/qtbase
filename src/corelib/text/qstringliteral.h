@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 
 typedef char16_t qunicodechar;
 
-Q_STATIC_ASSERT_X(sizeof(qunicodechar) == 2,
+static_assert(sizeof(qunicodechar) == 2,
         "qunicodechar must typedef an integral type of size 2");
 
 #define QT_UNICODE_LITERAL(str) u"" str

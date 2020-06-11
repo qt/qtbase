@@ -184,12 +184,12 @@ inline size_t qHash(const Custom &key, size_t seed = 0) { return qHash(key.i, se
 Q_DECLARE_METATYPE(Custom);
 
 // tests depends on the fact that:
-Q_STATIC_ASSERT(!QTypeInfo<int>::isStatic);
-Q_STATIC_ASSERT(!QTypeInfo<int>::isComplex);
-Q_STATIC_ASSERT(!QTypeInfo<Movable>::isStatic);
-Q_STATIC_ASSERT(QTypeInfo<Movable>::isComplex);
-Q_STATIC_ASSERT(QTypeInfo<Custom>::isStatic);
-Q_STATIC_ASSERT(QTypeInfo<Custom>::isComplex);
+static_assert(!QTypeInfo<int>::isStatic);
+static_assert(!QTypeInfo<int>::isComplex);
+static_assert(!QTypeInfo<Movable>::isStatic);
+static_assert(QTypeInfo<Movable>::isComplex);
+static_assert(QTypeInfo<Custom>::isStatic);
+static_assert(QTypeInfo<Custom>::isComplex);
 
 
 class tst_QVector : public QObject

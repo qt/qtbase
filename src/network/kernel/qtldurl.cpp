@@ -84,7 +84,7 @@ static bool containsTLDEntry(QStringView entry, TLDMatchType match)
     Q_ASSERT(tldGroupOffset <= tldIndices[index + 1]);
     // The last extra entry in tldIndices
     // should be equal to the total of all chunks' lengths.
-    Q_STATIC_ASSERT(tldIndices[tldCount] == tldChunks[tldChunkCount - 1]);
+    static_assert(tldIndices[tldCount] == tldChunks[tldChunkCount - 1]);
 
     // Find which chunk contains the tldGroupOffset
     while (tldGroupOffset >= tldChunks[chunk]) {

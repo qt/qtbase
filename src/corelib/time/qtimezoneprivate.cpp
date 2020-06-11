@@ -259,7 +259,7 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
       brackets the correct time and at most one DST transition.
     */
     const qint64 sixteenHoursInMSecs(16 * 3600 * 1000);
-    Q_STATIC_ASSERT(-sixteenHoursInMSecs / 1000 < QTimeZone::MinUtcOffsetSecs
+    static_assert(-sixteenHoursInMSecs / 1000 < QTimeZone::MinUtcOffsetSecs
                   && sixteenHoursInMSecs / 1000 > QTimeZone::MaxUtcOffsetSecs);
     const qint64 recent = forLocalMSecs - sixteenHoursInMSecs;
     const qint64 imminent = forLocalMSecs + sixteenHoursInMSecs;

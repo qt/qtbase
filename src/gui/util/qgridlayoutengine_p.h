@@ -105,8 +105,8 @@ template <typename T>
 class QHVContainer {
     T m_data[2];
 
-    Q_STATIC_ASSERT(Qt::Horizontal == 0x1);
-    Q_STATIC_ASSERT(Qt::Vertical == 0x2);
+    static_assert(Qt::Horizontal == 0x1);
+    static_assert(Qt::Vertical == 0x2);
     static constexpr int map(Qt::Orientation o) noexcept
     {
         return int(o) - 1;

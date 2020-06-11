@@ -1492,10 +1492,10 @@ QDateTime QFileInfo::lastRead() const
 */
 QDateTime QFileInfo::fileTime(QFile::FileTime time) const
 {
-    Q_STATIC_ASSERT(int(QFile::FileAccessTime) == int(QAbstractFileEngine::AccessTime));
-    Q_STATIC_ASSERT(int(QFile::FileBirthTime) == int(QAbstractFileEngine::BirthTime));
-    Q_STATIC_ASSERT(int(QFile::FileMetadataChangeTime) == int(QAbstractFileEngine::MetadataChangeTime));
-    Q_STATIC_ASSERT(int(QFile::FileModificationTime) == int(QAbstractFileEngine::ModificationTime));
+    static_assert(int(QFile::FileAccessTime) == int(QAbstractFileEngine::AccessTime));
+    static_assert(int(QFile::FileBirthTime) == int(QAbstractFileEngine::BirthTime));
+    static_assert(int(QFile::FileMetadataChangeTime) == int(QAbstractFileEngine::MetadataChangeTime));
+    static_assert(int(QFile::FileModificationTime) == int(QAbstractFileEngine::ModificationTime));
 
     Q_D(const QFileInfo);
     auto fetime = QAbstractFileEngine::FileTime(time);

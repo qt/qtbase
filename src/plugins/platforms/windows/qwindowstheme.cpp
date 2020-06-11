@@ -840,7 +840,7 @@ class FakePointer
 {
 public:
 
-    Q_STATIC_ASSERT_X(sizeof(T) <= sizeof(void *), "FakePointers can only go that far.");
+    static_assert(sizeof(T) <= sizeof(void *), "FakePointers can only go that far.");
 
     static FakePointer *create(T thing)
     {

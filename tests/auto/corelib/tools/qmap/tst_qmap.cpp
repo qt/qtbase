@@ -861,7 +861,7 @@ void tst_QMap::keyIterator()
 
     // DefaultConstructible test
     typedef QMap<int, int>::key_iterator keyIterator;
-    Q_STATIC_ASSERT(std::is_default_constructible<keyIterator>::value);
+    static_assert(std::is_default_constructible<keyIterator>::value);
 }
 
 void tst_QMap::keyValueIterator()

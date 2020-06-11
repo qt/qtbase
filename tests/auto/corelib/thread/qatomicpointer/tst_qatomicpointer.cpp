@@ -108,7 +108,7 @@ void tst_QAtomicPointer::warningFree()
 
 void tst_QAtomicPointer::alignment()
 {
-    Q_STATIC_ASSERT(alignof(QBasicAtomicPointer<void>) == alignof(void*));
+    static_assert(alignof(QBasicAtomicPointer<void>) == alignof(void*));
 }
 
 void tst_QAtomicPointer::constructor()

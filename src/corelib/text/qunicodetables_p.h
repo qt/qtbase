@@ -101,7 +101,7 @@ struct Properties {
 Q_CORE_EXPORT const Properties * QT_FASTCALL properties(char32_t ucs4) noexcept;
 Q_CORE_EXPORT const Properties * QT_FASTCALL properties(char16_t ucs2) noexcept;
 
-Q_STATIC_ASSERT(sizeof(Properties) == 20);
+static_assert(sizeof(Properties) == 20);
 
 enum GraphemeBreakClass {
     GraphemeBreak_Any,

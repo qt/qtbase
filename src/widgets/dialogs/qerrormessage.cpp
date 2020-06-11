@@ -163,11 +163,11 @@ static bool metFatal = false;
 
 static QString msgType2i18nString(QtMsgType t)
 {
-    Q_STATIC_ASSERT(QtDebugMsg == 0);
-    Q_STATIC_ASSERT(QtWarningMsg == 1);
-    Q_STATIC_ASSERT(QtCriticalMsg == 2);
-    Q_STATIC_ASSERT(QtFatalMsg == 3);
-    Q_STATIC_ASSERT(QtInfoMsg == 4);
+    static_assert(QtDebugMsg == 0);
+    static_assert(QtWarningMsg == 1);
+    static_assert(QtCriticalMsg == 2);
+    static_assert(QtFatalMsg == 3);
+    static_assert(QtInfoMsg == 4);
 
     // adjust the array below if any of the above fire...
 

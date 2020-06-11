@@ -70,7 +70,7 @@ quintptr Q_CORE_EXPORT qtHookData[] = {
     18
 };
 
-Q_STATIC_ASSERT(QHooks::LastHookIndex == sizeof(qtHookData) / sizeof(qtHookData[0]));
+static_assert(QHooks::LastHookIndex == sizeof(qtHookData) / sizeof(qtHookData[0]));
 
 QT_END_NAMESPACE
 

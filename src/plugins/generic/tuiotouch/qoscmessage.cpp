@@ -104,7 +104,7 @@ QOscMessage::QOscMessage(const QByteArray &data)
             if (parsedBytes > (quint32)data.size() || data.size() - parsedBytes < sizeof(quint32))
                 return;
 
-            Q_STATIC_ASSERT(sizeof(float) == sizeof(quint32));
+            static_assert(sizeof(float) == sizeof(quint32));
             union {
                 quint32 u;
                 float f;

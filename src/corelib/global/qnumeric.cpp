@@ -169,7 +169,7 @@ Q_CORE_EXPORT quint32 qFloatDistance(float a, float b)
        * IEE754 format.
        * Integers and floats have the same endian
     */
-    Q_STATIC_ASSERT(sizeof(quint32) == sizeof(float));
+    static_assert(sizeof(quint32) == sizeof(float));
     Q_ASSERT(qIsFinite(a) && qIsFinite(b));
     if (a == b)
         return 0;
@@ -227,7 +227,7 @@ Q_CORE_EXPORT quint64 qFloatDistance(double a, double b)
        * IEE754 format double precision
        * Integers and floats have the same endian
     */
-    Q_STATIC_ASSERT(sizeof(quint64) == sizeof(double));
+    static_assert(sizeof(quint64) == sizeof(double));
     Q_ASSERT(qIsFinite(a) && qIsFinite(b));
     if (a == b)
         return 0;

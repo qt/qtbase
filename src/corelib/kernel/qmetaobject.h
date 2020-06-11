@@ -171,7 +171,7 @@ public:
     static inline QMetaMethod fromSignal(PointerToMemberFunction signal)
     {
         typedef QtPrivate::FunctionPointer<PointerToMemberFunction> SignalType;
-        Q_STATIC_ASSERT_X(QtPrivate::HasQ_OBJECT_Macro<typename SignalType::Object>::Value,
+        static_assert(QtPrivate::HasQ_OBJECT_Macro<typename SignalType::Object>::Value,
                           "No Q_OBJECT in the class with the signal");
         return fromSignalImpl(&SignalType::Object::staticMetaObject,
                               reinterpret_cast<void **>(&signal));
@@ -241,7 +241,7 @@ public:
     inline bool isValid() const { return name() != nullptr; }
 
     template<typename T> static QMetaEnum fromType() {
-        Q_STATIC_ASSERT_X(QtPrivate::IsQEnumHelper<T>::Value,
+        static_assert(QtPrivate::IsQEnumHelper<T>::Value,
                           "QMetaEnum::fromType only works with enums declared as "
                           "Q_ENUM, Q_ENUM_NS, Q_FLAG or Q_FLAG_NS");
         const QMetaObject *metaObject = qt_getEnumMetaObject(T());

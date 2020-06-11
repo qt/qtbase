@@ -756,10 +756,10 @@ bool QFileDevice::unmap(uchar *address)
 
 static inline QAbstractFileEngine::FileTime FileDeviceTimeToAbstractFileEngineTime(QFileDevice::FileTime time)
 {
-    Q_STATIC_ASSERT(int(QFileDevice::FileAccessTime) == int(QAbstractFileEngine::AccessTime));
-    Q_STATIC_ASSERT(int(QFileDevice::FileBirthTime) == int(QAbstractFileEngine::BirthTime));
-    Q_STATIC_ASSERT(int(QFileDevice::FileMetadataChangeTime) == int(QAbstractFileEngine::MetadataChangeTime));
-    Q_STATIC_ASSERT(int(QFileDevice::FileModificationTime) == int(QAbstractFileEngine::ModificationTime));
+    static_assert(int(QFileDevice::FileAccessTime) == int(QAbstractFileEngine::AccessTime));
+    static_assert(int(QFileDevice::FileBirthTime) == int(QAbstractFileEngine::BirthTime));
+    static_assert(int(QFileDevice::FileMetadataChangeTime) == int(QAbstractFileEngine::MetadataChangeTime));
+    static_assert(int(QFileDevice::FileModificationTime) == int(QAbstractFileEngine::ModificationTime));
     return QAbstractFileEngine::FileTime(time);
 }
 

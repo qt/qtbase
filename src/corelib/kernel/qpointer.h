@@ -52,7 +52,7 @@ class QVariant;
 template <class T>
 class QPointer
 {
-    Q_STATIC_ASSERT_X(!std::is_pointer<T>::value, "QPointer's template type must not be a pointer type");
+    static_assert(!std::is_pointer<T>::value, "QPointer's template type must not be a pointer type");
 
     using QObjectType =
         typename std::conditional<std::is_const<T>::value, const QObject, QObject>::type;

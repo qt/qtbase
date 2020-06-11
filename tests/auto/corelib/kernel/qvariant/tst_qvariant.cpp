@@ -3563,7 +3563,7 @@ struct BigConvertible {
 };
 
 Q_DECLARE_METATYPE(BigConvertible);
-Q_STATIC_ASSERT(sizeof(BigConvertible) > sizeof(QVariant));
+static_assert(sizeof(BigConvertible) > sizeof(QVariant));
 
 void tst_QVariant::userConversion()
 {

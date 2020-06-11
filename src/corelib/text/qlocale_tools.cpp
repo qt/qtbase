@@ -433,7 +433,7 @@ QString qulltoa(qulonglong number, int base, const QStringView zero)
     // Length of MAX_ULLONG in base 2 is 64; and we may need a surrogate pair
     // per digit. We do not need a terminator.
     const unsigned maxlen = 128;
-    Q_STATIC_ASSERT(CHAR_BIT * sizeof(number) <= maxlen);
+    static_assert(CHAR_BIT * sizeof(number) <= maxlen);
     ushort buff[maxlen];
     ushort *const end = buff + maxlen, *p = end;
 

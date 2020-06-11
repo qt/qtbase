@@ -49,8 +49,8 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_VECTOR4D
 
-Q_STATIC_ASSERT_X(std::is_standard_layout<QVector4D>::value, "QVector4D is supposed to be standard layout");
-Q_STATIC_ASSERT_X(sizeof(QVector4D) == sizeof(float) * 4, "QVector4D is not supposed to have padding at the end");
+static_assert(std::is_standard_layout<QVector4D>::value, "QVector4D is supposed to be standard layout");
+static_assert(sizeof(QVector4D) == sizeof(float) * 4, "QVector4D is not supposed to have padding at the end");
 
 // QVector4D used to be defined as class QVector4D { float x, y, z, w; };,
 // now instead it is defined as classs QVector4D { float v[4]; };.
@@ -69,17 +69,17 @@ struct QVector4DNew
     float v[4];
 };
 
-Q_STATIC_ASSERT_X(std::is_standard_layout<QVector4DOld>::value, "Binary compatibility break in QVector4D");
-Q_STATIC_ASSERT_X(std::is_standard_layout<QVector4DNew>::value, "Binary compatibility break in QVector4D");
+static_assert(std::is_standard_layout<QVector4DOld>::value, "Binary compatibility break in QVector4D");
+static_assert(std::is_standard_layout<QVector4DNew>::value, "Binary compatibility break in QVector4D");
 
-Q_STATIC_ASSERT_X(sizeof(QVector4DOld) == sizeof(QVector4DNew), "Binary compatibility break in QVector4D");
+static_assert(sizeof(QVector4DOld) == sizeof(QVector4DNew), "Binary compatibility break in QVector4D");
 
 // requires a constexpr offsetof
 #if !defined(Q_CC_MSVC) || (_MSC_VER >= 1910)
-Q_STATIC_ASSERT_X(offsetof(QVector4DOld, x) == offsetof(QVector4DNew, v) + sizeof(QVector4DNew::v[0]) * 0, "Binary compatibility break in QVector4D");
-Q_STATIC_ASSERT_X(offsetof(QVector4DOld, y) == offsetof(QVector4DNew, v) + sizeof(QVector4DNew::v[0]) * 1, "Binary compatibility break in QVector4D");
-Q_STATIC_ASSERT_X(offsetof(QVector4DOld, z) == offsetof(QVector4DNew, v) + sizeof(QVector4DNew::v[0]) * 2, "Binary compatibility break in QVector4D");
-Q_STATIC_ASSERT_X(offsetof(QVector4DOld, w) == offsetof(QVector4DNew, v) + sizeof(QVector4DNew::v[0]) * 3, "Binary compatibility break in QVector4D");
+static_assert(offsetof(QVector4DOld, x) == offsetof(QVector4DNew, v) + sizeof(QVector4DNew::v[0]) * 0, "Binary compatibility break in QVector4D");
+static_assert(offsetof(QVector4DOld, y) == offsetof(QVector4DNew, v) + sizeof(QVector4DNew::v[0]) * 1, "Binary compatibility break in QVector4D");
+static_assert(offsetof(QVector4DOld, z) == offsetof(QVector4DNew, v) + sizeof(QVector4DNew::v[0]) * 2, "Binary compatibility break in QVector4D");
+static_assert(offsetof(QVector4DOld, w) == offsetof(QVector4DNew, v) + sizeof(QVector4DNew::v[0]) * 3, "Binary compatibility break in QVector4D");
 #endif
 
 

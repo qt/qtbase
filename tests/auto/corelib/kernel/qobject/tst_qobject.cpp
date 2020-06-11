@@ -6973,13 +6973,13 @@ void tst_QObject::checkArgumentsForNarrowing()
 
     static constexpr bool IsUnscopedEnumSigned = std::is_signed_v<std::underlying_type_t<UnscopedEnum>>;
 
-#define NARROWS_IF(x, y, test) Q_STATIC_ASSERT((QtPrivate::AreArgumentsConvertibleWithoutNarrowingBase<x, y>::value) != (test))
-#define FITS_IF(x, y, test)    Q_STATIC_ASSERT((QtPrivate::AreArgumentsConvertibleWithoutNarrowingBase<x, y>::value) == (test))
+#define NARROWS_IF(x, y, test) static_assert((QtPrivate::AreArgumentsConvertibleWithoutNarrowingBase<x, y>::value) != (test))
+#define FITS_IF(x, y, test)    static_assert((QtPrivate::AreArgumentsConvertibleWithoutNarrowingBase<x, y>::value) == (test))
 #define NARROWS(x, y)          NARROWS_IF(x, y, true)
 #define FITS(x, y)             FITS_IF(x, y, true)
 
-    Q_STATIC_ASSERT(sizeof(UnscopedEnum) <= sizeof(int));
-    Q_STATIC_ASSERT(sizeof(SignedUnscopedEnum) <= sizeof(int));
+    static_assert(sizeof(UnscopedEnum) <= sizeof(int));
+    static_assert(sizeof(SignedUnscopedEnum) <= sizeof(int));
 
     // floating point to integral
 
@@ -7230,7 +7230,7 @@ void tst_QObject::checkArgumentsForNarrowing()
     NARROWS_IF(UnscopedEnum, long long, sizeof(UnscopedEnum) > sizeof(long long) || (sizeof(UnscopedEnum) == sizeof(long long) && !IsUnscopedEnumSigned));
     NARROWS_IF(UnscopedEnum, unsigned long long, IsUnscopedEnumSigned);
 
-    Q_STATIC_ASSERT(std::is_signed<typename std::underlying_type<SignedUnscopedEnum>::type>::value);
+    static_assert(std::is_signed<typename std::underlying_type<SignedUnscopedEnum>::type>::value);
 
     NARROWS_IF(SignedUnscopedEnum, signed char, (sizeof(SignedUnscopedEnum) > sizeof(char)));
     NARROWS_IF(SignedUnscopedEnum, short, (sizeof(SignedUnscopedEnum) > sizeof(short)));
@@ -7469,8 +7469,8 @@ void tst_QObject::disconnectDisconnects()
 }
 
 // Test for QtPrivate::HasQ_OBJECT_Macro
-Q_STATIC_ASSERT(QtPrivate::HasQ_OBJECT_Macro<tst_QObject>::Value);
-Q_STATIC_ASSERT(!QtPrivate::HasQ_OBJECT_Macro<SiblingDeleter>::Value);
+static_assert(QtPrivate::HasQ_OBJECT_Macro<tst_QObject>::Value);
+static_assert(!QtPrivate::HasQ_OBJECT_Macro<SiblingDeleter>::Value);
 
 QTEST_MAIN(tst_QObject)
 #include "tst_qobject.moc"

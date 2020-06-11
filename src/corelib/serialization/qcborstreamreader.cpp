@@ -80,17 +80,17 @@ static CborError Q_DECL_UNUSED cbor_value_get_half_float_as_float(const CborValu
 }
 
 // confirm our constants match TinyCBOR's
-Q_STATIC_ASSERT(int(QCborStreamReader::UnsignedInteger) == CborIntegerType);
-Q_STATIC_ASSERT(int(QCborStreamReader::ByteString) == CborByteStringType);
-Q_STATIC_ASSERT(int(QCborStreamReader::TextString) == CborTextStringType);
-Q_STATIC_ASSERT(int(QCborStreamReader::Array) == CborArrayType);
-Q_STATIC_ASSERT(int(QCborStreamReader::Map) == CborMapType);
-Q_STATIC_ASSERT(int(QCborStreamReader::Tag) == CborTagType);
-Q_STATIC_ASSERT(int(QCborStreamReader::SimpleType) == CborSimpleType);
-Q_STATIC_ASSERT(int(QCborStreamReader::HalfFloat) == CborHalfFloatType);
-Q_STATIC_ASSERT(int(QCborStreamReader::Float) == CborFloatType);
-Q_STATIC_ASSERT(int(QCborStreamReader::Double) == CborDoubleType);
-Q_STATIC_ASSERT(int(QCborStreamReader::Invalid) == CborInvalidType);
+static_assert(int(QCborStreamReader::UnsignedInteger) == CborIntegerType);
+static_assert(int(QCborStreamReader::ByteString) == CborByteStringType);
+static_assert(int(QCborStreamReader::TextString) == CborTextStringType);
+static_assert(int(QCborStreamReader::Array) == CborArrayType);
+static_assert(int(QCborStreamReader::Map) == CborMapType);
+static_assert(int(QCborStreamReader::Tag) == CborTagType);
+static_assert(int(QCborStreamReader::SimpleType) == CborSimpleType);
+static_assert(int(QCborStreamReader::HalfFloat) == CborHalfFloatType);
+static_assert(int(QCborStreamReader::Float) == CborFloatType);
+static_assert(int(QCborStreamReader::Double) == CborDoubleType);
+static_assert(int(QCborStreamReader::Invalid) == CborInvalidType);
 
 /*!
    \class QCborStreamReader
@@ -708,8 +708,8 @@ static CborError qt_cbor_decoder_transfer_string(void *token, const void **userp
 {
     auto self = static_cast<QCborStreamReaderPrivate *>(token);
     Q_ASSERT(offset <= size_t(self->buffer.size()));
-    Q_STATIC_ASSERT(sizeof(size_t) >= sizeof(QByteArray::size_type));
-    Q_STATIC_ASSERT(sizeof(size_t) == sizeof(qsizetype));
+    static_assert(sizeof(size_t) >= sizeof(QByteArray::size_type));
+    static_assert(sizeof(size_t) == sizeof(qsizetype));
 
     // check that we will have enough data from the QIODevice before we advance
     // (otherwise, we'd lose the length information)

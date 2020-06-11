@@ -909,7 +909,7 @@ static int ucstrncmp(const QChar *a, const QChar *b, size_t l)
     return 0;
 #else
 #if defined(__mips_dsp)
-    Q_STATIC_ASSERT(sizeof(uint) == sizeof(size_t));
+    static_assert(sizeof(uint) == sizeof(size_t));
     if (l >= 8) {
         return qt_ucstrncmp_mips_dsp_asm(reinterpret_cast<const char16_t*>(a),
                                          reinterpret_cast<const char16_t*>(b),

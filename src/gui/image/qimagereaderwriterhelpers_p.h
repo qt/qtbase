@@ -118,7 +118,7 @@ static const _qt_BuiltInFormatStruct _qt_BuiltInFormats[] = {
     {"xpm", "x-xpixmap"},
 #endif
 };
-Q_STATIC_ASSERT(_qt_NumFormats == sizeof _qt_BuiltInFormats / sizeof *_qt_BuiltInFormats);
+static_assert(_qt_NumFormats == sizeof _qt_BuiltInFormats / sizeof *_qt_BuiltInFormats);
 
 #ifndef QT_NO_IMAGEFORMATPLUGIN
 QSharedPointer<QFactoryLoader> pluginLoader();

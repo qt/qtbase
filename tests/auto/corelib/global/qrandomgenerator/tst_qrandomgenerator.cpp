@@ -182,8 +182,8 @@ void tst_QRandomGenerator::basics()
     QRandomGenerator64 systemRng64 = *system64;
     systemRng64 = *system64;
 
-    Q_STATIC_ASSERT(std::is_same<decltype(rng64.generate()) COMMA quint64>::value);
-    Q_STATIC_ASSERT(std::is_same<decltype(system64->generate()) COMMA quint64>::value);
+    static_assert(std::is_same<decltype(rng64.generate()) COMMA quint64>::value);
+    static_assert(std::is_same<decltype(system64->generate()) COMMA quint64>::value);
 }
 
 void tst_QRandomGenerator::knownSequence()
@@ -390,7 +390,7 @@ void tst_QRandomGenerator::quality()
         AcceptableThreshold = 4 * PerfectDistribution,
         FailureThreshold = 16 * PerfectDistribution
     };
-    Q_STATIC_ASSERT(FailureThreshold > AcceptableThreshold);
+    static_assert(FailureThreshold > AcceptableThreshold);
 
     QFETCH(uint, control);
     if (control & RandomDataMask)
@@ -609,7 +609,7 @@ void tst_QRandomGenerator::boundedQuality()
         AcceptableThreshold = 4 * PerfectDistribution,
         FailureThreshold = 16 * PerfectDistribution
     };
-    Q_STATIC_ASSERT(FailureThreshold > AcceptableThreshold);
+    static_assert(FailureThreshold > AcceptableThreshold);
 
     QFETCH(uint, control);
     if (control & RandomDataMask)

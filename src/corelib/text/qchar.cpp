@@ -2154,10 +2154,10 @@ static void canonicalOrderHelper(QString *str, QChar::UnicodeVersion version, in
 // sets lastStable to the position of the last stable code point
 static bool normalizationQuickCheckHelper(QString *str, QString::NormalizationForm mode, int from, int *lastStable)
 {
-    Q_STATIC_ASSERT(QString::NormalizationForm_D == 0);
-    Q_STATIC_ASSERT(QString::NormalizationForm_C == 1);
-    Q_STATIC_ASSERT(QString::NormalizationForm_KD == 2);
-    Q_STATIC_ASSERT(QString::NormalizationForm_KC == 3);
+    static_assert(QString::NormalizationForm_D == 0);
+    static_assert(QString::NormalizationForm_C == 1);
+    static_assert(QString::NormalizationForm_KD == 2);
+    static_assert(QString::NormalizationForm_KC == 3);
 
     enum { NFQC_YES = 0, NFQC_NO = 1, NFQC_MAYBE = 3 };
 

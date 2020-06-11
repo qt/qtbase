@@ -152,8 +152,8 @@ private:
     QCborValue::Type t;
 
     // Assert binary compatibility with pre-5.15 QJsonValue
-    Q_STATIC_ASSERT(sizeof(QExplicitlySharedDataPointer<QCborContainerPrivate>) == sizeof(void *));
-    Q_STATIC_ASSERT(sizeof(QCborValue::Type) == sizeof(QJsonValue::Type));
+    static_assert(sizeof(QExplicitlySharedDataPointer<QCborContainerPrivate>) == sizeof(void *));
+    static_assert(sizeof(QCborValue::Type) == sizeof(QJsonValue::Type));
 };
 
 class Q_CORE_EXPORT QJsonValueRef

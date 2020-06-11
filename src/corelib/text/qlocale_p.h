@@ -498,19 +498,19 @@ Q_DECL_CONSTEXPR inline bool ascii_isspace(uchar c)
 }
 
 #if defined(Q_COMPILER_CONSTEXPR)
-Q_STATIC_ASSERT(ascii_isspace(' '));
-Q_STATIC_ASSERT(ascii_isspace('\t'));
-Q_STATIC_ASSERT(ascii_isspace('\n'));
-Q_STATIC_ASSERT(ascii_isspace('\v'));
-Q_STATIC_ASSERT(ascii_isspace('\f'));
-Q_STATIC_ASSERT(ascii_isspace('\r'));
-Q_STATIC_ASSERT(!ascii_isspace('\0'));
-Q_STATIC_ASSERT(!ascii_isspace('\a'));
-Q_STATIC_ASSERT(!ascii_isspace('a'));
-Q_STATIC_ASSERT(!ascii_isspace('\177'));
-Q_STATIC_ASSERT(!ascii_isspace(uchar('\200')));
-Q_STATIC_ASSERT(!ascii_isspace(uchar('\xA0')));
-Q_STATIC_ASSERT(!ascii_isspace(uchar('\377')));
+static_assert(ascii_isspace(' '));
+static_assert(ascii_isspace('\t'));
+static_assert(ascii_isspace('\n'));
+static_assert(ascii_isspace('\v'));
+static_assert(ascii_isspace('\f'));
+static_assert(ascii_isspace('\r'));
+static_assert(!ascii_isspace('\0'));
+static_assert(!ascii_isspace('\a'));
+static_assert(!ascii_isspace('a'));
+static_assert(!ascii_isspace('\177'));
+static_assert(!ascii_isspace(uchar('\200')));
+static_assert(!ascii_isspace(uchar('\xA0')));
+static_assert(!ascii_isspace(uchar('\377')));
 #endif
 
 QT_END_NAMESPACE

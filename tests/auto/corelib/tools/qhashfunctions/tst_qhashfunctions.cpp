@@ -79,7 +79,7 @@ void tst_QHashFunctions::consistent()
 
 void tst_QHashFunctions::initTestCase()
 {
-    Q_STATIC_ASSERT(int(RandomSeed) > 0);
+    static_assert(int(RandomSeed) > 0);
 
     QTest::addColumn<uint>("seedValue");
     QTest::newRow("zero-seed") << 0U;
@@ -240,7 +240,7 @@ void tst_QHashFunctions::range()
     {
         // verify that the input iterator category suffices:
         std::stringstream sstream;
-        Q_STATIC_ASSERT((std::is_same<std::input_iterator_tag, std::istream_iterator<int>::iterator_category>::value));
+        static_assert((std::is_same<std::input_iterator_tag, std::istream_iterator<int>::iterator_category>::value));
         std::copy(ints, ints + numInts, std::ostream_iterator<int>(sstream, " "));
         sstream.seekg(0);
         std::istream_iterator<int> it(sstream), end;

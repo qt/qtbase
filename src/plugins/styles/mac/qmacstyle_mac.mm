@@ -3238,7 +3238,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         static const CFStringRef keys[] = { kCTFontAttributeName, kCTForegroundColorAttributeName };
         static const int numValues = sizeof(keys) / sizeof(keys[0]);
         const CFTypeRef values[] = { (CFTypeRef)checkmarkFont,  (CFTypeRef)checkmarkColor };
-        Q_STATIC_ASSERT((sizeof(values) / sizeof(values[0])) == numValues);
+        static_assert((sizeof(values) / sizeof(values[0])) == numValues);
         QCFType<CFDictionaryRef> attributes = CFDictionaryCreate(kCFAllocatorDefault, (const void **)keys, (const void **)values,
                                                                  numValues, NULL, NULL);
         // U+2713: CHECK MARK
