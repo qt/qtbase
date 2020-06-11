@@ -255,7 +255,6 @@ qt_feature_module_end(GlobalConfig OUT_VAR_PREFIX "__GlobalConfig_")
 
 qt_generate_global_config_pri_file()
 qt_generate_global_module_pri_file()
-qt_generate_qt_conf()
 
 add_library(Qt::GlobalConfig ALIAS GlobalConfig)
 

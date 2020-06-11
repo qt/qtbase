@@ -1198,28 +1198,6 @@ CONFIG += ${private_config_joined}
     qt_install(FILES "${qmodule_pri_target_path}" DESTINATION ${INSTALL_MKSPECSDIR})
 endfunction()
 
-function(qt_generate_qt_conf)
-    qt_path_join(qt_conf__path ${PROJECT_BINARY_DIR} "bin" "qt.conf")
-
-    file(GENERATE
-        OUTPUT "${qt_conf__path}"
-        CONTENT
-        "[EffectivePaths]
-Prefix=..
-[DevicePaths]
-Prefix=${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}
-[Paths]
-Prefix=${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}
-HostPrefix=${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}
-Sysroot=
-SysrootifyPrefix=false
-TargetSpec=${QT_QMAKE_TARGET_MKSPEC}
-HostSpec=${QT_QMAKE_HOST_MKSPEC}
-[EffectiveSourcePaths]
-Prefix=${CMAKE_SOURCE_DIR}
-")
-endfunction()
-
 # Takes a list of path components and joins them into one path separated by forward slashes "/",
 # and saves the path in out_var.
 function(qt_path_join out_var)
