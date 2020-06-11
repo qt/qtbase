@@ -666,6 +666,7 @@ qt_extend_target(Core CONDITION QT_FEATURE_future
         thread/qfutureinterface.cpp thread/qfutureinterface.h thread/qfutureinterface_p.h
         thread/qfuturesynchronizer.h
         thread/qfuturewatcher.cpp thread/qfuturewatcher.h thread/qfuturewatcher_p.h
+        thread/qpromise.h
         thread/qresultstore.cpp thread/qresultstore.h
 )
 
