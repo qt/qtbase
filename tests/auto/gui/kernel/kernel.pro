@@ -14,7 +14,6 @@ SUBDIRS=\
    qguitimer \
    qguivariant \
    qhighdpi\
-   qhighdpiscaling \
    qinputdevice \
    qinputmethod \
    qkeyevent \

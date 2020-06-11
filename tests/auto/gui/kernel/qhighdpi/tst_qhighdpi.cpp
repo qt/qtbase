@@ -163,6 +163,29 @@ void tst_QHighDpi::initTestCase()
 #endif
 }
 
+void tst_QHighDpi::qhighdpiscaling_data()
+{
+    standardScreenDpiTestData();
+}
+
+// Tests the QHighDpiScaling API directly
+void tst_QHighDpi::qhighdpiscaling()
+{
+    QFETCH(QList<qreal>, dpiValues);
+    std::unique_ptr<QGuiApplication> app(createStandardOffscreenApp(dpiValues));
+
+    QHighDpiScaling::setGlobalFactor(2);
+
+    // Verfy that QHighDpiScaling::factor() does not crash on nullptr contexts.
+    QScreen *screenContext = nullptr;
+    QVERIFY(QHighDpiScaling::factor(screenContext) >= 0);
+    QPlatformScreen *platformScreenContext = nullptr;
+    QVERIFY(QHighDpiScaling::factor(platformScreenContext) >= 0);
+    QWindow *windowContext = nullptr;
+    QVERIFY(QHighDpiScaling::factor(windowContext) >= 0);
+    QHighDpiScaling::setGlobalFactor(1);
+}
+
 void tst_QHighDpi::screenDpiAndDpr_data()
 {
     standardScreenDpiTestData();
