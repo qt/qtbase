@@ -3505,7 +3505,14 @@ function(qt_add_executable name)
             message(FATAL_ERROR "Invalid version format")
         endif()
     endif()
-    qt_set_target_info_properties(${name} ${ARGN} TARGET_VERSION "${arg_VERSION}")
+
+    if("${arg_TARGET_DESCRIPTION}" STREQUAL "")
+        set(arg_TARGET_DESCRIPTION "Qt ${name}")
+    endif()
+
+    qt_set_target_info_properties(${name} ${ARGN}
+        TARGET_DESCRIPTION "${arg_TARGET_DESCRIPTION}"
+        TARGET_VERSION "${arg_VERSION}")
 
     if (WIN32)
         qt6_generate_win32_rc_file(${name})
