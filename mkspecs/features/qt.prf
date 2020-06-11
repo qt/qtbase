@@ -217,7 +217,26 @@ for(ever) {
             } else {
                 lib = $$MODULE_MODULE$$qtPlatformTargetSuffix()
                 win32|contains(MODULE_CONFIG, staticlib) {
-                    lib = $$MODULE_LIBS/$$QMAKE_PREFIX_STATICLIB$${lib}.$$QMAKE_EXTENSION_STATICLIB
+                    lib_missing = true
+                    lib_extensions = $$QMAKE_EXTENSION_STATICLIB
+                    lib_extensions *= $$QMAKE_LIB_EXTENSIONS
+                    candidates =
+                    for(ext, lib_extensions) {
+                        candidate = $$MODULE_LIBS/$$QMAKE_PREFIX_STATICLIB$${lib}.$$ext
+                        candidates += $$candidate
+                        exists($$candidate) {
+                            lib = $$candidate
+                            lib_missing = false
+                            break()
+                        }
+                    }
+                    $$lib_missing {
+                        msg = "Cannot find library for $${MODULE_MODULE}. Tried:$$escape_expand(\\n)"
+                        for(path, candidates): \
+                            msg += "$$path$$escape_expand(\\n)"
+                        warning($$msg)
+                        lib = $$first(candidates)
+                    }
                     PRE_TARGETDEPS += $$lib
                 } else {
                     lib = $$MODULE_LIBS/$$QMAKE_PREFIX_SHLIB$${lib}.$$QMAKE_EXTENSION_SHLIB
