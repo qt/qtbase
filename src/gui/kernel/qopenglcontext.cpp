@@ -781,7 +781,7 @@ QOpenGLExtraFunctions *QOpenGLContext::extraFunctions() const
     have the result cast to the correct type.
 
     \code
-        QOpenGLFunctions_3_3_Core* funcs = 0;
+        QOpenGLFunctions_3_3_Core* funcs = nullptr;
         funcs = context->versionFunctions<QOpenGLFunctions_3_3_Core>();
         if (!funcs) {
             qWarning() << "Could not obtain required OpenGL context version";
