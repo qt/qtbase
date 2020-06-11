@@ -34,7 +34,15 @@ endif()
 # Appends a 'debug postfix' to library targets (not executables)
 # e.g. lib/libQt6DBus_debug.5.12.0.dylib
 if(WIN32)
-    set(CMAKE_DEBUG_POSTFIX "d")
+    if(MINGW)
+        # On MinGW we don't have "d" suffix for debug libraries like on Linux,
+        # unless we're building debug and release libraries in one go.
+        if(FEATURE_debug_and_release)
+            set(CMAKE_DEBUG_POSTFIX "d")
+        endif()
+    else()
+        set(CMAKE_DEBUG_POSTFIX "d")
+    endif()
 elseif(APPLE)
     set(CMAKE_DEBUG_POSTFIX "_debug")
     set(CMAKE_FRAMEWORK_MULTI_CONFIG_POSTFIX_DEBUG "_debug")
