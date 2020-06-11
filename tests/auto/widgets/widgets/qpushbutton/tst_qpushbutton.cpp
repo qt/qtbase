@@ -67,6 +67,7 @@ private slots:
     void sizeHint();
     void taskQTBUG_20191_shortcutWithKeypadModifer();
     void emitReleasedAfterChange();
+    void hitButton();
 
 protected slots:
     void resetCounters();
@@ -646,6 +647,46 @@ void tst_QPushButton::emitReleasedAfterChange()
     button1->setEnabled(false);
     QVERIFY(!button1->isDown());
     QCOMPARE(spy.count(), 1);
+}
+
+/*
+    Test that QPushButton::hitButton returns true for points that
+    are certainly inside the bevel, also when a style sheet is set.
+*/
+void tst_QPushButton::hitButton()
+{
+    class PushButton : public QPushButton
+    {
+    public:
+        PushButton(const QString &text = {})
+        : QPushButton(text)
+        {}
+
+        bool hitButton(const QPoint &point) const override
+        {
+            return QPushButton::hitButton(point);
+        }
+    };
+
+    QDialog dialog;
+    QVBoxLayout *layout = new QVBoxLayout;
+    PushButton *button1 = new PushButton("Ok");
+    PushButton *button2 = new PushButton("Cancel");
+    button2->setStyleSheet("QPushButton { margin: 10px; border-radius: 4px; border: 1px solid black; }");
+
+    layout->addWidget(button1);
+    layout->addWidget(button2);
+
+    dialog.setLayout(layout);
+    dialog.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&dialog));
+
+    const QPoint button1Center = button1->rect().center();
+    QVERIFY(button1->hitButton(button1Center));
+
+    const QPoint button2Center = button2->rect().center();
+    QVERIFY(button2->hitButton(button2Center));
+    QVERIFY(!button2->hitButton(QPoint(0, 0)));
 }
 
 QTEST_MAIN(tst_QPushButton)
