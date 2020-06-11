@@ -640,6 +640,16 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     return NSAccessibilityUnignoredAncestor(self);
 }
 
+- (NSString *) accessibilityHelp {
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (iface && iface->isValid()) {
+        const QString helpText = iface->text(QAccessible::Help);
+        if (!helpText.isEmpty())
+            return helpText.toNSString();
+    }
+    return nil;
+}
+
 @end
 
 #endif // QT_NO_ACCESSIBILITY
