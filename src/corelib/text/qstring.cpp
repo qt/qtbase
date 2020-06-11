@@ -162,6 +162,13 @@ static inline bool qt_ends_with(QStringView haystack, QLatin1String needle, Qt::
 static inline bool qt_ends_with(QStringView haystack, QChar needle, Qt::CaseSensitivity cs);
 
 #if defined(__SSE2__) && defined(Q_CC_GNU) && !defined(Q_CC_INTEL)
+#  if defined(__SANITIZE_ADDRESS__) && Q_CC_GNU < 800 && !defined(Q_CC_CLANG)
+#     warning "The __attribute__ on below will likely cause a build failure with your GCC version. Your choices are:"
+#     warning "1) disable ASan;"
+#     warning "2) disable the optimized code in qustrlen (change __SSE2__ to anything else);"
+#     warning "3) upgrade your compiler (preferred)."
+#  endif
+
 // We may overrun the buffer, but that's a false positive:
 // this won't crash nor produce incorrect results
 __attribute__((__no_sanitize_address__))
