@@ -63,6 +63,7 @@ private slots:
     void arrayDefaultInitialization();
     void arrayEmptyInitializerList();
     void arrayEmptyDetach();
+    void arrayNonEmptyDetach();
     void arrayInitializerList();
     void arrayMutation();
     void arrayMutateWithCopies();
@@ -78,6 +79,7 @@ private slots:
     void mapDefaultInitialization();
     void mapEmptyInitializerList();
     void mapEmptyDetach();
+    void mapNonEmptyDetach();
     void mapSimpleInitializerList();
     void mapMutation();
     void mapMutateWithCopies();
@@ -655,6 +657,66 @@ void tst_QCborValue::mapEmptyDetach()
     QCborMap m2 = v.toMap();
     QVERIFY(m2.isEmpty());
     QCOMPARE(m2, m);
+}
+
+void tst_QCborValue::arrayNonEmptyDetach()
+{
+    QCborArray a;
+    a.append(1);
+    a.append(2);
+
+    QCOMPARE(a.first(), 1);
+    QCOMPARE(a.last(), 2);
+    QVERIFY(!a.contains(3));
+    QVERIFY(a.constBegin() != a.constEnd());
+    QVERIFY(a.begin() != a.end());
+
+    // now the same, with an active copy
+    { QCborArray copy(a); QCOMPARE(a.first(), 1); }
+    { QCborArray copy(a); QCOMPARE(a.last(), 2); }
+    { QCborArray copy(a); QVERIFY(!a.contains(3)); }
+    { QCborArray copy(a); QVERIFY(a.constBegin() != a.constEnd()); }
+    { QCborArray copy(a); QVERIFY(a.begin() != a.end()); }
+}
+
+void tst_QCborValue::mapNonEmptyDetach()
+{
+    QCborMap m;
+    m.insert(1, {});
+    m.insert(2, nullptr);
+    QVERIFY(!m.contains(3));
+    QVERIFY(m.constBegin() != m.constEnd());
+    QVERIFY(m.begin() != m.end());
+    // test all 4 overloads of find()
+    QVERIFY(m.constFind(3) == m.constEnd());
+    QVERIFY(m.constFind(QLatin1String("3")) == m.constEnd());
+    QVERIFY(m.constFind(QString("3")) == m.constEnd());
+    QVERIFY(m.constFind(QCborValue(3)) == m.constEnd());
+    QVERIFY(m.find(3) == m.end());
+    QVERIFY(m.find(QLatin1String("3")) == m.end());
+    QVERIFY(m.find(QString("3")) == m.end());
+    QVERIFY(m.find(QCborValue(3)) == m.end());
+    { auto it = m.find(3); QVERIFY(it == m.end()); }
+    { auto it = m.find(QLatin1String("3")); QVERIFY(it == m.end()); }
+    { auto it = m.find(QString("3")); QVERIFY(it == m.end()); }
+    { auto it = m.find(QCborValue(3)); QVERIFY(it == m.end()); }
+
+    // now the same, with an active copy
+    { QCborMap copy(m); QVERIFY(!m.contains(3)); }
+    { QCborMap copy(m); QVERIFY(m.constBegin() != m.constEnd()); }
+    { QCborMap copy(m); QVERIFY(m.begin() != m.end()); }
+    { QCborMap copy(m); QVERIFY(m.constFind(3) == m.constEnd()); }
+    { QCborMap copy(m); QVERIFY(m.constFind(QLatin1String("3")) == m.constEnd()); }
+    { QCborMap copy(m); QVERIFY(m.constFind(QString("3")) == m.constEnd()); }
+    { QCborMap copy(m); QVERIFY(m.constFind(QCborValue(3)) == m.constEnd()); }
+    { QCborMap copy(m); QVERIFY(m.find(3) == m.end()); }
+    { QCborMap copy(m); QVERIFY(m.find(QLatin1String("3")) == m.end()); }
+    { QCborMap copy(m); QVERIFY(m.find(QString("3")) == m.end()); }
+    { QCborMap copy(m); QVERIFY(m.find(QCborValue(3)) == m.end()); }\
+    { QCborMap copy(m); auto it = m.find(3); QVERIFY(it == m.end()); }
+    { QCborMap copy(m); auto it = m.find(QLatin1String("3")); QVERIFY(it == m.end()); }
+    { QCborMap copy(m); auto it = m.find(QString("3")); QVERIFY(it == m.end()); }
+    { QCborMap copy(m); auto it = m.find(QCborValue(3)); QVERIFY(it == m.end()); }
 }
 
 void tst_QCborValue::arrayInitializerList()
