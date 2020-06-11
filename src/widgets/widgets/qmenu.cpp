@@ -1356,14 +1356,14 @@ bool QMenuPrivate::mouseEventTaken(QMouseEvent *e)
     for(QWidget *caused = causedPopup.widget; caused;) {
         bool passOnEvent = false;
         QWidget *next_widget = nullptr;
-        QPoint cpos = caused->mapFromGlobal(e->globalPosition().toPoint());
+        QPointF cpos = caused->mapFromGlobal(e->globalPosition());
 #if QT_CONFIG(menubar)
         if (QMenuBar *mb = qobject_cast<QMenuBar*>(caused)) {
-            passOnEvent = mb->rect().contains(cpos);
+            passOnEvent = mb->rect().contains(cpos.toPoint());
         } else
 #endif
         if (QMenu *m = qobject_cast<QMenu*>(caused)) {
-            passOnEvent = m->rect().contains(cpos);
+            passOnEvent = m->rect().contains(cpos.toPoint());
             next_widget = m->d_func()->causedPopup.widget;
         }
         if (passOnEvent) {

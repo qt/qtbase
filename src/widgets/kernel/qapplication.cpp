@@ -3207,7 +3207,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 }
                 if (w->isWindow())
                     break;
-                dragEvent->p = w->mapToParent(dragEvent->p.toPoint());
+                dragEvent->p = w->mapToParent(dragEvent->p);
                 w = w->parentWidget();
             }
         }
@@ -3232,7 +3232,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 QDropEvent *dragEvent = static_cast<QDropEvent *>(e);
                 QWidget *origReciver = static_cast<QWidget *>(receiver);
                 while (origReciver && w != origReciver) {
-                    dragEvent->p = origReciver->mapToParent(dragEvent->p.toPoint());
+                    dragEvent->p = origReciver->mapToParent(dragEvent->p);
                     origReciver = origReciver->parentWidget();
                 }
             }
@@ -3942,11 +3942,8 @@ bool QApplicationPrivate::updateTouchPointsForWidget(QWidget *widget, QTouchEven
     bool containsPress = false;
 
     for (QEventPoint &pt : QMutableTouchEvent::from(touchEvent)->touchPoints()) {
-        // preserve the sub-pixel resolution
         const QPointF screenPos = pt.globalPosition();
-        const QPointF delta = screenPos - screenPos.toPoint();
-
-        QMutableEventPoint::from(pt).setPosition(widget->mapFromGlobal(screenPos.toPoint()) + delta);
+        QMutableEventPoint::from(pt).setPosition(widget->mapFromGlobal(screenPos));
 
         if (pt.state() == QEventPoint::State::Pressed)
             containsPress = true;

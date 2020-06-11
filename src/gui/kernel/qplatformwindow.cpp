@@ -266,6 +266,20 @@ QPoint QPlatformWindow::mapToGlobal(const QPoint &pos) const
     return result;
 }
 
+QPointF QPlatformWindow::mapToGlobalF(const QPointF &pos) const
+{
+    const QPoint posPt = pos.toPoint();
+    const QPointF delta = pos - posPt;
+    return mapToGlobal(posPt) + delta;
+}
+
+QPointF QPlatformWindow::mapFromGlobalF(const QPointF &pos) const
+{
+    const QPoint posPt = pos.toPoint();
+    const QPointF delta = pos - posPt;
+    return mapFromGlobal(posPt) + delta;
+}
+
 /*!
     Translates the global screen coordinate \a pos to window
     coordinates using native methods. This is required for embedded windows,

@@ -2191,8 +2191,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
                 window = currentMousePressWindow;
                 currentMousePressWindow = nullptr;
             }
-            QPointF delta = globalPoint - globalPoint.toPoint();
-            localPoint = window->mapFromGlobal(globalPoint.toPoint()) + delta;
+            localPoint = window->mapFromGlobal(globalPoint);
         }
     }
 
@@ -2285,10 +2284,8 @@ void QGuiApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::Wh
 
     if (e->nullWindow()) {
         window = QGuiApplication::topLevelAt(globalPoint.toPoint());
-        if (window) {
-            QPointF delta = globalPoint - globalPoint.toPoint();
-            localPoint = window->mapFromGlobal(globalPoint.toPoint()) + delta;
-        }
+        if (window)
+            localPoint = window->mapFromGlobal(globalPoint);
     }
 
     if (!window)
@@ -2962,12 +2959,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
 
         for (QEventPoint &pt : touchEvent.touchPoints()) {
             auto &touchPoint = QMutableEventPoint::from(pt);
-
-            // preserve the sub-pixel resolution
-            const QPointF screenPos = touchPoint.globalPosition();
-            const QPointF delta = screenPos - screenPos.toPoint();
-
-            touchPoint.setPosition(w->mapFromGlobal(screenPos.toPoint()) + delta);
+            touchPoint.setPosition(w->mapFromGlobal(touchPoint.globalPosition()));
         }
 
         QGuiApplication::sendSpontaneousEvent(w, &touchEvent);

@@ -180,7 +180,7 @@ bool QBasicDrag::eventFilter(QObject *o, QEvent *e)
             qCDebug(lcDnd) << "mouse released over" << releaseWindow << "after drag from" << m_sourceWindow << "globalPos" << release->globalPosition().toPoint();
             if (!releaseWindow)
                 releaseWindow = m_sourceWindow;
-            QPoint releaseWindowPos = (releaseWindow ? releaseWindow->mapFromGlobal(release->globalPosition().toPoint()) : release->globalPosition().toPoint());
+            QPointF releaseWindowPos = (releaseWindow ? releaseWindow->mapFromGlobal(release->globalPosition()) : release->globalPosition());
             QMouseEvent *newRelease = new QMouseEvent(release->type(),
                 releaseWindowPos, releaseWindowPos, release->globalPosition(),
                 release->button(), release->buttons(),

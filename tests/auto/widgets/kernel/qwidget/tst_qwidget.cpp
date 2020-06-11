@@ -1608,6 +1608,8 @@ void tst_QWidget::mapFromAndTo()
     QCOMPARE(window.mapToGlobal(QPoint(-10, 0)), QPoint(90, 100));
     QCOMPARE(window.mapToGlobal(QPoint(0, -10)), QPoint(100, 90));
     QCOMPARE(window.mapToGlobal(QPoint(100, 100)), QPoint(200, 200));
+    auto delta = window.mapToGlobal(QPointF(100.5, 100.5)) - QPointF(200.5, 200.5);
+    QVERIFY(qFuzzyIsNull(delta.manhattanLength()));
     QCOMPARE(window.mapToGlobal(QPoint(110, 100)), QPoint(210, 200));
     QCOMPARE(window.mapToGlobal(QPoint(100, 110)), QPoint(200, 210));
     QCOMPARE(window.mapFromGlobal(QPoint(100, 100)), QPoint(0, 0));
@@ -1616,6 +1618,8 @@ void tst_QWidget::mapFromAndTo()
     QCOMPARE(window.mapFromGlobal(QPoint(90, 100)), QPoint(-10, 0));
     QCOMPARE(window.mapFromGlobal(QPoint(100, 90)), QPoint(0, -10));
     QCOMPARE(window.mapFromGlobal(QPoint(200, 200)), QPoint(100, 100));
+    delta = window.mapFromGlobal(QPointF(200.5, 200.5)) - QPointF(100.5, 100.5);
+    QVERIFY(qFuzzyIsNull(delta.manhattanLength()));
     QCOMPARE(window.mapFromGlobal(QPoint(210, 200)), QPoint(110, 100));
     QCOMPARE(window.mapFromGlobal(QPoint(200, 210)), QPoint(100, 110));
     QCOMPARE(window.mapToParent(QPoint(0, 0)), QPoint(100, 100));

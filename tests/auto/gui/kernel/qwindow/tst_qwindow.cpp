@@ -260,10 +260,16 @@ void tst_QWindow::mapGlobal()
     c.setGeometry(40, 40, 100, 100);
 
     QCOMPARE(a.mapToGlobal(QPoint(100, 100)), QPoint(110, 110));
+    auto delta = a.mapToGlobal(QPointF(100.5, 100.5)) - QPointF(110.5, 110.5);
+    QVERIFY(qFuzzyIsNull(delta.manhattanLength()));
+
     QCOMPARE(b.mapToGlobal(QPoint(100, 100)), QPoint(130, 130));
     QCOMPARE(c.mapToGlobal(QPoint(100, 100)), QPoint(170, 170));
 
     QCOMPARE(a.mapFromGlobal(QPoint(100, 100)), QPoint(90, 90));
+    delta = a.mapFromGlobal(QPointF(100.5, 100.5)) - QPointF(90.5, 90.5);
+    QVERIFY(qFuzzyIsNull(delta.manhattanLength()));
+
     QCOMPARE(b.mapFromGlobal(QPoint(100, 100)), QPoint(70, 70));
     QCOMPARE(c.mapFromGlobal(QPoint(100, 100)), QPoint(30, 30));
 }

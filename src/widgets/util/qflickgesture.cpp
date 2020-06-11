@@ -297,8 +297,8 @@ protected:
 #endif // QT_CONFIG(graphicsview)
 
             if (me) {
-                QMouseEvent copy(me->type(), mouseTarget->mapFromGlobal(me->globalPosition().toPoint()),
-                                 mouseTarget->topLevelWidget()->mapFromGlobal(me->globalPosition().toPoint()), me->globalPosition(),
+                QMouseEvent copy(me->type(), mouseTarget->mapFromGlobal(me->globalPosition()),
+                                 mouseTarget->topLevelWidget()->mapFromGlobal(me->globalPosition()), me->globalPosition(),
                                  me->button(), me->buttons(), me->modifiers(), me->source());
                 qt_sendSpontaneousEvent(mouseTarget, &copy);
             }

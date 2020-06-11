@@ -260,6 +260,8 @@ public:
     virtual QAccessibleInterface *accessibleRoot() const;
     virtual QObject *focusObject() const;
 
+    QPointF mapToGlobal(const QPointF &pos) const;
+    QPointF mapFromGlobal(const QPointF &pos) const;
     QPoint mapToGlobal(const QPoint &pos) const;
     QPoint mapFromGlobal(const QPoint &pos) const;
 

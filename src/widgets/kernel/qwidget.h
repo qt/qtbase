@@ -295,11 +295,17 @@ public:
 
     // Widget coordinate mapping
 
+    QPointF mapToGlobal(const QPointF &) const;
     QPoint mapToGlobal(const QPoint &) const;
+    QPointF mapFromGlobal(const QPointF &) const;
     QPoint mapFromGlobal(const QPoint &) const;
+    QPointF mapToParent(const QPointF &) const;
     QPoint mapToParent(const QPoint &) const;
+    QPointF mapFromParent(const QPointF &) const;
     QPoint mapFromParent(const QPoint &) const;
+    QPointF mapTo(const QWidget *, const QPointF &) const;
     QPoint mapTo(const QWidget *, const QPoint &) const;
+    QPointF mapFrom(const QWidget *, const QPointF &) const;
     QPoint mapFrom(const QWidget *, const QPoint &) const;
 
     QWidget *window() const;

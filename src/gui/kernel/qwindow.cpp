@@ -2631,51 +2631,68 @@ bool QWindow::nativeEvent(const QByteArray &eventType, void *message, long *resu
 }
 
 /*!
-    \fn QPoint QWindow::mapToGlobal(const QPoint &pos) const
+    \fn QPointF QWindow::mapToGlobal(const QPointF &pos) const
 
     Translates the window coordinate \a pos to global screen
-    coordinates. For example, \c{mapToGlobal(QPoint(0,0))} would give
+    coordinates. For example, \c{mapToGlobal(QPointF(0,0))} would give
     the global coordinates of the top-left pixel of the window.
 
     \sa mapFromGlobal()
+    \since 6.0
 */
-QPoint QWindow::mapToGlobal(const QPoint &pos) const
+QPointF QWindow::mapToGlobal(const QPointF &pos) const
 {
     Q_D(const QWindow);
     // QTBUG-43252, prefer platform implementation for foreign windows.
     if (d->platformWindow
         && (d->platformWindow->isForeignWindow() || d->platformWindow->isEmbedded())) {
-        return QHighDpi::fromNativeLocalPosition(d->platformWindow->mapToGlobal(QHighDpi::toNativeLocalPosition(pos, this)), this);
+        return QHighDpi::fromNativeLocalPosition(d->platformWindow->mapToGlobalF(QHighDpi::toNativeLocalPosition(pos, this)), this);
     }
 
     if (QHighDpiScaling::isActive())
         return QHighDpiScaling::mapPositionToGlobal(pos, d->globalPosition(), this);
 
-    return pos + d->globalPosition();
+    return pos + QPointF(d->globalPosition());
 }
 
+/*!
+    \overload
+*/
+QPoint QWindow::mapToGlobal(const QPoint &pos) const
+{
+    return mapToGlobal(QPointF(pos)).toPoint();
+}
 
 /*!
-    \fn QPoint QWindow::mapFromGlobal(const QPoint &pos) const
+    \fn QPointF QWindow::mapFromGlobal(const QPointF &pos) const
 
     Translates the global screen coordinate \a pos to window
     coordinates.
 
     \sa mapToGlobal()
+    \since 6.0
 */
-QPoint QWindow::mapFromGlobal(const QPoint &pos) const
+QPointF QWindow::mapFromGlobal(const QPointF &pos) const
 {
     Q_D(const QWindow);
     // QTBUG-43252, prefer platform implementation for foreign windows.
     if (d->platformWindow
         && (d->platformWindow->isForeignWindow() || d->platformWindow->isEmbedded())) {
-        return QHighDpi::fromNativeLocalPosition(d->platformWindow->mapFromGlobal(QHighDpi::toNativeLocalPosition(pos, this)), this);
+        return QHighDpi::fromNativeLocalPosition(d->platformWindow->mapFromGlobalF(QHighDpi::toNativeLocalPosition(pos, this)), this);
     }
 
     if (QHighDpiScaling::isActive())
         return QHighDpiScaling::mapPositionFromGlobal(pos, d->globalPosition(), this);
 
-    return pos - d->globalPosition();
+    return pos - QPointF(d->globalPosition());
+}
+
+/*!
+    \overload
+*/
+QPoint QWindow::mapFromGlobal(const QPoint &pos) const
+{
+    return QWindow::mapFromGlobal(QPointF(pos)).toPoint();
 }
 
 QPoint QWindowPrivate::globalPosition() const

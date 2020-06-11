@@ -4029,15 +4029,16 @@ void QWidget::setFixedHeight(int h)
     of the calling widget.
 
     \sa mapFrom(), mapToParent(), mapToGlobal(), underMouse()
+    \since 6.0
 */
 
-QPoint QWidget::mapTo(const QWidget * parent, const QPoint & pos) const
+QPointF QWidget::mapTo(const QWidget *parent, const QPointF &pos) const
 {
-    QPoint p = pos;
+    QPointF p = pos;
     if (parent) {
         const QWidget * w = this;
         while (w != parent) {
-            Q_ASSERT_X(w, "QWidget::mapTo(const QWidget *parent, const QPoint &pos)",
+            Q_ASSERT_X(w, "QWidget::mapTo(const QWidget *parent, const QPointF &pos)",
                        "parent must be in parent hierarchy");
             p = w->mapToParent(p);
             w = w->parentWidget();
@@ -4046,6 +4047,13 @@ QPoint QWidget::mapTo(const QWidget * parent, const QPoint & pos) const
     return p;
 }
 
+/*!
+    \overload
+*/
+QPoint QWidget::mapTo(const QWidget *parent, const QPoint &pos) const
+{
+    return mapTo(parent, QPointF(pos)).toPoint();
+}
 
 /*!
     Translates the widget coordinate \a pos from the coordinate system
@@ -4053,11 +4061,12 @@ QPoint QWidget::mapTo(const QWidget * parent, const QPoint & pos) const
     must not be \nullptr and must be a parent of the calling widget.
 
     \sa mapTo(), mapFromParent(), mapFromGlobal(), underMouse()
+    \since 6.0
 */
 
-QPoint QWidget::mapFrom(const QWidget * parent, const QPoint & pos) const
+QPointF QWidget::mapFrom(const QWidget *parent, const QPointF &pos) const
 {
-    QPoint p(pos);
+    QPointF p(pos);
     if (parent) {
         const QWidget * w = this;
         while (w != parent) {
@@ -4071,6 +4080,13 @@ QPoint QWidget::mapFrom(const QWidget * parent, const QPoint & pos) const
     return p;
 }
 
+/*!
+    \overload
+*/
+QPoint QWidget::mapFrom(const QWidget *parent, const QPoint &pos) const
+{
+    return mapFrom(parent, QPointF(pos)).toPoint();
+}
 
 /*!
     Translates the widget coordinate \a pos to a coordinate in the
@@ -4079,8 +4095,17 @@ QPoint QWidget::mapFrom(const QWidget * parent, const QPoint & pos) const
     Same as mapToGlobal() if the widget has no parent.
 
     \sa mapFromParent(), mapTo(), mapToGlobal(), underMouse()
+    \since 6.0
 */
 
+QPointF QWidget::mapToParent(const QPointF &pos) const
+{
+    return pos + QPointF(data->crect.topLeft());
+}
+
+/*!
+    \overload
+*/
 QPoint QWidget::mapToParent(const QPoint &pos) const
 {
     return pos + data->crect.topLeft();
@@ -4093,8 +4118,17 @@ QPoint QWidget::mapToParent(const QPoint &pos) const
     Same as mapFromGlobal() if the widget has no parent.
 
     \sa mapToParent(), mapFrom(), mapFromGlobal(), underMouse()
+    \since 6.0
 */
 
+QPointF QWidget::mapFromParent(const QPointF &pos) const
+{
+    return pos - QPointF(data->crect.topLeft());
+}
+
+/*!
+    \overload
+*/
 QPoint QWidget::mapFromParent(const QPoint &pos) const
 {
     return pos - data->crect.topLeft();
@@ -12177,34 +12211,52 @@ static MapToGlobalTransformResult mapToGlobalTransform(const QWidget *w)
 }
 
 /*!
-    \fn QPoint QWidget::mapToGlobal(const QPoint &pos) const
+    \fn QPointF QWidget::mapToGlobal(const QPointF &pos) const
 
     Translates the widget coordinate \a pos to global screen
-    coordinates. For example, \c{mapToGlobal(QPoint(0,0))} would give
+    coordinates. For example, \c{mapToGlobal(QPointF(0,0))} would give
     the global coordinates of the top-left pixel of the widget.
 
     \sa mapFromGlobal(), mapTo(), mapToParent()
+    \since 6.0
 */
-QPoint QWidget::mapToGlobal(const QPoint &pos) const
+QPointF QWidget::mapToGlobal(const QPointF &pos) const
 {
     const MapToGlobalTransformResult t = mapToGlobalTransform(this);
-    const QPoint g = t.transform.map(pos);
+    const QPointF g = t.transform.map(pos);
     return t.window ? t.window->mapToGlobal(g) : g;
 }
 
 /*!
-    \fn QPoint QWidget::mapFromGlobal(const QPoint &pos) const
+    \overload
+*/
+QPoint QWidget::mapToGlobal(const QPoint &pos) const
+{
+    return mapToGlobal(QPointF(pos)).toPoint();
+}
+
+/*!
+    \fn QPointF QWidget::mapFromGlobal(const QPointF &pos) const
 
     Translates the global screen coordinate \a pos to widget
     coordinates.
 
     \sa mapToGlobal(), mapFrom(), mapFromParent()
+    \since 6.0
+*/
+QPointF QWidget::mapFromGlobal(const QPointF &pos) const
+{
+   const MapToGlobalTransformResult t = mapToGlobalTransform(this);
+   const QPointF windowLocal = t.window ? t.window->mapFromGlobal(pos) : pos;
+   return t.transform.inverted().map(windowLocal);
+}
+
+/*!
+    \overload
 */
 QPoint QWidget::mapFromGlobal(const QPoint &pos) const
 {
-   const MapToGlobalTransformResult t = mapToGlobalTransform(this);
-   const QPoint windowLocal = t.window ? t.window->mapFromGlobal(pos) : pos;
-   return t.transform.inverted().map(windowLocal);
+   return mapFromGlobal(QPointF(pos)).toPoint();
 }
 
 QWidget *qt_pressGrab = nullptr;

@@ -599,9 +599,9 @@ QPoint QHighDpiScaling::mapPositionFromNative(const QPoint &pos, const QPlatform
     return (pos - topLeft) / scaleFactor + topLeft;
 }
 
-QPoint QHighDpiScaling::mapPositionToGlobal(const QPoint &pos, const QPoint &windowGlobalPosition, const QWindow *window)
+QPointF QHighDpiScaling::mapPositionToGlobal(const QPointF &pos, const QPoint &windowGlobalPosition, const QWindow *window)
 {
-    QPoint globalPosCandidate = pos + windowGlobalPosition;
+    QPointF globalPosCandidate = pos + QPointF(windowGlobalPosition);
     if (QGuiApplicationPrivate::screen_list.size() <= 1)
         return globalPosCandidate;
 
@@ -609,18 +609,18 @@ QPoint QHighDpiScaling::mapPositionToGlobal(const QPoint &pos, const QPoint &win
     // in cases where a window spans screens. Detect this case and map via
     // native coordinates to the correct screen.
     auto currentScreen = window->screen();
-    if (currentScreen && !currentScreen->geometry().contains(globalPosCandidate)) {
-        auto nativeGlobalPos = QHighDpi::toNativePixels(globalPosCandidate, currentScreen);
-        if (auto actualPlatformScreen = currentScreen->handle()->screenForPosition(nativeGlobalPos))
+    if (currentScreen && !currentScreen->geometry().contains(globalPosCandidate.toPoint())) {
+        QPointF nativeGlobalPos = QHighDpi::toNativePixels(globalPosCandidate, currentScreen);
+        if (auto actualPlatformScreen = currentScreen->handle()->screenForPosition(nativeGlobalPos.toPoint()))
             return QHighDpi::fromNativePixels(nativeGlobalPos, actualPlatformScreen->screen());
     }
 
     return globalPosCandidate;
 }
 
-QPoint QHighDpiScaling::mapPositionFromGlobal(const QPoint &pos, const QPoint &windowGlobalPosition, const QWindow *window)
+QPointF QHighDpiScaling::mapPositionFromGlobal(const QPointF &pos, const QPoint &windowGlobalPosition, const QWindow *window)
 {
-    QPoint windowPosCandidate = pos - windowGlobalPosition;
+    QPointF windowPosCandidate = pos - QPointF(windowGlobalPosition);
     if (QGuiApplicationPrivate::screen_list.size() <= 1 || window->handle() == nullptr)
         return windowPosCandidate;
 
@@ -629,10 +629,10 @@ QPoint QHighDpiScaling::mapPositionFromGlobal(const QPoint &pos, const QPoint &w
     // position-to-be-mapped may not work in cases where a window spans multiple screens.
     // Map both positions to native global space (using the correct screens), subtract there,
     // and then map the difference back using the scale factor for the window.
-    QScreen *posScreen = QGuiApplication::screenAt(pos);
+    QScreen *posScreen = QGuiApplication::screenAt(pos.toPoint());
     if (posScreen && posScreen != window->screen()) {
-        QPoint nativePos = QHighDpi::toNativePixels(pos, posScreen);
-        QPoint windowNativePos = window->handle()->geometry().topLeft();
+        QPointF nativePos = QHighDpi::toNativePixels(pos, posScreen);
+        QPointF windowNativePos = window->handle()->geometry().topLeft();
         return QHighDpi::fromNativeLocalPosition(nativePos - windowNativePos, window);
     }
 
