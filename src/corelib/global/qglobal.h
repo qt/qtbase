@@ -111,7 +111,9 @@
 */
 #define Q_UNUSED(x) (void)x;
 
-#if defined(__cplusplus) && defined(Q_COMPILER_STATIC_ASSERT)
+#if defined(__cplusplus)
+// Don't use these in C++ mode, use static_assert directly.
+// These are here only to keep old code compiling.
 #  define Q_STATIC_ASSERT(Condition) static_assert(bool(Condition), #Condition)
 #  define Q_STATIC_ASSERT_X(Condition, Message) static_assert(bool(Condition), Message)
 #elif defined(Q_COMPILER_STATIC_ASSERT)
