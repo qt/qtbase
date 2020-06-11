@@ -89,7 +89,7 @@ void tst_QCborValue_Json::toVariant_data()
     };
 
     // good JSON matching:
-    add(QCborValue(), QVariant(), QJsonValue::Undefined);
+    add(QCborValue(), QVariant(), QJsonValue::Null);
     add(nullptr, QVariant::fromValue(nullptr), QJsonValue::Null);
     add(false, false, false);
     add(true, true, true);

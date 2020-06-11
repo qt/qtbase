@@ -1286,6 +1286,7 @@ void tst_QtJson::fromVariant_data()
     variantList.append(stringValue);
     variantList.append(stringList);
     variantList.append(QVariant::fromValue(nullptr));
+    variantList.append(QVariant());
     QJsonArray jsonArray_variant;
     jsonArray_variant.append(boolValue);
     jsonArray_variant.append(floatValue);
@@ -1293,23 +1294,31 @@ void tst_QtJson::fromVariant_data()
     jsonArray_variant.append(stringValue);
     jsonArray_variant.append(jsonArray_string);
     jsonArray_variant.append(QJsonValue(QJsonValue::Null));
+    jsonArray_variant.append(QJsonValue());
 
     QVariantMap variantMap;
     variantMap["bool"] = boolValue;
     variantMap["float"] = floatValue;
     variantMap["string"] = stringValue;
     variantMap["array"] = variantList;
+    variantMap["null"] = QVariant::fromValue(nullptr);
+    variantMap["default"] = QVariant();
     QVariantHash variantHash;
     variantHash["bool"] = boolValue;
     variantHash["float"] = floatValue;
     variantHash["string"] = stringValue;
     variantHash["array"] = variantList;
+    variantHash["null"] = QVariant::fromValue(nullptr);
+    variantHash["default"] = QVariant();
     QJsonObject jsonObject;
     jsonObject["bool"] = boolValue;
     jsonObject["float"] = floatValue;
     jsonObject["string"] = stringValue;
     jsonObject["array"] = jsonArray_variant;
+    jsonObject["null"] = QJsonValue::Null;
+    jsonObject["default"] = QJsonValue();
 
+    QTest::newRow("default") << QVariant() <<  QJsonValue(QJsonValue::Null);
     QTest::newRow("nullptr") << QVariant::fromValue(nullptr) <<  QJsonValue(QJsonValue::Null);
     QTest::newRow("bool") << QVariant(boolValue) <<  QJsonValue(boolValue);
     QTest::newRow("int") << QVariant(intValue) <<  QJsonValue(intValue);
@@ -1325,13 +1334,47 @@ void tst_QtJson::fromVariant_data()
     QTest::newRow("variantHash") << QVariant(variantHash) <<  QJsonValue(jsonObject);
 }
 
+// replaces QVariant() with QVariant(nullptr)
+static QVariant normalizedVariant(const QVariant &v)
+{
+    switch (v.userType()) {
+    case QMetaType::UnknownType:
+        return QVariant::fromValue(nullptr);
+    case QMetaType::QVariantList: {
+        const QVariantList in = v.toList();
+        QVariantList out;
+        out.reserve(in.size());
+        for (const QVariant &v : in)
+            out << normalizedVariant(v);
+        return out;
+    }
+    case QMetaType::QVariantMap: {
+        const QVariantMap in = v.toMap();
+        QVariantMap out;
+        for (auto it = in.begin(); it != in.end(); ++it)
+            out.insert(it.key(), normalizedVariant(it.value()));
+        return out;
+    }
+    case QMetaType::QVariantHash: {
+        const QVariantHash in = v.toHash();
+        QVariantHash out;
+        for (auto it = in.begin(); it != in.end(); ++it)
+            out.insert(it.key(), normalizedVariant(it.value()));
+        return out;
+    }
+
+    default:
+        return v;
+    }
+}
+
 void tst_QtJson::fromVariant()
 {
     QFETCH( QVariant, variant );
     QFETCH( QJsonValue, jsonvalue );
 
     QCOMPARE(QJsonValue::fromVariant(variant), jsonvalue);
-    QCOMPARE(variant.toJsonValue(), jsonvalue);
+    QCOMPARE(normalizedVariant(variant).toJsonValue(), jsonvalue);
 }
 
 void tst_QtJson::fromVariantSpecial_data()
@@ -1364,7 +1407,7 @@ void tst_QtJson::toVariant()
     QFETCH( QVariant, variant );
     QFETCH( QJsonValue, jsonvalue );
 
-    QCOMPARE(jsonvalue.toVariant(), variant);
+    QCOMPARE(jsonvalue.toVariant(), normalizedVariant(variant));
 }
 
 void tst_QtJson::fromVariantMap()
