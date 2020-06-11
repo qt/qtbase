@@ -2357,6 +2357,29 @@ function(qt_add_module target)
         qt_set_target_info_properties(${target} ${ARGN})
         qt_handle_multi_config_output_dirs("${target}")
 
+        if(NOT BUILD_SHARED_LIBS AND LINUX)
+            # Horrible workaround for static build failures due to incorrect static library link
+            # order. By increasing the multiplicity to 3, each library cycle will be repeated
+            # 3 times on the link line, reducing the probability of undefined symbols at
+            # link time.
+            # These failures are only observed on Linux with the ld linker (not sure about
+            # ld.gold).
+            # Allow opting out and modifying the value via cache value,  in case if we urgently
+            # need to increase it without waiting for the qtbase change to propagate to
+            # other dependent repos.
+            # The proper fix will be to get rid of the cycles in the future.
+            # See QTBUG-83498 for details.
+            set(default_link_cycle_multiplicity "3")
+            if(DEFINED QT_LINK_CYCLE_MULTIPLICITY)
+                set(default_link_cycle_multiplicity "${QT_LINK_CYCLE_MULTIPLICITY}")
+            endif()
+            if(default_link_cycle_multiplicity)
+                set_property(TARGET "${target}"
+                             PROPERTY
+                             LINK_INTERFACE_MULTIPLICITY "${default_link_cycle_multiplicity}")
+            endif()
+        endif()
+
         if (arg_SKIP_DEPENDS_INCLUDE)
             set_target_properties(${target} PROPERTIES QT_MODULE_SKIP_DEPENDS_INCLUDE TRUE)
         endif()
