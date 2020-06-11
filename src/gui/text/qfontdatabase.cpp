@@ -2321,7 +2321,7 @@ bool QFontDatabase::removeAllApplicationFonts()
     QMutexLocker locker(fontDatabaseMutex());
 
     QFontDatabasePrivate *db = privateDb();
-    if (db->applicationFonts.isEmpty())
+    if (!db || db->applicationFonts.isEmpty())
         return false;
 
     db->applicationFonts.clear();
