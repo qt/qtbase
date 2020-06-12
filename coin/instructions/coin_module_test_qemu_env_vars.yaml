@@ -1,0 +1,14 @@
+type: Group
+instructions:
+  - type: Group
+    instructions:
+      - type: EnvironmentVariable
+        variableName: QEMU_LD_PREFIX
+        variableValue: "{{.Env.QT_SYSROOT_FOR_RUNNING_TESTS}}"
+      - type: EnvironmentVariable
+        variableName: QT_QPA_PLATFORM
+        variableValue: "offscreen"
+    enable_if:
+      condition: property
+      property: target.osVersion
+      equals_value: QEMU

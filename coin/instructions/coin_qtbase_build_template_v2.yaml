@@ -4,7 +4,7 @@ instructions:
   - type: Group
     instructions:
       - !include "{{qt/qtbase}}/cmake_qtbase_build_instructions.yaml"
-      - !include "{{qt/qtbase}}/cmake_build_and_upload_test_artifacts.yaml"
+      - !include "{{qt/qtbase}}/cmake_build_and_upload_test_artifacts_host.yaml"
     enable_if:
       condition: and
       conditions:
@@ -17,6 +17,18 @@ instructions:
   - type: Group
     instructions:
       - !include "{{qt/qtbase}}/cmake_cross_compilation_qtbase_build_instructions.yaml"
+      - type: Group
+        instructions:
+          - !include "{{qt/qtbase}}/cmake_build_and_upload_test_artifacts_target.yaml"
+        enable_if:
+          condition: and
+          conditions:
+            - condition: property
+              property: host.os
+              equals_property: target.os
+            - condition: property
+              property: target.osVersion
+              equals_value: QEMU
     disable_if:
       condition: and
       conditions:

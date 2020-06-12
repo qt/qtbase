@@ -2,15 +2,24 @@ type: Group
 instructions:
   - type: Group
     instructions:
-      - !include "{{qt/qtbase}}/cmake_regular_test_instructions.yaml"
-    enable_if:
+      - !include "{{qt/qtbase}}/coin_module_test_qemu_env_vars.yaml"
+      - type: Group
+        instructions:
+          - !include "{{qt/qtbase}}/cmake_regular_test_instructions.yaml"
+        enable_if:
+          condition: or
+          conditions:
+            - condition: property
+              property: host.os
+              equals_property: target.os
+            - condition: property
+              property: target.osVersion
+              equals_value: QEMU
+    disable_if:
       condition: property
-      property: host.os
-      equals_property: target.os
+      property: features
+      contains_value: DisableTests
+
   - type: EnvironmentVariable
     variableName: Dummy
     variableValue: dummy
-    disable_if:
-      condition: property
-      property: host.os
-      equals_property: target.os
