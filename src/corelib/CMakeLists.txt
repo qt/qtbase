@@ -1272,7 +1272,7 @@ if(WIN32)
     set_target_properties(Core PROPERTIES COMPILE_DEFINITIONS "${defines}")
 endif()
 
-qt_internal_add_link_flags_gc_sections(Core PRIVATE)
+qt_internal_apply_gc_binaries_conditional(Core PUBLIC)
 
 if(WIN32)
     set(isExe $<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>)

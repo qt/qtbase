@@ -355,6 +355,9 @@ qt_feature("cross_compile" PUBLIC
 )
 qt_feature_config("cross_compile" QMAKE_PUBLIC_CONFIG)
 qt_feature_config("cross_compile" QMAKE_PRIVATE_CONFIG)
+qt_feature("gc_binaries" PRIVATE
+    CONDITION NOT QT_FEATURE_shared
+)
 qt_feature("use_bfd_linker"
     LABEL "bfd"
     AUTODETECT false

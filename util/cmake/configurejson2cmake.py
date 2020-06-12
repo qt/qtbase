@@ -863,7 +863,9 @@ def get_feature_mapping():
         "framework": {
             "condition": "APPLE AND BUILD_SHARED_LIBS AND NOT CMAKE_BUILD_TYPE STREQUAL Debug"
         },
-        "gc_binaries": None,
+        "gc_binaries": {
+            "condition" : "NOT QT_FEATURE_shared"
+        },
         "gcc-sysroot": None,
         "gcov": None,
         "gnu-libiconv": {

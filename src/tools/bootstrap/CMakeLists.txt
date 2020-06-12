@@ -261,7 +261,7 @@ qt_extend_target(Bootstrap CONDITION MINGW AND WIN32
 # QMAKE_CFLAGS = "$$QMAKE_CFLAGS_SHSTK"
 
 # special case begin
-qt_internal_add_link_flags_gc_sections(Bootstrap PUBLIC)
+qt_internal_apply_gc_binaries(Bootstrap PUBLIC)
 set_target_properties(Bootstrap PROPERTIES AUTOMOC OFF AUTOUIC OFF AUTORCC OFF)
 qt_internal_add_target_aliases(Bootstrap)
 qt_enable_msvc_cplusplus_define(Bootstrap PUBLIC)
