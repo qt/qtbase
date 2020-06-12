@@ -166,7 +166,7 @@ void Window::customInit()
     });
     inputLayout.setAttributes({
         { 0, 0, QRhiVertexInputAttribute::Float2, 0 },
-        { 0, 1, QRhiVertexInputAttribute::Float2, 2 * sizeof(float) }
+        { 0, 1, QRhiVertexInputAttribute::Float2, quint32(2 * sizeof(float)) }
     });
     d.ps->setVertexInputLayout(inputLayout);
     d.ps->setShaderResourceBindings(d.colData[0].srb); // all of them are layout-compatible
@@ -209,7 +209,7 @@ void Window::customInit()
     });
     inputLayout.setAttributes({
         { 0, 0, QRhiVertexInputAttribute::Float2, 0 },
-        { 0, 1, QRhiVertexInputAttribute::Float3, 2 * sizeof(float) }
+        { 0, 1, QRhiVertexInputAttribute::Float3, quint32(2 * sizeof(float)) }
     });
     d.triPs->setVertexInputLayout(inputLayout);
     d.triPs->setShaderResourceBindings(d.triSrb);
@@ -248,7 +248,7 @@ void Window::customRender()
     cb->setGraphicsPipeline(d.triPs);
     cb->setViewport({ 0, 0, float(d.rt->pixelSize().width()), float(d.rt->pixelSize().height()) });
     cb->setShaderResources();
-    QRhiCommandBuffer::VertexInput vbufBinding(d.vbuf, sizeof(quadVertexData));
+    QRhiCommandBuffer::VertexInput vbufBinding(d.vbuf, quint32(sizeof(quadVertexData)));
     cb->setVertexInput(0, 1, &vbufBinding);
     cb->draw(3);
     cb->endPass();

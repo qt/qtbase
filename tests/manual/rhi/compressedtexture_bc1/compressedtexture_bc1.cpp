@@ -191,7 +191,7 @@ void Window::customRender()
     cb->setShaderResources();
     const QRhiCommandBuffer::VertexInput vbufBindings[] = {
         { d.vbuf, 0 },
-        { d.vbuf, 36 * 3 * sizeof(float) }
+        { d.vbuf, quint32(36 * 3 * sizeof(float)) }
     };
     cb->setVertexInput(0, 2, vbufBindings);
     cb->draw(36);

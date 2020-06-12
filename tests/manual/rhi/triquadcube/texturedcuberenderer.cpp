@@ -217,7 +217,7 @@ void TexturedCubeRenderer::queueDraw(QRhiCommandBuffer *cb, const QSize &outputS
     cb->setShaderResources();
     const QRhiCommandBuffer::VertexInput vbufBindings[] = {
         { m_vbuf, 0 },
-        { m_vbuf, 36 * 3 * sizeof(float) }
+        { m_vbuf, quint32(36 * 3 * sizeof(float)) }
     };
     cb->setVertexInput(0, 2, vbufBindings);
     cb->draw(36);
