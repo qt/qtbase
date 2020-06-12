@@ -804,10 +804,30 @@ void tst_QSslSocket::ciphers()
     socket.setSslConfiguration(sslConfig);
     QCOMPARE(socket.sslConfiguration().ciphers(), QSslConfiguration::defaultConfiguration().ciphers());
 
-    // Task 164356
-    sslConfig.setCiphers({QSslCipher("ALL"), QSslCipher("!ADH"), QSslCipher("!LOW"),
-                          QSslCipher("!EXP"), QSslCipher("!MD5"), QSslCipher("@STRENGTH")});
+    sslConfig = QSslConfiguration::defaultConfiguration();
+    QList<QSslCipher> ciphers;
+    QString ciphersAsString;
+    const auto &supported = sslConfig.supportedCiphers();
+    for (const auto &cipher : supported) {
+        if (cipher.isNull() || !cipher.name().length())
+            continue;
+        if (ciphers.size() > 0)
+            ciphersAsString += QStringLiteral(":");
+        ciphersAsString += cipher.name();
+        ciphers.append(cipher);
+        if (ciphers.size() == 3) // 3 should be enough.
+            break;
+    }
+
+    if (!ciphers.size())
+        QSKIP("No proper ciphersuite was found to test 'setCiphers'");
+
+    sslConfig.setCiphers(ciphersAsString);
     socket.setSslConfiguration(sslConfig);
+    QCOMPARE(ciphers, socket.sslConfiguration().ciphers());
+    sslConfig.setCiphers(ciphers);
+    socket.setSslConfiguration(sslConfig);
+    QCOMPARE(ciphers, socket.sslConfiguration().ciphers());
 }
 
 void tst_QSslSocket::connectToHostEncrypted()

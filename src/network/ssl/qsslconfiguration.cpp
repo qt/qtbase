@@ -611,6 +611,33 @@ void QSslConfiguration::setCiphers(const QList<QSslCipher> &ciphers)
 }
 
 /*!
+    \since 6.0
+
+    Sets the cryptographic cipher suite for this configuration to \a ciphers,
+    which is a colon-separated list of cipher suite names. The ciphers are listed
+    in order of preference, starting with the most preferred cipher. For example:
+
+    \snippet code/src_network_ssl_qsslconfiguration.cpp 1
+
+    Each cipher name in \a ciphers must be the name of a cipher in the
+    list returned by supportedCiphers().  Restricting the cipher suite
+    must be done before the handshake phase, where the session cipher
+    is chosen.
+
+    \sa ciphers()
+*/
+void QSslConfiguration::setCiphers(const QString &ciphers)
+{
+    d->ciphers.clear();
+    const auto cipherNames = ciphers.split(QLatin1Char(':'), Qt::SkipEmptyParts);
+    for (const QString &cipherName : cipherNames) {
+        QSslCipher cipher(cipherName);
+        if (!cipher.isNull())
+            d->ciphers << cipher;
+    }
+}
+
+/*!
     \since 5.5
 
     Returns the list of cryptographic ciphers supported by this

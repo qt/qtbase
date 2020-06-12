@@ -125,6 +125,7 @@ public:
     // Cipher settings
     QList<QSslCipher> ciphers() const;
     void setCiphers(const QList<QSslCipher> &ciphers);
+    void setCiphers(const QString &ciphers);
     static QList<QSslCipher> supportedCiphers();
 
     // Certificate Authority (CA) settings
