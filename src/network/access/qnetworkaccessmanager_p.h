@@ -126,8 +126,6 @@ public:
     QNetworkAccessBackend *findBackend(QNetworkAccessManager::Operation op, const QNetworkRequest &request);
     QStringList backendSupportedSchemes() const;
 
-    void _q_onlineStateChanged(bool isOnline);
-
 #if QT_CONFIG(http)
     QNetworkRequest prepareMultipart(const QNetworkRequest &request, QHttpMultiPart *multiPart);
 #endif
@@ -144,8 +142,6 @@ public:
     QNetworkProxy proxy;
     QNetworkProxyFactory *proxyFactory;
 #endif
-
-    bool networkAccessible = true;
 
     bool cookieJarCreated;
     bool defaultAccessControl;

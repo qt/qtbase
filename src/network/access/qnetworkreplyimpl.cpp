@@ -910,31 +910,6 @@ bool QNetworkReplyImpl::event(QEvent *e)
     return QObject::event(e);
 }
 
-QDisabledNetworkReply::QDisabledNetworkReply(QObject *parent,
-                                             const QNetworkRequest &req,
-                                             QNetworkAccessManager::Operation op)
-:   QNetworkReply(parent)
-{
-    setRequest(req);
-    setUrl(req.url());
-    setOperation(op);
-    setFinished(true);
-
-    qRegisterMetaType<QNetworkReply::NetworkError>();
-
-    QString msg = QCoreApplication::translate("QNetworkAccessManager",
-                                              "Network access is disabled.");
-    setError(UnknownNetworkError, msg);
-
-    QMetaObject::invokeMethod(this, "errorOccurred", Qt::QueuedConnection,
-        Q_ARG(QNetworkReply::NetworkError, UnknownNetworkError));
-    QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection);
-}
-
-QDisabledNetworkReply::~QDisabledNetworkReply()
-{
-}
-
 QT_END_NAMESPACE
 
 #include "moc_qnetworkreplyimpl_p.cpp"

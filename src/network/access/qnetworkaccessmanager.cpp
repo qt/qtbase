@@ -422,14 +422,6 @@ QNetworkAccessManager::QNetworkAccessManager(QObject *parent)
 #endif
     qRegisterMetaType<QNetworkReply::NetworkError>();
     qRegisterMetaType<QSharedPointer<char> >();
-
-    Q_D(QNetworkAccessManager);
-
-    if (QNetworkStatusMonitor::isEnabled()) {
-        connect(&d->statusMonitor, SIGNAL(onlineStateChanged(bool)),
-                SLOT(_q_onlineStateChanged(bool)));
-        d->networkAccessible = d->statusMonitor.isNetworkAccessible();
-    }
 }
 
 /*!
@@ -1199,25 +1191,6 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
             return reply;
         }
     }
-
-    if (d->statusMonitor.isEnabled()) {
-        if (!d->statusMonitor.isMonitoring() && !d->statusMonitor.start())
-            qWarning(lcNetMon, "failed to start network status monitoring");
-
-        // See the code in ctor - QNetworkStatusMonitor allows us to
-        // immediately set 'networkAccessible' even before we start
-        // the monitor. If the monitor is unable to monitor then let's
-        // assume there's something wrong with the monitor and keep going.
-        if (d->statusMonitor.isMonitoring() && !d->networkAccessible && !isLocalFile) {
-            QHostAddress dest;
-            QString host = req.url().host().toLower();
-            if (!(dest.setAddress(host) && dest.isLoopback())
-                 && host != QLatin1String("localhost")
-                 && host != QHostInfo::localHostName().toLower()) {
-                return new QDisabledNetworkReply(this, req, op);
-            }
-        }
-    }
 #endif
     QNetworkRequest request = req;
     if (!request.header(QNetworkRequest::ContentLengthHeader).isValid() &&
@@ -1674,11 +1647,6 @@ void QNetworkAccessManagerPrivate::destroyThread()
             QObject::connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
         thread = nullptr;
     }
-}
-
-void QNetworkAccessManagerPrivate::_q_onlineStateChanged(bool isOnline)
-{
-    networkAccessible = isOnline;
 }
 
 #if QT_CONFIG(http)
