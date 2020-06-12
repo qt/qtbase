@@ -55,8 +55,10 @@
 #include <QPixmap>
 #include <QUrl>
 
+QT_BEGIN_NAMESPACE
 class QNetworkReply;
 class QPainter;
+QT_END_NAMESPACE
 
 class SlippyMap: public QObject
 {
@@ -94,3 +96,4 @@ private:
 };
 
 #endif
+
