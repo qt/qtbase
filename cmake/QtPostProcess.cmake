@@ -528,7 +528,10 @@ if (ANDROID)
 endif()
 
 # Install prl files
-qt_install(DIRECTORY "${PROJECT_BINARY_DIR}/${INSTALL_LIBDIR}/"
-    DESTINATION ${INSTALL_LIBDIR}
-    FILES_MATCHING PATTERN "*.prl"
-)
+get_property(prl_install_dirs GLOBAL PROPERTY QT_PRL_INSTALL_DIRS)
+foreach(prl_install_dir ${prl_install_dirs})
+    qt_install(DIRECTORY "${PROJECT_BINARY_DIR}/${prl_install_dir}/"
+        DESTINATION ${prl_install_dir}
+        FILES_MATCHING PATTERN "*.prl"
+    )
+endforeach()

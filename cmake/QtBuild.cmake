@@ -2183,6 +2183,8 @@ function(qt_watch_current_list_dir variable access value current_list_file stack
                 # Make finalizer known functions here:
                 if(func STREQUAL "qt_finalize_module")
                     qt_finalize_module(${a1} ${a2} ${a3} ${a4} ${a5} ${a6} ${a7} ${a8} ${a9})
+                elseif(func STREQUAL "qt_finalize_plugin")
+                    qt_finalize_plugin(${a1} ${a2} ${a3} ${a4} ${a5} ${a6} ${a7} ${a8} ${a9})
                 else()
                     message(FATAL_ERROR "qt_watch_current_list_dir doesn't know about ${func}. Consider adding it.")
                 endif()
@@ -2799,7 +2801,7 @@ function(qt_finalize_module target)
     if(QT_SUPERBUILD AND NOT BUILD_SHARED_LIBS)
         # Do nothing.
     else()
-        qt_generate_prl_file(${target})
+        qt_generate_prl_file(${target} "${INSTALL_LIBDIR}")
     endif()
     qt_generate_module_pri_file("${target}" ${ARGN})
 endfunction()
@@ -2906,8 +2908,9 @@ function(qt_collect_libs target out_var)
     set(${out_var} ${libs} PARENT_SCOPE)
 endfunction()
 
-# Generate a qmake .prl file for the given target
-function(qt_generate_prl_file target)
+# Generate a qmake .prl file for the given target.
+# The install_dir argument is a relative path, for example "lib".
+function(qt_generate_prl_file target install_dir)
     get_target_property(target_type ${target} TYPE)
     if(target_type STREQUAL "INTERFACE_LIBRARY")
         return()
@@ -2944,7 +2947,7 @@ QMAKE_PRL_LIBS_FOR_CMAKE = ${prl_libs}
     )
 
     # Add a custom command that prepares the .prl file for installation
-    qt_path_join(qt_build_libdir ${QT_BUILD_DIR} ${INSTALL_LIBDIR})
+    qt_path_join(qt_build_libdir ${QT_BUILD_DIR} ${install_dir})
     qt_path_join(prl_file_path "${qt_build_libdir}" "${prl_file_name}")
     set(library_suffixes ${CMAKE_SHARED_LIBRARY_SUFFIX} ${CMAKE_STATIC_LIBRARY_SUFFIX})
     add_custom_command(
@@ -2958,6 +2961,12 @@ QMAKE_PRL_LIBS_FOR_CMAKE = ${prl_libs}
 
     # Installation of the .prl file happens globally elsewhere,
     # because we have no clue here what the actual file name is.
+    # What we know however, is the directory where the prl file is created.
+    # Save that for later, to install all prl files from that directory.
+    get_property(prl_install_dirs GLOBAL PROPERTY QT_PRL_INSTALL_DIRS)
+    if(NOT install_dir IN_LIST prl_install_dirs)
+        set_property(GLOBAL APPEND PROPERTY QT_PRL_INSTALL_DIRS "${install_dir}")
+    endif()
 endfunction()
 
 function(qt_export_tools module_name)
@@ -3412,6 +3421,21 @@ function(qt_internal_add_plugin target)
     endif()
 
     qt_internal_add_linker_version_script(${target})
+    qt_add_list_file_finalizer(qt_finalize_plugin ${target} "${install_directory}")
+endfunction()
+
+function(qt_finalize_plugin target install_directory)
+    # Generate .prl files for plugins of static Qt builds.
+    if(NOT BUILD_SHARED_LIBS)
+        # Workaround to allow successful configuration of static top-level Qt builds.
+        # See QTBUG-84874.
+        if(QT_SUPERBUILD)
+            # Do nothing.
+            return()
+        endif()
+
+        qt_generate_prl_file(${target} "${install_directory}")
+    endif()
 endfunction()
 
 function(qt_install_qml_files target)
