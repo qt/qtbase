@@ -128,12 +128,14 @@ public class QtServiceDelegate
                       Method m = initClass.getMethod("setService", Service.class, Object.class);
                       m.invoke(staticInitDataObject, m_service, this);
                   } catch (Exception e) {
+                      e.printStackTrace();
                   }
 
                   try {
                       Method m = initClass.getMethod("setContext", Context.class);
                       m.invoke(staticInitDataObject, (Context)m_service);
                   } catch (Exception e) {
+                      e.printStackTrace();
                   }
                 } catch (Exception e) {
                     e.printStackTrace();
