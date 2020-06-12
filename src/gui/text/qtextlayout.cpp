@@ -2097,6 +2097,10 @@ found:
                     current.ascent = line.ascent;
                     current.descent = height - line.ascent;
                     break;
+                case QTextCharFormat::AlignMiddle:
+                    current.ascent = (line.ascent + line.descent) / 2 - line.descent + height / 2;
+                    current.descent = height - line.ascent;
+                    break;
                 case QTextCharFormat::AlignBottom:
                     current.descent = line.descent;
                     current.ascent = height - line.descent;
@@ -2554,6 +2558,7 @@ void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatR
         QFont f = eng->font(si);
         QTextCharFormat format;
 
+
         if (eng->hasFormats() || selection) {
             format = eng->format(&si);
             if (suppressColors) {
@@ -2584,10 +2589,18 @@ void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatR
                 p->save();
                 if (si.analysis.flags == QScriptAnalysis::Object && eng->block.docHandle()) {
                     QFixed itemY = y - si.ascent;
-                    if (format.verticalAlignment() == QTextCharFormat::AlignTop) {
+                    switch (format.verticalAlignment()) {
+                    case QTextCharFormat::AlignTop:
                         itemY = y - lineBase;
-                    } else if (format.verticalAlignment() == QTextCharFormat::AlignBottom) {
-                        itemY = y + line.descent - si.ascent - si.descent;
+                        break;
+                    case QTextCharFormat::AlignMiddle:
+                        itemY = y - lineBase + (line.height() - si.height()) / 2;
+                        break;
+                    case QTextCharFormat::AlignBottom:
+                        itemY = y - lineBase + line.height() - si.height();
+                        break;
+                    default:
+                        break;
                     }
 
                     QRectF itemRect(iterator.x.toReal(), itemY.toReal(), iterator.itemWidth.toReal(), si.height().toReal());
