@@ -2,7 +2,7 @@ TARGET = qqnx
 
 QT += \
     core-private gui-private \
-    fontdatabase_support-private egl_support-private
+    egl_support-private
 
 # Uncomment this to build with support for IMF once it becomes available in the BBNDK
 #CONFIG += qqnx_imf

@@ -47,7 +47,7 @@
 #include <qpa/qplatformfontdatabase.h>
 #include <QtGui/private/qcoretextfontdatabase_p.h>
 #else
-#include <QtFontDatabaseSupport/private/qgenericunixfontdatabase_p.h>
+#include <QtGui/private/qgenericunixfontdatabase_p.h>
 #endif
 #elif defined(Q_OS_WIN)
 #include <QtGui/private/qfreetypefontdatabase_p.h>

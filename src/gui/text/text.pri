@@ -126,6 +126,9 @@ qtConfig(cssparser) {
 
 qtConfig(freetype) {
     include($$PWD/freetype/freetype.pri)
+    unix:!darwin {
+        include($$PWD/unix/unix.pri)
+    }
 }
 
 darwin {
@@ -135,4 +138,3 @@ darwin {
 win32 {
     include($$PWD/windows/windows.pri)
 }
-

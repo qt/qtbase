@@ -53,7 +53,7 @@
 #include <qpa/qwindowsysteminterface.h>
 
 #include <QtGui/private/qgenericunixeventdispatcher_p.h>
-#include <QtFontDatabaseSupport/private/qgenericunixfontdatabase_p.h>
+#include <QtGui/private/qgenericunixfontdatabase_p.h>
 
 #include <stdio.h>
 

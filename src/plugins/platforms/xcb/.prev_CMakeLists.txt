@@ -42,7 +42,6 @@ qt_add_module(XcbQpa
         PkgConfig::XKB_COMMON_X11
         Qt::CorePrivate
         Qt::EdidSupportPrivate
-        Qt::FontDatabaseSupportPrivate
         Qt::GuiPrivate
         Qt::ServiceSupportPrivate
         Qt::ThemeSupportPrivate

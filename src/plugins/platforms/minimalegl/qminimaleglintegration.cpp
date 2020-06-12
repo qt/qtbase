@@ -43,7 +43,7 @@
 #ifndef QT_NO_OPENGL
 # include "qminimaleglbackingstore.h"
 #endif
-#include <QtFontDatabaseSupport/private/qgenericunixfontdatabase_p.h>
+#include <QtGui/private/qgenericunixfontdatabase_p.h>
 
 #if defined(Q_OS_UNIX)
 #  include <QtGui/private/qgenericunixeventdispatcher_p.h>

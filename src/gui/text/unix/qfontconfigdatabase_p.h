@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QGENERICUNIXFONTDATABASE_H
-#define QGENERICUNIXFONTDATABASE_H
+#ifndef QFONTCONFIGDATABASE_H
+#define QFONTCONFIGDATABASE_H
 
 //
 //  W A R N I N G
@@ -51,14 +51,30 @@
 // We mean it.
 //
 
-#include <QtGui/private/qtguiglobal_p.h>
-
-#if QT_CONFIG(fontconfig)
-#include <QtFontDatabaseSupport/private/qfontconfigdatabase_p.h>
-typedef QFontconfigDatabase QGenericUnixFontDatabase;
-#else
+#include <qpa/qplatformfontdatabase.h>
 #include <QtGui/private/qfreetypefontdatabase_p.h>
-typedef QFreeTypeFontDatabase QGenericUnixFontDatabase;
-#endif //Q_FONTCONFIGDATABASE
 
-#endif // QGENERICUNIXFONTDATABASE_H
+QT_BEGIN_NAMESPACE
+
+class QFontEngineFT;
+
+class Q_GUI_EXPORT QFontconfigDatabase : public QFreeTypeFontDatabase
+{
+public:
+    void populateFontDatabase() override;
+    void invalidate() override;
+    QFontEngineMulti *fontEngineMulti(QFontEngine *fontEngine, QChar::Script script) override;
+    QFontEngine *fontEngine(const QFontDef &fontDef, void *handle) override;
+    QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference) override;
+    QStringList fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const override;
+    QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName, QFontDatabasePrivate::ApplicationFont *applicationFont = nullptr) override;
+    QString resolveFontFamilyAlias(const QString &family) const override;
+    QFont defaultFont() const override;
+
+private:
+    void setupFontEngine(QFontEngineFT *engine, const QFontDef &fontDef) const;
+};
+
+QT_END_NAMESPACE
+
+#endif // QFONTCONFIGDATABASE_H

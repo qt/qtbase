@@ -11,7 +11,7 @@ MODULE = eglfsdeviceintegration
 QT += \
     core-private gui-private \
     devicediscovery_support-private \
-    service_support-private theme_support-private fontdatabase_support-private \
+    service_support-private theme_support-private \
     fb_support-private egl_support-private
 
 qtHaveModule(input_support-private): \

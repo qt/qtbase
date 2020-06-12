@@ -37,44 +37,28 @@
 **
 ****************************************************************************/
 
-#ifndef QFONTCONFIGDATABASE_H
-#define QFONTCONFIGDATABASE_H
+#ifndef QGENERICUNIXFONTDATABASE_H
+#define QGENERICUNIXFONTDATABASE_H
 
 //
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
+// This file is not part of the Qt API. It exists purely as an
+// implementation detail. This header file may change from version to
 // version without notice, or even be removed.
 //
 // We mean it.
 //
 
-#include <qpa/qplatformfontdatabase.h>
+#include <QtGui/private/qtguiglobal_p.h>
+
+#if QT_CONFIG(fontconfig)
+#include <QtGui/private/qfontconfigdatabase_p.h>
+using QGenericUnixFontDatabase = QFontconfigDatabase;
+#else
 #include <QtGui/private/qfreetypefontdatabase_p.h>
+using QGenericUnixFontDatabase = QFreeTypeFontDatabase;
+#endif //Q_FONTCONFIGDATABASE
 
-QT_BEGIN_NAMESPACE
-
-class QFontEngineFT;
-
-class QFontconfigDatabase : public QFreeTypeFontDatabase
-{
-public:
-    void populateFontDatabase() override;
-    void invalidate() override;
-    QFontEngineMulti *fontEngineMulti(QFontEngine *fontEngine, QChar::Script script) override;
-    QFontEngine *fontEngine(const QFontDef &fontDef, void *handle) override;
-    QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference) override;
-    QStringList fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const override;
-    QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName, QFontDatabasePrivate::ApplicationFont *applicationFont = nullptr) override;
-    QString resolveFontFamilyAlias(const QString &family) const override;
-    QFont defaultFont() const override;
-
-private:
-    void setupFontEngine(QFontEngineFT *engine, const QFontDef &fontDef) const;
-};
-
-QT_END_NAMESPACE
-
-#endif // QFONTCONFIGDATABASE_H
+#endif // QGENERICUNIXFONTDATABASE_H

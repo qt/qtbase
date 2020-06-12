@@ -19,7 +19,6 @@ qt_internal_add_plugin(QVncIntegrationPlugin
         Qt::Core
         Qt::CorePrivate
         Qt::FbSupportPrivate
-        Qt::FontDatabaseSupportPrivate
         Qt::Gui
         Qt::GuiPrivate
         Qt::Network

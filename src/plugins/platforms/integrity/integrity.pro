@@ -3,7 +3,7 @@ TARGET = integrityfb
 QT += \
     core-private gui-private \
     service_support-private \
-    fontdatabase_support-private fb_support-private
+    fb_support-private
 
 SOURCES = \
     main.cpp \

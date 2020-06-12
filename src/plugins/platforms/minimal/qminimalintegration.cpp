@@ -56,7 +56,7 @@
 #endif
 
 #if QT_CONFIG(fontconfig)
-#  include <QtFontDatabaseSupport/private/qgenericunixfontdatabase_p.h>
+#  include <QtGui/private/qgenericunixfontdatabase_p.h>
 #  include <qpa/qplatformfontdatabase.h>
 #endif
 

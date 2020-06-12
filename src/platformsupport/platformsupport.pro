@@ -9,9 +9,6 @@ SUBDIRS = \
 if(unix:!uikit:!macos)|qtConfig(xcb): \
     SUBDIRS += themes
 
-if(qtConfig(freetype):!darwin)|win32: \
-    SUBDIRS += fontdatabases
-
 qtConfig(evdev)|qtConfig(tslib)|qtConfig(libinput)|qtConfig(integrityhid)|qtConfig(xkbcommon) {
     SUBDIRS += input
     input.depends += devicediscovery

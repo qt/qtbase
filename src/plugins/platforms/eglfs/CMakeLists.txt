@@ -25,7 +25,6 @@ qt_add_module(EglFSDeviceIntegration
         Qt::DeviceDiscoverySupportPrivate
         Qt::EglSupportPrivate
         Qt::FbSupportPrivate
-        Qt::FontDatabaseSupportPrivate
         Qt::GuiPrivate
         Qt::ServiceSupportPrivate
         Qt::ThemeSupportPrivate

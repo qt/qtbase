@@ -658,6 +658,19 @@ qt_extend_target(Gui CONDITION QT_FEATURE_freetype
         WrapFreetype::WrapFreetype
 )
 
+qt_extend_target(Gui CONDITION QT_FEATURE_freetype AND UNIX AND NOT APPLE
+    SOURCES
+        text/unix/qgenericunixfontdatabase_p.h
+)
+
+qt_extend_target(Gui CONDITION QT_FEATURE_fontconfig AND QT_FEATURE_freetype AND UNIX AND NOT APPLE
+    SOURCES
+        text/unix/qfontconfigdatabase.cpp text/unix/qfontconfigdatabase_p.h
+        text/unix/qfontenginemultifontconfig.cpp text/unix/qfontenginemultifontconfig_p.h
+    LIBRARIES
+        Fontconfig::Fontconfig
+)
+
 qt_extend_target(Gui CONDITION APPLE AND NOT MACOS
     LIBRARIES
         ${FWUIKit}
@@ -835,10 +848,10 @@ add_custom_command(
 # qvkgen_pimpl.input = "QMAKE_QVKGEN_INPUT"
 # qvkgen_pimpl.output = "$$OUT_PWD/vulkan/qvulkanfunctions_p.cpp"
 
-#### Keys ignored in scope 100:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
+#### Keys ignored in scope 103:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
 # qvkgen_h.variable_out = "HEADERS"
 
-#### Keys ignored in scope 101:.:vulkan:vulkan/vulkan.pri:else:
+#### Keys ignored in scope 104:.:vulkan:vulkan/vulkan.pri:else:
 # qvkgen_h.CONFIG = "target_predeps" "no_link"
 
 qt_extend_target(Gui CONDITION WASM
