@@ -104,8 +104,9 @@ static inline qreal initialGlobalScaleFactor()
     \brief Collection of utility functions for UI scaling.
 
     QHighDpiScaling implements utility functions for high-dpi scaling for use
-    on operating systems that provide limited support for native scaling. In
-    addition this functionality can be used for simulation and testing purposes.
+    on operating systems that provide limited support for native scaling, such
+    as Windows, X11, and Android. In addition this functionality can be used
+    for simulation and testing purposes.
 
     The functions support scaling between the device independent coordinate
     system used by Qt applications and the native coordinate system used by
@@ -135,14 +136,13 @@ static inline qreal initialGlobalScaleFactor()
     pixels.
 
     The devicePixelRatio seen by applications is the product of the Qt scale
-    factor and the OS scale factor. The value of the scale factors may be 1,
-    in which case two or more of the coordinate systems are equivalent. Platforms
-    that (may) have an OS scale factor include \macos, iOS and Wayland.
+    factor and the OS scale factor (see QWindow::devicePixelRatio()). The value
+    of the scale factors may be 1, in which case two or more of the coordinate
+    systems are equivalent. Platforms that (may) have an OS scale factor include
+    macOS, iOS, Wayland, and Web(Assembly).
 
-    Note that the functions in this file do not work with the OS scale factor
-    directly and are limited to converting between device independent and native
-    pixels. The OS scale factor is accounted for by QWindow::devicePixelRatio()
-    and similar functions.
+    Note that the API implemented in this file do use the OS scale factor, and
+    is used for converting between device independent and native pixels only.
 
     Configuration Examples:
 
@@ -155,7 +155,7 @@ static inline qreal initialGlobalScaleFactor()
     |  Display                          100 x 100       |
     -----------------------------------------------------
 
-    'Retina Device': Device Independent Pixels = Native Pixels
+    '2x Apple Device': Device Independent Pixels = Native Pixels
      ---------------------------------------------------    devicePixelRatio: 2
     |  Application / Qt Gui             100 x 100       |
     |                                                   |   Qt Scale Factor: 1
@@ -164,7 +164,7 @@ static inline qreal initialGlobalScaleFactor()
     |  Display                          200 x 200       |
     -----------------------------------------------------
 
-    '2x Qt Scaling': Native Pixels = Device Pixels
+    'Windows at 200%': Native Pixels = Device Pixels
      ---------------------------------------------------    devicePixelRatio: 2
     |  Application / Qt Gui             100 x 100       |
     |---------------------------------------------------|   Qt Scale Factor: 2
@@ -173,48 +173,100 @@ static inline qreal initialGlobalScaleFactor()
     |  Display                          200 x 200       |
     -----------------------------------------------------
 
-    The Qt Scale Factor is the product of two sub-scale factors, which
-    are independently either set or determined by the platform plugin.
-    Several APIs are offered for this, targeting both developers and
-    end users. All scale factors are of type qreal.
+    * Configuration
 
-    1) A global scale factor
-        The QT_SCALE_FACTOR environment variable can be used to set
-        a global scale factor for all windows in the process. This
-        is useful for testing and debugging (you can simulate any
-        devicePixelRatio without needing access to special hardware),
-        and perhaps also for targeting a specific application to
-        a specific display type (embedded use cases).
+    - Enabling: In Qt 6, high-dpi scaling (the functionality implemented in this file)
+      is always enabled. The Qt scale factor value is typically determined by the
+      QPlatformScreen implementation - see below.
 
-    2) Per-screen scale factors
-        Some platform plugins support providing a per-screen scale
-        factor based on display density information. These platforms
-        include X11, Windows, and Android.
+      There is one environment variable based opt-out option: set QT_ENABLE_HIGH_DPI_SCALING=0.
+      Keep in mind that this does not affect the OS scale factor, which is controlled by
+      the operating system.
 
-        The QT_SCREEN_SCALE_FACTORS environment variable can be used to set the screen
-        scale factors manually. Set this to a semicolon-separated
-        list of scale factors (matching the order of QGuiApplications::screens()),
-        or to a list of name=value pairs (where name matches QScreen::name()).
+    - Qt scale factor value: The Qt scale factor is the product of the screen scale
+      factor and the global scale factor, which are independently either set or determined
+      by the platform plugin. Several APIs are offered for this, targeting both developers
+      and end users. All scale factors are of type qreal.
 
-    Coordinate conversion functions must be used when writing code that passes
-    geometry across the Qt Gui / Platform plugin boundary. The main conversion
-    functions are:
-        T toNativePixels(T, QWindow *)
-        T fromNativePixels(T, QWindow*)
+      1) Per-screen scale factors
 
-    The following classes in QtGui use native pixels, for the convenience of the
-    platform plugins:
-        QPlatformWindow
-        QPlatformScreen
-        QWindowSystemInterface (API only - Events are in device independent pixels)
+        Per-screen scale factors are computed based on logical DPI provided by
+        by the platform plugin.
 
-    As a special consideration platform plugin code should be careful about
-    calling QtGui geometry accessor functions:
-        QRect r = window->geometry();
-    Here the returned geometry is in device independent pixels. Add a conversion call:
-        QRect r = QHighDpi::toNativePixels(window->geometry());
-    (Avoiding calling QWindow and instead using the QPlatformWindow geometry
-     might be a better course of action in this case.)
+        The platform plugin implements DPI accessor functions:
+            QDpi QPlatformScreen::logicalDpi()
+            QDpi QPlatformScreen::logicalBaseDpi()
+
+        QHighDpiScaling then computes the per-screen scale factor as follows:
+
+            factor = logicalDpi / logicalBaseDpi
+
+        Alternatively, QT_SCREEN_SCALE_FACTORS can be used to set the screen
+        scale factors.
+
+      2) The global scale factor
+
+        The QT_SCALE_FACTOR environment variable can be used to set a global scale
+        factor which applies to all application windows. This allows developing and
+        testing at any DPR, independently of available hardware and without changing
+        global desktop settings.
+
+    - Rounding
+
+      Qt 6 does not round scale factors by default. Qt 5 rounds the screen scale factor
+      to the nearest integer (except for Qt on Android which does not round).
+
+      The rounding policy can be set by the application, or on the environment:
+
+        Application (C++):    QGuiApplication::setHighDpiScaleFactorRoundingPolicy()
+        User (environment):   QT_SCALE_FACTOR_ROUNDING_POLICY
+
+      Note that the OS scale factor, and global scale factors set with QT_SCALE_FACTOR
+      are never rounded by Qt.
+
+    * C++ API Overview
+
+    - Coordinate Conversion ("scaling")
+
+      The QHighDpi namespace provides several functions for converting geometry
+      between the device independent and native coordinate systems. These should
+      be used when calling "QPlatform*" API from QtGui. Callers are responsible
+      for selecting a function variant based on geometry type:
+
+            Type                        From Native                              To Native
+        local               :    QHighDpi::fromNativeLocalPosition()    QHighDpi::toNativeLocalPosition()
+        global (screen)     :    QHighDpi::fromNativeGlobalPosition()   QHighDpi::toNativeGlobalPosition()
+        QWindow::geometry() :    QHighDpi::fromNativeWindowGeometry()   QHighDpi::toNativeWindowGeometry()
+        sizes, margins, etc :    QHighDpi::fromNativePixels()           QHighDpi::toNativePixels()
+
+     The conversion functions take two arguments; the geometry and a context:
+
+        QSize nativeSize = toNativePixels(deviceIndependentSize, window);
+
+     The context is usually a QWindow instance, but can also be a QScreen instance,
+     or the corresponding QPlatform classes.
+
+    - Activation
+
+      QHighDpiScaling::isActive() returns true iff
+            Qt high-dpi scaling is enabled (e.g. with AA_EnableHighDpiScaling) AND
+            there is a Qt scale factor != 1
+
+      (the value of the OS scale factor does not affect this API)
+
+    - Calling QtGui from the platform plugins
+
+      Platform plugin code should be careful about calling QtGui geometry accessor
+      functions like geometry():
+
+         QRect r = window->geometry();
+
+      In this case the returned geometry is in the wrong coordinate system (device independent
+      instead of native pixels). Fix this by adding a conversion call:
+
+         QRect r = QHighDpi::toNativeWindowGeometry(window->geometry());
+
+      (Also consider if the call to QtGui is really needed - prefer calling QPlatform* API.)
 */
 
 qreal QHighDpiScaling::m_factor = 1.0;

@@ -141,10 +141,6 @@ private:
     static QDpi m_logicalDpi;
 };
 
-// Coordinate system conversion functions:
-// QHighDpi::fromNativePixels   : from physical(screen/backing) to logical pixels
-// QHighDpi::toNativePixels              : from logical to physical pixels
-
 namespace QHighDpi {
 
 inline qreal scale(qreal value, qreal scaleFactor, QPointF /* origin */ = QPointF(0, 0))
