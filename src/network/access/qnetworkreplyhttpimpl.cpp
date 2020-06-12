@@ -1184,6 +1184,26 @@ void QNetworkReplyHttpImplPrivate::onRedirected(const QUrl &redirectUrl, int htt
     redirectRequest = createRedirectRequest(originalRequest, url, maxRedirectsRemaining);
     operation = getRedirectOperation(operation, httpStatus);
 
+    // Clear stale headers, the relevant ones get set again later
+    httpRequest.clearHeaders();
+    if (operation == QNetworkAccessManager::GetOperation
+        || operation == QNetworkAccessManager::HeadOperation) {
+        // possibly changed from not-GET/HEAD to GET/HEAD, make sure to get rid of upload device
+        uploadByteDevice.reset();
+        uploadByteDevicePosition = 0;
+        if (outgoingData) {
+            QObject::disconnect(outgoingData, SIGNAL(readyRead()), q,
+                                SLOT(_q_bufferOutgoingData()));
+            QObject::disconnect(outgoingData, SIGNAL(readChannelFinished()), q,
+                                SLOT(_q_bufferOutgoingDataFinished()));
+        }
+        outgoingData = nullptr;
+        outgoingDataBuffer.reset();
+        // We need to explicitly unset these headers so they're not reapplied to the httpRequest
+        redirectRequest.setHeader(QNetworkRequest::ContentLengthHeader, QVariant());
+        redirectRequest.setHeader(QNetworkRequest::ContentTypeHeader, QVariant());
+    }
+
     if (const QNetworkCookieJar *const cookieJar = manager->cookieJar()) {
         auto cookies = cookieJar->cookiesForUrl(url);
         if (!cookies.empty()) {
@@ -1491,6 +1511,9 @@ void QNetworkReplyHttpImplPrivate::resetUploadDataSlot(bool *r)
 // Coming from QNonContiguousByteDeviceThreadForwardImpl in HTTP thread
 void QNetworkReplyHttpImplPrivate::sentUploadDataSlot(qint64 pos, qint64 amount)
 {
+    if (!uploadByteDevice) // uploadByteDevice is no longer available
+        return;
+
     if (uploadByteDevicePosition + amount != pos) {
         // Sanity check, should not happen.
         error(QNetworkReply::UnknownNetworkError, QString());
@@ -1504,6 +1527,9 @@ void QNetworkReplyHttpImplPrivate::sentUploadDataSlot(qint64 pos, qint64 amount)
 void QNetworkReplyHttpImplPrivate::wantUploadDataSlot(qint64 maxSize)
 {
     Q_Q(QNetworkReplyHttpImpl);
+
+    if (!uploadByteDevice) // uploadByteDevice is no longer available
+        return;
 
     // call readPointer
     qint64 currentUploadDataLength = 0;

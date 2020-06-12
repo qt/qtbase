@@ -288,6 +288,11 @@ void QHttpNetworkRequest::prependHeaderField(const QByteArray &name, const QByte
     d->prependHeaderField(name, data);
 }
 
+void QHttpNetworkRequest::clearHeaders()
+{
+    d->clearHeaders();
+}
+
 QHttpNetworkRequest &QHttpNetworkRequest::operator=(const QHttpNetworkRequest &other)
 {
     d = other.d;

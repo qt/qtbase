@@ -502,6 +502,8 @@ private Q_SLOTS:
     void ioHttpRedirectMultipartPost();
     void ioHttpRedirectDelete();
     void ioHttpRedirectCustom();
+    void ioHttpRedirectWithUploadDevice_data();
+    void ioHttpRedirectWithUploadDevice();
 #ifndef QT_NO_SSL
     void putWithServerClosingConnectionImmediately();
 #endif
@@ -721,7 +723,8 @@ public slots:
 
         if (doubleEndlPos != -1) {
             const int endOfHeader = doubleEndlPos + 4;
-            hasContent = receivedData.startsWith("POST") || receivedData.startsWith("PUT");
+            hasContent = receivedData.startsWith("POST") || receivedData.startsWith("PUT")
+                    || receivedData.startsWith("CUSTOM_WITH_PAYLOAD");
             if (hasContent && contentLength == 0)
                 parseContentLength();
             contentRead = receivedData.length() - endOfHeader;
@@ -9028,6 +9031,75 @@ void tst_QNetworkReply::ioHttpRedirectCustom()
 
     QCOMPARE(waitForFinish(reply), int(Success));
     QVERIFY2(target.receivedData.startsWith("CUSTOM"), "Target server called with the wrong method");
+}
+
+void tst_QNetworkReply::ioHttpRedirectWithUploadDevice_data()
+{
+    QTest::addColumn<QByteArray>("method");
+    QTest::addColumn<QString>("status");
+    QTest::addColumn<bool>("keepMethod");
+
+    QTest::addRow("post-301") << QByteArray("POST") << "301 Moved Permanently" << false;
+    QTest::addRow("post-307") << QByteArray("POST") << "307 Temporary Redirect" << true;
+
+    const QByteArray customVerb = QByteArray("CUSTOM_WITH_PAYLOAD");
+    QTest::addRow("custom-301") << customVerb << "301 Moved Permanently" << false;
+    QTest::addRow("custom-307") << customVerb << "307 Temporary Redirect" << true;
+}
+
+/*
+    Tests that we properly disregard the upload device when redirecting
+    and changing method to GET, and that it gets reset properly when
+    redirecting (without changing method) for POST and a custom method.
+*/
+void tst_QNetworkReply::ioHttpRedirectWithUploadDevice()
+{
+    QFETCH(QByteArray, method);
+    QFETCH(QString, status);
+    QFETCH(bool, keepMethod);
+
+    MiniHttpServer target(httpEmpty200Response, false);
+    QUrl targetUrl("http://localhost/");
+    targetUrl.setPort(target.serverPort());
+
+    QString redirectReply = QStringLiteral("HTTP/1.1 %1\r\n"
+                                           "Content-Type: text/plain\r\n"
+                                           "location: %2\r\n"
+                                           "\r\n").arg(status, targetUrl.toString());
+    MiniHttpServer redirectServer(redirectReply.toLatin1());
+    QUrl url("http://localhost/");
+    url.setPort(redirectServer.serverPort());
+
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, QByteArray("text/plain"));
+    auto oldRedirectPolicy = manager.redirectPolicy();
+    manager.setRedirectPolicy(QNetworkRequest::RedirectPolicy::NoLessSafeRedirectPolicy);
+
+    QByteArray data = "Hello world";
+    QBuffer buffer(&data);
+
+    QNetworkReplyPtr reply;
+    if (method == "POST")
+        reply.reset(manager.post(request, &buffer));
+    else
+        reply.reset(manager.sendCustomRequest(request, method, &buffer));
+    // Restore previous policy:
+    manager.setRedirectPolicy(oldRedirectPolicy);
+
+    QCOMPARE(waitForFinish(reply), int(Success));
+    QByteArray expectedMethod = method;
+    if (!keepMethod)
+        expectedMethod = "GET";
+    QVERIFY2(target.receivedData.startsWith(expectedMethod), "Target server called with the wrong method");
+    if (keepMethod) { // keepMethod also means we resend the data
+        QVERIFY2(target.receivedData.endsWith(data), "Target server didn't receive the data");
+    } else {
+        // we shouldn't send Content-Length with not content (esp. for GET)
+        QVERIFY2(!target.receivedData.contains("Content-Length"),
+                 "Target server should not have received a Content-Length header");
+        QVERIFY2(!target.receivedData.contains("Content-Type"),
+                 "Target server should not have received a Content-Type header");
+    }
 }
 
 #ifndef QT_NO_SSL
