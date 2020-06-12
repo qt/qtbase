@@ -103,6 +103,7 @@ public:
     QByteArray headerField(const QByteArray &name, const QByteArray &defaultValue = QByteArray()) const override;
     void setHeaderField(const QByteArray &name, const QByteArray &data) override;
     void prependHeaderField(const QByteArray &name, const QByteArray &data);
+    void clearHeaders();
 
     Operation operation() const;
     void setOperation(Operation operation);
