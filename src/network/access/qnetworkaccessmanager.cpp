@@ -250,53 +250,6 @@ static void ensureInitialized()
 */
 
 /*!
-    \enum QNetworkAccessManager::NetworkAccessibility
-    \obsolete
-
-    Indicates whether the network is accessible via this network access manager.
-
-    \value UnknownAccessibility     The network accessibility cannot be determined.
-    \value NotAccessible            The network is not currently accessible, either because there
-                                    is currently no network coverage or network access has been
-                                    explicitly disabled by a call to setNetworkAccessible().
-    \value Accessible               The network is accessible.
-
-    \sa networkAccessible
-*/
-
-/*!
-    \property QNetworkAccessManager::networkAccessible
-    \brief whether the network is currently accessible via this network access manager.
-    \obsolete
-
-    \since 4.7
-
-    If the network is \l {NotAccessible}{not accessible} the network access manager will not
-    process any new network requests, all such requests will fail with an error.  Requests with
-    URLs with the file:// scheme will still be processed.
-
-    By default the value of this property reflects the physical state of the device.  Applications
-    may override it to disable all network requests via this network access manager by calling
-
-    \snippet code/src_network_access_qnetworkaccessmanager.cpp 4
-
-    Network requests can be re-enabled again, and this property will resume to
-    reflect the actual device state by calling
-
-    \snippet code/src_network_access_qnetworkaccessmanager.cpp 5
-
-    \note Calling setNetworkAccessible() does not change the network state.
-*/
-
-/*!
-    \fn void QNetworkAccessManager::networkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility accessible)
-    \obsolete
-
-    This signal is emitted when the value of the \l networkAccessible property changes.
-    \a accessible is the new network accessibility.
-*/
-
-/*!
     \fn void QNetworkAccessManager::networkSessionConnected()
 
     \since 4.7

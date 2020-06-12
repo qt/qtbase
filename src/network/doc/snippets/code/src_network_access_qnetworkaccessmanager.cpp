@@ -69,12 +69,3 @@ connect(reply, &QNetworkReply::errorOccurred,
 connect(reply, &QNetworkReply::sslErrors,
         this, &MyClass::slotSslErrors);
 //! [1]
-
-//! [4]
-networkAccessManager->setNetworkAccessible(QNetworkAccessManager::NotAccessible);
-//! [4]
-
-//! [5]
-networkAccessManager->setNetworkAccessible(QNetworkAccessManager::Accessible);
-//! [5]
-
