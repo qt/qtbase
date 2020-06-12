@@ -586,12 +586,14 @@ public class QtActivityDelegate
                       Method m = initClass.getMethod("setActivity", Activity.class, Object.class);
                       m.invoke(staticInitDataObject, m_activity, this);
                   } catch (Exception e) {
+                      e.printStackTrace();
                   }
 
                   try {
                       Method m = initClass.getMethod("setContext", Context.class);
                       m.invoke(staticInitDataObject, (Context)m_activity);
                   } catch (Exception e) {
+                      e.printStackTrace();
                   }
                 } catch (Exception e) {
                     e.printStackTrace();

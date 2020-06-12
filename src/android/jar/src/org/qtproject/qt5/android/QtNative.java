@@ -213,9 +213,11 @@ public class QtNative
             return true;
         } catch (IllegalArgumentException e) {
             Log.e(QtTAG, "openURL(): Invalid Uri");
+            e.printStackTrace();
             return false;
         } catch (UnsupportedOperationException e) {
             Log.e(QtTAG, "openURL(): Unsupported operation for given Uri");
+            e.printStackTrace();
             return false;
         } catch (Exception e) {
             e.printStackTrace();
@@ -238,9 +240,11 @@ public class QtNative
             ParcelFileDescriptor fdDesc = resolver.openFileDescriptor(uri, openMode);
             return fdDesc.detachFd();
         } catch (FileNotFoundException e) {
+            e.printStackTrace();
             return error;
         } catch (IllegalArgumentException e) {
             Log.e(QtTAG, "openFdForContentUrl(): Invalid Uri");
+            e.printStackTrace();
             return error;
         }
     }
@@ -266,9 +270,11 @@ public class QtNative
             return size;
         } catch (IllegalArgumentException e) {
             Log.e(QtTAG, "getSize(): Invalid Uri");
+            e.printStackTrace();
             return size;
         }  catch (UnsupportedOperationException e) {
             Log.e(QtTAG, "getSize(): Unsupported operation for given Uri");
+            e.printStackTrace();
             return size;
         }
     }
@@ -293,9 +299,11 @@ public class QtNative
             return exists;
         } catch (IllegalArgumentException e) {
             Log.e(QtTAG, "checkFileExists(): Invalid Uri");
+            e.printStackTrace();
             return exists;
         } catch (UnsupportedOperationException e) {
             Log.e(QtTAG, "checkFileExists(): Unsupported operation for given Uri");
+            e.printStackTrace();
             return false;
         }
     }
@@ -348,7 +356,7 @@ public class QtNative
                                     systemLibraryDir = info.metaData.getString("android.app.system_libs_prefix");
                                 f = new File(systemLibraryDir + libNameTemplate);
                             } catch (Exception e) {
-
+                                e.printStackTrace();
                             }
                         }
                         if (f.exists())
@@ -899,6 +907,7 @@ public class QtNative
                         try {
                             m_addItemMethod = m_clipboardManager.getClass().getMethod("addItem", cArg);
                         } catch (Exception e) {
+                            e.printStackTrace();
                         }
                     }
                 }
@@ -1171,10 +1180,14 @@ public class QtNative
                         if (isDir != null && isDir.length > 0)
                             file += "/";
                         res.add(file);
-                    } catch (Exception e) {}
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return res.toArray(new String[res.size()]);
     }
 
