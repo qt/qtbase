@@ -96,7 +96,7 @@ if(WIN32)
     target_compile_definitions(PlatformModuleInternal INTERFACE _USE_MATH_DEFINES)
 endif()
 if(FEATURE_largefile AND UNIX)
-    target_compile_definitions(PlatformModuleInternal
+    target_compile_definitions(PlatformCommonInternal
                                INTERFACE "_LARGEFILE64_SOURCE;_LARGEFILE_SOURCE")
 endif()
 
