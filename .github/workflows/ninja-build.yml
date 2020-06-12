@@ -1,0 +1,110 @@
+# Smoke builds
+#
+# The goal of this workflow is to finish as fast as possible. Therefore some
+# choices have been made:
+# - no optimizations
+# - link to system-provided libraries instead of bulding
+#   bundled 3rd party libraries
+# - ccache
+
+name: Smoke build
+
+on: push
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: ubuntu-18.04
+            os:   ubuntu-18.04
+            deps:  libgl-dev libglu-dev libpcre2-dev libz-dev libfreetype6-dev libpng-dev libjpeg-dev libsqlite3-dev
+            tools: ninja-build ccache
+            install_cmd: sudo apt-get -y install
+            cmake_flags: -DFEATURE_system_sqlite=ON
+          - name: macos-10.15
+            os:   macos-10.15
+            deps:  jpeg sqlite
+            tools: ninja ccache
+            install_cmd: brew install
+            cmake_flags: -DFEATURE_system_sqlite=ON
+          - name: windows-2019
+            os:   windows-2019
+            install_cmd: choco install
+            install_cmd_postfix: --yes --no-progress
+            # Chocolatey sqlite package does not come with headers, so we build with bundled sqlite.
+            #deps: sqlite
+            tools: ninja ccache
+            # Because of header conflicts we disable everything else besides sqlite driver
+            cmake_flags: -DFEATURE_system_sqlite=OFF -DFEATURE_sql_psql=OFF -DFEATURE_sql_mysql=OFF -DFEATURE_sql_odbc=OFF
+    runs-on: ${{ matrix.os }}
+
+
+    steps:
+
+    - name: prepare Linux
+      if: runner.os == 'Linux'
+      run: sudo apt-get update
+    - name: prepare Windows
+      if: runner.os == 'Windows'
+      # Header pthread.h from postgres is included and creates issues.
+      # Also library zlib.lib is linked instead of the system one.
+      run: rm -rf "C:/Program Files/PostgreSQL/"
+
+    - uses: actions/checkout@v2
+
+    - name: restore ccache
+      id: ccache
+      uses: actions/cache@v2
+      with:
+        path: ~/.ccache
+        # "github.run_id" is unique, which causes the cache to always get
+        # saved at the end of a successful run.
+        key:  ccache-${{ runner.os }}-${{ github.ref }}-${{ github.run_id }}
+        # As the unique "key" above will never be found in the cache when the
+        # job starts, we need these broader "restore-keys" in order to match
+        # and restore the most recent cache.
+        restore-keys: |
+          ccache-${{ runner.os }}-${{ github.ref }}-
+          ccache-${{ runner.os }}-refs/heads/dev-
+          ccache-${{ runner.os }}-
+
+    - name: install build dependencies
+      run:  ${{ matrix.install_cmd }}  ${{ matrix.deps }}  ${{ matrix.install_cmd_postfix }}
+      if: matrix.deps != ''
+    - name: install compiler tools
+      run:  ${{ matrix.install_cmd }}  ${{ matrix.tools }}  ${{ matrix.install_cmd_postfix }}
+    - name: print versions and environment
+      run: |
+        gcc --version    | head -1
+        cmake --version  | head -1
+        echo Ninja `ninja --version`
+        { ninja --help || true ; } 2>&1 | grep "run N jobs in parallel"
+        ccache --version | head -1
+        echo Environment:
+        printenv
+
+    - name: make build directory
+      run:  mkdir build
+    - name: configure
+      working-directory: build
+      run:  ../configure -cmake -opensource -confirm-license \
+        \ -debug -no-optimize-debug -nomake tests -nomake examples \
+        \ -no-harfbuzz -no-iconv \
+        \ -system-pcre -system-zlib -system-freetype -system-libpng -system-libjpeg \
+        \ -- -DQT_NO_MAKE_TESTS=ON -DQT_NO_MAKE_EXAMPLES=ON \
+        \ -DQT_USE_CCACHE=ON -DBUILD_WITH_PCH=OFF \
+        \ ${{ matrix.cmake_flags }}
+    - name: ninja
+      working-directory: build
+      run: ninja
+
+    - name: various stats
+      # Print ccache utilization statistics, then reset them.
+      run:  ccache -s && ccache -z
