@@ -570,6 +570,8 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::ScreenSpaceDerivatives:
         return true;
+    case QRhi::ReadBackAnyTextureFormat:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;

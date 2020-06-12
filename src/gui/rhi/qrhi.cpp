@@ -596,6 +596,18 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     type attributes will be broken. In practice this feature will be unsupported
     with OpenGL ES 2.0 and OpenGL 2.x, while it will likely be supported
     everywhere else.
+
+    \value ScreenSpaceDerivatives Indicates that functions such as dFdx(),
+    dFdy(), and fwidth() are supported in shaders.
+
+    \value ReadBackAnyTextureFormat Indicates that reading back texture
+    contents can be expected to work for any QRhiTexture::Format. When reported
+    as false, which will typically happen with OpenGL, only the formats
+    QRhiTexture::RGBA8 and QRhiTexture::BGRA8 are guaranteed to be supported
+    for readbacks. In addition, with OpenGL, but not OpenGL ES, reading back
+    the 1 byte per component formats QRhiTexture::R8 and
+    QRhiTexture::RED_OR_ALPHA8 are supported as well. Backends other than
+    OpenGL can be expected to return true for this feature.
  */
 
 /*!

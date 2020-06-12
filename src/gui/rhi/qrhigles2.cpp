@@ -875,6 +875,8 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
         return caps.uintAttributes;
     case QRhi::ScreenSpaceDerivatives:
         return caps.screenSpaceDerivatives;
+    case QRhi::ReadBackAnyTextureFormat:
+        return false;
     default:
         Q_UNREACHABLE();
         return false;
@@ -2400,6 +2402,7 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
             const int h = result->pixelSize.height();
             if (mipLevel == 0 || caps.nonBaseLevelFramebufferTexture) {
                 // With GLES, GL_RGBA is the only mandated readback format, so stick with it.
+                // (and that's why we return false for the ReadBackAnyTextureFormat feature)
                 if (result->format == QRhiTexture::R8 || result->format == QRhiTexture::RED_OR_ALPHA8) {
                     result->data.resize(w * h);
                     QByteArray tmpBuf;
