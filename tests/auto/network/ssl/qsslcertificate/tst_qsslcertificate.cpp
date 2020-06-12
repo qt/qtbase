@@ -1081,7 +1081,11 @@ void tst_QSslCertificate::verify()
 
     // Verify a valid cert signed by a CA
     QList<QSslCertificate> caCerts = QSslCertificate::fromPath(testDataDir + "verify-certs/cacert.pem", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString);
+
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     QSslSocket::addDefaultCaCertificate(caCerts.first());
+QT_WARNING_POP
 
     toVerify = QSslCertificate::fromPath(testDataDir + "verify-certs/test-ocsp-good-cert.pem", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString);
 
