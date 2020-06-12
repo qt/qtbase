@@ -4363,7 +4363,9 @@ function(qt_add_tool target_name)
         SOURCES ${arg_SOURCES}
         INCLUDE_DIRECTORIES
             ${arg_INCLUDE_DIRECTORIES}
-        DEFINES ${arg_DEFINES}
+        DEFINES
+            QT_USE_QSTRINGBUILDER
+            ${arg_DEFINES}
         PUBLIC_LIBRARIES ${corelib}
         LIBRARIES ${arg_LIBRARIES} Qt::PlatformToolInternal
         COMPILE_OPTIONS ${arg_COMPILE_OPTIONS}
