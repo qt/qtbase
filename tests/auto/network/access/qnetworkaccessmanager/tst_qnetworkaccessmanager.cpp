@@ -84,15 +84,6 @@ void tst_QNetworkAccessManager::networkAccessible()
                  QNetworkAccessManager::NotAccessible);
     QCOMPARE(manager.networkAccessible(), QNetworkAccessManager::NotAccessible);
 
-    // When network is not accessible, all requests fail
-    QNetworkReply *reply = manager.get(QNetworkRequest(QUrl("http://www.example.org")));
-    QSignalSpy finishedSpy(reply, &QNetworkReply::finished);
-    QSignalSpy errorSpy(reply, &QNetworkReply::errorOccurred);
-    QVERIFY(finishedSpy.wait());
-    QCOMPARE(reply->isFinished(), true);
-    QCOMPARE(reply->errorString(), QStringLiteral("Network access is disabled."));
-    QCOMPARE(errorSpy.count(), 1);
-
     manager.setNetworkAccessible(QNetworkAccessManager::Accessible);
 
     QCOMPARE(spy.count(), expectedCount);

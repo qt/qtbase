@@ -207,20 +207,6 @@ public:
 };
 Q_DECLARE_TYPEINFO(QNetworkReplyImplPrivate::InternalNotifications, Q_PRIMITIVE_TYPE);
 
-class QDisabledNetworkReply : public QNetworkReply
-{
-    Q_OBJECT
-
-public:
-    QDisabledNetworkReply(QObject *parent, const QNetworkRequest &req,
-                          QNetworkAccessManager::Operation op);
-    ~QDisabledNetworkReply();
-
-    void abort() override { }
-protected:
-    qint64 readData(char *, qint64) override { return -1; }
-};
-
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QSharedPointer<char>)

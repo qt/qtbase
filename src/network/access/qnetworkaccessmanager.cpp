@@ -1446,60 +1446,6 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
             return reply;
         }
     }
-
-    if (d->statusMonitor->isEnabled()) {
-        if (!d->statusMonitor->isMonitoring() && !d->statusMonitor->start())
-            qWarning(lcNetMon, "failed to start network status monitoring");
-
-        // See the code in ctor - QNetworkStatusMonitor allows us to
-        // immediately set 'networkAccessible' even before we start
-        // the monitor. If the monitor is unable to monitor then let's
-        // assume there's something wrong with the monitor and keep going.
-        if (d->statusMonitor->isMonitoring()
-#ifdef QT_NO_BEARERMANAGEMENT
-            && !d->networkAccessible
-#else
-            && d->networkAccessible == NotAccessible
-#endif // QT_NO_BEARERMANAGEMENT
-            && !isLocalFile) {
-            QHostAddress dest;
-            QString host = req.url().host().toLower();
-            if (!(dest.setAddress(host) && dest.isLoopback())
-                 && host != QLatin1String("localhost")
-                 && host != QHostInfo::localHostName().toLower()) {
-                return new QDisabledNetworkReply(this, req, op);
-            }
-        }
-    } else {
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-        // Return a disabled network reply if network access is disabled.
-        // Except if the scheme is empty or file:// or if the host resolves to a loopback address.
-        if (d->networkAccessible == NotAccessible && !isLocalFile) {
-            QHostAddress dest;
-            QString host = req.url().host().toLower();
-            if (!(dest.setAddress(host) && dest.isLoopback()) && host != QLatin1String("localhost")
-                && host != QHostInfo::localHostName().toLower()) {
-                return new QDisabledNetworkReply(this, req, op);
-            }
-        }
-
-        if (!d->networkSessionStrongRef && (d->initializeSession || !d->networkConfiguration.identifier().isEmpty())) {
-            if (!d->networkConfiguration.identifier().isEmpty()) {
-                if ((d->networkConfiguration.state() & QNetworkConfiguration::Defined)
-                        && d->networkConfiguration != d->networkConfigurationManager.defaultConfiguration())
-                    d->createSession(d->networkConfigurationManager.defaultConfiguration());
-                else
-                    d->createSession(d->networkConfiguration);
-
-            } else {
-                if (d->networkSessionRequired)
-                    d->createSession(d->networkConfigurationManager.defaultConfiguration());
-                else
-                    d->initializeSession = false;
-            }
-        }
-#endif
-    }
 #endif
     QNetworkRequest request = req;
     if (!request.header(QNetworkRequest::ContentLengthHeader).isValid() &&
