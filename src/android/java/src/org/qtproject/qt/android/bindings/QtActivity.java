@@ -45,6 +45,7 @@ import android.content.res.Configuration;
 import android.content.res.Resources.Theme;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.AttributeSet;
@@ -64,6 +65,8 @@ import org.qtproject.qt.android.QtNative;
 
 public class QtActivity extends Activity
 {
+    public static final String EXTRA_SOURCE_INFO = "org.qtproject.qt.android.sourceInfo";
+
     public String APPLICATION_PARAMETERS = null; // use this variable to pass any parameters to your application,
                                                                // the parameters must not contain any white spaces
                                                                // and must be separated with "\t"
@@ -260,11 +263,25 @@ public class QtActivity extends Activity
         m_loader.onCreate(savedInstanceState);
     }
 
+    private void addReferrer(Intent intent)
+    {
+        if (intent.getExtras() != null && intent.getExtras().getString(EXTRA_SOURCE_INFO) != null)
+            return;
+
+        String sourceInformation = "";
+        Uri referrer = getReferrer();
+        if (referrer != null)
+            sourceInformation = referrer.toString().replaceFirst("android-app://", "");
+
+        intent.putExtra(EXTRA_SOURCE_INFO, sourceInformation);
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         onCreateHook(savedInstanceState);
+        addReferrer(getIntent());
     }
     //---------------------------------------------------------------------------
 
@@ -479,6 +496,7 @@ public class QtActivity extends Activity
     @Override
     protected void onNewIntent(Intent intent)
     {
+        addReferrer(intent);
         if (!QtApplication.invokeDelegate(intent).invoked)
             super.onNewIntent(intent);
     }
