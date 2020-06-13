@@ -96,12 +96,12 @@ void runSandboxed(const QString &name, const QStringList &arguments)
     proc.setChildProcessModifier([] {
         // Drop all privileges in the child process, and enter
         // a chroot jail.
-        ::setgroups(0, 0);
-        ::chroot("/etc/safe");
+        ::setgroups(0, nullptr);
+        ::chroot("/run/safedir");
         ::chdir("/");
         ::setgid(safeGid);
         ::setuid(safeUid);
-        ::umask(0);
+        ::umask(077);
     });
     proc.start(name, arguments);
     proc.waitForFinished();
