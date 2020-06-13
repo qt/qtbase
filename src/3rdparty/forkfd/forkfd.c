@@ -617,12 +617,6 @@ static int create_pipe(int filedes[], int flags)
  * fork(), such as not calling the functions registered with pthread_atfork().
  * If that's necessary, pass this flag.
  *
- * @li @c FFD_VFORK_SEMANTICS Tell forkfd() to use semantics similar to
- * vfork(), if that's available. For example, on Linux with pidfd support
- * available, this will add the CLONE_VFORK option. On most other systems,
- * including Linux without pidfd support, this option does nothing, as using
- * the actual vfork() system call would cause a race condition.
- *
  * The file descriptor returned by forkfd() supports the following operations:
  *
  * @li read(2) When the child process exits, then the buffer supplied to

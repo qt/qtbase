@@ -461,8 +461,6 @@ void QProcessPrivate::startProcess()
     int ffdflags = FFD_CLOEXEC;
     if (typeid(*q) != typeid(QProcess))
         ffdflags |= FFD_USE_FORK;
-    else
-        ffdflags |= FFD_VFORK_SEMANTICS;
     pid_t childPid;
     forkfd = ::forkfd(ffdflags , &childPid);
     int lastForkErrno = errno;
