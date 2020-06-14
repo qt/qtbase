@@ -126,6 +126,9 @@ private slots:
 
     void QTBUG_56277_resize_on_showEvent();
 
+    void mouseMoveWithPopup_data();
+    void mouseMoveWithPopup();
+
 private:
     QSize m_testWidgetSize;
     const int m_fuzz;
@@ -1317,6 +1320,189 @@ void tst_QWidget_window::QTBUG_56277_resize_on_showEvent()
     const int frameHeight = geometry.top() - w.frameGeometry().top();
     const int topmostY = screen->availableGeometry().top() + frameHeight;
     QVERIFY(geometry.top() > topmostY || geometry.left() > screen->availableGeometry().left());
+}
+
+void tst_QWidget_window::mouseMoveWithPopup_data()
+{
+    QTest::addColumn<Qt::WindowType>("windowType");
+
+    QTest::addRow("Dialog") << Qt::Dialog;
+    QTest::addRow("Popup") << Qt::Popup;
+}
+
+void tst_QWidget_window::mouseMoveWithPopup()
+{
+    QFETCH(Qt::WindowType, windowType);
+
+    class Window : public QWidget
+    {
+    public:
+        Window(QWidget *parent = nullptr, Qt::WindowFlags flags = {})
+        : QWidget(parent, flags|Qt::CustomizeWindowHint|Qt::FramelessWindowHint)
+        {}
+
+        QSize sizeHint() const
+        {
+            if (parent())
+                return QSize(150, 100);
+            return QSize(250, 250);
+        }
+
+        Window *popup = nullptr;
+        Qt::WindowType type = Qt::Popup;
+        int mousePressCount = 0;
+        int mouseMoveCount = 0;
+        int mouseReleaseCount = 0;
+        void resetCounters()
+        {
+            mousePressCount = 0;
+            mouseMoveCount = 0;
+            mouseReleaseCount = 0;
+        }
+    protected:
+        void mousePressEvent(QMouseEvent *event)
+        {
+            ++mousePressCount;
+
+            if (event->button() == Qt::RightButton) {
+                if (!popup)
+                    popup = new Window(this, type);
+                popup->move(event->globalPosition().toPoint());
+                popup->show();
+                if (!QTest::qWaitForWindowExposed(popup)) {
+                    delete popup;
+                    popup = nullptr;
+                    QSKIP("Failed to expose popup window!");
+                }
+            } else {
+                QWidget::mousePressEvent(event);
+            }
+        }
+        void mouseReleaseEvent(QMouseEvent *event)
+        {
+            ++mouseReleaseCount;
+            QWidget::mouseReleaseEvent(event);
+        }
+        void mouseMoveEvent(QMouseEvent *event)
+        {
+            ++mouseMoveCount;
+            QWidget::mouseMoveEvent(event);
+        }
+    };
+    Window topLevel;
+    topLevel.setObjectName("topLevel");
+    topLevel.type = windowType;
+    topLevel.show();
+    if (!QTest::qWaitForWindowExposed(&topLevel))
+        QSKIP("Failed to expose window!");
+
+    QCOMPARE(QApplication::activePopupWidget(), nullptr);
+    QCOMPARE(QApplication::activeWindow(), &topLevel);
+
+    QPoint mousePos = topLevel.geometry().center();
+    QWindow *window = nullptr;
+    Qt::MouseButtons buttons = {};
+    auto mouseAction = [&](Qt::MouseButton button, QPoint offset = {}) -> QEvent::Type
+    {
+        QEvent::Type type;
+        if (offset != QPoint()) {
+            type = QEvent::MouseMove;
+        } else if (buttons & button) {
+            type = QEvent::MouseButtonRelease;
+            buttons &= ~button;
+        } else {
+            Q_ASSERT(button != Qt::NoButton);
+            type = QEvent::MouseButtonPress;
+            buttons |= button;
+            window = QApplication::activeWindow()->windowHandle();
+        }
+
+        mousePos += offset;
+
+        if (!window)
+            return QEvent::None;
+
+        bool result = QWindowSystemInterface::handleMouseEvent(window, window->mapFromGlobal(mousePos),
+                                                               mousePos, buttons, button, type);
+        QCoreApplication::processEvents();
+        if (type == QEvent::MouseButtonRelease && buttons == Qt::NoButton)
+            window = nullptr;
+
+        if (!result)
+            return QEvent::None;
+        return type;
+    };
+
+    QCOMPARE(mouseAction(Qt::RightButton), QEvent::MouseButtonPress);
+    QCOMPARE(topLevel.mousePressCount, 1);
+    QVERIFY(topLevel.popup);
+    QCOMPARE(topLevel.popup->mousePressCount, 0);
+    topLevel.popup->setObjectName(windowType == Qt::Popup ? "Popup" : "Dialog");
+    QCOMPARE(QApplication::activePopupWidget(), windowType == Qt::Popup ? topLevel.popup : nullptr);
+    // if popup, then popup gets the mouse move even though it didn't get any press
+    QCOMPARE(mouseAction(Qt::NoButton, QPoint(10, 10)), QEvent::MouseMove);
+    QCOMPARE(topLevel.mouseMoveCount, windowType == Qt::Popup ? 0 : 1);
+    QCOMPARE(topLevel.popup->mouseMoveCount, windowType == Qt::Popup ? 1 : 0);
+    // if popup, then popup gets the release even though it didn't get any press
+    QCOMPARE(mouseAction(Qt::RightButton), QEvent::MouseButtonRelease);
+    QCOMPARE(topLevel.mouseReleaseCount, windowType == Qt::Popup ? 0 : 1);
+    QCOMPARE(topLevel.popup->mouseReleaseCount, windowType == Qt::Popup ? 1 : 0);
+
+    Q_ASSERT(buttons == Qt::NoButton);
+    topLevel.resetCounters();
+    topLevel.popup->resetCounters();
+
+    // nested popup, same procedure
+    QCOMPARE(mouseAction(Qt::RightButton), QEvent::MouseButtonPress);
+    QVERIFY(topLevel.popup);
+    QCOMPARE(topLevel.popup->mousePressCount, 1);
+    QVERIFY(topLevel.popup->popup);
+    topLevel.popup->popup->setObjectName("NestedPopup");
+    QCOMPARE(QApplication::activePopupWidget(), topLevel.popup->popup);
+    QCOMPARE(topLevel.popup->popup->mousePressCount, 0);
+
+    // nested popup is always a popup and grabs the mouse, so first popup gets nothing
+    QCOMPARE(mouseAction(Qt::NoButton, QPoint(10, 10)), QEvent::MouseMove);
+    QCOMPARE(topLevel.popup->mouseMoveCount, 0);
+    QCOMPARE(topLevel.popup->popup->mouseMoveCount, 1);
+
+    // nested popup gets the release, as before
+    QCOMPARE(mouseAction(Qt::RightButton), QEvent::MouseButtonRelease);
+    QCOMPARE(topLevel.popup->mouseReleaseCount, 0);
+    QCOMPARE(topLevel.popup->popup->mouseReleaseCount, 1);
+
+    Q_ASSERT(buttons == Qt::NoButton);
+
+    // move mouse back into first popup
+    mouseAction({}, QPoint(-15, -15));
+    QVERIFY(!topLevel.popup->popup->geometry().contains(mousePos));
+    QVERIFY(topLevel.popup->geometry().contains(mousePos));
+
+    topLevel.popup->resetCounters();
+    topLevel.popup->popup->resetCounters();
+
+    // closing the nested popup by clicking into the first popup/dialog; the nested popup gets the press
+    QCOMPARE(mouseAction(Qt::LeftButton), QEvent::MouseButtonPress);
+    QCOMPARE(topLevel.popup->popup->mousePressCount, 1);
+    QVERIFY(!topLevel.popup->popup->isVisible());
+    QCOMPARE(QApplication::activePopupWidget(), windowType == Qt::Popup ? topLevel.popup : nullptr);
+    QCOMPARE(QApplication::activeWindow(), windowType == Qt::Popup ? &topLevel : topLevel.popup);
+
+    // the move event following a press that closed the active popup should NOT be delivered to the first popup
+    QCOMPARE(mouseAction({}, QPoint(-10, -10)), QEvent::MouseMove);
+    // dialogs might or might not get the event - platform specific behavior in Qt 5
+    if (topLevel.popup->mouseMoveCount != 0)
+        QEXPECT_FAIL("Dialog", "Platform specific behavior", Continue);
+    QCOMPARE(topLevel.popup->mouseMoveCount, 0);
+    QCOMPARE(topLevel.popup->popup->mouseMoveCount, 0);
+
+    // but the release event will still be delivered to the first popup - dialogs might not get it
+    QCOMPARE(mouseAction(Qt::LeftButton), QEvent::MouseButtonRelease);
+    if (topLevel.popup->mouseMoveCount != 1
+        && (QGuiApplication::platformName().startsWith(QLatin1String("xcb"), Qt::CaseInsensitive)
+            || QGuiApplication::platformName().startsWith(QLatin1String("offscreen"), Qt::CaseInsensitive)))
+        QEXPECT_FAIL("Dialog", "Platform specific behavior", Continue);
+    QCOMPARE(topLevel.popup->mouseReleaseCount, 1);
 }
 
 QTEST_MAIN(tst_QWidget_window)

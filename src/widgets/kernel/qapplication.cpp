@@ -3534,6 +3534,7 @@ static void grabForPopup(QWidget *popup)
 
 extern QWidget *qt_popup_down;
 extern bool qt_replay_popup_mouse_event;
+extern bool qt_popup_down_closed;
 
 void QApplicationPrivate::closePopup(QWidget *popup)
 {
@@ -3543,12 +3544,14 @@ void QApplicationPrivate::closePopup(QWidget *popup)
 
      if (popup == qt_popup_down) {
          qt_button_down = nullptr;
+         qt_popup_down_closed = true;
          qt_popup_down = nullptr;
      }
 
     if (QApplicationPrivate::popupWidgets->count() == 0) { // this was the last popup
         delete QApplicationPrivate::popupWidgets;
         QApplicationPrivate::popupWidgets = nullptr;
+        qt_popup_down_closed = false;
 
         if (popupGrabOk) {
             popupGrabOk = false;
