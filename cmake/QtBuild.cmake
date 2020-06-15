@@ -2395,6 +2395,8 @@ function(qt_add_module target)
             )
         endif()
 
+        qt_internal_apply_win_prefix_and_suffix("${target}")
+
         if (WIN32 AND BUILD_SHARED_LIBS)
             qt6_generate_win32_rc_file(${target})
         endif()
@@ -3230,10 +3232,7 @@ function(qt_internal_add_plugin target)
             # but Qt plugins are actually suffixed with .dylib.
             set_property(TARGET "${target}" PROPERTY SUFFIX ".dylib")
         endif()
-        if(WIN32)
-            # CMake sets for Windows-GNU platforms the suffix "lib"
-            set_property(TARGET "${target}" PROPERTY PREFIX "")
-        endif()
+        qt_internal_apply_win_prefix_and_suffix("${target}")
     endif()
 
     qt_set_common_target_properties(${target})
@@ -3999,6 +3998,7 @@ function(qt_add_cmake_library target)
         add_library("${target}" STATIC)
     elseif(${arg_SHARED})
         add_library("${target}" SHARED)
+        qt_internal_apply_win_prefix_and_suffix("${target}")
     elseif(${arg_MODULE})
         add_library("${target}" MODULE)
         set_property(TARGET ${name} PROPERTY C_VISIBILITY_PRESET default)
@@ -4009,10 +4009,7 @@ function(qt_add_cmake_library target)
             # but Qt plugins are actually suffixed with .dylib.
             set_property(TARGET "${target}" PROPERTY SUFFIX ".dylib")
         endif()
-        if(WIN32)
-            # CMake sets for Windows-GNU platforms the suffix "lib"
-            set_property(TARGET "${target}" PROPERTY PREFIX "")
-        endif()
+        qt_internal_apply_win_prefix_and_suffix("${target}")
     else()
         add_library("${target}")
     endif()
@@ -5435,6 +5432,20 @@ function(qt_internal_set_up_sanitizer_features)
             set(${feature_name} "ON" CACHE BOOL "Enable ${sanitizer_type} sanitizer" FORCE)
             set(QT_${feature_name} "ON" CACHE BOOL "Enable ${sanitizer_type} sanitizer" FORCE)
         endforeach()
+    endif()
+endfunction()
+
+function(qt_internal_apply_win_prefix_and_suffix target)
+    if(WIN32)
+        # CMake sets for Windows-GNU platforms the prefix "lib", whereas qmake expects
+        # no prefix.
+        set_property(TARGET "${target}" PROPERTY PREFIX "")
+
+        # CMake sets for Windows-GNU platforms the import suffix "dll.a", whereas qmake
+        # expects an ".a" import suffix.
+        if(MINGW)
+            set_property(TARGET "${target}" PROPERTY IMPORT_SUFFIX ".a")
+        endif()
     endif()
 endfunction()
 
