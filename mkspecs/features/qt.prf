@@ -231,10 +231,6 @@ for(ever) {
                         }
                     }
                     $$lib_missing {
-                        msg = "Cannot find library for $${MODULE_MODULE}. Tried:$$escape_expand(\\n)"
-                        for(path, candidates): \
-                            msg += "$$path$$escape_expand(\\n)"
-                        warning($$msg)
                         lib = $$first(candidates)
                     }
                     PRE_TARGETDEPS += $$lib
