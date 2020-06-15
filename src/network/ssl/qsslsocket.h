@@ -196,16 +196,6 @@ public:
                        const QByteArray &passPhrase = QByteArray());
     QSslKey privateKey() const;
 
-    // Cipher settings.
-#if QT_DEPRECATED_SINCE(5, 5)
-    QT_DEPRECATED_X("Use QSslConfiguration::ciphers()") QList<QSslCipher> ciphers() const;
-    QT_DEPRECATED_X("Use QSslConfiguration::setCiphers()") void setCiphers(const QList<QSslCipher> &ciphers);
-    QT_DEPRECATED void setCiphers(const QString &ciphers);
-    QT_DEPRECATED static void setDefaultCiphers(const QList<QSslCipher> &ciphers);
-    QT_DEPRECATED static QList<QSslCipher> defaultCiphers();
-    QT_DEPRECATED_X("Use QSslConfiguration::supportedCiphers()") static QList<QSslCipher> supportedCiphers();
-#endif // QT_DEPRECATED_SINCE(5, 5)
-
     // CA settings.
 #if QT_DEPRECATED_SINCE(5, 15)
     QT_DEPRECATED_X("Use QSslConfiguration::addCaCertificate()") void addCaCertificate(const QSslCertificate &certificate);
