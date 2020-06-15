@@ -531,6 +531,13 @@ void QVulkanInstance::setExtensions(const QByteArrayList &extensions)
 
     \note This function can only be called before create() and has no effect if
     called afterwards.
+
+    \note Be aware that Vulkan 1.1 changes the behavior with regards to the
+    Vulkan API version field. In Vulkan 1.0 specifying an unsupported \a
+    vulkanVersion led to failing create() with \c VK_ERROR_INCOMPATIBLE_DRIVER,
+    as was mandated by the specification. Starting with Vulkan 1.1, the
+    specification disallows this, the driver must accept any version without
+    failing the instance creation.
  */
 void QVulkanInstance::setApiVersion(const QVersionNumber &vulkanVersion)
 {
