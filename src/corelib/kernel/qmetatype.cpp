@@ -1735,6 +1735,8 @@ static QtPrivate::QMetaTypeInterface *interfaceForType(int typeId)
         QT_FOR_EACH_STATIC_CORE_POINTER(QT_METATYPE_CONVERT_ID_TO_TYPE)
         QT_FOR_EACH_STATIC_CORE_TEMPLATE(QT_METATYPE_CONVERT_ID_TO_TYPE)
     default:
+        if (typeId != QMetaType::UnknownType)
+            qWarning("Trying to construct an instance of an invalid type, type id: %i", typeId);
         return nullptr;
     }
 }

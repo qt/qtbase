@@ -1752,9 +1752,6 @@ Q_CORE_EXPORT void QVariantPrivate::registerHandler(const int /* Modules::Names 
 void QVariant::create(int type, const void *copy)
 {
     d = Private(QMetaType(type));
-    if (Q_UNLIKELY(type && !d.type().isValid())) {
-        qWarning("Trying to construct an instance of an invalid type, type id: %i", type);
-    }
     customConstruct(&d, copy);
 }
 
