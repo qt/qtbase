@@ -546,9 +546,9 @@ public:
 
     explicit QMetaType(int type);
     explicit QMetaType(QtPrivate::QMetaTypeInterface *d);
-    QMetaType();
+    constexpr QMetaType() : d_ptr(nullptr) {}
     ~QMetaType();
-    QMetaType(const QMetaType &other);
+    QMetaType(const QMetaType &other) : QMetaType(other.d_ptr) {}
     QMetaType &operator=(const QMetaType &);
     QMetaType(QMetaType &&other) : d_ptr(other.d_ptr) { other.d_ptr = nullptr; }
     QMetaType &operator=(QMetaType &&other)

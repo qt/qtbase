@@ -683,9 +683,6 @@ QMetaType::QMetaType(QtPrivate::QMetaTypeInterface *d) : d_ptr(d)
         d_ptr->ref.ref();
 }
 
-QMetaType::QMetaType() : d_ptr(nullptr) {}
-
-QMetaType::QMetaType(const QMetaType &other) : QMetaType(other.d_ptr) {}
 QMetaType &QMetaType::operator=(const QMetaType &other)
 {
     if (d_ptr != other.d_ptr) {
