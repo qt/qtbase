@@ -100,8 +100,8 @@ class QNetworkStatusMonitorPrivate : public QObjectPrivate
 {
 };
 
-QNetworkStatusMonitor::QNetworkStatusMonitor()
-    : QObject(*new QNetworkStatusMonitorPrivate)
+QNetworkStatusMonitor::QNetworkStatusMonitor(QObject *parent)
+    : QObject(*new QNetworkStatusMonitorPrivate, parent)
 {
 }
 
@@ -126,6 +126,11 @@ bool QNetworkStatusMonitor::isMonitoring() const
 bool QNetworkStatusMonitor::isNetworkAccessible()
 {
     return false;
+}
+
+bool QNetworkStatusMonitor::event(QEvent *event)
+{
+    return QObject::event(event);
 }
 
 bool QNetworkStatusMonitor::isEnabled()

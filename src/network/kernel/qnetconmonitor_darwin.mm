@@ -310,8 +310,8 @@ public:
     bool isOnlineIpv6 = false;
 };
 
-QNetworkStatusMonitor::QNetworkStatusMonitor()
-    : QObject(*new QNetworkStatusMonitorPrivate)
+QNetworkStatusMonitor::QNetworkStatusMonitor(QObject *parent)
+    : QObject(*new QNetworkStatusMonitorPrivate, parent)
 {
     Q_D(QNetworkStatusMonitor);
 
@@ -383,6 +383,11 @@ bool QNetworkStatusMonitor::isNetworkAccessible()
     Q_D(QNetworkStatusMonitor);
 
     return d->isOnlineIpv4 || d->isOnlineIpv6;
+}
+
+bool QNetworkStatusMonitor::event(QEvent *event)
+{
+    return QObject::event(event);
 }
 
 bool QNetworkStatusMonitor::isEnabled()
