@@ -309,7 +309,7 @@ bool QSQLiteResultPrivate::fetchNext(QSqlCachedResult::ValueCache &values, int i
                 };
                 break;
             case SQLITE_NULL:
-                values[i + idx] = QVariant(QVariant::String);
+                values[i + idx] = QVariant(QMetaType::fromType<QString>());
                 break;
             default:
                 values[i + idx] = QString(reinterpret_cast<const QChar *>(

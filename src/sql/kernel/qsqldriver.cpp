@@ -599,7 +599,7 @@ QString QSqlDriver::formatValue(const QSqlField &field, bool trimStrings) const
     if (field.isNull())
         r = nullTxt;
     else {
-        switch (+field.type()) {
+        switch (field.metaType().id()) {
         case QMetaType::Int:
         case QMetaType::UInt:
             if (field.value().userType() == QMetaType::Bool)

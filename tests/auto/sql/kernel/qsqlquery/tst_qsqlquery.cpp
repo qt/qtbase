@@ -1072,9 +1072,9 @@ void tst_QSqlQuery::record()
     QCOMPARE( q.record().fieldName( 0 ).toLower(), QString( "id" ) );
     QCOMPARE( q.record().fieldName( 1 ).toLower(), QString( "t_varchar" ) );
     QCOMPARE( q.record().fieldName( 2 ).toLower(), QString( "t_char" ) );
-    QCOMPARE(q.record().value(0), QVariant(q.record().field(0).type()));
-    QCOMPARE(q.record().value(1), QVariant(q.record().field(1).type()));
-    QCOMPARE(q.record().value(2), QVariant(q.record().field(2).type()));
+    QCOMPARE(q.record().value(0), QVariant(q.record().field(0).metaType()));
+    QCOMPARE(q.record().value(1), QVariant(q.record().field(1).metaType()));
+    QCOMPARE(q.record().value(2), QVariant(q.record().field(2).metaType()));
 
     QVERIFY( q.next() );
     QVERIFY( q.next() );
@@ -2694,18 +2694,18 @@ void tst_QSqlQuery::record_sqlite()
     QSqlRecord rec = db.record(qTableName("record_sqlite", __FILE__, db));
 
     QCOMPARE( rec.count(), 3 );
-    QCOMPARE( rec.field( 0 ).type(), QVariant::Int );
-    QCOMPARE( rec.field( 1 ).type(), QVariant::String );
-    QCOMPARE( rec.field( 2 ).type(), QVariant::Int );
+    QCOMPARE( rec.field( 0 ).metaType().id(), QVariant::Int );
+    QCOMPARE( rec.field( 1 ).metaType().id(), QVariant::String );
+    QCOMPARE( rec.field( 2 ).metaType().id(), QVariant::Int );
 
     /* important - select from an empty table */
     QVERIFY_SQL(q, exec("select id, name, title from " + qTableName("record_sqlite", __FILE__, db)));
 
     rec = q.record();
     QCOMPARE( rec.count(), 3 );
-    QCOMPARE( rec.field( 0 ).type(), QVariant::Int );
-    QCOMPARE( rec.field( 1 ).type(), QVariant::String );
-    QCOMPARE( rec.field( 2 ).type(), QVariant::Int );
+    QCOMPARE( rec.field( 0 ).metaType().id(), QVariant::Int );
+    QCOMPARE( rec.field( 1 ).metaType().id(), QVariant::String );
+    QCOMPARE( rec.field( 2 ).metaType().id(), QVariant::Int );
 }
 
 void tst_QSqlQuery::oraLong()
@@ -3092,7 +3092,7 @@ void tst_QSqlQuery::nextResult()
 
     QCOMPARE( q.record().field( 0 ).name().toUpper(), QString( "ID" ) );
 
-    QCOMPARE( q.record().field( 0 ).type(), QVariant::Int );
+    QCOMPARE( q.record().field( 0 ).metaType().id(), QVariant::Int );
 
     QVERIFY( q.nextResult() );          // Discards first result set and move to the next
 
@@ -3100,10 +3100,10 @@ void tst_QSqlQuery::nextResult()
 
     QCOMPARE( q.record().field( 0 ).name().toUpper(), QString( "TEXT" ) );
 
-    QCOMPARE( q.record().field( 0 ).type(), QVariant::String );
+    QCOMPARE( q.record().field( 0 ).metaType().id(), QVariant::String );
 
     QCOMPARE( q.record().field( 1 ).name().toUpper(), QString( "NUM" ) );
-    QCOMPARE(q.record().field(1).type(), QVariant::Double);
+    QCOMPARE(q.record().field(1).metaType().id(), QVariant::Double);
 
     QVERIFY( q.next() );                    // Move to first row of the second result set
 
@@ -3915,14 +3915,14 @@ void tst_QSqlQuery::QTBUG_23895()
     QVERIFY_SQL(q, exec(sql));
     QVERIFY_SQL(q, next());
 
-    QCOMPARE(q.record().field(0).type(), QVariant::Int);
-    QCOMPARE(q.value(0).type(), QVariant::LongLong);
+    QCOMPARE(q.record().field(0).metaType().id(), QVariant::Int);
+    QCOMPARE(q.value(0).metaType().id(), QVariant::LongLong);
     QCOMPARE(q.value(0).toInt(), 1);
-    QCOMPARE(q.record().field(1).type(), QVariant::Bool);
-    QCOMPARE(q.value(1).type(), QVariant::LongLong);
+    QCOMPARE(q.record().field(1).metaType().id(), QVariant::Bool);
+    QCOMPARE(q.value(1).metaType().id(), QVariant::LongLong);
     QCOMPARE(q.value(1).toBool(), true);
-    QCOMPARE(q.record().field(2).type(), QVariant::Bool);
-    QCOMPARE(q.value(2).type(), QVariant::LongLong);
+    QCOMPARE(q.record().field(2).metaType().id(), QVariant::Bool);
+    QCOMPARE(q.value(2).metaType().id(), QVariant::LongLong);
     QCOMPARE(q.value(2).toBool(), false);
 
     q.prepare("insert into " + tableName + "(id, val1, val2) values(?, ?, ?);");
@@ -3971,14 +3971,14 @@ void tst_QSqlQuery::QTBUG_14904()
     QVERIFY_SQL(q, next());
 
     QCOMPARE(q.record().indexOf("value1"), 0);
-    QCOMPARE(q.record().field(0).type(), QVariant::Bool);
+    QCOMPARE(q.record().field(0).metaType().id(), QVariant::Bool);
     QCOMPARE(q.value(0).toBool(), true);
 
     sql="select val1 AS 'value.one' from " + tableName;
     QVERIFY_SQL(q, exec(sql));
     QVERIFY_SQL(q, next());
     QCOMPARE(q.record().indexOf("value.one"), 0);  // was -1 before bug fix
-    QCOMPARE(q.record().field(0).type(), QVariant::Bool);
+    QCOMPARE(q.record().field(0).metaType().id(), QVariant::Bool);
     QCOMPARE(q.value(0).toBool(), true);
 }
 
@@ -4104,7 +4104,7 @@ void tst_QSqlQuery::gisPointDatatype()
     QVERIFY(sqlQuery.exec(sqlCommand));
     sqlCommand = QStringLiteral("SELECT * FROM %1;").arg(tableName);
     QVERIFY(sqlQuery.exec(sqlCommand));
-    QCOMPARE(sqlQuery.record().field(0).type(), QVariant::Type::ByteArray);
+    QCOMPARE(sqlQuery.record().field(0).metaType().id(), QVariant::Type::ByteArray);
     QVERIFY(sqlQuery.next());
 }
 
@@ -4250,7 +4250,7 @@ void tst_QSqlQuery::sqlite_real()
     QVERIFY_SQL(q, exec("SELECT realVal FROM " + tableName));
     QVERIFY(q.next());
     QCOMPARE(q.value(0).toDouble(), 2.3);
-    QCOMPARE(q.record().field(0).type(), QVariant::Double);
+    QCOMPARE(q.record().field(0).metaType().id(), QVariant::Double);
 
     q.prepare("INSERT INTO " + tableName + " (id, realVal) VALUES (?, ?)");
     QVariant var((double)5.6);
@@ -4292,9 +4292,9 @@ void tst_QSqlQuery::aggregateFunctionTypes()
         QVERIFY_SQL(q, exec("SELECT SUM(id) FROM " + tableName));
         QVERIFY(q.next());
         if (dbType == QSqlDriver::SQLite)
-            QCOMPARE(q.record().field(0).type(), QVariant::Invalid);
+            QCOMPARE(q.record().field(0).metaType().id(), QVariant::Invalid);
         else
-            QCOMPARE(q.record().field(0).type(), sumType);
+            QCOMPARE(q.record().field(0).metaType().id(), sumType);
 
         QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id) VALUES (1)"));
         QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id) VALUES (2)"));
@@ -4302,33 +4302,33 @@ void tst_QSqlQuery::aggregateFunctionTypes()
         QVERIFY_SQL(q, exec("SELECT SUM(id) FROM " + tableName));
         QVERIFY(q.next());
         QCOMPARE(q.value(0).toInt(), 3);
-        QCOMPARE(q.record().field(0).type(), sumType);
+        QCOMPARE(q.record().field(0).metaType().id(), sumType);
 
         QVERIFY_SQL(q, exec("SELECT AVG(id) FROM " + tableName));
         QVERIFY(q.next());
         if (dbType == QSqlDriver::SQLite || dbType == QSqlDriver::PostgreSQL || dbType == QSqlDriver::MySqlServer
             || dbType == QSqlDriver::Oracle) {
             QCOMPARE(q.value(0).toDouble(), 1.5);
-            QCOMPARE(q.record().field(0).type(), QVariant::Double);
+            QCOMPARE(q.record().field(0).metaType().id(), QVariant::Double);
         } else {
             QCOMPARE(q.value(0).toInt(), 1);
-            QCOMPARE(q.record().field(0).type(), QVariant::Int);
+            QCOMPARE(q.record().field(0).metaType().id(), QVariant::Int);
         }
 
         QVERIFY_SQL(q, exec("SELECT COUNT(id) FROM " + tableName));
         QVERIFY(q.next());
         QCOMPARE(q.value(0).toInt(), 2);
-        QCOMPARE(q.record().field(0).type(), countType);
+        QCOMPARE(q.record().field(0).metaType().id(), countType);
 
         QVERIFY_SQL(q, exec("SELECT MIN(id) FROM " + tableName));
         QVERIFY(q.next());
         QCOMPARE(q.value(0).toInt(), 1);
-        QCOMPARE(q.record().field(0).type(), intType);
+        QCOMPARE(q.record().field(0).metaType().id(), intType);
 
         QVERIFY_SQL(q, exec("SELECT MAX(id) FROM " + tableName));
         QVERIFY(q.next());
         QCOMPARE(q.value(0).toInt(), 2);
-        QCOMPARE(q.record().field(0).type(), intType);
+        QCOMPARE(q.record().field(0).metaType().id(), intType);
     }
     {
         const QString tableName(qTableName("numericFunctionsWithDoubleValues", __FILE__, db));
@@ -4341,9 +4341,9 @@ void tst_QSqlQuery::aggregateFunctionTypes()
         QVERIFY_SQL(q, exec("SELECT SUM(id) FROM " + tableName));
         QVERIFY(q.next());
         if (dbType == QSqlDriver::SQLite)
-            QCOMPARE(q.record().field(0).type(), QVariant::Invalid);
+            QCOMPARE(q.record().field(0).metaType().id(), QVariant::Invalid);
         else
-            QCOMPARE(q.record().field(0).type(), QVariant::Double);
+            QCOMPARE(q.record().field(0).metaType().id(), QVariant::Double);
 
         QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id) VALUES (1.5)"));
         QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id) VALUES (2.5)"));
@@ -4351,27 +4351,27 @@ void tst_QSqlQuery::aggregateFunctionTypes()
         QVERIFY_SQL(q, exec("SELECT SUM(id) FROM " + tableName));
         QVERIFY(q.next());
         QCOMPARE(q.value(0).toDouble(), 4.0);
-        QCOMPARE(q.record().field(0).type(), QVariant::Double);
+        QCOMPARE(q.record().field(0).metaType().id(), QVariant::Double);
 
         QVERIFY_SQL(q, exec("SELECT AVG(id) FROM " + tableName));
         QVERIFY(q.next());
         QCOMPARE(q.value(0).toDouble(), 2.0);
-        QCOMPARE(q.record().field(0).type(), QVariant::Double);
+        QCOMPARE(q.record().field(0).metaType().id(), QVariant::Double);
 
         QVERIFY_SQL(q, exec("SELECT COUNT(id) FROM " + tableName));
         QVERIFY(q.next());
         QCOMPARE(q.value(0).toInt(), 2);
-        QCOMPARE(q.record().field(0).type(), countType);
+        QCOMPARE(q.record().field(0).metaType().id(), countType);
 
         QVERIFY_SQL(q, exec("SELECT MIN(id) FROM " + tableName));
         QVERIFY(q.next());
         QCOMPARE(q.value(0).toDouble(), 1.5);
-        QCOMPARE(q.record().field(0).type(), QVariant::Double);
+        QCOMPARE(q.record().field(0).metaType().id(), QVariant::Double);
 
         QVERIFY_SQL(q, exec("SELECT MAX(id) FROM " + tableName));
         QVERIFY(q.next());
         QCOMPARE(q.value(0).toDouble(), 2.5);
-        QCOMPARE(q.record().field(0).type(), QVariant::Double);
+        QCOMPARE(q.record().field(0).metaType().id(), QVariant::Double);
 
         QString field = "id";
 
@@ -4383,7 +4383,7 @@ void tst_QSqlQuery::aggregateFunctionTypes()
         QVERIFY_SQL(q, exec("SELECT ROUND(" + field + ", 1) FROM " + tableName + " WHERE id=1.5"));
         QVERIFY(q.next());
         QCOMPARE(q.value(0).toDouble(), 1.5);
-        QCOMPARE(q.record().field(0).type(), QVariant::Double);
+        QCOMPARE(q.record().field(0).metaType().id(), QVariant::Double);
 
         QVERIFY_SQL(q, exec("SELECT ROUND(" + field + ", 0) FROM " + tableName + " WHERE id=2.5"));
         QVERIFY(q.next());
@@ -4391,7 +4391,7 @@ void tst_QSqlQuery::aggregateFunctionTypes()
             QCOMPARE(q.value(0).toDouble(), 2.0);
         else
             QCOMPARE(q.value(0).toDouble(), 3.0);
-        QCOMPARE(q.record().field(0).type(), QVariant::Double);
+        QCOMPARE(q.record().field(0).metaType().id(), QVariant::Double);
     }
     {
         const QString tableName(qTableName("stringFunctions", __FILE__, db));
@@ -4403,9 +4403,9 @@ void tst_QSqlQuery::aggregateFunctionTypes()
         QVERIFY_SQL(q, exec("SELECT MAX(txt) FROM " + tableName));
         QVERIFY(q.next());
         if (dbType == QSqlDriver::SQLite)
-            QCOMPARE(q.record().field(0).type(), QVariant::Invalid);
+            QCOMPARE(q.record().field(0).metaType().id(), QVariant::Invalid);
         else
-            QCOMPARE(q.record().field(0).type(), QVariant::String);
+            QCOMPARE(q.record().field(0).metaType().id(), QVariant::String);
 
         QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id, txt) VALUES (1, 'lower')"));
         QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id, txt) VALUES (2, 'upper')"));
@@ -4413,7 +4413,7 @@ void tst_QSqlQuery::aggregateFunctionTypes()
         QVERIFY_SQL(q, exec("SELECT MAX(txt) FROM " + tableName));
         QVERIFY(q.next());
         QCOMPARE(q.value(0).toString(), QLatin1String("upper"));
-        QCOMPARE(q.record().field(0).type(), QVariant::String);
+        QCOMPARE(q.record().field(0).metaType().id(), QVariant::String);
     }
 }
 
@@ -4456,9 +4456,9 @@ void runIntegralTypesMysqlTest(QSqlDatabase &db, const QString &tableName, const
         QVariant value = q.value(0);
         actualVariantValues << value;
         actualValues << value.value<T>();
-        QVERIFY(actualVariantValues.last().userType() != qMetaTypeId<char>());
-        QVERIFY(actualVariantValues.last().userType() != qMetaTypeId<signed char>());
-        QVERIFY(actualVariantValues.last().userType() != qMetaTypeId<unsigned char>());
+        QVERIFY(actualVariantValues.last().metaType().id() != qMetaTypeId<char>());
+        QVERIFY(actualVariantValues.last().metaType().id() != qMetaTypeId<signed char>());
+        QVERIFY(actualVariantValues.last().metaType().id() != qMetaTypeId<unsigned char>());
     }
     QCOMPARE(actualValues, values);
     QCOMPARE(actualVariantValues, variantValues);

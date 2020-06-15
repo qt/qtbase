@@ -417,9 +417,9 @@ void tst_QSqlQueryModel::record()
     QCOMPARE(rec.fieldName(0), isToUpper ? QString("ID") : QString("id"));
     QCOMPARE(rec.fieldName(1), isToUpper ? QString("NAME") : QString("name"));
     QCOMPARE(rec.fieldName(2), isToUpper ? QString("TITLE") : QString("title"));
-    QCOMPARE(rec.value(0), QVariant(rec.field(0).type()));
-    QCOMPARE(rec.value(1), QVariant(rec.field(1).type()));
-    QCOMPARE(rec.value(2), QVariant(rec.field(2).type()));
+    QCOMPARE(rec.value(0), QVariant(rec.field(0).metaType()));
+    QCOMPARE(rec.value(1), QVariant(rec.field(1).metaType()));
+    QCOMPARE(rec.value(2), QVariant(rec.field(2).metaType()));
 
     rec = model.record(0);
     QCOMPARE(rec.fieldName(0), isToUpper ? QString("ID") : QString("id"));

@@ -634,7 +634,7 @@ QVariant QPSQLResult::data(int i)
     int ptype = PQftype(d->result, i);
     QVariant::Type type = qDecodePSQLType(ptype);
     if (PQgetisnull(d->result, currentRow, i))
-        return QVariant(type);
+        return QVariant(QMetaType(type), nullptr);
     const char *val = PQgetvalue(d->result, currentRow, i);
     switch (type) {
     case QVariant::Bool:
@@ -805,8 +805,8 @@ QSqlRecord QPSQLResult::record() const
             f.setTableName(QString());
         }
         int ptype = PQftype(d->result, i);
-        f.setType(qDecodePSQLType(ptype));
-        f.setValue(QVariant(f.type())); // only set in setType() when it's invalid before
+        f.setMetaType(QMetaType(qDecodePSQLType(ptype)));
+        f.setValue(QVariant(f.metaType())); // only set in setType() when it's invalid before
         int len = PQfsize(d->result, i);
         int precision = PQfmod(d->result, i);
 
@@ -856,7 +856,7 @@ static QString qCreateParamString(const QList<QVariant> &boundValues, const QSql
     QString params;
     QSqlField f;
     for (const QVariant &val : boundValues) {
-        f.setType(val.type());
+        f.setMetaType(val.metaType());
         if (val.isNull())
             f.clear();
         else
@@ -1476,7 +1476,7 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
     if (field.isNull()) {
         r = nullStr();
     } else {
-        switch (int(field.type())) {
+        switch (field.metaType().id()) {
         case QVariant::DateTime:
 #if QT_CONFIG(datestring)
             if (field.value().toDateTime().isValid()) {

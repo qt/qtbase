@@ -631,7 +631,7 @@ bool QSqlResult::exec()
         for (i = d->holders.count() - 1; i >= 0; --i) {
             holder = d->holders.at(i).holderName;
             val = d->values.value(d->indexes.value(holder).value(0,-1));
-            QSqlField f(QLatin1String(""), QVariant::Type(val.userType()));
+            QSqlField f(QLatin1String(""), val.metaType());
             f.setValue(val);
             query = query.replace(d->holders.at(i).holderPos,
                                    holder.length(), driver()->formatValue(f));
@@ -645,7 +645,7 @@ bool QSqlResult::exec()
             if (i == -1)
                 continue;
             QVariant var = d->values.value(idx);
-            QSqlField f(QLatin1String(""), QVariant::Type(var.userType()));
+            QSqlField f(QLatin1String(""), var.metaType());
             if (var.isNull())
                 f.clear();
             else

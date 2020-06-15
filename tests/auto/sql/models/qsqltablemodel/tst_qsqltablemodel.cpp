@@ -956,9 +956,9 @@ void tst_QSqlTableModel::insertMultiRecords()
 
     QVERIFY(model.insertRow(2));
 
-    QCOMPARE(model.data(model.index(2, 0)), QVariant(model.record().field(0).type()));
-    QCOMPARE(model.data(model.index(2, 1)), QVariant(model.record().field(1).type()));
-    QCOMPARE(model.data(model.index(2, 2)), QVariant(model.record().field(2).type()));
+    QCOMPARE(model.data(model.index(2, 0)), QVariant(model.record().field(0).metaType()));
+    QCOMPARE(model.data(model.index(2, 1)), QVariant(model.record().field(1).metaType()));
+    QCOMPARE(model.data(model.index(2, 2)), QVariant(model.record().field(2).metaType()));
 
     QVERIFY(model.insertRow(3));
     QVERIFY(model.insertRow(0));

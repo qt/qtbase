@@ -134,7 +134,7 @@ void tst_QSqlField::clear_data()
 
 void tst_QSqlField::clear()
 {
-    QSqlField field( "Testfield", QVariant::Int );
+    QSqlField field( "Testfield", QMetaType(QMetaType::Int) );
     QFETCH( int, val );
     field.setValue( val );
     field.setReadOnly(true);
@@ -142,7 +142,7 @@ void tst_QSqlField::clear()
     QVERIFY( field.value() == val );
     QVERIFY( !field.isNull() );
 
-    QSqlField bfield( "Testfield", QVariant::Bool );
+    QSqlField bfield( "Testfield", QMetaType(QMetaType::Bool) );
     QFETCH( bool, bval );
     bfield.setValue( QVariant(bval) );
     bfield.setReadOnly(true);
@@ -151,7 +151,7 @@ void tst_QSqlField::clear()
     QVERIFY( bfield.value() == QVariant(bval) );
     QVERIFY( !bfield.isNull() );
 
-    QSqlField ffield( "Testfield", QVariant::Double );
+    QSqlField ffield( "Testfield", QMetaType(QMetaType::Double) );
     QFETCH( double, fval );
     ffield.setValue( fval );
     ffield.setReadOnly(true);
@@ -159,7 +159,7 @@ void tst_QSqlField::clear()
     QVERIFY( ffield.value() == fval );
     QVERIFY( !ffield.isNull() );
 
-    QSqlField sfield( "Testfield", QVariant::String );
+    QSqlField sfield( "Testfield", QMetaType(QMetaType::QString) );
     QFETCH( QString, strVal );
     sfield.setValue( strVal );
     sfield.setReadOnly(true);
@@ -170,13 +170,13 @@ void tst_QSqlField::clear()
 
 void tst_QSqlField::isNull()
 {
-    QSqlField field( "test", QVariant::String );
+    QSqlField field( "test", QMetaType(QMetaType::QString) );
     QVERIFY( field.isNull() );
 }
 
 void tst_QSqlField::isReadOnly()
 {
-    QSqlField field( "test", QVariant::String );
+    QSqlField field( "test", QMetaType(QMetaType::QString) );
     QVERIFY( !field.isReadOnly() );
     field.setReadOnly( true );
     QVERIFY( field.isReadOnly() );
@@ -196,7 +196,7 @@ void tst_QSqlField::name_data()
 
 void tst_QSqlField::name()
 {
-    QSqlField field( "test", QVariant::String );
+    QSqlField field( "test", QMetaType(QMetaType::QString) );
     QFETCH( QString, val );
     QCOMPARE(field.name(), QLatin1String("test"));
     field.setName( val );
@@ -205,28 +205,28 @@ void tst_QSqlField::name()
 
 void tst_QSqlField::operator_Assign()
 {
-    QSqlField field1( "test", QVariant::String );
+    QSqlField field1( "test", QMetaType(QMetaType::QString) );
     field1.setValue( "Harry" );
     field1.setReadOnly( true );
     QSqlField field2 = field1;
     QVERIFY( field1 == field2 );
-    QSqlField field3( "test", QVariant::Double );
+    QSqlField field3( "test", QMetaType(QMetaType::Double) );
     field3.clear();
     field1 = field3;
     QVERIFY( field1 == field3 );
-    QSqlField field4("test", QVariant::String, "ATable");
+    QSqlField field4("test", QMetaType(QMetaType::QString), "ATable");
     field1 = field4;
     QVERIFY(field1 == field4);
 }
 
 void tst_QSqlField::operator_Equal()
 {
-    QSqlField field1( "test", QVariant::String );
-    QSqlField field2( "test2", QVariant::String );
-    QSqlField field3( "test", QVariant::Int );
-    QSqlField field4("test", QVariant::String, QString("ATable"));
-    QSqlField field5("test2", QVariant::String, QString("ATable"));
-    QSqlField field6("test", QVariant::String, QString("BTable"));
+    QSqlField field1( "test", QMetaType(QMetaType::QString) );
+    QSqlField field2( "test2", QMetaType(QMetaType::QString) );
+    QSqlField field3( "test", QMetaType(QMetaType::Int) );
+    QSqlField field4("test", QMetaType(QMetaType::QString), QString("ATable"));
+    QSqlField field5("test2", QMetaType(QMetaType::QString), QString("ATable"));
+    QSqlField field6("test", QMetaType(QMetaType::QString), QString("BTable"));
 
     QVERIFY( !(field1 == field2) );
     QVERIFY( !(field1 == field3) );
@@ -265,7 +265,7 @@ void tst_QSqlField::setName_data()
 
 void tst_QSqlField::setName()
 {
-    QSqlField field( "test", QVariant::String );
+    QSqlField field( "test", QMetaType(QMetaType::QString) );
     QFETCH( QString, val );
     QCOMPARE(field.name(), QLatin1String("test"));
     field.setName( val );
@@ -274,7 +274,7 @@ void tst_QSqlField::setName()
 
 void tst_QSqlField::setNull()
 {
-    QSqlField field( "test", QVariant::String );
+    QSqlField field( "test", QMetaType(QMetaType::QString) );
     field.setValue( "test" );
     field.clear();
     QVERIFY( field.value() == QVariant().toString() );
@@ -283,7 +283,7 @@ void tst_QSqlField::setNull()
 
 void tst_QSqlField::setReadOnly()
 {
-    QSqlField field( "test", QVariant::String );
+    QSqlField field( "test", QMetaType(QMetaType::QString) );
     field.setValue( "test" );
     field.setReadOnly( true );
     field.setValue( "Harry" );
@@ -317,10 +317,10 @@ void tst_QSqlField::setValue_data()
 
 void tst_QSqlField::setValue()
 {
-    QSqlField field1 ( "test", QVariant::Int );
-    QSqlField field2 ( "test", QVariant::String );
-    QSqlField field3 ( "test", QVariant::Bool );
-    QSqlField field4 ( "test", QVariant::Double );
+    QSqlField field1 ( "test", QMetaType(QMetaType::Int) );
+    QSqlField field2 ( "test", QMetaType(QMetaType::QString) );
+    QSqlField field3 ( "test", QMetaType(QMetaType::Bool) );
+    QSqlField field4 ( "test", QMetaType(QMetaType::Double) );
     field1.clear();
     QFETCH( int, ival );
     QFETCH( QString, sval );
@@ -344,12 +344,12 @@ void tst_QSqlField::setValue()
 
 void tst_QSqlField::type()
 {
-    QSqlField field1( "string", QVariant::String );
-    QSqlField field2( "string", QVariant::Bool );
-    QSqlField field3( "string", QVariant::Double );
-    QVERIFY( field1.type() == QVariant::String );
-    QVERIFY( field2.type() == QVariant::Bool );
-    QVERIFY( field3.type() == QVariant::Double );
+    QSqlField field1( "string", QMetaType(QMetaType::QString) );
+    QSqlField field2( "string", QMetaType(QMetaType::Bool) );
+    QSqlField field3( "string", QMetaType(QMetaType::Double) );
+    QVERIFY( field1.metaType() == QMetaType(QMetaType::QString) );
+    QVERIFY( field2.metaType() == QMetaType(QMetaType::Bool) );
+    QVERIFY( field3.metaType() == QMetaType(QMetaType::Double) );
 }
 
 void tst_QSqlField::setTableName_data()
@@ -362,7 +362,7 @@ void tst_QSqlField::setTableName_data()
 
 void tst_QSqlField::setTableName()
 {
-    QSqlField field("test", QVariant::String, "test");
+    QSqlField field("test", QMetaType(QMetaType::QString), "test");
     QFETCH(QString, tableName);
     QCOMPARE(field.tableName(), QLatin1String("test"));
     field.setTableName(tableName);

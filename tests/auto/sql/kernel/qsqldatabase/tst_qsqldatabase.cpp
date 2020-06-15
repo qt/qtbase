@@ -582,17 +582,17 @@ void tst_QSqlDatabase::whitespaceInIdentifiers()
         QCOMPARE(rec.count(), 1);
         QCOMPARE(rec.fieldName(0), QString("test test"));
         if (dbType == QSqlDriver::Oracle)
-            QCOMPARE(rec.field(0).type(), QVariant::Double);
+            QCOMPARE(rec.field(0).metaType(), QMetaType(QMetaType::Double));
         else
-            QCOMPARE(rec.field(0).type(), QVariant::Int);
+            QCOMPARE(rec.field(0).metaType(), QMetaType(QMetaType::Int));
 
         QSqlIndex idx = db.primaryIndex(tableName);
         QCOMPARE(idx.count(), 1);
         QCOMPARE(idx.fieldName(0), QString("test test"));
         if (dbType == QSqlDriver::Oracle)
-            QCOMPARE(idx.field(0).type(), QVariant::Double);
+            QCOMPARE(idx.field(0).metaType(), QMetaType(QMetaType::Double));
         else
-            QCOMPARE(idx.field(0).type(), QVariant::Int);
+            QCOMPARE(idx.field(0).metaType(), QMetaType(QMetaType::Int));
     } else {
         QSKIP("DBMS does not support whitespaces in identifiers");
     }
@@ -644,8 +644,8 @@ void tst_QSqlDatabase::record()
     CHECK_DATABASE(db);
 
     static const FieldDef fieldDefs[] = {
-        FieldDef("char(20)", QVariant::String,         QString("blah1"), false),
-        FieldDef("varchar(20)", QVariant::String,      QString("blah2"), false),
+        FieldDef("char(20)", QMetaType(QMetaType::String),         QString("blah1"), false),
+        FieldDef("varchar(20)", QMetaType(QMetaType::String),      QString("blah2"), false),
         FieldDef()
     };
 
@@ -663,10 +663,10 @@ void tst_QSqlDatabase::testRecord(const FieldDef fieldDefs[], const QSqlRecord& 
         QVERIFY2(inf.field(i).isAutoValue(), qPrintable(inf.field(i).name() + " should be reporting as an autovalue"));
     for (i = 0; !fieldDefs[ i ].typeName.isNull(); ++i) {
         QCOMPARE(inf.field(i+1).name().toUpper(), fieldDefs[ i ].fieldName().toUpper());
-        if (inf.field(i+1).type() != fieldDefs[ i ].type) {
+        if (inf.field(i+1).metaType().id() != int(fieldDefs[ i ].type)) {
             QFAIL(qPrintable(QString(" Expected: '%1' Received: '%2' for field %3 in testRecord").arg(
-              QVariant::typeToName(fieldDefs[ i ].type)).arg(
-            QVariant::typeToName(inf.field(i+1).type())).arg(
+              QMetaType(fieldDefs[ i ].type).name()).arg(
+              inf.field(i+1).metaType().name()).arg(
               fieldDefs[ i ].fieldName())));
         }
         QVERIFY(!inf.field(i+1).isAutoValue());
@@ -681,7 +681,7 @@ void tst_QSqlDatabase::commonFieldTest(const FieldDef fieldDefs[], QSqlDatabase 
     CHECK_DATABASE(db);
     const QStringList tableNames = { qTableName("qtestfields", __FILE__, db),
                                      qTableName("qtestfields", __FILE__, db, false) };
-    for (const QString table : tableNames) {
+    for (const QString &table : tableNames) {
         QSqlRecord rec = db.record(table);
         QCOMPARE(rec.count(), fieldCount + 1);
         testRecord(fieldDefs, rec, db);
@@ -1316,8 +1316,8 @@ void tst_QSqlDatabase::psql_escapedIdentifiers()
     QVERIFY(db.tables().contains(qTableName(bumpyCase, __FILE__, db, false) + '.' +
                                  qTableName("qtest", __FILE__, db, false), Qt::CaseSensitive));
 
-    QSqlField fld1(field1Name, QVariant::Int);
-    QSqlField fld2(field2Name, QVariant::String);
+    QSqlField fld1(field1Name, QMetaType(QMetaType::Int));
+    QSqlField fld2(field2Name, QMetaType(QMetaType::QString));
     QSqlRecord rec;
     rec.append(fld1);
     rec.append(fld2);
@@ -1330,7 +1330,7 @@ void tst_QSqlDatabase::psql_escapedIdentifiers()
     QCOMPARE(rec.count(), 2);
     QCOMPARE(rec.fieldName(0), field1Name);
     QCOMPARE(rec.fieldName(1), field2Name);
-    QCOMPARE(rec.field(0).type(), QVariant::Int);
+    QCOMPARE(rec.field(0).metaType(), QMetaType(QMetaType::Int));
 
     q.exec(QString("DROP SCHEMA %1 CASCADE").arg(schemaName));
 }
@@ -1433,14 +1433,14 @@ void tst_QSqlDatabase::precisionPolicy()
     QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
     if (dbType == QSqlDriver::SQLite)
         QEXPECT_FAIL("", "SQLite returns this value as determined by contents of the field, not the declaration", Continue);
-    QCOMPARE(q.value(0).type(), QVariant::String);
+    QCOMPARE(q.value(0).metaType(), QMetaType(QMetaType::QString));
 
     q.setNumericalPrecisionPolicy(QSql::LowPrecisionInt64);
     QVERIFY_SQL(q, exec(query));
     QVERIFY_SQL(q, next());
-    if(q.value(0).type() != QVariant::LongLong)
+    if(q.value(0).metaType() != QMetaType(QMetaType::LongLong))
         QEXPECT_FAIL("", "SQLite returns this value as determined by contents of the field, not the declaration", Continue);
-    QCOMPARE(q.value(0).type(), QVariant::LongLong);
+    QCOMPARE(q.value(0).metaType(), QMetaType(QMetaType::LongLong));
     QCOMPARE(q.value(0).toLongLong(), (qlonglong)123);
 
     q.setNumericalPrecisionPolicy(QSql::LowPrecisionInt32);
@@ -1448,7 +1448,7 @@ void tst_QSqlDatabase::precisionPolicy()
     QVERIFY_SQL(q, next());
     if (dbType == QSqlDriver::SQLite)
         QEXPECT_FAIL("", "SQLite returns this value as determined by contents of the field, not the declaration", Continue);
-    QCOMPARE(q.value(0).type(), QVariant::Int);
+    QCOMPARE(q.value(0).metaType(), QMetaType(QMetaType::Int));
     QCOMPARE(q.value(0).toInt(), 123);
 
     q.setNumericalPrecisionPolicy(QSql::LowPrecisionDouble);
@@ -1456,7 +1456,7 @@ void tst_QSqlDatabase::precisionPolicy()
     QVERIFY_SQL(q, next());
     if (dbType == QSqlDriver::SQLite)
         QEXPECT_FAIL("", "SQLite returns this value as determined by contents of the field, not the declaration", Continue);
-    QCOMPARE(q.value(0).type(), QVariant::Double);
+    QCOMPARE(q.value(0).metaType(), QMetaType(QMetaType::Double));
     QCOMPARE(q.value(0).toDouble(), (double)123);
 
     query = QString("SELECT num FROM %1 WHERE id = 2").arg(tableName);
@@ -1464,7 +1464,7 @@ void tst_QSqlDatabase::precisionPolicy()
     QVERIFY_SQL(q, next());
     if (dbType == QSqlDriver::SQLite)
         QEXPECT_FAIL("", "SQLite returns this value as determined by contents of the field, not the declaration", Continue);
-    QCOMPARE(q.value(0).type(), QVariant::Double);
+    QCOMPARE(q.value(0).metaType(), QMetaType(QMetaType::Double));
     QCOMPARE(q.value(0).toDouble(), QString("1850000000000.0001").toDouble());
 
     // Postgres returns invalid QVariants on overflow
@@ -1473,13 +1473,13 @@ void tst_QSqlDatabase::precisionPolicy()
     QVERIFY_SQL(q, next());
     if (dbType == QSqlDriver::SQLite)
         QEXPECT_FAIL("", "SQLite returns this value as determined by contents of the field, not the declaration", Continue);
-    QCOMPARE(q.value(0).type(), QVariant::String);
+    QCOMPARE(q.value(0).metaType(), QMetaType(QMetaType::QString));
 
     q.setNumericalPrecisionPolicy(QSql::LowPrecisionInt64);
     QEXPECT_FAIL("QOCI", "Oracle fails here, to retrieve next", Continue);
     QVERIFY_SQL(q, exec(query));
     QVERIFY_SQL(q, next());
-    QCOMPARE(q.value(0).type(), QVariant::LongLong);
+    QCOMPARE(q.value(0).metaType(), QMetaType(QMetaType::LongLong));
 
     QSql::NumericalPrecisionPolicy oldPrecision= db.numericalPrecisionPolicy();
     db.setNumericalPrecisionPolicy(QSql::LowPrecisionInt64);
@@ -1487,7 +1487,7 @@ void tst_QSqlDatabase::precisionPolicy()
     q2.exec(QString("SELECT num FROM %1 WHERE id = 2").arg(tableName));
     QVERIFY_SQL(q2, exec(query));
     QVERIFY_SQL(q2, next());
-    QCOMPARE(q2.value(0).type(), QVariant::LongLong);
+    QCOMPARE(q2.value(0).metaType(), QMetaType(QMetaType::LongLong));
     db.setNumericalPrecisionPolicy(oldPrecision);
 }
 
@@ -1634,11 +1634,11 @@ void tst_QSqlDatabase::ibase_numericFields()
         QCOMPARE(q.value(2).toString(), QString("%1").arg(num2));
         QCOMPARE(QString("%1").arg(q.value(3).toDouble()), QString("%1").arg(num3));
         QCOMPARE(QString("%1").arg(q.value(4).toDouble()), QString("%1").arg(num4));
-        QCOMPARE(q.value(0).type(), QVariant::Int);
-        QCOMPARE(q.value(1).type(), QVariant::Double);
-        QCOMPARE(q.value(2).type(), QVariant::Double);
-        QCOMPARE(q.value(3).type(), QVariant::Double);
-        QCOMPARE(q.value(4).type(), QVariant::Double);
+        QCOMPARE(q.value(0).metaType(), QMetaType(QMetaType::Int));
+        QCOMPARE(q.value(1).metaType(), QMetaType(QMetaType::Double));
+        QCOMPARE(q.value(2).metaType(), QMetaType(QMetaType::Double));
+        QCOMPARE(q.value(3).metaType(), QMetaType(QMetaType::Double));
+        QCOMPARE(q.value(4).metaType(), QMetaType(QMetaType::Double));
 
         QCOMPARE(q.record().field(1).length(), 2);
         QCOMPARE(q.record().field(1).precision(), 1);
@@ -1653,11 +1653,11 @@ void tst_QSqlDatabase::ibase_numericFields()
     }
 
     QSqlRecord r = db.record(tableName);
-    QCOMPARE(r.field(0).type(), QVariant::Int);
-    QCOMPARE(r.field(1).type(), QVariant::Double);
-    QCOMPARE(r.field(2).type(), QVariant::Double);
-    QCOMPARE(r.field(3).type(), QVariant::Double);
-    QCOMPARE(r.field(4).type(), QVariant::Double);
+    QCOMPARE(r.field(0).metaType(), QMetaType(QMetaType::Int));
+    QCOMPARE(r.field(1).metaType(), QMetaType(QMetaType::Double));
+    QCOMPARE(r.field(2).metaType(), QMetaType(QMetaType::Double));
+    QCOMPARE(r.field(3).metaType(), QMetaType(QMetaType::Double));
+    QCOMPARE(r.field(4).metaType(), QMetaType(QMetaType::Double));
     QCOMPARE(r.field(1).length(), 2);
     QCOMPARE(r.field(1).precision(), 1);
     QCOMPARE(r.field(2).length(), 5);
@@ -2220,7 +2220,7 @@ void tst_QSqlDatabase::sqlite_bindAndFetchUInt()
 
     // All integers in SQLite are signed, so even though we bound the value
     // as an UInt it will come back as a LongLong
-    QCOMPARE(q.value(0).type(), QVariant::LongLong);
+    QCOMPARE(q.value(0).metaType(), QMetaType(QMetaType::LongLong));
     QCOMPARE(q.value(0).toUInt(), 4000000000U);
 }
 

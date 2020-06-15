@@ -173,7 +173,7 @@ public:
     {
         char *outField = nullptr;
         MYSQL_FIELD *myField = nullptr;
-        QMetaType::Type type = QMetaType::UnknownType;
+        QMetaType type = QMetaType();
         my_bool nullIndicator = false;
         ulong bufLength = 0ul;
     };
@@ -201,7 +201,7 @@ static QSqlError qMakeError(const QString& err, QSqlError::ErrorType type,
 }
 
 
-static QMetaType::Type qDecodeMYSQLType(int mysqltype, uint flags)
+static QMetaType qDecodeMYSQLType(int mysqltype, uint flags)
 {
     QMetaType::Type type;
     switch (mysqltype) {
@@ -256,13 +256,13 @@ static QMetaType::Type qDecodeMYSQLType(int mysqltype, uint flags)
         type = QMetaType::QString;
         break;
     }
-    return type;
+    return QMetaType(type);
 }
 
 static QSqlField qToField(MYSQL_FIELD *field)
 {
     QSqlField f(QString::fromUtf8(field->name),
-                QVariant::Type(qDecodeMYSQLType(int(field->type), field->flags)),
+                qDecodeMYSQLType(int(field->type), field->flags),
                 QString::fromUtf8(field->table));
     f.setRequired(IS_NOT_NULL(field->flags));
     f.setLength(field->length);
@@ -344,7 +344,7 @@ bool QMYSQLResultPrivate::bindInValues()
             // after mysql_stmt_exec() in QMYSQLResult::exec()
             fieldInfo->length = 0;
             hasBlobs = true;
-        } else if (qIsInteger(f.type)) {
+        } else if (qIsInteger(f.type.id())) {
             fieldInfo->length = 8;
         } else {
             fieldInfo->type = MYSQL_TYPE_STRING;
@@ -541,33 +541,33 @@ QVariant QMYSQLResult::data(int field)
     QString val;
     if (d->preparedQuery) {
         if (f.nullIndicator)
-            return QVariant(QVariant::Type(f.type));
+            return QVariant(f.type);
 
-        if (qIsInteger(f.type)) {
-            QVariant variant(QMetaType(f.type), f.outField);
+        if (qIsInteger(f.type.id())) {
+            QVariant variant(f.type, f.outField);
             // we never want to return char variants here, see QTBUG-53397
-            if (static_cast<int>(f.type) == QMetaType::UChar)
+            if (f.type.id() == QMetaType::UChar)
                 return variant.toUInt();
-            else if (static_cast<int>(f.type) == QMetaType::Char)
+            else if (f.type.id() == QMetaType::Char)
                 return variant.toInt();
             return variant;
         }
 
-        if (f.type != QMetaType::QByteArray)
+        if (f.type.id() != QMetaType::QByteArray)
             val = QString::fromUtf8(f.outField, f.bufLength);
     } else {
         if (d->row[field] == NULL) {
             // NULL value
-            return QVariant(QVariant::Type(f.type));
+            return QVariant(f.type);
         }
 
         fieldLength = mysql_fetch_lengths(d->result)[field];
 
-        if (f.type != QMetaType::QByteArray)
+        if (f.type.id() != QMetaType::QByteArray)
             val = QString::fromUtf8(d->row[field], fieldLength);
     }
 
-    switch (static_cast<int>(f.type)) {
+    switch (f.type.id()) {
     case QMetaType::LongLong:
         return QVariant(val.toLongLong());
     case QMetaType::ULongLong:
@@ -1447,7 +1447,7 @@ QString QMYSQLDriver::formatValue(const QSqlField &field, bool trimStrings) cons
     if (field.isNull()) {
         r = QStringLiteral("NULL");
     } else {
-        switch (+field.type()) {
+        switch (field.metaType().id()) {
         case QMetaType::Double:
             r = QString::number(field.value().toDouble(), 'g', field.precision());
             break;

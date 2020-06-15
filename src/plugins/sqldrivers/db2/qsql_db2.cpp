@@ -702,7 +702,7 @@ bool QDB2Result::exec()
         if (bindValueType(i) & QSql::Out)
             values[i].detach();
 
-        switch (values.at(i).type()) {
+        switch (values.at(i).metaType().id()) {
             case QVariant::Date: {
                 QByteArray ba;
                 ba.resize(sizeof(DATE_STRUCT));
@@ -894,7 +894,7 @@ bool QDB2Result::exec()
         return true;
 
     for (i = 0; i < values.count(); ++i) {
-        switch (values[i].type()) {
+        switch (values[i].metaType().id()) {
             case QVariant::Date: {
                 DATE_STRUCT ds = *((DATE_STRUCT *)tmpStorage.takeFirst().constData());
                 values[i] = QVariant(QDate(ds.year, ds.month, ds.day));
@@ -921,7 +921,7 @@ bool QDB2Result::exec()
                 break; }
         }
         if (indicators[i] == SQL_NULL_DATA)
-            values[i] = QVariant(values[i].type());
+            values[i] = QVariant(values[i].metaType());
     }
     return true;
 }
@@ -1053,7 +1053,7 @@ QVariant QDB2Result::data(int field)
 
 
     QVariant* v = 0;
-    switch (info.type()) {
+    switch (info.metaType().id()) {
         case QVariant::LongLong:
             v = new QVariant((qint64) qGetBigIntData(d->hStmt, field, isNull));
             break;
@@ -1135,7 +1135,7 @@ QVariant QDB2Result::data(int field)
             break;
     }
     if (isNull)
-        *v = QVariant(info.type());
+        *v = QVariant(info.metaType());
     d->valueCache[field] = v;
     return *v;
 }
@@ -1687,7 +1687,7 @@ QString QDB2Driver::formatValue(const QSqlField &field, bool trimStrings) const
     if (field.isNull())
         return QLatin1String("NULL");
 
-    switch (field.type()) {
+    switch (field.metaType().id()) {
         case QVariant::DateTime: {
             // Use an escape sequence for the datetime fields
             if (field.value().toDateTime().isValid()) {

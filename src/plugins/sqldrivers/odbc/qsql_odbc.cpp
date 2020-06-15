@@ -341,49 +341,49 @@ static QSqlError qMakeError(const QString& err, QSqlError::ErrorType type,
                      nativeCode != -1 ? QString::number(nativeCode) : QString());
 }
 
-static QVariant::Type qDecodeODBCType(SQLSMALLINT sqltype, bool isSigned = true)
+static QMetaType qDecodeODBCType(SQLSMALLINT sqltype, bool isSigned = true)
 {
-    QVariant::Type type = QVariant::Invalid;
+    int type = QMetaType::UnknownType;
     switch (sqltype) {
     case SQL_DECIMAL:
     case SQL_NUMERIC:
     case SQL_REAL:
     case SQL_FLOAT:
     case SQL_DOUBLE:
-        type = QVariant::Double;
+        type = QMetaType::Double;
         break;
     case SQL_SMALLINT:
     case SQL_INTEGER:
     case SQL_BIT:
-        type = isSigned ? QVariant::Int : QVariant::UInt;
+        type = isSigned ? QMetaType::Int : QMetaType::UInt;
         break;
     case SQL_TINYINT:
-        type = QVariant::UInt;
+        type = QMetaType::UInt;
         break;
     case SQL_BIGINT:
-        type = isSigned ? QVariant::LongLong : QVariant::ULongLong;
+        type = isSigned ? QMetaType::LongLong : QMetaType::ULongLong;
         break;
     case SQL_BINARY:
     case SQL_VARBINARY:
     case SQL_LONGVARBINARY:
-        type = QVariant::ByteArray;
+        type = QMetaType::QByteArray;
         break;
     case SQL_DATE:
     case SQL_TYPE_DATE:
-        type = QVariant::Date;
+        type = QMetaType::QDate;
         break;
     case SQL_TIME:
     case SQL_TYPE_TIME:
-        type = QVariant::Time;
+        type = QMetaType::QTime;
         break;
     case SQL_TIMESTAMP:
     case SQL_TYPE_TIMESTAMP:
-        type = QVariant::DateTime;
+        type = QMetaType::QDateTime;
         break;
     case SQL_WCHAR:
     case SQL_WVARCHAR:
     case SQL_WLONGVARCHAR:
-        type = QVariant::String;
+        type = QMetaType::QString;
         break;
     case SQL_CHAR:
     case SQL_VARCHAR:
@@ -391,13 +391,13 @@ static QVariant::Type qDecodeODBCType(SQLSMALLINT sqltype, bool isSigned = true)
     case SQL_GUID:
 #endif
     case SQL_LONGVARCHAR:
-        type = QVariant::String;
+        type = QMetaType::QString;
         break;
     default:
-        type = QVariant::ByteArray;
+        type = QMetaType::QByteArray;
         break;
     }
-    return type;
+    return QMetaType(type);
 }
 
 static QString qGetStringData(SQLHANDLE hStmt, int column, int colSize, bool unicode = false)
@@ -554,7 +554,7 @@ static QVariant qGetBinaryData(SQLHANDLE hStmt, int column)
         if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO)
             break;
         if (lengthIndicator == SQL_NULL_DATA)
-            return QVariant(QVariant::ByteArray);
+            return QVariant(QMetaType(QVariant::ByteArray));
         if (lengthIndicator > SQLLEN(colSize) || lengthIndicator == SQL_NO_TOTAL) {
             read += colSize;
             colSize = 65536;
@@ -581,9 +581,9 @@ static QVariant qGetIntData(SQLHANDLE hStmt, int column, bool isSigned = true)
                               sizeof(intbuf),
                               &lengthIndicator);
     if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO)
-        return QVariant(QVariant::Invalid);
+        return QVariant();
     if (lengthIndicator == SQL_NULL_DATA)
-        return QVariant(QVariant::Int);
+        return QVariant(QMetaType::fromType<int>());
     if (isSigned)
         return int(intbuf);
     else
@@ -601,10 +601,10 @@ static QVariant qGetDoubleData(SQLHANDLE hStmt, int column)
                               0,
                               &lengthIndicator);
     if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO) {
-        return QVariant(QVariant::Invalid);
+        return QVariant();
     }
     if(lengthIndicator == SQL_NULL_DATA)
-        return QVariant(QVariant::Double);
+        return QVariant(QMetaType::fromType<double>());
 
     return (double) dblbuf;
 }
@@ -621,9 +621,9 @@ static QVariant qGetBigIntData(SQLHANDLE hStmt, int column, bool isSigned = true
                               sizeof(lngbuf),
                               &lengthIndicator);
     if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO)
-        return QVariant(QVariant::Invalid);
+        return QVariant();
     if (lengthIndicator == SQL_NULL_DATA)
-        return QVariant(QVariant::LongLong);
+        return QVariant(QMetaType::fromType<qlonglong>());
 
     if (isSigned)
         return qint64(lngbuf);
@@ -717,7 +717,7 @@ static QSqlField qMakeFieldInfo(const SQLHANDLE hStmt, int i, QString *errorMess
 
     const QString qColName(fromSQLTCHAR(colName, colNameLen));
     // nullable can be SQL_NO_NULLS, SQL_NULLABLE or SQL_NULLABLE_UNKNOWN
-    QVariant::Type type = qDecodeODBCType(colType, unsignedFlag == SQL_FALSE);
+    QMetaType type = qDecodeODBCType(colType, unsignedFlag == SQL_FALSE);
     QSqlField f(qColName, type);
     f.setSqlType(colType);
     f.setLength(colSize == 0 ? -1 : int(colSize));
@@ -1212,7 +1212,7 @@ QVariant QODBCResult::data(int field)
         // some servers do not support fetching column n after we already
         // fetched column n+1, so cache all previous columns here
         const QSqlField info = d->rInf.field(i);
-        switch (info.type()) {
+        switch (info.metaType().id()) {
         case QVariant::LongLong:
             d->fieldCache[i] = qGetBigIntData(d->hStmt, i);
         break;
@@ -1236,7 +1236,7 @@ QVariant QODBCResult::data(int field)
             if ((r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) && (lengthIndicator != SQL_NULL_DATA))
                 d->fieldCache[i] = QVariant(QDate(dbuf.year, dbuf.month, dbuf.day));
             else
-                d->fieldCache[i] = QVariant(QVariant::Date);
+                d->fieldCache[i] = QVariant(QMetaType::fromType<QDate>());
         break;
         case QVariant::Time:
             TIME_STRUCT tbuf;
@@ -1249,7 +1249,7 @@ QVariant QODBCResult::data(int field)
             if ((r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) && (lengthIndicator != SQL_NULL_DATA))
                 d->fieldCache[i] = QVariant(QTime(tbuf.hour, tbuf.minute, tbuf.second));
             else
-                d->fieldCache[i] = QVariant(QVariant::Time);
+                d->fieldCache[i] = QVariant(QMetaType::fromType<QTime>());
         break;
         case QVariant::DateTime:
             TIMESTAMP_STRUCT dtbuf;
@@ -1263,7 +1263,7 @@ QVariant QODBCResult::data(int field)
                 d->fieldCache[i] = QVariant(QDateTime(QDate(dtbuf.year, dtbuf.month, dtbuf.day),
                        QTime(dtbuf.hour, dtbuf.minute, dtbuf.second, dtbuf.fraction / 1000000)));
             else
-                d->fieldCache[i] = QVariant(QVariant::DateTime);
+                d->fieldCache[i] = QVariant(QMetaType::fromType<QDateTime>());
             break;
         case QVariant::ByteArray:
             d->fieldCache[i] = qGetBinaryData(d->hStmt, i);
@@ -1730,7 +1730,7 @@ bool QODBCResult::exec()
                 break; }
         }
         if (indicators[i] == SQL_NULL_DATA)
-            values[i] = QVariant(QVariant::Type(values[i].userType()));
+            values[i] = QVariant(values[i].metaType());
     }
     return true;
 }
@@ -2583,7 +2583,7 @@ QString QODBCDriver::formatValue(const QSqlField &field,
     QString r;
     if (field.isNull()) {
         r = QLatin1String("NULL");
-    } else if (field.type() == QVariant::DateTime) {
+    } else if (field.metaType().id() == QVariant::DateTime) {
         // Use an escape sequence for the datetime fields
         if (field.value().toDateTime().isValid()){
             QDate dt = field.value().toDateTime().date();
@@ -2599,7 +2599,7 @@ QString QODBCDriver::formatValue(const QSqlField &field,
                 QLatin1String("' }");
         } else
             r = QLatin1String("NULL");
-    } else if (field.type() == QVariant::ByteArray) {
+    } else if (field.metaType().id() == QVariant::ByteArray) {
         QByteArray ba = field.value().toByteArray();
         QString res;
         static const char hexchars[] = "0123456789abcdef";

@@ -117,9 +117,9 @@ int Dialog::addNewArtist(const QString &name)
 
     int id = generateArtistId();
 
-    QSqlField f1("id", QVariant::Int);
-    QSqlField f2("artist", QVariant::String);
-    QSqlField f3("albumcount", QVariant::Int);
+    QSqlField f1("id", QMetaType(QMetaType::Int));
+    QSqlField f2("artist", QMetaType(QMetaType::QString));
+    QSqlField f3("albumcount", QMetaType(QMetaType::Int));
 
     f1.setValue(QVariant(id));
     f2.setValue(QVariant(name));
@@ -137,10 +137,10 @@ int Dialog::addNewAlbum(const QString &title, int artistId)
     int id = generateAlbumId();
     QSqlRecord record;
 
-    QSqlField f1("albumid", QVariant::Int);
-    QSqlField f2("title", QVariant::String);
-    QSqlField f3("artistid", QVariant::Int);
-    QSqlField f4("year", QVariant::Int);
+    QSqlField f1("albumid", QMetaType(QMetaType::Int));
+    QSqlField f2("title", QMetaType(QMetaType::QString));
+    QSqlField f3("artistid", QMetaType(QMetaType::Int));
+    QSqlField f4("year", QMetaType(QMetaType::Int));
 
     f1.setValue(QVariant(id));
     f2.setValue(QVariant(title));

@@ -47,8 +47,8 @@ class QSqlFieldPrivate
 {
 public:
     QSqlFieldPrivate(const QString &name,
-                     QVariant::Type type, const QString &tableName) :
-        ref(1), nm(name), table(tableName), def(QVariant()), type(QMetaType::Type(type)),
+                     QMetaType type, const QString &tableName) :
+        ref(1), nm(name), table(tableName), def(QVariant()), type(type),
         req(QSqlField::Unknown), len(-1), prec(-1), tp(-1),
         ro(false), gen(true), autoval(false)
     {}
@@ -86,7 +86,7 @@ public:
     QString nm;
     QString table;
     QVariant def;
-    QMetaType::Type type;
+    QMetaType type;
     QSqlField::RequiredStatus req;
     int len;
     int prec;
@@ -155,18 +155,17 @@ public:
 */
 
 /*!
+    \fn QSqlField::QSqlField(const QString &fieldName, QVariant::Type type)
+
     Constructs an empty field called \a fieldName of variant type \a type.
 
     \sa setRequiredStatus(), setLength(), setPrecision(), setDefaultValue(),
         setGenerated(), setReadOnly()
 */
-QSqlField::QSqlField(const QString &fieldName, QVariant::Type type)
-{
-    d = new QSqlFieldPrivate(fieldName, type, QString());
-    val = QVariant(type);
-}
 
 /*!
+    \fn QSqlField::QSqlField(const QString &fieldName, QVariant::Type type, const QString &table)
+
     \overload
     Constructs an empty field called \a fieldName of variant type \a
     type in \a table.
@@ -174,11 +173,35 @@ QSqlField::QSqlField(const QString &fieldName, QVariant::Type type)
     \sa setRequiredStatus(), setLength(), setPrecision(), setDefaultValue(),
         setGenerated(), setReadOnly()
 */
-QSqlField::QSqlField(const QString &fieldName, QVariant::Type type,
-                     const QString &table)
+
+/*!
+    \fn QSqlField::QSqlField(const QString &fieldName, QVariant::Type type)
+
+    Constructs an empty field called \a fieldName of type \a type.
+
+    \sa setRequiredStatus(), setLength(), setPrecision(), setDefaultValue(),
+        setGenerated(), setReadOnly()
+*/
+QSqlField::QSqlField(const QString &fieldName, QMetaType type)
+{
+    d = new QSqlFieldPrivate(fieldName, type, QString());
+    val = QVariant(QMetaType(type), nullptr);
+}
+
+/*!
+    \fn QSqlField::QSqlField(const QString &fieldName, QVariant::Type type, const QString &table)
+
+    \overload
+    Constructs an empty field called \a fieldName of type \a
+    type in \a table.
+
+    \sa setRequiredStatus(), setLength(), setPrecision(), setDefaultValue(),
+        setGenerated(), setReadOnly()
+*/
+QSqlField::QSqlField(const QString &fieldName, QMetaType type, const QString &table)
 {
     d = new QSqlFieldPrivate(fieldName, type, table);
-    val = QVariant(type);
+    val = QVariant(QMetaType(type), nullptr);
 }
 
 /*!
@@ -344,7 +367,7 @@ void QSqlField::clear()
 {
     if (isReadOnly())
         return;
-    val = QVariant(type());
+    val = QVariant(d->type, nullptr);
 }
 
 /*!
@@ -397,9 +420,9 @@ QString QSqlField::name() const
 
     \sa setType()
 */
-QVariant::Type QSqlField::type() const
+QMetaType QSqlField::metaType() const
 {
-    return QVariant::Type(d->type);
+    return d->type;
 }
 
 /*!
@@ -408,13 +431,35 @@ QVariant::Type QSqlField::type() const
     \sa type(), setRequiredStatus(), setLength(), setPrecision(),
         setDefaultValue(), setGenerated(), setReadOnly()
 */
-void QSqlField::setType(QVariant::Type type)
+void QSqlField::setMetaType(QMetaType type)
 {
     detach();
-    d->type = QMetaType::Type(type);
+    d->type = type;
     if (!val.isValid())
-        val = QVariant(type);
+        val = QVariant(type, nullptr);
 }
+
+/*!
+    \fn QVariant::Type QSqlField::type() const
+    \obsolete Use metaType() instead.
+
+    Returns the field's type as stored in the database.
+    Note that the actual value might have a different type,
+    Numerical values that are too large to store in a long
+    int or double are usually stored as strings to prevent
+    precision loss.
+
+    \sa metaType()
+*/
+
+/*!
+    \fn void QSqlField::setType(QVariant::Type type)
+    \obsolete Use setMetaType() instead.
+
+    Set's the field's variant type to \a type.
+
+    \sa setMetaType()
+*/
 
 /*!
     Returns \c true if the field's value is read-only; otherwise returns
@@ -525,7 +570,7 @@ bool QSqlField::isGenerated() const
 */
 bool QSqlField::isValid() const
 {
-    return d->type != QMetaType::UnknownType;
+    return d->type.isValid();
 }
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -533,7 +578,7 @@ QDebug operator<<(QDebug dbg, const QSqlField &f)
 {
     QDebugStateSaver saver(dbg);
     dbg.nospace();
-    dbg << "QSqlField(" << f.name() << ", " << QMetaType::typeName(f.type());
+    dbg << "QSqlField(" << f.name() << ", " << f.metaType().name();
     dbg << ", tableName: " << (f.tableName().isEmpty() ? QStringLiteral("(not specified)") : f.tableName());
     if (f.length() >= 0)
         dbg << ", length: " << f.length();
