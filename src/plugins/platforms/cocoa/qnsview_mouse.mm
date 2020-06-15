@@ -400,6 +400,8 @@
                 selfClosed = self == popup->view();
                 QWindowSystemInterface::handleCloseEvent(popup->window());
                 QWindowSystemInterface::flushWindowSystemEvents();
+                if (!m_platformWindow)
+                    return; // Bail out if window was destroyed
             }
             // Consume the mouse event when closing the popup, except for tool tips
             // were it's expected that the event is processed normally.
