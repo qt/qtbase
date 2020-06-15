@@ -467,12 +467,37 @@ qt_feature("testcocoon"
     AUTODETECT OFF
 )
 qt_feature_config("testcocoon" QMAKE_PUBLIC_CONFIG)
+qt_feature("sanitize_address"
+    LABEL "Addresses"
+    AUTODETECT OFF
+)
+qt_feature_config("sanitize_address" QMAKE_PUBLIC_CONFIG)
+qt_feature("sanitize_thread"
+    LABEL "Threads"
+    AUTODETECT OFF
+)
+qt_feature_config("sanitize_thread" QMAKE_PUBLIC_CONFIG)
+qt_feature("sanitize_memory"
+    LABEL "Memory"
+    AUTODETECT OFF
+)
+qt_feature_config("sanitize_memory" QMAKE_PUBLIC_CONFIG)
 qt_feature("sanitize_fuzzer_no_link"
     LABEL "Fuzzer (instrumentation only)"
     PURPOSE "Adds instrumentation for fuzzing to the binaries but links to the usual main function instead of a fuzzer's."
     AUTODETECT OFF
 )
 qt_feature_config("sanitize_fuzzer_no_link" QMAKE_PUBLIC_CONFIG)
+qt_feature("sanitize_undefined"
+    LABEL "Undefined"
+    AUTODETECT OFF
+)
+qt_feature_config("sanitize_undefined" QMAKE_PUBLIC_CONFIG)
+qt_feature("sanitizer"
+    LABEL "Sanitizers"
+    CONDITION QT_FEATURE_sanitize_address OR QT_FEATURE_sanitize_thread OR QT_FEATURE_sanitize_memory OR QT_FEATURE_sanitize_fuzzer_no_link OR QT_FEATURE_sanitize_undefined
+)
+qt_feature_config("sanitizer" QMAKE_PUBLIC_CONFIG)
 qt_feature("coverage_trace_pc_guard"
     LABEL "trace-pc-guard"
     AUTODETECT OFF

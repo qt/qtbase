@@ -411,6 +411,11 @@ endif()\n")
                 "set(QT_BUILD_TOOLS_WHEN_CROSSCOMPILING \"TRUE\" CACHE BOOL \"\" FORCE)\n")
         endif()
 
+        if(ECM_ENABLE_SANITIZERS)
+            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
+                "set(ECM_ENABLE_SANITIZERS \"${ECM_ENABLE_SANITIZERS}\" CACHE BOOL \"\" FORCE)\n")
+        endif()
+
         # Rpath related things that need to be re-used when building other repos.
         string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
             "set(CMAKE_INSTALL_RPATH \"${CMAKE_INSTALL_RPATH}\" CACHE STRING \"\")\n")

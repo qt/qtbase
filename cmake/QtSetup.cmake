@@ -181,6 +181,7 @@ if (CMAKE_CROSSCOMPILING AND NOT IS_DIRECTORY ${QT_HOST_PATH})
 endif()
 
 ## Enable support for sanitizers:
+qt_internal_set_up_sanitizer_features()
 include(${CMAKE_CURRENT_LIST_DIR}/3rdparty/extra-cmake-modules/modules/ECMEnableSanitizers.cmake)
 
 option(QT_USE_CCACHE "Enable the use of ccache")

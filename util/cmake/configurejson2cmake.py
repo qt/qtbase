@@ -903,11 +903,7 @@ def get_feature_mapping():
             "autoDetect": "1",
             "condition": "BUILD_SHARED_LIBS AND UNIX AND NOT WIN32 AND NOT ANDROID",
         },
-        "sanitize_address": None,  # sanitizer
-        "sanitize_memory": None,
-        "sanitizer": None,
-        "sanitize_thread": None,
-        "sanitize_undefined": None,
+
         "shared": {
             "condition": "BUILD_SHARED_LIBS",
             "output": [
