@@ -56,6 +56,7 @@
 
 #include "private/qobject_p.h"
 #include "private/qmetaobject_p.h"
+#include "private/qthread_p.h"
 
 // for normalizeTypeInternal
 #include "private/qmetaobject_moc_p.h"
@@ -1467,10 +1468,14 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
     if (! object)
         return false;
 
-    QThread *currentThread = QThread::currentThread();
+    Qt::HANDLE currentThreadId = QThread::currentThreadId();
     QThread *objectThread = object->thread();
+    bool receiverInSameThread = false;
+    if (objectThread)
+        receiverInSameThread = currentThreadId == QThreadData::get2(objectThread)->threadId.loadRelaxed();
+
     if (type == Qt::AutoConnection)
-        type = (currentThread == objectThread) ? Qt::DirectConnection : Qt::QueuedConnection;
+        type = receiverInSameThread ? Qt::DirectConnection : Qt::QueuedConnection;
 
     void *argv[] = { ret };
 
@@ -1486,7 +1491,7 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
         QCoreApplication::postEvent(object, new QMetaCallEvent(slot, nullptr, -1, 1));
     } else if (type == Qt::BlockingQueuedConnection) {
 #if QT_CONFIG(thread)
-        if (currentThread == objectThread)
+        if (receiverInSameThread)
             qWarning("QMetaObject::invokeMethod: Dead lock detected");
 
         QSemaphore semaphore;
@@ -2253,11 +2258,15 @@ bool QMetaMethod::invoke(QObject *object,
     if (paramCount <= QMetaMethodPrivate::get(this)->parameterCount())
         return false;
 
+    Qt::HANDLE currentThreadId = QThread::currentThreadId();
+    QThread *objectThread = object->thread();
+    bool receiverInSameThread = false;
+    if (objectThread)
+        receiverInSameThread = currentThreadId == QThreadData::get2(objectThread)->threadId.loadRelaxed();
+
     // check connection type
     if (connectionType == Qt::AutoConnection) {
-        QThread *currentThread = QThread::currentThread();
-        QThread *objectThread = object->thread();
-        connectionType = currentThread == objectThread
+        connectionType = receiverInSameThread
                          ? Qt::DirectConnection
                          : Qt::QueuedConnection;
     }
@@ -2328,9 +2337,7 @@ bool QMetaMethod::invoke(QObject *object,
         QCoreApplication::postEvent(object, event.take());
     } else { // blocking queued connection
 #if QT_CONFIG(thread)
-        QThread *currentThread = QThread::currentThread();
-        QThread *objectThread = object->thread();
-        if (currentThread == objectThread) {
+        if (receiverInSameThread) {
             qWarning("QMetaMethod::invoke: Dead lock detected in "
                         "BlockingQueuedConnection: Receiver is %s(%p)",
                         mobj->className(), object);
