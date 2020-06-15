@@ -65,7 +65,7 @@ public:
         delete baseTheme;
     }
 
-    QPlatformTheme *baseTheme;
+    QPlatformTheme *baseTheme = nullptr;
     uint fileChooserPortalVersion = 0;
 };
 
