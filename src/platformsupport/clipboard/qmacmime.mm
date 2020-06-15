@@ -664,7 +664,8 @@ QList<QByteArray> QMacPasteboardMimeFileUri::convertFromMime(const QString &mime
                 url.setHost(QLatin1String("localhost"));
             url.setPath(url.path().normalized(QString::NormalizationForm_D));
         }
-        ret.append(url.toEncoded());
+        if (url.isLocalFile())
+            ret.append(url.toEncoded());
     }
     return ret;
 }
