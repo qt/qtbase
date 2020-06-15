@@ -209,7 +209,7 @@ class Q_CORE_EXPORT QVariant
     ~QVariant();
     QVariant(Type type);
     QVariant(int typeId, const void *copy, uint flags = 0); // ### Qt6 TODO deprecate
-    explicit QVariant(QMetaType type, const void *copy);
+    explicit QVariant(QMetaType type, const void *copy = nullptr);
     QVariant(const QVariant &other);
 
 #ifndef QT_NO_DATASTREAM
