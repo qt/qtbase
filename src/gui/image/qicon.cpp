@@ -782,7 +782,7 @@ QIcon &QIcon::operator=(const QIcon &other)
 */
 QIcon::operator QVariant() const
 {
-    return QVariant(QMetaType::QIcon, this);
+    return QVariant::fromValue(*this);
 }
 
 /*!

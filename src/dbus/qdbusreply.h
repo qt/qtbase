@@ -67,7 +67,7 @@ public:
     inline QDBusReply(const QDBusReply &) = default;
     inline QDBusReply& operator=(const QDBusMessage &reply)
     {
-        QVariant data(qMetaTypeId<Type>(), nullptr);
+        QVariant data(QMetaType::fromType<Type>());
         qDBusReplyFill(reply, m_error, data);
         m_data = qvariant_cast<Type>(data);
         return *this;
@@ -131,8 +131,7 @@ private:
 template<> inline QDBusReply<QVariant>&
 QDBusReply<QVariant>::operator=(const QDBusMessage &reply)
 {
-    void *null = nullptr;
-    QVariant data(qMetaTypeId<QDBusVariant>(), null);
+    QVariant data(QMetaType::fromType<QDBusVariant>());
     qDBusReplyFill(reply, m_error, data);
     m_data = qvariant_cast<QDBusVariant>(data).variant();
     return *this;

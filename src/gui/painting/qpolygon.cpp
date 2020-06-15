@@ -716,7 +716,7 @@ QPolygon QPolygonF::toPolygon() const
 */
 QPolygon::operator QVariant() const
 {
-    return QVariant(QMetaType::QPolygon, this);
+    return QVariant::fromValue(*this);
 }
 
 /*****************************************************************************
@@ -1040,7 +1040,7 @@ bool QPolygonF::intersects(const QPolygonF &p) const
 
 QPolygonF::operator QVariant() const
 {
-    return QVariant(QMetaType::QPolygonF, this);
+    return QVariant::fromValue(*this);
 }
 
 QT_END_NAMESPACE

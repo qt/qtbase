@@ -289,7 +289,7 @@ int QDBusInterfacePrivate::metacall(QMetaObject::Call c, int id, void **argv)
             args.reserve(inputTypesCount);
             int i = 1;
             for ( ; i <= inputTypesCount; ++i)
-                args << QVariant(inputTypes[i], argv[i]);
+                args << QVariant(QMetaType(inputTypes[i]), argv[i]);
 
             // make the call
             QDBusMessage reply = q->callWithArgumentList(QDBus::Block, methodName, args);

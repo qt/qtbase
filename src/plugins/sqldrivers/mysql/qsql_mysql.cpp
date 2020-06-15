@@ -544,7 +544,7 @@ QVariant QMYSQLResult::data(int field)
             return QVariant(QVariant::Type(f.type));
 
         if (qIsInteger(f.type)) {
-            QVariant variant(f.type, f.outField);
+            QVariant variant(QMetaType(f.type), f.outField);
             // we never want to return char variants here, see QTBUG-53397
             if (static_cast<int>(f.type) == QMetaType::UChar)
                 return variant.toUInt();

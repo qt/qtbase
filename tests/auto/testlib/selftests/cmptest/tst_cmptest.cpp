@@ -317,14 +317,14 @@ void tst_Cmptest::compare_tostring_data()
 
     QTest::newRow("string, null user type")
         << QVariant::fromValue(QString::fromLatin1("A simple string"))
-        << QVariant(QVariant::Type(qRegisterMetaType<PhonyClass>("PhonyClass")))
+        << QVariant(QMetaType::fromType<PhonyClass>())
     ;
 
     PhonyClass fake1 = {1};
     PhonyClass fake2 = {2};
     QTest::newRow("both non-null user type")
-        << QVariant(qRegisterMetaType<PhonyClass>("PhonyClass"), (const void*)&fake1)
-        << QVariant(qRegisterMetaType<PhonyClass>("PhonyClass"), (const void*)&fake2)
+        << QVariant(QMetaType::fromType<PhonyClass>(), (const void*)&fake1)
+        << QVariant(QMetaType::fromType<PhonyClass>(), (const void*)&fake2)
     ;
 }
 

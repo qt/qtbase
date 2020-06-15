@@ -591,7 +591,7 @@ static bool qMakeStatement(QDB2ResultPrivate* d, bool forwardOnly, bool setForwa
 QVariant QDB2Result::handle() const
 {
     Q_D(const QDB2Result);
-    return QVariant(qRegisterMetaType<SQLHANDLE>("SQLHANDLE"), &d->hStmt);
+    return QVariant(QMetaType::fromType<SQLHANDLE>(), &d->hStmt);
 }
 
 /************************************/
@@ -1729,7 +1729,7 @@ QString QDB2Driver::formatValue(const QSqlField &field, bool trimStrings) const
 QVariant QDB2Driver::handle() const
 {
     Q_D(const QDB2Driver);
-    return QVariant(qRegisterMetaType<SQLHANDLE>("SQLHANDLE"), &d->hDbc);
+    return QVariant(QMetaType::fromType<SQLHANDLE>(), &d->hDbc);
 }
 
 QString QDB2Driver::escapeIdentifier(const QString &identifier, IdentifierType) const

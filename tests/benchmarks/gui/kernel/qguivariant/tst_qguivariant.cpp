@@ -70,7 +70,7 @@ void tst_QGuiVariant::createGuiType()
     QFETCH(int, typeId);
     QBENCHMARK {
         for (int i = 0; i < ITERATION_COUNT; ++i)
-            QVariant(typeId, (void *)0);
+            QVariant(QMetaType(typeId));
     }
 }
 
@@ -86,11 +86,11 @@ void tst_QGuiVariant::createGuiTypeCopy_data()
 void tst_QGuiVariant::createGuiTypeCopy()
 {
     QFETCH(int, typeId);
-    QVariant other(typeId, (void *)0);
+    QVariant other((QMetaType(typeId)));
     const void *copy = other.constData();
     QBENCHMARK {
         for (int i = 0; i < ITERATION_COUNT; ++i)
-            QVariant(typeId, copy);
+            QVariant(QMetaType(typeId), copy);
     }
 }
 

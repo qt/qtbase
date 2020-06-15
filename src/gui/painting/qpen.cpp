@@ -408,7 +408,7 @@ QPen &QPen::operator=(const QPen &p) noexcept
 */
 QPen::operator QVariant() const
 {
-    return QVariant(QMetaType::QPen, this);
+    return QVariant::fromValue(*this);
 }
 
 /*!

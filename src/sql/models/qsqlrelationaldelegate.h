@@ -112,7 +112,7 @@ QWidget *createEditor(QWidget *aParent,
             const QByteArray n = editor->metaObject()->userProperty().name();
             if (!n.isEmpty()) {
                 if (!v.isValid())
-                    v = QVariant(editor->property(n.data()).userType(), nullptr);
+                    v = QVariant(editor->property(n.data()).metaType());
                 editor->setProperty(n.data(), v);
                 return;
             }

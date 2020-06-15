@@ -2081,7 +2081,7 @@ QTransform::TransformationType QTransform::type() const
 */
 QTransform::operator QVariant() const
 {
-    return QVariant(QMetaType::QTransform, this);
+    return QVariant::fromValue(*this);
 }
 
 

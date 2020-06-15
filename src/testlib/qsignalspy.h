@@ -221,7 +221,7 @@ private:
             if (type == QMetaType::QVariant)
                 list << *reinterpret_cast<QVariant *>(a[i + 1]);
             else
-                list << QVariant(type, a[i + 1]);
+                list << QVariant(QMetaType(type), a[i + 1]);
         }
         append(list);
 

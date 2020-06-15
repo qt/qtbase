@@ -768,7 +768,7 @@ QColorTransform QColorSpace::transformationToColorSpace(const QColorSpace &color
 */
 QColorSpace::operator QVariant() const
 {
-    return QVariant(QMetaType::QColorSpace, this);
+    return QVariant::fromValue(*this);
 }
 
 /*****************************************************************************

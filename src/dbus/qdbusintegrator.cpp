@@ -946,8 +946,7 @@ void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const Q
             params.append(const_cast<void *>(arg.constData()));
         else if (arg.userType() == qMetaTypeId<QDBusArgument>()) {
             // convert to what the function expects
-            void *null = nullptr;
-            auxParameters.append(QVariant(id, null));
+            auxParameters.append(QVariant(QMetaType(id)));
 
             const QDBusArgument &in =
                 *reinterpret_cast<const QDBusArgument *>(arg.constData());
@@ -974,10 +973,9 @@ void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const Q
     // output arguments
     const int numMetaTypes = metaTypes.count();
     QVariantList outputArgs;
-    void *null = nullptr;
     if (metaTypes[0] != QMetaType::Void && metaTypes[0] != QMetaType::UnknownType) {
         outputArgs.reserve(numMetaTypes - i + 1);
-        QVariant arg(metaTypes[0], null);
+        QVariant arg{QMetaType(metaTypes[0])};
         outputArgs.append( arg );
         params[0] = const_cast<void*>(outputArgs.at( outputArgs.count() - 1 ).constData());
     } else {
@@ -985,7 +983,7 @@ void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const Q
     }
 
     for ( ; i < numMetaTypes; ++i) {
-        QVariant arg(metaTypes[i], null);
+        QVariant arg{QMetaType(metaTypes[i])};
         outputArgs.append( arg );
         params.append(const_cast<void*>(outputArgs.at( outputArgs.count() - 1 ).constData()));
     }

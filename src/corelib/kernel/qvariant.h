@@ -208,7 +208,6 @@ class Q_CORE_EXPORT QVariant
     QVariant() noexcept : d() {}
     ~QVariant();
     QVariant(Type type);
-    QVariant(int typeId, const void *copy, uint flags = 0); // ### Qt6 TODO deprecate
     explicit QVariant(QMetaType type, const void *copy = nullptr);
     QVariant(const QVariant &other);
 
@@ -820,12 +819,12 @@ namespace QtPrivate {
             if (QMetaType::hasRegisteredConverterFunction(typeId, qMetaTypeId<QtMetaTypePrivate::QPairVariantInterfaceImpl>()) && !(typeId == qMetaTypeId<QPair<QVariant, QVariant> >())) {
                 QtMetaTypePrivate::QPairVariantInterfaceImpl pi = v.value<QtMetaTypePrivate::QPairVariantInterfaceImpl>();
                 const QtMetaTypePrivate::VariantData d1 = pi.first();
-                QVariant v1(d1.metaTypeId, d1.data, d1.flags);
+                QVariant v1(QMetaType(d1.metaTypeId), d1.data);
                 if (d1.metaTypeId == qMetaTypeId<QVariant>())
                     v1 = *reinterpret_cast<const QVariant*>(d1.data);
 
                 const QtMetaTypePrivate::VariantData d2 = pi.second();
-                QVariant v2(d2.metaTypeId, d2.data, d2.flags);
+                QVariant v2(QMetaType(d2.metaTypeId), d2.data);
                 if (d2.metaTypeId == qMetaTypeId<QVariant>())
                     v2 = *reinterpret_cast<const QVariant*>(d2.data);
 

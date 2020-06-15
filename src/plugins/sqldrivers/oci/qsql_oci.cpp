@@ -561,7 +561,7 @@ void QOCIResultPrivate::outValues(QVariantList &values, IndicatorArray &indicato
 
         qOraOutValue(values[i], tmpStorage, env, err);
 
-        QVariant::Type typ = values.at(i).type();
+        auto typ = values.at(i).metaType();
         if (indicators[i] == -1) // NULL
             values[i] = QVariant(typ);
         else
@@ -1618,8 +1618,7 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVariantList &boundValues, bool a
         if (!d->isOutValue(i))
             continue;
 
-        QVariant::Type tp = boundValues.at(i).type();
-        if (tp != QVariant::List) {
+        if (auto tp = boundValues.at(i).metaType(); tp.id() != QVariant::List) {
             qOraOutValue(boundValues[i], tmpStorage, d->env, d->err);
             if (*columns[i].indicators == -1)
                 boundValues[i] = QVariant(tp);

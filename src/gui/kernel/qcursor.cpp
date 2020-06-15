@@ -688,7 +688,7 @@ QCursor &QCursor::operator=(const QCursor &c)
 */
 QCursor::operator QVariant() const
 {
-    return QVariant(QMetaType::QCursor, this);
+    return QVariant::fromValue(*this);
 }
 
 #ifndef QT_NO_DEBUG_STREAM

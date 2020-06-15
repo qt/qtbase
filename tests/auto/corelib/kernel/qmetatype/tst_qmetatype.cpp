@@ -275,7 +275,7 @@ struct GenericGadgetType : BaseGenericType
         } else if (_c == QMetaObject::WriteProperty) {
             if (_id < properties.size()) {
                 auto & prop = properties[_id];
-                prop = QVariant(prop.userType(), _a[0]);
+                prop = QVariant(prop.metaType(), _a[0]);
             }
         }
     }
@@ -404,7 +404,7 @@ void tst_QMetaType::registerGadget(const char *name, const QList<GadgetPropertyT
     auto dynamicGadgetProperties = std::make_shared<GenericGadgetType>();
     for (const auto &prop : gadgetProperties) {
         int propertyType = QMetaType::type(prop.type);
-        dynamicGadgetProperties->properties.push_back(QVariant(QVariant::Type(propertyType)));
+        dynamicGadgetProperties->properties.push_back(QVariant(QMetaType(propertyType)));
         auto dynamicPropery = gadgetBuilder.addProperty(prop.name, prop.type);
         dynamicPropery.setWritable(true);
         dynamicPropery.setReadable(true);
@@ -1291,7 +1291,7 @@ void tst_QMetaType::typedConstruct()
     };
     registerGadget("DynamicGadget1", dynamicGadget1);
 
-    QVariant testGadget1(QVariant::Type(QMetaType::type("DynamicGadget1")));
+    QVariant testGadget1(QMetaType(QMetaType::type("DynamicGadget1")));
     testMetaObjectWriteOnGadget(testGadget1, dynamicGadget1);
     testMetaObjectReadOnGadget(testGadget1, dynamicGadget1);
 
@@ -1303,7 +1303,7 @@ void tst_QMetaType::typedConstruct()
         {"DynamicGadget1", "dynamicGadget1_prop", testGadget1}
     };
     registerGadget("DynamicGadget2", dynamicGadget2);
-    QVariant testGadget2(QVariant::Type(QMetaType::type("DynamicGadget2")));
+    QVariant testGadget2(QMetaType(QMetaType::type("DynamicGadget2")));
     testMetaObjectWriteOnGadget(testGadget2, dynamicGadget2);
     testMetaObjectReadOnGadget(testGadget2, dynamicGadget2);
     auto g2mo = QMetaType::metaObjectForType(testGadget2.userType());
@@ -1336,7 +1336,7 @@ void tst_QMetaType::typedConstruct()
 
     // Test POD
     QCOMPARE(podTypeId, QMetaType::type(podTypeName));
-    QVariant podVariant{QVariant::Type(podTypeId)};
+    QVariant podVariant{QMetaType(podTypeId)};
     QCOMPARE(myPodTesData, static_cast<const GenericPODType *>(reinterpret_cast<const BaseGenericType *>(podVariant.constData()))->podData);
 
     QVariant podVariant1{podVariant};

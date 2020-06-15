@@ -2032,21 +2032,6 @@ QVariant::QVariant(Type type)
 
 /*!
     \internal
-    flags is true if it is a pointer type
- */
-QVariant::QVariant(int typeId, const void *copy, uint flags)
-{
-    if (flags) { //type is a pointer type
-        d = Private(QMetaType(typeId));
-        d.data.ptr = *reinterpret_cast<void *const*>(copy);
-    } else {
-        create(typeId, copy);
-    }
-}
-
-/*!
-    \internal
-    flags is true if it is a pointer type
  */
 QVariant::QVariant(QMetaType type, const void *copy) : d(type)
 {
@@ -4307,7 +4292,7 @@ static const QVariant variantFromVariantDataHelper(const QtMetaTypePrivate::Vari
     if (d.metaTypeId == qMetaTypeId<QVariant>())
         v =  *reinterpret_cast<const QVariant*>(d.data);
     else
-        v = QVariant(d.metaTypeId, d.data, d.flags & ~QVariantConstructionFlags::ShouldDeleteVariantData);
+        v = QVariant(QMetaType(d.metaTypeId), d.data);
     if (d.flags & QVariantConstructionFlags::ShouldDeleteVariantData)
         QMetaType::destroy(d.metaTypeId, const_cast<void *>(d.data));
     return v;

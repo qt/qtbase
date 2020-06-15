@@ -1390,7 +1390,7 @@ QKeySequence::SequenceMatch QKeySequence::matches(const QKeySequence &seq) const
 */
 QKeySequence::operator QVariant() const
 {
-    return QVariant(QMetaType::QKeySequence, this);
+    return QVariant::fromValue(*this);
 }
 
 /*!

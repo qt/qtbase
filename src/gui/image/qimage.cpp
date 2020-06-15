@@ -1083,7 +1083,7 @@ int QImage::devType() const
 */
 QImage::operator QVariant() const
 {
-    return QVariant(QMetaType::QImage, this);
+    return QVariant::fromValue(*this);
 }
 
 /*!

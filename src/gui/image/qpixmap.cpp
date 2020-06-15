@@ -404,7 +404,7 @@ QPixmap &QPixmap::operator=(const QPixmap &pixmap)
 */
 QPixmap::operator QVariant() const
 {
-    return QVariant(QMetaType::QPixmap, this);
+    return QVariant::fromValue(*this);
 }
 
 /*!

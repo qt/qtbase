@@ -672,7 +672,7 @@ QBrush &QBrush::operator=(const QBrush &b)
 */
 QBrush::operator QVariant() const
 {
-    return QVariant(QMetaType::QBrush, this);
+    return QVariant::fromValue(*this);
 }
 
 /*!

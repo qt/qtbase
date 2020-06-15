@@ -439,7 +439,7 @@ void QSizePolicy::setControlType(ControlType type) noexcept
 */
 QSizePolicy::operator QVariant() const
 {
-    return QVariant(QMetaType::QSizePolicy, this);
+    return QVariant::fromValue(*this);
 }
 
 #ifndef QT_NO_DATASTREAM

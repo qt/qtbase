@@ -531,7 +531,7 @@ void QItemDelegate::setEditorData(QWidget *editor, const QModelIndex &index) con
 
     if (!n.isEmpty()) {
         if (!v.isValid())
-            v = QVariant(editor->property(n).userType(), (const void *)nullptr);
+            v = QVariant(editor->property(n).metaType());
         editor->setProperty(n, v);
     }
 #endif

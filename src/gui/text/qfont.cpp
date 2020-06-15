@@ -1726,7 +1726,7 @@ bool QFont::operator!=(const QFont &f) const
 */
 QFont::operator QVariant() const
 {
-    return QVariant(QMetaType::QFont, this);
+    return QVariant::fromValue(*this);
 }
 
 /*!

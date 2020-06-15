@@ -144,7 +144,7 @@ QT_BEGIN_NAMESPACE
 */
 QTextLength::operator QVariant() const
 {
-    return QVariant(QMetaType::QTextLength, this);
+    return QVariant::fromValue(*this);
 }
 
 #ifndef QT_NO_DATASTREAM
@@ -895,7 +895,7 @@ QTextFormat::~QTextFormat()
 */
 QTextFormat::operator QVariant() const
 {
-    return QVariant(QMetaType::QTextFormat, this);
+    return QVariant::fromValue(*this);
 }
 
 /*!

@@ -134,7 +134,7 @@ void tst_QGuiVariant::constructor_invalid()
     }
     {
         QTest::ignoreMessage(QtWarningMsg, QRegularExpression("^Trying to construct an instance of an invalid type, type id:"));
-        QVariant variant(typeId, /* copy */ 0);
+        QVariant variant(QMetaType(typeId), nullptr);
         QVERIFY(!variant.isValid());
         QCOMPARE(variant.userType(), int(QMetaType::UnknownType));
     }

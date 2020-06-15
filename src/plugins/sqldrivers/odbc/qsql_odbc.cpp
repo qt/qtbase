@@ -1779,7 +1779,7 @@ QVariant QODBCResult::lastInsertId() const
 QVariant QODBCResult::handle() const
 {
     Q_D(const QODBCResult);
-    return QVariant(qRegisterMetaType<SQLHANDLE>("SQLHANDLE"), &d->hStmt);
+    return QVariant(QMetaType::fromType<SQLHANDLE>(), &d->hStmt);
 }
 
 bool QODBCResult::nextResult()
@@ -2618,7 +2618,7 @@ QString QODBCDriver::formatValue(const QSqlField &field,
 QVariant QODBCDriver::handle() const
 {
     Q_D(const QODBCDriver);
-    return QVariant(qRegisterMetaType<SQLHANDLE>("SQLHANDLE"), &d->hDbc);
+    return QVariant(QMetaType::fromType<SQLHANDLE>(), &d->hDbc);
 }
 
 QString QODBCDriver::escapeIdentifier(const QString &identifier, IdentifierType) const

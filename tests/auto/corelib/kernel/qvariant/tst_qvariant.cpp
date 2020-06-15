@@ -356,7 +356,7 @@ void tst_QVariant::constructor_invalid()
     }
     {
         QTest::ignoreMessage(QtWarningMsg, QRegularExpression("^Trying to construct an instance of an invalid type"));
-        QVariant variant(typeId, /* copy */ 0);
+        QVariant variant(QMetaType(typeId), /* copy */ nullptr);
         QVERIFY(!variant.isValid());
         QVERIFY(variant.isNull());
         QCOMPARE(variant.userType(), int(QMetaType::UnknownType));
@@ -403,7 +403,7 @@ void tst_QVariant::isNull()
     QVariant varLL( (qlonglong)0 );
     QVERIFY( !varLL.isNull() );
 
-    QVariant var8(QMetaType::Nullptr, nullptr);
+    QVariant var8(QMetaType(QMetaType::Nullptr), nullptr);
     QVERIFY(var8.isNull());
     var8 = QVariant::fromValue<std::nullptr_t>(nullptr);
     QVERIFY(var8.isNull());
@@ -412,12 +412,12 @@ void tst_QVariant::isNull()
     var9 = QVariant::fromValue<QJsonValue>(QJsonValue(QJsonValue::Null));
     QVERIFY(!var9.isNull());
 
-    QVariant var10(QMetaType::VoidStar, nullptr);
+    QVariant var10(QMetaType(QMetaType::VoidStar), nullptr);
     QVERIFY(var10.isNull());
     var10 = QVariant::fromValue<void*>(nullptr);
     QVERIFY(var10.isNull());
 
-    QVariant var11(QMetaType::QObjectStar, nullptr);
+    QVariant var11(QMetaType(QMetaType::QObjectStar), nullptr);
     QVERIFY(var11.isNull());
     var11 = QVariant::fromValue<QObject*>(nullptr);
     QVERIFY(var11.isNull());
@@ -1305,27 +1305,27 @@ void tst_QVariant::writeToReadFromDataStream_data()
     QTest::newRow( "regularexpression_empty" ) << QVariant(QRegularExpression()) << false;
 
     // types known to QMetaType, but not part of QVariant::Type
-    QTest::newRow("QMetaType::Long invalid") << QVariant(QMetaType::Long, (void *) 0) << true;
+    QTest::newRow("QMetaType::Long invalid") << QVariant(QMetaType(QMetaType::Long), nullptr) << true;
     long longInt = -1l;
-    QTest::newRow("QMetaType::Long") << QVariant(QMetaType::Long, &longInt) << false;
-    QTest::newRow("QMetaType::Short invalid") << QVariant(QMetaType::Short, (void *) 0) << true;
+    QTest::newRow("QMetaType::Long") << QVariant(QMetaType(QMetaType::Long), &longInt) << false;
+    QTest::newRow("QMetaType::Short invalid") << QVariant(QMetaType(QMetaType::Short), nullptr) << true;
     short shortInt = 1;
-    QTest::newRow("QMetaType::Short") << QVariant(QMetaType::Short, &shortInt) << false;
-    QTest::newRow("QMetaType::Char invalid") << QVariant(QMetaType::Char, (void *) 0) << true;
+    QTest::newRow("QMetaType::Short") << QVariant(QMetaType(QMetaType::Short), &shortInt) << false;
+    QTest::newRow("QMetaType::Char invalid") << QVariant(QMetaType(QMetaType::Char), nullptr) << true;
     char ch = 'c';
-    QTest::newRow("QMetaType::Char") << QVariant(QMetaType::Char, &ch) << false;
-    QTest::newRow("QMetaType::ULong invalid") << QVariant(QMetaType::ULong, (void *) 0) << true;
+    QTest::newRow("QMetaType::Char") << QVariant(QMetaType(QMetaType::Char), &ch) << false;
+    QTest::newRow("QMetaType::ULong invalid") << QVariant(QMetaType(QMetaType::ULong), nullptr) << true;
     ulong ulongInt = 1ul;
-    QTest::newRow("QMetaType::ULong") << QVariant(QMetaType::ULong, &ulongInt) << false;
-    QTest::newRow("QMetaType::UShort invalid") << QVariant(QMetaType::UShort, (void *) 0) << true;
+    QTest::newRow("QMetaType::ULong") << QVariant(QMetaType(QMetaType::ULong), &ulongInt) << false;
+    QTest::newRow("QMetaType::UShort invalid") << QVariant(QMetaType(QMetaType::UShort), nullptr) << true;
     ushort ushortInt = 1u;
-    QTest::newRow("QMetaType::UShort") << QVariant(QMetaType::UShort, &ushortInt) << false;
-    QTest::newRow("QMetaType::UChar invalid") << QVariant(QMetaType::UChar, (void *) 0) << true;
+    QTest::newRow("QMetaType::UShort") << QVariant(QMetaType(QMetaType::UShort), &ushortInt) << false;
+    QTest::newRow("QMetaType::UChar invalid") << QVariant(QMetaType(QMetaType::UChar), nullptr) << true;
     uchar uch = 0xf0;
-    QTest::newRow("QMetaType::UChar") << QVariant(QMetaType::UChar, &uch) << false;
-    QTest::newRow("QMetaType::Float invalid") << QVariant(QMetaType::Float, (void *) 0) << true;
+    QTest::newRow("QMetaType::UChar") << QVariant(QMetaType(QMetaType::UChar), &uch) << false;
+    QTest::newRow("QMetaType::Float invalid") << QVariant(QMetaType(QMetaType::Float), nullptr) << true;
     float f = 1.234f;
-    QTest::newRow("QMetaType::Float") << QVariant(QMetaType::Float, &f) << false;
+    QTest::newRow("QMetaType::Float") << QVariant(QMetaType(QMetaType::Float), &f) << false;
     CustomStreamableClass custom = {123};
     QTest::newRow("Custom type") << QVariant::fromValue(custom) << false;
 }
@@ -1990,35 +1990,35 @@ void tst_QVariant::basicUserType()
     QVariant v;
     {
         int i = 7;
-        v = QVariant(QMetaType::Int, &i);
+        v = QVariant(QMetaType(QMetaType::Int), &i);
     }
     QCOMPARE(v.type(), QVariant::Int);
     QCOMPARE(v.toInt(), 7);
 
     {
         QString s("foo");
-        v = QVariant(QMetaType::QString, &s);
+        v = QVariant(QMetaType(QMetaType::QString), &s);
     }
     QCOMPARE(v.type(), QVariant::String);
     QCOMPARE(v.toString(), QString("foo"));
 
     {
         double d = 4.4;
-        v = QVariant(QMetaType::Double, &d);
+        v = QVariant(QMetaType(QMetaType::Double), &d);
     }
     QCOMPARE(v.type(), QVariant::Double);
     QCOMPARE(v.toDouble(), 4.4);
 
     {
         float f = 4.5f;
-        v = QVariant(QMetaType::Float, &f);
+        v = QVariant(QMetaType(QMetaType::Float), &f);
     }
     QCOMPARE(v.userType(), int(QMetaType::Float));
     QCOMPARE(v.toDouble(), 4.5);
 
     {
         QByteArray ba("bar");
-        v = QVariant(QMetaType::QByteArray, &ba);
+        v = QVariant(QMetaType(QMetaType::QByteArray), &ba);
     }
     QCOMPARE(v.type(), QVariant::ByteArray);
     QCOMPARE(v.toByteArray(), QByteArray("bar"));
@@ -2181,12 +2181,12 @@ void tst_QVariant::saveLoadCustomTypes()
     QByteArray data;
 
     Blah i = { 42 };
-    int tp = qRegisterMetaType<Blah>("Blah");
+    auto tp = QMetaType::fromType<Blah>();
     QVariant v = QVariant(tp, &i);
 
     qRegisterMetaTypeStreamOperators<Blah>("Blah");
 
-    QCOMPARE(v.userType(), tp);
+    QCOMPARE(v.userType(), tp.id());
     QCOMPARE(v.type(), QVariant::UserType);
     {
         QDataStream stream(&data, QIODevice::WriteOnly);
@@ -2239,10 +2239,10 @@ void tst_QVariant::variantMap()
     QCOMPARE(map2.value("test").toInt(), 42);
     QCOMPARE(map2, map);
 
-    QVariant v2 = QVariant(QMetaType::type("QVariantMap"), &map);
+    QVariant v2 = QVariant(QMetaType::fromType<QVariantMap>(), &map);
     QCOMPARE(qvariant_cast<QVariantMap>(v2).value("test").toInt(), 42);
 
-    QVariant v3 = QVariant(QMetaType::type("QMap<QString, QVariant>"), &map);
+    QVariant v3 = QVariant(QMetaType::fromType<QMap<QString, QVariant>>(), &map);
     QCOMPARE(qvariant_cast<QVariantMap>(v3).value("test").toInt(), 42);
 
     QHash<QString, QVariant> hash;
@@ -2264,10 +2264,10 @@ void tst_QVariant::variantHash()
     QCOMPARE(hash2.value("test").toInt(), 42);
     QCOMPARE(hash2, hash);
 
-    QVariant v2 = QVariant(QMetaType::type("QVariantHash"), &hash);
+    QVariant v2 = QVariant(QMetaType::fromType<QVariantHash>(), &hash);
     QCOMPARE(qvariant_cast<QVariantHash>(v2).value("test").toInt(), 42);
 
-    QVariant v3 = QVariant(QMetaType::type("QHash<QString, QVariant>"), &hash);
+    QVariant v3 = QVariant(QMetaType::fromType<QHash<QString, QVariant>>(), &hash);
     QCOMPARE(qvariant_cast<QVariantHash>(v3).value("test").toInt(), 42);
 
     QMap<QString, QVariant> map;
@@ -2299,7 +2299,7 @@ void tst_QVariant::qvariant_cast_QObject_data()
     QTest::addColumn<bool>("isNull");
     QObject *obj = new QObject;
     obj->setObjectName(QString::fromLatin1("Hello"));
-    QTest::newRow("from QObject") << QVariant(QMetaType::QObjectStar, &obj) << true << false;
+    QTest::newRow("from QObject") << QVariant(QMetaType(QMetaType::QObjectStar), &obj) << true << false;
     QTest::newRow("from QObject2") << QVariant::fromValue(obj) << true << false;
     QTest::newRow("from String") << QVariant(QLatin1String("1, 2, 3")) << false << false;
     QTest::newRow("from int") << QVariant((int) 123) << false << false;
@@ -3559,7 +3559,7 @@ void tst_QVariant::variantInVariant()
     QCOMPARE((int)var8.type(), (int)QVariant::String);
     QCOMPARE(qvariant_cast<QString>(QVariant(qvariant_cast<QVariant>(var8))), str);
 
-    QVariant var9(qMetaTypeId<QVariant>(), &var1);
+    QVariant var9(QMetaType::fromType<QVariant>(), &var1);
     QCOMPARE(var9.userType(), qMetaTypeId<QVariant>());
     QCOMPARE(qvariant_cast<QVariant>(var9), var1);
 }
@@ -3817,8 +3817,8 @@ void tst_QVariant::debugStream_data()
         }
     }
     QTest::newRow("QBitArray(111)") << QVariant(QBitArray(3, true)) << qMetaTypeId<QBitArray>();
-    QTest::newRow("CustomStreamableClass") << QVariant(qMetaTypeId<CustomStreamableClass>(), 0) << qMetaTypeId<CustomStreamableClass>();
-    QTest::newRow("MyClass") << QVariant(qMetaTypeId<MyClass>(), 0) << qMetaTypeId<MyClass>();
+    QTest::newRow("CustomStreamableClass") << QVariant(QMetaType::fromType<CustomStreamableClass>(), 0) << qMetaTypeId<CustomStreamableClass>();
+    QTest::newRow("MyClass") << QVariant(QMetaType::fromType<MyClass>(), 0) << qMetaTypeId<MyClass>();
     QTest::newRow("InvalidVariant") << QVariant() << int(QMetaType::UnknownType);
     QTest::newRow("CustomQObject") << QVariant::fromValue(this) << qMetaTypeId<tst_QVariant*>();
 }

@@ -2435,7 +2435,7 @@ void QStateMachinePrivate::handleTransitionSignal(QObject *sender, int signalInd
     QList<QVariant> vargs;
     vargs.reserve(argc);
     for (int i = 0; i < argc; ++i) {
-        int type = method.parameterType(i);
+        auto type = method.parameterMetaType(i);
         vargs.append(QVariant(type, argv[i+1]));
     }
 

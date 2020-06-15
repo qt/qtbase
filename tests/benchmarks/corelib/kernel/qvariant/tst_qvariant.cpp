@@ -349,7 +349,7 @@ void tst_qvariant::createCoreType()
     QFETCH(int, typeId);
     QBENCHMARK {
         for (int i = 0; i < ITERATION_COUNT; ++i)
-            QVariant(typeId, (void *)0);
+            QVariant(QMetaType(typeId));
     }
 }
 
@@ -365,11 +365,11 @@ void tst_qvariant::createCoreTypeCopy_data()
 void tst_qvariant::createCoreTypeCopy()
 {
     QFETCH(int, typeId);
-    QVariant other(typeId, (void *)0);
+    QVariant other(typeId);
     const void *copy = other.constData();
     QBENCHMARK {
         for (int i = 0; i < ITERATION_COUNT; ++i)
-            QVariant(typeId, copy);
+            QVariant(QMetaType(typeId), copy);
     }
 }
 
