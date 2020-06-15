@@ -592,70 +592,99 @@ QWindow *QCocoaScreen::topLevelAt(const QPoint &point) const
     return window;
 }
 
+/*!
+    \internal
+
+    Coordinates are in screen coordinates if \a view is 0, otherwise they are in view
+    coordiantes.
+*/
 QPixmap QCocoaScreen::grabWindow(WId view, int x, int y, int width, int height) const
 {
-    // Determine the grab rect. FIXME: The rect should be bounded by the view's
-    // geometry, but note that for the pixeltool use case that window will be the
-    // desktop widget's view, which currently gets resized to fit one screen
-    // only, since its NSWindow has the NSWindowStyleMaskTitled flag set.
-    Q_UNUSED(view);
+    /*
+       Grab the grabRect section of the specified display into a pixmap that has
+       sRGB color spec. Once Qt supports a fully color-managed flow and conversions
+       that don't lose the colorspec information, we would want the image to maintain
+       the color spec of the display from which it was grabbed. Ultimately, rendering
+       the returned pixmap on the same display from which it was grabbed should produce
+       identical visual results.
+    */
+    auto grabFromDisplay = [](CGDirectDisplayID displayId, const QRect &grabRect) -> QPixmap {
+        QCFType<CGImageRef> image = CGDisplayCreateImageForRect(displayId, grabRect.toCGRect());
+        const QCFType<CGColorSpaceRef> sRGBcolorSpace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
+        if (CGImageGetColorSpace(image) != sRGBcolorSpace) {
+            qCDebug(lcQpaScreen) << "applying color correction for display" << displayId;
+            image = CGImageCreateCopyWithColorSpace(image, sRGBcolorSpace);
+        }
+        QPixmap pixmap = QPixmap::fromImage(qt_mac_toQImage(image));
+        pixmap.setDevicePixelRatio(nativeScreenForDisplayId(displayId).backingScaleFactor);
+        return pixmap;
+    };
+
     QRect grabRect = QRect(x, y, width, height);
     qCDebug(lcQpaScreen) << "input grab rect" << grabRect;
 
-    // Find which displays to grab from, or all of them if the grab size is unspecified
+    if (!view) {
+        // coordinates are relative to the screen
+        if (!grabRect.isValid()) // entire screen
+            grabRect = QRect(QPoint(0, 0), geometry().size());
+        else
+            grabRect.translate(-geometry().topLeft());
+        return grabFromDisplay(displayId(), grabRect);
+    }
+
+    // grab the window; grab rect in window coordinates might span multiple screens
+    NSView *nsView = reinterpret_cast<NSView*>(view);
+    NSPoint windowPoint = [nsView convertPoint:NSMakePoint(0, 0) toView:nil];
+    NSRect screenRect = [nsView.window convertRectToScreen:NSMakeRect(windowPoint.x, windowPoint.y, 1, 1)];
+    QPoint position = mapFromNative(screenRect.origin).toPoint();
+    QSize size = QRectF::fromCGRect(NSRectToCGRect(nsView.bounds)).toRect().size();
+    QRect windowRect = QRect(position, size);
+    if (!grabRect.isValid())
+        grabRect = windowRect;
+    else
+        grabRect.translate(windowRect.topLeft());
+
+    // Find which displays to grab from
     const int maxDisplays = 128;
     CGDirectDisplayID displays[maxDisplays];
     CGDisplayCount displayCount;
-    CGRect cgRect = (width < 0 || height < 0) ? CGRectInfinite : grabRect.toCGRect();
+    CGRect cgRect = grabRect.isValid() ? grabRect.toCGRect() : CGRectInfinite;
     const CGDisplayErr err = CGGetDisplaysWithRect(cgRect, maxDisplays, displays, &displayCount);
     if (err || displayCount == 0)
         return QPixmap();
 
-    // If the grab size is not specified, set it to be the bounding box of all screens,
-    if (width < 0 || height < 0) {
-        QRect windowRect;
-        for (uint i = 0; i < displayCount; ++i) {
-            QRect displayBounds = QRectF::fromCGRect(CGDisplayBounds(displays[i])).toRect();
-            // Only include the screen if it is positioned past the x/y position
-            if ((displayBounds.x() >= x || displayBounds.right() > x) &&
-                (displayBounds.y() >= y || displayBounds.bottom() > y)) {
-                windowRect = windowRect.united(displayBounds);
-            }
-        }
-        if (grabRect.width() < 0)
-            grabRect.setWidth(windowRect.width());
-        if (grabRect.height() < 0)
-            grabRect.setHeight(windowRect.height());
-    }
-
     qCDebug(lcQpaScreen) << "final grab rect" << grabRect << "from" << displayCount << "displays";
 
     // Grab images from each display
-    QVector<QImage> images;
+    QVector<QPixmap> pixmaps;
     QVector<QRect> destinations;
     for (uint i = 0; i < displayCount; ++i) {
         auto display = displays[i];
-        QRect displayBounds = QRectF::fromCGRect(CGDisplayBounds(display)).toRect();
-        QRect grabBounds = displayBounds.intersected(grabRect);
+        const QRect displayBounds = QRectF::fromCGRect(CGDisplayBounds(display)).toRect();
+        const QRect grabBounds = displayBounds.intersected(grabRect);
         if (grabBounds.isNull()) {
             destinations.append(QRect());
-            images.append(QImage());
+            pixmaps.append(QPixmap());
             continue;
         }
-        QRect displayLocalGrabBounds = QRect(QPoint(grabBounds.topLeft() - displayBounds.topLeft()), grabBounds.size());
-        QImage displayImage = qt_mac_toQImage(QCFType<CGImageRef>(CGDisplayCreateImageForRect(display, displayLocalGrabBounds.toCGRect())));
-        displayImage.setDevicePixelRatio(displayImage.size().width() / displayLocalGrabBounds.size().width());
-        images.append(displayImage);
-        QRect destBounds = QRect(QPoint(grabBounds.topLeft() - grabRect.topLeft()), grabBounds.size());
+        const QRect displayLocalGrabBounds = QRect(QPoint(grabBounds.topLeft() - displayBounds.topLeft()), grabBounds.size());
+
+        qCDebug(lcQpaScreen) << "grab display" << i << "global" << grabBounds << "local" << displayLocalGrabBounds;
+        QPixmap displayPixmap = grabFromDisplay(display, displayLocalGrabBounds);
+        // Fast path for when grabbing from a single screen only
+        if (displayCount == 1)
+            return displayPixmap;
+
+        qCDebug(lcQpaScreen) << "grab sub-image size" << displayPixmap.size() << "devicePixelRatio" << displayPixmap.devicePixelRatio();
+        pixmaps.append(displayPixmap);
+        const QRect destBounds = QRect(QPoint(grabBounds.topLeft() - grabRect.topLeft()), grabBounds.size());
         destinations.append(destBounds);
-        qCDebug(lcQpaScreen) << "grab display" << i << "global" << grabBounds << "local" << displayLocalGrabBounds
-                             << "grab image size" << displayImage.size() << "devicePixelRatio" << displayImage.devicePixelRatio();
     }
 
     // Determine the highest dpr, which becomes the dpr for the returned pixmap.
     qreal dpr = 1.0;
     for (uint i = 0; i < displayCount; ++i)
-        dpr = qMax(dpr, images.at(i).devicePixelRatio());
+        dpr = qMax(dpr, pixmaps.at(i).devicePixelRatio());
 
     // Allocate target pixmap and draw each screen's content
     qCDebug(lcQpaScreen) << "Create grap pixmap" << grabRect.size() << "at devicePixelRatio" << dpr;
@@ -664,7 +693,7 @@ QPixmap QCocoaScreen::grabWindow(WId view, int x, int y, int width, int height) 
     windowPixmap.fill(Qt::transparent);
     QPainter painter(&windowPixmap);
     for (uint i = 0; i < displayCount; ++i)
-        painter.drawImage(destinations.at(i), images.at(i));
+        painter.drawPixmap(destinations.at(i), pixmaps.at(i));
 
     return windowPixmap;
 }
@@ -754,17 +783,21 @@ QCocoaScreen *QCocoaScreen::get(CFUUIDRef uuid)
     return nullptr;
 }
 
+NSScreen *QCocoaScreen::nativeScreenForDisplayId(CGDirectDisplayID displayId)
+{
+    for (NSScreen *screen in NSScreen.screens) {
+        if (screen.qt_displayId == displayId)
+            return screen;
+    }
+    return nil;
+}
+
 NSScreen *QCocoaScreen::nativeScreen() const
 {
     if (!m_displayId)
         return nil; // The display has been disconnected
 
-    for (NSScreen *screen in NSScreen.screens) {
-        if (screen.qt_displayId == m_displayId)
-            return screen;
-    }
-
-    return nil;
+    return nativeScreenForDisplayId(m_displayId);
 }
 
 CGPoint QCocoaScreen::mapToNative(const QPointF &pos, QCocoaScreen *screen)

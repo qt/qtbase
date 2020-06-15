@@ -703,10 +703,11 @@ QScreen *QScreen::virtualSiblingAt(QPoint point)
 /*!
     Creates and returns a pixmap constructed by grabbing the contents
     of the given \a window restricted by QRect(\a x, \a y, \a width,
-    \a height).
+    \a height). If \a window is 0, then the entire screen will be
+    grabbed.
 
     The arguments (\a{x}, \a{y}) specify the offset in the window,
-    whereas (\a{width}, \a{height}) specify the area to be copied.  If
+    whereas (\a{width}, \a{height}) specify the area to be copied. If
     \a width is negative, the function copies everything to the right
     border of the window. If \a height is negative, the function
     copies everything to the bottom of the window.

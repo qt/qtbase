@@ -79,6 +79,7 @@ public:
 
     // ----------------------------------------------------
 
+    static NSScreen *nativeScreenForDisplayId(CGDirectDisplayID displayId);
     NSScreen *nativeScreen() const;
 
     void requestUpdate();
