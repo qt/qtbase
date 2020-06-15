@@ -96,7 +96,7 @@ class Q_AUTOTEST_EXPORT QNetworkStatusMonitor : public QObject
     Q_OBJECT
 
 public:
-    QNetworkStatusMonitor();
+    QNetworkStatusMonitor(QObject *parent);
     ~QNetworkStatusMonitor();
 
     bool isNetworkAccessible();
@@ -104,6 +104,8 @@ public:
     bool start();
     void stop();
     bool isMonitoring() const;
+
+    bool event(QEvent *event) override;
 
     static bool isEnabled();
 

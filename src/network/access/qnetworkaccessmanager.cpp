@@ -477,12 +477,13 @@ QNetworkAccessManager::QNetworkAccessManager(QObject *parent)
     Q_D(QNetworkAccessManager);
 
     if (QNetworkStatusMonitor::isEnabled()) {
-        connect(&d->statusMonitor, SIGNAL(onlineStateChanged(bool)),
+        d->statusMonitor = new QNetworkStatusMonitor(this);
+        connect(d->statusMonitor, SIGNAL(onlineStateChanged(bool)),
                 SLOT(_q_onlineStateChanged(bool)));
 #ifdef QT_NO_BEARERMANAGEMENT
-        d->networkAccessible = d->statusMonitor.isNetworkAccessible();
+        d->networkAccessible = d->statusMonitor->isNetworkAccessible();
 #else
-        d->networkAccessible = d->statusMonitor.isNetworkAccessible() ? Accessible : NotAccessible;
+        d->networkAccessible = d->statusMonitor->isNetworkAccessible() ? Accessible : NotAccessible;
     } else {
         // if a session is required, we track online state through
         // the QNetworkSession's signals if a request is already made.
@@ -1047,7 +1048,7 @@ QNetworkConfiguration QNetworkAccessManager::configuration() const
     Q_D(const QNetworkAccessManager);
 
     QSharedPointer<QNetworkSession> session(d->getNetworkSession());
-    if (session && !d->statusMonitor.isEnabled()) {
+    if (session && !d->statusMonitor->isEnabled()) {
         return session->configuration();
     } else {
         return d->networkConfigurationManager.defaultConfiguration();
@@ -1075,7 +1076,7 @@ QNetworkConfiguration QNetworkAccessManager::activeConfiguration() const
     Q_D(const QNetworkAccessManager);
 
     QSharedPointer<QNetworkSession> networkSession(d->getNetworkSession());
-    if (networkSession && !d->statusMonitor.isEnabled()) {
+    if (networkSession && !d->statusMonitor->isEnabled()) {
         return d->networkConfigurationManager.configurationFromIdentifier(
             networkSession->sessionProperty(QLatin1String("ActiveConfiguration")).toString());
     } else {
@@ -1119,9 +1120,9 @@ QNetworkAccessManager::NetworkAccessibility QNetworkAccessManager::networkAccess
 {
     Q_D(const QNetworkAccessManager);
 
-    if (d->statusMonitor.isEnabled()) {
-        if (!d->statusMonitor.isMonitoring())
-            d->statusMonitor.start();
+    if (d->statusMonitor->isEnabled()) {
+        if (!d->statusMonitor->isMonitoring())
+            d->statusMonitor->start();
         return d->networkAccessible;
     }
 
@@ -1446,15 +1447,15 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         }
     }
 
-    if (d->statusMonitor.isEnabled()) {
-        if (!d->statusMonitor.isMonitoring() && !d->statusMonitor.start())
+    if (d->statusMonitor->isEnabled()) {
+        if (!d->statusMonitor->isMonitoring() && !d->statusMonitor->start())
             qWarning(lcNetMon, "failed to start network status monitoring");
 
         // See the code in ctor - QNetworkStatusMonitor allows us to
         // immediately set 'networkAccessible' even before we start
         // the monitor. If the monitor is unable to monitor then let's
         // assume there's something wrong with the monitor and keep going.
-        if (d->statusMonitor.isMonitoring()
+        if (d->statusMonitor->isMonitoring()
 #ifdef QT_NO_BEARERMANAGEMENT
             && !d->networkAccessible
 #else
@@ -1555,7 +1556,7 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
 #endif
         QNetworkReplyHttpImpl *reply = new QNetworkReplyHttpImpl(this, request, op, outgoingData);
 #ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-        if (!d->statusMonitor.isEnabled()) {
+        if (!d->statusMonitor->isEnabled()) {
             connect(this, SIGNAL(networkSessionConnected()),
                     reply, SLOT(_q_networkSessionConnected()));
         }
@@ -2117,7 +2118,7 @@ void QNetworkAccessManagerPrivate::_q_onlineStateChanged(bool isOnline)
 {
     Q_Q(QNetworkAccessManager);
 
-    if (statusMonitor.isEnabled()) {
+    if (statusMonitor->isEnabled()) {
         auto previous = networkAccessible;
         networkAccessible = isOnline ? QNetworkAccessManager::Accessible : QNetworkAccessManager::NotAccessible;
 QT_WARNING_PUSH
@@ -2160,7 +2161,7 @@ QT_WARNING_POP
 
 void QNetworkAccessManagerPrivate::_q_configurationChanged(const QNetworkConfiguration &configuration)
 {
-    if (statusMonitor.isEnabled())
+    if (statusMonitor->isEnabled())
         return;
 
     const QString id = configuration.identifier();
@@ -2195,7 +2196,7 @@ void QNetworkAccessManagerPrivate::_q_configurationChanged(const QNetworkConfigu
 
 void QNetworkAccessManagerPrivate::_q_networkSessionFailed(QNetworkSession::SessionError)
 {
-    if (statusMonitor.isEnabled())
+    if (statusMonitor->isEnabled())
         return;
 
     const auto cfgs = networkConfigurationManager.allConfigurations();

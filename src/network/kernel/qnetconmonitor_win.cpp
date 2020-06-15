@@ -512,7 +512,6 @@ public:
 
     Q_REQUIRED_RESULT
     bool start();
-    Q_REQUIRED_RESULT
     bool stop();
 
 private:
@@ -659,8 +658,6 @@ QNetworkStatusMonitorPrivate::~QNetworkStatusMonitorPrivate()
         return;
     if (monitoring)
         stop();
-    managerEvents.Reset();
-    CoUninitialize();
 }
 
 void QNetworkStatusMonitorPrivate::setConnectivity(NLM_CONNECTIVITY newConnectivity)
@@ -676,10 +673,20 @@ void QNetworkStatusMonitorPrivate::setConnectivity(NLM_CONNECTIVITY newConnectiv
 
 bool QNetworkStatusMonitorPrivate::start()
 {
-    if (comInitFailed)
-        return false;
-    Q_ASSERT(managerEvents);
     Q_ASSERT(!monitoring);
+
+    if (comInitFailed) {
+        auto hr = CoInitialize(nullptr);
+        if (FAILED(hr)) {
+            qCWarning(lcNetMon) << "Failed to initialize COM:" << errorStringFromHResult(hr);
+            comInitFailed = true;
+            return false;
+        }
+        comInitFailed = false;
+    }
+    if (!managerEvents)
+        managerEvents = new QNetworkListManagerEvents(this);
+
     if (managerEvents->start())
         monitoring = true;
     return monitoring;
@@ -689,11 +696,18 @@ void QNetworkStatusMonitorPrivate::stop()
 {
     Q_ASSERT(managerEvents);
     Q_ASSERT(monitoring);
-    if (managerEvents->stop())
-        monitoring = false;
+    // Can return false but realistically shouldn't since that would break everything:
+    managerEvents->stop();
+    monitoring = false;
+    managerEvents.Reset();
+
+    CoUninitialize();
 }
 
-QNetworkStatusMonitor::QNetworkStatusMonitor() : QObject(*new QNetworkStatusMonitorPrivate) {}
+QNetworkStatusMonitor::QNetworkStatusMonitor(QObject *parent)
+    : QObject(*new QNetworkStatusMonitorPrivate, parent)
+{
+}
 
 QNetworkStatusMonitor::~QNetworkStatusMonitor() {}
 
@@ -728,6 +742,16 @@ bool QNetworkStatusMonitor::isNetworkAccessible()
             & (NLM_CONNECTIVITY_IPV4_INTERNET | NLM_CONNECTIVITY_IPV6_INTERNET
                | NLM_CONNECTIVITY_IPV4_SUBNET | NLM_CONNECTIVITY_IPV6_SUBNET
                | NLM_CONNECTIVITY_IPV4_LOCALNETWORK | NLM_CONNECTIVITY_IPV6_LOCALNETWORK);
+}
+
+bool QNetworkStatusMonitor::event(QEvent *event)
+{
+    if (event->type() == QEvent::ThreadChange && isMonitoring()) {
+        stop();
+        QMetaObject::invokeMethod(this, &QNetworkStatusMonitor::start, Qt::QueuedConnection);
+    }
+
+    return QObject::event(event);
 }
 
 bool QNetworkStatusMonitor::isEnabled()
