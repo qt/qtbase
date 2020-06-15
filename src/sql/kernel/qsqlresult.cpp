@@ -58,23 +58,9 @@ QString QSqlResultPrivate::holderAt(int index) const
     return holders.size() > index ? holders.at(index).holderName : fieldSerial(index);
 }
 
-// return a unique id for bound names
 QString QSqlResultPrivate::fieldSerial(int i) const
 {
-    char16_t arr[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    auto end = std::end(arr);
-    auto ptr = end;
-
-    while (i > 0) {
-        *(--ptr) = 'a' + i % 16;
-        i >>= 4;
-    }
-
-    const int nb = end - ptr;
-    *(--ptr) = 'a' + nb;
-    *(--ptr) = ':';
-
-    return QString::fromUtf16(ptr, int(end - ptr));
+    return QString(QLatin1String(":%1")).arg(i);
 }
 
 static bool qIsAlnum(QChar ch)
