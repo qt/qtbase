@@ -112,6 +112,20 @@ QXcbVirtualDesktop::QXcbVirtualDesktop(QXcbConnection *connection, xcb_screen_t 
 
         xcb_depth_next(&depth_iterator);
     }
+
+    auto dpiChangedCallback = [](QXcbVirtualDesktop *desktop, const QByteArray &, const QVariant &property, void *) {
+        bool ok;
+        int dpiTimes1k = property.toInt(&ok);
+        if (!ok)
+            return;
+        int dpi = dpiTimes1k / 1024;
+        if (desktop->m_forcedDpi == dpi)
+            return;
+        desktop->m_forcedDpi = dpi;
+        for (QXcbScreen *screen : desktop->connection()->screens())
+            QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(screen->QPlatformScreen::screen(), dpi, dpi);
+    };
+    xSettings()->registerCallbackForProperty("Xft/DPI", dpiChangedCallback, nullptr);
 }
 
 QXcbVirtualDesktop::~QXcbVirtualDesktop()
