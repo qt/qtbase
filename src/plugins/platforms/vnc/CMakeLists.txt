@@ -23,7 +23,6 @@ qt_internal_add_plugin(QVncIntegrationPlugin
         Qt::Gui
         Qt::GuiPrivate
         Qt::Network
-        Qt::ServiceSupportPrivate
 )
 
 #### Keys ignored in scope 1:.:.:vnc.pro:<TRUE>:

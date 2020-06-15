@@ -28,7 +28,6 @@ qt_internal_add_plugin(QDirectFbIntegrationPlugin
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate
-        Qt::ServiceSupportPrivate
 )
 
 #### Keys ignored in scope 1:.:.:directfb.pro:<TRUE>:

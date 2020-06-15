@@ -4,7 +4,6 @@ DEFINES += QT_NO_FOREACH
 
 QT += \
     core-private gui-private \
-    service_support-private \
     fb_support-private
 
 qtHaveModule(input_support-private): \

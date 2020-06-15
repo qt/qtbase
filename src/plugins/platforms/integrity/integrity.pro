@@ -2,7 +2,6 @@ TARGET = integrityfb
 
 QT += \
     core-private gui-private \
-    service_support-private \
     fb_support-private
 
 SOURCES = \

@@ -60,7 +60,7 @@
 #include <xcb/xcb.h>
 
 #include <QtGui/private/qgenericunixfontdatabase_p.h>
-#include <QtServiceSupport/private/qgenericunixservices_p.h>
+#include <QtGui/private/qgenericunixservices_p.h>
 #if QT_CONFIG(opengl)
 #include <QtOpenGL/qpa/qplatformbackingstoreopenglsupport.h>
 #endif

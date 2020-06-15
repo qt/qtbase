@@ -4,7 +4,7 @@ DEFINES += QT_NO_FOREACH
 
 QT += \
     core-private gui-private \
-    service_support-private theme_support-private \
+    theme_support-private \
     edid_support-private \
     xkbcommon_support-private
 

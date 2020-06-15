@@ -15,7 +15,6 @@
     "QtDeviceDiscoverySupport" => "$basedir/src/platformsupport/devicediscovery",
     "QtInputSupport" => "$basedir/src/platformsupport/input",
     "QtXkbCommonSupport" => "$basedir/src/platformsupport/input/xkbcommon",
-    "QtServiceSupport" => "$basedir/src/platformsupport/services",
     "QtThemeSupport" => "$basedir/src/platformsupport/themes",
     "QtEglSupport" => "$basedir/src/platformsupport/eglconvenience",
     "QtFbSupport" => "$basedir/src/platformsupport/fbconvenience",

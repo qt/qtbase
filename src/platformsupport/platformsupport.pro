@@ -14,9 +14,6 @@ qtConfig(evdev)|qtConfig(tslib)|qtConfig(libinput)|qtConfig(integrityhid)|qtConf
     input.depends += devicediscovery
 }
 
-if(unix:!uikit)|qtConfig(xcb): \
-    SUBDIRS += services
-
 qtConfig(egl): \
     SUBDIRS += eglconvenience
 qtConfig(xlib):qtConfig(opengl):!qtConfig(opengles2): \

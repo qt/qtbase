@@ -859,6 +859,16 @@ qt_extend_target(Gui CONDITION QT_FEATURE_glib AND UNIX
         GLIB2::GLIB2
 )
 
+qt_extend_target(Gui CONDITION UNIX AND (QT_FEATURE_xcb OR NOT UIKIT)
+    SOURCES
+        platform/unix/qgenericunixservices.cpp platform/unix/qgenericunixservices_p.h
+)
+
+qt_extend_target(Gui CONDITION TARGET Qt::DBus AND UNIX AND (QT_FEATURE_xcb OR NOT UIKIT)
+    LIBRARIES
+        Qt::DBus
+)
+
 qt_extend_target(Gui CONDITION IOS OR MACOS
     SOURCES
         rhi/qrhimetal.mm rhi/qrhimetal_p.h

@@ -44,7 +44,7 @@
 #endif
 
 #include <QtGui/private/qgenericunixfontdatabase_p.h>
-#include <QtServiceSupport/private/qgenericunixservices_p.h>
+#include <QtGui/private/qgenericunixservices_p.h>
 #include <QtGui/private/qgenericunixeventdispatcher_p.h>
 
 #include <QtFbSupport/private/qfbvthandler_p.h>

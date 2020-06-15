@@ -46,7 +46,7 @@
 
 #include <QtGui/private/qgenericunixfontdatabase_p.h>
 #include <QtGui/private/qgenericunixeventdispatcher_p.h>
-#include <QtServiceSupport/private/qgenericunixservices_p.h>
+#include <QtGui/private/qgenericunixservices_p.h>
 
 #include <QtGui/private/qpixmap_blitter_p.h>
 #include <QtGui/private/qpixmap_raster_p.h>
