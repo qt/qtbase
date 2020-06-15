@@ -1752,7 +1752,9 @@ void QSslSocketBackendPrivate::_q_caRootLoaded(QSslCertificate cert, QSslCertifi
     if (!trustedRoot.isNull() && !trustedRoot.isBlacklisted()) {
         if (s_loadRootCertsOnDemand) {
             //Add the new root cert to default cert list for use by future sockets
-            QSslSocket::addDefaultCaCertificate(trustedRoot);
+            auto defaultConfig = QSslConfiguration::defaultConfiguration();
+            defaultConfig.addCaCertificate(trustedRoot);
+            QSslConfiguration::setDefaultConfiguration(defaultConfig);
         }
         //Add the new root cert to this socket for future connections
         if (!configuration.caCertificates.contains(trustedRoot))

@@ -32,6 +32,7 @@
 #include <qsslkey.h>
 #include <qsslsocket.h>
 #include <qsslcertificateextension.h>
+#include <qscopeguard.h>
 
 #ifndef QT_NO_OPENSSL
 #include <openssl/obj_mac.h>
@@ -1000,11 +1001,15 @@ void tst_QSslCertificate::verify()
 
     // Verify a valid cert signed by a CA
     QList<QSslCertificate> caCerts = QSslCertificate::fromPath(testDataDir + "verify-certs/cacert.pem", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString);
-
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    QSslSocket::addDefaultCaCertificate(caCerts.first());
-QT_WARNING_POP
+    // For the purpose of this test only, add (and then remove) the
+    // specific CA certificate.
+    const auto defaultConfig = QSslConfiguration::defaultConfiguration();
+    auto temporaryDefault = defaultConfig;
+    temporaryDefault.addCaCertificate(caCerts.first());
+    QSslConfiguration::setDefaultConfiguration(temporaryDefault);
+    const auto confGuard = qScopeGuard([&defaultConfig](){
+        QSslConfiguration::setDefaultConfiguration(defaultConfig);
+    });
 
     toVerify = QSslCertificate::fromPath(testDataDir + "verify-certs/test-ocsp-good-cert.pem", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString);
 

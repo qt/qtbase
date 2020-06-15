@@ -196,25 +196,6 @@ public:
                        const QByteArray &passPhrase = QByteArray());
     QSslKey privateKey() const;
 
-    // CA settings.
-#if QT_DEPRECATED_SINCE(5, 15)
-    QT_DEPRECATED_X("Use QSslConfiguration::addCaCertificate()") void addCaCertificate(const QSslCertificate &certificate);
-    QT_DEPRECATED_X("Use QSslConfiguration::addCaCertificates()") void addCaCertificates(const QList<QSslCertificate> &certificates);
-#endif // QT_DEPRECATED_SINCE(5, 15)
-#if QT_DEPRECATED_SINCE(5, 5)
-    QT_DEPRECATED_X("Use QSslConfiguration::setCaCertificates()") void setCaCertificates(const QList<QSslCertificate> &certificates);
-    QT_DEPRECATED_X("Use QSslConfiguration::caCertificates()") QList<QSslCertificate> caCertificates() const;
-#endif // QT_DEPRECATED_SINCE(5, 5)
-#if QT_DEPRECATED_SINCE(5, 15)
-    QT_DEPRECATED static void addDefaultCaCertificate(const QSslCertificate &certificate);
-    QT_DEPRECATED static void addDefaultCaCertificates(const QList<QSslCertificate> &certificates);
-#endif // QT_DEPRECATED_SINCE(5, 15)
-#if QT_DEPRECATED_SINCE(5, 5)
-    QT_DEPRECATED static void setDefaultCaCertificates(const QList<QSslCertificate> &certificates);
-    QT_DEPRECATED static QList<QSslCertificate> defaultCaCertificates();
-    QT_DEPRECATED_X("Use QSslConfiguration::systemCaCertificates()") static QList<QSslCertificate> systemCaCertificates();
-#endif // QT_DEPRECATED_SINCE(5, 5)
-
     bool waitForConnected(int msecs = 30000) override;
     bool waitForEncrypted(int msecs = 30000);
     bool waitForReadyRead(int msecs = 30000) override;

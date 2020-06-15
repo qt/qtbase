@@ -92,7 +92,7 @@ void tst_QSslSocket::systemCaCertificates()
   // Therefore this benchmark is only good for manual regression checking between
   // Qt versions.
   QBENCHMARK_ONCE {
-     QList<QSslCertificate> list = QSslSocket::systemCaCertificates();
+      QList<QSslCertificate> list = QSslConfiguration::defaultConfiguration().systemCaCertificates();
   }
 }
 
