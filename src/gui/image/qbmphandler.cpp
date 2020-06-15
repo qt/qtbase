@@ -188,6 +188,8 @@ static bool read_dib_infoheader(QDataStream &s, BMP_INFOHDR &bi)
     if (!(comp == BMP_RGB || (nbits == 4 && comp == BMP_RLE4) ||
         (nbits == 8 && comp == BMP_RLE8) || ((nbits == 16 || nbits == 32) && comp == BMP_BITFIELDS)))
          return false;                                // weird compression type
+    if (bi.biHeight == INT_MIN)
+        return false; // out of range for positive int
     if (bi.biWidth <= 0 || !bi.biHeight || quint64(bi.biWidth) * qAbs(bi.biHeight) > 16384 * 16384)
         return false;
 
