@@ -5090,6 +5090,12 @@ endfunction()
 # 'input_file_list' is a list of 'foo.g' file paths.
 # 'flags' are extra flags to be passed to qlalr.
 function(qt_process_qlalr consuming_target input_file_list flags)
+    # Don't try to extend_target when cross compiling an imported host target (like a tool).
+    qt_is_imported_target("${consuming_target}" is_imported)
+    if(is_imported)
+        return()
+    endif()
+
     foreach(input_file ${input_file_list})
         file(STRINGS ${input_file} input_file_lines)
         qt_qlalr_find_option_in_list("${input_file_lines}" "^%parser(.+)" "parser")
