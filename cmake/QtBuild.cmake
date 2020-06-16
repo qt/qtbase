@@ -2918,6 +2918,15 @@ function(qt_generate_prl_file target install_dir)
         return()
     endif()
 
+    get_target_property(rcc_objects ${target} QT_RCC_OBJECTS)
+    if(rcc_objects)
+        if(QT_WILL_INSTALL)
+            list(TRANSFORM rcc_objects PREPEND "$$[QT_INSTALL_LIBS]/")
+        endif()
+    else()
+        unset(rcc_objects)
+    endif()
+
     unset(prl_libs)
     qt_collect_libs(${target} prl_libs)
 
@@ -2940,7 +2949,8 @@ function(qt_generate_prl_file target install_dir)
     file(GENERATE
         OUTPUT "${prl_file_name}"
         CONTENT
-        "QMAKE_PRL_BUILD_DIR = ${CMAKE_CURRENT_BINARY_DIR}
+        "RCC_OBJECTS = ${rcc_objects}
+QMAKE_PRL_BUILD_DIR = ${CMAKE_CURRENT_BINARY_DIR}
 QMAKE_PRL_TARGET = $<TARGET_FILE_NAME:${target}>
 QMAKE_PRL_CONFIG = ${prl_config}
 QMAKE_PRL_VERSION = ${PROJECT_VERSION}
@@ -3483,6 +3493,24 @@ function(qt_add_resource target resourceName)
             EXPORT "${INSTALL_CMAKE_NAMESPACE}${target}Targets"
             DESTINATION ${INSTALL_LIBDIR}
         )
+        foreach(out_target ${out_targets})
+            get_target_property(resource_name ${out_target} QT_RESOURCE_NAME)
+            if(NOT resource_name)
+                continue()
+            endif()
+            if(QT_WILL_INSTALL)
+                # Compute the install location of the rcc object file.
+                # This is the relative path below the install destination (install_prefix/lib).
+                # See CMake's computeInstallObjectDir function.
+                set(object_file_name "qrc_${resource_name}.cpp${CMAKE_CXX_OUTPUT_EXTENSION}")
+                qt_path_join(rcc_object_file_path
+                    "objects-$<CONFIG>" ${out_target} .rcc "${object_file_name}")
+            else()
+                # In a non-prefix build we use the object file paths right away.
+                set(rcc_object_file_path $<TARGET_OBJECTS:$<TARGET_NAME:${out_target}>>)
+            endif()
+            set_property(TARGET ${target} APPEND PROPERTY QT_RCC_OBJECTS "${rcc_object_file_path}")
+        endforeach()
    endif()
 
 endfunction()
