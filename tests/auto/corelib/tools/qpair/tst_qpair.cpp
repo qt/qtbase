@@ -89,7 +89,6 @@ Q_STATIC_ASSERT(!QTypeInfo<QPairPM>::isStatic );
 Q_STATIC_ASSERT(!QTypeInfo<QPairPP>::isComplex);
 Q_STATIC_ASSERT(!QTypeInfo<QPairPP>::isStatic );
 
-Q_STATIC_ASSERT(!QTypeInfo<QPairPP>::isDummy  );
 Q_STATIC_ASSERT(!QTypeInfo<QPairPP>::isPointer);
 
 

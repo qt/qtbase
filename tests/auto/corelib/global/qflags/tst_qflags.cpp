@@ -151,7 +151,6 @@ Q_DECLARE_FLAGS( MyStrictNoOpFlags, MyStrictNoOpEnum )
 
 Q_STATIC_ASSERT( !QTypeInfo<MyStrictFlags>::isComplex );
 Q_STATIC_ASSERT( !QTypeInfo<MyStrictFlags>::isStatic );
-Q_STATIC_ASSERT( !QTypeInfo<MyStrictFlags>::isLarge );
 Q_STATIC_ASSERT( !QTypeInfo<MyStrictFlags>::isPointer );
 
 void tst_QFlags::classEnum()
@@ -322,7 +321,6 @@ Q_DECLARE_OPERATORS_FOR_FLAGS( MyFlags )
 
 Q_STATIC_ASSERT( !QTypeInfo<MyFlags>::isComplex );
 Q_STATIC_ASSERT( !QTypeInfo<MyFlags>::isStatic );
-Q_STATIC_ASSERT( !QTypeInfo<MyFlags>::isLarge );
 Q_STATIC_ASSERT( !QTypeInfo<MyFlags>::isPointer );
 
 QTEST_MAIN(tst_QFlags)

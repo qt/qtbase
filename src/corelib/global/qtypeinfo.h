@@ -52,21 +52,13 @@ QT_BEGIN_NAMESPACE
 template <typename T>
 static constexpr bool qIsRelocatable()
 {
-#if defined(Q_CC_CLANG) || !defined(Q_CC_GNU) || Q_CC_GNU >= 501
     return std::is_trivially_copyable<T>::value && std::is_trivially_destructible<T>::value;
-#else
-    return std::is_enum<T>::value || std::is_integral<T>::value;
-#endif
 }
 
 template <typename T>
 static constexpr bool qIsTrivial()
 {
-#if defined(Q_CC_CLANG) || !defined(Q_CC_GNU) || Q_CC_GNU >= 501
     return std::is_trivial<T>::value;
-#else
-    return std::is_enum<T>::value || std::is_integral<T>::value;
-#endif
 }
 
 /*
@@ -78,14 +70,11 @@ class QTypeInfo
 {
 public:
     enum {
-        isSpecialized = std::is_enum<T>::value, // don't require every enum to be marked manually
         isPointer = false,
         isIntegral = std::is_integral<T>::value,
         isComplex = !qIsTrivial<T>(),
         isStatic = true,
         isRelocatable = qIsRelocatable<T>(),
-        isLarge = (sizeof(T)>sizeof(void*)),
-        isDummy = false, //### Qt6: remove
         sizeOf = sizeof(T)
     };
 };
@@ -95,14 +84,11 @@ class QTypeInfo<void>
 {
 public:
     enum {
-        isSpecialized = true,
         isPointer = false,
         isIntegral = false,
         isComplex = false,
         isStatic = false,
         isRelocatable = false,
-        isLarge = false,
-        isDummy = false,
         sizeOf = 0
     };
 };
@@ -112,14 +98,11 @@ class QTypeInfo<T*>
 {
 public:
     enum {
-        isSpecialized = true,
         isPointer = true,
         isIntegral = false,
         isComplex = false,
         isStatic = false,
         isRelocatable = true,
-        isLarge = false,
-        isDummy = false,
         sizeOf = sizeof(T*)
     };
 };
@@ -175,14 +158,11 @@ class QTypeInfoMerger
 {
     static_assert(sizeof...(Ts) > 0);
 public:
-    static constexpr bool isSpecialized = true;
     static constexpr bool isComplex = ((QTypeInfoQuery<Ts>::isComplex) || ...);
     static constexpr bool isStatic =  ((QTypeInfoQuery<Ts>::isStatic) || ...);
     static constexpr bool isRelocatable = ((QTypeInfoQuery<Ts>::isRelocatable) && ...);
-    static constexpr bool isLarge = sizeof(T) > sizeof(void*);
     static constexpr bool isPointer = false;
     static constexpr bool isIntegral = false;
-    static constexpr bool isDummy = false;
     static constexpr std::size_t sizeOf = sizeof(T);
 };
 
@@ -193,14 +173,11 @@ class QTypeInfo< CONTAINER<T> > \
 { \
 public: \
     enum { \
-        isSpecialized = true, \
         isPointer = false, \
         isIntegral = false, \
         isComplex = true, \
         isRelocatable = true, \
         isStatic = false, \
-        isLarge = (sizeof(CONTAINER<T>) > sizeof(void*)), \
-        isDummy = false, \
         sizeOf = sizeof(CONTAINER<T>) \
     }; \
 }
@@ -212,7 +189,6 @@ Q_DECLARE_MOVABLE_CONTAINER(QSet);
 
 #undef Q_DECLARE_MOVABLE_CONTAINER
 
-/* These cannot be movable before ### Qt 6, for BC reasons */
 #define Q_DECLARE_MOVABLE_CONTAINER(CONTAINER) \
 template <typename K, typename V> class CONTAINER; \
 template <typename K, typename V> \
@@ -220,14 +196,11 @@ class QTypeInfo< CONTAINER<K, V> > \
 { \
 public: \
     enum { \
-        isSpecialized = true, \
         isPointer = false, \
         isIntegral = false, \
         isComplex = true, \
-        isStatic = (QT_VERSION < QT_VERSION_CHECK(6, 0, 0)), \
+        isStatic = false, \
         isRelocatable = true, \
-        isLarge = (sizeof(CONTAINER<K, V>) > sizeof(void*)), \
-        isDummy = false, \
         sizeOf = sizeof(CONTAINER<K, V>) \
     }; \
 }
@@ -261,14 +234,11 @@ class QTypeInfo<TYPE > \
 { \
 public: \
     enum { \
-        isSpecialized = true, \
         isComplex = (((FLAGS) & Q_PRIMITIVE_TYPE) == 0) && !qIsTrivial<TYPE>(), \
         isStatic = (((FLAGS) & (Q_MOVABLE_TYPE | Q_PRIMITIVE_TYPE)) == 0), \
         isRelocatable = !isStatic || ((FLAGS) & Q_RELOCATABLE_TYPE) || qIsRelocatable<TYPE>(), \
-        isLarge = (sizeof(TYPE)>sizeof(void*)), \
         isPointer = false, \
         isIntegral = std::is_integral< TYPE >::value, \
-        isDummy = (((FLAGS) & Q_DUMMY_TYPE) != 0), \
         sizeOf = sizeof(TYPE) \
     }; \
     static inline const char *name() { return #TYPE; } \
