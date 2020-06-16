@@ -1151,7 +1151,6 @@ public class ExtractStyle {
             json.put("width", bmp.getWidth());
             json.put("height", bmp.getHeight());
             m_drawableCache.put(filename, new DrawableCache(json, drawable));
-//            MinistroActivity.nativeChmode(filename, 0644);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -1972,11 +1971,9 @@ public class ExtractStyle {
 
     public ExtractStyle(Context context, String extractPath, boolean minimal)
     {
-//        Log.i(MinistroService.TAG, "Extract " + extractPath);
         m_minimal = minimal;
         m_extractPath = extractPath + "/";
         new File(m_extractPath).mkdirs();
-//        MinistroActivity.nativeChmode(m_extractPath, 0755);
         m_context = context;
         m_theme = context.getTheme();
         TypedArray array = m_theme.obtainStyledAttributes(new int[]{
@@ -2027,7 +2024,6 @@ public class ExtractStyle {
           }
           jsonWriter.endObject();
           jsonWriter.close();
-//          MinistroActivity.nativeChmode(m_extractPath+"style.json", 0644);
         }
         catch (Exception e) {
           e.printStackTrace();

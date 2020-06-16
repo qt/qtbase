@@ -1,9 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <array name="qt_sources">
-        <item>https://download.qt.io/ministro/android/qt5/qt-5.14</item>
-    </array>
-
     <!-- The following is handled automatically by the deployment tool. It should
          not be edited manually. -->
 

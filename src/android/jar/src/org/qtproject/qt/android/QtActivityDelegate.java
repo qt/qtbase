@@ -119,7 +119,6 @@ public class QtActivityDelegate
     private static final String ENVIRONMENT_VARIABLES_KEY = "environment.variables";
     private static final String APPLICATION_PARAMETERS_KEY = "application.parameters";
     private static final String STATIC_INIT_CLASSES_KEY = "static.init.classes";
-    private static final String NECESSITAS_API_LEVEL_KEY = "necessitas.api.level";
     private static final String EXTRACT_STYLE_KEY = "extract.android.style";
     private static final String EXTRACT_STYLE_MINIMAL_KEY = "extract.android.style.option";
 
@@ -674,14 +673,9 @@ public class QtActivityDelegate
             return false;
         }
 
-        int necessitasApiLevel = 1;
-        if (loaderParams.containsKey(NECESSITAS_API_LEVEL_KEY))
-            necessitasApiLevel = loaderParams.getInt(NECESSITAS_API_LEVEL_KEY);
-
         m_environmentVariables = loaderParams.getString(ENVIRONMENT_VARIABLES_KEY);
         String additionalEnvironmentVariables = "QT_ANDROID_FONTS_MONOSPACE=Droid Sans Mono;Droid Sans;Droid Sans Fallback"
                                               + "\tQT_ANDROID_FONTS_SERIF=Droid Serif"
-                                              + "\tNECESSITAS_API_LEVEL=" + necessitasApiLevel
                                               + "\tHOME=" + m_activity.getFilesDir().getAbsolutePath()
                                               + "\tTMPDIR=" + m_activity.getFilesDir().getAbsolutePath();
 
