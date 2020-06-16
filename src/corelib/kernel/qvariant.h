@@ -224,7 +224,9 @@ class Q_CORE_EXPORT QVariant
     QVariant(double d);
     QVariant(float f);
 #ifndef QT_NO_CAST_FROM_ASCII
-    QT_ASCII_CAST_WARN QVariant(const char *str);
+    QT_ASCII_CAST_WARN QVariant(const char *str)
+        : QVariant(QString::fromUtf8(str))
+    {}
 #endif
 
     QVariant(const QByteArray &bytearray);
@@ -512,22 +514,6 @@ public:
     inline const DataPtr &data_ptr() const { return d; }
 };
 
-#if QT_DEPRECATED_SINCE(5, 14)
-template <typename T>
-QT_DEPRECATED_X("Use QVariant::fromValue() instead.")
-inline QVariant qVariantFromValue(const T &t)
-{
-    return QVariant::fromValue(t);
-}
-
-template <typename T>
-QT_DEPRECATED_X("Use QVariant::setValue() instead.")
-inline void qVariantSetValue(QVariant &v, const T &t)
-{
-    v.setValue(t);
-}
-#endif
-
 template<>
 inline QVariant QVariant::fromValue(const QVariant &value)
 {
@@ -645,11 +631,7 @@ public:
 
     friend struct const_iterator;
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    explicit QSequentialIterable(QtMetaTypePrivate::QSequentialIterableImpl impl);
-#else
     explicit QSequentialIterable(const QtMetaTypePrivate::QSequentialIterableImpl &impl);
-#endif
 
     const_iterator begin() const;
     const_iterator end() const;
@@ -703,11 +685,7 @@ public:
 
     friend struct const_iterator;
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    explicit QAssociativeIterable(QtMetaTypePrivate::QAssociativeIterableImpl impl);
-#else
     explicit QAssociativeIterable(const QtMetaTypePrivate::QAssociativeIterableImpl &impl);
-#endif
 
     const_iterator begin() const;
     const_iterator end() const;
@@ -871,16 +849,6 @@ template<> inline QVariant qvariant_cast<QVariant>(const QVariant &v)
         return *reinterpret_cast<const QVariant *>(v.constData());
     return v;
 }
-
-#if QT_DEPRECATED_SINCE(5, 0)
-template<typename T>
-inline QT_DEPRECATED T qVariantValue(const QVariant &variant)
-{ return qvariant_cast<T>(variant); }
-
-template<typename T>
-inline QT_DEPRECATED bool qVariantCanConvert(const QVariant &variant)
-{ return variant.template canConvert<T>(); }
-#endif
 
 #endif
 

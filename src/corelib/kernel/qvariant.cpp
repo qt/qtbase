@@ -1828,14 +1828,6 @@ QVariant::QVariant(QDataStream &s)
     QT_NO_CAST_FROM_ASCII when you compile your applications.
 */
 
-#ifndef QT_NO_CAST_FROM_ASCII
-QVariant::QVariant(const char *val)
-{
-    QString s = QString::fromUtf8(val);
-    create(String, &s);
-}
-#endif
-
 /*!
   \fn QVariant::QVariant(const QStringList &val)
 
@@ -4305,11 +4297,7 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 /*!
     \internal
 */
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-QSequentialIterable::QSequentialIterable(QtMetaTypePrivate::QSequentialIterableImpl impl)
-#else
 QSequentialIterable::QSequentialIterable(const QtMetaTypePrivate::QSequentialIterableImpl &impl)
-#endif
   : m_impl(impl)
 {
 }
@@ -4624,11 +4612,7 @@ QSequentialIterable::const_iterator QSequentialIterable::const_iterator::operato
 /*!
     \internal
 */
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-QAssociativeIterable::QAssociativeIterable(QtMetaTypePrivate::QAssociativeIterableImpl impl)
-#else
 QAssociativeIterable::QAssociativeIterable(const QtMetaTypePrivate::QAssociativeIterableImpl &impl)
-#endif
   : m_impl(impl)
 {
 }
