@@ -293,6 +293,10 @@
     any longer), you can force removal of your resources by calling
     \l Q_CLEANUP_RESOURCE() with the same base name as above.
 
-    Note: The use of \l Q_INIT_RESOURCE() and \l Q_CLEANUP_RESOURCE() is
-    not necessary when the resource is built as part of the application.
+    \note The use of \l Q_INIT_RESOURCE() and \l Q_CLEANUP_RESOURCE() is
+    not necessary in the following cases:
+    \list
+    \li When the resource is built as part of the application.
+    \li When the resource is built with CMake as part of a static library.
+    \endlist
 */
