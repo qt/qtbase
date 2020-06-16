@@ -168,8 +168,6 @@ public class QtActivity extends Activity
             QtApplication.invokeDelegateMethod(QtApplication.onActivityResult, requestCode, resultCode, data);
             return;
         }
-        if (requestCode == QtLoader.MINISTRO_INSTALL_REQUEST_CODE)
-            m_loader.startApp(false);
         super.onActivityResult(requestCode, resultCode, data);
     }
     public void super_onActivityResult(int requestCode, int resultCode, Intent data)

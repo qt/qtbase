@@ -137,8 +137,7 @@ struct Options
 
     enum DeploymentMechanism
     {
-        Bundled,
-        Ministro
+        Bundled
     };
 
     enum TriState {
@@ -452,9 +451,7 @@ Options parseOptions()
                 options.helpRequested = true;
             } else {
                 QString deploymentMechanism = arguments.at(++i);
-                if (deploymentMechanism.compare(QLatin1String("ministro"), Qt::CaseInsensitive) == 0) {
-                    options.deploymentMechanism = Options::Ministro;
-                } else if (deploymentMechanism.compare(QLatin1String("bundled"), Qt::CaseInsensitive) == 0) {
+                if (deploymentMechanism.compare(QLatin1String("bundled"), Qt::CaseInsensitive) == 0) {
                     options.deploymentMechanism = Options::Bundled;
                 } else {
                     fprintf(stderr, "Unrecognized deployment mechanism: %s\n", qPrintable(deploymentMechanism));
@@ -595,7 +592,6 @@ void printHelp()
                     "\n"
                     "    --deployment <mechanism>: Supported deployment mechanisms:\n"
                     "       bundled (default): Include Qt files in stand-alone package.\n"
-                    "       ministro: Use the Ministro service to manage Qt files.\n"
                     "\n"
                     "    --aab: Build an Android App Bundle.\n"
                     "\n"
@@ -1474,8 +1470,8 @@ bool updateAndroidManifest(Options &options)
     replacements[QStringLiteral("package=\"org.qtproject.example\"")] = QLatin1String("package=\"%1\"").arg(options.packageName);
     replacements[QStringLiteral("-- %%BUNDLE_LOCAL_QT_LIBS%% --")]
             = (options.deploymentMechanism == Options::Bundled) ? QLatin1String("1") : QLatin1String("0");
-    replacements[QStringLiteral("-- %%USE_LOCAL_QT_LIBS%% --")]
-            = (options.deploymentMechanism != Options::Ministro) ? QLatin1String("1") : QLatin1String("0");
+     // use libs from the apk
+    replacements[QStringLiteral("-- %%USE_LOCAL_QT_LIBS%% --")] = QLatin1String("1");
 
     QString permissions;
     for (const QString &permission : qAsConst(options.permissions))
@@ -2222,9 +2218,6 @@ bool copyQtFiles(Options *options)
         switch (options->deploymentMechanism) {
         case Options::Bundled:
             fprintf(stdout, "Copying %zd dependencies from Qt into package.\n", size_t(options->qtDependencies.size()));
-            break;
-        case Options::Ministro:
-            fprintf(stdout, "Setting %zd dependencies from Qt in package.\n", size_t(options->qtDependencies.size()));
             break;
         };
     }
@@ -3035,7 +3028,7 @@ int main(int argc, char *argv[])
             fprintf(stdout, "[TIMING] %d ms: Copied extra resources\n", options.timer.elapsed());
 
         if (!options.auxMode) {
-            if (options.deploymentMechanism != Options::Ministro && !copyStdCpp(&options))
+            if (!copyStdCpp(&options))
                 return CannotCopyGnuStl;
 
             if (Q_UNLIKELY(options.timing))
@@ -3048,10 +3041,8 @@ int main(int argc, char *argv[])
         if (Q_UNLIKELY(options.timing))
             fprintf(stdout, "[TIMING] %d ms: Checked for application binary\n", options.timer.elapsed());
 
-        if (options.deploymentMechanism != Options::Ministro) {
-            if (Q_UNLIKELY(options.timing))
-                fprintf(stdout, "[TIMING] %d ms: Bundled Qt libs\n", options.timer.elapsed());
-        }
+        if (Q_UNLIKELY(options.timing))
+            fprintf(stdout, "[TIMING] %d ms: Bundled Qt libs\n", options.timer.elapsed());
     }
 
     if (!createRcc(options))

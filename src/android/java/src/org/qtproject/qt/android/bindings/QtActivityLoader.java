@@ -58,32 +58,6 @@ public class QtActivityLoader extends QtLoader {
         super(activity, QtActivity.class);
         m_activity = activity;
     }
-    @Override
-    protected void downloadUpgradeMinistro(String msg) {
-        AlertDialog.Builder downloadDialog = new AlertDialog.Builder(m_activity);
-        downloadDialog.setMessage(msg);
-        downloadDialog.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                try {
-                    Uri uri = Uri.parse("market://details?id=org.kde.necessitas.ministro");
-                    Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-                    m_activity.startActivityForResult(intent, MINISTRO_INSTALL_REQUEST_CODE);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    ministroNotFound();
-                }
-            }
-        });
-
-        downloadDialog.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                m_activity.finish();
-            }
-        });
-        downloadDialog.show();
-    }
 
     @Override
     protected String loaderClassName() {

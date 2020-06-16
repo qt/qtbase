@@ -37,21 +37,14 @@
 package org.qtproject.qt.android.bindings;
 
 import android.app.AlertDialog;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.pm.ComponentInfo;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.IBinder;
-import android.os.RemoteException;
 import android.util.Log;
-
-import org.kde.necessitas.ministro.IMinistro;
-import org.kde.necessitas.ministro.IMinistroCallback;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -65,11 +58,6 @@ import dalvik.system.DexClassLoader;
 
 public abstract class QtLoader {
 
-    public final static int MINISTRO_INSTALL_REQUEST_CODE = 0xf3ee; // request code used to know when Ministro instalation is finished
-    public static final int MINISTRO_API_LEVEL = 5; // Ministro api level (check IMinistro.aidl file)
-    public static final int NECESSITAS_API_LEVEL = 2; // Necessitas api level used by platform plugin
-    public static final int QT_VERSION = 0x050700; // This app requires at least Qt version 5.7.0
-
     public static final String ERROR_CODE_KEY = "error.code";
     public static final String ERROR_MESSAGE_KEY = "error.message";
     public static final String DEX_PATH_KEY = "dex.path";
@@ -81,27 +69,12 @@ public abstract class QtLoader {
     public static final String BUNDLED_LIBRARIES_KEY = "bundled.libraries";
     public static final String MAIN_LIBRARY_KEY = "main.library";
     public static final String STATIC_INIT_CLASSES_KEY = "static.init.classes";
-    public static final String NECESSITAS_API_LEVEL_KEY = "necessitas.api.level";
     public static final String EXTRACT_STYLE_KEY = "extract.android.style";
     private static final String EXTRACT_STYLE_MINIMAL_KEY = "extract.android.style.option";
 
     // These parameters matter in case of deploying application as system (embedded into firmware)
     public static final String SYSTEM_LIB_PATH = "/system/lib/";
     public String[] SYSTEM_APP_PATHS = {"/system/priv-app/", "/system/app/"};
-
-    /// Ministro server parameter keys
-    public static final String REQUIRED_MODULES_KEY = "required.modules";
-    public static final String APPLICATION_TITLE_KEY = "application.title";
-    public static final String MINIMUM_MINISTRO_API_KEY = "minimum.ministro.api";
-    public static final String MINIMUM_QT_VERSION_KEY = "minimum.qt.version";
-    public static final String SOURCES_KEY = "sources";               // needs MINISTRO_API_LEVEL >=3 !!!
-    // Use this key to specify any 3rd party sources urls
-    // Ministro will download these repositories into their
-    // own folders, check http://community.kde.org/Necessitas/Ministro
-    // for more details.
-
-    public static final String REPOSITORY_KEY = "repository";         // use this key to overwrite the default ministro repsitory
-    public static final String ANDROID_THEMES_KEY = "android.themes"; // themes that your application uses
 
     public String APPLICATION_PARAMETERS = null; // use this variable to pass any parameters to your application,
     // the parameters must not contain any white spaces
@@ -129,20 +102,6 @@ public abstract class QtLoader {
 
     public String QT_ANDROID_DEFAULT_THEME = null; // sets the default theme.
 
-    public static final int INCOMPATIBLE_MINISTRO_VERSION = 1; // Incompatible Ministro version. Ministro needs to be upgraded.
-
-    public String[] m_sources = {"https://download.qt-project.org/ministro/android/qt5/qt-5.7"}; // Make sure you are using ONLY secure locations
-    public String m_repository = "default"; // Overwrites the default Ministro repository
-    // Possible values:
-    // * default - Ministro default repository set with "Ministro configuration tool".
-    // By default the stable version is used. Only this or stable repositories should
-    // be used in production.
-    // * stable - stable repository, only this and default repositories should be used
-    // in production.
-    // * testing - testing repository, DO NOT use this repository in production,
-    // this repository is used to push a new release, and should be used to test your application.
-    // * unstable - unstable repository, DO NOT use this repository in production,
-    // this repository is used to push Qt snapshots.
     public ArrayList<String> m_qtLibs = null; // required qt libs
     public int m_displayDensity = -1;
     private ContextWrapper m_context;
@@ -166,10 +125,6 @@ public abstract class QtLoader {
 
     protected void runOnUiThread(Runnable run) {
         run.run();
-    }
-    protected void downloadUpgradeMinistro(String msg)
-    {
-        Log.e(QtApplication.QtTAG, msg);
     }
 
     protected abstract String loaderClassName();
@@ -218,11 +173,6 @@ public abstract class QtLoader {
         try {
             final int errorCode = loaderParams.getInt(ERROR_CODE_KEY);
             if (errorCode != 0) {
-                if (errorCode == INCOMPATIBLE_MINISTRO_VERSION) {
-                    downloadUpgradeMinistro(loaderParams.getString(ERROR_MESSAGE_KEY));
-                    return;
-                }
-
                 // fatal error, show the error and quit
                 AlertDialog errorDialog = new AlertDialog.Builder(m_context).create();
                 errorDialog.setMessage(loaderParams.getString(ERROR_MESSAGE_KEY));
@@ -250,7 +200,6 @@ public abstract class QtLoader {
             }
 
             loaderParams.putStringArrayList(BUNDLED_LIBRARIES_KEY, libs);
-            loaderParams.putInt(NECESSITAS_API_LEVEL_KEY, NECESSITAS_API_LEVEL);
 
             // load and start QtLoader class
             DexClassLoader classLoader = new DexClassLoader(loaderParams.getString(DEX_PATH_KEY), // .jar/.apk files
@@ -291,82 +240,9 @@ public abstract class QtLoader {
         }
     }
 
-    private ServiceConnection m_ministroConnection=new ServiceConnection() {
-        private IMinistro m_service = null;
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service)
-        {
-            m_service = IMinistro.Stub.asInterface(service);
-            try {
-                if (m_service != null) {
-                    Bundle parameters = new Bundle();
-                    parameters.putStringArray(REQUIRED_MODULES_KEY, (String[]) m_qtLibs.toArray());
-                    parameters.putString(APPLICATION_TITLE_KEY, getTitle());
-                    parameters.putInt(MINIMUM_MINISTRO_API_KEY, MINISTRO_API_LEVEL);
-                    parameters.putInt(MINIMUM_QT_VERSION_KEY, QT_VERSION);
-                    parameters.putString(ENVIRONMENT_VARIABLES_KEY, ENVIRONMENT_VARIABLES);
-                    if (APPLICATION_PARAMETERS != null)
-                        parameters.putString(APPLICATION_PARAMETERS_KEY, APPLICATION_PARAMETERS);
-                    parameters.putStringArray(SOURCES_KEY, m_sources);
-                    parameters.putString(REPOSITORY_KEY, m_repository);
-                    if (QT_ANDROID_THEMES != null)
-                        parameters.putStringArray(ANDROID_THEMES_KEY, QT_ANDROID_THEMES);
-                    m_service.requestLoader(m_ministroCallback, parameters);
-                }
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
-        }
-
-        private IMinistroCallback m_ministroCallback = new IMinistroCallback.Stub() {
-            // this function is called back by Ministro.
-            @Override
-            public void loaderReady(final Bundle loaderParams) throws RemoteException {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        m_context.unbindService(m_ministroConnection);
-                        loadApplication(loaderParams);
-                    }
-                });
-            }
-        };
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            m_service = null;
-        }
-    };
-
-    protected void ministroNotFound()
-    {
-        AlertDialog errorDialog = new AlertDialog.Builder(m_context).create();
-
-        if (m_contextInfo.metaData.containsKey("android.app.ministro_not_found_msg"))
-            errorDialog.setMessage(m_contextInfo.metaData.getString("android.app.ministro_not_found_msg"));
-        else
-            errorDialog.setMessage("Can't find Ministro service.\nThe application can't start.");
-
-        errorDialog.setButton(m_context.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                finish();
-            }
-        });
-        errorDialog.show();
-    }
-
     public void startApp(final boolean firstStart)
     {
         try {
-            if (m_contextInfo.metaData.containsKey("android.app.qt_sources_resource_id")) {
-                int resourceId = m_contextInfo.metaData.getInt("android.app.qt_sources_resource_id");
-                m_sources = m_context.getResources().getStringArray(resourceId);
-            }
-
-            if (m_contextInfo.metaData.containsKey("android.app.repository"))
-                m_repository = m_contextInfo.metaData.getString("android.app.repository");
-
             if (m_contextInfo.metaData.containsKey("android.app.qt_libs_resource_id")) {
                 int resourceId = m_contextInfo.metaData.getInt("android.app.qt_libs_resource_id");
                 m_qtLibs = prefferedAbiLibs(m_context.getResources().getStringArray(resourceId));
@@ -472,8 +348,7 @@ public abstract class QtLoader {
                 if (extractOption.equals("full"))
                     ENVIRONMENT_VARIABLES += "\tQT_USE_ANDROID_NATIVE_STYLE=1";
 
-                ENVIRONMENT_VARIABLES += "\tMINISTRO_ANDROID_STYLE_PATH=" + stylePath
-                        + "\tQT_ANDROID_THEMES_ROOT_PATH=" + themePath;
+                ENVIRONMENT_VARIABLES += "\tANDROID_STYLE_PATH=" + stylePath;
 
                 loaderParams.putString(ENVIRONMENT_VARIABLES_KEY, ENVIRONMENT_VARIABLES);
 
@@ -504,23 +379,6 @@ public abstract class QtLoader {
 
                 loadApplication(loaderParams);
                 return;
-            }
-
-            try {
-                if (!m_context.bindService(new Intent(org.kde.necessitas.ministro.IMinistro.class.getCanonicalName()),
-                        m_ministroConnection,
-                        Context.BIND_AUTO_CREATE)) {
-                    throw new SecurityException("");
-                }
-            } catch (Exception e) {
-                if (firstStart) {
-                    String msg = "This application requires Ministro service. Would you like to install it?";
-                    if (m_contextInfo.metaData.containsKey("android.app.ministro_needed_msg"))
-                        msg = m_contextInfo.metaData.getString("android.app.ministro_needed_msg");
-                    downloadUpgradeMinistro(msg);
-                } else {
-                    ministroNotFound();
-                }
             }
         } catch (Exception e) {
             Log.e(QtApplication.QtTAG, "Can't create main activity", e);

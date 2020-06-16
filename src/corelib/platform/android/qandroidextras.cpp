@@ -482,9 +482,6 @@ static int uniqueActivityRequestCode()
     static int requestCode = 0x1000; // Reserve all request codes under 0x1000 for Qt.
 
     QMutexLocker locker(&mutex);
-    if (requestCode == 0xf3ee) // Special case for MINISTRO_INSTALL_REQUEST_CODE
-        requestCode++;
-
     if (requestCode == INT_MAX)
         qWarning("Unique activity request code has wrapped. Unexpected behavior may occur.");
 
