@@ -1,6 +1,6 @@
 # Finish a preliminary .prl file.
 #
-# - Replaces occurrences of the build libdir with $$[QT_INSTALL_LIBDIR/get].
+# - Replaces occurrences of the build libdir with $$[QT_INSTALL_LIBDIR].
 # - Strips version number suffixes from absolute paths, because qmake's lflag
 #   merging does not handle them correctly.
 #
@@ -38,7 +38,7 @@ foreach(line ${lines})
                 if(IS_ABSOLUTE "${relative_lib}" OR (relative_lib MATCHES "^\\.\\."))
                     list(APPEND adjusted_libs "${lib}")
                 else()
-                    list(APPEND adjusted_libs "$$[QT_INSTALL_LIBS/get]/${relative_lib}")
+                    list(APPEND adjusted_libs "$$[QT_INSTALL_LIBS]/${relative_lib}")
                 endif()
             else()
                 if(NOT lib MATCHES "^-l" AND NOT lib MATCHES "^-framework")
