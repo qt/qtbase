@@ -54,18 +54,12 @@ bool TabletWidget::eventFilter(QObject *, QEvent *ev)
     case QEvent::TabletRelease:
         {
             QTabletEvent *event = static_cast<QTabletEvent*>(ev);
-            mType = event->type();
-            mPos = event->pos();
-            mGPos = event->globalPos();
-            mHiResGlobalPos = event->posF();
-            if (event->pointingDevice()) {
-                mDev = event->pointingDevice()->type();
-                mPointerType = event->pointingDevice()->pointerType();
-                mCaps = event->pointingDevice()->capabilities();
-            } else {
+            mDev = event->pointingDevice();
+            if (!mDev)
                 qWarning() << "missing device in tablet event";
-            }
-            mUnique = event->uniqueId();
+            mType = event->type();
+            mPos = event->position();
+            mGPos = event->globalPosition();
             mXT = event->xTilt();
             mYT = event->yTilt();
             mZ = event->z();
@@ -86,7 +80,7 @@ bool TabletWidget::eventFilter(QObject *, QEvent *ev)
             QMouseEvent *event = static_cast<QMouseEvent*>(ev);
             mType = event->type();
             mPos = event->pos();
-            mGPos = event->globalPos();
+            mGPos = event->globalPosition();
             mTimestamp = event->timestamp();
         }
         break;
@@ -134,12 +128,16 @@ void TabletWidget::paintEvent(QPaintEvent *)
     if (mType == QEvent::TabletEnterProximity || mType == QEvent::TabletLeaveProximity
         || mType == QEvent::TabletMove || mType == QEvent::TabletPress
         || mType == QEvent::TabletRelease) {
-
-        eventInfo << QString("High res global position: %1 %2").arg(QString::number(mHiResGlobalPos.x()), QString::number(mHiResGlobalPos.y()));
-
-        eventInfo << QString("Device type: %1").arg(deviceTypeToString(mDev));
-        eventInfo << QString("Pointer type: %1").arg(pointerTypeToString(mPointerType));
-        eventInfo << QString("Capabilities: %1").arg(pointerCapabilitiesToString(mCaps));
+        if (mDev.isNull()) {
+            eventInfo << QString("Device info missing");
+        } else {
+            eventInfo << QString("Seat: %1").arg(mDev->seatName());
+            eventInfo << QString("Device type: %1").arg(deviceTypeToString(mDev->type()));
+            eventInfo << QString("Pointer type: %1").arg(pointerTypeToString(mDev->pointerType()));
+            eventInfo << QString("Capabilities: %1").arg(pointerCapabilitiesToString(mDev->capabilities()));
+            eventInfo << QString("Unique Id: %1").arg(QString::number(mDev->uniqueId().numericId(), 16));
+            eventInfo << QString("System Id: %1").arg(mDev->id());
+        }
         eventInfo << QString("Button: %1 (0x%2)").arg(buttonToString(mButton)).arg(mButton, 0, 16);
         eventInfo << QString("Buttons currently pressed: %1 (0x%2)").arg(buttonsToString(mButtons)).arg(mButtons, 0, 16);
         eventInfo << QString("Keyboard modifiers: %1 (0x%2)").arg(modifiersToString(mModifiers)).arg(mModifiers, 0, 16);
@@ -150,7 +148,6 @@ void TabletWidget::paintEvent(QPaintEvent *)
         eventInfo << QString("yTilt: %1").arg(QString::number(mYT));
         eventInfo << QString("z: %1").arg(QString::number(mZ));
 
-        eventInfo << QString("Unique Id: %1").arg(QString::number(mUnique, 16));
 
         eventInfo << QString("Total wheel events: %1").arg(QString::number(mWheelEventCount));
     }

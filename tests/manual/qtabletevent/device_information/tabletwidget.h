@@ -31,6 +31,7 @@
 
 #include <QWidget>
 #include <QTabletEvent>
+#include <QPointer>
 #include <QPointingDevice>
 #include <QShortcut>
 
@@ -51,27 +52,19 @@ protected:
     QString modifiersToString(Qt::KeyboardModifiers m);
 private:
     void resetAttributes() {
-        mDev = QInputDevice::DeviceType::Unknown;
-        mPointerType = QPointingDevice::PointerType::Unknown;
-        mCaps = {};
+        mDev.clear();
         mType = mXT = mYT = mZ = 0;
         mPress = mTangential = mRot = 0.0;
         mPos = mGPos = QPoint();
-        mHiResGlobalPos = QPointF();
-        mUnique = 0;
     }
+    QPointer<const QPointingDevice> mDev;
     int mType;
-    QPoint mPos, mGPos;
-    QPointF mHiResGlobalPos;
-    QInputDevice::DeviceType mDev;
-    QPointingDevice::PointerType mPointerType;
-    QPointingDevice::Capabilities mCaps;
+    QPointF mPos, mGPos;
     int mXT, mYT, mZ;
     Qt::MouseButton mButton;
     Qt::MouseButtons mButtons;
     Qt::KeyboardModifiers mModifiers;
     qreal mPress, mTangential, mRot;
-    qint64 mUnique;
     bool mMouseToo;
     ulong mTimestamp;
     int mWheelEventCount;
