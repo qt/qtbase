@@ -2376,9 +2376,10 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
                 d->itemsDirty = true;
             screenSet = true;
         } else if (QMenu *parentMenu = qobject_cast<QMenu *>(parent())) {
-            // a submenu is always opened from an open parent menu,
+            // a submenu is normally opened from an open parent menu,
             // so show it on the same screen where the parent is.
-            if (d->setScreen(QMenuPrivate::get(parentMenu)->windowHandle()->screen()))
+            if (QMenuPrivate::get(parentMenu)->windowHandle() &&
+                 d->setScreen(QMenuPrivate::get(parentMenu)->windowHandle()->screen()))
                 d->itemsDirty = true;
             screenSet = true;
         }
