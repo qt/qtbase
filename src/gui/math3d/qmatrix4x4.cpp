@@ -2002,8 +2002,7 @@ QDebug operator<<(QDebug dbg, const QMatrix4x4 &m)
             bits += "Rotation,";
         if ((m.flagBits & QMatrix4x4::Perspective) != 0)
             bits += "Perspective,";
-        if (bits.size() > 0)
-            bits = bits.left(bits.size() - 1);
+        bits.chop(1);
     }
 
     // Output in row-major order because it is more human-readable.
