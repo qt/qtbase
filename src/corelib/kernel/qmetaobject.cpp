@@ -1854,9 +1854,7 @@ QByteArray QMetaMethod::name() const
 */
 int QMetaMethod::returnType() const
  {
-     if (!mobj)
-         return QMetaType::UnknownType;
-     return QMetaMethodPrivate::get(this)->returnType();
+     return returnMetaType().id();
 }
 
 /*!
