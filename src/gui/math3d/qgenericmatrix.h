@@ -219,6 +219,11 @@ Q_OUTOFLINE_TEMPLATE QGenericMatrix<N, M, T>& QGenericMatrix<N, M, T>::operator*
     return *this;
 }
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wfloat-equal")
+QT_WARNING_DISABLE_GCC("-Wfloat-equal")
+QT_WARNING_DISABLE_INTEL(1572)
+
 template <int N, int M, typename T>
 Q_OUTOFLINE_TEMPLATE bool QGenericMatrix<N, M, T>::operator==(const QGenericMatrix<N, M, T>& other) const
 {
@@ -233,13 +238,10 @@ Q_OUTOFLINE_TEMPLATE bool QGenericMatrix<N, M, T>::operator==(const QGenericMatr
 template <int N, int M, typename T>
 Q_OUTOFLINE_TEMPLATE bool QGenericMatrix<N, M, T>::operator!=(const QGenericMatrix<N, M, T>& other) const
 {
-    for (int row = 0; row < M; ++row)
-        for (int col = 0; col < N; ++col) {
-            if (m[col][row] != other.m[col][row])
-                return true;
-        }
-    return false;
+    return !(*this == other);
 }
+
+QT_WARNING_POP
 
 template <int N, int M, typename T>
 Q_OUTOFLINE_TEMPLATE QGenericMatrix<N, M, T>& QGenericMatrix<N, M, T>::operator/=(T divisor)
