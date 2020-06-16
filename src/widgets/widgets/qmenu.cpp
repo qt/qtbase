@@ -2395,7 +2395,7 @@ void QMenuPrivate::popup(const QPoint &p, QAction *atAction, PositionFunction po
         } else if (QMenu *parentMenu = qobject_cast<QMenu *>(parent)) {
             // a submenu is always opened from an open parent menu,
             // so show it on the same screen where the parent is. (QTBUG-76162)
-            if (setScreen(QMenuPrivate::get(parentMenu)->windowHandle()->screen()))
+            if (setScreen(parentMenu->screen()))
                 itemsDirty = true;
             screenSet = true;
         }
