@@ -207,12 +207,12 @@ class Q_CORE_EXPORT QVariant
 
     QVariant() noexcept : d() {}
     ~QVariant();
-    QVariant(Type type);
+    explicit QVariant(Type type);
     explicit QVariant(QMetaType type, const void *copy = nullptr);
     QVariant(const QVariant &other);
 
 #ifndef QT_NO_DATASTREAM
-    QVariant(QDataStream &s);
+    explicit QVariant(QDataStream &s);
 #endif
 
     QVariant(int i);
