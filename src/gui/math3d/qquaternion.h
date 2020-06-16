@@ -169,9 +169,8 @@ inline QQuaternion::QQuaternion() : wp(1.0f), xp(0.0f), yp(0.0f), zp(0.0f) {}
 inline QQuaternion::QQuaternion(float aScalar, float xpos, float ypos, float zpos) : wp(aScalar), xp(xpos), yp(ypos), zp(zpos) {}
 
 QT_WARNING_PUSH
-QT_WARNING_DISABLE_CLANG("-Wfloat-equal")
-QT_WARNING_DISABLE_GCC("-Wfloat-equal")
-QT_WARNING_DISABLE_INTEL(1572)
+QT_WARNING_DISABLE_FLOAT_COMPARE
+
 inline bool QQuaternion::isNull() const
 {
     return wp == 0.0f && xp == 0.0f && yp == 0.0f && zp == 0.0f;

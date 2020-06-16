@@ -269,9 +269,7 @@ inline qreal QTransform::dy() const
 }
 
 QT_WARNING_PUSH
-QT_WARNING_DISABLE_CLANG("-Wfloat-equal")
-QT_WARNING_DISABLE_GCC("-Wfloat-equal")
-QT_WARNING_DISABLE_INTEL(1572)
+QT_WARNING_DISABLE_FLOAT_COMPARE
 
 inline QTransform &QTransform::operator*=(qreal num)
 {

@@ -240,8 +240,7 @@ template <typename T> static inline bool convertDoubleTo(double v, T *value, boo
     *value = T(v);
 
 QT_WARNING_PUSH
-QT_WARNING_DISABLE_GCC("-Wfloat-equal")
-QT_WARNING_DISABLE_CLANG("-Wfloat-equal")
+QT_WARNING_DISABLE_FLOAT_COMPARE
 
     return *value == v;
 
