@@ -3015,6 +3015,8 @@ void *QWindowsWindow::surface(void *nativeConfig, int *err)
     }
 
     return m_surface;
+#else
+    return nullptr;
 #endif
 }
 
