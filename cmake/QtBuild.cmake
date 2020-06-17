@@ -1139,6 +1139,10 @@ function(qt_generate_global_config_pri_file)
             "${compiler_version_patch_var_name} = ${QT_COMPILER_VERSION_PATCH}")
     endif()
 
+    if(APPLE)
+        list(APPEND extra_statements "QT_MAC_SDK_VERSION = ${QT_MAC_SDK_VERSION}")
+    endif()
+
     list(APPEND extra_statements "QT_EDITION = Open Source")
 
     if(extra_statements)

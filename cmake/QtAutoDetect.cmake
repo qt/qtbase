@@ -194,6 +194,31 @@ function(qt_auto_detect_cyclic_toolchain)
     endif()
 endfunction()
 
+function(qt_internal_get_darwin_sdk_version out_var)
+    if(APPLE)
+        if(IOS)
+            set(sdk_name "iphoneos")
+        elseif(TVOS)
+            set(sdk_name "appletvos")
+        elseif(WATCHOS)
+            set(sdk_name "watchos")
+        else()
+            # Default to macOS
+            set(sdk_name "macosx")
+        endif()
+        set(xcrun_version_arg "--show-sdk-version")
+        execute_process(COMMAND /usr/bin/xcrun --sdk ${sdk_name} ${xcrun_version_arg}
+                        OUTPUT_VARIABLE sdk_version
+                        ERROR_VARIABLE xcrun_error)
+        if(NOT sdk_version)
+            message(FATAL_ERROR
+                    "Can't determine darwin ${sdk_name} SDK version. Error: ${xcrun_error}")
+        endif()
+        string(STRIP "${sdk_version}" sdk_version)
+        set(${out_var} "${sdk_version}" PARENT_SCOPE)
+    endif()
+endfunction()
+
 function(qt_auto_detect_darwin)
     if(APPLE)
         # If no CMAKE_OSX_DEPLOYMENT_TARGET is provided, default to a value that Qt defines.
@@ -220,6 +245,11 @@ function(qt_auto_detect_darwin)
             message(STATUS
                 "CMAKE_OSX_DEPLOYMENT_TARGET set to: \"${CMAKE_OSX_DEPLOYMENT_TARGET}\".")
         endif()
+
+        qt_internal_get_darwin_sdk_version(darwin_sdk_version)
+        set(QT_MAC_SDK_VERSION "${darwin_sdk_version}" CACHE STRING "Darwin SDK version.")
+        message(STATUS
+            "QT_MAC_SDK_VERSION set to: \"${QT_MAC_SDK_VERSION}\".")
     endif()
 endfunction()
 
