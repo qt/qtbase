@@ -612,6 +612,14 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
         << tag("ItemGroup")
         << attrTag("Label", "ProjectConfigurations");
 
+    for (int i = 0; i < tool.SingleProjects.count(); ++i) {
+        xml << tag("ProjectConfiguration")
+            << attrTag("Include" , tool.SingleProjects.at(i).Configuration.Name)
+            << tagValue("Configuration", tool.SingleProjects.at(i).Configuration.ConfigurationName)
+            << tagValue("Platform", tool.SingleProjects.at(i).PlatformName)
+            << closetag();
+    }
+
     xml << closetag()
         << tag("PropertyGroup")
         << attrTag("Label", "Globals")
