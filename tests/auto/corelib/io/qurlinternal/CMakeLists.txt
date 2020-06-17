@@ -10,7 +10,7 @@ endif()
 
 add_qt_test(tst_qurlinternal
     SOURCES
-        ../../codecs/utf8/utf8data.cpp
+        utf8data.cpp
         tst_qurlinternal.cpp
     PUBLIC_LIBRARIES
         Qt::CorePrivate

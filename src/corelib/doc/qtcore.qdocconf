@@ -44,8 +44,7 @@ imagedirs   += images
 
 excludedirs += snippets
 
-excludefiles += ../../../examples/widgets/tools/customcompleter/doc/src/customcompleter.qdoc \
-                ../../../examples/widgets/tools/codecs/doc/src/codecs.qdoc
+excludefiles += ../../../examples/widgets/tools/customcompleter/doc/src/customcompleter.qdoc
 
 # Included in qttestlib.qdocconf instead
 excludefiles += ../kernel/qtestsupport_core.cpp

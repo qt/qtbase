@@ -1,5 +1,5 @@
 option(host_build)
-!force_bootstrap:if(!qtConfig(commandlineparser)|!qtConfig(textcodec)|!qtConfig(xmlstreamreader)|!qtConfig(xmlstreamwriter)): \
+!force_bootstrap:if(!qtConfig(commandlineparser)|!qtConfig(xmlstreamreader)|!qtConfig(xmlstreamwriter)): \
     CONFIG += force_bootstrap
 
 DEFINES += QT_UIC QT_NO_CAST_FROM_ASCII QT_NO_FOREACH

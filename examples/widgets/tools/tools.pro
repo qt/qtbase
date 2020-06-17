@@ -1,6 +1,5 @@
 TEMPLATE      = subdirs
 SUBDIRS       = \
-                codecs \
                 completer \
                 customcompleter \
                 echoplugin \

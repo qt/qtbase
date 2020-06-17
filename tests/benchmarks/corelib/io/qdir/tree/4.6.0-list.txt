@@ -7805,28 +7805,6 @@
 2 x86_64/
 0 arch.pri
  qatomic_sun.s
-3 codecs/
-0 codecs.pri
- codecs.qdoc
- qfontlaocodec.cpp
- qfontlaocodec_p.h
- qiconvcodec.cpp
- qiconvcodec_p.h
- qisciicodec.cpp
- qisciicodec_p.h
- qlatincodec.cpp
- qlatincodec_p.h
- qsimplecodec.cpp
- qsimplecodec_p.h
- qtextcodec.cpp
- qtextcodec.h
- qtextcodec_p.h
- qtextcodecplugin.cpp
- qtextcodecplugin.h
- qtsciicodec.cpp
- qtsciicodec_p.h
- qutfcodec.cpp
- qutfcodec_p.h
 2 concurrent/
 0 concurrent.pri
  qfuture.cpp
@@ -10021,37 +9999,6 @@
  widgets.pro
 3 audio/
 0 audio.pro
-2 codecs/
-0 cn/
-0 cn.pro
- main.cpp
- qgb18030codec.cpp
- qgb18030codec.h
-2 codecs.pro
- jp/
-0 jp.pro
- main.cpp
- qeucjpcodec.cpp
- qeucjpcodec.h
- qfontjpcodec.cpp
- qfontjpcodec.h
- qjiscodec.cpp
- qjiscodec.h
- qjpunicode.cpp
- qjpunicode.h
- qsjiscodec.cpp
- qsjiscodec.h
-2 kr/
-0 cp949codetbl.h
- kr.pro
- main.cpp
- qeuckrcodec.cpp
- qeuckrcodec.h
-2 tw/
-0 main.cpp
- qbig5codec.cpp
- qbig5codec.h
- tw.pro
 3 decorations/
 0 decorations.pro
  default/

@@ -212,9 +212,6 @@ qmake_pch.obj:
 {$(SOURCE_PATH)\src\3rdparty\md5}.cpp{}.obj::
 	$(CXX) $(CXXFLAGS) $<
 
-{$(SOURCE_PATH)\src\corelib\codecs}.cpp{}.obj::
-	$(CXX) $(CXXFLAGS) $<
-
 {$(SOURCE_PATH)\src\corelib\global}.cpp{}.obj::
 	$(CXX) $(CXXFLAGS) $<
 

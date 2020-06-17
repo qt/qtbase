@@ -8,7 +8,6 @@ SUBDIRS = \
         thread \
         time \
         tools \
-        codecs \
         plugin
 
 TRUSTED_BENCHMARKS += \

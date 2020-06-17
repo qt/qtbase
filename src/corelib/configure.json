@@ -7,7 +7,6 @@
             "doubleconversion": { "type": "enum", "values": [ "no", "qt", "system" ] },
             "eventfd": "boolean",
             "glib": "boolean",
-            "iconv": { "type": "enum", "values": [ "no", "yes", "posix", "sun", "gnu" ] },
             "icu": "boolean",
             "inotify": "boolean",
             "journald": "boolean",
@@ -46,52 +45,6 @@
             "headers": "glib.h",
             "sources": [
                 { "type": "pkgConfig", "args": "glib-2.0 gthread-2.0" }
-            ]
-        },
-        "posix_iconv": {
-            "label": "POSIX iconv",
-            "export": "iconv",
-            "test": {
-                "main": [
-                    "iconv_t x = iconv_open(\"\", \"\");",
-                    "char *inp, *outp;",
-                    "size_t inbytes, outbytes;",
-                    "iconv(x, &inp, &inbytes, &outp, &outbytes);",
-                    "iconv_close(x);"
-                ]
-            },
-            "headers": "iconv.h",
-            "sources": [
-                { "libs": "-liconv", "condition": "config.openbsd || config.haiku" },
-                { "libs": "", "condition": "!(config.openbsd || config.haiku)" }
-            ]
-        },
-        "gnu_iconv": {
-            "label": "GNU libiconv",
-            "export": "iconv",
-            "test": {
-                "main": [
-                    "iconv_t x = iconv_open(\"\", \"\");",
-                    "const char *inp;",
-                    "char *outp;",
-                    "size_t inbytes, outbytes;",
-                    "iconv(x, &inp, &inbytes, &outp, &outbytes);",
-                    "iconv_close(x);"
-                ]
-            },
-            "headers": "iconv.h",
-            "sources": [
-                "-liconv"
-            ]
-        },
-        "sun_iconv": {
-            "label": "SUN libiconv",
-            "export": "iconv",
-            "test": {
-                "inherit": "gnu_iconv"
-            },
-            "sources": [
-                ""
             ]
         },
         "icu": {
@@ -671,33 +624,6 @@
             "condition": "tests.glibc",
             "output": [ "privateFeature" ]
         },
-        "iconv": {
-            "label": "iconv",
-            "purpose": "Provides internationalization on Unix.",
-            "section": "Internationalization",
-            "condition": "!features.icu && features.textcodec && (features.posix-libiconv || features.sun-libiconv || features.gnu-libiconv)",
-            "output": [ "privateFeature", "feature" ]
-        },
-        "posix-libiconv": {
-            "label": "POSIX iconv",
-            "enable": "input.iconv == 'posix'",
-            "disable": "input.iconv == 'sun' || input.iconv == 'gnu' || input.iconv == 'no'",
-            "condition": "!config.win32 && !config.qnx && !config.android && !config.darwin && libs.posix_iconv",
-            "output": [ "privateFeature" ]
-        },
-        "sun-libiconv": {
-            "label": "SUN iconv",
-            "enable": "input.iconv == 'sun'",
-            "disable": "input.iconv == 'posix' || input.iconv == 'gnu' || input.iconv == 'no'",
-            "condition": "!config.win32 && !config.qnx && !config.android && !config.darwin && !features.posix-libiconv && libs.sun_iconv"
-        },
-        "gnu-libiconv": {
-            "label": "GNU iconv",
-            "enable": "input.iconv == 'gnu'",
-            "disable": "input.iconv == 'posix' || input.iconv == 'sun' || input.iconv == 'no'",
-            "condition": "!config.win32 && !config.qnx && !config.android && !config.darwin && !features.posix-libiconv && !features.sun-libiconv && libs.gnu_iconv",
-            "output": [ "privateFeature" ]
-        },
         "icu": {
             "label": "ICU",
             "autoDetect": "!config.win32",
@@ -737,7 +663,6 @@
             "label": "Mimetype handling",
             "purpose": "Provides MIME type handling.",
             "section": "Utilities",
-            "condition": "features.textcodec",
             "output": [ "publicFeature", "feature" ]
         },
         "mimetype-database": {
@@ -990,26 +915,6 @@
             "section": "Internationalization",
             "output": [ "publicFeature", "feature" ]
         },
-        "textcodec": {
-            "label": "QTextCodec",
-            "purpose": "Supports conversions between text encodings.",
-            "section": "Internationalization",
-            "output": [ "publicFeature", "feature" ]
-        },
-        "codecs": {
-            "label": "Codecs",
-            "purpose": "Supports non-unicode text conversions.",
-            "section": "Internationalization",
-            "condition": "features.textcodec",
-            "output": [ "publicFeature", "feature" ]
-        },
-        "big_codecs": {
-            "label": "Big Codecs",
-            "purpose": "Supports big codecs, e.g. CJK.",
-            "section": "Internationalization",
-            "condition": "features.textcodec",
-            "output": [ "publicFeature", "feature" ]
-        },
         "easingcurve": {
             "label": "Easing curve",
             "purpose": "Provides easing curve.",
@@ -1167,7 +1072,6 @@ Note that this is required for plugin loading. Qt GUI needs QPA plugins for basi
                 "doubleconversion",
                 "system-doubleconversion",
                 "glib",
-                "iconv",
                 "icu",
                 "mimetype-database",
                 {

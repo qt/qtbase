@@ -210,7 +210,7 @@ void tst_QCollator::compare()
     QCOMPARE(asSign(collator.compare(s1, s2)), result);
     collator.setCaseSensitivity(Qt::CaseInsensitive);
     QCOMPARE(asSign(collator.compare(s1, s2)), caseInsensitiveResult);
-#if !QT_CONFIG(iconv)
+#if !QT_CONFIG(icu)
     collator.setIgnorePunctuation(ignorePunctuation);
     QCOMPARE(asSign(collator.compare(s1, s2)), punctuationResult);
 #endif

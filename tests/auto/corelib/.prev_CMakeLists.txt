@@ -3,7 +3,6 @@
 add_subdirectory(kernel)
 if(NOT UIKIT)
     add_subdirectory(animation)
-    add_subdirectory(codecs)
     add_subdirectory(global)
     add_subdirectory(io)
     add_subdirectory(itemmodels)

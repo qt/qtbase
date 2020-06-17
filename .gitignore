@@ -125,7 +125,6 @@ qt*-config.pri
 /tests/auto/qprocess/fileWriterProcess.txt
 
 # Unit tests executables (other than those named tst_*)
-/tests/auto/corelib/codecs/qtextcodec/echo/echo
 /tests/auto/corelib/global/qlogging/app/app
 /tests/auto/corelib/io/qlockfile/qlockfiletesthelper/qlockfile_test_helper
 /tests/auto/corelib/io/qprocess-noapplication/qprocess-noapplication

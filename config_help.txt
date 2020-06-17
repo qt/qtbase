@@ -240,7 +240,6 @@ Core options:
   -glib ................ Enable Glib support [no; auto on Unix]
   -eventfd ............. Enable eventfd support
   -inotify ............. Enable inotify support
-  -iconv ............... Enable iconv(3) support [posix/sun/gnu/no] (Unix only)
   -icu ................. Enable ICU support [auto]
   -pcre ................ Select used libpcre2 [system/qt/no]
   -pps ................. Enable PPS support [auto] (QNX only)

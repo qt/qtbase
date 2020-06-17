@@ -5,7 +5,6 @@ SUBDIRS = \
 
 !uikit: SUBDIRS += \
    animation \
-   codecs \
    global \
    io \
    itemmodels \

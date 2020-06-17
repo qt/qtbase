@@ -1,6 +1,5 @@
 # Generated from tools.pro.
 
-add_subdirectory(codecs)
 add_subdirectory(completer)
 add_subdirectory(customcompleter)
 if(QT_FEATURE_translation) # special case

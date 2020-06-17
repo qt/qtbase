@@ -93,7 +93,6 @@
 #define QT_FEATURE_getentropy -1
 #define QT_NO_GEOM_VARIANT
 #define QT_FEATURE_hijricalendar -1
-#define QT_FEATURE_iconv -1
 #define QT_FEATURE_icu -1
 #define QT_FEATURE_islamiccivilcalendar -1
 #define QT_FEATURE_jalalicalendar -1
@@ -140,8 +139,6 @@
 #ifndef QT_FEATURE_zstd
 #define QT_FEATURE_zstd -1
 #endif
-
-#define QT_FEATURE_textcodec -1
 
 #ifdef QT_BUILD_QMAKE
 #define QT_FEATURE_commandlineparser -1

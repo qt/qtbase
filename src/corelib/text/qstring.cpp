@@ -611,7 +611,7 @@ bool QtPrivate::isValidUtf16(QStringView s) noexcept
 }
 
 // conversion between Latin 1 and UTF-16
-void qt_from_latin1(char16_t *dst, const char *str, size_t size) noexcept
+Q_CORE_EXPORT void qt_from_latin1(char16_t *dst, const char *str, size_t size) noexcept
 {
     /* SIMD:
      * Unpacking with SSE has been shown to improve performance on recent CPUs
@@ -5092,7 +5092,7 @@ QString QString::fromLocal8Bit_helper(const char *str, int size)
     This function can be used to process incoming data incrementally as long as
     all UTF-8 characters are terminated within the incoming data. Any
     unterminated characters at the end of the string will be replaced or
-    suppressed. In order to do stateful decoding, please use \l QTextDecoder.
+    suppressed. In order to do stateful decoding, please use \l QStringDecoder.
 
     \sa toUtf8(), fromLatin1(), fromLocal8Bit()
 */

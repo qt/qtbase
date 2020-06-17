@@ -107,7 +107,6 @@ VPATH += \
     ../src/corelib/text \
     ../src/corelib/tools \
     ../src/corelib/kernel \
-    ../src/corelib/codecs \
     ../src/corelib/plugin \
     ../src/corelib/io \
         ../src/corelib/time \

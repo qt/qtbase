@@ -93,9 +93,6 @@ Cpp.ignoretokens        += \
                           Q_DECLARATIVE_EXPORT \
                           Q_EXPLICIT \
                           Q_EXPORT \
-                          Q_EXPORT_CODECS_CN \
-                          Q_EXPORT_CODECS_JP \
-                          Q_EXPORT_CODECS_KR \
                           Q_EXPORT_PLUGIN \
                           Q_EXPORT_PLUGIN2 \
                           Q_GADGET \
