@@ -65,6 +65,8 @@ public:
     using T = typename Map::mapped_type;
     using value_type = typename Map::value_type;
     using size_type = typename Map::size_type;
+    using iterator = typename Map::iterator;
+    using const_iterator = typename Map::const_iterator;
 
     Map m;
 
@@ -164,6 +166,47 @@ public:
     size_type count(const Key &key) const
     {
         return m.count(key);
+    }
+
+    // Used in erase. Allocates a new QMapData and copies, from this->m,
+    // the elements not in the [first, last) range. The return contains
+    // the new QMapData and an iterator in its map pointing at the first
+    // element after the erase.
+    struct EraseResult {
+        QMapData *data;
+        iterator it;
+    };
+
+    EraseResult erase(const_iterator first, const_iterator last) const
+    {
+        EraseResult result;
+        result.data = new QMapData;
+        result.it = result.data->m.end();
+        const auto newDataEnd = result.it;
+
+        auto i = m.begin();
+        const auto e = m.end();
+
+        // copy over all the elements before first
+        while (i != first) {
+            result.it = result.data->m.insert(newDataEnd, *i);
+            ++i;
+        }
+
+        // skip until last
+        while (i != last)
+            ++i;
+
+        // copy from last to the end
+        while (i != e) {
+            result.data->m.insert(newDataEnd, *i);
+            ++i;
+        }
+
+        if (result.it != newDataEnd)
+            ++result.it;
+
+        return result;
     }
 };
 
@@ -532,35 +575,20 @@ public:
 
     iterator erase(const_iterator it)
     {
+        return erase(it, std::next(it));
+    }
+
+    iterator erase(const_iterator afirst, const_iterator alast)
+    {
         if (!d)
             return iterator();
 
         if (!d.isShared())
-            return iterator(d->m.erase(it.i));
+            return iterator(d->m.erase(afirst.i, alast.i));
 
-        MapData *newData = new MapData;
-        const auto newDataEnd = newData->m.end();
-
-        auto i = d->m.begin();
-        auto e = d->m.end();
-        size_type steps = 0;
-
-        while (i != it.i) {
-            newData->m.insert(newDataEnd, *i);
-            ++i;
-            ++steps;
-        }
-
-        if (i != e)
-            ++i;
-
-        while (i != e)
-            newData->m.insert(newDataEnd, *i);
-
-        d.reset(newData);
-
-        auto result = std::next(d->m.begin(), steps);
-        return iterator(result);
+        auto result = d->erase(afirst.i, alast.i);
+        d.reset(result.data);
+        return iterator(result.it);
     }
 
     // more Qt
@@ -1139,35 +1167,20 @@ public:
 
     iterator erase(const_iterator it)
     {
+        return erase(it, std::next(it));
+    }
+
+    iterator erase(const_iterator afirst, const_iterator alast)
+    {
         if (!d)
             return iterator();
 
         if (!d.isShared())
-            return iterator(d->m.erase(it.i));
+            return iterator(d->m.erase(afirst.i, alast.i));
 
-        auto newData = new MapData;
-        const auto newDataEnd = newData->m.end();
-
-        auto i = d->m.begin();
-        auto e = d->m.end();
-        size_type steps = 0;
-
-        while (i != it.i) {
-            newData->m.insert(newDataEnd, *i);
-            ++i;
-            ++steps;
-        }
-
-        if (i != e)
-            ++i;
-
-        while (i != e)
-            newData->m.insert(newDataEnd, *i++);
-
-        d.reset(newData);
-
-        auto result = std::next(d->m.begin(), steps);
-        return iterator(result);
+        auto result = d->erase(afirst.i, alast.i);
+        d.reset(result.data);
+        return iterator(result.it);
     }
 
     // more Qt

@@ -664,6 +664,17 @@
     \sa remove()
 */
 
+/*! \fn template <class Key, class T> QMultiMap<Key, T>::iterator QMultiMap<Key, T>::erase(const_iterator first, const_iterator last)
+    \since 6.0
+
+    Removes the (key, value) pairs pointed to by the iterator range
+    [\a first, \a last) from the multi map.
+    Returns an iterator to the item in the multi map following the last
+    removed element.
+
+    \sa remove()
+*/
+
 /*! \fn template <class Key, class T> QMultiMap<Key, T>::iterator QMultiMap<Key, T>::find(const Key &key)
 
     Returns an iterator pointing to the item with key \a key in the

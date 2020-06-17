@@ -660,6 +660,16 @@
     \sa remove()
 */
 
+/*! \fn template <class Key, class T> QMap<Key, T>::iterator QMap<Key, T>::erase(const_iterator first, const_iterator last)
+    \since 6.0
+
+    Removes the (key, value) pairs pointed to by the iterator range
+    [\a first, \a last) from the map.
+    Returns an iterator to the item in the map following the last removed element.
+
+    \sa remove()
+*/
+
 /*! \fn template <class Key, class T> QMap<Key, T>::iterator QMap<Key, T>::find(const Key &key)
 
     Returns an iterator pointing to the item with key \a key in the
