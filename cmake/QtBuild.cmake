@@ -3003,17 +3003,34 @@ QMAKE_PRL_LIBS_FOR_CMAKE = ${prl_libs}
     )
 
     # Add a custom command that prepares the .prl file for installation
-    qt_path_join(prl_file_path "${QT_BUILD_DIR}/${install_dir}" "${prl_file_name}")
+    qt_path_join(final_prl_file_path "${QT_BUILD_DIR}/${install_dir}" "${prl_file_name}")
+    qt_path_join(fake_dependency_prl_file_path
+                 "${CMAKE_CURRENT_BINARY_DIR}" "fake_dep_prl_for_${target}.prl")
     set(library_suffixes ${CMAKE_SHARED_LIBRARY_SUFFIX} ${CMAKE_STATIC_LIBRARY_SUFFIX})
     add_custom_command(
-        TARGET ${target} POST_BUILD
+        OUTPUT "${fake_dependency_prl_file_path}"
+        DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/${prl_file_name}"
+                "${QT_CMAKE_DIR}/QtFinishPrlFile.cmake"
         COMMAND ${CMAKE_COMMAND} "-DIN_FILE=${prl_file_name}"
-                "-DOUT_FILE=${prl_file_path}"
+                "-DOUT_FILE=${fake_dependency_prl_file_path}"
                 "-DLIBRARY_SUFFIXES=${library_suffixes}"
                 "-DQT_BUILD_LIBDIR=${QT_BUILD_DIR}/${INSTALL_LIBDIR}"
                 -P "${QT_CMAKE_DIR}/QtFinishPrlFile.cmake"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${fake_dependency_prl_file_path}"
+            "${final_prl_file_path}"
         VERBATIM
+        COMMENT "Generating prl file for target ${target}"
         )
+
+    # Tell the target to depend on the fake dependency prl file, to ensure the custom command
+    # is executed. As a side-effect, this will also create the final_prl_file_path that uses
+    # generator expressions. It should not be specified as a BYPRODUCT.
+    # This allows proper per-file dependency tracking, without having to resort on a POST_BUILD
+    # step, which means that relinking would happen as well as transitive rebuilding of any
+    # dependees.
+    # This is inspired by https://gitlab.kitware.com/cmake/cmake/-/issues/20842
+    target_sources(${target} PRIVATE "${fake_dependency_prl_file_path}")
 
     # Installation of the .prl file happens globally elsewhere,
     # because we have no clue here what the actual file name is.
