@@ -66,7 +66,7 @@ public:
     void bind();
     void release();
 
-    class Q_OPENGL_EXPORT Binder
+    class Binder
     {
     public:
         inline Binder(QOpenGLVertexArrayObject *v)
