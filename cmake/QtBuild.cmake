@@ -1101,6 +1101,14 @@ function(qt_generate_global_config_pri_file)
     list(JOIN corrected_public_config " " public_config_joined)
     list(JOIN corrected_qt_public_config " " qt_public_config_joined)
 
+    set(extra_statements "")
+    if(QT_NAMESPACE)
+        list(APPEND extra_statements "QT_NAMESPACE = ${QT_NAMESPACE}")
+    endif()
+    if(extra_statements)
+        string (REPLACE ";" "\n" extra_statements "${extra_statements}")
+    endif()
+
     file(GENERATE
         OUTPUT "${qconfig_pri_target_path}"
         CONTENT
@@ -1115,6 +1123,7 @@ QT_VERSION = ${PROJECT_VERSION}
 QT_MAJOR_VERSION = ${PROJECT_VERSION_MAJOR}
 QT_MINOR_VERSION = ${PROJECT_VERSION_MINOR}
 QT_PATCH_VERSION = ${PROJECT_VERSION_PATCH}
+${extra_statements}
 "
     )
     qt_install(FILES "${qconfig_pri_target_path}" DESTINATION ${INSTALL_MKSPECSDIR})
