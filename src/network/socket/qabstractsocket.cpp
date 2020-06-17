@@ -1159,8 +1159,10 @@ void QAbstractSocketPrivate::_q_connectToNextAddress()
                                  q, SLOT(_q_abortConnectionAttempt()),
                                  Qt::DirectConnection);
             }
+#ifdef QT_NO_BEARERMANAGEMENT
+            int connectTimeout = 30000;
+#else
             int connectTimeout = QNetworkConfigurationPrivate::DefaultTimeout;
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
             QSharedPointer<QNetworkSession> networkSession = qvariant_cast< QSharedPointer<QNetworkSession> >(q->property("_q_networksession"));
             if (networkSession) {
                 QNetworkConfiguration networkConfiguration = networkSession->configuration();
@@ -2168,8 +2170,10 @@ bool QAbstractSocket::waitForConnected(int msecs)
     if (state() == UnconnectedState)
         return false; // connect not im progress anymore!
 
+#ifdef QT_NO_BEARERMANAGEMENT
+    int connectTimeout = 30000;
+#else
     int connectTimeout = QNetworkConfigurationPrivate::DefaultTimeout;
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
     if (networkSession) {
         QNetworkConfiguration networkConfiguration = networkSession->configuration();
         connectTimeout = networkConfiguration.connectTimeout();

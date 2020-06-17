@@ -43,6 +43,8 @@
 #include "qnetworkconfiguration_p.h"
 #include <QDebug>
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -594,3 +596,5 @@ QString QNetworkConfiguration::bearerTypeName() const
 }
 
 QT_END_NAMESPACE
+
+#endif

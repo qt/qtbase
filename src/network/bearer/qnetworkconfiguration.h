@@ -54,6 +54,8 @@
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_NAMESPACE
 
 class QNetworkConfigurationPrivate;
@@ -141,6 +143,8 @@ Q_DECLARE_SHARED(QNetworkConfiguration)
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QNetworkConfiguration)
+
+#endif
 
 QT_WARNING_POP
 

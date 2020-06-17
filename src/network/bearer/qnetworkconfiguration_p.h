@@ -58,6 +58,8 @@
 #include <QtCore/qmutex.h>
 #include <QtCore/qmap.h>
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_NAMESPACE
 
 typedef QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> QNetworkConfigurationPrivatePointer;
@@ -95,5 +97,5 @@ private:
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QNetworkConfigurationPrivatePointer)
-
+#endif
 #endif // QNETWORKCONFIGURATIONPRIVATE_H
