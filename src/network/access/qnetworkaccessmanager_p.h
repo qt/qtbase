@@ -164,7 +164,6 @@ public:
     QScopedPointer<QHstsStore> stsStore;
 #endif // QT_CONFIG(settings)
     bool stsEnabled = false;
-    mutable QNetworkStatusMonitor statusMonitor;
 
     bool autoDeleteReplies = false;
 
