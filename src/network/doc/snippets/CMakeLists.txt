@@ -7,6 +7,6 @@ add_executable(mytarget
 )
 
 # ![0]
-find_package(Qt5 COMPONENTS Network REQUIRED)
-target_link_libraries(mytarget Qt5::Network)
+find_package(Qt6 COMPONENTS Network REQUIRED)
+target_link_libraries(mytarget Qt::Network)
 # ![0]
