@@ -1,0 +1,95 @@
+Qt 5.12.9 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.12.0 through 5.12.8.
+
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
+
+https://doc.qt.io/qt-5/index.html
+
+The Qt version 5.12 series is binary compatible with the 5.11.x series.
+Applications compiled for 5.11 will continue to run with 5.12.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                         Platform-specific Changes                        *
+****************************************************************************
+
+Linux
+-----
+
+ - [QTBUG-63584] Fixed a crash in evdev when multiple touchscreens are in use.
+
+Windows
+-------
+
+ - Fixed a compatibility issue found when linking code compiled with
+   MSVC version 16.6 to a Qt compiled with 16.5.
+ - [QTBUG-80436] Fixed a crash when changing screen during session lock.
+ - [QTBUG-84265] Direct Write Font engine: Fix a memory leak
+
+macOS
+-----
+
+ - [QTBUG-84405] Respect window type when determining main window status
+
+****************************************************************************
+*                                  QtCore                                  *
+****************************************************************************
+
+ - QCborValue:
+   * fromCbor() now limits decoding to at most 1024 nested maps, arrays,
+     and tags to prevent stack overflows. This should be sufficient for
+     most uses of CBOR. An API to limit further or to relax the limit will
+     be provided in 5.15. Meanwhile, if decoding more is required,
+     QCborStreamReader can be used (note that each level of map and array
+     allocates memory).
+
+****************************************************************************
+*                                  QtSQL                                   *
+****************************************************************************
+
+ - sqlite:
+   * Updated to v3.32.1 which includes fixes for CVE-2020-11655 and
+     CVE-2020-11656
+
+****************************************************************************
+*                                  QtNetwork                               *
+****************************************************************************
+
+ - [QTBUG-83450] OpenSSL: handle SSL_shutdown's errors properly
+
+****************************************************************************
+*                                  QtGui                                   *
+****************************************************************************
+
+ - QIcon:
+   * [QTBUG-74252] If you call QIcon::setFallbackThemeName(), do it before
+     creating a QGuiApplication. We fixed a race condition which was
+     preventing loading the first icon from the fallback theme.
+
+ - QImage:
+   * [oss-fuzz 22557] Fixed undefined behavior in bmp/ico decoder
+   * [oss-fuzz 22741] Fixed crash in gif decoder
+
+ - [QTBUG-84189] Avoid format conversion when uploading textures for the
+   backing store
+
+****************************************************************************
+*                                  QtWidgets                               *
+****************************************************************************
+
+ - QWidgetWindow:
+   * [QTBUG-84222] Fixed crash in QWidgetWindow::event() when
+     handling closeEvent.
+
+ - QMenu:
+   * [QTBUG-76162] A submenu now always opens on the same screen as
+     the parent menu.
+
