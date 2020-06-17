@@ -171,8 +171,8 @@ QString QInputDevice::seatName() const
     return d->seatName;
 }
 
-typedef QVector<const QInputDevice *> InputDevicesVector;
-Q_GLOBAL_STATIC(InputDevicesVector, deviceList)
+using InputDevicesList = QList<const QInputDevice *>;
+Q_GLOBAL_STATIC(InputDevicesList, deviceList)
 static QBasicMutex devicesMutex;
 
 /*!
@@ -183,7 +183,7 @@ static QBasicMutex devicesMutex;
     Platform plugins should call \l QWindowSystemInterface::registerInputDevice()
     to add devices as they are discovered.
 */
-QVector<const QInputDevice *> QInputDevice::devices()
+QList<const QInputDevice *> QInputDevice::devices()
 {
     QMutexLocker lock(&devicesMutex);
     return *deviceList();
@@ -195,7 +195,7 @@ QVector<const QInputDevice *> QInputDevice::devices()
 const QInputDevice *QInputDevice::primaryKeyboard(const QString& seatName)
 {
     QMutexLocker locker(&devicesMutex);
-    InputDevicesVector v = *deviceList();
+    InputDevicesList v = *deviceList();
     locker.unlock();
     const QInputDevice *ret = nullptr;
     for (const QInputDevice *d : v) {
@@ -229,7 +229,7 @@ bool QInputDevicePrivate::isRegistered(const QInputDevice *dev)
     if (!dev)
         return false;
     QMutexLocker locker(&devicesMutex);
-    InputDevicesVector v = *deviceList();
+    InputDevicesList v = *deviceList();
     for (const QInputDevice *d : v)
         if (d && *d == *dev)
             return true;

@@ -356,7 +356,7 @@ const QPointingDevice *QPointingDevice::tabletDevice(QInputDevice::DeviceType de
                                                      QPointingDevice::PointerType pointerType,
                                                      QPointingDeviceUniqueId uniqueId, quint32 busId)
 {
-    const QVector<const QInputDevice *> devices = QInputDevice::devices();
+    const auto &devices = QInputDevice::devices();
     for (const QInputDevice *dev : devices) {
         if (dev->type() < DeviceType::Puck || dev->type() > DeviceType::Airbrush)
             continue;

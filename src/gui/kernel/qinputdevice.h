@@ -107,7 +107,7 @@ public:
     qint64 id() const;
     QString seatName() const;
 
-    static QVector<const QInputDevice *> devices();
+    static QList<const QInputDevice *> devices();
     static const QInputDevice *primaryKeyboard(const QString& seatName = QString());
 
     bool operator==(const QInputDevice &other) const;
