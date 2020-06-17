@@ -40,7 +40,7 @@
 #include <QtGui/qtgui-config.h>
 
 #ifndef QT_NO_SYSTEMTRAYICON
-#include "qdbustrayicon_p.h"
+#include "../dbustray/qdbustrayicon_p.h"
 #endif
 #include "qdbusmenuconnection_p.h"
 #include "qdbusmenuadaptor_p.h"

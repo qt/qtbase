@@ -41,10 +41,10 @@
 
 #ifndef QT_NO_SYSTEMTRAYICON
 
-#include "qdbusmenuconnection_p.h"
+#include <private/qdbusmenuconnection_p.h>
 #include "qstatusnotifieritemadaptor_p.h"
-#include "qdbusmenuadaptor_p.h"
-#include "qdbusplatformmenu_p.h"
+#include <private/qdbusmenuadaptor_p.h>
+#include <private/qdbusplatformmenu_p.h>
 #include "qxdgnotificationproxy_p.h"
 
 #include <qpa/qplatformmenu.h>

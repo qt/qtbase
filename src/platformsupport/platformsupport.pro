@@ -6,9 +6,6 @@ SUBDIRS = \
     devicediscovery \
     fbconvenience
 
-if(unix:!uikit:!macos)|qtConfig(xcb): \
-    SUBDIRS += themes
-
 qtConfig(evdev)|qtConfig(tslib)|qtConfig(libinput)|qtConfig(integrityhid)|qtConfig(xkbcommon) {
     SUBDIRS += input
     input.depends += devicediscovery

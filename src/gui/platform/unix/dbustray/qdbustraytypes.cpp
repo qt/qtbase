@@ -53,7 +53,7 @@
 #include <QPainter>
 #include <QGuiApplication>
 #include <qpa/qplatformmenu.h>
-#include "qdbusplatformmenu_p.h"
+#include <private/qdbusplatformmenu_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -73,7 +73,7 @@ QXdgDBusImageVector iconToQXdgDBusImageVector(const QIcon &icon)
     bool hasMediumIcon = false;
     qreal dpr = qGuiApp->devicePixelRatio();
     QList<QSize> toRemove;
-    Q_FOREACH (const QSize &size, sizes) {
+    for (const QSize &size : qAsConst(sizes)) {
         int maxSize = qMax(size.width(), size.height());
         if (maxSize <= IconNormalSmallSize * dpr)
             hasSmallIcon = true;
@@ -82,7 +82,7 @@ QXdgDBusImageVector iconToQXdgDBusImageVector(const QIcon &icon)
         else if (maxSize > IconSizeLimit * dpr)
             toRemove << size;
     }
-    Q_FOREACH (const QSize &size, toRemove)
+    for (const QSize &size : qAsConst(toRemove))
         sizes.removeOne(size);
     if (!hasSmallIcon)
         sizes.append(QSize(IconNormalSmallSize * dpr, IconNormalSmallSize * dpr));
@@ -90,7 +90,7 @@ QXdgDBusImageVector iconToQXdgDBusImageVector(const QIcon &icon)
         sizes.append(QSize(IconNormalMediumSize * dpr, IconNormalMediumSize * dpr));
 
     ret.reserve(sizes.size());
-    foreach (QSize size, sizes) {
+    for (const QSize &size : qAsConst(sizes)) {
         // Protocol specifies ARGB32 format in network byte order
         QImage im = icon.pixmap(size).toImage().convertToFormat(QImage::Format_ARGB32);
         // letterbox if necessary to make it square

@@ -5,7 +5,7 @@ PLUGIN_EXTENDS = -
 PLUGIN_CLASS_NAME = QXdgDesktopPortalThemePlugin
 load(qt_plugin)
 
-QT += core-private dbus gui-private theme_support-private
+QT += core-private dbus gui-private
 
 HEADERS += \
         qxdgdesktopportaltheme.h \

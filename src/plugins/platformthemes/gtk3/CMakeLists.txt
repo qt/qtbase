@@ -25,7 +25,6 @@ qt_internal_add_plugin(QGtk3ThemePlugin
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate
-        Qt::ThemeSupportPrivate
 )
 
 #### Keys ignored in scope 1:.:.:gtk3.pro:<TRUE>:

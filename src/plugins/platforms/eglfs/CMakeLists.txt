@@ -26,7 +26,6 @@ qt_add_module(EglFSDeviceIntegration
         Qt::EglSupportPrivate
         Qt::FbSupportPrivate
         Qt::GuiPrivate
-        Qt::ThemeSupportPrivate
         EGL::EGL # special case
 )
 

@@ -5,7 +5,7 @@ PLUGIN_EXTENDS = -
 PLUGIN_CLASS_NAME = QGtk3ThemePlugin
 load(qt_plugin)
 
-QT += core-private gui-private theme_support-private
+QT += core-private gui-private
 
 CONFIG += X11
 QMAKE_USE += gtk3

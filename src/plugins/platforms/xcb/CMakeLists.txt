@@ -43,7 +43,6 @@ qt_add_module(XcbQpa
         Qt::CorePrivate
         Qt::EdidSupportPrivate
         Qt::GuiPrivate
-        Qt::ThemeSupportPrivate
         Qt::XkbCommonSupportPrivate
         XCB::ICCCM
         XCB::IMAGE

@@ -17,7 +17,6 @@ qt_internal_add_plugin(QXdgDesktopPortalThemePlugin
         Qt::DBus
         Qt::Gui
         Qt::GuiPrivate
-        Qt::ThemeSupportPrivate
 )
 
 #### Keys ignored in scope 1:.:.:xdgdesktopportal.pro:<TRUE>:

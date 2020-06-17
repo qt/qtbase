@@ -182,6 +182,7 @@ qtConfig(dbus) {
     qtConfig(accessibility-atspi-bridge): \
         src_platformsupport.depends += src_dbus src_tools_qdbusxml2cpp
     src_plugins.depends += src_dbus src_tools_qdbusxml2cpp src_tools_qdbuscpp2xml
+    src_gui.depends += src_dbus
 }
 
 android {

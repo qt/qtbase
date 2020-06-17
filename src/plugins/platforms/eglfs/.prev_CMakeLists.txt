@@ -25,7 +25,6 @@ qt_add_module(EglFSDeviceIntegration
         Qt::EglSupportPrivate
         Qt::FbSupportPrivate
         Qt::GuiPrivate
-        Qt::ThemeSupportPrivate
 )
 
 #### Keys ignored in scope 2:.:.:eglfsdeviceintegration.pro:<TRUE>:

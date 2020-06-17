@@ -21,3 +21,15 @@ if(unix:!uikit)|qtConfig(xcb) {
 
     qtHaveModule(dbus): QT_PRIVATE += dbus
 }
+
+if(unix:!uikit:!macos)|qtConfig(xcb) {
+    SOURCES += \
+        platform/unix/qgenericunixthemes.cpp
+    HEADERS += \
+        platform/unix/qgenericunixthemes_p.h
+
+    qtHaveModule(dbus) {
+        include(dbusmenu/dbusmenu.pri)
+        qtConfig(systemtrayicon): include(dbustray/dbustray.pri)
+    }
+}

@@ -40,6 +40,7 @@
 #include "qgenericunixthemes_p.h"
 
 #include "qpa/qplatformtheme_p.h"
+#include "qpa/qplatformfontdatabase.h" // lcQpaFonts
 
 #include <QtGui/QPalette>
 #include <QtGui/QFont>
@@ -64,11 +65,11 @@
 #include <qpa/qplatformservices.h>
 #include <qpa/qplatformdialoghelper.h>
 #ifndef QT_NO_DBUS
-#include "qdbusplatformmenu_p.h"
-#include "qdbusmenubar_p.h"
+#include <private/qdbusplatformmenu_p.h>
+#include <private/qdbusmenubar_p.h>
 #endif
 #if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
-#include "qdbustrayicon_p.h"
+#include <private/qdbustrayicon_p.h>
 #endif
 
 #include <algorithm>
@@ -76,7 +77,6 @@
 QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(qLcTray)
-Q_LOGGING_CATEGORY(lcQpaFonts, "qt.qpa.fonts")
 
 ResourceHelper::ResourceHelper()
 {

@@ -132,12 +132,12 @@ Q_SIGNALS:
     void NotificationClosed(uint id, uint reason);
 };
 
+QT_END_NAMESPACE
+
 namespace org {
   namespace freedesktop {
-    typedef ::QXdgNotificationInterface Notifications;
+    using Notifications = QT_PREPEND_NAMESPACE(QXdgNotificationInterface);
   }
 }
-
-QT_END_NAMESPACE
 
 #endif

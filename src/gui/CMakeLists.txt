@@ -869,6 +869,29 @@ qt_extend_target(Gui CONDITION TARGET Qt::DBus AND UNIX AND (QT_FEATURE_xcb OR N
         Qt::DBus
 )
 
+qt_extend_target(Gui CONDITION UNIX AND (QT_FEATURE_xcb OR NOT MACOS) AND (QT_FEATURE_xcb OR NOT UIKIT)
+    SOURCES
+        platform/unix/qgenericunixthemes.cpp platform/unix/qgenericunixthemes_p.h
+)
+
+qt_extend_target(Gui CONDITION TARGET Qt::DBus AND UNIX AND (QT_FEATURE_xcb OR NOT MACOS) AND (QT_FEATURE_xcb OR NOT UIKIT)
+    SOURCES
+        platform/unix/dbusmenu/qdbusmenuadaptor.cpp platform/unix/dbusmenu/qdbusmenuadaptor_p.h
+        platform/unix/dbusmenu/qdbusmenubar.cpp platform/unix/dbusmenu/qdbusmenubar_p.h
+        platform/unix/dbusmenu/qdbusmenuconnection.cpp platform/unix/dbusmenu/qdbusmenuconnection_p.h
+        platform/unix/dbusmenu/qdbusmenuregistrarproxy.cpp platform/unix/dbusmenu/qdbusmenuregistrarproxy_p.h
+        platform/unix/dbusmenu/qdbusmenutypes.cpp platform/unix/dbusmenu/qdbusmenutypes_p.h
+        platform/unix/dbusmenu/qdbusplatformmenu.cpp platform/unix/dbusmenu/qdbusplatformmenu_p.h
+)
+
+qt_extend_target(Gui CONDITION QT_FEATURE_systemtrayicon AND TARGET Qt::DBus AND UNIX AND (QT_FEATURE_xcb OR NOT MACOS) AND (QT_FEATURE_xcb OR NOT UIKIT)
+    SOURCES
+        platform/unix/dbustray/qdbustrayicon.cpp platform/unix/dbustray/qdbustrayicon_p.h
+        platform/unix/dbustray/qdbustraytypes.cpp platform/unix/dbustray/qdbustraytypes_p.h
+        platform/unix/dbustray/qstatusnotifieritemadaptor.cpp platform/unix/dbustray/qstatusnotifieritemadaptor_p.h
+        platform/unix/dbustray/qxdgnotificationproxy.cpp platform/unix/dbustray/qxdgnotificationproxy_p.h
+)
+
 qt_extend_target(Gui CONDITION IOS OR MACOS
     SOURCES
         rhi/qrhimetal.mm rhi/qrhimetal_p.h
