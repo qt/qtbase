@@ -1105,6 +1105,42 @@ function(qt_generate_global_config_pri_file)
     if(QT_NAMESPACE)
         list(APPEND extra_statements "QT_NAMESPACE = ${QT_NAMESPACE}")
     endif()
+    # TODO: Add libinfix support.
+
+    # TODO: Add QT_EMCC_VERSION when WASM is ported over.
+    if(APPLECLANG)
+        set(compiler_version_major_var_name "QT_APPLE_CLANG_MAJOR_VERSION")
+        set(compiler_version_minor_var_name "QT_APPLE_CLANG_MINOR_VERSION")
+        set(compiler_version_patch_var_name "QT_APPLE_CLANG_PATCH_VERSION")
+    elseif(CLANG)
+        set(compiler_version_major_var_name "QT_CLANG_MAJOR_VERSION")
+        set(compiler_version_minor_var_name "QT_CLANG_MINOR_VERSION")
+        set(compiler_version_patch_var_name "QT_CLANG_PATCH_VERSION")
+    elseif(GCC)
+        set(compiler_version_major_var_name "QT_GCC_MAJOR_VERSION")
+        set(compiler_version_minor_var_name "QT_GCC_MINOR_VERSION")
+        set(compiler_version_patch_var_name "QT_GCC_PATCH_VERSION")
+    elseif(ICC)
+        set(compiler_version_major_var_name "QT_ICC_MAJOR_VERSION")
+        set(compiler_version_minor_var_name "QT_ICC_MINOR_VERSION")
+        set(compiler_version_patch_var_name "QT_ICC_PATCH_VERSION")
+    elseif(MSVC)
+        set(compiler_version_major_var_name "QT_MSVC_MAJOR_VERSION")
+        set(compiler_version_minor_var_name "QT_MSVC_MINOR_VERSION")
+        set(compiler_version_patch_var_name "QT_MSVC_PATCH_VERSION")
+    endif()
+
+    if(compiler_version_major_var_name)
+        list(APPEND extra_statements
+            "${compiler_version_major_var_name} = ${QT_COMPILER_VERSION_MAJOR}")
+        list(APPEND extra_statements
+            "${compiler_version_minor_var_name} = ${QT_COMPILER_VERSION_MINOR}")
+        list(APPEND extra_statements
+            "${compiler_version_patch_var_name} = ${QT_COMPILER_VERSION_PATCH}")
+    endif()
+
+    list(APPEND extra_statements "QT_EDITION = Open Source")
+
     if(extra_statements)
         string (REPLACE ";" "\n" extra_statements "${extra_statements}")
     endif()
