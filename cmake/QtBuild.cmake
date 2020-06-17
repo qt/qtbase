@@ -5520,14 +5520,37 @@ endfunction()
 
 function(qt_internal_apply_win_prefix_and_suffix target)
     if(WIN32)
-        # CMake sets for Windows-GNU platforms the prefix "lib", whereas qmake expects
-        # no prefix.
-        set_property(TARGET "${target}" PROPERTY PREFIX "")
+        # Table of prefix / suffixes for MSVC libraries as qmake expects them to be created.
+        # static - Qt6EdidSupport.lib (platform support libraries / or static QtCore, etc)
+        # shared - Qt6Core.dll
+        # shared import library - Qt6Core.lib
+        # module aka Qt plugin - qwindows.dll
+        # module import library - qwindows.lib
+        #
+        # The CMake defaults are fine for us.
 
-        # CMake sets for Windows-GNU platforms the import suffix "dll.a", whereas qmake
-        # expects an ".a" import suffix.
-        if(MINGW)
+        # Table of prefix / suffixes for MinGW libraries as qmake expects them to be created.
+        # static - libQt6EdidSupport.a (platform support libraries / or static QtCore, etc)
+        # shared - Qt6Core.dll
+        # shared import library - libQt6Core.a
+        # module aka Qt plugin - qwindows.dll
+        # module import library - libqwindows.a
+        #
+        # CMake for Windows-GNU platforms defaults the prefix to "lib".
+        # CMake for Windows-GNU platforms defaults the import suffix to ".dll.a".
+        # These CMake defaults are not ok for us.
+
+        # This should cover both MINGW with GCC and CLANG.
+        if(NOT MSVC)
             set_property(TARGET "${target}" PROPERTY IMPORT_SUFFIX ".a")
+
+            get_target_property(target_type ${target} TYPE)
+            if(target_type STREQUAL "STATIC_LIBRARY")
+                set_property(TARGET "${target}" PROPERTY PREFIX "lib")
+            else()
+                set_property(TARGET "${target}" PROPERTY PREFIX "")
+                set_property(TARGET "${target}" PROPERTY IMPORT_PREFIX "lib")
+            endif()
         endif()
     endif()
 endfunction()
