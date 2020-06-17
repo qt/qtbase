@@ -3008,14 +3008,14 @@ QMAKE_PRL_LIBS_FOR_CMAKE = ${prl_libs}
     )
 
     # Add a custom command that prepares the .prl file for installation
-    qt_path_join(qt_build_libdir ${QT_BUILD_DIR} ${install_dir})
-    qt_path_join(prl_file_path "${qt_build_libdir}" "${prl_file_name}")
+    qt_path_join(prl_file_path "${QT_BUILD_DIR}/${install_dir}" "${prl_file_name}")
     set(library_suffixes ${CMAKE_SHARED_LIBRARY_SUFFIX} ${CMAKE_STATIC_LIBRARY_SUFFIX})
     add_custom_command(
         TARGET ${target} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -DIN_FILE=${prl_file_name} -DOUT_FILE=${prl_file_path}
+        COMMAND ${CMAKE_COMMAND} "-DIN_FILE=${prl_file_name}"
+                "-DOUT_FILE=${prl_file_path}"
                 "-DLIBRARY_SUFFIXES=${library_suffixes}"
-                -DQT_BUILD_LIBDIR=${qt_build_libdir}
+                "-DQT_BUILD_LIBDIR=${QT_BUILD_DIR}/${INSTALL_LIBDIR}"
                 -P "${QT_CMAKE_DIR}/QtFinishPrlFile.cmake"
         VERBATIM
         )
