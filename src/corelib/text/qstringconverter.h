@@ -207,9 +207,9 @@ public:
     {}
 
 #if defined(Q_QDOC)
-    QString operator()(const QString &);
-    QString operator()(QStringView);
-    QString operator()(const QChar *, qsizetype);
+    QByteArray operator()(const QString &in);
+    QByteArray operator()(QStringView in);
+    QByteArray operator()(const QChar *in, qsizetype length);
 #else
     template<typename T>
     struct DecodedData
@@ -268,7 +268,7 @@ public:
 
 #if defined(Q_QDOC)
     QString operator()(const QByteArray &ba);
-    QString operator()(const char *in, qsizetype length);
+    QString operator()(const char *in, qsizetype size);
     QString operator()(const char *chars);
 #else
     template<typename T>

@@ -1790,7 +1790,7 @@ const char *QStringConverter::nameForEncoding(QStringConverter::Encoding e)
 */
 
 /*!
-    \fn QByteArray QStringEncoder::operator()(const QStringView in)
+    \fn QByteArray QStringEncoder::operator()(QStringView in)
     \overload
 
     Converts \a in and returns the data as a byte array.
@@ -1884,23 +1884,25 @@ const char *QStringConverter::nameForEncoding(QStringConverter::Encoding e)
 */
 
 /*!
-    \fn QByteArray QStringDecoder::operator()(const QString &in)
+    \fn QString QStringDecoder::operator()(const QByteArray &ba)
 
-    Converts \a in and returns the data as a QString.
+    Converts \a ba and returns the data as a QString.
 */
 
 /*!
-    \fn QByteArray QStringDecoder::operator()(const QStringView in)
+    \fn QString QStringDecoder::operator()(const char *in, qsizetype size)
     \overload
 
-    Converts \a in and returns the data as a QString.
+    Converts a byte array containing the first \a size bytes of the array \a in
+    and returns the data as a QString.
 */
 
 /*!
-    \fn QByteArray QStringDecoder::operator()(const QChar *in, qsizetype length)
+    \fn QString QStringDecoder::operator()(const char *chars)
     \overload
 
-    Converts \a length QChars from \a in and returns the data as a QString.
+    Converts \a chars and returns the data as a QString. \a chars is assumed to
+    point to a \c{\0}-terminated string and its length is determined dynamically.
 */
 
 /*!
