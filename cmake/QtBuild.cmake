@@ -2989,7 +2989,13 @@ function(qt_generate_prl_file target install_dir)
     list(JOIN prl_config " " prl_config)
 
     # Generate a preliminary .prl file that contains absolute paths to all libraries
-    set(prl_file_name "$<TARGET_FILE_PREFIX:${target}>$<TARGET_FILE_BASE_NAME:${target}>.prl")
+    if(MINGW)
+        # For MinGW, qmake doesn't have a lib prefix in prl files.
+        set(prefix_for_prl_name "")
+    else()
+        set(prefix_for_prl_name "$<TARGET_FILE_PREFIX:${target}>")
+    endif()
+    set(prl_file_name "${prefix_for_prl_name}$<TARGET_FILE_BASE_NAME:${target}>.prl")
     file(GENERATE
         OUTPUT "${prl_file_name}"
         CONTENT
