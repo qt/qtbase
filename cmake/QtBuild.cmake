@@ -1255,12 +1255,7 @@ endfunction()
 # Takes a list of path components and joins them into one path separated by forward slashes "/",
 # and saves the path in out_var.
 function(qt_path_join out_var)
-    # Remove output variable.
-    set(argv ${ARGV})
-    list(REMOVE_AT argv 0)
-
-    # Join the path components.
-    string(JOIN "/" path ${argv})
+    string(JOIN "/" path ${ARGN})
     set(${out_var} ${path} PARENT_SCOPE)
 endfunction()
 
