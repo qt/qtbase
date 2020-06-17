@@ -1404,7 +1404,7 @@ void tst_QVariant::checkDataStream()
 
     QTest::ignoreMessage(QtWarningMsg, QRegularExpression("^Trying to construct an instance of an invalid type"));
     QByteArray settingsHex("000000");
-    settingsHex.append(QString::number(typeId, 16));
+    settingsHex.append(QByteArray::number(typeId, 16));
     settingsHex.append("ffffffffff");
     const QByteArray settings = QByteArray::fromHex(settingsHex);
     QDataStream in(settings);

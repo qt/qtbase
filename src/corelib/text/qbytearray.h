@@ -322,26 +322,6 @@ public:
 
     Q_REQUIRED_RESULT QByteArray repeated(int times) const;
 
-#ifndef QT_NO_CAST_TO_ASCII
-    QT_ASCII_CAST_WARN QByteArray &append(const QString &s);
-    QT_ASCII_CAST_WARN QByteArray &insert(int i, const QString &s);
-    QT_ASCII_CAST_WARN QByteArray &replace(const QString &before, const char *after);
-    QT_ASCII_CAST_WARN QByteArray &replace(char c, const QString &after);
-    QT_ASCII_CAST_WARN QByteArray &replace(const QString &before, const QByteArray &after);
-
-    QT_ASCII_CAST_WARN QByteArray &operator+=(const QString &s);
-    QT_ASCII_CAST_WARN int indexOf(const QString &s, int from = 0) const;
-    QT_ASCII_CAST_WARN int lastIndexOf(const QString &s, int from = -1) const;
-#endif
-#if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
-    inline QT_ASCII_CAST_WARN bool operator==(const QString &s2) const;
-    inline QT_ASCII_CAST_WARN bool operator!=(const QString &s2) const;
-    inline QT_ASCII_CAST_WARN bool operator<(const QString &s2) const;
-    inline QT_ASCII_CAST_WARN bool operator>(const QString &s2) const;
-    inline QT_ASCII_CAST_WARN bool operator<=(const QString &s2) const;
-    inline QT_ASCII_CAST_WARN bool operator>=(const QString &s2) const;
-#endif
-
     short toShort(bool *ok = nullptr, int base = 10) const;
     ushort toUShort(bool *ok = nullptr, int base = 10) const;
     int toInt(bool *ok = nullptr, int base = 10) const;

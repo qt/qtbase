@@ -804,7 +804,7 @@ QByteArray sanitizeOutput(const QString &test, const QByteArray &output)
     if (test == "crashes") {
 #if !defined(Q_OS_WIN)
         // Remove digits of times
-        const QLatin1String timePattern("Function time:");
+        const QByteArray timePattern("Function time:");
         int timePos = actual.indexOf(timePattern);
         if (timePos >= 0) {
             timePos += timePattern.size();

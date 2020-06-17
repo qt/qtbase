@@ -5226,14 +5226,6 @@ void tst_QString::operator_smaller()
     QVERIFY(QString("b") >= QByteArray("a"));
     QVERIFY(QString("b") > QByteArray("a"));
 
-    QVERIFY(QByteArray("a") < QString("b"));
-    QVERIFY(QByteArray("a") <= QString("b"));
-    QVERIFY(QByteArray("a") <= QString("a"));
-    QVERIFY(QByteArray("a") == QString("a"));
-    QVERIFY(QByteArray("a") >= QString("a"));
-    QVERIFY(QByteArray("b") >= QString("a"));
-    QVERIFY(QByteArray("b") > QString("a"));
-
     QVERIFY(QLatin1String("a") < QString("b"));
     QVERIFY(QLatin1String("a") <= QString("b"));
     QVERIFY(QLatin1String("a") <= QString("a"));

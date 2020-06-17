@@ -233,7 +233,6 @@ private Q_SLOTS:
     void compare_QByteArray_QStringRef_data() { compare_data(); }
     void compare_QByteArray_QStringRef() { compare_impl<QByteArray, QStringRef>(); }
     void compare_QByteArray_QString_data() { compare_data(); }
-    void compare_QByteArray_QString() { compare_impl<QByteArray, QString>(); }
     void compare_QByteArray_QLatin1String_data() { compare_data(); }
     void compare_QByteArray_QLatin1String() { compare_impl<QByteArray, QLatin1String>(); }
     void compare_QByteArray_QByteArray_data() { compare_data(); }

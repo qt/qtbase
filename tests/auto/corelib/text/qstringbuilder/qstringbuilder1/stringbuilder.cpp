@@ -358,12 +358,6 @@ void runScenario()
         QByteArray ba2 = withZero;
         ba2 += ba2 P withZero;
         QCOMPARE(ba2, QByteArray(withZero + withZero + withZero));
-#ifndef QT_NO_CAST_TO_ASCII
-        ba = UTF8_LITERAL;
-        ba2 = (ba += QLatin1String(LITERAL) + QString::fromUtf8(UTF8_LITERAL));
-        QCOMPARE(ba2, ba);
-        QCOMPARE(ba, QByteArray(UTF8_LITERAL LITERAL UTF8_LITERAL));
-#endif
     }
 
 }
