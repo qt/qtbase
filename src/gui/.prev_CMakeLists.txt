@@ -41,6 +41,7 @@ qt_add_module(Gui
         kernel/qguiapplication.cpp kernel/qguiapplication.h kernel/qguiapplication_p.h
         kernel/qguivariant.cpp
         kernel/qhighdpiscaling.cpp kernel/qhighdpiscaling_p.h
+        kernel/qinputdevice.cpp kernel/qinputdevice.h kernel/qinputdevice_p.h
         kernel/qinputdevicemanager.cpp kernel/qinputdevicemanager_p.h
         kernel/qinputdevicemanager_p_p.h
         kernel/qinputmethod.cpp kernel/qinputmethod.h kernel/qinputmethod_p.h
@@ -74,6 +75,7 @@ qt_add_module(Gui
         kernel/qplatformthemefactory.cpp kernel/qplatformthemefactory_p.h
         kernel/qplatformthemeplugin.cpp kernel/qplatformthemeplugin.h
         kernel/qplatformwindow.cpp kernel/qplatformwindow.h kernel/qplatformwindow_p.h
+        kernel/qpointingdevice.cpp kernel/qpointingdevice.h kernel/qpointingdevice_p.h
         kernel/qrasterwindow.cpp kernel/qrasterwindow.h
         kernel/qscreen.cpp kernel/qscreen.h kernel/qscreen_p.h
         kernel/qsessionmanager.cpp kernel/qsessionmanager.h kernel/qsessionmanager_p.h
@@ -82,7 +84,6 @@ qt_add_module(Gui
         kernel/qsurfaceformat.cpp kernel/qsurfaceformat.h
         kernel/qtestsupport_gui.cpp kernel/qtestsupport_gui.h
         kernel/qtguiglobal.h kernel/qtguiglobal_p.h
-        kernel/qtouchdevice.cpp kernel/qtouchdevice.h kernel/qtouchdevice_p.h
         kernel/qwindow.cpp kernel/qwindow.h kernel/qwindow_p.h
         kernel/qwindowdefs.h
         kernel/qwindowsysteminterface.cpp kernel/qwindowsysteminterface.h kernel/qwindowsysteminterface_p.h
