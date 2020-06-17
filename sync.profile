@@ -13,8 +13,6 @@
     "QtConcurrent" => "$basedir/src/concurrent",
     "QtLinuxAccessibilitySupport" => "$basedir/src/platformsupport/linuxaccessibility",
     "QtDeviceDiscoverySupport" => "$basedir/src/platformsupport/devicediscovery",
-    "QtEventDispatcherSupport" => "$basedir/src/platformsupport/eventdispatchers",
-    "QtFontDatabaseSupport" => "$basedir/src/platformsupport/fontdatabases",
     "QtInputSupport" => "$basedir/src/platformsupport/input",
     "QtXkbCommonSupport" => "$basedir/src/platformsupport/input/xkbcommon",
     "QtServiceSupport" => "$basedir/src/platformsupport/services",
