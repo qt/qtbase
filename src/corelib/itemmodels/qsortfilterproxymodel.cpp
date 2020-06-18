@@ -2856,17 +2856,6 @@ void QSortFilterProxyModel::setAutoAcceptChildRows(bool accept)
     emit autoAcceptChildRowsChanged(accept);
 }
 
-#if QT_DEPRECATED_SINCE(5, 11)
-/*!
-    \obsolete
-
-    This function is obsolete. Use invalidate() instead.
-*/
-void QSortFilterProxyModel::clear()
-{
-    invalidate();
-}
-#endif
 /*!
    \since 4.3
 
@@ -2881,18 +2870,6 @@ void QSortFilterProxyModel::invalidate()
     d->_q_clearMapping();
     emit layoutChanged();
 }
-
-#if QT_DEPRECATED_SINCE(5, 11)
-/*!
-   \obsolete
-
-    This function is obsolete. Use invalidateFilter() instead.
-*/
-void QSortFilterProxyModel::filterChanged()
-{
-    invalidateFilter();
-}
-#endif
 
 /*!
    \since 4.3

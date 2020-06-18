@@ -127,9 +127,6 @@ public Q_SLOTS:
 #endif
     void setFilterWildcard(const QString &pattern);
     void setFilterFixedString(const QString &pattern);
-#if QT_DEPRECATED_SINCE(5, 11)
-    QT_DEPRECATED_X("Use QSortFilterProxyModel::invalidate") void clear();
-#endif
     void invalidate();
 
 protected:
@@ -137,9 +134,6 @@ protected:
     virtual bool filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const;
     virtual bool lessThan(const QModelIndex &source_left, const QModelIndex &source_right) const;
 
-#if QT_DEPRECATED_SINCE(5, 11)
-    QT_DEPRECATED_X("Use QSortFilterProxyModel::invalidateFilter") void filterChanged();
-#endif
     void invalidateFilter();
     void invalidateRowsFilter();
     void invalidateColumnsFilter();
