@@ -54,7 +54,7 @@ QPlatformIntegration* QXcbIntegrationPlugin::create(const QString& system, const
 {
     if (!system.compare(QLatin1String("xcb"), Qt::CaseInsensitive)) {
         auto xcbIntegration = new QXcbIntegration(parameters, argc, argv);
-        if (!xcbIntegration->hasDefaultConnection()) {
+        if (!xcbIntegration->hasConnection()) {
             delete xcbIntegration;
             return nullptr;
         }
