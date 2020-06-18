@@ -2374,7 +2374,7 @@ void QDateTimeEdit::paintEvent(QPaintEvent *event)
 
     QStyleOptionComboBox optCombo;
 
-    optCombo.init(this);
+    optCombo.initFrom(this);
     optCombo.editable = true;
     optCombo.frame = opt.frame;
     optCombo.subControls = opt.subControls;
@@ -2522,7 +2522,7 @@ QStyle::SubControl QDateTimeEditPrivate::newHoverControl(const QPoint &pos)
     Q_Q(QDateTimeEdit);
 
     QStyleOptionComboBox optCombo;
-    optCombo.init(q);
+    optCombo.initFrom(q);
     optCombo.editable = true;
     optCombo.subControls = QStyle::SC_All;
     hoverControl = q->style()->hitTestComplexControl(QStyle::CC_ComboBox, &optCombo, pos, q);
@@ -2539,7 +2539,7 @@ void QDateTimeEditPrivate::updateEditFieldGeometry()
     Q_Q(QDateTimeEdit);
 
     QStyleOptionComboBox optCombo;
-    optCombo.init(q);
+    optCombo.initFrom(q);
     optCombo.editable = true;
     optCombo.subControls = QStyle::SC_ComboBoxEditField;
     edit->setGeometry(q->style()->subControlRect(QStyle::CC_ComboBox, &optCombo,
@@ -2707,7 +2707,7 @@ void QCalendarPopup::mousePressEvent(QMouseEvent *event)
     QDateTimeEdit *dateTime = qobject_cast<QDateTimeEdit *>(parentWidget());
     if (dateTime) {
         QStyleOptionComboBox opt;
-        opt.init(dateTime);
+        opt.initFrom(dateTime);
         QRect arrowRect = dateTime->style()->subControlRect(QStyle::CC_ComboBox, &opt,
                                                             QStyle::SC_ComboBoxArrow, dateTime);
         arrowRect.moveTo(dateTime->mapToGlobal(arrowRect .topLeft()));

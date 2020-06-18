@@ -340,7 +340,7 @@ void QAbstractScrollAreaPrivate::layoutChildren_helper(bool *needHorizontalScrol
                             && vbar->minimum() < vbar->maximum() && !vbar->sizeHint().isEmpty())));
 
     QStyleOption opt(0);
-    opt.init(q);
+    opt.initFrom(q);
 
     const int hscrollOverlap = hbar->style()->pixelMetric(QStyle::PM_ScrollView_ScrollBarOverlap, &opt, hbar);
     const int vscrollOverlap = vbar->style()->pixelMetric(QStyle::PM_ScrollView_ScrollBarOverlap, &opt, vbar);

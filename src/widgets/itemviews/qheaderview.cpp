@@ -2478,7 +2478,7 @@ void QHeaderView::paintEvent(QPaintEvent *e)
     }
 
     QStyleOption opt;
-    opt.init(this);
+    opt.initFrom(this);
     // Paint the area beyond where there are indexes
     if (d->reverse()) {
         opt.state |= QStyle::State_Horizontal;

@@ -341,7 +341,7 @@ void QDockWidgetGroupWindow::paintEvent(QPaintEvent *)
 
     if (!nativeDeco) {
         QStyleOptionFrame framOpt;
-        framOpt.init(this);
+        framOpt.initFrom(this);
         QStylePainter p(this);
         p.drawPrimitive(QStyle::PE_FrameDockWidget, framOpt);
     }

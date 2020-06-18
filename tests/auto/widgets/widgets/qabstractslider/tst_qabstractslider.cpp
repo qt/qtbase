@@ -1818,7 +1818,7 @@ void tst_QAbstractSlider::sliderPressedReleased()
     slider->activateWindow();
 
     QStyleOptionSlider option;
-    option.init(slider);
+    option.initFrom(slider);
     option.upsideDown = control == QStyle::CC_Slider ? !slider->invertedAppearance()
                                                      : slider->invertedAppearance();
     option.subControls = QStyle::SC_None;

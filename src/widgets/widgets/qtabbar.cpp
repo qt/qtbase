@@ -580,7 +580,7 @@ void QTabBarPrivate::layoutTabs()
 
         Q_Q(QTabBar);
         QStyleOption opt;
-        opt.init(q);
+        opt.initFrom(q);
         QRect scrollButtonLeftRect = q->style()->subElementRect(QStyle::SE_TabBarScrollLeftButton, &opt, q);
         QRect scrollButtonRightRect = q->style()->subElementRect(QStyle::SE_TabBarScrollRightButton, &opt, q);
         int scrollButtonWidth = q->style()->pixelMetric(QStyle::PM_TabBarScrollButtonWidth, &opt, q);
@@ -2120,7 +2120,7 @@ void QTabBar::mousePressEvent(QMouseEvent *event)
 
     if (d->validIndex(d->pressedIndex)) {
         QStyleOptionTabBarBase optTabBase;
-        optTabBase.init(this);
+        optTabBase.initFrom(this);
         optTabBase.documentMode = d->documentMode;
         if (event->type() == style()->styleHint(QStyle::SH_TabBar_SelectMouseType, &optTabBase, this))
             setCurrentIndex(d->pressedIndex);
@@ -2820,7 +2820,7 @@ void CloseButton::paintEvent(QPaintEvent *)
 {
     QPainter p(this);
     QStyleOption opt;
-    opt.init(this);
+    opt.initFrom(this);
     opt.state |= QStyle::State_AutoRaise;
     if (isEnabled() && underMouse() && !isChecked() && !isDown())
         opt.state |= QStyle::State_Raised;

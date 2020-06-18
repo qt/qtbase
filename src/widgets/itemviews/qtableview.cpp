@@ -589,7 +589,7 @@ public:
     QTableCornerButton(QWidget *parent) : QAbstractButton(parent) {}
     void paintEvent(QPaintEvent*) override {
         QStyleOptionHeader opt;
-        opt.init(this);
+        opt.initFrom(this);
         QStyle::State state = QStyle::State_None;
         if (isEnabled())
             state |= QStyle::State_Enabled;

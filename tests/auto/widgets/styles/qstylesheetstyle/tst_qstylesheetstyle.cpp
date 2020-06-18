@@ -1918,7 +1918,7 @@ void tst_QStyleSheetStyle::QTBUG15910_crashNullWidget()
         void paintEvent(QPaintEvent *) override
         {
             QStyleOption opt;
-            opt.init(this);
+            opt.initFrom(this);
             QPainter p(this);
             style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, nullptr);
             style()->drawPrimitive(QStyle::PE_Frame, &opt, &p, nullptr);

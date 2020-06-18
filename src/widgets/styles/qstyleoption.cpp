@@ -176,13 +176,7 @@ QStyleOption::~QStyleOption()
     \sa QWidget::layoutDirection(), QWidget::rect(),
         QWidget::palette(), QWidget::fontMetrics()
 */
-
-/*!
-    \obsolete
-
-    Use initFrom(\a widget) instead.
-*/
-void QStyleOption::init(const QWidget *widget)
+void QStyleOption::initFrom(const QWidget *widget)
 {
     QWidget *window = widget->window();
     state = QStyle::State_None;

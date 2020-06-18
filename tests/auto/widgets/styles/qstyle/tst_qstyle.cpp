@@ -190,7 +190,7 @@ bool tst_QStyle::testAllFunctions(QStyle *style)
 {
     QStyleOption opt;
     QWidget testWidget;
-    opt.init(&testWidget);
+    opt.initFrom(&testWidget);
 
     testWidget.setStyle(style);
 
@@ -218,24 +218,24 @@ bool tst_QStyle::testAllFunctions(QStyle *style)
         QPixmap surface(QSize(200, 200));
         QPainter painter(&surface);
         QStyleOptionComboBox copt1;
-        copt1.init(&testWidget);
+        copt1.initFrom(&testWidget);
 
         QStyleOptionGroupBox copt2;
-        copt2.init(&testWidget);
+        copt2.initFrom(&testWidget);
         QStyleOptionSizeGrip copt3;
-        copt3.init(&testWidget);
+        copt3.initFrom(&testWidget);
         QStyleOptionSlider copt4;
-        copt4.init(&testWidget);
+        copt4.initFrom(&testWidget);
         copt4.minimum = 0;
         copt4.maximum = 100;
         copt4.tickInterval = 25;
         copt4.sliderValue = 50;
         QStyleOptionSpinBox copt5;
-        copt5.init(&testWidget);
+        copt5.initFrom(&testWidget);
         QStyleOptionTitleBar copt6;
-        copt6.init(&testWidget);
+        copt6.initFrom(&testWidget);
         QStyleOptionToolButton copt7;
-        copt7.init(&testWidget);
+        copt7.initFrom(&testWidget);
         QStyleOptionComplex copt9;
         copt9.initFrom(&testWidget);
 
@@ -538,7 +538,7 @@ void tst_QStyle::testProxyCalled()
     QToolButton b;
     b.setArrowType(Qt::DownArrow);
     QStyleOptionToolButton opt;
-    opt.init(&b);
+    opt.initFrom(&b);
     opt.features |= QStyleOptionToolButton::Arrow;
     QPixmap surface(QSize(200, 200));
     QPainter painter(&surface);

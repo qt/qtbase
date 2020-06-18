@@ -222,7 +222,7 @@ void QDockWidgetTitleButton::paintEvent(QPaintEvent *)
     QPainter p(this);
 
     QStyleOptionToolButton opt;
-    opt.init(this);
+    opt.initFrom(this);
     opt.state |= QStyle::State_AutoRaise;
 
     if (style()->styleHint(QStyle::SH_DockWidget_ButtonsHaveFrame, nullptr, this))
@@ -1480,7 +1480,7 @@ void QDockWidget::paintEvent(QPaintEvent *event)
         // when not floating.
         if (isFloating()) {
             QStyleOptionFrame framOpt;
-            framOpt.init(this);
+            framOpt.initFrom(this);
             p.drawPrimitive(QStyle::PE_FrameDockWidget, framOpt);
         }
 

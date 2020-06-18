@@ -263,7 +263,7 @@ void QMenuPrivate::copyActionToPlatformItem(const QAction *action, QPlatformMenu
         item->setIcon(action->icon());
         if (QWidget *w = action->parentWidget()) {
             QStyleOption opt;
-            opt.init(w);
+            opt.initFrom(w);
             item->setIconSize(w->style()->pixelMetric(QStyle::PM_SmallIconSize, &opt, w));
         } else {
             QStyleOption opt;
@@ -379,7 +379,7 @@ void QMenuPrivate::updateActionRects(const QRect &screen) const
 
     QStyle *style = q->style();
     QStyleOption opt;
-    opt.init(q);
+    opt.initFrom(q);
     const int hmargin = style->pixelMetric(QStyle::PM_MenuHMargin, &opt, q),
               vmargin = style->pixelMetric(QStyle::PM_MenuVMargin, &opt, q),
               icone = style->pixelMetric(QStyle::PM_SmallIconSize, &opt, q);
@@ -1007,7 +1007,7 @@ QRect QMenuPrivate::rect() const
     Q_Q(const QMenu);
     QStyle *style = q->style();
     QStyleOption opt(0);
-    opt.init(q);
+    opt.initFrom(q);
     const int hmargin = style->pixelMetric(QStyle::PM_MenuHMargin, &opt, q);
     const int vmargin = style->pixelMetric(QStyle::PM_MenuVMargin, &opt, q);
     const int fw = style->pixelMetric(QStyle::PM_MenuPanelWidth, &opt, q);
@@ -1306,7 +1306,7 @@ bool QMenuPrivate::mouseEventTaken(QMouseEvent *e)
 
     QStyle *style = q->style();
     QStyleOption opt(0);
-    opt.init(q);
+    opt.initFrom(q);
     const int hmargin = style->pixelMetric(QStyle::PM_MenuHMargin, &opt, q);
     const int vmargin = style->pixelMetric(QStyle::PM_MenuVMargin, &opt, q);
     const int fw = style->pixelMetric(QStyle::PM_MenuPanelWidth, &opt, q);
@@ -2339,7 +2339,7 @@ QSize QMenu::sizeHint() const
     // the top and left margins, so we only need to add margins for
     // the bottom and right.
     QStyleOption opt(0);
-    opt.init(this);
+    opt.initFrom(this);
     const int fw = style()->pixelMetric(QStyle::PM_MenuPanelWidth, &opt, this);
     s.rwidth() += style()->pixelMetric(QStyle::PM_MenuHMargin, &opt, this) + fw + d->rightmargin;
     s.rheight() += style()->pixelMetric(QStyle::PM_MenuVMargin, &opt, this) + fw + d->bottommargin;
