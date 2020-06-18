@@ -471,22 +471,6 @@ QStyleOptionFocusRect::QStyleOptionFocusRect(int version)
 */
 
 /*!
-    \typedef QStyleOptionFrameV2
-    \relates QStyleOptionFrame
-    \obsolete
-
-    Synonym for QStyleOptionFrame.
-*/
-
-/*!
-    \typedef QStyleOptionFrameV3
-    \relates QStyleOptionFrame
-    \obsolete
-
-    Synonym for QStyleOptionFrame.
-*/
-
-/*!
     Constructs a QStyleOptionFrame, initializing the members
     variables to their default values.
 */
@@ -1251,30 +1235,6 @@ QStyleOptionToolBar::QStyleOptionToolBar(int version)
 */
 
 /*!
-    \typedef QStyleOptionTabV2
-    \relates QStyleOptionTab
-    \obsolete
-
-    Synonym for QStyleOptionTab.
-*/
-
-/*!
-    \typedef QStyleOptionTabV3
-    \relates QStyleOptionTab
-    \obsolete
-
-    Synonym for QStyleOptionTab.
-*/
-
-/*!
-    \typedef QStyleOptionTabV4
-    \relates QStyleOptionTab
-    \obsolete
-
-    Synonym for QStyleOptionTab.
-*/
-
-/*!
     Constructs a QStyleOptionTab object, initializing the members
     variables to their default values.
 */
@@ -1509,14 +1469,6 @@ QStyleOptionTab::QStyleOptionTab(int version)
     the \l {widgets/styles}{Styles} example.
 
     \sa QStyleOption
-*/
-
-/*!
-    \typedef QStyleOptionProgressBarV2
-    \relates QStyleOptionProgressBar
-    \obsolete
-
-    Synonym for QStyleOptionProgressBar.
 */
 
 /*!
@@ -2288,14 +2240,6 @@ QStyleOptionSpinBox::QStyleOptionSpinBox(int version)
 */
 
 /*!
-    \typedef QStyleOptionDockWidgetV2
-    \relates QStyleOptionDockWidget
-    \obsolete
-
-    Synonym for QStyleOptionDockWidget.
-*/
-
-/*!
     Constructs a QStyleOptionDockWidget, initializing the member
     variables to their default values.
 */
@@ -2701,14 +2645,6 @@ QStyleOptionComboBox::QStyleOptionComboBox(int version)
 */
 
 /*!
-    \typedef QStyleOptionToolBoxV2
-    \relates QStyleOptionToolBox
-    \obsolete
-
-    Synonym for QStyleOptionToolBox.
-*/
-
-/*!
     Creates a QStyleOptionToolBox, initializing the members variables
     to their default values.
 */
@@ -3039,30 +2975,6 @@ QStyleOptionTitleBar::QStyleOptionTitleBar(int version)
 */
 
 /*!
-    \typedef QStyleOptionViewItemV2
-    \relates QStyleOptionViewItem
-    \obsolete
-
-    Synonym for QStyleOptionViewItem.
-*/
-
-/*!
-    \typedef QStyleOptionViewItemV3
-    \relates QStyleOptionViewItem
-    \obsolete
-
-    Synonym for QStyleOptionViewItem.
-*/
-
-/*!
-    \typedef QStyleOptionViewItemV4
-    \relates QStyleOptionViewItem
-    \obsolete
-
-    Synonym for QStyleOptionViewItem.
-*/
-
-/*!
     \enum QStyleOptionViewItem::Position
 
     This enum describes the position of the item's decoration.
@@ -3328,14 +3240,6 @@ QStyleOptionViewItem::QStyleOptionViewItem(int version)
 */
 
 /*!
-    \typedef QStyleOptionTabWidgetFrameV2
-    \relates QStyleOptionTabWidgetFrame
-    \obsolete
-
-    Synonym for QStyleOptionTabWidgetFrame.
-*/
-
-/*!
     Constructs a QStyleOptionTabWidgetFrame, initializing the members
     variables to their default values.
 */
@@ -3475,14 +3379,6 @@ QStyleOptionTabWidgetFrame::QStyleOptionTabWidgetFrame(int version)
     the \l {widgets/styles}{Styles} example.
 
     \sa QStyleOption, QTabBar::drawBase()
-*/
-
-/*!
-    \typedef QStyleOptionTabBarBaseV2
-    \relates QStyleOptionTabBarBase
-    \obsolete
-
-    Synonym for QStyleOptionTabBarBase.
 */
 
 /*!
