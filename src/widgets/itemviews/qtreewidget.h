@@ -303,7 +303,6 @@ public:
 
     QTreeWidgetItem *itemAbove(const QTreeWidgetItem *item) const;
     QTreeWidgetItem *itemBelow(const QTreeWidgetItem *item) const;
-    QList<QTreeWidgetItem*> items(const QMimeData *data) const;
 
     QModelIndex indexFromItem(const QTreeWidgetItem *item, int column = 0) const;
     QTreeWidgetItem *itemFromIndex(const QModelIndex &index) const;

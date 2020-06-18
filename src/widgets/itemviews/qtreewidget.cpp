@@ -3309,18 +3309,6 @@ Qt::DropActions QTreeWidget::supportedDropActions() const
 }
 
 /*!
-  \obsolete
-  Returns an empty list
-
-  \sa mimeData()
-*/
-QList<QTreeWidgetItem*> QTreeWidget::items(const QMimeData *data) const
-{
-    Q_UNUSED(data);
-    return QList<QTreeWidgetItem*>();
-}
-
-/*!
     Returns the QModelIndex associated with the given \a item in the given \a column.
 
     \note In Qt versions prior to 5.7, this function took a non-\c{const} \a item.
