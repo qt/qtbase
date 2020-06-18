@@ -64,8 +64,6 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_DECLARE_LOGGING_CATEGORY(lcQpaFonts)
-
 class Q_GUI_EXPORT QCoreTextFontEngine : public QFontEngine
 {
     Q_GADGET

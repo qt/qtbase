@@ -86,8 +86,6 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(lcQpaFonts, "qt.qpa.fonts")
-
 static float SYNTHETIC_ITALIC_SKEW = std::tan(14.f * std::acos(0.f) / 90.f);
 
 bool QCoreTextFontEngine::ct_getSfntTable(void *user_data, uint tag, uchar *buffer, uint *length)

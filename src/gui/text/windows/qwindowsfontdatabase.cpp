@@ -67,8 +67,6 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(lcQpaFonts, "qt.qpa.fonts")
-
 #if QT_CONFIG(directwrite)
 // ### fixme: Consider direct linking of dwrite.dll once Windows Vista pre SP2 is dropped (QTBUG-49711)
 

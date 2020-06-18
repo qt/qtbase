@@ -50,6 +50,7 @@
 //
 
 #include <QtGui/qtguiglobal.h>
+#include <QtCore/qloggingcategory.h>
 #include <QtCore/QString>
 #include <QtCore/QStringList>
 #include <QtCore/QList>
@@ -63,6 +64,7 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_DECLARE_LOGGING_CATEGORY(lcQpaFonts)
 
 class QWritingSystemsPrivate;
 

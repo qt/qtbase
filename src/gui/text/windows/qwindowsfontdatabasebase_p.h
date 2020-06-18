@@ -65,8 +65,6 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_DECLARE_LOGGING_CATEGORY(lcQpaFonts);
-
 class QWindowsFontEngineData
 {
     Q_DISABLE_COPY_MOVE(QWindowsFontEngineData)

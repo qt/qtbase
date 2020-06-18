@@ -53,6 +53,8 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(lcQpaFonts, "qt.qpa.fonts")
+
 void qt_registerFont(const QString &familyname, const QString &stylename,
                      const QString &foundryname, int weight,
                      QFont::Style style, int stretch, bool antialiased,
