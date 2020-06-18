@@ -702,6 +702,7 @@ void QNetworkStatusMonitorPrivate::stop()
     managerEvents.Reset();
 
     CoUninitialize();
+    comInitFailed = true; // we check this value in start() to see if we need to re-initialize
 }
 
 QNetworkStatusMonitor::QNetworkStatusMonitor(QObject *parent)
