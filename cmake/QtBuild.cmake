@@ -1494,6 +1494,25 @@ function(qt_internal_apply_gc_binaries target visibility)
     endif()
 endfunction()
 
+function(qt_internal_apply_intel_cet target visibility)
+    if(NOT QT_FEATURE_intelcet)
+        return()
+    endif()
+
+    set(possible_visibilities PRIVATE INTERFACE PUBLIC)
+    list(FIND possible_visibilities "${visibility}" known_visibility)
+    if (known_visibility EQUAL "-1")
+        message(FATAL_ERROR "Visibitily setting must be one of PRIVATE, INTERFACE or PUBLIC.")
+    endif()
+
+    if(GCC)
+        set(flags "-mshstk")
+    endif()
+    if(flags)
+        target_compile_options("${target}" ${visibility} "${flags}")
+    endif()
+endfunction()
+
 function(qt_internal_add_linker_version_script target)
     qt_parse_all_arguments(arg "qt_internal_add_linker" "INTERNAL" "" "PRIVATE_HEADERS" ${ARGN})
 

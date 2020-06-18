@@ -274,3 +274,4 @@ qt_internal_apply_gc_binaries(${target_name} PRIVATE) # special case
 
 qt_enable_msvc_cplusplus_define(${target_name} PUBLIC) # special case
 qt_skip_warnings_are_errors(${target_name}) # special case
+qt_internal_apply_intel_cet(Bootstrap PUBLIC) # special case

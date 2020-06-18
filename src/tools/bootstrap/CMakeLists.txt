@@ -265,4 +265,5 @@ qt_internal_apply_gc_binaries(Bootstrap PUBLIC)
 set_target_properties(Bootstrap PROPERTIES AUTOMOC OFF AUTOUIC OFF AUTORCC OFF)
 qt_internal_add_target_aliases(Bootstrap)
 qt_enable_msvc_cplusplus_define(Bootstrap PUBLIC)
+qt_internal_apply_intel_cet(Bootstrap PUBLIC)
 # special case end
