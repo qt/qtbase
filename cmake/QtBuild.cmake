@@ -831,6 +831,11 @@ function(qt_generate_module_pri_file target)
         qt_path_join(pri_file_name "${target_path}" "qt_lib_${config_module_name}.pri")
         list(APPEND pri_files "${pri_file_name}")
 
+        set(module_extra_defines "")
+        if(config_module_name STREQUAL core AND QT_NAMESPACE)
+            set(module_extra_defines "QT_NAMESPACE=${QT_NAMESPACE}")
+        endif()
+
         file(GENERATE
             OUTPUT "${pri_file_name}"
             CONTENT
@@ -845,7 +850,7 @@ QT.${config_module_name}.plugin_types = ${module_plugin_types}
 QT.${config_module_name}.depends = ${public_module_dependencies}
 QT.${config_module_name}.uses =
 QT.${config_module_name}.module_config = ${joined_module_internal_config}
-QT.${config_module_name}.DEFINES = QT_${module_define}_LIB
+QT.${config_module_name}.DEFINES = QT_${module_define}_LIB ${module_extra_defines}
 QT.${config_module_name}.enabled_features = ${enabled_features}
 QT.${config_module_name}.disabled_features = ${disabled_features}${module_build_config}
 QT_CONFIG += ${enabled_features}
