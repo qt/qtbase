@@ -57,24 +57,26 @@
 
 QT_BEGIN_NAMESPACE
 
-class QOpenGLVertexArrayObjectHelper;
 class QOpenGLContext;
-
-void Q_OPENGL_EXPORT qtInitializeVertexArrayObjectHelper(QOpenGLVertexArrayObjectHelper *helper, QOpenGLContext *context);
 
 class QOpenGLVertexArrayObjectHelper
 {
     Q_DISABLE_COPY(QOpenGLVertexArrayObjectHelper)
 
-public:
+private:
     explicit inline QOpenGLVertexArrayObjectHelper(QOpenGLContext *context)
         : GenVertexArrays(nullptr)
         , DeleteVertexArrays(nullptr)
         , BindVertexArray(nullptr)
         , IsVertexArray(nullptr)
     {
-        qtInitializeVertexArrayObjectHelper(this, context);
+        initializeFromContext(context);
     }
+
+    void Q_OPENGL_EXPORT initializeFromContext(QOpenGLContext *context);
+
+public:
+    static Q_OPENGL_EXPORT QOpenGLVertexArrayObjectHelper *vertexArrayObjectHelperForContext(QOpenGLContext *context);
 
     inline bool isValid() const
     {
@@ -100,9 +102,6 @@ public:
     {
         return IsVertexArray(array);
     }
-
-private:
-    friend void Q_OPENGL_EXPORT qtInitializeVertexArrayObjectHelper(QOpenGLVertexArrayObjectHelper *helper, QOpenGLContext *context);
 
     // Function signatures are equivalent between desktop core, ARB, APPLE, ES 3 and ES 2 extensions
     typedef void (QOPENGLF_APIENTRYP qt_GenVertexArrays_t)(GLsizei n, GLuint *arrays);

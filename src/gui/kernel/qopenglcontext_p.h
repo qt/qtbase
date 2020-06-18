@@ -191,6 +191,7 @@ private:
 class QPaintEngineEx;
 class QOpenGLFunctions;
 class QOpenGLTextureHelper;
+class QOpenGLVertexArrayObjectHelper;
 
 class Q_GUI_EXPORT QOpenGLContextVersionFunctionHelper
 {
@@ -211,6 +212,8 @@ public:
         , functions(nullptr)
         , textureFunctions(nullptr)
         , versionFunctions(nullptr)
+        , vaoHelper(nullptr)
+        , vaoHelperDestroyCallback(nullptr)
         , max_texture_size(-1)
         , workaround_brokenFBOReadBack(false)
         , workaround_brokenTexSubImage(false)
@@ -242,6 +245,9 @@ public:
     QOpenGLTextureHelper* textureFunctions;
     std::function<void()> textureFunctionsDestroyCallback;
     QOpenGLContextVersionFunctionHelper *versionFunctions;
+    QOpenGLVertexArrayObjectHelper *vaoHelper;
+    using QOpenGLVertexArrayObjectHelperDestroyCallback_t = void (*)(QOpenGLVertexArrayObjectHelper *);
+    QOpenGLVertexArrayObjectHelperDestroyCallback_t vaoHelperDestroyCallback;
 
     GLint max_texture_size;
 

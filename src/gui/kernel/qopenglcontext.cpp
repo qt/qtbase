@@ -484,6 +484,13 @@ void QOpenGLContext::destroy()
     }
     d->textureFunctions = nullptr;
 
+    if (d->vaoHelperDestroyCallback) {
+        Q_ASSERT(d->vaoHelper);
+        d->vaoHelperDestroyCallback(d->vaoHelper);
+        d->vaoHelperDestroyCallback = nullptr;
+    }
+    d->vaoHelper = nullptr;
+
     d->nativeHandle = QVariant();
 }
 

@@ -375,7 +375,7 @@ struct StateSaver
 {
     StateSaver() {
         f = QOpenGLContext::currentContext()->functions();
-        vaoHelper = new QOpenGLVertexArrayObjectHelper(QOpenGLContext::currentContext());
+        vaoHelper = QOpenGLVertexArrayObjectHelper::vertexArrayObjectHelperForContext(QOpenGLContext::currentContext());
 
         static bool windowsChecked = false;
         static bool shouldSave = true;
@@ -446,7 +446,6 @@ struct StateSaver
                 f->glVertexAttribPointer(i, va[i].size, va[i].type, va[i].normalized, va[i].stride, va[i].pointer);
             }
         }
-        delete vaoHelper;
     }
     QOpenGLFunctions *f;
     QOpenGLVertexArrayObjectHelper *vaoHelper;
