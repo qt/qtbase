@@ -831,10 +831,11 @@ function(qt_generate_module_pri_file target)
         qt_path_join(pri_file_name "${target_path}" "qt_lib_${config_module_name}.pri")
         list(APPEND pri_files "${pri_file_name}")
 
-        set(module_extra_defines "")
-        if(config_module_name STREQUAL core AND QT_NAMESPACE)
-            set(module_extra_defines "QT_NAMESPACE=${QT_NAMESPACE}")
-        endif()
+        # Don't use $<TARGET_PROPERTY:${target},INTERFACE_COMPILE_DEFINITIONS> genex because that
+        # will compute the transitive list of all defines for a module (so Gui would get Core
+        #defines too). Instead query just the public defines on the target.
+        get_target_property(target_defines "${target}" INTERFACE_COMPILE_DEFINITIONS)
+        list(JOIN target_defines " " joined_target_defines)
 
         file(GENERATE
             OUTPUT "${pri_file_name}"
@@ -850,7 +851,7 @@ QT.${config_module_name}.plugin_types = ${module_plugin_types}
 QT.${config_module_name}.depends = ${public_module_dependencies}
 QT.${config_module_name}.uses =
 QT.${config_module_name}.module_config = ${joined_module_internal_config}
-QT.${config_module_name}.DEFINES = QT_${module_define}_LIB ${module_extra_defines}
+QT.${config_module_name}.DEFINES = ${joined_target_defines}
 QT.${config_module_name}.enabled_features = ${enabled_features}
 QT.${config_module_name}.disabled_features = ${disabled_features}${module_build_config}
 QT_CONFIG += ${enabled_features}
