@@ -94,9 +94,9 @@ bool QAndroidPlatformFileDialogHelper::handleActivityResult(jint requestCode, ji
             QJNIObjectPrivate itemUri = item.callObjectMethod("getUri", "()Landroid/net/Uri;");
             takePersistableUriPermission(itemUri);
             m_selectedFile.append(itemUri.toString());
-            Q_EMIT filesSelected(m_selectedFile);
-            Q_EMIT accept();
         }
+        Q_EMIT filesSelected(m_selectedFile);
+        Q_EMIT accept();
     }
 
     return true;
