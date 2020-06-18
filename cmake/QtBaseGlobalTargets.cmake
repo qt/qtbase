@@ -108,10 +108,48 @@ if(VCPKG_TARGET_TRIPLET)
     list(APPEND init_vcpkg "set(VCPKG_TARGET_TRIPLET \"${VCPKG_TARGET_TRIPLET}\" CACHE STRING \"\")")
 endif()
 
-# On Windows compilers aren't easily mixed. Avoid that qtbase is built using cl.exe for example and then for another
-# build gcc is picked up from %PATH%. The same goes when using a custom compiler on other platforms, such as ICC.
-list(APPEND init_platform "set(CMAKE_CXX_COMPILER \"${CMAKE_CXX_COMPILER}\" CACHE STRING \"\")")
-list(APPEND init_platform "set(CMAKE_C_COMPILER \"${CMAKE_C_COMPILER}\" CACHE STRING \"\")")
+# By default we don't want to allow mixing compilers for building different repositories, so we
+# embed the initially chosen compilers into the toolchain.
+# This is because on Windows compilers aren't easily mixed.
+# We want to avoid that qtbase is built using cl.exe for example, and then for another repo
+# gcc is picked up from %PATH%.
+# The same goes when using a custom compiler on other platforms, such as ICC.
+#
+# There are a few exceptions though.
+#
+# When crosscompiling using Boot2Qt, the environment setup shell script sets up the CXX env var,
+# which is used by CMake to determine the initial compiler that should be used.
+# Unfortunately, the CXX env var contains not only the compiler name, but also a few required
+# arch-specific compiler flags. This means that when building qtsvg, if the Qt created toolchain
+# file sets the CMAKE_CXX_COMPILER variable, the CXX env var is ignored and thus the extra
+# arch specific compiler flags are not picked up anymore, leading to a configuration failure.
+#
+# To avoid this issue, disable automatic embedding of the compilers into the qt toolchain when
+# cross compiling. This is merely a heuristic, becacuse we don't have enough data to decide
+# when to do it or not.
+# For example on Linux one might want to allow mixing of clang and gcc (maybe).
+#
+# To allow such use cases when the default is wrong, one can provide a flag to explicitly opt-in
+# or opt-out of the compiler embedding into the Qt toolchain.
+#
+# Passing -DQT_EMBED_TOOLCHAIN_COMPILER=ON  will force embedding of the compilers.
+# Passing -DQT_EMBED_TOOLCHAIN_COMPILER=OFF will disable embedding of the compilers.
+set(__qt_embed_toolchain_compilers TRUE)
+if(CMAKE_CROSSCOMPILING)
+    set(__qt_embed_toolchain_compilers FALSE)
+endif()
+if(DEFINED QT_EMBED_TOOLCHAIN_COMPILER)
+    if(QT_EMBED_TOOLCHAIN_COMPILER)
+        set(__qt_embed_toolchain_compilers TRUE)
+    else()
+        set(__qt_embed_toolchain_compilers FALSE)
+    endif()
+endif()
+if(__qt_embed_toolchain_compilers)
+    list(APPEND init_platform "set(CMAKE_CXX_COMPILER \"${CMAKE_CXX_COMPILER}\" CACHE STRING \"\")")
+    list(APPEND init_platform "set(CMAKE_C_COMPILER \"${CMAKE_C_COMPILER}\" CACHE STRING \"\")")
+endif()
+unset(__qt_embed_toolchain_compilers)
 
 if(APPLE)
     # For simulator_and_device build, we should not explicitly set the sysroot.
