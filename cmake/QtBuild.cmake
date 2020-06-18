@@ -295,8 +295,11 @@ elseif(EMSCRIPTEN)
     set(QT_QMAKE_TARGET_MKSPEC wasm-emscripten)
 endif()
 
-# TODO: Fixme to be correct.
-set(QT_QMAKE_HOST_MKSPEC "${QT_QMAKE_TARGET_MKSPEC}")
+if(CMAKE_CROSSCOMPILING)
+    set(QT_QMAKE_HOST_MKSPEC "${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_QMAKE_MKSPEC}")
+else()
+    set(QT_QMAKE_HOST_MKSPEC "${QT_QMAKE_TARGET_MKSPEC}")
+endif()
 
 # Platform definition dir provided by user on command line.
 # Derive the absolute one relative to the current source dir.
@@ -1301,6 +1304,90 @@ CONFIG += ${private_config_joined}
         VERBATIM)
     add_custom_target(qmodule_pri DEPENDS "${qmodule_pri_target_path}")
     qt_install(FILES "${qmodule_pri_target_path}" DESTINATION ${INSTALL_MKSPECSDIR})
+endfunction()
+
+# In the cross-compiling case, creates a wrapper around the host Qt's
+# qmake executable. Also creates a qmake configuration file that sets
+# up the host qmake's properties for cross-compiling with this Qt
+# build.
+function(qt_generate_qmake_wrapper_for_target)
+    if(NOT CMAKE_CROSSCOMPILING)
+        return()
+    endif()
+
+    # Call the configuration file something else but qt.conf to avoid
+    # being picked up by the qmake executable that's created if
+    # QT_BUILD_TOOLS_WHEN_CROSSCOMPILING is enabled.
+    qt_path_join(qt_conf_path "${INSTALL_BINDIR}" "target_qt.conf")
+
+    set(prefix "${CMAKE_INSTALL_PREFIX}")
+    set(ext_prefix "${CMAKE_STAGING_PREFIX}")
+    if(ext_prefix STREQUAL "")
+        set(ext_prefix "${prefix}")
+    endif()
+
+    set(host_prefix "${QT_HOST_PATH}")
+    file(RELATIVE_PATH host_prefix_relative_to_conf_file "${ext_prefix}/${INSTALL_BINDIR}"
+        "${host_prefix}")
+    file(RELATIVE_PATH ext_prefix_relative_to_conf_file "${ext_prefix}/${INSTALL_BINDIR}"
+        "${ext_prefix}")
+    file(RELATIVE_PATH ext_prefix_relative_to_host_prefix "${host_prefix}" "${ext_prefix}")
+
+    set(content "")
+    if(ext_prefix STREQUAL prefix)
+        set(sysrootify_prefix true)
+    else()
+        set(sysrootify_prefix false)
+        string(APPEND content "[DevicePaths]
+Prefix=${prefix}
+")
+    endif()
+
+    if(NOT QT_WILL_INSTALL)
+        # The shadow build directory of a non-prefix build does not contain a copy of the mkspecs
+        # directory. Let $$[QT_HOST_DATA/src] point to the qtbase source directory.
+        string(APPEND content "[EffectiveSourcePaths]
+HostData=${CMAKE_CURRENT_SOURCE_DIR}
+")
+
+        # Set $$[QT_HOST_DATA/get] to avoid falling back to the source dir where it isn't explicitly
+        # requested.
+        string(APPEND content "[EffectivePaths]
+HostData=${ext_prefix}
+")
+    endif()
+
+    string(APPEND content
+        "[Paths]
+Prefix=${ext_prefix_relative_to_conf_file}
+HostPrefix=${host_prefix_relative_to_conf_file}
+HostData=${ext_prefix_relative_to_host_prefix}
+Sysroot=${CMAKE_SYSROOT}
+SysrootifyPrefix=${sysrootify_prefix}
+TargetSpec=${QT_QMAKE_TARGET_MKSPEC}
+HostSpec=${QT_QMAKE_HOST_MKSPEC}
+")
+    file(GENERATE OUTPUT "${qt_conf_path}" CONTENT "${content}")
+
+    qt_path_join(qmake_wrapper_in_file "${CMAKE_CURRENT_SOURCE_DIR}/bin/qmake-wrapper-for-target")
+    qt_path_join(qmake_wrapper "preliminary" "qmake")
+    if(QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
+        # Avoid collisions with the cross-compiled qmake binary.
+        string(PREPEND qmake_wrapper "host-")
+    endif()
+    if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
+        string(APPEND qmake_wrapper_in_file ".bat")
+        string(APPEND qmake_wrapper ".bat")
+    endif()
+    string(APPEND qmake_wrapper_in_file ".in")
+
+    set(host_qt_bindir "${host_prefix}/${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_BINDIR}")
+
+    configure_file("${qmake_wrapper_in_file}" "${qmake_wrapper}" @ONLY)
+    qt_install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${qt_conf_path}"
+        DESTINATION "${INSTALL_BINDIR}")
+    qt_copy_or_install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/${qmake_wrapper}"
+        DESTINATION "${INSTALL_BINDIR}")
 endfunction()
 
 # Takes a list of path components and joins them into one path separated by forward slashes "/",
