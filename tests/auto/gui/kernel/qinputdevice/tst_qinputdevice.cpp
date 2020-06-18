@@ -66,7 +66,7 @@ void tst_QInputDevice::multiSeatDevices()
     QVERIFY(!QInputDevicePrivate::fromId(2010)->hasCapability(QInputDevice::Capability::Scroll));
     QTest::ignoreMessage(QtWarningMsg, "no keyboards registered for seat \"\" The platform plugin should have provided one via "
                                        "QWindowSystemInterface::registerInputDevice(). Creating a default one for now.");
-    QTest::ignoreMessage(QtWarningMsg, "no pointing devices registered for seat \"\" The platform plugin should have provided one via "
+    QTest::ignoreMessage(QtWarningMsg, "no mouse-like devices registered for seat \"\" The platform plugin should have provided one via "
                          "QWindowSystemInterface::registerInputDevice(). Creating a default mouse for now.");
     QVERIFY(QInputDevice::primaryKeyboard());
     QCOMPARE(QInputDevice::primaryKeyboard()->id(), 0);

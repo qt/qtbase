@@ -301,17 +301,18 @@ QPointingDeviceUniqueId QPointingDevice::uniqueId() const
     Returns the primary pointing device (the core pointer, traditionally
     assumed to be a mouse) on the given seat \a seatName.
 
-    If multiple pointing devices are registered, this function prefers a
-    mouse, touchpad, or touchscreen (in that order) that matches the given
-    \a seatName and that does not have another device as its parent.
-    Usually only one master or core device does not have a parent device.
+    If multiple pointing devices are registered, this function prefers a mouse
+    or touchpad that matches the given \a seatName and that does not have
+    another device as its parent. Usually only one master or core device does
+    not have a parent device. But if such a device is not found, this function
+    creates a new virtual "core pointer" mouse. Thus Qt continues to work on
+    platforms that are not yet doing input device discovery and registration.
 */
 const QPointingDevice *QPointingDevice::primaryPointingDevice(const QString& seatName)
 {
     const auto v = devices();
     const QPointingDevice *mouse = nullptr;
     const QPointingDevice *touchpad = nullptr;
-    const QPointingDevice *touchscreen = nullptr;
     for (const QInputDevice *dev : v) {
         if (dev->seatName() != seatName)
             continue;
@@ -324,13 +325,10 @@ const QPointingDevice *QPointingDevice::primaryPointingDevice(const QString& sea
         } else if (dev->type() == QInputDevice::DeviceType::TouchPad) {
             if (!touchpad || !dev->parent() || dev->parent()->metaObject() != dev->metaObject())
                 touchpad = static_cast<const QPointingDevice *>(dev);
-        } else if (dev->type() == QInputDevice::DeviceType::TouchScreen) {
-            if (!touchscreen || !dev->parent() || dev->parent()->metaObject() != dev->metaObject())
-                touchscreen = static_cast<const QPointingDevice *>(dev);
         }
     }
-    if (!mouse && !touchpad && !touchscreen) {
-        qWarning() << "no pointing devices registered for seat" << seatName
+    if (!mouse && !touchpad) {
+        qWarning() << "no mouse-like devices registered for seat" << seatName
                    << "The platform plugin should have provided one via "
                       "QWindowSystemInterface::registerInputDevice(). Creating a default mouse for now.";
         mouse = new QPointingDevice(QLatin1String("core pointer"), 1, DeviceType::Mouse,
@@ -339,12 +337,10 @@ const QPointingDevice *QPointingDevice::primaryPointingDevice(const QString& sea
         return mouse;
     }
     if (v.length() > 1)
-        qCWarning(lcQpaInputDevices) << "core pointer ambiguous for seat" << seatName;
+        qCDebug(lcQpaInputDevices) << "core pointer ambiguous for seat" << seatName;
     if (mouse)
         return mouse;
-    if (touchpad)
-        return touchpad;
-    return touchscreen;
+    return touchpad;
 }
 
 /*!
