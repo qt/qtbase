@@ -454,7 +454,7 @@ void tst_QImage::formatHandlersInput()
 
     bool formatSupported = false;
     for (QList<QByteArray>::Iterator it = formats.begin(); it != formats.end(); ++it) {
-        if (*it == testFormat.toLower()) {
+        if (*it == testFormat.toLower().toUtf8()) {
             formatSupported = true;
             break;
         }

@@ -1803,7 +1803,7 @@ static QByteArray msgIgnoreFormatAndExtensionFail(const QString &sourceFileName,
     QByteArray result = "Failure for '";
     result += sourceFileName.toLocal8Bit();
     result += "' as '";
-    result += targetFileName;
+    result += targetFileName.toLocal8Bit();
     result += "', detected as: '";
     result += detectedFormat.toLocal8Bit();
     result += '\'';
@@ -1825,7 +1825,7 @@ void tst_QImageReader::testIgnoresFormatAndExtension()
         tempPath += QLatin1Char('/');
 
     foreach (const QByteArray &f, formats) {
-        if (f == extension)
+        if (f == extension.toLocal8Bit())
             continue;
 
         QFile tmp(tempPath + name + QLatin1Char('_') + expected + QLatin1Char('.') + f);

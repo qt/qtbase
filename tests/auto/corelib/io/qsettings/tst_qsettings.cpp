@@ -2932,8 +2932,10 @@ void tst_QSettings::testEscapes()
     testVariant(QString("Hello, World!"), QString("Hello, World!"), toString);
     testVariant(QString("@Hello World!"), QString("@@Hello World!"), toString);
     testVariant(QString("@@Hello World!"), QString("@@@Hello World!"), toString);
+#if QT_DEPRECATED_SINCE(5, 15)
     testVariant(QByteArray("Hello World!"), QString("@ByteArray(Hello World!)"), toString);
     testVariant(QByteArray("@Hello World!"), QString("@ByteArray(@Hello World!)"), toString);
+#endif
     testVariant(QVariant(100), QString("100"), toString);
     testVariant(QStringList() << "ene" << "due" << "rike", QString::fromLatin1("@Variant(\x0\x0\x0\xb\x0\x0\x0\x3\x0\x0\x0\x6\x0\x65\x0n\x0\x65\x0\x0\x0\x6\x0\x64\x0u\x0\x65\x0\x0\x0\x8\x0r\x0i\x0k\x0\x65)", 50), toStringList);
     testVariant(QRect(1, 2, 3, 4), QString("@Rect(1 2 3 4)"), toRect);

@@ -148,7 +148,7 @@ tst_qnetworkreply_from_cache::tst_qnetworkreply_from_cache()
 void tst_qnetworkreply_from_cache::timeReadAll(const QString &headers, const QByteArray &data)
 {
     QByteArray reply;
-    reply.append(headers);
+    reply.append(headers.toUtf8());
     reply.append(data);
 
     m_replyData.reserve(data.size());

@@ -1440,11 +1440,11 @@ void tst_QVariant::checkDataStream()
     QVERIFY(!QMetaType::isRegistered(typeId));
 
     QByteArray errorMessage("Trying to construct an instance of an invalid type, type id: ");
-    errorMessage.append(QString::number(typeId, 10));
+    errorMessage.append(QString::number(typeId, 10).toUtf8());
 
     QTest::ignoreMessage(QtWarningMsg, errorMessage.constData());
     QByteArray settingsHex("000000");
-    settingsHex.append(QString::number(typeId, 16));
+    settingsHex.append(QString::number(typeId, 16).toUtf8());
     settingsHex.append("ffffffffff");
     const QByteArray settings = QByteArray::fromHex(settingsHex);
     QDataStream in(settings);

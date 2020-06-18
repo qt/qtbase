@@ -1483,6 +1483,7 @@ inline QT_ASCII_CAST_WARN bool QString::operator<=(const QByteArray &s) const
 inline QT_ASCII_CAST_WARN bool QString::operator>=(const QByteArray &s) const
 { return QString::compare_helper(constData(), size(), s.constData(), s.size()) >= 0; }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 inline bool QByteArray::operator==(const QString &s) const
 { return QString::compare_helper(s.constData(), s.size(), constData(), qstrnlen(constData(), size())) == 0; }
 inline bool QByteArray::operator!=(const QString &s) const
@@ -1495,9 +1496,11 @@ inline bool QByteArray::operator<=(const QString &s) const
 { return QString::compare_helper(s.constData(), s.size(), constData(), size()) >= 0; }
 inline bool QByteArray::operator>=(const QString &s) const
 { return QString::compare_helper(s.constData(), s.size(), constData(), size()) <= 0; }
+#endif // QT_DEPRECATED_SINCE(5, 15)
+
 #endif // !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
 
-#ifndef QT_NO_CAST_TO_ASCII
+#if !defined(QT_NO_CAST_TO_ASCII) && QT_DEPRECATED_SINCE(5, 15)
 inline QByteArray &QByteArray::append(const QString &s)
 { return append(s.toUtf8()); }
 inline QByteArray &QByteArray::insert(int i, const QString &s)
@@ -1514,7 +1517,7 @@ inline int QByteArray::indexOf(const QString &s, int from) const
 { return indexOf(s.toUtf8(), from); }
 inline int QByteArray::lastIndexOf(const QString &s, int from) const
 { return lastIndexOf(s.toUtf8(), from); }
-#endif // QT_NO_CAST_TO_ASCII
+#endif // !defined(QT_NO_CAST_TO_ASCII) && QT_DEPRECATED_SINCE(5, 15)
 
 #if !defined(QT_USE_FAST_OPERATOR_PLUS) && !defined(QT_USE_QSTRINGBUILDER)
 inline const QString operator+(const QString &s1, const QString &s2)

@@ -152,7 +152,7 @@ static QString doCompare(const QStringList &actual, const QStringList &expected,
         if (expectedLine != actual.at(i)) {
             qDebug() << "LINES" << (i + 1) << "DIFFER";
             ba.append(
-             "\n<<<<<< actual\n" + actual.at(i) + "\n======\n" + expectedLine
+             "\n<<<<<< actual\n" + actual.at(i).toUtf8() + "\n======\n" + expectedLine.toUtf8()
                 + "\n>>>>>> expected\n"
             );
         }

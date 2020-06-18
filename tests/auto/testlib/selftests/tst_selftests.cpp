@@ -735,7 +735,7 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
             QByteArray &actual = actualOutputs[0];
 #ifndef Q_OS_WIN
              // Remove digits of times to match the expected file.
-            const QLatin1String timePattern("Function time:");
+            const QByteArray timePattern("Function time:");
             int timePos = actual.indexOf(timePattern);
             if (timePos >= 0) {
                 timePos += timePattern.size();

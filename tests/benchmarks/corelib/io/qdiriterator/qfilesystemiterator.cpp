@@ -323,7 +323,7 @@ bool QFileSystemIteratorPrivate::advanceHelper()
     if (m_entry->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
         QByteArray ba = m_dirPaths.top();
         ba += '\\';
-        ba += QString::fromWCharArray(m_entry->cFileName);
+        ba += QString::fromWCharArray(m_entry->cFileName).toUtf8();
         pushSubDirectory(ba);
     }
 #else
@@ -643,7 +643,7 @@ QString QFileSystemIterator::filePath() const
     else if (d->m_entry) {
         ba += '/';
 #ifdef Q_OS_WIN
-        ba += QString::fromWCharArray(d->m_entry->cFileName);
+        ba += QString::fromWCharArray(d->m_entry->cFileName).toUtf8();
 #else
         ba += d->m_entry->d_name;
 #endif

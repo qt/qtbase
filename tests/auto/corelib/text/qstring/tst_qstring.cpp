@@ -5327,6 +5327,9 @@ void tst_QString::operator_smaller()
     QVERIFY(QString("b") >= QByteArray("a"));
     QVERIFY(QString("b") > QByteArray("a"));
 
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     QVERIFY(QByteArray("a") < QString("b"));
     QVERIFY(QByteArray("a") <= QString("b"));
     QVERIFY(QByteArray("a") <= QString("a"));
@@ -5334,6 +5337,8 @@ void tst_QString::operator_smaller()
     QVERIFY(QByteArray("a") >= QString("a"));
     QVERIFY(QByteArray("b") >= QString("a"));
     QVERIFY(QByteArray("b") > QString("a"));
+QT_WARNING_POP
+#endif
 
     QVERIFY(QLatin1String("a") < QString("b"));
     QVERIFY(QLatin1String("a") <= QString("b"));

@@ -175,7 +175,7 @@ private slots:
 
             if (isBody)
             {
-                body.append(line);
+                body.append(line.toUtf8());
                 bodyBytesRead += line.length();
             }
             else if (line == "\r\n")

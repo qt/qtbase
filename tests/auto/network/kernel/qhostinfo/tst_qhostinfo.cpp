@@ -455,7 +455,7 @@ static QStringList reverseLookupHelper(const QString &ip)
             name = line.mid(line.lastIndexOf(" ")).trimmed();
         } else if (line.startsWith(addressMarkerWin)) {
             QByteArray address = line.mid(addressMarkerWin.length()).trimmed();
-            if (address == ip) {
+            if (address == ip.toUtf8()) {
                 results << name;
             }
         }
