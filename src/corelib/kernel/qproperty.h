@@ -374,11 +374,21 @@ namespace Qt {
     }
 }
 
-template <typename T, typename Class, void(Class::*Callback)()>
-class QNotifiedProperty<T, Callback>
+namespace detail {
+    template <typename F>
+    struct ExtractClassFromFunctionPointer;
+
+    template<typename T, typename C>
+    struct ExtractClassFromFunctionPointer<T C::*> { using Class = C; };
+}
+
+template <typename T, auto Callback>
+class QNotifiedProperty
 {
 public:
     using value_type = T;
+    using Class = typename detail::ExtractClassFromFunctionPointer<decltype(Callback)>::Class;
+    static_assert(std::is_invocable_v<decltype(Callback), Class, T> || std::is_invocable_v<decltype(Callback), Class>);
 
     QNotifiedProperty() = default;
 
@@ -420,45 +430,83 @@ public:
 
     void setValue(Class *owner, T &&newValue)
     {
-        if (d.setValueAndReturnTrueIfChanged(std::move(newValue)))
-            notify(owner);
+        if constexpr(std::is_invocable_v<decltype(Callback), Class>) {
+            if (d.setValueAndReturnTrueIfChanged(std::move(newValue)))
+                notify(owner);
+        } else {
+            T oldValue = value(); // TODO: kind of pointless if there was no change
+            if (d.setValueAndReturnTrueIfChanged(std::move(newValue)))
+                notify(owner, &oldValue);
+        }
         d.priv.removeBinding();
     }
 
     void setValue(Class *owner, const T &newValue)
     {
-        if (d.setValueAndReturnTrueIfChanged(newValue))
-            notify(owner);
+        if constexpr(std::is_invocable_v<decltype(Callback), Class>) {
+            if (d.setValueAndReturnTrueIfChanged(newValue))
+                notify(owner);
+        } else {
+            T oldValue = value();
+            if (d.setValueAndReturnTrueIfChanged(newValue))
+                notify(owner, &oldValue);
+        }
         d.priv.removeBinding();
     }
 
     QPropertyBinding<T> setBinding(Class *owner, const QPropertyBinding<T> &newBinding)
     {
-        QPropertyBinding<T> oldBinding(d.priv.setBinding(newBinding, &d, owner, [](void *o) {
-            (reinterpret_cast<Class *>(o)->*Callback)();
-        }));
-        notify(owner);
-        return oldBinding;
+        if constexpr(std::is_invocable_v<decltype(Callback), Class>) {
+            QPropertyBinding<T> oldBinding(d.priv.setBinding(newBinding, &d, owner, [](void *o) {
+                (reinterpret_cast<Class *>(o)->*Callback)();
+            }));
+            notify(owner);
+            return oldBinding;
+        } else {
+            T oldValue = value();
+            QPropertyBinding<T> oldBinding(d.priv.setBinding(newBinding, &d, owner, [](void *o, void *oldValue) {
+                (reinterpret_cast<Class *>(o)->*Callback)(*reinterpret_cast<T *>(oldValue));
+            }));
+            notify(owner, &oldValue);
+            return oldBinding;
+        }
     }
 
     QPropertyBinding<T> setBinding(Class *owner, QPropertyBinding<T> &&newBinding)
     {
         QPropertyBinding<T> b(std::move(newBinding));
-        QPropertyBinding<T> oldBinding(d.priv.setBinding(b, &d, owner, [](void *o) {
-            (reinterpret_cast<Class *>(o)->*Callback)();
-        }));
-        notify(owner);
-        return oldBinding;
+        if constexpr(std::is_invocable_v<decltype(Callback), Class>) {
+            QPropertyBinding<T> oldBinding(d.priv.setBinding(b, &d, owner, [](void *o, void *) {
+                (reinterpret_cast<Class *>(o)->*Callback)();
+            }));
+            notify(owner);
+            return oldBinding;
+        } else {
+            T oldValue = value();
+            QPropertyBinding<T> oldBinding(d.priv.setBinding(b, &d, owner, [](void *o, void *oldValue) {
+                (reinterpret_cast<Class *>(o)->*Callback)(*reinterpret_cast<T *>(oldValue));
+            }));
+            notify(owner, &oldValue);
+            return oldBinding;
+        }
     }
 
     bool setBinding(Class *owner, const QUntypedPropertyBinding &newBinding)
     {
         if (newBinding.valueMetaType().id() != qMetaTypeId<T>())
             return false;
-        d.priv.setBinding(newBinding, &d, owner, [](void *o) {
-            (reinterpret_cast<Class *>(o)->*Callback)();
-        });
-        notify(owner);
+        if constexpr(std::is_invocable_v<decltype(Callback), Class>) {
+            d.priv.setBinding(newBinding, &d, owner, [](void *o, void *) {
+                (reinterpret_cast<Class *>(o)->*Callback)();
+            });
+            notify(owner);
+        } else {
+            T oldValue = value();
+            d.priv.setBinding(newBinding, &d, owner, [](void *o, void *oldValue) {
+                (reinterpret_cast<Class *>(o)->*Callback)(*reinterpret_cast<T *>(oldValue));
+            });
+            notify(owner, &oldValue);
+        }
         return true;
     }
 
@@ -493,10 +541,13 @@ public:
     QPropertyChangeHandler<Functor> subscribe(Functor f);
 
 private:
-    void notify(Class *owner)
+    void notify(Class *owner, T *oldValue=nullptr)
     {
         d.priv.notifyObservers(&d);
-        (owner->*Callback)();
+        if constexpr(std::is_invocable_v<decltype(Callback), Class>)
+            (owner->*Callback)();
+        else
+            (owner->*Callback)(*oldValue);
     }
 
     Q_DISABLE_COPY_MOVE(QNotifiedProperty)
@@ -624,7 +675,7 @@ QPropertyChangeHandler<Functor> QProperty<T>::subscribe(Functor f)
     return onValueChanged(f);
 }
 
-template <typename T, typename Class, void(Class::*Callback)()>
+template <typename T, auto Callback>
 template<typename Functor>
 QPropertyChangeHandler<Functor> QNotifiedProperty<T, Callback>::onValueChanged(Functor f)
 {
@@ -634,7 +685,7 @@ QPropertyChangeHandler<Functor> QNotifiedProperty<T, Callback>::onValueChanged(F
     return QPropertyChangeHandler<Functor>(*this, f);
 }
 
-template <typename T, typename Class, void(Class::*Callback)()>
+template <typename T, auto Callback>
 template<typename Functor>
 QPropertyChangeHandler<Functor> QNotifiedProperty<T, Callback>::subscribe(Functor f)
 {

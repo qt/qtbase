@@ -69,8 +69,15 @@ void QPropertyBindingPrivate::markDirtyAndNotifyObservers()
     dirty = true;
     if (firstObserver)
         firstObserver.notify(this, propertyDataPtr);
-    if (hasStaticObserver)
-        staticObserverCallback(staticObserver);
+    if (hasStaticObserver) {
+        if (metaType == QMetaType::fromType<bool>()) {
+            auto propertyPtr = reinterpret_cast<QPropertyBase *>(propertyDataPtr);
+            bool oldValue = propertyPtr->extraBit();
+            staticObserverCallback(staticObserver, &oldValue);
+        } else {
+            staticObserverCallback(staticObserver, propertyDataPtr);
+        }
+    }
 }
 
 bool QPropertyBindingPrivate::evaluateIfDirtyAndReturnTrueIfValueChanged()

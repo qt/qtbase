@@ -80,7 +80,7 @@ private:
         ObserverArray inlineDependencyObservers;
         struct {
             void *staticObserver;
-            void (*staticObserverCallback)(void*);
+            void (*staticObserverCallback)(void*, void*);
         };
     };
     QScopedPointer<std::vector<QPropertyObserver>> heapObservers;
@@ -107,7 +107,7 @@ public:
 
     void setDirty(bool d) { dirty = d; }
     void setProperty(void *propertyPtr) { propertyDataPtr = propertyPtr; }
-    void setStaticObserver(void *observer, void (*callback)(void*))
+    void setStaticObserver(void *observer, void (*callback)(void*, void*))
     {
         if (observer) {
             if (!hasStaticObserver) {

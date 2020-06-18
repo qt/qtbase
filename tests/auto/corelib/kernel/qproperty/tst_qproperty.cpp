@@ -72,6 +72,7 @@ private slots:
     void multipleObservers();
     void propertyAlias();
     void notifiedProperty();
+    void notifiedPropertyWithOldValueCallback();
 };
 
 void tst_QProperty::functorBinding()
@@ -779,6 +780,15 @@ struct ClassWithNotifiedProperty
     QNotifiedProperty<int, &ClassWithNotifiedProperty::callback> property;
 };
 
+struct ClassWithNotifiedProperty2
+{
+    QVector<int> recordedValues;
+
+    void callback(int oldValue) { recordedValues << oldValue; }
+
+    QNotifiedProperty<int, &ClassWithNotifiedProperty2::callback> property;
+};
+
 void tst_QProperty::notifiedProperty()
 {
     ClassWithNotifiedProperty instance;
@@ -852,6 +862,18 @@ void tst_QProperty::notifiedProperty()
     instance.recordedValues.clear();
     check();
     QCOMPARE(subscribedCount, 10);
+}
+
+void tst_QProperty::notifiedPropertyWithOldValueCallback()
+{
+    ClassWithNotifiedProperty2 instance;
+    instance.property.setValue(&instance, 1);
+    instance.property.setBinding(&instance, [](){return 2;});
+    instance.property.setBinding(&instance, [](){return 3;});
+    instance.property.setValue(&instance, 4);
+    QVector<int> expected {0, 1, 2, 3};
+    QCOMPARE(instance.recordedValues, expected);
+    QCOMPARE(instance.property.value(), 4);
 }
 
 QTEST_MAIN(tst_QProperty);
