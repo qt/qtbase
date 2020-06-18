@@ -268,8 +268,7 @@ QPlatformWindow *QXcbIntegration::createForeignWindow(QWindow *window, WId nativ
 #ifndef QT_NO_OPENGL
 QPlatformOpenGLContext *QXcbIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
-    QXcbScreen *screen = static_cast<QXcbScreen *>(context->screen()->handle());
-    QXcbGlIntegration *glIntegration = screen->connection()->glIntegration();
+    QXcbGlIntegration *glIntegration = m_connection->glIntegration();
     if (!glIntegration) {
         qWarning("QXcbIntegration: Cannot create platform OpenGL context, neither GLX nor EGL are enabled");
         return nullptr;
