@@ -453,7 +453,7 @@ void QXcbConnection::xi2SetupDevices()
         case XCB_INPUT_DEVICE_TYPE_MASTER_KEYBOARD: {
             auto dev = new QInputDevice(QString::fromUtf8(xcb_input_xi_device_info_name(deviceInfo)),
                                         deviceInfo->deviceid, QInputDevice::DeviceType::Keyboard,
-                                        QString::number(deviceInfo->attachment << 16 | deviceInfo->deviceid, 16), this);
+                                        QString::number(deviceInfo->deviceid << 16 | deviceInfo->attachment, 16), this);
             QWindowSystemInterface::registerInputDevice(dev);
         } break;
         case XCB_INPUT_DEVICE_TYPE_MASTER_POINTER: {
