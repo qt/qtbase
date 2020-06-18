@@ -1006,13 +1006,6 @@ QRect QRect::operator|(const QRect &r) const noexcept
 }
 
 /*!
-    \fn QRect QRect::unite(const QRect &rectangle) const
-    \obsolete
-
-    Use united(\a rectangle) instead.
-*/
-
-/*!
     \fn QRect QRect::united(const QRect &rectangle) const
     \since 4.2
 
@@ -1079,13 +1072,6 @@ QRect QRect::operator&(const QRect &r) const noexcept
     tmp.y2 = qMin(b1, b2);
     return tmp;
 }
-
-/*!
-    \fn QRect QRect::intersect(const QRect &rectangle) const
-    \obsolete
-
-    Use intersected(\a rectangle) instead.
-*/
 
 /*!
     \fn QRect QRect::intersected(const QRect &rectangle) const
@@ -2189,13 +2175,6 @@ QRectF QRectF::operator|(const QRectF &r) const noexcept
 }
 
 /*!
-    \fn QRectF QRectF::unite(const QRectF &rectangle) const
-    \obsolete
-
-    Use united(\a rectangle) instead.
-*/
-
-/*!
     \fn QRectF QRectF::united(const QRectF &rectangle) const
     \since 4.2
 
@@ -2268,13 +2247,6 @@ QRectF QRectF::operator&(const QRectF &r) const noexcept
     tmp.h = qMin(b1, b2) - tmp.yp;
     return tmp;
 }
-
-/*!
-    \fn QRectF QRectF::intersect(const QRectF &rectangle) const
-    \obsolete
-
-    Use intersected(\a rectangle) instead.
-*/
 
 /*!
     \fn QRectF QRectF::intersected(const QRectF &rectangle) const

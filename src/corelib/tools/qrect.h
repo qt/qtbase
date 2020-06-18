@@ -145,11 +145,6 @@ public:
     Q_DECL_RELAXED_CONSTEXPR inline QRect &operator+=(const QMargins &margins) noexcept;
     Q_DECL_RELAXED_CONSTEXPR inline QRect &operator-=(const QMargins &margins) noexcept;
 
-#if QT_DEPRECATED_SINCE(5, 0)
-    Q_REQUIRED_RESULT QT_DEPRECATED QRect unite(const QRect &r) const noexcept { return united(r); }
-    Q_REQUIRED_RESULT QT_DEPRECATED QRect intersect(const QRect &r) const noexcept { return intersected(r); }
-#endif
-
     friend Q_DECL_CONSTEXPR inline bool operator==(const QRect &, const QRect &) noexcept;
     friend Q_DECL_CONSTEXPR inline bool operator!=(const QRect &, const QRect &) noexcept;
 
@@ -600,11 +595,6 @@ public:
     Q_DECL_CONSTEXPR inline QRectF marginsRemoved(const QMarginsF &margins) const noexcept;
     Q_DECL_RELAXED_CONSTEXPR inline QRectF &operator+=(const QMarginsF &margins) noexcept;
     Q_DECL_RELAXED_CONSTEXPR inline QRectF &operator-=(const QMarginsF &margins) noexcept;
-
-#if QT_DEPRECATED_SINCE(5, 0)
-    Q_REQUIRED_RESULT QT_DEPRECATED QRectF unite(const QRectF &r) const noexcept { return united(r); }
-    Q_REQUIRED_RESULT QT_DEPRECATED QRectF intersect(const QRectF &r) const noexcept { return intersected(r); }
-#endif
 
     friend Q_DECL_CONSTEXPR inline bool operator==(const QRectF &, const QRectF &) noexcept;
     friend Q_DECL_CONSTEXPR inline bool operator!=(const QRectF &, const QRectF &) noexcept;
