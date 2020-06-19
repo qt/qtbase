@@ -151,6 +151,8 @@ int system_forkfd(int flags, pid_t *ppid, int *system)
     if (flags & FFD_VFORK_SEMANTICS)
         cloneflags |= CLONE_VFORK;
     pid = sys_clone(cloneflags, &pidfd);
+    if (pid < 0)
+        return pid;
     if (ppid)
         *ppid = pid;
 
