@@ -282,7 +282,6 @@ void QNetworkReplyWasmImplPrivate::emitReplyError(QNetworkReply::NetworkError er
 
     q->setError(errorCode, errorString);
     emit q->errorOccurred(errorCode);
-    doAbort();
     m_fetch = 0;
     q->close();
 }
