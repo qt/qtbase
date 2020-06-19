@@ -73,6 +73,7 @@ private slots:
     void propertyAlias();
     void notifiedProperty();
     void notifiedPropertyWithOldValueCallback();
+    void notifiedPropertyWithGuard();
 };
 
 void tst_QProperty::functorBinding()
@@ -875,6 +876,136 @@ void tst_QProperty::notifiedPropertyWithOldValueCallback()
     QCOMPARE(instance.recordedValues, expected);
     QCOMPARE(instance.property.value(), 4);
 }
+
+struct ClassWithNotifiedPropertyWithGuard
+{
+    using This = ClassWithNotifiedPropertyWithGuard;
+    QVector<int> recordedValues;
+
+    void callback() { recordedValues << property.value(); }
+    void callback2() { recordedValues << property2.value(); }
+    void callback3() {}
+    bool trivialGuard(int ) {return true;}
+    bool reject42(int newValue) {return newValue != 42;}
+    bool bound(int &newValue) { newValue = qBound<int>(0, newValue, 100); return true; }
+
+    QNotifiedProperty<int, &This::callback, &This::trivialGuard> property;
+    QNotifiedProperty<int, &This::callback2, &This::reject42> property2;
+    QNotifiedProperty<int, &This::callback3, &This::bound> property3;
+};
+
+void tst_QProperty::notifiedPropertyWithGuard()
+{
+    {
+        // property with guard that returns always true is the same as using no guard
+        ClassWithNotifiedPropertyWithGuard instance;
+
+        std::array<QProperty<int>, 5> otherProperties = {
+            QProperty<int>([&]() { return instance.property + 1; }),
+            QProperty<int>([&]() { return instance.property + 2; }),
+            QProperty<int>([&]() { return instance.property + 3; }),
+            QProperty<int>([&]() { return instance.property + 4; }),
+            QProperty<int>([&]() { return instance.property + 5; }),
+        };
+
+        auto check = [&] {
+            const int val = instance.property.value();
+            for (int i = 0; i < int(otherProperties.size()); ++i)
+                QCOMPARE(otherProperties[i].value(), val + i + 1);
+        };
+
+        QVERIFY(instance.recordedValues.isEmpty());
+        check();
+
+        instance.property.setValue(&instance, 42);
+        QCOMPARE(instance.recordedValues.count(), 1);
+        QCOMPARE(instance.recordedValues.at(0), 42);
+        instance.recordedValues.clear();
+        check();
+
+        instance.property.setValue(&instance, 42);
+        QVERIFY(instance.recordedValues.isEmpty());
+        check();
+
+        int subscribedCount = 0;
+        QProperty<int> injectedValue(100);
+        instance.property.setBinding(&instance, [&injectedValue]() { return injectedValue.value(); });
+        auto subscriber = [&] { ++subscribedCount; };
+        std::array<QPropertyChangeHandler<decltype (subscriber)>, 10> subscribers = {
+            instance.property.subscribe(subscriber),
+            instance.property.subscribe(subscriber),
+            instance.property.subscribe(subscriber),
+            instance.property.subscribe(subscriber),
+            instance.property.subscribe(subscriber),
+            instance.property.subscribe(subscriber),
+            instance.property.subscribe(subscriber),
+            instance.property.subscribe(subscriber),
+            instance.property.subscribe(subscriber),
+            instance.property.subscribe(subscriber)
+        };
+
+        QCOMPARE(subscribedCount, 10);
+        subscribedCount = 0;
+
+        QCOMPARE(instance.property.value(), 100);
+        QCOMPARE(instance.recordedValues.count(), 1);
+        QCOMPARE(instance.recordedValues.at(0), 100);
+        instance.recordedValues.clear();
+        check();
+        QCOMPARE(subscribedCount, 0);
+
+        injectedValue = 200;
+        QCOMPARE(instance.property.value(), 200);
+        QCOMPARE(instance.recordedValues.count(), 1);
+        QCOMPARE(instance.recordedValues.at(0), 200);
+        instance.recordedValues.clear();
+        check();
+        QCOMPARE(subscribedCount, 10);
+        subscribedCount = 0;
+
+        injectedValue = 400;
+        QCOMPARE(instance.property.value(), 400);
+        QCOMPARE(instance.recordedValues.count(), 1);
+        QCOMPARE(instance.recordedValues.at(0), 400);
+        instance.recordedValues.clear();
+        check();
+        QCOMPARE(subscribedCount, 10);
+    }
+
+    {
+        // Values can be rejected
+        ClassWithNotifiedPropertyWithGuard instance2;
+
+        instance2.property2.setValue(&instance2, 1);
+        instance2.property2.setBinding(&instance2, [](){return 42;});
+        instance2.property2.setValue(&instance2, 2);
+        instance2.property2.setBinding(&instance2, [](){return 3;});
+        instance2.property2.setValue(&instance2, 42);
+        // Note that we get 1 twice
+        // This is an unfortunate result of the lazyness used for bindings
+        // When we call setBinding, the binding does not get evaluated, but we
+        // call the callback in notify; the callback will in our case query the
+        // properties' value. At that point we then evaluate the binding, and
+        // notice that the value is in fact disallowed. Thus we return the old
+        // value.
+        QVector<int> expected {1,  1, 2, 3};
+        QCOMPARE(instance2.recordedValues, expected);
+    }
+
+    {
+        // guard can modify incoming values
+        ClassWithNotifiedPropertyWithGuard instance3;
+        instance3.property3.setValue(&instance3, 5);
+        int i1 = 5;
+        QCOMPARE(instance3.property3.value(), i1);
+        instance3.property3.setBinding(&instance3, [](){return 255;});
+        QCOMPARE(instance3.property3.value(), 100);
+        const int i2 = -1;
+        instance3.property3.setValue(&instance3, i2);
+        QCOMPARE(instance3.property3.value(), 0);
+    }
+}
+
 
 QTEST_MAIN(tst_QProperty);
 

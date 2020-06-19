@@ -111,7 +111,10 @@ bool QPropertyBindingPrivate::evaluateIfDirtyAndReturnTrueIfValueChanged()
         bool newValue = false;
         evalError = evaluationFunction(metaType, &newValue);
         if (evalError.type() == QPropertyBindingError::NoError) {
-            if (propertyPtr->extraBit() != newValue) {
+            bool updateAllowed = true;
+            if (hasStaticObserver && staticGuardCallback)
+                updateAllowed = staticGuardCallback(staticObserver, &newValue);
+            if (updateAllowed && propertyPtr->extraBit() != newValue) {
                 propertyPtr->setExtraBit(newValue);
                 changed = true;
             }
@@ -121,7 +124,10 @@ bool QPropertyBindingPrivate::evaluateIfDirtyAndReturnTrueIfValueChanged()
         evalError = evaluationFunction(metaType, resultVariant.data());
         if (evalError.type() == QPropertyBindingError::NoError) {
             int compareResult = 0;
-            if (!QMetaType::compare(propertyDataPtr, resultVariant.constData(), metaType.id(), &compareResult) || compareResult != 0) {
+            bool updateAllowed = true;
+            if (hasStaticObserver && staticGuardCallback)
+                updateAllowed = staticGuardCallback(staticObserver, resultVariant.data());
+            if (updateAllowed && (!QMetaType::compare(propertyDataPtr, resultVariant.constData(), metaType.id(), &compareResult) || compareResult != 0)) {
                 changed = true;
                 metaType.destruct(propertyDataPtr);
                 metaType.construct(propertyDataPtr, resultVariant.constData());

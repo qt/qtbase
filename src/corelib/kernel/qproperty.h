@@ -85,7 +85,7 @@ struct Q_CORE_EXPORT QPropertyBindingSourceLocation
 template <typename Functor> class QPropertyChangeHandler;
 
 template <typename T> class QProperty;
-template <typename T, auto callbackMember> class QNotifiedProperty;
+template <typename T, auto callbackMember, auto guardCallback> class QNotifiedProperty;
 
 class QPropertyBindingErrorPrivate;
 
@@ -179,8 +179,8 @@ public:
         : QUntypedPropertyBinding(property.d.priv.binding())
     {}
 
-    template<auto notifier>
-    QPropertyBinding(const QNotifiedProperty<PropertyType, notifier> &property)
+    template<auto notifier, auto guard>
+    QPropertyBinding(const QNotifiedProperty<PropertyType, notifier, guard> &property)
         : QUntypedPropertyBinding(property.d.priv.binding())
     {}
 
@@ -382,13 +382,36 @@ namespace detail {
     struct ExtractClassFromFunctionPointer<T C::*> { using Class = C; };
 }
 
-template <typename T, auto Callback>
+template <typename T, auto Callback, auto ValueGuard=nullptr>
 class QNotifiedProperty
 {
 public:
     using value_type = T;
     using Class = typename detail::ExtractClassFromFunctionPointer<decltype(Callback)>::Class;
-    static_assert(std::is_invocable_v<decltype(Callback), Class, T> || std::is_invocable_v<decltype(Callback), Class>);
+private:
+    static bool constexpr ValueGuardModifiesArgument = std::is_invocable_r_v<bool, decltype(ValueGuard), Class, T&>;
+    static bool constexpr CallbackAcceptsOldValue = std::is_invocable_v<decltype(Callback), Class, T>;
+    static bool constexpr HasValueGuard = !std::is_same_v<decltype(ValueGuard), std::nullptr_t>;
+public:
+    static_assert(CallbackAcceptsOldValue || std::is_invocable_v<decltype(Callback), Class>);
+    static_assert(
+            std::is_invocable_r_v<bool, decltype(ValueGuard), Class, T> ||
+            ValueGuardModifiesArgument ||
+            !HasValueGuard,
+        "Guard has wrong signature");
+private:
+    // type erased guard functions, casts its arguments to the correct types
+    static constexpr bool (*GuardTEHelper)(void *, void*) = [](void *o, void *newValue){
+        if constexpr (HasValueGuard) { // Guard->* is invalid if Guard == nullptr
+            return (reinterpret_cast<Class *>(o)->*(ValueGuard))(*static_cast<T *>(newValue));
+        } else {
+            Q_UNUSED(o); // some compilers complain about unused variables
+            Q_UNUSED(newValue);
+            return true;
+        }
+    };
+    static constexpr bool(*GuardTE)(void *, void*)  = HasValueGuard ? GuardTEHelper : nullptr;
+public:
 
     QNotifiedProperty() = default;
 
@@ -428,46 +451,56 @@ public:
         return value();
     }
 
-    void setValue(Class *owner, T &&newValue)
+    template<typename S>
+    auto setValue(Class *owner, S &&newValue) -> std::enable_if_t<!ValueGuardModifiesArgument && std::is_same_v<S, T>, void>
     {
-        if constexpr(std::is_invocable_v<decltype(Callback), Class>) {
-            if (d.setValueAndReturnTrueIfChanged(std::move(newValue)))
-                notify(owner);
-        } else {
+        if constexpr (HasValueGuard) {
+            if (!(owner->*ValueGuard)(newValue))
+                return;
+        }
+        if constexpr (CallbackAcceptsOldValue) {
             T oldValue = value(); // TODO: kind of pointless if there was no change
             if (d.setValueAndReturnTrueIfChanged(std::move(newValue)))
                 notify(owner, &oldValue);
+        } else {
+            if (d.setValueAndReturnTrueIfChanged(std::move(newValue)))
+                notify(owner);
         }
         d.priv.removeBinding();
     }
 
-    void setValue(Class *owner, const T &newValue)
+    void setValue(Class *owner, std::conditional_t<ValueGuardModifiesArgument, T, const T &> newValue)
     {
-        if constexpr(std::is_invocable_v<decltype(Callback), Class>) {
-            if (d.setValueAndReturnTrueIfChanged(newValue))
-                notify(owner);
-        } else {
+        if constexpr (HasValueGuard) {
+            if (!(owner->*ValueGuard)(newValue))
+                return;
+        }
+        if constexpr (CallbackAcceptsOldValue) {
+            // When newValue is T, we move it, if it's const T& it stays const T& and won't get moved
             T oldValue = value();
-            if (d.setValueAndReturnTrueIfChanged(newValue))
+            if (d.setValueAndReturnTrueIfChanged(std::move(newValue)))
                 notify(owner, &oldValue);
+        } else {
+            if (d.setValueAndReturnTrueIfChanged(std::move(newValue)))
+                notify(owner);
         }
         d.priv.removeBinding();
     }
 
     QPropertyBinding<T> setBinding(Class *owner, const QPropertyBinding<T> &newBinding)
     {
-        if constexpr(std::is_invocable_v<decltype(Callback), Class>) {
-            QPropertyBinding<T> oldBinding(d.priv.setBinding(newBinding, &d, owner, [](void *o) {
-                (reinterpret_cast<Class *>(o)->*Callback)();
-            }));
-            notify(owner);
+        if constexpr (CallbackAcceptsOldValue) {
+            T oldValue = value();
+            QPropertyBinding<T> oldBinding(d.priv.setBinding(newBinding, &d, owner, [](void *o, void *oldVal) {
+                (reinterpret_cast<Class *>(o)->*Callback)(*reinterpret_cast<T *>(oldVal));
+            }, GuardTE));
+            notify(owner, &oldValue);
             return oldBinding;
         } else {
-            T oldValue = value();
-            QPropertyBinding<T> oldBinding(d.priv.setBinding(newBinding, &d, owner, [](void *o, void *oldValue) {
-                (reinterpret_cast<Class *>(o)->*Callback)(*reinterpret_cast<T *>(oldValue));
-            }));
-            notify(owner, &oldValue);
+            QPropertyBinding<T> oldBinding(d.priv.setBinding(newBinding, &d, owner, [](void *o, void *) {
+                (reinterpret_cast<Class *>(o)->*Callback)();
+            }, GuardTE));
+            notify(owner);
             return oldBinding;
         }
     }
@@ -475,18 +508,18 @@ public:
     QPropertyBinding<T> setBinding(Class *owner, QPropertyBinding<T> &&newBinding)
     {
         QPropertyBinding<T> b(std::move(newBinding));
-        if constexpr(std::is_invocable_v<decltype(Callback), Class>) {
-            QPropertyBinding<T> oldBinding(d.priv.setBinding(b, &d, owner, [](void *o, void *) {
-                (reinterpret_cast<Class *>(o)->*Callback)();
-            }));
-            notify(owner);
+        if constexpr (CallbackAcceptsOldValue) {
+            T oldValue = value();
+            QPropertyBinding<T> oldBinding(d.priv.setBinding(b, &d, owner, [](void *o, void *oldVal) {
+                (reinterpret_cast<Class *>(o)->*Callback)(*reinterpret_cast<T *>(oldVal));
+            }, GuardTE));
+            notify(owner, &oldValue);
             return oldBinding;
         } else {
-            T oldValue = value();
-            QPropertyBinding<T> oldBinding(d.priv.setBinding(b, &d, owner, [](void *o, void *oldValue) {
-                (reinterpret_cast<Class *>(o)->*Callback)(*reinterpret_cast<T *>(oldValue));
-            }));
-            notify(owner, &oldValue);
+            QPropertyBinding<T> oldBinding(d.priv.setBinding(b, &d, owner, [](void *o, void *) {
+                (reinterpret_cast<Class *>(o)->*Callback)();
+            }, GuardTE));
+            notify(owner);
             return oldBinding;
         }
     }
@@ -495,17 +528,17 @@ public:
     {
         if (newBinding.valueMetaType().id() != qMetaTypeId<T>())
             return false;
-        if constexpr(std::is_invocable_v<decltype(Callback), Class>) {
+        if constexpr (CallbackAcceptsOldValue) {
+            T oldValue = value();
+            d.priv.setBinding(newBinding, &d, owner, [](void *o, void *oldVal) {
+                (reinterpret_cast<Class *>(o)->*Callback)(*reinterpret_cast<T *>(oldVal));
+            }, GuardTE);
+            notify(owner, &oldValue);
+        } else {
             d.priv.setBinding(newBinding, &d, owner, [](void *o, void *) {
                 (reinterpret_cast<Class *>(o)->*Callback)();
-            });
+            }, GuardTE);
             notify(owner);
-        } else {
-            T oldValue = value();
-            d.priv.setBinding(newBinding, &d, owner, [](void *o, void *oldValue) {
-                (reinterpret_cast<Class *>(o)->*Callback)(*reinterpret_cast<T *>(oldValue));
-            });
-            notify(owner, &oldValue);
         }
         return true;
     }
@@ -544,10 +577,12 @@ private:
     void notify(Class *owner, T *oldValue=nullptr)
     {
         d.priv.notifyObservers(&d);
-        if constexpr(std::is_invocable_v<decltype(Callback), Class>)
+        if constexpr (std::is_invocable_v<decltype(Callback), Class>) {
+            Q_UNUSED(oldValue);
             (owner->*Callback)();
-        else
+        } else {
             (owner->*Callback)(*oldValue);
+        }
     }
 
     Q_DISABLE_COPY_MOVE(QNotifiedProperty)
@@ -581,8 +616,8 @@ public:
     void setSource(const QProperty<PropertyType> &property)
     { setSource(property.d.priv); }
 
-    template <typename PropertyType, auto notifier>
-    void setSource(const QNotifiedProperty<PropertyType, notifier> &property)
+    template <typename PropertyType, auto notifier, auto guard>
+    void setSource(const QNotifiedProperty<PropertyType, notifier, guard> &property)
     { setSource(property.d.priv); }
 
 protected:
@@ -642,8 +677,8 @@ public:
         setSource(property);
     }
 
-    template <typename PropertyType, typename Class, void(Class::*Callback)()>
-    QPropertyChangeHandler(const QNotifiedProperty<PropertyType, Callback> &property, Functor handler)
+    template <typename PropertyType, auto Callback, auto Guard>
+    QPropertyChangeHandler(const QNotifiedProperty<PropertyType, Callback, Guard> &property, Functor handler)
         : QPropertyObserver([](QPropertyObserver *self, void *) {
               auto This = static_cast<QPropertyChangeHandler<Functor>*>(self);
               This->m_handler();
@@ -675,9 +710,9 @@ QPropertyChangeHandler<Functor> QProperty<T>::subscribe(Functor f)
     return onValueChanged(f);
 }
 
-template <typename T, auto Callback>
+template <typename T, auto Callback, auto ValueGuard>
 template<typename Functor>
-QPropertyChangeHandler<Functor> QNotifiedProperty<T, Callback>::onValueChanged(Functor f)
+QPropertyChangeHandler<Functor> QNotifiedProperty<T, Callback, ValueGuard>::onValueChanged(Functor f)
 {
 #if defined(__cpp_lib_is_invocable) && (__cpp_lib_is_invocable >= 201703L)
     static_assert(std::is_invocable_v<Functor>, "Functor callback must be callable without any parameters");
@@ -685,9 +720,9 @@ QPropertyChangeHandler<Functor> QNotifiedProperty<T, Callback>::onValueChanged(F
     return QPropertyChangeHandler<Functor>(*this, f);
 }
 
-template <typename T, auto Callback>
+template <typename T, auto Callback, auto ValueGuard>
 template<typename Functor>
-QPropertyChangeHandler<Functor> QNotifiedProperty<T, Callback>::subscribe(Functor f)
+QPropertyChangeHandler<Functor> QNotifiedProperty<T, Callback, ValueGuard>::subscribe(Functor f)
 {
 #if defined(__cpp_lib_is_invocable) && (__cpp_lib_is_invocable >= 201703L)
     static_assert(std::is_invocable_v<Functor>, "Functor callback must be callable without any parameters");

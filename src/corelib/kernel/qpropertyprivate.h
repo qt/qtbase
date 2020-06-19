@@ -84,7 +84,8 @@ public:
 
     QUntypedPropertyBinding setBinding(const QUntypedPropertyBinding &newBinding,
                                        void *propertyDataPtr, void *staticObserver = nullptr,
-                                       void (*staticObserverCallback)(void *, void *) = nullptr);
+                                       void (*staticObserverCallback)(void *, void *) = nullptr,
+                                       bool (*guardCallback)(void *, void *) = nullptr);
     QPropertyBindingPrivate *binding();
 
     void evaluateIfDirty();

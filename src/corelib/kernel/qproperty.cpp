@@ -95,7 +95,8 @@ QPropertyBase::~QPropertyBase()
 QUntypedPropertyBinding QPropertyBase::setBinding(const QUntypedPropertyBinding &binding,
                                                   void *propertyDataPtr,
                                                   void *staticObserver,
-                                                  void (*staticObserverCallback)(void*, void*))
+                                                  void (*staticObserverCallback)(void*, void*),
+                                                  bool (*guardCallback)(void *, void*))
 {
     QPropertyBindingPrivatePtr oldBinding;
     QPropertyBindingPrivatePtr newBinding = binding.d;
@@ -122,7 +123,7 @@ QUntypedPropertyBinding QPropertyBase::setBinding(const QUntypedPropertyBinding 
         newBinding->setProperty(propertyDataPtr);
         if (observer)
             newBinding->prependObserver(observer);
-        newBinding->setStaticObserver(staticObserver, staticObserverCallback);
+        newBinding->setStaticObserver(staticObserver, staticObserverCallback, guardCallback);
     } else if (observer) {
         d.setObservers(observer.ptr);
     } else {
