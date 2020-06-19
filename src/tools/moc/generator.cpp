@@ -243,7 +243,7 @@ void Generator::generateCode()
 //
     const int constCharArraySizeLimit = 65535;
     fprintf(out, "struct qt_meta_stringdata_%s_t {\n", qualifiedClassNameIdentifier.constData());
-    fprintf(out, "    const uint offsetsAndSize[%d];\n", strings.size()*2);
+    fprintf(out, "    const uint offsetsAndSize[%d];\n", int(strings.size()*2));
     {
         int stringDataLength = 0;
         int stringDataCounter = 0;
@@ -352,7 +352,7 @@ void Generator::generateCode()
     fprintf(out, "\n // content:\n");
     fprintf(out, "    %4d,       // revision\n", int(QMetaObjectPrivate::OutputRevision));
     fprintf(out, "    %4d,       // classname\n", stridx(cdef->qualified));
-    fprintf(out, "    %4d, %4d, // classinfo\n", cdef->classInfoList.count(), cdef->classInfoList.count() ? index : 0);
+    fprintf(out, "    %4d, %4d, // classinfo\n", int(cdef->classInfoList.count()), int(cdef->classInfoList.count() ? index : 0));
     index += cdef->classInfoList.count() * 2;
 
     int methodCount = cdef->signalList.count() + cdef->slotList.count() + cdef->methodList.count();
@@ -369,14 +369,14 @@ void Generator::generateCode()
             - methodCount // return "parameters" don't have names
             - cdef->constructorList.count(); // "this" parameters don't have names
 
-    fprintf(out, "    %4d, %4d, // properties\n", cdef->propertyList.count(), cdef->propertyList.count() ? index : 0);
+    fprintf(out, "    %4d, %4d, // properties\n", int(cdef->propertyList.count()), int(cdef->propertyList.count() ? index : 0));
     index += cdef->propertyList.count() * QMetaObjectPrivate::IntsPerProperty;
-    fprintf(out, "    %4d, %4d, // enums/sets\n", cdef->enumList.count(), cdef->enumList.count() ? index : 0);
+    fprintf(out, "    %4d, %4d, // enums/sets\n", int(cdef->enumList.count()), cdef->enumList.count() ? index : 0);
 
     int enumsIndex = index;
     for (int i = 0; i < cdef->enumList.count(); ++i)
         index += 5 + (cdef->enumList.at(i).values.count() * 2);
-    fprintf(out, "    %4d, %4d, // constructors\n", isConstructible ? cdef->constructorList.count() : 0,
+    fprintf(out, "    %4d, %4d, // constructors\n", isConstructible ? int(cdef->constructorList.count()) : 0,
             isConstructible ? index : 0);
 
     int flags = 0;
@@ -386,7 +386,7 @@ void Generator::generateCode()
         flags |= PropertyAccessInStaticMetaCall;
     }
     fprintf(out, "    %4d,       // flags\n", flags);
-    fprintf(out, "    %4d,       // signalCount\n", cdef->signalList.count());
+    fprintf(out, "    %4d,       // signalCount\n", int(cdef->signalList.count()));
 
 
 //
@@ -943,7 +943,7 @@ void Generator::generateEnums(int index)
                  stridx(e.name),
                  e.enumName.isNull() ? stridx(e.name) : stridx(e.enumName),
                  flags,
-                 e.values.count(),
+                 int(e.values.count()),
                  index);
         index += e.values.count() * 2;
     }
@@ -994,18 +994,18 @@ void Generator::generateMetacall()
     if (methodList.size()) {
         needElse = true;
         fprintf(out, "if (_c == QMetaObject::InvokeMetaMethod) {\n");
-        fprintf(out, "        if (_id < %d)\n", methodList.size());
+        fprintf(out, "        if (_id < %d)\n", int(methodList.size()));
         fprintf(out, "            qt_static_metacall(this, _c, _id, _a);\n");
-        fprintf(out, "        _id -= %d;\n    }", methodList.size());
+        fprintf(out, "        _id -= %d;\n    }", int(methodList.size()));
 
         fprintf(out, " else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {\n");
-        fprintf(out, "        if (_id < %d)\n", methodList.size());
+        fprintf(out, "        if (_id < %d)\n", int(methodList.size()));
 
         if (methodsWithAutomaticTypesHelper(methodList).isEmpty())
             fprintf(out, "            *reinterpret_cast<int*>(_a[0]) = -1;\n");
         else
             fprintf(out, "            qt_static_metacall(this, _c, _id, _a);\n");
-        fprintf(out, "        _id -= %d;\n    }", methodList.size());
+        fprintf(out, "        _id -= %d;\n    }", int(methodList.size()));
 
     }
 
@@ -1020,7 +1020,7 @@ void Generator::generateMetacall()
             "            || _c == QMetaObject::RegisterQPropertyObserver\n"
             "            || _c == QMetaObject::SetQPropertyBinding) {\n"
             "        qt_static_metacall(this, _c, _id, _a);\n"
-            "        _id -= %d;\n    }", cdef->propertyList.count());
+            "        _id -= %d;\n    }", int(cdef->propertyList.count()));
         fprintf(out, "\n#endif // QT_NO_PROPERTIES");
     }
     if (methodList.size() || cdef->propertyList.size())

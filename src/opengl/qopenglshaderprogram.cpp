@@ -3782,7 +3782,7 @@ bool QOpenGLShaderProgramPrivate::linkBinary()
     const QByteArray cacheKey = binaryProgram.cacheKey();
     if (lcOpenGLProgramDiskCache().isEnabled(QtDebugMsg))
         qCDebug(lcOpenGLProgramDiskCache, "program with %d shaders, cache key %s",
-                binaryProgram.shaders.count(), cacheKey.constData());
+                int(binaryProgram.shaders.count()), cacheKey.constData());
 
     bool needsCompile = true;
     if (binCache.load(cacheKey, q->programId())) {

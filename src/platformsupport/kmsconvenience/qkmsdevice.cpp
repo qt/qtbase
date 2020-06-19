@@ -471,7 +471,7 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
         }
     }
     qCDebug(qLcKmsDebug, "Output %s can use %d planes: %s",
-            connectorName.constData(), output.available_planes.count(), qPrintable(planeListStr));
+            connectorName.constData(), int(output.available_planes.count()), qPrintable(planeListStr));
 
     // This is for the EGLDevice/EGLStream backend. On some of those devices one
     // may want to target a pre-configured plane. It is probably useless for

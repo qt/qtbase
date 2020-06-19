@@ -3132,7 +3132,7 @@ QMimeData *QStandardItemModel::mimeData(const QModelIndexList &indexes) const
         if (itemsSet.contains(item)) //if the item is selection 'top-level', stream its position
             stream << item->row() << item->column();
 
-        stream << *item << item->columnCount() << item->d_ptr->children.count();
+        stream << *item << item->columnCount() << int(item->d_ptr->children.count());
         stack += item->d_ptr->children;
     }
 

@@ -877,7 +877,7 @@ bool QTextDocumentPrivate::unite(uint f)
 
 int QTextDocumentPrivate::undoRedo(bool undo)
 {
-    PMDEBUG("%s, undoState=%d, undoStack size=%d", undo ? "undo:" : "redo:", undoState, undoStack.size());
+    PMDEBUG("%s, undoState=%d, undoStack size=%d", undo ? "undo:" : "redo:", undoState, int(undoStack.size()));
     if (!undoEnabled || (undo && undoState == 0) || (!undo && undoState == undoStack.size()))
         return -1;
 

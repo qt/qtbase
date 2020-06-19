@@ -2171,7 +2171,7 @@ int QTreeView::verticalOffset() const
         // ### find a faster way to do this
         d->executePostedLayout();
         int offset = 0;
-        const int cnt = std::min(d->viewItems.count(), verticalScrollBar()->value());
+        const int cnt = qMin(d->viewItems.count(), verticalScrollBar()->value());
         for (int i = 0; i < cnt; ++i)
             offset += d->itemHeight(i);
         return offset;

@@ -391,7 +391,7 @@ void tst_QGroupBox::clicked()
     else
         QTest::mouseClick(&testWidget, Qt::LeftButton);
 
-    QTEST(spy.count(), "clickedCount");
+    QTEST(int(spy.count()), "clickedCount");
     if (spy.count() > 0)
         QTEST(spy.at(0).at(0).toBool(), "finalCheck");
     QTEST(testWidget.isChecked(), "finalCheck");

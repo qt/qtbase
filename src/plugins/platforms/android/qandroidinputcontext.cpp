@@ -1173,7 +1173,7 @@ void QAndroidInputContext::focusObjectStartComposing()
 
     QInputMethodEvent event(m_composingText, {
         { QInputMethodEvent::Cursor, absoluteCursorPos - m_composingTextStart, 1 },
-        { QInputMethodEvent::TextFormat, 0, m_composingText.length(), underlined }
+        { QInputMethodEvent::TextFormat, 0, int(m_composingText.length()), underlined }
     });
 
     event.setCommitString({}, m_composingTextStart - absoluteCursorPos, m_composingText.length());
@@ -1450,7 +1450,7 @@ jboolean QAndroidInputContext::setComposingText(const QString &text, jint newCur
         underlined.setFontUnderline(true);
 
         event = QInputMethodEvent(m_composingText, {
-            { QInputMethodEvent::TextFormat, 0, m_composingText.length(), underlined },
+            { QInputMethodEvent::TextFormat, 0, int(m_composingText.length()), underlined },
             { QInputMethodEvent::Cursor, m_composingCursor - m_composingTextStart, 1 }
         });
 

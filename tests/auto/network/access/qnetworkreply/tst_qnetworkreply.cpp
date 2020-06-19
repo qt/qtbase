@@ -4817,8 +4817,8 @@ void tst_QNetworkReply::ioPostToHttpFromSocket()
 
     QCOMPARE(reply->readAll().trimmed(), md5sum(data).toHex());
 
-    QTEST(authenticationRequiredSpy.count(), "authenticationRequiredCount");
-    QTEST(proxyAuthenticationRequiredSpy.count(), "proxyAuthenticationRequiredCount");
+    QTEST(int(authenticationRequiredSpy.count()), "authenticationRequiredCount");
+    QTEST(int(proxyAuthenticationRequiredSpy.count()), "proxyAuthenticationRequiredCount");
 }
 
 void tst_QNetworkReply::ioPostToHttpFromSocketSynchronous_data()

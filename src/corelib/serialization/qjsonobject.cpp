@@ -718,7 +718,7 @@ bool QJsonObject::operator!=(const QJsonObject &other) const
 QJsonObject::iterator QJsonObject::erase(QJsonObject::iterator it)
 {
     if (it.o != this || it.i < 0 || it.i >= o->elements.length())
-        return {this, o->elements.length()};
+        return {this, int(o->elements.length())};
 
     int index = it.i;
 

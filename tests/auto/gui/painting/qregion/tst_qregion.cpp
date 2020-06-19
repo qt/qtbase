@@ -335,7 +335,7 @@ void tst_QRegion::emptyPolygonRegion()
     QTEST(int(std::distance(r.begin(), r.end())), "numRects");
     QList<QRect> rects;
     std::copy(r.begin(), r.end(), std::back_inserter(rects));
-    QTEST(rects.size(), "numRects");
+    QTEST(int(rects.size()), "numRects");
     QTEST(rects, "rects");
 }
 

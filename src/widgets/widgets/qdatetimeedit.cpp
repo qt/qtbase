@@ -1860,7 +1860,7 @@ int QDateTimeEditPrivate::closestSection(int pos, bool forward) const
 
     const QString text = displayText();
     if (text.size() - pos < separators.last().size() + 1)
-        return forward ? LastSectionIndex : sectionNodes.size() - 1;
+        return forward ? LastSectionIndex : int(sectionNodes.size() - 1);
 
     updateCache(value, text);
     for (int i=0; i<sectionNodes.size(); ++i) {
@@ -1892,7 +1892,7 @@ int QDateTimeEditPrivate::nextPrevSection(int current, bool forward) const
 
     switch (current) {
     case FirstSectionIndex: return forward ? 0 : FirstSectionIndex;
-    case LastSectionIndex: return (forward ? LastSectionIndex : sectionNodes.size() - 1);
+    case LastSectionIndex: return (forward ? LastSectionIndex : int(sectionNodes.size() - 1));
     case NoSectionIndex: return FirstSectionIndex;
     default: break;
     }

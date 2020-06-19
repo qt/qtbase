@@ -267,7 +267,7 @@ void XmlOutput::closeTag()
         case Bare:
             if (tagStack.count())
                 //warn_msg(WarnLogic, "<Root>: Cannot close tag in Bare state, %d tags on stack", tagStack.count());
-                qDebug("<Root>: Cannot close tag in Bare state, %d tags on stack", tagStack.count());
+                qDebug("<Root>: Cannot close tag in Bare state, %d tags on stack", int(tagStack.count()));
             else
                 //warn_msg(WarnLogic, "<Root>: Cannot close tag, no tags on stack");
                 qDebug("<Root>: Cannot close tag, no tags on stack");

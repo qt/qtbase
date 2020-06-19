@@ -1796,7 +1796,7 @@ void QDockAreaLayoutInfo::saveState(QDataStream &stream) const
         stream << (uchar) SequenceMarker;
     }
 
-    stream << (uchar) o << item_list.count();
+    stream << (uchar) o << int(item_list.count());
 
     for (int i = 0; i < item_list.count(); ++i) {
         const QDockAreaLayoutItem &item = item_list.at(i);

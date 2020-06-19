@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -71,7 +71,7 @@ protected:
 #endif
 public:
     inline void sort(Qt::CaseSensitivity cs = Qt::CaseSensitive);
-    inline int removeDuplicates();
+    inline qsizetype removeDuplicates();
 
 #if QT_STRINGVIEW_LEVEL < 2
     inline QString join(const QString &sep) const;
@@ -134,15 +134,15 @@ public:
     inline QStringList &operator<<(const QList<QString> &l)
     { *this += l; return *this; }
 
-    inline int indexOf(QStringView str, int from = 0) const;
-    inline int indexOf(QLatin1String str, int from = 0) const;
+    inline qsizetype indexOf(QStringView str, qsizetype from = 0) const;
+    inline qsizetype indexOf(QLatin1String str, qsizetype from = 0) const;
 
-    inline int lastIndexOf(QStringView str, int from = -1) const;
-    inline int lastIndexOf(QLatin1String str, int from = -1) const;
+    inline qsizetype lastIndexOf(QStringView str, qsizetype from = -1) const;
+    inline qsizetype lastIndexOf(QLatin1String str, qsizetype from = -1) const;
 
 #if QT_CONFIG(regularexpression)
-    inline int indexOf(const QRegularExpression &re, int from = 0) const;
-    inline int lastIndexOf(const QRegularExpression &re, int from = -1) const;
+    inline qsizetype indexOf(const QRegularExpression &re, qsizetype from = 0) const;
+    inline qsizetype lastIndexOf(const QRegularExpression &re, qsizetype from = -1) const;
 #endif // QT_CONFIG(regularexpression)
 
     using QList<QString>::indexOf;
@@ -159,9 +159,9 @@ inline const QStringList *QListSpecialMethods<QString>::self() const
 
 namespace QtPrivate {
     void Q_CORE_EXPORT QStringList_sort(QStringList *that, Qt::CaseSensitivity cs);
-    int Q_CORE_EXPORT QStringList_removeDuplicates(QStringList *that);
+    qsizetype Q_CORE_EXPORT QStringList_removeDuplicates(QStringList *that);
     QString Q_CORE_EXPORT QStringList_join(const QStringList *that, QStringView sep);
-    QString Q_CORE_EXPORT QStringList_join(const QStringList *that, const QChar *sep, int seplen);
+    QString Q_CORE_EXPORT QStringList_join(const QStringList *that, const QChar *sep, qsizetype seplen);
     Q_CORE_EXPORT QString QStringList_join(const QStringList &list, QLatin1String sep);
     QStringList Q_CORE_EXPORT QStringList_filter(const QStringList *that, QStringView str,
                                                Qt::CaseSensitivity cs);
@@ -185,8 +185,8 @@ namespace QtPrivate {
 #if QT_CONFIG(regularexpression)
     void Q_CORE_EXPORT QStringList_replaceInStrings(QStringList *that, const QRegularExpression &rx, const QString &after);
     QStringList Q_CORE_EXPORT QStringList_filter(const QStringList *that, const QRegularExpression &re);
-    int Q_CORE_EXPORT QStringList_indexOf(const QStringList *that, const QRegularExpression &re, int from);
-    int Q_CORE_EXPORT QStringList_lastIndexOf(const QStringList *that, const QRegularExpression &re, int from);
+    qsizetype Q_CORE_EXPORT QStringList_indexOf(const QStringList *that, const QRegularExpression &re, qsizetype from);
+    qsizetype Q_CORE_EXPORT QStringList_lastIndexOf(const QStringList *that, const QRegularExpression &re, qsizetype from);
 #endif // QT_CONFIG(regularexpression)
 }
 
@@ -195,7 +195,7 @@ inline void QListSpecialMethods<QString>::sort(Qt::CaseSensitivity cs)
     QtPrivate::QStringList_sort(self(), cs);
 }
 
-inline int QListSpecialMethods<QString>::removeDuplicates()
+inline qsizetype QListSpecialMethods<QString>::removeDuplicates()
 {
     return QtPrivate::QStringList_removeDuplicates(self());
 }
@@ -284,22 +284,22 @@ inline QStringList operator+(const QList<QString> &one, const QStringList &other
     return n;
 }
 
-inline int QStringList::indexOf(QStringView string, int from) const
+inline qsizetype QStringList::indexOf(QStringView string, qsizetype from) const
 {
     return QtPrivate::indexOf<QString, QStringView>(*this, string, from);
 }
 
-inline int QStringList::indexOf(QLatin1String string, int from) const
+inline qsizetype QStringList::indexOf(QLatin1String string, qsizetype from) const
 {
     return QtPrivate::indexOf<QString, QLatin1String>(*this, string, from);
 }
 
-inline int QStringList::lastIndexOf(QStringView string, int from) const
+inline qsizetype QStringList::lastIndexOf(QStringView string, qsizetype from) const
 {
     return QtPrivate::lastIndexOf<QString, QStringView>(*this, string, from);
 }
 
-inline int QStringList::lastIndexOf(QLatin1String string, int from) const
+inline qsizetype QStringList::lastIndexOf(QLatin1String string, qsizetype from) const
 {
     return QtPrivate::lastIndexOf<QString, QLatin1String>(*this, string, from);
 }
@@ -316,12 +316,12 @@ inline QStringList QListSpecialMethods<QString>::filter(const QRegularExpression
     return QtPrivate::QStringList_filter(self(), rx);
 }
 
-inline int QStringList::indexOf(const QRegularExpression &rx, int from) const
+inline qsizetype QStringList::indexOf(const QRegularExpression &rx, qsizetype from) const
 {
     return QtPrivate::QStringList_indexOf(this, rx, from);
 }
 
-inline int QStringList::lastIndexOf(const QRegularExpression &rx, int from) const
+inline qsizetype QStringList::lastIndexOf(const QRegularExpression &rx, qsizetype from) const
 {
     return QtPrivate::QStringList_lastIndexOf(this, rx, from);
 }

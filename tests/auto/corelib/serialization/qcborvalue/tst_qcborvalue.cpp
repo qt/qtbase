@@ -2022,8 +2022,8 @@ void tst_QCborValue::validation_data()
         QTest::addRow("very-large-array-overflow2") << raw("\x9b\0\0\0\1""\0\0\0\2" "\0\0") << 0 << CborErrorDataTooLarge;
     } else {
         // 64-bit Qt 6
-        QTest::addRow("very-large-array-no-overflow") << raw("\x9b\x07\xff\xff\xff" "\xff\xff\xff\xff" "\0\0");
-        QTest::addRow("very-large-array-overflow") << raw("\x9b\x40\0\0\0" "\0\0\0\0" "\0\0");
+        QTest::addRow("very-large-array-no-overflow") << raw("\x9b\x07\xff\xff\xff" "\xff\xff\xff\xff" "\0\0") << 0 << CborErrorDataTooLarge;
+        QTest::addRow("very-large-array-overflow") << raw("\x9b\x40\0\0\0" "\0\0\0\0" "\0\0") << 0 << CborErrorDataTooLarge;
     }
 }
 

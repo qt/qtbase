@@ -247,7 +247,7 @@ void tst_QTabBar::removeTab()
     tabbar.setCurrentIndex(currentIndex);
     QSignalSpy spy(&tabbar, SIGNAL(currentChanged(int)));
     tabbar.removeTab(deleteIndex);
-    QTEST(spy.count(), "spyCount");
+    QTEST(int(spy.count()), "spyCount");
     QTEST(tabbar.currentIndex(), "finalIndex");
 }
 
@@ -278,7 +278,7 @@ void tst_QTabBar::hideTab()
     tabbar.setCurrentIndex(currentIndex);
     QSignalSpy spy(&tabbar, &QTabBar::currentChanged);
     tabbar.setTabVisible(hideIndex, false);
-    QTEST(spy.count(), "spyCount");
+    QTEST(int(spy.count()), "spyCount");
     QTEST(tabbar.currentIndex(), "finalIndex");
 }
 

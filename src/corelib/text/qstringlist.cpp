@@ -314,7 +314,7 @@ QStringList QtPrivate::QStringList_filter(const QStringList *that, QStringView s
 {
     QStringMatcher matcher(str, cs);
     QStringList res;
-    for (int i = 0; i < that->size(); ++i)
+    for (qsizetype i = 0; i < that->size(); ++i)
         if (matcher.indexIn(that->at(i)) != -1)
             res << that->at(i);
     return res;
@@ -327,7 +327,7 @@ QStringList QtPrivate::QStringList_filter(const QStringList *that, const QString
 {
     QStringMatcher matcher(str, cs);
     QStringList res;
-    for (int i = 0; i < that->size(); ++i)
+    for (qsizetype i = 0; i < that->size(); ++i)
         if (matcher.indexIn(that->at(i)) != -1)
             res << that->at(i);
     return res;
@@ -399,7 +399,7 @@ bool QtPrivate::QStringList_contains(const QStringList *that, QLatin1String str,
 }
 
 /*!
-    \fn bool QStringList::indexOf(QStringView str, int from) const
+    \fn bool QStringList::indexOf(QStringView str, qsizetype from) const
     \overload
     \since 5.13
 
@@ -411,7 +411,7 @@ bool QtPrivate::QStringList_contains(const QStringList *that, QLatin1String str,
  */
 
 /*!
-    \fn bool QStringList::indexOf(QLatin1String str, int from) const
+    \fn bool QStringList::indexOf(QLatin1String str, qsizetype from) const
     \overload
     \since 5.13
 
@@ -423,7 +423,7 @@ bool QtPrivate::QStringList_contains(const QStringList *that, QLatin1String str,
  */
 
 /*!
-    \fn bool QStringList::lastIndexOf(QStringView str, int from) const
+    \fn bool QStringList::lastIndexOf(QStringView str, qsizetype from) const
     \overload
     \since 5.13
 
@@ -436,7 +436,7 @@ bool QtPrivate::QStringList_contains(const QStringList *that, QLatin1String str,
  */
 
 /*!
-    \fn bool QStringList::lastIndexOf(QLatin1String str, int from) const
+    \fn bool QStringList::lastIndexOf(QLatin1String str, qsizetype from) const
     \overload
     \since 5.13
 
@@ -460,7 +460,7 @@ bool QtPrivate::QStringList_contains(const QStringList *that, QLatin1String str,
 QStringList QtPrivate::QStringList_filter(const QStringList *that, const QRegularExpression &re)
 {
     QStringList res;
-    for (int i = 0; i < that->size(); ++i) {
+    for (qsizetype i = 0; i < that->size(); ++i) {
         if (that->at(i).contains(re))
             res << that->at(i);
     }
@@ -506,7 +506,7 @@ QStringList QtPrivate::QStringList_filter(const QStringList *that, const QRegula
 void QtPrivate::QStringList_replaceInStrings(QStringList *that, QStringView before,
                                              QStringView after, Qt::CaseSensitivity cs)
 {
-    for (int i = 0; i < that->size(); ++i)
+    for (qsizetype i = 0; i < that->size(); ++i)
         (*that)[i].replace(before.data(), before.length(), after.data(), after.length(), cs);
 }
 
@@ -515,7 +515,7 @@ void QtPrivate::QStringList_replaceInStrings(QStringList *that, QStringView befo
 void QtPrivate::QStringList_replaceInStrings(QStringList *that, const QString &before,
                                              const QString &after, Qt::CaseSensitivity cs)
 {
-    for (int i = 0; i < that->size(); ++i)
+    for (qsizetype i = 0; i < that->size(); ++i)
         (*that)[i].replace(before, after, cs);
 }
 #endif
@@ -546,14 +546,14 @@ void QtPrivate::QStringList_replaceInStrings(QStringList *that, const QString &b
 */
 void QtPrivate::QStringList_replaceInStrings(QStringList *that, const QRegularExpression &re, const QString &after)
 {
-    for (int i = 0; i < that->size(); ++i)
+    for (qsizetype i = 0; i < that->size(); ++i)
         (*that)[i].replace(re, after);
 }
 #endif // QT_CONFIG(regularexpression)
 
-static int accumulatedSize(const QStringList &list, int seplen)
+static qsizetype accumulatedSize(const QStringList &list, qsizetype seplen)
 {
-    int result = 0;
+    qsizetype result = 0;
     if (!list.isEmpty()) {
         for (const auto &e : list)
             result += e.size() + seplen;
@@ -579,16 +579,16 @@ static int accumulatedSize(const QStringList &list, int seplen)
     \since 5.0
     \overload join()
 */
-QString QtPrivate::QStringList_join(const QStringList *that, const QChar *sep, int seplen)
+QString QtPrivate::QStringList_join(const QStringList *that, const QChar *sep, qsizetype seplen)
 {
-    const int totalLength = accumulatedSize(*that, seplen);
-    const int size = that->size();
+    const qsizetype totalLength = accumulatedSize(*that, seplen);
+    const qsizetype size = that->size();
 
     QString res;
     if (totalLength == 0)
         return res;
     res.reserve(totalLength);
-    for (int i = 0; i < size; ++i) {
+    for (qsizetype i = 0; i < size; ++i) {
         if (i)
             res.append(sep, seplen);
         res += that->at(i);
@@ -666,7 +666,7 @@ QString QtPrivate::QStringList_join(const QStringList *that, QStringView sep)
 
 #if QT_CONFIG(regularexpression)
 /*!
-    \fn int QStringList::indexOf(const QRegularExpression &re, int from) const
+    \fn qsizetype QStringList::indexOf(const QRegularExpression &re, qsizetype from) const
     \overload
     \since 5.0
 
@@ -676,15 +676,15 @@ QString QtPrivate::QStringList_join(const QStringList *that, QStringView sep)
 
     \sa lastIndexOf()
 */
-int QtPrivate::QStringList_indexOf(const QStringList *that, const QRegularExpression &re, int from)
+qsizetype QtPrivate::QStringList_indexOf(const QStringList *that, const QRegularExpression &re, qsizetype from)
 {
     if (from < 0)
-        from = qMax(from + that->size(), 0);
+        from = qMax(from + that->size(), qsizetype(0));
 
     QString exactPattern = QRegularExpression::anchoredPattern(re.pattern());
     QRegularExpression exactRe(exactPattern, re.patternOptions());
 
-    for (int i = from; i < that->size(); ++i) {
+    for (qsizetype i = from; i < that->size(); ++i) {
         QRegularExpressionMatch m = exactRe.match(that->at(i));
         if (m.hasMatch())
             return i;
@@ -693,7 +693,7 @@ int QtPrivate::QStringList_indexOf(const QStringList *that, const QRegularExpres
 }
 
 /*!
-    \fn int QStringList::lastIndexOf(const QRegularExpression &re, int from) const
+    \fn qsizetype QStringList::lastIndexOf(const QRegularExpression &re, qsizetype from) const
     \overload
     \since 5.0
 
@@ -704,7 +704,7 @@ int QtPrivate::QStringList_indexOf(const QStringList *that, const QRegularExpres
 
     \sa indexOf()
 */
-int QtPrivate::QStringList_lastIndexOf(const QStringList *that, const QRegularExpression &re, int from)
+qsizetype QtPrivate::QStringList_lastIndexOf(const QStringList *that, const QRegularExpression &re, qsizetype from)
 {
     if (from < 0)
         from += that->size();
@@ -714,7 +714,7 @@ int QtPrivate::QStringList_lastIndexOf(const QStringList *that, const QRegularEx
     QString exactPattern = QRegularExpression::anchoredPattern(re.pattern());
     QRegularExpression exactRe(exactPattern, re.patternOptions());
 
-    for (int i = from; i >= 0; --i) {
+    for (qsizetype i = from; i >= 0; --i) {
         QRegularExpressionMatch m = exactRe.match(that->at(i));
         if (m.hasMatch())
             return i;
@@ -724,7 +724,7 @@ int QtPrivate::QStringList_lastIndexOf(const QStringList *that, const QRegularEx
 #endif // QT_CONFIG(regularexpression)
 
 /*!
-    \fn int QStringList::removeDuplicates()
+    \fn qsizetype QStringList::removeDuplicates()
 
     \since 4.5
 
@@ -734,14 +734,14 @@ int QtPrivate::QStringList_lastIndexOf(const QStringList *that, const QRegularEx
 
     Returns the number of removed entries.
 */
-int QtPrivate::QStringList_removeDuplicates(QStringList *that)
+qsizetype QtPrivate::QStringList_removeDuplicates(QStringList *that)
 {
-    int n = that->size();
-    int j = 0;
+    qsizetype n = that->size();
+    qsizetype j = 0;
 
     QDuplicateTracker<QString> seen;
     seen.reserve(n);
-    for (int i = 0; i < n; ++i) {
+    for (qsizetype i = 0; i < n; ++i) {
         const QString &s = that->at(i);
         if (seen.hasSeen(s))
             continue;

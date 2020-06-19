@@ -177,7 +177,7 @@ int QTextMarkdownImporter::cbEnterBlock(int blockType, void *det)
     switch (blockType) {
     case MD_BLOCK_P:
         if (!m_listStack.isEmpty())
-            qCDebug(lcMD, m_listItem ? "P of LI at level %d"  : "P continuation inside LI at level %d", m_listStack.count());
+            qCDebug(lcMD, m_listItem ? "P of LI at level %d"  : "P continuation inside LI at level %d", int(m_listStack.count()));
         else
             qCDebug(lcMD, "P");
         m_needsInsertBlock = true;
@@ -243,7 +243,7 @@ int QTextMarkdownImporter::cbEnterBlock(int blockType, void *det)
             m_listFormat.setStyle(QTextListFormat::ListDisc);
             break;
         }
-        qCDebug(lcMD, "UL %c level %d", detail->mark, m_listStack.count() + 1);
+        qCDebug(lcMD, "UL %c level %d", detail->mark, int(m_listStack.count()) + 1);
     } break;
     case MD_BLOCK_OL: {
         if (m_needsInsertList) // list nested in an empty list
@@ -255,7 +255,7 @@ int QTextMarkdownImporter::cbEnterBlock(int blockType, void *det)
         m_listFormat.setIndent(m_listStack.count() + 1);
         m_listFormat.setNumberSuffix(QChar::fromLatin1(detail->mark_delimiter));
         m_listFormat.setStyle(QTextListFormat::ListDecimal);
-        qCDebug(lcMD, "OL xx%d level %d", detail->mark_delimiter, m_listStack.count() + 1);
+        qCDebug(lcMD, "OL xx%d level %d", detail->mark_delimiter, int(m_listStack.count()) + 1);
     } break;
     case MD_BLOCK_TD: {
         MD_BLOCK_TD_DETAIL *detail = static_cast<MD_BLOCK_TD_DETAIL *>(det);
@@ -326,7 +326,7 @@ int QTextMarkdownImporter::cbLeaveBlock(int blockType, void *detail)
         if (Q_UNLIKELY(m_listStack.isEmpty())) {
             qCWarning(lcMD, "list ended unexpectedly");
         } else {
-            qCDebug(lcMD, "list at level %d ended", m_listStack.count());
+            qCDebug(lcMD, "list at level %d ended", int(m_listStack.count()));
             m_listStack.pop();
         }
         break;
@@ -363,7 +363,7 @@ int QTextMarkdownImporter::cbLeaveBlock(int blockType, void *detail)
         m_cursor->movePosition(QTextCursor::End);
         break;
     case MD_BLOCK_LI:
-        qCDebug(lcMD, "LI at level %d ended", m_listStack.count());
+        qCDebug(lcMD, "LI at level %d ended", int(m_listStack.count()));
         m_listItem = false;
         break;
     case MD_BLOCK_CODE: {

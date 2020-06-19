@@ -505,7 +505,7 @@ bool QRhiVulkan::create(QRhi::Flags flags)
             for (const VkExtensionProperties &p : qAsConst(extProps))
                 devExts.append({ p.extensionName, p.specVersion });
         }
-        qCDebug(QRHI_LOG_INFO, "%d device extensions available", devExts.count());
+        qCDebug(QRHI_LOG_INFO, "%d device extensions available", int(devExts.count()));
 
         QVector<const char *> requestedDevExts;
         requestedDevExts.append("VK_KHR_swapchain");

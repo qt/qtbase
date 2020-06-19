@@ -1267,7 +1267,7 @@ void QToolBarAreaLayout::saveState(QDataStream &stream) const
         for (int j = 0; j < dock.lines.count(); ++j) {
             const QToolBarAreaLayoutLine &line = dock.lines.at(j);
 
-            stream << i << line.toolBarItems.count();
+            stream << i << int(line.toolBarItems.count());
 
             for (int k = 0; k < line.toolBarItems.count(); ++k) {
                 const QToolBarAreaLayoutItem &item = line.toolBarItems.at(k);

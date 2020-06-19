@@ -1598,12 +1598,12 @@ void QMetaObjectBuilder::serialize(QDataStream& stream) const
         stream << QByteArray();
 
     // Write the counts for each type of class member.
-    stream << d->classInfoNames.size();
+    stream << int(d->classInfoNames.size());
     stream << int(d->methods.size());
     stream << int(d->properties.size());
     stream << int(d->enumerators.size());
     stream << int(d->constructors.size());
-    stream << d->relatedMetaObjects.size();
+    stream << int(d->relatedMetaObjects.size());
 
     // Write the items of class information.
     for (index = 0; index < d->classInfoNames.size(); ++index) {
