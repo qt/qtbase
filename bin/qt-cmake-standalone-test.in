@@ -1,1 +1,3 @@
+@__qt_cmake_standalone_test_os_prelude@
+
 @__qt_cmake_private_path@ @__qt_cmake_standalone_test_path@ -DQT_STANDALONE_TEST_PATH=@__qt_cmake_standalone_passed_args@
