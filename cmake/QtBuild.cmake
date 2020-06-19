@@ -835,6 +835,11 @@ function(qt_generate_module_pri_file target)
         # will compute the transitive list of all defines for a module (so Gui would get Core
         #defines too). Instead query just the public defines on the target.
         get_target_property(target_defines "${target}" INTERFACE_COMPILE_DEFINITIONS)
+
+        # We must filter out expressions of the form $<TARGET_PROPERTY:name>, because
+        # 1. They cannot be used in file(GENERATE) content.
+        # 2. They refer to the consuming target we have no access to here.
+        list(FILTER target_defines EXCLUDE REGEX "\\$<TARGET_PROPERTY:[^,>]+>")
         list(JOIN target_defines " " joined_target_defines)
 
         file(GENERATE
