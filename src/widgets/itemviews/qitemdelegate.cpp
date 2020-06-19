@@ -267,7 +267,6 @@ QSizeF QItemDelegatePrivate::doTextLayout(int lineWidth) const
     \row    \li \l Qt::AccessibleTextRole \li QString
     \endomit
     \row    \li \l Qt::BackgroundRole \li QBrush (\since 4.2)
-    \row    \li \l Qt::BackgroundColorRole \li QColor (obsolete; use Qt::BackgroundRole instead)
     \row    \li \l Qt::CheckStateRole \li Qt::CheckState
     \row    \li \l Qt::DecorationRole \li QIcon, QPixmap and QColor
     \row    \li \l Qt::DisplayRole \li QString and types with a string representation
@@ -279,7 +278,6 @@ QSizeF QItemDelegatePrivate::doTextLayout(int lineWidth) const
     \endomit
     \row    \li \l Qt::TextAlignmentRole \li Qt::Alignment
     \row    \li \l Qt::ForegroundRole \li QBrush (\since 4.2)
-    \row    \li \l Qt::TextColorRole \li QColor (obsolete; use Qt::ForegroundRole instead)
     \omit
     \row    \li \l Qt::ToolTipRole
     \row    \li \l Qt::WhatsThisRole
