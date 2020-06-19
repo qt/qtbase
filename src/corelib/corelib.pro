@@ -117,6 +117,12 @@ defineTest(pathIsAbsolute) {
 ##### This requires fixing, so that the feature system works with cmake as well
 CMAKE_DISABLED_FEATURES = $$join(QT_DISABLED_FEATURES, "$$escape_expand(\\n)    ")
 
+# Embed the minimum darwin deployment target that Qt needs for informational purposes only.
+macos: CMAKE_MIN_DARWIN_DEPLOYMENT_TARGET = $$QMAKE_MACOSX_DEPLOYMENT_TARGET
+ios: CMAKE_MIN_DARWIN_DEPLOYMENT_TARGET = $$QMAKE_IOS_DEPLOYMENT_TARGET
+tvos: CMAKE_MIN_DARWIN_DEPLOYMENT_TARGET = $$QMAKE_TVOS_DEPLOYMENT_TARGET
+watchos: CMAKE_MIN_DARWIN_DEPLOYMENT_TARGET = $$QMAKE_WATCHOS_DEPLOYMENT_TARGET
+
 CMAKE_HOST_DATA_DIR = $$cmakeRelativePath($$[QT_HOST_DATA/src], $$[QT_INSTALL_PREFIX])
 pathIsAbsolute($$CMAKE_HOST_DATA_DIR) {
     CMAKE_HOST_DATA_DIR = $$[QT_HOST_DATA/src]/
