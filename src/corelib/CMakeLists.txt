@@ -1283,6 +1283,14 @@ if(WIN32)
     target_link_libraries(Core INTERFACE $<$<AND:${isExe},${isWin32},${isNotExcluded},${isPolicyNEW}>:Qt::WinMain>)
     qt_record_extra_qt_package_dependency(Core WinMain "${PROJECT_VERSION}")
 endif()
+
+# Record darwin minimum deployment target.
+if(APPLE AND CMAKE_OSX_DEPLOYMENT_TARGET)
+    set_property(TARGET Core PROPERTY
+                 QT_DARWIN_MIN_DEPLOYMENT_TARGET "${CMAKE_OSX_DEPLOYMENT_TARGET}")
+    set_property(TARGET Core APPEND PROPERTY
+                 EXPORT_PROPERTIES "QT_DARWIN_MIN_DEPLOYMENT_TARGET")
+endif()
 # special case end
 
 qt_create_tracepoints(Core qtcore.tracepoints)
