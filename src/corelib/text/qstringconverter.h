@@ -210,19 +210,28 @@ public:
     QByteArray operator()(const QString &in);
     QByteArray operator()(QStringView in);
     QByteArray operator()(const QChar *in, qsizetype length);
+    QByteArray encode(const QString &in);
+    QByteArray encode(QStringView in);
+    QByteArray encode(const QChar *in, qsizetype length);
 #else
     template<typename T>
     struct DecodedData
     {
         QStringEncoder *encoder;
         T data;
-        operator QByteArray() const { return encoder->encode(QStringView(data)); }
+        operator QByteArray() const { return encoder->encodeAsByteArray(QStringView(data)); }
     };
     DecodedData<const QString &> operator()(const QString &str)
     { return DecodedData<const QString &>{this, str}; }
     DecodedData<QStringView> operator()(QStringView in)
     { return DecodedData<QStringView>{this, in}; }
     DecodedData<QStringView> operator()(const QChar *in, qsizetype length)
+    { return (*this)(QStringView(in, length)); }
+    DecodedData<const QString &> encode(const QString &str)
+    { return DecodedData<const QString &>{this, str}; }
+    DecodedData<QStringView> encode(QStringView in)
+    { return DecodedData<QStringView>{this, in}; }
+    DecodedData<QStringView> encode(const QChar *in, qsizetype length)
     { return (*this)(QStringView(in, length)); }
 #endif
 
@@ -231,7 +240,7 @@ public:
     char *appendToBuffer(char *out, const QChar *in, qsizetype length)
     { return iface->fromUtf16(out, QStringView(in, length), &state); }
 private:
-    QByteArray encode(QStringView in)
+    QByteArray encodeAsByteArray(QStringView in)
     {
         QByteArray result(iface->fromUtf16Len(in.size()), Qt::Uninitialized);
         char *out = result.data();
@@ -270,19 +279,28 @@ public:
     QString operator()(const QByteArray &ba);
     QString operator()(const char *in, qsizetype size);
     QString operator()(const char *chars);
+    QString decode(const QByteArray &ba);
+    QString decode(const char *in, qsizetype size);
+    QString decode(const char *chars);
 #else
     template<typename T>
     struct EncodedData
     {
         QStringDecoder *decoder;
         T data;
-        operator QString() const { return decoder->decode(data.data(), data.length()); }
+        operator QString() const { return decoder->decodeAsString(data.data(), data.length()); }
     };
     EncodedData<const QByteArray &> operator()(const QByteArray &ba)
     { return EncodedData<const QByteArray &>{this, ba}; }
     EncodedData<View> operator()(const char *in, qsizetype length)
     { return EncodedData<View>{this, {in, length}}; }
     EncodedData<View> operator()(const char *chars)
+    { return EncodedData<View>{this, {chars, qsizetype(strlen(chars))}}; }
+    EncodedData<const QByteArray &> decode(const QByteArray &ba)
+    { return EncodedData<const QByteArray &>{this, ba}; }
+    EncodedData<View> decode(const char *in, qsizetype length)
+    { return EncodedData<View>{this, {in, length}}; }
+    EncodedData<View> decode(const char *chars)
     { return EncodedData<View>{this, {chars, qsizetype(strlen(chars))}}; }
 #endif
 
@@ -291,7 +309,7 @@ public:
     QChar *appendToBuffer(QChar *out, const char *in, qsizetype length)
     { return iface->toUtf16(out, in, length, &state); }
 private:
-    QString decode(const char *in, qsizetype length)
+    QString decodeAsString(const char *in, qsizetype length)
     {
         QString result(iface->toUtf16Len(length), Qt::Uninitialized);
         QChar *out  = result.data();

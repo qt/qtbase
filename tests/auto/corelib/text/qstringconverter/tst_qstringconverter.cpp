@@ -114,9 +114,13 @@ void tst_QStringConverter::convertUtf8()
         QString uniString = decoder(ba);
         QCOMPARE(uniString, QString::fromUtf8(ba));
         QCOMPARE(ba, uniString.toUtf8());
+        uniString = decoder.decode(ba);
+        QCOMPARE(uniString, QString::fromUtf8(ba));
+        QCOMPARE(ba, uniString.toUtf8());
 
         QStringEncoder encoder(QStringEncoder::Utf8);
         QCOMPARE(ba, encoder(uniString));
+        QCOMPARE(ba, encoder.encode(uniString));
     }
 
     {
@@ -127,11 +131,19 @@ void tst_QStringConverter::convertUtf8()
         for (int i = 0; i < ba.size(); ++i)
             uniString += decoder(ba.constData() + i, 1);
         QCOMPARE(uniString, QString::fromUtf8(ba));
+        uniString.clear();
+        for (int i = 0; i < ba.size(); ++i)
+            uniString += decoder.decode(ba.constData() + i, 1);
+        QCOMPARE(uniString, QString::fromUtf8(ba));
 
         QStringEncoder encoder(QStringEncoder::Utf8);
         QByteArray reencoded;
         for (int i = 0; i < uniString.size(); ++i)
             reencoded += encoder(uniString.constData() + i, 1);
+        QCOMPARE(ba, encoder(uniString));
+        reencoded.clear();
+        for (int i = 0; i < uniString.size(); ++i)
+            reencoded += encoder.encode(uniString.constData() + i, 1);
         QCOMPARE(ba, encoder(uniString));
     }
 }

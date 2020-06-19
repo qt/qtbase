@@ -1785,12 +1785,14 @@ const char *QStringConverter::nameForEncoding(QStringConverter::Encoding e)
 
 /*!
     \fn QByteArray QStringEncoder::operator()(const QString &in)
+    \fn QByteArray QStringEncoder::encode(const QString &in)
 
     Converts \a in and returns the data as a byte array.
 */
 
 /*!
     \fn QByteArray QStringEncoder::operator()(QStringView in)
+    \fn QByteArray QStringEncoder::encode(QStringView in)
     \overload
 
     Converts \a in and returns the data as a byte array.
@@ -1798,6 +1800,7 @@ const char *QStringConverter::nameForEncoding(QStringConverter::Encoding e)
 
 /*!
     \fn QByteArray QStringEncoder::operator()(const QChar *in, qsizetype length)
+    \fn QByteArray QStringEncoder::encode(const QChar *in, qsizetype length)
     \overload
 
     Converts \a length QChars from \a in and returns the data as a byte array.
@@ -1885,12 +1888,14 @@ const char *QStringConverter::nameForEncoding(QStringConverter::Encoding e)
 
 /*!
     \fn QString QStringDecoder::operator()(const QByteArray &ba)
+    \fn QString QStringDecoder::decode(const QByteArray &ba)
 
     Converts \a ba and returns the data as a QString.
 */
 
 /*!
     \fn QString QStringDecoder::operator()(const char *in, qsizetype size)
+    \fn QString QStringDecoder::decode(const char *in, qsizetype size)
     \overload
 
     Converts a byte array containing the first \a size bytes of the array \a in
@@ -1899,6 +1904,7 @@ const char *QStringConverter::nameForEncoding(QStringConverter::Encoding e)
 
 /*!
     \fn QString QStringDecoder::operator()(const char *chars)
+    \fn QString QStringDecoder::decode(const char *chars)
     \overload
 
     Converts \a chars and returns the data as a QString. \a chars is assumed to
