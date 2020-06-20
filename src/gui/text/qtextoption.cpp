@@ -324,28 +324,6 @@ QList<QTextOption::Tab> QTextOption::tabs() const
   \sa flags()
 */
 
-#if QT_DEPRECATED_SINCE(5, 10)
-/*!
-  \fn qreal QTextOption::tabStop() const
-  \deprecated in Qt 5.10. Use tabStopDistance() instead.
-
-  Returns the distance in device units between tab stops.
-  Convenient function for the above method
-
-  \sa setTabStopDistance(), tabArray(), setTabs(), tabs()
-*/
-
-/*!
-  \fn void QTextOption::setTabStop(qreal tabStop)
-  \deprecated in Qt 5.10. Use setTabStopDistance() instead.
-
-  Sets the default distance in device units between tab stops to the value specified
-  by \a tabStop.
-
-  \sa tabStopDistance(), setTabArray(), setTabs(), tabs()
-*/
-#endif
-
 /*!
   \fn qreal QTextOption::tabStopDistance() const
   \since 5.10
@@ -442,7 +420,7 @@ QList<QTextOption::Tab> QTextOption::tabs() const
   \fn QList<QTextOption::Tab> QTextOption::tabs() const
   Returns a list of tab positions defined for the text layout.
 
-  \sa tabStopDistance(), setTabs(), setTabStop()
+  \sa tabStopDistance(), setTabs(), setTabStopDistance()
 */
 
 
