@@ -28,7 +28,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QVariant>
 #include <QtCore/QList>
-#include <QtCore/QVector>
+#include <QtCore/QList>
 #include <QtTest/QtTest>
 #include <QtDBus>
 
@@ -52,8 +52,7 @@ public Q_SLOTS:
     Q_SCRIPTABLE QDBusVariant echo(const QDBusVariant &value)
     { return value; }
 
-    Q_SCRIPTABLE QVector<int> echo(const QVector<int> &value)
-    { return value; }
+    Q_SCRIPTABLE QList<int> echo(const QList<int> &value) { return value; }
 
     Q_SCRIPTABLE QString echo2(const QStringList &list, QString &out)
     { out = list[1]; return list[0]; }
@@ -200,7 +199,7 @@ void tst_QDBusLocalCalls::makeCallsTwoRets()
 void tst_QDBusLocalCalls::makeCallsComplex()
 {
     qDBusRegisterMetaType<QList<int> >();
-    qDBusRegisterMetaType<QVector<int> >();
+    qDBusRegisterMetaType<QList<int>>();
 
     QList<int> value;
     value << 1 << -42 << 47;

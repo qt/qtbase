@@ -30,7 +30,6 @@
 #include <QtCore/QVariant>
 #include <QtCore/QList>
 #include <QtCore/QThread>
-#include <QtCore/QVector>
 #include <QtTest/QtTest>
 #include <QtDBus>
 
