@@ -121,7 +121,7 @@ private:
     int indexAt(const QPoint &pos) const;
     QString uniqueName(const QString &name) const;
 
-    QVector<Shape> m_shapeList;
+    QList<Shape> m_shapeList;
     QPoint m_mousePressOffset;
     QString m_fileName;
     QUndoStack *m_undoStack = nullptr;

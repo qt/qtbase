@@ -63,7 +63,7 @@ class DownloadManager: public QObject
 {
     Q_OBJECT
     QNetworkAccessManager manager;
-    QVector<QNetworkReply *> currentDownloads;
+    QList<QNetworkReply *> currentDownloads;
 
 public:
     DownloadManager();

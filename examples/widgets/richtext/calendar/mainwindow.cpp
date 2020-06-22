@@ -132,7 +132,7 @@ void MainWindow::insertCalendar()
     tableFormat.setCellPadding(2);
     tableFormat.setCellSpacing(4);
 //! [6] //! [7]
-    QVector<QTextLength> constraints;
+    QList<QTextLength> constraints;
     constraints << QTextLength(QTextLength::PercentageLength, 14)
                 << QTextLength(QTextLength::PercentageLength, 14)
                 << QTextLength(QTextLength::PercentageLength, 14)

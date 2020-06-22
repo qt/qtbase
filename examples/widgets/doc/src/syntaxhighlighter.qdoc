@@ -66,7 +66,7 @@
     We have chosen to store our highlighting rules using a private
     struct: A rule consists of a QRegularExpression pattern and a
     QTextCharFormat instance. The various rules are then stored using a
-    QVector.
+    QList.
 
     The QTextCharFormat class provides formatting information for
     characters in a QTextDocument specifying the visual properties of
@@ -137,7 +137,7 @@
     blocks that have changed.
 
     First we apply the syntax highlighting rules that we stored in the
-    \c highlightingRules vector. For each rule (i.e. for each
+    \c highlightingRules list. For each rule (i.e. for each
     HighlightingRule object) we search for the pattern in the given
     text block using the QString::indexOf() function. When the first
     occurrence of the pattern is found, we use the

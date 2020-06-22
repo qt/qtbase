@@ -99,7 +99,7 @@ private:
                                   const char *member);
 
 //! [2]
-    QVector<ShapeItem> shapeItems;
+    QList<ShapeItem> shapeItems;
     QPainterPath circlePath;
     QPainterPath squarePath;
     QPainterPath trianglePath;

@@ -52,7 +52,7 @@
 #define NODE_H
 
 #include <QGraphicsItem>
-#include <QVector>
+#include <QList>
 
 class Edge;
 class GraphWidget;
@@ -64,7 +64,7 @@ public:
     Node(GraphWidget *graphWidget);
 
     void addEdge(Edge *edge);
-    QVector<Edge *> edges() const;
+    QList<Edge *> edges() const;
 
     enum { Type = UserType + 1 };
     int type() const override { return Type; }
@@ -83,7 +83,7 @@ protected:
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
 
 private:
-    QVector<Edge *> edgeList;
+    QList<Edge *> edgeList;
     QPointF newPos;
     GraphWidget *graph;
 };

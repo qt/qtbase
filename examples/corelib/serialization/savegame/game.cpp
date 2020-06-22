@@ -63,7 +63,7 @@ Character Game::player() const
     return mPlayer;
 }
 
-QVector<Level> Game::levels() const
+QList<Level> Game::levels() const
 {
     return mLevels;
 }
@@ -80,7 +80,7 @@ void Game::newGame()
     mLevels.reserve(2);
 
     Level village(QStringLiteral("Village"));
-    QVector<Character> villageNpcs;
+    QList<Character> villageNpcs;
     villageNpcs.reserve(2);
     villageNpcs.append(Character(QStringLiteral("Barry the Blacksmith"),
                                  QRandomGenerator::global()->bounded(8, 11),
@@ -92,7 +92,7 @@ void Game::newGame()
     mLevels.append(village);
 
     Level dungeon(QStringLiteral("Dungeon"));
-    QVector<Character> dungeonNpcs;
+    QList<Character> dungeonNpcs;
     dungeonNpcs.reserve(3);
     dungeonNpcs.append(Character(QStringLiteral("Eric the Evil"),
                                  QRandomGenerator::global()->bounded(18, 26),

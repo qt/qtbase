@@ -128,7 +128,7 @@
     Each cell in the table will be padded and spaced to make the text easier to
     read.
 
-    We want the columns to have equal widths, so we provide a vector containing
+    We want the columns to have equal widths, so we provide a list containing
     percentage widths for each of them and set the constraints in the
     QTextTableFormat:
 

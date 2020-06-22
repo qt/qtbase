@@ -52,7 +52,7 @@
 
 #include <QMainWindow>
 #include <QSharedPointer>
-#include <QVector>
+#include <QList>
 
 QT_BEGIN_NAMESPACE
 
@@ -99,7 +99,7 @@ private:
     Ui::MainWindow *ui = nullptr;
 
     using AssocPtr = QSharedPointer<DtlsAssociation>;
-    QVector<AssocPtr> connections;
+    QList<AssocPtr> connections;
 
     QString nameTemplate;
     unsigned nextId = 0;

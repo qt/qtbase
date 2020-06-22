@@ -90,8 +90,8 @@
     \snippet itemviews/addressbook/tablemodel.h 0
 
     Two constructors are used, a default constructor which uses
-    \c TableModel's own \c {QVector<Contact>} and one that takes
-    \c {QVector<Contact>} as an argument, for convenience.
+    \c TableModel's own \c {QList<Contact>} and one that takes
+    \c {QList<Contact>} as an argument, for convenience.
 
 
     \section1 TableModel Class Implementation
@@ -161,7 +161,7 @@
     them here so that we can reuse the model in other programs.
 
     The last function in \c {TableModel}, \c getContacts() returns the
-    QVector<Contact> object that holds all the contacts in the address
+    QList<Contact> object that holds all the contacts in the address
     book. We use this function later to obtain the list of contacts to
     check for existing entries, write the contacts to a file and read
     them back. Further explanation is given with \c AddressWidget.

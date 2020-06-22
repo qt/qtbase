@@ -55,8 +55,9 @@
 Model::Model(int rows, int columns, QObject *parent)
     : QAbstractItemModel(parent),
       services(QPixmap(":/images/services.png")),
-      rc(rows), cc(columns),
-      tree(new QVector<Node>(rows, Node()))
+      rc(rows),
+      cc(columns),
+      tree(new QList<Node>(rows, Node()))
 {
 
 }
@@ -139,8 +140,8 @@ Qt::ItemFlags Model::flags(const QModelIndex &index) const
 Model::Node *Model::node(int row, Node *parent) const
 {
     if (parent && !parent->children)
-        parent->children = new QVector<Node>(rc, Node(parent));
-    QVector<Node> *v = parent ? parent->children : tree;
+        parent->children = new QList<Node>(rc, Node(parent));
+    QList<Node> *v = parent ? parent->children : tree;
     return const_cast<Node*>(&(v->at(row)));
 }
 

@@ -54,7 +54,7 @@
 #include <QIcon>
 #include <QWidget>
 #include <QStringList>
-#include <QVector>
+#include <QList>
 
 QT_BEGIN_NAMESPACE
 class QLabel;
@@ -71,8 +71,8 @@ public:
     void setIcon(const QIcon &icon);
     void setSize(const QSize &size);
 
-    static QVector<QIcon::Mode> iconModes();
-    static QVector<QIcon::State> iconStates();
+    static QList<QIcon::Mode> iconModes();
+    static QList<QIcon::State> iconStates();
     static QStringList iconModeNames();
     static QStringList iconStateNames();
 

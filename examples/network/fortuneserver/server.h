@@ -53,7 +53,7 @@
 
 #include <QDialog>
 #include <QString>
-#include <QVector>
+#include <QList>
 
 QT_BEGIN_NAMESPACE
 class QLabel;
@@ -76,7 +76,7 @@ private:
 
     QLabel *statusLabel = nullptr;
     QTcpServer *tcpServer = nullptr;
-    QVector<QString> fortunes;
+    QList<QString> fortunes;
 };
 //! [0]
 

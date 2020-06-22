@@ -64,7 +64,7 @@ public:
     explicit GSuggestCompletion(QLineEdit *parent = nullptr);
     ~GSuggestCompletion();
     bool eventFilter(QObject *obj, QEvent *ev) override;
-    void showCompletion(const QVector<QString> &choices);
+    void showCompletion(const QList<QString> &choices);
 
 public slots:
 

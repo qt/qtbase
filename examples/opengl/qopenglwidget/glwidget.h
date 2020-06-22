@@ -57,7 +57,7 @@
 #include <QVector3D>
 #include <QMatrix4x4>
 #include <QElapsedTimer>
-#include <QVector>
+#include <QList>
 #include <QPushButton>
 
 class Bubble;
@@ -101,10 +101,10 @@ private:
     qreal m_fAngle = 0;
     qreal m_fScale = 1;
     bool m_showBubbles = true;
-    QVector<QVector3D> m_vertices;
-    QVector<QVector3D> m_normals;
+    QList<QVector3D> m_vertices;
+    QList<QVector3D> m_normals;
     bool m_qtLogo = true;
-    QVector<Bubble *> m_bubbles;
+    QList<Bubble *> m_bubbles;
     int m_frames = 0;
     QElapsedTimer m_time;
     QOpenGLShader *m_vshader1 = nullptr;

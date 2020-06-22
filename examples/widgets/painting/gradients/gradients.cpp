@@ -542,7 +542,7 @@ GradientRenderer::GradientRenderer(QWidget *parent)
     m_hoverPoints->setConnectionType(HoverPoints::NoConnection);
     m_hoverPoints->setEditable(false);
 
-    QVector<QPointF> points;
+    QList<QPointF> points;
     points << QPointF(100, 100) << QPointF(200, 200);
     m_hoverPoints->setPoints(points);
 

@@ -72,7 +72,7 @@ class ImageWidget : public QWidget
 public:
     ImageWidget(QWidget *parent = nullptr);
     void openDirectory(const QString &path);
-    void grabGestures(const QVector<Qt::GestureType> &gestures);
+    void grabGestures(const QList<Qt::GestureType> &gestures);
 
 protected:
     bool event(QEvent *event) override;

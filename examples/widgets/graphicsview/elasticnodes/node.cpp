@@ -75,7 +75,7 @@ void Node::addEdge(Edge *edge)
     edge->adjust();
 }
 
-QVector<Edge *> Node::edges() const
+QList<Edge *> Node::edges() const
 {
     return edgeList;
 }

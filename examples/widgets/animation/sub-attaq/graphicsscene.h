@@ -85,7 +85,7 @@ public:
     struct LevelDescription {
         int id = 0;
         QString name;
-        QVector<QPair<int, int>> submarines;
+        QList<QPair<int, int>> submarines;
     };
 
     GraphicsScene(int x, int y, int width, int height, Mode mode, QObject *parent = nullptr);
@@ -114,7 +114,7 @@ private:
     QSet<SubMarine *> submarines;
     QSet<Bomb *> bombs;
     QSet<Torpedo *> torpedos;
-    QVector<SubmarineDescription> submarinesData;
+    QList<SubmarineDescription> submarinesData;
     QHash<int, LevelDescription> levelsData;
 
     friend class PauseState;

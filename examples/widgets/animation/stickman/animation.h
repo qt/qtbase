@@ -53,7 +53,7 @@
 
 #include <QPointF>
 #include <QString>
-#include <QVector>
+#include <QList>
 
 class Frame;
 QT_BEGIN_NAMESPACE
@@ -85,7 +85,7 @@ public:
 
 private:
     QString m_name;
-    QVector<Frame *> m_frames;
+    QList<Frame *> m_frames;
     int m_currentFrame;
 };
 

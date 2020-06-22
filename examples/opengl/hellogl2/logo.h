@@ -52,7 +52,7 @@
 #define LOGO_H
 
 #include <qopengl.h>
-#include <QVector>
+#include <QList>
 #include <QVector3D>
 
 class Logo
@@ -68,7 +68,7 @@ private:
     void extrude(GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2);
     void add(const QVector3D &v, const QVector3D &n);
 
-    QVector<GLfloat> m_data;
+    QList<GLfloat> m_data;
     int m_count = 0;
 };
 

@@ -53,7 +53,7 @@
 
 #include "roundrectitem.h"
 
-#include <QVector>
+#include <QList>
 
 //! [0]
 class FlippablePad : public RoundRectItem
@@ -64,7 +64,7 @@ public:
     RoundRectItem *iconAt(int column, int row) const;
 
 private:
-    QVector<QVector<RoundRectItem *> > iconGrid;
+    QList<QList<RoundRectItem *>> iconGrid;
 };
 //! [0]
 

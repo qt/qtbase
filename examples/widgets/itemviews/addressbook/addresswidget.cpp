@@ -201,7 +201,7 @@ void AddressWidget::readFromFile(const QString &fileName)
         return;
     }
 
-    QVector<Contact> contacts;
+    QList<Contact> contacts;
     QDataStream in(&file);
     in >> contacts;
 

@@ -52,7 +52,7 @@
 #define SERVER_H
 
 #include <QDialog>
-#include <QVector>
+#include <QList>
 #include <QList>
 
 QT_BEGIN_NAMESPACE
@@ -81,7 +81,7 @@ private slots:
     void writeDatagram(QSctpSocket *to, const QByteArray &ba);
 
 private:
-    QVector<Provider *> providers;
+    QList<Provider *> providers;
     QSctpServer *sctpServer;
     QList<QSctpSocket *> connections;
 

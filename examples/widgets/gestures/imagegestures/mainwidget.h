@@ -61,7 +61,7 @@ class MainWidget : public QMainWindow
 
 public:
     MainWidget(QWidget *parent = nullptr);
-    void grabGestures(const QVector<Qt::GestureType> &gestures);
+    void grabGestures(const QList<Qt::GestureType> &gestures);
 
 public slots:
     void openDirectory(const QString &path);

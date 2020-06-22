@@ -119,8 +119,8 @@ private:
     int m_pointCount;
     int m_pointSize;
     int m_activePoint;
-    QVector<QPointF> m_points;
-    QVector<QPointF> m_vectors;
+    QList<QPointF> m_points;
+    QList<QPointF> m_vectors;
 
     Qt::PenJoinStyle m_joinStyle;
     Qt::PenCapStyle m_capStyle;

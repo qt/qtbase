@@ -81,15 +81,16 @@ IconPreviewArea::IconPreviewArea(QWidget *parent)
 //! [0]
 
 //! [42]
-QVector<QIcon::Mode> IconPreviewArea::iconModes()
+QList<QIcon::Mode> IconPreviewArea::iconModes()
 {
-    static const QVector<QIcon::Mode> result = {QIcon::Normal, QIcon::Active, QIcon::Disabled, QIcon::Selected};
+    static const QList<QIcon::Mode> result = { QIcon::Normal, QIcon::Active, QIcon::Disabled,
+                                               QIcon::Selected };
     return result;
 }
 
-QVector<QIcon::State> IconPreviewArea::iconStates()
+QList<QIcon::State> IconPreviewArea::iconStates()
 {
-    static const QVector<QIcon::State> result = {QIcon::Off, QIcon::On};
+    static const QList<QIcon::State> result = { QIcon::Off, QIcon::On };
     return result;
 }
 

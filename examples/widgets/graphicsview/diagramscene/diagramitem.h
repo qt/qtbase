@@ -52,7 +52,7 @@
 #define DIAGRAMITEM_H
 
 #include <QGraphicsPixmapItem>
-#include <QVector>
+#include <QList>
 
 QT_BEGIN_NAMESPACE
 class QPixmap;
@@ -88,7 +88,7 @@ private:
     DiagramType myDiagramType;
     QPolygonF myPolygon;
     QMenu *myContextMenu;
-    QVector<Arrow *> arrows;
+    QList<Arrow *> arrows;
 };
 //! [0]
 

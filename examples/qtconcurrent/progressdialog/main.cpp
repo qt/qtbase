@@ -61,10 +61,10 @@ int main(int argc, char **argv)
 
     const int iterations = 20;
 
-    // Prepare the vector.
-    QVector<int> vector;
+    // Prepare the list.
+    QList<int> list;
     for (int i = 0; i < iterations; ++i)
-        vector.append(i);
+        list.append(i);
 
     // Create a progress dialog.
     QProgressDialog dialog;
@@ -88,7 +88,7 @@ int main(int argc, char **argv)
     };
 
     // Start the computation.
-    futureWatcher.setFuture(QtConcurrent::map(vector, spin));
+    futureWatcher.setFuture(QtConcurrent::map(list, spin));
 
     // Display the dialog and start the event loop.
     dialog.exec();

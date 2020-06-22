@@ -52,7 +52,7 @@
 #define CLIENT_H
 
 #include <QDialog>
-#include <QVector>
+#include <QList>
 #include <QSctpSocket>
 
 QT_BEGIN_NAMESPACE
@@ -81,7 +81,7 @@ private slots:
     void writeDatagram(const QByteArray &ba);
 
 private:
-    QVector<Consumer *> consumers;
+    QList<Consumer *> consumers;
     QSctpSocket *sctpSocket;
 
     QComboBox *hostCombo;

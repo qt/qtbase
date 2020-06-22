@@ -96,7 +96,7 @@ Renderer::Renderer(VulkanWindow *w, int initialCount)
 
 void Renderer::preInitResources()
 {
-    const QVector<int> sampleCounts = m_window->supportedSampleCounts();
+    const QList<int> sampleCounts = m_window->supportedSampleCounts();
     if (DBG)
         qDebug() << "Supported sample counts:" << sampleCounts;
     if (sampleCounts.contains(4)) {

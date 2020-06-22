@@ -55,7 +55,7 @@
 #include <QPixmap>
 #include <QPoint>
 #include <QStringList>
-#include <QVector>
+#include <QList>
 
 QT_BEGIN_NAMESPACE
 class QMimeData;
@@ -83,8 +83,8 @@ public:
     void addPieces(const QPixmap &pixmap);
 
 private:
-    QVector<QPoint> locations;
-    QVector<QPixmap> pixmaps;
+    QList<QPoint> locations;
+    QList<QPixmap> pixmaps;
 
     int m_PieceSize;
 };

@@ -72,7 +72,7 @@ private:
     int x;
     int y;
     QColor color;
-    QVector<QPointF> stuff;
+    QList<QPointF> stuff;
 };
 
 #endif // CHIP_H

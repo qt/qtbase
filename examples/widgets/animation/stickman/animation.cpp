@@ -79,7 +79,7 @@ public:
     }
 
 private:
-    QVector<QPointF> m_nodePositions;
+    QList<QPointF> m_nodePositions;
 };
 
 Animation::Animation() : m_currentFrame(0)

@@ -66,7 +66,7 @@ ImageWidget::ImageWidget(QWidget *parent)
 }
 //! [constructor]
 
-void ImageWidget::grabGestures(const QVector<Qt::GestureType> &gestures)
+void ImageWidget::grabGestures(const QList<Qt::GestureType> &gestures)
 {
     //! [enable gestures]
     for (Qt::GestureType gesture : gestures)

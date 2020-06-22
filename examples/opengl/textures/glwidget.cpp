@@ -199,7 +199,7 @@ void GLWidget::makeObject()
     for (int j = 0; j < 6; ++j)
         textures[j] = new QOpenGLTexture(QImage(QString(":/images/side%1.png").arg(j + 1)).mirrored());
 
-    QVector<GLfloat> vertData;
+    QList<GLfloat> vertData;
     for (int i = 0; i < 6; ++i) {
         for (int j = 0; j < 4; ++j) {
             // vertex position

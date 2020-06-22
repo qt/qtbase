@@ -135,7 +135,7 @@ private:
     SortType m_sortType;
     ConnectionType m_connectionType;
 
-    QVector<uint> m_locks;
+    QList<uint> m_locks;
 
     QSizeF m_pointSize;
     int m_currentIndex;

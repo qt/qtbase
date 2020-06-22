@@ -71,10 +71,9 @@ Window::Window()
 
 void Window::createGUI()
 {
-    const QVector<QPair<QString, QColor> > list =
-        {{ tr("Alice"), QColor("aliceblue") },
-         { tr("Neptun"), QColor("aquamarine") },
-         { tr("Ferdinand"), QColor("springgreen") }};
+    const QList<QPair<QString, QColor>> list = { { tr("Alice"), QColor("aliceblue") },
+                                                 { tr("Neptun"), QColor("aquamarine") },
+                                                 { tr("Ferdinand"), QColor("springgreen") } };
 
     QTableWidget *table = new QTableWidget(3, 2);
     table->setHorizontalHeaderLabels({ tr("Name"), tr("Hair Color") });

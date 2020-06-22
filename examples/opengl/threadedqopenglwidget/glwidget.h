@@ -91,8 +91,8 @@ private:
     bool m_inited = false;
     qreal m_fAngle = 0;
     qreal m_fScale = 1;
-    QVector<QVector3D> vertices;
-    QVector<QVector3D> normals;
+    QList<QVector3D> vertices;
+    QList<QVector3D> normals;
     QOpenGLShaderProgram program;
     QOpenGLBuffer vbo;
     int vertexAttr = 0;

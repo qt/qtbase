@@ -52,13 +52,13 @@
 #define TREEITEM_H
 
 #include <QVariant>
-#include <QVector>
+#include <QList>
 
 //! [0]
 class TreeItem
 {
 public:
-    explicit TreeItem(const QVector<QVariant> &data, TreeItem *parent = nullptr);
+    explicit TreeItem(const QList<QVariant> &data, TreeItem *parent = nullptr);
     ~TreeItem();
 
     TreeItem *child(int number);
@@ -74,8 +74,8 @@ public:
     bool setData(int column, const QVariant &value);
 
 private:
-    QVector<TreeItem*> childItems;
-    QVector<QVariant> itemData;
+    QList<TreeItem *> childItems;
+    QList<QVariant> itemData;
     TreeItem *parentItem;
 };
 //! [0]

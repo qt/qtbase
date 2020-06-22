@@ -1086,7 +1086,7 @@ void TorrentClient::scheduleUploads()
     // seeding, we sort by upload speed. Seeds are left out; there's
     // no use in unchoking them.
     QList<PeerWireClient *> allClients = d->connections;
-    QVector<QPair<qint64, PeerWireClient *>> transferSpeeds;
+    QList<QPair<qint64, PeerWireClient *>> transferSpeeds;
     for (PeerWireClient *client : qAsConst(allClients)) {
         if (client->state() == QAbstractSocket::ConnectedState
             && client->availablePieces().count(true) != d->pieceCount) {
@@ -1373,7 +1373,7 @@ void TorrentClient::requestMore(PeerWireClient *client)
 int TorrentClient::requestBlocks(PeerWireClient *client, TorrentPiece *piece, int maxBlocks)
 {
     // Generate the list of incomplete blocks for this piece.
-    QVector<int> bits;
+    QList<int> bits;
     int completedBlocksSize = piece->completedBlocks.size();
     for (int i = 0; i < completedBlocksSize; ++i) {
         if (!piece->completedBlocks.testBit(i) && !piece->requestedBlocks.testBit(i))

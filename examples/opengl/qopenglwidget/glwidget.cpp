@@ -319,7 +319,7 @@ void GLWidget::initializeGL()
     // let's do something different and potentially more efficient: create a
     // properly interleaved data set.
     const int vertexCount = m_vertices.count();
-    QVector<GLfloat> buf;
+    QList<GLfloat> buf;
     buf.resize(vertexCount * 3 * 2);
     GLfloat *p = buf.data();
     for (int i = 0; i < vertexCount; ++i) {

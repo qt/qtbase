@@ -53,7 +53,7 @@
 
 #include <QPoint>
 #include <QPixmap>
-#include <QVector>
+#include <QList>
 #include <QWidget>
 
 QT_BEGIN_NAMESPACE
@@ -94,7 +94,7 @@ private:
     int findPiece(const QRect &pieceRect) const;
     const QRect targetSquare(const QPoint &position) const;
 
-    QVector<Piece> pieces;
+    QList<Piece> pieces;
     QRect highlightedRect;
     int inPlace;
     int m_ImageSize;

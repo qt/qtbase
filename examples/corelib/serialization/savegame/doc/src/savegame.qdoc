@@ -77,7 +77,7 @@
     \snippet serialization/savegame/level.h 0
 
     We want to have several levels in our game, each with several NPCs, so we
-    keep a QVector of Character objects. We also provide the familiar read() and
+    keep a QList of Character objects. We also provide the familiar read() and
     write() functions.
 
     \snippet serialization/savegame/level.cpp 0

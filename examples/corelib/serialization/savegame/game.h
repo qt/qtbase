@@ -52,7 +52,7 @@
 #define GAME_H
 
 #include <QJsonObject>
-#include <QVector>
+#include <QList>
 
 #include "character.h"
 #include "level.h"
@@ -66,7 +66,7 @@ public:
     };
 
     Character player() const;
-    QVector<Level> levels() const;
+    QList<Level> levels() const;
 
     void newGame();
     bool loadGame(SaveFormat saveFormat);
@@ -78,7 +78,7 @@ public:
     void print(int indentation = 0) const;
 private:
     Character mPlayer;
-    QVector<Level> mLevels;
+    QList<Level> mLevels;
 };
 //! [0]
 

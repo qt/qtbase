@@ -76,7 +76,7 @@ private slots:
     void unregisterAnimation_helper(QObject *obj);
 
 private:
-    QVector<QAbstractAnimation *> animations;
+    QList<QAbstractAnimation *> animations;
 };
 
 #endif // ANIMATIONMANAGER_H

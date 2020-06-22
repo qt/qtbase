@@ -75,7 +75,7 @@ private:
     QSizeF prefSize() const;
     QSizeF maxSize() const;
 
-    QVector<QGraphicsLayoutItem*> m_items;
+    QList<QGraphicsLayoutItem *> m_items;
     qreal m_spacing[2] = {6, 6};
 };
 

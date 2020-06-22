@@ -53,7 +53,7 @@
 
 #include <QDialog>
 #include <QHostAddress>
-#include <QVector>
+#include <QList>
 
 QT_BEGIN_NAMESPACE
 
@@ -78,7 +78,7 @@ public:
 
 private:
     Ui::NicSelector *ui = nullptr;
-    QVector<QHostAddress> availableAddresses;
+    QList<QHostAddress> availableAddresses;
 };
 
 #endif // NICSELECTOR_H

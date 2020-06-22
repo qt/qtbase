@@ -470,7 +470,7 @@ void PathStrokeRenderer::paint(QPainter *painter)
             stroker.setJoinStyle(m_joinStyle);
             stroker.setCapStyle(m_capStyle);
 
-            QVector<qreal> dashes;
+            QList<qreal> dashes;
             qreal space = 4;
             dashes << 1 << space
                    << 3 << space

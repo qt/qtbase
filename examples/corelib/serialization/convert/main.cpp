@@ -58,12 +58,12 @@
 
 #include <stdio.h>
 
-static QVector<Converter *> *availableConverters;
+static QList<Converter *> *availableConverters;
 
 Converter::Converter()
 {
     if (!availableConverters)
-        availableConverters = new QVector<Converter *>;
+        availableConverters = new QList<Converter *>;
     availableConverters->append(this);
 }
 

@@ -201,7 +201,7 @@ QAbstractItemModel *MainWindow::modelFromFile(const QString &fileName)
 #endif
 
     QStandardItemModel *model = new QStandardItemModel(completer);
-    QVector<QStandardItem *> parents(10);
+    QList<QStandardItem *> parents(10);
     parents[0] = model->invisibleRootItem();
 
     QRegularExpression re("^\\s+");

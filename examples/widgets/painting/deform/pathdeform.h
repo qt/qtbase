@@ -105,8 +105,8 @@ private:
 //     int m_fpsCounter;
     QElapsedTimer m_repaintTracker;
 
-    QVector<QPainterPath> m_paths;
-    QVector<QPointF> m_advances;
+    QList<QPainterPath> m_paths;
+    QList<QPointF> m_advances;
     QRectF m_pathBounds;
     QString m_text;
 

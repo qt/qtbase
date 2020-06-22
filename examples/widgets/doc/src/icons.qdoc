@@ -260,7 +260,7 @@
     QIcon::Active, QIcon::Disabled, QIcon::Selected and the rows in the order
     QIcon::Off, QIcon::On, which does not match the enumeration. The above code
     provides arrays allowing to map from enumeration value to row/column
-    (by using QVector::indexOf()) and back by using the array index and lists
+    (by using QList::indexOf()) and back by using the array index and lists
     of the matching strings. Qt's containers can be easily populated by
     using C++ 11 initializer lists.
 

@@ -62,12 +62,12 @@ QString Level::name() const
     return mName;
 }
 
-QVector<Character> Level::npcs() const
+QList<Character> Level::npcs() const
 {
     return mNpcs;
 }
 
-void Level::setNpcs(const QVector<Character> &npcs)
+void Level::setNpcs(const QList<Character> &npcs)
 {
     mNpcs = npcs;
 }

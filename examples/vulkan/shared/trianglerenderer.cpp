@@ -73,7 +73,7 @@ TriangleRenderer::TriangleRenderer(QVulkanWindow *w, bool msaa)
     : m_window(w)
 {
     if (msaa) {
-        const QVector<int> counts = w->supportedSampleCounts();
+        const QList<int> counts = w->supportedSampleCounts();
         qDebug() << "Supported sample counts:" << counts;
         for (int s = 16; s >= 4; s /= 2) {
             if (counts.contains(s)) {

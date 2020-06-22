@@ -148,7 +148,7 @@ bool GSuggestCompletion::eventFilter(QObject *obj, QEvent *ev)
 //! [4]
 
 //! [5]
-void GSuggestCompletion::showCompletion(const QVector<QString> &choices)
+void GSuggestCompletion::showCompletion(const QList<QString> &choices)
 {
     if (choices.isEmpty())
         return;
@@ -210,7 +210,7 @@ void GSuggestCompletion::handleNetworkData(QNetworkReply *networkReply)
 {
     QUrl url = networkReply->url();
     if (networkReply->error() == QNetworkReply::NoError) {
-        QVector<QString> choices;
+        QList<QString> choices;
 
         QByteArray response(networkReply->readAll());
         QXmlStreamReader xml(response);

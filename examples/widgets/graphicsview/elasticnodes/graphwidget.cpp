@@ -163,7 +163,7 @@ void GraphWidget::timerEvent(QTimerEvent *event)
 {
     Q_UNUSED(event);
 
-    QVector<Node *> nodes;
+    QList<Node *> nodes;
     const QList<QGraphicsItem *> items = scene()->items();
     for (QGraphicsItem *item : items) {
         if (Node *node = qgraphicsitem_cast<Node *>(item))

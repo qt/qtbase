@@ -228,7 +228,7 @@ PadNavigator::PadNavigator(const QSize &size, QWidget *parent)
     // Create substates for each icon; store in temporary grid.
     int columns = size.width();
     int rows = size.height();
-    QVector< QVector< QState * > > stateGrid;
+    QList<QList<QState *>> stateGrid;
     stateGrid.resize(rows);
     for (int y = 0; y < rows; ++y) {
         stateGrid[y].resize(columns);

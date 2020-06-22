@@ -59,9 +59,8 @@ PieView::PieView(QWidget *parent)
     verticalScrollBar()->setRange(0, 0);
 }
 
-void PieView::dataChanged(const QModelIndex &topLeft,
-                          const QModelIndex &bottomRight,
-                          const QVector<int> &roles)
+void PieView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight,
+                          const QList<int> &roles)
 {
     QAbstractItemView::dataChanged(topLeft, bottomRight, roles);
 

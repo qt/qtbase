@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
     VulkanWindow w;
     w.setVulkanInstance(&inst);
     if (QCoreApplication::arguments().contains(QStringLiteral("--srgb")))
-        w.setPreferredColorFormats(QVector<VkFormat>() << VK_FORMAT_B8G8R8A8_SRGB);
+        w.setPreferredColorFormats(QList<VkFormat>() << VK_FORMAT_B8G8R8A8_SRGB);
 
     w.resize(1024, 768);
     w.show();

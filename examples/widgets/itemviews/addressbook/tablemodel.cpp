@@ -56,9 +56,8 @@ TableModel::TableModel(QObject *parent)
 {
 }
 
-TableModel::TableModel(const QVector<Contact> &contacts, QObject *parent)
-    : QAbstractTableModel(parent),
-      contacts(contacts)
+TableModel::TableModel(const QList<Contact> &contacts, QObject *parent)
+    : QAbstractTableModel(parent), contacts(contacts)
 {
 }
 //! [0]
@@ -186,7 +185,7 @@ Qt::ItemFlags TableModel::flags(const QModelIndex &index) const
 //! [7]
 
 //! [8]
-const QVector<Contact> &TableModel::getContacts() const
+const QList<Contact> &TableModel::getContacts() const
 {
     return contacts;
 }

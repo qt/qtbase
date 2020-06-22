@@ -77,7 +77,7 @@ private:
     QGridLayout *m_layout;
     int m_nextX;
     int m_nextY;
-    QVector<QOpenGLWidget *> m_glWidgets;
+    QList<QOpenGLWidget *> m_glWidgets;
 };
 
 #endif
