@@ -609,7 +609,7 @@ void tst_QtConcurrentMap::mappedReduced()
     const int sum = 6;
     const int sumOfSquares = 14;
 
-    void (QVector<int>::*push_back)(const int &) = &QVector<int>::push_back;
+    void (QList<int>::*push_back)(const int &) = &QList<int>::push_back;
 
     auto lambdaSquare = [](int x) {
         return x * x;
@@ -857,7 +857,7 @@ void tst_QtConcurrentMap::mappedReducedInitialValue()
     const int sumOfSquares = 24;
     const int intInitial = 10;
 
-    void (QVector<int>::*push_back)(const int &) = &QVector<int>::push_back;
+    void (QList<int>::*push_back)(const int &) = &QList<int>::push_back;
 
     auto lambdaSquare = [](int x) {
         return x * x;
@@ -1161,7 +1161,7 @@ public:
     }
 };
 
-Q_DECLARE_METATYPE(QVector<MemFnTester>);
+Q_DECLARE_METATYPE(QList<MemFnTester>);
 
 void tst_QtConcurrentMap::functionOverloads()
 {
@@ -1175,10 +1175,10 @@ void tst_QtConcurrentMap::functionOverloads()
     QtConcurrent::mapped(classList, &MemFnTester::fnConst);
     QtConcurrent::mapped(constMemFnTesterList, &MemFnTester::fnConst);
 
-    QtConcurrent::blockingMapped<QVector<int> >(intList, fnConst);
-    QtConcurrent::blockingMapped<QVector<int> >(constIntList, fnConst);
-    QtConcurrent::blockingMapped<QVector<MemFnTester> >(classList, &MemFnTester::fnConst);
-    QtConcurrent::blockingMapped<QVector<MemFnTester> >(constMemFnTesterList, &MemFnTester::fnConst);
+    QtConcurrent::blockingMapped<QList<int>>(intList, fnConst);
+    QtConcurrent::blockingMapped<QList<int>>(constIntList, fnConst);
+    QtConcurrent::blockingMapped<QList<MemFnTester>>(classList, &MemFnTester::fnConst);
+    QtConcurrent::blockingMapped<QList<MemFnTester>>(constMemFnTesterList, &MemFnTester::fnConst);
 
     QtConcurrent::blockingMapped<QList<QString> >(intList, changeTypeConst);
     QtConcurrent::blockingMapped<QList<QString> >(constIntList, changeTypeConst);
@@ -1198,10 +1198,11 @@ void tst_QtConcurrentMap::noExceptFunctionOverloads()
     QtConcurrent::mapped(classList, &MemFnTester::fnConstNoExcept);
     QtConcurrent::mapped(constMemFnTesterList, &MemFnTester::fnConstNoExcept);
 
-    QtConcurrent::blockingMapped<QVector<int> >(intList, fnConstNoExcept);
-    QtConcurrent::blockingMapped<QVector<int> >(constIntList, fnConstNoExcept);
-    QtConcurrent::blockingMapped<QVector<MemFnTester> >(classList, &MemFnTester::fnConstNoExcept);
-    QtConcurrent::blockingMapped<QVector<MemFnTester> >(constMemFnTesterList, &MemFnTester::fnConstNoExcept);
+    QtConcurrent::blockingMapped<QList<int>>(intList, fnConstNoExcept);
+    QtConcurrent::blockingMapped<QList<int>>(constIntList, fnConstNoExcept);
+    QtConcurrent::blockingMapped<QList<MemFnTester>>(classList, &MemFnTester::fnConstNoExcept);
+    QtConcurrent::blockingMapped<QList<MemFnTester>>(constMemFnTesterList,
+                                                     &MemFnTester::fnConstNoExcept);
 
     QtConcurrent::blockingMapped<QList<QString> >(intList, changeTypeConstNoExcept);
     QtConcurrent::blockingMapped<QList<QString> >(constIntList, changeTypeConstNoExcept);

@@ -107,18 +107,18 @@ void tst_QtConcurrentTask::setPriority()
 
     QSemaphore sem;
 
-    QVector<QFuture<void>> futureResults;
+    QList<QFuture<void>> futureResults;
     futureResults << task([&]{ sem.acquire(); })
                          .onThreadPool(pool)
                          .spawn();
 
     const int tasksCount = 10;
-    QVector<int> priorities(tasksCount);
+    QList<int> priorities(tasksCount);
     std::iota(priorities.begin(), priorities.end(), 1);
     auto seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::shuffle(priorities.begin(), priorities.end(), std::default_random_engine(seed));
 
-    QVector<int> actual;
+    QList<int> actual;
     for (int priority : priorities)
         futureResults << task([priority, &actual] { actual << priority; })
                              .onThreadPool(pool)
@@ -131,7 +131,7 @@ void tst_QtConcurrentTask::setPriority()
     for (const auto &f : futureResults)
         QVERIFY(f.isFinished());
 
-    QVector<int> expected(priorities);
+    QList<int> expected(priorities);
     std::sort(expected.begin(), expected.end(), std::greater<>());
 
     QCOMPARE(actual, expected);
@@ -144,7 +144,7 @@ void tst_QtConcurrentTask::adjustAllSettings()
 
     const int priority = 10;
 
-    QVector<int> result;
+    QList<int> result;
     auto append = [&](auto &&...args){ (result << ... << args); };
 
     task(std::move(append))
@@ -154,7 +154,7 @@ void tst_QtConcurrentTask::adjustAllSettings()
         .spawn()
         .waitForFinished();
 
-    QCOMPARE(result, QVector<int>({1, 2, 3}));
+    QCOMPARE(result, QList<int>({ 1, 2, 3 }));
 }
 void tst_QtConcurrentTask::ignoreFutureResult()
 {
