@@ -1066,7 +1066,7 @@
         "fontconfig": {
             "label": "Fontconfig",
             "autoDetect": "!config.darwin",
-            "condition": "!config.msvc && features.system-freetype && libs.fontconfig",
+            "condition": "!config.win32 && features.system-freetype && libs.fontconfig",
             "output": [ "privateFeature", "feature" ]
         },
         "gbm": {

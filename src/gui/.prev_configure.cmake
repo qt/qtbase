@@ -585,7 +585,7 @@ qt_feature("system-freetype" PRIVATE
 qt_feature("fontconfig" PUBLIC PRIVATE
     LABEL "Fontconfig"
     AUTODETECT NOT APPLE
-    CONDITION NOT MSVC AND QT_FEATURE_system_freetype AND FONTCONFIG_FOUND
+    CONDITION NOT WIN32 AND QT_FEATURE_system_freetype AND FONTCONFIG_FOUND
 )
 qt_feature_definition("fontconfig" "QT_NO_FONTCONFIG" NEGATE VALUE "1")
 qt_feature("gbm"
@@ -802,6 +802,10 @@ qt_feature("system-png" PRIVATE
     ENABLE INPUT_libpng STREQUAL 'system'
     DISABLE INPUT_libpng STREQUAL 'qt'
 )
+qt_feature("imageio-text-loading" PRIVATE
+    LABEL "Image Text section loading"
+)
+qt_feature_definition("imageio-text-loading" "QT_NO_IMAGEIO_TEXT_LOADING" NEGATE)
 qt_feature("sessionmanager" PUBLIC
     SECTION "Kernel"
     LABEL "Session Management"

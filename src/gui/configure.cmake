@@ -647,7 +647,7 @@ qt_feature("system-freetype" PRIVATE
 qt_feature("fontconfig" PUBLIC PRIVATE
     LABEL "Fontconfig"
     AUTODETECT NOT APPLE
-    CONDITION NOT MSVC AND QT_FEATURE_system_freetype AND FONTCONFIG_FOUND
+    CONDITION NOT WIN32 AND QT_FEATURE_system_freetype AND FONTCONFIG_FOUND
 )
 qt_feature_definition("fontconfig" "QT_NO_FONTCONFIG" NEGATE VALUE "1")
 qt_feature("gbm"
