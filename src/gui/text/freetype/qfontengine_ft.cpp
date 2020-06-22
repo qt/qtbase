@@ -750,7 +750,7 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
         // fake bold
         if ((fontDef.weight >= QFont::Bold) && !(face->style_flags & FT_STYLE_FLAG_BOLD) && !FT_IS_FIXED_WIDTH(face)  && !qEnvironmentVariableIsSet("QT_NO_SYNTHESIZED_BOLD")) {
             if (const TT_OS2 *os2 = reinterpret_cast<const TT_OS2 *>(FT_Get_Sfnt_Table(face, ft_sfnt_os2))) {
-                if (os2->usWeightClass < 700)
+                if (os2->usWeightClass < 700 && fontDef.pixelSize < 64)
                     embolden = true;
             }
         }
