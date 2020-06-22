@@ -32,7 +32,7 @@
 #include <QDataStream>
 #include <QTcpSocket>
 #include <QImage>
-#include <QVector>
+#include <QList>
 #include <QMap>
 #include <QPointer>
 #include <QStringList>
@@ -120,8 +120,7 @@ QDataStream & operator>> (QDataStream &stream, ImageItem& ii);
 
 Q_DECLARE_METATYPE(ImageItem);
 
-typedef QVector<ImageItem> ImageItemList;
-
+typedef QList<ImageItem> ImageItemList;
 
 class BaselineProtocol
 {

@@ -28,7 +28,7 @@
 
 #include <QDate>
 #include <QTest>
-#include <QVector>
+#include <QList>
 
 class tst_QDate : public QObject
 {
@@ -41,8 +41,8 @@ class tst_QDate : public QObject
         JULIAN_DAY_2020 = 2458850,
     };
 
-    static QVector<QDate> daily(qint64 start, qint64 end);
-    static QVector<QDate> yearly(qint32 first, qint32 last);
+    static QList<QDate> daily(qint64 start, qint64 end);
+    static QList<QDate> yearly(qint32 first, qint32 last);
 
 private Q_SLOTS:
     void create();
@@ -60,18 +60,18 @@ private Q_SLOTS:
     void addYears();
 };
 
-QVector<QDate> tst_QDate::daily(qint64 start, qint64 end)
+QList<QDate> tst_QDate::daily(qint64 start, qint64 end)
 {
-    QVector<QDate> list;
+    QList<QDate> list;
     list.reserve(end - start);
     for (qint64 jd = start; jd < end; ++jd)
         list.append(QDate::fromJulianDay(jd));
     return list;
 }
 
-QVector<QDate> tst_QDate::yearly(qint32 first, qint32 last)
+QList<QDate> tst_QDate::yearly(qint32 first, qint32 last)
 {
-    QVector<QDate> list;
+    QList<QDate> list;
     list.reserve(last + 1 - first);
     for (qint32 year = first; year <= last; ++year)
         list.append(QDate(year, 3, 21));

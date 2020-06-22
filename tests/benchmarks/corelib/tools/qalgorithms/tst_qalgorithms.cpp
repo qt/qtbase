@@ -36,7 +36,7 @@
 #include <qalgorithms.h>
 #include <QStringList>
 #include <QString>
-#include <QVector>
+#include <QList>
 
 using namespace std;
 
@@ -51,10 +51,10 @@ private slots:
     void sort();
 };
 
-template <typename DataType>
-QVector<DataType> generateData(QString dataSetType, const int length)
+template<typename DataType>
+QList<DataType> generateData(QString dataSetType, const int length)
 {
-    QVector<DataType> container;
+    QList<DataType> container;
     if (dataSetType == "Random") {
         for (int i = 0; i < length; ++i)
             container.append(QRandomGenerator::global()->generate());
@@ -88,7 +88,7 @@ QVector<DataType> generateData(QString dataSetType, const int length)
 void tst_QAlgorithms::stableSort_data()
 {
     const int dataSize = 5000;
-    QTest::addColumn<QVector<int> >("unsorted");
+    QTest::addColumn<QList<int>>("unsorted");
     QTest::newRow("Equal") << (generateData<int>("Equal", dataSize));
     QTest::newRow("Ascending") << (generateData<int>("Ascending", dataSize));
     QTest::newRow("Descending") << (generateData<int>("Descending", dataSize));
@@ -98,10 +98,10 @@ void tst_QAlgorithms::stableSort_data()
 
 void tst_QAlgorithms::stableSort()
 {
-    QFETCH(QVector<int>, unsorted);
+    QFETCH(QList<int>, unsorted);
 
     QBENCHMARK {
-        QVector<int> sorted = unsorted;
+        QList<int> sorted = unsorted;
         qStableSort(sorted.begin(), sorted.end());
     }
 }
@@ -113,10 +113,10 @@ void tst_QAlgorithms::sort_data()
 
 void tst_QAlgorithms::sort()
 {
-    QFETCH(QVector<int>, unsorted);
+    QFETCH(QList<int>, unsorted);
 
     QBENCHMARK {
-        QVector<int> sorted = unsorted;
+        QList<int> sorted = unsorted;
         qSort(sorted.begin(), sorted.end());
     }
 }

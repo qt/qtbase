@@ -55,7 +55,7 @@ public:
     uint m_total;
     uint m_iteration;
 
-    QVector<uint> iterationTimes;
+    QList<uint> iterationTimes;
 };
 
 void BenchWidget::paintEvent(QPaintEvent *)

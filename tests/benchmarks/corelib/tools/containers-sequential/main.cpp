@@ -25,10 +25,10 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-// This file contains benchmarks for comparing QVector against std::vector
+// This file contains benchmarks for comparing QList against std::vector
 
 #include <QtCore>
-#include <QVector>
+#include <QList>
 #include <vector>
 
 #include <qtest.h>
@@ -51,13 +51,13 @@ T * f(T *ts) // dummy function to prevent code from being optimized away by the 
     return ts;
 }
 
-// This subclass implements the use cases using QVector as efficiently as possible.
-template <typename T>
-class UseCases_QVector : public UseCases<T>
+// This subclass implements the use cases using QList as efficiently as possible.
+template<typename T>
+class UseCases_QList : public UseCases<T>
 {
     void insert(int size)
     {
-        QVector<T> v;
+        QList<T> v;
         T t;
         QBENCHMARK {
             for (int i = 0; i < size; ++i)
@@ -67,7 +67,7 @@ class UseCases_QVector : public UseCases<T>
 
     void lookup(int size)
     {
-        QVector<T> v;
+        QList<T> v;
 
         T t;
         for (int i = 0; i < size; ++i)
@@ -127,17 +127,17 @@ class tst_vector_vs_std : public QObject
 public:
     tst_vector_vs_std()
     {
-        useCases_QVector_int = new UseCases_QVector<int>;
+        useCases_QList_int = new UseCases_QList<int>;
         useCases_stdvector_int = new UseCases_stdvector<int>;
 
-        useCases_QVector_Large = new UseCases_QVector<Large>;
+        useCases_QList_Large = new UseCases_QList<Large>;
         useCases_stdvector_Large = new UseCases_stdvector<Large>;
     }
 
 private:
-    UseCases<int> *useCases_QVector_int;
+    UseCases<int> *useCases_QList_int;
     UseCases<int> *useCases_stdvector_int;
-    UseCases<Large> *useCases_QVector_Large;
+    UseCases<Large> *useCases_QList_Large;
     UseCases<Large> *useCases_stdvector_Large;
 
 private slots:
@@ -159,7 +159,7 @@ void tst_vector_vs_std::insert_int_data()
     for (int size = 10; size < 20000; size += 100) {
         const QByteArray sizeString = QByteArray::number(size);
         QTest::newRow(QByteArray("std::vector-int--" + sizeString).constData()) << true << size;
-        QTest::newRow(QByteArray("QVector-int--" + sizeString).constData()) << false << size;
+        QTest::newRow(QByteArray("QList-int--" + sizeString).constData()) << false << size;
     }
 }
 
@@ -171,7 +171,7 @@ void tst_vector_vs_std::insert_int()
     if (useStd)
         useCases_stdvector_int->insert(size);
     else
-        useCases_QVector_int->insert(size);
+        useCases_QList_int->insert(size);
 }
 
 void tst_vector_vs_std::insert_Large_data()
@@ -182,7 +182,7 @@ void tst_vector_vs_std::insert_Large_data()
     for (int size = 10; size < LARGE_MAX_SIZE; size += 100) {
         const QByteArray sizeString = QByteArray::number(size);
         QTest::newRow(QByteArray("std::vector-Large--" + sizeString).constData()) << true << size;
-        QTest::newRow(QByteArray("QVector-Large--" + sizeString).constData()) << false << size;
+        QTest::newRow(QByteArray("QList-Large--" + sizeString).constData()) << false << size;
     }
 }
 
@@ -194,7 +194,7 @@ void tst_vector_vs_std::insert_Large()
     if (useStd)
         useCases_stdvector_Large->insert(size);
     else
-        useCases_QVector_Large->insert(size);
+        useCases_QList_Large->insert(size);
 }
 
 void tst_vector_vs_std::lookup_int_data()
@@ -205,7 +205,7 @@ void tst_vector_vs_std::lookup_int_data()
     for (int size = 10; size < 20000; size += 100) {
         const QByteArray sizeString = QByteArray::number(size);
         QTest::newRow(QByteArray("std::vector-int--" + sizeString).constData()) << true << size;
-        QTest::newRow(QByteArray("QVector-int--" + sizeString).constData()) << false << size;
+        QTest::newRow(QByteArray("QList-int--" + sizeString).constData()) << false << size;
     }
 }
 
@@ -217,7 +217,7 @@ void tst_vector_vs_std::lookup_int()
     if (useStd)
         useCases_stdvector_int->lookup(size);
     else
-        useCases_QVector_int->lookup(size);
+        useCases_QList_int->lookup(size);
 }
 
 void tst_vector_vs_std::lookup_Large_data()
@@ -228,7 +228,7 @@ void tst_vector_vs_std::lookup_Large_data()
     for (int size = 10; size < LARGE_MAX_SIZE; size += 100) {
         const QByteArray sizeString = QByteArray::number(size);
         QTest::newRow(QByteArray("std::vector-Large--" + sizeString).constData()) << true << size;
-        QTest::newRow(QByteArray("QVector-Large--" + sizeString).constData()) << false << size;
+        QTest::newRow(QByteArray("QList-Large--" + sizeString).constData()) << false << size;
     }
 }
 
@@ -240,7 +240,7 @@ void tst_vector_vs_std::lookup_Large()
     if (useStd)
         useCases_stdvector_Large->lookup(size);
     else
-        useCases_QVector_Large->lookup(size);
+        useCases_QList_Large->lookup(size);
 }
 
 QTEST_MAIN(tst_vector_vs_std)

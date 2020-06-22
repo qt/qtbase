@@ -51,32 +51,24 @@ private Q_SLOTS:
     void transitionsReverse();
 };
 
-static QVector<QByteArray> enoughZones()
+static QList<QByteArray> enoughZones()
 {
 #ifdef EXHAUSTIVE
     auto available = QTimeZone::availableTimeZoneIds();
-    QVector<QByteArray> result;
+    QList<QByteArray> result;
     result.reserve(available.size() + 1);
     for (conat auto &name : available)
         result << name;
 #else
-    QVector<QByteArray> result{
-        QByteArray("UTC"),
-        // Those named overtly in tst_QDateTime:
-        QByteArray("Europe/Oslo"),
-        QByteArray("America/Vancouver"),
-        QByteArray("Europe/Berlin"),
-        QByteArray("America/Sao_Paulo"),
-        QByteArray("Pacific/Auckland"),
-        QByteArray("Australia/Eucla"),
-        QByteArray("Asia/Kathmandu"),
-        QByteArray("Pacific/Kiritimati"),
-        QByteArray("Pacific/Apia"),
-        QByteArray("UTC+12:00"),
-        QByteArray("Australia/Sydney"),
-        QByteArray("Asia/Singapore"),
-        QByteArray("Australia/Brisbane")
-    };
+    QList<QByteArray> result { QByteArray("UTC"),
+                               // Those named overtly in tst_QDateTime:
+                               QByteArray("Europe/Oslo"), QByteArray("America/Vancouver"),
+                               QByteArray("Europe/Berlin"), QByteArray("America/Sao_Paulo"),
+                               QByteArray("Pacific/Auckland"), QByteArray("Australia/Eucla"),
+                               QByteArray("Asia/Kathmandu"), QByteArray("Pacific/Kiritimati"),
+                               QByteArray("Pacific/Apia"), QByteArray("UTC+12:00"),
+                               QByteArray("Australia/Sydney"), QByteArray("Asia/Singapore"),
+                               QByteArray("Australia/Brisbane") };
 #endif
     result << QByteArray("Vulcan/ShiKahr"); // invalid: also worth testing
     return result;

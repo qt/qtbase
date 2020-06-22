@@ -310,7 +310,7 @@ void tst_QPainter::drawLine_data()
     QTest::addColumn<QLine>("line");
     QTest::addColumn<QPen>("pen");
 
-    QVector<QPen> pens;
+    QList<QPen> pens;
     pens << QPen(Qt::black)
          << QPen(Qt::black, 0, Qt::DashDotLine)
          << QPen(Qt::black, 4)

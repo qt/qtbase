@@ -229,7 +229,7 @@ void tst_QTableView::spanSelectColumn()
     }
 }
 
-typedef QVector<QRect> SpanList;
+typedef QList<QRect> SpanList;
 Q_DECLARE_METATYPE(SpanList)
 
 void spansData()

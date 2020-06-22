@@ -294,7 +294,7 @@ void tst_QMutex::contendedNative()
     NativeMutexInitialize(&mutex1);
     NativeMutexInitialize(&mutex2);
 
-    QVector<NativeMutexThread *> threads(threadCount);
+    QList<NativeMutexThread *> threads(threadCount);
     for (int i = 0; i < threads.count(); ++i) {
         threads[i] = new NativeMutexThread(&mutex1, &mutex2, iterations, msleepDuration, use2mutexes);
         threads[i]->start();
@@ -361,7 +361,7 @@ void tst_QMutex::contendedQMutex()
 
     QMutex mutex1, mutex2;
 
-    QVector<QMutexThread *> threads(threadCount);
+    QList<QMutexThread *> threads(threadCount);
     for (int i = 0; i < threads.count(); ++i) {
         threads[i] = new QMutexThread(&mutex1, &mutex2, iterations, msleepDuration, use2mutexes);
         threads[i]->start();
@@ -423,7 +423,7 @@ void tst_QMutex::contendedQMutexLocker()
 
     QMutex mutex1, mutex2;
 
-    QVector<QMutexLockerThread *> threads(threadCount);
+    QList<QMutexLockerThread *> threads(threadCount);
     for (int i = 0; i < threads.count(); ++i) {
         threads[i] = new QMutexLockerThread(&mutex1, &mutex2, iterations, msleepDuration, use2mutexes);
         threads[i]->start();

@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QVector>
+#include <QList>
 #include <vector>
 #include "qrawvector.h"
 
