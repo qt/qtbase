@@ -67,7 +67,7 @@ struct EnumDef
 {
     QByteArray name;
     QByteArray enumName;
-    QVector<QByteArray> values;
+    QList<QByteArray> values;
     bool isEnumClass; // c++11 enum class
     EnumDef() : isEnumClass(false) {}
     QJsonObject toJson(const ClassDef &cdef) const;
@@ -89,7 +89,7 @@ Q_DECLARE_TYPEINFO(ArgumentDef, Q_MOVABLE_TYPE);
 struct FunctionDef
 {
     Type type;
-    QVector<ArgumentDef> arguments;
+    QList<ArgumentDef> arguments;
     QByteArray normalizedType;
     QByteArray tag;
     QByteArray name;
@@ -168,26 +168,26 @@ Q_DECLARE_TYPEINFO(ClassInfoDef, Q_MOVABLE_TYPE);
 struct BaseDef {
     QByteArray classname;
     QByteArray qualified;
-    QVector<ClassInfoDef> classInfoList;
+    QList<ClassInfoDef> classInfoList;
     QMap<QByteArray, bool> enumDeclarations;
-    QVector<EnumDef> enumList;
+    QList<EnumDef> enumList;
     QMap<QByteArray, QByteArray> flagAliases;
     int begin = 0;
     int end = 0;
 };
 
 struct ClassDef : BaseDef {
-    QVector<QPair<QByteArray, FunctionDef::Access> > superclassList;
+    QList<QPair<QByteArray, FunctionDef::Access>> superclassList;
 
     struct Interface
     {
-        Interface() {} // for QVector, don't use
+        Interface() { } // for QList, don't use
         inline explicit Interface(const QByteArray &_className)
             : className(_className) {}
         QByteArray className;
         QByteArray interfaceId;
     };
-    QVector<QVector<Interface> >interfaceList;
+    QList<QList<Interface>> interfaceList;
 
     struct PluginData {
         QByteArray iid;
@@ -196,11 +196,11 @@ struct ClassDef : BaseDef {
         QJsonDocument metaData;
     } pluginData;
 
-    QVector<FunctionDef> constructorList;
-    QVector<FunctionDef> signalList, slotList, methodList, publicList;
-    QVector<QByteArray> nonClassSignalList;
-    QVector<PropertyDef> propertyList;
-    QVector<PrivateQPropertyDef> privateQProperties;
+    QList<FunctionDef> constructorList;
+    QList<FunctionDef> signalList, slotList, methodList, publicList;
+    QList<QByteArray> nonClassSignalList;
+    QList<PropertyDef> propertyList;
+    QList<PrivateQPropertyDef> privateQProperties;
     QHash<QByteArray, bool> qPropertyMembersMaybeWithNotifier;
     int revisionedMethods = 0;
 
@@ -232,15 +232,15 @@ public:
     bool mustIncludeQPluginH;
     bool requireCompleteTypes;
     QByteArray includePath;
-    QVector<QByteArray> includeFiles;
-    QVector<ClassDef> classList;
+    QList<QByteArray> includeFiles;
+    QList<ClassDef> classList;
     QMap<QByteArray, QByteArray> interface2IdMap;
-    QVector<QByteArray> metaTypes;
+    QList<QByteArray> metaTypes;
     // map from class name to fully qualified name
     QHash<QByteArray, QByteArray> knownQObjectClasses;
     QHash<QByteArray, QByteArray> knownGadgets;
     QMap<QString, QJsonArray> metaArgs;
-    QVector<QString> parsedPluginMetadataFiles;
+    QList<QString> parsedPluginMetadataFiles;
 
     void parse();
     void generate(FILE *out, FILE *jsonOutput);

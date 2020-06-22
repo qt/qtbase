@@ -120,7 +120,7 @@ struct Symbol
 };
 Q_DECLARE_TYPEINFO(Symbol, Q_MOVABLE_TYPE);
 
-typedef QVector<Symbol> Symbols;
+typedef QList<Symbol> Symbols;
 
 struct SafeSymbols {
     Symbols symbols;

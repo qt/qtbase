@@ -80,12 +80,19 @@ QT_FOR_EACH_STATIC_TYPE(RETURN_METATYPENAME_STRING)
     return nullptr;
  }
 
-Generator::Generator(ClassDef *classDef, const QVector<QByteArray> &metaTypes, const QHash<QByteArray, QByteArray> &knownQObjectClasses, const QHash<QByteArray, QByteArray> &knownGadgets, FILE *outfile, bool requireCompleteTypes)
-    : out(outfile), cdef(classDef), metaTypes(metaTypes), knownQObjectClasses(knownQObjectClasses)
-    , knownGadgets(knownGadgets), requireCompleteTypes(requireCompleteTypes)
-{
-    if (cdef->superclassList.size())
-        purestSuperClass = cdef->superclassList.constFirst().first;
+ Generator::Generator(ClassDef *classDef, const QList<QByteArray> &metaTypes,
+                      const QHash<QByteArray, QByteArray> &knownQObjectClasses,
+                      const QHash<QByteArray, QByteArray> &knownGadgets, FILE *outfile,
+                      bool requireCompleteTypes)
+     : out(outfile),
+       cdef(classDef),
+       metaTypes(metaTypes),
+       knownQObjectClasses(knownQObjectClasses),
+       knownGadgets(knownGadgets),
+       requireCompleteTypes(requireCompleteTypes)
+ {
+     if (cdef->superclassList.size())
+         purestSuperClass = cdef->superclassList.constFirst().first;
 }
 
 static inline int lengthOfEscapeSequence(const QByteArray &s, int i)
@@ -127,7 +134,7 @@ int Generator::stridx(const QByteArray &s)
 // Returns the sum of all parameters (including return type) for the given
 // \a list of methods. This is needed for calculating the size of the methods'
 // parameter type/name meta-data.
-static int aggregateParameterCount(const QVector<FunctionDef> &list)
+static int aggregateParameterCount(const QList<FunctionDef> &list)
 {
     int sum = 0;
     for (int i = 0; i < list.count(); ++i)
@@ -150,22 +157,22 @@ bool Generator::registerableMetaType(const QByteArray &propertyType)
             return true;
     }
 
-    static const QVector<QByteArray> smartPointers = QVector<QByteArray>()
+    static const QList<QByteArray> smartPointers = QList<QByteArray>()
 #define STREAM_SMART_POINTER(SMART_POINTER) << #SMART_POINTER
-        QT_FOR_EACH_AUTOMATIC_TEMPLATE_SMART_POINTER(STREAM_SMART_POINTER)
+            QT_FOR_EACH_AUTOMATIC_TEMPLATE_SMART_POINTER(STREAM_SMART_POINTER)
 #undef STREAM_SMART_POINTER
-        ;
+            ;
 
     for (const QByteArray &smartPointer : smartPointers) {
         if (propertyType.startsWith(smartPointer + "<") && !propertyType.endsWith("&"))
             return knownQObjectClasses.contains(propertyType.mid(smartPointer.size() + 1, propertyType.size() - smartPointer.size() - 1 - 1));
     }
 
-    static const QVector<QByteArray> oneArgTemplates = QVector<QByteArray>()
+    static const QList<QByteArray> oneArgTemplates = QList<QByteArray>()
 #define STREAM_1ARG_TEMPLATE(TEMPLATENAME) << #TEMPLATENAME
-      QT_FOR_EACH_AUTOMATIC_TEMPLATE_1ARG(STREAM_1ARG_TEMPLATE)
+            QT_FOR_EACH_AUTOMATIC_TEMPLATE_1ARG(STREAM_1ARG_TEMPLATE)
 #undef STREAM_1ARG_TEMPLATE
-    ;
+            ;
     for (const QByteArray &oneArgTemplateType : oneArgTemplates) {
         if (propertyType.startsWith(oneArgTemplateType + "<") && propertyType.endsWith(">")) {
             const int argumentSize = propertyType.size() - oneArgTemplateType.size() - 1
@@ -199,7 +206,7 @@ void Generator::generateCode()
 
     // filter out undeclared enumerators and sets
     {
-        QVector<EnumDef> enumList;
+        QList<EnumDef> enumList;
         for (int i = 0; i < cdef->enumList.count(); ++i) {
             EnumDef def = cdef->enumList.at(i);
             if (cdef->enumDeclarations.contains(def.name)) {
@@ -455,7 +462,7 @@ void Generator::generateCode()
 //
 // Build extra array
 //
-    QVector<QByteArray> extraList;
+    QList<QByteArray> extraList;
     QMultiHash<QByteArray, QByteArray> knownExtraMetaObject = knownGadgets;
     knownExtraMetaObject.unite(knownQObjectClasses);
 
@@ -574,7 +581,8 @@ void Generator::generateCode()
             fprintf(out, "%s%s", needsComma ? ", " : "", p.type.data());
             needsComma = true;
         }
-        for (const QVector<FunctionDef> &methodContainer: {cdef->signalList, cdef->slotList, cdef->methodList} ) {
+        for (const QList<FunctionDef> &methodContainer :
+             { cdef->signalList, cdef->slotList, cdef->methodList }) {
             for (int i = 0; i< methodContainer.count(); ++i) {
                 const FunctionDef& fdef = methodContainer.at(i);
                 fprintf(out, "%s%s", needsComma ? ", " : "", fdef.type.name.data());
@@ -621,7 +629,7 @@ void Generator::generateCode()
                 cname, cname);
     }
     for (int i = 0; i < cdef->interfaceList.size(); ++i) {
-        const QVector<ClassDef::Interface> &iface = cdef->interfaceList.at(i);
+        const QList<ClassDef::Interface> &iface = cdef->interfaceList.at(i);
         for (int j = 0; j < iface.size(); ++j) {
             fprintf(out, "    if (!strcmp(_clname, %s))\n        return ", iface.at(j).interfaceId.constData());
             for (int k = j; k >= 0; --k)
@@ -695,7 +703,7 @@ void Generator::generateClassInfos()
     }
 }
 
-void Generator::registerFunctionStrings(const QVector<FunctionDef>& list)
+void Generator::registerFunctionStrings(const QList<FunctionDef> &list)
 {
     for (int i = 0; i < list.count(); ++i) {
         const FunctionDef &f = list.at(i);
@@ -715,13 +723,14 @@ void Generator::registerFunctionStrings(const QVector<FunctionDef>& list)
     }
 }
 
-void Generator::registerByteArrayVector(const QVector<QByteArray> &list)
+void Generator::registerByteArrayVector(const QList<QByteArray> &list)
 {
     for (const QByteArray &ba : list)
         strreg(ba);
 }
 
-void Generator::generateFunctions(const QVector<FunctionDef>& list, const char *functype, int type, int &paramsIndex, int &initialMetatypeOffset)
+void Generator::generateFunctions(const QList<FunctionDef> &list, const char *functype, int type,
+                                  int &paramsIndex, int &initialMetatypeOffset)
 {
     if (list.isEmpty())
         return;
@@ -769,7 +778,7 @@ void Generator::generateFunctions(const QVector<FunctionDef>& list, const char *
     }
 }
 
-void Generator::generateFunctionRevisions(const QVector<FunctionDef>& list, const char *functype)
+void Generator::generateFunctionRevisions(const QList<FunctionDef> &list, const char *functype)
 {
     if (list.count())
         fprintf(out, "\n // %ss: revision\n", functype);
@@ -779,7 +788,7 @@ void Generator::generateFunctionRevisions(const QVector<FunctionDef>& list, cons
     }
 }
 
-void Generator::generateFunctionParameters(const QVector<FunctionDef>& list, const char *functype)
+void Generator::generateFunctionParameters(const QList<FunctionDef> &list, const char *functype)
 {
     if (list.isEmpty())
         return;
@@ -968,7 +977,7 @@ void Generator::generateMetacall()
 
 
     bool needElse = false;
-    QVector<FunctionDef> methodList;
+    QList<FunctionDef> methodList;
     methodList += cdef->signalList;
     methodList += cdef->slotList;
     methodList += cdef->methodList;
@@ -1031,7 +1040,8 @@ QMultiMap<QByteArray, int> Generator::automaticPropertyMetaTypesHelper()
     return automaticPropertyMetaTypes;
 }
 
-QMap<int, QMultiMap<QByteArray, int> > Generator::methodsWithAutomaticTypesHelper(const QVector<FunctionDef> &methodList)
+QMap<int, QMultiMap<QByteArray, int>>
+Generator::methodsWithAutomaticTypesHelper(const QList<FunctionDef> &methodList)
 {
     QMap<int, QMultiMap<QByteArray, int> > methodsWithAutomaticTypes;
     for (int i = 0; i < methodList.size(); ++i) {
@@ -1085,7 +1095,7 @@ void Generator::generateStaticMetacall()
         isUsed_a = true;
     }
 
-    QVector<FunctionDef> methodList;
+    QList<FunctionDef> methodList;
     methodList += cdef->signalList;
     methodList += cdef->slotList;
     methodList += cdef->methodList;

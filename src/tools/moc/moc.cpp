@@ -607,7 +607,7 @@ bool Moc::parseMaybeQProperty(ClassDef *def)
 
 void Moc::parse()
 {
-    QVector<NamespaceDef> namespaceList;
+    QList<NamespaceDef> namespaceList;
     bool templateClass = false;
     while (hasNext()) {
         Token t = next();
@@ -1008,7 +1008,7 @@ void Moc::parse()
     }
 }
 
-static bool any_type_contains(const QVector<PropertyDef> &properties, const QByteArray &pattern)
+static bool any_type_contains(const QList<PropertyDef> &properties, const QByteArray &pattern)
 {
     for (const auto &p : properties) {
         if (p.type.contains(pattern))
@@ -1017,7 +1017,7 @@ static bool any_type_contains(const QVector<PropertyDef> &properties, const QByt
     return false;
 }
 
-static bool any_arg_contains(const QVector<FunctionDef> &functions, const QByteArray &pattern)
+static bool any_arg_contains(const QList<FunctionDef> &functions, const QByteArray &pattern)
 {
     for (const auto &f : functions) {
         for (const auto &arg : f.arguments) {
@@ -1042,7 +1042,7 @@ static QByteArrayList make_candidates()
     return result;
 }
 
-static QByteArrayList requiredQtContainers(const QVector<ClassDef> &classes)
+static QByteArrayList requiredQtContainers(const QList<ClassDef> &classes)
 {
     static const QByteArrayList candidates = make_candidates();
 
@@ -1608,7 +1608,7 @@ void Moc::parseInterfaces(ClassDef *def)
 {
     next(LPAREN);
     while (test(IDENTIFIER)) {
-        QVector<ClassDef::Interface> iface;
+        QList<ClassDef::Interface> iface;
         iface += ClassDef::Interface(lexem());
         while (test(SCOPE)) {
             iface.last().className += lexem();
@@ -1966,7 +1966,7 @@ QJsonObject ClassDef::toJson() const
     if (classInfos.size())
         cls[QLatin1String("classInfos")] = classInfos;
 
-    const auto appendFunctions = [&cls](const QString &type, const QVector<FunctionDef> &funcs) {
+    const auto appendFunctions = [&cls](const QString &type, const QList<FunctionDef> &funcs) {
         QJsonArray jsonFuncs;
 
         for (const FunctionDef &fdef: funcs)
@@ -2017,7 +2017,7 @@ QJsonObject ClassDef::toJson() const
         cls[QLatin1String("enums")] = enums;
 
     QJsonArray ifaces;
-    for (const QVector<Interface> &ifaceList: interfaceList) {
+    for (const QList<Interface> &ifaceList : interfaceList) {
         QJsonArray jsonList;
         for (const Interface &iface: ifaceList) {
             QJsonObject ifaceJson;
