@@ -66,21 +66,30 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 # This detection only happens when building qtbase, and later is propagated via the generated
 # QtBuildInternalsExtra.cmake file.
 if (PROJECT_NAME STREQUAL "QtBase" AND NOT QT_BUILD_STANDALONE_TESTS)
-    if((CMAKE_INSTALL_PREFIX STREQUAL QtBase_BINARY_DIR) OR
-        (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND FEATURE_developer_build))
-
-        set(__qt_will_install_value OFF)
+    if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND FEATURE_developer_build)
         # Handle non-prefix builds by setting the CMake install prefix to point to qtbase's build
         # dir.
         # While building another repo (like qtsvg) the CMAKE_PREFIX_PATH
         # should be set on the command line to point to the qtbase build dir.
         set(CMAKE_INSTALL_PREFIX ${QtBase_BINARY_DIR} CACHE PATH
             "Install path prefix, prepended onto install directories." FORCE)
+    endif()
+    if(CMAKE_CROSSCOMPILING)
+        set(__qt_prefix "${CMAKE_STAGING_PREFIX}")
+    else()
+        set(__qt_prefix_ "")
+    endif()
+    if(__qt_prefix STREQUAL "")
+        set(__qt_prefix "${CMAKE_INSTALL_PREFIX}")
+    endif()
+    if(__qt_prefix STREQUAL QtBase_BINARY_DIR)
+        set(__qt_will_install_value OFF)
     else()
         set(__qt_will_install_value ON)
     endif()
     set(QT_WILL_INSTALL ${__qt_will_install_value} CACHE BOOL
         "Boolean indicating if doing a Qt prefix build (vs non-prefix build)." FORCE)
+    unset(__qt_prefix)
     unset(__qt_will_install_value)
 endif()
 
