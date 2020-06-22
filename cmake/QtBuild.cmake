@@ -2570,24 +2570,19 @@ function(qt_add_module target)
     set(public_headers_list "public_includes")
     if(is_framework)
         set(public_headers_list "private_includes")
-        set(fw_bundle_subdir "${INSTALL_LIBDIR}/Qt${target}.framework")
-        set(fw_headers_subdir "Versions/${PROJECT_VERSION_MAJOR}/Headers")
-        list(APPEND public_includes
-            # Add the lib/Foo.framework dir as include path to let CMake generate
-            # the -F compiler flag.
-            "$<BUILD_INTERFACE:${QT_BUILD_DIR}/${fw_bundle_subdir}>"
-            "$<INSTALL_INTERFACE:${fw_bundle_subdir}>"
-
-            # Add the fully resolved Headers subdir, because the Headers symlink might
-            # not be there yet.
-            "$<BUILD_INTERFACE:${QT_BUILD_DIR}/${fw_bundle_subdir}/${fw_headers_subdir}>"
-
-            # After installing, the Headers symlink is guaranteed to exist.
-            "$<INSTALL_INTERFACE:${fw_bundle_subdir}/Headers>"
-            )
     endif()
 
-    # Handle cases like QmlDevTools which do not have their own headers, but rather borrow them
+    # Make sure the BUILD_INTERFACE include paths come before the framework headers, so that the
+    # the compiler prefers the build dir includes.
+    #
+    # Make sure to add non-framework "build_dir/include" as an include path for moc to find the
+    # currently built module headers. qmake does this too.
+    # Framework-style include paths are found by moc when cmQtAutoMocUic.cxx detects frameworks by
+    # looking at an include path and detecting a "QtFoo.framework/Headers" path.
+    # Make sure to create such paths for both the the BUILD_INTERFACE and the INSTALL_INTERFACE.
+    #
+    # Only add syncqt headers if they exist.
+    # This handles cases like QmlDevTools which do not have their own headers, but borrow them
     # from another module.
     if(NOT arg_NO_SYNC_QT AND NOT arg_NO_MODULE_HEADERS)
         # Don't include private headers unless they exist, aka syncqt created them.
@@ -2597,10 +2592,26 @@ function(qt_add_module target)
                         "$<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}/${module}>")
         endif()
 
-        list(APPEND ${public_headers_list}
+        list(APPEND public_includes
                     # For the syncqt headers
                     "$<BUILD_INTERFACE:${module_repo_include_dir}>"
                     "$<BUILD_INTERFACE:${module_include_dir}>")
+    endif()
+
+    if(is_framework)
+        set(fw_bundle_subdir "${INSTALL_LIBDIR}/Qt${target}.framework")
+        list(APPEND public_includes
+            # Add the lib/Foo.framework dir as include path to let CMake generate
+            # the -F compiler flag for framework-style includes to work.
+            "$<INSTALL_INTERFACE:${fw_bundle_subdir}>"
+
+            # Add the framework Headers subdir, so that non-framework-style includes work. The
+            # BUILD_INTERFACE Headers symlink was previously claimed not to exist at the relevant
+            # time, and a fully specified Header path was used instead. This doesn't seem to be a
+            # problem anymore.
+            "$<BUILD_INTERFACE:${QT_BUILD_DIR}/${fw_bundle_subdir}/Headers>"
+            "$<INSTALL_INTERFACE:${fw_bundle_subdir}/Headers>"
+            )
     endif()
 
     if(NOT arg_NO_MODULE_HEADERS AND NOT arg_NO_SYNC_QT)
