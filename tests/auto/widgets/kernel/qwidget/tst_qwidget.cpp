@@ -67,6 +67,7 @@
 #include <qproxystyle.h>
 #include <QtWidgets/QGraphicsView>
 #include <QtWidgets/QGraphicsProxyWidget>
+#include <QtWidgets/QSpinBox>
 #include <QtGui/qwindow.h>
 #include <qtimer.h>
 
@@ -180,6 +181,7 @@ private slots:
     void reverseTabOrder();
     void tabOrderWithProxy();
     void tabOrderWithCompoundWidgets();
+    void tabOrderWithCompoundWidgetsNoFocusPolicy();
     void tabOrderNoChange();
     void tabOrderNoChange2();
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
@@ -1962,6 +1964,51 @@ static void dumpFocusChain(QWidget *start, bool bForward, const char *desc = nul
     Q_UNUSED(bForward)
     Q_UNUSED(desc)
 #endif
+}
+
+void tst_QWidget::tabOrderWithCompoundWidgetsNoFocusPolicy()
+{
+    Container container;
+    container.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
+    QSpinBox spinbox1;
+    spinbox1.setObjectName("spinbox1");
+    QSpinBox spinbox2;
+    spinbox2.setObjectName("spinbox2");
+    QSpinBox spinbox3;
+    spinbox3.setObjectName("spinbox3");
+
+    spinbox1.setFocusPolicy(Qt::StrongFocus);
+    spinbox2.setFocusPolicy(Qt::NoFocus);
+    spinbox3.setFocusPolicy(Qt::StrongFocus);
+    container.box->addWidget(&spinbox1);
+    container.box->addWidget(&spinbox2);
+    container.box->addWidget(&spinbox3);
+
+    container.show();
+    container.activateWindow();
+
+    QApplication::setActiveWindow(&container);
+    if (!QTest::qWaitForWindowActive(&container))
+        QSKIP("Window failed to activate, skipping test");
+
+    QVERIFY2(spinbox1.hasFocus(),
+             qPrintable(QApplication::focusWidget()->objectName()));
+    container.tab();
+    QVERIFY2(!spinbox2.hasFocus(),
+             qPrintable(QApplication::focusWidget()->objectName()));
+    QVERIFY2(spinbox3.hasFocus(),
+             qPrintable(QApplication::focusWidget()->objectName()));
+    container.tab();
+    QVERIFY2(spinbox1.hasFocus(),
+             qPrintable(QApplication::focusWidget()->objectName()));
+    container.backTab();
+    QVERIFY2(spinbox3.hasFocus(),
+             qPrintable(QApplication::focusWidget()->objectName()));
+    container.backTab();
+    QVERIFY2(!spinbox2.hasFocus(),
+             qPrintable(QApplication::focusWidget()->objectName()));
+    QVERIFY2(spinbox1.hasFocus(),
+             qPrintable(QApplication::focusWidget()->objectName()));
 }
 
 void tst_QWidget::tabOrderNoChange()
