@@ -2733,7 +2733,7 @@ void PaintCommands::command_pen_setDashPattern(QRegularExpressionMatch re)
     QString cap = caps.at(1);
     QStringList numbers = cap.split(separators, Qt::SkipEmptyParts);
 
-    QVector<qreal> pattern;
+    QList<qreal> pattern;
     for (int i=0; i<numbers.size(); ++i)
         pattern.append(convertToDouble(numbers.at(i)));
 

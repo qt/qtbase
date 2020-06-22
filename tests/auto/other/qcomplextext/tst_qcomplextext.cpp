@@ -288,7 +288,8 @@ void tst_QComplexText::bidiCursor_PDF()
     QVERIFY(line.cursorToX(size) == line.cursorToX(size - 1));
 }
 
-static void testBidiString(const QString &data, int paragraphDirection, const QVector<int> &resolvedLevels, const QVector<int> &visualOrder)
+static void testBidiString(const QString &data, int paragraphDirection,
+                           const QList<int> &resolvedLevels, const QList<int> &visualOrder)
 {
     Q_UNUSED(resolvedLevels);
 
@@ -398,7 +399,7 @@ void tst_QComplexText::bidiCharacterTest()
         int paragraphDirection = parts.at(1).toInt();
 //        int resolvedParagraphLevel = parts.at(2).toInt();
 
-        QVector<int> resolvedLevels;
+        QList<int> resolvedLevels;
         QList<QByteArray> levelParts = parts.at(3).split(' ');
         for (const auto &p : levelParts) {
             if (p == "x") {
@@ -410,7 +411,7 @@ void tst_QComplexText::bidiCharacterTest()
             }
         }
 
-        QVector<int> visualOrder;
+        QList<int> visualOrder;
         QList<QByteArray> orderParts = parts.at(4).split(' ');
         for (const auto &p : orderParts) {
             bool ok;
@@ -470,8 +471,8 @@ void tst_QComplexText::bidiTest()
     f.open(QIODevice::ReadOnly);
 
     int linenum = 0;
-    QVector<int> resolvedLevels;
-    QVector<int> visualOrder;
+    QList<int> resolvedLevels;
+    QList<int> visualOrder;
     while (!f.atEnd()) {
         linenum++;
 

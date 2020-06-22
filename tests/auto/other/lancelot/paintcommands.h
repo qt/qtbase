@@ -109,7 +109,11 @@ public:
     void setPainter(QPainter *pt) { staticInit(); m_painter = pt; }
     void setType(DeviceType t) { staticInit(); m_type = t; }
     void setFilePath(const QString &path) { staticInit(); m_filepath = path; }
-    void setControlPoints(const QVector<QPointF> &points) { staticInit(); m_controlPoints = points; }
+    void setControlPoints(const QList<QPointF> &points)
+    {
+        staticInit();
+        m_controlPoints = points;
+    }
     void setVerboseMode(bool v) { staticInit(); m_verboseMode = v; }
     void insertAt(int commandIndex, const QStringList &newCommands);
     void setShouldDrawText(bool drawText) { m_shouldDrawText = drawText; }
@@ -279,7 +283,7 @@ private:
     bool m_checkers_background;
     bool m_shouldDrawText;
 
-    QVector<QPointF> m_controlPoints;
+    QList<QPointF> m_controlPoints;
 
 #ifndef QT_NO_OPENGL
     QOpenGLContext *m_default_glcontext;

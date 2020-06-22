@@ -58,7 +58,6 @@ private slots:
     void detectEnums();
     void overrideCFunction();
     void stdSortQList();
-    void stdSortQVector();
     void templateCallOrder();
     void virtualFunctionNoLongerPureVirtual();
     void charSignedness() const;
@@ -421,21 +420,6 @@ void tst_Compiler::stdSortQList()
     std::sort(slist.begin(), slist.end());
     QCOMPARE(slist.value(0), QString("a"));
     QCOMPARE(slist.value(1), QString("b"));
-}
-
-void tst_Compiler::stdSortQVector()
-{
-    QVector<int> vector;
-    vector << 4 << 2;
-    std::sort(vector.begin(), vector.end());
-    QCOMPARE(vector.value(0), 2);
-    QCOMPARE(vector.value(1), 4);
-
-    QVector<QString> strvec;
-    strvec << "b" << "a";
-    std::sort(strvec.begin(), strvec.end());
-    QCOMPARE(strvec.value(0), QString("a"));
-    QCOMPARE(strvec.value(1), QString("b"));
 }
 #else
 void tst_Compiler::stdSortQList()
@@ -1063,15 +1047,16 @@ void tst_Compiler::cxx11_nullptr()
 
 namespace SomeNamespace {
 class AdlOnly {
-    QVector<int> v;
+    QList<int> v;
+
 public:
     AdlOnly() : v(5) { std::fill_n(v.begin(), v.size(), 42); }
 
 private:
-    friend QVector<int>::const_iterator begin(const AdlOnly &x) { return x.v.begin(); }
-    friend QVector<int>::const_iterator end(const AdlOnly &x) { return x.v.end(); }
-    friend QVector<int>::iterator begin(AdlOnly &x) { return x.v.begin(); }
-    friend QVector<int>::iterator end(AdlOnly &x) { return x.v.end(); }
+    friend QList<int>::const_iterator begin(const AdlOnly &x) { return x.v.begin(); }
+    friend QList<int>::const_iterator end(const AdlOnly &x) { return x.v.end(); }
+    friend QList<int>::iterator begin(AdlOnly &x) { return x.v.begin(); }
+    friend QList<int>::iterator end(AdlOnly &x) { return x.v.end(); }
 };
 }
 
