@@ -36,7 +36,7 @@
 #include <QtCore/QTemporaryDir>
 #include <QtCore/QRegularExpression>
 #include <QtCore/QStandardPaths>
-#include <QtCore/QVector>
+#include <QtCore/QList>
 
 #include <cstdio>
 
@@ -67,7 +67,7 @@ class tst_uic : public QObject
     Q_OBJECT
 
 public:
-    using TestEntries = QVector<TestEntry>;
+    using TestEntries = QList<TestEntry>;
 
     tst_uic();
 
