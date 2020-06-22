@@ -181,8 +181,34 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSColorPanelDelegate);
 
 - (void)updateQtColor
 {
-    NSColor *color = [mColorPanel color];
-    mQtColor = qt_mac_toQColor(color);
+    // Discard the color space and pass the color components to QColor. This
+    // is a good option as long as QColor is color-unmanaged: we preserve the
+    // exact RGB value from the color picker, which is predictable. Further,
+    // painting with the color will reproduce the same color on-screen, as
+    // long as the the same screen is used for selecting the color.
+    NSColor *componentColor = [[mColorPanel color] colorUsingType:NSColorTypeComponentBased];
+    switch (componentColor.colorSpace.colorSpaceModel)
+    {
+    case NSColorSpaceModelGray: {
+        CGFloat white = 0, alpha = 0;
+        [componentColor getWhite:&white alpha:&alpha];
+        mQtColor.setRgbF(white, white, white, alpha);
+    } break;
+    case NSColorSpaceModelRGB: {
+        CGFloat red = 0, green = 0, blue = 0, alpha = 0;
+        [componentColor getRed:&red green:&green blue:&blue alpha:&alpha];
+        mQtColor.setRgbF(red, green, blue, alpha);
+    } break;
+    case NSColorSpaceModelCMYK: {
+        CGFloat cyan = 0, magenta = 0, yellow = 0, black = 0, alpha = 0;
+        [componentColor getCyan:&cyan magenta:&magenta yellow:&yellow black:&black alpha:&alpha];
+        mQtColor.setCmykF(cyan, magenta, yellow, black, alpha);
+    } break;
+    default:
+        qWarning("QNSColorPanelDelegate: Unsupported color space model");
+    break;
+    }
+
     if (mHelper)
         emit mHelper->currentColorChanged(mQtColor);
 }
