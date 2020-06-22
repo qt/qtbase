@@ -699,10 +699,10 @@ void tst_QDtls::verificationErrors()
 
 void tst_QDtls::presetExpectedErrors_data()
 {
-    QTest::addColumn<QVector<QSslError>>("expectedTlsErrors");
+    QTest::addColumn<QList<QSslError>>("expectedTlsErrors");
     QTest::addColumn<bool>("works");
 
-    QVector<QSslError> expectedErrors{{QSslError::HostNameMismatch, selfSignedCert}};
+    QList<QSslError> expectedErrors { { QSslError::HostNameMismatch, selfSignedCert } };
     QTest::addRow("unexpected-self-signed") << expectedErrors << false;
     expectedErrors.push_back({QSslError::SelfSignedCertificate, selfSignedCert});
     QTest::addRow("all-errors-ignored") << expectedErrors << true;
@@ -710,7 +710,7 @@ void tst_QDtls::presetExpectedErrors_data()
 
 void tst_QDtls::presetExpectedErrors()
 {
-    QFETCH(const QVector<QSslError>, expectedTlsErrors);
+    QFETCH(const QList<QSslError>, expectedTlsErrors);
     QFETCH(const bool, works);
 
     connectHandshakeReadingSlots();

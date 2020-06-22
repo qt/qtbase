@@ -59,7 +59,7 @@
 #include "private/qsslconfiguration_p.h"
 
 Q_DECLARE_METATYPE(QSslSocket::SslMode)
-typedef QVector<QSslError::SslError> SslErrorList;
+typedef QList<QSslError::SslError> SslErrorList;
 Q_DECLARE_METATYPE(SslErrorList)
 Q_DECLARE_METATYPE(QSslError)
 Q_DECLARE_METATYPE(QSslKey)

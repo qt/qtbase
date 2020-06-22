@@ -56,7 +56,7 @@
 // so in general it's our peer's certificate we are asking about.
 
 using SslError = QT_PREPEND_NAMESPACE(QSslError);
-using VectorOfErrors = QT_PREPEND_NAMESPACE(QVector<SslError>);
+using VectorOfErrors = QT_PREPEND_NAMESPACE(QList<SslError>);
 using Latin1String = QT_PREPEND_NAMESPACE(QLatin1String);
 
 Q_DECLARE_METATYPE(SslError)

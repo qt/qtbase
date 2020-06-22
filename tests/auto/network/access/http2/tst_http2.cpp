@@ -789,7 +789,7 @@ void tst_Http2::contentEncoding_data()
         QByteArray expected;
     };
 
-    QVector<ContentEncodingData> contentEncodingData;
+    QList<ContentEncodingData> contentEncodingData;
     contentEncodingData.emplace_back(
             "gzip", QByteArray::fromBase64("H4sIAAAAAAAAA8tIzcnJVyjPL8pJAQCFEUoNCwAAAA=="),
             "hello world");

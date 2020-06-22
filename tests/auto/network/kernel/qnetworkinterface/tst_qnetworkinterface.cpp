@@ -141,7 +141,7 @@ void tst_QNetworkInterface::consistencyCheck()
 {
     QList<QNetworkInterface> ifaces = QNetworkInterface::allInterfaces();
     QSet<QString> interfaceNames;
-    QVector<int> interfaceIndexes;
+    QList<int> interfaceIndexes;
 
     foreach (const QNetworkInterface &iface, ifaces) {
         QVERIFY(iface.isValid());
