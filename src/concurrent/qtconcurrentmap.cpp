@@ -148,7 +148,7 @@
 
     The QtConcurrent::map(), QtConcurrent::mapped() and
     QtConcurrent::mappedReduced() functions run computations in parallel on
-    the items in a sequence such as a QList or a QVector. QtConcurrent::map()
+    the items in a sequence such as a QList. QtConcurrent::map()
     modifies a sequence in-place, QtConcurrent::mapped() returns a new
     sequence containing the modified content, and QtConcurrent::mappedReduced()
     returns a single result.

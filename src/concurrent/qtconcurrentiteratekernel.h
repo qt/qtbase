@@ -124,7 +124,7 @@ public:
 
     int currentResultCount;
     ThreadEngine<T> *threadEngine;
-    QVector<T> vector;
+    QList<T> vector;
 };
 
 template <>

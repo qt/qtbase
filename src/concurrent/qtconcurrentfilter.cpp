@@ -44,7 +44,7 @@
 
     The QtConcurrent::filter(), QtConcurrent::filtered() and
     QtConcurrent::filteredReduced() functions filter items in a sequence such
-    as a QList or a QVector in parallel. QtConcurrent::filter() modifies a
+    as a QList in parallel. QtConcurrent::filter() modifies a
     sequence in-place, QtConcurrent::filtered() returns a new sequence
     containing the filtered content, and QtConcurrent::filteredReduced()
     returns a single result.

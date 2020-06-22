@@ -195,7 +195,7 @@ public:
             futureInterfaceTyped()->reportResult(_result, index);
     }
 
-    void reportResults(const QVector<T> &_result, int index = -1, int count = -1)
+    void reportResults(const QList<T> &_result, int index = -1, int count = -1)
     {
         if (futureInterface)
             futureInterfaceTyped()->reportResults(_result, index, count);

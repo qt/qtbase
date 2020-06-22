@@ -86,7 +86,7 @@ class IntermediateResults
 {
 public:
     int begin, end;
-    QVector<T> vector;
+    QList<T> vector;
 };
 
 enum ReduceOption {
