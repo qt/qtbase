@@ -3131,10 +3131,10 @@ class AutoRegistrationObject : public QObject
     Q_PROPERTY(QWeakPointer<CustomQObject> customObjectWP READ customObjectWP CONSTANT)
     Q_PROPERTY(QPointer<CustomQObject> customObjectTP READ customObjectTP CONSTANT)
     Q_PROPERTY(QList<int> listInt READ listInt CONSTANT)
-    Q_PROPERTY(QVector<QVariant> vectorVariant READ vectorVariant CONSTANT)
+    Q_PROPERTY(QList<QVariant> listVariant READ listVariant CONSTANT)
     Q_PROPERTY(QList<CustomQObject*> listObject READ listObject CONSTANT)
-    Q_PROPERTY(QVector<QList<int>> vectorListInt READ vectorListInt CONSTANT)
-    Q_PROPERTY(QVector<QList<CustomQObject*>> vectorListObject READ vectorListObject CONSTANT)
+    Q_PROPERTY(QList<QList<int>> listListInt READ listListInt CONSTANT)
+    Q_PROPERTY(QList<QList<CustomQObject *>> listListObject READ listListObject CONSTANT)
     Q_PROPERTY(CustomQObject::Number enumValue READ enumValue CONSTANT)
     Q_PROPERTY(CustomQObjectStar customObjectTypedef READ customObjectTypedef CONSTANT)
     Q_PROPERTY(SomeNamespace::NamespacedQObject* customObjectNamespaced READ customObjectNamespaced CONSTANT)
@@ -3175,25 +3175,16 @@ public:
         return QList<int>();
     }
 
-    QVector<QVariant> vectorVariant() const
-    {
-        return QVector<QVariant>();
-    }
+    QList<QVariant> listVariant() const { return QList<QVariant>(); }
 
     QList<CustomQObject*> listObject() const
     {
         return QList<CustomQObject*>();
     }
 
-    QVector<QList<int> > vectorListInt() const
-    {
-        return QVector<QList<int> >();
-    }
+    QList<QList<int>> listListInt() const { return QList<QList<int>>(); }
 
-    QVector<QList<CustomQObject*> > vectorListObject() const
-    {
-        return QVector<QList<CustomQObject*> >();
-    }
+    QList<QList<CustomQObject *>> listListObject() const { return QList<QList<CustomQObject *>>(); }
 
     CustomQObject::Number enumValue() const
     {
@@ -3222,10 +3213,10 @@ public slots:
     void weakPointerSlot(QWeakPointer<CustomQObject2>) {}
     void trackingPointerSlot(QPointer<CustomQObject2>) {}
     void listIntSlot(QList<int>) {}
-    void vectorVariantSlot(QVector<QVariant>) {}
+    void listVariantSlot(QList<QVariant>) { }
     void listCustomObjectSlot(QList<CustomQObject2*>) {}
-    void vectorListIntSlot(QVector<QList<int> >) {}
-    void vectorListCustomObjectSlot(QVector<QList<CustomQObject2*> >) {}
+    void listListIntSlot(QList<QList<int>>) { }
+    void listListCustomObjectSlot(QList<QList<CustomQObject2 *>>) { }
     void enumSlot(CustomQObject2::Number) {}
     void typedefSlot(CustomQObject2Star) {}
     void namespacedQObjectSlot(SomeNamespace2::NamespacedQObject2*) {}
@@ -3253,7 +3244,7 @@ void tst_Moc::autoPropertyMetaTypeRegistration()
     AutoRegistrationObject aro;
 
     static const int numPropertiesUnderTest = 15;
-    QVector<int> propertyMetaTypeIds;
+    QList<int> propertyMetaTypeIds;
     propertyMetaTypeIds.reserve(numPropertiesUnderTest);
 
     const QMetaObject *metaObject = aro.metaObject();
@@ -3266,23 +3257,17 @@ void tst_Moc::autoPropertyMetaTypeRegistration()
     }
 
     // Verify that QMetaProperty::userType gave us what we expected.
-    QVector<int> expectedMetaTypeIds = QVector<int>()
-        << QMetaType::QString            // QObject::userType
-        << QMetaType::QObjectStar        // AutoRegistrationObject::object
-        << qMetaTypeId<CustomQObject*>() // etc.
-        << qMetaTypeId<QSharedPointer<CustomQObject> >()
-        << qMetaTypeId<QWeakPointer<CustomQObject> >()
-        << qMetaTypeId<QPointer<CustomQObject> >()
-        << qMetaTypeId<QList<int> >()
-        << qMetaTypeId<QVector<QVariant> >()
-        << qMetaTypeId<QList<CustomQObject*> >()
-        << qMetaTypeId<QVector<QList<int> > >()
-        << qMetaTypeId<QVector<QList<CustomQObject*> > >()
-        << qMetaTypeId<CustomQObject::Number>()
-        << qMetaTypeId<CustomQObjectStar>()
-        << qMetaTypeId<SomeNamespace::NamespacedQObject*>()
-        << qMetaTypeId<SomeNamespace::NamespacedNonQObject>()
-        ;
+    QList<int> expectedMetaTypeIds = QList<int>()
+            << QMetaType::QString // QObject::userType
+            << QMetaType::QObjectStar // AutoRegistrationObject::object
+            << qMetaTypeId<CustomQObject *>() // etc.
+            << qMetaTypeId<QSharedPointer<CustomQObject>>()
+            << qMetaTypeId<QWeakPointer<CustomQObject>>() << qMetaTypeId<QPointer<CustomQObject>>()
+            << qMetaTypeId<QList<int>>() << qMetaTypeId<QList<QVariant>>()
+            << qMetaTypeId<QList<CustomQObject *>>() << qMetaTypeId<QList<QList<int>>>()
+            << qMetaTypeId<QList<QList<CustomQObject *>>>() << qMetaTypeId<CustomQObject::Number>()
+            << qMetaTypeId<CustomQObjectStar>() << qMetaTypeId<SomeNamespace::NamespacedQObject *>()
+            << qMetaTypeId<SomeNamespace::NamespacedNonQObject>();
 
     QCOMPARE(propertyMetaTypeIds, expectedMetaTypeIds);
 }
@@ -3303,7 +3288,7 @@ void tst_Moc::autoMethodArgumentMetaTypeRegistration()
 {
     AutoRegistrationObject aro;
 
-    QVector<int> methodArgMetaTypeIds;
+    QList<int> methodArgMetaTypeIds;
 
     const QMetaObject *metaObject = aro.metaObject();
 
@@ -3328,20 +3313,20 @@ void tst_Moc::autoMethodArgumentMetaTypeRegistration()
         ++i; \
     }
 
-#define FOR_EACH_SLOT_ARG_TYPE(F) \
-    F(QObject*) \
-    F(CustomQObject2*) \
-    F(QSharedPointer<CustomQObject2>) \
-    F(QWeakPointer<CustomQObject2>) \
-    F(QPointer<CustomQObject2>) \
-    F(QList<int>) \
-    F(QVector<QVariant>) \
-    F(QList<CustomQObject2*>) \
-    F(QVector<QList<int> >) \
-    F(QVector<QList<CustomQObject2*> >) \
-    F(CustomQObject2::Number) \
-    F(CustomQObject2Star) \
-    F(SomeNamespace2::NamespacedQObject2*) \
+#define FOR_EACH_SLOT_ARG_TYPE(F)                                                                  \
+    F(QObject *)                                                                                   \
+    F(CustomQObject2 *)                                                                            \
+    F(QSharedPointer<CustomQObject2>)                                                              \
+    F(QWeakPointer<CustomQObject2>)                                                                \
+    F(QPointer<CustomQObject2>)                                                                    \
+    F(QList<int>)                                                                                  \
+    F(QList<QVariant>)                                                                             \
+    F(QList<CustomQObject2 *>)                                                                     \
+    F(QList<QList<int>>)                                                                           \
+    F(QList<QList<CustomQObject2 *>>)                                                              \
+    F(CustomQObject2::Number)                                                                      \
+    F(CustomQObject2Star)                                                                          \
+    F(SomeNamespace2::NamespacedQObject2 *)                                                        \
     F(SomeNamespace2::NamespacedNonQObject2)
 
     // Note: mulit-arg slots are tested below.
@@ -3351,27 +3336,20 @@ void tst_Moc::autoMethodArgumentMetaTypeRegistration()
 #undef TYPE_LOOP
 #undef FOR_EACH_SLOT_ARG_TYPE
 
-    QVector<int> expectedMetaTypeIds = QVector<int>()
-        << QMetaType::QObjectStar
-        << qMetaTypeId<CustomQObject2*>()
-        << qMetaTypeId<QSharedPointer<CustomQObject2> >()
-        << qMetaTypeId<QWeakPointer<CustomQObject2> >()
-        << qMetaTypeId<QPointer<CustomQObject2> >()
-        << qMetaTypeId<QList<int> >()
-        << qMetaTypeId<QVector<QVariant> >()
-        << qMetaTypeId<QList<CustomQObject2*> >()
-        << qMetaTypeId<QVector<QList<int> > >()
-        << qMetaTypeId<QVector<QList<CustomQObject2*> > >()
-        << qMetaTypeId<CustomQObject2::Number>()
-        << qMetaTypeId<CustomQObject2Star>()
-        << qMetaTypeId<SomeNamespace2::NamespacedQObject2*>()
-        << qMetaTypeId<SomeNamespace2::NamespacedNonQObject2>()
-        ;
+    QList<int> expectedMetaTypeIds = QList<int>()
+            << QMetaType::QObjectStar << qMetaTypeId<CustomQObject2 *>()
+            << qMetaTypeId<QSharedPointer<CustomQObject2>>()
+            << qMetaTypeId<QWeakPointer<CustomQObject2>>()
+            << qMetaTypeId<QPointer<CustomQObject2>>() << qMetaTypeId<QList<int>>()
+            << qMetaTypeId<QList<QVariant>>() << qMetaTypeId<QList<CustomQObject2 *>>()
+            << qMetaTypeId<QList<QList<int>>>() << qMetaTypeId<QList<QList<CustomQObject2 *>>>()
+            << qMetaTypeId<CustomQObject2::Number>() << qMetaTypeId<CustomQObject2Star>()
+            << qMetaTypeId<SomeNamespace2::NamespacedQObject2 *>()
+            << qMetaTypeId<SomeNamespace2::NamespacedNonQObject2>();
 
     QCOMPARE(methodArgMetaTypeIds, expectedMetaTypeIds);
 
-
-    QVector<int> methodMultiArgMetaTypeIds;
+    QList<int> methodMultiArgMetaTypeIds;
 
     {
         const QMetaMethod method = metaObject->method(i);
@@ -3422,23 +3400,12 @@ void tst_Moc::autoMethodArgumentMetaTypeRegistration()
         ++i;
     }
 
-    QVector<int> expectedMultiMetaTypeIds = QVector<int>()
-        << QMetaType::Int
-        << qMetaTypeId<CustomObject3>()
-        << qMetaTypeId<CustomObject4>()
-        << QMetaType::Int
-        << qMetaTypeId<CustomObject5>()
-        << qMetaTypeId<CustomObject6>()
-        << qMetaTypeId<CustomObject7>()
-        << QMetaType::Int
-        << qMetaTypeId<CustomObject8>()
-        << QMetaType::Int
-        << qMetaTypeId<CustomObject9>()
-        << qMetaTypeId<CustomObject10>()
-        << QMetaType::Int
-        << qMetaTypeId<CustomObject11>()
-        << QMetaType::Int
-        ;
+    QList<int> expectedMultiMetaTypeIds = QList<int>()
+            << QMetaType::Int << qMetaTypeId<CustomObject3>() << qMetaTypeId<CustomObject4>()
+            << QMetaType::Int << qMetaTypeId<CustomObject5>() << qMetaTypeId<CustomObject6>()
+            << qMetaTypeId<CustomObject7>() << QMetaType::Int << qMetaTypeId<CustomObject8>()
+            << QMetaType::Int << qMetaTypeId<CustomObject9>() << qMetaTypeId<CustomObject10>()
+            << QMetaType::Int << qMetaTypeId<CustomObject11>() << QMetaType::Int;
 
     QCOMPARE(methodMultiArgMetaTypeIds, expectedMultiMetaTypeIds);
 
@@ -3449,7 +3416,7 @@ void tst_Moc::autoSignalSpyMetaTypeRegistration()
 {
     AutoRegistrationObject aro;
 
-    QVector<int> methodArgMetaTypeIds;
+    QList<int> methodArgMetaTypeIds;
 
     const QMetaObject *metaObject = aro.metaObject();
 
@@ -3674,7 +3641,7 @@ void tst_Moc::relatedMetaObjectsInGadget()
 
 void tst_Moc::relatedMetaObjectsNameConflict_data()
 {
-    typedef QVector<const QMetaObject*> QMetaObjects;
+    typedef QList<const QMetaObject *> QMetaObjects;
     QTest::addColumn<const QMetaObject*>("dependingObject");
     QTest::addColumn<QMetaObjects>("relatedMetaObjects");
 
@@ -3705,7 +3672,7 @@ void tst_Moc::relatedMetaObjectsNameConflict_data()
 
 void tst_Moc::relatedMetaObjectsNameConflict()
 {
-    typedef QVector<const QMetaObject*> QMetaObjects;
+    typedef QList<const QMetaObject *> QMetaObjects;
     QFETCH(const QMetaObject*, dependingObject);
     QFETCH(QMetaObjects, relatedMetaObjects);
 
@@ -3886,7 +3853,8 @@ void tst_Moc::optionsFileError()
 #endif
 }
 
-static void checkEnum(const QMetaEnum &enumerator, const QByteArray &name, const QVector<QPair<QByteArray, int >> &keys)
+static void checkEnum(const QMetaEnum &enumerator, const QByteArray &name,
+                      const QList<QPair<QByteArray, int>> &keys)
 {
     QCOMPARE(name, QByteArray{enumerator.name()});
     QCOMPARE(keys.size(), enumerator.keyCount());
