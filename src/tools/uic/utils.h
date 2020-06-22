@@ -42,7 +42,7 @@ inline bool toBool(const QString &str)
 inline QString toString(const DomString *str)
 { return str ? str->text() : QString(); }
 
-inline QHash<QString, DomProperty *> propertyMap(const QVector<DomProperty *> &properties)
+inline QHash<QString, DomProperty *> propertyMap(const QList<DomProperty *> &properties)
 {
     QHash<QString, DomProperty *> map;
     for (DomProperty *p : properties)

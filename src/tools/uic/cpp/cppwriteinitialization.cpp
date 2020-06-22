@@ -2338,7 +2338,7 @@ void WriteInitialization::initializeTreeWidget(DomWidget *w)
     conditions an item is needed needs to be done bottom-up, the whole process makes
     two passes, storing the intermediate result in a recursive StringInitializerListMap.
 */
-WriteInitialization::Items WriteInitialization::initializeTreeWidgetItems(const QVector<DomItem *> &domItems)
+WriteInitialization::Items WriteInitialization::initializeTreeWidgetItems(const QList<DomItem *> &domItems)
 {
     // items
     Items items;

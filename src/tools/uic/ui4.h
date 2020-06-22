@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -348,14 +348,14 @@ public:
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
 
     // child element accessors
-    inline QVector<DomInclude *> elementInclude() const { return m_include; }
-    void setElementInclude(const QVector<DomInclude *> &a);
+    inline QList<DomInclude *> elementInclude() const { return m_include; }
+    void setElementInclude(const QList<DomInclude *> &a);
 
 private:
 
     // child element data
     uint m_children = 0;
-    QVector<DomInclude *> m_include;
+    QList<DomInclude *> m_include;
 
     enum Child {
         Include = 1
@@ -412,8 +412,8 @@ public:
     inline void clearAttributeName() { m_has_attr_name = false; }
 
     // child element accessors
-    inline QVector<DomResource *> elementInclude() const { return m_include; }
-    void setElementInclude(const QVector<DomResource *> &a);
+    inline QList<DomResource *> elementInclude() const { return m_include; }
+    void setElementInclude(const QList<DomResource *> &a);
 
 private:
     // attribute data
@@ -422,7 +422,7 @@ private:
 
     // child element data
     uint m_children = 0;
-    QVector<DomResource *> m_include;
+    QList<DomResource *> m_include;
 
     enum Child {
         Include = 1
@@ -466,17 +466,17 @@ public:
     inline void clearAttributeName() { m_has_attr_name = false; }
 
     // child element accessors
-    inline QVector<DomAction *> elementAction() const { return m_action; }
-    void setElementAction(const QVector<DomAction *> &a);
+    inline QList<DomAction *> elementAction() const { return m_action; }
+    void setElementAction(const QList<DomAction *> &a);
 
-    inline QVector<DomActionGroup *> elementActionGroup() const { return m_actionGroup; }
-    void setElementActionGroup(const QVector<DomActionGroup *> &a);
+    inline QList<DomActionGroup *> elementActionGroup() const { return m_actionGroup; }
+    void setElementActionGroup(const QList<DomActionGroup *> &a);
 
-    inline QVector<DomProperty *> elementProperty() const { return m_property; }
-    void setElementProperty(const QVector<DomProperty *> &a);
+    inline QList<DomProperty *> elementProperty() const { return m_property; }
+    void setElementProperty(const QList<DomProperty *> &a);
 
-    inline QVector<DomProperty *> elementAttribute() const { return m_attribute; }
-    void setElementAttribute(const QVector<DomProperty *> &a);
+    inline QList<DomProperty *> elementAttribute() const { return m_attribute; }
+    void setElementAttribute(const QList<DomProperty *> &a);
 
 private:
     // attribute data
@@ -485,10 +485,10 @@ private:
 
     // child element data
     uint m_children = 0;
-    QVector<DomAction *> m_action;
-    QVector<DomActionGroup *> m_actionGroup;
-    QVector<DomProperty *> m_property;
-    QVector<DomProperty *> m_attribute;
+    QList<DomAction *> m_action;
+    QList<DomActionGroup *> m_actionGroup;
+    QList<DomProperty *> m_property;
+    QList<DomProperty *> m_attribute;
 
     enum Child {
         Action = 1,
@@ -519,11 +519,11 @@ public:
     inline void clearAttributeMenu() { m_has_attr_menu = false; }
 
     // child element accessors
-    inline QVector<DomProperty *> elementProperty() const { return m_property; }
-    void setElementProperty(const QVector<DomProperty *> &a);
+    inline QList<DomProperty *> elementProperty() const { return m_property; }
+    void setElementProperty(const QList<DomProperty *> &a);
 
-    inline QVector<DomProperty *> elementAttribute() const { return m_attribute; }
-    void setElementAttribute(const QVector<DomProperty *> &a);
+    inline QList<DomProperty *> elementAttribute() const { return m_attribute; }
+    void setElementAttribute(const QList<DomProperty *> &a);
 
 private:
     // attribute data
@@ -535,8 +535,8 @@ private:
 
     // child element data
     uint m_children = 0;
-    QVector<DomProperty *> m_property;
-    QVector<DomProperty *> m_attribute;
+    QList<DomProperty *> m_property;
+    QList<DomProperty *> m_attribute;
 
     enum Child {
         Property = 1,
@@ -581,11 +581,11 @@ public:
     inline void clearAttributeName() { m_has_attr_name = false; }
 
     // child element accessors
-    inline QVector<DomProperty *> elementProperty() const { return m_property; }
-    void setElementProperty(const QVector<DomProperty *> &a);
+    inline QList<DomProperty *> elementProperty() const { return m_property; }
+    void setElementProperty(const QList<DomProperty *> &a);
 
-    inline QVector<DomProperty *> elementAttribute() const { return m_attribute; }
-    void setElementAttribute(const QVector<DomProperty *> &a);
+    inline QList<DomProperty *> elementAttribute() const { return m_attribute; }
+    void setElementAttribute(const QList<DomProperty *> &a);
 
 private:
     // attribute data
@@ -594,8 +594,8 @@ private:
 
     // child element data
     uint m_children = 0;
-    QVector<DomProperty *> m_property;
-    QVector<DomProperty *> m_attribute;
+    QList<DomProperty *> m_property;
+    QList<DomProperty *> m_attribute;
 
     enum Child {
         Property = 1,
@@ -613,14 +613,14 @@ public:
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
 
     // child element accessors
-    inline QVector<DomButtonGroup *> elementButtonGroup() const { return m_buttonGroup; }
-    void setElementButtonGroup(const QVector<DomButtonGroup *> &a);
+    inline QList<DomButtonGroup *> elementButtonGroup() const { return m_buttonGroup; }
+    void setElementButtonGroup(const QList<DomButtonGroup *> &a);
 
 private:
 
     // child element data
     uint m_children = 0;
-    QVector<DomButtonGroup *> m_buttonGroup;
+    QList<DomButtonGroup *> m_buttonGroup;
 
     enum Child {
         ButtonGroup = 1
@@ -637,14 +637,14 @@ public:
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
 
     // child element accessors
-    inline QVector<DomCustomWidget *> elementCustomWidget() const { return m_customWidget; }
-    void setElementCustomWidget(const QVector<DomCustomWidget *> &a);
+    inline QList<DomCustomWidget *> elementCustomWidget() const { return m_customWidget; }
+    void setElementCustomWidget(const QList<DomCustomWidget *> &a);
 
 private:
 
     // child element data
     uint m_children = 0;
-    QVector<DomCustomWidget *> m_customWidget;
+    QList<DomCustomWidget *> m_customWidget;
 
     enum Child {
         CustomWidget = 1
@@ -891,14 +891,14 @@ public:
     inline void clearAttributeColumnMinimumWidth() { m_has_attr_columnMinimumWidth = false; }
 
     // child element accessors
-    inline QVector<DomProperty *> elementProperty() const { return m_property; }
-    void setElementProperty(const QVector<DomProperty *> &a);
+    inline QList<DomProperty *> elementProperty() const { return m_property; }
+    void setElementProperty(const QList<DomProperty *> &a);
 
-    inline QVector<DomProperty *> elementAttribute() const { return m_attribute; }
-    void setElementAttribute(const QVector<DomProperty *> &a);
+    inline QList<DomProperty *> elementAttribute() const { return m_attribute; }
+    void setElementAttribute(const QList<DomProperty *> &a);
 
-    inline QVector<DomLayoutItem *> elementItem() const { return m_item; }
-    void setElementItem(const QVector<DomLayoutItem *> &a);
+    inline QList<DomLayoutItem *> elementItem() const { return m_item; }
+    void setElementItem(const QList<DomLayoutItem *> &a);
 
 private:
     // attribute data
@@ -925,9 +925,9 @@ private:
 
     // child element data
     uint m_children = 0;
-    QVector<DomProperty *> m_property;
-    QVector<DomProperty *> m_attribute;
-    QVector<DomLayoutItem *> m_item;
+    QList<DomProperty *> m_property;
+    QList<DomProperty *> m_attribute;
+    QList<DomLayoutItem *> m_item;
 
     enum Child {
         Property = 1,
@@ -1023,14 +1023,14 @@ public:
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
 
     // child element accessors
-    inline QVector<DomProperty *> elementProperty() const { return m_property; }
-    void setElementProperty(const QVector<DomProperty *> &a);
+    inline QList<DomProperty *> elementProperty() const { return m_property; }
+    void setElementProperty(const QList<DomProperty *> &a);
 
 private:
 
     // child element data
     uint m_children = 0;
-    QVector<DomProperty *> m_property;
+    QList<DomProperty *> m_property;
 
     enum Child {
         Property = 1
@@ -1047,14 +1047,14 @@ public:
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
 
     // child element accessors
-    inline QVector<DomProperty *> elementProperty() const { return m_property; }
-    void setElementProperty(const QVector<DomProperty *> &a);
+    inline QList<DomProperty *> elementProperty() const { return m_property; }
+    void setElementProperty(const QList<DomProperty *> &a);
 
 private:
 
     // child element data
     uint m_children = 0;
-    QVector<DomProperty *> m_property;
+    QList<DomProperty *> m_property;
 
     enum Child {
         Property = 1
@@ -1082,11 +1082,11 @@ public:
     inline void clearAttributeColumn() { m_has_attr_column = false; }
 
     // child element accessors
-    inline QVector<DomProperty *> elementProperty() const { return m_property; }
-    void setElementProperty(const QVector<DomProperty *> &a);
+    inline QList<DomProperty *> elementProperty() const { return m_property; }
+    void setElementProperty(const QList<DomProperty *> &a);
 
-    inline QVector<DomItem *> elementItem() const { return m_item; }
-    void setElementItem(const QVector<DomItem *> &a);
+    inline QList<DomItem *> elementItem() const { return m_item; }
+    void setElementItem(const QList<DomItem *> &a);
 
 private:
     // attribute data
@@ -1098,8 +1098,8 @@ private:
 
     // child element data
     uint m_children = 0;
-    QVector<DomProperty *> m_property;
-    QVector<DomItem *> m_item;
+    QList<DomProperty *> m_property;
+    QList<DomItem *> m_item;
 
     enum Child {
         Property = 1,
@@ -1136,35 +1136,35 @@ public:
     inline QStringList elementClass() const { return m_class; }
     void setElementClass(const QStringList &a);
 
-    inline QVector<DomProperty *> elementProperty() const { return m_property; }
-    void setElementProperty(const QVector<DomProperty *> &a);
+    inline QList<DomProperty *> elementProperty() const { return m_property; }
+    void setElementProperty(const QList<DomProperty *> &a);
 
-    inline QVector<DomProperty *> elementAttribute() const { return m_attribute; }
-    void setElementAttribute(const QVector<DomProperty *> &a);
+    inline QList<DomProperty *> elementAttribute() const { return m_attribute; }
+    void setElementAttribute(const QList<DomProperty *> &a);
 
-    inline QVector<DomRow *> elementRow() const { return m_row; }
-    void setElementRow(const QVector<DomRow *> &a);
+    inline QList<DomRow *> elementRow() const { return m_row; }
+    void setElementRow(const QList<DomRow *> &a);
 
-    inline QVector<DomColumn *> elementColumn() const { return m_column; }
-    void setElementColumn(const QVector<DomColumn *> &a);
+    inline QList<DomColumn *> elementColumn() const { return m_column; }
+    void setElementColumn(const QList<DomColumn *> &a);
 
-    inline QVector<DomItem *> elementItem() const { return m_item; }
-    void setElementItem(const QVector<DomItem *> &a);
+    inline QList<DomItem *> elementItem() const { return m_item; }
+    void setElementItem(const QList<DomItem *> &a);
 
-    inline QVector<DomLayout *> elementLayout() const { return m_layout; }
-    void setElementLayout(const QVector<DomLayout *> &a);
+    inline QList<DomLayout *> elementLayout() const { return m_layout; }
+    void setElementLayout(const QList<DomLayout *> &a);
 
-    inline QVector<DomWidget *> elementWidget() const { return m_widget; }
-    void setElementWidget(const QVector<DomWidget *> &a);
+    inline QList<DomWidget *> elementWidget() const { return m_widget; }
+    void setElementWidget(const QList<DomWidget *> &a);
 
-    inline QVector<DomAction *> elementAction() const { return m_action; }
-    void setElementAction(const QVector<DomAction *> &a);
+    inline QList<DomAction *> elementAction() const { return m_action; }
+    void setElementAction(const QList<DomAction *> &a);
 
-    inline QVector<DomActionGroup *> elementActionGroup() const { return m_actionGroup; }
-    void setElementActionGroup(const QVector<DomActionGroup *> &a);
+    inline QList<DomActionGroup *> elementActionGroup() const { return m_actionGroup; }
+    void setElementActionGroup(const QList<DomActionGroup *> &a);
 
-    inline QVector<DomActionRef *> elementAddAction() const { return m_addAction; }
-    void setElementAddAction(const QVector<DomActionRef *> &a);
+    inline QList<DomActionRef *> elementAddAction() const { return m_addAction; }
+    void setElementAddAction(const QList<DomActionRef *> &a);
 
     inline QStringList elementZOrder() const { return m_zOrder; }
     void setElementZOrder(const QStringList &a);
@@ -1183,16 +1183,16 @@ private:
     // child element data
     uint m_children = 0;
     QStringList m_class;
-    QVector<DomProperty *> m_property;
-    QVector<DomProperty *> m_attribute;
-    QVector<DomRow *> m_row;
-    QVector<DomColumn *> m_column;
-    QVector<DomItem *> m_item;
-    QVector<DomLayout *> m_layout;
-    QVector<DomWidget *> m_widget;
-    QVector<DomAction *> m_action;
-    QVector<DomActionGroup *> m_actionGroup;
-    QVector<DomActionRef *> m_addAction;
+    QList<DomProperty *> m_property;
+    QList<DomProperty *> m_attribute;
+    QList<DomRow *> m_row;
+    QList<DomColumn *> m_column;
+    QList<DomItem *> m_item;
+    QList<DomLayout *> m_layout;
+    QList<DomWidget *> m_widget;
+    QList<DomAction *> m_action;
+    QList<DomActionGroup *> m_actionGroup;
+    QList<DomActionRef *> m_addAction;
     QStringList m_zOrder;
 
     enum Child {
@@ -1227,8 +1227,8 @@ public:
     inline void clearAttributeName() { m_has_attr_name = false; }
 
     // child element accessors
-    inline QVector<DomProperty *> elementProperty() const { return m_property; }
-    void setElementProperty(const QVector<DomProperty *> &a);
+    inline QList<DomProperty *> elementProperty() const { return m_property; }
+    void setElementProperty(const QList<DomProperty *> &a);
 
 private:
     // attribute data
@@ -1237,7 +1237,7 @@ private:
 
     // child element data
     uint m_children = 0;
-    QVector<DomProperty *> m_property;
+    QList<DomProperty *> m_property;
 
     enum Child {
         Property = 1
@@ -1405,8 +1405,8 @@ public:
     inline void clearAttributeCoordinateMode() { m_has_attr_coordinateMode = false; }
 
     // child element accessors
-    inline QVector<DomGradientStop *> elementGradientStop() const { return m_gradientStop; }
-    void setElementGradientStop(const QVector<DomGradientStop *> &a);
+    inline QList<DomGradientStop *> elementGradientStop() const { return m_gradientStop; }
+    void setElementGradientStop(const QList<DomGradientStop *> &a);
 
 private:
     // attribute data
@@ -1451,7 +1451,7 @@ private:
 
     // child element data
     uint m_children = 0;
-    QVector<DomGradientStop *> m_gradientStop;
+    QList<DomGradientStop *> m_gradientStop;
 
     enum Child {
         GradientStop = 1
@@ -1549,18 +1549,18 @@ public:
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
 
     // child element accessors
-    inline QVector<DomColorRole *> elementColorRole() const { return m_colorRole; }
-    void setElementColorRole(const QVector<DomColorRole *> &a);
+    inline QList<DomColorRole *> elementColorRole() const { return m_colorRole; }
+    void setElementColorRole(const QList<DomColorRole *> &a);
 
-    inline QVector<DomColor *> elementColor() const { return m_color; }
-    void setElementColor(const QVector<DomColor *> &a);
+    inline QList<DomColor *> elementColor() const { return m_color; }
+    void setElementColor(const QList<DomColor *> &a);
 
 private:
 
     // child element data
     uint m_children = 0;
-    QVector<DomColorRole *> m_colorRole;
-    QVector<DomColor *> m_color;
+    QList<DomColorRole *> m_colorRole;
+    QList<DomColor *> m_color;
 
     enum Child {
         ColorRole = 1,
@@ -2660,14 +2660,14 @@ public:
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
 
     // child element accessors
-    inline QVector<DomConnection *> elementConnection() const { return m_connection; }
-    void setElementConnection(const QVector<DomConnection *> &a);
+    inline QList<DomConnection *> elementConnection() const { return m_connection; }
+    void setElementConnection(const QList<DomConnection *> &a);
 
 private:
 
     // child element data
     uint m_children = 0;
-    QVector<DomConnection *> m_connection;
+    QList<DomConnection *> m_connection;
 
     enum Child {
         Connection = 1
@@ -2739,14 +2739,14 @@ public:
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
 
     // child element accessors
-    inline QVector<DomConnectionHint *> elementHint() const { return m_hint; }
-    void setElementHint(const QVector<DomConnectionHint *> &a);
+    inline QList<DomConnectionHint *> elementHint() const { return m_hint; }
+    void setElementHint(const QList<DomConnectionHint *> &a);
 
 private:
 
     // child element data
     uint m_children = 0;
-    QVector<DomConnectionHint *> m_hint;
+    QList<DomConnectionHint *> m_hint;
 
     enum Child {
         Hint = 1
@@ -2805,14 +2805,14 @@ public:
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
 
     // child element accessors
-    inline QVector<DomProperty *> elementProperty() const { return m_property; }
-    void setElementProperty(const QVector<DomProperty *> &a);
+    inline QList<DomProperty *> elementProperty() const { return m_property; }
+    void setElementProperty(const QList<DomProperty *> &a);
 
 private:
 
     // child element data
     uint m_children = 0;
-    QVector<DomProperty *> m_property;
+    QList<DomProperty *> m_property;
 
     enum Child {
         Property = 1
@@ -2858,18 +2858,18 @@ public:
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
 
     // child element accessors
-    inline QVector<DomPropertyToolTip *> elementTooltip() const { return m_tooltip; }
-    void setElementTooltip(const QVector<DomPropertyToolTip *> &a);
+    inline QList<DomPropertyToolTip *> elementTooltip() const { return m_tooltip; }
+    void setElementTooltip(const QList<DomPropertyToolTip *> &a);
 
-    inline QVector<DomStringPropertySpecification *> elementStringpropertyspecification() const { return m_stringpropertyspecification; }
-    void setElementStringpropertyspecification(const QVector<DomStringPropertySpecification *> &a);
+    inline QList<DomStringPropertySpecification *> elementStringpropertyspecification() const { return m_stringpropertyspecification; }
+    void setElementStringpropertyspecification(const QList<DomStringPropertySpecification *> &a);
 
 private:
 
     // child element data
     uint m_children = 0;
-    QVector<DomPropertyToolTip *> m_tooltip;
-    QVector<DomStringPropertySpecification *> m_stringpropertyspecification;
+    QList<DomPropertyToolTip *> m_tooltip;
+    QList<DomStringPropertySpecification *> m_stringpropertyspecification;
 
     enum Child {
         Tooltip = 1,

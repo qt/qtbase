@@ -88,7 +88,7 @@ namespace CPP {
 
 struct WriteInitialization : public TreeWalker
 {
-    using DomPropertyList = QVector<DomProperty*>;
+    using DomPropertyList = QList<DomProperty*>;
     using DomPropertyMap = QHash<QString, DomProperty*>;
 
     WriteInitialization(Uic *uic);
@@ -190,7 +190,7 @@ private:
         };
         ItemData m_setupUiData;
         ItemData m_retranslateUiData;
-        QVector<Item *> m_children;
+        QList<Item *> m_children;
         Item *m_parent = nullptr;
 
         const QString m_itemClassName;
@@ -199,7 +199,7 @@ private:
         QTextStream &m_retranslateUiStream;
         Driver *m_driver;
     };
-    using Items = QVector<Item *>;
+    using Items = QList<Item *>;
 
     void addInitializer(Item *item,
             const QString &name, int column, const QString &value, const QString &directive = QString(), bool translatable = false) const;
@@ -218,7 +218,7 @@ private:
     void initializeComboBox(DomWidget *w);
     void initializeListWidget(DomWidget *w);
     void initializeTreeWidget(DomWidget *w);
-    Items initializeTreeWidgetItems(const QVector<DomItem *> &domItems);
+    Items initializeTreeWidgetItems(const QList<DomItem *> &domItems);
     void initializeTableWidget(DomWidget *w);
 
     QString disableSorting(DomWidget *w, const QString &varName);
@@ -263,7 +263,7 @@ private:
     QStack<DomWidget*> m_widgetChain;
     QStack<DomLayout*> m_layoutChain;
     QStack<DomActionGroup*> m_actionGroupChain;
-    QVector<Buddy> m_buddies;
+    QList<Buddy> m_buddies;
 
     QSet<QString> m_buttonGroups;
     using ColorBrushHash = QHash<uint, QString>;
