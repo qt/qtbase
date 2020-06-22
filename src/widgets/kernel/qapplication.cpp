@@ -1952,10 +1952,12 @@ QWidget *QApplicationPrivate::focusNextPrevChild_helper(QWidget *toplevel, bool 
         // \a next). This is to ensure that we can tab in and out of compound widgets
         // without getting stuck in a tab-loop between parent and child.
         QWidget *focusProxy = test->d_func()->deepestFocusProxy();
-
-        if ((test->focusPolicy() & focus_flag) == focus_flag
-            && !(next && focusProxy && focusProxy->isAncestorOf(test))
-            && !(!next && focusProxy && test->isAncestorOf(focusProxy))
+        const bool canTakeFocus = ((focusProxy ? focusProxy->focusPolicy() : test->focusPolicy())
+                                  & focus_flag) == focus_flag;
+        const bool composites = focusProxy ? (next ? focusProxy->isAncestorOf(test)
+                                                   : test->isAncestorOf(focusProxy))
+                                           : false;
+        if (canTakeFocus && !composites
             && test->isVisibleTo(toplevel) && test->isEnabled()
             && !(w->windowType() == Qt::SubWindow && !w->isAncestorOf(test))
             && (toplevel->windowType() != Qt::SubWindow || toplevel->isAncestorOf(test))
