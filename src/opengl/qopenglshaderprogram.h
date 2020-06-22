@@ -140,11 +140,11 @@ public:
     void setPatchVertexCount(int count);
     int patchVertexCount() const;
 
-    void setDefaultOuterTessellationLevels(const QVector<float> &levels);
-    QVector<float> defaultOuterTessellationLevels() const;
+    void setDefaultOuterTessellationLevels(const QList<float> &levels);
+    QList<float> defaultOuterTessellationLevels() const;
 
-    void setDefaultInnerTessellationLevels(const QVector<float> &levels);
-    QVector<float> defaultInnerTessellationLevels() const;
+    void setDefaultInnerTessellationLevels(const QList<float> &levels);
+    QList<float> defaultInnerTessellationLevels() const;
 
     void bindAttributeLocation(const char *name, int location);
     void bindAttributeLocation(const QByteArray& name, int location);

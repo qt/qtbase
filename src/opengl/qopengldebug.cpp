@@ -1079,10 +1079,8 @@ public:
     void handleMessage(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *rawMessage);
     void controlDebugMessages(QOpenGLDebugMessage::Sources sources,
                               QOpenGLDebugMessage::Types types,
-                              QOpenGLDebugMessage::Severities severities,
-                              const QVector<GLuint> &ids,
-                              const QByteArray &callerName,
-                              bool enable);
+                              QOpenGLDebugMessage::Severities severities, const QList<GLuint> &ids,
+                              const QByteArray &callerName, bool enable);
     void _q_contextAboutToBeDestroyed();
 
     qt_glDebugMessageControl_t glDebugMessageControl;
@@ -1159,9 +1157,8 @@ void QOpenGLDebugLoggerPrivate::handleMessage(GLenum source,
 void QOpenGLDebugLoggerPrivate::controlDebugMessages(QOpenGLDebugMessage::Sources sources,
                                                      QOpenGLDebugMessage::Types types,
                                                      QOpenGLDebugMessage::Severities severities,
-                                                     const QVector<GLuint> &ids,
-                                                     const QByteArray &callerName,
-                                                     bool enable)
+                                                     const QList<GLuint> &ids,
+                                                     const QByteArray &callerName, bool enable)
 {
     if (!initialized) {
         qWarning("QOpenGLDebugLogger::%s(): object must be initialized before enabling/disabling messages", callerName.constData());
@@ -1644,12 +1641,8 @@ void QOpenGLDebugLogger::enableMessages(QOpenGLDebugMessage::Sources sources,
                                         QOpenGLDebugMessage::Severities severities)
 {
     Q_D(QOpenGLDebugLogger);
-    d->controlDebugMessages(sources,
-                            types,
-                            severities,
-                            QVector<GLuint>(),
-                            QByteArrayLiteral("enableMessages"),
-                            true);
+    d->controlDebugMessages(sources, types, severities, QList<GLuint>(),
+                            QByteArrayLiteral("enableMessages"), true);
 }
 
 /*!
@@ -1660,7 +1653,7 @@ void QOpenGLDebugLogger::enableMessages(QOpenGLDebugMessage::Sources sources,
 
     \sa disableMessages(), pushGroup(), popGroup()
 */
-void QOpenGLDebugLogger::enableMessages(const QVector<GLuint> &ids,
+void QOpenGLDebugLogger::enableMessages(const QList<GLuint> &ids,
                                         QOpenGLDebugMessage::Sources sources,
                                         QOpenGLDebugMessage::Types types)
 {
@@ -1686,12 +1679,8 @@ void QOpenGLDebugLogger::disableMessages(QOpenGLDebugMessage::Sources sources,
                                          QOpenGLDebugMessage::Severities severities)
 {
     Q_D(QOpenGLDebugLogger);
-    d->controlDebugMessages(sources,
-                            types,
-                            severities,
-                            QVector<GLuint>(),
-                            QByteArrayLiteral("disableMessages"),
-                            false);
+    d->controlDebugMessages(sources, types, severities, QList<GLuint>(),
+                            QByteArrayLiteral("disableMessages"), false);
 }
 
 /*!
@@ -1702,7 +1691,7 @@ void QOpenGLDebugLogger::disableMessages(QOpenGLDebugMessage::Sources sources,
 
     \sa enableMessages(), pushGroup(), popGroup()
 */
-void QOpenGLDebugLogger::disableMessages(const QVector<GLuint> &ids,
+void QOpenGLDebugLogger::disableMessages(const QList<GLuint> &ids,
                                          QOpenGLDebugMessage::Sources sources,
                                          QOpenGLDebugMessage::Types types)
 {

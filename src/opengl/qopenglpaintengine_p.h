@@ -306,7 +306,7 @@ public:
 
     QOpenGL2PEXVertexArray vertexCoordinateArray;
     QOpenGL2PEXVertexArray textureCoordinateArray;
-    QVector<GLushort> elementIndices;
+    QList<GLushort> elementIndices;
     GLuint elementIndicesVBOId;
     QDataBuffer<GLfloat> opacityArray;
     GLfloat staticVertexCoordinateArray[8];
@@ -332,8 +332,8 @@ public:
     QTriangulatingStroker stroker;
     QDashedStrokeProcessor dasher;
 
-    QVector<GLuint> unusedVBOSToClean;
-    QVector<GLuint> unusedIBOSToClean;
+    QList<GLuint> unusedVBOSToClean;
+    QList<GLuint> unusedIBOSToClean;
 
     const GLfloat *vertexAttribPointers[3];
 };

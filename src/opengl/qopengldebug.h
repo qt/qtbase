@@ -47,7 +47,6 @@
 #include <QtCore/qshareddata.h>
 #include <QtCore/qflags.h>
 #include <QtCore/qlist.h>
-#include <QtCore/qvector.h>
 #include <QtCore/qmetatype.h>
 #include <QtCore/qdebug.h>
 #include <QtGui/qopenglcontext.h>
@@ -184,7 +183,7 @@ public:
                         QOpenGLDebugMessage::Types types = QOpenGLDebugMessage::AnyType,
                         QOpenGLDebugMessage::Severities severities = QOpenGLDebugMessage::AnySeverity);
 
-    void enableMessages(const QVector<GLuint> &ids,
+    void enableMessages(const QList<GLuint> &ids,
                         QOpenGLDebugMessage::Sources sources = QOpenGLDebugMessage::AnySource,
                         QOpenGLDebugMessage::Types types = QOpenGLDebugMessage::AnyType);
 
@@ -192,7 +191,7 @@ public:
                          QOpenGLDebugMessage::Types types = QOpenGLDebugMessage::AnyType,
                          QOpenGLDebugMessage::Severities severities = QOpenGLDebugMessage::AnySeverity);
 
-    void disableMessages(const QVector<GLuint> &ids,
+    void disableMessages(const QList<GLuint> &ids,
                          QOpenGLDebugMessage::Sources sources = QOpenGLDebugMessage::AnySource,
                          QOpenGLDebugMessage::Types types = QOpenGLDebugMessage::AnyType);
 

@@ -487,12 +487,12 @@ public:
     void destroy();
     void recordSample();
     bool isResultAvailable() const;
-    QVector<GLuint64> samples() const;
-    QVector<GLuint64> intervals() const;
+    QList<GLuint64> samples() const;
+    QList<GLuint64> intervals() const;
     void reset();
 
-    QVector<GLuint> timers;
-    mutable QVector<GLuint64> timeSamples;
+    QList<GLuint> timers;
+    mutable QList<GLuint64> timeSamples;
 
     QOpenGLContext *context;
     QOpenGLQueryHelper *core;
@@ -596,7 +596,7 @@ bool QOpenGLTimeMonitorPrivate::isResultAvailable() const
     return available;
 }
 
-QVector<GLuint64> QOpenGLTimeMonitorPrivate::samples() const
+QList<GLuint64> QOpenGLTimeMonitorPrivate::samples() const
 {
     // For the Core and ARB options just ask for the timestamp for each timer query.
     // For the EXT implementation we cannot obtain timestamps so we defer any result
@@ -611,12 +611,12 @@ QVector<GLuint64> QOpenGLTimeMonitorPrivate::samples() const
     return timeSamples;
 }
 
-QVector<GLuint64> QOpenGLTimeMonitorPrivate::intervals() const
+QList<GLuint64> QOpenGLTimeMonitorPrivate::intervals() const
 {
-    QVector<GLuint64> intervals(timers.size() - 1);
+    QList<GLuint64> intervals(timers.size() - 1);
     if (!ext) {
         // Obtain the timestamp samples and calculate the interval durations
-        const QVector<GLuint64> timeStamps = samples();
+        const QList<GLuint64> timeStamps = samples();
         for (int i = 0; i < intervals.size(); ++i)
             intervals[i] = timeStamps[i+1] - timeStamps[i];
     } else {
@@ -794,9 +794,9 @@ bool QOpenGLTimeMonitor::isCreated() const
 }
 
 /*!
-    Returns a QVector containing the object Ids of the OpenGL timer query objects.
+    Returns a QList containing the object Ids of the OpenGL timer query objects.
 */
-QVector<GLuint> QOpenGLTimeMonitor::objectIds() const
+QList<GLuint> QOpenGLTimeMonitor::objectIds() const
 {
     Q_D(const QOpenGLTimeMonitor);
     return d->timers;
@@ -829,7 +829,7 @@ bool QOpenGLTimeMonitor::isResultAvailable() const
 }
 
 /*!
-    Returns a QVector containing the GPU timestamps taken with recordSample().
+    Returns a QList containing the GPU timestamps taken with recordSample().
 
     This function will block until OpenGL indicates the results are available. It
     is recommended to check the availability of the result prior to calling this
@@ -840,14 +840,14 @@ bool QOpenGLTimeMonitor::isResultAvailable() const
 
     \sa waitForIntervals(), isResultAvailable()
 */
-QVector<GLuint64> QOpenGLTimeMonitor::waitForSamples() const
+QList<GLuint64> QOpenGLTimeMonitor::waitForSamples() const
 {
     Q_D(const QOpenGLTimeMonitor);
     return d->samples();
 }
 
 /*!
-    Returns a QVector containing the time intervals delimited by the calls to
+    Returns a QList containing the time intervals delimited by the calls to
     recordSample(). The resulting vector will contain one fewer element as
     this represents the intervening intervals rather than the actual timestamp
     samples.
@@ -858,7 +858,7 @@ QVector<GLuint64> QOpenGLTimeMonitor::waitForSamples() const
 
     \sa waitForSamples(), isResultAvailable()
 */
-QVector<GLuint64> QOpenGLTimeMonitor::waitForIntervals() const
+QList<GLuint64> QOpenGLTimeMonitor::waitForIntervals() const
 {
     Q_D(const QOpenGLTimeMonitor);
     return d->intervals();

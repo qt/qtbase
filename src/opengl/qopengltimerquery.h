@@ -93,14 +93,14 @@ public:
     bool create();
     void destroy();
     bool isCreated() const;
-    QVector<GLuint> objectIds() const;
+    QList<GLuint> objectIds() const;
 
     int recordSample();
 
     bool isResultAvailable() const;
 
-    QVector<GLuint64> waitForSamples() const;
-    QVector<GLuint64> waitForIntervals() const;
+    QList<GLuint64> waitForSamples() const;
+    QList<GLuint64> waitForIntervals() const;
 
     void reset();
 

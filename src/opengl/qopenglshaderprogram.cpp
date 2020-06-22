@@ -44,9 +44,9 @@
 #include <QtCore/private/qobject_p.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qfile.h>
-#include <QtCore/qvarlengtharray.h>
-#include <QtCore/qvector.h>
+#include <QtCore/qlist.h>
 #include <QtCore/qloggingcategory.h>
+#include <QtCore/qvarlengtharray.h>
 #include <QtGui/private/qopenglprogrambinarycache_p.h>
 #include <QtGui/qtransform.h>
 #include <QtGui/QColor>
@@ -3552,7 +3552,7 @@ int QOpenGLShaderProgram::patchVertexCount() const
     does not output them to \a levels. For more details on OpenGL and Tessellation
     shaders see \l{OpenGL Tessellation Shaders}.
 
-    The \a levels argument should be a QVector consisting of 4 floats. Not all
+    The \a levels argument should be a QList consisting of 4 floats. Not all
     of the values make sense for all tessellation modes. If you specify a vector with
     fewer than 4 elements, the remaining elements will be given a default value of 1.
 
@@ -3566,12 +3566,12 @@ int QOpenGLShaderProgram::patchVertexCount() const
 
     \sa defaultOuterTessellationLevels(), setDefaultInnerTessellationLevels()
 */
-void QOpenGLShaderProgram::setDefaultOuterTessellationLevels(const QVector<float> &levels)
+void QOpenGLShaderProgram::setDefaultOuterTessellationLevels(const QList<float> &levels)
 {
 #if !QT_CONFIG(opengles2)
     Q_D(QOpenGLShaderProgram);
     if (d->tessellationFuncs) {
-        QVector<float> tessLevels = levels;
+        QList<float> tessLevels = levels;
 
         // Ensure we have the required 4 outer tessellation levels
         // Use default of 1 for missing entries (same as spec)
@@ -3594,7 +3594,7 @@ void QOpenGLShaderProgram::setDefaultOuterTessellationLevels(const QVector<float
     does not output them. For more details on OpenGL and Tessellation shaders see
     \l{OpenGL Tessellation Shaders}.
 
-    Returns a QVector of floats describing the outer tessellation levels. The vector
+    Returns a QList of floats describing the outer tessellation levels. The vector
     will always have four elements but not all of them make sense for every mode
     of tessellation.
 
@@ -3606,16 +3606,16 @@ void QOpenGLShaderProgram::setDefaultOuterTessellationLevels(const QVector<float
 
     \sa setDefaultOuterTessellationLevels(), defaultInnerTessellationLevels()
 */
-QVector<float> QOpenGLShaderProgram::defaultOuterTessellationLevels() const
+QList<float> QOpenGLShaderProgram::defaultOuterTessellationLevels() const
 {
 #if !QT_CONFIG(opengles2)
-    QVector<float> tessLevels(4, 1.0f);
+    QList<float> tessLevels(4, 1.0f);
     Q_D(const QOpenGLShaderProgram);
     if (d->tessellationFuncs)
         d->tessellationFuncs->glGetFloatv(GL_PATCH_DEFAULT_OUTER_LEVEL, tessLevels.data());
     return tessLevels;
 #else
-    return QVector<float>();
+    return QList<float>();
 #endif
 }
 
@@ -3625,7 +3625,7 @@ QVector<float> QOpenGLShaderProgram::defaultOuterTessellationLevels() const
     does not output them to \a levels. For more details on OpenGL and Tessellation shaders see
     \l{OpenGL Tessellation Shaders}.
 
-    The \a levels argument should be a QVector consisting of 2 floats. Not all
+    The \a levels argument should be a QList consisting of 2 floats. Not all
     of the values make sense for all tessellation modes. If you specify a vector with
     fewer than 2 elements, the remaining elements will be given a default value of 1.
 
@@ -3639,12 +3639,12 @@ QVector<float> QOpenGLShaderProgram::defaultOuterTessellationLevels() const
 
     \sa defaultInnerTessellationLevels(), setDefaultOuterTessellationLevels()
 */
-void QOpenGLShaderProgram::setDefaultInnerTessellationLevels(const QVector<float> &levels)
+void QOpenGLShaderProgram::setDefaultInnerTessellationLevels(const QList<float> &levels)
 {
 #if !QT_CONFIG(opengles2)
     Q_D(QOpenGLShaderProgram);
     if (d->tessellationFuncs) {
-        QVector<float> tessLevels = levels;
+        QList<float> tessLevels = levels;
 
         // Ensure we have the required 2 inner tessellation levels
         // Use default of 1 for missing entries (same as spec)
@@ -3667,7 +3667,7 @@ void QOpenGLShaderProgram::setDefaultInnerTessellationLevels(const QVector<float
     does not output them. For more details on OpenGL and Tessellation shaders see
     \l{OpenGL Tessellation Shaders}.
 
-    Returns a QVector of floats describing the inner tessellation levels. The vector
+    Returns a QList of floats describing the inner tessellation levels. The vector
     will always have two elements but not all of them make sense for every mode
     of tessellation.
 
@@ -3679,16 +3679,16 @@ void QOpenGLShaderProgram::setDefaultInnerTessellationLevels(const QVector<float
 
     \sa setDefaultInnerTessellationLevels(), defaultOuterTessellationLevels()
 */
-QVector<float> QOpenGLShaderProgram::defaultInnerTessellationLevels() const
+QList<float> QOpenGLShaderProgram::defaultInnerTessellationLevels() const
 {
 #if !QT_CONFIG(opengles2)
-    QVector<float> tessLevels(2, 1.0f);
+    QList<float> tessLevels(2, 1.0f);
     Q_D(const QOpenGLShaderProgram);
     if (d->tessellationFuncs)
         d->tessellationFuncs->glGetFloatv(GL_PATCH_DEFAULT_INNER_LEVEL, tessLevels.data());
     return tessLevels;
 #else
-    return QVector<float>();
+    return QList<float>();
 #endif
 }
 

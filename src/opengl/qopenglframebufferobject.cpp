@@ -1223,10 +1223,10 @@ GLuint QOpenGLFramebufferObject::texture() const
 
     \sa takeTexture(), texture()
 */
-QVector<GLuint> QOpenGLFramebufferObject::textures() const
+QList<GLuint> QOpenGLFramebufferObject::textures() const
 {
     Q_D(const QOpenGLFramebufferObject);
-    QVector<GLuint> ids;
+    QList<GLuint> ids;
     if (d->format.samples() != 0)
         return ids;
     ids.reserve(d->colorAttachments.count());
@@ -1310,10 +1310,10 @@ QSize QOpenGLFramebufferObject::size() const
 
     \since 5.6
 */
-QVector<QSize> QOpenGLFramebufferObject::sizes() const
+QList<QSize> QOpenGLFramebufferObject::sizes() const
 {
     Q_D(const QOpenGLFramebufferObject);
-    QVector<QSize> sz;
+    QList<QSize> sz;
     sz.reserve(d->colorAttachments.size());
     for (const auto &color : d->colorAttachments)
         sz.append(color.size);

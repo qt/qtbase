@@ -524,7 +524,7 @@ GLuint QOpenGLEngineShaderManager::getUniformLocation(Uniform id)
     if (!currentShaderProg)
         return 0;
 
-    QVector<uint> &uniformLocations = currentShaderProg->uniformLocations;
+    QList<uint> &uniformLocations = currentShaderProg->uniformLocations;
     if (uniformLocations.isEmpty())
         uniformLocations.fill(GLuint(-1), NumUniforms);
 

@@ -386,7 +386,7 @@ public:
     QByteArray          customStageSource; //TODO: Decent cache key for custom stages
     QOpenGLShaderProgram*   program;
 
-    QVector<uint> uniformLocations;
+    QList<uint> uniformLocations;
 
     bool                useTextureCoords;
     bool                useOpacityAttribute;
