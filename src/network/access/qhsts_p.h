@@ -73,13 +73,13 @@ public:
 
     void updateFromHeaders(const QList<QPair<QByteArray, QByteArray>> &headers,
                            const QUrl &url);
-    void updateFromPolicies(const QVector<QHstsPolicy> &hosts);
+    void updateFromPolicies(const QList<QHstsPolicy> &hosts);
     void updateKnownHost(const QUrl &url, const QDateTime &expires,
                          bool includeSubDomains);
     bool isKnownHost(const QUrl &url) const;
     void clear();
 
-    QVector<QHstsPolicy> policies() const;
+    QList<QHstsPolicy> policies() const;
 
 #if QT_CONFIG(settings)
     void setStore(class QHstsStore *store);

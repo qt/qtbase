@@ -195,7 +195,8 @@ void QSslKeyPrivate::clear(bool deep)
     keyLength = -1;
 }
 
-static int extractPkcs8KeyLength(const QVector<QAsn1Element> &items, QSslKeyPrivate *that) {
+static int extractPkcs8KeyLength(const QList<QAsn1Element> &items, QSslKeyPrivate *that)
+{
     Q_ASSERT(items.size() == 3);
     int keyLength;
 
@@ -210,7 +211,7 @@ static int extractPkcs8KeyLength(const QVector<QAsn1Element> &items, QSslKeyPriv
         Q_UNREACHABLE();
     };
 
-    const QVector<QAsn1Element> pkcs8Info = items[1].toVector();
+    const auto pkcs8Info = items[1].toList();
     if (pkcs8Info.size() != 2 || pkcs8Info[0].type() != QAsn1Element::ObjectIdentifierType)
         return -1;
     const QByteArray value = pkcs8Info[0].toObjectId();
@@ -252,7 +253,7 @@ static int extractPkcs8KeyLength(const QVector<QAsn1Element> &items, QSslKeyPriv
         // https://www.cryptsoft.com/pkcs11doc/STANDARD/v201-95.pdf in section 11.9.
         if (pkcs8Info[1].type() != QAsn1Element::SequenceType)
             return -1;
-        const QVector<QAsn1Element> dsaInfo = pkcs8Info[1].toVector();
+        const auto dsaInfo = pkcs8Info[1].toList();
         if (dsaInfo.size() != 3 || dsaInfo[0].type() != QAsn1Element::IntegerType)
             return -1;
         keyLength = numberOfBits(dsaInfo[0].value());
@@ -267,7 +268,7 @@ static int extractPkcs8KeyLength(const QVector<QAsn1Element> &items, QSslKeyPriv
         // https://www.cryptsoft.com/pkcs11doc/STANDARD/v201-95.pdf in section 11.9.
         if (pkcs8Info[1].type() != QAsn1Element::SequenceType)
             return -1;
-        const QVector<QAsn1Element> dhInfo = pkcs8Info[1].toVector();
+        const auto dhInfo = pkcs8Info[1].toList();
         if (dhInfo.size() < 2 || dhInfo.size() > 3 || dhInfo[0].type() != QAsn1Element::IntegerType)
             return -1;
         keyLength = numberOfBits(dhInfo[0].value());
@@ -298,7 +299,7 @@ void QSslKeyPrivate::decodeDer(const QByteArray &der, const QByteArray &passPhra
         QDataStream keyStream(elem.value());
         if (!elem.read(keyStream) || elem.type() != QAsn1Element::SequenceType)
             return;
-        const QVector<QAsn1Element> infoItems = elem.toVector();
+        const auto infoItems = elem.toList();
         if (infoItems.size() < 2 || infoItems[0].type() != QAsn1Element::ObjectIdentifierType)
             return;
         if (algorithm == QSsl::Rsa) {
@@ -318,7 +319,7 @@ void QSslKeyPrivate::decodeDer(const QByteArray &der, const QByteArray &passPhra
             if (infoItems[1].type() != QAsn1Element::SequenceType)
                 return;
             // key params
-            const QVector<QAsn1Element> params = infoItems[1].toVector();
+            const auto params = infoItems[1].toList();
             if (params.isEmpty() || params[0].type() != QAsn1Element::IntegerType)
                 return;
             keyLength = numberOfBits(params[0].value());
@@ -328,7 +329,7 @@ void QSslKeyPrivate::decodeDer(const QByteArray &der, const QByteArray &passPhra
             if (infoItems[1].type() != QAsn1Element::SequenceType)
                 return;
             // key params
-            const QVector<QAsn1Element> params = infoItems[1].toVector();
+            const auto params = infoItems[1].toList();
             if (params.isEmpty() || params[0].type() != QAsn1Element::IntegerType)
                 return;
             keyLength = numberOfBits(params[0].value());
@@ -341,7 +342,7 @@ void QSslKeyPrivate::decodeDer(const QByteArray &der, const QByteArray &passPhra
         }
 
     } else {
-        const QVector<QAsn1Element> items = elem.toVector();
+        const auto items = elem.toList();
         if (items.isEmpty())
             return;
 
@@ -497,7 +498,7 @@ struct EncryptionData
     QByteArray iv;
 };
 
-static EncryptionData readPbes2(const QVector<QAsn1Element> &element, const QByteArray &passPhrase)
+static EncryptionData readPbes2(const QList<QAsn1Element> &element, const QByteArray &passPhrase)
 {
     // RFC 8018: https://tools.ietf.org/html/rfc8018#section-6.2
     /*** Scheme: ***
@@ -534,7 +535,7 @@ static EncryptionData readPbes2(const QVector<QAsn1Element> &element, const QByt
         // @todo: AES(, rc5?)
     };
 
-    const QVector<QAsn1Element> keyDerivationContainer = element[0].toVector();
+    const QList<QAsn1Element> keyDerivationContainer = element[0].toList();
     if (keyDerivationContainer.size() != 2
         || keyDerivationContainer[0].type() != QAsn1Element::ObjectIdentifierType
         || keyDerivationContainer[1].type() != QAsn1Element::SequenceType) {
@@ -542,9 +543,9 @@ static EncryptionData readPbes2(const QVector<QAsn1Element> &element, const QByt
     }
 
     const QByteArray keyDerivationAlgorithm = keyDerivationContainer[0].toObjectId();
-    const QVector<QAsn1Element> keyDerivationParams = keyDerivationContainer[1].toVector();
+    const auto keyDerivationParams = keyDerivationContainer[1].toList();
 
-    const QVector<QAsn1Element> encryptionAlgorithmContainer = element[1].toVector();
+    const auto encryptionAlgorithmContainer = element[1].toList();
     if (encryptionAlgorithmContainer.size() != 2
         || encryptionAlgorithmContainer[0].type() != QAsn1Element::ObjectIdentifierType) {
         return {};
@@ -588,7 +589,7 @@ static EncryptionData readPbes2(const QVector<QAsn1Element> &element, const QByt
         */
         if (encryptionAlgorithmContainer[1].type() != QAsn1Element::SequenceType)
             return {};
-        const QVector<QAsn1Element> rc2ParametersContainer = encryptionAlgorithmContainer[1].toVector();
+        const auto rc2ParametersContainer = encryptionAlgorithmContainer[1].toList();
         if ((rc2ParametersContainer.size() != 1 && rc2ParametersContainer.size() != 2)
             || rc2ParametersContainer.back().type() != QAsn1Element::OctetStringType) {
             return {};
@@ -636,7 +637,7 @@ static EncryptionData readPbes2(const QVector<QAsn1Element> &element, const QByt
         QCryptographicHash::Algorithm hashAlgorithm = QCryptographicHash::Sha1;
         if (keyDerivationParams.size() > vectorPos
             && keyDerivationParams[vectorPos].type() == QAsn1Element::SequenceType) {
-            QVector<QAsn1Element> hashAlgorithmContainer = keyDerivationParams[vectorPos].toVector();
+            const auto hashAlgorithmContainer = keyDerivationParams[vectorPos].toList();
             hashAlgorithm = pbes2OidHashFunctionMap[hashAlgorithmContainer.front().toObjectId()];
             Q_ASSERT(hashAlgorithmContainer[1].type() == QAsn1Element::NullType);
             ++vectorPos;
@@ -675,8 +676,8 @@ static const QMap<QByteArray, QCryptographicHash::Algorithm> pbes1OidHashFunctio
     // {PKCS12_SHA1_RC2_40_CBC_OID, QCryptographicHash::Sha1}
 };
 
-
-static EncryptionData readPbes1(const QVector<QAsn1Element> &element, const QByteArray &encryptionScheme, const QByteArray &passPhrase)
+static EncryptionData readPbes1(const QList<QAsn1Element> &element,
+                                const QByteArray &encryptionScheme, const QByteArray &passPhrase)
 {
     // RFC 8018: https://tools.ietf.org/html/rfc8018#section-6.1
     // Steps refer to this section: https://tools.ietf.org/html/rfc8018#section-6.1.2
@@ -733,14 +734,14 @@ QByteArray QSslKeyPrivate::decryptPkcs8(const QByteArray &encrypted, const QByte
     if (!elem.read(encrypted) || elem.type() != QAsn1Element::SequenceType)
         return encrypted;
 
-    const QVector<QAsn1Element> items = elem.toVector();
+    const auto items = elem.toList();
     if (items.size() != 2
         || items[0].type() != QAsn1Element::SequenceType
         || items[1].type() != QAsn1Element::OctetStringType) {
         return encrypted;
     }
 
-    const QVector<QAsn1Element> encryptionSchemeContainer = items[0].toVector();
+    const auto encryptionSchemeContainer = items[0].toList();
 
     if (encryptionSchemeContainer.size() != 2
         || encryptionSchemeContainer[0].type() != QAsn1Element::ObjectIdentifierType
@@ -749,7 +750,7 @@ QByteArray QSslKeyPrivate::decryptPkcs8(const QByteArray &encrypted, const QByte
     }
 
     const QByteArray encryptionScheme = encryptionSchemeContainer[0].toObjectId();
-    const QVector<QAsn1Element> schemeParameterContainer = encryptionSchemeContainer[1].toVector();
+    const auto schemeParameterContainer = encryptionSchemeContainer[1].toList();
 
     if (schemeParameterContainer.size() != 2
         && schemeParameterContainer[0].type() != QAsn1Element::SequenceType

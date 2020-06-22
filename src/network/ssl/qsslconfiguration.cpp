@@ -858,7 +858,7 @@ QSslKey QSslConfiguration::ephemeralServerKey() const
 
     \sa setEllipticCurves
  */
-QVector<QSslEllipticCurve> QSslConfiguration::ellipticCurves() const
+QList<QSslEllipticCurve> QSslConfiguration::ellipticCurves() const
 {
     return d->ellipticCurves;
 }
@@ -875,7 +875,7 @@ QVector<QSslEllipticCurve> QSslConfiguration::ellipticCurves() const
 
     \sa ellipticCurves
  */
-void QSslConfiguration::setEllipticCurves(const QVector<QSslEllipticCurve> &curves)
+void QSslConfiguration::setEllipticCurves(const QList<QSslEllipticCurve> &curves)
 {
     d->ellipticCurves = curves;
 }
@@ -889,7 +889,7 @@ void QSslConfiguration::setEllipticCurves(const QVector<QSslEllipticCurve> &curv
 
     \sa ellipticCurves(), setEllipticCurves()
 */
-QVector<QSslEllipticCurve> QSslConfiguration::supportedEllipticCurves()
+QList<QSslEllipticCurve> QSslConfiguration::supportedEllipticCurves()
 {
     return QSslSocketPrivate::supportedEllipticCurves();
 }

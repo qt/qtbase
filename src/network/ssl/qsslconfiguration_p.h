@@ -120,7 +120,7 @@ public:
 
     Q_AUTOTEST_EXPORT static const QSsl::SslOptions defaultSslOptions;
 
-    QVector<QSslEllipticCurve> ellipticCurves;
+    QList<QSslEllipticCurve> ellipticCurves;
 
     QSslDiffieHellmanParameters dhParams;
 

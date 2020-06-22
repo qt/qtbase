@@ -148,9 +148,9 @@ public:
     QSslKey ephemeralServerKey() const;
 
     // EC settings
-    QVector<QSslEllipticCurve> ellipticCurves() const;
-    void setEllipticCurves(const QVector<QSslEllipticCurve> &curves);
-    static QVector<QSslEllipticCurve> supportedEllipticCurves();
+    QList<QSslEllipticCurve> ellipticCurves() const;
+    void setEllipticCurves(const QList<QSslEllipticCurve> &curves);
+    static QList<QSslEllipticCurve> supportedEllipticCurves();
 
     QByteArray preSharedKeyIdentityHint() const;
     void setPreSharedKeyIdentityHint(const QByteArray &hint);

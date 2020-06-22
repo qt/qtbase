@@ -53,7 +53,7 @@
 #include <QtCore/qsystemdetection.h>
 #include <QtCore/qdatastream.h>
 #include <QtCore/qsysinfo.h>
-#include <QtCore/qvector.h>
+#include <QtCore/qlist.h>
 #include <QtCore/qmutex.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/quuid.h>
@@ -332,7 +332,7 @@ void QSslSocketPrivate::ensureInitialized()
         size_t numCiphers = 0;
         // Fails only if any of parameters is null.
         SSLGetNumberSupportedCiphers(context, &numCiphers);
-        QVector<SSLCipherSuite> cfCiphers(numCiphers);
+        QList<SSLCipherSuite> cfCiphers(numCiphers);
         // Fails only if any of parameter is null or number of ciphers is wrong.
         SSLGetSupportedCiphers(context, cfCiphers.data(), &numCiphers);
 
@@ -425,7 +425,7 @@ void QSslSocketBackendPrivate::continueHandshake()
             const OSStatus result = SSLCopyALPNProtocols(context, &cfArray);
             if (result == errSecSuccess && cfArray && CFArrayGetCount(cfArray)) {
                 const int size = CFArrayGetCount(cfArray);
-                QVector<QString> peerProtocols(size);
+                QList<QString> peerProtocols(size);
                 for (int i = 0; i < size; ++i)
                     peerProtocols[i] = QString::fromCFString((CFStringRef)CFArrayGetValueAtIndex(cfArray, i));
 

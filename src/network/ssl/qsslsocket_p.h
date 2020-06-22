@@ -65,8 +65,8 @@
 class QSslContext;
 #endif
 
+#include <QtCore/qlist.h>
 #include <QtCore/qstringlist.h>
-#include <QtCore/qvector.h>
 #include <private/qringbuffer_p.h>
 
 #if defined(Q_OS_MAC)
@@ -146,8 +146,8 @@ public:
     static void setDefaultSupportedCiphers(const QList<QSslCipher> &ciphers);
     static void resetDefaultCiphers();
 
-    static QVector<QSslEllipticCurve> supportedEllipticCurves();
-    static void setDefaultSupportedEllipticCurves(const QVector<QSslEllipticCurve> &curves);
+    static QList<QSslEllipticCurve> supportedEllipticCurves();
+    static void setDefaultSupportedEllipticCurves(const QList<QSslEllipticCurve> &curves);
     static void resetDefaultEllipticCurves();
 
     static QList<QSslCertificate> defaultCaCertificates();
@@ -219,7 +219,7 @@ protected:
     bool paused;
     bool flushTriggered;
     bool systemOrSslErrorDetected = false;
-    QVector<QOcspResponse> ocspResponses;
+    QList<QOcspResponse> ocspResponses;
     bool handshakeInterrupted = false;
     bool fetchAuthorityInformation = false;
 };

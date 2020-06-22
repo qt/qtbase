@@ -54,10 +54,10 @@
 #include <QtNetwork/qsslpresharedkeyauthenticator.h>
 #include <QtNetwork/qhostaddress.h>
 
-#include <QtCore/qcryptographichash.h>
-#include <QtCore/qsharedpointer.h>
 #include <QtCore/qbytearray.h>
-#include <QtCore/qvector.h>
+#include <QtCore/qcryptographichash.h>
+#include <QtCore/qlist.h>
+#include <QtCore/qsharedpointer.h>
 
 //
 //  W A R N I N G
@@ -100,7 +100,7 @@ public:
     QHostAddress remoteAddress;
     quint16 remotePort = 0;
 
-    QVector<QSslErrorEntry> x509Errors;
+    QList<QSslErrorEntry> x509Errors;
 
     long peeking = false;
     QUdpSocket *udpSocket = nullptr;
@@ -173,7 +173,7 @@ private:
     void reportTimeout();
     void resetDtls();
 
-    QVector<QSslErrorEntry> opensslErrors;
+    QList<QSslErrorEntry> opensslErrors;
     dtlsopenssl::DtlsState dtls;
 
     // We have to externally handle timeouts since we have non-blocking

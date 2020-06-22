@@ -61,7 +61,7 @@ static QAsn1Element wrap(quint8 type, const QAsn1Element &child)
 
 static QAsn1Element _q_PKCS7_data(const QByteArray &data)
 {
-    QVector<QAsn1Element> items;
+    QList<QAsn1Element> items;
     items << QAsn1Element::fromObjectId("1.2.840.113549.1.7.1");
     items << wrap(QAsn1Element::Context0Type,
                   QAsn1Element(QAsn1Element::OctetStringType, data));
@@ -145,11 +145,11 @@ static QByteArray _q_PKCS12_salt()
 
 static QByteArray _q_PKCS12_certBag(const QSslCertificate &cert)
 {
-    QVector<QAsn1Element> items;
+    QList<QAsn1Element> items;
     items << QAsn1Element::fromObjectId("1.2.840.113549.1.12.10.1.3");
 
     // certificate
-    QVector<QAsn1Element> certItems;
+    QList<QAsn1Element> certItems;
     certItems << QAsn1Element::fromObjectId("1.2.840.113549.1.9.22.1");
     certItems << wrap(QAsn1Element::Context0Type,
                       QAsn1Element(QAsn1Element::OctetStringType, cert.toDer()));
@@ -158,7 +158,7 @@ static QByteArray _q_PKCS12_certBag(const QSslCertificate &cert)
 
     // local key id
     const QByteArray localKeyId = cert.digest(QCryptographicHash::Sha1);
-    QVector<QAsn1Element> idItems;
+    QList<QAsn1Element> idItems;
     idItems << QAsn1Element::fromObjectId("1.2.840.113549.1.9.21");
     idItems << wrap(QAsn1Element::SetType,
                     QAsn1Element(QAsn1Element::OctetStringType, localKeyId));
@@ -176,9 +176,9 @@ static QAsn1Element _q_PKCS12_key(const QSslKey &key)
 {
     Q_ASSERT(key.algorithm() == QSsl::Rsa || key.algorithm() == QSsl::Dsa);
 
-    QVector<QAsn1Element> keyItems;
+    QList<QAsn1Element> keyItems;
     keyItems << QAsn1Element::fromInteger(0);
-    QVector<QAsn1Element> algoItems;
+    QList<QAsn1Element> algoItems;
     if (key.algorithm() == QSsl::Rsa)
         algoItems << QAsn1Element::fromObjectId(RSA_ENCRYPTION_OID);
     else if (key.algorithm() == QSsl::Dsa)
@@ -203,14 +203,14 @@ static QByteArray _q_PKCS12_shroudedKeyBag(const QSslKey &key, const QString &pa
     QByteArray crypted = QSslKeyPrivate::encrypt(QSslKeyPrivate::DesEde3Cbc,
                                                  plain, cKey, cIv);
 
-    QVector<QAsn1Element> items;
+    QList<QAsn1Element> items;
     items << QAsn1Element::fromObjectId("1.2.840.113549.1.12.10.1.2");
 
     // key
-    QVector<QAsn1Element> keyItems;
-    QVector<QAsn1Element> algoItems;
+    QList<QAsn1Element> keyItems;
+    QList<QAsn1Element> algoItems;
     algoItems << QAsn1Element::fromObjectId("1.2.840.113549.1.12.1.3");
-    QVector<QAsn1Element> paramItems;
+    QList<QAsn1Element> paramItems;
     paramItems << QAsn1Element(QAsn1Element::OctetStringType, salt);
     paramItems << QAsn1Element::fromInteger(iterations);
     algoItems << QAsn1Element::fromVector(paramItems);
@@ -220,7 +220,7 @@ static QByteArray _q_PKCS12_shroudedKeyBag(const QSslKey &key, const QString &pa
                   QAsn1Element::fromVector(keyItems));
 
     // local key id
-    QVector<QAsn1Element> idItems;
+    QList<QAsn1Element> idItems;
     idItems << QAsn1Element::fromObjectId("1.2.840.113549.1.9.21");
     idItems << wrap(QAsn1Element::SetType,
                     QAsn1Element(QAsn1Element::OctetStringType, localKeyId));
@@ -237,7 +237,7 @@ static QByteArray _q_PKCS12_shroudedKeyBag(const QSslKey &key, const QString &pa
 
 static QByteArray _q_PKCS12_bag(const QList<QSslCertificate> &certs, const QSslKey &key, const QString &passPhrase)
 {
-    QVector<QAsn1Element> items;
+    QList<QAsn1Element> items;
 
     // certs
     for (int i = 0; i < certs.size(); ++i)
@@ -269,15 +269,15 @@ static QAsn1Element _q_PKCS12_mac(const QByteArray &data, const QString &passPhr
     QMessageAuthenticationCode hmac(QCryptographicHash::Sha1, key);
     hmac.addData(data);
 
-    QVector<QAsn1Element> algoItems;
+    QList<QAsn1Element> algoItems;
     algoItems << QAsn1Element::fromObjectId("1.3.14.3.2.26");
     algoItems << QAsn1Element(QAsn1Element::NullType);
 
-    QVector<QAsn1Element> digestItems;
+    QList<QAsn1Element> digestItems;
     digestItems << QAsn1Element::fromVector(algoItems);
     digestItems << QAsn1Element(QAsn1Element::OctetStringType, hmac.result());
 
-    QVector<QAsn1Element> macItems;
+    QList<QAsn1Element> macItems;
     macItems << QAsn1Element::fromVector(digestItems);
     macItems << QAsn1Element(QAsn1Element::OctetStringType, macSalt);
     macItems << QAsn1Element::fromInteger(iterations);
@@ -286,7 +286,7 @@ static QAsn1Element _q_PKCS12_mac(const QByteArray &data, const QString &passPhr
 
 QByteArray _q_makePkcs12(const QList<QSslCertificate> &certs, const QSslKey &key, const QString &passPhrase)
 {
-    QVector<QAsn1Element> items;
+    QList<QAsn1Element> items;
 
     // version
     items << QAsn1Element::fromInteger(3);

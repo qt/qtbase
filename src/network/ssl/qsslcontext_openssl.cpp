@@ -658,7 +658,7 @@ init_context:
         q_SSL_CTX_use_psk_identity_hint(sslContext->ctx, sslContext->sslConfiguration.preSharedKeyIdentityHint().constData());
 #endif // !OPENSSL_NO_PSK
 
-    const QVector<QSslEllipticCurve> qcurves = sslContext->sslConfiguration.ellipticCurves();
+    const auto qcurves = sslContext->sslConfiguration.ellipticCurves();
     if (!qcurves.isEmpty()) {
 #ifdef OPENSSL_NO_EC
         sslContext->errorStr = msgErrorSettingEllipticCurves(QSslSocket::tr("OpenSSL version with disabled elliptic curves"));

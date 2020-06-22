@@ -1281,7 +1281,7 @@ QSslError _q_OpenSSL_to_QSslError(int errorCode, const QSslCertificate &cert);
 bool QDtlsPrivateOpenSSL::verifyPeer()
 {
     // DTLSTODO: Windows-specific code for CA fetcher is not here yet.
-    QVector<QSslError> errors;
+    QList<QSslError> errors;
 
     // Check the whole chain for blacklisting (including root, as we check for
     // subjectInfo and issuer)
@@ -1344,7 +1344,7 @@ bool QDtlsPrivateOpenSSL::tlsErrorsWereIgnored() const
 {
     // check whether the errors we got are all in the list of expected errors
     // (applies only if the method QDtlsConnection::ignoreTlsErrors(const
-    // QVector<QSslError> &errors) was called)
+    // QList<QSslError> &errors) was called)
     for (const QSslError &error : tlsErrors) {
         if (!tlsErrorsToIgnore.contains(error))
             return false;

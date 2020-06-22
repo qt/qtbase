@@ -271,27 +271,23 @@ QByteArray QSslKeyPrivate::derFromPem(const QByteArray &pem, QMap<QByteArray, QB
 
 bool QSslKeyPrivate::isEncryptedPkcs8(const QByteArray &der) const
 {
-    static const QVector<QByteArray> pbes1OIds {
+    static const QList<QByteArray> pbes1OIds {
         // PKCS5
-        {PKCS5_MD2_DES_CBC_OID},
-        {PKCS5_MD2_RC2_CBC_OID},
-        {PKCS5_MD5_DES_CBC_OID},
-        {PKCS5_MD5_RC2_CBC_OID},
-        {PKCS5_SHA1_DES_CBC_OID},
-        {PKCS5_SHA1_RC2_CBC_OID},
+        { PKCS5_MD2_DES_CBC_OID }, { PKCS5_MD2_RC2_CBC_OID },  { PKCS5_MD5_DES_CBC_OID },
+        { PKCS5_MD5_RC2_CBC_OID }, { PKCS5_SHA1_DES_CBC_OID }, { PKCS5_SHA1_RC2_CBC_OID },
     };
     QAsn1Element elem;
     if (!elem.read(der) || elem.type() != QAsn1Element::SequenceType)
         return false;
 
-    const QVector<QAsn1Element> items = elem.toVector();
+    const auto items = elem.toList();
     if (items.size() != 2
         || items[0].type() != QAsn1Element::SequenceType
         || items[1].type() != QAsn1Element::OctetStringType) {
         return false;
     }
 
-    const QVector<QAsn1Element> encryptionSchemeContainer = items[0].toVector();
+    const auto encryptionSchemeContainer = items[0].toList();
     if (encryptionSchemeContainer.size() != 2
         || encryptionSchemeContainer[0].type() != QAsn1Element::ObjectIdentifierType
         || encryptionSchemeContainer[1].type() != QAsn1Element::SequenceType) {

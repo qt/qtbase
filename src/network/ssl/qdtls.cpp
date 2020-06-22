@@ -1127,7 +1127,7 @@ QString QDtls::dtlsErrorString() const
     If you want to continue connecting despite the errors that have occurred,
     you must call ignoreVerificationErrors().
 */
-QVector<QSslError> QDtls::peerVerificationErrors() const
+QList<QSslError> QDtls::peerVerificationErrors() const
 {
     Q_D(const QDtls);
 
@@ -1152,7 +1152,7 @@ QVector<QSslError> QDtls::peerVerificationErrors() const
 
     \sa doHandshake(), resumeHandshake(), QSslError
 */
-void QDtls::ignoreVerificationErrors(const QVector<QSslError> &errorsToIgnore)
+void QDtls::ignoreVerificationErrors(const QList<QSslError> &errorsToIgnore)
 {
     Q_D(QDtls);
 

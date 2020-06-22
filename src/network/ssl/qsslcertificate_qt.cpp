@@ -484,9 +484,9 @@ bool QSslCertificatePrivate::parseExtension(const QByteArray &data, QSslCertific
         if (!val.read(valElem.value()) || val.type() != QAsn1Element::SequenceType)
             return false;
         QVariantMap result;
-        const auto elems = val.toVector();
+        const auto elems = val.toList();
         for (const QAsn1Element &el : elems) {
-            QVector<QAsn1Element> items = el.toVector();
+            const auto items = el.toList();
             if (items.size() != 2)
                 return false;
             const QString key = QString::fromLatin1(items.at(0).toObjectName());
@@ -510,7 +510,7 @@ bool QSslCertificatePrivate::parseExtension(const QByteArray &data, QSslCertific
             return false;
 
         QVariantMap result;
-        QVector<QAsn1Element> items = val.toVector();
+        const auto items = val.toList();
         if (items.size() > 0) {
             result[QStringLiteral("ca")] = items.at(0).toBool(&ok);
             if (!ok)
@@ -529,7 +529,7 @@ bool QSslCertificatePrivate::parseExtension(const QByteArray &data, QSslCertific
         if (!val.read(valElem.value()) || val.type() != QAsn1Element::SequenceType)
             return false;
         QVariantMap result;
-        const auto elems = val.toVector();
+        const auto elems = val.toList();
         for (const QAsn1Element &el : elems) {
             if (el.type() == 0x80) {
                 const QString key = QStringLiteral("keyid");

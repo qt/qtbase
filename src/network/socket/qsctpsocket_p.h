@@ -54,7 +54,7 @@
 #include <QtNetwork/qsctpsocket.h>
 #include <private/qtcpsocket_p.h>
 #include <QtCore/qbytearray.h>
-#include <QtCore/qvector.h>
+#include <QtCore/qlist.h>
 #include <private/qnetworkdatagram_p.h>
 
 #include <deque>
@@ -77,8 +77,8 @@ public:
     int maximumChannelCount;
 
     typedef std::deque<QIpPacketHeader> IpHeaderList;
-    QVector<IpHeaderList> readHeaders;
-    QVector<IpHeaderList> writeHeaders;
+    QList<IpHeaderList> readHeaders;
+    QList<IpHeaderList> writeHeaders;
 
     void configureCreatedSocket() override;
 };

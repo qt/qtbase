@@ -43,7 +43,6 @@
 
 #include <QtNetwork/qtnetworkglobal.h>
 #include <QtCore/qlist.h>
-#include <QtCore/qvector.h>
 #ifndef QT_NO_SSL
 #   include <QtNetwork/qtcpsocket.h>
 #   include <QtNetwork/qsslerror.h>
@@ -187,7 +186,7 @@ public:
     QList<QSslCertificate> peerCertificateChain() const;
     QSslCipher sessionCipher() const;
     QSsl::SslProtocol sessionProtocol() const;
-    QVector<QOcspResponse> ocspResponses() const;
+    QList<QOcspResponse> ocspResponses() const;
 
     // Private keys, for server sockets.
     void setPrivateKey(const QSslKey &key);

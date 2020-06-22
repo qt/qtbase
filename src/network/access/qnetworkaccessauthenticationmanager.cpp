@@ -42,8 +42,8 @@
 #include "qnetworkaccessmanager_p.h"
 
 #include "QtCore/qbuffer.h"
+#include "QtCore/qlist.h"
 #include "QtCore/qurl.h"
-#include "QtCore/qvector.h"
 #include "QtCore/QMutexLocker"
 #include "QtNetwork/qauthenticator.h"
 
@@ -51,11 +51,8 @@
 
 QT_BEGIN_NAMESPACE
 
-
-
-
-class QNetworkAuthenticationCache: private QVector<QNetworkAuthenticationCredential>,
-                                   public QNetworkAccessCache::CacheableObject
+class QNetworkAuthenticationCache : private QList<QNetworkAuthenticationCredential>,
+                                    public QNetworkAccessCache::CacheableObject
 {
 public:
     QNetworkAuthenticationCache()
@@ -89,9 +86,9 @@ public:
             newCredential.password = password;
 
             if (closestMatch)
-                QVector<QNetworkAuthenticationCredential>::insert(++closestMatch, newCredential);
+                QList<QNetworkAuthenticationCredential>::insert(++closestMatch, newCredential);
             else
-                QVector<QNetworkAuthenticationCredential>::insert(end(), newCredential);
+                QList<QNetworkAuthenticationCredential>::insert(end(), newCredential);
         }
     }
 

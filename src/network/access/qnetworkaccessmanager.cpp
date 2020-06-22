@@ -64,8 +64,8 @@
 #include "qnetworkreplyfileimpl_p.h"
 
 #include "QtCore/qbuffer.h"
+#include "QtCore/qlist.h"
 #include "QtCore/qurl.h"
-#include "QtCore/qvector.h"
 #include "QtNetwork/private/qauthenticator_p.h"
 #include "QtNetwork/qsslconfiguration.h"
 #include "QtNetwork/private/http2protocol_p.h"
@@ -740,7 +740,7 @@ bool QNetworkAccessManager::isStrictTransportSecurityStoreEnabled() const
     \sa addStrictTransportSecurityHosts(), enableStrictTransportSecurityStore(), QHstsPolicy
 */
 
-void QNetworkAccessManager::addStrictTransportSecurityHosts(const QVector<QHstsPolicy> &knownHosts)
+void QNetworkAccessManager::addStrictTransportSecurityHosts(const QList<QHstsPolicy> &knownHosts)
 {
     Q_D(QNetworkAccessManager);
     d->stsCache.updateFromPolicies(knownHosts);
@@ -755,7 +755,7 @@ void QNetworkAccessManager::addStrictTransportSecurityHosts(const QVector<QHstsP
 
     \sa addStrictTransportSecurityHosts(), QHstsPolicy
 */
-QVector<QHstsPolicy> QNetworkAccessManager::strictTransportSecurityHosts() const
+QList<QHstsPolicy> QNetworkAccessManager::strictTransportSecurityHosts() const
 {
     Q_D(const QNetworkAccessManager);
     return d->stsCache.policies();

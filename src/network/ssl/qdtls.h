@@ -168,8 +168,8 @@ public:
     QDtlsError dtlsError() const;
     QString dtlsErrorString() const;
 
-    QVector<QSslError> peerVerificationErrors() const;
-    void ignoreVerificationErrors(const QVector<QSslError> &errorsToIgnore);
+    QList<QSslError> peerVerificationErrors() const;
+    void ignoreVerificationErrors(const QList<QSslError> &errorsToIgnore);
 
 Q_SIGNALS:
 

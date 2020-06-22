@@ -136,7 +136,7 @@ QAlertType tlsAlertType(int value)
 
 #ifdef Q_OS_WIN
 
-QSslCertificate findCertificateToFetch(const QVector<QSslError> &tlsErrors, bool checkAIA)
+QSslCertificate findCertificateToFetch(const QList<QSslError> &tlsErrors, bool checkAIA)
 {
     QSslCertificate certToFetch;
 
@@ -577,7 +577,7 @@ int q_X509Callback(int ok, X509_STORE_CTX *ctx)
     if (!ok) {
         // Store the error and at which depth the error was detected.
 
-        using ErrorListPtr = QVector<QSslErrorEntry>*;
+        using ErrorListPtr = QList<QSslErrorEntry> *;
         ErrorListPtr errors = nullptr;
 
         // Error list is attached to either 'SSL' or 'X509_STORE'.
@@ -962,7 +962,7 @@ void QSslSocketPrivate::resetDefaultCiphers()
 
 void QSslSocketPrivate::resetDefaultEllipticCurves()
 {
-    QVector<QSslEllipticCurve> curves;
+    QList<QSslEllipticCurve> curves;
 
 #ifndef OPENSSL_NO_EC
     const size_t curveCount = q_EC_get_builtin_curves(nullptr, 0);
@@ -1391,7 +1391,7 @@ bool QSslSocketBackendPrivate::startHandshake()
 
     pendingFatalAlert = false;
     errorsReportedFromCallback = false;
-    QVector<QSslErrorEntry> lastErrors;
+    QList<QSslErrorEntry> lastErrors;
     q_SSL_set_ex_data(ssl, s_indexForSSLExtraData + errorOffsetInExData, &lastErrors);
 
     // SSL_set_ex_data can fail, but see the callback's code - we handle this there.
@@ -2018,7 +2018,7 @@ int QSslSocketBackendPrivate::emitErrorFromCallback(X509_STORE_CTX *ctx)
     // wants to check errors (ignored or not):
     const auto offset = QSslSocketBackendPrivate::s_indexForSSLExtraData
                         + QSslSocketBackendPrivate::errorOffsetInExData;
-    if (auto errorList = static_cast<QVector<QSslErrorEntry>*>(q_SSL_get_ex_data(ssl, offset)))
+    if (auto errorList = static_cast<QList<QSslErrorEntry> *>(q_SSL_get_ex_data(ssl, offset)))
         errorList->append(errorAndDepth);
 
     // An application is expected to ignore this error (by calling ignoreSslErrors)
@@ -2336,7 +2336,7 @@ QList<QSslError> QSslSocketBackendPrivate::verify(const QList<QSslCertificate> &
         }
     }
 
-    QVector<QSslErrorEntry> lastErrors;
+    QList<QSslErrorEntry> lastErrors;
     if (!q_X509_STORE_set_ex_data(certStore, 0, &lastErrors)) {
         qCWarning(lcSsl) << "Unable to attach external data (error list) to a store";
         errors << QSslError(QSslError::UnspecifiedError);

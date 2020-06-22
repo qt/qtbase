@@ -76,13 +76,13 @@ QHstsStore::~QHstsStore()
     synchronize();
 }
 
-QVector<QHstsPolicy> QHstsStore::readPolicies()
+QList<QHstsPolicy> QHstsStore::readPolicies()
 {
     // This function only attempts to read policies, making no decision about
     // expired policies. It's up to a user (QHstsCache) to mark these policies
     // for deletion and sync the store later. But we immediately remove keys/values
     // (if the store isWritable) for the policies that we fail to read.
-    QVector<QHstsPolicy> policies;
+    QList<QHstsPolicy> policies;
 
     beginHstsGroups();
 

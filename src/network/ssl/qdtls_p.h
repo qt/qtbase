@@ -144,8 +144,8 @@ public:
 
     QDtls::HandshakeState handshakeState = QDtls::HandshakeNotStarted;
 
-    QVector<QSslError> tlsErrors;
-    QVector<QSslError> tlsErrorsToIgnore;
+    QList<QSslError> tlsErrors;
+    QList<QSslError> tlsErrorsToIgnore;
 
     bool connectionEncrypted = false;
 };

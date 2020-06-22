@@ -40,7 +40,6 @@
 #include "qhsts_p.h"
 
 #include "QtCore/private/qipaddress_p.h"
-#include "QtCore/qvector.h"
 #include "QtCore/qlist.h"
 
 #if QT_CONFIG(settings)
@@ -93,7 +92,7 @@ void QHstsCache::updateFromHeaders(const QList<QPair<QByteArray, QByteArray>> &h
     }
 }
 
-void QHstsCache::updateFromPolicies(const QVector<QHstsPolicy> &policies)
+void QHstsCache::updateFromPolicies(const QList<QHstsPolicy> &policies)
 {
     for (const auto &policy : policies)
         updateKnownHost(policy.host(), policy.expiry(), policy.includesSubDomains());
@@ -227,9 +226,9 @@ void QHstsCache::clear()
     knownHosts.clear();
 }
 
-QVector<QHstsPolicy> QHstsCache::policies() const
+QList<QHstsPolicy> QHstsCache::policies() const
 {
-    QVector<QHstsPolicy> values;
+    QList<QHstsPolicy> values;
     values.reserve(int(knownHosts.size()));
     for (const auto &host : knownHosts)
         values << host.second;
@@ -250,7 +249,7 @@ void QHstsCache::setStore(QHstsStore *store)
         // (and thus the cached policy takes priority over whatever policy we
         // had in the store for the same host, if any).
         if (knownHosts.size()) {
-            const QVector<QHstsPolicy> observed(policies());
+            const QList<QHstsPolicy> observed(policies());
             for (const auto &policy : observed)
                 hstsStore->addToObserved(policy);
             hstsStore->synchronize();
@@ -260,7 +259,7 @@ void QHstsCache::setStore(QHstsStore *store)
         // the store knows about (well, it can happen we synchronize again as a
         // result if some policies managed to expire or if we add a new one
         // from the store to cache):
-        const QVector<QHstsPolicy> restored(store->readPolicies());
+        const QList<QHstsPolicy> restored(store->readPolicies());
         updateFromPolicies(restored);
     }
 }

@@ -55,8 +55,8 @@
 
 QT_REQUIRE_CONFIG(settings);
 
+#include <QtCore/qlist.h>
 #include <QtCore/qsettings.h>
-#include <QtCore/qvector.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -70,7 +70,7 @@ public:
     explicit QHstsStore(const QString &dirName);
     ~QHstsStore();
 
-    QVector<QHstsPolicy> readPolicies();
+    QList<QHstsPolicy> readPolicies();
     void addToObserved(const QHstsPolicy &policy);
     void synchronize();
 
@@ -84,7 +84,7 @@ private:
     void evictPolicy(const QString &key);
     void endHstsGroups();
 
-    QVector<QHstsPolicy> observedPolicies;
+    QList<QHstsPolicy> observedPolicies;
     QSettings store;
 
     Q_DISABLE_COPY_MOVE(QHstsStore)

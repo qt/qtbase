@@ -488,7 +488,7 @@ public:
 
     QMutex mutex;
     QList<QSslCipher> supportedCiphers;
-    QVector<QSslEllipticCurve> supportedEllipticCurves;
+    QList<QSslEllipticCurve> supportedEllipticCurves;
     QExplicitlySharedDataPointer<QSslConfigurationPrivate> config;
     QExplicitlySharedDataPointer<QSslConfigurationPrivate> dtlsConfig;
 };
@@ -1296,12 +1296,12 @@ QSsl::SslProtocol QSslSocket::sessionProtocol() const
     \since 5.13
 
     This function returns Online Certificate Status Protocol responses that
-    a server may send during a TLS handshake using OCSP stapling. The vector
+    a server may send during a TLS handshake using OCSP stapling. The list
     is empty if no definitive response or no response at all was received.
 
     \sa QSslConfiguration::setOcspStaplingEnabled()
 */
-QVector<QOcspResponse> QSslSocket::ocspResponses() const
+QList<QOcspResponse> QSslSocket::ocspResponses() const
 {
     Q_D(const QSslSocket);
     return d->ocspResponses;
@@ -2061,7 +2061,7 @@ QList<QSslCipher> q_getDefaultDtlsCiphers()
 /*!
     \internal
 */
-QVector<QSslEllipticCurve> QSslSocketPrivate::supportedEllipticCurves()
+QList<QSslEllipticCurve> QSslSocketPrivate::supportedEllipticCurves()
 {
     QSslSocketPrivate::ensureInitialized();
     const QMutexLocker locker(&globalData()->mutex);
@@ -2071,7 +2071,7 @@ QVector<QSslEllipticCurve> QSslSocketPrivate::supportedEllipticCurves()
 /*!
     \internal
 */
-void QSslSocketPrivate::setDefaultSupportedEllipticCurves(const QVector<QSslEllipticCurve> &curves)
+void QSslSocketPrivate::setDefaultSupportedEllipticCurves(const QList<QSslEllipticCurve> &curves)
 {
     const QMutexLocker locker(&globalData()->mutex);
     globalData()->config.detach();

@@ -69,7 +69,7 @@
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 #include "qsslsocket_p.h"
 
-#include <QtCore/qvector.h>
+#include <QtCore/qlist.h>
 #include <QtCore/qstring.h>
 
 #ifdef Q_OS_WIN
@@ -129,7 +129,7 @@ public:
     BIO *readBio;
     BIO *writeBio;
     SSL_SESSION *session;
-    QVector<QSslErrorEntry> errorList;
+    QList<QSslErrorEntry> errorList;
     static int s_indexForSSLExtraData; // index used in SSL_get_ex_data to get the matching QSslSocketBackendPrivate
     enum ExDataOffset {
         errorOffsetInExData = 1,
@@ -174,7 +174,7 @@ public:
     // This decription will go to setErrorAndEmit(SslHandshakeError, ocspErrorDescription)
     QString ocspErrorDescription;
     // These will go to sslErrors()
-    QVector<QSslError> ocspErrors;
+    QList<QSslError> ocspErrors;
     QByteArray ocspResponseDer;
 
     Q_AUTOTEST_EXPORT static long setupOpenSslOptions(QSsl::SslProtocol protocol, QSsl::SslOptions sslOptions);

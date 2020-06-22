@@ -416,8 +416,8 @@ public:
     }
 
 private:
-    QVector<HANDLE> m_watchEvents;
-    QVector<HKEY> m_registryHandles;
+    QList<HANDLE> m_watchEvents;
+    QList<HKEY> m_registryHandles;
 };
 } // namespace
 
