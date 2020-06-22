@@ -76,7 +76,7 @@ protected:
   // recognizer
   int tos;
   int stack_size;
-  QVector<QString> sym_stack;
+  QList<QString> sym_stack;
   int *state_stack;
 
   QString _M_contents;

@@ -39,9 +39,9 @@ public:
   void operator () (int *table, int row_count, int column_count);
 
 public:
-  QVector<int> index;
-  QVector<int> info;
-  QVector<int> check;
+    QList<int> index;
+    QList<int> info;
+    QList<int> check;
 };
 
 #endif // COMPRESS_H

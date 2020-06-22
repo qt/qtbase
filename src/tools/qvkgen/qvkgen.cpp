@@ -45,11 +45,11 @@ public:
 
     struct Command {
         TypedName cmd;
-        QVector<TypedName> args;
+        QList<TypedName> args;
         bool deviceLevel;
     };
 
-    QVector<Command> commands() const { return m_commands; }
+    QList<Command> commands() const { return m_commands; }
 
     void setFileName(const QString &fn) { m_fn = fn; }
 
@@ -62,7 +62,7 @@ private:
 
     QFile m_file;
     QXmlStreamReader m_reader;
-    QVector<Command> m_commands;
+    QList<Command> m_commands;
     QString m_fn;
 };
 
@@ -262,7 +262,8 @@ QByteArray Preamble::get(const QString &fn)
     return m_str;
 }
 
-bool genVulkanFunctionsH(const QVector<VkSpecParser::Command> &commands, const QString &licHeaderFn, const QString &outputBase)
+bool genVulkanFunctionsH(const QList<VkSpecParser::Command> &commands, const QString &licHeaderFn,
+                         const QString &outputBase)
 {
     QFile f(outputBase + QStringLiteral(".h"));
     if (!f.open(QIODevice::WriteOnly | QIODevice::Text)) {
@@ -342,7 +343,8 @@ bool genVulkanFunctionsH(const QVector<VkSpecParser::Command> &commands, const Q
     return true;
 }
 
-bool genVulkanFunctionsPH(const QVector<VkSpecParser::Command> &commands, const QString &licHeaderFn, const QString &outputBase)
+bool genVulkanFunctionsPH(const QList<VkSpecParser::Command> &commands, const QString &licHeaderFn,
+                          const QString &outputBase)
 {
     QFile f(outputBase + QStringLiteral("_p.h"));
     if (!f.open(QIODevice::WriteOnly | QIODevice::Text)) {
@@ -401,7 +403,8 @@ bool genVulkanFunctionsPH(const QVector<VkSpecParser::Command> &commands, const 
     return true;
 }
 
-bool genVulkanFunctionsPC(const QVector<VkSpecParser::Command> &commands, const QString &licHeaderFn, const QString &outputBase)
+bool genVulkanFunctionsPC(const QList<VkSpecParser::Command> &commands, const QString &licHeaderFn,
+                          const QString &outputBase)
 {
     QFile f(outputBase + QStringLiteral("_p.cpp"));
     if (!f.open(QIODevice::WriteOnly | QIODevice::Text)) {
@@ -499,7 +502,7 @@ int main(int argc, char **argv)
     if (!parser.parse())
         return 1;
 
-    QVector<VkSpecParser::Command> commands = parser.commands();
+    QList<VkSpecParser::Command> commands = parser.commands();
     QStringList ignoredFuncs {
         QStringLiteral("vkCreateInstance"),
         QStringLiteral("vkDestroyInstance"),

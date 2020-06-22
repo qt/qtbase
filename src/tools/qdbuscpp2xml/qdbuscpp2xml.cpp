@@ -81,8 +81,7 @@ static const char help[] =
     "  -V             Show the program version and quit.\n"
     "\n";
 
-
-int qDBusParametersForMethod(const FunctionDef &mm, QVector<int>& metaTypes, QString &errorMsg)
+int qDBusParametersForMethod(const FunctionDef &mm, QList<int> &metaTypes, QString &errorMsg)
 {
     QList<QByteArray> parameterTypes;
     parameterTypes.reserve(mm.arguments.size());
@@ -125,8 +124,8 @@ static QString addFunction(const FunctionDef &mm, bool isSignal = false) {
             return QString();           // wasn't a valid type
         }
     }
-    QVector<ArgumentDef> names = mm.arguments;
-    QVector<int> types;
+    QList<ArgumentDef> names = mm.arguments;
+    QList<int> types;
     QString errorMsg;
     int inputCount = qDBusParametersForMethod(mm, types, errorMsg);
     if (inputCount == -1) {
@@ -398,7 +397,7 @@ int main(int argc, char **argv)
         args.append(QString::fromLocal8Bit(argv[n]));
     parseCmdLine(args);
 
-    QVector<ClassDef> classes;
+    QList<ClassDef> classes;
 
     for (int i = 0; i < args.count(); ++i) {
         const QString arg = args.at(i);

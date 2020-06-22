@@ -51,7 +51,7 @@ void generateSeparator(int i, QTextStream &out)
     }
 }
 
-void generateList(const QVector<int> &list, QTextStream &out)
+void generateList(const QList<int> &list, QTextStream &out)
 {
     for (int i = 0; i < list.size(); ++i) {
         generateSeparator(i, out);

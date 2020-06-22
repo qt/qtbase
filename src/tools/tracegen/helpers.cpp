@@ -52,8 +52,8 @@ QString includeGuard(const QString &filename)
     return guard;
 }
 
-template <typename T>
-static QString joinArguments(const QVector<Tracepoint::Argument> &args, T joinFunction)
+template<typename T>
+static QString joinArguments(const QList<Tracepoint::Argument> &args, T joinFunction)
 {
     QString ret;
     bool first = true;
@@ -70,14 +70,14 @@ static QString joinArguments(const QVector<Tracepoint::Argument> &args, T joinFu
     return ret;
 }
 
-QString formatFunctionSignature(const QVector<Tracepoint::Argument> &args)
+QString formatFunctionSignature(const QList<Tracepoint::Argument> &args)
 {
     return joinArguments(args, [](const Tracepoint::Argument &arg) {
             return QStringLiteral("%1 %2").arg(arg.type).arg(arg.name);
     });
 }
 
-QString formatParameterList(const QVector<Tracepoint::Argument> &args, ParamType type)
+QString formatParameterList(const QList<Tracepoint::Argument> &args, ParamType type)
 {
     if (type == LTTNG) {
         QString ret;

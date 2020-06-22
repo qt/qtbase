@@ -79,14 +79,14 @@ struct Tracepoint
     };
 
     QString name;
-    QVector<Argument> args;
-    QVector<Field> fields;
+    QList<Argument> args;
+    QList<Field> fields;
 };
 
 struct Provider
 {
     QString name;
-    QVector<Tracepoint> tracepoints;
+    QList<Tracepoint> tracepoints;
     QStringList prefixText;
 };
 

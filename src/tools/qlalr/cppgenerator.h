@@ -78,8 +78,8 @@ private:
   bool copyright;
   Compress compressed_action;
   Compress compressed_goto;
-  QVector<int> count;
-  QVector<int> defgoto;
+  QList<int> count;
+  QList<int> defgoto;
 };
 
 #endif // CPPGENERATOR_H

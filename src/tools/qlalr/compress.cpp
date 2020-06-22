@@ -53,17 +53,15 @@ struct _PerfectMatch
 
 struct _GenerateCheck
 {
-  QVector<int>::const_iterator iterator;
-  int initial;
+    QList<int>::const_iterator iterator;
+    int initial;
 
-  _GenerateCheck (QVector<int>::const_iterator it, int i):
-    iterator (it),
-    initial (i) {}
+    _GenerateCheck(QList<int>::const_iterator it, int i) : iterator(it), initial(i) { }
 
-  inline int operator () ()
-  {
-    int check = initial++;
-    return *iterator++ ? check : -1;
+    inline int operator()()
+    {
+        int check = initial++;
+        return *iterator++ ? check : -1;
   }
 };
 
@@ -151,7 +149,7 @@ void Compress::operator () (int *table, int row_count, int column_count)
   info.clear ();
   check.clear ();
 
-  QVector<UncompressedRow> sortedTable (row_count);
+  QList<UncompressedRow> sortedTable(row_count);
 
   for (int i = 0; i < row_count; ++i)
     {
@@ -181,14 +179,15 @@ void Compress::operator () (int *table, int row_count, int column_count)
   for (const UncompressedRow &row : qAsConst(sortedTable))
     {
       int first_token = std::distance (row.begin (), row.beginNonZeros ());
-      QVector<int>::iterator pos = info.begin ();
+      QList<int>::iterator pos = info.begin();
 
       while (pos != info.end ())
         {
           if (pos == info.begin ())
             {
               // try to find a perfect match
-              QVector<int>::iterator pm = std::search (pos, info.end (), row.beginNonZeros (), row.endNonZeros (), _PerfectMatch ());
+              QList<int>::iterator pm = std::search(pos, info.end(), row.beginNonZeros(),
+                                                    row.endNonZeros(), _PerfectMatch());
 
               if (pm != info.end ())
                 {
