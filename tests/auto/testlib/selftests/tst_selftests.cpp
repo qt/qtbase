@@ -743,7 +743,7 @@ bool TestLogger::shouldIgnoreTest(const QString &test) const
     return false;
 }
 
-using TestLoggers = QVector<TestLogger>;
+using TestLoggers = QList<TestLogger>;
 
 // ----------------------- Output checking -----------------------
 

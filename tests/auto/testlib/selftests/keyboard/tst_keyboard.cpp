@@ -54,7 +54,7 @@ public:
         mEventOrder.append(copiedEvent);
     }
 
-    QVector<QSharedPointer<QKeyEvent>> mEventOrder;
+    QList<QSharedPointer<QKeyEvent>> mEventOrder;
 };
 
 void tst_Keyboard::keyPressAndRelease()

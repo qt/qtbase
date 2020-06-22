@@ -178,7 +178,7 @@ int main(int argc, char** argv)
         name.
     */
     int badstring = -1;
-    QVector<char const*> args;
+    QList<char const *> args;
     for (int i = 0; i < argc; ++i) {
         if (!strcmp(argv[i], "-badstring")) {
             bool ok = false;

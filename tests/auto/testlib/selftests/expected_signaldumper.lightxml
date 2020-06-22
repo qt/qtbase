@@ -542,22 +542,22 @@
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) qByteArraySignal (QByteArray(Test bytearray))]]></Description>
 </Message>
 <Message type="info" file="" line="0">
-    <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) qListSignal (QVector<int>())]]></Description>
+    <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) qListSignal (QList<int>())]]></Description>
 </Message>
 <Message type="info" file="" line="0">
-    <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorSignal (QVector<int>())]]></Description>
+    <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorSignal (QList<int>())]]></Description>
 </Message>
 <Message type="info" file="" line="0">
-    <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorRefSignal ((QVector<int>&)@_POINTER_)]]></Description>
+    <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorRefSignal ((QList<int>&)@_POINTER_)]]></Description>
 </Message>
 <Message type="info" file="" line="0">
-    <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorConstRefSignal (QVector<int>())]]></Description>
+    <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorConstRefSignal (QList<int>())]]></Description>
 </Message>
 <Message type="info" file="" line="0">
-    <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorConstPointerSignal ((const QVector<int>*)_POINTER_)]]></Description>
+    <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorConstPointerSignal ((const QList<int>*)_POINTER_)]]></Description>
 </Message>
 <Message type="info" file="" line="0">
-    <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorPointerConstSignal ((QVector<int>*)_POINTER_)]]></Description>
+    <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorPointerConstSignal ((QList<int>*)_POINTER_)]]></Description>
 </Message>
 <Message type="info" file="" line="0">
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())]]></Description>

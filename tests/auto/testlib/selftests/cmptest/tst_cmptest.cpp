@@ -523,7 +523,7 @@ void tst_Cmptest::compareQRegion_data()
     const QRect rect1(QPoint(10, 10), QSize(200, 50));
     const QRegion region1(rect1);
     QRegion listRegion2;
-    const QVector<QRect> list2 = QVector<QRect>() << QRect(QPoint(100, 200), QSize(50, 200)) << rect1;
+    const QList<QRect> list2 = QList<QRect>() << QRect(QPoint(100, 200), QSize(50, 200)) << rect1;
     listRegion2.setRects(list2.constData(), list2.size());
     QTest::newRow("equal-empty") << QRegion() << QRegion();
     QTest::newRow("1-empty") << region1 << QRegion();
