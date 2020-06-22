@@ -5098,6 +5098,14 @@ QString QString::fromLocal8Bit_helper(const char *str, int size)
 */
 
 /*!
+    \fn QString QString::fromUtf8(const char8_t *str, qsizetype size)
+    \overload
+    \since 6.0
+
+    This overload is only available when compiling in C++20 mode.
+*/
+
+/*!
     \fn QString QString::fromUtf8(const QByteArray &str)
     \overload
     \since 5.0

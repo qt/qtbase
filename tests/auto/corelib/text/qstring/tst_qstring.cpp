@@ -4216,7 +4216,13 @@ void tst_QString::nullFromUtf8()
     a = QString::fromUtf8(0);
     QVERIFY(a.isNull());
     QVERIFY(a.isEmpty());
+    a = QString::fromUtf8(nullptr);
+    QVERIFY(a.isNull());
+    QVERIFY(a.isEmpty());
     a = QString::fromUtf8("");
+    QVERIFY(!a.isNull());
+    QVERIFY(a.isEmpty());
+    a = QString::fromUtf8(u8""); // char in C++17 / char8_t in C++20
     QVERIFY(!a.isNull());
     QVERIFY(a.isEmpty());
     a = QString::fromUtf8(QByteArray());

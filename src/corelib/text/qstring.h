@@ -658,6 +658,11 @@ public:
     {
         return fromUtf8_helper(str, (str && size == -1) ? int(strlen(str)) : size);
     }
+#ifdef __cpp_char8_t
+    Q_WEAK_OVERLOAD
+    static inline QString fromUtf8(const char8_t *str, qsizetype size = -1)
+    { return fromUtf8(reinterpret_cast<const char *>(str), int(size)); }
+#endif
     static inline QString fromLocal8Bit(const char *str, int size = -1)
     {
         return fromLocal8Bit_helper(str, (str && size == -1) ? int(strlen(str)) : size);

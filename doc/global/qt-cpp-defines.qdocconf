@@ -132,6 +132,7 @@ Cpp.ignoretokens        += \
                           Q_SVG_EXPORT \
                           Q_TESTLIB_EXPORT \
                           Q_TYPENAME \
+                          Q_WEAK_OVERLOAD \
                           Q_WIDGETS_EXPORT \
                           Q_WINEXTRAS_EXPORT \
                           Q_XML_EXPORT \
