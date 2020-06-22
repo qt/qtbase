@@ -217,7 +217,8 @@ protected:
     void updateGeometries() override;
     void scrollContentsBy(int dx, int dy) override;
 
-    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>()) override;
+    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight,
+                     const QList<int> &roles = QList<int>()) override;
     void rowsInserted(const QModelIndex &parent, int start, int end) override;
 
     QRect visualRect(const QModelIndex &index) const override;

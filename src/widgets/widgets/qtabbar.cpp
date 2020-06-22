@@ -467,7 +467,7 @@ void QTabBarPrivate::layoutTabs()
     int hiddenTabs = 0;
 
     Qt::Alignment tabAlignment = Qt::Alignment(q->style()->styleHint(QStyle::SH_TabBar_Alignment, nullptr, q));
-    QVector<QLayoutStruct> tabChain(tabList.count() + 2);
+    QList<QLayoutStruct> tabChain(tabList.count() + 2);
 
     // We put an empty item at the front and back and set its expansive attribute
     // depending on tabAlignment and expanding.

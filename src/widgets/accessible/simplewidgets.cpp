@@ -519,11 +519,12 @@ QString QAccessibleDisplay::text(QAccessible::Text t) const
 }
 
 /*! \reimp */
-QVector<QPair<QAccessibleInterface*, QAccessible::Relation> >
+QList<QPair<QAccessibleInterface *, QAccessible::Relation>>
 QAccessibleDisplay::relations(QAccessible::Relation match /* = QAccessible::AllRelations */) const
 {
-    QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > rels = QAccessibleWidget::relations(match);
-#if QT_CONFIG(shortcut) && QT_CONFIG(label)
+    QList<QPair<QAccessibleInterface *, QAccessible::Relation>> rels =
+            QAccessibleWidget::relations(match);
+#    if QT_CONFIG(shortcut) && QT_CONFIG(label)
     if (match & QAccessible::Labelled) {
         if (QLabel *label = qobject_cast<QLabel*>(object())) {
             const QAccessible::Relation rel = QAccessible::Labelled;
@@ -630,10 +631,11 @@ QAccessible::Role QAccessibleGroupBox::role() const
     return groupBox()->isCheckable() ? QAccessible::CheckBox : QAccessible::Grouping;
 }
 
-QVector<QPair<QAccessibleInterface*, QAccessible::Relation> >
+QList<QPair<QAccessibleInterface *, QAccessible::Relation>>
 QAccessibleGroupBox::relations(QAccessible::Relation match /* = QAccessible::AllRelations */) const
 {
-    QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > rels = QAccessibleWidget::relations(match);
+    QList<QPair<QAccessibleInterface *, QAccessible::Relation>> rels =
+            QAccessibleWidget::relations(match);
 
     if ((match & QAccessible::Labelled) && (!groupBox()->title().isEmpty())) {
         const QList<QWidget*> kids = childWidgets(widget());

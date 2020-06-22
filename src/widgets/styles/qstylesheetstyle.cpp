@@ -508,7 +508,7 @@ class QRenderRule
 {
 public:
     QRenderRule() : features(0), hasFont(false), pal(nullptr), b(nullptr), bg(nullptr), bd(nullptr), ou(nullptr), geo(nullptr), p(nullptr), img(nullptr), clipset(0) { }
-    QRenderRule(const QVector<QCss::Declaration> &, const QObject *);
+    QRenderRule(const QList<QCss::Declaration> &, const QObject *);
 
     QRect borderRect(const QRect &r) const;
     QRect outlineRect(const QRect &r) const;
@@ -803,7 +803,7 @@ QHash<QStyle::SubControl, QRect> QStyleSheetStyle::titleBarLayout(const QWidget 
 
     int offsets[3] = { 0, 0, 0 };
     enum Where { Left, Right, Center, NoWhere } where = Left;
-    QVector<ButtonInfo> infos;
+    QList<ButtonInfo> infos;
     const int numLayouts = layout.size();
     infos.reserve(numLayouts);
     for (int i = 0; i < numLayouts; i++) {
@@ -915,8 +915,18 @@ static QStyle::StandardPixmap subControlIcon(int pe)
     return QStyle::SP_CustomBase;
 }
 
-QRenderRule::QRenderRule(const QVector<Declaration> &declarations, const QObject *object)
-: features(0), hasFont(false), pal(nullptr), b(nullptr), bg(nullptr), bd(nullptr), ou(nullptr), geo(nullptr), p(nullptr), img(nullptr), clipset(0)
+QRenderRule::QRenderRule(const QList<Declaration> &declarations, const QObject *object)
+    : features(0),
+      hasFont(false),
+      pal(nullptr),
+      b(nullptr),
+      bg(nullptr),
+      bd(nullptr),
+      ou(nullptr),
+      geo(nullptr),
+      p(nullptr),
+      img(nullptr),
+      clipset(0)
 {
     QPalette palette = QGuiApplication::palette(); // ###: ideally widget's palette
     ValueExtractor v(declarations, palette);
@@ -1602,14 +1612,15 @@ private:
     mutable QHash<const QObject *, QHash<QString, QString> > m_attributeCache;
 };
 
-QVector<QCss::StyleRule> QStyleSheetStyle::styleRules(const QObject *obj) const
+QList<QCss::StyleRule> QStyleSheetStyle::styleRules(const QObject *obj) const
 {
-    QHash<const QObject *, QVector<StyleRule> >::const_iterator cacheIt = styleSheetCaches->styleRulesCache.constFind(obj);
+    QHash<const QObject *, QList<StyleRule>>::const_iterator cacheIt =
+            styleSheetCaches->styleRulesCache.constFind(obj);
     if (cacheIt != styleSheetCaches->styleRulesCache.constEnd())
         return cacheIt.value();
 
     if (!initObject(obj)) {
-        return QVector<StyleRule>();
+        return QList<StyleRule>();
     }
 
     QStyleSheetStyleSelector styleSelector;
@@ -1645,7 +1656,7 @@ QVector<QCss::StyleRule> QStyleSheetStyle::styleRules(const QObject *obj) const
         styleSelector.styleSheets += appSs;
     }
 
-    QVector<QCss::StyleSheet> objectSs;
+    QList<QCss::StyleSheet> objectSs;
     for (const QObject *o = obj; o; o = parentObject(o)) {
         QString styleSheet = o->property("styleSheet").toString();
         if (styleSheet.isEmpty())
@@ -1674,16 +1685,17 @@ QVector<QCss::StyleRule> QStyleSheetStyle::styleRules(const QObject *obj) const
 
     StyleSelector::NodePtr n;
     n.ptr = const_cast<QObject *>(obj);
-    QVector<QCss::StyleRule> rules = styleSelector.styleRulesForNode(n);
+    QList<QCss::StyleRule> rules = styleSelector.styleRulesForNode(n);
     styleSheetCaches->styleRulesCache.insert(obj, rules);
     return rules;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Rendering rules
-static QVector<Declaration> declarations(const QVector<StyleRule> &styleRules, const QString &part, quint64 pseudoClass = PseudoClass_Unspecified)
+static QList<Declaration> declarations(const QList<StyleRule> &styleRules, const QString &part,
+                                       quint64 pseudoClass = PseudoClass_Unspecified)
 {
-    QVector<Declaration> decls;
+    QList<Declaration> decls;
     for (int i = 0; i < styleRules.count(); i++) {
         const Selector& selector = styleRules.at(i).selectors.at(0);
         // Rules with pseudo elements don't cascade. This is an intentional
@@ -1813,7 +1825,7 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, int element, quint6
         return QRenderRule();
 
     quint64 stateMask = 0;
-    const QVector<StyleRule> rules = styleRules(obj);
+    const QList<StyleRule> rules = styleRules(obj);
     for (int i = 0; i < rules.count(); i++) {
         const Selector& selector = rules.at(i).selectors.at(0);
         quint64 negated = 0;
@@ -1830,7 +1842,7 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, int element, quint6
 
 
     const QString part = QLatin1String(knownPseudoElements[element].name);
-    QVector<Declaration> decls = declarations(rules, part, state);
+    QList<Declaration> decls = declarations(rules, part, state);
     QRenderRule newRule(decls, obj);
     cache[state] = newRule;
     if ((state & stateMask) != state)
@@ -2120,8 +2132,7 @@ bool QStyleSheetStyle::hasStyleRule(const QObject *obj, int part) const
     if (!initObject(obj))
         return false;
 
-
-    const QVector<StyleRule> &rules = styleRules(obj);
+    const QList<StyleRule> &rules = styleRules(obj);
     if (part == PseudoElement_None) {
         bool result = obj && !rules.isEmpty();
         cache[part] = result;
@@ -2580,8 +2591,8 @@ void QStyleSheetStyle::setProperties(QWidget *w)
     // Set value for each property in the order of property final occurrence
     // since properties interact.
 
-    const QVector<Declaration> decls = declarations(styleRules(w), QString());
-    QVector<int> finals; // indices in reverse order of each property's final occurrence
+    const QList<Declaration> decls = declarations(styleRules(w), QString());
+    QList<int> finals; // indices in reverse order of each property's final occurrence
 
     {
         // scan decls for final occurrence of each "qproperty"
@@ -2844,7 +2855,7 @@ void QStyleSheetStyle::polish(QWidget *w)
     setPalette(w);
 
     //set the WA_Hover attribute if one of the selector depends of the hover state
-    QVector<StyleRule> rules = styleRules(w);
+    QList<StyleRule> rules = styleRules(w);
     for (int i = 0; i < rules.count(); i++) {
         const Selector& selector = rules.at(i).selectors.at(0);
         quint64 negated = 0;

@@ -40,10 +40,10 @@
 #ifndef QTABLEWIDGET_H
 #define QTABLEWIDGET_H
 
-#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qtableview.h>
+#include <QtWidgets/qtwidgetsglobal.h>
+#include <QtCore/qlist.h>
 #include <QtCore/qvariant.h>
-#include <QtCore/qvector.h>
 
 QT_REQUIRE_CONFIG(tablewidget);
 
@@ -168,7 +168,7 @@ private:
 
 private:
     int rtti;
-    QVector<QWidgetItemData> values;
+    QList<QWidgetItemData> values;
     QTableWidget *view;
     QTableWidgetItemPrivate *d;
     Qt::ItemFlags itemFlags;

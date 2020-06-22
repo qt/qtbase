@@ -40,7 +40,7 @@
 #include "qlayout.h"
 #include "private/qlayoutengine_p.h"
 
-#include "qvector.h"
+#include "qlist.h"
 #include "qwidget.h"
 
 #include <qvarlengtharray.h>
@@ -73,8 +73,7 @@ static inline int fRound(Fixed64 i) {
   count is the count of items in the chain; pos and space give the
   interval (relative to parentWidget topLeft).
 */
-void qGeomCalc(QVector<QLayoutStruct> &chain, int start, int count,
-               int pos, int space, int spacer)
+void qGeomCalc(QList<QLayoutStruct> &chain, int start, int count, int pos, int space, int spacer)
 {
     int cHint = 0;
     int cMin = 0;

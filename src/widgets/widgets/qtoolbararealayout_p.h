@@ -112,7 +112,7 @@ Q_DECLARE_TYPEINFO(QToolBarAreaLayoutItem, Q_PRIMITIVE_TYPE);
 class QToolBarAreaLayoutLine
 {
 public:
-    QToolBarAreaLayoutLine() {} // for QVector, don't use
+    QToolBarAreaLayoutLine() { } // for QList, don't use
     QToolBarAreaLayoutLine(Qt::Orientation orientation);
 
     QSize sizeHint() const;
@@ -124,7 +124,7 @@ public:
     QRect rect;
     Qt::Orientation o;
 
-    QVector<QToolBarAreaLayoutItem> toolBarItems;
+    QList<QToolBarAreaLayoutItem> toolBarItems;
 };
 Q_DECLARE_TYPEINFO(QToolBarAreaLayoutLine, Q_MOVABLE_TYPE);
 
@@ -151,7 +151,7 @@ public:
     QRect itemRect(const QList<int> &path) const;
     int distance(const QPoint &pos) const;
 
-    QVector<QToolBarAreaLayoutLine> lines;
+    QList<QToolBarAreaLayoutLine> lines;
     QRect rect;
     Qt::Orientation o;
     QInternal::DockPosition dockPos;

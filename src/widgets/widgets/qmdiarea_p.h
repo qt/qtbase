@@ -58,7 +58,7 @@
 QT_REQUIRE_CONFIG(mdiarea);
 
 #include <QList>
-#include <QVector>
+#include <QList>
 #include <QRect>
 #include <QPoint>
 #include <QtWidgets/qapplication.h>
@@ -115,20 +115,22 @@ class Placer
 public:
     // Places the rectangle defined by 'size' relative to 'rects' and 'domain'.
     // Returns the position of the resulting rectangle.
-    virtual QPoint place(
-        const QSize &size, const QVector<QRect> &rects, const QRect &domain) const = 0;
+    virtual QPoint place(const QSize &size, const QList<QRect> &rects,
+                         const QRect &domain) const = 0;
     virtual ~Placer() {}
 };
 
 class MinOverlapPlacer : public Placer
 {
-    QPoint place(const QSize &size, const QVector<QRect> &rects, const QRect &domain) const override;
-    static int accumulatedOverlap(const QRect &source, const QVector<QRect> &rects);
-    static QRect findMinOverlapRect(const QVector<QRect> &source, const QVector<QRect> &rects);
-    static QVector<QRect> getCandidatePlacements(const QSize &size, const QVector<QRect> &rects, const QRect &domain);
-    static QPoint findBestPlacement(const QRect &domain, const QVector<QRect> &rects, QVector<QRect> &source);
-    static QVector<QRect> findNonInsiders(const QRect &domain, QVector<QRect> &source);
-    static QVector<QRect> findMaxOverlappers(const QRect &domain, const QVector<QRect> &source);
+    QPoint place(const QSize &size, const QList<QRect> &rects, const QRect &domain) const override;
+    static int accumulatedOverlap(const QRect &source, const QList<QRect> &rects);
+    static QRect findMinOverlapRect(const QList<QRect> &source, const QList<QRect> &rects);
+    static QList<QRect> getCandidatePlacements(const QSize &size, const QList<QRect> &rects,
+                                               const QRect &domain);
+    static QPoint findBestPlacement(const QRect &domain, const QList<QRect> &rects,
+                                    QList<QRect> &source);
+    static QList<QRect> findNonInsiders(const QRect &domain, QList<QRect> &source);
+    static QList<QRect> findMaxOverlappers(const QRect &domain, const QList<QRect> &source);
 };
 } // namespace QMdi
 
@@ -149,9 +151,9 @@ public:
 #endif
     QMdiAreaTabBar *tabBar;
     QList<QMdi::Rearranger *> pendingRearrangements;
-    QVector< QPointer<QMdiSubWindow> > pendingPlacements;
-    QVector< QPointer<QMdiSubWindow> > childWindows;
-    QVector<int> indicesToActivatedChildren;
+    QList<QPointer<QMdiSubWindow>> pendingPlacements;
+    QList<QPointer<QMdiSubWindow>> childWindows;
+    QList<int> indicesToActivatedChildren;
     QPointer<QMdiSubWindow> active;
     QPointer<QMdiSubWindow> aboutToBecomeActive;
     QBrush background;

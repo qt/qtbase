@@ -52,11 +52,11 @@
 //
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
+#include <qlist.h>
 #include <qlistview.h>
 #include <qstandarditemmodel.h>
 #include <qstyleditemdelegate.h>
 #include <qurl.h>
-#include <qvector.h>
 
 QT_REQUIRE_CONFIG(filedialog);
 
@@ -114,7 +114,7 @@ private:
     };
     friend class QTypeInfo<WatchItem>;
 
-    QVector<WatchItem> watching;
+    QList<WatchItem> watching;
     QList<QUrl> invalidUrls;
 };
 Q_DECLARE_TYPEINFO(QUrlModel::WatchItem, Q_MOVABLE_TYPE);

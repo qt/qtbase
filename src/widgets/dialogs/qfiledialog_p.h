@@ -116,7 +116,7 @@ class Q_WIDGETS_EXPORT QFileDialogPrivate : public QDialogPrivate
     Q_DECLARE_PUBLIC(QFileDialog)
 
 public:
-    using PersistentModelIndexList = QVector<QPersistentModelIndex>;
+    using PersistentModelIndexList = QList<QPersistentModelIndex>;
 
     struct HistoryItem
     {

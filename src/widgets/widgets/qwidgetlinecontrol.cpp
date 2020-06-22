@@ -578,7 +578,7 @@ void QWidgetLineControl::processInputMethodEvent(QInputMethodEvent *event)
     const int oldPreeditCursor = m_preeditCursor;
     m_preeditCursor = event->preeditString().length();
     m_hideCursor = false;
-    QVector<QTextLayout::FormatRange> formats;
+    QList<QTextLayout::FormatRange> formats;
     formats.reserve(event->attributes().size());
     for (int i = 0; i < event->attributes().size(); ++i) {
         const QInputMethodEvent::Attribute &a = event->attributes().at(i);
@@ -627,7 +627,7 @@ void QWidgetLineControl::processInputMethodEvent(QInputMethodEvent *event)
 */
 void QWidgetLineControl::draw(QPainter *painter, const QPoint &offset, const QRect &clip, int flags)
 {
-    QVector<QTextLayout::FormatRange> selections;
+    QList<QTextLayout::FormatRange> selections;
     if (flags & DrawSelections) {
         QTextLayout::FormatRange o;
         if (m_selstart < m_selend) {

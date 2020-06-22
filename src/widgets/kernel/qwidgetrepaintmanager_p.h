@@ -130,11 +130,11 @@ private:
     QBackingStore *store = nullptr;
 
     QRegion dirty; // needsRepaint
-    QVector<QWidget *> dirtyWidgets;
-    QVector<QWidget *> dirtyRenderToTextureWidgets;
+    QList<QWidget *> dirtyWidgets;
+    QList<QWidget *> dirtyRenderToTextureWidgets;
 
     QRegion topLevelNeedsFlush;
-    QVector<QWidget *> needsFlushWidgets;
+    QList<QWidget *> needsFlushWidgets;
 
     QList<QWidget *> staticWidgets;
 

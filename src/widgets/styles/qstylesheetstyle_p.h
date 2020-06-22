@@ -45,14 +45,14 @@
 
 #ifndef QT_NO_STYLE_STYLESHEET
 
+#include "QtWidgets/qapplication.h"
 #include "QtWidgets/qstyleoption.h"
 #include "QtCore/qhash.h"
-#include "QtGui/qevent.h"
-#include "QtCore/qvector.h"
+#include "QtCore/qlist.h"
 #include "QtCore/qset.h"
-#include "QtWidgets/qapplication.h"
-#include "private/qcssparser_p.h"
 #include "QtGui/qbrush.h"
+#include "QtGui/qevent.h"
+#include "private/qcssparser_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -158,7 +158,7 @@ private:
     void setProperties(QWidget *);
     void setGeometry(QWidget *);
     void unsetStyleSheetFont(QWidget *) const;
-    QVector<QCss::StyleRule> styleRules(const QObject *obj) const;
+    QList<QCss::StyleRule> styleRules(const QObject *obj) const;
     bool hasStyleRule(const QObject *obj, int part) const;
 
     QHash<QStyle::SubControl, QRect> titleBarLayout(const QWidget *w, const QStyleOptionTitleBar *tb) const;
@@ -184,7 +184,7 @@ public Q_SLOTS:
     void objectDestroyed(QObject *);
     void styleDestroyed(QObject *);
 public:
-    QHash<const QObject *, QVector<QCss::StyleRule> > styleRulesCache;
+    QHash<const QObject *, QList<QCss::StyleRule>> styleRulesCache;
     QHash<const QObject *, QHash<int, bool> > hasStyleRuleCache;
     typedef QHash<int, QHash<quint64, QRenderRule> > QRenderRules;
     QHash<const QObject *, QRenderRules> renderRulesCache;

@@ -276,7 +276,7 @@ public:
 
     void _q_directoryChanged(const QString &directory, const QStringList &list);
     void _q_performDelayedSort();
-    void _q_fileSystemChanged(const QString &path, const QVector<QPair<QString, QFileInfo> > &);
+    void _q_fileSystemChanged(const QString &path, const QList<QPair<QString, QFileInfo>> &);
     void _q_resolvedName(const QString &fileName, const QString &resolvedName);
 
     QDir rootDir;
@@ -301,7 +301,7 @@ public:
         QString file;
         const QFileSystemNode *node;
     };
-    QVector<Fetching> toFetch;
+    QList<Fetching> toFetch;
 
     QBasicTimer fetchingTimer;
 

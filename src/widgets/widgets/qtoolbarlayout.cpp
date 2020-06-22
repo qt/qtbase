@@ -282,7 +282,7 @@ void QToolBarLayout::updateGeomArray() const
     that->expanding = false;
     that->empty = false;
 
-    QVector<QLayoutStruct> a(items.count() + 1); // + 1 for the stretch
+    QList<QLayoutStruct> a(items.count() + 1); // + 1 for the stretch
 
     int count = 0;
     for (int i = 0; i < items.count(); ++i) {
@@ -468,7 +468,7 @@ bool QToolBarLayout::layoutActions(const QSize &size)
     int rowPos = perp(o, rect.topLeft()) + perp(o, QSize(margins.top(), margins.left()));
     int i = 0;
     while (i < items.count()) {
-        QVector<QLayoutStruct> a = geomArray;
+        QList<QLayoutStruct> a = geomArray;
 
         int start = i;
         int size = 0;

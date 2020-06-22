@@ -118,7 +118,8 @@ public:
     QAccessible::Role role() const override;
     QAccessible::State state() const override;
 
-    QVector<QPair<QAccessibleInterface*, QAccessible::Relation> >relations(QAccessible::Relation match = QAccessible::AllRelations) const override;
+    QList<QPair<QAccessibleInterface *, QAccessible::Relation>>
+    relations(QAccessible::Relation match = QAccessible::AllRelations) const override;
     void *interface_cast(QAccessible::InterfaceType t) override;
 
     // QAccessibleImageInterface
@@ -137,7 +138,8 @@ public:
     QAccessible::Role role() const override;
     QString text(QAccessible::Text t) const override;
 
-    QVector<QPair<QAccessibleInterface*, QAccessible::Relation> >relations(QAccessible::Relation match = QAccessible::AllRelations) const override;
+    QList<QPair<QAccessibleInterface *, QAccessible::Relation>>
+    relations(QAccessible::Relation match = QAccessible::AllRelations) const override;
 
     //QAccessibleActionInterface
     QStringList actionNames() const override;

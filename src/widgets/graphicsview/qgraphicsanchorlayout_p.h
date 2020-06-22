@@ -190,7 +190,7 @@ inline QString AnchorData::toString() const
 
 struct SequentialAnchorData : public AnchorData
 {
-    SequentialAnchorData(const QVector<AnchorVertex *> &vertices, const QVector<AnchorData *> &edges)
+    SequentialAnchorData(const QList<AnchorVertex *> &vertices, const QList<AnchorData *> &edges)
         : AnchorData(), m_children(vertices), m_edges(edges)
     {
         type = AnchorData::Sequential;
@@ -203,8 +203,8 @@ struct SequentialAnchorData : public AnchorData
     virtual void updateChildrenSizes() override;
     void calculateSizeHints();
 
-    QVector<AnchorVertex*> m_children;          // list of vertices in the sequence
-    QVector<AnchorData*> m_edges;               // keep the list of edges too.
+    QList<AnchorVertex *> m_children; // list of vertices in the sequence
+    QList<AnchorData *> m_edges; // keep the list of edges too.
 };
 
 struct ParallelAnchorData : public AnchorData
@@ -556,7 +556,7 @@ public:
     QHVContainer<std::array<qreal, 3>> sizeHints = {{-1, -1, -1}, {-1, -1, -1}};
 
     // Items
-    QVector<QGraphicsLayoutItem *> items;
+    QList<QGraphicsLayoutItem *> items;
 
     // Mapping between high level anchorage points (Item, Edge) to low level
     // ones (Graph Vertices)

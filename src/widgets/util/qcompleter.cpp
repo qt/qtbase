@@ -475,7 +475,7 @@ QMatchData QCompletionEngine::filterHistory()
     const bool isFsModel = false;
 #endif
     Q_UNUSED(isFsModel)
-    QVector<int> v;
+    QList<int> v;
     QIndexMapper im(v);
     QMatchData m(im, -1, true);
 
@@ -783,7 +783,7 @@ QMatchData QUnsortedModelEngine::filter(const QString& part, const QModelIndex& 
 {
     QMatchData hint;
 
-    QVector<int> v;
+    QList<int> v;
     QIndexMapper im(v);
     QMatchData m(im, -1, true);
 

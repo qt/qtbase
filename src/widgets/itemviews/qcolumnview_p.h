@@ -168,7 +168,7 @@ public:
     void _q_columnsInserted(const QModelIndex &parent, int start, int end) override;
 
     QList<QAbstractItemView*> columns;
-    QVector<int> columnSizes; // used during init and corner moving
+    QList<int> columnSizes; // used during init and corner moving
     bool showResizeGrips;
     int offset;
 #if QT_CONFIG(animation)

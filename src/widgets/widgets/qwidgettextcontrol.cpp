@@ -2067,7 +2067,7 @@ void QWidgetTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
     QTextLayout *layout = block.layout();
     if (isGettingInput)
         layout->setPreeditArea(cursor.position() - block.position(), e->preeditString());
-    QVector<QTextLayout::FormatRange> overrides;
+    QList<QTextLayout::FormatRange> overrides;
     overrides.reserve(e->attributes().size());
     const int oldPreeditCursor = preeditCursor;
     preeditCursor = e->preeditString().length();
@@ -2087,9 +2087,9 @@ void QWidgetTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
                 o.format = f;
 
                 // Make sure list is sorted by start index
-                QVector<QTextLayout::FormatRange>::iterator it = overrides.end();
+                QList<QTextLayout::FormatRange>::iterator it = overrides.end();
                 while (it != overrides.begin()) {
-                    QVector<QTextLayout::FormatRange>::iterator previous = it - 1;
+                    QList<QTextLayout::FormatRange>::iterator previous = it - 1;
                     if (o.start >= previous->start) {
                         overrides.insert(it, o);
                         break;
@@ -2107,7 +2107,7 @@ void QWidgetTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
         int start = cursor.position() - block.position();
         int end = start + e->preeditString().length();
 
-        QVector<QTextLayout::FormatRange>::iterator it = overrides.begin();
+        QList<QTextLayout::FormatRange>::iterator it = overrides.begin();
         while (it != overrides.end()) {
             QTextLayout::FormatRange range = *it;
             int rangeStart = range.start;

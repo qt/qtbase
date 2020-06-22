@@ -189,7 +189,7 @@ public:
     QWizardField(QWizardPage *page, const QString &spec, QObject *object, const char *property,
                   const char *changedSignal);
 
-    void resolve(const QVector<QWizardDefaultProperty> &defaultPropertyTable);
+    void resolve(const QList<QWizardDefaultProperty> &defaultPropertyTable);
     void findProperty(const QWizardDefaultProperty *properties, int propertyCount);
 
     QWizardPage *page;
@@ -213,7 +213,7 @@ QWizardField::QWizardField(QWizardPage *page, const QString &spec, QObject *obje
     }
 }
 
-void QWizardField::resolve(const QVector<QWizardDefaultProperty> &defaultPropertyTable)
+void QWizardField::resolve(const QList<QWizardDefaultProperty> &defaultPropertyTable)
 {
     if (property.isEmpty())
         findProperty(defaultPropertyTable.constData(), defaultPropertyTable.count());
@@ -491,7 +491,7 @@ public:
     QString title;
     QString subTitle;
     QPixmap pixmaps[QWizard::NPixmaps];
-    QVector<QWizardField> pendingFields;
+    QList<QWizardField> pendingFields;
     mutable TriState completeState = Tri_Unknown;
     bool explicitlyFinal = false;
     bool commit = false;
@@ -585,9 +585,9 @@ public:
 #endif
 
     PageMap pageMap;
-    QVector<QWizardField> fields;
+    QList<QWizardField> fields;
     QMap<QString, int> fieldIndexMap;
-    QVector<QWizardDefaultProperty> defaultPropertyTable;
+    QList<QWizardDefaultProperty> defaultPropertyTable;
     QList<int> history;
     int start = -1;
     bool startSetByUser = false;
@@ -1707,7 +1707,7 @@ void QWizardPrivate::_q_updateButtonStates()
 void QWizardPrivate::_q_handleFieldObjectDestroyed(QObject *object)
 {
     int destroyed_index = -1;
-    QVector<QWizardField>::iterator it = fields.begin();
+    QList<QWizardField>::iterator it = fields.begin();
     while (it != fields.end()) {
         const QWizardField &field = *it;
         if (field.object == object) {
@@ -2244,7 +2244,7 @@ void QWizard::setPage(int theid, QWizardPage *page)
 
     page->setParent(d->pageFrame);
 
-    QVector<QWizardField> &pendingFields = page->d_func()->pendingFields;
+    QList<QWizardField> &pendingFields = page->d_func()->pendingFields;
     for (int i = 0; i < pendingFields.count(); ++i)
         d->addField(pendingFields.at(i));
     pendingFields.clear();
@@ -3597,7 +3597,7 @@ void QWizardPage::cleanupPage()
 {
     Q_D(QWizardPage);
     if (d->wizard) {
-        const QVector<QWizardField> &fields = d->wizard->d_func()->fields;
+        const QList<QWizardField> &fields = d->wizard->d_func()->fields;
         for (const auto &field : fields) {
             if (field.page == this)
                 field.object->setProperty(field.property, field.initialValue);
@@ -3648,7 +3648,7 @@ bool QWizardPage::isComplete() const
     if (!d->wizard)
         return true;
 
-    const QVector<QWizardField> &wizardFields = d->wizard->d_func()->fields;
+    const QList<QWizardField> &wizardFields = d->wizard->d_func()->fields;
     for (int i = wizardFields.count() - 1; i >= 0; --i) {
         const QWizardField &field = wizardFields.at(i);
         if (field.page == this && field.mandatory) {

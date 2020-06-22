@@ -117,8 +117,8 @@ QAccessibleInterface *QAccessibleMenu::child(int index) const
 QAccessibleInterface *QAccessibleMenu::parent() const
 {
     if (QAction *menuAction = menu()->menuAction()) {
-        QVector<QObject*> parentCandidates;
-        const QVector<QObject*> associatedObjects = menuAction->associatedObjects();
+        QList<QObject *> parentCandidates;
+        const QList<QObject *> associatedObjects = menuAction->associatedObjects();
         parentCandidates.reserve(associatedObjects.size() + 1);
         parentCandidates << menu()->parentWidget() << associatedObjects;
         for (QObject *object : qAsConst(parentCandidates)) {

@@ -87,7 +87,7 @@ struct QItemViewPaintPair {
 template <>
 class QTypeInfo<QItemViewPaintPair> : public QTypeInfoMerger<QItemViewPaintPair, QRect, QModelIndex> {};
 
-typedef QVector<QItemViewPaintPair> QItemViewPaintPairs;
+typedef QList<QItemViewPaintPair> QItemViewPaintPairs;
 
 class Q_AUTOTEST_EXPORT QAbstractItemViewPrivate : public QAbstractScrollAreaPrivate
 {
@@ -459,11 +459,11 @@ private:
 };
 
 QT_BEGIN_INCLUDE_NAMESPACE
-#include <qvector.h>
+#include <qlist.h>
 QT_END_INCLUDE_NAMESPACE
 
-template <typename T>
-inline int qBinarySearch(const QVector<T> &vec, const T &item, int start, int end)
+template<typename T>
+inline int qBinarySearch(const QList<T> &vec, const T &item, int start, int end)
 {
     int i = (start + end + 1) >> 1;
     while (end - start > 0) {

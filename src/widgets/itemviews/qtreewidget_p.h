@@ -139,7 +139,7 @@ public:
 
 protected:
     QTreeModel(QTreeModelPrivate &, QTreeWidget *parent = nullptr);
-    void emitDataChanged(QTreeWidgetItem *item, int column, const QVector<int> &roles);
+    void emitDataChanged(QTreeWidgetItem *item, int column, const QList<int> &roles);
     void beginInsertItems(QTreeWidgetItem *parent, int row, int count);
     void endInsertItems();
     void beginRemoveItems(QTreeWidgetItem *parent, int row, int count);

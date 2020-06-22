@@ -81,8 +81,8 @@ public:
     //item calculations
     uint itemsDirty : 1;
 
-    QVector<int> shortcutIndexMap;
-    mutable QVector<QRect> actionRects;
+    QList<int> shortcutIndexMap;
+    mutable QList<QRect> actionRects;
     void calcActionRects(int max_width, int start) const;
     QRect actionRect(QAction *) const;
     void updateGeometries();
@@ -124,7 +124,7 @@ public:
 
     // reparenting
     void handleReparent();
-    QVector<QPointer<QWidget> > oldParents;
+    QList<QPointer<QWidget>> oldParents;
 
     QList<QAction*> hiddenActions;
     //default action

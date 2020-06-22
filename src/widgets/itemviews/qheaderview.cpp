@@ -39,25 +39,25 @@
 
 #include "qheaderview.h"
 
+#include <qabstractitemdelegate.h>
+#include <qapplication.h>
 #include <qbitarray.h>
 #include <qbrush.h>
 #include <qdebug.h>
 #include <qevent.h>
+#include <qlist.h>
 #include <qpainter.h>
 #include <qscrollbar.h>
+#include <qstyle.h>
+#include <qstyleoption.h>
 #if QT_CONFIG(tooltip)
 #include <qtooltip.h>
 #endif
+#include <qvarlengtharray.h>
+#include <qvariant.h>
 #if QT_CONFIG(whatsthis)
 #include <qwhatsthis.h>
 #endif
-#include <qstyle.h>
-#include <qstyleoption.h>
-#include <qvector.h>
-#include <qapplication.h>
-#include <qvarlengtharray.h>
-#include <qabstractitemdelegate.h>
-#include <qvariant.h>
 #include <private/qheaderview_p.h>
 #include <private/qabstractitemmodel_p.h>
 
@@ -3050,7 +3050,8 @@ void QHeaderView::scrollContentsBy(int dx, int dy)
     \reimp
     \internal
 */
-void QHeaderView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
+void QHeaderView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight,
+                              const QList<int> &roles)
 {
     Q_D(QHeaderView);
     if (!roles.isEmpty()) {
@@ -3979,8 +3980,8 @@ bool QHeaderViewPrivate::read(QDataStream &in)
     int sortIndicatorSectionIn;
     bool sortIndicatorShownIn;
     int lengthIn;
-    QVector<int> visualIndicesIn;
-    QVector<int> logicalIndicesIn;
+    QList<int> visualIndicesIn;
+    QList<int> logicalIndicesIn;
     QHash<int, int> hiddenSectionSizeIn;
     bool movableSectionsIn;
     bool clickableSectionsIn;
@@ -3991,7 +3992,7 @@ bool QHeaderViewPrivate::read(QDataStream &in)
     int contentsSectionsIn;
     int defaultSectionSizeIn;
     int minimumSectionSizeIn;
-    QVector<SectionItem> sectionItemsIn;
+    QList<SectionItem> sectionItemsIn;
 
     in >> orient;
     in >> order;
@@ -4031,7 +4032,7 @@ bool QHeaderViewPrivate::read(QDataStream &in)
     // In Qt4 we had a vector of spans where one span could hold information on more sections.
     // Now we have an itemvector where one items contains information about one section
     // For backward compatibility with Qt4 we do the following
-    QVector<SectionItem> newSectionItems;
+    QList<SectionItem> newSectionItems;
     for (int u = 0; u < sectionItemsIn.count(); ++u) {
         int count = sectionItemsIn.at(u).tmpDataStreamSectionCount;
         if (count > 1)

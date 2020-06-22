@@ -121,9 +121,9 @@ class QTornOffMenu : public QMenu
             q->setFixedSize(size);
         }
 
-        QVector<QPointer<QWidget> > calcCausedStack() const override { return causedStack; }
+        QList<QPointer<QWidget>> calcCausedStack() const override { return causedStack; }
         QPointer<QMenu> causedMenu;
-        QVector<QPointer<QWidget> > causedStack;
+        QList<QPointer<QWidget>> causedStack;
         bool initialized;
     };
 
@@ -334,9 +334,9 @@ QRect QMenuPrivate::popupGeometry(int screen) const
         : QDesktopWidgetPrivate::availableGeometry(screen);
 }
 
-QVector<QPointer<QWidget> > QMenuPrivate::calcCausedStack() const
+QList<QPointer<QWidget>> QMenuPrivate::calcCausedStack() const
 {
-    QVector<QPointer<QWidget> > ret;
+    QList<QPointer<QWidget>> ret;
     for(QWidget *widget = causedPopup.widget; widget; ) {
         ret.append(widget);
         if (QTornOffMenu *qtmenu = qobject_cast<QTornOffMenu*>(widget))
@@ -1387,7 +1387,8 @@ bool QMenuPrivate::mouseEventTaken(QMouseEvent *e)
     return false;
 }
 
-void QMenuPrivate::activateCausedStack(const QVector<QPointer<QWidget> > &causedStack, QAction *action, QAction::ActionEvent action_e, bool self)
+void QMenuPrivate::activateCausedStack(const QList<QPointer<QWidget>> &causedStack, QAction *action,
+                                       QAction::ActionEvent action_e, bool self)
 {
     QBoolBlocker guard(activationRecursionGuard);
     if(self)
@@ -1435,7 +1436,7 @@ void QMenuPrivate::activateAction(QAction *action, QAction::ActionEvent action_e
     /* I have to save the caused stack here because it will be undone after popup execution (ie in the hide).
        Then I iterate over the list to actually send the events. --Sam
     */
-    const QVector<QPointer<QWidget> > causedStack = calcCausedStack();
+    const QList<QPointer<QWidget>> causedStack = calcCausedStack();
     if (action_e == QAction::Trigger) {
 #if QT_CONFIG(whatsthis)
         if (!inWhatsThisMode)
@@ -1497,7 +1498,7 @@ void QMenuPrivate::_q_actionTriggered()
         if (!activationRecursionGuard && actionGuard) {
             //in case the action has not been activated by the mouse
             //we check the parent hierarchy
-            QVector< QPointer<QWidget> > list;
+            QList<QPointer<QWidget>> list;
             for(QWidget *widget = q->parentWidget(); widget; ) {
                 if (qobject_cast<QMenu*>(widget)
 #if QT_CONFIG(menubar)

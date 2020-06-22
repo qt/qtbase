@@ -728,10 +728,8 @@ AnchorData *QGraphicsAnchorLayoutPrivate::addAnchorMaybeParallel(AnchorData *new
     Note that this function doesn't add the created anchor to the graph. This should be done by
     the caller.
 */
-static AnchorData *createSequence(Graph<AnchorVertex, AnchorData> *graph,
-                                  AnchorVertex *before,
-                                  const QVector<AnchorVertex*> &vertices,
-                                  AnchorVertex *after)
+static AnchorData *createSequence(Graph<AnchorVertex, AnchorData> *graph, AnchorVertex *before,
+                                  const QList<AnchorVertex *> &vertices, AnchorVertex *after)
 {
 #if defined(QT_DEBUG) && 0
     QString strVertices;
@@ -743,7 +741,7 @@ static AnchorData *createSequence(Graph<AnchorVertex, AnchorData> *graph,
 #endif
 
     AnchorVertex *prev = before;
-    QVector<AnchorData *> edges;
+    QList<AnchorData *> edges;
     edges.reserve(vertices.count() + 1);
 
     const int numVertices = vertices.count();
@@ -1022,7 +1020,7 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(Qt::Orientation orient
     QSet<AnchorVertex *> visited;
     QStack<QPair<AnchorVertex *, AnchorVertex *> > stack;
     stack.push(qMakePair(static_cast<AnchorVertex *>(nullptr), layoutFirstVertex[orientation]));
-    QVector<AnchorVertex*> candidates;
+    QList<AnchorVertex *> candidates;
 
     // Walk depth-first, in the stack we store start of the candidate sequence (beforeSequence)
     // and the vertex to be visited.
@@ -1252,7 +1250,7 @@ void QGraphicsAnchorLayoutPrivate::restoreSimplifiedGraph(Qt::Orientation orient
 
     // Restore anchor simplification
     Graph<AnchorVertex, AnchorData> &g = graph[orientation];
-    QVector<QPair<AnchorVertex*, AnchorVertex*> > connections = g.connections();
+    QList<QPair<AnchorVertex *, AnchorVertex *>> connections = g.connections();
     for (int i = 0; i < connections.count(); ++i) {
         AnchorVertex *v1 = connections.at(i).first;
         AnchorVertex *v2 = connections.at(i).second;
@@ -2274,7 +2272,7 @@ bool QGraphicsAnchorLayoutPrivate::calculateNonTrunk(const QList<QSimplexConstra
 void QGraphicsAnchorLayoutPrivate::refreshAllSizeHints(Qt::Orientation orientation)
 {
     Graph<AnchorVertex, AnchorData> &g = graph[orientation];
-    QVector<QPair<AnchorVertex *, AnchorVertex *> > vertices = g.connections();
+    QList<QPair<AnchorVertex *, AnchorVertex *>> vertices = g.connections();
 
     QLayoutStyleInfo styleInf = styleInfo();
     for (int i = 0; i < vertices.count(); ++i) {
@@ -2367,7 +2365,7 @@ void QGraphicsAnchorLayoutPrivate::constraintsFromPaths(Qt::Orientation orientat
 void QGraphicsAnchorLayoutPrivate::updateAnchorSizes(Qt::Orientation orientation)
 {
     Graph<AnchorVertex, AnchorData> &g = graph[orientation];
-    const QVector<QPair<AnchorVertex *, AnchorVertex *> > &vertices = g.connections();
+    const QList<QPair<AnchorVertex *, AnchorVertex *>> &vertices = g.connections();
 
     for (int i = 0; i < vertices.count(); ++i) {
         AnchorData *ad = g.edgeData(vertices.at(i).first, vertices.at(i).second);

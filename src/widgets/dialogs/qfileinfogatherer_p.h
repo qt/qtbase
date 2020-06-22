@@ -160,7 +160,7 @@ class Q_AUTOTEST_EXPORT QFileInfoGatherer : public QThread
 Q_OBJECT
 
 Q_SIGNALS:
-    void updates(const QString &directory, const QVector<QPair<QString, QFileInfo> > &updates);
+    void updates(const QString &directory, const QList<QPair<QString, QFileInfo>> &updates);
     void newListOfFiles(const QString &directory, const QStringList &listOfFiles) const;
     void nameResolved(const QString &fileName, const QString &resolvedName) const;
     void directoryLoaded(const QString &path);
@@ -199,7 +199,8 @@ private:
     void run() override;
     // called by run():
     void getFileInfos(const QString &path, const QStringList &files);
-    void fetch(const QFileInfo &info, QElapsedTimer &base, bool &firstTime, QVector<QPair<QString, QFileInfo> > &updatedFiles, const QString &path);
+    void fetch(const QFileInfo &info, QElapsedTimer &base, bool &firstTime,
+               QList<QPair<QString, QFileInfo>> &updatedFiles, const QString &path);
 
 private:
     void createWatcher();

@@ -1106,7 +1106,7 @@ void QFileSystemModelPrivate::sortChildren(int column, const QModelIndex &parent
     if (indexNode->children.count() == 0)
         return;
 
-    QVector<QFileSystemModelPrivate::QFileSystemNode*> values;
+    QList<QFileSystemModelPrivate::QFileSystemNode *> values;
 
     for (auto iterator = indexNode->children.constBegin(), cend = indexNode->children.constEnd(); iterator != cend; ++iterator) {
         if (filtersAcceptsNode(iterator.value())) {
@@ -1150,7 +1150,7 @@ void QFileSystemModel::sort(int column, Qt::SortOrder order)
 
     emit layoutAboutToBeChanged();
     QModelIndexList oldList = persistentIndexList();
-    QVector<QPair<QFileSystemModelPrivate::QFileSystemNode*, int> > oldNodes;
+    QList<QPair<QFileSystemModelPrivate::QFileSystemNode *, int>> oldNodes;
     const int nodeCount = oldList.count();
     oldNodes.reserve(nodeCount);
     for (int i = 0; i < nodeCount; ++i) {
@@ -1920,11 +1920,12 @@ void QFileSystemModelPrivate::removeVisibleFile(QFileSystemNode *parentNode, int
     The thread has received new information about files,
     update and emit dataChanged if it has actually changed.
  */
-void QFileSystemModelPrivate::_q_fileSystemChanged(const QString &path, const QVector<QPair<QString, QFileInfo> > &updates)
+void QFileSystemModelPrivate::_q_fileSystemChanged(const QString &path,
+                                                   const QList<QPair<QString, QFileInfo>> &updates)
 {
 #if QT_CONFIG(filesystemwatcher)
     Q_Q(QFileSystemModel);
-    QVector<QString> rowsToUpdate;
+    QList<QString> rowsToUpdate;
     QStringList newFiles;
     QFileSystemModelPrivate::QFileSystemNode *parentNode = node(path, false);
     QModelIndex parentIndex = index(parentNode);
@@ -2077,12 +2078,12 @@ void QFileSystemModelPrivate::init()
 
     delayedSortTimer.setSingleShot(true);
 
-    qRegisterMetaType<QVector<QPair<QString,QFileInfo> > >();
+    qRegisterMetaType<QList<QPair<QString, QFileInfo>>>();
 #if QT_CONFIG(filesystemwatcher)
     q->connect(&fileInfoGatherer, SIGNAL(newListOfFiles(QString,QStringList)),
                q, SLOT(_q_directoryChanged(QString,QStringList)));
-    q->connect(&fileInfoGatherer, SIGNAL(updates(QString,QVector<QPair<QString,QFileInfo> >)),
-            q, SLOT(_q_fileSystemChanged(QString,QVector<QPair<QString,QFileInfo> >)));
+    q->connect(&fileInfoGatherer, SIGNAL(updates(QString, QList<QPair<QString, QFileInfo>>)), q,
+               SLOT(_q_fileSystemChanged(QString, QList<QPair<QString, QFileInfo>>)));
     q->connect(&fileInfoGatherer, SIGNAL(nameResolved(QString,QString)),
             q, SLOT(_q_resolvedName(QString,QString)));
     q->connect(&fileInfoGatherer, SIGNAL(directoryLoaded(QString)),

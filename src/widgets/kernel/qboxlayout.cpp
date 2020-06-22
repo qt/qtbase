@@ -37,15 +37,14 @@
 **
 ****************************************************************************/
 
-#include "qboxlayout.h"
 #include "qapplication.h"
-#include "qwidget.h"
+#include "qboxlayout.h"
 #include "qlist.h"
 #include "qsizepolicy.h"
-#include "qvector.h"
+#include "qwidget.h"
 
-#include "qlayoutengine_p.h"
 #include "qlayout_p.h"
+#include "qlayoutengine_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -104,7 +103,7 @@ public:
     }
 
     QList<QBoxLayoutItem *> list;
-    QVector<QLayoutStruct> geomArray;
+    QList<QLayoutStruct> geomArray;
     int hfwWidth;
     int hfwHeight;
     int hfwMinHeight;
@@ -271,7 +270,7 @@ void QBoxLayoutPrivate::setupGeom()
 
     int n = list.count();
     geomArray.clear();
-    QVector<QLayoutStruct> a(n);
+    QList<QLayoutStruct> a(n);
 
     QSizePolicy::ControlTypes controlTypes1;
     QSizePolicy::ControlTypes controlTypes2;
@@ -400,7 +399,7 @@ void QBoxLayoutPrivate::setupGeom()
 */
 void QBoxLayoutPrivate::calcHfw(int w)
 {
-    QVector<QLayoutStruct> &a = geomArray;
+    QList<QLayoutStruct> &a = geomArray;
     int n = a.count();
     int h = 0;
     int mh = 0;
@@ -770,7 +769,7 @@ void QBoxLayout::setGeometry(const QRect &r)
                 cr.width() - (left + right),
                 cr.height() - (top + bottom));
 
-        QVector<QLayoutStruct> a = d->geomArray;
+        QList<QLayoutStruct> a = d->geomArray;
         int pos = horz(d->dir) ? s.x() : s.y();
         int space = horz(d->dir) ? s.width() : s.height();
         int n = a.count();

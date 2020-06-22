@@ -94,9 +94,8 @@ struct QLayoutStruct
     int size;
 };
 
-
-Q_WIDGETS_EXPORT void qGeomCalc(QVector<QLayoutStruct> &chain, int start, int count,
-                            int pos, int space, int spacer = -1);
+Q_WIDGETS_EXPORT void qGeomCalc(QList<QLayoutStruct> &chain, int start, int count, int pos,
+                                int space, int spacer = -1);
 Q_WIDGETS_EXPORT QSize qSmartMinSize(const QSize &sizeHint, const QSize &minSizeHint,
                                  const QSize &minSize, const QSize &maxSize,
                                  const QSizePolicy &sizePolicy);

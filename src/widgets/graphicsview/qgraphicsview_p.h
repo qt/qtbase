@@ -150,7 +150,7 @@ public:
 
     QGraphicsView::CacheMode cacheMode;
 
-    QVector<QStyleOptionGraphicsItem> styleOptions;
+    QList<QStyleOptionGraphicsItem> styleOptions;
     QStyleOptionGraphicsItem *allocStyleOptionsArray(int numItems);
     void freeStyleOptionsArray(QStyleOptionGraphicsItem *array);
 

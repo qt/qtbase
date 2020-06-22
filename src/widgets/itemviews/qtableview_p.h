@@ -190,8 +190,8 @@ public:
     int columnSectionAnchor;
     int columnResizeTimerID;
     int rowResizeTimerID;
-    QVector<int> columnsToUpdate;
-    QVector<int> rowsToUpdate;
+    QList<int> columnsToUpdate;
+    QList<int> rowsToUpdate;
     QHeaderView *horizontalHeader;
     QHeaderView *verticalHeader;
 #if QT_CONFIG(abstractbutton)

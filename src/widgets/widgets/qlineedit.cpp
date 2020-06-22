@@ -64,7 +64,6 @@
 #include "qtimer.h"
 #include "qvalidator.h"
 #include "qvariant.h"
-#include "qvector.h"
 #include "qdebug.h"
 #if QT_CONFIG(textedit)
 #include "qtextedit.h"

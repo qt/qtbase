@@ -379,7 +379,7 @@ void qDrawShadePanel(QPainter *p, int x, int y, int w, int h,
             light = pal.midlight().color();
     }
     QPen oldPen = p->pen();                        // save pen
-    QVector<QLineF> lines;
+    QList<QLineF> lines;
     lines.reserve(2*lineWidth);
 
     if (sunken)

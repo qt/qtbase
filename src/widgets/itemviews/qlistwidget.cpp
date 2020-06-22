@@ -237,7 +237,7 @@ bool QListModel::clearItemData(const QModelIndex &index)
     if (std::all_of(beginIter, endIter, [](const QWidgetItemData& data) -> bool { return !data.value.isValid(); }))
         return true; //it's already cleared
     item->d->values.clear();
-    emit dataChanged(index, index, QVector<int>{});
+    emit dataChanged(index, index, QList<int> {});
     return true;
 }
 
@@ -336,7 +336,7 @@ void QListModel::sort(int column, Qt::SortOrder order)
 
     emit layoutAboutToBeChanged({}, QAbstractItemModel::VerticalSortHint);
 
-    QVector < QPair<QListWidgetItem*,int> > sorting(items.count());
+    QList<QPair<QListWidgetItem *, int>> sorting(items.count());
     for (int i = 0; i < items.count(); ++i) {
         QListWidgetItem *item = items.at(i);
         sorting[i].first = item;
@@ -374,7 +374,7 @@ void QListModel::ensureSorted(int column, Qt::SortOrder order, int start, int en
         return;
 
     int count = end - start + 1;
-    QVector < QPair<QListWidgetItem*,int> > sorting(count);
+    QList<QPair<QListWidgetItem *, int>> sorting(count);
     for (int i = 0; i < count; ++i) {
         sorting[i].first = items.at(start + i);
         sorting[i].second = start + i;
@@ -454,7 +454,7 @@ QList<QListWidgetItem*>::iterator QListModel::sortedInsertionIterator(
     return std::lower_bound(begin, end, item, QListModelGreaterThan());
 }
 
-void QListModel::itemChanged(QListWidgetItem *item, const QVector<int> &roles)
+void QListModel::itemChanged(QListWidgetItem *item, const QList<int> &roles)
 {
     const QModelIndex idx = index(item);
     emit dataChanged(idx, idx, roles);
@@ -744,9 +744,9 @@ void QListWidgetItem::setData(int role, const QVariant &value)
     if (!found)
         d->values.append(QWidgetItemData(role, value));
     if (QListModel *model = listModel()) {
-        const QVector<int> roles((role == Qt::DisplayRole) ?
-                                    QVector<int>({Qt::DisplayRole, Qt::EditRole}) :
-                                    QVector<int>({role}));
+        const QList<int> roles((role == Qt::DisplayRole)
+                                       ? QList<int>({ Qt::DisplayRole, Qt::EditRole })
+                                       : QList<int>({ role }));
         model->itemChanged(this, roles);
     }
 }

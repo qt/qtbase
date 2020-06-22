@@ -145,12 +145,12 @@ public:
                                 const QPair<QTableWidgetItem*,int> &right);
 
     void ensureSorted(int column, Qt::SortOrder order, int start, int end);
-    QVector<QTableWidgetItem*> columnItems(int column) const;
+    QList<QTableWidgetItem *> columnItems(int column) const;
     void updateRowIndexes(QModelIndexList &indexes, int movedFromRow, int movedToRow);
-    static QVector<QTableWidgetItem*>::iterator sortedInsertionIterator(
-        const QVector<QTableWidgetItem*>::iterator &begin,
-        const QVector<QTableWidgetItem*>::iterator &end,
-        Qt::SortOrder order, QTableWidgetItem *item);
+    static QList<QTableWidgetItem *>::iterator
+    sortedInsertionIterator(const QList<QTableWidgetItem *>::iterator &begin,
+                            const QList<QTableWidgetItem *>::iterator &end, Qt::SortOrder order,
+                            QTableWidgetItem *item);
 
     bool isValid(const QModelIndex &index) const;
     inline long tableIndex(int row, int column) const
@@ -158,7 +158,7 @@ public:
 
     void clear();
     void clearContents();
-    void itemChanged(QTableWidgetItem *item, const QVector<int> &roles = QVector<int>());
+    void itemChanged(QTableWidgetItem *item, const QList<int> &roles = QList<int>());
 
     QTableWidgetItem *createItem() const;
     const QTableWidgetItem *itemPrototype() const;
@@ -175,9 +175,9 @@ public:
 
 private:
     const QTableWidgetItem *prototype;
-    QVector<QTableWidgetItem*> tableItems;
-    QVector<QTableWidgetItem*> verticalHeaderItems;
-    QVector<QTableWidgetItem*> horizontalHeaderItems;
+    QList<QTableWidgetItem *> tableItems;
+    QList<QTableWidgetItem *> verticalHeaderItems;
+    QList<QTableWidgetItem *> horizontalHeaderItems;
 
     // A cache must be mutable if get-functions should have const modifiers
     mutable QModelIndexList cachedIndexes;

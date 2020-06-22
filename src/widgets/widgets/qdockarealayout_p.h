@@ -52,11 +52,10 @@
 //
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
-#include "QtCore/qrect.h"
-#include "QtCore/qpair.h"
-#include "QtCore/qlist.h"
-#include "QtCore/qvector.h"
 #include "QtWidgets/qlayout.h"
+#include "QtCore/qlist.h"
+#include "QtCore/qpair.h"
+#include "QtCore/qrect.h"
 
 QT_REQUIRE_CONFIG(dockwidget);
 
@@ -193,7 +192,7 @@ public:
     QMainWindowLayout *mainWindowLayout() const;
 
     const int *sep;
-    mutable QVector<QWidget*> separatorWidgets;
+    mutable QList<QWidget *> separatorWidgets;
     QInternal::DockPosition dockPos;
     Qt::Orientation o;
     QRect rect;
@@ -238,7 +237,7 @@ public:
     QDockAreaLayoutInfo docks[4];
     int sep; // separator extent
     bool fallbackToSizeHints; //determines if we should use the sizehint for the dock areas (true until the layout is restored or the separator is moved by user)
-    mutable QVector<QWidget*> separatorWidgets;
+    mutable QList<QWidget *> separatorWidgets;
 
     bool isValid() const;
 
@@ -296,10 +295,8 @@ public:
     QLayoutItem *takeAt(int *x, int index);
     void deleteAllLayoutItems();
 
-    void getGrid(QVector<QLayoutStruct> *ver_struct_list,
-                    QVector<QLayoutStruct> *hor_struct_list);
-    void setGrid(QVector<QLayoutStruct> *ver_struct_list,
-                    QVector<QLayoutStruct> *hor_struct_list);
+    void getGrid(QList<QLayoutStruct> *ver_struct_list, QList<QLayoutStruct> *hor_struct_list);
+    void setGrid(QList<QLayoutStruct> *ver_struct_list, QList<QLayoutStruct> *hor_struct_list);
 
     QRect gapRect(const QList<int> &path) const;
 

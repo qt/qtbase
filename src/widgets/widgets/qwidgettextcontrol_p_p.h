@@ -217,7 +217,7 @@ public:
     int preeditCursor;
     bool hideCursor; // used to hide the cursor in the preedit area
 
-    QVector<QAbstractTextDocumentLayout::Selection> extraSelections;
+    QList<QAbstractTextDocumentLayout::Selection> extraSelections;
 
     QPalette palette;
     bool hasFocus;

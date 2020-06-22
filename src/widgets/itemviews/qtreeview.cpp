@@ -674,7 +674,8 @@ void QTreeView::setFirstColumnSpanned(int row, const QModelIndex &parent, bool s
 /*!
   \reimp
 */
-void QTreeView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
+void QTreeView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight,
+                            const QList<int> &roles)
 {
     Q_D(QTreeView);
 
@@ -1444,8 +1445,11 @@ void QTreeViewPrivate::adjustViewOptionsForIndex(QStyleOptionViewItem *option, c
     option->showDecorationSelected = (selectionBehavior & QTreeView::SelectRows)
                                      || option->showDecorationSelected;
 
-    QVector<int> logicalIndices; // index = visual index of visible columns only. data = logical index.
-    QVector<QStyleOptionViewItem::ViewItemPosition> viewItemPosList; // vector of left/middle/end for each logicalIndex, visible columns only.
+    QList<int>
+            logicalIndices; // index = visual index of visible columns only. data = logical index.
+    QList<QStyleOptionViewItem::ViewItemPosition>
+            viewItemPosList; // vector of left/middle/end for each logicalIndex, visible columns
+                             // only.
     const bool spanning = viewItems.at(row).spanning;
     const int left = (spanning ? header->visualIndex(0) : 0);
     const int right = (spanning ? header->visualIndex(0) : header->count() - 1 );
@@ -1466,7 +1470,7 @@ void QTreeViewPrivate::adjustViewOptionsForIndex(QStyleOptionViewItem *option, c
 void QTreeView::drawTree(QPainter *painter, const QRegion &region) const
 {
     Q_D(const QTreeView);
-    const QVector<QTreeViewItem> viewItems = d->viewItems;
+    const QList<QTreeViewItem> viewItems = d->viewItems;
 
     QStyleOptionViewItem option = d->viewOptionsV1();
     const QStyle::State state = option.state;
@@ -1489,7 +1493,7 @@ void QTreeView::drawTree(QPainter *painter, const QRegion &region) const
     QPoint hoverPos = d->viewport->mapFromGlobal(QCursor::pos());
     d->hoverBranch = d->itemDecorationAt(hoverPos);
 
-    QVector<int> drawn;
+    QList<int> drawn;
     bool multipleRects = (region.rectCount() > 1);
     for (const QRect &a : region) {
         const QRect area = (multipleRects
@@ -1542,7 +1546,9 @@ static inline bool ancestorOf(QObject *widget, QObject *other)
     return false;
 }
 
-void QTreeViewPrivate::calcLogicalIndices(QVector<int> *logicalIndices, QVector<QStyleOptionViewItem::ViewItemPosition> *itemPositions, int left, int right) const
+void QTreeViewPrivate::calcLogicalIndices(
+        QList<int> *logicalIndices, QList<QStyleOptionViewItem::ViewItemPosition> *itemPositions,
+        int left, int right) const
 {
     const int columnCount = header->count();
     /* 'left' and 'right' are the left-most and right-most visible visual indices.
@@ -1682,8 +1688,9 @@ void QTreeView::drawRow(QPainter *painter, const QStyleOptionViewItem &option,
                   && index.parent() == hover.parent()
                   && index.row() == hover.row();
 
-    QVector<int> logicalIndices;
-    QVector<QStyleOptionViewItem::ViewItemPosition> viewItemPosList; // vector of left/middle/end for each logicalIndex
+    QList<int> logicalIndices;
+    QList<QStyleOptionViewItem::ViewItemPosition>
+            viewItemPosList; // vector of left/middle/end for each logicalIndex
     d->calcLogicalIndices(&logicalIndices, &viewItemPosList, left, right);
 
     for (int currentLogicalSection = 0; currentLogicalSection < logicalIndices.count(); ++currentLogicalSection) {
@@ -2862,7 +2869,7 @@ int QTreeView::sizeHintForColumn(int column) const
     ensurePolished();
     int w = 0;
     QStyleOptionViewItem option = d->viewOptionsV1();
-    const QVector<QTreeViewItem> viewItems = d->viewItems;
+    const QList<QTreeViewItem> viewItems = d->viewItems;
 
     const int maximumProcessRows = d->header->resizeContentsPrecision(); // To avoid this to take forever.
 
@@ -3799,8 +3806,8 @@ QRect QTreeViewPrivate::itemDecorationRect(const QModelIndex &index) const
     return q->style()->subElementRect(QStyle::SE_TreeViewDisclosureItem, &opt, q);
 }
 
-QVector<QPair<int, int> > QTreeViewPrivate::columnRanges(const QModelIndex &topIndex,
-                                                         const QModelIndex &bottomIndex) const
+QList<QPair<int, int>> QTreeViewPrivate::columnRanges(const QModelIndex &topIndex,
+                                                      const QModelIndex &bottomIndex) const
 {
     const int topVisual = header->visualIndex(topIndex.column()),
         bottomVisual = header->visualIndex(bottomIndex.column());
@@ -3820,7 +3827,7 @@ QVector<QPair<int, int> > QTreeViewPrivate::columnRanges(const QModelIndex &topI
     //let's sort the list
     std::sort(logicalIndexes.begin(), logicalIndexes.end());
 
-    QVector<QPair<int, int> > ret;
+    QList<QPair<int, int>> ret;
     QPair<int, int> current;
     current.first = -2; // -1 is not enough because -1+1 = 0
     current.second = -2;
@@ -3854,8 +3861,8 @@ void QTreeViewPrivate::select(const QModelIndex &topIndex, const QModelIndex &bo
     const int top = viewIndex(topIndex),
         bottom = viewIndex(bottomIndex);
 
-    const QVector<QPair<int, int> > colRanges = columnRanges(topIndex, bottomIndex);
-    QVector<QPair<int, int> >::const_iterator it;
+    const QList<QPair<int, int>> colRanges = columnRanges(topIndex, bottomIndex);
+    QList<QPair<int, int>>::const_iterator it;
     for (it = colRanges.begin(); it != colRanges.end(); ++it) {
         const int left = (*it).first,
             right = (*it).second;

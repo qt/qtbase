@@ -144,7 +144,7 @@ public:
     QHash<QPaintDevice *, DeviceData> deviceData;
 
     // List of logical exposed rects
-    QVector<QRectF> exposed;
+    QList<QRectF> exposed;
     bool allExposed;
 
     // Empty cache
@@ -289,7 +289,7 @@ public:
     }
 
     struct ExtraStruct {
-        ExtraStruct() {} // for QVector, don't use
+        ExtraStruct() { } // for QList, don't use
         ExtraStruct(Extra type, const QVariant &value)
             : type(type), value(value)
         { }
@@ -301,7 +301,7 @@ public:
         { return type < extra; }
     };
 
-    QVector<ExtraStruct> extras;
+    QList<ExtraStruct> extras;
 
     QGraphicsItemCache *maybeExtraItemCache() const;
     QGraphicsItemCache *extraItemCache() const;

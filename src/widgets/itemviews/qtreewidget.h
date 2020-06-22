@@ -40,11 +40,11 @@
 #ifndef QTREEWIDGET_H
 #define QTREEWIDGET_H
 
-#include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qtreeview.h>
 #include <QtWidgets/qtreewidgetitemiterator.h>
+#include <QtWidgets/qtwidgetsglobal.h>
+#include <QtCore/qlist.h>
 #include <QtCore/qvariant.h>
-#include <QtCore/qvector.h>
 
 QT_REQUIRE_CONFIG(treewidget);
 
@@ -201,7 +201,7 @@ private:
 
     int rtti;
     // One item has a vector of column entries. Each column has a vector of (role, value) pairs.
-    QVector< QVector<QWidgetItemData> > values;
+    QList<QList<QWidgetItemData>> values;
     QTreeWidget *view;
     QTreeWidgetItemPrivate *d;
     QTreeWidgetItem *par;

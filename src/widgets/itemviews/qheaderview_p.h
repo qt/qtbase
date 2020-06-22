@@ -258,8 +258,8 @@ public:
     int sortIndicatorSection;
     bool sortIndicatorShown;
 
-    mutable QVector<int> visualIndices; // visualIndex = visualIndices.at(logicalIndex)
-    mutable QVector<int> logicalIndices; // logicalIndex = row or column in the model
+    mutable QList<int> visualIndices; // visualIndex = visualIndices.at(logicalIndex)
+    mutable QList<int> logicalIndices; // logicalIndex = row or column in the model
     mutable QBitArray sectionSelected; // from logical index to bit
     mutable QHash<int, int> hiddenSectionSize; // from logical index to section size
     mutable QHash<int, int> cascadingSectionSize; // from visual index to section size
@@ -329,12 +329,12 @@ public:
 #endif
     };
 
-    QVector<SectionItem> sectionItems;
+    QList<SectionItem> sectionItems;
     struct LayoutChangeItem {
         QPersistentModelIndex index;
         SectionItem section;
     };
-    QVector<LayoutChangeItem> layoutChangePersistentSections;
+    QList<LayoutChangeItem> layoutChangePersistentSections;
 
     void createSectionItems(int start, int end, int size, QHeaderView::ResizeMode mode);
     void removeSectionsFromSectionItems(int start, int end);

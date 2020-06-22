@@ -695,10 +695,12 @@ void QItemDelegate::drawDisplay(QPainter *painter, const QStyleOptionViewItem &o
                            || textRect.height() < textLayoutSize.height())) {
         painter->save();
         painter->setClipRect(layoutRect);
-        d->textLayout.draw(painter, layoutRect.topLeft(), QVector<QTextLayout::FormatRange>(), layoutRect);
+        d->textLayout.draw(painter, layoutRect.topLeft(), QList<QTextLayout::FormatRange>(),
+                           layoutRect);
         painter->restore();
     } else {
-        d->textLayout.draw(painter, layoutRect.topLeft(), QVector<QTextLayout::FormatRange>(), layoutRect);
+        d->textLayout.draw(painter, layoutRect.topLeft(), QList<QTextLayout::FormatRange>(),
+                           layoutRect);
     }
 }
 

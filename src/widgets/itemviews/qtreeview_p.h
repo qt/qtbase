@@ -53,11 +53,11 @@
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "private/qabstractitemview_p.h"
+#include <QtCore/qabstractitemmodel.h>
+#include <QtCore/qlist.h>
 #if QT_CONFIG(animation)
 #include <QtCore/qvariantanimation.h>
 #endif
-#include <QtCore/qabstractitemmodel.h>
-#include <QtCore/qvector.h>
 
 QT_REQUIRE_CONFIG(treeview);
 
@@ -170,8 +170,8 @@ public:
     int itemDecorationAt(const QPoint &pos) const;
     QRect itemDecorationRect(const QModelIndex &index) const;
 
-
-    QVector<QPair<int, int> > columnRanges(const QModelIndex &topIndex, const QModelIndex &bottomIndex) const;
+    QList<QPair<int, int>> columnRanges(const QModelIndex &topIndex,
+                                        const QModelIndex &bottomIndex) const;
     void select(const QModelIndex &start, const QModelIndex &stop, QItemSelectionModel::SelectionFlags command);
 
     QPair<int,int> startAndEndColumns(const QRect &rect) const;
@@ -182,12 +182,14 @@ public:
 
     // logicalIndices: vector of currently visibly logical indices
     // itemPositions: vector of view item positions (beginning/middle/end/onlyone)
-    void calcLogicalIndices(QVector<int> *logicalIndices, QVector<QStyleOptionViewItem::ViewItemPosition> *itemPositions, int left, int right) const;
+    void calcLogicalIndices(QList<int> *logicalIndices,
+                            QList<QStyleOptionViewItem::ViewItemPosition> *itemPositions, int left,
+                            int right) const;
     int widthHintForIndex(const QModelIndex &index, int hint, const QStyleOptionViewItem &option, int i) const;
     QHeaderView *header;
     int indent;
 
-    mutable QVector<QTreeViewItem> viewItems;
+    mutable QList<QTreeViewItem> viewItems;
     mutable int lastViewedItem;
     int defaultItemHeight; // this is just a number; contentsHeight() / numItems
     bool uniformRowHeights; // used when all rows have the same height

@@ -1383,7 +1383,7 @@ void QMenuBarPrivate::handleReparent()
     // also a window (for shortcuts)
     QWidget *newWindow = newParent ? newParent->window() : nullptr;
 
-    QVector<QPointer<QWidget> > newParents;
+    QList<QPointer<QWidget>> newParents;
     // Remove event filters on ex-parents, keep them on still-parents
     // The parents are always ordered in the vector
     foreach (const QPointer<QWidget> &w, oldParents) {

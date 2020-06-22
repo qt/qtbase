@@ -52,7 +52,7 @@
 //
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
-#include <qvector.h>
+#include <qlist.h>
 #include <qrect.h>
 
 QT_BEGIN_NAMESPACE
@@ -80,7 +80,7 @@ public:
         };
     };
     typedef QBspTree::Data QBspTreeData;
-    typedef void callback(QVector<int> &leaf, const QRect &area, uint visited, QBspTreeData data);
+    typedef void callback(QList<int> &leaf, const QRect &area, uint visited, QBspTreeData data);
 
     QBspTree();
 
@@ -92,7 +92,7 @@ public:
     void climbTree(const QRect &rect, callback *function, QBspTreeData data);
 
     inline int leafCount() const { return leaves.count(); }
-    inline QVector<int> &leaf(int i) { return leaves[i]; }
+    inline QList<int> &leaf(int i) { return leaves[i]; }
     inline void insertLeaf(const QRect &r, int i) { climbTree(r, &insert, i, 0); }
     inline void removeLeaf(const QRect &r, int i) { climbTree(r, &remove, i, 0); }
 
@@ -103,14 +103,14 @@ protected:
     inline int parentIndex(int i) const { return (i & 1) ? ((i - 1) / 2) : ((i - 2) / 2); }
     inline int firstChildIndex(int i) const { return ((i * 2) + 1); }
 
-    static void insert(QVector<int> &leaf, const QRect &area, uint visited, QBspTreeData data);
-    static void remove(QVector<int> &leaf, const QRect &area, uint visited, QBspTreeData data);
+    static void insert(QList<int> &leaf, const QRect &area, uint visited, QBspTreeData data);
+    static void remove(QList<int> &leaf, const QRect &area, uint visited, QBspTreeData data);
 
 private:
     uint depth;
     mutable uint visited;
-    QVector<Node> nodes;
-    mutable QVector< QVector<int> > leaves; // the leaves are just indices into the items
+    QList<Node> nodes;
+    mutable QList<QList<int>> leaves; // the leaves are just indices into the items
 };
 
 QT_END_NAMESPACE

@@ -126,7 +126,7 @@ public:
     virtual bool doBatchedItemLayout(const QListViewLayoutInfo &info, int max) = 0;
     virtual void clear() = 0;
     virtual void setRowCount(int) = 0;
-    virtual QVector<QModelIndex> intersectingSet(const QRect &area) const = 0;
+    virtual QList<QModelIndex> intersectingSet(const QRect &area) const = 0;
     virtual void dataChanged(const QModelIndex &, const QModelIndex &) = 0;
 
     virtual int horizontalScrollToValue(int index, QListView::ScrollHint hint,
@@ -198,11 +198,11 @@ class QListModeViewBase : public QCommonListViewBase
 public:
     QListModeViewBase(QListView *q, QListViewPrivate *d);
 
-    QVector<int> flowPositions;
-    QVector<int> segmentPositions;
-    QVector<int> segmentStartRows;
-    QVector<int> segmentExtents;
-    QVector<int> scrollValueMap;
+    QList<int> flowPositions;
+    QList<int> segmentPositions;
+    QList<int> segmentStartRows;
+    QList<int> segmentExtents;
+    QList<int> scrollValueMap;
 
     // used when laying out in batches
     int batchSavedPosition;
@@ -213,7 +213,7 @@ public:
     bool doBatchedItemLayout(const QListViewLayoutInfo &info, int max) override;
     void clear() override;
     void setRowCount(int rowCount) override { flowPositions.resize(rowCount); }
-    QVector<QModelIndex> intersectingSet(const QRect &area) const override;
+    QList<QModelIndex> intersectingSet(const QRect &area) const override;
     void dataChanged(const QModelIndex &, const QModelIndex &) override;
 
     int horizontalScrollToValue(int index, QListView::ScrollHint hint,
@@ -251,14 +251,14 @@ public:
     QIconModeViewBase(QListView *q, QListViewPrivate *d) : QCommonListViewBase(q, d), interSectingVector(nullptr) {}
 
     QBspTree tree;
-    QVector<QListViewItem> items;
+    QList<QListViewItem> items;
     QBitArray moved;
 
-    QVector<QModelIndex> draggedItems; // indices to the tree.itemVector
+    QList<QModelIndex> draggedItems; // indices to the tree.itemVector
     mutable QPoint draggedItemsPos;
 
     // used when laying out in batches
-    QVector<QModelIndex> *interSectingVector; //used from within intersectingSet
+    QList<QModelIndex> *interSectingVector; // used from within intersectingSet
 
     //reimplementations
     int itemIndex(const QListViewItem &item) const override;
@@ -266,7 +266,7 @@ public:
     bool doBatchedItemLayout(const QListViewLayoutInfo &info, int max) override;
     void clear() override;
     void setRowCount(int rowCount) override;
-    QVector<QModelIndex> intersectingSet(const QRect &area) const override;
+    QList<QModelIndex> intersectingSet(const QRect &area) const override;
 
     void scrollContentsBy(int dx, int dy, bool scrollElasticBand) override;
     void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight) override;
@@ -285,14 +285,13 @@ private:
     void initBspTree(const QSize &contents);
     QPoint initDynamicLayout(const QListViewLayoutInfo &info);
     void doDynamicLayout(const QListViewLayoutInfo &info);
-    static void addLeaf(QVector<int> &leaf, const QRect &area,
-                        uint visited, QBspTree::Data data);
-    QRect itemsRect(const QVector<QModelIndex> &indexes) const;
+    static void addLeaf(QList<int> &leaf, const QRect &area, uint visited, QBspTree::Data data);
+    QRect itemsRect(const QList<QModelIndex> &indexes) const;
     QRect draggedItemsRect() const;
     QPoint snapToGrid(const QPoint &pos) const;
     void updateContentsSize();
     QPoint draggedItemsDelta() const;
-    void drawItems(QPainter *painter, const QVector<QModelIndex> &indexes) const;
+    void drawItems(QPainter *painter, const QList<QModelIndex> &indexes) const;
     void moveItem(int index, const QPoint &dest);
 
 };
@@ -309,7 +308,8 @@ public:
 
     bool doItemsLayout(int num);
 
-    inline QVector<QModelIndex> intersectingSet(const QRect &area, bool doLayout = true) const {
+    inline QList<QModelIndex> intersectingSet(const QRect &area, bool doLayout = true) const
+    {
         if (doLayout) executePostedLayout();
         QRect a = (q_func()->isRightToLeft() ? flipX(area.normalized()) : area.normalized());
         return commonListView->intersectingSet(a);
@@ -363,7 +363,7 @@ public:
 
     QRect mapToViewport(const QRect &rect, bool extend = true) const;
 
-    QModelIndex closestIndex(const QRect &target, const QVector<QModelIndex> &candidates) const;
+    QModelIndex closestIndex(const QRect &target, const QList<QModelIndex> &candidates) const;
     QSize itemSize(const QStyleOptionViewItem &option, const QModelIndex &index) const;
 
     bool selectionAllowed(const QModelIndex &index) const override
@@ -395,8 +395,9 @@ public:
         return isPersistent(idx) && hiddenRows.contains(idx);
     }
     // helper to avoid checking for isPersistent and creating persistent indexes as above in isHidden
-    QVector<int> hiddenRowIds() const {
-        QVector<int> rowIds;
+    QList<int> hiddenRowIds() const
+    {
+        QList<int> rowIds;
         rowIds.reserve(hiddenRows.size());
         for (const auto &idx : hiddenRows)
             rowIds += idx.row();
@@ -404,7 +405,7 @@ public:
     }
     inline bool isHiddenOrDisabled(int row) const { return isHidden(row) || !isIndexEnabled(modelIndex(row)); }
 
-    void removeCurrentAndDisabled(QVector<QModelIndex> *indexes, const QModelIndex &current) const;
+    void removeCurrentAndDisabled(QList<QModelIndex> *indexes, const QModelIndex &current) const;
 
     void scrollElasticBandBy(int dx, int dy);
 

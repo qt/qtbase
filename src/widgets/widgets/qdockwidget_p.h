@@ -172,7 +172,7 @@ public:
     bool verticalTitleBar;
 
 private:
-    QVector<QLayoutItem*> item_list;
+    QList<QLayoutItem *> item_list;
     QRect _titleArea;
 };
 

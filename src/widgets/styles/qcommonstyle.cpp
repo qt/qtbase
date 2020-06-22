@@ -244,7 +244,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         int posX = opt->rect.x() + (opt->rect.width() - markW)/2 + 1;
         int posY = opt->rect.y() + (opt->rect.height() - markH)/2;
 
-        QVector<QLineF> a;
+        QList<QLineF> a;
         a.reserve(markH);
 
         int i, xx, yy;

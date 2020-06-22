@@ -220,9 +220,9 @@ const QColor QColormap::colorAt(uint pixel) const
     return QColor();
 }
 
-const QVector<QColor> QColormap::colormap() const
+const QList<QColor> QColormap::colormap() const
 {
-    return QVector<QColor>();
+    return QList<QColor>();
 }
 
 QColormap &QColormap::operator=(const QColormap &colormap)

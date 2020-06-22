@@ -53,7 +53,6 @@
 #include "qstyleoption.h"
 #include "qtextstream.h"
 #include "qvarlengtharray.h"
-#include "qvector.h"
 #include "private/qlayoutengine_p.h"
 #include "private/qsplitter_p.h"
 #include "qtimer.h"
@@ -484,7 +483,7 @@ void QSplitterPrivate::doResize()
     Q_Q(QSplitter);
     QRect r = q->contentsRect();
     int n = list.count();
-    QVector<QLayoutStruct> a(n*2);
+    QList<QLayoutStruct> a(n * 2);
     int i;
 
     bool noStretchFactorsSet = true;

@@ -60,9 +60,9 @@
 #include "QtGui/qpainter.h"
 #include "QtGui/qevent.h"
 #endif
-#include "QtCore/qvector.h"
-#include "QtCore/qset.h"
 #include "QtCore/qbasictimer.h"
+#include "QtCore/qlist.h"
+#include "QtCore/qset.h"
 #include "private/qlayoutengine_p.h"
 #include "private/qwidgetanimator_p.h"
 

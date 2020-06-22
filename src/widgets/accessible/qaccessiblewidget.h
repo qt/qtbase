@@ -59,7 +59,8 @@ public:
     QWindow *window() const override;
     int childCount() const override;
     int indexOfChild(const QAccessibleInterface *child) const override;
-    QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > relations(QAccessible::Relation match = QAccessible::AllRelations) const override;
+    QList<QPair<QAccessibleInterface *, QAccessible::Relation>>
+    relations(QAccessible::Relation match = QAccessible::AllRelations) const override;
     QAccessibleInterface *focusChild() const override;
 
     QRect rect() const override;

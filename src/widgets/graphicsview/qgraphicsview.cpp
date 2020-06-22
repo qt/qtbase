@@ -2664,7 +2664,7 @@ void QGraphicsView::updateScene(const QList<QRectF> &rects)
         return;
 
     // Extract and reset dirty scene rect info.
-    QVector<QRect> dirtyViewportRects;
+    QList<QRect> dirtyViewportRects;
     dirtyViewportRects.reserve(d->dirtyRegion.rectCount() + rects.count());
     for (const QRect &dirtyRect : d->dirtyRegion)
         dirtyViewportRects += dirtyRect;

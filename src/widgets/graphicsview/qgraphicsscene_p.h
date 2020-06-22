@@ -142,7 +142,7 @@ public:
     QPainterPath selectionArea;
     int selectionChanging;
     QSet<QGraphicsItem *> selectedItems;
-    QVector<QGraphicsItem *> unpolishedItems;
+    QList<QGraphicsItem *> unpolishedItems;
     QList<QGraphicsItem *> topLevelItems;
 
     QHash<QGraphicsItem *, QPointF> movingItemsInitialPositions;

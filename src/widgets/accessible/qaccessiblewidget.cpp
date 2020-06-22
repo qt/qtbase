@@ -299,10 +299,10 @@ static inline bool isAncestor(const QObject *obj, const QObject *child)
 }
 
 /*! \reimp */
-QVector<QPair<QAccessibleInterface*, QAccessible::Relation> >
+QList<QPair<QAccessibleInterface *, QAccessible::Relation>>
 QAccessibleWidget::relations(QAccessible::Relation match /*= QAccessible::AllRelations*/) const
 {
-    QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > rels;
+    QList<QPair<QAccessibleInterface *, QAccessible::Relation>> rels;
     if (match & QAccessible::Label) {
         const QAccessible::Relation rel = QAccessible::Label;
         if (QWidget *parent = widget()->parentWidget()) {

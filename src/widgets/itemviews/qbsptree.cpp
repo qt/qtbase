@@ -128,12 +128,12 @@ void QBspTree::init(const QRect &area, int depth, NodeType type, int index)
     }
 }
 
-void QBspTree::insert(QVector<int> &leaf, const QRect &, uint, QBspTreeData data)
+void QBspTree::insert(QList<int> &leaf, const QRect &, uint, QBspTreeData data)
 {
     leaf.append(data.i);
 }
 
-void QBspTree::remove(QVector<int> &leaf, const QRect &, uint, QBspTreeData data)
+void QBspTree::remove(QList<int> &leaf, const QRect &, uint, QBspTreeData data)
 {
     int i = leaf.indexOf(data.i);
     if (i != -1)

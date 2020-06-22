@@ -543,7 +543,7 @@ void QDockAreaLayoutInfo::fitItems()
     }
 #endif
 
-    QVector<QLayoutStruct> layout_struct_list(item_list.size()*2);
+    QList<QLayoutStruct> layout_struct_list(item_list.size() * 2);
     int j = 0;
 
     int size = pick(o, rect.size());
@@ -853,7 +853,7 @@ static inline int grow(QLayoutStruct &ls, int delta)
     return ls.size - old_size;
 }
 
-static int separatorMoveHelper(QVector<QLayoutStruct> &list, int index, int delta, int sep)
+static int separatorMoveHelper(QList<QLayoutStruct> &list, int index, int delta, int sep)
 {
     // adjust sizes
     int pos = -1;
@@ -937,7 +937,7 @@ int QDockAreaLayoutInfo::separatorMove(int index, int delta)
     Q_ASSERT(!tabbed);
 #endif
 
-    QVector<QLayoutStruct> list(item_list.size());
+    QList<QLayoutStruct> list(item_list.size());
     for (int i = 0; i < list.size(); ++i) {
         const QDockAreaLayoutItem &item = item_list.at(i);
         QLayoutStruct &ls = list[i];
@@ -2616,8 +2616,8 @@ void QDockAreaLayout::removePlaceHolder(const QString &name)
 
 static inline int qMax(int i1, int i2, int i3) { return qMax(i1, qMax(i2, i3)); }
 
-void QDockAreaLayout::getGrid(QVector<QLayoutStruct> *_ver_struct_list,
-                                QVector<QLayoutStruct> *_hor_struct_list)
+void QDockAreaLayout::getGrid(QList<QLayoutStruct> *_ver_struct_list,
+                              QList<QLayoutStruct> *_hor_struct_list)
 {
     QSize center_hint(0, 0);
     QSize center_min(0, 0);
@@ -2670,7 +2670,7 @@ void QDockAreaLayout::getGrid(QVector<QLayoutStruct> *_ver_struct_list,
     bottom_hint = bottom_hint.boundedTo(bottom_max).expandedTo(bottom_min);
 
     if (_ver_struct_list != nullptr) {
-        QVector<QLayoutStruct> &ver_struct_list = *_ver_struct_list;
+        QList<QLayoutStruct> &ver_struct_list = *_ver_struct_list;
         ver_struct_list.resize(3);
 
         // top --------------------------------------------------
@@ -2732,7 +2732,7 @@ void QDockAreaLayout::getGrid(QVector<QLayoutStruct> *_ver_struct_list,
     }
 
     if (_hor_struct_list != nullptr) {
-        QVector<QLayoutStruct> &hor_struct_list = *_hor_struct_list;
+        QList<QLayoutStruct> &hor_struct_list = *_hor_struct_list;
         hor_struct_list.resize(3);
 
         // left --------------------------------------------------
@@ -2794,8 +2794,8 @@ void QDockAreaLayout::getGrid(QVector<QLayoutStruct> *_ver_struct_list,
     }
 }
 
-void QDockAreaLayout::setGrid(QVector<QLayoutStruct> *ver_struct_list,
-                                QVector<QLayoutStruct> *hor_struct_list)
+void QDockAreaLayout::setGrid(QList<QLayoutStruct> *ver_struct_list,
+                              QList<QLayoutStruct> *hor_struct_list)
 {
 
     // top ---------------------------------------------------
@@ -2892,8 +2892,8 @@ void QDockAreaLayout::setGrid(QVector<QLayoutStruct> *ver_struct_list,
 
 void QDockAreaLayout::fitLayout()
 {
-    QVector<QLayoutStruct> ver_struct_list(3);
-    QVector<QLayoutStruct> hor_struct_list(3);
+    QList<QLayoutStruct> ver_struct_list(3);
+    QList<QLayoutStruct> hor_struct_list(3);
     getGrid(&ver_struct_list, &hor_struct_list);
 
     qGeomCalc(ver_struct_list, 0, 3, rect.top(), rect.height(), sep);
@@ -3251,7 +3251,7 @@ int QDockAreaLayout::separatorMove(const QList<int> &separator, const QPoint &or
         return delta;
     }
 
-    QVector<QLayoutStruct> list;
+    QList<QLayoutStruct> list;
 
     if (index == QInternal::LeftDock || index == QInternal::RightDock)
         getGrid(nullptr, &list);

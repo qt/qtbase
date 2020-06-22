@@ -416,9 +416,9 @@ static bool hasPlatformWindow(QWidget *widget)
     return widget && widget->windowHandle() && widget->windowHandle()->handle();
 }
 
-static QVector<QRect> getSortedRectsToScroll(const QRegion &region, int dx, int dy)
+static QList<QRect> getSortedRectsToScroll(const QRegion &region, int dx, int dy)
 {
-    QVector<QRect> rects;
+    QList<QRect> rects;
     std::copy(region.begin(), region.end(), std::back_inserter(rects));
     if (rects.count() > 1) {
         std::sort(rects.begin(), rects.end(), [=](const QRect &r1, const QRect &r2) {
@@ -488,8 +488,8 @@ void QWidgetPrivate::moveRect(const QRect &rect, int dx, int dy)
 
             const qreal factor = QHighDpiScaling::factor(q->windowHandle());
             if (overlappedExpose.isEmpty() || qFloor(factor) == factor) {
-                const QVector<QRect> rectsToScroll
-                        = getSortedRectsToScroll(QRegion(sourceRect) - overlappedExpose, dx, dy);
+                const QList<QRect> rectsToScroll =
+                        getSortedRectsToScroll(QRegion(sourceRect) - overlappedExpose, dx, dy);
                 for (QRect rect : rectsToScroll) {
                     if (repaintManager->bltRect(rect, dx, dy, pw)) {
                         childExpose -= rect.translated(dx, dy);
@@ -570,8 +570,8 @@ void QWidgetPrivate::scrollRect(const QRect &rect, int dx, int dy)
 
         const qreal factor = QHighDpiScaling::factor(q->windowHandle());
         if (overlappedExpose.isEmpty() || qFloor(factor) == factor) {
-            const QVector<QRect> rectsToScroll
-                    = getSortedRectsToScroll(QRegion(sourceRect) - overlappedExpose, dx, dy);
+            const QList<QRect> rectsToScroll =
+                    getSortedRectsToScroll(QRegion(sourceRect) - overlappedExpose, dx, dy);
             for (const QRect &rect : rectsToScroll) {
                 if (repaintManager->bltRect(rect, dx, dy, q)) {
                     childExpose -= rect.translated(dx, dy);
@@ -627,7 +627,9 @@ bool QWidgetRepaintManager::bltRect(const QRect &rect, int dx, int dy, QWidget *
 // ---------------------------------------------------------------------------
 
 #ifndef QT_NO_OPENGL
-static void findTextureWidgetsRecursively(QWidget *tlw, QWidget *widget, QPlatformTextureList *widgetTextures, QVector<QWidget *> *nativeChildren)
+static void findTextureWidgetsRecursively(QWidget *tlw, QWidget *widget,
+                                          QPlatformTextureList *widgetTextures,
+                                          QList<QWidget *> *nativeChildren)
 {
     QWidgetPrivate *wd = QWidgetPrivate::get(widget);
     if (wd->renderToTexture) {
@@ -650,7 +652,7 @@ static void findAllTextureWidgetsRecursively(QWidget *tlw, QWidget *widget)
 {
     // textureChildSeen does not take native child widgets into account and that's good.
     if (QWidgetPrivate::get(widget)->textureChildSeen) {
-        QVector<QWidget *> nativeChildren;
+        QList<QWidget *> nativeChildren;
         auto tl = qt_make_unique<QPlatformTextureList>();
         // Look for texture widgets (incl. widget itself) from 'widget' down,
         // but skip subtrees with a parent of a native child widget.

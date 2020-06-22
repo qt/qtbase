@@ -41,10 +41,10 @@
 #define QCOLORMAP_H
 
 #include <QtWidgets/qtwidgetsglobal.h>
-#include <QtCore/qatomic.h>
 #include <QtGui/qrgb.h>
-#include <QtCore/qvector.h>
 #include <QtGui/qwindowdefs.h>
+#include <QtCore/qatomic.h>
+#include <QtCore/qlist.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -75,7 +75,7 @@ public:
     uint pixel(const QColor &color) const;
     const QColor colorAt(uint pixel) const;
 
-    const QVector<QColor> colormap() const;
+    const QList<QColor> colormap() const;
 
 private:
     QColormap();

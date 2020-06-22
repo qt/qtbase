@@ -37,13 +37,13 @@
 **
 ****************************************************************************/
 
-#include "qgridlayout.h"
 #include "qapplication.h"
-#include "qwidget.h"
+#include "qgridlayout.h"
 #include "qlist.h"
 #include "qsizepolicy.h"
-#include "qvector.h"
 #include "qvarlengtharray.h"
+#include "qwidget.h"
+
 #include "qlayoutengine_p.h"
 #include "qlayout_p.h"
 
@@ -204,7 +204,7 @@ private:
     QSize findSize(int QLayoutStruct::*, int hSpacing, int vSpacing) const;
     void addData(QGridBox *b, const QGridLayoutSizeTriple &sizes, bool r, bool c);
     void setSize(int rows, int cols);
-    void setupSpacings(QVector<QLayoutStruct> &chain, QGridBox *grid[], int fixedSpacing,
+    void setupSpacings(QList<QLayoutStruct> &chain, QGridBox *grid[], int fixedSpacing,
                        Qt::Orientation orientation);
     void setupLayoutData(int hSpacing, int vSpacing);
     void setupHfwLayoutData();
@@ -212,13 +212,13 @@ private:
 
     int rr;
     int cc;
-    QVector<QLayoutStruct> rowData;
-    QVector<QLayoutStruct> colData;
-    QVector<QLayoutStruct> *hfwData;
-    QVector<int> rStretch;
-    QVector<int> cStretch;
-    QVector<int> rMinHeights;
-    QVector<int> cMinWidths;
+    QList<QLayoutStruct> rowData;
+    QList<QLayoutStruct> colData;
+    QList<QLayoutStruct> *hfwData;
+    QList<int> rStretch;
+    QList<int> cStretch;
+    QList<int> rMinHeights;
+    QList<int> cMinWidths;
     QList<QGridBox *> things;
 
     int hfw_width;
@@ -390,9 +390,9 @@ void QGridLayoutPrivate::recalcHFW(int w)
       and put the results in hfwData.
     */
     if (!hfwData)
-        hfwData = new QVector<QLayoutStruct>(rr);
+        hfwData = new QList<QLayoutStruct>(rr);
     setupHfwLayoutData();
-    QVector<QLayoutStruct> &rData = *hfwData;
+    QList<QLayoutStruct> &rData = *hfwData;
 
     int h = 0;
     int mh = 0;
@@ -615,7 +615,7 @@ void QGridLayoutPrivate::addData(QGridBox *box, const QGridLayoutSizeTriple &siz
     }
 }
 
-static void initEmptyMultiBox(QVector<QLayoutStruct> &chain, int start, int end)
+static void initEmptyMultiBox(QList<QLayoutStruct> &chain, int start, int end)
 {
     for (int i = start; i <= end; i++) {
         QLayoutStruct *data = &chain[i];
@@ -625,8 +625,8 @@ static void initEmptyMultiBox(QVector<QLayoutStruct> &chain, int start, int end)
     }
 }
 
-static void distributeMultiBox(QVector<QLayoutStruct> &chain, int start, int end, int minSize,
-                               int sizeHint, QVector<int> &stretchArray, int stretch)
+static void distributeMultiBox(QList<QLayoutStruct> &chain, int start, int end, int minSize,
+                               int sizeHint, QList<int> &stretchArray, int stretch)
 {
     int i;
     int w = 0;
@@ -698,9 +698,8 @@ static QGridBox *&gridAt(QGridBox *grid[], int r, int c, int cc,
     return grid[(r * cc) + c];
 }
 
-void QGridLayoutPrivate::setupSpacings(QVector<QLayoutStruct> &chain,
-                                       QGridBox *grid[], int fixedSpacing,
-                                       Qt::Orientation orientation)
+void QGridLayoutPrivate::setupSpacings(QList<QLayoutStruct> &chain, QGridBox *grid[],
+                                       int fixedSpacing, Qt::Orientation orientation)
 {
     Q_Q(QGridLayout);
     int numRows = rr;       // or columns if orientation is horizontal
@@ -868,7 +867,7 @@ void QGridLayoutPrivate::setupLayoutData(int hSpacing, int vSpacing)
 
 void QGridLayoutPrivate::addHfwData(QGridBox *box, int width)
 {
-    QVector<QLayoutStruct> &rData = *hfwData;
+    QList<QLayoutStruct> &rData = *hfwData;
     if (box->hasHeightForWidth()) {
         int hint = box->heightForWidth(width);
         rData[box->row].sizeHint = qMax(hint, rData.at(box->row).sizeHint);
@@ -888,7 +887,7 @@ void QGridLayoutPrivate::addHfwData(QGridBox *box, int width)
 */
 void QGridLayoutPrivate::setupHfwLayoutData()
 {
-    QVector<QLayoutStruct> &rData = *hfwData;
+    QList<QLayoutStruct> &rData = *hfwData;
     for (int i = 0; i < rr; i++) {
         rData[i] = rowData.at(i);
         rData[i].minimumSize = rData[i].sizeHint = rMinHeights.at(i);
@@ -944,7 +943,7 @@ void QGridLayoutPrivate::distribute(QRect r, int hSpacing, int vSpacing)
     r.adjust(+left, +top, -right, -bottom);
 
     qGeomCalc(colData, 0, cc, r.x(), r.width());
-    QVector<QLayoutStruct> *rDataPtr;
+    QList<QLayoutStruct> *rDataPtr;
     if (has_hfw) {
         recalcHFW(r.width());
         qGeomCalc(*hfwData, 0, rr, r.y(), r.height());
@@ -953,7 +952,7 @@ void QGridLayoutPrivate::distribute(QRect r, int hSpacing, int vSpacing)
         qGeomCalc(rowData, 0, rr, r.y(), r.height());
         rDataPtr = &rowData;
     }
-    QVector<QLayoutStruct> &rData = *rDataPtr;
+    QList<QLayoutStruct> &rData = *rDataPtr;
     int i;
 
     bool reverse = ((r.bottom() > rect.bottom()) || (r.bottom() == rect.bottom()
@@ -985,7 +984,7 @@ QRect QGridLayoutPrivate::cellRect(int row, int col) const
     if (row < 0 || row >= rr || col < 0 || col >= cc)
         return QRect();
 
-    const QVector<QLayoutStruct> *rDataPtr;
+    const QList<QLayoutStruct> *rDataPtr;
     if (has_hfw && hfwData)
         rDataPtr = hfwData;
     else

@@ -53,10 +53,8 @@
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include <QtCore/qlist.h>
-
 #include <QtCore/qrect.h>
 #include <QtCore/qset.h>
-#include <QtCore/qvector.h>
 
 QT_REQUIRE_CONFIG(graphicsview);
 
@@ -107,8 +105,8 @@ private:
     void climbTree(QGraphicsSceneBspTreeVisitor *visitor, const QRectF &rect, int index = 0) const;
     QRectF rectForIndex(int index) const;
 
-    QVector<Node> nodes;
-    QVector<QList<QGraphicsItem *> > leaves;
+    QList<Node> nodes;
+    QList<QList<QGraphicsItem *>> leaves;
     int leafCnt;
     QRectF rect;
 

@@ -43,8 +43,8 @@
 #include "qlabel.h"
 #include "qlayout_p.h"
 #include "qlayoutengine_p.h"
+#include "qlist.h"
 #include "qrect.h"
-#include "qvector.h"
 #include "qwidget.h"
 
 QT_BEGIN_NAMESPACE
@@ -55,7 +55,7 @@ namespace {
 template <class T, int NumColumns>
 class FixedColumnMatrix {
 public:
-    typedef QVector<T> Storage;
+    typedef QList<T> Storage;
 
     FixedColumnMatrix() { }
 
@@ -169,7 +169,7 @@ public:
     void setLayout(int row, QFormLayout::ItemRole role, QLayout *layout);
     void setWidget(int row, QFormLayout::ItemRole role, QWidget *widget);
 
-    void arrangeWidgets(const QVector<QLayoutStruct>& layouts, QRect &rect);
+    void arrangeWidgets(const QList<QLayoutStruct> &layouts, QRect &rect);
 
     void updateSizes();
 
@@ -215,11 +215,11 @@ public:
     int formMaxWidth;
     void calcSizeHints();
 
-    QVector<QLayoutStruct> vLayouts; // set by setupVerticalLayoutData;
+    QList<QLayoutStruct> vLayouts; // set by setupVerticalLayoutData;
     int vLayoutCount;               // Number of rows we calculated in setupVerticalLayoutData
     int maxLabelWidth;              // the label width we calculated in setupVerticalLayoutData
 
-    QVector<QLayoutStruct> hfwLayouts;
+    QList<QLayoutStruct> hfwLayouts;
 
     int hSpacing = -1;
     int vSpacing = -1;
@@ -2167,7 +2167,7 @@ int QFormLayout::spacing() const
     }
 }
 
-void QFormLayoutPrivate::arrangeWidgets(const QVector<QLayoutStruct>& layouts, QRect &rect)
+void QFormLayoutPrivate::arrangeWidgets(const QList<QLayoutStruct> &layouts, QRect &rect)
 {
     Q_Q(QFormLayout);
 
