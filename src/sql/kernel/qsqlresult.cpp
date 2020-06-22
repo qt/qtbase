@@ -675,7 +675,7 @@ void QSqlResult::bindValue(int index, const QVariant& val, QSql::ParamType param
 {
     Q_D(QSqlResult);
     d->binds = PositionalBinding;
-    QVector<int> &indexes = d->indexes[d->fieldSerial(index)];
+    QList<int> &indexes = d->indexes[d->fieldSerial(index)];
     if (!indexes.contains(index))
         indexes.append(index);
     if (d->values.count() <= index)
@@ -702,7 +702,7 @@ void QSqlResult::bindValue(const QString& placeholder, const QVariant& val,
     d->binds = NamedBinding;
     // if the index has already been set when doing emulated named
     // bindings - don't reset it
-    const QVector<int> indexes = d->indexes.value(placeholder);
+    const QList<int> indexes = d->indexes.value(placeholder);
     for (int idx : indexes) {
         if (d->values.count() <= idx)
             d->values.resize(idx + 1);
@@ -749,7 +749,7 @@ QVariant QSqlResult::boundValue(int index) const
 QVariant QSqlResult::boundValue(const QString& placeholder) const
 {
     Q_D(const QSqlResult);
-    const QVector<int> indexes = d->indexes.value(placeholder);
+    const QList<int> indexes = d->indexes.value(placeholder);
     return d->values.value(indexes.value(0,-1));
 }
 
@@ -793,7 +793,7 @@ int QSqlResult::boundValueCount() const
 
     \sa boundValueCount()
 */
-QVector<QVariant>& QSqlResult::boundValues() const
+QList<QVariant> &QSqlResult::boundValues() const
 {
     Q_D(const QSqlResult);
     return const_cast<QSqlResultPrivate *>(d)->values;
@@ -943,7 +943,7 @@ bool QSqlResult::execBatch(bool arrayBind)
     Q_UNUSED(arrayBind);
     Q_D(QSqlResult);
 
-    QVector<QVariant> values = d->values;
+    QList<QVariant> values = d->values;
     if (values.count() == 0)
         return false;
     for (int i = 0; i < values.at(0).toList().count(); ++i) {

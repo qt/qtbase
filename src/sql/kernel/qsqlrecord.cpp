@@ -57,7 +57,7 @@ public:
     inline bool contains(int index) { return index >= 0 && index < fields.count(); }
     QString createField(int index, const QString &prefix) const;
 
-    QVector<QSqlField> fields;
+    QList<QSqlField> fields;
     QAtomicInt ref;
 };
 

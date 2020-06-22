@@ -63,7 +63,7 @@ QSqlTableModelPrivate::~QSqlTableModelPrivate()
 /*! \internal
     Populates our record with values.
 */
-QSqlRecord QSqlTableModelPrivate::record(const QVector<QVariant> &values) const
+QSqlRecord QSqlTableModelPrivate::record(const QList<QVariant> &values) const
 {
     QSqlRecord r = rec;
     for (int i = 0; i < r.count() && i < values.count(); ++i)

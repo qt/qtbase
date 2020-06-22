@@ -70,7 +70,7 @@ private:
     QString createField(int i, const QString& prefix, bool verbose) const;
     QString cursor;
     QString nm;
-    QVector<bool> sorts;
+    QList<bool> sorts;
 };
 
 QT_END_NAMESPACE

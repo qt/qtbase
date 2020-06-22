@@ -80,7 +80,7 @@ public:
     QModelIndex bottom;
     QSqlRecord rec;
     uint atEnd : 1;
-    QVector<QHash<int, QVariant> > headers;
+    QList<QHash<int, QVariant>> headers;
     QVarLengthArray<int, 56> colOffsets; // used to calculate indexInQuery of columns
     int nestedResetLevel;
 };

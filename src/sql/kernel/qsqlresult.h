@@ -105,7 +105,7 @@ protected:
     QSql::ParamType bindValueType(const QString& placeholder) const;
     QSql::ParamType bindValueType(int pos) const;
     int boundValueCount() const;
-    QVector<QVariant>& boundValues() const;
+    QList<QVariant> &boundValues() const;
     QString executedQuery() const;
     QString boundValueName(int pos) const;
     void clear();

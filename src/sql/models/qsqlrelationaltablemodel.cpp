@@ -275,7 +275,7 @@ public:
     QString fullyQualifiedFieldName(const QString &tableName, const QString &fieldName) const;
 
     int nameToIndex(const QString &name) const override;
-    mutable QVector<QRelation> relations;
+    mutable QList<QRelation> relations;
     QSqlRecord baseRec; // the record without relations
     void clearChanges();
     void clearCache() override;

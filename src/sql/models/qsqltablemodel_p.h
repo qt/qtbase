@@ -75,7 +75,7 @@ public:
 
     void clear();
     virtual void clearCache();
-    QSqlRecord record(const QVector<QVariant> &values) const;
+    QSqlRecord record(const QList<QVariant> &values) const;
 
     bool exec(const QString &stmt, bool prepStatement,
               const QSqlRecord &rec, const QSqlRecord &whereValues);

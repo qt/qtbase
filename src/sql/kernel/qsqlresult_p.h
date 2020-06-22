@@ -119,11 +119,11 @@ public:
 
     QString executedQuery;
     QHash<int, QSql::ParamType> types;
-    QVector<QVariant> values;
-    using IndexMap = QHash<QString, QVector<int> >;
+    QList<QVariant> values;
+    using IndexMap = QHash<QString, QList<int>>;
     IndexMap indexes;
 
-    using QHolderVector = QVector<QHolder>;
+    using QHolderVector = QList<QHolder>;
     QHolderVector holders;
 
     QSqlResult::BindingSyntax binds = QSqlResult::PositionalBinding;
