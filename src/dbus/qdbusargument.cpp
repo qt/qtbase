@@ -247,8 +247,8 @@ bool QDBusArgumentPrivate::checkReadAndDetach(QDBusArgumentPrivate *&d)
 
     \value VariantType The variant element (QDBusVariant)
 
-    \value ArrayType An array element, usually represented by QList<T>
-    or QVector<T>. Note: QByteArray and associative maps are not
+    \value ArrayType An array element, usually represented by QList<T>.
+    Note: QByteArray and associative maps are not
     considered arrays, even if the D-Bus protocol transports them as such.
 
     \value StructureType A custom type represented by a structure,
@@ -869,7 +869,7 @@ void QDBusArgument::endStructure()
 
     \snippet code/src_qdbus_qdbusargument.cpp 6
 
-    If the type you want to marshall is a QList, QVector or any of the
+    If the type you want to marshall is a QList or any of the
     Qt's \l {Container Classes} that take one template parameter,
     you need not declare an \c{operator<<} function for it, since
     Qt D-Bus provides generic templates to do the job of marshalling
@@ -997,7 +997,7 @@ void QDBusArgument::endStructure() const
 
     \snippet code/src_qdbus_qdbusargument.cpp 9
 
-    If the type you want to demarshall is a QList, QVector or any of the
+    If the type you want to demarshall is a QList or any of the
     Qt's \l {Container Classes} that take one template parameter, you
     need not declare an \c{operator>>} function for it, since Qt D-Bus
     provides generic templates to do the job of demarshalling the data.

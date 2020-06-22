@@ -54,7 +54,6 @@
 #if QT_DEPRECATED_SINCE(5, 5)
 #include <QtCore/qhash.h>
 #endif
-#include <QtCore/qvector.h>
 #endif
 
 QT_BEGIN_NAMESPACE

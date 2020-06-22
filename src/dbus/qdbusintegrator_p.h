@@ -84,7 +84,7 @@ struct QDBusSlotCache
     {
         int flags;
         int slotIdx;
-        QVector<int> metaTypes;
+        QList<int> metaTypes;
 
         void swap(Data &other) noexcept
         {
@@ -105,9 +105,15 @@ class QDBusCallDeliveryEvent: public QAbstractMetaCallEvent
 {
 public:
     QDBusCallDeliveryEvent(const QDBusConnection &c, int id, QObject *sender,
-                           const QDBusMessage &msg, const QVector<int> &types, int f = 0)
-        : QAbstractMetaCallEvent(sender, -1), connection(c), message(msg), metaTypes(types), id(id), flags(f)
-        { }
+                           const QDBusMessage &msg, const QList<int> &types, int f = 0)
+        : QAbstractMetaCallEvent(sender, -1),
+          connection(c),
+          message(msg),
+          metaTypes(types),
+          id(id),
+          flags(f)
+    {
+    }
 
     void placeMetaCall(QObject *object) override
     {
@@ -117,7 +123,7 @@ public:
 private:
     QDBusConnection connection; // just for refcounting
     QDBusMessage message;
-    QVector<int> metaTypes;
+    QList<int> metaTypes;
     int id;
     int flags;
 };

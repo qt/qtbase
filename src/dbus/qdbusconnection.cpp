@@ -44,7 +44,6 @@
 #include <qdebug.h>
 #include <qcoreapplication.h>
 #include <qstringlist.h>
-#include <qvector.h>
 #include <qtimer.h>
 #include <qthread.h>
 #include <QtCore/private/qlocking_p.h>

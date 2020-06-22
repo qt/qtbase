@@ -41,8 +41,8 @@
 
 #include "qdbus_symbols_p.h"
 
+#include <QtCore/qlist.h>
 #include <QtCore/qstringlist.h>
-#include <QtCore/qvector.h>
 
 #include "qdbusargument.h"
 #include "qdbusunixfiledescriptor.h"

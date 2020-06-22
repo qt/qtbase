@@ -412,7 +412,7 @@ static bool findObject(const QDBusConnectionPrivate::ObjectTreeNode *root,
             result = *node;
         else
             // there really is no object here
-            // we're just looking at an unused space in the QVector
+            // we're just looking at an unused space in the QList
             node = nullptr;
     }
     return node;
@@ -604,7 +604,8 @@ static void huntAndDestroy(QObject *needle, QDBusConnectionPrivate::ObjectTreeNo
     }
 }
 
-static void huntAndUnregister(const QVector<QStringView> &pathComponents, int i, QDBusConnection::UnregisterMode mode,
+static void huntAndUnregister(const QList<QStringView> &pathComponents, int i,
+                              QDBusConnection::UnregisterMode mode,
                               QDBusConnectionPrivate::ObjectTreeNode *node)
 {
     if (pathComponents.count() == i) {
@@ -666,7 +667,7 @@ static void huntAndEmit(DBusConnection *connection, DBusMessage *msg,
 }
 
 static int findSlot(const QMetaObject *mo, const QByteArray &name, int flags,
-                    const QString &signature_, QVector<int> &metaTypes)
+                    const QString &signature_, QList<int> &metaTypes)
 {
     QByteArray msgSignature = signature_.toLatin1();
 
@@ -777,9 +778,9 @@ void QDBusConnectionPrivate::setDispatchEnabled(bool enable)
 
 static QDBusCallDeliveryEvent * const DIRECT_DELIVERY = (QDBusCallDeliveryEvent *)1;
 
-QDBusCallDeliveryEvent* QDBusConnectionPrivate::prepareReply(QDBusConnectionPrivate *target,
+QDBusCallDeliveryEvent *QDBusConnectionPrivate::prepareReply(QDBusConnectionPrivate *target,
                                                              QObject *object, int idx,
-                                                             const QVector<int> &metaTypes,
+                                                             const QList<int> &metaTypes,
                                                              const QDBusMessage &msg)
 {
     Q_ASSERT(object);
@@ -915,7 +916,7 @@ bool QDBusConnectionPrivate::activateCall(QObject* object, int flags, const QDBu
 }
 
 void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const QDBusMessage &msg,
-                                         const QVector<int> &metaTypes, int slotIdx)
+                                         const QList<int> &metaTypes, int slotIdx)
 {
     Q_ASSERT_X(!object || QThread::currentThread() == object->thread(),
                "QDBusConnection: internal threading error",
@@ -1303,8 +1304,8 @@ void QDBusConnectionPrivate::serviceOwnerChangedNoLock(const QString &name,
     it->owner = newOwner;
 }
 
-int QDBusConnectionPrivate::findSlot(QObject* obj, const QByteArray &normalizedName,
-                                     QVector<int> &params)
+int QDBusConnectionPrivate::findSlot(QObject *obj, const QByteArray &normalizedName,
+                                     QList<int> &params)
 {
     int midx = obj->metaObject()->indexOfMethod(normalizedName);
     if (midx == -1)
@@ -2410,7 +2411,7 @@ void QDBusConnectionPrivate::registerObject(const ObjectTreeNode *node)
 void QDBusConnectionPrivate::unregisterObject(const QString &path, QDBusConnection::UnregisterMode mode)
 {
     QDBusConnectionPrivate::ObjectTreeNode *node = &rootNode;
-    QVector<QStringView> pathComponents;
+    QList<QStringView> pathComponents;
     int i;
     if (path == QLatin1String("/")) {
         i = 0;

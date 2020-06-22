@@ -45,8 +45,8 @@
 
 #include <qbytearray.h>
 #include <qglobal.h>
+#include <qlist.h>
 #include <qreadwritelock.h>
-#include <qvector.h>
 
 #include "qdbusargument_p.h"
 #include "qdbusutil_p.h"
@@ -131,25 +131,13 @@ void QDBusMetaTypeId::init()
         qDBusRegisterMetaType<QList<QDBusObjectPath> >();
         qDBusRegisterMetaType<QList<QDBusSignature> >();
         qDBusRegisterMetaType<QList<QDBusUnixFileDescriptor> >();
-
-        qDBusRegisterMetaType<QVector<bool> >();
-        qDBusRegisterMetaType<QVector<short> >();
-        qDBusRegisterMetaType<QVector<ushort> >();
-        qDBusRegisterMetaType<QVector<int> >();
-        qDBusRegisterMetaType<QVector<uint> >();
-        qDBusRegisterMetaType<QVector<qlonglong> >();
-        qDBusRegisterMetaType<QVector<qulonglong> >();
-        qDBusRegisterMetaType<QVector<double> >();
-        qDBusRegisterMetaType<QVector<QDBusObjectPath> >();
-        qDBusRegisterMetaType<QVector<QDBusSignature> >();
-        qDBusRegisterMetaType<QVector<QDBusUnixFileDescriptor> >();
 #endif
 
         initialized.storeRelaxed(true);
     }
 }
 
-Q_GLOBAL_STATIC(QVector<QDBusCustomTypeInfo>, customTypes)
+Q_GLOBAL_STATIC(QList<QDBusCustomTypeInfo>, customTypes)
 Q_GLOBAL_STATIC(QReadWriteLock, customTypesLock)
 
 /*!
@@ -228,7 +216,7 @@ Q_GLOBAL_STATIC(QReadWriteLock, customTypesLock)
 void QDBusMetaType::registerMarshallOperators(int id, MarshallFunction mf,
                                               DemarshallFunction df)
 {
-    QVector<QDBusCustomTypeInfo> *ct = customTypes();
+    QList<QDBusCustomTypeInfo> *ct = customTypes();
     if (id < 0 || !mf || !df || !ct)
         return;                 // error!
 
@@ -253,7 +241,7 @@ bool QDBusMetaType::marshall(QDBusArgument &arg, int id, const void *data)
     MarshallFunction mf;
     {
         QReadLocker locker(customTypesLock());
-        QVector<QDBusCustomTypeInfo> *ct = customTypes();
+        QList<QDBusCustomTypeInfo> *ct = customTypes();
         if (id >= ct->size())
             return false;       // non-existent
 
@@ -282,7 +270,7 @@ bool QDBusMetaType::demarshall(const QDBusArgument &arg, int id, void *data)
     DemarshallFunction df;
     {
         QReadLocker locker(customTypesLock());
-        QVector<QDBusCustomTypeInfo> *ct = customTypes();
+        QList<QDBusCustomTypeInfo> *ct = customTypes();
         if (id >= ct->size())
             return false;       // non-existent
 
@@ -456,7 +444,7 @@ const char *QDBusMetaType::typeToSignature(int type)
         return DBUS_TYPE_UNIX_FD_AS_STRING;
 
     // try the database
-    QVector<QDBusCustomTypeInfo> *ct = customTypes();
+    QList<QDBusCustomTypeInfo> *ct = customTypes();
     {
         QReadLocker locker(customTypesLock());
         if (type >= ct->size())

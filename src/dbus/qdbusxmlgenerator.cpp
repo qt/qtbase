@@ -175,7 +175,7 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
         }
 
         QList<QByteArray> names = mm.parameterNames();
-        QVector<int> types;
+        QList<int> types;
         QString errorMsg;
         int inputCount = qDBusParametersForMethod(mm, types, errorMsg);
         if (inputCount == -1) {

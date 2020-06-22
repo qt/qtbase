@@ -55,11 +55,11 @@
 #include <QtDBus/private/qtdbusglobal_p.h>
 #include <qdbusabstractadaptor.h>
 
-#include <QtCore/qobject.h>
+#include <QtCore/qlist.h>
 #include <QtCore/qmap.h>
+#include <QtCore/qobject.h>
 #include <QtCore/qreadwritelock.h>
 #include <QtCore/qvariant.h>
-#include <QtCore/qvector.h>
 #include "private/qobject_p.h"
 
 #define QCLASSINFO_DBUS_INTERFACE       "D-Bus Interface"
@@ -107,7 +107,7 @@ public: // typedefs
         inline bool operator<(const QByteArray &other) const
         { return interface < other; }
     };
-    typedef QVector<AdaptorData> AdaptorMap;
+    typedef QList<AdaptorData> AdaptorMap;
 
 public: // methods
     explicit QDBusAdaptorConnector(QObject *parent);

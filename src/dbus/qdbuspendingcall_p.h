@@ -54,10 +54,10 @@
 #define QDBUSPENDINGCALL_P_H
 
 #include <QtDBus/private/qtdbusglobal_p.h>
-#include <qshareddata.h>
-#include <qpointer.h>
-#include <qvector.h>
+#include <qlist.h>
 #include <qmutex.h>
+#include <qpointer.h>
+#include <qshareddata.h>
 #include <qwaitcondition.h>
 
 #include "qdbusmessage.h"
@@ -82,7 +82,7 @@ public:
 
     // for the callback mechanism (see setReplyCallback and QDBusConnectionPrivate::sendWithReplyAsync)
     QPointer<QObject> receiver;
-    QVector<int> metaTypes;
+    QList<int> metaTypes;
     int methodIdx;
 
     // }
