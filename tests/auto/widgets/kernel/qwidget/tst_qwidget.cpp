@@ -5685,6 +5685,16 @@ void tst_QWidget::moveChild()
     parent.showNormal();
     QVERIFY(QTest::qWaitForWindowExposed(&parent));
 
+    if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation)) {
+        // On some platforms (macOS), the palette will be different depending on if a
+        // window is active or not. And because of that, the whole window will be
+        // repainted when going from Inactive to Active. So wait for the window to be
+        // active before we continue, so the activation doesn't happen at a random
+        // time below. And call processEvents to have the paint events delivered right away.
+        QVERIFY(QTest::qWaitForWindowActive(&parent));
+        qApp->processEvents();
+    }
+
     QTRY_COMPARE(parent.r, QRegion(parent.rect()) - child.geometry());
     QTRY_COMPARE(child.r, QRegion(child.rect()));
 
@@ -8029,6 +8039,17 @@ void tst_QWidget::hideOpaqueChildWhileHidden()
 
     w.show();
     QVERIFY(QTest::qWaitForWindowExposed(&w));
+
+    if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation)) {
+        // On some platforms (macOS), the palette will be different depending on if a
+        // window is active or not. And because of that, the whole window will be
+        // repainted when going from Inactive to Active. So wait for the window to be
+        // active before we continue, so the activation doesn't happen at a random
+        // time below. And call processEvents to have the paint events delivered right away.
+        QVERIFY(QTest::qWaitForWindowActive(&w));
+        qApp->processEvents();
+    }
+
     QTRY_COMPARE(child2.r, QRegion(child2.rect()));
     child.r = QRegion();
     child2.r = QRegion();

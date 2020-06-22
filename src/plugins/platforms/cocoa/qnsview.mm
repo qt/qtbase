@@ -310,8 +310,27 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSViewMouseMoveHelper);
         return NO;
     if ([self isTransparentForUserInput])
         return NO;
-    if (!m_platformWindow->windowIsPopupType())
+
+    if (!m_platformWindow->windowIsPopupType()
+            && (!self.window.canBecomeKeyWindow || self.window.keyWindow)) {
+        // Calling handleWindowActivated for a QWindow has two effects: first, it
+        // will set the QWindow (and all other QWindows in the same hierarchy)
+        // as Active. Being Active means that the window should appear active from
+        // a style perspective (according to QWindow::isActive()). The second
+        // effect is that it will set QQuiApplication::focusWindow() to point to
+        // the QWindow. The latter means that the QWindow should have keyboard
+        // focus. But those two are not necessarily the same; A tool window could e.g be
+        // rendered as Active while the parent window, which is also Active, has
+        // input focus. But we currently don't distiguish between that cleanly in Qt.
+        // Since we don't want a QWindow to be rendered as Active when the NSWindow
+        // it belongs to is not key, we skip calling handleWindowActivated when
+        // that is the case. Instead, we wait for the window to become key, and handle
+        // QWindow activation from QCocoaWindow::windowDidBecomeKey instead. The only
+        // exception is if the window can never become key, in which case we naturally
+        // cannot wait for that to happen.
         QWindowSystemInterface::handleWindowActivated([self topLevelWindow], Qt::ActiveWindowFocusReason);
+    }
+
     return YES;
 }
 

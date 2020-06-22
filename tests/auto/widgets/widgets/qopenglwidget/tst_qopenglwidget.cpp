@@ -364,6 +364,16 @@ void tst_QOpenGLWidget::asViewport()
     widget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
 
+    if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation)) {
+        // On some platforms (macOS), the palette will be different depending on if a
+        // window is active or not. And because of that, the whole window will be
+        // repainted when going from Inactive to Active. So wait for the window to be
+        // active before we continue, so the activation doesn't happen at a random
+        // time below. And call processEvents to have the paint events delivered right away.
+        QVERIFY(QTest::qWaitForWindowActive(&widget));
+        qApp->processEvents();
+    }
+
     QVERIFY(view->paintCount() > 0);
     view->resetPaintCount();
 

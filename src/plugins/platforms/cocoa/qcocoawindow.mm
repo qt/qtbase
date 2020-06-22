@@ -1212,9 +1212,17 @@ void QCocoaWindow::windowDidBecomeKey()
         QWindowSystemInterface::handleEnterEvent(m_enterLeaveTargetWindow, windowPoint, screenPoint);
     }
 
-    if (!windowIsPopupType())
-        QWindowSystemInterface::handleWindowActivated<QWindowSystemInterface::SynchronousDelivery>(
-            window(), Qt::ActiveWindowFocusReason);
+    QNSView *firstResponderView = qt_objc_cast<QNSView *>(m_view.window.firstResponder);
+    if (!firstResponderView)
+        return;
+
+    const QCocoaWindow *focusCocoaWindow = firstResponderView.platformWindow;
+    if (focusCocoaWindow->windowIsPopupType())
+        return;
+
+    // See also [QNSView becomeFirstResponder]
+    QWindowSystemInterface::handleWindowActivated<QWindowSystemInterface::SynchronousDelivery>(
+                focusCocoaWindow->window(), Qt::ActiveWindowFocusReason);
 }
 
 void QCocoaWindow::windowDidResignKey()
