@@ -328,9 +328,9 @@ const QPointingDevice *QPointingDevice::primaryPointingDevice(const QString& sea
         }
     }
     if (!mouse && !touchpad) {
-        qWarning() << "no mouse-like devices registered for seat" << seatName
-                   << "The platform plugin should have provided one via "
-                      "QWindowSystemInterface::registerInputDevice(). Creating a default mouse for now.";
+        qCDebug(lcQpaInputDevices) << "no mouse-like devices registered for seat" << seatName
+                                   << "The platform plugin should have provided one via "
+                                      "QWindowSystemInterface::registerInputDevice(). Creating a default mouse for now.";
         mouse = new QPointingDevice(QLatin1String("core pointer"), 1, DeviceType::Mouse,
                                     PointerType::Generic, Capability::Position, 1, 3, seatName);
         QInputDevicePrivate::registerDevice(mouse);
@@ -372,9 +372,9 @@ const QPointingDevice *QPointingDevice::tabletDevice(QInputDevice::DeviceType de
             return pdev;
         }
     }
-    qWarning() << "failed to find registered tablet device" << deviceType << pointerType << Qt::hex << uniqueId.numericId()
-               << "The platform plugin should have provided one via "
-                  "QWindowSystemInterface::registerInputDevice(). Creating a default one for now.";
+    qCDebug(lcQpaInputDevices) << "failed to find registered tablet device" << deviceType << pointerType << Qt::hex << uniqueId.numericId()
+                               << "The platform plugin should have provided one via "
+                                  "QWindowSystemInterface::registerInputDevice(). Creating a default one for now.";
     QPointingDevice *dev = new QPointingDevice(QLatin1String("fake tablet"), 2, deviceType, pointerType,
                                                QInputDevice::Capability::Position | QInputDevice::Capability::Pressure,
                                                1, 1, QString(), uniqueId);

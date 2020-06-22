@@ -41,10 +41,13 @@
 #include "qinputdevice_p.h"
 #include <QCoreApplication>
 #include <QDebug>
+#include <QLoggingCategory>
 #include <QMutex>
 #include <QScreen>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcQpaInputDevices)
 
 /*!
     \class QInputDevice
@@ -208,9 +211,9 @@ const QInputDevice *QInputDevice::primaryKeyboard(const QString& seatName)
         }
     }
     if (!ret) {
-        qWarning() << "no keyboards registered for seat" << seatName
-                   << "The platform plugin should have provided one via "
-                      "QWindowSystemInterface::registerInputDevice(). Creating a default one for now.";
+        qCDebug(lcQpaInputDevices) << "no keyboards registered for seat" << seatName
+                                   << "The platform plugin should have provided one via "
+                                      "QWindowSystemInterface::registerInputDevice(). Creating a default one for now.";
         ret = new QInputDevice(QLatin1String("core keyboard"), 0, DeviceType::Keyboard, seatName);
         QInputDevicePrivate::registerDevice(ret);
         return ret;
