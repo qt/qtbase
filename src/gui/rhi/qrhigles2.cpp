@@ -413,6 +413,10 @@ bool QRhiGles2::create(QRhi::Flags flags)
     if (!importedContext) {
         ctx = new QOpenGLContext;
         ctx->setFormat(requestedFormat);
+        if (QOpenGLContext *shareContext = qt_gl_global_share_context()) {
+            ctx->setShareContext(shareContext);
+            ctx->setScreen(shareContext->screen());
+        }
         if (!ctx->create()) {
             qWarning("QRhiGles2: Failed to create context");
             delete ctx;
