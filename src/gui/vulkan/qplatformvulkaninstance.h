@@ -79,7 +79,7 @@ public:
     virtual bool supportsPresent(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, QWindow *window) = 0;
     virtual void presentAboutToBeQueued(QWindow *window);
     virtual void presentQueued(QWindow *window);
-    virtual void setDebugFilters(const QVector<QVulkanInstance::DebugFilter> &filters);
+    virtual void setDebugFilters(const QList<QVulkanInstance::DebugFilter> &filters);
 
 private:
     QScopedPointer<QPlatformVulkanInstancePrivate> d_ptr;

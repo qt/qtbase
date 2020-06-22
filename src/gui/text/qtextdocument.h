@@ -230,7 +230,7 @@ public:
     QVariant resource(int type, const QUrl &name) const;
     void addResource(int type, const QUrl &name, const QVariant &resource);
 
-    QVector<QTextFormat> allFormats() const;
+    QList<QTextFormat> allFormats() const;
 
     void markContentsDirty(int from, int length);
 

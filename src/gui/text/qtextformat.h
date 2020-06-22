@@ -40,15 +40,16 @@
 #ifndef QTEXTFORMAT_H
 #define QTEXTFORMAT_H
 
-#include <QtGui/qtguiglobal.h>
+#include <QtGui/qbrush.h>
 #include <QtGui/qcolor.h>
 #include <QtGui/qfont.h>
-#include <QtCore/qshareddata.h>
-#include <QtCore/qvector.h>
-#include <QtCore/qvariant.h>
 #include <QtGui/qpen.h>
-#include <QtGui/qbrush.h>
 #include <QtGui/qtextoption.h>
+#include <QtGui/qtguiglobal.h>
+
+#include <QtCore/qlist.h>
+#include <QtCore/qshareddata.h>
+#include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -351,9 +352,9 @@ public:
     QPen penProperty(int propertyId) const;
     QBrush brushProperty(int propertyId) const;
     QTextLength lengthProperty(int propertyId) const;
-    QVector<QTextLength> lengthVectorProperty(int propertyId) const;
+    QList<QTextLength> lengthVectorProperty(int propertyId) const;
 
-    void setProperty(int propertyId, const QVector<QTextLength> &lengths);
+    void setProperty(int propertyId, const QList<QTextLength> &lengths);
 
     QMap<int, QVariant> properties() const;
     int propertyCount() const;
@@ -952,10 +953,10 @@ public:
     { int cols = intProperty(TableColumns); if (cols == 0) cols = 1; return cols; }
     inline void setColumns(int columns);
 
-    inline void setColumnWidthConstraints(const QVector<QTextLength> &constraints)
+    inline void setColumnWidthConstraints(const QList<QTextLength> &constraints)
     { setProperty(TableColumnWidthConstraints, constraints); }
 
-    inline QVector<QTextLength> columnWidthConstraints() const
+    inline QList<QTextLength> columnWidthConstraints() const
     { return lengthVectorProperty(TableColumnWidthConstraints); }
 
     inline void clearColumnWidthConstraints()

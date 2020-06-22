@@ -54,7 +54,7 @@
 #include <QtGui/private/qtguiglobal_p.h>
 #include "qcolortransferfunction_p.h"
 
-#include <QVector>
+#include <QList>
 #include <cmath>
 
 QT_BEGIN_NAMESPACE
@@ -66,13 +66,11 @@ public:
     QColorTransferTable() noexcept
             : m_tableSize(0)
     { }
-    QColorTransferTable(uint32_t size, const QVector<uint8_t> &table) noexcept
-            : m_tableSize(size)
-            , m_table8(table)
+    QColorTransferTable(uint32_t size, const QList<uint8_t> &table) noexcept
+        : m_tableSize(size), m_table8(table)
     { }
-    QColorTransferTable(uint32_t size, const QVector<uint16_t> &table) noexcept
-            : m_tableSize(size)
-            , m_table16(table)
+    QColorTransferTable(uint32_t size, const QList<uint16_t> &table) noexcept
+        : m_tableSize(size), m_table16(table)
     { }
 
     bool isValid() const
@@ -208,8 +206,8 @@ public:
     friend inline bool operator==(const QColorTransferTable &t1, const QColorTransferTable &t2);
 
     uint32_t m_tableSize;
-    QVector<uint8_t> m_table8;
-    QVector<uint16_t> m_table16;
+    QList<uint8_t> m_table8;
+    QList<uint16_t> m_table16;
 };
 
 inline bool operator!=(const QColorTransferTable &t1, const QColorTransferTable &t2)

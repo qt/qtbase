@@ -113,7 +113,7 @@ private:
     QString m_htmlAccumulator;
 #endif
     QString m_blockCodeLanguage;
-    QVector<int> m_nonEmptyTableCells; // in the current row
+    QList<int> m_nonEmptyTableCells; // in the current row
     QStack<QPointer<QTextList>> m_listStack;
     QStack<QTextCharFormat> m_spanFormatStack;
     QFont m_monoFont;

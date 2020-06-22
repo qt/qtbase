@@ -64,12 +64,12 @@ typedef void* VkDevice;
 typedef int VkResult;
 #endif
 
-#include <QtCore/qhashfunctions.h>
-#include <QtCore/qscopedpointer.h>
-#include <QtCore/qvector.h>
 #include <QtCore/qbytearraylist.h>
-#include <QtCore/qversionnumber.h>
 #include <QtCore/qdebug.h>
+#include <QtCore/qhashfunctions.h>
+#include <QtCore/qlist.h>
+#include <QtCore/qscopedpointer.h>
+#include <QtCore/qversionnumber.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -132,7 +132,7 @@ Q_GUI_EXPORT QDebug operator<<(QDebug, const QVulkanExtension &);
 #endif
 
 template<typename T>
-class QVulkanInfoVector : public QVector<T>
+class QVulkanInfoVector : public QList<T>
 {
 public:
     bool contains(const QByteArray &name) const {

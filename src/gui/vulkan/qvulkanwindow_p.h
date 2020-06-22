@@ -95,12 +95,12 @@ public:
     QVulkanInstance *inst = nullptr;
     VkSurfaceKHR surface = VK_NULL_HANDLE;
     int physDevIndex = 0;
-    QVector<VkPhysicalDevice> physDevs;
-    QVector<VkPhysicalDeviceProperties> physDevProps;
+    QList<VkPhysicalDevice> physDevs;
+    QList<VkPhysicalDeviceProperties> physDevProps;
     QVulkanWindow::Flags flags;
     QByteArrayList requestedDevExtensions;
     QHash<VkPhysicalDevice, QVulkanInfoVector<QVulkanExtension> > supportedDevExtensions;
-    QVector<VkFormat> requestedColorFormats;
+    QList<VkFormat> requestedColorFormats;
     VkSampleCountFlagBits sampleCount = VK_SAMPLE_COUNT_1_BIT;
     QVulkanWindow::QueueCreateInfoModifier queueCreateInfoModifier;
 

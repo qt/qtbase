@@ -51,7 +51,7 @@
 // We mean it.
 //
 
-#include <QtCore/qvector.h>
+#include <QtCore/qlist.h>
 #include <QtGui/qimage.h>
 #include <QtGui/qrgba64.h>
 
@@ -280,20 +280,26 @@ struct QDitherInfo {
     int y;
 };
 
-typedef const uint *(QT_FASTCALL *FetchAndConvertPixelsFunc)(uint *buffer, const uchar *src, int index, int count,
-                                                             const QVector<QRgb> *clut, QDitherInfo *dither);
-typedef void (QT_FASTCALL *ConvertAndStorePixelsFunc)(uchar *dest, const uint *src, int index, int count,
-                                                      const QVector<QRgb> *clut, QDitherInfo *dither);
+typedef const uint *(QT_FASTCALL *FetchAndConvertPixelsFunc)(uint *buffer, const uchar *src,
+                                                             int index, int count,
+                                                             const QList<QRgb> *clut,
+                                                             QDitherInfo *dither);
+typedef void(QT_FASTCALL *ConvertAndStorePixelsFunc)(uchar *dest, const uint *src, int index,
+                                                     int count, const QList<QRgb> *clut,
+                                                     QDitherInfo *dither);
 
-typedef const QRgba64 *(QT_FASTCALL *FetchAndConvertPixelsFunc64)(QRgba64 *buffer, const uchar *src, int index, int count,
-                                                                 const QVector<QRgb> *clut, QDitherInfo *dither);
-typedef void (QT_FASTCALL *ConvertAndStorePixelsFunc64)(uchar *dest, const QRgba64 *src, int index, int count,
-                                                        const QVector<QRgb> *clut, QDitherInfo *dither);
+typedef const QRgba64 *(QT_FASTCALL *FetchAndConvertPixelsFunc64)(QRgba64 *buffer, const uchar *src,
+                                                                  int index, int count,
+                                                                  const QList<QRgb> *clut,
+                                                                  QDitherInfo *dither);
+typedef void(QT_FASTCALL *ConvertAndStorePixelsFunc64)(uchar *dest, const QRgba64 *src, int index,
+                                                       int count, const QList<QRgb> *clut,
+                                                       QDitherInfo *dither);
 
-typedef void (QT_FASTCALL *ConvertFunc)(uint *buffer, int count, const QVector<QRgb> *clut);
-typedef void (QT_FASTCALL *Convert64Func)(quint64 *buffer, int count, const QVector<QRgb> *clut);
+typedef void(QT_FASTCALL *ConvertFunc)(uint *buffer, int count, const QList<QRgb> *clut);
+typedef void(QT_FASTCALL *Convert64Func)(quint64 *buffer, int count, const QList<QRgb> *clut);
 typedef const QRgba64 *(QT_FASTCALL *ConvertTo64Func)(QRgba64 *buffer, const uint *src, int count,
-                                                      const QVector<QRgb> *clut, QDitherInfo *dither);
+                                                      const QList<QRgb> *clut, QDitherInfo *dither);
 typedef void (QT_FASTCALL *RbSwapFunc)(uchar *dst, const uchar *src, int count);
 
 typedef void (*MemRotateFunc)(const uchar *srcPixels, int w, int h, int sbpl, uchar *destPixels, int dbpl);

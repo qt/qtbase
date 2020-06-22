@@ -146,7 +146,7 @@ public:
     QShaderDescription description() const;
     void setDescription(const QShaderDescription &desc);
 
-    QVector<QShaderKey> availableShaders() const;
+    QList<QShaderKey> availableShaders() const;
     QShaderCode shader(const QShaderKey &key) const;
     void setShader(const QShaderKey &key, const QShaderCode &shader);
     void removeShader(const QShaderKey &key);

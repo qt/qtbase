@@ -55,12 +55,12 @@
 
 #ifndef QT_NO_PDF
 
+#include "QtCore/qlist.h"
 #include "QtCore/qstring.h"
-#include "QtCore/qvector.h"
-#include "private/qstroker_p.h"
-#include "private/qpaintengine_p.h"
 #include "private/qfontengine_p.h"
 #include "private/qfontsubset_p.h"
+#include "private/qpaintengine_p.h"
+#include "private/qstroker_p.h"
 #include "qpagelayout.h"
 
 QT_BEGIN_NAMESPACE
@@ -147,11 +147,11 @@ class QPdfPage : public QPdf::ByteStream
 public:
     QPdfPage();
 
-    QVector<uint> images;
-    QVector<uint> graphicStates;
-    QVector<uint> patterns;
-    QVector<uint> fonts;
-    QVector<uint> annotations;
+    QList<uint> images;
+    QList<uint> graphicStates;
+    QList<uint> patterns;
+    QList<uint> fonts;
+    QList<uint> annotations;
 
     void streamImage(int w, int h, int object);
 
@@ -265,7 +265,7 @@ public:
     QPointF brushOrigin;
     QBrush brush;
     QPen pen;
-    QVector<QPainterPath> clips;
+    QList<QPainterPath> clips;
     bool clipEnabled;
     bool allClipped;
     bool hasPen;
@@ -309,7 +309,7 @@ private:
     void embedFont(QFontSubset *font);
     qreal calcUserUnit() const;
 
-    QVector<int> xrefPositions;
+    QList<int> xrefPositions;
     QDataStream* stream;
     int streampos;
 
@@ -340,10 +340,10 @@ private:
 
     // various PDF objects
     int pageRoot, embeddedfilesRoot, namesRoot, catalog, info, graphicsState, patternColorSpace;
-    QVector<uint> pages;
+    QList<uint> pages;
     QHash<qint64, uint> imageCache;
     QHash<QPair<uint, uint>, uint > alphaCache;
-    QVector<AttachmentInfo> fileCache;
+    QList<AttachmentInfo> fileCache;
     QByteArray xmpDocumentMetadata;
 };
 

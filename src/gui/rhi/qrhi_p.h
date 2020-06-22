@@ -51,7 +51,7 @@
 #include <QtGui/qtguiglobal.h>
 #include <QSize>
 #include <QMatrix4x4>
-#include <QVector>
+#include <QList>
 #include <QVarLengthArray>
 #include <QThread>
 #include <QColor>
@@ -1535,7 +1535,7 @@ public:
 
     QRhiResourceUpdateBatch *nextResourceUpdateBatch();
 
-    QVector<int> supportedSampleCounts() const;
+    QList<int> supportedSampleCounts() const;
 
     int ubufAlignment() const;
     int ubufAligned(int v) const;

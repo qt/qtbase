@@ -43,9 +43,9 @@
 #include <QtGui/qtguiglobal.h>
 #include <QtGui/qtransform.h>
 #include <QtCore/qglobal.h>
-#include <QtCore/qrect.h>
 #include <QtCore/qline.h>
-#include <QtCore/qvector.h>
+#include <QtCore/qlist.h>
+#include <QtCore/qrect.h>
 #include <QtCore/qscopedpointer.h>
 
 QT_BEGIN_NAMESPACE
@@ -256,8 +256,8 @@ public:
     qreal curveThreshold() const;
 
     void setDashPattern(Qt::PenStyle);
-    void setDashPattern(const QVector<qreal> &dashPattern);
-    QVector<qreal> dashPattern() const;
+    void setDashPattern(const QList<qreal> &dashPattern);
+    QList<qreal> dashPattern() const;
 
     void setDashOffset(qreal offset);
     qreal dashOffset() const;

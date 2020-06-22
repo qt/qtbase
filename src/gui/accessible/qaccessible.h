@@ -46,10 +46,10 @@
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qglobal.h>
+#include <QtCore/qlist.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qset.h>
-#include <QtCore/qvector.h>
 #include <QtCore/qvariant.h>
 #include <QtGui/qcolor.h>
 #include <QtGui/qevent.h>
@@ -463,7 +463,8 @@ public:
     virtual QWindow *window() const;
 
     // relations
-    virtual QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > relations(QAccessible::Relation match = QAccessible::AllRelations) const;
+    virtual QList<QPair<QAccessibleInterface *, QAccessible::Relation>>
+    relations(QAccessible::Relation match = QAccessible::AllRelations) const;
     virtual QAccessibleInterface *focusChild() const;
 
     virtual QAccessibleInterface *childAt(int x, int y) const = 0;

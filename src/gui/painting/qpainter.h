@@ -279,22 +279,22 @@ public:
     inline void drawLine(const QPointF &p1, const QPointF &p2);
 
     void drawLines(const QLineF *lines, int lineCount);
-    inline void drawLines(const QVector<QLineF> &lines);
+    inline void drawLines(const QList<QLineF> &lines);
     void drawLines(const QPointF *pointPairs, int lineCount);
-    inline void drawLines(const QVector<QPointF> &pointPairs);
+    inline void drawLines(const QList<QPointF> &pointPairs);
     void drawLines(const QLine *lines, int lineCount);
-    inline void drawLines(const QVector<QLine> &lines);
+    inline void drawLines(const QList<QLine> &lines);
     void drawLines(const QPoint *pointPairs, int lineCount);
-    inline void drawLines(const QVector<QPoint> &pointPairs);
+    inline void drawLines(const QList<QPoint> &pointPairs);
 
     inline void drawRect(const QRectF &rect);
     inline void drawRect(int x1, int y1, int w, int h);
     inline void drawRect(const QRect &rect);
 
     void drawRects(const QRectF *rects, int rectCount);
-    inline void drawRects(const QVector<QRectF> &rectangles);
+    inline void drawRects(const QList<QRectF> &rectangles);
     void drawRects(const QRect *rects, int rectCount);
-    inline void drawRects(const QVector<QRect> &rectangles);
+    inline void drawRects(const QList<QRect> &rectangles);
 
     void drawEllipse(const QRectF &r);
     void drawEllipse(const QRect &r);
@@ -500,22 +500,22 @@ inline void QPainter::drawLine(const QPointF &p1, const QPointF &p2)
     drawLine(QLineF(p1, p2));
 }
 
-inline void QPainter::drawLines(const QVector<QLineF> &lines)
+inline void QPainter::drawLines(const QList<QLineF> &lines)
 {
     drawLines(lines.constData(), lines.size());
 }
 
-inline void QPainter::drawLines(const QVector<QLine> &lines)
+inline void QPainter::drawLines(const QList<QLine> &lines)
 {
     drawLines(lines.constData(), lines.size());
 }
 
-inline void QPainter::drawLines(const QVector<QPointF> &pointPairs)
+inline void QPainter::drawLines(const QList<QPointF> &pointPairs)
 {
     drawLines(pointPairs.constData(), pointPairs.size() / 2);
 }
 
-inline void QPainter::drawLines(const QVector<QPoint> &pointPairs)
+inline void QPainter::drawLines(const QList<QPoint> &pointPairs)
 {
     drawLines(pointPairs.constData(), pointPairs.size() / 2);
 }
@@ -566,12 +566,12 @@ inline void QPainter::drawRect(const QRect &r)
     drawRects(&r, 1);
 }
 
-inline void QPainter::drawRects(const QVector<QRectF> &rects)
+inline void QPainter::drawRects(const QList<QRectF> &rects)
 {
     drawRects(rects.constData(), rects.size());
 }
 
-inline void QPainter::drawRects(const QVector<QRect> &rects)
+inline void QPainter::drawRects(const QList<QRect> &rects)
 {
     drawRects(rects.constData(), rects.size());
 }

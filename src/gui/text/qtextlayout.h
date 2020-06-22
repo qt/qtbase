@@ -39,17 +39,18 @@
 #ifndef QTEXTLAYOUT_H
 #define QTEXTLAYOUT_H
 
-#include <QtGui/qtguiglobal.h>
-#include <QtCore/qstring.h>
-#include <QtCore/qnamespace.h>
-#include <QtCore/qrect.h>
-#include <QtCore/qvector.h>
 #include <QtGui/qcolor.h>
-#include <QtCore/qobject.h>
 #include <QtGui/qevent.h>
-#include <QtGui/qtextformat.h>
 #include <QtGui/qglyphrun.h>
 #include <QtGui/qtextcursor.h>
+#include <QtGui/qtextformat.h>
+#include <QtGui/qtguiglobal.h>
+
+#include <QtCore/qlist.h>
+#include <QtCore/qnamespace.h>
+#include <QtCore/qobject.h>
+#include <QtCore/qrect.h>
+#include <QtCore/qstring.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -155,8 +156,8 @@ public:
     QT_DEPRECATED_X("Use formats()") QList<FormatRange> additionalFormats() const;
     QT_DEPRECATED_X("Use clearFormats()") void clearAdditionalFormats();
 #endif
-    void setFormats(const QVector<FormatRange> &overrides);
-    QVector<FormatRange> formats() const;
+    void setFormats(const QList<FormatRange> &overrides);
+    QList<FormatRange> formats() const;
     void clearFormats();
 
     void setCacheEnabled(bool enable);
@@ -185,7 +186,8 @@ public:
     int leftCursorPosition(int oldPos) const;
     int rightCursorPosition(int oldPos) const;
 
-    void draw(QPainter *p, const QPointF &pos, const QVector<FormatRange> &selections = QVector<FormatRange>(),
+    void draw(QPainter *p, const QPointF &pos,
+              const QList<FormatRange> &selections = QList<FormatRange>(),
               const QRectF &clip = QRectF()) const;
     void drawCursor(QPainter *p, const QPointF &pos, int cursorPosition) const;
     void drawCursor(QPainter *p, const QPointF &pos, int cursorPosition, int width) const;

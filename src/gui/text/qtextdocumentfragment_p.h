@@ -150,7 +150,7 @@ private:
         QPointer<QTextList> list;
     };
     friend class QTypeInfo<List>;
-    QVector<List> lists;
+    QList<List> lists;
     int indent;
     int headingLevel;
 
@@ -205,7 +205,7 @@ private:
         int lastIndent;
     };
     friend class QTypeInfo<Table>;
-    QVector<Table> tables;
+    QList<Table> tables;
 
     struct RowColSpanInfo
     {

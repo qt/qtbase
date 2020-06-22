@@ -41,9 +41,9 @@
 #define QRANGECOLLECTION_H
 
 #include <QtGui/qtguiglobal.h>
+#include <QtCore/qlist.h>
 #include <QtCore/qpair.h>
 #include <QtCore/qscopedpointer.h>
-#include <QtCore/qvector.h>
 
 QT_BEGIN_NAMESPACE
 

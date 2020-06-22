@@ -77,23 +77,24 @@ public:
         Q_GUI_EXPORT int portIndex(QShaderNodePort::Direction direction, const QString &portName) const noexcept;
 
         QShaderNode node;
-        QVector<int> inputs;
-        QVector<int> outputs;
+        QList<int> inputs;
+        QList<int> outputs;
     };
 
     Q_GUI_EXPORT void addNode(const QShaderNode &node);
     Q_GUI_EXPORT void removeNode(const QShaderNode &node);
-    Q_GUI_EXPORT QVector<QShaderNode> nodes() const noexcept;
+    Q_GUI_EXPORT QList<QShaderNode> nodes() const noexcept;
 
     Q_GUI_EXPORT void addEdge(const Edge &edge);
     Q_GUI_EXPORT void removeEdge(const Edge &edge);
-    Q_GUI_EXPORT QVector<Edge> edges() const noexcept;
+    Q_GUI_EXPORT QList<Edge> edges() const noexcept;
 
-    Q_GUI_EXPORT QVector<Statement> createStatements(const QStringList &enabledLayers = QStringList()) const;
+    Q_GUI_EXPORT QList<Statement>
+    createStatements(const QStringList &enabledLayers = QStringList()) const;
 
 private:
-    QVector<QShaderNode> m_nodes;
-    QVector<Edge> m_edges;
+    QList<QShaderNode> m_nodes;
+    QList<Edge> m_edges;
 };
 
 Q_GUI_EXPORT bool operator==(const QShaderGraph::Edge &lhs, const QShaderGraph::Edge &rhs) noexcept;

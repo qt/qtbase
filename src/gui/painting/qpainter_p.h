@@ -102,7 +102,7 @@ inline bool qbrush_has_transform(const QBrush &b) { return data_ptr(b)->transfor
 class QPainterClipInfo
 {
 public:
-    QPainterClipInfo() {} // for QVector, don't use
+    QPainterClipInfo() { } // for QList, don't use
     enum ClipType { RegionClip, PathClip, RectClip, RectFClip };
 
     QPainterClipInfo(const QPainterPath &p, Qt::ClipOperation op, const QTransform &m) :
@@ -160,7 +160,7 @@ public:
     QPainterPath clipPath;
     Qt::ClipOperation clipOperation = Qt::NoClip;
     QPainter::RenderHints renderHints;
-    QVector<QPainterClipInfo> clipInfo; // ### Make me smaller and faster to copy around...
+    QList<QPainterClipInfo> clipInfo; // ### Make me smaller and faster to copy around...
     QTransform worldMatrix;       // World transformation matrix, not window and viewport
     QTransform matrix;            // Complete transformation matrix,
     QTransform redirectionMatrix;

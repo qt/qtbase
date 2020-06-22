@@ -93,7 +93,7 @@ public:
     QVector2D velocity;
     QTouchEvent::TouchPoint::InfoFlags flags;
     bool stationaryWithModifiedProperty : 1;
-    QVector<QPointF> rawScreenPositions;
+    QList<QPointF> rawScreenPositions;
 };
 
 QT_END_NAMESPACE

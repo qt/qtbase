@@ -538,8 +538,8 @@ int QRBTree<T>::order(Node *left, Node *right)
     if (left == right)
         return 0;
 
-    QVector<Node *> leftAncestors;
-    QVector<Node *> rightAncestors;
+    QList<Node *> leftAncestors;
+    QList<Node *> rightAncestors;
     while (left) {
         leftAncestors.push_back(left);
         left = left->parent;

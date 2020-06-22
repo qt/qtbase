@@ -78,7 +78,7 @@ public:
         int cursorPosition;
         QPalette palette;
         QRectF clip;
-        QVector<Selection> selections;
+        QList<Selection> selections;
     };
 
     virtual void draw(QPainter *painter, const PaintContext &context) = 0;

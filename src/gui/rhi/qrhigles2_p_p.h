@@ -275,8 +275,8 @@ struct QGles2GraphicsPipeline : public QRhiGraphicsPipeline
 
     GLuint program = 0;
     GLenum drawMode = GL_TRIANGLES;
-    QVector<QGles2UniformDescription> uniforms;
-    QVector<QGles2SamplerDescription> samplers;
+    QList<QGles2UniformDescription> uniforms;
+    QList<QGles2SamplerDescription> samplers;
     uint generation = 0;
     friend class QRhiGles2;
 };
@@ -289,8 +289,8 @@ struct QGles2ComputePipeline : public QRhiComputePipeline
     bool create() override;
 
     GLuint program = 0;
-    QVector<QGles2UniformDescription> uniforms;
-    QVector<QGles2SamplerDescription> samplers;
+    QList<QGles2UniformDescription> uniforms;
+    QList<QGles2SamplerDescription> samplers;
     uint generation = 0;
     friend class QRhiGles2;
 };
@@ -511,7 +511,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
         ComputePass
     };
 
-    QVector<Command> commands;
+    QList<Command> commands;
     QVarLengthArray<QRhiPassResourceTracker, 8> passResTrackers;
     int currentPassResTrackerIndex;
 
@@ -574,8 +574,8 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
         }
     } computePassState;
 
-    QVector<QByteArray> dataRetainPool;
-    QVector<QImage> imageRetainPool;
+    QList<QByteArray> dataRetainPool;
+    QList<QImage> imageRetainPool;
 
     // relies heavily on implicit sharing (no copies of the actual data will be made)
     const void *retainData(const QByteArray &data) {
@@ -766,7 +766,7 @@ public:
     void beginExternal(QRhiCommandBuffer *cb) override;
     void endExternal(QRhiCommandBuffer *cb) override;
 
-    QVector<int> supportedSampleCounts() const override;
+    QList<int> supportedSampleCounts() const override;
     int ubufAlignment() const override;
     bool isYUpInFramebuffer() const override;
     bool isYUpInNDC() const override;
@@ -809,16 +809,12 @@ public:
     bool compileShader(GLuint program, const QRhiShaderStage &shaderStage, int *glslVersion);
     bool linkProgram(GLuint program);
     void registerUniformIfActive(const QShaderDescription::BlockVariable &var,
-                                 const QByteArray &namePrefix,
-                                 int binding,
-                                 int baseOffset,
-                                 GLuint program,
-                                 QVector<QGles2UniformDescription> *dst);
-    void gatherUniforms(GLuint program,
-                        const QShaderDescription::UniformBlock &ub,
-                        QVector<QGles2UniformDescription> *dst);
+                                 const QByteArray &namePrefix, int binding, int baseOffset,
+                                 GLuint program, QList<QGles2UniformDescription> *dst);
+    void gatherUniforms(GLuint program, const QShaderDescription::UniformBlock &ub,
+                        QList<QGles2UniformDescription> *dst);
     void gatherSamplers(GLuint program, const QShaderDescription::InOutVariable &v,
-                        QVector<QGles2SamplerDescription> *dst);
+                        QList<QGles2SamplerDescription> *dst);
     bool isProgramBinaryDiskCacheEnabled() const;
 
     enum DiskCacheResult {
@@ -908,8 +904,8 @@ public:
         uint screenSpaceDerivatives : 1;
     } caps;
     QGles2SwapChain *currentSwapChain = nullptr;
-    QVector<GLint> supportedCompressedFormats;
-    mutable QVector<int> supportedSampleCountList;
+    QList<GLint> supportedCompressedFormats;
+    mutable QList<int> supportedSampleCountList;
     QRhiGles2NativeHandles nativeHandlesStruct;
     mutable bool contextLost = false;
 
@@ -941,7 +937,7 @@ public:
             } textureRenderTarget;
         };
     };
-    QVector<DeferredReleaseEntry> releaseQueue;
+    QList<DeferredReleaseEntry> releaseQueue;
 
     struct OffscreenFrame {
         OffscreenFrame(QRhiImplementation *rhi) : cbWrapper(rhi) { }

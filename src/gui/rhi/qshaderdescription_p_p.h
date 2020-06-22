@@ -49,7 +49,7 @@
 //
 
 #include "qshaderdescription_p.h"
-#include <QtCore/QVector>
+#include <QtCore/QList>
 #include <QtCore/QAtomicInt>
 #include <QtCore/QJsonDocument>
 
@@ -85,13 +85,13 @@ struct Q_GUI_EXPORT QShaderDescriptionPrivate
     void loadFromStream(QDataStream *stream, int version);
 
     QAtomicInt ref;
-    QVector<QShaderDescription::InOutVariable> inVars;
-    QVector<QShaderDescription::InOutVariable> outVars;
-    QVector<QShaderDescription::UniformBlock> uniformBlocks;
-    QVector<QShaderDescription::PushConstantBlock> pushConstantBlocks;
-    QVector<QShaderDescription::StorageBlock> storageBlocks;
-    QVector<QShaderDescription::InOutVariable> combinedImageSamplers;
-    QVector<QShaderDescription::InOutVariable> storageImages;
+    QList<QShaderDescription::InOutVariable> inVars;
+    QList<QShaderDescription::InOutVariable> outVars;
+    QList<QShaderDescription::UniformBlock> uniformBlocks;
+    QList<QShaderDescription::PushConstantBlock> pushConstantBlocks;
+    QList<QShaderDescription::StorageBlock> storageBlocks;
+    QList<QShaderDescription::InOutVariable> combinedImageSamplers;
+    QList<QShaderDescription::InOutVariable> storageImages;
     std::array<uint, 3> localSize;
 };
 

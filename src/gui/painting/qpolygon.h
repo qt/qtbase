@@ -41,7 +41,7 @@
 #define QPOLYGON_H
 
 #include <QtGui/qtguiglobal.h>
-#include <QtCore/qvector.h>
+#include <QtCore/qlist.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qrect.h>
 
@@ -51,21 +51,21 @@ class QTransform;
 class QRect;
 class QVariant;
 
-class Q_GUI_EXPORT QPolygon : public QVector<QPoint>
+class Q_GUI_EXPORT QPolygon : public QList<QPoint>
 {
 public:
     inline QPolygon() {}
     inline ~QPolygon() {}
     inline explicit QPolygon(int size);
-    inline /*implicit*/ QPolygon(const QVector<QPoint> &v) : QVector<QPoint>(v) {}
-    /*implicit*/ QPolygon(QVector<QPoint> &&v) noexcept : QVector<QPoint>(std::move(v)) {}
+    inline /*implicit*/ QPolygon(const QList<QPoint> &v) : QList<QPoint>(v) { }
+    /*implicit*/ QPolygon(QList<QPoint> &&v) noexcept : QList<QPoint>(std::move(v)) { }
     QPolygon(const QRect &r, bool closed=false);
     QPolygon(int nPoints, const int *points);
-    QPolygon(const QPolygon &other) : QVector<QPoint>(other) {}
-    QPolygon(QPolygon &&other) noexcept : QVector<QPoint>(std::move(other)) {}
+    QPolygon(const QPolygon &other) : QList<QPoint>(other) { }
+    QPolygon(QPolygon &&other) noexcept : QList<QPoint>(std::move(other)) { }
     QPolygon &operator=(QPolygon &&other) noexcept { swap(other); return *this; }
-    QPolygon &operator=(const QPolygon &other) { QVector<QPoint>::operator=(other); return *this; }
-    void swap(QPolygon &other) noexcept { QVector<QPoint>::swap(other); } // prevent QVector<QPoint><->QPolygon swaps
+    QPolygon &operator=(const QPolygon &other) { QList<QPoint>::operator=(other); return *this; }
+    void swap(QPolygon &other) noexcept { QList<QPoint>::swap(other); } // prevent QList<QPoint><->QPolygon swaps
 
     operator QVariant() const;
 
@@ -97,7 +97,7 @@ public:
 };
 Q_DECLARE_SHARED(QPolygon)
 
-inline QPolygon::QPolygon(int asize) : QVector<QPoint>(asize) {}
+inline QPolygon::QPolygon(int size) : QList<QPoint>(size) { }
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QPolygon &);
@@ -132,21 +132,21 @@ inline QPolygon QPolygon::translated(const QPoint &offset) const
 
 class QRectF;
 
-class Q_GUI_EXPORT QPolygonF : public QVector<QPointF>
+class Q_GUI_EXPORT QPolygonF : public QList<QPointF>
 {
 public:
     inline QPolygonF() {}
     inline ~QPolygonF() {}
     inline explicit QPolygonF(int size);
-    inline /*implicit*/ QPolygonF(const QVector<QPointF> &v) : QVector<QPointF>(v) {}
-    /* implicit */ QPolygonF(QVector<QPointF> &&v) noexcept : QVector<QPointF>(std::move(v)) {}
+    inline /*implicit*/ QPolygonF(const QList<QPointF> &v) : QList<QPointF>(v) { }
+    /* implicit */ QPolygonF(QList<QPointF> &&v) noexcept : QList<QPointF>(std::move(v)) { }
     QPolygonF(const QRectF &r);
     /*implicit*/ QPolygonF(const QPolygon &a);
-    inline QPolygonF(const QPolygonF &a) : QVector<QPointF>(a) {}
-    QPolygonF(QPolygonF &&other) noexcept : QVector<QPointF>(std::move(other)) {}
+    inline QPolygonF(const QPolygonF &a) : QList<QPointF>(a) { }
+    QPolygonF(QPolygonF &&other) noexcept : QList<QPointF>(std::move(other)) { }
     QPolygonF &operator=(QPolygonF &&other) noexcept { swap(other); return *this; }
-    QPolygonF &operator=(const QPolygonF &other) { QVector<QPointF>::operator=(other); return *this; }
-    inline void swap(QPolygonF &other) { QVector<QPointF>::swap(other); } // prevent QVector<QPointF><->QPolygonF swaps
+    QPolygonF &operator=(const QPolygonF &other) { QList<QPointF>::operator=(other); return *this; }
+    inline void swap(QPolygonF &other) { QList<QPointF>::swap(other); } // prevent QList<QPointF><->QPolygonF swaps
 
     operator QVariant() const;
 
@@ -172,7 +172,7 @@ public:
 };
 Q_DECLARE_SHARED(QPolygonF)
 
-inline QPolygonF::QPolygonF(int asize) : QVector<QPointF>(asize) {}
+inline QPolygonF::QPolygonF(int size) : QList<QPointF>(size) { }
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QPolygonF &);

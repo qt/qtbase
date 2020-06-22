@@ -52,14 +52,15 @@
 //
 
 #include <QtGui/private/qtguiglobal_p.h>
-#include "qalgorithms.h"
-#include "qbitarray.h"
-#include "qlist.h"
-#include "qmap.h"
-#include "qpair.h"
-#include <QtCore/qvector.h>
+
+#include <QtCore/qalgorithms.h>
+#include <QtCore/qbitarray.h>
+#include <QtCore/qlist.h>
+#include <QtCore/qmap.h>
+#include <QtCore/qpair.h>
 #include <QtCore/qsize.h>
 #include <QtCore/qrect.h>
+
 #include <float.h>
 #include "qlayoutpolicy_p.h"
 #include "qabstractlayoutstyleinfo_p.h"
@@ -277,10 +278,10 @@ public:
 #endif
 
     QBitArray ignore;   // ### rename q_
-    QVector<QGridLayoutBox> boxes;
+    QList<QGridLayoutBox> boxes;
     MultiCellMap multiCellMap;
-    QVector<int> stretches;
-    QVector<qreal> spacings;
+    QList<int> stretches;
+    QList<qreal> spacings;
     bool hasIgnoreFlag;
 };
 
@@ -296,10 +297,10 @@ public:
 #endif
 
     int count;
-    QVector<QStretchParameter> stretches;
-    QVector<QLayoutParameter<qreal> > spacings;
-    QVector<Qt::Alignment> alignments;
-    QVector<QGridLayoutBox> boxes;
+    QList<QStretchParameter> stretches;
+    QList<QLayoutParameter<qreal>> spacings;
+    QList<Qt::Alignment> alignments;
+    QList<QGridLayoutBox> boxes;
 };
 
 
@@ -471,7 +472,7 @@ protected:
     QList<QGridLayoutItem *> q_items;
 private:
     // User input
-    QVector<QGridLayoutItem *> q_grid;
+    QList<QGridLayoutItem *> q_grid;
     QHVContainer<QLayoutParameter<qreal>> q_defaultSpacings;
     QHVContainer<QGridLayoutRowInfo> q_infos;
     Qt::LayoutDirection m_visualDirection;
@@ -500,11 +501,11 @@ private:
 
     // Output
     mutable QSizeF q_cachedSize;
-    mutable QVector<qreal> q_xx;
-    mutable QVector<qreal> q_yy;
-    mutable QVector<qreal> q_widths;
-    mutable QVector<qreal> q_heights;
-    mutable QVector<qreal> q_descents;
+    mutable QList<qreal> q_xx;
+    mutable QList<qreal> q_yy;
+    mutable QList<qreal> q_widths;
+    mutable QList<qreal> q_heights;
+    mutable QList<qreal> q_descents;
 
     friend class QGridLayoutItem;
 };

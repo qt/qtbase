@@ -67,7 +67,7 @@ public:
 private:
     FcPattern* getMatchPatternForFallback(int at) const;
 
-    mutable QVector<FcPattern*> cachedMatchPatterns;
+    mutable QList<FcPattern *> cachedMatchPatterns;
 };
 
 QT_END_NAMESPACE

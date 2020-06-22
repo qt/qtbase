@@ -95,7 +95,7 @@ public:
         QDateTime lastModified;
     };
 
-    QVector<FileInfo> fileInfoList() const;
+    QList<FileInfo> fileInfoList() const;
     int count() const;
 
     FileInfo entryInfoAt(int index) const;

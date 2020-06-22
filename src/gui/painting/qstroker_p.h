@@ -263,10 +263,10 @@ public:
 
     QStroker *stroker() const { return m_stroker; }
 
-    static QVector<qfixed> patternForStyle(Qt::PenStyle style);
+    static QList<qfixed> patternForStyle(Qt::PenStyle style);
 
-    void setDashPattern(const QVector<qfixed> &dashPattern) { m_dashPattern = dashPattern; }
-    QVector<qfixed> dashPattern() const { return m_dashPattern; }
+    void setDashPattern(const QList<qfixed> &dashPattern) { m_dashPattern = dashPattern; }
+    QList<qfixed> dashPattern() const { return m_dashPattern; }
 
     void setDashOffset(qreal offset) { m_dashOffset = offset; }
     qreal dashOffset() const { return m_dashOffset; }
@@ -281,7 +281,7 @@ protected:
     void processCurrentSubpath() override;
 
     QStroker *m_stroker;
-    QVector<qfixed> m_dashPattern;
+    QList<qfixed> m_dashPattern;
     qreal m_dashOffset;
 
     qreal m_stroke_width;

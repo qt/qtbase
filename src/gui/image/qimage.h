@@ -166,7 +166,8 @@ public:
         else
             return convertToFormat_helper(f, flags);
     }
-    Q_REQUIRED_RESULT QImage convertToFormat(Format f, const QVector<QRgb> &colorTable, Qt::ImageConversionFlags flags = Qt::AutoColor) const;
+    Q_REQUIRED_RESULT QImage convertToFormat(Format f, const QList<QRgb> &colorTable,
+                                             Qt::ImageConversionFlags flags = Qt::AutoColor) const;
     bool reinterpretAsFormat(Format f);
 
     void convertTo(Format f, Qt::ImageConversionFlags flags = Qt::AutoColor);
@@ -216,8 +217,8 @@ public:
     void setPixelColor(int x, int y, const QColor &c);
     void setPixelColor(const QPoint &pt, const QColor &c);
 
-    QVector<QRgb> colorTable() const;
-    void setColorTable(const QVector<QRgb> &colors);
+    QList<QRgb> colorTable() const;
+    void setColorTable(const QList<QRgb> &colors);
 
     qreal devicePixelRatio() const;
     void setDevicePixelRatio(qreal scaleFactor);

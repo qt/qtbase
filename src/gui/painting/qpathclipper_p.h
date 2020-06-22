@@ -282,7 +282,7 @@ private:
     QDataBuffer<QPathEdge> m_edges;
     QDataBuffer<QPathVertex> m_vertices;
 
-    QVector<qreal> m_splitPoints;
+    QList<qreal> m_splitPoints;
 
     QPathSegments m_segments;
 };

@@ -67,7 +67,7 @@ public:
 
     void mergeIntervals();
 
-    QVector<QPair<int, int>> intervals;
+    QList<QPair<int, int>> intervals;
     QRangeCollection *q_ptr;
 };
 

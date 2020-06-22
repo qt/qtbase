@@ -90,8 +90,8 @@ public:
     {
     }
 
-    QVector<quint32> glyphIndexes;
-    QVector<QPointF> glyphPositions;
+    QList<quint32> glyphIndexes;
+    QList<QPointF> glyphPositions;
     QRawFont rawFont;
     QRectF boundingRect;
 

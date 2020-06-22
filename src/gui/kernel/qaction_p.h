@@ -104,7 +104,7 @@ public:
 
 #if QT_CONFIG(shortcut)
     int shortcutId = 0;
-    QVector<int> alternateShortcutIds;
+    QList<int> alternateShortcutIds;
     Qt::ShortcutContext shortcutContext = Qt::WindowShortcut;
     uint autorepeat : 1;
 #endif

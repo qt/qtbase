@@ -533,7 +533,7 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
             } executeSecondary;
         } args;
     };
-    QVector<Command> commands;
+    QList<Command> commands;
     QVarLengthArray<QRhiPassResourceTracker, 8> passResTrackers;
     int currentPassResTrackerIndex;
 
@@ -601,7 +601,7 @@ struct QVkSwapChain : public QRhiSwapChain
     VkColorSpaceKHR colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
     QVkRenderBuffer *ds = nullptr;
     VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT;
-    QVector<VkPresentModeKHR> supportedPresentationModes;
+    QList<VkPresentModeKHR> supportedPresentationModes;
     VkDeviceMemory msaaImageMem = VK_NULL_HANDLE;
     QVkReferenceRenderTarget rtWrapper;
     QVkCommandBuffer cbWrapper;
@@ -729,7 +729,7 @@ public:
     void beginExternal(QRhiCommandBuffer *cb) override;
     void endExternal(QRhiCommandBuffer *cb) override;
 
-    QVector<int> supportedSampleCounts() const override;
+    QList<int> supportedSampleCounts() const override;
     int ubufAlignment() const override;
     bool isYUpInFramebuffer() const override;
     bool isYUpInNDC() const override;
@@ -865,7 +865,7 @@ public:
         int refCount = 0;
         int allocedDescSets = 0;
     };
-    QVector<DescriptorPoolData> descriptorPools;
+    QList<DescriptorPoolData> descriptorPools;
 
     VkQueryPool timestampQueryPool = VK_NULL_HANDLE;
     QBitArray timestampQueryPoolMap;
@@ -894,7 +894,7 @@ public:
         QSize pixelSize;
         QRhiTexture::Format format;
     };
-    QVector<TextureReadback> activeTextureReadbacks;
+    QList<TextureReadback> activeTextureReadbacks;
     struct BufferReadback {
         int activeFrameSlot = -1;
         QRhiBufferReadbackResult *result;
@@ -902,7 +902,7 @@ public:
         VkBuffer stagingBuf;
         QVkAlloc stagingAlloc;
     };
-    QVector<BufferReadback> activeBufferReadbacks;
+    QList<BufferReadback> activeBufferReadbacks;
 
     struct DeferredReleaseEntry {
         enum Type {
@@ -967,7 +967,7 @@ public:
             } commandBuffer;
         };
     };
-    QVector<DeferredReleaseEntry> releaseQueue;
+    QList<DeferredReleaseEntry> releaseQueue;
 };
 
 Q_DECLARE_TYPEINFO(QRhiVulkan::DescriptorPoolData, Q_MOVABLE_TYPE);

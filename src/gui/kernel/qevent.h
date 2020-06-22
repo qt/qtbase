@@ -44,11 +44,11 @@
 
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qiodevice.h>
+#include <QtCore/qlist.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qstring.h>
-#include <QtCore/qvariant.h>
-#include <QtCore/qvector.h>
 #include <QtCore/qurl.h>
+#include <QtCore/qvariant.h>
 #include <QtGui/qpointingdevice.h>
 #include <QtGui/qregion.h>
 #include <QtGui/qvector2d.h>
@@ -607,7 +607,7 @@ private:
         QVariant value;
     };
     friend QTypeInfo<QueryPair>;
-    QVector<QueryPair> m_values;
+    QList<QueryPair> m_values;
 };
 Q_DECLARE_TYPEINFO(QInputMethodQueryEvent::QueryPair, Q_MOVABLE_TYPE);
 
@@ -902,7 +902,7 @@ public:
 
         QVector2D velocity() const;
         InfoFlags flags() const;
-        QVector<QPointF> rawScreenPositions() const;
+        QList<QPointF> rawScreenPositions() const;
 
         // internal
         // ### Qt 6: move private, rename appropriately, only friends can call them
@@ -927,7 +927,7 @@ public:
         void setEllipseDiameters(const QSizeF &dia);
         void setVelocity(const QVector2D &v);
         void setFlags(InfoFlags flags);
-        void setRawScreenPositions(const QVector<QPointF> &positions);
+        void setRawScreenPositions(const QList<QPointF> &positions);
 #endif // QT_DEPRECATED_SINCE(6, 0)
 
     private:

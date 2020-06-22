@@ -52,11 +52,11 @@
 //
 
 #include <QtGui/private/qtguiglobal_p.h>
+#include <QtCore/qlist.h>
+#include <QtCore/qloggingcategory.h>
 #include <QtCore/qmargins.h>
 #include <QtCore/qmath.h>
 #include <QtCore/qrect.h>
-#include <QtCore/qvector.h>
-#include <QtCore/qloggingcategory.h>
 #include <QtGui/qregion.h>
 #include <QtGui/qscreen.h>
 #include <QtGui/qvector2d.h>
@@ -184,13 +184,13 @@ inline QMargins scale(const QMargins &margins, qreal scaleFactor, QPoint origin 
                     qRound(qreal(margins.right()) * scaleFactor), qRound(qreal(margins.bottom()) * scaleFactor));
 }
 
-template <typename T>
-QVector<T> scale(const QVector<T> &vector, qreal scaleFactor, QPoint origin = QPoint(0, 0))
+template<typename T>
+QList<T> scale(const QList<T> &vector, qreal scaleFactor, QPoint origin = QPoint(0, 0))
 {
     if (!QHighDpiScaling::isActive())
         return vector;
 
-    QVector<T> scaled;
+    QList<T> scaled;
     scaled.reserve(vector.size());
     for (const T &item : vector)
         scaled.append(scale(item, scaleFactor, origin));

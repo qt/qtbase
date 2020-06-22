@@ -79,8 +79,8 @@ public:
     Qt::PenStyle style() const;
     void setStyle(Qt::PenStyle);
 
-    QVector<qreal> dashPattern() const;
-    void setDashPattern(const QVector<qreal> &pattern);
+    QList<qreal> dashPattern() const;
+    void setDashPattern(const QList<qreal> &pattern);
 
     qreal dashOffset() const;
     void setDashOffset(qreal doffset);

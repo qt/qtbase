@@ -98,7 +98,7 @@ public:
 
 private:
     QAtomicInt ref;
-    QVector<QPainterPath::Element> elements;
+    QList<QPainterPath::Element> elements;
 };
 
 class QPainterPathStrokerPrivate
@@ -107,7 +107,7 @@ public:
     QPainterPathStrokerPrivate();
 
     QStroker stroker;
-    QVector<qfixed> dashPattern;
+    QList<qfixed> dashPattern;
     qreal dashOffset;
 };
 
@@ -117,20 +117,19 @@ class QVectorPathConverter;
 class QVectorPathConverter
 {
 public:
-    QVectorPathConverter(const QVector<QPainterPath::Element> &path, uint fillRule, bool convex)
+    QVectorPathConverter(const QList<QPainterPath::Element> &path, uint fillRule, bool convex)
         : pathData(path, fillRule, convex),
-          path(pathData.points.data(), path.size(),
-               pathData.elements.data(), pathData.flags) {}
+          path(pathData.points.data(), path.size(), pathData.elements.data(), pathData.flags)
+    {
+    }
 
     const QVectorPath &vectorPath() {
         return path;
     }
 
     struct QVectorPathData {
-        QVectorPathData(const QVector<QPainterPath::Element> &path, uint fillRule, bool convex)
-            : elements(path.size()),
-              points(path.size() * 2),
-              flags(0)
+        QVectorPathData(const QList<QPainterPath::Element> &path, uint fillRule, bool convex)
+            : elements(path.size()), points(path.size() * 2), flags(0)
         {
             int ptsPos = 0;
             bool isLines = true;

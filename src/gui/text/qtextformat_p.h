@@ -53,7 +53,7 @@
 
 #include <QtGui/private/qtguiglobal_p.h>
 #include "QtGui/qtextformat.h"
-#include "QtCore/qvector.h"
+#include "QtCore/qlist.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -92,10 +92,10 @@ public:
 
     inline int numFormats() const { return formats.count(); }
 
-    typedef QVector<QTextFormat> FormatVector;
+    typedef QList<QTextFormat> FormatVector;
 
     FormatVector formats;
-    QVector<qint32> objFormats;
+    QList<qint32> objFormats;
     QMultiHash<size_t,int> hashes;
 
     inline QFont defaultFont() const { return defaultFnt; }

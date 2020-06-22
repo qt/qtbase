@@ -52,8 +52,8 @@
 //
 
 #include <QtGui/private/qtguiglobal_p.h>
-#include <QtCore/qvector.h>
 #include <QtGui/private/qvectorpath_p.h>
+#include <QtCore/qlist.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -67,13 +67,13 @@ public:
 
     inline Type type() const { return t; }
 
-    inline void setDataUint(const QVector<quint32> &data)
+    inline void setDataUint(const QList<quint32> &data)
     {
         t = UnsignedInt;
         indices32 = data;
     }
 
-    inline void setDataUshort(const QVector<quint16> &data)
+    inline void setDataUshort(const QList<quint16> &data)
     {
         t = UnsignedShort;
         indices16 = data;
@@ -96,20 +96,20 @@ public:
 private:
 
     Type t;
-    QVector<quint32> indices32;
-    QVector<quint16> indices16;
+    QList<quint32> indices32;
+    QList<quint16> indices16;
 };
 
 struct QTriangleSet
 {
     // The vertices of a triangle are given by: (x[i[n]], y[i[n]]), (x[j[n]], y[j[n]]), (x[k[n]], y[k[n]]), n = 0, 1, ...
-    QVector<qreal> vertices; // [x[0], y[0], x[1], y[1], x[2], ...]
+    QList<qreal> vertices; // [x[0], y[0], x[1], y[1], x[2], ...]
     QVertexIndexVector indices; // [i[0], j[0], k[0], i[1], j[1], k[1], i[2], ...]
 };
 
 struct QPolylineSet
 {
-    QVector<qreal> vertices; // [x[0], y[0], x[1], y[1], x[2], ...]
+    QList<qreal> vertices; // [x[0], y[0], x[1], y[1], x[2], ...]
     QVertexIndexVector indices; // End of polyline is marked with -1.
 };
 

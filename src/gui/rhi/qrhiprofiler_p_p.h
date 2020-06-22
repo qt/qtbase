@@ -104,9 +104,9 @@ public:
         QElapsedTimer frameToFrameTimer;
         bool frameToFrameRunning = false;
         QElapsedTimer beginToEndTimer;
-        QVector<qint64> frameToFrameSamples;
-        QVector<qint64> beginToEndSamples;
-        QVector<float> gpuFrameSamples;
+        QList<qint64> frameToFrameSamples;
+        QList<qint64> beginToEndSamples;
+        QList<float> gpuFrameSamples;
         QRhiProfiler::CpuTime frameToFrameTime;
         QRhiProfiler::CpuTime beginToEndFrameTime;
         QRhiProfiler::GpuTime gpuFrameTime;

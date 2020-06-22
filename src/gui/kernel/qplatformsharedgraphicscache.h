@@ -74,11 +74,10 @@ public:
     virtual void beginRequestBatch() = 0;
     virtual void ensureCacheInitialized(const QByteArray &cacheId, BufferType bufferType,
                                                     PixelFormat pixelFormat) = 0;
-    virtual void requestItems(const QByteArray &cacheId, const QVector<quint32> &itemIds) = 0;
-    virtual void insertItems(const QByteArray &cacheId,
-                                         const QVector<quint32> &itemIds,
-                                         const QVector<QImage> &items) = 0;
-    virtual void releaseItems(const QByteArray &cacheId, const QVector<quint32> &itemIds) = 0;
+    virtual void requestItems(const QByteArray &cacheId, const QList<quint32> &itemIds) = 0;
+    virtual void insertItems(const QByteArray &cacheId, const QList<quint32> &itemIds,
+                             const QList<QImage> &items) = 0;
+    virtual void releaseItems(const QByteArray &cacheId, const QList<quint32> &itemIds) = 0;
     virtual void endRequestBatch() = 0;
 
     virtual bool requestBatchStarted() const = 0;
@@ -90,12 +89,12 @@ public:
     virtual void *eglImageForBuffer(void *bufferId) = 0;
 
 Q_SIGNALS:
-    void itemsMissing(const QByteArray &cacheId, const QVector<quint32> &itemIds);
-    void itemsAvailable(const QByteArray &cacheId, void *bufferId,
-                        const QVector<quint32> &itemIds, const QVector<QPoint> &positionsInBuffer);
-    void itemsInvalidated(const QByteArray &cacheId, const QVector<quint32> &itemIds);
-    void itemsUpdated(const QByteArray &cacheId, void *bufferId,
-                      const QVector<quint32> &itemIds, const QVector<QPoint> &positionsInBuffer);
+    void itemsMissing(const QByteArray &cacheId, const QList<quint32> &itemIds);
+    void itemsAvailable(const QByteArray &cacheId, void *bufferId, const QList<quint32> &itemIds,
+                        const QList<QPoint> &positionsInBuffer);
+    void itemsInvalidated(const QByteArray &cacheId, const QList<quint32> &itemIds);
+    void itemsUpdated(const QByteArray &cacheId, void *bufferId, const QList<quint32> &itemIds,
+                      const QList<QPoint> &positionsInBuffer);
 };
 
 QT_END_NAMESPACE

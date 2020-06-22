@@ -127,7 +127,7 @@ public:
 
 private:
     QPixmapIconEngineEntry *tryMatch(const QSize &size, QIcon::Mode mode, QIcon::State state);
-    QVector<QPixmapIconEngineEntry> pixmaps;
+    QList<QPixmapIconEngineEntry> pixmaps;
 
     friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &s, const QIcon &icon);
     friend class QIconThemeEngine;

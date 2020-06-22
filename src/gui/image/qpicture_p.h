@@ -54,13 +54,13 @@
 #include <QtGui/private/qtguiglobal_p.h>
 #include "QtCore/qatomic.h"
 #include "QtCore/qbuffer.h"
+#include "QtCore/qlist.h"
 #include "QtCore/qobjectdefs.h"
-#include "QtCore/qvector.h"
+#include "QtCore/qrect.h"
 #include "QtGui/qpicture.h"
 #include "QtGui/qpixmap.h"
 #include "QtGui/qpen.h"
 #include "QtGui/qbrush.h"
-#include "QtCore/qrect.h"
 #include "private/qobject_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -158,8 +158,8 @@ public:
     QRect override_rect;
     QScopedPointer<QPaintEngine> paintEngine;
     bool in_memory_only;
-    QVector<QImage> image_list;
-    QVector<QPixmap> pixmap_list;
+    QList<QImage> image_list;
+    QList<QPixmap> pixmap_list;
     QList<QBrush> brush_list;
     QList<QPen> pen_list;
 };

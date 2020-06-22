@@ -244,7 +244,7 @@ public:
         Qt::MouseButtons state;
         QWindow *target;
     };
-    static QVector<TabletPointData> tabletDevicePoints;
+    static QList<TabletPointData> tabletDevicePoints;
     static TabletPointData &tabletDevicePoint(qint64 deviceId);
 
 #ifndef QT_NO_CLIPBOARD

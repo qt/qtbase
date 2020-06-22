@@ -52,26 +52,26 @@
 //
 
 #include <QtGui/private/qtguiglobal_p.h>
-#include "QtCore/qstring.h"
-#include "QtCore/qvarlengtharray.h"
-#include "QtCore/qnamespace.h"
-#include "QtGui/qtextlayout.h"
-#include "private/qtextformat_p.h"
-#include "private/qfont_p.h"
-#include "QtCore/qvector.h"
 #include "QtGui/qpaintengine.h"
+#include "QtGui/qtextcursor.h"
 #include "QtGui/qtextobject.h"
 #include "QtGui/qtextoption.h"
-#include "QtGui/qtextcursor.h"
-#include "QtCore/qset.h"
+#include "QtGui/qtextlayout.h"
+
 #include "QtCore/qdebug.h"
+#include "QtCore/qlist.h"
+#include "QtCore/qnamespace.h"
+#include "QtCore/qset.h"
+#include "QtCore/qstring.h"
+#include "QtCore/qvarlengtharray.h"
+
+#include "private/qfixed_p.h"
+#include "private/qfont_p.h"
+#include "private/qtextformat_p.h"
+#include "private/qunicodetools_p.h"
 #ifndef QT_BUILD_COMPAT_LIB
 #include "private/qtextdocument_p.h"
 #endif
-
-#include "private/qfixed_p.h"
-
-#include <private/qunicodetools_p.h>
 
 #include <stdlib.h>
 #include <vector>
@@ -394,7 +394,7 @@ inline void QScriptLine::operator+=(const QScriptLine &other)
     length += other.length;
 }
 
-typedef QVector<QScriptLine> QScriptLineArray;
+typedef QList<QScriptLine> QScriptLineArray;
 
 class QFontPrivate;
 class QTextFormatCollection;
@@ -426,7 +426,7 @@ public:
     };
 
     struct ItemDecoration {
-        ItemDecoration() {} // for QVector, don't use
+        ItemDecoration() { } // for QList, don't use
         ItemDecoration(qreal x1, qreal x2, qreal y, const QPen &pen):
             x1(x1), x2(x2), y(y), pen(pen) {}
 
@@ -436,7 +436,7 @@ public:
         QPen pen;
     };
 
-    typedef QVector<ItemDecoration> ItemDecorationList;
+    typedef QList<ItemDecoration> ItemDecorationList;
 
     QTextEngine();
     QTextEngine(const QString &str, const QFont &f);
@@ -597,9 +597,11 @@ public:
 
     inline bool hasFormats() const
     { return QTextDocumentPrivate::get(block) != nullptr || (specialData && !specialData->formats.isEmpty()); }
-    inline QVector<QTextLayout::FormatRange> formats() const
-    { return specialData ? specialData->formats : QVector<QTextLayout::FormatRange>(); }
-    void setFormats(const QVector<QTextLayout::FormatRange> &formats);
+    inline QList<QTextLayout::FormatRange> formats() const
+    {
+        return specialData ? specialData->formats : QList<QTextLayout::FormatRange>();
+    }
+    void setFormats(const QList<QTextLayout::FormatRange> &formats);
 
 private:
     static void init(QTextEngine *e);
@@ -607,8 +609,8 @@ private:
     struct SpecialData {
         int preeditPosition;
         QString preeditText;
-        QVector<QTextLayout::FormatRange> formats;
-        QVector<QTextCharFormat> resolvedFormats;
+        QList<QTextLayout::FormatRange> formats;
+        QList<QTextCharFormat> resolvedFormats;
         // only used when no QTextDocumentPrivate is available
         QScopedPointer<QTextFormatCollection> formatCollection;
     };
@@ -654,13 +656,9 @@ private:
     void addRequiredBoundaries() const;
     void shapeText(int item) const;
 #if QT_CONFIG(harfbuzz)
-    int shapeTextWithHarfbuzzNG(const QScriptItem &si,
-                                const ushort *string,
-                                int itemLength,
-                                QFontEngine *fontEngine,
-                                const QVector<uint> &itemBoundaries,
-                                bool kerningEnabled,
-                                bool hasLetterSpacing) const;
+    int shapeTextWithHarfbuzzNG(const QScriptItem &si, const ushort *string, int itemLength,
+                                QFontEngine *fontEngine, const QList<uint> &itemBoundaries,
+                                bool kerningEnabled, bool hasLetterSpacing) const;
 #endif
 
     int endOfLine(int lineNum);

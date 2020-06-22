@@ -106,20 +106,20 @@ public:
     void setFlags(Flags flags);
     Flags flags() const;
 
-    QVector<VkPhysicalDeviceProperties> availablePhysicalDevices();
+    QList<VkPhysicalDeviceProperties> availablePhysicalDevices();
     void setPhysicalDeviceIndex(int idx);
 
     QVulkanInfoVector<QVulkanExtension> supportedDeviceExtensions();
     void setDeviceExtensions(const QByteArrayList &extensions);
 
-    void setPreferredColorFormats(const QVector<VkFormat> &formats);
+    void setPreferredColorFormats(const QList<VkFormat> &formats);
 
-    QVector<int> supportedSampleCounts();
+    QList<int> supportedSampleCounts();
     void setSampleCount(int sampleCount);
 
-    typedef std::function<void(const VkQueueFamilyProperties *,
-                               uint32_t,
-                               QVector<VkDeviceQueueCreateInfo> &)> QueueCreateInfoModifier;
+    typedef std::function<void(const VkQueueFamilyProperties *, uint32_t,
+                               QList<VkDeviceQueueCreateInfo> &)>
+            QueueCreateInfoModifier;
     void setQueueCreateInfoModifier(const QueueCreateInfoModifier &modifier);
 
     bool isValid() const;

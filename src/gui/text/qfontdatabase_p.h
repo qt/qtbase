@@ -262,9 +262,9 @@ public:
             int stretch = QFont::Unstretched;
         };
 
-        QVector<Properties> properties;
+        QList<Properties> properties;
     };
-    QVector<ApplicationFont> applicationFonts;
+    QList<ApplicationFont> applicationFonts;
     int addAppFont(const QByteArray &fontData, const QString &fileName);
     bool isApplicationFont(const QString &fileName);
 

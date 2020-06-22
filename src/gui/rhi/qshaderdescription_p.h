@@ -50,7 +50,7 @@
 
 #include <QtGui/qtguiglobal.h>
 #include <QtCore/QString>
-#include <QtCore/QVector>
+#include <QtCore/QList>
 #include <array>
 
 QT_BEGIN_NAMESPACE
@@ -218,7 +218,7 @@ public:
         int descriptorSet = -1;
         ImageFormat imageFormat = ImageFormatUnknown;
         ImageFlags imageFlags;
-        QVector<int> arrayDims;
+        QList<int> arrayDims;
     };
 
     struct BlockVariable {
@@ -226,11 +226,11 @@ public:
         VariableType type = Unknown;
         int offset = 0;
         int size = 0;
-        QVector<int> arrayDims;
+        QList<int> arrayDims;
         int arrayStride = 0;
         int matrixStride = 0;
         bool matrixIsRowMajor = false;
-        QVector<BlockVariable> structMembers;
+        QList<BlockVariable> structMembers;
     };
 
     struct UniformBlock {
@@ -239,13 +239,13 @@ public:
         int size = 0;
         int binding = -1;
         int descriptorSet = -1;
-        QVector<BlockVariable> members;
+        QList<BlockVariable> members;
     };
 
     struct PushConstantBlock {
         QByteArray name;
         int size = 0;
-        QVector<BlockVariable> members;
+        QList<BlockVariable> members;
     };
 
     struct StorageBlock {
@@ -254,16 +254,16 @@ public:
         int knownSize = 0;
         int binding = -1;
         int descriptorSet = -1;
-        QVector<BlockVariable> members;
+        QList<BlockVariable> members;
     };
 
-    QVector<InOutVariable> inputVariables() const;
-    QVector<InOutVariable> outputVariables() const;
-    QVector<UniformBlock> uniformBlocks() const;
-    QVector<PushConstantBlock> pushConstantBlocks() const;
-    QVector<StorageBlock> storageBlocks() const;
-    QVector<InOutVariable> combinedImageSamplers() const;
-    QVector<InOutVariable> storageImages() const;
+    QList<InOutVariable> inputVariables() const;
+    QList<InOutVariable> outputVariables() const;
+    QList<UniformBlock> uniformBlocks() const;
+    QList<PushConstantBlock> pushConstantBlocks() const;
+    QList<StorageBlock> storageBlocks() const;
+    QList<InOutVariable> combinedImageSamplers() const;
+    QList<InOutVariable> storageImages() const;
 
     std::array<uint, 3> computeShaderLocalSize() const;
 

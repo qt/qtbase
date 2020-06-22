@@ -149,7 +149,7 @@ public:
     virtual void beginExternal(QRhiCommandBuffer *cb) = 0;
     virtual void endExternal(QRhiCommandBuffer *cb) = 0;
 
-    virtual QVector<int> supportedSampleCounts() const = 0;
+    virtual QList<int> supportedSampleCounts() const = 0;
     virtual int ubufAlignment() const = 0;
     virtual bool isYUpInFramebuffer() const = 0;
     virtual bool isYUpInNDC() const = 0;
@@ -228,7 +228,7 @@ private:
     QBitArray resUpdPoolMap;
     QSet<QRhiResource *> resources;
     QSet<QRhiResource *> pendingDeleteResources;
-    QVector<QRhi::CleanupCallback> cleanupCallbacks;
+    QList<QRhi::CleanupCallback> cleanupCallbacks;
 
     friend class QRhi;
     friend class QRhiResourceUpdateBatchPrivate;
@@ -335,7 +335,7 @@ public:
         // In the backend this can then end up, where applicable, as a
         // single, batched copy operation with only one set of barriers.
         // This helps when doing for example glyph cache fills.
-        QVector<QRhiTextureSubresourceUploadDescription> subresDesc[QRhi::MAX_LAYERS][QRhi::MAX_LEVELS];
+        QList<QRhiTextureSubresourceUploadDescription> subresDesc[QRhi::MAX_LAYERS][QRhi::MAX_LEVELS];
         QRhiTexture *src;
         QRhiTextureCopyDescription desc;
         QRhiReadbackDescription rb;

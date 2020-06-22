@@ -150,7 +150,7 @@ public:
     virtual PowerState powerState() const;
     virtual void setPowerState(PowerState state);
 
-    virtual QVector<Mode> modes() const;
+    virtual QList<Mode> modes() const;
 
     virtual int currentMode() const;
     virtual int preferredMode() const;

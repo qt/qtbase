@@ -97,9 +97,10 @@ public:
     QFont::Style style() const;
     int weight() const;
 
-    QVector<quint32> glyphIndexesForString(const QString &text) const;
-    inline QVector<QPointF> advancesForGlyphIndexes(const QVector<quint32> &glyphIndexes) const;
-    inline QVector<QPointF> advancesForGlyphIndexes(const QVector<quint32> &glyphIndexes, LayoutFlags layoutFlags) const;
+    QList<quint32> glyphIndexesForString(const QString &text) const;
+    inline QList<QPointF> advancesForGlyphIndexes(const QList<quint32> &glyphIndexes) const;
+    inline QList<QPointF> advancesForGlyphIndexes(const QList<quint32> &glyphIndexes,
+                                                  LayoutFlags layoutFlags) const;
     bool glyphIndexesForChars(const QChar *chars, int numChars, quint32 *glyphIndexes, int *numGlyphs) const;
     bool advancesForGlyphIndexes(const quint32 *glyphIndexes, QPointF *advances, int numGlyphs) const;
     bool advancesForGlyphIndexes(const quint32 *glyphIndexes, QPointF *advances, int numGlyphs, LayoutFlags layoutFlags) const;
@@ -158,15 +159,16 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QRawFont::LayoutFlags)
 
 Q_GUI_EXPORT size_t qHash(const QRawFont &font, size_t seed = 0) noexcept;
 
-inline QVector<QPointF> QRawFont::advancesForGlyphIndexes(const QVector<quint32> &glyphIndexes, QRawFont::LayoutFlags layoutFlags) const
+inline QList<QPointF> QRawFont::advancesForGlyphIndexes(const QList<quint32> &glyphIndexes,
+                                                        QRawFont::LayoutFlags layoutFlags) const
 {
-    QVector<QPointF> advances(glyphIndexes.size());
+    QList<QPointF> advances(glyphIndexes.size());
     if (advancesForGlyphIndexes(glyphIndexes.constData(), advances.data(), glyphIndexes.size(), layoutFlags))
         return advances;
-    return QVector<QPointF>();
+    return QList<QPointF>();
 }
 
-inline QVector<QPointF> QRawFont::advancesForGlyphIndexes(const QVector<quint32> &glyphIndexes) const
+inline QList<QPointF> QRawFont::advancesForGlyphIndexes(const QList<quint32> &glyphIndexes) const
 {
     return advancesForGlyphIndexes(glyphIndexes, QRawFont::SeparateAdvances);
 }

@@ -102,7 +102,7 @@ public:
 
     ~QAction();
 
-    QVector<QObject *> associatedObjects() const;
+    QList<QObject *> associatedObjects() const;
 
 #if QT_DEPRECATED_SINCE(6,0)
 #ifdef Q_CLANG_QDOC

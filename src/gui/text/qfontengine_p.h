@@ -353,7 +353,7 @@ public:
             return left_right < other.left_right;
         }
     };
-    QVector<KernPair> kerning_pairs;
+    QList<KernPair> kerning_pairs;
     void loadKerningPairs(QFixed scalingFactor);
 
     GlyphFormat glyphFormat;
@@ -513,7 +513,7 @@ protected:
     virtual QFontEngine *loadEngine(int at);
 
 private:
-    QVector<QFontEngine *> m_engines;
+    QList<QFontEngine *> m_engines;
     QStringList m_fallbackFamilies;
     const int m_script;
     bool m_fallbackFamiliesQueried;

@@ -51,13 +51,12 @@
 // We mean it.
 //
 
-#include <QtGui/qcolorspace.h>
 #include <QtGui/private/qtguiglobal_p.h>
+#include <QtGui/qcolorspace.h>
 #include <QtGui/qimage.h>
 #include <QtCore/private/qnumeric_p.h>
-
-#include <QMap>
-#include <QVector>
+#include <QtCore/qlist.h>
+#include <QtCore/qmap.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -79,7 +78,7 @@ struct Q_GUI_EXPORT QImageData {        // internal image data
     int depth;
     qsizetype nbytes;               // number of bytes data
     qreal devicePixelRatio;
-    QVector<QRgb> colortable;
+    QList<QRgb> colortable;
     uchar *data;
     QImage::Format format;
     qsizetype bytes_per_line;

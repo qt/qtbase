@@ -87,7 +87,7 @@ public:
     Q_GUI_EXPORT QStringList layers() const noexcept;
     Q_GUI_EXPORT void setLayers(const QStringList &layers) noexcept;
 
-    Q_GUI_EXPORT QVector<QShaderNodePort> ports() const noexcept;
+    Q_GUI_EXPORT QList<QShaderNodePort> ports() const noexcept;
     Q_GUI_EXPORT void addPort(const QShaderNodePort &port);
     Q_GUI_EXPORT void removePort(const QShaderNodePort &port);
 
@@ -99,15 +99,15 @@ public:
     Q_GUI_EXPORT void addRule(const QShaderFormat &format, const Rule &rule);
     Q_GUI_EXPORT void removeRule(const QShaderFormat &format);
 
-    Q_GUI_EXPORT QVector<QShaderFormat> availableFormats() const;
+    Q_GUI_EXPORT QList<QShaderFormat> availableFormats() const;
     Q_GUI_EXPORT Rule rule(const QShaderFormat &format) const;
 
 private:
     QUuid m_uuid;
     QStringList m_layers;
-    QVector<QShaderNodePort> m_ports;
+    QList<QShaderNodePort> m_ports;
     QHash<QString, QVariant> m_parameters;
-    QVector<QPair<QShaderFormat, QShaderNode::Rule>> m_rules;
+    QList<QPair<QShaderFormat, QShaderNode::Rule>> m_rules;
 };
 
 Q_GUI_EXPORT bool operator==(const QShaderNode::Rule &lhs, const QShaderNode::Rule &rhs) noexcept;

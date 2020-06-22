@@ -78,7 +78,7 @@ public:
         QByteArray source;
     };
     struct Q_GUI_EXPORT ProgramDesc {
-        QVector<ShaderDesc> shaders;
+        QList<ShaderDesc> shaders;
         QByteArray cacheKey() const;
     };
 
