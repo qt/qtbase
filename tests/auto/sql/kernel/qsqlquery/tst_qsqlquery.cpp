@@ -2168,7 +2168,7 @@ void tst_QSqlQuery::prepare_bind_exec()
 
         /*** Below we test QSqlQuery::boundValues() with position arguments.
          *   Due to the fact that the name of a positional argument is not
-         *   specified by the Qt docs, we test that the QVector contains
+         *   specified by the Qt docs, we test that the QList contains
          *   the correct values in the same order as QSqlResult::boundValueName
          *   returns since it should be in insertion order (i.e. field order). ***/
         QVERIFY( q.prepare( "insert into " + qtest_prepare + " (id, name) values (?, ?)" ) );
@@ -4054,7 +4054,7 @@ void tst_QSqlQuery::QTBUG_36211()
 void tst_QSqlQuery::QTBUG_53969()
 {
     QFETCH( QString, dbName );
-    QVector<int> values = QVector<int>() << 10 << 20 << 127 << 128 << 1, tableValues;
+    QList<int> values = QList<int>() << 10 << 20 << 127 << 128 << 1, tableValues;
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
     tableValues.reserve(values.size());
@@ -4069,7 +4069,7 @@ void tst_QSqlQuery::QTBUG_53969()
 
         QVERIFY_SQL(q, prepare("INSERT INTO " + tableName + " (test_number) VALUES (:value)"));
 
-        QVector<int>::iterator begin = values.begin(), end = values.end(), it;
+        QList<int>::iterator begin = values.begin(), end = values.end(), it;
         for (it = begin; it != end; ++it) {
             q.bindValue(":value", *it);
             QVERIFY_SQL(q, exec());
@@ -4416,11 +4416,10 @@ void tst_QSqlQuery::aggregateFunctionTypes()
 }
 
 template<typename T>
-void runIntegralTypesMysqlTest(QSqlDatabase &db, const QString &tableName,
-                               const QString &type, bool withPreparedStatement,
-                               const QVector<T> &values)
+void runIntegralTypesMysqlTest(QSqlDatabase &db, const QString &tableName, const QString &type,
+                               bool withPreparedStatement, const QList<T> &values)
 {
-    QVector<QVariant> variantValues;
+    QList<QVariant> variantValues;
     variantValues.reserve(values.size());
 
     QSqlQuery q(db);
@@ -4448,8 +4447,8 @@ void runIntegralTypesMysqlTest(QSqlDatabase &db, const QString &tableName,
     } else {
         QVERIFY_SQL(q, exec("SELECT id FROM " + tableName));
     }
-    QVector<T> actualValues;
-    QVector<QVariant> actualVariantValues;
+    QList<T> actualValues;
+    QList<QVariant> actualVariantValues;
     actualValues.reserve(values.size());
     while (q.next()) {
         QVariant value = q.value(0);
@@ -4472,7 +4471,7 @@ void runIntegralTypesMysqlTest(QSqlDatabase &db, const QString &tableName,
     // insert some values
     const int steps = 20;
     const T increment = (max / steps - min / steps);
-    QVector<T> values;
+    QList<T> values;
     values.reserve(steps);
     T v = min;
     for (int i = 0; i < steps; ++i, v += increment)
@@ -4486,7 +4485,7 @@ void tst_QSqlQuery::integralTypesMysql()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
-    const QVector<bool> boolValues = QVector<bool>() << false << true;
+    const QList<bool> boolValues = QList<bool>() << false << true;
     for (int i = 0; i < 2; ++i) {
         const bool withPreparedStatement = (i == 1);
         runIntegralTypesMysqlTest<bool>(db, "tinyInt1Test", "TINYINT(1)", withPreparedStatement, boolValues);

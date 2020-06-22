@@ -46,10 +46,7 @@ public:
         return QSqlResult::savePrepare(sqlquery);
     }
 
-    QVector<QVariant> boundValues() const
-    {
-        return QSqlResult::boundValues();
-    }
+    QList<QVariant> boundValues() const { return QSqlResult::boundValues(); }
 
 protected:
     QVariant data(int /* index */) { return QVariant(); }
