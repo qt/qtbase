@@ -168,7 +168,7 @@ namespace QTest {
 
     static IgnoreResultList *ignoreResultList = nullptr;
 
-    static QVector<QAbstractTestLogger*> loggers;
+    static QList<QAbstractTestLogger *> loggers;
     static bool loggerUsingStdout = false;
 
     static int verbosity = 0;

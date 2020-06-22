@@ -233,7 +233,7 @@ private:
     // the full, normalized signal name
     QByteArray sig;
     // holds the QMetaType types for the argument list of the signal
-    QVector<int> args;
+    QList<int> args;
 
     QTestEventLoop m_loop;
     bool m_waiting;
