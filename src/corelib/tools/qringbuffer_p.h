@@ -53,7 +53,7 @@
 
 #include <QtCore/private/qglobal_p.h>
 #include <QtCore/qbytearray.h>
-#include <QtCore/qvector.h>
+#include <QtCore/qlist.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -265,7 +265,7 @@ public:
     }
 
 private:
-    QVector<QRingChunk> buffers;
+    QList<QRingChunk> buffers;
     qint64 bufferSize;
     int basicBlockSize;
 };

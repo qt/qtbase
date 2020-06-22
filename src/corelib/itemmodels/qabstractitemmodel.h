@@ -40,10 +40,10 @@
 #ifndef QABSTRACTITEMMODEL_H
 #define QABSTRACTITEMMODEL_H
 
-#include <QtCore/qvariant.h>
-#include <QtCore/qobject.h>
 #include <QtCore/qhash.h>
-#include <QtCore/qvector.h>
+#include <QtCore/qlist.h>
+#include <QtCore/qobject.h>
+#include <QtCore/qvariant.h>
 
 QT_REQUIRE_CONFIG(itemmodel);
 
@@ -257,7 +257,8 @@ public:
     Q_REQUIRED_RESULT bool checkIndex(const QModelIndex &index, CheckIndexOptions options = CheckIndexOption::NoOption) const;
 
 Q_SIGNALS:
-    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>());
+    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight,
+                     const QList<int> &roles = QList<int>());
     void headerDataChanged(Qt::Orientation orientation, int first, int last);
     void layoutChanged(const QList<QPersistentModelIndex> &parents = QList<QPersistentModelIndex>(), QAbstractItemModel::LayoutChangeHint hint = QAbstractItemModel::NoLayoutChangeHint);
     void layoutAboutToBeChanged(const QList<QPersistentModelIndex> &parents = QList<QPersistentModelIndex>(), QAbstractItemModel::LayoutChangeHint hint = QAbstractItemModel::NoLayoutChangeHint);

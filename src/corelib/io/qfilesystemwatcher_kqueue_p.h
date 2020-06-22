@@ -55,9 +55,8 @@
 
 #include <QtCore/qhash.h>
 #include <QtCore/qmutex.h>
-#include <QtCore/qthread.h>
-#include <QtCore/qvector.h>
 #include <QtCore/qsocketnotifier.h>
+#include <QtCore/qthread.h>
 
 QT_REQUIRE_CONFIG(filesystemwatcher);
 struct kevent;

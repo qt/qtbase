@@ -53,11 +53,11 @@
 
 #include <QtCore/private/qglobal_p.h>
 #include <QtCore/qloggingcategory.h>
+#include <QtCore/qlist.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qmutex.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qtextstream.h>
-#include <QtCore/qvector.h>
 
 class tst_QLoggingRegistry;
 
@@ -98,14 +98,14 @@ public:
     void setContent(const QString &content);
     void setContent(QTextStream &stream);
 
-    QVector<QLoggingRule> rules() const { return _rules; }
+    QList<QLoggingRule> rules() const { return _rules; }
 
 private:
     void parseNextLine(QStringView line);
 
 private:
     bool m_inRulesSection = false;
-    QVector<QLoggingRule> _rules;
+    QList<QLoggingRule> _rules;
 };
 
 class Q_AUTOTEST_EXPORT QLoggingRegistry
@@ -143,7 +143,7 @@ private:
     QMutex registryMutex;
 
     // protected by mutex:
-    QVector<QLoggingRule> ruleSets[NumRuleSets];
+    QList<QLoggingRule> ruleSets[NumRuleSets];
     QHash<QLoggingCategory*,QtMsgType> categories;
     QLoggingCategory::CategoryFilter categoryFilter;
 

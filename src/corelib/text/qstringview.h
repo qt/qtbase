@@ -253,7 +253,7 @@ public:
     Q_REQUIRED_RESULT QByteArray toLatin1() const { return QtPrivate::convertToLatin1(*this); }
     Q_REQUIRED_RESULT QByteArray toUtf8() const { return QtPrivate::convertToUtf8(*this); }
     Q_REQUIRED_RESULT QByteArray toLocal8Bit() const { return QtPrivate::convertToLocal8Bit(*this); }
-    Q_REQUIRED_RESULT inline QVector<uint> toUcs4() const; // defined in qvector.h
+    Q_REQUIRED_RESULT inline QList<uint> toUcs4() const; // defined in qlist.h
 
     Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QChar at(qsizetype n) const { return (*this)[n]; }
 

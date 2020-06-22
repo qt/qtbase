@@ -67,7 +67,7 @@ public:
     QJsonObject metaData() const;
 
     static QObjectList staticInstances();
-    static QVector<QStaticPlugin> staticPlugins();
+    static QList<QStaticPlugin> staticPlugins();
 
     bool load();
     bool unload();
@@ -93,7 +93,7 @@ class Q_CORE_EXPORT QPluginLoader
 {
 public:
     static QObjectList staticInstances();
-    static QVector<QStaticPlugin> staticPlugins();
+    static QList<QStaticPlugin> staticPlugins();
 };
 
 #endif // QT_CONFIG(library)

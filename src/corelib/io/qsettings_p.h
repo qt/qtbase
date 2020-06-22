@@ -293,7 +293,7 @@ private:
     void ensureAllSectionsParsed(QConfFile *confFile) const;
     void ensureSectionParsed(QConfFile *confFile, const QSettingsKey &key) const;
 
-    QVector<QConfFile *> confFiles;
+    QList<QConfFile *> confFiles;
     QSettings::ReadFunc readFunc;
     QSettings::WriteFunc writeFunc;
     QString extension;

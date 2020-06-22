@@ -87,7 +87,7 @@ public:
         int standardTimeOffset;
         int daylightTimeOffset;
     };
-    typedef QVector<OffsetData> OffsetDataList;
+    typedef QList<OffsetData> OffsetDataList;
 
     QTimeZone() noexcept;
     explicit QTimeZone(const QByteArray &ianaId);

@@ -53,11 +53,10 @@
 
 #include "qfilesystemwatcher_p.h"
 
-#include <QtCore/qmutex.h>
 #include <QtCore/qhash.h>
-#include <QtCore/qthread.h>
-#include <QtCore/qvector.h>
+#include <QtCore/qmutex.h>
 #include <QtCore/qsocketnotifier.h>
+#include <QtCore/qthread.h>
 
 #include <dispatch/dispatch.h>
 #include <CoreServices/CoreServices.h>

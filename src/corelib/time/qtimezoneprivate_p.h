@@ -52,9 +52,9 @@
 // We mean it.
 //
 
+#include "qlist.h"
 #include "qtimezone.h"
 #include "private/qlocale_p.h"
-#include "qvector.h"
 
 #if QT_CONFIG(icu)
 #include <unicode/ucal.h>
@@ -85,7 +85,7 @@ public:
         int standardTimeOffset;
         int daylightTimeOffset;
     };
-    typedef QVector<Data> DataList;
+    typedef QList<Data> DataList;
 
     // Create null time zone
     QTimeZonePrivate();
@@ -294,8 +294,8 @@ Q_DECL_CONSTEXPR inline bool operator!=(const QTzTransitionRule &lhs, const QTzT
 // cached, avoiding the need to re-parse them from disk constantly.
 struct QTzTimeZoneCacheEntry
 {
-    QVector<QTzTransitionTime> m_tranTimes;
-    QVector<QTzTransitionRule> m_tranRules;
+    QList<QTzTransitionTime> m_tranTimes;
+    QList<QTzTransitionRule> m_tranRules;
     QList<QByteArray> m_abbreviations;
     QByteArray m_posixRule;
 };
@@ -344,14 +344,14 @@ public:
 
 private:
     void init(const QByteArray &ianaId);
-    QVector<QTimeZonePrivate::Data> getPosixTransitions(qint64 msNear) const;
+    QList<QTimeZonePrivate::Data> getPosixTransitions(qint64 msNear) const;
 
     Data dataForTzTransition(QTzTransitionTime tran) const;
 #if QT_CONFIG(icu)
     mutable QSharedDataPointer<QTimeZonePrivate> m_icu;
 #endif
     QTzTimeZoneCacheEntry cached_data;
-    QVector<QTzTransitionTime> tranCache() const { return cached_data.m_tranTimes; }
+    QList<QTzTransitionTime> tranCache() const { return cached_data.m_tranTimes; }
 };
 #endif // Q_OS_UNIX
 

@@ -44,9 +44,9 @@
 
 #ifndef QT_NO_XMLSTREAM
 
-#include <QtCore/qstring.h>
-#include <QtCore/qvector.h>
+#include <QtCore/qlist.h>
 #include <QtCore/qscopedpointer.h>
+#include <QtCore/qstring.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -113,7 +113,7 @@ public:
 
 Q_DECLARE_TYPEINFO(QXmlStreamAttribute, Q_MOVABLE_TYPE);
 
-class Q_CORE_EXPORT QXmlStreamAttributes : public QVector<QXmlStreamAttribute>
+class Q_CORE_EXPORT QXmlStreamAttributes : public QList<QXmlStreamAttribute>
 {
 public:
     inline QXmlStreamAttributes() {}
@@ -140,7 +140,7 @@ public:
         return !value(namespaceUri, name).isNull();
     }
 
-    using QVector<QXmlStreamAttribute>::append;
+    using QList<QXmlStreamAttribute>::append;
 };
 
 class Q_CORE_EXPORT QXmlStreamNamespaceDeclaration {
@@ -164,7 +164,7 @@ public:
 };
 
 Q_DECLARE_TYPEINFO(QXmlStreamNamespaceDeclaration, Q_MOVABLE_TYPE);
-typedef QVector<QXmlStreamNamespaceDeclaration> QXmlStreamNamespaceDeclarations;
+typedef QList<QXmlStreamNamespaceDeclaration> QXmlStreamNamespaceDeclarations;
 
 class Q_CORE_EXPORT QXmlStreamNotationDeclaration {
     QXmlStreamStringRef m_name, m_systemId, m_publicId;
@@ -188,7 +188,7 @@ public:
 };
 
 Q_DECLARE_TYPEINFO(QXmlStreamNotationDeclaration, Q_MOVABLE_TYPE);
-typedef QVector<QXmlStreamNotationDeclaration> QXmlStreamNotationDeclarations;
+typedef QList<QXmlStreamNotationDeclaration> QXmlStreamNotationDeclarations;
 
 class Q_CORE_EXPORT QXmlStreamEntityDeclaration {
     QXmlStreamStringRef m_name, m_notationName, m_systemId, m_publicId, m_value;
@@ -217,8 +217,7 @@ public:
 };
 
 Q_DECLARE_TYPEINFO(QXmlStreamEntityDeclaration, Q_MOVABLE_TYPE);
-typedef QVector<QXmlStreamEntityDeclaration> QXmlStreamEntityDeclarations;
-
+typedef QList<QXmlStreamEntityDeclaration> QXmlStreamEntityDeclarations;
 
 class Q_CORE_EXPORT QXmlStreamEntityResolver
 {

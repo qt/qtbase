@@ -44,8 +44,8 @@
 
 QT_REQUIRE_CONFIG(easingcurve);
 
+#include <QtCore/qlist.h>
 #include <QtCore/qobjectdefs.h>
-#include <QtCore/qvector.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -100,7 +100,7 @@ public:
 
     void addCubicBezierSegment(const QPointF & c1, const QPointF & c2, const QPointF & endPoint);
     void addTCBSegment(const QPointF &nextPoint, qreal t, qreal c, qreal b);
-    QVector<QPointF> toCubicSpline() const;
+    QList<QPointF> toCubicSpline() const;
 
     Type type() const;
     void setType(Type type);

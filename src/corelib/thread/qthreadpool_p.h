@@ -174,7 +174,7 @@ public:
     QSet<QThreadPoolThread *> allThreads;
     QQueue<QThreadPoolThread *> waitingThreads;
     QQueue<QThreadPoolThread *> expiredThreads;
-    QVector<QueuePage*> queue;
+    QList<QueuePage *> queue;
     QWaitCondition noActiveThreads;
 
     int expiryTimeout = 30000;

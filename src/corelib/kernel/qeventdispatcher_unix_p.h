@@ -141,10 +141,10 @@ public:
     void setSocketNotifierPending(QSocketNotifier *notifier);
 
     QThreadPipe threadPipe;
-    QVector<pollfd> pollfds;
+    QList<pollfd> pollfds;
 
     QHash<int, QSocketNotifierSetUNIX> socketNotifiers;
-    QVector<QSocketNotifier *> pendingNotifiers;
+    QList<QSocketNotifier *> pendingNotifiers;
 
     QTimerInfoList timerList;
     QAtomicInt interrupt; // bool

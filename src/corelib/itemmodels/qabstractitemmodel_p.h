@@ -82,7 +82,8 @@ public:
     ~QAbstractItemModelPrivate();
 
     void removePersistentIndexData(QPersistentModelIndexData *data);
-    void movePersistentIndexes(const QVector<QPersistentModelIndexData *> &indexes, int change, const QModelIndex &parent, Qt::Orientation orientation);
+    void movePersistentIndexes(const QList<QPersistentModelIndexData *> &indexes, int change, const QModelIndex &parent,
+                               Qt::Orientation orientation);
     void rowsAboutToBeInserted(const QModelIndex &parent, int first, int last);
     void rowsInserted(const QModelIndex &parent, int first, int last);
     void rowsAboutToBeRemoved(const QModelIndex &parent, int first, int last);
@@ -142,8 +143,8 @@ public:
     struct Persistent {
         Persistent() {}
         QMultiHash<QModelIndex, QPersistentModelIndexData *> indexes;
-        QStack<QVector<QPersistentModelIndexData *> > moved;
-        QStack<QVector<QPersistentModelIndexData *> > invalidated;
+        QStack<QList<QPersistentModelIndexData *>> moved;
+        QStack<QList<QPersistentModelIndexData *>> invalidated;
         void insertMultiAtEnd(const QModelIndex& key, QPersistentModelIndexData *data);
     } persistent;
 

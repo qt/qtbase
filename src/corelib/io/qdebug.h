@@ -47,7 +47,6 @@
 #include <QtCore/qmap.h>
 #include <QtCore/qtextstream.h>
 #include <QtCore/qstring.h>
-#include <QtCore/qvector.h>
 #include <QtCore/qset.h>
 #include <QtCore/qcontiguouscache.h>
 #include <QtCore/qsharedpointer.h>
@@ -262,10 +261,10 @@ inline QDebug printAssociativeContainer(QDebug debug, const char *which, const A
 
 } // namespace QtPrivate
 
-template <typename T>
-inline QDebug operator<<(QDebug debug, const QVector<T> &vec)
+template<typename T>
+inline QDebug operator<<(QDebug debug, const QList<T> &vec)
 {
-    return QtPrivate::printSequentialContainer(debug, "QVector", vec);
+    return QtPrivate::printSequentialContainer(debug, "QList", vec);
 }
 
 template <typename T, typename Alloc>

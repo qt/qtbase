@@ -60,8 +60,8 @@ QT_REQUIRE_CONFIG(mimetype);
 #include "qmimeglobpattern_p.h"
 
 #include <QtCore/qelapsedtimer.h>
+#include <QtCore/qlist.h>
 #include <QtCore/qmutex.h>
-#include <QtCore/qvector.h>
 
 #include <vector>
 #include <memory>

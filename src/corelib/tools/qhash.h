@@ -40,12 +40,12 @@
 #ifndef QHASH_H
 #define QHASH_H
 
-#include <QtCore/qiterator.h>
-#include <QtCore/qvector.h>
-#include <QtCore/qrefcount.h>
-#include <QtCore/qhashfunctions.h>
 #include <QtCore/qcontainertools_impl.h>
+#include <QtCore/qhashfunctions.h>
+#include <QtCore/qiterator.h>
+#include <QtCore/qlist.h>
 #include <QtCore/qmath.h>
+#include <QtCore/qrefcount.h>
 
 #include <initializer_list>
 
@@ -897,13 +897,10 @@ public:
         return value(key);
     }
 
-    QVector<Key> keys() const
+    QList<Key> keys() const { return QList<Key>(keyBegin(), keyEnd()); }
+    QList<Key> keys(const T &value) const
     {
-        return QVector<Key>(keyBegin(), keyEnd());
-    }
-    QVector<Key> keys(const T &value) const
-    {
-        QVector<Key> res;
+        QList<Key> res;
         const_iterator i = begin();
         while (i != end()) {
             if (i.value() == value)
@@ -912,10 +909,7 @@ public:
         }
         return res;
     }
-    QVector<T> values() const
-    {
-        return QVector<T>(begin(), end());
-    }
+    QList<T> values() const { return QList<T>(begin(), end()); }
 
     class const_iterator;
 
@@ -1381,9 +1375,9 @@ public:
         return value(key);
     }
 
-    QVector<Key> uniqueKeys() const
+    QList<Key> uniqueKeys() const
     {
-        QVector<Key> res;
+        QList<Key> res;
         if (d) {
             auto i = d->begin();
             while (i != d->end()) {
@@ -1394,13 +1388,10 @@ public:
         return res;
     }
 
-    QVector<Key> keys() const
+    QList<Key> keys() const { return QList<Key>(keyBegin(), keyEnd()); }
+    QList<Key> keys(const T &value) const
     {
-        return QVector<Key>(keyBegin(), keyEnd());
-    }
-    QVector<Key> keys(const T &value) const
-    {
-        QVector<Key> res;
+        QList<Key> res;
         const_iterator i = begin();
         while (i != end()) {
             if (i.value()->contains(value))
@@ -1409,13 +1400,10 @@ public:
         }
         return res;
     }
-    QVector<T> values() const
+    QList<T> values() const { return QList<T>(begin(), end()); }
+    QList<T> values(const Key &key) const
     {
-        return QVector<T>(begin(), end());
-    }
-    QVector<T> values(const Key &key) const
-    {
-        QVector<T> values;
+        QList<T> values;
         if (d) {
             Node *n = d->findNode(key);
             if (n) {

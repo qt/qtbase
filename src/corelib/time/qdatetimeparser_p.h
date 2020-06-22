@@ -54,15 +54,15 @@
 #include <QtCore/private/qglobal_p.h>
 #include "qplatformdefs.h"
 #include "QtCore/qatomic.h"
-#include "QtCore/qdatetime.h"
-#include "QtCore/qstringlist.h"
-#include "QtCore/qlocale.h"
 #include "QtCore/qcalendar.h"
+#include "QtCore/qcoreapplication.h"
+#include "QtCore/qdatetime.h"
+#include "QtCore/qlist.h"
+#include "QtCore/qlocale.h"
+#include "QtCore/qstringlist.h"
 #ifndef QT_BOOTSTRAPPED
 # include "QtCore/qvariant.h"
 #endif
-#include "QtCore/qvector.h"
-#include "QtCore/qcoreapplication.h"
 
 QT_REQUIRE_CONFIG(datetimeparser);
 
@@ -291,7 +291,7 @@ protected: // for the benefit of QDateTimeEditPrivate
     */
     mutable int cachedDay;
     mutable QString text;
-    QVector<SectionNode> sectionNodes;
+    QList<SectionNode> sectionNodes;
     SectionNode first, last, none, popup;
     QStringList separators;
     QString displayFormat;

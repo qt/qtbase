@@ -54,12 +54,12 @@
 #include "qfilesystemwatcher_p.h"
 
 #include <QtCore/qdatetime.h>
-#include <QtCore/qthread.h>
 #include <QtCore/qfile.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qhash.h>
+#include <QtCore/qlist.h>
 #include <QtCore/qmutex.h>
-#include <QtCore/qvector.h>
+#include <QtCore/qthread.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -157,7 +157,7 @@ public:
     void wakeup();
 
     QMutex mutex;
-    QVector<Qt::HANDLE> handles;
+    QList<Qt::HANDLE> handles;
     int msg;
 
     HandleForDirHash handleForDir;

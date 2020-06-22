@@ -205,11 +205,11 @@ public:
     inline qsizetype size() const noexcept { return d.size; }
     inline qsizetype count() const noexcept { return d.size; }
     inline bool isEmpty() const noexcept { return !d.size; }
-    inline QVector<Key> keys() const
+    inline QList<Key> keys() const
     {
-        QVector<Key> k;
+        QList<Key> k;
         if (d.size) {
-            k.reserve(typename QVector<Key>::size_type(d.size));
+            k.reserve(typename QList<Key>::size_type(d.size));
             for (auto it = d.begin(); it != d.end(); ++it)
                 k << it.node()->key;
         }

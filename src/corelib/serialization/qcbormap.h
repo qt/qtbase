@@ -188,7 +188,7 @@ public:
     qsizetype size() const noexcept Q_DECL_PURE_FUNCTION;
     bool isEmpty() const { return size() == 0; }
     void clear();
-    QVector<QCborValue> keys() const;
+    QList<QCborValue> keys() const;
 
     QCborValue value(qint64 key) const
     { const_iterator it = find(key); return it == end() ? QCborValue() : it.value(); }

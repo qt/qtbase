@@ -53,14 +53,13 @@
 //
 
 #include <QtCore/private/qglobal_p.h>
-#include "QtCore/qobject.h"
-#include "QtCore/qpointer.h"
-#include "QtCore/qsharedpointer.h"
 #include "QtCore/qcoreevent.h"
 #include "QtCore/qlist.h"
-#include "QtCore/qvector.h"
-#include "QtCore/qvariant.h"
+#include "QtCore/qobject.h"
+#include "QtCore/qpointer.h"
 #include "QtCore/qreadwritelock.h"
+#include "QtCore/qsharedpointer.h"
+#include "QtCore/qvariant.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -105,8 +104,8 @@ public:
     {
         ExtraData() {}
         QList<QByteArray> propertyNames;
-        QVector<QVariant> propertyValues;
-        QVector<int> runningTimers;
+        QList<QVariant> propertyValues;
+        QList<int> runningTimers;
         QList<QPointer<QObject> > eventFilters;
         QString objectName;
     };

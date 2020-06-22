@@ -93,7 +93,7 @@ Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION qsizetype count(QStringView
 Q_REQUIRED_RESULT Q_CORE_EXPORT QByteArray convertToLatin1(QStringView str);
 Q_REQUIRED_RESULT Q_CORE_EXPORT QByteArray convertToUtf8(QStringView str);
 Q_REQUIRED_RESULT Q_CORE_EXPORT QByteArray convertToLocal8Bit(QStringView str);
-Q_REQUIRED_RESULT Q_CORE_EXPORT QVector<uint> convertToUcs4(QStringView str);
+Q_REQUIRED_RESULT Q_CORE_EXPORT QList<uint> convertToUcs4(QStringView str);
 
 Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION bool isRightToLeft(QStringView string) noexcept;
 

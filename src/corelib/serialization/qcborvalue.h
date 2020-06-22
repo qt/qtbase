@@ -51,7 +51,6 @@
 #include <QtCore/qurl.h>
 #include <QtCore/quuid.h>
 #include <QtCore/qvariant.h>
-#include <QtCore/qvector.h>
 
 // See qcborcommon.h for why we check
 #if defined(QT_X11_DEFINES_FOUND)

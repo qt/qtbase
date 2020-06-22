@@ -94,7 +94,7 @@ inline bool operator<(const QPostEvent &first, const QPostEvent &second)
 
 // This class holds the list of posted events.
 //  The list has to be kept sorted by priority
-class QPostEventList : public QVector<QPostEvent>
+class QPostEventList : public QList<QPostEvent>
 {
 public:
     // recursion == recursion count for sendPostedEvents()
@@ -107,9 +107,7 @@ public:
 
     QMutex mutex;
 
-    inline QPostEventList()
-        : QVector<QPostEvent>(), recursion(0), startOffset(0), insertionOffset(0)
-    { }
+    inline QPostEventList() : QList<QPostEvent>(), recursion(0), startOffset(0), insertionOffset(0) { }
 
     void addEvent(const QPostEvent &ev) {
         int priority = ev.priority;
@@ -129,8 +127,8 @@ public:
     }
 private:
     //hides because they do not keep that list sorted. addEvent must be used
-    using QVector<QPostEvent>::append;
-    using QVector<QPostEvent>::insert;
+    using QList<QPostEvent>::append;
+    using QList<QPostEvent>::insert;
 };
 
 #if QT_CONFIG(thread)
@@ -292,7 +290,7 @@ public:
     QAtomicPointer<QThread> thread;
     QAtomicPointer<void> threadId;
     QAtomicPointer<QAbstractEventDispatcher> eventDispatcher;
-    QVector<void *> tls;
+    QList<void *> tls;
     FlaggedDebugSignatures flaggedSignatures;
 
     bool quitNow;

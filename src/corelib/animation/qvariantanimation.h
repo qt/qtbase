@@ -40,11 +40,11 @@
 #ifndef QVARIANTANIMATION_H
 #define QVARIANTANIMATION_H
 
-#include <QtCore/qeasingcurve.h>
 #include <QtCore/qabstractanimation.h>
-#include <QtCore/qvector.h>
-#include <QtCore/qvariant.h>
+#include <QtCore/qeasingcurve.h>
+#include <QtCore/qlist.h>
 #include <QtCore/qpair.h>
+#include <QtCore/qvariant.h>
 
 QT_REQUIRE_CONFIG(animation);
 
@@ -62,7 +62,7 @@ class Q_CORE_EXPORT QVariantAnimation : public QAbstractAnimation
 
 public:
     typedef QPair<qreal, QVariant> KeyValue;
-    typedef QVector<KeyValue> KeyValues;
+    typedef QList<KeyValue> KeyValues;
 
     QVariantAnimation(QObject *parent = nullptr);
     ~QVariantAnimation();

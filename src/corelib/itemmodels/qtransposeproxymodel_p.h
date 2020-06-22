@@ -62,14 +62,14 @@ class QTransposeProxyModelPrivate : public QAbstractProxyModelPrivate
     Q_DISABLE_COPY(QTransposeProxyModelPrivate)
 private:
     QTransposeProxyModelPrivate() = default;
-    QVector<QMetaObject::Connection> sourceConnections;
-    QVector<QPersistentModelIndex> layoutChangePersistentIndexes;
+    QList<QMetaObject::Connection> sourceConnections;
+    QList<QPersistentModelIndex> layoutChangePersistentIndexes;
     QModelIndexList layoutChangeProxyIndexes;
     QModelIndex uncheckedMapToSource(const QModelIndex &proxyIndex) const;
     QModelIndex uncheckedMapFromSource(const QModelIndex &sourceIndex) const;
     void onLayoutChanged(const QList<QPersistentModelIndex> &parents, QAbstractItemModel::LayoutChangeHint hint);
     void onLayoutAboutToBeChanged(const QList<QPersistentModelIndex> &parents, QAbstractItemModel::LayoutChangeHint hint);
-    void onDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles);
+    void onDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles);
     void onHeaderDataChanged(Qt::Orientation orientation, int first, int last);
     void onColumnsAboutToBeInserted(const QModelIndex &parent, int first, int last);
     void onColumnsAboutToBeRemoved(const QModelIndex &parent, int first, int last);

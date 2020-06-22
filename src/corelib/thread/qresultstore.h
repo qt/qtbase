@@ -49,15 +49,13 @@ QT_REQUIRE_CONFIG(future);
 
 QT_BEGIN_NAMESPACE
 
-
 /*
     ResultStore stores indexed results. Results can be added and retrieved
-    either individually batched in a QVector. Retriveing results and checking
+    either individually batched in a QList. Retriveing results and checking
     which indexes are in the store can be done either by iterating or by random
     accees. In addition results kan be removed from the front of the store,
     either individually or in batches.
 */
-
 
 namespace QtPrivate {
 
@@ -116,7 +114,7 @@ public:
     const T *pointer() const
     {
         if (mapIterator.value().isVector())
-            return &(reinterpret_cast<const QVector<T> *>(mapIterator.value().result)->at(m_vectorIndex));
+            return &(reinterpret_cast<const QList<T> *>(mapIterator.value().result)->at(m_vectorIndex));
         else
             return reinterpret_cast<const T *>(mapIterator.value().result);
     }
@@ -169,19 +167,19 @@ public:
         return addResult(index, static_cast<void *>(new T(std::move_if_noexcept(result))));
     }
 
-    template <typename T>
-    int addResults(int index, const QVector<T> *results)
+    template<typename T>
+    int addResults(int index, const QList<T> *results)
     {
-        return addResults(index, new QVector<T>(*results), results->count(), results->count());
+        return addResults(index, new QList<T>(*results), results->count(), results->count());
     }
 
-    template <typename T>
-    int addResults(int index, const QVector<T> *results, int totalCount)
+    template<typename T>
+    int addResults(int index, const QList<T> *results, int totalCount)
     {
         if (m_filterMode == true && results->count() != totalCount && 0 == results->count())
             return addResults(index, nullptr, 0, totalCount);
 
-        return addResults(index, new QVector<T>(*results), results->count(), totalCount);
+        return addResults(index, new QList<T>(*results), results->count(), totalCount);
     }
 
     int addCanceledResult(int index)
@@ -192,7 +190,7 @@ public:
     template <typename T>
     int addCanceledResults(int index, int _count)
     {
-        QVector<T> empty;
+        QList<T> empty;
         return addResults(index, &empty, _count);
     }
 
@@ -202,7 +200,7 @@ public:
         QMap<int, ResultItem>::const_iterator mapIterator = m_results.constBegin();
         while (mapIterator != m_results.constEnd()) {
             if (mapIterator.value().isVector())
-                delete reinterpret_cast<const QVector<T> *>(mapIterator.value().result);
+                delete reinterpret_cast<const QList<T> *>(mapIterator.value().result);
             else
                 delete reinterpret_cast<const T *>(mapIterator.value().result);
             ++mapIterator;

@@ -42,10 +42,10 @@
 #ifndef QVERSIONNUMBER_H
 #define QVERSIONNUMBER_H
 
+#include <QtCore/qlist.h>
+#include <QtCore/qmetatype.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qstring.h>
-#include <QtCore/qvector.h>
-#include <QtCore/qmetatype.h>
 #include <QtCore/qtypeinfo.h>
 #include <limits>
 
@@ -84,24 +84,24 @@ class QVersionNumber
         union {
             quintptr dummy;
             qint8 inline_segments[sizeof(void*)];
-            QVector<int> *pointer_segments;
+            QList<int> *pointer_segments;
         };
 
         // set the InlineSegmentMarker and set length to zero
         SegmentStorage() noexcept : dummy(1) {}
 
-        SegmentStorage(const QVector<int> &seg)
+        SegmentStorage(const QList<int> &seg)
         {
             if (dataFitsInline(seg.begin(), seg.size()))
                 setInlineData(seg.begin(), seg.size());
             else
-                pointer_segments = new QVector<int>(seg);
+                pointer_segments = new QList<int>(seg);
         }
 
         SegmentStorage(const SegmentStorage &other)
         {
             if (other.isUsingPointer())
-                pointer_segments = new QVector<int>(*other.pointer_segments);
+                pointer_segments = new QList<int>(*other.pointer_segments);
             else
                 dummy = other.dummy;
         }
@@ -111,7 +111,7 @@ class QVersionNumber
             if (isUsingPointer() && other.isUsingPointer()) {
                 *pointer_segments = *other.pointer_segments;
             } else if (other.isUsingPointer()) {
-                pointer_segments = new QVector<int>(*other.pointer_segments);
+                pointer_segments = new QList<int>(*other.pointer_segments);
             } else {
                 if (isUsingPointer())
                     delete pointer_segments;
@@ -132,19 +132,19 @@ class QVersionNumber
             return *this;
         }
 
-        explicit SegmentStorage(QVector<int> &&seg)
+        explicit SegmentStorage(QList<int> &&seg)
         {
             if (dataFitsInline(seg.begin(), seg.size()))
                 setInlineData(seg.begin(), seg.size());
             else
-                pointer_segments = new QVector<int>(std::move(seg));
+                pointer_segments = new QList<int>(std::move(seg));
         }
         SegmentStorage(std::initializer_list<int> args)
         {
             if (dataFitsInline(args.begin(), int(args.size()))) {
                 setInlineData(args.begin(), int(args.size()));
             } else {
-                pointer_segments = new QVector<int>(args);
+                pointer_segments = new QList<int>(args);
             }
         }
 
@@ -218,15 +218,11 @@ public:
     inline QVersionNumber() noexcept
         : m_segments()
     {}
-    inline explicit QVersionNumber(const QVector<int> &seg)
-        : m_segments(seg)
-    {}
+    inline explicit QVersionNumber(const QList<int> &seg) : m_segments(seg) { }
 
     // compiler-generated copy/move ctor/assignment operators and the destructor are ok
 
-    explicit QVersionNumber(QVector<int> &&seg)
-        : m_segments(std::move(seg))
-    {}
+    explicit QVersionNumber(QList<int> &&seg) : m_segments(std::move(seg)) { }
 
     inline QVersionNumber(std::initializer_list<int> args)
         : m_segments(args)
@@ -258,7 +254,7 @@ public:
 
     Q_REQUIRED_RESULT Q_CORE_EXPORT QVersionNumber normalized() const;
 
-    Q_REQUIRED_RESULT Q_CORE_EXPORT QVector<int> segments() const;
+    Q_REQUIRED_RESULT Q_CORE_EXPORT QList<int> segments() const;
 
     Q_REQUIRED_RESULT inline int segmentAt(int index) const noexcept
     { return (m_segments.size() > index) ? m_segments.at(index) : 0; }

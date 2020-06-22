@@ -75,5 +75,4 @@
 #include <qstring.h>
 #include <qstringlist.h>
 #include <qtimer.h>
-#include <qvector.h>
 #endif

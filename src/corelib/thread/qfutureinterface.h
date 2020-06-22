@@ -237,7 +237,7 @@ public:
     inline void reportAndMoveResult(T &&result, int index = -1);
     inline void reportResult(T &&result, int index = -1);
     inline void reportResult(const T &result, int index = -1);
-    inline void reportResults(const QVector<T> &results, int beginIndex = -1, int count = -1);
+    inline void reportResults(const QList<T> &results, int beginIndex = -1, int count = -1);
     inline void reportFinished(const T *result);
     void reportFinished()
     {
@@ -300,8 +300,8 @@ inline void QFutureInterface<T>::reportResult(const T &result, int index)
     reportResult(&result, index);
 }
 
-template <typename T>
-inline void QFutureInterface<T>::reportResults(const QVector<T> &_results, int beginIndex, int count)
+template<typename T>
+inline void QFutureInterface<T>::reportResults(const QList<T> &_results, int beginIndex, int count)
 {
     std::lock_guard<QMutex> locker{mutex()};
     if (this->queryState(Canceled) || this->queryState(Finished)) {
@@ -418,7 +418,7 @@ public:
     inline QFuture<void> future(); // implemented in qfuture.h
 
     void reportResult(const void *, int) { }
-    void reportResults(const QVector<void> &, int) { }
+    void reportResults(const QList<void> &, int) { }
     void reportFinished(const void * = nullptr)
     {
         QFutureInterfaceBase::reportFinished();

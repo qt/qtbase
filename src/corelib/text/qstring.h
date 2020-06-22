@@ -580,22 +580,20 @@ public:
     QStringList split(const QString &sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts,
                       Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     Q_REQUIRED_RESULT
-    QVector<QStringRef> splitRef(const QString &sep,
-                                 Qt::SplitBehavior behavior = Qt::KeepEmptyParts,
-                                 Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    QList<QStringRef> splitRef(const QString &sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts,
+                               Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     Q_REQUIRED_RESULT
     QStringList split(QChar sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts,
                       Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     Q_REQUIRED_RESULT
-    QVector<QStringRef> splitRef(QChar sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts,
-                                 Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    QList<QStringRef> splitRef(QChar sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts,
+                               Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 #ifndef QT_NO_REGULAREXPRESSION
     Q_REQUIRED_RESULT
     QStringList split(const QRegularExpression &sep,
                       Qt::SplitBehavior behavior = Qt::KeepEmptyParts) const;
     Q_REQUIRED_RESULT
-    QVector<QStringRef> splitRef(const QRegularExpression &sep,
-                                 Qt::SplitBehavior behavior = Qt::KeepEmptyParts) const;
+    QList<QStringRef> splitRef(const QRegularExpression &sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts) const;
 #endif
 
     template <typename Needle, typename...Flags>
@@ -647,7 +645,7 @@ public:
     Q_REQUIRED_RESULT QByteArray toUtf8() const;
     Q_REQUIRED_RESULT QByteArray toLocal8Bit() const;
 #endif
-    Q_REQUIRED_RESULT QVector<uint> toUcs4() const;
+    Q_REQUIRED_RESULT QList<uint> toUcs4() const;
 
     // note - this are all inline so we can benefit from strlen() compile time optimizations
     static inline QString fromLatin1(const char *str, int size = -1)
@@ -1414,11 +1412,11 @@ public:
     int count(const QStringRef &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 
     Q_REQUIRED_RESULT
-    QVector<QStringRef> split(const QString &sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts,
-                              Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    QList<QStringRef> split(const QString &sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts,
+                            Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     Q_REQUIRED_RESULT
-    QVector<QStringRef> split(QChar sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts,
-                              Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    QList<QStringRef> split(QChar sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts,
+                            Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 
     Q_REQUIRED_RESULT QStringRef left(int n) const;
     Q_REQUIRED_RESULT QStringRef right(int n) const;
@@ -1480,7 +1478,7 @@ public:
     Q_REQUIRED_RESULT QByteArray toLatin1() const;
     Q_REQUIRED_RESULT QByteArray toUtf8() const;
     Q_REQUIRED_RESULT QByteArray toLocal8Bit() const;
-    Q_REQUIRED_RESULT QVector<uint> toUcs4() const;
+    Q_REQUIRED_RESULT QList<uint> toUcs4() const;
 
     inline void clear() { m_string = nullptr; m_position = m_size = 0; }
     QString toString() const;

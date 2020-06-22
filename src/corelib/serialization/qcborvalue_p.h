@@ -131,7 +131,7 @@ public:
 
     QByteArray::size_type usedData = 0;
     QByteArray data;
-    QVector<QtCbor::Element> elements;
+    QList<QtCbor::Element> elements;
 
     void deref() { if (!ref.deref()) delete this; }
     void compact(qsizetype reserved);

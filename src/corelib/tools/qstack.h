@@ -40,18 +40,17 @@
 #ifndef QSTACK_H
 #define QSTACK_H
 
-#include <QtCore/qvector.h>
+#include <QtCore/qlist.h>
 
 QT_BEGIN_NAMESPACE
 
-
 template<class T>
-class QStack : public QVector<T>
+class QStack : public QList<T>
 {
 public:
     // compiler-generated special member functions are fine!
-    inline void swap(QStack<T> &other) noexcept { QVector<T>::swap(other); } // prevent QVector<->QStack swaps
-    inline void push(const T &t) { QVector<T>::append(t); }
+    inline void swap(QStack<T> &other) noexcept { QList<T>::swap(other); } // prevent QList<->QStack swaps
+    inline void push(const T &t) { QList<T>::append(t); }
     T pop();
     T &top();
     const T &top() const;

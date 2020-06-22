@@ -42,10 +42,9 @@
 
 #include <QtCore/qglobal.h>
 
-#include <QtCore/qset.h>
-#include <QtCore/qvector.h>
-#include <QtCore/qlist.h>
 #include <QtCore/qabstractitemmodel.h>
+#include <QtCore/qlist.h>
+#include <QtCore/qset.h>
 
 QT_REQUIRE_CONFIG(itemmodel);
 

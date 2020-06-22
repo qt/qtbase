@@ -51,7 +51,7 @@
 // We mean it.
 //
 
-#include "qvector.h"
+#include "qlist.h"
 
 #include <algorithm>
 #include <functional>
@@ -66,7 +66,7 @@ QT_BEGIN_NAMESPACE
 
 /*
   QFlatMap provides an associative container backed by sorted sequential
-  containers. By default, QVector is used.
+  containers. By default, QList is used.
 
   Keys and values are stored in two separate containers. This provides improved
   cache locality for key iteration and makes keys() and values() fast
@@ -105,10 +105,8 @@ public:
     }
 };
 
-template <class Key, class T,
-          class Compare = std::less<Key>,
-          class KeyContainer = QVector<Key>,
-          class MappedContainer = QVector<T>>
+template<class Key, class T, class Compare = std::less<Key>, class KeyContainer = QList<Key>,
+         class MappedContainer = QList<T>>
 class QFlatMap : private QFlatMapValueCompare<Key, T, Compare>
 {
     using full_map_t = QFlatMap<Key, T, Compare, KeyContainer, MappedContainer>;

@@ -51,12 +51,12 @@
 // We mean it.
 //
 
-#include "QtCore/qiodevice.h"
 #include "QtCore/qbytearray.h"
+#include "QtCore/qiodevice.h"
+#include "QtCore/qlist.h"
 #include "QtCore/qobjectdefs.h"
 #include "QtCore/qstring.h"
 #include "private/qringbuffer_p.h"
-#include "QtCore/qvector.h"
 #ifndef QT_NO_QOBJECT
 #include "private/qobject_p.h"
 #endif
@@ -83,8 +83,8 @@ public:
     QIODevice::OpenMode openMode;
     QString errorString;
 
-    QVector<QRingBuffer> readBuffers;
-    QVector<QRingBuffer> writeBuffers;
+    QList<QRingBuffer> readBuffers;
+    QList<QRingBuffer> writeBuffers;
 
     class QRingBufferRef {
         QRingBuffer *m_buf;

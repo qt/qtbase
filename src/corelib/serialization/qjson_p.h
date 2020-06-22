@@ -113,7 +113,7 @@ struct ObjectIterator
         Element m_value;
     };
 
-    using difference_type = typename QVector<Element>::difference_type;
+    using difference_type = typename QList<Element>::difference_type;
     using iterator_category = std::random_access_iterator_tag;
 
     ObjectIterator() = default;
@@ -182,8 +182,8 @@ inline bool operator==(
     return a.elementsIterator() == b.elementsIterator();
 }
 
-using KeyIterator = ObjectIterator<QtCbor::Element, QVector<QtCbor::Element>::iterator>;
-using ConstKeyIterator = ObjectIterator<const QtCbor::Element, QVector<QtCbor::Element>::const_iterator>;
+using KeyIterator = ObjectIterator<QtCbor::Element, QList<QtCbor::Element>::iterator>;
+using ConstKeyIterator = ObjectIterator<const QtCbor::Element, QList<QtCbor::Element>::const_iterator>;
 
 template<>
 inline KeyIterator::reference &KeyIterator::reference::operator=(const KeyIterator::value_type &value)

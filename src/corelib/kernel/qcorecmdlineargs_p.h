@@ -60,7 +60,6 @@
 #    include <qt_windows.h> // first to suppress min, max macros.
 #    include <shlobj.h>
 #  else
-#    include "QtCore/qvector.h"
 #    include <qt_windows.h>
 #  endif
 

@@ -406,13 +406,13 @@ operator>>(QDataStream &s, T &t)
 { return s >> reinterpret_cast<typename std::underlying_type<T>::type &>(t); }
 
 template<typename T>
-inline QDataStream &operator>>(QDataStream &s, QVector<T> &v)
+inline QDataStream &operator>>(QDataStream &s, QList<T> &v)
 {
     return QtPrivate::readArrayBasedContainer(s, v);
 }
 
 template<typename T>
-inline QDataStream &operator<<(QDataStream &s, const QVector<T> &v)
+inline QDataStream &operator<<(QDataStream &s, const QList<T> &v)
 {
     return QtPrivate::writeSequentialContainer(s, v);
 }
