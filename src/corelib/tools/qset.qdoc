@@ -1093,6 +1093,10 @@
 
     \include containers-range-constructor.qdocinc
 
+    This function creates a new list, in \l {linear time}. The time and memory
+    use that entails can be avoided by iterating from \l constBegin() to
+    \l constEnd().
+
     \sa fromList(), QList::fromSet()
 */
 

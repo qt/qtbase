@@ -1431,6 +1431,10 @@ size_t qHash(long double key, size_t seed) noexcept
 
     The order is guaranteed to be the same as that used by values().
 
+    This function creates a new list, in \l {linear time}. The time and memory
+    use that entails can be avoided by iterating from \l keyBegin() to
+    \l keyEnd().
+
     \sa values(), key()
 */
 
@@ -1452,6 +1456,10 @@ size_t qHash(long double key, size_t seed) noexcept
     arbitrary order.
 
     The order is guaranteed to be the same as that used by keys().
+
+    This function creates a new list, in \l {linear time}. The time and memory
+    use that entails can be avoided by iterating from \l keyValueBegin() to
+    \l keyValueEnd().
 
     \sa keys(), value()
 */
@@ -2518,6 +2526,10 @@ size_t qHash(long double key, size_t seed) noexcept
 
     The order is guaranteed to be the same as that used by values().
 
+    This function creates a new list, in \l {linear time}. The time and memory
+    use that entails can be avoided by iterating from \l keyBegin() to
+    \l keyEnd().
+
     \sa values(), key()
 */
 
@@ -2529,6 +2541,10 @@ size_t qHash(long double key, size_t seed) noexcept
     inserted one.
 
     The order is guaranteed to be the same as that used by keys().
+
+    This function creates a new list, in \l {linear time}. The time and memory
+    use that entails can be avoided by iterating from \l keyValueBegin() to
+    \l keyValueEnd().
 
     \sa keys(), value()
 */

@@ -759,6 +759,10 @@ void QMapDataBase::freeData(QMapDataBase *d)
 
     The order is guaranteed to be the same as that used by values().
 
+    This function creates a new list, in \l {linear time}. The time and memory
+    use that entails can be avoided by iterating from \l keyBegin() to
+    \l keyEnd().
+
     \sa QMultiMap::uniqueKeys(), values(), key()
 */
 
@@ -797,6 +801,10 @@ void QMapDataBase::freeData(QMapDataBase *d)
     order of their keys. If a key is associated with multiple values,
     all of its values will be in the list, and not just the most
     recently inserted one.
+
+    This function creates a new list, in \l {linear time}. The time and memory
+    use that entails can be avoided by iterating from \l keyValueBegin() to
+    \l keyValueEnd().
 
     \sa keys(), value()
 */
