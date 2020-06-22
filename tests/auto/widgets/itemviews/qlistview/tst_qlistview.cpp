@@ -62,7 +62,7 @@ static inline HWND getHWNDForWidget(const QWidget *widget)
 Q_DECLARE_METATYPE(QAbstractItemView::ScrollMode)
 Q_DECLARE_METATYPE(QMargins)
 Q_DECLARE_METATYPE(QSize)
-using IntList = QVector<int>;
+using IntList = QList<int>;
 
 static QStringList generateList(const QString &prefix, int size)
 {

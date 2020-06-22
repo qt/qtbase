@@ -140,7 +140,7 @@ void tst_QLayout::geometry()
 
 void tst_QLayout::smartMaxSize()
 {
-    QVector<int> expectedWidths;
+    QList<int> expectedWidths;
 
     QFile f(QFINDTESTDATA("baseline/smartmaxsize"));
 

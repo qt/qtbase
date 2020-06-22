@@ -2095,9 +2095,9 @@ void tst_QWidget::tabOrderWithCompoundWidgets()
     QVERIFY(lastEdit->hasFocus());
 }
 
-static QVector<QWidget*> getFocusChain(QWidget *start, bool bForward)
+static QList<QWidget *> getFocusChain(QWidget *start, bool bForward)
 {
-    QVector<QWidget*> ret;
+    QList<QWidget *> ret;
     QWidget *cur = start;
     do {
         ret += cur;
@@ -5130,14 +5130,14 @@ void tst_QWidget::qobject_castInDestroyedSlot()
 // Since X11 WindowManager operations are all async, and we have no way to know if the window
 // manager has finished playing with the window geometry, this test can't be reliable on X11.
 
-using Rects = QVector<QRect>;
+using Rects = QList<QRect>;
 
 void tst_QWidget::setWindowGeometry_data()
 {
     QTest::addColumn<Rects>("rects");
     QTest::addColumn<int>("windowFlags");
 
-    QVector<Rects> rects;
+    QList<Rects> rects;
     const int width = m_testWidgetSize.width();
     const int height = m_testWidgetSize.height();
     const QRect availableAdjusted = QGuiApplication::primaryScreen()->availableGeometry().adjusted(100, 100, -100, -100);
@@ -8344,7 +8344,7 @@ void tst_QWidget::alienWidgets()
     }
 }
 
-using WidgetAttributes = QVector<Qt::WidgetAttribute>;
+using WidgetAttributes = QList<Qt::WidgetAttribute>;
 
 void tst_QWidget::nativeWindowPosition_data()
 {

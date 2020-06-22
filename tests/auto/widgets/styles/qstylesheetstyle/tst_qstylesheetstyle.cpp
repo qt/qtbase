@@ -1086,7 +1086,7 @@ void tst_QStyleSheetStyle::background()
     typedef QSharedPointer<QWidget> WidgetPtr;
 
     const QString styleSheet = QStringLiteral("* { background-color: #e8ff66; }");
-    QVector<WidgetPtr> widgets;
+    QList<WidgetPtr> widgets;
     const QPoint topLeft = m_availableGeometry.topLeft();
     // Testing inheritance styling of QDialog.
     WidgetPtr toplevel(new SingleInheritanceDialog);
@@ -1602,8 +1602,8 @@ void tst_QStyleSheetStyle::toolTip()
     // including one without stylesheet (the tooltip will be reused,
     // but its color must change)
     const QWidgetList widgets{wid4, wid1, wid2, wid3, wid4};
-    const QVector<QColor> colors{normalToolTip, QColor("#ae2"), QColor("#f81"),
-                                 QColor("#0b8"), normalToolTip};
+    const QList<QColor> colors { normalToolTip, QColor("#ae2"), QColor("#f81"), QColor("#0b8"),
+                                 normalToolTip };
 
     QWidgetList topLevels;
     for (int i = 0; i < widgets.count() ; ++i) {

@@ -601,7 +601,7 @@ protected:
 void tst_QGraphicsLayout::constructors()
 {
     // Strange test, but see the fix that was with this submit
-    QVector<Layout*> layouts;
+    QList<Layout *> layouts;
     for (int pass = 0; pass < 5; ++pass) {
         Layout *lay = new Layout();
         layouts << lay;
@@ -703,8 +703,8 @@ private slots:
     }
 private:
     QTimeLine m_timeline;
-    QVector<QRectF> fromGeoms;
-    QVector<QRectF> toGeoms;
+    QList<QRectF> fromGeoms;
+    QList<QRectF> toGeoms;
 };
 
 

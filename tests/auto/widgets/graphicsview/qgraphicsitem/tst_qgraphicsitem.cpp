@@ -61,7 +61,7 @@
 #include <QPainterPath>
 
 using AbstractGraphicsShapeItemPtr = QSharedPointer<QAbstractGraphicsShapeItem>;
-using GraphicsItems = QVector<QGraphicsItem *>;
+using GraphicsItems = QList<QGraphicsItem *>;
 using GraphicsItemsList = QList<QGraphicsItem *>;
 
 Q_DECLARE_METATYPE(AbstractGraphicsShapeItemPtr)
@@ -251,7 +251,7 @@ public:
         lastExposedRect = QRectF();
     }
 
-    QVector<QEvent::Type> events;
+    QList<QEvent::Type> events;
     QPainter::RenderHints hints;
     int repaints = 0;
     QRectF br = QRectF(-10, -10, 20, 20);
@@ -1544,7 +1544,7 @@ class SelectChangeItem : public QGraphicsRectItem
 {
 public:
     SelectChangeItem() : QGraphicsRectItem(-50, -50, 100, 100) { setBrush(Qt::blue); }
-    QVector<bool> values;
+    QList<bool> values;
 
 protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value) override
@@ -4482,7 +4482,7 @@ public:
     QVariant itemChangeReturnValue;
     QGraphicsScene *itemSceneChangeTargetScene;
 
-    QVector<GraphicsItemChange> changes;
+    QList<GraphicsItemChange> changes;
     QVariantList values;
     QVariantList oldValues;
 protected:
@@ -4946,9 +4946,9 @@ void tst_QGraphicsItem::itemChange()
 class EventFilterTesterItem : public QGraphicsLineItem
 {
 public:
-    QVector<QEvent::Type> filteredEvents;
+    QList<QEvent::Type> filteredEvents;
     GraphicsItems filteredEventReceivers;
-    QVector<QEvent::Type> receivedEvents;
+    QList<QEvent::Type> receivedEvents;
     bool handlesSceneEvents = false;
 
 protected:
@@ -8069,20 +8069,22 @@ void tst_QGraphicsItem::itemSendsGeometryChanges()
     QCOMPARE(item.scale(), qreal(1.0));
     QCOMPARE(item.transformOriginPoint(), QPointF(0.0, 0.0));
 
-    const QVector<QGraphicsItem::GraphicsItemChange> expected{QGraphicsItem::ItemOpacityChange,
-                QGraphicsItem::ItemOpacityHasChanged,
-                QGraphicsItem::ItemFlagsChange,
-                QGraphicsItem::ItemFlagsHaveChanged,
-                QGraphicsItem::ItemTransformChange,
-                QGraphicsItem::ItemTransformHasChanged,
-                QGraphicsItem::ItemPositionChange,
-                QGraphicsItem::ItemPositionHasChanged,
-                QGraphicsItem::ItemRotationChange,
-                QGraphicsItem::ItemRotationHasChanged,
-                QGraphicsItem::ItemScaleChange,
-                QGraphicsItem::ItemScaleHasChanged,
-                QGraphicsItem::ItemTransformOriginPointChange,
-                QGraphicsItem::ItemTransformOriginPointHasChanged};
+    const QList<QGraphicsItem::GraphicsItemChange> expected {
+        QGraphicsItem::ItemOpacityChange,
+        QGraphicsItem::ItemOpacityHasChanged,
+        QGraphicsItem::ItemFlagsChange,
+        QGraphicsItem::ItemFlagsHaveChanged,
+        QGraphicsItem::ItemTransformChange,
+        QGraphicsItem::ItemTransformHasChanged,
+        QGraphicsItem::ItemPositionChange,
+        QGraphicsItem::ItemPositionHasChanged,
+        QGraphicsItem::ItemRotationChange,
+        QGraphicsItem::ItemRotationHasChanged,
+        QGraphicsItem::ItemScaleChange,
+        QGraphicsItem::ItemScaleHasChanged,
+        QGraphicsItem::ItemTransformOriginPointChange,
+        QGraphicsItem::ItemTransformOriginPointHasChanged
+    };
     QCOMPARE(item.changes, expected);
 }
 
@@ -10978,7 +10980,7 @@ void tst_QGraphicsItem::focusHandling()
 class TouchEventTestee : public QGraphicsRectItem
 {
 public:
-    using TouchPoints = QVector<QTouchEvent::TouchPoint>;
+    using TouchPoints = QList<QTouchEvent::TouchPoint>;
 
     TouchEventTestee(const QSizeF &size = QSizeF(100, 100)) :
         QGraphicsRectItem(QRectF(QPointF(), size))

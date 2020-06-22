@@ -544,7 +544,7 @@ void tst_QStyle::testProxyCalled()
     QPainter painter(&surface);
 
     const QStringList keys = QStyleFactory::keys();
-    QVector<QStyle*> styles;
+    QList<QStyle *> styles;
     styles.reserve(keys.size() + 1);
 
     styles << new QCommonStyle();

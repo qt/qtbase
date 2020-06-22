@@ -1836,7 +1836,7 @@ public:
     { }
 
     bool ignoreMouse = false;
-    QVector<QEvent::Type> eventTypes;
+    QList<QEvent::Type> eventTypes;
 
 protected:
     bool sceneEvent(QEvent *event) override
@@ -2150,7 +2150,7 @@ void tst_QGraphicsScene::mouseEventPropagation_doubleclick()
 class Scene : public QGraphicsScene
 {
 public:
-    QVector<QPointF> mouseMovePoints;
+    QList<QPointF> mouseMovePoints;
 
 protected:
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override
@@ -3897,20 +3897,16 @@ void tst_QGraphicsScene::dispatchHoverOnPress()
         me2.setButton(Qt::LeftButton);
         QCoreApplication::sendEvent(&scene, &me);
         QCoreApplication::sendEvent(&scene, &me2);
-        QCOMPARE(tester1->eventTypes, QVector<QEvent::Type>()
-                 << QEvent::GraphicsSceneHoverEnter
-                 << QEvent::GraphicsSceneHoverMove
-                 << QEvent::GrabMouse
-                 << QEvent::GraphicsSceneMousePress
-                 << QEvent::UngrabMouse);
+        QCOMPARE(tester1->eventTypes,
+                 QList<QEvent::Type>() << QEvent::GraphicsSceneHoverEnter
+                                       << QEvent::GraphicsSceneHoverMove << QEvent::GrabMouse
+                                       << QEvent::GraphicsSceneMousePress << QEvent::UngrabMouse);
         tester1->eventTypes.clear();
         QCoreApplication::sendEvent(&scene, &me);
         QCoreApplication::sendEvent(&scene, &me2);
-        QCOMPARE(tester1->eventTypes, QVector<QEvent::Type>()
-                 << QEvent::GraphicsSceneHoverMove
-                 << QEvent::GrabMouse
-                 << QEvent::GraphicsSceneMousePress
-                 << QEvent::UngrabMouse);
+        QCOMPARE(tester1->eventTypes,
+                 QList<QEvent::Type>() << QEvent::GraphicsSceneHoverMove << QEvent::GrabMouse
+                                       << QEvent::GraphicsSceneMousePress << QEvent::UngrabMouse);
     }
     {
         QGraphicsSceneMouseEvent me(QEvent::GraphicsSceneMousePress);
@@ -3924,22 +3920,17 @@ void tst_QGraphicsScene::dispatchHoverOnPress()
         QCoreApplication::sendEvent(&scene, &me);
         QCoreApplication::sendEvent(&scene, &me2);
         qCDebug(lcTests) << tester1->eventTypes;
-        QCOMPARE(tester1->eventTypes, QVector<QEvent::Type>()
-                 << QEvent::GraphicsSceneHoverLeave);
-        QCOMPARE(tester2->eventTypes, QVector<QEvent::Type>()
-                 << QEvent::GraphicsSceneHoverEnter
-                 << QEvent::GraphicsSceneHoverMove
-                 << QEvent::GrabMouse
-                 << QEvent::GraphicsSceneMousePress
-                 << QEvent::UngrabMouse);
+        QCOMPARE(tester1->eventTypes, QList<QEvent::Type>() << QEvent::GraphicsSceneHoverLeave);
+        QCOMPARE(tester2->eventTypes,
+                 QList<QEvent::Type>() << QEvent::GraphicsSceneHoverEnter
+                                       << QEvent::GraphicsSceneHoverMove << QEvent::GrabMouse
+                                       << QEvent::GraphicsSceneMousePress << QEvent::UngrabMouse);
         tester2->eventTypes.clear();
         QCoreApplication::sendEvent(&scene, &me);
         QCoreApplication::sendEvent(&scene, &me2);
-        QCOMPARE(tester2->eventTypes, QVector<QEvent::Type>()
-                 << QEvent::GraphicsSceneHoverMove
-                 << QEvent::GrabMouse
-                 << QEvent::GraphicsSceneMousePress
-                 << QEvent::UngrabMouse);
+        QCOMPARE(tester2->eventTypes,
+                 QList<QEvent::Type>() << QEvent::GraphicsSceneHoverMove << QEvent::GrabMouse
+                                       << QEvent::GraphicsSceneMousePress << QEvent::UngrabMouse);
     }
 }
 

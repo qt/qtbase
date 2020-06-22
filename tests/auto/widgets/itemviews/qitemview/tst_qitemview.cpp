@@ -569,8 +569,10 @@ void walkIndex(const QModelIndex &index, const QAbstractItemView *view)
     if (width == 0 || height == 0)
         return;
 
-    const auto widths = (width < 2) ? QVector<int>({ 0, 1 }) : QVector<int>({ 0, 1, width / 2, width - 2, width - 1 });
-    const auto heights = (height < 2) ? QVector<int>({ 0, 1 }) : QVector<int>({ 0, 1, height / 2, height - 2, height - 1 });
+    const auto widths = (width < 2) ? QList<int>({ 0, 1 })
+                                    : QList<int>({ 0, 1, width / 2, width - 2, width - 1 });
+    const auto heights = (height < 2) ? QList<int>({ 0, 1 })
+                                      : QList<int>({ 0, 1, height / 2, height - 2, height - 1 });
     for (int w : widths)
     {
         for (int h : heights)

@@ -1873,51 +1873,58 @@ Q_DECLARE_METATYPE(Inst)
 void tst_QGraphicsWidget::setSizes_data()
 {
 
-    QTest::addColumn<QVector<Inst> >("inputInstructions");
-    QTest::addColumn<QVector<Inst> >("compareInstructions");
+    QTest::addColumn<QList<Inst>>("inputInstructions");
+    QTest::addColumn<QList<Inst>>("compareInstructions");
 
-    QTest::newRow("minSize1") << (QVector<Inst>() << Inst(Size, QSize(25, 25)) << Inst(MinimumSize, QSize(10, 10)))
-                                << (QVector<Inst>() << Inst(Size, QSize(25,25)));
-    QTest::newRow("minSize2") << (QVector<Inst>() << Inst(Size, QSizeF(20, 20)) << Inst(MinimumSize, QSizeF(25, 25)))
-                                 << (QVector<Inst>() << Inst(Size, QSizeF(25, 25)));
-    QTest::newRow("minWidth1") << (QVector<Inst>() << Inst(Size, QSizeF(20, 20)) << Inst(MinimumWidth, 5.0))
-                                 << (QVector<Inst>() << Inst(Size, QSizeF(20, 20)));
-    QTest::newRow("minWidth2") << (QVector<Inst>() << Inst(Size, QSizeF(20, 20)) << Inst(MinimumWidth, 25.0))
-                                 << (QVector<Inst>() << Inst(Size, QSizeF(25, 20)));
-    QTest::newRow("minHeight1") << (QVector<Inst>() << Inst(Size, QSizeF(20, 20)) << Inst(MinimumHeight, 5.0))
-                                 << (QVector<Inst>() << Inst(Size, QSizeF(20, 20)));
-    QTest::newRow("minHeight2") << (QVector<Inst>() << Inst(Size, QSizeF(20, 20)) << Inst(MinimumHeight, 25.0))
-                                 << (QVector<Inst>() << Inst(Size, QSizeF(20, 25)));
-    QTest::newRow("maxSize1") << (QVector<Inst>() << Inst(Size, QSizeF(40, 40)) << Inst(MaximumSize, QSizeF(30, 30)))
-                                 << (QVector<Inst>() << Inst(Size, QSizeF(30, 30)));
-    QTest::newRow("maxSize2") << (QVector<Inst>() << Inst(Size, QSizeF(40, 40)) << Inst(MaximumSize, QSizeF(30, -1)))
-                                 << (QVector<Inst>() << Inst(Size, QSizeF(30, 40)));
-    QTest::newRow("maxSize3") << (QVector<Inst>() << Inst(Size, QSizeF(40, 40)) << Inst(MaximumSize, QSizeF(-1, 30)))
-                                 << (QVector<Inst>() << Inst(Size, QSizeF(40, 30)));
-    QTest::newRow("maxWidth1")<< (QVector<Inst>() << Inst(Size, QSizeF(40, 40)) << Inst(MaximumWidth, 30))
-                                 << (QVector<Inst>() << Inst(Size, QSizeF(30, 40)));
-    QTest::newRow("maxHeight")<< (QVector<Inst>() << Inst(Size, QSizeF(40, 40)) << Inst(MaximumHeight, 20))
-                                 << (QVector<Inst>() << Inst(Size, QSizeF(40, 20)));
-    QTest::newRow("unsetMinSize")<< (QVector<Inst>() << Inst(Size, QSizeF(40, 40)) << Inst(MinimumSize, QSizeF(-1, -1)))
-                                 << (QVector<Inst>() << Inst(MinimumSize, QSizeF(5, 5)));
-    QTest::newRow("unsetMaxSize")<< (QVector<Inst>() << Inst(Size, QSizeF(40, 40)) << Inst(MaximumSize, QSizeF(-1, -1)))
-                                 << (QVector<Inst>() << Inst(MaximumSize, QSizeF(500, 500)));
-    QTest::newRow("unsetMinSize, expand size to minimumSizeHint") << (QVector<Inst>()
-                                        << Inst(MinimumSize, QSize(0, 0))
-                                        << Inst(Size, QSize(1,1))
-                                        << Inst(MinimumSize, QSize(-1.0, -1.0))
-                                        )
-                                    << (QVector<Inst>()
-                                        << Inst(Size, QSize(5,5))
-                                        << Inst(MinimumSize, QSize(5,5))
-                                        );
-
+    QTest::newRow("minSize1") << (QList<Inst>()
+                                  << Inst(Size, QSize(25, 25)) << Inst(MinimumSize, QSize(10, 10)))
+                              << (QList<Inst>() << Inst(Size, QSize(25, 25)));
+    QTest::newRow("minSize2") << (QList<Inst>() << Inst(Size, QSizeF(20, 20))
+                                                << Inst(MinimumSize, QSizeF(25, 25)))
+                              << (QList<Inst>() << Inst(Size, QSizeF(25, 25)));
+    QTest::newRow("minWidth1") << (QList<Inst>()
+                                   << Inst(Size, QSizeF(20, 20)) << Inst(MinimumWidth, 5.0))
+                               << (QList<Inst>() << Inst(Size, QSizeF(20, 20)));
+    QTest::newRow("minWidth2") << (QList<Inst>()
+                                   << Inst(Size, QSizeF(20, 20)) << Inst(MinimumWidth, 25.0))
+                               << (QList<Inst>() << Inst(Size, QSizeF(25, 20)));
+    QTest::newRow("minHeight1") << (QList<Inst>()
+                                    << Inst(Size, QSizeF(20, 20)) << Inst(MinimumHeight, 5.0))
+                                << (QList<Inst>() << Inst(Size, QSizeF(20, 20)));
+    QTest::newRow("minHeight2") << (QList<Inst>()
+                                    << Inst(Size, QSizeF(20, 20)) << Inst(MinimumHeight, 25.0))
+                                << (QList<Inst>() << Inst(Size, QSizeF(20, 25)));
+    QTest::newRow("maxSize1") << (QList<Inst>() << Inst(Size, QSizeF(40, 40))
+                                                << Inst(MaximumSize, QSizeF(30, 30)))
+                              << (QList<Inst>() << Inst(Size, QSizeF(30, 30)));
+    QTest::newRow("maxSize2") << (QList<Inst>() << Inst(Size, QSizeF(40, 40))
+                                                << Inst(MaximumSize, QSizeF(30, -1)))
+                              << (QList<Inst>() << Inst(Size, QSizeF(30, 40)));
+    QTest::newRow("maxSize3") << (QList<Inst>() << Inst(Size, QSizeF(40, 40))
+                                                << Inst(MaximumSize, QSizeF(-1, 30)))
+                              << (QList<Inst>() << Inst(Size, QSizeF(40, 30)));
+    QTest::newRow("maxWidth1") << (QList<Inst>()
+                                   << Inst(Size, QSizeF(40, 40)) << Inst(MaximumWidth, 30))
+                               << (QList<Inst>() << Inst(Size, QSizeF(30, 40)));
+    QTest::newRow("maxHeight") << (QList<Inst>()
+                                   << Inst(Size, QSizeF(40, 40)) << Inst(MaximumHeight, 20))
+                               << (QList<Inst>() << Inst(Size, QSizeF(40, 20)));
+    QTest::newRow("unsetMinSize") << (QList<Inst>() << Inst(Size, QSizeF(40, 40))
+                                                    << Inst(MinimumSize, QSizeF(-1, -1)))
+                                  << (QList<Inst>() << Inst(MinimumSize, QSizeF(5, 5)));
+    QTest::newRow("unsetMaxSize") << (QList<Inst>() << Inst(Size, QSizeF(40, 40))
+                                                    << Inst(MaximumSize, QSizeF(-1, -1)))
+                                  << (QList<Inst>() << Inst(MaximumSize, QSizeF(500, 500)));
+    QTest::newRow("unsetMinSize, expand size to minimumSizeHint")
+            << (QList<Inst>() << Inst(MinimumSize, QSize(0, 0)) << Inst(Size, QSize(1, 1))
+                              << Inst(MinimumSize, QSize(-1.0, -1.0)))
+            << (QList<Inst>() << Inst(Size, QSize(5, 5)) << Inst(MinimumSize, QSize(5, 5)));
 }
 
 void tst_QGraphicsWidget::setSizes()
 {
-    QFETCH(QVector<Inst>, inputInstructions);
-    QFETCH(QVector<Inst>, compareInstructions);
+    QFETCH(QList<Inst>, inputInstructions);
+    QFETCH(QList<Inst>, compareInstructions);
 
     QGraphicsScene scene;
     QGraphicsView view(&scene);

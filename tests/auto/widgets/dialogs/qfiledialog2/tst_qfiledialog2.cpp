@@ -192,7 +192,7 @@ void tst_QFileDialog2::listRoot()
 
 void tst_QFileDialog2::heapCorruption()
 {
-    QVector<QFileDialog*> dialogs;
+    QList<QFileDialog *> dialogs;
     for (int i=0; i < 10; i++) {
         QFileDialog *f = new QFileDialog(NULL);
         dialogs << f;

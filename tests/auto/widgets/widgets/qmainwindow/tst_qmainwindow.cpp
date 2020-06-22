@@ -1371,7 +1371,7 @@ void tst_QMainWindow::restoreStateFromPreviousVersion()
 
         QMainWindow win;
         win.setCentralWidget(new QTextEdit);
-        QVector<QDockWidget*> docks;
+        QList<QDockWidget *> docks;
 
         for(int i = 0; i < 16; ++i) {
             const QString name = QStringLiteral("dock ") + QString::number(i);

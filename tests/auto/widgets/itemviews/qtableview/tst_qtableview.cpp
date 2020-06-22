@@ -57,10 +57,10 @@ using namespace QTestPrivate;
 Q_DECLARE_METATYPE(Qt::Key);
 Q_DECLARE_METATYPE(Qt::KeyboardModifier);
 Q_DECLARE_METATYPE(QItemSelectionModel::SelectionFlag);
-using BoolList = QVector<bool>;
-using IntList = QVector<int>;
-using KeyList = QVector<Qt::Key>;
-using SpanList = QVector<QRect>;
+using BoolList = QList<bool>;
+using IntList = QList<int>;
+using KeyList = QList<Qt::Key>;
+using SpanList = QList<QRect>;
 
 class QtTestTableModel: public QAbstractTableModel
 {
@@ -243,7 +243,8 @@ public:
         verticalHeader()->setMinimumSectionSize(0);
     }
 
-    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>()) override
+    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight,
+                     const QList<int> &roles = QList<int>()) override
     {
         QTableView::dataChanged(topLeft, bottomRight, roles);
         QTableViewPrivate *av = static_cast<QTableViewPrivate*>(qt_widget_private(this));
@@ -296,7 +297,7 @@ class tst_QTableView : public QObject
     Q_OBJECT
 
 private:
-    using CursorActionList = QVector<QtTestTableView::CursorAction>;
+    using CursorActionList = QList<QtTestTableView::CursorAction>;
 private slots:
     void getSetCheck();
 
@@ -3841,7 +3842,7 @@ void tst_QTableView::setCurrentIndex()
 void tst_QTableView::checkIntersectedRect_data()
 {
     QTest::addColumn<QtTestTableModel *>("model");
-    QTest::addColumn<QVector<QModelIndex>>("changedIndexes");
+    QTest::addColumn<QList<QModelIndex>>("changedIndexes");
     QTest::addColumn<bool>("isEmpty");
     QTest::addColumn<bool>("swapFirstAndLastIndexRow");  // for QHeaderView::sectionsMoved()
     QTest::addColumn<bool>("swapFirstAndLastIndexColumn");  // for QHeaderView::sectionsMoved()
@@ -3863,35 +3864,28 @@ void tst_QTableView::checkIntersectedRect_data()
             {
                 QtTestTableModel *model = new QtTestTableModel(10, 3);
                 QTest::newRow(testName("multiple columns", dir, swapRow, swapColumn).data())
-                    << model
-                    << QVector<QModelIndex>({model->index(0, 0),
-                                             model->index(0, 1)})
-                    << false << swapRow << swapColumn << dir << -1 << -1;
+                        << model << QList<QModelIndex>({ model->index(0, 0), model->index(0, 1) })
+                        << false << swapRow << swapColumn << dir << -1 << -1;
             }
             {
                 QtTestTableModel *model = new QtTestTableModel(10, 3);
                 QTest::newRow(testName("multiple rows", dir, swapRow, swapColumn).data())
-                    << model
-                    << QVector<QModelIndex>({model->index(0, 0),
-                                             model->index(1, 0),
-                                             model->index(2, 0)})
-                    << false << swapRow << swapColumn << dir << -1 << -1;
+                        << model
+                        << QList<QModelIndex>(
+                                   { model->index(0, 0), model->index(1, 0), model->index(2, 0) })
+                        << false << swapRow << swapColumn << dir << -1 << -1;
             }
             {
                 QtTestTableModel *model = new QtTestTableModel(10, 3);
                 QTest::newRow(testName("hidden row", dir, swapRow, swapColumn).data())
-                    << model
-                    << QVector<QModelIndex>({model->index(3, 0),
-                                             model->index(3, 1)})
-                    << true << swapRow << swapColumn << dir << 3 << -1;
+                        << model << QList<QModelIndex>({ model->index(3, 0), model->index(3, 1) })
+                        << true << swapRow << swapColumn << dir << 3 << -1;
             }
             {
                 QtTestTableModel *model = new QtTestTableModel(50, 2);
                 QTest::newRow(testName("row outside viewport", dir, swapRow, swapColumn).data())
-                    << model
-                    << QVector<QModelIndex>({model->index(49, 0),
-                                             model->index(49, 1)})
-                    << true << swapRow << swapColumn << dir << -1 << -1;
+                        << model << QList<QModelIndex>({ model->index(49, 0), model->index(49, 1) })
+                        << true << swapRow << swapColumn << dir << -1 << -1;
             }
         }
     }
@@ -3900,7 +3894,7 @@ void tst_QTableView::checkIntersectedRect_data()
 void tst_QTableView::checkIntersectedRect()
 {
     QFETCH(QtTestTableModel *, model);
-    QFETCH(const QVector<QModelIndex>, changedIndexes);
+    QFETCH(const QList<QModelIndex>, changedIndexes);
     QFETCH(bool, isEmpty);
     QFETCH(bool, swapFirstAndLastIndexRow);
     QFETCH(bool, swapFirstAndLastIndexColumn);

@@ -49,7 +49,7 @@
 #include <QScreen>
 #include <QSizeGrip>
 
-#include <QVector>
+#include <QList>
 
 QT_BEGIN_NAMESPACE
 extern bool qt_tab_all_widgets();
@@ -401,7 +401,7 @@ void tst_QMdiSubWindow::setWindowState()
 
 void tst_QMdiSubWindow::mainWindowSupport()
 {
-    QVector<QMdiSubWindow *> windows;
+    QList<QMdiSubWindow *> windows;
     QMdiArea *workspace = new QMdiArea;
     QMainWindow mainWindow;
     mainWindow.setCentralWidget(workspace);

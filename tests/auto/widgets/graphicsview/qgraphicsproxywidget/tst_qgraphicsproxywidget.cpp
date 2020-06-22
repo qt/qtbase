@@ -1524,10 +1524,10 @@ protected:
     }
 };
 
-// ### work around missing QVector ctor from iterator pair:
-static QVector<QRect> rects(const QRegion &region)
+// ### work around missing QList ctor from iterator pair:
+static QList<QRect> rects(const QRegion &region)
 {
-    QVector<QRect> result;
+    QList<QRect> result;
     for (QRect r : region)
         result.push_back(r);
     return result;
@@ -1555,10 +1555,10 @@ void tst_QGraphicsProxyWidget::scrollUpdate()
     // QRect(0, 12, 102, 10) is the scroll update, expanded (-2, -2, 2, 2),
     // intersected with the above update.
     QCOMPARE(rects(view.paintEventRegion),
-             QVector<QRect>() << QRect(0, 0, 200, 12) << QRect(0, 12, 102, 10));
+             QList<QRect>() << QRect(0, 0, 200, 12) << QRect(0, 12, 102, 10));
     QCOMPARE(widget->npaints, 2);
     QCOMPARE(rects(widget->paintEventRegion),
-             QVector<QRect>() << QRect(0, 0, 200, 12) << QRect(0, 12, 102, 10));
+             QList<QRect>() << QRect(0, 0, 200, 12) << QRect(0, 12, 102, 10));
 }
 
 void tst_QGraphicsProxyWidget::setWidget_simple()

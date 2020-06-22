@@ -33,7 +33,7 @@
 #include <QtWidgets/QGestureEvent>
 #include <QtGui/QScreen>
 #include <QtGui/QPointingDevice>
-#include <QtCore/QVector>
+#include <QtCore/QList>
 #include <QtCore/QString>
 #include <QtCore/QHash>
 #include <QtCore/QDebug>
@@ -73,7 +73,7 @@ void tst_QGestureRecognizer::initTestCase()
 
 #ifndef QT_NO_GESTURES
 
-typedef QVector<Qt::GestureType> GestureTypeVector;
+typedef QList<Qt::GestureType> GestureTypeVector;
 
 class TestWidget : public QWidget
 {
@@ -126,8 +126,7 @@ bool TestWidget::event(QEvent * event)
     return QWidget::event(event);
 }
 
-static void pressSequence(QTest::QTouchEventSequence &sequence,
-                          QVector<QPoint> &points,
+static void pressSequence(QTest::QTouchEventSequence &sequence, QList<QPoint> &points,
                           QWidget *widget)
 {
     const int pointCount = points.size();
@@ -136,10 +135,8 @@ static void pressSequence(QTest::QTouchEventSequence &sequence,
     sequence.commit();
 }
 
-static void linearSequence(int n, const QPoint &delta,
-                           QTest::QTouchEventSequence &sequence,
-                           QVector<QPoint> &points,
-                           QWidget *widget)
+static void linearSequence(int n, const QPoint &delta, QTest::QTouchEventSequence &sequence,
+                           QList<QPoint> &points, QWidget *widget)
 {
     const int pointCount = points.size();
     for (int s = 0; s < n; ++s) {
@@ -151,8 +148,7 @@ static void linearSequence(int n, const QPoint &delta,
     }
 }
 
-static void releaseSequence(QTest::QTouchEventSequence &sequence,
-                            QVector<QPoint> &points,
+static void releaseSequence(QTest::QTouchEventSequence &sequence, QList<QPoint> &points,
                             QWidget *widget)
 {
     const int pointCount = points.size();
@@ -188,7 +184,7 @@ void tst_QGestureRecognizer::panGesture()
     widget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
 
-    QVector<QPoint> points;
+    QList<QPoint> points;
     for (int i = 0; i < panPoints; ++i)
         points.append(QPoint(10 + i *20, 10 + i *20));
 
@@ -231,7 +227,7 @@ void tst_QGestureRecognizer::pinchGesture()
     widget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
 
-    QVector<QPoint> points;
+    QList<QPoint> points;
     points.append(widget.rect().center());
     points.append(points.front() + QPoint(0, 20));
 
@@ -288,7 +284,7 @@ void tst_QGestureRecognizer::swipeGesture()
 
     // Start a swipe sequence with 2 points (QTBUG-15768)
     const QPoint fingerDistance(m_fingerDistance, m_fingerDistance);
-    QVector<QPoint> points;
+    QList<QPoint> points;
     for (int i = 0; i < swipePoints - 1; ++i)
         points.append(fingerDistance + i * fingerDistance);
 

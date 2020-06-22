@@ -97,8 +97,8 @@ private:
 };
 
 using IntPair = QPair<int, int>;
-using IntList = QVector<int>;
-using IntIntList = QVector<IntPair>;
+using IntList = QList<int>;
+using IntIntList = QList<IntPair>;
 
 Q_DECLARE_METATYPE(QTableWidgetSelectionRange)
 
@@ -1118,7 +1118,7 @@ void tst_QTableWidget::sortItems()
     testWidget->setColumnCount(columnCount);
 
     QAbstractItemModel *model = testWidget->model();
-    QVector<QPersistentModelIndex> persistent;
+    QList<QPersistentModelIndex> persistent;
 
     int ti = 0;
     for (int r = 0; r < rowCount; ++r) {
@@ -1300,7 +1300,7 @@ void tst_QTableWidget::setItemWithSorting()
         QTableWidget w(rowCount, columnCount);
 
         QAbstractItemModel *model = w.model();
-        QVector<QPersistentModelIndex> persistent;
+        QList<QPersistentModelIndex> persistent;
 
         int ti = 0;
         for (int r = 0; r < rowCount; ++r) {
@@ -1356,12 +1356,13 @@ class QTableWidgetDataChanged : public QTableWidget
 public:
     using QTableWidget::QTableWidget;
 
-    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles) override
+    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight,
+                     const QList<int> &roles) override
     {
         QTableWidget::dataChanged(topLeft, bottomRight, roles);
         currentRoles = roles;
     }
-    QVector<int> currentRoles;
+    QList<int> currentRoles;
 };
 
 void tst_QTableWidget::itemData()
@@ -1372,13 +1373,13 @@ void tst_QTableWidget::itemData()
     QVERIFY(item);
     item->setFlags(item->flags() | Qt::ItemIsEditable);
     item->setData(Qt::DisplayRole,  QString("0"));
-    QCOMPARE(widget.currentRoles, QVector<int>({Qt::DisplayRole, Qt::EditRole}));
+    QCOMPARE(widget.currentRoles, QList<int>({ Qt::DisplayRole, Qt::EditRole }));
     item->setData(Qt::CheckStateRole, Qt::PartiallyChecked);
-    QCOMPARE(widget.currentRoles, QVector<int>{Qt::CheckStateRole});
+    QCOMPARE(widget.currentRoles, QList<int> { Qt::CheckStateRole });
     for (int i = 0; i < 4; ++i)
     {
         item->setData(Qt::UserRole + i, QString::number(i + 1));
-        QCOMPARE(widget.currentRoles, QVector<int>{Qt::UserRole + i});
+        QCOMPARE(widget.currentRoles, QList<int> { Qt::UserRole + i });
     }
     QMap<int, QVariant> flags = widget.model()->itemData(widget.model()->index(0, 0));
     QCOMPARE(flags.count(), 6);
@@ -1401,7 +1402,7 @@ void tst_QTableWidget::setItemData()
     data.insert(Qt::DisplayRole, QLatin1String("Display"));
     data.insert(Qt::ToolTipRole, QLatin1String("ToolTip"));
     table.model()->setItemData(idx, data);
-    QCOMPARE(table.currentRoles, QVector<int>({Qt::DisplayRole, Qt::EditRole, Qt::ToolTipRole}));
+    QCOMPARE(table.currentRoles, QList<int>({ Qt::DisplayRole, Qt::EditRole, Qt::ToolTipRole }));
 
     QCOMPARE(table.model()->data(idx, Qt::DisplayRole).toString(), QLatin1String("Display"));
     QCOMPARE(table.model()->data(idx, Qt::EditRole).toString(), QLatin1String("Display"));
@@ -1409,7 +1410,7 @@ void tst_QTableWidget::setItemData()
     QCOMPARE(dataChangedSpy.count(), 1);
     QCOMPARE(idx, qvariant_cast<QModelIndex>(dataChangedSpy.first().at(0)));
     QCOMPARE(idx, qvariant_cast<QModelIndex>(dataChangedSpy.first().at(1)));
-    const auto roles = qvariant_cast<QVector<int>>(dataChangedSpy.first().at(2));
+    const auto roles = qvariant_cast<QList<int>>(dataChangedSpy.first().at(2));
     QCOMPARE(roles.size(), 3);
     QVERIFY(roles.contains(Qt::DisplayRole));
     QVERIFY(roles.contains(Qt::EditRole));
@@ -1424,7 +1425,8 @@ void tst_QTableWidget::setItemData()
     table.model()->setItemData(idx, data);
     QCOMPARE(table.model()->data(idx, Qt::DisplayRole).toString(), QLatin1String("dizplaye"));
     QCOMPARE(dataChangedSpy.count(), 1);
-    QCOMPARE(QVector<int>({Qt::DisplayRole, Qt::EditRole}), qvariant_cast<QVector<int>>(dataChangedSpy.first().at(2)));
+    QCOMPARE(QList<int>({ Qt::DisplayRole, Qt::EditRole }),
+             qvariant_cast<QList<int>>(dataChangedSpy.first().at(2)));
 
     item->setBackground(QBrush(Qt::red));
     item->setForeground(QBrush(Qt::green));
@@ -1697,8 +1699,7 @@ void tst_QTableWidget::search()
         return item;
     };
 
-    auto checkSeries = [](TestTableWidget &tw, const QVector<QPair<QKeyEvent, int>> &series)
-    {
+    auto checkSeries = [](TestTableWidget &tw, const QList<QPair<QKeyEvent, int>> &series) {
         for (const auto &p : series) {
             QKeyEvent e = p.first;
             tw.keyPressEvent(&e);
@@ -1745,7 +1746,7 @@ void tst_QTableWidget::clearItemData()
     const QList<QVariant> dataChangeArgs = dataChangeSpy.takeFirst();
     QCOMPARE(dataChangeArgs.at(0).value<QModelIndex>(), table.model()->index(0, 0));
     QCOMPARE(dataChangeArgs.at(1).value<QModelIndex>(), table.model()->index(0, 0));
-    QVERIFY(dataChangeArgs.at(2).value<QVector<int>>().isEmpty());
+    QVERIFY(dataChangeArgs.at(2).value<QList<int>>().isEmpty());
     QVERIFY(table.model()->clearItemData(table.model()->index(0, 0)));
     QCOMPARE(dataChangeSpy.size(), 0);
 }

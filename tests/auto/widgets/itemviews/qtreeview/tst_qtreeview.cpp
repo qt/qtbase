@@ -88,7 +88,8 @@ public:
         QTreeView::paintEvent(event);
         wasPainted = true;
     }
-    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>()) override
+    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight,
+                     const QList<int> &roles = QList<int>()) override
     {
         QTreeView::dataChanged(topLeft, bottomRight, roles);
         QTreeViewPrivate *av = static_cast<QTreeViewPrivate*>(qt_widget_private(this));
@@ -1998,7 +1999,7 @@ public:
     { return QSize(200, 50); }
 };
 
-typedef QVector<QPoint> PointList;
+typedef QList<QPoint> PointList;
 
 void tst_QTreeView::setSelection_data()
 {
@@ -2898,8 +2899,8 @@ public:
             }
         }
 
-        QVector<Node *> children;
-        QVector<Node *> deadChildren;
+        QList<Node *> children;
+        QList<Node *> deadChildren;
         Node *parent;
         bool isDead = false;
     };
@@ -2923,7 +2924,7 @@ public:
     {
         emit layoutAboutToBeChanged();
         QModelIndexList oldList = persistentIndexList();
-        QVector<QStack<int>> oldListPath;
+        QList<QStack<int>> oldListPath;
         for (int i = 0; i < oldList.count(); ++i) {
             QModelIndex idx = oldList.at(i);
             QStack<int> path;
@@ -4861,59 +4862,54 @@ void tst_QTreeView::checkIntersectedRect_data()
         return model;
     };
     QTest::addColumn<QStandardItemModel *>("model");
-    QTest::addColumn<QVector<QModelIndex>>("changedIndexes");
+    QTest::addColumn<QList<QModelIndex>>("changedIndexes");
     QTest::addColumn<bool>("isEmpty");
     {
         auto model = createModel(5);
-        QTest::newRow("multiple columns") << model
-                                          << QVector<QModelIndex>({model->index(0, 0),
-                                                                   model->index(0, 1)})
-                                          << false;
+        QTest::newRow("multiple columns")
+                << model << QList<QModelIndex>({ model->index(0, 0), model->index(0, 1) }) << false;
     }
     {
         auto model = createModel(5);
-        QTest::newRow("multiple rows") << model
-                                       << QVector<QModelIndex>({model->index(0, 0),
-                                                                model->index(1, 0),
-                                                                model->index(2, 0)})
-                                       << false;
+        QTest::newRow("multiple rows")
+                << model
+                << QList<QModelIndex>(
+                           { model->index(0, 0), model->index(1, 0), model->index(2, 0) })
+                << false;
     }
     {
         auto model = createModel(5);
         const QModelIndex idxRow2(model->indexFromItem(model->item(2)));
-        QTest::newRow("child row") << model
-                                   << QVector<QModelIndex>({model->index(0, 0, idxRow2),
-                                                            model->index(0, 1, idxRow2)})
-                                   << false;
+        QTest::newRow("child row")
+                << model
+                << QList<QModelIndex>({ model->index(0, 0, idxRow2), model->index(0, 1, idxRow2) })
+                << false;
         }
     {
         auto model = createModel(5);
-        QTest::newRow("hidden row") << model
-                                    << QVector<QModelIndex>({model->index(3, 0),
-                                                             model->index(3, 1)})
-                                    << true;
+        QTest::newRow("hidden row")
+                << model << QList<QModelIndex>({ model->index(3, 0), model->index(3, 1) }) << true;
     }
     {
         auto model = createModel(5);
         const QModelIndex idxRow3(model->indexFromItem(model->item(3)));
-        QTest::newRow("hidden child row") << model
-                                          << QVector<QModelIndex>({model->index(0, 0, idxRow3),
-                                                                   model->index(0, 1, idxRow3)})
-                                          << true;
+        QTest::newRow("hidden child row")
+                << model
+                << QList<QModelIndex>({ model->index(0, 0, idxRow3), model->index(0, 1, idxRow3) })
+                << true;
     }
     {
         auto model = createModel(50);
-        QTest::newRow("row outside viewport") << model
-                                              << QVector<QModelIndex>({model->index(49, 0),
-                                                                       model->index(49, 1)})
-                                              << true;
+        QTest::newRow("row outside viewport")
+                << model << QList<QModelIndex>({ model->index(49, 0), model->index(49, 1) })
+                << true;
     }
 }
 
 void tst_QTreeView::checkIntersectedRect()
 {
     QFETCH(QStandardItemModel *, model);
-    QFETCH(const QVector<QModelIndex>, changedIndexes);
+    QFETCH(const QList<QModelIndex>, changedIndexes);
     QFETCH(bool, isEmpty);
 
     TreeView view;

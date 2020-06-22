@@ -1409,7 +1409,7 @@ void tst_QMdiArea::subWindowList()
     QVERIFY(QTest::qWaitForWindowActive(&workspace));
 
     QList<QMdiSubWindow *> activationOrder;
-    QVector<QMdiSubWindow *> windows;
+    QList<QMdiSubWindow *> windows;
     for (int i = 0; i < windowCount; ++i) {
         windows.append(qobject_cast<QMdiSubWindow *>(workspace.addSubWindow(new QWidget)));
         windows[i]->show();

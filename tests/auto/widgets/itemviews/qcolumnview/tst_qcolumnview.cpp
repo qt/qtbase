@@ -134,7 +134,7 @@ public:
 
     friend class tst_QColumnView;
 
-    QVector<QPointer<QAbstractItemView>> createdColumns;
+    QList<QPointer<QAbstractItemView>> createdColumns;
 
 protected:
     QAbstractItemView *createColumn(const QModelIndex &index) override

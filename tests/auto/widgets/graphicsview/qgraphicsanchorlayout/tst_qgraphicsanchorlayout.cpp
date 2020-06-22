@@ -1358,7 +1358,7 @@ static inline QByteArray msgStability(const QRectF &actual, const QRectF &expect
 
 void tst_QGraphicsAnchorLayout::stability()
 {
-    QVector<QRectF> geometries;
+    QList<QRectF> geometries;
     geometries.resize(7);
     QGraphicsWidget p(0, Qt::Window);
     // it usually fails after 3-4 iterations

@@ -35,7 +35,7 @@
 #include <QTest>
 #include <private/qlistwidget_p.h>
 
-using IntList = QVector<int>;
+using IntList = QList<int>;
 
 class tst_QListWidget : public QObject
 {
@@ -154,9 +154,9 @@ protected slots:
 
 private:
     QListWidget *testWidget = nullptr;
-    QVector<QModelIndex> rcParent{8};
-    QVector<int> rcFirst = QVector<int>(8, 0);
-    QVector<int> rcLast = QVector<int>(8, 0);
+    QList<QModelIndex> rcParent { 8 };
+    QList<int> rcFirst = QList<int>(8, 0);
+    QList<int> rcLast = QList<int>(8, 0);
 
     void populate();
     void checkDefaultValues();
@@ -1062,7 +1062,7 @@ void tst_QListWidget::sortItems()
     }
 
     QAbstractItemModel *model = testWidget->model();
-    QVector<QPersistentModelIndex> persistent;
+    QList<QPersistentModelIndex> persistent;
     for (int j = 0; j < model->rowCount(QModelIndex()); ++j)
         persistent << model->index(j, 0, QModelIndex());
 
@@ -1129,7 +1129,7 @@ void tst_QListWidget::sortHiddenItems()
     tw->addItems(initialList);
 
     QAbstractItemModel *model = tw->model();
-    QVector<QPersistentModelIndex> persistent;
+    QList<QPersistentModelIndex> persistent;
     for (int j = 0; j < model->rowCount(QModelIndex()); ++j) {
         persistent << model->index(j, 0, QModelIndex());
         tw->setRowHidden(j, j & 1); // every odd is hidden
@@ -1479,12 +1479,13 @@ class QListWidgetDataChanged : public QListWidget
 public:
     using QListWidget::QListWidget;
 
-    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles) override
+    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight,
+                     const QList<int> &roles) override
     {
         QListWidget::dataChanged(topLeft, bottomRight, roles);
         currentRoles = roles;
     }
-    QVector<int> currentRoles;
+    QList<int> currentRoles;
 };
 
 void tst_QListWidget::itemData()
@@ -1493,13 +1494,13 @@ void tst_QListWidget::itemData()
     QListWidgetItem item(&widget);
     item.setFlags(item.flags() | Qt::ItemIsEditable);
     item.setData(Qt::DisplayRole,  QString("0"));
-    QCOMPARE(widget.currentRoles, QVector<int>({Qt::DisplayRole, Qt::EditRole}));
+    QCOMPARE(widget.currentRoles, QList<int>({ Qt::DisplayRole, Qt::EditRole }));
     item.setData(Qt::CheckStateRole, Qt::PartiallyChecked);
-    QCOMPARE(widget.currentRoles, QVector<int>{Qt::CheckStateRole});
+    QCOMPARE(widget.currentRoles, QList<int> { Qt::CheckStateRole });
     for (int i = 0; i < 4; ++i)
     {
         item.setData(Qt::UserRole + i, QString::number(i + 1));
-        QCOMPARE(widget.currentRoles, QVector<int>{Qt::UserRole + i});
+        QCOMPARE(widget.currentRoles, QList<int> { Qt::UserRole + i });
     }
     QMap<int, QVariant> flags = widget.model()->itemData(widget.model()->index(0, 0));
     QCOMPARE(flags.count(), 6);
@@ -1537,7 +1538,7 @@ void tst_QListWidget::changeDataWithSorting()
     w.addItems(initialItems);
 
     QAbstractItemModel *model = w.model();
-    QVector<QPersistentModelIndex> persistent;
+    QList<QPersistentModelIndex> persistent;
     for (int j = 0; j < model->rowCount(QModelIndex()); ++j)
         persistent << model->index(j, 0, QModelIndex());
 
@@ -1859,7 +1860,7 @@ void tst_QListWidget::clearItemData()
     const QList<QVariant> dataChangeArgs = dataChangeSpy.takeFirst();
     QCOMPARE(dataChangeArgs.at(0).value<QModelIndex>(), list.model()->index(0, 0));
     QCOMPARE(dataChangeArgs.at(1).value<QModelIndex>(), list.model()->index(0, 0));
-    QVERIFY(dataChangeArgs.at(2).value<QVector<int>>().isEmpty());
+    QVERIFY(dataChangeArgs.at(2).value<QList<int>>().isEmpty());
     QVERIFY(list.model()->clearItemData(list.model()->index(0, 0)));
     QCOMPARE(dataChangeSpy.size(), 0);
 }

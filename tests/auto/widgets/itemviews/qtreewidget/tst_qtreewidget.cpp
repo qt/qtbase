@@ -218,11 +218,11 @@ void tst_QTreeWidget::getSetCheck()
     QCOMPARE(obj1.currentItem(), nullptr);
 }
 
-using IntList = QVector<int>;
-using ListIntList = QVector<IntList>;
-using PersistentModelIndexVec = QVector<QPersistentModelIndex>;
+using IntList = QList<int>;
+using ListIntList = QList<IntList>;
+using PersistentModelIndexVec = QList<QPersistentModelIndex>;
 using TreeItem = QTreeWidgetItem;
-using TreeItemList = QVector<TreeItem*>;
+using TreeItemList = QList<TreeItem *>;
 
 Q_DECLARE_METATYPE(Qt::Orientation)
 Q_DECLARE_METATYPE(QTreeWidgetItem*)
@@ -1466,19 +1466,15 @@ void tst_QTreeWidget::keyboardNavigation()
 
     fillTreeWidget(testWidget, rows);
 
-    const QVector<Qt::Key> keymoves {
-        Qt::Key_Down, Qt::Key_Right, Qt::Key_Left,
-        Qt::Key_Down, Qt::Key_Down, Qt::Key_Down, Qt::Key_Down,
-        Qt::Key_Right,
-        Qt::Key_Up, Qt::Key_Left, Qt::Key_Left,
-        Qt::Key_Up, Qt::Key_Down, Qt::Key_Up, Qt::Key_Up,
-        Qt::Key_Up, Qt::Key_Up, Qt::Key_Up, Qt::Key_Up,
-        Qt::Key_Down, Qt::Key_Right, Qt::Key_Down, Qt::Key_Down,
-        Qt::Key_Down, Qt::Key_Right, Qt::Key_Down, Qt::Key_Down,
-        Qt::Key_Left, Qt::Key_Left, Qt::Key_Up, Qt::Key_Down,
-        Qt::Key_Up, Qt::Key_Up, Qt::Key_Up, Qt::Key_Left,
-        Qt::Key_Down, Qt::Key_Right, Qt::Key_Right, Qt::Key_Right,
-        Qt::Key_Left, Qt::Key_Left, Qt::Key_Right, Qt::Key_Left
+    const QList<Qt::Key> keymoves {
+        Qt::Key_Down,  Qt::Key_Right, Qt::Key_Left,  Qt::Key_Down, Qt::Key_Down, Qt::Key_Down,
+        Qt::Key_Down,  Qt::Key_Right, Qt::Key_Up,    Qt::Key_Left, Qt::Key_Left, Qt::Key_Up,
+        Qt::Key_Down,  Qt::Key_Up,    Qt::Key_Up,    Qt::Key_Up,   Qt::Key_Up,   Qt::Key_Up,
+        Qt::Key_Up,    Qt::Key_Down,  Qt::Key_Right, Qt::Key_Down, Qt::Key_Down, Qt::Key_Down,
+        Qt::Key_Right, Qt::Key_Down,  Qt::Key_Down,  Qt::Key_Left, Qt::Key_Left, Qt::Key_Up,
+        Qt::Key_Down,  Qt::Key_Up,    Qt::Key_Up,    Qt::Key_Up,   Qt::Key_Left, Qt::Key_Down,
+        Qt::Key_Right, Qt::Key_Right, Qt::Key_Right, Qt::Key_Left, Qt::Key_Left, Qt::Key_Right,
+        Qt::Key_Left
     };
 
     int row = 0;
@@ -1957,12 +1953,13 @@ class QTreeWidgetDataChanged : public QTreeWidget
 public:
     using QTreeWidget::QTreeWidget;
 
-    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles) override
+    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight,
+                     const QList<int> &roles) override
     {
         QTreeWidget::dataChanged(topLeft, bottomRight, roles);
         currentRoles = roles;
     }
-    QVector<int> currentRoles;
+    QList<int> currentRoles;
 };
 
 void tst_QTreeWidget::itemData()
@@ -1972,12 +1969,12 @@ void tst_QTreeWidget::itemData()
     widget.setColumnCount(2);
     item.setFlags(item.flags() | Qt::ItemIsEditable);
     item.setData(0, Qt::DisplayRole,  QString("0"));
-    QCOMPARE(widget.currentRoles, QVector<int>({Qt::DisplayRole, Qt::EditRole}));
+    QCOMPARE(widget.currentRoles, QList<int>({ Qt::DisplayRole, Qt::EditRole }));
     item.setData(0, Qt::CheckStateRole, Qt::PartiallyChecked);
-    QCOMPARE(widget.currentRoles, QVector<int>{Qt::CheckStateRole});
+    QCOMPARE(widget.currentRoles, QList<int> { Qt::CheckStateRole });
     for (int i = 0; i < 4; ++i) {
         item.setData(0, Qt::UserRole + i, QString::number(i + 1));
-        QCOMPARE(widget.currentRoles, QVector<int>{Qt::UserRole + i});
+        QCOMPARE(widget.currentRoles, QList<int> { Qt::UserRole + i });
     }
     QMap<int, QVariant> flags = widget.model()->itemData(widget.model()->index(0, 0));
     QCOMPARE(flags.count(), 6);
@@ -2318,7 +2315,7 @@ void tst_QTreeWidget::insertExpandedItemsWithSorting()
     tree.setSortingEnabled(true);
 
     // insert expanded items in unsorted order
-    QVector<QTreeWidgetItem *> items;
+    QList<QTreeWidgetItem *> items;
     for (const QString &text : parentTexts) {
         QTreeWidgetItem *parent = new QTreeWidgetItem(&tree, {text});
         parent->setExpanded(true);
@@ -2725,7 +2722,7 @@ void tst_QTreeWidget::sortedIndexOfChild()
     QFETCH(const IntList, expectedIndexes);
 
     QTreeWidget tw;
-    QVector<QTreeWidgetItem *> itms;
+    QList<QTreeWidgetItem *> itms;
     auto *top = new QTreeWidgetItem(&tw, {"top"});
 
     for (const QString &str : itemTexts)
@@ -2998,7 +2995,7 @@ protected:
     }
 private:
     int timerId;
-    QVector<QTreeWidgetItem*> m_list;
+    QList<QTreeWidgetItem *> m_list;
 };
 
 void tst_QTreeWidget::sortAndSelect()
@@ -3612,7 +3609,7 @@ void tst_QTreeWidget::clearItemData()
     QList<QVariant> dataChangeArgs = dataChangeSpy.takeFirst();
     QCOMPARE(dataChangeArgs.at(0).value<QModelIndex>(), parentIdx);
     QCOMPARE(dataChangeArgs.at(1).value<QModelIndex>(), parentIdx);
-    QVERIFY(dataChangeArgs.at(2).value<QVector<int>>().isEmpty());
+    QVERIFY(dataChangeArgs.at(2).value<QList<int>>().isEmpty());
     QVERIFY(model->clearItemData(parentIdx));
     QCOMPARE(dataChangeSpy.size(), 0);
     QVERIFY(model->clearItemData(childIdx));
@@ -3621,7 +3618,7 @@ void tst_QTreeWidget::clearItemData()
     dataChangeArgs = dataChangeSpy.takeFirst();
     QCOMPARE(dataChangeArgs.at(0).value<QModelIndex>(), childIdx);
     QCOMPARE(dataChangeArgs.at(1).value<QModelIndex>(), childIdx);
-    QVERIFY(dataChangeArgs.at(2).value<QVector<int>>().isEmpty());
+    QVERIFY(dataChangeArgs.at(2).value<QList<int>>().isEmpty());
 }
 #endif
 

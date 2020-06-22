@@ -1690,7 +1690,7 @@ QString SetOption::describe() const
         + QLatin1Char(on ? '1' : '0');
 }
 
-Q_DECLARE_METATYPE(QVector<QSharedPointer<Operation> >)
+Q_DECLARE_METATYPE(QList<QSharedPointer<Operation>>)
 
 class TestGroup
 {
@@ -1707,7 +1707,7 @@ public:
         combinations.clear();
     }
 
-    QVector<QSharedPointer<Operation> > &add()
+    QList<QSharedPointer<Operation>> &add()
     {
         combinations.resize(combinations.size() + 1);
         return combinations.last();
@@ -1728,7 +1728,7 @@ private:
     QString name;
     Type type;
     int nRows_;
-    QVector<QVector<QSharedPointer<Operation> > > combinations;
+    QList<QList<QSharedPointer<Operation>>> combinations;
 };
 
 class IntroPage : public QWizardPage
@@ -1812,7 +1812,7 @@ public:
         }
     }
 
-    void applyOperations(const QVector<QSharedPointer<Operation> > &operations)
+    void applyOperations(const QList<QSharedPointer<Operation>> &operations)
     {
         foreach (const QSharedPointer<Operation> &op, operations) {
             if (op) {
@@ -1834,15 +1834,16 @@ public:
 class CombinationsTestData
 {
     TestGroup testGroup;
-    QVector<QSharedPointer<Operation> > pageOps;
-    QVector<QSharedPointer<Operation> > styleOps;
-    QMap<bool, QVector<QSharedPointer<Operation> > > setAllOptions;
+    QList<QSharedPointer<Operation>> pageOps;
+    QList<QSharedPointer<Operation>> styleOps;
+    QMap<bool, QList<QSharedPointer<Operation>>> setAllOptions;
+
 public:
     CombinationsTestData()
     {
         QTest::addColumn<bool>("ref");
         QTest::addColumn<bool>("testEquality");
-        QTest::addColumn<QVector<QSharedPointer<Operation> > >("operations");
+        QTest::addColumn<QList<QSharedPointer<Operation>>>("operations");
         pageOps << SetPage::create(0) << SetPage::create(1) << SetPage::create(2);
         styleOps << SetStyle::create(QWizard::ClassicStyle) << SetStyle::create(QWizard::ModernStyle)
                  << SetStyle::create(QWizard::MacStyle);
@@ -1908,7 +1909,7 @@ public:
         testGroup.createTestRows();
 
         for (int i = 0; i < 2; ++i) {
-            QVector<QSharedPointer<Operation> > setOptions = setAllOptions.value(i == 1);
+            QList<QSharedPointer<Operation>> setOptions = setAllOptions.value(i == 1);
 
             testGroup.reset("testAll 3.1");
             testGroup.add() << setOptions;
@@ -1932,7 +1933,7 @@ public:
             testGroup.createTestRows();
 
             for (int i = 0; i < 2; ++i) {
-                QVector<QSharedPointer<Operation> > optionOps = setAllOptions.value(i == 1);
+                QList<QSharedPointer<Operation>> optionOps = setAllOptions.value(i == 1);
                 testGroup.reset("testAll 4.2");
                 testGroup.add() << optionOps << pageOp;
                 testGroup.add() << pageOp << optionOps;
@@ -1955,7 +1956,7 @@ public:
             testGroup.createTestRows();
 
             for (int i = 0; i < 2; ++i) {
-                QVector<QSharedPointer<Operation> > optionOps = setAllOptions.value(i == 1);
+                QList<QSharedPointer<Operation>> optionOps = setAllOptions.value(i == 1);
                 testGroup.reset("testAll 5.2");
                 testGroup.add() << optionOps << styleOp;
                 testGroup.add() << styleOp << optionOps;
@@ -1990,7 +1991,7 @@ public:
                 testGroup.createTestRows();
 
                 for (int i = 0; i < 2; ++i) {
-                    QVector<QSharedPointer<Operation> > optionOps = setAllOptions.value(i == 1);
+                    QList<QSharedPointer<Operation>> optionOps = setAllOptions.value(i == 1);
                     testGroup.reset("testAll 6.4");
                     testGroup.add() << optionOps << pageOp << styleOp;
                     testGroup.add() << pageOp << optionOps << styleOp;
@@ -2063,7 +2064,7 @@ void tst_QWizard::combinations()
 {
     QFETCH(bool, ref);
     QFETCH(bool, testEquality);
-    QFETCH(QVector<QSharedPointer<Operation> >, operations);
+    QFETCH(QList<QSharedPointer<Operation>>, operations);
 
     TestWizard wizard;
 #if !defined(QT_NO_STYLE_WINDOWSVISTA)

@@ -38,9 +38,9 @@
 #include <QTreeWidget>
 #include <QtWidgets/private/qheaderview_p.h>
 
-using BoolList = QVector<bool>;
-using IntList = QVector<int>;
-using ResizeVec = QVector<QHeaderView::ResizeMode>;
+using BoolList = QList<bool>;
+using IntList = QList<int>;
+using ResizeVec = QList<QHeaderView::ResizeMode>;
 
 class TestStyle : public QProxyStyle
 {

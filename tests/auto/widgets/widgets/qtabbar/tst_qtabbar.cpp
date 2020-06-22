@@ -291,8 +291,7 @@ public:
 void tst_QTabBar::hideAllTabs()
 {
     TabBar tabbar;
-    auto checkPositions = [&tabbar](const QVector<int> &positions)
-    {
+    auto checkPositions = [&tabbar](const QList<int> &positions) {
         QStyleOptionTab option;
         int iPos = 0;
         for (int i = 0; i < tabbar.count(); ++i) {

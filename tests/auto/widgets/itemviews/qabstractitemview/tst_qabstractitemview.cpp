@@ -56,7 +56,7 @@
 Q_DECLARE_METATYPE(Qt::ItemFlags);
 
 using namespace QTestPrivate;
-using IntList = QVector<int>;
+using IntList = QList<int>;
 
 // Move cursor out of widget area to avoid undesired interaction on Mac.
 static inline void moveCursorAway(const QWidget *topLevel)
@@ -305,7 +305,7 @@ void tst_QAbstractItemView::emptyModels_data()
 {
     QTest::addColumn<QByteArray>("viewType");
 
-    const QVector<QByteArray> widgets{ "QListView", "QTreeView", "QTableView", "QHeaderView" };
+    const QList<QByteArray> widgets { "QListView", "QTreeView", "QTableView", "QHeaderView" };
     for (const QByteArray &widget : widgets)
         QTest::newRow(widget) << widget;
 }
@@ -1059,7 +1059,7 @@ void tst_QAbstractItemView::setCurrentIndex_data()
     QTest::addColumn<Qt::ItemFlags>("itemFlags");
     QTest::addColumn<bool>("result");
 
-    const QVector<QByteArray> widgets{ "QListView", "QTreeView", "QTableView", "QHeaderView" };
+    const QList<QByteArray> widgets { "QListView", "QTreeView", "QTableView", "QHeaderView" };
     for (const QByteArray &widget : widgets) {
         QTest::newRow(widget + ": no flags")
             << widget << Qt::ItemFlags(Qt::NoItemFlags) << false;
@@ -1117,49 +1117,45 @@ void tst_QAbstractItemView::checkIntersectedRect_data()
         return model;
     };
     QTest::addColumn<QStandardItemModel *>("model");
-    QTest::addColumn<QVector<QModelIndex>>("changedIndexes");
+    QTest::addColumn<QList<QModelIndex>>("changedIndexes");
     QTest::addColumn<bool>("isEmpty");
     {
         auto model = createModel(5);
-        QTest::newRow("multiple columns") << model
-                                          << QVector<QModelIndex>({model->index(0, 0),
-                                                                   model->index(0, 1)})
-                                          << false;
+        QTest::newRow("multiple columns")
+                << model << QList<QModelIndex>({ model->index(0, 0), model->index(0, 1) }) << false;
     }
     {
         auto model = createModel(5);
-        QTest::newRow("multiple rows") << model
-                                       << QVector<QModelIndex>({model->index(0, 0),
-                                                                model->index(1, 0),
-                                                                model->index(2, 0)})
-                                       << false;
+        QTest::newRow("multiple rows")
+                << model
+                << QList<QModelIndex>(
+                           { model->index(0, 0), model->index(1, 0), model->index(2, 0) })
+                << false;
     }
     {
         auto model = createModel(5);
-        QTest::newRow("hidden rows") << model
-                                     << QVector<QModelIndex>({model->index(3, 0),
-                                                              model->index(4, 0)})
-                                     << true;
+        QTest::newRow("hidden rows")
+                << model << QList<QModelIndex>({ model->index(3, 0), model->index(4, 0) }) << true;
     }
     {
         auto model = createModel(500);
-        QTest::newRow("rows outside viewport") << model
-                                               << QVector<QModelIndex>({model->index(498, 0),
-                                                                        model->index(499, 0)})
-                                               << true;
+        QTest::newRow("rows outside viewport")
+                << model << QList<QModelIndex>({ model->index(498, 0), model->index(499, 0) })
+                << true;
     }
 }
 
 void tst_QAbstractItemView::checkIntersectedRect()
 {
     QFETCH(QStandardItemModel *, model);
-    QFETCH(const QVector<QModelIndex>, changedIndexes);
+    QFETCH(const QList<QModelIndex>, changedIndexes);
     QFETCH(bool, isEmpty);
 
     class TableView : public QTableView
     {
     public:
-        void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>()) override
+        void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight,
+                         const QList<int> &roles = QList<int>()) override
         {
             QTableView::dataChanged(topLeft, bottomRight, roles);
             // we want to check the base class implementation here!
@@ -2337,7 +2333,7 @@ void tst_QAbstractItemView::inputMethodEnabled_data()
     QTest::addColumn<Qt::ItemFlags>("itemFlags");
     QTest::addColumn<bool>("result");
 
-    const QVector<QByteArray> widgets{ "QListView", "QTreeView", "QTableView" };
+    const QList<QByteArray> widgets { "QListView", "QTreeView", "QTableView" };
     for (const QByteArray &widget : widgets) {
         QTest::newRow(widget + ": no flags")
             << widget << Qt::ItemFlags(Qt::NoItemFlags) << false;
@@ -2434,7 +2430,7 @@ void tst_QAbstractItemView::currentFollowsIndexWidget_data()
 {
     QTest::addColumn<QByteArray>("viewType");
 
-    const QVector<QByteArray> widgets{ "QListView", "QTreeView", "QTableView" };
+    const QList<QByteArray> widgets { "QListView", "QTreeView", "QTableView" };
     for (const QByteArray &widget : widgets)
         QTest::newRow(widget) << widget;
 }
