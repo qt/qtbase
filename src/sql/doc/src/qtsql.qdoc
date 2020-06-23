@@ -75,6 +75,7 @@
     \module QtSql
     \title Qt SQL C++ Classes
     \ingroup modules
+    \qtcmakepackage Sql
     \qtvariable sql
     \brief Provides a driver layer, SQL API layer, and a user
     interface layer for SQL databases.

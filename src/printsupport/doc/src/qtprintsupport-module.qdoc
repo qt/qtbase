@@ -31,5 +31,6 @@
     \brief The Qt PrintSupport module provides classes to make printing easier and portable.
 
     \ingroup modules
+    \qtcmakepackage PrintSupport
     \qtvariable printsupport
 */
