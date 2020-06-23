@@ -878,7 +878,8 @@ public class QtActivityDelegate
 
     public void onPause()
     {
-        QtNative.setApplicationState(ApplicationInactive);
+        if (Build.VERSION.SDK_INT < 24 || !m_activity.isInMultiWindowMode())
+            QtNative.setApplicationState(ApplicationInactive);
     }
 
     public void onResume()
