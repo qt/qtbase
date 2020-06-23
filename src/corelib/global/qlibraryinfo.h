@@ -51,17 +51,6 @@ class QStringList;
 class Q_CORE_EXPORT QLibraryInfo
 {
 public:
-#if QT_DEPRECATED_SINCE(5, 8)
-    static QT_DEPRECATED QString licensee();
-    static QT_DEPRECATED QString licensedProducts();
-#endif
-
-#if QT_CONFIG(datestring)
-#if QT_DEPRECATED_SINCE(5, 5)
-    static QT_DEPRECATED QDate buildDate();
-#endif // QT_DEPRECATED_SINCE(5, 5)
-#endif // datestring
-
     static const char * build() noexcept;
 
     static bool isDebugBuild();

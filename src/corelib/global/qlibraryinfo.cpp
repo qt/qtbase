@@ -247,47 +247,6 @@ QSettings *QLibraryInfoPrivate::findConfiguration()
 QLibraryInfo::QLibraryInfo()
 { }
 
-/*!
-  \deprecated
-  This function used to return the person to whom this build of Qt is licensed, now returns an empty string.
-*/
-
-#if QT_DEPRECATED_SINCE(5, 8)
-QString
-QLibraryInfo::licensee()
-{
-    return QString();
-}
-#endif
-
-/*!
-  \deprecated
-  This function used to return the products that the license for this build of Qt has access to, now returns an empty string.
-*/
-
-#if QT_DEPRECATED_SINCE(5, 8)
-QString
-QLibraryInfo::licensedProducts()
-{
-    return QString();
-}
-#endif
-
-/*!
-    \since 4.6
-    \deprecated
-    This function used to return the installation date for this build of Qt, but now returns a constant date.
-*/
-#if QT_CONFIG(datestring)
-#if QT_DEPRECATED_SINCE(5, 5)
-QDate
-QLibraryInfo::buildDate()
-{
-    return QDate::fromString(QString::fromLatin1("2012-12-20"), Qt::ISODate);
-}
-#endif
-#endif // datestring
-
 #if defined(Q_CC_INTEL) // must be before GNU, Clang and MSVC because ICC/ICL claim to be them
 #  ifdef __INTEL_CLANG_COMPILER
 #    define ICC_COMPAT "Clang"
