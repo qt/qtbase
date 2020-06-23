@@ -78,19 +78,25 @@ private Q_SLOTS:
     void operator_gt_eq();
     void operator_insert_extract_data();
     void operator_insert_extract();
+#if QT_CONFIG(datestring)
     void fromStringDateFormat_data();
     void fromStringDateFormat();
+# if QT_CONFIG(datetimeparser)
     void fromStringFormat_data();
     void fromStringFormat();
+# endif
     void toStringFormat_data();
     void toStringFormat();
     void toStringDateFormat_data();
     void toStringDateFormat();
+#endif
     void isLeapYear();
     void yearsZeroToNinetyNine();
     void printNegativeYear_data() const;
     void printNegativeYear() const;
-    void roundtripGermanLocale() const;
+#if QT_CONFIG(datestring)
+    void roundtripString() const;
+#endif
     void roundtrip() const;
     void qdebug() const;
 private:
@@ -1089,6 +1095,7 @@ void tst_QDate::operator_insert_extract()
     QCOMPARE(deserialised, date);
 }
 
+#if QT_CONFIG(datetimeparser)
 void tst_QDate::fromStringDateFormat_data()
 {
     QTest::addColumn<QString>("dateStr");
@@ -1295,7 +1302,9 @@ void tst_QDate::fromStringFormat()
     QDate dt = QDate::fromString(string, format);
     QCOMPARE(dt, expected);
 }
+#endif // datetimeparser
 
+#if QT_CONFIG(datestring)
 void tst_QDate::toStringFormat_data()
 {
     QTest::addColumn<QDate>("t");
@@ -1342,6 +1351,7 @@ void tst_QDate::toStringDateFormat()
 
     QCOMPARE(date.toString(format), expectedStr);
 }
+#endif // datestring
 
 void tst_QDate::isLeapYear()
 {
@@ -1448,7 +1458,8 @@ void tst_QDate::printNegativeYear() const
     QCOMPARE(date.toString(QLatin1String("yyyy")), expect);
 }
 
-void tst_QDate::roundtripGermanLocale() const
+#if QT_CONFIG(datestring)
+void tst_QDate::roundtripString() const
 {
     /* This code path should not result in warnings. */
     const QDate theDate(QDate::currentDate());
@@ -1457,6 +1468,7 @@ void tst_QDate::roundtripGermanLocale() const
     const QDateTime theDateTime(QDateTime::currentDateTime());
     theDateTime.fromString(theDateTime.toString(Qt::TextDate), Qt::TextDate);
 }
+#endif
 
 void tst_QDate::roundtrip() const
 {

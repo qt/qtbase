@@ -911,6 +911,7 @@ qt_feature("datetimeparser" PRIVATE
     SECTION "Utilities"
     LABEL "QDateTimeParser"
     PURPOSE "Provides support for parsing date-time texts."
+    CONDITION QT_FEATURE_datestring
 )
 qt_feature("commandlineparser" PUBLIC
     SECTION "Utilities"

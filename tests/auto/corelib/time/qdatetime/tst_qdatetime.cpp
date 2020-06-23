@@ -72,18 +72,18 @@ private Q_SLOTS:
     void fromSecsSinceEpoch();
     void fromMSecsSinceEpoch_data();
     void fromMSecsSinceEpoch();
+#if QT_CONFIG(datestring)
     void toString_isoDate_data();
     void toString_isoDate();
     void toString_isoDate_extra();
-#if QT_CONFIG(datestring)
     void toString_textDate_data();
     void toString_textDate();
     void toString_textDate_extra();
-#endif
     void toString_rfcDate_data();
     void toString_rfcDate();
     void toString_enumformat();
     void toString_strformat();
+#endif
     void addDays();
     void addMonths();
     void addMonths_data();
@@ -111,12 +111,16 @@ private Q_SLOTS:
     void currentDateTime();
     void currentDateTimeUtc();
     void currentDateTimeUtc2();
+#if QT_CONFIG(datestring)
     void fromStringDateFormat_data();
     void fromStringDateFormat();
+#  if QT_CONFIG(datetimeparser)
     void fromStringStringFormat_data();
     void fromStringStringFormat();
     void fromStringStringFormat_localTimeZone_data();
     void fromStringStringFormat_localTimeZone();
+#  endif
+#endif
 
     void offsetFromUtc();
     void setOffsetFromUtc();
@@ -130,7 +134,7 @@ private Q_SLOTS:
 
     void fewDigitsInYear() const;
     void printNegativeYear() const;
-#if QT_CONFIG(textdate)
+#if QT_CONFIG(datetimeparser)
     void roundtripTextDate() const;
 #endif
     void utcOffsetLessThan() const;
@@ -280,13 +284,13 @@ QString tst_QDateTime::str( int y, int month, int d, int h, int min, int s )
     return QDateTime( QDate(y, month, d), QTime(h, min, s) ).toString( Qt::ISODate );
 }
 
-QDateTime tst_QDateTime::dt( const QString& str )
+QDateTime tst_QDateTime::dt(const QString &text)
 {
-    if ( str == "INVALID" ) {
-        return QDateTime();
-    } else {
-        return QDateTime::fromString( str, Qt::ISODate );
-    }
+#if QT_CONFIG(datestring)
+    if (text != "INVALID")
+        return QDateTime::fromString(text, Qt::ISODate);
+#endif
+    return QDateTime();
 }
 
 void tst_QDateTime::ctor()
@@ -801,6 +805,7 @@ void tst_QDateTime::fromSecsSinceEpoch()
 #endif // timezone
 }
 
+#if QT_CONFIG(datestring) // depends on, so implies, textdate
 void tst_QDateTime::toString_isoDate_data()
 {
     QTest::addColumn<QDateTime>("datetime");
@@ -883,7 +888,6 @@ void tst_QDateTime::toString_isoDate_extra()
 #endif // timezone
 }
 
-#if QT_CONFIG(datestring) // depends on textdate
 void tst_QDateTime::toString_textDate_data()
 {
     QTest::addColumn<QDateTime>("datetime");
@@ -914,12 +918,14 @@ void tst_QDateTime::toString_textDate()
     QString result = datetime.toString(Qt::TextDate);
     QCOMPARE(result, expected);
 
+#if QT_CONFIG(datetimeparser)
     QDateTime resultDatetime = QDateTime::fromString(result, Qt::TextDate);
     QCOMPARE(resultDatetime, datetime);
     QCOMPARE(resultDatetime.date(), datetime.date());
     QCOMPARE(resultDatetime.time(), datetime.time());
     QCOMPARE(resultDatetime.timeSpec(), datetime.timeSpec());
     QCOMPARE(resultDatetime.offsetFromUtc(), datetime.offsetFromUtc());
+#endif
 }
 
 void tst_QDateTime::toString_textDate_extra()
@@ -976,7 +982,6 @@ void tst_QDateTime::toString_textDate_extra()
     dt = QDateTime::fromMSecsSinceEpoch(0, Qt::UTC);
     QVERIFY(endsWithGmt(dt));
 }
-#endif // datestring
 
 void tst_QDateTime::toString_rfcDate_data()
 {
@@ -1025,14 +1030,24 @@ void tst_QDateTime::toString_enumformat()
 {
     QDateTime dt1(QDate(1995, 5, 20), QTime(12, 34, 56));
 
-#if QT_CONFIG(textdate)
     QString str1 = dt1.toString(Qt::TextDate);
     QVERIFY(!str1.isEmpty()); // It's locale-dependent everywhere
-#endif
 
     QString str2 = dt1.toString(Qt::ISODate);
     QCOMPARE(str2, QString("1995-05-20T12:34:56"));
 }
+
+void tst_QDateTime::toString_strformat()
+{
+    // Most tests are in QLocale, just test that the api works.
+    QDate testDate(2013, 1, 1);
+    QTime testTime(1, 2, 3);
+    QDateTime testDateTime(testDate, testTime, Qt::UTC);
+    QCOMPARE(testDate.toString("yyyy-MM-dd"), QString("2013-01-01"));
+    QCOMPARE(testTime.toString("hh:mm:ss"), QString("01:02:03"));
+    QCOMPARE(testDateTime.toString("yyyy-MM-dd hh:mm:ss t"), QString("2013-01-01 01:02:03 UTC"));
+}
+#endif // datestring
 
 void tst_QDateTime::addDays()
 {
@@ -2089,24 +2104,13 @@ void tst_QDateTime::operator_insert_extract()
     }
 }
 
-void tst_QDateTime::toString_strformat()
-{
-    // Most tests are in QLocale, just test that the api works.
-    QDate testDate(2013, 1, 1);
-    QTime testTime(1, 2, 3);
-    QDateTime testDateTime(testDate, testTime, Qt::UTC);
-    QCOMPARE(testDate.toString("yyyy-MM-dd"), QString("2013-01-01"));
-    QCOMPARE(testTime.toString("hh:mm:ss"), QString("01:02:03"));
-    QCOMPARE(testDateTime.toString("yyyy-MM-dd hh:mm:ss t"), QString("2013-01-01 01:02:03 UTC"));
-}
-
+#if QT_CONFIG(datestring)
 void tst_QDateTime::fromStringDateFormat_data()
 {
     QTest::addColumn<QString>("dateTimeStr");
     QTest::addColumn<Qt::DateFormat>("dateFormat");
     QTest::addColumn<QDateTime>("expected");
 
-#if QT_CONFIG(textdate)
     // Test Qt::TextDate format.
     QTest::newRow("text date") << QString::fromLatin1("Tue Jun 17 08:00:10 2003")
         << Qt::TextDate << QDateTime(QDate(2003, 6, 17), QTime(8, 0, 10, 0), Qt::LocalTime);
@@ -2186,7 +2190,6 @@ void tst_QDateTime::fromStringDateFormat_data()
         << QStringLiteral("Sun 1. Dec 13:02:00 1974") << Qt::TextDate << ref;
     QTest::newRow("month:day")
         << QStringLiteral("Sun Dec 1 13:02:00 1974") << Qt::TextDate << ref;
-#endif // textdate
 
     // Test Qt::ISODate format.
     QTest::newRow("trailing space") // QTBUG-80445
@@ -2453,6 +2456,7 @@ void tst_QDateTime::fromStringDateFormat()
     QCOMPARE(dateTime, expected);
 }
 
+# if QT_CONFIG(datetimeparser)
 void tst_QDateTime::fromStringStringFormat_data()
 {
     QTest::addColumn<QString>("string");
@@ -2688,6 +2692,8 @@ void tst_QDateTime::fromStringStringFormat_localTimeZone()
     TimeZoneRollback useZone(localTimeZone);  // enforce test's time zone
     fromStringStringFormat();  // call basic fromStringStringFormat test
 }
+# endif // datetimeparser
+#endif // datestring
 
 void tst_QDateTime::offsetFromUtc()
 {
@@ -2999,7 +3005,7 @@ void tst_QDateTime::printNegativeYear() const
     }
 }
 
-#if QT_CONFIG(textdate)
+#if QT_CONFIG(datetimeparser)
 void tst_QDateTime::roundtripTextDate() const
 {
     /* This code path should not result in warnings. */

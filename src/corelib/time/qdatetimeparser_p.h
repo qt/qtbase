@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -177,11 +177,9 @@ public:
         LowerCase
     };
 
-#if QT_CONFIG(datestring)
     StateNode parse(QString input, int position, const QDateTime &defaultValue, bool fixup) const;
     bool fromString(const QString &text, QDate *date, QTime *time) const;
     bool fromString(const QString &text, QDateTime* datetime) const;
-#endif
     bool parseFormat(const QString &format);
 
     enum FieldInfoFlag {
@@ -201,7 +199,6 @@ public:
 private:
     int sectionMaxSize(Section s, int count) const;
     QString sectionText(const QString &text, int sectionIndex, int index) const;
-#if QT_CONFIG(datestring)
     StateNode scanString(const QDateTime &defaultValue,
                          bool fixup, QString *input) const;
     struct ParsedSection {
@@ -236,7 +233,6 @@ private:
         PossibleBoth = 4
     };
     AmPmFinder findAmPm(QString &str, int index, int *used = nullptr) const;
-#endif // datestring
 
     bool potentialValue(QStringView str, int min, int max, int index,
                         const QDateTime &currentValue, int insert) const;

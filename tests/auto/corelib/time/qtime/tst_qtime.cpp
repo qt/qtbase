@@ -26,6 +26,7 @@
 **
 ****************************************************************************/
 
+#include <private/qglobal_p.h>
 #include <QtTest/QtTest>
 #include "qdatetime.h"
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -57,14 +58,18 @@ private Q_SLOTS:
     void operator_gt();
     void operator_lt_eq();
     void operator_gt_eq();
+#if QT_CONFIG(datestring)
+# if QT_CONFIG(datetimeparser)
     void fromStringFormat_data();
     void fromStringFormat();
+# endif
     void fromStringDateFormat_data();
     void fromStringDateFormat();
     void toStringDateFormat_data();
     void toStringDateFormat();
     void toStringFormat_data();
     void toStringFormat();
+#endif
     void msecsSinceStartOfDay_data();
     void msecsSinceStartOfDay();
 
@@ -530,6 +535,8 @@ void tst_QTime::operator_gt_eq()
     QVERIFY( t1 >= t2 );
 }
 
+#if QT_CONFIG(datestring)
+# if QT_CONFIG(datetimeparser)
 void tst_QTime::fromStringFormat_data()
 {
     QTest::addColumn<QString>("string");
@@ -562,6 +569,7 @@ void tst_QTime::fromStringFormat()
     QTime dt = QTime::fromString(string, format);
     QCOMPARE(dt, expected);
 }
+# endif // datetimeparser
 
 void tst_QTime::fromStringDateFormat_data()
 {
@@ -750,6 +758,7 @@ void tst_QTime::toStringFormat()
 
     QCOMPARE( t.toString( format ), str );
 }
+#endif // datestring
 
 void tst_QTime::msecsSinceStartOfDay_data()
 {

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -424,7 +424,7 @@ void QNetworkAccessFtpBackend::ftpRawCommandReply(int code, const QString &text)
         if (id == sizeId) {
             // reply to the size command
             setHeader(QNetworkRequest::ContentLengthHeader, text.toLongLong());
-#if QT_CONFIG(datestring)
+#if QT_CONFIG(datetimeparser)
         } else if (id == mdtmId) {
             QDateTime dt = QDateTime::fromString(text, QLatin1String("yyyyMMddHHmmss"));
             setHeader(QNetworkRequest::LastModifiedHeader, dt);

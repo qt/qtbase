@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -517,7 +517,7 @@ static void _q_parseUnixDir(const QStringList &tokens, const QString &userName, 
     // Resolve the modification date by parsing all possible formats
     QDateTime dateTime;
     int n = 0;
-#if QT_CONFIG(datestring)
+#if QT_CONFIG(datetimeparser)
     do {
         dateTime = QLocale::c().toDateTime(dateString, formats.at(n++));
     }  while (n < formats.size() && (!dateTime.isValid()));
@@ -592,7 +592,7 @@ static void _q_parseDosDir(const QStringList &tokens, const QString &userName, Q
     info->setWritable(info->isFile());
 
     QDateTime dateTime;
-#if QT_CONFIG(datestring)
+#if QT_CONFIG(datetimeparser)
     dateTime = QLocale::c().toDateTime(tokens.at(1), QLatin1String("MM-dd-yy  hh:mmAP"));
     if (dateTime.date().year() < 1971) {
         dateTime.setDate(QDate(dateTime.date().year() + 100,

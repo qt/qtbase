@@ -100,7 +100,7 @@ qt_feature("datetimeedit" PUBLIC
     SECTION "Widgets"
     LABEL "QDateTimeEdit"
     PURPOSE "Supports editing dates and times."
-    CONDITION QT_FEATURE_calendarwidget AND QT_FEATURE_datestring AND QT_FEATURE_textdate AND QT_FEATURE_datetimeparser
+    CONDITION QT_FEATURE_calendarwidget AND QT_FEATURE_datetimeparser
 )
 qt_feature_definition("datetimeedit" "QT_NO_DATETIMEEDIT" NEGATE VALUE "1")
 qt_feature("stackedwidget" PUBLIC

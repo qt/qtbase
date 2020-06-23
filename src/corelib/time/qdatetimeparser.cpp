@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -79,12 +79,8 @@ QDateTimeParser::~QDateTimeParser()
 int QDateTimeParser::getDigit(const QDateTime &t, int index) const
 {
     if (index < 0 || index >= sectionNodes.size()) {
-#if QT_CONFIG(datestring)
         qWarning("QDateTimeParser::getDigit() Internal error (%ls %d)",
                  qUtf16Printable(t.toString()), index);
-#else
-        qWarning("QDateTimeParser::getDigit() Internal error (%d)", index);
-#endif
         return -1;
     }
     const SectionNode &node = sectionNodes.at(index);
@@ -105,12 +101,8 @@ int QDateTimeParser::getDigit(const QDateTime &t, int index) const
     default: break;
     }
 
-#if QT_CONFIG(datestring)
     qWarning("QDateTimeParser::getDigit() Internal error 2 (%ls %d)",
              qUtf16Printable(t.toString()), index);
-#else
-    qWarning("QDateTimeParser::getDigit() Internal error 2 (%d)", index);
-#endif
     return -1;
 }
 
@@ -129,12 +121,8 @@ int QDateTimeParser::getDigit(const QDateTime &t, int index) const
 bool QDateTimeParser::setDigit(QDateTime &v, int index, int newVal) const
 {
     if (index < 0 || index >= sectionNodes.size()) {
-#if QT_CONFIG(datestring)
         qWarning("QDateTimeParser::setDigit() Internal error (%ls %d %d)",
                  qUtf16Printable(v.toString()), index, newVal);
-#else
-        qWarning("QDateTimeParser::setDigit() Internal error (%d %d)", index, newVal);
-#endif
         return false;
     }
 
@@ -742,9 +730,6 @@ QString QDateTimeParser::sectionText(int sectionIndex) const
     const SectionNode &sn = sectionNode(sectionIndex);
     return sectionText(displayText(), sectionIndex, sn.pos);
 }
-
-
-#if QT_CONFIG(datestring)
 
 QDateTimeParser::ParsedSection
 QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex,
@@ -1867,7 +1852,6 @@ QDateTimeParser::AmPmFinder QDateTimeParser::findAmPm(QString &str, int sectionI
         return PossibleBoth;
     return (!broken[amindex] ? PossibleAM : PossiblePM);
 }
-#endif // datestring
 
 /*!
   \internal
@@ -2098,7 +2082,6 @@ QString QDateTimeParser::stateName(State s) const
     }
 }
 
-#if QT_CONFIG(datestring)
 bool QDateTimeParser::fromString(const QString &t, QDate *date, QTime *time) const
 {
     QDateTime datetime;
@@ -2137,7 +2120,6 @@ bool QDateTimeParser::fromString(const QString &t, QDateTime* datetime) const
 
     return true;
 }
-#endif // datestring
 
 QDateTime QDateTimeParser::getMinimum() const
 {
