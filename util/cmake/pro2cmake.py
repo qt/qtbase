@@ -681,7 +681,10 @@ class QmlDir:
         elif entries[0] == "designersupported":
             self.designer_supported = True
         elif entries[0] == "import":
-            self.imports.append(entries[1])
+            if len(entries) == 3:
+                self.imports.append(entries[1] + "/" + entries[2])
+            else:
+                self.imports.append(entries[1])
         elif len(entries) == 3:
             self.handle_file(entries[0], entries[1], entries[2])
         else:
@@ -3399,7 +3402,7 @@ def write_example(
                             raise RuntimeError(
                                 "Only qmldir import statements expected in conditional scope!"
                             )
-                        import_list.append(qml_import[len("import ") :])
+                        import_list.append(qml_import[len("import ") :].replace(" ", "/"))
                     if len(import_list) == 0:
                         continue
 
@@ -3703,7 +3706,7 @@ def write_qml_plugin(
                     raise RuntimeError(
                         "Only qmldir import statements expected in conditional scope!"
                     )
-                import_list.append(qml_import[len("import ") :])
+                import_list.append(qml_import[len("import ") :].replace(" ", "/"))
             if len(import_list) == 0:
                 continue
 
