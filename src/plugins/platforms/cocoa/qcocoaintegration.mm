@@ -63,6 +63,7 @@
 #include <qpa/qplatforminputcontextfactory_p.h>
 #include <qpa/qplatformoffscreensurface.h>
 #include <QtCore/qcoreapplication.h>
+#include <QtGui/qpointingdevice.h>
 
 #include <QtGui/private/qcoregraphics_p.h>
 #include <QtGui/private/qopenglcontext_p.h>
@@ -198,6 +199,8 @@ QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
     QMacInternalPasteboardMime::initializeMimeTypes();
     QCocoaMimeTypes::initializeMimeTypes();
     QWindowSystemInterfacePrivate::TabletEvent::setPlatformSynthesizesMouse(false);
+    QWindowSystemInterface::registerInputDevice(new QInputDevice(QString("keyboard"), 0,
+                                                                 QInputDevice::DeviceType::Keyboard, QString(), this));
 
     connect(qGuiApp, &QGuiApplication::focusWindowChanged,
         this, &QCocoaIntegration::focusWindowChanged);
