@@ -335,8 +335,24 @@ function(qt_wrap_string_in_if_ninja_multi_config content out_var)
 ${content}endif()\n" PARENT_SCOPE)
 endfunction()
 
+function(qt_create_hostinfo_package)
+    set(package "${INSTALL_CMAKE_NAMESPACE}HostInfo")
+    qt_path_join(config_file_path "${QT_CONFIG_BUILD_DIR}/${package}/${package}Config.cmake")
+    qt_path_join(install_destination ${QT_CONFIG_INSTALL_DIR} ${package})
+    set(var_prefix "QT${PROJECT_VERSION_MAJOR}_HOST_INFO_")
+    configure_package_config_file(
+        "${CMAKE_CURRENT_LIST_DIR}/QtHostInfoConfig.cmake.in"
+        "${config_file_path}"
+        INSTALL_DESTINATION "${install_destination}"
+        NO_SET_AND_CHECK_MACRO
+        NO_CHECK_REQUIRED_COMPONENTS_MACRO)
+    qt_install(FILES "${config_file_path}" DESTINATION "${install_destination}")
+endfunction()
+
 function(qt_generate_build_internals_extra_cmake_code)
     if(PROJECT_NAME STREQUAL "QtBase")
+        qt_create_hostinfo_package()
+
         foreach(var IN LISTS QT_BASE_CONFIGURE_TESTS_VARS_TO_EXPORT)
             string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS "set(${var} \"${${var}}\" CACHE INTERNAL \"\")\n")
         endforeach()
