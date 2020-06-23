@@ -32,7 +32,6 @@
 #if SCENARIO == 1
 // this is the "no harm done" version. Only operator% is active,
 // with NO_CAST * defined
-#define P %
 #undef QT_USE_FAST_OPERATOR_PLUS
 #undef QT_USE_FAST_CONCATENATION
 #define QT_NO_CAST_FROM_ASCII
@@ -44,7 +43,6 @@
 // this is the "full" version. Operator+ is replaced by a QStringBuilder
 // based version
 // with NO_CAST * defined
-#define P +
 #define QT_USE_FAST_OPERATOR_PLUS
 #define QT_USE_FAST_CONCATENATION
 #define QT_NO_CAST_FROM_ASCII
@@ -54,7 +52,6 @@
 #if SCENARIO == 3
 // this is the "no harm done" version. Only operator% is active,
 // with NO_CAST * _not_ defined
-#define P %
 #undef QT_USE_FAST_OPERATOR_PLUS
 #undef QT_USE_FAST_CONCATENATION
 #undef QT_NO_CAST_FROM_ASCII
@@ -65,7 +62,6 @@
 // this is the "full" version. Operator+ is replaced by a QStringBuilder
 // based version
 // with NO_CAST * _not_ defined
-#define P +
 #define QT_USE_FAST_OPERATOR_PLUS
 #define QT_USE_FAST_CONCATENATION
 #undef QT_NO_CAST_FROM_ASCII
@@ -81,6 +77,17 @@
 #include <qtest.h>
 
 #include <string>
+
+// Select one of the scenarios below
+#if SCENARIO == 1
+#define P %
+#elif SCENARIO == 2
+#define P +
+#elif SCENARIO == 3
+#define P %
+#elif SCENARIO == 4
+#define P +
+#endif
 
 #define COMPARE(a, b) QCOMPARE(a, b)
 //#define COMPARE(a, b)
@@ -416,5 +423,7 @@ private:
 };
 
 QTEST_MAIN(tst_qstringbuilder)
+
+#undef P
 
 #include "main.moc"
