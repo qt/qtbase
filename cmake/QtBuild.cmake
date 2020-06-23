@@ -2341,7 +2341,7 @@ function(qt_add_module target)
     # Process arguments:
     qt_parse_all_arguments(arg "qt_add_module"
         "NO_MODULE_HEADERS;STATIC;DISABLE_TOOLS_EXPORT;EXCEPTIONS;INTERNAL_MODULE;NO_SYNC_QT;NO_PRIVATE_MODULE;HEADER_MODULE;GENERATE_METATYPES;NO_CONFIG_HEADER_FILE;SKIP_DEPENDS_INCLUDE"
-        "MODULE_INCLUDE_NAME;CONFIG_MODULE_NAME;PRECOMPILED_HEADER;${__default_target_info_args}"
+        "MODULE_INCLUDE_NAME;CONFIG_MODULE_NAME;PRECOMPILED_HEADER;CONFIGURE_FILE_PATH;${__default_target_info_args}"
         "${__default_private_args};${__default_public_args};${__default_private_module_args};QMAKE_MODULE_CONFIG;EXTRA_CMAKE_FILES;EXTRA_CMAKE_INCLUDES;NO_PCH_SOURCES" ${ARGN})
 
     qt_internal_add_qt_repo_known_module("${target}")
@@ -2676,6 +2676,9 @@ function(qt_add_module target)
     endif()
 
     set(configureFile "${CMAKE_CURRENT_SOURCE_DIR}/configure.cmake")
+    if(arg_CONFIGURE_FILE_PATH)
+        set(configureFile "${arg_CONFIGURE_FILE_PATH}")
+    endif()
     if(EXISTS "${configureFile}" AND NOT arg_NO_CONFIG_HEADER_FILE)
         qt_feature_module_begin(
             LIBRARY "${target}"
