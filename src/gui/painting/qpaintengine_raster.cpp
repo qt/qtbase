@@ -1810,9 +1810,9 @@ void QRasterPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
 
     // ### Optimize for non transformed ellipses and rectangles...
     QRectF cpRect = path.controlPointRect();
-    const QRect pathDeviceRect = s->matrix.mapRect(cpRect).toRect();
+    const QRectF pathDeviceRect = s->matrix.mapRect(cpRect);
     // Skip paths that by conservative estimates are completely outside the paint device.
-    if (!pathDeviceRect.intersects(d->deviceRect))
+    if (!pathDeviceRect.intersects(QRectF(d->deviceRect)))
         return;
 
     ProcessSpans blend = d->getBrushFunc(pathDeviceRect, &s->brushData);
@@ -3074,7 +3074,12 @@ bool QRasterPaintEnginePrivate::isUnclipped(const QRect &rect,
 inline bool QRasterPaintEnginePrivate::isUnclipped(const QRectF &rect,
                                                    int penWidth) const
 {
-    return isUnclipped(rect.normalized().toAlignedRect(), penWidth);
+    const QRectF norm = rect.normalized();
+    if (norm.left() < INT_MIN || norm.top() < INT_MIN
+            || norm.right() > INT_MAX || norm.bottom() > INT_MAX
+            || norm.width() > INT_MAX || norm.height() > INT_MAX)
+        return false;
+    return isUnclipped(norm.toAlignedRect(), penWidth);
 }
 
 inline ProcessSpans
