@@ -67,7 +67,8 @@ namespace
         return port;
     }
 
-    QShaderNode createNode(const QVector<QShaderNodePort> &ports, const QStringList &layers = QStringList())
+    QShaderNode createNode(const QList<QShaderNodePort> &ports,
+                           const QStringList &layers = QStringList())
     {
         auto node = QShaderNode();
         node.setUuid(QUuid::createUuid());
@@ -216,7 +217,8 @@ namespace
         qDebug() << prefix << statement.inputs << statement.uuid().toString() << statement.outputs;
     }
 
-    void dumpStatementsIfNeeded(const QVector<QShaderGraph::Statement> &statements, const QVector<QShaderGraph::Statement> &expected)
+    void dumpStatementsIfNeeded(const QList<QShaderGraph::Statement> &statements,
+                                const QList<QShaderGraph::Statement> &expected)
     {
         if (statements != expected) {
             for (int i = 0; i < qMax(statements.size(), expected.size()); i++) {

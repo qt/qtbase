@@ -110,8 +110,8 @@ static QGlyphRun make_dummy_indexes()
 {
     QGlyphRun glyphs;
 
-    QVector<quint32> glyphIndexes;
-    QVector<QPointF> positions;
+    QList<quint32> glyphIndexes;
+    QList<QPointF> positions;
     QFont font;
     font.setPointSize(18);
 
@@ -135,8 +135,8 @@ void tst_QGlyphRun::copyConstructor()
     QGlyphRun glyphs;
 
     {
-        QVector<quint32> glyphIndexes;
-        QVector<QPointF> positions;
+        QList<quint32> glyphIndexes;
+        QList<QPointF> positions;
         QFont font;
         font.setPointSize(18);
 
@@ -183,7 +183,7 @@ void tst_QGlyphRun::equalsOperator_data()
     {
         QGlyphRun busted(two);
 
-        QVector<QPointF> positions = busted.positions();
+        QList<QPointF> positions = busted.positions();
         positions[2] += QPointF(1, 1);
         busted.setPositions(positions);
 
@@ -204,7 +204,7 @@ void tst_QGlyphRun::equalsOperator_data()
     {
         QGlyphRun busted(two);
 
-        QVector<quint32> glyphIndexes = busted.glyphIndexes();
+        QList<quint32> glyphIndexes = busted.glyphIndexes();
         glyphIndexes[2] += 1;
         busted.setGlyphIndexes(glyphIndexes);
 
@@ -228,14 +228,14 @@ void tst_QGlyphRun::isEmpty()
     QGlyphRun glyphs;
     QVERIFY(glyphs.isEmpty());
 
-    glyphs.setGlyphIndexes(QVector<quint32>() << 1 << 2 << 3);
+    glyphs.setGlyphIndexes(QList<quint32>() << 1 << 2 << 3);
     QVERIFY(!glyphs.isEmpty());
 
     glyphs.clear();
     QVERIFY(glyphs.isEmpty());
 
-    QVector<quint32> glyphIndexes = QVector<quint32>() << 1 << 2 << 3;
-    QVector<QPointF> positions = QVector<QPointF>() << QPointF(0, 0) << QPointF(0, 0) << QPointF(0, 0);
+    QList<quint32> glyphIndexes = QList<quint32>() << 1 << 2 << 3;
+    QList<QPointF> positions = QList<QPointF>() << QPointF(0, 0) << QPointF(0, 0) << QPointF(0, 0);
     glyphs.setRawData(glyphIndexes.constData(), positions.constData(), glyphIndexes.size());
     QVERIFY(!glyphs.isEmpty());
 }
@@ -309,8 +309,8 @@ void tst_QGlyphRun::setRawData()
 {
     QGlyphRun glyphRun;
     glyphRun.setRawFont(QRawFont::fromFont(m_testFont));
-    glyphRun.setGlyphIndexes(QVector<quint32>() << 2 << 2 << 2);
-    glyphRun.setPositions(QVector<QPointF>() << QPointF(2, 3) << QPointF(20, 3) << QPointF(10, 20));
+    glyphRun.setGlyphIndexes(QList<quint32>() << 2 << 2 << 2);
+    glyphRun.setPositions(QList<QPointF>() << QPointF(2, 3) << QPointF(20, 3) << QPointF(10, 20));
 
     QPixmap baseline(100, 50);
     baseline.fill(Qt::white);
@@ -357,17 +357,17 @@ void tst_QGlyphRun::setRawData()
 
 void tst_QGlyphRun::setRawDataAndGetAsVector()
 {
-    QVector<quint32> glyphIndexArray;
+    QList<quint32> glyphIndexArray;
     glyphIndexArray << 3 << 2 << 1 << 4;
 
-    QVector<QPointF> glyphPositionArray;
+    QList<QPointF> glyphPositionArray;
     glyphPositionArray << QPointF(1, 2) << QPointF(3, 4) << QPointF(5, 6) << QPointF(7, 8);
 
     QGlyphRun glyphRun;
     glyphRun.setRawData(glyphIndexArray.constData(), glyphPositionArray.constData(), 4);
 
-    QVector<quint32> glyphIndexes = glyphRun.glyphIndexes();
-    QVector<QPointF> glyphPositions = glyphRun.positions();
+    QList<quint32> glyphIndexes = glyphRun.glyphIndexes();
+    QList<QPointF> glyphPositions = glyphRun.positions();
 
     QCOMPARE(glyphIndexes.size(), 4);
     QCOMPARE(glyphPositions.size(), 4);
@@ -384,10 +384,10 @@ void tst_QGlyphRun::setRawDataAndGetAsVector()
 
 void tst_QGlyphRun::drawNonExistentGlyphs()
 {
-    QVector<quint32> glyphIndexes;
+    QList<quint32> glyphIndexes;
     glyphIndexes.append(4);
 
-    QVector<QPointF> glyphPositions;
+    QList<QPointF> glyphPositions;
     glyphPositions.append(QPointF(0, 0));
 
     QGlyphRun glyphs;
@@ -495,17 +495,17 @@ void tst_QGlyphRun::detach()
 {
     QGlyphRun glyphs;
 
-    glyphs.setGlyphIndexes(QVector<quint32>() << 1 << 2 << 3);
+    glyphs.setGlyphIndexes(QList<quint32>() << 1 << 2 << 3);
 
     QGlyphRun otherGlyphs;
     otherGlyphs = glyphs;
 
     QCOMPARE(otherGlyphs.glyphIndexes(), glyphs.glyphIndexes());
 
-    otherGlyphs.setGlyphIndexes(QVector<quint32>() << 4 << 5 << 6);
+    otherGlyphs.setGlyphIndexes(QList<quint32>() << 4 << 5 << 6);
 
-    QCOMPARE(otherGlyphs.glyphIndexes(), QVector<quint32>() << 4 << 5 << 6);
-    QCOMPARE(glyphs.glyphIndexes(), QVector<quint32>() << 1 << 2 << 3);
+    QCOMPARE(otherGlyphs.glyphIndexes(), QList<quint32>() << 4 << 5 << 6);
+    QCOMPARE(glyphs.glyphIndexes(), QList<quint32>() << 1 << 2 << 3);
 }
 
 void tst_QGlyphRun::drawRightToLeft()
@@ -559,8 +559,8 @@ void tst_QGlyphRun::boundingRect()
 
     QRawFont rawFont(QRawFont::fromFont(QFont()));
     QVERIFY(rawFont.isValid());
-    QVector<quint32> glyphIndexes = rawFont.glyphIndexesForString(s);
-    QVector<QPointF> positions = rawFont.advancesForGlyphIndexes(glyphIndexes);
+    QList<quint32> glyphIndexes = rawFont.glyphIndexesForString(s);
+    QList<QPointF> positions = rawFont.advancesForGlyphIndexes(glyphIndexes);
     QCOMPARE(glyphIndexes.size(), s.size());
     QCOMPARE(positions.size(), glyphIndexes.size());
 

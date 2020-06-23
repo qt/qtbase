@@ -155,7 +155,7 @@ void tst_QTextFormat::testUnderlinePropertyPrecedence()
     QCOMPARE(format.fontUnderline(), false);
     QCOMPARE(format.font().underline(), false);
 
-    // do it again, but reverse the ordering (we use a QVector internally, so test a LOT ;)
+    // do it again, but reverse the ordering (we use a QList internally, so test a LOT ;)
     // create conflict. Should use the new property
     format.setProperty(QTextCharFormat::FontUnderline, false);
     format.setProperty(QTextCharFormat::TextUnderlineStyle, QTextCharFormat::SingleUnderline);
@@ -210,7 +210,7 @@ void tst_QTextFormat::resolveFont()
     fmt.setProperty(QTextFormat::FontItalic, true);
     QTextCursor(&doc).insertText("Test", fmt);
 
-    QVector<QTextFormat> formats = doc.allFormats();
+    QList<QTextFormat> formats = doc.allFormats();
     QCOMPARE(formats.count(), 3);
 
     QCOMPARE(formats.at(2).type(), int(QTextFormat::CharFormat));

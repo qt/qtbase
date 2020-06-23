@@ -266,7 +266,7 @@ void tst_QShader::mslResourceMapping()
     QVERIFY(s.isValid());
     QCOMPARE(QShaderPrivate::get(&s)->qsbVersion, 2);
 
-    const QVector<QShaderKey> availableShaders = s.availableShaders();
+    const QList<QShaderKey> availableShaders = s.availableShaders();
     QCOMPARE(availableShaders.count(), 7);
     QVERIFY(availableShaders.contains(QShaderKey(QShader::SpirvShader, QShaderVersion(100))));
     QVERIFY(availableShaders.contains(QShaderKey(QShader::MslShader, QShaderVersion(12))));
@@ -298,7 +298,7 @@ void tst_QShader::loadV3()
     QVERIFY(s.isValid());
     QCOMPARE(QShaderPrivate::get(&s)->qsbVersion, 3);
 
-    const QVector<QShaderKey> availableShaders = s.availableShaders();
+    const QList<QShaderKey> availableShaders = s.availableShaders();
     QCOMPARE(availableShaders.count(), 7);
     QVERIFY(availableShaders.contains(QShaderKey(QShader::SpirvShader, QShaderVersion(100))));
     QVERIFY(availableShaders.contains(QShaderKey(QShader::MslShader, QShaderVersion(12))));
@@ -461,7 +461,7 @@ void tst_QShader::loadV4()
     QVERIFY(s.isValid());
     QCOMPARE(QShaderPrivate::get(&s)->qsbVersion, 4);
 
-    const QVector<QShaderKey> availableShaders = s.availableShaders();
+    const QList<QShaderKey> availableShaders = s.availableShaders();
     QCOMPARE(availableShaders.count(), 7);
     QVERIFY(availableShaders.contains(QShaderKey(QShader::SpirvShader, QShaderVersion(100))));
     QVERIFY(availableShaders.contains(QShaderKey(QShader::MslShader, QShaderVersion(12))));

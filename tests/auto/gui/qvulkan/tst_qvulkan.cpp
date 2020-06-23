@@ -197,7 +197,7 @@ void tst_QVulkan::vulkanWindow()
     w.hide();
     waitForUnexposed(&w);
     w.setVulkanInstance(&inst);
-    QVector<VkPhysicalDeviceProperties> pdevs = w.availablePhysicalDevices();
+    QList<VkPhysicalDeviceProperties> pdevs = w.availablePhysicalDevices();
     if (pdevs.isEmpty())
         QSKIP("No Vulkan physical devices; skip");
     w.show();

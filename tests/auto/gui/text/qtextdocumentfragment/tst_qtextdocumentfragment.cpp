@@ -1175,7 +1175,7 @@ void tst_QTextDocumentFragment::copySubTable()
     QTextDocumentFragment frag;
     {
         QTextTableFormat fmt;
-        QVector<QTextLength> constraints;
+        QList<QTextLength> constraints;
         constraints << QTextLength(QTextLength::PercentageLength, 16);
         constraints << QTextLength(QTextLength::PercentageLength, 28);
         constraints << QTextLength(QTextLength::PercentageLength, 28);
@@ -2744,7 +2744,7 @@ void tst_QTextDocumentFragment::html_columnWidths()
     QCOMPARE(table->rows(), 2);
     QTextTableFormat fmt = table->format();
 
-    const QVector<QTextLength> columnWidths = fmt.columnWidthConstraints();
+    const QList<QTextLength> columnWidths = fmt.columnWidthConstraints();
     QCOMPARE(columnWidths.count(), 2);
     QCOMPARE(columnWidths.at(0).type(), QTextLength::VariableLength);
     QCOMPARE(columnWidths.at(1).type(), QTextLength::PercentageLength);

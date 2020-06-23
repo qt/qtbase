@@ -1764,7 +1764,7 @@ void tst_QPainter::setEqualClipRegionAndPath_data()
     QTest::newRow("simple rect") << QSize(100, 100)
                                  << QRegion(QRect(5, 5, 10, 10));
 
-    QVector<QRect> rects;
+    QList<QRect> rects;
     QRegion region;
 
     rects << QRect(5, 5, 10, 10) << QRect(20, 20, 10, 10);
@@ -2065,7 +2065,7 @@ void tst_QPainter::clippedLines_data()
     QPen pen2(QColor(223, 223, 0, 223));
     pen2.setWidth(2);
 
-    QVector<QLineF> lines;
+    QList<QLineF> lines;
     lines << QLineF(15, 15, 65, 65)
           << QLineF(14, 14, 66, 66)
           << QLineF(16, 16, 64, 64)
@@ -3239,7 +3239,7 @@ bool verifyOutlineFillConsistency(const QImage &img, QRgb outside, QRgb inside, 
     QQueue<QPoint> discovered;
     discovered.enqueue(QPoint(x, y));
 
-    QVector<bool> visited(img.width() * img.height());
+    QList<bool> visited(img.width() * img.height());
     visited.fill(false);
 
     while (!discovered.isEmpty()) {
@@ -4023,7 +4023,7 @@ void tst_QPainter::inactivePainter()
     QPainter p;
     QPainterPath path;
     QRegion region(QRect(20, 20, 60, 40));
-    QPolygonF polygon(QVector<QPointF>() << QPointF(0, 0) << QPointF(12, 0) << QPointF(8, 6));
+    QPolygonF polygon(QList<QPointF>() << QPointF(0, 0) << QPointF(12, 0) << QPointF(8, 6));
     path.addPolygon(polygon);
 
     p.save();
@@ -4666,7 +4666,7 @@ void tst_QPainter::QTBUG17053_zeroDashPattern()
 
     QImage original = image;
 
-    QVector<qreal> pattern;
+    QList<qreal> pattern;
     pattern << qreal(0) << qreal(0);
 
     QPainter p(&image);
@@ -4788,7 +4788,7 @@ void tst_QPainter::QTBUG25153_drawLine()
 {
     QImage image(2, 2, QImage::Format_RGB32);
 
-    QVector<Qt::PenCapStyle> styles;
+    QList<Qt::PenCapStyle> styles;
     styles << Qt::FlatCap << Qt::SquareCap << Qt::RoundCap;
 
     foreach (Qt::PenCapStyle style, styles) {
@@ -5045,17 +5045,23 @@ void tst_QPainter::drawTextNoHinting()
 
 void tst_QPainter::drawPolyline_data()
 {
-    QTest::addColumn< QVector<QPointF> >("points");
+    QTest::addColumn<QList<QPointF>>("points");
 
-    QTest::newRow("basic") << (QVector<QPointF>() << QPointF(10, 10) << QPointF(20, 10) << QPointF(20, 20));
-    QTest::newRow("clipped") << (QVector<QPointF>() << QPoint(-10, 100) << QPoint(-1, 100) << QPoint(-1,  -2) << QPoint(100, -2) << QPoint(100, 40)); // QTBUG-31579
-    QTest::newRow("shortsegment") << (QVector<QPointF>() << QPoint(20, 100) << QPoint(20, 99) << QPoint(21, 99) << QPoint(21, 104)); // QTBUG-42398
-    QTest::newRow("edge") << (QVector<QPointF>() << QPointF(4.5, 121.6) << QPointF(9.4, 150.9) << QPointF(14.2, 184.8) << QPointF(19.1, 130.4));
+    QTest::newRow("basic") << (QList<QPointF>()
+                               << QPointF(10, 10) << QPointF(20, 10) << QPointF(20, 20));
+    QTest::newRow("clipped") << (QList<QPointF>()
+                                 << QPoint(-10, 100) << QPoint(-1, 100) << QPoint(-1, -2)
+                                 << QPoint(100, -2) << QPoint(100, 40)); // QTBUG-31579
+    QTest::newRow("shortsegment") << (QList<QPointF>()
+                                      << QPoint(20, 100) << QPoint(20, 99) << QPoint(21, 99)
+                                      << QPoint(21, 104)); // QTBUG-42398
+    QTest::newRow("edge") << (QList<QPointF>() << QPointF(4.5, 121.6) << QPointF(9.4, 150.9)
+                                               << QPointF(14.2, 184.8) << QPointF(19.1, 130.4));
 }
 
 void tst_QPainter::drawPolyline()
 {
-    QFETCH(QVector<QPointF>, points);
+    QFETCH(QList<QPointF>, points);
     QImage images[2];
 
     for (int r = 0; r < 2; r++) {

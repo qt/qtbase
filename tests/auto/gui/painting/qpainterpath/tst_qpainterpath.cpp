@@ -1345,7 +1345,7 @@ void tst_QPainterPath::translate()
     shape -= QRect(225, 175, 50, 50);
     QPainterPath complexPath;
     complexPath.addRegion(shape);
-    QVector<QPointF> untranslatedElements;
+    QList<QPointF> untranslatedElements;
     for (int i = 0; i < complexPath.elementCount(); ++i)
         untranslatedElements.append(QPointF(complexPath.elementAt(i)));
 

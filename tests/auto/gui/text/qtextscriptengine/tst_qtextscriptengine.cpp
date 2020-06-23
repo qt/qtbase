@@ -117,7 +117,7 @@ static void prepareShapingTest(const QFont &font, const ShapeTable *shape_table)
             string.append(QChar(*u));
             testName.append(" 0x" + QByteArray::number(*u, 16));
         }
-        QVector<ushort> glyphs;
+        QList<ushort> glyphs;
         for (const ushort *g = s->glyphs; *g; ++g)
             glyphs.append(*g);
 
@@ -129,7 +129,7 @@ static void doShapingTests()
 {
     QFETCH(QFont, font);
     QFETCH(QString, string);
-    QFETCH(QVector<ushort>, glyphs);
+    QFETCH(QList<ushort>, glyphs);
 
     QVERIFY(!string.isEmpty());
 
@@ -176,7 +176,7 @@ void tst_QTextScriptEngine::devanagari_data()
 {
     QTest::addColumn<QFont>("font");
     QTest::addColumn<QString>("string");
-    QTest::addColumn<QVector<ushort> >("glyphs");
+    QTest::addColumn<QList<ushort>>("glyphs");
 
     if (!haveTestFonts)
         QSKIP("Test fonts are not available");
@@ -283,7 +283,7 @@ void tst_QTextScriptEngine::bengali_data()
 {
     QTest::addColumn<QFont>("font");
     QTest::addColumn<QString>("string");
-    QTest::addColumn<QVector<ushort> >("glyphs");
+    QTest::addColumn<QList<ushort>>("glyphs");
 
     if (!haveTestFonts)
         QSKIP("Test fonts are not available");
@@ -521,7 +521,7 @@ void tst_QTextScriptEngine::gurmukhi_data()
 {
     QTest::addColumn<QFont>("font");
     QTest::addColumn<QString>("string");
-    QTest::addColumn<QVector<ushort> >("glyphs");
+    QTest::addColumn<QList<ushort>>("glyphs");
 
     if (!haveTestFonts)
         QSKIP("Test fonts are not available");
@@ -549,7 +549,7 @@ void tst_QTextScriptEngine::oriya_data()
 {
     QTest::addColumn<QFont>("font");
     QTest::addColumn<QString>("string");
-    QTest::addColumn<QVector<ushort> >("glyphs");
+    QTest::addColumn<QList<ushort>>("glyphs");
 
     if (!haveTestFonts)
         QSKIP("Test fonts are not available");
@@ -590,7 +590,7 @@ void tst_QTextScriptEngine::tamil_data()
 {
     QTest::addColumn<QFont>("font");
     QTest::addColumn<QString>("string");
-    QTest::addColumn<QVector<ushort> >("glyphs");
+    QTest::addColumn<QList<ushort>>("glyphs");
 
     if (!haveTestFonts)
         QSKIP("Test fonts are not available");
@@ -667,7 +667,7 @@ void tst_QTextScriptEngine::telugu_data()
 {
     QTest::addColumn<QFont>("font");
     QTest::addColumn<QString>("string");
-    QTest::addColumn<QVector<ushort> >("glyphs");
+    QTest::addColumn<QList<ushort>>("glyphs");
 
     if (!haveTestFonts)
         QSKIP("Test fonts are not available");
@@ -716,7 +716,7 @@ void tst_QTextScriptEngine::kannada_data()
 {
     QTest::addColumn<QFont>("font");
     QTest::addColumn<QString>("string");
-    QTest::addColumn<QVector<ushort> >("glyphs");
+    QTest::addColumn<QList<ushort>>("glyphs");
 
     if (!haveTestFonts)
         QSKIP("Test fonts are not available");
@@ -787,7 +787,7 @@ void tst_QTextScriptEngine::malayalam_data()
 {
     QTest::addColumn<QFont>("font");
     QTest::addColumn<QString>("string");
-    QTest::addColumn<QVector<ushort> >("glyphs");
+    QTest::addColumn<QList<ushort>>("glyphs");
 
     if (!haveTestFonts)
         QSKIP("Test fonts are not available");
@@ -868,7 +868,7 @@ void tst_QTextScriptEngine::sinhala_data()
 {
     QTest::addColumn<QFont>("font");
     QTest::addColumn<QString>("string");
-    QTest::addColumn<QVector<ushort> >("glyphs");
+    QTest::addColumn<QList<ushort>>("glyphs");
 
     if (!haveTestFonts)
         QSKIP("Test fonts are not available");
@@ -906,7 +906,7 @@ void tst_QTextScriptEngine::khmer_data()
 {
     QTest::addColumn<QFont>("font");
     QTest::addColumn<QString>("string");
-    QTest::addColumn<QVector<ushort> >("glyphs");
+    QTest::addColumn<QList<ushort>>("glyphs");
 
     if (!haveTestFonts)
         QSKIP("Test fonts are not available");
@@ -950,7 +950,7 @@ void tst_QTextScriptEngine::linearB_data()
 {
     QTest::addColumn<QFont>("font");
     QTest::addColumn<QString>("string");
-    QTest::addColumn<QVector<ushort> >("glyphs");
+    QTest::addColumn<QList<ushort>>("glyphs");
 
     if (!haveTestFonts)
         QSKIP("Test fonts are not available");
@@ -978,7 +978,7 @@ void tst_QTextScriptEngine::greek_data()
 {
     QTest::addColumn<QFont>("font");
     QTest::addColumn<QString>("string");
-    QTest::addColumn<QVector<ushort> >("glyphs");
+    QTest::addColumn<QList<ushort>>("glyphs");
 
     if (!haveTestFonts)
         QSKIP("Test fonts are not available");
@@ -990,7 +990,7 @@ void tst_QTextScriptEngine::greek_data()
                 QString string;
                 string.append(QChar(uc));
                 QByteArray testName = f.family().toLatin1() + ": 0x" + QByteArray::number(uc, 16);
-                QTest::newRow(testName.constData()) << f << string << QVector<ushort>();
+                QTest::newRow(testName.constData()) << f << string << QList<ushort>();
             }
         } else
             QSKIP("couldn't find DejaVu Sans");
@@ -1003,7 +1003,7 @@ void tst_QTextScriptEngine::greek_data()
                 QString string;
                 string.append(QChar(uc));
                 QByteArray testName = f.family().toLatin1() + ": 0x" + QByteArray::number(uc, 16);
-                QTest::newRow(testName.constData()) << f << string << QVector<ushort>();
+                QTest::newRow(testName.constData()) << f << string << QList<ushort>();
             }
 
             const ShapeTable shape_table [] = {

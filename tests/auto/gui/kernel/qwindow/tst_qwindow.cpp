@@ -343,12 +343,12 @@ public:
         return m_surfaceventType;
     }
 
-    QVector<QPoint> m_framePositionsOnMove;
+    QList<QPoint> m_framePositionsOnMove;
     Qt::WindowStates lastReceivedWindowState;
 
 private:
     QHash<QEvent::Type, int> m_received;
-    QVector<QEvent::Type> m_order;
+    QList<QEvent::Type> m_order;
     QRegion m_exposeRegion;
     QPlatformSurfaceEvent::SurfaceEventType m_surfaceventType;
 };

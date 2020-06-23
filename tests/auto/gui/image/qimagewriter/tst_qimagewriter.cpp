@@ -47,7 +47,7 @@
 #include <algorithm>
 
 typedef QMap<QString, QString> QStringMap;
-typedef QVector<int> QIntList;
+typedef QList<int> QIntList;
 Q_DECLARE_METATYPE(QImageWriter::ImageWriterError)
 Q_DECLARE_METATYPE(QImage::Format)
 

@@ -41,7 +41,8 @@ namespace
         return port;
     }
 
-    QShaderNode createNode(const QVector<QShaderNodePort> &ports, const QStringList &layers = QStringList())
+    QShaderNode createNode(const QList<QShaderNodePort> &ports,
+                           const QStringList &layers = QStringList())
     {
         auto node = QShaderNode();
         node.setUuid(QUuid::createUuid());
@@ -65,8 +66,8 @@ namespace
     }
 
     QShaderGraph::Statement createStatement(const QShaderNode &node,
-                                            const QVector<int> &inputs = QVector<int>(),
-                                            const QVector<int> &outputs = QVector<int>())
+                                            const QList<int> &inputs = QList<int>(),
+                                            const QList<int> &outputs = QList<int>())
     {
         auto statement = QShaderGraph::Statement();
         statement.node = node;
@@ -80,7 +81,8 @@ namespace
         qDebug() << prefix << statement.inputs << statement.uuid().toString() << statement.outputs;
     }
 
-    void dumpStatementsIfNeeded(const QVector<QShaderGraph::Statement> &statements, const QVector<QShaderGraph::Statement> &expected)
+    void dumpStatementsIfNeeded(const QList<QShaderGraph::Statement> &statements,
+                                const QList<QShaderGraph::Statement> &expected)
     {
         if (statements != expected) {
             for (int i = 0; i < qMax(statements.size(), expected.size()); i++) {
@@ -464,14 +466,12 @@ void tst_QShaderGraph::shouldSerializeGraphForCodeGeneration()
     const auto statements = graph.createStatements();
 
     // THEN
-    const auto expected = QVector<QShaderGraph::Statement>()
-            << createStatement(input2, {}, {1})
-            << createStatement(input1, {}, {0})
-            << createStatement(function2, {0, 1}, {3})
-            << createStatement(function1, {0}, {2})
-            << createStatement(function3, {2, 3}, {4, 5})
-            << createStatement(output2, {5}, {})
-            << createStatement(output1, {4}, {});
+    const auto expected = QList<QShaderGraph::Statement>()
+            << createStatement(input2, {}, { 1 }) << createStatement(input1, {}, { 0 })
+            << createStatement(function2, { 0, 1 }, { 3 })
+            << createStatement(function1, { 0 }, { 2 })
+            << createStatement(function3, { 2, 3 }, { 4, 5 }) << createStatement(output2, { 5 }, {})
+            << createStatement(output1, { 4 }, {});
     dumpStatementsIfNeeded(statements, expected);
     QCOMPARE(statements, expected);
 }
@@ -517,8 +517,7 @@ void tst_QShaderGraph::shouldHandleUnboundPortsDuringGraphSerialization()
 
     // THEN
     // Note that no statement has any unbound input
-    const auto expected = QVector<QShaderGraph::Statement>()
-            << createStatement(input, {}, {0});
+    const auto expected = QList<QShaderGraph::Statement>() << createStatement(input, {}, { 0 });
     dumpStatementsIfNeeded(statements, expected);
     QCOMPARE(statements, expected);
 }
@@ -566,7 +565,7 @@ void tst_QShaderGraph::shouldSurviveCyclesDuringGraphSerialization()
 
     // THEN
     // The cycle is ignored
-    const auto expected = QVector<QShaderGraph::Statement>();
+    const auto expected = QList<QShaderGraph::Statement>();
     dumpStatementsIfNeeded(statements, expected);
     QCOMPARE(statements, expected);
 }
@@ -641,16 +640,14 @@ void tst_QShaderGraph::shouldDealWithEdgesJumpingOverLayers()
     const auto statements = graph.createStatements();
 
     // THEN
-    const auto expected = QVector<QShaderGraph::Statement>()
-            << createStatement(texCoord, {}, {2})
-            << createStatement(texture, {}, {1})
-            << createStatement(lightIntensity, {}, {3})
-            << createStatement(sampleTexture, {1, 2}, {5})
-            << createStatement(worldPosition, {}, {0})
-            << createStatement(exposure, {}, {4})
-            << createStatement(lightFunction, {5, 0, 3}, {6})
-            << createStatement(exposureFunction, {6, 4}, {7})
-            << createStatement(fragColor, {7}, {});
+    const auto expected = QList<QShaderGraph::Statement>()
+            << createStatement(texCoord, {}, { 2 }) << createStatement(texture, {}, { 1 })
+            << createStatement(lightIntensity, {}, { 3 })
+            << createStatement(sampleTexture, { 1, 2 }, { 5 })
+            << createStatement(worldPosition, {}, { 0 }) << createStatement(exposure, {}, { 4 })
+            << createStatement(lightFunction, { 5, 0, 3 }, { 6 })
+            << createStatement(exposureFunction, { 6, 4 }, { 7 })
+            << createStatement(fragColor, { 7 }, {});
     dumpStatementsIfNeeded(statements, expected);
     QCOMPARE(statements, expected);
 }
@@ -716,11 +713,11 @@ void tst_QShaderGraph::shouldGenerateDifferentStatementsDependingOnActiveLayers(
         const auto statements = graph.createStatements({"diffuseUniform", "normalUniform"});
 
         // THEN
-        const auto expected = QVector<QShaderGraph::Statement>()
-                << createStatement(normalUniform, {}, {1})
-                << createStatement(diffuseUniform, {}, {0})
-                << createStatement(lightFunction, {0, 1}, {2})
-                << createStatement(fragColor, {2}, {});
+        const auto expected = QList<QShaderGraph::Statement>()
+                << createStatement(normalUniform, {}, { 1 })
+                << createStatement(diffuseUniform, {}, { 0 })
+                << createStatement(lightFunction, { 0, 1 }, { 2 })
+                << createStatement(fragColor, { 2 }, {});
         dumpStatementsIfNeeded(statements, expected);
         QCOMPARE(statements, expected);
     }
@@ -730,12 +727,12 @@ void tst_QShaderGraph::shouldGenerateDifferentStatementsDependingOnActiveLayers(
         const auto statements = graph.createStatements({"diffuseUniform", "normalTexture"});
 
         // THEN
-        const auto expected = QVector<QShaderGraph::Statement>()
-                << createStatement(texCoord, {}, {0})
-                << createStatement(normalTexture, {0}, {2})
-                << createStatement(diffuseUniform, {}, {1})
-                << createStatement(lightFunction, {1, 2}, {3})
-                << createStatement(fragColor, {3}, {});
+        const auto expected = QList<QShaderGraph::Statement>()
+                << createStatement(texCoord, {}, { 0 })
+                << createStatement(normalTexture, { 0 }, { 2 })
+                << createStatement(diffuseUniform, {}, { 1 })
+                << createStatement(lightFunction, { 1, 2 }, { 3 })
+                << createStatement(fragColor, { 3 }, {});
         dumpStatementsIfNeeded(statements, expected);
         QCOMPARE(statements, expected);
     }
@@ -745,12 +742,11 @@ void tst_QShaderGraph::shouldGenerateDifferentStatementsDependingOnActiveLayers(
         const auto statements = graph.createStatements({"diffuseTexture", "normalUniform"});
 
         // THEN
-        const auto expected = QVector<QShaderGraph::Statement>()
-                << createStatement(texCoord, {}, {0})
-                << createStatement(normalUniform, {}, {2})
-                << createStatement(diffuseTexture, {0}, {1})
-                << createStatement(lightFunction, {1, 2}, {3})
-                << createStatement(fragColor, {3}, {});
+        const auto expected = QList<QShaderGraph::Statement>()
+                << createStatement(texCoord, {}, { 0 }) << createStatement(normalUniform, {}, { 2 })
+                << createStatement(diffuseTexture, { 0 }, { 1 })
+                << createStatement(lightFunction, { 1, 2 }, { 3 })
+                << createStatement(fragColor, { 3 }, {});
         dumpStatementsIfNeeded(statements, expected);
         QCOMPARE(statements, expected);
     }
@@ -760,12 +756,12 @@ void tst_QShaderGraph::shouldGenerateDifferentStatementsDependingOnActiveLayers(
         const auto statements = graph.createStatements({"diffuseTexture", "normalTexture"});
 
         // THEN
-        const auto expected = QVector<QShaderGraph::Statement>()
-                << createStatement(texCoord, {}, {0})
-                << createStatement(normalTexture, {0}, {2})
-                << createStatement(diffuseTexture, {0}, {1})
-                << createStatement(lightFunction, {1, 2}, {3})
-                << createStatement(fragColor, {3}, {});
+        const auto expected = QList<QShaderGraph::Statement>()
+                << createStatement(texCoord, {}, { 0 })
+                << createStatement(normalTexture, { 0 }, { 2 })
+                << createStatement(diffuseTexture, { 0 }, { 1 })
+                << createStatement(lightFunction, { 1, 2 }, { 3 })
+                << createStatement(fragColor, { 3 }, {});
         dumpStatementsIfNeeded(statements, expected);
         QCOMPARE(statements, expected);
     }
@@ -806,11 +802,10 @@ void tst_QShaderGraph::shouldDealWithBranchesWithoutOutput()
 
     // THEN
     // Note that no edge leads to the unbound input
-    const auto expected = QVector<QShaderGraph::Statement>()
-            << createStatement(input, {}, {0})
-            << createStatement(function, {0}, {1})
-            << createStatement(output, {1}, {})
-            << createStatement(danglingFunction, {0}, {2});
+    const auto expected = QList<QShaderGraph::Statement>()
+            << createStatement(input, {}, { 0 }) << createStatement(function, { 0 }, { 1 })
+            << createStatement(output, { 1 }, {})
+            << createStatement(danglingFunction, { 0 }, { 2 });
     dumpStatementsIfNeeded(statements, expected);
     QCOMPARE(statements, expected);
 }

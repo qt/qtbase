@@ -285,8 +285,8 @@ void tst_QRawFont::glyphIndices()
     QRawFont font(testFont, 10);
     QVERIFY(font.isValid());
 
-    QVector<quint32> glyphIndices = font.glyphIndexesForString(QLatin1String("Foobar"));
-    QVector<quint32> expectedGlyphIndices;
+    QList<quint32> glyphIndices = font.glyphIndexesForString(QLatin1String("Foobar"));
+    QList<quint32> expectedGlyphIndices;
     expectedGlyphIndices << 44 << 83 << 83 << 70 << 69 << 86;
 
     QCOMPARE(glyphIndices, expectedGlyphIndices);
@@ -330,11 +330,11 @@ void tst_QRawFont::advances()
     QRawFontPrivate *font_d = QRawFontPrivate::get(font);
     QVERIFY(font_d->fontEngine != 0);
 
-    QVector<quint32> glyphIndices;
+    QList<quint32> glyphIndices;
     glyphIndices << 44 << 83 << 83 << 70 << 69 << 86; // "Foobar"
 
     bool supportsSubPixelPositions = font_d->fontEngine->supportsSubPixelPositions();
-    QVector<QPointF> advances = font.advancesForGlyphIndexes(glyphIndices);
+    QList<QPointF> advances = font.advancesForGlyphIndexes(glyphIndices);
 
     bool mayDiffer = font_d->fontEngine->type() == QFontEngine::Freetype
                      && (hintingPreference == QFont::PreferFullHinting
@@ -358,7 +358,7 @@ void tst_QRawFont::advances()
         QVERIFY(qFuzzyIsNull(advances.at(i).y()));
     }
 
-    advances = font.advancesForGlyphIndexes(QVector<quint32>());
+    advances = font.advancesForGlyphIndexes(QList<quint32>());
     QVERIFY(advances.isEmpty());
 
     int numGlyphs = glyphIndices.size();
@@ -415,7 +415,7 @@ void tst_QRawFont::textLayout()
     QCOMPARE(rawFont.familyName(), familyName);
     QCOMPARE(rawFont.pixelSize(), 18.0);
 
-    QVector<quint32> expectedGlyphIndices;
+    QList<quint32> expectedGlyphIndices;
     expectedGlyphIndices << 44 << 83 << 83 << 70 << 69 << 86;
 
     QCOMPARE(glyphs.glyphIndexes(), expectedGlyphIndices);
@@ -996,10 +996,10 @@ void tst_QRawFont::kernedAdvances()
     QRawFont font(testFont, pixelSize);
     QVERIFY(font.isValid());
 
-    QVector<quint32> glyphIndexes = font.glyphIndexesForString(QStringLiteral("__"));
+    QList<quint32> glyphIndexes = font.glyphIndexesForString(QStringLiteral("__"));
     QCOMPARE(glyphIndexes.size(), 2);
 
-    QVector<QPointF> advances = font.advancesForGlyphIndexes(glyphIndexes, QRawFont::KernedAdvances);
+    QList<QPointF> advances = font.advancesForGlyphIndexes(glyphIndexes, QRawFont::KernedAdvances);
     QCOMPARE(advances.size(), 2);
 
     qreal expectedAdvanceWidth = pixelSize * underScoreAW / emSquareSize;

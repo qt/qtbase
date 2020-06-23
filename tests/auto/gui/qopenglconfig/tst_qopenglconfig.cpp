@@ -249,7 +249,7 @@ void tst_QOpenGlConfig::testBugList()
     expectedFeatures << "feature1";
 
     // adapter info
-    QVersionNumber driverVersion(QVector<int>() << 9 << 18 << 13 << 4460);
+    QVersionNumber driverVersion(QList<int>() << 9 << 18 << 13 << 4460);
     QOpenGLConfig::Gpu gpu = QOpenGLConfig::Gpu::fromDevice(0x10DE, 0x0DE9, driverVersion, QByteArrayLiteral("Unknown"));
 
     QSet<QString> actualFeatures = QOpenGLConfig::gpuFeatures(gpu, QStringLiteral("win"),

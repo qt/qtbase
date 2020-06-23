@@ -71,7 +71,7 @@ namespace
         return port;
     }
 
-    QShaderNode createNode(const QVector<QShaderNodePort> &ports)
+    QShaderNode createNode(const QList<QShaderNodePort> &ports)
     {
         auto node = QShaderNode();
         for (const auto &port : ports)

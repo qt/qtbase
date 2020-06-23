@@ -834,7 +834,7 @@ void tst_QOpenGL::fboMRT()
 
     {
         // 3 color attachments, different sizes, same internal format, no depth/stencil.
-        QVector<QSize> sizes;
+        QList<QSize> sizes;
         sizes << QSize(128, 128) << QSize(192, 128) << QSize(432, 123);
         QOpenGLFramebufferObject fbo(sizes[0]);
         fbo.addColorAttachment(sizes[1]);
@@ -882,7 +882,7 @@ void tst_QOpenGL::fboMRT()
 
     {
         // 2 color attachments, same size, same internal format, depth/stencil.
-        QVector<QSize> sizes;
+        QList<QSize> sizes;
         sizes.fill(QSize(128, 128), 2);
         QOpenGLFramebufferObject fbo(sizes[0], QOpenGLFramebufferObject::CombinedDepthStencil);
         fbo.addColorAttachment(sizes[1]);
@@ -922,11 +922,11 @@ void tst_QOpenGL::fboMRT_differentFormats()
         QSKIP("RGB10_A2 not supported on this platform");
 
     // 3 color attachments, same size, different internal format, depth/stencil.
-    QVector<QSize> sizes;
+    QList<QSize> sizes;
     sizes.fill(QSize(128, 128), 3);
     QOpenGLFramebufferObjectFormat format;
     format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
-    QVector<GLenum> internalFormats;
+    QList<GLenum> internalFormats;
     internalFormats << GL_RGBA8 << GL_RGB10_A2 << GL_RGB5_A1;
     format.setInternalTextureFormat(internalFormats[0]);
     QOpenGLFramebufferObject fbo(sizes[0], format);

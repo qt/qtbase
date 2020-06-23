@@ -625,7 +625,7 @@ void tst_QTouchEvent::basicRawEventTranslation()
     rawTouchPoint.setState(Qt::TouchPointPressed);
     rawTouchPoint.setScreenPos(screenPos);
     rawTouchPoint.setNormalizedPos(normalized(rawTouchPoint.position(), screenGeometry));
-    QVector<QPointF> rawPosList;
+    QList<QPointF> rawPosList;
     rawPosList << QPointF(12, 34) << QPointF(56, 78);
     rawTouchPoint.setRawScreenPositions(rawPosList);
     const ulong timestamp = 1234;
@@ -977,7 +977,7 @@ void tst_QTouchEvent::touchOnMultipleTouchscreens()
     QPointF delta(10, 10);
     QRectF screenGeometry = touchWidget.screen()->geometry();
 
-    QVector<QTouchEvent::TouchPoint> rawTouchPoints(3);
+    QList<QTouchEvent::TouchPoint> rawTouchPoints(3);
     rawTouchPoints[0].setId(1);
     rawTouchPoints[1].setId(10);
     rawTouchPoints[2].setId(11);
@@ -1361,7 +1361,7 @@ void tst_QTouchEvent::basicRawEventTranslationOfIds()
     QPointF delta(10, 10);
     QRectF screenGeometry = touchWidget.screen()->geometry();
 
-    QVector<QPointF> rawPosList;
+    QList<QPointF> rawPosList;
     rawPosList << QPointF(12, 34) << QPointF(56, 78);
 
     QList<QTouchEvent::TouchPoint> rawTouchPoints;

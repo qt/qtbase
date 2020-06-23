@@ -986,7 +986,7 @@ void tst_QImage::convertToFormat()
 
 void tst_QImage::convertToFormatWithColorTable()
 {
-    QVector<QRgb> colors(2);
+    QList<QRgb> colors(2);
     colors[0] = 0xFF000000;
     colors[1] = 0xFFFFFFFF;
     for (int format = QImage::Format_RGB32; format < QImage::Format_Alpha8; ++format) {
@@ -1129,7 +1129,7 @@ void tst_QImage::rotate_data()
     QTest::addColumn<QImage::Format>("format");
     QTest::addColumn<int>("degrees");
 
-    QVector<int> degrees;
+    QList<int> degrees;
     degrees << 0 << 90 << 180 << 270;
 
     foreach (int d, degrees) {
@@ -1481,7 +1481,7 @@ void tst_QImage::convertToFormatPreserveText()
     QCOMPARE(imgResult1.text(), result);
     QCOMPARE(imgResult1.textKeys(), listResult);
 
-    QVector<QRgb> colorTable(4);
+    QList<QRgb> colorTable(4);
     for (int i = 0; i < 4; ++i)
         colorTable[i] = QRgb(42);
     QImage imgResult2 = img.convertToFormat(QImage::Format_MonoLSB,
@@ -2187,7 +2187,7 @@ void tst_QImage::compareIndexed()
 {
     QImage img(256, 1, QImage::Format_Indexed8);
 
-    QVector<QRgb> colorTable(256);
+    QList<QRgb> colorTable(256);
     for (int i = 0; i < 256; ++i)
         colorTable[i] = qRgb(i, i, i);
     img.setColorTable(colorTable);
@@ -2197,7 +2197,7 @@ void tst_QImage::compareIndexed()
     }
 
     QImage imgInverted(256, 1, QImage::Format_Indexed8);
-    QVector<QRgb> invertedColorTable(256);
+    QList<QRgb> invertedColorTable(256);
     for (int i = 0; i < 256; ++i)
         invertedColorTable[255-i] = qRgb(i, i, i);
     imgInverted.setColorTable(invertedColorTable);
@@ -2290,7 +2290,7 @@ void tst_QImage::fillColor()
     QImage image(1, 1, format);
 
     if (image.depth() == 8) {
-        QVector<QRgb> table;
+        QList<QRgb> table;
         table << 0xff000000;
         table << 0xffffffff;
         table << 0xffff0000;
@@ -2401,7 +2401,7 @@ void tst_QImage::rgbSwapped()
     QImage image(100, 1, format);
     image.fill(0);
 
-    QVector<QColor> testColor(image.width());
+    QList<QColor> testColor(image.width());
 
     for (int i = 0; i < image.width(); ++i)
         testColor[i] = QColor(i, 10 + i, 20 + i * 2, 30 + i);
@@ -2569,7 +2569,7 @@ void tst_QImage::inplaceRgbSwapped()
     QImage image(64, 1, format);
     image.fill(0);
 
-    QVector<QRgb> testColor(image.width());
+    QList<QRgb> testColor(image.width());
     for (int i = 0; i < image.width(); ++i)
         testColor[i] = qRgb(i * 2, i * 3, 255 - i * 4);
 

@@ -1267,7 +1267,7 @@ void tst_QTextDocument::toHtml_data()
         CREATE_DOC_AND_CURSOR();
 
         QTextTableFormat fmt;
-        QVector<QTextLength> widths;
+        QList<QTextLength> widths;
         widths.append(QTextLength());
         widths.append(QTextLength(QTextLength::PercentageLength, 30));
         widths.append(QTextLength(QTextLength::FixedLength, 40));
@@ -1540,7 +1540,7 @@ void tst_QTextDocument::toHtml_data()
         QTextTable *table = cursor.insertTable(2, 2);
         table->mergeCells(0, 0, 1, 2);
         QTextTableFormat fmt = table->format();
-        QVector<QTextLength> widths;
+        QList<QTextLength> widths;
         widths.append(QTextLength(QTextLength::FixedLength, 20));
         widths.append(QTextLength(QTextLength::FixedLength, 40));
         fmt.setColumnWidthConstraints(widths);

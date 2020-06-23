@@ -113,8 +113,10 @@ void tst_QSyntaxHighlighter::cleanup()
 class TestHighlighter : public QSyntaxHighlighter
 {
 public:
-    inline TestHighlighter(const QVector<QTextLayout::FormatRange> &fmts, QTextDocument *parent)
-        : QSyntaxHighlighter(parent), formats(fmts), highlighted(false), callCount(0) {}
+    inline TestHighlighter(const QList<QTextLayout::FormatRange> &fmts, QTextDocument *parent)
+        : QSyntaxHighlighter(parent), formats(fmts), highlighted(false), callCount(0)
+    {
+    }
     inline TestHighlighter(QObject *parent)
         : QSyntaxHighlighter(parent) {}
         inline TestHighlighter(QTextDocument *parent)
@@ -131,7 +133,7 @@ public:
                 ++callCount;
             }
 
-            QVector<QTextLayout::FormatRange> formats;
+            QList<QTextLayout::FormatRange> formats;
             bool highlighted;
             int callCount;
             QString highlightedText;
@@ -139,7 +141,7 @@ public:
 
 void tst_QSyntaxHighlighter::basic()
 {
-    QVector<QTextLayout::FormatRange> formats;
+    QList<QTextLayout::FormatRange> formats;
     QTextLayout::FormatRange range;
     range.start = 0;
     range.length = 2;
@@ -206,7 +208,7 @@ void tst_QSyntaxHighlighter::basicTwo()
 
 void tst_QSyntaxHighlighter::removeFormatsOnDelete()
 {
-    QVector<QTextLayout::FormatRange> formats;
+    QList<QTextLayout::FormatRange> formats;
     QTextLayout::FormatRange range;
     range.start = 0;
     range.length = 9;
@@ -403,7 +405,7 @@ void tst_QSyntaxHighlighter::highlightToEndOfDocument2()
 
 void tst_QSyntaxHighlighter::preservePreeditArea()
 {
-    QVector<QTextLayout::FormatRange> formats;
+    QList<QTextLayout::FormatRange> formats;
     QTextLayout::FormatRange range;
     range.start = 0;
     range.length = 8;
@@ -500,7 +502,7 @@ void tst_QSyntaxHighlighter::avoidUnnecessaryDelayedRehighlight()
 
 void tst_QSyntaxHighlighter::noContentsChangedDuringHighlight()
 {
-    QVector<QTextLayout::FormatRange> formats;
+    QList<QTextLayout::FormatRange> formats;
     QTextLayout::FormatRange range;
     range.start = 0;
     range.length = 10;

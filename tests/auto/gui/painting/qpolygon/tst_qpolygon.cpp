@@ -154,8 +154,9 @@ void tst_QPolygon::makeEllipse()
 
 void tst_QPolygon::swap()
 {
-    QPolygon p1(QVector<QPoint>() << QPoint(0,0) << QPoint(10,10) << QPoint(-10,10));
-    QPolygon p2(QVector<QPoint>() << QPoint(0,0) << QPoint( 0,10) << QPoint( 10,10) << QPoint(10,0));
+    QPolygon p1(QList<QPoint>() << QPoint(0, 0) << QPoint(10, 10) << QPoint(-10, 10));
+    QPolygon p2(QList<QPoint>() << QPoint(0, 0) << QPoint(0, 10) << QPoint(10, 10)
+                                << QPoint(10, 0));
     p1.swap(p2);
     QCOMPARE(p1.count(),4);
     QCOMPARE(p2.count(),3);
@@ -169,23 +170,27 @@ void tst_QPolygon::intersections_data()
 
     QTest::newRow("empty intersects nothing")
             << QPolygon()
-            << QPolygon(QVector<QPoint>() << QPoint(0,0) << QPoint(10,10) << QPoint(-10,10))
+            << QPolygon(QList<QPoint>() << QPoint(0, 0) << QPoint(10, 10) << QPoint(-10, 10))
             << false;
     QTest::newRow("identical triangles")
-            << QPolygon(QVector<QPoint>() << QPoint(0,0) << QPoint(10,10) << QPoint(-10,10))
-            << QPolygon(QVector<QPoint>() << QPoint(0,0) << QPoint(10,10) << QPoint(-10,10))
+            << QPolygon(QList<QPoint>() << QPoint(0, 0) << QPoint(10, 10) << QPoint(-10, 10))
+            << QPolygon(QList<QPoint>() << QPoint(0, 0) << QPoint(10, 10) << QPoint(-10, 10))
             << true;
     QTest::newRow("not intersecting")
-            << QPolygon(QVector<QPoint>() << QPoint(0,0) << QPoint(10,10) << QPoint(-10,10))
-            << QPolygon(QVector<QPoint>() << QPoint(0,20) << QPoint(10,12) << QPoint(-10,12))
+            << QPolygon(QList<QPoint>() << QPoint(0, 0) << QPoint(10, 10) << QPoint(-10, 10))
+            << QPolygon(QList<QPoint>() << QPoint(0, 20) << QPoint(10, 12) << QPoint(-10, 12))
             << false;
     QTest::newRow("clean intersection of squares")
-            << QPolygon(QVector<QPoint>() << QPoint(0,0) << QPoint(0,10) << QPoint(10,10) << QPoint(10,0))
-            << QPolygon(QVector<QPoint>() << QPoint(5,5) << QPoint(5,15) << QPoint(15,15) << QPoint(15,5))
+            << QPolygon(QList<QPoint>()
+                        << QPoint(0, 0) << QPoint(0, 10) << QPoint(10, 10) << QPoint(10, 0))
+            << QPolygon(QList<QPoint>()
+                        << QPoint(5, 5) << QPoint(5, 15) << QPoint(15, 15) << QPoint(15, 5))
             << true;
     QTest::newRow("clean contains of squares")
-            << QPolygon(QVector<QPoint>() << QPoint(0,0) << QPoint(0,10) << QPoint(10,10) << QPoint(10,0))
-            << QPolygon(QVector<QPoint>() << QPoint(5,5) << QPoint(5,8) << QPoint(8,8) << QPoint(8,5))
+            << QPolygon(QList<QPoint>()
+                        << QPoint(0, 0) << QPoint(0, 10) << QPoint(10, 10) << QPoint(10, 0))
+            << QPolygon(QList<QPoint>()
+                        << QPoint(5, 5) << QPoint(5, 8) << QPoint(8, 8) << QPoint(8, 5))
             << true;
 }
 
