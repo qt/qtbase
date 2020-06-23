@@ -415,7 +415,7 @@ QThread::QThread(QObject *parent)
 {
     Q_D(QThread);
     // fprintf(stderr, "QThreadData %p created for thread %p\n", d->data, this);
-    d->data->thread = this;
+    d->data->thread.storeRelaxed(this);
 }
 
 /*!
@@ -426,7 +426,7 @@ QThread::QThread(QThreadPrivate &dd, QObject *parent)
 {
     Q_D(QThread);
     // fprintf(stderr, "QThreadData %p taken from private data for thread %p\n", d->data, this);
-    d->data->thread = this;
+    d->data->thread.storeRelaxed(this);
 }
 
 /*!
@@ -451,7 +451,7 @@ QThread::~QThread()
         if (d->running && !d->finished && !d->data->isAdopted)
             qFatal("QThread: Destroyed while thread is still running");
 
-        d->data->thread = nullptr;
+        d->data->thread.storeRelease(nullptr);
     }
 }
 
@@ -797,7 +797,7 @@ QThread::QThread(QObject *parent)
     : QObject(*(new QThreadPrivate), parent)
 {
     Q_D(QThread);
-    d->data->thread = this;
+    d->data->thread.storeRelaxed(this);
 }
 
 QThread::~QThread()
@@ -915,7 +915,7 @@ QThread::QThread(QThreadPrivate &dd, QObject *parent)
 {
     Q_D(QThread);
     // fprintf(stderr, "QThreadData %p taken from private data for thread %p\n", d->data, this);
-    d->data->thread = this;
+    d->data->thread.storeRelaxed(this);
 }
 
 QThreadPrivate::QThreadPrivate(QThreadData *d) : data(d ? d : new QThreadData)
@@ -924,7 +924,7 @@ QThreadPrivate::QThreadPrivate(QThreadData *d) : data(d ? d : new QThreadData)
 
 QThreadPrivate::~QThreadPrivate()
 {
-    data->thread = nullptr; // prevent QThreadData from deleting the QThreadPrivate (again).
+    data->thread.storeRelease(nullptr); // prevent QThreadData from deleting the QThreadPrivate (again).
     delete data;
 }
 
