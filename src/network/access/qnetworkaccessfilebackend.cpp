@@ -95,8 +95,12 @@ QNetworkAccessFileBackendFactory::create(QNetworkAccessManager::Operation op,
     return nullptr;
 }
 
+// We pass TargetType::Local even though it's kind of Networked but we're using a QFile to access
+// the resource so it cannot use proxies anyway
 QNetworkAccessFileBackend::QNetworkAccessFileBackend()
-    : totalBytes(0), hasUploadFinished(false)
+    : QNetworkAccessBackend(QNetworkAccessBackend::TargetType::Local),
+      totalBytes(0),
+      hasUploadFinished(false)
 {
 }
 
@@ -152,7 +156,7 @@ void QNetworkAccessFileBackend::open()
     case QNetworkAccessManager::PutOperation:
         mode = QIODevice::WriteOnly | QIODevice::Truncate;
         createUploadByteDevice();
-        QObject::connect(uploadByteDevice.data(), SIGNAL(readyRead()), this, SLOT(uploadReadyReadSlot()));
+        QObject::connect(uploadByteDevice(), SIGNAL(readyRead()), this, SLOT(uploadReadyReadSlot()));
         QMetaObject::invokeMethod(this, "uploadReadyReadSlot", Qt::QueuedConnection);
         break;
     default:
@@ -163,6 +167,8 @@ void QNetworkAccessFileBackend::open()
 
     mode |= QIODevice::Unbuffered;
     bool opened = file.open(mode);
+    if (file.isSequential())
+        connect(&file, &QIODevice::readChannelFinished, this, [this]() { finished(); });
 
     // could we open the file?
     if (!opened) {
@@ -186,8 +192,8 @@ void QNetworkAccessFileBackend::uploadReadyReadSlot()
         return;
 
     forever {
-        qint64 haveRead;
-        const char *readPointer = uploadByteDevice->readPointer(-1, haveRead);
+        QByteArray data(16 * 1024, Qt::Uninitialized);
+        qint64 haveRead = uploadByteDevice()->peek(data.data(), data.size());
         if (haveRead == -1) {
             // EOF
             hasUploadFinished = true;
@@ -195,12 +201,13 @@ void QNetworkAccessFileBackend::uploadReadyReadSlot()
             file.close();
             finished();
             break;
-        } else if (haveRead == 0 || readPointer == nullptr) {
+        } else if (haveRead == 0) {
             // nothing to read right now, we will be called again later
             break;
         } else {
             qint64 haveWritten;
-            haveWritten = file.write(readPointer, haveRead);
+            data.truncate(haveRead);
+            haveWritten = file.write(data);
 
             if (haveWritten < 0) {
                 // write error!
@@ -211,7 +218,7 @@ void QNetworkAccessFileBackend::uploadReadyReadSlot()
                 finished();
                 return;
             } else {
-                uploadByteDevice->advanceReadPointer(haveWritten);
+                uploadByteDevice()->skip(haveWritten);
             }
 
 
@@ -220,19 +227,11 @@ void QNetworkAccessFileBackend::uploadReadyReadSlot()
     }
 }
 
-void QNetworkAccessFileBackend::closeDownstreamChannel()
+void QNetworkAccessFileBackend::close()
 {
     if (operation() == QNetworkAccessManager::GetOperation) {
         file.close();
     }
-}
-
-void QNetworkAccessFileBackend::downstreamReadyWrite()
-{
-    Q_ASSERT_X(operation() == QNetworkAccessManager::GetOperation, "QNetworkAccessFileBackend",
-               "We're being told to download data but operation isn't GET!");
-
-    readMoreFromFile();
 }
 
 bool QNetworkAccessFileBackend::loadFileInfo()
@@ -254,40 +253,36 @@ bool QNetworkAccessFileBackend::loadFileInfo()
     return true;
 }
 
-bool QNetworkAccessFileBackend::readMoreFromFile()
+qint64 QNetworkAccessFileBackend::bytesAvailable() const
 {
-    qint64 wantToRead;
-    while ((wantToRead = nextDownstreamBlockSize()) > 0) {
-        // ### FIXME!!
-        // Obtain a pointer from the ringbuffer!
-        // Avoid extra copy
-        QByteArray data;
-        data.reserve(wantToRead);
-        qint64 actuallyRead = file.read(data.data(), wantToRead);
-        if (actuallyRead <= 0) {
-            // EOF or error
-            if (file.error() != QFile::NoError) {
-                QString msg = QCoreApplication::translate("QNetworkAccessFileBackend", "Read error reading from %1: %2")
-                              .arg(url().toString(), file.errorString());
-                error(QNetworkReply::ProtocolFailure, msg);
+    if (operation() != QNetworkAccessManager::GetOperation)
+        return 0;
+    return file.bytesAvailable();
+}
 
-                finished();
-                return false;
-            }
+qint64 QNetworkAccessFileBackend::read(char *data, qint64 maxlen)
+{
+    if (operation() != QNetworkAccessManager::GetOperation)
+        return 0;
+    qint64 actuallyRead = file.read(data, maxlen);
+    if (actuallyRead <= 0) {
+        // EOF or error
+        if (file.error() != QFile::NoError) {
+            QString msg = QCoreApplication::translate("QNetworkAccessFileBackend", "Read error reading from %1: %2")
+                            .arg(url().toString(), file.errorString());
+            error(QNetworkReply::ProtocolFailure, msg);
 
             finished();
-            return true;
+            return -1;
         }
 
-        data.resize(actuallyRead);
-        totalBytes += actuallyRead;
-
-        QByteDataBuffer list;
-        list.append(data);
-        data.clear(); // important because of implicit sharing!
-        writeDownstreamData(list);
+        finished();
+        return actuallyRead;
     }
-    return true;
+    if (!file.isSequential() && file.atEnd())
+        finished();
+    totalBytes += actuallyRead;
+    return actuallyRead;
 }
 
 QT_END_NAMESPACE

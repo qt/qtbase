@@ -48,7 +48,7 @@
 QT_BEGIN_NAMESPACE
 
 QNetworkAccessCacheBackend::QNetworkAccessCacheBackend()
-    : QNetworkAccessBackend()
+    : QNetworkAccessBackend(QNetworkAccessBackend::TargetType::Local)
 {
 }
 
@@ -107,11 +107,11 @@ bool QNetworkAccessCacheBackend::sendCacheContents()
     metaDataChanged();
 
     if (operation() == QNetworkAccessManager::GetOperation) {
-        QIODevice *contents = nc->data(url());
-        if (!contents)
+        device = nc->data(url());
+        if (!device)
             return false;
-        contents->setParent(this);
-        writeDownstreamData(contents);
+        device->setParent(this);
+        readyRead();
     }
 
 #if defined(QNETWORKACCESSCACHEBACKEND_DEBUG)
@@ -126,23 +126,16 @@ bool QNetworkAccessCacheBackend::start()
     return true;
 }
 
-void QNetworkAccessCacheBackend::closeDownstreamChannel()
+void QNetworkAccessCacheBackend::close() { }
+
+qint64 QNetworkAccessCacheBackend::bytesAvailable() const
 {
+    return device ? device->bytesAvailable() : qint64(0);
 }
 
-void QNetworkAccessCacheBackend::closeUpstreamChannel()
+qint64 QNetworkAccessCacheBackend::read(char *data, qint64 maxlen)
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "This function show not have been called!");
-}
-
-void QNetworkAccessCacheBackend::upstreamReadyRead()
-{
-    Q_ASSERT_X(false, Q_FUNC_INFO, "This function show not have been called!");
-}
-
-void QNetworkAccessCacheBackend::downstreamReadyWrite()
-{
-    Q_ASSERT_X(false, Q_FUNC_INFO, "This function show not have been called!");
+    return device ? device->read(data, maxlen) : qint64(0);
 }
 
 QT_END_NAMESPACE

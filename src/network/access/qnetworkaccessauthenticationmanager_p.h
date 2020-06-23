@@ -54,7 +54,6 @@
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 #include "qnetworkaccessmanager.h"
 #include "qnetworkaccesscache_p.h"
-#include "qnetworkaccessbackend_p.h"
 #include "QtNetwork/qnetworkproxy.h"
 #include "QtCore/QMutex"
 

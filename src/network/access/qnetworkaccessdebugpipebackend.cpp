@@ -80,8 +80,13 @@ QNetworkAccessDebugPipeBackendFactory::create(QNetworkAccessManager::Operation o
 }
 
 QNetworkAccessDebugPipeBackend::QNetworkAccessDebugPipeBackend()
-    : bareProtocol(false), hasUploadFinished(false), hasDownloadFinished(false),
-    hasEverythingFinished(false), bytesDownloaded(0), bytesUploaded(0)
+    : QNetworkAccessBackend(QNetworkAccessBackend::TargetType::Networked),
+      bareProtocol(false),
+      hasUploadFinished(false),
+      hasDownloadFinished(false),
+      hasEverythingFinished(false),
+      bytesDownloaded(0),
+      bytesUploaded(0)
 {
 }
 
@@ -108,19 +113,36 @@ void QNetworkAccessDebugPipeBackend::open()
 
     if (operation() == QNetworkAccessManager::PutOperation) {
         createUploadByteDevice();
-        QObject::connect(uploadByteDevice.data(), SIGNAL(readyRead()), this, SLOT(uploadReadyReadSlot()));
+        QObject::connect(uploadByteDevice(), SIGNAL(readyRead()), this,
+                         SLOT(uploadReadyReadSlot()));
         QMetaObject::invokeMethod(this, "uploadReadyReadSlot", Qt::QueuedConnection);
     }
 }
 
 void QNetworkAccessDebugPipeBackend::socketReadyRead()
 {
-    pushFromSocketToDownstream();
+    readyRead();
 }
 
-void QNetworkAccessDebugPipeBackend::downstreamReadyWrite()
+qint64 QNetworkAccessDebugPipeBackend::read(char *data, qint64 maxlen)
 {
-    pushFromSocketToDownstream();
+    qint64 haveRead = socket.read(data, maxlen);
+
+    if (haveRead == -1) {
+        hasDownloadFinished = true;
+        // this ensures a good last downloadProgress is emitted
+        setHeader(QNetworkRequest::ContentLengthHeader, QVariant());
+        possiblyFinish();
+        return haveRead;
+    }
+
+    bytesDownloaded += haveRead;
+    return haveRead;
+}
+
+qint64 QNetworkAccessDebugPipeBackend::bytesAvailable() const
+{
+    return socket.bytesAvailable();
 }
 
 void QNetworkAccessDebugPipeBackend::socketBytesWritten(qint64)
@@ -131,42 +153,6 @@ void QNetworkAccessDebugPipeBackend::socketBytesWritten(qint64)
 void QNetworkAccessDebugPipeBackend::uploadReadyReadSlot()
 {
     pushFromUpstreamToSocket();
-}
-
-void QNetworkAccessDebugPipeBackend::pushFromSocketToDownstream()
-{
-    QByteArray buffer;
-
-    if (socket.state() == QAbstractSocket::ConnectingState) {
-        return;
-    }
-
-    forever {
-        if (hasDownloadFinished)
-            return;
-
-        buffer.resize(ReadBufferSize);
-        qint64 haveRead = socket.read(buffer.data(), ReadBufferSize);
-
-        if (haveRead == -1) {
-            hasDownloadFinished = true;
-            // this ensures a good last downloadProgress is emitted
-            setHeader(QNetworkRequest::ContentLengthHeader, QVariant());
-            possiblyFinish();
-            break;
-        } else if (haveRead == 0) {
-            break;
-        } else {
-            // have read something
-            buffer.resize(haveRead);
-            bytesDownloaded += haveRead;
-
-            QByteDataBuffer list;
-            list.append(buffer);
-            buffer.clear(); // important because of implicit sharing!
-            writeDownstreamData(list);
-        }
-    }
 }
 
 void QNetworkAccessDebugPipeBackend::pushFromUpstreamToSocket()
@@ -180,20 +166,20 @@ void QNetworkAccessDebugPipeBackend::pushFromUpstreamToSocket()
             if (socket.bytesToWrite() >= WriteBufferSize)
                 return;
 
-            qint64 haveRead;
-            const char *readPointer = uploadByteDevice->readPointer(WriteBufferSize, haveRead);
+            QByteArray data(WriteBufferSize, Qt::Uninitialized);
+            qint64 haveRead = uploadByteDevice()->peek(data.data(), data.size());
             if (haveRead == -1) {
                 // EOF
                 hasUploadFinished = true;
-                emitReplyUploadProgress(bytesUploaded, bytesUploaded);
                 possiblyFinish();
                 break;
-            } else if (haveRead == 0 || readPointer == nullptr) {
+            } else if (haveRead == 0) {
                 // nothing to read right now, we will be called again later
                 break;
             } else {
                 qint64 haveWritten;
-                haveWritten = socket.write(readPointer, haveRead);
+                data.truncate(haveRead);
+                haveWritten = socket.write(std::move(data));
 
                 if (haveWritten < 0) {
                     // write error!
@@ -203,13 +189,11 @@ void QNetworkAccessDebugPipeBackend::pushFromUpstreamToSocket()
                     finished();
                     return;
                 } else {
-                    uploadByteDevice->advanceReadPointer(haveWritten);
+                    uploadByteDevice()->skip(haveWritten);
                     bytesUploaded += haveWritten;
-                    emitReplyUploadProgress(bytesUploaded, -1);
                 }
 
                 //QCoreApplication::processEvents();
-
             }
         }
     }
@@ -232,7 +216,7 @@ void QNetworkAccessDebugPipeBackend::possiblyFinish()
 
 }
 
-void QNetworkAccessDebugPipeBackend::closeDownstreamChannel()
+void QNetworkAccessDebugPipeBackend::close()
 {
     qWarning("QNetworkAccessDebugPipeBackend::closeDownstreamChannel() %d",operation());;
     //if (operation() == QNetworkAccessManager::GetOperation)
@@ -266,11 +250,10 @@ void QNetworkAccessDebugPipeBackend::socketError()
 
 void QNetworkAccessDebugPipeBackend::socketDisconnected()
 {
-    pushFromSocketToDownstream();
-
     if (socket.bytesToWrite() == 0) {
         // normal close
     } else {
+        readyRead(); // @todo this is odd
         // abnormal close
         QString msg = QNetworkAccessDebugPipeBackend::tr("Remote host closed the connection prematurely on %1")
                              .arg(url().toString());

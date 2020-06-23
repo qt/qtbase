@@ -60,6 +60,9 @@
 #include "qnetworkreplydataimpl_p.h"
 #include "qnetworkreplyfileimpl_p.h"
 
+#include "qnetworkaccessbackend_p.h"
+#include "qnetworkreplyimpl_p.h"
+
 #include "QtCore/qbuffer.h"
 #include "QtCore/qlist.h"
 #include "QtCore/qurl.h"
@@ -76,6 +79,8 @@
 #include "qthread.h"
 
 #include <QHostInfo>
+
+#include <QtCore/private/qfactoryloader_p.h>
 
 #if defined(Q_OS_MACOS)
 #include <CoreServices/CoreServices.h>
@@ -96,6 +101,9 @@ Q_GLOBAL_STATIC(QNetworkAccessFileBackendFactory, fileBackend)
 Q_GLOBAL_STATIC(QNetworkAccessDebugPipeBackendFactory, debugpipeBackend)
 #endif
 
+Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
+                          (QNetworkAccessBackendFactory_iid,
+                           QLatin1String("/networkaccessbackends")))
 #if defined(Q_OS_MACOS)
 bool getProxyAuth(const QString& proxyHostname, const QString &scheme, QString& username, QString& password)
 {
@@ -396,6 +404,7 @@ QNetworkAccessManager::QNetworkAccessManager(QObject *parent)
     : QObject(*new QNetworkAccessManagerPrivate, parent)
 {
     ensureInitialized();
+    d_func()->ensureBackendPluginsLoaded();
 
     qRegisterMetaType<QNetworkReply::NetworkError>();
 #ifndef QT_NO_NETWORKPROXY
@@ -1171,9 +1180,9 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
             QNetworkReplyImplPrivate *priv = reply->d_func();
             priv->manager = this;
             priv->backend = new QNetworkAccessCacheBackend();
-            priv->backend->manager = this->d_func();
+            priv->backend->setManagerPrivate(this->d_func());
             priv->backend->setParent(reply);
-            priv->backend->reply = priv;
+            priv->backend->setReplyPrivate(priv);
             priv->setup(op, req, outgoingData);
             return reply;
         }
@@ -1251,7 +1260,7 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
 
     if (priv->backend) {
         priv->backend->setParent(reply);
-        priv->backend->reply = priv;
+        priv->backend->setReplyPrivate(priv);
     }
 
 #ifndef QT_NO_SSL
@@ -1684,6 +1693,25 @@ QNetworkRequest QNetworkAccessManagerPrivate::prepareMultipart(const QNetworkReq
     return newRequest;
 }
 #endif // QT_CONFIG(http)
+
+/*!
+    \internal
+    Go through the instances so the factories will be created and
+    register themselves to QNetworkAccessBackendFactoryData
+*/
+void QNetworkAccessManagerPrivate::ensureBackendPluginsLoaded()
+{
+    static QBasicMutex mutex;
+    std::unique_lock locker(mutex);
+    if (!loader())
+        return;
+#if QT_CONFIG(library)
+    loader->update();
+#endif
+    int index = 0;
+    while (loader->instance(index))
+        ++index;
+}
 
 QT_END_NAMESPACE
 

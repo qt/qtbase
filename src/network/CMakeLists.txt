@@ -5,6 +5,7 @@
 #####################################################################
 
 qt_add_module(Network
+    PLUGIN_TYPES networkaccessbackends
     SOURCES
         access/qabstractnetworkcache.cpp access/qabstractnetworkcache.h access/qabstractnetworkcache_p.h
         access/qhsts.cpp access/qhsts_p.h

@@ -66,16 +66,15 @@ public:
     ~QNetworkAccessCacheBackend();
 
     void open() override;
-    void closeDownstreamChannel() override;
-    void closeUpstreamChannel();
+    void close() override;
     bool start() override;
-
-    void upstreamReadyRead();
-    void downstreamReadyWrite() override;
+    qint64 bytesAvailable() const override;
+    qint64 read(char *data, qint64 maxlen) override;
 
 private:
     bool sendCacheContents();
 
+    QIODevice *device = nullptr;
 };
 
 QT_END_NAMESPACE

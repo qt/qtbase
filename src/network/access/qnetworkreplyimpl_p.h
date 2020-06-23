@@ -106,8 +106,6 @@ class QNetworkReplyImplPrivate: public QNetworkReplyPrivate
 public:
     enum InternalNotifications {
         NotifyDownstreamReadyWrite,
-        NotifyCloseDownstreamChannel,
-        NotifyCopyFinished
     };
 
     QNetworkReplyImplPrivate();
@@ -139,7 +137,6 @@ public:
     void appendDownstreamDataSignalEmissions();
     void appendDownstreamData(QByteDataBuffer &data);
     void appendDownstreamData(QIODevice *data);
-    void appendDownstreamData(const QByteArray &data);
 
     void setDownloadBuffer(QSharedPointer<char> sp, qint64 size);
     char* getDownloadBuffer(qint64 size);
@@ -151,6 +148,8 @@ public:
     void redirectionRequested(const QUrl &target);
     void encrypted();
     void sslErrors(const QList<QSslError> &errors);
+
+    void readFromBackend();
 
     QNetworkAccessBackend *backend;
     QIODevice *outgoingData;
@@ -171,7 +170,6 @@ public:
 #endif
 
     qint64 bytesDownloaded;
-    qint64 lastBytesDownloaded;
     qint64 bytesUploaded;
 
     QString httpReasonPhrase;

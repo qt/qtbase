@@ -56,7 +56,7 @@ inline QNetworkReplyImplPrivate::QNetworkReplyImplPrivate()
       copyDevice(nullptr),
       cacheEnabled(false), cacheSaveDevice(nullptr),
       notificationHandlingPaused(false),
-      bytesDownloaded(0), lastBytesDownloaded(-1), bytesUploaded(-1),
+      bytesDownloaded(0), bytesUploaded(-1),
       httpStatusCode(0),
       state(Idle)
       , downloadBufferReadPosition(0)
@@ -124,7 +124,7 @@ void QNetworkReplyImplPrivate::_q_copyReadyRead()
     // FIXME Optimize to use download buffer if it is a QBuffer.
     // Needs to be done where sendCacheContents() (?) of HTTP is emitting
     // metaDataChanged ?
-
+    qint64 lastBytesDownloaded = bytesDownloaded;
     forever {
         qint64 bytesToRead = nextDownstreamBlockSize();
         if (bytesToRead == 0)
@@ -135,13 +135,11 @@ void QNetworkReplyImplPrivate::_q_copyReadyRead()
         qint64 bytesActuallyRead = copyDevice->read(buffer.reserve(bytesToRead), bytesToRead);
         if (bytesActuallyRead == -1) {
             buffer.chop(bytesToRead);
-            backendNotify(NotifyCopyFinished);
             break;
         }
         buffer.chop(bytesToRead - bytesActuallyRead);
 
         if (!copyDevice->isSequential() && copyDevice->atEnd()) {
-            backendNotify(NotifyCopyFinished);
             bytesDownloaded += bytesActuallyRead;
             break;
         }
@@ -154,7 +152,6 @@ void QNetworkReplyImplPrivate::_q_copyReadyRead()
         return;
     }
 
-    lastBytesDownloaded = bytesDownloaded;
     QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
     pauseNotificationHandling();
     // emit readyRead before downloadProgress incase this will cause events to be
@@ -323,21 +320,15 @@ void QNetworkReplyImplPrivate::handleNotifications()
             return;
         switch (notification) {
         case NotifyDownstreamReadyWrite:
-            if (copyDevice)
+            if (copyDevice) {
                 _q_copyReadyRead();
-            else
-                backend->downstreamReadyWrite();
+            } else if (backend) {
+                if (backend->bytesAvailable() > 0)
+                    readFromBackend();
+                else if (backend->wantToRead())
+                    readFromBackend();
+            }
             break;
-
-        case NotifyCloseDownstreamChannel:
-            backend->closeDownstreamChannel();
-            break;
-
-        case NotifyCopyFinished: {
-            QIODevice *dev = qExchange(copyDevice, nullptr);
-            backend->copyFinished(dev);
-            break;
-        }
         }
     }
 }
@@ -463,7 +454,8 @@ void QNetworkReplyImplPrivate::initCacheSaveDevice()
     // save the meta data
     QNetworkCacheMetaData metaData;
     metaData.setUrl(url);
-    metaData = backend->fetchCacheMetaData(metaData);
+    // @todo @future: fetchCacheMetaData is not currently implemented in any backend, but can be useful again in the future
+    // metaData = backend->fetchCacheMetaData(metaData);
 
     // save the redirect request also in the cache
     QVariant redirectionTarget = q->attribute(QNetworkRequest::RedirectionTargetAttribute);
@@ -512,7 +504,6 @@ void QNetworkReplyImplPrivate::appendDownstreamData(QByteDataBuffer &data)
     data.clear();
 
     bytesDownloaded += bytesWritten;
-    lastBytesDownloaded = bytesDownloaded;
 
     appendDownstreamDataSignalEmissions();
 }
@@ -560,16 +551,6 @@ void QNetworkReplyImplPrivate::appendDownstreamData(QIODevice *data)
 
     // start the copy:
     _q_copyReadyRead();
-}
-
-void QNetworkReplyImplPrivate::appendDownstreamData(const QByteArray &data)
-{
-    Q_UNUSED(data);
-    // TODO implement
-
-    // TODO call
-
-    qFatal("QNetworkReplyImplPrivate::appendDownstreamData not implemented");
 }
 
 static void downloadBufferDeleter(char *ptr)
@@ -620,16 +601,11 @@ void QNetworkReplyImplPrivate::appendDownstreamDataDownloadBuffer(qint64 bytesRe
         initCacheSaveDevice();
 
     if (cacheSaveDevice && bytesReceived == bytesTotal) {
-//        if (lastBytesDownloaded == -1)
-//            lastBytesDownloaded = 0;
-//        cacheSaveDevice->write(downloadBuffer + lastBytesDownloaded, bytesReceived - lastBytesDownloaded);
-
         // Write everything in one go if we use a download buffer. might be more performant.
         cacheSaveDevice->write(downloadBuffer, bytesTotal);
     }
 
     bytesDownloaded = bytesReceived;
-    lastBytesDownloaded = bytesReceived;
 
     downloadBufferCurrentSize = bytesReceived;
 
@@ -748,6 +724,30 @@ void QNetworkReplyImplPrivate::sslErrors(const QList<QSslError> &errors)
 #endif
 }
 
+void QNetworkReplyImplPrivate::readFromBackend()
+{
+    Q_Q(QNetworkReplyImpl);
+    if (!backend)
+        return;
+
+    if (backend->ioFeatures() & QNetworkAccessBackend::IOFeature::ZeroCopy) {
+        if (backend->bytesAvailable())
+            emit q->readyRead();
+    } else {
+        while (backend->bytesAvailable()
+               && (!readBufferMaxSize || buffer.size() < readBufferMaxSize)) {
+            qint64 toRead = qMin(nextDownstreamBlockSize(), backend->bytesAvailable());
+            if (toRead == 0)
+                toRead = 16 * 1024; // try to read something
+            char *data = buffer.reserve(toRead);
+            qint64 bytesRead = backend->read(data, toRead);
+            Q_ASSERT(bytesRead <= toRead);
+            buffer.chop(toRead - bytesRead);
+            emit q->readyRead();
+        }
+    }
+}
+
 QNetworkReplyImpl::QNetworkReplyImpl(QObject *parent)
     : QNetworkReply(*new QNetworkReplyImplPrivate, parent)
 {
@@ -799,7 +799,7 @@ void QNetworkReplyImpl::close()
 
     // stop the download
     if (d->backend)
-        d->backend->closeDownstreamChannel();
+        d->backend->close();
     if (d->copyDevice)
         disconnect(d->copyDevice, nullptr, this, nullptr);
 
@@ -823,21 +823,16 @@ qint64 QNetworkReplyImpl::bytesAvailable() const
         qint64 maxAvail = d->downloadBufferCurrentSize - d->downloadBufferReadPosition;
         return QNetworkReply::bytesAvailable() + maxAvail;
     }
-
-    return QNetworkReply::bytesAvailable();
+    return QNetworkReply::bytesAvailable() + (d->backend ? d->backend->bytesAvailable() : 0);
 }
 
 void QNetworkReplyImpl::setReadBufferSize(qint64 size)
 {
     Q_D(QNetworkReplyImpl);
-    if (size > d->readBufferMaxSize &&
-        size > d->buffer.size())
-        d->backendNotify(QNetworkReplyImplPrivate::NotifyDownstreamReadyWrite);
-
+    qint64 oldMaxSize = d->readBufferMaxSize;
     QNetworkReply::setReadBufferSize(size);
-
-    if (d->backend)
-        d->backend->setDownstreamLimited(d->readBufferMaxSize > 0);
+    if (size > oldMaxSize && size > d->buffer.size())
+        d->readFromBackend();
 }
 
 #ifndef QT_NO_SSL
@@ -845,7 +840,7 @@ void QNetworkReplyImpl::sslConfigurationImplementation(QSslConfiguration &config
 {
     Q_D(const QNetworkReplyImpl);
     if (d->backend)
-        d->backend->fetchSslConfiguration(configuration);
+        configuration = d->backend->sslConfiguration();
 }
 
 void QNetworkReplyImpl::setSslConfigurationImplementation(const QSslConfiguration &config)
@@ -876,6 +871,35 @@ void QNetworkReplyImpl::ignoreSslErrorsImplementation(const QList<QSslError> &er
 qint64 QNetworkReplyImpl::readData(char *data, qint64 maxlen)
 {
     Q_D(QNetworkReplyImpl);
+
+    if (d->backend
+        && d->backend->ioFeatures().testFlag(QNetworkAccessBackend::IOFeature::ZeroCopy)) {
+        qint64 bytesRead = 0;
+        while (d->backend->bytesAvailable()) {
+            QByteArrayView view = d->backend->readPointer();
+            if (view.size()) {
+                qint64 bytesToCopy = qMin(qint64(view.size()), maxlen - bytesRead);
+                memcpy(data + bytesRead, view.data(), bytesToCopy); // from zero to one copy
+
+                // We might have to cache this
+                if (d->cacheEnabled && !d->cacheSaveDevice)
+                    d->initCacheSaveDevice();
+                if (d->cacheEnabled && d->cacheSaveDevice)
+                    d->cacheSaveDevice->write(view.data(), view.size());
+
+                bytesRead += bytesToCopy;
+                d->backend->advanceReadPointer(bytesToCopy);
+            } else {
+                break;
+            }
+        }
+        QVariant totalSize = d->cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
+        emit downloadProgress(bytesRead,
+                              totalSize.isNull() ? Q_INT64_C(-1) : totalSize.toLongLong());
+        return bytesRead;
+    } else if (d->backend && d->backend->bytesAvailable()) {
+        return d->backend->read(data, maxlen);
+    }
 
     // Special case code if we have the "zero copy" download buffer
     if (d->downloadBuffer) {

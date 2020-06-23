@@ -5,6 +5,7 @@
 #####################################################################
 
 qt_add_module(Network
+    PLUGIN_TYPES networkaccessbackends
     SOURCES
         access/qabstractnetworkcache.cpp access/qabstractnetworkcache.h access/qabstractnetworkcache_p.h
         access/qhsts.cpp access/qhsts_p.h
@@ -68,13 +69,6 @@ qt_add_module(Network
 qt_extend_target(Network CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
     LINK_OPTIONS
         "/BASE:0x64000000"
-)
-
-qt_extend_target(Network CONDITION QT_FEATURE_ftp
-    SOURCES
-        access/qftp.cpp access/qftp_p.h
-        access/qnetworkaccessftpbackend.cpp access/qnetworkaccessftpbackend_p.h
-        kernel/qurlinfo.cpp kernel/qurlinfo_p.h
 )
 
 qt_extend_target(Network CONDITION QT_FEATURE_networkdiskcache

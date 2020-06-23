@@ -61,6 +61,8 @@
 #include "qnetworkcookiejar.h"
 #include "qnetconmonitor_p.h"
 
+#include "qnetworkreplyimpl_p.h"
+
 #include <string.h>             // for strchr
 
 QT_BEGIN_NAMESPACE

@@ -68,13 +68,13 @@ public:
     QNetworkAccessDebugPipeBackend();
     virtual ~QNetworkAccessDebugPipeBackend();
 
-    virtual void open() override;
-    virtual void closeDownstreamChannel() override;
+    void open() override;
+    void close() override;
 
-    virtual void downstreamReadyWrite() override;
+    qint64 read(char *data, qint64 maxlen) override;
+    qint64 bytesAvailable() const override;
 
 protected:
-    void pushFromSocketToDownstream();
     void pushFromUpstreamToSocket();
     void possiblyFinish();
 

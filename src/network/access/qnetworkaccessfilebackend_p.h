@@ -66,10 +66,11 @@ public:
     QNetworkAccessFileBackend();
     virtual ~QNetworkAccessFileBackend();
 
-    virtual void open() override;
-    virtual void closeDownstreamChannel() override;
+    void open() override;
+    void close() override;
 
-    virtual void downstreamReadyWrite() override;
+    qint64 bytesAvailable() const;
+    qint64 read(char *data, qint64 maxlen);
 
 public slots:
     void uploadReadyReadSlot();
@@ -79,7 +80,6 @@ private:
     bool hasUploadFinished;
 
     bool loadFileInfo();
-    bool readMoreFromFile();
 };
 
 class QNetworkAccessFileBackendFactory: public QNetworkAccessBackendFactory

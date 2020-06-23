@@ -14,6 +14,9 @@ msvc:equals(QT_ARCH, i386): QMAKE_LFLAGS += /BASE:0x64000000
 
 QMAKE_DOCS = $$PWD/doc/qtnetwork.qdocconf
 
+MODULE_PLUGIN_TYPES = \
+    networkaccessbackends
+
 include(access/access.pri)
 include(kernel/kernel.pri)
 include(socket/socket.pri)
