@@ -36,18 +36,6 @@ class tst_QTime : public QObject
 {
     Q_OBJECT
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-public:
-    tst_QTime()
-    {
-        // Some tests depend on C locale - BF&I it with belt *and* braces:
-        qputenv("LC_ALL", "C");
-        setlocale(LC_ALL, "C");
-        // Need to instantiate as early as possible, before anything accesses
-        // the QSystemLocale singleton; once it exists, there's no changing it.
-    }
-#endif // remove for ### Qt 6
-
 private Q_SLOTS:
     void msecsTo_data();
     void msecsTo();
@@ -77,9 +65,6 @@ private Q_SLOTS:
     void toStringDateFormat();
     void toStringFormat_data();
     void toStringFormat();
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    void toStringLocale();
-#endif // ### Qt 6: remove
     void msecsSinceStartOfDay_data();
     void msecsSinceStartOfDay();
 
@@ -593,11 +578,7 @@ void tst_QTime::fromStringDateFormat_data()
     QTest::newRow("TextDate - invalid, minute fraction") << QString::fromLatin1("23:00.123456") << Qt::TextDate << invalidTime();
     QTest::newRow("TextDate - invalid, seconds") << QString::fromLatin1("23:00:XX") << Qt::TextDate << invalidTime();
     QTest::newRow("TextDate - invalid, milliseconds") << QString::fromLatin1("23:01:01:XXXX") << Qt::TextDate
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
         << invalidTime();
-#else
-        << QTime(23, 1, 1, 0);
-#endif
     QTest::newRow("TextDate - midnight 24") << QString("24:00:00") << Qt::TextDate << QTime();
 
     QTest::newRow("IsoDate - valid, start of day, omit seconds") << QString::fromLatin1("00:00") << Qt::ISODate << QTime(0, 0, 0);
@@ -615,11 +596,7 @@ void tst_QTime::fromStringDateFormat_data()
     QTest::newRow("IsoDate - invalid, minute fraction") << QString::fromLatin1("23:00,XX") << Qt::ISODate << invalidTime();
     QTest::newRow("IsoDate - invalid, seconds") << QString::fromLatin1("23:00:XX") << Qt::ISODate << invalidTime();
     QTest::newRow("IsoDate - invalid, milliseconds") << QString::fromLatin1("23:01:01:XXXX") << Qt::ISODate
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
         << invalidTime();
-#else
-        << QTime(23, 1, 1, 0);
-#endif
     QTest::newRow("IsoDate - data0") << QString("00:00:00") << Qt::ISODate << QTime(0,0,0,0);
     QTest::newRow("IsoDate - data1") << QString("10:12:34") << Qt::ISODate << QTime(10,12,34,0);
     QTest::newRow("IsoDate - data2") << QString("19:03:54.998601") << Qt::ISODate << QTime(19, 3, 54, 999);
@@ -773,30 +750,6 @@ void tst_QTime::toStringFormat()
 
     QCOMPARE( t.toString( format ), str );
 }
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-void tst_QTime::toStringLocale()
-{
-    QTime time(18, 30);
-    QCOMPARE(time.toString(Qt::SystemLocaleShortDate),
-                QLocale::system().toString(time, QLocale::ShortFormat));
-    QCOMPARE(time.toString(Qt::DefaultLocaleShortDate),
-                QLocale().toString(time, QLocale::ShortFormat));
-    QCOMPARE(time.toString(Qt::SystemLocaleLongDate),
-                QLocale::system().toString(time, QLocale::LongFormat));
-    QCOMPARE(time.toString(Qt::DefaultLocaleLongDate),
-                QLocale().toString(time, QLocale::LongFormat));
-    QLocale::setDefault(QLocale::German);
-    QCOMPARE(time.toString(Qt::SystemLocaleShortDate),
-                QLocale::system().toString(time, QLocale::ShortFormat));
-    QCOMPARE(time.toString(Qt::DefaultLocaleShortDate),
-                QLocale().toString(time, QLocale::ShortFormat));
-    QCOMPARE(time.toString(Qt::SystemLocaleLongDate),
-                QLocale::system().toString(time, QLocale::LongFormat));
-    QCOMPARE(time.toString(Qt::DefaultLocaleLongDate),
-                QLocale().toString(time, QLocale::LongFormat));
-}
-#endif // ### Qt 6: remove
 
 void tst_QTime::msecsSinceStartOfDay_data()
 {

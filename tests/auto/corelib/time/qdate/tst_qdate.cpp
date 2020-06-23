@@ -1340,18 +1340,6 @@ void tst_QDate::toStringDateFormat()
     QFETCH(Qt::DateFormat, format);
     QFETCH(QString, expectedStr);
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    QCOMPARE(date.toString(Qt::SystemLocaleShortDate), QLocale::system().toString(date, QLocale::ShortFormat));
-    QCOMPARE(date.toString(Qt::DefaultLocaleShortDate), QLocale().toString(date, QLocale::ShortFormat));
-    QCOMPARE(date.toString(Qt::SystemLocaleLongDate), QLocale::system().toString(date, QLocale::LongFormat));
-    QCOMPARE(date.toString(Qt::DefaultLocaleLongDate), QLocale().toString(date, QLocale::LongFormat));
-    QLocale::setDefault(QLocale::German);
-    QCOMPARE(date.toString(Qt::SystemLocaleShortDate), QLocale::system().toString(date, QLocale::ShortFormat));
-    QCOMPARE(date.toString(Qt::DefaultLocaleShortDate), QLocale().toString(date, QLocale::ShortFormat));
-    QCOMPARE(date.toString(Qt::SystemLocaleLongDate), QLocale::system().toString(date, QLocale::LongFormat));
-    QCOMPARE(date.toString(Qt::DefaultLocaleLongDate), QLocale().toString(date, QLocale::LongFormat));
-#endif // ### Qt 6: remove
-
     QCOMPARE(date.toString(format), expectedStr);
 }
 
@@ -1452,9 +1440,7 @@ void tst_QDate::printNegativeYear() const
 {
     QFETCH(int, year);
     QFETCH(QString, expect);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     expect.replace(QLatin1Char('-'), QLocale().negativeSign());
-#endif
 
     QDate date(year, 3, 4);
     QVERIFY(date.isValid());

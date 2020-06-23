@@ -31,9 +31,6 @@
 #include <time.h>
 #include <qdatetime.h>
 #include <private/qdatetime_p.h>
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#  include <locale.h>
-#endif
 
 #ifdef Q_OS_WIN
 #   include <qt_windows.h>
@@ -50,7 +47,6 @@ public:
     static QDateTime dt( const QString& str );
 public Q_SLOTS:
     void initTestCase();
-    void init();
 private Q_SLOTS:
     void ctor();
     void operator_eq();
@@ -121,10 +117,6 @@ private Q_SLOTS:
     void fromStringStringFormat();
     void fromStringStringFormat_localTimeZone_data();
     void fromStringStringFormat_localTimeZone();
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    void fromStringToStringLocale_data();
-    void fromStringToStringLocale();
-#endif // ### Qt 6: remove
 
     void offsetFromUtc();
     void setOffsetFromUtc();
@@ -193,14 +185,6 @@ Q_DECLARE_METATYPE(Qt::DateFormat)
 
 tst_QDateTime::tst_QDateTime()
 {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    // Some tests depend on C locale - BF&I it with belt *and* braces:
-    qputenv("LC_ALL", "C");
-    setlocale(LC_ALL, "C");
-    // Need to do this as early as possible, before anything accesses the
-    // QSystemLocale singleton; once it exists, there's no changing it.
-#endif // remove for ### Qt 6
-
     /*
       Due to some jurisdictions changing their zones and rules, it's possible
       for a non-CET zone to accidentally match CET at a few tested moments but
@@ -289,13 +273,6 @@ void tst_QDateTime::initTestCase()
              << "UTC"
              << typemsg2
              << "the Central European timezone";
-}
-
-void tst_QDateTime::init()
-{
-#if defined(Q_OS_WIN32) && QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    SetThreadLocale(MAKELCID(MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), SORT_DEFAULT));
-#endif // ### Qt 6: remove
 }
 
 QString tst_QDateTime::str( int y, int month, int d, int h, int min, int s )
@@ -866,11 +843,6 @@ void tst_QDateTime::toString_isoDate()
     QFETCH(Qt::DateFormat, format);
     QFETCH(QString, expected);
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    QLocale oldLocale;
-    QLocale::setDefault(QLocale("en_US"));
-#endif // ### Qt 6: remove
-
     QString result = datetime.toString(format);
     QCOMPARE(result, expected);
 
@@ -887,10 +859,6 @@ void tst_QDateTime::toString_isoDate()
     } else {
         QCOMPARE(resultDatetime, QDateTime());
     }
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    QLocale::setDefault(oldLocale);
-#endif // ### Qt 6: remove
 }
 
 void tst_QDateTime::toString_isoDate_extra()
@@ -2254,12 +2222,7 @@ void tst_QDateTime::fromStringDateFormat_data()
     // Spaces as separators:
     QTest::newRow("sec-milli space")
         << QString("2000-01-02 03:04:05 678") << Qt::ISODate
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
         << invalidDateTime();
-#else
-        // Should be invalid, but we ignore trailing cruft (in some cases)
-        << QDateTime(QDate(2000, 1, 2), QTime(3, 4, 5));
-#endif
     QTest::newRow("min-sec space")
         << QString("2000-01-02 03:04 05.678") << Qt::ISODate << QDateTime();
     QTest::newRow("hour-min space")
@@ -2347,11 +2310,7 @@ void tst_QDateTime::fromStringDateFormat_data()
         << Qt::ISODate << QDateTime(QDate(2012, 1, 1), QTime(8, 0, 0, 0), Qt::LocalTime);
     // Test invalid characters (should ignore invalid characters at end of string).
     QTest::newRow("ISO invalid character at end") << QString::fromLatin1("2012-01-01T08:00:00!")
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
         << Qt::ISODate << invalidDateTime();
-#else
-        << Qt::ISODate << QDateTime(QDate(2012, 1, 1), QTime(8, 0, 0, 0), Qt::LocalTime);
-#endif
     QTest::newRow("ISO invalid character at front") << QString::fromLatin1("!2012-01-01T08:00:00")
         << Qt::ISODate << invalidDateTime();
     QTest::newRow("ISO invalid character both ends") << QString::fromLatin1("!2012-01-01T08:00:00!")
@@ -2729,51 +2688,6 @@ void tst_QDateTime::fromStringStringFormat_localTimeZone()
     TimeZoneRollback useZone(localTimeZone);  // enforce test's time zone
     fromStringStringFormat();  // call basic fromStringStringFormat test
 }
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
-
-void tst_QDateTime::fromStringToStringLocale_data()
-{
-    QTest::addColumn<QLocale>("locale");
-    QTest::addColumn<QDateTime>("dateTime");
-
-    QTest::newRow("frFR") << QLocale(QLocale::French, QLocale::France) << QDateTime(QDate(1999, 1, 18), QTime(11, 49, 00));
-    QTest::newRow("spCO") << QLocale(QLocale::Spanish, QLocale::Colombia) << QDateTime(QDate(1999, 1, 18), QTime(11, 49, 00));
-}
-
-void tst_QDateTime::fromStringToStringLocale()
-{
-    QFETCH(QLocale, locale);
-    QFETCH(QDateTime, dateTime);
-
-    QLocale def;
-    QLocale::setDefault(locale);
-#define ROUNDTRIP(format) \
-    QCOMPARE(QDateTime::fromString(dateTime.toString(format), format), dateTime)
-
-    ROUNDTRIP(Qt::DefaultLocaleShortDate);
-    ROUNDTRIP(Qt::SystemLocaleShortDate);
-
-    // obsolete
-    ROUNDTRIP(Qt::SystemLocaleDate);
-    ROUNDTRIP(Qt::LocaleDate);
-
-#if !QT_CONFIG(timezone)
-    QEXPECT_FAIL("", "Long date formats (with time-zone specifiers) need timezone feature enabled",
-                 Continue);
-#endif
-    ROUNDTRIP(Qt::DefaultLocaleLongDate);
-#if !QT_CONFIG(timezone)
-    QEXPECT_FAIL("", "Long date formats (with time-zone specifiers) need timezone feature enabled",
-                 Continue);
-#endif
-    ROUNDTRIP(Qt::SystemLocaleLongDate);
-#undef ROUNDTRIP
-    QLocale::setDefault(def);
-}
-QT_WARNING_POP
-#endif // ### Qt 6: remove
 
 void tst_QDateTime::offsetFromUtc()
 {
