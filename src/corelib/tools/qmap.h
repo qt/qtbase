@@ -226,7 +226,7 @@ public:
     using difference_type = qptrdiff;
     using size_type = qsizetype;
 
-    constexpr QMap() noexcept {}
+    QMap() = default;
 
     // implicitly generated special member functions are OK!
 
@@ -763,7 +763,7 @@ public:
     using difference_type = qptrdiff;
     using size_type = qsizetype;
 
-    constexpr QMultiMap() noexcept {}
+    QMultiMap() = default;
 
     // implicitly generated special member functions are OK!
 
