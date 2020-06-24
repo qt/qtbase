@@ -332,7 +332,8 @@ const QPointingDevice *QPointingDevice::primaryPointingDevice(const QString& sea
                                    << "The platform plugin should have provided one via "
                                       "QWindowSystemInterface::registerInputDevice(). Creating a default mouse for now.";
         mouse = new QPointingDevice(QLatin1String("core pointer"), 1, DeviceType::Mouse,
-                                    PointerType::Generic, Capability::Position, 1, 3, seatName);
+                                    PointerType::Generic, Capability::Position, 1, 3, seatName,
+                                    QPointingDeviceUniqueId(), QCoreApplication::instance());
         QInputDevicePrivate::registerDevice(mouse);
         return mouse;
     }
