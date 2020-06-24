@@ -4373,12 +4373,12 @@ void tst_QRect::toRect()
                 for (qreal h = 1.0; h < 2.0; h += 0.25) {
                     const QRectF rectf(x, y, w, h);
                     const QRectF rect = rectf.toRect();
-                    QVERIFY(qAbs(rect.x() - rectf.x()) < 1.0);
-                    QVERIFY(qAbs(rect.y() - rectf.y()) < 1.0);
-                    QVERIFY(qAbs(rect.width() - rectf.width()) < 1.0);
-                    QVERIFY(qAbs(rect.height() - rectf.height()) < 1.0);
-                    QVERIFY(qAbs(rect.right() - rectf.right()) < 1.0);
-                    QVERIFY(qAbs(rect.bottom() - rectf.bottom()) < 1.0);
+                    QVERIFY(qAbs(rect.x() - rectf.x()) <= 0.75);
+                    QVERIFY(qAbs(rect.y() - rectf.y()) <= 0.75);
+                    QVERIFY(qAbs(rect.width() - rectf.width()) <= 0.75);
+                    QVERIFY(qAbs(rect.height() - rectf.height()) <= 0.75);
+                    QVERIFY(qAbs(rect.right() - rectf.right()) <= 0.75);
+                    QVERIFY(qAbs(rect.bottom() - rectf.bottom()) <= 0.75);
 
                     const QRectF arect = rectf.toAlignedRect();
                     QVERIFY(qAbs(arect.x() - rectf.x()) < 1.0);

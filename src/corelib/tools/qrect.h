@@ -874,7 +874,14 @@ constexpr inline bool operator!=(const QRectF &r1, const QRectF &r2) noexcept
 
 constexpr inline QRect QRectF::toRect() const noexcept
 {
-    return QRect(QPoint(qRound(xp), qRound(yp)), QPoint(qRound(xp + w) - 1, qRound(yp + h) - 1));
+    // This rounding is designed to minimize the maximum possible difference
+    // in topLeft(), bottomRight(), and size() after rounding.
+    // All dimensions are at most off by 0.75, and topLeft by at most 0.5.
+    const int nxp = qRound(xp);
+    const int nyp = qRound(yp);
+    const int nw = qRound(w + (xp - nxp)/2);
+    const int nh = qRound(h + (yp - nyp)/2);
+    return QRect(nxp, nyp, nw, nh);
 }
 
 constexpr inline QRectF operator+(const QRectF &lhs, const QMarginsF &rhs) noexcept
