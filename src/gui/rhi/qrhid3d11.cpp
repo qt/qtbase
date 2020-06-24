@@ -84,10 +84,15 @@ QT_BEGIN_NAMESPACE
     When interoperating with another graphics engine, it may be necessary to
     get a QRhi instance that uses the same Direct3D device. This can be
     achieved by passing a pointer to a QRhiD3D11NativeHandles to
-    QRhi::create(). Both the device and the device context must be set to a
-    non-null value then.
+    QRhi::create(). When the device is set to a non-null value, the device
+    context must be specified as well. QRhi does not take ownership of any of
+    the external objects.
 
-    The QRhi does not take ownership of any of the external objects.
+    Sometimes, for example when using QRhi in combination with OpenXR, one will
+    want to specify which adapter to use, and optionally, which feature level
+    to request on the device, while leaving the device creation to QRhi. This
+    is achieved by leaving the device and context pointers set to null, while
+    specifying the adapter LUID and feature level.
 
     \note QRhi works with immediate contexts only. Deferred contexts are not
     used in any way.
@@ -117,7 +122,7 @@ QT_BEGIN_NAMESPACE
 #define D3D11_1_UAV_SLOT_COUNT 64
 #endif
 
-QRhiD3D11::QRhiD3D11(QRhiD3D11InitParams *params, QRhiD3D11NativeHandles *importDevice)
+QRhiD3D11::QRhiD3D11(QRhiD3D11InitParams *params, QRhiD3D11NativeHandles *importParams)
     : ofr(this),
       deviceCurse(this)
 {
@@ -126,22 +131,21 @@ QRhiD3D11::QRhiD3D11(QRhiD3D11InitParams *params, QRhiD3D11NativeHandles *import
     deviceCurse.framesToActivate = params->framesUntilKillingDeviceViaTdr;
     deviceCurse.permanent = params->repeatDeviceKill;
 
-    importedDevice = importDevice != nullptr;
-    if (importedDevice) {
-        dev = reinterpret_cast<ID3D11Device *>(importDevice->dev);
-        if (dev) {
-            ID3D11DeviceContext *ctx = reinterpret_cast<ID3D11DeviceContext *>(importDevice->context);
+    if (importParams) {
+        if (importParams->dev && importParams->context) {
+            dev = reinterpret_cast<ID3D11Device *>(importParams->dev);
+            ID3D11DeviceContext *ctx = reinterpret_cast<ID3D11DeviceContext *>(importParams->context);
             if (SUCCEEDED(ctx->QueryInterface(IID_ID3D11DeviceContext1, reinterpret_cast<void **>(&context)))) {
                 // get rid of the ref added by QueryInterface
                 ctx->Release();
+                importedDeviceAndContext = true;
             } else {
                 qWarning("ID3D11DeviceContext1 not supported by context, cannot import");
-                importedDevice = false;
             }
-        } else {
-            qWarning("No ID3D11Device given, cannot import");
-            importedDevice = false;
         }
+        featureLevel = D3D_FEATURE_LEVEL(importParams->featureLevel);
+        adapterLuid.LowPart = importParams->adapterLuidLow;
+        adapterLuid.HighPart = importParams->adapterLuidHigh;
     }
 }
 
@@ -215,12 +219,27 @@ bool QRhiD3D11::create(QRhi::Flags flags)
     qCDebug(QRHI_LOG_INFO, "DXGI 1.2 = %s, FLIP_DISCARD swapchain supported = %s",
             hasDxgi2 ? "true" : "false", supportsFlipDiscardSwapchain ? "true" : "false");
 
-    if (!importedDevice) {
+    if (!importedDeviceAndContext) {
         IDXGIAdapter1 *adapterToUse = nullptr;
         IDXGIAdapter1 *adapter;
         int requestedAdapterIndex = -1;
         if (qEnvironmentVariableIsSet("QT_D3D_ADAPTER_INDEX"))
             requestedAdapterIndex = qEnvironmentVariableIntValue("QT_D3D_ADAPTER_INDEX");
+
+        // The importParams may specify an adapter by the luid, take that into account.
+        if (requestedAdapterIndex < 0 && (adapterLuid.LowPart || adapterLuid.HighPart)) {
+            for (int adapterIndex = 0; dxgiFactory->EnumAdapters1(UINT(adapterIndex), &adapter) != DXGI_ERROR_NOT_FOUND; ++adapterIndex) {
+                DXGI_ADAPTER_DESC1 desc;
+                adapter->GetDesc1(&desc);
+                adapter->Release();
+                if (desc.AdapterLuid.LowPart == adapterLuid.LowPart
+                        && desc.AdapterLuid.HighPart == adapterLuid.HighPart)
+                {
+                    requestedAdapterIndex = adapterIndex;
+                    break;
+                }
+            }
+        }
 
         if (requestedAdapterIndex < 0 && flags.testFlag(QRhi::PreferSoftwareRenderer)) {
             for (int adapterIndex = 0; dxgiFactory->EnumAdapters1(UINT(adapterIndex), &adapter) != DXGI_ERROR_NOT_FOUND; ++adapterIndex) {
@@ -246,6 +265,7 @@ bool QRhiD3D11::create(QRhi::Flags flags)
                     desc.Flags);
             if (!adapterToUse && (requestedAdapterIndex < 0 || requestedAdapterIndex == adapterIndex)) {
                 adapterToUse = adapter;
+                adapterLuid = desc.AdapterLuid;
                 qCDebug(QRHI_LOG_INFO, "  using this adapter");
             } else {
                 adapter->Release();
@@ -256,9 +276,20 @@ bool QRhiD3D11::create(QRhi::Flags flags)
             return false;
         }
 
+        // Normally we won't specify a requested feature level list,
+        // except when a level was specified in importParams.
+        QVarLengthArray<D3D_FEATURE_LEVEL, 4> requestedFeatureLevels;
+        bool requestFeatureLevels = false;
+        if (featureLevel) {
+            requestFeatureLevels = true;
+            requestedFeatureLevels.append(featureLevel);
+        }
+
         ID3D11DeviceContext *ctx = nullptr;
         HRESULT hr = D3D11CreateDevice(adapterToUse, D3D_DRIVER_TYPE_UNKNOWN, nullptr, devFlags,
-                                       nullptr, 0, D3D11_SDK_VERSION,
+                                       requestFeatureLevels ? requestedFeatureLevels.constData() : nullptr,
+                                       requestFeatureLevels ? requestedFeatureLevels.count() : 0,
+                                       D3D11_SDK_VERSION,
                                        &dev, &featureLevel, &ctx);
         // We cannot assume that D3D11_CREATE_DEVICE_DEBUG is always available. Retry without it, if needed.
         if (hr == DXGI_ERROR_SDK_COMPONENT_MISSING && debugLayer) {
@@ -266,7 +297,9 @@ bool QRhiD3D11::create(QRhi::Flags flags)
                                    "Attempting to create D3D11 device without it.");
             devFlags &= ~D3D11_CREATE_DEVICE_DEBUG;
             hr = D3D11CreateDevice(adapterToUse, D3D_DRIVER_TYPE_UNKNOWN, nullptr, devFlags,
-                                   nullptr, 0, D3D11_SDK_VERSION,
+                                   requestFeatureLevels ? requestedFeatureLevels.constData() : nullptr,
+                                   requestFeatureLevels ? requestedFeatureLevels.count() : 0,
+                                   D3D11_SDK_VERSION,
                                    &dev, &featureLevel, &ctx);
         }
         adapterToUse->Release();
@@ -283,6 +316,18 @@ bool QRhiD3D11::create(QRhi::Flags flags)
     } else {
         Q_ASSERT(dev && context);
         featureLevel = dev->GetFeatureLevel();
+        IDXGIDevice *dxgiDev = nullptr;
+        if (SUCCEEDED(dev->QueryInterface(IID_IDXGIDevice, reinterpret_cast<void **>(&dxgiDev)))) {
+            IDXGIAdapter *adapter = nullptr;
+            if (SUCCEEDED(dxgiDev->GetAdapter(&adapter))) {
+                DXGI_ADAPTER_DESC desc;
+                adapter->GetDesc(&desc);
+                adapterLuid = desc.AdapterLuid;
+                adapter->Release();
+            }
+            dxgiDev->Release();
+        }
+        qCDebug(QRHI_LOG_INFO, "Using imported device %p", dev);
     }
 
     if (FAILED(context->QueryInterface(IID_ID3DUserDefinedAnnotation, reinterpret_cast<void **>(&annotations))))
@@ -292,6 +337,9 @@ bool QRhiD3D11::create(QRhi::Flags flags)
 
     nativeHandlesStruct.dev = dev;
     nativeHandlesStruct.context = context;
+    nativeHandlesStruct.featureLevel = featureLevel;
+    nativeHandlesStruct.adapterLuidLow = adapterLuid.LowPart;
+    nativeHandlesStruct.adapterLuidHigh = adapterLuid.HighPart;
 
     if (deviceCurse.framesToActivate > 0)
         deviceCurse.initResources();
@@ -320,7 +368,7 @@ void QRhiD3D11::destroy()
         annotations = nullptr;
     }
 
-    if (!importedDevice) {
+    if (!importedDeviceAndContext) {
         if (context) {
             context->Release();
             context = nullptr;

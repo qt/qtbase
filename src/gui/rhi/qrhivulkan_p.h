@@ -62,10 +62,14 @@ struct Q_GUI_EXPORT QRhiVulkanInitParams : public QRhiInitParams
 
 struct Q_GUI_EXPORT QRhiVulkanNativeHandles : public QRhiNativeHandles
 {
+    // to import a physical device (always required)
     VkPhysicalDevice physDev = VK_NULL_HANDLE;
+    // to import a device and queue
     VkDevice dev = VK_NULL_HANDLE;
     int gfxQueueFamilyIdx = -1;
+    int gfxQueueIdx = 0;
     VkQueue gfxQueue = VK_NULL_HANDLE;
+    // and optionally, command pool and/or mem allocator
     VkCommandPool cmdPool = VK_NULL_HANDLE;
     void *vmemAllocator = nullptr;
 };

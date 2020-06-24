@@ -645,7 +645,7 @@ struct QVkSwapChain : public QRhiSwapChain
 class QRhiVulkan : public QRhiImplementation
 {
 public:
-    QRhiVulkan(QRhiVulkanInitParams *params, QRhiVulkanNativeHandles *importDevice = nullptr);
+    QRhiVulkan(QRhiVulkanInitParams *params, QRhiVulkanNativeHandles *importParams = nullptr);
 
     bool create(QRhi::Flags flags) override;
     void destroy() override;
@@ -824,6 +824,7 @@ public:
     bool importedCmdPool = false;
     VkCommandPool cmdPool = VK_NULL_HANDLE;
     int gfxQueueFamilyIdx = -1;
+    int gfxQueueIdx = 0;
     VkQueue gfxQueue = VK_NULL_HANDLE;
     bool hasCompute = false;
     quint32 timestampValidBits = 0;

@@ -107,10 +107,6 @@ QT_BEGIN_NAMESPACE
     \class QRhiMetalNativeHandles
     \inmodule QtRhi
     \brief Holds the Metal device used by the QRhi.
-
-    \note The class uses \c{void *} as the type since including the Objective C
-    headers is not acceptable here. The actual types are \c{id<MTLDevice>} and
-    \c{id<MTLCommandQueue>}.
  */
 
 /*!
@@ -413,8 +409,8 @@ bool QRhiMetal::create(QRhi::Flags flags)
     }
 #endif
 
-    nativeHandlesStruct.dev = d->dev;
-    nativeHandlesStruct.cmdQueue = d->cmdQueue;
+    nativeHandlesStruct.dev = (MTLDevice *) d->dev;
+    nativeHandlesStruct.cmdQueue = (MTLCommandQueue *) d->cmdQueue;
 
     return true;
 }
@@ -3657,8 +3653,8 @@ void QMetalCommandBuffer::destroy()
 
 const QRhiNativeHandles *QMetalCommandBuffer::nativeHandles()
 {
-    nativeHandlesStruct.commandBuffer = d->cb;
-    nativeHandlesStruct.encoder = d->currentRenderPassEncoder;
+    nativeHandlesStruct.commandBuffer = (MTLCommandBuffer *) d->cb;
+    nativeHandlesStruct.encoder = (MTLRenderCommandEncoder *) d->currentRenderPassEncoder;
     return &nativeHandlesStruct;
 }
 

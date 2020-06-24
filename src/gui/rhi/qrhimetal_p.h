@@ -50,7 +50,10 @@
 
 #include <private/qrhi_p.h>
 
-// no Metal includes here, the user code may be plain C++
+Q_FORWARD_DECLARE_OBJC_CLASS(MTLDevice);
+Q_FORWARD_DECLARE_OBJC_CLASS(MTLCommandQueue);
+Q_FORWARD_DECLARE_OBJC_CLASS(MTLCommandBuffer);
+Q_FORWARD_DECLARE_OBJC_CLASS(MTLRenderCommandEncoder);
 
 QT_BEGIN_NAMESPACE
 
@@ -60,14 +63,14 @@ struct Q_GUI_EXPORT QRhiMetalInitParams : public QRhiInitParams
 
 struct Q_GUI_EXPORT QRhiMetalNativeHandles : public QRhiNativeHandles
 {
-    void *dev = nullptr; // id<MTLDevice>
-    void *cmdQueue = nullptr; // id<MTLCommandQueue>
+    MTLDevice *dev = nullptr;
+    MTLCommandQueue *cmdQueue = nullptr;
 };
 
 struct Q_GUI_EXPORT QRhiMetalCommandBufferNativeHandles : public QRhiNativeHandles
 {
-    void *commandBuffer = nullptr; // id<MTLCommandBuffer>
-    void *encoder = nullptr; // id<MTLRenderCommandEncoder>
+    MTLCommandBuffer *commandBuffer = nullptr;
+    MTLRenderCommandEncoder *encoder = nullptr;
 };
 
 QT_END_NAMESPACE

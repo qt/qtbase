@@ -43,6 +43,7 @@
 
 #if QT_CONFIG(vulkan)
 # include <QVulkanInstance>
+# include <QVulkanFunctions>
 # include <QtGui/private/qrhivulkan_p.h>
 # define TST_VK
 #endif
@@ -73,6 +74,9 @@ private slots:
     void create();
     void nativeHandles_data();
     void nativeHandles();
+    void nativeHandlesImportVulkan();
+    void nativeHandlesImportD3D11();
+    void nativeHandlesImportOpenGL();
     void nativeTexture_data();
     void nativeTexture();
     void nativeBuffer_data();
@@ -353,6 +357,7 @@ void tst_QRhi::nativeHandles()
             QVERIFY(vkHandles->physDev);
             QVERIFY(vkHandles->dev);
             QVERIFY(vkHandles->gfxQueueFamilyIdx >= 0);
+            QVERIFY(vkHandles->gfxQueueIdx >= 0);
             QVERIFY(vkHandles->gfxQueue);
             QVERIFY(vkHandles->cmdPool);
             QVERIFY(vkHandles->vmemAllocator);
@@ -378,6 +383,8 @@ void tst_QRhi::nativeHandles()
             const QRhiD3D11NativeHandles *d3dHandles = static_cast<const QRhiD3D11NativeHandles *>(rhiHandles);
             QVERIFY(d3dHandles->dev);
             QVERIFY(d3dHandles->context);
+            QVERIFY(d3dHandles->featureLevel > 0);
+            QVERIFY(d3dHandles->adapterLuidLow || d3dHandles->adapterLuidHigh);
         }
             break;
 #endif
@@ -492,6 +499,130 @@ void tst_QRhi::nativeHandles()
             Q_ASSERT(false);
         }
     }
+}
+
+void tst_QRhi::nativeHandlesImportVulkan()
+{
+#ifdef TST_VK
+    // VkDevice and everything else. For simplicity we'll get QRhi to create one, and then use that with another QRhi.
+    {
+        QScopedPointer<QRhi> rhi(QRhi::create(QRhi::Vulkan, &initParams.vk, QRhi::Flags(), nullptr));
+        if (!rhi)
+            QSKIP("Skipping native Vulkan test");
+
+        const QRhiVulkanNativeHandles *nativeHandles = static_cast<const QRhiVulkanNativeHandles *>(rhi->nativeHandles());
+        QRhiVulkanNativeHandles h = *nativeHandles;
+        // do not pass the rarely used fields, this is useful to test if it creates its own as expected
+        h.cmdPool = VK_NULL_HANDLE;
+        h.vmemAllocator = nullptr;
+
+        QScopedPointer<QRhi> adoptingRhi(QRhi::create(QRhi::Vulkan, &initParams.vk, QRhi::Flags(), &h));
+        QVERIFY(adoptingRhi);
+
+        const QRhiVulkanNativeHandles *newNativeHandles = static_cast<const QRhiVulkanNativeHandles *>(adoptingRhi->nativeHandles());
+        QCOMPARE(newNativeHandles->physDev, nativeHandles->physDev);
+        QCOMPARE(newNativeHandles->dev, nativeHandles->dev);
+        QCOMPARE(newNativeHandles->gfxQueueFamilyIdx, nativeHandles->gfxQueueFamilyIdx);
+        QCOMPARE(newNativeHandles->gfxQueueIdx, nativeHandles->gfxQueueIdx);
+        QVERIFY(newNativeHandles->cmdPool != nativeHandles->cmdPool);
+        QVERIFY(newNativeHandles->vmemAllocator != nativeHandles->vmemAllocator);
+    }
+
+    // Physical device only
+    {
+        uint32_t physDevCount = 0;
+        QVulkanFunctions *f = vulkanInstance.functions();
+        f->vkEnumeratePhysicalDevices(vulkanInstance.vkInstance(), &physDevCount, nullptr);
+        if (physDevCount < 1)
+            QSKIP("No Vulkan physical devices, skip");
+        QVarLengthArray<VkPhysicalDevice, 4> physDevs(physDevCount);
+        f->vkEnumeratePhysicalDevices(vulkanInstance.vkInstance(), &physDevCount, physDevs.data());
+
+        for (uint32_t i = 0; i < physDevCount; ++i) {
+            QRhiVulkanNativeHandles h;
+            h.physDev = physDevs[i];
+            QScopedPointer<QRhi> rhi(QRhi::create(QRhi::Vulkan, &initParams.vk, QRhi::Flags(), &h));
+            // ok if fails, what we want to know is that if it succeeds, it must use that given phys.dev.
+            if (!rhi) {
+                qWarning("Skipping native Vulkan handle test for physical device %u", i);
+                continue;
+            }
+            const QRhiVulkanNativeHandles *actualNativeHandles = static_cast<const QRhiVulkanNativeHandles *>(rhi->nativeHandles());
+            QCOMPARE(actualNativeHandles->physDev, physDevs[i]);
+        }
+    }
+
+#else
+    QSKIP("Skipping Vulkan-specific test");
+#endif
+}
+
+void tst_QRhi::nativeHandlesImportD3D11()
+{
+#ifdef TST_D3D11
+    QScopedPointer<QRhi> rhi(QRhi::create(QRhi::D3D11, &initParams.d3d, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing D3D11 native handle import");
+
+    const QRhiD3D11NativeHandles *nativeHandles = static_cast<const QRhiD3D11NativeHandles *>(rhi->nativeHandles());
+
+    // Case 1: device and context
+    {
+        QRhiD3D11NativeHandles h = *nativeHandles;
+        h.featureLevel = 0; // see if these are queried as expected, even when not provided
+        h.adapterLuidLow = 0;
+        h.adapterLuidHigh = 0;
+        QScopedPointer<QRhi> adoptingRhi(QRhi::create(QRhi::D3D11, &initParams.d3d, QRhi::Flags(), &h));
+        QVERIFY(adoptingRhi);
+        const QRhiD3D11NativeHandles *newNativeHandles = static_cast<const QRhiD3D11NativeHandles *>(adoptingRhi->nativeHandles());
+        QCOMPARE(newNativeHandles->dev, nativeHandles->dev);
+        QCOMPARE(newNativeHandles->context, nativeHandles->context);
+        QCOMPARE(newNativeHandles->featureLevel, nativeHandles->featureLevel);
+        QCOMPARE(newNativeHandles->adapterLuidLow, nativeHandles->adapterLuidLow);
+        QCOMPARE(newNativeHandles->adapterLuidHigh, nativeHandles->adapterLuidHigh);
+    }
+
+    // Case 2: adapter and feature level only (hello OpenXR)
+    {
+        QRhiD3D11NativeHandles h = *nativeHandles;
+        h.dev = nullptr;
+        h.context = nullptr;
+        QScopedPointer<QRhi> adoptingRhi(QRhi::create(QRhi::D3D11, &initParams.d3d, QRhi::Flags(), &h));
+        QVERIFY(adoptingRhi);
+        const QRhiD3D11NativeHandles *newNativeHandles = static_cast<const QRhiD3D11NativeHandles *>(adoptingRhi->nativeHandles());
+        QVERIFY(newNativeHandles->dev != nativeHandles->dev);
+        QVERIFY(newNativeHandles->context != nativeHandles->context);
+        QCOMPARE(newNativeHandles->featureLevel, nativeHandles->featureLevel);
+        QCOMPARE(newNativeHandles->adapterLuidLow, nativeHandles->adapterLuidLow);
+        QCOMPARE(newNativeHandles->adapterLuidHigh, nativeHandles->adapterLuidHigh);
+    }
+
+#else
+    QSKIP("Skipping D3D11-specific test");
+#endif
+}
+
+void tst_QRhi::nativeHandlesImportOpenGL()
+{
+#ifdef TST_GL
+    QRhiGles2NativeHandles h;
+    QScopedPointer<QOpenGLContext> ctx(new QOpenGLContext);
+    ctx->setFormat(QRhiGles2InitParams::adjustedFormat());
+    if (!ctx->create())
+        QSKIP("No OpenGL context, skipping OpenGL-specific test");
+    h.context = ctx.data();
+    QScopedPointer<QRhi> rhi(QRhi::create(QRhi::OpenGLES2, &initParams.gl, QRhi::Flags(), &h));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing OpenGL native handle import");
+
+    const QRhiGles2NativeHandles *actualNativeHandles = static_cast<const QRhiGles2NativeHandles *>(rhi->nativeHandles());
+    QCOMPARE(actualNativeHandles->context, ctx.data());
+
+    rhi->makeThreadLocalNativeContextCurrent();
+    QCOMPARE(QOpenGLContext::currentContext(), ctx.data());
+#else
+    QSKIP("Skipping OpenGL-specific test");
+#endif
 }
 
 void tst_QRhi::nativeTexture_data()

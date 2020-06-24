@@ -159,12 +159,19 @@ QT_BEGIN_NAMESPACE
     get a QRhi instance that uses the same Vulkan device. This can be achieved
     by passing a pointer to a QRhiVulkanNativeHandles to QRhi::create().
 
-    The physical device and device object must then be set to a non-null value.
-    In addition, either the graphics queue family index or the graphics queue
-    object itself is required. Prefer the former, whenever possible since
-    deducing the index is not possible afterwards. Optionally, an existing
-    command pool object can be specified as well, and, also optionally,
-    vmemAllocator can be used to share the same
+    The physical device must always be set to a non-null value. If the
+    intention is to just specify a physical device, but leave the rest of the
+    VkDevice and queue creation to QRhi, then no other members need to be
+    filled out in the struct. For example, this is the case when working with
+    OpenXR.
+
+    To adopt an existing \c VkDevice, the device field must be set to a
+    non-null value as well. In addition, the graphics queue family index is
+    required. The queue index is optional, as the default of 0 is often
+    suitable.
+
+    Optionally, an existing command pool object can be specified as well. Also
+    optionally, vmemAllocator can be used to share the same
     \l{https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator}{Vulkan
     memory allocator} between two QRhi instances.
 
@@ -298,31 +305,29 @@ static inline VmaAllocator toVmaAllocator(QVkAllocator a)
     return reinterpret_cast<VmaAllocator>(a);
 }
 
-QRhiVulkan::QRhiVulkan(QRhiVulkanInitParams *params, QRhiVulkanNativeHandles *importDevice)
+QRhiVulkan::QRhiVulkan(QRhiVulkanInitParams *params, QRhiVulkanNativeHandles *importParams)
     : ofr(this)
 {
     inst = params->inst;
     maybeWindow = params->window; // may be null
     requestedDeviceExtensions = params->deviceExtensions;
 
-    importedDevice = importDevice != nullptr;
-    if (importedDevice) {
-        physDev = importDevice->physDev;
-        dev = importDevice->dev;
-        if (physDev && dev) {
-            gfxQueueFamilyIdx = importDevice->gfxQueueFamilyIdx;
-            gfxQueue = importDevice->gfxQueue;
-            if (importDevice->cmdPool) {
+    if (importParams) {
+        physDev = importParams->physDev;
+        dev = importParams->dev;
+        if (dev && physDev) {
+            importedDevice = true;
+            gfxQueueFamilyIdx = importParams->gfxQueueFamilyIdx;
+            gfxQueueIdx = importParams->gfxQueueIdx;
+            // gfxQueue is output only, no point in accepting it as input
+            if (importParams->cmdPool) {
                 importedCmdPool = true;
-                cmdPool = importDevice->cmdPool;
+                cmdPool = importParams->cmdPool;
             }
-            if (importDevice->vmemAllocator) {
+            if (importParams->vmemAllocator) {
                 importedAllocator = true;
-                allocator = importDevice->vmemAllocator;
+                allocator = importParams->vmemAllocator;
             }
-        } else {
-            qWarning("No (physical) Vulkan device is given, cannot import");
-            importedDevice = false;
         }
     }
 }
@@ -379,7 +384,8 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         f->vkGetPhysicalDeviceQueueFamilyProperties(physDev, &queueCount, queueFamilyProps.data());
     };
 
-    if (!importedDevice) {
+    // Choose a physical device, unless one was provided in importParams.
+    if (!physDev) {
         uint32_t physDevCount = 0;
         f->vkEnumeratePhysicalDevices(inst->vkInstance(), &physDevCount, nullptr);
         if (!physDevCount) {
@@ -433,16 +439,29 @@ bool QRhiVulkan::create(QRhi::Flags flags)
             return false;
         }
         physDev = physDevs[physDevIndex];
+    } else {
+        f->vkGetPhysicalDeviceProperties(physDev, &physDevProperties);
+        qCDebug(QRHI_LOG_INFO, "Using imported physical device '%s' %d.%d.%d (api %d.%d.%d vendor 0x%X device 0x%X type %d)",
+                physDevProperties.deviceName,
+                VK_VERSION_MAJOR(physDevProperties.driverVersion),
+                VK_VERSION_MINOR(physDevProperties.driverVersion),
+                VK_VERSION_PATCH(physDevProperties.driverVersion),
+                VK_VERSION_MAJOR(physDevProperties.apiVersion),
+                VK_VERSION_MINOR(physDevProperties.apiVersion),
+                VK_VERSION_PATCH(physDevProperties.apiVersion),
+                physDevProperties.vendorID,
+                physDevProperties.deviceID,
+                physDevProperties.deviceType);
+    }
 
-        queryQueueFamilyProps();
-
-        gfxQueue = VK_NULL_HANDLE;
-
+    // Choose queue and create device, unless the device was specified in importParams.
+    if (!importedDevice) {
         // We only support combined graphics+present queues. When it comes to
         // compute, only combined graphics+compute queue is used, compute gets
         // disabled otherwise.
         gfxQueueFamilyIdx = -1;
         int computelessGfxQueueCandidateIdx = -1;
+        queryQueueFamilyProps();
         for (int i = 0; i < queueFamilyProps.count(); ++i) {
             qCDebug(QRHI_LOG_INFO, "queue family %d: flags=0x%x count=%d",
                     i, queueFamilyProps[i].queueFlags, queueFamilyProps[i].queueCount);
@@ -540,11 +559,13 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         devInfo.enabledExtensionCount = uint32_t(requestedDevExts.count());
         devInfo.ppEnabledExtensionNames = requestedDevExts.constData();
 
-        err = f->vkCreateDevice(physDev, &devInfo, nullptr, &dev);
+        VkResult err = f->vkCreateDevice(physDev, &devInfo, nullptr, &dev);
         if (err != VK_SUCCESS) {
             qWarning("Failed to create device: %d", err);
             return false;
         }
+    } else {
+        qCDebug(QRHI_LOG_INFO, "Using imported device %p", dev);
     }
 
     df = inst->deviceFunctions(dev);
@@ -561,16 +582,19 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         }
     }
 
-    if (gfxQueueFamilyIdx != -1) {
-        if (!gfxQueue)
-            df->vkGetDeviceQueue(dev, uint32_t(gfxQueueFamilyIdx), 0, &gfxQueue);
-
-        if (queueFamilyProps.isEmpty())
-            queryQueueFamilyProps();
-
-        hasCompute = (queueFamilyProps[gfxQueueFamilyIdx].queueFlags & VK_QUEUE_COMPUTE_BIT) != 0;
-        timestampValidBits = queueFamilyProps[gfxQueueFamilyIdx].timestampValidBits;
+    if (gfxQueueFamilyIdx < 0) {
+        // this is when importParams is faulty and did not specify the queue family index
+        qWarning("No queue family index provided");
+        return false;
     }
+
+    df->vkGetDeviceQueue(dev, uint32_t(gfxQueueFamilyIdx), gfxQueueIdx, &gfxQueue);
+
+    if (queueFamilyProps.isEmpty())
+        queryQueueFamilyProps();
+
+    hasCompute = (queueFamilyProps[gfxQueueFamilyIdx].queueFlags & VK_QUEUE_COMPUTE_BIT) != 0;
+    timestampValidBits = queueFamilyProps[gfxQueueFamilyIdx].timestampValidBits;
 
     f->vkGetPhysicalDeviceProperties(physDev, &physDevProperties);
     ubufAlign = physDevProperties.limits.minUniformBufferOffsetAlignment;
@@ -651,6 +675,7 @@ bool QRhiVulkan::create(QRhi::Flags flags)
     nativeHandlesStruct.physDev = physDev;
     nativeHandlesStruct.dev = dev;
     nativeHandlesStruct.gfxQueueFamilyIdx = gfxQueueFamilyIdx;
+    nativeHandlesStruct.gfxQueueIdx = gfxQueueIdx;
     nativeHandlesStruct.gfxQueue = gfxQueue;
     nativeHandlesStruct.cmdPool = cmdPool;
     nativeHandlesStruct.vmemAllocator = allocator;

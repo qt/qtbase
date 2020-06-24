@@ -670,10 +670,11 @@ public:
     void clearShaderCache();
 
     bool debugLayer = false;
-    bool importedDevice = false;
+    bool importedDeviceAndContext = false;
     ID3D11Device *dev = nullptr;
     ID3D11DeviceContext1 *context = nullptr;
-    D3D_FEATURE_LEVEL featureLevel;
+    D3D_FEATURE_LEVEL featureLevel = D3D_FEATURE_LEVEL(0);
+    LUID adapterLuid = {};
     ID3DUserDefinedAnnotation *annotations = nullptr;
     IDXGIFactory1 *dxgiFactory = nullptr;
     bool hasDxgi2 = false;

@@ -50,8 +50,7 @@
 
 #include <private/qrhi_p.h>
 
-// no d3d includes here, to prevent precompiled header mess (due to this being
-// a public header)
+// no d3d includes here, to prevent precompiled header mess due to COM
 
 QT_BEGIN_NAMESPACE
 
@@ -65,8 +64,13 @@ struct Q_GUI_EXPORT QRhiD3D11InitParams : public QRhiInitParams
 
 struct Q_GUI_EXPORT QRhiD3D11NativeHandles : public QRhiNativeHandles
 {
+    // to import a device and a context
     void *dev = nullptr;
     void *context = nullptr;
+    // alternatively, to specify the device feature level and/or the adapter to use
+    int featureLevel = 0;
+    quint32 adapterLuidLow = 0;
+    qint32 adapterLuidHigh = 0;
 };
 
 QT_END_NAMESPACE
