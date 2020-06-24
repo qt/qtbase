@@ -56,7 +56,6 @@ qt_add_module(XcbQpa
         XCB::XCB
         XCB::XFIXES
         XCB::XINERAMA
-        $<$<TARGET_EXISTS:XCB::XINPUT>:XCB::XINPUT> # special case
         XCB::XKB
         XKB::XKB
 )
@@ -146,7 +145,9 @@ qt_extend_target(XcbQpa CONDITION QT_FEATURE_fontconfig AND QT_FEATURE_xcb_nativ
 )
 
 # special case begin
-if (NOT QT_FEATURE_system_xcb_input)
+if(TARGET XCB::XINPUT)
+    qt_extend_target(XcbQpa LIBRARIES XCB::XINPUT)
+else()
     set(xinput_source "${PROJECT_SOURCE_DIR}/src/3rdparty/xcb/libxcb/xinput.c")
     set_source_files_properties(
         "${xinput_source}"
