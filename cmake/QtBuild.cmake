@@ -534,6 +534,22 @@ function(qt_non_prefix_copy)
     endif()
 endfunction()
 
+# Retrieve the permissions that are set by install(PROGRAMS).
+function(qt_get_install_executable_permissions out_var)
+    set(default_permissions ${CMAKE_INSTALL_DEFAULT_DIRECTORY_PERMISSIONS})
+    if(NOT default_permissions)
+        set(default_permissions OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
+    endif()
+    set(executable_permissions ${default_permissions} OWNER_EXECUTE)
+    if(GROUP_READ IN_LIST default_permissions)
+        list(APPEND executable_permissions GROUP_EXECUTE)
+    endif()
+    if(WORLD_READ IN_LIST default_permissions)
+        list(APPEND executable_permissions WORLD_EXECUTE)
+    endif()
+    set(${out_var} ${executable_permissions} PARENT_SCOPE)
+endfunction()
+
 # Use case is installing files in a prefix build, or copying them to the correct build dir
 # in a non-prefix build.
 # Pass along arguments as you would pass them to install().
@@ -546,18 +562,21 @@ function(qt_copy_or_install)
     cmake_parse_arguments(arg "${flags}" "${options}" "${multiopts}" ${ARGN})
 
     # Remember which option has to be passed to the install command.
+    set(copy_arguments "")
     set(argv_copy ${ARGV})
     if(arg_FILES)
         set(install_option "FILES")
     elseif(arg_PROGRAMS)
         set(install_option "PROGRAMS")
+        qt_get_install_executable_permissions(executable_permissions)
+        list(APPEND copy_arguments FILE_PERMISSIONS ${executable_permissions})
     elseif(arg_DIRECTORY)
         set(install_option "DIRECTORY")
     endif()
 
     list(REMOVE_AT argv_copy 0)
     qt_install(${install_option} ${argv_copy})
-    qt_non_prefix_copy(COPY ${argv_copy})
+    qt_non_prefix_copy(COPY ${argv_copy} ${copy_arguments})
 endfunction()
 
 # Hacky way to remove the install target in non-prefix builds.
