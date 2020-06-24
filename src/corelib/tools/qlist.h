@@ -114,7 +114,7 @@ public:
     }
 
 public:
-    constexpr inline QList() noexcept { }
+    QList() = default;
     explicit QList(int size)
         : d(Data::allocate(size))
     {
