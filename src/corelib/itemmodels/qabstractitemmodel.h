@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 class QAbstractItemModel;
 class QPersistentModelIndex;
 
-class Q_CORE_EXPORT QModelIndex
+class QModelIndex
 {
     friend class QAbstractItemModel;
 public:
