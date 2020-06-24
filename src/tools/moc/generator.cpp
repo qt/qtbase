@@ -1419,7 +1419,7 @@ void Generator::generateStaticMetacall()
                     prefix += p.inPrivateClass + "->";
                 }
                 fprintf(out, "        case %d: observer->setSource(%s%s); break;\n",
-                        propindex, prefix.constData(), p.name.constData());
+                        propindex, prefix.constData(), p.qpropertyname.isEmpty() ? p.name.constData() : p.qpropertyname.constData());
             }
             fprintf(out, "        default: break;\n");
             fprintf(out, "        }\n");
@@ -1447,7 +1447,7 @@ void Generator::generateStaticMetacall()
                 else
                     objectAccessor.clear();
                 fprintf(out, "        case %d: %s%s.setBinding(%s*reinterpret_cast<QPropertyBinding<%s> *>(_a[0])); break;\n",
-                        propindex, prefix.constData(), p.name.constData(), objectAccessor.constData(), p.type.constData());
+                        propindex, prefix.constData(), p.qpropertyname.isEmpty() ? p.name.constData() : p.qpropertyname.constData(), objectAccessor.constData(), p.type.constData());
             }
             fprintf(out, "        default: break;\n");
             fprintf(out, "        }\n");
@@ -1557,7 +1557,7 @@ void Generator::generateQPropertyApi()
         fprintf(out, "}\n");
 
         // property value setter
-        fprintf(out, "\nvoid %s::_qt_property_api_%s::setValue(const %s &value)\n{\n",
+        fprintf(out, "\nvoid %s::_qt_property_api_%s::setValue(%s const &value)\n{\n",
                 cdef->qualified.constData(),
                 property.name.constData(),
                 property.type.name.constData());
@@ -1629,7 +1629,7 @@ void Generator::generateQPropertyApi()
         fprintf(out, "}\n");
 
         // property setter function
-        fprintf(out, "\nvoid %s::%s(const %s &value)\n{\n",
+        fprintf(out, "\nvoid %s::%s(%s const& value)\n{\n",
                 cdef->qualified.constData(),
                 property.setter.constData(),
                 property.type.name.constData());

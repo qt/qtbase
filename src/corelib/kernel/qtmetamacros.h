@@ -96,8 +96,8 @@ QT_BEGIN_NAMESPACE
                 type value() const; \
                 type operator()() const { return value(); } \
                 void setValue(type &&); \
-                void setValue(const type &); \
-                void operator=(const type &v) { setValue(v); } \
+                void setValue(type const &); \
+                void operator=(type const &v) { setValue(v); } \
                 void operator=(type &&v) { setValue(std::move(v)); } \
                 QPropertyBinding<type> setBinding(const QPropertyBinding<type> &); \
                 QPropertyBinding<type> setBinding(QPropertyBinding<type> &&); \
@@ -114,7 +114,7 @@ QT_BEGIN_NAMESPACE
                 QPropertyBinding<type> binding() const; \
                 QPropertyBinding<type> takeBinding(); \
             }; \
-            void setter(const type &value);
+            void setter(type const& value);
 #if __has_cpp_attribute(no_unique_address)
 #define Q_PRIVATE_QPROPERTIES_BEGIN
 #define QT_PRIVATE_QPROPERTY_PREFIX [[no_unique_address]]

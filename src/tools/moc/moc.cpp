@@ -1317,6 +1317,12 @@ void Moc::parsePropertyAttributes(PropertyDef &propDef)
         } else if(l[0] == 'F' && l == "FINAL") {
             propDef.final = true;
             continue;
+        } else if (l[0] == 'N' && l == "NAME") {
+            if (!propDef.isQProperty)
+                error(1);
+            next(IDENTIFIER);
+            propDef.name = lexem();
+            continue;
         } else if (l[0] == 'R' && l == "REQUIRED") {
             propDef.required = true;
             continue;
@@ -1525,6 +1531,7 @@ void Moc::parsePrivateQProperty(ClassDef *def)
 
     PropertyDef propDef;
     propDef.name = name;
+    propDef.qpropertyname = name;
     propDef.type = type.name;
     propDef.read = name + ".value";
     propDef.write = name + ".setValue";
