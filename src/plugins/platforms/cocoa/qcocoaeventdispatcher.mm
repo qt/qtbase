@@ -504,6 +504,11 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
                         retVal = true;
                     }
                 }
+
+                // Clean up the modal session list, call endModalSession.
+                if (d->cleanupModalSessionsNeeded)
+                    d->cleanupModalSessions();
+
             } while (!d->interrupt && event);
 
             if ((d->processEventsFlags & QEventLoop::EventLoopExec) == 0) {
