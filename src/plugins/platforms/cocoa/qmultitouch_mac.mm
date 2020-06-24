@@ -46,8 +46,6 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(lcInputDevices, "qt.qpa.input.devices")
-
 QHash<qint64, QCocoaTouch*> QCocoaTouch::_currentTouches;
 QHash<quint64, QPointingDevice*> QCocoaTouch::_touchDevices;
 QPointF QCocoaTouch::_screenReferencePos;

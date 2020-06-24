@@ -62,6 +62,7 @@
 #include <private/qguiapplication_p.h>
 #include <private/qcoregraphics_p.h>
 #include <private/qwindow_p.h>
+#include <private/qpointingdevice_p.h>
 #include "qcocoabackingstore.h"
 #ifndef QT_NO_OPENGL
 #include "qcocoaglcontext.h"
