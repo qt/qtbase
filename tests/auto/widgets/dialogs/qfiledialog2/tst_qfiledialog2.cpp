@@ -1249,14 +1249,7 @@ void tst_QFileDialog2::QTBUG6558_showDirsOnly()
 
     fd.setOption(QFileDialog::ShowDirsOnly, true);
     QTRY_COMPARE(model->rowCount(model->index(dir.absolutePath())), 2);
-
-    fd.setFileMode(QFileDialog::DirectoryOnly);
-    QTRY_COMPARE(model->rowCount(model->index(dir.absolutePath())), 2);
     QTRY_COMPARE(bool(fd.options() & QFileDialog::ShowDirsOnly), true);
-
-    fd.setFileMode(QFileDialog::AnyFile);
-    QTRY_COMPARE(model->rowCount(model->index(dir.absolutePath())), 3);
-    QTRY_COMPARE(bool(fd.options() & QFileDialog::ShowDirsOnly), false);
 
     fd.setDirectory(QDir::homePath());
 

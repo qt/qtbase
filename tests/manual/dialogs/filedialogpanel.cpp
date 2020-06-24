@@ -65,8 +65,7 @@ const FlagData fileModeComboData[] =
     {"AnyFile", QFileDialog::AnyFile},
     {"ExistingFile", QFileDialog::ExistingFile},
     {"ExistingFiles", QFileDialog::ExistingFiles},
-    {"Directory", QFileDialog::Directory},
-    {"DirectoryOnly", QFileDialog::DirectoryOnly}
+    {"Directory", QFileDialog::Directory}
 };
 
 static inline QPushButton *addButton(const QString &description, QGridLayout *layout,

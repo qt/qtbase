@@ -73,8 +73,7 @@ class Q_WIDGETS_EXPORT QFileDialog : public QDialog
 public:
     enum ViewMode { Detail, List };
     Q_ENUM(ViewMode)
-    enum FileMode { AnyFile, ExistingFile, Directory, ExistingFiles,
-                    DirectoryOnly Q_DECL_ENUMERATOR_DEPRECATED_X("Use setOption(ShowDirsOnly, true) instead")};
+    enum FileMode { AnyFile, ExistingFile, Directory, ExistingFiles };
     Q_ENUM(FileMode)
     enum AcceptMode { AcceptOpen, AcceptSave };
     Q_ENUM(AcceptMode)

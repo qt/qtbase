@@ -292,7 +292,6 @@ void tst_QFiledialog::filesSelectedSignal_data()
     QTest::newRow("any") << QFileDialog::AnyFile;
     QTest::newRow("existing") << QFileDialog::ExistingFile;
     QTest::newRow("directory") << QFileDialog::Directory;
-    QTest::newRow("directoryOnly") << QFileDialog::DirectoryOnly;
     QTest::newRow("existingFiles") << QFileDialog::ExistingFiles;
 }
 
@@ -317,7 +316,7 @@ void tst_QFiledialog::filesSelectedSignal()
     QModelIndex file;
     for (int i = 0; i < listView->model()->rowCount(root); ++i) {
         file = listView->model()->index(i, 0, root);
-        if (fileMode == QFileDialog::Directory || fileMode == QFileDialog::DirectoryOnly) {
+        if (fileMode == QFileDialog::Directory) {
             if (listView->model()->hasChildren(file))
                 break;
         } else {
@@ -649,8 +648,6 @@ void tst_QFiledialog::fileMode()
     QCOMPARE(fd.fileMode(), QFileDialog::ExistingFile);
     fd.setFileMode(QFileDialog::Directory);
     QCOMPARE(fd.fileMode(), QFileDialog::Directory);
-    fd.setFileMode(QFileDialog::DirectoryOnly);
-    QCOMPARE(fd.fileMode(), QFileDialog::DirectoryOnly);
     fd.setFileMode(QFileDialog::ExistingFiles);
     QCOMPARE(fd.fileMode(), QFileDialog::ExistingFiles);
 }
