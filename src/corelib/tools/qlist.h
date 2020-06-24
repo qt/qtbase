@@ -128,8 +128,6 @@ public:
             d->copyAppend(size, t);
     }
 
-    inline QList(const QList<T> &other) noexcept : d(other.d) {}
-    QList(QList<T> &&other) noexcept : d(std::move(other.d)) {}
     inline QList(std::initializer_list<T> args)
         : d(Data::allocate(args.size()))
     {
@@ -137,13 +135,6 @@ public:
             d->copyAppend(args.begin(), args.end());
     }
 
-    ~QList() /*noexcept(std::is_nothrow_destructible<T>::value)*/ {}
-    QList<T> &operator=(const QList<T> &other) { d = other.d; return *this; }
-    QList &operator=(QList &&other) noexcept(std::is_nothrow_destructible<T>::value)
-    {
-        d = std::move(other.d);
-        return *this;
-    }
     QList<T> &operator=(std::initializer_list<T> args)
     {
         d = DataPointer(Data::allocate(args.size()));
@@ -166,6 +157,8 @@ public:
         QtPrivate::reserveIfForwardIterator(this, i1, i2);
         std::copy(i1, i2, std::back_inserter(*this));
     }
+
+    // compiler-generated special member functions are fine!
 
     void swap(QList<T> &other) noexcept { qSwap(d, other.d); }
 
