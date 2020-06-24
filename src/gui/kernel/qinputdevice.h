@@ -84,6 +84,7 @@ public:
         Velocity = 0x0008,
         NormalizedPosition = 0x0020,
         MouseEmulation = 0x0040,
+        PixelScroll = 0x0080,
         Scroll      = 0x0100,
         Hover       = 0x0200,
         Rotation    = 0x0400,
