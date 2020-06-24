@@ -144,17 +144,17 @@ public:
     }
     template <typename InputIterator, QtPrivate::IfIsForwardIterator<InputIterator> = true>
     QList(InputIterator i1, InputIterator i2)
-        : d(Data::allocate(std::distance(i1, i2)))
     {
-        if (std::distance(i1, i2))
+        const auto distance = std::distance(i1, i2);
+        if (distance) {
+            d = DataPointer(Data::allocate(distance));
             d->copyAppend(i1, i2);
+        }
     }
 
     template <typename InputIterator, QtPrivate::IfIsNotForwardIterator<InputIterator> = true>
     QList(InputIterator i1, InputIterator i2)
-        : QList()
     {
-        QtPrivate::reserveIfForwardIterator(this, i1, i2);
         std::copy(i1, i2, std::back_inserter(*this));
     }
 
