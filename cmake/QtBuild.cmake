@@ -2087,6 +2087,8 @@ function(qt_set_symbol_visibility_preset target value)
 
     set_target_properties("${target}" PROPERTIES C_VISIBILITY_PRESET "${value}")
     set_target_properties("${target}" PROPERTIES CXX_VISIBILITY_PRESET "${value}")
+    set_target_properties("${target}" PROPERTIES OBJC_VISIBILITY_PRESET "${value}")
+    set_target_properties("${target}" PROPERTIES OBJCXX_VISIBILITY_PRESET "${value}")
 endfunction()
 
 function(qt_set_symbol_visibility_hidden target)
@@ -4150,6 +4152,8 @@ function(qt_add_cmake_library target)
         add_library("${target}" MODULE)
         set_property(TARGET ${name} PROPERTY C_VISIBILITY_PRESET default)
         set_property(TARGET ${name} PROPERTY CXX_VISIBILITY_PRESET default)
+        set_property(TARGET ${name} PROPERTY OBJC_VISIBILITY_PRESET default)
+        set_property(TARGET ${name} PROPERTY OBJCXX_VISIBILITY_PRESET default)
 
         if(APPLE)
             # CMake defaults to using .so extensions for loadable modules, aka plugins,
@@ -4233,6 +4237,8 @@ function(qt_add_3rdparty_library target)
         add_library("${target}" MODULE)
         set_property(TARGET ${name} PROPERTY C_VISIBILITY_PRESET default)
         set_property(TARGET ${name} PROPERTY CXX_VISIBILITY_PRESET default)
+        set_property(TARGET ${name} PROPERTY OBJC_VISIBILITY_PRESET default)
+        set_property(TARGET ${name} PROPERTY OBJCXX_VISIBILITY_PRESET default)
 
         if(APPLE)
             # CMake defaults to using .so extensions for loadable modules, aka plugins,
