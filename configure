@@ -149,23 +149,18 @@ $i"
                 CMAKE_CMDLINE="$CMAKE_CMDLINE
 -DQT_NO_MAKE_${arg_capitalized}=ON"
                 ;;
-            -feature-*)
-                VAR=`echo $i | sed 's,^-feature-\(.*\),\1,'`
+            -feature-*|--feature-*)
+                VAR=`echo $i | sed -E 's/-?-feature-(.*)/\1/'`
                 CMAKE_CMDLINE="$CMAKE_CMDLINE
 -DQT_FEATURE_${VAR}=ON"
                 ;;
-            -no-feature-*)
-                VAR=`echo $i | sed 's,^-no-feature-\(.*\),\1,'`
+            -no-feature-*|--no-feature-*)
+                VAR=`echo $i | sed -E 's/-?-no-feature-(.*)/\1/'`
                 CMAKE_CMDLINE="$CMAKE_CMDLINE
 -DQT_FEATURE_${VAR}=OFF"
                 ;;
-            --no-*)
-                VAR=`echo $i | sed 's,^--no-\(.*\),\1,'`
-                CMAKE_CMDLINE="$CMAKE_CMDLINE
--DFEATURE_${VAR}=OFF"
-                ;;
-            -no-*)
-                VAR=`echo $i | sed 's,^-no-\(.*\),\1,'`
+            -no-*|--no-*)
+                VAR=`echo $i | sed -E 's/-?-no-(.*)/\1/'`
                 CMAKE_CMDLINE="$CMAKE_CMDLINE
 -DFEATURE_${VAR}=OFF"
                 ;;
@@ -179,12 +174,12 @@ $i"
                 CMAKE_CMDLINE="$CMAKE_CMDLINE
 -DFEATURE_system_${VAR}=OFF"
                 ;;
-            --sanitize=*)
-                VAR=`echo $i | sed 's,^--sanitize=\(.*\),\1,'`
+            -sanitize=*|--sanitize=*)
+                VAR=`echo $i | sed -E 's/-?-sanitize=(.*)/\1/'`
                 CMAKE_CMDLINE="$CMAKE_CMDLINE
 -DECM_ENABLE_SANITIZERS=${VAR}"
                 ;;
-            --ccache)
+            -ccache|--ccache)
                 CMAKE_CMDLINE="$CMAKE_CMDLINE
 -DQT_USE_CCACHE=ON"
                 ;;
