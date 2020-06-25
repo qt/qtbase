@@ -57,7 +57,7 @@
 QWidget *loadCustomWidget(QWidget *parent)
 {
     QUiLoader loader;
-    QWidget *myWidget;
+    QWidget *myWidget = nullptr;
 
     QStringList availableWidgets = loader.availableWidgets();
 
