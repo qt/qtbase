@@ -22,8 +22,3 @@ add_qt_test(tst_qmake
 
 #### Keys ignored in scope 2:.:.:qmake.pro:WIN32:
 # testcase.timeout = "900"
-
-extend_target(tst_qmake CONDITION CMAKE_CROSSCOMPILING
-    DEFINES
-        QMAKE_CROSS_COMPILED
-)
