@@ -51,6 +51,98 @@ endif()
 # build.
 include(QtPlatformSupport)
 
+function(qt_build_internals_disable_pkg_config_if_needed)
+    # pkg-config should not be used by default on Darwin and Windows platforms, as defined in
+    # the qtbase/configure.json. Unfortunately by the time the feature is evaluated there are
+    # already a few find_package() calls.
+    # So we have to duplicate the condition logic here and disable pkg-config for those platforms by
+    # default.
+    #
+    # Note that on macOS, if the pkg-config feature is enabled by the user explicitly, we will also
+    # tell CMake to consider paths like /usr/local (Homebrew) as system paths when looking for
+    # packages.
+    # We have to do that because disabling these paths but keeping pkg-config
+    # enabled won't enable finding all system libraries via pkg-config alone, many libraries can
+    # only be found via FooConfig.cmake files which means /usr/local should be in the system prefix
+    # path.
+    set(pkg_config_enabled ON)
+    if(APPLE OR WIN32)
+        set(pkg_config_enabled OFF)
+    endif()
+    if(DEFINED FEATURE_pkg_config)
+        if(FEATURE_pkg_config)
+            set(pkg_config_enabled ON)
+        else()
+            set(pkg_config_enabled OFF)
+        endif()
+    endif()
+    set(FEATURE_pkg_config "${pkg_config_enabled}" CACHE STRING "Using pkg-config")
+    if(NOT pkg_config_enabled)
+        qt_build_internals_disable_pkg_config()
+    else()
+        unset(PKG_CONFIG_EXECUTABLE CACHE)
+    endif()
+endfunction()
+
+function(qt_build_internals_disable_pkg_config)
+    # Disable pkg-config by setting an empty executable path. There's no documented way to
+    # mark the package as found, but force all pkg_check_modules calls to do nothing.
+    set(PKG_CONFIG_EXECUTABLE "" CACHE STRING "Disabled pkg-config usage." FORCE)
+endfunction()
+
+if(NOT QT_BUILD_INTERNALS_SKIP_PKG_CONFIG_ADJUSTMENT)
+    qt_build_internals_disable_pkg_config_if_needed()
+endif()
+
+macro(qt_build_internals_find_pkg_config)
+    # Find package config once before any system prefix modifications.
+    find_package(PkgConfig QUIET)
+endmacro()
+
+if(NOT QT_BUILD_INTERNALS_SKIP_FIND_PKG_CONFIG)
+    qt_build_internals_find_pkg_config()
+endif()
+
+function(qt_build_internals_set_up_system_prefixes)
+    if(APPLE AND NOT FEATURE_pkg_config)
+        # Remove /usr/local and other paths like that which CMake considers as system prefixes on
+        # darwin platforms. CMake considers them as system prefixes, but in qmake / Qt land we only
+        # consider the SDK path as a system prefix.
+        # 3rd party libraries in these locations should not be picked up when building Qt,
+        # unless opted-in via the pkg-config feature, which in turn will disable this behavior.
+        #
+        # Note that we can't remove /usr as a system prefix path, because many programs won't be
+        # found then (e.g. perl).
+        set(QT_CMAKE_SYSTEM_PREFIX_PATH_BACKUP "${CMAKE_SYSTEM_PREFIX_PATH}" PARENT_SCOPE)
+        set(QT_CMAKE_SYSTEM_FRAMEWORK_PATH_BACKUP "${CMAKE_SYSTEM_FRAMEWORK_PATH}" PARENT_SCOPE)
+
+        list(REMOVE_ITEM CMAKE_SYSTEM_PREFIX_PATH
+            "/usr/local" # Homebrew
+            "/usr/X11R6"
+            "/usr/pkg"
+            "/opt"
+            "/sw" # Fink
+            "/opt/local" # MacPorts
+        )
+        if(_CMAKE_INSTALL_DIR)
+            list(REMOVE_ITEM CMAKE_SYSTEM_PREFIX_PATH "${_CMAKE_INSTALL_DIR}")
+        endif()
+        list(REMOVE_ITEM CMAKE_SYSTEM_FRAMEWORK_PATH "~/Library/Frameworks")
+        set(CMAKE_SYSTEM_PREFIX_PATH "${CMAKE_SYSTEM_PREFIX_PATH}" PARENT_SCOPE)
+        set(CMAKE_SYSTEM_FRAMEWORK_PATH "${CMAKE_SYSTEM_FRAMEWORK_PATH}" PARENT_SCOPE)
+
+        # Also tell qt_find_package() not to use PATH when looking for packages.
+        # We can't simply set CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH to OFF because that will break
+        # find_program(), and for instance ccache won't be found.
+        # That's why we set a different variable which is used by qt_find_package.
+        set(QT_NO_USE_FIND_PACKAGE_SYSTEM_ENVIRONMENT_PATH "ON" PARENT_SCOPE)
+    endif()
+endfunction()
+
+if(NOT QT_BUILD_INTERNALS_SKIP_SYSTEM_PREFIX_ADJUSTMENT)
+    qt_build_internals_set_up_system_prefixes()
+endif()
+
 macro(qt_build_internals_set_up_private_api)
     # Qt specific setup common for all modules:
     include(QtSetup)

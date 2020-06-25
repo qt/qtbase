@@ -444,6 +444,14 @@ endif()\n")
                 "set(QT_EXTRA_RPATHS \"${QT_EXTRA_RPATHS}\" CACHE STRING \"\")\n")
         endif()
 
+        # Save pkg-config feature value to be able to query it internally as soon as BuildInternals
+        # package is loaded. This is to avoid any pkg-config package from being found when
+        # find_package(Qt6Core) is called in case if the feature was disabled.
+        string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS "
+if(NOT QT_SKIP_BUILD_INTERNALS_PKG_CONFIG_FEATURE)
+    set(FEATURE_pkg_config \"${FEATURE_pkg_config}\" CACHE STRING \"Using pkg-config\" FORCE)
+endif()\n")
+
         # The OpenSSL root dir needs to be saved so that repos other than qtbase (like qtopcua) can
         # still successfully find_package(WrapOpenSSL) in the CI.
         # qmake saves any additional include paths passed via the configure like '-I/foo'

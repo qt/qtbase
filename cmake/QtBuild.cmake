@@ -5246,6 +5246,12 @@ macro(qt_find_package)
         list(APPEND arg_UNPARSED_ARGUMENTS "COMPONENTS;${arg_COMPONENTS}")
     endif()
 
+    # Don't look for packages in PATH if requested to.
+    if(QT_NO_USE_FIND_PACKAGE_SYSTEM_ENVIRONMENT_PATH)
+        set(_qt_find_package_use_system_env_backup "${CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH}")
+        set(CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH "OFF")
+    endif()
+
     if(NOT (arg_CONFIG OR arg_NO_MODULE OR arg_MODULE) AND NOT _qt_find_package_skip_find_package)
         # Try to find a config package first in quiet mode
         set(config_package_arg ${arg_UNPARSED_ARGUMENTS})
@@ -5289,6 +5295,14 @@ macro(qt_find_package)
 
         # Call original function without our custom arguments.
         find_package(${arg_UNPARSED_ARGUMENTS})
+    endif()
+
+    if(QT_NO_USE_FIND_PACKAGE_SYSTEM_ENVIRONMENT_PATH)
+        if("${_qt_find_package_use_system_env_backup}" STREQUAL "")
+            unset(CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH)
+        else()
+            set(CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH "${_qt_find_package_use_system_env_backup}")
+        endif()
     endif()
 
     if(${ARGV0}_FOUND AND arg_PROVIDED_TARGETS AND NOT _qt_find_package_skip_find_package)
