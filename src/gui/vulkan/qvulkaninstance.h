@@ -58,6 +58,10 @@ typedef void* PFN_vkVoidFunction;
 typedef unsigned long VkSurfaceKHR;
 typedef unsigned long VkImage;
 typedef unsigned long VkImageView;
+typedef void* VkInstance;
+typedef void* VkPhysicalDevice;
+typedef void* VkDevice;
+typedef int VkResult;
 #endif
 
 #include <QtCore/qhashfunctions.h>
