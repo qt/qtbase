@@ -37,14 +37,6 @@
 #include <QStandardPaths>
 #include <QTemporaryDir>
 
-#if defined(DEBUG_BUILD)
-#  define DIR_INFIX "debug/"
-#elif defined(RELEASE_BUILD)
-#  define DIR_INFIX "release/"
-#else
-#  define DIR_INFIX ""
-#endif
-
 class tst_qmake : public QObject
 {
     Q_OBJECT
@@ -725,7 +717,7 @@ void tst_qmake::resources()
     QVERIFY(test_compiler.qmake(workDir, "resources"));
 
     {
-        QFile qrcFile(workDir + '/' + DIR_INFIX "qmake_pro_file.qrc");
+        QFile qrcFile(workDir + '/' + "qmake_pro_file.qrc");
         QVERIFY2(qrcFile.exists(), qPrintable(qrcFile.fileName()));
         QVERIFY(qrcFile.open(QFile::ReadOnly));
         QByteArray qrcXml = qrcFile.readAll();
@@ -734,7 +726,7 @@ void tst_qmake::resources()
     }
 
     {
-        QFile qrcFile(workDir + '/' + DIR_INFIX "qmake_subdir.qrc");
+        QFile qrcFile(workDir + '/' + "qmake_subdir.qrc");
         QVERIFY(qrcFile.exists());
         QVERIFY(qrcFile.open(QFile::ReadOnly));
         QByteArray qrcXml = qrcFile.readAll();
@@ -742,7 +734,7 @@ void tst_qmake::resources()
     }
 
     {
-        QFile qrcFile(workDir + '/' + DIR_INFIX "qmake_qmake_immediate.qrc");
+        QFile qrcFile(workDir + '/' + "qmake_qmake_immediate.qrc");
         QVERIFY(qrcFile.exists());
         QVERIFY(qrcFile.open(QFile::ReadOnly));
         QByteArray qrcXml = qrcFile.readAll();

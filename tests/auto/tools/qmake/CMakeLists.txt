@@ -27,16 +27,3 @@ extend_target(tst_qmake CONDITION CMAKE_CROSSCOMPILING
     DEFINES
         QMAKE_CROSS_COMPILED
 )
-
-# special case begin
-# remove this because it's not needed
-#extend_target(tst_qmake CONDITION CMAKE_BUILD_TYPE STREQUAL Debug AND debug_and_release
-    #DEFINES
-        #DEBUG_BUILD
-#)
-
-#extend_target(tst_qmake CONDITION debug_and_release AND NOT CMAKE_BUILD_TYPE STREQUAL Debug
-    #DEFINES
-        #RELEASE_BUILD
-#)
-# special case end

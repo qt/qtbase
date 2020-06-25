@@ -1,4 +1,5 @@
 TEMPLATE = app
+CONFIG -= debug_and_release
 SOURCES = main.cpp
 
 pro_file.files = resources.pro
