@@ -162,7 +162,7 @@
     \row \li On \li S1 \li N1'' \li \b {A1''} \li S0 \li N0'' \li A0'' \li D1'' \li D0''
     \endtable
 
-    In the table, "0" and "1" stand for Off" and "On", respectively.
+    In the table, "0" and "1" stand for "Off" and "On", respectively.
     Single quotes indicates that QIcon generates a disabled ("grayed
     out") version of the pixmap; similarly, double quuote indicate
     that QIcon generates a selected ("blued out") version of the
