@@ -1,0 +1,30 @@
+type: Group
+instructions:
+  - type: Group
+    instructions:
+      - type: EnvironmentVariable
+        variableName: TESTS_ENV_PREFIX
+        variableValue: "{{.Env.ENV_PREFIX}}"
+    enable_if:
+      condition: and
+      conditions:
+        - condition: property
+          property: host.os
+          equals_property: target.os
+        - condition: property
+          property: target.osVersion
+          not_equals_value: QEMU
+  - type: Group
+    instructions:
+      - type: EnvironmentVariable
+        variableName: TESTS_ENV_PREFIX
+        variableValue: "{{.Env.TARGET_ENV_PREFIX}}"
+    disable_if:
+      condition: and
+      conditions:
+        - condition: property
+          property: host.os
+          equals_property: target.os
+        - condition: property
+          property: target.osVersion
+          not_equals_value: QEMU

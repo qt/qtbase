@@ -12,7 +12,7 @@ instructions:
   - type: ChangeDirectory
     directory: "{{.SourceDir}}_standalone_tests"
   - type: ExecuteCommand
-    command: "ctest -V --rerun-failed"
+    command: "{{.Env.TESTS_ENV_PREFIX}} ctest -V --rerun-failed"
     ignoreExitCode: true
     maxTimeInSeconds: 7200
     maxTimeBetweenOutput: 900
