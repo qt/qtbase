@@ -416,13 +416,13 @@ auto QStringTokenizerBase<Haystack, Needle>::next(tokenizer_state state) const n
         Haystack result;
         if (state.end >= 0) {
             // token separator found => return intermediate element:
-            result = m_haystack.mid(state.start, state.end - state.start);
+            result = m_haystack.sliced(state.start, state.end - state.start);
             const auto ns = QtPrivate::Tok::size(m_needle);
             state.start = state.end + ns;
             state.extra = (ns == 0 ? 1 : 0);
         } else {
             // token separator not found => return final element:
-            result = m_haystack.mid(state.start);
+            result = m_haystack.sliced(state.start);
         }
         if ((m_sb & Qt::SkipEmptyParts) && result.isEmpty())
             continue;
