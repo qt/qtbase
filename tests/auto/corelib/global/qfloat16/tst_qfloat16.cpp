@@ -301,7 +301,7 @@ void tst_qfloat16::promotionTests()
     QCOMPARE(sizeof(double),sizeof(qfloat16(1.f)*1));
     QCOMPARE(sizeof(double),sizeof(qfloat16(1.f)/1));
 
-    QCOMPARE(QString::number(1.f),QString::number(qfloat16(1.f)));
+    QCOMPARE(QString::number(1.f),QString::number(double(qfloat16(1.f))));
 }
 
 void tst_qfloat16::arithOps_data()
@@ -624,7 +624,7 @@ void tst_qfloat16::mantissaOverflow()
     float f;
     memcpy(&f, &in, 4);
 
-    qfloat16 f16 = f;
+    qfloat16 f16 = qfloat16(f);
     qfloat16 f16s[1];
     qFloatToFloat16(f16s, &f, 1);
     QCOMPARE(f16, f16s[0]);

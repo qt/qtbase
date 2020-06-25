@@ -113,7 +113,7 @@ class QHypotHelper
 public:
     QHypotHelper(T first) : scale(qAbs(first)), total(1) {}
     T result() const
-    { return qIsFinite(scale) ? scale > 0 ? scale * T(std::sqrt(total)) : T(0) : scale; }
+    { return qIsFinite(scale) ? scale > 0 ? scale * T(qSqrt(total)) : T(0) : scale; }
 
     template<typename F, typename ...Fs>
     auto add(F first, Fs... rest) const
@@ -133,7 +133,7 @@ public:
             return QHypotHelper<R>(scale, total);
         if (val > scale) {
             const R ratio = scale / next;
-            return QHypotHelper<R>(val, total * ratio * ratio + 1);
+            return QHypotHelper<R>(val, total * ratio * ratio + R(1));
         }
         const R ratio = next / scale;
         return QHypotHelper<R>(scale, total + ratio * ratio);
