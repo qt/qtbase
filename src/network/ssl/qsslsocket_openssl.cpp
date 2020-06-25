@@ -100,21 +100,23 @@ QT_BEGIN_NAMESPACE
 
 namespace {
 
-QAlertLevel tlsAlertLevel(int value)
+QSsl::AlertLevel tlsAlertLevel(int value)
 {
+    using QSsl::AlertLevel;
+
     if (const char *typeString = q_SSL_alert_type_string(value)) {
         // Documented to return 'W' for warning, 'F' for fatal,
         // 'U' for unknown.
         switch (typeString[0]) {
         case 'W':
-            return QAlertLevel::Warning;
+            return AlertLevel::Warning;
         case 'F':
-            return QAlertLevel::Fatal;
+            return AlertLevel::Fatal;
         default:;
         }
     }
 
-    return QAlertLevel::Unknown;
+    return AlertLevel::Unknown;
 }
 
 QString tlsAlertDescription(int value)
@@ -125,13 +127,13 @@ QString tlsAlertDescription(int value)
     return description;
 }
 
-QAlertType tlsAlertType(int value)
+QSsl::AlertType tlsAlertType(int value)
 {
     // In case for some reason openssl gives us a value,
     // which is not in our enum actually, we leave it to
     // an application to handle (supposedly they have
     // if or switch-statements).
-    return QAlertType(value & 0xff);
+    return QSsl::AlertType(value & 0xff);
 }
 
 #ifdef Q_OS_WIN
@@ -1970,7 +1972,7 @@ void QSslSocketBackendPrivate::alertMessageSent(int value)
     Q_Q(QSslSocket);
 
     const auto level = tlsAlertLevel(value);
-    if (level == QAlertLevel::Fatal && !connectionEncrypted) {
+    if (level == QSsl::AlertLevel::Fatal && !connectionEncrypted) {
         // Note, this logic is handshake-time only:
         pendingFatalAlert = true;
     }

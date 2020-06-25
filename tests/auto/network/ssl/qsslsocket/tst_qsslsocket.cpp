@@ -341,8 +341,6 @@ tst_QSslSocket::tst_QSslSocket()
     qRegisterMetaType<QSslError>("QSslError");
     qRegisterMetaType<QAbstractSocket::SocketState>("QAbstractSocket::SocketState");
     qRegisterMetaType<QAbstractSocket::SocketError>("QAbstractSocket::SocketError");
-    qRegisterMetaType<QAlertLevel>("QAlertLevel");
-    qRegisterMetaType<QAlertType>("QAlertType");
 
 #ifndef QT_NO_OPENSSL
     qRegisterMetaType<QSslPreSharedKeyAuthenticator *>();
@@ -1202,8 +1200,8 @@ public:
 
 signals:
     void socketError(QAbstractSocket::SocketError);
-    void gotAlert(QAlertLevel level, QAlertType type, const QString &message);
-    void alertSent(QAlertLevel level, QAlertType type, const QString &message);
+    void gotAlert(QSsl::AlertLevel level, QSsl::AlertType type, const QString &message);
+    void alertSent(QSsl::AlertLevel level, QSsl::AlertType type, const QString &message);
 
 protected:
     void incomingConnection(qintptr socketDescriptor)

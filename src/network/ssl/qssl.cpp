@@ -175,5 +175,72 @@ Q_LOGGING_CATEGORY(lcSsl, "qt.network.ssl");
     backend in use.
 */
 
+/*!
+    \enum QSsl::AlertLevel
+    \brief Describes the level of an alert message
+    \relates QSslSocket
+    \since 6.0
+
+    \ingroup network
+    \ingroup ssl
+    \inmodule QtNetwork
+
+    This enum describes the level of an alert message that was sent
+    or received.
+
+    \value Warning Non-fatal alert message
+    \value Fatal Fatal alert message, the underlying backend will
+           handle such an alert properly and close the connection.
+    \value Unknown An alert of unknown level of severity.
+*/
+
+/*!
+    \enum QSsl::AlertType
+    \brief Enumerates possible codes that an alert message can have
+    \relates QSslSocket
+    \since 6.0
+
+    \ingroup network
+    \ingroup ssl
+    \inmodule QtNetwork
+
+    See \l{https://tools.ietf.org/html/rfc8446#page-85}{RFC 8446, section 6}
+    for the possible values and their meaning.
+
+    \value CloseNotify,
+    \value UnexpectedMessage
+    \value BadRecordMac
+    \value RecordOverflow
+    \value DecompressionFailure
+    \value HandshakeFailure
+    \value NoCertificate
+    \value BadCertificate
+    \value UnsupportedCertificate
+    \value CertificateRevoked
+    \value CertificateExpired
+    \value CertificateUnknown
+    \value IllegalParameter
+    \value UnknownCa
+    \value AccessDenied
+    \value DecodeError
+    \value DecryptError
+    \value ExportRestriction
+    \value ProtocolVersion
+    \value InsufficientSecurity
+    \value InternalError
+    \value InappropriateFallback
+    \value UserCancelled
+    \value NoRenegotiation
+    \value MissingExtension
+    \value UnsupportedExtension
+    \value CertificateUnobtainable
+    \value UnrecognizedName
+    \value BadCertificateStatusResponse
+    \value BadCertificateHashValue
+    \value UnknownPskIdentity
+    \value CertificateRequired
+    \value NoApplicationProtocol
+    \value UnknownAlertMessage
+*/
 
 QT_END_NAMESPACE
