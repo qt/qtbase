@@ -46,7 +46,7 @@ if(QT_FEATURE_system_zlib)
     qt_add_qmake_lib_dependency(libpng zlib)
 endif()
 qt_find_package(Mtdev PROVIDED_TARGETS PkgConfig::Mtdev MODULE_NAME gui QMAKE_LIB mtdev)
-qt_find_package(OpenGL PROVIDED_TARGETS OpenGL::GL MODULE_NAME gui QMAKE_LIB opengl)
+qt_find_package(WrapOpenGL PROVIDED_TARGETS WrapOpenGL::WrapOpenGL MODULE_NAME gui QMAKE_LIB opengl)
 qt_find_package(GLESv2 PROVIDED_TARGETS GLESv2::GLESv2 MODULE_NAME gui QMAKE_LIB opengl_es2)
 qt_find_package(Tslib PROVIDED_TARGETS PkgConfig::Tslib MODULE_NAME gui QMAKE_LIB tslib)
 qt_find_package(Vulkan PROVIDED_TARGETS Vulkan::Vulkan MODULE_NAME gui QMAKE_LIB vulkan)
@@ -744,7 +744,7 @@ qt_feature("opengles32" PUBLIC
 qt_feature("opengl-desktop"
     LABEL "Desktop OpenGL"
     AUTODETECT NOT WIN32
-    CONDITION ( WIN32 AND ( MSVC OR OpenGL_FOUND ) ) OR ( NOT WATCHOS AND NOT WIN32 AND NOT WASM AND OpenGL_FOUND )
+    CONDITION ( WIN32 AND ( MSVC OR WrapOpenGL_FOUND ) ) OR ( NOT WATCHOS AND NOT WIN32 AND NOT WASM AND WrapOpenGL_FOUND )
     ENABLE INPUT_opengl STREQUAL 'desktop'
     DISABLE INPUT_opengl STREQUAL 'es2' OR INPUT_opengl STREQUAL 'dynamic' OR INPUT_opengl STREQUAL 'no'
 )
