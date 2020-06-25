@@ -656,7 +656,11 @@ function(qt_generate_qmake_libraries_pri_content module_name output_root_dir out
                 list(APPEND lib_incdir  "$<TARGET_PROPERTY:${lib_target},INTERFACE_INCLUDE_DIRECTORIES>")
                 list(APPEND lib_defines "$<TARGET_PROPERTY:${lib_target},INTERFACE_COMPILE_DEFINITIONS>")
             else()
-                list(APPEND lib_libs "${lib_target}")
+                if(lib_target MATCHES "/([^/]+).framework$")
+                    list(APPEND lib_libs "-framework" "${CMAKE_MATCH_1}")
+                else()
+                    list(APPEND lib_libs "${lib_target}")
+                endif()
             endif()
         endwhile()
 
