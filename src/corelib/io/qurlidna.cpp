@@ -2087,7 +2087,7 @@ Q_AUTOTEST_EXPORT bool qt_nameprep(QString *source, int from)
 
     // Normalize to Unicode 3.2 form KC
     extern void qt_string_normalize(QString *data, QString::NormalizationForm mode,
-                                    QChar::UnicodeVersion version, int from);
+                                    QChar::UnicodeVersion version, qsizetype from);
     qt_string_normalize(source, QString::NormalizationForm_KC, QChar::Unicode_3_2,
                         firstNonAscii > from ? firstNonAscii - 1 : from);
 

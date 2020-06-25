@@ -1439,7 +1439,7 @@ enum {
 
 // buffer has to have a length of 3. It's needed for Hangul decomposition
 static const unsigned short * QT_FASTCALL decompositionHelper
-    (uint ucs4, int *length, int *tag, unsigned short *buffer)
+    (uint ucs4, qsizetype *length, int *tag, unsigned short *buffer)
 {
     if (ucs4 >= Hangul_SBase && ucs4 < Hangul_SBase + Hangul_SCount) {
         // compute Hangul syllable decomposition as per UAX #15
@@ -1484,7 +1484,7 @@ QString QChar::decomposition() const
 QString QChar::decomposition(char32_t ucs4)
 {
     unsigned short buffer[3];
-    int length;
+    qsizetype length;
     int tag;
     const unsigned short *d = decompositionHelper(ucs4, &length, &tag, buffer);
     return QString(reinterpret_cast<const QChar *>(d), length);
@@ -1910,9 +1910,9 @@ QDataStream &operator>>(QDataStream &in, QChar &chr)
 // ---------------------------------------------------------------------------
 
 
-static void decomposeHelper(QString *str, bool canonical, QChar::UnicodeVersion version, int from)
+static void decomposeHelper(QString *str, bool canonical, QChar::UnicodeVersion version, qsizetype from)
 {
-    int length;
+    qsizetype length;
     int tag;
     unsigned short buffer[3];
 
@@ -1937,7 +1937,7 @@ static void decomposeHelper(QString *str, bool canonical, QChar::UnicodeVersion 
         if (!d || (canonical && tag != QChar::Canonical))
             continue;
 
-        int pos = uc - utf16;
+        qsizetype pos = uc - utf16;
         s.replace(pos, QChar::requiresSurrogates(ucs4) ? 2 : 1, reinterpret_cast<const QChar *>(d), length);
         // since the replace invalidates the pointers and we do decomposition recursive
         utf16 = reinterpret_cast<unsigned short *>(s.data());
@@ -2010,7 +2010,7 @@ static uint inline ligatureHelper(uint u1, uint u2)
     return 0;
 }
 
-static void composeHelper(QString *str, QChar::UnicodeVersion version, int from)
+static void composeHelper(QString *str, QChar::UnicodeVersion version, qsizetype from)
 {
     QString &s = *str;
 
@@ -2018,13 +2018,13 @@ static void composeHelper(QString *str, QChar::UnicodeVersion version, int from)
         return;
 
     uint stcode = 0; // starter code point
-    int starter = -1; // starter position
-    int next = -1; // to prevent i == next
+    qsizetype starter = -1; // starter position
+    qsizetype next = -1; // to prevent i == next
     int lastCombining = 255; // to prevent combining > lastCombining
 
-    int pos = from;
+    qsizetype pos = from;
     while (pos < s.length()) {
-        int i = pos;
+        qsizetype i = pos;
         char32_t uc = s.at(pos).unicode();
         if (QChar(uc).isHighSurrogate() && pos < s.length()-1) {
             ushort low = s.at(pos+1).unicode();
@@ -2051,7 +2051,7 @@ static void composeHelper(QString *str, QChar::UnicodeVersion version, int from)
                 stcode = ligature;
                 QChar *d = s.data();
                 // ligatureHelper() never changes planes
-                int j = 0;
+                qsizetype j = 0;
                 for (QChar ch : QChar::fromUcs4(ligature))
                     d[starter + j++] = ch;
                 s.remove(i, j);
@@ -2070,17 +2070,17 @@ static void composeHelper(QString *str, QChar::UnicodeVersion version, int from)
 }
 
 
-static void canonicalOrderHelper(QString *str, QChar::UnicodeVersion version, int from)
+static void canonicalOrderHelper(QString *str, QChar::UnicodeVersion version, qsizetype from)
 {
     QString &s = *str;
-    const int l = s.length()-1;
+    const qsizetype l = s.length()-1;
 
     char32_t u1, u2;
     char16_t c1, c2;
 
-    int pos = from;
+    qsizetype pos = from;
     while (pos < l) {
-        int p2 = pos+1;
+        qsizetype p2 = pos+1;
         u1 = s.at(pos).unicode();
         if (QChar::isHighSurrogate(u1)) {
             const char16_t low = s.at(p2).unicode();
@@ -2122,7 +2122,7 @@ static void canonicalOrderHelper(QString *str, QChar::UnicodeVersion version, in
 
         if (c1 > c2) {
             QChar *uc = s.data();
-            int p = pos;
+            qsizetype p = pos;
             // exchange characters
             for (QChar ch : QChar::fromUcs4(u2))
                 uc[p++] = ch;
@@ -2152,7 +2152,7 @@ static void canonicalOrderHelper(QString *str, QChar::UnicodeVersion version, in
 
 // returns true if the text is in a desired Normalization Form already; false otherwise.
 // sets lastStable to the position of the last stable code point
-static bool normalizationQuickCheckHelper(QString *str, QString::NormalizationForm mode, int from, int *lastStable)
+static bool normalizationQuickCheckHelper(QString *str, QString::NormalizationForm mode, qsizetype from, qsizetype *lastStable)
 {
     static_assert(QString::NormalizationForm_D == 0);
     static_assert(QString::NormalizationForm_C == 1);
@@ -2162,15 +2162,15 @@ static bool normalizationQuickCheckHelper(QString *str, QString::NormalizationFo
     enum { NFQC_YES = 0, NFQC_NO = 1, NFQC_MAYBE = 3 };
 
     const ushort *string = reinterpret_cast<const ushort *>(str->constData());
-    int length = str->length();
+    qsizetype length = str->length();
 
     // this avoids one out of bounds check in the loop
     while (length > from && QChar::isHighSurrogate(string[length - 1]))
         --length;
 
     uchar lastCombining = 0;
-    for (int i = from; i < length; ++i) {
-        int pos = i;
+    for (qsizetype i = from; i < length; ++i) {
+        qsizetype pos = i;
         char32_t uc = string[i];
         if (uc < 0x80) {
             // ASCII characters are stable code points

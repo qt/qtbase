@@ -288,7 +288,7 @@ void QStringMatcher::setCaseSensitivity(Qt::CaseSensitivity cs)
 
     \sa setPattern(), setCaseSensitivity()
 */
-int QStringMatcher::indexIn(const QString &str, int from) const
+int QStringMatcher::indexIn(const QString &str, qsizetype from) const
 {
     return int(indexIn(QStringView(str), from));
 }
@@ -305,7 +305,7 @@ int QStringMatcher::indexIn(const QString &str, int from) const
 
     \sa setPattern(), setCaseSensitivity()
 */
-int QStringMatcher::indexIn(const QChar *str, int length, int from) const
+int QStringMatcher::indexIn(const QChar *str, qsizetype length, qsizetype from) const
 {
     return int(indexIn(QStringView(str, length), from));
 }

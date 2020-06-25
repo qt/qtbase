@@ -483,27 +483,27 @@ void tst_QStringRef::lastIndexOf_data()
 
     QString a = "ABCDEFGHIEfGEFG";
 
-    QTest::newRow("-1") << a << "G" << a.size() - 1 << 14 << true;
+    QTest::newRow("-1") << a << "G" << int(a.size()) - 1 << 14 << true;
     QTest::newRow("1") << a << "G" << - 1 << 14 << true;
     QTest::newRow("2") << a << "G" << -3 << 11 << true;
     QTest::newRow("3") << a << "G" << -5 << 6 << true;
     QTest::newRow("4") << a << "G" << 14 << 14 << true;
     QTest::newRow("5") << a << "G" << 13 << 11 << true;
-    QTest::newRow("6") << a << "B" << a.size() - 1 << 1 << true;
+    QTest::newRow("6") << a << "B" << int(a.size()) - 1 << 1 << true;
     QTest::newRow("7") << a << "B" << - 1 << 1 << true;
     QTest::newRow("8") << a << "B" << 1 << 1 << true;
     QTest::newRow("9") << a << "B" << 0 << -1 << true;
 
-    QTest::newRow("10") << a << "G" <<  -1 <<  a.size()-1 << true;
-    QTest::newRow("11") << a << "G" <<  a.size()-1 <<  a.size()-1 << true;
-    QTest::newRow("12") << a << "G" <<  a.size() <<  -1 << true;
+    QTest::newRow("10") << a << "G" <<  -1 <<  int(a.size())-1 << true;
+    QTest::newRow("11") << a << "G" <<  int(a.size())-1 <<  int(a.size())-1 << true;
+    QTest::newRow("12") << a << "G" <<  int(a.size()) <<  -1 << true;
     QTest::newRow("13") << a << "A" <<  0 <<  0 << true;
-    QTest::newRow("14") << a << "A" <<  -1*a.size() <<  0 << true;
+    QTest::newRow("14") << a << "A" <<  -1*int(a.size()) <<  0 << true;
 
     QTest::newRow("15") << a << "efg" << 0 << -1 << false;
-    QTest::newRow("16") << a << "efg" << a.size() << -1 << false;
-    QTest::newRow("17") << a << "efg" << -1 * a.size() << -1 << false;
-    QTest::newRow("19") << a << "efg" << a.size() - 1 << 12 << false;
+    QTest::newRow("16") << a << "efg" << int(a.size()) << -1 << false;
+    QTest::newRow("17") << a << "efg" << -1 * int(a.size()) << -1 << false;
+    QTest::newRow("19") << a << "efg" << int(a.size()) - 1 << 12 << false;
     QTest::newRow("20") << a << "efg" << 12 << 12 << false;
     QTest::newRow("21") << a << "efg" << -12 << -1 << false;
     QTest::newRow("22") << a << "efg" << 11 << 9 << false;
@@ -512,8 +512,8 @@ void tst_QStringRef::lastIndexOf_data()
     QTest::newRow("25") << "asd" << "asdf" << -1 << -1 << false;
     QTest::newRow("26") << "" << QString() << -1 << -1 << false;
 
-    QTest::newRow("27") << a << "" << a.size() << a.size() << false;
-    QTest::newRow("28") << a << "" << a.size() + 10 << -1 << false;
+    QTest::newRow("27") << a << "" << int(a.size()) << int(a.size()) << false;
+    QTest::newRow("28") << a << "" << int(a.size()) + 10 << -1 << false;
 }
 
 void tst_QStringRef::lastIndexOf()

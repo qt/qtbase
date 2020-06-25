@@ -333,7 +333,7 @@ class tst_QString : public QObject
     template <typename ArgType, typename MemFun>
     void insert_impl() const { do_apply1<ArgType, int>(MemFun(&QString::insert)); }
     template <typename ArgType>
-    void insert_impl() const { insert_impl<ArgType, QString &(QString::*)(int, const ArgType&)>(); }
+    void insert_impl() const { insert_impl<ArgType, QString &(QString::*)(qsizetype, const ArgType&)>(); }
     void insert_data(bool emptyIsNoop = false);
 
     class TransientDefaultLocale
@@ -397,7 +397,7 @@ private slots:
     void prepend_qstringview_data()   { prepend_data(true); }
     void prepend_qlatin1string()      { prepend_impl<QLatin1String, QString &(QString::*)(QLatin1String)>(); }
     void prepend_qlatin1string_data() { prepend_data(true); }
-    void prepend_qcharstar_int()      { prepend_impl<QPair<const QChar *, int>, QString &(QString::*)(const QChar *, int)>(); }
+    void prepend_qcharstar_int()      { prepend_impl<QPair<const QChar *, int>, QString &(QString::*)(const QChar *, qsizetype)>(); }
     void prepend_qcharstar_int_data() { prepend_data(true); }
     void prepend_qchar()              { prepend_impl<Reversed<QChar>, QString &(QString::*)(QChar)>(); }
     void prepend_qchar_data()         { prepend_data(true); }
@@ -416,7 +416,7 @@ private slots:
     void append_qstringview_data()   { append_data(true); }
     void append_qlatin1string()      { append_impl<QLatin1String, QString &(QString::*)(QLatin1String)>(); }
     void append_qlatin1string_data() { append_data(); }
-    void append_qcharstar_int()      { append_impl<QPair<const QChar *, int>, QString&(QString::*)(const QChar *, int)>(); }
+    void append_qcharstar_int()      { append_impl<QPair<const QChar *, int>, QString&(QString::*)(const QChar *, qsizetype)>(); }
     void append_qcharstar_int_data() { append_data(true); }
     void append_qchar()              { append_impl<QChar, QString &(QString::*)(QChar)>(); }
     void append_qchar_data()         { append_data(true); }
@@ -453,19 +453,19 @@ private slots:
 
     void insert_qstring()            { insert_impl<QString>(); }
     void insert_qstring_data()       { insert_data(true); }
-    void insert_qstringview()        { insert_impl<QStringView, QString &(QString::*)(int, QStringView)>(); }
+    void insert_qstringview()        { insert_impl<QStringView, QString &(QString::*)(qsizetype, QStringView)>(); }
     void insert_qstringview_data()   { insert_data(true); }
-    void insert_qlatin1string()      { insert_impl<QLatin1String, QString &(QString::*)(int, QLatin1String)>(); }
+    void insert_qlatin1string()      { insert_impl<QLatin1String, QString &(QString::*)(qsizetype, QLatin1String)>(); }
     void insert_qlatin1string_data() { insert_data(true); }
-    void insert_qcharstar_int()      { insert_impl<QPair<const QChar *, int>, QString &(QString::*)(int, const QChar*, int) >(); }
+    void insert_qcharstar_int()      { insert_impl<QPair<const QChar *, int>, QString &(QString::*)(qsizetype, const QChar*, qsizetype) >(); }
     void insert_qcharstar_int_data() { insert_data(true); }
-    void insert_qchar()              { insert_impl<Reversed<QChar>, QString &(QString::*)(int, QChar)>(); }
+    void insert_qchar()              { insert_impl<Reversed<QChar>, QString &(QString::*)(qsizetype, QChar)>(); }
     void insert_qchar_data()         { insert_data(true); }
     void insert_qbytearray()         { insert_impl<QByteArray>(); }
     void insert_qbytearray_data()    { insert_data(true); }
-    void insert_char()               { insert_impl<Reversed<char>, QString &(QString::*)(int, QChar)>(); }
+    void insert_char()               { insert_impl<Reversed<char>, QString &(QString::*)(qsizetype, QChar)>(); }
     void insert_char_data()          { insert_data(true); }
-    void insert_charstar()           { insert_impl<const char *, QString &(QString::*)(int, const char*) >(); }
+    void insert_charstar()           { insert_impl<const char *, QString &(QString::*)(qsizetype, const char*) >(); }
     void insert_charstar_data()      { insert_data(true); }
     void insert_special_cases();
 
@@ -1213,7 +1213,7 @@ void tst_QString::chop_data()
     QTest::newRow("data0") << original << 1 << QString("abc");
     QTest::newRow("data1") << original << 0 << original;
     QTest::newRow("data2") << original << -1 << original;
-    QTest::newRow("data3") << original << original.size() << QString();
+    QTest::newRow("data3") << original << int(original.size()) << QString();
     QTest::newRow("data4") << original << 1000  << QString();
 }
 
@@ -1581,27 +1581,27 @@ void tst_QString::lastIndexOf_data()
 
     QString a = "ABCDEFGHIEfGEFG";
 
-    QTest::newRow("-1") << a << "G" << a.size() - 1 << 14 << true;
+    QTest::newRow("-1") << a << "G" << int(a.size()) - 1 << 14 << true;
     QTest::newRow("1") << a << "G" << - 1 << 14 << true;
     QTest::newRow("2") << a << "G" << -3 << 11 << true;
     QTest::newRow("3") << a << "G" << -5 << 6 << true;
     QTest::newRow("4") << a << "G" << 14 << 14 << true;
     QTest::newRow("5") << a << "G" << 13 << 11 << true;
-    QTest::newRow("6") << a << "B" << a.size() - 1 << 1 << true;
+    QTest::newRow("6") << a << "B" << int(a.size()) - 1 << 1 << true;
     QTest::newRow("7") << a << "B" << - 1 << 1 << true;
     QTest::newRow("8") << a << "B" << 1 << 1 << true;
     QTest::newRow("9") << a << "B" << 0 << -1 << true;
 
-    QTest::newRow("10") << a << "G" <<  -1 <<  a.size()-1 << true;
-    QTest::newRow("11") << a << "G" <<  a.size()-1 <<  a.size()-1 << true;
-    QTest::newRow("12") << a << "G" <<  a.size() <<  -1 << true;
+    QTest::newRow("10") << a << "G" <<  -1 <<  int(a.size())-1 << true;
+    QTest::newRow("11") << a << "G" <<  int(a.size())-1 <<  int(a.size())-1 << true;
+    QTest::newRow("12") << a << "G" <<  int(a.size()) <<  -1 << true;
     QTest::newRow("13") << a << "A" <<  0 <<  0 << true;
-    QTest::newRow("14") << a << "A" <<  -1*a.size() <<  0 << true;
+    QTest::newRow("14") << a << "A" <<  -1*int(a.size()) <<  0 << true;
 
     QTest::newRow("15") << a << "efg" << 0 << -1 << false;
-    QTest::newRow("16") << a << "efg" << a.size() << -1 << false;
-    QTest::newRow("17") << a << "efg" << -1 * a.size() << -1 << false;
-    QTest::newRow("19") << a << "efg" << a.size() - 1 << 12 << false;
+    QTest::newRow("16") << a << "efg" << int(a.size()) << -1 << false;
+    QTest::newRow("17") << a << "efg" << -1 * int(a.size()) << -1 << false;
+    QTest::newRow("19") << a << "efg" << int(a.size()) - 1 << 12 << false;
     QTest::newRow("20") << a << "efg" << 12 << 12 << false;
     QTest::newRow("21") << a << "efg" << -12 << -1 << false;
     QTest::newRow("22") << a << "efg" << 11 << 9 << false;
@@ -1610,8 +1610,8 @@ void tst_QString::lastIndexOf_data()
     QTest::newRow("25") << "asd" << "asdf" << -1 << -1 << false;
     QTest::newRow("26") << "" << QString() << -1 << -1 << false;
 
-    QTest::newRow("27") << a << "" << a.size() << a.size() << false;
-    QTest::newRow("28") << a << "" << a.size() + 10 << -1 << false;
+    QTest::newRow("27") << a << "" << int(a.size()) << int(a.size()) << false;
+    QTest::newRow("28") << a << "" << int(a.size()) + 10 << -1 << false;
 }
 
 void tst_QString::lastIndexOf()

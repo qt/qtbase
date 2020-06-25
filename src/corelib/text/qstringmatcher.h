@@ -68,8 +68,8 @@ public:
     void setPattern(const QString &pattern);
     void setCaseSensitivity(Qt::CaseSensitivity cs);
 
-    int indexIn(const QString &str, int from = 0) const;
-    int indexIn(const QChar *str, int length, int from = 0) const;
+    int indexIn(const QString &str, qsizetype from = 0) const;
+    int indexIn(const QChar *str, qsizetype length, qsizetype from = 0) const;
     qsizetype indexIn(QStringView str, qsizetype from = 0) const;
     QString pattern() const;
     inline Qt::CaseSensitivity caseSensitivity() const { return q_cs; }
