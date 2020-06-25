@@ -1327,7 +1327,7 @@ QImage QOpenGLWidget::grabFramebuffer()
 }
 
 /*!
-  \internal
+  \reimp
 */
 int QOpenGLWidget::metric(QPaintDevice::PaintDeviceMetric metric) const
 {
@@ -1397,7 +1397,7 @@ int QOpenGLWidget::metric(QPaintDevice::PaintDeviceMetric metric) const
 }
 
 /*!
-  \internal
+  \reimp
 */
 QPaintDevice *QOpenGLWidget::redirected(QPoint *p) const
 {
@@ -1409,7 +1409,7 @@ QPaintDevice *QOpenGLWidget::redirected(QPoint *p) const
 }
 
 /*!
-  \internal
+  \reimp
 */
 QPaintEngine *QOpenGLWidget::paintEngine() const
 {
@@ -1427,7 +1427,7 @@ QPaintEngine *QOpenGLWidget::paintEngine() const
 }
 
 /*!
-  \internal
+  \reimp
 */
 bool QOpenGLWidget::event(QEvent *e)
 {
