@@ -177,7 +177,7 @@ void tst_QLatin1String::emptyString()
 
     {
         const char *notEmpty = "foo";
-        QLatin1String l1(notEmpty, 0);
+        QLatin1String l1(notEmpty, qsizetype(0));
         QCOMPARE(static_cast<const void*>(l1.data()), static_cast<const void*>(notEmpty));
         QCOMPARE(l1.size(), 0);
 

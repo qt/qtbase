@@ -536,6 +536,8 @@ private Q_SLOTS:
     void sliced_QString() { sliced_impl<QString>(); }
     void sliced_QStringView_data() { sliced_data(); }
     void sliced_QStringView() { sliced_impl<QStringView>(); }
+    void sliced_QLatin1String_data() { sliced_data(); }
+    void sliced_QLatin1String() { sliced_impl<QLatin1String>(); }
     void sliced_QByteArray_data() { sliced_data(); }
     void sliced_QByteArray() { sliced_impl<QByteArray>(); }
 
@@ -543,6 +545,8 @@ private Q_SLOTS:
     void first_truncate_QString() { first_impl<QString>(); }
     void first_truncate_QStringView_data() { first_data(); }
     void first_truncate_QStringView() { first_impl<QStringView>(); }
+    void first_truncate_QLatin1String_data() { first_data(); }
+    void first_truncate_QLatin1String() { first_impl<QLatin1String>(); }
     void first_truncate_QByteArray_data() { first_data(); }
     void first_truncate_QByteArray() { first_impl<QByteArray>(); }
 
@@ -550,6 +554,8 @@ private Q_SLOTS:
     void last_QString() { last_impl<QString>(); }
     void last_QStringView_data() { last_data(); }
     void last_QStringView() { last_impl<QStringView>(); }
+    void last_QLatin1String_data() { last_data(); }
+    void last_QLatin1String() { last_impl<QLatin1String>(); }
     void last_QByteArray_data() { last_data(); }
     void last_QByteArray() { last_impl<QByteArray>(); }
 

@@ -1275,7 +1275,7 @@ static int qt_compare_strings(QLatin1String lhs, QStringView rhs, Qt::CaseSensit
 static int qt_compare_strings(QLatin1String lhs, QLatin1String rhs, Qt::CaseSensitivity cs) noexcept
 {
     if (lhs.isEmpty())
-        return lencmp(0, rhs.size());
+        return lencmp(qsizetype(0), rhs.size());
     if (cs == Qt::CaseInsensitive)
         return latin1nicmp(lhs.data(), lhs.size(), rhs.data(), rhs.size());
     const auto l = std::min(lhs.size(), rhs.size());
@@ -8641,6 +8641,10 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \since 5.10
 
     Alias for \c{qsizetype}. Provided for compatibility with the STL.
+
+    \note In version prior to Qt 6, this was an alias for \c{int},
+    restricting the amount of data that could be held in a QLatin1String
+    on 64-bit architectures.
 */
 
 /*!
@@ -8708,7 +8712,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \sa latin1()
 */
 
-/*! \fn QLatin1String::QLatin1String(const char *str, int size)
+/*! \fn QLatin1String::QLatin1String(const char *str, qsizetype size)
 
     Constructs a QLatin1String object that stores \a str with \a size.
 
@@ -8768,9 +8772,13 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     Returns the Latin-1 string stored in this object.
 */
 
-/*! \fn int QLatin1String::size() const
+/*! \fn QLatin1String::size() const
 
     Returns the size of the Latin-1 string stored in this object.
+
+    \note In version prior to Qt 6, this function returned \c{int},
+    restricting the amount of data that could be held in a QLatin1String
+    on 64-bit architectures.
 */
 
 /*! \fn bool QLatin1String::isNull() const
@@ -8791,7 +8799,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \sa isNull(), size()
 */
 
-/*! \fn QLatin1Char QLatin1String::at(int pos) const
+/*! \fn QLatin1Char QLatin1String::at(qsizetype pos) const
     \since 5.8
 
     Returns the character at position \a pos in this object.
@@ -8802,7 +8810,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \sa operator[]()
 */
 
-/*! \fn QLatin1Char QLatin1String::operator[](int pos) const
+/*! \fn QLatin1Char QLatin1String::operator[](qsizetype pos) const
     \since 5.8
 
     Returns the character at position \a pos in this object.
@@ -8901,9 +8909,9 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 */
 
 /*!
-    \fn int QLatin1String::indexOf(QStringView str, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
-    \fn int QLatin1String::indexOf(QLatin1String l1, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
-    \fn int QLatin1String::indexOf(QChar c, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    \fn int QLatin1String::indexOf(QStringView str, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    \fn int QLatin1String::indexOf(QLatin1String l1, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    \fn int QLatin1String::indexOf(QChar c, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
     \since 5.14
 
     Returns the index position of the first occurrence of the string-view \a str,
@@ -8935,9 +8943,9 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 */
 
 /*!
-    \fn int QLatin1String::lastIndexOf(QStringView str, int from, Qt::CaseSensitivity cs) const
-    \fn int QLatin1String::lastIndexOf(QLatin1String l1, int from, Qt::CaseSensitivity cs) const
-    \fn int QLatin1String::lastIndexOf(QChar c, int from, Qt::CaseSensitivity cs) const
+    \fn int QLatin1String::lastIndexOf(QStringView str, qsizetype from, Qt::CaseSensitivity cs) const
+    \fn int QLatin1String::lastIndexOf(QLatin1String l1, qsizetype from, Qt::CaseSensitivity cs) const
+    \fn int QLatin1String::lastIndexOf(QChar c, qsizetype from, Qt::CaseSensitivity cs) const
     \since 5.14
 
     Returns the index position of the last occurrence of the string-view \a str,
@@ -9043,47 +9051,105 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \sa crbegin(), rend(), cend()
 */
 
-/*! \fn QLatin1String QLatin1String::mid(int start, int length) const
+/*!
+    \fn QLatin1String::mid(qsizetype start, qsizetype length) const
     \since 5.8
 
     Returns the substring of length \a length starting at position
-    \a start in this object.
+    \a start in this Latin-1 string.
 
-    Returns a null string if the \a start index exceeds the
-    length of the string. If there are less than \a length characters
-    available in the string starting at \a start, or if
-    \a length is negative (default), the function returns all characters
-    that are available from \a start.
+    \obsolete Use sliced() instead in new code.
 
-    \sa left(), right(), chopped(), chop(), truncate()
-*/
+    Returns an empty Latin-1 string if \a start exceeds the
+    length of this Latin-1 string. If there are less than \a length characters
+    available in this Latin-1 string starting at \a start, or if
+    \a length is negative (default), the function returns all characters that
+    are available from \a start.
 
-/*! \fn QLatin1String QLatin1String::left(int length) const
-    \since 5.8
-
-    Returns the substring of length \a length starting at position
-    0 in this object.
-
-    The entire string is returned if \a length is greater than or equal
-    to size(), or less than zero.
-
-    \sa mid(), right(), chopped(), chop(), truncate()
-*/
-
-/*! \fn QLatin1String QLatin1String::right(int length) const
-    \since 5.8
-
-    Returns the substring of length \a length starting at position
-    size() - \a length in this object.
-
-    The entire string is returned if \a length is greater than or equal
-    to size(), or less than zero.
-
-    \sa mid(), left(), chopped(), chop(), truncate()
+    \sa first(), last(), sliced(), chopped(), chop(), truncate()
 */
 
 /*!
-    \fn QLatin1String QLatin1String::chopped(int length) const
+    \fn QLatin1String::left(qsizetype length) const
+    \since 5.8
+
+    \obsolete Use first() instead in new code.
+
+    Returns the substring of length \a length starting at position
+    0 in this Latin-1 string.
+
+    The entire Latin-1 string is returned if \a length is greater than or equal
+    to size(), or less than zero.
+
+    \sa first(), last(), sliced(), startsWith(), chopped(), chop(), truncate()
+*/
+
+/*!
+    \fn QLatin1String::right(qsizetype length) const
+    \since 5.8
+
+    \obsolete Use last() instead in new code.
+
+    Returns the substring of length \a length starting at position
+    size() - \a length in this Latin-1 string.
+
+    The entire Latin-1 string is returned if \a length is greater than or equal
+    to size(), or less than zero.
+
+    \sa first(), last(), sliced(), endsWith(), chopped(), chop(), truncate()
+*/
+
+/*!
+    \fn QLatin1String::first(qsizetype n) const
+    \since 6.0
+
+    Returns a Latin-1 string that contains the first \a n characters
+    of this Latin-1 string.
+
+    \note The behavior is undefined when \a n < 0 or \a n > size().
+
+    \sa last(), subString(), startsWith(), chopped(), chop(), truncate()
+*/
+
+/*!
+    \fn QLatin1String::last(qsizetype n) const
+    \since 6.0
+
+    Returns a Latin-1 string that contains the last \a n characters
+    of this Latin-1 string.
+
+    \note The behavior is undefined when \a n < 0 or \a n > size().
+
+    \sa first(), subString(), endsWith(), chopped(), chop(), truncate()
+*/
+
+/*!
+    \fn QLatin1String::sliced(qsizetype pos, qsizetype n) const
+    \since 6.0
+
+    Returns a Latin-1 string that points to \a n characters of this
+    Latin-1 string, starting at position \a pos.
+
+    \note The behavior is undefined when \a pos < 0, \a n < 0,
+    or \c{pos + n > size()}.
+
+    \sa first(), last(), chopped(), chop(), truncate()
+*/
+
+/*!
+    \fn QLatin1String::sliced(qsizetype pos) const
+    \since 6.0
+
+    Returns a Latin-1 string starting at position \a pos in this
+    Latin-1 string, and extending to its end.
+
+    \note The behavior is undefined when \a pos < 0 or \a pos > size().
+
+    \sa first(), last(), chopped(), chop(), truncate()
+*/
+
+/*!
+    \fn QLatin1String QLatin1String::chopped(qsizetype length) const
     \since 5.10
 
     Returns the substring of length size() - \a length starting at the
@@ -9097,7 +9163,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 */
 
 /*!
-    \fn void QLatin1String::truncate(int length)
+    \fn void QLatin1String::truncate(qsizetype length)
     \since 5.10
 
     Truncates this string to length \a length.
@@ -9110,7 +9176,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 */
 
 /*!
-    \fn void QLatin1String::chop(int length)
+    \fn void QLatin1String::chop(qsizetype length)
     \since 5.10
 
     Truncates this string by \a length characters.

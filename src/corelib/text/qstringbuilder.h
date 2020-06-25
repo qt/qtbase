@@ -236,7 +236,7 @@ template <> struct QConcatenable<QLatin1String> : private QAbstractConcatenable
     typedef QLatin1String type;
     typedef QString ConvertTo;
     enum { ExactSize = true };
-    static int size(const QLatin1String a) { return a.size(); }
+    static int size(const QLatin1String a) { return int(a.size()); } // ### Qt 6: qsizetype
     static inline void appendTo(const QLatin1String a, QChar *&out)
     {
         appendLatin1To(a.latin1(), a.size(), out);

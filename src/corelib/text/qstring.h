@@ -85,16 +85,16 @@ class QLatin1String
 {
 public:
     constexpr inline QLatin1String() noexcept : m_size(0), m_data(nullptr) {}
-    constexpr inline explicit QLatin1String(const char *s) noexcept : m_size(s ? int(strlen(s)) : 0), m_data(s) {}
+    constexpr inline explicit QLatin1String(const char *s) noexcept : m_size(s ? qsizetype(strlen(s)) : 0), m_data(s) {}
     constexpr explicit QLatin1String(const char *f, const char *l)
-        : QLatin1String(f, int(l - f)) {}
-    constexpr inline explicit QLatin1String(const char *s, int sz) noexcept : m_size(sz), m_data(s) {}
-    inline explicit QLatin1String(const QByteArray &s) noexcept : m_size(int(qstrnlen(s.constData(), s.size()))), m_data(s.constData()) {}
+        : QLatin1String(f, qsizetype(l - f)) {}
+    constexpr inline explicit QLatin1String(const char *s, qsizetype sz) noexcept : m_size(sz), m_data(s) {}
+    explicit QLatin1String(const QByteArray &s) noexcept : m_size(qsizetype(qstrnlen(s.constData(), s.size()))), m_data(s.constData()) {}
 
     inline QString toString() const;
 
     constexpr const char *latin1() const noexcept { return m_data; }
-    constexpr int size() const noexcept { return m_size; }
+    constexpr qsizetype size() const noexcept { return m_size; }
     constexpr const char *data() const noexcept { return m_data; }
 
     constexpr bool isNull() const noexcept { return !data(); }
@@ -103,9 +103,9 @@ public:
     template <typename...Args>
     Q_REQUIRED_RESULT inline QString arg(Args &&...args) const;
 
-    constexpr QLatin1Char at(int i) const
+    [[nodiscard]] constexpr QLatin1Char at(qsizetype i) const
     { return Q_ASSERT(i >= 0), Q_ASSERT(i < size()), QLatin1Char(m_data[i]); }
-    constexpr QLatin1Char operator[](int i) const { return at(i); }
+    [[nodiscard]] constexpr QLatin1Char operator[](qsizetype i) const { return at(i); }
 
     Q_REQUIRED_RESULT constexpr QLatin1Char front() const { return at(0); }
     Q_REQUIRED_RESULT constexpr QLatin1Char back() const { return at(size() - 1); }
@@ -137,12 +137,12 @@ public:
     Q_REQUIRED_RESULT inline bool endsWith(QChar c, Qt::CaseSensitivity cs) const noexcept
     { return QtPrivate::endsWith(*this, QStringView(&c, 1), cs); }
 
-    Q_REQUIRED_RESULT int indexOf(QStringView s, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
-    { return int(QtPrivate::findString(*this, from, s, cs)); } // ### Qt6: qsizetype
-    Q_REQUIRED_RESULT int indexOf(QLatin1String s, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
-    { return int(QtPrivate::findString(*this, from, s, cs)); } // ### Qt6: qsizetype
-    Q_REQUIRED_RESULT inline int indexOf(QChar c, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
-    { return int(QtPrivate::findString(*this, from, QStringView(&c, 1), cs)); } // ### Qt6: qsizetype
+    [[nodiscard]] qsizetype indexOf(QStringView s, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    { return QtPrivate::findString(*this, from, s, cs); }
+    [[nodiscard]] qsizetype indexOf(QLatin1String s, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    { return QtPrivate::findString(*this, from, s, cs); }
+    [[nodiscard]] qsizetype indexOf(QChar c, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    { return QtPrivate::findString(*this, from, QStringView(&c, 1), cs); }
 
     Q_REQUIRED_RESULT bool contains(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return indexOf(s, 0, cs) != -1; }
@@ -151,20 +151,20 @@ public:
     Q_REQUIRED_RESULT inline bool contains(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return indexOf(QStringView(&c, 1), 0, cs) != -1; }
 
-    Q_REQUIRED_RESULT int lastIndexOf(QStringView s, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
-    { return int(QtPrivate::lastIndexOf(*this, from, s, cs)); } // ### Qt6: qsizetype
-    Q_REQUIRED_RESULT int lastIndexOf(QLatin1String s, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
-    { return int(QtPrivate::lastIndexOf(*this, from, s, cs)); } // ### Qt6: qsizetype
-    Q_REQUIRED_RESULT inline int lastIndexOf(QChar c, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
-    { return int(QtPrivate::lastIndexOf(*this, from, QStringView(&c, 1), cs)); } // ### Qt6: qsizetype
+    [[nodiscard]] qsizetype lastIndexOf(QStringView s, qsizetype from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    { return QtPrivate::lastIndexOf(*this, from, s, cs); }
+    [[nodiscard]] qsizetype lastIndexOf(QLatin1String s, qsizetype from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    { return QtPrivate::lastIndexOf(*this, from, s, cs); }
+    [[nodiscard]] qsizetype lastIndexOf(QChar c, qsizetype from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    { return QtPrivate::lastIndexOf(*this, from, QStringView(&c, 1), cs); }
 
     using value_type = const char;
     using reference = value_type&;
     using const_reference = reference;
     using iterator = value_type*;
     using const_iterator = iterator;
-    using difference_type = int; // violates Container concept requirements
-    using size_type = int;       // violates Container concept requirements
+    using difference_type = qsizetype; // violates Container concept requirements
+    using size_type = qsizetype;       // violates Container concept requirements
 
     constexpr const_iterator begin() const noexcept { return data(); }
     constexpr const_iterator cbegin() const noexcept { return data(); }
@@ -179,33 +179,40 @@ public:
     const_reverse_iterator rend() const noexcept { return const_reverse_iterator(begin()); }
     const_reverse_iterator crend() const noexcept { return const_reverse_iterator(begin()); }
 
-    constexpr QLatin1String mid(int pos, int n = -1) const
+    [[nodiscard]] constexpr QLatin1String mid(qsizetype pos, qsizetype n = -1) const
     {
-        qsizetype p = pos;
-        qsizetype l = n;
         using namespace QtPrivate;
-        auto result = QContainerImplHelper::mid(size(), &p, &l);
-        return result == QContainerImplHelper::Null ? QLatin1String() : QLatin1String(m_data + p, l);
+        auto result = QContainerImplHelper::mid(size(), &pos, &n);
+        return result == QContainerImplHelper::Null ? QLatin1String() : QLatin1String(m_data + pos, n);
     }
-    constexpr QLatin1String left(int n) const
+    [[nodiscard]] constexpr QLatin1String left(qsizetype n) const
     {
         if (size_t(n) >= size_t(size()))
             n = size();
         return QLatin1String(m_data, n);
     }
-    constexpr QLatin1String right(int n) const
+    [[nodiscard]] constexpr QLatin1String right(qsizetype n) const
     {
         if (size_t(n) >= size_t(size()))
             n = size();
         return QLatin1String(m_data + m_size - n, n);
     }
-    Q_REQUIRED_RESULT constexpr QLatin1String chopped(int n) const
-    { return Q_ASSERT(n >= 0), Q_ASSERT(n <= size()), QLatin1String(m_data, m_size - n); }
 
-    constexpr void chop(int n)
-    { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); m_size -= n; }
-    constexpr void truncate(int n)
-    { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); m_size = n; }
+    [[nodiscard]] constexpr QLatin1String sliced(qsizetype pos) const
+    { verify(pos); return QLatin1String(m_data + pos, m_size - pos); }
+    [[nodiscard]] constexpr QLatin1String sliced(qsizetype pos, qsizetype n) const
+    { verify(pos, n); return QLatin1String(m_data + pos, n); }
+    [[nodiscard]] constexpr QLatin1String first(qsizetype n) const
+    { verify(n); return QLatin1String(m_data, n); }
+    [[nodiscard]] constexpr QLatin1String last(qsizetype n) const
+    { verify(n); return QLatin1String(m_data + size() - n, n); }
+    [[nodiscard]] constexpr QLatin1String chopped(qsizetype n) const
+    { verify(n); return QLatin1String(m_data, size() - n); }
+
+    constexpr void chop(qsizetype n)
+    { verify(n); m_size -= n; }
+    constexpr void truncate(qsizetype n)
+    { verify(n); m_size = n; }
 
     Q_REQUIRED_RESULT QLatin1String trimmed() const noexcept { return QtPrivate::trimmed(*this); }
 
@@ -239,7 +246,14 @@ public:
 #endif // !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
 
 private:
-    int m_size;
+    Q_ALWAYS_INLINE constexpr void verify(qsizetype pos, qsizetype n = 0) const
+    {
+        Q_ASSERT(pos >= 0);
+        Q_ASSERT(pos <= size());
+        Q_ASSERT(n >= 0);
+        Q_ASSERT(n <= size() - pos);
+    }
+    qsizetype m_size;
     const char *m_data;
 };
 Q_DECLARE_TYPEINFO(QLatin1String, Q_MOVABLE_TYPE);
@@ -1142,7 +1156,7 @@ inline bool operator!=(QLatin1String s1, QLatin1String s2) noexcept
 { return !operator==(s1, s2); }
 inline bool operator<(QLatin1String s1, QLatin1String s2) noexcept
 {
-    const int len = qMin(s1.size(), s2.size());
+    const qsizetype len = qMin(s1.size(), s2.size());
     const int r = len ? memcmp(s1.latin1(), s2.latin1(), len) : 0;
     return r < 0 || (r == 0 && s1.size() < s2.size());
 }
