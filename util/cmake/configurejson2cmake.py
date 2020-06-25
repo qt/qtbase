@@ -122,8 +122,6 @@ def map_tests(test: str) -> Optional[str]:
         "altivec": "TEST_subarch_altivec",
         "spe": "TEST_subarch_spe",
         "vsx": "TEST_subarch_vsx",
-        "posix-iconv": "TEST_posix_iconv",
-        "sun-iconv": "TEST_sun_iconv",
         "openssl11": '(OPENSSL_VERSION VERSION_GREATER_EQUAL "1.1.0")',
         "reduce_exports": "CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY",
         "libinput_axis_api": "ON",
@@ -773,8 +771,6 @@ def parseTest(ctx, test, data, cm_fh):
         "c11",
         "c99",
         "gc_binaries",
-        "posix-iconv",
-        "sun-iconv",
         "precomile_header",
         "reduce_exports",
         "gc_binaries",
@@ -868,15 +864,10 @@ def get_feature_mapping():
         },
         "gcc-sysroot": None,
         "gcov": None,
-        "gnu-libiconv": {
-            "condition": "NOT WIN32 AND NOT QNX AND NOT ANDROID AND NOT APPLE AND TEST_posix_iconv AND NOT TEST_iconv_needlib",
-            "enable": "TEST_posix_iconv AND NOT TEST_iconv_needlib",
-            "disable": "NOT TEST_posix_iconv OR TEST_iconv_needlib",
-        },
         "GNUmake": None,
         "host-dbus": None,
         "iconv": {
-            "condition": "NOT QT_FEATURE_icu AND QT_FEATURE_textcodec AND ( TEST_posix_iconv OR TEST_sun_iconv )"
+            "condition": "NOT QT_FEATURE_icu AND QT_FEATURE_textcodec AND NOT WIN32 AND NOT QNX AND NOT ANDROID AND NOT APPLE AND WrapIconv_FOUND",
         },
         "incredibuild_xge": None,
         "ltcg": {
@@ -888,11 +879,6 @@ def get_feature_mapping():
         "optimize_size": None,
         "simulator_and_device": {"condition": "UIKIT AND NOT QT_UIKIT_SDK"},
         "pkg-config": {"condition": "PKG_CONFIG_FOUND"},
-        "posix-libiconv": {
-            "condition": "NOT WIN32 AND NOT QNX AND NOT ANDROID AND NOT APPLE AND TEST_posix_iconv AND TEST_iconv_needlib",
-            "enable": "TEST_posix_iconv AND TEST_iconv_needlib",
-            "disable": "NOT TEST_posix_iconv OR NOT TEST_iconv_needlib",
-        },
         "precompile_header": {"condition": "BUILD_WITH_PCH"},
         "profile": None,
         "qmakeargs": None,
@@ -922,11 +908,6 @@ def get_feature_mapping():
         "sql-sqlite": {"condition": "QT_FEATURE_datestring"},
         "stl": None,  # Do we really need to test for this in 2018?!
         "strip": None,
-        "sun-libiconv": {
-            "condition": "NOT WIN32 AND NOT QNX AND NOT ANDROID AND NOT APPLE AND TEST_sun_iconv",
-            "enable": "TEST_sun_iconv",
-            "disable": "NOT TEST_sun_iconv",
-        },
         "tiff": {"condition": "QT_FEATURE_imageformatplugin AND TIFF_FOUND"},
         "use_gold_linker": None,
         "verifyspec": None,  # qmake specific...

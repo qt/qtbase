@@ -401,7 +401,7 @@ _library_map = [
     ),
     LibraryMapping("gbm", "gbm", "gbm::gbm"),
     LibraryMapping("glib", "GLIB2", "GLIB2::GLIB2"),
-    LibraryMapping("gnu_iconv", None, None),
+    LibraryMapping("iconv", "WrapIconv", "WrapIconv::WrapIconv"),
     LibraryMapping("gtk3", "GTK3", "PkgConfig::GTK3"),
     LibraryMapping("gssapi", "GSSAPI", "GSSAPI::GSSAPI"),
     LibraryMapping(
@@ -450,7 +450,6 @@ _library_map = [
     LibraryMapping(
         "pcre2", "WrapPCRE2", "WrapPCRE2::WrapPCRE2", extra=["REQUIRED"], is_bundled_with_qt=True
     ),
-    LibraryMapping("posix_iconv", None, None),
     LibraryMapping("pps", "PPS", "PPS::PPS"),
     LibraryMapping("psql", "PostgreSQL", "PostgreSQL::PostgreSQL"),
     LibraryMapping("slog2", "Slog2", "Slog2::Slog2"),
@@ -458,7 +457,6 @@ _library_map = [
     LibraryMapping("sqlite2", None, None),  # No more sqlite2 support in Qt6!
     LibraryMapping("sqlite3", "SQLite3", "SQLite::SQLite3"),
     LibraryMapping("sqlite", "SQLite3", "SQLite::SQLite3"),
-    LibraryMapping("sun_iconv", None, None),
     LibraryMapping("tslib", "Tslib", "PkgConfig::Tslib"),
     LibraryMapping("udev", "Libudev", "PkgConfig::Libudev"),
     LibraryMapping("udev", "Libudev", "PkgConfig::Libudev"),  # see also libudev!
