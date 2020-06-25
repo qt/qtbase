@@ -54,6 +54,20 @@
 #include <QtGui/qmatrix4x4.h>
 #include <QtCore/qset.h>
 
+#ifdef Q_CLANG_QDOC
+typedef void* VkQueue;
+typedef void* VkCommandPool;
+typedef void* VkRenderPass;
+typedef void* VkCommandBuffer;
+typedef void* VkFramebuffer;
+typedef int VkPhysicalDeviceProperties;
+typedef int VkFormat;
+typedef int VkQueueFamilyProperties;
+typedef int VkDeviceQueueCreateInfo;
+typedef int VkFormat;
+typedef int VkSampleCountFlagBits;
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QVulkanWindowPrivate;
