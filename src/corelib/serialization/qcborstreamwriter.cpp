@@ -729,7 +729,7 @@ void QCborStreamWriter::appendTextString(const char *utf8, qsizetype len)
    length is implied by the elements contained in it. Note, however, that use
    of indeterminate-length arrays is not compliant with canonical CBOR encoding.
 
-   The following example appends elements from the vector of strings
+   The following example appends elements from the list of strings
    passed as input:
 
    \snippet code/src_corelib_serialization_qcborstream.cpp 20
@@ -802,7 +802,7 @@ bool QCborStreamWriter::endArray()
    indeterminate-length maps is not compliant with canonical CBOR encoding
    (canonical encoding also requires keys to be unique and in sorted order).
 
-   The following example appends elements from the vector of int and
+   The following example appends elements from the list of int and
    string pairs passed as input:
 
    \snippet code/src_corelib_serialization_qcborstream.cpp 22

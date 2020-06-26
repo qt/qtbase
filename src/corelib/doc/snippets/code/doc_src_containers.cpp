@@ -205,7 +205,7 @@ for (i = splitter->sizes().begin();
 
 
 //! [15]
-QVector<QString> values;
+QList<QString> values;
 ...
 QString str;
 foreach (str, values)
@@ -214,16 +214,16 @@ foreach (str, values)
 
 
 //! [16]
-QVector<QString> values;
+QList<QString> values;
 ...
-QVectorIterator<QString> i(values);
+QListIterator<QString> i(values);
 while (i.hasNext())
     qDebug() << i.next();
 //! [16]
 
 
 //! [17]
-QVector<QString> values;
+QList<QString> values;
 ...
 foreach (const QString &str, values)
     qDebug() << str;
@@ -231,7 +231,7 @@ foreach (const QString &str, values)
 
 
 //! [18]
-QVector<QString> values;
+QList<QString> values;
 ...
 foreach (const QString &str, values) {
     if (str.isEmpty())
@@ -284,10 +284,10 @@ QString onlyLetters(const QString &in)
 //! [23]
 
 //! [24]
-QVector<int> a, b;
-a.resize(100000); // make a big vector filled with 0.
+QList<int> a, b;
+a.resize(100000); // make a big list filled with 0.
 
-QVector<int>::iterator i = a.begin();
+QList<int>::iterator i = a.begin();
 // WRONG way of using the iterator i:
 b = a;
 /*
@@ -309,13 +309,13 @@ int j = *i; // Undefined behavior!
 /*
     The data from b (which i pointed to) is gone.
     This would be well-defined with STL containers (and (*i) == 5),
-    but with QVector this is likely to crash.
+    but with QList this is likely to crash.
 */
 //! [24]
 
 //! [25]
-QVector<int> vector{1, 2, 3, 4, 4, 5};
-QSet<int> set(vector.begin(), vector.end());
+QList<int> list { 1, 2, 3, 4, 4, 5 };
+QSet<int> set(list.begin(), list.end());
 /*
     Will generate a QSet containing 1, 2, 4, 5.
 */

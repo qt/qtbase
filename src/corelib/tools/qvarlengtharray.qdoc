@@ -66,20 +66,20 @@
     compiler won't let you, for example, store a QWidget as a value;
     instead, store a QWidget *.
 
-    QVarLengthArray, like QVector, provides a resizable array data
+    QVarLengthArray, like QList, provides a resizable array data
     structure. The main differences between the two classes are:
 
     \list
     \li QVarLengthArray's API is much more low-level and it lacks
-        some of QVector's functionality.
+        some of QList's functionality.
 
     \li QVarLengthArray doesn't initialize the memory if the value is
-       a basic type. (QVector always does.)
+        a basic type. (QList always does.)
 
-    \li QVector uses \l{implicit sharing} as a memory optimization.
-       QVarLengthArray doesn't provide that feature; however, it
-       usually produces slightly better performance due to reduced
-       overhead, especially in tight loops.
+    \li QList uses \l{implicit sharing} as a memory optimization.
+        QVarLengthArray doesn't provide that feature; however, it
+        usually produces slightly better performance due to reduced
+        overhead, especially in tight loops.
     \endlist
 
     In summary, QVarLengthArray is a low-level optimization class
@@ -87,7 +87,7 @@
     places inside Qt and was added to Qt's public API for the
     convenience of advanced users.
 
-    \sa QVector, QList
+    \sa QList
 */
 
 /*! \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc>::QVarLengthArray(qsizetype size)

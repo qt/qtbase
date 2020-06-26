@@ -49,162 +49,162 @@
 ****************************************************************************/
 
 //! [0]
-QList<int> integerVector;
-QList<QString> stringVector;
+QList<int> integerList;
+QList<QString> stringList;
 //! [0]
 
 
 //! [1]
-QList<QString> vector(200);
+QList<QString> list(200);
 //! [1]
 
 
 //! [2]
-QList<QString> vector(200, "Pass");
+QList<QString> list(200, "Pass");
 //! [2]
 
 
 //! [3]
-if (vector[0] == "Liz")
-    vector[0] = "Elizabeth";
+if (list[0] == "Liz")
+    list[0] = "Elizabeth";
 //! [3]
 
 
 //! [4]
-for (int i = 0; i < vector.size(); ++i) {
-    if (vector.at(i) == "Alfonso")
+for (int i = 0; i < list.size(); ++i) {
+    if (list.at(i) == "Alfonso")
         cout << "Found Alfonso at position " << i << Qt::endl;
 }
 //! [4]
 
 
 //! [5]
-int i = vector.indexOf("Harumi");
+int i = list.indexOf("Harumi");
 if (i != -1)
     cout << "First occurrence of Harumi is at position " << i << Qt::endl;
 //! [5]
 
 
 //! [6]
-QList<int> vector(10);
-int *data = vector.data();
+QList<int> list(10);
+int *data = list.data();
 for (int i = 0; i < 10; ++i)
     data[i] = 2 * i;
 //! [6]
 
 
 //! [7]
-QList<QString> vector;
-vector.append("one");
-vector.append("two");
+QList<QString> list;
+list.append("one");
+list.append("two");
 QString three = "three";
-vector.append(three);
-// vector: ["one", "two", "three"]
+list.append(three);
+// list: ["one", "two", "three"]
 // three: "three"
 //! [7]
 
 
 //! [move-append]
-QList<QString> vector;
-vector.append("one");
-vector.append("two");
+QList<QString> list;
+list.append("one");
+list.append("two");
 QString three = "three";
-vector.append(std::move(three));
-// vector: ["one", "two", "three"]
+list.append(std::move(three));
+// list: ["one", "two", "three"]
 // three: ""
 //! [move-append]
 
 
 //! [emplace]
-QList<QString> vector{"a", "ccc"};
-vector.emplace(1, 2, 'b');
-// vector: ["a", "bb", "ccc"]
+QList<QString> list{"a", "ccc"};
+list.emplace(1, 2, 'b');
+// list: ["a", "bb", "ccc"]
 //! [emplace]
 
 
 //! [emplace-back]
-QList<QString> vector{"one", "two"};
-vector.emplaceBack(3, 'a');
-qDebug() << vector;
-// vector: ["one", "two", "aaa"]
+QList<QString> list{"one", "two"};
+list.emplaceBack(3, 'a');
+qDebug() << list;
+// list: ["one", "two", "aaa"]
 //! [emplace-back]
 
 
 //! [emplace-back-ref]
-QList<QString> vector;
-auto &ref = vector.emplaceBack();
+QList<QString> list;
+auto &ref = list.emplaceBack();
 ref = "one";
-// vector: ["one"]
+// list: ["one"]
 //! [emplace-back-ref]
 
 
 //! [8]
-QList<QString> vector;
-vector.prepend("one");
-vector.prepend("two");
-vector.prepend("three");
-// vector: ["three", "two", "one"]
+QList<QString> list;
+list.prepend("one");
+list.prepend("two");
+list.prepend("three");
+// list: ["three", "two", "one"]
 //! [8]
 
 
 //! [9]
-QList<QString> vector;
-vector << "alpha" << "beta" << "delta";
-vector.insert(2, "gamma");
-// vector: ["alpha", "beta", "gamma", "delta"]
+QList<QString> list;
+list << "alpha" << "beta" << "delta";
+list.insert(2, "gamma");
+// list: ["alpha", "beta", "gamma", "delta"]
 //! [9]
 
 
 //! [10]
-QList<double> vector;
-vector << 2.718 << 1.442 << 0.4342;
-vector.insert(1, 3, 9.9);
-// vector: [2.718, 9.9, 9.9, 9.9, 1.442, 0.4342]
+QList<double> list;
+list << 2.718 << 1.442 << 0.4342;
+list.insert(1, 3, 9.9);
+// list: [2.718, 9.9, 9.9, 9.9, 1.442, 0.4342]
 //! [10]
 
 
 //! [11]
-QList<QString> vector(3);
-vector.fill("Yes");
-// vector: ["Yes", "Yes", "Yes"]
+QList<QString> list(3);
+list.fill("Yes");
+// list: ["Yes", "Yes", "Yes"]
 
-vector.fill("oh", 5);
-// vector: ["oh", "oh", "oh", "oh", "oh"]
+list.fill("oh", 5);
+// list: ["oh", "oh", "oh", "oh", "oh"]
 //! [11]
 
 
 //! [12]
-QList<QString> vector;
-vector << "A" << "B" << "C" << "B" << "A";
-vector.indexOf("B");            // returns 1
-vector.indexOf("B", 1);         // returns 1
-vector.indexOf("B", 2);         // returns 3
-vector.indexOf("X");            // returns -1
+QList<QString> list;
+list << "A" << "B" << "C" << "B" << "A";
+list.indexOf("B");            // returns 1
+list.indexOf("B", 1);         // returns 1
+list.indexOf("B", 2);         // returns 3
+list.indexOf("X");            // returns -1
 //! [12]
 
 
 //! [13]
-QList<QString> vector;
-vector << "A" << "B" << "C" << "B" << "A";
-vector.lastIndexOf("B");        // returns 3
-vector.lastIndexOf("B", 3);     // returns 3
-vector.lastIndexOf("B", 2);     // returns 1
-vector.lastIndexOf("X");        // returns -1
+QList<QString> list;
+list << "A" << "B" << "C" << "B" << "A";
+list.lastIndexOf("B");        // returns 3
+list.lastIndexOf("B", 3);     // returns 3
+list.lastIndexOf("B", 2);     // returns 1
+list.lastIndexOf("X");        // returns -1
 //! [13]
 
 //! [16]
 std::vector<double> stdvector;
-vector.push_back(1.2);
-vector.push_back(0.5);
-vector.push_back(3.14);
+stdvector.push_back(1.2);
+stdvector.push_back(0.5);
+stdvector.push_back(3.14);
 
-QList<double> vector = QList<double>::fromStdVector(stdvector);
+QList<double> list = QList<double>::fromStdVector(stdvector);
 //! [16]
 
 
 //! [17]
-QList<double> vector;
-vector << 1.2 << 0.5 << 3.14;
+QList<double> list;
+list << 1.2 << 0.5 << 3.14;
 
-std::vector<double> stdvector = vector.toStdVector();
+std::vector<double> stdlist = list.toStdVector();
 //! [17]

@@ -105,13 +105,13 @@ QChar resolveEntity(const QString &entity)
 QStringList list;
 list << "one" << "two" << "three";
 
-QVector<QString> vect1(3);
-qCopy(list.begin(), list.end(), vect1.begin());
-// vect: [ "one", "two", "three" ]
+QList<QString> list1(3);
+qCopy(list.begin(), list.end(), list1.begin());
+// list1: [ "one", "two", "three" ]
 
-QVector<QString> vect2(8);
-qCopy(list.begin(), list.end(), vect2.begin() + 2);
-// vect: [ "", "", "one", "two", "three", "", "", "" ]
+QList<QString> list2(8);
+qCopy(list.begin(), list.end(), list2.begin() + 2);
+// list2: [ "", "", "one", "two", "three", "", "", "" ]
 //! [4]
 
 
@@ -119,26 +119,26 @@ qCopy(list.begin(), list.end(), vect2.begin() + 2);
 QStringList list;
 list << "one" << "two" << "three";
 
-QVector<QString> vect(5);
-qCopyBackward(list.begin(), list.end(), vect.end());
-// vect: [ "", "", "one", "two", "three" ]
+QList<QString> backList(5);
+qCopyBackward(list.begin(), list.end(), backList.end());
+// backList: [ "", "", "one", "two", "three" ]
 //! [5]
 
 
 //! [6]
-QStringList list;
-list << "one" << "two" << "three";
+QStringList listLeft;
+listLeft << "one" << "two" << "three";
 
-QVector<QString> vect(3);
-vect[0] = "one";
-vect[1] = "two";
-vect[2] = "three";
+QList<QString> listRight(3);
+listRight[0] = "one";
+listRight[1] = "two";
+listRight[2] = "three";
 
-bool ret1 = qEqual(list.begin(), list.end(), vect.begin());
+bool ret1 = qEqual(listLeft.begin(), listLeft.end(), listRight.begin());
 // ret1 == true
 
-vect[2] = "seven";
-bool ret2 = qEqual(list.begin(), list.end(), vect.begin());
+listRight[2] = "seven";
+bool ret2 = qEqual(listLeft.begin(), listLeft.end(), listRight.begin());
 // ret2 == false
 //! [6]
 
@@ -281,19 +281,19 @@ list.insert(i, 12);
 
 
 //! [19]
-QVector<int> vect;
-vect << 3 << 3 << 6 << 6 << 6 << 8;
-QVector<int>::iterator begin6 =
-        qLowerBound(vect.begin(), vect.end(), 6);
-QVector<int>::iterator end6 =
-        qUpperBound(begin6, vect.end(), 6);
+QList<int> list;
+list << 3 << 3 << 6 << 6 << 6 << 8;
+QList<int>::iterator begin6 =
+        qLowerBound(list.begin(), list.end(), 6);
+QList<int>::iterator end6 =
+        qUpperBound(begin6, list.end(), 6);
 
-QVector<int>::iterator i = begin6;
+QList<int>::iterator i = begin6;
 while (i != end6) {
     *i = 7;
     ++i;
 }
-// vect: [ 3, 3, 7, 7, 7, 8 ]
+// list: [ 3, 3, 7, 7, 7, 8 ]
 //! [19]
 
 
@@ -312,29 +312,29 @@ list.insert(i, 12);
 
 
 //! [21]
-QVector<int> vect;
-vect << 3 << 3 << 6 << 6 << 6 << 8;
-QVector<int>::iterator begin6 =
-        qLowerBound(vect.begin(), vect.end(), 6);
-QVector<int>::iterator end6 =
-        qUpperBound(vect.begin(), vect.end(), 6);
+QList<int> list;
+list << 3 << 3 << 6 << 6 << 6 << 8;
+QList<int>::iterator begin6 =
+        qLowerBound(list.begin(), list.end(), 6);
+QList<int>::iterator end6 =
+        qUpperBound(list.begin(), list.end(), 6);
 
-QVector<int>::iterator i = begin6;
+QList<int>::iterator i = begin6;
 while (i != end6) {
     *i = 7;
     ++i;
 }
-// vect: [ 3, 3, 7, 7, 7, 8 ]
+// list: [ 3, 3, 7, 7, 7, 8 ]
 //! [21]
 
 
 //! [22]
-QVector<int> vect;
-vect << 3 << 3 << 6 << 6 << 6 << 8;
+QList<int> list;
+list << 3 << 3 << 6 << 6 << 6 << 8;
 
-QVector<int>::iterator i =
-        qBinaryFind(vect.begin(), vect.end(), 6);
-// i == vect.begin() + 2 (or 3 or 4)
+QList<int>::iterator i =
+        qBinaryFind(list.begin(), list.end(), 6);
+// i == list.begin() + 2 (or 3 or 4)
 //! [22]
 
 

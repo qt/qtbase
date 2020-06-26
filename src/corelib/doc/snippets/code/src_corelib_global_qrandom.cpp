@@ -95,9 +95,9 @@
 //! [8]
 
 //! [9]
-    QVector<quint32> vector;
-    vector.resize(16);
-    QRandomGenerator::global()->fillRange(vector.data(), vector.size());
+    QList<quint32> list;
+    list.resize(16);
+    QRandomGenerator::global()->fillRange(list.data(), list.size());
 //! [9]
 
 //! [10]

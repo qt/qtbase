@@ -42,7 +42,7 @@
     The Qt library provides a set of general purpose template-based
     container classes. These classes can be used to store items of a
     specified type. For example, if you need a resizable array of
-    \l{QString}s, use QVector<QString>.
+    \l{QString}s, use QList<QString>.
 
     These container classes are designed to be lighter, safer, and
     easier to use than the STL containers. If you are unfamiliar with
@@ -74,9 +74,9 @@
 
     \section1 The Container Classes
 
-    Qt provides the following sequential containers: QVector,
+    Qt provides the following sequential containers: QList,
     QStack, and QQueue. For most
-    applications, QVector is the best type to use. It provides very fast
+    applications, QList is the best type to use. It provides very fast
     appends. If you really need a linked-list, use std::list.
     QStack and QQueue are convenience classes that provide LIFO and
     FIFO semantics.
@@ -93,30 +93,30 @@
     \table
     \header \li Class \li Summary
 
-    \row \li \l{QVector}<T>
+    \row \li \l{QList}<T>
     \li This is by far the most commonly used container class. It
     stores a list of values of a given type (T) that can be accessed
     by index. Internally, it stores an array of values of a
     given type at adjacent
     positions in memory. Inserting at the front or in the middle of
-    a vector can be quite slow, because it can lead to large numbers
+    a list can be quite slow, because it can lead to large numbers
     of items having to be moved by one position in memory.
 
     \row \li \l{QVarLengthArray}<T, Prealloc>
     \li This provides a low-level variable-length array. It can be used
-    instead of QVector in places where speed is particularly important.
+    instead of QList in places where speed is particularly important.
 
     \row \li \l{QStack}<T>
-    \li This is a convenience subclass of QVector that provides
+    \li This is a convenience subclass of QList that provides
     "last in, first out" (LIFO) semantics. It adds the following
-    functions to those already present in QVector:
+    functions to those already present in QList:
     \l{QStack::push()}{push()}, \l{QStack::pop()}{pop()},
     and \l{QStack::top()}{top()}.
 
     \row \li \l{QQueue}<T>
-    \li This is a convenience subclass of QVector that provides
+    \li This is a convenience subclass of QList that provides
     "first in, first out" (FIFO) semantics. It adds the following
-    functions to those already present in QQVector:
+    functions to those already present in QList:
     \l{QQueue::enqueue()}{enqueue()},
     \l{QQueue::dequeue()}{dequeue()}, and \l{QQueue::head()}{head()}.
 
@@ -147,11 +147,11 @@
     \endtable
 
     Containers can be nested. For example, it is perfectly possible
-    to use a QMap<QString, QVector<int>>, where the key type is
-    QString and the value type QVector<int>.
+    to use a QMap<QString, QList<int>>, where the key type is
+    QString and the value type QList<int>.
 
     The containers are defined in individual header files with the
-    same name as the container (e.g., \c <QVector>). For
+    same name as the container (e.g., \c <QList>). For
     convenience, the containers are forward declared in \c
     <QtContainerFwd>.
 
@@ -167,10 +167,10 @@
     double, pointer types, and Qt data types such as QString, QDate,
     and QTime, but it doesn't cover QObject or any QObject subclass
     (QWidget, QDialog, QTimer, etc.). If you attempt to instantiate a
-    QVector<QWidget>, the compiler will complain that QWidget's copy
+    QList<QWidget>, the compiler will complain that QWidget's copy
     constructor and assignment operators are disabled. If you want to
     store these kinds of objects in a container, store them as
-    pointers, for example as QVector<QWidget *>.
+    pointers, for example as QList<QWidget *>.
 
     Here's an example custom data type that meets the requirement of
     an assignable data type:
@@ -210,7 +210,7 @@
     \target default-constructed value
 
     The documentation of certain container class functions refer to
-    \e{default-constructed values}; for example, QVector
+    \e{default-constructed values}; for example, QList
     automatically initializes its items with default-constructed
     values, and QMap::value() returns a default-constructed value if
     the specified key isn't in the map. For most value types, this
@@ -241,22 +241,22 @@
     read-write access.
 
     \table
-    \header \li Containers                         \li Read-only iterator
+    \header \li Containers                        \li Read-only iterator
                                                   \li Read-write iterator
                                                   \li QMutableListIterator<T>
-    \row    \li QVector<T>, QStack<T>, QQueue<T>   \li QVectorIterator<T>
-                                                  \li QMutableVectorIterator<T>
-    \row    \li QSet<T>                            \li QSetIterator<T>
+    \row    \li QList<T>, QQueue<T>, QStack<T>,   \li QListIterator<T>
+                                                  \li QMutableListIterator<T>
+    \row    \li QSet<T>                           \li QSetIterator<T>
                                                   \li QMutableSetIterator<T>
-    \row    \li QMap<Key, T>, QMultiMap<Key, T>    \li QMapIterator<Key, T>
+    \row    \li QMap<Key, T>, QMultiMap<Key, T>   \li QMapIterator<Key, T>
                                                   \li QMutableMapIterator<Key, T>
-    \row    \li QHash<Key, T>, QMultiHash<Key, T>  \li QHashIterator<Key, T>
+    \row    \li QHash<Key, T>, QMultiHash<Key, T> \li QHashIterator<Key, T>
                                                   \li QMutableHashIterator<Key, T>
     \endtable
 
-    In this discussion, we will concentrate on QVector and QMap. The
+    In this discussion, we will concentrate on QList and QMap. The
     iterator types for QSet have exactly
-    the same interface as QVector's iterators; similarly, the iterator
+    the same interface as QList's iterators; similarly, the iterator
     types for QHash have the same interface as QMap's iterators.
 
     Unlike STL-style iterators (covered \l{STL-style
@@ -271,59 +271,59 @@
     \image javaiterators1.png
 
     Here's a typical loop for iterating through all the elements of a
-    QVector<QString> in order and printing them to the console:
+    QList<QString> in order and printing them to the console:
 
     \snippet code/doc_src_containers.cpp 1
 
-    It works as follows: The QVector to iterate over is passed to the
-    QVectorIterator constructor. At that point, the iterator is located
+    It works as follows: The QList to iterate over is passed to the
+    QListIterator constructor. At that point, the iterator is located
     just in front of the first item in the list (before item "A").
-    Then we call \l{QVectorIterator::hasNext()}{hasNext()} to
+    Then we call \l{QListIterator::hasNext()}{hasNext()} to
     check whether there is an item after the iterator. If there is, we
-    call \l{QVectorIterator::next()}{next()} to jump over that
+    call \l{QListIterator::next()}{next()} to jump over that
     item. The next() function returns the item that it jumps over. For
-    a QVector<QString>, that item is of type QString.
+    a QList<QString>, that item is of type QString.
 
-    Here's how to iterate backward in a QVector:
+    Here's how to iterate backward in a QList:
 
     \snippet code/doc_src_containers.cpp 2
 
     The code is symmetric with iterating forward, except that we
-    start by calling \l{QVectorIterator::toBack()}{toBack()}
+    start by calling \l{QListIterator::toBack()}{toBack()}
     to move the iterator after the last item in the list.
 
     The diagram below illustrates the effect of calling
-    \l{QVectorIterator::next()}{next()} and
-    \l{QVectorIterator::previous()}{previous()} on an iterator:
+    \l{QListIterator::next()}{next()} and
+    \l{QListIterator::previous()}{previous()} on an iterator:
 
     \image javaiterators2.png
 
-    The following table summarizes the QVectorIterator API:
+    The following table summarizes the QListIterator API:
 
     \table
     \header \li Function \li Behavior
-    \row    \li \l{QVectorIterator::toFront()}{toFront()}
+    \row    \li \l{QListIterator::toFront()}{toFront()}
             \li Moves the iterator to the front of the list (before the first item)
-    \row    \li \l{QVectorIterator::toBack()}{toBack()}
+    \row    \li \l{QListIterator::toBack()}{toBack()}
             \li Moves the iterator to the back of the list (after the last item)
-    \row    \li \l{QVectorIterator::hasNext()}{hasNext()}
+    \row    \li \l{QListIterator::hasNext()}{hasNext()}
             \li Returns \c true if the iterator isn't at the back of the list
-    \row    \li \l{QVectorIterator::next()}{next()}
+    \row    \li \l{QListIterator::next()}{next()}
             \li Returns the next item and advances the iterator by one position
-    \row    \li \l{QVectorIterator::peekNext()}{peekNext()}
+    \row    \li \l{QListIterator::peekNext()}{peekNext()}
             \li Returns the next item without moving the iterator
-    \row    \li \l{QVectorIterator::hasPrevious()}{hasPrevious()}
+    \row    \li \l{QListIterator::hasPrevious()}{hasPrevious()}
             \li Returns \c true if the iterator isn't at the front of the list
-    \row    \li \l{QVectorIterator::previous()}{previous()}
+    \row    \li \l{QListIterator::previous()}{previous()}
             \li Returns the previous item and moves the iterator back by one position
-    \row    \li \l{QVectorIterator::peekPrevious()}{peekPrevious()}
+    \row    \li \l{QListIterator::peekPrevious()}{peekPrevious()}
             \li Returns the previous item without moving the iterator
     \endtable
 
-    QVectorIterator provides no functions to insert or remove items
+    QListIterator provides no functions to insert or remove items
     from the list as we iterate. To accomplish this, you must use
     QMutableListIterator. Here's an example where we remove all
-    odd numbers from a QVector<int> using QMutableListIterator:
+    odd numbers from a QList<int> using QMutableListIterator:
 
     \snippet code/doc_src_containers.cpp 3
 
@@ -357,11 +357,11 @@
     \snippet code/doc_src_containers.cpp 6
 
     As mentioned above QSet's iterator
-    classes have exactly the same API as QVector's. We will now turn to
+    classes have exactly the same API as QList's. We will now turn to
     QMapIterator, which is somewhat different because it iterates on
     (key, value) pairs.
 
-    Like QVectorIterator, QMapIterator provides
+    Like QListIterator, QMapIterator provides
     \l{QMapIterator::toFront()}{toFront()},
     \l{QMapIterator::toBack()}{toBack()},
     \l{QMapIterator::hasNext()}{hasNext()},
@@ -407,48 +407,48 @@
     possible because they are faster than read-write iterators.
 
     \table
-    \header \li Containers                         \li Read-only iterator
+    \header \li Containers                        \li Read-only iterator
                                                   \li Read-write iterator
-    \row    \li QVector<T>, QStack<T>, QQueue<T>   \li QVector<T>::const_iterator
-                                                  \li QVector<T>::iterator
-    \row    \li QSet<T>                            \li QSet<T>::const_iterator
+    \row    \li QList<T>, QStack<T>, QQueue<T>    \li QList<T>::const_iterator
+                                                  \li QList<T>::iterator
+    \row    \li QSet<T>                           \li QSet<T>::const_iterator
                                                   \li QSet<T>::iterator
-    \row    \li QMap<Key, T>, QMultiMap<Key, T>    \li QMap<Key, T>::const_iterator
+    \row    \li QMap<Key, T>, QMultiMap<Key, T>   \li QMap<Key, T>::const_iterator
                                                   \li QMap<Key, T>::iterator
-    \row    \li QHash<Key, T>, QMultiHash<Key, T>  \li QHash<Key, T>::const_iterator
+    \row    \li QHash<Key, T>, QMultiHash<Key, T> \li QHash<Key, T>::const_iterator
                                                   \li QHash<Key, T>::iterator
     \endtable
 
     The API of the STL iterators is modelled on pointers in an array.
     For example, the \c ++ operator advances the iterator to the next
     item, and the \c * operator returns the item that the iterator
-    points to. In fact, for QVector and QStack, which store their
+    points to. In fact, for QList and QStack, which store their
     items at adjacent memory positions, the
-    \l{QVector::iterator}{iterator} type is just a typedef for \c{T *},
-    and the \l{QVector::iterator}{const_iterator} type is
+    \l{QList::iterator}{iterator} type is just a typedef for \c{T *},
+    and the \l{QList::iterator}{const_iterator} type is
     just a typedef for \c{const T *}.
 
-    In this discussion, we will concentrate on QVector and QMap. The
+    In this discussion, we will concentrate on QList and QMap. The
     iterator types for QSet have exactly
-    the same interface as QVector's iterators; similarly, the iterator
+    the same interface as QList's iterators; similarly, the iterator
     types for QHash have the same interface as QMap's iterators.
 
     Here's a typical loop for iterating through all the elements of a
-    QVector<QString> in order and converting them to lowercase:
+    QList<QString> in order and converting them to lowercase:
 
     \snippet code/doc_src_containers.cpp 10
 
     Unlike \l{Java-style iterators}, STL-style iterators point
-    directly at items. The \l{QVector::begin()}{begin()} function of a container returns an
+    directly at items. The \l{QList::begin()}{begin()} function of a container returns an
     iterator that points to the first item in the container. The
-    \l{QVector::end()}{end()} function of a container returns an iterator to the
+    \l{QList::end()}{end()} function of a container returns an iterator to the
     imaginary item one position past the last item in the container.
-    \l {QVector::end()}{end()} marks an invalid position; it must never be dereferenced.
+    \l {QList::end()}{end()} marks an invalid position; it must never be dereferenced.
     It is typically used in a loop's break condition. If the list is
-    empty, \l{QVector::begin}{begin()} equals \l{QVector::end()}{end()}, so we never execute the loop.
+    empty, \l{QList::begin}{begin()} equals \l{QList::end()}{end()}, so we never execute the loop.
 
     The diagram below shows the valid iterator positions as red
-    arrows for a vector containing four items:
+    arrows for a list containing four items:
 
     \image stliterators1.png
 
@@ -462,8 +462,8 @@
     compilers also allow us to write \c{i->toLower()}, but some
     don't.
 
-    For read-only access, you can use const_iterator, \l{QVector::constBegin}{constBegin()},
-    and \l{QVector::constEnd()}{constEnd()}. For example:
+    For read-only access, you can use const_iterator, \l{QList::constBegin}{constBegin()},
+    and \l{QList::constEnd()}{constEnd()}. For example:
 
     \snippet code/doc_src_containers.cpp 12
 
@@ -501,7 +501,7 @@
 
     Thanks to \l{implicit sharing}, it is very inexpensive for a
     function to return a container per value. The Qt API contains
-    dozens of functions that return a QVector or QStringList per value
+    dozens of functions that return a QList or QStringList per value
     (e.g., QSplitter::sizes()). If you want to iterate over these
     using an STL iterator, you should always take a copy of the
     container and iterate over the copy. For example:
@@ -521,7 +521,7 @@
 
     \snippet code/doc_src_containers.cpp 24
 
-     The above example only shows a problem with QVector, but
+     The above example only shows a problem with QList, but
      the problem exists for all the implicitly shared Qt containers.
 
     \target foreach
@@ -534,7 +534,7 @@
 
     Its syntax is: \c foreach (\e variable, \e container) \e
     statement. For example, here's how to use \c foreach to iterate
-    over a QVector<QString>:
+    over a QList<QString>:
 
     \snippet code/doc_src_containers.cpp 15
 
@@ -620,8 +620,8 @@
     example, inserting an item in the middle of a std::list is an
     extremely fast operation, irrespective of the number of items
     stored in the list. On the other hand, inserting an item
-    in the middle of a QVector is potentially very expensive if the
-    QVector contains many items, since half of the items must be
+    in the middle of a QList is potentially very expensive if the
+    QList contains many items, since half of the items must be
     moved one position in memory.
 
     To describe algorithmic complexity, we use the following
@@ -637,7 +637,7 @@
     \li \b{Constant time:} O(1). A function is said to run in constant
        time if it requires the same amount of time no matter how many
        items are present in the container. One example is
-       QVector::push_back().
+       QList::push_back().
 
     \li \b{Logarithmic time:} O(log \e n). A function that runs in
        logarithmic time is a function whose running time is
@@ -647,7 +647,7 @@
     \li \b{Linear time:} O(\e n). A function that runs in linear time
        will execute in a time directly proportional to the number of
        items stored in the container. One example is
-       QVector::insert().
+       QList::insert().
 
     \li \b{Linear-logarithmic time:} O(\e{n} log \e n). A function
        that runs in linear-logarithmic time is asymptotically slower
@@ -660,11 +660,11 @@
     \endlist
 
     The following table summarizes the algorithmic complexity of the sequential
-    container QVector<T>:
+    container QList<T>:
 
     \table
-    \header \li                \li Index lookup \li Insertion \li Prepending         \li Appending
-    \row    \li QVector<T>     \li O(1)         \li O(n)      \li O(n)               \li Amort. O(1)
+    \header \li          \li Index lookup \li Insertion \li Prepending \li Appending
+    \row    \li QList<T> \li O(1)         \li O(n)      \li O(n)       \li Amort. O(1)
     \endtable
 
     In the table, "Amort." stands for "amortized behavior". For
@@ -685,15 +685,15 @@
     \row    \li QSet<Key>     \li Amort. O(1) \li O(\e n)     \li Amort. O(1)        \li O(\e n)
     \endtable
 
-    With QVector, QHash, and QSet, the performance of appending items
+    With QList, QHash, and QSet, the performance of appending items
     is amortized O(log \e n). It can be brought down to O(1) by
-    calling QVector::reserve(), QHash::reserve(), or QSet::reserve()
+    calling QList::reserve(), QHash::reserve(), or QSet::reserve()
     with the expected number of items before you insert the items.
     The next section discusses this topic in more depth.
 
     \section1 Growth Strategies
 
-    QVector<T>, QString, and QByteArray store their items
+    QList<T>, QString, and QByteArray store their items
     contiguously in memory; QHash<Key, T> keeps a
     hash table whose size is proportional to the number
     of items in the hash. To avoid reallocating the data every single
@@ -732,12 +732,12 @@
     QByteArray uses more or less the same algorithm as
     QString.
 
-    QVector<T> also uses that algorithm for data types that can be
+    QList<T> also uses that algorithm for data types that can be
     moved around in memory using \c memcpy() (including the basic C++
     types, the pointer types, and Qt's \l{shared classes}) but uses a
     different algorithm for data types that can only be moved by
     calling the copy constructor and a destructor. Since the cost of
-    reallocating is higher in that case, QVector<T> reduces the
+    reallocating is higher in that case, QList<T> reduces the
     number of reallocations by always doubling the memory when
     running out of space.
 
@@ -748,7 +748,7 @@
     QSet<T> and QCache<Key, T> as well.
 
     For most applications, the default growing algorithm provided by
-    Qt does the trick. If you need more control, QVector<T>,
+    Qt does the trick. If you need more control, QList<T>,
     QHash<Key, T>, QSet<T>, QString, and QByteArray provide a trio of
     functions that allow you to check and specify how much memory to
     use to store the items:

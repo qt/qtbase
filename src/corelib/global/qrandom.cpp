@@ -811,7 +811,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
     efficient way to obtain more than one quantity at a time, as it reduces the
     number of calls into the Random Number Generator source.
 
-    For example, to fill a vector of 16 entries with random values, one may
+    For example, to fill a list of 16 entries with random values, one may
     write:
 
     \snippet code/src_corelib_global_qrandom.cpp 9

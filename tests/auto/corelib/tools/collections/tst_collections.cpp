@@ -1084,7 +1084,7 @@ void tst_Collections::stack()
     stack.push(1);
     stack.push(2);
     stack.push(3);
-    QVectorIterator<int> i = stack;
+    QListIterator<int> i = stack;
     i.toBack();
     int sum = 0;
     while (i.hasPrevious())

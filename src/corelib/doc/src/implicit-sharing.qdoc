@@ -139,7 +139,7 @@
     is called for \c p2, because painting a pixmap will modify it.
 
     \warning Be careful with copying an implicitly shared container
-    (QMap, QVector, etc.) while you use
+    (QMap, QList, etc.) while you use
     \l{STL-style iterators}{STL-style iterator}. See \l{Implicit sharing iterator problem}.
 
     \target implicitly shared classes

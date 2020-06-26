@@ -64,23 +64,6 @@ while (i.hasPrevious())
     qDebug() << i.previous();
 //! [1]
 
-//! [4]
-QVector<float> vector;
-...
-QVectorIterator<float> i(vector);
-while (i.hasNext())
-    qDebug() << i.next();
-//! [4]
-
-
-//! [5]
-QVectorIterator<float> i(vector);
-i.toBack();
-while (i.hasPrevious())
-    qDebug() << i.previous();
-//! [5]
-
-
 //! [6]
 QSet<QString> set;
 ...
@@ -127,35 +110,6 @@ while (i.hasNext()) {
 }
 //! [10]
 
-//! [14]
-QVector<float> vector;
-...
-QMutableVectorIterator<float> i(vector);
-while (i.hasNext())
-    qDebug() << i.next();
-//! [14]
-
-//! [15]
-QMutableVectorIterator<float> i(vector);
-i.toBack();
-while (i.hasPrevious())
-    qDebug() << i.previous();
-//! [15]
-
-
-//! [16]
-QMutableVectorIterator<int> i(vector);
-while (i.hasNext()) {
-    int val = i.next();
-    if (val < 0) {
-        i.setValue(-val);
-    } else if (val == 0) {
-        i.remove();
-    }
-}
-//! [16]
-
-
 //! [17]
 QSet<float> set;
 ...
@@ -182,16 +136,6 @@ while (i.hasNext()) {
 }
 //! [19]
 
-//! [21]
-QMutableVectorIterator<int> i(vector);
-while (i.hasNext()) {
-    int val = i.next();
-    if (val < -32768 || val > 32767)
-        i.remove();
-}
-//! [21]
-
-
 //! [22]
 QMutableSetIterator<int> i(set);
 while (i.hasNext()) {
@@ -209,15 +153,6 @@ while (i.hasNext()) {
     i.setValue(std::sqrt(val));
 }
 //! [23]
-
-//! [25]
-QMutableVectorIterator<double> i(list);
-while (i.hasNext()) {
-    double val = i.next();
-    i.setValue(std::sqrt(val));
-}
-//! [25]
-
 
 //! [26]
 QMap<int, QWidget *> map;

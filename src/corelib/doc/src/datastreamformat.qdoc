@@ -66,6 +66,7 @@
     \li QIcon
     \li QImage
     \li QKeySequence
+    \li QList<T>
     \li QMap<Key, T>
     \li QMargins
     \li QMatrix4x4
@@ -88,7 +89,6 @@
     \li QVector2D
     \li QVector3D
     \li QVector4D
-    \li QVector<T>
     \endlist
 
     \sa {JSON Support in Qt}
