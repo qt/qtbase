@@ -1363,9 +1363,8 @@ QByteArray &QByteArray::operator=(const char *str)
 
     Returns the byte at index position \a i as a modifiable reference.
 
-    If an assignment is made beyond the end of the byte array, the
-    array is extended with resize() before the assignment takes
-    place.
+    \a i must be a valid index position in the byte array (i.e., 0 <=
+    \a i < size()).
 
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 9
