@@ -1157,9 +1157,24 @@ function(qt_generate_global_config_pri_file)
 ")
     endif()
 
-    string(APPEND content "QT_ARCH = ${TEST_architecture_arch}
+    if(CMAKE_CROSSCOMPILING)
+        string(APPEND content "host_build {
+    QT_ARCH = ${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_ARCH}
+    QT_BUILDABI = ${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_BUILDABI}
+    QT_TARGET_ARCH = ${TEST_architecture_arch}
+    QT_TARGET_BUILDABI = ${TEST_buildAbi}
+} else {
+    QT_ARCH = ${TEST_architecture_arch}
+    QT_BUILDABI = ${TEST_buildAbi}
+}
+")
+    else()
+        string(APPEND content "QT_ARCH = ${TEST_architecture_arch}
 QT_BUILDABI = ${TEST_buildAbi}
-QT.global.enabled_features = ${corrected_enabled_features}
+")
+    endif()
+
+    string(APPEND content "QT.global.enabled_features = ${corrected_enabled_features}
 QT.global.disabled_features = ${corrected_disabled_features}
 QT.global.disabled_features += release build_all
 QT_CONFIG += ${qt_public_config_joined}
