@@ -320,7 +320,11 @@ function(qt_evaluate_qmake_config_values key)
     set(expected "NOT")
     if (arg_NEGATE)
         set(expected "")
-        string(PREPEND arg_NAME "no_")
+        if(arg_NAME MATCHES "^no_(.*)")
+            set(arg_NAME "${CMAKE_MATCH_1}")
+        else()
+            string(PREPEND arg_NAME "no_")
+        endif()
     endif()
 
     # The feature condition is false, there is no need to export any config values.
