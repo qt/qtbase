@@ -791,6 +791,7 @@ QXmlStreamPrivateTagStack::QXmlStreamPrivateTagStack()
     namespaceDeclaration.prefix = addToStringStorage(u"xml");
     namespaceDeclaration.namespaceUri = addToStringStorage(u"http://www.w3.org/XML/1998/namespace");
     initialTagStackStringStorageSize = tagStackStringStorageSize;
+    tagsDone = false;
 }
 
 #ifndef QT_NO_XMLSTREAMREADER
