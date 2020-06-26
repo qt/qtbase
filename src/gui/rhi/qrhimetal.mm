@@ -2235,7 +2235,7 @@ QRhiBuffer::NativeBuffer QMetalBuffer::nativeBuffer()
     return { { &d->buf[0] }, 1 };
 }
 
-static inline MTLPixelFormat toMetalTextureFormat(QRhiTexture::Format format, QRhiTexture::Flags flags)
+static inline MTLPixelFormat toMetalTextureFormat(QRhiTexture::Format format, QRhiTexture::Flags flags, const QRhiMetalData *d)
 {
     const bool srgb = flags.testFlag(QRhiTexture::sRGB);
     switch (format) {
@@ -2269,11 +2269,20 @@ static inline MTLPixelFormat toMetalTextureFormat(QRhiTexture::Format format, QR
     case QRhiTexture::R32F:
         return MTLPixelFormatR32Float;
 
-    case QRhiTexture::D16:
 #ifdef Q_OS_MACOS
+    case QRhiTexture::D16:
         return MTLPixelFormatDepth16Unorm;
+    case QRhiTexture::D24:
+        return [d->dev isDepth24Stencil8PixelFormatSupported] ? MTLPixelFormatDepth24Unorm_Stencil8 : MTLPixelFormatDepth32Float;
+    case QRhiTexture::D24S8:
+        return [d->dev isDepth24Stencil8PixelFormatSupported] ? MTLPixelFormatDepth24Unorm_Stencil8 : MTLPixelFormatDepth32Float_Stencil8;
 #else
+    case QRhiTexture::D16:
         return MTLPixelFormatDepth32Float;
+    case QRhiTexture::D24:
+        return MTLPixelFormatDepth32Float;
+    case QRhiTexture::D24S8:
+        return MTLPixelFormatDepth32Float_Stencil8;
 #endif
     case QRhiTexture::D32F:
         return MTLPixelFormatDepth32Float;
@@ -2443,7 +2452,7 @@ bool QMetalRenderBuffer::create()
     case Color:
         desc.storageMode = MTLStorageModePrivate;
         if (m_backingFormatHint != QRhiTexture::UnknownFormat)
-            d->format = toMetalTextureFormat(m_backingFormatHint, {});
+            d->format = toMetalTextureFormat(m_backingFormatHint, {}, rhiD->d);
         else
             d->format = MTLPixelFormatRGBA8Unorm;
         desc.pixelFormat = d->format;
@@ -2533,7 +2542,7 @@ bool QMetalTexture::prepareCreate(QSize *adjustedSize)
     const bool hasMipMaps = m_flags.testFlag(MipMapped);
 
     QRHI_RES_RHI(QRhiMetal);
-    d->format = toMetalTextureFormat(m_format, m_flags);
+    d->format = toMetalTextureFormat(m_format, m_flags, rhiD->d);
     mipLevelCount = hasMipMaps ? rhiD->q->mipLevelsForSize(size) : 1;
     samples = rhiD->effectiveSampleCount(m_sampleCount);
     if (samples > 1) {

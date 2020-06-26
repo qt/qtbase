@@ -834,6 +834,10 @@ static inline VkFormat toVkTextureFormat(QRhiTexture::Format format, QRhiTexture
 
     case QRhiTexture::D16:
         return VK_FORMAT_D16_UNORM;
+    case QRhiTexture::D24:
+        return VK_FORMAT_X8_D24_UNORM_PACK32;
+    case QRhiTexture::D24S8:
+        return VK_FORMAT_D24_UNORM_S8_UINT;
     case QRhiTexture::D32F:
         return VK_FORMAT_D32_SFLOAT;
 
@@ -930,16 +934,23 @@ static inline QRhiTexture::Format colorTextureFormatFromVkFormat(VkFormat format
     return QRhiTexture::UnknownFormat;
 }
 
-static inline bool isDepthTextureFormat(QRhiTexture::Format format)
+static constexpr inline bool isDepthTextureFormat(QRhiTexture::Format format)
 {
     switch (format) {
     case QRhiTexture::Format::D16:
+    case QRhiTexture::Format::D24:
+    case QRhiTexture::Format::D24S8:
     case QRhiTexture::Format::D32F:
         return true;
 
     default:
         return false;
     }
+}
+
+static constexpr inline VkImageAspectFlags aspectMaskForTextureFormat(QRhiTexture::Format format)
+{
+    return isDepthTextureFormat(format) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 }
 
 // Transient images ("render buffers") backed by lazily allocated memory are
@@ -2723,8 +2734,7 @@ void QRhiVulkan::trackedImageBarrier(QVkCommandBuffer *cbD, QVkTexture *texD,
     VkImageMemoryBarrier barrier;
     memset(&barrier, 0, sizeof(barrier));
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    barrier.subresourceRange.aspectMask = !isDepthTextureFormat(texD->m_format)
-            ? VK_IMAGE_ASPECT_COLOR_BIT : VK_IMAGE_ASPECT_DEPTH_BIT;
+    barrier.subresourceRange.aspectMask = aspectMaskForTextureFormat(texD->m_format);
     barrier.subresourceRange.baseMipLevel = 0;
     barrier.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
     barrier.subresourceRange.baseArrayLayer = 0;
@@ -3933,8 +3943,7 @@ void QRhiVulkan::recordTransitionPassResources(QVkCommandBuffer *cbD, const QRhi
         VkImageMemoryBarrier barrier;
         memset(&barrier, 0, sizeof(barrier));
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-        barrier.subresourceRange.aspectMask = !isDepthTextureFormat(texD->m_format)
-                ? VK_IMAGE_ASPECT_COLOR_BIT : VK_IMAGE_ASPECT_DEPTH_BIT;
+        barrier.subresourceRange.aspectMask = aspectMaskForTextureFormat(texD->m_format);
         barrier.subresourceRange.baseMipLevel = 0;
         barrier.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
         barrier.subresourceRange.baseArrayLayer = 0;
@@ -5521,7 +5530,7 @@ bool QVkTexture::finishCreate()
 {
     QRHI_RES_RHI(QRhiVulkan);
 
-    const bool isDepth = isDepthTextureFormat(m_format);
+    const auto aspectMask = aspectMaskForTextureFormat(m_format);
     const bool isCube = m_flags.testFlag(CubeMap);
 
     VkImageViewCreateInfo viewInfo;
@@ -5534,7 +5543,7 @@ bool QVkTexture::finishCreate()
     viewInfo.components.g = VK_COMPONENT_SWIZZLE_G;
     viewInfo.components.b = VK_COMPONENT_SWIZZLE_B;
     viewInfo.components.a = VK_COMPONENT_SWIZZLE_A;
-    viewInfo.subresourceRange.aspectMask = isDepth ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+    viewInfo.subresourceRange.aspectMask = aspectMask;
     viewInfo.subresourceRange.levelCount = mipLevelCount;
     viewInfo.subresourceRange.layerCount = isCube ? 6 : 1;
 
@@ -5656,7 +5665,7 @@ VkImageView QVkTexture::imageViewForLevel(int level)
     if (perLevelImageViews[level] != VK_NULL_HANDLE)
         return perLevelImageViews[level];
 
-    const bool isDepth = isDepthTextureFormat(m_format);
+    const VkImageAspectFlags aspectMask = aspectMaskForTextureFormat(m_format);
     const bool isCube = m_flags.testFlag(CubeMap);
 
     VkImageViewCreateInfo viewInfo;
@@ -5669,7 +5678,7 @@ VkImageView QVkTexture::imageViewForLevel(int level)
     viewInfo.components.g = VK_COMPONENT_SWIZZLE_G;
     viewInfo.components.b = VK_COMPONENT_SWIZZLE_B;
     viewInfo.components.a = VK_COMPONENT_SWIZZLE_A;
-    viewInfo.subresourceRange.aspectMask = isDepth ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+    viewInfo.subresourceRange.aspectMask = aspectMask;
     viewInfo.subresourceRange.baseMipLevel = uint32_t(level);
     viewInfo.subresourceRange.levelCount = 1;
     viewInfo.subresourceRange.baseArrayLayer = 0;

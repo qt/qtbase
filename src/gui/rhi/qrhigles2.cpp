@@ -775,6 +775,18 @@ static inline void toGlTextureFormat(QRhiTexture::Format format, const QRhiGles2
         *glformat = GL_DEPTH_COMPONENT;
         *gltype = GL_UNSIGNED_SHORT;
         break;
+    case QRhiTexture::D24:
+        *glintformat = GL_DEPTH_COMPONENT24;
+        *glsizedintformat = *glintformat;
+        *glformat = GL_DEPTH_COMPONENT;
+        *gltype = GL_UNSIGNED_SHORT;
+        break;
+    case QRhiTexture::D24S8:
+        *glintformat = GL_DEPTH24_STENCIL8;
+        *glsizedintformat = *glintformat;
+        *glformat = GL_DEPTH_STENCIL;
+        *gltype = GL_UNSIGNED_SHORT;
+        break;
     case QRhiTexture::D32F:
         *glintformat = GL_DEPTH_COMPONENT32F;
         *glsizedintformat = *glintformat;
@@ -800,6 +812,12 @@ bool QRhiGles2::isTextureFormatSupported(QRhiTexture::Format format, QRhiTexture
     case QRhiTexture::D16:
     case QRhiTexture::D32F:
         return caps.depthTexture;
+
+    case QRhiTexture::D24:
+        return caps.depth24;
+
+    case QRhiTexture::D24S8:
+        return caps.depth24 && caps.packedDepthStencil;
 
     case QRhiTexture::BGRA8:
         return caps.bgraExternalFormat;

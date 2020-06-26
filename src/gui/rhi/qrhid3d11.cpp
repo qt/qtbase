@@ -1204,6 +1204,10 @@ static inline DXGI_FORMAT toD3DTextureFormat(QRhiTexture::Format format, QRhiTex
 
     case QRhiTexture::D16:
         return DXGI_FORMAT_R16_TYPELESS;
+    case QRhiTexture::D24:
+        return DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+    case QRhiTexture::D24S8:
+        return DXGI_FORMAT_D24_UNORM_S8_UINT;
     case QRhiTexture::D32F:
         return DXGI_FORMAT_R32_TYPELESS;
 
@@ -1283,6 +1287,8 @@ static inline bool isDepthTextureFormat(QRhiTexture::Format format)
 {
     switch (format) {
     case QRhiTexture::Format::D16:
+    case QRhiTexture::Format::D24:
+    case QRhiTexture::Format::D24S8:
     case QRhiTexture::Format::D32F:
         return true;
 
@@ -2839,6 +2845,10 @@ static inline DXGI_FORMAT toD3DDepthTextureSRVFormat(QRhiTexture::Format format)
     switch (format) {
     case QRhiTexture::Format::D16:
         return DXGI_FORMAT_R16_FLOAT;
+    case QRhiTexture::Format::D24:
+        return DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+    case QRhiTexture::Format::D24S8:
+        return DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
     case QRhiTexture::Format::D32F:
         return DXGI_FORMAT_R32_FLOAT;
     default:
@@ -2852,6 +2862,10 @@ static inline DXGI_FORMAT toD3DDepthTextureDSVFormat(QRhiTexture::Format format)
     switch (format) {
     case QRhiTexture::Format::D16:
         return DXGI_FORMAT_D16_UNORM;
+    case QRhiTexture::Format::D24:
+        return DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+    case QRhiTexture::Format::D24S8:
+        return DXGI_FORMAT_D24_UNORM_S8_UINT;
     case QRhiTexture::Format::D32F:
         return DXGI_FORMAT_D32_FLOAT;
     default:

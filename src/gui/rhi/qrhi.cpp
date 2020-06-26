@@ -2245,6 +2245,10 @@ QRhiResource::Type QRhiRenderBuffer::resourceType() const
 
     \value D16 16-bit depth (normalized unsigned integer)
 
+    \value D24 24-bit depth (normalized unsigned integer)
+
+    \value D24S8 24-bit depth (normalized unsigned integer), 8 bit stencil
+
     \value D32F 32-bit depth (32-bit float)
 
     \value BC1
@@ -4137,6 +4141,8 @@ void QRhiImplementation::textureFormatInfo(QRhiTexture::Format format, const QSi
     case QRhiTexture::D16:
         bpc = 2;
         break;
+    case QRhiTexture::D24:
+    case QRhiTexture::D24S8:
     case QRhiTexture::D32F:
         bpc = 4;
         break;
