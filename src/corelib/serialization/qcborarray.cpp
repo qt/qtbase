@@ -66,7 +66,7 @@ using namespace QtCbor;
     from those two, though there may be loss of information in some
     conversions.
 
-    \sa QCborValue, QCborMap, QJsonArray, QList, QVector
+    \sa QCborValue, QCborMap, QJsonArray, QList
  */
 
 /*!

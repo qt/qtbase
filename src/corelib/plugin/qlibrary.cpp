@@ -56,7 +56,7 @@
 #include <errno.h>
 #endif // NO_ERROR_H
 #include <qdebug.h>
-#include <qvector.h>
+#include <qlist.h>
 #include <qdir.h>
 #include <qendian.h>
 #include <qjsondocument.h>

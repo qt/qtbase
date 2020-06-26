@@ -39,7 +39,7 @@
     on all items in a given container or in a given range.
     You can use these algorithms with any \l {container
     class} that provides STL-style iterators, including Qt's QList,
-    QVector, QMap, and QHash classes.
+    QMap, and QHash classes.
 
     Most algorithms take \l {STL-style iterators} as parameters. The
     algorithms are generic in the sense that they aren't bound to a
@@ -143,7 +143,7 @@
     \row \li \c{i < j} \li returns \c true if iterator \c j comes after iterator \c i
     \endtable
 
-    QList and QVector's non-const iterator types are random access iterators.
+    QList's non-const iterator type is random access iterator.
 
     \section1 Qt and the STL Algorithms
 

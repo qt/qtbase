@@ -308,7 +308,7 @@
 #endif
 
 #include <QtCore/qpoint.h>
-#include <QtCore/qvector.h>
+#include <QtCore/qlist.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -357,7 +357,7 @@ QDataStream &operator>>(QDataStream &stream, TCBPoint &point)
     return stream;
 }
 
-typedef QVector<TCBPoint> TCBPoints;
+typedef QList<TCBPoint> TCBPoints;
 
 class QEasingCurveFunction
 {
@@ -375,7 +375,7 @@ public:
     qreal _p;
     qreal _a;
     qreal _o;
-    QVector<QPointF> _bezierCurves;
+    QList<QPointF> _bezierCurves;
     TCBPoints _tcbPoints;
 
 };
@@ -468,8 +468,8 @@ struct BezierEase : public QEasingCurveFunction
         qreal p3x, p3y;
     };
 
-    QVector<SingleCubicBezier> _curves;
-    QVector<qreal> _intervals;
+    QList<SingleCubicBezier> _curves;
+    QList<qreal> _intervals;
     int _curveCount;
     bool _init;
     bool _valid;
@@ -1307,10 +1307,10 @@ void QEasingCurve::addCubicBezierSegment(const QPointF & c1, const QPointF & c2,
     d_ptr->config->_bezierCurves << c1 << c2 << endPoint;
 }
 
-QVector<QPointF> static inline tcbToBezier(const TCBPoints &tcbPoints)
+QList<QPointF> static inline tcbToBezier(const TCBPoints &tcbPoints)
 {
     const int count = tcbPoints.count();
-    QVector<QPointF> bezierPoints;
+    QList<QPointF> bezierPoints;
     bezierPoints.reserve(3 * (count - 1));
 
     for (int i = 1; i < count; i++) {
@@ -1388,9 +1388,9 @@ void QEasingCurve::addTCBSegment(const QPointF &nextPoint, qreal t, qreal c, qre
     If the easing curve does not have a custom bezier easing curve the list
     is empty.
 */
-QVector<QPointF> QEasingCurve::toCubicSpline() const
+QList<QPointF> QEasingCurve::toCubicSpline() const
 {
-    return d_ptr->config ? d_ptr->config->_bezierCurves : QVector<QPointF>();
+    return d_ptr->config ? d_ptr->config->_bezierCurves : QList<QPointF>();
 }
 
 /*!
@@ -1406,8 +1406,8 @@ void QEasingCurvePrivate::setType_helper(QEasingCurve::Type newType)
     qreal amp = -1.0;
     qreal period = -1.0;
     qreal overshoot = -1.0;
-    QVector<QPointF> bezierCurves;
-    QVector<TCBPoint> tcbPoints;
+    QList<QPointF> bezierCurves;
+    QList<TCBPoint> tcbPoints;
 
     if (config) {
         amp = config->_a;

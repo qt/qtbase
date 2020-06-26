@@ -142,7 +142,7 @@ public:
     const QDirIterator::IteratorFlags iteratorFlags;
 
 #if QT_CONFIG(regularexpression)
-    QVector<QRegularExpression> nameRegExps;
+    QList<QRegularExpression> nameRegExps;
 #endif
 
     QDirIteratorPrivateIteratorStack<QAbstractFileEngineIterator> fileEngineIterators;

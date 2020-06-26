@@ -41,7 +41,6 @@
 #include "qfilesystemengine_p.h"
 #include "qoperatingsystemversion.h"
 #include "qplatformdefs.h"
-#include "qvector.h"
 
 #include <QtCore/qt_windows.h>
 

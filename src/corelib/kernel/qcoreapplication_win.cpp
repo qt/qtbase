@@ -41,7 +41,6 @@
 #include "qcoreapplication.h"
 #include "qcoreapplication_p.h"
 #include "qstringlist.h"
-#include "qvector.h"
 #include "qfileinfo.h"
 #include "qcorecmdlineargs_p.h"
 #ifndef QT_NO_QOBJECT

@@ -3906,9 +3906,9 @@ QString &QString::replace(const QRegularExpression &re, const QString &after)
 
     int numCaptures = re.captureCount();
 
-    // 1. build the backreferences vector, holding where the backreferences
+    // 1. build the backreferences list, holding where the backreferences
     // are in the replacement string
-    QVector<QStringCapture> backReferences;
+    QList<QStringCapture> backReferences;
     const int al = after.length();
     const QChar *ac = after.unicode();
 
@@ -3940,7 +3940,7 @@ QString &QString::replace(const QRegularExpression &re, const QString &after)
 
     int newLength = 0; // length of the new string, with all the replacements
     int lastEnd = 0;
-    QVector<QStringRef> chunks;
+    QList<QStringRef> chunks;
     while (iterator.hasNext()) {
         QRegularExpressionMatch match = iterator.next();
         int len;
@@ -4317,8 +4317,8 @@ int QString::count(const QRegularExpression &re) const
 
 QString QString::section(const QString &sep, int start, int end, SectionFlags flags) const
 {
-    const QVector<QStringRef> sections = splitRef(sep, Qt::KeepEmptyParts,
-                                                  (flags & SectionCaseInsensitiveSeps) ? Qt::CaseInsensitive : Qt::CaseSensitive);
+    const QList<QStringRef> sections = splitRef(
+            sep, Qt::KeepEmptyParts, (flags & SectionCaseInsensitiveSeps) ? Qt::CaseInsensitive : Qt::CaseSensitive);
     const int sectionsSize = sections.size();
     if (!(flags & SectionSkipEmpty)) {
         if (start < 0)
@@ -4373,10 +4373,7 @@ public:
 };
 Q_DECLARE_TYPEINFO(qt_section_chunk, Q_MOVABLE_TYPE);
 
-static QString extractSections(const QVector<qt_section_chunk> &sections,
-                               int start,
-                               int end,
-                               QString::SectionFlags flags)
+static QString extractSections(const QList<qt_section_chunk> &sections, int start, int end, QString::SectionFlags flags)
 {
     const int sectionsSize = sections.size();
 
@@ -4465,7 +4462,7 @@ QString QString::section(const QRegularExpression &re, int start, int end, Secti
     if (flags & SectionCaseInsensitiveSeps)
         sep.setPatternOptions(sep.patternOptions() | QRegularExpression::CaseInsensitiveOption);
 
-    QVector<qt_section_chunk> sections;
+    QList<qt_section_chunk> sections;
     int n = length(), m = 0, last_m = 0, last_len = 0;
     QRegularExpressionMatchIterator iterator = sep.globalMatch(*this);
     while (iterator.hasNext()) {
@@ -4951,30 +4948,30 @@ QByteArray QtPrivate::convertToUtf8(QStringView string)
     return qt_convert_to_utf8(string);
 }
 
-static QVector<uint> qt_convert_to_ucs4(QStringView string);
+static QList<uint> qt_convert_to_ucs4(QStringView string);
 
 /*!
     \since 4.2
 
-    Returns a UCS-4/UTF-32 representation of the string as a QVector<uint>.
+    Returns a UCS-4/UTF-32 representation of the string as a QList<uint>.
 
     UCS-4 is a Unicode codec and therefore it is lossless. All characters from
     this string will be encoded in UCS-4. Any invalid sequence of code units in
     this string is replaced by the Unicode's replacement character
     (QChar::ReplacementCharacter, which corresponds to \c{U+FFFD}).
 
-    The returned vector is not \\0'-terminated.
+    The returned list is not \\0'-terminated.
 
     \sa fromUtf8(), toUtf8(), toLatin1(), toLocal8Bit(), QStringEncoder, fromUcs4(), toWCharArray()
 */
-QVector<uint> QString::toUcs4() const
+QList<uint> QString::toUcs4() const
 {
     return qt_convert_to_ucs4(*this);
 }
 
-static QVector<uint> qt_convert_to_ucs4(QStringView string)
+static QList<uint> qt_convert_to_ucs4(QStringView string)
 {
-    QVector<uint> v(string.length());
+    QList<uint> v(string.length());
     uint *a = const_cast<uint*>(v.constData());
     QStringIterator it(string);
     while (it.hasNext())
@@ -4988,19 +4985,19 @@ static QVector<uint> qt_convert_to_ucs4(QStringView string)
     \internal
     \relates QStringView
 
-    Returns a UCS-4/UTF-32 representation of \a string as a QVector<uint>.
+    Returns a UCS-4/UTF-32 representation of \a string as a QList<uint>.
 
     UCS-4 is a Unicode codec and therefore it is lossless. All characters from
     this string will be encoded in UCS-4. Any invalid sequence of code units in
     this string is replaced by the Unicode's replacement character
     (QChar::ReplacementCharacter, which corresponds to \c{U+FFFD}).
 
-    The returned vector is not \\0'-terminated.
+    The returned list is not \\0'-terminated.
 
     \sa QString::toUcs4(), QStringView::toUcs4(), QtPrivate::convertToLatin1(),
     QtPrivate::convertToLocal8Bit(), QtPrivate::convertToUtf8()
 */
-QVector<uint> QtPrivate::convertToUcs4(QStringView string)
+QList<uint> QtPrivate::convertToUcs4(QStringView string)
 {
     return qt_convert_to_ucs4(string);
 }
@@ -7242,10 +7239,9 @@ QStringList QString::split(const QString &sep, Qt::SplitBehavior behavior, Qt::C
     \since 5.14
     \sa QStringRef split()
 */
-QVector<QStringRef> QString::splitRef(const QString &sep, Qt::SplitBehavior behavior,
-                                      Qt::CaseSensitivity cs) const
+QList<QStringRef> QString::splitRef(const QString &sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
 {
-    return splitString<QVector<QStringRef>>(QStringRef(this), sep, behavior, cs);
+    return splitString<QList<QStringRef>>(QStringRef(this), sep, behavior, cs);
 }
 
 /*!
@@ -7261,10 +7257,9 @@ QStringList QString::split(QChar sep, Qt::SplitBehavior behavior, Qt::CaseSensit
     \overload
     \since 5.14
 */
-QVector<QStringRef> QString::splitRef(QChar sep, Qt::SplitBehavior behavior,
-                                      Qt::CaseSensitivity cs) const
+QList<QStringRef> QString::splitRef(QChar sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
 {
-    return splitString<QVector<QStringRef> >(QStringRef(this), QStringView(&sep, 1), behavior, cs);
+    return splitString<QList<QStringRef>>(QStringRef(this), QStringView(&sep, 1), behavior, cs);
 }
 
 /*!
@@ -7279,18 +7274,18 @@ QVector<QStringRef> QString::splitRef(QChar sep, Qt::SplitBehavior behavior,
 
     \since 5.14
 */
-QVector<QStringRef> QStringRef::split(const QString &sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
+QList<QStringRef> QStringRef::split(const QString &sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
 {
-    return splitString<QVector<QStringRef> >(*this, sep, behavior, cs);
+    return splitString<QList<QStringRef>>(*this, sep, behavior, cs);
 }
 
 /*!
     \overload
     \since 5.14
 */
-QVector<QStringRef> QStringRef::split(QChar sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
+QList<QStringRef> QStringRef::split(QChar sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
 {
-    return splitString<QVector<QStringRef> >(*this, QStringView(&sep, 1), behavior, cs);
+    return splitString<QList<QStringRef>>(*this, QStringView(&sep, 1), behavior, cs);
 }
 
 /*!
@@ -7311,7 +7306,7 @@ QVector<QStringRef> QStringRef::split(QChar sep, Qt::SplitBehavior behavior, Qt:
 */
 QList<QStringView> QStringView::split(QStringView sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
 {
-    return splitString<QVector<QStringView>>(QStringView(*this), sep, behavior, cs);
+    return splitString<QList<QStringView>>(QStringView(*this), sep, behavior, cs);
 }
 
 QList<QStringView> QStringView::split(QChar sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
@@ -7388,16 +7383,16 @@ QStringList QString::split(const QRegularExpression &re, Qt::SplitBehavior behav
     Splits the string into substring references wherever the regular expression
     \a re matches, and returns the list of those strings. If \a re
     does not match anywhere in the string, splitRef() returns a
-    single-element vector containing this string reference.
+    single-element list containing this string reference.
 
     \note All references are valid as long this string is alive. Destroying this
     string will cause all references to be dangling pointers.
 
     \sa split() QStringRef
 */
-QVector<QStringRef> QString::splitRef(const QRegularExpression &re, Qt::SplitBehavior behavior) const
+QList<QStringRef> QString::splitRef(const QRegularExpression &re, Qt::SplitBehavior behavior) const
 {
-    return splitString<QVector<QStringRef> >(QStringRef(this), re, behavior);
+    return splitString<QList<QStringRef>>(QStringRef(this), re, behavior);
 }
 
 /*!
@@ -7406,7 +7401,7 @@ QVector<QStringRef> QString::splitRef(const QRegularExpression &re, Qt::SplitBeh
     Splits the string into substring views wherever the regular expression
     \a re matches, and returns the list of those strings. If \a re
     does not match anywhere in the string, splitRef() returns a
-    single-element vector containing this string reference.
+    single-element list containing this string reference.
 
     \note All references are valid as long this string is alive. Destroying this
     string will cause all references to be dangling pointers.
@@ -11638,18 +11633,18 @@ QByteArray QStringRef::toUtf8() const
 /*!
     \since 4.8
 
-    Returns a UCS-4/UTF-32 representation of the string as a QVector<uint>.
+    Returns a UCS-4/UTF-32 representation of the string as a QList<uint>.
 
     UCS-4 is a Unicode codec and therefore it is lossless. All characters from
     this string will be encoded in UCS-4. Any invalid sequence of code units in
     this string is replaced by the Unicode's replacement character
     (QChar::ReplacementCharacter, which corresponds to \c{U+FFFD}).
 
-    The returned vector is not \\0'-terminated.
+    The returned list is not \\0'-terminated.
 
     \sa toUtf8(), toLatin1(), toLocal8Bit(), QStringEncoder
 */
-QVector<uint> QStringRef::toUcs4() const
+QList<uint> QStringRef::toUcs4() const
 {
     return qt_convert_to_ucs4(*this);
 }

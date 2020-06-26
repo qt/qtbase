@@ -4261,7 +4261,7 @@ QString QLocale::formattedDataSize(qint64 bytes, int precision, DataSizeFormats 
 QStringList QLocale::uiLanguages() const
 {
     QStringList uiLanguages;
-    QVector<QLocale> locales;
+    QList<QLocale> locales;
 #ifndef QT_NO_SYSTEMLOCALE
     if (d->m_data == systemData()) {
         QVariant res = systemLocale()->query(QSystemLocale::UILanguages, QVariant());

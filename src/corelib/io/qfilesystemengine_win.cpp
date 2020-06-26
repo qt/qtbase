@@ -47,12 +47,11 @@
 #include <private/qsystemlibrary_p.h>
 #include <qdebug.h>
 
-#include "qfile.h"
 #include "qdir.h"
-#include "qvarlengtharray.h"
 #include "qdatetime.h"
+#include "qfile.h"
+#include "qvarlengtharray.h"
 #include "qt_windows.h"
-#include "qvector.h"
 #if QT_CONFIG(regularexpression)
 #include "qregularexpression.h"
 #endif

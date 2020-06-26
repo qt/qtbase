@@ -731,14 +731,6 @@ QDebug &QDebug::resetFormat()
 */
 
 /*!
-    \fn template <typename T> QDebug operator<<(QDebug debug, const QVector<T> &vec)
-    \relates QDebug
-
-    Writes the contents of vector \a vec to \a debug. \c T needs to
-    support streaming into QDebug.
-*/
-
-/*!
     \fn template <typename T, typename Alloc> QDebug operator<<(QDebug debug, const std::vector<T, Alloc> &vec)
     \relates QDebug
     \since 5.7

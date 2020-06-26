@@ -196,7 +196,7 @@ public:
     bool isFlag;
     bool isScoped;
     QList<QByteArray> keys;
-    QVector<int> values;
+    QList<int> values;
 };
 Q_DECLARE_TYPEINFO(QMetaEnumBuilderPrivate, Q_MOVABLE_TYPE);
 

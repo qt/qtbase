@@ -43,7 +43,7 @@
 
 #ifdef QT_QMAP_DEBUG
 # include <qstring.h>
-# include <qvector.h>
+# include <qlist.h>
 #endif
 
 QT_BEGIN_NAMESPACE

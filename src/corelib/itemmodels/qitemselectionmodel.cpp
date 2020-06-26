@@ -306,7 +306,7 @@ bool QItemSelectionRange::operator<(const QItemSelectionRange &other) const
 
 */
 
-static void rowLengthsFromRange(const QItemSelectionRange &range, QVector<QPair<QPersistentModelIndex, uint> > &result)
+static void rowLengthsFromRange(const QItemSelectionRange &range, QList<QPair<QPersistentModelIndex, uint>> &result)
 {
     if (range.isValid() && range.model()) {
         const QModelIndex topLeft = range.topLeft();
@@ -495,9 +495,9 @@ QModelIndexList QItemSelection::indexes() const
     return qSelectionIndexes<QModelIndexList>(*this);
 }
 
-static QVector<QPair<QPersistentModelIndex, uint> > qSelectionPersistentRowLengths(const QItemSelection &sel)
+static QList<QPair<QPersistentModelIndex, uint>> qSelectionPersistentRowLengths(const QItemSelection &sel)
 {
-    QVector<QPair<QPersistentModelIndex, uint> > result;
+    QList<QPair<QPersistentModelIndex, uint>> result;
     for (const QItemSelectionRange &range : sel)
         rowLengthsFromRange(range, result);
     return result;
@@ -902,14 +902,14 @@ void QItemSelectionModelPrivate::_q_layoutAboutToBeChanged(const QList<QPersiste
         savedPersistentRowLengths = qSelectionPersistentRowLengths(ranges);
         savedPersistentCurrentRowLengths = qSelectionPersistentRowLengths(currentSelection);
     } else {
-        savedPersistentIndexes = qSelectionIndexes<QVector<QPersistentModelIndex>>(ranges);
-        savedPersistentCurrentIndexes = qSelectionIndexes<QVector<QPersistentModelIndex>>(currentSelection);
+        savedPersistentIndexes = qSelectionIndexes<QList<QPersistentModelIndex>>(ranges);
+        savedPersistentCurrentIndexes = qSelectionIndexes<QList<QPersistentModelIndex>>(currentSelection);
     }
 }
 /*!
     \internal
 */
-static QItemSelection mergeRowLengths(const QVector<QPair<QPersistentModelIndex, uint> > &rowLengths)
+static QItemSelection mergeRowLengths(const QList<QPair<QPersistentModelIndex, uint>> &rowLengths)
 {
     if (rowLengths.isEmpty())
       return QItemSelection();
@@ -949,7 +949,7 @@ static QItemSelection mergeRowLengths(const QVector<QPair<QPersistentModelIndex,
     Merges \a indexes into an item selection made up of ranges.
     Assumes that the indexes are sorted.
 */
-static QItemSelection mergeIndexes(const QVector<QPersistentModelIndex> &indexes)
+static QItemSelection mergeIndexes(const QList<QPersistentModelIndex> &indexes)
 {
     QItemSelection colSpans;
     // merge columns

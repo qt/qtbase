@@ -790,7 +790,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
     \snippet code/src_corelib_global_qrandom.cpp 8
 
     If the range refers to contiguous memory (such as an array or the data from
-    a QVector), the fillRange() function may be used too.
+    a QList), the fillRange() function may be used too.
 
     \sa fillRange()
  */

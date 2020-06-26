@@ -43,7 +43,6 @@
 #include "qlist.h"
 #include "qsemaphore.h"
 #include "qsharedpointer.h"
-#include "qvector.h"
 #include "qthread.h"
 #include "qcoreapplication.h"
 #include <QtCore/qrunnable.h>
@@ -119,7 +118,7 @@ static void runPendingCppRunnables(JNIEnv */*env*/, jobject /*obj*/)
 namespace {
     struct GenericMotionEventListeners {
         QMutex mutex;
-        QVector<QtAndroidPrivate::GenericMotionEventListener *> listeners;
+        QList<QtAndroidPrivate::GenericMotionEventListener *> listeners;
     };
 
     enum {
@@ -168,7 +167,7 @@ static jboolean dispatchGenericMotionEvent(JNIEnv *, jclass, jobject event)
 namespace {
     struct KeyEventListeners {
         QMutex mutex;
-        QVector<QtAndroidPrivate::KeyEventListener *> listeners;
+        QList<QtAndroidPrivate::KeyEventListener *> listeners;
     };
 }
 Q_GLOBAL_STATIC(KeyEventListeners, g_keyEventListeners)

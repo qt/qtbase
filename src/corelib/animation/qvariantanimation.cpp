@@ -389,7 +389,7 @@ void QVariantAnimation::setEasingCurve(const QEasingCurve &easing)
     d->recalculateCurrentInterval();
 }
 
-typedef QVector<QVariantAnimation::Interpolator> QInterpolatorVector;
+typedef QList<QVariantAnimation::Interpolator> QInterpolatorVector;
 Q_GLOBAL_STATIC(QInterpolatorVector, registeredInterpolators)
 static QBasicMutex registeredInterpolatorsMutex;
 
@@ -571,7 +571,7 @@ QVariant QVariantAnimation::keyValueAt(qreal step) const
 /*!
     \typedef QVariantAnimation::KeyValues
 
-    This is a typedef for QVector<KeyValue>
+    This is a typedef for QList<KeyValue>
 */
 
 /*!

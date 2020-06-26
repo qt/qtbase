@@ -45,7 +45,7 @@
 #include "qreadwritelock.h"
 #include "qstring.h"
 #include "qstringlist.h"
-#include "qvector.h"
+#include "qlist.h"
 #include "qlocale.h"
 #if QT_CONFIG(easingcurve)
 #include "qeasingcurve.h"
@@ -103,7 +103,7 @@ struct DefinedTypesFilter {
 struct QMetaTypeCustomRegistry
 {
     QReadWriteLock lock;
-    QVector<QtPrivate::QMetaTypeInterface *> registry;
+    QList<QtPrivate::QMetaTypeInterface *> registry;
     QHash<QByteArray, QtPrivate::QMetaTypeInterface *> aliases;
 #ifndef QT_NO_DATASTREAM
     struct DataStreamOps
@@ -237,7 +237,7 @@ Q_GLOBAL_STATIC(QMetaTypeCustomRegistry, customTypeRegistry)
 
     \list
     \li Pointers to classes derived from QObject
-    \li QList<T>, QVector<T>, QQueue<T>, QStack<T> or QSet<T>
+    \li QList<T>, QQueue<T>, QStack<T> or QSet<T>
         where T is a registered meta type
     \li QHash<T1, T2>, QMap<T1, T2> or QPair<T1, T2> where T1 and T2 are
         registered meta types

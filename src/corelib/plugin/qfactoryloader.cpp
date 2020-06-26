@@ -404,7 +404,7 @@ QObject *QFactoryLoader::instance(int index) const
     lock.unlock();
 #endif
 
-    QVector<QStaticPlugin> staticPlugins = QPluginLoader::staticPlugins();
+    QList<QStaticPlugin> staticPlugins = QPluginLoader::staticPlugins();
     for (int i = 0; i < staticPlugins.count(); ++i) {
         const QJsonObject object = staticPlugins.at(i).metaData();
         if (object.value(QLatin1String("IID")) != QLatin1String(d->iid.constData(), d->iid.size()))

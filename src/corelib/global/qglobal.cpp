@@ -40,7 +40,6 @@
 
 #include "qplatformdefs.h"
 #include "qstring.h"
-#include "qvector.h"
 #include "qlist.h"
 #include "qdir.h"
 #include "qdatetime.h"
@@ -4267,7 +4266,7 @@ bool qunsetenv(const char *varName)
 */
 
 struct QInternal_CallBackTable {
-    QVector<QList<qInternalCallback> > callbacks;
+    QList<QList<qInternalCallback>> callbacks;
 };
 
 Q_GLOBAL_STATIC(QInternal_CallBackTable, global_callback_table)

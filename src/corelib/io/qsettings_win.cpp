@@ -40,7 +40,7 @@
 #include "qsettings.h"
 
 #include "qsettings_p.h"
-#include "qvector.h"
+#include "qlist.h"
 #include "qmap.h"
 #include "qdebug.h"
 #include <qt_windows.h>
@@ -369,7 +369,7 @@ void RegistryKey::close()
     m_handle = 0;
 }
 
-typedef QVector<RegistryKey> RegistryKeyList;
+typedef QList<RegistryKey> RegistryKeyList;
 
 /*******************************************************************************
 ** class QWinSettingsPrivate

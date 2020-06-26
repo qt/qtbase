@@ -283,7 +283,7 @@ static bool qtLoggingDebug()
     return debugEnv;
 }
 
-static QVector<QLoggingRule> loadRulesFromFile(const QString &filePath)
+static QList<QLoggingRule> loadRulesFromFile(const QString &filePath)
 {
     QFile file(filePath);
     if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -295,7 +295,7 @@ static QVector<QLoggingRule> loadRulesFromFile(const QString &filePath)
         parser.setContent(stream);
         return parser.rules();
     }
-    return QVector<QLoggingRule>();
+    return QList<QLoggingRule>();
 }
 
 /*!
@@ -305,7 +305,7 @@ static QVector<QLoggingRule> loadRulesFromFile(const QString &filePath)
  */
 void QLoggingRegistry::initializeRules()
 {
-    QVector<QLoggingRule> er, qr, cr;
+    QList<QLoggingRule> er, qr, cr;
     // get rules from environment
     const QByteArray rulesFilePath = qgetenv("QT_LOGGING_CONF");
     if (!rulesFilePath.isEmpty())

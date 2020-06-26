@@ -1088,7 +1088,7 @@ struct QMessagePattern {
         QString backtraceSeparator;
         int backtraceDepth;
     };
-    QVector<BacktraceParams> backtraceArgs; // backtrace argumens in sequence of %{backtrace
+    QList<BacktraceParams> backtraceArgs; // backtrace argumens in sequence of %{backtrace
 #endif
 
     bool fromEnvironment;

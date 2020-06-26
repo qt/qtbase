@@ -107,7 +107,7 @@ QT_BEGIN_NAMESPACE
     QBitArray(0). We recommend that you always use isEmpty() and
     avoid isNull().
 
-    \sa QByteArray, QVector
+    \sa QByteArray, QList
 */
 
 /*!

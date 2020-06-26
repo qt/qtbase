@@ -648,7 +648,7 @@ void QWindowsFileSystemWatcherEngineThread::run()
 {
     auto locker = qt_unique_lock(mutex);
     forever {
-        QVector<HANDLE> handlesCopy = handles;
+        QList<HANDLE> handlesCopy = handles;
         locker.unlock();
         DEBUG() << "QWindowsFileSystemWatcherThread" << this << "waiting on" << handlesCopy.count() << "handles";
         DWORD r = WaitForMultipleObjects(handlesCopy.count(), handlesCopy.constData(), false, INFINITE);

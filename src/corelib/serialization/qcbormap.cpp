@@ -298,9 +298,9 @@ void QCborMap::clear()
 
     \sa QMap::keys(), QHash::keys()
  */
-QVector<QCborValue> QCborMap::keys() const
+QList<QCborValue> QCborMap::keys() const
 {
-    QVector<QCborValue> result;
+    QList<QCborValue> result;
     if (d) {
         result.reserve(size());
         for (qsizetype i = 0; i < d->elements.size(); i += 2)

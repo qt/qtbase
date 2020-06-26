@@ -96,13 +96,13 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QVersionNumber::QVersionNumber(const QVector<int> &seg)
+    \fn QVersionNumber::QVersionNumber(const QList<int> &seg)
 
     Constructs a version number from the list of numbers contained in \a seg.
 */
 
 /*!
-    \fn QVersionNumber::QVersionNumber(QVector<int> &&seg)
+    \fn QVersionNumber::QVersionNumber(QList<int> &&seg)
 
     Move-constructs a version number from the list of numbers contained in \a seg.
 
@@ -168,18 +168,18 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn const QVector<int>& QVersionNumber::segments() const
+    \fn const QList<int>& QVersionNumber::segments() const
 
     Returns all of the numerical segments.
 
     \sa majorVersion(), minorVersion(), microVersion()
 */
-QVector<int> QVersionNumber::segments() const
+QList<int> QVersionNumber::segments() const
 {
     if (m_segments.isUsingPointer())
         return *m_segments.pointer_segments;
 
-    QVector<int> result;
+    QList<int> result;
     result.resize(segmentCount());
     for (int i = 0; i < segmentCount(); ++i)
         result[i] = segmentAt(i);
@@ -462,7 +462,7 @@ QVersionNumber QVersionNumber::fromString(QStringView string, int *suffixIndex)
 */
 QVersionNumber QVersionNumber::fromString(QLatin1String string, int *suffixIndex)
 {
-    QVector<int> seg;
+    QList<int> seg;
 
     const char *start = string.begin();
     const char *end = start;
@@ -487,7 +487,7 @@ QVersionNumber QVersionNumber::fromString(QLatin1String string, int *suffixIndex
 
 void QVersionNumber::SegmentStorage::setVector(int len, int maj, int min, int mic)
 {
-    pointer_segments = new QVector<int>;
+    pointer_segments = new QList<int>;
     pointer_segments->resize(len);
     pointer_segments->data()[0] = maj;
     if (len > 1) {
@@ -525,7 +525,7 @@ QDataStream& operator<<(QDataStream &out, const QVersionNumber &version)
 QDataStream& operator>>(QDataStream &in, QVersionNumber &version)
 {
     if (!version.m_segments.isUsingPointer())
-        version.m_segments.pointer_segments = new QVector<int>;
+        version.m_segments.pointer_segments = new QList<int>;
     in >> *version.m_segments.pointer_segments;
     return in;
 }

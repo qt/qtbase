@@ -4748,7 +4748,7 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
         return QDateTime(date, time, spec, offset);
     }
     case Qt::TextDate: {
-        QVector<QStringView > parts = QStringView{string}.split(QLatin1Char(' '), Qt::SkipEmptyParts);
+        QList<QStringView> parts = QStringView { string }.split(QLatin1Char(' '), Qt::SkipEmptyParts);
 
         if ((parts.count() < 5) || (parts.count() > 6))
             return QDateTime();
@@ -4800,7 +4800,7 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
             return QDateTime();
 
         // ### fixme, use QStringView::tokenize() when available
-        QVector<QStringView > timeParts = parts.at(timePart).split(QLatin1Char(':'));
+        QList<QStringView> timeParts = parts.at(timePart).split(QLatin1Char(':'));
         if (timeParts.count() < 2 || timeParts.count() > 3)
             return QDateTime();
 
@@ -4816,7 +4816,7 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
         int millisecond = 0;
         if (timeParts.count() > 2) {
             // ### fixme, use QStringView::tokenize() when available
-            const QVector<QStringView > secondParts = timeParts.at(2).split(QLatin1Char('.'));
+            const QList<QStringView> secondParts = timeParts.at(2).split(QLatin1Char('.'));
             if (secondParts.size() > 2) {
                 return QDateTime();
             }

@@ -427,7 +427,7 @@ QLibrary::LoadHints QPluginLoader::loadHints() const
 
 #endif // QT_CONFIG(library)
 
-typedef QVector<QStaticPlugin> StaticPluginList;
+typedef QList<QStaticPlugin> StaticPluginList;
 Q_GLOBAL_STATIC(StaticPluginList, staticPluginList)
 
 /*!
@@ -467,12 +467,12 @@ QObjectList QPluginLoader::staticInstances()
     meta data information.
     \sa staticInstances()
 */
-QVector<QStaticPlugin> QPluginLoader::staticPlugins()
+QList<QStaticPlugin> QPluginLoader::staticPlugins()
 {
     StaticPluginList *plugins = staticPluginList();
     if (plugins)
         return *plugins;
-    return QVector<QStaticPlugin>();
+    return QList<QStaticPlugin>();
 }
 
 /*!

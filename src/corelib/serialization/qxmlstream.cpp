@@ -1935,7 +1935,7 @@ QStringRef QXmlStreamReader::text() const
 /*!  If the tokenType() is \l DTD, this function returns the DTD's
   notation declarations. Otherwise an empty vector is returned.
 
-  The QXmlStreamNotationDeclarations class is defined to be a QVector
+  The QXmlStreamNotationDeclarations class is defined to be a QList
   of QXmlStreamNotationDeclaration.
  */
 QXmlStreamNotationDeclarations QXmlStreamReader::notationDeclarations() const
@@ -1950,7 +1950,7 @@ QXmlStreamNotationDeclarations QXmlStreamReader::notationDeclarations() const
 /*!  If the tokenType() is \l DTD, this function returns the DTD's
   unparsed (external) entity declarations. Otherwise an empty vector is returned.
 
-  The QXmlStreamEntityDeclarations class is defined to be a QVector
+  The QXmlStreamEntityDeclarations class is defined to be a QList
   of QXmlStreamEntityDeclaration.
  */
 QXmlStreamEntityDeclarations QXmlStreamReader::entityDeclarations() const
@@ -2046,7 +2046,7 @@ void QXmlStreamReader::setEntityExpansionLimit(int limit)
   element's namespace declarations. Otherwise an empty vector is
   returned.
 
-  The QXmlStreamNamespaceDeclarations class is defined to be a QVector
+  The QXmlStreamNamespaceDeclarations class is defined to be a QList
   of QXmlStreamNamespaceDeclaration.
 
   \sa addExtraNamespaceDeclaration(), addExtraNamespaceDeclarations()
@@ -2428,7 +2428,7 @@ QXmlStreamAttribute& QXmlStreamAttribute::operator=(const QXmlStreamAttribute &o
     \typedef QXmlStreamNotationDeclarations
     \relates QXmlStreamNotationDeclaration
 
-    Synonym for QVector<QXmlStreamNotationDeclaration>.
+    Synonym for QList<QXmlStreamNotationDeclaration>.
 */
 
 
@@ -2507,7 +2507,7 @@ Returns the public identifier.
     \typedef QXmlStreamNamespaceDeclarations
     \relates QXmlStreamNamespaceDeclaration
 
-    Synonym for QVector<QXmlStreamNamespaceDeclaration>.
+    Synonym for QList<QXmlStreamNamespaceDeclaration>.
 */
 
 /*!
@@ -2592,7 +2592,7 @@ Returns the namespaceUri.
     \typedef QXmlStreamEntityDeclarations
     \relates QXmlStreamEntityDeclaration
 
-    Synonym for QVector<QXmlStreamEntityDeclaration>.
+    Synonym for QList<QXmlStreamEntityDeclaration>.
 */
 
 /*!

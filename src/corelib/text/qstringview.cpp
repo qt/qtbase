@@ -107,7 +107,7 @@ QT_BEGIN_NAMESPACE
 
     \note We strongly discourage the use of QList<QStringView>,
     because QList is a very inefficient container for QStringViews (it would heap-allocate
-    every element). Use QVector (or std::vector) to hold QStringViews instead.
+    every element). Use QList (or std::vector) to hold QStringViews instead.
 
     \sa QString, QStringRef
 */
@@ -898,16 +898,16 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QVector<uint> QStringView::toUcs4() const
+    \fn QList<uint> QStringView::toUcs4() const
 
-    Returns a UCS-4/UTF-32 representation of the string as a QVector<uint>.
+    Returns a UCS-4/UTF-32 representation of the string as a QList<uint>.
 
     UCS-4 is a Unicode codec and therefore it is lossless. All characters from
     this string will be encoded in UCS-4. Any invalid sequence of code units in
     this string is replaced by the Unicode replacement character
     (QChar::ReplacementCharacter, which corresponds to \c{U+FFFD}).
 
-    The returned vector is not 0-terminated.
+    The returned list is not 0-terminated.
 
     \sa toUtf8(), toLatin1(), toLocal8Bit(), QStringEncoder
 */

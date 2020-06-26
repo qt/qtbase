@@ -38,7 +38,7 @@
 ****************************************************************************/
 
 // ### Qt6: verify if we can remove this, somehow.
-// First, try to see if the extern template from qvector.h is necessary.
+// First, try to see if the extern template from qlist.h is necessary.
 // If it still is, check if removing the copy constructors in qarraydata.h
 // make the calling convention of both sets of begin() and end() functions
 // match, as it does for the IA-64 C++ ABI.
@@ -47,5 +47,5 @@
 #  error "This file must be compiled with no precompiled headers"
 #endif
 
-// the Q_TEMPLATE_EXTERN at the bottom of qvector.h will do the trick
-#include <QtCore/qvector.h>
+// the Q_TEMPLATE_EXTERN at the bottom of qlist.h will do the trick
+#include <QtCore/qlist.h>

@@ -414,7 +414,7 @@ bool QDateTimeParser::parseFormat(const QString &newFormat)
 
     QDTPDEBUGN("parseFormat: %s", newFormat.toLatin1().constData());
 
-    QVector<SectionNode> newSectionNodes;
+    QList<SectionNode> newSectionNodes;
     Sections newDisplay;
     QStringList newSeparators;
     int i, index = 0;

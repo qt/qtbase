@@ -43,8 +43,8 @@
 
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qhashfunctions.h>
+#include <QtCore/qlist.h>
 #include <QtCore/qmutex.h>
-#include <QtCore/qvector.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qthreadstorage.h>
@@ -787,7 +787,7 @@ struct QRegularExpressionMatchPrivate : QSharedData
 
     // the capturedOffsets vector contains pairs of (start, end) positions
     // for each captured substring
-    QVector<int> capturedOffsets;
+    QList<int> capturedOffsets;
 
     int capturedCount = 0;
 

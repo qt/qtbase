@@ -296,7 +296,7 @@ QT_BEGIN_NAMESPACE
     \code
     // assuming tok's value_type is QStringView, then...
     auto tok = QStringTokenizer{~~~};
-    // ... rac1 is a QVector:
+    // ... rac1 is a QList:
     auto rac1 = tok.toContainer();
     // ... rac2 is std::pmr::vector<QStringView>:
     auto rac2 = tok.toContainer<std::pmr::vector<QStringView>>();

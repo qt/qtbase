@@ -124,7 +124,7 @@ namespace {
     };
 }
 typedef QHash<int, Path> PathHash;
-typedef QVector<QConfFileCustomFormat> CustomFormatVector;
+typedef QList<QConfFileCustomFormat> CustomFormatVector;
 
 Q_GLOBAL_STATIC(ConfFileHash, usedHashFunc)
 Q_GLOBAL_STATIC(ConfFileCache, unusedCacheFunc)
@@ -1772,7 +1772,7 @@ bool QConfFileSettingsPrivate::writeIniFile(QIODevice &device, const ParsedSetti
     }
 
     const int sectionCount = iniMap.size();
-    QVector<QSettingsIniKey> sections;
+    QList<QSettingsIniKey> sections;
     sections.reserve(sectionCount);
     for (i = iniMap.constBegin(); i != iniMap.constEnd(); ++i)
         sections.append(QSettingsIniKey(i.key(), i.value().position));

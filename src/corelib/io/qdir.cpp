@@ -51,7 +51,6 @@
 #if QT_CONFIG(regularexpression)
 #  include <qregularexpression.h>
 #endif
-#include "qvector.h"
 #include "qvarlengtharray.h"
 #include "qfilesystementry_p.h"
 #include "qfilesystemmetadata_p.h"

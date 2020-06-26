@@ -61,10 +61,10 @@
 
     The example will output 3, 2, 1 in that order.
 
-    QStack inherits from QVector. All of QVector's functionality also
+    QStack inherits from QList. All of QList's functionality also
     applies to QStack. For example, you can use isEmpty() to test
     whether the stack is empty, and you can traverse a QStack using
-    QVector's iterator classes (for example, QVectorIterator). But in
+    QList's iterator classes (for example, QListIterator). But in
     addition, QStack provides three convenience functions that make
     it easy to implement LIFO semantics: push(), pop(), and top().
 
@@ -73,7 +73,7 @@
     won't let you, for example, store a QWidget as a value; instead,
     store a QWidget *.
 
-    \sa QVector, QQueue
+    \sa QList, QQueue
 */
 
 /*!
@@ -89,7 +89,7 @@
 
     Adds element \a t to the top of the stack.
 
-    This is the same as QVector::append().
+    This is the same as QList::append().
 
     \sa pop(), top()
 */
@@ -100,7 +100,7 @@
     Returns a reference to the stack's top item. This function
     assumes that the stack isn't empty.
 
-    This is the same as QVector::last().
+    This is the same as QList::last().
 
     \sa pop(), push(), isEmpty()
 */

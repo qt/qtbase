@@ -1494,7 +1494,7 @@ static inline QCborContainerPrivate *createContainerFromCbor(QCborStreamReader &
 
         // Clamp allocation to 1M elements (avoids crashing due to corrupt
         // stream or loss of precision when converting from quint64 to
-        // QVector::size_type).
+        // QList::size_type).
         len = qMin(len, quint64(1024 * 1024 - 1));
         if (len) {
             d = new QCborContainerPrivate;

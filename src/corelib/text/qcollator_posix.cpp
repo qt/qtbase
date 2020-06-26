@@ -98,7 +98,7 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
 
     QVarLengthArray<wchar_t> original;
     stringToWCharArray(original, string);
-    QVector<wchar_t> result(original.size());
+    QList<wchar_t> result(original.size());
     if (d->isC()) {
         std::copy(original.cbegin(), original.cend(), result.begin());
     } else {

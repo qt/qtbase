@@ -69,7 +69,7 @@ void qtsDebug(const char *fmt, ...)
 #endif
 
 static QBasicMutex destructorsMutex;
-typedef QVector<void (*)(void *)> DestructorMap;
+typedef QList<void (*)(void *)> DestructorMap;
 Q_GLOBAL_STATIC(DestructorMap, destructors)
 
 QThreadStorageData::QThreadStorageData(void (*func)(void *))
@@ -118,7 +118,7 @@ void **QThreadStorageData::get() const
         qWarning("QThreadStorage::get: QThreadStorage can only be used with threads started with QThread");
         return nullptr;
     }
-    QVector<void *> &tls = data->tls;
+    QList<void *> &tls = data->tls;
     if (tls.size() <= id)
         tls.resize(id + 1);
     void **v = &tls[id];
@@ -138,7 +138,7 @@ void **QThreadStorageData::set(void *p)
         qWarning("QThreadStorage::set: QThreadStorage can only be used with threads started with QThread");
         return nullptr;
     }
-    QVector<void *> &tls = data->tls;
+    QList<void *> &tls = data->tls;
     if (tls.size() <= id)
         tls.resize(id + 1);
 
@@ -170,7 +170,7 @@ void **QThreadStorageData::set(void *p)
 
 void QThreadStorageData::finish(void **p)
 {
-    QVector<void *> *tls = reinterpret_cast<QVector<void *> *>(p);
+    QList<void *> *tls = reinterpret_cast<QList<void *> *>(p);
     if (!tls || tls->isEmpty() || !destructors())
         return; // nothing to do
 

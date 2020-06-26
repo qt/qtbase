@@ -39,7 +39,7 @@
 
 #include "qtransposeproxymodel.h"
 #include <private/qtransposeproxymodel_p.h>
-#include <QtCore/qvector.h>
+#include <QtCore/qlist.h>
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qsize.h>
 
@@ -111,7 +111,8 @@ void QTransposeProxyModelPrivate::onLayoutAboutToBeChanged(const QList<QPersiste
     emit q->layoutAboutToBeChanged(proxyParents, proxyHint);
 }
 
-void QTransposeProxyModelPrivate::onDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles)
+void QTransposeProxyModelPrivate::onDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight,
+                                                const QList<int> &roles)
 {
     Q_Q(QTransposeProxyModel);
     emit q->dataChanged(q->mapFromSource(topLeft), q->mapFromSource(bottomRight), roles);
@@ -205,7 +206,7 @@ void QTransposeProxyModel::setSourceModel(QAbstractItemModel* newSourceModel)
     QAbstractProxyModel::setSourceModel(newSourceModel);
     if (d->model) {
         using namespace std::placeholders;
-        d->sourceConnections = QVector<QMetaObject::Connection>{
+        d->sourceConnections = QList<QMetaObject::Connection>{
             connect(d->model, &QAbstractItemModel::modelAboutToBeReset, this, &QTransposeProxyModel::beginResetModel),
             connect(d->model, &QAbstractItemModel::modelReset, this, &QTransposeProxyModel::endResetModel),
             connect(d->model, &QAbstractItemModel::dataChanged, this, std::bind(&QTransposeProxyModelPrivate::onDataChanged, d, _1, _2, _3)),

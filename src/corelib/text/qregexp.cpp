@@ -51,7 +51,6 @@
 #include "qstring.h"
 #include "qstringlist.h"
 #include "qstringmatcher.h"
-#include "qvector.h"
 #include "private/qlocking_p.h"
 
 #include <limits.h>
@@ -849,7 +848,7 @@ static bool isWord(QChar ch)
   Merges two vectors of ints and puts the result into the first
   one.
 */
-static void mergeInto(QVector<int> *a, const QVector<int> &b)
+static void mergeInto(QList<int> *a, const QList<int> &b)
 {
     int asize = a->size();
     int bsize = b.size();
@@ -862,7 +861,7 @@ static void mergeInto(QVector<int> *a, const QVector<int> &b)
 #endif
     } else if (bsize >= 1) {
         int csize = asize + bsize;
-        QVector<int> c(csize);
+        QList<int> c(csize);
         int i = 0, j = 0, k = 0;
         while (i < asize) {
             if (j < bsize) {
@@ -1035,8 +1034,6 @@ static size_t qHash(const QRegExpEngineKey &key, size_t seed = 0) noexcept
 
 class QRegExpEngine;
 
-//Q_DECLARE_TYPEINFO(QVector<int>, Q_MOVABLE_TYPE);
-
 /*
   This is the engine state during matching.
 */
@@ -1064,7 +1061,7 @@ struct QRegExpMatchState
     int slideTabSize; // size of slide table
     int capturedSize;
 #ifndef QT_NO_REGEXP_BACKREF
-    QList<QVector<int> > sleeping; // list of back-reference sleepers
+    QList<QList<int>> sleeping; // list of back-reference sleepers
 #endif
     int matchLen; // length of match
     int oneTestMatchedLen; // length of partial match
@@ -1094,7 +1091,7 @@ struct QRegExpAutomatonState
     int atom; // which atom does this state belong to?
 #endif
     int match; // what does it match? (see CharClassBit and BackRefBit)
-    QVector<int> outs; // out-transitions
+    QList<int> outs; // out-transitions
     QMap<int, int> reenter; // atoms reentered when transiting out
     QMap<int, int> anchors; // anchors met when transiting out
 
@@ -1176,7 +1173,7 @@ public:
 
     bool in(QChar ch) const;
 #ifndef QT_NO_REGEXP_OPTIM
-    const QVector<int> &firstOccurrence() const { return occ1; }
+    const QList<int> &firstOccurrence() const { return occ1; }
 #endif
 
 #if defined(QT_DEBUG)
@@ -1184,9 +1181,9 @@ public:
 #endif
 
 private:
-    QVector<QRegExpCharClassRange> r; // character ranges
+    QList<QRegExpCharClassRange> r; // character ranges
 #ifndef QT_NO_REGEXP_OPTIM
-    QVector<int> occ1; // first-occurrence array
+    QList<int> occ1; // first-occurrence array
 #endif
     uint c; // character classes
     bool n; // negative?
@@ -1199,8 +1196,8 @@ struct QRegExpCharClass
 #ifndef QT_NO_REGEXP_OPTIM
     QRegExpCharClass() { occ1.fill(0, NumBadChars); }
 
-    const QVector<int> &firstOccurrence() const { return occ1; }
-    QVector<int> occ1;
+    const QList<int> &firstOccurrence() const { return occ1; }
+    QList<int> occ1;
 #endif
 };
 #endif
@@ -1230,9 +1227,9 @@ public:
     int createState(int bref);
 #endif
 
-    void addCatTransitions(const QVector<int> &from, const QVector<int> &to);
+    void addCatTransitions(const QList<int> &from, const QList<int> &to);
 #ifndef QT_NO_REGEXP_CAPTURE
-    void addPlusTransitions(const QVector<int> &from, const QVector<int> &to, int atom);
+    void addPlusTransitions(const QList<int> &from, const QList<int> &to, int atom);
 #endif
 
 #ifndef QT_NO_REGEXP_ANCHOR_ALT
@@ -1290,23 +1287,23 @@ private:
     bool bruteMatch(QRegExpMatchState &matchState) const;
 #endif
 
-    QVector<QRegExpAutomatonState> s; // array of states
+    QList<QRegExpAutomatonState> s; // array of states
 #ifndef QT_NO_REGEXP_CAPTURE
-    QVector<QRegExpAtom> f; // atom hierarchy
+    QList<QRegExpAtom> f; // atom hierarchy
     int nf; // number of atoms
     int cf; // current atom
-    QVector<int> captureForOfficialCapture;
+    QList<int> captureForOfficialCapture;
 #endif
     int officialncap; // number of captures, seen from the outside
     int ncap; // number of captures, seen from the inside
 #ifndef QT_NO_REGEXP_CCLASS
-    QVector<QRegExpCharClass> cl; // array of character classes
+    QList<QRegExpCharClass> cl; // array of character classes
 #endif
 #ifndef QT_NO_REGEXP_LOOKAHEAD
-    QVector<QRegExpLookahead *> ahead; // array of lookaheads
+    QList<QRegExpLookahead *> ahead; // array of lookaheads
 #endif
 #ifndef QT_NO_REGEXP_ANCHOR_ALT
-    QVector<QRegExpAnchorAlternation> aa; // array of (a, b) pairs of anchors
+    QList<QRegExpAnchorAlternation> aa; // array of (a, b) pairs of anchors
 #endif
 #ifndef QT_NO_REGEXP_OPTIM
     bool caretAnchored; // does the regexp start with ^?
@@ -1328,7 +1325,7 @@ private:
     QString goodStr; // the string that any match has to contain
 
     int minl; // the minimum length of a match
-    QVector<int> occ1; // first-occurrence array
+    QList<int> occ1; // first-occurrence array
 #endif
 
     /*
@@ -1370,8 +1367,8 @@ private:
         void addAnchorsToEngine(const Box &to) const;
 
         QRegExpEngine *eng; // the automaton under construction
-        QVector<int> ls; // the left states (firstpos)
-        QVector<int> rs; // the right states (lastpos)
+        QList<int> ls; // the left states (firstpos)
+        QList<int> rs; // the right states (lastpos)
         QMap<int, int> lanchors; // the left anchors
         QMap<int, int> ranchors; // the right anchors
         int skipanchors; // the anchors to match if the box is skipped
@@ -1387,7 +1384,7 @@ private:
 
         int minl; // the minimum length of this box
 #ifndef QT_NO_REGEXP_OPTIM
-        QVector<int> occ1; // first-occurrence array
+        QList<int> occ1; // first-occurrence array
 #endif
     };
 
@@ -1502,7 +1499,7 @@ QRegExpEngine::~QRegExpEngine()
 void QRegExpMatchState::prepareForMatch(QRegExpEngine *eng)
 {
     /*
-      We use one QVector<int> for all the big data used a lot in
+      We use one QList<int> for all the big data used a lot in
       matchHere() and friends.
     */
     int ns = eng->s.size(); // number of states
@@ -1661,18 +1658,18 @@ int QRegExpEngine::createState(int bref)
   capturing.
 */
 
-void QRegExpEngine::addCatTransitions(const QVector<int> &from, const QVector<int> &to)
+void QRegExpEngine::addCatTransitions(const QList<int> &from, const QList<int> &to)
 {
     for (int i = 0; i < from.size(); i++)
         mergeInto(&s[from.at(i)].outs, to);
 }
 
 #ifndef QT_NO_REGEXP_CAPTURE
-void QRegExpEngine::addPlusTransitions(const QVector<int> &from, const QVector<int> &to, int atom)
+void QRegExpEngine::addPlusTransitions(const QList<int> &from, const QList<int> &to, int atom)
 {
     for (int i = 0; i < from.size(); i++) {
         QRegExpAutomatonState &st = s[from.at(i)];
-        const QVector<int> oldOuts = st.outs;
+        const QList<int> oldOuts = st.outs;
         mergeInto(&st.outs, to);
         if (f.at(atom).capture != QRegExpAtom::NoCapture) {
             for (int j = 0; j < to.size(); j++) {
@@ -1971,7 +1968,7 @@ bool QRegExpMatchState::testAnchor(int i, int a, const int *capBegin)
 #endif
 #ifndef QT_NO_REGEXP_LOOKAHEAD
     if ((a & QRegExpEngine::Anchor_LookaheadMask) != 0) {
-        const QVector<QRegExpLookahead *> &ahead = eng->ahead;
+        const QList<QRegExpLookahead *> &ahead = eng->ahead;
         for (j = 0; j < ahead.size(); j++) {
             if ((a & (QRegExpEngine::Anchor_FirstLookahead << j)) != 0) {
                 QRegExpMatchState matchState;
@@ -2134,7 +2131,7 @@ bool QRegExpMatchState::matchHere()
         for (j = 0; j < ncur; j++) {
             int cur = curStack[j];
             const QRegExpAutomatonState &scur = eng->s.at(cur);
-            const QVector<int> &outs = scur.outs;
+            const QList<int> &outs = scur.outs;
             for (k = 0; k < outs.size(); k++) {
                 int next = outs.at(k);
                 const QRegExpAutomatonState &snext = eng->s.at(next);
@@ -2363,7 +2360,7 @@ bool QRegExpMatchState::matchHere()
                       nextStack.
                     */
                     if (needSomeSleep > 0) {
-                        QVector<int> zzZ(2 + 2 * ncap);
+                        QList<int> zzZ(2 + 2 * ncap);
                         zzZ[0] = i + needSomeSleep;
                         zzZ[1] = next;
                         if (ncap > 0) {
@@ -2394,7 +2391,7 @@ bool QRegExpMatchState::matchHere()
         j = 0;
         while (j < sleeping.count()) {
             if (sleeping.at(j)[0] == i) {
-                const QVector<int> &zzZ = sleeping.at(j);
+                const QList<int> &zzZ = sleeping.at(j);
                 int next = zzZ[1];
                 const int *capBegin = zzZ.data() + 2;
                 const int *capEnd = zzZ.data() + 2 + ncap;

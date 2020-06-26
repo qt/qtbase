@@ -43,7 +43,7 @@
 #include <qcoreapplication.h>
 #include <private/qcoreapplication_p.h>
 #include <qhash.h>
-#include <qvector.h>
+#include <qlist.h>
 #include <qdebug.h>
 #if defined(Q_OS_WIN) && !defined(QT_BOOTSTRAPPED)
 #  include <qt_windows.h>
@@ -109,7 +109,7 @@ public:
         QString description;
         QString syntax;
     };
-    QVector<PositionalArgumentDefinition> positionalArgumentDefinitions;
+    QList<PositionalArgumentDefinition> positionalArgumentDefinitions;
 
     //! The parsing mode for "-abc"
     QCommandLineParser::SingleDashWordOptionMode singleDashWordOptionMode;
