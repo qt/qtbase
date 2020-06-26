@@ -10,9 +10,9 @@ set(WrapSystemFreetype_FOUND OFF)
 # Hunter has the package named freetype, but exports the Freetype::Freetype target as upstream
 # First try the CONFIG package, and afterwards the MODULE if not found
 
-find_package(Freetype CONFIG NAMES Freetype freetype QUIET)
+find_package(Freetype QUIET CONFIG NAMES Freetype freetype QUIET)
 if(NOT Freetype_FOUND)
-    find_package(Freetype MODULE)
+    find_package(Freetype QUIET MODULE)
 endif()
 
 if(Freetype_FOUND)

@@ -19,7 +19,7 @@ if(DEFINED ENV{PKG_CONFIG_LIBDIR})
     set(__qt_dbus_pcl "$ENV{PKG_CONFIG_LIBDIR}")
 endif()
 
-find_package(DBus1)
+find_package(DBus1 QUIET)
 
 if(DEFINED __qt_dbus_pcd)
     set(ENV{PKG_CONFIG_DIR} "${__qt_dbus_pcd}")

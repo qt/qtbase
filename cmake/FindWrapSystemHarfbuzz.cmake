@@ -7,7 +7,7 @@ endif()
 
 set(WrapSystemHarfbuzz_FOUND OFF)
 
-find_package(harfbuzz)
+find_package(harfbuzz QUIET)
 
 # Gentoo has some buggy version of a harfbuzz Config file. Check if include paths are valid.
 set(__harfbuzz_target_name "harfbuzz::harfbuzz")
@@ -24,7 +24,7 @@ if(harfbuzz_FOUND AND TARGET "${__harfbuzz_target_name}")
 endif()
 
 if(__harfbuzz_broken_config_file)
-    find_package(PkgConfig)
+    find_package(PkgConfig QUIET)
 
     pkg_check_modules(harfbuzz harfbuzz IMPORTED_TARGET)
     set(__harfbuzz_target_name "PkgConfig::harfbuzz")
