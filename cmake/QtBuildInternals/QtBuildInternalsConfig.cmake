@@ -148,6 +148,13 @@ macro(qt_build_repo_begin)
     add_dependencies(install_html_docs_docs ${qt_docs_install_html_target_name})
     add_dependencies(install_qch_docs_docs ${qt_docs_install_qch_target_name})
     add_dependencies(install_docs_docs ${qt_docs_install_target_name})
+
+    # Add host_tools meta target, so that developrs can easily build only tools and their
+    # dependencies when working in qtbase.
+    if(NOT TARGET host_tools)
+        add_custom_target(host_tools)
+        add_custom_target(bootstrap_tools)
+    endif()
 endmacro()
 
 macro(qt_build_repo_end)

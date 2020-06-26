@@ -4587,6 +4587,13 @@ function(qt_add_tool target_name)
         )
     endif()
 
+    if(TARGET host_tools)
+        add_dependencies(host_tools "${target_name}")
+        if(bootstrap OR no_qt)
+            add_dependencies(bootstrap_tools "${target_name}")
+        endif()
+    endif()
+
     # If building with a multi-config configuration, the main configuration tool will be placed in
     # ./bin, while the rest will be in <CONFIG> specific subdirectories.
     qt_get_tool_cmake_configuration(tool_cmake_configuration)
