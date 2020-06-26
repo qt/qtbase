@@ -92,6 +92,8 @@ private slots:
 
     void tabBarClicked();
     void autoHide();
+
+    void mouseReleaseOutsideTabBar();
 };
 
 // Testing get/set functions
@@ -795,6 +797,42 @@ void tst_QTabBar::autoHide()
 
     tabBar.setAutoHide(false);
     QVERIFY(tabBar.isVisible());
+}
+
+void tst_QTabBar::mouseReleaseOutsideTabBar()
+{
+    class RepaintChecker : public QObject
+    {
+    public:
+        bool repainted = false;
+        QRect rectToBeRepainted;
+        bool eventFilter(QObject *, QEvent *event) override
+        {
+            if (event->type() == QEvent::Paint
+                && rectToBeRepainted.contains(static_cast<QPaintEvent *>(event)->rect()))
+                repainted = true;
+            return false;
+        }
+    } repaintChecker;
+
+    QTabBar tabBar;
+    tabBar.installEventFilter(&repaintChecker);
+    tabBar.addTab("    ");
+    tabBar.addTab("    ");
+    tabBar.show();
+    if (!QTest::qWaitForWindowExposed(&tabBar))
+        QSKIP("Window failed to show, skipping test");
+
+    QRect tabRect = tabBar.tabRect(1);
+    QPoint tabCenter = tabRect.center();
+    QTest::mousePress(&tabBar, Qt::LeftButton, {}, tabCenter);
+    QTest::mouseEvent(QTest::MouseMove, &tabBar, Qt::LeftButton, {}, tabCenter + QPoint(tabCenter.x(), tabCenter.y() + tabRect.height()));
+
+    // make sure the holding tab is repainted after releasing the mouse
+    repaintChecker.repainted = false;
+    repaintChecker.rectToBeRepainted = tabRect;
+    QTest::mouseRelease(&tabBar, Qt::LeftButton, {}, tabCenter + QPoint(tabCenter.x(), tabCenter.y() + tabRect.height()));
+    QTRY_VERIFY(repaintChecker.repainted);
 }
 
 QTEST_MAIN(tst_QTabBar)
