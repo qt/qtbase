@@ -1,4 +1,4 @@
-include(FindPkgConfig)
+find_package(PkgConfig)
 
 if(NOT TARGET PkgConfig::XRender)
     pkg_check_modules(XRender xrender IMPORTED_TARGET)
