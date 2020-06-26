@@ -819,6 +819,15 @@ def parseTest(ctx, test, data, cm_fh):
         cm_fh.write(f'qt_config_compile_test_x86simd({test} "{label}")\n')
         cm_fh.write("\n")
 
+    elif data["type"] == "machineTuple":
+        knownTests.add(test)
+
+        label = data["label"]
+
+        cm_fh.write(f"# {test}\n")
+        cm_fh.write(f'qt_config_compile_test_machine_tuple("{label}")\n')
+        cm_fh.write("\n")
+
     #    "features": {
     #        "android-style-assets": {
     #            "label": "Android Style Assets",

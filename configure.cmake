@@ -14,6 +14,9 @@ qt_find_package(Libudev PROVIDED_TARGETS PkgConfig::Libudev MODULE_NAME global Q
 
 #### Tests
 
+# machineTuple
+qt_config_compile_test_machine_tuple("machine tuple")
+
 # cxx14
 qt_config_compile_test(cxx14
     LABEL "C++14 support"

@@ -858,6 +858,25 @@ function(qt_config_compile_test_x86simd extension label)
     set(TEST_subarch_${extension} "${TEST_X86SIMD_${extension}}" CACHE INTERNAL "${label}")
 endfunction()
 
+function(qt_config_compile_test_machine_tuple label)
+    if(DEFINED TEST_MACHINE_TUPLE OR NOT (GCC OR CLANG))
+        return()
+    endif()
+
+    message(STATUS "Performing Test ${label}")
+    execute_process(COMMAND "${CMAKE_CXX_COMPILER}" -dumpmachine
+        OUTPUT_VARIABLE output
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        RESULT_VARIABLE exit_code)
+    if(exit_code EQUAL 0)
+        set(status_label "Success")
+    else()
+        set(status_label "Failed")
+    endif()
+    message(STATUS "Performing Test ${label} - ${status_label}")
+    set(TEST_machine_tuple "${output}" CACHE INTERNAL "${label}")
+endfunction()
+
 function(qt_make_features_available target)
     if(NOT "${target}" MATCHES "^${QT_CMAKE_EXPORT_NAMESPACE}::[a-zA-Z0-9_-]*$")
         message(FATAL_ERROR "${target} does not match ${QT_CMAKE_EXPORT_NAMESPACE}::[a-zA-Z0-9_-]*. INVALID NAME.")

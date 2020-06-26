@@ -293,6 +293,7 @@ qt_feature_module_end(GlobalConfig OUT_VAR_PREFIX "__GlobalConfig_")
 
 qt_generate_global_config_pri_file()
 qt_generate_global_module_pri_file()
+qt_generate_global_device_pri_file()
 qt_generate_qmake_wrapper_for_target()
 
 add_library(Qt::GlobalConfig ALIAS GlobalConfig)

@@ -1244,6 +1244,28 @@ QT_PATCH_VERSION = ${PROJECT_VERSION_PATCH}
     qt_install(FILES "${qconfig_pri_target_path}" DESTINATION ${INSTALL_MKSPECSDIR})
 endfunction()
 
+# Creates mkspecs/qdevice.pri which contains target device information for cross-builds.
+# The content of QT_QMAKE_DEVICE_OPTIONS is written verbatim into qdevice.pri.
+function(qt_generate_global_device_pri_file)
+    if(NOT CMAKE_CROSSCOMPILING)
+        return()
+    endif()
+
+    qt_path_join(qdevice_pri_target_path ${PROJECT_BINARY_DIR} ${INSTALL_MKSPECSDIR} "qdevice.pri")
+
+    set(content "")
+    foreach(opt ${QT_QMAKE_DEVICE_OPTIONS})
+        string(APPEND content "${opt}\n")
+    endforeach()
+
+    if(TEST_machine_tuple)
+        string(APPEND content "GCC_MACHINE_DUMP = ${TEST_machine_tuple}\n")
+    endif()
+
+    file(GENERATE OUTPUT "${qdevice_pri_target_path}" CONTENT "${content}")
+    qt_install(FILES "${qdevice_pri_target_path}" DESTINATION ${INSTALL_MKSPECSDIR})
+endfunction()
+
 function(qt_get_build_parts out_var)
     set(parts "libs")
 
