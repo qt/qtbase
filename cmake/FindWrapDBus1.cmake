@@ -40,3 +40,6 @@ endif()
 if(DBus1_FOUND)
     set(WrapDBus1_FOUND 1)
 endif()
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(WrapDBus1 DEFAULT_MSG WrapDBus1_FOUND)

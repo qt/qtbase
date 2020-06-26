@@ -57,3 +57,5 @@ set_package_properties(DB2 PROPERTIES
   URL "https://www.ibm.com"
   DESCRIPTION "IBM DB2 client library")
 
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(DB2 DEFAULT_MSG DB2_INCLUDE_DIRS DB2_LIBRARIES)

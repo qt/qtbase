@@ -33,3 +33,5 @@ if(Freetype_FOUND)
     endforeach()
 endif()
 
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(WrapSystemFreetype DEFAULT_MSG WrapSystemFreetype_FOUND)

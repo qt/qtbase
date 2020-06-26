@@ -42,3 +42,6 @@ if(HAVE_STDATOMIC_WITH_LIB)
 endif()
 
 set(WrapAtomic_FOUND 1)
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(WrapAtomic DEFAULT_MSG WrapAtomic_FOUND)

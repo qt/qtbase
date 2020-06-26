@@ -35,3 +35,6 @@ if(HAVE_GETTIME)
         target_link_libraries(WrapRt::WrapRt INTERFACE "${LIBRT}")
     endif()
 endif()
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(WrapRt DEFAULT_MSG WrapRt_FOUND)

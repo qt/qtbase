@@ -25,3 +25,5 @@ if(PNG_FOUND)
     endforeach()
 endif()
 
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(WrapSystemPNG DEFAULT_MSG WrapSystemPNG_FOUND)

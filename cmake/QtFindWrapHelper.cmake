@@ -76,6 +76,11 @@ macro(qt_find_package_system_or_bundled _unique_prefix)
         set_target_properties("${_qfwrap_${_unique_prefix}_WRAP_PACKAGE_TARGET}" PROPERTIES
                               INTERFACE_QT_3RD_PARTY_PACKAGE_TYPE
                               "${${_unique_prefix}_qt_package_type}")
+
+        include(FindPackageHandleStandardArgs)
+        find_package_handle_standard_args(
+            Wrap${_qfwrap_${_unique_prefix}_FRIENDLY_PACKAGE_NAME}
+            DEFAULT_MSG ${_qfwrap_${_unique_prefix}_WRAP_PACKAGE_FOUND_VAR_NAME})
     elseif(${_unique_prefix}_qt_package_type STREQUAL "bundled")
         message(FATAL_ERROR "Can't find ${${_unique_prefix}_qt_package_target_to_use}.")
     endif()

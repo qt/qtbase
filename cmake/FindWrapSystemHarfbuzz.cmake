@@ -43,3 +43,6 @@ endif()
 unset(__harfbuzz_target_name)
 unset(__harfbuzz_include_dir)
 unset(__harfbuzz_broken_config_file)
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(WrapSystemHarfbuzz DEFAULT_MSG WrapSystemHarfbuzz_FOUND)

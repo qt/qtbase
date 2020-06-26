@@ -17,3 +17,6 @@ if (double-conversion_FOUND)
     set(WrapDoubleConversion_FOUND ON)
     return()
 endif()
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(WrapDoubleConversion DEFAULT_MSG WrapDoubleConversion_FOUND)

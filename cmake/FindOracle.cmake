@@ -46,3 +46,5 @@ set_package_properties(Oracle PROPERTIES
   URL "https://www.oracle.com"
   DESCRIPTION "Oracle client library")
 
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(Oracle DEFAULT_MSG Oracle_INCLUDE_DIRS Oracle_LIBRARIES)

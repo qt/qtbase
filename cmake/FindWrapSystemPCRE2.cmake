@@ -21,3 +21,6 @@ else()
       set(WrapSystemPCRE2_FOUND TRUE)
   endif()
 endif()
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(WrapSystemPCRE2 DEFAULT_MSG WrapSystemPCRE2_FOUND)
