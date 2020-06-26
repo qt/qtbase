@@ -1,7 +1,8 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 Intel Corporation.
+** Copyright (C) 2019 Klarälvdalens Datakonsult AB.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -107,7 +108,7 @@ namespace QtSharedPointer {
 
     template <class T, typename Klass, typename RetVal>
     inline void executeDeleter(T *t, RetVal (Klass:: *memberDeleter)())
-    { (t->*memberDeleter)(); }
+    { if (t) (t->*memberDeleter)(); }
     template <class T, typename Deleter>
     inline void executeDeleter(T *t, Deleter d)
     { d(t); }
@@ -319,7 +320,8 @@ public:
     { internalConstruct(ptr, deleter); }
 
     template <typename Deleter>
-    QSharedPointer(std::nullptr_t, Deleter) : value(nullptr), d(nullptr) { }
+    QSharedPointer(std::nullptr_t, Deleter deleter) : value(nullptr)
+    { internalConstruct(static_cast<T *>(nullptr), deleter); }
 
     QSharedPointer(const QSharedPointer &other) noexcept : value(other.value), d(other.d)
     { if (d) ref(); }
@@ -470,11 +472,6 @@ private:
     template <typename X, typename Deleter>
     inline void internalConstruct(X *ptr, Deleter deleter)
     {
-        if (!ptr) {
-            d = nullptr;
-            return;
-        }
-
         typedef QtSharedPointer::ExternalRefCountWithCustomDeleter<X, Deleter> Private;
 # ifdef QT_SHAREDPOINTER_TRACK_POINTERS
         typename Private::DestroyerFn actualDeleter = &Private::safetyCheckDeleter;

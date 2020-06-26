@@ -1,7 +1,8 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 Intel Corporation.
+** Copyright (C) 2019 Klarälvdalens Datakonsult AB.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -95,6 +96,7 @@ private slots:
     void constCorrectness();
     void customDeleter();
     void lambdaCustomDeleter();
+    void customDeleterOnNullptr();
     void creating();
     void creatingCvQualified();
     void creatingVariadic();
@@ -1844,6 +1846,33 @@ void tst_QSharedPointer::lambdaCustomDeleter()
         QCOMPARE(i, 42);
     }
     safetyCheck();
+}
+
+void tst_QSharedPointer::customDeleterOnNullptr()
+{
+    Data *null = nullptr;
+    int callCount = 0;
+    auto deleter = [&callCount](Data *) { ++callCount; };
+    {
+        QSharedPointer<Data> ptr(null, deleter);
+    }
+    safetyCheck();
+    QCOMPARE(callCount, 1);
+
+    callCount = 0;
+    {
+        QSharedPointer<Data> ptr(nullptr, deleter);
+    }
+    safetyCheck();
+    QCOMPARE(callCount, 1);
+
+    callCount = 0;
+    {
+        QSharedPointer<Data> ptr1(null, deleter);
+        QSharedPointer<Data> ptr2(nullptr, deleter);
+    }
+    safetyCheck();
+    QCOMPARE(callCount, 2);
 }
 
 void customQObjectDeleterFn(QObject *obj)

@@ -1,7 +1,8 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2020 Intel Corporation.
+** Copyright (C) 2019 Klarälvdalens Datakonsult AB.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -1561,6 +1562,12 @@ void QtSharedPointer::internalSafetyCheckAdd(const void *d_ptr, const volatile v
     KnownPointers *const kp = knownPointers();
     if (!kp)
         return;                 // end-game: the application is being destroyed already
+
+    if (!ptr) {
+        // nullptr is allowed to be tracked by more than one QSharedPointer, so we
+        // need something else to put in our tracking structures
+        ptr = d_ptr;
+    }
 
     QMutexLocker lock(&kp->mutex);
     Q_ASSERT(!kp->dPointers.contains(d_ptr));
