@@ -834,7 +834,8 @@ recodeFromUser(const QString &input, const ushort *actions, int from, int to)
 static inline void appendToUser(QString &appendTo, const QStringRef &value, QUrl::FormattingOptions options,
                                 const ushort *actions)
 {
-    if (options == QUrl::PrettyDecoded) {
+    // Test ComponentFormattingOptions, ignore FormattingOptions.
+    if ((options & 0xFFFF0000) == QUrl::PrettyDecoded) {
         appendTo += value;
         return;
     }
@@ -3321,9 +3322,10 @@ QString QUrl::toString(FormattingOptions options) const
         // also catches isEmpty()
         return url;
     }
-    if (options == QUrl::FullyDecoded) {
+    if ((options & QUrl::FullyDecoded) == QUrl::FullyDecoded) {
         qWarning("QUrl: QUrl::FullyDecoded is not permitted when reconstructing the full URL");
-        options = QUrl::PrettyDecoded;
+        options &= ~QUrl::FullyDecoded;
+        //options |= QUrl::PrettyDecoded; // no-op, value is 0
     }
 
     // return just the path if:
@@ -3336,7 +3338,7 @@ QString QUrl::toString(FormattingOptions options) const
             && (!d->hasQuery() || options.testFlag(QUrl::RemoveQuery))
             && (!d->hasFragment() || options.testFlag(QUrl::RemoveFragment))
             && isLocalFile()) {
-        url = d->toLocalFile(options);
+        url = d->toLocalFile(options | QUrl::FullyDecoded);
         return url;
     }
 

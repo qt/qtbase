@@ -70,6 +70,8 @@ private slots:
     void toString_PreferLocalFile();
     void toString_constructed_data();
     void toString_constructed();
+    void toDisplayString_PreferLocalFile_data();
+    void toDisplayString_PreferLocalFile();
     void toAndFromStringList_data();
     void toAndFromStringList();
     void isParentOf_data();
@@ -1210,6 +1212,32 @@ void tst_QUrl::toString_constructed()
     QCOMPARE(url.toEncoded(formattingOptions), asEncoded);
 }
 
+void tst_QUrl::toDisplayString_PreferLocalFile_data()
+{
+    QTest::addColumn<QUrl>("url");
+    QTest::addColumn<QString>("string");
+
+    QTest::newRow("basic") << QUrl::fromLocalFile("/home/charles/foomoo")
+                           << QString::fromLatin1("/home/charles/foomoo");
+    QTest::newRow("with%") << QUrl::fromLocalFile("/home/charles/foo%20moo")
+                           << QString::fromLatin1("/home/charles/foo%20moo");
+    QTest::newRow("non-local") << QUrl("file://host/foo")
+                               << QString::fromLatin1("//host/foo");
+    QTest::newRow("query-and-fragment") << QUrl("file://user:pass@example.org/a?b=c%20d%23e#frag%23ment")
+                                        << QString::fromLatin1("file://user@example.org/a?b=c d%23e#frag%23ment");
+    QTest::newRow("http")  << QUrl("http://user:pass@example.org/a?b=c%20d%23e#frag%23ment")
+                           << QString::fromLatin1("http://user@example.org/a?b=c d%23e#frag%23ment");
+}
+
+void tst_QUrl::toDisplayString_PreferLocalFile()
+{
+    QFETCH(QUrl, url);
+    QFETCH(QString, string);
+
+    if (url.isLocalFile() && url.query().isEmpty() && url.fragment().isEmpty())
+        QCOMPARE(url.toLocalFile(), string);
+    QCOMPARE(url.toDisplayString(QUrl::PreferLocalFile), string);
+}
 
 void tst_QUrl::isParentOf()
 {
