@@ -822,6 +822,7 @@ QXmlStreamReaderPrivate::QXmlStreamReaderPrivate(QXmlStreamReader *q)
 void QXmlStreamReaderPrivate::init()
 {
     scanDtd = false;
+    lastAttributeIsCData = false;
     token = -1;
     token_char = 0;
     isEmptyElement = false;
