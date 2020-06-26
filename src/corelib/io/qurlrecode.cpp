@@ -676,7 +676,7 @@ qt_urlRecode(QString &appendTo, QStringView in,
              QUrl::ComponentFormattingOptions encoding, const ushort *tableModifications)
 {
     uchar actionTable[sizeof defaultActionTable];
-    if (encoding == QUrl::FullyDecoded) {
+    if ((encoding & QUrl::FullyDecoded) == QUrl::FullyDecoded) {
         return int(decode(appendTo, in));
     }
 
