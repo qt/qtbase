@@ -929,10 +929,19 @@ QT.${config_module_name}_private.disabled_features = ${disabled_private_features
 
     qt_path_join(private_pri_file_path "${target_path}" "${private_pri_file_name}")
     list(APPEND pri_files "${private_pri_file_path}")
+
+    set(library_prefixes ${CMAKE_SHARED_LIBRARY_PREFIX} ${CMAKE_STATIC_LIBRARY_PREFIX})
+    set(library_suffixes
+        ${CMAKE_SHARED_LIBRARY_SUFFIX}
+        ${CMAKE_EXTRA_SHARED_LIBRARY_SUFFIXES}
+        ${CMAKE_STATIC_LIBRARY_SUFFIX})
     add_custom_command(
         OUTPUT "${private_pri_file_path}"
-        DEPENDS ${inputs}
+        DEPENDS ${inputs} "${QT_CMAKE_DIR}/QtGenerateLibPri.cmake"
         COMMAND ${CMAKE_COMMAND} "-DIN_FILES=${inputs}" "-DOUT_FILE=${private_pri_file_path}"
+                "-DLIBRARY_PREFIXES=${library_prefixes}"
+                "-DLIBRARY_SUFFIXES=${library_suffixes}"
+                "-DLINK_LIBRARY_FLAG=${CMAKE_LINK_LIBRARY_FLAG}"
                 "-DCONFIGS=${configs}"
                 -P "${QT_CMAKE_DIR}/QtGenerateLibPri.cmake"
         VERBATIM)
@@ -976,7 +985,7 @@ set(libs $<TARGET_FILE:${target}>)
     qt_path_join(qt_build_libdir ${QT_BUILD_DIR} ${INSTALL_LIBDIR})
     add_custom_command(
         OUTPUT "${pri_file}"
-        DEPENDS ${inputs}
+        DEPENDS ${inputs} "${QT_CMAKE_DIR}/QtGenerateExtPri.cmake"
         COMMAND ${CMAKE_COMMAND} "-DIN_FILES=${inputs}" "-DOUT_FILE=${pri_file}" -DLIB=${lib}
                 "-DCONFIGS=${configs}"
                 "-DQT_BUILD_LIBDIR=${qt_build_libdir}"
@@ -1275,10 +1284,18 @@ CONFIG += ${private_config_joined}
         list(APPEND inputs "${preliminary_pri_root}/${cfg}/${pri_data_cmake_file}")
     endforeach()
 
+    set(library_prefixes ${CMAKE_SHARED_LIBRARY_PREFIX} ${CMAKE_STATIC_LIBRARY_PREFIX})
+    set(library_suffixes
+        ${CMAKE_SHARED_LIBRARY_SUFFIX}
+        ${CMAKE_EXTRA_SHARED_LIBRARY_SUFFIXES}
+        ${CMAKE_STATIC_LIBRARY_SUFFIX})
     add_custom_command(
         OUTPUT "${qmodule_pri_target_path}"
-        DEPENDS ${inputs}
+        DEPENDS ${inputs} "${QT_CMAKE_DIR}/QtGenerateLibPri.cmake"
         COMMAND ${CMAKE_COMMAND} "-DIN_FILES=${inputs}" "-DOUT_FILE=${qmodule_pri_target_path}"
+                "-DLIBRARY_PREFIXES=${library_prefixes}"
+                "-DLIBRARY_SUFFIXES=${library_suffixes}"
+                "-DLINK_LIBRARY_FLAG=${CMAKE_LINK_LIBRARY_FLAG}"
                 "-DCONFIGS=${configs}"
                 -P "${QT_CMAKE_DIR}/QtGenerateLibPri.cmake"
         VERBATIM)
