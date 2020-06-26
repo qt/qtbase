@@ -1,4 +1,4 @@
-find_package(PkgConfig)
+find_package(PkgConfig QUIET)
 
 pkg_check_modules(Libudev libudev IMPORTED_TARGET)
 

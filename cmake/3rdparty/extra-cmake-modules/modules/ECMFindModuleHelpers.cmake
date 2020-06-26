@@ -214,7 +214,7 @@ macro(ecm_find_package_handle_library_components module_name)
     endif()
 
     include(FindPackageHandleStandardArgs)
-    find_package(PkgConfig)
+    find_package(PkgConfig QUIET)
     foreach(ecm_fpwc_comp ${ECM_FPWC_COMPONENTS})
         set(ecm_fpwc_dep_vars)
         set(ecm_fpwc_dep_targets)

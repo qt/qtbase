@@ -1,4 +1,4 @@
-find_package(PkgConfig)
+find_package(PkgConfig QUIET)
 
 pkg_check_modules(XKB_COMMON_X11 "xkbcommon-x11>=0.4.1" IMPORTED_TARGET)
 

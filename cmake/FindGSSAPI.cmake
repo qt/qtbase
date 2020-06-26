@@ -1,4 +1,4 @@
-find_package(PkgConfig)
+find_package(PkgConfig QUIET)
 pkg_check_modules(PC_GSSAPI QUIET krb5-gssapi)
 
 find_path(GSSAPI_INCLUDE_DIRS

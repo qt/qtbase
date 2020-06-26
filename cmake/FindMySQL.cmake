@@ -18,7 +18,7 @@
 # ``MySQL::MySQL``
 #     The mysql client library
 
-find_package(PkgConfig)
+find_package(PkgConfig QUIET)
 pkg_check_modules(PC_MySQL QUIET mysqlclient)
 
 find_path(MySQL_INCLUDE_DIRS

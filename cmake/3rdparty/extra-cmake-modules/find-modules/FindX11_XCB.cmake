@@ -69,7 +69,7 @@ ecm_find_package_version_check(X11_XCB)
 
 # use pkg-config to get the directories and then use these values
 # in the FIND_PATH() and FIND_LIBRARY() calls
-find_package(PkgConfig)
+find_package(PkgConfig QUIET)
 pkg_check_modules(PKG_X11_XCB QUIET x11-xcb)
 
 set(X11_XCB_DEFINITIONS ${PKG_X11_XCB_CFLAGS_OTHER})

@@ -47,7 +47,7 @@ endif()
 if(NOT WIN32)
     # Use pkg-config to get the directories and then use these values
     # in the FIND_PATH() and FIND_LIBRARY() calls
-    find_package(PkgConfig)
+    find_package(PkgConfig QUIET)
     pkg_check_modules(PKG_XKB QUIET xkbcommon)
 
     set(XKB_DEFINITIONS ${PKG_XKB_CFLAGS_OTHER})

@@ -1,4 +1,4 @@
-find_package(PkgConfig)
+find_package(PkgConfig QUIET)
 
 pkg_check_modules(Libsystemd libsystemd IMPORTED_TARGET)
 

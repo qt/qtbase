@@ -1,4 +1,4 @@
-find_package(PkgConfig)
+find_package(PkgConfig QUIET)
 
 pkg_check_modules(ATSPI2 atspi-2 IMPORTED_TARGET)
 

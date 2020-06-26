@@ -18,7 +18,7 @@
 # ``ZSTD::ZSTD``
 #     The zstd library
 
-find_package(PkgConfig)
+find_package(PkgConfig QUIET)
 pkg_check_modules(PC_ZSTD QUIET libzstd)
 
 find_path(ZSTD_INCLUDE_DIRS

@@ -51,7 +51,7 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-find_package(PkgConfig)
+find_package(PkgConfig QUIET)
 pkg_check_modules(PC_GLIB2 QUIET glib-2.0)
 
 find_path(GLIB2_INCLUDE_DIRS
