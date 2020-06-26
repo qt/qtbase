@@ -1147,6 +1147,29 @@ function(qt_generate_global_config_pri_file)
     list(JOIN corrected_public_config " " public_config_joined)
     list(JOIN corrected_qt_public_config " " qt_public_config_joined)
 
+    set(content "")
+    if(GCC OR CLANG AND NOT "${CMAKE_SYSROOT}" STREQUAL "")
+        string(APPEND content "!host_build {
+    QMAKE_CFLAGS    += --sysroot=\$\$[QT_SYSROOT]
+    QMAKE_CXXFLAGS  += --sysroot=\$\$[QT_SYSROOT]
+    QMAKE_LFLAGS    += --sysroot=\$\$[QT_SYSROOT]
+}
+")
+    endif()
+
+    string(APPEND content "QT_ARCH = ${TEST_architecture_arch}
+QT_BUILDABI = ${TEST_buildAbi}
+QT.global.enabled_features = ${corrected_enabled_features}
+QT.global.disabled_features = ${corrected_disabled_features}
+QT.global.disabled_features += release build_all
+QT_CONFIG += ${qt_public_config_joined}
+CONFIG += ${config_entries} ${public_config_joined}
+QT_VERSION = ${PROJECT_VERSION}
+QT_MAJOR_VERSION = ${PROJECT_VERSION_MAJOR}
+QT_MINOR_VERSION = ${PROJECT_VERSION_MINOR}
+QT_PATCH_VERSION = ${PROJECT_VERSION_PATCH}
+")
+
     set(extra_statements "")
     if(QT_NAMESPACE)
         list(APPEND extra_statements "QT_NAMESPACE = ${QT_NAMESPACE}")
@@ -1192,25 +1215,13 @@ function(qt_generate_global_config_pri_file)
     list(APPEND extra_statements "QT_EDITION = Open Source")
 
     if(extra_statements)
-        string (REPLACE ";" "\n" extra_statements "${extra_statements}")
+        string(REPLACE ";" "\n" extra_statements "${extra_statements}")
+        string(APPEND content "\n${extra_statements}")
     endif()
 
     file(GENERATE
         OUTPUT "${qconfig_pri_target_path}"
-        CONTENT
-        "QT_ARCH = ${TEST_architecture_arch}
-QT_BUILDABI = ${TEST_buildAbi}
-QT.global.enabled_features = ${corrected_enabled_features}
-QT.global.disabled_features = ${corrected_disabled_features}
-QT.global.disabled_features += release build_all
-QT_CONFIG += ${qt_public_config_joined}
-CONFIG += ${config_entries} ${public_config_joined}
-QT_VERSION = ${PROJECT_VERSION}
-QT_MAJOR_VERSION = ${PROJECT_VERSION_MAJOR}
-QT_MINOR_VERSION = ${PROJECT_VERSION_MINOR}
-QT_PATCH_VERSION = ${PROJECT_VERSION_PATCH}
-${extra_statements}
-"
+        CONTENT "${content}"
     )
     qt_install(FILES "${qconfig_pri_target_path}" DESTINATION ${INSTALL_MKSPECSDIR})
 endfunction()
