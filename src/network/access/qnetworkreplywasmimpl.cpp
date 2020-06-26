@@ -121,7 +121,6 @@ void QNetworkReplyWasmImpl::abort()
 
     d->state = QNetworkReplyPrivate::Aborted;
     d->doAbort();
-    d->m_fetch = 0;
     close();
 }
 
@@ -282,8 +281,6 @@ void QNetworkReplyWasmImplPrivate::emitReplyError(QNetworkReply::NetworkError er
 
     q->setError(errorCode, errorString);
     emit q->errorOccurred(errorCode);
-    m_fetch = 0;
-    q->close();
 }
 
 void QNetworkReplyWasmImplPrivate::emitDataReadProgress(qint64 bytesReceived, qint64 bytesTotal)
