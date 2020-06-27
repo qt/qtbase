@@ -439,10 +439,36 @@ void QJsonValue::swap(QJsonValue &other) noexcept
             "stringification" of map keys.
     \endtable
 
-    For all other QVariant types a conversion to a QString will be attempted. If the returned string
-    is empty, a Null QJsonValue will be stored, otherwise a String value using the returned QString.
+    \section2 Loss of information and other types
 
-    \sa toVariant()
+    QVariant can carry more information than is representable in JSON. If the
+    QVariant is not one of the types above, the conversion is not guaranteed
+    and is subject to change in future versions of Qt, as the UUID one did.
+    Code should strive not to use any other types than those listed above.
+
+    If QVariant::isNull() returns true, a null QJsonValue is returned or
+    inserted into the list or object, regardless of the type carried by
+    QVariant. Note the behavior change in Qt 6.0 affecting QVariant::isNull()
+    also affects this function.
+
+    A floating point value that is either an infinity or NaN will be converted
+    to a null JSON value. Since Qt 6.0, QJsonValue can store the full precision
+    of any 64-bit signed integer without loss, but in previous versions values
+    outside the range of ±2^53 may lose precision. Unsigned 64-bit values
+    greater than or equal to 2^63 will either lose precision or alias to
+    negative values, so QMetaType::ULongLong should be avoided.
+
+    For other types not listed above, a conversion to string will be attempted,
+    usually but not always by calling QVariant::toString(). If the conversion
+    fails the value is replaced by a null JSON value. Note that
+    QVariant::toString() is also lossy for the majority of types.
+
+    Please note that the conversions via QVariant::toString() are subject to
+    change at any time. Both QVariant and QJsonValue may be extended in the
+    future to support more types, which will result in a change in how this
+    function performs conversions.
+
+    \sa toVariant(), QCborValue::fromVariant()
  */
 QJsonValue QJsonValue::fromVariant(const QVariant &variant)
 {
