@@ -378,6 +378,29 @@ public:
     inline bool endsWith(const T &t) const { return !isEmpty() && last() == t; }
     QList<T> mid(qsizetype pos, qsizetype len = -1) const;
 
+    QList<T> first(qsizetype n) const
+    {
+        Q_ASSERT(size_t(n) <= size_t(size()));
+        return QList<T>(begin(), begin() + n);
+    }
+    QList<T> last(qsizetype n) const
+    {
+        Q_ASSERT(size_t(n) <= size_t(size()));
+        return QList<T>(end() - n, end());
+    }
+    QList<T> sliced(qsizetype pos) const
+    {
+        Q_ASSERT(size_t(pos) <= size_t(size()));
+        return QList<T>(begin() + pos, end());
+    }
+    QList<T> sliced(qsizetype pos, qsizetype n) const
+    {
+        Q_ASSERT(size_t(pos) <= size_t(size()));
+        Q_ASSERT(n >= 0);
+        Q_ASSERT(pos + n <= size());
+        return QList<T>(begin() + pos, begin() + pos + n);
+    }
+
     T value(qsizetype i) const { return value(i, T()); }
     T value(qsizetype i, const T &defaultValue) const;
 

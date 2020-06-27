@@ -202,6 +202,55 @@
     are included.
 */
 
+/*!
+    \fn template <typename T> QList<T> QList<T>::first(qsizetype n) const
+    \since 6.0
+
+    Returns a sub-list that contains the first \a n elements
+    of this list.
+
+    \note The behavior is undefined when \a n < 0 or \a n > size().
+
+    \sa last(), sliced()
+*/
+
+/*!
+    \fn template <typename T> QList<T> QList<T>::last(qsizetype n) const
+    \since 6.0
+
+    Returns a sub-list that contains the last \a n elements of this list.
+
+    \note The behavior is undefined when \a n < 0 or \a n > size().
+
+    \sa first(), sliced()
+*/
+
+/*!
+    \fn template <typename T> QList<T> QList<T>::sliced(qsizetype pos, qsizetype n) const
+    \since 6.0
+
+    Returns a sub-list that contains \a n elements of this list,
+    starting at position \a pos.
+
+    \note The behavior is undefined when \a pos < 0, \a n < 0,
+    or \a pos + \a n > size().
+
+    \sa first(), last()
+*/
+
+/*!
+    \fn template <typename T> QList<T> QList<T>::sliced(qsizetype pos) const
+    \since 6.0
+    \overload
+
+    Returns a sub-list that contains the elements of this list starting at
+    position \a pos and extending to its end.
+
+    \note The behavior is undefined when \a pos < 0 or \a pos > size().
+
+    \sa first(), last()
+*/
+
 
 /*! \fn template <typename T> QList<T>::QList()
 

@@ -267,6 +267,7 @@ private slots:
     void last() const;
     void lastIndexOf() const;
     void mid() const;
+    void sliced() const;
     void moveInt() const;
     void moveMovable() const;
     void moveCustom() const;
@@ -1287,6 +1288,13 @@ void tst_QList::first() const
     myvec.prepend(23);
     QCOMPARE(myvec.first(), 23);
     QCOMPARE(myvec.constFirst(), 23);
+
+
+    QCOMPARE(QList<int>().first(0), QList<int>());
+    QCOMPARE(myvec.first(0), QList<int>());
+    QCOMPARE(myvec.first(1), (QList<int>{23}));
+    QCOMPARE(myvec.first(2), (QList<int>{23, 42}));
+    QCOMPARE(myvec.first(3), myvec);
 }
 
 void tst_QList::constFirst() const
@@ -1546,6 +1554,12 @@ void tst_QList::last() const
     myvec.remove(3);
     QCOMPARE(myvec.last(), QLatin1String("C"));
     QCOMPARE(myvec.constLast(), QLatin1String("C"));
+
+    QCOMPARE(QList<QString>().last(0), QList<QString>());
+    QCOMPARE(myvec.last(0), QList<QString>());
+    QCOMPARE(myvec.last(1), (QList<QString>{QLatin1String("C")}));
+    QCOMPARE(myvec.last(2), (QList<QString>{QLatin1String("B"), QLatin1String("C")}));
+    QCOMPARE(myvec.last(3), myvec);
 }
 
 void tst_QList::constLast() const
@@ -1646,6 +1660,22 @@ void tst_QList::mid() const
     QCOMPARE(list.mid(6, 10), QList<QString>() << "kitty");
     QCOMPARE(list.mid(-1, 20), list);
     QCOMPARE(list.mid(4), QList<QString>() << "buck" << "hello" << "kitty");
+}
+
+void tst_QList::sliced() const
+{
+    QList<QString> list;
+    list << "foo" << "bar" << "baz" << "bak" << "buck" << "hello" << "kitty";
+
+    QCOMPARE(QList<QString>().sliced(0), QList<QString>());
+    QCOMPARE(QList<QString>().sliced(0, 0), QList<QString>());
+    QCOMPARE(list.sliced(3, 3), QList<QString>() << "bak" << "buck" << "hello");
+    QCOMPARE(list.sliced(3), QList<QString>() << "bak" << "buck" << "hello" << "kitty");
+    QCOMPARE(list.sliced(6, 1), QList<QString>() << "kitty");
+    QCOMPARE(list.sliced(6), QList<QString>() << "kitty");
+    QCOMPARE(list.sliced(0, list.size()), list);
+    QCOMPARE(list.sliced(0), list);
+    QCOMPARE(list.sliced(4), QList<QString>() << "buck" << "hello" << "kitty");
 }
 
 template <typename T>
