@@ -67,7 +67,7 @@
 
 - (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker
 {
-    Q_UNUSED(picker)
+    Q_UNUSED(picker);
     emit m_fileDialog->reject();
 }
 

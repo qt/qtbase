@@ -830,7 +830,7 @@ QStringList QFontconfigDatabase::fallbacksForFamily(const QString &family, QFont
 static FcPattern *queryFont(const FcChar8 *file, const QByteArray &data, int id, FcBlanks *blanks, int *count)
 {
 #if FC_VERSION < 20402
-    Q_UNUSED(data)
+    Q_UNUSED(data);
     return FcFreeTypeQuery(file, id, blanks, count);
 #else
     if (data.isEmpty())

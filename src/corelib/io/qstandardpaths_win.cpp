@@ -84,7 +84,7 @@ static void appendOrganizationAndApp(QString &path) // Courtesy qstandardpaths_u
     if (!appName.isEmpty())
         path += QLatin1Char('/') + appName;
 #else // !QT_BOOTSTRAPPED
-    Q_UNUSED(path)
+    Q_UNUSED(path);
 #endif
 }
 

@@ -473,16 +473,16 @@ bool QWindowSystemInterface::handleShortcutEvent(QWindow *window, ulong timestam
 
     return shortcutMap.tryShortcut(&keyEvent);
 #else
-    Q_UNUSED(window)
-    Q_UNUSED(timestamp)
-    Q_UNUSED(keyCode)
-    Q_UNUSED(modifiers)
-    Q_UNUSED(nativeScanCode)
-    Q_UNUSED(nativeVirtualKey)
-    Q_UNUSED(nativeModifiers)
-    Q_UNUSED(text)
-    Q_UNUSED(autorepeat)
-    Q_UNUSED(count)
+    Q_UNUSED(window);
+    Q_UNUSED(timestamp);
+    Q_UNUSED(keyCode);
+    Q_UNUSED(modifiers);
+    Q_UNUSED(nativeScanCode);
+    Q_UNUSED(nativeVirtualKey);
+    Q_UNUSED(nativeModifiers);
+    Q_UNUSED(text);
+    Q_UNUSED(autorepeat);
+    Q_UNUSED(count);
     return false;
 #endif
 }
@@ -528,7 +528,7 @@ bool QWindowSystemInterface::handleExtendedKeyEvent(QWindow *window, ulong times
         return true;
     }
 #else
-    Q_UNUSED(tryShortcutOverride)
+    Q_UNUSED(tryShortcutOverride);
 #endif
 
     QWindowSystemInterfacePrivate::KeyEvent * e =
@@ -1222,13 +1222,13 @@ Q_GUI_EXPORT bool qt_sendShortcutOverrideEvent(QObject *o, ulong timestamp, int 
     // Then as QShortcutEvent
     return shortcutMap.tryShortcut(&qevent);
 #else
-    Q_UNUSED(o)
-    Q_UNUSED(timestamp)
-    Q_UNUSED(k)
-    Q_UNUSED(mods)
-    Q_UNUSED(text)
-    Q_UNUSED(autorep)
-    Q_UNUSED(count)
+    Q_UNUSED(o);
+    Q_UNUSED(timestamp);
+    Q_UNUSED(k);
+    Q_UNUSED(mods);
+    Q_UNUSED(text);
+    Q_UNUSED(autorep);
+    Q_UNUSED(count);
     return false;
 #endif
 }

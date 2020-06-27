@@ -125,7 +125,7 @@ void QSystemTrayIconSys::mousePressEvent(QMouseEvent *ev)
     if (ev->button() == Qt::RightButton && q->contextMenu())
         q->contextMenu()->popup(globalPos);
 #else
-    Q_UNUSED(globalPos)
+    Q_UNUSED(globalPos);
 #endif // QT_NO_CONTEXTMENU
 
     if (QBalloonTip::isBalloonVisible()) {

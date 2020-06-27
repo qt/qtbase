@@ -104,7 +104,7 @@ void QAndroidPlatformMenu::syncMenuItem(QPlatformMenuItem *menuItem)
 
 void QAndroidPlatformMenu::syncSeparatorsCollapsible(bool enable)
 {
-    Q_UNUSED(enable)
+    Q_UNUSED(enable);
 }
 
 void QAndroidPlatformMenu::setText(const QString &text)

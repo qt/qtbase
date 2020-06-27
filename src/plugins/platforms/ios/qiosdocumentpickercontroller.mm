@@ -96,7 +96,7 @@
 
 - (void)documentPickerWasCancelled:(UIDocumentPickerViewController *)controller
 {
-    Q_UNUSED(controller)
+    Q_UNUSED(controller);
     emit m_fileDialog->reject();
 }
 

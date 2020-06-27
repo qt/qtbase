@@ -3004,8 +3004,8 @@ void *QWindowsWindow::surface(void *nativeConfig, int *err)
         return &m_vkSurface;
     }
 #elif defined(QT_NO_OPENGL)
-    Q_UNUSED(err)
-    Q_UNUSED(nativeConfig)
+    Q_UNUSED(err);
+    Q_UNUSED(nativeConfig);
     return 0;
 #endif
 #ifndef QT_NO_OPENGL

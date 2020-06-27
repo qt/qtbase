@@ -79,9 +79,9 @@ bool QAndroidPlatformMessageDialogHelper::show(Qt::WindowFlags windowFlags
                                          , Qt::WindowModality windowModality
                                          , QWindow *parent)
 {
-    Q_UNUSED(windowFlags)
-    Q_UNUSED(windowModality)
-    Q_UNUSED(parent)
+    Q_UNUSED(windowFlags);
+    Q_UNUSED(windowModality);
+    Q_UNUSED(parent);
     QSharedPointer<QMessageDialogOptions> opt = options();
     if (!opt.data())
         return false;

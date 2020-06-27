@@ -3397,9 +3397,9 @@ void QAbstractItemView::rowsAboutToBeRemoved(const QModelIndex &parent, int star
 */
 void QAbstractItemViewPrivate::_q_rowsRemoved(const QModelIndex &index, int start, int end)
 {
-    Q_UNUSED(index)
-    Q_UNUSED(start)
-    Q_UNUSED(end)
+    Q_UNUSED(index);
+    Q_UNUSED(start);
+    Q_UNUSED(end);
 
     Q_Q(QAbstractItemView);
     if (q->isVisible())
@@ -3478,9 +3478,9 @@ void QAbstractItemViewPrivate::_q_columnsAboutToBeRemoved(const QModelIndex &par
 */
 void QAbstractItemViewPrivate::_q_columnsRemoved(const QModelIndex &index, int start, int end)
 {
-    Q_UNUSED(index)
-    Q_UNUSED(start)
-    Q_UNUSED(end)
+    Q_UNUSED(index);
+    Q_UNUSED(start);
+    Q_UNUSED(end);
 
     Q_Q(QAbstractItemView);
     if (q->isVisible())
@@ -3505,9 +3505,9 @@ void QAbstractItemViewPrivate::_q_columnsRemoved(const QModelIndex &index, int s
 */
 void QAbstractItemViewPrivate::_q_rowsInserted(const QModelIndex &index, int start, int end)
 {
-    Q_UNUSED(index)
-    Q_UNUSED(start)
-    Q_UNUSED(end)
+    Q_UNUSED(index);
+    Q_UNUSED(start);
+    Q_UNUSED(end);
 
 #ifndef QT_NO_ACCESSIBILITY
     Q_Q(QAbstractItemView);
@@ -3528,9 +3528,9 @@ void QAbstractItemViewPrivate::_q_rowsInserted(const QModelIndex &index, int sta
 */
 void QAbstractItemViewPrivate::_q_columnsInserted(const QModelIndex &index, int start, int end)
 {
-    Q_UNUSED(index)
-    Q_UNUSED(start)
-    Q_UNUSED(end)
+    Q_UNUSED(index);
+    Q_UNUSED(start);
+    Q_UNUSED(end);
 
     Q_Q(QAbstractItemView);
     if (q->isVisible())
@@ -3955,7 +3955,7 @@ QItemSelectionModel::SelectionFlags QAbstractItemView::selectionCommand(const QM
 QItemSelectionModel::SelectionFlags QAbstractItemViewPrivate::multiSelectionCommand(
     const QModelIndex &index, const QEvent *event) const
 {
-    Q_UNUSED(index)
+    Q_UNUSED(index);
 
     if (event) {
         switch (event->type()) {

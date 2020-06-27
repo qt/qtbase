@@ -609,15 +609,15 @@ class ErrorDevice : public QIODevice
 protected:
     qint64 readData(char *data, qint64 maxlen) override
     {
-        Q_UNUSED(data)
-        Q_UNUSED(maxlen)
+        Q_UNUSED(data);
+        Q_UNUSED(maxlen);
         return -1;
     }
 
     qint64 writeData(const char *data, qint64 len) override
     {
-        Q_UNUSED(data)
-        Q_UNUSED(len)
+        Q_UNUSED(data);
+        Q_UNUSED(len);
         return -1;
     }
 };

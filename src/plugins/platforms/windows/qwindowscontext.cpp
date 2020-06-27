@@ -465,7 +465,7 @@ void QWindowsContext::setTabletAbsoluteRange(int a)
     if (!d->m_tabletSupport.isNull())
         d->m_tabletSupport->setAbsoluteRange(a);
 #else
-    Q_UNUSED(a)
+    Q_UNUSED(a);
 #endif
 }
 

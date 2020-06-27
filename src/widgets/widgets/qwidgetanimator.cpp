@@ -55,7 +55,7 @@ QWidgetAnimator::QWidgetAnimator(QMainWindowLayout *layout)
 : m_mainWindowLayout(layout)
 #endif
 {
-    Q_UNUSED(layout)
+    Q_UNUSED(layout);
 }
 
 void QWidgetAnimator::abort(QWidget *w)

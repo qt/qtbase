@@ -217,7 +217,7 @@
 
 - (BOOL)acceptsFirstMouse:(NSEvent *)theEvent
 {
-    Q_UNUSED(theEvent)
+    Q_UNUSED(theEvent);
     if (!m_platformWindow)
         return NO;
     if ([self isTransparentForUserInput])
@@ -548,7 +548,7 @@
 
 - (void)mouseEnteredImpl:(NSEvent *)theEvent
 {
-    Q_UNUSED(theEvent)
+    Q_UNUSED(theEvent);
     if (!m_platformWindow)
         return;
 

@@ -960,7 +960,7 @@ QWindowsNativeImage *QWindowsFontEngine::drawGDIGlyph(HFONT font, glyph_t glyph,
                                                   const QTransform &t,
                                                   QImage::Format mask_format)
 {
-    Q_UNUSED(mask_format)
+    Q_UNUSED(mask_format);
     glyph_metrics_t gm = boundingBox(glyph);
 
 //     printf(" -> for glyph %4x\n", glyph);

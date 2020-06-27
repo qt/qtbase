@@ -313,7 +313,7 @@ QPrintPropertiesDialog::QPrintPropertiesDialog(QPrinter *printer, QPrintDevice *
     });
 
 #else
-    Q_UNUSED(currentPrintDevice)
+    Q_UNUSED(currentPrintDevice);
     widget.tabs->setTabEnabled(advancedTabIndex, false);
 #endif
 }

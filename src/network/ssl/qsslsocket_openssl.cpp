@@ -376,7 +376,7 @@ int q_ssl_sess_set_new_cb(SSL *ssl, SSL_SESSION *session)
 
 int qt_OCSP_status_server_callback(SSL *ssl, void *ocspRequest)
 {
-    Q_UNUSED(ocspRequest)
+    Q_UNUSED(ocspRequest);
     if (!ssl)
         return SSL_TLSEXT_ERR_ALERT_FATAL;
 

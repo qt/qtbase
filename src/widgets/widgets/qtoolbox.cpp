@@ -726,7 +726,7 @@ void QToolBox::changeEvent(QEvent *ev)
  */
 void QToolBox::itemInserted(int index)
 {
-    Q_UNUSED(index)
+    Q_UNUSED(index);
 }
 
 /*!
@@ -737,7 +737,7 @@ void QToolBox::itemInserted(int index)
  */
 void QToolBox::itemRemoved(int index)
 {
-    Q_UNUSED(index)
+    Q_UNUSED(index);
 }
 
 /*! \reimp */

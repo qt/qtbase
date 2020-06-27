@@ -63,7 +63,7 @@ QDebug operator<<(QDebug debug, const QStyleOption *option)
             debug << ", \"" << (textSize < 20 ? ivo->text : ivo->text.left(20) + QLatin1String("...")) << '"';
         debug << ", ";
 #else // Qt 5
-        Q_UNUSED(ivo)
+        Q_UNUSED(ivo);
 #endif
     } else {
         debug << "QStyleOption(";

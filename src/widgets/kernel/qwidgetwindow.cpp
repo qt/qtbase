@@ -632,8 +632,8 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
             QApplication::forwardEvent(receiver, &e, event);
         }
 #else
-            Q_UNUSED(contextMenuTrigger)
-            Q_UNUSED(oldOpenPopupCount)
+            Q_UNUSED(contextMenuTrigger);
+            Q_UNUSED(oldOpenPopupCount);
         }
 #endif
 

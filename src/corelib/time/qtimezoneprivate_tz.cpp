@@ -888,8 +888,8 @@ QString QTzTimeZonePrivate::displayName(qint64 atMSecsSinceEpoch,
     if (m_icu->isValid())
         return m_icu->displayName(atMSecsSinceEpoch, nameType, locale);
 #else
-    Q_UNUSED(nameType)
-    Q_UNUSED(locale)
+    Q_UNUSED(nameType);
+    Q_UNUSED(locale);
 #endif
     return abbreviation(atMSecsSinceEpoch);
 }
@@ -906,9 +906,9 @@ QString QTzTimeZonePrivate::displayName(QTimeZone::TimeType timeType,
     if (m_icu->isValid())
         return m_icu->displayName(timeType, nameType, locale);
 #else
-    Q_UNUSED(timeType)
-    Q_UNUSED(nameType)
-    Q_UNUSED(locale)
+    Q_UNUSED(timeType);
+    Q_UNUSED(nameType);
+    Q_UNUSED(locale);
 #endif
     // If no ICU available then have to use abbreviations instead
     // Abbreviations don't have GenericTime

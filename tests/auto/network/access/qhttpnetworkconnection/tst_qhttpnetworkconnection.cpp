@@ -233,7 +233,7 @@ void tst_QHttpNetworkConnection::finishedReply()
 
 void tst_QHttpNetworkConnection::finishedWithError(QNetworkReply::NetworkError errorCode, const QString &detail)
 {
-    Q_UNUSED(detail)
+    Q_UNUSED(detail);
     finishedWithErrorCalled = true;
     netErrorCode = errorCode;
 }
@@ -425,7 +425,7 @@ void tst_QHttpNetworkConnection::_connect()
 void tst_QHttpNetworkConnection::challenge401(const QHttpNetworkRequest &request,
                                                         QAuthenticator *authenticator)
 {
-    Q_UNUSED(request)
+    Q_UNUSED(request);
 
     QHttpNetworkReply *reply = qobject_cast<QHttpNetworkReply*>(sender());
     if (reply) {
@@ -563,7 +563,7 @@ void tst_QHttpNetworkConnection::compression()
 #ifndef QT_NO_SSL
 void tst_QHttpNetworkConnection::sslErrors(const QList<QSslError> &errors)
 {
-    Q_UNUSED(errors)
+    Q_UNUSED(errors);
 
     QHttpNetworkReply *reply = qobject_cast<QHttpNetworkReply*>(sender());
     if (reply) {

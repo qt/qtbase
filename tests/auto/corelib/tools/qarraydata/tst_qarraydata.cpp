@@ -736,7 +736,7 @@ size_t CountedObject::liveCount = 0;
 
 void tst_QArrayData::arrayOps()
 {
-    CountedObject::LeakChecker leakChecker; Q_UNUSED(leakChecker)
+    CountedObject::LeakChecker leakChecker; Q_UNUSED(leakChecker);
 
     const int intArray[5] = { 80, 101, 100, 114, 111 };
     const QString stringArray[5] = {
@@ -901,7 +901,7 @@ void tst_QArrayData::arrayOps()
 
 void tst_QArrayData::arrayOps2()
 {
-    CountedObject::LeakChecker leakChecker; Q_UNUSED(leakChecker)
+    CountedObject::LeakChecker leakChecker; Q_UNUSED(leakChecker);
 
     ////////////////////////////////////////////////////////////////////////////
     // appendInitialize

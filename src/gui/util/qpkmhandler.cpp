@@ -67,7 +67,7 @@ static PkmType typeMap[5] = {
 
 bool QPkmHandler::canRead(const QByteArray &suffix, const QByteArray &block)
 {
-    Q_UNUSED(suffix)
+    Q_UNUSED(suffix);
 
     return block.startsWith("PKM ");
 }

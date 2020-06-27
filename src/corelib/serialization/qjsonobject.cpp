@@ -1421,7 +1421,7 @@ QJsonObject::const_iterator QJsonObject::constFindImpl(T key) const
  */
 void QJsonObject::detach(uint reserve)
 {
-    Q_UNUSED(reserve)
+    Q_UNUSED(reserve);
     Q_ASSERT(!reserve);
     detach2(reserve);
 }

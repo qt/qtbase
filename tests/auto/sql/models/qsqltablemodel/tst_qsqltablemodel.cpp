@@ -414,7 +414,7 @@ public:
     SelectRowOverrideTestModel(QObject *parent, QSqlDatabase db):QSqlTableModel(parent, db) { }
     bool selectRow(int row)
     {
-        Q_UNUSED(row)
+        Q_UNUSED(row);
         return select();
     }
 };

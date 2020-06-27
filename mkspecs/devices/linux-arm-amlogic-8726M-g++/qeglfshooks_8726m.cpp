@@ -75,8 +75,8 @@ QSize QEglFS8726MHooks::screenSize() const
 
 EGLNativeWindowType QEglFS8726MHooks::createNativeWindow(QPlatformWindow *window, const QSize &size, const QSurfaceFormat &format)
 {
-    Q_UNUSED(window)
-    Q_UNUSED(format)
+    Q_UNUSED(window);
+    Q_UNUSED(format);
 
     fbdev_window *window = new fbdev_window;
     window->width = size.width();

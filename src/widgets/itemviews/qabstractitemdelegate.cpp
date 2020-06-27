@@ -551,7 +551,7 @@ bool QAbstractItemDelegatePrivate::tryFixup(QWidget *editor)
         }
     }
 #else
-    Q_UNUSED(editor)
+    Q_UNUSED(editor);
 #endif // QT_CONFIG(lineedit)
 
     return true;

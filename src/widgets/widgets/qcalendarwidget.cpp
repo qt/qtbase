@@ -1621,7 +1621,7 @@ public:
 protected:
     void paintEvent(QPaintEvent *e) override
     {
-        Q_UNUSED(e)
+        Q_UNUSED(e);
 
         QStyleOptionToolButton opt;
         initStyleOption(&opt);

@@ -242,7 +242,7 @@ static bool createFileFromTemplate(NativeFileHandle &file, QTemporaryFileName &t
             return false;
         }
 #else // POSIX
-        Q_UNUSED(flags)
+        Q_UNUSED(flags);
         file = QT_OPEN(path.constData(),
                 QT_OPEN_CREAT | QT_OPEN_EXCL | QT_OPEN_RDWR | QT_OPEN_LARGEFILE,
                 static_cast<mode_t>(mode));

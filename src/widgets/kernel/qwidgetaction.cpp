@@ -250,7 +250,7 @@ bool QWidgetAction::eventFilter(QObject *obj, QEvent *event)
 */
 QWidget *QWidgetAction::createWidget(QWidget *parent)
 {
-    Q_UNUSED(parent)
+    Q_UNUSED(parent);
     return nullptr;
 }
 

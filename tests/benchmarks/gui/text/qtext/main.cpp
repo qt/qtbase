@@ -399,7 +399,7 @@ void tst_QText::paintLayoutToPixmap_painterFill()
 void tst_QText::document()
 {
     QTextDocument *doc = new QTextDocument;
-    Q_UNUSED(doc)
+    Q_UNUSED(doc);
 
     QBENCHMARK {
         QTextDocument *doc = new QTextDocument;

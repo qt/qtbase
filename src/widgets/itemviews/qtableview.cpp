@@ -975,7 +975,7 @@ void QTableViewPrivate::drawAndClipSpans(const QRegion &area, QPainter *painter,
 */
 void QTableViewPrivate::_q_updateSpanInsertedRows(const QModelIndex &parent, int start, int end)
 {
-    Q_UNUSED(parent)
+    Q_UNUSED(parent);
     spans.updateInsertedRows(start, end);
 }
 
@@ -985,7 +985,7 @@ void QTableViewPrivate::_q_updateSpanInsertedRows(const QModelIndex &parent, int
 */
 void QTableViewPrivate::_q_updateSpanInsertedColumns(const QModelIndex &parent, int start, int end)
 {
-    Q_UNUSED(parent)
+    Q_UNUSED(parent);
     spans.updateInsertedColumns(start, end);
 }
 
@@ -995,7 +995,7 @@ void QTableViewPrivate::_q_updateSpanInsertedColumns(const QModelIndex &parent, 
 */
 void QTableViewPrivate::_q_updateSpanRemovedRows(const QModelIndex &parent, int start, int end)
 {
-    Q_UNUSED(parent)
+    Q_UNUSED(parent);
     spans.updateRemovedRows(start, end);
 }
 
@@ -1005,7 +1005,7 @@ void QTableViewPrivate::_q_updateSpanRemovedRows(const QModelIndex &parent, int 
 */
 void QTableViewPrivate::_q_updateSpanRemovedColumns(const QModelIndex &parent, int start, int end)
 {
-    Q_UNUSED(parent)
+    Q_UNUSED(parent);
     spans.updateRemovedColumns(start, end);
 }
 
@@ -3451,7 +3451,7 @@ void QTableView::selectionChanged(const QItemSelection &selected,
                                   const QItemSelection &deselected)
 {
     Q_D(QTableView);
-    Q_UNUSED(d)
+    Q_UNUSED(d);
 #ifndef QT_NO_ACCESSIBILITY
     if (QAccessible::isActive()) {
         // ### does not work properly for selection ranges.

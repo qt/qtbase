@@ -142,7 +142,7 @@ bool QAccessibleCache::containsObject(QObject *obj) const
 QAccessible::Id QAccessibleCache::insert(QObject *object, QAccessibleInterface *iface) const
 {
     Q_ASSERT(iface);
-    Q_UNUSED(object)
+    Q_UNUSED(object);
 
     // object might be 0
     Q_ASSERT(!containsObject(object));

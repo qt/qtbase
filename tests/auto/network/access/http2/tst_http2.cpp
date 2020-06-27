@@ -990,12 +990,12 @@ void tst_Http2::invalidFrame()
 
 void tst_Http2::invalidRequest(quint32 streamID)
 {
-    Q_UNUSED(streamID)
+    Q_UNUSED(streamID);
 }
 
 void tst_Http2::decompressionFailed(quint32 streamID)
 {
-    Q_UNUSED(streamID)
+    Q_UNUSED(streamID);
 }
 
 void tst_Http2::receivedRequest(quint32 streamID)
@@ -1021,7 +1021,7 @@ void tst_Http2::receivedData(quint32 streamID)
 
 void tst_Http2::windowUpdated(quint32 streamID)
 {
-    Q_UNUSED(streamID)
+    Q_UNUSED(streamID);
 
     ++windowUpdates;
 }

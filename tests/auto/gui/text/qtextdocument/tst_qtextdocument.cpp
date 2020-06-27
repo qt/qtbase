@@ -240,9 +240,9 @@ void tst_QTextDocument::writeActualAndExpected(const char *testTag, const QStrin
         out.close();
     }
 #else
-    Q_UNUSED(testTag)
-    Q_UNUSED(actual)
-    Q_UNUSED(expected)
+    Q_UNUSED(testTag);
+    Q_UNUSED(actual);
+    Q_UNUSED(expected);
 #endif
 }
 

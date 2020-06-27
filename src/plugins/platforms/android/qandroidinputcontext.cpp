@@ -897,8 +897,8 @@ void QAndroidInputContext::update(Qt::InputMethodQueries queries)
 void QAndroidInputContext::invokeAction(QInputMethod::Action action, int cursorPosition)
 {
 #warning TODO Handle at least QInputMethod::ContextMenu action
-    Q_UNUSED(action)
-    Q_UNUSED(cursorPosition)
+    Q_UNUSED(action);
+    Q_UNUSED(cursorPosition);
     //### click should be passed to the IM, but in the meantime it's better to ignore it than to do something wrong
     // if (action == QInputMethod::Click)
     //     commit();

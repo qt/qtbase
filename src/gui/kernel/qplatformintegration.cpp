@@ -324,7 +324,7 @@ QPlatformSharedGraphicsCache *QPlatformIntegration::createPlatformSharedGraphics
 */
 QPaintEngine *QPlatformIntegration::createImagePaintEngine(QPaintDevice *paintDevice) const
 {
-    Q_UNUSED(paintDevice)
+    Q_UNUSED(paintDevice);
     return nullptr;
 }
 
@@ -472,7 +472,7 @@ QStringList QPlatformIntegration::themeNames() const
 
 class QPlatformTheme *QPlatformIntegration::createPlatformTheme(const QString &name) const
 {
-    Q_UNUSED(name)
+    Q_UNUSED(name);
     return new QPlatformTheme;
 }
 
@@ -483,7 +483,7 @@ class QPlatformTheme *QPlatformIntegration::createPlatformTheme(const QString &n
 */
 QPlatformOffscreenSurface *QPlatformIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const
 {
-    Q_UNUSED(surface)
+    Q_UNUSED(surface);
     return nullptr;
 }
 

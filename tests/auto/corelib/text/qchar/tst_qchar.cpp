@@ -881,7 +881,7 @@ void tst_QChar::normalization()
     QFETCH(QStringList, columns);
     QFETCH(int, part);
 
-    Q_UNUSED(part)
+    Q_UNUSED(part);
 
         // CONFORMANCE:
         // 1. The following invariants must be true for all conformant implementations

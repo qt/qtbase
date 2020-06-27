@@ -102,7 +102,7 @@ static void checkWarnMessage(const QIODevice *device, const char *function, cons
         d << ", \"" << QDir::toNativeSeparators(f->fileName()) << '"';
     d << ')';
 #else
-    Q_UNUSED(device)
+    Q_UNUSED(device);
 #endif // !QT_NO_QOBJECT
     d << ": " << what;
 #else

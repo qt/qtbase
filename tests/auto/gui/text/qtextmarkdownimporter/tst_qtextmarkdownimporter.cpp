@@ -382,7 +382,7 @@ void tst_QTextMarkdownImporter::pathological() // avoid crashing on crazy input
     QFile f(QFINDTESTDATA(filename));
     QVERIFY(f.open(QFile::ReadOnly));
 #ifdef QT_NO_DEBUG
-    Q_UNUSED(warning)
+    Q_UNUSED(warning);
 #else
     if (!warning.isEmpty())
         QTest::ignoreMessage(QtWarningMsg, warning.toLatin1());

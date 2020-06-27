@@ -713,7 +713,7 @@ void tst_QTransposeProxyModel::span()
         {}
         QSize span(const QModelIndex &index) const override
         {
-            Q_UNUSED(index)
+            Q_UNUSED(index);
             return QSize(2, 1);
         }
     };

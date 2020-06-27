@@ -61,7 +61,7 @@ struct AstcHeader
 
 bool QAstcHandler::canRead(const QByteArray &suffix, const QByteArray &block)
 {
-    Q_UNUSED(suffix)
+    Q_UNUSED(suffix);
 
     return block.startsWith("\x13\xAB\xA1\x5C");
 }

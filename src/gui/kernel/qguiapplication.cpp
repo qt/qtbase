@@ -2676,7 +2676,7 @@ void QGuiApplicationPrivate::processTabletEvent(QWindowSystemInterfacePrivate::T
         processMouseEvent(&mouseEvent);
     }
 #else
-    Q_UNUSED(e)
+    Q_UNUSED(e);
 #endif
 }
 
@@ -2690,7 +2690,7 @@ void QGuiApplicationPrivate::processTabletEnterProximityEvent(QWindowSystemInter
     ev.setTimestamp(e->timestamp);
     QGuiApplication::sendSpontaneousEvent(qGuiApp, &ev);
 #else
-    Q_UNUSED(e)
+    Q_UNUSED(e);
 #endif
 }
 
@@ -2704,7 +2704,7 @@ void QGuiApplicationPrivate::processTabletLeaveProximityEvent(QWindowSystemInter
     ev.setTimestamp(e->timestamp);
     QGuiApplication::sendSpontaneousEvent(qGuiApp, &ev);
 #else
-    Q_UNUSED(e)
+    Q_UNUSED(e);
 #endif
 }
 
@@ -4196,7 +4196,7 @@ void QGuiApplicationPrivate::notifyThemeChanged()
 #if QT_CONFIG(draganddrop)
 void QGuiApplicationPrivate::notifyDragStarted(const QDrag *drag)
 {
-    Q_UNUSED(drag)
+    Q_UNUSED(drag);
 
 }
 #endif

@@ -57,7 +57,7 @@ struct GUserEventSource
 
 static gboolean userEventSourcePrepare(GSource *source, gint *timeout)
 {
-    Q_UNUSED(timeout)
+    Q_UNUSED(timeout);
     GUserEventSource *userEventSource = reinterpret_cast<GUserEventSource *>(source);
     return userEventSource->d->wakeUpCalled;
 }

@@ -214,7 +214,7 @@ QDBusMenuItem::QDBusMenuItem(const QDBusPlatformMenuItem *item)
 
 QDBusMenuItemList QDBusMenuItem::items(const QList<int> &ids, const QStringList &propertyNames)
 {
-    Q_UNUSED(propertyNames)
+    Q_UNUSED(propertyNames);
     QDBusMenuItemList ret;
     const QList<const QDBusPlatformMenuItem *> items = QDBusPlatformMenuItem::byIds(ids);
     ret.reserve(items.size());

@@ -215,8 +215,8 @@ QMarginsF QCocoaPrintDevice::printableMargins(const QPageSize &pageSize,
                                               QPageLayout::Orientation orientation,
                                               int resolution) const
 {
-    Q_UNUSED(orientation)
-    Q_UNUSED(resolution)
+    Q_UNUSED(orientation);
+    Q_UNUSED(resolution);
     if (!m_havePageSizes)
         loadPageSizes();
     if (m_printableMargins.contains(pageSize.key()))

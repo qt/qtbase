@@ -175,7 +175,7 @@ void tst_QGestureRecognizer::panGesture()
     QFETCH(int, panSubTest);
     QFETCH(bool, gestureExpected);
 
-    Q_UNUSED(panSubTest) // Single finger pan will be added later.
+    Q_UNUSED(panSubTest); // Single finger pan will be added later.
 
     const int panPoints = 2;
     const Qt::GestureType gestureType = Qt::PanGesture;
@@ -219,7 +219,7 @@ void tst_QGestureRecognizer::pinchGesture()
     QFETCH(int, pinchSubTest);
     QFETCH(bool, gestureExpected);
 
-    Q_UNUSED(pinchSubTest)
+    Q_UNUSED(pinchSubTest);
 
     const Qt::GestureType gestureType = Qt::PinchGesture;
     TestWidget widget(GestureTypeVector(1, gestureType));

@@ -160,7 +160,7 @@ struct SharedResource : public QOpenGLSharedResource
     void freeResource(QOpenGLContext *context)
     {
         Q_ASSERT(context == QOpenGLContext::currentContext());
-        Q_UNUSED(context)
+        Q_UNUSED(context);
         resource = 0;
         if (tracker)
             tracker->freeResourceCalls++;

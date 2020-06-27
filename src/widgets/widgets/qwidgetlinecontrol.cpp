@@ -694,7 +694,7 @@ void QWidgetLineControl::selectWordAtPos(int cursor)
 */
 bool QWidgetLineControl::finishChange(int validateFromState, bool update, bool edited)
 {
-    Q_UNUSED(update)
+    Q_UNUSED(update);
 
     if (m_textDirty) {
         // do validation
@@ -788,7 +788,7 @@ void QWidgetLineControl::internalSetText(const QString &txt, int pos, bool edite
         }
     }
 #else
-    Q_UNUSED(changed)
+    Q_UNUSED(changed);
 #endif
 }
 

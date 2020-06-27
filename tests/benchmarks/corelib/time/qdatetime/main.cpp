@@ -126,7 +126,7 @@ void tst_QDateTime::create()
     QBENCHMARK {
         for (int jd = JULIAN_DAY_2010; jd < JULIAN_DAY_2020; ++jd) {
             QDateTime test(QDate::fromJulianDay(jd), QTime::fromMSecsSinceStartOfDay(0));
-            Q_UNUSED(test)
+            Q_UNUSED(test);
         }
     }
 }
@@ -427,7 +427,7 @@ void tst_QDateTime::equivalent()
         for (const QDateTime &test : list)
             result = (test == other);
     }
-    Q_UNUSED(result)
+    Q_UNUSED(result);
 }
 
 void tst_QDateTime::equivalentUtc()
@@ -440,7 +440,7 @@ void tst_QDateTime::equivalentUtc()
         for (const QDateTime &test : list)
             result = (test == other);
     }
-    Q_UNUSED(result)
+    Q_UNUSED(result);
 }
 
 void tst_QDateTime::lessThan()
@@ -453,7 +453,7 @@ void tst_QDateTime::lessThan()
         for (const QDateTime &test : list)
             result = (test < other);
     }
-    Q_UNUSED(result)
+    Q_UNUSED(result);
 }
 
 void tst_QDateTime::lessThanUtc()
@@ -466,7 +466,7 @@ void tst_QDateTime::lessThanUtc()
         for (const QDateTime &test : list)
             result = (test < other);
     }
-    Q_UNUSED(result)
+    Q_UNUSED(result);
 }
 
 void tst_QDateTime::currentDateTime()

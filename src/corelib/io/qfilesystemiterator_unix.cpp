@@ -66,9 +66,9 @@ QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Fi
     , dirEntry(nullptr)
     , lastError(0)
 {
-    Q_UNUSED(filters)
-    Q_UNUSED(nameFilters)
-    Q_UNUSED(flags)
+    Q_UNUSED(filters);
+    Q_UNUSED(nameFilters);
+    Q_UNUSED(flags);
 
     if ((dir = QT_OPENDIR(nativePath.constData())) == nullptr) {
         lastError = errno;

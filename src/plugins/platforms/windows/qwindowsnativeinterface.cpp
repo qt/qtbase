@@ -182,7 +182,7 @@ QVariantMap QWindowsNativeInterface::windowProperties(QPlatformWindow *window) c
 void *QWindowsNativeInterface::nativeResourceForIntegration(const QByteArray &resource)
 {
 #ifdef QT_NO_OPENGL
-    Q_UNUSED(resource)
+    Q_UNUSED(resource);
 #else
     if (resourceType(resource) == GlHandleType) {
         if (const QWindowsStaticOpenGLContext *sc = QWindowsIntegration::staticOpenGLContext())

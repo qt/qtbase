@@ -571,7 +571,7 @@ void QWindowPrivate::clearFocusObject()
 // implement heightForWidth().
 QRectF QWindowPrivate::closestAcceptableGeometry(const QRectF &rect) const
 {
-    Q_UNUSED(rect)
+    Q_UNUSED(rect);
     return QRectF();
 }
 

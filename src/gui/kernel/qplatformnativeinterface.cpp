@@ -137,7 +137,7 @@ QFunctionPointer QPlatformNativeInterface::platformFunction(const QByteArray &fu
 */
 QVariantMap QPlatformNativeInterface::windowProperties(QPlatformWindow *window) const
 {
-    Q_UNUSED(window)
+    Q_UNUSED(window);
     return QVariantMap();
 }
 

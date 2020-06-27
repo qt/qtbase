@@ -62,7 +62,7 @@ QPrintEngine *QWindowsPrinterSupport::createNativePrintEngine(QPrinter::PrinterM
 
 QPaintEngine *QWindowsPrinterSupport::createPaintEngine(QPrintEngine *engine, QPrinter::PrinterMode printerMode)
 {
-    Q_UNUSED(printerMode)
+    Q_UNUSED(printerMode);
     return static_cast<QWin32PrintEngine *>(engine);
 }
 

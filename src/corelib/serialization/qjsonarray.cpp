@@ -1109,7 +1109,7 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
  */
 void QJsonArray::detach(uint reserve)
 {
-    Q_UNUSED(reserve)
+    Q_UNUSED(reserve);
     Q_ASSERT(!reserve);
     detach2(0);
 }

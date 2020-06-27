@@ -662,9 +662,9 @@ bool QWindowsMouseHandler::translateGestureEvent(QWindow *window, HWND hwnd,
                                                  QtWindows::WindowsEventType,
                                                  MSG msg, LRESULT *)
 {
-    Q_UNUSED(window)
-    Q_UNUSED(hwnd)
-    Q_UNUSED(msg)
+    Q_UNUSED(window);
+    Q_UNUSED(hwnd);
+    Q_UNUSED(msg);
     return false;
 }
 

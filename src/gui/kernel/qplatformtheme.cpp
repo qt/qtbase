@@ -410,7 +410,7 @@ const QPalette *QPlatformTheme::palette(Palette type) const
 
 const QFont *QPlatformTheme::font(Font type) const
 {
-    Q_UNUSED(type)
+    Q_UNUSED(type);
     return nullptr;
 }
 
@@ -698,7 +698,7 @@ QString QPlatformTheme::standardButtonText(int button) const
 
 QKeySequence QPlatformTheme::standardButtonShortcut(int button) const
 {
-    Q_UNUSED(button)
+    Q_UNUSED(button);
     return QKeySequence();
 }
 #endif // QT_CONFIG(shortcut)

@@ -70,7 +70,7 @@ void PrintView::print(QPrinter *printer)
     resize(printer->width(), printer->height());
     render(printer);
 #else
-    Q_UNUSED(printer)
+    Q_UNUSED(printer);
 #endif
 }
 

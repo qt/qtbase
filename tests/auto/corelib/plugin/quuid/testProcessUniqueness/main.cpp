@@ -32,8 +32,8 @@
 // This is a testcase for QTBUG-11213
 int main(int argc, char **argv)
 {
-    Q_UNUSED(argc)
-    Q_UNUSED(argv)
+    Q_UNUSED(argc);
+    Q_UNUSED(argv);
 
     // Now print a few uuids.
     printf("%s", qPrintable(QUuid::createUuid().toString()));

@@ -2119,9 +2119,9 @@ static void dumpFocusChain(QWidget *start, bool bForward, const char *desc = nul
         cur = bForward ? widgetPrivate->focus_next : widgetPrivate->focus_prev;
     } while (cur != start);
 #else
-    Q_UNUSED(start)
-    Q_UNUSED(bForward)
-    Q_UNUSED(desc)
+    Q_UNUSED(start);
+    Q_UNUSED(bForward);
+    Q_UNUSED(desc);
 #endif
 }
 
@@ -7398,7 +7398,7 @@ void tst_QWidget::render_task188133()
     // Make sure QWidget::render does not trigger QWidget::repaint/update
     // and asserts for Qt::WA_WState_Created.
     const QPixmap pixmap = mainWindow.grab(QRect(QPoint(0, 0), QSize(-1, -1)));
-    Q_UNUSED(pixmap)
+    Q_UNUSED(pixmap);
 }
 
 void tst_QWidget::render_task211796()

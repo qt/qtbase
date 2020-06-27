@@ -127,7 +127,7 @@ QSize QEglFSBrcmIntegration::screenSize() const
 
 EGLNativeWindowType QEglFSBrcmIntegration::createNativeWindow(QPlatformWindow *window, const QSize &size, const QSurfaceFormat &format)
 {
-    Q_UNUSED(window)
+    Q_UNUSED(window);
     return createDispmanxLayer(QPoint(0, 0), size, 1, format.hasAlpha() ? DISPMANX_FLAGS_ALPHA_FROM_SOURCE : DISPMANX_FLAGS_ALPHA_FIXED_ALL_PIXELS);
 }
 

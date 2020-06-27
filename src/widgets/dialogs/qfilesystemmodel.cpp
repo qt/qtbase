@@ -863,7 +863,7 @@ static void displayRenameFailedMessage(const QString &newName)
     QMessageBox::information(nullptr, QFileSystemModel::tr("Invalid filename"),
                              message, QMessageBox::Ok);
 #else
-    Q_UNUSED(newName)
+    Q_UNUSED(newName);
 #endif // QT_CONFIG(messagebox)
 }
 
@@ -1633,7 +1633,7 @@ void QFileSystemModel::setResolveSymlinks(bool enable)
     Q_D(QFileSystemModel);
     d->fileInfoGatherer.setResolveSymlinks(enable);
 #else
-    Q_UNUSED(enable)
+    Q_UNUSED(enable);
 #endif
 }
 
@@ -1721,7 +1721,7 @@ void QFileSystemModel::setNameFilters(const QStringList &filters)
     d->forceSort = true;
     d->delayedSort();
 #else
-    Q_UNUSED(filters)
+    Q_UNUSED(filters);
 #endif
 }
 
@@ -1824,7 +1824,7 @@ QFileSystemModelPrivate::QFileSystemNode* QFileSystemModelPrivate::addNode(QFile
 #if QT_CONFIG(filesystemwatcher)
     node->populate(info);
 #else
-    Q_UNUSED(info)
+    Q_UNUSED(info);
 #endif
 #if defined(Q_OS_WIN)
     //The parentNode is "" so we are listing the drives
@@ -2016,8 +2016,8 @@ void QFileSystemModelPrivate::_q_fileSystemChanged(const QString &path,
         delayedSort();
     }
 #else
-    Q_UNUSED(path)
-    Q_UNUSED(updates)
+    Q_UNUSED(path);
+    Q_UNUSED(updates);
 #endif // filesystemwatcher
 }
 
@@ -2165,7 +2165,7 @@ bool QFileSystemModelPrivate::passNameFilters(const QFileSystemNode *node) const
         return false;
     }
 #else
-    Q_UNUSED(node)
+    Q_UNUSED(node);
 #endif
     return true;
 }

@@ -41,6 +41,6 @@ GvbWidget::~GvbWidget()
 
 void GvbWidget::keyPressEvent(QKeyEvent *event)
 {
-    Q_UNUSED(event)
+    Q_UNUSED(event);
 }
 

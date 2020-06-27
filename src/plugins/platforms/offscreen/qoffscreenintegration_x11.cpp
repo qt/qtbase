@@ -104,7 +104,7 @@ QPlatformNativeInterface *QOffscreenX11Integration::nativeInterface() const
 
 void *QOffscreenX11Integration::nativeResourceForScreen(const QByteArray &resource, QScreen *screen)
 {
-    Q_UNUSED(screen)
+    Q_UNUSED(screen);
     if (resource.toLower() == QByteArrayLiteral("display") ) {
         if (!m_connection)
             m_connection.reset(new QOffscreenX11Connection);

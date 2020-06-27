@@ -195,22 +195,22 @@ public:
 
     //  bool link(const QString &newName)
     //  {
-    //      Q_UNUSED(newName)
+    //      Q_UNUSED(newName);
     //      return false;
     //  }
 
     //  bool mkdir(const QString &dirName, bool createParentDirectories) const
     //  {
-    //      Q_UNUSED(dirName)
-    //      Q_UNUSED(createParentDirectories)
+    //      Q_UNUSED(dirName);
+    //      Q_UNUSED(createParentDirectories);
 
     //      return false;
     //  }
 
     //  bool rmdir(const QString &dirName, bool recurseParentDirectories) const
     //  {
-    //      Q_UNUSED(dirName)
-    //      Q_UNUSED(recurseParentDirectories)
+    //      Q_UNUSED(dirName);
+    //      Q_UNUSED(recurseParentDirectories);
 
     //      return false;
     //  }
@@ -247,7 +247,7 @@ public:
 
     //  bool setPermissions(uint perms)
     //  {
-    //      Q_UNUSED(perms)
+    //      Q_UNUSED(perms);
 
     //      return false;
     //  }
@@ -373,8 +373,8 @@ public:
     //  typedef QAbstractFileEngineIterator Iterator;
     //  Iterator *beginEntryList(QDir::Filters filters, const QStringList &filterNames)
     //  {
-    //      Q_UNUSED(filters)
-    //      Q_UNUSED(filterNames)
+    //      Q_UNUSED(filters);
+    //      Q_UNUSED(filterNames);
 
     //      return 0;
     //  }

@@ -35,7 +35,7 @@ extern "C" int LLVMFuzzerTestOneInput(const char *data, size_t size) {
     // to reduce noise and increase speed
     static char quiet[] = "QT_LOGGING_RULES=qt.gui.icc=false";
     static int pe = putenv(quiet);
-    Q_UNUSED(pe)
+    Q_UNUSED(pe);
     static int argc = 3;
     static char arg1[] = "fuzzer";
     static char arg2[] = "-platform";

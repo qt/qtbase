@@ -166,8 +166,8 @@ bool AbstractScrollArea::event(QEvent *e)
 
 void AbstractScrollArea::scrollContentsBy(qreal dx, qreal dy)
 {
-    Q_UNUSED(dx)
-    Q_UNUSED(dy)
+    Q_UNUSED(dx);
+    Q_UNUSED(dy);
     prepareGeometryChange();
 }
 

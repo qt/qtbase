@@ -531,7 +531,7 @@ void QPngHandlerPrivate::readPngTexts(png_info *info)
         text_ptr++;
     }
 #else
-    Q_UNUSED(info)
+    Q_UNUSED(info);
 #endif
 }
 

@@ -627,15 +627,15 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     // Check first if QIOSMenu should handle the action before continuing up the responder chain
     return [QIOSMenu::menuActionTarget() targetForAction:action withSender:sender] != 0;
 #else
-    Q_UNUSED(action)
-    Q_UNUSED(sender)
+    Q_UNUSED(action);
+    Q_UNUSED(sender);
     return false;
 #endif
 }
 
 - (id)forwardingTargetForSelector:(SEL)selector
 {
-    Q_UNUSED(selector)
+    Q_UNUSED(selector);
 #ifndef Q_OS_TVOS
     return QIOSMenu::menuActionTarget();
 #else

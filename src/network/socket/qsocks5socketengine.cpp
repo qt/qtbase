@@ -1611,9 +1611,9 @@ qint64 QSocks5SocketEngine::readDatagram(char *data, qint64 maxlen, QIpPacketHea
     }
     return copyLen;
 #else
-    Q_UNUSED(data)
-    Q_UNUSED(maxlen)
-    Q_UNUSED(header)
+    Q_UNUSED(data);
+    Q_UNUSED(maxlen);
+    Q_UNUSED(header);
     return -1;
 #endif // QT_NO_UDPSOCKET
 }
@@ -1658,9 +1658,9 @@ qint64 QSocks5SocketEngine::writeDatagram(const char *data, qint64 len, const QI
 
     return len;
 #else
-    Q_UNUSED(data)
-    Q_UNUSED(len)
-    Q_UNUSED(header)
+    Q_UNUSED(data);
+    Q_UNUSED(len);
+    Q_UNUSED(header);
     return -1;
 #endif // QT_NO_UDPSOCKET
 }

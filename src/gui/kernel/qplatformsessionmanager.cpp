@@ -118,14 +118,14 @@ QStringList QPlatformSessionManager::discardCommand() const
 
 void QPlatformSessionManager::setManagerProperty(const QString &name, const QString &value)
 {
-    Q_UNUSED(name)
-    Q_UNUSED(value)
+    Q_UNUSED(name);
+    Q_UNUSED(value);
 }
 
 void QPlatformSessionManager::setManagerProperty(const QString &name, const QStringList &value)
 {
-    Q_UNUSED(name)
-    Q_UNUSED(value)
+    Q_UNUSED(name);
+    Q_UNUSED(value);
 }
 
 bool QPlatformSessionManager::isPhase2() const

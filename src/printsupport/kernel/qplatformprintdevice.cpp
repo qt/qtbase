@@ -259,9 +259,9 @@ QMarginsF QPlatformPrintDevice::printableMargins(const QPageSize &pageSize,
                                                  QPageLayout::Orientation orientation,
                                                  int resolution) const
 {
-    Q_UNUSED(pageSize)
-    Q_UNUSED(orientation)
-    Q_UNUSED(resolution)
+    Q_UNUSED(pageSize);
+    Q_UNUSED(orientation);
+    Q_UNUSED(resolution);
     return QMarginsF(0, 0, 0, 0);
 }
 
@@ -361,23 +361,23 @@ void QPlatformPrintDevice::loadMimeTypes() const
 
 QVariant QPlatformPrintDevice::property(QPrintDevice::PrintDevicePropertyKey key) const
 {
-    Q_UNUSED(key)
+    Q_UNUSED(key);
 
     return QVariant();
 }
 
 bool QPlatformPrintDevice::setProperty(QPrintDevice::PrintDevicePropertyKey key, const QVariant &value)
 {
-    Q_UNUSED(key)
-    Q_UNUSED(value)
+    Q_UNUSED(key);
+    Q_UNUSED(value);
 
     return false;
 }
 
 bool QPlatformPrintDevice::isFeatureAvailable(QPrintDevice::PrintDevicePropertyKey key, const QVariant &params) const
 {
-    Q_UNUSED(key)
-    Q_UNUSED(params)
+    Q_UNUSED(key);
+    Q_UNUSED(params);
 
     return false;
 }

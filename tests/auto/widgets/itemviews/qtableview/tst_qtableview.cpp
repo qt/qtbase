@@ -2190,7 +2190,7 @@ void tst_QTableView::resizeRowsToContents()
     QFETCH(int, cellHeight);
     QFETCH(int, rowHeight);
     QFETCH(int, columnWidth);
-    Q_UNUSED(columnWidth)
+    Q_UNUSED(columnWidth);
 
     QtTestTableModel model(rowCount, columnCount);
     QtTestTableView view;
@@ -2236,7 +2236,7 @@ void tst_QTableView::resizeColumnsToContents()
     QFETCH(int, cellHeight);
     QFETCH(int, rowHeight);
     QFETCH(int, columnWidth);
-    Q_UNUSED(rowHeight)
+    Q_UNUSED(rowHeight);
 
     QtTestTableModel model(rowCount, columnCount);
     QtTestTableView view;
@@ -3780,13 +3780,13 @@ public:
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override
     {
-        Q_UNUSED(parent)
+        Q_UNUSED(parent);
         return 10000000;
     }
 
     int columnCount(const QModelIndex &parent = QModelIndex()) const override
     {
-        Q_UNUSED(parent)
+        Q_UNUSED(parent);
         return 20000000;
     }
 };
@@ -3956,7 +3956,7 @@ public:
 private:
     bool eventFilter(QObject *obj, QEvent *e) override
     {
-        Q_UNUSED(obj)
+        Q_UNUSED(obj);
         if (e->type() == QEvent::Paint)
             ++paintEventCount_;
         return false;

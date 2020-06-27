@@ -91,7 +91,7 @@ public:
         { print(fileName, lineNo, type, msg); }
 
     virtual void fileMessage(int type, const QString &msg)
-        { Q_UNUSED(type) doPrint(msg); }
+        { Q_UNUSED(type); doPrint(msg); }
 
     virtual void aboutToEval(ProFile *, ProFile *, EvalFileType) {}
     virtual void doneWithEval(ProFile *) {}

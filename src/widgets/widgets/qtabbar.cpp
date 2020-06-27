@@ -1632,7 +1632,7 @@ QSize QTabBar::tabSizeHint(int index) const
  */
 void QTabBar::tabInserted(int index)
 {
-    Q_UNUSED(index)
+    Q_UNUSED(index);
 }
 
 /*!
@@ -1643,7 +1643,7 @@ void QTabBar::tabInserted(int index)
  */
 void QTabBar::tabRemoved(int index)
 {
-    Q_UNUSED(index)
+    Q_UNUSED(index);
 }
 
 /*!
@@ -2364,7 +2364,7 @@ void QTabBar::wheelEvent(QWheelEvent *event)
     d->setCurrentNextEnabledIndex(offset);
     QWidget::wheelEvent(event);
 #else
-    Q_UNUSED(event)
+    Q_UNUSED(event);
 #endif
 }
 #endif // QT_CONFIG(wheelevent)

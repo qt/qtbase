@@ -215,7 +215,7 @@ int QUndoCommand::id() const
 
 bool QUndoCommand::mergeWith(const QUndoCommand *command)
 {
-    Q_UNUSED(command)
+    Q_UNUSED(command);
     return false;
 }
 

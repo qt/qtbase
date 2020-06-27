@@ -85,7 +85,7 @@ QPrintDevice QPlatformPrinterSupport::createPrintDevice(QPlatformPrintDevice *de
 
 QPrintDevice QPlatformPrinterSupport::createPrintDevice(const QString &id)
 {
-    Q_UNUSED(id)
+    Q_UNUSED(id);
     return QPrintDevice();
 }
 
@@ -101,9 +101,9 @@ QString QPlatformPrinterSupport::defaultPrintDeviceId() const
 
 QPageSize QPlatformPrinterSupport::createPageSize(const QString &id, QSize size, const QString &localizedName)
 {
-    Q_UNUSED(id)
-    Q_UNUSED(size)
-    Q_UNUSED(localizedName)
+    Q_UNUSED(id);
+    Q_UNUSED(size);
+    Q_UNUSED(localizedName);
     return QPageSize();
 }
 

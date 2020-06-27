@@ -103,7 +103,7 @@ bool QDBusMenuAdaptor::AboutToShow(int id)
 QList<int> QDBusMenuAdaptor::AboutToShowGroup(const QList<int> &ids, QList<int> &idErrors)
 {
     qCDebug(qLcMenu) << ids;
-    Q_UNUSED(idErrors)
+    Q_UNUSED(idErrors);
     idErrors.clear();
     for (int id : ids)
         AboutToShow(id);
@@ -112,8 +112,8 @@ QList<int> QDBusMenuAdaptor::AboutToShowGroup(const QList<int> &ids, QList<int> 
 
 void QDBusMenuAdaptor::Event(int id, const QString &eventId, const QDBusVariant &data, uint timestamp)
 {
-    Q_UNUSED(data)
-    Q_UNUSED(timestamp)
+    Q_UNUSED(data);
+    Q_UNUSED(timestamp);
     QDBusPlatformMenuItem *item = QDBusPlatformMenuItem::byId(id);
     qCDebug(qLcMenu) << id << (item ? item->text() : QLatin1String("")) << eventId;
     if (item && eventId == QLatin1String("clicked"))

@@ -88,7 +88,7 @@ void WebViewPrivate::_q_loadStarted()
 
 void WebViewPrivate::_q_loadProgress(int progress)
 {
-    Q_UNUSED(progress)
+    Q_UNUSED(progress);
 //    qDebug() << "WebView: load progress" << progress;
     adjustSize();
 }

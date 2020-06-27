@@ -1266,7 +1266,7 @@ QString QTabWidget::tabWhatsThis(int index) const
  */
 void QTabWidget::tabInserted(int index)
 {
-    Q_UNUSED(index)
+    Q_UNUSED(index);
 }
 
 /*!
@@ -1277,7 +1277,7 @@ void QTabWidget::tabInserted(int index)
  */
 void QTabWidget::tabRemoved(int index)
 {
-    Q_UNUSED(index)
+    Q_UNUSED(index);
 }
 
 /*!

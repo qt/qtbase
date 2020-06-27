@@ -197,7 +197,7 @@ static int rm(const char *fileName)
 static int rmr(const char *dirName)
 {
 #if QT_VERSION < 0x050000
-    Q_UNUSED(dirName)
+    Q_UNUSED(dirName);
     return 1;
 #else
     QDir dir(QString::fromLocal8Bit(dirName));
@@ -213,7 +213,7 @@ static int rmr(const char *dirName)
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
-    Q_UNUSED(a)
+    Q_UNUSED(a);
     if (argc >= 3 && !qstrcmp(argv[1], "ls"))
         return ls(argc -2, const_cast<const char **>(argv + 2), true);
 

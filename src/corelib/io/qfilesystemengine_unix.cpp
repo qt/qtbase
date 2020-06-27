@@ -615,7 +615,7 @@ void QFileSystemMetaData::fillFromDirEnt(const QT_DIRENT &entry)
         clear();
     }
 #else
-    Q_UNUSED(entry)
+    Q_UNUSED(entry);
 #endif
 }
 

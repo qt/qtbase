@@ -1011,7 +1011,7 @@ void QKmsDevice::parseCrtcProperties(uint32_t crtcId, QKmsOutput *output)
     }
 
     enumerateProperties(objProps, [output](drmModePropertyPtr prop, quint64 value) {
-        Q_UNUSED(value)
+        Q_UNUSED(value);
         if (!strcasecmp(prop->name, "mode_id"))
             output->modeIdPropertyId = prop->prop_id;
         else if (!strcasecmp(prop->name, "active"))

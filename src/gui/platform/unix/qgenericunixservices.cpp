@@ -220,7 +220,7 @@ static inline QDBusMessage xdgDesktopPortalOpenFile(const QUrl &url)
         return QDBusConnection::sessionBus().call(message);
     }
 #else
-    Q_UNUSED(url)
+    Q_UNUSED(url);
 #endif
 
     return QDBusMessage::createError(QDBusError::InternalError, qt_error_string());
@@ -357,14 +357,14 @@ QByteArray QGenericUnixServices::desktopEnvironment() const
 
 bool QGenericUnixServices::openUrl(const QUrl &url)
 {
-    Q_UNUSED(url)
+    Q_UNUSED(url);
     qWarning("openUrl() not supported on this platform");
     return false;
 }
 
 bool QGenericUnixServices::openDocument(const QUrl &url)
 {
-    Q_UNUSED(url)
+    Q_UNUSED(url);
     qWarning("openDocument() not supported on this platform");
     return false;
 }

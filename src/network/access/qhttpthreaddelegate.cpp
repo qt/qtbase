@@ -169,7 +169,7 @@ static QByteArray makeCacheKey(QUrl &url, QNetworkProxy *proxy, const QString &p
         }
     }
 #else
-    Q_UNUSED(proxy)
+    Q_UNUSED(proxy);
 #endif
     if (!peerVerifyName.isEmpty())
         result += QLatin1Char(':') + peerVerifyName;

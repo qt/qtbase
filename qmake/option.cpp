@@ -613,7 +613,7 @@ void EvalHandler::message(int type, const QString &msg, const QString &fileName,
 
 void EvalHandler::fileMessage(int type, const QString &msg)
 {
-    Q_UNUSED(type)
+    Q_UNUSED(type);
     fprintf(stderr, "%s\n", qPrintable(msg));
 }
 

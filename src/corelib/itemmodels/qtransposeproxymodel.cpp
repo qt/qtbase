@@ -440,8 +440,8 @@ bool QTransposeProxyModel::moveColumns(const QModelIndex &sourceParent, int sour
 */
 void QTransposeProxyModel::sort(int column, Qt::SortOrder order)
 {
-    Q_UNUSED(column)
-    Q_UNUSED(order)
+    Q_UNUSED(column);
+    Q_UNUSED(order);
     return;
 }
 

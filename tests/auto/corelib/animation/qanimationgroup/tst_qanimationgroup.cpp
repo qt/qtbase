@@ -83,8 +83,8 @@ public:
     virtual void updateState(QAbstractAnimation::State oldState,
                              QAbstractAnimation::State newState)
     {
-        Q_UNUSED(oldState)
-        Q_UNUSED(newState)
+        Q_UNUSED(oldState);
+        Q_UNUSED(newState);
     };
 };
 

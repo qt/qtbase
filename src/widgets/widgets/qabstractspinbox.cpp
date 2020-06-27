@@ -1952,7 +1952,7 @@ void QAbstractSpinBoxPrivate::clearCache() const
 
 QVariant QAbstractSpinBoxPrivate::calculateAdaptiveDecimalStep(int steps) const
 {
-    Q_UNUSED(steps)
+    Q_UNUSED(steps);
     return singleStep;
 }
 

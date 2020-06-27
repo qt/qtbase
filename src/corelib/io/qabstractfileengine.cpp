@@ -1076,7 +1076,7 @@ QFileInfo QAbstractFileEngineIterator::currentFileInfo() const
 */
 QVariant QAbstractFileEngineIterator::entryInfo(EntryInfoType type) const
 {
-    Q_UNUSED(type)
+    Q_UNUSED(type);
     return QVariant();
 }
 

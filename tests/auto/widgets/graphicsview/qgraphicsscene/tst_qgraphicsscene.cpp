@@ -4020,7 +4020,7 @@ void tst_QGraphicsScene::polishItems()
     PolishItem *parent = new PolishItem;
     scene.addItem(parent);
     PolishItem *child = new PolishItem(parent);
-    Q_UNUSED(child)
+    Q_UNUSED(child);
     // test that QGraphicsScenePrivate::_q_polishItems() doesn't crash
     QMetaObject::invokeMethod(&scene,"_q_polishItems");
 }

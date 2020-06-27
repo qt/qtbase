@@ -625,8 +625,8 @@ void QSslSocketBackendPrivate::transmit()
 QList<QSslError> (QSslSocketBackendPrivate::verify)(QList<QSslCertificate> certificateChain, const QString &hostName)
 {
     Q_UNIMPLEMENTED();
-    Q_UNUSED(certificateChain)
-    Q_UNUSED(hostName)
+    Q_UNUSED(certificateChain);
+    Q_UNUSED(hostName);
 
     QList<QSslError> errors;
     errors << QSslError(QSslError::UnspecifiedError);
@@ -640,11 +640,11 @@ bool QSslSocketBackendPrivate::importPkcs12(QIODevice *device,
                          const QByteArray &passPhrase)
 {
     Q_UNIMPLEMENTED();
-    Q_UNUSED(device)
-    Q_UNUSED(key)
-    Q_UNUSED(cert)
-    Q_UNUSED(caCertificates)
-    Q_UNUSED(passPhrase)
+    Q_UNUSED(device);
+    Q_UNUSED(key);
+    Q_UNUSED(cert);
+    Q_UNUSED(caCertificates);
+    Q_UNUSED(passPhrase);
     return false;
 }
 

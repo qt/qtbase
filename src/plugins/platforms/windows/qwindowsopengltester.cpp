@@ -281,8 +281,8 @@ QWindowsOpenGLTester::Renderers QWindowsOpenGLTester::detectSupportedRenderers(c
                                                                                Renderer requested)
 {
 #if defined(QT_NO_OPENGL)
-    Q_UNUSED(gpu)
-    Q_UNUSED(requested)
+    Q_UNUSED(gpu);
+    Q_UNUSED(requested);
     return 0;
 #else
     QOpenGLConfig::Gpu qgpu = QOpenGLConfig::Gpu::fromDevice(gpu.vendorId, gpu.deviceId, gpu.driverVersion, gpu.description);

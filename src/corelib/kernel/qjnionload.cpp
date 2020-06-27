@@ -46,7 +46,7 @@ static const char logTag[] = "QtCore";
 
 Q_CORE_EXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
 {
-    Q_UNUSED(reserved)
+    Q_UNUSED(reserved);
 
     static bool initialized = false;
     if (initialized)

@@ -588,7 +588,7 @@ QWindowsCursor::QWindowsCursor(const QPlatformScreen *screen)
     : m_screen(screen)
 {
     static const bool dummy = initResources();
-    Q_UNUSED(dummy)
+    Q_UNUSED(dummy);
 }
 
 inline CursorHandlePtr QWindowsCursor::cursorHandle(const QCursor &cursor)

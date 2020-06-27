@@ -118,7 +118,7 @@ bool QAndroidPlatformMenuItem::isSeparator() const
 
 void QAndroidPlatformMenuItem::setFont(const QFont &font)
 {
-    Q_UNUSED(font)
+    Q_UNUSED(font);
 }
 
 void QAndroidPlatformMenuItem::setRole(QPlatformMenuItem::MenuRole role)
@@ -153,7 +153,7 @@ bool QAndroidPlatformMenuItem::isChecked() const
 
 void QAndroidPlatformMenuItem::setShortcut(const QKeySequence &shortcut)
 {
-    Q_UNUSED(shortcut)
+    Q_UNUSED(shortcut);
 }
 
 void QAndroidPlatformMenuItem::setEnabled(bool enabled)
@@ -170,7 +170,7 @@ bool QAndroidPlatformMenuItem::isEnabled() const
 
 void QAndroidPlatformMenuItem::setIconSize(int size)
 {
-    Q_UNUSED(size)
+    Q_UNUSED(size);
 }
 
 QT_END_NAMESPACE

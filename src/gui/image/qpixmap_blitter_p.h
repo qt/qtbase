@@ -120,7 +120,7 @@ inline void QBlittablePlatformPixmap::markRasterOverlay(const QRectF &rect)
 #ifdef QT_BLITTER_RASTEROVERLAY
     markRasterOverlayImpl(rect);
 #else
-   Q_UNUSED(rect)
+   Q_UNUSED(rect);
 #endif
 }
 
@@ -129,7 +129,7 @@ inline void QBlittablePlatformPixmap::markRasterOverlay(const QVectorPath &path)
 #ifdef QT_BLITTER_RASTEROVERLAY
     markRasterOverlayImpl(path.convertToPainterPath().boundingRect());
 #else
-    Q_UNUSED(path)
+    Q_UNUSED(path);
 #endif
 }
 
@@ -141,8 +141,8 @@ inline void QBlittablePlatformPixmap::markRasterOverlay(const QPointF &pos, cons
     rect.moveBottomLeft(pos);
     markRasterOverlay(rect);
 #else
-    Q_UNUSED(pos)
-    Q_UNUSED(ti)
+    Q_UNUSED(pos);
+    Q_UNUSED(ti);
 #endif
 }
 
@@ -153,8 +153,8 @@ inline void QBlittablePlatformPixmap::markRasterOverlay(const QRect *rects, int 
         markRasterOverlay(rects[i]);
     }
 #else
-    Q_UNUSED(rects)
-    Q_UNUSED(rectCount)
+    Q_UNUSED(rects);
+    Q_UNUSED(rectCount);
 #endif
 }
 inline void QBlittablePlatformPixmap::markRasterOverlay(const QRectF *rects, int rectCount)
@@ -164,8 +164,8 @@ inline void QBlittablePlatformPixmap::markRasterOverlay(const QRectF *rects, int
         markRasterOverlay(rects[i]);
     }
 #else
-    Q_UNUSED(rects)
-    Q_UNUSED(rectCount)
+    Q_UNUSED(rects);
+    Q_UNUSED(rectCount);
 #endif
 }
 
@@ -203,7 +203,7 @@ inline void QBlittablePlatformPixmap::unmarkRasterOverlay(const QRectF &rect)
 #ifdef QT_BLITTER_RASTEROVERLAY
     unmarkRasterOverlayImpl(rect);
 #else
-    Q_UNUSED(rect)
+    Q_UNUSED(rect);
 #endif
 }
 

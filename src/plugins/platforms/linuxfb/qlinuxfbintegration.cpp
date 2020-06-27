@@ -187,7 +187,7 @@ QFunctionPointer QLinuxFbIntegration::platformFunction(const QByteArray &functio
     else if (function == QLinuxFbFunctions::switchLangTypeIdentifier())
         return QFunctionPointer(switchLangStatic);
 #else
-    Q_UNUSED(function)
+    Q_UNUSED(function);
 #endif
 
     return 0;

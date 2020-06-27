@@ -111,7 +111,7 @@ static int CbText(MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE size, void *use
 
 static void CbDebugLog(const char *msg, void *userdata)
 {
-    Q_UNUSED(userdata)
+    Q_UNUSED(userdata);
     qCDebug(lcMD) << msg;
 }
 
@@ -314,7 +314,7 @@ int QTextMarkdownImporter::cbEnterBlock(int blockType, void *det)
 
 int QTextMarkdownImporter::cbLeaveBlock(int blockType, void *detail)
 {
-    Q_UNUSED(detail)
+    Q_UNUSED(detail);
     switch (blockType) {
     case MD_BLOCK_P:
         m_listItem = false;
@@ -432,7 +432,7 @@ int QTextMarkdownImporter::cbEnterSpan(int spanType, void *det)
 
 int QTextMarkdownImporter::cbLeaveSpan(int spanType, void *detail)
 {
-    Q_UNUSED(detail)
+    Q_UNUSED(detail);
     QTextCharFormat charFmt;
     if (!m_spanFormatStack.isEmpty()) {
         m_spanFormatStack.pop();

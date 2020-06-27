@@ -1029,7 +1029,7 @@ QUrl QFileDialog::directoryUrl() const
 // FIXME Qt 5.4: Use upcoming QVolumeInfo class to determine this information?
 static inline bool isCaseSensitiveFileSystem(const QString &path)
 {
-    Q_UNUSED(path)
+    Q_UNUSED(path);
 #if defined(Q_OS_WIN)
     // Return case insensitive unconditionally, even if someone has a case sensitive
     // file system mounted, wrongly capitalized drive letters will cause mismatches.
@@ -1185,7 +1185,7 @@ QStringList QFileDialogPrivate::typedFiles() const
             files << qt_tildeExpansion(editText);
 #else
         files << editText;
-        Q_UNUSED(q)
+        Q_UNUSED(q);
 #endif
     } else {
         // " is used to separate files like so: "file1" "file2" "file3" ...

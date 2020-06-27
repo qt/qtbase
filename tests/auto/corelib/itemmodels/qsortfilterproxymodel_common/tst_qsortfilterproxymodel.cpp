@@ -2823,7 +2823,7 @@ public:
 
     bool hasChildren(const QModelIndex &parent = QModelIndex()) const override
     {
-        Q_UNUSED(parent)
+        Q_UNUSED(parent);
         return true;
     }
 
@@ -2834,7 +2834,7 @@ public:
 
     int columnCount(const QModelIndex& parent = QModelIndex()) const override
     {
-        Q_UNUSED(parent)
+        Q_UNUSED(parent);
         return cols;
     }
 
@@ -3986,14 +3986,14 @@ public:
     using QAbstractListModel::QAbstractListModel;
     QVariant data(const QModelIndex &index, int role) const override
     {
-        Q_UNUSED(index)
-        Q_UNUSED(role)
+        Q_UNUSED(index);
+        Q_UNUSED(role);
         return QVariant();
     }
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const  override
     {
-        Q_UNUSED(parent)
+        Q_UNUSED(parent);
         return 0;
     }
 
@@ -4034,15 +4034,15 @@ public:
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override
     {
-        Q_UNUSED(parent)
+        Q_UNUSED(parent);
         return 10;
     }
 
     bool canDropMimeData(const QMimeData *, Qt::DropAction,
                          int row, int column, const QModelIndex &parent) const override
     {
-        Q_UNUSED(row)
-        Q_UNUSED(column)
+        Q_UNUSED(row);
+        Q_UNUSED(column);
         return parent.row() % 2 == 0;
     }
 };
@@ -4771,7 +4771,7 @@ void tst_QSortFilterProxyModel::filterAndInsertColumn()
         {}
         bool filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const override
         {
-            Q_UNUSED(source_parent)
+            Q_UNUSED(source_parent);
             switch (filerMode){
             case FilterAll:
                 return true;
@@ -5030,8 +5030,8 @@ void tst_QSortFilterProxyModel::invalidateColumnsOrRowsFilter()
         }
         bool filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const override
         {
-            Q_UNUSED(source_column)
-            Q_UNUSED(source_parent)
+            Q_UNUSED(source_column);
+            Q_UNUSED(source_parent);
 
             columnFiltered++;
             return true;

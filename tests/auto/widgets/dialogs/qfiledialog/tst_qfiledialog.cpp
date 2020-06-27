@@ -71,7 +71,7 @@ QT_END_NAMESPACE
 
 static inline bool isCaseSensitiveFileSystem(const QString &path)
 {
-    Q_UNUSED(path)
+    Q_UNUSED(path);
 #if defined(Q_OS_MAC)
     return pathconf(QFile::encodeName(path).constData(), _PC_CASE_SENSITIVE);
 #elif defined(Q_OS_WIN)

@@ -1942,9 +1942,9 @@ bool QAbstractItemModel::canDropMimeData(const QMimeData *data, Qt::DropAction a
                                          int row, int column,
                                          const QModelIndex &parent) const
 {
-    Q_UNUSED(row)
-    Q_UNUSED(column)
-    Q_UNUSED(parent)
+    Q_UNUSED(row);
+    Q_UNUSED(column);
+    Q_UNUSED(parent);
 
     if (!(action & supportedDropActions()))
         return false;

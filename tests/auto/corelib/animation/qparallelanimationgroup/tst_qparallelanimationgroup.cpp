@@ -96,8 +96,8 @@ public:
     virtual void updateState(QAbstractAnimation::State newState,
                              QAbstractAnimation::State oldState)
     {
-        Q_UNUSED(oldState)
-        Q_UNUSED(newState)
+        Q_UNUSED(oldState);
+        Q_UNUSED(newState);
     };
 };
 
@@ -112,8 +112,8 @@ public:
     virtual void updateState(QAbstractAnimation::State newState,
                              QAbstractAnimation::State oldState)
     {
-        Q_UNUSED(oldState)
-        Q_UNUSED(newState)
+        Q_UNUSED(oldState);
+        Q_UNUSED(newState);
     };
 
     virtual int duration() const {

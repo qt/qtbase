@@ -90,8 +90,8 @@ EGLNativeDisplayType QEglFSVivIntegration::platformDisplay() const
 
 EGLNativeWindowType QEglFSVivIntegration::createNativeWindow(QPlatformWindow *window, const QSize &size, const QSurfaceFormat &format)
 {
-    Q_UNUSED(window)
-    Q_UNUSED(format)
+    Q_UNUSED(window);
+    Q_UNUSED(format);
 
     EGLNativeWindowType eglWindow = static_cast<EGLNativeWindowType>(fbCreateWindow(mNativeDisplay, 0, 0, size.width(), size.height()));
     return eglWindow;

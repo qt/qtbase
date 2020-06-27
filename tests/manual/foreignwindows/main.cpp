@@ -82,7 +82,7 @@ static WId createInternalWindow(const QString &name)
         }
     }
 #else // Q_OS_WIN
-    Q_UNUSED(name)
+    Q_UNUSED(name);
 #endif
     return result;
 }

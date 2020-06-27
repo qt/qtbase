@@ -96,7 +96,7 @@ void AbstractViewItem::themeChange()
 /*virtual*/
 void AbstractViewItem::setSubtreeCacheEnabled(bool enabled)
 {
-    Q_UNUSED(enabled)
+    Q_UNUSED(enabled);
     ; // No impl
 }
 

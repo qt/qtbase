@@ -570,7 +570,7 @@ void TextEdit::printPreview(QPrinter *printer)
 #if defined(QT_PRINTSUPPORT_LIB) && QT_CONFIG(printer)
     textEdit->print(printer);
 #else
-    Q_UNUSED(printer)
+    Q_UNUSED(printer);
 #endif
 }
 

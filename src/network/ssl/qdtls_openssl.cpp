@@ -594,7 +594,7 @@ extern "C" int q_dgram_create(BIO *bio)
 
 extern "C" int q_dgram_destroy(BIO *bio)
 {
-    Q_UNUSED(bio)
+    Q_UNUSED(bio);
     return 1;
 }
 
@@ -862,7 +862,7 @@ void QDtlsPrivateOpenSSL::TimeoutHandler::stop()
 
 void QDtlsPrivateOpenSSL::TimeoutHandler::timerEvent(QTimerEvent *event)
 {
-    Q_UNUSED(event)
+    Q_UNUSED(event);
     Q_ASSERT(timerId != -1);
 
     killTimer(timerId);

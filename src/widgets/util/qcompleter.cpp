@@ -474,7 +474,7 @@ QMatchData QCompletionEngine::filterHistory()
 #else
     const bool isFsModel = false;
 #endif
-    Q_UNUSED(isFsModel)
+    Q_UNUSED(isFsModel);
     QList<int> v;
     QIndexMapper im(v);
     QMatchData m(im, -1, true);

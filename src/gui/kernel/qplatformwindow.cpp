@@ -492,7 +492,7 @@ bool QPlatformWindow::windowEvent(QEvent *event)
 
 bool QPlatformWindow::startSystemResize(Qt::Edges edges)
 {
-    Q_UNUSED(edges)
+    Q_UNUSED(edges);
     return false;
 }
 
@@ -519,7 +519,7 @@ bool QPlatformWindow::startSystemMove()
 
 void QPlatformWindow::setFrameStrutEventsEnabled(bool enabled)
 {
-    Q_UNUSED(enabled) // Do not warn as widgets enable it by default causing warnings with XCB.
+    Q_UNUSED(enabled); // Do not warn as widgets enable it by default causing warnings with XCB.
 }
 
 /*!
@@ -607,7 +607,7 @@ QSize QPlatformWindow::constrainWindowSize(const QSize &size)
 
 void QPlatformWindow::setAlertState(bool enable)
 {
-    Q_UNUSED(enable)
+    Q_UNUSED(enable);
 }
 
 /*!

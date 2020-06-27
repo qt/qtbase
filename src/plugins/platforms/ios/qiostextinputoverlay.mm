@@ -588,7 +588,7 @@ static void executeBlockWithoutAnimation(Block block)
 
 - (BOOL)acceptTouchesBegan:(QPointF)touchPoint
 {
-    Q_UNUSED(touchPoint)
+    Q_UNUSED(touchPoint);
     Q_UNREACHABLE();
     return NO;
 }
@@ -601,7 +601,7 @@ static void executeBlockWithoutAnimation(Block block)
 
 - (void)updateFocalPoint:(QPointF)touchPoint
 {
-    Q_UNUSED(touchPoint)
+    Q_UNUSED(touchPoint);
     Q_UNREACHABLE();
 }
 

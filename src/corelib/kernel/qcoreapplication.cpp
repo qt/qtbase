@@ -2237,8 +2237,8 @@ bool QCoreApplicationPrivate::isTranslatorInstalled(QTranslator *translator)
 QString QCoreApplication::translate(const char *context, const char *sourceText,
                                     const char *disambiguation, int n)
 {
-    Q_UNUSED(context)
-    Q_UNUSED(disambiguation)
+    Q_UNUSED(context);
+    Q_UNUSED(disambiguation);
     QString ret = QString::fromUtf8(sourceText);
     if (n >= 0)
         ret.replace(QLatin1String("%n"), QString::number(n));

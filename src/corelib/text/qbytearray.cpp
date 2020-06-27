@@ -676,7 +676,7 @@ QByteArray qUncompress(const uchar* data, int nbytes)
         switch (res) {
         case Z_OK: {
             Q_ASSERT(len <= alloc);
-            Q_UNUSED(alloc)
+            Q_UNUSED(alloc);
             d.data()[len] = '\0';
             d.size = len;
             return QByteArray(d);

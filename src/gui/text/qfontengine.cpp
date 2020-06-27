@@ -103,12 +103,12 @@ bool qt_useHarfbuzzNG()
 
 int QFontEngine::getPointInOutline(glyph_t glyph, int flags, quint32 point, QFixed *xpos, QFixed *ypos, quint32 *nPoints)
 {
-    Q_UNUSED(glyph)
-    Q_UNUSED(flags)
-    Q_UNUSED(point)
-    Q_UNUSED(xpos)
-    Q_UNUSED(ypos)
-    Q_UNUSED(nPoints)
+    Q_UNUSED(glyph);
+    Q_UNUSED(flags);
+    Q_UNUSED(point);
+    Q_UNUSED(xpos);
+    Q_UNUSED(ypos);
+    Q_UNUSED(nPoints);
     return Err_Not_Covered;
 }
 
@@ -954,9 +954,9 @@ void QFontEngine::getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_metr
 */
 bool QFontEngine::getSfntTableData(uint tag, uchar *buffer, uint *length) const
 {
-    Q_UNUSED(tag)
-    Q_UNUSED(buffer)
-    Q_UNUSED(length)
+    Q_UNUSED(tag);
+    Q_UNUSED(buffer);
+    Q_UNUSED(length);
     return false;
 }
 
@@ -1538,7 +1538,7 @@ QFontEngineBox::~QFontEngineBox()
 
 glyph_t QFontEngineBox::glyphIndex(uint ucs4) const
 {
-    Q_UNUSED(ucs4)
+    Q_UNUSED(ucs4);
     return 0;
 }
 

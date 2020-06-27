@@ -1100,7 +1100,7 @@ QT_WARNING_DISABLE_DEPRECATED
     QResource::addSearchPath(path);
 QT_WARNING_POP
 #else
-    Q_UNUSED(path)
+    Q_UNUSED(path);
 #endif
 }
 #endif

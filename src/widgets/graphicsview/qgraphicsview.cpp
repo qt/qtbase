@@ -903,8 +903,8 @@ void QGraphicsViewPrivate::populateSceneDragDropEvent(QGraphicsSceneDragDropEven
     dest->setWidget(viewport);
     dest->setSource(qobject_cast<QWidget *>(source->source()));
 #else
-    Q_UNUSED(dest)
-    Q_UNUSED(source)
+    Q_UNUSED(dest);
+    Q_UNUSED(source);
 #endif
 }
 

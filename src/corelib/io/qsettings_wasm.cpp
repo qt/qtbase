@@ -126,7 +126,7 @@ QSettingsPrivate *QSettingsPrivate::create(QSettings::Format format,
                                            const QString &organization,
                                            const QString &application)
 {
-    Q_UNUSED(format)
+    Q_UNUSED(format);
     if (organization == QLatin1String("Qt"))
     {
         QString organizationDomain = QCoreApplication::organizationDomain();

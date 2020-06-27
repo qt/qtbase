@@ -86,7 +86,7 @@ struct XcbEventSource
 
 static gboolean xcbSourcePrepare(GSource *source, gint *timeout)
 {
-    Q_UNUSED(timeout)
+    Q_UNUSED(timeout);
     auto xcbEventSource = reinterpret_cast<XcbEventSource *>(source);
     return xcbEventSource->dispatcher_p->wakeUpCalled;
 }

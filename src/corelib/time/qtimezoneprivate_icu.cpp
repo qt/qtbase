@@ -440,7 +440,7 @@ QTimeZonePrivate::Data QIcuTimeZonePrivate::nextTransition(qint64 afterMSecsSinc
 #if U_ICU_VERSION_MAJOR_NUM == 50
     return ucalTimeZoneTransition(m_ucal, UCAL_TZ_TRANSITION_NEXT, afterMSecsSinceEpoch);
 #else
-    Q_UNUSED(afterMSecsSinceEpoch)
+    Q_UNUSED(afterMSecsSinceEpoch);
     return invalidData();
 #endif // U_ICU_VERSION_MAJOR_NUM == 50
 }
@@ -452,7 +452,7 @@ QTimeZonePrivate::Data QIcuTimeZonePrivate::previousTransition(qint64 beforeMSec
 #if U_ICU_VERSION_MAJOR_NUM == 50
     return ucalTimeZoneTransition(m_ucal, UCAL_TZ_TRANSITION_PREVIOUS, beforeMSecsSinceEpoch);
 #else
-    Q_UNUSED(beforeMSecsSinceEpoch)
+    Q_UNUSED(beforeMSecsSinceEpoch);
     return invalidData();
 #endif // U_ICU_VERSION_MAJOR_NUM == 50
 }

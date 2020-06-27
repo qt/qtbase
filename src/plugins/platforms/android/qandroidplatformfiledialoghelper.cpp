@@ -197,9 +197,9 @@ QJNIObjectPrivate QAndroidPlatformFileDialogHelper::getFileDialogIntent(const QS
 
 bool QAndroidPlatformFileDialogHelper::show(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent)
 {
-    Q_UNUSED(windowFlags)
-    Q_UNUSED(windowModality)
-    Q_UNUSED(parent)
+    Q_UNUSED(windowFlags);
+    Q_UNUSED(windowModality);
+    Q_UNUSED(parent);
 
     bool isDirDialog = false;
 

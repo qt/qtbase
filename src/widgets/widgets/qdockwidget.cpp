@@ -1466,7 +1466,7 @@ void QDockWidget::closeEvent(QCloseEvent *event)
 /*! \reimp */
 void QDockWidget::paintEvent(QPaintEvent *event)
 {
-    Q_UNUSED(event)
+    Q_UNUSED(event);
     Q_D(QDockWidget);
 
     QDockWidgetLayout *layout

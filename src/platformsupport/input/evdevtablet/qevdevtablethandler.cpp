@@ -169,7 +169,7 @@ void QEvdevTabletData::report()
 QEvdevTabletHandler::QEvdevTabletHandler(const QString &device, const QString &spec, QObject *parent)
     : QObject(parent), m_fd(-1), m_device(device), m_notifier(0), d(0)
 {
-    Q_UNUSED(spec)
+    Q_UNUSED(spec);
 
     setObjectName(QLatin1String("Evdev Tablet Handler"));
 

@@ -111,7 +111,7 @@ static void showNativeWindow(WId wid)
 #ifdef Q_OS_WIN
      ShowWindow(HWND(wid), SW_SHOW);
 #else // Q_OS_WIN
-    Q_UNUSED(wid)
+    Q_UNUSED(wid);
     Q_UNIMPLEMENTED();
 #endif
 }
@@ -121,7 +121,7 @@ static void setFocusToNativeWindow(WId wid)
 #ifdef Q_OS_WIN
      SetFocus(HWND(wid));
 #else // Q_OS_WIN
-    Q_UNUSED(wid)
+    Q_UNUSED(wid);
     Q_UNIMPLEMENTED();
 #endif
 }
@@ -131,7 +131,7 @@ static void destroyNativeWindow(WId wid)
 #ifdef Q_OS_WIN
      DestroyWindow(HWND(wid));
 #else // Q_OS_WIN
-    Q_UNUSED(wid)
+    Q_UNUSED(wid);
     Q_UNIMPLEMENTED();
 #endif
 }

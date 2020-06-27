@@ -215,7 +215,7 @@ void AbstractItemView::setSelectionModel(QItemSelectionModel *smodel)
 /*virtual*/
 void AbstractItemView::currentIndexChanged(const QModelIndex &current, const QModelIndex &previous)
 {
-    Q_UNUSED(previous)
+    Q_UNUSED(previous);
 
     if (current != m_currentIndex)
         m_currentIndex = current;
@@ -225,24 +225,24 @@ void AbstractItemView::currentIndexChanged(const QModelIndex &current, const QMo
 void AbstractItemView::currentSelectionChanged(const QItemSelection &selected,
                                                const QItemSelection &deselected)
 {
-   Q_UNUSED(selected)
-   Q_UNUSED(deselected)
+   Q_UNUSED(selected);
+   Q_UNUSED(deselected);
 }
 
 /*virtual*/
 void AbstractItemView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight)
 {
-    Q_UNUSED(topLeft)
-    Q_UNUSED(bottomRight)
+    Q_UNUSED(topLeft);
+    Q_UNUSED(bottomRight);
     // TODO implement if we like to edit view items.
 }
 
 /*virtual*/
 void AbstractItemView::rowsAboutToBeInserted(const QModelIndex &index, int start, int end)
 {
-    Q_UNUSED(index)
-    Q_UNUSED(start)
-    Q_UNUSED(end)
+    Q_UNUSED(index);
+    Q_UNUSED(start);
+    Q_UNUSED(end);
 
     // TODO implement
 }
@@ -250,17 +250,17 @@ void AbstractItemView::rowsAboutToBeInserted(const QModelIndex &index, int start
 /*virtual*/
 void AbstractItemView::rowsAboutToBeRemoved(const QModelIndex &index,int start, int end)
 {
-    Q_UNUSED(index)
-    Q_UNUSED(start)
-    Q_UNUSED(end)
+    Q_UNUSED(index);
+    Q_UNUSED(start);
+    Q_UNUSED(end);
 }
 
 /*virtual*/
 void AbstractItemView::rowsRemoved(const QModelIndex &parent,int start, int end)
 {
-    Q_UNUSED(parent)
-    Q_UNUSED(start)
-    Q_UNUSED(end)
+    Q_UNUSED(parent);
+    Q_UNUSED(start);
+    Q_UNUSED(end);
 
     if (start <= m_currentIndex.row() && m_currentIndex.row() <= end) {
         QModelIndex newCurrentIndex = m_model->index(start, 0, m_rootIndex);

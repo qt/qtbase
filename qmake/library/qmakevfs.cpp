@@ -142,12 +142,12 @@ bool QMakeVfs::writeFile(int id, QIODevice::OpenMode mode, VfsFlags flags,
     QMutexLocker locker(&m_mutex);
 # endif
     QString *cont = &m_files[id];
-    Q_UNUSED(flags)
+    Q_UNUSED(flags);
     if (mode & QIODevice::Append)
         *cont += contents;
     else
         *cont = contents;
-    Q_UNUSED(errStr)
+    Q_UNUSED(errStr);
     return true;
 #else
     QFileInfo qfi(fileNameForId(id));
@@ -243,7 +243,7 @@ bool QMakeVfs::exists(const QString &fn, VfsFlags flags)
     if (it != m_files.constEnd())
         return it->constData() != m_magicMissing.constData();
 #else
-    Q_UNUSED(flags)
+    Q_UNUSED(flags);
 #endif
     bool ex = IoUtils::fileType(fn) == IoUtils::FileIsRegular;
 #ifndef PROEVALUATOR_FULL

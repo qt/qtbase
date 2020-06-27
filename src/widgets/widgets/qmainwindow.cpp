@@ -1365,7 +1365,7 @@ void QMainWindow::setUnifiedTitleAndToolBarOnMac(bool enabled)
 
     update();
 #else
-    Q_UNUSED(enabled)
+    Q_UNUSED(enabled);
 #endif
 }
 

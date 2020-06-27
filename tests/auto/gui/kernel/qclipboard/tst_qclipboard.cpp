@@ -250,9 +250,9 @@ static bool runHelper(const QString &program, const QStringList &arguments, QByt
     }
     return true;
 #else // QT_CONFIG(process)
-    Q_UNUSED(program)
-    Q_UNUSED(arguments)
-    Q_UNUSED(errorMessage)
+    Q_UNUSED(program);
+    Q_UNUSED(arguments);
+    Q_UNUSED(errorMessage);
     return false;
 #endif // QT_CONFIG(process)
 }

@@ -984,7 +984,7 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
             }
 
             // send a cursor update
-            Q_UNUSED(cursorPosition)
+            Q_UNUSED(cursorPosition);
 //            QDBusVariant cursorData;
 //            cursorData.setVariant(QVariant::fromValue(cursorPosition));
 //            QVariantList args = packDBusSignalArguments(QString(), cursorPosition, 0, QVariant::fromValue(cursorData));
@@ -1790,7 +1790,7 @@ bool AtSpiAdaptor::textInterface(QAccessibleInterface *interface, const QString 
     } else if (function == QLatin1String("GetAttributeRun")) {
         int offset = message.arguments().at(0).toInt();
         bool includeDefaults = message.arguments().at(1).toBool();
-        Q_UNUSED(includeDefaults)
+        Q_UNUSED(includeDefaults);
         connection.send(message.createReply(getAttributes(interface, offset, includeDefaults)));
     } else if (function == QLatin1String("GetAttributeValue")) {
         int offset = message.arguments().at(0).toInt();

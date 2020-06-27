@@ -53,7 +53,7 @@ private:
 void tst_QFontMetrics::testQFontMetrics( const QFontMetrics &fm )
 {
     int fontHeight = fm.height();
-    Q_UNUSED(fontHeight)
+    Q_UNUSED(fontHeight);
 }
 
 void tst_QFontMetrics::fontmetrics_create()

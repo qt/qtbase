@@ -344,7 +344,7 @@ QT_END_INCLUDE_NAMESPACE
 
 static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
 {
-    Q_UNUSED(getMtu)
+    Q_UNUSED(getMtu);
     QList<QNetworkInterfacePrivate *> interfaces;
     QDuplicateTracker<QString> seenInterfaces;
     QDuplicateTracker<int> seenIndexes;
@@ -400,7 +400,7 @@ static void getAddressExtraInfo(QNetworkAddressEntry *entry, struct sockaddr *sa
 {
     Q_UNUSED(entry);
     Q_UNUSED(sa);
-    Q_UNUSED(ifname)
+    Q_UNUSED(ifname);
 }
 
 # elif defined(Q_OS_BSD4)
@@ -568,7 +568,7 @@ static void getAddressExtraInfo(QNetworkAddressEntry *entry, struct sockaddr *sa
 
 static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
 {
-    Q_UNUSED(getMtu)
+    Q_UNUSED(getMtu);
     QList<QNetworkInterfacePrivate *> interfaces;
 
     // make sure there's one entry for each interface
@@ -600,7 +600,7 @@ static void getAddressExtraInfo(QNetworkAddressEntry *entry, struct sockaddr *sa
 {
     Q_UNUSED(entry);
     Q_UNUSED(sa);
-    Q_UNUSED(ifname)
+    Q_UNUSED(ifname);
 }
 # endif
 

@@ -219,7 +219,7 @@ QTextImageHandler::QTextImageHandler(QObject *parent)
 
 QSizeF QTextImageHandler::intrinsicSize(QTextDocument *doc, int posInDocument, const QTextFormat &format)
 {
-    Q_UNUSED(posInDocument)
+    Q_UNUSED(posInDocument);
     const QTextImageFormat imageFormat = format.toImageFormat();
 
     if (QCoreApplication::instance()->thread() != QThread::currentThread())
@@ -236,7 +236,7 @@ QImage QTextImageHandler::image(QTextDocument *doc, const QTextImageFormat &imag
 
 void QTextImageHandler::drawObject(QPainter *p, const QRectF &rect, QTextDocument *doc, int posInDocument, const QTextFormat &format)
 {
-    Q_UNUSED(posInDocument)
+    Q_UNUSED(posInDocument);
         const QTextImageFormat imageFormat = format.toImageFormat();
 
     if (QCoreApplication::instance()->thread() != QThread::currentThread()) {

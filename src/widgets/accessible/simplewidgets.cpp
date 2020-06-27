@@ -365,7 +365,7 @@ QAccessibleInterface *QAccessibleToolButton::child(int index) const
         return QAccessible::queryAccessibleInterface(toolButton()->menu());
     }
 #else
-    Q_UNUSED(index)
+    Q_UNUSED(index);
 #endif
     return nullptr;
 }

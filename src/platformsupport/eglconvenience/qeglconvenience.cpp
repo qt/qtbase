@@ -468,7 +468,7 @@ void q_printEglConfig(EGLDisplay display, EGLConfig config)
 QSizeF q_physicalScreenSizeFromFb(int framebufferDevice, const QSize &screenSize)
 {
 #ifndef Q_OS_LINUX
-    Q_UNUSED(framebufferDevice)
+    Q_UNUSED(framebufferDevice);
 #endif
     const int defaultPhysicalDpi = 100;
     static QSizeF size;
@@ -521,7 +521,7 @@ QSizeF q_physicalScreenSizeFromFb(int framebufferDevice, const QSize &screenSize
 QSize q_screenSizeFromFb(int framebufferDevice)
 {
 #ifndef Q_OS_LINUX
-    Q_UNUSED(framebufferDevice)
+    Q_UNUSED(framebufferDevice);
 #endif
     const int defaultWidth = 800;
     const int defaultHeight = 600;
@@ -565,7 +565,7 @@ QSize q_screenSizeFromFb(int framebufferDevice)
 int q_screenDepthFromFb(int framebufferDevice)
 {
 #ifndef Q_OS_LINUX
-    Q_UNUSED(framebufferDevice)
+    Q_UNUSED(framebufferDevice);
 #endif
     const int defaultDepth = 32;
     static int depth = qEnvironmentVariableIntValue("QT_QPA_EGLFS_DEPTH");
@@ -594,7 +594,7 @@ int q_screenDepthFromFb(int framebufferDevice)
 qreal q_refreshRateFromFb(int framebufferDevice)
 {
 #ifndef Q_OS_LINUX
-    Q_UNUSED(framebufferDevice)
+    Q_UNUSED(framebufferDevice);
 #endif
 
     static qreal rate = 0;

@@ -130,7 +130,7 @@ TestWidget::TestWidget(QWidget *parent)
 //! [6]
 void TestWidget::resizeEvent(QResizeEvent *event)
 {
-    Q_UNUSED(event)
+    Q_UNUSED(event);
 
     int maxWidth = widthSlider->width();
     widthSlider->setMaximum(maxWidth);

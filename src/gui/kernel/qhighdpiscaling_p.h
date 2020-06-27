@@ -179,7 +179,7 @@ inline QRectF scale(const QRectF &rect, qreal scaleFactor, QPoint origin = QPoin
 
 inline QMargins scale(const QMargins &margins, qreal scaleFactor, QPoint origin = QPoint(0, 0))
 {
-    Q_UNUSED(origin)
+    Q_UNUSED(origin);
     return QMargins(qRound(qreal(margins.left()) * scaleFactor), qRound(qreal(margins.top()) * scaleFactor),
                     qRound(qreal(margins.right()) * scaleFactor), qRound(qreal(margins.bottom()) * scaleFactor));
 }

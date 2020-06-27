@@ -95,7 +95,7 @@
 
 - (void)insertText:(id)aString replacementRange:(NSRange)replacementRange
 {
-    Q_UNUSED(replacementRange)
+    Q_UNUSED(replacementRange);
 
     if (m_sendKeyEvent && m_composingText.isEmpty() && [aString isEqualToString:m_inputSource]) {
         // don't send input method events for simple text input (let handleKeyEvent send key events instead)
@@ -129,7 +129,7 @@
 
 - (void)setMarkedText:(id)aString selectedRange:(NSRange)selectedRange replacementRange:(NSRange)replacementRange
 {
-    Q_UNUSED(replacementRange)
+    Q_UNUSED(replacementRange);
     QString preeditString;
 
     QList<QInputMethodEvent::Attribute> attrs;
@@ -199,7 +199,7 @@
 
 - (NSAttributedString *)attributedSubstringForProposedRange:(NSRange)aRange actualRange:(NSRangePointer)actualRange
 {
-    Q_UNUSED(actualRange)
+    Q_UNUSED(actualRange);
     QObject *fo = m_platformWindow->window()->focusObject();
     if (!fo)
         return nil;
@@ -255,8 +255,8 @@
 
 - (NSRect)firstRectForCharacterRange:(NSRange)aRange actualRange:(NSRangePointer)actualRange
 {
-    Q_UNUSED(aRange)
-    Q_UNUSED(actualRange)
+    Q_UNUSED(aRange);
+    Q_UNUSED(actualRange);
 
     QObject *fo = m_platformWindow->window()->focusObject();
     if (!fo)
@@ -305,7 +305,7 @@
 
 - (void)textInputContextKeyboardSelectionDidChangeNotification:(NSNotification *)textInputContextKeyboardSelectionDidChangeNotification
 {
-    Q_UNUSED(textInputContextKeyboardSelectionDidChangeNotification)
+    Q_UNUSED(textInputContextKeyboardSelectionDidChangeNotification);
     if (([NSApp keyWindow] == self.window) && self.window.firstResponder == self) {
         if (QCocoaInputContext *ic = qobject_cast<QCocoaInputContext *>(QCocoaIntegration::instance()->inputContext()))
             ic->updateLocale();

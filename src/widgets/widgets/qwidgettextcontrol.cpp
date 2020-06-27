@@ -697,9 +697,9 @@ void QWidgetTextControlPrivate::_q_contentsChanged(int from, int charsRemoved, i
         delete ev;
     }
 #else
-    Q_UNUSED(from)
-    Q_UNUSED(charsRemoved)
-    Q_UNUSED(charsAdded)
+    Q_UNUSED(from);
+    Q_UNUSED(charsRemoved);
+    Q_UNUSED(charsAdded);
 #endif
 }
 

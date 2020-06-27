@@ -58,7 +58,7 @@ void BackgroundItem::paint(QPainter *painter,
                            const QStyleOptionGraphicsItem *option,
                            QWidget *widget)
 {
-    Q_UNUSED(widget)
+    Q_UNUSED(widget);
     painter->setCompositionMode(QPainter::CompositionMode_Source);
     painter->drawPixmap(option->exposedRect, m_background, option->exposedRect);
 }

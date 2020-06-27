@@ -229,7 +229,7 @@ DWORD WINAPI qt_adopted_thread_watcher_function(LPVOID)
             QThread *thread = data->thread;
             Q_ASSERT(thread);
             auto thread_p = static_cast<QThreadPrivate *>(QObjectPrivate::get(thread));
-            Q_UNUSED(thread_p)
+            Q_UNUSED(thread_p);
             Q_ASSERT(!thread_p->finished);
             QThreadPrivate::finish(thread);
         }

@@ -2640,7 +2640,7 @@ void instantiateContainer()
     constIt = constContainer.end();
     constIt = constContainer.cend();
     container.constEnd();
-    Q_UNUSED(constIt)
+    Q_UNUSED(constIt);
 
     container.clear();
     container.contains(value);
@@ -2663,7 +2663,7 @@ void instantiateMutableIterationContainer()
     typename ContainerType::iterator it;
     it = container.begin();
     it = container.end();
-    Q_UNUSED(it)
+    Q_UNUSED(it);
 }
 
 template <typename ContainerType, typename ValueType>
@@ -2824,7 +2824,7 @@ void tst_Collections::qtimerList()
 template <typename Container>
 void testContainerTypedefs(Container container)
 {
-    Q_UNUSED(container)
+    Q_UNUSED(container);
     { QVERIFY_TYPE(typename Container::value_type); }
     { QVERIFY_TYPE(typename Container::iterator); }
     { QVERIFY_TYPE(typename Container::const_iterator); }
@@ -2838,7 +2838,7 @@ void testContainerTypedefs(Container container)
 template <typename Container>
 void testPairAssociativeContainerTypedefs(Container container)
 {
-    Q_UNUSED(container)
+    Q_UNUSED(container);
 
 //  TODO: Not sure how to define value_type for our associative containers
 //    { QVERIFY_TYPE(typename Container::value_type); }
@@ -2860,7 +2860,7 @@ void testPairAssociativeContainerTypedefs(Container container)
 template <typename Container>
 void testSetContainerTypedefs(Container container)
 {
-    Q_UNUSED(container)
+    Q_UNUSED(container);
     { QVERIFY_TYPE(typename Container::iterator); }
     { QVERIFY_TYPE(typename Container::const_iterator); }
     { QVERIFY_TYPE(typename Container::reference); }

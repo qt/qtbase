@@ -748,7 +748,7 @@ void QSystemTrayIconPrivate::addPlatformMenu(QMenu *menu) const
     if (platformMenu)
         menu->setPlatformMenu(platformMenu);
 #else
-    Q_UNUSED(menu)
+    Q_UNUSED(menu);
 #endif // QT_CONFIG(menu)
 }
 

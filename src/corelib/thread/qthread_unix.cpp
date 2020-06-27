@@ -775,7 +775,7 @@ void QThread::setTerminationEnabled(bool enabled)
     Q_ASSERT_X(thr != nullptr, "QThread::setTerminationEnabled()",
                "Current thread was not started with QThread.");
 
-    Q_UNUSED(thr)
+    Q_UNUSED(thr);
 #if defined(Q_OS_ANDROID)
     Q_UNUSED(enabled);
 #else

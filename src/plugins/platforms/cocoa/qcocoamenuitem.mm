@@ -205,7 +205,7 @@ void QCocoaMenuItem::setIsSeparator(bool isSeparator)
 
 void QCocoaMenuItem::setFont(const QFont &font)
 {
-    Q_UNUSED(font)
+    Q_UNUSED(font);
 }
 
 void QCocoaMenuItem::setRole(MenuRole role)

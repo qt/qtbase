@@ -648,7 +648,7 @@ int QWasmEventTranslator::focus_cb(int /*eventType*/, const EmscriptenFocusEvent
 
 int QWasmEventTranslator::wheel_cb(int eventType, const EmscriptenWheelEvent *wheelEvent, void *userData)
 {
-    Q_UNUSED(eventType)
+    Q_UNUSED(eventType);
 
     QWasmEventTranslator *eventTranslator = static_cast<QWasmEventTranslator *>(userData);
     EmscriptenMouseEvent mouseEvent = wheelEvent->mouse;

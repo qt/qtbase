@@ -637,7 +637,7 @@ bool QNullTexture::create()
 
 bool QNullTexture::createFrom(QRhiTexture::NativeTexture src)
 {
-    Q_UNUSED(src)
+    Q_UNUSED(src);
     QRHI_RES_RHI(QRhiNull);
     const bool isCube = m_flags.testFlag(CubeMap);
     const bool hasMipMaps = m_flags.testFlag(MipMapped);

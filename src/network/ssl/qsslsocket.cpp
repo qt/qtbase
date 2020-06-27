@@ -2340,7 +2340,7 @@ void QSslSocketPrivate::_q_stateChangedSlot(QAbstractSocket::SocketState state)
 */
 void QSslSocketPrivate::_q_errorSlot(QAbstractSocket::SocketError error)
 {
-    Q_UNUSED(error)
+    Q_UNUSED(error);
 #ifdef QSSLSOCKET_DEBUG
     Q_Q(QSslSocket);
     qCDebug(lcSsl) << "QSslSocket::_q_errorSlot(" << error << ')';

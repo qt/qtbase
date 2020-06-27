@@ -423,7 +423,7 @@ void tst_QKeySequence::mnemonic()
     QFETCH(bool, warning);
 
 #ifdef QT_NO_DEBUG
-    Q_UNUSED(warning)
+    Q_UNUSED(warning);
 #else
     if (warning) {
         QString str = QString::fromLatin1("QKeySequence::mnemonic: \"%1\" contains multiple occurrences of '&'").arg(string);

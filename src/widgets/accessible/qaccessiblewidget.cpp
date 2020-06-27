@@ -158,7 +158,7 @@ QString qt_accHotKey(const QString &text)
     if (ampIndex != -1)
         return QKeySequence(Qt::ALT).toString(QKeySequence::NativeText) + text.at(ampIndex + 1);
 #else
-    Q_UNUSED(text)
+    Q_UNUSED(text);
 #endif
 
     return QString();

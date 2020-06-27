@@ -134,7 +134,7 @@ QPlatformNativeInterface::NativeResourceForIntegrationFunction QQnxNativeInterfa
     if (resource == "blackberryIMFCheckSpelling")
         return reinterpret_cast<NativeResourceForIntegrationFunction>(QQnxInputContext::checkSpelling);
 #else
-    Q_UNUSED(resource)
+    Q_UNUSED(resource);
 #endif
     return 0;
 }

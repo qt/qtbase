@@ -64,7 +64,7 @@ static inline void moveCursorAway(const QWidget *topLevel)
 #ifndef QT_NO_CURSOR
     QCursor::setPos(topLevel->geometry().topRight() + QPoint(100, 0));
 #else
-    Q_UNUSED(topLevel)
+    Q_UNUSED(topLevel);
 #endif
 }
 
@@ -204,8 +204,8 @@ public:
 
     void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
     {
-        Q_UNUSED(model)
-        Q_UNUSED(index)
+        Q_UNUSED(model);
+        Q_UNUSED(index);
 
         QDialog *dialog = qobject_cast<QDialog *>(editor);
         result = static_cast<QDialog::DialogCode>(dialog->result());

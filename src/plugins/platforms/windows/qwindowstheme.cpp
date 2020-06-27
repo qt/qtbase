@@ -876,8 +876,8 @@ static QPixmap pixmapFromShellImageList(int iImageList, const SHFILEINFO &info)
     }
     imageList->Release();
 #else
-    Q_UNUSED(iImageList)
-    Q_UNUSED(info)
+    Q_UNUSED(iImageList);
+    Q_UNUSED(info);
 #endif // USE_IIMAGELIST
     return result;
 }

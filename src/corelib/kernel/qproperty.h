@@ -208,7 +208,7 @@ namespace Qt {
             return QPropertyBinding<std::invoke_result_t<Functor>>(std::forward<Functor>(f), location);
         }
         // Work around bogus warning
-        Q_UNUSED(QtPrivate::is_variant_v<bool>)
+        Q_UNUSED(QtPrivate::is_variant_v<bool>);
     }
 }
 

@@ -747,7 +747,7 @@ template <typename T, bool Accepted = true>
 struct QMetaTypeFunctionHelper {
     static void Destruct(void *t)
     {
-        Q_UNUSED(t) // Silence MSVC that warns for POD types.
+        Q_UNUSED(t); // Silence MSVC that warns for POD types.
         static_cast<T*>(t)->~T();
     }
 

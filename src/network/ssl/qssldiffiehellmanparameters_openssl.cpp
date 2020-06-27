@@ -104,7 +104,7 @@ static int q_DH_check(DH *dh, int *status)
     // errors from the error queue, but it's not needed anyway
     // - see the 'isSafeDH' below, how it returns immediately
     // on 0.
-    Q_UNUSED(status)
+    Q_UNUSED(status);
 
     return result;
 }

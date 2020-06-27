@@ -116,7 +116,7 @@ timespec qAbsTimespec(const timespec &t)
 bool QTimerInfoList::timeChanged(timespec *delta)
 {
 #ifdef Q_OS_NACL
-    Q_UNUSED(delta)
+    Q_UNUSED(delta);
     return false; // Calling "times" crashes.
 #endif
     struct tms unused;

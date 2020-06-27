@@ -725,8 +725,8 @@ QWindowsFontDatabase::QWindowsFontDatabase()
     // Properties accessed by QWin32PrintEngine (Qt Print Support)
     static const int hfontMetaTypeId = qRegisterMetaType<HFONT>();
     static const int logFontMetaTypeId = qRegisterMetaType<LOGFONT>();
-    Q_UNUSED(hfontMetaTypeId)
-    Q_UNUSED(logFontMetaTypeId)
+    Q_UNUSED(hfontMetaTypeId);
+    Q_UNUSED(logFontMetaTypeId);
 
     if (lcQpaFonts().isDebugEnabled()) {
         QSharedPointer<QWindowsFontEngineData> d = data();

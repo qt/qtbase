@@ -106,7 +106,7 @@ bool QPlatformInputContext::isValid() const
  */
 bool QPlatformInputContext::hasCapability(Capability capability) const
 {
-    Q_UNUSED(capability)
+    Q_UNUSED(capability);
     return true;
 }
 
@@ -136,7 +136,7 @@ void QPlatformInputContext::update(Qt::InputMethodQueries)
  */
 void QPlatformInputContext::invokeAction(QInputMethod::Action action, int cursorPosition)
 {
-    Q_UNUSED(cursorPosition)
+    Q_UNUSED(cursorPosition);
     // Default behavior for simple ephemeral input contexts. Some
     // complex input contexts should not be reset here.
     if (action == QInputMethod::Click)
@@ -151,7 +151,7 @@ void QPlatformInputContext::invokeAction(QInputMethod::Action action, int cursor
 */
 bool QPlatformInputContext::filterEvent(const QEvent *event)
 {
-    Q_UNUSED(event)
+    Q_UNUSED(event);
     return false;
 }
 
@@ -251,7 +251,7 @@ void QPlatformInputContext::emitInputDirectionChanged(Qt::LayoutDirection newDir
  */
 void QPlatformInputContext::setFocusObject(QObject *object)
 {
-    Q_UNUSED(object)
+    Q_UNUSED(object);
 }
 
 /*!
