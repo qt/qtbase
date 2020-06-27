@@ -3104,6 +3104,10 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     \sa QByteArray::compare()
 */
+bool operator==(const QByteArray &a1, const QByteArray &a2) noexcept
+{
+    return (a1.size() == a2.size()) && (memcmp(a1.constData(), a2.constData(), a1.size())==0);
+}
 
 /*! \fn bool operator==(const QByteArray &a1, const char *a2)
     \relates QByteArray

@@ -567,8 +567,7 @@ inline int QByteArray::compare(const QByteArray &a, Qt::CaseSensitivity cs) cons
     return cs == Qt::CaseSensitive ? qstrcmp(*this, a) :
                                      qstrnicmp(data(), size(), a.data(), a.size());
 }
-inline bool operator==(const QByteArray &a1, const QByteArray &a2) noexcept
-{ return (a1.size() == a2.size()) && (memcmp(a1.constData(), a2.constData(), a1.size())==0); }
+Q_CORE_EXPORT bool operator==(const QByteArray &a1, const QByteArray &a2) noexcept;
 inline bool operator==(const QByteArray &a1, const char *a2) noexcept
 { return a2 ? qstrcmp(a1,a2) == 0 : a1.isEmpty(); }
 inline bool operator==(const char *a1, const QByteArray &a2) noexcept

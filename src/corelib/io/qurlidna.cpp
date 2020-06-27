@@ -2548,8 +2548,7 @@ QString qt_ACE_do(QStringView domain, AceOperation op, AceLeadingDot dot)
             // ACE form domains contain only ASCII characters, but we can't consider them simple
             // is this an ACE form?
             // the shortest valid ACE domain is 6 characters long (U+0080 would be 1, but it's not allowed)
-            static const ushort acePrefixUtf16[] = { 'x', 'n', '-', '-' };
-            if (memcmp(result.constData() + prevLen, acePrefixUtf16, sizeof acePrefixUtf16) == 0)
+            if (QStringView{result}.sliced(prevLen).startsWith(u"xn--"))
                 simple = false;
         }
 
