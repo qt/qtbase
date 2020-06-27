@@ -4554,7 +4554,7 @@ QString QString::mid(qsizetype position, qsizetype n) const
 
     \note The behavior is undefined when \a n < 0 or \a n > size().
 
-    \sa last(), sliced(), from(), startsWith(), chopped(), chop(), truncate()
+    \sa last(), sliced(), startsWith(), chopped(), chop(), truncate()
 */
 
 /*!
@@ -4565,7 +4565,7 @@ QString QString::mid(qsizetype position, qsizetype n) const
 
     \note The behavior is undefined when \a n < 0 or \a n > size().
 
-    \sa first(), sliced(), from(), endsWith(), chopped(), chop(), truncate()
+    \sa first(), sliced(), endsWith(), chopped(), chop(), truncate()
 */
 
 /*!
@@ -4582,8 +4582,9 @@ QString QString::mid(qsizetype position, qsizetype n) const
 */
 
 /*!
-    \fn QString QString::from(qsizetype pos) const
+    \fn QString QString::sliced(qsizetype pos) const
     \since 6.0
+    \overload
 
     Returns a string that contains the portion of this string starting at
     position \a pos and extending to its end.

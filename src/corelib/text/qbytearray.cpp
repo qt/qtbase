@@ -2902,7 +2902,7 @@ QByteArray QByteArray::mid(int pos, int len) const
 
     \note The behavior is undefined when \a n < 0 or \a n > size().
 
-    \sa last(), sliced(), from(), startsWith(), chopped(), chop(), truncate()
+    \sa last(), sliced(), startsWith(), chopped(), chop(), truncate()
 */
 
 /*!
@@ -2913,7 +2913,7 @@ QByteArray QByteArray::mid(int pos, int len) const
 
     \note The behavior is undefined when \a n < 0 or \a n > size().
 
-    \sa first(), sliced(), from(), endsWith(), chopped(), chop(), truncate()
+    \sa first(), sliced(), endsWith(), chopped(), chop(), truncate()
 */
 
 /*!
@@ -2926,12 +2926,13 @@ QByteArray QByteArray::mid(int pos, int len) const
     \note The behavior is undefined when \a pos < 0, \a n < 0,
     or \a pos + \a n > size().
 
-    \sa first(), last(), from(), chopped(), chop(), truncate()
+    \sa first(), last(), chopped(), chop(), truncate()
 */
 
 /*!
-    \fn QByteArray QByteArray::from(qsizetype pos) const
+    \fn QByteArray QByteArray::sliced(qsizetype pos) const
     \since 6.0
+    \overload
 
     Returns a byte array containing the bytes starting at position \a pos
     in this object, and extending to the end of this object.

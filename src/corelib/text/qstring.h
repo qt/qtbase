@@ -441,7 +441,7 @@ public:
     { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); return QString(data(), n); }
     Q_REQUIRED_RESULT QString last(qsizetype n) const
     { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); return QString(data() + size() - n, n); }
-    Q_REQUIRED_RESULT QString from(qsizetype pos) const
+    Q_REQUIRED_RESULT QString sliced(qsizetype pos) const
     { Q_ASSERT(pos >= 0); Q_ASSERT(pos <= size()); return QString(data() + pos, size() - pos); }
     Q_REQUIRED_RESULT QString sliced(qsizetype pos, qsizetype n) const
     { Q_ASSERT(pos >= 0); Q_ASSERT(n >= 0); Q_ASSERT(size_t(pos) + size_t(n) <= size_t(size())); return QString(data() + pos, n); }

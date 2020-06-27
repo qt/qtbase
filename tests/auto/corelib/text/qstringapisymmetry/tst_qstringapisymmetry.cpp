@@ -1780,7 +1780,7 @@ void tst_QStringApiSymmetry::sliced_impl()
     const auto s = make<String>(unicode, latin1, utf8);
 
     {
-        const auto from = s.from(pos);
+        const auto from = s.sliced(pos);
         const auto sliced = s.sliced(pos, n);
 
         QCOMPARE(from, result);
@@ -1792,7 +1792,7 @@ void tst_QStringApiSymmetry::sliced_impl()
         QCOMPARE(sliced.isEmpty(), result2.isEmpty());
     }
     {
-        const auto from = detached(s).from(pos);
+        const auto from = detached(s).sliced(pos);
         const auto sliced = detached(s).sliced(pos, n);
 
         QCOMPARE(from, result);

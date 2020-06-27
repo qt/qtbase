@@ -692,8 +692,9 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringView QStringView::from(qsizetype pos) const
+    \fn QStringView QStringView::sliced(qsizetype pos) const
     \since 6.0
+    \overload
 
     Returns a string view starting at position \a pos in this object,
     and extending to its end.
