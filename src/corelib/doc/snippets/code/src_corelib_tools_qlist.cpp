@@ -206,5 +206,5 @@ QList<double> list = QList<double>::fromStdVector(stdvector);
 QList<double> list;
 list << 1.2 << 0.5 << 3.14;
 
-std::vector<double> stdlist = list.toStdVector();
+std::vector<double> stdvector = list.toStdVector();
 //! [17]

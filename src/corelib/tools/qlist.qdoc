@@ -592,9 +592,9 @@
     the list. From Qt 5.7, the capacity is preserved. To shed
     all capacity, swap with a default-constructed list:
     \code
-    QList<T> v ...;
-    QList<T>().swap(v);
-    Q_ASSERT(v.capacity() == 0);
+    QList<T> l ...;
+    QList<T>().swap(l);
+    Q_ASSERT(l.capacity() == 0);
     \endcode
     or call squeeze().
 
