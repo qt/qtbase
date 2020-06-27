@@ -684,17 +684,22 @@ static void appendVariant(QCborContainerPrivate *d, const QVariant &variant)
       \row  \li \l QUuid                    \li Uuid
     \endtable
 
-    For any other types, this function will return Null if the QVariant itself
-    is null, and otherwise will try to convert to string using
-    QVariant::toString(). If the conversion to string fails, this function
-    returns Undefined.
+    If QVariant::isNull() returns true, a null QCborValue is returned or
+    inserted into the list or object, regardless of the type carried by
+    QVariant. Note the behavior change in Qt 6.0 affecting QVariant::isNull()
+    also affects this function.
+
+    For other types not listed above, a conversion to string will be attempted,
+    usually but not always by calling QVariant::toString(). If the conversion
+    fails the value is replaced by an Undefined CBOR value. Note that
+    QVariant::toString() is also lossy for the majority of types.
 
     Please note that the conversions via QVariant::toString() are subject to
-    change at any time. QCborValue may be extended in the future to support
-    more types, which will result in a change in how this function performs
-    conversions.
+    change at any time. Both QVariant and QCborValue may be extended in the
+    future to support more types, which will result in a change in how this
+    function performs conversions.
 
-    \sa toVariant(), fromJsonValue(), QCborArray::toVariantList(), QCborMap::toVariantMap()
+    \sa toVariant(), fromJsonValue(), QCborArray::toVariantList(), QCborMap::toVariantMap(), QJsonValue::fromVariant()
  */
 QCborValue QCborValue::fromVariant(const QVariant &variant)
 {
