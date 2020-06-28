@@ -363,15 +363,16 @@ static constexpr Qt::KeyboardModifiers modifierCombinations[] = {
 };
 
 /*
-    Updates the key map for the given \macVirtualKey by applying
-    all possible modifier combinations.
+    Returns a key map for the given \macVirtualKey based on all
+    possible modifier combinations.
 */
-void QCocoaKeyMapper::updateKeyMap(unsigned short macVirtualKey, QChar unicodeKey)
+KeyboardLayoutItem *QCocoaKeyMapper::keyMapForKey(unsigned short macVirtualKey, QChar unicodeKey) const
 {
-    updateKeyboard();
+    const_cast<QCocoaKeyMapper *>(this)->updateKeyboard();
 
-    if (m_keyLayout[macVirtualKey])
-        return;
+    Q_ASSERT(macVirtualKey < 256);
+    if (auto *existingKeyMap = m_keyLayout[macVirtualKey])
+        return existingKeyMap;
 
     qCDebug(lcQpaKeyMapper, "Updating key map for virtual key = 0x%02x!", (uint)macVirtualKey);
 
@@ -402,27 +403,25 @@ void QCocoaKeyMapper::updateKeyMap(unsigned short macVirtualKey, QChar unicodeKe
 
         qCDebug(lcQpaKeyMapper, "    [%d] (%d,0x%02x,'%c')", i, qtkey, qtkey, qtkey);
     }
+
+    return m_keyLayout[macVirtualKey];
 }
 
 QList<int> QCocoaKeyMapper::possibleKeys(const QKeyEvent *event) const
 {
     QList<int> ret;
 
-    auto virtualKey = event->nativeVirtualKey();
-    const_cast<QCocoaKeyMapper *>(this)->updateKeyMap(virtualKey, QChar(event->key()));
-    KeyboardLayoutItem *keyLayout = m_keyLayout[virtualKey];
+    auto *keyMap = keyMapForKey(event->nativeVirtualKey(), QChar(event->key()));
+    Q_ASSERT(keyMap);
 
-    if (!keyLayout) // Key is not in any keyboard layout (e.g. eisu-key on Japanese keyboard)
-        return ret;
-
-    int baseKey = keyLayout->qtKey[Qt::NoModifier];
+    int baseKey = keyMap->qtKey[Qt::NoModifier];
     auto eventModifiers = event->modifiers();
 
     // The base key is always valid
     ret << int(baseKey + eventModifiers);
 
     for (int i = 1; i < 8; ++i) {
-        int keyAfterApplyingModifiers = keyLayout->qtKey[i];
+        int keyAfterApplyingModifiers = keyMap->qtKey[i];
         if (!keyAfterApplyingModifiers)
             continue;
         if (keyAfterApplyingModifiers == baseKey)

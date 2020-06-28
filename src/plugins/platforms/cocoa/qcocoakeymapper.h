@@ -85,7 +85,7 @@ public:
 private:
     bool updateKeyboard();
     void deleteLayouts();
-    void updateKeyMap(unsigned short macVirtualKey, QChar unicodeKey);
+    KeyboardLayoutItem *keyMapForKey(unsigned short macVirtualKey, QChar unicodeKey) const;
     void clearMappings();
 
     QCFType<TISInputSourceRef> m_currentInputSource = nullptr;
@@ -93,8 +93,8 @@ private:
     enum { NullMode, UnicodeMode, OtherMode } m_keyboardMode = NullMode;
     const UCKeyboardLayout *m_keyboardLayoutFormat = nullptr;
     KeyboardLayoutKind m_keyboardKind = kKLKCHRuchrKind;
-    UInt32 m_deadKeyState = 0; // Maintains dead key state beween calls to UCKeyTranslate
-    KeyboardLayoutItem *m_keyLayout[256];
+    mutable UInt32 m_deadKeyState = 0; // Maintains dead key state beween calls to UCKeyTranslate
+    mutable KeyboardLayoutItem *m_keyLayout[256];
 };
 
 QT_END_NAMESPACE
