@@ -70,7 +70,6 @@ QT_BEGIN_NAMESPACE
         16. Meta + Alt + Control + Shift
 */
 struct KeyboardLayoutItem {
-    bool dirty;
     quint32 qtKey[16]; // Can by any Qt::Key_<foo>, or unicode character
 };
 
@@ -82,19 +81,20 @@ public:
     ~QCocoaKeyMapper();
     static Qt::KeyboardModifiers queryKeyboardModifiers();
     QList<int> possibleKeys(const QKeyEvent *event) const;
+
+private:
     bool updateKeyboard();
     void deleteLayouts();
     void updateKeyMap(unsigned short macVirtualKey, QChar unicodeKey);
     void clearMappings();
 
-private:
-    QCFType<TISInputSourceRef> currentInputSource = nullptr;
+    QCFType<TISInputSourceRef> m_currentInputSource = nullptr;
 
-    enum { NullMode, UnicodeMode, OtherMode } keyboard_mode = NullMode;
-    const UCKeyboardLayout *keyboard_layout_format = nullptr;
-    KeyboardLayoutKind keyboard_kind = kKLKCHRuchrKind;
-    UInt32 keyboard_dead = 0;
-    KeyboardLayoutItem *keyLayout[256];
+    enum { NullMode, UnicodeMode, OtherMode } m_keyboardMode = NullMode;
+    const UCKeyboardLayout *m_keyboardLayoutFormat = nullptr;
+    KeyboardLayoutKind m_keyboardKind = kKLKCHRuchrKind;
+    UInt32 m_deadKeyState = 0; // Maintains dead key state beween calls to UCKeyTranslate
+    KeyboardLayoutItem *m_keyLayout[256];
 };
 
 QT_END_NAMESPACE
