@@ -395,7 +395,7 @@ KeyboardLayoutItem *QCocoaKeyMapper::keyMapForKey(unsigned short macVirtualKey, 
         if (err == noErr && actualStringLength)
             unicodeKey = QChar(unicodeString[0]);
 
-        int qtkey = toKeyCode(unicodeKey, macVirtualKey, modifierKeyState);
+        int qtkey = toKeyCode(unicodeKey, macVirtualKey, qtModifiers);
         if (qtkey == Qt::Key_unknown)
             qtkey = unicodeKey.unicode();
 
