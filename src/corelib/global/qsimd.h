@@ -154,4 +154,7 @@
 #define QT_VECTORCALL
 #endif
 
+QT_BEGIN_NAMESPACE
+QT_END_NAMESPACE
+
 #endif // QSIMD_H
