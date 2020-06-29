@@ -1525,7 +1525,7 @@ namespace {
                 || (uc >= 0xE000 && uc <= 0xF8FF)
                 || (uc >= 0xFDD0 && uc <= 0xFDEF)
                 || uc == 0xFEFF
-                || (uc >= 0xFFF9 && uc <= 0xFFFF))) {
+                || uc >= 0xFFF9)) {
                 return false;
             }
         } else {
