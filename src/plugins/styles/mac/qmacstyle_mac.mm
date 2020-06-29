@@ -5397,7 +5397,6 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 } else
 #endif
                 {
-                    [slider calcSize];
                     if (!hasDoubleTicks)
                         fixStaleGeometry(slider);
                     NSSliderCell *cell = slider.cell;
@@ -5782,7 +5781,6 @@ QStyle::SubControl QMacStyle::hitTestComplexControl(ComplexControl cc,
             if (!setupSlider(slider, sl))
                 break;
 
-            [slider calcSize];
             NSSliderCell *cell = slider.cell;
             const auto barRect = QRectF::fromCGRect([cell barRectFlipped:hasTicks]);
             const auto knobRect = QRectF::fromCGRect([cell knobRectFlipped:NO]);
@@ -5887,7 +5885,6 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
             if (!setupSlider(slider, sl))
                 break;
 
-            [slider calcSize];
             NSSliderCell *cell = slider.cell;
             if (sc == SC_SliderHandle) {
                 ret = QRectF::fromCGRect([cell knobRectFlipped:NO]).toRect();
