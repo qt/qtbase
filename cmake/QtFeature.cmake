@@ -424,7 +424,6 @@ function(qt_internal_generate_feature_line line feature)
 endfunction()
 
 function(qt_internal_feature_write_file file features extra)
-    message("Generating file ${file}.")
     set(contents "")
     foreach(it ${features})
         qt_internal_generate_feature_line(line "${it}")

@@ -2679,6 +2679,7 @@ function(qt_add_module target)
                                  -outdir "${QT_BUILD_DIR}"
                                  -builddir "${PROJECT_BINARY_DIR}"
                                  "${PROJECT_SOURCE_DIR}")
+        message(STATUS "Running syncqt for module: '${module_include_name}' ")
         execute_process(COMMAND ${syncqt_full_command})
 
         set_target_properties("${target}" PROPERTIES INTERFACE_MODULE_HAS_HEADERS ON)
