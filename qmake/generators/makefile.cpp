@@ -1678,7 +1678,7 @@ MakefileGenerator::replaceExtraCompilerVariables(
                 fullVal = val.join(' ');
             }
             ret.replace(match.capturedStart(), match.capturedLength(), fullVal);
-            rep = match.capturedStart(), fullVal.length();
+            rep += fullVal.length();
         } else {
             rep = match.capturedEnd();
         }
