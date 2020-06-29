@@ -416,8 +416,6 @@
     \value META The Meta keys.
     \value CTRL The Ctrl keys.
     \value ALT The normal Alt keys, but not keys like AltGr.
-    \value UNICODE_ACCEL The shortcut is specified as a Unicode code
-    point, not as a Qt Key.
     \omitvalue MODIFIER_MASK
 
     \sa KeyboardModifier, MouseButton

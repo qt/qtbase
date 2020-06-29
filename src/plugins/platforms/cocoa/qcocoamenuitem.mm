@@ -99,7 +99,7 @@ static quint32 constructModifierMask(quint32 accel_key)
 // return an autoreleased string given a QKeySequence (currently only looks at the first one).
 NSString *keySequenceToKeyEqivalent(const QKeySequence &accel)
 {
-    quint32 accel_key = (accel[0] & ~(Qt::MODIFIER_MASK | Qt::UNICODE_ACCEL));
+    quint32 accel_key = (accel[0] & ~Qt::MODIFIER_MASK);
     QChar cocoa_key = QCocoaKeyMapper::toCocoaKey(Qt::Key(accel_key));
     if (cocoa_key.isNull())
         cocoa_key = QChar(accel_key).toLower().unicode();

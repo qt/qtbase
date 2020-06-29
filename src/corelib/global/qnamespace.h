@@ -96,13 +96,13 @@ namespace Qt {
     // user-defined or third-party macros. More so when the identifiers are not
     // "namespace"-prefixed. This is considered bad practice and is why
     // KeypadModifier was not added to the Modifier enum.
+    // ### Qt 7: consider deprecating in favor of KeyboardModifier.
     enum Modifier {
         META          = Qt::MetaModifier,
         SHIFT         = Qt::ShiftModifier,
         CTRL          = Qt::ControlModifier,
         ALT           = Qt::AltModifier,
         MODIFIER_MASK = KeyboardModifierMask,
-        UNICODE_ACCEL = 0x00000000
     };
 
     enum MouseButton {

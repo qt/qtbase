@@ -196,26 +196,26 @@ void tst_QKeySequence::operatorQString_data()
     QTest::addColumn<int>("keycode");
     QTest::addColumn<QString>("keystring");
 
-    QTest::newRow( "No modifier" ) << 0 << int(Qt::Key_Aring | Qt::UNICODE_ACCEL) << QString::fromLatin1( "\x0c5" );
+    QTest::newRow( "No modifier" ) << 0 << int(Qt::Key_Aring) << QString::fromLatin1( "\x0c5" );
 
 #ifndef Q_OS_MAC
     QTest::newRow( "Ctrl+Left" ) << int(Qt::CTRL) << int(Qt::Key_Left) << QString( "Ctrl+Left" );
     QTest::newRow( "Ctrl+," ) << int(Qt::CTRL) << int(Qt::Key_Comma) << QString( "Ctrl+," );
     QTest::newRow( "Alt+Left" ) << int(Qt::ALT) << int(Qt::Key_Left) << QString( "Alt+Left" );
     QTest::newRow( "Alt+Shift+Left" ) << int(Qt::ALT | Qt::SHIFT) << int(Qt::Key_Left) << QString( "Alt+Shift+Left" );
-    QTest::newRow( "Ctrl" ) << int(Qt::CTRL) << int(Qt::Key_Aring | Qt::UNICODE_ACCEL) << QString::fromLatin1( "Ctrl+\x0c5" );
-    QTest::newRow( "Alt" ) << int(Qt::ALT) << int(Qt::Key_Aring | Qt::UNICODE_ACCEL) << QString::fromLatin1( "Alt+\x0c5" );
-    QTest::newRow( "Shift" ) << int(Qt::SHIFT) << int(Qt::Key_Aring | Qt::UNICODE_ACCEL) << QString::fromLatin1( "Shift+\x0c5" );
-    QTest::newRow( "Meta" ) << int(Qt::META) << int(Qt::Key_Aring | Qt::UNICODE_ACCEL) << QString::fromLatin1( "Meta+\x0c5" );
+    QTest::newRow( "Ctrl" ) << int(Qt::CTRL) << int(Qt::Key_Aring) << QString::fromLatin1( "Ctrl+\x0c5" );
+    QTest::newRow( "Alt" ) << int(Qt::ALT) << int(Qt::Key_Aring) << QString::fromLatin1( "Alt+\x0c5" );
+    QTest::newRow( "Shift" ) << int(Qt::SHIFT) << int(Qt::Key_Aring) << QString::fromLatin1( "Shift+\x0c5" );
+    QTest::newRow( "Meta" ) << int(Qt::META) << int(Qt::Key_Aring) << QString::fromLatin1( "Meta+\x0c5" );
 #else
     QTest::newRow( "Ctrl+Left" ) << int(Qt::CTRL) << int(Qt::Key_Left) << MacCtrl + macSymbolForQtKey(Qt::Key_Left);
     QTest::newRow( "Ctrl+," ) << int(Qt::CTRL) << int(Qt::Key_Comma) << MacCtrl + ",";
     QTest::newRow( "Alt+Left" ) << int(Qt::ALT) << int(Qt::Key_Left) << MacAlt + macSymbolForQtKey(Qt::Key_Left);
     QTest::newRow( "Alt+Shift+Left" ) << int(Qt::ALT | Qt::SHIFT) << int(Qt::Key_Left) << MacAlt + MacShift + macSymbolForQtKey(Qt::Key_Left);
-    QTest::newRow( "Ctrl" ) << int(Qt::CTRL) << int(Qt::Key_Aring | Qt::UNICODE_ACCEL) << MacCtrl + QLatin1String("\x0c5");
-    QTest::newRow( "Alt" ) << int(Qt::ALT) << int(Qt::Key_Aring | Qt::UNICODE_ACCEL) << MacAlt + QLatin1String("\x0c5");
-    QTest::newRow( "Shift" ) << int(Qt::SHIFT) << int(Qt::Key_Aring | Qt::UNICODE_ACCEL) << MacShift + QLatin1String("\x0c5");
-    QTest::newRow( "Meta" ) << int(Qt::META) << int(Qt::Key_Aring | Qt::UNICODE_ACCEL) << MacMeta + QLatin1String("\x0c5");
+    QTest::newRow( "Ctrl" ) << int(Qt::CTRL) << int(Qt::Key_Aring) << MacCtrl + QLatin1String("\x0c5");
+    QTest::newRow( "Alt" ) << int(Qt::ALT) << int(Qt::Key_Aring) << MacAlt + QLatin1String("\x0c5");
+    QTest::newRow( "Shift" ) << int(Qt::SHIFT) << int(Qt::Key_Aring) << MacShift + QLatin1String("\x0c5");
+    QTest::newRow( "Meta" ) << int(Qt::META) << int(Qt::Key_Aring) << MacMeta + QLatin1String("\x0c5");
 #endif
 }
 
@@ -224,11 +224,11 @@ void tst_QKeySequence::symetricConstructors_data()
     QTest::addColumn<int>("modifiers");
     QTest::addColumn<int>("keycode");
 
-    QTest::newRow( "No modifier" ) << 0 << int(Qt::Key_Aring | Qt::UNICODE_ACCEL);
-    QTest::newRow( "Ctrl" ) << int(Qt::CTRL) << int(Qt::Key_Aring | Qt::UNICODE_ACCEL);
-    QTest::newRow( "Alt" ) << int(Qt::ALT) << int(Qt::Key_Aring | Qt::UNICODE_ACCEL);
-    QTest::newRow( "Shift" ) << int(Qt::SHIFT) << int(Qt::Key_Aring | Qt::UNICODE_ACCEL);
-    QTest::newRow( "Meta" ) << int(Qt::META) << int(Qt::Key_Aring | Qt::UNICODE_ACCEL);
+    QTest::newRow( "No modifier" ) << 0 << int(Qt::Key_Aring);
+    QTest::newRow( "Ctrl" ) << int(Qt::CTRL) << int(Qt::Key_Aring);
+    QTest::newRow( "Alt" ) << int(Qt::ALT) << int(Qt::Key_Aring);
+    QTest::newRow( "Shift" ) << int(Qt::SHIFT) << int(Qt::Key_Aring);
+    QTest::newRow( "Meta" ) << int(Qt::META) << int(Qt::Key_Aring);
 }
 
 void tst_QKeySequence::compareConstructors_data()
