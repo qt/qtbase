@@ -49,6 +49,7 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qtypeinfo.h>
 
+#include <cstring>
 #include <iterator>
 #include <memory>
 
@@ -62,9 +63,9 @@ void q_uninitialized_relocate_n(T* first, N n, T* out)
 {
     if constexpr (QTypeInfoQuery<T>::isRelocatable) {
         if (n != N(0)) { // even if N == 0, out == nullptr or first == nullptr are UB for memmove()
-            memmove(static_cast<void*>(out),
-                    static_cast<const void*>(first),
-                    n * sizeof(T));
+            std::memmove(static_cast<void*>(out),
+                         static_cast<const void*>(first),
+                         n * sizeof(T));
         }
     } else {
         std::uninitialized_move_n(first, n, out);
