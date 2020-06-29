@@ -1911,8 +1911,6 @@ QByteArray& QByteArray::append(char ch)
 static inline QByteArray &qbytearray_insert(QByteArray *ba,
                                             int pos, const char *arr, int len)
 {
-    Q_ASSERT(pos >= 0);
-
     if (pos < 0 || len <= 0 || arr == nullptr)
         return *ba;
 
