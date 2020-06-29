@@ -54,7 +54,6 @@ const char _GUIDLexYaccFiles[]         = "{E12AE0D2-192F-4d59-BD23-7D3FA58D3183}
 const char _GUIDTranslationFiles[]     = "{639EADAA-A684-42e4-A9AD-28FC9BCB8F7C}";
 const char _GUIDFormFiles[]            = "{99349809-55BA-4b9d-BF79-8FDBB0286EB3}";
 const char _GUIDExtraCompilerFiles[]   = "{E0D8C965-CC5F-43d7-AD63-FAEF0BBC0F85}";
-const char _GUIDDeploymentFiles[]      = "{D9D6E243-F8AF-46E4-B9FD-80ECBC20BA3E}";
 const char _GUIDDistributionFiles[]    = "{B83CAF91-C7BF-462F-B76C-EA11631F866C}";
 
 // Flatfile Tags ----------------------------------------------------
@@ -99,10 +98,8 @@ const char _slnProjDepEnd[]     = "\n\tEndProjectSection";
 const char _slnProjConfBeg[]    = "\n\tGlobalSection(ProjectConfigurationPlatforms) = postSolution";
 const char _slnProjRelConfTag1[]= ".Release|%1.ActiveCfg = Release|";
 const char _slnProjRelConfTag2[]= ".Release|%1.Build.0 = Release|";
-const char _slnProjRelConfTag3[]= ".Release|%1.Deploy.0 = Release|";
 const char _slnProjDbgConfTag1[]= ".Debug|%1.ActiveCfg = Debug|";
 const char _slnProjDbgConfTag2[]= ".Debug|%1.Build.0 = Debug|";
-const char _slnProjDbgConfTag3[]= ".Debug|%1.Deploy.0 = Debug|";
 const char _slnProjConfEnd[]    = "\n\tEndGlobalSection";
 const char _slnExtSections[]    = "\n\tGlobalSection(ExtensibilityGlobals) = postSolution"
                                   "\n\tEndGlobalSection"
