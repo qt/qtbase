@@ -227,17 +227,17 @@ private:
     inline void releaseDCs();
     bool updateObtainedParams(HDC hdc, int *obtainedSwapInterval = nullptr);
 
-    QOpenGLStaticContext *m_staticContext;
+    QOpenGLStaticContext *m_staticContext = nullptr;
     QSurfaceFormat m_obtainedFormat;
-    HGLRC m_renderingContext;
+    HGLRC m_renderingContext = nullptr;
     std::vector<QOpenGLContextData> m_windowContexts;
     PIXELFORMATDESCRIPTOR m_obtainedPixelFormatDescriptor;
-    int m_pixelFormat;
-    bool m_extensionsUsed;
-    int m_swapInterval;
-    bool m_ownsContext;
-    GlGetGraphicsResetStatusArbType m_getGraphicsResetStatus;
-    bool m_lost;
+    int m_pixelFormat = 0;
+    bool m_extensionsUsed = false;
+    int m_swapInterval = -1;
+    bool m_ownsContext = true;
+    GlGetGraphicsResetStatusArbType m_getGraphicsResetStatus = nullptr;
+    bool m_lost = false;
 };
 #endif
 QT_END_NAMESPACE

@@ -1051,14 +1051,7 @@ QOpenGLStaticContext *QOpenGLStaticContext::create(bool softwareRendering)
 
 QWindowsGLContext::QWindowsGLContext(QOpenGLStaticContext *staticContext,
                                      QOpenGLContext *context) :
-    m_staticContext(staticContext),
-    m_renderingContext(nullptr),
-    m_pixelFormat(0),
-    m_extensionsUsed(false),
-    m_swapInterval(-1),
-    m_ownsContext(true),
-    m_getGraphicsResetStatus(nullptr),
-    m_lost(false)
+    m_staticContext(staticContext)
 {
     if (!m_staticContext) // Something went very wrong. Stop here, isValid() will return false.
         return;
