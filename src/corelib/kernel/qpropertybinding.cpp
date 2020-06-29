@@ -123,11 +123,10 @@ bool QPropertyBindingPrivate::evaluateIfDirtyAndReturnTrueIfValueChanged()
         QVariant resultVariant(metaType.id(), nullptr);
         evalError = evaluationFunction(metaType, resultVariant.data());
         if (evalError.type() == QPropertyBindingError::NoError) {
-            int compareResult = 0;
             bool updateAllowed = true;
             if (hasStaticObserver && staticGuardCallback)
                 updateAllowed = staticGuardCallback(staticObserver, resultVariant.data());
-            if (updateAllowed && (!QMetaType::compare(propertyDataPtr, resultVariant.constData(), metaType.id(), &compareResult) || compareResult != 0)) {
+            if (updateAllowed && !metaType.equals(propertyDataPtr, resultVariant.constData())) {
                 changed = true;
                 metaType.destruct(propertyDataPtr);
                 metaType.construct(propertyDataPtr, resultVariant.constData());

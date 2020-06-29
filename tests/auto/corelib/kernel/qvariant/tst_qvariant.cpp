@@ -1826,6 +1826,12 @@ struct MyType
     {
         ++instanceCount;
     }
+    MyType &operator=(const MyType &other)
+    {
+        number = other.number;
+        text = other.text;
+        return *this;
+    }
     ~MyType()
     {
         --instanceCount;
@@ -1833,6 +1839,8 @@ struct MyType
     int number;
     const char *text;
 };
+bool operator==(const MyType &a, const MyType &b) { return a.number == b.number && a.text == b.text; }
+static_assert(QTypeTraits::has_operator_equal_v<MyType>);
 
 Q_DECLARE_METATYPE(MyType)
 Q_DECLARE_METATYPE(MyType*)
@@ -2837,28 +2845,43 @@ void tst_QVariant::invalidDate() const
 
 struct WontCompare
 {
-    int x,y,z,q,w,e,r,t;
+    int x;
 };
 Q_DECLARE_METATYPE(WontCompare);
 
+struct WillCompare
+{
+    int x;
+};
+bool operator==(const WillCompare &a, const WillCompare &b) { return a.x == b.x; }
+Q_DECLARE_METATYPE(WillCompare);
+
 void tst_QVariant::compareCustomTypes() const
 {
-    qRegisterMetaType<WontCompare>("WontCompare");
+    {
+        WontCompare f1{0};
+        const QVariant variant1(QVariant::fromValue(f1));
 
-    WontCompare f1 = {};
-    f1.x = 0;
-    const QVariant variant1(QVariant::fromValue(f1));
+        WontCompare f2{1};
+        const QVariant variant2(QVariant::fromValue(f2));
 
-    WontCompare f2 = {};
-    f2.x = 1;
-    const QVariant variant2(QVariant::fromValue(f2));
+        /* No comparison operator exists. */
+        QVERIFY(variant1 != variant2);
+        QVERIFY(variant1 != variant1);
+        QVERIFY(variant2 != variant2);
+    }
+    {
+        WillCompare f1{0};
+        const QVariant variant1(QVariant::fromValue(f1));
 
-    /* We compare via memcmp. */
-    QVERIFY(variant1 != variant2);
-    QCOMPARE(variant1, variant1);
-    QCOMPARE(variant2, variant2);
+        WillCompare f2 {1};
+        const QVariant variant2(QVariant::fromValue(f2));
+
+        QVERIFY(variant1 != variant2);
+        QCOMPARE(variant1, variant1);
+        QCOMPARE(variant2, variant2);
+    }
 }
-
 void tst_QVariant::timeToDateTime() const
 {
     const QVariant val(QTime::currentTime());

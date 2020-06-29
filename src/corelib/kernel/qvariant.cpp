@@ -3738,21 +3738,14 @@ bool QVariant::convert(const int type, void *ptr) const
     The result of the function is not affected by the result of QVariant::isNull,
     which means that two values can be equal even if one of them is null and
     another is not.
-
-    \warning To make this function work with a custom type registered with
-    qRegisterMetaType(), its comparison operator must be registered using
-    QMetaType::registerComparators().
 */
+
 /*!
     \fn bool operator!=(const QVariant &v1, const QVariant &v2)
 
     \relates QVariant
 
     Returns \c false if \a v1 and \a v2 are equal; otherwise returns \c true.
-
-    \warning To make this function work with a custom type registered with
-    qRegisterMetaType(), its comparison operator must be registered using
-    QMetaType::registerComparators().
 */
 
 /*! \fn bool QVariant::operator==(const QVariant &v) const
@@ -3764,10 +3757,6 @@ bool QVariant::convert(const int type, void *ptr) const
     check for equality. QVariant will try to convert() \a v if its
     type is not the same as this variant's type. See canConvert() for
     a list of possible conversions.
-
-    \warning To make this function work with a custom type registered with
-    qRegisterMetaType(), its comparison operator must be registered using
-    QMetaType::registerComparators().
 */
 
 /*!
@@ -3775,10 +3764,6 @@ bool QVariant::convert(const int type, void *ptr) const
 
     Compares this QVariant with \a v and returns \c true if they are not
     equal; otherwise returns \c false.
-
-    \warning To make this function work with a custom type registered with
-    qRegisterMetaType(), its comparison operator must be registered using
-    QMetaType::registerComparators().
 */
 
 static bool qIsNumericType(uint tp)
@@ -3928,12 +3913,9 @@ bool QVariant::cmp(const QVariant &v) const
 {
     auto cmp_helper = [](const QVariant::Private &d1, const QVariant::Private &d2) {
         Q_ASSERT(d1.type() == d2.type());
-        if (d1.type().id() >= QMetaType::User) {
-            int result;
-            if (QMetaType::equals(QT_PREPEND_NAMESPACE(constData(d1)),
-                                  QT_PREPEND_NAMESPACE(constData(d2)), d1.type().id(), &result))
-                return result == 0;
-        }
+        auto metatype = d1.type();
+        if (metatype.id() >= QMetaType::User)
+            return metatype.equals(QT_PREPEND_NAMESPACE(constData(d1)), QT_PREPEND_NAMESPACE(constData(d2)));
         return handlerManager[d1.type().id()]->compare(&d1, &d2);
     };
 

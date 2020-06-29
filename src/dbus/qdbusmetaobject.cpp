@@ -139,7 +139,7 @@ static int registerComplexDBusType(const QByteArray &typeName)
                 [](QtPrivate::QMetaTypeInterface *self) {
                     delete static_cast<QDBusRawTypeHandler *>(self);
                 },
-                nullptr, nullptr, nullptr, nullptr, nullptr
+                nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
             },
             name(name)
         {}

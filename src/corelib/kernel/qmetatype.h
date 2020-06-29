@@ -56,6 +56,7 @@
 #include <vector>
 #include <list>
 #include <map>
+#include <optional>
 
 #ifdef Bool
 #error qmetatype.h must be included before any header file that defines Bool
@@ -296,62 +297,6 @@ struct BuiltInDebugStreamFunction : public AbstractDebugStreamFunction
 };
 #endif
 
-struct AbstractComparatorFunction
-{
-    typedef bool (*LessThan)(const AbstractComparatorFunction *, const void *, const void *);
-    typedef bool (*Equals)(const AbstractComparatorFunction *, const void *, const void *);
-    typedef void (*Destroy)(AbstractComparatorFunction *);
-    explicit AbstractComparatorFunction(LessThan lt = nullptr, Equals e = nullptr, Destroy d = nullptr)
-        : lessThan(lt), equals(e), destroy(d) {}
-    Q_DISABLE_COPY(AbstractComparatorFunction)
-    LessThan lessThan;
-    Equals equals;
-    Destroy destroy;
-};
-
-template<typename T>
-struct BuiltInComparatorFunction : public AbstractComparatorFunction
-{
-    BuiltInComparatorFunction()
-        : AbstractComparatorFunction(lessThan, equals, destroy) {}
-    static bool lessThan(const AbstractComparatorFunction *, const void *l, const void *r)
-    {
-        const T *lhs = static_cast<const T *>(l);
-        const T *rhs = static_cast<const T *>(r);
-        return *lhs < *rhs;
-    }
-
-    static bool equals(const AbstractComparatorFunction *, const void *l, const void *r)
-    {
-        const T *lhs = static_cast<const T *>(l);
-        const T *rhs = static_cast<const T *>(r);
-        return *lhs == *rhs;
-    }
-
-    static void destroy(AbstractComparatorFunction *_this)
-    {
-        delete static_cast<BuiltInComparatorFunction *>(_this);
-    }
-};
-
-template<typename T>
-struct BuiltInEqualsComparatorFunction : public AbstractComparatorFunction
-{
-    BuiltInEqualsComparatorFunction()
-        : AbstractComparatorFunction(nullptr, equals, destroy) {}
-    static bool equals(const AbstractComparatorFunction *, const void *l, const void *r)
-    {
-        const T *lhs = static_cast<const T *>(l);
-        const T *rhs = static_cast<const T *>(r);
-        return *lhs == *rhs;
-    }
-
-    static void destroy(AbstractComparatorFunction *_this)
-    {
-        delete static_cast<BuiltInEqualsComparatorFunction *>(_this);
-    }
-};
-
 struct AbstractConverterFunction
 {
     typedef bool (*Converter)(const AbstractConverterFunction *, const void *, void*);
@@ -569,6 +514,11 @@ public:
     void destroy(void *data) const;
     void *construct(void *where, const void *copy = nullptr) const;
     void destruct(void *data) const;
+    std::optional<int> compare(const void *lhs, const void *rhs) const;
+    bool equals(const void *lhs, const void *rhs) const;
+
+    bool isEqualityComparable() const;
+    bool isOrdered() const;
 
     template<typename T>
     static QMetaType fromType();
@@ -577,33 +527,6 @@ public:
     friend bool operator!=(const QMetaType &a, const QMetaType &b) { return !(a == b); }
 
 public:
-    template<typename T>
-    static bool registerComparators()
-    {
-        static_assert((!QMetaTypeId2<T>::IsBuiltIn),
-            "QMetaType::registerComparators: The type must be a custom type.");
-
-        const int typeId = qMetaTypeId<T>();
-        static const QtPrivate::BuiltInComparatorFunction<T> f;
-        return registerComparatorFunction( &f, typeId);
-    }
-    template<typename T>
-    static bool registerEqualsComparator()
-    {
-        static_assert((!QMetaTypeId2<T>::IsBuiltIn),
-            "QMetaType::registerEqualsComparator: The type must be a custom type.");
-        const int typeId = qMetaTypeId<T>();
-        static const QtPrivate::BuiltInEqualsComparatorFunction<T> f;
-        return registerComparatorFunction( &f, typeId);
-    }
-
-    template<typename T>
-    static bool hasRegisteredComparators()
-    {
-        return hasRegisteredComparators(qMetaTypeId<T>());
-    }
-    static bool hasRegisteredComparators(int typeId);
-
 
 #ifndef QT_NO_DEBUG_STREAM
     template<typename T>
@@ -680,8 +603,30 @@ public:
 #endif
 
     static bool convert(const void *from, int fromTypeId, void *to, int toTypeId);
-    static bool compare(const void *lhs, const void *rhs, int typeId, int* result);
-    static bool equals(const void *lhs, const void *rhs, int typeId, int* result);
+#if QT_DEPRECATED_SINCE(6, 0)
+    QT_DEPRECATED_VERSION_6_0
+    static bool compare(const void *lhs, const void *rhs, int typeId, int *result)
+    {
+        QMetaType t(typeId);
+        auto c = t.compare(lhs, rhs);
+        if (!c) {
+            *result = 0;
+            return false;
+        }
+        *result = *c;
+        return true;
+    }
+    QT_DEPRECATED_VERSION_6_0
+    static bool equals(const void *lhs, const void *rhs, int typeId, int *result)
+    {
+        QMetaType t(typeId);
+        if (!t.isEqualityComparable())
+            return false;
+        *result = t.equals(lhs, rhs) ? 0 : -1;
+        return true;
+    }
+#endif
+
     static bool debugStream(QDebug& dbg, const void *rhs, int typeId);
 
     template<typename From, typename To>
@@ -692,7 +637,6 @@ public:
 
     static bool hasRegisteredConverterFunction(int fromTypeId, int toTypeId);
 
-    static bool registerComparatorFunction(const QtPrivate::AbstractComparatorFunction *f, int type);
 #ifndef QT_NO_DEBUG_STREAM
     static bool registerDebugStreamOperatorFunction(const QtPrivate::AbstractDebugStreamFunction *f, int type);
 #endif
@@ -2297,6 +2241,10 @@ public:
     MoveCtrFn moveCtr;
     using DtorFn = void (*)(const QMetaTypeInterface *, void *);
     DtorFn dtor;
+    using EqualsFn = bool (*)(const QMetaTypeInterface *, const void *, const void *);
+    EqualsFn equals;
+    using LessThanFn = bool (*)(const QMetaTypeInterface *, const void *, const void *);
+    LessThanFn lessThan;
 
     using LegacyRegisterOp = void (*)();
     LegacyRegisterOp legacyRegisterOp;
@@ -2679,6 +2627,32 @@ struct BuiltinMetaType<T, std::enable_if_t<QMetaTypeId2<T>::IsBuiltIn>>
 {
 };
 
+template<typename T, bool = QTypeTraits::has_operator_equal_v<T>>
+struct QEqualityOperatorForType
+{
+    static bool equals(const QMetaTypeInterface *, const void *a, const void *b)
+    { return *reinterpret_cast<const T *>(a) == *reinterpret_cast<const T *>(b); }
+};
+
+template<typename T>
+struct QEqualityOperatorForType <T, false>
+{
+    static constexpr QMetaTypeInterface::EqualsFn equals = nullptr;
+};
+
+template<typename T, bool = QTypeTraits::has_operator_less_than_v<T>>
+struct QLessThanOperatorForType
+{
+    static bool lessThan(const QMetaTypeInterface *, const void *a, const void *b)
+    { return *reinterpret_cast<const T *>(a) < *reinterpret_cast<const T *>(b); }
+};
+
+template<typename T>
+struct QLessThanOperatorForType <T, false>
+{
+    static constexpr QMetaTypeInterface::LessThanFn lessThan = nullptr;
+};
+
 template<typename S>
 class QMetaTypeForType
 {
@@ -2765,6 +2739,8 @@ QMetaTypeInterface QMetaTypeForType<T>::metaType = {
     /*.copyCtr=*/ getCopyCtr<T>(),
     /*.moveCtr=*/ getMoveCtr<T>(),
     /*.dtor=*/ getDtor<T>(),
+    /*.equals=*/ QEqualityOperatorForType<T>::equals,
+    /*.lessThan=*/ QLessThanOperatorForType<T>::lessThan,
     /*.legacyRegisterOp=*/ getLegacyRegister<T>()
 };
 
@@ -2792,6 +2768,8 @@ public:
         /*.copyCtr=*/ nullptr,
         /*.moveCtr=*/ nullptr,
         /*.dtor=*/ nullptr,
+        /*.equals=*/ nullptr,
+        /*.lessThan=*/ nullptr,
         /*.legacyRegisterOp=*/ nullptr
     };
 };

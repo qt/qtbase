@@ -657,6 +657,98 @@ void QMetaType::destruct(void *data) const
     }
 }
 
+/*!
+    Compares the objects at \a lhs and \a rhs for ordering.
+
+    Returns an empty optional if comparison is not supported or the values are unordered.
+    Otherwise, returns -1, 0 or +1 according as \a lhs is less than, equal to or greater
+    than \a rhs.
+
+    Both objects must be of the type described by this metatype. If either \a lhs
+    or \a rhs is \nullptr, the values are unordered. Comparison is only supported
+    if the type's less than operator was visible to the metatype declaration.
+
+    If the type's equality operator was also visible, values will only compare equal if the
+    equality operator says they are. In the absence of an equality operator, when neither
+    value is less than the other, values are considered equal; if equality is also available
+    and two such values are not equal, they are considered unordered, just as NaN (not a
+    number) values of a floating point type lie outside its ordering.
+
+    \note If no less than operator was visible to the metatype declaration, values are
+    unordered even if an equality operator visible to the declaration considers them equal:
+    \s{compare() == 0} only agrees with equals() if the less than operator was visible.
+
+    \since 6.0
+    \sa equals(), isOrdered()
+*/
+std::optional<int> QMetaType::compare(const void *lhs, const void *rhs) const
+{
+    if (!lhs || !rhs)
+        return std::optional<int>{};
+    if (d_ptr && d_ptr->lessThan) {
+        if (d_ptr->equals && d_ptr->equals(d_ptr, lhs, rhs))
+            return 0;
+        if (d_ptr->lessThan(d_ptr, lhs, rhs))
+            return -1;
+        if (d_ptr->lessThan(d_ptr, rhs, lhs))
+            return 1;
+        if (!d_ptr->equals)
+            return 0;
+    }
+    return std::optional<int>{};
+}
+
+/*!
+    Compares the objects at \a lhs and \a rhs for equality.
+
+    Both objects must be of the type described by this metatype.  Can only compare the
+    two objects if a less than or equality operator for the type was visible to the
+    metatype declaration.  Otherwise, the metatype never considers values equal.  When
+    an equality operator was visible to the metatype declaration, it is authoritative;
+    otherwise, if less than is visible, when neither value is less than the other, the
+    two are considered equal.  If values are unordered (see compare() for details) they
+    are not equal.
+
+    Returns true if the two objects compare equal, otherwise false.
+
+    \since 6.0
+    \sa isEqualityComparable(), compare()
+*/
+bool QMetaType::equals(const void *lhs, const void *rhs) const
+{
+    if (!lhs || !rhs)
+        return false;
+    if (d_ptr) {
+        if (d_ptr->equals)
+            return d_ptr->equals(d_ptr, lhs, rhs);
+        if (d_ptr->lessThan && !d_ptr->lessThan(d_ptr, lhs, rhs) && !d_ptr->lessThan(d_ptr, rhs, lhs))
+            return true;
+    }
+    return false;
+}
+
+/*!
+    Returns \c true if a less than or equality operator for the type described by
+    this metatype was visible to the metatype declaration, otherwise \c false.
+
+    \sa equals(), isOrdered()
+*/
+bool QMetaType::isEqualityComparable() const
+{
+    return d_ptr && (d_ptr->equals != nullptr || d_ptr->lessThan != nullptr);
+}
+
+/*!
+    Returns \c true if a less than operator for the type described by this metatype
+    was visible to the metatype declaration, otherwise \c false.
+
+    \sa compare(), isEqualityComparable()
+*/
+bool QMetaType::isOrdered() const
+{
+    return d_ptr && d_ptr->lessThan != nullptr;
+}
+
 void QtMetaTypePrivate::derefAndDestroy(NS(QtPrivate::QMetaTypeInterface) *d_ptr)
 {
     if (d_ptr && !d_ptr->ref.deref()) {
@@ -789,13 +881,10 @@ private:
 
 typedef QMetaTypeFunctionRegistry<QtPrivate::AbstractConverterFunction,QPair<int,int> >
 QMetaTypeConverterRegistry;
-typedef QMetaTypeFunctionRegistry<QtPrivate::AbstractComparatorFunction,int>
-QMetaTypeComparatorRegistry;
 typedef QMetaTypeFunctionRegistry<QtPrivate::AbstractDebugStreamFunction,int>
 QMetaTypeDebugStreamRegistry;
 
 Q_GLOBAL_STATIC(QMetaTypeConverterRegistry, customTypesConversionRegistry)
-Q_GLOBAL_STATIC(QMetaTypeComparatorRegistry, customTypesComparatorRegistry)
 Q_GLOBAL_STATIC(QMetaTypeDebugStreamRegistry, customTypesDebugStreamRegistry)
 
 /*!
@@ -827,22 +916,6 @@ Q_GLOBAL_STATIC(QMetaTypeDebugStreamRegistry, customTypesDebugStreamRegistry)
     \overload
     Registers a unary function object \a function as converter from type From
     to type To in the meta type system. Returns \c true if the registration succeeded, otherwise false.
-*/
-
-/*!
-    \fn bool QMetaType::registerComparators()
-    \since 5.2
-    Registers comparison operators for the user-registered type T. This requires T to have
-    both an operator== and an operator<.
-    Returns \c true if the registration succeeded, otherwise false.
-*/
-
-/*!
-    \fn bool QMetaType::registerEqualsComparator()
-    \since 5.5
-    Registers equals operator for the user-registered type T. This requires T to have
-    an operator==.
-    Returns \c true if the registration succeeded, otherwise false.
 */
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -881,30 +954,6 @@ void QMetaType::unregisterConverterFunction(int from, int to)
     if (customTypesConversionRegistry.isDestroyed())
         return;
     customTypesConversionRegistry()->remove(from, to);
-}
-
-bool QMetaType::registerComparatorFunction(const QtPrivate::AbstractComparatorFunction *f, int type)
-{
-    if (!customTypesComparatorRegistry()->insertIfNotContains(type, f)) {
-        qWarning("Comparators already registered for type %s", QMetaType::typeName(type));
-        return false;
-    }
-    return true;
-}
-
-/*!
-    \fn bool QMetaType::hasRegisteredComparators()
-    Returns \c true, if the meta type system has registered comparators for type T.
-    \since 5.2
- */
-
-/*!
-    Returns \c true, if the meta type system has registered comparators for type id \a typeId.
-    \since 5.2
- */
-bool QMetaType::hasRegisteredComparators(int typeId)
-{
-    return customTypesComparatorRegistry()->contains(typeId);
 }
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -948,44 +997,24 @@ bool QMetaType::convert(const void *from, int fromTypeId, void *to, int toTypeId
 }
 
 /*!
+    bool QMetaType::compare(const void *lhs, const void *rhs, int typeId, int* result)
+    \deprecated Use the non-static compare method instead
+
     Compares the objects at \a lhs and \a rhs. Both objects need to be of type \a typeId.
     \a result is set to less than, equal to or greater than zero, if \a lhs is less than, equal to
     or greater than \a rhs. Returns \c true, if the comparison succeeded, otherwise \c false.
     \since 5.2
 */
-bool QMetaType::compare(const void *lhs, const void *rhs, int typeId, int* result)
-{
-    const QtPrivate::AbstractComparatorFunction * const f =
-        customTypesComparatorRegistry()->function(typeId);
-    if (!f)
-        return false;
-    if (f->equals(f, lhs, rhs))
-        *result = 0;
-    else if (f->lessThan)
-        *result = f->lessThan(f, lhs, rhs) ? -1 : 1;
-    else
-        return false;
-    return true;
-}
 
 /*!
+    bool QMetaType::equals(const void *lhs, const void *rhs, int typeId, int *result)
+    \deprecated Use the non-static equals method instead
+
     Compares the objects at \a lhs and \a rhs. Both objects need to be of type \a typeId.
     \a result is set to zero, if \a lhs equals to rhs. Returns \c true, if the comparison
     succeeded, otherwise \c false.
     \since 5.5
 */
-bool QMetaType::equals(const void *lhs, const void *rhs, int typeId, int *result)
-{
-    const QtPrivate::AbstractComparatorFunction * const f
-        = customTypesComparatorRegistry()->function(typeId);
-    if (!f)
-        return false;
-    if (f->equals(f, lhs, rhs))
-        *result = 0;
-    else
-        *result = -1;
-    return true;
-}
 
 /*!
     Streams the object at \a rhs of type \a typeId to the debug stream \a dbg. Returns \c true
