@@ -129,6 +129,12 @@ struct LargeStatic {
     static int count;
     LargeStatic():c(count) { ++count; }
     LargeStatic(const LargeStatic& o):c(o.c) { ++count; }
+    LargeStatic &operator=(const LargeStatic &o)
+    {
+        c = o.c;
+        ++count;
+        return *this;
+    };
     ~LargeStatic() { --count; }
     int c;
     int data[8];
@@ -1326,19 +1332,19 @@ void tst_Collections::hash()
         hash1.unite(hash2);
         QCOMPARE(hash1.size(), 5);
         auto values = hash1.values();
-        qSort(values);
+        std::sort(values.begin(), values.end());
         QList<QString> expected;
         expected << "Gamma" << "Gamma" << "Beta" << "Gamma" << "Alpha";
-        qSort(expected);
+        std::sort(expected.begin(), expected.end());
         QCOMPARE(values, expected);
 
         hash2 = hash1;
         hash2.unite(hash2);
         QCOMPARE(hash2.size(), 10);
         values = hash2.values();
-        qSort(values);
+        std::sort(values.begin(), values.end());
         expected += expected;
-        qSort(expected);
+        std::sort(expected.begin(), expected.end());
         QCOMPARE(values, expected);
     }
 }
@@ -1645,12 +1651,12 @@ void tst_Collections::map()
     }
 
     {
-        QMap<int, QString> map1, map2;
-        map1.insertMulti(1, "Alpha");
-        map1.insertMulti(1, "Gamma");
-        map2.insertMulti(1, "Beta");
-        map2.insertMulti(1, "Gamma");
-        map2.insertMulti(1, "Gamma");
+        QMultiMap<int, QString> map1, map2;
+        map1.insert(1, "Alpha");
+        map1.insert(1, "Gamma");
+        map2.insert(1, "Beta");
+        map2.insert(1, "Gamma");
+        map2.insert(1, "Gamma");
 
         map1.unite(map2);
         QCOMPARE(map1.size(), 5);
@@ -2895,16 +2901,40 @@ class T2;
 
 void tst_Collections::forwardDeclared()
 {
-    { typedef QHash<Key1, T1> C; C *x = 0; C::iterator i; C::const_iterator j; Q_UNUSED(x) }
-    { typedef QMultiHash<Key1, T1> C; C *x = 0; C::iterator i; C::const_iterator j; Q_UNUSED(x) }
-    { typedef QMap<Key1, T1> C; C *x = 0; C::iterator i; C::const_iterator j; Q_UNUSED(x) }
-    { typedef QMultiMap<Key1, T1> C; C *x = 0; C::iterator i; C::const_iterator j; Q_UNUSED(x) }
-    { typedef QPair<T1, T2> C; C *x = 0; Q_UNUSED(x) }
-    { typedef QList<T1> C; C *x = 0; C::iterator i; C::const_iterator j; Q_UNUSED(x) }
-    { typedef QVector<T1> C; C *x = 0; C::iterator i; C::const_iterator j; Q_UNUSED(x) Q_UNUSED(i) Q_UNUSED(j) }
-    { typedef QStack<T1> C; C *x = 0; C::iterator i; C::const_iterator j; Q_UNUSED(x) Q_UNUSED(i) Q_UNUSED(j) }
-    { typedef QQueue<T1> C; C *x = 0; C::iterator i; C::const_iterator j; Q_UNUSED(x) }
-    { typedef QSet<T1> C; C *x = 0; /* C::iterator i; */ C::const_iterator j; Q_UNUSED(x) }
+#define COMMA ,
+#define TEST(type) do { \
+        using C = type; \
+        C *x = nullptr; \
+        C::iterator i; \
+        C::const_iterator j; \
+        Q_UNUSED(x); \
+        Q_UNUSED(i); \
+        Q_UNUSED(j); \
+    } while (false)
+
+    TEST(QHash<Key1 COMMA T1>);
+    TEST(QMap<Key1 COMMA T1>);
+    TEST(QMultiMap<Key1 COMMA T1>);
+    TEST(QList<T1>);
+    TEST(QVector<T1>);
+    TEST(QStack<T1>);
+    TEST(QQueue<T1>);
+#undef TEST
+#undef COMMA
+
+    {
+        using C = QPair<T1, T2>;
+        C *x = nullptr;
+        Q_UNUSED(x);
+    }
+
+    {
+        using C = QSet<T1>;
+        C *x = nullptr;
+        C::const_iterator j;
+        Q_UNUSED(x);
+        Q_UNUSED(j);
+    }
 }
 
 class alignas(4) Aligned4
