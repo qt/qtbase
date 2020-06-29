@@ -181,7 +181,7 @@ public:
         return rgba;
     }
 
-    QRgba64 operator=(quint64 _rgba)
+    QRgba64 &operator=(quint64 _rgba) noexcept
     {
         rgba = _rgba;
         return *this;
