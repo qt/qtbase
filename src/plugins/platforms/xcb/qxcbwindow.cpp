@@ -85,7 +85,7 @@
 #undef register
 #endif
 
-#define XCOORD_MAX 16383
+#define XCOORD_MAX 32767
 enum {
     defaultWindowWidth = 160,
     defaultWindowHeight = 160
