@@ -204,7 +204,7 @@ class QWindowsGLContext : public QWindowsOpenGLContext
 public:
     explicit QWindowsGLContext(QOpenGLStaticContext *staticContext, QOpenGLContext *context);
     ~QWindowsGLContext() override;
-    bool isSharing() const override { return m_context->shareHandle(); }
+    bool isSharing() const override { return context()->shareHandle(); }
     bool isValid() const override { return m_renderingContext && !m_lost; }
     QSurfaceFormat format() const override { return m_obtainedFormat; }
 
@@ -228,7 +228,6 @@ private:
     bool updateObtainedParams(HDC hdc, int *obtainedSwapInterval = nullptr);
 
     QOpenGLStaticContext *m_staticContext;
-    QOpenGLContext *m_context;
     QSurfaceFormat m_obtainedFormat;
     HGLRC m_renderingContext;
     std::vector<QOpenGLContextData> m_windowContexts;

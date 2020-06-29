@@ -1052,7 +1052,6 @@ QOpenGLStaticContext *QOpenGLStaticContext::create(bool softwareRendering)
 QWindowsGLContext::QWindowsGLContext(QOpenGLStaticContext *staticContext,
                                      QOpenGLContext *context) :
     m_staticContext(staticContext),
-    m_context(context),
     m_renderingContext(nullptr),
     m_pixelFormat(0),
     m_extensionsUsed(false),
