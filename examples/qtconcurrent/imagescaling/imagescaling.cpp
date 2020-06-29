@@ -72,7 +72,7 @@ Images::Images(QWidget *parent)
 
     pauseButton = new QPushButton(tr("Pause/Resume"));
     pauseButton->setEnabled(false);
-    connect(pauseButton, &QPushButton::clicked, imageScaling, &QFutureWatcher<QImage>::togglePaused);
+    connect(pauseButton, &QPushButton::clicked, imageScaling, &QFutureWatcher<QImage>::toggleSuspended);
 
     QHBoxLayout *buttonLayout = new QHBoxLayout();
     buttonLayout->addWidget(openButton);
@@ -127,7 +127,7 @@ void Images::open()
         }
     }
 
-    std::function<QImage(const QString&)> scale = [imageSize](const QString &imageFileName) {
+    std::function<QImage(const QString&)> scale = [&](const QString &imageFileName) {
         QImage image(imageFileName);
         return image.scaled(QSize(imageSize, imageSize), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
     };
