@@ -105,8 +105,7 @@ int QLoggingRule::pass(QLatin1String cat, QtMsgType msgType) const
     if (idx >= 0) {
         if (flags == MidFilter) {
             // matches somewhere
-            if (idx >= 0)
-                return (enabled ? 1 : -1);
+            return (enabled ? 1 : -1);
         } else if (flags == LeftFilter) {
             // matches left
             if (idx == 0)
