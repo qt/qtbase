@@ -3535,7 +3535,8 @@
     \section2 re_escape(string)
 
     Returns the \c string with every special regular expression character
-    escaped with a backslash. This function is a wrapper around QRegExp::escape.
+    escaped with a backslash. This function is a wrapper around
+    QRegularExpression::escape.
 
     \section2 read_registry(tree, key[, flag])
 

@@ -30,7 +30,7 @@ QOBJS = \
 	qarraydata.o qbitarray.o qbytearray.o qbytearraylist.o qbytearraymatcher.o \
 	qcalendar.o qgregoriancalendar.o qromancalendar.o \
         qcryptographichash.o qdatetime.o qhash.o \
-        qlocale.o qlocale_tools.o qmap.o qregularexpression.o qregexp.o qringbuffer.o \
+        qlocale.o qlocale_tools.o qmap.o qregularexpression.o qringbuffer.o \
         qstringbuilder.o qstring.o qstringconverter.o qstringlist.o qversionnumber.o \
 	qvsnprintf.o \
         pcre2_auto_possess.o pcre2_chartables.o pcre2_compile.o pcre2_config.o \
@@ -116,7 +116,6 @@ DEPEND_SRC = \
 	   $(SOURCE_PATH)/src/corelib/text/qlocale.cpp \
 	   $(SOURCE_PATH)/src/corelib/text/qlocale_tools.cpp \
 	   $(SOURCE_PATH)/src/corelib/text/qregularexpression.cpp \
-	   $(SOURCE_PATH)/src/corelib/text/qregexp.cpp \
 	   $(SOURCE_PATH)/src/corelib/text/qstringbuilder.cpp \
 	   $(SOURCE_PATH)/src/corelib/text/qstringconverter.cpp \
 	   $(SOURCE_PATH)/src/corelib/text/qstring.cpp \
@@ -447,9 +446,6 @@ qtemporaryfile.o: $(SOURCE_PATH)/src/corelib/io/qtemporaryfile.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qregularexpression.o: $(SOURCE_PATH)/src/corelib/text/qregularexpression.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $<
-
-qregexp.o: $(SOURCE_PATH)/src/corelib/text/qregexp.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qbitarray.o: $(SOURCE_PATH)/src/corelib/tools/qbitarray.cpp

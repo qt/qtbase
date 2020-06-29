@@ -16,7 +16,6 @@ HEADERS +=  \
         text/qlocale_p.h \
         text/qlocale_tools_p.h \
         text/qlocale_data_p.h \
-        text/qregexp.h \
         text/qstring.h \
         text/qstringalgorithms.h \
         text/qstringalgorithms_p.h \
@@ -41,7 +40,6 @@ SOURCES += \
         text/qcollator.cpp \
         text/qlocale.cpp \
         text/qlocale_tools.cpp \
-        text/qregexp.cpp \
         text/qstring.cpp \
         text/qstringbuilder.cpp \
         text/qstringconverter.cpp \

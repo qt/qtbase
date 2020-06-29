@@ -110,7 +110,7 @@ static int doSed(int argc, char **argv)
                         && (c == QLatin1Char('+') || c == QLatin1Char('?') || c == QLatin1Char('|')
                             || c == QLatin1Char('{') || c == QLatin1Char('}')
                             || c == QLatin1Char('(') || c == QLatin1Char(')'))) {
-                        // translate sed rx to QRegExp
+                        // translate sed rx to QRegularExpression
                         escaped ^= 1;
                     }
                     if (escaped) {

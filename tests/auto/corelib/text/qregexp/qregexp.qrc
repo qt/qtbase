@@ -1,6 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>data/qdatastream_4.9.bin</file>
-        <file>data/qdatastream_5.0.bin</file>
-    </qresource>
-</RCC>

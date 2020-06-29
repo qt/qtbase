@@ -85,7 +85,6 @@ qt_add_tool(${target_name}
         ../src/corelib/text/qchar.h
         ../src/corelib/text/qlocale.cpp ../src/corelib/text/qlocale.h
         ../src/corelib/text/qlocale_tools.cpp ../src/corelib/text/qlocale_tools_p.h
-        ../src/corelib/text/qregexp.cpp ../src/corelib/text/qregexp.h
         ../src/corelib/text/qregularexpression.cpp ../src/corelib/text/qregularexpression.h
         ../src/corelib/text/qstring.cpp ../src/corelib/text/qstring.h
         ../src/corelib/text/qstringbuilder.cpp ../src/corelib/text/qstringbuilder.h
@@ -114,7 +113,6 @@ qt_add_tool(${target_name}
         ../src/corelib/text/qlocale.cpp ../src/corelib/text/qlocale.h
         ../src/corelib/text/qlocale_tools.cpp ../src/corelib/text/qlocale_tools_p.h
         ../src/corelib/tools/qmap.cpp ../src/corelib/tools/qmap.h
-        ../src/corelib/text/qregexp.cpp ../src/corelib/text/qregexp.h
         ../src/corelib/text/qregularexpression.cpp ../src/corelib/text/qregularexpression.h
         ../src/corelib/tools/qringbuffer.cpp # special case
         ../src/corelib/text/qstring.cpp ../src/corelib/text/qstring.h

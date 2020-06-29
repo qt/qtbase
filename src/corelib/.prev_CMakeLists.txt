@@ -145,7 +145,6 @@ qt_add_module(Core
         text/qlocale.cpp text/qlocale.h text/qlocale_p.h
         text/qlocale_data_p.h
         text/qlocale_tools.cpp text/qlocale_tools_p.h
-        text/qregexp.cpp text/qregexp.h
         text/qstring.cpp text/qstring.h
         text/qstring_compat.cpp
         text/qstringalgorithms.h text/qstringalgorithms_p.h

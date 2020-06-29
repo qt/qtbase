@@ -102,7 +102,6 @@ QTOBJS= \
 	qmap.obj \
 	qoperatingsystemversion.obj \
 	qoperatingsystemversion_win.obj \
-	qregexp.obj \
 	qromancalendar.obj \
 	qstring.obj \
 	qstringconverter.obj \

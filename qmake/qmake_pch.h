@@ -52,7 +52,6 @@
 #include <qhash.h>
 #include <time.h>
 #include <stdlib.h>
-#include <qregexp.h>
 
 //#include <qdir.h>
 //#include "option.h"

@@ -1631,7 +1631,7 @@ void tst_QString::lastIndexOf()
     QCOMPARE(haystack.lastIndexOf(needle.toLatin1().data(), from, cs), expected);
 
     if (from >= -1 && from < haystack.size()) {
-        // unfortunately, QString and QRegExp don't have the same out of bound semantics
+        // unfortunately, QString and QRegularExpression don't have the same out of bound semantics
         // I think QString is wrong -- See file log for contact information.
         {
             QRegularExpression::PatternOptions options = QRegularExpression::NoPatternOption;

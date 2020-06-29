@@ -11,7 +11,6 @@ SUBDIRS = \
     qcollator \
     qlatin1string \
     qlocale \
-    qregexp \
     qregularexpression \
     qstring \
     qstring_no_cast_from_bytearray \

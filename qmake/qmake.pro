@@ -152,7 +152,6 @@ SOURCES += \
     qmap.cpp \
     qmetatype.cpp \
     qnumeric.cpp \
-    qregexp.cpp \
     qregularexpression.cpp \
     qromancalendar.cpp \
     qsettings.cpp \
@@ -209,7 +208,6 @@ HEADERS += \
     qmap.h \
     qmetatype.h \
     qnumeric.h \
-    qregexp.h \
     qregularexpression.h \
     qromancalendar_p.h \
     qstring.h \
