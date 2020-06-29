@@ -3923,7 +3923,6 @@ void QFileDialogPrivate::_q_fileRenamed(const QString &path, const QString &oldN
         if (path == rootPath() && lineEdit()->text() == oldName)
             lineEdit()->setText(newName);
     }
-QT_WARNING_POP
 }
 
 void QFileDialogPrivate::_q_emitUrlSelected(const QUrl &file)
