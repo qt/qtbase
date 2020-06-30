@@ -3525,7 +3525,7 @@ void QRhiVulkan::finishActiveReadbacks(bool forced)
             if (readback.result->completed)
                 completedCallbacks.append(readback.result->completed);
 
-            activeTextureReadbacks.removeAt(i);
+            activeTextureReadbacks.removeLast();
         }
     }
 
@@ -3549,7 +3549,7 @@ void QRhiVulkan::finishActiveReadbacks(bool forced)
             if (readback.result->completed)
                 completedCallbacks.append(readback.result->completed);
 
-            activeBufferReadbacks.removeAt(i);
+            activeBufferReadbacks.removeLast();
         }
     }
 
@@ -6719,9 +6719,9 @@ bool QVkSwapChain::ensureSurface()
 
     quint32 presModeCount = 0;
     rhiD->vkGetPhysicalDeviceSurfacePresentModesKHR(rhiD->physDev, surface, &presModeCount, nullptr);
-    QVector<VkPresentModeKHR> presModes(presModeCount);
-    rhiD->vkGetPhysicalDeviceSurfacePresentModesKHR(rhiD->physDev, surface, &presModeCount, presModes.data());
-    supportedPresentationModes = presModes;
+    supportedPresentationModes.resize(presModeCount);
+    rhiD->vkGetPhysicalDeviceSurfacePresentModesKHR(rhiD->physDev, surface, &presModeCount,
+                                                    supportedPresentationModes.data());
 
     return true;
 }

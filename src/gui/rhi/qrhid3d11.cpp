@@ -1641,7 +1641,7 @@ void QRhiD3D11::finishActiveReadbacks()
         if (readback.result->completed)
             completedCallbacks.append(readback.result->completed);
 
-        activeTextureReadbacks.removeAt(i);
+        activeTextureReadbacks.removeLast();
     }
 
     for (int i = activeBufferReadbacks.count() - 1; i >= 0; --i) {
@@ -1663,7 +1663,7 @@ void QRhiD3D11::finishActiveReadbacks()
         if (readback.result->completed)
             completedCallbacks.append(readback.result->completed);
 
-        activeBufferReadbacks.removeAt(i);
+        activeBufferReadbacks.removeLast();
     }
 
     for (auto f : completedCallbacks)

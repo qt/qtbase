@@ -469,17 +469,17 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
     ID3D11Buffer *currentVertexBuffers[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT];
     quint32 currentVertexOffsets[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT];
 
-    QList<QByteArray> dataRetainPool;
-    QList<QImage> imageRetainPool;
+    QVarLengthArray<QByteArray, 4> dataRetainPool;
+    QVarLengthArray<QImage, 4> imageRetainPool;
 
     // relies heavily on implicit sharing (no copies of the actual data will be made)
     const uchar *retainData(const QByteArray &data) {
         dataRetainPool.append(data);
-        return reinterpret_cast<const uchar *>(dataRetainPool.constLast().constData());
+        return reinterpret_cast<const uchar *>(dataRetainPool.last().constData());
     }
     const uchar *retainImage(const QImage &image) {
         imageRetainPool.append(image);
-        return imageRetainPool.constLast().constBits();
+        return imageRetainPool.last().constBits();
     }
     void resetCommands() {
         commands.clear();
@@ -707,13 +707,13 @@ public:
         QSize pixelSize;
         QRhiTexture::Format format;
     };
-    QList<TextureReadback> activeTextureReadbacks;
+    QVarLengthArray<TextureReadback, 2> activeTextureReadbacks;
     struct BufferReadback {
         QRhiBufferReadbackResult *result;
         quint32 byteSize;
         ID3D11Buffer *stagingBuf;
     };
-    QList<BufferReadback> activeBufferReadbacks;
+    QVarLengthArray<BufferReadback, 2> activeBufferReadbacks;
 
     struct Shader {
         Shader() = default;

@@ -601,7 +601,7 @@ struct QVkSwapChain : public QRhiSwapChain
     VkColorSpaceKHR colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
     QVkRenderBuffer *ds = nullptr;
     VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT;
-    QList<VkPresentModeKHR> supportedPresentationModes;
+    QVarLengthArray<VkPresentModeKHR, 8> supportedPresentationModes;
     VkDeviceMemory msaaImageMem = VK_NULL_HANDLE;
     QVkReferenceRenderTarget rtWrapper;
     QVkCommandBuffer cbWrapper;
@@ -865,7 +865,7 @@ public:
         int refCount = 0;
         int allocedDescSets = 0;
     };
-    QList<DescriptorPoolData> descriptorPools;
+    QVarLengthArray<DescriptorPoolData, 8> descriptorPools;
 
     VkQueryPool timestampQueryPool = VK_NULL_HANDLE;
     QBitArray timestampQueryPoolMap;
@@ -894,7 +894,7 @@ public:
         QSize pixelSize;
         QRhiTexture::Format format;
     };
-    QList<TextureReadback> activeTextureReadbacks;
+    QVarLengthArray<TextureReadback, 2> activeTextureReadbacks;
     struct BufferReadback {
         int activeFrameSlot = -1;
         QRhiBufferReadbackResult *result;
@@ -902,7 +902,7 @@ public:
         VkBuffer stagingBuf;
         QVkAlloc stagingAlloc;
     };
-    QList<BufferReadback> activeBufferReadbacks;
+    QVarLengthArray<BufferReadback, 2> activeBufferReadbacks;
 
     struct DeferredReleaseEntry {
         enum Type {

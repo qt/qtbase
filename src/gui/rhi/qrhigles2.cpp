@@ -2746,8 +2746,8 @@ void QRhiGles2::bindShaderResources(QRhiGraphicsPipeline *maybeGraphicsPs, QRhiC
             QGles2Buffer *bufD = QRHI_RES(QGles2Buffer, b->u.ubuf.buf);
             const QByteArray bufView = QByteArray::fromRawData(bufD->ubuf.constData() + viewOffset,
                                                                b->u.ubuf.maybeSize ? b->u.ubuf.maybeSize : bufD->m_size);
-            QVector<QGles2UniformDescription> &uniforms(maybeGraphicsPs ? QRHI_RES(QGles2GraphicsPipeline, maybeGraphicsPs)->uniforms
-                                                                        : QRHI_RES(QGles2ComputePipeline, maybeComputePs)->uniforms);
+            QGles2UniformDescriptionVector &uniforms(maybeGraphicsPs ? QRHI_RES(QGles2GraphicsPipeline, maybeGraphicsPs)->uniforms
+                                                     : QRHI_RES(QGles2ComputePipeline, maybeComputePs)->uniforms);
             for (QGles2UniformDescription &uniform : uniforms) {
                 if (uniform.binding == b->binding) {
                     // in a uniform buffer everything is at least 4 byte aligned
@@ -2877,8 +2877,8 @@ void QRhiGles2::bindShaderResources(QRhiGraphicsPipeline *maybeGraphicsPs, QRhiC
             break;
         case QRhiShaderResourceBinding::SampledTexture:
         {
-            QVector<QGles2SamplerDescription> &samplers(maybeGraphicsPs ? QRHI_RES(QGles2GraphicsPipeline, maybeGraphicsPs)->samplers
-                                                                        : QRHI_RES(QGles2ComputePipeline, maybeComputePs)->samplers);
+            QGles2SamplerDescriptionVector &samplers(maybeGraphicsPs ? QRHI_RES(QGles2GraphicsPipeline, maybeGraphicsPs)->samplers
+                                                     : QRHI_RES(QGles2ComputePipeline, maybeComputePs)->samplers);
             for (int elem = 0; elem < b->u.stex.count; ++elem) {
                 QGles2Texture *texD = QRHI_RES(QGles2Texture, b->u.stex.texSamplers[elem].tex);
                 QGles2Sampler *samplerD = QRHI_RES(QGles2Sampler, b->u.stex.texSamplers[elem].sampler);
@@ -3404,7 +3404,7 @@ void QRhiGles2::registerUniformIfActive(const QShaderDescription::BlockVariable 
                                         int binding,
                                         int baseOffset,
                                         GLuint program,
-                                        QVector<QGles2UniformDescription> *dst)
+                                        QGles2UniformDescriptionVector *dst)
 {
     if (var.type == QShaderDescription::Struct) {
         qWarning("Nested structs are not supported at the moment. '%s' ignored.",
@@ -3431,7 +3431,7 @@ void QRhiGles2::registerUniformIfActive(const QShaderDescription::BlockVariable 
 
 void QRhiGles2::gatherUniforms(GLuint program,
                                const QShaderDescription::UniformBlock &ub,
-                               QVector<QGles2UniformDescription> *dst)
+                               QGles2UniformDescriptionVector *dst)
 {
     QByteArray prefix = ub.structName + '.';
     for (const QShaderDescription::BlockVariable &blockMember : ub.members) {
@@ -3464,8 +3464,9 @@ void QRhiGles2::gatherUniforms(GLuint program,
     }
 }
 
-void QRhiGles2::gatherSamplers(GLuint program, const QShaderDescription::InOutVariable &v,
-                               QVector<QGles2SamplerDescription> *dst)
+void QRhiGles2::gatherSamplers(GLuint program,
+                               const QShaderDescription::InOutVariable &v,
+                               QGles2SamplerDescriptionVector *dst)
 {
     QGles2SamplerDescription sampler;
     sampler.glslLocation = f->glGetUniformLocation(program, v.name.constData());

@@ -266,6 +266,9 @@ struct QGles2SamplerDescription
 
 Q_DECLARE_TYPEINFO(QGles2SamplerDescription, Q_MOVABLE_TYPE);
 
+using QGles2UniformDescriptionVector = QVarLengthArray<QGles2UniformDescription, 8>;
+using QGles2SamplerDescriptionVector = QVarLengthArray<QGles2SamplerDescription, 4>;
+
 struct QGles2GraphicsPipeline : public QRhiGraphicsPipeline
 {
     QGles2GraphicsPipeline(QRhiImplementation *rhi);
@@ -275,8 +278,8 @@ struct QGles2GraphicsPipeline : public QRhiGraphicsPipeline
 
     GLuint program = 0;
     GLenum drawMode = GL_TRIANGLES;
-    QList<QGles2UniformDescription> uniforms;
-    QList<QGles2SamplerDescription> samplers;
+    QGles2UniformDescriptionVector uniforms;
+    QGles2SamplerDescriptionVector samplers;
     uint generation = 0;
     friend class QRhiGles2;
 };
@@ -289,8 +292,8 @@ struct QGles2ComputePipeline : public QRhiComputePipeline
     bool create() override;
 
     GLuint program = 0;
-    QList<QGles2UniformDescription> uniforms;
-    QList<QGles2SamplerDescription> samplers;
+    QGles2UniformDescriptionVector uniforms;
+    QGles2SamplerDescriptionVector samplers;
     uint generation = 0;
     friend class QRhiGles2;
 };
@@ -574,17 +577,17 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
         }
     } computePassState;
 
-    QList<QByteArray> dataRetainPool;
-    QList<QImage> imageRetainPool;
+    QVarLengthArray<QByteArray, 4> dataRetainPool;
+    QVarLengthArray<QImage, 4> imageRetainPool;
 
     // relies heavily on implicit sharing (no copies of the actual data will be made)
     const void *retainData(const QByteArray &data) {
         dataRetainPool.append(data);
-        return dataRetainPool.constLast().constData();
+        return dataRetainPool.last().constData();
     }
     const void *retainImage(const QImage &image) {
         imageRetainPool.append(image);
-        return imageRetainPool.constLast().constBits();
+        return imageRetainPool.last().constBits();
     }
     void resetCommands() {
         commands.clear();
@@ -810,11 +813,11 @@ public:
     bool linkProgram(GLuint program);
     void registerUniformIfActive(const QShaderDescription::BlockVariable &var,
                                  const QByteArray &namePrefix, int binding, int baseOffset,
-                                 GLuint program, QList<QGles2UniformDescription> *dst);
+                                 GLuint program, QGles2UniformDescriptionVector *dst);
     void gatherUniforms(GLuint program, const QShaderDescription::UniformBlock &ub,
-                        QList<QGles2UniformDescription> *dst);
+                        QGles2UniformDescriptionVector *dst);
     void gatherSamplers(GLuint program, const QShaderDescription::InOutVariable &v,
-                        QList<QGles2SamplerDescription> *dst);
+                        QGles2SamplerDescriptionVector *dst);
     bool isProgramBinaryDiskCacheEnabled() const;
 
     enum DiskCacheResult {

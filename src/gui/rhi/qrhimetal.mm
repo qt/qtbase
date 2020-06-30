@@ -203,7 +203,7 @@ struct QRhiMetalData
         QSize pixelSize;
         QRhiTexture::Format format;
     };
-    QVector<TextureReadback> activeTextureReadbacks;
+    QVarLengthArray<TextureReadback, 2> activeTextureReadbacks;
 
     API_AVAILABLE(macos(10.13), ios(11.0)) MTLCaptureManager *captureMgr;
     API_AVAILABLE(macos(10.13), ios(11.0)) id<MTLCaptureScope> captureScope = nil;
@@ -2123,7 +2123,7 @@ void QRhiMetal::finishActiveReadbacks(bool forced)
             if (readback.result->completed)
                 completedCallbacks.append(readback.result->completed);
 
-            d->activeTextureReadbacks.removeAt(i);
+            d->activeTextureReadbacks.removeLast();
         }
     }
 

@@ -228,7 +228,7 @@ private:
     QBitArray resUpdPoolMap;
     QSet<QRhiResource *> resources;
     QSet<QRhiResource *> pendingDeleteResources;
-    QList<QRhi::CleanupCallback> cleanupCallbacks;
+    QVarLengthArray<QRhi::CleanupCallback, 4> cleanupCallbacks;
 
     friend class QRhi;
     friend class QRhiResourceUpdateBatchPrivate;
