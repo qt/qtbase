@@ -5408,7 +5408,18 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
 
                     const CGRect barRect = [cell barRectFlipped:hasTicks];
                     if (drawBar) {
-                        [cell drawBarInside:barRect flipped:!verticalFlip];
+                        if (!isHorizontal && !sl->upsideDown && (hasDoubleTicks || !hasTicks)) {
+                            // The logic behind verticalFlip and upsideDown is the twisted one.
+                            // Bar is the only part of the cell affected by this 'flipped'
+                            // parameter in the call below, all other parts (knob, etc.) 'fixed'
+                            // by scaling/translating. With ticks on one side it's not a problem
+                            // at all - the bar is gray anyway. Without ticks or with ticks on
+                            // the both sides, for inverted appearance and vertical orientation -
+                            // we must flip so that knob and blue filling work in accordance.
+                            [cell drawBarInside:barRect flipped:true];
+                        } else {
+                            [cell drawBarInside:barRect flipped:!verticalFlip];
+                        }
                         // This ain't HIG kosher: force unfilled bar look.
                         if (hasDoubleTicks)
                             slider.numberOfTickMarks = numberOfTickMarks;
