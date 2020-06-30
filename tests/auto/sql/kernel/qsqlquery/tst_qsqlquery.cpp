@@ -33,7 +33,7 @@
 
 #include "../qsqldatabase/tst_databases.h"
 
-const QString qtest(qTableName("qtest", __FILE__, QSqlDatabase()));
+QString qtest;
 
 class tst_QSqlQuery : public QObject
 {
@@ -271,6 +271,8 @@ private:
 
 tst_QSqlQuery::tst_QSqlQuery()
 {
+    static QSqlDatabase static_qtest_db = QSqlDatabase();
+    qtest = qTableName("qtest", __FILE__, static_qtest_db);
 }
 
 tst_QSqlQuery::~tst_QSqlQuery()

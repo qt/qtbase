@@ -34,8 +34,8 @@
 
 #include "../../kernel/qsqldatabase/tst_databases.h"
 
-const QString reltest1(qTableName("reltest1", __FILE__, QSqlDatabase())),
-              reltest2(qTableName("reltest2", __FILE__, QSqlDatabase()));
+QString reltest1;
+QString reltest2;
 
 class tst_QSqlRelationalDelegate : public QObject
 {
@@ -45,6 +45,7 @@ public:
     void recreateTestTables(QSqlDatabase);
 
     tst_Databases dbs;
+    tst_QSqlRelationalDelegate();
 
 public slots:
     void initTestCase_data();
@@ -59,6 +60,14 @@ private:
     void dropTestTables(QSqlDatabase db);
 };
 
+tst_QSqlRelationalDelegate::tst_QSqlRelationalDelegate()
+{
+    static QSqlDatabase static_qtest_db_1 = QSqlDatabase();
+    reltest1 = qTableName("reltest1", __FILE__, static_qtest_db_1);
+
+    static QSqlDatabase static_qtest_db_2 = QSqlDatabase();
+    reltest2 = qTableName("reltest2", __FILE__, static_qtest_db_2);
+}
 
 void tst_QSqlRelationalDelegate::initTestCase_data()
 {

@@ -34,9 +34,9 @@
 #include <QThread>
 #include <QElapsedTimer>
 
-const QString test(qTableName("test", __FILE__, QSqlDatabase())),
-                   test2(qTableName("test2", __FILE__, QSqlDatabase())),
-                   test3(qTableName("test3", __FILE__, QSqlDatabase()));
+QString test;
+QString test2;
+QString test3;
 
 // In order to catch when the warning message occurs, indicating that the database belongs to another
 // thread, we have to install our own message handler. To ensure that the test reporting still happens
@@ -164,6 +164,15 @@ private:
 
 tst_QSqlTableModel::tst_QSqlTableModel()
 {
+    static QSqlDatabase static_qtest_db_1 = QSqlDatabase();
+    test = qTableName("test1", __FILE__, static_qtest_db_1);
+
+    static QSqlDatabase static_qtest_db_2 = QSqlDatabase();
+    test2 = qTableName("test2", __FILE__, static_qtest_db_2);
+
+    static QSqlDatabase static_qtest_db_3 = QSqlDatabase();
+    test3 = qTableName("test3", __FILE__, static_qtest_db_3);
+
     QVERIFY(dbs.open());
 }
 

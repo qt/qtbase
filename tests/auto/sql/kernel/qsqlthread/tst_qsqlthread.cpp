@@ -36,7 +36,7 @@
 #include <QtSql>
 #include "qdebug.h"
 
-const QString qtest(qTableName("qtest", __FILE__, QSqlDatabase()));
+QString qtest;
 // set this define if Oracle is built with threading support
 //#define QOCI_THREADED
 
@@ -263,6 +263,8 @@ private:
 tst_QSqlThread::tst_QSqlThread()
     : threadFinishedCount(0)
 {
+    static QSqlDatabase static_qtest_db = QSqlDatabase();
+    qtest = qTableName("qtest", __FILE__, static_qtest_db);
 }
 
 tst_QSqlThread::~tst_QSqlThread()
