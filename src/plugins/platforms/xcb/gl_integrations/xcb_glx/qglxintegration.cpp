@@ -473,10 +473,16 @@ void QGLXContext::init(QXcbScreen *screen, QPlatformOpenGLContext *share, const 
             return;
         }
 
+        int screenNumber = 0;
+        if (glXQueryContext(m_display, context, GLX_SCREEN, &screenNumber) != Success) {
+            qWarning("QGLXContext: Failed to query screen from the provided context");
+            screenNumber = DefaultScreen(m_display);
+        }
+
         GLXFBConfig *configs;
         int numConfigs = 0;
         static const int attribs[] = { GLX_FBCONFIG_ID, configId, None };
-        configs = glXChooseFBConfig(m_display, screen->screenNumber(), attribs, &numConfigs);
+        configs = glXChooseFBConfig(m_display, screenNumber, attribs, &numConfigs);
         if (!configs || numConfigs < 1) {
             qWarning("QGLXContext: Failed to find config");
             return;
