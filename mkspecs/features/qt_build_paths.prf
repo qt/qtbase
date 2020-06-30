@@ -24,6 +24,6 @@ exists($$MODULE_BASE_INDIR/.git): \
 !force_independent {
     # If the module is not built independently, everything ends up in qtbase.
     # This is the case in non-prefix builds, except for selected modules.
-    MODULE_BASE_OUTDIR = $$[QT_HOST_PREFIX]
-    MODULE_QMAKE_OUTDIR = $$[QT_HOST_PREFIX]
+    MODULE_BASE_OUTDIR = $$[QT_INSTALL_PREFIX]
+    MODULE_QMAKE_OUTDIR = $$[QT_INSTALL_PREFIX]
 }
