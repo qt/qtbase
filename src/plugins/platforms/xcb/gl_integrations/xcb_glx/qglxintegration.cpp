@@ -436,11 +436,6 @@ void QGLXContext::init(QXcbScreen *screen, QPlatformOpenGLContext *share, const 
         return;
     }
 
-    // Use the provided Display, if available. If not, use our own. It may still work.
-    Display *dpy = handle.display();
-    if (!dpy)
-        dpy = m_display;
-
     // Legacy contexts created using glXCreateContext are created using a visual
     // and the FBConfig cannot be queried. The only way to adapt these contexts
     // is to figure out the visual id.
@@ -452,7 +447,7 @@ void QGLXContext::init(QXcbScreen *screen, QPlatformOpenGLContext *share, const 
         Window wnd = handle.window();
         if (wnd) {
             XWindowAttributes attrs;
-            XGetWindowAttributes(dpy, wnd, &attrs);
+            XGetWindowAttributes(m_display, wnd, &attrs);
             vid = XVisualIDFromVisual(attrs.visual);
         }
     }
@@ -461,7 +456,7 @@ void QGLXContext::init(QXcbScreen *screen, QPlatformOpenGLContext *share, const 
         v.screen = screen->screenNumber();
         v.visualid = vid;
         int n = 0;
-        vinfo = XGetVisualInfo(dpy, VisualScreenMask | VisualIDMask, &v, &n);
+        vinfo = XGetVisualInfo(m_display, VisualScreenMask | VisualIDMask, &v, &n);
         if (n < 1) {
             XFree(vinfo);
             vinfo = nullptr;
@@ -473,7 +468,7 @@ void QGLXContext::init(QXcbScreen *screen, QPlatformOpenGLContext *share, const 
     GLXFBConfig config = nullptr;
     if (!vinfo) {
         int configId = 0;
-        if (glXQueryContext(dpy, context, GLX_FBCONFIG_ID, &configId) != Success) {
+        if (glXQueryContext(m_display, context, GLX_FBCONFIG_ID, &configId) != Success) {
             qWarning("QGLXContext: Failed to query config from the provided context");
             return;
         }
@@ -481,7 +476,7 @@ void QGLXContext::init(QXcbScreen *screen, QPlatformOpenGLContext *share, const 
         GLXFBConfig *configs;
         int numConfigs = 0;
         static const int attribs[] = { GLX_FBCONFIG_ID, configId, None };
-        configs = glXChooseFBConfig(dpy, screen->screenNumber(), attribs, &numConfigs);
+        configs = glXChooseFBConfig(m_display, screen->screenNumber(), attribs, &numConfigs);
         if (!configs || numConfigs < 1) {
             qWarning("QGLXContext: Failed to find config");
             return;
@@ -496,12 +491,12 @@ void QGLXContext::init(QXcbScreen *screen, QPlatformOpenGLContext *share, const 
 
     Q_ASSERT(vinfo || config);
 
-    int screenNumber = DefaultScreen(dpy);
+    int screenNumber = DefaultScreen(m_display);
     Window window;
     if (vinfo)
-        window = createDummyWindow(dpy, vinfo, screenNumber, RootWindow(dpy, screenNumber));
+        window = createDummyWindow(m_display, vinfo, screenNumber, RootWindow(m_display, screenNumber));
     else
-        window = createDummyWindow(dpy, config, screenNumber, RootWindow(dpy, screenNumber));
+        window = createDummyWindow(m_display, config, screenNumber, RootWindow(m_display, screenNumber));
     if (!window) {
         qWarning("QGLXContext: Failed to create dummy window");
         return;
@@ -510,7 +505,7 @@ void QGLXContext::init(QXcbScreen *screen, QPlatformOpenGLContext *share, const 
     // Update OpenGL version and buffer sizes in our format.
     GLXContext prevContext = glXGetCurrentContext();
     GLXDrawable prevDrawable = glXGetCurrentDrawable();
-    if (!glXMakeCurrent(dpy, window, context)) {
+    if (!glXMakeCurrent(m_display, window, context)) {
         qWarning("QGLXContext: Failed to make provided context current");
         return;
     }
@@ -519,11 +514,11 @@ void QGLXContext::init(QXcbScreen *screen, QPlatformOpenGLContext *share, const 
                                ? QSurfaceFormat::OpenGL : QSurfaceFormat::OpenGLES);
     updateFormatFromContext(m_format);
     if (vinfo)
-        qglx_surfaceFormatFromVisualInfo(&m_format, dpy, vinfo);
+        qglx_surfaceFormatFromVisualInfo(&m_format, m_display, vinfo);
     else
-        qglx_surfaceFormatFromGLXFBConfig(&m_format, dpy, config);
-    glXMakeCurrent(dpy, prevDrawable, prevContext);
-    XDestroyWindow(dpy, window);
+        qglx_surfaceFormatFromGLXFBConfig(&m_format, m_display, config);
+    glXMakeCurrent(m_display, prevDrawable, prevContext);
+    XDestroyWindow(m_display, window);
 
     if (vinfo)
         XFree(vinfo);
