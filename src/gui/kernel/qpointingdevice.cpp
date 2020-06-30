@@ -403,7 +403,7 @@ QDebug operator<<(QDebug debug, const QPointingDevice *device)
     if (device) {
         debug << '"' << device->name() << "\", type=";
         QtDebugUtils::formatQEnum(debug, device->type());
-        debug << "id=" << Qt::hex << device->id() << Qt::dec << "seat=" << device->seatName();
+        debug << ", id=" << Qt::hex << device->id() << Qt::dec << ", seat=" << device->seatName();
         debug << ", pointerType=";
         QtDebugUtils::formatQEnum(debug, device->pointerType());
         debug << ", capabilities=";
