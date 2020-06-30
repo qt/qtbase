@@ -4,7 +4,6 @@ DEFINES += QT_NO_FOREACH
 
 QT += \
     core-private gui-private \
-    edid_support-private \
     xkbcommon_support-private
 
 qtConfig(opengl): QT += opengl-private

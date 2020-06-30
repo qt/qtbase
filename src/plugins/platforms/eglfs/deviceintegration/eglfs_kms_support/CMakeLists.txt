@@ -21,7 +21,6 @@ qt_add_module(EglFsKmsSupport
         Libdrm::Libdrm
         Qt::Core
         Qt::CorePrivate
-        Qt::EdidSupportPrivate
         Qt::EglFSDeviceIntegrationPrivate
         Qt::Gui
         Qt::GuiPrivate

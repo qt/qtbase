@@ -21,7 +21,6 @@ qt_internal_add_plugin(QEglFSKmsEglDeviceIntegrationPlugin
         Libdrm::Libdrm
         Qt::Core
         Qt::CorePrivate
-        Qt::EdidSupportPrivate
         Qt::EglFSDeviceIntegrationPrivate
         Qt::EglFsKmsSupportPrivate
         Qt::Gui

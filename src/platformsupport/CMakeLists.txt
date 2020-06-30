@@ -1,6 +1,5 @@
 # Generated from platformsupport.pro.
 
-add_subdirectory(edid)
 add_subdirectory(devicediscovery)
 add_subdirectory(fbconvenience)
 # special case begin

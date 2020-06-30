@@ -49,11 +49,10 @@
 #include <xcb/xinerama.h>
 
 #include "qxcbobject.h"
-#include "qxcbscreen.h"
 
 #include <private/qfontengine_p.h>
 
-#include <QtEdidSupport/private/qedidparser_p.h>
+#include <QtGui/private/qedidparser_p.h>
 
 QT_BEGIN_NAMESPACE
 

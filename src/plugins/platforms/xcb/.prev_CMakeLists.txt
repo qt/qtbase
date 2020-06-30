@@ -41,7 +41,6 @@ qt_add_module(XcbQpa
     PUBLIC_LIBRARIES
         PkgConfig::XKB_COMMON_X11
         Qt::CorePrivate
-        Qt::EdidSupportPrivate
         Qt::GuiPrivate
         Qt::XkbCommonSupportPrivate
         XCB::ICCCM

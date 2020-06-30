@@ -3,7 +3,7 @@
 ** Copyright (C) 2017 Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -54,9 +54,13 @@
 // We mean it.
 //
 
+#include <QtGui/qtguiglobal.h>
+#include <QtCore/qstring.h>
+#include <QtCore/qmap.h>
+
 QT_BEGIN_NAMESPACE
 
-class QEdidParser
+class Q_GUI_EXPORT QEdidParser
 {
 public:
     QEdidParser();

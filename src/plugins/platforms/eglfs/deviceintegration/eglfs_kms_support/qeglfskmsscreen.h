@@ -47,7 +47,7 @@
 #include <QtCore/QMutex>
 
 #include <QtKmsSupport/private/qkmsdevice_p.h>
-#include <QtEdidSupport/private/qedidparser_p.h>
+#include <QtGui/private/qedidparser_p.h>
 
 QT_BEGIN_NAMESPACE
 

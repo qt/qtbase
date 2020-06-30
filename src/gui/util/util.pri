@@ -2,6 +2,8 @@
 
 HEADERS += \
         util/qdesktopservices.h \
+        util/qedidparser_p.h \
+        util/qedidvendortable_p.h \
         util/qhexstring_p.h \
         util/qvalidator.h \
         util/qgridlayoutengine_p.h \
@@ -23,6 +25,7 @@ HEADERS += \
 
 SOURCES += \
         util/qdesktopservices.cpp \
+        util/qedidparser.cpp \
         util/qvalidator.cpp \
         util/qgridlayoutengine.cpp \
         util/qabstractlayoutstyleinfo.cpp \
