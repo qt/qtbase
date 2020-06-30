@@ -45,6 +45,15 @@
 
 #include <algorithm>
 
+/* NOTE: IDNA 2003 is based on Unicode 3.2
+
+   As a result, the assorted Unicode data below snould *not* be updated as part
+   of our routine updates to UCS (see ../text/qt_attributions.json and
+   util/unicode/).  See QTBUG-85323 and RFCs 3491, 3454.
+
+   TODO (QTBUG-85371): Update to IDNA 2008.
+*/
+
 QT_BEGIN_NAMESPACE
 
 // needed by the punycode encoder/decoder
