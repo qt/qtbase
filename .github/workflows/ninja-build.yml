@@ -95,12 +95,11 @@ jobs:
       run:  mkdir build
     - name: configure
       working-directory: build
-      run:  ../configure -cmake -opensource -confirm-license \
-        \ -debug -no-optimize-debug -nomake tests -nomake examples \
+      run:  ../configure -cmake -opensource -confirm-license -ccache -no-pch \
+        \ -debug -nomake tests -nomake examples \
         \ -no-harfbuzz -no-iconv \
         \ -system-pcre -system-zlib -system-freetype -system-libpng -system-libjpeg \
-        \ -- -DQT_NO_MAKE_TESTS=ON -DQT_NO_MAKE_EXAMPLES=ON \
-        \ -DQT_USE_CCACHE=ON -DBUILD_WITH_PCH=OFF \
+        \ --  \
         \ ${{ matrix.cmake_flags }}
     - name: ninja
       working-directory: build
