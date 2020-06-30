@@ -846,7 +846,7 @@ function(qt_generate_module_pri_file target)
         if(arg_HEADER_MODULE)
             set(module_plugin_types "")
         else()
-            get_target_property(module_plugin_types ${target} MODULE_PLUGIN_TYPES)
+            get_target_property(module_plugin_types ${target} QMAKE_MODULE_PLUGIN_TYPES)
             if(module_plugin_types)
                 list(JOIN module_plugin_types " " module_plugin_types)
             else()
@@ -1021,6 +1021,7 @@ endfunction()
 function(qt_generate_plugin_pri_file target pri_file_var)
     get_target_property(plugin_name ${target} OUTPUT_NAME)
     get_target_property(plugin_type ${target} QT_PLUGIN_TYPE)
+    get_target_property(qmake_plugin_type ${target} QT_QMAKE_PLUGIN_TYPE)
     get_target_property(default_plugin ${target} QT_DEFAULT_PLUGIN)
     get_target_property(plugin_class_name ${target} QT_PLUGIN_CLASS_NAME)
 
@@ -1041,7 +1042,8 @@ function(qt_generate_plugin_pri_file target pri_file_var)
 
     qt_path_join(pri_target_path ${QT_BUILD_DIR} ${INSTALL_MKSPECSDIR}/modules)
     qt_path_join(pri_file "${pri_target_path}" "qt_plugin_${plugin_name}.pri")
-    qt_configure_file(OUTPUT "${pri_file}" CONTENT "QT_PLUGIN.${plugin_name}.TYPE = ${plugin_type}
+    qt_configure_file(OUTPUT "${pri_file}"
+                      CONTENT "QT_PLUGIN.${plugin_name}.TYPE = ${qmake_plugin_type}
 QT_PLUGIN.${plugin_name}.EXTENDS = ${plugin_extends}
 QT_PLUGIN.${plugin_name}.DEPENDS = ${plugin_deps}
 QT_PLUGIN.${plugin_name}.CLASS_NAME = ${plugin_class_name}
@@ -2735,6 +2737,10 @@ function(qt_add_module target)
                 set_property(TARGET "${target}" APPEND PROPERTY MODULE_PLUGIN_TYPES "${plugin_type}")
                 qt_internal_add_qt_repo_known_plugin_types("${plugin_type}")
             endforeach()
+
+            # Save the non-sanitized plugin type values for qmake consumption via .pri files.
+            set_property(TARGET "${target}"
+                         PROPERTY QMAKE_MODULE_PLUGIN_TYPES "${arg_PLUGIN_TYPES}")
         endif()
     endif()
 
@@ -3605,6 +3611,8 @@ function(qt_internal_add_plugin target)
         RUNTIME_OUTPUT_DIRECTORY "${output_directory}"
         ARCHIVE_OUTPUT_DIRECTORY "${output_directory}"
         QT_PLUGIN_TYPE "${plugin_type_escaped}"
+        # Save the non-sanitized plugin type values for qmake consumption via .pri files.
+        QT_QMAKE_PLUGIN_TYPE "${arg_TYPE}"
         QT_PLUGIN_CLASS_NAME "${plugin_class_name}")
         qt_handle_multi_config_output_dirs("${target}")
 
