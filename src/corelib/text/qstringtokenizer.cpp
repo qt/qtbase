@@ -46,14 +46,14 @@ QT_BEGIN_NAMESPACE
     \class QStringTokenizer
     \inmodule QtCore
     \since 6.0
-    \brief The QStringTokenizer class splits strings into tokens along given separators
+    \brief The QStringTokenizer class splits strings into tokens along given separators.
     \reentrant
     \ingroup tools
     \ingroup string-processing
 
     Splits a string into substrings wherever a given separator occurs,
-    and returns a (lazy) list of those strings. If the separator does
-    not match anywhere in the string, produces a single-element
+    returning a (lazily constructed) list of those strings. If the separator does
+    not match anywhere in the string, produces a single-element list
     containing this string.  If the separator is empty,
     QStringTokenizer produces an empty string, followed by each of the
     string's characters, followed by another empty string. The two
@@ -85,7 +85,7 @@ QT_BEGIN_NAMESPACE
     from with which they are constructed, and they don't usually
     correspond to the actual types passed.
 
-    \section Lazy Sequences
+    \section1 Lazy Sequences
 
     QStringTokenizer acts as a so-called lazy sequence, that is, each
     next element is only computed once you ask for it. Lazy sequences
@@ -107,17 +107,17 @@ QT_BEGIN_NAMESPACE
                           [] (auto token) { use(token); });
     \endcode
 
-    \section End Sentinel
+    \section1 End Sentinel
 
     The QStringTokenizer iterators cannot be used with classical STL
     algorithms, because those require iterator/iterator pairs, while
-    QStringTokenizer uses sentinels, that is, it uses a different
+    QStringTokenizer uses sentinels. That is, it uses a different
     type, QStringTokenizer::sentinel, to mark the end of the
     range. This improves performance, because the sentinel is an empty
     type. Sentinels are supported from C++17 (for ranged for)
     and C++20 (for algorithms using the new ranges library).
 
-    \section Temporaries
+    \section1 Temporaries
 
     QStringTokenizer is very carefully designed to avoid dangling
     references. If you construct a tokenizer from a temporary string
@@ -132,7 +132,7 @@ QT_BEGIN_NAMESPACE
     \endcode
 
     If you pass named objects (lvalues), then QStringTokenizer does
-    not store a copy. You are reponsible to keep the named object's
+    not store a copy. You are responsible to keep the named object's
     data around for longer than the tokenizer operates on it:
 
     \code
@@ -143,7 +143,7 @@ QT_BEGIN_NAMESPACE
         use(e);
     \endcode
 
-    \sa QStringView::split(), QLatin1Sting::split(), Qt::SplitBehavior, Qt::CaseSensitivity
+    \sa QStringView::split(), QLatin1String::split(), QRegularExpression
 */
 
 /*!
