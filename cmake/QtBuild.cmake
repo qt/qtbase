@@ -5588,28 +5588,16 @@ function(qt_generate_qconfig_cpp)
     endif()
     file(RELATIVE_PATH from_lib_location_to_prefix
          "${lib_location_absolute_path}" "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}")
-
-    if(QT_HOST_PATH)
-        set(host_prefix "${QT_HOST_PATH}")
-        set(host_bin_dir_absolute_path "${QT_HOST_PATH}/${INSTALL_BINDIR}")
-    else()
-        set(host_prefix "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}")
-        set(host_bin_dir_absolute_path
-            "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_BINDIR}")
-    endif()
-
-    file(RELATIVE_PATH from_host_bin_dir_to_host_prefix
-         "${host_bin_dir_absolute_path}" "${host_prefix}")
-
-    # TODO: Fix this to use the equivalent of extprefix on CMake (CMAKE_STAGING_PREFIX?)
-    # For now just assume ext prefix is same as regular prefix.
-    file(RELATIVE_PATH from_host_bin_dir_to_ext_prefix
-         "${host_bin_dir_absolute_path}" "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}")
-
-
     set(QT_CONFIGURE_LIBLOCATION_TO_PREFIX_PATH "${from_lib_location_to_prefix}")
-    set(QT_CONFIGURE_HOSTBINDIR_TO_HOSTPREFIX_PATH "${from_host_bin_dir_to_host_prefix}")
-    set(QT_CONFIGURE_HOSTBINDIR_TO_EXTPREFIX_PATH "${from_host_bin_dir_to_ext_prefix}")
+
+    # The QT_CONFIGURE_HOSTBINDIR_TO_*PREFIX_PATH defines are exclusively used by qmake to determine
+    # the prefix from the location of the qmake executable. In our build of qmake host_prefix is
+    # always the same as ext_prefix, and we can just use CMAKE_INSTALL_PREFIX for the calculation of
+    # the relative path between <ext_prefix>/bin and <ext_prefix>.
+    set(bin_dir_absolute_path "${CMAKE_INSTALL_PREFIX}/${INSTALL_BINDIR}")
+    file(RELATIVE_PATH from_bin_dir_to_prefix "${bin_dir_absolute_path}" "${CMAKE_INSTALL_PREFIX}")
+    set(QT_CONFIGURE_HOSTBINDIR_TO_HOSTPREFIX_PATH "${from_bin_dir_to_prefix}")
+    set(QT_CONFIGURE_HOSTBINDIR_TO_EXTPREFIX_PATH "${from_bin_dir_to_prefix}")
 
     configure_file(global/qconfig.cpp.in global/qconfig.cpp @ONLY)
 endfunction()
