@@ -64,7 +64,8 @@ public:
     QInputDevicePrivate(const QString &name, qint64 id, QInputDevice::DeviceType type,
                         QInputDevice::Capabilities caps = QInputDevice::Capability::None,
                         const QString &seatName = QString())
-      : name(name), seatName(seatName), id(id), capabilities(caps), deviceType(type)
+      : name(name), seatName(seatName), id(id), capabilities(caps),
+        deviceType(type), pointingDeviceType(false)
     {
         // if the platform doesn't provide device IDs, make one up,
         // but try to avoid clashing with OS-provided 32-bit IDs
@@ -81,6 +82,7 @@ public:
     qint64 id = 0;
     qint32 capabilities = static_cast<qint32>(QInputDevice::Capability::None);
     QInputDevice::DeviceType deviceType = QInputDevice::DeviceType::Unknown;
+    qint16 pointingDeviceType : 1; // actually bool, but pack with deviceType
 
     static void registerDevice(const QInputDevice *dev);
     static void unregisterDevice(const QInputDevice *dev);

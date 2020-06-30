@@ -39,6 +39,7 @@
 
 #include "qinputdevice.h"
 #include "qinputdevice_p.h"
+#include "qpointingdevice.h"
 #include <QCoreApplication>
 #include <QDebug>
 #include <QLoggingCategory>
@@ -278,6 +279,9 @@ bool QInputDevice::operator==(const QInputDevice &other) const
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug debug, const QInputDevice *device)
 {
+    const QInputDevicePrivate *d = QInputDevicePrivate::get(device);
+    if (d->pointingDeviceType)
+        return operator<<(debug, static_cast<const QPointingDevice *>(device));
     QDebugStateSaver saver(debug);
     debug.nospace();
     debug.noquote();

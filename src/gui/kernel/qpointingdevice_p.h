@@ -70,6 +70,7 @@ public:
         maximumTouchPoints(qint8(maxPoints)), buttonCount(qint8(buttonCount)),
         pointerType(pType)
     {
+        pointingDeviceType = true;
     }
 
     void * extra = nullptr; // QPA plugins can store platform-specific stuff here
