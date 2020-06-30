@@ -94,7 +94,7 @@ static QRegion deviceRegion(const QRegion &region, QWindow *window, const QPoint
     if (offset.isNull() && window->devicePixelRatio() <= 1)
         return region;
 
-    QList<QRect> rects;
+    QVarLengthArray<QRect, 4> rects;
     rects.reserve(region.rectCount());
     for (const QRect &rect : region)
         rects.append(deviceRect(rect.translated(offset), window));

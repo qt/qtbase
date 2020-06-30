@@ -332,8 +332,8 @@ public:
     QTriangulatingStroker stroker;
     QDashedStrokeProcessor dasher;
 
-    QList<GLuint> unusedVBOSToClean;
-    QList<GLuint> unusedIBOSToClean;
+    QVarLengthArray<GLuint, 8> unusedVBOSToClean;
+    QVarLengthArray<GLuint, 8> unusedIBOSToClean;
 
     const GLfloat *vertexAttribPointers[3];
 };

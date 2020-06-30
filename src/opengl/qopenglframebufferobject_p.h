@@ -141,7 +141,7 @@ public:
         GLenum internalFormat;
         QOpenGLSharedResourceGuard *guard;
     };
-    QList<ColorAttachment> colorAttachments;
+    QVarLengthArray<ColorAttachment, 8> colorAttachments;
 
     inline GLuint fbo() const { return fbo_guard ? fbo_guard->id() : 0; }
 };
