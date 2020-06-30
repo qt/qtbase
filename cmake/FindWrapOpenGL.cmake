@@ -27,7 +27,7 @@ if (OpenGL_FOUND)
 
         if(NOT __opengl_fw_path)
             # Just a safety measure in case if no OpenGL::GL target exists.
-            set(__opengl_fw_path "-framework" "OpenGL")
+            set(__opengl_fw_path "-framework OpenGL")
         endif()
 
         find_library(WrapOpenGL_AGL NAMES AGL)
@@ -35,7 +35,7 @@ if (OpenGL_FOUND)
             set(__opengl_agl_fw_path "${WrapOpenGL_AGL}")
         endif()
         if(NOT __opengl_agl_fw_path)
-            set(__opengl_agl_fw_path "-framework" "AGL")
+            set(__opengl_agl_fw_path "-framework AGL")
         endif()
 
         target_link_libraries(WrapOpenGL::WrapOpenGL INTERFACE ${__opengl_fw_path})

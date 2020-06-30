@@ -60,8 +60,7 @@ if(GLESv2_FOUND AND NOT TARGET GLESv2::GLESv2)
             # For simulator_and_device builds we can't specify the full library path, because
             # it's specific to either the device or the simulator. Resort to passing a link
             # flag instead.
-            set_target_properties(GLESv2::GLESv2 PROPERTIES
-                INTERFACE_LINK_LIBRARIES "-framework OpenGLES")
+            target_link_libraries(GLESv2::GLESv2 INTERFACE "-framework OpenGLES")
         endif()
     else()
         add_library(GLESv2::GLESv2 UNKNOWN IMPORTED)

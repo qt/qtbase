@@ -23,7 +23,7 @@ function(qmake_list out_var)
 
     # Surround values that contain spaces with double quotes.
     foreach(v ${ARGN})
-        if(v MATCHES " ")
+        if(v MATCHES " " AND NOT MATCHES "^-framework")
             set(v "\"${v}\"")
         endif()
         list(APPEND result ${v})
