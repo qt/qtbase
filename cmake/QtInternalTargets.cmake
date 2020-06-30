@@ -108,6 +108,21 @@ endif()
 
 target_compile_definitions(PlatformCommonInternal INTERFACE $<$<NOT:$<CONFIG:Debug>>:QT_NO_DEBUG>)
 
+function(qt_internal_apply_bitcode_flags target)
+    # See mkspecs/features/uikit/bitcode.prf
+    set(release_flags "-fembed-bitcode")
+    set(debug_flags "-fembed-bitcode-marker")
+
+    set(is_release_genex "$<NOT:$<CONFIG:Debug>>")
+    set(flags_genex "$<IF:${is_release_genex},${release_flags},${debug_flags}>")
+    set(is_enabled_genex "$<NOT:$<BOOL:$<TARGET_PROPERTY:QT_NO_BITCODE>>>")
+
+    set(bitcode_flags "$<${is_enabled_genex}:${flags_genex}>")
+
+    target_link_options("${target}" INTERFACE ${bitcode_flags})
+    target_compile_options("${target}" INTERFACE ${bitcode_flags})
+endfunction()
+
 if(UIKIT)
     # Do what mkspecs/features/uikit/default_pre.prf does, aka enable sse2 for
     # simulator_and_device_builds.
@@ -118,6 +133,7 @@ if(UIKIT)
         # TODO: Figure out if this ok or not (sounds ok to me).
         target_compile_definitions(PlatformCommonInternal INTERFACE QT_COMPILER_SUPPORTS_SSE2)
     endif()
+    qt_internal_apply_bitcode_flags(PlatformCommonInternal)
 endif()
 
 # Taken from mkspecs/common/msvc-version.conf and mkspecs/common/msvc-desktop.conf

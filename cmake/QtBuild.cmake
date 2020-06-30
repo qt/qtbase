@@ -1667,7 +1667,7 @@ function(qt_internal_apply_gc_binaries target visibility)
         message(FATAL_ERROR "Visibitily setting must be one of PRIVATE, INTERFACE or PUBLIC.")
     endif()
 
-    if ((GCC OR CLANG) AND NOT EMSCRIPTEN)
+    if ((GCC OR CLANG) AND NOT EMSCRIPTEN AND NOT UIKIT)
         if(APPLE)
             set(gc_sections_flag "-Wl,-dead_strip")
         elseif(SOLARIS)
@@ -1680,7 +1680,7 @@ function(qt_internal_apply_gc_binaries target visibility)
         target_link_options("${target}" ${visibility} "${gc_sections_flag}")
     endif()
 
-    if((GCC OR CLANG OR ICC) AND NOT EMSCRIPTEN)
+    if((GCC OR CLANG OR ICC) AND NOT EMSCRIPTEN AND NOT UIKIT)
         set(split_sections_flags "-ffunction-sections" "-fdata-sections")
     endif()
     if(split_sections_flags)
@@ -3835,6 +3835,10 @@ function(qt_add_resource target resourceName)
                 set(rcc_object_file_path $<TARGET_OBJECTS:$<TARGET_NAME:${out_target}>>)
             endif()
             set_property(TARGET ${target} APPEND PROPERTY QT_RCC_OBJECTS "${rcc_object_file_path}")
+
+            # Make sure that the target cpp files are compiled with the regular Qt internal compile
+            # flags, needed for building iOS apps with qmake where bitcode is involved.
+            target_link_libraries("${out_target}" PRIVATE Qt::PlatformModuleInternal)
         endforeach()
    endif()
 
@@ -4520,7 +4524,7 @@ function(qt_add_3rdparty_library target)
         DEFINES
             ${arg_DEFINES}
         PUBLIC_LIBRARIES ${arg_PUBLIC_LIBRARIES}
-        LIBRARIES ${arg_LIBRARIES}
+        LIBRARIES ${arg_LIBRARIES} Qt::PlatformModuleInternal
         COMPILE_OPTIONS ${arg_COMPILE_OPTIONS}
         PUBLIC_COMPILE_OPTIONS ${arg_PUBLIC_COMPILE_OPTIONS}
         LINK_OPTIONS ${arg_LINK_OPTIONS}
