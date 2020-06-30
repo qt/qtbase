@@ -31,9 +31,10 @@ jobs:
           - name: macos-10.15
             os:   macos-10.15
             deps:  jpeg sqlite
-            tools: ninja ccache
+            tools: ninja ccache pkg-config
             install_cmd: brew install
-            cmake_flags: -DFEATURE_system_sqlite=ON
+            # Specifically on macOS pkg_config has to be manually turned on otherwise libraries under /usr/local are not detected.
+            cmake_flags: -DFEATURE_system_sqlite=ON -DFEATURE_pkg_config=ON
           - name: windows-2019
             os:   windows-2019
             install_cmd: choco install
