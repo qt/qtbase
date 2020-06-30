@@ -159,6 +159,10 @@ $i"
                 CMAKE_CMDLINE="$CMAKE_CMDLINE
 -DQT_FEATURE_${VAR}=OFF"
                 ;;
+            -no-pch|--no-pch)
+                "$CMAKE_CMDLINE
+-DBUILD_WITH_PCH=OFF"
+                ;;
             -no-*|--no-*)
                 VAR=`echo $i | sed -E 's/-?-no-(.*)/\1/'`
                 CMAKE_CMDLINE="$CMAKE_CMDLINE
