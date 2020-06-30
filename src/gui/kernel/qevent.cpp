@@ -2207,9 +2207,9 @@ QTabletEvent::QTabletEvent(Type type, const QPointF &pos, const QPointF &globalP
                            qreal rotation, int z, Qt::KeyboardModifiers keyState, qint64 uniqueID,
                            Qt::MouseButton button, Qt::MouseButtons buttons)
     : QTabletEvent(type,
-                    QPointingDevice::tabletDevice(QInputDevice::DeviceType(deviceType),
-                                                  QPointingDevice::PointerType(pointerType),
-                                                  QPointingDeviceUniqueId::fromNumericId(uniqueID)),
+                   QPointingDevicePrivate::tabletDevice(QInputDevice::DeviceType(deviceType),
+                                                        QPointingDevice::PointerType(pointerType),
+                                                        QPointingDeviceUniqueId::fromNumericId(uniqueID)),
                    pos, globalPos, pressure, xTilt, yTilt, tangentialPressure,
                    rotation, z, keyState, button, buttons)
 {

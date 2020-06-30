@@ -102,7 +102,7 @@ public:
 
     QPointingDevice();
     ~QPointingDevice();
-    QPointingDevice(const QString &name, qint64 id, QInputDevice::DeviceType devType,
+    QPointingDevice(const QString &name, qint64 systemId, QInputDevice::DeviceType devType,
                     PointerType pType, Capabilities caps, int maxPoints, int buttonCount,
                     const QString &seatName = QString(),
                     QPointingDeviceUniqueId uniqueId = QPointingDeviceUniqueId(),
@@ -123,10 +123,6 @@ public:
     QPointingDeviceUniqueId uniqueId() const;
 
     static const QPointingDevice *primaryPointingDevice(const QString& seatName = QString());
-
-    static const QPointingDevice *tabletDevice(QInputDevice::DeviceType deviceType,
-                                               QPointingDevice::PointerType pointerType,
-                                               QPointingDeviceUniqueId uniqueId, quint32 usbId = 0);
 
     bool operator==(const QPointingDevice &other) const;
 

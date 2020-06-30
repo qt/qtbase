@@ -202,7 +202,8 @@ static const QPointingDevice *tabletToolInstance(QPointingDevice *master, const 
     }
     if (pointerTypeOverride != QPointingDevice::PointerType::Unknown)
         pointerType = pointerTypeOverride;
-    const QPointingDevice *ret = QPointingDevice::tabletDevice(devType, pointerType, QPointingDeviceUniqueId::fromNumericId(uniqueId));
+    const QPointingDevice *ret = QPointingDevicePrivate::queryTabletDevice(devType, pointerType,
+                                                                           QPointingDeviceUniqueId::fromNumericId(uniqueId), id);
     if (!ret) {
         ret = new QPointingDevice(tabletName, id, devType, pointerType, caps, 1, buttonCount,
                                   master ? master->seatName() : QString(),

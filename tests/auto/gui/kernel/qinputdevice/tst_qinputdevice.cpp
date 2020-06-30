@@ -65,17 +65,17 @@ void tst_QInputDevice::multiSeatDevices()
     QVERIFY(QInputDevicePrivate::fromId(2010));
     QVERIFY(!QInputDevicePrivate::fromId(2010)->hasCapability(QInputDevice::Capability::Scroll));
     QVERIFY(QInputDevice::primaryKeyboard());
-    QCOMPARE(QInputDevice::primaryKeyboard()->id(), 0);
+    QCOMPARE(QInputDevice::primaryKeyboard()->systemId(), qint64(1) << 33);
     QVERIFY(QPointingDevice::primaryPointingDevice());
-    QCOMPARE(QPointingDevice::primaryPointingDevice()->id(), 1);
+    QCOMPARE(QPointingDevice::primaryPointingDevice()->systemId(), 1);
     QVERIFY(QInputDevice::primaryKeyboard("seat 1"));
-    QCOMPARE(QInputDevice::primaryKeyboard("seat 1")->id(), 1000);
+    QCOMPARE(QInputDevice::primaryKeyboard("seat 1")->systemId(), 1000);
     QVERIFY(QPointingDevice::primaryPointingDevice("seat 1"));
-    QCOMPARE(QPointingDevice::primaryPointingDevice("seat 1")->id(), 1010);
+    QCOMPARE(QPointingDevice::primaryPointingDevice("seat 1")->systemId(), 1010);
     QVERIFY(QInputDevice::primaryKeyboard("seat 2"));
-    QCOMPARE(QInputDevice::primaryKeyboard("seat 2")->id(), 2000);
+    QCOMPARE(QInputDevice::primaryKeyboard("seat 2")->systemId(), 2000);
     QVERIFY(QPointingDevice::primaryPointingDevice("seat 2"));
-    QCOMPARE(QPointingDevice::primaryPointingDevice("seat 2")->id(), 2010);
+    QCOMPARE(QPointingDevice::primaryPointingDevice("seat 2")->systemId(), 2010);
 }
 
 QTEST_MAIN(tst_QInputDevice)

@@ -175,14 +175,14 @@ bool QInputDevice::hasCapability(QInputDevice::Capability capability) const
 }
 
 /*!
-    Returns the platform ID (for example xinput ID on the X11 platform).
+    Returns the platform specific system ID (for example xinput ID on the X11 platform).
 
-    All platforms are expected to provide a unique ID for each device.
+    All platforms are expected to provide a unique system ID for each device.
 */
-qint64 QInputDevice::id() const
+qint64 QInputDevice::systemId() const
 {
     Q_D(const QInputDevice);
-    return d->id;
+    return d->systemId;
 }
 
 /*!
@@ -265,17 +265,21 @@ bool QInputDevicePrivate::isRegistered(const QInputDevice *dev)
 
 /*!
     \internal
-    Find the device with the given \a id, which must be unique.
+    Find the device with the given \a systemId (for example the xinput
+    device ID on X11), which is expected to be unique if nonzero.
 
-    \note Use QPointingDevice::tabletDevice() if the device is a tablet
-    or a tablet stylus; in that case, \a id is not unique.
+    If the \a systemId is not unique, this function returns the first one found.
+
+    \note Use QInputDevicePrivate::queryTabletDevice() if the device is a
+    tablet or a tablet stylus; in that case, \a id is not unique.
 */
-const QInputDevice *QInputDevicePrivate::fromId(qint64 id)
+const QInputDevice *QInputDevicePrivate::fromId(qint64 systemId)
 {
     QMutexLocker locker(&devicesMutex);
-    for (const QInputDevice *dev : *deviceList())
-        if (const_cast<QInputDevicePrivate *>(QInputDevicePrivate::get(dev))->id == id)
+    for (const QInputDevice *dev : *deviceList()) {
+        if (dev->systemId() == systemId)
             return dev;
+    }
     return nullptr;
 }
 
@@ -296,7 +300,7 @@ void QInputDevicePrivate::unregisterDevice(const QInputDevice *dev)
 
 bool QInputDevice::operator==(const QInputDevice &other) const
 {
-    return id() == other.id();
+    return systemId() == other.systemId();
 }
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -311,7 +315,7 @@ QDebug operator<<(QDebug debug, const QInputDevice *device)
     debug << "QInputDevice(";
     if (device) {
         debug << '"' << device->name() << "\", type=" << device->type()
-              << Qt::hex << ", ID=" << device->id() << ", seat='" << device->seatName() << "'";
+              << Qt::hex << ", ID=" << device->systemId() << ", seat='" << device->seatName() << "'";
     } else {
         debug << '0';
     }

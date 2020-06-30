@@ -345,41 +345,70 @@ const QPointingDevice *QPointingDevice::primaryPointingDevice(const QString& sea
 }
 
 /*!
+    \internal
     Finds the device instance belonging to the drawing or eraser end of a particular stylus,
-    identified by its \a deviceType, \a pointerType and \a uniqueId.  The given \a busId
-    may be used to update the stored USB ID, if it was not known before.
+    identified by its \a deviceType, \a pointerType, \a uniqueId and \a systemId.
+    Returns the device found, or \c nullptr if none was found.
+
+    If \a systemId is \c 0, it's not significant for the search.
+
+    If an instance matching the given \a deviceType and \a pointerType but with
+    only a default-constructed \c uniqueId is found, it will be assumed to be
+    the one we're looking for, and its \c uniqueId will be updated to match the
+    given \a uniqueId. This is for the benefit of any platform plugin that can
+    discover the tablet itself at startup, along with the supported stylus types,
+    but then discovers specific styli later on as they come into proximity.
 */
-const QPointingDevice *QPointingDevice::tabletDevice(QInputDevice::DeviceType deviceType,
-                                                     QPointingDevice::PointerType pointerType,
-                                                     QPointingDeviceUniqueId uniqueId, quint32 busId)
+const QPointingDevice *QPointingDevicePrivate::queryTabletDevice(QInputDevice::DeviceType deviceType,
+                                                                 QPointingDevice::PointerType pointerType,
+                                                                 QPointingDeviceUniqueId uniqueId,
+                                                                 qint64 systemId)
 {
     const auto &devices = QInputDevice::devices();
     for (const QInputDevice *dev : devices) {
-        if (dev->type() < DeviceType::Puck || dev->type() > DeviceType::Airbrush)
+        if (dev->type() < QPointingDevice::DeviceType::Puck || dev->type() > QPointingDevice::DeviceType::Airbrush)
             continue;
         const QPointingDevice *pdev = static_cast<const QPointingDevice *>(dev);
         const auto devPriv = QPointingDevicePrivate::get(pdev);
         bool uniqueIdDiscovered = (devPriv->uniqueId.numericId() == 0 && uniqueId.numericId() != 0);
         if (devPriv->deviceType == deviceType && devPriv->pointerType == pointerType &&
+                (!systemId || devPriv->systemId == systemId) &&
                 (devPriv->uniqueId == uniqueId || uniqueIdDiscovered)) {
             if (uniqueIdDiscovered) {
                 const_cast<QPointingDevicePrivate *>(devPriv)->uniqueId = uniqueId;
                 qCDebug(lcQpaInputDevices) << "discovered unique ID of tablet tool" << pdev;
             }
-            if (devPriv->busId.isEmpty() && busId) {
-                const_cast<QPointingDevicePrivate *>(devPriv)->busId = QString::number(busId, 16);
-                qCDebug(lcQpaInputDevices) << "discovered USB ID" << devPriv->busId << "of" << pdev;
-            }
             return pdev;
         }
     }
-    qCDebug(lcQpaInputDevices) << "failed to find registered tablet device" << deviceType << pointerType << Qt::hex << uniqueId.numericId()
-                               << "The platform plugin should have provided one via "
-                                  "QWindowSystemInterface::registerInputDevice(). Creating a default one for now.";
-    QPointingDevice *dev = new QPointingDevice(QLatin1String("fake tablet"), 2, deviceType, pointerType,
-                                               QInputDevice::Capability::Position | QInputDevice::Capability::Pressure,
-                                               1, 1, QString(), uniqueId);
-    QInputDevicePrivate::registerDevice(dev);
+    return nullptr;
+}
+
+/*!
+    \internal
+    Finds the device instance belonging to the drawing or eraser end of a particular stylus,
+    identified by its \a deviceType, \a pointerType and \a uniqueId. If an existing device
+    is not found, a new one is created and registered, with a warning.
+
+    This function is called from QWindowSystemInterface. Platform plugins should use
+    \l queryTabletDeviceInstance() to check whether a tablet stylus coming into proximity
+    is previously known; if not known, the plugin should create and register the stylus.
+*/
+const QPointingDevice *QPointingDevicePrivate::tabletDevice(QInputDevice::DeviceType deviceType,
+                                                            QPointingDevice::PointerType pointerType,
+                                                            QPointingDeviceUniqueId uniqueId)
+{
+    const QPointingDevice *dev = queryTabletDevice(deviceType, pointerType, uniqueId);
+    if (!dev) {
+        qCDebug(lcQpaInputDevices) << "failed to find registered tablet device"
+                                   << deviceType << pointerType << Qt::hex << uniqueId.numericId()
+                                   << "The platform plugin should have provided one via "
+                                      "QWindowSystemInterface::registerInputDevice(). Creating a default one for now.";
+        dev = new QPointingDevice(QLatin1String("fake tablet"), 2, deviceType, pointerType,
+                                                   QInputDevice::Capability::Position | QInputDevice::Capability::Pressure,
+                                                   1, 1, QString(), uniqueId, QCoreApplication::instance());
+        QInputDevicePrivate::registerDevice(dev);
+    }
     return dev;
 }
 
@@ -403,7 +432,7 @@ QDebug operator<<(QDebug debug, const QPointingDevice *device)
     if (device) {
         debug << '"' << device->name() << "\", type=";
         QtDebugUtils::formatQEnum(debug, device->type());
-        debug << ", id=" << Qt::hex << device->id() << Qt::dec << ", seat=" << device->seatName();
+        debug << ", id=" << Qt::hex << device->systemId() << Qt::dec << ", seat=" << device->seatName();
         debug << ", pointerType=";
         QtDebugUtils::formatQEnum(debug, device->pointerType());
         debug << ", capabilities=";

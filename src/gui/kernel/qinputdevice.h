@@ -56,7 +56,7 @@ class Q_GUI_EXPORT QInputDevice : public QObject
     Q_PROPERTY(QString name READ name CONSTANT)
     Q_PROPERTY(DeviceType type READ type CONSTANT)
     Q_PROPERTY(Capabilities capabilities READ capabilities CONSTANT)
-    Q_PROPERTY(qint64 id READ id CONSTANT)
+    Q_PROPERTY(qint64 systemId READ systemId CONSTANT)
     Q_PROPERTY(QString seatName READ seatName CONSTANT)
     Q_PROPERTY(QRect availableVirtualGeometry READ availableVirtualGeometry NOTIFY availableVirtualGeometryChanged)
 
@@ -98,14 +98,14 @@ public:
 
     QInputDevice();
     ~QInputDevice();
-    QInputDevice(const QString &name, qint64 id, DeviceType type,
+    QInputDevice(const QString &name, qint64 systemId, DeviceType type,
                  const QString &seatName = QString(), QObject *parent = nullptr);
 
     QString name() const;
     DeviceType type() const;
     Capabilities capabilities() const;
     bool hasCapability(Capability cap) const;
-    qint64 id() const;
+    qint64 systemId() const;
     QString seatName() const;
     QRect availableVirtualGeometry() const;
 

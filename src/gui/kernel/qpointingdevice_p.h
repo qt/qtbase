@@ -90,6 +90,15 @@ public:
     {
         return static_cast<const QPointingDevicePrivate *>(QObjectPrivate::get(q));
     }
+
+    static const QPointingDevice *tabletDevice(QInputDevice::DeviceType deviceType,
+                                               QPointingDevice::PointerType pointerType,
+                                               QPointingDeviceUniqueId uniqueId);
+
+    static const QPointingDevice *queryTabletDevice(QInputDevice::DeviceType deviceType,
+                                                    QPointingDevice::PointerType pointerType,
+                                                    QPointingDeviceUniqueId uniqueId,
+                                                    qint64 systemId = 0);
 };
 
 QT_END_NAMESPACE

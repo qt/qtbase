@@ -61,17 +61,17 @@ class Q_GUI_EXPORT QInputDevicePrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QInputDevice)
 public:
-    QInputDevicePrivate(const QString &name, qint64 id, QInputDevice::DeviceType type,
+    QInputDevicePrivate(const QString &name, qint64 winSysId, QInputDevice::DeviceType type,
                         QInputDevice::Capabilities caps = QInputDevice::Capability::None,
                         const QString &seatName = QString())
-      : name(name), seatName(seatName), id(id), capabilities(caps),
+      : name(name), seatName(seatName), systemId(winSysId), capabilities(caps),
         deviceType(type), pointingDeviceType(false)
     {
         // if the platform doesn't provide device IDs, make one up,
         // but try to avoid clashing with OS-provided 32-bit IDs
         static qint64 nextId = qint64(1) << 33;
-        if (!id)
-            id = nextId++;
+        if (!systemId)
+            systemId = nextId++;
     }
 
     QString name;
@@ -80,7 +80,7 @@ public:
     QRect availableVirtualGeometry;
     void *extra = nullptr;      // The QPA plugin can store arbitrary device-specific data here
     void *qqExtra = nullptr;    // Qt Quick can store arbitrary device-specific data here
-    qint64 id = 0;
+    qint64 systemId = 0;
     qint32 capabilities = static_cast<qint32>(QInputDevice::Capability::None);
     QInputDevice::DeviceType deviceType = QInputDevice::DeviceType::Unknown;
     qint16 pointingDeviceType : 1; // actually bool, but pack with deviceType
@@ -88,7 +88,7 @@ public:
     static void registerDevice(const QInputDevice *dev);
     static void unregisterDevice(const QInputDevice *dev);
     static bool isRegistered(const QInputDevice *dev);
-    static const QInputDevice *fromId(qint64 id);  // window system ID (e.g. xinput id), not QPointingDeviceUniqueId
+    static const QInputDevice *fromId(qint64 systemId);
 
     void setAvailableVirtualGeometry(QRect a)
     {
