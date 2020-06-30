@@ -66,14 +66,14 @@ jobs:
         path: ~/.ccache
         # "github.run_id" is unique, which causes the cache to always get
         # saved at the end of a successful run.
-        key:  ccache-${{ runner.os }}-${{ github.ref }}-${{ github.run_id }}
+        key:  ccache-${{ matrix.os }}-${{ github.ref }}-${{ github.run_id }}
         # As the unique "key" above will never be found in the cache when the
         # job starts, we need these broader "restore-keys" in order to match
         # and restore the most recent cache.
         restore-keys: |
-          ccache-${{ runner.os }}-${{ github.ref }}-
-          ccache-${{ runner.os }}-refs/heads/dev-
-          ccache-${{ runner.os }}-
+          ccache-${{ matrix.os }}-${{ github.ref }}-
+          ccache-${{ matrix.os }}-refs/heads/dev-
+          ccache-${{ matrix.os }}-
 
     - name: install build dependencies
       run:  ${{ matrix.install_cmd }}  ${{ matrix.deps }}  ${{ matrix.install_cmd_postfix }}
