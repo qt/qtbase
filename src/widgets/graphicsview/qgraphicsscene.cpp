@@ -4143,8 +4143,12 @@ void QGraphicsScene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent)
 void QGraphicsScene::inputMethodEvent(QInputMethodEvent *event)
 {
     Q_D(QGraphicsScene);
-    if (d->focusItem && (d->focusItem->flags() & QGraphicsItem::ItemAcceptsInputMethod))
+    if (d->focusItem && (d->focusItem->flags() & QGraphicsItem::ItemAcceptsInputMethod)) {
         d->sendEvent(d->focusItem, event);
+        return;
+    }
+    if (d->lastFocusItem && d->lastFocusItem != d->focusItem && (d->lastFocusItem->flags() & QGraphicsItem::ItemAcceptsInputMethod))
+        d->sendEvent(d->lastFocusItem, event);
 }
 
 /*!

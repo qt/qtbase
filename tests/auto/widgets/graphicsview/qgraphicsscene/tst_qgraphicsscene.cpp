@@ -288,6 +288,7 @@ private slots:
     void taskQTBUG_15977_renderWithDeviceCoordinateCache();
     void taskQTBUG_16401_focusItem();
     void taskQTBUG_42915_focusNextPrevChild();
+    void taskQTBUG_85088_previewTextfailWhenLostFocus();
 
 private:
     QRect m_availableGeometry = QGuiApplication::primaryScreen()->availableGeometry();
@@ -3867,7 +3868,7 @@ void tst_QGraphicsScene::inputMethod()
 
     item->eventCalls = 0;
     QCoreApplication::sendEvent(&scene, &event);
-    QCOMPARE(item->eventCalls, 0);
+    QCOMPARE(item->eventCalls, callFocusItem ? 1 : 0);
 
     item->queryCalls = 0;
     scene.inputMethodQuery(Qt::InputMethodQuery(0));
@@ -4930,6 +4931,39 @@ void tst_QGraphicsScene::taskQTBUG_42915_focusNextPrevChild()
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     QTest::keyEvent(QTest::Click, &view, Qt::Key_Tab);
+}
+
+void tst_QGraphicsScene::taskQTBUG_85088_previewTextfailWhenLostFocus()
+{
+    QString str = "simpleTextItem";
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+
+    QGraphicsTextItem *simpleTextItem = new QGraphicsTextItem;
+    simpleTextItem->setFlag(QGraphicsTextItem::ItemIsFocusScope);
+    simpleTextItem->setTextInteractionFlags(Qt::TextEditorInteraction);
+    simpleTextItem->setPlainText(str);
+    scene.addItem(simpleTextItem);
+
+    scene.setFocusItem(simpleTextItem);
+    view.setGeometry(100, 100, 600, 400);
+    view.show();
+
+    QInputMethodEvent inputEvent;
+    QString &preedictStr = const_cast<QString &>(inputEvent.preeditString());
+    preedictStr = str;
+    QApplication::sendEvent(&scene, &inputEvent);
+    QCOMPARE(simpleTextItem->toPlainText(), str);
+
+    // focusItem will lose focus
+    QMouseEvent pressEvent(QEvent::MouseButtonPress, QPointF(0, 0),
+                           Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
+    QApplication::sendEvent(view.viewport(), &pressEvent);
+
+    preedictStr.clear();
+    inputEvent.setCommitString(str);
+    QApplication::sendEvent(&scene, &inputEvent);
+    QCOMPARE(simpleTextItem->toPlainText(), str + str);
 }
 
 QTEST_MAIN(tst_QGraphicsScene)
