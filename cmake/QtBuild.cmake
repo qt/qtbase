@@ -1403,8 +1403,11 @@ HostData=${CMAKE_CURRENT_SOURCE_DIR}
 
         # Set $$[QT_HOST_DATA/get] to avoid falling back to the source dir where it isn't explicitly
         # requested.
+        # Also make sure to specif the Prefix as well, because it doesn't get inherited from the
+        # [Paths] section.
         string(APPEND content "[EffectivePaths]
 HostData=${ext_prefix}
+Prefix=${ext_prefix_relative_to_conf_file}
 ")
     endif()
 
