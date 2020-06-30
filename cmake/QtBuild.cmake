@@ -3067,13 +3067,7 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
 endfunction()
 
 function(qt_finalize_module target)
-    # Workaround to allow successful configuration of static top-level Qt builds.
-    # See QTBUG-84874.
-    if(QT_SUPERBUILD AND NOT BUILD_SHARED_LIBS)
-        # Do nothing.
-    else()
-        qt_generate_prl_file(${target} "${INSTALL_LIBDIR}")
-    endif()
+    qt_generate_prl_file(${target} "${INSTALL_LIBDIR}")
     qt_generate_module_pri_file("${target}" ${ARGN})
 endfunction()
 
@@ -3091,15 +3085,27 @@ endfunction()
 # Collects the library dependencies of a target.
 # This takes into account transitive usage requirements.
 function(qt_collect_libs target out_var)
+    qt_internal_walk_libs("${target}" "${out_var}" "qt_collect_libs_dict" "collect_libs")
+    set("${out_var}" "${${out_var}}" PARENT_SCOPE)
+endfunction()
+
+# Walks a target's link libraries recursively, and performs some actions (poor man's polypmorphism)
+#
+# out_var is the name of the variable where the result will be assigned. The result is a list of
+# libraries, mostly in generator expression form.
+# dict_name is used for caching the result, and preventing the same target from being processed
+# twice
+# operation is a string to tell the function what to do
+function(qt_internal_walk_libs target out_var dict_name operation)
     set(collected ${ARGN})
     if(target IN_LIST collected)
         return()
     endif()
     list(APPEND collected ${target})
-    if(NOT TARGET qt_collect_libs_dict)
-        add_library(qt_collect_libs_dict INTERFACE IMPORTED GLOBAL)
+    if(NOT TARGET ${dict_name})
+        add_library(${dict_name} INTERFACE IMPORTED GLOBAL)
     endif()
-    get_target_property(libs qt_collect_libs_dict INTERFACE_${target})
+    get_target_property(libs ${dict_name} INTERFACE_${target})
     if(NOT libs)
         unset(libs)
         get_target_property(target_libs ${target} INTERFACE_LINK_LIBRARIES)
@@ -3154,16 +3160,31 @@ function(qt_collect_libs target out_var)
                 endif()
                 get_target_property(lib_target_type ${lib_target} TYPE)
                 if(lib_target_type STREQUAL "INTERFACE_LIBRARY")
-                    qt_collect_libs(${lib_target} lib_libs ${collected})
+                    qt_internal_walk_libs(
+                        ${lib_target} lib_libs "${dict_name}" "${operation}" ${collected})
                     if(lib_libs)
                         qt_merge_libs(libs ${lib_libs})
                         set(is_module 0)
                     endif()
                 else()
                     qt_merge_libs(libs "$<TARGET_FILE:${lib_target}>")
-                    qt_collect_libs(${lib_target} lib_libs ${collected})
+                    qt_internal_walk_libs(
+                        ${lib_target} lib_libs "${dict_name}" "${operation}" ${collected})
                     if(lib_libs)
                         qt_merge_libs(libs ${lib_libs})
+                    endif()
+                endif()
+                if(operation STREQUAL "promote_global")
+                    set(lib_target_unaliased "${lib_target}")
+                    get_target_property(aliased_target ${lib_target} ALIASED_TARGET)
+                    if(aliased_target)
+                        set(lib_target_unaliased ${aliased_target})
+                    endif()
+
+                    get_property(is_imported TARGET ${lib_target_unaliased} PROPERTY IMPORTED)
+                    get_property(is_global TARGET ${lib_target_unaliased} PROPERTY IMPORTED_GLOBAL)
+                    if(NOT is_global AND is_imported)
+                        set_property(TARGET ${lib_target_unaliased} PROPERTY IMPORTED_GLOBAL TRUE)
                     endif()
                 endif()
             else()
@@ -3174,7 +3195,7 @@ function(qt_collect_libs target out_var)
                 qt_merge_libs(libs "${final_lib_name_to_merge}")
             endif()
         endforeach()
-        set_target_properties(qt_collect_libs_dict PROPERTIES INTERFACE_${target} "${libs}")
+        set_target_properties(${dict_name} PROPERTIES INTERFACE_${target} "${libs}")
     endif()
     set(${out_var} ${libs} PARENT_SCOPE)
 endfunction()
@@ -3736,13 +3757,6 @@ endfunction()
 function(qt_finalize_plugin target install_directory)
     # Generate .prl files for plugins of static Qt builds.
     if(NOT BUILD_SHARED_LIBS)
-        # Workaround to allow successful configuration of static top-level Qt builds.
-        # See QTBUG-84874.
-        if(QT_SUPERBUILD)
-            # Do nothing.
-            return()
-        endif()
-
         qt_generate_prl_file(${target} "${install_directory}")
     endif()
 endfunction()
@@ -5203,6 +5217,21 @@ function(qt_add_docs)
 
 endfunction()
 
+# This function recursively walks transitive link libraries of the given target
+# and promotes those targets to be IMPORTED_GLOBAL if they are not.
+#
+# This is required for .prl file generation in top-level builds, to make sure that imported 3rd
+# party library targets in any repo are made global, so there are no scoping issues.
+#
+# Only works if called from qt_find_package(), because the promotion needs to happen in the same
+# directory scope where the imported target is first created.
+#
+# Uses qt_internal_walk_libs.
+function(qt_find_package_promote_targets_to_global_scope target)
+    qt_internal_walk_libs("${target}" _discared_out_var
+                          "qt_find_package_targets_dict" "promote_global")
+endfunction()
+
 macro(qt_find_package)
     # Get the target names we expect to be provided by the package.
     set(options CONFIG NO_MODULE MODULE REQUIRED)
@@ -5337,6 +5366,8 @@ macro(qt_find_package)
                 if(NOT is_global)
                     set_property(TARGET ${qt_find_package_target_name} PROPERTY
                                                                        IMPORTED_GLOBAL TRUE)
+                    qt_find_package_promote_targets_to_global_scope(
+                        "${qt_find_package_target_name}")
                 endif()
             endif()
 
