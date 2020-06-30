@@ -178,11 +178,8 @@ Q_GLOBAL_STATIC(QRecursiveMutex, qt_factoryloader_mutex)
 
 QFactoryLoaderPrivate::~QFactoryLoaderPrivate()
 {
-    for (int i = 0; i < libraryList.count(); ++i) {
-        QLibraryPrivate *library = libraryList.at(i);
-        library->unload();
+    for (QLibraryPrivate *library : qAsConst(libraryList))
         library->release();
-    }
 }
 
 void QFactoryLoader::update()
