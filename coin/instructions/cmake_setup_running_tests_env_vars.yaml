@@ -1,5 +1,8 @@
 type: Group
 instructions:
+  - type: EnvironmentVariable
+    variableName: QTEST_ENVIRONMENT
+    variableValue: "ci"
   - type: Group
     instructions:
       - type: EnvironmentVariable

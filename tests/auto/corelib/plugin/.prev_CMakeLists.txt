@@ -9,10 +9,5 @@ if(QT_FEATURE_library)
     add_subdirectory(qlibrary)
 endif()
 if(QT_BUILD_SHARED_LIBS AND QT_FEATURE_library)
-    # special case begin
-    # QTBUG-85364
-    if(NOT LINUX)
-        add_subdirectory(qplugin)
-    endif()
-    # special case end
+    add_subdirectory(qplugin)
 endif()
