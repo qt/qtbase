@@ -103,9 +103,6 @@ private:
 
 void tst_rcc::initTestCase()
 {
-    // rcc uses a QHash to store files in the resource system.
-    // we must force a certain hash order when testing or tst_rcc will fail, see QTBUG-25078
-    QVERIFY(qputenv("QT_RCC_TEST", "1"));
     m_rcc = QLibraryInfo::location(QLibraryInfo::BinariesPath) + QLatin1String("/rcc");
 
     m_dataPath = QFINDTESTDATA("data");
