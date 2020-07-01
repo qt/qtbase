@@ -56,6 +56,8 @@ The basic way of building with cmake is as follows:
     cmake --install .
 ```
 
+The mapping of configure options to CMake arguments is described [here](configure-cmake-mapping.md).
+
 You need one build directory per Qt module. The build directory can be a sub-directory inside the
 module ``qtbase/build`` or an independent directory ``qtbase_build``. The installation prefix is
 chosen when running cmake by passing ``-DCMAKE_INSTALL_PREFIX``. To build more than one Qt module,
