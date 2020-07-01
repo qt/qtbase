@@ -58,7 +58,8 @@ QT_BEGIN_NAMESPACE
   referring to this documentation is kind to readers.  Comments can also be used
   to indicate the reasons for ignoring particular cases.
 
-  The key "ci" applies only when run by COIN.  Other keys name platforms,
+  The key "ci" applies only when run by COIN.
+  The key "cmake" applies when Qt is built using CMake. Other keys name platforms,
   operating systems, distributions, tool-chains or architectures; a !  prefix
   reverses what it checks.  A version, joined to a key (at present, only for
   distributions and for msvc) with a hyphen, limits the key to the specific
@@ -163,6 +164,10 @@ static QSet<QByteArray> keywords()
 
 #ifdef QT_BUILD_INTERNAL
             << "developer-build"
+#endif
+
+#ifdef QT_CMAKE_BUILD
+            << "cmake"
 #endif
             ;
 
