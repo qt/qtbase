@@ -53,11 +53,8 @@ QT_BEGIN_NAMESPACE
 #ifndef QT_NO_PRINTER
 
 // The CUPS PPD APIs were deprecated in CUPS 1.6/macOS 10.8, but
-// as long as we're supporting RHEL 6, which still ships CUPS 1.4
-// we're not going to rewrite this, as we want to share the code
-// between macOS and Linux for the CUPS-bits. See discussion in
+// the replacement APIs are unfortunately not sufficient. See:
 // https://bugreports.qt.io/browse/QTBUG-56545
-#pragma message "Disabling CUPS PPD deprecation warnings. This should be fixed once we drop support for RHEL6 (QTBUG-56545)"
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 
