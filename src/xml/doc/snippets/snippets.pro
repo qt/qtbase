@@ -7,3 +7,7 @@ QT += xml
 #! [qmake_use]
 
 load(qt_common)
+
+QT += core xml
+
+SOURCES += code/src_xml_dom_qdom.cpp

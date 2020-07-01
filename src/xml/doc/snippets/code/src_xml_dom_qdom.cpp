@@ -47,40 +47,57 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <iostream>
+#include <cstring>
+#include <QFile>
+#include <QDomDocument>
+#include <QDomImplementation>
 
+void NodeElements();
+void DomText();
+void FirstElement();
+void FileContent();
+void DocAppend();
+void XML_snippet_main();
+
+using namespace std;
 //! [0]
+void XML_snippet_main()
+{
 QDomDocument doc;
 QDomImplementation impl;
-
 // This will create the element, but the resulting XML document will
 // be invalid, because '~' is not a valid character in a tag name.
-impl.setInvalidDataPolicy(QDomImplementation::AcceptInvalidData);
+impl.setInvalidDataPolicy(QDomImplementation::AcceptInvalidChars);
 QDomElement elt1 = doc.createElement("foo~bar");
 
 // This will create an element with the tag name "foobar".
-impl.setInvalidDataPolicy(QDomImplementation::DropInvalidData);
+impl.setInvalidDataPolicy(QDomImplementation::DropInvalidChars);
 QDomElement elt2 = doc.createElement("foo~bar");
 
 // This will create a null element.
 impl.setInvalidDataPolicy(QDomImplementation::ReturnNullNode);
 QDomElement elt3 = doc.createElement("foo~bar");
+}
 //! [0]
 
-
+void NodeElements()
+{
 //! [1]
 QDomDocument d;
+QString someXML;
+
 d.setContent(someXML);
 QDomNode n = d.firstChild();
 while (!n.isNull()) {
     if (n.isElement()) {
         QDomElement e = n.toElement();
-        cout << "Element name: " << e.tagName() << Qt::endl;
+        cout << "Element name: " << qPrintable(e.tagName()) << '\n';
         break;
     }
     n = n.nextSibling();
 }
 //! [1]
-
 
 //! [2]
 QDomDocument document;
@@ -88,58 +105,25 @@ QDomElement element1 = document.documentElement();
 QDomElement element2 = element1;
 //! [2]
 
-
 //! [3]
 QDomElement element3 = document.createElement("MyElement");
 QDomElement element4 = document.createElement("MyElement");
 //! [3]
 
-
-//! [4]
-<body>
-<h1>Heading</h1>
-<p>Hello <b>you</b></p>
-</body>
-//! [4]
-
-
-//! [5]
-<h1>Heading</h1>
-<p>The text...</p>
-<h2>Next heading</h2>
-//! [5]
-
-
-//! [6]
-<h1>Heading</h1>
-<p>The text...</p>
-<h2>Next heading</h2>
-//! [6]
-
-
-//! [7]
-<link href="http://qt-project.org" color="red" />
-//! [7]
-
-
 //! [8]
-QDomElement e = //...
+QDomElement e;
 //...
 QDomAttr a = e.attributeNode("href");
-cout << a.value() << Qt::endl;                // prints "http://qt-project.org"
+cout << qPrintable(a.value()) << '\n';   // prints "http://qt-project.org"
 a.setValue("http://qt-project.org/doc"); // change the node's attribute
 QDomAttr a2 = e.attributeNode("href");
-cout << a2.value() << Qt::endl;               // prints "http://qt-project.org/doc"
+cout << qPrintable(a2.value()) << '\n';  // prints "http://qt-project.org/doc"
 //! [8]
+}
 
-
-//! [9]
-QDomElement e = //...
-//...
-QString s = e.text()
-//! [9]
-
-
+void DomText()
+{
+QDomDocument doc;
 //! [10]
 QString text;
 QDomElement element = doc.documentElement();
@@ -151,37 +135,21 @@ for(QDomNode n = element.firstChild(); !n.isNull(); n = n.nextSibling())
 }
 //! [10]
 
-
+}
+void FirstElement()
+{
 //! [11]
-QDomDocument doc = // ...
+QDomDocument doc;
 QDomElement root = doc.firstChildElement("database");
 QDomElement elt = root.firstChildElement("entry");
 for (; !elt.isNull(); elt = elt.nextSiblingElement("entry")) {
     // ...
 }
 //! [11]
+}
 
-
-//! [12]
-<img src="myimg.png">
-//! [12]
-
-
-//! [13]
-<h1>Hello <b>Qt</b> <![CDATA[<xml is cool>]]></h1>
-//! [13]
-
-
-//! [14]
-Hello Qt <xml is cool>
-//! [14]
-
-
-//! [15]
-<!-- this is a comment -->
-//! [15]
-
-
+void FileContent()
+{
 //! [16]
 QDomDocument doc("mydocument");
 QFile file("mydocument.xml");
@@ -201,7 +169,7 @@ QDomNode n = docElem.firstChild();
 while(!n.isNull()) {
     QDomElement e = n.toElement(); // try to convert the node to an element.
     if(!e.isNull()) {
-        cout << qPrintable(e.tagName()) << Qt::endl; // the node really is an element.
+        cout << qPrintable(e.tagName()) << '\n'; // the node really is an element.
     }
     n = n.nextSibling();
 }
@@ -211,10 +179,12 @@ QDomElement elem = doc.createElement("img");
 elem.setAttribute("src", "myimage.png");
 docElem.appendChild(elem);
 //! [16]
+}
 
-
+void DocAppend()
+{
 //! [17]
-QDomDocument doc("MyML");
+QDomDocument doc;
 QDomElement root = doc.createElement("MyML");
 doc.appendChild(root);
 
@@ -226,3 +196,4 @@ tag.appendChild(t);
 
 QString xml = doc.toString();
 //! [17]
+}

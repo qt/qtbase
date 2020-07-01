@@ -1723,7 +1723,7 @@ QDomNode QDomNode::parentNode() const
 
     For example, if the XML document looks like this:
 
-    \snippet code/src_xml_dom_qdom.cpp 4
+    \snippet code/src_xml_dom_qdom_snippet.cpp 4
 
     Then the list of child nodes for the "body"-element will contain
     the node created by the &lt;h1&gt; tag and the node created by the
@@ -1775,7 +1775,7 @@ QDomNode QDomNode::lastChild() const
 
     For example, if you have XML like this:
 
-    \snippet code/src_xml_dom_qdom.cpp 5
+    \snippet code/src_xml_dom_qdom_snippet.cpp 5
 
     and this QDomNode represents the &lt;p&gt; tag, previousSibling()
     will return the node representing the &lt;h1&gt; tag.
@@ -1795,7 +1795,7 @@ QDomNode QDomNode::previousSibling() const
 
     If you have XML like this:
 
-    \snippet code/src_xml_dom_qdom.cpp 6
+    \snippet code/src_xml_dom_qdom_snippet.cpp 6
 
     and this QDomNode represents the <p> tag, nextSibling() will
     return the node representing the <h2> tag.
@@ -3745,7 +3745,7 @@ void QDomAttrPrivate::save(QTextStream& s, int, int) const
     For example, the following piece of XML produces an element with
     no children, but two attributes:
 
-    \snippet code/src_xml_dom_qdom.cpp 7
+    \snippet code/src_xml_dom_qdom_snippet.cpp 7
 
     You can access the attributes of an element with code like this:
 
@@ -4159,7 +4159,7 @@ void QDomElementPrivate::save(QTextStream& s, int depth, int indent) const
 
     If you want to access the text of a node use text(), e.g.
 
-    \snippet code/src_xml_dom_qdom.cpp 9
+    \snippet code/src_xml_dom_qdom_snippet.cpp 9
 
     The text() function operates recursively to find the text (since
     not all elements contain text). If you want to find all the text
@@ -4181,7 +4181,7 @@ void QDomElementPrivate::save(QTextStream& s, int depth, int indent) const
     nextSiblingElement() and previousSiblingElement(). For example, to iterate over all
     child elements called "entry" in a root element called "database", you can use:
 
-    \snippet code/src_xml_dom_qdom.cpp 11
+    \snippet code/src_xml_dom_qdom_snippet.cpp 11
 
    For further information about the Document Object Model see
     \l{W3C DOM Level 1}{Level 1} and
@@ -4248,7 +4248,7 @@ void QDomElement::setTagName(const QString& name)
 /*!
     Returns the tag name of this element. For an XML element like this:
 
-    \snippet code/src_xml_dom_qdom.cpp 12
+    \snippet code/src_xml_dom_qdom_snippet.cpp 12
 
     the tagname would return "img".
 
@@ -4618,12 +4618,12 @@ bool QDomElement::hasAttributeNS(const QString& nsURI, const QString& localName)
     Returns the element's text or an empty string.
 
     Example:
-    \snippet code/src_xml_dom_qdom.cpp 13
+    \snippet code/src_xml_dom_qdom_snippet.cpp 13
 
     The function text() of the QDomElement for the \c{<h1>} tag,
     will return the following text:
 
-    \snippet code/src_xml_dom_qdom.cpp 14
+    \snippet code/src_xml_dom_qdom_snippet.cpp 14
 
     Comments are ignored by this function. It only evaluates QDomText
     and QDomCDATASection objects.
@@ -4830,7 +4830,7 @@ void QDomCommentPrivate::save(QTextStream& s, int depth, int indent) const
 
     A comment in the parsed XML such as this:
 
-    \snippet code/src_xml_dom_qdom.cpp 15
+    \snippet code/src_xml_dom_qdom_snippet.cpp 15
 
     is represented by QDomComment objects in the parsed Dom tree.
 
