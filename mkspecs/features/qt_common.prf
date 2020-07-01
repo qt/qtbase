@@ -62,6 +62,13 @@ contains(TEMPLATE, .*lib)|darwin {
     if(!host_build|!cross_compile):qtConfig(reduce_exports): CONFIG += hide_symbols
 }
 
+# Apple deprecated the entire OpenGL API in favor of Metal, which
+# we are aware of, so silence the deprecation warnings in code.
+# This does not apply to user-code, which will need to silence
+# their own warnings if they use the deprecated APIs explicitly.
+macos: DEFINES += GL_SILENCE_DEPRECATION
+uikit: DEFINES += GLES_SILENCE_DEPRECATION
+
 # The remainder of this file must not apply to host tools/libraries,
 # as the host compiler's version and capabilities are not checked.
 host_build:cross_compile: return()

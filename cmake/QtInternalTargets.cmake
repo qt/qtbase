@@ -123,6 +123,16 @@ function(qt_internal_apply_bitcode_flags target)
     target_compile_options("${target}" INTERFACE ${bitcode_flags})
 endfunction()
 
+# Apple deprecated the entire OpenGL API in favor of Metal, which
+# we are aware of, so silence the deprecation warnings in code.
+# This does not apply to user-code, which will need to silence
+# their own warnings if they use the deprecated APIs explicitly.
+if(MACOS)
+    target_compile_definitions(PlatformCommonInternal INTERFACE GL_SILENCE_DEPRECATION)
+elseif(UIKIT)
+    target_compile_definitions(PlatformCommonInternal INTERFACE GLES_SILENCE_DEPRECATION)
+endif()
+
 if(UIKIT)
     # Do what mkspecs/features/uikit/default_pre.prf does, aka enable sse2 for
     # simulator_and_device_builds.
