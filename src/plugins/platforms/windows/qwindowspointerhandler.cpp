@@ -317,31 +317,34 @@ static bool isValidWheelReceiver(QWindow *candidate)
     return false;
 }
 
-QPointingDevice *QWindowsPointerHandler::ensureTouchDevice()
+QPointingDevice *QWindowsPointerHandler::createTouchDevice(bool mouseEmulation)
 {
-    if (!m_touchDevice) {
-        const int digitizers = GetSystemMetrics(SM_DIGITIZER);
-        if (!(digitizers & (NID_INTEGRATED_TOUCH | NID_EXTERNAL_TOUCH)))
-            return nullptr;
-        const int tabletPc = GetSystemMetrics(SM_TABLETPC);
-        const int maxTouchPoints = GetSystemMetrics(SM_MAXIMUMTOUCHES);
-        const bool touchScreen = digitizers & NID_INTEGRATED_TOUCH;
-        QPointingDevice::Capabilities capabilities = QPointingDevice::Capability::Position;
-        if (!touchScreen) {
-            capabilities.setFlag(QInputDevice::Capability::MouseEmulation);
-            capabilities.setFlag(QInputDevice::Capability::Scroll);
-        }
-        qCDebug(lcQpaEvents) << "Digitizers:" << Qt::hex << Qt::showbase << (digitizers & ~NID_READY)
-            << "Ready:" << (digitizers & NID_READY) << Qt::dec << Qt::noshowbase
-            << "Tablet PC:" << tabletPc << "Max touch points:" << maxTouchPoints << "Capabilities:" << capabilities;
-        // TODO: use system-provided name and device ID rather than empty-string and m_nextInputDeviceId
-        m_touchDevice = new QPointingDevice(QString(), m_nextInputDeviceId++,
-                                           (touchScreen ? QInputDevice::DeviceType::TouchScreen : QInputDevice::DeviceType::TouchPad),
-                                           QPointingDevice::PointerType::Finger, capabilities, maxTouchPoints,
-                                            // TODO: precise button count (detect whether the touchpad can emulate 3 or more buttons)
-                                           (touchScreen ? 1 : 3));
-    }
-    return m_touchDevice;
+     const int digitizers = GetSystemMetrics(SM_DIGITIZER);
+     if (!(digitizers & (NID_INTEGRATED_TOUCH | NID_EXTERNAL_TOUCH)))
+         return nullptr;
+     const int tabletPc = GetSystemMetrics(SM_TABLETPC);
+     const int maxTouchPoints = GetSystemMetrics(SM_MAXIMUMTOUCHES);
+     const QPointingDevice::DeviceType type = (digitizers & NID_INTEGRATED_TOUCH)
+         ? QInputDevice::DeviceType::TouchScreen : QInputDevice::DeviceType::TouchPad;
+     QInputDevice::Capabilities capabilities = QInputDevice::Capability::Position
+         | QInputDevice::Capability::Area
+         | QInputDevice::Capability::NormalizedPosition;
+     if (type != QInputDevice::DeviceType::TouchScreen) {
+         capabilities.setFlag(QInputDevice::Capability::MouseEmulation);
+         capabilities.setFlag(QInputDevice::Capability::Scroll);
+     } else if (mouseEmulation) {
+         capabilities.setFlag(QInputDevice::Capability::MouseEmulation);
+     }
+
+     qCDebug(lcQpaEvents) << "Digitizers:" << Qt::hex << Qt::showbase << (digitizers & ~NID_READY)
+         << "Ready:" << (digitizers & NID_READY) << Qt::dec << Qt::noshowbase
+         << "Tablet PC:" << tabletPc << "Max touch points:" << maxTouchPoints << "Capabilities:" << capabilities;
+
+     const int buttonCount = type == QInputDevice::DeviceType::TouchScreen ? 1 : 3;
+     // TODO: use system-provided name and device ID rather than empty-string and m_nextInputDeviceId
+     return new QPointingDevice(QString(), m_nextInputDeviceId++,
+                                type, QPointingDevice::PointerType::Finger,
+                                capabilities, maxTouchPoints, buttonCount);
 }
 
 void QWindowsPointerHandler::clearEvents()

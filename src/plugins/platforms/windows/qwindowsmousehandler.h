@@ -59,7 +59,7 @@ public:
     QWindowsMouseHandler();
 
     QPointingDevice *touchDevice() const { return m_touchDevice; }
-    QPointingDevice *ensureTouchDevice();
+    void setTouchDevice(QPointingDevice *d) { m_touchDevice = d; }
 
     bool translateMouseEvent(QWindow *widget, HWND hwnd,
                              QtWindows::WindowsEventType t, MSG msg,

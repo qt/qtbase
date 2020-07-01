@@ -117,27 +117,6 @@ static inline void compressMouseMove(MSG *msg)
     }
 }
 
-static inline QPointingDevice *createTouchDevice()
-{
-    const int digitizers = GetSystemMetrics(SM_DIGITIZER);
-    if (!(digitizers & (NID_INTEGRATED_TOUCH | NID_EXTERNAL_TOUCH)))
-        return nullptr;
-    const int tabletPc = GetSystemMetrics(SM_TABLETPC);
-    const int maxTouchPoints = GetSystemMetrics(SM_MAXIMUMTOUCHES);
-    qCDebug(lcQpaEvents) << "Digitizers:" << Qt::hex << Qt::showbase << (digitizers & ~NID_READY)
-        << "Ready:" << (digitizers & NID_READY) << Qt::dec << Qt::noshowbase
-        << "Tablet PC:" << tabletPc << "Max touch points:" << maxTouchPoints;
-    auto *result = new QPointingDevice;
-    result->setType(digitizers & NID_INTEGRATED_TOUCH
-                    ? QInputDevice::DeviceType::TouchScreen : QInputDevice::DeviceType::TouchPad);
-    QPointingDevice::Capabilities capabilities = QPointingDevice::Capability::Position | QPointingDevice::Capability::Area | QPointingDevice::Capability::NormalizedPosition;
-    if (result->type() == QInputDevice::DeviceType::TouchPad)
-        capabilities.setFlag(QInputDevice::Capability::MouseEmulation);
-    result->setCapabilities(capabilities);
-    result->setMaximumTouchPoints(maxTouchPoints);
-    return result;
-}
-
 /*!
     \class QWindowsMouseHandler
     \brief Windows mouse handler
@@ -148,13 +127,6 @@ static inline QPointingDevice *createTouchDevice()
 */
 
 QWindowsMouseHandler::QWindowsMouseHandler() = default;
-
-QPointingDevice *QWindowsMouseHandler::ensureTouchDevice()
-{
-    if (!m_touchDevice)
-        m_touchDevice = createTouchDevice();
-    return m_touchDevice;
-}
 
 void QWindowsMouseHandler::clearEvents()
 {

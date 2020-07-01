@@ -61,8 +61,11 @@ public:
     ~QWindowsPointerHandler();
     bool translatePointerEvent(QWindow *window, HWND hwnd, QtWindows::WindowsEventType et, MSG msg, LRESULT *result);
     bool translateMouseEvent(QWindow *window, HWND hwnd, QtWindows::WindowsEventType et, MSG msg, LRESULT *result);
+
     QPointingDevice *touchDevice() const { return m_touchDevice; }
-    QPointingDevice *ensureTouchDevice();
+    void setTouchDevice(QPointingDevice *d) { m_touchDevice = d; }
+    static QPointingDevice *createTouchDevice(bool mouseEmulation);
+
     QWindow *windowUnderMouse() const { return m_windowUnderPointer.data(); }
     void clearWindowUnderMouse() { m_windowUnderPointer = nullptr; }
     void clearEvents();
