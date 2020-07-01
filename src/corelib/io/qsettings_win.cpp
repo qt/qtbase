@@ -759,11 +759,17 @@ QStringList QWinSettingsPrivate::children(const QString &uKey, ChildSpec spec) c
 
     for (const RegistryKey &r : regList) {
         HKEY parent_handle = r.handle();
-        if (parent_handle == 0)
-            continue;
+        if (parent_handle == 0) {
+            if (fallbacks)
+                continue;
+            break;
+        }
         HKEY handle = openKey(parent_handle, KEY_READ, rKey, access);
-        if (handle == 0)
-            continue;
+        if (handle == 0) {
+            if (fallbacks)
+                continue;
+            break;
+        }
 
         if (spec == AllKeys) {
             NameSet keys;

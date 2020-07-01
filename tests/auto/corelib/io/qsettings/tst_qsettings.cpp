@@ -2018,6 +2018,16 @@ void tst_QSettings::testChildKeysAndGroups()
         l.sort();
         QCOMPARE(l, QStringList() << "bar" << "foo");
     }
+    {
+        QSettings settings3(format, QSettings::UserScope, "software.org", "application");
+        settings3.setFallbacksEnabled(false);
+        settings3.beginGroup("alpha");
+        QCOMPARE(settings3.childGroups(), QStringList());
+        settings3.setFallbacksEnabled(true);
+        QStringList children = settings3.childGroups();
+        children.sort();
+        QCOMPARE(children, QStringList({"beta", "gamma"}));
+    }
 }
 
 void tst_QSettings::testUpdateRequestEvent()
