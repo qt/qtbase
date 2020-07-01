@@ -1,0 +1,13 @@
+type: Group
+instructions:
+  - type: MakeDirectory
+    directory: "{{.SourceDir}}_standalone_tests"
+  - type: InstallTestBinaryArchive
+    relativeStoragePath: "{{.Env.MODULE_ARTIFACTS_RELATIVE_STORAGE_PATH}}/tests.tar.gz"
+    directory: "{{.SourceDir}}_standalone_tests"
+    maxTimeInSeconds: 1200
+    maxTimeBetweenOutput: 1200
+    userMessageOnFailure: >
+      Failed to install tests archive.
+  - type: ChangeDirectory
+    directory: "{{.SourceDir}}_standalone_tests"

@@ -5,7 +5,7 @@ instructions:
       - !include "{{qt/qtbase}}/coin_module_test_template_common.yaml"
       - type: Group
         instructions:
-          - !include "{{qt/qtbase}}/cmake_regular_test_instructions.yaml"
+          - !include "{{qt/qtbase}}/cmake_regular_test_instructions_enforced.yaml"
         enable_if:
           condition: or
           conditions:
