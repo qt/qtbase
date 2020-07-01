@@ -9,4 +9,4 @@ instructions:
     - !include "{{qt/qtbase}}/coin_qtbase_build_template_v2.yaml"
 
   Test:
-    - !include "{{qt/qtbase}}/coin_module_test_template_v2.yaml"
+    - !include "{{qt/qtbase}}/coin_module_test_template_v3.yaml"
