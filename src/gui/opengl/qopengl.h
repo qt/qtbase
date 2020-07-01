@@ -109,12 +109,12 @@ typedef void* GLeglImageOES;
 #   include <GLES3/gl3.h>
 #  else
 #   include <GLES2/gl2.h>
-#endif
+#  endif
 
 #  ifdef QGL_TEMP_GLEXT_PROTO
 #   undef GL_GLEXT_PROTOTYPES
 #   undef QGL_TEMP_GLEXT_PROTO
-# endif
+#  endif
 
 /*
    Some GLES2 implementations (like the one on Harmattan) are missing the
@@ -125,9 +125,9 @@ typedef void* GLeglImageOES;
 typedef char GLchar;
 
 #  include <QtGui/qopengles2ext.h>
-# endif // Q_OS_MAC
+# endif
 #else // non-ES2 platforms
-# if defined(Q_OS_MAC)
+# if defined(Q_OS_MACOS)
 #  include <OpenGL/gl.h>
 #  define GL_DO_NOT_WARN_IF_MULTI_GL_VERSION_HEADERS_INCLUDED
 #  include <OpenGL/gl3.h>
@@ -144,7 +144,7 @@ typedef char GLchar;
 #   include <GL/gl.h>
 #  endif
 #  include <QtGui/qopenglext.h>
-# endif // Q_OS_MAC
+# endif
 #endif // !QT_CONFIG(opengles2)
 
 // Desktops can support OpenGL 4.
