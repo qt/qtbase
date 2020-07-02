@@ -1341,7 +1341,6 @@ class TestObject : public QObject
 {
     // Manually expanded from Q_OBJECT macro
 public:
-    Q_OBJECT_CHECK
     static QMetaObject staticMetaObject;
     virtual const QMetaObject *metaObject() const;
     virtual void *qt_metacast(const char *);

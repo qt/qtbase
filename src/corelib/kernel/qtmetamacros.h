@@ -166,9 +166,6 @@ QT_BEGIN_NAMESPACE
 #define QT_TR_FUNCTIONS
 #endif
 
-// ### Qt6: remove
-#define Q_OBJECT_CHECK  /* empty, unused since Qt 5.2 */
-
 #if defined(Q_CC_INTEL)
 // Cannot redefine the visibility of a method in an exported class
 # define Q_DECL_HIDDEN_STATIC_METACALL
