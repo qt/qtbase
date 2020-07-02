@@ -10,10 +10,10 @@ The effort of this is tracked in QTBUG-85373 and QTBUG-85349.
 | -external-hostbindir /path/to/host/qt | -DQT_HOST_PATH=/path/to/host/qt                   |                                                                 |
 | -bindir <dir>                         | -DINSTALL_BINDIR=<dir>                            | similar for -headerdir -libdir and so on                        |
 | -host*dir <dir>                       | n/a                                               |                                                                 |
-| -help                                 |                                                   |                                                                 |
+| -help                                 | n/a                                               | Handled by configure[.bat].                                     |
 | -verbose                              |                                                   |                                                                 |
 | -continue                             |                                                   |                                                                 |
-| -redo                                 |                                                   |                                                                 |
+| -redo                                 | n/a                                               | Handled by configure[.bat].                                     |
 | -recheck [test,...]                   |                                                   |                                                                 |
 | -feature-foo                          | -DFEATURE_foo=ON                                  |                                                                 |
 | -no-feature-foo                       | -DFEATURE_foo=OFF                                 |                                                                 |
@@ -23,60 +23,61 @@ The effort of this is tracked in QTBUG-85373 and QTBUG-85349.
 | -opensource                           |                                                   |                                                                 |
 | -commercial                           |                                                   |                                                                 |
 | -confirm-license                      |                                                   |                                                                 |
-| -release                              |                                                   |                                                                 |
-| -debug                                |                                                   |                                                                 |
-| -debug-and-release                    |                                                   |                                                                 |
+| -release                              | -DCMAKE_BUILD_TYPE=Release                        |                                                                 |
+| -debug                                | -DCMAKE_BUILD_TYPE=Debug                          |                                                                 |
+| -debug-and-release                    | -G "Ninja Multi-Config"                           |                                                                 |
+|                                       | -DCMAKE_CONFIGURATION_TYPES=Release;Debug         |                                                                 |
 | -optimize-debug                       |                                                   |                                                                 |
 | -optimize-size                        |                                                   |                                                                 |
 | -optimized-tools                      |                                                   |                                                                 |
-| -force-debug-info                     |                                                   |                                                                 |
-| -separate-debug-info .                |                                                   |                                                                 |
+| -force-debug-info                     | Use the RelWithDebInfo build config.              |                                                                 |
+| -separate-debug-info                  | -DFEATURE_separate_debug_info=ON                  |                                                                 |
 | -gdb-index                            |                                                   |                                                                 |
 | -strip                                |                                                   |                                                                 |
-| -gc-binaries                          |                                                   |                                                                 |
+| -gc-binaries                          | -DFEATURE_gc_binaries=ON                          |                                                                 |
 | -force-asserts                        |                                                   |                                                                 |
-| -developer-build                      |                                                   |                                                                 |
-| -shared                               |                                                   |                                                                 |
-| -static                               |                                                   |                                                                 |
-| -framework                            |                                                   |                                                                 |
-| -platform <target>                    |                                                   |                                                                 |
-| -xplatform <target>                   | -DQT_QMAKE_TARGET_MKSPEC=<target>                 | Only used for generating qmake-compatibility files.             |
+| -developer-build                      | -DFEATURE_developer_build=ON                      |                                                                 |
+| -shared                               | -DBUILD_SHARED_LIBS=ON                            |                                                                 |
+| -static                               | -DBUILD_SHARED_LIBS=OFF                           |                                                                 |
+| -framework                            | -DFEATURE_framework=ON                            |                                                                 |
+| -platform <target>                    | -DQT_QMAKE_TARGET_MKSPEC=<mkspec>                 |                                                                 |
+| -xplatform <target>                   | -DQT_QMAKE_TARGET_MKSPEC=<mkspec>                 | Only used for generating qmake-compatibility files.             |
 | -device <name>                        | equivalent to -xplatform devices/<name>           |                                                                 |
 | -device-option <key=value>            | -DQT_QMAKE_DEVICE_OPTIONS=key1=value1;key2=value2 | Only used for generation qmake-compatibility files.             |
 |                                       |                                                   | The device options are written into mkspecs/qdevice.pri.        |
 | -appstore-compliant                   |                                                   |                                                                 |
-| -qtnamespace <name>                   |                                                   |                                                                 |
+| -qtnamespace <name>                   | -DQT_NAMESPACE=<name>                             |                                                                 |
 | -qtlibinfix <infix>                   |                                                   |                                                                 |
-| -qtlibinfix-plugins                   |                                                   |                                                                 |
 | -testcocoon                           |                                                   |                                                                 |
 | -gcov                                 |                                                   |                                                                 |
 | -trace [backend]                      |                                                   |                                                                 |
-| -sanitize {address                    |                                                   |                                                                 |
-| -coverage {trace-pc-gu                |                                                   |                                                                 |
-| -c++std <edition>                     |                                                   |                                                                 |
-| -sse2                                 |                                                   |                                                                 |
-| -sse3/-ssse3/-sse4.1/-                |                                                   |                                                                 |
+| -sanitize <arg>                       | -DFEATURE_sanitize_<arg>                          |                                                                 |
+| -coverage <arg>                       |                                                   |                                                                 |
+| -c++std c++2a                         | -DFEATURE_cxx2a=ON                                |                                                                 |
+| -sse2/sse3/-ssse3/-sse4.1             |                                                   |                                                                 |
 | -mips_dsp/-mips_dspr2                 |                                                   |                                                                 |
 | -qreal <type>                         |                                                   |                                                                 |
-| -R <string>                           |                                                   |                                                                 |
-| -rpath                                |                                                   |                                                                 |
+| -R <string>                           | -DQT_EXTRA_RPATHS=path1;path2                     |                                                                 |
+| -rpath                                | negative CMAKE_SKIP_BUILD_RPATH                   |                                                                 |
+|                                       | negative CMAKE_SKIP_INSTALL_RPATH                 |                                                                 |
 | -reduce-exports                       |                                                   |                                                                 |
-| -reduce-relocations                   |                                                   |                                                                 |
+| -reduce-relocations                   | -DFEATURE_reduce_relocations=ON                   |                                                                 |
 | -plugin-manifests                     |                                                   |                                                                 |
-| -static-runtime                       |                                                   |                                                                 |
-| -pch                                  |                                                   |                                                                 |
+| -static-runtime                       | -DFEATURE_static_runtime=ON                       |                                                                 |
+| -pch                                  | -DBUILD_WITH_PCH=ON                               |                                                                 |
 | -ltcg                                 |                                                   |                                                                 |
 | -linker [bfd,gold,lld]                |                                                   |                                                                 |
 | -incredibuild-xge                     |                                                   |                                                                 |
 | -ccache                               | -DQT_USE_CCACHE=ON                                |                                                                 |
 | -make-tool <tool>                     | n/a                                               |                                                                 |
 | -mp                                   | n/a                                               |                                                                 |
-| -warnings-are-errors                  | -DWARNINGS_ARE_ERRORS=ON                          |                                                                 |
-| -silent                               |                                                   |                                                                 |
+| -warnings-are-errors                  | -DWARNINGS_ARE_ERRORS=ON or                       |                                                                 |
+|                                       | -DFEATURE_warnings_are_errors=ON                  |                                                                 |
+| -silent                               | n/a                                               |                                                                 |
 | -sysroot <dir>                        | -DCMAKE_SYSROOT=<dir>                             | Should be provided by a toolchain file that's                   |
 |                                       |                                                   | passed via -DCMAKE_TOOLCHAIN_FILE=<filename>                    |
-| -gcc-sysroot                          |                                                   |                                                                 |
-| -pkg-config                           |                                                   |                                                                 |
+| -no-gcc-sysroot                       |                                                   |                                                                 |
+| -no-pkg-config                        |                                                   |                                                                 |
 | -D <string>                           |                                                   |                                                                 |
 | -I <string>                           |                                                   |                                                                 |
 | -L <string>                           |                                                   |                                                                 |
@@ -88,20 +89,11 @@ The effort of this is tracked in QTBUG-85373 and QTBUG-85349.
 | -android-ndk-host                     |                                                   |                                                                 |
 | -android-abis                         |                                                   |                                                                 |
 | -android-style-assets                 |                                                   |                                                                 |
-| mponent selection:                    |                                                   |                                                                 |
-| -skip <repo>                          |                                                   |                                                                 |
-| -make <part>                          |                                                   |                                                                 |
-| -nomake <part>                        |                                                   |                                                                 |
-| -compile-examples                     |                                                   |                                                                 |
-| -gui                                  |                                                   |                                                                 |
-| -widgets                              |                                                   |                                                                 |
-| -no-dbus                              |                                                   |                                                                 |
-| -dbus-linked                          |                                                   |                                                                 |
-| -dbus-runtime                         |                                                   |                                                                 |
-| -accessibility                        |                                                   |                                                                 |
-| -skip <repo>                          |                                                   |                                                                 |
-| -make <part>                          |                                                   |                                                                 |
-| -nomake <part>                        |                                                   |                                                                 |
+| -skip <repo>                          | -DBUILD_<repo>=OFF                                |                                                                 |
+| -make <part>                          | -DBUILD_TESTING=ON                                | A way to turn on tools explicitly is missing.                   |
+|                                       | -DBUILD_EXAMPLES=ON                               |                                                                 |
+| -nomake <part>                        | -DBUILD_TESTING=OFF                               | A way to turn off tools explicitly is missing.                  |
+|                                       | -DBUILD_EXAMPLES=OFF                              |                                                                 |
 | -compile-examples                     |                                                   |                                                                 |
 | -gui                                  |                                                   |                                                                 |
 | -widgets                              |                                                   |                                                                 |
