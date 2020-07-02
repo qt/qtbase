@@ -1205,6 +1205,100 @@ void tst_QMap::insert()
     }
 }
 
+template <template <typename K, typename T> typename Map>
+void testDetachWhenInsert()
+{
+    const Map<int, int> referenceSource = {
+        { 0, 0 },
+        { 1, 1 },
+        { 2, 2 }
+    };
+
+    const Map<int, int> referenceDestination = {
+        { 0, 0 },
+        { 1, 1 },
+        { 2, 2 },
+        { 3, 3 }
+    };
+
+    // copy insertion of non-shared map
+    {
+        Map<int, int> source;
+        source.insert(0, 0);
+        source.insert(1, 1);
+        source.insert(2, 2);
+
+        Map<int, int> dest;
+        dest.insert(3, 3);
+        Map<int, int> destCopy = dest;
+
+        dest.insert(source);
+
+        QCOMPARE(source, referenceSource);
+        QCOMPARE(dest, referenceDestination);
+
+        QCOMPARE(destCopy.count(), 1); // unchanged
+    }
+
+    // copy insertion of shared map
+    {
+        Map<int, int> source;
+        source.insert(0, 0);
+        source.insert(1, 1);
+        source.insert(2, 2);
+        Map<int, int> sourceCopy = source;
+
+        Map<int, int> dest;
+        dest.insert(3, 3);
+        Map<int, int> destCopy = dest;
+
+        dest.insert(source);
+
+        QCOMPARE(source, referenceSource);
+        QCOMPARE(sourceCopy, referenceSource);
+
+        QCOMPARE(dest, referenceDestination);
+        QCOMPARE(destCopy.count(), 1); // unchanged
+    }
+
+    // move insertion of non-shared map
+    {
+        Map<int, int> source;
+        source.insert(0, 0);
+        source.insert(1, 1);
+        source.insert(2, 2);
+
+        Map<int, int> dest;
+        dest.insert(3, 3);
+        Map<int, int> destCopy = dest;
+
+        dest.insert(source);
+
+        QCOMPARE(dest, referenceDestination);
+        QCOMPARE(destCopy.count(), 1); // unchanged
+    }
+
+    // move insertion of shared map
+    {
+        Map<int, int> source;
+        source.insert(0, 0);
+        source.insert(1, 1);
+        source.insert(2, 2);
+        Map<int, int> sourceCopy = source;
+
+        Map<int, int> dest;
+        dest.insert(3, 3);
+        Map<int, int> destCopy = dest;
+
+        dest.insert(std::move(source));
+
+        QCOMPARE(sourceCopy, referenceSource);
+
+        QCOMPARE(dest, referenceDestination);
+        QCOMPARE(destCopy.count(), 1); // unchanged
+    }
+};
+
 void tst_QMap::insertMap()
 {
     {
@@ -1298,6 +1392,9 @@ void tst_QMap::insertMap()
 
         QCOMPARE(map.count(), 1);
     }
+
+    testDetachWhenInsert<QMap>();
+    testDetachWhenInsert<QMultiMap>();
 }
 
 void tst_QMap::checkMostLeftNode()

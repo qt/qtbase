@@ -655,6 +655,12 @@ public:
         if (!map.d || map.d->m.empty())
             return;
 
+        if (map.d.isShared()) {
+            // fall back to a regular copy
+            insert(map);
+            return;
+        }
+
         detach();
 
 #ifdef __cpp_lib_node_extract
@@ -1291,6 +1297,12 @@ public:
     {
         if (!map.d || map.d->m.empty())
             return;
+
+        if (map.d.isShared()) {
+            // fall back to a regular copy
+            insert(map);
+            return;
+        }
 
         detach();
 
