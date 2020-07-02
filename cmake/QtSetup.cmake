@@ -87,6 +87,8 @@ if (PROJECT_NAME STREQUAL "QtBase" AND NOT QT_BUILD_STANDALONE_TESTS)
     else()
         set(__qt_will_install_value ON)
     endif()
+    set(QT_STAGING_PREFIX "${__qt_prefix}" CACHE INTERNAL
+        "Install prefix on the build machine. Either CMAKE_INSTALL_PREFIX or CMAKE_STAGING_PREFIX.")
     set(QT_WILL_INSTALL ${__qt_will_install_value} CACHE BOOL
         "Boolean indicating if doing a Qt prefix build (vs non-prefix build)." FORCE)
     unset(__qt_prefix)

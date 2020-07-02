@@ -162,11 +162,7 @@ function(qt_internal_set_up_global_paths)
         else()
             # When doing a non-prefix build, both the build dir and install dir are the same,
             # pointing to the qtbase build dir.
-            if("${CMAKE_STAGING_PREFIX}" STREQUAL "")
-                set(QT_BUILD_DIR "${CMAKE_INSTALL_PREFIX}")
-            else()
-                set(QT_BUILD_DIR "${CMAKE_STAGING_PREFIX}")
-            endif()
+            set(QT_BUILD_DIR "${QT_STAGING_PREFIX}")
             set(QT_INSTALL_DIR "${QT_BUILD_DIR}")
         endif()
     endif()
@@ -1399,11 +1395,7 @@ function(qt_generate_qmake_wrapper_for_target)
     qt_path_join(qt_conf_path "${INSTALL_BINDIR}" "target_qt.conf")
 
     set(prefix "${CMAKE_INSTALL_PREFIX}")
-    set(ext_prefix "${CMAKE_STAGING_PREFIX}")
-    if(ext_prefix STREQUAL "")
-        set(ext_prefix "${prefix}")
-    endif()
-
+    set(ext_prefix "${QT_STAGING_PREFIX}")
     set(host_prefix "${QT_HOST_PATH}")
     file(RELATIVE_PATH host_prefix_relative_to_conf_file "${ext_prefix}/${INSTALL_BINDIR}"
         "${host_prefix}")
