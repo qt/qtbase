@@ -48,6 +48,8 @@ QT_BEGIN_NAMESPACE
 
 using namespace QPlatformInterface::Private;
 
+#ifndef QT_NO_OPENGL
+
 QT_DEFINE_PLATFORM_INTERFACE(QCocoaGLContext, QOpenGLContext);
 QT_DEFINE_PRIVATE_PLATFORM_INTERFACE(QCocoaGLIntegration);
 
@@ -56,5 +58,7 @@ QOpenGLContext *QPlatformInterface::QCocoaGLContext::fromNative(NSOpenGLContext 
     return QGuiApplicationPrivate::platformIntegration()->call<
         &QCocoaGLIntegration::createOpenGLContext>(nativeContext, shareContext);
 }
+
+#endif // QT_NO_OPENGL
 
 QT_END_NAMESPACE

@@ -54,7 +54,10 @@ struct QWindowsWindowData;
 class QWindowsWindow;
 class QWindowsStaticOpenGLContext;
 
-class QWindowsIntegration : public QPlatformIntegration, public QPlatformInterface::Private::QWindowsGLIntegration
+class QWindowsIntegration : public QPlatformIntegration
+#ifndef QT_NO_OPENGL
+    , public QPlatformInterface::Private::QWindowsGLIntegration
+#endif
 {
     Q_DISABLE_COPY_MOVE(QWindowsIntegration)
 public:

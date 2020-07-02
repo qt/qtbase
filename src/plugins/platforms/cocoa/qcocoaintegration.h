@@ -62,8 +62,10 @@ Q_FORWARD_DECLARE_OBJC_CLASS(NSToolbar);
 
 QT_BEGIN_NAMESPACE
 
-class QCocoaIntegration : public QObject, public QPlatformIntegration,
-    public QPlatformInterface::Private::QCocoaGLIntegration
+class QCocoaIntegration : public QObject, public QPlatformIntegration
+#ifndef QT_NO_OPENGL
+    , public QPlatformInterface::Private::QCocoaGLIntegration
+#endif
 {
     Q_OBJECT
 public:

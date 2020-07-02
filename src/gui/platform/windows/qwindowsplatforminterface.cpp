@@ -46,6 +46,8 @@ QT_BEGIN_NAMESPACE
 
 using namespace QPlatformInterface::Private;
 
+#ifndef QT_NO_OPENGL
+
 QT_DEFINE_PLATFORM_INTERFACE(QWGLContext, QOpenGLContext);
 QT_DEFINE_PRIVATE_PLATFORM_INTERFACE(QWindowsGLIntegration);
 
@@ -60,5 +62,7 @@ QOpenGLContext *QPlatformInterface::QWGLContext::fromNative(HGLRC context, HWND 
     return QGuiApplicationPrivate::platformIntegration()->call<
         &QWindowsGLIntegration::createOpenGLContext>(context, window, shareContext);
 }
+
+#endif // QT_NO_OPENGL
 
 QT_END_NAMESPACE

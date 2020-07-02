@@ -56,8 +56,10 @@ class QAbstractEventDispatcher;
 class QXcbNativeInterface;
 
 class Q_XCB_EXPORT QXcbIntegration : public QPlatformIntegration
+#ifndef QT_NO_OPENGL
     , public QPlatformInterface::Private::QGLXIntegration
     , public QPlatformInterface::Private::QEGLIntegration
+#endif
 {
 public:
     QXcbIntegration(const QStringList &parameters, int &argc, char **argv);

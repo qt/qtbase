@@ -68,7 +68,9 @@ class QFbVtHandler;
 class QEvdevKeyboardManager;
 
 class Q_EGLFS_EXPORT QEglFSIntegration : public QPlatformIntegration, public QPlatformNativeInterface
+#ifndef QT_NO_OPENGL
                                        , public QPlatformInterface::Private::QEGLIntegration
+#endif
 {
 public:
     QEglFSIntegration();
