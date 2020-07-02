@@ -1309,7 +1309,23 @@ function(qt_generate_global_module_pri_file)
     qt_correct_config(corrected_private_config "${private_config}")
     list(JOIN corrected_private_config " " private_config_joined)
 
-    set(content "QT.global_private.enabled_features = ${corrected_enabled_features}
+    set(content "")
+    set(arch "${TEST_architecture_arch}")
+    list(JOIN TEST_subarch_result " " subarchs)
+    if(CMAKE_CROSSCOMPILING)
+        set(host_arch "${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_ARCH}")
+        list(JOIN QT${PROJECT_VERSION_MAJOR}_HOST_INFO_SUBARCHS " " host_subarchs)
+        string(APPEND content "host_build {
+    QT_CPU_FEATURES.${host_arch} = ${host_subarchs}
+} else {
+    QT_CPU_FEATURES.${arch} = ${subarchs}
+}
+")
+    else()
+        string(APPEND content "QT_CPU_FEATURES.${arch} = ${subarchs}\n")
+    endif()
+
+    string(APPEND content "QT.global_private.enabled_features = ${corrected_enabled_features}
 QT.global_private.disabled_features = ${corrected_disabled_features}
 CONFIG += ${private_config_joined}
 ")

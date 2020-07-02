@@ -72,6 +72,8 @@ function(qt_run_config_test_architecture)
     set(TEST_architecture_arch "${_architecture}" CACHE INTERNAL "Target machine architecture")
     list(APPEND QT_BASE_CONFIGURE_TESTS_VARS_TO_EXPORT TEST_architecture_arch)
     set(TEST_subarch 1 CACHE INTERNAL "Ran machine subArchitecture test")
+    set(TEST_subarch_result "${_sub_architecture}" CACHE INTERNAL "Target sub-architectures")
+    list(APPEND QT_BASE_CONFIGURE_TESTS_VARS_TO_EXPORT TEST_subarch_result)
     foreach(it ${_sub_architecture})
         # Equivalent to qmake's QT_CPU_FEATURES.$arch.
         set(TEST_arch_${TEST_architecture_arch}_subarch_${it} 1 CACHE INTERNAL "Target sub architecture result")
