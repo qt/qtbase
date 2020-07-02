@@ -143,26 +143,30 @@ public:
 
     void updateDefaultTextOption();
 
-    QPlainTextEditControl *control;
-
-    bool tabChangesFocus;
-
     QBasicTimer autoScrollTimer;
+#ifdef QT_KEYPAD_NAVIGATION
+    QBasicTimer deleteAllTimer;
+#endif
     QPoint autoScrollDragPos;
+    QString placeholderText;
 
-    QPlainTextEdit::LineWrapMode lineWrap;
-    QTextOption::WrapMode wordWrap;
-    Qt::KeyboardModifiers keyboardModifiers;
+    QPlainTextEditControl *control = nullptr;
+    qreal topLineFracture = 0; // for non-int sized fonts
+    qreal pageUpDownLastCursorY = 0;
+    QPlainTextEdit::LineWrapMode lineWrap = QPlainTextEdit::WidgetWidth;
+    QTextOption::WrapMode wordWrap = QTextOption::WrapAtWordBoundaryOrAnywhere;
+    Qt::KeyboardModifiers keyboardModifiers = {};
+    int originalOffsetY = 0;
+    int topLine = 0;
 
+    uint tabChangesFocus : 1;
     uint showCursorOnInitialShow : 1;
     uint backgroundVisible : 1;
     uint centerOnScroll : 1;
     uint inDrag : 1;
     uint clickCausedFocus : 1;
     uint placeholderVisible : 1;
-
-    int topLine;
-    qreal topLineFracture; // for non-int sized fonts
+    uint pageUpDownLastCursorYIsValid : 1;
 
     void setTopLine(int visualTopLine, int dx = 0);
     void setTopBlock(int newTopBlock, int newTopLine, int dx = 0);
@@ -175,19 +179,8 @@ public:
 
     void append(const QString &text, Qt::TextFormat format = Qt::AutoText);
 
-    qreal pageUpDownLastCursorY;
-    bool pageUpDownLastCursorYIsValid;
-
-
-#ifdef QT_KEYPAD_NAVIGATION
-    QBasicTimer deleteAllTimer;
-#endif
-
     void _q_cursorPositionChanged();
     void _q_modificationChanged(bool);
-
-    int originalOffsetY;
-    QString placeholderText;
 };
 
 QT_END_NAMESPACE

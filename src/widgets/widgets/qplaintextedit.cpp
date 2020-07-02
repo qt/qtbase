@@ -755,21 +755,11 @@ void QPlainTextEditPrivate::updateViewport()
 }
 
 QPlainTextEditPrivate::QPlainTextEditPrivate()
-    : control(nullptr),
-      tabChangesFocus(false),
-      lineWrap(QPlainTextEdit::WidgetWidth),
-      wordWrap(QTextOption::WrapAtWordBoundaryOrAnywhere),
-      keyboardModifiers{},
-      clickCausedFocus(0), placeholderVisible(1),
-      topLine(0), topLineFracture(0),
+    : tabChangesFocus(false), showCursorOnInitialShow(false), backgroundVisible(false),
+      centerOnScroll(false), inDrag(false), clickCausedFocus(false), placeholderVisible(true),
       pageUpDownLastCursorYIsValid(false)
 {
-    showCursorOnInitialShow = true;
-    backgroundVisible = false;
-    centerOnScroll = false;
-    inDrag = false;
 }
-
 
 void QPlainTextEditPrivate::init(const QString &txt)
 {
@@ -825,7 +815,6 @@ void QPlainTextEditPrivate::init(const QString &txt)
 #ifndef QT_NO_CURSOR
     viewport->setCursor(Qt::IBeamCursor);
 #endif
-    originalOffsetY = 0;
 }
 
 void QPlainTextEditPrivate::_q_textChanged()
