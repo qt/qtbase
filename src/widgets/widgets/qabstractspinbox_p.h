@@ -124,18 +124,32 @@ public:
 
     virtual QVariant calculateAdaptiveDecimalStep(int steps) const;
 
-    QLineEdit *edit;
     QString prefix, suffix, specialValueText;
     QVariant value, minimum, maximum, singleStep;
-    QMetaType::Type type;
-    int spinClickTimerId, spinClickTimerInterval, spinClickThresholdTimerId, spinClickThresholdTimerInterval;
-    int effectiveSpinRepeatRate;
-    uint buttonState;
-    Qt::KeyboardModifiers keyboardModifiers;
-    mutable QString cachedText;
+    QRect hoverRect;
+
+    mutable QString cachedText = QLatin1String("\x01");
     mutable QVariant cachedValue;
-    mutable QValidator::State cachedState;
     mutable QSize cachedSizeHint, cachedMinimumSizeHint;
+    QLineEdit *edit = nullptr;
+    QSpinBoxValidator *validator = nullptr;
+    QMetaType::Type type = QMetaType::UnknownType;
+    int spinClickTimerId = -1;
+    int spinClickTimerInterval = 100;
+    int spinClickThresholdTimerId = -1;
+    int spinClickThresholdTimerInterval = -1;
+    int effectiveSpinRepeatRate = 1;
+    int acceleration = 0;
+    int wheelDeltaRemainder = 0;
+
+    Qt::KeyboardModifiers keyboardModifiers = Qt::NoModifier;
+    Qt::KeyboardModifier stepModifier = Qt::ControlModifier;
+    QAbstractSpinBox::CorrectionMode correctionMode = QAbstractSpinBox::CorrectToPreviousValue;
+    QAbstractSpinBox::StepType stepType = QAbstractSpinBox::StepType::DefaultStepType;
+    QAbstractSpinBox::ButtonSymbols buttonSymbols = QAbstractSpinBox::UpDownArrows;
+    QStyle::SubControl hoverControl = QStyle::SC_None;
+    mutable QValidator::State cachedState = QValidator::Invalid;
+    uint buttonState = None;
     uint pendingEmit : 1;
     uint readOnly : 1;
     uint wrapping : 1;
@@ -145,16 +159,7 @@ public:
     uint keyboardTracking : 1;
     uint cleared : 1;
     uint ignoreUpdateEdit : 1;
-    QAbstractSpinBox::CorrectionMode correctionMode;
-    QAbstractSpinBox::StepType stepType = QAbstractSpinBox::StepType::DefaultStepType;
-    Qt::KeyboardModifier stepModifier = Qt::ControlModifier;
-    int acceleration;
-    QStyle::SubControl hoverControl;
-    QRect hoverRect;
-    QAbstractSpinBox::ButtonSymbols buttonSymbols;
-    QSpinBoxValidator *validator;
     uint showGroupSeparator : 1;
-    int wheelDeltaRemainder;
 };
 
 class QSpinBoxValidator : public QValidator

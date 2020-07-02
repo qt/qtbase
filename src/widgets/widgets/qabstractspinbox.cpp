@@ -1425,15 +1425,9 @@ void QAbstractSpinBox::mouseReleaseEvent(QMouseEvent *event)
 */
 
 QAbstractSpinBoxPrivate::QAbstractSpinBoxPrivate()
-    : edit(nullptr), type(QMetaType::UnknownType), spinClickTimerId(-1),
-      spinClickTimerInterval(100), spinClickThresholdTimerId(-1), spinClickThresholdTimerInterval(-1),
-      effectiveSpinRepeatRate(1), buttonState(None), keyboardModifiers{}, cachedText(QLatin1String("\x01")),
-      cachedState(QValidator::Invalid), pendingEmit(false), readOnly(false), wrapping(false),
-      ignoreCursorPositionChanged(false), frame(true), accelerate(false), keyboardTracking(true),
-      cleared(false), ignoreUpdateEdit(false), correctionMode(QAbstractSpinBox::CorrectToPreviousValue),
-      stepModifier(Qt::ControlModifier), acceleration(0), hoverControl(QStyle::SC_None),
-      buttonSymbols(QAbstractSpinBox::UpDownArrows), validator(nullptr), showGroupSeparator(0),
-      wheelDeltaRemainder(0)
+    :  pendingEmit(false), readOnly(false), wrapping(false),
+       ignoreCursorPositionChanged(false), frame(true), accelerate(false), keyboardTracking(true),
+       cleared(false), ignoreUpdateEdit(false), showGroupSeparator(false)
 {
 }
 
