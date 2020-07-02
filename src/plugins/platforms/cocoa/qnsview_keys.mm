@@ -41,11 +41,6 @@
 
 @implementation QNSView (Keys)
 
-- (int)convertKeyCode:(QChar)keyChar
-{
-    return qt_mac_cocoaKey2QtKey(keyChar);
-}
-
 - (bool)handleKeyEvent:(NSEvent *)nsevent eventType:(int)eventType
 {
     ulong timestamp = [nsevent timestamp] * 1000;
@@ -78,7 +73,7 @@
             ch = QChar([charactersIgnoringModifiers characterAtIndex:0]);
         else if ([characters length] != 0)
             ch = QChar([characters characterAtIndex:0]);
-        keyCode = [self convertKeyCode:ch];
+        keyCode = QCocoaKeyMapper::fromCocoaKey(ch);
     }
 
     // we will send a key event unless the input method sets m_sendKeyEvent to false

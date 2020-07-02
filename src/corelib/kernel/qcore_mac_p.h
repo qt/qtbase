@@ -183,8 +183,6 @@ private:
 };
 
 #ifdef Q_OS_MACOS
-Q_CORE_EXPORT QChar qt_mac_qtKey2CocoaKey(Qt::Key key);
-Q_CORE_EXPORT Qt::Key qt_mac_cocoaKey2QtKey(QChar keyCode);
 Q_CORE_EXPORT bool qt_mac_applicationIsInDarkMode();
 #endif
 

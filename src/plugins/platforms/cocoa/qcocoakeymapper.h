@@ -83,6 +83,8 @@ public:
     QList<int> possibleKeys(const QKeyEvent *event) const;
 
     static Qt::KeyboardModifiers fromCocoaModifiers(NSEventModifierFlags cocoaModifiers);
+    static QChar toCocoaKey(Qt::Key key);
+    static Qt::Key fromCocoaKey(QChar keyCode);
 
 private:
     bool updateKeyboard();

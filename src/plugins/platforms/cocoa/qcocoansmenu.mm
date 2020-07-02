@@ -264,7 +264,7 @@ static NSString *qt_mac_removePrivateUnicode(NSString *string)
                 } else {
                     ch = QChar([charactersIgnoringModifiers characterAtIndex:0]);
                 }
-                keyCode = qt_mac_cocoaKey2QtKey(ch);
+                keyCode = QCocoaKeyMapper::fromCocoaKey(ch);
             } else {
                 // might be a dead key
                 ch = QChar::ReplacementCharacter;

@@ -50,6 +50,7 @@
 #include "qcocoahelpers.h"
 #include "qcocoaapplication.h" // for custom application category
 #include "qcocoamenuloader.h"
+#include "qcocoakeymapper.h"
 #include <QtGui/private/qcoregraphics_p.h>
 #include <QtCore/qregularexpression.h>
 
@@ -99,7 +100,7 @@ static quint32 constructModifierMask(quint32 accel_key)
 NSString *keySequenceToKeyEqivalent(const QKeySequence &accel)
 {
     quint32 accel_key = (accel[0] & ~(Qt::MODIFIER_MASK | Qt::UNICODE_ACCEL));
-    QChar cocoa_key = qt_mac_qtKey2CocoaKey(Qt::Key(accel_key));
+    QChar cocoa_key = QCocoaKeyMapper::toCocoaKey(Qt::Key(accel_key));
     if (cocoa_key.isNull())
         cocoa_key = QChar(accel_key).toLower().unicode();
     // Similar to qt_mac_removePrivateUnicode change the delete key so the symbol is correctly seen in native menubar

@@ -295,6 +295,148 @@ static int toKeyCode(const QChar &key, int virtualKey, int modifiers)
     return Qt::Key_unknown;
 }
 
+// --------- Cocoa key mapping moved from Qt Core ---------
+
+// Use this method to keep all the information in the TextSegment. As long as it is ordered
+// we are in OK shape, and we can influence that ourselves.
+struct KeyPair
+{
+    QChar cocoaKey;
+    Qt::Key qtKey;
+};
+
+bool operator==(const KeyPair &entry, QChar qchar)
+{
+    return entry.cocoaKey == qchar;
+}
+
+bool operator<(const KeyPair &entry, QChar qchar)
+{
+    return entry.cocoaKey < qchar;
+}
+
+bool operator<(QChar qchar, const KeyPair &entry)
+{
+    return qchar < entry.cocoaKey;
+}
+
+bool operator<(const Qt::Key &key, const KeyPair &entry)
+{
+    return key < entry.qtKey;
+}
+
+bool operator<(const KeyPair &entry, const Qt::Key &key)
+{
+    return entry.qtKey < key;
+}
+
+struct qtKey2CocoaKeySortLessThan
+{
+    typedef bool result_type;
+    Q_DECL_CONSTEXPR result_type operator()(const KeyPair &entry1, const KeyPair &entry2) const noexcept
+    {
+        return entry1.qtKey < entry2.qtKey;
+    }
+};
+
+static const int NSEscapeCharacter = 27; // not defined by Cocoa headers
+static const int NumEntries = 59;
+static const KeyPair entries[NumEntries] = {
+    { NSEnterCharacter, Qt::Key_Enter },
+    { NSBackspaceCharacter, Qt::Key_Backspace },
+    { NSTabCharacter, Qt::Key_Tab },
+    { NSNewlineCharacter, Qt::Key_Return },
+    { NSCarriageReturnCharacter, Qt::Key_Return },
+    { NSBackTabCharacter, Qt::Key_Backtab },
+    { NSEscapeCharacter, Qt::Key_Escape },
+    // Cocoa sends us delete when pressing backspace!
+    // (NB when we reverse this list in qtKey2CocoaKey, there
+    // will be two indices of Qt::Key_Backspace. But is seems to work
+    // ok for menu shortcuts (which uses that function):
+    { NSDeleteCharacter, Qt::Key_Backspace },
+    { NSUpArrowFunctionKey, Qt::Key_Up },
+    { NSDownArrowFunctionKey, Qt::Key_Down },
+    { NSLeftArrowFunctionKey, Qt::Key_Left },
+    { NSRightArrowFunctionKey, Qt::Key_Right },
+    { NSF1FunctionKey, Qt::Key_F1 },
+    { NSF2FunctionKey, Qt::Key_F2 },
+    { NSF3FunctionKey, Qt::Key_F3 },
+    { NSF4FunctionKey, Qt::Key_F4 },
+    { NSF5FunctionKey, Qt::Key_F5 },
+    { NSF6FunctionKey, Qt::Key_F6 },
+    { NSF7FunctionKey, Qt::Key_F7 },
+    { NSF8FunctionKey, Qt::Key_F8 },
+    { NSF9FunctionKey, Qt::Key_F9 },
+    { NSF10FunctionKey, Qt::Key_F10 },
+    { NSF11FunctionKey, Qt::Key_F11 },
+    { NSF12FunctionKey, Qt::Key_F12 },
+    { NSF13FunctionKey, Qt::Key_F13 },
+    { NSF14FunctionKey, Qt::Key_F14 },
+    { NSF15FunctionKey, Qt::Key_F15 },
+    { NSF16FunctionKey, Qt::Key_F16 },
+    { NSF17FunctionKey, Qt::Key_F17 },
+    { NSF18FunctionKey, Qt::Key_F18 },
+    { NSF19FunctionKey, Qt::Key_F19 },
+    { NSF20FunctionKey, Qt::Key_F20 },
+    { NSF21FunctionKey, Qt::Key_F21 },
+    { NSF22FunctionKey, Qt::Key_F22 },
+    { NSF23FunctionKey, Qt::Key_F23 },
+    { NSF24FunctionKey, Qt::Key_F24 },
+    { NSF25FunctionKey, Qt::Key_F25 },
+    { NSF26FunctionKey, Qt::Key_F26 },
+    { NSF27FunctionKey, Qt::Key_F27 },
+    { NSF28FunctionKey, Qt::Key_F28 },
+    { NSF29FunctionKey, Qt::Key_F29 },
+    { NSF30FunctionKey, Qt::Key_F30 },
+    { NSF31FunctionKey, Qt::Key_F31 },
+    { NSF32FunctionKey, Qt::Key_F32 },
+    { NSF33FunctionKey, Qt::Key_F33 },
+    { NSF34FunctionKey, Qt::Key_F34 },
+    { NSF35FunctionKey, Qt::Key_F35 },
+    { NSInsertFunctionKey, Qt::Key_Insert },
+    { NSDeleteFunctionKey, Qt::Key_Delete },
+    { NSHomeFunctionKey, Qt::Key_Home },
+    { NSEndFunctionKey, Qt::Key_End },
+    { NSPageUpFunctionKey, Qt::Key_PageUp },
+    { NSPageDownFunctionKey, Qt::Key_PageDown },
+    { NSPrintScreenFunctionKey, Qt::Key_Print },
+    { NSScrollLockFunctionKey, Qt::Key_ScrollLock },
+    { NSPauseFunctionKey, Qt::Key_Pause },
+    { NSSysReqFunctionKey, Qt::Key_SysReq },
+    { NSMenuFunctionKey, Qt::Key_Menu },
+    { NSHelpFunctionKey, Qt::Key_Help },
+};
+static const KeyPair * const end = entries + NumEntries;
+
+QChar QCocoaKeyMapper::toCocoaKey(Qt::Key key)
+{
+    // The first time this function is called, create a reverse
+    // lookup table sorted on Qt Key rather than Cocoa key:
+    static QVector<KeyPair> rev_entries(NumEntries);
+    static bool mustInit = true;
+    if (mustInit){
+        mustInit = false;
+        for (int i=0; i<NumEntries; ++i)
+            rev_entries[i] = entries[i];
+        std::sort(rev_entries.begin(), rev_entries.end(), qtKey2CocoaKeySortLessThan());
+    }
+    const QVector<KeyPair>::iterator i
+            = std::lower_bound(rev_entries.begin(), rev_entries.end(), key);
+    if ((i == rev_entries.end()) || (key < *i))
+        return QChar();
+    return i->cocoaKey;
+}
+
+Qt::Key QCocoaKeyMapper::fromCocoaKey(QChar keyCode)
+{
+    const KeyPair *i = std::lower_bound(entries, end, keyCode);
+    if ((i == end) || (keyCode < *i))
+        return Qt::Key(keyCode.toUpper().unicode());
+    return i->qtKey;
+}
+
+// ------------------------------------------------
+
 QCocoaKeyMapper::QCocoaKeyMapper()
 {
     memset(m_keyLayout, 0, sizeof(m_keyLayout));
