@@ -65,6 +65,7 @@
 #define ANIMATION_DURATION 250
 
 #include <qstyleoption.h>
+#include <utility>
 
 QT_REQUIRE_CONFIG(tabbar);
 
@@ -93,6 +94,10 @@ public:
       paintWithOffsets(true), movable(false), dragInProgress(false), documentMode(false),
       autoHide(false), changeCurrentOnDrag(false)
     {}
+    ~QTabBarPrivate()
+    {
+        qDeleteAll(tabList);
+    }
 
     QRect hoverRect;
     QPoint dragStartPosition;
@@ -131,8 +136,14 @@ public:
     struct Tab {
         inline Tab(const QIcon &ico, const QString &txt)
         : text(txt), icon(ico), enabled(true), visible(true)
-        {}
-        bool operator==(const Tab &other) const { return &other == this; }
+        {
+        }
+        /*
+            Tabs are managed by instance; they are not the same even
+            if all properties are the same.
+        */
+        Q_DISABLE_COPY_MOVE(Tab);
+
         QString text;
 #if QT_CONFIG(tooltip)
         QString toolTip;
@@ -159,7 +170,6 @@ public:
         uint visible : 1;
 
 #if QT_CONFIG(animation)
-        ~Tab() { delete animation; }
         struct TabBarAnimation : public QVariantAnimation {
             TabBarAnimation(Tab *t, QTabBarPrivate *_priv) : tab(t), priv(_priv)
             { setEasingCurve(QEasingCurve::InOutQuad); }
@@ -171,15 +181,16 @@ public:
             //these are needed for the callbacks
             Tab *tab;
             QTabBarPrivate *priv;
-        } *animation = nullptr;
+        };
+        std::unique_ptr<TabBarAnimation> animation;
 
         void startAnimation(QTabBarPrivate *priv, int duration) {
             if (!priv->isAnimated()) {
-                priv->moveTabFinished(priv->tabList.indexOf(*this));
+                priv->moveTabFinished(priv->tabList.indexOf(this));
                 return;
             }
             if (!animation)
-                animation = new TabBarAnimation(this, priv);
+                animation = std::make_unique<TabBarAnimation>(this, priv);
             animation->setStartValue(dragOffset);
             animation->setEndValue(0);
             animation->setDuration(duration);
@@ -190,7 +201,7 @@ public:
         { Q_UNUSED(duration); priv->moveTabFinished(priv->tabList.indexOf(*this)); }
 #endif // animation
     };
-    QList<Tab> tabList;
+    QList<Tab*> tabList;
     mutable QHash<QString, QSize> textSizes;
 
     void calculateFirstLastVisible(int index, bool visible, bool remove);
@@ -199,8 +210,8 @@ public:
     void slide(int from, int to);
     void init();
 
-    Tab *at(int index);
-    const Tab *at(int index) const;
+    inline Tab *at(int index) { return tabList.value(index, nullptr); }
+    inline const Tab *at(int index) const { return tabList.value(index, nullptr); }
 
     int indexAtPos(const QPoint &p) const;
 
