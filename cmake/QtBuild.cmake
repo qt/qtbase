@@ -1339,6 +1339,11 @@ CONFIG += ${private_config_joined}
     string(REPLACE ";" " " build_parts "${build_parts}")
     string(APPEND content "QT_BUILD_PARTS = ${build_parts}\n")
 
+    if(QT_EXTRA_RPATHS)
+        list(JOIN QT_EXTRA_RPATHS " " extra_rpaths)
+        string(APPEND content "EXTRA_RPATHS += ${extra_rpaths}")
+    endif()
+
     set(preliminary_pri_root "${CMAKE_CURRENT_BINARY_DIR}/mkspecs/preliminary")
     set(pri_data_cmake_file "qmodule.cmake")
     qt_generate_qmake_libraries_pri_content(global ${preliminary_pri_root} ${pri_data_cmake_file})
