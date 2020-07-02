@@ -158,7 +158,7 @@ public:
 
     constexpr inline const char *str() const { return m_string.data; }
     constexpr inline const T *offsets() const { return m_offsets; }
-    constexpr inline int count() const { return SizeOffsets; };
+    constexpr inline int count() const { return SizeOffsets; }
 
     static constexpr const auto sizeString = SizeString;
     static constexpr const auto sizeOffsets = SizeOffsets;

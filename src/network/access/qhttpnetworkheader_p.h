@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
 class Q_AUTOTEST_EXPORT QHttpNetworkHeader
 {
 public:
-    virtual ~QHttpNetworkHeader() {};
+    virtual ~QHttpNetworkHeader() {}
     virtual QUrl url() const = 0;
     virtual void setUrl(const QUrl &url) = 0;
 

@@ -62,14 +62,14 @@ public:
     bool show(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent) override;
     void hide() override;
 
-    QString selectedNameFilter() const override { return QString(); };
-    void selectNameFilter(const QString &) override {};
-    void setFilter() override {};
-    QList<QUrl> selectedFiles() const override { return m_selectedFile; };
-    void selectFile(const QUrl &) override {};
-    QUrl directory() const override { return QUrl(); };
-    void setDirectory(const QUrl &) override {};
-    bool defaultNameFilterDisables() const override { return false; };
+    QString selectedNameFilter() const override { return QString(); }
+    void selectNameFilter(const QString &) override {}
+    void setFilter() override {}
+    QList<QUrl> selectedFiles() const override { return m_selectedFile; }
+    void selectFile(const QUrl &) override {}
+    QUrl directory() const override { return QUrl(); }
+    void setDirectory(const QUrl &) override {}
+    bool defaultNameFilterDisables() const override { return false; }
     bool handleActivityResult(jint requestCode, jint resultCode, jobject data) override;
 
 private:

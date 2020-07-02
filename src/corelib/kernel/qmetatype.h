@@ -2315,7 +2315,7 @@ private:
                 || s == '_');
     }
     static constexpr bool is_space(char s) { return (s == ' ' || s == '\t' || s == '\n'); }
-    static constexpr bool is_number(char s) { return s >= '0' && s <= '9'; };
+    static constexpr bool is_number(char s) { return s >= '0' && s <= '9'; }
     static constexpr bool starts_with_token(const char *b, const char *e, const char *token,
                                             bool msvcKw = false)
     {

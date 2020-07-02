@@ -119,7 +119,7 @@ public:
     virtual void clearFocusObject();
     virtual QRectF closestAcceptableGeometry(const QRectF &rect) const;
 
-    virtual void processSafeAreaMarginsChanged() {};
+    virtual void processSafeAreaMarginsChanged() {}
 
     bool isPopup() const { return (windowFlags & Qt::WindowType_Mask) == Qt::Popup; }
     void setAutomaticPositionAndResizeEnabled(bool a)

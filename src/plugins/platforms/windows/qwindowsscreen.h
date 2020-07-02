@@ -87,7 +87,7 @@ public:
     QImage::Format format() const override { return m_data.format; }
     QSizeF physicalSize() const override { return m_data.physicalSizeMM; }
     QDpi logicalDpi() const override { return m_data.dpi; }
-    QDpi logicalBaseDpi() const override { return QDpi(96, 96); };
+    QDpi logicalBaseDpi() const override { return QDpi(96, 96); }
     qreal devicePixelRatio() const override { return 1.0; }
     qreal refreshRate() const override { return m_data.refreshRateHz; }
     QString name() const override { return m_data.name; }

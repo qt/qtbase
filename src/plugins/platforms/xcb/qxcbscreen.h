@@ -160,7 +160,7 @@ public:
     QImage::Format format() const override;
     QSizeF physicalSize() const override { return m_sizeMillimeters; }
     QDpi logicalDpi() const override;
-    QDpi logicalBaseDpi() const override { return QDpi(96, 96); };
+    QDpi logicalBaseDpi() const override { return QDpi(96, 96); }
     QPlatformCursor *cursor() const override;
     qreal refreshRate() const override { return m_refreshRate; }
     Qt::ScreenOrientation orientation() const override { return m_orientation; }

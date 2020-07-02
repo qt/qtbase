@@ -33,7 +33,7 @@
 
 struct TestQPrivateSlots_Private
 {
-    void _q_privateslot() {};
+    void _q_privateslot() {}
 };
 
 class TestQPrivateSlots: public QObject

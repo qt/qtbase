@@ -40,9 +40,9 @@ class TestPointeeCanBeIncomplete : public QObject
 {
     Q_OBJECT
 public:
-    void setProp1(QPointer<FwdClass>) {};
-    void setProp2(QSharedPointer<FwdClass>) {};
-    void setProp3(const QWeakPointer<FwdClass> &) {};
+    void setProp1(QPointer<FwdClass>) {}
+    void setProp2(QSharedPointer<FwdClass>) {}
+    void setProp3(const QWeakPointer<FwdClass> &) {}
 };
 
 #endif // POINTERY_TO_INCOMPLETE_H

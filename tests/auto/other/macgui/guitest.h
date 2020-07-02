@@ -52,7 +52,7 @@ public:
 */
 class WidgetNavigator {
 public:
-    WidgetNavigator() {};
+    WidgetNavigator() {}
     ~WidgetNavigator();
 
     void printAll(QWidget *widget);

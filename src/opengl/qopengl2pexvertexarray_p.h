@@ -63,13 +63,13 @@ class QOpenGLPoint
 {
 public:
     QOpenGLPoint(GLfloat new_x, GLfloat new_y) :
-        x(new_x), y(new_y) {};
+        x(new_x), y(new_y) {}
 
     QOpenGLPoint(const QPointF &p) :
-        x(p.x()), y(p.y()) {};
+        x(p.x()), y(p.y()) {}
 
     QOpenGLPoint(const QPointF* p) :
-        x(p->x()), y(p->y()) {};
+        x(p->x()), y(p->y()) {}
 
     GLfloat x;
     GLfloat y;

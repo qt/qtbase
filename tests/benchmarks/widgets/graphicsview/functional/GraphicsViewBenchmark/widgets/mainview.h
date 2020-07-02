@@ -74,7 +74,7 @@ protected:
     virtual void resizeEvent(QResizeEvent * event);
     virtual void paintEvent(QPaintEvent *event);
     virtual void keyPressEvent(QKeyEvent *event);
-    virtual void wheelEvent(QWheelEvent *event) { Q_UNUSED (event); };
+    virtual void wheelEvent(QWheelEvent *event) { Q_UNUSED (event); }
 
 private slots:
     void updateFps();

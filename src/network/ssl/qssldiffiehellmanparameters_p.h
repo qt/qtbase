@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
 class QSslDiffieHellmanParametersPrivate : public QSharedData
 {
 public:
-    QSslDiffieHellmanParametersPrivate() : error(QSslDiffieHellmanParameters::NoError) {};
+    QSslDiffieHellmanParametersPrivate() : error(QSslDiffieHellmanParameters::NoError) {}
 
     void decodeDer(const QByteArray &der);
     void decodePem(const QByteArray &pem);

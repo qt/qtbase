@@ -113,8 +113,8 @@ public:
 
     void updateKeyboardState(NSNotification *notification = 0);
 
-    const ImeState &imeState() { return m_imeState; };
-    const KeyboardState &keyboardState() { return m_keyboardState; };
+    const ImeState &imeState() { return m_imeState; }
+    const KeyboardState &keyboardState() { return m_keyboardState; }
 
     bool inputMethodAccepted() const;
 

@@ -81,7 +81,7 @@ public:
 #if QT_CONFIG(dialog)
     QDialog *dialogParent() const;
 #else
-    QDialog *dialogParent() const { return 0; };
+    QDialog *dialogParent() const { return 0; }
 #endif
 
     QPointer<QMenu> menu;
