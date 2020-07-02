@@ -123,13 +123,13 @@ public:
     };
     Q_DECLARE_FLAGS(ShaperFlags, ShaperFlag)
 
-    /* Used with the Freetype font engine. We don't cache glyphs that are too large anyway, so we can make this struct rather small */
+    /* Used with the Freetype font engine. */
     struct Glyph {
         Glyph() = default;
         ~Glyph() { delete [] data; }
         short linearAdvance = 0;
-        unsigned char width = 0;
-        unsigned char height = 0;
+        unsigned short width = 0;
+        unsigned short height = 0;
         short x = 0;
         short y = 0;
         short advance = 0;
