@@ -183,7 +183,8 @@ bool FieldLookupTable::prependField(const QByteArray &name, const QByteArray &va
 
     if (useIndex) {
         const auto result = searchIndex.insert(frontKey());
-        Q_UNUSED(result) Q_ASSERT(result.second);
+        Q_UNUSED(result);
+        Q_ASSERT(result.second);
     }
 
     return true;
@@ -198,7 +199,8 @@ void FieldLookupTable::evictEntry()
 
     if (useIndex) {
         const auto res = searchIndex.erase(backKey());
-        Q_UNUSED(res) Q_ASSERT(res == 1);
+        Q_UNUSED(res);
+        Q_ASSERT(res == 1);
     }
 
     const HeaderField &field = back();

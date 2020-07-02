@@ -696,7 +696,8 @@ void QNetworkAccessManager::enableStrictTransportSecurityStore(bool enabled, con
     d->stsStore.reset(enabled ? new QHstsStore(storeDir) : nullptr);
     d->stsCache.setStore(d->stsStore.data());
 #else
-    Q_UNUSED(enabled) Q_UNUSED(storeDir)
+    Q_UNUSED(enabled);
+    Q_UNUSED(storeDir);
     qWarning("HSTS permanent store requires the feature 'settings' enabled");
 #endif // QT_CONFIG(settings)
 }

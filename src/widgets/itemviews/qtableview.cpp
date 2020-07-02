@@ -123,7 +123,8 @@ void QSpanCollection::updateSpan(QSpanCollection::Span *span, int old_height)
         while (-it_y.key() <= span->top() + old_height -1) {
             if (-it_y.key() > span->bottom()) {
                 int removed = (*it_y).remove(-span->left());
-                Q_ASSERT(removed == 1); Q_UNUSED(removed);
+                Q_ASSERT(removed == 1);
+                Q_UNUSED(removed);
                 if (it_y->isEmpty()) {
                     it_y = index.erase(it_y);
                 }

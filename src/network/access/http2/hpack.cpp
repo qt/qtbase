@@ -391,7 +391,8 @@ bool Encoder::encodeLiteralField(BitOStream &outputStream, const BitPattern &fie
 
     QByteArray name;
     const bool found = lookupTable.fieldName(nameIndex, &name);
-    Q_UNUSED(found) Q_ASSERT(found);
+    Q_UNUSED(found);
+    Q_ASSERT(found);
 
     if (fieldType == LiteralIncrementalIndexing) {
         if (!lookupTable.prependField(name, value))

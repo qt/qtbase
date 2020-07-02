@@ -679,7 +679,8 @@ void QHttp2ProtocolHandler::handlePRIORITY()
     quint32 streamDependency = 0;
     uchar weight = 0;
     const bool noErr = inboundFrame.priority(&streamDependency, &weight);
-    Q_UNUSED(noErr) Q_ASSERT(noErr);
+    Q_UNUSED(noErr);
+    Q_ASSERT(noErr);
 
 
     const bool exclusive = streamDependency & 0x80000000;

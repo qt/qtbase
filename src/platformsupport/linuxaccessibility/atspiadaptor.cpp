@@ -1806,9 +1806,13 @@ bool AtSpiAdaptor::textInterface(QAccessibleInterface *interface, const QString 
         uint coordType = message.arguments().at(4).toUInt();
         uint xClipType = message.arguments().at(5).toUInt();
         uint yClipType = message.arguments().at(6).toUInt();
-        Q_UNUSED(x) Q_UNUSED (y) Q_UNUSED(width)
-        Q_UNUSED(height) Q_UNUSED(coordType)
-        Q_UNUSED(xClipType) Q_UNUSED(yClipType)
+        Q_UNUSED(x);
+        Q_UNUSED(y);
+        Q_UNUSED(width);
+        Q_UNUSED(height);
+        Q_UNUSED(coordType);
+        Q_UNUSED(xClipType);
+        Q_UNUSED(yClipType);
         qCDebug(lcAccessibilityAtspi) << "Not implemented: QSpiAdaptor::GetBoundedRanges";
         sendReply(connection, message, QVariant::fromValue(QSpiTextRangeList()));
     } else if (function == QLatin1String("GetCharacterAtOffset")) {

@@ -228,7 +228,9 @@
 */
 - (BOOL)layer:(CALayer *)layer shouldInheritContentsScale:(CGFloat)scale fromWindow:(NSWindow *)window
 {
-    Q_UNUSED(layer); Q_UNUSED(scale); Q_UNUSED(window);
+    Q_UNUSED(layer);
+    Q_UNUSED(scale);
+    Q_UNUSED(window);
     return NO;
 }
 

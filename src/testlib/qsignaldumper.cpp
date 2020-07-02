@@ -66,7 +66,9 @@ enum { IndentSpacesCount = 4 };
 
 static void qSignalDumperCallback(QObject *caller, int signal_index, void **argv)
 {
-    Q_ASSERT(caller); Q_ASSERT(argv); Q_UNUSED(argv);
+    Q_ASSERT(caller);
+    Q_ASSERT(argv);
+    Q_UNUSED(argv);
     const QMetaObject *mo = caller->metaObject();
     Q_ASSERT(mo);
     QMetaMethod member = QMetaObjectPrivate::signal(mo, signal_index);
@@ -123,7 +125,9 @@ static void qSignalDumperCallback(QObject *caller, int signal_index, void **argv
 
 static void qSignalDumperCallbackSlot(QObject *caller, int method_index, void **argv)
 {
-    Q_ASSERT(caller); Q_ASSERT(argv); Q_UNUSED(argv);
+    Q_ASSERT(caller);
+    Q_ASSERT(argv);
+    Q_UNUSED(argv);
     const QMetaObject *mo = caller->metaObject();
     Q_ASSERT(mo);
     QMetaMethod member = mo->method(method_index);

@@ -289,7 +289,8 @@ static void qDBusUpdateDispatchStatus(DBusConnection *connection, DBusDispatchSt
 static void qDBusNewConnection(DBusServer *server, DBusConnection *connection, void *data)
 {
     // ### We may want to separate the server from the QDBusConnectionPrivate
-    Q_ASSERT(server); Q_UNUSED(server);
+    Q_ASSERT(server);
+    Q_UNUSED(server);
     Q_ASSERT(connection);
     Q_ASSERT(data);
 
