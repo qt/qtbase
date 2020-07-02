@@ -487,6 +487,31 @@ qt_extend_target(Gui CONDITION QT_FEATURE_accessibility AND WIN32
         accessible/windows/apisupport/uiatypes_p.h
 )
 
+qt_extend_target(Gui CONDITION QT_FEATURE_accessibility AND QT_FEATURE_accessibility_atspi_bridge
+    SOURCES
+        accessible/linux/atspiadaptor.cpp accessible/linux/atspiadaptor_p.h
+        accessible/linux/dbusconnection.cpp accessible/linux/dbusconnection_p.h
+        accessible/linux/qspi_constant_mappings.cpp accessible/linux/qspi_constant_mappings_p.h
+        accessible/linux/qspi_struct_marshallers.cpp accessible/linux/qspi_struct_marshallers_p.h
+        accessible/linux/qspiaccessiblebridge.cpp accessible/linux/qspiaccessiblebridge_p.h
+        accessible/linux/qspiapplicationadaptor.cpp accessible/linux/qspiapplicationadaptor_p.h
+        accessible/linux/qspidbuscache.cpp accessible/linux/qspidbuscache_p.h
+# special case begin
+    DBUS_ADAPTOR_SOURCES
+        accessible/linux/dbusxml/Cache.xml
+        accessible/linux/dbusxml/DeviceEventController.xml
+    DBUS_ADAPTOR_FLAGS
+        "-i" "QtGui/private/qspi_struct_marshallers_p.h"
+    DBUS_INTERFACE_SOURCES
+        accessible/linux/dbusxml/Bus.xml
+        accessible/linux/dbusxml/Socket.xml
+    DBUS_INTERFACE_FLAGS
+        "-i" "QtGui/private/qspi_struct_marshallers_p.h"
+# special case end
+    PUBLIC_LIBRARIES
+        PkgConfig::ATSPI2_nolink
+)
+
 qt_extend_target(Gui CONDITION QT_FEATURE_action
     SOURCES
         kernel/qaction.cpp kernel/qaction.h kernel/qaction_p.h
@@ -521,7 +546,7 @@ qt_extend_target(Gui CONDITION QT_FEATURE_png
         WrapPNG::WrapPNG
 )
 
-#### Keys ignored in scope 38:.:image:image/image.pri:WIN32 AND MINGW:
+#### Keys ignored in scope 40:.:image:image/image.pri:WIN32 AND MINGW:
 # GCC_VERSION = "$${QMAKE_GCC_MAJOR_VERSION}.$${QMAKE_GCC_MINOR_VERSION}.$${QMAKE_GCC_PATCH_VERSION}"
 
 qt_extend_target(Gui CONDITION ((QT_FEATURE_png) AND (WIN32 AND MINGW)) AND (GCC_VERSION___equals___8.1.0)
@@ -839,10 +864,10 @@ add_custom_command(
 # qvkgen_pimpl.input = "QMAKE_QVKGEN_INPUT"
 # qvkgen_pimpl.output = "$$OUT_PWD/vulkan/qvulkanfunctions_p.cpp"
 
-#### Keys ignored in scope 100:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
+#### Keys ignored in scope 102:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
 # qvkgen_h.variable_out = "HEADERS"
 
-#### Keys ignored in scope 101:.:vulkan:vulkan/vulkan.pri:else:
+#### Keys ignored in scope 103:.:vulkan:vulkan/vulkan.pri:else:
 # qvkgen_h.CONFIG = "target_predeps" "no_link"
 
 qt_extend_target(Gui CONDITION WASM

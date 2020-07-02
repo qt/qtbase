@@ -37,59 +37,63 @@
 **
 ****************************************************************************/
 
-
-#ifndef DBUSCONNECTION_H
-#define DBUSCONNECTION_H
+#ifndef Q_SPI_APPLICATION_H
+#define Q_SPI_APPLICATION_H
 
 //
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
+// This file is not part of the Qt API. It exists purely as an
+// implementation detail. This header file may change from version to
 // version without notice, or even be removed.
 //
 // We mean it.
 //
 
-#include <QtCore/QString>
+#include <QtGui/private/qtguiglobal_p.h>
+#include <QtCore/QPointer>
+#include <QtCore/QQueue>
 #include <QtDBus/QDBusConnection>
-#include <QtDBus/QDBusVariant>
-Q_MOC_INCLUDE(<QtDBus/QDBusError>)
+#include <QtGui/QAccessibleInterface>
+Q_MOC_INCLUDE(<QtDBus/QDBusMessage>)
+
+QT_REQUIRE_CONFIG(accessibility);
 
 QT_BEGIN_NAMESPACE
 
-class QDBusServiceWatcher;
-
-class DBusConnection : public QObject
+/*
+ * Used for the root object.
+ *
+ * Uses the root object reference and reports its parent as the desktop object.
+ */
+class QSpiApplicationAdaptor :public QObject
 {
     Q_OBJECT
 
 public:
-    DBusConnection(QObject *parent = nullptr);
-    QDBusConnection connection() const;
-    bool isEnabled() const { return m_enabled; }
+    QSpiApplicationAdaptor(const QDBusConnection &connection, QObject *parent);
+    virtual ~QSpiApplicationAdaptor() {}
+    void sendEvents(bool active);
 
 Q_SIGNALS:
-    // Emitted when the global accessibility status changes to enabled
-    void enabledChanged(bool enabled);
+    void windowActivated(QObject* window, bool active);
+
+protected:
+    bool eventFilter(QObject *obj, QEvent *event) override;
 
 private Q_SLOTS:
-    QString getAddressFromXCB();
-    void serviceRegistered();
-    void serviceUnregistered();
-    void connectA11yBus(const QString &address);
-
-    void dbusError(const QDBusError &error);
+    void notifyKeyboardListenerCallback(const QDBusMessage& message);
+    void notifyKeyboardListenerError(const QDBusError& error, const QDBusMessage& message);
 
 private:
-    QString getAccessibilityBusAddress() const;
+    static QKeyEvent* copyKeyEvent(QKeyEvent*);
 
-    QDBusServiceWatcher *dbusWatcher;
-    QDBusConnection m_a11yConnection;
-    bool m_enabled;
+    QQueue<QPair<QPointer<QObject>, QKeyEvent*> > keyEvents;
+    QDBusConnection dbusConnection;
+    bool inCapsLock;
 };
 
 QT_END_NAMESPACE
 
-#endif // DBUSCONNECTION_H
+#endif

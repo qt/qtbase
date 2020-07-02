@@ -38,54 +38,58 @@
 ****************************************************************************/
 
 
-#include "cache_p.h"
-#include "bridge_p.h"
+#ifndef QSPIACCESSIBLEBRIDGE_H
+#define QSPIACCESSIBLEBRIDGE_H
 
-#ifndef QT_NO_ACCESSIBILITY
-#include "cache_adaptor.h"
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API. It exists purely as an
+// implementation detail. This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#define QSPI_OBJECT_PATH_CACHE "/org/a11y/atspi/cache"
+#include <QtGui/private/qtguiglobal_p.h>
+#include <QtDBus/qdbusconnection.h>
+#include <qpa/qplatformaccessibility.h>
+
+class DeviceEventControllerAdaptor;
+
+QT_REQUIRE_CONFIG(accessibility);
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \class QSpiDBusCache
-    \internal
-    \brief This class is responsible for the AT-SPI cache interface.
+class DBusConnection;
+class QSpiDBusCache;
+class AtSpiAdaptor;
 
-    The idea behind the cache is that starting an application would
-    result in many dbus calls. The way GTK/Gail/ATK work is that
-    they create accessibles for all objects on startup.
-    In order to avoid querying all the objects individually via DBus
-    they get sent by using the GetItems call of the cache.
-
-    Additionally the AddAccessible and RemoveAccessible signals
-    are responsible for adding/removing objects from the cache.
-
-    Currently the Qt bridge chooses to ignore these.
-*/
-
-QSpiDBusCache::QSpiDBusCache(QDBusConnection c, QObject* parent)
-    : QObject(parent)
+class Q_GUI_EXPORT QSpiAccessibleBridge: public QObject, public QPlatformAccessibility
 {
-    new CacheAdaptor(this);
-    c.registerObject(QLatin1String(QSPI_OBJECT_PATH_CACHE), this, QDBusConnection::ExportAdaptors);
-}
+    Q_OBJECT
+public:
+    QSpiAccessibleBridge();
 
-void QSpiDBusCache::emitAddAccessible(const QSpiAccessibleCacheItem& item)
-{
-    emit AddAccessible(item);
-}
+    virtual ~QSpiAccessibleBridge();
 
-void QSpiDBusCache::emitRemoveAccessible(const QSpiObjectReference& item)
-{
-    emit RemoveAccessible(item);
-}
+    void notifyAccessibilityUpdate(QAccessibleEvent *event) override;
+    QDBusConnection dBusConnection() const;
 
-QSpiAccessibleCacheArray QSpiDBusCache::GetItems()
-{
-    return QSpiAccessibleCacheArray();
-}
+public Q_SLOTS:
+    void enabledChanged(bool enabled);
+
+private:
+    void initializeConstantMappings();
+    void updateStatus();
+
+    QSpiDBusCache *cache;
+    DeviceEventControllerAdaptor *dec;
+    AtSpiAdaptor *dbusAdaptor;
+    DBusConnection* dbusConnection;
+};
 
 QT_END_NAMESPACE
-#endif //QT_NO_ACCESSIBILITY
+
+#endif

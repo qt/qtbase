@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef DBUSCONNECTION_H
-#define DBUSCONNECTION_H
+#ifndef QDBUSMENUCONNECTION_H
+#define QDBUSMENUCONNECTION_H
 
 //
 //  W A R N I N G
@@ -98,4 +98,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // DBUSCONNECTION_H
+#endif // QDBUSMENUCONNECTION_H

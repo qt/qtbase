@@ -17,12 +17,6 @@ qtConfig(xlib):qtConfig(opengl):!qtConfig(opengles2): \
 qtConfig(kms): \
     SUBDIRS += kmsconvenience
 
-qtConfig(accessibility) {
-    qtConfig(accessibility-atspi-bridge) {
-        SUBDIRS += linuxaccessibility
-    }
-}
-
 !android:linux*:qtHaveModule(dbus) \
     SUBDIRS += linuxofono
 

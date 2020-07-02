@@ -38,17 +38,17 @@
 ****************************************************************************/
 
 
-#include "bridge_p.h"
+#include "qspiaccessiblebridge_p.h"
 
 #include <atspi/atspi-constants.h>
 #include <qstring.h>
 
 #include "atspiadaptor_p.h"
 
-#include "cache_p.h"
-#include "constant_mappings_p.h"
+#include "qspidbuscache_p.h"
+#include "qspi_constant_mappings_p.h"
 #include "dbusconnection_p.h"
-#include "struct_marshallers_p.h"
+#include "qspi_struct_marshallers_p.h"
 
 #ifndef QT_NO_ACCESSIBILITY
 #include "deviceeventcontroller_adaptor.h"

@@ -45,8 +45,8 @@
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
+// This file is not part of the Qt API. It exists purely as an
+// implementation detail. This header file may change from version to
 // version without notice, or even be removed.
 //
 // We mean it.
@@ -60,7 +60,7 @@
 #include <QtGui/qaccessible.h>
 
 #include "dbusconnection_p.h"
-#include "struct_marshallers_p.h"
+#include "qspi_struct_marshallers_p.h"
 
 QT_REQUIRE_CONFIG(accessibility);
 

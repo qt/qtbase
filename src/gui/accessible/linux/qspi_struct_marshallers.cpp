@@ -38,13 +38,13 @@
 ****************************************************************************/
 
 
-#include "struct_marshallers_p.h"
+#include "qspi_struct_marshallers_p.h"
 
 #include <atspi/atspi-constants.h>
 #include <QtCore/qdebug.h>
 #include <QtDBus/qdbusmetatype.h>
 
-#include "bridge_p.h"
+#include "qspiaccessiblebridge_p.h"
 
 #ifndef QT_NO_ACCESSIBILITY
 QT_BEGIN_NAMESPACE

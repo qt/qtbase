@@ -38,7 +38,7 @@
 ****************************************************************************/
 
 
-#include "application_p.h"
+#include "qspiapplicationadaptor_p.h"
 
 #include <QtCore/qcoreapplication.h>
 #include <QtDBus/qdbuspendingreply.h>

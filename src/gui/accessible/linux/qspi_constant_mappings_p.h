@@ -41,8 +41,8 @@
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
+// This file is not part of the Qt API. It exists purely as an
+// implementation detail. This header file may change from version to
 // version without notice, or even be removed.
 //
 // We mean it.
@@ -56,7 +56,7 @@
 #ifndef Q_SPI_CONSTANT_MAPPINGS_H
 #define Q_SPI_CONSTANT_MAPPINGS_H
 
-#include "struct_marshallers_p.h"
+#include "qspi_struct_marshallers_p.h"
 
 #include <QtGui/private/qtguiglobal_p.h>
 #include <QtGui/QAccessible>
@@ -124,7 +124,6 @@ private:
 };
 
 extern QHash <QAccessible::Role, RoleNames> qSpiRoleMapping;
-extern QHash <int, AtspiStateType> qSpiStateMapping;
 
 inline void setSpiStateBit(quint64* state, AtspiStateType spiState)
 {

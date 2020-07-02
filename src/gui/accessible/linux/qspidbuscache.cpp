@@ -37,63 +37,55 @@
 **
 ****************************************************************************/
 
-#ifndef Q_SPI_APPLICATION_H
-#define Q_SPI_APPLICATION_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include "qspidbuscache_p.h"
+#include "qspiaccessiblebridge_p.h"
 
-#include <QtGui/private/qtguiglobal_p.h>
-#include <QtCore/QPointer>
-#include <QtCore/QQueue>
-#include <QtDBus/QDBusConnection>
-#include <QtGui/QAccessibleInterface>
-Q_MOC_INCLUDE(<QtDBus/QDBusMessage>)
+#ifndef QT_NO_ACCESSIBILITY
+#include "cache_adaptor.h"
 
-QT_REQUIRE_CONFIG(accessibility);
+#define QSPI_OBJECT_PATH_CACHE "/org/a11y/atspi/cache"
 
 QT_BEGIN_NAMESPACE
 
-/*
- * Used for the root object.
- *
- * Uses the root object reference and reports its parent as the desktop object.
- */
-class QSpiApplicationAdaptor :public QObject
+/*!
+    \class QSpiDBusCache
+    \internal
+    \brief This class is responsible for the AT-SPI cache interface.
+
+    The idea behind the cache is that starting an application would
+    result in many dbus calls. The way GTK/Gail/ATK work is that
+    they create accessibles for all objects on startup.
+    In order to avoid querying all the objects individually via DBus
+    they get sent by using the GetItems call of the cache.
+
+    Additionally the AddAccessible and RemoveAccessible signals
+    are responsible for adding/removing objects from the cache.
+
+    Currently the Qt bridge chooses to ignore these.
+*/
+
+QSpiDBusCache::QSpiDBusCache(QDBusConnection c, QObject* parent)
+    : QObject(parent)
 {
-    Q_OBJECT
+    new CacheAdaptor(this);
+    c.registerObject(QLatin1String(QSPI_OBJECT_PATH_CACHE), this, QDBusConnection::ExportAdaptors);
+}
 
-public:
-    QSpiApplicationAdaptor(const QDBusConnection &connection, QObject *parent);
-    virtual ~QSpiApplicationAdaptor() {}
-    void sendEvents(bool active);
+void QSpiDBusCache::emitAddAccessible(const QSpiAccessibleCacheItem& item)
+{
+    emit AddAccessible(item);
+}
 
-Q_SIGNALS:
-    void windowActivated(QObject* window, bool active);
+void QSpiDBusCache::emitRemoveAccessible(const QSpiObjectReference& item)
+{
+    emit RemoveAccessible(item);
+}
 
-protected:
-    bool eventFilter(QObject *obj, QEvent *event) override;
-
-private Q_SLOTS:
-    void notifyKeyboardListenerCallback(const QDBusMessage& message);
-    void notifyKeyboardListenerError(const QDBusError& error, const QDBusMessage& message);
-
-private:
-    static QKeyEvent* copyKeyEvent(QKeyEvent*);
-
-    QQueue<QPair<QPointer<QObject>, QKeyEvent*> > keyEvents;
-    QDBusConnection dbusConnection;
-    bool inCapsLock;
-};
+QSpiAccessibleCacheArray QSpiDBusCache::GetItems()
+{
+    return QSpiAccessibleCacheArray();
+}
 
 QT_END_NAMESPACE
-
-#endif
+#endif //QT_NO_ACCESSIBILITY

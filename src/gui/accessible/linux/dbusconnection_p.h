@@ -38,58 +38,58 @@
 ****************************************************************************/
 
 
-#ifndef QSPIACCESSIBLEBRIDGE_H
-#define QSPIACCESSIBLEBRIDGE_H
+#ifndef DBUSCONNECTION_H
+#define DBUSCONNECTION_H
 
 //
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
+// This file is not part of the Qt API. It exists purely as an
+// implementation detail. This header file may change from version to
 // version without notice, or even be removed.
 //
 // We mean it.
 //
 
-#include <QtGui/private/qtguiglobal_p.h>
-#include <QtDBus/qdbusconnection.h>
-#include <qpa/qplatformaccessibility.h>
-
-class DeviceEventControllerAdaptor;
-
-QT_REQUIRE_CONFIG(accessibility);
+#include <QtCore/QString>
+#include <QtDBus/QDBusConnection>
+#include <QtDBus/QDBusVariant>
+Q_MOC_INCLUDE(<QtDBus/QDBusError>)
 
 QT_BEGIN_NAMESPACE
 
-class DBusConnection;
-class QSpiDBusCache;
-class AtSpiAdaptor;
+class QDBusServiceWatcher;
 
-class QSpiAccessibleBridge: public QObject, public QPlatformAccessibility
+class DBusConnection : public QObject
 {
     Q_OBJECT
+
 public:
-    QSpiAccessibleBridge();
+    DBusConnection(QObject *parent = nullptr);
+    QDBusConnection connection() const;
+    bool isEnabled() const { return m_enabled; }
 
-    virtual ~QSpiAccessibleBridge();
-
-    void notifyAccessibilityUpdate(QAccessibleEvent *event) override;
-    QDBusConnection dBusConnection() const;
-
-public Q_SLOTS:
+Q_SIGNALS:
+    // Emitted when the global accessibility status changes to enabled
     void enabledChanged(bool enabled);
 
-private:
-    void initializeConstantMappings();
-    void updateStatus();
+private Q_SLOTS:
+    QString getAddressFromXCB();
+    void serviceRegistered();
+    void serviceUnregistered();
+    void connectA11yBus(const QString &address);
 
-    QSpiDBusCache *cache;
-    DeviceEventControllerAdaptor *dec;
-    AtSpiAdaptor *dbusAdaptor;
-    DBusConnection* dbusConnection;
+    void dbusError(const QDBusError &error);
+
+private:
+    QString getAccessibilityBusAddress() const;
+
+    QDBusServiceWatcher *dbusWatcher;
+    QDBusConnection m_a11yConnection;
+    bool m_enabled;
 };
 
 QT_END_NAMESPACE
 
-#endif
+#endif // DBUSCONNECTION_H

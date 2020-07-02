@@ -49,10 +49,10 @@
 
 #ifndef QT_NO_ACCESSIBILITY
 #include "socket_interface.h"
-#include "constant_mappings_p.h"
+#include "qspi_constant_mappings_p.h"
 #include <QtGui/private/qaccessiblebridgeutils_p.h>
 
-#include "application_p.h"
+#include "qspiapplicationadaptor_p.h"
 /*!
     \class AtSpiAdaptor
     \internal

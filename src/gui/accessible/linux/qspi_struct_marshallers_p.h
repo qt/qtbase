@@ -45,8 +45,8 @@
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
+// This file is not part of the Qt API. It exists purely as an
+// implementation detail. This header file may change from version to
 // version without notice, or even be removed.
 //
 // We mean it.
@@ -193,5 +193,8 @@ Q_DECLARE_METATYPE(QSpiTextRangeList)
 Q_DECLARE_METATYPE(QSpiAttributeSet)
 Q_DECLARE_METATYPE(QSpiAppUpdate)
 Q_DECLARE_METATYPE(QSpiDeviceEvent)
+
+// For qdbusxml2cpp-generated code
+QT_USE_NAMESPACE
 
 #endif /* Q_SPI_STRUCT_MARSHALLERS_H */

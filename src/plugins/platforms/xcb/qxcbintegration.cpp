@@ -90,7 +90,7 @@
 #ifndef QT_NO_ACCESSIBILITY
 #include <qpa/qplatformaccessibility.h>
 #ifndef QT_NO_ACCESSIBILITY_ATSPI_BRIDGE
-#include <QtLinuxAccessibilitySupport/private/bridge_p.h>
+#include <QtGui/private/qspiaccessiblebridge_p.h>
 #endif
 #endif
 

@@ -7,9 +7,6 @@ QT += \
 
 qtConfig(opengl): QT += opengl-private
 
-qtHaveModule(linuxaccessibility_support-private): \
-    QT += linuxaccessibility_support-private
-
 qtConfig(glib) : QMAKE_USE_PRIVATE += glib
 
 SOURCES = \

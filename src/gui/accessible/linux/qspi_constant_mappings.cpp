@@ -38,7 +38,7 @@
 ****************************************************************************/
 
 
-#include "constant_mappings_p.h"
+#include "qspi_constant_mappings_p.h"
 
 #include <qobject.h>
 #include <qdebug.h>

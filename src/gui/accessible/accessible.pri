@@ -25,4 +25,6 @@ qtConfig(accessibility) {
     }
 
     win32: include(windows/windows.pri)
+
+    qtConfig(accessibility-atspi-bridge): include(linux/linux.pri)
 }
