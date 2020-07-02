@@ -553,6 +553,7 @@ void QScrollBar::mousePressEvent(QMouseEvent *e)
                                              nullptr, this);
     QStyleOptionSlider opt;
     initStyleOption(&opt);
+    opt.keyboardModifiers = e->modifiers();
 
     if (d->maximum == d->minimum // no range
         || (e->buttons() & (~e->button())) // another button was clicked before

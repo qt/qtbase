@@ -527,6 +527,7 @@ public:
     int pageStep;
     qreal notchTarget;
     bool dialWrapping;
+    Qt::KeyboardModifiers keyboardModifiers;
 
     QStyleOptionSlider();
     QStyleOptionSlider(const QStyleOptionSlider &other) : QStyleOptionComplex(Version, Type) { *this = other; }

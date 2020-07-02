@@ -2644,7 +2644,8 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
     case SH_ScrollBar_LeftClickAbsolutePosition: {
         NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
         bool result = [defaults boolForKey:@"AppleScrollerPagingBehavior"];
-        if(QApplication::keyboardModifiers() & Qt::AltModifier)
+        const QStyleOptionSlider *sliderOpt = qstyleoption_cast<const QStyleOptionSlider*>(opt);
+        if (sliderOpt && sliderOpt->keyboardModifiers & Qt::AltModifier)
             ret = !result;
         else
             ret = result;
