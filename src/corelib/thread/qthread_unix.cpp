@@ -109,43 +109,81 @@ static_assert(sizeof(pthread_t) <= sizeof(Qt::HANDLE));
 enum { ThreadPriorityResetFlag = 0x80000000 };
 
 
-class QThreadDataHolder
+static thread_local QThreadData *currentThreadData = nullptr;
+
+static pthread_once_t current_thread_data_once = PTHREAD_ONCE_INIT;
+static pthread_key_t current_thread_data_key;
+
+static void destroy_current_thread_data(void *p)
 {
-public:
-    QThreadData* data;
-
-    ~QThreadDataHolder()
-    {
-        if (!data)
-            return;
-
-        if (data->isAdopted) {
-            QThread *thread = data->thread.loadAcquire();
-            Q_ASSERT(thread);
-            QThreadPrivate *thread_p = static_cast<QThreadPrivate *>(QObjectPrivate::get(thread));
-            Q_ASSERT(!thread_p->finished);
-            thread_p->finish(thread);
-        }
-        data->deref();
+#if defined(Q_OS_VXWORKS)
+    // Calling setspecific(..., 0) sets the value to 0 for ALL threads.
+    // The 'set to 1' workaround adds a bit of an overhead though,
+    // since this function is called twice now.
+    if (p == (void *)1)
+        return;
+#endif
+    // POSIX says the value in our key is set to zero before calling
+    // this destructor function, so we need to set it back to the
+    // right value...
+    pthread_setspecific(current_thread_data_key, p);
+    QThreadData *data = static_cast<QThreadData *>(p);
+    if (data->isAdopted) {
+        QThread *thread = data->thread.loadAcquire();
+        Q_ASSERT(thread);
+        QThreadPrivate *thread_p = static_cast<QThreadPrivate *>(QObjectPrivate::get(thread));
+        Q_ASSERT(!thread_p->finished);
+        thread_p->finish(thread);
     }
-};
+    data->deref();
 
-static thread_local QThreadDataHolder currentThreadData;
+    // ... but we must reset it to zero before returning so we aren't
+    // called again (POSIX allows implementations to call destructor
+    // functions repeatedly until all values are zero)
+    pthread_setspecific(current_thread_data_key,
+#if defined(Q_OS_VXWORKS)
+                                                 (void *)1);
+#else
+                                                 nullptr);
+#endif
+}
+
+static void create_current_thread_data_key()
+{
+    pthread_key_create(&current_thread_data_key, destroy_current_thread_data);
+}
+
+static void destroy_current_thread_data_key()
+{
+    pthread_once(&current_thread_data_once, create_current_thread_data_key);
+    pthread_key_delete(current_thread_data_key);
+
+    // Reset current_thread_data_once in case we end up recreating
+    // the thread-data in the rare case of QObject construction
+    // after destroying the QThreadData.
+    pthread_once_t pthread_once_init = PTHREAD_ONCE_INIT;
+    current_thread_data_once = pthread_once_init;
+}
+Q_DESTRUCTOR_FUNCTION(destroy_current_thread_data_key)
+
 
 // Utility functions for getting, setting and clearing thread specific data.
 static QThreadData *get_thread_data()
 {
-    return currentThreadData.data;
+    return currentThreadData;
 }
 
 static void set_thread_data(QThreadData *data)
 {
-    currentThreadData.data = data;
+    currentThreadData = data;
+    pthread_once(&current_thread_data_once, create_current_thread_data_key);
+    pthread_setspecific(current_thread_data_key, data);
 }
 
 static void clear_thread_data()
 {
-    currentThreadData.data = nullptr;
+    currentThreadData = nullptr;
+    pthread_setspecific(current_thread_data_key, nullptr);
 }
 
 template <typename T>
