@@ -69,6 +69,7 @@ exit /b 1
 set SYNCQT=
 set PLATFORM=
 set MAKE=
+set CMAKE=
 call :doargs %ARGS%
 if errorlevel 1 exit /b
 goto doneargs
@@ -95,6 +96,9 @@ goto doneargs
 
     if /i "%~1" == "-make-tool" goto maketool
     if /i "%~1" == "--make-tool" goto maketool
+
+    if /i "%~1" == "-cmake" goto cmake
+    if /i "%~1" == "--cmake" goto cmake
 
 :nextarg
     shift
@@ -144,7 +148,13 @@ goto doneargs
     set MAKE=%~1
     goto nextarg
 
+:cmake
+    set CMAKE=true
+    goto nextarg
+
 :doneargs
+
+if "%CMAKE%" == "true" goto cmake
 
 rem Find various executables
 for %%C in (clang-cl.exe clang.exe cl.exe icl.exe g++.exe perl.exe jom.exe) do set %%C=%%~$PATH:C
@@ -294,3 +304,15 @@ rem Launch qmake-based configure
 
 cd "%TOPQTDIR%"
 "%QTDIR%\bin\qmake.exe" "%TOPQTSRC%" -- %ARGS%
+goto :eof
+
+:cmake
+
+rem Write config.opt if we're not currently -redo'ing
+if "%rargs%" == "" (
+    if exist "%TOPQTDIR%\config.opt" del "%TOPQTDIR%\config.opt"
+    for %%a in (%ARGS%) do echo %%a >> "%TOPQTDIR%\config.opt"
+)
+
+rem Launch CMake-based configure
+cmake -DOPTFILE="%TOPQTDIR%\config.opt" -P "%QTSRC%\cmake\QtProcessConfigureArgs.cmake"

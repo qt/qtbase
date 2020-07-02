@@ -112,93 +112,6 @@ checkTopLevelBuild()
     fi
 }
 
-CMAKE_CMDLINE=
-getCMakeCmdLine()
-{
-PASSTHRU=
-set -f  # suppress globbing in for loop
-SAVED_IFS=$IFS
-IFS='
-'
-
-if [ "$CFG_DEV" = "yes" ]; then
-    CMAKE_CMDLINE="$CMAKE_CMDLINE
--DFEATURE_developer_build=ON"
-    CMAKE_CMDLINE="$CMAKE_CMDLINE
--DBUILD_TESTING=ON"
-    CMAKE_CMDLINE="$CMAKE_CMDLINE
--DBUILD_EXAMPLES=ON"
-fi
-
-if [ "$CMAKE_MAKEFILES" = "no" ]; then
-       CMAKE_CMDLINE="$CMAKE_CMDLINE
--G Ninja"
-fi
-
-while [ "$#" -gt 0 ]; do
-    i="$1"
-    shift
-    if [ "$PASSTHRU" = "yes" ]; then
-        CMAKE_CMDLINE="$CMAKE_CMDLINE
-$i"
-    else
-        case $i in
-            -nomake|--nomake)
-                arg_capitalized=`echo $1 | tr a-z A-Z`
-                shift
-                CMAKE_CMDLINE="$CMAKE_CMDLINE
--DQT_NO_MAKE_${arg_capitalized}=ON"
-                ;;
-            -feature-*|--feature-*)
-                VAR=`echo $i | sed -E 's/-?-feature-(.*)/\1/'`
-                CMAKE_CMDLINE="$CMAKE_CMDLINE
--DQT_FEATURE_${VAR}=ON"
-                ;;
-            -no-feature-*|--no-feature-*)
-                VAR=`echo $i | sed -E 's/-?-no-feature-(.*)/\1/'`
-                CMAKE_CMDLINE="$CMAKE_CMDLINE
--DQT_FEATURE_${VAR}=OFF"
-                ;;
-            -no-pch|--no-pch)
-                "$CMAKE_CMDLINE
--DBUILD_WITH_PCH=OFF"
-                ;;
-            -no-*|--no-*)
-                VAR=`echo $i | sed -E 's/-?-no-(.*)/\1/'`
-                CMAKE_CMDLINE="$CMAKE_CMDLINE
--DFEATURE_${VAR}=OFF"
-                ;;
-            -system-*|--system-*)
-                VAR=`echo $i | sed -E 's/-?-system-(.*)/\1/'`
-                CMAKE_CMDLINE="$CMAKE_CMDLINE
--DFEATURE_system_${VAR}=ON"
-                ;;
-            -qt-*|--qt-*)
-                VAR=`echo $i | sed -E 's/-?-qt-(.*)/\1/'`
-                CMAKE_CMDLINE="$CMAKE_CMDLINE
--DFEATURE_system_${VAR}=OFF"
-                ;;
-            -sanitize=*|--sanitize=*)
-                VAR=`echo $i | sed -E 's/-?-sanitize=(.*)/\1/'`
-                CMAKE_CMDLINE="$CMAKE_CMDLINE
--DECM_ENABLE_SANITIZERS=${VAR}"
-                ;;
-            -ccache|--ccache)
-                CMAKE_CMDLINE="$CMAKE_CMDLINE
--DQT_USE_CCACHE=ON"
-                ;;
-            --)
-                PASSTHRU=yes
-                ;;
-            *)
-                ;;
-        esac
-    fi
-done
-set +f
-IFS=$SAVED_IFS
-}
-
 OPT_CMDLINE=  # expanded version for the script
 QMAKE_CMDLINE=  # verbatim version for qmake call
 getOptAndQMakeCmdLines()
@@ -1002,26 +915,19 @@ else
 fi
 }
 
-runCMake()
-{
-# recreate command line for cmake
-set -f
-SAVED_IFS=$IFS
-IFS='
-'
-for i in $CMAKE_CMDLINE; do
-    set -- $* "$i"
-done
-set +f
-IFS=$SAVED_IFS
-cmake $* "$relpath"
-}
-
 parseCommandline "$@"
 handleHelp
 if [ "$BUILD_WITH_CMAKE" = "yes" ]; then
-    getCMakeCmdLine $@
-    runCMake
+    checkTopLevelBuild "$@"
+    getOptAndQMakeCmdLines "$@"
+    if [ -z "$optfile" ]; then   # only write optfile if not currently redoing
+        optfile=${outpathPrefix}config.opt
+        if [ -f "$optfile" ]; then rm "$optfile"; fi
+        for arg in "$@"; do
+            echo $arg >> "$optfile"
+        done
+    fi
+    cmake "-DOPTFILE=$optfile" -P "$relpath/cmake/QtProcessConfigureArgs.cmake"
 else
     findPerl
     findAwk
