@@ -60,10 +60,6 @@ QT_DECLARE_NAMESPACED_OBJC_INTERFACE(QNSView, NSView
 - (void)resetMouseButtons;
 @end
 
-@interface QNSView (KeysAPI)
-+ (Qt::KeyboardModifiers)convertKeyModifiers:(ulong)modifierFlags;
-@end
-
 @interface QNSView (ComplexTextAPI)
 - (void)unmarkText;
 - (void)cancelComposingText;

@@ -281,7 +281,7 @@
     QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
     nativeDrag->setLastMouseEvent(theEvent, self);
 
-    const auto modifiers = [QNSView convertKeyModifiers:theEvent.modifierFlags];
+    const auto modifiers = QCocoaKeyMapper::fromCocoaModifiers(theEvent.modifierFlags);
     auto button = cocoaButton2QtButton(theEvent);
     if (button == Qt::LeftButton && m_sendUpAsRightButton)
         button = Qt::RightButton;
@@ -432,7 +432,7 @@
         [[NSTextInputContext currentInputContext] handleEvent:theEvent];
     } else {
         auto ctrlOrMetaModifier = qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta) ? Qt::ControlModifier : Qt::MetaModifier;
-        if (!m_dontOverrideCtrlLMB && [QNSView convertKeyModifiers:[theEvent modifierFlags]] & ctrlOrMetaModifier) {
+        if (!m_dontOverrideCtrlLMB && QCocoaKeyMapper::fromCocoaModifiers(theEvent.modifierFlags) & ctrlOrMetaModifier) {
             m_buttons |= Qt::RightButton;
             m_sendUpAsRightButton = true;
         } else {
@@ -681,7 +681,7 @@
     // after scrolling in Qt Creator: not taking the phase into account causes
     // the end of the event stream to be interpreted as font size changes.
     if (theEvent.momentumPhase == NSEventPhaseNone)
-        m_currentWheelModifiers = [QNSView convertKeyModifiers:[theEvent modifierFlags]];
+        m_currentWheelModifiers = QCocoaKeyMapper::fromCocoaModifiers(theEvent.modifierFlags);
 
     // "isInverted": natural OS X scrolling, inverted from the Qt/other platform/Jens perspective.
     bool isInverted  = [theEvent isDirectionInvertedFromDevice];

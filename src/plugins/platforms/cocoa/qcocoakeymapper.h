@@ -82,6 +82,8 @@ public:
     static Qt::KeyboardModifiers queryKeyboardModifiers();
     QList<int> possibleKeys(const QKeyEvent *event) const;
 
+    static Qt::KeyboardModifiers fromCocoaModifiers(NSEventModifierFlags cocoaModifiers);
+
 private:
     bool updateKeyboard();
     void deleteLayouts();

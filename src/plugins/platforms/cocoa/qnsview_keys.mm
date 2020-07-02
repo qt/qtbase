@@ -39,27 +39,6 @@
 
 // This file is included from qnsview.mm, and only used to organize the code
 
-@implementation QNSView (KeysAPI)
-
-+ (Qt::KeyboardModifiers)convertKeyModifiers:(ulong)modifierFlags
-{
-    const bool dontSwapCtrlAndMeta = qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta);
-    Qt::KeyboardModifiers qtMods =Qt::NoModifier;
-    if (modifierFlags & NSEventModifierFlagShift)
-        qtMods |= Qt::ShiftModifier;
-    if (modifierFlags & NSEventModifierFlagControl)
-        qtMods |= dontSwapCtrlAndMeta ? Qt::ControlModifier : Qt::MetaModifier;
-    if (modifierFlags & NSEventModifierFlagOption)
-        qtMods |= Qt::AltModifier;
-    if (modifierFlags & NSEventModifierFlagCommand)
-        qtMods |= dontSwapCtrlAndMeta ? Qt::MetaModifier : Qt::ControlModifier;
-    if (modifierFlags & NSEventModifierFlagNumericPad)
-        qtMods |= Qt::KeypadModifier;
-    return qtMods;
-}
-
-@end
-
 @implementation QNSView (Keys)
 
 - (int)convertKeyCode:(QChar)keyChar
@@ -71,7 +50,7 @@
 {
     ulong timestamp = [nsevent timestamp] * 1000;
     ulong nativeModifiers = [nsevent modifierFlags];
-    Qt::KeyboardModifiers modifiers = [QNSView convertKeyModifiers: nativeModifiers];
+    Qt::KeyboardModifiers modifiers = QCocoaKeyMapper::fromCocoaModifiers(nativeModifiers);
     NSString *charactersIgnoringModifiers = [nsevent charactersIgnoringModifiers];
     NSString *characters = [nsevent characters];
     if (m_inputSource != characters) {
@@ -219,7 +198,7 @@
 {
     ulong timestamp = [nsevent timestamp] * 1000;
     ulong modifiers = [nsevent modifierFlags];
-    Qt::KeyboardModifiers qmodifiers = [QNSView convertKeyModifiers:modifiers];
+    Qt::KeyboardModifiers qmodifiers = QCocoaKeyMapper::fromCocoaModifiers(modifiers);
 
     // calculate the delta and remember the current modifiers for next time
     static ulong m_lastKnownModifiers;
@@ -255,7 +234,7 @@
                                                timestamp,
                                                (lastKnownModifiers & mac_mask) ? QEvent::KeyRelease : QEvent::KeyPress,
                                                qtCode,
-                                               qmodifiers ^ [QNSView convertKeyModifiers:mac_mask]);
+                                               qmodifiers ^ QCocoaKeyMapper::fromCocoaModifiers(mac_mask));
     }
 }
 

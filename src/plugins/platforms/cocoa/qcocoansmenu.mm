@@ -46,6 +46,7 @@
 #include "qcocoawindow.h"
 #include "qnsview.h"
 #include "qcocoahelpers.h"
+#include "qcocoakeymapper.h"
 
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qcoreevent.h>
@@ -253,7 +254,7 @@ static NSString *qt_mac_removePrivateUnicode(NSString *string)
             QChar ch;
             int keyCode;
             ulong nativeModifiers = event.modifierFlags;
-            Qt::KeyboardModifiers modifiers = [QNSView convertKeyModifiers:nativeModifiers];
+            Qt::KeyboardModifiers modifiers = QCocoaKeyMapper::fromCocoaModifiers(nativeModifiers);
             NSString *charactersIgnoringModifiers = event.charactersIgnoringModifiers;
             NSString *characters = event.characters;
 

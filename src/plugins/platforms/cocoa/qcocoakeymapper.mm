@@ -50,6 +50,23 @@ Q_LOGGING_CATEGORY(lcQpaKeyMapper, "qt.qpa.keymapper");
 Q_LOGGING_CATEGORY(lcQpaKeyMapperKeys, "qt.qpa.keymapper.keys");
 Q_LOGGING_CATEGORY(lcQpaKeyMapperModifiers, "qt.qpa.keymapper.modifiers");
 
+Qt::KeyboardModifiers QCocoaKeyMapper::fromCocoaModifiers(NSEventModifierFlags cocoaModifiers)
+{
+    const bool dontSwapCtrlAndMeta = qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta);
+    Qt::KeyboardModifiers qtMods =Qt::NoModifier;
+    if (cocoaModifiers & NSEventModifierFlagShift)
+        qtMods |= Qt::ShiftModifier;
+    if (cocoaModifiers & NSEventModifierFlagControl)
+        qtMods |= dontSwapCtrlAndMeta ? Qt::ControlModifier : Qt::MetaModifier;
+    if (cocoaModifiers & NSEventModifierFlagOption)
+        qtMods |= Qt::AltModifier;
+    if (cocoaModifiers & NSEventModifierFlagCommand)
+        qtMods |= dontSwapCtrlAndMeta ? Qt::MetaModifier : Qt::ControlModifier;
+    if (cocoaModifiers & NSEventModifierFlagNumericPad)
+        qtMods |= Qt::KeypadModifier;
+    return qtMods;
+}
+
 static constexpr std::tuple<int, Qt::KeyboardModifier> carbonModifierMap[] = {
     { shiftKey, Qt::ShiftModifier },
     { rightShiftKey, Qt::ShiftModifier },
