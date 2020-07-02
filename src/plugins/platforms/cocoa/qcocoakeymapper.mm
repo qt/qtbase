@@ -297,51 +297,9 @@ static int toKeyCode(const QChar &key, int virtualKey, int modifiers)
 
 // --------- Cocoa key mapping moved from Qt Core ---------
 
-// Use this method to keep all the information in the TextSegment. As long as it is ordered
-// we are in OK shape, and we can influence that ourselves.
-struct KeyPair
-{
-    QChar cocoaKey;
-    Qt::Key qtKey;
-};
-
-bool operator==(const KeyPair &entry, QChar qchar)
-{
-    return entry.cocoaKey == qchar;
-}
-
-bool operator<(const KeyPair &entry, QChar qchar)
-{
-    return entry.cocoaKey < qchar;
-}
-
-bool operator<(QChar qchar, const KeyPair &entry)
-{
-    return qchar < entry.cocoaKey;
-}
-
-bool operator<(const Qt::Key &key, const KeyPair &entry)
-{
-    return key < entry.qtKey;
-}
-
-bool operator<(const KeyPair &entry, const Qt::Key &key)
-{
-    return entry.qtKey < key;
-}
-
-struct qtKey2CocoaKeySortLessThan
-{
-    typedef bool result_type;
-    Q_DECL_CONSTEXPR result_type operator()(const KeyPair &entry1, const KeyPair &entry2) const noexcept
-    {
-        return entry1.qtKey < entry2.qtKey;
-    }
-};
-
 static const int NSEscapeCharacter = 27; // not defined by Cocoa headers
-static const int NumEntries = 59;
-static const KeyPair entries[NumEntries] = {
+
+static const QHash<QChar, Qt::Key> cocoaKeys = {
     { NSEnterCharacter, Qt::Key_Enter },
     { NSBackspaceCharacter, Qt::Key_Backspace },
     { NSTabCharacter, Qt::Key_Tab },
@@ -349,10 +307,6 @@ static const KeyPair entries[NumEntries] = {
     { NSCarriageReturnCharacter, Qt::Key_Return },
     { NSBackTabCharacter, Qt::Key_Backtab },
     { NSEscapeCharacter, Qt::Key_Escape },
-    // Cocoa sends us delete when pressing backspace!
-    // (NB when we reverse this list in qtKey2CocoaKey, there
-    // will be two indices of Qt::Key_Backspace. But is seems to work
-    // ok for menu shortcuts (which uses that function):
     { NSDeleteCharacter, Qt::Key_Backspace },
     { NSUpArrowFunctionKey, Qt::Key_Up },
     { NSDownArrowFunctionKey, Qt::Key_Down },
@@ -406,33 +360,31 @@ static const KeyPair entries[NumEntries] = {
     { NSMenuFunctionKey, Qt::Key_Menu },
     { NSHelpFunctionKey, Qt::Key_Help },
 };
-static const KeyPair * const end = entries + NumEntries;
 
 QChar QCocoaKeyMapper::toCocoaKey(Qt::Key key)
 {
-    // The first time this function is called, create a reverse
-    // lookup table sorted on Qt Key rather than Cocoa key:
-    static QVector<KeyPair> rev_entries(NumEntries);
-    static bool mustInit = true;
-    if (mustInit){
-        mustInit = false;
-        for (int i=0; i<NumEntries; ++i)
-            rev_entries[i] = entries[i];
-        std::sort(rev_entries.begin(), rev_entries.end(), qtKey2CocoaKeySortLessThan());
+    // Prioritize overloaded keys
+    if (key == Qt::Key_Return)
+        return NSNewlineCharacter;
+    if (key == Qt::Key_Backspace)
+        return NSBackspaceCharacter;
+
+    static QHash<Qt::Key, QChar> reverseCocoaKeys;
+    if (reverseCocoaKeys.isEmpty()) {
+        reverseCocoaKeys.reserve(cocoaKeys.size());
+        for (auto it = cocoaKeys.begin(); it != cocoaKeys.end(); ++it)
+            reverseCocoaKeys.insert(it.value(), it.key());
     }
-    const QVector<KeyPair>::iterator i
-            = std::lower_bound(rev_entries.begin(), rev_entries.end(), key);
-    if ((i == rev_entries.end()) || (key < *i))
-        return QChar();
-    return i->cocoaKey;
+
+    return reverseCocoaKeys.value(key);
 }
 
 Qt::Key QCocoaKeyMapper::fromCocoaKey(QChar keyCode)
 {
-    const KeyPair *i = std::lower_bound(entries, end, keyCode);
-    if ((i == end) || (keyCode < *i))
-        return Qt::Key(keyCode.toUpper().unicode());
-    return i->qtKey;
+    if (auto key = cocoaKeys.value(keyCode))
+        return key;
+
+    return Qt::Key(keyCode.toUpper().unicode());
 }
 
 // ------------------------------------------------
