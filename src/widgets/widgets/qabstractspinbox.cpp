@@ -1010,6 +1010,8 @@ void QAbstractSpinBox::keyPressEvent(QKeyEvent *event)
 {
     Q_D(QAbstractSpinBox);
 
+    d->keyboardModifiers = event->modifiers();
+
     if (!event->text().isEmpty() && d->edit->cursorPosition() < d->prefix.size())
         d->edit->setCursorPosition(d->prefix.size());
 
@@ -1150,6 +1152,7 @@ void QAbstractSpinBox::keyReleaseEvent(QKeyEvent *event)
 {
     Q_D(QAbstractSpinBox);
 
+    d->keyboardModifiers = event->modifiers();
     if (d->buttonState & Keyboard && !event->isAutoRepeat())  {
         d->reset();
     } else {
@@ -1282,7 +1285,7 @@ void QAbstractSpinBox::timerEvent(QTimerEvent *event)
     }
 
     if (doStep) {
-        const bool increaseStepRate = QGuiApplication::keyboardModifiers() & d->stepModifier;
+        const bool increaseStepRate = d->keyboardModifiers & d->stepModifier;
         const StepEnabled st = stepEnabled();
         if (d->buttonState & Up) {
             if (!(st & StepUpEnabled)) {
@@ -1359,6 +1362,7 @@ void QAbstractSpinBox::mouseMoveEvent(QMouseEvent *event)
 {
     Q_D(QAbstractSpinBox);
 
+    d->keyboardModifiers = event->modifiers();
     d->updateHoverControl(event->position().toPoint());
 
     // If we have a timer ID, update the state
@@ -1382,6 +1386,7 @@ void QAbstractSpinBox::mousePressEvent(QMouseEvent *event)
 {
     Q_D(QAbstractSpinBox);
 
+    d->keyboardModifiers = event->modifiers();
     if (event->button() != Qt::LeftButton || d->buttonState != None) {
         return;
     }
@@ -1406,6 +1411,7 @@ void QAbstractSpinBox::mouseReleaseEvent(QMouseEvent *event)
 {
     Q_D(QAbstractSpinBox);
 
+    d->keyboardModifiers = event->modifiers();
     if ((d->buttonState & Mouse) != 0)
         d->reset();
     event->accept();
@@ -1421,7 +1427,7 @@ void QAbstractSpinBox::mouseReleaseEvent(QMouseEvent *event)
 QAbstractSpinBoxPrivate::QAbstractSpinBoxPrivate()
     : edit(nullptr), type(QMetaType::UnknownType), spinClickTimerId(-1),
       spinClickTimerInterval(100), spinClickThresholdTimerId(-1), spinClickThresholdTimerInterval(-1),
-      effectiveSpinRepeatRate(1), buttonState(None), cachedText(QLatin1String("\x01")),
+      effectiveSpinRepeatRate(1), buttonState(None), keyboardModifiers{}, cachedText(QLatin1String("\x01")),
       cachedState(QValidator::Invalid), pendingEmit(false), readOnly(false), wrapping(false),
       ignoreCursorPositionChanged(false), frame(true), accelerate(false), keyboardTracking(true),
       cleared(false), ignoreUpdateEdit(false), correctionMode(QAbstractSpinBox::CorrectToPreviousValue),
@@ -1679,7 +1685,7 @@ void QAbstractSpinBoxPrivate::updateState(bool up, bool fromKeyboard /* = false 
         spinClickThresholdTimerId = q->startTimer(spinClickThresholdTimerInterval);
         buttonState = (up ? Up : Down) | (fromKeyboard ? Keyboard : Mouse);
         int steps = up ? 1 : -1;
-        if (QGuiApplication::keyboardModifiers() & stepModifier)
+        if (keyboardModifiers & stepModifier)
             steps *= 10;
         q->stepBy(steps);
 #ifndef QT_NO_ACCESSIBILITY

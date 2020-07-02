@@ -131,6 +131,7 @@ public:
     int spinClickTimerId, spinClickTimerInterval, spinClickThresholdTimerId, spinClickThresholdTimerInterval;
     int effectiveSpinRepeatRate;
     uint buttonState;
+    Qt::KeyboardModifiers keyboardModifiers;
     mutable QString cachedText;
     mutable QVariant cachedValue;
     mutable QValidator::State cachedState;
