@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include "atspiadaptor_p.h"
+#include "qspiaccessiblebridge_p.h"
 
 #include <QtGui/qwindow.h>
 #include <QtGui/qguiapplication.h>
@@ -1364,9 +1365,9 @@ bool AtSpiAdaptor::accessibleInterface(QAccessibleInterface *interface, const QS
     } else if (function == QLatin1String("GetName")) {
         sendReply(connection, message, QVariant::fromValue(QDBusVariant(interface->text(QAccessible::Name))));
     } else if (function == QLatin1String("GetRoleName")) {
-        sendReply(connection, message, qSpiRoleMapping[interface->role()].name());
+        sendReply(connection, message, QSpiAccessibleBridge::namesForRole(interface->role()).name());
     } else if (function == QLatin1String("GetLocalizedRoleName")) {
-        sendReply(connection, message, QVariant::fromValue(qSpiRoleMapping[interface->role()].localizedName()));
+        sendReply(connection, message, QVariant::fromValue(QSpiAccessibleBridge::namesForRole(interface->role()).localizedName()));
     } else if (function == QLatin1String("GetChildCount")) {
         sendReply(connection, message, QVariant::fromValue(QDBusVariant(interface->childCount())));
     } else if (function == QLatin1String("GetIndexInParent")) {
@@ -1450,7 +1451,7 @@ AtspiRole AtSpiAdaptor::getRole(QAccessibleInterface *interface) const
 {
     if ((interface->role() == QAccessible::EditableText) && interface->state().passwordEdit)
         return ATSPI_ROLE_PASSWORD_TEXT;
-    return qSpiRoleMapping[interface->role()].spiRole();
+    return QSpiAccessibleBridge::namesForRole(interface->role()).spiRole();
 }
 
 QStringList AtSpiAdaptor::accessibleInterfaces(QAccessibleInterface *interface) const

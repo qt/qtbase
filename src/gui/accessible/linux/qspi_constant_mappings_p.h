@@ -123,8 +123,6 @@ private:
     QString m_localizedName;
 };
 
-extern QHash <QAccessible::Role, RoleNames> qSpiRoleMapping;
-
 inline void setSpiStateBit(quint64* state, AtspiStateType spiState)
 {
     *state |= quint64(1) << spiState;

@@ -55,6 +55,7 @@
 #include <QtGui/private/qtguiglobal_p.h>
 #include <QtDBus/qdbusconnection.h>
 #include <qpa/qplatformaccessibility.h>
+#include <QtCore/qhash.h>
 
 class DeviceEventControllerAdaptor;
 
@@ -65,17 +66,25 @@ QT_BEGIN_NAMESPACE
 class DBusConnection;
 class QSpiDBusCache;
 class AtSpiAdaptor;
+struct RoleNames;
 
 class Q_GUI_EXPORT QSpiAccessibleBridge: public QObject, public QPlatformAccessibility
 {
     Q_OBJECT
 public:
+    using SpiRoleMapping = QHash <QAccessible::Role, RoleNames>;
+
     QSpiAccessibleBridge();
 
     virtual ~QSpiAccessibleBridge();
 
     void notifyAccessibilityUpdate(QAccessibleEvent *event) override;
     QDBusConnection dBusConnection() const;
+
+    const SpiRoleMapping &spiRoleNames() const { return m_spiRoleMapping; }
+
+    static QSpiAccessibleBridge *instance();
+    static RoleNames namesForRole(QAccessible::Role role);
 
 public Q_SLOTS:
     void enabledChanged(bool enabled);
@@ -88,6 +97,7 @@ private:
     DeviceEventControllerAdaptor *dec;
     AtSpiAdaptor *dbusAdaptor;
     DBusConnection* dbusConnection;
+    SpiRoleMapping m_spiRoleMapping;
 };
 
 QT_END_NAMESPACE

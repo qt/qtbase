@@ -41,6 +41,8 @@
 #include "qspiaccessiblebridge_p.h"
 
 #include <atspi/atspi-constants.h>
+#include <private/qguiapplication_p.h>
+#include <qpa/qplatformintegration.h>
 #include <qstring.h>
 
 #include "atspiadaptor_p.h"
@@ -273,13 +275,28 @@ static RoleMapping map[] = {
 void QSpiAccessibleBridge::initializeConstantMappings()
 {
     for (uint i = 0; i < sizeof(map) / sizeof(RoleMapping); ++i)
-        qSpiRoleMapping.insert(map[i].role, RoleNames(map[i].spiRole, QLatin1String(map[i].name), tr(map[i].name)));
+        m_spiRoleMapping.insert(map[i].role, RoleNames(map[i].spiRole, QLatin1String(map[i].name), tr(map[i].name)));
 
     // -1 because we have button duplicated, as PushButton and Button.
-    Q_ASSERT_X(qSpiRoleMapping.size() ==
+    Q_ASSERT_X(m_spiRoleMapping.size() ==
                QAccessible::staticMetaObject.enumerator(
                    QAccessible::staticMetaObject.indexOfEnumerator("Role")).keyCount() - 1,
                "", "Handle all QAccessible::Role members in qSpiRoleMapping");
+}
+
+QSpiAccessibleBridge *QSpiAccessibleBridge::instance()
+{
+    if (auto integration = QGuiApplicationPrivate::platformIntegration()) {
+        if (auto accessibility = integration->accessibility())
+            return static_cast<QSpiAccessibleBridge *>(accessibility);
+    }
+    return nullptr;
+}
+
+RoleNames QSpiAccessibleBridge::namesForRole(QAccessible::Role role)
+{
+    auto brigde = QSpiAccessibleBridge::instance();
+    return brigde ? brigde->spiRoleNames().value(role) : RoleNames();
 }
 
 QT_END_NAMESPACE

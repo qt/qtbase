@@ -54,8 +54,6 @@
 #ifndef QT_NO_ACCESSIBILITY
 QT_BEGIN_NAMESPACE
 
-QHash <QAccessible::Role, RoleNames> qSpiRoleMapping;
-
 quint64 spiStatesFromQState(QAccessible::State state)
 {
     quint64 spiState = 0;
