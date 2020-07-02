@@ -88,14 +88,17 @@ class Q_WIDGETS_EXPORT QTabBarPrivate : public QWidgetPrivate
     Q_DECLARE_PUBLIC(QTabBar)
 public:
     QTabBarPrivate()
-        :currentIndex(-1), pressedIndex(-1), firstVisible(0), lastVisible(-1), shape(QTabBar::RoundedNorth), layoutDirty(false),
-        drawBase(true), scrollOffset(0), hoverIndex(-1), elideModeSetByUser(false), useScrollButtonsSetByUser(false), expanding(true), closeButtonOnTabs(false),
-        selectionBehaviorOnRemove(QTabBar::SelectRightTab), paintWithOffsets(true), movable(false),
-        dragInProgress(false), documentMode(false), autoHide(false), changeCurrentOnDrag(false),
-        switchTabCurrentIndex(-1), switchTabTimerId(0), movingTab(nullptr)
+        : currentIndex(-1), mouseButtons(Qt::NoButton), pressedIndex(-1), firstVisible(0), lastVisible(-1),
+        shape(QTabBar::RoundedNorth), layoutDirty(false), drawBase(true), scrollOffset(0),
+        hoverIndex(-1), elideModeSetByUser(false), useScrollButtonsSetByUser(false), expanding(true),
+        closeButtonOnTabs(false), selectionBehaviorOnRemove(QTabBar::SelectRightTab),
+        paintWithOffsets(true), movable(false), dragInProgress(false), documentMode(false),
+        autoHide(false), changeCurrentOnDrag(false), switchTabCurrentIndex(-1), switchTabTimerId(0),
+        movingTab(nullptr)
         {}
 
     int currentIndex;
+    Qt::MouseButtons mouseButtons;
     int pressedIndex;
     int firstVisible;
     int lastVisible;

@@ -861,7 +861,7 @@ void QTabBarPrivate::refresh()
     // be safe in case a subclass is also handling move with the tabs
     if (pressedIndex != -1
         && movable
-        && QGuiApplication::mouseButtons() == Qt::NoButton) {
+        && mouseButtons == Qt::NoButton) {
         moveTabFinished(pressedIndex);
         if (!validIndex(pressedIndex))
             pressedIndex = -1;
@@ -1782,6 +1782,11 @@ bool QTabBar::event(QEvent *event)
         event->ignore();
         break;
 #endif
+    case QEvent::MouseButtonPress:
+    case QEvent::MouseButtonRelease:
+    case QEvent::MouseMove:
+        d->mouseButtons = static_cast<QMouseEvent *>(event)->buttons();
+        break;
     default:
         break;
     }
