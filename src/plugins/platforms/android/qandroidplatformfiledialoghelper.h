@@ -63,12 +63,12 @@ public:
     void hide() override;
 
     QString selectedNameFilter() const override { return QString(); };
-    void selectNameFilter(const QString &filter) override { Q_UNUSED(filter) };
+    void selectNameFilter(const QString &) override {};
     void setFilter() override {};
     QList<QUrl> selectedFiles() const override { return m_selectedFile; };
-    void selectFile(const QUrl &file) override { Q_UNUSED(file) };
+    void selectFile(const QUrl &) override {};
     QUrl directory() const override { return QUrl(); };
-    void setDirectory(const QUrl &directory) override { Q_UNUSED(directory) };
+    void setDirectory(const QUrl &) override {};
     bool defaultNameFilterDisables() const override { return false; };
     bool handleActivityResult(jint requestCode, jint resultCode, jobject data) override;
 

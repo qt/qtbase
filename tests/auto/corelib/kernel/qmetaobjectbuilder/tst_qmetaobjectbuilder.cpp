@@ -121,7 +121,7 @@ private slots:
 
 protected slots:
     Q_SCRIPTABLE void slot4(int) {}
-    void slot5(int a, const QString& b) { Q_UNUSED(a); Q_UNUSED(b); }
+    void slot5(int, const QString &) {}
 
 signals:
     void sig1();

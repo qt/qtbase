@@ -79,7 +79,7 @@ public:
 
 public slots:
     void slotWithoutParameters() {}
-    void slotWithParameters(int i, char c) { Q_UNUSED(i); Q_UNUSED(c); }
+    void slotWithParameters(int, char) {}
     void emitSecondSignal() { emit nestedSignal(); }
 
 signals:

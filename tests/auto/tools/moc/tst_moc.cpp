@@ -1804,16 +1804,14 @@ signals:
 class QTBUG12260_defaultTemplate_Object : public QObject
 { Q_OBJECT
 public slots:
-    void doSomething(QHash<QString, QVariant> values = QHash<QString, QVariant>() ) { Q_UNUSED(values); }
-    void doSomethingElse(QSharedPointer<QVarLengthArray<QString, (16 >> 2)> > val
-            = QSharedPointer<QVarLengthArray<QString, (16 >> 2)> >() )
-    { Q_UNUSED(val); }
+    void doSomething(QHash<QString, QVariant> = QHash<QString, QVariant>() ) {}
+    void doSomethingElse(QSharedPointer<QVarLengthArray<QString, (16 >> 2)> >
+            = QSharedPointer<QVarLengthArray<QString, (16 >> 2)> >() ) {}
 
-    void doAnotherThing(bool a = (1 < 3), bool b = (1 > 4)) { Q_UNUSED(a); Q_UNUSED(b); }
+    void doAnotherThing(bool = (1 < 3), bool = (1 > 4)) {}
 
-    void performSomething(QList<QList<QString>> e = QList<QList<QString>>(8 < 1),
-                          QHash<int, QList<QString>> h = QHash<int, QList<QString>>())
-    { Q_UNUSED(e); Q_UNUSED(h); }
+    void performSomething(QList<QList<QString>> = QList<QList<QString>>(8 < 1),
+                          QHash<int, QList<QString>> = QHash<int, QList<QString>>()) {}
 };
 
 

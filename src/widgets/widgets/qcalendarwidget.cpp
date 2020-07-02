@@ -955,7 +955,7 @@ public:
 
     void internalUpdate() { updateGeometries(); }
     void setReadOnly(bool enable);
-    virtual void keyboardSearch(const QString & search) override { Q_UNUSED(search) }
+    virtual void keyboardSearch(const QString &) override {}
 
 signals:
     void showDate(QDate date);

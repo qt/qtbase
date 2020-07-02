@@ -115,7 +115,7 @@ public:
 #if defined(Q_OS_DARWIN)
     static QString bundleName(const QFileSystemEntry &entry);
 #else
-    static QString bundleName(const QFileSystemEntry &entry) { Q_UNUSED(entry) return QString(); }
+    static QString bundleName(const QFileSystemEntry &) { return QString(); }
 #endif
 
     static bool fillMetaData(const QFileSystemEntry &entry, QFileSystemMetaData &data,

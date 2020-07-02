@@ -207,7 +207,11 @@ protected:
     Q_INVOKABLE QT_MOC_COMPAT void invoke2(int){}
     Q_SCRIPTABLE QT_MOC_COMPAT void sinvoke2(){}
 private:
-    Q_INVOKABLE void invoke3(int hinz = 0, int kunz = 0){Q_UNUSED(hinz) Q_UNUSED(kunz)}
+    Q_INVOKABLE void invoke3(int hinz = 0, int kunz = 0)
+    {
+        Q_UNUSED(hinz);
+        Q_UNUSED(kunz);
+    }
     Q_SCRIPTABLE void sinvoke3(){}
 
     int recursionCount;
@@ -426,15 +430,12 @@ public:
 
 public slots:
     void on_Sender_signalNoParams() { called_slots << 1; }
-    void on_Sender_signalWithParams(int i = 0) { called_slots << 2; Q_UNUSED(i); }
-    void on_Sender_signalWithParams(int i, QString string) { called_slots << 3; Q_UNUSED(i);Q_UNUSED(string); }
+    void on_Sender_signalWithParams(int = 0) { called_slots << 2; }
+    void on_Sender_signalWithParams(int, QString) { called_slots << 3; }
     void on_Sender_signalManyParams() { called_slots << 4; }
-    void on_Sender_signalManyParams(int i1, int i2, int i3, QString string, bool onoff)
-    { called_slots << 5; Q_UNUSED(i1);Q_UNUSED(i2);Q_UNUSED(i3);Q_UNUSED(string);Q_UNUSED(onoff); }
-    void on_Sender_signalManyParams(int i1, int i2, int i3, QString string, bool onoff, bool dummy)
-    { called_slots << 6; Q_UNUSED(i1);Q_UNUSED(i2);Q_UNUSED(i3);Q_UNUSED(string);Q_UNUSED(onoff); Q_UNUSED(dummy);}
-    void on_Sender_signalManyParams2(int i1, int i2, int i3, QString string, bool onoff)
-    { called_slots << 7; Q_UNUSED(i1);Q_UNUSED(i2);Q_UNUSED(i3);Q_UNUSED(string);Q_UNUSED(onoff); }
+    void on_Sender_signalManyParams(int, int, int, QString, bool) { called_slots << 5; }
+    void on_Sender_signalManyParams(int, int, int, QString, bool, bool) { called_slots << 6; }
+    void on_Sender_signalManyParams2(int, int, int, QString, bool) { called_slots << 7; }
     void slotLoopBack() { called_slots << 8; }
     void on_Receiver_signalNoParams() { called_slots << 9; }
     void on_Receiver_signal_with_underscore() { called_slots << 10; }

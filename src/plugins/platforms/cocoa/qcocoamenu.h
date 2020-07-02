@@ -70,7 +70,7 @@ public:
 
     void propagateEnabledState(bool enabled);
 
-    void setIcon(const QIcon &icon) override { Q_UNUSED(icon) }
+    void setIcon(const QIcon &) override {}
 
     void setText(const QString &text) override;
     void setMinimumWidth(int width) override;

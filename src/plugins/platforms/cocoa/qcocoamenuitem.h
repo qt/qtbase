@@ -100,7 +100,7 @@ public:
 #ifndef QT_NO_SHORTCUT
     void setShortcut(const QKeySequence& shortcut) override;
 #endif
-    void setCheckable(bool checkable) override { Q_UNUSED(checkable) }
+    void setCheckable(bool) override {}
     void setChecked(bool isChecked) override;
     void setEnabled(bool isEnabled) override;
     void setIconSize(int size) override;
