@@ -152,6 +152,7 @@ public:
 
     QPlainTextEdit::LineWrapMode lineWrap;
     QTextOption::WrapMode wordWrap;
+    Qt::KeyboardModifiers keyboardModifiers;
 
     uint showCursorOnInitialShow : 1;
     uint backgroundVisible : 1;
