@@ -172,6 +172,8 @@ public:
         return *this;
     }
 
+    inline QDBusReply(const QDBusReply &) = default;
+
     inline QDBusReply& operator=(const QDBusReply& other)
     {
         m_error = other.m_error;
