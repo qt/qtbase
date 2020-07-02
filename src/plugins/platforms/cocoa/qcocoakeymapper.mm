@@ -119,11 +119,11 @@ static CarbonModifiers toCarbonModifiers(Qt::KeyboardModifiers qtModifiers)
 
     if (qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) {
         int oldModifiers = carbonModifiers;
-        carbonModifiers &= ~(controlKeyBit | cmdKeyBit);
-        if (oldModifiers & controlKeyBit)
-            carbonModifiers |= cmdKeyBit;
-        if (oldModifiers & cmdKeyBit)
-            carbonModifiers |= controlKeyBit;
+        carbonModifiers &= ~(controlKey | rightControlKey | cmdKey);
+        if (oldModifiers & (controlKey | rightControlKey))
+            carbonModifiers |= cmdKey;
+        if (oldModifiers & cmdKey)
+            carbonModifiers |= (controlKey | rightControlKey);
     }
     return carbonModifiers;
 }
