@@ -115,8 +115,7 @@ function(qt_android_dependencies target)
         endif()
     endmacro()
 
-    get_target_property(target_bin_dir ${target} BINARY_DIR)
-    set(dependency_file "${target_bin_dir}/${target_name}_${CMAKE_ANDROID_ARCH_ABI}-android-dependencies.xml")
+    set(dependency_file "${QT_BUILD_DIR}/${INSTALL_LIBDIR}/${target_name}_${CMAKE_ANDROID_ARCH_ABI}-android-dependencies.xml")
 
     set(file_contents "<rules><dependencies>\n")
     string(APPEND file_contents "<lib name=\"${target_name}_${CMAKE_ANDROID_ARCH_ABI}\"><depends>\n")

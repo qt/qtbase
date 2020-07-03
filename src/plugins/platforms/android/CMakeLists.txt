@@ -53,14 +53,6 @@ qt_internal_add_plugin(QAndroidIntegrationPlugin
         Qt::GuiPrivate
         android
         jnigraphics
-# special case begin
-    INSTALL_DIRECTORY
-        plugins/platforms
-    OUTPUT_DIRECTORY
-        plugins/platforms
-    ARCHIVE_INSTALL_DIRECTORY
-        plugins/platforms
-# special case end
 )
 
 #### Keys ignored in scope 1:.:.:android.pro:<TRUE>:

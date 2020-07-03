@@ -7,6 +7,7 @@ set(java_sources
 add_jar(QtAndroidNetwork
     INCLUDE_JARS ${QT_ANDROID_JAR}
     SOURCES ${java_sources}
+    OUTPUT_DIR "${QT_BUILD_DIR}/jar"
 )
 
 install_jar(QtAndroidNetwork

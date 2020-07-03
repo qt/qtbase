@@ -9,11 +9,10 @@ set(template_files
 set(template_directories
     res)
 
-qt_install(FILES ${template_files}
-    DESTINATION src/android/templates
-    COMPONENT Devel)
+qt_path_join(destination ${QT_INSTALL_DIR} "src/android/templates")
+qt_copy_or_install(FILES ${template_files}
+                   DESTINATION "${destination}")
 
-qt_install(DIRECTORY ${template_directories}
-    DESTINATION src/android/templates
-    COMPONENT Devel)
+qt_copy_or_install(DIRECTORY ${template_directories}
+                   DESTINATION "${destination}")
 # special case end
