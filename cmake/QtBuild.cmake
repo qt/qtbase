@@ -2843,6 +2843,20 @@ function(qt_add_module target)
         add_custom_target(${target}_timestamp ALL DEPENDS "${timestamp_file}")
     endif()
 
+    set(defines_for_extend_target "")
+
+    if(NOT arg_HEADER_MODULE)
+        list(APPEND defines_for_extend_target
+            QT_NO_CAST_TO_ASCII QT_ASCII_CAST_WARNINGS
+            QT_MOC_COMPAT #we don't need warnings from calling moc code in our generated code
+            QT_USE_QSTRINGBUILDER
+            QT_DEPRECATED_WARNINGS
+            QT_BUILDING_QT
+            QT_BUILD_${module_define}_LIB ### FIXME: use QT_BUILD_ADDON for Add-ons or remove if we don't have add-ons anymore
+            "${deprecation_define}"
+            )
+    endif()
+
     qt_extend_target("${target}"
         ${header_module}
         SOURCES ${arg_SOURCES}
@@ -2855,13 +2869,7 @@ function(qt_add_module target)
             QT_${module_define}_LIB
         DEFINES
             ${arg_DEFINES}
-            QT_NO_CAST_TO_ASCII QT_ASCII_CAST_WARNINGS
-            QT_MOC_COMPAT #we don't need warnings from calling moc code in our generated code
-            QT_USE_QSTRINGBUILDER
-            QT_DEPRECATED_WARNINGS
-            QT_BUILDING_QT
-            QT_BUILD_${module_define}_LIB ### FIXME: use QT_BUILD_ADDON for Add-ons or remove if we don't have add-ons anymore
-            "${deprecation_define}"
+            ${defines_for_extend_target}
         PUBLIC_LIBRARIES ${arg_PUBLIC_LIBRARIES}
         LIBRARIES ${arg_LIBRARIES} Qt::PlatformModuleInternal
         PRIVATE_MODULE_INTERFACE ${arg_PRIVATE_MODULE_INTERFACE}
