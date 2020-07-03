@@ -3917,21 +3917,9 @@ QItemSelectionModel::SelectionFlags QAbstractItemView::selectionCommand(const QM
                                                                         const QEvent *event) const
 {
     Q_D(const QAbstractItemView);
-    Qt::KeyboardModifiers keyModifiers = Qt::NoModifier;
-    if (event) {
-        switch (event->type()) {
-            case QEvent::MouseButtonDblClick:
-            case QEvent::MouseButtonPress:
-            case QEvent::MouseButtonRelease:
-            case QEvent::MouseMove:
-            case QEvent::KeyPress:
-            case QEvent::KeyRelease:
-                keyModifiers = (static_cast<const QInputEvent*>(event))->modifiers();
-                break;
-            default:
-                break;
-        }
-    }
+    Qt::KeyboardModifiers keyModifiers = event && event->isInputEvent()
+                                       ? static_cast<const QInputEvent*>(event)->modifiers()
+                                       : Qt::NoModifier;
     switch (d->selectionMode) {
         case NoSelection: // Never update selection model
             return QItemSelectionModel::NoUpdate;
@@ -3989,16 +3977,16 @@ QItemSelectionModel::SelectionFlags QAbstractItemViewPrivate::extendedSelectionC
 {
     Qt::KeyboardModifiers modifiers = Qt::NoModifier;
     if (event) {
+        if (event->isInputEvent())
+            modifiers = static_cast<const QInputEvent*>(event)->modifiers();
         switch (event->type()) {
         case QEvent::MouseMove: {
             // Toggle on MouseMove
-            modifiers = static_cast<const QMouseEvent*>(event)->modifiers();
             if (modifiers & Qt::ControlModifier)
                 return QItemSelectionModel::ToggleCurrent|selectionBehaviorFlags();
             break;
         }
         case QEvent::MouseButtonPress: {
-            modifiers = static_cast<const QMouseEvent*>(event)->modifiers();
             const Qt::MouseButton button = static_cast<const QMouseEvent*>(event)->button();
             const bool rightButtonPressed = button & Qt::RightButton;
             const bool shiftKeyPressed = modifiers & Qt::ShiftModifier;
@@ -4016,7 +4004,6 @@ QItemSelectionModel::SelectionFlags QAbstractItemViewPrivate::extendedSelectionC
         }
         case QEvent::MouseButtonRelease: {
             // ClearAndSelect on MouseButtonRelease if MouseButtonPress on selected item or empty area
-            modifiers = static_cast<const QMouseEvent*>(event)->modifiers();
             const Qt::MouseButton button = static_cast<const QMouseEvent*>(event)->button();
             const bool rightButtonPressed = button & Qt::RightButton;
             const bool shiftKeyPressed = modifiers & Qt::ShiftModifier;
@@ -4029,7 +4016,6 @@ QItemSelectionModel::SelectionFlags QAbstractItemViewPrivate::extendedSelectionC
         }
         case QEvent::KeyPress: {
             // NoUpdate on Key movement and Ctrl
-            modifiers = static_cast<const QKeyEvent*>(event)->modifiers();
             switch (static_cast<const QKeyEvent*>(event)->key()) {
             case Qt::Key_Backtab:
                 modifiers = modifiers & ~Qt::ShiftModifier; // special case for backtab

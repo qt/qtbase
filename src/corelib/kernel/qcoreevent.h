@@ -307,9 +307,13 @@ public:
     inline void accept() { m_accept = true; }
     inline void ignore() { m_accept = false; }
 
+    inline bool isInputEvent() const noexcept { return m_inputEvent; }
+
     static int registerEventType(int hint = -1) noexcept;
 
 protected:
+    struct InputEventTag { explicit InputEventTag() = default; };
+    QEvent(Type type, InputEventTag) : QEvent(type) { m_inputEvent = true; }
     QEventPrivate *d;
     ushort t;
 
@@ -317,7 +321,8 @@ private:
     ushort posted : 1;
     ushort spont : 1;
     ushort m_accept : 1;
-    ushort reserved : 13;
+    ushort m_inputEvent : 1;
+    ushort reserved : 12;
 
     friend class QCoreApplication;
     friend class QCoreApplicationPrivate;

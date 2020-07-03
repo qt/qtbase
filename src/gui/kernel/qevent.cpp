@@ -163,7 +163,7 @@ QEnterEvent::~QEnterEvent()
   \internal
 */
 QInputEvent::QInputEvent(Type type, const QInputDevice *dev, Qt::KeyboardModifiers modifiers)
-    : QEvent(type), m_dev(dev), m_modState(modifiers)
+    : QEvent(type, QEvent::InputEventTag{}), m_dev(dev), m_modState(modifiers)
 {}
 
 /*!
