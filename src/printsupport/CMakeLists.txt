@@ -44,6 +44,19 @@ qt_add_module(PrintSupport
 ## Scopes:
 #####################################################################
 
+qt_extend_target(PrintSupport CONDITION MACOS
+    SOURCES
+        platform/macos/qcocoaprintdevice.mm platform/macos/qcocoaprintdevice_p.h
+        platform/macos/qcocoaprintersupport.mm platform/macos/qcocoaprintersupport_p.h
+        platform/macos/qpaintengine_mac.mm platform/macos/qpaintengine_mac_p.h
+        platform/macos/qprintengine_mac.mm platform/macos/qprintengine_mac_p.h
+    PUBLIC_LIBRARIES
+        ${FWApplicationServices}
+        Cups::Cups
+    NO_PCH_SOURCES
+        "platform/macos/qcocoaprintersupport.mm"
+)
+
 qt_extend_target(PrintSupport CONDITION QT_FEATURE_printpreviewwidget
     SOURCES
         kernel/qpaintengine_preview.cpp kernel/qpaintengine_preview_p.h
@@ -139,19 +152,6 @@ if(QT_FEATURE_printdialog)
             ${qprintdialog1_resource_files}
     )
 endif()
-
-qt_extend_target(PrintSupport CONDITION MACOS AND TARGET Qt::Widgets
-    SOURCES
-        platform/macos/qpaintengine_mac.mm platform/macos/qpaintengine_mac_p.h
-        platform/macos/qcocoaprintdevice_p.h platform/macos/qcocoaprintdevice.mm
-        platform/macos/qcocoaprintersupport_p.h platform/macos/qcocoaprintersupport.mm
-        platform/macos/qprintengine_mac.mm platform/macos/qprintengine_mac_p.h
-    NO_PCH_SOURCES
-        "platform/macos/qcocoaprintersupport.mm"
-    PUBLIC_LIBRARIES
-        Qt::WidgetsPrivate
-        Cups::Cups
-)
 
 qt_extend_target(PrintSupport CONDITION MACOS AND QT_FEATURE_printdialog
     SOURCES
