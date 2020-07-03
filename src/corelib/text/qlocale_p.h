@@ -126,7 +126,7 @@ public:
         StandaloneMonthNameLong, // QString, in: int
         StandaloneMonthNameShort // QString, in: int
     };
-    virtual QVariant query(QueryType type, QVariant in) const;
+    virtual QVariant query(QueryType type, QVariant in = QVariant()) const;
     virtual QLocale fallbackUiLocale() const;
 
     inline const QLocaleData *fallbackUiLocaleData() const;

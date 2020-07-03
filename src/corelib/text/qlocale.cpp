@@ -719,22 +719,22 @@ static void updateSystemPrivate()
     const QSystemLocale *sys_locale = systemLocale();
 
     // tell the object that the system locale has changed.
-    sys_locale->query(QSystemLocale::LocaleChanged, QVariant());
+    sys_locale->query(QSystemLocale::LocaleChanged);
 
     // Populate global with fallback as basis:
     globalLocaleData = *sys_locale->fallbackUiLocaleData();
 
-    QVariant res = sys_locale->query(QSystemLocale::LanguageId, QVariant());
+    QVariant res = sys_locale->query(QSystemLocale::LanguageId);
     if (!res.isNull()) {
         globalLocaleData.m_language_id = res.toInt();
         globalLocaleData.m_script_id = QLocale::AnyScript; // default for compatibility
     }
-    res = sys_locale->query(QSystemLocale::CountryId, QVariant());
+    res = sys_locale->query(QSystemLocale::CountryId);
     if (!res.isNull()) {
         globalLocaleData.m_country_id = res.toInt();
         globalLocaleData.m_script_id = QLocale::AnyScript; // default for compatibility
     }
-    res = sys_locale->query(QSystemLocale::ScriptId, QVariant());
+    res = sys_locale->query(QSystemLocale::ScriptId);
     if (!res.isNull())
         globalLocaleData.m_script_id = res.toInt();
 
@@ -836,9 +836,9 @@ QString QLocaleData::decimalPoint() const
 {
 #ifndef QT_NO_SYSTEMLOCALE
     if (this == systemData()) {
-        QVariant res = systemLocale()->query(QSystemLocale::DecimalPoint, QVariant());
-        if (!res.isNull())
-            return res.toString();
+        auto res = systemLocale()->query(QSystemLocale::DecimalPoint).toString();
+        if (!res.isEmpty())
+            return res;
     }
 #endif
     return decimalSeparator().getData(single_character_data);
@@ -846,9 +846,10 @@ QString QLocaleData::decimalPoint() const
 
 QString QLocaleData::groupSeparator() const
 {
+    // Empty => don't do grouping
 #ifndef QT_NO_SYSTEMLOCALE
     if (this == systemData()) {
-        QVariant res = systemLocale()->query(QSystemLocale::GroupSeparator, QVariant());
+        QVariant res = systemLocale()->query(QSystemLocale::GroupSeparator);
         if (!res.isNull())
             return res.toString();
     }
@@ -870,9 +871,9 @@ QString QLocaleData::zeroDigit() const
 {
 #ifndef QT_NO_SYSTEMLOCALE
     if (this == systemData()) {
-        QVariant res = systemLocale()->query(QSystemLocale::ZeroDigit, QVariant());
-        if (!res.isNull())
-            return res.toString();
+        auto res = systemLocale()->query(QSystemLocale::ZeroDigit).toString();
+        if (!res.isEmpty())
+            return res;
     }
 #endif
     return zero().getData(single_character_data);
@@ -882,9 +883,8 @@ uint QLocaleData::zeroUcs() const
 {
 #ifndef QT_NO_SYSTEMLOCALE
     if (this == systemData()) {
-        QVariant res = systemLocale()->query(QSystemLocale::ZeroDigit, QVariant());
-        if (!res.isNull()) {
-            const QString text = res.toString();
+        const auto text = systemLocale()->query(QSystemLocale::ZeroDigit).toString();
+        if (!text.isEmpty()) {
             if (text.size() == 1 && !text.at(0).isSurrogate())
                 return text.at(0).unicode();
             if (text.size() == 2 && text.at(0).isHighSurrogate())
@@ -899,9 +899,9 @@ QString QLocaleData::negativeSign() const
 {
 #ifndef QT_NO_SYSTEMLOCALE
     if (this == systemData()) {
-        QVariant res = systemLocale()->query(QSystemLocale::NegativeSign, QVariant());
-        if (!res.isNull())
-            return res.toString();
+        auto res = systemLocale()->query(QSystemLocale::NegativeSign).toString();
+        if (!res.isEmpty())
+            return res;
     }
 #endif
     return minus().getData(single_character_data);
@@ -911,9 +911,9 @@ QString QLocaleData::positiveSign() const
 {
 #ifndef QT_NO_SYSTEMLOCALE
     if (this == systemData()) {
-        QVariant res = systemLocale()->query(QSystemLocale::PositiveSign, QVariant());
-        if (!res.isNull())
-            return res.toString();
+        auto res = systemLocale()->query(QSystemLocale::PositiveSign).toString();
+        if (!res.isEmpty())
+            return res;
     }
 #endif
     return plus().getData(single_character_data);
@@ -1173,6 +1173,7 @@ QString QLocale::quoteString(QStringView str, QuotationStyle style) const
 */
 QString QLocale::createSeparatedList(const QStringList &list) const
 {
+    // May be empty if list is empty or sole entry is empty.
 #ifndef QT_NO_SYSTEMLOCALE
     if (d->m_data == systemData()) {
         QVariant res =
@@ -2890,7 +2891,7 @@ Qt::DayOfWeek QLocale::firstDayOfWeek() const
 {
 #ifndef QT_NO_SYSTEMLOCALE
     if (d->m_data == systemData()) {
-        QVariant res = systemLocale()->query(QSystemLocale::FirstDayOfWeek, QVariant());
+        const auto res = systemLocale()->query(QSystemLocale::FirstDayOfWeek);
         if (!res.isNull())
             return static_cast<Qt::DayOfWeek>(res.toUInt());
     }
@@ -2918,9 +2919,10 @@ QList<Qt::DayOfWeek> QLocale::weekdays() const
 {
 #ifndef QT_NO_SYSTEMLOCALE
     if (d->m_data == systemData()) {
-        QVariant res = systemLocale()->query(QSystemLocale::Weekdays, QVariant());
-        if (!res.isNull())
-            return static_cast<QList<Qt::DayOfWeek> >(qvariant_cast<QList<Qt::DayOfWeek> >(res));
+        auto res
+            = qvariant_cast<QList<Qt::DayOfWeek> >(systemLocale()->query(QSystemLocale::Weekdays));
+        if (!res.isEmpty())
+            return res;
     }
 #endif
     QList<Qt::DayOfWeek> weekdays;
@@ -2943,7 +2945,7 @@ QLocale::MeasurementSystem QLocale::measurementSystem() const
 {
 #ifndef QT_NO_SYSTEMLOCALE
     if (d->m_data == systemData()) {
-        QVariant res = systemLocale()->query(QSystemLocale::MeasurementSystem, QVariant());
+        const auto res = systemLocale()->query(QSystemLocale::MeasurementSystem);
         if (!res.isNull())
             return MeasurementSystem(res.toInt());
     }
@@ -3056,9 +3058,9 @@ QString QLocale::amText() const
 {
 #ifndef QT_NO_SYSTEMLOCALE
     if (d->m_data == systemData()) {
-        QVariant res = systemLocale()->query(QSystemLocale::AMText, QVariant());
-        if (!res.isNull())
-            return res.toString();
+        auto res = systemLocale()->query(QSystemLocale::AMText).toString();
+        if (!res.isEmpty())
+            return res;
     }
 #endif
     return d->m_data->anteMeridiem().getData(am_data);
@@ -3076,9 +3078,9 @@ QString QLocale::pmText() const
 {
 #ifndef QT_NO_SYSTEMLOCALE
     if (d->m_data == systemData()) {
-        QVariant res = systemLocale()->query(QSystemLocale::PMText, QVariant());
-        if (!res.isNull())
-            return res.toString();
+        auto res = systemLocale()->query(QSystemLocale::PMText).toString();
+        if (!res.isEmpty())
+            return res;
     }
 #endif
     return d->m_data->postMeridiem().getData(pm_data);
@@ -4026,9 +4028,9 @@ QString QLocale::currencySymbol(QLocale::CurrencySymbolFormat format) const
 {
 #ifndef QT_NO_SYSTEMLOCALE
     if (d->m_data == systemData()) {
-        QVariant res = systemLocale()->query(QSystemLocale::CurrencySymbol, format);
-        if (!res.isNull())
-            return res.toString();
+        auto res = systemLocale()->query(QSystemLocale::CurrencySymbol, format).toString();
+        if (!res.isEmpty())
+            return res;
     }
 #endif
     switch (format) {
@@ -4059,10 +4061,10 @@ QString QLocale::toCurrencyString(qlonglong value, const QString &symbol) const
 #ifndef QT_NO_SYSTEMLOCALE
     if (d->m_data == systemData()) {
         QSystemLocale::CurrencyToStringArgument arg(value, symbol);
-        QVariant res =
-            systemLocale()->query(QSystemLocale::CurrencyToString, QVariant::fromValue(arg));
-        if (!res.isNull())
-            return res.toString();
+        auto res = systemLocale()->query(QSystemLocale::CurrencyToString,
+                                         QVariant::fromValue(arg)).toString();
+        if (!res.isEmpty())
+            return res;
     }
 #endif
     QLocaleData::DataRange range = d->m_data->currencyFormatNegative();
@@ -4086,10 +4088,10 @@ QString QLocale::toCurrencyString(qulonglong value, const QString &symbol) const
 #ifndef QT_NO_SYSTEMLOCALE
     if (d->m_data == systemData()) {
         QSystemLocale::CurrencyToStringArgument arg(value, symbol);
-        QVariant res =
-            systemLocale()->query(QSystemLocale::CurrencyToString, QVariant::fromValue(arg));
-        if (!res.isNull())
-            return res.toString();
+        auto res = systemLocale()->query(QSystemLocale::CurrencyToString,
+                                         QVariant::fromValue(arg)).toString();
+        if (!res.isEmpty())
+            return res;
     }
 #endif
     QString str = toString(value);
@@ -4125,10 +4127,10 @@ QString QLocale::toCurrencyString(double value, const QString &symbol, int preci
 #ifndef QT_NO_SYSTEMLOCALE
     if (d->m_data == systemData()) {
         QSystemLocale::CurrencyToStringArgument arg(value, symbol);
-        QVariant res =
-            systemLocale()->query(QSystemLocale::CurrencyToString, QVariant::fromValue(arg));
-        if (!res.isNull())
-            return res.toString();
+        auto res = systemLocale()->query(QSystemLocale::CurrencyToString,
+                                         QVariant::fromValue(arg)).toString();
+        if (!res.isEmpty())
+            return res;
     }
 #endif
     QLocaleData::DataRange range = d->m_data->currencyFormatNegative();
@@ -4247,13 +4249,10 @@ QStringList QLocale::uiLanguages() const
     QList<QLocale> locales;
 #ifndef QT_NO_SYSTEMLOCALE
     if (d->m_data == systemData()) {
-        QVariant res = systemLocale()->query(QSystemLocale::UILanguages, QVariant());
-        if (!res.isNull()) {
-            uiLanguages = res.toStringList();
-            // ... but we need to include likely-adjusted forms of each of those, too:
-            for (const auto &entry : qAsConst(uiLanguages))
-                locales.append(QLocale(entry));
-        }
+        const auto uiLanguages = systemLocale()->query(QSystemLocale::UILanguages).toStringList();
+        // ... but we need to include likely-adjusted forms of each of those, too:
+        for (const auto &entry : uiLanguages)
+            locales.append(QLocale(entry));
         if (locales.isEmpty())
             locales.append(systemLocale()->fallbackUiLocale());
     } else
@@ -4320,7 +4319,7 @@ QLocale QLocale::collation() const
 {
 #ifndef QT_NO_SYSTEMLOCALE
     if (d->m_data == systemData()) {
-        QString res = systemLocale()->query(QSystemLocale::Collation, QVariant()).toString();
+        const auto res = systemLocale()->query(QSystemLocale::Collation).toString();
         if (!res.isEmpty())
             return QLocale(res);
     }
@@ -4340,9 +4339,9 @@ QString QLocale::nativeLanguageName() const
 {
 #ifndef QT_NO_SYSTEMLOCALE
     if (d->m_data == systemData()) {
-        QVariant res = systemLocale()->query(QSystemLocale::NativeLanguageName, QVariant());
-        if (!res.isNull())
-            return res.toString();
+        auto res = systemLocale()->query(QSystemLocale::NativeLanguageName).toString();
+        if (!res.isEmpty())
+            return res;
     }
 #endif
     return d->m_data->endonymLanguage().getData(endonyms_data);
@@ -4360,9 +4359,9 @@ QString QLocale::nativeCountryName() const
 {
 #ifndef QT_NO_SYSTEMLOCALE
     if (d->m_data == systemData()) {
-        QVariant res = systemLocale()->query(QSystemLocale::NativeCountryName, QVariant());
-        if (!res.isNull())
-            return res.toString();
+        auto res = systemLocale()->query(QSystemLocale::NativeCountryName).toString();
+        if (!res.isEmpty())
+            return res;
     }
 #endif
     return d->m_data->endonymCountry().getData(endonyms_data);
