@@ -39,10 +39,8 @@ class tst_QPolygon : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QPolygon();
-
 private slots:
+    void constructors();
     void boundingRect_data();
     void boundingRect();
     void boundingRectF_data();
@@ -53,8 +51,33 @@ private slots:
     void intersections();
 };
 
-tst_QPolygon::tst_QPolygon()
+void constructors_helper(QPolygon) {}
+void constructors_helperF(QPolygonF) {}
+
+void tst_QPolygon::constructors()
 {
+    constructors_helper(QPolygon());
+    constructors_helper({});
+    constructors_helper({ QPoint(1, 2), QPoint(3, 4)});
+    constructors_helper({ {1, 2}, {3, 4} });
+    constructors_helper(QPolygon(12));
+    QList<QPoint> pointList;
+    constructors_helper(pointList);
+    constructors_helper(std::move(pointList));
+    constructors_helper(QRect(1, 2, 3, 4));
+    const int points[2] = { 10, 20 };
+    constructors_helper(QPolygon(1, points));
+
+    constructors_helperF(QPolygonF());
+    constructors_helperF({});
+    constructors_helperF({ QPointF(1, 2), QPointF(3, 4)});
+    constructors_helperF({ {1, 2}, {3, 4} });
+    constructors_helperF(QPolygonF(12));
+    constructors_helperF(QPolygon());
+    QList<QPointF> pointFList;
+    constructors_helperF(pointFList);
+    constructors_helperF(std::move(pointFList));
+    constructors_helperF(QRectF(1, 2, 3, 4));
 }
 
 void tst_QPolygon::boundingRect_data()
