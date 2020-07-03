@@ -116,18 +116,11 @@ static pthread_key_t current_thread_data_key;
 
 static void destroy_current_thread_data(void *p)
 {
-#if defined(Q_OS_VXWORKS)
-    // Calling setspecific(..., 0) sets the value to 0 for ALL threads.
-    // The 'set to 1' workaround adds a bit of an overhead though,
-    // since this function is called twice now.
-    if (p == (void *)1)
-        return;
-#endif
-    // POSIX says the value in our key is set to zero before calling
-    // this destructor function, so we need to set it back to the
-    // right value...
-    pthread_setspecific(current_thread_data_key, p);
     QThreadData *data = static_cast<QThreadData *>(p);
+    // thread_local variables are set to zero before calling this destructor function,
+    // if they are internally using pthread-specific data management,
+    // so we need to set it back to the right value...
+    currentThreadData = data;
     if (data->isAdopted) {
         QThread *thread = data->thread.loadAcquire();
         Q_ASSERT(thread);
@@ -138,14 +131,8 @@ static void destroy_current_thread_data(void *p)
     data->deref();
 
     // ... but we must reset it to zero before returning so we aren't
-    // called again (POSIX allows implementations to call destructor
-    // functions repeatedly until all values are zero)
-    pthread_setspecific(current_thread_data_key,
-#if defined(Q_OS_VXWORKS)
-                                                 (void *)1);
-#else
-                                                 nullptr);
-#endif
+    // leaving a dangling pointer.
+    currentThreadData = nullptr;
 }
 
 static void create_current_thread_data_key()
