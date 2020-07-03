@@ -25,6 +25,7 @@ qt_add_module(EglFSDeviceIntegration
         Qt::EglSupportPrivate
         Qt::FbSupportPrivate
         Qt::GuiPrivate
+        Qt::PlatformHeadersPrivate
 )
 
 #### Keys ignored in scope 2:.:.:eglfsdeviceintegration.pro:<TRUE>:
@@ -91,6 +92,7 @@ qt_internal_add_plugin(QEglFSIntegrationPlugin
         api
     PUBLIC_LIBRARIES
         Qt::EglFSDeviceIntegrationPrivate
+        Qt::PlatformHeadersPrivate
 )
 
 #### Keys ignored in scope 12:.:.:eglfs-plugin.pro:<TRUE>:

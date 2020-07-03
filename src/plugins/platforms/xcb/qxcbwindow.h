@@ -49,7 +49,7 @@
 
 #include "qxcbobject.h"
 
-#include <QtPlatformHeaders/qxcbwindowfunctions.h>
+#include <QtPlatformHeaders/private/qxcbwindowfunctions_p.h>
 
 QT_BEGIN_NAMESPACE
 

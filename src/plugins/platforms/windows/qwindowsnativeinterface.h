@@ -42,7 +42,7 @@
 
 #include <QtGui/qfont.h>
 #include <QtGui/qpa/qplatformnativeinterface.h>
-#include <QtPlatformHeaders/qwindowswindowfunctions.h>
+#include <QtPlatformHeaders/private/qwindowswindowfunctions_p.h>
 
 QT_BEGIN_NAMESPACE
 

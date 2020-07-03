@@ -1,3 +1,3 @@
 HEADERS += \
-    $$PWD/qxcbwindowfunctions.h \
-    $$PWD/qxcbscreenfunctions.h
+    $$PWD/qxcbwindowfunctions_p.h \
+    $$PWD/qxcbscreenfunctions_p.h

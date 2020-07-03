@@ -1,1 +1,1 @@
-HEADERS += $$PWD/qwindowswindowfunctions.h
+HEADERS += $$PWD/qwindowswindowfunctions_p.h

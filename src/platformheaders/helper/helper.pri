@@ -1,2 +1,2 @@
 HEADERS += \
-    $$PWD/qplatformheaderhelper.h
+    $$PWD/qplatformheaderhelper_p.h

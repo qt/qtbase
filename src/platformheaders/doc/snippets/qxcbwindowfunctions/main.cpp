@@ -49,7 +49,7 @@
 ****************************************************************************/
 
 #include <QtWidgets>
-#include <QtPlatformHeaders/qxcbwindowfunctions.h>
+#include <QtPlatformHeaders/private/qxcbwindowfunctions_p.h>
 
 //! [0]
 int main(int argc, char **argv)

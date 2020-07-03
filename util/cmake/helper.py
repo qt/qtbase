@@ -168,6 +168,7 @@ _qt_library_map = [
         "gsttools", "Qt6", "Qt::MultimediaGstTools", extra=["COMPONENTS", "MultimediaGstTools"]
     ),
     LibraryMapping("gui", "Qt6", "Qt::Gui", extra=["COMPONENTS", "Gui"]),
+    LibraryMapping("platformheaders", "Qt6", "Qt::PlatformHeaders", extra=["COMPONENTS", "PlatformHeaders"]),
     LibraryMapping("help", "Qt6", "Qt::Help", extra=["COMPONENTS", "Help"]),
     LibraryMapping(
         "hunspellinputmethod",

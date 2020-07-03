@@ -64,7 +64,7 @@
 
 #include <QtGui/private/qcoregraphics_p.h>
 
-#include <QtPlatformHeaders/qcocoawindowfunctions.h>
+#include <QtPlatformHeaders/private/qcocoawindowfunctions_p.h>
 
 #if QT_CONFIG(vulkan)
 #include <MoltenVK/mvk_vulkan.h>

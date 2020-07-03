@@ -113,7 +113,7 @@
 
 #include "qwindowcontainer_p.h"
 
-#include <QtPlatformHeaders/qxcbwindowfunctions.h>
+#include <QtPlatformHeaders/private/qxcbwindowfunctions_p.h>
 
 #include <private/qmemory_p.h>
 

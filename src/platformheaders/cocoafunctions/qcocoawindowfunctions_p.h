@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -37,26 +37,38 @@
 **
 ****************************************************************************/
 
-#ifndef QXCBSCREENFUNCTIONS_H
-#define QXCBSCREENFUNCTIONS_H
+#ifndef QCOCOAWINDOWFUNCTIONS_H
+#define QCOCOAWINDOWFUNCTIONS_H
 
-#include <QtPlatformHeaders/QPlatformHeaderHelper>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtPlatformHeaders/private/qplatformheaderhelper_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QScreen;
+class QWindow;
 
-class QXcbScreenFunctions
-{
+class QCocoaWindowFunctions {
 public:
-    typedef bool (*VirtualDesktopNumber)(const QScreen *screen);
-    static const QByteArray virtualDesktopNumberIdentifier() { return QByteArrayLiteral("XcbVirtualDesktopNumber"); }
-    static int virtualDesktopNumber(const QScreen *screen)
+    typedef QPoint (*BottomLeftClippedByNSWindowOffset)(QWindow *window);
+    static const QByteArray bottomLeftClippedByNSWindowOffsetIdentifier() { return QByteArrayLiteral("CocoaBottomLeftClippedByNSWindowOffset"); }
+
+    static QPoint bottomLeftClippedByNSWindowOffset(QWindow *window)
     {
-        return QPlatformHeaderHelper::callPlatformFunction<int, VirtualDesktopNumber, const QScreen *>(virtualDesktopNumberIdentifier(), screen);
+        return QPlatformHeaderHelper::callPlatformFunction<QPoint, BottomLeftClippedByNSWindowOffset>(bottomLeftClippedByNSWindowOffsetIdentifier(),window);
     }
 };
 
+
 QT_END_NAMESPACE
 
-#endif  /*QXCBSCREENFUNCTIONS_H*/
+#endif // QCOCOAWINDOWFUNCTIONS_H

@@ -1,7 +1,7 @@
 TARGET = qwindows
 
 QT += \
-    core-private gui-private
+    core-private gui-private platformheaders-private
 
 qtConfig(opengl): QT += opengl-private
 

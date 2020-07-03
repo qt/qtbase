@@ -53,8 +53,8 @@
 #include <QtGui/qopenglcontext.h>
 #include <QtGui/qscreen.h>
 
-#include <QtPlatformHeaders/qxcbwindowfunctions.h>
-#include <QtPlatformHeaders/qxcbscreenfunctions.h>
+#include <QtPlatformHeaders/private/qxcbwindowfunctions_p.h>
+#include <QtPlatformHeaders/private/qxcbscreenfunctions_p.h>
 
 #include <stdio.h>
 

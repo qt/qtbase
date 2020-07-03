@@ -1,1 +1,1 @@
-HEADERS += $$PWD/qcocoawindowfunctions.h
+HEADERS += $$PWD/qcocoawindowfunctions_p.h

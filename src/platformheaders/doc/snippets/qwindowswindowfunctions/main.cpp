@@ -49,7 +49,7 @@
 ****************************************************************************/
 
 #include <QtWidgets>
-#include <QtPlatformHeaders/qwindowswindowfunctions.h>
+#include <QtPlatformHeaders/private/qwindowswindowfunctions_p.h>
 
 //! [0]
 int main(int argc, char **argv)

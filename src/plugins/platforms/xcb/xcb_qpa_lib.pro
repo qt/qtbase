@@ -3,7 +3,8 @@ CONFIG += no_module_headers internal_module
 DEFINES += QT_NO_FOREACH
 
 QT += \
-    core-private gui-private
+    core-private gui-private \
+    platformheaders-private
 
 qtConfig(opengl): QT += opengl-private
 

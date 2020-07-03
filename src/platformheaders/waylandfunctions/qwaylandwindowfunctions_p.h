@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2016 LG Electronics Ltd, author: mikko.levonmaa@lge.com
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -37,27 +37,61 @@
 **
 ****************************************************************************/
 
-#ifndef QCOCOAWINDOWFUNCTIONS_H
-#define QCOCOAWINDOWFUNCTIONS_H
+#ifndef QWAYLANDWINDOWFUNCTIONS_H
+#define QWAYLANDWINDOWFUNCTIONS_H
 
-#include <QtPlatformHeaders/QPlatformHeaderHelper>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtCore/QByteArray>
+#include <QtGui/QGuiApplication>
 
 QT_BEGIN_NAMESPACE
 
 class QWindow;
 
-class QCocoaWindowFunctions {
+class QWaylandWindowFunctions {
 public:
-    typedef QPoint (*BottomLeftClippedByNSWindowOffset)(QWindow *window);
-    static const QByteArray bottomLeftClippedByNSWindowOffsetIdentifier() { return QByteArrayLiteral("CocoaBottomLeftClippedByNSWindowOffset"); }
 
-    static QPoint bottomLeftClippedByNSWindowOffset(QWindow *window)
+    typedef void (*SetWindowSync)(QWindow *window);
+    typedef void (*SetWindowDeSync)(QWindow *window);
+    typedef bool (*IsWindowSync)(QWindow *window);
+    static const QByteArray setSyncIdentifier() { return QByteArrayLiteral("WaylandSubSurfaceSetSync"); }
+    static const QByteArray setDeSyncIdentifier() { return QByteArrayLiteral("WaylandSubSurfaceSetDeSync"); }
+    static const QByteArray isSyncIdentifier() { return QByteArrayLiteral("WaylandSubSurfaceIsSync"); }
+
+    static void setSync(QWindow *window)
     {
-        return QPlatformHeaderHelper::callPlatformFunction<QPoint, BottomLeftClippedByNSWindowOffset>(bottomLeftClippedByNSWindowOffsetIdentifier(),window);
+        static SetWindowSync func = reinterpret_cast<SetWindowSync>(QGuiApplication::platformFunction(setSyncIdentifier()));
+        Q_ASSERT(func);
+        func(window);
     }
-};
 
+    static void setDeSync(QWindow *window)
+    {
+        static SetWindowDeSync func = reinterpret_cast<SetWindowDeSync>(QGuiApplication::platformFunction(setDeSyncIdentifier()));
+        Q_ASSERT(func);
+        func(window);
+    }
+
+    static bool isSync(QWindow *window)
+    {
+        static IsWindowSync func = reinterpret_cast<IsWindowSync>(QGuiApplication::platformFunction(isSyncIdentifier()));
+        Q_ASSERT(func);
+        return func(window);
+    }
+
+};
 
 QT_END_NAMESPACE
 
-#endif // QCOCOAWINDOWFUNCTIONS_H
+#endif // QWAYLANDWINDOWFUNCTIONS_H
+

@@ -19,6 +19,7 @@ qt_internal_add_plugin(QLinuxFbIntegrationPlugin
         Qt::FbSupportPrivate
         Qt::Gui
         Qt::GuiPrivate
+        Qt::PlatformHeadersPrivate
 )
 
 #### Keys ignored in scope 1:.:.:linuxfb.pro:<TRUE>:

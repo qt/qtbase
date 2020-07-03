@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 LG Electronics Ltd, author: mikko.levonmaa@lge.com
-** Contact: https://www.qt.io/licensing/
+** Copyright (C) 2017 The Qt Company Ltd.
+** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -37,50 +37,37 @@
 **
 ****************************************************************************/
 
-#ifndef QWAYLANDWINDOWFUNCTIONS_H
-#define QWAYLANDWINDOWFUNCTIONS_H
+#ifndef QXCBSCREENFUNCTIONS_H
+#define QXCBSCREENFUNCTIONS_H
 
-#include <QtCore/QByteArray>
-#include <QtGui/QGuiApplication>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtPlatformHeaders/private/qplatformheaderhelper_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QWindow;
+class QScreen;
 
-class QWaylandWindowFunctions {
+class QXcbScreenFunctions
+{
 public:
-
-    typedef void (*SetWindowSync)(QWindow *window);
-    typedef void (*SetWindowDeSync)(QWindow *window);
-    typedef bool (*IsWindowSync)(QWindow *window);
-    static const QByteArray setSyncIdentifier() { return QByteArrayLiteral("WaylandSubSurfaceSetSync"); }
-    static const QByteArray setDeSyncIdentifier() { return QByteArrayLiteral("WaylandSubSurfaceSetDeSync"); }
-    static const QByteArray isSyncIdentifier() { return QByteArrayLiteral("WaylandSubSurfaceIsSync"); }
-
-    static void setSync(QWindow *window)
+    typedef bool (*VirtualDesktopNumber)(const QScreen *screen);
+    static const QByteArray virtualDesktopNumberIdentifier() { return QByteArrayLiteral("XcbVirtualDesktopNumber"); }
+    static int virtualDesktopNumber(const QScreen *screen)
     {
-        static SetWindowSync func = reinterpret_cast<SetWindowSync>(QGuiApplication::platformFunction(setSyncIdentifier()));
-        Q_ASSERT(func);
-        func(window);
+        return QPlatformHeaderHelper::callPlatformFunction<int, VirtualDesktopNumber, const QScreen *>(virtualDesktopNumberIdentifier(), screen);
     }
-
-    static void setDeSync(QWindow *window)
-    {
-        static SetWindowDeSync func = reinterpret_cast<SetWindowDeSync>(QGuiApplication::platformFunction(setDeSyncIdentifier()));
-        Q_ASSERT(func);
-        func(window);
-    }
-
-    static bool isSync(QWindow *window)
-    {
-        static IsWindowSync func = reinterpret_cast<IsWindowSync>(QGuiApplication::platformFunction(isSyncIdentifier()));
-        Q_ASSERT(func);
-        return func(window);
-    }
-
 };
 
 QT_END_NAMESPACE
 
-#endif // QWAYLANDWINDOWFUNCTIONS_H
-
+#endif  /*QXCBSCREENFUNCTIONS_H*/

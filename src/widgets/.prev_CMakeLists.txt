@@ -57,6 +57,7 @@ qt_add_module(Widgets
     LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
+        Qt::PlatformHeadersPrivate
     PUBLIC_LIBRARIES
         Qt::Core
         Qt::Gui

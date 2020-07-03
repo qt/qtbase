@@ -94,7 +94,7 @@
 #include <QtInputSupport/qintegrityhidmanager.h>
 #endif
 
-#include <QtPlatformHeaders/qeglfsfunctions.h>
+#include <QtPlatformHeaders/private/qeglfsfunctions_p.h>
 
 static void initResources()
 {

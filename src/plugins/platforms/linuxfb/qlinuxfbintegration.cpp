@@ -70,7 +70,7 @@
 #include <QtInputSupport/private/qtslib_p.h>
 #endif
 
-#include <QtPlatformHeaders/qlinuxfbfunctions.h>
+#include <QtPlatformHeaders/private/qlinuxfbfunctions_p.h>
 
 QT_BEGIN_NAMESPACE
 

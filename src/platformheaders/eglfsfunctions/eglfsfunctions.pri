@@ -1,1 +1,1 @@
-HEADERS += $$PWD/qeglfsfunctions.h
+HEADERS += $$PWD/qeglfsfunctions_p.h

@@ -52,7 +52,7 @@
 #include <QtCore/QJsonArray>
 #include <QtGui/qpa/qplatformwindow.h>
 #include <QtGui/QScreen>
-#include <QtPlatformHeaders/qeglfsfunctions.h>
+#include <QtPlatformHeaders/private/qeglfsfunctions_p.h>
 
 #include <xf86drm.h>
 #include <xf86drmMode.h>

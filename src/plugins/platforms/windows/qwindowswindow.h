@@ -45,7 +45,7 @@
 #include "qwindowscursor.h"
 
 #include <qpa/qplatformwindow.h>
-#include <QtPlatformHeaders/qwindowswindowfunctions.h>
+#include <QtPlatformHeaders/private/qwindowswindowfunctions_p.h>
 
 #if QT_CONFIG(vulkan)
 #include "qwindowsvulkaninstance.h"
