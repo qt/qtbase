@@ -1078,29 +1078,6 @@ bool QThread::isInterruptionRequested() const
 
     \note the caller acquires ownership of the returned QThread instance.
 
-    \note this function is only available when using C++17.
-
-    \warning do not call start() on the returned QThread instance more than once;
-    doing so will result in undefined behavior.
-
-    \sa start()
-*/
-
-/*!
-    \fn template <typename Function> QThread *QThread::create(Function &&f)
-    \since 5.10
-
-    Creates a new QThread object that will execute the function \a f.
-
-    The new thread is not started -- it must be started by an explicit call
-    to start(). This allows you to connect to its signals, move QObjects
-    to the thread, choose the new thread's priority and so on. The function
-    \a f will be called in the new thread.
-
-    Returns the newly created QThread instance.
-
-    \note the caller acquires ownership of the returned QThread instance.
-
     \warning do not call start() on the returned QThread instance more than once;
     doing so will result in undefined behavior.
 

@@ -1449,7 +1449,6 @@ void tst_QThread::create()
             QCOMPARE(i, 42);
         }
 
-#if defined(__cpp_init_captures) && __cpp_init_captures >= 201304
         {
             int i = 0;
             MoveOnlyValue mo(123);
@@ -1461,9 +1460,7 @@ void tst_QThread::create()
             QVERIFY(thread->wait());
             QCOMPARE(i, 123);
         }
-#endif // __cpp_init_captures
 
-#ifdef QTHREAD_HAS_VARIADIC_CREATE
         {
             int i = 0;
             const auto &function = [&i](MoveOnlyValue &&mo) { i = mo.v; };
@@ -1486,10 +1483,8 @@ void tst_QThread::create()
             QVERIFY(thread->wait());
             QCOMPARE(i, -1);
         }
-#endif // QTHREAD_HAS_VARIADIC_CREATE
     }
 
-#ifdef QTHREAD_HAS_VARIADIC_CREATE
     {
         // simple parameter passing
         int i = 0;
@@ -1587,7 +1582,6 @@ void tst_QThread::create()
         QVERIFY(!thread);
     }
 #endif // QT_NO_EXCEPTIONS
-#endif // QTHREAD_HAS_VARIADIC_CREATE
 #endif // QT_CONFIG(cxx11_future)
 }
 
