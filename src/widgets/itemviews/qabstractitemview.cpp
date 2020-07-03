@@ -3929,7 +3929,7 @@ QItemSelectionModel::SelectionFlags QAbstractItemView::selectionCommand(const QM
                 keyModifiers = (static_cast<const QInputEvent*>(event))->modifiers();
                 break;
             default:
-                keyModifiers = QGuiApplication::keyboardModifiers();
+                break;
         }
     }
     switch (d->selectionMode) {
@@ -3987,7 +3987,7 @@ QItemSelectionModel::SelectionFlags QAbstractItemViewPrivate::multiSelectionComm
 QItemSelectionModel::SelectionFlags QAbstractItemViewPrivate::extendedSelectionCommand(
     const QModelIndex &index, const QEvent *event) const
 {
-    Qt::KeyboardModifiers modifiers = QGuiApplication::keyboardModifiers();
+    Qt::KeyboardModifiers modifiers = Qt::NoModifier;
     if (event) {
         switch (event->type()) {
         case QEvent::MouseMove: {
