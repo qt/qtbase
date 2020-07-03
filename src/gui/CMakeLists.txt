@@ -898,6 +898,14 @@ qt_extend_target(Gui CONDITION QT_FEATURE_systemtrayicon AND TARGET Qt::DBus AND
         platform/unix/dbustray/qxdgnotificationproxy.cpp platform/unix/dbustray/qxdgnotificationproxy_p.h
 )
 
+qt_extend_target(Gui CONDITION QT_FEATURE_xkbcommon AND UNIX
+    SOURCES
+        platform/unix/qxkbcommon.cpp platform/unix/qxkbcommon_p.h
+        platform/unix/qxkbcommon_3rdparty.cpp
+    PUBLIC_LIBRARIES
+        XKB::XKB
+)
+
 qt_extend_target(Gui CONDITION IOS OR MACOS
     SOURCES
         rhi/qrhimetal.mm rhi/qrhimetal_p.h

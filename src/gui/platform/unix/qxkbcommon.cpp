@@ -459,9 +459,9 @@ QString QXkbCommon::lookupStringNoKeysymTransformations(xkb_keysym_t keysym)
     return QString::fromUtf8(chars.constData(), size - 1);
 }
 
-QVector<xkb_keysym_t> QXkbCommon::toKeysym(QKeyEvent *event)
+QList<xkb_keysym_t> QXkbCommon::toKeysym(QKeyEvent *event)
 {
-    QVector<xkb_keysym_t> keysyms;
+    QList<xkb_keysym_t> keysyms;
     int qtKey = event->key();
 
     if (qtKey >= Qt::Key_F1 && qtKey <= Qt::Key_F35) {

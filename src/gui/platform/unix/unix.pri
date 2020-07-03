@@ -34,3 +34,12 @@ if(unix:!uikit:!macos)|qtConfig(xcb) {
         qtConfig(systemtrayicon): include(dbustray/dbustray.pri)
     }
 }
+
+qtConfig(xkbcommon) {
+    SOURCES += \
+        platform/unix/qxkbcommon_3rdparty.cpp \
+        platform/unix/qxkbcommon.cpp
+    HEADERS += \
+        platform/unix/qxkbcommon_p.h
+    QMAKE_USE += xkbcommon
+}

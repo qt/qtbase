@@ -22,7 +22,7 @@ qt_add_module(InputSupport
         "../../corelib/global/qt_pch.h"
 )
 
-#### Keys ignored in scope 3:.:.:input-support.pro:<TRUE>:
+#### Keys ignored in scope 2:.:.:input-support.pro:<TRUE>:
 # MODULE = "input_support"
 
 ## Scopes:
@@ -82,13 +82,6 @@ qt_extend_target(InputSupport CONDITION QT_FEATURE_libinput
         PkgConfig::Libudev
 )
 
-qt_extend_target(InputSupport CONDITION QT_FEATURE_libinput AND QT_FEATURE_xkbcommon
-    LIBRARIES
-        XKB::XKB
-    PUBLIC_LIBRARIES
-        Qt::XkbCommonSupportPrivate
-)
-
 qt_extend_target(InputSupport CONDITION QT_FEATURE_evdev OR QT_FEATURE_libinput
     SOURCES
         shared/devicehandlerlist_p.h
@@ -102,6 +95,3 @@ qt_extend_target(InputSupport CONDITION QT_FEATURE_integrityhid
     LIBRARIES
         integrityhid
 )
-if(QT_FEATURE_xkbcommon)
-    add_subdirectory(xkbcommon)
-endif()

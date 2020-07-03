@@ -44,17 +44,17 @@
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
+// This file is not part of the Qt API. It exists purely as an
+// implementation detail. This header file may change from version to
 // version without notice, or even be removed.
 //
 // We mean it.
 //
 
-#include <QtCore/QString>
-#include <QtCore/QVector>
-#include <QtCore/QLoggingCategory>
-#include <QtCore/QList>
+#include <QtGui/qtguiglobal.h>
+#include <QtCore/qstring.h>
+#include <QtCore/qloggingcategory.h>
+#include <QtCore/qlist.h>
 
 #include <xkbcommon/xkbcommon.h>
 
@@ -68,13 +68,13 @@ class QEvent;
 class QKeyEvent;
 class QPlatformInputContext;
 
-class QXkbCommon
+class Q_GUI_EXPORT QXkbCommon
 {
 public:
     static QString lookupString(struct xkb_state *state, xkb_keycode_t code);
     static QString lookupStringNoKeysymTransformations(xkb_keysym_t keysym);
 
-    static QVector<xkb_keysym_t> toKeysym(QKeyEvent *event);
+    static QList<xkb_keysym_t> toKeysym(QKeyEvent *event);
 
     static int keysymToQtKey(xkb_keysym_t keysym, Qt::KeyboardModifiers modifiers);
     static int keysymToQtKey(xkb_keysym_t keysym, Qt::KeyboardModifiers modifiers,

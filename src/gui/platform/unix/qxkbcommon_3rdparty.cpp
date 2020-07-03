@@ -101,6 +101,8 @@
 
 #include <QtCore/QChar>
 
+QT_BEGIN_NAMESPACE
+
 static void qt_UCSConvertCase(uint32_t code, xkb_keysym_t *lower, xkb_keysym_t *upper)
 {
     *lower = QChar::toLower(code);
@@ -217,3 +219,5 @@ void QXkbCommon::xkbcommon_XConvertCase(xkb_keysym_t sym, xkb_keysym_t *lower, x
         break;
     }
 }
+
+QT_END_NAMESPACE

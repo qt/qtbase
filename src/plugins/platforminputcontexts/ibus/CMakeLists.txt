@@ -19,7 +19,6 @@ qt_internal_add_plugin(QIbusPlatformInputContextPlugin
         Qt::DBus
         Qt::Gui
         Qt::GuiPrivate
-        Qt::XkbCommonSupportPrivate
 )
 
 #### Keys ignored in scope 1:.:.:ibus.pro:<TRUE>:

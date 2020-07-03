@@ -47,7 +47,7 @@
 #include <xcb/xkb.h>
 #undef explicit
 
-#include <QtXkbCommonSupport/private/qxkbcommon_p.h>
+#include <QtGui/private/qxkbcommon_p.h>
 #include <xkbcommon/xkbcommon-x11.h>
 
 #include <QEvent>

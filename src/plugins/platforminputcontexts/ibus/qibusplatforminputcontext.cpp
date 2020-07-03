@@ -51,7 +51,7 @@
 
 #include <QtGui/private/qguiapplication_p.h>
 
-#include <QtXkbCommonSupport/private/qxkbcommon_p.h>
+#include <QtGui/private/qxkbcommon_p.h>
 
 #include "qibusproxy.h"
 #include "qibusproxyportal.h"
