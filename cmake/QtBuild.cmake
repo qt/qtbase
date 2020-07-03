@@ -1260,9 +1260,28 @@ function(qt_generate_global_device_pri_file)
         string(APPEND content "${opt}\n")
     endforeach()
 
-    if(TEST_machine_tuple)
-        string(APPEND content "GCC_MACHINE_DUMP = ${TEST_machine_tuple}\n")
+    # Write android specific device info.
+    if(ANDROID)
+        string(APPEND content "DEFAULT_ANDROID_SDK_ROOT = ${ANDROID_SDK_ROOT}\n")
+        string(APPEND content "DEFAULT_ANDROID_NDK_ROOT = ${ANDROID_NDK}\n")
+
+        set(android_platform "android-23")
+        if(ANDROID_NATIVE_API_LEVEL)
+            set(android_platform "android-${ANDROID_NATIVE_API_LEVEL}")
+        endif()
+        string(APPEND content "DEFAULT_ANDROID_PLATFORM = ${android_platform}\n")
+
+        string(APPEND content "DEFAULT_ANDROID_NDK_HOST = ${ANDROID_HOST_TAG}\n")
+
+        # TODO: QTBUG-80943 When we eventually support Android multi-abi, this should be changed.
+        string(APPEND content "DEFAULT_ANDROID_ABIS = ${ANDROID_ABI}\n")
     endif()
+
+    set(gcc_machine_dump "")
+    if(TEST_machine_tuple)
+        set(gcc_machine_dump "${TEST_machine_tuple}")
+    endif()
+    string(APPEND content "GCC_MACHINE_DUMP = ${gcc_machine_dump}\n")
 
     file(GENERATE OUTPUT "${qdevice_pri_target_path}" CONTENT "${content}")
     qt_install(FILES "${qdevice_pri_target_path}" DESTINATION ${INSTALL_MKSPECSDIR})
@@ -1430,12 +1449,20 @@ Prefix=${ext_prefix_relative_to_conf_file}
 ")
     endif()
 
+    # On Android CMAKE_SYSROOT is set, but for Qt's purposes it should not be set, because then
+    # qmake generates incorrect Qt module include flags (among other things). Do the same for darwin
+    # cross-compilation.
+    set(sysroot "")
+    if(CMAKE_SYSROOT AND NOT ANDROID AND NOT UIKIT)
+        set(sysroot "${CMAKE_SYSROOT}")
+    endif()
+
     string(APPEND content
         "[Paths]
 Prefix=${ext_prefix_relative_to_conf_file}
 HostPrefix=${host_prefix_relative_to_conf_file}
 HostData=${ext_prefix_relative_to_host_prefix}
-Sysroot=${CMAKE_SYSROOT}
+Sysroot=${sysroot}
 SysrootifyPrefix=${sysrootify_prefix}
 TargetSpec=${QT_QMAKE_TARGET_MKSPEC}
 HostSpec=${QT_QMAKE_HOST_MKSPEC}

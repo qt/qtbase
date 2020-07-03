@@ -858,7 +858,7 @@ function(qt_config_compile_test_x86simd extension label)
 endfunction()
 
 function(qt_config_compile_test_machine_tuple label)
-    if(DEFINED TEST_MACHINE_TUPLE OR NOT (GCC OR CLANG))
+    if(DEFINED TEST_MACHINE_TUPLE OR NOT LINUX OR ANDROID)
         return()
     endif()
 
