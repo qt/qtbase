@@ -85,6 +85,11 @@ Build options:
   -commercial .......... Build the Commercial Edition of Qt
   -confirm-license ..... Automatically acknowledge the license
 
+  -cmake ............... Use the CMake build system instead of the qmake one.
+  -cmake-generator <name> ... Explicitly specify the build system generator for
+                         CMake instead of auto-detecting one.
+  -cmake-use-default-generator ... Turn off auto-detection of the CMake build
+                         system generator.
   -release ............. Build Qt with debugging turned off [yes]
   -debug ............... Build Qt with debugging turned on [no]
   -debug-and-release ... Build two versions of Qt, with and without
