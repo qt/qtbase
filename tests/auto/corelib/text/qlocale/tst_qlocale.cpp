@@ -2072,7 +2072,7 @@ static QString getWinLocaleInfo(LCTYPE type)
     return QString::fromWCharArray(buf.data());
 }
 
-static void setWinLocaleInfo(LCTYPE type, const QString &value)
+static void setWinLocaleInfo(LCTYPE type, QStringView value)
 {
     LCID id = GetThreadLocale();
     SetLocaleInfo(id, type, reinterpret_cast<const wchar_t*>(value.utf16()));
@@ -2091,7 +2091,10 @@ public:
         m_thousand = getWinLocaleInfo(LOCALE_STHOUSAND);
         m_sdate = getWinLocaleInfo(LOCALE_SSHORTDATE);
         m_ldate = getWinLocaleInfo(LOCALE_SLONGDATE);
-        m_time = getWinLocaleInfo(LOCALE_SSHORTTIME);
+        m_stime = getWinLocaleInfo(LOCALE_SSHORTTIME);
+        m_ltime = getWinLocaleInfo(LOCALE_STIMEFORMAT);
+        m_digits = getWinLocaleInfo(LOCALE_SNATIVEDIGITS);
+        m_subst = getWinLocaleInfo(LOCALE_IDIGITSUBSTITUTION);
     }
 
     ~RestoreLocaleHelper()
@@ -2101,20 +2104,23 @@ public:
         setWinLocaleInfo(LOCALE_STHOUSAND, m_thousand);
         setWinLocaleInfo(LOCALE_SSHORTDATE, m_sdate);
         setWinLocaleInfo(LOCALE_SLONGDATE, m_ldate);
-        setWinLocaleInfo(LOCALE_SSHORTTIME, m_time);
+        setWinLocaleInfo(LOCALE_SSHORTTIME, m_stime);
+        setWinLocaleInfo(LOCALE_STIMEFORMAT, m_ltime);
+        setWinLocaleInfo(LOCALE_SNATIVEDIGITS, m_digits);
+        setWinLocaleInfo(LOCALE_IDIGITSUBSTITUTION, m_subst);
 
         QSystemLocale dummy; // to provoke a refresh of the system locale
     }
 
-    QString m_decimal, m_thousand, m_sdate, m_ldate, m_time;
+    QString m_decimal, m_thousand, m_sdate, m_ldate, m_stime, m_ltime, m_digits, m_subst;
 };
 
 void tst_QLocale::windowsDefaultLocale()
 {
     RestoreLocaleHelper systemLocale;
     // set weird system defaults and make sure we're using them
-    setWinLocaleInfo(LOCALE_SDECIMAL, QLatin1String("@"));
-    setWinLocaleInfo(LOCALE_STHOUSAND, QLatin1String("?"));
+    setWinLocaleInfo(LOCALE_SDECIMAL, u"@");
+    setWinLocaleInfo(LOCALE_STHOUSAND, u"?");
     const QString shortDateFormat = QStringLiteral("d*M*yyyy");
     setWinLocaleInfo(LOCALE_SSHORTDATE, shortDateFormat);
     const QString longDateFormat = QStringLiteral("d@M@yyyy");
@@ -2123,11 +2129,17 @@ void tst_QLocale::windowsDefaultLocale()
     setWinLocaleInfo(LOCALE_SSHORTTIME, shortTimeFormat);
     const QString longTimeFormat = QStringLiteral("HH%mm%ss");
     setWinLocaleInfo(LOCALE_STIMEFORMAT, longTimeFormat);
+    // Suzhou numerals (QTBUG-85409):
+    const QStringView digits = u"\u3007\u3021\u3022\u3023\u3024\u3025\u3026\u3027\u3028\u3029";
+    setWinLocaleInfo(LOCALE_SNATIVEDIGITS, digits);
+    setWinLocaleInfo(LOCALE_IDIGITSUBSTITUTION, u"2");
+    // NB: when adding to the system things being set, be sure to update RestoreLocaleHelper, too.
 
     QSystemLocale dummy; // to provoke a refresh of the system locale
     QLocale locale = QLocale::system();
 
-    // make sure we are seeing the system's format strings
+    // Make sure we are seeing the system's format strings
+    QCOMPARE(locale.zeroDigit(), QStringView(u"\u3007"));
     QCOMPARE(locale.decimalPoint(), QStringView(u"@"));
     QCOMPARE(locale.groupSeparator(), QStringView(u"?"));
     QCOMPARE(locale.dateFormat(QLocale::ShortFormat), shortDateFormat);
@@ -2140,24 +2152,28 @@ void tst_QLocale::windowsDefaultLocale()
     QCOMPARE(locale.dateTimeFormat(QLocale::LongFormat), expectedLongDateTimeFormat);
 
     // make sure we are using the system to parse them
-    QCOMPARE(locale.toString(1234.56), QString("1?234@56"));
-    QCOMPARE(locale.toString(QDate(1974, 12, 1), QLocale::ShortFormat), QString("1*12*1974"));
+    QCOMPARE(locale.toString(1234.56), QStringView(u"\u3021?\u3022\u3023\u3024@\u3025\u3026"));
+    QCOMPARE(locale.toString(QDate(1974, 12, 1), QLocale::ShortFormat),
+             QStringView(u"\u3021*\u3021\u3022*\u3021\u3029\u3027\u3024"));
     QCOMPARE(locale.toString(QDate(1974, 12, 1), QLocale::NarrowFormat),
              locale.toString(QDate(1974, 12, 1), QLocale::ShortFormat));
-    QCOMPARE(locale.toString(QDate(1974, 12, 1), QLocale::LongFormat), QString("1@12@1974"));
-    const QString expectedFormattedShortTimeSeconds = QStringLiteral("1^2^3");
-    const QString expectedFormattedShortTime = QStringLiteral("1^2");
+    QCOMPARE(locale.toString(QDate(1974, 12, 1), QLocale::LongFormat),
+             QStringView(u"\u3021@\u3021\u3022@\u3021\u3029\u3027\u3024"));
+    const QString expectedFormattedShortTime = QStringView(u"\u3021^\u3022").toString();
     QCOMPARE(locale.toString(QTime(1,2,3), QLocale::ShortFormat), expectedFormattedShortTime);
     QCOMPARE(locale.toString(QTime(1,2,3), QLocale::NarrowFormat),
              locale.toString(QTime(1,2,3), QLocale::ShortFormat));
-    const QString expectedFormattedLongTime = QStringLiteral("01%02%03");
+    const QString expectedFormattedLongTime
+        = QStringView(u"\u3007\u3021%\u3007\u3022%\u3007\u3023").toString();
     QCOMPARE(locale.toString(QTime(1,2,3), QLocale::LongFormat), expectedFormattedLongTime);
     QCOMPARE(locale.toString(QDateTime(QDate(1974, 12, 1), QTime(1,2,3)), QLocale::ShortFormat),
-             QStringLiteral("1*12*1974 ") + expectedFormattedShortTime);
+             QStringView(u"\u3021*\u3021\u3022*\u3021\u3029\u3027\u3024 ").toString()
+             + expectedFormattedShortTime);
     QCOMPARE(locale.toString(QDateTime(QDate(1974, 12, 1), QTime(1,2,3)), QLocale::NarrowFormat),
              locale.toString(QDateTime(QDate(1974, 12, 1), QTime(1,2,3)), QLocale::ShortFormat));
     QCOMPARE(locale.toString(QDateTime(QDate(1974, 12, 1), QTime(1,2,3)), QLocale::LongFormat),
-             QStringLiteral("1@12@1974 ") + expectedFormattedLongTime);
+             QStringView(u"\u3021@\u3021\u3022@\u3021\u3029\u3027\u3024 ").toString()
+             + expectedFormattedLongTime);
 }
 #endif // Q_OS_WIN
 

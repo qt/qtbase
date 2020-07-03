@@ -235,23 +235,24 @@ QString QSystemLocalePrivate::substituteDigits(QString &&string)
     zeroDigit(); // Ensure zero is set.
     switch (zero.size()) {
     case 1: {
-        const ushort offset = zero.at(0).unicode() - '0';
-        if (!offset) // Nothing to do
+        ushort z = zero.at(0).unicode();
+        if (z == '0') // Nothing to do
             break;
-        Q_ASSERT(offset > 9);
+        Q_ASSERT(z > '9');
         ushort *const qch = reinterpret_cast<ushort *>(string.data());
         for (int i = 0, stop = string.size(); i < stop; ++i) {
             ushort &ch = qch[i];
             if (ch >= '0' && ch <= '9')
-                ch += offset;
+                ch = unicodeForDigit(ch - '0', z);
         }
         break;
     }
     case 2: {
         // Surrogate pair (high, low):
-        uint digit = QChar::surrogateToUcs4(zero.at(0), zero.at(1));
+        uint z = QChar::surrogateToUcs4(zero.at(0), zero.at(1));
         for (int i = 0; i < 10; i++) {
-            const QChar s[2] = { QChar::highSurrogate(digit + i), QChar::lowSurrogate(digit + i) };
+            uint digit = unicodeForDigit(i, z);
+            const QChar s[2] = { QChar::highSurrogate(digit), QChar::lowSurrogate(digit) };
             string.replace(QString(QLatin1Char('0' + i)), QString(s, 2));
         }
         break;
@@ -276,7 +277,8 @@ QVariant QSystemLocalePrivate::zeroDigit()
          */
         wchar_t digits[11];
         if (getLocaleInfo(LOCALE_SNATIVEDIGITS, digits, 11)) {
-            // assert all(digits[i] == i + digits[0] for i in range(1, 10)), assumed above
+            // assert all(digits[i] == i + digits[0] for i in range(1, 10)),
+            // assumed above (unless digits[0] is 0x3007; see QTBUG-85409).
             zero = QString::fromWCharArray(digits, 1);
         }
     }

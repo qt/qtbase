@@ -3363,7 +3363,7 @@ QString QLocaleData::doubleToString(double d, int precision, DoubleForm form,
             QString converted;
             converted.reserve(2 * digits.size());
             for (int i = 0; i < digits.length(); ++i) {
-                const uint digit = zeroUcs4 - '0' + digits.at(i).unicode();
+                const uint digit = unicodeForDigit(digits.at(i).unicode() - '0', zeroUcs4);
                 Q_ASSERT(QChar::requiresSurrogates(digit));
                 converted.append(QChar::highSurrogate(digit));
                 converted.append(QChar::lowSurrogate(digit));
@@ -3372,9 +3372,10 @@ QString QLocaleData::doubleToString(double d, int precision, DoubleForm form,
         } else {
             Q_ASSERT(zero.size() == 1);
             Q_ASSERT(!zero.at(0).isSurrogate());
-            ushort z = zero.at(0).unicode() - '0';
+            ushort z = zero.at(0).unicode();
+            ushort *const value = reinterpret_cast<ushort *>(digits.data());
             for (int i = 0; i < digits.length(); ++i)
-                reinterpret_cast<ushort *>(digits.data())[i] += z;
+                value[i] = unicodeForDigit(value[i] - '0', z);
         }
 
         const bool mustMarkDecimal = flags & ForcePoint;

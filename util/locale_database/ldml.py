@@ -299,8 +299,10 @@ class LocaleScanner (object):
         digits = lookup(system)['digits']
         assert len(digits) == 10
         zero = digits[0]
-        # Qt's number-formatting code assumes digits are consecutive:
-        assert all(ord(c) == i for i, c in enumerate(digits, ord(zero)))
+        # Qt's number-formatting code assumes digits are consecutive
+        # (except Suzhou, CLDR's hanidec - see QTBUG-85409):
+        assert all(ord(c) == i + (0x3020 if ord(zero) == 0x3007 else ord(zero))
+                   for i, c in enumerate(digits[1:], 1))
         yield 'zero', zero
 
         plus = self.find(stem + 'plusSign')

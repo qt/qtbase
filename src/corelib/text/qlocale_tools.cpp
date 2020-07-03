@@ -447,14 +447,14 @@ QString qulltoa(qulonglong number, int base, const QStringView zero)
     } else if (zero.size() && !zero.at(0).isSurrogate()) {
         const ushort zeroUcs4 = zero.at(0).unicode();
         while (number != 0) {
-            *(--p) = zeroUcs4 + number % base;
+            *(--p) = unicodeForDigit(number % base, zeroUcs4);
 
             number /= base;
         }
     } else if (zero.size() == 2 && zero.at(0).isHighSurrogate()) {
         const uint zeroUcs4 = QChar::surrogateToUcs4(zero.at(0), zero.at(1));
         while (number != 0) {
-            const uint digit = zeroUcs4 + number % base;
+            const uint digit = unicodeForDigit(number % base, zeroUcs4);
 
             *(--p) = QChar::lowSurrogate(digit);
             *(--p) = QChar::highSurrogate(digit);

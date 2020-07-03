@@ -89,6 +89,23 @@ inline int wholePartSpace(double d)
     return d > (1 << 19) ? std::numeric_limits<double>::max_exponent10 + 1 : 6;
 }
 
+// Returns code-point of same kind (UCS2 or UCS4) as zero; digit is 0 through 9
+template <typename UcsInt>
+inline UcsInt unicodeForDigit(uint digit, UcsInt zero)
+{
+    // Must match QLocaleData::numericToCLocale()'s digit-digestion.
+    Q_ASSERT(digit < 10);
+    if (!digit)
+        return zero;
+
+    // See QTBUG-85409: Suzhou's digits are U+3007, U+2021, ..., U+3029
+    if (zero == 0x3007u)
+        return 0x3020u + digit;
+    // At CLDR 36.1, no other number system's digits were discontinuous.
+
+    return zero + digit;
+}
+
 Q_CORE_EXPORT double qstrtod(const char *s00, char const **se, bool *ok);
 Q_CORE_EXPORT double qstrntod(const char *s00, int len, char const **se, bool *ok);
 qlonglong qstrtoll(const char *nptr, const char **endptr, int base, bool *ok);
