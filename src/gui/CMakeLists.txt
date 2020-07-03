@@ -347,7 +347,8 @@ endif()
 
 qt_extend_target(Gui CONDITION QT_FEATURE_opengl
     SOURCES
-        kernel/qopenglcontext.cpp kernel/qopenglcontext.h kernel/qopenglcontext_p.h kernel/qopenglcontext_platform.h
+        kernel/qopenglcontext.cpp kernel/qopenglcontext.h kernel/qopenglcontext_p.h
+        kernel/qopenglcontext_platform.h
         kernel/qplatformopenglcontext.cpp kernel/qplatformopenglcontext.h
         opengl/qopengl.cpp opengl/qopengl.h opengl/qopengl_p.h
         opengl/qopenglextensions_p.h
