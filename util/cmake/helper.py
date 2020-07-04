@@ -676,7 +676,6 @@ platform_mapping = {
     "mingw": "MINGW",
     "netbsd": "NETBSD",
     "haiku": "HAIKU",
-    "netbsd": "NETBSD",
     "mac": "APPLE",
     "macx": "MACOS",
     "macos": "MACOS",
