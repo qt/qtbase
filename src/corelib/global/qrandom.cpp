@@ -1249,7 +1249,7 @@ static inline QRandEngine *randTLS()
 
     Thread-safe version of the standard C++ \c srand() function.
 
-    Sets the argument \a seed to be used to generate a new random number sequence of
+    Sets the argument \a newSeed to be used to generate a new random number sequence of
     pseudo random integers to be returned by qrand().
 
     The sequence of random numbers generated is deterministic per thread. For example,
@@ -1261,13 +1261,13 @@ static inline QRandEngine *randTLS()
 
     \sa qrand(), QRandomGenerator
 */
-void qsrand(uint seed)
+void qsrand(uint newSeed)
 {
     auto prng = randTLS();
     if (prng)
-        prng->seed(seed);
+        prng->seed(newSeed);
     else
-        srand(seed);
+        srand(newSeed);
 }
 
 /*!
