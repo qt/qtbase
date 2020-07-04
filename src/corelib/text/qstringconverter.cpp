@@ -390,8 +390,8 @@ QByteArray QUtf8::convertFromUnicode(const QChar *uc, qsizetype len)
             break;
 
         do {
-            ushort uc = *src++;
-            int res = QUtf8Functions::toUtf8<QUtf8BaseTraits>(uc, dst, src, end);
+            ushort u = *src++;
+            int res = QUtf8Functions::toUtf8<QUtf8BaseTraits>(u, dst, src, end);
             if (res < 0) {
                 // encoding error - append '?'
                 *dst++ = '?';
