@@ -2904,7 +2904,6 @@ def write_main_part(
     target_ref = name
     if typename == "Tool":
         target_ref = "${target_name}"
-        comment_line = "#" * 69
         cm_fh.write(f"{spaces(indent)}qt_get_tool_target_name(target_name {name})\n")
 
     # Check for DESTDIR override
@@ -3353,7 +3352,6 @@ def write_example(
 
     add_target = ""
 
-    qmldir = None
     if is_plugin:
         if "qml" in scope.get("QT"):
             # Get the uri from the destination directory
@@ -3524,9 +3522,6 @@ def write_example(
                 cm_fh.write(f"{spaces(indent)}endif()\n")
 
         handling_first_scope = False
-
-    if qmldir:
-        write_qml_plugin_epilogue(cm_fh, binary_name, scope, qmldir, indent)
 
     cm_fh.write(
         f"\ninstall(TARGETS {binary_name}\n"
@@ -3939,29 +3934,6 @@ def find_top_level_repo_project_file(project_file_path: str = "") -> Optional[st
 
 
 def handle_top_level_repo_tests_project(scope: Scope, cm_fh: IO[str]):
-    top_level_project_path = find_top_level_repo_project_file(scope.file_absolute_path)
-    if top_level_project_path:
-        # qtdeclarative
-        file_name = os.path.splitext(os.path.basename(top_level_project_path))[0]
-
-        # declarative
-        file_name_without_qt = file_name[2:]
-
-        # Qt::Declarative
-        qt_lib = map_qt_library(file_name_without_qt)
-
-        # Found a mapping, adjust name.
-        if qt_lib != file_name_without_qt:
-            # QtDeclarative
-            qt_lib = f'{re.sub(r":", r"", qt_lib)}{"Tests"}'
-        else:
-            qt_lib += "Tests_FIXME"
-    else:
-        qt_lib = "Tests_FIXME"
-
-    requires_content = expand_project_requirements(scope, skip_message=True)
-    if requires_content:
-        requires_content = f"\n\n{textwrap_indent(requires_content, spaces(3))}"
 
     content = dedent(
         f"""\
