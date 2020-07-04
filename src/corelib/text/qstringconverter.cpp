@@ -1631,8 +1631,7 @@ std::optional<QStringConverter::Encoding> QStringConverter::encodingForData(cons
     }
 
     if (arraySize > 2) {
-        static const char utf8bom[] = "\xef\xbb\xbf";
-        if (memcmp(buf, utf8bom, sizeof(utf8bom) - 1) == 0)
+        if (memcmp(buf, utf8bom, sizeof(utf8bom)) == 0)
             return QStringConverter::Utf8;
     }
 
