@@ -4470,7 +4470,7 @@ function(qt_add_cmake_library target)
         DEFINES
             ${arg_DEFINES}
         PUBLIC_LIBRARIES ${arg_PUBLIC_LIBRARIES}
-        LIBRARIES ${arg_LIBRARIES} Qt::PlatformModuleInternal
+        LIBRARIES ${arg_LIBRARIES} Qt::PlatformCommonInternal
         COMPILE_OPTIONS ${arg_COMPILE_OPTIONS}
         PUBLIC_COMPILE_OPTIONS ${arg_PUBLIC_COMPILE_OPTIONS}
         LINK_OPTIONS ${arg_LINK_OPTIONS}
