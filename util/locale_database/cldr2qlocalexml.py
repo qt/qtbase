@@ -57,7 +57,6 @@ time zone names; see cldr2qtimezone.py for details.
 import os
 import sys
 
-from localetools import Error
 from cldr import CldrReader
 from qlocalexml import QLocaleXmlWriter
 from enumdata import language_list, script_list, country_list

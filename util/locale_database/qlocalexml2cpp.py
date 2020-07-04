@@ -37,7 +37,6 @@ import os
 import datetime
 
 from qlocalexml import QLocaleXmlReader
-from xml.dom import minidom
 from localetools import unicode2hex, wrap_list, Error, Transcriber, SourceFileEditor
 
 def compareLocaleKeys(key1, key2):
