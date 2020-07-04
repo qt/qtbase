@@ -490,9 +490,9 @@ void QWidgetPrivate::moveRect(const QRect &rect, int dx, int dy)
             if (overlappedExpose.isEmpty() || qFloor(factor) == factor) {
                 const QList<QRect> rectsToScroll =
                         getSortedRectsToScroll(QRegion(sourceRect) - overlappedExpose, dx, dy);
-                for (QRect rect : rectsToScroll) {
-                    if (repaintManager->bltRect(rect, dx, dy, pw)) {
-                        childExpose -= rect.translated(dx, dy);
+                for (QRect r : rectsToScroll) {
+                    if (repaintManager->bltRect(r, dx, dy, pw)) {
+                        childExpose -= r.translated(dx, dy);
                     }
                 }
             }
@@ -572,9 +572,9 @@ void QWidgetPrivate::scrollRect(const QRect &rect, int dx, int dy)
         if (overlappedExpose.isEmpty() || qFloor(factor) == factor) {
             const QList<QRect> rectsToScroll =
                     getSortedRectsToScroll(QRegion(sourceRect) - overlappedExpose, dx, dy);
-            for (const QRect &rect : rectsToScroll) {
-                if (repaintManager->bltRect(rect, dx, dy, q)) {
-                    childExpose -= rect.translated(dx, dy);
+            for (const QRect &r : rectsToScroll) {
+                if (repaintManager->bltRect(r, dx, dy, q)) {
+                    childExpose -= r.translated(dx, dy);
                 }
             }
         }
