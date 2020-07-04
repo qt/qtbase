@@ -113,7 +113,7 @@ public:
     mutable QTextLayout *layout;
     mutable QTextBlockUserData *userData;
     mutable int userState;
-    mutable int revision : 31;
+    mutable signed int revision : 31;
     mutable uint hidden : 1;
 };
 
