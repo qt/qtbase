@@ -350,8 +350,8 @@ struct QSpanData
         ConicalGradient,
         Texture
     } type : 8;
-    int txop : 8;
-    int fast_matrix : 1;
+    signed int txop : 8;
+    uint fast_matrix : 1;
     bool bilinear;
     QImage *tempImage;
     QRgba64 solidColor;

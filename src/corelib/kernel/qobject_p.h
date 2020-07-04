@@ -165,7 +165,7 @@ public:
         uint id = 0;
         ushort method_offset;
         ushort method_relative;
-        int signal_index : 27; // In signal range (see QObjectPrivate::signalIndex())
+        signed int signal_index : 27; // In signal range (see QObjectPrivate::signalIndex())
         ushort connectionType : 3; // 0 == auto, 1 == direct, 2 == queued, 4 == blocking
         ushort isSlotObject : 1;
         ushort ownArgumentTypes : 1;
