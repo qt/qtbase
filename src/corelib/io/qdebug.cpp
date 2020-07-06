@@ -956,7 +956,7 @@ void qt_QMetaEnum_flagDebugOperator(QDebug &debug, size_t sizeofT, int value)
          MyNamespace::MyClass::MyScopedEnum::Enum3
          MyNamespace::MyClass::MyScopedEnum(456)
  */
-QDebug qt_QMetaEnum_debugOperator(QDebug &dbg, int value, const QMetaObject *meta, const char *name)
+QDebug qt_QMetaEnum_debugOperator(QDebug &dbg, qint64 value, const QMetaObject *meta, const char *name)
 {
     QDebugStateSaver saver(dbg);
     dbg.nospace();

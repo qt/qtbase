@@ -388,7 +388,7 @@ void qt_QMetaEnum_flagDebugOperator(QDebug &debug, size_t sizeofT, Int value)
 }
 
 #if !defined(QT_NO_QOBJECT) && !defined(Q_QDOC)
-Q_CORE_EXPORT QDebug qt_QMetaEnum_debugOperator(QDebug&, int value, const QMetaObject *meta, const char *name);
+Q_CORE_EXPORT QDebug qt_QMetaEnum_debugOperator(QDebug&, qint64 value, const QMetaObject *meta, const char *name);
 Q_CORE_EXPORT QDebug qt_QMetaEnum_flagDebugOperator(QDebug &dbg, quint64 value, const QMetaObject *meta, const char *name);
 
 template<typename T>
@@ -397,7 +397,7 @@ operator<<(QDebug dbg, T value)
 {
     const QMetaObject *obj = qt_getEnumMetaObject(value);
     const char *name = qt_getEnumName(value);
-    return qt_QMetaEnum_debugOperator(dbg, typename QFlags<T>::Int(value), obj, name);
+    return qt_QMetaEnum_debugOperator(dbg, static_cast<typename std::underlying_type<T>::type>(value), obj, name);
 }
 
 template<typename T,
