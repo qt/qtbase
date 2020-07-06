@@ -464,6 +464,17 @@ struct has_ostream_operator<Stream, T, std::void_t<decltype(detail::reference<St
 template <typename Stream, typename T>
 constexpr bool has_ostream_operator_v = has_ostream_operator<Stream, T>::value;
 
+template <typename Stream, typename, typename = void>
+struct has_istream_operator : std::false_type {};
+template <typename Stream, typename T>
+struct has_istream_operator<Stream, T, std::void_t<decltype(detail::reference<Stream>() >> detail::reference<T>())>>
+        : std::true_type {};
+template <typename Stream, typename T>
+constexpr bool has_istream_operator_v = has_istream_operator<Stream, T>::value;
+
+template <typename Stream, typename T>
+constexpr bool has_stream_operator_v = has_ostream_operator_v<Stream, T> && has_istream_operator_v<Stream, T>;
+
 }
 
 

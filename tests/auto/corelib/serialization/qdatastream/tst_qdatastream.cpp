@@ -36,6 +36,14 @@
 #include <QtGui/QPixmap>
 #include <QtGui/QTextLength>
 
+static_assert(QTypeTraits::has_ostream_operator_v<QDataStream, int>);
+static_assert(QTypeTraits::has_ostream_operator_v<QDataStream, QList<int>>);
+static_assert(QTypeTraits::has_ostream_operator_v<QDataStream, QMap<int, QString>>);
+struct NonStreamable {};
+static_assert(!QTypeTraits::has_ostream_operator_v<QDataStream, NonStreamable>);
+static_assert(!QTypeTraits::has_ostream_operator_v<QDataStream, QList<NonStreamable>>);
+static_assert(!QTypeTraits::has_ostream_operator_v<QDataStream, QMap<int, NonStreamable>>);
+
 class tst_QDataStream : public QObject
 {
 Q_OBJECT
