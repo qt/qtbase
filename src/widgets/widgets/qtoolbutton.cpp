@@ -40,7 +40,6 @@
 #include "qtoolbutton.h"
 
 #include <qapplication.h>
-#include <private/qdesktopwidget_p.h>
 #include <qdrawutil.h>
 #include <qevent.h>
 #include <qicon.h>
@@ -728,7 +727,7 @@ static QPoint positionMenu(const QToolButton *q, bool horizontal,
 {
     QPoint p;
     const QRect rect = q->rect(); // Find screen via point in case of QGraphicsProxyWidget.
-    QRect screen = QDesktopWidgetPrivate::availableGeometry(q->mapToGlobal(rect.center()));
+    const QRect screen = QWidgetPrivate::availableScreenGeometry(q);
     if (horizontal) {
         if (q->isRightToLeft()) {
             if (q->mapToGlobal(QPoint(0, rect.bottom())).y() + sh.height() <= screen.bottom()) {

@@ -49,7 +49,6 @@
 #endif
 
 #include "qevent.h"
-#include <private/qdesktopwidget_p.h>
 #include "qapplication.h"
 #include "qlayout.h"
 #if QT_CONFIG(sizegrip)
@@ -872,23 +871,23 @@ void QDialog::showEvent(QShowEvent *event)
 /*! \internal */
 void QDialog::adjustPosition(QWidget* w)
 {
-
     if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
         if (theme->themeHint(QPlatformTheme::WindowAutoPlacement).toBool())
             return;
     QPoint p(0, 0);
-    int extraw = 0, extrah = 0, scrn = 0;
+    int extraw = 0, extrah = 0;
     if (w)
         w = w->window();
     QRect desk;
-    if (w) {
-        scrn = QDesktopWidgetPrivate::screenNumber(w);
-    } else if (QGuiApplication::primaryScreen()->virtualSiblings().size() > 1) {
-        scrn = QDesktopWidgetPrivate::screenNumber(QCursor::pos());
-    } else {
-        scrn = QDesktopWidgetPrivate::screenNumber(this);
-    }
-    desk = QDesktopWidgetPrivate::availableGeometry(scrn);
+    QScreen *scrn = nullptr;
+    if (w)
+        scrn = w->screen();
+    else if (QGuiApplication::primaryScreen()->virtualSiblings().size() > 1)
+        scrn = QGuiApplication::screenAt(QCursor::pos());
+    else
+        scrn = screen();
+    if (scrn)
+        desk = scrn->availableGeometry();
 
     QWidgetList list = QApplication::topLevelWidgets();
     for (int i = 0; (extraw == 0 || extrah == 0) && i < list.size(); ++i) {
@@ -942,9 +941,9 @@ void QDialog::adjustPosition(QWidget* w)
     // QTBUG-52735: Manually set the correct target screen since scaling in a
     // subsequent call to QWindow::resize() may otherwise use the wrong factor
     // if the screen changed notification is still in an event queue.
-    if (scrn >= 0) {
+    if (scrn) {
         if (QWindow *window = windowHandle())
-            window->setScreen(QGuiApplication::screens().at(scrn));
+            window->setScreen(scrn);
     }
 
     move(p);

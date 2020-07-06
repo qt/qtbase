@@ -158,7 +158,7 @@
 #include "QtWidgets/qapplication.h"
 #include "QtGui/qevent.h"
 #include <private/qapplication_p.h>
-#include <private/qdesktopwidget_p.h>
+#include <private/qwidget_p.h>
 #if QT_CONFIG(lineedit)
 #include "QtWidgets/qlineedit.h"
 #endif

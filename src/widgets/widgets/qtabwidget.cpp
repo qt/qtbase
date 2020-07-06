@@ -44,7 +44,6 @@
 #include "private/qtabbar_p.h"
 #include "qapplication.h"
 #include "qbitmap.h"
-#include <private/qdesktopwidget_p.h>
 #include "qevent.h"
 #include "qlayout.h"
 #include "qstackedwidget.h"

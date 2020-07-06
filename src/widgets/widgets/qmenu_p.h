@@ -352,8 +352,7 @@ public:
     mutable QHash<QAction *, QWidget *> widgetItems;
     void updateActionRects() const;
     void updateActionRects(const QRect &screen) const;
-    QRect popupGeometry() const;
-    QRect popupGeometry(int screen) const;
+    QRect popupGeometry(QScreen *screen = nullptr) const;
     bool useFullScreenForPopup() const;
     int getLastVisibleAction() const;
     void popup(const QPoint &p, QAction *atAction, PositionFunction positionFunction = {});

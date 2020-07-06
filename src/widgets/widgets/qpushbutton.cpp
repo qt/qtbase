@@ -39,7 +39,6 @@
 
 #include "qapplication.h"
 #include "qbitmap.h"
-#include <private/qdesktopwidget_p.h>
 #if QT_CONFIG(dialog)
 #include <private/qdialog_p.h>
 #endif

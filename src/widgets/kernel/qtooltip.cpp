@@ -40,7 +40,6 @@
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 
 #include <qapplication.h>
-#include <private/qdesktopwidget_p.h>
 #include <qevent.h>
 #include <qpointer.h>
 #include <qstyle.h>
@@ -167,11 +166,11 @@ private:
 QTipLabel *QTipLabel::instance = nullptr;
 
 QTipLabel::QTipLabel(const QString &text, const QPoint &pos, QWidget *w, int msecDisplayTime)
+    : QLabel(w, Qt::ToolTip | Qt::BypassGraphicsProxyWidget)
 #ifndef QT_NO_STYLE_STYLESHEET
-    : QLabel(w, Qt::ToolTip | Qt::BypassGraphicsProxyWidget), styleSheetParent(nullptr), widget(nullptr)
-#else
-    : QLabel(w, Qt::ToolTip | Qt::BypassGraphicsProxyWidget), widget(0)
+    , styleSheetParent(nullptr)
 #endif
+    , widget(nullptr)
 {
     delete instance;
     instance = this;
@@ -225,15 +224,10 @@ void  QTipLabel::updateSize(const QPoint &pos)
         ++extra.rheight();
     setWordWrap(Qt::mightBeRichText(text()));
     QSize sh = sizeHint();
-    QScreen *screen = windowHandle() ? windowHandle()->screen() : QGuiApplication::screenAt(pos);
-    if (!screen)
-        screen = QGuiApplication::primaryScreen();
-    if (screen) {
-        const qreal screenWidth = screen->geometry().width();
-        if (!wordWrap() && sh.width() > screenWidth) {
-            setWordWrap(true);
-            sh = sizeHint();
-        }
+    const QScreen *screen = getTipScreen(pos, this);
+    if (!wordWrap() && sh.width() > screen->geometry().width()) {
+        setWordWrap(true);
+        sh = sizeHint();
     }
     resize(sh + extra);
 }
@@ -367,10 +361,7 @@ bool QTipLabel::eventFilter(QObject *o, QEvent *e)
 
 QScreen *QTipLabel::getTipScreen(const QPoint &pos, QWidget *w)
 {
-    int screenNo = QGuiApplication::primaryScreen()->virtualSiblings().size() > 1
-                 ? QDesktopWidgetPrivate::screenNumber(pos)
-                 : QDesktopWidgetPrivate::screenNumber(w);
-    return QDesktopWidgetPrivate::screen(screenNo);
+    return w ? w->screen() : QGuiApplication::primaryScreen()->virtualSiblingAt(pos);
 }
 
 void QTipLabel::placeTip(const QPoint &pos, QWidget *w)
@@ -463,12 +454,11 @@ bool QTipLabel::tipChanged(const QPoint &pos, const QString &text, QObject *o)
 
 void QToolTip::showText(const QPoint &pos, const QString &text, QWidget *w, const QRect &rect, int msecDisplayTime)
 {
-    if (QTipLabel::instance && QTipLabel::instance->isVisible()){ // a tip does already exist
+    if (QTipLabel::instance && QTipLabel::instance->isVisible()) { // a tip does already exist
         if (text.isEmpty()){ // empty text means hide current tip
             QTipLabel::instance->hideTip();
             return;
-        }
-        else if (!QTipLabel::instance->fadingOut){
+        } else if (!QTipLabel::instance->fadingOut) {
             // If the tip has changed, reuse the one
             // that is showing (removes flickering)
             QPoint localPos = pos;
@@ -483,23 +473,22 @@ void QToolTip::showText(const QPoint &pos, const QString &text, QWidget *w, cons
         }
     }
 
-    if (!text.isEmpty()){ // no tip can be reused, create new tip:
-        QWidget *tipLabelParent = [pos, w]() -> QWidget* {
+    if (!text.isEmpty()) { // no tip can be reused, create new tip:
+        QWidget *tipLabelParent = [w]() -> QWidget* {
 #ifdef Q_OS_WIN32
             // On windows, we can't use the widget as parent otherwise the window will be
             // raised when the tooltip will be shown
-            QScreen *screen = QTipLabel::getTipScreen(pos, w);
-            return QApplication::desktop(screen);
+            Q_UNUSED(w);
+            return nullptr;
 #else
-            Q_UNUSED(pos);
             return w;
 #endif
         }();
         new QTipLabel(text, pos, tipLabelParent, msecDisplayTime); // sets QTipLabel::instance to itself
+        QWidgetPrivate::get(QTipLabel::instance)->setScreen(QTipLabel::getTipScreen(pos, w));
         QTipLabel::instance->setTipRect(w, rect);
         QTipLabel::instance->placeTip(pos, w);
         QTipLabel::instance->setObjectName(QLatin1String("qtooltip_label"));
-
 
 #if QT_CONFIG(effects)
         if (QApplication::isEffectEnabled(Qt::UI_FadeTooltip))

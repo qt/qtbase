@@ -38,7 +38,9 @@
 ****************************************************************************/
 
 #include "qapplication.h"
+#include "qdebug.h"
 #include "qeffects_p.h"
+#include "qelapsedtimer.h"
 #include "qevent.h"
 #include "qimage.h"
 #include "qpainter.h"
@@ -46,10 +48,10 @@
 #include "qpixmap.h"
 #include "qpointer.h"
 #include "qtimer.h"
-#include "qelapsedtimer.h"
-#include "qdebug.h"
+#include "qwidget.h"
+#include "private/qwidget_p.h"
+#include "qwindow.h"
 
-#include <private/qdesktopwidget_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -98,8 +100,9 @@ static QAlphaWidget* q_blend = nullptr;
   Constructs a QAlphaWidget.
 */
 QAlphaWidget::QAlphaWidget(QWidget* w, Qt::WindowFlags f)
-    : QWidget(QApplication::desktop(w ? w->screen() : nullptr), f)
+    : QWidget(nullptr, f)
 {
+    QWidgetPrivate::get(this)->setScreen(w->screen());
 #ifndef Q_OS_WIN
     setEnabled(false);
 #endif
@@ -161,7 +164,7 @@ void QAlphaWidget::run(int time)
     resize(widget->size().width(), widget->size().height());
 
     frontImage = widget->grab().toImage();
-    backImage = QGuiApplication::primaryScreen()->grabWindow(QApplication::desktop()->winId(),
+    backImage = QGuiApplication::primaryScreen()->grabWindow(0,
                                 widget->geometry().x(), widget->geometry().y(),
                                 widget->geometry().width(), widget->geometry().height()).toImage();
 
@@ -379,8 +382,9 @@ static QRollEffect* q_roll = nullptr;
   Construct a QRollEffect widget.
 */
 QRollEffect::QRollEffect(QWidget* w, Qt::WindowFlags f, DirFlags orient)
-    : QWidget(QApplication::desktop(w ? w->screen() : nullptr), f), orientation(orient)
+    : QWidget(nullptr, f), orientation(orient)
 {
+    QWidgetPrivate::get(this)->setScreen(w->screen());
 #ifndef Q_OS_WIN
     setEnabled(false);
 #endif

@@ -41,7 +41,7 @@
 #include "qpointer.h"
 #include "qapplication.h"
 #include <private/qguiapplication_p.h>
-#include <private/qdesktopwidget_p.h>
+#include "qwidget.h"
 #include "qevent.h"
 #include "qpixmap.h"
 #include "qscreen.h"
@@ -235,8 +235,7 @@ QWhatsThat::~QWhatsThat()
 
 void QWhatsThat::showEvent(QShowEvent *)
 {
-    background = QGuiApplication::primaryScreen()->grabWindow(QApplication::desktop()->internalWinId(),
-                                                              x(), y(), width(), height());
+    background = QGuiApplication::primaryScreen()->grabWindow(0, x(), y(), width(), height());
 }
 
 void QWhatsThat::mousePressEvent(QMouseEvent* e)
@@ -579,16 +578,16 @@ void QWhatsThisPrivate::say(QWidget * widget, const QString &text, int x, int y)
     QWhatsThat *whatsThat = new QWhatsThat(text, nullptr, widget);
 
     // okay, now to find a suitable location
-    int scr = (widget ?
-                QDesktopWidgetPrivate::screenNumber(widget) :
-                QDesktopWidgetPrivate::screenNumber(QPoint(x,y))
-               );
-    QRect screen = QDesktopWidgetPrivate::screenGeometry(scr);
+    QScreen *screen = widget ? widget->screen()
+                             : QGuiApplication::screenAt(QPoint(x, y));
+    if (!screen)
+        screen = QGuiApplication::primaryScreen();
+    QRect screenRect = screen->geometry();
 
     int w = whatsThat->width();
     int h = whatsThat->height();
-    int sx = screen.x();
-    int sy = screen.y();
+    int sx = screenRect.x();
+    int sy = screenRect.y();
 
     // first try locating the widget immediately above/below,
     // with nice alignment if possible.
@@ -601,13 +600,13 @@ void QWhatsThisPrivate::say(QWidget * widget, const QString &text, int x, int y)
     else
         x = x - w/2;
 
-        // squeeze it in if that would result in part of what's this
-        // being only partially visible
-    if (x + w  + shadowWidth > sx+screen.width())
-        x = (widget? (qMin(screen.width(),
-                           pos.x() + widget->width())
-                     ) : screen.width())
+    // squeeze it in if that would result in part of what's this
+    // being only partially visible
+    if (x + w  + shadowWidth > sx+screenRect.width()) {
+        x = (widget ? qMin(screenRect.width(), pos.x() + widget->width())
+                    : screenRect.width())
             - w;
+    }
 
     if (x < sx)
         x = sx;
@@ -615,18 +614,18 @@ void QWhatsThisPrivate::say(QWidget * widget, const QString &text, int x, int y)
     if (widget && h > widget->height() + 16) {
         y = pos.y() + widget->height() + 2; // below, two pixels spacing
         // what's this is above or below, wherever there's most space
-        if (y + h + 10 > sy+screen.height())
+        if (y + h + 10 > sy + screenRect.height())
             y = pos.y() + 2 - shadowWidth - h; // above, overlap
     }
     y = y + 2;
 
-        // squeeze it in if that would result in part of what's this
-        // being only partially visible
-    if (y + h + shadowWidth > sy+screen.height())
-        y = (widget ? (qMin(screen.height(),
-                             pos.y() + widget->height())
-                       ) : screen.height())
+    // squeeze it in if that would result in part of what's this
+    // being only partially visible
+    if (y + h + shadowWidth > sy + screenRect.height()) {
+        y = (widget ? qMin(screenRect.height(), pos.y() + widget->height())
+                    : screenRect.height())
             - h;
+    }
     if (y < sy)
         y = sy;
 

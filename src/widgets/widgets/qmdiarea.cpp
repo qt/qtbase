@@ -165,7 +165,6 @@
 #include <QPainter>
 #include <QFontMetrics>
 #include <QStyleOption>
-#include <private/qdesktopwidget_p.h>
 #include <QDebug>
 #include <qmath.h>
 #if QT_CONFIG(menu)

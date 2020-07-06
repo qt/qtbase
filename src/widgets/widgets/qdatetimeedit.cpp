@@ -42,7 +42,6 @@
 #include <qabstractspinbox.h>
 #include <qapplication.h>
 #include <qdatetimeedit.h>
-#include <private/qdesktopwidget_p.h>
 #include <qdebug.h>
 #include <qevent.h>
 #include <qlineedit.h>
@@ -2598,28 +2597,31 @@ void QDateTimeEditPrivate::positionCalendarPopup()
     pos = q->mapToGlobal(pos);
     pos2 = q->mapToGlobal(pos2);
     QSize size = monthCalendar->sizeHint();
-    QRect screen = QDesktopWidgetPrivate::availableGeometry(pos);
+    QScreen *screen = QGuiApplication::screenAt(pos);
+    if (!screen)
+        screen = QGuiApplication::primaryScreen();
+    const QRect screenRect = screen->availableGeometry();
     //handle popup falling "off screen"
     if (q->layoutDirection() == Qt::RightToLeft) {
         pos.setX(pos.x()-size.width());
         pos2.setX(pos2.x()-size.width());
-        if (pos.x() < screen.left())
-            pos.setX(qMax(pos.x(), screen.left()));
-        else if (pos.x()+size.width() > screen.right())
-            pos.setX(qMax(pos.x()-size.width(), screen.right()-size.width()));
+        if (pos.x() < screenRect.left())
+            pos.setX(qMax(pos.x(), screenRect.left()));
+        else if (pos.x()+size.width() > screenRect.right())
+            pos.setX(qMax(pos.x()-size.width(), screenRect.right()-size.width()));
     } else {
-        if (pos.x()+size.width() > screen.right())
-            pos.setX(screen.right()-size.width());
-        pos.setX(qMax(pos.x(), screen.left()));
+        if (pos.x()+size.width() > screenRect.right())
+            pos.setX(screenRect.right()-size.width());
+        pos.setX(qMax(pos.x(), screenRect.left()));
     }
-    if (pos.y() + size.height() > screen.bottom())
+    if (pos.y() + size.height() > screenRect.bottom())
         pos.setY(pos2.y() - size.height());
-    else if (pos.y() < screen.top())
-        pos.setY(screen.top());
-    if (pos.y() < screen.top())
-        pos.setY(screen.top());
-    if (pos.y()+size.height() > screen.bottom())
-        pos.setY(screen.bottom()-size.height());
+    else if (pos.y() < screenRect.top())
+        pos.setY(screenRect.top());
+    if (pos.y() < screenRect.top())
+        pos.setY(screenRect.top());
+    if (pos.y()+size.height() > screenRect.bottom())
+        pos.setY(screenRect.bottom()-size.height());
     monthCalendar->move(pos);
 }
 

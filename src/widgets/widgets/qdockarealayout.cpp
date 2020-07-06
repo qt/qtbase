@@ -44,7 +44,6 @@
 #include "QtWidgets/qtabbar.h"
 #endif
 #include "QtWidgets/qstyle.h"
-#include <private/qdesktopwidget_p.h>
 #include "QtWidgets/qapplication.h"
 #include "QtCore/qvariant.h"
 #include "qdockarealayout_p.h"
@@ -3019,19 +3018,20 @@ QSize QDockAreaLayout::minimumSize() const
  */
 QRect QDockAreaLayout::constrainedRect(QRect rect, QWidget* widget)
 {
-    QRect desktop;
+    QScreen *screen;
     if (QGuiApplication::primaryScreen()->virtualSiblings().size() > 1)
-        desktop = QDesktopWidgetPrivate::screenGeometry(rect.topLeft());
+        screen = QGuiApplication::screenAt(rect.topLeft());
     else
-        desktop = QWidgetPrivate::screenGeometry(widget);
+        screen = widget->screen();
 
-    if (desktop.isValid()) {
-        rect.setWidth(qMin(rect.width(), desktop.width()));
-        rect.setHeight(qMin(rect.height(), desktop.height()));
-        rect.moveLeft(qMax(rect.left(), desktop.left()));
-        rect.moveTop(qMax(rect.top(), desktop.top()));
-        rect.moveRight(qMin(rect.right(), desktop.right()));
-        rect.moveBottom(qMin(rect.bottom(), desktop.bottom()));
+    const QRect screenRect = screen->geometry();
+    if (screenRect.isValid()) {
+        rect.setWidth(qMin(rect.width(), screenRect.width()));
+        rect.setHeight(qMin(rect.height(), screenRect.height()));
+        rect.moveLeft(qMax(rect.left(), screenRect.left()));
+        rect.moveTop(qMax(rect.top(), screenRect.top()));
+        rect.moveRight(qMin(rect.right(), screenRect.right()));
+        rect.moveBottom(qMin(rect.bottom(), screenRect.bottom()));
     }
 
     return rect;

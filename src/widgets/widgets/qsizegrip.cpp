@@ -50,7 +50,6 @@
 #include "qdebug.h"
 
 #include <private/qwidget_p.h>
-#include <private/qdesktopwidget_p.h>
 #include <QtWidgets/qabstractscrollarea.h>
 
 QT_BEGIN_NAMESPACE

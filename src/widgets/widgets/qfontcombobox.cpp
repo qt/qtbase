@@ -46,7 +46,6 @@
 #include <qevent.h>
 #include <qapplication.h>
 #include <private/qcombobox_p.h>
-#include <private/qdesktopwidget_p.h>
 #include <qdebug.h>
 
 QT_BEGIN_NAMESPACE

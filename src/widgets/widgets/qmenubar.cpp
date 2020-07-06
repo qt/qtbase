@@ -63,7 +63,6 @@
 #include <qpa/qplatformtheme.h>
 #include "private/qguiapplication_p.h"
 #include "qpa/qplatformintegration.h"
-#include <private/qdesktopwidget_p.h>
 
 #include "qmenu_p.h"
 #include "qmenubar_p.h"

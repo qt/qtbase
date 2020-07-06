@@ -64,7 +64,6 @@
 #include <QtGui/qfontmetrics.h>
 #include <QtGui/qclipboard.h>
 #include "private/qabstractbutton_p.h"
-#include <private/qdesktopwidget_p.h>
 
 #ifdef Q_OS_WIN
 #    include <QtCore/qt_windows.h>
@@ -363,7 +362,7 @@ void QMessageBoxPrivate::updateSize()
     if (!q->isVisible())
         return;
 
-    QSize screenSize = QDesktopWidgetPrivate::availableGeometry(QCursor::pos()).size();
+    const QSize screenSize = QGuiApplication::screenAt(QCursor::pos())->availableGeometry().size();
     int hardLimit = qMin(screenSize.width() - 480, 1000); // can never get bigger than this
     // on small screens allows the messagebox be the same size as the screen
     if (screenSize.width() <= 1024)

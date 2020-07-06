@@ -41,7 +41,7 @@
 
 #include "qframe.h"
 #include "qapplication.h"
-#include <private/qdesktopwidget_p.h>
+#include "private/qwidget_p.h"
 #include "qcursor.h"
 #if QT_CONFIG(sizegrip)
 #include "qsizegrip.h"

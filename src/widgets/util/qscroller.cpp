@@ -57,7 +57,6 @@
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #endif
-#include <private/qdesktopwidget_p.h>
 #include <QVector2D>
 #include <QtCore/qmath.h>
 #include <QtGui/qevent.h>
