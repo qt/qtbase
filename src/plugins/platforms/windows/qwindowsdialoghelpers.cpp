@@ -1078,8 +1078,11 @@ void QWindowsNativeFileDialogBase::setNameFilters(const QStringList &filters)
         const QString &filter = specs[i].filter;
         if (!m_hideFiltersDetails && !filter.startsWith(u"*.")) {
             const int pos = description.lastIndexOf(u'(');
-            if (pos > 0)
+            if (pos > 0) {
                 description.truncate(pos);
+                while (!description.isEmpty() && description.back().isSpace())
+                    description.chop(1);
+            }
         }
         // Add to buffer.
         comFilterSpec[i].pszName = ptr;
