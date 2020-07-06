@@ -400,7 +400,6 @@ def process_qrc_file(
     base_dir: str = "",
     project_file_path: str = "",
     skip_qtquick_compiler: bool = False,
-    retain_qtquick_compiler: bool = False,
     is_example: bool = False,
 ) -> str:
     assert target
@@ -469,7 +468,6 @@ def process_qrc_file(
             lang,
             files,
             skip_qtquick_compiler,
-            retain_qtquick_compiler,
             is_example,
         )
         resource_count += 1
@@ -486,7 +484,6 @@ def write_add_qt_resource_call(
     lang: Optional[str],
     files: Dict[str, str],
     skip_qtquick_compiler: bool,
-    retain_qtquick_compiler: bool,
     is_example: bool,
 ) -> str:
     output = ""
@@ -549,12 +546,6 @@ def write_add_qt_resource_call(
             " PROPERTIES QT_SKIP_QUICKCOMPILER 1)\n\n"
         )
 
-    if retain_qtquick_compiler:
-        output += (
-            f"set_source_files_properties(${{{resource_name}_resource_files}}"
-            "PROPERTIES QT_RETAIN_QUICKCOMPILER 1)\n\n"
-        )
-
     prefix_expanded = scope.expandString(prefix)
     if prefix_expanded:
         prefix = prefix_expanded
@@ -564,7 +555,6 @@ def write_add_qt_resource_call(
     params += f'{spaces(1)}PREFIX\n{spaces(2)}"{prefix}"\n'
     if base_dir:
         params += f'{spaces(1)}BASE\n{spaces(2)}"{base_dir}"\n'
-    add_resource_command = ""
     if is_example:
         add_resource_command = "qt6_add_resources"
     else:
@@ -2342,13 +2332,11 @@ def write_resources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, 
     # Handle QRC files by turning them into qt_add_resource:
     resources = scope.get_files("RESOURCES")
     qtquickcompiler_skipped = scope.get_files("QTQUICK_COMPILER_SKIPPED_RESOURCES")
-    qtquickcompiler_retained = scope.get_files("QTQUICK_COMPILER_RETAINED_RESOURCES")
     qrc_output = ""
     if resources:
         standalone_files: List[str] = []
         for r in resources:
             skip_qtquick_compiler = r in qtquickcompiler_skipped
-            retain_qtquick_compiler = r in qtquickcompiler_retained
             if r.endswith(".qrc"):
                 if "${CMAKE_CURRENT_BINARY_DIR}" in r:
                     cm_fh.write(f"#### Ignored generated resource: {r}")
@@ -2360,7 +2348,6 @@ def write_resources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, 
                     scope.basedir,
                     scope.file_absolute_path,
                     skip_qtquick_compiler,
-                    retain_qtquick_compiler,
                     is_example,
                 )
             else:
@@ -2394,7 +2381,6 @@ def write_resources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, 
                         lang=immediate_lang,
                         files=immediate_files,
                         skip_qtquick_compiler=skip_qtquick_compiler,
-                        retain_qtquick_compiler=retain_qtquick_compiler,
                         is_example=is_example,
                     )
                 else:
@@ -2408,12 +2394,6 @@ def write_resources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, 
                                 f'set_source_files_properties("{r}" PROPERTIES '
                                 f"QT_SKIP_QUICKCOMPILER 1)\n\n"
                             )
-
-                        if retain_qtquick_compiler:
-                            qrc_output += (
-                                f'set_source_files_properties("{r}" PROPERTIES '
-                                f"QT_RETAIN_QUICKCOMPILER 1)\n\n"
-                            )
                         standalone_files.append(r)
 
         if standalone_files:
@@ -2422,7 +2402,6 @@ def write_resources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, 
             base = ""
             lang = None
             files = {f: "" for f in standalone_files}
-            skip_qtquick_compiler = False
             qrc_output += write_add_qt_resource_call(
                 target=target_ref,
                 scope=scope,
@@ -2432,7 +2411,6 @@ def write_resources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, 
                 lang=lang,
                 files=files,
                 skip_qtquick_compiler=False,
-                retain_qtquick_compiler=False,
                 is_example=is_example,
             )
 
