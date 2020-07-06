@@ -97,8 +97,6 @@ class QFlags
     struct Private;
     typedef int (Private::*Zero);
 #endif
-    template <typename E> friend QDataStream &operator>>(QDataStream &, QFlags<E> &);
-    template <typename E> friend QDataStream &operator<<(QDataStream &, QFlags<E>);
 public:
 #if defined(Q_CC_MSVC) || defined(Q_CLANG_QDOC)
     // see above for MSVC

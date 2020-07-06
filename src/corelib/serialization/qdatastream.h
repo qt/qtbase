@@ -396,11 +396,16 @@ inline QDataStream &QDataStream::operator<<(quint64 i)
 
 template <typename Enum>
 inline QDataStream &operator<<(QDataStream &s, QFlags<Enum> e)
-{ return s << e.i; }
+{ return s << typename QFlags<Enum>::Int(e); }
 
 template <typename Enum>
 inline QDataStream &operator>>(QDataStream &s, QFlags<Enum> &e)
-{ return s >> e.i; }
+{
+    typename QFlags<Enum>::Int i;
+    s >> i;
+    e = QFlag(i);
+    return s;
+}
 
 template <typename T>
 typename std::enable_if_t<std::is_enum<T>::value, QDataStream &>
