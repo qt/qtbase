@@ -58,7 +58,7 @@ private:
     bool m_hasMainLoop = false;
     bool m_hasZeroTimer = false;
     uint64_t m_currentTargetTime = std::numeric_limits<uint64_t>::max();
-    QVector<std::function<void(void)>> m_requestUpdateCallbacks;
+    QList<std::function<void(void)>> m_requestUpdateCallbacks;
 };
 
 QT_END_NAMESPACE

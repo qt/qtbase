@@ -44,7 +44,7 @@
 
 #include <qpa/qplatformmenu.h>
 
-#include <QtCore/qvector.h>
+#include <QtCore/qlist.h>
 #include <QtCore/qpair.h>
 
 QT_BEGIN_NAMESPACE
@@ -120,7 +120,7 @@ class QWindowsMenu : public QPlatformMenu
 {
     Q_OBJECT
 public:
-    using MenuItems = QVector<QWindowsMenuItem *>;
+    using MenuItems = QList<QWindowsMenuItem *>;
 
     QWindowsMenu();
     ~QWindowsMenu();
@@ -196,7 +196,7 @@ class QWindowsMenuBar : public QPlatformMenuBar
 {
     Q_OBJECT
 public:
-    using Menus = QVector<QWindowsMenu *>;
+    using Menus = QList<QWindowsMenu *>;
 
     QWindowsMenuBar();
     ~QWindowsMenuBar() override;

@@ -182,7 +182,7 @@ void QXcbDrag::startDrag()
 
     QStringList fmts = QXcbMime::formatsHelper(drag()->mimeData());
     for (int i = 0; i < fmts.size(); ++i) {
-        QVector<xcb_atom_t> atoms = QXcbMime::mimeAtomsForFormat(connection(), fmts.at(i));
+        QList<xcb_atom_t> atoms = QXcbMime::mimeAtomsForFormat(connection(), fmts.at(i));
         for (int j = 0; j < atoms.size(); ++j) {
             if (!drag_types.contains(atoms.at(j)))
                 drag_types.append(atoms.at(j));
@@ -580,7 +580,7 @@ Qt::DropAction QXcbDrag::toDropAction(xcb_atom_t a) const
     return Qt::CopyAction;
 }
 
-Qt::DropActions QXcbDrag::toDropActions(const QVector<xcb_atom_t> &atoms) const
+Qt::DropActions QXcbDrag::toDropActions(const QList<xcb_atom_t> &atoms) const
 {
     Qt::DropActions actions;
     for (const auto actionAtom : atoms) {
@@ -625,7 +625,7 @@ void QXcbDrag::readActionList()
 void QXcbDrag::setActionList(Qt::DropAction requestedAction, Qt::DropActions supportedActions)
 {
 #ifndef QT_NO_CLIPBOARD
-    QVector<xcb_atom_t> actions;
+    QList<xcb_atom_t> actions;
     if (requestedAction != Qt::IgnoreAction)
         actions.append(toXdndAction(requestedAction));
 
@@ -1361,7 +1361,7 @@ QVariant QXcbDropData::xdndObtainData(const QByteArray &format, QMetaType::Type 
         return result;
     }
 
-    QVector<xcb_atom_t> atoms = drag->xdnd_types;
+    QList<xcb_atom_t> atoms = drag->xdnd_types;
     bool hasUtf8 = false;
     xcb_atom_t a = mimeAtomForFormat(c, QLatin1String(format), requestedType, atoms, &hasUtf8);
     if (a == XCB_NONE)

@@ -49,7 +49,7 @@
 QT_BEGIN_NAMESPACE
 
 QT_WARNING_DISABLE_GCC("-Wsign-compare")
-typedef QVector<QWindowsPrinterInfo> WindowsPrinterLookup;
+typedef QList<QWindowsPrinterInfo> WindowsPrinterLookup;
 Q_GLOBAL_STATIC(WindowsPrinterLookup, windowsDeviceLookup);
 
 extern qreal qt_pointMultiplier(QPageLayout::Unit unit);

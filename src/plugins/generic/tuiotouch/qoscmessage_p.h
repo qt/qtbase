@@ -58,12 +58,12 @@ public:
     bool isValid() const { return m_isValid; }
 
     QByteArray addressPattern() const { return m_addressPattern; }
-    QList<QVariant> arguments() const { return m_arguments; }
+    QVariantList arguments() const { return m_arguments; }
 
 private:
     bool m_isValid;
     QByteArray m_addressPattern;
-    QList<QVariant> m_arguments;
+    QVariantList m_arguments;
 };
 Q_DECLARE_TYPEINFO(QOscMessage, Q_MOVABLE_TYPE);
 

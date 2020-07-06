@@ -572,7 +572,7 @@ void QXcbConnection::xi2SelectDeviceEventsCompatibility(xcb_window_t window)
     QSet<int> tabletDevices;
     if (!m_tabletData.isEmpty()) {
         const int nrTablets = m_tabletData.count();
-        QVector<qt_xcb_input_event_mask_t> xiEventMask(nrTablets);
+        QList<qt_xcb_input_event_mask_t> xiEventMask(nrTablets);
         for (int i = 0; i < nrTablets; ++i) {
             int deviceId = m_tabletData.at(i).deviceId;
             tabletDevices.insert(deviceId);
@@ -585,7 +585,7 @@ void QXcbConnection::xi2SelectDeviceEventsCompatibility(xcb_window_t window)
 #endif
 
     if (!m_scrollingDevices.isEmpty()) {
-        QVector<qt_xcb_input_event_mask_t> xiEventMask(m_scrollingDevices.size());
+        QList<qt_xcb_input_event_mask_t> xiEventMask(m_scrollingDevices.size());
         int i = 0;
         for (const ScrollingDevice& scrollingDevice : qAsConst(m_scrollingDevices)) {
 #if QT_CONFIG(tabletevent)

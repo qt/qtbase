@@ -40,8 +40,8 @@
 #ifndef QVSP2BLENDINGDEVICE_H
 #define QVSP2BLENDINGDEVICE_H
 
+#include <QtCore/QList>
 #include <QtCore/QRect>
-#include <QtCore/QVector>
 #include <QtCore/qglobal.h>
 
 #include "qlinuxmediadevice.h"
@@ -86,7 +86,7 @@ private:
         struct media_pad *bruInputFormatPad = nullptr; // bru:x
         QLinuxMediaDevice::OutputSubDevice *rpfInput = nullptr; // rpf.x input
     };
-    QVector<struct Input> m_inputs;
+    QList<struct Input> m_inputs;
     const QSize m_screenSize;
     bool m_dirty = true;
 };

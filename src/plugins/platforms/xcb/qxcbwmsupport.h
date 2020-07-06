@@ -41,7 +41,7 @@
 
 #include "qxcbobject.h"
 #include "qxcbconnection.h"
-#include <qvector.h>
+#include <qlist.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -52,15 +52,15 @@ public:
 
 
     bool isSupportedByWM(xcb_atom_t atom) const;
-    const QVector<xcb_window_t> &virtualRoots() const { return net_virtual_roots; }
+    const QList<xcb_window_t> &virtualRoots() const { return net_virtual_roots; }
 
 private:
     friend class QXcbConnection;
     void updateNetWMAtoms();
     void updateVirtualRoots();
 
-    QVector<xcb_atom_t> net_wm_atoms;
-    QVector<xcb_window_t> net_virtual_roots;
+    QList<xcb_atom_t> net_wm_atoms;
+    QList<xcb_window_t> net_virtual_roots;
 };
 
 QT_END_NAMESPACE

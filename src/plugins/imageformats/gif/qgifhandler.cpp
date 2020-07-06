@@ -69,7 +69,7 @@ public:
 
     int decode(QImage *image, const uchar* buffer, int length,
                int *nextFrameDelay, int *loopCount);
-    static void scan(QIODevice *device, QVector<QSize> *imageSizes, int *loopCount);
+    static void scan(QIODevice *device, QList<QSize> *imageSizes, int *loopCount);
 
     bool newFrame;
     bool partialNewFrame;
@@ -688,9 +688,9 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
 
 /*!
    Scans through the data stream defined by \a device and returns the image
-   sizes found in the stream in the \a imageSizes vector.
+   sizes found in the stream in the \a imageSizes list.
 */
-void QGIFFormat::scan(QIODevice *device, QVector<QSize> *imageSizes, int *loopCount)
+void QGIFFormat::scan(QIODevice *device, QList<QSize> *imageSizes, int *loopCount)
 {
     if (!device)
         return;

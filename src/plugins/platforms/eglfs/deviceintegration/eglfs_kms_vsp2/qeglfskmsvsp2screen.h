@@ -97,7 +97,7 @@ private:
     std::array<FrameBuffer, 2> m_frameBuffers;
     uint m_backFb = 0;
     void initDumbFrameBuffer(FrameBuffer &fb);
-    QVector<void (*)()> m_blendFinishedCallbacks;
+    QList<void (*)()> m_blendFinishedCallbacks;
 
     struct DmaBuffer { //these are for qt buffers before blending with additional layers (gbm buffer data)
         int dmabufFd = -1;

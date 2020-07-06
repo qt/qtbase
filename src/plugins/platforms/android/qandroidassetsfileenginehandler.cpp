@@ -42,7 +42,7 @@
 #include <optional>
 
 #include <QCoreApplication>
-#include <QVector>
+#include <QList>
 #include <QtCore/private/qjni_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -88,7 +88,7 @@ struct AssetItem {
     QString name;
 };
 
-using AssetItemList = QVector<AssetItem>;
+using AssetItemList = QList<AssetItem>;
 
 class FolderIterator : public AssetItemList
 {

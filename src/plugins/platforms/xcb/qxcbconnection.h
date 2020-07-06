@@ -49,7 +49,6 @@
 #include "qxcbexport.h"
 #include <QHash>
 #include <QList>
-#include <QVector>
 #include <qpa/qwindowsysteminterface.h>
 #include <QtCore/QLoggingCategory>
 #include <QtCore/private/qglobal_p.h>
@@ -277,7 +276,7 @@ private:
             int number = -1;
             QXcbAtom::Atom label;
         };
-        QVector<ValuatorClassInfo> valuatorInfo;
+        QList<ValuatorClassInfo> valuatorInfo;
 
         // Stuff that is relevant only for touchpads
         QPointF firstPressedPosition;        // in screen coordinates where the first point was pressed
@@ -313,7 +312,7 @@ private:
     friend class QTypeInfo<TabletData::ValuatorClassInfo>;
     bool xi2HandleTabletEvent(const void *event, TabletData *tabletData);
     void xi2ReportTabletEvent(const void *event, TabletData *tabletData);
-    QVector<TabletData> m_tabletData;
+    QList<TabletData> m_tabletData;
     TabletData *tabletDataForDevice(int id);
 #endif // QT_CONFIG(tabletevent)
     // TODO get rid of this: store a smaller struct in QPointingDevicePrivate::extra
@@ -378,7 +377,7 @@ private:
     mutable QXcbGlIntegration *m_glIntegration = nullptr;
     mutable bool m_glIntegrationInitialized = false;
     bool m_xiGrab = false;
-    QVector<int> m_xiMasterPointerIds;
+    QList<int> m_xiMasterPointerIds;
 
     xcb_window_t m_qtSelectionOwner = 0;
 

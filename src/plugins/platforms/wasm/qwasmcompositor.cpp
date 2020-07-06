@@ -621,7 +621,7 @@ void QWasmCompositor::drawShadePanel(QWasmTitleBarOptions options, QPainter *pai
             light = palette.midlight().color();
     }
     QPen oldPen = painter->pen();
-    QVector<QLineF> lines;
+    QList<QLineF> lines;
     lines.reserve(2*lineWidth);
 
     painter->setPen(light);

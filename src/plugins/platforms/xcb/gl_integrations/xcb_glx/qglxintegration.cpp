@@ -261,7 +261,7 @@ QGLXContext::QGLXContext(Display *display, QXcbScreen *screen, const QSurfaceFor
             // order from the requested version.
             const int requestedVersion = m_format.majorVersion() * 10 + qMin(m_format.minorVersion(), 9);
 
-            QVector<int> glVersions;
+            QList<int> glVersions;
             if (m_format.renderableType() == QSurfaceFormat::OpenGL) {
                 if (requestedVersion > 46)
                     glVersions << requestedVersion;
@@ -290,7 +290,7 @@ QGLXContext::QGLXContext(Display *display, QXcbScreen *screen, const QSurfaceFor
                 const int majorVersion = version / 10;
                 const int minorVersion = version % 10;
 
-                QVector<int> contextAttributes;
+                QList<int> contextAttributes;
                 contextAttributes << GLX_CONTEXT_MAJOR_VERSION_ARB << majorVersion
                                   << GLX_CONTEXT_MINOR_VERSION_ARB << minorVersion;
 
@@ -323,7 +323,7 @@ QGLXContext::QGLXContext(Display *display, QXcbScreen *screen, const QSurfaceFor
                 }
 
                 if (supportsRobustness && m_format.testOption(QSurfaceFormat::ResetNotification)) {
-                    QVector<int> contextAttributesWithRobustness = contextAttributes;
+                    QList<int> contextAttributesWithRobustness = contextAttributes;
                     contextAttributesWithRobustness << GLX_CONTEXT_RESET_NOTIFICATION_STRATEGY_ARB << GLX_LOSE_CONTEXT_ON_RESET_ARB;
                     if (supportsVideoMemoryPurge)
                         contextAttributesWithRobustness << GLX_GENERATE_RESET_ON_VIDEO_MEMORY_PURGE_NV << GL_TRUE;

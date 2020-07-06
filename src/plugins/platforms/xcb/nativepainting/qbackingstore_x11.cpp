@@ -100,7 +100,7 @@ void QXcbNativeBackingStore::flush(QWindow *window, const QRegion &region, const
     Window wid = platformWindow->xcb_window();
     Pixmap pid = qt_x11PixmapHandle(m_pixmap);
 
-    QVector<XRectangle> clipRects = qt_region_to_xrectangles(clipped);
+    QList<XRectangle> clipRects = qt_region_to_xrectangles(clipped);
 
 #if QT_CONFIG(xrender)
     if (m_translucentBackground)
@@ -198,7 +198,7 @@ void QXcbNativeBackingStore::beginPaint(const QRegion &region)
 
 #if QT_CONFIG(xrender)
     if (m_translucentBackground) {
-        const QVector<XRectangle> xrects = qt_region_to_xrectangles(region);
+        const QList<XRectangle> xrects = qt_region_to_xrectangles(region);
         const XRenderColor color = { 0, 0, 0, 0 };
         XRenderFillRectangles(display(), PictOpSrc,
                               qt_x11PictureHandle(m_pixmap), &color,

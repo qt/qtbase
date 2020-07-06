@@ -60,8 +60,8 @@
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qpixmap.h>
 #include <QtCore/qdebug.h>
+#include <QtCore/qlist.h>
 #include <QtCore/qrect.h>
-#include <QtCore/qvector.h>
 #include <QtCore/qsettings.h>
 #include <qpa/qwindowsysteminterface.h>
 
@@ -119,7 +119,7 @@ struct QWindowsHwndSystemTrayIconEntry
     QWindowsSystemTrayIcon *trayIcon;
 };
 
-using HwndTrayIconEntries = QVector<QWindowsHwndSystemTrayIconEntry>;
+using HwndTrayIconEntries = QList<QWindowsHwndSystemTrayIconEntry>;
 
 Q_GLOBAL_STATIC(HwndTrayIconEntries, hwndTrayIconEntries)
 

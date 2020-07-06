@@ -129,9 +129,9 @@ bool QXcbMime::mimeDataForAtom(QXcbConnection *connection, xcb_atom_t a, QMimeDa
     return ret;
 }
 
-QVector<xcb_atom_t> QXcbMime::mimeAtomsForFormat(QXcbConnection *connection, const QString &format)
+QList<xcb_atom_t> QXcbMime::mimeAtomsForFormat(QXcbConnection *connection, const QString &format)
 {
-    QVector<xcb_atom_t> atoms;
+    QList<xcb_atom_t> atoms;
     atoms.reserve(7);
     atoms.append(connection->internAtom(format.toLatin1()));
 
@@ -256,7 +256,7 @@ QVariant QXcbMime::mimeConvertToFormat(QXcbConnection *connection, xcb_atom_t a,
 }
 
 xcb_atom_t QXcbMime::mimeAtomForFormat(QXcbConnection *connection, const QString &format, QMetaType::Type requestedType,
-                                 const QVector<xcb_atom_t> &atoms, bool *hasUtf8)
+                                 const QList<xcb_atom_t> &atoms, bool *hasUtf8)
 {
     *hasUtf8 = false;
 

@@ -42,15 +42,15 @@
 #include <qcoreapplication.h>
 #include <qvariant.h>
 #include <qdatetime.h>
+#include <qdebug.h>
+#include <qfile.h>
+#include <qlist.h>
 #include <qsqlerror.h>
 #include <qsqlfield.h>
 #include <qsqlindex.h>
 #include <qsqlquery.h>
 #include <qsqlrecord.h>
 #include <qstringlist.h>
-#include <qvector.h>
-#include <qfile.h>
-#include <qdebug.h>
 #include <QtSql/private/qsqldriver_p.h>
 #include <QtSql/private/qsqlresult_p.h>
 
@@ -178,7 +178,7 @@ public:
         ulong bufLength = 0ul;
     };
 
-    QVector<QMyField> fields;
+    QList<QMyField> fields;
 
     MYSQL_STMT *stmt = nullptr;
     MYSQL_RES *meta = nullptr;
@@ -882,11 +882,11 @@ bool QMYSQLResult::exec()
 
     int r = 0;
     MYSQL_BIND* currBind;
-    QVector<MYSQL_TIME *> timeVector;
-    QVector<QByteArray> stringVector;
-    QVector<my_bool> nullVector;
+    QList<MYSQL_TIME *> timeVector;
+    QList<QByteArray> stringVector;
+    QList<my_bool> nullVector;
 
-    const QVector<QVariant> values = boundValues();
+    const QList<QVariant> values = boundValues();
 
     r = mysql_stmt_reset(d->stmt);
     if (r != 0) {

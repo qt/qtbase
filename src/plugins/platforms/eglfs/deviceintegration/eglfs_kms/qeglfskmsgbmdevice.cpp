@@ -150,7 +150,7 @@ QPlatformScreen *QEglFSKmsGbmDevice::createHeadlessScreen()
 
 void QEglFSKmsGbmDevice::registerScreenCloning(QPlatformScreen *screen,
                                                QPlatformScreen *screenThisScreenClones,
-                                               const QVector<QPlatformScreen *> &screensCloningThisScreen)
+                                               const QList<QPlatformScreen *> &screensCloningThisScreen)
 {
     if (!screenThisScreenClones && screensCloningThisScreen.isEmpty())
         return;

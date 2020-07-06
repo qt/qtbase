@@ -296,7 +296,7 @@ protected:
     void create() override {} // No-op
 };
 
-QVector<xcb_rectangle_t> qRegionToXcbRectangleList(const QRegion &region);
+QList<xcb_rectangle_t> qRegionToXcbRectangleList(const QRegion &region);
 
 QT_END_NAMESPACE
 

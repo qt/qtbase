@@ -40,13 +40,13 @@
 #include "qsql_db2_p.h"
 #include <qcoreapplication.h>
 #include <qdatetime.h>
-#include <qsqlfield.h>
+#include <qlist.h>
 #include <qsqlerror.h>
+#include <qsqlfield.h>
 #include <qsqlindex.h>
 #include <qsqlrecord.h>
 #include <qstringlist.h>
 #include <qvarlengtharray.h>
-#include <qvector.h>
 #include <QDebug>
 #include <QtSql/private/qsqldriver_p.h>
 #include <QtSql/private/qsqlresult_p.h>
@@ -141,7 +141,7 @@ public:
 
     SQLHANDLE hStmt;
     QSqlRecord recInf;
-    QVector<QVariant*> valueCache;
+    QList<QVariant*> valueCache;
 };
 
 static QString qFromTChar(SQLTCHAR* str)
@@ -692,7 +692,7 @@ bool QDB2Result::exec()
         return false;
 
 
-    QVector<QVariant> &values = boundValues();
+    QList<QVariant> &values = boundValues();
     int i;
     for (i = 0; i < values.count(); ++i) {
         // bind parameters - only positional binding allowed

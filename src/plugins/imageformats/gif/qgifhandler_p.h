@@ -94,7 +94,7 @@ private:
     mutable int nextDelay;
     mutable int loopCnt;
     int frameNumber;
-    mutable QVector<QSize> imageSizes;
+    mutable QList<QSize> imageSizes;
     mutable bool scanIsCached;
 };
 

@@ -78,7 +78,7 @@ public:
 private:
     QMutex m_mutex;
     QAtomicInt m_started = 1;
-    QVector<QAndroidEventDispatcher *> m_dispatchers;
+    QList<QAndroidEventDispatcher *> m_dispatchers;
 };
 
 

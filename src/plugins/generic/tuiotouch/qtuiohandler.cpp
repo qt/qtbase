@@ -158,7 +158,7 @@ void QTuioHandler::processPackets()
         // messages. The FSEQ frame ID is incremented for each delivered bundle,
         // while redundant bundles can be marked using the frame sequence ID
         // -1."
-        QVector<QOscMessage> messages;
+        QList<QOscMessage> messages;
 
         QOscBundle bundle(datagram);
         if (bundle.isValid()) {

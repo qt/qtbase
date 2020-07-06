@@ -845,7 +845,7 @@ int QAndroidStyle::Android9PatchDrawable::calculateStretch(int boundsLimit,
 }
 
 void QAndroidStyle::Android9PatchDrawable::extractIntArray(const QVariantList &values,
-                                                           QVector<int> & array)
+                                                           QList<int> & array)
 {
     for (const QVariant &value : values)
         array << value.toInt();

@@ -380,7 +380,7 @@ public:
 
     QImage cursor;
     QPoint hotspot;
-    QVector<QVncClient *> clients;
+    QList<QVncClient *> clients;
 };
 #endif // QT_CONFIG(cursor)
 
@@ -408,7 +408,7 @@ private slots:
 
 private:
     QTcpServer *serverSocket;
-    QVector<QVncClient*> clients;
+    QList<QVncClient*> clients;
     QVncScreen *qvnc_screen;
     quint16 m_port;
 };

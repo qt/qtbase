@@ -43,9 +43,9 @@
 #include "qwindowscombase.h"
 #include <QtCore/qt_windows.h>
 
+#include <QtCore/qlist.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qpointer.h>
-#include <QtCore/qvector.h>
 
 #include <objidl.h>
 
@@ -86,8 +86,8 @@ private:
 class QWindowsOleEnumFmtEtc : public QWindowsComBase<IEnumFORMATETC>
 {
 public:
-    explicit QWindowsOleEnumFmtEtc(const QVector<FORMATETC> &fmtetcs);
-    explicit QWindowsOleEnumFmtEtc(const QVector<LPFORMATETC> &lpfmtetcs);
+    explicit QWindowsOleEnumFmtEtc(const QList<FORMATETC> &fmtetcs);
+    explicit QWindowsOleEnumFmtEtc(const QList<LPFORMATETC> &lpfmtetcs);
     ~QWindowsOleEnumFmtEtc() override;
 
     bool isNull() const;
@@ -102,7 +102,7 @@ private:
     bool copyFormatEtc(LPFORMATETC dest, const FORMATETC *src) const;
 
     ULONG m_nIndex = 0;
-    QVector<LPFORMATETC> m_lpfmtetcs;
+    QList<LPFORMATETC> m_lpfmtetcs;
     bool m_isNull = false;
 };
 

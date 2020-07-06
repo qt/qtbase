@@ -122,7 +122,7 @@ QPlatformScreen *QEglFSKmsVsp2Device::createHeadlessScreen()
 
 void QEglFSKmsVsp2Device::registerScreenCloning(QPlatformScreen *screen,
                                                QPlatformScreen *screenThisScreenClones,
-                                               const QVector<QPlatformScreen *> &screensCloningThisScreen)
+                                               const QList<QPlatformScreen *> &screensCloningThisScreen)
 {
     Q_UNUSED(screen);
     qWarning() << Q_FUNC_INFO << "Not implemented yet";

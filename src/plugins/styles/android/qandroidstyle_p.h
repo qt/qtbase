@@ -89,9 +89,9 @@ public:
 
     struct Android9PatchChunk
     {
-        QVector<int> xDivs;
-        QVector<int> yDivs;
-        QVector<int> colors;
+        QList<int> xDivs;
+        QList<int> yDivs;
+        QList<int> colors;
     };
 
     struct AndroidItemStateInfo
@@ -169,7 +169,7 @@ public:
         static int calculateStretch(int boundsLimit, int startingPoint,
                                   int srcSpace, int numStrechyPixelsRemaining,
                                   int numFixedPixelsRemaining);
-        void extractIntArray(const QVariantList &values, QVector<int> &array);
+        void extractIntArray(const QVariantList &values, QList<int> &array);
     private:
         Android9PatchChunk m_chunkData;
     };

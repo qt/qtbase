@@ -69,10 +69,10 @@ QT_BEGIN_NAMESPACE
 
 static uint nextId = 1;
 
-// Find a QPlatformMenu[Item]* in a vector of QWindowsMenu[Item], where
-// QVector::indexOf() cannot be used since it wants a QWindowsMenu[Item]*
+// Find a QPlatformMenu[Item]* in a list of QWindowsMenu[Item], where
+// QList::indexOf() cannot be used since it wants a QWindowsMenu[Item]*
 template <class Derived, class Needle>
-static int indexOf(const QVector<Derived *> &v, const Needle *needle)
+static int indexOf(const QList<Derived *> &v, const Needle *needle)
 {
     for (int i = 0, size = v.size(); i < size; ++i) {
         if (v.at(i) == needle)
@@ -81,9 +81,9 @@ static int indexOf(const QVector<Derived *> &v, const Needle *needle)
     return -1;
 }
 
-// Helper for inserting a QPlatformMenu[Item]* into a vector of QWindowsMenu[Item].
+// Helper for inserting a QPlatformMenu[Item]* into a list of QWindowsMenu[Item].
 template <class Derived, class Base>
-static int insertBefore(QVector<Derived *> *v, Base *newItemIn, const Base *before = nullptr)
+static int insertBefore(QList<Derived *> *v, Base *newItemIn, const Base *before = nullptr)
 {
     int index = before ? indexOf(*v, before) : -1;
     if (index != -1) {
@@ -175,7 +175,7 @@ static QWindowsMenu *findMenuByHandle(const Menu *menu, HMENU hMenu)
 }
 
 template <class MenuType>
-static int findNextVisibleEntry(const QVector<MenuType *> &entries, int pos)
+static int findNextVisibleEntry(const QList<MenuType *> &entries, int pos)
 {
     for (int i = pos, size = entries.size(); i < size; ++i) {
         if (entries.at(i)->isVisible())
@@ -862,7 +862,7 @@ void QWindowsMenuBar::redraw() const
 #ifndef QT_NO_DEBUG_STREAM
 
 template <class M>  /* Menu[Item] */
-static void formatTextSequence(QDebug &d, const QVector<M *> &v)
+static void formatTextSequence(QDebug &d, const QList<M *> &v)
 {
     if (const int size = v.size()) {
         d << '[' << size << "](";

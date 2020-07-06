@@ -75,10 +75,10 @@ public:
     QString m_makeAndModel;
     QList<QPageSize> m_pageSizes;
     QList<int> m_resolutions;
-    QVector<QPrint::InputSlot> m_inputSlots;
-    QVector<QPrint::OutputBin> m_outputBins;
-    QVector<QPrint::DuplexMode> m_duplexModes;
-    QVector<QPrint::ColorMode> m_colorModes;
+    QList<QPrint::InputSlot> m_inputSlots;
+    QList<QPrint::OutputBin> m_outputBins;
+    QList<QPrint::DuplexMode> m_duplexModes;
+    QList<QPrint::ColorMode> m_colorModes;
     QSize m_minimumPhysicalPageSize;
     QSize m_maximumPhysicalPageSize;
     bool m_isRemote = false;

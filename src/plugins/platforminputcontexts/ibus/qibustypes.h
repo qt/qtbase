@@ -39,7 +39,7 @@
 #ifndef QIBUSTYPES_H
 #define QIBUSTYPES_H
 
-#include <qvector.h>
+#include <qlist.h>
 #include <qevent.h>
 #include <QDBusArgument>
 #include <QTextCharFormat>
@@ -104,7 +104,7 @@ public:
     void serializeTo(QDBusArgument &argument) const;
     void deserializeFrom(const QDBusArgument &argument);
 
-    QVector<QIBusAttribute> attributes;
+    QList<QIBusAttribute> attributes;
 };
 Q_DECLARE_TYPEINFO(QIBusAttributeList, Q_MOVABLE_TYPE);
 

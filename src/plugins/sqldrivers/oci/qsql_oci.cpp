@@ -40,8 +40,9 @@
 #include "qsql_oci_p.h"
 
 #include <qcoreapplication.h>
-#include <qvariant.h>
 #include <qdatetime.h>
+#include <qdebug.h>
+#include <qlist.h>
 #include <qmetatype.h>
 #if QT_CONFIG(regularexpression)
 #include <qregularexpression.h>
@@ -54,10 +55,9 @@
 #include <QtSql/private/qsqlcachedresult_p.h>
 #include <QtSql/private/qsqldriver_p.h>
 #include <qstringlist.h>
-#include <qvarlengtharray.h>
-#include <qvector.h>
-#include <qdebug.h>
 #include <qtimezone.h>
+#include <qvariant.h>
+#include <qvarlengtharray.h>
 
 // This is needed for oracle oci when compiling with mingw-w64 headers
 #if defined(__MINGW64_VERSION_MAJOR) && defined(_WIN64)
@@ -283,9 +283,9 @@ public:
     void setStatementAttributes();
     int bindValue(OCIStmt *sql, OCIBind **hbnd, OCIError *err, int pos,
                   const QVariant &val, dvoid *indPtr, ub2 *tmpSize, TempStorage &tmpStorage);
-    int bindValues(QVector<QVariant> &values, IndicatorArray &indicators, SizeArray &tmpSizes,
+    int bindValues(QVariantList &values, IndicatorArray &indicators, SizeArray &tmpSizes,
                    TempStorage &tmpStorage);
-    void outValues(QVector<QVariant> &values, IndicatorArray &indicators,
+    void outValues(QVariantList &values, IndicatorArray &indicators,
                    TempStorage &tmpStorage);
     inline bool isOutValue(int i) const
     { Q_Q(const QOCIResult); return q->bindValueType(i) & QSql::Out; }
@@ -502,7 +502,7 @@ int QOCIResultPrivate::bindValue(OCIStmt *sql, OCIBind **hbnd, OCIError *err, in
     return r;
 }
 
-int QOCIResultPrivate::bindValues(QVector<QVariant> &values, IndicatorArray &indicators,
+int QOCIResultPrivate::bindValues(QVariantList &values, IndicatorArray &indicators,
                                   SizeArray &tmpSizes, TempStorage &tmpStorage)
 {
     int r = OCI_SUCCESS;
@@ -551,7 +551,7 @@ static void qOraOutValue(QVariant &value, TempStorage &tmpStorage, OCIEnv *env, 
     }
 }
 
-void QOCIResultPrivate::outValues(QVector<QVariant> &values, IndicatorArray &indicators,
+void QOCIResultPrivate::outValues(QVariantList &values, IndicatorArray &indicators,
                                   TempStorage &tmpStorage)
 {
     for (int i = 0; i < values.count(); ++i) {
@@ -835,12 +835,12 @@ class QOCICols
 public:
     QOCICols(int size, QOCIResultPrivate* dp);
     ~QOCICols();
-    int readPiecewise(QVector<QVariant> &values, int index = 0);
-    int readLOBs(QVector<QVariant> &values, int index = 0);
+    int readPiecewise(QVariantList &values, int index = 0);
+    int readLOBs(QVariantList &values, int index = 0);
     int fieldFromDefine(OCIDefine* d);
-    void getValues(QVector<QVariant> &v, int index);
+    void getValues(QVariantList &v, int index);
     inline int size() { return fieldInf.size(); }
-    static bool execBatch(QOCIResultPrivate *d, QVector<QVariant> &boundValues, bool arrayBind);
+    static bool execBatch(QOCIResultPrivate *d, QVariantList &boundValues, bool arrayBind);
 
     QSqlRecord rec;
 
@@ -865,7 +865,7 @@ private:
         void *dataPtr;
     };
 
-    QVector<OraFieldInf> fieldInf;
+    QList<OraFieldInf> fieldInf;
     const QOCIResultPrivate *const d;
 };
 
@@ -1116,7 +1116,7 @@ OCILobLocator **QOCICols::createLobLocator(int position, OCIEnv* env)
     return &lob;
 }
 
-int QOCICols::readPiecewise(QVector<QVariant> &values, int index)
+int QOCICols::readPiecewise(QVariantList &values, int index)
 {
     OCIDefine*     dfn;
     ub4            typep;
@@ -1328,7 +1328,7 @@ struct QOCIBatchColumn
 
 struct QOCIBatchCleanupHandler
 {
-    inline QOCIBatchCleanupHandler(QVector<QOCIBatchColumn> &columns)
+    inline QOCIBatchCleanupHandler(QList<QOCIBatchColumn> &columns)
         : col(columns) {}
 
     ~QOCIBatchCleanupHandler()
@@ -1341,10 +1341,10 @@ struct QOCIBatchCleanupHandler
         }
     }
 
-    QVector<QOCIBatchColumn> &col;
+    QList<QOCIBatchColumn> &col;
 };
 
-bool QOCICols::execBatch(QOCIResultPrivate *d, QVector<QVariant> &boundValues, bool arrayBind)
+bool QOCICols::execBatch(QOCIResultPrivate *d, QVariantList &boundValues, bool arrayBind)
 {
     int columnCount = boundValues.count();
     if (boundValues.isEmpty() || columnCount == 0)
@@ -1364,7 +1364,7 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVector<QVariant> &boundValues, b
                                                : tp);
     }
     SizeArray tmpSizes(columnCount);
-    QVector<QOCIBatchColumn> columns(columnCount);
+    QList<QOCIBatchColumn> columns(columnCount);
     QOCIBatchCleanupHandler cleaner(columns);
     TempStorage tmpStorage;
 
@@ -1612,7 +1612,7 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVector<QVariant> &boundValues, b
         return false;
     }
 
-    // for out parameters we copy data back to value vector
+    // for out parameters we copy data back to value list
     for (i = 0; i < columnCount; ++i) {
 
         if (!d->isOutValue(i))
@@ -1739,7 +1739,7 @@ int qReadLob(T &buf, const QOCIResultPrivate *d, OCILobLocator *lob)
     return r;
 }
 
-int QOCICols::readLOBs(QVector<QVariant> &values, int index)
+int QOCICols::readLOBs(QVariantList &values, int index)
 {
     OCILobLocator *lob;
     int r = OCI_SUCCESS;
@@ -1778,7 +1778,7 @@ int QOCICols::fieldFromDefine(OCIDefine* d)
     return -1;
 }
 
-void QOCICols::getValues(QVector<QVariant> &v, int index)
+void QOCICols::getValues(QVariantList &v, int index)
 {
     for (int i = 0; i < fieldInf.size(); ++i) {
         const OraFieldInf &fld = fieldInf.at(i);

@@ -124,9 +124,9 @@ static inline D2D1_MATRIX_3X2_F transformFromLine(const QLineF &line, qreal penW
 static void adjustLine(QPointF *p1, QPointF *p2);
 static bool isLinePositivelySloped(const QPointF &p1, const QPointF &p2);
 
-static QVector<D2D1_GRADIENT_STOP> qGradientStopsToD2DStops(const QGradientStops &qstops)
+static QList<D2D1_GRADIENT_STOP> qGradientStopsToD2DStops(const QGradientStops &qstops)
 {
-    QVector<D2D1_GRADIENT_STOP> stops(qstops.count());
+    QList<D2D1_GRADIENT_STOP> stops(qstops.count());
     for (int i = 0, count =  stops.size(); i < count; ++i) {
         stops[i].position = FLOAT(qstops.at(i).first);
         stops[i].color = to_d2d_color_f(qstops.at(i).second);
@@ -572,8 +572,8 @@ public:
         HRESULT hr;
 
         if (props.dashStyle == D2D1_DASH_STYLE_CUSTOM) {
-            QVector<qreal> dashes = newPen.dashPattern();
-            QVector<FLOAT> converted(dashes.size());
+            QList<qreal> dashes = newPen.dashPattern();
+            QList<FLOAT> converted(dashes.size());
             qreal penWidth = pen.qpen.widthF();
             qreal brushWidth = 0;
             for (int i = 0; i < dashes.size(); i++) {
@@ -696,7 +696,7 @@ public:
                 linearGradientBrushProperties.startPoint = to_d2d_point_2f(qlinear->start());
                 linearGradientBrushProperties.endPoint = to_d2d_point_2f(qlinear->finalStop());
 
-                const QVector<D2D1_GRADIENT_STOP> stops = qGradientStopsToD2DStops(qlinear->stops());
+                const QList<D2D1_GRADIENT_STOP> stops = qGradientStopsToD2DStops(qlinear->stops());
 
                 hr = dc()->CreateGradientStopCollection(stops.constData(),
                                                         UINT32(stops.size()),
@@ -736,7 +736,7 @@ public:
                 radialGradientBrushProperties.radiusX = FLOAT(qradial->radius());
                 radialGradientBrushProperties.radiusY = FLOAT(qradial->radius());
 
-                const QVector<D2D1_GRADIENT_STOP> stops = qGradientStopsToD2DStops(qradial->stops());
+                const QList<D2D1_GRADIENT_STOP> stops = qGradientStopsToD2DStops(qradial->stops());
 
                 hr = dc()->CreateGradientStopCollection(stops.constData(), stops.size(), &gradientStopCollection);
                 if (FAILED(hr)) {

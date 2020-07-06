@@ -218,9 +218,9 @@ qreal QEglFSKmsScreen::refreshRate() const
     return refresh > 0 ? refresh : 60;
 }
 
-QVector<QPlatformScreen::Mode> QEglFSKmsScreen::modes() const
+QList<QPlatformScreen::Mode> QEglFSKmsScreen::modes() const
 {
-    QVector<QPlatformScreen::Mode> list;
+    QList<QPlatformScreen::Mode> list;
     list.reserve(m_output.modes.size());
 
     for (const drmModeModeInfo &info : qAsConst(m_output.modes))

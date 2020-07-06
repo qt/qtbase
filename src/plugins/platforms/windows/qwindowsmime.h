@@ -42,7 +42,7 @@
 
 #include <QtCore/qt_windows.h>
 
-#include <QtCore/qvector.h>
+#include <QtCore/qlist.h>
 #include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
@@ -60,7 +60,7 @@ public:
     // for converting from Qt
     virtual bool canConvertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData) const = 0;
     virtual bool convertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData, STGMEDIUM * pmedium) const = 0;
-    virtual QVector<FORMATETC> formatsForMime(const QString &mimeType, const QMimeData *mimeData) const = 0;
+    virtual QList<FORMATETC> formatsForMime(const QString &mimeType, const QMimeData *mimeData) const = 0;
 
     // for converting to Qt
     virtual bool canConvertToMime(const QString &mimeType, IDataObject *pDataObj) const = 0;
@@ -80,7 +80,7 @@ public:
     QWindowsMime *converterToMime(const QString &mimeType, IDataObject *pDataObj) const;
     QStringList allMimesForFormats(IDataObject *pDataObj) const;
     QWindowsMime *converterFromMime(const FORMATETC &formatetc, const QMimeData *mimeData) const;
-    QVector<FORMATETC> allFormatsForMime(const QMimeData *mimeData) const;
+    QList<FORMATETC> allFormatsForMime(const QMimeData *mimeData) const;
 
     // Convenience.
     QVariant convertToMime(const QStringList &mimeTypes, IDataObject *pDataObj, QVariant::Type preferredType,
@@ -94,7 +94,7 @@ public:
 private:
     void ensureInitialized() const;
 
-    mutable QVector<QWindowsMime *> m_mimes;
+    mutable QList<QWindowsMime *> m_mimes;
     mutable int m_internalMimeCount = 0;
 };
 

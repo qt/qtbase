@@ -41,7 +41,7 @@
 #define QEGLFSKMSGBMCURSOR_H
 
 #include <qpa/qplatformcursor.h>
-#include <QtCore/QVector>
+#include <QtCore/QList>
 #include <QtGui/QImage>
 #include <QtGui/private/qinputdevicemanager_p.h>
 
@@ -112,7 +112,7 @@ private:
         int cursorsPerRow;
         int width, height; // width and height of the atlas
         int cursorWidth, cursorHeight; // width and height of cursors inside the atlas
-        QVector<QPoint> hotSpots;
+        QList<QPoint> hotSpots;
         QImage image;
     } m_cursorAtlas;
 };

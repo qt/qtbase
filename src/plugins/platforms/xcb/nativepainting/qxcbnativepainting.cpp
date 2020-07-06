@@ -110,11 +110,11 @@ void qt_xcb_native_x11_info_init(QXcbConnection *conn)
 #endif // QT_CONFIG(xrender)
 }
 
-QVector<XRectangle> qt_region_to_xrectangles(const QRegion &r)
+QList<XRectangle> qt_region_to_xrectangles(const QRegion &r)
 {
     const int numRects = r.rectCount();
     const auto input = r.begin();
-    QVector<XRectangle> output(numRects);
+    QList<XRectangle> output(numRects);
     for (int i = 0; i < numRects; ++i) {
         const QRect &in = input[i];
         XRectangle &out = output[i];

@@ -44,15 +44,15 @@
 #include <qt_windows.h>
 #endif
 #include <qcoreapplication.h>
-#include <qvariant.h>
 #include <qdatetime.h>
+#include <qlist.h>
+#include <qmath.h>
 #include <qsqlerror.h>
 #include <qsqlfield.h>
 #include <qsqlindex.h>
 #include <qstringlist.h>
+#include <qvariant.h>
 #include <qvarlengtharray.h>
-#include <qvector.h>
-#include <qmath.h>
 #include <QDebug>
 #include <QSqlQuery>
 #include <QtSql/private/qsqldriver_p.h>
@@ -206,7 +206,7 @@ public:
     SQLHANDLE hStmt = nullptr;
 
     QSqlRecord rInf;
-    QVector<QVariant> fieldCache;
+    QVariantList fieldCache;
     int fieldCacheIdx = 0;
     int disconnectCount = 0;
     bool hasSQLFetchScroll = true;
@@ -1399,8 +1399,8 @@ bool QODBCResult::exec()
     if (isSelect())
         SQLCloseCursor(d->hStmt);
 
-    QVector<QVariant>& values = boundValues();
-    QVector<QByteArray> tmpStorage(values.count(), QByteArray()); // holds temporary buffers
+    QVariantList &values = boundValues();
+    QByteArrayList tmpStorage(values.count(), QByteArray()); // holds temporary buffers
     QVarLengthArray<SQLLEN, 32> indicators(values.count());
     memset(indicators.data(), 0, indicators.size() * sizeof(SQLLEN));
 

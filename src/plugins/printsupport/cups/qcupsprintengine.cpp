@@ -201,7 +201,7 @@ void QCupsPrintEnginePrivate::closePrintDevice()
 
         // Set up print options.
         QList<QPair<QByteArray, QByteArray> > options;
-        QVector<cups_option_t> cupsOptStruct;
+        QList<cups_option_t> cupsOptStruct;
 
         options.append(QPair<QByteArray, QByteArray>("media", m_pageLayout.pageSize().key().toLocal8Bit()));
 

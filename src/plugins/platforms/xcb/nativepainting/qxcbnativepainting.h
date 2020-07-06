@@ -55,7 +55,7 @@ class QXcbConnection;
 class QPixmap;
 
 void qt_xcb_native_x11_info_init(QXcbConnection *conn);
-QVector<XRectangle> qt_region_to_xrectangles(const QRegion &r);
+QList<XRectangle> qt_region_to_xrectangles(const QRegion &r);
 
 class QXcbX11InfoData;
 class QXcbX11Info

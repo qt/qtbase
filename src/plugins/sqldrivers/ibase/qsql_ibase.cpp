@@ -41,20 +41,19 @@
 #include <qcoreapplication.h>
 #include <qdatetime.h>
 #include <qdeadlinetimer.h>
-#include <qvariant.h>
+#include <qdebug.h>
+#include <qlist.h>
+#include <qmutex.h>
 #include <qsqlerror.h>
 #include <qsqlfield.h>
 #include <qsqlindex.h>
 #include <qsqlquery.h>
+#include <qvariant.h>
 #include <QtSql/private/qsqlcachedresult_p.h>
 #include <QtSql/private/qsqldriver_p.h>
-#include <qlist.h>
-#include <qvector.h>
-#include <qmutex.h>
 #include <stdlib.h>
 #include <limits.h>
 #include <math.h>
-#include <qdebug.h>
 #include <QVarLengthArray>
 
 QT_BEGIN_NAMESPACE
@@ -968,7 +967,7 @@ bool QIBaseResult::exec()
     setAt(QSql::BeforeFirstRow);
 
     if (d->inda) {
-        QVector<QVariant>& values = boundValues();
+        QList<QVariant>& values = boundValues();
         int i;
         if (values.count() > d->inda->sqld) {
             qWarning("QIBaseResult::exec: Parameter mismatch, expected %d, got %d parameters",

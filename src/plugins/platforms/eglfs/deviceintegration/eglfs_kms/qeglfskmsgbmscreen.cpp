@@ -198,7 +198,7 @@ void QEglFSKmsGbmScreen::resetSurface()
 }
 
 void QEglFSKmsGbmScreen::initCloning(QPlatformScreen *screenThisScreenClones,
-                                     const QVector<QPlatformScreen *> &screensCloningThisScreen)
+                                     const QList<QPlatformScreen *> &screensCloningThisScreen)
 {
     // clone destinations need to know the clone source
     const bool clonesAnother = screenThisScreenClones != nullptr;

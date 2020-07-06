@@ -41,9 +41,9 @@
 #define QANDROIDPLATFORMMENUBAR_H
 
 #include <qpa/qplatformmenu.h>
-#include <qvector.h>
-#include <qmutex.h>
 #include <qhash.h>
+#include <qlist.h>
+#include <qmutex.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -51,7 +51,7 @@ class QAndroidPlatformMenu;
 class QAndroidPlatformMenuBar: public QPlatformMenuBar
 {
 public:
-    typedef QVector<QAndroidPlatformMenu *> PlatformMenusType;
+    typedef QList<QAndroidPlatformMenu *> PlatformMenusType;
 public:
     QAndroidPlatformMenuBar();
     ~QAndroidPlatformMenuBar();

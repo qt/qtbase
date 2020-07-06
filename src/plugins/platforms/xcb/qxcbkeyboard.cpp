@@ -223,7 +223,7 @@ struct xkb_keymap *QXcbKeyboard::keymapFromCore(const KeysymModifierMap &keysymM
 
     // Generate mapping between symbolic names and keysyms
     {
-        QVector<xcb_keysym_t> xkeymap;
+        QList<xcb_keysym_t> xkeymap;
         int keysymsPerKeycode = 0;
         {
             int keycodeCount = maxKeycode - minKeycode + 1;

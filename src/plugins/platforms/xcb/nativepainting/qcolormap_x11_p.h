@@ -41,7 +41,7 @@
 #define QCOLORMAP_X11_H
 
 #include <QColor>
-#include <QVector>
+#include <QList>
 
 QT_BEGIN_NAMESPACE
 
@@ -69,7 +69,7 @@ public:
     uint pixel(const QColor &color) const;
     const QColor colorAt(uint pixel) const;
 
-    const QVector<QColor> colormap() const;
+    const QList<QColor> colormap() const;
 
 private:
     QXcbColormap();

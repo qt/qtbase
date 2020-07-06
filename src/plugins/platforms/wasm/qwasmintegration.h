@@ -95,7 +95,7 @@ private:
     mutable QWasmFontDatabase *m_fontDb;
     mutable QWasmServices *m_desktopServices;
     mutable QHash<QWindow *, QWasmBackingStore *> m_backingStores;
-    QVector<QPair<emscripten::val, QWasmScreen *>> m_screens;
+    QList<QPair<emscripten::val, QWasmScreen *>> m_screens;
     mutable QWasmClipboard *m_clipboard;
     qreal m_fontDpi = -1;
     mutable QScopedPointer<QPlatformInputContext> m_inputContext;

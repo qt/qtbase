@@ -40,7 +40,7 @@
 #define QXDGDESKTOPPORTALFILEDIALOG_P_H
 
 #include <qpa/qplatformdialoghelper.h>
-#include <QVector>
+#include <QList>
 
 QT_BEGIN_NAMESPACE
 
@@ -61,13 +61,13 @@ public:
         ConditionType type;
         QString pattern; // E.g. '*ico' or 'image/png'
     };
-    typedef QVector<FilterCondition> FilterConditionList;
+    typedef QList<FilterCondition> FilterConditionList;
 
     struct Filter {
         QString name; // E.g. 'Images' or 'Text
         FilterConditionList filterConditions;; // E.g. [(0, '*.ico'), (1, 'image/png')] or [(0, '*.txt')]
     };
-    typedef QVector<Filter> FilterList;
+    typedef QList<Filter> FilterList;
 
     QXdgDesktopPortalFileDialog(QPlatformFileDialogHelper *nativeFileDialog = nullptr);
     ~QXdgDesktopPortalFileDialog();

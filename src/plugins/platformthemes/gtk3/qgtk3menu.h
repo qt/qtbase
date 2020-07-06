@@ -156,7 +156,7 @@ protected:
 private:
     GtkWidget *m_menu;
     QPoint m_targetPos;
-    QVector<QGtk3MenuItem *> m_items;
+    QList<QGtk3MenuItem *> m_items;
 };
 
 QT_END_NAMESPACE

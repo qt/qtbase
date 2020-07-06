@@ -64,7 +64,7 @@ public:
     void resetSurface();
 
     void initCloning(QPlatformScreen *screenThisScreenClones,
-                     const QVector<QPlatformScreen *> &screensCloningThisScreen);
+                     const QList<QPlatformScreen *> &screensCloningThisScreen);
 
     void waitForFlip() override;
 
@@ -98,7 +98,7 @@ private:
         QEglFSKmsGbmScreen *screen = nullptr;
         bool cloneFlipPending = false;
     };
-    QVector<CloneDestination> m_cloneDests;
+    QList<CloneDestination> m_cloneDests;
 };
 
 QT_END_NAMESPACE

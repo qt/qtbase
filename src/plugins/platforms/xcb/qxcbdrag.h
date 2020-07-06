@@ -42,16 +42,16 @@
 
 #include <qpa/qplatformdrag.h>
 #include <private/qsimpledrag_p.h>
-#include <qxcbobject.h>
 #include <xcb/xcb.h>
+#include <qbackingstore.h>
+#include <qdatetime.h>
+#include <qlist.h>
+#include <qpixmap.h>
 #include <qpoint.h>
+#include <qpointer.h>
 #include <qrect.h>
 #include <qsharedpointer.h>
-#include <qpointer.h>
-#include <qvector.h>
-#include <qdatetime.h>
-#include <qpixmap.h>
-#include <qbackingstore.h>
+#include <qxcbobject.h>
 
 #include <QtCore/QDebug>
 
@@ -118,7 +118,7 @@ private:
     void send_leave();
 
     Qt::DropAction toDropAction(xcb_atom_t atom) const;
-    Qt::DropActions toDropActions(const QVector<xcb_atom_t> &atoms) const;
+    Qt::DropActions toDropActions(const QList<xcb_atom_t> &atoms) const;
     xcb_atom_t toXdndAction(Qt::DropAction a) const;
 
     void readActionList();
@@ -139,7 +139,7 @@ private:
 
     // the types in this drop. 100 is no good, but at least it's big.
     enum { xdnd_max_type = 100 };
-    QVector<xcb_atom_t> xdnd_types;
+    QList<xcb_atom_t> xdnd_types;
 
     // timestamp from XdndPosition and XdndDroptime for retrieving the data
     xcb_timestamp_t target_time;
@@ -167,10 +167,10 @@ private:
     enum { XdndDropTransactionTimeout = 600000 };
     int cleanup_timer;
 
-    QVector<xcb_atom_t> drag_types;
+    QList<xcb_atom_t> drag_types;
 
-    QVector<xcb_atom_t> current_actions;
-    QVector<xcb_atom_t> drop_actions;
+    QList<xcb_atom_t> current_actions;
+    QList<xcb_atom_t> drop_actions;
 
     struct Transaction
     {
@@ -183,7 +183,7 @@ private:
         QTime time;
     };
     friend class QTypeInfo<Transaction>;
-    QVector<Transaction> transactions;
+    QList<Transaction> transactions;
 
     int transaction_expiry_timer;
     void restartDropExpiryTimer();

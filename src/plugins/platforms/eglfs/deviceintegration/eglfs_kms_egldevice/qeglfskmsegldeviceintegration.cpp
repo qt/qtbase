@@ -171,7 +171,7 @@ void QEglFSKmsEglDeviceWindow::resetSurface()
 
     qCDebug(qLcEglfsKmsDebug, "Output has %d layers", count);
 
-    QVector<EGLOutputLayerEXT> layers;
+    QList<EGLOutputLayerEXT> layers;
     layers.resize(count);
     EGLint actualCount;
     if (!m_integration->m_funcs->get_output_layers(display, nullptr, layers.data(), count, &actualCount)) {

@@ -115,7 +115,7 @@ private:
     static void pageFlipHandler(int fd, unsigned int sequence,
                                 unsigned int tv_sec, unsigned int tv_usec, void *user_data);
 
-    QVector<Output> m_outputs;
+    QList<Output> m_outputs;
 };
 
 QLinuxFbDevice::QLinuxFbDevice(QKmsScreenConfig *screenConfig)

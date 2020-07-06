@@ -69,7 +69,7 @@ static GpuDescription adapterIdentifierToGpuDescription(const D3DADAPTER_IDENTIF
     result.deviceId = adapterIdentifier.DeviceId;
     result.revision = adapterIdentifier.Revision;
     result.subSysId = adapterIdentifier.SubSysId;
-    QVector<int> version(4, 0);
+    QList<int> version(4, 0);
     version[0] = HIWORD(adapterIdentifier.DriverVersion.HighPart); // Product
     version[1] = LOWORD(adapterIdentifier.DriverVersion.HighPart); // Version
     version[2] = HIWORD(adapterIdentifier.DriverVersion.LowPart); // Sub version
@@ -169,9 +169,9 @@ GpuDescription GpuDescription::detect()
     return result;
 }
 
-QVector<GpuDescription> GpuDescription::detectAll()
+QList<GpuDescription> GpuDescription::detectAll()
 {
-    QVector<GpuDescription> result;
+    QList<GpuDescription> result;
     QDirect3D9Handle direct3D9;
     if (const UINT adapterCount = direct3D9.adapterCount()) {
         for (UINT adp = 0; adp < adapterCount; ++adp) {

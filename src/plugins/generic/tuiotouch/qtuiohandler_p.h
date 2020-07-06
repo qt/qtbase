@@ -41,10 +41,10 @@
 #ifndef QTUIOHANDLER_P_H
 #define QTUIOHANDLER_P_H
 
+#include <QList>
 #include <QObject>
 #include <QMap>
 #include <QUdpSocket>
-#include <QVector>
 #include <QTransform>
 
 #include <qpa/qwindowsysteminterface.h>
@@ -83,9 +83,9 @@ private:
     QPointingDevice *m_device = nullptr;
     QUdpSocket m_socket;
     QMap<int, QTuioCursor> m_activeCursors;
-    QVector<QTuioCursor> m_deadCursors;
+    QList<QTuioCursor> m_deadCursors;
     QMap<int, QTuioToken> m_activeTokens;
-    QVector<QTuioToken> m_deadTokens;
+    QList<QTuioToken> m_deadTokens;
     QTransform m_transform;
 };
 

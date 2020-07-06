@@ -45,12 +45,12 @@
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qhash.h>
+#include <QtCore/qlist.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qmath.h>
 #include <QtCore/qpair.h>
 #include <QtCore/qpointer.h>
 #include <QtCore/qtextstream.h>
-#include <QtCore/qvector.h>
 
 #include <QtGui/private/qpainter_p.h>
 
@@ -291,7 +291,7 @@ public:
 
 public:
     mutable QPointer<QObject> autoDefaultButton;
-    static  QVector<QPointer<QObject> > scrollBars;
+    static  QList<QPointer<QObject> > scrollBars;
 
     mutable QPointer<QFocusFrame> focusWidget;
     mutable NSView *backingStoreNSView;

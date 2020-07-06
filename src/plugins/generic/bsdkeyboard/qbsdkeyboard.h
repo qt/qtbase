@@ -42,7 +42,7 @@
 
 #include <qobject.h>
 #include <QDataStream>
-#include <QVector>
+#include <QList>
 
 QT_BEGIN_NAMESPACE
 
@@ -137,7 +137,7 @@ private:
     bool m_numLock = false;
     bool m_scrollLock = false;
 
-    QVector<QBsdKeyboardMap::Mapping> m_keymap;
+    QList<QBsdKeyboardMap::Mapping> m_keymap;
 };
 
 QT_END_NAMESPACE

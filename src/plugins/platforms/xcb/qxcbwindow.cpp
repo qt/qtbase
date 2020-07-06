@@ -632,7 +632,7 @@ QMargins QXcbWindow::frameMargins() const
 
         bool foundRoot = false;
 
-        const QVector<xcb_window_t> &virtualRoots =
+        const QList<xcb_window_t> &virtualRoots =
             connection()->wmSupport()->virtualRoots();
 
         while (!foundRoot) {
@@ -1086,7 +1086,7 @@ void QXcbWindow::setNetWmStateOnUnmappedWindow()
     // we first read it and then merge our hints with the existing values, allowing a user
     // to set custom hints.
 
-    QVector<xcb_atom_t> atoms;
+    QList<xcb_atom_t> atoms;
     auto reply = Q_XCB_REPLY_UNCHECKED(xcb_get_property, xcb_connection(),
                                        0, m_window, atom(QXcbAtom::_NET_WM_STATE),
                                        XCB_ATOM_ATOM, 0, 1024);
@@ -1293,7 +1293,7 @@ void QXcbWindow::setWindowIconText(const QString &title)
 
 void QXcbWindow::setWindowIcon(const QIcon &icon)
 {
-    QVector<quint32> icon_data;
+    QList<quint32> icon_data;
     if (!icon.isNull()) {
         QList<QSize> availableSizes = icon.availableSizes();
         if (availableSizes.isEmpty()) {
@@ -1542,7 +1542,7 @@ QXcbWindowFunctions::WmWindowTypes QXcbWindow::wmWindowTypes() const
 
 void QXcbWindow::setWmWindowType(QXcbWindowFunctions::WmWindowTypes types, Qt::WindowFlags flags)
 {
-    QVector<xcb_atom_t> atoms;
+    QList<xcb_atom_t> atoms;
 
     // manual selection 1 (these are never set by Qt and take precedence)
     if (types & QXcbWindowFunctions::Normal)
@@ -2526,9 +2526,9 @@ void QXcbWindow::setOpacity(qreal level)
                         (uchar *)&value);
 }
 
-QVector<xcb_rectangle_t> qRegionToXcbRectangleList(const QRegion &region)
+QList<xcb_rectangle_t> qRegionToXcbRectangleList(const QRegion &region)
 {
-    QVector<xcb_rectangle_t> rects;
+    QList<xcb_rectangle_t> rects;
     rects.reserve(region.rectCount());
     for (const QRect &r : region)
         rects.push_back(qRectToXCBRectangle(r));

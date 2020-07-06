@@ -43,7 +43,6 @@
 #include "qtwindowsglobal.h"
 
 #include <QtCore/qlist.h>
-#include <QtCore/qvector.h>
 #include <QtCore/qpair.h>
 #include <QtCore/qscopedpointer.h>
 #include <qpa/qplatformscreen.h>
@@ -127,7 +126,7 @@ private:
 class QWindowsScreenManager
 {
 public:
-    using WindowsScreenList = QVector<QWindowsScreen *>;
+    using WindowsScreenList = QList<QWindowsScreen *>;
 
     QWindowsScreenManager();
 

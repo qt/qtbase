@@ -41,7 +41,8 @@
 
 #include <qcoreapplication.h>
 #include <qdatetime.h>
-#include <qvariant.h>
+#include <qdebug.h>
+#include <qlist.h>
 #include <qsqlerror.h>
 #include <qsqlfield.h>
 #include <qsqlindex.h>
@@ -49,8 +50,7 @@
 #include <QtSql/private/qsqlcachedresult_p.h>
 #include <QtSql/private/qsqldriver_p.h>
 #include <qstringlist.h>
-#include <qvector.h>
-#include <qdebug.h>
+#include <qvariant.h>
 #if QT_CONFIG(regularexpression)
 #include <qcache.h>
 #include <qregularexpression.h>
@@ -146,7 +146,7 @@ class QSQLiteDriverPrivate : public QSqlDriverPrivate
 public:
     inline QSQLiteDriverPrivate() : QSqlDriverPrivate(QSqlDriver::SQLite) {}
     sqlite3 *access = nullptr;
-    QVector<QSQLiteResult *> results;
+    QList<QSQLiteResult *> results;
     QStringList notificationid;
 };
 
@@ -166,7 +166,7 @@ public:
 
     sqlite3_stmt *stmt = nullptr;
     QSqlRecord rInf;
-    QVector<QVariant> firstRow;
+    QList<QVariant> firstRow;
     bool skippedStatus = false; // the status of the fetchNext() that's skipped
     bool skipRow = false; // skip the next fetchNext()?
 };
@@ -413,15 +413,15 @@ bool QSQLiteResult::execBatch(bool arrayBind)
 {
     Q_UNUSED(arrayBind);
     Q_D(QSqlResult);
-    QScopedValueRollback<QVector<QVariant>> valuesScope(d->values);
-    QVector<QVariant> values = d->values;
+    QScopedValueRollback<QList<QVariant>> valuesScope(d->values);
+    QList<QVariant> values = d->values;
     if (values.count() == 0)
         return false;
 
     for (int i = 0; i < values.at(0).toList().count(); ++i) {
         d->values.clear();
-        QScopedValueRollback<QHash<QString, QVector<int>>> indexesScope(d->indexes);
-        QHash<QString, QVector<int>>::const_iterator it = d->indexes.constBegin();
+        QScopedValueRollback<QHash<QString, QList<int>>> indexesScope(d->indexes);
+        auto it = d->indexes.constBegin();
         while (it != d->indexes.constEnd()) {
             bindValue(it.key(), values.at(it.value().first()).toList().at(i), QSql::In);
             ++it;
@@ -435,7 +435,7 @@ bool QSQLiteResult::execBatch(bool arrayBind)
 bool QSQLiteResult::exec()
 {
     Q_D(QSQLiteResult);
-    QVector<QVariant> values = boundValues();
+    QList<QVariant> values = boundValues();
 
     d->skippedStatus = false;
     d->skipRow = false;
@@ -460,7 +460,7 @@ bool QSQLiteResult::exec()
     // can end up in a case where for virtual tables it returns 0 even though it
     // has parameters
     if (paramCount >= 1 && paramCount < values.count()) {
-        const auto countIndexes = [](int counter, const QVector<int> &indexList) {
+        const auto countIndexes = [](int counter, const QList<int> &indexList) {
                                       return counter + indexList.length();
                                   };
 
@@ -471,10 +471,10 @@ bool QSQLiteResult::exec()
 
         paramCountIsValid = bindParamCount == values.count();
         // When using named placeholders, it will reuse the index for duplicated
-        // placeholders. So we need to ensure the QVector has only one instance of
+        // placeholders. So we need to ensure the QList has only one instance of
         // each value as SQLite will do the rest for us.
-        QVector<QVariant> prunedValues;
-        QVector<int> handledIndexes;
+        QList<QVariant> prunedValues;
+        QList<int> handledIndexes;
         for (int i = 0, currentIndex = 0; i < values.size(); ++i) {
             if (handledIndexes.contains(i))
                 continue;

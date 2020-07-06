@@ -318,7 +318,7 @@ void QWindowsTabletSupport::notifyActivate()
    qCDebug(lcQpaTablet) << __FUNCTION__ << result;
 }
 
-static inline int indexOfDevice(const QVector<QWindowsTabletDeviceData> &devices, qint64 uniqueId)
+static inline int indexOfDevice(const QList<QWindowsTabletDeviceData> &devices, qint64 uniqueId)
 {
     for (int i = 0; i < devices.size(); ++i)
         if (devices.at(i).uniqueId == uniqueId)

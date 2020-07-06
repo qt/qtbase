@@ -131,7 +131,7 @@ protected:
 
         (void)formats(); // trigger update of format list
 
-        QVector<xcb_atom_t> atoms;
+        QList<xcb_atom_t> atoms;
         const xcb_atom_t *targets = (const xcb_atom_t *) format_atoms.data();
         int size = format_atoms.size() / sizeof(xcb_atom_t);
         atoms.reserve(size);
@@ -445,10 +445,10 @@ xcb_window_t QXcbClipboard::owner() const
 
 xcb_atom_t QXcbClipboard::sendTargetsSelection(QMimeData *d, xcb_window_t window, xcb_atom_t property)
 {
-    QVector<xcb_atom_t> types;
+    QList<xcb_atom_t> types;
     QStringList formats = QInternalMimeData::formatsHelper(d);
     for (int i = 0; i < formats.size(); ++i) {
-        QVector<xcb_atom_t> atoms = QXcbMime::mimeAtomsForFormat(connection(), formats.at(i));
+        QList<xcb_atom_t> atoms = QXcbMime::mimeAtomsForFormat(connection(), formats.at(i));
         for (int j = 0; j < atoms.size(); ++j) {
             if (!types.contains(atoms.at(j)))
                 types.append(atoms.at(j));

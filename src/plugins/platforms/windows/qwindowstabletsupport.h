@@ -44,9 +44,9 @@
 #include <QtGui/qtguiglobal.h>
 #include <QtGui/qpointingdevice.h>
 
-#include <QtCore/qvector.h>
-#include <QtCore/qpoint.h>
 #include <QtCore/qhash.h>
+#include <QtCore/qlist.h>
+#include <QtCore/qpoint.h>
 
 #include <wintab.h>
 
@@ -152,7 +152,7 @@ private:
     const HCTX m_context;
     int m_absoluteRange = 20;
     bool m_tiltSupport = false;
-    QVector<QWindowsTabletDeviceData> m_devices;
+    QList<QWindowsTabletDeviceData> m_devices;
     int m_currentDevice = -1;
     Mode m_mode = PenMode;
     State m_state = PenUp;

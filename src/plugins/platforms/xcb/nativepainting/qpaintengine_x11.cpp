@@ -392,7 +392,7 @@ static inline void x11SetClipRegion(Display *dpy, GC gc, GC gc2,
 {
 //    int num;
 //    XRectangle *rects = (XRectangle *)qt_getClipRects(r, num);
-    QVector<XRectangle> rects = qt_region_to_xrectangles(r);
+    QList<XRectangle> rects = qt_region_to_xrectangles(r);
     int num = rects.size();
 
     if (gc)
@@ -2129,7 +2129,7 @@ void QX11PaintEngine::drawPixmap(const QRectF &r, const QPixmap &px, const QRect
         XSetBackground(d->dpy, cgc, 0);
         XSetForeground(d->dpy, cgc, 1);
         if (!d->crgn.isEmpty()) {
-            QVector<XRectangle> rects = qt_region_to_xrectangles(d->crgn);
+            QList<XRectangle> rects = qt_region_to_xrectangles(d->crgn);
             XSetClipRectangles(d->dpy, cgc, -x, -y, rects.data(), rects.size(), Unsorted);
         } else if (d->has_clipping) {
             XSetClipRectangles(d->dpy, cgc, 0, 0, 0, 0, Unsorted);
@@ -2152,7 +2152,7 @@ void QX11PaintEngine::drawPixmap(const QRectF &r, const QPixmap &px, const QRect
             GC cgc = XCreateGC(d->dpy, comb, 0, 0);
             XSetForeground(d->dpy, cgc, 0);
             XFillRectangle(d->dpy, comb, cgc, 0, 0, sw, sh);
-            QVector<XRectangle> rects = qt_region_to_xrectangles(d->crgn);
+            QList<XRectangle> rects = qt_region_to_xrectangles(d->crgn);
             XSetClipRectangles(d->dpy, cgc, -x, -y, rects.data(), rects.size(), Unsorted);
             XCopyArea(d->dpy, qt_x11PixmapHandle(pixmap), comb, cgc, sx, sy, sw, sh, 0, 0);
             XFreeGC(d->dpy, cgc);
@@ -2201,7 +2201,7 @@ void QX11PaintEngine::drawPixmap(const QRectF &r, const QPixmap &px, const QRect
 
     if (restore_clip) {
         XSetClipOrigin(d->dpy, d->gc, 0, 0);
-        QVector<XRectangle> rects = qt_region_to_xrectangles(d->crgn);
+        QList<XRectangle> rects = qt_region_to_xrectangles(d->crgn);
         if (rects.isEmpty())
             XSetClipMask(d->dpy, d->gc, XNone);
         else

@@ -77,8 +77,8 @@ public:
     uint g_shift;
     uint b_shift;
 
-    QVector<QColor> colors;
-    QVector<int> pixels;
+    QList<QColor> colors;
+    QList<int> pixels;
 };
 
 static uint right_align(uint v)
@@ -638,7 +638,7 @@ const QColor QXcbColormap::colorAt(uint pixel) const
     return QColor(r, g, b);
 }
 
-const QVector<QColor> QXcbColormap::colormap() const
+const QList<QColor> QXcbColormap::colormap() const
 { return d->colors; }
 
 QXcbColormap &QXcbColormap::operator=(const QXcbColormap &colormap)

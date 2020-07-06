@@ -39,14 +39,14 @@
 
 #include "qjpeghandler_p.h"
 
-#include <qimage.h>
+#include <qbuffer.h>
 #include <qcolorspace.h>
 #include <qcolortransform.h>
 #include <qdebug.h>
-#include <qvariant.h>
-#include <qvector.h>
-#include <qbuffer.h>
+#include <qimage.h>
+#include <qlist.h>
 #include <qmath.h>
+#include <qvariant.h>
 #include <private/qicc_p.h>
 #include <private/qsimd_p.h>
 #include <private/qimage_p.h>   // for qt_getImageText
@@ -535,7 +535,7 @@ static bool do_write_jpeg_image(struct jpeg_compress_struct &cinfo,
                                 bool progressive)
 {
     bool success = false;
-    const QVector<QRgb> cmap = image.colorTable();
+    const QList<QRgb> cmap = image.colorTable();
 
     if (image.format() == QImage::Format_Invalid || image.format() == QImage::Format_Alpha8)
         return false;

@@ -49,7 +49,6 @@
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qlist.h>
-#include <QtCore/qvector.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -79,7 +78,7 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaSelectionProvider::GetSelection(SAFEARRAY *
         return UIA_E_ELEMENTNOTAVAILABLE;
 
     // First put selected items in a list, then build a safe array with the right size.
-    QVector<QAccessibleInterface *> selectedList;
+    QList<QAccessibleInterface *> selectedList;
     for (int i = 0; i < accessible->childCount(); ++i) {
         if (QAccessibleInterface *child = accessible->child(i)) {
             if (child->state().selected) {
