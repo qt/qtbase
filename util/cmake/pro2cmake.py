@@ -495,16 +495,34 @@ def write_add_qt_resource_call(
 
     assert sorted_files
 
+    if base_dir:
+        base_dir_expanded = scope.expandString(base_dir)
+        if base_dir_expanded:
+            base_dir = base_dir_expanded
+
+    source_file_properties = defaultdict(list)
+
     for source in sorted_files:
+        full_source = posixpath.join(base_dir, source)
         alias = files[source]
         if alias:
-            full_source = posixpath.join(base_dir, source)
+            source_file_properties[full_source].append(f'QT_RESOURCE_ALIAS "{alias}"')
+        # If a base dir is given, we have to write the source file property
+        # assignments that disable the quick compiler per file.
+        if base_dir and skip_qtquick_compiler:
+            source_file_properties[full_source].append('QT_SKIP_QUICKCOMPILER 1')
+
+    for full_source in source_file_properties:
+        per_file_props = source_file_properties[full_source]
+        if per_file_props:
+            prop_spaces = "                                "
+            per_file_props_joined = f'\n{prop_spaces}'.join(per_file_props)
             output += dedent(
                 f"""\
-                set_source_files_properties("{full_source}"
-                    PROPERTIES QT_RESOURCE_ALIAS "{alias}"
-                )
-            """
+                            set_source_files_properties("{full_source}"
+                                PROPERTIES {per_file_props_joined}
+                            )
+                        """
             )
 
     # Quote file paths in case there are spaces.
@@ -525,7 +543,7 @@ def write_add_qt_resource_call(
         """
     )
     file_list = f"${{{resource_name}_resource_files}}"
-    if skip_qtquick_compiler:
+    if skip_qtquick_compiler and not base_dir:
         output += (
             f"set_source_files_properties(${{{resource_name}_resource_files}}"
             " PROPERTIES QT_SKIP_QUICKCOMPILER 1)\n\n"
@@ -539,15 +557,12 @@ def write_add_qt_resource_call(
 
     prefix_expanded = scope.expandString(prefix)
     if prefix_expanded:
-        prefix = perfix_expanded
+        prefix = prefix_expanded
     params = ""
     if lang:
         params += f'{spaces(1)}LANG\n{spaces(2)}"{lang}"\n'
     params += f'{spaces(1)}PREFIX\n{spaces(2)}"{prefix}"\n'
     if base_dir:
-        base_dir_expanded = scope.expandString(base_dir)
-        if base_dir_expanded:
-            base_dir = base_dir_expanded
         params += f'{spaces(1)}BASE\n{spaces(2)}"{base_dir}"\n'
     add_resource_command = ""
     if is_example:
