@@ -51,8 +51,8 @@
 // We mean it.
 //
 
+#include <QList>
 #include <QSurfaceFormat>
-#include <QVector>
 
 #include <X11/Xlib.h>
 #include <GL/glx.h>
@@ -62,7 +62,7 @@ enum QGlxFlags
     QGLX_SUPPORTS_SRGB = 0x01
 };
 
-QVector<int> qglx_buildSpec(const QSurfaceFormat &format, int drawableBit = GLX_WINDOW_BIT, int flags = 0);
+QList<int> qglx_buildSpec(const QSurfaceFormat &format, int drawableBit = GLX_WINDOW_BIT, int flags = 0);
 XVisualInfo *qglx_findVisualInfo(Display *display, int screen, QSurfaceFormat *format, int drawableBit = GLX_WINDOW_BIT, int flags = 0);
 GLXFBConfig qglx_findConfig(Display *display, int screen, QSurfaceFormat format, bool highestPixelFormat = false, int drawableBit = GLX_WINDOW_BIT, int flags = 0);
 void qglx_surfaceFormatFromGLXFBConfig(QSurfaceFormat *format, Display *display, GLXFBConfig config, int flags = 0);

@@ -88,7 +88,7 @@ Q_DECLARE_TYPEINFO(ObjectPathProperties, Q_MOVABLE_TYPE); // QDBusObjectPath is 
                                                           // marked as such until Qt 6
 QT_END_NAMESPACE
 
-typedef QVector<ObjectPathProperties> PathPropertiesList;
+typedef QList<ObjectPathProperties> PathPropertiesList;
 Q_DECLARE_METATYPE(ObjectPathProperties)
 Q_DECLARE_METATYPE (PathPropertiesList)
 

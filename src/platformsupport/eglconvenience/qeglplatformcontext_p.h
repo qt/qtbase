@@ -135,7 +135,7 @@ private:
     int m_swapIntervalFromEnv = -1;
     Flags m_flags;
     bool m_ownsContext = false;
-    QVector<EGLint> m_contextAttrs;
+    QList<EGLint> m_contextAttrs;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QEGLPlatformContext::Flags)

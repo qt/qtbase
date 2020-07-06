@@ -163,7 +163,7 @@ struct QKmsPlane
 
     int possibleCrtcs = 0;
 
-    QVector<uint32_t> supportedFormats;
+    QList<uint32_t> supportedFormats;
 
     Rotations initialRotation = Rotation0;
     Rotations availableRotations = Rotation0;
@@ -207,7 +207,7 @@ struct QKmsOutput
     uint32_t drm_format = DRM_FORMAT_XRGB8888;
     bool drm_format_requested_by_user = false;
     QString clone_source;
-    QVector<QKmsPlane> available_planes;
+    QList<QKmsPlane> available_planes;
     struct QKmsPlane *eglfs_plane = nullptr;
     QSize size;
     uint32_t crtcIdPropertyId = 0;
@@ -258,7 +258,7 @@ protected:
     virtual QPlatformScreen *createHeadlessScreen();
     virtual void registerScreenCloning(QPlatformScreen *screen,
                                        QPlatformScreen *screenThisScreenClones,
-                                       const QVector<QPlatformScreen *> &screensCloningThisScreen);
+                                       const QList<QPlatformScreen *> &screensCloningThisScreen);
     virtual void registerScreen(QPlatformScreen *screen,
                                 bool isPrimary,
                                 const QPoint &virtualPos,
@@ -292,7 +292,7 @@ protected:
 #endif
     quint32 m_crtc_allocator;
 
-    QVector<QKmsPlane> m_planes;
+    QList<QKmsPlane> m_planes;
 
 private:
     Q_DISABLE_COPY(QKmsDevice)

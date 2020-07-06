@@ -1495,7 +1495,7 @@ QStringList AtSpiAdaptor::accessibleInterfaces(QAccessibleInterface *interface) 
 QSpiRelationArray AtSpiAdaptor::relationSet(QAccessibleInterface *interface, const QDBusConnection &connection) const
 {
     typedef QPair<QAccessibleInterface*, QAccessible::Relation> RelationPair;
-    const QVector<RelationPair> relationInterfaces = interface->relations();
+    const QList<RelationPair> relationInterfaces = interface->relations();
 
     QSpiRelationArray relations;
     for (const RelationPair &pair : relationInterfaces) {

@@ -664,7 +664,7 @@ void QKmsDevice::createScreens()
 
     discoverPlanes();
 
-    QVector<OrderedScreen> screens;
+    QList<OrderedScreen> screens;
 
     int wantedConnectorIndex = -1;
     bool ok;
@@ -702,7 +702,7 @@ void QKmsDevice::createScreens()
     // The final list of screens is available, so do the second phase setup.
     // Hook up clone sources and targets.
     for (const OrderedScreen &orderedScreen : screens) {
-        QVector<QPlatformScreen *> screensCloningThisScreen;
+        QList<QPlatformScreen *> screensCloningThisScreen;
         for (const OrderedScreen &s : screens) {
             if (s.vinfo.output.clone_source == orderedScreen.vinfo.output.name)
                 screensCloningThisScreen.append(s.screen);
@@ -727,7 +727,7 @@ void QKmsDevice::createScreens()
     // Figure out the virtual desktop and register the screens to QPA/QGuiApplication.
     QPoint pos(0, 0);
     QList<QPlatformScreen *> siblings;
-    QVector<QPoint> virtualPositions;
+    QList<QPoint> virtualPositions;
     int primarySiblingIdx = -1;
 
     for (const OrderedScreen &orderedScreen : screens) {
@@ -775,7 +775,7 @@ QPlatformScreen *QKmsDevice::createHeadlessScreen()
 // not all subclasses support screen cloning
 void QKmsDevice::registerScreenCloning(QPlatformScreen *screen,
                                        QPlatformScreen *screenThisScreenClones,
-                                       const QVector<QPlatformScreen *> &screensCloningThisScreen)
+                                       const QList<QPlatformScreen *> &screensCloningThisScreen)
 {
     Q_UNUSED(screen);
     Q_UNUSED(screenThisScreenClones);

@@ -54,7 +54,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QVector<EGLint> q_createConfigAttributesFromFormat(const QSurfaceFormat &format)
+QList<EGLint> q_createConfigAttributesFromFormat(const QSurfaceFormat &format)
 {
     int redSize     = format.redBufferSize();
     int greenSize   = format.greenBufferSize();
@@ -64,7 +64,7 @@ QVector<EGLint> q_createConfigAttributesFromFormat(const QSurfaceFormat &format)
     int stencilSize = format.stencilBufferSize();
     int sampleCount = format.samples();
 
-    QVector<EGLint> configAttributes;
+    QList<EGLint> configAttributes;
 
     // Map default, unspecified values (-1) to 0. This is important due to sorting rule #3
     // in section 3.4.1 of the spec and allows picking a potentially faster 16-bit config
@@ -121,7 +121,7 @@ QVector<EGLint> q_createConfigAttributesFromFormat(const QSurfaceFormat &format)
     return configAttributes;
 }
 
-bool q_reduceConfigAttributes(QVector<EGLint> *configAttributes)
+bool q_reduceConfigAttributes(QList<EGLint> *configAttributes)
 {
     int i = -1;
     // Reduce the complexity of a configuration request to ask for less
@@ -240,7 +240,7 @@ QEglConfigChooser::~QEglConfigChooser()
 
 EGLConfig QEglConfigChooser::chooseConfig()
 {
-    QVector<EGLint> configureAttributes = q_createConfigAttributesFromFormat(m_format);
+    QList<EGLint> configureAttributes = q_createConfigAttributesFromFormat(m_format);
     configureAttributes.append(EGL_SURFACE_TYPE);
     configureAttributes.append(surfaceType());
 
@@ -299,7 +299,7 @@ EGLConfig QEglConfigChooser::chooseConfig()
         i = configureAttributes.indexOf(EGL_ALPHA_SIZE);
         m_confAttrAlpha = i == -1 ? 0 : configureAttributes.at(i+1);
 
-        QVector<EGLConfig> configs(matching);
+        QList<EGLConfig> configs(matching);
         eglChooseConfig(display(), configureAttributes.constData(), configs.data(), configs.size(), &matching);
         if (!cfg && matching > 0)
             cfg = configs.first();

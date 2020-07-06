@@ -52,14 +52,14 @@
 //
 
 #include <QtGui/QSurfaceFormat>
-#include <QtCore/QVector>
+#include <QtCore/QList>
 #include <QtCore/QSizeF>
 #include <QtEglSupport/private/qt_egl_p.h>
 
 QT_BEGIN_NAMESPACE
 
-QVector<EGLint> q_createConfigAttributesFromFormat(const QSurfaceFormat &format);
-bool q_reduceConfigAttributes(QVector<EGLint> *configAttributes);
+QList<EGLint> q_createConfigAttributesFromFormat(const QSurfaceFormat &format);
+bool q_reduceConfigAttributes(QList<EGLint> *configAttributes);
 EGLConfig q_configFromGLFormat(EGLDisplay display, const QSurfaceFormat &format, bool highestPixelFormat = false, int surfaceType = EGL_WINDOW_BIT);
 QSurfaceFormat q_glFormatFromConfig(EGLDisplay display, const EGLConfig config, const QSurfaceFormat &referenceFormat = QSurfaceFormat());
 bool q_hasEglExtension(EGLDisplay display,const char* extensionName);

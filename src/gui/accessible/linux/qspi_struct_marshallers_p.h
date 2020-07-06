@@ -53,7 +53,7 @@
 //
 
 #include <QtGui/private/qtguiglobal_p.h>
-#include <QtCore/qvector.h>
+#include <QtCore/qlist.h>
 #include <QtCore/qpair.h>
 #include <QtDBus/QDBusArgument>
 #include <QtDBus/QDBusConnection>
@@ -63,8 +63,8 @@ QT_REQUIRE_CONFIG(accessibility);
 
 QT_BEGIN_NAMESPACE
 
-typedef QVector<int> QSpiIntList;
-typedef QVector<uint> QSpiUIntList;
+using QSpiIntList = QList<int>;
+using QSpiUIntList = QList<uint>;
 
 // FIXME: make this copy on write
 struct QSpiObjectReference
@@ -82,7 +82,7 @@ Q_DECLARE_TYPEINFO(QSpiObjectReference, Q_MOVABLE_TYPE); // QDBusObjectPath is m
 QDBusArgument &operator<<(QDBusArgument &argument, const QSpiObjectReference &address);
 const QDBusArgument &operator>>(const QDBusArgument &argument, QSpiObjectReference &address);
 
-typedef QVector<QSpiObjectReference> QSpiObjectReferenceArray;
+typedef QList<QSpiObjectReference> QSpiObjectReferenceArray;
 
 struct QSpiAccessibleCacheItem
 {
@@ -98,7 +98,7 @@ struct QSpiAccessibleCacheItem
 };
 Q_DECLARE_TYPEINFO(QSpiAccessibleCacheItem, Q_MOVABLE_TYPE);
 
-typedef QVector<QSpiAccessibleCacheItem> QSpiAccessibleCacheArray;
+typedef QList<QSpiAccessibleCacheItem> QSpiAccessibleCacheArray;
 
 QDBusArgument &operator<<(QDBusArgument &argument, const QSpiAccessibleCacheItem &item);
 const QDBusArgument &operator>>(const QDBusArgument &argument, QSpiAccessibleCacheItem &item);
@@ -111,7 +111,7 @@ struct QSpiAction
 };
 Q_DECLARE_TYPEINFO(QSpiAction, Q_MOVABLE_TYPE);
 
-typedef QVector<QSpiAction> QSpiActionArray;
+typedef QList<QSpiAction> QSpiActionArray;
 
 QDBusArgument &operator<<(QDBusArgument &argument, const QSpiAction &action);
 const QDBusArgument &operator>>(const QDBusArgument &argument, QSpiAction &action);
@@ -123,13 +123,13 @@ struct QSpiEventListener
 };
 Q_DECLARE_TYPEINFO(QSpiEventListener, Q_MOVABLE_TYPE);
 
-typedef QVector<QSpiEventListener> QSpiEventListenerArray;
+typedef QList<QSpiEventListener> QSpiEventListenerArray;
 
 QDBusArgument &operator<<(QDBusArgument &argument, const QSpiEventListener &action);
 const QDBusArgument &operator>>(const QDBusArgument &argument, QSpiEventListener &action);
 
 typedef QPair<unsigned int, QSpiObjectReferenceArray> QSpiRelationArrayEntry;
-typedef QVector<QSpiRelationArrayEntry> QSpiRelationArray;
+typedef QList<QSpiRelationArrayEntry> QSpiRelationArray;
 
 //a(iisv)
 struct QSpiTextRange {
@@ -140,7 +140,7 @@ struct QSpiTextRange {
 };
 Q_DECLARE_TYPEINFO(QSpiTextRange, Q_MOVABLE_TYPE);
 
-typedef QVector<QSpiTextRange> QSpiTextRangeList;
+typedef QList<QSpiTextRange> QSpiTextRangeList;
 typedef QMap <QString, QString> QSpiAttributeSet;
 
 enum QSpiAppUpdateType {

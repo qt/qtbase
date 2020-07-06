@@ -126,7 +126,7 @@ QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatform
     // but does not yet contain version, profile, options.
     m_shareContext = share ? static_cast<QEGLPlatformContext *>(share)->m_eglContext : nullptr;
 
-    QVector<EGLint> contextAttrs;
+    QList<EGLint> contextAttrs;
     contextAttrs.append(EGL_CONTEXT_CLIENT_VERSION);
     contextAttrs.append(format.majorVersion());
     const bool hasKHRCreateContext = q_hasEglExtension(m_eglDisplay, "EGL_KHR_create_context");

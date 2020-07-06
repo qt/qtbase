@@ -46,8 +46,8 @@
 #include <QtCore/qtextstream.h>
 #include "qglxconvenience_p.h"
 
+#include <QtCore/QList>
 #include <QtCore/QLoggingCategory>
-#include <QtCore/QVector>
 #include <QtCore/QVarLengthArray>
 
 #include <GL/glxext.h>
@@ -81,9 +81,9 @@ enum {
 #define GLX_FRAMEBUFFER_SRGB_CAPABLE_ARB 0x20B2
 #endif
 
-QVector<int> qglx_buildSpec(const QSurfaceFormat &format, int drawableBit, int flags)
+QList<int> qglx_buildSpec(const QSurfaceFormat &format, int drawableBit, int flags)
 {
-    QVector<int> spec;
+    QList<int> spec;
 
     spec << GLX_LEVEL
          << 0
@@ -196,7 +196,7 @@ GLXFBConfig qglx_findConfig(Display *display, int screen , QSurfaceFormat format
     GLXFBConfig config = nullptr;
 
     do {
-        const QVector<int> spec = qglx_buildSpec(format, drawableBit, flags);
+        const QList<int> spec = qglx_buildSpec(format, drawableBit, flags);
 
         int confcount = 0;
         QXlibArrayPointer<GLXFBConfig> configs(glXChooseFBConfig(display, screen, spec.constData(), &confcount));
@@ -288,7 +288,7 @@ XVisualInfo *qglx_findVisualInfo(Display *display, int screen, QSurfaceFormat *f
 
     // attempt to fall back to glXChooseVisual
     do {
-        QVector<int> attribs = qglx_buildSpec(*format, drawableBit, flags);
+        QList<int> attribs = qglx_buildSpec(*format, drawableBit, flags);
         visualInfo = glXChooseVisual(display, screen, attribs.data());
 
         if (visualInfo) {
