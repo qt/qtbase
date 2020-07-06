@@ -285,7 +285,7 @@ void QAbstractTransition::setTargetStates(const QList<QAbstractState*> &targets)
         // we can just set the new list as the targetStates.
         sameList = false;
     } else {
-        QVector<QPointer<QAbstractState> > copy(d->targetStates);
+        QList<QPointer<QAbstractState>> copy(d->targetStates);
         for (int i = 0; i < targets.size(); ++i) {
             sameList &= copy.removeOne(targets.at(i));
             if (!sameList)

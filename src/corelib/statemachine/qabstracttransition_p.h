@@ -54,7 +54,6 @@
 #include <private/qobject_p.h>
 
 #include <QtCore/qlist.h>
-#include <QtCore/qvector.h>
 #include <QtCore/qsharedpointer.h>
 
 QT_REQUIRE_CONFIG(statemachine);
@@ -82,7 +81,7 @@ public:
     QStateMachine *machine() const;
     void emitTriggered();
 
-    QVector<QPointer<QAbstractState> > targetStates;
+    QList<QPointer<QAbstractState>> targetStates;
     QAbstractTransition::TransitionType transitionType;
 
 #if QT_CONFIG(animation)

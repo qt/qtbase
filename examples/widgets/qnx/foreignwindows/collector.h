@@ -41,8 +41,8 @@
 #define COLLECTOR_H_
 
 #include <QAbstractNativeEventFilter>
+#include <QList>
 #include <QWidget>
-#include <QVector>
 
 #include <screen/screen.h>
 
@@ -60,7 +60,7 @@ private:
         QWindow *window;
         QWidget *widget;
     };
-    QVector<Collectible> m_collectibles;
+    QList<Collectible> m_collectibles;
 
     bool filterQnxScreenEvent(screen_event_t event);
     bool filterQnxScreenWindowEvent(screen_event_t event);

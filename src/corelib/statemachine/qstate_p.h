@@ -118,7 +118,7 @@ public:
     mutable QList<QAbstractTransition*> transitionsList;
 
 #ifndef QT_NO_PROPERTIES
-    QVector<QPropertyAssignment> propertyAssignments;
+    QList<QPropertyAssignment> propertyAssignments;
 #endif
 };
 
