@@ -1183,9 +1183,6 @@ QWindow *QGuiApplication::topLevelAt(const QPoint &pos)
             EGL and  OpenGL ES 2.0 without an actual windowing system (like X11
             or Wayland). For more information, see \l{EGLFS}.
         \li \c ios (also used for tvOS)
-        \li \c kms is an experimental platform plugin using kernel modesetting
-            and \l{http://dri.freedesktop.org/wiki/DRM}{DRM} (Direct Rendering
-            Manager).
         \li \c linuxfb writes directly to the framebuffer. For more information,
             see \l{LinuxFB}.
         \li \c minimal is provided as an examples for developers who want to
