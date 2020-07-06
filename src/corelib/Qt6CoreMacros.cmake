@@ -404,7 +404,7 @@ function(qt6_add_big_resources outfiles )
         add_custom_command(OUTPUT ${outfile}
                            COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
                            ARGS ${rcc_options} --name ${outfilename} --pass 2 --temp $<TARGET_OBJECTS:rcc_object_${outfilename}> --output ${outfile} ${infile}
-                           DEPENDS rcc_object_${outfilename} ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
+                           DEPENDS rcc_object_${outfilename} $<TARGET_OBJECTS:rcc_object_${outfilename}> ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
                            VERBATIM)
        list(APPEND ${outfiles} ${outfile})
     endforeach()
