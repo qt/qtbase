@@ -651,46 +651,6 @@ ConverterFunctor<From, To, UnaryFunction>::~ConverterFunctor()
     namespace QtMetaTypePrivate {
 
 namespace QtMetaTypePrivate {
-template <typename T, bool Accepted = true>
-struct QMetaTypeFunctionHelper {
-    static void Destruct(void *t)
-    {
-        Q_UNUSED(t); // Silence MSVC that warns for POD types.
-        static_cast<T*>(t)->~T();
-    }
-
-    static void *Construct(void *where, const void *t)
-    {
-        if (t)
-            return new (where) T(*static_cast<const T*>(t));
-        return new (where) T;
-    }
-#ifndef QT_NO_DATASTREAM
-    static void Save(QDataStream &stream, const void *t)
-    {
-        stream << *static_cast<const T*>(t);
-    }
-
-    static void Load(QDataStream &stream, void *t)
-    {
-        stream >> *static_cast<T*>(t);
-    }
-#endif // QT_NO_DATASTREAM
-};
-
-template <typename T>
-struct QMetaTypeFunctionHelper<T, /* Accepted */ false> {
-    static void Destruct(void *) {}
-    static void *Construct(void *, const void *) { return nullptr; }
-#ifndef QT_NO_DATASTREAM
-    static void Save(QDataStream &, const void *) {}
-    static void Load(QDataStream &, void *) {}
-#endif // QT_NO_DATASTREAM
-};
-template <>
-struct QMetaTypeFunctionHelper<void, /* Accepted */ true>
-        : public QMetaTypeFunctionHelper<void, /* Accepted */ false>
-{};
 
 struct VariantData
 {

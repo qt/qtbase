@@ -132,10 +132,6 @@ class QMetaTypeModuleHelper
 {
 public:
     virtual QtPrivate::QMetaTypeInterface *interfaceForType(int) const = 0;
-#ifndef QT_NO_DATASTREAM
-    virtual bool save(QDataStream &stream, int type, const void *data) const = 0;
-    virtual bool load(QDataStream &stream, int type, void *data) const = 0;
-#endif
 };
 
 namespace QtMetaTypePrivate {
@@ -208,16 +204,6 @@ static QT_PREPEND_NAMESPACE(QtPrivate::QMetaTypeInterface) *getInterfaceFromType
 #define QT_METATYPE_CONVERT_ID_TO_TYPE(MetaTypeName, MetaTypeId, RealName)                         \
     case QMetaType::MetaTypeName:                                                                  \
         return QtMetaTypePrivate::getInterfaceFromType<RealName>();
-
-#define QT_METATYPE_DATASTREAM_SAVE(MetaTypeName, MetaTypeId, RealName) \
-    case QMetaType::MetaTypeName: \
-        QtMetaTypePrivate::QMetaTypeFunctionHelper<RealName, QtMetaTypePrivate::TypeDefinition<RealName>::IsAvailable>::Save(stream, data); \
-        return true;
-
-#define QT_METATYPE_DATASTREAM_LOAD(MetaTypeName, MetaTypeId, RealName) \
-    case QMetaType::MetaTypeName: \
-        QtMetaTypePrivate::QMetaTypeFunctionHelper<RealName, QtMetaTypePrivate::TypeDefinition<RealName>::IsAvailable>::Load(stream, data); \
-        return true;
 
 void derefAndDestroy(QT_PREPEND_NAMESPACE(QtPrivate::QMetaTypeInterface) *d_ptr);
 

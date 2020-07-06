@@ -71,21 +71,6 @@ static const struct : QMetaTypeModuleHelper
             default: return nullptr;
         }
     }
-#ifndef QT_NO_DATASTREAM
-    bool save(QDataStream &stream, int type, const void *data) const override {
-        switch (type) {
-            QT_FOR_EACH_STATIC_WIDGETS_CLASS(QT_METATYPE_DATASTREAM_SAVE)
-            default: return false;
-        }
-    }
-    bool load(QDataStream &stream, int type, void *data) const override {
-        switch (type) {
-            QT_FOR_EACH_STATIC_WIDGETS_CLASS(QT_METATYPE_DATASTREAM_LOAD)
-            default: return false;
-        }
-    }
-#endif
-
 }  qVariantWidgetsHelper;
 
 
