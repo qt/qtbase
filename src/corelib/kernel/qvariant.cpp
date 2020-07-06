@@ -1378,35 +1378,13 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
     return true;
 }
 
-#if !defined(QT_NO_DEBUG_STREAM)
-static void streamDebug(QDebug dbg, const QVariant &v)
-{
-    QVariant::Private *d = const_cast<QVariant::Private *>(&v.data_ptr());
-    QVariantDebugStream<CoreTypesFilter> stream(dbg, d);
-    QMetaTypeSwitcher::switcher<void>(stream, d->type().id());
-}
-#endif
-
 const QVariant::Handler qt_kernel_variant_handler = {
-    convert,
-#if !defined(QT_NO_DEBUG_STREAM)
-    streamDebug
-#else
-    nullptr
-#endif
+    convert
 };
 
 static bool dummyConvert(const QVariant::Private *, int, void *, bool *) { Q_ASSERT_X(false, "QVariant", "Trying to convert an unknown type"); return false; }
-#if !defined(QT_NO_DEBUG_STREAM)
-static void dummyStreamDebug(QDebug, const QVariant &) { Q_ASSERT_X(false, "QVariant", "Trying to convert an unknown type"); }
-#endif
 const QVariant::Handler qt_dummy_variant_handler = {
     dummyConvert,
-#if !defined(QT_NO_DEBUG_STREAM)
-    dummyStreamDebug
-#else
-    nullptr
-#endif
 };
 
 // the type of d has already been set, but other field are not set
@@ -1464,26 +1442,8 @@ static bool customConvert(const QVariant::Private *d, int t, void *result, bool 
     return convert(d, t, result, ok);
 }
 
-#if !defined(QT_NO_DEBUG_STREAM)
-static void customStreamDebug(QDebug dbg, const QVariant &variant) {
-#ifndef QT_BOOTSTRAPPED
-    QMetaType::TypeFlags flags = QMetaType::typeFlags(variant.userType());
-    if (flags & QMetaType::PointerToQObject)
-        dbg.nospace() << qvariant_cast<QObject*>(variant);
-#else
-    Q_UNUSED(dbg);
-    Q_UNUSED(variant);
-#endif
-}
-#endif
-
 const QVariant::Handler qt_custom_variant_handler = {
-    customConvert,
-#if !defined(QT_NO_DEBUG_STREAM)
-    customStreamDebug
-#else
-    nullptr
-#endif
+    customConvert
 };
 
 } // annonymous used to hide QVariant handlers
@@ -3975,16 +3935,9 @@ QDebug operator<<(QDebug dbg, const QVariant &v)
     dbg.nospace() << "QVariant(";
     if (typeId != QMetaType::UnknownType) {
         dbg << QMetaType::typeName(typeId) << ", ";
-        bool userStream = false;
-        bool canConvertToString = false;
-        if (typeId >= QMetaType::User) {
-            userStream = v.d.type().debugStream(dbg, constData(v.d));
-            canConvertToString = v.canConvert<QString>();
-        }
-        if (!userStream && canConvertToString)
+        bool streamed = v.d.type().debugStream(dbg, constData(v.d));
+        if (!streamed && v.canConvert<QString>())
             dbg << v.toString();
-        else if (!userStream)
-            handlerManager[typeId]->debugStream(dbg, v);
     } else {
         dbg << "Invalid";
     }

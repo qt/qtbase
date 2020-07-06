@@ -59,27 +59,8 @@ static bool convert(const QVariant::Private *d, int type, void *result, bool *ok
     return false;
 }
 
-#if !defined(QT_NO_DEBUG_STREAM)
-static void streamDebug(QDebug dbg, const QVariant &v)
-{
-    QVariant::Private *d = const_cast<QVariant::Private *>(&v.data_ptr());
-    switch (d->type().id()) {
-    case QMetaType::QSizePolicy:
-        dbg.nospace() << *v_cast<QSizePolicy>(d);
-        break;
-    default:
-        dbg.nospace() << "QMetaType::Type(" << d->type().id() << ')';
-    }
-}
-#endif
-
 static const QVariant::Handler widgets_handler = {
-    convert,
-#if !defined(QT_NO_DEBUG_STREAM)
-    streamDebug
-#else
-    nullptr
-#endif
+    convert
 };
 
 static const struct : QMetaTypeModuleHelper

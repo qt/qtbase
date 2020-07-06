@@ -55,7 +55,6 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/private/qmetatype_p.h>
-#include <QtCore/qdebug.h>
 
 #include "qmetatypeswitcher_p.h"
 
@@ -187,55 +186,6 @@ Q_CORE_EXPORT const QVariant::Handler *qcoreVariantHandler();
 namespace QVariantPrivate {
 Q_CORE_EXPORT void registerHandler(const int /* Modules::Names */ name, const QVariant::Handler *handler);
 }
-
-#if !defined(QT_NO_DEBUG_STREAM)
-template<class Filter>
-class QVariantDebugStream
-{
-    template<typename T, bool IsAcceptedType = Filter::template Acceptor<T>::IsAccepted>
-    struct Filtered {
-        Filtered(QDebug dbg, QVariant::Private *d)
-        {
-            dbg.nospace() << *v_cast<T>(d);
-        }
-    };
-    template<typename T>
-    struct Filtered<T, /* IsAcceptedType = */ false> {
-        Filtered(QDebug /* dbg */, QVariant::Private *)
-        {
-            // It is not possible to construct not acccepted type, QVariantConstructor creates an invalid variant for them
-            Q_ASSERT(false);
-        }
-    };
-
-public:
-    QVariantDebugStream(QDebug dbg, QVariant::Private *d)
-        : m_debugStream(dbg)
-        , m_d(d)
-    {}
-
-    template<typename T>
-    void delegate(const T*)
-    {
-        Filtered<T> streamIt(m_debugStream, m_d);
-        Q_UNUSED(streamIt);
-    }
-
-    void delegate(const QMetaTypeSwitcher::NotBuiltinType*)
-    {
-        // QVariantDebugStream class is used only for a built-in type
-        Q_ASSERT(false);
-    }
-    void delegate(const QMetaTypeSwitcher::UnknownType*)
-    {
-        m_debugStream.nospace() << "QVariant::Invalid";
-    }
-    void delegate(const void*) { Q_ASSERT(false); }
-private:
-    QDebug m_debugStream;
-    QVariant::Private *m_d;
-};
-#endif
 
 QT_END_NAMESPACE
 

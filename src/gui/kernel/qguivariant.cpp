@@ -233,22 +233,8 @@ static bool convert(const QVariant::Private *d, int t,
     return qcoreVariantHandler()->convert(d, t, result, ok);
 }
 
-#if !defined(QT_NO_DEBUG_STREAM)
-static void streamDebug(QDebug dbg, const QVariant &v)
-{
-    QVariant::Private *d = const_cast<QVariant::Private *>(&v.data_ptr());
-    QVariantDebugStream<GuiTypesFilter> stream(dbg, d);
-    QMetaTypeSwitcher::switcher<void>(stream, d->type().id(), nullptr);
-}
-#endif
-
 const QVariant::Handler qt_gui_variant_handler = {
-    convert,
-#if !defined(QT_NO_DEBUG_STREAM)
-    streamDebug
-#else
-    nullptr
-#endif
+    convert
 };
 
 #define QT_IMPL_METATYPEINTERFACE_GUI_TYPES(MetaTypeName, MetaTypeId, RealName) \
