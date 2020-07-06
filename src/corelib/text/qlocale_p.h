@@ -224,6 +224,8 @@ private:
                          PrecisionMode pm, bool mustMarkDecimal,
                          int minExponentDigits) const;
     QString signPrefix(bool negative, unsigned flags) const;
+    QString applyIntegerFormatting(QString &&numStr, bool negative, int precision,
+                                   int base, int width, unsigned flags) const;
 
 public:
     QString doubleToString(double d,

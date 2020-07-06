@@ -3561,14 +3561,6 @@ QString QLocaleData::signPrefix(bool negative, unsigned flags) const
 QString QLocaleData::longLongToString(qlonglong l, int precision,
                                       int base, int width, unsigned flags) const
 {
-    const QString zero = zeroDigit();
-
-    bool precision_not_specified = false;
-    if (precision == -1) {
-        precision_not_specified = true;
-        precision = 1;
-    }
-
     bool negative = l < 0;
     if (base != 10) {
         // these are not supported by sprintf for octal and hex
@@ -3584,150 +3576,80 @@ QT_WARNING_DISABLE_MSVC(4146)
       Negating std::numeric_limits<qlonglong>::min() hits undefined behavior, so
       taking an absolute value has to cast to unsigned to change sign.
      */
-    QString num_str = qulltoa(negative ? -qulonglong(l) : qulonglong(l), base, zero);
+    QString numStr = qulltoa(negative ? -qulonglong(l) : qulonglong(l), base, zeroDigit());
 QT_WARNING_POP
 
-    const QString resultZero = base == 10 ? zero : QStringLiteral("0");
-    const auto digitWidth = resultZero.size();
-    uint cnt_thousand_sep = 0;
-    if (base == 10) {
-        const QString &group = groupSeparator();
-        if (flags & ThousandsGroup) {
-            for (int i = num_str.length() / digitWidth - 3; i > 0; i -= 3) {
-                num_str.insert(i * digitWidth, group);
-                ++cnt_thousand_sep;
-            }
-        } else if (flags & IndianNumberGrouping) {
-            const int size = num_str.length();
-            if (size > 3 * digitWidth)
-                num_str.insert(size - 3 * digitWidth , group);
-            for (int i = size / digitWidth - 5; i > 0; i -= 2) {
-                num_str.insert(i * digitWidth, group);
-                ++cnt_thousand_sep;
-            }
-        }
-    }
-
-    for (int i = num_str.length()/* - cnt_thousand_sep*/; i < precision; ++i)
-        num_str.prepend(resultZero);
-
-    if ((flags & ShowBase)
-            && base == 8
-            && (num_str.isEmpty() || num_str[0].unicode() != QLatin1Char('0')))
-        num_str.prepend(QLatin1Char('0'));
-
-    // LeftAdjusted overrides this flag ZeroPadded. sprintf only padds
-    // when precision is not specified in the format string
-    bool zero_padded = flags & ZeroPadded
-                        && !(flags & LeftAdjusted)
-                        && precision_not_specified;
-
-    if (zero_padded) {
-        int num_pad_chars = width - num_str.length() / digitWidth;
-
-        // leave space for the sign
-        if (negative
-                || flags & AlwaysShowSign
-                || flags & BlankBeforePositive)
-            --num_pad_chars;
-
-        // leave space for optional '0x' in hex form
-        if (base == 16 && (flags & ShowBase))
-            num_pad_chars -= 2;
-        // leave space for optional '0b' in binary form
-        else if (base == 2 && (flags & ShowBase))
-            num_pad_chars -= 2;
-
-        while (num_pad_chars-- > 0)
-            num_str.prepend(resultZero);
-    }
-
-    if (flags & CapitalEorX)
-        num_str = std::move(num_str).toUpper();
-
-    if (base == 16 && (flags & ShowBase))
-        num_str.prepend(QLatin1String(flags & UppercaseBase ? "0X" : "0x"));
-    if (base == 2 && (flags & ShowBase))
-        num_str.prepend(QLatin1String(flags & UppercaseBase ? "0B" : "0b"));
-
-    return signPrefix(negative, flags) + num_str;
+    return applyIntegerFormatting(std::move(numStr), negative, precision, base, width, flags);
 }
 
 QString QLocaleData::unsLongLongToString(qulonglong l, int precision,
                                          int base, int width, unsigned flags) const
 {
     const QString zero = zeroDigit();
+    QString resultZero = base == 10 ? zero : QStringLiteral("0");
+    return applyIntegerFormatting(l ? qulltoa(l, base, zero) : resultZero,
+                                  false, precision, base, width, flags);
+}
 
-    const QString resultZero = base == 10 ? zero : QStringLiteral("0");
-    QString num_str = l ? qulltoa(l, base, zero) : resultZero;
+QString QLocaleData::applyIntegerFormatting(QString &&numStr, bool negative, int precision,
+                                            int base, int width, unsigned flags) const
+{
+    const QString zero = base == 10 ? zeroDigit() : QStringLiteral("0");
+    const auto digitWidth = zero.size();
+    const auto digitCount = numStr.length() / digitWidth;
 
-    bool precision_not_specified = false;
-    if (precision == -1) {
-        if (flags == NoFlags)
-            return num_str; // fast-path: nothing below applies, so we're done.
+    const auto basePrefix = [numStr, zero, base, flags] () -> QStringView {
+        if (flags & ShowBase) {
+            const bool upper = flags & UppercaseBase;
+            if (base == 16)
+                return upper ? u"0X" : u"0x";
+            if (base == 2)
+                return upper ? u"0B" : u"0b";
+            if (base == 8 && !numStr.startsWith(zero))
+                return zero;
+        }
+        return {};
+    };
 
-        precision_not_specified = true;
-        precision = 1;
-    }
+    const QString prefix = signPrefix(negative, flags) + basePrefix();
+    // Count how much of width we've used up.  Each digit counts as one
+    int usedWidth = digitCount + prefix.size();
 
-    const auto digitWidth = resultZero.size();
-    uint cnt_thousand_sep = 0;
     if (base == 10) {
         const QString group = groupSeparator();
         if (flags & ThousandsGroup) {
-            for (int i = num_str.length() / digitWidth - 3; i > 0; i -= 3) {
-                num_str.insert(i * digitWidth, group);
-                ++cnt_thousand_sep;
+            for (int i = numStr.length() / digitWidth - 3; i > 0; i -= 3) {
+                numStr.insert(i * digitWidth, group);
+                ++usedWidth;
             }
         } else if (flags & IndianNumberGrouping) {
-            const int size = num_str.length();
+            const int size = numStr.length();
             if (size > 3 * digitWidth)
-                num_str.insert(size - 3 * digitWidth , group);
+                numStr.insert(size - 3 * digitWidth , group);
             for (int i = size / digitWidth - 5; i > 0; i -= 2) {
-                num_str.insert(i * digitWidth, group);
-                ++cnt_thousand_sep;
+                numStr.insert(i * digitWidth, group);
+                ++usedWidth;
             }
         }
     }
 
-    int zeroPadding = precision - num_str.length() / digitWidth /* + cnt_thousand_sep*/;
-    while (zeroPadding-- > 0)
-        num_str.prepend(resultZero);
+    const bool noPrecision = precision == -1;
+    if (noPrecision)
+        precision = 1;
 
-    if ((flags & ShowBase)
-            && base == 8
-            && (num_str.isEmpty() || num_str.at(0).unicode() != QLatin1Char('0')))
-        num_str.prepend(QLatin1Char('0'));
-
-    // LeftAdjusted overrides this flag ZeroPadded. sprintf only padds
-    // when precision is not specified in the format string
-    bool zero_padded = flags & ZeroPadded
-                        && !(flags & LeftAdjusted)
-                        && precision_not_specified;
-
-    if (zero_padded) {
-        int num_pad_chars = width - num_str.length() / digitWidth;
-
-        // leave space for optional '0x' in hex form
-        if (base == 16 && flags & ShowBase)
-            num_pad_chars -= 2;
-        // leave space for optional '0b' in binary form
-        else if (base == 2 && flags & ShowBase)
-            num_pad_chars -= 2;
-
-        while (num_pad_chars-- > 0)
-            num_str.prepend(resultZero);
+    for (int i = numStr.length(); i < precision; ++i) {
+        numStr.prepend(zero);
+        usedWidth++;
     }
 
-    if (flags & CapitalEorX)
-        num_str = std::move(num_str).toUpper();
+    // LeftAdjusted overrides ZeroPadded; and sprintf() only pads when
+    // precision is not specified in the format string.
+    if (noPrecision && flags & ZeroPadded && !(flags & LeftAdjusted)) {
+        for (int i = usedWidth; i < width; ++i)
+            numStr.prepend(zero);
+    }
 
-    if (base == 16 && flags & ShowBase)
-        num_str.prepend(QLatin1String(flags & UppercaseBase ? "0X" : "0x"));
-    else if (base == 2 && flags & ShowBase)
-        num_str.prepend(QLatin1String(flags & UppercaseBase ? "0B" : "0b"));
-
-    return signPrefix(false, flags) + num_str;
+    return prefix + (flags & CapitalEorX ? std::move(numStr).toUpper() : numStr);
 }
 
 /*
