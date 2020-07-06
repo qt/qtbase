@@ -210,20 +210,22 @@ public:
 
     typedef QVarLengthArray<char, 256> CharBuff;
 
-    static QString doubleToString(const QString &zero, const QString &plus,
-                                  const QString &minus, const QString &exponent,
-                                  const QString &group, const QString &decimal,
-                                  double d, int precision, DoubleForm form,
-                                  int width, unsigned flags);
-    static QString longLongToString(const QString &zero, const QString &group,
-                                    const QString &plus, const QString &minus,
-                                    qint64 l, int precision, int base,
-                                    int width, unsigned flags);
-    static QString unsLongLongToString(const QString &zero, const QString &group,
-                                       const QString &plus,
-                                       quint64 l, int precision,
-                                       int base, int width, unsigned flags);
+private:
+    enum PrecisionMode {
+        PMDecimalDigits =       0x01,
+        PMSignificantDigits =   0x02,
+        PMChopTrailingZeros =   0x03
+    };
 
+    QString decimalForm(QString &&digits, int decpt, int precision,
+                        PrecisionMode pm, bool mustMarkDecimal,
+                        bool groupDigits) const;
+    QString exponentForm(QString &&digits, int decpt, int precision,
+                         PrecisionMode pm, bool mustMarkDecimal,
+                         int minExponentDigits) const;
+    QString signPrefix(bool negative, unsigned flags) const;
+
+public:
     QString doubleToString(double d,
                            int precision = -1,
                            DoubleForm form = DFSignificantDigits,

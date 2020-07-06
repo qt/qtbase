@@ -70,24 +70,6 @@ void qt_doubleToAscii(double d, QLocaleData::DoubleForm form, int precision, cha
 QString qulltoa(qulonglong l, int base, const QStringView zero);
 Q_CORE_EXPORT QString qdtoa(qreal d, int *decpt, int *sign);
 
-enum PrecisionMode {
-    PMDecimalDigits =             0x01,
-    PMSignificantDigits =   0x02,
-    PMChopTrailingZeros =   0x03
-};
-
-QString &decimalForm(const QString &zero, const QString &decimal, const QString &group,
-                     QString &digits, int decpt, int precision,
-                     PrecisionMode pm,
-                     bool always_show_decpt,
-                     bool thousands_group);
-QString &exponentForm(const QString &zero, const QString &decimal, const QString &exponential,
-                      const QString &group, const QString &plus, const QString &minus,
-                      QString &digits, int decpt, int precision,
-                      PrecisionMode pm,
-                      bool always_show_decpt,
-                      bool leading_zero_in_exponent);
-
 inline bool isZero(double d)
 {
     uchar *ch = (uchar *)&d;

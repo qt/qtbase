@@ -2480,13 +2480,9 @@ static char qToLower(char c)
 QString QLocale::toString(double i, char f, int prec) const
 {
     QLocaleData::DoubleForm form = QLocaleData::DFDecimal;
-    uint flags = 0;
+    uint flags = qIsUpper(f) ? QLocaleData::CapitalEorX : 0;
 
-    if (qIsUpper(f))
-        flags = QLocaleData::CapitalEorX;
-    f = qToLower(f);
-
-    switch (f) {
+    switch (qToLower(f)) {
         case 'f':
             form = QLocaleData::DFDecimal;
             break;
@@ -3332,17 +3328,8 @@ QString QCalendarBackend::dateTimeToString(QStringView format, const QDateTime &
 QString QLocaleData::doubleToString(double d, int precision, DoubleForm form,
                                     int width, unsigned flags) const
 {
-    return doubleToString(zeroDigit(), positiveSign(), negativeSign(),
-                          exponentSeparator(), groupSeparator(), decimalPoint(),
-                          d, precision, form, width, flags);
-}
-
-QString QLocaleData::doubleToString(const QString &zero, const QString &plus, const QString &minus,
-                                    const QString &exponential,
-                                    const QString &group, const QString &decimal,
-                                    double d, int precision, DoubleForm form, int width,
-                                    unsigned flags)
-{
+    // Undocumented: aside from F.P.Shortest, precision < 0 is treated as
+    // default, 6 - same as printf().
     if (precision != QLocale::FloatingPointShortest && precision < 0)
         precision = 6;
     if (width < 0)
@@ -3362,10 +3349,13 @@ QString QLocaleData::doubleToString(const QString &zero, const QString &plus, co
     bool negative = false;
     qt_doubleToAscii(d, form, precision, buf.data(), bufSize, negative, length, decpt);
 
+    const QString prefix = signPrefix(negative && !isZero(d), flags);
     QString numStr;
+
     if (qstrncmp(buf.data(), "inf", 3) == 0 || qstrncmp(buf.data(), "nan", 3) == 0) {
         numStr = QString::fromLatin1(buf.data(), length);
     } else { // Handle finite values
+        const QString zero = zeroDigit();
         QString digits = QString::fromLatin1(buf.data(), length);
 
         if (zero == u"0") {
@@ -3391,22 +3381,19 @@ QString QLocaleData::doubleToString(const QString &zero, const QString &plus, co
 
         const bool mustMarkDecimal = flags & ForcePoint;
         const bool groupDigits = flags & ThousandsGroup;
+        const int minExponentDigits = flags & ZeroPadExponent ? 2 : 1;
         switch (form) {
             case DFExponent:
-                numStr = exponentForm(zero, decimal, exponential, group, plus, minus,
-                                      digits, decpt, precision, PMDecimalDigits,
-                                      mustMarkDecimal, flags & ZeroPadExponent);
+                numStr = exponentForm(std::move(digits), decpt, precision, PMDecimalDigits,
+                                      mustMarkDecimal, minExponentDigits);
                 break;
             case DFDecimal:
-                numStr = decimalForm(zero, decimal, group,
-                                     digits, decpt, precision, PMDecimalDigits,
+                numStr = decimalForm(std::move(digits), decpt, precision, PMDecimalDigits,
                                      mustMarkDecimal, groupDigits);
                 break;
             case DFSignificantDigits: {
                 PrecisionMode mode = (flags & AddTrailingZeroes) ?
                             PMSignificantDigits : PMChopTrailingZeros;
-
-                const int minExponentDigits = flags & ZeroPadExponent ? 2 : 1;
 
                 /* POSIX specifies sprintf() to follow fprintf(), whose 'g/G'
                    format says; with P = 6 if precision unspecified else 1 if
@@ -3460,60 +3447,122 @@ QString QLocaleData::doubleToString(const QString &zero, const QString &plus, co
                 }
 
                 numStr = useDecimal
-                    ? decimalForm(zero, decimal, group,
-                                  digits, decpt, precision, mode,
+                    ? decimalForm(std::move(digits), decpt, precision, mode,
                                   mustMarkDecimal, groupDigits)
-                    : exponentForm(zero, decimal, exponential, group, plus, minus,
-                                   digits, decpt, precision, mode,
-                                   mustMarkDecimal, flags & ZeroPadExponent);
+                    : exponentForm(std::move(digits), decpt, precision, mode,
+                                   mustMarkDecimal, minExponentDigits);
                 break;
             }
         }
 
-        if (isZero(d))
-            negative = false;
-
-        // pad with zeros. LeftAdjusted overrides this flag. Also, we don't
-        // pad special numbers
-        if (flags & QLocaleData::ZeroPadded && !(flags & QLocaleData::LeftAdjusted)) {
-            int num_pad_chars = width - numStr.length() / zero.length();
-            // leave space for the sign
-            if (negative
-                    || flags & QLocaleData::AlwaysShowSign
-                    || flags & QLocaleData::BlankBeforePositive)
-                --num_pad_chars;
-
-            for (int i = 0; i < num_pad_chars; ++i)
+        // Pad with zeros. LeftAdjusted overrides ZeroPadded.
+        if (flags & ZeroPadded && !(flags & LeftAdjusted)) {
+            for (int i = numStr.length() / zero.length() + prefix.size(); i < width; ++i)
                 numStr.prepend(zero);
         }
     }
 
-    // add sign
+    return prefix + (flags & CapitalEorX ? std::move(numStr).toUpper() : numStr);
+}
+
+QString QLocaleData::decimalForm(QString &&digits, int decpt, int precision,
+                                 PrecisionMode pm, bool mustMarkDecimal,
+                                 bool groupDigits) const
+{
+    const QString zero = zeroDigit();
+    const auto digitWidth = zero.size();
+    Q_ASSERT(digitWidth == 1 || digitWidth == 2);
+    Q_ASSERT(digits.size() % digitWidth == 0);
+
+    // Separator needs to go at index decpt: so add zeros before or after the
+    // given digits, if they don't reach that position already:
+    if (decpt < 0) {
+        for (; decpt < 0; ++decpt)
+            digits.prepend(zero);
+    } else {
+        for (int i = digits.length() / digitWidth; i < decpt; ++i)
+            digits.append(zero);
+    }
+
+    switch (pm) {
+    case PMDecimalDigits:
+        for (int i = digits.length() / digitWidth - decpt; i < precision; ++i)
+            digits.append(zero);
+        break;
+    case  PMSignificantDigits:
+        for (int i = digits.length() / digitWidth; i < precision; ++i)
+            digits.append(zero);
+        break;
+    case PMChopTrailingZeros:
+        Q_ASSERT(digits.length() / digitWidth <= qMax(decpt, 1) || !digits.endsWith(zero));
+        break;
+    }
+
+    if (mustMarkDecimal || decpt < digits.length() / digitWidth)
+        digits.insert(decpt * digitWidth, decimalPoint());
+
+    // FIXME: they're not simply thousands separators !
+    // Need to mirror IndianNumberGrouping code in longLongToString()
+    if (groupDigits) {
+        const QString group = groupSeparator();
+        for (int i = decpt - 3; i > 0; i -= 3)
+            digits.insert(i * digitWidth, group);
+    }
+
+    if (decpt == 0)
+        digits.prepend(zero);
+
+    return std::move(digits);
+}
+
+QString QLocaleData::exponentForm(QString &&digits, int decpt, int precision,
+                                  PrecisionMode pm, bool mustMarkDecimal,
+                                  int minExponentDigits) const
+{
+    const QString zero = zeroDigit();
+    const auto digitWidth = zero.size();
+    Q_ASSERT(digitWidth == 1 || digitWidth == 2);
+    Q_ASSERT(digits.size() % digitWidth == 0);
+
+    switch (pm) {
+    case PMDecimalDigits:
+        for (int i = digits.length() / digitWidth; i < precision + 1; ++i)
+            digits.append(zero);
+        break;
+    case PMSignificantDigits:
+        for (int i = digits.length() / digitWidth; i < precision; ++i)
+            digits.append(zero);
+        break;
+    case PMChopTrailingZeros:
+        Q_ASSERT(digits.length() / digitWidth <= 1 || !digits.endsWith(zero));
+        break;
+    }
+
+    if (mustMarkDecimal || digits.length() > digitWidth)
+        digits.insert(digitWidth, decimalPoint());
+
+    digits.append(exponentSeparator());
+    digits.append(longLongToString(decpt - 1, minExponentDigits, 10, -1, AlwaysShowSign));
+
+    return std::move(digits);
+}
+
+QString QLocaleData::signPrefix(bool negative, unsigned flags) const
+{
     if (negative)
-        numStr.prepend(minus);
-    else if (flags & QLocaleData::AlwaysShowSign)
-        numStr.prepend(plus);
-    else if (flags & QLocaleData::BlankBeforePositive)
-        numStr.prepend(QLatin1Char(' '));
-
-    if (flags & QLocaleData::CapitalEorX)
-        numStr = std::move(numStr).toUpper();
-
-    return numStr;
+        return negativeSign();
+    if (flags & AlwaysShowSign)
+        return positiveSign();
+    if (flags & BlankBeforePositive)
+        return QStringView(u" ").toString();
+    return {};
 }
 
 QString QLocaleData::longLongToString(qlonglong l, int precision,
                                       int base, int width, unsigned flags) const
 {
-    return longLongToString(zeroDigit(), groupSeparator(), positiveSign(), negativeSign(),
-                            l, precision, base, width, flags);
-}
+    const QString zero = zeroDigit();
 
-QString QLocaleData::longLongToString(const QString &zero, const QString &group,
-                                      const QString &plus, const QString &minus,
-                                      qlonglong l, int precision,
-                                      int base, int width, unsigned flags)
-{
     bool precision_not_specified = false;
     if (precision == -1) {
         precision_not_specified = true;
@@ -3542,6 +3591,7 @@ QT_WARNING_POP
     const auto digitWidth = resultZero.size();
     uint cnt_thousand_sep = 0;
     if (base == 10) {
+        const QString &group = groupSeparator();
         if (flags & ThousandsGroup) {
             for (int i = num_str.length() / digitWidth - 3; i > 0; i -= 3) {
                 num_str.insert(i * digitWidth, group);
@@ -3600,29 +3650,14 @@ QT_WARNING_POP
     if (base == 2 && (flags & ShowBase))
         num_str.prepend(QLatin1String(flags & UppercaseBase ? "0B" : "0b"));
 
-    // add sign
-    if (negative)
-        num_str.prepend(minus);
-    else if (flags & AlwaysShowSign)
-        num_str.prepend(plus);
-    else if (flags & BlankBeforePositive)
-        num_str.prepend(QLatin1Char(' '));
-
-    return num_str;
+    return signPrefix(negative, flags) + num_str;
 }
 
 QString QLocaleData::unsLongLongToString(qulonglong l, int precision,
                                          int base, int width, unsigned flags) const
 {
-    return unsLongLongToString(zeroDigit(), groupSeparator(), positiveSign(),
-                               l, precision, base, width, flags);
-}
+    const QString zero = zeroDigit();
 
-QString QLocaleData::unsLongLongToString(const QString &zero, const QString &group,
-                                         const QString &plus,
-                                         qulonglong l, int precision,
-                                         int base, int width, unsigned flags)
-{
     const QString resultZero = base == 10 ? zero : QStringLiteral("0");
     QString num_str = l ? qulltoa(l, base, zero) : resultZero;
 
@@ -3638,6 +3673,7 @@ QString QLocaleData::unsLongLongToString(const QString &zero, const QString &gro
     const auto digitWidth = resultZero.size();
     uint cnt_thousand_sep = 0;
     if (base == 10) {
+        const QString group = groupSeparator();
         if (flags & ThousandsGroup) {
             for (int i = num_str.length() / digitWidth - 3; i > 0; i -= 3) {
                 num_str.insert(i * digitWidth, group);
@@ -3691,13 +3727,7 @@ QString QLocaleData::unsLongLongToString(const QString &zero, const QString &gro
     else if (base == 2 && flags & ShowBase)
         num_str.prepend(QLatin1String(flags & UppercaseBase ? "0B" : "0b"));
 
-    // add sign
-    if (flags & AlwaysShowSign)
-        num_str.prepend(plus);
-    else if (flags & BlankBeforePositive)
-        num_str.prepend(QLatin1Char(' '));
-
-    return num_str;
+    return signPrefix(false, flags) + num_str;
 }
 
 /*
