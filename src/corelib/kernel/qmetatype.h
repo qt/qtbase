@@ -814,15 +814,10 @@ struct ContainerCapabilitiesImpl<Container, decltype(std::declval<Container>().p
     { static_cast<Container *>(const_cast<void *>(container))->push_back(*static_cast<const typename Container::value_type *>(value)); }
 };
 
-namespace QtPrivate {
-namespace ContainerCapabilitiesMetaProgrammingHelper {
-    template<typename... Ts>
-    using void_t = void;
-}
-}
-
 template<typename Container>
-struct ContainerCapabilitiesImpl<Container, QtPrivate::ContainerCapabilitiesMetaProgrammingHelper::void_t<decltype(std::declval<Container>().insert(std::declval<typename Container::value_type>())), decltype(std::declval<typename Container::value_type>() == std::declval<typename Container::value_type>())>>
+struct ContainerCapabilitiesImpl<Container,
+        std::void_t<decltype(std::declval<Container>().insert(std::declval<typename Container::value_type>())),
+                    decltype(std::declval<typename Container::value_type>() == std::declval<typename Container::value_type>())>>
 {
     enum {ContainerCapabilities = ContainerIsAppendable};
 
