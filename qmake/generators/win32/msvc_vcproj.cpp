@@ -355,7 +355,7 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
                                                    QHash<QString, ProStringList> &subdirProjectLookup,
                                                    const ProStringList &allDependencies)
 {
-    QVector<QPair<QString, ProStringList> > collectedSubdirs;
+    QList<QPair<QString, ProStringList>> collectedSubdirs;
     ProStringList tmp_proj_subdirs = proj->values("SUBDIRS");
     ProStringList projectsInProject;
     const int numSubdirs = tmp_proj_subdirs.size();

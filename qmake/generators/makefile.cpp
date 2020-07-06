@@ -601,7 +601,7 @@ MakefileGenerator::init()
     int x;
 
     //build up a list of compilers
-    QVector<Compiler> compilers;
+    QList<Compiler> compilers;
     {
         const char *builtins[] = { "OBJECTS", "SOURCES", "PRECOMPILED_HEADER", nullptr };
         for(x = 0; builtins[x]; ++x) {
@@ -764,7 +764,7 @@ MakefileGenerator::init()
         ProStringList incDirs = v["DEPENDPATH"] + v["QMAKE_ABSOLUTE_SOURCE_PATH"];
         if(project->isActiveConfig("depend_includepath"))
             incDirs += v["INCLUDEPATH"];
-        QVector<QMakeLocalFileName> deplist;
+        QList<QMakeLocalFileName> deplist;
         deplist.reserve(incDirs.size());
         for (ProStringList::Iterator it = incDirs.begin(); it != incDirs.end(); ++it)
             deplist.append(QMakeLocalFileName((*it).toQString()));
@@ -1826,7 +1826,7 @@ static QStringList splitDeps(const QString &indeps, bool lineMode)
 
 QString MakefileGenerator::resolveDependency(const QDir &outDir, const QString &file)
 {
-    const QVector<QMakeLocalFileName> &depdirs = QMakeSourceFileInfo::dependencyPaths();
+    const QList<QMakeLocalFileName> &depdirs = QMakeSourceFileInfo::dependencyPaths();
     for (const auto &depdir : depdirs) {
         const QString &local = depdir.local();
         QString lf = outDir.absoluteFilePath(local + '/' + file);
@@ -3095,7 +3095,7 @@ MakefileGenerator::findFileForDep(const QMakeLocalFileName &dep, const QMakeLoca
 
         if(Option::output_dir != qmake_getpwd()
            && QDir::isRelativePath(dep.real())) { //is it from the shadow tree
-            QVector<QMakeLocalFileName> depdirs = QMakeSourceFileInfo::dependencyPaths();
+            QList<QMakeLocalFileName> depdirs = QMakeSourceFileInfo::dependencyPaths();
             depdirs.prepend(fileInfo(file.real()).absoluteDir().path());
             QString pwd = qmake_getpwd();
             if(pwd.at(pwd.length()-1) != '/')

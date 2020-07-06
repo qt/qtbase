@@ -31,9 +31,9 @@
 
 #include <proitems.h>
 
-#include <qstringlist.h>
 #include <qfileinfo.h>
-#include <qvector.h>
+#include <qlist.h>
+#include <qstringlist.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -66,7 +66,7 @@ private:
     //quick project lookups
     SourceFiles *files, *includes;
     bool files_changed;
-    QVector<QMakeLocalFileName> depdirs;
+    QList<QMakeLocalFileName> depdirs;
     QStringList systemIncludes;
 
     //sleezy buffer code
@@ -89,8 +89,8 @@ public:
     QMakeSourceFileInfo();
     virtual ~QMakeSourceFileInfo();
 
-    QVector<QMakeLocalFileName> dependencyPaths() const { return depdirs; }
-    void setDependencyPaths(const QVector<QMakeLocalFileName> &);
+    QList<QMakeLocalFileName> dependencyPaths() const { return depdirs; }
+    void setDependencyPaths(const QList<QMakeLocalFileName> &);
 
     enum DependencyMode { Recursive, NonRecursive };
     inline void setDependencyMode(DependencyMode mode) { dep_mode = mode; }

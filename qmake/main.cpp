@@ -67,7 +67,7 @@ Q_DECLARE_TYPEINFO(SedSubst, Q_MOVABLE_TYPE);
 
 static int doSed(int argc, char **argv)
 {
-    QVector<SedSubst> substs;
+    QList<SedSubst> substs;
     QList<const char *> inFiles;
     for (int i = 0; i < argc; i++) {
         if (!strcmp(argv[i], "-e")) {

@@ -258,7 +258,7 @@ void BuildsMetaMakefileGenerator::checkForConflictingTargets() const
         return;
     }
     using TargetInfo = std::pair<Build *, ProString>;
-    QVector<TargetInfo> targets;
+    QList<TargetInfo> targets;
     const int last = makefiles.count() - 1;
     targets.resize(last);
     for (int i = 0; i < last; ++i) {

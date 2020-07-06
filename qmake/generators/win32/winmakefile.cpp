@@ -102,7 +102,7 @@ Win32MakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
     ProStringList impexts = project->values("QMAKE_LIB_EXTENSIONS");
     if (impexts.isEmpty())
         impexts = project->values("QMAKE_EXTENSION_STATICLIB");
-    QVector<LibrarySearchPath> dirs;
+    QList<LibrarySearchPath> dirs;
     int libidx = 0;
     for (const ProString &dlib : project->values("QMAKE_DEFAULT_LIBDIRS"))
         dirs.append(LibrarySearchPath(dlib.toQString(), true));

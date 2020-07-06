@@ -32,10 +32,10 @@
 #include "qmake_global.h"
 
 #include <qdebug.h>
-#include <qstring.h>
-#include <qvector.h>
 #include <qhash.h>
+#include <qlist.h>
 #include <qmap.h>
+#include <qstring.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -311,7 +311,7 @@ private:
     const ProString *m_ps;
 };
 
-class ProStringList : public QVector<ProString> {
+class ProStringList : public QList<ProString> {
 public:
     ProStringList() {}
     ProStringList(const ProString &str) { *this << str; }
@@ -319,7 +319,7 @@ public:
     QStringList toQStringList() const;
 
     ProStringList &operator<<(const ProString &str)
-        { QVector<ProString>::operator<<(str); return *this; }
+        { QList<ProString>::operator<<(str); return *this; }
 
     int length() const { return size(); }
 

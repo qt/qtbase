@@ -958,7 +958,7 @@ public:
     VCCLCompilerTool        CompilerTool;
 };
 
-typedef QVector<VCFilter> VCFilterList;
+typedef QList<VCFilter> VCFilterList;
 class VCProjectSingleConfig
 {
 public:

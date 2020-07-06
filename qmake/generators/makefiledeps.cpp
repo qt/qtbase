@@ -192,10 +192,10 @@ void QMakeSourceFileInfo::dependTreeWalker(SourceFile *node, SourceDependChildre
     }
 }
 
-void QMakeSourceFileInfo::setDependencyPaths(const QVector<QMakeLocalFileName> &l)
+void QMakeSourceFileInfo::setDependencyPaths(const QList<QMakeLocalFileName> &l)
 {
     // Ensure that depdirs does not contain the same paths several times, to minimize the stats
-    QVector<QMakeLocalFileName> ll;
+    QList<QMakeLocalFileName> ll;
     for (int i = 0; i < l.count(); ++i) {
         if (!ll.contains(l.at(i)))
             ll.append(l.at(i));
