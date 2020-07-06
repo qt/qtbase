@@ -42,23 +42,23 @@
 #include <QtTest/qtestassert.h>
 
 #include <QtCore/qbytearray.h>
+#include <QtCore/qcoreapplication.h>
+#include <QtCore/qdebug.h>
+#include <QtCore/qdir.h>
+#include <QtCore/qdiriterator.h>
+#include <QtCore/qfile.h>
+#include <QtCore/qfileinfo.h>
+#include <QtCore/qfloat16.h>
+#include <QtCore/qlibraryinfo.h>
+#include <QtCore/qlist.h>
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qstringlist.h>
-#include <QtCore/qvector.h>
-#include <QtCore/qvarlengtharray.h>
-#include <QtCore/qcoreapplication.h>
-#include <QtCore/qfile.h>
-#include <QtCore/qfileinfo.h>
-#include <QtCore/qdir.h>
-#include <QtCore/qdebug.h>
-#include <QtCore/qfloat16.h>
-#include <QtCore/qlibraryinfo.h>
-#include <QtCore/private/qtools_p.h>
-#include <QtCore/qdiriterator.h>
 #include <QtCore/qtemporarydir.h>
 #include <QtCore/qthread.h>
+#include <QtCore/qvarlengtharray.h>
 #include <QtCore/private/qlocking_p.h>
+#include <QtCore/private/qtools_p.h>
 #include <QtCore/private/qwaitcondition_p.h>
 
 #include <QtCore/qtestsupport_core.h>

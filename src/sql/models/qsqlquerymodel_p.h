@@ -57,8 +57,8 @@
 #include "QtSql/qsqlquery.h"
 #include "QtSql/qsqlrecord.h"
 #include "QtCore/qhash.h"
+#include "QtCore/qlist.h"
 #include "QtCore/qvarlengtharray.h"
-#include "QtCore/qvector.h"
 
 QT_REQUIRE_CONFIG(sqlmodel);
 

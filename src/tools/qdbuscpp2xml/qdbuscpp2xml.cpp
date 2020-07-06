@@ -26,14 +26,13 @@
 **
 ****************************************************************************/
 
+#include <qbuffer.h>
 #include <qbytearray.h>
-#include <qstring.h>
-#include <qvarlengtharray.h>
+#include <qdebug.h>
 #include <qfile.h>
 #include <qlist.h>
-#include <qbuffer.h>
-#include <qvector.h>
-#include <qdebug.h>
+#include <qstring.h>
+#include <qvarlengtharray.h>
 
 #include <stdio.h>
 #include <stdlib.h>

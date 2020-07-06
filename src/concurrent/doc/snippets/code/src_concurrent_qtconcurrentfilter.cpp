@@ -184,19 +184,19 @@ QFuture<QString> fooString =
 
 //! [15]
 // keep only even integers
-QVector<int> vector { 1, 2, 3, 4 };
-QtConcurrent::blockingFilter(vector, [](int n) { return (n & 1) == 0; });
+QList<int> list { 1, 2, 3, 4 };
+QtConcurrent::blockingFilter(list, [](int n) { return (n & 1) == 0; });
 
 // retrieve only even integers
-QVector<int> vector2 { 1, 2, 3, 4 };
-QFuture<int> future = QtConcurrent::filtered(vector2, [](int x) {
+QList<int> list2 { 1, 2, 3, 4 };
+QFuture<int> future = QtConcurrent::filtered(list2, [](int x) {
     return (x & 1) == 0;
 });
-QVector<int> results = future.results();
+QList<int> results = future.results();
 
 // add up all even integers
-QVector<int> vector3 { 1, 2, 3, 4 };
-int sum = QtConcurrent::filteredReduced<int>(vector3,
+QList<int> list3 { 1, 2, 3, 4 };
+int sum = QtConcurrent::filteredReduced<int>(list3,
     [](int x) {
         return (x & 1) == 0;
     },
@@ -212,8 +212,8 @@ void intSumReduce(int &sum, int x)
     sum += x;
 }
 
-QVector<int> vector { 1, 2, 3, 4 };
-int sum = QtConcurrent::filteredReduced(vector,
+QList<int> list { 1, 2, 3, 4 };
+int sum = QtConcurrent::filteredReduced(list,
     [] (int x) {
         return (x & 1) == 0;
     },
@@ -227,8 +227,8 @@ bool keepEvenIntegers(int x)
     return (x & 1) == 0;
 }
 
-QVector<int> vector { 1, 2, 3, 4 };
-int sum = QtConcurrent::filteredReduced<int>(vector,
+QList<int> list { 1, 2, 3, 4 };
+int sum = QtConcurrent::filteredReduced<int>(list,
     keepEvenIntegers,
     [](int &sum, int x) {
         sum += x;

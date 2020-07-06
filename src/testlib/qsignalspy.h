@@ -44,9 +44,8 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qmetaobject.h>
-#include <QtCore/qvariant.h>
-#include <QtCore/qvector.h>
 #include <QtTest/qtesteventloop.h>
+#include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
 

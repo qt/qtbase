@@ -41,16 +41,15 @@
 
 //#define QT_DEBUG_SQL
 
+#include "qatomic.h"
 #include "qdebug.h"
 #include "qelapsedtimer.h"
-#include "qatomic.h"
+#include "qmap.h"
 #include "qsqlrecord.h"
 #include "qsqlresult.h"
 #include "qsqldriver.h"
 #include "qsqldatabase.h"
 #include "private/qsqlnulldriver_p.h"
-#include "qvector.h"
-#include "qmap.h"
 
 QT_BEGIN_NAMESPACE
 

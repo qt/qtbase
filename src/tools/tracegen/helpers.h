@@ -42,7 +42,7 @@
 
 #include "provider.h"
 
-#include <qvector.h>
+#include <qlist.h>
 #include <qstring.h>
 
 enum ParamType {

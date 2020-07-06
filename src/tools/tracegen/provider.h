@@ -40,7 +40,7 @@
 #ifndef PROVIDER_H
 #define PROVIDER_H
 
-#include <qvector.h>
+#include <qlist.h>
 #include <qstring.h>
 #include <qstringlist.h>
 #include <qtypeinfo.h>

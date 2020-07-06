@@ -31,26 +31,26 @@
 #include <cstdio>
 #include <cstdlib>
 
+#include <qcommandlineoption.h>
+#include <qcommandlineparser.h>
+#include <qcoreapplication.h>
+#include <qdebug.h>
+#include <qdir.h>
 #include <qfile.h>
+#include <qhash.h>
 #include <qjsonarray.h>
 #include <qjsondocument.h>
 #include <qjsonobject.h>
-#include <qdir.h>
-#include <qstring.h>
-#include <qhash.h>
-#include <qvector.h>
-#include <qstack.h>
-#include <qdebug.h>
-#include <qset.h>
+#include <qlist.h>
 #include <qmap.h>
-#include <qcoreapplication.h>
-#include <qcommandlineoption.h>
-#include <qcommandlineparser.h>
+#include <qset.h>
+#include <qstring.h>
+#include <qstack.h>
 
 QT_BEGIN_NAMESPACE
 
 using AutoGenHeaderMap = QMap<QString, QString>;
-using AutoGenSourcesList = QVector<QString>;
+using AutoGenSourcesList = QList<QString>;
 
 static bool readAutogenInfoJson(AutoGenHeaderMap &headers, AutoGenSourcesList &sources,
                                 QStringList &headerExts, const QString &autoGenInfoJsonPath)
@@ -194,7 +194,7 @@ static bool readParseCache(ParseCacheMap &entries, const QString &parseCacheFile
     return true;
 }
 
-static bool readJsonFiles(QVector<QString> &entries, const QString &filePath)
+static bool readJsonFiles(QList<QString> &entries, const QString &filePath)
 {
 
     QFile file(filePath);
@@ -212,7 +212,7 @@ static bool readJsonFiles(QVector<QString> &entries, const QString &filePath)
     return true;
 }
 
-static bool writeJsonFiles(const QVector<QString> &fileList, const QString &fileListFilePath)
+static bool writeJsonFiles(const QList<QString> &fileList, const QString &fileListFilePath)
 {
     QFile file(fileListFilePath);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
@@ -308,7 +308,7 @@ int main(int argc, char **argv)
     // entry for it in the parse cache. Use the value for the location of the
     // moc.json file
 
-    QVector<QString> jsonFileList;
+    QList<QString> jsonFileList;
     QDir dir(cmakeIncludeDir);
     jsonFileList.reserve(autoGenSources.size());
 
@@ -379,7 +379,7 @@ int main(int argc, char **argv)
 
     // Read Previous file list (if any)
     const QString fileListFilePath = parser.value(outputFileOption);
-    QVector<QString> previousList;
+    QList<QString> previousList;
     QFile prev_file(fileListFilePath);
 
     // Only try to open file if it exists to avoid error messages

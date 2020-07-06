@@ -39,12 +39,12 @@
 
 #include "qsqlrecord.h"
 
-#include "qdebug.h"
-#include "qstringlist.h"
 #include "qatomic.h"
+#include "qdebug.h"
+#include "qlist.h"
 #include "qsqlfield.h"
 #include "qstring.h"
-#include "qvector.h"
+#include "qstringlist.h"
 
 QT_BEGIN_NAMESPACE
 

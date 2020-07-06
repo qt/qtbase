@@ -31,11 +31,11 @@
 #define SYMBOLS_H
 
 #include "token.h"
-#include <qstring.h>
-#include <qhash.h>
-#include <qvector.h>
-#include <qstack.h>
 #include <qdebug.h>
+#include <qhash.h>
+#include <qlist.h>
+#include <qstack.h>
+#include <qstring.h>
 
 QT_BEGIN_NAMESPACE
 

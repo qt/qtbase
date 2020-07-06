@@ -107,7 +107,7 @@
 
     Qt Concurrent supports several STL-compatible container and iterator types,
     but works best with Qt containers that have random-access iterators, such as
-    QList or QVector. The map and filter functions accept both containers and begin/end iterators.
+    QList. The map and filter functions accept both containers and begin/end iterators.
 
     STL Iterator support overview:
 
@@ -134,7 +134,7 @@
         \li Supported
     \row
         \li Random Access Iterator
-        \li QList, QVector, std::vector
+        \li QList, std::vector
         \li Supported and Recommended
     \endtable
 

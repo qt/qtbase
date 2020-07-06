@@ -39,9 +39,8 @@
 
 #include "private/qsqlcachedresult_p.h"
 
-#include <qvariant.h>
 #include <qdatetime.h>
-#include <qvector.h>
+#include <qvariant.h>
 #include <QtSql/private/qsqldriver_p.h>
 
 QT_BEGIN_NAMESPACE

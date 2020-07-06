@@ -42,11 +42,11 @@
     \value Direct Pixel values are derived directly from the RGB
     values, also known as "True Color."
 
-    \value Indexed Pixel values represent indexes into a vector of
+    \value Indexed Pixel values represent indexes into a list of
     available colors, i.e. QColormap uses the index of the color that
     most closely matches an RGB value.
 
-    \value Gray Similar to \c Indexed, pixel values represent a vector
+    \value Gray Similar to \c Indexed, pixel values represent a list
     of available gray tones.  QColormap uses the index of the gray
     tone that most closely matches the computed gray tone of an RGB
     value.
@@ -113,11 +113,11 @@
 */
 
 /*!
-    \fn const QVector<QColor> QColormap::colormap() const
+    \fn const QList<QColor> QColormap::colormap() const
 
-    Returns a vector of colors which represents the devices colormap
+    Returns a list of colors which represents the devices colormap
     for \c Indexed and \c Gray modes.  This function returns an empty
-    vector for \c Direct mode.
+    list for \c Direct mode.
 
     \sa size()
 */

@@ -58,9 +58,9 @@
 
 #include <QtCore/qatomic.h>
 #include <QtCore/qbytearray.h>
-#include <QtCore/QElapsedTimer>
-#include <QtCore/QVariant>
-#include <QtCore/qvector.h>
+#include <QtCore/qelapsedtimer.h>
+#include <QtCore/qlist.h>
+#include <QtCore/qvariant.h>
 #if QT_CONFIG(regularexpression)
 #include <QtCore/QRegularExpression>
 #endif

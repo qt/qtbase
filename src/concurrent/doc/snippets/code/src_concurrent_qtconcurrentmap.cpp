@@ -200,13 +200,13 @@ QFuture<QImage> thumbnails = QtConcurrent::mapped(images, Scaled(100));
 //! [14]
 
 //! [15]
-QVector<int> vector { 1, 2, 3, 4 };
+QList<int> vector { 1, 2, 3, 4 };
 QtConcurrent::blockingMap(vector, [](int &x) { x *= 2; });
 
 int size = 100;
-QVector<QImage> images = ...;
+QList<QImage> images = ...;
 
-QVector<QImage> thumbnails = QtConcurrent::mapped(images,
+QList<QImage> thumbnails = QtConcurrent::mapped(images,
         [&size](const QImage &image) {
             return image.scaled(size, size);
         }
@@ -214,7 +214,7 @@ QVector<QImage> thumbnails = QtConcurrent::mapped(images,
 //! [15]
 
 //! [16]
-QVector<QImage> collage = QtConcurrent::mappedReduced(images,
+QList<QImage> collage = QtConcurrent::mappedReduced(images,
         [&size](const QImage &image) {
             return image.scaled(size, size);
         },
@@ -223,7 +223,7 @@ QVector<QImage> collage = QtConcurrent::mappedReduced(images,
 //! [16]
 
 //! [17]
-QVector<QImage> collage = QtConcurrent::mappedReduced<QImage>(images,
+QList<QImage> collage = QtConcurrent::mappedReduced<QImage>(images,
         [&size](const QImage &image) {
             return image.scaled(size, size);
         },

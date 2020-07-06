@@ -53,7 +53,7 @@
 #define CARD_H
 
 #include <QtWidgets>
-#include <QVector>
+#include <QList>
 
 class CardLayout : public QLayout
 {
@@ -73,7 +73,7 @@ public:
     void setGeometry(const QRect &rect) override;
 
 private:
-    QVector<QLayoutItem*> m_items;
+    QList<QLayoutItem *> m_items;
 };
 #endif
 //! [0]
@@ -86,7 +86,7 @@ private:
 //! [2]
 int CardLayout::count() const
 {
-    // QVector::size() returns the number of QLayoutItems in m_items
+    // QList::size() returns the number of QLayoutItems in m_items
     return m_items.size();
 }
 //! [2]
@@ -94,14 +94,14 @@ int CardLayout::count() const
 //! [3]
 QLayoutItem *CardLayout::itemAt(int idx) const
 {
-    // QVector::value() performs index checking, and returns nullptr if we are
+    // QList::value() performs index checking, and returns nullptr if we are
     // outside the valid range
     return m_items.value(idx);
 }
 
 QLayoutItem *CardLayout::takeAt(int idx)
 {
-    // QVector::take does not do index checking
+    // QList::take does not do index checking
     return idx >= 0 && idx < m_items.size() ? m_items.takeAt(idx) : 0;
 }
 //! [3]

@@ -27,9 +27,9 @@
 ****************************************************************************/
 
 #include <QtCore/qcoreapplication.h>
-#include <QtCore/qvector.h>
 #include <QtCore/qfile.h>
 #include <QtCore/qfileinfo.h>
+#include <QtCore/qlist.h>
 #include <QtCore/qxmlstream.h>
 
 class VkSpecParser

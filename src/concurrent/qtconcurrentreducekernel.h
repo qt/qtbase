@@ -50,7 +50,6 @@
 #include <QtCore/qmutex.h>
 #include <QtCore/qthread.h>
 #include <QtCore/qthreadpool.h>
-#include <QtCore/qvector.h>
 
 #include <mutex>
 

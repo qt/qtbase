@@ -45,7 +45,6 @@
 #include <qlist.h>
 #include <qstring.h>
 #include <qstringlist.h>
-#include <qvector.h>
 #include <qxmlstream.h>
 #include <qglobal.h>
 
