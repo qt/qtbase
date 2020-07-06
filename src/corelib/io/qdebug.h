@@ -262,62 +262,66 @@ inline QDebug printAssociativeContainer(QDebug debug, const char *which, const A
 
 } // namespace QtPrivate
 
+template<typename ...T>
+using QDebugIfHasDebugStream =
+    std::enable_if_t<std::conjunction_v<QTypeTraits::has_ostream_operator<QDebug, T>...>, QDebug>;
+
 template<typename T>
-inline QDebug operator<<(QDebug debug, const QList<T> &vec)
+inline QDebugIfHasDebugStream<T> operator<<(QDebug debug, const QList<T> &vec)
 {
     return QtPrivate::printSequentialContainer(debug, "QList", vec);
 }
 
 template <typename T, typename Alloc>
-inline QDebug operator<<(QDebug debug, const std::vector<T, Alloc> &vec)
+inline QDebugIfHasDebugStream<T> operator<<(QDebug debug, const std::vector<T, Alloc> &vec)
 {
     return QtPrivate::printSequentialContainer(debug, "std::vector", vec);
 }
 
 template <typename T, typename Alloc>
-inline QDebug operator<<(QDebug debug, const std::list<T, Alloc> &vec)
+inline QDebugIfHasDebugStream<T> operator<<(QDebug debug, const std::list<T, Alloc> &vec)
 {
     return QtPrivate::printSequentialContainer(debug, "std::list", vec);
 }
 
 template <typename Key, typename T, typename Compare, typename Alloc>
-inline QDebug operator<<(QDebug debug, const std::map<Key, T, Compare, Alloc> &map)
+inline QDebugIfHasDebugStream<Key, T> operator<<(QDebug debug, const std::map<Key, T, Compare, Alloc> &map)
 {
     return QtPrivate::printSequentialContainer(debug, "std::map", map); // yes, sequential: *it is std::pair
 }
 
 template <typename Key, typename T, typename Compare, typename Alloc>
-inline QDebug operator<<(QDebug debug, const std::multimap<Key, T, Compare, Alloc> &map)
+inline QDebugIfHasDebugStream<Key, T> operator<<(QDebug debug, const std::multimap<Key, T, Compare, Alloc> &map)
 {
     return QtPrivate::printSequentialContainer(debug, "std::multimap", map); // yes, sequential: *it is std::pair
 }
 
 template <class Key, class T>
-inline QDebug operator<<(QDebug debug, const QMap<Key, T> &map)
+inline QDebugIfHasDebugStream<Key, T> operator<<(QDebug debug, const QMap<Key, T> &map)
 {
     return QtPrivate::printAssociativeContainer(debug, "QMap", map);
 }
 
 template <class Key, class T>
-inline QDebug operator<<(QDebug debug, const QMultiMap<Key, T> &map)
+inline QDebugIfHasDebugStream<Key, T> operator<<(QDebug debug, const QMultiMap<Key, T> &map)
 {
     return QtPrivate::printAssociativeContainer(debug, "QMultiMap", map);
 }
 
 template <class Key, class T>
-inline QDebug operator<<(QDebug debug, const QHash<Key, T> &hash)
+inline QDebugIfHasDebugStream<Key, T> operator<<(QDebug debug, const QHash<Key, T> &hash)
 {
     return QtPrivate::printAssociativeContainer(debug, "QHash", hash);
 }
 
 template <class Key, class T>
-inline QDebug operator<<(QDebug debug, const QMultiHash<Key, T> &hash)
+inline QDebugIfHasDebugStream<Key, T> operator<<(QDebug debug, const QMultiHash<Key, T> &hash)
 {
     return QtPrivate::printAssociativeContainer(debug, "QMultiHash", hash);
 }
 
 template <class T1, class T2>
-inline QDebug operator<<(QDebug debug, const std::pair<T1, T2> &pair)
+inline QDebugIfHasDebugStream<T1, T2> operator<<(QDebug debug, const std::pair<T1, T2> &pair)
 {
     const QDebugStateSaver saver(debug);
     debug.nospace() << "std::pair(" << pair.first << ',' << pair.second << ')';
@@ -325,13 +329,13 @@ inline QDebug operator<<(QDebug debug, const std::pair<T1, T2> &pair)
 }
 
 template <typename T>
-inline QDebug operator<<(QDebug debug, const QSet<T> &set)
+inline QDebugIfHasDebugStream<T> operator<<(QDebug debug, const QSet<T> &set)
 {
     return QtPrivate::printSequentialContainer(debug, "QSet", set);
 }
 
 template <class T>
-inline QDebug operator<<(QDebug debug, const QContiguousCache<T> &cache)
+inline QDebugIfHasDebugStream<T> operator<<(QDebug debug, const QContiguousCache<T> &cache)
 {
     const QDebugStateSaver saver(debug);
     debug.nospace() << "QContiguousCache(";

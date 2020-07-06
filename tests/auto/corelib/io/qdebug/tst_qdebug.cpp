@@ -35,6 +35,12 @@
 #include <QtConcurrentRun>
 #include <QFutureSynchronizer>
 
+static_assert(QTypeTraits::has_ostream_v<QDebug, int>);
+static_assert(QTypeTraits::has_ostream_v<QDebug, QList<int>>);
+struct NonStreamable {};
+static_assert(!QTypeTraits::has_ostream_v<QDebug, NonStreamable>);
+static_assert(!QTypeTraits::has_ostream_v<QDebug, QList<NonStreamable>>);
+
 class tst_QDebug: public QObject
 {
     Q_OBJECT

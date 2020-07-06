@@ -48,6 +48,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QDebug;
+
 /*
    QTypeInfo     - type trait functionality
 */
@@ -444,6 +446,23 @@ using compare_eq_result = std::enable_if_t<std::conjunction_v<QTypeTraits::has_o
 
 template <typename ...T>
 using compare_lt_result = std::enable_if_t<std::conjunction_v<QTypeTraits::has_operator_less_than<T>...>, bool>;
+
+namespace detail {
+
+template<typename T>
+const T const_value();
+template<typename T>
+T &reference();
+
+}
+
+template <typename Stream, typename, typename = void>
+struct has_ostream_operator : std::false_type {};
+template <typename Stream, typename T>
+struct has_ostream_operator<Stream, T, std::void_t<decltype(detail::reference<Stream>() << detail::const_value<T>())>>
+        : std::true_type {};
+template <typename Stream, typename T>
+constexpr bool has_ostream_operator_v = has_ostream_operator<Stream, T>::value;
 
 }
 
