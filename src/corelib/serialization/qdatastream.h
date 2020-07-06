@@ -403,12 +403,12 @@ inline QDataStream &operator>>(QDataStream &s, QFlags<Enum> &e)
 { return s >> e.i; }
 
 template <typename T>
-typename std::enable_if<std::is_enum<T>::value, QDataStream &>::type&
+typename std::enable_if_t<std::is_enum<T>::value, QDataStream &>
 operator<<(QDataStream &s, const T &t)
 { return s << static_cast<typename std::underlying_type<T>::type>(t); }
 
 template <typename T>
-typename std::enable_if<std::is_enum<T>::value, QDataStream &>::type&
+typename std::enable_if_t<std::is_enum<T>::value, QDataStream &>
 operator>>(QDataStream &s, T &t)
 { return s >> reinterpret_cast<typename std::underlying_type<T>::type &>(t); }
 
