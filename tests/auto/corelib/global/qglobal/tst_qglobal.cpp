@@ -93,7 +93,7 @@ void tst_QGlobal::qIsNull()
 
 void tst_QGlobal::for_each()
 {
-    QVector<int> list;
+    QList<int> list;
     list << 0 << 1 << 2 << 3 << 4 << 5;
 
     int counter = 0;
@@ -112,7 +112,7 @@ void tst_QGlobal::for_each()
 
     // check whether we can pass a constructor as container argument
     counter = 0;
-    foreach (int i, QVector<int>(list)) {
+    foreach (int i, QList<int>(list)) {
         QCOMPARE(i, counter++);
     }
     QCOMPARE(counter, list.count());

@@ -241,7 +241,7 @@ public:
     class MissedBaseline
     {
         friend class QList<MissedBaseline>;
-        MissedBaseline() {} // for QVector, don't use
+        MissedBaseline() {} // for QList, don't use
     public:
         MissedBaseline(const QString &aId,
                        const QByteArray &aExpected,
@@ -265,8 +265,8 @@ public:
         QByteArray  output;
     };
 
-    QVector<GeneralFailure> failures;
-    QVector<MissedBaseline> missedBaselines;
+    QList<GeneralFailure> failures;
+    QList<MissedBaseline> missedBaselines;
 
     /**
      * The count of how many tests that were run.

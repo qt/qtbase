@@ -42,7 +42,7 @@ static QSet<int> *setX;
 static QStack<int> *stackX;
 static QVarLengthArray<int> *varLengthArrayX;
 static QVarLengthArray<int, 512> *varLengthArrayY;
-static QVector<int> *vectorX;
+static QList<int> *vectorX;
 
 void foo()
 {
@@ -78,7 +78,6 @@ void foo()
 #include "qstring.h"
 #include "qstringlist.h"
 #include "qvarlengtharray.h"
-#include "qvector.h"
 #include "qqueue.h"
 
 class tst_Collections : public QObject
@@ -470,7 +469,7 @@ void tst_Collections::list()
     }
 
     {
-        QVector<QString> vector(5);
+        QList<QString> vector(5);
         vector[0] = "99";
         vector[4] ="100";
         QList<QString> list = vector.toList();
@@ -726,7 +725,7 @@ void tst_Collections::list()
 
 void tst_Collections::vector()
 {
-    QVector<int> v1;
+    QList<int> v1;
     v1 << 1 << 2 << 3;
     QVector<int> v2;
     v2 << 4 << 5;
@@ -2495,13 +2494,12 @@ void testMapLikeStlIterators()
 
 void tst_Collections::constAndNonConstStlIterators()
 {
-    testListLikeStlIterators<QList<int> >();
-    testListLikeStlIterators<QStringList >();
-    testListLikeStlIterators<QVector<int> >();
-    testMapLikeStlIterators<QMap<QString, QString> >();
-    testMapLikeStlIterators<QMultiMap<QString, QString> >();
-    testMapLikeStlIterators<QHash<QString, QString> >();
-    testMapLikeStlIterators<QMultiHash<QString, QString> >();
+    testListLikeStlIterators<QList<int>>();
+    testListLikeStlIterators<QStringList>();
+    testMapLikeStlIterators<QMap<QString, QString>>();
+    testMapLikeStlIterators<QMultiMap<QString, QString>>();
+    testMapLikeStlIterators<QHash<QString, QString>>();
+    testMapLikeStlIterators<QMultiHash<QString, QString>>();
 }
 
 void tst_Collections::vector_stl_data()
@@ -2518,7 +2516,7 @@ void tst_Collections::vector_stl()
 {
     QFETCH(QStringList, elements);
 
-    QVector<QString> vector;
+    QList<QString> vector;
     for (int i = 0; i < elements.count(); ++i)
         vector << elements.at(i);
 
@@ -2534,9 +2532,9 @@ void tst_Collections::vector_stl()
         QCOMPARE(*it, vector[j]);
 
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    QCOMPARE(QVector<QString>::fromStdVector(stdVector), vector);
+    QCOMPARE(QList<QString>::fromStdVector(stdVector), vector);
 #endif
-    QCOMPARE(QVector<QString>(stdVector.begin(), stdVector.end()), vector);
+    QCOMPARE(QList<QString>(stdVector.begin(), stdVector.end()), vector);
 }
 
 void tst_Collections::list_stl_data()
@@ -2789,10 +2787,6 @@ void tst_Collections::containerInstantiation()
         list.removeAll(value);
     }
 
-    //Instantiate QVector member functions.
-    typedef QVector<EqualsComparable> Vector;
-    instantiateRandomAccess<Vector, EqualsComparable>();
-
     //Instantiate QQueue member functions.
     typedef QQueue<EqualsComparable> Queue;
     instantiateRandomAccess<Queue, EqualsComparable>();
@@ -2883,7 +2877,6 @@ void testSetContainerTypedefs(Container container)
 */
 void tst_Collections::containerTypedefs()
 {
-    testContainerTypedefs(QVector<int>());
     testContainerTypedefs(QStack<int>());
     testContainerTypedefs(QList<int>());
     testContainerTypedefs(QQueue<int>());
@@ -3032,18 +3025,18 @@ void testAssociativeContainerAlignment()
 
 void tst_Collections::alignment()
 {
-    testVectorAlignment<QVector<Aligned4> >();
-    testVectorAlignment<QVector<AlignedBiggest> >();
-    testContiguousCacheAlignment<QContiguousCache<Aligned4> >();
-    testContiguousCacheAlignment<QContiguousCache<AlignedBiggest> >();
-    testAssociativeContainerAlignment<QMap<Aligned4, Aligned4> >();
-    testAssociativeContainerAlignment<QMap<Aligned4, AlignedBiggest> >();
-    testAssociativeContainerAlignment<QMap<AlignedBiggest, Aligned4> >();
-    testAssociativeContainerAlignment<QMap<AlignedBiggest, AlignedBiggest> >();
-    testAssociativeContainerAlignment<QHash<Aligned4, Aligned4> >();
-    testAssociativeContainerAlignment<QHash<Aligned4, AlignedBiggest> >();
-    testAssociativeContainerAlignment<QHash<AlignedBiggest, Aligned4> >();
-    testAssociativeContainerAlignment<QHash<AlignedBiggest, AlignedBiggest> >();
+    testVectorAlignment<QList<Aligned4>>();
+    testVectorAlignment<QList<AlignedBiggest>>();
+    testContiguousCacheAlignment<QContiguousCache<Aligned4>>();
+    testContiguousCacheAlignment<QContiguousCache<AlignedBiggest>>();
+    testAssociativeContainerAlignment<QMap<Aligned4, Aligned4>>();
+    testAssociativeContainerAlignment<QMap<Aligned4, AlignedBiggest>>();
+    testAssociativeContainerAlignment<QMap<AlignedBiggest, Aligned4>>();
+    testAssociativeContainerAlignment<QMap<AlignedBiggest, AlignedBiggest>>();
+    testAssociativeContainerAlignment<QHash<Aligned4, Aligned4>>();
+    testAssociativeContainerAlignment<QHash<Aligned4, AlignedBiggest>>();
+    testAssociativeContainerAlignment<QHash<AlignedBiggest, Aligned4>>();
+    testAssociativeContainerAlignment<QHash<AlignedBiggest, AlignedBiggest>>();
 }
 
 #ifndef QT_NO_TEMPLATE_TEMPLATE_PARAMETERS
@@ -3327,25 +3320,25 @@ using ExtList = QList<T>;
 
 void tst_Collections::insert_remove_loop()
 {
-    insert_remove_loop_impl<ExtList<int> >();
-    insert_remove_loop_impl<ExtList<QString> >();
-    insert_remove_loop_impl<QVector<int> >();
-    insert_remove_loop_impl<QVector<QString> >();
-    insert_remove_loop_impl<QVarLengthArray<int> >();
-    insert_remove_loop_impl<QVarLengthArray<QString> >();
-    insert_remove_loop_impl<QVarLengthArray<int, 10> >();
-    insert_remove_loop_impl<QVarLengthArray<QString, 10> >();
-    insert_remove_loop_impl<QVarLengthArray<int, 3> >();
-    insert_remove_loop_impl<QVarLengthArray<QString, 3> >();
-    insert_remove_loop_impl<QVarLengthArray<int, 15> >();
-    insert_remove_loop_impl<QVarLengthArray<QString, 15> >();
+    insert_remove_loop_impl<ExtList<int>>();
+    insert_remove_loop_impl<ExtList<QString>>();
+    insert_remove_loop_impl<QList<int>>();
+    insert_remove_loop_impl<QList<QString>>();
+    insert_remove_loop_impl<QVarLengthArray<int>>();
+    insert_remove_loop_impl<QVarLengthArray<QString>>();
+    insert_remove_loop_impl<QVarLengthArray<int, 10>>();
+    insert_remove_loop_impl<QVarLengthArray<QString, 10>>();
+    insert_remove_loop_impl<QVarLengthArray<int, 3>>();
+    insert_remove_loop_impl<QVarLengthArray<QString, 3>>();
+    insert_remove_loop_impl<QVarLengthArray<int, 15>>();
+    insert_remove_loop_impl<QVarLengthArray<QString, 15>>();
 
-    insert_remove_loop_impl<ExtList<std::string> >();
-    insert_remove_loop_impl<QVector<std::string> >();
-    insert_remove_loop_impl<QVarLengthArray<std::string> >();
-    insert_remove_loop_impl<QVarLengthArray<std::string, 10> >();
-    insert_remove_loop_impl<QVarLengthArray<std::string, 3> >();
-    insert_remove_loop_impl<QVarLengthArray<std::string, 15> >();
+    insert_remove_loop_impl<ExtList<std::string>>();
+    insert_remove_loop_impl<QList<std::string>>();
+    insert_remove_loop_impl<QVarLengthArray<std::string>>();
+    insert_remove_loop_impl<QVarLengthArray<std::string, 10>>();
+    insert_remove_loop_impl<QVarLengthArray<std::string, 3>>();
+    insert_remove_loop_impl<QVarLengthArray<std::string, 15>>();
 }
 
 

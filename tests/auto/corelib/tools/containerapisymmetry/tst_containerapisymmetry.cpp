@@ -29,12 +29,11 @@
 #include <QtTest/QtTest>
 
 #include "qbytearray.h"
+#include "qdebug.h"
+#include "qhash.h"
 #include "qlist.h"
 #include "qstring.h"
 #include "qvarlengtharray.h"
-#include "qvector.h"
-#include "qhash.h"
-#include "qdebug.h"
 
 #include <algorithm>
 #include <functional>
@@ -269,19 +268,14 @@ private Q_SLOTS:
     void ranged_ctor_std_vector_Complex() { ranged_ctor_non_associative_impl<std::vector<Complex>>(); }
     void ranged_ctor_std_vector_duplicates_strategy() { non_associative_container_duplicates_strategy<std::vector>(); }
 
-    void ranged_ctor_QVector_int() { ranged_ctor_non_associative_impl<QVector<int>>(); }
-    void ranged_ctor_QVector_char() { ranged_ctor_non_associative_impl<QVector<char>>(); }
-    void ranged_ctor_QVector_QChar() { ranged_ctor_non_associative_impl<QVector<QChar>>(); }
-    void ranged_ctor_QVector_Movable() { ranged_ctor_non_associative_impl<QVector<Movable>>(); }
-    void ranged_ctor_QVector_Complex() { ranged_ctor_non_associative_impl<QVector<Complex>>(); }
-    void ranged_ctor_QVector_duplicates_strategy() { non_associative_container_duplicates_strategy<QVector>(); }
-
     void ranged_ctor_QVarLengthArray_int() { ranged_ctor_non_associative_impl<QVarLengthArray<int>>(); }
     void ranged_ctor_QVarLengthArray_Movable() { ranged_ctor_non_associative_impl<QVarLengthArray<Movable>>(); }
     void ranged_ctor_QVarLengthArray_Complex() { ranged_ctor_non_associative_impl<QVarLengthArray<Complex>>(); }
     void ranged_ctor_QVarLengthArray_duplicates_strategy() { non_associative_container_duplicates_strategy<VarLengthArray>(); } // note the VarLengthArray passed
 
     void ranged_ctor_QList_int() { ranged_ctor_non_associative_impl<QList<int>>(); }
+    void ranged_ctor_QList_char() { ranged_ctor_non_associative_impl<QList<char>>(); }
+    void ranged_ctor_QList_QChar() { ranged_ctor_non_associative_impl<QList<QChar>>(); }
     void ranged_ctor_QList_Movable() { ranged_ctor_non_associative_impl<QList<Movable>>(); }
     void ranged_ctor_QList_Complex() { ranged_ctor_non_associative_impl<QList<Complex>>(); }
     void ranged_ctor_QList_duplicates_strategy() { non_associative_container_duplicates_strategy<QList>(); }
@@ -474,7 +468,6 @@ private:
 
 private Q_SLOTS:
     void front_back_std_vector() { front_back_impl<std::vector<int>>(); }
-    void front_back_QVector() { front_back_impl<QVector<int>>(); }
     void front_back_QList() { front_back_impl<QList<qintptr>>(); }
     void front_back_QVarLengthArray() { front_back_impl<QVarLengthArray<int>>(); }
     void front_back_QString() { front_back_impl<QString>(); }

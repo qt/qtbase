@@ -648,7 +648,7 @@ void tst_QMetaMethod::method()
         QCOMPARE(method.parameterType(i), parameterTypes.at(i));
 
     {
-        QVector<int> actualParameterTypes(parameterTypes.size());
+        QList<int> actualParameterTypes(parameterTypes.size());
         method.getParameterTypes(actualParameterTypes.data());
         for (int i = 0; i < parameterTypes.size(); ++i)
             QCOMPARE(actualParameterTypes.at(i), parameterTypes.at(i));

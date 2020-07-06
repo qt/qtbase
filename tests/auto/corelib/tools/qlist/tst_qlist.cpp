@@ -2826,7 +2826,7 @@ void tst_QList::emplaceConsistentWithStdVectorImpl() const
     vecEq(qVec, stdVec);
 
     T t;
-    // while QVector is safe with regards to emplacing elements moved form itself, it's UB
+    // while QList is safe with regards to emplacing elements moved form itself, it's UB
     // for std::vector, so do the moving in two steps there.
     qVec.emplaceBack(std::move(qVec[0]));
     stdVec.emplace_back(std::move(t = std::move(stdVec[0])));

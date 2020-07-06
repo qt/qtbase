@@ -3128,7 +3128,7 @@ void tst_QDataStream::status_QHash_QMap()
 void tst_QDataStream::status_QList_QVector()
 {
     typedef QList<QString> List;
-    typedef QVector<QString> Vector;
+    typedef QList<QString> Vector;
     List list;
     Vector vector;
 
@@ -3292,7 +3292,7 @@ void tst_QDataStream::streamRealDataTypes()
         stream >> rect;
         QCOMPARE(rect, QRectF(-1, -2, 3, 4));
         stream >> polygon;
-        QCOMPARE((QVector<QPointF> &)polygon, (QPolygonF() << QPointF(0, 0) << QPointF(1, 2)));
+        QCOMPARE((QList<QPointF> &)polygon, (QPolygonF() << QPointF(0, 0) << QPointF(1, 2)));
         auto matrix = transform.asAffineMatrix();
         stream >> matrix;
         QCOMPARE(transform, QTransform().rotate(90).scale(2, 2));

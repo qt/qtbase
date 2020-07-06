@@ -518,7 +518,7 @@ public slots:
 
     void slotWithRegistrableArgument(QtTestObject *o1, QPointer<QtTestObject> o2,
                                      QSharedPointer<QtTestObject> o3, QWeakPointer<QtTestObject> o4,
-                                     QVector<QtTestObject *> o5, QList<QtTestObject *> o6)
+                                     QList<QtTestObject *> o5, QList<QtTestObject *> o6)
     {
         slotResult = QLatin1String("slotWithRegistrableArgument:") + o1->slotResult + o2->slotResult
             + o3->slotResult + o4.toStrongRef()->slotResult + QString::number(o5.size())
@@ -1297,7 +1297,7 @@ void tst_QMetaObject::invokeQueuedAutoRegister()
         &obj, "slotWithRegistrableArgument", Qt::QueuedConnection,
         Q_ARG(QtTestObject *, shared.data()), Q_ARG(QPointer<QtTestObject>, shared.data()),
         Q_ARG(QSharedPointer<QtTestObject>, shared), Q_ARG(QWeakPointer<QtTestObject>, shared),
-        Q_ARG(QVector<QtTestObject *>, QVector<QtTestObject *>()),
+        Q_ARG(QList<QtTestObject *>, QList<QtTestObject *>()),
         Q_ARG(QList<QtTestObject *>, QList<QtTestObject *>())));
     QVERIFY(obj.slotResult.isEmpty());
     qApp->processEvents(QEventLoop::AllEvents);

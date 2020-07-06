@@ -137,13 +137,13 @@ void tst_QStringTokenizer::toContainer() const
     {
         auto tok = qTokenize(u"a,b,c", u',');
         auto v = tok.toContainer();
-        QVERIFY((std::is_same_v<decltype(v), QVector<QStringView>>));
+        QVERIFY((std::is_same_v<decltype(v), QList<QStringView>>));
     }
     // QLatin1String value_type
     {
         auto tok = qTokenize(QLatin1String{"a,b,c"}, u',');
         auto v = tok.toContainer();
-        QVERIFY((std::is_same_v<decltype(v), QVector<QLatin1String>>));
+        QVERIFY((std::is_same_v<decltype(v), QList<QLatin1String>>));
     }
 }
 

@@ -167,7 +167,7 @@ bool operator!=(const Match &m, const QRegularExpressionMatch &rem)
 }
 
 
-bool operator==(const QRegularExpressionMatchIterator &iterator, const QVector<Match> &expectedMatchList)
+bool operator==(const QRegularExpressionMatchIterator &iterator, const QList<Match> &expectedMatchList)
 {
     QRegularExpressionMatchIterator i = iterator;
 
@@ -186,17 +186,17 @@ bool operator==(const QRegularExpressionMatchIterator &iterator, const QVector<M
     return true;
 }
 
-bool operator==(const QVector<Match> &expectedMatchList, const QRegularExpressionMatchIterator &iterator)
+bool operator==(const QList<Match> &expectedMatchList, const QRegularExpressionMatchIterator &iterator)
 {
     return operator==(iterator, expectedMatchList);
 }
 
-bool operator!=(const QRegularExpressionMatchIterator &iterator, const QVector<Match> &expectedMatchList)
+bool operator!=(const QRegularExpressionMatchIterator &iterator, const QList<Match> &expectedMatchList)
 {
     return !operator==(iterator, expectedMatchList);
 }
 
-bool operator!=(const QVector<Match> &expectedMatchList, const QRegularExpressionMatchIterator &iterator)
+bool operator!=(const QList<Match> &expectedMatchList, const QRegularExpressionMatchIterator &iterator)
 {
     return !operator==(expectedMatchList, iterator);
 }
@@ -1150,9 +1150,9 @@ void tst_QRegularExpression::globalMatch_data()
     QTest::addColumn<int>("offset");
     QTest::addColumn<QRegularExpression::MatchType>("matchType");
     QTest::addColumn<QRegularExpression::MatchOptions>("matchOptions");
-    QTest::addColumn<QVector<Match> >("matchList");
+    QTest::addColumn<QList<Match> >("matchList");
 
-    QVector<Match> matchList;
+    QList<Match> matchList;
     Match m;
 
     matchList.clear();
@@ -1408,7 +1408,7 @@ void tst_QRegularExpression::globalMatch()
     QFETCH(int, offset);
     QFETCH(QRegularExpression::MatchType, matchType);
     QFETCH(QRegularExpression::MatchOptions, matchOptions);
-    QFETCH(QVector<Match>, matchList);
+    QFETCH(QList<Match>, matchList);
 
     testMatch<QRegularExpressionMatchIterator>(regexp,
                                                static_cast<QREGlobalMatchStringPMF>(&QRegularExpression::globalMatch),
@@ -2136,7 +2136,7 @@ void tst_QRegularExpression::threadSafety()
     for (int threadSafetyIteration = 0; threadSafetyIteration < THREAD_SAFETY_ITERATIONS && time.elapsed() < 2000; ++threadSafetyIteration) {
         QRegularExpression re(pattern);
 
-        QVector<MatcherThread *> threads;
+        QList<MatcherThread *> threads;
         for (int i = 0; i < threadCount; ++i) {
             MatcherThread *thread = new MatcherThread(re, subject);
             thread->start();

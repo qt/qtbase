@@ -27,9 +27,9 @@
 ****************************************************************************/
 
 #include <QtTest>
+#include <qlist.h>
 #include <qobject.h>
 #include <qrandom.h>
-#include <qvector.h>
 #include <private/qrandom_p.h>
 
 #include <algorithm>
@@ -621,7 +621,7 @@ void tst_QRandomGenerator::boundedQuality()
 
     {
         // test the quality of the generator
-        QVector<quint32> buffer(BufferCount, 0xcdcdcdcd);
+        QList<quint32> buffer(BufferCount, 0xcdcdcdcd);
         generate(buffer.begin(), buffer.end(), [&] { return rng.bounded(Bound); });
 
         for (quint32 value : qAsConst(buffer)) {

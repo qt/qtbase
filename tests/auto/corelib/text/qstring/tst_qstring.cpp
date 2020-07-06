@@ -667,7 +667,7 @@ QString verifyZeroTermination(const QString &str)
     } while (0)                                                         \
     /**/
 
-typedef QVector<int> IntList;
+typedef QList<int> IntList;
 
 tst_QString::tst_QString()
 {
@@ -4627,7 +4627,7 @@ void tst_QString::fromUcs4()
 void tst_QString::toUcs4()
 {
     QString s;
-    QVector<uint> ucs4;
+    QList<uint> ucs4;
     QCOMPARE( s.toUcs4().size(), 0 );
 
     static const QChar bmp = QLatin1Char('a');
@@ -5683,9 +5683,9 @@ template<> struct StringSplitWrapper<QString>
 template<> struct StringSplitWrapper<QStringRef>
 {
     const QString &string;
-    QVector<QStringRef> split(const QString &sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return string.splitRef(sep, behavior, cs); }
-    QVector<QStringRef> split(QChar sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return string.splitRef(sep, behavior, cs); }
-    QVector<QStringRef> split(const QRegularExpression &sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts) const { return string.splitRef(sep, behavior); }
+    QList<QStringRef> split(const QString &sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return string.splitRef(sep, behavior, cs); }
+    QList<QStringRef> split(QChar sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return string.splitRef(sep, behavior, cs); }
+    QList<QStringRef> split(const QRegularExpression &sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts) const { return string.splitRef(sep, behavior); }
 };
 
 template<> struct StringSplitWrapper<QStringView>
@@ -5710,20 +5710,14 @@ static bool operator==(const QList<QStringView> &result, const QStringList &expe
 }
 
 
-static bool operator ==(const QStringList &left, const QVector<QStringRef> &right)
+static bool operator ==(const QStringList &left, const QList<QStringRef> &right)
 {
     if (left.size() != right.size())
         return false;
 
-    QStringList::const_iterator iLeft = left.constBegin();
-    QVector<QStringRef>::const_iterator iRight = right.constBegin();
-    for (; iLeft != left.end(); ++iLeft, ++iRight) {
-        if (*iLeft != *iRight)
-            return false;
-    }
-    return true;
+    return std::equal(left.constBegin(), left.constEnd(), right.constBegin());
 }
-static inline bool operator ==(const QVector<QStringRef> &left, const QStringList &right) { return right == left; }
+static inline bool operator ==(const QList<QStringRef> &left, const QStringList &right) { return right == left; }
 
 template<class List>
 void tst_QString::split(const QString &string, const QString &sep, QStringList result)
@@ -5771,7 +5765,7 @@ void tst_QString::split()
     QFETCH(QString, sep);
     QFETCH(QStringList, result);
     split<QStringList>(str, sep, result);
-    split<QVector<QStringView>>(str, sep, result);
+    split<QList<QStringView>>(str, sep, result);
 }
 
 void tst_QString::splitRef_data()
@@ -5784,7 +5778,7 @@ void tst_QString::splitRef()
     QFETCH(QString, str);
     QFETCH(QString, sep);
     QFETCH(QStringList, result);
-    split<QVector<QStringRef> >(str, sep, result);
+    split<QList<QStringRef> >(str, sep, result);
 }
 
 void tst_QString::split_regularexpression_data()
@@ -5840,7 +5834,7 @@ void tst_QString::splitRef_regularexpression()
     QFETCH(QString, string);
     QFETCH(QString, pattern);
     QFETCH(QStringList, result);
-    split_regexp<QVector<QStringRef>, QRegularExpression>(string, pattern, result);
+    split_regexp<QList<QStringRef>, QRegularExpression>(string, pattern, result);
 }
 
 void tst_QString::fromUtf16_data()

@@ -41,8 +41,8 @@
 Q_LOGGING_CATEGORY(lcItemModels, "qt.corelib.tests.itemmodels")
 
 using IntPair = QPair<int, int>;
-using IntList = QVector<int>;
-using IntPairList = QVector<IntPair>;
+using IntList = QList<int>;
+using IntPairList = QList<IntPair>;
 
 // Testing get/set functions
 void tst_QSortFilterProxyModel::getSetCheck()
@@ -1462,8 +1462,8 @@ void tst_QSortFilterProxyModel::changeSourceLayout()
     QSortFilterProxyModel proxy;
     proxy.setSourceModel(&model);
 
-    QVector<QPersistentModelIndex> persistentSourceIndexes;
-    QVector<QPersistentModelIndex> persistentProxyIndexes;
+    QList<QPersistentModelIndex> persistentSourceIndexes;
+    QList<QPersistentModelIndex> persistentProxyIndexes;
     for (int row = 0; row < model.rowCount(); ++row) {
         persistentSourceIndexes.append(model.index(row, 0));
         persistentProxyIndexes.append(proxy.index(row, 0));
@@ -2146,7 +2146,7 @@ void tst_QSortFilterProxyModel::changeSourceDataForwardsRoles_qtbug35440()
 
     // QStringListModel doesn't distinguish between edit and display roles,
     // so changing one always changes the other, too.
-    QVector<int> expectedChangedRoles;
+    QList<int> expectedChangedRoles;
     expectedChangedRoles.append(Qt::DisplayRole);
     expectedChangedRoles.append(Qt::EditRole);
 
@@ -2154,13 +2154,13 @@ void tst_QSortFilterProxyModel::changeSourceDataForwardsRoles_qtbug35440()
     QVERIFY(index.isValid());
     model.setData(index, QStringLiteral("teststring"), Qt::DisplayRole);
     QCOMPARE(spy.length(), 1);
-    QCOMPARE(spy.at(0).at(2).value<QVector<int> >(), expectedChangedRoles);
+    QCOMPARE(spy.at(0).at(2).value<QList<int> >(), expectedChangedRoles);
 
     index = model.index(1, 0);
     QVERIFY(index.isValid());
     model.setData(index, QStringLiteral("teststring2"), Qt::EditRole);
     QCOMPARE(spy.length(), 2);
-    QCOMPARE(spy.at(1).at(2).value<QVector<int> >(), expectedChangedRoles);
+    QCOMPARE(spy.at(1).at(2).value<QList<int> >(), expectedChangedRoles);
 }
 
 void tst_QSortFilterProxyModel::sortFilterRole()
@@ -2170,12 +2170,12 @@ void tst_QSortFilterProxyModel::sortFilterRole()
     proxy.setSourceModel(&model);
     model.insertColumns(0, 1);
 
-    const QVector<QPair<QVariant, QVariant>>
+    const QList<QPair<QVariant, QVariant>>
         sourceItems({QPair<QVariant, QVariant>("b", 3),
                      QPair<QVariant, QVariant>("c", 2),
                      QPair<QVariant, QVariant>("a", 1)});
 
-    const QVector<int> orderedItems({2, 1});
+    const QList<int> orderedItems({2, 1});
 
     model.insertRows(0, sourceItems.count());
     for (int i = 0; i < sourceItems.count(); ++i) {
@@ -4947,7 +4947,7 @@ public:
             return QVariant();
         return m_data[index.row()][index.column()];
     }
-    QVector<QVector<QVariant>> m_data;
+    QList<QList<QVariant>> m_data;
 };
 
 class SortFilterProxyModel final : public QSortFilterProxyModel

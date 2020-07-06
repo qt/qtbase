@@ -81,7 +81,7 @@ void tst_QHooks::testAddRemoveObject()
     QCOMPARE(objectCount, 0);
 }
 
-static QVector<QString> hookOrder;
+static QList<QString> hookOrder;
 
 static QHooks::AddQObjectCallback existingAddHook = 0;
 static QHooks::RemoveQObjectCallback existingRemoveHook = 0;

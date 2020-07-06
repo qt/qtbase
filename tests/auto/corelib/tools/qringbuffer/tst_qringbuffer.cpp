@@ -29,7 +29,7 @@
 #include <QtTest/QtTest>
 
 #include <private/qringbuffer_p.h>
-#include <qvector.h>
+#include <qlist.h>
 
 class tst_QRingBuffer : public QObject
 {
@@ -82,7 +82,7 @@ void tst_QRingBuffer::constructing()
 void tst_QRingBuffer::usingInVector()
 {
     QRingBuffer ringBuffer;
-    QVector<QRingBuffer> buffers;
+    QList<QRingBuffer> buffers;
 
     ringBuffer.reserve(5);
     buffers.append(ringBuffer);

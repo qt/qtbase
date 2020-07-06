@@ -417,7 +417,7 @@ struct Deallocator
 
     size_t objectSize;
     size_t alignment;
-    QVector<QArrayData *> headers;
+    QList<QArrayData *> headers;
 };
 
 Q_DECLARE_METATYPE(const QArrayData *)
@@ -652,7 +652,7 @@ void tst_QArrayData::gccBug43247()
 {
     // This test tries to verify QArrayData is not affected by GCC optimizer
     // bug #43247.
-    // Reported on GCC 4.4.3, Linux, affects QVector
+    // Reported on GCC 4.4.3, Linux, affects QList
 
     QTest::ignoreMessage(QtDebugMsg, "GCC Optimization bug #43247 not triggered (3)");
     QTest::ignoreMessage(QtDebugMsg, "GCC Optimization bug #43247 not triggered (4)");
@@ -661,7 +661,7 @@ void tst_QArrayData::gccBug43247()
     QTest::ignoreMessage(QtDebugMsg, "GCC Optimization bug #43247 not triggered (7)");
 
     SimpleVector<int> array(10, 0);
-    // QVector<int> vector(10, 0);
+    // QList<int> list(10, 0);
 
     for (int i = 0; i < 10; ++i) {
         if (i >= 3 && i < 8)
@@ -671,7 +671,7 @@ void tst_QArrayData::gccBug43247()
         // line lets the compiler assume i == 0, and the conditional above is
         // skipped.
         QVERIFY(array.at(i) == 0);
-        // QVERIFY(vector.at(i) == 0);
+        // QVERIFY(list.at(i) == 0);
     }
 }
 
@@ -1141,18 +1141,18 @@ void tst_QArrayData::literals()
     }
 
     {
-        QVector<char> v(Q_ARRAY_LITERAL(char, "ABCDEFGHIJ"));
-        QCOMPARE(v.size(), 11);
-        QCOMPARE(v.capacity(), 0);
+        QList<char> l(Q_ARRAY_LITERAL(char, "ABCDEFGHIJ"));
+        QCOMPARE(l.size(), 11);
+        QCOMPARE(l.capacity(), 0);
         for (int i = 0; i < 10; ++i)
-            QCOMPARE(v.at(i), char('A' + i));
+            QCOMPARE(l.at(i), char('A' + i));
 
-        (void)v.begin(); // "detach"
+        (void)l.begin(); // "detach"
 
-        QCOMPARE(v.size(), 11);
-        QVERIFY(v.capacity() >= v.size());
+        QCOMPARE(l.size(), 11);
+        QVERIFY(l.capacity() >= l.size());
         for (int i = 0; i < 10; ++i)
-            QCOMPARE(v[i], char('A' + i));
+            QCOMPARE(l[i], char('A' + i));
     }
 
     {
@@ -1176,18 +1176,18 @@ void tst_QArrayData::literals()
     }
 
     {
-        QVector<LiteralType> v(Q_ARRAY_LITERAL(LiteralType, LiteralType(0), LiteralType(1), LiteralType(2)));
-        QCOMPARE(v.size(), 3);
-        QCOMPARE(v.capacity(), 0);
+        QList<LiteralType> l(Q_ARRAY_LITERAL(LiteralType, LiteralType(0), LiteralType(1), LiteralType(2)));
+        QCOMPARE(l.size(), 3);
+        QCOMPARE(l.capacity(), 0);
         for (int i = 0; i < 3; ++i)
-            QCOMPARE(v.at(i).value, i);
+            QCOMPARE(l.at(i).value, i);
 
-        (void)v.begin(); // "detach"
+        (void)l.begin(); // "detach"
 
-        QCOMPARE(v.size(), 3);
-        QVERIFY(v.capacity() >= v.size());
+        QCOMPARE(l.size(), 3);
+        QVERIFY(l.capacity() >= l.size());
         for (int i = 0; i < 3; ++i)
-            QCOMPARE(v[i].value, i);
+            QCOMPARE(l[i].value, i);
     }
 }
 

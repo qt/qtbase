@@ -883,7 +883,7 @@ void tst_QThread::adoptMultipleThreads()
 #else
     const int numThreads = 5;
 #endif
-    QVector<NativeThreadWrapper*> nativeThreads;
+    QList<NativeThreadWrapper*> nativeThreads;
 
     SignalRecorder recorder;
 
@@ -915,7 +915,7 @@ void tst_QThread::adoptMultipleThreadsOverlap()
 #else
     const int numThreads = 5;
 #endif
-    QVector<NativeThreadWrapper*> nativeThreads;
+    QList<NativeThreadWrapper*> nativeThreads;
 
     SignalRecorder recorder;
 

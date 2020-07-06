@@ -31,15 +31,14 @@
 #undef QT_NO_CAST_TO_ASCII
 #undef QT_ASCII_CAST_WARNINGS
 
-#include <QString>
-#include <QStringView>
-#include <QStringTokenizer>
 #include <QChar>
-#include <QScopedArrayPointer>
-#include <QStringRef>
 #include <QLatin1String>
-#include <QVector>
-
+#include <QList>
+#include <QScopedArrayPointer>
+#include <QString>
+#include <QStringRef>
+#include <QStringTokenizer>
+#include <QStringView>
 #include <QTest>
 
 Q_DECLARE_METATYPE(QLatin1String)
@@ -2304,12 +2303,12 @@ void tst_QStringApiSymmetry::toUtf8_impl()
 void tst_QStringApiSymmetry::toUcs4_data()
 {
     QTest::addColumn<QString>("unicode");
-    QTest::addColumn<QVector<uint>>("ucs4");
+    QTest::addColumn<QList<uint>>("ucs4");
 
     auto add = [](const char *l1) {
         const QByteArray ba(l1);
         QString s;
-        QVector<uint> ucs4;
+        QList<uint> ucs4;
         for (char c : ba) {
             s += QLatin1Char(c);
             ucs4.append(uint(uchar(c)));
@@ -2317,8 +2316,8 @@ void tst_QStringApiSymmetry::toUcs4_data()
         QTest::newRow(rowName(ba).constData()) << s << ucs4;
     };
 
-    QTest::addRow("null") << QString() << QVector<uint>();
-    QTest::addRow("empty") << QString("") << QVector<uint>();
+    QTest::addRow("null") << QString() << QList<uint>();
+    QTest::addRow("empty") << QString("") << QList<uint>();
 
     add("M\xF6" "bius");
     add(LONG_STRING_256);
@@ -2328,7 +2327,7 @@ template <typename String>
 void tst_QStringApiSymmetry::toUcs4_impl()
 {
     QFETCH(const QString, unicode);
-    QFETCH(const QVector<uint>, ucs4);
+    QFETCH(const QList<uint>, ucs4);
 
     const auto str = make<String>(unicode);
 

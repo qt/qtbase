@@ -1055,7 +1055,7 @@ public:
         FunctorNoCtx
     };
     Q_ENUM(CallType)
-    QVector<CallType> calls;
+    QList<CallType> calls;
 
     void triggerCall(CallType callType)
     {
@@ -1087,7 +1087,7 @@ Q_DECLARE_METATYPE(OrderHelper::CallType)
 
 void tst_QTimer::timerOrder()
 {
-    QFETCH(QVector<OrderHelper::CallType>, calls);
+    QFETCH(QList<OrderHelper::CallType>, calls);
 
     OrderHelper helper;
 
@@ -1099,9 +1099,9 @@ void tst_QTimer::timerOrder()
 
 void tst_QTimer::timerOrder_data()
 {
-    QTest::addColumn<QVector<OrderHelper::CallType>>("calls");
+    QTest::addColumn<QList<OrderHelper::CallType>>("calls");
 
-    QVector<OrderHelper::CallType> calls = {
+    QList<OrderHelper::CallType> calls = {
         OrderHelper::String, OrderHelper::PMF,
         OrderHelper::Functor, OrderHelper::FunctorNoCtx
     };
@@ -1135,7 +1135,7 @@ struct StaticSingleShotUser
     }
     OrderHelper helper;
 
-    static QVector<OrderHelper::CallType> calls()
+    static QList<OrderHelper::CallType> calls()
     {
         return {OrderHelper::String, OrderHelper::PMF,
                 OrderHelper::Functor, OrderHelper::FunctorNoCtx};

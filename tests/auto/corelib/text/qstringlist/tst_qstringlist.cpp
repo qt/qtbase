@@ -27,9 +27,9 @@
 ****************************************************************************/
 
 #include <QtTest/QtTest>
+#include <qlist.h>
 #include <qregularexpression.h>
 #include <qstringlist.h>
-#include <qvector.h>
 
 #include <locale.h>
 
@@ -88,7 +88,7 @@ void tst_QStringList::constructors()
         QCOMPARE(list.at(2), "c");
     }
     {
-        const QVector<QString> reference{ "a", "b", "c" };
+        const QList<QString> reference{ "a", "b", "c" };
         QCOMPARE(reference.size(), 3);
 
         QStringList list(reference.cbegin(), reference.cend());

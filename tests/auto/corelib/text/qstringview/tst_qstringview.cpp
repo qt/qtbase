@@ -32,7 +32,7 @@
 #include <QChar>
 #include <QStringRef>
 #include <QVarLengthArray>
-#include <QVector>
+#include <QList>
 
 #include <QTest>
 
@@ -89,7 +89,7 @@ static_assert(CanConvert<ushort[123]>::value);
 static_assert(CanConvert<      ushort*>::value);
 static_assert(CanConvert<const ushort*>::value);
 
-static_assert(CanConvert<QVector<ushort>>::value);
+static_assert(CanConvert<QList<ushort>>::value);
 static_assert(CanConvert<QVarLengthArray<ushort>>::value);
 static_assert(CanConvert<std::vector<ushort>>::value);
 static_assert(CanConvert<std::array<ushort, 123>>::value);
@@ -115,7 +115,7 @@ static_assert(CanConvert<const std::u16string_view >::value);
 static_assert(CanConvert<      std::u16string_view&>::value);
 static_assert(CanConvert<const std::u16string_view&>::value);
 
-static_assert(CanConvert<QVector<char16_t>>::value);
+static_assert(CanConvert<QList<char16_t>>::value);
 static_assert(CanConvert<QVarLengthArray<char16_t>>::value);
 static_assert(CanConvert<std::vector<char16_t>>::value);
 static_assert(CanConvert<std::array<char16_t, 123>>::value);
@@ -149,7 +149,7 @@ static_assert(CanConvert<const std::wstring_view >::value == CanConvertFromWChar
 static_assert(CanConvert<      std::wstring_view&>::value == CanConvertFromWCharT);
 static_assert(CanConvert<const std::wstring_view&>::value == CanConvertFromWCharT);
 
-static_assert(CanConvert<QVector<wchar_t>>::value == CanConvertFromWCharT);
+static_assert(CanConvert<QList<wchar_t>>::value == CanConvertFromWCharT);
 static_assert(CanConvert<QVarLengthArray<wchar_t>>::value == CanConvertFromWCharT);
 static_assert(CanConvert<std::vector<wchar_t>>::value == CanConvertFromWCharT);
 static_assert(CanConvert<std::array<wchar_t, 123>>::value == CanConvertFromWCharT);
@@ -732,7 +732,7 @@ void tst_QStringView::fromContainer() const
 template <typename Char>
 void tst_QStringView::fromContainers() const
 {
-    fromContainer<Char, QVector<Char>>();
+    fromContainer<Char, QList<Char>>();
     fromContainer<Char, QVarLengthArray<Char>>();
     fromContainer<Char, std::vector<Char>>();
 }

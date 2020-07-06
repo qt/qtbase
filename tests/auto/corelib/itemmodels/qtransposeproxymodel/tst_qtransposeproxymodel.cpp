@@ -769,15 +769,15 @@ void tst_QTransposeProxyModel::setItemData()
     auto signalData = proxyDataChangeSpy.takeFirst();
     QCOMPARE(signalData.at(0).value<QModelIndex>(), idx);
     QCOMPARE(signalData.at(1).value<QModelIndex>(), idx);
-    const QVector<int> expectedRoles{Qt::DisplayRole, Qt::UserRole, Qt::EditRole, Qt::UserRole + 1};
-    QVector<int> receivedRoles = signalData.at(2).value<QVector<int> >();
+    const QList<int> expectedRoles{Qt::DisplayRole, Qt::UserRole, Qt::EditRole, Qt::UserRole + 1};
+    QList<int> receivedRoles = signalData.at(2).value<QList<int> >();
     QCOMPARE(receivedRoles.size(), expectedRoles.size());
     for (int role : expectedRoles)
         QVERIFY(receivedRoles.contains(role));
     signalData = sourceDataChangeSpy.takeFirst();
     QCOMPARE(signalData.at(0).value<QModelIndex>(), proxy.mapToSource(idx));
     QCOMPARE(signalData.at(1).value<QModelIndex>(), proxy.mapToSource(idx));
-    receivedRoles = signalData.at(2).value<QVector<int> >();
+    receivedRoles = signalData.at(2).value<QList<int> >();
     QCOMPARE(receivedRoles.size(), expectedRoles.size());
     for (int role : expectedRoles)
         QVERIFY(receivedRoles.contains(role));
@@ -793,14 +793,14 @@ void tst_QTransposeProxyModel::setItemData()
     signalData = proxyDataChangeSpy.takeFirst();
     QCOMPARE(signalData.at(0).value<QModelIndex>(), idx);
     QCOMPARE(signalData.at(1).value<QModelIndex>(), idx);
-    receivedRoles = signalData.at(2).value<QVector<int> >();
+    receivedRoles = signalData.at(2).value<QList<int> >();
     QCOMPARE(receivedRoles.size(), expectedRoles.size());
     for (int role : expectedRoles)
         QVERIFY(receivedRoles.contains(role));
     signalData = sourceDataChangeSpy.takeFirst();
     QCOMPARE(signalData.at(0).value<QModelIndex>(), proxy.mapToSource(idx));
     QCOMPARE(signalData.at(1).value<QModelIndex>(), proxy.mapToSource(idx));
-    receivedRoles = signalData.at(2).value<QVector<int> >();
+    receivedRoles = signalData.at(2).value<QList<int> >();
     QCOMPARE(receivedRoles.size(), expectedRoles.size());
     for (int role : expectedRoles)
         QVERIFY(receivedRoles.contains(role));

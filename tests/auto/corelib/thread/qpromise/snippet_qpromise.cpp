@@ -194,7 +194,7 @@ void snippet_QPromise::suspendExample()
     thread->wait();
 
     QCOMPARE(future.resultCount(), 100);
-    QVector<int> expected(100);
+    QList<int> expected(100);
     std::iota(expected.begin(), expected.end(), 0);
     QCOMPARE(future.results(), expected);
 }

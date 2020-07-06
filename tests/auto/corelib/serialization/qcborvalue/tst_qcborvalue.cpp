@@ -2013,7 +2013,7 @@ void tst_QCborValue::validation_data()
     // error. QCborValue internally uses 16 bytes per element, so we get to 2
     // GB at 2^27 elements (32-bit) or, theoretically, 2^63 bytes at 2^59
     // elements (64-bit).
-    if (sizeof(QVector<int>::size_type) == sizeof(int)) {
+    if (sizeof(QList<int>::size_type) == sizeof(int)) {
         // 32-bit sizes (Qt 5 and 32-bit platforms)
         QTest::addRow("very-large-array-no-overflow") << raw("\x9a\x07\xff\xff\xff" "\0\0") << 0 << CborErrorUnexpectedEOF;
         QTest::addRow("very-large-array-overflow1") << raw("\x9a\x40\0\0\0" "\0\0") << 0 << CborErrorUnexpectedEOF;

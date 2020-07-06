@@ -285,7 +285,7 @@ private:
     void saveQVariantFromDataStream(QDataStream::Version version);
 
     CustomNonQObject *customNonQObjectPointer;
-    QVector<QObject*> objectPointerTestData;
+    QList<QObject*> objectPointerTestData;
 };
 
 const qlonglong intMax1 = (qlonglong)INT_MAX + 1;
@@ -3472,9 +3472,9 @@ void tst_QVariant::moreCustomTypes()
     }
 
     {
-        QList<QVector<int> > data;
+        QList<QList<int> > data;
         PLAY_WITH_VARIANT(data, false, QString(), 0, false);
-        data << (QVector<int>() << 42);
+        data << (QList<int>() << 42);
         PLAY_WITH_VARIANT(data, false, QString(), 0, false);
     }
 
@@ -4173,9 +4173,6 @@ void tst_QVariant::iterateContainerElements()
     TEST_SEQUENTIAL_ITERATION_ON_FULL_NAME(CONTAINER<VALUE_TYPE > )
 
 
-    TEST_SEQUENTIAL_ITERATION(QVector, int)
-    TEST_SEQUENTIAL_ITERATION(QVector, QVariant)
-    TEST_SEQUENTIAL_ITERATION(QVector, QString)
     TEST_SEQUENTIAL_ITERATION(QQueue, int)
     TEST_SEQUENTIAL_ITERATION(QQueue, QVariant)
     TEST_SEQUENTIAL_ITERATION(QQueue, QString)
@@ -4668,14 +4665,14 @@ void tst_QVariant::sequentialIterableEndianessSanityCheck()
 void tst_QVariant::sequentialIterableAppend()
 {
     {
-        QVector<int> container {1, 2};
+        QList<int> container { 1, 2 };
         auto variant = QVariant::fromValue(container);
         QVERIFY(variant.canConvert<QtMetaTypePrivate::QSequentialIterableImpl>());
         auto asIterable = variant.value<QtMetaTypePrivate::QSequentialIterableImpl>();
         const int i = 3, j = 4;
         asIterable.append(&i);
         asIterable.append(&j);
-        QCOMPARE(variant.value<QVector<int>>(), QVector<int> ({1, 2, 3, 4}));
+        QCOMPARE(variant.value<QList<int>>(), QList<int> ({ 1, 2, 3, 4 }));
     }
     {
         QSet<QByteArray> container { QByteArray{"hello"}, QByteArray{"world"} };

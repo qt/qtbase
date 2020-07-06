@@ -191,8 +191,8 @@ void tst_QFuture::resultStore()
         QVERIFY(it == store.end());
     }
 
-    QVector<int> vec0 = QVector<int>() << 2 << 3;
-    QVector<int> vec1 = QVector<int>() << 4 << 5;
+    QList<int> vec0 = QList<int>() << 2 << 3;
+    QList<int> vec1 = QList<int>() << 4 << 5;
 
     {
         ResultStoreInt store;
@@ -1728,7 +1728,7 @@ void tst_QFuture::nonGlobalThreadPool()
 
     const int numTasks = QThread::idealThreadCount();
 
-    QVector<QFuture<int> > futures;
+    QList<QFuture<int>> futures;
     futures.reserve(numTasks);
 
     for (int i = 0; i < numTasks; ++i)

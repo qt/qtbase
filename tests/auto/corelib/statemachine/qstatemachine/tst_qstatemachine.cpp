@@ -272,7 +272,7 @@ public:
     TestState(ChildMode mode, const QString &objectName = QString())
         : QState(mode)
     { setObjectName(objectName); }
-    QVector<QPair<int, Event> > events;
+    QList<QPair<int, Event> > events;
 protected:
     virtual void onEntry(QEvent *) {
         events.append(qMakePair(globalTick++, Entry));
@@ -288,7 +288,7 @@ public:
     TestTransition(QAbstractState *target, const QString &objectName = QString())
         : QAbstractTransition()
     { setTargetState(target); setObjectName(objectName); }
-    QVector<int> triggers;
+    QList<int> triggers;
 protected:
     virtual bool eventTest(QEvent *) {
         return true;
@@ -4876,7 +4876,7 @@ public:
         signalList.append(signal);
     }
 
-    QVector<QMetaMethod> signalList;
+    QList<QMetaMethod> signalList;
 };
 
 void tst_QStateMachine::testIncrementReceivers()

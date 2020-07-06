@@ -122,7 +122,7 @@ class QtTestModel: public QAbstractItemModel
 {
 public:
     QtTestModel(int rows, int columns, QObject *parent = 0);
-    QtTestModel(const QVector<QVector<QString> > tbl, QObject *parent = 0);
+    QtTestModel(const QList<QList<QString> > tbl, QObject *parent = 0);
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
     QModelIndex parent(const QModelIndex &) const;
     int rowCount(const QModelIndex &parent) const;
@@ -146,7 +146,7 @@ public:
 
     int cCount, rCount;
     mutable bool wrongIndex;
-    QVector<QVector<QString> > table;
+    QList<QList<QString> > table;
 };
 
 Q_DECLARE_METATYPE(QAbstractItemModel::LayoutChangeHint);
@@ -163,7 +163,7 @@ QtTestModel::QtTestModel(int rows, int columns, QObject *parent)
     }
 }
 
-QtTestModel::QtTestModel(const QVector<QVector<QString> > tbl, QObject *parent)
+QtTestModel::QtTestModel(const QList<QList<QString> > tbl, QObject *parent)
     : QAbstractItemModel(parent), wrongIndex(false)
 {
     table = tbl;
@@ -201,7 +201,7 @@ bool QtTestModel::insertRows(int row, int count, const QModelIndex &parent)
 {
     QAbstractItemModel::beginInsertRows(parent, row, row + count - 1);
     int cc = columnCount(parent);
-    table.insert(row, count, QVector<QString>(cc));
+    table.insert(row, count, QList<QString>(cc));
     rCount = table.count();
     QAbstractItemModel::endInsertRows();
     return true;
@@ -256,7 +256,7 @@ bool QtTestModel::moveRows(const QModelIndex &sourceParent, int src, int cnt,
                                            destinationParent, dst))
         return false;
 
-    QVector<QString> buf;
+    QList<QString> buf;
     if (dst < src) {
         for (int i  = 0; i < cnt; ++i) {
             buf.swap(table[src + i]);
@@ -489,9 +489,9 @@ void tst_QAbstractItemModel::match()
 }
 
 typedef QPair<int, int> Position;
-typedef QVector<QPair<int, int> > Selection;
-typedef QVector<QVector<QString> > StringTable;
-typedef QVector<QString> StringTableRow;
+typedef QList<QPair<int, int> > Selection;
+typedef QList<QList<QString> > StringTable;
+typedef QList<QString> StringTableRow;
 
 static StringTableRow qStringTableRow(const QString &s1, const QString &s2, const QString &s3)
 {
@@ -1940,8 +1940,8 @@ public:
         const QModelIndex bottom = index(2, 0);
 
         emit dataChanged(top, bottom);
-        emit dataChanged(top, bottom, QVector<int>() << Qt::ToolTipRole);
-        emit dataChanged(top, bottom, QVector<int>() << Qt::ToolTipRole << Custom1);
+        emit dataChanged(top, bottom, QList<int>() << Qt::ToolTipRole);
+        emit dataChanged(top, bottom, QList<int>() << Qt::ToolTipRole << Custom1);
     }
 };
 
@@ -1963,8 +1963,8 @@ void tst_QAbstractItemModel::testDataChanged()
     const QVariantList secondEmission = withRoles.at(1);
     const QVariantList thirdEmission = withRoles.at(2);
 
-    const QVector<int> secondRoles = secondEmission.at(2).value<QVector<int> >();
-    const QVector<int> thirdRoles = thirdEmission.at(2).value<QVector<int> >();
+    const QList<int> secondRoles = secondEmission.at(2).value<QList<int> >();
+    const QList<int> thirdRoles = thirdEmission.at(2).value<QList<int> >();
 
     QCOMPARE(secondRoles.size(), 1);
     QVERIFY(secondRoles.contains(Qt::ToolTipRole));

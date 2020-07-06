@@ -31,9 +31,9 @@
 #include "qsharedpointer.h"
 #include <QtTest/QtTest>
 #include <QtCore/QHash>
+#include <QtCore/QList>
 #include <QtCore/QMap>
 #include <QtCore/QThread>
-#include <QtCore/QVector>
 
 #include "externaltests.h"
 #include "forwarddeclared.h"
@@ -2114,7 +2114,7 @@ void tst_QSharedPointer::threadStressTest()
     memset(guard2, 0, sizeof guard2);
 
     for (int r = 0; r < 5; ++r) {
-        QVector<QThread*> allThreads(6 * qMax(strongThreadCount, weakThreadCount) + 3, 0);
+        QList<QThread*> allThreads(6 * qMax(strongThreadCount, weakThreadCount) + 3, 0);
         QSharedPointer<ThreadData> base = QSharedPointer<ThreadData>(new ThreadData(&counter));
         counter.storeRelaxed(0);
 

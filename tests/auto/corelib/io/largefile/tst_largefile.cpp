@@ -127,7 +127,7 @@ private:
 
     QFile largeFile;
 
-    QVector<QByteArray> generatedBlocks;
+    QByteArrayList generatedBlocks;
 
     int fd_;
     FILE *stream_;

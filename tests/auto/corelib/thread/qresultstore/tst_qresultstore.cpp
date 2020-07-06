@@ -57,8 +57,8 @@ private:
     int int0;
     int int1;
     int int2;
-    QVector<int> vec0;
-    QVector<int> vec1;
+    QList<int> vec0;
+    QList<int> vec1;
 };
 
 void tst_QtConcurrentResultStore::init()
@@ -66,8 +66,8 @@ void tst_QtConcurrentResultStore::init()
     int0 = 0;
     int1 = 1;
     int2 = 2;
-    vec0 = QVector<int>() << 2 << 3;
-    vec1 = QVector<int>() << 4 << 5;
+    vec0 = QList<int> { 2, 3 };
+    vec1 = QList<int> { 4, 5 };
 }
 
 void tst_QtConcurrentResultStore::construction()

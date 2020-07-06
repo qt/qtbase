@@ -563,7 +563,7 @@ void tst_QSequentialAnimationGroup::seekingBackwards()
     QCOMPARE(a1_s_o3->state(), QAnimationGroup::Stopped);
 }
 
-typedef QVector<QAbstractAnimation::State> StateList;
+using StateList = QList<QAbstractAnimation::State>;
 
 static bool compareStates(const QSignalSpy& spy, const StateList &expectedStates)
 {

@@ -27,10 +27,10 @@
 ****************************************************************************/
 
 #include <QtTest/QtTest>
-#include <qwineventnotifier.h>
+#include <qlist.h>
 #include <qtimer.h>
 #include <qvarlengtharray.h>
-#include <qvector.h>
+#include <qwineventnotifier.h>
 #include <qt_windows.h>
 
 #include <algorithm>
@@ -208,7 +208,7 @@ void tst_QWinEventNotifier::manyNotifiers()
     }));
 }
 
-using Indices = QVector<int>;
+using Indices = QList<int>;
 
 void tst_QWinEventNotifier::disableNotifiersInActivatedSlot_data()
 {

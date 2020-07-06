@@ -1231,7 +1231,7 @@ void tst_QProcess::processesInMultipleThreads()
         if (i > 7)
             threadCount = qMax(threadCount, QThread::idealThreadCount() + 2);
 
-        QVector<TestThread *> threads(threadCount);
+        QList<TestThread *> threads(threadCount);
         for (int j = 0; j < threadCount; ++j)
             threads[j] = new TestThread;
         for (int j = 0; j < threadCount; ++j)

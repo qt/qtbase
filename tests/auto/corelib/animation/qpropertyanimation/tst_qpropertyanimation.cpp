@@ -508,7 +508,7 @@ public:
     void setOle(int v) { o = v; values << v; }
 
     int o;
-    QVector<int> values;
+    QList<int> values;
 };
 
 void tst_QPropertyAnimation::noStartValue()

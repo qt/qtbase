@@ -166,7 +166,7 @@ void tst_QSemaphore::multiRelease()
     };
 
     QSemaphore sem;
-    QVector<Thread *> threads;
+    QList<Thread *> threads;
     threads.resize(4);
 
     for (Thread *&t : threads)
@@ -200,7 +200,7 @@ void tst_QSemaphore::multiAcquireRelease()
     };
 
     QSemaphore sem;
-    QVector<Thread *> threads;
+    QList<Thread *> threads;
     threads.resize(4);
 
     for (Thread *&t : threads)

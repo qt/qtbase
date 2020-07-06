@@ -1839,7 +1839,7 @@ void tst_QStringConverter::threadSafety()
 {
     QThreadPool::globalInstance()->setMaxThreadCount(12);
 
-    QVector<QString> res;
+    QList<QString> res;
     res.resize(QStringConverter::LastEncoding + 1);
     for (int i = 0; i < QStringConverter::LastEncoding + 1; ++i) {
         QThreadPool::globalInstance()->start(new LoadAndConvert(QStringConverter::Encoding(i), &res[i]));

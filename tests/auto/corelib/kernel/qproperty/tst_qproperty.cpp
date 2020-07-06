@@ -381,7 +381,7 @@ void tst_QProperty::moveCtor()
 void tst_QProperty::changeHandler()
 {
     QProperty<int> testProperty(0);
-    QVector<int> recordedValues;
+    QList<int> recordedValues;
 
     {
         auto handler = testProperty.onValueChanged([&]() {
@@ -424,7 +424,7 @@ void tst_QProperty::propertyChangeHandlerApi()
 void tst_QProperty::subscribe()
 {
     QProperty<int> testProperty(42);
-    QVector<int> recordedValues;
+    QList<int> recordedValues;
 
     {
         auto handler = testProperty.subscribe([&]() {
@@ -754,7 +754,7 @@ void tst_QProperty::propertyAlias()
 
 struct ClassWithNotifiedProperty
 {
-    QVector<int> recordedValues;
+    QList<int> recordedValues;
 
     void callback() { recordedValues << property.value(); }
 
@@ -763,7 +763,7 @@ struct ClassWithNotifiedProperty
 
 struct ClassWithNotifiedProperty2
 {
-    QVector<int> recordedValues;
+    QList<int> recordedValues;
 
     void callback(int oldValue) { recordedValues << oldValue; }
 
@@ -852,7 +852,7 @@ void tst_QProperty::notifiedPropertyWithOldValueCallback()
     instance.property.setBinding(&instance, [](){return 2;});
     instance.property.setBinding(&instance, [](){return 3;});
     instance.property.setValue(&instance, 4);
-    QVector<int> expected {0, 1, 2, 3};
+    QList<int> expected {0, 1, 2, 3};
     QCOMPARE(instance.recordedValues, expected);
     QCOMPARE(instance.property.value(), 4);
 }
@@ -860,7 +860,7 @@ void tst_QProperty::notifiedPropertyWithOldValueCallback()
 struct ClassWithNotifiedPropertyWithGuard
 {
     using This = ClassWithNotifiedPropertyWithGuard;
-    QVector<int> recordedValues;
+    QList<int> recordedValues;
 
     void callback() { recordedValues << property.value(); }
     void callback2() { recordedValues << property2.value(); }
@@ -968,7 +968,7 @@ void tst_QProperty::notifiedPropertyWithGuard()
         // properties' value. At that point we then evaluate the binding, and
         // notice that the value is in fact disallowed. Thus we return the old
         // value.
-        QVector<int> expected {1,  1, 2, 3};
+        QList<int> expected {1,  1, 2, 3};
         QCOMPARE(instance2.recordedValues, expected);
     }
 

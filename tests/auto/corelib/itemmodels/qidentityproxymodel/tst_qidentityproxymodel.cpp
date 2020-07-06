@@ -50,7 +50,7 @@ public:
     void changeData()
     {
         const QModelIndex idx = index(0, 0, QModelIndex());
-        Q_EMIT dataChanged(idx, idx, QVector<int>() << 1);
+        Q_EMIT dataChanged(idx, idx, QList<int>() << 1);
     }
 };
 
@@ -94,7 +94,7 @@ tst_QIdentityProxyModel::tst_QIdentityProxyModel()
 
 void tst_QIdentityProxyModel::initTestCase()
 {
-    qRegisterMetaType<QVector<int> >();
+    qRegisterMetaType<QList<int> >();
     m_model = new QStandardItemModel(0, 1);
     m_proxy = new QIdentityProxyModel();
     m_modelTest = new QAbstractItemModelTester(m_proxy, this);
@@ -389,7 +389,7 @@ void tst_QIdentityProxyModel::dataChanged()
 
     model.changeData();
 
-    QCOMPARE(modelSpy.first().at(2).value<QVector<int> >(), QVector<int>() << 1);
+    QCOMPARE(modelSpy.first().at(2).value<QList<int> >(), QList<int>() << 1);
     QCOMPARE(modelSpy.first().at(2), proxySpy.first().at(2));
 
     verifyIdentity(&model);

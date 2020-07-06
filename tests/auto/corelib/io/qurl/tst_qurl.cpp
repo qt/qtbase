@@ -4048,7 +4048,7 @@ public:
         for (int i = 0 ; i < m_urls.size(); ++i)
             m_urls[i] = QUrl::fromEncoded("http://www.kde.org", QUrl::StrictMode);
     }
-    QVector<QUrl> m_urls;
+    QList<QUrl> m_urls;
 };
 
 static const UrlStorage * s_urlStorage = nullptr;

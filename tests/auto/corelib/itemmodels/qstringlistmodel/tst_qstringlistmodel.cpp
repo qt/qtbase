@@ -340,7 +340,7 @@ void tst_QStringListModel::setData_emits_both_roles()
     QFETCH(int, role);
 
     QStringListModel model(QStringList() << "one" << "two");
-    QVector<int> expected;
+    QList<int> expected;
     expected.reserve(2);
     expected.append(Qt::DisplayRole);
     expected.append(Qt::EditRole);
@@ -349,7 +349,7 @@ void tst_QStringListModel::setData_emits_both_roles()
     QVERIFY(spy.isValid());
     model.setData(model.index(row, 0), data, role);
     QCOMPARE(spy.size(), 1);
-    QCOMPARE(sorted(spy.at(0).at(2).value<QVector<int> >()),
+    QCOMPARE(sorted(spy.at(0).at(2).value<QList<int> >()),
              expected);
 }
 
@@ -380,7 +380,7 @@ void tst_QStringListModel::setItemData()
     }};
     QSignalSpy dataChangedSpy(&testModel, &QAbstractItemModel::dataChanged);
     QModelIndex changeIndex = testModel.index(1, 0);
-    const QVector<int> changeRoles{Qt::DisplayRole, Qt::EditRole};
+    const QList<int> changeRoles{Qt::DisplayRole, Qt::EditRole};
     const QString changedString("Changed");
     QMap<int, QVariant> newItemData{std::make_pair<int>(Qt::DisplayRole, changedString)};
     // invalid index does nothing and returns false
@@ -393,7 +393,7 @@ void tst_QStringListModel::setItemData()
     QVariantList dataChangedArguments = dataChangedSpy.takeFirst();
     QCOMPARE(dataChangedArguments.at(0).value<QModelIndex>(), changeIndex);
     QCOMPARE(dataChangedArguments.at(1).value<QModelIndex>(), changeIndex);
-    QCOMPARE(dataChangedArguments.at(2).value<QVector<int> >(), changeRoles);
+    QCOMPARE(dataChangedArguments.at(2).value<QList<int> >(), changeRoles);
     // Unsupported roles do nothing return false
     newItemData.clear();
     newItemData.insert(Qt::UserRole, changedString);
@@ -418,7 +418,7 @@ void tst_QStringListModel::setItemData()
     dataChangedArguments = dataChangedSpy.takeFirst();
     QCOMPARE(dataChangedArguments.at(0).value<QModelIndex>(), changeIndex);
     QCOMPARE(dataChangedArguments.at(1).value<QModelIndex>(), changeIndex);
-    QCOMPARE(dataChangedArguments.at(2).value<QVector<int> >(), changeRoles);
+    QCOMPARE(dataChangedArguments.at(2).value<QList<int> >(), changeRoles);
 }
 
 void tst_QStringListModel::setData_emits_on_change_only()
@@ -433,8 +433,8 @@ void tst_QStringListModel::setData_emits_on_change_only()
     const QList<QVariant> spyList = dataChangedSpy.takeFirst();
     QCOMPARE(spyList.at(0).value<QModelIndex>(), modelIdx);
     QCOMPARE(spyList.at(1).value<QModelIndex>(), modelIdx);
-    const QVector<int> expectedRoles{Qt::DisplayRole, Qt::EditRole};
-    QCOMPARE(spyList.at(2).value<QVector<int> >(), expectedRoles);
+    const QList<int> expectedRoles{Qt::DisplayRole, Qt::EditRole};
+    QCOMPARE(spyList.at(2).value<QList<int> >(), expectedRoles);
     QVERIFY(model.setData(modelIdx, newStringData));
     QVERIFY(dataChangedSpy.isEmpty());
 }

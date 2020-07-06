@@ -2081,20 +2081,14 @@ void tst_QStringRef::mid()
     QVERIFY(emptyRef.mid(-10, 3).isEmpty());
 }
 
-static bool operator ==(const QStringList &left, const QVector<QStringRef> &right)
+static bool operator ==(const QStringList &left, const QList<QStringRef> &right)
 {
     if (left.size() != right.size())
         return false;
 
-    QStringList::const_iterator iLeft = left.constBegin();
-    QVector<QStringRef>::const_iterator iRight = right.constBegin();
-    for (; iLeft != left.end(); ++iLeft, ++iRight) {
-        if (*iLeft != *iRight)
-            return false;
-    }
-    return true;
+    return std::equal(left.constBegin(), left.constEnd(), right.constBegin());
 }
-static inline bool operator ==(const QVector<QStringRef> &left, const QStringList &right) { return right == left; }
+static inline bool operator ==(const QList<QStringRef> &left, const QStringList &right) { return right == left; }
 
 void tst_QStringRef::split_data()
 {
@@ -2124,7 +2118,7 @@ void tst_QStringRef::split()
     QFETCH(QString, sep);
     QFETCH(QStringList, result);
 
-    QVector<QStringRef> list;
+    QList<QStringRef> list;
     // we construct a bigger valid string to check
     // if ref.split is using the right size
     QString source = str + str + str;

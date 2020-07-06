@@ -35,10 +35,10 @@
 #include <iterator>
 #include <algorithm>
 #include <qalgorithms.h>
-#include <QStringList>
-#include <QString>
+#include <QList>
 #include <QRandomGenerator>
-#include <QVector>
+#include <QString>
+#include <QStringList>
 
 #define Q_TEST_PERFORMANCE 0
 
@@ -137,9 +137,9 @@ QStringList dataSetTypes = QStringList() << "Random" << "Ascending"
                 << "Descending" << "Equal" << "Duplicates" << "Almost Sorted"  ;
 
 template <typename DataType>
-QVector<DataType> generateData(QString dataSetType, const int length)
+QList<DataType> generateData(QString dataSetType, const int length)
 {
-    QVector<DataType> container;
+    QList<DataType> container;
     if (dataSetType == "Random") {
         for (int i = 0; i < length; ++i)
             container.append(QRandomGenerator::global()->generate());
@@ -236,7 +236,7 @@ QList<ResultSet> testAlgorithm(Algorithm &algorithm,  QStringList dataSetTypes, 
 {
     QList<ResultSet> results;
     foreach(QString dataSetType, dataSetTypes) {
-        QVector<DataType> container = generateData<DataType>(dataSetType, size);
+        QList<DataType> container = generateData<DataType>(dataSetType, size);
         results.append(testRun(container, algorithm, time));
         if (!isSorted(container))
             qWarning("%s: container is not sorted after test", Q_FUNC_INFO);
@@ -534,22 +534,6 @@ void tst_QAlgorithms::qBinaryFindOneEntry()
 
 void tst_QAlgorithms::sortAPItest()
 {
-    QVector<int> testVector = generateData<int>("Random", 101);
-    qSort(testVector);
-    QVERIFY(isSorted(testVector));
-    qSort(testVector.begin(), testVector.end());
-    QVERIFY(isSorted(testVector));
-    qSort(testVector.begin(), testVector.end(), qLess<int>());
-    QVERIFY(isSorted(testVector));
-
-    testVector = generateData<int>("Random", 71);
-    qStableSort(testVector);
-    QVERIFY(isSorted(testVector));
-    qStableSort(testVector.begin(), testVector.end());
-    QVERIFY(isSorted(testVector));
-    qStableSort(testVector.begin(), testVector.end(), qLess<int>());
-    QVERIFY(isSorted(testVector));
-
     QList<int> testList = generateData<int>("Random", 101).toList();
     qSort(testList);
     QVERIFY(isSorted(testList));
@@ -582,15 +566,14 @@ int Minor;
 
 ostream &operator<<(ostream &out, const StableSortTest& obj)  { out << obj.Major << "-" << obj.Minor; return out; }
 
-QVector<StableSortTest> createStableTestVector()
+QList<StableSortTest> createStableTestList()
 {
-    QVector<StableSortTest> stableTestVector;
-    for (int i=500; i>=0; --i) {
-        for (int j=0; j<10; ++j) {
-            stableTestVector.append(StableSortTest(i, j));
-        }
+    QList<StableSortTest> stableTestList;
+    for (int i = 500; i >= 0; --i) {
+        for (int j = 0; j < 10; ++j)
+            stableTestList.append(StableSortTest(i, j));
     }
-    return stableTestVector;
+    return stableTestList;
 }
 
 template <typename ContainerType, typename LessThan>
@@ -614,52 +597,52 @@ void tst_QAlgorithms::stableSortTest()
 {
     // Selftests:
     {
-        QVector<StableSortTest> stableTestVector = createStableTestVector();
-        qSort(stableTestVector.begin(), stableTestVector.end(), qLess<StableSortTest>());
-        QVERIFY(isSorted(stableTestVector, qLess<StableSortTest>()));
-        QVERIFY(!isStableSorted(stableTestVector, qLess<StableSortTest>()));
+        QList<StableSortTest> stableTestList = createStableTestList();
+        qSort(stableTestList.begin(), stableTestList.end(), qLess<StableSortTest>());
+        QVERIFY(isSorted(stableTestList, qLess<StableSortTest>()));
+        QVERIFY(!isStableSorted(stableTestList, qLess<StableSortTest>()));
     }
     {
-        QVector<StableSortTest> stableTestVector = createStableTestVector();
-        qSort(stableTestVector.begin(), stableTestVector.end(), qGreater<StableSortTest>());
-        QVERIFY(isSorted(stableTestVector, qGreater<StableSortTest>()));
-        QVERIFY(!isStableSorted(stableTestVector, qGreater<StableSortTest>()));
+        QList<StableSortTest> stableTestList = createStableTestList();
+        qSort(stableTestList.begin(), stableTestList.end(), qGreater<StableSortTest>());
+        QVERIFY(isSorted(stableTestList, qGreater<StableSortTest>()));
+        QVERIFY(!isStableSorted(stableTestList, qGreater<StableSortTest>()));
     }
     {
-        QVector<StableSortTest> stableTestVector = createStableTestVector();
-        qSort(stableTestVector.begin(), stableTestVector.end(), qGreater<StableSortTest>());
-        QVERIFY(!isSorted(stableTestVector, qLess<StableSortTest>()));
-        QVERIFY(!isStableSorted(stableTestVector, qGreater<StableSortTest>()));
+        QList<StableSortTest> stableTestList = createStableTestList();
+        qSort(stableTestList.begin(), stableTestList.end(), qGreater<StableSortTest>());
+        QVERIFY(!isSorted(stableTestList, qLess<StableSortTest>()));
+        QVERIFY(!isStableSorted(stableTestList, qGreater<StableSortTest>()));
     }
 
 
     // Stable sort with qLess
     {
-        QVector<StableSortTest> stableTestVector = createStableTestVector();
-        std::stable_sort(stableTestVector.begin(), stableTestVector.end(), qLess<StableSortTest>());
-        QVERIFY(isSorted(stableTestVector, qLess<StableSortTest>()));
-        QVERIFY(isStableSorted(stableTestVector, qLess<StableSortTest>()));
+        QList<StableSortTest> stableTestList = createStableTestList();
+        std::stable_sort(stableTestList.begin(), stableTestList.end(), qLess<StableSortTest>());
+        QVERIFY(isSorted(stableTestList, qLess<StableSortTest>()));
+        QVERIFY(isStableSorted(stableTestList, qLess<StableSortTest>()));
     }
     {
-        QVector<StableSortTest> stableTestVector = createStableTestVector();
-        qStableSort(stableTestVector.begin(), stableTestVector.end(), qLess<StableSortTest>());
-        QVERIFY(isSorted(stableTestVector, qLess<StableSortTest>()));
-        QVERIFY(isStableSorted(stableTestVector, qLess<StableSortTest>()));
+        QList<StableSortTest> stableTestList = createStableTestList();
+        qStableSort(stableTestList.begin(), stableTestList.end(), qLess<StableSortTest>());
+        QVERIFY(isSorted(stableTestList, qLess<StableSortTest>()));
+        QVERIFY(isStableSorted(stableTestList, qLess<StableSortTest>()));
     }
 
     // Stable sort with qGreater
     {
-        QVector<StableSortTest> stableTestVector = createStableTestVector();
-        std::stable_sort(stableTestVector.begin(), stableTestVector.end(), qGreater<StableSortTest>());
-        QVERIFY(isSorted(stableTestVector, qGreater<StableSortTest>()));
-        QVERIFY(isStableSorted(stableTestVector, qGreater<StableSortTest>()));
+        QList<StableSortTest> stableTestList = createStableTestList();
+        std::stable_sort(stableTestList.begin(), stableTestList.end(), qGreater<StableSortTest>());
+        QVERIFY(isSorted(stableTestList, qGreater<StableSortTest>()));
+        QVERIFY(isStableSorted(stableTestList, qGreater<StableSortTest>()));
     }
 
     {
-        QVector<StableSortTest> stableTestVector = createStableTestVector();
-        qStableSort(stableTestVector.begin(), stableTestVector.end(), qGreater<StableSortTest>());
-        QVERIFY(isSorted(stableTestVector, qGreater<StableSortTest>()));
-        QVERIFY(isStableSorted(stableTestVector, qGreater<StableSortTest>()));
+        QList<StableSortTest> stableTestList = createStableTestList();
+        qStableSort(stableTestList.begin(), stableTestList.end(), qGreater<StableSortTest>());
+        QVERIFY(isSorted(stableTestList, qGreater<StableSortTest>()));
+        QVERIFY(isStableSorted(stableTestList, qGreater<StableSortTest>()));
     }
 }
 
@@ -667,8 +650,8 @@ void tst_QAlgorithms::stableSortTest()
 void tst_QAlgorithms::stableSortCorrectnessTest_data()
 {
     const int dataSize = 1000;
-    QTest::addColumn<QVector<int> >("unsorted");
-    QTest::newRow("From documentation") << (QVector<int>() << 33 << 12 << 68 << 6 << 12);
+    QTest::addColumn<QList<int>>("unsorted");
+    QTest::newRow("From documentation") << (QList<int>() << 33 << 12 << 68 << 6 << 12);
     QTest::newRow("Equal") << (generateData<int>("Equal", dataSize));
     QTest::newRow("Ascending") << (generateData<int>("Ascending", dataSize));
     QTest::newRow("Descending") << (generateData<int>("Descending", dataSize));
@@ -679,9 +662,9 @@ void tst_QAlgorithms::stableSortCorrectnessTest_data()
 
 void tst_QAlgorithms::stableSortCorrectnessTest()
 {
-    QFETCH(QVector<int>, unsorted);
+    QFETCH(QList<int>, unsorted);
 
-    QVector<int> sorted = unsorted;
+    QList<int> sorted = unsorted;
     qStableSort(sorted.begin(), sorted.end());
 
     // Verify that sorted contains the same numbers as unsorted.
@@ -743,7 +726,7 @@ template <typename DataType>
 class QuickSortHelper
 {
 public:
-    void operator()(QVector<DataType> list)
+    void operator()(QList<DataType> list)
     {
         ::qSort(list);
     }
@@ -753,7 +736,7 @@ template <typename DataType>
 class StableSortHelper
 {
 public:
-    void operator()(QVector<DataType> list)
+    void operator()(QList<DataType> list)
     {
         ::qStableSort(list);
     }
@@ -763,7 +746,7 @@ template <typename DataType>
 class StlSortHelper
 {
 public:
-    void operator()(QVector<DataType> list)
+    void operator()(QList<DataType> list)
     {
         std::sort(list.begin(), list.end());
     }
@@ -773,7 +756,7 @@ template <typename DataType>
 class StlStableSortHelper
 {
 public:
-    void operator()(QVector<DataType> list)
+    void operator()(QList<DataType> list)
     {
         std::stable_sort(list.begin(), list.end());
     }

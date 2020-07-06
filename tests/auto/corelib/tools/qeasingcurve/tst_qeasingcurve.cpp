@@ -602,7 +602,7 @@ static inline void setupBezierSpline(QEasingCurve *easingCurve, const QString &s
 {
     QStringList pointStr = string.split(QLatin1Char(' '));
 
-    QVector<QPointF> points;
+    QList<QPointF> points;
     foreach (const QString &str, pointStr) {
         QStringList coordStr = str.split(QLatin1Char(','));
         QPointF point(coordStr.first().toDouble(), coordStr.last().toDouble());
