@@ -54,12 +54,11 @@
 #include "QtPrintSupport/qprintengine.h"
 
 #ifndef QT_NO_PRINTER
+#include "QtCore/qdatastream.h"
 #include "QtCore/qmap.h"
 #include "QtCore/qstring.h"
-#include "QtCore/qvector.h"
 #include "QtGui/qpaintengine.h"
 #include "QtGui/qpainterpath.h"
-#include "QtCore/qdatastream.h"
 
 #include "private/qfontengine_p.h"
 #include "private/qpdf_p.h"

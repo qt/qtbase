@@ -107,7 +107,7 @@ public:
     QRegion m_cliprgn;
     mutable QRegion m_cachedDirtyRgn;
     mutable int m_numberOfCachedRects;
-    QVector<QRect> m_dirtyRects;
+    QList<QRect> m_dirtyRects;
 
     bool m_hasalpha;
     bool m_alphaPen;

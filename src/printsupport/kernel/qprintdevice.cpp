@@ -210,9 +210,9 @@ QPrint::InputSlot QPrintDevice::defaultInputSlot() const
     return isValid() ? d->defaultInputSlot() : QPrint::InputSlot();
 }
 
-QVector<QPrint::InputSlot> QPrintDevice::supportedInputSlots() const
+QList<QPrint::InputSlot> QPrintDevice::supportedInputSlots() const
 {
-    return isValid() ? d->supportedInputSlots() : QVector<QPrint::InputSlot>{};
+    return isValid() ? d->supportedInputSlots() : QList<QPrint::InputSlot>{};
 }
 
 QPrint::OutputBin QPrintDevice::defaultOutputBin() const
@@ -220,9 +220,9 @@ QPrint::OutputBin QPrintDevice::defaultOutputBin() const
     return isValid() ? d->defaultOutputBin() : QPrint::OutputBin();
 }
 
-QVector<QPrint::OutputBin> QPrintDevice::supportedOutputBins() const
+QList<QPrint::OutputBin> QPrintDevice::supportedOutputBins() const
 {
-    return isValid() ? d->supportedOutputBins() : QVector<QPrint::OutputBin>{};
+    return isValid() ? d->supportedOutputBins() : QList<QPrint::OutputBin>{};
 }
 
 QPrint::DuplexMode QPrintDevice::defaultDuplexMode() const
@@ -230,9 +230,9 @@ QPrint::DuplexMode QPrintDevice::defaultDuplexMode() const
     return isValid() ? d->defaultDuplexMode() : QPrint::DuplexNone;
 }
 
-QVector<QPrint::DuplexMode> QPrintDevice::supportedDuplexModes() const
+QList<QPrint::DuplexMode> QPrintDevice::supportedDuplexModes() const
 {
-    return isValid() ? d->supportedDuplexModes() : QVector<QPrint::DuplexMode>{};
+    return isValid() ? d->supportedDuplexModes() : QList<QPrint::DuplexMode>{};
 }
 
 QPrint::ColorMode QPrintDevice::defaultColorMode() const
@@ -240,9 +240,9 @@ QPrint::ColorMode QPrintDevice::defaultColorMode() const
     return isValid() ? d->defaultColorMode() : QPrint::GrayScale;
 }
 
-QVector<QPrint::ColorMode> QPrintDevice::supportedColorModes() const
+QList<QPrint::ColorMode> QPrintDevice::supportedColorModes() const
 {
-    return isValid() ? d->supportedColorModes() : QVector<QPrint::ColorMode>{};
+    return isValid() ? d->supportedColorModes() : QList<QPrint::ColorMode>{};
 }
 
 QVariant QPrintDevice::property(PrintDevicePropertyKey key) const

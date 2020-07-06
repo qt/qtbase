@@ -55,7 +55,7 @@
 
 #include <qbitmap.h>
 #include <qdebug.h>
-#include <qvector.h>
+#include <qlist.h>
 #include <qpicture.h>
 #include <qpa/qplatformpixmap.h>
 #include <private/qpicture_p.h>
@@ -1018,7 +1018,7 @@ bool QWin32PrintEnginePrivate::resetDC()
     return hdc != 0;
 }
 
-static int indexOfId(const QVector<QPrint::InputSlot> &inputSlots, QPrint::InputSlotId id)
+static int indexOfId(const QList<QPrint::InputSlot> &inputSlots, QPrint::InputSlotId id)
 {
     for (int i = 0; i < inputSlots.size(); ++i) {
         if (inputSlots.at(i).id == id)
@@ -1027,7 +1027,7 @@ static int indexOfId(const QVector<QPrint::InputSlot> &inputSlots, QPrint::Input
     return -1;
 }
 
-static int indexOfWindowsId(const QVector<QPrint::InputSlot> &inputSlots, int windowsId)
+static int indexOfWindowsId(const QList<QPrint::InputSlot> &inputSlots, int windowsId)
 {
     for (int i = 0; i < inputSlots.size(); ++i) {
         if (inputSlots.at(i).windowsId == windowsId)

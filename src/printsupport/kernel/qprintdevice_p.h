@@ -118,16 +118,16 @@ public:
     QList<int> supportedResolutions() const;
 
     QPrint::InputSlot defaultInputSlot() const;
-    QVector<QPrint::InputSlot> supportedInputSlots() const;
+    QList<QPrint::InputSlot> supportedInputSlots() const;
 
     QPrint::OutputBin defaultOutputBin() const;
-    QVector<QPrint::OutputBin> supportedOutputBins() const;
+    QList<QPrint::OutputBin> supportedOutputBins() const;
 
     QPrint::DuplexMode defaultDuplexMode() const;
-    QVector<QPrint::DuplexMode> supportedDuplexModes() const;
+    QList<QPrint::DuplexMode> supportedDuplexModes() const;
 
     QPrint::ColorMode defaultColorMode() const;
-    QVector<QPrint::ColorMode> supportedColorModes() const;
+    QList<QPrint::ColorMode> supportedColorModes() const;
 
     enum PrintDevicePropertyKey {
         PDPK_CustomBase = 0xff00

@@ -166,7 +166,7 @@ private:
     QPrintDevice *m_currentPrintDevice;
 
     QStringDecoder toUnicode;
-    QVector<QComboBox*> m_advancedOptionsCombos;
+    QList<QComboBox*> m_advancedOptionsCombos;
 #endif
 };
 

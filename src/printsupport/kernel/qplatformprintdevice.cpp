@@ -294,7 +294,7 @@ QPrint::InputSlot QPlatformPrintDevice::defaultInputSlot() const
     return input;
 }
 
-QVector<QPrint::InputSlot> QPlatformPrintDevice::supportedInputSlots() const
+QList<QPrint::InputSlot> QPlatformPrintDevice::supportedInputSlots() const
 {
     if (!m_haveInputSlots)
         loadInputSlots();
@@ -314,7 +314,7 @@ QPrint::OutputBin QPlatformPrintDevice::defaultOutputBin() const
     return output;
 }
 
-QVector<QPrint::OutputBin> QPlatformPrintDevice::supportedOutputBins() const
+QList<QPrint::OutputBin> QPlatformPrintDevice::supportedOutputBins() const
 {
     if (!m_haveOutputBins)
         loadOutputBins();
@@ -330,7 +330,7 @@ QPrint::DuplexMode QPlatformPrintDevice::defaultDuplexMode() const
     return QPrint::DuplexNone;
 }
 
-QVector<QPrint::DuplexMode> QPlatformPrintDevice::supportedDuplexModes() const
+QList<QPrint::DuplexMode> QPlatformPrintDevice::supportedDuplexModes() const
 {
     if (!m_haveDuplexModes)
         loadDuplexModes();
@@ -346,7 +346,7 @@ QPrint::ColorMode QPlatformPrintDevice::defaultColorMode() const
     return QPrint::GrayScale;
 }
 
-QVector<QPrint::ColorMode> QPlatformPrintDevice::supportedColorModes() const
+QList<QPrint::ColorMode> QPlatformPrintDevice::supportedColorModes() const
 {
     if (!m_haveColorModes)
         loadColorModes();
