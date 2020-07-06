@@ -1595,12 +1595,10 @@ static QtPrivate::QMetaTypeInterface *interfaceForType(int typeId)
 }
 
 /*!
-     \fn QMetaType::QMetaType(const int typeId)
+     \fn QMetaType::QMetaType(int typeId)
      \since 5.0
 
      Constructs a QMetaType object that contains all information about type \a typeId.
-
-     \note The default parameter was added in Qt 5.15.
 */
 QMetaType::QMetaType(int typeId) : QMetaType(interfaceForType(typeId)) {}
 
