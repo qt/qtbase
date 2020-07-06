@@ -286,7 +286,10 @@ QString QClipboard::text(QString &subtype, Mode mode) const
     }
 
     const QByteArray rawData = data->data(QLatin1String("text/") + subtype);
-    return qFromUtfEncoded(rawData);
+    auto encoding = QStringConverter::encodingForData(rawData.constData(), rawData.size());
+    if (!encoding)
+        encoding = QStringConverter::Utf8;
+    return QStringDecoder(*encoding).decode(rawData);
 }
 
 /*!

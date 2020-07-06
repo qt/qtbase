@@ -331,12 +331,6 @@ struct Q_CORE_EXPORT QLocal8Bit
 #endif
 };
 
-/*
- Converts from different utf encodings looking at a possible byte order mark at the
- beginning of the string. If no BOM exists, utf-8 is assumed.
- */
-Q_CORE_EXPORT QString qFromUtfEncoded(const QByteArray &ba);
-
 QT_END_NAMESPACE
 
 #endif // QSTRINGCONVERTER_P_H

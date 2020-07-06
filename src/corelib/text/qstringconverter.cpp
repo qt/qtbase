@@ -1067,26 +1067,6 @@ QChar *QUtf32::convertToUnicode(QChar *out, const char *chars, qsizetype len, QS
     return out;
 }
 
-QString qFromUtfEncoded(const QByteArray &ba)
-{
-    const qsizetype arraySize = ba.size();
-    const uchar *buf = reinterpret_cast<const uchar *>(ba.constData());
-    const uint bom = 0xfeff;
-
-    if (arraySize > 3) {
-        uint uc = qFromUnaligned<uint>(buf);
-        if (uc == qToBigEndian(bom) || uc == qToLittleEndian(bom))
-            return QUtf32::convertToUnicode(ba.constData(), ba.length(), nullptr); // utf-32
-    }
-
-    if (arraySize > 1) {
-        ushort uc = qFromUnaligned<ushort>(buf);
-        if (uc == qToBigEndian(ushort(bom)) || qToLittleEndian(ushort(bom)))
-            return QUtf16::convertToUnicode(ba.constData(), ba.length(), nullptr); // utf-16
-    }
-    return QUtf8::convertToUnicode(ba.constData(), ba.length());
-}
-
 #if defined(Q_OS_WIN) && !defined(QT_BOOTSTRAPPED)
 static QString convertToUnicodeCharByChar(const char *chars, qsizetype length, QStringConverter::State *state)
 {
