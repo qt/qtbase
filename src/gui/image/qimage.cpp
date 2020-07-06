@@ -2052,7 +2052,7 @@ QImage QImage::convertToFormat_helper(Format format, Qt::ImageConversionFlags fl
     if (!converter && format > QImage::Format_Indexed8 && d->format > QImage::Format_Indexed8) {
         if (qt_highColorPrecision(d->format, !destLayout->hasAlphaChannel)
                 && qt_highColorPrecision(format, !hasAlphaChannel())) {
-            converter = convert_generic_to_rgb64;
+            converter = convert_generic_over_rgb64;
         } else
             converter = convert_generic;
     }
@@ -4829,12 +4829,16 @@ bool QImageData::convertInPlace(QImage::Format newFormat, Qt::ImageConversionFla
     InPlace_Image_Converter converter = qimage_inplace_converter_map[format][newFormat];
     if (converter)
         return converter(this, flags);
-    else if (format > QImage::Format_Indexed8 && newFormat > QImage::Format_Indexed8 && !qimage_converter_map[format][newFormat])
+    if (format > QImage::Format_Indexed8 && newFormat > QImage::Format_Indexed8 && !qimage_converter_map[format][newFormat]) {
         // Convert inplace generic, but only if there are no direct converters,
         // any direct ones are probably better even if not inplace.
+        if (qt_highColorPrecision(newFormat, !qPixelLayouts[newFormat].hasAlphaChannel)
+                && qt_highColorPrecision(format, !qPixelLayouts[format].hasAlphaChannel)) {
+            return convert_generic_inplace_over_rgb64(this, newFormat, flags);
+        }
         return convert_generic_inplace(this, newFormat, flags);
-    else
-        return false;
+    }
+    return false;
 }
 
 /*!

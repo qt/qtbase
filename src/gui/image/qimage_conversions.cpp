@@ -257,7 +257,7 @@ void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversio
 #endif
 }
 
-void convert_generic_to_rgb64(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
+void convert_generic_over_rgb64(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
 {
     Q_ASSERT(dest->format > QImage::Format_Indexed8);
     Q_ASSERT(src->format > QImage::Format_Indexed8);
@@ -325,10 +325,9 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
     const QPixelLayout *destLayout = &qPixelLayouts[dst_format];
 
     // The precision here is only ARGB32PM so don't convert between higher accuracy
-    // formats (assert instead when we have a convert_generic_over_rgb64_inplace).
-    if (qt_highColorPrecision(data->format, !destLayout->hasAlphaChannel)
-            && qt_highColorPrecision(dst_format, !srcLayout->hasAlphaChannel))
-        return false;
+    // formats.
+    Q_ASSERT(!qt_highColorPrecision(data->format, !destLayout->hasAlphaChannel)
+             || !qt_highColorPrecision(dst_format, !srcLayout->hasAlphaChannel));
 
     QImageData::ImageSizeParameters params = { data->bytes_per_line, data->nbytes };
     if (data->depth != destDepth) {
@@ -390,6 +389,100 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
                     l = qMin(l, BufferSize);
                 const uint *ptr = fetch(buffer, srcData, x, l, nullptr, ditherPtr);
                 store(destData, ptr, x, l, nullptr, ditherPtr);
+                x += l;
+            }
+            srcData += data->bytes_per_line;
+            destData += params.bytesPerLine;
+        }
+    };
+#ifdef QT_USE_THREAD_PARALLEL_IMAGE_CONVERSIONS
+    int segments = data->nbytes / (1<<16);
+    segments = std::min(segments, data->height);
+    QThreadPool *threadPool = QThreadPool::globalInstance();
+    if (segments > 1 && !threadPool->contains(QThread::currentThread())) {
+        QSemaphore semaphore;
+        int y = 0;
+        for (int i = 0; i < segments; ++i) {
+            int yn = (data->height - y) / (segments - i);
+            threadPool->start([&, y, yn]() {
+                convertSegment(y, y + yn);
+                semaphore.release(1);
+            });
+            y += yn;
+        }
+        semaphore.acquire(segments);
+        if (data->bytes_per_line != params.bytesPerLine) {
+            // Compress segments to a continuous block
+            y = 0;
+            for (int i = 0; i < segments; ++i) {
+                int yn = (data->height - y) / (segments - i);
+                uchar *srcData = data->data + data->bytes_per_line * y;
+                uchar *destData = data->data + params.bytesPerLine * y;
+                if (srcData != destData)
+                    memmove(destData, srcData, params.bytesPerLine * yn);
+                y += yn;
+            }
+        }
+    } else
+#endif
+        convertSegment(0, data->height);
+    if (params.totalSize != data->nbytes) {
+        Q_ASSERT(params.totalSize < data->nbytes);
+        void *newData = realloc(data->data, params.totalSize);
+        if (newData) {
+            data->data = (uchar *)newData;
+            data->nbytes = params.totalSize;
+        }
+        data->bytes_per_line = params.bytesPerLine;
+    }
+    data->depth = destDepth;
+    data->format = dst_format;
+    return true;
+}
+
+bool convert_generic_inplace_over_rgb64(QImageData *data, QImage::Format dst_format, Qt::ImageConversionFlags)
+{
+    Q_ASSERT(data->format > QImage::Format_Indexed8);
+    Q_ASSERT(dst_format > QImage::Format_Indexed8);
+    const int destDepth = qt_depthForFormat(dst_format);
+    if (data->depth < destDepth)
+        return false;
+
+    const QPixelLayout *srcLayout = &qPixelLayouts[data->format];
+    const QPixelLayout *destLayout = &qPixelLayouts[dst_format];
+
+    QImageData::ImageSizeParameters params = { data->bytes_per_line, data->nbytes };
+    if (data->depth != destDepth) {
+        params = QImageData::calculateImageParameters(data->width, data->height, destDepth);
+        if (!params.isValid())
+            return false;
+    }
+
+    FetchAndConvertPixelsFunc64 fetch = srcLayout->fetchToRGBA64PM;
+    ConvertAndStorePixelsFunc64 store = qStoreFromRGBA64PM[dst_format];
+    if (srcLayout->hasAlphaChannel && !srcLayout->premultiplied &&
+        destLayout->hasAlphaChannel && !destLayout->premultiplied) {
+        // Avoid unnecessary premultiply and unpremultiply when converting between two unpremultiplied formats.
+        // This abuses the fact unpremultiplied formats are always before their premultiplied counterparts.
+        fetch = qPixelLayouts[data->format + 1].fetchToRGBA64PM;
+        store = qStoreFromRGBA64PM[dst_format + 1];
+    }
+
+    auto convertSegment = [=](int yStart, int yEnd) {
+        QRgba64 buf[BufferSize];
+        QRgba64 *buffer = buf;
+        uchar *srcData = data->data + yStart * data->bytes_per_line;
+        uchar *destData = srcData;
+        for (int y = yStart; y < yEnd; ++y) {
+            int x = 0;
+            while (x < data->width) {
+                int l = data->width - x;
+                if (srcLayout->bpp == QPixelLayout::BPP64)
+                    buffer = reinterpret_cast<QRgba64 *>(srcData) + x;
+                else
+                    l = qMin(l, BufferSize);
+                const QRgba64 *ptr = fetch(buffer, srcData, x, l, nullptr, nullptr);
+                store(destData, ptr, x, l, nullptr, nullptr);
                 x += l;
             }
             srcData += data->bytes_per_line;
