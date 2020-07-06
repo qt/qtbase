@@ -1632,7 +1632,7 @@ QRhiTextureUploadEntry::QRhiTextureUploadEntry(int layer, int level,
     \badcode
         QImage faces[6];
         ...
-        QVector<QRhiTextureUploadEntry> entries;
+        QList<QRhiTextureUploadEntry> entries;
         for (int i = 0; i < 6; ++i)
           entries.append(QRhiTextureUploadEntry(i, 0, faces[i]));
         QRhiTextureUploadDescription desc(entries);
@@ -3337,7 +3337,7 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBindings &srb)
  */
 
 /*!
-    \fn void QRhiGraphicsPipeline::setTargetBlends(const QVector<TargetBlend> &blends)
+    \fn void QRhiGraphicsPipeline::setTargetBlends(const QList<TargetBlend> &blends)
 
     Sets the blend specification for color attachments. Each element in \a
     blends corresponds to a color attachment of the render target.
@@ -5850,7 +5850,7 @@ QRhi::FrameOpResult QRhi::finish()
     with some others the (physical) device properties indicate what is
     supported at run time.
  */
-QVector<int> QRhi::supportedSampleCounts() const
+QList<int> QRhi::supportedSampleCounts() const
 {
     return d->supportedSampleCounts();
 }

@@ -100,7 +100,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QPlatformSharedGraphicsCache::requestItems(const QByteArray &cacheId, const QVector<quint32> &itemIds)
+    \fn void QPlatformSharedGraphicsCache::requestItems(const QByteArray &cacheId, const QList<quint32> &itemIds)
 
     Requests all the items in \a itemIds from the cache with the name \a cacheId.
 
@@ -116,7 +116,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QPlatformSharedGraphicsCache::insertItems(const QByteArray &cacheId, const QVector<quint32> &itemIds, const QVector<QImage> &items)
+    \fn void QPlatformSharedGraphicsCache::insertItems(const QByteArray &cacheId, const QList<quint32> &itemIds, const QList<QImage> &items)
 
     Inserts the items in \a itemIds into the cache named \a cacheId. The appearance of
     each item is stored in \a items. The format of the QImage objects is expected to match the
@@ -132,7 +132,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QPlatformSharedGraphicsCache::releaseItems(const QByteArray &cacheId, const QVector<quint32> &itemIds)
+    \fn void QPlatformSharedGraphicsCache::releaseItems(const QByteArray &cacheId, const QList<quint32> &itemIds)
 
     Releases the reference to the items in \a itemIds from the cache named \a cacheId. This should
     only be called when all references to the items have been released by the user, and they are no
@@ -140,20 +140,20 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QPlatformSharedGraphicsCache::itemsMissing(const QByteArray &cacheId, const QVector<quint32> &itemIds)
+    \fn void QPlatformSharedGraphicsCache::itemsMissing(const QByteArray &cacheId, const QList<quint32> &itemIds)
 
     This signal is emitted when requestItems() has been called for one or more items in the
     cache named \a cacheId which are not yet available in the cache. The user is then expected to
     call insertItems() to update the cache with the respective items, at which point they will
     become available to all clients of the shared cache.
 
-    The vector \a itemIds contains the IDs of the items that need to be inserted into the cache.
+    The \a itemIds list contains the IDs of the items that need to be inserted into the cache.
 
     \sa itemsAvailable(), insertItems(), requestItems()
 */
 
 /*!
-    \fn void QPlatformSharedGraphicsCache::itemsAvailable(const QByteArray &cacheId, void *bufferId, const QVector<quint32> &itemIds, const QVector<QPoint> &positionsInBuffer)
+    \fn void QPlatformSharedGraphicsCache::itemsAvailable(const QByteArray &cacheId, void *bufferId, const QList<quint32> &itemIds, const QList<QPoint> &positionsInBuffer)
 
     This signal can be emitted at any time when either requestItems() or insertItems() has been
     called by the application for one or more items in the cache named \a cacheId, as long as
@@ -167,8 +167,8 @@ QT_BEGIN_NAMESPACE
     initialization. If it is a OpenGLTexture, its texture ID can be requested using the
     textureIdForBuffer() function. The dimensions of the buffer are given by \a bufferSize.
 
-    The items provided by the cache are identified in the \a itemIds vector. The
-    \a positionsInBuffer vector contains the locations inside the buffer of each item. Each entry in
+    The items provided by the cache are identified in the \a itemIds list. The
+    \a positionsInBuffer list contains the locations inside the buffer of each item. Each entry in
     \a positionsInBuffer corresponds to an item in \a itemIds.
 
     The buffer and the items' locations within the buffer can be considered valid until an
@@ -179,7 +179,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QPlatformSharedGraphicsCache::itemsUpdated(const QByteArray &cacheId, void *bufferId, const QVector<quint32> &itemIds, const QVector<QPoint> &positionsInBuffer)
+    \fn void QPlatformSharedGraphicsCache::itemsUpdated(const QByteArray &cacheId, void *bufferId, const QList<quint32> &itemIds, const QList<QPoint> &positionsInBuffer)
 
     This signal is similar in usage to the itemsAvailable() signal, but will be emitted when
     the location of a previously requested or inserted item has been updated. The application
@@ -194,7 +194,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QPlatformSharedGraphicsCache::itemsInvalidated(const QByteArray &cacheId, const QVector<quint32> &itemIds)
+    \fn void QPlatformSharedGraphicsCache::itemsInvalidated(const QByteArray &cacheId, const QList<quint32> &itemIds)
 
     This signal is emitted when the items given by \a itemIds in the cache named \a cacheId have
     been removed from the cache and the previously reported information about them is considered

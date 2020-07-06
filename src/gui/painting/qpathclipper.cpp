@@ -268,11 +268,11 @@ private:
     void intersectLines(const QLineF &a, const QLineF &b, QDataBuffer<QIntersection> &intersections);
 
     QPathSegments &m_segments;
-    QVector<int> m_index;
+    QList<int> m_index;
 
     RectF m_bounds;
 
-    QVector<TreeNode> m_tree;
+    QList<TreeNode> m_tree;
     QDataBuffer<QIntersection> m_intersections;
 };
 
@@ -1618,7 +1618,7 @@ QPainterPath QPathClipper::clip(Operation operation)
 
 bool QPathClipper::doClip(QWingedEdge &list, ClipperMode mode)
 {
-    QVector<qreal> y_coords;
+    QList<qreal> y_coords;
     y_coords.reserve(list.vertexCount());
     for (int i = 0; i < list.vertexCount(); ++i)
         y_coords << list.vertex(i)->y;
@@ -1778,9 +1778,9 @@ bool QWingedEdge::isInside(qreal x, qreal y) const
     return winding & 1;
 }
 
-static QVector<QCrossingEdge> findCrossings(const QWingedEdge &list, qreal y)
+static QList<QCrossingEdge> findCrossings(const QWingedEdge &list, qreal y)
 {
-    QVector<QCrossingEdge> crossings;
+    QList<QCrossingEdge> crossings;
     for (int i = 0; i < list.edgeCount(); ++i) {
         const QPathEdge *edge = list.edge(i);
         QPointF a = *list.vertex(edge->first);
@@ -1797,7 +1797,7 @@ static QVector<QCrossingEdge> findCrossings(const QWingedEdge &list, qreal y)
 
 bool QPathClipper::handleCrossingEdges(QWingedEdge &list, qreal y, ClipperMode mode)
 {
-    QVector<QCrossingEdge> crossings = findCrossings(list, y);
+    QList<QCrossingEdge> crossings = findCrossings(list, y);
 
     Q_ASSERT(!crossings.isEmpty());
     std::sort(crossings.begin(), crossings.end());
@@ -1869,10 +1869,10 @@ bool QPathClipper::handleCrossingEdges(QWingedEdge &list, qreal y, ClipperMode m
 
 namespace {
 
-QVector<QPainterPath> toSubpaths(const QPainterPath &path)
+QList<QPainterPath> toSubpaths(const QPainterPath &path)
 {
 
-    QVector<QPainterPath> subpaths;
+    QList<QPainterPath> subpaths;
     if (path.isEmpty())
         return subpaths;
 
@@ -2072,7 +2072,7 @@ QPainterPath clip(const QPainterPath &path, qreal t)
 
 QPainterPath intersectPath(const QPainterPath &path, const QRectF &rect)
 {
-    QVector<QPainterPath> subpaths = toSubpaths(path);
+    QList<QPainterPath> subpaths = toSubpaths(path);
 
     QPainterPath result;
     result.setFillRule(path.fillRule());

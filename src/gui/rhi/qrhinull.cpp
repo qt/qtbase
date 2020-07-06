@@ -83,7 +83,7 @@ void QRhiNull::destroy()
 {
 }
 
-QVector<int> QRhiNull::supportedSampleCounts() const
+QList<int> QRhiNull::supportedSampleCounts() const
 {
     return { 1 };
 }

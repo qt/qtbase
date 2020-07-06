@@ -40,7 +40,7 @@
 #include "qbasicvulkanplatforminstance_p.h"
 #include <QLibrary>
 #include <QCoreApplication>
-#include <QVector>
+#include <QList>
 #include <QLoggingCategory>
 
 QT_BEGIN_NAMESPACE
@@ -138,7 +138,7 @@ void QBasicPlatformVulkanInstance::init(QLibrary *lib)
     uint32_t layerCount = 0;
     m_vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
     if (layerCount) {
-        QVector<VkLayerProperties> layerProps(layerCount);
+        QList<VkLayerProperties> layerProps(layerCount);
         m_vkEnumerateInstanceLayerProperties(&layerCount, layerProps.data());
         m_supportedLayers.reserve(layerCount);
         for (const VkLayerProperties &p : qAsConst(layerProps)) {
@@ -157,7 +157,7 @@ void QBasicPlatformVulkanInstance::init(QLibrary *lib)
     uint32_t extCount = 0;
     m_vkEnumerateInstanceExtensionProperties(nullptr, &extCount, nullptr);
     if (extCount) {
-        QVector<VkExtensionProperties> extProps(extCount);
+        QList<VkExtensionProperties> extProps(extCount);
         m_vkEnumerateInstanceExtensionProperties(nullptr, &extCount, extProps.data());
         m_supportedExtensions.reserve(extCount);
         for (const VkExtensionProperties &p : qAsConst(extProps)) {
@@ -250,7 +250,7 @@ void QBasicPlatformVulkanInstance::initInstance(QVulkanInstance *instance, const
         instInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         instInfo.pApplicationInfo = &appInfo;
 
-        QVector<const char *> layerNameVec;
+        QList<const char *> layerNameVec;
         for (const QByteArray &ba : qAsConst(m_enabledLayers))
             layerNameVec.append(ba.constData());
         if (!layerNameVec.isEmpty()) {
@@ -258,7 +258,7 @@ void QBasicPlatformVulkanInstance::initInstance(QVulkanInstance *instance, const
             instInfo.ppEnabledLayerNames = layerNameVec.constData();
         }
 
-        QVector<const char *> extNameVec;
+        QList<const char *> extNameVec;
         for (const QByteArray &ba : qAsConst(m_enabledExtensions))
             extNameVec.append(ba.constData());
         if (!extNameVec.isEmpty()) {
@@ -346,7 +346,7 @@ bool QBasicPlatformVulkanInstance::supportsPresent(VkPhysicalDevice physicalDevi
     return supported;
 }
 
-void QBasicPlatformVulkanInstance::setDebugFilters(const QVector<QVulkanInstance::DebugFilter> &filters)
+void QBasicPlatformVulkanInstance::setDebugFilters(const QList<QVulkanInstance::DebugFilter> &filters)
 {
     m_debugFilters = filters;
 }

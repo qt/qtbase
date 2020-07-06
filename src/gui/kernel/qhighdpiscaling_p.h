@@ -185,14 +185,14 @@ inline QMargins scale(const QMargins &margins, qreal scaleFactor, QPoint origin 
 }
 
 template<typename T>
-QList<T> scale(const QList<T> &vector, qreal scaleFactor, QPoint origin = QPoint(0, 0))
+QList<T> scale(const QList<T> &list, qreal scaleFactor, QPoint origin = QPoint(0, 0))
 {
     if (!QHighDpiScaling::isActive())
-        return vector;
+        return list;
 
     QList<T> scaled;
-    scaled.reserve(vector.size());
-    for (const T &item : vector)
+    scaled.reserve(list.size());
+    for (const T &item : list)
         scaled.append(scale(item, scaleFactor, origin));
     return scaled;
 }

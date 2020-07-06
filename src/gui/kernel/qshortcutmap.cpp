@@ -42,7 +42,7 @@
 #include "qkeysequence.h"
 #include "qdebug.h"
 #include "qevent.h"
-#include "qvector.h"
+#include "qlist.h"
 #include "qcoreapplication.h"
 #include <private/qkeymapper_p.h>
 #include <QtCore/qloggingcategory.h>
@@ -122,15 +122,15 @@ public:
     }
     QShortcutMap *q_ptr;                        // Private's parent
 
-    QVector<QShortcutEntry> sequences;          // All sequences!
+    QList<QShortcutEntry> sequences;            // All sequences!
 
     int currentId;                              // Global shortcut ID number
     int ambigCount;                             // Index of last enabled ambiguous dispatch
     QKeySequence::SequenceMatch currentState;
-    QVector<QKeySequence> currentSequences;     // Sequence for the current state
-    QVector<QKeySequence> newEntries;
+    QList<QKeySequence> currentSequences;       // Sequence for the current state
+    QList<QKeySequence> newEntries;
     QKeySequence prevSequence;                  // Sequence for the previous identical match
-    QVector<const QShortcutEntry*> identicals;  // Last identical matches
+    QList<const QShortcutEntry*> identicals;    // Last identical matches
 };
 
 
@@ -413,7 +413,7 @@ bool QShortcutMap::hasShortcutForKeySequence(const QKeySequence &seq) const
 /*! \internal
     Returns the next state of the statemachine, based
     on the new key event \a e.
-    Matches are appended to the vector of identicals,
+    Matches are appended to the list of identicals,
     which can be access through matches().
     \sa matches
 */
@@ -438,7 +438,7 @@ QKeySequence::SequenceMatch QShortcutMap::find(QKeyEvent *e, int ignoredModifier
 
     bool partialFound = false;
     bool identicalDisabledFound = false;
-    QVector<QKeySequence> okEntries;
+    QList<QKeySequence> okEntries;
     int result = QKeySequence::NoMatch;
     for (int i = d->newEntries.count()-1; i >= 0 ; --i) {
         QShortcutEntry entry(d->newEntries.at(i)); // needed for searching
@@ -506,7 +506,7 @@ QKeySequence::SequenceMatch QShortcutMap::find(QKeyEvent *e, int ignoredModifier
     Same as doing (the slower)
     \snippet code/src_gui_kernel_qshortcutmap.cpp 0
 */
-void QShortcutMap::clearSequence(QVector<QKeySequence> &ksl)
+void QShortcutMap::clearSequence(QList<QKeySequence> &ksl)
 {
     ksl.clear();
     d_func()->newEntries.clear();
@@ -516,7 +516,7 @@ void QShortcutMap::clearSequence(QVector<QKeySequence> &ksl)
     Alters \a seq to the new sequence state, based on the
     current sequence state, and the new key event \a e.
 */
-void QShortcutMap::createNewSequences(QKeyEvent *e, QVector<QKeySequence> &ksl, int ignoredModifiers)
+void QShortcutMap::createNewSequences(QKeyEvent *e, QList<QKeySequence> &ksl, int ignoredModifiers)
 {
     Q_D(QShortcutMap);
     QList<int> possibleKeys = QKeyMapper::possibleKeys(e);
@@ -605,9 +605,9 @@ int QShortcutMap::translateModifiers(Qt::KeyboardModifiers modifiers)
 }
 
 /*! \internal
-    Returns the vector of QShortcutEntry's matching the last Identical state.
+    Returns the list of QShortcutEntry's matching the last Identical state.
 */
-QVector<const QShortcutEntry*> QShortcutMap::matches() const
+QList<const QShortcutEntry*> QShortcutMap::matches() const
 {
     Q_D(const QShortcutMap);
     return d->identicals;
@@ -630,7 +630,7 @@ void QShortcutMap::dispatchEvent(QKeyEvent *e)
     // Find next
     const QShortcutEntry *current = nullptr, *next = nullptr;
     int i = 0, enabledShortcuts = 0;
-    QVector<const QShortcutEntry*> ambiguousShortcuts;
+    QList<const QShortcutEntry*> ambiguousShortcuts;
     while(i < d->identicals.size()) {
         current = d->identicals.at(i);
         if (current->enabled || !next){

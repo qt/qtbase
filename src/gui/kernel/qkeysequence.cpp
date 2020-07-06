@@ -1050,8 +1050,8 @@ struct QModifKeyName {
 };
 Q_DECLARE_TYPEINFO(QModifKeyName, Q_MOVABLE_TYPE);
 
-Q_GLOBAL_STATIC(QVector<QModifKeyName>, globalModifs)
-Q_GLOBAL_STATIC(QVector<QModifKeyName>, globalPortableModifs)
+Q_GLOBAL_STATIC(QList<QModifKeyName>, globalModifs)
+Q_GLOBAL_STATIC(QList<QModifKeyName>, globalPortableModifs)
 
 /*!
   Constructs a single key from the string \a str.
@@ -1069,7 +1069,7 @@ int QKeySequencePrivate::decodeString(QString accel, QKeySequence::SequenceForma
     accel = std::move(accel).toLower();
     bool nativeText = (format == QKeySequence::NativeText);
 
-    QVector<QModifKeyName> *gmodifs;
+    QList<QModifKeyName> *gmodifs;
     if (nativeText) {
         gmodifs = globalModifs();
         if (gmodifs->isEmpty()) {
@@ -1104,7 +1104,7 @@ int QKeySequencePrivate::decodeString(QString accel, QKeySequence::SequenceForma
     }
 
 
-    QVector<QModifKeyName> modifs;
+    QList<QModifKeyName> modifs;
     if (nativeText) {
         modifs << QModifKeyName(Qt::CTRL, QCoreApplication::translate("QShortcut", "Ctrl").toLower().append(QLatin1Char('+')))
                << QModifKeyName(Qt::SHIFT, QCoreApplication::translate("QShortcut", "Shift").toLower().append(QLatin1Char('+')))

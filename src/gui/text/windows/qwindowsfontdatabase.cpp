@@ -890,8 +890,8 @@ static void getFontTable(const uchar *fileBegin, const uchar *data, quint32 tag,
 
 static void getFamiliesAndSignatures(const QByteArray &fontData,
                                      QList<QFontNames> *families,
-                                     QVector<FONTSIGNATURE> *signatures,
-                                     QVector<QFontValues> *values)
+                                     QList<FONTSIGNATURE> *signatures,
+                                     QList<QFontValues> *values)
 {
     const uchar *data = reinterpret_cast<const uchar *>(fontData.constData());
 
@@ -952,8 +952,8 @@ QStringList QWindowsFontDatabase::addApplicationFont(const QByteArray &fontData,
 {
     WinApplicationFont font;
     font.fileName = fileName;
-    QVector<FONTSIGNATURE> signatures;
-    QVector<QFontValues> fontValues;
+    QList<FONTSIGNATURE> signatures;
+    QList<QFontValues> fontValues;
     QList<QFontNames> families;
     QStringList familyNames;
 

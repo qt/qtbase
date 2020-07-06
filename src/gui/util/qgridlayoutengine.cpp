@@ -47,8 +47,8 @@
 
 QT_BEGIN_NAMESPACE
 
-template <typename T>
-static void insertOrRemoveItems(QVector<T> &items, int index, int delta)
+template<typename T>
+static void insertOrRemoveItems(QList<T> &items, int index, int delta)
 {
     int count = items.count();
     if (index < count) {
@@ -355,7 +355,7 @@ void QGridLayoutRowData::calculateGeometries(int start, int end, qreal targetSiz
                     if (newSizes[i] >= 0.0)
                         continue;
 
-                    const QVector<QGridLayoutBox> &rBoxes = isLargerThanMaximum ? rowInfo.boxes : boxes;
+                    const QList<QGridLayoutBox> &rBoxes = isLargerThanMaximum ? rowInfo.boxes : boxes;
                     const QGridLayoutBox &box = rBoxes.value(start + i);
                     qreal maxBoxSize = box.q_maximumSize;
 
@@ -1095,8 +1095,8 @@ QSizeF QGridLayoutEngine::sizeHint(Qt::SizeHint which, const QSizeF &constraint,
             //We have items whose height depends on their width
             if (constraint.width() >= 0) {
                 ensureColumnAndRowData(&q_columnData, &sizehint_totalBoxes[Qt::Horizontal], nullptr, nullptr, Qt::Horizontal, styleInfo);
-                QVector<qreal> sizehint_xx;
-                QVector<qreal> sizehint_widths;
+                QList<qreal> sizehint_xx;
+                QList<qreal> sizehint_widths;
 
                 sizehint_xx.resize(columnCount());
                 sizehint_widths.resize(columnCount());
@@ -1112,8 +1112,8 @@ QSizeF QGridLayoutEngine::sizeHint(Qt::SizeHint which, const QSizeF &constraint,
             if (constraint.height() >= 0) {
                 //We have items whose width depends on their height
                 ensureColumnAndRowData(&q_rowData, &sizehint_totalBoxes[Qt::Vertical], nullptr, nullptr, Qt::Vertical, styleInfo);
-                QVector<qreal> sizehint_yy;
-                QVector<qreal> sizehint_heights;
+                QList<qreal> sizehint_yy;
+                QList<qreal> sizehint_heights;
 
                 sizehint_yy.resize(rowCount());
                 sizehint_heights.resize(rowCount());
@@ -1210,7 +1210,7 @@ void QGridLayoutEngine::dump(int indent) const
     q_rowData.dump(indent + 2);
 
     qDebug("%*s Geometries output", indent, "");
-    QVector<qreal> *cellPos = &q_yy;
+    QList<qreal> *cellPos = &q_yy;
     for (int pass = 0; pass < 2; ++pass) {
         QString message;
         for (i = 0; i < cellPos->count(); ++i) {

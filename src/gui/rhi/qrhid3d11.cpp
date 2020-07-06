@@ -395,7 +395,7 @@ void QRhiD3D11::reportLiveObjects(ID3D11Device *device)
     }
 }
 
-QVector<int> QRhiD3D11::supportedSampleCounts() const
+QList<int> QRhiD3D11::supportedSampleCounts() const
 {
     return { 1, 2, 4, 8 };
 }

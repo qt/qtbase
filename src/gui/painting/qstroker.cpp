@@ -1028,13 +1028,13 @@ QDashStroker::~QDashStroker()
 {
 }
 
-QVector<qfixed> QDashStroker::patternForStyle(Qt::PenStyle style)
+QList<qfixed> QDashStroker::patternForStyle(Qt::PenStyle style)
 {
     const qfixed space = 2;
     const qfixed dot = 1;
     const qfixed dash = 4;
 
-    QVector<qfixed> pattern;
+    QList<qfixed> pattern;
 
     switch (style) {
     case Qt::DashLine:

@@ -45,9 +45,7 @@
 #include <qdebug.h>
 #include <qiodevice.h>
 #include <qimage.h>
-#include <qlist.h>
 #include <qvariant.h>
-#include <qvector.h>
 
 #include <private/qimage_p.h> // for qt_getImageText
 

@@ -478,7 +478,7 @@ bool parseTRC(const QByteArray &data, const TagEntry &tagEntry, QColorTrc &gamma
             gamma.m_type = QColorTrc::Type::Function;
             gamma.m_fun = QColorTransferFunction::fromGamma(g);
         } else {
-            QVector<quint16> tabl;
+            QList<quint16> tabl;
             tabl.resize(curv->valueCount);
             for (uint i = 0; i < curv->valueCount; ++i)
                 tabl[i] = curv->value[i];

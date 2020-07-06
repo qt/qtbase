@@ -112,6 +112,6 @@ struct ParenthesisInfo
 
 struct BlockData : public QTextBlockUserData
 {
-    QVector<ParenthesisInfo> parentheses;
+    QList<ParenthesisInfo> parentheses;
 };
 //! [3]

@@ -304,7 +304,7 @@ void QShader::setDescription(const QShaderDescription &desc)
 /*!
     \return the list of available shader versions
  */
-QVector<QShaderKey> QShader::availableShaders() const
+QList<QShaderKey> QShader::availableShaders() const
 {
     return d->shaders.keys().toVector();
 }

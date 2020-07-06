@@ -111,7 +111,7 @@ struct FontKey
 };
 } // namespace
 
-typedef QVector<FontKey> FontKeys;
+using FontKeys = QList<FontKey>;
 
 static FontKeys &fontKeys()
 {

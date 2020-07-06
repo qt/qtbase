@@ -489,7 +489,7 @@ void QRhiProfilerPrivate::releaseSwapChain(QRhiSwapChain *sc)
 }
 
 template<typename T>
-void calcTiming(QVector<T> *vec, T *minDelta, T *maxDelta, float *avgDelta)
+void calcTiming(QList<T> *vec, T *minDelta, T *maxDelta, float *avgDelta)
 {
     if (vec->isEmpty())
         return;

@@ -3015,7 +3015,7 @@ void QTextHtmlExporter::emitTable(const QTextTable *table)
     const int rows = table->rows();
     const int columns = table->columns();
 
-    QVector<QTextLength> columnWidths = format.columnWidthConstraints();
+    QList<QTextLength> columnWidths = format.columnWidthConstraints();
     if (columnWidths.isEmpty()) {
         columnWidths.resize(columns);
         columnWidths.fill(QTextLength());
@@ -3311,9 +3311,9 @@ void QTextDocument::setMarkdown(const QString &markdown, QTextDocument::Markdown
 #endif
 
 /*!
-    Returns a vector of text formats for all the formats used in the document.
+    Returns a list of text formats for all the formats used in the document.
 */
-QVector<QTextFormat> QTextDocument::allFormats() const
+QList<QTextFormat> QTextDocument::allFormats() const
 {
     Q_D(const QTextDocument);
     return d->formatCollection()->formats;

@@ -399,7 +399,7 @@ static inline bool isInheritable(Property propertyId)
 
 ///////////////////////////////////////////////////////////////////////////////
 // Value Extractor
-ValueExtractor::ValueExtractor(const QVector<Declaration> &decls, const QPalette &pal)
+ValueExtractor::ValueExtractor(const QList<Declaration> &decls, const QPalette &pal)
 : declarations(decls), adjustment(0), fontExtracted(false), pal(pal)
 {
 }
@@ -752,7 +752,7 @@ static ColorData parseColorValue(QCss::Value v)
     if (!p.testExpr())
         return ColorData();
 
-    QVector<QCss::Value> colorDigits;
+    QList<QCss::Value> colorDigits;
     if (!p.parseExpr(&colorDigits))
         return ColorData();
     const int tokenCount = colorDigits.count();
@@ -830,7 +830,7 @@ static BrushData parseBrushValue(const QCss::Value &v, const QPalette &pal)
         return BrushData();
 
     QHash<QString, qreal> vars;
-    QVector<QGradientStop> stops;
+    QList<QGradientStop> stops;
 
     int spread = -1;
     QStringList spreads;
@@ -1009,7 +1009,7 @@ void ValueExtractor::borderValue(const Declaration &decl, int *width, QCss::Bord
          decl.d->parsed = QVariant::fromValue<BorderData>(data);
 }
 
-static void parseShorthandBackgroundProperty(const QVector<QCss::Value> &values, BrushData *brush, QString *image, Repeat *repeat, Qt::Alignment *alignment, const QPalette &pal)
+static void parseShorthandBackgroundProperty(const QList<QCss::Value> &values, BrushData *brush, QString *image, Repeat *repeat, Qt::Alignment *alignment, const QPalette &pal)
 {
     *brush = BrushData();
     *image = QString();
@@ -1202,7 +1202,7 @@ static bool setFontWeightFromValue(const QCss::Value &value, QFont *font)
  * and set it the \a font
  * The function returns \c true if a family was extracted.
  */
-static bool setFontFamilyFromValues(const QVector<QCss::Value> &values, QFont *font, int start = 0)
+static bool setFontFamilyFromValues(const QList<QCss::Value> &values, QFont *font, int start = 0)
 {
     QString family;
     QStringList families;
@@ -1232,7 +1232,7 @@ static bool setFontFamilyFromValues(const QVector<QCss::Value> &values, QFont *f
     return true;
 }
 
-static void setTextDecorationFromValues(const QVector<QCss::Value> &values, QFont *font)
+static void setTextDecorationFromValues(const QList<QCss::Value> &values, QFont *font)
 {
     for (int i = 0; i < values.count(); ++i) {
         if (values.at(i).type != Value::KnownIdentifier)
@@ -1282,7 +1282,7 @@ static void setWordSpacingFromValue(const QCss::Value &value, QFont *font)
     }
 }
 
-static void parseShorthandFontProperty(const QVector<QCss::Value> &values, QFont *font, int *fontSizeAdjustment)
+static void parseShorthandFontProperty(const QList<QCss::Value> &values, QFont *font, int *fontSizeAdjustment)
 {
     font->setStyle(QFont::StyleNormal);
     font->setWeight(QFont::Normal);
@@ -1900,10 +1900,10 @@ quint64 Selector::pseudoClass(quint64 *negated) const
 // StyleSheet
 void StyleSheet::buildIndexes(Qt::CaseSensitivity nameCaseSensitivity)
 {
-    QVector<StyleRule> universals;
+    QList<StyleRule> universals;
     for (int i = 0; i < styleRules.count(); ++i) {
         const StyleRule &rule = styleRules.at(i);
-        QVector<Selector> universalsSelectors;
+        QList<Selector> universalsSelectors;
         for (int j = 0; j < rule.selectors.count(); ++j) {
             const Selector& selector = rule.selectors.at(j);
 
@@ -2106,9 +2106,9 @@ void StyleSelector::matchRule(NodePtr node, const StyleRule &rule, StyleSheetOri
 
 // Returns style rules that are in ascending order of specificity
 // Each of the StyleRule returned will contain exactly one Selector
-QVector<StyleRule> StyleSelector::styleRulesForNode(NodePtr node)
+QList<StyleRule> StyleSelector::styleRulesForNode(NodePtr node)
 {
-    QVector<StyleRule> rules;
+    QList<StyleRule> rules;
     if (styleSheets.isEmpty())
         return rules;
 
@@ -2167,10 +2167,10 @@ QVector<StyleRule> StyleSelector::styleRulesForNode(NodePtr node)
 
 // for qtexthtmlparser which requires just the declarations with Enabled state
 // and without pseudo elements
-QVector<Declaration> StyleSelector::declarationsForNode(NodePtr node, const char *extraPseudo)
+QList<Declaration> StyleSelector::declarationsForNode(NodePtr node, const char *extraPseudo)
 {
-    QVector<Declaration> decls;
-    QVector<StyleRule> rules = styleRulesForNode(node);
+    QList<Declaration> decls;
+    QList<StyleRule> rules = styleRulesForNode(node);
     for (int i = 0; i < rules.count(); i++) {
         const Selector& selector = rules.at(i).selectors.at(0);
         const QString pseudoElement = selector.pseudoElement();
@@ -2253,7 +2253,7 @@ int QCssScanner_Generated::handleCommentStart()
     return S;
 }
 
-void Scanner::scan(const QString &preprocessedInput, QVector<Symbol> *symbols)
+void Scanner::scan(const QString &preprocessedInput, QList<Symbol> *symbols)
 {
     QCssScanner_Generated scanner(preprocessedInput);
     Symbol sym;
@@ -2710,7 +2710,7 @@ bool Parser::parsePrio(Declaration *declaration)
     return true;
 }
 
-bool Parser::parseExpr(QVector<Value> *values)
+bool Parser::parseExpr(QList<Value> *values)
 {
     Value val;
     if (!parseTerm(&val)) return false;

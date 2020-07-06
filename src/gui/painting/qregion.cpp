@@ -1101,7 +1101,7 @@ Q_GUI_EXPORT QPainterPath qt_regionToPath(const QRegion &region)
 struct QRegionPrivate {
     int numRects;
     int innerArea;
-    QVector<QRect> rects;
+    QList<QRect> rects;
     QRect extents;
     QRect innerRect;
 
@@ -2173,7 +2173,7 @@ static void miRegionOp(QRegionPrivate &dest,
      * reg1->rects and reg2->rects (if the regions have more than 1 rectangle),
      * take a copy of dest.rects to keep those iteractors valid.
      */
-    const QVector<QRect> destRectsCopy = dest.rects;
+    const QList<QRect> destRectsCopy = dest.rects;
     Q_UNUSED(destRectsCopy);
 
     dest.numRects = 0;

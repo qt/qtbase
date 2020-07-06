@@ -1667,7 +1667,7 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
         qreal dashOffset = s->lastPen.dashOffset();
         bool inDash = true;
         qreal patternLength = 0;
-        const QVector<qreal> pattern = s->lastPen.dashPattern();
+        const QList<qreal> pattern = s->lastPen.dashPattern();
         for (int i = 0; i < pattern.size(); ++i)
             patternLength += pattern.at(i);
 
@@ -1888,14 +1888,14 @@ static inline bool isAbove(const QPointF *a, const QPointF *b)
     return a->y() < b->y();
 }
 
-static bool splitPolygon(const QPointF *points, int pointCount, QVector<QPointF> *upper, QVector<QPointF> *lower)
+static bool splitPolygon(const QPointF *points, int pointCount, QList<QPointF> *upper, QList<QPointF> *lower)
 {
     Q_ASSERT(upper);
     Q_ASSERT(lower);
 
     Q_ASSERT(pointCount >= 2);
 
-    QVector<const QPointF *> sorted;
+    QList<const QPointF *> sorted;
     sorted.reserve(pointCount);
 
     upper->reserve(pointCount * 3 / 4);
@@ -1911,7 +1911,7 @@ static bool splitPolygon(const QPointF *points, int pointCount, QVector<QPointF>
     const QPointF *end = points + pointCount;
     const QPointF *last = end - 1;
 
-    QVector<QPointF> *bin[2] = { upper, lower };
+    QList<QPointF> *bin[2] = { upper, lower };
 
     for (const QPointF *p = points; p < end; ++p) {
         int side = p->y() < splitY;
@@ -1952,7 +1952,7 @@ void QRasterPaintEngine::fillPolygon(const QPointF *points, int pointCount, Poly
 
     // max amount of points that raster engine can reliably handle
     if (pointCount > maxPoints) {
-        QVector<QPointF> upper, lower;
+        QList<QPointF> upper, lower;
 
         if (splitPolygon(points, pointCount, &upper, &lower)) {
             fillPolygon(upper.constData(), upper.size(), mode);
@@ -3289,7 +3289,7 @@ void QRasterPaintEnginePrivate::rasterizeLine_dashed(QLineF line,
 
     const QPen &pen = s->lastPen;
     const bool squareCap = (pen.capStyle() == Qt::SquareCap);
-    const QVector<qreal> pattern = pen.dashPattern();
+    const QList<qreal> pattern = pen.dashPattern();
 
     qreal patternLength = 0;
     for (int i = 0; i < pattern.size(); ++i)
@@ -3831,7 +3831,7 @@ QImage::Format QRasterBuffer::prepare(QImage *image)
     format = image->format();
     if (image->depth() == 1 && image->colorTable().size() == 2) {
         monoDestinationWithClut = true;
-        const QVector<QRgb> colorTable = image->colorTable();
+        const QList<QRgb> colorTable = image->colorTable();
         destColor0 = qPremultiply(colorTable[0]);
         destColor1 = qPremultiply(colorTable[1]);
     }

@@ -498,25 +498,25 @@ namespace {
             return User;
         }
 
-        QVector<QStaticTextItem> items() const
+        QList<QStaticTextItem> items() const
         {
             return m_items;
         }
 
-        QVector<QFixedPoint> positions() const
+        QList<QFixedPoint> positions() const
         {
             return m_positions;
         }
 
-        QVector<glyph_t> glyphs() const
+        QList<glyph_t> glyphs() const
         {
             return m_glyphs;
         }
 
     private:
-        QVector<QStaticTextItem> m_items;
-        QVector<QFixedPoint> m_positions;
-        QVector<glyph_t> m_glyphs;
+        QList<QStaticTextItem> m_items;
+        QList<QFixedPoint> m_positions;
+        QList<glyph_t> m_glyphs;
 
         bool m_dirtyPen;
         bool m_useBackendOptimizations;
@@ -580,17 +580,17 @@ namespace {
             return m_paintEngine;
         }
 
-        QVector<glyph_t> glyphs() const
+        QList<glyph_t> glyphs() const
         {
             return m_paintEngine->glyphs();
         }
 
-        QVector<QFixedPoint> positions() const
+        QList<QFixedPoint> positions() const
         {
             return m_paintEngine->positions();
         }
 
-        QVector<QStaticTextItem> items() const
+        QList<QStaticTextItem> items() const
         {
             return m_paintEngine->items();
         }
@@ -684,9 +684,9 @@ void QStaticTextPrivate::init()
         paintText(QPointF(0, 0), &painter, QColor(0, 0, 0, 0));
     }
 
-    QVector<QStaticTextItem> deviceItems = device.items();
-    QVector<QFixedPoint> positions = device.positions();
-    QVector<glyph_t> glyphs = device.glyphs();
+    QList<QStaticTextItem> deviceItems = device.items();
+    QList<QFixedPoint> positions = device.positions();
+    QList<glyph_t> glyphs = device.glyphs();
 
     itemCount = deviceItems.size();
     items = new QStaticTextItem[itemCount];

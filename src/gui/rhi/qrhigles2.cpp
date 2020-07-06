@@ -594,7 +594,7 @@ void QRhiGles2::executeDeferredReleases()
     }
 }
 
-QVector<int> QRhiGles2::supportedSampleCounts() const
+QList<int> QRhiGles2::supportedSampleCounts() const
 {
     if (supportedSampleCountList.isEmpty()) {
         // 1, 2, 4, 8, ...
@@ -3294,7 +3294,7 @@ static inline GLenum toGlShaderType(QRhiShaderStage::Type type)
 QByteArray QRhiGles2::shaderSource(const QRhiShaderStage &shaderStage, int *glslVersion)
 {
     const QShader bakedShader = shaderStage.shader();
-    QVector<int> versionsToTry;
+    QList<int> versionsToTry;
     QByteArray source;
     if (caps.gles) {
         if (caps.ctxMajor > 3 || (caps.ctxMajor == 3 && caps.ctxMinor >= 2)) {

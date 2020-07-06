@@ -183,7 +183,7 @@ void QPaintEngineExPrivate::replayClipOperations()
     if (!p || !p->d_ptr)
         return;
 
-    const QVector<QPainterClipInfo> &clipInfo = p->d_ptr->state->clipInfo;
+    const QList<QPainterClipInfo> &clipInfo = p->d_ptr->state->clipInfo;
 
     QTransform transform = q->state()->matrix;
 

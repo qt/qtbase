@@ -3412,14 +3412,14 @@ void QPainter::drawRects(const QRect *rects, int rectCount)
 }
 
 /*!
-    \fn void QPainter::drawRects(const QVector<QRectF> &rectangles)
+    \fn void QPainter::drawRects(const QList<QRectF> &rectangles)
     \overload
 
     Draws the given \a rectangles using the current pen and brush.
 */
 
 /*!
-    \fn void QPainter::drawRects(const QVector<QRect> &rectangles)
+    \fn void QPainter::drawRects(const QList<QRect> &rectangles)
 
     \overload
 
@@ -3578,7 +3578,7 @@ void QPainter::drawPoints(const QPoint *points, int pointCount)
 
     \overload
 
-    Draws the points in the vector  \a points.
+    Draws the points in the vector \a points.
 */
 
 /*!
@@ -3586,7 +3586,7 @@ void QPainter::drawPoints(const QPoint *points, int pointCount)
 
     \overload
 
-    Draws the points in the vector  \a points.
+    Draws the points in the vector \a points.
 */
 
 /*!
@@ -4421,7 +4421,7 @@ void QPainter::drawLines(const QPoint *pointPairs, int lineCount)
 
 
 /*!
-    \fn void QPainter::drawLines(const QVector<QPointF> &pointPairs)
+    \fn void QPainter::drawLines(const QList<QPointF> &pointPairs)
     \overload
 
     Draws a line for each pair of points in the vector \a pointPairs
@@ -4430,7 +4430,7 @@ void QPainter::drawLines(const QPoint *pointPairs, int lineCount)
 */
 
 /*!
-    \fn void QPainter::drawLines(const QVector<QPoint> &pointPairs)
+    \fn void QPainter::drawLines(const QList<QPoint> &pointPairs)
     \overload
 
     Draws a line for each pair of points in the vector \a pointPairs
@@ -4438,7 +4438,7 @@ void QPainter::drawLines(const QPoint *pointPairs, int lineCount)
 */
 
 /*!
-    \fn void QPainter::drawLines(const QVector<QLineF> &lines)
+    \fn void QPainter::drawLines(const QList<QLineF> &lines)
     \overload
 
     Draws the set of lines defined by the list \a lines using the
@@ -4446,7 +4446,7 @@ void QPainter::drawLines(const QPoint *pointPairs, int lineCount)
 */
 
 /*!
-    \fn void QPainter::drawLines(const QVector<QLine> &lines)
+    \fn void QPainter::drawLines(const QList<QLine> &lines)
     \overload
 
     Draws the set of lines defined by the list \a lines using the
@@ -7198,7 +7198,7 @@ start_lengthVariant:
         }
     }
 
-    QVector<QTextLayout::FormatRange> underlineFormats;
+    QList<QTextLayout::FormatRange> underlineFormats;
     int length = offset - old_offset;
     if ((hidemnmemonic || showmnemonic) && maxUnderlines > 0) {
         QChar *cout = text.data() + old_offset;

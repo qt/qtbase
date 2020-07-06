@@ -75,8 +75,8 @@ public:
 
     QByteArray logName;
     QByteArray data;
-    QVector<int> offsets;
-    QVector<int> lengths;
+    QList<int> offsets;
+    QList<int> lengths;
     QSize size;
     quint32 format = 0;
     quint32 internalFormat = 0;

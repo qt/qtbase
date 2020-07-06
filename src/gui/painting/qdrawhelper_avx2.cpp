@@ -1089,25 +1089,25 @@ static void convertARGBToARGB32PM_avx2(uint *buffer, const uint *src, qsizetype 
     }
 }
 
-void QT_FASTCALL convertARGB32ToARGB32PM_avx2(uint *buffer, int count, const QVector<QRgb> *)
+void QT_FASTCALL convertARGB32ToARGB32PM_avx2(uint *buffer, int count, const QList<QRgb> *)
 {
     convertARGBToARGB32PM_avx2<false>(buffer, buffer, count);
 }
 
-void QT_FASTCALL convertRGBA8888ToARGB32PM_avx2(uint *buffer, int count, const QVector<QRgb> *)
+void QT_FASTCALL convertRGBA8888ToARGB32PM_avx2(uint *buffer, int count, const QList<QRgb> *)
 {
     convertARGBToARGB32PM_avx2<true>(buffer, buffer, count);
 }
 
 const uint *QT_FASTCALL fetchARGB32ToARGB32PM_avx2(uint *buffer, const uchar *src, int index, int count,
-                                                  const QVector<QRgb> *, QDitherInfo *)
+                                                  const QList<QRgb> *, QDitherInfo *)
 {
     convertARGBToARGB32PM_avx2<false>(buffer, reinterpret_cast<const uint *>(src) + index, count);
     return buffer;
 }
 
 const uint *QT_FASTCALL fetchRGBA8888ToARGB32PM_avx2(uint *buffer, const uchar *src, int index, int count,
-                                                     const QVector<QRgb> *, QDitherInfo *)
+                                                     const QList<QRgb> *, QDitherInfo *)
 {
     convertARGBToARGB32PM_avx2<true>(buffer, reinterpret_cast<const uint *>(src) + index, count);
     return buffer;
@@ -1202,28 +1202,28 @@ static void convertARGBToRGBA64PM_avx2(QRgba64 *buffer, const uint *src, qsizety
 }
 
 const QRgba64 * QT_FASTCALL convertARGB32ToRGBA64PM_avx2(QRgba64 *buffer, const uint *src, int count,
-                                                         const QVector<QRgb> *, QDitherInfo *)
+                                                         const QList<QRgb> *, QDitherInfo *)
 {
     convertARGBToRGBA64PM_avx2<false>(buffer, src, count);
     return buffer;
 }
 
 const QRgba64 * QT_FASTCALL convertRGBA8888ToRGBA64PM_avx2(QRgba64 *buffer, const uint *src, int count,
-                                                           const QVector<QRgb> *, QDitherInfo *)
+                                                           const QList<QRgb> *, QDitherInfo *)
 {
     convertARGBToRGBA64PM_avx2<true>(buffer, src, count);
     return buffer;
 }
 
 const QRgba64 *QT_FASTCALL fetchARGB32ToRGBA64PM_avx2(QRgba64 *buffer, const uchar *src, int index, int count,
-                                                      const QVector<QRgb> *, QDitherInfo *)
+                                                      const QList<QRgb> *, QDitherInfo *)
 {
     convertARGBToRGBA64PM_avx2<false>(buffer, reinterpret_cast<const uint *>(src) + index, count);
     return buffer;
 }
 
 const QRgba64 *QT_FASTCALL fetchRGBA8888ToRGBA64PM_avx2(QRgba64 *buffer, const uchar *src, int index, int count,
-                                                        const QVector<QRgb> *, QDitherInfo *)
+                                                        const QList<QRgb> *, QDitherInfo *)
 {
     convertARGBToRGBA64PM_avx2<true>(buffer, reinterpret_cast<const uint *>(src) + index, count);
     return buffer;

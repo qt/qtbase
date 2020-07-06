@@ -129,7 +129,7 @@ typedef QPenPrivate QPenData;
     Since Qt 4.1 it is also possible to specify a custom dash pattern
     using the setDashPattern() function which implicitly converts the
     style of the pen to Qt::CustomDashLine. The pattern argument, a
-    QVector, must be specified as an even number of \l qreal entries
+    QList, must be specified as an even number of \l qreal entries
     where the entries 1, 3, 5... are the dashes and 2, 4, 6... are the
     spaces. For example, the custom pattern shown above is created
     using the following code:
@@ -453,11 +453,11 @@ void QPen::setStyle(Qt::PenStyle s)
 
     \sa style(), isSolid()
  */
-QVector<qreal> QPen::dashPattern() const
+QList<qreal> QPen::dashPattern() const
 {
     QPenData *dd = static_cast<QPenData *>(d);
     if (d->style == Qt::SolidLine || d->style == Qt::NoPen) {
-        return QVector<qreal>();
+        return QList<qreal>();
     } else if (dd->dashPattern.isEmpty()) {
         const qreal space = 2;
         const qreal dot = 1;
@@ -517,7 +517,7 @@ QVector<qreal> QPen::dashPattern() const
 
     \sa setStyle(), dashPattern(), setCapStyle(), setCosmetic()
  */
-void QPen::setDashPattern(const QVector<qreal> &pattern)
+void QPen::setDashPattern(const QList<qreal> &pattern)
 {
     if (pattern.isEmpty())
         return;
@@ -928,7 +928,7 @@ QDataStream &operator<<(QDataStream &s, const QPen &p)
             // ensure that we write doubles here instead of streaming the pattern
             // directly; otherwise, platforms that redefine qreal might generate
             // data that cannot be read on other platforms.
-            QVector<qreal> pattern = p.dashPattern();
+            QList<qreal> pattern = p.dashPattern();
             s << quint32(pattern.size());
             for (int i = 0; i < pattern.size(); ++i)
                 s << double(pattern.at(i));
@@ -959,7 +959,7 @@ QDataStream &operator>>(QDataStream &s, QPen &p)
     QColor color;
     QBrush brush;
     double miterLimit = 2;
-    QVector<qreal> dashPattern;
+    QList<qreal> dashPattern;
     double dashOffset = 0;
     bool cosmetic = false;
     bool defaultWidth = false;

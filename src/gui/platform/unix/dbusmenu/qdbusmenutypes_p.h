@@ -63,8 +63,8 @@ QT_BEGIN_NAMESPACE
 class QDBusPlatformMenu;
 class QDBusPlatformMenuItem;
 class QDBusMenuItem;
-typedef QVector<QDBusMenuItem> QDBusMenuItemList;
-typedef QVector<QStringList> QDBusMenuShortcut;
+typedef QList<QDBusMenuItem> QDBusMenuItemList;
+typedef QList<QStringList> QDBusMenuShortcut;
 
 class QDBusMenuItem
 {
@@ -99,7 +99,7 @@ Q_DECLARE_TYPEINFO(QDBusMenuItemKeys, Q_MOVABLE_TYPE);
 const QDBusArgument &operator<<(QDBusArgument &arg, const QDBusMenuItemKeys &keys);
 const QDBusArgument &operator>>(const QDBusArgument &arg, QDBusMenuItemKeys &keys);
 
-typedef QVector<QDBusMenuItemKeys> QDBusMenuItemKeysList;
+typedef QList<QDBusMenuItemKeys> QDBusMenuItemKeysList;
 
 class QDBusMenuLayoutItem
 {
@@ -110,14 +110,14 @@ public:
 
     int m_id;
     QVariantMap m_properties;
-    QVector<QDBusMenuLayoutItem> m_children;
+    QList<QDBusMenuLayoutItem> m_children;
 };
 Q_DECLARE_TYPEINFO(QDBusMenuLayoutItem, Q_MOVABLE_TYPE);
 
 const QDBusArgument &operator<<(QDBusArgument &arg, const QDBusMenuLayoutItem &);
 const QDBusArgument &operator>>(const QDBusArgument &arg, QDBusMenuLayoutItem &item);
 
-typedef QVector<QDBusMenuLayoutItem> QDBusMenuLayoutItemList;
+typedef QList<QDBusMenuLayoutItem> QDBusMenuLayoutItemList;
 
 class QDBusMenuEvent
 {
@@ -133,7 +133,7 @@ Q_DECLARE_TYPEINFO(QDBusMenuEvent, Q_MOVABLE_TYPE); // QDBusVariant is movable, 
 const QDBusArgument &operator<<(QDBusArgument &arg, const QDBusMenuEvent &ev);
 const QDBusArgument &operator>>(const QDBusArgument &arg, QDBusMenuEvent &ev);
 
-typedef QVector<QDBusMenuEvent> QDBusMenuEventList;
+typedef QList<QDBusMenuEvent> QDBusMenuEventList;
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug d, const QDBusMenuItem &item);

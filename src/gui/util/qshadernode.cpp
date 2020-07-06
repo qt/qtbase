@@ -82,7 +82,7 @@ void QShaderNode::setLayers(const QStringList &layers) noexcept
     m_layers = layers;
 }
 
-QVector<QShaderNodePort> QShaderNode::ports() const noexcept
+QList<QShaderNodePort> QShaderNode::ports() const noexcept
 {
     return m_ports;
 }
@@ -139,9 +139,9 @@ void QShaderNode::removeRule(const QShaderFormat &format)
         m_rules.erase(it);
 }
 
-QVector<QShaderFormat> QShaderNode::availableFormats() const
+QList<QShaderFormat> QShaderNode::availableFormats() const
 {
-    auto res = QVector<QShaderFormat>();
+    auto res = QList<QShaderFormat>();
     std::transform(m_rules.cbegin(), m_rules.cend(),
                    std::back_inserter(res),
                    [](const QPair<QShaderFormat, Rule> &entry) { return entry.first; });

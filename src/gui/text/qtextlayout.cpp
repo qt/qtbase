@@ -534,7 +534,7 @@ void QTextLayout::setAdditionalFormats(const QList<FormatRange> &formatList)
 
     \sa formats(), clearFormats()
 */
-void QTextLayout::setFormats(const QVector<FormatRange> &formats)
+void QTextLayout::setFormats(const QList<FormatRange> &formats)
 {
     d->setFormats(formats);
 
@@ -561,7 +561,7 @@ QList<QTextLayout::FormatRange> QTextLayout::additionalFormats() const
 
     \sa setFormats(), clearFormats()
 */
-QVector<QTextLayout::FormatRange> QTextLayout::formats() const
+QList<QTextLayout::FormatRange> QTextLayout::formats() const
 {
     return d->formats();
 }
@@ -585,7 +585,7 @@ void QTextLayout::clearAdditionalFormats()
 */
 void QTextLayout::clearFormats()
 {
-    setFormats(QVector<FormatRange>());
+    setFormats(QList<FormatRange>());
 }
 
 /*!
@@ -1076,8 +1076,8 @@ QList<QGlyphRun> QTextLayout::glyphRuns(int from, int length) const
                 if (oldGlyphRun.isEmpty()) {
                     oldGlyphRun = glyphRun;
                 } else {
-                    QVector<quint32> indexes = oldGlyphRun.glyphIndexes();
-                    QVector<QPointF> positions = oldGlyphRun.positions();
+                    QList<quint32> indexes = oldGlyphRun.glyphIndexes();
+                    QList<QPointF> positions = oldGlyphRun.positions();
                     QRectF boundingRect = oldGlyphRun.boundingRect();
 
                     indexes += glyphRun.glyphIndexes();
@@ -1101,7 +1101,7 @@ QList<QGlyphRun> QTextLayout::glyphRuns(int from, int length) const
     The rendered layout includes the given \a selections and is clipped within
     the rectangle specified by \a clip.
 */
-void QTextLayout::draw(QPainter *p, const QPointF &pos, const QVector<FormatRange> &selections, const QRectF &clip) const
+void QTextLayout::draw(QPainter *p, const QPointF &pos, const QList<FormatRange> &selections, const QRectF &clip) const
 {
     if (d->lines.isEmpty())
         return;
@@ -2276,9 +2276,9 @@ static QGlyphRun glyphRunWithInfo(QFontEngine *fontEngine,
     qreal fontHeight = font.ascent() + font.descent();
     qreal minY = 0;
     qreal maxY = 0;
-    QVector<quint32> glyphs;
+    QList<quint32> glyphs;
     glyphs.reserve(glyphsArray.size());
-    QVector<QPointF> positions;
+    QList<QPointF> positions;
     positions.reserve(glyphsArray.size());
     for (int i=0; i<glyphsArray.size(); ++i) {
         glyphs.append(glyphsArray.at(i) & 0xffffff);

@@ -42,8 +42,8 @@
 #ifndef QT_NO_IMAGEFORMAT_PPM
 
 #include <qimage.h>
+#include <qlist.h>
 #include <qvariant.h>
-#include <qvector.h>
 #include <ctype.h>
 #include <qrgba64.h>
 
@@ -367,7 +367,7 @@ static bool write_pbm_image(QIODevice *out, const QImage &sourceImage, const QBy
             qsizetype bpl = qsizetype(w) * (gray ? 1 : 3);
             uchar *buf = new uchar[bpl];
             if (image.format() == QImage::Format_Indexed8) {
-                QVector<QRgb> color = image.colorTable();
+                QList<QRgb> color = image.colorTable();
                 for (uint y=0; y<h; y++) {
                     const uchar *b = image.constScanLine(y);
                     uchar *p = buf;

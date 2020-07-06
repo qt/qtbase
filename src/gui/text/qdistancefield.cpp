@@ -796,7 +796,7 @@ bool qt_fontHasNarrowOutlines(const QRawFont &f)
     if (!font.isValid())
         return false;
 
-    QVector<quint32> glyphIndices = font.glyphIndexesForString(QLatin1String("O"));
+    QList<quint32> glyphIndices = font.glyphIndexesForString(QLatin1String("O"));
     if (glyphIndices.isEmpty() || glyphIndices[0] == 0)
         return false;
 

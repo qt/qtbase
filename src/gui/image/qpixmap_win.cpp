@@ -181,7 +181,7 @@ static QImage copyImageData(const BITMAPINFOHEADER &header, const RGBQUAD *color
     }
     if (colorTableSize) {
         Q_ASSERT(colorTableIn);
-        QVector<QRgb> colorTable;
+        QList<QRgb> colorTable;
         colorTable.reserve(colorTableSize);
         std::transform(colorTableIn, colorTableIn + colorTableSize,
                        std::back_inserter(colorTable), rgbQuadToQRgb);

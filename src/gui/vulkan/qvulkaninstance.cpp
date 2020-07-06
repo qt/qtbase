@@ -268,7 +268,7 @@ public:
     VkResult errorCode;
     QScopedPointer<QVulkanFunctions> funcs;
     QHash<VkDevice, QVulkanDeviceFunctions *> deviceFuncs;
-    QVector<QVulkanInstance::DebugFilter> debugFilters;
+    QList<QVulkanInstance::DebugFilter> debugFilters;
 };
 
 bool QVulkanInstancePrivate::ensureVulkan()
@@ -411,19 +411,19 @@ QVulkanInstance::~QVulkanInstance()
 
 /*!
     \class QVulkanInfoVector
-    \brief A specialized QVector for QVulkanLayer and QVulkanExtension.
+    \brief A specialized QList for QVulkanLayer and QVulkanExtension.
  */
 
 /*!
     \fn template<typename T> bool QVulkanInfoVector<T>::contains(const QByteArray &name) const
 
-    \return true if the vector contains a layer or extension with the given \a name.
+    \return true if the list contains a layer or extension with the given \a name.
  */
 
 /*!
     \fn template<typename T> bool QVulkanInfoVector<T>::contains(const QByteArray &name, int minVersion) const
 
-    \return true if the vector contains a layer or extension with the given
+    \return true if the list contains a layer or extension with the given
     \a name and a version same as or newer than \a minVersion.
  */
 

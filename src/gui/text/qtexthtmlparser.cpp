@@ -1141,7 +1141,7 @@ void QTextHtmlParserNode::initializeProperties(const QTextHtmlParserNode *parent
 }
 
 #ifndef QT_NO_CSSPARSER
-void QTextHtmlParserNode::setListStyle(const QVector<QCss::Value> &cssValues)
+void QTextHtmlParserNode::setListStyle(const QList<QCss::Value> &cssValues)
 {
     for (int i = 0; i < cssValues.count(); ++i) {
         if (cssValues.at(i).type == QCss::Value::KnownIdentifier) {
@@ -1164,7 +1164,7 @@ void QTextHtmlParserNode::setListStyle(const QVector<QCss::Value> &cssValues)
         blockFormat.setProperty(QTextFormat::ListStyle, listStyle);
 }
 
-void QTextHtmlParserNode::applyCssDeclarations(const QVector<QCss::Declaration> &declarations, const QTextDocument *resourceProvider)
+void QTextHtmlParserNode::applyCssDeclarations(const QList<QCss::Declaration> &declarations, const QTextDocument *resourceProvider)
 {
     QCss::ValueExtractor extractor(declarations);
     extractor.extractBox(margin, padding);
@@ -1915,9 +1915,9 @@ void QTextHtmlParser::importStyleSheet(const QString &href)
     }
 }
 
-QVector<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode &node)
+QList<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode &node)
 {
-    QVector<QCss::Declaration> decls;
+    QList<QCss::Declaration> decls;
     QCss::Declaration decl;
     QCss::Value val;
     switch (node.id) {
@@ -1934,7 +1934,7 @@ QVector<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode 
                     decl.d->propertyId = QCss::Color;
                     val.type = QCss::Value::Color;
                     val.variant = QVariant(QGuiApplication::palette().link());
-                    decl.d->values = QVector<QCss::Value>() << val;
+                    decl.d->values = QList<QCss::Value> { val };
                     decl.d->inheritable = true;
                     decls << decl;
                     break;
@@ -1947,7 +1947,7 @@ QVector<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode 
             decl.d->propertyId = QCss::TextDecoration;
             val.type = QCss::Value::KnownIdentifier;
             val.variant = QVariant(QCss::Value_Underline);
-            decl.d->values = QVector<QCss::Value>() << val;
+            decl.d->values = QList<QCss::Value> { val };
             decl.d->inheritable = true;
             decls << decl;
         }
@@ -1966,7 +1966,7 @@ QVector<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode 
         decl.d->propertyId = QCss::FontWeight;
         val.type = QCss::Value::KnownIdentifier;
         val.variant = QVariant(QCss::Value_Bold);
-        decl.d->values = QVector<QCss::Value>() << val;
+        decl.d->values = QList<QCss::Value> { val };
         decl.d->inheritable = true;
         decls << decl;
         if (node.id == Html_b || node.id == Html_strong)
@@ -1988,7 +1988,7 @@ QVector<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode 
             case Html_h5: case Html_small: val.variant = QVariant(QCss::Value_Small); break;
             default: break;
             }
-            decl.d->values = QVector<QCss::Value>() << val;
+            decl.d->values = QList<QCss::Value> { val };
             decls << decl;
             break;
         }
@@ -2000,7 +2000,7 @@ QVector<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode 
         decl.d->propertyId = QCss::TextAlignment;
         val.type = QCss::Value::KnownIdentifier;
         val.variant = (node.id == Html_td) ? QVariant(QCss::Value_Left) : QVariant(QCss::Value_Center);
-        decl.d->values = QVector<QCss::Value>() << val;
+        decl.d->values = QList<QCss::Value> { val };
         decl.d->inheritable = true;
         decls << decl;
         break;
@@ -2010,7 +2010,7 @@ QVector<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode 
         decl.d->propertyId = QCss::TextDecoration;
         val.type = QCss::Value::KnownIdentifier;
         val.variant = QVariant(QCss::Value_LineThrough);
-        decl.d->values = QVector<QCss::Value>() << val;
+        decl.d->values = QList<QCss::Value> { val };
         decl.d->inheritable = true;
         decls << decl;
         break;
@@ -2025,7 +2025,7 @@ QVector<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode 
         decl.d->propertyId = QCss::FontStyle;
         val.type = QCss::Value::KnownIdentifier;
         val.variant = QVariant(QCss::Value_Italic);
-        decl.d->values = QVector<QCss::Value>() << val;
+        decl.d->values = QList<QCss::Value> { val };
         decl.d->inheritable = true;
         decls << decl;
         break;
@@ -2036,7 +2036,7 @@ QVector<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode 
         decl.d->propertyId = QCss::VerticalAlignment;
         val.type = QCss::Value::KnownIdentifier;
         val.variant = (node.id == Html_sub) ? QVariant(QCss::Value_Sub) : QVariant(QCss::Value_Super);
-        decl.d->values = QVector<QCss::Value>() << val;
+        decl.d->values = QList<QCss::Value> { val };
         decl.d->inheritable = true;
         decls << decl;
         break;
@@ -2047,7 +2047,7 @@ QVector<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode 
         decl.d->propertyId = QCss::ListStyle;
         val.type = QCss::Value::KnownIdentifier;
         val.variant = (node.id == Html_ul) ? QVariant(QCss::Value_Disc) : QVariant(QCss::Value_Decimal);
-        decl.d->values = QVector<QCss::Value>() << val;
+        decl.d->values = QList<QCss::Value> { val };
         decl.d->inheritable = true;
         decls << decl;
         break;
@@ -2059,7 +2059,7 @@ QVector<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode 
         decl = QCss::Declaration();
         decl.d->property = QLatin1String("font-family");
         decl.d->propertyId = QCss::FontFamily;
-        QVector<QCss::Value> values;
+        QList<QCss::Value> values;
         val.type = QCss::Value::String;
         val.variant = QFontDatabase::systemFont(QFontDatabase::FixedFont).family();
         values << val;
@@ -2082,7 +2082,7 @@ QVector<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode 
         case Html_pre: val.variant = QVariant(QCss::Value_Pre); break;
         default: break;
         }
-        decl.d->values = QVector<QCss::Value>() << val;
+        decl.d->values = QList<QCss::Value> { val };
         decl.d->inheritable = true;
         decls << decl;
         break;
@@ -2092,9 +2092,9 @@ QVector<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode 
     return decls;
 }
 
-QVector<QCss::Declaration> QTextHtmlParser::declarationsForNode(int node) const
+QList<QCss::Declaration> QTextHtmlParser::declarationsForNode(int node) const
 {
-    QVector<QCss::Declaration> decls;
+    QList<QCss::Declaration> decls;
 
     QTextHtmlStyleSelector selector(this);
 
@@ -2124,7 +2124,7 @@ QVector<QCss::Declaration> QTextHtmlParser::declarationsForNode(int node) const
     decls += selector.declarationsForNode(n, extraPseudo);
     n = selector.parentNode(n);
     while (!selector.isNullNode(n)) {
-        QVector<QCss::Declaration> inheritedDecls;
+        QList<QCss::Declaration> inheritedDecls;
         inheritedDecls = selector.declarationsForNode(n, extraPseudo);
         for (int i = 0; i < inheritedDecls.size(); ++i) {
             const QCss::Declaration &decl = inheritedDecls.at(i);

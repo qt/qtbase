@@ -421,7 +421,7 @@ QByteArray QPdf::generateDashes(const QPen &pen)
     ByteStream s(&result);
     s << '[';
 
-    QVector<qreal> dasharray = pen.dashPattern();
+    QList<qreal> dasharray = pen.dashPattern();
     qreal w = pen.widthF();
     if (w < 0.001)
         w = 1;
@@ -666,7 +666,7 @@ void QPdf::Stroker::setPen(const QPen &pen, QPainter::RenderHints hints)
     basicStroker.setJoinStyle(pen.joinStyle());
     basicStroker.setMiterLimit(pen.miterLimit());
 
-    QVector<qreal> dashpattern = pen.dashPattern();
+    QList<qreal> dashpattern = pen.dashPattern();
     if (zeroWidth) {
         for (int i = 0; i < dashpattern.size(); ++i)
             dashpattern[i] *= 10.;
@@ -1824,7 +1824,7 @@ void QPdfEnginePrivate::writeAttachmentRoot()
     if (fileCache.isEmpty())
         return;
 
-    QVector<int> attachments;
+    QList<int> attachments;
     const int size = fileCache.size();
     for (int i = 0; i < size; ++i) {
         auto attachment = fileCache.at(i);
@@ -2396,7 +2396,7 @@ int QPdfEnginePrivate::createShadingFunction(const QGradient *gradient, int from
     if (stops.at(stops.size() - 1).first < 1)
         stops.append(QGradientStop(1, stops.at(stops.size() - 1).second));
 
-    QVector<int> functions;
+    QList<int> functions;
     const int numStops = stops.size();
     functions.reserve(numStops - 1);
     for (int i = 0; i < numStops - 1; ++i) {
@@ -2420,7 +2420,7 @@ int QPdfEnginePrivate::createShadingFunction(const QGradient *gradient, int from
         functions << f;
     }
 
-    QVector<QGradientBound> gradientBounds;
+    QList<QGradientBound> gradientBounds;
     gradientBounds.reserve((to - from) * (numStops - 1));
 
     for (int step = from; step < to; ++step) {
@@ -2816,7 +2816,7 @@ int QPdfEnginePrivate::addBrushPattern(const QTransform &m, bool *specifyColor, 
     return patternObj;
 }
 
-static inline bool is_monochrome(const QVector<QRgb> &colorTable)
+static inline bool is_monochrome(const QList<QRgb> &colorTable)
 {
     return colorTable.size() == 2
         && colorTable.at(0) == QColor(Qt::black).rgba()

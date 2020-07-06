@@ -485,7 +485,7 @@ QList<xkb_keysym_t> QXkbCommon::toKeysym(QKeyEvent *event)
         return keysyms;
     }
 
-    QVector<uint> ucs4;
+    QList<uint> ucs4;
     if (event->text().isEmpty())
         ucs4.append(qtKey);
     else

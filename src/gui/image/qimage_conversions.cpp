@@ -69,7 +69,7 @@ struct QDefaultColorTables
         }
     }
 
-    QVector<QRgb> gray, alpha;
+    QList<QRgb> gray, alpha;
 };
 
 Q_GLOBAL_STATIC(QDefaultColorTables, defaultColorTables);
@@ -132,7 +132,7 @@ void qGamma_correct_back_to_linear_cs(QImage *image)
 // The drawhelper conversions from/to RGB32 are passthroughs which is not always correct for general image conversion
 #if !defined(__ARM_NEON__) || !(Q_BYTE_ORDER == Q_LITTLE_ENDIAN)
 static void QT_FASTCALL storeRGB32FromARGB32PM(uchar *dest, const uint *src, int index, int count,
-                                               const QVector<QRgb> *, QDitherInfo *)
+                                               const QList<QRgb> *, QDitherInfo *)
 {
     uint *d = reinterpret_cast<uint *>(dest) + index;
     for (int i = 0; i < count; ++i)
@@ -141,7 +141,7 @@ static void QT_FASTCALL storeRGB32FromARGB32PM(uchar *dest, const uint *src, int
 #endif
 
 static void QT_FASTCALL storeRGB32FromARGB32(uchar *dest, const uint *src, int index, int count,
-                                             const QVector<QRgb> *, QDitherInfo *)
+                                             const QList<QRgb> *, QDitherInfo *)
 {
     uint *d = reinterpret_cast<uint *>(dest) + index;
     for (int i = 0; i < count; ++i)
@@ -149,7 +149,7 @@ static void QT_FASTCALL storeRGB32FromARGB32(uchar *dest, const uint *src, int i
 }
 
 static const uint *QT_FASTCALL fetchRGB32ToARGB32PM(uint *buffer, const uchar *src, int index, int count,
-                                                    const QVector<QRgb> *, QDitherInfo *)
+                                                    const QList<QRgb> *, QDitherInfo *)
 {
     const uint *s = reinterpret_cast<const uint *>(src) + index;
     for (int i = 0; i < count; ++i)
@@ -159,10 +159,10 @@ static const uint *QT_FASTCALL fetchRGB32ToARGB32PM(uint *buffer, const uchar *s
 
 #ifdef QT_COMPILER_SUPPORTS_SSE4_1
 extern void QT_FASTCALL storeRGB32FromARGB32PM_sse4(uchar *dest, const uint *src, int index, int count,
-                                                    const QVector<QRgb> *, QDitherInfo *);
+                                                    const QList<QRgb> *, QDitherInfo *);
 #elif defined(__ARM_NEON__) && (Q_BYTE_ORDER == Q_LITTLE_ENDIAN)
 extern void QT_FASTCALL storeRGB32FromARGB32PM_neon(uchar *dest, const uint *src, int index, int count,
-                                                    const QVector<QRgb> *, QDitherInfo *);
+                                                    const QList<QRgb> *, QDitherInfo *);
 #endif
 
 void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags flags)
@@ -1308,9 +1308,9 @@ static void convert_RGBA64_to_gray16(QImageData *dest, const QImageData *src, Qt
     }
 }
 
-static QVector<QRgb> fix_color_table(const QVector<QRgb> &ctbl, QImage::Format format)
+static QList<QRgb> fix_color_table(const QList<QRgb> &ctbl, QImage::Format format)
 {
-    QVector<QRgb> colorTable = ctbl;
+    QList<QRgb> colorTable = ctbl;
     if (format == QImage::Format_RGB32) {
         // check if the color table has alpha
         for (int i = 0; i < colorTable.size(); ++i)
@@ -1644,7 +1644,7 @@ static void convert_RGB_to_Indexed8(QImageData *dst, const QImageData *src, Qt::
     int   pix=0;
 
     if (!dst->colortable.isEmpty()) {
-        QVector<QRgb> ctbl = dst->colortable;
+        QList<QRgb> ctbl = dst->colortable;
         dst->colortable.resize(256);
         // Preload palette into table.
         // Almost same code as pixel insertion below
@@ -1907,7 +1907,7 @@ static void convert_Indexed8_to_X32(QImageData *dest, const QImageData *src, Qt:
     Q_ASSERT(src->width == dest->width);
     Q_ASSERT(src->height == dest->height);
 
-    QVector<QRgb> colorTable = src->has_alpha_clut ? fix_color_table(src->colortable, dest->format) : src->colortable;
+    QList<QRgb> colorTable = src->has_alpha_clut ? fix_color_table(src->colortable, dest->format) : src->colortable;
     if (colorTable.size() == 0) {
         colorTable.resize(256);
         for (int i=0; i<256; ++i)
@@ -1947,7 +1947,7 @@ static void convert_Mono_to_X32(QImageData *dest, const QImageData *src, Qt::Ima
     Q_ASSERT(src->width == dest->width);
     Q_ASSERT(src->height == dest->height);
 
-    QVector<QRgb> colorTable = fix_color_table(src->colortable, dest->format);
+    QList<QRgb> colorTable = fix_color_table(src->colortable, dest->format);
 
     // Default to black / white colors
     if (colorTable.size() < 2) {
@@ -1987,7 +1987,7 @@ static void convert_Mono_to_Indexed8(QImageData *dest, const QImageData *src, Qt
     Q_ASSERT(src->width == dest->width);
     Q_ASSERT(src->height == dest->height);
 
-    QVector<QRgb> ctbl = src->colortable;
+    QList<QRgb> ctbl = src->colortable;
     if (ctbl.size() > 2) {
         ctbl.resize(2);
     } else if (ctbl.size() < 2) {
@@ -2041,7 +2041,7 @@ static void convert_Indexed8_to_Alpha8(QImageData *dest, const QImageData *src, 
     Q_ASSERT(dest->format == QImage::Format_Alpha8);
 
     uchar translate[256];
-    const QVector<QRgb> &colors = src->colortable;
+    const QList<QRgb> &colors = src->colortable;
     bool simpleCase = (colors.size() == 256);
     for (int i = 0; i < colors.size(); ++i) {
         uchar alpha = qAlpha(colors[i]);
@@ -2069,7 +2069,7 @@ static void convert_Indexed8_to_Grayscale8(QImageData *dest, const QImageData *s
     Q_ASSERT(dest->format == QImage::Format_Grayscale8);
 
     uchar translate[256];
-    const QVector<QRgb> &colors = src->colortable;
+    const QList<QRgb> &colors = src->colortable;
     bool simpleCase = (colors.size() == 256);
     for (int i = 0; i < colors.size(); ++i) {
         uchar gray = qGray(colors[i]);
@@ -2096,7 +2096,7 @@ static bool convert_Indexed8_to_Alpha8_inplace(QImageData *data, Qt::ImageConver
     Q_ASSERT(data->format == QImage::Format_Indexed8);
 
     // Just check if this is an Alpha8 in Indexed8 disguise.
-    const QVector<QRgb> &colors = data->colortable;
+    const QList<QRgb> &colors = data->colortable;
     if (colors.size() != 256)
         return false;
     for (int i = 0; i < colors.size(); ++i) {
@@ -2115,7 +2115,7 @@ static bool convert_Indexed8_to_Grayscale8_inplace(QImageData *data, Qt::ImageCo
     Q_ASSERT(data->format == QImage::Format_Indexed8);
 
     // Just check if this is a Grayscale8 in Indexed8 disguise.
-    const QVector<QRgb> &colors = data->colortable;
+    const QList<QRgb> &colors = data->colortable;
     if (colors.size() != 256)
         return false;
     for (int i = 0; i < colors.size(); ++i) {

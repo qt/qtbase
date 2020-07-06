@@ -1466,7 +1466,7 @@ void QTextEngine::shapeText(int item) const
 
     // split up the item into parts that come from different font engines
     // k * 3 entries, array[k] == index in string, array[k + 1] == index in glyphs, array[k + 2] == engine index
-    QVector<uint> itemBoundaries;
+    QList<uint> itemBoundaries;
     itemBoundaries.reserve(24);
 
     QGlyphLayout initialGlyphs = availableGlyphs(&si);
@@ -1608,7 +1608,7 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si,
                                          const ushort *string,
                                          int itemLength,
                                          QFontEngine *fontEngine,
-                                         const QVector<uint> &itemBoundaries,
+                                         const QList<uint> &itemBoundaries,
                                          bool kerningEnabled,
                                          bool hasLetterSpacing) const
 {
@@ -2887,7 +2887,7 @@ void QTextEngine::setPreeditArea(int position, const QString &preeditText)
     clearLineData();
 }
 
-void QTextEngine::setFormats(const QVector<QTextLayout::FormatRange> &formats)
+void QTextEngine::setFormats(const QList<QTextLayout::FormatRange> &formats)
 {
     if (formats.isEmpty()) {
         if (!specialData)
@@ -3278,17 +3278,17 @@ QFixed QTextEngine::calculateTabWidth(int item, QFixed x) const
 
 namespace {
 class FormatRangeComparatorByStart {
-    const QVector<QTextLayout::FormatRange> &list;
+    const QList<QTextLayout::FormatRange> &list;
 public:
-    FormatRangeComparatorByStart(const QVector<QTextLayout::FormatRange> &list) : list(list) { }
+    FormatRangeComparatorByStart(const QList<QTextLayout::FormatRange> &list) : list(list) { }
     bool operator()(int a, int b) {
         return list.at(a).start < list.at(b).start;
     }
 };
 class FormatRangeComparatorByEnd {
-    const QVector<QTextLayout::FormatRange> &list;
+    const QList<QTextLayout::FormatRange> &list;
 public:
-    FormatRangeComparatorByEnd(const QVector<QTextLayout::FormatRange> &list) : list(list) { }
+    FormatRangeComparatorByEnd(const QList<QTextLayout::FormatRange> &list) : list(list) { }
     bool operator()(int a, int b) {
         return list.at(a).start + list.at(a).length < list.at(b).start + list.at(b).length;
     }
@@ -3303,7 +3303,7 @@ void QTextEngine::resolveFormats() const
 
     QTextFormatCollection *collection = formatCollection();
 
-    QVector<QTextCharFormat> resolvedFormats(layoutData->items.count());
+    QList<QTextCharFormat> resolvedFormats(layoutData->items.count());
 
     QVarLengthArray<int, 64> formatsSortedByStart;
     formatsSortedByStart.reserve(specialData->formats.size());

@@ -511,7 +511,7 @@ int QRawFont::weight() const
 
 /*!
    Converts the string of unicode points given by \a text to glyph indexes
-   using the CMAP table in the underlying font, and returns a vector containing
+   using the CMAP table in the underlying font, and returns a list containing
    the result.
 
    Note that, in cases where there are other tables in the font that affect the
@@ -522,9 +522,9 @@ int QRawFont::weight() const
 
    \sa advancesForGlyphIndexes(), glyphIndexesForChars(), QGlyphRun, QTextLayout::glyphRuns(), QTextFragment::glyphRuns()
 */
-QVector<quint32> QRawFont::glyphIndexesForString(const QString &text) const
+QList<quint32> QRawFont::glyphIndexesForString(const QString &text) const
 {
-    QVector<quint32> glyphIndexes;
+    QList<quint32> glyphIndexes;
     if (!d->isValid() || text.isEmpty())
         return glyphIndexes;
 
@@ -571,7 +571,7 @@ bool QRawFont::glyphIndexesForChars(const QChar *chars, int numChars, quint32 *g
 }
 
 /*!
-   \fn QVector<QPointF> QRawFont::advancesForGlyphIndexes(const QVector<quint32> &glyphIndexes, LayoutFlags layoutFlags) const
+   \fn QList<QPointF> QRawFont::advancesForGlyphIndexes(const QList<quint32> &glyphIndexes, LayoutFlags layoutFlags) const
    \since 5.1
 
    Returns the QRawFont's advances for each of the \a glyphIndexes in pixel units. The advances
@@ -583,7 +583,7 @@ bool QRawFont::glyphIndexesForChars(const QChar *chars, int numChars, quint32 *g
 */
 
 /*!
-   \fn QVector<QPointF> QRawFont::advancesForGlyphIndexes(const QVector<quint32> &glyphIndexes) const
+   \fn QList<QPointF> QRawFont::advancesForGlyphIndexes(const QList<quint32> &glyphIndexes) const
 
    \overload
 

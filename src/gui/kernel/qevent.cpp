@@ -4487,7 +4487,7 @@ QTouchEvent::TouchPoint::InfoFlags QTouchEvent::TouchPoint::flags() const
   Returns the raw, unfiltered positions for the touch point. The positions are in native screen coordinates.
   To get local coordinates you can use mapFromGlobal() of the QWindow returned by QTouchEvent::window().
 
-  \note Returns an empty vector if the touch device's capabilities do not include QPointingDevice::RawPositions.
+  \note Returns an empty list if the touch device's capabilities do not include QPointingDevice::RawPositions.
 
   \note Native screen coordinates refer to the native orientation of the screen which, in case of
   mobile devices, is typically portrait. This means that on systems capable of screen orientation
@@ -4496,7 +4496,7 @@ QTouchEvent::TouchPoint::InfoFlags QTouchEvent::TouchPoint::flags() const
 
   \sa QPointingDevice::capabilities(), device(), window()
   */
-QVector<QPointF> QTouchEvent::TouchPoint::rawScreenPositions() const
+QList<QPointF> QTouchEvent::TouchPoint::rawScreenPositions() const
 {
     return d->rawScreenPositions;
 }
@@ -4654,7 +4654,7 @@ void QTouchEvent::TouchPoint::setVelocity(const QVector2D &v)
 }
 
 /*! \internal */
-void QTouchEvent::TouchPoint::setRawScreenPositions(const QVector<QPointF> &positions)
+void QTouchEvent::TouchPoint::setRawScreenPositions(const QList<QPointF> &positions)
 {
     if (d->ref.loadRelaxed() != 1)
         d = d->detach();
@@ -4933,7 +4933,7 @@ Qt::ApplicationState QApplicationStateChangeEvent::applicationState() const
     functions by value.
 
     This type actively prevents you from holding it in a QList, because doing so would
-    be very inefficient. Use a QVector instead, which has the same API as QList, but more
+    be very inefficient. Use a QList instead, which has the same API as QList, but more
     efficient storage.
 
     \sa QTouchEvent::TouchPoint

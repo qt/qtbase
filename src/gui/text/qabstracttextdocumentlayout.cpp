@@ -357,7 +357,7 @@ QTextObjectInterface::~QTextObjectInterface()
     \brief the collection of selections that will be rendered when passing this
     paint context to QAbstractTextDocumentLayout's draw() function.
 
-    The default value is an empty vector indicating no selection.
+    The default value is an empty list indicating no selection.
 */
 
 /*!

@@ -525,7 +525,7 @@ void QTextOdfWriter::writeInlineCharacter(QXmlStreamWriter &writer, const QTextF
 void QTextOdfWriter::writeFormats(QXmlStreamWriter &writer, const QSet<int> &formats) const
 {
     writer.writeStartElement(officeNS, QString::fromLatin1("automatic-styles"));
-    QVector<QTextFormat> allStyles = m_document->allFormats();
+    QList<QTextFormat> allStyles = m_document->allFormats();
     for (int formatIndex : formats) {
         QTextFormat textFormat = allStyles.at(formatIndex);
         switch (textFormat.type()) {
@@ -905,11 +905,11 @@ void QTextOdfWriter::writeTableFormat(QXmlStreamWriter &writer, QTextTableFormat
 }
 
 void QTextOdfWriter::writeTableCellFormat(QXmlStreamWriter &writer, QTextTableCellFormat format,
-                                          int formatIndex, QVector<QTextFormat> &styles) const
+                                          int formatIndex, QList<QTextFormat> &styles) const
 {
     // check for all table cells here if they are in a table with border
     if (m_cellFormatsInTablesWithBorders.contains(formatIndex)) {
-        const QVector<int> tableIdVector = m_cellFormatsInTablesWithBorders.value(formatIndex);
+        const QList<int> tableIdVector = m_cellFormatsInTablesWithBorders.value(formatIndex);
         for (const auto &tableId : tableIdVector) {
             const auto &tmpStyle = styles.at(tableId);
             if (tmpStyle.isTableFormat()) {
@@ -1052,7 +1052,7 @@ bool QTextOdfWriter::writeAll()
     }
 
     // add objects for lists, frames and tables
-    const QVector<QTextFormat> allFormats = m_document->allFormats();
+    const QList<QTextFormat> allFormats = m_document->allFormats();
     const QList<int> copy = formats.values();
     for (auto index : copy) {
         QTextObject *object = m_document->objectForFormat(allFormats[index]);
@@ -1067,7 +1067,7 @@ bool QTextOdfWriter::writeAll()
                     for (int rowindex = 0; rowindex < tableobject->rows(); ++rowindex) {
                         for (int colindex = 0; colindex < tableobject->columns(); ++colindex) {
                             const int cellFormatID = tableobject->cellAt(rowindex, colindex).tableCellFormatIndex();
-                            QVector<int> tableIdsTmp;
+                            QList<int> tableIdsTmp;
                             if (m_cellFormatsInTablesWithBorders.contains(cellFormatID))
                                 tableIdsTmp = m_cellFormatsInTablesWithBorders.value(cellFormatID);
                             if (!tableIdsTmp.contains(tableID))

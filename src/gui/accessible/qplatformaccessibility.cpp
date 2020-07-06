@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, bridgeloader,
     (QAccessibleBridgeFactoryInterface_iid, QLatin1String("/accessiblebridge")))
 
-Q_GLOBAL_STATIC(QVector<QAccessibleBridge *>, bridges)
+Q_GLOBAL_STATIC(QList<QAccessibleBridge *>, bridges)
 
 /*!
     \class QPlatformAccessibility

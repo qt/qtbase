@@ -66,8 +66,8 @@ struct QVertexSet
     QVertexSet<T> &operator = (const QVertexSet<T> &other) {vertices = other.vertices; indices = other.indices; return *this;}
 
     // The vertices of a triangle are given by: (x[i[n]], y[i[n]]), (x[j[n]], y[j[n]]), (x[k[n]], y[k[n]]), n = 0, 1, ...
-    QVector<qreal> vertices; // [x[0], y[0], x[1], y[1], x[2], ...]
-    QVector<T> indices; // [i[0], j[0], k[0], i[1], j[1], k[1], i[2], ...]
+    QList<qreal> vertices; // [x[0], y[0], x[1], y[1], x[2], ...]
+    QList<T> indices; // [i[0], j[0], k[0], i[1], j[1], k[1], i[2], ...]
 };
 
 //============================================================================//
@@ -761,7 +761,7 @@ public:
     QVertexSet<T> polyline();
 private:
     QDataBuffer<QPodPoint> m_vertices;
-    QVector<T> m_indices;
+    QList<T> m_indices;
     uint m_hint;
 };
 
@@ -2155,7 +2155,7 @@ bool QTriangulator<T>::SimpleToMonotone::CompareVertices::operator () (int i, in
 template <typename T>
 void QTriangulator<T>::MonotoneToTriangles::decompose()
 {
-    QVector<T> result;
+    QList<T> result;
     QDataBuffer<int> stack(m_parent->m_indices.size());
     m_first = 0;
     // Require at least three more indices.

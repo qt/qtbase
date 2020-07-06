@@ -1090,10 +1090,10 @@ QPair< int, int > QAccessible::qAccessibleTextBoundaryHelper(const QTextCursor &
 
     \sa parent(), child()
 */
-QVector<QPair<QAccessibleInterface*, QAccessible::Relation> >
+QList<QPair<QAccessibleInterface*, QAccessible::Relation>>
 QAccessibleInterface::relations(QAccessible::Relation /*match = QAccessible::AllRelations*/) const
 {
-    return QVector<QPair<QAccessibleInterface*, QAccessible::Relation> >();
+    return { };
 }
 
 /*!

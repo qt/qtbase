@@ -376,7 +376,7 @@ bool QRhiVulkan::create(QRhi::Flags flags)
 
     f = inst->functions();
 
-    QVector<VkQueueFamilyProperties> queueFamilyProps;
+    QList<VkQueueFamilyProperties> queueFamilyProps;
     auto queryQueueFamilyProps = [this, &queueFamilyProps] {
         uint32_t queueCount = 0;
         f->vkGetPhysicalDeviceQueueFamilyProperties(physDev, &queueCount, nullptr);
@@ -492,7 +492,7 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         queueInfo[0].queueCount = 1;
         queueInfo[0].pQueuePriorities = prio;
 
-        QVector<const char *> devLayers;
+        QList<const char *> devLayers;
         if (inst->layers().contains("VK_LAYER_LUNARG_standard_validation"))
             devLayers.append("VK_LAYER_LUNARG_standard_validation");
 
@@ -500,14 +500,14 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         uint32_t devExtCount = 0;
         f->vkEnumerateDeviceExtensionProperties(physDev, nullptr, &devExtCount, nullptr);
         if (devExtCount) {
-            QVector<VkExtensionProperties> extProps(devExtCount);
+            QList<VkExtensionProperties> extProps(devExtCount);
             f->vkEnumerateDeviceExtensionProperties(physDev, nullptr, &devExtCount, extProps.data());
             for (const VkExtensionProperties &p : qAsConst(extProps))
                 devExts.append({ p.extensionName, p.specVersion });
         }
         qCDebug(QRHI_LOG_INFO, "%d device extensions available", int(devExts.count()));
 
-        QVector<const char *> requestedDevExts;
+        QList<const char *> requestedDevExts;
         requestedDevExts.append("VK_KHR_swapchain");
 
         debugMarkersAvailable = false;
@@ -3101,7 +3101,7 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
 
             for (int layer = 0; layer < QRhi::MAX_LAYERS; ++layer) {
                 for (int level = 0; level < QRhi::MAX_LEVELS; ++level) {
-                    const QVector<QRhiTextureSubresourceUploadDescription> &srd(u.subresDesc[layer][level]);
+                    const QList<QRhiTextureSubresourceUploadDescription> &srd(u.subresDesc[layer][level]);
                     if (srd.isEmpty())
                         continue;
                     for (const QRhiTextureSubresourceUploadDescription &subresDesc : qAsConst(srd)) {
@@ -3581,13 +3581,13 @@ static struct {
     { VK_SAMPLE_COUNT_64_BIT, 64 }
 };
 
-QVector<int> QRhiVulkan::supportedSampleCounts() const
+QList<int> QRhiVulkan::supportedSampleCounts() const
 {
     const VkPhysicalDeviceLimits *limits = &physDevProperties.limits;
     VkSampleCountFlags color = limits->framebufferColorSampleCounts;
     VkSampleCountFlags depth = limits->framebufferDepthSampleCounts;
     VkSampleCountFlags stencil = limits->framebufferStencilSampleCounts;
-    QVector<int> result;
+    QList<int> result;
 
     for (const auto &qvk_sampleCount : qvk_sampleCounts) {
         if ((color & qvk_sampleCount.mask)
@@ -6711,7 +6711,7 @@ bool QVkSwapChain::ensureSurface()
 
     quint32 formatCount = 0;
     rhiD->vkGetPhysicalDeviceSurfaceFormatsKHR(rhiD->physDev, surface, &formatCount, nullptr);
-    QVector<VkSurfaceFormatKHR> formats(formatCount);
+    QList<VkSurfaceFormatKHR> formats(formatCount);
     if (formatCount)
         rhiD->vkGetPhysicalDeviceSurfaceFormatsKHR(rhiD->physDev, surface, &formatCount, formats.data());
 

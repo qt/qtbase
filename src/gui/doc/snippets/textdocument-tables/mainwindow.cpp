@@ -83,7 +83,7 @@ MainWindow::MainWindow()
 //! [2]
     QTextTableFormat tableFormat;
     tableFormat.setBackground(QColor("#e0e0e0"));
-    QVector<QTextLength> constraints;
+    QList<QTextLength> constraints;
     constraints << QTextLength(QTextLength::PercentageLength, 16);
     constraints << QTextLength(QTextLength::PercentageLength, 28);
     constraints << QTextLength(QTextLength::PercentageLength, 28);

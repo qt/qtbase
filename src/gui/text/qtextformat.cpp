@@ -251,7 +251,7 @@ public:
         return fnt;
     }
 
-    QVector<Property> props;
+    QList<Property> props;
 private:
 
     size_t recalcHash() const;
@@ -312,7 +312,8 @@ static inline size_t getHash(const QTextFormatPrivate *d, int format)
 size_t QTextFormatPrivate::recalcHash() const
 {
     hashValue = 0;
-    for (QVector<Property>::ConstIterator it = props.constBegin(); it != props.constEnd(); ++it)
+    const auto end = props.constEnd();
+    for (auto it = props.constBegin(); it != end; ++it)
         hashValue += (static_cast<quint32>(it->key) << 16) + variantHash(it->value);
 
     hashDirty = false;
@@ -916,7 +917,7 @@ void QTextFormat::merge(const QTextFormat &other)
 
     QTextFormatPrivate *d = this->d;
 
-    const QVector<QT_PREPEND_NAMESPACE(Property)> &otherProps = other.d->props;
+    const QList<QT_PREPEND_NAMESPACE(Property)> &otherProps = other.d->props;
     d->props.reserve(d->props.size() + otherProps.size());
     for (int i = 0; i < otherProps.count(); ++i) {
         const QT_PREPEND_NAMESPACE(Property) &p = otherProps.at(i);
@@ -1134,29 +1135,28 @@ QTextLength QTextFormat::lengthProperty(int propertyId) const
 
 /*!
     Returns the value of the property given by \a propertyId. If the
-    property isn't of QTextFormat::LengthVector type, an empty length
-    vector is returned instead.
+    property isn't of QTextFormat::LengthVector type, an empty
+    list is returned instead.
 
     \sa setProperty(), boolProperty(), intProperty(), doubleProperty(), stringProperty(),
         colorProperty(), lengthProperty(), Property
 */
-QVector<QTextLength> QTextFormat::lengthVectorProperty(int propertyId) const
+QList<QTextLength> QTextFormat::lengthVectorProperty(int propertyId) const
 {
-    QVector<QTextLength> vector;
+    QList<QTextLength> list;
     if (!d)
-        return vector;
+        return list;
     const QVariant prop = d->property(propertyId);
     if (prop.userType() != QMetaType::QVariantList)
-        return vector;
+        return list;
 
-    QList<QVariant> propertyList = prop.toList();
-    for (int i=0; i<propertyList.size(); ++i) {
-        QVariant var = propertyList.at(i);
+    const QList<QVariant> propertyList = prop.toList();
+    for (const auto &var : propertyList) {
         if (var.userType() == QMetaType::QTextLength)
-            vector.append(qvariant_cast<QTextLength>(var));
+            list.append(qvariant_cast<QTextLength>(var));
     }
 
-    return vector;
+    return list;
 }
 
 /*!
@@ -1189,7 +1189,7 @@ void QTextFormat::setProperty(int propertyId, const QVariant &value)
 
     \sa lengthVectorProperty(), Property
 */
-void QTextFormat::setProperty(int propertyId, const QVector<QTextLength> &value)
+void QTextFormat::setProperty(int propertyId, const QList<QTextLength> &value)
 {
     if (!d)
         d = new QTextFormatPrivate;
@@ -2998,7 +2998,7 @@ qreal QTextFrameFormat::rightMargin() const
     returns the number of columns with constraints, and the
     columnWidthConstraints() function returns the constraints defined for the
     table. These quantities can also be set by calling setColumnWidthConstraints()
-    with a vector containing new constraints. If no constraints are
+    with a list containing new constraints. If no constraints are
     required, clearColumnWidthConstraints() can be used to remove them.
 
     \sa QTextTable, QTextTableCell, QTextLength
@@ -3062,7 +3062,7 @@ QTextTableFormat::QTextTableFormat(const QTextFormat &fmt)
 */
 
 /*!
-    \fn void QTextTableFormat::setColumnWidthConstraints(const QVector<QTextLength> &constraints)
+    \fn void QTextTableFormat::setColumnWidthConstraints(const QList<QTextLength> &constraints)
 
     Sets the column width \a constraints for the table.
 
@@ -3070,7 +3070,7 @@ QTextTableFormat::QTextTableFormat(const QTextFormat &fmt)
 */
 
 /*!
-    \fn QVector<QTextLength> QTextTableFormat::columnWidthConstraints() const
+    \fn QList<QTextLength> QTextTableFormat::columnWidthConstraints() const
 
     Returns a list of constraints used by this table format to control the
     appearance of columns in a table.

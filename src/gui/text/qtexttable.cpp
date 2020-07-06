@@ -759,7 +759,7 @@ void QTextTable::insertColumns(int pos, int num)
     QTextFormatCollection *c = p->formatCollection();
     p->beginEditBlock();
 
-    QVector<int> extendedSpans;
+    QList<int> extendedSpans;
     for (int i = 0; i < d->nRows; ++i) {
         int cell;
         if (i == d->nRows - 1 && pos == d->nCols) {
@@ -825,7 +825,7 @@ void QTextTable::insertColumns(int pos, int num)
 
     QTextTableFormat tfmt = format();
     tfmt.setColumns(tfmt.columns()+num);
-    QVector<QTextLength> columnWidths = tfmt.columnWidthConstraints();
+    QList<QTextLength> columnWidths = tfmt.columnWidthConstraints();
     if (! columnWidths.isEmpty()) {
         for (int i = num; i > 0; --i)
             columnWidths.insert(pos, columnWidths.at(qMax(0, pos - 1)));
@@ -894,7 +894,7 @@ void QTextTable::removeRows(int pos, int num)
 
     p->aboutToRemoveCell(cellAt(pos, 0).firstPosition(), cellAt(pos + num - 1, d->nCols - 1).lastPosition());
 
-    QVector<int> touchedCells;
+    QList<int> touchedCells;
     for (int r = pos; r < pos + num; ++r) {
         for (int c = 0; c < d->nCols; ++c) {
             int cell = d->grid[r*d->nCols + c];
@@ -956,7 +956,7 @@ void QTextTable::removeColumns(int pos, int num)
 
     p->aboutToRemoveCell(cellAt(0, pos).firstPosition(), cellAt(d->nRows - 1, pos + num - 1).lastPosition());
 
-    QVector<int> touchedCells;
+    QList<int> touchedCells;
     for (int r = 0; r < d->nRows; ++r) {
         for (int c = pos; c < pos + num; ++c) {
             int cell = d->grid[r*d->nCols + c];
@@ -981,7 +981,7 @@ void QTextTable::removeColumns(int pos, int num)
 
     QTextTableFormat tfmt = format();
     tfmt.setColumns(tfmt.columns()-num);
-    QVector<QTextLength> columnWidths = tfmt.columnWidthConstraints();
+    QList<QTextLength> columnWidths = tfmt.columnWidthConstraints();
     if (columnWidths.count() > pos) {
         columnWidths.remove(pos, num);
         tfmt.setColumnWidthConstraints (columnWidths);

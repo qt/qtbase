@@ -1071,7 +1071,7 @@ QDataStream &operator<<(QDataStream &s, const QBrush &b)
             // ensure that we write doubles here instead of streaming the stops
             // directly; otherwise, platforms that redefine qreal might generate
             // data that cannot be read on other platforms.
-            QVector<QGradientStop> stops = gradient->stops();
+            QList<QGradientStop> stops = gradient->stops();
             s << quint32(stops.size());
             for (int i = 0; i < stops.size(); ++i) {
                 const QGradientStop &stop = stops.at(i);
@@ -2364,7 +2364,7 @@ void QConicalGradient::setAngle(qreal angle)
     \typedef QGradientStops
     \relates QGradient
 
-    Typedef for QVector<QGradientStop>.
+    Typedef for QList<QGradientStop>.
 */
 
 /*!

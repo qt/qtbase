@@ -40,16 +40,16 @@
 #include "qplatformdialoghelper.h"
 
 #include <QtCore/QCoreApplication>
-#include <QtCore/QVariant>
+#include <QtCore/QList>
 #if QT_CONFIG(regularexpression)
 #include <QtCore/QRegularExpression>
 #endif
-#include <QtCore/QSharedData>
 #if QT_CONFIG(settings)
 #include <QtCore/QSettings>
 #endif
+#include <QtCore/QSharedData>
 #include <QtCore/QUrl>
-#include <QtCore/QVector>
+#include <QtCore/QVariant>
 #include <QtGui/QColor>
 
 #include <algorithm>
@@ -812,7 +812,7 @@ public:
     QString informativeText;
     QString detailedText;
     QPlatformDialogHelper::StandardButtons buttons;
-    QVector<QMessageDialogOptions::CustomButton> customButtons;
+    QList<QMessageDialogOptions::CustomButton> customButtons;
     int nextCustomButtonId;
 };
 
@@ -923,7 +923,7 @@ void QMessageDialogOptions::removeButton(int id)
     d->customButtons.removeOne(CustomButton(id));
 }
 
-const QVector<QMessageDialogOptions::CustomButton> &QMessageDialogOptions::customButtons()
+const QList<QMessageDialogOptions::CustomButton> &QMessageDialogOptions::customButtons()
 {
     return d->customButtons;
 }

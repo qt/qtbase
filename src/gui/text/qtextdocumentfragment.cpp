@@ -891,10 +891,10 @@ QTextHtmlImporter::Table QTextHtmlImporter::scanTable(int tableNodeIdx)
     Table table;
     table.columns = 0;
 
-    QVector<QTextLength> columnWidths;
+    QList<QTextLength> columnWidths;
 
     int tableHeaderRowCount = 0;
-    QVector<int> rowNodes;
+    QList<int> rowNodes;
     rowNodes.reserve(at(tableNodeIdx).children.count());
     for (int row : at(tableNodeIdx).children) {
         switch (at(row).id) {
@@ -916,8 +916,8 @@ QTextHtmlImporter::Table QTextHtmlImporter::scanTable(int tableNodeIdx)
         }
     }
 
-    QVector<RowColSpanInfo> rowColSpans;
-    QVector<RowColSpanInfo> rowColSpanForColumn;
+    QList<RowColSpanInfo> rowColSpans;
+    QList<RowColSpanInfo> rowColSpanForColumn;
 
     int effectiveRow = 0;
     for (int row : qAsConst(rowNodes)) {

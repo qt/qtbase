@@ -40,10 +40,8 @@
 #include "qbezier_p.h"
 #include <qdebug.h>
 #include <qline.h>
-#include <qpolygon.h>
-#include <qvector.h>
-#include <qlist.h>
 #include <qmath.h>
+#include <qpolygon.h>
 
 #include <private/qnumeric_p.h>
 

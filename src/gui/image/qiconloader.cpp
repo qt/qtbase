@@ -217,7 +217,7 @@ class QIconCacheGtkReader
 {
 public:
     explicit QIconCacheGtkReader(const QString &themeDir);
-    QVector<const char *> lookup(QStringView);
+    QList<const char *> lookup(QStringView);
     bool isValid() const { return m_isValid; }
 private:
     QFile m_file;
@@ -290,9 +290,9 @@ static quint32 icon_name_hash(const char *p)
     with this name is present. The char* are pointers to the mapped data.
     For example, this would return { "32x32/apps", "24x24/apps" , ... }
  */
-QVector<const char *> QIconCacheGtkReader::lookup(QStringView name)
+QList<const char *> QIconCacheGtkReader::lookup(QStringView name)
 {
-    QVector<const char *> ret;
+    QList<const char *> ret;
     if (!isValid() || name.isEmpty())
         return ret;
 
@@ -452,7 +452,7 @@ QThemeIconInfo QIconLoader::findIconHelper(const QString &themeName,
 
         // Add all relevant files
         for (int i = 0; i < contentDirs.size(); ++i) {
-            QVector<QIconDirInfo> subDirs = theme.keyList();
+            QList<QIconDirInfo> subDirs = theme.keyList();
 
             // Try to reduce the amount of subDirs by looking in the GTK+ cache in order to save
             // a massive amount of file stat (especially if the icon is not there)
@@ -460,7 +460,7 @@ QThemeIconInfo QIconLoader::findIconHelper(const QString &themeName,
             if (cache->isValid()) {
                 const auto result = cache->lookup(iconNameFallback);
                 if (cache->isValid()) {
-                    const QVector<QIconDirInfo> subDirsCopy = subDirs;
+                    const QList<QIconDirInfo> subDirsCopy = subDirs;
                     subDirs.clear();
                     subDirs.reserve(result.count());
                     for (const char *s : result) {

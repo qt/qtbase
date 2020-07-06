@@ -41,7 +41,6 @@
 #include "qharfbuzzng_p.h"
 
 #include <qstring.h>
-#include <qvector.h>
 
 #include <private/qstringiterator_p.h>
 

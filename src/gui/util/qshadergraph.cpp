@@ -44,9 +44,9 @@ QT_BEGIN_NAMESPACE
 
 namespace
 {
-    QVector<QShaderNode> copyOutputNodes(const QVector<QShaderNode> &nodes, const QVector<QShaderGraph::Edge> &edges)
+    QList<QShaderNode> copyOutputNodes(const QList<QShaderNode> &nodes, const QList<QShaderGraph::Edge> &edges)
     {
-        auto res = QVector<QShaderNode>();
+        auto res = QList<QShaderNode>();
         std::copy_if(nodes.cbegin(), nodes.cend(),
                      std::back_inserter(res),
                      [&edges] (const QShaderNode &node) {
@@ -62,9 +62,9 @@ namespace
         return res;
     }
 
-    QVector<QShaderGraph::Edge> incomingEdges(const QVector<QShaderGraph::Edge> &edges, const QUuid &uuid)
+    QList<QShaderGraph::Edge> incomingEdges(const QList<QShaderGraph::Edge> &edges, const QUuid &uuid)
     {
-        auto res = QVector<QShaderGraph::Edge>();
+        auto res = QList<QShaderGraph::Edge>();
         std::copy_if(edges.cbegin(), edges.cend(),
                      std::back_inserter(res),
                      [uuid] (const QShaderGraph::Edge &edge) {
@@ -73,9 +73,9 @@ namespace
         return res;
     }
 
-    QVector<QShaderGraph::Edge> outgoingEdges(const QVector<QShaderGraph::Edge> &edges, const QUuid &uuid)
+    QList<QShaderGraph::Edge> outgoingEdges(const QList<QShaderGraph::Edge> &edges, const QUuid &uuid)
     {
-        auto res = QVector<QShaderGraph::Edge>();
+        auto res = QList<QShaderGraph::Edge>();
         std::copy_if(edges.cbegin(), edges.cend(),
                      std::back_inserter(res),
                      [uuid] (const QShaderGraph::Edge &edge) {
@@ -89,7 +89,7 @@ namespace
         auto statement = QShaderGraph::Statement();
         statement.node = node;
 
-        const QVector<QShaderNodePort> ports = node.ports();
+        const QList<QShaderNodePort> ports = node.ports();
         for (const QShaderNodePort &port : ports) {
             if (port.direction == QShaderNodePort::Input) {
                 statement.inputs.append(-1);
@@ -102,7 +102,7 @@ namespace
     }
 
     QShaderGraph::Statement completeStatement(const QHash<QUuid, QShaderGraph::Statement> &idHash,
-                                              const QVector<QShaderGraph::Edge> edges,
+                                              const QList<QShaderGraph::Edge> edges,
                                               const QUuid &uuid)
     {
         auto targetStatement = idHash.value(uuid);
@@ -117,29 +117,29 @@ namespace
             if (sourcePortIndex < 0 || targetPortIndex < 0)
                 continue;
 
-            const QVector<int> sourceOutputs = sourceStatement.outputs;
-            QVector<int> &targetInputs = targetStatement.inputs;
+            const QList<int> sourceOutputs = sourceStatement.outputs;
+            QList<int> &targetInputs = targetStatement.inputs;
             targetInputs[targetPortIndex] = sourceOutputs[sourcePortIndex];
         }
         return targetStatement;
     }
 
-    void removeNodesWithUnboundInputs(QVector<QShaderGraph::Statement> &statements,
-                                      const QVector<QShaderGraph::Edge> &allEdges)
+    void removeNodesWithUnboundInputs(QList<QShaderGraph::Statement> &statements,
+                                      const QList<QShaderGraph::Edge> &allEdges)
     {
         // A node is invalid if any of its input ports is disconected
         // or connected to the output port of another invalid node.
 
         // Keeps track of the edges from the nodes we know to be valid
         // to unvisited nodes
-        auto currentEdges = QVector<QShaderGraph::Edge>();
+        auto currentEdges = QList<QShaderGraph::Edge>();
 
         statements.erase(std::remove_if(statements.begin(),
                                         statements.end(),
                                         [&currentEdges, &allEdges] (const QShaderGraph::Statement &statement) {
             const QShaderNode &node = statement.node;
-            const QVector<QShaderGraph::Edge> outgoing = outgoingEdges(currentEdges, node.uuid());
-            const QVector<QShaderNodePort> ports = node.ports();
+            const QList<QShaderGraph::Edge> outgoing = outgoingEdges(currentEdges, node.uuid());
+            const QList<QShaderNodePort> ports = node.ports();
 
             bool allInputsConnected = true;
             for (const QShaderNodePort &port : node.ports()) {
@@ -159,7 +159,7 @@ namespace
             }
 
             if (allInputsConnected) {
-                const QVector<QShaderGraph::Edge> incoming = incomingEdges(allEdges, node.uuid());
+                const QList<QShaderGraph::Edge> incoming = incomingEdges(allEdges, node.uuid());
                 currentEdges.append(incoming);
             }
 
@@ -176,7 +176,7 @@ QUuid QShaderGraph::Statement::uuid() const noexcept
 
 int QShaderGraph::Statement::portIndex(QShaderNodePort::Direction direction, const QString &portName) const noexcept
 {
-    const QVector<QShaderNodePort> ports = node.ports();
+    const QList<QShaderNodePort> ports = node.ports();
     int index = 0;
     for (const QShaderNodePort &port : ports) {
         if (port.name == portName && port.direction == direction)
@@ -201,7 +201,7 @@ void QShaderGraph::removeNode(const QShaderNode &node)
         m_nodes.erase(it);
 }
 
-QVector<QShaderNode> QShaderGraph::nodes() const noexcept
+QList<QShaderNode> QShaderGraph::nodes() const noexcept
 {
     return m_nodes;
 }
@@ -218,12 +218,12 @@ void QShaderGraph::removeEdge(const QShaderGraph::Edge &edge)
     m_edges.removeAll(edge);
 }
 
-QVector<QShaderGraph::Edge> QShaderGraph::edges() const noexcept
+QList<QShaderGraph::Edge> QShaderGraph::edges() const noexcept
 {
     return m_edges;
 }
 
-QVector<QShaderGraph::Statement> QShaderGraph::createStatements(const QStringList &enabledLayers) const
+QList<QShaderGraph::Statement> QShaderGraph::createStatements(const QStringList &enabledLayers) const
 {
     const auto intersectsEnabledLayers = [enabledLayers] (const QStringList &layers) {
         return layers.isEmpty()
@@ -231,8 +231,8 @@ QVector<QShaderGraph::Statement> QShaderGraph::createStatements(const QStringLis
                            [enabledLayers] (const QString &s) { return enabledLayers.contains(s); });
     };
 
-    const QVector<QShaderNode> enabledNodes = [this, intersectsEnabledLayers] {
-        auto res = QVector<QShaderNode>();
+    const QList<QShaderNode> enabledNodes = [this, intersectsEnabledLayers] {
+        auto res = QList<QShaderNode>();
         std::copy_if(m_nodes.cbegin(), m_nodes.cend(),
                      std::back_inserter(res),
                      [intersectsEnabledLayers] (const QShaderNode &node) {
@@ -241,8 +241,8 @@ QVector<QShaderGraph::Statement> QShaderGraph::createStatements(const QStringLis
         return res;
     }();
 
-    const QVector<Edge> enabledEdges = [this, intersectsEnabledLayers] {
-        auto res = QVector<Edge>();
+    const QList<Edge> enabledEdges = [this, intersectsEnabledLayers] {
+        auto res = QList<Edge>();
         std::copy_if(m_edges.cbegin(), m_edges.cend(),
                      std::back_inserter(res),
                      [intersectsEnabledLayers] (const Edge &edge) {
@@ -259,11 +259,11 @@ QVector<QShaderGraph::Statement> QShaderGraph::createStatements(const QStringLis
         return res;
     }();
 
-    auto result = QVector<Statement>();
-    QVector<Edge> currentEdges = enabledEdges;
-    QVector<QUuid> currentUuids = [enabledNodes, enabledEdges] {
-        const QVector<QShaderNode> inputs = copyOutputNodes(enabledNodes, enabledEdges);
-        auto res = QVector<QUuid>();
+    auto result = QList<Statement>();
+    QList<Edge> currentEdges = enabledEdges;
+    QList<QUuid> currentUuids = [enabledNodes, enabledEdges] {
+        const QList<QShaderNode> inputs = copyOutputNodes(enabledNodes, enabledEdges);
+        auto res = QList<QUuid>();
         std::transform(inputs.cbegin(), inputs.cend(),
                        std::back_inserter(res),
                        [](const QShaderNode &node) { return node.uuid(); });
@@ -280,11 +280,11 @@ QVector<QShaderGraph::Statement> QShaderGraph::createStatements(const QStringLis
         const QUuid uuid = currentUuids.takeFirst();
         result.append(completeStatement(idHash, enabledEdges, uuid));
 
-        const QVector<QShaderGraph::Edge> outgoing = outgoingEdges(currentEdges, uuid);
+        const QList<QShaderGraph::Edge> outgoing = outgoingEdges(currentEdges, uuid);
         for (const QShaderGraph::Edge &outgoingEdge : outgoing) {
             currentEdges.removeAll(outgoingEdge);
             const QUuid nextUuid = outgoingEdge.sourceNodeUuid;
-            const QVector<QShaderGraph::Edge> incoming = incomingEdges(currentEdges, nextUuid);
+            const QList<QShaderGraph::Edge> incoming = incomingEdges(currentEdges, nextUuid);
             if (incoming.isEmpty()) {
                 currentUuids.append(nextUuid);
             }

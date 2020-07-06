@@ -668,7 +668,7 @@ void QPainterPath::clear()
 
     Attempts to allocate memory for at least \a size elements.
 
-    \sa clear(), capacity(), QVector::reserve()
+    \sa clear(), capacity(), QList::reserve()
     \since 5.13
 */
 void QPainterPath::reserve(int size)
@@ -1692,7 +1692,7 @@ QList<QPolygonF> QPainterPath::toFillPolygons(const QTransform &matrix) const
     if (count == 0)
         return polys;
 
-    QVector<QRectF> bounds;
+    QList<QRectF> bounds;
     bounds.reserve(count);
     for (int i=0; i<count; ++i)
         bounds += subpaths.at(i).boundingRect();
@@ -1703,7 +1703,7 @@ QList<QPolygonF> QPainterPath::toFillPolygons(const QTransform &matrix) const
         qDebug() << " bounds" << i << bounds.at(i);
 #endif
 
-    QVector< QVector<int> > isects;
+    QList< QList<int> > isects;
     isects.resize(count);
 
     // find all intersections
@@ -1731,12 +1731,12 @@ QList<QPolygonF> QPainterPath::toFillPolygons(const QTransform &matrix) const
 
     // flatten the sets of intersections
     for (int i=0; i<count; ++i) {
-        const QVector<int> &current_isects = isects.at(i);
+        const QList<int> &current_isects = isects.at(i);
         for (int j=0; j<current_isects.size(); ++j) {
             int isect_j = current_isects.at(j);
             if (isect_j == i)
                 continue;
-            const QVector<int> &isects_j = isects.at(isect_j);
+            const QList<int> &isects_j = isects.at(isect_j);
             for (int k = 0, size = isects_j.size(); k < size; ++k) {
                 int isect_k = isects_j.at(k);
                 if (isect_k != i && !isects.at(i).contains(isect_k)) {
@@ -1760,7 +1760,7 @@ QList<QPolygonF> QPainterPath::toFillPolygons(const QTransform &matrix) const
 
     // Join the intersected subpaths as rewinded polygons
     for (int i=0; i<count; ++i) {
-        const QVector<int> &subpath_list = isects.at(i);
+        const QList<int> &subpath_list = isects.at(i);
         if (!subpath_list.isEmpty()) {
             QPolygonF buildUp;
             for (int j=0; j<subpath_list.size(); ++j) {
@@ -2592,7 +2592,7 @@ void qt_path_stroke_cubic_to(qfixed c1x, qfixed c1y,
     \endlist
 
     The setDashPattern() function accepts both a Qt::PenStyle object
-    and a vector representation of the pattern as argument.
+    and a list representation of the pattern as argument.
 
     In addition you can specify a curve's threshold, controlling the
     granularity with which a curve is drawn, using the
@@ -2811,16 +2811,16 @@ void QPainterPathStroker::setDashPattern(Qt::PenStyle style)
     dashPattern.  This function makes it possible to specify custom
     dash patterns.
 
-    Each element in the vector contains the lengths of the dashes and spaces
+    Each element in the list contains the lengths of the dashes and spaces
     in the stroke, beginning with the first dash in the first element, the
     first space in the second element, and alternating between dashes and
     spaces for each following pair of elements.
 
-    The vector can contain an odd number of elements, in which case the last
+    The list can contain an odd number of elements, in which case the last
     element will be extended by the length of the first element when the
     pattern repeats.
 */
-void QPainterPathStroker::setDashPattern(const QVector<qreal> &dashPattern)
+void QPainterPathStroker::setDashPattern(const QList<qreal> &dashPattern)
 {
     d_func()->dashPattern.clear();
     for (int i=0; i<dashPattern.size(); ++i)
@@ -2830,7 +2830,7 @@ void QPainterPathStroker::setDashPattern(const QVector<qreal> &dashPattern)
 /*!
     Returns the dash pattern for the generated outlines.
 */
-QVector<qreal> QPainterPathStroker::dashPattern() const
+QList<qreal> QPainterPathStroker::dashPattern() const
 {
     return d_func()->dashPattern;
 }

@@ -322,17 +322,17 @@ QByteArray QShaderGenerator::createShaderCode(const QStringList &enabledLayers) 
                            [enabledLayers] (const QString &s) { return enabledLayers.contains(s); });
     };
 
-    QVector<QString> globalInputVariables;
+    QList<QString> globalInputVariables;
     const QRegularExpression globalInputExtractRegExp(QStringLiteral("^.*\\s+(\\w+).*;$"));
 
-    const QVector<QShaderNode> nodes = graph.nodes();
+    const QList<QShaderNode> nodes = graph.nodes();
     for (const QShaderNode &node : nodes) {
         if (intersectsEnabledLayers(node.layers())) {
             const QByteArrayList headerSnippets = node.rule(format).headerSnippets;
             for (const QByteArray &snippet : headerSnippets) {
                 code << replaceParameters(snippet, node, format);
 
-                // If node is an input, record the variable name into the globalInputVariables vector
+                // If node is an input, record the variable name into the globalInputVariables list
                 if (node.type() == QShaderNode::Input) {
                     const QRegularExpressionMatch match = globalInputExtractRegExp.match(QString::fromUtf8(code.last()));
                     if (match.hasMatch())
@@ -355,7 +355,7 @@ QByteArray QShaderGenerator::createShaderCode(const QStringList &enabledLayers) 
     struct Assignment
     {
         QString expression;
-        QVector<Variable *> referencedVariables;
+        QList<Variable *> referencedVariables;
     };
 
     struct Variable
@@ -415,11 +415,11 @@ QByteArray QShaderGenerator::createShaderCode(const QStringList &enabledLayers) 
     // just use vertexPosition directly.
     // The added benefit is when having arrays, we don't try to create
     // mat4 v38 = skinningPalelette[100] which would be invalid
-    QVector<Variable> temporaryVariables;
+    QList<Variable> temporaryVariables;
     // Reserve more than enough space to ensure no reallocation will take place
     temporaryVariables.reserve(nodes.size() * 8);
 
-    QVector<LineContent> lines;
+    QList<LineContent> lines;
 
     auto createVariable = [&] () -> Variable * {
         Q_ASSERT(temporaryVariables.capacity() > 0);
@@ -456,14 +456,14 @@ QByteArray QShaderGenerator::createShaderCode(const QStringList &enabledLayers) 
     for (const QShaderGraph::Statement &statement : graph.createStatements(enabledLayers)) {
         const QShaderNode node = statement.node;
         QByteArray line = node.rule(format).substitution;
-        const QVector<QShaderNodePort> ports = node.ports();
+        const QList<QShaderNodePort> ports = node.ports();
 
         struct VariableReplacement {
             QByteArray placeholder;
             QByteArray variable;
         };
 
-        QVector<VariableReplacement> variableReplacements;
+        QList<VariableReplacement> variableReplacements;
 
         // Generate temporary variable names vN
         for (const QShaderNodePort &port : ports) {

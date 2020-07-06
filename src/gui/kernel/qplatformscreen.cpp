@@ -554,9 +554,9 @@ void QPlatformScreen::setPowerState(PowerState state)
 
     \since 5.9
 */
-QVector<QPlatformScreen::Mode> QPlatformScreen::modes() const
+QList<QPlatformScreen::Mode> QPlatformScreen::modes() const
 {
-    QVector<QPlatformScreen::Mode> list;
+    QList<QPlatformScreen::Mode> list;
     list.append({geometry().size(), refreshRate()});
     return list;
 }

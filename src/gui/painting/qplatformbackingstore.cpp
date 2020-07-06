@@ -90,7 +90,7 @@ public:
     {
     }
 
-    QVector<QBackingstoreTextureInfo> textures;
+    QList<QBackingstoreTextureInfo> textures;
     bool locked;
 };
 

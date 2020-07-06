@@ -541,7 +541,7 @@ bool QImageData::checkForAlphaPixels() const
 
     8-bit images are stored using 8-bit indexes into a color table,
     i.e.  they have a single byte per pixel. The color table is a
-    QVector<QRgb>, and the QRgb typedef is equivalent to an unsigned
+    QList<QRgb>, and the QRgb typedef is equivalent to an unsigned
     int containing an ARGB quadruplet on the format 0xAARRGGBB.
 
     32-bit images have no color table; instead, each pixel contains an
@@ -1398,7 +1398,7 @@ int QImage::colorCount() const
     \sa colorTable(), setColor(), {QImage#Image Transformations}{Image
     Transformations}
 */
-void QImage::setColorTable(const QVector<QRgb> &colors)
+void QImage::setColorTable(const QList<QRgb> &colors)
 {
     if (!d)
         return;
@@ -1424,9 +1424,9 @@ void QImage::setColorTable(const QVector<QRgb> &colors)
 
     \sa setColorTable(), colorCount(), color()
 */
-QVector<QRgb> QImage::colorTable() const
+QList<QRgb> QImage::colorTable() const
 {
-    return d ? d->colortable : QVector<QRgb>();
+    return d ? d->colortable : QList<QRgb>();
 }
 
 /*!
@@ -2014,7 +2014,7 @@ void QImage::setColorCount(int colorCount)
     if (colorCount == d->colortable.size())
         return;
     if (colorCount <= 0) {                        // use no color table
-        d->colortable = QVector<QRgb>();
+        d->colortable.clear();
         return;
     }
     int nc = d->colortable.size();
@@ -2109,7 +2109,7 @@ static inline int pixel_distance(QRgb p1, QRgb p2) {
     return abs(r1 - r2) + abs(g1 - g2) + abs(b1 - b2) + abs(a1 - a2);
 }
 
-static inline int closestMatch(QRgb pixel, const QVector<QRgb> &clut) {
+static inline int closestMatch(QRgb pixel, const QList<QRgb> &clut) {
     int idx = 0;
     int current_distance = INT_MAX;
     for (int i=0; i<clut.size(); ++i) {
@@ -2123,7 +2123,7 @@ static inline int closestMatch(QRgb pixel, const QVector<QRgb> &clut) {
 }
 
 static QImage convertWithPalette(const QImage &src, QImage::Format format,
-                                 const QVector<QRgb> &clut) {
+                                 const QList<QRgb> &clut) {
     QImage dest(src.size(), format);
     dest.setColorTable(clut);
 
@@ -2149,7 +2149,7 @@ static QImage convertWithPalette(const QImage &src, QImage::Format format,
             }
         }
     } else {
-        QVector<QRgb> table = clut;
+        QList<QRgb> table = clut;
         table.resize(2);
         for (int y=0; y<h; ++y) {
             const QRgb *src_pixels = (const QRgb *) src.scanLine(y);
@@ -2178,7 +2178,7 @@ static QImage convertWithPalette(const QImage &src, QImage::Format format,
     and will use a straightforward nearest color approach, with no
     dithering.
 */
-QImage QImage::convertToFormat(Format format, const QVector<QRgb> &colorTable, Qt::ImageConversionFlags flags) const
+QImage QImage::convertToFormat(Format format, const QList<QRgb> &colorTable, Qt::ImageConversionFlags flags) const
 {
     if (!d || d->format == format)
         return *this;
@@ -3776,8 +3776,8 @@ bool QImage::operator==(const QImage & i) const
         } else {
             const int w = width();
             const int h = height();
-            const QVector<QRgb> &colortable = d->colortable;
-            const QVector<QRgb> &icolortable = i.d->colortable;
+            const QList<QRgb> &colortable = d->colortable;
+            const QList<QRgb> &icolortable = i.d->colortable;
             for (int y=0; y<h; ++y) {
                 for (int x=0; x<w; ++x) {
                     if (colortable[pixelIndex(x, y)] != icolortable[i.pixelIndex(x, y)])

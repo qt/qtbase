@@ -84,7 +84,7 @@ static void qt_polygon_isect_line(const QPointF &p1, const QPointF &p2, const QP
 
 /*!
     \class QPolygon
-    \brief The QPolygon class provides a vector of points using
+    \brief The QPolygon class provides a list of points using
     integer precision.
     \inmodule QtGui
 
@@ -93,13 +93,13 @@ static void qt_polygon_isect_line(const QPointF &p1, const QPointF &p2, const QP
     \ingroup painting
     \ingroup shared
 
-    A QPolygon object is a QVector<QPoint>.  The easiest way to add
-    points to a QPolygon is to use QVector's streaming operator, as
+    A QPolygon object is a QList<QPoint>.  The easiest way to add
+    points to a QPolygon is to use QList's streaming operator, as
     illustrated below:
 
     \snippet polygon/polygon.cpp 0
 
-    In addition to the functions provided by QVector, QPolygon
+    In addition to the functions provided by QList, QPolygon
     provides some point-specific functions.
 
     Each point in a polygon can be retrieved by passing its index to
@@ -117,7 +117,7 @@ static void qt_polygon_isect_line(const QPointF &p1, const QPointF &p2, const QP
     The QPolygon class is \l {Implicit Data Sharing}{implicitly
     shared}.
 
-    \sa QVector, QPolygonF, QLine
+    \sa QList, QPolygonF, QLine
 */
 
 
@@ -130,7 +130,7 @@ static void qt_polygon_isect_line(const QPointF &p1, const QPointF &p2, const QP
 
     Constructs a polygon with no points.
 
-    \sa QVector::isEmpty()
+    \sa QList::isEmpty()
 */
 
 /*!
@@ -139,7 +139,7 @@ static void qt_polygon_isect_line(const QPointF &p1, const QPointF &p2, const QP
     Constructs a polygon of the given \a size. Creates an empty
     polygon if \a size == 0.
 
-    \sa QVector::isEmpty()
+    \sa QList::isEmpty()
 */
 
 /*!
@@ -151,7 +151,7 @@ static void qt_polygon_isect_line(const QPointF &p1, const QPointF &p2, const QP
 */
 
 /*!
-    \fn QPolygon::QPolygon(const QVector<QPoint> &points)
+    \fn QPolygon::QPolygon(const QList<QPoint> &points)
 
     Constructs a polygon containing the specified \a points.
 
@@ -438,7 +438,7 @@ void QPolygon::putPoints(int index, int nPoints, const QPolygon & from, int from
     Returns the bounding rectangle of the polygon, or QRect(0, 0, 0,
     0) if the polygon is empty.
 
-    \sa QVector::isEmpty()
+    \sa QList::isEmpty()
 */
 
 QRect QPolygon::boundingRect() const
@@ -479,7 +479,7 @@ QDebug operator<<(QDebug dbg, const QPolygon &a)
 
 /*!
     \class QPolygonF
-    \brief The QPolygonF class provides a vector of points using
+    \brief The QPolygonF class provides a list of points using
     floating point precision.
     \inmodule QtGui
 
@@ -487,13 +487,13 @@ QDebug operator<<(QDebug dbg, const QPolygon &a)
     \ingroup painting
     \ingroup shared
 
-    A QPolygonF is a QVector<QPointF>. The easiest way to add points
+    A QPolygonF is a QList<QPointF>. The easiest way to add points
     to a QPolygonF is to use its streaming operator, as illustrated
     below:
 
     \snippet polygon/polygon.cpp 1
 
-    In addition to the functions provided by QVector, QPolygonF
+    In addition to the functions provided by QList, QPolygonF
     provides the boundingRect() and translate() functions for geometry
     operations. Use the QTransform::map() function for more general
     transformations of QPolygonFs.
@@ -506,7 +506,7 @@ QDebug operator<<(QDebug dbg, const QPolygon &a)
     The QPolygonF class is \l {Implicit Data Sharing}{implicitly
     shared}.
 
-    \sa QVector, QPolygon, QLineF
+    \sa QList, QPolygon, QLineF
 */
 
 
@@ -519,7 +519,7 @@ QDebug operator<<(QDebug dbg, const QPolygon &a)
 
     Constructs a polygon with no points.
 
-    \sa QVector::isEmpty()
+    \sa QList::isEmpty()
 */
 
 /*!
@@ -528,7 +528,7 @@ QDebug operator<<(QDebug dbg, const QPolygon &a)
     Constructs a polygon of the given \a size. Creates an empty
     polygon if \a size == 0.
 
-    \sa QVector::isEmpty()
+    \sa QList::isEmpty()
 */
 
 /*!
@@ -538,7 +538,7 @@ QDebug operator<<(QDebug dbg, const QPolygon &a)
 */
 
 /*!
-    \fn QPolygonF::QPolygonF(const QVector<QPointF> &points)
+    \fn QPolygonF::QPolygonF(const QList<QPointF> &points)
 
     Constructs a polygon containing the specified \a points.
 */
@@ -645,14 +645,14 @@ QPolygonF QPolygonF::translated(const QPointF &offset) const
 
     A polygon is said to be closed if its start point and end point are equal.
 
-    \sa QVector::first(), QVector::last()
+    \sa QList::first(), QList::last()
 */
 
 /*!
     Returns the bounding rectangle of the polygon, or QRectF(0,0,0,0)
     if the polygon is empty.
 
-    \sa QVector::isEmpty()
+    \sa QList::isEmpty()
 */
 
 QRectF QPolygonF::boundingRect() const
@@ -735,7 +735,7 @@ QPolygon::operator QVariant() const
 */
 QDataStream &operator<<(QDataStream &s, const QPolygon &a)
 {
-    const QVector<QPoint> &v = a;
+    const QList<QPoint> &v = a;
     return s << v;
 }
 
@@ -751,7 +751,7 @@ QDataStream &operator<<(QDataStream &s, const QPolygon &a)
 */
 QDataStream &operator>>(QDataStream &s, QPolygon &a)
 {
-    QVector<QPoint> &v = a;
+    QList<QPoint> &v = a;
     return s >> v;
 }
 #endif // QT_NO_DATASTREAM

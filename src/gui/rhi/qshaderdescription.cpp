@@ -417,7 +417,7 @@ QShaderDescription QShaderDescription::deserialize(QDataStream *stream, int vers
     called attributes) for the vertex stage, and inputs for other stages
     (sometimes called varyings).
  */
-QVector<QShaderDescription::InOutVariable> QShaderDescription::inputVariables() const
+QList<QShaderDescription::InOutVariable> QShaderDescription::inputVariables() const
 {
     return d->inVars;
 }
@@ -425,7 +425,7 @@ QVector<QShaderDescription::InOutVariable> QShaderDescription::inputVariables() 
 /*!
     \return the list of output variables.
  */
-QVector<QShaderDescription::InOutVariable> QShaderDescription::outputVariables() const
+QList<QShaderDescription::InOutVariable> QShaderDescription::outputVariables() const
 {
     return d->outVars;
 }
@@ -433,7 +433,7 @@ QVector<QShaderDescription::InOutVariable> QShaderDescription::outputVariables()
 /*!
     \return the list of uniform blocks.
  */
-QVector<QShaderDescription::UniformBlock> QShaderDescription::uniformBlocks() const
+QList<QShaderDescription::UniformBlock> QShaderDescription::uniformBlocks() const
 {
     return d->uniformBlocks;
 }
@@ -445,7 +445,7 @@ QVector<QShaderDescription::UniformBlock> QShaderDescription::uniformBlocks() co
     in combination with the Qt Rendering Hardware Interface since that
     currently has no support for them.
  */
-QVector<QShaderDescription::PushConstantBlock> QShaderDescription::pushConstantBlocks() const
+QList<QShaderDescription::PushConstantBlock> QShaderDescription::pushConstantBlocks() const
 {
     return d->pushConstantBlocks;
 }
@@ -516,7 +516,7 @@ QVector<QShaderDescription::PushConstantBlock> QShaderDescription::pushConstantB
     \note SSBOs are not available with some graphics APIs, such as, OpenGL 2.x or
     OpenGL ES older than 3.1.
  */
-QVector<QShaderDescription::StorageBlock> QShaderDescription::storageBlocks() const
+QList<QShaderDescription::StorageBlock> QShaderDescription::storageBlocks() const
 {
     return d->storageBlocks;
 }
@@ -543,7 +543,7 @@ QVector<QShaderDescription::StorageBlock> QShaderDescription::storageBlocks() co
     exist everywhere. For instance, a HLSL version will likely just use a
     Texture2D and SamplerState object with registers t1 and s1, respectively.
   */
-QVector<QShaderDescription::InOutVariable> QShaderDescription::combinedImageSamplers() const
+QList<QShaderDescription::InOutVariable> QShaderDescription::combinedImageSamplers() const
 {
     return d->combinedImageSamplers;
 }
@@ -570,7 +570,7 @@ QVector<QShaderDescription::InOutVariable> QShaderDescription::combinedImageSamp
     \note Separate image objects are not compatible with some graphics APIs,
     such as, OpenGL 2.x or OpenGL ES older than 3.1.
   */
-QVector<QShaderDescription::InOutVariable> QShaderDescription::storageImages() const
+QList<QShaderDescription::InOutVariable> QShaderDescription::storageImages() const
 {
     return d->storageImages;
 }

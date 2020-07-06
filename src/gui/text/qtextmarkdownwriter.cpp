@@ -79,7 +79,7 @@ bool QTextMarkdownWriter::writeAll(const QTextDocument *document)
 #if QT_CONFIG(itemmodel)
 void QTextMarkdownWriter::writeTable(const QAbstractItemModel *table)
 {
-    QVector<int> tableColumnWidths(table->columnCount());
+    QList<int> tableColumnWidths(table->columnCount());
     for (int col = 0; col < table->columnCount(); ++col) {
         tableColumnWidths[col] = table->headerData(col, Qt::Horizontal).toString().length();
         for (int row = 0; row < table->rowCount(); ++row) {
@@ -118,7 +118,7 @@ void QTextMarkdownWriter::writeFrame(const QTextFrame *frame)
     QTextFrame *child = nullptr;
     int tableRow = -1;
     bool lastWasList = false;
-    QVector<int> tableColumnWidths;
+    QList<int> tableColumnWidths;
     if (table) {
         tableColumnWidths.resize(table->columns());
         for (int col = 0; col < table->columns(); ++col) {

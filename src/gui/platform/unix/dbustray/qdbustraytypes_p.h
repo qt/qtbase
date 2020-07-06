@@ -77,7 +77,7 @@ struct QXdgDBusImageStruct
 };
 Q_DECLARE_TYPEINFO(QXdgDBusImageStruct, Q_MOVABLE_TYPE);
 
-typedef QVector<QXdgDBusImageStruct> QXdgDBusImageVector;
+using QXdgDBusImageVector = QList<QXdgDBusImageStruct>;
 
 QXdgDBusImageVector iconToQXdgDBusImageVector(const QIcon &icon);
 

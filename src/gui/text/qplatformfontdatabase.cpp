@@ -159,18 +159,18 @@ class QWritingSystemsPrivate
 public:
     QWritingSystemsPrivate()
         : ref(1)
-        , vector(QFontDatabase::WritingSystemsCount,false)
+        , list(QFontDatabase::WritingSystemsCount, false)
     {
     }
 
     QWritingSystemsPrivate(const QWritingSystemsPrivate *other)
         : ref(1)
-        , vector(other->vector)
+        , list(other->list)
     {
     }
 
     QAtomicInt ref;
-    QVector<bool> vector;
+    QList<bool> list;
 };
 
 /*!
@@ -212,10 +212,10 @@ QDebug operator<<(QDebug debug, const QSupportedWritingSystems &sws)
 
     QDebugStateSaver saver(debug);
     debug.nospace() << "QSupportedWritingSystems(";
-    int i = sws.d->vector.indexOf(true);
+    int i = sws.d->list.indexOf(true);
     while (i > 0) {
         debug << me.valueToKey(i);
-        i = sws.d->vector.indexOf(true, i + 1);
+        i = sws.d->list.indexOf(true, i + 1);
         if (i > 0)
             debug << ", ";
     }
@@ -253,7 +253,7 @@ void QSupportedWritingSystems::detach()
 void QSupportedWritingSystems::setSupported(QFontDatabase::WritingSystem writingSystem, bool support)
 {
     detach();
-    d->vector[writingSystem] = support;
+    d->list[writingSystem] = support;
 }
 
 /*!
@@ -262,7 +262,7 @@ void QSupportedWritingSystems::setSupported(QFontDatabase::WritingSystem writing
 */
 bool QSupportedWritingSystems::supported(QFontDatabase::WritingSystem writingSystem) const
 {
-    return d->vector.at(writingSystem);
+    return d->list.at(writingSystem);
 }
 
 /*!
@@ -379,7 +379,7 @@ QFontEngine *QPlatformFontDatabase::fontEngine(const QByteArray &fontData, qreal
     or using the font contained in the file referenced by \a fileName. Returns
     a list of family names, or an empty list if the font could not be added.
 
-    If \a applicationFont is non-null, its \c properties vector should be filled
+    If \a applicationFont is non-null, its \c properties list should be filled
     with information from the loaded fonts. This is exposed through FontLoader in
     Qt Quick where it is needed for disambiguating fonts in the same family. When
     the function exits, the \a applicationFont should contain an entry of properties

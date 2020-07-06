@@ -570,7 +570,7 @@ QActionGroup *QAction::actionGroup() const
 
   \sa QWidget::addAction(), QGraphicsWidget::addAction()
 */
-QVector<QObject*> QAction::associatedObjects() const
+QList<QObject*> QAction::associatedObjects() const
 {
     Q_D(const QAction);
     return d->associatedObjects;

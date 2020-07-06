@@ -249,7 +249,7 @@ void QCosmeticStroker::setup()
     if (state->renderHints & QPainter::Antialiasing)
         strokeSelection |= AntiAliased;
 
-    const QVector<qreal> &penPattern = state->lastPen.dashPattern();
+    const QList<qreal> &penPattern = state->lastPen.dashPattern();
     if (penPattern.isEmpty()) {
         Q_ASSERT(!pattern && !reversePattern);
         pattern = nullptr;

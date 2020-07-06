@@ -222,12 +222,12 @@ void QGlyphRun::setRawFont(const QRawFont &rawFont)
 
     \sa setGlyphIndexes(), setPositions()
 */
-QVector<quint32> QGlyphRun::glyphIndexes() const
+QList<quint32> QGlyphRun::glyphIndexes() const
 {
     if (d->glyphIndexes.constData() == d->glyphIndexData) {
         return d->glyphIndexes;
     } else {
-        QVector<quint32> indexes(d->glyphIndexDataSize);
+        QList<quint32> indexes(d->glyphIndexDataSize);
         memcpy(indexes.data(), d->glyphIndexData, d->glyphIndexDataSize * sizeof(quint32));
         return indexes;
     }
@@ -237,10 +237,10 @@ QVector<quint32> QGlyphRun::glyphIndexes() const
     Set the glyph indexes for this QGlyphRun object to \a glyphIndexes. The glyph indexes must
     be valid for the selected font.
 */
-void QGlyphRun::setGlyphIndexes(const QVector<quint32> &glyphIndexes)
+void QGlyphRun::setGlyphIndexes(const QList<quint32> &glyphIndexes)
 {
     detach();
-    d->glyphIndexes = glyphIndexes; // Keep a reference to the QVector to avoid copying
+    d->glyphIndexes = glyphIndexes; // Keep a reference to the QList to avoid copying
     d->glyphIndexData = glyphIndexes.constData();
     d->glyphIndexDataSize = glyphIndexes.size();
 }
@@ -248,12 +248,12 @@ void QGlyphRun::setGlyphIndexes(const QVector<quint32> &glyphIndexes)
 /*!
     Returns the position of the edge of the baseline for each glyph in this set of glyph indexes.
 */
-QVector<QPointF> QGlyphRun::positions() const
+QList<QPointF> QGlyphRun::positions() const
 {
     if (d->glyphPositions.constData() == d->glyphPositionData) {
         return d->glyphPositions;
     } else {
-        QVector<QPointF> glyphPositions(d->glyphPositionDataSize);
+        QList<QPointF> glyphPositions(d->glyphPositionDataSize);
         memcpy(glyphPositions.data(), d->glyphPositionData,
                  d->glyphPositionDataSize * sizeof(QPointF));
         return glyphPositions;
@@ -264,10 +264,10 @@ QVector<QPointF> QGlyphRun::positions() const
     Sets the positions of the edge of the baseline for each glyph in this set of glyph indexes to
     \a positions.
 */
-void QGlyphRun::setPositions(const QVector<QPointF> &positions)
+void QGlyphRun::setPositions(const QList<QPointF> &positions)
 {
     detach();
-    d->glyphPositions = positions; // Keep a reference to the vector to avoid copying
+    d->glyphPositions = positions; // Keep a reference to the list to avoid copying
     d->glyphPositionData = positions.constData();
     d->glyphPositionDataSize = positions.size();
 }
@@ -281,8 +281,8 @@ void QGlyphRun::clear()
     d->rawFont = QRawFont();
     d->flags = { };
 
-    setPositions(QVector<QPointF>());
-    setGlyphIndexes(QVector<quint32>());
+    setPositions(QList<QPointF>());
+    setGlyphIndexes(QList<quint32>());
 }
 
 /*!
