@@ -1,6 +1,7 @@
 # Generated from text.pro.
 
 add_subdirectory(qbytearray)
+add_subdirectory(qbytearrayapisymmetry)
 add_subdirectory(qbytearraylist)
 add_subdirectory(qbytearraymatcher)
 add_subdirectory(qbytedatabuffer)

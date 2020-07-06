@@ -2,6 +2,7 @@ TEMPLATE = subdirs
 
 SUBDIRS = \
     qbytearray \
+    qbytearrayapisymmetry \
     qbytearraylist \
     qbytearraymatcher \
     qbytedatabuffer \
