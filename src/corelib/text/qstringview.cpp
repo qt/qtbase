@@ -105,10 +105,6 @@ QT_BEGIN_NAMESPACE
     allowed in \c constexpr functions). You can use an indexed loop and/or utf16() in
     \c constexpr contexts instead.
 
-    \note We strongly discourage the use of QList<QStringView>,
-    because QList is a very inefficient container for QStringViews (it would heap-allocate
-    every element). Use QList (or std::vector) to hold QStringViews instead.
-
     \sa QString, QStringRef
 */
 
