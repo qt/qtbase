@@ -148,6 +148,7 @@ public:
     int version() const;
     void setVersion(int);
 
+    QDataStream &operator>>(char &i);
     QDataStream &operator>>(qint8 &i);
     QDataStream &operator>>(quint8 &i);
     QDataStream &operator>>(qint16 &i);
@@ -166,6 +167,7 @@ public:
     QDataStream &operator>>(char16_t &c);
     QDataStream &operator>>(char32_t &c);
 
+    QDataStream &operator<<(char i);
     QDataStream &operator<<(qint8 i);
     QDataStream &operator<<(quint8 i);
     QDataStream &operator<<(qint16 i);
@@ -370,6 +372,9 @@ inline int QDataStream::version() const
 inline void QDataStream::setVersion(int v)
 { ver = v; }
 
+inline QDataStream &QDataStream::operator>>(char &i)
+{ return *this >> reinterpret_cast<qint8&>(i); }
+
 inline QDataStream &QDataStream::operator>>(quint8 &i)
 { return *this >> reinterpret_cast<qint8&>(i); }
 
@@ -381,6 +386,9 @@ inline QDataStream &QDataStream::operator>>(quint32 &i)
 
 inline QDataStream &QDataStream::operator>>(quint64 &i)
 { return *this >> reinterpret_cast<qint64&>(i); }
+
+inline QDataStream &QDataStream::operator<<(char i)
+{ return *this << qint8(i); }
 
 inline QDataStream &QDataStream::operator<<(quint8 i)
 { return *this << qint8(i); }
