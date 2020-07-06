@@ -27,30 +27,30 @@
 ****************************************************************************/
 
 #include <QApplication>
-#include <QGesture>
-#include <QLabel>
-#include <QMenu>
-#include <QMenuBar>
 #include <QAction>
-#include <QMainWindow>
-#include <QSplitter>
-#include <QStatusBar>
-#include <QToolBar>
-#include <QVector>
 #include <QCommandLineOption>
 #include <QCommandLineParser>
-#include <QPlainTextEdit>
+#include <QDebug>
+#include <QGesture>
+#include <QLabel>
+#include <QList>
+#include <QMainWindow>
+#include <QMenu>
+#include <QMenuBar>
 #include <QPainter>
 #include <QPainterPath>
 #include <QPaintEvent>
+#include <QPlainTextEdit>
 #include <QScreen>
-#include <QWindow>
 #include <QSharedPointer>
-#include <QDebug>
+#include <QSplitter>
+#include <QStatusBar>
 #include <QTextStream>
+#include <QToolBar>
+#include <QWindow>
 
 static bool optIgnoreTouch = false;
-static QVector<Qt::GestureType> optGestures;
+static QList<Qt::GestureType> optGestures;
 
 static QWidgetList mainWindows;
 
@@ -192,9 +192,9 @@ Gesture *Gesture::fromQGesture(const QWidget *w, const QGesture *source)
 }
 
 typedef QSharedPointer<Gesture> GesturePtr;
-typedef QVector<GesturePtr> GesturePtrs;
+typedef QList<GesturePtr> GesturePtrs;
 
-typedef QVector<QEvent::Type> EventTypeVector;
+typedef QList<QEvent::Type> EventTypeVector;
 static EventTypeVector eventTypes;
 
 class EventFilter : public QObject {
@@ -305,7 +305,7 @@ protected:
 private:
     void handleGestureEvent(QGestureEvent *gestureEvent);
 
-    QVector<Point> m_points;
+    QList<Point> m_points;
     GesturePtrs m_gestures;
     bool m_drawPoints;
 };

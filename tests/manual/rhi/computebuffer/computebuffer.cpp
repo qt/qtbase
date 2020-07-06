@@ -60,7 +60,7 @@
 // everywhere. So in some cases the points will be of size 1.
 
 struct {
-    QVector<QRhiResource *> releasePool;
+    QList<QRhiResource *> releasePool;
     QRhiBuffer *sbuf = nullptr;
     QRhiBuffer *computeUniBuf = nullptr;
     QRhiShaderResourceBindings *computeBindings = nullptr;

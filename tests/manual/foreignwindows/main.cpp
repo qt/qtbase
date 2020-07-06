@@ -59,8 +59,8 @@
 QT_USE_NAMESPACE
 
 using WidgetPtr = QSharedPointer<QWidget>;
-using WidgetPtrList = QVector<WidgetPtr>;
-using WIdList = QVector<WId>;
+using WidgetPtrList = QList<WidgetPtr>;
+using WIdList = QList<WId>;
 
 // Create some pre-defined Windows controls by class name
 static WId createInternalWindow(const QString &name)

@@ -26,19 +26,19 @@
 **
 ****************************************************************************/
 
-#include <QApplication>
-#include <QDebug>
-#include <QMouseEvent>
-#include <QTabletEvent>
-#include <QMainWindow>
-#include <QMenuBar>
-#include <QMenu>
 #include <QAction>
-#include <QStatusBar>
-#include <QVector>
+#include <QApplication>
+#include <QCursor>
+#include <QDebug>
+#include <QList>
+#include <QMainWindow>
+#include <QMenu>
+#include <QMenuBar>
+#include <QMouseEvent>
 #include <QPainter>
 #include <QPainterPath>
-#include <QCursor>
+#include <QStatusBar>
+#include <QTabletEvent>
 
 enum TabletPointType {
     TabletButtonPress,
@@ -125,8 +125,8 @@ private:
     bool m_lastIsMouseMove = false;
     bool m_lastIsTabletMove = false;
     Qt::MouseButton m_lastButton = Qt::NoButton;
-    QVector<TabletPoint> m_points;
-    QVector<QPointF> m_touchPoints;
+    QList<TabletPoint> m_points;
+    QList<QPointF> m_touchPoints;
     QPointF m_tabletPos;
     int m_tabletMoveCount = 0;
     int m_paintEventCount = 0;

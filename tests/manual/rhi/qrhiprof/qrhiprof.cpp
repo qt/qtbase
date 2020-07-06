@@ -92,7 +92,7 @@ public:
             };
         };
 
-        QVector<Param> params;
+        QList<Param> params;
 
         const Param *param(const char *key) const {
             auto it = std::find_if(params.cbegin(), params.cend(), [key](const Param &p) {

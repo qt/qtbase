@@ -53,7 +53,7 @@ public:
         const int rectSize = 10;
         QRect rect(pos.x() - rectSize, pos.y() - rectSize, rectSize *2, rectSize * 2);
 
-        QVector<QRect> updateRects;
+        QList<QRect> updateRects;
         updateRects.append(rect.translated(rectSize * 2, rectSize * 2));
         updateRects.append(rect.translated(rectSize * 2, -rectSize * 2));
         updateRects.append(rect.translated(-rectSize * 2, rectSize * 2));

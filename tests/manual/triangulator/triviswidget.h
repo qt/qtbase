@@ -93,17 +93,17 @@ private:
     float m_strokeWidth = 1;
     bool m_dashStroke = false;
 
-    QVector<QPainterPath> m_paths;
-    QVector<QImage> m_strokePreviews;
-    QVector<QImage> m_fillPreviews;
+    QList<QPainterPath> m_paths;
+    QList<QImage> m_strokePreviews;
+    QList<QImage> m_fillPreviews;
 
     struct Vertex {
         float x, y;
         void set(float vx, float vy) { x = vx; y = vy; }
     };
-    QVector<Vertex> m_fillVertices;
-    QVector<quint32> m_fillIndices;
-    QVector<Vertex> m_strokeVertices;
+    QList<Vertex> m_fillVertices;
+    QList<quint32> m_fillIndices;
+    QList<Vertex> m_strokeVertices;
 
     float m_zoom = 1;
 

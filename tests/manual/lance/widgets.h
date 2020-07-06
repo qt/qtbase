@@ -291,7 +291,7 @@ public:
 
     QSize sizeHint() const { return QSize(800, 800); }
 
-    QVector<QPointF> m_controlPoints;
+    QList<QPointF> m_controlPoints;
     int m_currentPoint;
     bool m_showControlPoints;
 

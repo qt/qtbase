@@ -77,7 +77,7 @@ static quint16 indexData[] =
 static const int MAX_MIP_LEVELS = 20;
 
 struct {
-    QVector<QRhiResource *> releasePool;
+    QList<QRhiResource *> releasePool;
 
     QRhiBuffer *vbuf = nullptr;
     QRhiBuffer *ibuf = nullptr;

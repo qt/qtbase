@@ -102,7 +102,7 @@ protected:
     QWidget *m_widget = nullptr;
 };
 
-using DemoContainerList = QVector<DemoContainerBase*>;
+using DemoContainerList = QList<DemoContainerBase*>;
 
 template <class T>
 class DemoContainer : public DemoContainerBase
@@ -551,7 +551,7 @@ QMenu *MainWindow::addNewMenu(const QString &title, int itemCount)
 void MainWindow::maskActionToggled(bool t)
 {
     if (t) {
-        QVector<QPoint> upperLeftTriangle;
+        QList<QPoint> upperLeftTriangle;
         upperLeftTriangle << QPoint(0, 0) << QPoint(width(), 0) << QPoint(0, height());
         setMask(QRegion(QPolygon(upperLeftTriangle)));
     } else {
@@ -851,7 +851,7 @@ public:
 
 private:
     QPoint lastMousePoint;
-    QVector<QPoint> linePoints;
+    QList<QPoint> linePoints;
 };
 
 void LinePainter::paintEvent(QPaintEvent *)

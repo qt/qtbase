@@ -77,7 +77,7 @@ static float triangleData[] =
 const int UBUFSZ = 68;
 
 struct {
-    QVector<QRhiResource *> releasePool;
+    QList<QRhiResource *> releasePool;
     QRhiBuffer *vbuf = nullptr;
     QRhiBuffer *ibuf = nullptr;
     QRhiBuffer *ubuf = nullptr;

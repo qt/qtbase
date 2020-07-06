@@ -58,7 +58,7 @@ public:
         Display display;
     };
 
-    QVector<test> tests;
+    QList<test> tests;
 };
 
 

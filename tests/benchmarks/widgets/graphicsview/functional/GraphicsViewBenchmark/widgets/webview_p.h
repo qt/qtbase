@@ -75,8 +75,8 @@ public:
 
 private:
 
-    QVector<QRectF> m_tileRects;
-    QVector<QPixmapCache::Key> m_tilePixmaps;
+    QList<QRectF> m_tileRects;
+    QList<QPixmapCache::Key> m_tilePixmaps;
     QSizeF m_itemSize;
     QGraphicsWebView *m_webView;
 

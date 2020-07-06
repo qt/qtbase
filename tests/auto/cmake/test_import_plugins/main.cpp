@@ -48,10 +48,10 @@
 **
 ****************************************************************************/
 
+#include <QList>
 #include <QPluginLoader>
 #include <QSet>
 #include <QString>
-#include <QVector>
 
 #include <cstddef>
 #include <iostream>
@@ -67,7 +67,7 @@ int main(int argc, char **argv)
         expectedPluginSet.insert(expectedPlugins[i]);
     }
 
-    QVector<QStaticPlugin> plugins = QPluginLoader::staticPlugins();
+    QList<QStaticPlugin> plugins = QPluginLoader::staticPlugins();
     QSet<QString> actualPluginSet;
     for (QStaticPlugin plugin : plugins) {
         actualPluginSet.insert(plugin.metaData()["className"].toString());

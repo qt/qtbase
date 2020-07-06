@@ -35,7 +35,7 @@
 #include <QStyle>
 
 #include <QtCore/QDebug>
-#include <QtCore/QVector>
+#include <QtCore/QList>
 #include <QtCore/QStringList>
 
 #include <iostream>
@@ -88,9 +88,9 @@ QString LogWidget::startupMessage()
     return result;
 }
 
-static const QVector<QString> &messageTypes()
+static const QList<QString> &messageTypes()
 {
-    static QVector<QString> result;
+    static QList<QString> result;
     if (result.isEmpty()) {
         result << QLatin1String("debug") << QLatin1String("warn")
             << QLatin1String("critical") << QLatin1String("fatal")

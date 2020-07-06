@@ -268,7 +268,7 @@ struct Renderer
     QColor m_bgColor;
     int m_rotationAxis;
 
-    QVector<QRhiResource *> m_releasePool;
+    QList<QRhiResource *> m_releasePool;
     bool m_hasSwapChain = false;
     QRhiSwapChain *m_sc = nullptr;
     QRhiRenderBuffer *m_ds = nullptr;
@@ -691,7 +691,7 @@ struct WindowAndRenderer
     Renderer *renderer;
 };
 
-QVector<WindowAndRenderer> windows;
+QList<WindowAndRenderer> windows;
 
 void createWindow()
 {

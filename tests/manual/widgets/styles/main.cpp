@@ -32,19 +32,19 @@
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QLabel>
+#include <QList>
 #include <QMainWindow>
 #include <QMenu>
 #include <QMenuBar>
 #include <QPalette>
 #include <QPixmap>
 #include <QPlainTextEdit>
+#include <QScreen>
 #include <QStyle>
 #include <QTabWidget>
 #include <QTextStream>
 #include <QVBoxLayout>
-#include <QVector>
 #include <QWindow>
-#include <QScreen>
 
 // Format enumeration value and strip off the class name
 // added by QDebug: "QStyle::StandardPixmap(SP_Icon)" -> "SP_Icon".
@@ -82,9 +82,9 @@ static bool operator<(const StyleIconEntry &e1, const StyleIconEntry &e2)
     return e1.name < e2.name;
 }
 
-static QVector<StyleIconEntry> styleIconEntries()
+static QList<StyleIconEntry> styleIconEntries()
 {
-    QVector<StyleIconEntry> result;
+    QList<StyleIconEntry> result;
     const int count = int(QStyle::SP_LineEditClearButton) + 1;
     result.reserve(count);
     for (int i = 0; i < count; ++i) {
@@ -131,7 +131,7 @@ static QWidget *createStandardPixmapPage(QWidget *parent)
     QGridLayout *grid = new QGridLayout(result);
     int row = 0;
     int column = 0;
-    QVector<StyleIconEntry> entries = styleIconEntries();
+    QList<StyleIconEntry> entries = styleIconEntries();
     for (int i = 0, size = entries.size(); i < size; ++i) {
         grid->addWidget(createStandardPixmapDisplay(entries.at(i), parent), row, column++);
         if (column >= maxColumns) {
@@ -169,7 +169,7 @@ static QWidget *createStandardIconPage(QWidget *parent)
     int column = 0;
     const int largeIconSize = parent->style()->pixelMetric(QStyle::PM_LargeIconSize);
     const QSize displaySize(largeIconSize, largeIconSize);
-    QVector<StyleIconEntry> entries = styleIconEntries();
+    QList<StyleIconEntry> entries = styleIconEntries();
     for (int i = 0, size = entries.size(); i < size; ++i) {
         grid->addWidget(createStandardIconDisplay(entries.at(i), displaySize, parent), row, column++);
         if (column >= maxColumns) {

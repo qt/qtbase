@@ -29,10 +29,10 @@
 #include <QtTest/QtTest>
 
 #include <QtCore/qdatetime.h>
-#include <QtCore/qvector.h>
+#include <QtCore/qdir.h>
+#include <QtCore/qlist.h>
 #include <QtCore/qpair.h>
 #include <QtCore/qurl.h>
-#include <QtCore/qdir.h>
 
 #include <QtNetwork/private/qhstsstore_p.h>
 #include <QtNetwork/private/qhsts_p.h>

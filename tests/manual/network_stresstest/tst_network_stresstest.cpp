@@ -27,14 +27,14 @@
 ****************************************************************************/
 
 #include <QtTest/QtTest>
-#include <QtCore/QThread>
-#include <QtCore/QSemaphore>
 #include <QtCore/QElapsedTimer>
+#include <QtCore/QList>
+#include <QtCore/QSemaphore>
 #include <QtCore/QSharedPointer>
-#include <QtCore/QVector>
-#include <QtNetwork/QTcpSocket>
-#include <QtNetwork/QNetworkReply>
+#include <QtCore/QThread>
 #include <QtNetwork/QNetworkAccessManager>
+#include <QtNetwork/QNetworkReply>
+#include <QtNetwork/QTcpSocket>
 
 #ifdef QT_BUILD_INTERNAL
 # include <private/qnetworkaccessmanager_p.h>
@@ -729,7 +729,7 @@ void tst_NetworkStressTest::namGet()
         QNetworkRequest req(url);
         req.setAttribute(QNetworkRequest::HttpPipeliningAllowedAttribute, pipelineAllowed);
 
-        QVector<QSharedPointer<QNetworkReply> > replies;
+        QList<QSharedPointer<QNetworkReply> > replies;
         replies.resize(parallelAttempts);
         for (int j = 0; j < parallelAttempts; ++j) {
             QNetworkReply *r = manager.get(req);

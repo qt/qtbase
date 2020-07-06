@@ -169,7 +169,7 @@ void destroyRhi()
 }
 
 struct {
-    QVector<QWindow *> windows;
+    QList<QWindow *> windows;
 
     QRhiBuffer *vbuf = nullptr;
     QRhiBuffer *ubuf = nullptr;
@@ -295,7 +295,7 @@ protected:
     bool m_newlyExposed = false;
 
     QMatrix4x4 m_proj;
-    QVector<QRhiResource *> m_releasePool;
+    QList<QRhiResource *> m_releasePool;
 
     bool m_hasSwapChain = false;
     QRhiSwapChain *m_sc = nullptr;

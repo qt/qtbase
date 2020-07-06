@@ -157,7 +157,7 @@ template <typename String> void tst_QHash::hashing_template()
     // just the hashing function
     QFETCH(QStringList, items);
 
-    QVector<String> realitems;
+    QList<String> realitems;
     realitems.reserve(items.size());
     foreach (const QString &s, items)
         realitems.append(s);

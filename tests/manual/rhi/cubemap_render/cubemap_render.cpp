@@ -79,7 +79,7 @@ static quint16 halfQuadIndexData[] =
 };
 
 struct {
-    QVector<QRhiResource *> releasePool;
+    QList<QRhiResource *> releasePool;
 
     QRhiTexture *cubemap1 = nullptr;
     QRhiTexture *cubemap2 = nullptr;

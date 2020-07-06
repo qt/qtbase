@@ -39,11 +39,11 @@
 #include <QtNetwork/qdtls.h>
 #include <QtNetwork/qssl.h>
 
-#include <QtCore/qcryptographichash.h>
 #include <QtCore/qbytearray.h>
-#include <QtCore/qvector.h>
-#include <QtCore/qstring.h>
+#include <QtCore/qcryptographichash.h>
+#include <QtCore/qlist.h>
 #include <QtCore/qobject.h>
+#include <QtCore/qstring.h>
 
 #include <algorithm>
 

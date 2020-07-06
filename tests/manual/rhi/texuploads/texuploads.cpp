@@ -59,7 +59,7 @@ struct {
     QRhiSampler *sampler = nullptr;
     QRhiShaderResourceBindings *srb = nullptr;
     QRhiGraphicsPipeline *ps = nullptr;
-    QVector<QRhiResource *> releasePool;
+    QList<QRhiResource *> releasePool;
 
     float rotation = 0;
     QRhiResourceUpdateBatch *initialUpdates = nullptr;

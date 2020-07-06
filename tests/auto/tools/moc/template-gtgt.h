@@ -31,13 +31,13 @@
 template<class TYPE, size_t COUNT>
 class myTemplate :
       QString,
-      QVector<TYPE, QList<COUNT>>
+      QList<TYPE, QList<COUNT>>
 {};
 
 template<class TYPE, size_t COUNT>
 class myTemplate2 :
       QString,
-      QVector<TYPE, QList< (4 >> 2) >>
+      QList<TYPE, QList< (4 >> 2) >>
 {};
 
 class Widget : public QWidget

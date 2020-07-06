@@ -112,7 +112,7 @@ void QOpenGLContextWindow::createForeignContext()
     QSurfaceFormat fmt = format();
     EGLConfig config = q_configFromGLFormat(dpy, fmt);
 
-    QVector<EGLint> contextAttrs;
+    QList<EGLint> contextAttrs;
     contextAttrs.append(EGL_CONTEXT_CLIENT_VERSION);
     contextAttrs.append(fmt.majorVersion());
     contextAttrs.append(EGL_NONE);

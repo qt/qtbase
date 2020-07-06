@@ -27,13 +27,13 @@
 ****************************************************************************/
 
 #include <QApplication>
-#include <QStringList>
-#include <QVector>
-#include <QFile>
 #include <QDir>
-#include <QPainter>
+#include <QFile>
 #include <QFontMetrics>
 #include <QImage>
+#include <QList>
+#include <QPainter>
+#include <QStringList>
 #include <QXmlStreamReader>
 
 static const int fontPixelSize = 25;
@@ -47,7 +47,7 @@ struct testDataSet
     QString inputOriginal;
     QString output;
     QString outputOriginal;
-    QVector<uint> outputGlyphIDs;
+    QList<uint> outputGlyphIDs;
     QString outputGlyphIDsOriginal;
 };
 

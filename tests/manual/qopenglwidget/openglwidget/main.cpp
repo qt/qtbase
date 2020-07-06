@@ -49,7 +49,7 @@ class Tools : public QObject
     Q_OBJECT
 
 public:
-    Tools(QWidget *root, QWidget *widgetToTurn, const QVector<QWidget *> glwidgets)
+    Tools(QWidget *root, QWidget *widgetToTurn, const QWidgetList &glwidgets)
         : m_root(root), m_widgetToTurn(widgetToTurn), m_glWidgets(glwidgets) { }
     void dump();
 
@@ -66,7 +66,7 @@ private:
 
     QWidget *m_root;
     QWidget *m_widgetToTurn;
-    QVector<QWidget *> m_glWidgets;
+    QWidgetList m_glWidgets;
 };
 
 void Tools::turnNative()
@@ -212,7 +212,7 @@ int main(int argc, char *argv[])
     sw->setWindowTitle("Tabs");
 
     TabWidgetResetter twr(tw);
-    Tools t(&wnd, glw3, QVector<QWidget *>() << glw << glw2 << glw3 << glw4);
+    Tools t(&wnd, glw3, QWidgetList { glw, glw2, glw3, glw4 });
     QObject::connect(&t, SIGNAL(aboutToShowGLWidgets()), &twr, SLOT(reset()));
     QMenu *toolsMenu = wnd.menuBar()->addMenu("&Tools");
     toolsMenu->addAction("&Turn widgets (or some parent) into native", &t, SLOT(turnNative()));

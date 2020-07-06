@@ -58,7 +58,7 @@
 const int INSTANCE_COUNT = 1024;
 
 struct {
-    QVector<QRhiResource *> releasePool;
+    QList<QRhiResource *> releasePool;
 
     QRhiBuffer *vbuf = nullptr;
     QRhiBuffer *instBuf = nullptr;

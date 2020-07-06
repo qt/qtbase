@@ -26,7 +26,8 @@
 **
 ****************************************************************************/
 #include <QDebug>
-#include <QVector>
+#include <QList>
+
 void testErase()
 {
     QList<int> a, b;

@@ -29,11 +29,11 @@
 #include "nativewindowdump.h"
 #include "qwindowdump.h"
 
-#include <QtCore/QTextStream>
-#include <QtCore/QSharedPointer>
 #include <QtCore/QDebug>
+#include <QtCore/QList>
 #include <QtCore/QRect>
-#include <QtCore/QVector>
+#include <QtCore/QSharedPointer>
+#include <QtCore/QTextStream>
 
 #include <QtCore/qt_windows.h>
 
@@ -253,7 +253,7 @@ static void dumpNativeWindowRecursionByZ(HWND hwnd, DumpContext *dc)
     }
 }
 
-typedef QVector<WId> WIdVector;
+typedef QList<WId> WIdVector;
 
 static void dumpNativeWindows(const WIdVector& wins)
 {

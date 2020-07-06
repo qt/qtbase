@@ -59,7 +59,7 @@
 #include "../shared/cube.h"
 
 struct {
-    QVector<QRhiResource *> releasePool;
+    QList<QRhiResource *> releasePool;
     QRhiBuffer *vbuf = nullptr;
     QRhiBuffer *ubuf = nullptr;
     QRhiTexture *tex = nullptr;
