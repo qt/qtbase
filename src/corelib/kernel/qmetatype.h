@@ -864,8 +864,7 @@ struct ContainerAPI<std::list<T> > : CapabilitiesImpl<std::list<T> >
 { static int size(const std::list<T> *t) { return int(t->size()); } };
 
 /*
- revision 0: _iteratorCapabilities is simply a uint, where the bits at _revision were never set
- revision 1: _iteratorCapabilties is treated as a bitfield, the remaining bits are used to introduce
+ revision 0: _iteratorCapabilties is treated as a bitfield, the remaining bits are used to introduce
              _revision, _containerCapabilities and _unused. The latter contains 21 bits that are
              not used yet
 */
@@ -884,9 +883,8 @@ public:
     // uint _unused:21;
     typedef int(*sizeFunc)(const void *p);
     typedef const void * (*atFunc)(const void *p, int);
-    typedef void (*moveIteratorFunc)(const void *p, void **);
     enum Position { ToBegin, ToEnd };
-    typedef void (*moveIteratorFunc2)(const void *p, void **, Position position);
+    typedef void (*moveIteratorFunc)(const void *p, void **, Position position);
     typedef void (*advanceFunc)(void **p, int);
     typedef VariantData (*getFunc)( void * const *p, int metaTypeId, uint flags);
     typedef void (*destroyIterFunc)(void **p);
@@ -900,14 +898,8 @@ public:
 
     sizeFunc _size;
     atFunc _at;
-    union {
-        moveIteratorFunc _moveToBegin;
-        moveIteratorFunc2 _moveTo;
-    };
-    union {
-        moveIteratorFunc _moveToEnd;
-        appendFunction _append;
-    };
+    moveIteratorFunc _moveTo;
+    appendFunction _append;
     advanceFunc _advance;
     getFunc _get;
     destroyIterFunc _destroyIter;
@@ -953,7 +945,7 @@ public:
       , _iterator(nullptr)
       , _metaType_id(qMetaTypeId<typename T::value_type>())
       , _metaType_flags(QTypeInfo<typename T::value_type>::isPointer)
-      , _iteratorCapabilities(ContainerAPI<T>::IteratorCapabilities | (1 << 4) | (ContainerCapabilitiesImpl<T>::ContainerCapabilities << (4+3)))
+      , _iteratorCapabilities(ContainerAPI<T>::IteratorCapabilities | (0 << 4) | (ContainerCapabilitiesImpl<T>::ContainerCapabilities << (4+3)))
       , _size(sizeImpl<T>)
       , _at(atImpl<T>)
       , _moveTo(moveToImpl<T>)
@@ -971,11 +963,11 @@ public:
       , _iterator(nullptr)
       , _metaType_id(QMetaType::UnknownType)
       , _metaType_flags(0)
-      , _iteratorCapabilities(0 | (1 << 4) ) // no iterator capabilities, revision 1
+      , _iteratorCapabilities(0 | (0 << 4) ) // no iterator capabilities, revision 0
       , _size(nullptr)
       , _at(nullptr)
-      , _moveToBegin(nullptr)
-      , _moveToEnd(nullptr)
+      , _moveTo(nullptr)
+      , _append(nullptr)
       , _advance(nullptr)
       , _get(nullptr)
       , _destroyIter(nullptr)
@@ -985,16 +977,10 @@ public:
     }
 
     inline void moveToBegin() {
-        if (revision() == 0)
-            _moveToBegin(_iterable, &_iterator);
-        else
-            _moveTo(_iterable, &_iterator, ToBegin);
+        _moveTo(_iterable, &_iterator, ToBegin);
     }
     inline void moveToEnd() {
-        if (revision() == 0)
-            _moveToEnd(_iterable, &_iterator);
-        else
-            _moveTo(_iterable, &_iterator, ToEnd);
+        _moveTo(_iterable, &_iterator, ToEnd);
     }
     inline bool equal(const QSequentialIterableImpl&other) const { return _equalIter(&_iterator, &other._iterator); }
     inline QSequentialIterableImpl &advance(int i) {

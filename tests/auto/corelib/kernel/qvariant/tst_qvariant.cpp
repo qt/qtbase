@@ -4516,8 +4516,8 @@ void tst_QVariant::shouldDeleteVariantDataWorksForSequential()
 
         iterator._size = [](const void *) {return 1;};
         iterator._metaType_id = qMetaTypeId<MyType>();
-        iterator._moveToBegin = [](const void *, void **) {};
-        iterator._moveToEnd = [](const void *, void **) {};
+        iterator._moveTo = [](const void *, void **, QtMetaTypePrivate::QSequentialIterableImpl::Position) {};
+        iterator._append = [](const void *, const void *) {};
         iterator._advance = [](void **, int) {};
         iterator._destroyIter = [](void **){};
         iterator._equalIter = [](void * const *, void * const *){return true; /*all iterators are nullptr*/};
@@ -4655,7 +4655,7 @@ void tst_QVariant::sequentialIterableEndianessSanityCheck()
     namespace QMTP = QtMetaTypePrivate;
     uint oldIteratorCaps = QMTP::ForwardCapability | QMTP::BiDirectionalCapability | QMTP::RandomAccessCapability;
     QMTP::QSequentialIterableImpl seqImpl {};
-    QCOMPARE(seqImpl.revision(), 1u);
+    QCOMPARE(seqImpl.revision(), 0u);
     memcpy(&seqImpl._iteratorCapabilities, &oldIteratorCaps, sizeof(oldIteratorCaps));
     QCOMPARE(seqImpl.revision(), 0u);
 }
