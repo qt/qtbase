@@ -1193,7 +1193,6 @@ QWindow *QGuiApplication::topLevelAt(const QPoint &pos)
             run GUI applications in environments without a GUI, such as servers.
         \li \c minimalegl is an example plugin.
         \li \c offscreen
-        \li \c openwfd
         \li \c qnx
         \li \c windows
         \li \c wayland is a platform plugin for modern Linux desktops and some
