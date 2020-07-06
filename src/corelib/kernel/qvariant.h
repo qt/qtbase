@@ -817,13 +817,13 @@ namespace QtPrivate {
             if (QMetaType::hasRegisteredConverterFunction(typeId, qMetaTypeId<QtMetaTypePrivate::QPairVariantInterfaceImpl>()) && !(typeId == qMetaTypeId<QPair<QVariant, QVariant> >())) {
                 QtMetaTypePrivate::QPairVariantInterfaceImpl pi = v.value<QtMetaTypePrivate::QPairVariantInterfaceImpl>();
                 const QtMetaTypePrivate::VariantData d1 = pi.first();
-                QVariant v1(QMetaType(d1.metaTypeId), d1.data);
-                if (d1.metaTypeId == qMetaTypeId<QVariant>())
+                QVariant v1(d1.metaType, d1.data);
+                if (d1.metaType == QMetaType::fromType<QVariant>())
                     v1 = *reinterpret_cast<const QVariant*>(d1.data);
 
                 const QtMetaTypePrivate::VariantData d2 = pi.second();
-                QVariant v2(QMetaType(d2.metaTypeId), d2.data);
-                if (d2.metaTypeId == qMetaTypeId<QVariant>())
+                QVariant v2(d2.metaType, d2.data);
+                if (d2.metaType == QMetaType::fromType<QVariant>())
                     v2 = *reinterpret_cast<const QVariant*>(d2.data);
 
                 return QPair<QVariant, QVariant>(v1, v2);

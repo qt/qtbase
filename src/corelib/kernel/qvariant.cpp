@@ -4245,12 +4245,12 @@ QSequentialIterable::const_iterator QSequentialIterable::end() const
 
 static const QVariant variantFromVariantDataHelper(const QtMetaTypePrivate::VariantData &d) {
     QVariant v;
-    if (d.metaTypeId == qMetaTypeId<QVariant>())
+    if (d.metaType == QMetaType::fromType<QVariant>())
         v =  *reinterpret_cast<const QVariant*>(d.data);
     else
-        v = QVariant(QMetaType(d.metaTypeId), d.data);
+        v = QVariant(d.metaType, d.data);
     if (d.flags & QVariantConstructionFlags::ShouldDeleteVariantData)
-        QMetaType::destroy(d.metaTypeId, const_cast<void *>(d.data));
+        d.metaType.destroy(const_cast<void *>(d.data));
     return v;
 }
 
@@ -4533,8 +4533,8 @@ void QAssociativeIterable::const_iterator::end()
 
 void QAssociativeIterable::const_iterator::find(const QVariant &key)
 {
-    Q_ASSERT(key.userType() == m_impl._metaType_id_key);
-    const QtMetaTypePrivate::VariantData dkey(key.userType(), key.constData(), 0 /*key.flags()*/);
+    Q_ASSERT(key.metaType() == m_impl._metaType_key);
+    const QtMetaTypePrivate::VariantData dkey(key.metaType(), key.constData(), 0 /*key.flags()*/);
     m_impl.find(dkey);
 }
 
@@ -4580,7 +4580,7 @@ QAssociativeIterable::const_iterator QAssociativeIterable::find(const QVariant &
 {
     const_iterator it(*this, new QAtomicInt(0));
     QVariant key_ = key;
-    if (key_.canConvert(m_impl._metaType_id_key) && key_.convert(m_impl._metaType_id_key))
+    if (key_.canConvert(m_impl._metaType_key.id()) && key_.convert(m_impl._metaType_key.id()))
         it.find(key_);
     else
         it.end();
