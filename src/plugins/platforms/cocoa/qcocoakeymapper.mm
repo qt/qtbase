@@ -84,33 +84,22 @@ Qt::KeyboardModifiers QCocoaKeyMapper::fromCocoaModifiers(NSEventModifierFlags c
     return swapModifiersIfNeeded(qtModifiers);
 }
 
-static constexpr std::tuple<int, Qt::KeyboardModifier> carbonModifierMap[] = {
-    { shiftKey, Qt::ShiftModifier },
-    { rightShiftKey, Qt::ShiftModifier },
-    { controlKey, Qt::ControlModifier },
-    { rightControlKey, Qt::ControlModifier },
-    { cmdKey, Qt::MetaModifier },
-    { optionKey, Qt::AltModifier },
-    { rightOptionKey, Qt::AltModifier },
-    { kEventKeyModifierNumLockMask, Qt::KeypadModifier }
-};
-
 using CarbonModifiers = UInt32; // As opposed to EventModifiers which is UInt16
-
-Qt::KeyboardModifiers fromCarbonModifiers(CarbonModifiers carbonModifiers)
-{
-    Qt::KeyboardModifiers qtModifiers = Qt::NoModifier;
-    for (const auto &[carbonModifier, qtModifier] : carbonModifierMap) {
-        if (carbonModifiers & carbonModifier)
-            qtModifiers |= qtModifier;
-    }
-
-    return swapModifiersIfNeeded(qtModifiers);
-}
 
 static CarbonModifiers toCarbonModifiers(Qt::KeyboardModifiers qtModifiers)
 {
     qtModifiers = swapModifiersIfNeeded(qtModifiers);
+
+    static constexpr std::tuple<int, Qt::KeyboardModifier> carbonModifierMap[] = {
+        { shiftKey, Qt::ShiftModifier },
+        { rightShiftKey, Qt::ShiftModifier },
+        { controlKey, Qt::ControlModifier },
+        { rightControlKey, Qt::ControlModifier },
+        { cmdKey, Qt::MetaModifier },
+        { optionKey, Qt::AltModifier },
+        { rightOptionKey, Qt::AltModifier },
+        { kEventKeyModifierNumLockMask, Qt::KeypadModifier }
+    };
 
     CarbonModifiers carbonModifiers = 0;
     for (const auto &[carbonModifier, qtModifier] : carbonModifierMap) {
@@ -394,7 +383,7 @@ QCocoaKeyMapper::~QCocoaKeyMapper()
 
 Qt::KeyboardModifiers QCocoaKeyMapper::queryKeyboardModifiers()
 {
-    return fromCarbonModifiers(GetCurrentKeyModifiers());
+    return fromCocoaModifiers(NSEvent.modifierFlags);
 }
 
 bool QCocoaKeyMapper::updateKeyboard()
