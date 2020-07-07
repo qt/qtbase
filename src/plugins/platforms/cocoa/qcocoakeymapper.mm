@@ -65,21 +65,23 @@ static Qt::KeyboardModifiers swapModifiersIfNeeded(const Qt::KeyboardModifiers m
     return swappedModifiers;
 }
 
+static constexpr std::tuple<NSEventModifierFlags, Qt::KeyboardModifier> cocoaModifierMap[] = {
+    { NSEventModifierFlagShift, Qt::ShiftModifier },
+    { NSEventModifierFlagControl, Qt::ControlModifier },
+    { NSEventModifierFlagCommand, Qt::MetaModifier },
+    { NSEventModifierFlagOption, Qt::AltModifier },
+    { NSEventModifierFlagNumericPad, Qt::KeypadModifier }
+};
+
 Qt::KeyboardModifiers QCocoaKeyMapper::fromCocoaModifiers(NSEventModifierFlags cocoaModifiers)
 {
-    const bool dontSwapCtrlAndMeta = qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta);
-    Qt::KeyboardModifiers qtMods =Qt::NoModifier;
-    if (cocoaModifiers & NSEventModifierFlagShift)
-        qtMods |= Qt::ShiftModifier;
-    if (cocoaModifiers & NSEventModifierFlagControl)
-        qtMods |= dontSwapCtrlAndMeta ? Qt::ControlModifier : Qt::MetaModifier;
-    if (cocoaModifiers & NSEventModifierFlagOption)
-        qtMods |= Qt::AltModifier;
-    if (cocoaModifiers & NSEventModifierFlagCommand)
-        qtMods |= dontSwapCtrlAndMeta ? Qt::MetaModifier : Qt::ControlModifier;
-    if (cocoaModifiers & NSEventModifierFlagNumericPad)
-        qtMods |= Qt::KeypadModifier;
-    return qtMods;
+    Qt::KeyboardModifiers qtModifiers = Qt::NoModifier;
+    for (const auto &[cocoaModifier, qtModifier] : cocoaModifierMap) {
+        if (cocoaModifiers & cocoaModifier)
+            qtModifiers |= qtModifier;
+    }
+
+    return swapModifiersIfNeeded(qtModifiers);
 }
 
 static constexpr std::tuple<int, Qt::KeyboardModifier> carbonModifierMap[] = {
