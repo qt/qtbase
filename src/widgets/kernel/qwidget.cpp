@@ -6872,30 +6872,6 @@ void QWidgetPrivate::reparentFocusWidgets(QWidget * oldtlw)
 
 }
 
-/*!\internal
-
-  Measures the shortest distance from a point to a rect.
-
-  This function is called from QDesktopwidget::screen(QPoint) to find the
-  closest screen for a point.
-  In directional KeypadNavigation, it is called to find the closest
-  widget to the current focus widget center.
-*/
-int QWidgetPrivate::pointToRect(const QPoint &p, const QRect &r)
-{
-    int dx = 0;
-    int dy = 0;
-    if (p.x() < r.left())
-        dx = r.left() - p.x();
-    else if (p.x() > r.right())
-        dx = p.x() - r.right();
-    if (p.y() < r.top())
-        dy = r.top() - p.y();
-    else if (p.y() > r.bottom())
-        dy = p.y() - r.bottom();
-    return dx + dy;
-}
-
 /*!
     \property QWidget::frameSize
     \brief the size of the widget including any window frame
@@ -11780,7 +11756,20 @@ QWidget *QWidgetPrivate::widgetInNavigationDirection(Direction direction)
                 && targetCandidate->isVisible()
                    // ...is in the same window,
                 && targetCandidate->window() == sourceWindow) {
-            const int targetCandidateDistance = pointToRect(sourcePoint, targetCandidateRect);
+            const int targetCandidateDistance = [](const QPoint &sourcePoint,
+                                                   const QRect &targetCandidateRect) {
+                int dx = 0;
+                int dy = 0;
+                if (p.x() < r.left())
+                    dx = r.left() - p.x();
+                else if (p.x() > r.right())
+                    dx = p.x() - r.right();
+                if (p.y() < r.top())
+                    dy = r.top() - p.y();
+                else if (p.y() > r.bottom())
+                    dy = p.y() - r.bottom();
+                return dx + dy;
+            }();
             if (targetCandidateDistance < shortestDistance) {
                 shortestDistance = targetCandidateDistance;
                 targetWidget = targetCandidate;

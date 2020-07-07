@@ -398,8 +398,6 @@ public:
 
     void reparentFocusWidgets(QWidget *oldtlw);
 
-    static int pointToRect(const QPoint &p, const QRect &r);
-
     void setWinId(WId);
     void showChildren(bool spontaneous);
     void hideChildren(bool spontaneous);
