@@ -465,7 +465,9 @@ void QListModel::itemChanged(QListWidgetItem *item, const QVector<int> &roles)
 QStringList QListModel::mimeTypes() const
 {
     const QListWidget *view = qobject_cast<const QListWidget*>(QObject::parent());
-    return view->mimeTypes();
+    if (view)
+        return view->mimeTypes();
+    return {};
 }
 
 QMimeData *QListModel::internalMimeData()  const
