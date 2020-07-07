@@ -1,7 +1,7 @@
-# Generated from qvector.pro.
+# Generated from qlist.pro.
 
 #####################################################################
-## tst_qvector Test:
+## tst_qlist Test:
 #####################################################################
 
 qt_add_test(tst_qlist

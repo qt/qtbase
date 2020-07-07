@@ -1,13 +1,12 @@
-# Generated from qinputdevice.pro.
+# Generated from qpromise.pro.
 
 #####################################################################
-## tst_qinputdevice Test:
+## tst_qpromise Test:
 #####################################################################
 
-add_qt_test(tst_qinputdevice
+qt_add_test(tst_qpromise
     SOURCES
-        tst_qinputdevice.cpp
+        tst_qpromise.cpp
     PUBLIC_LIBRARIES
-        Qt::Gui
-        Qt::GuiPrivate
+        Qt::CorePrivate
 )

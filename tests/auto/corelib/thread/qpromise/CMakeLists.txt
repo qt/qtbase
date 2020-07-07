@@ -1,3 +1,5 @@
+# Generated from qpromise.pro.
+
 #####################################################################
 ## tst_qpromise Test:
 #####################################################################
@@ -7,6 +9,6 @@ qt_add_test(tst_qpromise
         tst_qpromise.cpp
     PUBLIC_LIBRARIES
         Qt::CorePrivate
-    LIBRARIES
-        Threads::Threads  # solves issue with libpthread linkage
+    LIBRARIES # special case
+        Threads::Threads  # solves issue with libpthread linkage # special case
 )
