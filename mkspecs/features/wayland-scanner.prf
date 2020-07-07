@@ -38,7 +38,7 @@ wayland_code.name = wayland ${QMAKE_FILE_BASE}
 wayland_code.input = WAYLANDCLIENTSOURCES WAYLANDSERVERSOURCES
 wayland_code.variable_out = SOURCES
 wayland_code.output = wayland-${QMAKE_FILE_BASE}-protocol.c
-wayland_code.commands = $$QMAKE_WAYLAND_SCANNER --include-core-only code < ${QMAKE_FILE_IN} > ${QMAKE_FILE_OUT}
+wayland_code.commands = $$QMAKE_WAYLAND_SCANNER --include-core-only public-code < ${QMAKE_FILE_IN} > ${QMAKE_FILE_OUT}
 silent:wayland_code.commands = @echo Wayland code header ${QMAKE_FILE_IN} && $$wayland_code.commands
 QMAKE_EXTRA_COMPILERS += wayland_code
 
