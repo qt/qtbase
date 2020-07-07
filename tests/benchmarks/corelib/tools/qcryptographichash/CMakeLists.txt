@@ -4,7 +4,7 @@
 ## tst_bench_qcryptographichash Binary:
 #####################################################################
 
-add_qt_benchmark(tst_bench_qcryptographichash
+qt_add_benchmark(tst_bench_qcryptographichash
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

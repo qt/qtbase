@@ -4,7 +4,7 @@
 ## tst_bench_qnetworkdiskcache Binary:
 #####################################################################
 
-add_qt_benchmark(tst_bench_qnetworkdiskcache
+qt_add_benchmark(tst_bench_qnetworkdiskcache
     SOURCES
         tst_qnetworkdiskcache.cpp
     PUBLIC_LIBRARIES

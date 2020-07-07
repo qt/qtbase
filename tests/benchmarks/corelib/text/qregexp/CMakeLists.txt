@@ -4,7 +4,7 @@
 ## tst_bench_qregexp Binary:
 #####################################################################
 
-add_qt_benchmark(tst_bench_qregexp
+qt_add_benchmark(tst_bench_qregexp
     EXCEPTIONS
     SOURCES
         main.cpp
@@ -17,7 +17,7 @@ set(qregexp_resource_files
     "main.cpp"
 )
 
-add_qt_resource(tst_bench_qregexp "qregexp"
+qt_add_resource(tst_bench_qregexp "qregexp"
     PREFIX
         "/"
     FILES
@@ -31,14 +31,14 @@ add_qt_resource(tst_bench_qregexp "qregexp"
 ## Scopes:
 #####################################################################
 
-extend_target(tst_bench_qregexp CONDITION TARGET Qt::Script AND NOT pcre
+qt_extend_target(tst_bench_qregexp CONDITION TARGET Qt::Script AND NOT pcre
     DEFINES
         HAVE_JSC
     PUBLIC_LIBRARIES
         Qt::Script
 )
 
-extend_target(tst_bench_qregexp CONDITION (NOT QNX) AND (EXISTS _ss_[QT_SYSROOT]/usr/include/boost/regex.hpp)
+qt_extend_target(tst_bench_qregexp CONDITION (NOT QNX) AND (EXISTS _ss_[QT_SYSROOT]/usr/include/boost/regex.hpp)
     DEFINES
         HAVE_BOOST
     PUBLIC_LIBRARIES

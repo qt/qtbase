@@ -4,7 +4,7 @@
 ## tst_bench_qlocale Binary:
 #####################################################################
 
-add_qt_benchmark(tst_bench_qlocale
+qt_add_benchmark(tst_bench_qlocale
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

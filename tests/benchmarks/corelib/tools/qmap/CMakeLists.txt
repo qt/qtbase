@@ -4,7 +4,7 @@
 ## tst_bench_qmap Binary:
 #####################################################################
 
-add_qt_benchmark(tst_bench_qmap
+qt_add_benchmark(tst_bench_qmap
     SOURCES
         main.cpp
     INCLUDE_DIRECTORIES

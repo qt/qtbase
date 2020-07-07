@@ -4,7 +4,7 @@
 ## tst_bench_drawtexture Binary:
 #####################################################################
 
-add_qt_benchmark(tst_bench_drawtexture
+qt_add_benchmark(tst_bench_drawtexture
     SOURCES
         tst_drawtexture.cpp
     PUBLIC_LIBRARIES

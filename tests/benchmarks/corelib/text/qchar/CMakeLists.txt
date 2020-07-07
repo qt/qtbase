@@ -4,7 +4,7 @@
 ## tst_bench_qchar Binary:
 #####################################################################
 
-add_qt_benchmark(tst_bench_qchar
+qt_add_benchmark(tst_bench_qchar
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

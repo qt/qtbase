@@ -4,7 +4,7 @@
 ## tst_bench_qdiriterator Binary:
 #####################################################################
 
-add_qt_benchmark(tst_bench_qdiriterator
+qt_add_benchmark(tst_bench_qdiriterator
     SOURCES
         main.cpp
         qfilesystemiterator.cpp qfilesystemiterator.h
@@ -15,7 +15,7 @@ add_qt_benchmark(tst_bench_qdiriterator
 ## Scopes:
 #####################################################################
 
-extend_target(tst_bench_qdiriterator CONDITION (QT_FEATURE_cxx17_filesystem) AND (GCC AND (QMAKE_GCC_MAJOR_VERSION LESS 9))
+qt_extend_target(tst_bench_qdiriterator CONDITION (QT_FEATURE_cxx17_filesystem) AND (GCC AND (QMAKE_GCC_MAJOR_VERSION LESS 9))
     LINK_OPTIONS
         "-lstdc++fs"
 )

@@ -4,7 +4,7 @@
 ## tst_bench_imageScale Binary:
 #####################################################################
 
-add_qt_benchmark(tst_bench_imageScale
+qt_add_benchmark(tst_bench_imageScale
     SOURCES
         tst_qimagescale.cpp
     PUBLIC_LIBRARIES

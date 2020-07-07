@@ -4,7 +4,7 @@
 ## tst_bench_qthreadstorage Binary:
 #####################################################################
 
-add_qt_benchmark(tst_bench_qthreadstorage
+qt_add_benchmark(tst_bench_qthreadstorage
     SOURCES
         tst_qthreadstorage.cpp
     PUBLIC_LIBRARIES

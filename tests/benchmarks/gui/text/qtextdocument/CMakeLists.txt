@@ -4,7 +4,7 @@
 ## tst_bench_QTextDocument Binary:
 #####################################################################
 
-add_qt_benchmark(tst_bench_QTextDocument
+qt_add_benchmark(tst_bench_QTextDocument
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

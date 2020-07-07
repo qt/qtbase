@@ -4,7 +4,7 @@
 ## tst_bench_qpixmapcache Binary:
 #####################################################################
 
-add_qt_benchmark(tst_bench_qpixmapcache
+qt_add_benchmark(tst_bench_qpixmapcache
     SOURCES
         tst_qpixmapcache.cpp
     PUBLIC_LIBRARIES

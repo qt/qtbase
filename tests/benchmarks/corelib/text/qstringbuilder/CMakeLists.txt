@@ -4,7 +4,7 @@
 ## tst_bench_qstringbuilder Binary:
 #####################################################################
 
-add_qt_benchmark(tst_bench_qstringbuilder
+qt_add_benchmark(tst_bench_qstringbuilder
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

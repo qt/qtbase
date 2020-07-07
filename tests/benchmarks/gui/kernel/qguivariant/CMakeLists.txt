@@ -4,7 +4,7 @@
 ## tst_bench_qguivariant Binary:
 #####################################################################
 
-add_qt_benchmark(tst_bench_qguivariant
+qt_add_benchmark(tst_bench_qguivariant
     SOURCES
         tst_qguivariant.cpp
     PUBLIC_LIBRARIES

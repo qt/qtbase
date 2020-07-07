@@ -4,7 +4,7 @@
 ## tst_bench_qgraphicsscene Binary:
 #####################################################################
 
-add_qt_benchmark(tst_bench_qgraphicsscene
+qt_add_benchmark(tst_bench_qgraphicsscene
     SOURCES
         tst_qgraphicsscene.cpp
     PUBLIC_LIBRARIES

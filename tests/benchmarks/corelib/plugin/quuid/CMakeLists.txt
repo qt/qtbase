@@ -4,7 +4,7 @@
 ## tst_bench_quuid Binary:
 #####################################################################
 
-add_qt_benchmark(tst_bench_quuid
+qt_add_benchmark(tst_bench_quuid
     SOURCES
         tst_quuid.cpp
     PUBLIC_LIBRARIES

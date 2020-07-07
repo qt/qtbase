@@ -4,7 +4,7 @@
 ## tst_bench_qalgorithms Binary:
 #####################################################################
 
-add_qt_benchmark(tst_bench_qalgorithms
+qt_add_benchmark(tst_bench_qalgorithms
     SOURCES
         tst_qalgorithms.cpp
     PUBLIC_LIBRARIES

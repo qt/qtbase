@@ -4,7 +4,7 @@
 ## tst_bench_qtemporaryfile Binary:
 #####################################################################
 
-add_qt_benchmark(tst_bench_qtemporaryfile
+qt_add_benchmark(tst_bench_qtemporaryfile
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

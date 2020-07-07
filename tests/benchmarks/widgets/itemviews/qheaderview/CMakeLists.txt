@@ -4,7 +4,7 @@
 ## tst_bench_qheaderview Binary:
 #####################################################################
 
-add_qt_benchmark(tst_bench_qheaderview
+qt_add_benchmark(tst_bench_qheaderview
     SOURCES
         qheaderviewbench.cpp
     PUBLIC_LIBRARIES

@@ -4,7 +4,7 @@
 ## tst_bench_qtbench Binary:
 #####################################################################
 
-add_qt_benchmark(tst_bench_qtbench
+qt_add_benchmark(tst_bench_qtbench
     SOURCES
         tst_qtbench.cpp
     PUBLIC_LIBRARIES

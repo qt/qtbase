@@ -4,7 +4,7 @@
 ## tst_bench_qmetaobject Binary:
 #####################################################################
 
-add_qt_benchmark(tst_bench_qmetaobject
+qt_add_benchmark(tst_bench_qmetaobject
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

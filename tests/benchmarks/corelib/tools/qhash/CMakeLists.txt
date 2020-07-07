@@ -4,7 +4,7 @@
 ## tst_hash Binary:
 #####################################################################
 
-add_qt_benchmark(tst_hash
+qt_add_benchmark(tst_hash
     SOURCES
         main.cpp
         outofline.cpp

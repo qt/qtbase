@@ -4,7 +4,7 @@
 ## tst_bench_qguimetatype Binary:
 #####################################################################
 
-add_qt_benchmark(tst_bench_qguimetatype
+qt_add_benchmark(tst_bench_qguimetatype
     SOURCES
         tst_qguimetatype.cpp
     PUBLIC_LIBRARIES

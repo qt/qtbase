@@ -4,7 +4,7 @@
 ## tst_bench_qimagereader Binary:
 #####################################################################
 
-add_qt_benchmark(tst_bench_qimagereader
+qt_add_benchmark(tst_bench_qimagereader
     SOURCES
         tst_qimagereader.cpp
     PUBLIC_LIBRARIES
@@ -20,12 +20,12 @@ add_qt_benchmark(tst_bench_qimagereader
 ## Scopes:
 #####################################################################
 
-extend_target(tst_bench_qimagereader CONDITION QT_FEATURE_gif
+qt_extend_target(tst_bench_qimagereader CONDITION QT_FEATURE_gif
     DEFINES
         QTEST_HAVE_GIF
 )
 
-extend_target(tst_bench_qimagereader CONDITION QT_FEATURE_jpeg
+qt_extend_target(tst_bench_qimagereader CONDITION QT_FEATURE_jpeg
     DEFINES
         QTEST_HAVE_JPEG
 )

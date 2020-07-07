@@ -4,8 +4,7 @@
 ## testProcessLoopback Binary:
 #####################################################################
 
-# add_qt_executable(testProcessLoopback # special case
-add_qt_benchmark(testProcessLoopback # special case
+qt_add_benchmark(testProcessLoopback
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
     SOURCES
         main.cpp

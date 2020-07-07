@@ -4,7 +4,7 @@
 ## tst_bench_qbytearray Binary:
 #####################################################################
 
-add_qt_benchmark(tst_bench_qbytearray
+qt_add_benchmark(tst_bench_qbytearray
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

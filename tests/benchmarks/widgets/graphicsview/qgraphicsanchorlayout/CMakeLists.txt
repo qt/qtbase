@@ -4,7 +4,7 @@
 ## tst_bench_qgraphicsanchorlayout Binary:
 #####################################################################
 
-add_qt_benchmark(tst_bench_qgraphicsanchorlayout
+qt_add_benchmark(tst_bench_qgraphicsanchorlayout
     SOURCES
         tst_qgraphicsanchorlayout.cpp
     PUBLIC_LIBRARIES
