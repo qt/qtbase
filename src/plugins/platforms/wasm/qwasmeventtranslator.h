@@ -41,6 +41,7 @@
 #include <QtGui/qpointingdevice.h>
 #endif
 #include <QHash>
+#include <QCursor>
 
 QT_BEGIN_NAMESPACE
 
@@ -102,6 +103,7 @@ private:
 
     Qt::Key m_emDeadKey = Qt::Key_unknown;
     bool m_emStickyDeadKey = false;
+    QCursor cursorForMode(QWasmWindow::ResizeMode mode);
 };
 
 QT_END_NAMESPACE
