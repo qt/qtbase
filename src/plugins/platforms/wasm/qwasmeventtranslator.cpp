@@ -43,6 +43,7 @@
 #include <QtCore/qdeadlinetimer.h>
 #include <private/qmakearray_p.h>
 #include <QtCore/qnamespace.h>
+#include <QCursor>
 
 #include <emscripten/bind.h>
 
@@ -574,8 +575,13 @@ void QWasmEventTranslator::processMouse(int eventType, const EmscriptenMouseEven
     Qt::MouseButton button = translateMouseButton(mouseEvent->button);
     Qt::KeyboardModifiers modifiers = translateMouseEventModifier(mouseEvent);
 
-    QWindow *window2 = screen()->compositor()->windowAt(globalPoint, 5);
+    QWindow *window2 = nullptr;
+    if (resizeMode == QWasmWindow::ResizeNone)
+        window2 = screen()->compositor()->windowAt(globalPoint, 5);
 
+    if (lastWindow && lastWindow->cursor() != Qt::ArrowCursor) {
+        lastWindow->setCursor(Qt::ArrowCursor);
+    }
     if (window2 == nullptr) {
         window2 = lastWindow;
     } else {
@@ -635,6 +641,10 @@ void QWasmEventTranslator::processMouse(int eventType, const EmscriptenMouseEven
     case EMSCRIPTEN_EVENT_MOUSEMOVE: // drag event
     {
         buttonEventType = QEvent::MouseMove;
+
+        if (htmlWindow && htmlWindow->isPointOnResizeRegion(globalPoint))
+            window2->setCursor(cursorForMode(htmlWindow->resizeModeAtPoint(globalPoint)));
+
         if (!(htmlWindow->m_windowState & Qt::WindowFullScreen) && !(htmlWindow->m_windowState & Qt::WindowMaximized)) {
             if (resizeMode == QWasmWindow::ResizeNone && draggedWindow) {
                 draggedWindow->setX(draggedWindow->x() + mouseEvent->movementX);
@@ -987,6 +997,29 @@ bool QWasmEventTranslator::processKeyboard(int eventType, const EmscriptenKeyboa
     QWasmEventDispatcher::maintainTimers();
 
     return accepted;
+}
+
+QCursor QWasmEventTranslator::cursorForMode(QWasmWindow::ResizeMode m)
+{
+    switch (m) {
+    case QWasmWindow::ResizeTopLeft:
+    case QWasmWindow::ResizeBottomRight:
+        return Qt::SizeFDiagCursor;
+        break;
+    case QWasmWindow::ResizeBottomLeft:
+    case QWasmWindow::ResizeTopRight:
+        return Qt::SizeBDiagCursor;
+        break;
+    case QWasmWindow::ResizeTop:
+    case QWasmWindow::ResizeBottom:
+        return Qt::SizeVerCursor;
+        break;
+    case QWasmWindow::ResizeLeft:
+    case QWasmWindow::ResizeRight:
+        return Qt::SizeHorCursor;
+        break;
+    }
+    return Qt::ArrowCursor;
 }
 
 QT_END_NAMESPACE
