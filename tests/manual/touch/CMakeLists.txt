@@ -4,7 +4,7 @@
 ## touch Binary:
 #####################################################################
 
-add_qt_manual_test(touch
+qt_add_manual_test(touch
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

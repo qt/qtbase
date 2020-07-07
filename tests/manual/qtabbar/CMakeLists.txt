@@ -4,7 +4,7 @@
 ## qtabbar Binary:
 #####################################################################
 
-add_qt_manual_test(qtabbar
+qt_add_manual_test(qtabbar
     GUI
     SOURCES
         main.cpp

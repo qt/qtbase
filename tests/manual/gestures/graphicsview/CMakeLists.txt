@@ -4,7 +4,7 @@
 ## tst_manual_graphicsview Binary:
 #####################################################################
 
-add_qt_manual_test(tst_manual_graphicsview
+qt_add_manual_test(tst_manual_graphicsview
     GUI
     SOURCES
         gestures.cpp gestures.h

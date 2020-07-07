@@ -4,7 +4,7 @@
 ## glyphshaping Binary:
 #####################################################################
 
-add_qt_manual_test(glyphshaping
+qt_add_manual_test(glyphshaping
     GUI
     SOURCES
         main.cpp

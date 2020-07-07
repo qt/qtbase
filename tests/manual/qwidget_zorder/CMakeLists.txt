@@ -4,7 +4,7 @@
 ## qwidget_zorder Binary:
 #####################################################################
 
-add_qt_manual_test(qwidget_zorder
+qt_add_manual_test(qwidget_zorder
     GUI
     SOURCES
         main.cpp

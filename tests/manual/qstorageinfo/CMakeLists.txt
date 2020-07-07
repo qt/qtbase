@@ -4,7 +4,7 @@
 ## qstorageinfo Binary:
 #####################################################################
 
-add_qt_manual_test(qstorageinfo
+qt_add_manual_test(qstorageinfo
     SOURCES
         main.cpp
 )

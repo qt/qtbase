@@ -4,7 +4,7 @@
 ## appicon Binary:
 #####################################################################
 
-add_qt_manual_test(appicon
+qt_add_manual_test(appicon
     GUI
     SOURCES
         main.cpp

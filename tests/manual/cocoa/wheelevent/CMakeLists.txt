@@ -4,7 +4,7 @@
 ## wheelevent Binary:
 #####################################################################
 
-add_qt_manual_test(wheelevent
+qt_add_manual_test(wheelevent
     GUI
     SOURCES
         main.cpp

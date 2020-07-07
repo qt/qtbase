@@ -4,7 +4,7 @@
 ## qopenglcontext Binary:
 #####################################################################
 
-add_qt_manual_test(qopenglcontext
+qt_add_manual_test(qopenglcontext
     GUI
     SOURCES
         main.cpp
@@ -13,6 +13,7 @@ add_qt_manual_test(qopenglcontext
         Qt::EglSupportPrivate
         Qt::Gui
         Qt::GuiPrivate
+        Qt::OpenGL
 )
 
 #### Keys ignored in scope 1:.:.:qopenglcontext.pro:<TRUE>:

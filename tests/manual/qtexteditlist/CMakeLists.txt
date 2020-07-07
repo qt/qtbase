@@ -4,7 +4,7 @@
 ## qtexteditlist Binary:
 #####################################################################
 
-add_qt_manual_test(qtexteditlist
+qt_add_manual_test(qtexteditlist
     GUI
     SOURCES
         main.cpp

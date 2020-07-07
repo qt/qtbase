@@ -4,7 +4,7 @@
 ## menuOnMultiScreens Binary:
 #####################################################################
 
-add_qt_manual_test(menuOnMultiScreens
+qt_add_manual_test(menuOnMultiScreens
     GUI
     SOURCES
         main.cpp

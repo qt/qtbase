@@ -4,7 +4,7 @@
 ## cubemap_scissor Binary:
 #####################################################################
 
-add_qt_manual_test(cubemap_scissor
+qt_add_manual_test(cubemap_scissor
     GUI
     SOURCES
         cubemap_scissor.cpp
@@ -29,7 +29,7 @@ set(cubemap_scissor_resource_files
     "../cubemap/cubemap.vert.qsb"
 )
 
-add_qt_resource(cubemap_scissor "cubemap_scissor"
+qt_add_resource(cubemap_scissor "cubemap_scissor"
     PREFIX
         "/"
     FILES

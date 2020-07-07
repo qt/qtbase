@@ -4,7 +4,7 @@
 ## qrhiprof Binary:
 #####################################################################
 
-add_qt_manual_test(qrhiprof
+qt_add_manual_test(qrhiprof
     GUI
     SOURCES
         qrhiprof.cpp

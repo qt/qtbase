@@ -4,7 +4,7 @@
 ## nativewigets Binary:
 #####################################################################
 
-add_qt_manual_test(nativewigets
+qt_add_manual_test(nativewigets
     GUI
     SOURCES
         main.cpp

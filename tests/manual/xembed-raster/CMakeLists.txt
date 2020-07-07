@@ -4,7 +4,7 @@
 ## tst_manual_rasterwindow Binary:
 #####################################################################
 
-add_qt_manual_test(tst_manual_rasterwindow
+qt_add_manual_test(tst_manual_rasterwindow
     GUI
     SOURCES
         main.cpp

@@ -4,7 +4,7 @@
 ## qscreen Binary:
 #####################################################################
 
-add_qt_manual_test(qscreen
+qt_add_manual_test(qscreen
     SOURCES
         main.cpp
         propertyfield.cpp propertyfield.h

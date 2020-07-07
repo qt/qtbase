@@ -4,7 +4,7 @@
 ## windowtransparency Binary:
 #####################################################################
 
-add_qt_manual_test(windowtransparency
+qt_add_manual_test(windowtransparency
     SOURCES
         windowtransparency.cpp
     PUBLIC_LIBRARIES

@@ -4,7 +4,7 @@
 ## tst_network_stresstest Binary:
 #####################################################################
 
-add_qt_manual_test(tst_network_stresstest
+qt_add_manual_test(tst_network_stresstest
     SOURCES
         minihttpserver.cpp minihttpserver.h
         tst_network_stresstest.cpp
@@ -21,7 +21,7 @@ set(wwwfiles_resource_files
     "qtest"
 )
 
-add_qt_resource(tst_network_stresstest "wwwfiles"
+qt_add_resource(tst_network_stresstest "wwwfiles"
     PREFIX
         "/"
     FILES

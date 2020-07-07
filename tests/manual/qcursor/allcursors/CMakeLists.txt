@@ -4,7 +4,7 @@
 ## tst_allcursors Binary:
 #####################################################################
 
-add_qt_manual_test(tst_allcursors
+qt_add_manual_test(tst_allcursors
     GUI
     SOURCES
         main.cpp

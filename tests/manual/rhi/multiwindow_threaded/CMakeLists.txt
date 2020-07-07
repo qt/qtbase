@@ -4,7 +4,7 @@
 ## multiwindow_threaded Binary:
 #####################################################################
 
-add_qt_manual_test(multiwindow_threaded
+qt_add_manual_test(multiwindow_threaded
     GUI
     SOURCES
         multiwindow_threaded.cpp
@@ -31,7 +31,7 @@ set(multiwindow_threaded_resource_files
     "../shared/texture.vert.qsb"
 )
 
-add_qt_resource(multiwindow_threaded "multiwindow_threaded"
+qt_add_resource(multiwindow_threaded "multiwindow_threaded"
     PREFIX
         "/"
     FILES

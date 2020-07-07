@@ -4,7 +4,7 @@
 ## t_cursors Binary:
 #####################################################################
 
-add_qt_manual_test(t_cursors
+qt_add_manual_test(t_cursors
     GUI
     SOURCES
         main.cpp
@@ -21,7 +21,7 @@ set(images_resource_files
     "data/monkey_on_64x64.png"
 )
 
-add_qt_resource(t_cursors "images"
+qt_add_resource(t_cursors "images"
     PREFIX
         "/"
     FILES

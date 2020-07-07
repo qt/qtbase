@@ -4,7 +4,7 @@
 ## transientwindow Binary:
 #####################################################################
 
-add_qt_manual_test(transientwindow
+qt_add_manual_test(transientwindow
     GUI
     SOURCES
         main.cpp

@@ -1,15 +1,14 @@
-# Generated from flicker.pro.
+# Generated from qtabbar.pro.
 
 #####################################################################
-## flicker Binary:
+## qtabbar Binary:
 #####################################################################
 
-qt_add_manual_test(flicker
+qt_add_manual_test(qtabbar
     GUI
-    SOURCES
-        main.cpp
-        window.cpp window.h
     PUBLIC_LIBRARIES
         Qt::Gui
-        Qt::Widgets
 )
+
+#### Keys ignored in scope 1:.:.:qtabbar.pro:<TRUE>:
+# SUBDIRS = "stylesheet"

@@ -4,7 +4,7 @@
 ## offscreen Binary:
 #####################################################################
 
-add_qt_manual_test(offscreen
+qt_add_manual_test(offscreen
     SOURCES
         offscreen.cpp
     PUBLIC_LIBRARIES
@@ -24,7 +24,7 @@ set(offscreen_resource_files
     "../shared/color.vert.qsb"
 )
 
-add_qt_resource(offscreen "offscreen"
+qt_add_resource(offscreen "offscreen"
     PREFIX
         "/"
     FILES

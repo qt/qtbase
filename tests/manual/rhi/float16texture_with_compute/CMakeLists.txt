@@ -1,13 +1,13 @@
-# Generated from texuploads.pro.
+# Generated from float16texture_with_compute.pro.
 
 #####################################################################
-## texuploads Binary:
+## float16texture_with_compute Binary:
 #####################################################################
 
-qt_add_manual_test(texuploads
+qt_add_manual_test(float16texture_with_compute
     GUI
     SOURCES
-        texuploads.cpp
+        float16texture_with_compute.cpp
     PUBLIC_LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
@@ -23,19 +23,21 @@ set_source_files_properties("../shared/texture.frag.qsb"
 set_source_files_properties("../shared/texture.vert.qsb"
     PROPERTIES QT_RESOURCE_ALIAS "texture.vert.qsb"
 )
-set(texuploads_resource_files
+set(float16texture_with_compute_resource_files
     "../shared/qt256.png"
     "../shared/texture.frag.qsb"
     "../shared/texture.vert.qsb"
+    "load.comp.qsb"
+    "prefilter.comp.qsb"
 )
 
-qt_add_resource(texuploads "texuploads"
+qt_add_resource(float16texture_with_compute "float16texture_with_compute"
     PREFIX
         "/"
     FILES
-        ${texuploads_resource_files}
+        ${float16texture_with_compute_resource_files}
 )
 
 
-#### Keys ignored in scope 1:.:.:texuploads.pro:<TRUE>:
+#### Keys ignored in scope 1:.:.:float16texture_with_compute.pro:<TRUE>:
 # TEMPLATE = "app"

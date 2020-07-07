@@ -4,7 +4,7 @@
 ## tst_socketengine Binary:
 #####################################################################
 
-add_qt_manual_test(tst_socketengine
+qt_add_manual_test(tst_socketengine
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

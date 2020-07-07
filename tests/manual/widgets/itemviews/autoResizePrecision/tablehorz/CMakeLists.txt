@@ -4,7 +4,7 @@
 ## testtable1 Binary:
 #####################################################################
 
-add_qt_manual_test(testtable1
+qt_add_manual_test(testtable1
     GUI
     SOURCES
         testtable1.cpp

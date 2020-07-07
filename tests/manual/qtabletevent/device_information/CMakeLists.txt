@@ -4,7 +4,7 @@
 ## device_information Binary:
 #####################################################################
 
-add_qt_manual_test(device_information
+qt_add_manual_test(device_information
     GUI
     SOURCES
         main.cpp

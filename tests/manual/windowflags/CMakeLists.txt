@@ -4,7 +4,7 @@
 ## tst_manual_windowflags Binary:
 #####################################################################
 
-add_qt_manual_test(tst_manual_windowflags
+qt_add_manual_test(tst_manual_windowflags
     GUI
     SOURCES
         controllerwindow.cpp controllerwindow.h

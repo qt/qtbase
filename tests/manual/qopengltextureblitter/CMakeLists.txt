@@ -4,7 +4,7 @@
 ## qopengltextureblitter Binary:
 #####################################################################
 
-add_qt_manual_test(qopengltextureblitter
+qt_add_manual_test(qopengltextureblitter
     GUI
     SOURCES
         main.cpp

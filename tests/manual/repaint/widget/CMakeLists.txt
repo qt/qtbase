@@ -4,7 +4,7 @@
 ## widget Binary:
 #####################################################################
 
-add_qt_manual_test(widget
+qt_add_manual_test(widget
     GUI
     SOURCES
         ../shared/shared.h

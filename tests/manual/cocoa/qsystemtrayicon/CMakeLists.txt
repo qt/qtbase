@@ -4,7 +4,7 @@
 ## qsystemtrayicon Binary:
 #####################################################################
 
-add_qt_manual_test(qsystemtrayicon
+qt_add_manual_test(qsystemtrayicon
     GUI
     SOURCES
         main.cpp
@@ -26,7 +26,7 @@ set(icons_resource_files
     "macsystray64x64.png"
 )
 
-add_qt_resource(qsystemtrayicon "icons"
+qt_add_resource(qsystemtrayicon "icons"
     PREFIX
         "/"
     FILES

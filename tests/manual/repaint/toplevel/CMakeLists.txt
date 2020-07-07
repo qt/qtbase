@@ -4,7 +4,7 @@
 ## tst_manual_toplevel Binary:
 #####################################################################
 
-add_qt_manual_test(tst_manual_toplevel
+qt_add_manual_test(tst_manual_toplevel
     SOURCES
         ../shared/shared.h
         main.cpp

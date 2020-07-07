@@ -4,7 +4,7 @@
 ## touchGraphicsItem Binary:
 #####################################################################
 
-add_qt_manual_test(touchGraphicsItem
+qt_add_manual_test(touchGraphicsItem
     GUI
     SOURCES
         main.cpp

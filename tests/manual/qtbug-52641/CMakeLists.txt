@@ -4,7 +4,7 @@
 ## qtbug-52641 Binary:
 #####################################################################
 
-add_qt_manual_test(qtbug-52641
+qt_add_manual_test(qtbug-52641
     GUI
     SOURCES
         main.cpp

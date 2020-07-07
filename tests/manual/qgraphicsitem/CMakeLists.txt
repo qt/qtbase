@@ -4,7 +4,7 @@
 ## qgraphicsitem Binary:
 #####################################################################
 
-add_qt_manual_test(qgraphicsitem
+qt_add_manual_test(qgraphicsitem
     GUI
     SOURCES
         main.cpp

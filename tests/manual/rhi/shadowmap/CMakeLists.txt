@@ -4,7 +4,7 @@
 ## shadowmap Binary:
 #####################################################################
 
-add_qt_manual_test(shadowmap
+qt_add_manual_test(shadowmap
     GUI
     SOURCES
         shadowmap.cpp
@@ -21,7 +21,7 @@ set(shadowmap_resource_files
     "shadowmap.vert.qsb"
 )
 
-add_qt_resource(shadowmap "shadowmap"
+qt_add_resource(shadowmap "shadowmap"
     PREFIX
         "/"
     FILES

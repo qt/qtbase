@@ -4,7 +4,7 @@
 ## textperformance Binary:
 #####################################################################
 
-add_qt_manual_test(textperformance
+qt_add_manual_test(textperformance
     GUI
     SOURCES
         main.cpp

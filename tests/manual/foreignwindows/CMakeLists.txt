@@ -4,7 +4,7 @@
 ## foreignwindows Binary:
 #####################################################################
 
-add_qt_manual_test(foreignwindows
+qt_add_manual_test(foreignwindows
     SOURCES
         ../diaglib/eventfilter.cpp ../diaglib/eventfilter.h
         ../diaglib/nativewindowdump.h
@@ -29,19 +29,19 @@ add_qt_manual_test(foreignwindows
 ## Scopes:
 #####################################################################
 
-extend_target(foreignwindows CONDITION WIN32
+qt_extend_target(foreignwindows CONDITION WIN32
     SOURCES
         ../diaglib/nativewindowdump_win.cpp
     PUBLIC_LIBRARIES
         user32
 )
 
-extend_target(foreignwindows CONDITION UNIX
+qt_extend_target(foreignwindows CONDITION UNIX
     SOURCES
         ../diaglib/nativewindowdump.cpp
 )
 
-extend_target(foreignwindows CONDITION QT_FEATURE_widgets
+qt_extend_target(foreignwindows CONDITION QT_FEATURE_widgets
     SOURCES
         ../diaglib/debugproxystyle.cpp ../diaglib/debugproxystyle.h
         ../diaglib/logwidget.cpp ../diaglib/logwidget.h
@@ -50,7 +50,7 @@ extend_target(foreignwindows CONDITION QT_FEATURE_widgets
         Qt::WidgetsPrivate
 )
 
-extend_target(foreignwindows CONDITION QT_FEATURE_opengl
+qt_extend_target(foreignwindows CONDITION QT_FEATURE_opengl
     SOURCES
         ../diaglib/glinfo.cpp ../diaglib/glinfo.h
     PUBLIC_LIBRARIES

@@ -4,7 +4,7 @@
 ## qtooltip Binary:
 #####################################################################
 
-add_qt_manual_test(qtooltip
+qt_add_manual_test(qtooltip
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

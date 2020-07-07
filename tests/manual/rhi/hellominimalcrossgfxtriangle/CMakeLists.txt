@@ -4,7 +4,7 @@
 ## hellominimalcrossgfxtriangle Binary:
 #####################################################################
 
-add_qt_manual_test(hellominimalcrossgfxtriangle
+qt_add_manual_test(hellominimalcrossgfxtriangle
     SOURCES
         hellowindow.cpp hellowindow.h
         main.cpp
@@ -26,7 +26,7 @@ set(hellominimalcrossgfxtriangle_resource_files
     "../shared/color.vert.qsb"
 )
 
-add_qt_resource(hellominimalcrossgfxtriangle "hellominimalcrossgfxtriangle"
+qt_add_resource(hellominimalcrossgfxtriangle "hellominimalcrossgfxtriangle"
     PREFIX
         "/"
     FILES

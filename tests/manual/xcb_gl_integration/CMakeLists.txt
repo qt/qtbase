@@ -4,7 +4,7 @@
 ## xcb_gl_integration Binary:
 #####################################################################
 
-add_qt_manual_test(xcb_gl_integration
+qt_add_manual_test(xcb_gl_integration
     GUI
     SOURCES
         main.cpp

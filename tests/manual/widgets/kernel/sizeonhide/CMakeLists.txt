@@ -4,7 +4,7 @@
 ## sizeonhide Binary:
 #####################################################################
 
-add_qt_manual_test(sizeonhide
+qt_add_manual_test(sizeonhide
     GUI
     SOURCES
         main.cpp

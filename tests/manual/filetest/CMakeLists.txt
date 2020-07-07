@@ -4,7 +4,7 @@
 ## filetest Binary:
 #####################################################################
 
-add_qt_manual_test(filetest
+qt_add_manual_test(filetest
     SOURCES
         main.cpp
 )

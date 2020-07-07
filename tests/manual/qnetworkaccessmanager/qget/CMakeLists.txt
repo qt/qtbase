@@ -4,7 +4,7 @@
 ## qget Binary:
 #####################################################################
 
-add_qt_manual_test(qget
+qt_add_manual_test(qget
     SOURCES
         downloadmanager.cpp
         qget.cpp qget.h

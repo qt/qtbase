@@ -4,7 +4,7 @@
 ## compressedtexture_bc1 Binary:
 #####################################################################
 
-add_qt_manual_test(compressedtexture_bc1
+qt_add_manual_test(compressedtexture_bc1
     GUI
     SOURCES
         compressedtexture_bc1.cpp
@@ -29,7 +29,7 @@ set(compressedtexture_bc1_resource_files
     "../shared/texture.vert.qsb"
 )
 
-add_qt_resource(compressedtexture_bc1 "compressedtexture_bc1"
+qt_add_resource(compressedtexture_bc1 "compressedtexture_bc1"
     PREFIX
         "/"
     FILES

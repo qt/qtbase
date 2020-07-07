@@ -4,7 +4,7 @@
 ## event_compression Binary:
 #####################################################################
 
-add_qt_manual_test(event_compression
+qt_add_manual_test(event_compression
     SOURCES
         main.cpp
         mousestatwidget.cpp mousestatwidget.h

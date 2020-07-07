@@ -4,7 +4,7 @@
 ## floattexture Binary:
 #####################################################################
 
-add_qt_manual_test(floattexture
+qt_add_manual_test(floattexture
     GUI
     SOURCES
         floattexture.cpp
@@ -29,7 +29,7 @@ set(floattexture_resource_files
     "../shared/texture.vert.qsb"
 )
 
-add_qt_resource(floattexture "floattexture"
+qt_add_resource(floattexture "floattexture"
     PREFIX
         "/"
     FILES

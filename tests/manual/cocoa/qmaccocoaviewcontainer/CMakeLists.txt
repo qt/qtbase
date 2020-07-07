@@ -4,7 +4,7 @@
 ## qmaccocoaviewcontainer Binary:
 #####################################################################
 
-add_qt_manual_test(qmaccocoaviewcontainer
+qt_add_manual_test(qmaccocoaviewcontainer
     GUI
     SOURCES
         TestMouseMovedNSView.h TestMouseMovedNSView.m

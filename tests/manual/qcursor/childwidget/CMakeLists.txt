@@ -4,7 +4,7 @@
 ## tst_manual_childwidget Binary:
 #####################################################################
 
-add_qt_manual_test(tst_manual_childwidget
+qt_add_manual_test(tst_manual_childwidget
     GUI
     SOURCES
         main.cpp

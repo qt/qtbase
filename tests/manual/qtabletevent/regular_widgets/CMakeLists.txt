@@ -4,7 +4,7 @@
 ## regular_widgets Binary:
 #####################################################################
 
-add_qt_manual_test(regular_widgets
+qt_add_manual_test(regular_widgets
     GUI
     SOURCES
         main.cpp

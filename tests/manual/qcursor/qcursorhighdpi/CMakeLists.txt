@@ -4,7 +4,7 @@
 ## qcursorhighdpi Binary:
 #####################################################################
 
-add_qt_manual_test(qcursorhighdpi
+qt_add_manual_test(qcursorhighdpi
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES
@@ -20,7 +20,7 @@ add_qt_manual_test(qcursorhighdpi
 ## Scopes:
 #####################################################################
 
-extend_target(qcursorhighdpi CONDITION WIN32
+qt_extend_target(qcursorhighdpi CONDITION WIN32
     PUBLIC_LIBRARIES
         User32
 )

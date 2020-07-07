@@ -4,7 +4,7 @@
 ## tst_manual_lineedits Binary:
 #####################################################################
 
-add_qt_manual_test(tst_manual_lineedits
+qt_add_manual_test(tst_manual_lineedits
     GUI
     SOURCES
         main.cpp
