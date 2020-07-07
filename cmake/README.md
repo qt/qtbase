@@ -4,6 +4,11 @@ This document gives an overview of the Qt 6 build system. For a hands-on guide o
 to build Qt 6, see https://doc.qt.io/qt-6/build-sources.html and
 https://wiki.qt.io/Building_Qt_6_from_Git
 
+# Contributing
+
+See qtbase/cmake/CODESTYLE.md for the code style you should follow when contributing
+to Qt's cmake files.
+
 # CMake Versions
 
 * You need CMake 3.16.0 or later for most platforms (due to new AUTOMOC json feature).
