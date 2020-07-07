@@ -31,7 +31,7 @@ function(qt_print_build_instructions)
         message("Note that this build cannot be deployed to other machines or devices.")
     endif()
     message("To configure and build other modules, you can use the following convenience script:
-        ${CMAKE_INSTALL_PREFIX}/${INSTALL_BINDIR}/qt-cmake")
+        ${QT_STAGING_PREFIX}/${INSTALL_BINDIR}/qt-cmake")
     message("\nIf reconfiguration fails for some reason, try to remove 'CMakeCache.txt' \
 from the build directory \n")
 endfunction()
