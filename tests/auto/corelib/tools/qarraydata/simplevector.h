@@ -50,22 +50,22 @@ public:
     {
     }
 
-    explicit SimpleVector(size_t n)
-        : d(Data::allocate(n))
+    explicit SimpleVector(size_t n, typename Data::ArrayOptions f = Data::DefaultAllocationFlags)
+        : d(Data::allocate(n, f))
     {
         if (n)
             d->appendInitialize(n);
     }
 
-    SimpleVector(size_t n, const T &t)
-        : d(Data::allocate(n))
+    SimpleVector(size_t n, const T &t, typename Data::ArrayOptions f = Data::DefaultAllocationFlags)
+        : d(Data::allocate(n, f))
     {
         if (n)
             d->copyAppend(n, t);
     }
 
-    SimpleVector(const T *begin, const T *end)
-        : d(Data::allocate(end - begin))
+    SimpleVector(const T *begin, const T *end, typename Data::ArrayOptions f = Data::DefaultAllocationFlags)
+        : d(Data::allocate(end - begin, f))
     {
         if (end - begin)
             d->copyAppend(begin, end);
