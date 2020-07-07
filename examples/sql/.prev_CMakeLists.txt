@@ -13,7 +13,6 @@ add_subdirectory(tablemodel)
 if(TARGET Qt::Xml)
     add_subdirectory(masterdetail)
 endif()
-
-if(NOT CMAKE_CROSSCOMPILING) # special case
+if(QT_BUILD_PARTS___contains___tools AND NOT CMAKE_CROSSCOMPILING)
     add_subdirectory(sqlbrowser)
 endif()

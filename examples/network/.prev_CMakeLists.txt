@@ -16,7 +16,7 @@ if(TARGET Qt::Widgets)
     add_subdirectory(loopback)
     add_subdirectory(threadedfortuneserver)
     add_subdirectory(googlesuggest)
-    # add_subdirectory(torrent) FIXME: This does not find its ui file:-/ # special case
+    add_subdirectory(torrent)
     add_subdirectory(multicastreceiver)
     add_subdirectory(multicastsender)
     add_subdirectory(fortuneclient)
