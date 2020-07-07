@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
@@ -453,11 +453,7 @@ bool QMYSQLResult::fetch(int i)
 
         int nRC = mysql_stmt_fetch(d->stmt);
         if (nRC) {
-#ifdef MYSQL_DATA_TRUNCATED
             if (nRC == 1 || nRC == MYSQL_DATA_TRUNCATED)
-#else
-            if (nRC == 1)
-#endif
                 setLastError(qMakeStmtError(QCoreApplication::translate("QMYSQLResult",
                          "Unable to fetch data"), QSqlError::StatementError, d->stmt));
             return false;
@@ -481,11 +477,7 @@ bool QMYSQLResult::fetchNext()
     if (d->preparedQuery) {
         int nRC = mysql_stmt_fetch(d->stmt);
         if (nRC) {
-#ifdef MYSQL_DATA_TRUNCATED
             if (nRC == 1 || nRC == MYSQL_DATA_TRUNCATED)
-#else
-            if (nRC == 1)
-#endif // MYSQL_DATA_TRUNCATED
                 setLastError(qMakeStmtError(QCoreApplication::translate("QMYSQLResult",
                                     "Unable to fetch data"), QSqlError::StatementError, d->stmt));
             return false;
@@ -1049,11 +1041,7 @@ static void qLibraryInit()
     if (qMySqlInitHandledByUser || qMySqlConnectionCount > 1)
         return;
 
-# if MYSQL_VERSION_ID >= 50003
     if (mysql_library_init(0, 0, 0)) {
-# else
-    if (mysql_server_init(0, 0, 0)) {
-# endif
         qWarning("QMYSQLDriver::qServerInit: unable to start server.");
     }
 #endif // Q_NO_MYSQL_EMBEDDED
@@ -1067,11 +1055,7 @@ static void qLibraryEnd()
 {
 #if !defined(MARIADB_BASE_VERSION) && !defined(MARIADB_VERSION_ID)
 # if !defined(Q_NO_MYSQL_EMBEDDED)
-#  if MYSQL_VERSION_ID >= 50003
     mysql_library_end();
-#  else
-    mysql_server_end();
-#  endif
 # endif
 #endif
 }
@@ -1123,13 +1107,10 @@ bool QMYSQLDriver::hasFeature(DriverFeature f) const
     Q_D(const QMYSQLDriver);
     switch (f) {
     case Transactions:
-// CLIENT_TRANSACTION should be defined in all recent mysql client libs > 3.23.34
-#ifdef CLIENT_TRANSACTIONS
         if (d->mysql) {
             if ((d->mysql->server_capabilities & CLIENT_TRANSACTIONS) == CLIENT_TRANSACTIONS)
                 return true;
         }
-#endif
         return false;
     case NamedPlaceholders:
     case BatchOperations:
@@ -1262,14 +1243,12 @@ bool QMYSQLDriver::open(const QString& db,
                                            : sslCipher.toLocal8Bit().constData());
     }
 
-#if MYSQL_VERSION_ID >= 50100
     if (connectTimeout != 0)
         mysql_options(d->mysql, MYSQL_OPT_CONNECT_TIMEOUT, &connectTimeout);
     if (readTimeout != 0)
         mysql_options(d->mysql, MYSQL_OPT_READ_TIMEOUT, &readTimeout);
     if (writeTimeout != 0)
         mysql_options(d->mysql, MYSQL_OPT_WRITE_TIMEOUT, &writeTimeout);
-#endif
     MYSQL *mysql = mysql_real_connect(d->mysql,
                                       host.isNull() ? static_cast<const char *>(0)
                                                     : host.toLocal8Bit().constData(),
@@ -1296,10 +1275,8 @@ bool QMYSQLDriver::open(const QString& db,
             setOpenError(true);
             return false;
         }
-#if MYSQL_VERSION_ID >= 50100
         if (reconnect)
             mysql_options(d->mysql, MYSQL_OPT_RECONNECT, &reconnect);
-#endif
     } else {
         setLastError(qMakeError(tr("Unable to connect"),
                      QSqlError::ConnectionError, d));
@@ -1421,9 +1398,6 @@ QVariant QMYSQLDriver::handle() const
 bool QMYSQLDriver::beginTransaction()
 {
     Q_D(QMYSQLDriver);
-#ifndef CLIENT_TRANSACTIONS
-    return false;
-#endif
     if (!isOpen()) {
         qWarning("QMYSQLDriver::beginTransaction: Database not open");
         return false;
@@ -1439,9 +1413,6 @@ bool QMYSQLDriver::beginTransaction()
 bool QMYSQLDriver::commitTransaction()
 {
     Q_D(QMYSQLDriver);
-#ifndef CLIENT_TRANSACTIONS
-    return false;
-#endif
     if (!isOpen()) {
         qWarning("QMYSQLDriver::commitTransaction: Database not open");
         return false;
@@ -1457,9 +1428,6 @@ bool QMYSQLDriver::commitTransaction()
 bool QMYSQLDriver::rollbackTransaction()
 {
     Q_D(QMYSQLDriver);
-#ifndef CLIENT_TRANSACTIONS
-    return false;
-#endif
     if (!isOpen()) {
         qWarning("QMYSQLDriver::rollbackTransaction: Database not open");
         return false;
