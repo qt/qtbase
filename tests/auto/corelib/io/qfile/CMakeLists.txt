@@ -17,7 +17,7 @@ list(APPEND test_data "forCopying.txt")
 list(APPEND test_data "forRenaming.txt")
 list(APPEND test_data "resources/file1.ext1")
 
-add_qt_test(tst_qfile
+qt_add_test(tst_qfile
     SOURCES
         ../../../../shared/emulationdetector.h
         tst_qfile.cpp
@@ -33,7 +33,7 @@ set(qfile_resource_files
     "resources/"
 )
 
-add_qt_resource(tst_qfile "qfile"
+qt_add_resource(tst_qfile "qfile"
     PREFIX
         "/tst_qfileinfo/"
     FILES
@@ -43,7 +43,7 @@ set(rename-fallback_resource_files
     "rename-fallback.qrc"
 )
 
-add_qt_resource(tst_qfile "rename-fallback"
+qt_add_resource(tst_qfile "rename-fallback"
     PREFIX
         "/"
     FILES
@@ -53,7 +53,7 @@ set(copy-fallback_resource_files
     "copy-fallback.qrc"
 )
 
-add_qt_resource(tst_qfile "copy-fallback"
+qt_add_resource(tst_qfile "copy-fallback"
     PREFIX
         "/"
     FILES
@@ -64,22 +64,22 @@ add_qt_resource(tst_qfile "copy-fallback"
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qfile CONDITION TARGET Qt::Network
+qt_extend_target(tst_qfile CONDITION TARGET Qt::Network
     PUBLIC_LIBRARIES
         Qt::Network
 )
 
-extend_target(tst_qfile CONDITION NOT TARGET Qt::Network
+qt_extend_target(tst_qfile CONDITION NOT TARGET Qt::Network
     DEFINES
         QT_NO_NETWORK
 )
 
-extend_target(tst_qfile CONDITION CONFIG___contains___builtin_testdata
+qt_extend_target(tst_qfile CONDITION CONFIG___contains___builtin_testdata
     DEFINES
         BUILTIN_TESTDATA
 )
 
-extend_target(tst_qfile CONDITION WIN32
+qt_extend_target(tst_qfile CONDITION WIN32
     PUBLIC_LIBRARIES
         ole32
         uuid

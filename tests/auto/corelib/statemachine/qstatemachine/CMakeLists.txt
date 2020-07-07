@@ -1,22 +1,20 @@
-# Generated from qlockfile.pro.
+# Generated from qstatemachine.pro.
 
 #####################################################################
-## tst_qlockfile Test:
+## tst_qstatemachine Test:
 #####################################################################
 
-qt_add_test(tst_qlockfile
+qt_add_test(tst_qstatemachine
     SOURCES
-        tst_qlockfile.cpp
+        tst_qstatemachine.cpp
     PUBLIC_LIBRARIES
-        Qt::Concurrent
         Qt::CorePrivate
 )
 
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qlockfile CONDITION WIN32
+qt_extend_target(tst_qstatemachine CONDITION TARGET Qt::Widgets
     PUBLIC_LIBRARIES
-        advapi32
+        Qt::Widgets
 )
-add_subdirectory(qlockfiletesthelper)

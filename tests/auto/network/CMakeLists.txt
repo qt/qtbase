@@ -14,6 +14,7 @@ if (QT_FEATURE_private_tests)
 endif()
 # special case end
 
+# add_subdirectory(selftest) # special case not ported
 add_subdirectory(access)
 add_subdirectory(kernel)
 add_subdirectory(ssl)

@@ -1,9 +1,9 @@
-
 # Generated from qdbusabstractadaptor.pro.
 
 add_subdirectory(qmyserver)
 
-add_qt_test(tst_qdbusabstractadaptor
+# special case begin
+qt_add_test(tst_qdbusabstractadaptor
     SOURCES
         myobject.h
         tst_qdbusabstractadaptor.cpp
@@ -11,4 +11,4 @@ add_qt_test(tst_qdbusabstractadaptor
         Qt::CorePrivate
         Qt::DBus
 )
-
+# special case end

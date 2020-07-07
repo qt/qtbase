@@ -4,7 +4,7 @@
 ## tst_qcommandlineparser Test:
 #####################################################################
 
-add_qt_test(tst_qcommandlineparser
+qt_add_test(tst_qcommandlineparser
     SOURCES
         tst_qcommandlineparser.cpp
 )

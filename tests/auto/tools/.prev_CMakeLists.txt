@@ -2,7 +2,7 @@
 
 add_subdirectory(qmakelib)
 add_subdirectory(qmake)
-#add_subdirectory(moc) # special case to be ported
+add_subdirectory(moc)
 add_subdirectory(rcc)
 if(TARGET Qt::Widgets)
     add_subdirectory(uic)

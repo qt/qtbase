@@ -4,7 +4,7 @@
 ## tst_qobject Test:
 #####################################################################
 
-add_qt_test(tst_qobject
+qt_add_test(tst_qobject
     SOURCES
         tst_qobject.cpp
     DEFINES

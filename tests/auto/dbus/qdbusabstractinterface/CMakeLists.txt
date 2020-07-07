@@ -2,6 +2,7 @@
 
 add_subdirectory(qpinger)
 
+# special case begin
 qt_add_test(tst_qdbusabstractinterface
     SOURCES
         interface.cpp
@@ -19,3 +20,5 @@ qt_extend_target(tst_qdbusabstractinterface
     DBUS_INTERFACE_FLAGS
         -i interface.h
 )
+
+# special case end

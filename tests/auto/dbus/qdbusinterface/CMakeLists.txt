@@ -1,7 +1,7 @@
 # Generated from qdbusinterface.pro.
 
-# special case begin
 add_subdirectory(qmyserver)
+# special case begin
 
 #####################################################################
 ## ../tst_qdbusinterface Test:

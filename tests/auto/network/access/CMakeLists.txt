@@ -8,8 +8,6 @@ add_subdirectory(qnetworkrequest)
 add_subdirectory(qnetworkreply)
 add_subdirectory(qnetworkcachemetadata)
 add_subdirectory(qabstractnetworkcache)
-
-
 if(QT_FEATURE_private_tests)
     add_subdirectory(qhttpnetworkconnection)
     add_subdirectory(qhttpnetworkreply)

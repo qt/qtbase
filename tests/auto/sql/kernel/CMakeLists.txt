@@ -1,3 +1,5 @@
+# Generated from kernel.pro.
+
 add_subdirectory(qsqlfield)
 add_subdirectory(qsqldatabase)
 add_subdirectory(qsqlerror)

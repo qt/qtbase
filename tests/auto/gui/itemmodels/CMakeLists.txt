@@ -1,4 +1,6 @@
-add_subdirectory("qstandarditem")
-if (QT_FEATURE_widgets)
-    add_subdirectory("qstandarditemmodel")
+# Generated from itemmodels.pro.
+
+add_subdirectory(qstandarditem)
+if(TARGET Qt::Widgets)
+    add_subdirectory(qstandarditemmodel)
 endif()

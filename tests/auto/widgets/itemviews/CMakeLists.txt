@@ -13,7 +13,6 @@ add_subdirectory(qtablewidget)
 add_subdirectory(qtreeview)
 add_subdirectory(qtreewidget)
 add_subdirectory(qtreewidgetitemiterator)
-
 if(QT_FEATURE_private_tests)
     add_subdirectory(qcolumnview)
     add_subdirectory(qlistwidget)
