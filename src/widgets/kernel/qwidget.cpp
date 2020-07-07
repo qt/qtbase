@@ -132,7 +132,6 @@ static inline bool qRectIntersects(const QRect &r1, const QRect &r2)
 }
 
 extern bool qt_sendSpontaneousEvent(QObject*, QEvent*); // qapplication.cpp
-extern QDesktopWidget *qt_desktopWidget; // qapplication.cpp
 
 QWidgetPrivate::QWidgetPrivate(int version)
     : QObjectPrivate(version)
@@ -1560,20 +1559,14 @@ int QWidgetPrivate::maxInstances = 0;     // Maximum number of widget instances
 void QWidgetPrivate::setWinId(WId id)                // set widget identifier
 {
     Q_Q(QWidget);
-    // the user might create a widget with Qt::Desktop window
-    // attribute (or create another QDesktopWidget instance), which
-    // will have the same windowid (the root window id) as the
-    // qt_desktopWidget. We should not add the second desktop widget
-    // to the mapper.
-    bool userDesktopWidget = qt_desktopWidget != nullptr && qt_desktopWidget != q && q->windowType() == Qt::Desktop;
-    if (mapper && data.winid && !userDesktopWidget) {
+    if (mapper && data.winid) {
         mapper->remove(data.winid);
     }
 
     const WId oldWinId = data.winid;
 
     data.winid = id;
-    if (mapper && id && !userDesktopWidget) {
+    if (mapper && id) {
         mapper->insert(data.winid, q);
     }
 
@@ -3487,12 +3480,8 @@ QPoint QWidget::pos() const
     See the \l{Window Geometry} documentation for an overview of geometry
     issues with windows.
 
-    \note Do not use this function to find the height of a screen
-    on a \l{QDesktopWidget}{multiple screen desktop}. Read
-    \l{QDesktopWidget#Screen Geometry}{this note} for details.
-
     By default, this property contains a value that depends on the user's
-    platform and screen geometry.
+    platform and \l{screen geometry}{QScreen::geometry}.
 
     \sa geometry, width, size
 */
@@ -7135,7 +7124,7 @@ QByteArray QWidget::saveGeometry() const
     // - Qt 5.12 - today              : Version 3.0, save QWidget::geometry()
     quint16 majorVersion = 3;
     quint16 minorVersion = 0;
-    const int screenNumber = QDesktopWidgetPrivate::screenNumber(this);
+    const int screenNumber = QGuiApplication::screens().indexOf(screen());
     stream << magicNumber
            << majorVersion
            << minorVersion
@@ -7144,7 +7133,7 @@ QByteArray QWidget::saveGeometry() const
            << qint32(screenNumber)
            << quint8(windowState() & Qt::WindowMaximized)
            << quint8(windowState() & Qt::WindowFullScreen)
-           << qint32(QDesktopWidgetPrivate::screenGeometry(screenNumber).width()) // added in 2.0
+           << qint32(screen()->geometry().width()) // added in 2.0
            << geometry(); // added in 3.0
     return array;
 }
@@ -7229,7 +7218,8 @@ bool QWidget::restoreGeometry(const QByteArray &geometry)
 
     if (restoredScreenNumber >= qMax(QGuiApplication::screens().size(), 1))
         restoredScreenNumber = 0;
-    const qreal screenWidthF = qreal(QDesktopWidgetPrivate::screenGeometry(restoredScreenNumber).width());
+    const QScreen *restoredScreen = QGuiApplication::screens().value(restoredScreenNumber, nullptr);
+    const qreal screenWidthF = restoredScreen ? qreal(restoredScreen->geometry().width()) : 0;
     // Sanity check bailing out when large variations of screen sizes occur due to
     // high DPI scaling or different levels of DPI awareness.
     if (restoredScreenWidth) {
@@ -7254,7 +7244,8 @@ bool QWidget::restoreGeometry(const QByteArray &geometry)
                                        .expandedTo(d_func()->adjustedSize()));
     }
 
-    const QRect availableGeometry = QDesktopWidgetPrivate::availableGeometry(restoredScreenNumber);
+    const QRect availableGeometry = restoredScreen ? restoredScreen->availableGeometry()
+                                                   : QRect();
 
     // Modify the restored geometry if we are about to restore to coordinates
     // that would make the window "lost". This happens if:
@@ -7278,7 +7269,7 @@ bool QWidget::restoreGeometry(const QByteArray &geometry)
             // Setting a geometry on an already maximized window causes this to be
             // restored into a broken, half-maximized state, non-resizable state (QTBUG-4397).
             // Move the window in normal state if needed.
-            if (restoredScreenNumber != QDesktopWidgetPrivate::screenNumber(this)) {
+            if (restoredScreen != screen()) {
                 setWindowState(Qt::WindowNoState);
                 setGeometry(restoredNormalGeometry);
             }
@@ -8368,7 +8359,11 @@ QSize QWidgetPrivate::adjustedSize() const
         if (exp & Qt::Vertical)
             s.setHeight(qMax(s.height(), 100));
 
-        QRect screen = QDesktopWidgetPrivate::screenGeometry(q->pos());
+        QRect screen;
+        if (const QScreen *screenAtPoint = QGuiApplication::screenAt(q->pos()))
+            screen = screenAtPoint->geometry();
+        else
+            screen = QGuiApplication::primaryScreen()->geometry();
 
         s.setWidth(qMin(s.width(), screen.width()*2/3));
         s.setHeight(qMin(s.height(), screen.height()*2/3));
