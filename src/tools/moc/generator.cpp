@@ -1555,7 +1555,7 @@ void Generator::generateQPropertyApi()
                 cdef->qualified.constData(),
                 property.name.constData());
         printAccessor(/*const*/true);
-        fprintf(out, "    return thisPtr->%s->%s.value();\n", property.accessor.constData(), property.name.constData());
+        fprintf(out, "    return thisPtr->%s->%s.value();\n", property.accessor.constData(), property.storage.constData());
         fprintf(out, "}\n");
 
         // property value setter
@@ -1564,7 +1564,7 @@ void Generator::generateQPropertyApi()
                 property.name.constData(),
                 property.type.name.constData());
         printAccessor();
-        fprintf(out, "    return thisPtr->%s->%s.setValue(thisPtr->%s, value);\n", property.accessor.constData(), property.name.constData(), property.accessor.constData());
+        fprintf(out, "    return thisPtr->%s->%s.setValue(thisPtr->%s, value);\n", property.accessor.constData(), property.storage.constData(), property.accessor.constData());
         fprintf(out, "}\n");
 
         // property value move setter
@@ -1573,7 +1573,7 @@ void Generator::generateQPropertyApi()
                 property.name.constData(),
                 property.type.name.constData());
         printAccessor();
-        fprintf(out, "    return thisPtr->%s->%s.setValue(thisPtr->%s, std::move(value));\n", property.accessor.constData(), property.name.constData(), property.accessor.constData());
+        fprintf(out, "    return thisPtr->%s->%s.setValue(thisPtr->%s, std::move(value));\n", property.accessor.constData(), property.storage.constData(), property.accessor.constData());
         fprintf(out, "}\n");
 
         // binding setter
@@ -1583,7 +1583,7 @@ void Generator::generateQPropertyApi()
                 property.name.constData(),
                 property.type.name.constData());
         printAccessor();
-        fprintf(out, "    return thisPtr->%s->%s.setBinding(thisPtr->%s, binding);\n", property.accessor.constData(), property.name.constData(), property.accessor.constData());
+        fprintf(out, "    return thisPtr->%s->%s.setBinding(thisPtr->%s, binding);\n", property.accessor.constData(), property.storage.constData(), property.accessor.constData());
         fprintf(out, "}\n");
 
         // binding move setter
@@ -1593,7 +1593,7 @@ void Generator::generateQPropertyApi()
                 property.name.constData(),
                 property.type.name.constData());
         printAccessor();
-        fprintf(out, "    return thisPtr->%s->%s.setBinding(thisPtr->%s, std::move(binding));\n", property.accessor.constData(), property.name.constData(), property.accessor.constData());
+        fprintf(out, "    return thisPtr->%s->%s.setBinding(thisPtr->%s, std::move(binding));\n", property.accessor.constData(), property.storage.constData(), property.accessor.constData());
         fprintf(out, "}\n");
 
         // untyped binding setter
@@ -1601,7 +1601,7 @@ void Generator::generateQPropertyApi()
                 cdef->qualified.constData(),
                 property.name.constData());
         printAccessor();
-        fprintf(out, "    return thisPtr->%s->%s.setBinding(thisPtr->%s, binding);\n", property.accessor.constData(), property.name.constData(), property.accessor.constData());
+        fprintf(out, "    return thisPtr->%s->%s.setBinding(thisPtr->%s, binding);\n", property.accessor.constData(), property.storage.constData(), property.accessor.constData());
         fprintf(out, "}\n");
 
         // binding bool getter
@@ -1609,7 +1609,7 @@ void Generator::generateQPropertyApi()
                 cdef->qualified.constData(),
                 property.name.constData());
         printAccessor(/*const*/true);
-        fprintf(out, "    return thisPtr->%s->%s.hasBinding();\n", property.accessor.constData(), property.name.constData());
+        fprintf(out, "    return thisPtr->%s->%s.hasBinding();\n", property.accessor.constData(), property.storage.constData());
         fprintf(out, "}\n");
 
         // binding getter
@@ -1618,7 +1618,7 @@ void Generator::generateQPropertyApi()
                 cdef->qualified.constData(),
                 property.name.constData());
         printAccessor(/*const*/true);
-        fprintf(out, "    return thisPtr->%s->%s.binding();\n", property.accessor.constData(), property.name.constData());
+        fprintf(out, "    return thisPtr->%s->%s.binding();\n", property.accessor.constData(), property.storage.constData());
         fprintf(out, "}\n");
 
         // binding taker
@@ -1627,7 +1627,7 @@ void Generator::generateQPropertyApi()
                 cdef->qualified.constData(),
                 property.name.constData());
         printAccessor();
-        fprintf(out, "    return thisPtr->%s->%s.takeBinding();\n", property.accessor.constData(), property.name.constData());
+        fprintf(out, "    return thisPtr->%s->%s.takeBinding();\n", property.accessor.constData(), property.storage.constData());
         fprintf(out, "}\n");
 
         // property setter function

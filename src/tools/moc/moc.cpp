@@ -1527,14 +1527,9 @@ void Moc::parsePrivateQProperty(ClassDef *def)
     next(IDENTIFIER);
     const QByteArray setter = lexem();
 
-    def->privateQProperties += PrivateQPropertyDef{type, name, setter, accessor};
-
     PropertyDef propDef;
     propDef.name = name;
-    propDef.qpropertyname = name;
     propDef.type = type.name;
-    propDef.read = name + ".value";
-    propDef.write = name + ".setValue";
     propDef.isQProperty = true;
     propDef.isQPropertyWithNotifier = true;
     propDef.inPrivateClass = accessor;
@@ -1543,6 +1538,17 @@ void Moc::parsePrivateQProperty(ClassDef *def)
 
     if (test(COMMA))
         parsePropertyAttributes(propDef);
+
+    propDef.qpropertyname = (propDef.stored == "true") ? name : (name + "()");
+
+    def->privateQProperties += PrivateQPropertyDef {
+            type, name, setter, accessor, propDef.qpropertyname
+    };
+
+    if (propDef.read.isEmpty())
+        propDef.read = propDef.qpropertyname + ".value";
+    if (propDef.write.isEmpty())
+        propDef.write = propDef.qpropertyname + ".setValue";
 
     next(RPAREN);
 

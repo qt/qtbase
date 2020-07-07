@@ -4170,13 +4170,17 @@ class ClassWithPrivateQPropertyShim :public QObject
     Q_OBJECT
 public:
     Q_PRIVATE_QPROPERTY(d_func(), int, testProperty, setTestProperty, NOTIFY testPropertyChanged)
+    Q_PRIVATE_QPROPERTY(d_func(), int, lazyTestProperty, setLazyTestProperty,
+                        NOTIFY lazyTestPropertyChanged STORED false)
 
     Q_PRIVATE_QPROPERTIES_BEGIN
     Q_PRIVATE_QPROPERTY_IMPL(testProperty)
+    Q_PRIVATE_QPROPERTY_IMPL(lazyTestProperty)
     Q_PRIVATE_QPROPERTIES_END
 
 signals:
     void testPropertyChanged();
+    void lazyTestPropertyChanged();
 public:
 
     struct Private {
@@ -4188,6 +4192,22 @@ public:
 
         void onTestPropertyChanged() { q->testPropertyChanged(); }
         QNotifiedProperty<int, &Private::onTestPropertyChanged> testProperty;
+
+        void onLazyTestPropertyChanged() { q->lazyTestPropertyChanged(); }
+
+        QNotifiedProperty<int, &Private::onLazyTestPropertyChanged> &lazyTestProperty() {
+            if (!lazyTestPropertyStorage)
+                lazyTestPropertyStorage.reset(new QNotifiedProperty<int, &Private::onLazyTestPropertyChanged>);
+            return *lazyTestPropertyStorage;
+        }
+
+        const QNotifiedProperty<int, &Private::onLazyTestPropertyChanged> &lazyTestProperty() const {
+            if (!lazyTestPropertyStorage)
+                lazyTestPropertyStorage.reset(new QNotifiedProperty<int, &Private::onLazyTestPropertyChanged>);
+            return *lazyTestPropertyStorage;
+        }
+
+        mutable QScopedPointer<QNotifiedProperty<int, &Private::onLazyTestPropertyChanged>> lazyTestPropertyStorage;
     };
     Private priv{this};
 
@@ -4220,6 +4240,24 @@ void tst_Moc::privateQPropertyShim()
     testObject.setTestProperty(400);
     QVERIFY(!testObject.testProperty.hasBinding());
     QCOMPARE(testObject.testProperty(), 400);
+
+    // Created and default-initialized, without nullptr access
+    QCOMPARE(testObject.lazyTestProperty(), 0);
+
+    // Explicitly set to something
+    testObject.priv.lazyTestProperty().setValue(&testObject.priv, 42);
+    QCOMPARE(testObject.property("lazyTestProperty").toInt(), 42);
+
+    // Behave like a QProperty
+    QVERIFY(!testObject.lazyTestProperty.hasBinding());
+    testObject.lazyTestProperty.setBinding([]() { return 100; });
+    QCOMPARE(testObject.lazyTestProperty.value(), 100);
+    QVERIFY(testObject.lazyTestProperty.hasBinding());
+
+    // Old style setter getters
+    testObject.setLazyTestProperty(400);
+    QVERIFY(!testObject.lazyTestProperty.hasBinding());
+    QCOMPARE(testObject.lazyTestProperty(), 400);
 }
 
 QTEST_MAIN(tst_Moc)
