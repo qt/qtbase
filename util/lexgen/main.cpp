@@ -203,7 +203,7 @@ static DFA generateMachine(const Config &cfg)
         return DFA();
     }
 
-    QVector<NFA> tokens;
+    QList<NFA> tokens;
 
     foreach (ConfigFile::Entry e, cfg.configSections.value("Tokens")) {
         int errCol = 0;

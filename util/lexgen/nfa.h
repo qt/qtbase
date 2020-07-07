@@ -29,13 +29,13 @@
 #ifndef NFA_H
 #define NFA_H
 
-#include <QMap>
-#include <QHash>
-#include <QString>
-#include <QVector>
-#include <QDebug>
-#include <QStack>
 #include <QByteArray>
+#include <QDebug>
+#include <QHash>
+#include <QList>
+#include <QMap>
+#include <QStack>
+#include <QString>
 
 #include "global.h"
 
@@ -57,7 +57,7 @@ inline QDataStream &operator>>(QDataStream &stream, State &state)
     return stream >> state.symbol >> state.transitions;
 }
 
-struct DFA : public QVector<State>
+struct DFA : public QList<State>
 {
     void debug() const;
     DFA minimize() const;
@@ -107,7 +107,7 @@ public:
     int initialState;
     int finalState;
 
-    QVector<State> states;
+    QList<State> states;
 };
 
 #endif // NFA_H

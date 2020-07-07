@@ -129,7 +129,7 @@ int main(int argc, char **argv)
     outFile.write(";\n");
 
     file.reset();
-    QVector<QString> strings(lineCount);
+    QStringList strings(lineCount);
     while (!file.atEnd()) {
         QString st = QString::fromUtf8(file.readLine()).trimmed();
         int num = qt_hash(st) % lineCount;

@@ -161,9 +161,9 @@ private:
     QString cname;
     struct Section
     {
-        QVector<Function> functions;
+        QList<Function> functions;
         QStringList variables;
-        QVector<Function> constructors;
+        QList<Function> constructors;
 
         inline bool isEmpty() const
         { return functions.isEmpty() && variables.isEmpty() && constructors.isEmpty(); }
@@ -202,7 +202,7 @@ public:
         QString testFunction;
     };
 private:
-    QVector<TransitionSequence> charFunctionRanges;
+    QList<TransitionSequence> charFunctionRanges;
 };
 
 #endif

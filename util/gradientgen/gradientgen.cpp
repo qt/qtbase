@@ -32,12 +32,12 @@
 #include <algorithm>
 
 #include <QByteArray>
-#include <QVector>
+#include <QDebug>
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QJsonValue>
-#include <QDebug>
+#include <QList>
 
 #include <QColor>
 
@@ -174,7 +174,7 @@ static void printGradientStops(Printer &p, const QJsonArray &presets)
         const QJsonArray stops = preset[QLatin1String("stops")].toArray();
         Q_ASSERT(!stops.isEmpty());
 
-        QVector<GradientStop> gradientStops;
+        QList<GradientStop> gradientStops;
         gradientStops.reserve(stops.size());
         std::transform(stops.cbegin(),
                        stops.cend(),

@@ -223,9 +223,9 @@ static inline bool adjacentKeys(int left, int right) { return left + 1 == right;
 //static inline bool adjacentKeys(const InputType &left, const InputType &right)
 //{ return left.val + 1 == right.val; }
 
-static QVector<Generator::TransitionSequence> convertToSequences(const TransitionMap &transitions)
+static QList<Generator::TransitionSequence> convertToSequences(const TransitionMap &transitions)
 {
-    QVector<Generator::TransitionSequence> sequences;
+    QList<Generator::TransitionSequence> sequences;
     if (transitions.isEmpty())
         return sequences;
 
@@ -272,7 +272,7 @@ void Generator::generateTransitions(CodeBlock &body, const TransitionMap &transi
     if (transitions.isEmpty())
         return;
 
-    QVector<TransitionSequence> sequences = convertToSequences(transitions);
+    QList<TransitionSequence> sequences = convertToSequences(transitions);
 
     bool needsCharFunction = false;
     if (!charFunctionRanges.isEmpty()) {

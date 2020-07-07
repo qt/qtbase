@@ -430,7 +430,7 @@ void DFA::debug() const
 
 DFA DFA::minimize() const
 {
-    QVector<bool> inequivalentStates(count() * count());
+    QList<bool> inequivalentStates(count() * count());
     inequivalentStates.fill(false);
 
     for (int i = 0; i < count(); ++i)

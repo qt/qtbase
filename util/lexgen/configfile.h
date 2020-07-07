@@ -28,10 +28,10 @@
 #ifndef CONFIGFILE_H
 #define CONFIGFILE_H
 
-#include <QStringList>
-#include <QMap>
-#include <QVector>
 #include <QIODevice>
+#include <QList>
+#include <QMap>
+#include <QStringList>
 
 struct ConfigFile
 {
@@ -42,7 +42,7 @@ struct ConfigFile
         QString key;
         QString value;
     };
-    struct Section : public QVector<Entry>
+    struct Section : public QList<Entry>
     {
         inline bool contains(const QString &key) const
         {

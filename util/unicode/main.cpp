@@ -26,14 +26,13 @@
 **
 ****************************************************************************/
 
-#include <qlist.h>
-#include <qhash.h>
-#include <qfile.h>
 #include <qbytearray.h>
-#include <qstring.h>
 #include <qchar.h>
-#include <qvector.h>
 #include <qdebug.h>
+#include <qfile.h>
+#include <qhash.h>
+#include <qlist.h>
+#include <qstring.h>
 #if 0
 #include <private/qunicodetables_p.h>
 #endif
@@ -2310,7 +2309,7 @@ struct UniqueBlock {
     { return values == other.values; }
 
     int index;
-    QVector<int> values;
+    QList<int> values;
 };
 
 static QByteArray createPropertyInfo()
@@ -2332,7 +2331,7 @@ static QByteArray createPropertyInfo()
     const int SMP_SHIFT = 8;
 
     QList<UniqueBlock> uniqueBlocks;
-    QVector<int> blockMap;
+    QList<int> blockMap;
     int used = 0;
 
     for (int block = 0; block < BMP_END/BMP_BLOCKSIZE; ++block) {
@@ -2617,11 +2616,11 @@ static QByteArray createCompositionInfo()
     if (SMP_END <= highestComposedCharacter)
         qFatal("end of table smaller than highest composed character 0x%x", highestComposedCharacter);
 
-    QVector<unsigned short> decompositions;
+    QList<unsigned short> decompositions;
     int tableIndex = 0;
 
     QList<UniqueBlock> uniqueBlocks;
-    QVector<int> blockMap;
+    QList<int> blockMap;
     int used = 0;
 
     for (int block = 0; block < BMP_END/BMP_BLOCKSIZE; ++block) {
@@ -2832,7 +2831,7 @@ static QByteArray createLigatureInfo()
     int tableIndex = 0;
 
     QList<UniqueBlock> uniqueBlocks;
-    QVector<int> blockMap;
+    QList<int> blockMap;
     int used = 0;
 
     for (int block = 0; block < BMP_END/BMP_BLOCKSIZE; ++block) {

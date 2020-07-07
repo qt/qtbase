@@ -92,7 +92,7 @@ private:
     void tokenize(const QString &input);
 
     QMap<QString, NFA> macros;
-    QVector<Symbol> symbols;
+    QList<Symbol> symbols;
     int index;
     int errorColumn;
     const QSet<InputType> maxInputSet;
