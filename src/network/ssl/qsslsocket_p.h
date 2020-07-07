@@ -83,7 +83,7 @@ class QSslContext;
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_OS_MACX)
+#if defined(Q_OS_MACOS)
     typedef CFDataRef (*PtrSecCertificateCopyData)(SecCertificateRef);
     typedef OSStatus (*PtrSecTrustSettingsCopyCertificates)(int, CFArrayRef*);
     typedef OSStatus (*PtrSecTrustCopyAnchorCertificates)(CFArrayRef*);

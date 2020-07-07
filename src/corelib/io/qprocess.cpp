@@ -2386,7 +2386,7 @@ bool QProcess::startDetached(const QString &program,
 }
 
 QT_BEGIN_INCLUDE_NAMESPACE
-#if defined(Q_OS_MACX)
+#if defined(Q_OS_MACOS)
 # include <crt_externs.h>
 # define environ (*_NSGetEnviron())
 #elif defined(QT_PLATFORM_UIKIT)

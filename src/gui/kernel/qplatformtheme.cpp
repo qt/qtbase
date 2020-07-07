@@ -608,7 +608,7 @@ QIconEngine *QPlatformTheme::createIconEngine(const QString &iconName) const
     return new QIconLoaderEngine(iconName);
 }
 
-#if defined(Q_OS_MACX)
+#if defined(Q_OS_MACOS)
 static inline int maybeSwapShortcut(int shortcut)
 {
     if (qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) {
@@ -661,7 +661,7 @@ QList<QKeySequence> QPlatformTheme::keyBindings(QKeySequence::StandardKey key) c
             continue;
 
         uint shortcut =
-#if defined(Q_OS_MACX)
+#if defined(Q_OS_MACOS)
             maybeSwapShortcut(it->shortcut);
 #else
             it->shortcut;

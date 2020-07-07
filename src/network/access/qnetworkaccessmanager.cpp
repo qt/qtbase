@@ -102,7 +102,7 @@ Q_GLOBAL_STATIC(QNetworkAccessFtpBackendFactory, ftpBackend)
 Q_GLOBAL_STATIC(QNetworkAccessDebugPipeBackendFactory, debugpipeBackend)
 #endif
 
-#if defined(Q_OS_MACX)
+#if defined(Q_OS_MACOS)
 bool getProxyAuth(const QString& proxyHostname, const QString &scheme, QString& username, QString& password)
 {
     OSStatus err;

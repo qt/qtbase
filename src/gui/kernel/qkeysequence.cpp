@@ -49,7 +49,7 @@
 #endif
 #include "qvariant.h"
 
-#if defined(Q_OS_MACX)
+#if defined(Q_OS_MACOS)
 #include <QtCore/private/qcore_mac_p.h>
 #endif
 
@@ -1073,7 +1073,7 @@ int QKeySequencePrivate::decodeString(QString accel, QKeySequence::SequenceForma
     if (nativeText) {
         gmodifs = globalModifs();
         if (gmodifs->isEmpty()) {
-#if defined(Q_OS_MACX)
+#if defined(Q_OS_MACOS)
             const bool dontSwap = qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta);
             if (dontSwap)
                 *gmodifs << QModifKeyName(Qt::META, QChar(kCommandUnicode));
@@ -1115,7 +1115,7 @@ int QKeySequencePrivate::decodeString(QString accel, QKeySequence::SequenceForma
     modifs += *gmodifs; // Test non-translated ones last
 
     QString sl = accel;
-#if defined(Q_OS_MACX)
+#if defined(Q_OS_MACOS)
     for (int i = 0; i < modifs.size(); ++i) {
         const QModifKeyName &mkf = modifs.at(i);
         if (sl.contains(mkf.name)) {
@@ -1170,7 +1170,7 @@ int QKeySequencePrivate::decodeString(QString accel, QKeySequence::SequenceForma
 
     int fnum = 0;
     if (accelRef.length() == 1) {
-#if defined(Q_OS_MACX)
+#if defined(Q_OS_MACOS)
         int qtKey = qtkeyForMacSymbol(accelRef.at(0));
         if (qtKey != -1) {
             ret |= qtKey;
@@ -1242,7 +1242,7 @@ QString QKeySequencePrivate::encodeString(int key, QKeySequence::SequenceFormat 
     if (key == -1 || key == Qt::Key_unknown)
         return s;
 
-#if defined(Q_OS_MACX)
+#if defined(Q_OS_MACOS)
     if (nativeText) {
         // On OS X the order (by default) is Meta, Alt, Shift, Control.
         // If the AA_MacDontSwapCtrlAndMeta is enabled, then the order
@@ -1321,7 +1321,7 @@ QString QKeySequencePrivate::keyName(int key, QKeySequence::SequenceFormat forma
                            : QString::fromLatin1("F%1").arg(key - Qt::Key_F1 + 1);
     } else if (key) {
         int i=0;
-#if defined(Q_OS_MACX)
+#if defined(Q_OS_MACOS)
         if (nativeText) {
             QChar ch = qt_macSymbolForQtKey(key);
             if (!ch.isNull())
@@ -1331,7 +1331,7 @@ QString QKeySequencePrivate::keyName(int key, QKeySequence::SequenceFormat forma
         } else
 #endif
         {
-#if defined(Q_OS_MACX)
+#if defined(Q_OS_MACOS)
 NonSymbol:
 #endif
             while (i < numKeyNames) {

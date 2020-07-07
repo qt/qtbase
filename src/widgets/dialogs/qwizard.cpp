@@ -64,7 +64,7 @@
 #include "qstyle.h"
 #include "qstyleoption.h"
 #include "qvarlengtharray.h"
-#if defined(Q_OS_MACX)
+#if defined(Q_OS_MACOS)
 #include <QtCore/QMetaMethod>
 #include <QtGui/QGuiApplication>
 #include <qpa/qplatformnativeinterface.h>
@@ -579,7 +579,7 @@ public:
     void _q_updateButtonStates();
     void _q_handleFieldObjectDestroyed(QObject *);
     void setStyle(QStyle *style);
-#ifdef Q_OS_MACX
+#ifdef Q_OS_MACOS
     static QPixmap findDefaultBackgroundPixmap();
 #endif
 
@@ -1382,7 +1382,7 @@ bool QWizardPrivate::ensureButton(QWizard::WizardButton which) const
         if (style != QApplication::style()) // Propagate style
             pushButton->setStyle(style);
         pushButton->setObjectName(object_name_for_button(which));
-#ifdef Q_OS_MACX
+#ifdef Q_OS_MACOS
         pushButton->setAutoDefault(false);
 #endif
         pushButton->hide();
@@ -1740,7 +1740,7 @@ void QWizardPrivate::setStyle(QStyle *style)
         it.value()->setStyle(style);
 }
 
-#ifdef Q_OS_MACX
+#ifdef Q_OS_MACOS
 
 QPixmap QWizardPrivate::findDefaultBackgroundPixmap()
 {
@@ -2871,7 +2871,7 @@ QPixmap QWizard::pixmap(WizardPixmap which) const
 {
     Q_D(const QWizard);
     Q_ASSERT(uint(which) < NPixmaps);
-#ifdef Q_OS_MACX
+#ifdef Q_OS_MACOS
     if (which == BackgroundPixmap && d->defaultPixmaps[BackgroundPixmap].isNull())
         d->defaultPixmaps[BackgroundPixmap] = d->findDefaultBackgroundPixmap();
 #endif

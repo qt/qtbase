@@ -114,7 +114,7 @@
 # endif
 #endif
 
-#if defined(Q_OS_MACX)
+#if defined(Q_OS_MACOS)
 #include <IOKit/pwr_mgt/IOPMLib.h>
 #include <mach/task.h>
 #include <mach/mach_init.h>
