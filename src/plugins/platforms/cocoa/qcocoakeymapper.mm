@@ -92,12 +92,9 @@ static CarbonModifiers toCarbonModifiers(Qt::KeyboardModifiers qtModifiers)
 
     static constexpr std::tuple<int, Qt::KeyboardModifier> carbonModifierMap[] = {
         { shiftKey, Qt::ShiftModifier },
-        { rightShiftKey, Qt::ShiftModifier },
         { controlKey, Qt::ControlModifier },
-        { rightControlKey, Qt::ControlModifier },
         { cmdKey, Qt::MetaModifier },
         { optionKey, Qt::AltModifier },
-        { rightOptionKey, Qt::AltModifier },
         { kEventKeyModifierNumLockMask, Qt::KeypadModifier }
     };
 
