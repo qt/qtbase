@@ -112,6 +112,7 @@ struct BindingEvaluationState
     ~BindingEvaluationState();
     QPropertyBindingPrivate *binding;
     BindingEvaluationState *previousState = nullptr;
+    BindingEvaluationState **currentState = nullptr;
 };
 
 QT_END_NAMESPACE

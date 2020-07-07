@@ -193,14 +193,17 @@ static thread_local BindingEvaluationState *currentBindingEvaluationState = null
 BindingEvaluationState::BindingEvaluationState(QPropertyBindingPrivate *binding)
     : binding(binding)
 {
-    previousState = currentBindingEvaluationState;
-    currentBindingEvaluationState = this;
+    // store a pointer to the currentBindingEvaluationState to avoid a TLS lookup in
+    // the destructor (as these come with a non zero cost)
+    currentState = &currentBindingEvaluationState;
+    previousState = *currentState;
+    *currentState = this;
     binding->clearDependencyObservers();
 }
 
 BindingEvaluationState::~BindingEvaluationState()
 {
-    currentBindingEvaluationState = previousState;
+    *currentState = previousState;
 }
 
 void QPropertyBase::evaluateIfDirty()
