@@ -1195,7 +1195,7 @@ bool copyAndroidExtraResources(Options *options)
         return true;
 
     if (options->verbose)
-        fprintf(stdout, "Copying %d external resources to package.\n", options->extraPlugins.size());
+        fprintf(stdout, "Copying %zd external resources to package.\n", size_t(options->extraPlugins.size()));
 
     for (const QString &extraResource : options->extraPlugins) {
         QFileInfo extraResourceInfo(extraResource);
