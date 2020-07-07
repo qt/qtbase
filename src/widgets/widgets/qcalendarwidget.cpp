@@ -860,37 +860,22 @@ class QCalendarModel : public QAbstractTableModel
 public:
     QCalendarModel(QObject *parent = nullptr);
 
-    int rowCount(const QModelIndex &) const override
-        { return RowCount + m_firstRow; }
-    int columnCount(const QModelIndex &) const override
-        { return ColumnCount + m_firstColumn; }
+    int rowCount(const QModelIndex &parent) const override
+    {
+        if (parent.isValid())
+            return 0;
+        return RowCount + m_firstRow;
+    }
+
+    int columnCount(const QModelIndex &parent) const override
+    {
+        if (parent.isValid())
+            return 0;
+        return ColumnCount + m_firstColumn;
+    }
+
     QVariant data(const QModelIndex &index, int role) const override;
     Qt::ItemFlags flags(const QModelIndex &index) const override;
-
-    bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex()) override
-    {
-        beginInsertRows(parent, row, row + count - 1);
-        endInsertRows();
-        return true;
-    }
-    bool insertColumns(int column, int count, const QModelIndex &parent = QModelIndex()) override
-    {
-        beginInsertColumns(parent, column, column + count - 1);
-        endInsertColumns();
-        return true;
-    }
-    bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex()) override
-    {
-        beginRemoveRows(parent, row, row + count - 1);
-        endRemoveRows();
-        return true;
-    }
-    bool removeColumns(int column, int count, const QModelIndex &parent = QModelIndex()) override
-    {
-        beginRemoveColumns(parent, column, column + count - 1);
-        endRemoveColumns();
-        return true;
-    }
 
     void showMonth(int year, int month);
     void setDate(QDate d);
@@ -1303,11 +1288,13 @@ void QCalendarModel::setHorizontalHeaderFormat(QCalendarWidget::HorizontalHeader
     int oldFormat = m_horizontalHeaderFormat;
     m_horizontalHeaderFormat = format;
     if (oldFormat == QCalendarWidget::NoHorizontalHeader) {
+        beginInsertRows(QModelIndex(), 0, 0);
         m_firstRow = 1;
-        insertRow(0);
+        endInsertRows();
     } else if (m_horizontalHeaderFormat == QCalendarWidget::NoHorizontalHeader) {
+        beginRemoveRows(QModelIndex(), 0, 0);
         m_firstRow = 0;
-        removeRow(0);
+        endRemoveRows();
     }
     internalUpdate();
 }
@@ -1338,11 +1325,13 @@ void QCalendarModel::setWeekNumbersShown(bool show)
 
     m_weekNumbersShown = show;
     if (show) {
+        beginInsertColumns(QModelIndex(), 0, 0);
         m_firstColumn = 1;
-        insertColumn(0);
+        endInsertColumns();
     } else {
+        beginRemoveColumns(QModelIndex(), 0, 0);
         m_firstColumn = 0;
-        removeColumn(0);
+        endRemoveColumns();
     }
     internalUpdate();
 }
