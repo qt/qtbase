@@ -384,11 +384,16 @@ void QPropertyObserverPointer::observeProperty(QPropertyBasePointer property)
     property.addObserver(ptr);
 }
 
-QPropertyBindingError::QPropertyBindingError(Type type)
+QPropertyBindingError::QPropertyBindingError()
+{
+}
+
+QPropertyBindingError::QPropertyBindingError(Type type, const QString &description)
 {
     if (type != NoError) {
         d = new QPropertyBindingErrorPrivate;
         d->type = type;
+        d->description = description;
     }
 }
 
@@ -425,25 +430,11 @@ QPropertyBindingError::Type QPropertyBindingError::type() const
     return d->type;
 }
 
-void QPropertyBindingError::setDescription(const QString &description)
-{
-    if (!d)
-        d = new QPropertyBindingErrorPrivate;
-    d->description = description;
-}
-
 QString QPropertyBindingError::description() const
 {
     if (!d)
         return QString();
     return d->description;
-}
-
-QPropertyBindingSourceLocation QPropertyBindingError::location() const
-{
-    if (!d)
-        return QPropertyBindingSourceLocation();
-    return d->location;
 }
 
 /*!

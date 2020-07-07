@@ -103,7 +103,6 @@ class QPropertyBindingErrorPrivate : public QSharedData
 public:
     QPropertyBindingError::Type type = QPropertyBindingError::NoError;
     QString description;
-    QPropertyBindingSourceLocation location;
 };
 
 struct BindingEvaluationState

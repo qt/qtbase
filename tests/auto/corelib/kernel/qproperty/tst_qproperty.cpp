@@ -506,8 +506,7 @@ void tst_QProperty::bindingSourceLocation()
 void tst_QProperty::bindingError()
 {
     QProperty<int> prop = Qt::makePropertyBinding([]() -> std::variant<int, QPropertyBindingError> {
-        QPropertyBindingError error(QPropertyBindingError::UnknownError);
-        error.setDescription(QLatin1String("my error"));
+        QPropertyBindingError error(QPropertyBindingError::UnknownError, QLatin1String("my error"));
         return error;
     });
     QCOMPARE(prop.value(), 0);

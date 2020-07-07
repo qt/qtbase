@@ -99,17 +99,18 @@ public:
         UnknownError
     };
 
-    QPropertyBindingError(Type type = NoError);
+    QPropertyBindingError();
+    QPropertyBindingError(Type type, const QString &description = QString());
+
     QPropertyBindingError(const QPropertyBindingError &other);
     QPropertyBindingError &operator=(const QPropertyBindingError &other);
     QPropertyBindingError(QPropertyBindingError &&other);
     QPropertyBindingError &operator=(QPropertyBindingError &&other);
     ~QPropertyBindingError();
 
+    bool hasError() const { return d.get() != nullptr; }
     Type type() const;
-    void setDescription(const QString &description);
     QString description() const;
-    QPropertyBindingSourceLocation location() const;
 
 private:
     QSharedDataPointer<QPropertyBindingErrorPrivate> d;
