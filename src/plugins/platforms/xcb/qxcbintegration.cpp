@@ -285,6 +285,7 @@ QOpenGLContext *QXcbIntegration::createOpenGLContext(GLXContext context, void *v
         return nullptr;
 }
 
+#if QT_CONFIG(egl)
 QOpenGLContext *QXcbIntegration::createOpenGLContext(EGLContext context, EGLDisplay display, QOpenGLContext *shareContext) const
 {
     using namespace QPlatformInterface::Private;
@@ -293,6 +294,7 @@ QOpenGLContext *QXcbIntegration::createOpenGLContext(EGLContext context, EGLDisp
     else
         return nullptr;
 }
+#endif
 
 #endif // QT_NO_OPENGL
 

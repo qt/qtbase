@@ -58,7 +58,9 @@ class QXcbNativeInterface;
 class Q_XCB_EXPORT QXcbIntegration : public QPlatformIntegration
 #ifndef QT_NO_OPENGL
     , public QPlatformInterface::Private::QGLXIntegration
+# if QT_CONFIG(egl)
     , public QPlatformInterface::Private::QEGLIntegration
+# endif
 #endif
 {
 public:
@@ -71,7 +73,9 @@ public:
 #ifndef QT_NO_OPENGL
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const override;
     QOpenGLContext *createOpenGLContext(GLXContext context, void *visualInfo, QOpenGLContext *shareContext) const override;
+# if QT_CONFIG(egl)
     QOpenGLContext *createOpenGLContext(EGLContext context, EGLDisplay display, QOpenGLContext *shareContext) const override;
+# endif
 #endif
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const override;
 
