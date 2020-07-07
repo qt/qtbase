@@ -54,17 +54,15 @@ QGestureRecognizer::Result ThreeFingerSlideGestureRecognizer::recognize(QGesture
     case QEvent::TouchUpdate:
         if (d->state() != Qt::NoGesture) {
             QTouchEvent *ev = static_cast<QTouchEvent*>(event);
-            if (ev->touchPoints().size() == 3) {
+            if (ev->points().size() == 3) {
                 d->gestureFired = true;
                 result = QGestureRecognizer::TriggerGesture;
             } else {
                 result = QGestureRecognizer::MayBeGesture;
-                for (int i = 0; i < ev->touchPoints().size(); ++i) {
-                    const QTouchEvent::TouchPoint &pt = ev->touchPoints().at(i);
-                    const int distance = (pt.pos().toPoint() - pt.startPos().toPoint()).manhattanLength();
-                    if (distance > 20) {
+                for (const QEventPoint &pt : ev->points()) {
+                    const int distance = (pt.globalPosition().toPoint() - pt.globalPressPosition().toPoint()).manhattanLength();
+                    if (distance > 20)
                         result = QGestureRecognizer::CancelGesture;
-                    }
                 }
             }
         } else {

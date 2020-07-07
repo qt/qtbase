@@ -272,7 +272,7 @@ bool EventReportWidget::event(QEvent *event)
     case QEvent::TouchUpdate:
         event->accept();
         m_touchPoints.clear();
-        for (const QTouchEvent::TouchPoint &p : static_cast<const QTouchEvent *>(event)->touchPoints())
+        for (const QEventPoint &p : static_cast<const QPointerEvent *>(event)->points())
             m_touchPoints.append(p.position());
         update();
         break;

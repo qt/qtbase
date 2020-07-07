@@ -344,7 +344,7 @@ bool TouchTestWidget::event(QEvent *event)
     case QEvent::MouseButtonRelease:
         if (m_drawPoints) {
             const QMouseEvent *me = static_cast<const QMouseEvent *>(event);
-            m_points.append(Point(me->localPos(),
+            m_points.append(Point(me->position(),
                                   type == QEvent::MouseButtonPress ? MousePress : MouseRelease,
                                   me->source()));
             update();
@@ -353,8 +353,8 @@ bool TouchTestWidget::event(QEvent *event)
     case QEvent::TouchBegin:
     case QEvent::TouchUpdate:
         if (m_drawPoints) {
-            for (const QTouchEvent::TouchPoint &p : static_cast<const QTouchEvent *>(event)->touchPoints())
-                m_points.append(Point(p.pos(), TouchPoint, Qt::MouseEventNotSynthesized, p.ellipseDiameters()));
+            for (const QEventPoint &p : static_cast<const QPointerEvent *>(event)->points())
+                m_points.append(Point(p.position(), TouchPoint, Qt::MouseEventNotSynthesized, p.ellipseDiameters()));
             update();
         }
         Q_FALLTHROUGH();

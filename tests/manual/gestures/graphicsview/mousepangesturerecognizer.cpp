@@ -57,7 +57,7 @@ QGestureRecognizer::Result MousePanGestureRecognizer::recognize(QGesture *state,
     case QEvent::MouseButtonPress:
     case QEvent::MouseMove:
     case QEvent::MouseButtonRelease:
-        globalPos = static_cast<QMouseEvent *>(event)->globalPos();
+        globalPos = static_cast<QMouseEvent *>(event)->globalPosition().toPoint();
         break;
     default:
         break;
