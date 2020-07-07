@@ -858,8 +858,17 @@ if (QT_FEATURE_vulkan)
     set(vulkan_fun_p_cpp "qvulkanfunctions_p.cpp")
     list(APPEND vulkan_fun_outputs "vulkan/${vulkan_fun_p_cpp}")
 
+    if(QT_HOST_PATH)
+        qt_path_join(qvkgen
+            "${QT_HOST_PATH}"
+            "${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_BINDIR}"
+            "qvkgen")
+    else()
+        set(qvkgen "${QT_CMAKE_EXPORT_NAMESPACE}::qvkgen")
+    endif()
+
     list(APPEND vulkan_fun_command_content
-        COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::qvkgen
+        COMMAND "${qvkgen}"
             "${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vk.xml"
             "${PROJECT_SOURCE_DIR}/header.LGPL"
             "${CMAKE_CURRENT_BINARY_DIR}/vulkan/qvulkanfunctions"
