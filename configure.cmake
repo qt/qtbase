@@ -827,12 +827,6 @@ qt_feature("libudev" PRIVATE
     LABEL "udev"
     CONDITION Libudev_FOUND
 )
-qt_feature("qt_libinfix_plugins"
-    LABEL "Use QT_LIBINFIX for Plugins"
-    AUTODETECT OFF
-    ENABLE ( NOT INPUT_qt_libinfix STREQUAL '' ) AND INPUT_qt_libinfix_plugins STREQUAL 'yes'
-)
-qt_feature_config("qt_libinfix_plugins" QMAKE_PRIVATE_CONFIG)
 qt_feature("compile_examples"
     LABEL "Compile examples"
     AUTODETECT NOT WASM

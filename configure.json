@@ -109,7 +109,6 @@
             "profile": "boolean",
             "qreal": "string",
             "qtlibinfix": { "type": "string", "name": "qt_libinfix" },
-            "qtlibinfix-plugins": { "type": "boolean", "name": "qt_libinfix_plugins" },
             "qtnamespace": { "type": "string", "name": "qt_namespace" },
             "reduce-exports": { "type": "boolean", "name": "reduce_exports" },
             "reduce-relocations": { "type": "boolean", "name": "reduce_relocations" },
@@ -1364,12 +1363,6 @@
             "label": "udev",
             "condition": "libs.libudev",
             "output": [ "privateFeature" ]
-        },
-        "qt_libinfix_plugins": {
-            "label": "Use QT_LIBINFIX for Plugins",
-            "autoDetect": false,
-            "enable": "input.qt_libinfix != '' && input.qt_libinfix_plugins == 'yes'",
-            "output": [ "privateConfig" ]
         },
         "compile_examples": {
             "label": "Compile examples",

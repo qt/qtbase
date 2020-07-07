@@ -126,7 +126,6 @@ Build options:
 
   -qtnamespace <name> .. Wrap all Qt library code in 'namespace <name> {...}'.
   -qtlibinfix <infix> .. Rename all libQt5*.so to libQt5*<infix>.so.
-  -qtlibinfix-plugins .. Rename Qt plugins according to -qtlibinfix [no]
 
   -testcocoon .......... Instrument with the TestCocoon code coverage tool [no]
   -gcov ................ Instrument with the GCov code coverage tool [no]
