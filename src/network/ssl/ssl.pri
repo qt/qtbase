@@ -117,7 +117,7 @@ qtConfig(ssl) {
 
         qtConfig(openssl-linked): {
             android {
-                build_pass: LIBS_PRIVATE += -lssl_$${QT_ARCH} -lcrypto_$${QT_ARCH}
+                build_pass|singleAndroidAbi: LIBS_PRIVATE += -lssl_$${QT_ARCH} -lcrypto_$${QT_ARCH}
             } else: QMAKE_USE_FOR_PRIVATE += openssl
         } else: \
             QMAKE_USE_FOR_PRIVATE += openssl/nolink
