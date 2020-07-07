@@ -139,13 +139,24 @@
            set to true won't be used as a native menubar (e.g, the menubar at
            the top of the main screen on \macos).
 
-    \value AA_MacDontSwapCtrlAndMeta On \macos by default, Qt swaps the
-           Control and Meta (Command) keys (i.e., whenever Control is pressed, Qt
-           sends Meta, and whenever Meta is pressed Control is sent). When this
-           attribute is true, Qt will not do the flip. \l QKeySequence::StandardKey
-           will also flip accordingly (i.e., QKeySequence::Copy will be
-           Command+C on the keyboard regardless of the value set, though what is output for
-           QKeySequence::toString() will be different).
+    \value AA_MacDontSwapCtrlAndMeta Keyboard shortcuts on \macos are typically
+           based on the Command (or Cmd) keyboard modifier, represented by
+           the ⌘ symbol. For example, the 'Copy' action is Command+C (⌘+C).
+           To ease cross platform development Qt will by default remap Command
+           to the Qt::ControlModifier, to align with other platforms. This
+           allows creating keyboard shortcuts such as "Ctrl+J", which on
+           \macos will then map to Command+J, as expected by \macos users. The
+           actual Control (or Ctrl) modifier on \macos, represented by ⌃, is
+           mapped to Qt::MetaModifier.
+
+           When this attribute is true Qt will not do the remapping, and pressing
+           the Command modifier will result in Qt::MetaModifier, while pressing
+           the Control modifier will result in Qt::ControlModifier.
+
+           Note that the \l QKeySequence::StandardKey sequences will always be
+           based on the same modifier (i.e., QKeySequence::Copy will be
+           Command+C regardless of the value set), but what is output for
+           QKeySequence::toString() will be different.
 
     \value AA_Use96Dpi Assume the screen has a resolution of 96 DPI rather
            than using the OS-provided resolution. This will cause font rendering
