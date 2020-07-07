@@ -148,9 +148,9 @@ public:
 
     void clearDependencyObservers() {
         if (!hasStaticObserver) {
-            for (size_t i = 0; i < inlineDependencyObservers.size(); ++i) {
-                QPropertyObserver empty;
-                qSwap(inlineDependencyObservers[i], empty);
+            for (size_t i = 0; i < qMin(dependencyObserverCount, inlineDependencyObservers.size()); ++i) {
+                QPropertyObserverPointer p{&inlineDependencyObservers[i]};
+                p.unlink();
             }
         }
         if (heapObservers)

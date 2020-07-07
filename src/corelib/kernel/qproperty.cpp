@@ -279,8 +279,6 @@ QPropertyObserver::~QPropertyObserver()
     d.unlink();
 }
 
-QPropertyObserver::QPropertyObserver() = default;
-
 QPropertyObserver::QPropertyObserver(QPropertyObserver &&other)
 {
     std::swap(bindingToMarkDirty, other.bindingToMarkDirty);

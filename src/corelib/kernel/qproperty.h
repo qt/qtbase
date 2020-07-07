@@ -607,7 +607,7 @@ public:
         ObserverNotifiesAlias,
     };
 
-    QPropertyObserver();
+    QPropertyObserver() = default;
     QPropertyObserver(QPropertyObserver &&other);
     QPropertyObserver &operator=(QPropertyObserver &&other);
     ~QPropertyObserver();
