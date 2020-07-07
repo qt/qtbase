@@ -48,7 +48,22 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcQpaKeyMapper, "qt.qpa.keymapper");
 Q_LOGGING_CATEGORY(lcQpaKeyMapperKeys, "qt.qpa.keymapper.keys");
-Q_LOGGING_CATEGORY(lcQpaKeyMapperModifiers, "qt.qpa.keymapper.modifiers");
+
+static Qt::KeyboardModifiers swapModifiersIfNeeded(const Qt::KeyboardModifiers modifiers)
+{
+    if (QCoreApplication::testAttribute(Qt::AA_MacDontSwapCtrlAndMeta))
+        return modifiers;
+
+    Qt::KeyboardModifiers swappedModifiers = modifiers;
+    swappedModifiers &= ~(Qt::MetaModifier | Qt::ControlModifier);
+
+    if (modifiers & Qt::ControlModifier)
+        swappedModifiers |= Qt::MetaModifier;
+    if (modifiers & Qt::MetaModifier)
+        swappedModifiers |= Qt::ControlModifier;
+
+    return swappedModifiers;
+}
 
 Qt::KeyboardModifiers QCocoaKeyMapper::fromCocoaModifiers(NSEventModifierFlags cocoaModifiers)
 {
@@ -70,9 +85,9 @@ Qt::KeyboardModifiers QCocoaKeyMapper::fromCocoaModifiers(NSEventModifierFlags c
 static constexpr std::tuple<int, Qt::KeyboardModifier> carbonModifierMap[] = {
     { shiftKey, Qt::ShiftModifier },
     { rightShiftKey, Qt::ShiftModifier },
-    { controlKey, Qt::MetaModifier },
-    { rightControlKey, Qt::MetaModifier },
-    { cmdKey, Qt::ControlModifier },
+    { controlKey, Qt::ControlModifier },
+    { rightControlKey, Qt::ControlModifier },
+    { cmdKey, Qt::MetaModifier },
     { optionKey, Qt::AltModifier },
     { rightOptionKey, Qt::AltModifier },
     { kEventKeyModifierNumLockMask, Qt::KeypadModifier }
@@ -82,49 +97,25 @@ using CarbonModifiers = UInt32; // As opposed to EventModifiers which is UInt16
 
 Qt::KeyboardModifiers fromCarbonModifiers(CarbonModifiers carbonModifiers)
 {
-    qCDebug(lcQpaKeyMapperModifiers, "Mapping carbon modifiers: %d (0x%04x)",
-        carbonModifiers, carbonModifiers);
-
     Qt::KeyboardModifiers qtModifiers = Qt::NoModifier;
     for (const auto &[carbonModifier, qtModifier] : carbonModifierMap) {
-        if (carbonModifiers & carbonModifier) {
-            qCDebug(lcQpaKeyMapperModifiers) << "Got modifier" << qtModifier;
+        if (carbonModifiers & carbonModifier)
             qtModifiers |= qtModifier;
-        }
     }
 
-    if (qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) {
-        Qt::KeyboardModifiers oldModifiers = qtModifiers;
-        qtModifiers &= ~(Qt::MetaModifier | Qt::ControlModifier);
-        if (oldModifiers & Qt::ControlModifier)
-            qtModifiers |= Qt::MetaModifier;
-        if (oldModifiers & Qt::MetaModifier)
-            qtModifiers |= Qt::ControlModifier;
-    }
-
-    return qtModifiers;
+    return swapModifiersIfNeeded(qtModifiers);
 }
 
 static CarbonModifiers toCarbonModifiers(Qt::KeyboardModifiers qtModifiers)
 {
-    qCDebug(lcQpaKeyMapperModifiers).verbosity(1) << "Mapping" << qtModifiers;
+    qtModifiers = swapModifiersIfNeeded(qtModifiers);
 
     CarbonModifiers carbonModifiers = 0;
     for (const auto &[carbonModifier, qtModifier] : carbonModifierMap) {
-        if (qtModifiers & qtModifier) {
-            qCDebug(lcQpaKeyMapperModifiers) << "Got carbon modifier" << carbonModifier;
+        if (qtModifiers & qtModifier)
             carbonModifiers |= carbonModifier;
-        }
     }
 
-    if (qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) {
-        int oldModifiers = carbonModifiers;
-        carbonModifiers &= ~(controlKey | rightControlKey | cmdKey);
-        if (oldModifiers & (controlKey | rightControlKey))
-            carbonModifiers |= cmdKey;
-        if (oldModifiers & cmdKey)
-            carbonModifiers |= (controlKey | rightControlKey);
-    }
     return carbonModifiers;
 }
 
