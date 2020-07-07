@@ -4,7 +4,7 @@
 ## tst_qsqldriver Test:
 #####################################################################
 
-add_qt_test(tst_qsqldriver
+qt_add_test(tst_qsqldriver
     SOURCES
         tst_qsqldriver.cpp
     PUBLIC_LIBRARIES

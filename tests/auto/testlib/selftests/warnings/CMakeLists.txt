@@ -4,7 +4,7 @@
 ## warnings Binary:
 #####################################################################
 
-add_qt_executable(warnings
+qt_add_executable(warnings
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

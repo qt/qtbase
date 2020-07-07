@@ -8,7 +8,7 @@
 list(APPEND test_data "qtlogo.png")
 list(APPEND test_data "qtlogoinverted.png")
 
-add_qt_test(tst_qcombobox
+qt_add_test(tst_qcombobox
     SOURCES
         tst_qcombobox.cpp
     DEFINES

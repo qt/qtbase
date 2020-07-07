@@ -4,7 +4,7 @@
 ## watchdog Binary:
 #####################################################################
 
-add_qt_executable(watchdog
+qt_add_executable(watchdog
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

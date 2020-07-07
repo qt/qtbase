@@ -7,7 +7,7 @@
 # Collect test data
 list(APPEND test_data "qtlogging.ini")
 
-add_qt_test(tst_qloggingregistry
+qt_add_test(tst_qloggingregistry
     SOURCES
         tst_qloggingregistry.cpp
     PUBLIC_LIBRARIES
@@ -27,7 +27,7 @@ if(ANDROID AND NOT ANDROID_EMBEDDED)
         "qtlogging.ini"
     )
 
-    add_qt_resource(tst_qloggingregistry "android_testdata"
+    qt_add_resource(tst_qloggingregistry "android_testdata"
         PREFIX
             "/"
         FILES

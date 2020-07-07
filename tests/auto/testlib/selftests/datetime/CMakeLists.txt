@@ -4,7 +4,7 @@
 ## datetime Binary:
 #####################################################################
 
-add_qt_executable(datetime
+qt_add_executable(datetime
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

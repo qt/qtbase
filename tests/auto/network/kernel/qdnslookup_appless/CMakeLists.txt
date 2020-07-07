@@ -4,7 +4,7 @@
 ## tst_qdnslookup_appless Test:
 #####################################################################
 
-add_qt_test(tst_qdnslookup_appless
+qt_add_test(tst_qdnslookup_appless
     SOURCES
         tst_qdnslookup_appless.cpp
     PUBLIC_LIBRARIES

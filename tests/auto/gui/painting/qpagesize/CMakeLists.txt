@@ -4,7 +4,7 @@
 ## tst_qpagesize Test:
 #####################################################################
 
-add_qt_test(tst_qpagesize
+qt_add_test(tst_qpagesize
     SOURCES
         tst_qpagesize.cpp
     DEFINES

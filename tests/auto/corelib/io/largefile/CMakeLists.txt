@@ -4,7 +4,7 @@
 ## tst_largefile Test:
 #####################################################################
 
-add_qt_test(tst_largefile
+qt_add_test(tst_largefile
     SOURCES
         ../../../../shared/emulationdetector.h
         tst_largefile.cpp

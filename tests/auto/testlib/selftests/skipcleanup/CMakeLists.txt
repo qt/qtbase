@@ -4,7 +4,7 @@
 ## skipcleanup Binary:
 #####################################################################
 
-add_qt_executable(skipcleanup
+qt_add_executable(skipcleanup
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

@@ -4,7 +4,7 @@
 ## tst_qnetworkproxyfactory Test:
 #####################################################################
 
-add_qt_test(tst_qnetworkproxyfactory
+qt_add_test(tst_qnetworkproxyfactory
     SOURCES
         tst_qnetworkproxyfactory.cpp
     PUBLIC_LIBRARIES

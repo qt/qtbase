@@ -10,7 +10,7 @@ list(APPEND test_data "data/headingBulletsContinuations.md")
 list(APPEND test_data "data/fuzz20450.md")
 list(APPEND test_data "data/fuzz20580.md")
 
-add_qt_test(tst_qtextmarkdownimporter
+qt_add_test(tst_qtextmarkdownimporter
     SOURCES
         tst_qtextmarkdownimporter.cpp
     DEFINES

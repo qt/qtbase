@@ -4,7 +4,7 @@
 ## skipcleanup Binary:
 #####################################################################
 
-add_qt_executable(skipcleanup
+qt_add_executable(skipcleanup
     SOURCES
         tst_skipcleanup.cpp
     PUBLIC_LIBRARIES

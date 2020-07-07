@@ -4,7 +4,7 @@
 ## app Binary:
 #####################################################################
 
-add_qt_executable(app
+qt_add_executable(app
     GUI
     SOURCES
         main.cpp

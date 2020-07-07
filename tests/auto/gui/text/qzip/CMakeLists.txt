@@ -7,7 +7,7 @@
 # Collect test data
 list(APPEND test_data "testdata")
 
-add_qt_test(tst_qzip
+qt_add_test(tst_qzip
     SOURCES
         tst_qzip.cpp
     PUBLIC_LIBRARIES
@@ -26,7 +26,7 @@ if(ANDROID)
         "testdata/test.zip"
     )
 
-    add_qt_resource(tst_qzip "testdata"
+    qt_add_resource(tst_qzip "testdata"
         PREFIX
             "/"
         FILES

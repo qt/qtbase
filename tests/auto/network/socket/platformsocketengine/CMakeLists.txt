@@ -8,7 +8,7 @@ endif()
 ## tst_platformsocketengine Test:
 #####################################################################
 
-add_qt_test(tst_platformsocketengine
+qt_add_test(tst_platformsocketengine
     SOURCES
         tst_platformsocketengine.cpp
     INCLUDE_DIRECTORIES
@@ -25,7 +25,7 @@ add_qt_test(tst_platformsocketengine
 ## Scopes:
 #####################################################################
 
-extend_target(tst_platformsocketengine CONDITION WIN32
+qt_extend_target(tst_platformsocketengine CONDITION WIN32
     PUBLIC_LIBRARIES
         ws2_32
 )

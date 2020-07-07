@@ -4,7 +4,7 @@
 ## tst_qtextscriptengine Test:
 #####################################################################
 
-add_qt_test(tst_qtextscriptengine
+qt_add_test(tst_qtextscriptengine
     SOURCES
         tst_qtextscriptengine.cpp
     PUBLIC_LIBRARIES

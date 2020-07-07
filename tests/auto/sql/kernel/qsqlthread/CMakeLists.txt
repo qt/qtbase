@@ -4,7 +4,7 @@
 ## tst_qsqlthread Test:
 #####################################################################
 
-add_qt_test(tst_qsqlthread
+qt_add_test(tst_qsqlthread
     SOURCES
         tst_qsqlthread.cpp
     PUBLIC_LIBRARIES

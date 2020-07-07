@@ -10,7 +10,7 @@ endif()
 ## tst_qaccessibilitylinux Test:
 #####################################################################
 
-add_qt_test(tst_qaccessibilitylinux
+qt_add_test(tst_qaccessibilitylinux
     SOURCES
         tst_qaccessibilitylinux.cpp
     DBUS_INTERFACE_SOURCES

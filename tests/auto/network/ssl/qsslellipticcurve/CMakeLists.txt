@@ -4,7 +4,7 @@
 ## tst_qsslellipticcurve Test:
 #####################################################################
 
-add_qt_test(tst_qsslellipticcurve
+qt_add_test(tst_qsslellipticcurve
     SOURCES
         tst_qsslellipticcurve.cpp
     PUBLIC_LIBRARIES

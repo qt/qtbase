@@ -4,7 +4,7 @@
 ## tst_qintvalidator Test:
 #####################################################################
 
-add_qt_test(tst_qintvalidator
+qt_add_test(tst_qintvalidator
     SOURCES
         tst_qintvalidator.cpp
     PUBLIC_LIBRARIES

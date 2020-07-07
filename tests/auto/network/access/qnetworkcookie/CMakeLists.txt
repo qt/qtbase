@@ -4,7 +4,7 @@
 ## tst_qnetworkcookie Test:
 #####################################################################
 
-add_qt_test(tst_qnetworkcookie
+qt_add_test(tst_qnetworkcookie
     SOURCES
         tst_qnetworkcookie.cpp
     PUBLIC_LIBRARIES

@@ -4,7 +4,7 @@
 ## qprocess-noapplication Test:
 #####################################################################
 
-add_qt_test(qprocess-noapplication
+qt_add_test(qprocess-noapplication
     SOURCES
         tst_qprocessnoapplication.cpp
 )

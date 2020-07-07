@@ -4,7 +4,7 @@
 ## tst_qfontmetrics Test:
 #####################################################################
 
-add_qt_test(tst_qfontmetrics
+qt_add_test(tst_qfontmetrics
     SOURCES
         tst_qfontmetrics.cpp
     PUBLIC_LIBRARIES
@@ -22,7 +22,7 @@ set(testfont_resource_files
     "ucs4font.ttf"
 )
 
-add_qt_resource(tst_qfontmetrics "testfont"
+qt_add_resource(tst_qfontmetrics "testfont"
     PREFIX
         "/fonts"
     FILES

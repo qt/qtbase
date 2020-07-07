@@ -7,7 +7,7 @@
 # Collect test data
 list(APPEND test_data "../library_path/invalid.so")
 
-add_qt_test(tst_qlibrary
+qt_add_test(tst_qlibrary
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../"
     SOURCES
         ../tst_qlibrary.cpp
@@ -39,7 +39,7 @@ if(ANDROID)
         # special case end
     )
 
-    add_qt_resource(tst_qlibrary "qmake_libs"
+    qt_add_resource(tst_qlibrary "qmake_libs"
         PREFIX
             "android_test_data"
         BASE

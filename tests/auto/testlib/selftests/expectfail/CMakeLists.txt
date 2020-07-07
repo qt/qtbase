@@ -4,7 +4,7 @@
 ## expectfail Binary:
 #####################################################################
 
-add_qt_executable(expectfail
+qt_add_executable(expectfail
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

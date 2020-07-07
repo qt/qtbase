@@ -4,7 +4,7 @@
 ## tst_qatomicinteger_qptrdiff Test:
 #####################################################################
 
-add_qt_test(tst_qatomicinteger_qptrdiff
+qt_add_test(tst_qatomicinteger_qptrdiff
     SOURCES
         ../tst_qatomicinteger.cpp
     DEFINES

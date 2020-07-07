@@ -17,7 +17,7 @@ list(APPEND test_data "../certs")
 list(APPEND test_data "../index.html")
 list(APPEND test_data "../smb-file.txt")
 
-add_qt_test(tst_qnetworkreply
+qt_add_test(tst_qnetworkreply
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../" # special case
     SOURCES
         ../../../../../shared/emulationdetector.h
@@ -38,7 +38,7 @@ set(qnetworkreply_resource_files
     "resource"
 )
 
-add_qt_resource(tst_qnetworkreply "qnetworkreply"
+qt_add_resource(tst_qnetworkreply "qnetworkreply"
     PREFIX
         "/"
     BASE

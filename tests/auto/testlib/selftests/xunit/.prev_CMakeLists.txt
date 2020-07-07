@@ -4,7 +4,7 @@
 ## xunit Binary:
 #####################################################################
 
-add_qt_executable(xunit
+qt_add_executable(xunit
     SOURCES
         tst_xunit.cpp
     PUBLIC_LIBRARIES

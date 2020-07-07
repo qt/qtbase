@@ -4,7 +4,7 @@
 ## tst_qtextblock Test:
 #####################################################################
 
-add_qt_test(tst_qtextblock
+qt_add_test(tst_qtextblock
     SOURCES
         tst_qtextblock.cpp
     PUBLIC_LIBRARIES

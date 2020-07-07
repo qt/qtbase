@@ -4,7 +4,7 @@
 ## tst_http2 Test:
 #####################################################################
 
-add_qt_test(tst_http2
+qt_add_test(tst_http2
     SOURCES
         ../../../../shared/emulationdetector.h
         http2srv.cpp http2srv.h

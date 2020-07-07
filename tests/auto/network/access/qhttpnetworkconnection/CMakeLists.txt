@@ -8,7 +8,7 @@ endif()
 ## tst_qhttpnetworkconnection Test:
 #####################################################################
 
-add_qt_test(tst_qhttpnetworkconnection
+qt_add_test(tst_qhttpnetworkconnection
     SOURCES
         tst_qhttpnetworkconnection.cpp
     PUBLIC_LIBRARIES

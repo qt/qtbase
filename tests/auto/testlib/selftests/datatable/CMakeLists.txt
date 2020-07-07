@@ -4,7 +4,7 @@
 ## datatable Binary:
 #####################################################################
 
-add_qt_executable(datatable
+qt_add_executable(datatable
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

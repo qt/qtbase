@@ -4,7 +4,7 @@
 ## modal Binary:
 #####################################################################
 
-add_qt_executable(modal_helper  # special case
+qt_add_executable(modal_helper  # special case
     SOURCES
         base.cpp base.h
         main.cpp

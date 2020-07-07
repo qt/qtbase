@@ -4,7 +4,7 @@
 ## tst_qcborstreamwriter Test:
 #####################################################################
 
-add_qt_test(tst_qcborstreamwriter
+qt_add_test(tst_qcborstreamwriter
     SOURCES
         tst_qcborstreamwriter.cpp
     DEFINES

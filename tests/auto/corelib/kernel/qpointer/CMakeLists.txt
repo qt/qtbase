@@ -4,7 +4,7 @@
 ## tst_qpointer Test:
 #####################################################################
 
-add_qt_test(tst_qpointer
+qt_add_test(tst_qpointer
     SOURCES
         tst_qpointer.cpp
 )
@@ -12,7 +12,7 @@ add_qt_test(tst_qpointer
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qpointer CONDITION TARGET Qt::Widgets
+qt_extend_target(tst_qpointer CONDITION TARGET Qt::Widgets
     PUBLIC_LIBRARIES
         Qt::Widgets
 )

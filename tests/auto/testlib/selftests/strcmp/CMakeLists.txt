@@ -4,7 +4,7 @@
 ## strcmp Binary:
 #####################################################################
 
-add_qt_executable(strcmp
+qt_add_executable(strcmp
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

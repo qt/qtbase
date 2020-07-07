@@ -4,7 +4,7 @@
 ## findtestdata Binary:
 #####################################################################
 
-add_qt_executable(findtestdata
+qt_add_executable(findtestdata
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES
@@ -18,7 +18,7 @@ set(findtestdata_resource_files
     "qt.conf"
 )
 
-add_qt_resource(findtestdata "findtestdata"
+qt_add_resource(findtestdata "findtestdata"
     PREFIX
         "/qt/etc/"
     FILES

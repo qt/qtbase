@@ -4,7 +4,7 @@
 ## datatable Binary:
 #####################################################################
 
-add_qt_executable(datatable
+qt_add_executable(datatable
     SOURCES
         tst_datatable.cpp
     PUBLIC_LIBRARIES

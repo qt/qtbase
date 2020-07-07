@@ -4,7 +4,7 @@
 ## tst_qabstractbutton Test:
 #####################################################################
 
-add_qt_test(tst_qabstractbutton
+qt_add_test(tst_qabstractbutton
     SOURCES
         tst_qabstractbutton.cpp
     PUBLIC_LIBRARIES

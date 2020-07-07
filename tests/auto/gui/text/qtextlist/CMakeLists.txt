@@ -4,7 +4,7 @@
 ## tst_qtextlist Test:
 #####################################################################
 
-add_qt_test(tst_qtextlist
+qt_add_test(tst_qtextlist
     SOURCES
         ../qtextdocument/common.h
         tst_qtextlist.cpp

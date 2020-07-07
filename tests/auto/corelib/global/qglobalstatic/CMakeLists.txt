@@ -4,7 +4,7 @@
 ## tst_qglobalstatic Test:
 #####################################################################
 
-add_qt_test(tst_qglobalstatic
+qt_add_test(tst_qglobalstatic
     EXCEPTIONS
     SOURCES
         tst_qglobalstatic.cpp

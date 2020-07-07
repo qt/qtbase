@@ -4,7 +4,7 @@
 ## tst_qfilesystemwatcher Test:
 #####################################################################
 
-add_qt_test(tst_qfilesystemwatcher
+qt_add_test(tst_qfilesystemwatcher
     SOURCES
         tst_qfilesystemwatcher.cpp
 )

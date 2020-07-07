@@ -4,7 +4,7 @@
 ## tst_compiler Test:
 #####################################################################
 
-add_qt_test(tst_compiler
+qt_add_test(tst_compiler
     SOURCES
         baseclass.cpp baseclass.h
         derivedclass.cpp derivedclass.h

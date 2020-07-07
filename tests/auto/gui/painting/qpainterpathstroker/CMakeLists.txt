@@ -4,7 +4,7 @@
 ## tst_qpainterpathstroker Test:
 #####################################################################
 
-add_qt_test(tst_qpainterpathstroker
+qt_add_test(tst_qpainterpathstroker
     SOURCES
         tst_qpainterpathstroker.cpp
     PUBLIC_LIBRARIES

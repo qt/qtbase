@@ -4,7 +4,7 @@
 ## tst_qguitimer Test:
 #####################################################################
 
-add_qt_test(tst_qguitimer
+qt_add_test(tst_qguitimer
     SOURCES
         ../../../corelib/kernel/qtimer/tst_qtimer.cpp
     PUBLIC_LIBRARIES

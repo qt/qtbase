@@ -4,7 +4,7 @@
 ## tuplediagnostics Binary:
 #####################################################################
 
-add_qt_executable(tuplediagnostics
+qt_add_executable(tuplediagnostics
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

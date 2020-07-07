@@ -4,7 +4,7 @@
 ## clientserver Binary:
 #####################################################################
 
-add_qt_executable(clientserver
+qt_add_executable(clientserver
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
     SOURCES
         main.cpp

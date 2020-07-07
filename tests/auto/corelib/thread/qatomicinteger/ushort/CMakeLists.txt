@@ -4,7 +4,7 @@
 ## tst_qatomicinteger_ushort Test:
 #####################################################################
 
-add_qt_test(tst_qatomicinteger_ushort
+qt_add_test(tst_qatomicinteger_ushort
     SOURCES
         ../tst_qatomicinteger.cpp
     DEFINES

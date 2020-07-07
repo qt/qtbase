@@ -4,7 +4,7 @@
 ## tst_qitemdelegate Test:
 #####################################################################
 
-add_qt_test(tst_qitemdelegate
+qt_add_test(tst_qitemdelegate
     SOURCES
         tst_qitemdelegate.cpp
     PUBLIC_LIBRARIES
@@ -16,7 +16,7 @@ add_qt_test(tst_qitemdelegate
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qitemdelegate CONDITION WIN32
+qt_extend_target(tst_qitemdelegate CONDITION WIN32
     PUBLIC_LIBRARIES
         user32
 )

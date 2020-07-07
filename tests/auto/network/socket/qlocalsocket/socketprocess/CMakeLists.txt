@@ -4,7 +4,7 @@
 ## socketprocess Binary:
 #####################################################################
 
-add_qt_executable(socketprocess
+qt_add_executable(socketprocess
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
     SOURCES
         main.cpp

@@ -10,7 +10,7 @@ file(GLOB_RECURSE test_data_glob
     images/*)
 list(APPEND test_data ${test_data_glob})
 
-add_qt_test(tst_qimage
+qt_add_test(tst_qimage
     SOURCES
         tst_qimage.cpp
     PUBLIC_LIBRARIES
@@ -46,7 +46,7 @@ if(ANDROID AND NOT ANDROID_EMBEDDED)
         "images/jpeg_exif_orientation_value_8.jpg"
     )
 
-    add_qt_resource(tst_qimage "qimage"
+    qt_add_resource(tst_qimage "qimage"
         PREFIX
             "/"
         FILES
@@ -54,13 +54,13 @@ if(ANDROID AND NOT ANDROID_EMBEDDED)
     )
 endif()
 
-extend_target(tst_qimage CONDITION WIN32
+qt_extend_target(tst_qimage CONDITION WIN32
     PUBLIC_LIBRARIES
         gdi32
         user32
 )
 
-extend_target(tst_qimage CONDITION APPLE
+qt_extend_target(tst_qimage CONDITION APPLE
     PUBLIC_LIBRARIES
         ${FWCoreGraphics}
 )

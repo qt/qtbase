@@ -4,7 +4,7 @@
 ## badxml Binary:
 #####################################################################
 
-add_qt_executable(badxml
+qt_add_executable(badxml
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

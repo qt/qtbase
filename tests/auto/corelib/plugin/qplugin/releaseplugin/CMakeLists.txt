@@ -4,7 +4,7 @@
 ## releaseplugin Generic Library:
 #####################################################################
 
-add_cmake_library(releaseplugin
+qt_add_cmake_library(releaseplugin
     MODULE
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../plugins"
     SOURCES

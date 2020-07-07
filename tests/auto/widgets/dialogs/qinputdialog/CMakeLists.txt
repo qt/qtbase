@@ -4,7 +4,7 @@
 ## tst_qinputdialog Test:
 #####################################################################
 
-add_qt_test(tst_qinputdialog
+qt_add_test(tst_qinputdialog
     SOURCES
         tst_qinputdialog.cpp
     PUBLIC_LIBRARIES

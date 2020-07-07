@@ -4,7 +4,7 @@
 ## subtest Binary:
 #####################################################################
 
-add_qt_executable(subtest
+qt_add_executable(subtest
     SOURCES
         tst_subtest.cpp
     PUBLIC_LIBRARIES

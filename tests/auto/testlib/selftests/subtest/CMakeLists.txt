@@ -4,7 +4,7 @@
 ## subtest Binary:
 #####################################################################
 
-add_qt_executable(subtest
+qt_add_executable(subtest
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

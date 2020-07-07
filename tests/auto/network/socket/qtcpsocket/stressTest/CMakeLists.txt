@@ -4,7 +4,7 @@
 ## stressTest Binary:
 #####################################################################
 
-add_qt_executable(stressTest
+qt_add_executable(stressTest
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
     SOURCES
         Test.cpp Test.h

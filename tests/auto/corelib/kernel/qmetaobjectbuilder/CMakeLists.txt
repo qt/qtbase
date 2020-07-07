@@ -4,7 +4,7 @@
 ## tst_qmetaobjectbuilder Test:
 #####################################################################
 
-add_qt_test(tst_qmetaobjectbuilder
+qt_add_test(tst_qmetaobjectbuilder
     SOURCES
         tst_qmetaobjectbuilder.cpp
     PUBLIC_LIBRARIES

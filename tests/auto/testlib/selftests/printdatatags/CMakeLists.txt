@@ -4,7 +4,7 @@
 ## printdatatags Binary:
 #####################################################################
 
-add_qt_executable(printdatatags
+qt_add_executable(printdatatags
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

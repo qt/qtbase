@@ -4,7 +4,7 @@
 ## tst_qdbusconnection_no_libdbus Test:
 #####################################################################
 
-add_qt_test(tst_qdbusconnection_no_libdbus
+qt_add_test(tst_qdbusconnection_no_libdbus
     SOURCES
         ../qdbusconnection_no_bus/tst_qdbusconnection_no_bus.cpp
     DEFINES

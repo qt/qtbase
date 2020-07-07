@@ -4,7 +4,7 @@
 ## tst_qpixmapcache Test:
 #####################################################################
 
-add_qt_test(tst_qpixmapcache
+qt_add_test(tst_qpixmapcache
     SOURCES
         tst_qpixmapcache.cpp
     PUBLIC_LIBRARIES

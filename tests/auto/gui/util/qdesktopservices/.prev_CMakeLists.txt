@@ -4,7 +4,7 @@
 ## tst_qdesktopservices Test:
 #####################################################################
 
-add_qt_test(tst_qdesktopservices
+qt_add_test(tst_qdesktopservices
     SOURCES
         tst_qdesktopservices.cpp
     DEFINES

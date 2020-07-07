@@ -4,7 +4,7 @@
 ## tst_qstringlist Test:
 #####################################################################
 
-add_qt_test(tst_qstringlist
+qt_add_test(tst_qstringlist
     SOURCES
         tst_qstringlist.cpp
 )

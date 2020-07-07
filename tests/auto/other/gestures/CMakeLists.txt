@@ -4,7 +4,7 @@
 ## tst_gestures Test:
 #####################################################################
 
-add_qt_test(tst_gestures
+qt_add_test(tst_gestures
     SOURCES
         tst_gestures.cpp
     PUBLIC_LIBRARIES

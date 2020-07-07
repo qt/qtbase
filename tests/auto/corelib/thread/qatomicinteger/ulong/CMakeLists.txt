@@ -4,7 +4,7 @@
 ## tst_qatomicinteger_ulong Test:
 #####################################################################
 
-add_qt_test(tst_qatomicinteger_ulong
+qt_add_test(tst_qatomicinteger_ulong
     SOURCES
         ../tst_qatomicinteger.cpp
     DEFINES

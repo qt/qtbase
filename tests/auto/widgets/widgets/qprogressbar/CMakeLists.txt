@@ -4,7 +4,7 @@
 ## tst_qprogressbar Test:
 #####################################################################
 
-add_qt_test(tst_qprogressbar
+qt_add_test(tst_qprogressbar
     SOURCES
         tst_qprogressbar.cpp
     PUBLIC_LIBRARIES

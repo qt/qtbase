@@ -4,7 +4,7 @@
 ## benchlibcounting Binary:
 #####################################################################
 
-add_qt_executable(benchlibcounting
+qt_add_executable(benchlibcounting
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

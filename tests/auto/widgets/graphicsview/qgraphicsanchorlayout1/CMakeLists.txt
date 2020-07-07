@@ -4,7 +4,7 @@
 ## tst_qgraphicsanchorlayout1 Test:
 #####################################################################
 
-add_qt_test(tst_qgraphicsanchorlayout1
+qt_add_test(tst_qgraphicsanchorlayout1
     SOURCES
         tst_qgraphicsanchorlayout1.cpp
     PUBLIC_LIBRARIES

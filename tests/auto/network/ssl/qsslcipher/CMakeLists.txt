@@ -4,7 +4,7 @@
 ## tst_qsslcipher Test:
 #####################################################################
 
-add_qt_test(tst_qsslcipher
+qt_add_test(tst_qsslcipher
     SOURCES
         tst_qsslcipher.cpp
     PUBLIC_LIBRARIES

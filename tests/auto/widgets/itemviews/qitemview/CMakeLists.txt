@@ -4,7 +4,7 @@
 ## tst_qitemview Test:
 #####################################################################
 
-add_qt_test(tst_qitemview
+qt_add_test(tst_qitemview
     SOURCES
         tst_qitemview.cpp
     PUBLIC_LIBRARIES

@@ -4,7 +4,7 @@
 ## commandlinedata Binary:
 #####################################################################
 
-add_qt_executable(commandlinedata
+qt_add_executable(commandlinedata
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

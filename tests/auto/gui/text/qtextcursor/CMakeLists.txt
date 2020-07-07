@@ -4,7 +4,7 @@
 ## tst_qtextcursor Test:
 #####################################################################
 
-add_qt_test(tst_qtextcursor
+qt_add_test(tst_qtextcursor
     SOURCES
         tst_qtextcursor.cpp
     PUBLIC_LIBRARIES

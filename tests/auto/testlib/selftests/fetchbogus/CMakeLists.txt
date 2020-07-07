@@ -4,7 +4,7 @@
 ## fetchbogus Binary:
 #####################################################################
 
-add_qt_executable(fetchbogus
+qt_add_executable(fetchbogus
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

@@ -7,7 +7,7 @@
 # Collect test data
 list(APPEND test_data "entrylist")
 
-add_qt_test(tst_qdiriterator
+qt_add_test(tst_qdiriterator
     SOURCES
         tst_qdiriterator.cpp
     PUBLIC_LIBRARIES
@@ -21,7 +21,7 @@ set(qdiriterator_resource_files
     "entrylist/file"
 )
 
-add_qt_resource(tst_qdiriterator "qdiriterator"
+qt_add_resource(tst_qdiriterator "qdiriterator"
     PREFIX
         "/testdata/"
     FILES
@@ -32,7 +32,7 @@ add_qt_resource(tst_qdiriterator "qdiriterator"
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qdiriterator CONDITION CONFIG___contains___builtin_testdata
+qt_extend_target(tst_qdiriterator CONDITION CONFIG___contains___builtin_testdata
     DEFINES
         BUILTIN_TESTDATA
 )

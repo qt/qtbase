@@ -4,7 +4,7 @@
 ## singleskip Binary:
 #####################################################################
 
-add_qt_executable(singleskip
+qt_add_executable(singleskip
     SOURCES
         tst_singleskip.cpp
     PUBLIC_LIBRARIES

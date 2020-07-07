@@ -4,7 +4,7 @@
 ## tst_qsqlrelationaldelegate Test:
 #####################################################################
 
-add_qt_test(tst_qsqlrelationaldelegate
+qt_add_test(tst_qsqlrelationaldelegate
     SOURCES
         tst_qsqlrelationaldelegate.cpp
     PUBLIC_LIBRARIES

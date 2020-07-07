@@ -4,7 +4,7 @@
 ## differentexec Binary:
 #####################################################################
 
-add_qt_executable(differentexec
+qt_add_executable(differentexec
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

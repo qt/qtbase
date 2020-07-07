@@ -4,7 +4,7 @@
 ## tst_qradiobutton Test:
 #####################################################################
 
-add_qt_test(tst_qradiobutton
+qt_add_test(tst_qradiobutton
     SOURCES
         tst_qradiobutton.cpp
     PUBLIC_LIBRARIES

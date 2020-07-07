@@ -4,7 +4,7 @@
 ## tst_qgetputenv Test:
 #####################################################################
 
-add_qt_test(tst_qgetputenv
+qt_add_test(tst_qgetputenv
     SOURCES
         tst_qgetputenv.cpp
 )

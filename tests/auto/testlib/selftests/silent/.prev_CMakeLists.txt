@@ -4,7 +4,7 @@
 ## silent Binary:
 #####################################################################
 
-add_qt_executable(silent
+qt_add_executable(silent
     SOURCES
         tst_silent.cpp
     PUBLIC_LIBRARIES

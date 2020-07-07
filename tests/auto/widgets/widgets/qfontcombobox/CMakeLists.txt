@@ -4,7 +4,7 @@
 ## tst_qfontcombobox Test:
 #####################################################################
 
-add_qt_test(tst_qfontcombobox
+qt_add_test(tst_qfontcombobox
     SOURCES
         tst_qfontcombobox.cpp
     PUBLIC_LIBRARIES

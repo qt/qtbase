@@ -8,7 +8,7 @@ endif()
 ## tst_qauthenticator Test:
 #####################################################################
 
-add_qt_test(tst_qauthenticator
+qt_add_test(tst_qauthenticator
     SOURCES
         tst_qauthenticator.cpp
     DEFINES

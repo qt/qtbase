@@ -4,7 +4,7 @@
 ## tst_hpack Test:
 #####################################################################
 
-add_qt_test(tst_hpack
+qt_add_test(tst_hpack
     SOURCES
         tst_hpack.cpp
     PUBLIC_LIBRARIES

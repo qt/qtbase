@@ -10,7 +10,7 @@ file(GLOB_RECURSE test_data_glob
     animations/*)
 list(APPEND test_data ${test_data_glob})
 
-add_qt_test(tst_qmovie
+qt_add_test(tst_qmovie
     SOURCES
         tst_qmovie.cpp
     PUBLIC_LIBRARIES
@@ -25,7 +25,7 @@ set(resources_resource_files
     "animations/trolltech.gif"
 )
 
-add_qt_resource(tst_qmovie "resources"
+qt_add_resource(tst_qmovie "resources"
     PREFIX
         "/"
     FILES
@@ -40,17 +40,17 @@ add_qt_resource(tst_qmovie "resources"
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qmovie CONDITION TARGET Qt::Widgets
+qt_extend_target(tst_qmovie CONDITION TARGET Qt::Widgets
     PUBLIC_LIBRARIES
         Qt::Widgets
 )
 
-extend_target(tst_qmovie CONDITION QT_FEATURE_gif
+qt_extend_target(tst_qmovie CONDITION QT_FEATURE_gif
     DEFINES
         QTEST_HAVE_GIF
 )
 
-extend_target(tst_qmovie CONDITION QT_FEATURE_jpeg
+qt_extend_target(tst_qmovie CONDITION QT_FEATURE_jpeg
     DEFINES
         QTEST_HAVE_JPEG
 )

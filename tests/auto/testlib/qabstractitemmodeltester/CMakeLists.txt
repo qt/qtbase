@@ -4,7 +4,7 @@
 ## qabstractitemmodeltester Test:
 #####################################################################
 
-add_qt_test(qabstractitemmodeltester
+qt_add_test(qabstractitemmodeltester
     SOURCES
         ../../other/qabstractitemmodelutils/dynamictreemodel.cpp ../../other/qabstractitemmodelutils/dynamictreemodel.h
         tst_qabstractitemmodeltester.cpp

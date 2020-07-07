@@ -4,7 +4,7 @@
 ## tst_qgraphicsobject Test:
 #####################################################################
 
-add_qt_test(tst_qgraphicsobject
+qt_add_test(tst_qgraphicsobject
     SOURCES
         tst_qgraphicsobject.cpp
     PUBLIC_LIBRARIES

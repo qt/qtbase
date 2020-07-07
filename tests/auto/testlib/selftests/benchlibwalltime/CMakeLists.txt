@@ -4,7 +4,7 @@
 ## benchlibwalltime Binary:
 #####################################################################
 
-add_qt_executable(benchlibwalltime
+qt_add_executable(benchlibwalltime
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

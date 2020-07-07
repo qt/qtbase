@@ -4,7 +4,7 @@
 ## tst_qthreadpool Test:
 #####################################################################
 
-add_qt_test(tst_qthreadpool
+qt_add_test(tst_qthreadpool
     SOURCES
         tst_qthreadpool.cpp
 )

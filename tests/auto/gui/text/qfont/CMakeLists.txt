@@ -4,7 +4,7 @@
 ## tst_qfont Test:
 #####################################################################
 
-add_qt_test(tst_qfont
+qt_add_test(tst_qfont
     SOURCES
         tst_qfont.cpp
     PUBLIC_LIBRARIES
@@ -18,7 +18,7 @@ set(testfont_resource_files
     "weirdfont.otf"
 )
 
-add_qt_resource(tst_qfont "testfont"
+qt_add_resource(tst_qfont "testfont"
     PREFIX
         "/"
     FILES
@@ -29,7 +29,7 @@ add_qt_resource(tst_qfont "testfont"
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qfont CONDITION TARGET Qt::Widgets
+qt_extend_target(tst_qfont CONDITION TARGET Qt::Widgets
     PUBLIC_LIBRARIES
         Qt::Widgets
 )

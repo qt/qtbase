@@ -4,7 +4,7 @@
 ## tst_qprinterinfo Test:
 #####################################################################
 
-add_qt_test(tst_qprinterinfo
+qt_add_test(tst_qprinterinfo
     SOURCES
         tst_qprinterinfo.cpp
     DEFINES

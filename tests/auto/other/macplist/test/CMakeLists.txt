@@ -4,7 +4,7 @@
 ## tst_macplist Test:
 #####################################################################
 
-add_qt_test(tst_macplist
+qt_add_test(tst_macplist
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../"
     SOURCES
         ../tst_macplist.cpp

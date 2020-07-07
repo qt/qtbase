@@ -4,7 +4,7 @@
 ## tst_qsystemtrayicon Test:
 #####################################################################
 
-add_qt_test(tst_qsystemtrayicon
+qt_add_test(tst_qsystemtrayicon
     SOURCES
         tst_qsystemtrayicon.cpp
     PUBLIC_LIBRARIES

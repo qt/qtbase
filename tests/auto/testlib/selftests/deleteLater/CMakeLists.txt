@@ -4,7 +4,7 @@
 ## deleteLater Binary:
 #####################################################################
 
-add_qt_executable(deleteLater
+qt_add_executable(deleteLater
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

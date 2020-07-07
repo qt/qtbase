@@ -4,7 +4,7 @@
 ## tst_qmacstyle Test:
 #####################################################################
 
-add_qt_test(tst_qmacstyle
+qt_add_test(tst_qmacstyle
     SOURCES
         tst_qmacstyle.cpp
     PUBLIC_LIBRARIES

@@ -4,7 +4,7 @@
 ## tst_qgraphicspixmapitem Test:
 #####################################################################
 
-add_qt_test(tst_qgraphicspixmapitem
+qt_add_test(tst_qgraphicspixmapitem
     SOURCES
         tst_qgraphicspixmapitem.cpp
     PUBLIC_LIBRARIES

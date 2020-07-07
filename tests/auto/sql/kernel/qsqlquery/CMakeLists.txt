@@ -4,7 +4,7 @@
 ## tst_qsqlquery Test:
 #####################################################################
 
-add_qt_test(tst_qsqlquery
+qt_add_test(tst_qsqlquery
     SOURCES
         tst_qsqlquery.cpp
     PUBLIC_LIBRARIES

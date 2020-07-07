@@ -4,7 +4,7 @@
 ## tst_qdtlscookie Test:
 #####################################################################
 
-add_qt_test(tst_qdtlscookie
+qt_add_test(tst_qdtlscookie
     SOURCES
         tst_qdtlscookie.cpp
     PUBLIC_LIBRARIES

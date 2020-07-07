@@ -4,7 +4,7 @@
 ## multiexec Binary:
 #####################################################################
 
-add_qt_executable(multiexec
+qt_add_executable(multiexec
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

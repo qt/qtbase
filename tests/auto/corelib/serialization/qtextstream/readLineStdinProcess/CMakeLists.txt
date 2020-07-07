@@ -4,7 +4,7 @@
 ## readLineStdinProcess Binary:
 #####################################################################
 
-add_qt_executable(readLineStdinProcess
+qt_add_executable(readLineStdinProcess
     INSTALL_DIRECTORY "${INSTALL_TESTSDIR}/tst_qtextstream/readLineStdinProcess"
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
     SOURCES

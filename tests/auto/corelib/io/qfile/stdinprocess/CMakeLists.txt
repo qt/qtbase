@@ -4,7 +4,7 @@
 ## stdinprocess_helper Binary:
 #####################################################################
 
-add_qt_test_helper(stdinprocess_helper
+qt_add_test_helper(stdinprocess_helper
     SOURCES
         main.cpp
 )

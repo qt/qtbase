@@ -4,7 +4,7 @@
 ## tst_languagechange Test:
 #####################################################################
 
-add_qt_test(tst_languagechange
+qt_add_test(tst_languagechange
     SOURCES
         tst_languagechange.cpp
     PUBLIC_LIBRARIES

@@ -4,7 +4,7 @@
 ## tst_qatomicinteger_schar Test:
 #####################################################################
 
-add_qt_test(tst_qatomicinteger_schar
+qt_add_test(tst_qatomicinteger_schar
     SOURCES
         ../tst_qatomicinteger.cpp
     DEFINES

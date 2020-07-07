@@ -4,7 +4,7 @@
 ## tst_qalgorithms Test:
 #####################################################################
 
-add_qt_test(tst_qalgorithms
+qt_add_test(tst_qalgorithms
     SOURCES
         tst_qalgorithms.cpp
 )

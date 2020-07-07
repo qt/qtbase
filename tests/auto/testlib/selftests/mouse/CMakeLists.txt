@@ -4,7 +4,7 @@
 ## mouse Binary:
 #####################################################################
 
-add_qt_executable(mouse
+qt_add_executable(mouse
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

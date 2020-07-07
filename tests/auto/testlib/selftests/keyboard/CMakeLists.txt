@@ -4,7 +4,7 @@
 ## keyboard Binary:
 #####################################################################
 
-add_qt_executable(keyboard
+qt_add_executable(keyboard
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

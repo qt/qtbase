@@ -4,7 +4,7 @@
 ## tst_qscrollbar Test:
 #####################################################################
 
-add_qt_test(tst_qscrollbar
+qt_add_test(tst_qscrollbar
     SOURCES
         tst_qscrollbar.cpp
     PUBLIC_LIBRARIES

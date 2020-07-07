@@ -4,7 +4,7 @@
 ## tst_qmutexlocker Test:
 #####################################################################
 
-add_qt_test(tst_qmutexlocker
+qt_add_test(tst_qmutexlocker
     SOURCES
         tst_qmutexlocker.cpp
 )

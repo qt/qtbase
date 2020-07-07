@@ -14,7 +14,7 @@ file(GLOB_RECURSE test_data_glob
     rsa-*.pem)
 list(APPEND test_data ${test_data_glob})
 
-add_qt_test(tst_qsslkey
+qt_add_test(tst_qsslkey
     SOURCES
         tst_qsslkey.cpp
     PUBLIC_LIBRARIES
@@ -25,7 +25,7 @@ add_qt_test(tst_qsslkey
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qsslkey CONDITION QT_FEATURE_private_tests
+qt_extend_target(tst_qsslkey CONDITION QT_FEATURE_private_tests
     PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate

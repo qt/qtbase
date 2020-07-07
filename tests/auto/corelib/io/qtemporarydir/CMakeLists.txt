@@ -4,7 +4,7 @@
 ## tst_qtemporarydir Test:
 #####################################################################
 
-add_qt_test(tst_qtemporarydir
+qt_add_test(tst_qtemporarydir
     SOURCES
         ../../../../shared/emulationdetector.h
         tst_qtemporarydir.cpp

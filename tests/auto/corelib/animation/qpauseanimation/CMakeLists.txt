@@ -4,7 +4,7 @@
 ## tst_qpauseanimation Test:
 #####################################################################
 
-add_qt_test(tst_qpauseanimation
+qt_add_test(tst_qpauseanimation
     SOURCES
         tst_qpauseanimation.cpp
     PUBLIC_LIBRARIES

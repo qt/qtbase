@@ -4,7 +4,7 @@
 ## tst_qmainwindow Test:
 #####################################################################
 
-add_qt_test(tst_qmainwindow
+qt_add_test(tst_qmainwindow
     SOURCES
         tst_qmainwindow.cpp
     PUBLIC_LIBRARIES

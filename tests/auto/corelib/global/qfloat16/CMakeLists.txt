@@ -4,7 +4,7 @@
 ## tst_qfloat16 Test:
 #####################################################################
 
-add_qt_test(tst_qfloat16
+qt_add_test(tst_qfloat16
     SOURCES
         tst_qfloat16.cpp
 )

@@ -8,7 +8,7 @@ endif()
 ## tst_macnativeevents Test:
 #####################################################################
 
-add_qt_test(tst_macnativeevents
+qt_add_test(tst_macnativeevents
     SOURCES
         expectedeventlist.cpp expectedeventlist.h
         nativeeventlist.cpp nativeeventlist.h

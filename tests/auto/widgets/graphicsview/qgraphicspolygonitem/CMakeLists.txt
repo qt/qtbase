@@ -4,7 +4,7 @@
 ## tst_qgraphicspolygonitem Test:
 #####################################################################
 
-add_qt_test(tst_qgraphicspolygonitem
+qt_add_test(tst_qgraphicspolygonitem
     SOURCES
         tst_qgraphicspolygonitem.cpp
     PUBLIC_LIBRARIES

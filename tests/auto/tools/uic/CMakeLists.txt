@@ -4,7 +4,7 @@
 ## tst_uic Test:
 #####################################################################
 
-add_qt_test(tst_uic
+qt_add_test(tst_uic
     SOURCES
         tst_uic.cpp
 )

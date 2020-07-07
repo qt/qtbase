@@ -4,7 +4,7 @@
 ## skipinitdata Binary:
 #####################################################################
 
-add_qt_executable(skipinitdata
+qt_add_executable(skipinitdata
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

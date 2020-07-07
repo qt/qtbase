@@ -4,7 +4,7 @@
 ## tst_qresultstore Test:
 #####################################################################
 
-add_qt_test(tst_qresultstore
+qt_add_test(tst_qresultstore
     SOURCES
         tst_qresultstore.cpp
     PUBLIC_LIBRARIES

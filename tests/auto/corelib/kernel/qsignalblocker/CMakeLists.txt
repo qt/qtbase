@@ -4,7 +4,7 @@
 ## tst_qsignalblocker Test:
 #####################################################################
 
-add_qt_test(tst_qsignalblocker
+qt_add_test(tst_qsignalblocker
     SOURCES
         tst_qsignalblocker.cpp
 )

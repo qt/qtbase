@@ -4,7 +4,7 @@
 ## tst_qidentityproxymodel Test:
 #####################################################################
 
-add_qt_test(tst_qidentityproxymodel
+qt_add_test(tst_qidentityproxymodel
     SOURCES
         ../../../other/qabstractitemmodelutils/dynamictreemodel.cpp ../../../other/qabstractitemmodelutils/dynamictreemodel.h
         tst_qidentityproxymodel.cpp

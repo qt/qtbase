@@ -4,7 +4,7 @@
 ## tst_qmakearray Test:
 #####################################################################
 
-add_qt_test(tst_qmakearray
+qt_add_test(tst_qmakearray
     SOURCES
         tst_qmakearray.cpp
     PUBLIC_LIBRARIES

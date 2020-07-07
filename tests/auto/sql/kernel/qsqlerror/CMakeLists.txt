@@ -4,7 +4,7 @@
 ## tst_qsqlerror Test:
 #####################################################################
 
-add_qt_test(tst_qsqlerror
+qt_add_test(tst_qsqlerror
     SOURCES
         tst_qsqlerror.cpp
     PUBLIC_LIBRARIES

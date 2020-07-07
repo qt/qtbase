@@ -4,7 +4,7 @@
 ## tst_qprintdevice Test:
 #####################################################################
 
-add_qt_test(tst_qprintdevice
+qt_add_test(tst_qprintdevice
     SOURCES
         tst_qprintdevice.cpp
     DEFINES

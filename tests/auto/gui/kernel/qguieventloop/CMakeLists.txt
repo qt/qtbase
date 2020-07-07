@@ -4,7 +4,7 @@
 ## tst_qguieventloop Test:
 #####################################################################
 
-add_qt_test(tst_qguieventloop
+qt_add_test(tst_qguieventloop
     SOURCES
         ../../../corelib/kernel/qeventloop/tst_qeventloop.cpp
     PUBLIC_LIBRARIES
@@ -16,12 +16,12 @@ add_qt_test(tst_qguieventloop
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qguieventloop CONDITION WIN32
+qt_extend_target(tst_qguieventloop CONDITION WIN32
     PUBLIC_LIBRARIES
         user32
 )
 
-extend_target(tst_qguieventloop CONDITION QT_FEATURE_glib
+qt_extend_target(tst_qguieventloop CONDITION QT_FEATURE_glib
     DEFINES
         HAVE_GLIB
 )

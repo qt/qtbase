@@ -4,7 +4,7 @@
 ## printdatatagswithglobaltags Binary:
 #####################################################################
 
-add_qt_executable(printdatatagswithglobaltags
+qt_add_executable(printdatatagswithglobaltags
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

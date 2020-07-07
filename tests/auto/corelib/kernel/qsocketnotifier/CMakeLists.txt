@@ -8,7 +8,7 @@ endif()
 ## tst_qsocketnotifier Test:
 #####################################################################
 
-add_qt_test(tst_qsocketnotifier
+qt_add_test(tst_qsocketnotifier
     SOURCES
         tst_qsocketnotifier.cpp
     INCLUDE_DIRECTORIES
@@ -25,7 +25,7 @@ add_qt_test(tst_qsocketnotifier
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qsocketnotifier CONDITION WIN32
+qt_extend_target(tst_qsocketnotifier CONDITION WIN32
     PUBLIC_LIBRARIES
         ws2_32
 )

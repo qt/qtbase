@@ -4,7 +4,7 @@
 ## verbose1 Binary:
 #####################################################################
 
-add_qt_executable(verbose1
+qt_add_executable(verbose1
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

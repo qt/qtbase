@@ -4,7 +4,7 @@
 ## tst_qheaderview Test:
 #####################################################################
 
-add_qt_test(tst_qheaderview
+qt_add_test(tst_qheaderview
     SOURCES
         tst_qheaderview.cpp
     DEFINES

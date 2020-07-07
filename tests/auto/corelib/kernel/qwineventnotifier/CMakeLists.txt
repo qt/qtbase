@@ -4,7 +4,7 @@
 ## tst_qwineventnotifier Test:
 #####################################################################
 
-add_qt_test(tst_qwineventnotifier
+qt_add_test(tst_qwineventnotifier
     SOURCES
         tst_qwineventnotifier.cpp
     PUBLIC_LIBRARIES

@@ -4,7 +4,7 @@
 ## tst_qboxlayout Test:
 #####################################################################
 
-add_qt_test(tst_qboxlayout
+qt_add_test(tst_qboxlayout
     SOURCES
         tst_qboxlayout.cpp
     PUBLIC_LIBRARIES

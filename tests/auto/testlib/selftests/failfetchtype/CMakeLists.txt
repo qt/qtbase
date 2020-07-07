@@ -4,7 +4,7 @@
 ## failfetchtype Binary:
 #####################################################################
 
-add_qt_executable(failfetchtype
+qt_add_executable(failfetchtype
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

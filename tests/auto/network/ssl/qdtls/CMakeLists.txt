@@ -7,7 +7,7 @@
 # Collect test data
 list(APPEND test_data "certs")
 
-add_qt_test(tst_qdtls
+qt_add_test(tst_qdtls
     SOURCES
         tst_qdtls.cpp
     PUBLIC_LIBRARIES

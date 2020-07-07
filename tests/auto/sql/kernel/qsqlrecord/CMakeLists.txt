@@ -4,7 +4,7 @@
 ## tst_qsqlrecord Test:
 #####################################################################
 
-add_qt_test(tst_qsqlrecord
+qt_add_test(tst_qsqlrecord
     SOURCES
         tst_qsqlrecord.cpp
     PUBLIC_LIBRARIES

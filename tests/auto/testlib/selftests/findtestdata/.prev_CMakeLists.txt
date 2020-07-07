@@ -4,7 +4,7 @@
 ## findtestdata Binary:
 #####################################################################
 
-add_qt_executable(findtestdata
+qt_add_executable(findtestdata
     SOURCES
         findtestdata.cpp
     PUBLIC_LIBRARIES
@@ -16,7 +16,7 @@ set(findtestdata_resource_files
     "qt.conf"
 )
 
-add_qt_resource(findtestdata "findtestdata"
+qt_add_resource(findtestdata "findtestdata"
     PREFIX
         "/qt/etc/"
     FILES

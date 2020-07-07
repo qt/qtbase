@@ -4,7 +4,7 @@
 ## tst_qshadernodes Test:
 #####################################################################
 
-add_qt_test(tst_qshadernodes
+qt_add_test(tst_qshadernodes
     SOURCES
         tst_qshadernodes.cpp
     PUBLIC_LIBRARIES

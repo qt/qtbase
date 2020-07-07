@@ -7,7 +7,7 @@
 # Collect test data
 list(APPEND test_data "tst_qtemporaryfile.cpp")
 
-add_qt_test(tst_qtemporaryfile
+qt_add_test(tst_qtemporaryfile
     SOURCES
         tst_qtemporaryfile.cpp
     PUBLIC_LIBRARIES
@@ -20,7 +20,7 @@ set(qtemporaryfile_resource_files
     "resources/test.txt"
 )
 
-add_qt_resource(tst_qtemporaryfile "qtemporaryfile"
+qt_add_resource(tst_qtemporaryfile "qtemporaryfile"
     PREFIX
         "/"
     FILES
@@ -38,7 +38,7 @@ if(ANDROID AND NOT ANDROID_EMBEDDED)
         "tst_qtemporaryfile.cpp"
     )
 
-    add_qt_resource(tst_qtemporaryfile "android_testdata"
+    qt_add_resource(tst_qtemporaryfile "android_testdata"
         PREFIX
             "/android_testdata"
         FILES

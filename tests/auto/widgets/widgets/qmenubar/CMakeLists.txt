@@ -4,7 +4,7 @@
 ## tst_qmenubar Test:
 #####################################################################
 
-add_qt_test(tst_qmenubar
+qt_add_test(tst_qmenubar
     SOURCES
         tst_qmenubar.cpp
     PUBLIC_LIBRARIES
@@ -16,7 +16,7 @@ add_qt_test(tst_qmenubar
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qmenubar CONDITION MACOS
+qt_extend_target(tst_qmenubar CONDITION MACOS
     SOURCES
         tst_qmenubar_mac.mm
     PUBLIC_LIBRARIES

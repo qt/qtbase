@@ -4,7 +4,7 @@
 ## tst_qfileiconprovider Test:
 #####################################################################
 
-add_qt_test(tst_qfileiconprovider
+qt_add_test(tst_qfileiconprovider
     SOURCES
         tst_qfileiconprovider.cpp
     PUBLIC_LIBRARIES

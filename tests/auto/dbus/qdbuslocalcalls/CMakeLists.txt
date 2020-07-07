@@ -4,7 +4,7 @@
 ## tst_qdbuslocalcalls Test:
 #####################################################################
 
-add_qt_test(tst_qdbuslocalcalls
+qt_add_test(tst_qdbuslocalcalls
     SOURCES
         tst_qdbuslocalcalls.cpp
     PUBLIC_LIBRARIES

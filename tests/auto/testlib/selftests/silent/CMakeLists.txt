@@ -4,7 +4,7 @@
 ## silent Binary:
 #####################################################################
 
-add_qt_executable(silent
+qt_add_executable(silent
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

@@ -14,7 +14,7 @@ file(GLOB_RECURSE test_data_glob
     *.png)
 list(APPEND test_data ${test_data_glob})
 
-add_qt_test(tst_qlabel
+qt_add_test(tst_qlabel
     SOURCES
         tst_qlabel.cpp
     PUBLIC_LIBRARIES

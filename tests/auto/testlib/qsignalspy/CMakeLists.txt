@@ -4,7 +4,7 @@
 ## tst_qsignalspy Test:
 #####################################################################
 
-add_qt_test(tst_qsignalspy
+qt_add_test(tst_qsignalspy
     SOURCES
         tst_qsignalspy.cpp
 )

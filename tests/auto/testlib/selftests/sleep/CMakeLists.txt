@@ -4,7 +4,7 @@
 ## sleep Binary:
 #####################################################################
 
-add_qt_executable(sleep
+qt_add_executable(sleep
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

@@ -4,7 +4,7 @@
 ## qpong Binary:
 #####################################################################
 
-add_qt_executable(qpong
+qt_add_executable(qpong
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
     SOURCES
         qpong.cpp

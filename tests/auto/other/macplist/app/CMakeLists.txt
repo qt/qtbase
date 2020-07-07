@@ -4,7 +4,7 @@
 ## app Binary:
 #####################################################################
 
-add_qt_executable(app
+qt_add_executable(app
     GUI
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

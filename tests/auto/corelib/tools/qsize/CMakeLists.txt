@@ -4,7 +4,7 @@
 ## tst_qsize Test:
 #####################################################################
 
-add_qt_test(tst_qsize
+qt_add_test(tst_qsize
     SOURCES
         tst_qsize.cpp
 )

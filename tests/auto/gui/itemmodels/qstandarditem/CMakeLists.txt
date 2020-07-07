@@ -4,7 +4,7 @@
 ## tst_qstandarditem Test:
 #####################################################################
 
-add_qt_test(tst_qstandarditem
+qt_add_test(tst_qstandarditem
     SOURCES
         tst_qstandarditem.cpp
     PUBLIC_LIBRARIES

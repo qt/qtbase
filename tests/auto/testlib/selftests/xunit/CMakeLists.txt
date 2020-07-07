@@ -4,7 +4,7 @@
 ## xunit Binary:
 #####################################################################
 
-add_qt_executable(xunit
+qt_add_executable(xunit
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

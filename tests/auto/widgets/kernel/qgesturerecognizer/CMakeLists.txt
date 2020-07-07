@@ -4,7 +4,7 @@
 ## tst_qgesturerecognizer Test:
 #####################################################################
 
-add_qt_test(tst_qgesturerecognizer
+qt_add_test(tst_qgesturerecognizer
     SOURCES
         tst_qgesturerecognizer.cpp
     PUBLIC_LIBRARIES

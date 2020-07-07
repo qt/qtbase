@@ -4,7 +4,7 @@
 ## tst_qfactoryloader Test:
 #####################################################################
 
-add_qt_test(tst_qfactoryloader
+qt_add_test(tst_qfactoryloader
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../"
     SOURCES
         ../plugin1/plugininterface1.h
@@ -23,7 +23,7 @@ if (NOT QT_FEATURE_library)
 endif()
 # special case end
 
-extend_target(tst_qfactoryloader CONDITION NOT QT_FEATURE_library
+qt_extend_target(tst_qfactoryloader CONDITION NOT QT_FEATURE_library
     PUBLIC_LIBRARIES
         # Remove: L
         # special case begin
@@ -57,7 +57,7 @@ if(ANDROID)
     endif()
     # special case end
 
-    add_qt_resource(tst_qfactoryloader "qmake_libs"
+    qt_add_resource(tst_qfactoryloader "qmake_libs"
         PREFIX
             "android_test_data"
         BASE

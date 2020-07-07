@@ -4,7 +4,7 @@
 ## tst_toolsupport Test:
 #####################################################################
 
-add_qt_test(tst_toolsupport
+qt_add_test(tst_toolsupport
     SOURCES
         tst_toolsupport.cpp
     PUBLIC_LIBRARIES

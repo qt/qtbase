@@ -4,7 +4,7 @@
 ## tst_qmessageauthenticationcode Test:
 #####################################################################
 
-add_qt_test(tst_qmessageauthenticationcode
+qt_add_test(tst_qmessageauthenticationcode
     SOURCES
         tst_qmessageauthenticationcode.cpp
 )

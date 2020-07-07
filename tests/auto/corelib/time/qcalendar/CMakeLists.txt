@@ -4,7 +4,7 @@
 ## tst_qcalendar Test:
 #####################################################################
 
-add_qt_test(tst_qcalendar
+qt_add_test(tst_qcalendar
     SOURCES
         tst_qcalendar.cpp
 )

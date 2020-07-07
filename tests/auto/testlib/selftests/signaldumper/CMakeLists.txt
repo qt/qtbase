@@ -4,7 +4,7 @@
 ## signaldumper Binary:
 #####################################################################
 
-add_qt_executable(signaldumper
+qt_add_executable(signaldumper
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

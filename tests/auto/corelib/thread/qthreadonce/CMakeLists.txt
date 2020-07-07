@@ -4,7 +4,7 @@
 ## tst_qthreadonce Test:
 #####################################################################
 
-add_qt_test(tst_qthreadonce
+qt_add_test(tst_qthreadonce
     SOURCES
         qthreadonce.cpp
         tst_qthreadonce.cpp

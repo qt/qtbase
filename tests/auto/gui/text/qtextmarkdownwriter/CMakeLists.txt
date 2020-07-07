@@ -8,7 +8,7 @@
 list(APPEND test_data "data/example.md")
 list(APPEND test_data "data/blockquotes.md")
 
-add_qt_test(tst_qtextmarkdownwriter
+qt_add_test(tst_qtextmarkdownwriter
     SOURCES
         tst_qtextmarkdownwriter.cpp
     DEFINES

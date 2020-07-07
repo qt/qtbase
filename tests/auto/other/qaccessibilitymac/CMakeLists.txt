@@ -8,7 +8,7 @@ endif()
 ## tst_qaccessibilitymac Test:
 #####################################################################
 
-add_qt_test(tst_qaccessibilitymac
+qt_add_test(tst_qaccessibilitymac
     SOURCES
         tst_qaccessibilitymac.cpp
         tst_qaccessibilitymac_helpers.h
@@ -23,7 +23,7 @@ add_qt_test(tst_qaccessibilitymac
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qaccessibilitymac CONDITION APPLE
+qt_extend_target(tst_qaccessibilitymac CONDITION APPLE
     SOURCES
         tst_qaccessibilitymac_helpers.mm
     PUBLIC_LIBRARIES

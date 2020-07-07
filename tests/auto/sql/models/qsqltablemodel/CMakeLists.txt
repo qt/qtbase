@@ -4,7 +4,7 @@
 ## tst_qsqltablemodel Test:
 #####################################################################
 
-add_qt_test(tst_qsqltablemodel
+qt_add_test(tst_qsqltablemodel
     SOURCES
         tst_qsqltablemodel.cpp
     PUBLIC_LIBRARIES

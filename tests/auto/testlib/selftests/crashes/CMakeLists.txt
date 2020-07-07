@@ -4,7 +4,7 @@
 ## crashes Binary:
 #####################################################################
 
-add_qt_executable(crashes
+qt_add_executable(crashes
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

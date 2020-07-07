@@ -4,7 +4,7 @@
 ## maxwarnings Binary:
 #####################################################################
 
-add_qt_executable(maxwarnings
+qt_add_executable(maxwarnings
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

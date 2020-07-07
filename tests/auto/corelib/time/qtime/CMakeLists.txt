@@ -4,7 +4,7 @@
 ## tst_qtime Test:
 #####################################################################
 
-add_qt_test(tst_qtime
+qt_add_test(tst_qtime
     SOURCES
         tst_qtime.cpp
     DEFINES

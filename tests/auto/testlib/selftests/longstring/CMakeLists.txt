@@ -4,7 +4,7 @@
 ## longstring Binary:
 #####################################################################
 
-add_qt_executable(longstring
+qt_add_executable(longstring
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

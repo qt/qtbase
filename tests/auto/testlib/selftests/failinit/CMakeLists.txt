@@ -4,7 +4,7 @@
 ## failinit Binary:
 #####################################################################
 
-add_qt_executable(failinit
+qt_add_executable(failinit
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

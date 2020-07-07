@@ -4,7 +4,7 @@
 ## tst_qopenglwidget Test:
 #####################################################################
 
-add_qt_test(tst_qopenglwidget
+qt_add_test(tst_qopenglwidget
     SOURCES
         tst_qopenglwidget.cpp
     PUBLIC_LIBRARIES

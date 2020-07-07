@@ -4,7 +4,7 @@
 ## tst_qwindow Test:
 #####################################################################
 
-add_qt_test(tst_qwindow
+qt_add_test(tst_qwindow
     SOURCES
         tst_qwindow.cpp
     PUBLIC_LIBRARIES
@@ -16,7 +16,7 @@ add_qt_test(tst_qwindow
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qwindow CONDITION QT_FEATURE_dynamicgl AND WIN32
+qt_extend_target(tst_qwindow CONDITION QT_FEATURE_dynamicgl AND WIN32
     PUBLIC_LIBRARIES
         user32
 )

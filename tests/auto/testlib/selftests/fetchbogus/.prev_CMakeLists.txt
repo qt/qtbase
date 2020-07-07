@@ -4,7 +4,7 @@
 ## fetchbogus Binary:
 #####################################################################
 
-add_qt_executable(fetchbogus
+qt_add_executable(fetchbogus
     SOURCES
         tst_fetchbogus.cpp
     PUBLIC_LIBRARIES

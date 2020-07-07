@@ -4,7 +4,7 @@
 ## tst_qhostaddress Test:
 #####################################################################
 
-add_qt_test(tst_qhostaddress
+qt_add_test(tst_qhostaddress
     SOURCES
         tst_qhostaddress.cpp
     PUBLIC_LIBRARIES
@@ -14,7 +14,7 @@ add_qt_test(tst_qhostaddress
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qhostaddress CONDITION WIN32
+qt_extend_target(tst_qhostaddress CONDITION WIN32
     PUBLIC_LIBRARIES
         ws2_32
 )

@@ -14,7 +14,7 @@ file(GLOB_RECURSE test_data_glob
     xmldocs/*)
 list(APPEND test_data ${test_data_glob})
 
-add_qt_test(tst_qxmlsimplereader
+qt_add_test(tst_qxmlsimplereader
     SOURCES
         parser/parser.cpp parser/parser.h
         tst_qxmlsimplereader.cpp

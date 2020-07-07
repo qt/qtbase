@@ -4,7 +4,7 @@
 ## benchlibcallgrind Binary:
 #####################################################################
 
-add_qt_executable(benchlibcallgrind
+qt_add_executable(benchlibcallgrind
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

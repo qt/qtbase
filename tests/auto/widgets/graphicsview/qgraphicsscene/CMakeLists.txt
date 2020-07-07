@@ -4,7 +4,7 @@
 ## tst_qgraphicsscene Test:
 #####################################################################
 
-add_qt_test(tst_qgraphicsscene
+qt_add_test(tst_qgraphicsscene
     SOURCES
         tst_qgraphicsscene.cpp
     DEFINES
@@ -23,7 +23,7 @@ set(images_resource_files
     "Ash_European.jpg"
 )
 
-add_qt_resource(tst_qgraphicsscene "images"
+qt_add_resource(tst_qgraphicsscene "images"
     PREFIX
         "/"
     FILES
@@ -60,7 +60,7 @@ set(testdata_resource_files
     "testData/render/topright-topleft-untransformed.png"
 )
 
-add_qt_resource(tst_qgraphicsscene "testdata"
+qt_add_resource(tst_qgraphicsscene "testdata"
     PREFIX
         "/"
     FILES
@@ -71,7 +71,7 @@ add_qt_resource(tst_qgraphicsscene "testdata"
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qgraphicsscene CONDITION WIN32
+qt_extend_target(tst_qgraphicsscene CONDITION WIN32
     PUBLIC_LIBRARIES
         user32
 )

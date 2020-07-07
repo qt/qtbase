@@ -4,7 +4,7 @@
 ## tst_qabstractsocket Test:
 #####################################################################
 
-add_qt_test(tst_qabstractsocket
+qt_add_test(tst_qabstractsocket
     SOURCES
         tst_qabstractsocket.cpp
     PUBLIC_LIBRARIES

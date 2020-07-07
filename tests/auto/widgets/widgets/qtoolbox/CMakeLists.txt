@@ -4,7 +4,7 @@
 ## tst_qtoolbox Test:
 #####################################################################
 
-add_qt_test(tst_qtoolbox
+qt_add_test(tst_qtoolbox
     SOURCES
         tst_qtoolbox.cpp
     PUBLIC_LIBRARIES

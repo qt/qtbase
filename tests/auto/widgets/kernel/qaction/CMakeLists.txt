@@ -4,7 +4,7 @@
 ## tst_qaction Test:
 #####################################################################
 
-add_qt_test(tst_qaction
+qt_add_test(tst_qaction
     SOURCES
         tst_qaction.cpp
     PUBLIC_LIBRARIES

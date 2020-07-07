@@ -4,7 +4,7 @@
 ## globaldata Binary:
 #####################################################################
 
-add_qt_executable(globaldata
+qt_add_executable(globaldata
     SOURCES
         tst_globaldata.cpp
     PUBLIC_LIBRARIES

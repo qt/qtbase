@@ -4,7 +4,7 @@
 ## tst_qvariant Test:
 #####################################################################
 
-add_qt_test(tst_qvariant
+qt_add_test(tst_qvariant
     SOURCES
         tst_qvariant.cpp
     DEFINES
@@ -21,7 +21,7 @@ set(qvariant_resource_files
     "stream/qt5.0/"
 )
 
-add_qt_resource(tst_qvariant "qvariant"
+qt_add_resource(tst_qvariant "qvariant"
     PREFIX
         "/"
     FILES
@@ -32,7 +32,7 @@ add_qt_resource(tst_qvariant "qvariant"
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qvariant CONDITION NOT QT_FEATURE_doubleconversion AND NOT QT_FEATURE_system_doubleconversion
+qt_extend_target(tst_qvariant CONDITION NOT QT_FEATURE_doubleconversion AND NOT QT_FEATURE_system_doubleconversion
     DEFINES
         QT_NO_DOUBLECONVERSION
 )

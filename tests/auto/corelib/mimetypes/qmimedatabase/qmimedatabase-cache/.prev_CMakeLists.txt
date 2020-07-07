@@ -8,7 +8,7 @@ endif()
 ## tst_qmimedatabase-cache Test:
 #####################################################################
 
-add_qt_test(tst_qmimedatabase-cache
+qt_add_test(tst_qmimedatabase-cache
     SOURCES
         ../tst_qmimedatabase.h
         tst_qmimedatabase-cache.cpp
@@ -17,18 +17,18 @@ add_qt_test(tst_qmimedatabase-cache
 )
 
 # Resources:
-set_source_files_properties("/devel/work/qt-cmake/qtbase/src/corelib/mimetypes/mime/packages/freedesktop.org.xml"
+set_source_files_properties("/Volumes/T3/Dev/qt/qt5_cmake/qtbase/src/corelib/mimetypes/mime/packages/freedesktop.org.xml"
     PROPERTIES QT_RESOURCE_ALIAS "freedesktop.org.xml"
 )
 set(mimetypes_resource_files
     "mime/packages/freedesktop.org.xml"
 )
 
-add_qt_resource(tst_qmimedatabase-cache "mimetypes"
+qt_add_resource(tst_qmimedatabase-cache "mimetypes"
     PREFIX
         "/qt-project.org/qmime/packages"
     BASE
-        "/devel/work/qt-cmake/qtbase/src/corelib/mimetypes"
+        "/Volumes/T3/Dev/qt/qt5_cmake/qtbase/src/corelib/mimetypes"
     FILES
         ${mimetypes_resource_files}
 )
@@ -75,7 +75,7 @@ set(testdata_resource_files
     "yast2-metapackage-handler-mimetypes.xml"
 )
 
-add_qt_resource(tst_qmimedatabase-cache "testdata"
+qt_add_resource(tst_qmimedatabase-cache "testdata"
     PREFIX
         "/qt-project.org/qmime"
     BASE
@@ -91,7 +91,7 @@ add_qt_resource(tst_qmimedatabase-cache "testdata"
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qmimedatabase-cache CONDITION GCC
+qt_extend_target(tst_qmimedatabase-cache CONDITION GCC
     COMPILE_OPTIONS
         -W
         -Wall
@@ -101,7 +101,7 @@ extend_target(tst_qmimedatabase-cache CONDITION GCC
         -Wshadow
 )
 
-extend_target(tst_qmimedatabase-cache CONDITION UNIX AND NOT APPLE AND NOT QNX
+qt_extend_target(tst_qmimedatabase-cache CONDITION UNIX AND NOT APPLE AND NOT QNX
     DEFINES
         USE_XDG_DATA_DIRS
 )

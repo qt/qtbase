@@ -4,7 +4,7 @@
 ## tst_qmargins Test:
 #####################################################################
 
-add_qt_test(tst_qmargins
+qt_add_test(tst_qmargins
     SOURCES
         tst_qmargins.cpp
 )

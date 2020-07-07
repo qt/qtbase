@@ -4,7 +4,7 @@
 ## tst_qwidget_window Test:
 #####################################################################
 
-add_qt_test(tst_qwidget_window
+qt_add_test(tst_qwidget_window
     SOURCES
         tst_qwidget_window.cpp
     PUBLIC_LIBRARIES

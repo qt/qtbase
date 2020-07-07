@@ -30,7 +30,7 @@ file(GLOB_RECURSE test_data_glob
     *.svgz)
 list(APPEND test_data ${test_data_glob})
 
-add_qt_test(tst_qicon
+qt_add_test(tst_qicon
     SOURCES
         tst_qicon.cpp
     PUBLIC_LIBRARIES
@@ -67,7 +67,7 @@ set(tst_qicon_resource_files
     "tst_qicon.cpp"
 )
 
-add_qt_resource(tst_qicon "tst_qicon"
+qt_add_resource(tst_qicon "tst_qicon"
     PREFIX
         "/"
     FILES
@@ -77,7 +77,7 @@ set(qmake_immediate_resource_files
     "tst_qicon.cpp"
 )
 
-add_qt_resource(tst_qicon "qmake_immediate"
+qt_add_resource(tst_qicon "qmake_immediate"
     PREFIX
         "/"
     FILES
@@ -88,7 +88,7 @@ add_qt_resource(tst_qicon "qmake_immediate"
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qicon CONDITION TARGET Qt::Widgets
+qt_extend_target(tst_qicon CONDITION TARGET Qt::Widgets
     PUBLIC_LIBRARIES
         Qt::Widgets
 )

@@ -4,7 +4,7 @@
 ## crashes Binary:
 #####################################################################
 
-add_qt_executable(crashes
+qt_add_executable(crashes
     SOURCES
         tst_crashes.cpp
     PUBLIC_LIBRARIES

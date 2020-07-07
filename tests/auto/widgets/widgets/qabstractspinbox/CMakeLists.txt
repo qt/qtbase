@@ -4,7 +4,7 @@
 ## tst_qabstractspinbox Test:
 #####################################################################
 
-add_qt_test(tst_qabstractspinbox
+qt_add_test(tst_qabstractspinbox
     SOURCES
         tst_qabstractspinbox.cpp
     PUBLIC_LIBRARIES

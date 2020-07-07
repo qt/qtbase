@@ -4,7 +4,7 @@
 ## tst_qgraphicsview Test:
 #####################################################################
 
-add_qt_test(tst_qgraphicsview
+qt_add_test(tst_qgraphicsview
     SOURCES
         tst_qgraphicsview.cpp tst_qgraphicsview.h
         tst_qgraphicsview_2.cpp
@@ -25,7 +25,7 @@ add_qt_test(tst_qgraphicsview
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qgraphicsview CONDITION QT_FEATURE_opengl
+qt_extend_target(tst_qgraphicsview CONDITION QT_FEATURE_opengl
     PUBLIC_LIBRARIES
         Qt::OpenGL
         Qt::OpenGLWidgets

@@ -4,7 +4,7 @@
 ## modal Binary:
 #####################################################################
 
-add_qt_executable(modal
+qt_add_executable(modal
     SOURCES
         base.cpp base.h
         main.cpp

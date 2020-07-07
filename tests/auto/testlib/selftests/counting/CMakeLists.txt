@@ -4,7 +4,7 @@
 ## counting Binary:
 #####################################################################
 
-add_qt_executable(counting
+qt_add_executable(counting
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

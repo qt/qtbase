@@ -4,7 +4,7 @@
 ## tst_qactiongroup Test:
 #####################################################################
 
-add_qt_test(tst_qactiongroup
+qt_add_test(tst_qactiongroup
     SOURCES
         tst_qactiongroup.cpp
     PUBLIC_LIBRARIES

@@ -4,7 +4,7 @@
 ## tst_qdial Test:
 #####################################################################
 
-add_qt_test(tst_qdial
+qt_add_test(tst_qdial
     SOURCES
         tst_qdial.cpp
     PUBLIC_LIBRARIES

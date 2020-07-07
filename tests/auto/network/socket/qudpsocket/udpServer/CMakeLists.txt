@@ -4,7 +4,7 @@
 ## udpServer Binary:
 #####################################################################
 
-add_qt_executable(udpServer
+qt_add_executable(udpServer
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/./" # special case
     SOURCES
         main.cpp

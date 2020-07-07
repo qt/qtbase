@@ -4,7 +4,7 @@
 ## tst_qfocusframe Test:
 #####################################################################
 
-add_qt_test(tst_qfocusframe
+qt_add_test(tst_qfocusframe
     SOURCES
         tst_qfocusframe.cpp
     PUBLIC_LIBRARIES

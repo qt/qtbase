@@ -8,7 +8,7 @@ endif()
 ## tst_qhttpsocketengine Test:
 #####################################################################
 
-add_qt_test(tst_qhttpsocketengine
+qt_add_test(tst_qhttpsocketengine
     SOURCES
         tst_qhttpsocketengine.cpp
     INCLUDE_DIRECTORIES
@@ -28,7 +28,7 @@ add_qt_test(tst_qhttpsocketengine
 #### Keys ignored in scope 2:.:.:qhttpsocketengine.pro:LINUX:
 # QT_TEST_SERVER_LIST = "squid" "danted" "cyrus" "apache2"
 
-extend_target(tst_qhttpsocketengine CONDITION WIN32
+qt_extend_target(tst_qhttpsocketengine CONDITION WIN32
     PUBLIC_LIBRARIES
         ws2_32
 )

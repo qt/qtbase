@@ -4,7 +4,7 @@
 ## tst_qmenu Test:
 #####################################################################
 
-add_qt_test(tst_qmenu
+qt_add_test(tst_qmenu
     SOURCES
         tst_qmenu.cpp
     PUBLIC_LIBRARIES
@@ -17,14 +17,14 @@ add_qt_test(tst_qmenu
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qmenu CONDITION MACOS
+qt_extend_target(tst_qmenu CONDITION MACOS
     SOURCES
         tst_qmenu_mac.mm
     PUBLIC_LIBRARIES
         objc
 )
 
-extend_target(tst_qmenu CONDITION NOT MACOS
+qt_extend_target(tst_qmenu CONDITION NOT MACOS
     DEFINES
         QTEST_QPA_MOUSE_HANDLING
 )

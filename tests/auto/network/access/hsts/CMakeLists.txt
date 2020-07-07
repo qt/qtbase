@@ -4,7 +4,7 @@
 ## tst_qhsts Test:
 #####################################################################
 
-add_qt_test(tst_qhsts
+qt_add_test(tst_qhsts
     SOURCES
         tst_qhsts.cpp
     PUBLIC_LIBRARIES

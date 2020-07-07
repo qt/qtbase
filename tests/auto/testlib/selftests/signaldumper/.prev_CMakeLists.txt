@@ -4,7 +4,7 @@
 ## signaldumper Binary:
 #####################################################################
 
-add_qt_executable(signaldumper
+qt_add_executable(signaldumper
     SOURCES
         tst_signaldumper.cpp
     PUBLIC_LIBRARIES

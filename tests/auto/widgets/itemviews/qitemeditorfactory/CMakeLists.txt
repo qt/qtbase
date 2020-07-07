@@ -4,7 +4,7 @@
 ## tst_qitemeditorfactory Test:
 #####################################################################
 
-add_qt_test(tst_qitemeditorfactory
+qt_add_test(tst_qitemeditorfactory
     SOURCES
         tst_qitemeditorfactory.cpp
     PUBLIC_LIBRARIES

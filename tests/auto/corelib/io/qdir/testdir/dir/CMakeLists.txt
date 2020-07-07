@@ -4,7 +4,7 @@
 ## qdir Binary:
 #####################################################################
 
-add_qt_executable(qdir
+qt_add_executable(qdir
     GUI
     DEFINES
         QT_DISABLE_DEPRECATED_BEFORE=0

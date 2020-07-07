@@ -4,7 +4,7 @@
 ## tst_qrand Test:
 #####################################################################
 
-add_qt_test(tst_qrand
+qt_add_test(tst_qrand
     SOURCES
         tst_qrand.cpp
 )

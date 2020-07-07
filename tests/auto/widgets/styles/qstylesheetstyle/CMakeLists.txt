@@ -8,7 +8,7 @@ endif()
 ## tst_qstylesheetstyle Test:
 #####################################################################
 
-add_qt_test(tst_qstylesheetstyle
+qt_add_test(tst_qstylesheetstyle
     SOURCES
         tst_qstylesheetstyle.cpp
     PUBLIC_LIBRARIES
@@ -25,7 +25,7 @@ set(resources_resource_files
     "images/testimage@2x.png"
 )
 
-add_qt_resource(tst_qstylesheetstyle "resources"
+qt_add_resource(tst_qstylesheetstyle "resources"
     PREFIX
         "/"
     FILES

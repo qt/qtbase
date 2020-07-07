@@ -4,7 +4,7 @@
 ## crashonexit Binary:
 #####################################################################
 
-add_qt_executable(crashOnExit_helper
+qt_add_executable(crashOnExit_helper # special case
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/.." # special case
     INSTALL_DIRECTORY "${INSTALL_TESTSDIR}/tst_qthreadstorage/crashOnExit_helper" # special case
     SOURCES

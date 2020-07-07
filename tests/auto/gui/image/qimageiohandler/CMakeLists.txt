@@ -4,7 +4,7 @@
 ## tst_qimageiohandler Test:
 #####################################################################
 
-add_qt_test(tst_qimageiohandler
+qt_add_test(tst_qimageiohandler
     SOURCES
         tst_qimageiohandler.cpp
     PUBLIC_LIBRARIES

@@ -4,7 +4,7 @@
 ## tst_qdialog Test:
 #####################################################################
 
-add_qt_test(tst_qdialog
+qt_add_test(tst_qdialog
     SOURCES
         tst_qdialog.cpp
     PUBLIC_LIBRARIES

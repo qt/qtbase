@@ -4,7 +4,7 @@
 ## tst_qmdiarea Test:
 #####################################################################
 
-add_qt_test(tst_qmdiarea
+qt_add_test(tst_qmdiarea
     SOURCES
         tst_qmdiarea.cpp
     DEFINES
@@ -21,12 +21,12 @@ add_qt_test(tst_qmdiarea
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qmdiarea CONDITION TARGET Qt::OpenGL
+qt_extend_target(tst_qmdiarea CONDITION TARGET Qt::OpenGL
     PUBLIC_LIBRARIES
         Qt::OpenGL
 )
 
-extend_target(tst_qmdiarea CONDITION APPLE
+qt_extend_target(tst_qmdiarea CONDITION APPLE
     PUBLIC_LIBRARIES
         ${FWSecurity}
 )

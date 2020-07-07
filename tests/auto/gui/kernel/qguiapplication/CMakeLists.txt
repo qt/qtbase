@@ -16,8 +16,8 @@ else()
 endif()
 # special case end
 
-add_qt_test(tst_qguiapplication
-    VERSION ${target_version}
+qt_add_test(tst_qguiapplication
+    VERSION ${target_version} # special case
     SOURCES
         ../../../corelib/kernel/qcoreapplication/tst_qcoreapplication.cpp ../../../corelib/kernel/qcoreapplication/tst_qcoreapplication.h # special case
         tst_qguiapplication.cpp
@@ -37,7 +37,7 @@ set(tst_qguiapplication_resource_files
     "icons/usericon.png"
 )
 
-add_qt_resource(tst_qguiapplication "tst_qguiapplication"
+qt_add_resource(tst_qguiapplication "tst_qguiapplication"
     PREFIX
         "/"
     FILES

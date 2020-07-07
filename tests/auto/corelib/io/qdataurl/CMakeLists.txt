@@ -4,7 +4,7 @@
 ## tst_qdataurl Test:
 #####################################################################
 
-add_qt_test(tst_qdataurl
+qt_add_test(tst_qdataurl
     SOURCES
         tst_qdataurl.cpp
     PUBLIC_LIBRARIES

@@ -4,7 +4,7 @@
 ## desktopsettingsaware Binary:
 #####################################################################
 
-add_qt_executable(desktopsettingsaware
+qt_add_executable(desktopsettingsaware
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

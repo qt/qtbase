@@ -4,7 +4,7 @@
 ## tst_qpen Test:
 #####################################################################
 
-add_qt_test(tst_qpen
+qt_add_test(tst_qpen
     SOURCES
         tst_qpen.cpp
     PUBLIC_LIBRARIES

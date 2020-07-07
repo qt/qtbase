@@ -4,7 +4,7 @@
 ## tst_qplaintextedit Test:
 #####################################################################
 
-add_qt_test(tst_qplaintextedit
+qt_add_test(tst_qplaintextedit
     SOURCES
         tst_qplaintextedit.cpp
     INCLUDE_DIRECTORIES
@@ -19,7 +19,7 @@ add_qt_test(tst_qplaintextedit
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qplaintextedit CONDITION MACOS
+qt_extend_target(tst_qplaintextedit CONDITION MACOS
     PUBLIC_LIBRARIES
         ${FWAppKit}
 )

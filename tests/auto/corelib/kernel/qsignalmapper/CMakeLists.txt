@@ -4,7 +4,7 @@
 ## tst_qsignalmapper Test:
 #####################################################################
 
-add_qt_test(tst_qsignalmapper
+qt_add_test(tst_qsignalmapper
     SOURCES
         tst_qsignalmapper.cpp
 )

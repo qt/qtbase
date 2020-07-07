@@ -4,7 +4,7 @@
 ## tst_qshader Test:
 #####################################################################
 
-add_qt_test(tst_qshader
+qt_add_test(tst_qshader
     SOURCES
         tst_qshader.cpp
     PUBLIC_LIBRARIES
@@ -17,7 +17,7 @@ set(qshader_resource_files
     "data"
 )
 
-add_qt_resource(tst_qshader "qshader"
+qt_add_resource(tst_qshader "qshader"
     PREFIX
         "/"
     FILES

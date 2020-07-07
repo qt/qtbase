@@ -4,7 +4,7 @@
 ## singleskip Binary:
 #####################################################################
 
-add_qt_executable(singleskip
+qt_add_executable(singleskip
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

@@ -7,7 +7,7 @@
 # Collect test data
 list(APPEND test_data "tst_qiodevice.cpp")
 
-add_qt_test(tst_qiodevice
+qt_add_test(tst_qiodevice
     SOURCES
         tst_qiodevice.cpp
     PUBLIC_LIBRARIES
@@ -27,7 +27,7 @@ if(ANDROID AND NOT ANDROID_EMBEDDED)
         "tst_qiodevice.cpp"
     )
 
-    add_qt_resource(tst_qiodevice "android_testdata"
+    qt_add_resource(tst_qiodevice "android_testdata"
         PREFIX
             "/"
         FILES

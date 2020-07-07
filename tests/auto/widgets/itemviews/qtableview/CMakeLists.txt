@@ -4,7 +4,7 @@
 ## tst_qtableview Test:
 #####################################################################
 
-add_qt_test(tst_qtableview
+qt_add_test(tst_qtableview
     SOURCES
         tst_qtableview.cpp
     PUBLIC_LIBRARIES

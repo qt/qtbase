@@ -4,7 +4,7 @@
 ## tst_qsizegrip Test:
 #####################################################################
 
-add_qt_test(tst_qsizegrip
+qt_add_test(tst_qsizegrip
     SOURCES
         tst_qsizegrip.cpp
     INCLUDE_DIRECTORIES

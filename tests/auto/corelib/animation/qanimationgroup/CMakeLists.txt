@@ -4,7 +4,7 @@
 ## tst_qanimationgroup Test:
 #####################################################################
 
-add_qt_test(tst_qanimationgroup
+qt_add_test(tst_qanimationgroup
     SOURCES
         tst_qanimationgroup.cpp
 )

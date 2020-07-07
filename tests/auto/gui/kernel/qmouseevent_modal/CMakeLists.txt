@@ -4,7 +4,7 @@
 ## tst_qmouseevent_modal Test:
 #####################################################################
 
-add_qt_test(tst_qmouseevent_modal
+qt_add_test(tst_qmouseevent_modal
     SOURCES
         tst_qmouseevent_modal.cpp
     PUBLIC_LIBRARIES

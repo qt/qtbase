@@ -4,7 +4,7 @@
 ## sleep Binary:
 #####################################################################
 
-add_qt_executable(sleep
+qt_add_executable(sleep
     SOURCES
         tst_sleep.cpp
     PUBLIC_LIBRARIES

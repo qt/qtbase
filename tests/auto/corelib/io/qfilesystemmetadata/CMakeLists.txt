@@ -4,7 +4,7 @@
 ## tst_qfilesystemmetadata Test:
 #####################################################################
 
-add_qt_test(tst_qfilesystemmetadata
+qt_add_test(tst_qfilesystemmetadata
     SOURCES
         tst_qfilesystemmetadata.cpp
     PUBLIC_LIBRARIES

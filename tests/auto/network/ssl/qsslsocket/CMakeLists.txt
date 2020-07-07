@@ -11,7 +11,7 @@ endif()
 # Collect test data
 list(APPEND test_data "certs")
 
-add_qt_test(tst_qsslsocket
+qt_add_test(tst_qsslsocket
     SOURCES
         tst_qsslsocket.cpp
     DEFINES

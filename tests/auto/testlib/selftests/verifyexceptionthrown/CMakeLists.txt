@@ -4,7 +4,7 @@
 ## verifyexceptionthrown Binary:
 #####################################################################
 
-add_qt_executable(verifyexceptionthrown
+qt_add_executable(verifyexceptionthrown
     EXCEPTIONS
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case

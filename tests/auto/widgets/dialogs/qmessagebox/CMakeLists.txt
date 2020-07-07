@@ -4,7 +4,7 @@
 ## tst_qmessagebox Test:
 #####################################################################
 
-add_qt_test(tst_qmessagebox
+qt_add_test(tst_qmessagebox
     SOURCES
         tst_qmessagebox.cpp
     PUBLIC_LIBRARIES

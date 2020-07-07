@@ -4,7 +4,7 @@
 ## faildatatype Binary:
 #####################################################################
 
-add_qt_executable(faildatatype
+qt_add_executable(faildatatype
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

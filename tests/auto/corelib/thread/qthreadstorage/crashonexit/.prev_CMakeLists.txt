@@ -4,7 +4,7 @@
 ## crashonexit Binary:
 #####################################################################
 
-add_qt_executable(crashonexit
+qt_add_executable(crashonexit
     OUTPUT_DIRECTORY "${INSTALL_TESTSDIR}/tst_qthreadstorage/crashonexit"
     INSTALL_DIRECTORY "${INSTALL_TESTSDIR}/tst_qthreadstorage/crashonexit"
     SOURCES

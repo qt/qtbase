@@ -14,7 +14,7 @@ endif()
 ## tst_qaccessibility Test:
 #####################################################################
 
-add_qt_test(tst_qaccessibility
+qt_add_test(tst_qaccessibility
     SOURCES
         accessiblewidgets.h
         tst_qaccessibility.cpp
@@ -32,12 +32,12 @@ add_qt_test(tst_qaccessibility
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qaccessibility CONDITION UNIX AND NOT APPLE AND NOT HAIKU AND NOT integity
+qt_extend_target(tst_qaccessibility CONDITION UNIX AND NOT APPLE AND NOT HAIKU AND NOT integity
     PUBLIC_LIBRARIES
         m
 )
 
-extend_target(tst_qaccessibility CONDITION WIN32
+qt_extend_target(tst_qaccessibility CONDITION WIN32
     PUBLIC_LIBRARIES
         ole32
         oleacc

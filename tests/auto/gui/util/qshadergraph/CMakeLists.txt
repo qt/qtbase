@@ -4,7 +4,7 @@
 ## tst_qshadergraph Test:
 #####################################################################
 
-add_qt_test(tst_qshadergraph
+qt_add_test(tst_qshadergraph
     SOURCES
         tst_qshadergraph.cpp
     PUBLIC_LIBRARIES

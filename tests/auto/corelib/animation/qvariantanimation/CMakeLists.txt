@@ -4,7 +4,7 @@
 ## tst_qvariantanimation Test:
 #####################################################################
 
-add_qt_test(tst_qvariantanimation
+qt_add_test(tst_qvariantanimation
     SOURCES
         tst_qvariantanimation.cpp
 )

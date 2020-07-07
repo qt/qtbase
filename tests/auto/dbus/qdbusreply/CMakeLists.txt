@@ -4,7 +4,7 @@
 ## tst_qdbusreply Test:
 #####################################################################
 
-add_qt_test(tst_qdbusreply
+qt_add_test(tst_qdbusreply
     SOURCES
         tst_qdbusreply.cpp
     PUBLIC_LIBRARIES

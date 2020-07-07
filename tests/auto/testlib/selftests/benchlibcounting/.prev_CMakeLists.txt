@@ -4,7 +4,7 @@
 ## benchlibcounting Binary:
 #####################################################################
 
-add_qt_executable(benchlibcounting
+qt_add_executable(benchlibcounting
     SOURCES
         tst_benchlibcounting.cpp
     PUBLIC_LIBRARIES

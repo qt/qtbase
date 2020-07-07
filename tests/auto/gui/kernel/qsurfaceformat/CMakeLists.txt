@@ -4,7 +4,7 @@
 ## tst_qsurfaceformat Test:
 #####################################################################
 
-add_qt_test(tst_qsurfaceformat
+qt_add_test(tst_qsurfaceformat
     SOURCES
         tst_qsurfaceformat.cpp
     PUBLIC_LIBRARIES

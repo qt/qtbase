@@ -4,7 +4,7 @@
 ## tst_qudpsocket Test:
 #####################################################################
 
-add_qt_test(tst_qudpsocket
+qt_add_test(tst_qudpsocket
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../" # special case
     SOURCES
         ../tst_qudpsocket.cpp

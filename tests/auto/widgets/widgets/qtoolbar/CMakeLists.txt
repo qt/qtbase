@@ -4,7 +4,7 @@
 ## tst_qtoolbar Test:
 #####################################################################
 
-add_qt_test(tst_qtoolbar
+qt_add_test(tst_qtoolbar
     SOURCES
         tst_qtoolbar.cpp
     PUBLIC_LIBRARIES

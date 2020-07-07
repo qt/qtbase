@@ -4,7 +4,7 @@
 ## tst_qstyleoption Test:
 #####################################################################
 
-add_qt_test(tst_qstyleoption
+qt_add_test(tst_qstyleoption
     SOURCES
         tst_qstyleoption.cpp
     PUBLIC_LIBRARIES

@@ -4,7 +4,7 @@
 ## benchliboptions Binary:
 #####################################################################
 
-add_qt_executable(benchliboptions
+qt_add_executable(benchliboptions
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES

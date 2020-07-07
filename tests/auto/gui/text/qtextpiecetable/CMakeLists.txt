@@ -11,7 +11,7 @@ endif()
 ## tst_qtextpiecetable Test:
 #####################################################################
 
-add_qt_test(tst_qtextpiecetable
+qt_add_test(tst_qtextpiecetable
     SOURCES
         ../qtextdocument/common.h
         tst_qtextpiecetable.cpp

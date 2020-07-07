@@ -4,7 +4,7 @@
 ## tst_qstorageinfo Test:
 #####################################################################
 
-add_qt_test(tst_qstorageinfo
+qt_add_test(tst_qstorageinfo
     SOURCES
         tst_qstorageinfo.cpp
     PUBLIC_LIBRARIES

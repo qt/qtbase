@@ -4,7 +4,7 @@
 ## tst_qmutex Test:
 #####################################################################
 
-add_qt_test(tst_qmutex
+qt_add_test(tst_qmutex
     SOURCES
         tst_qmutex.cpp
 )
@@ -12,7 +12,7 @@ add_qt_test(tst_qmutex
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qmutex CONDITION WIN32
+qt_extend_target(tst_qmutex CONDITION WIN32
     PUBLIC_LIBRARIES
         Qt::CorePrivate
 )

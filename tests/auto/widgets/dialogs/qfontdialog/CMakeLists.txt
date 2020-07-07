@@ -4,7 +4,7 @@
 ## tst_qfontdialog Test:
 #####################################################################
 
-add_qt_test(tst_qfontdialog
+qt_add_test(tst_qfontdialog
     SOURCES
         tst_qfontdialog.cpp
     PUBLIC_LIBRARIES
@@ -27,7 +27,7 @@ set(testfonts_resource_files
     "../../../shared/resources/testfont.ttf"
 )
 
-add_qt_resource(tst_qfontdialog "testfonts"
+qt_add_resource(tst_qfontdialog "testfonts"
     PREFIX
         "/"
     FILES

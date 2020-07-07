@@ -4,7 +4,7 @@
 ## tst_qtcpserver Test:
 #####################################################################
 
-add_qt_test(tst_qtcpserver
+qt_add_test(tst_qtcpserver
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../" # special case
     SOURCES
         ../tst_qtcpserver.cpp
@@ -18,7 +18,7 @@ add_qt_test(tst_qtcpserver
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qtcpserver CONDITION WIN32
+qt_extend_target(tst_qtcpserver CONDITION WIN32
     PUBLIC_LIBRARIES
         ws2_32
 )
