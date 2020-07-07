@@ -1820,6 +1820,7 @@ Qt::MouseButtons QGuiApplication::mouseButtons()
 }
 
 /*!
+    \internal
     Returns the platform's native interface, for platform specific
     functionality.
 */
@@ -1830,6 +1831,7 @@ QPlatformNativeInterface *QGuiApplication::platformNativeInterface()
 }
 
 /*!
+    \internal
     Returns a function pointer from the platformplugin matching \a function
 */
 QFunctionPointer QGuiApplication::platformFunction(const QByteArray &function)
