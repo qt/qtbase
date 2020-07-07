@@ -80,6 +80,10 @@ public:
 
     void handleSystemThemeChange();
 
+#ifndef QT_NO_SHORTCUT
+    QList<QKeySequence> keyBindings(QKeySequence::StandardKey key) const override;
+#endif
+
 private:
     mutable QPalette *m_systemPalette;
     QMacNotificationObserver m_systemColorObserver;
