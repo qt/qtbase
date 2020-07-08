@@ -61,6 +61,8 @@ defineTest(qtConfCommandline_sanitize) {
 # callbacks
 
 defineReplace(qtConfFunc_crossCompile) {
+    !isEmpty(config.input.xplatform): return(true)
+    !isEmpty(config.input.device-option): return(true)
     !isEmpty(config.input.sysroot): return(true)
     spec = $$[QMAKE_SPEC]
     !equals(spec, $$[QMAKE_XSPEC]): return(true)
