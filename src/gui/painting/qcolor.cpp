@@ -90,6 +90,8 @@ static bool get_hex_rgb(const char *name, size_t len, QRgba64 *rgb)
         r = hex2int(name + 0, 3);
         g = hex2int(name + 3, 3);
         b = hex2int(name + 6, 3);
+        if (r == -1 || g == -1 || b == -1)
+            return false;
         r = (r << 4) | (r >> 8);
         g = (g << 4) | (g >> 8);
         b = (b << 4) | (b >> 8);
