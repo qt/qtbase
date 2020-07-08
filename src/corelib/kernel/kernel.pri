@@ -46,8 +46,7 @@ HEADERS += \
         kernel/qtestsupport_core.h \
         kernel/qproperty.h \
         kernel/qpropertyprivate.h \
-        kernel/qproperty_p.h \
-        kernel/qpropertybinding_p.h
+        kernel/qproperty_p.h
 
 SOURCES += \
         kernel/qabstracteventdispatcher.cpp \
@@ -77,7 +76,6 @@ SOURCES += \
         kernel/qsystemerror.cpp \
         kernel/qtestsupport_core.cpp \
         kernel/qproperty.cpp \
-        kernel/qpropertybinding.cpp
 
 win32 {
         SOURCES += \

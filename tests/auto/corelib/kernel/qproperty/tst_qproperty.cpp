@@ -30,7 +30,6 @@
 #include <qtest.h>
 #include <qproperty.h>
 #include <private/qproperty_p.h>
-#include <private/qpropertybinding_p.h>
 
 using namespace QtPrivate;
 

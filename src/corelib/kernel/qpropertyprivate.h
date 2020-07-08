@@ -55,6 +55,8 @@
 #include <QtCore/QExplicitlySharedDataPointer>
 #include <QtCore/qtaggedpointer.h>
 
+#include <functional>
+
 QT_BEGIN_NAMESPACE
 
 class QUntypedPropertyBinding;

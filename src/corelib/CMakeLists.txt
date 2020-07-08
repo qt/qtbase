@@ -111,7 +111,6 @@ qt_add_module(Core
         kernel/qobjectdefs_impl.h
         kernel/qpointer.cpp kernel/qpointer.h
         kernel/qproperty.cpp kernel/qproperty.h kernel/qproperty_p.h
-        kernel/qpropertybinding.cpp kernel/qpropertybinding_p.h
         kernel/qpropertyprivate.h
         kernel/qsharedmemory.cpp kernel/qsharedmemory.h kernel/qsharedmemory_p.h
         kernel/qsignalmapper.cpp kernel/qsignalmapper.h

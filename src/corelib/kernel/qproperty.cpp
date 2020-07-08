@@ -39,13 +39,172 @@
 
 #include "qproperty.h"
 #include "qproperty_p.h"
-#include "qpropertybinding_p.h"
 
 #include <qscopedvaluerollback.h>
 
 QT_BEGIN_NAMESPACE
 
 using namespace QtPrivate;
+
+void QPropertyBasePointer::addObserver(QPropertyObserver *observer)
+{
+    if (auto *binding = bindingPtr()) {
+        observer->prev = &binding->firstObserver.ptr;
+        observer->next = binding->firstObserver.ptr;
+        if (observer->next)
+            observer->next->prev = &observer->next;
+        binding->firstObserver.ptr = observer;
+    } else {
+        auto firstObserver = reinterpret_cast<QPropertyObserver*>(ptr->d_ptr & ~QPropertyBase::FlagMask);
+        observer->prev = reinterpret_cast<QPropertyObserver**>(&ptr->d_ptr);
+        observer->next = firstObserver;
+        if (observer->next)
+            observer->next->prev = &observer->next;
+    }
+    setFirstObserver(observer);
+}
+
+QPropertyBindingPrivate::~QPropertyBindingPrivate()
+{
+    if (firstObserver)
+        firstObserver.unlink();
+    if (!hasStaticObserver)
+        inlineDependencyObservers.~ObserverArray(); // Explicit because of union.
+}
+
+void QPropertyBindingPrivate::unlinkAndDeref()
+{
+    propertyDataPtr = nullptr;
+    if (!ref.deref())
+        delete this;
+}
+
+void QPropertyBindingPrivate::markDirtyAndNotifyObservers()
+{
+    if (dirty)
+        return;
+    dirty = true;
+    if (firstObserver)
+        firstObserver.notify(this, propertyDataPtr);
+    if (hasStaticObserver) {
+        if (isBool) {
+            auto propertyPtr = reinterpret_cast<QPropertyBase *>(propertyDataPtr);
+            bool oldValue = propertyPtr->extraBit();
+            staticObserverCallback(staticObserver, &oldValue);
+        } else {
+            staticObserverCallback(staticObserver, propertyDataPtr);
+        }
+    }
+}
+
+bool QPropertyBindingPrivate::evaluateIfDirtyAndReturnTrueIfValueChanged()
+{
+    if (!dirty)
+        return false;
+
+    if (updating) {
+        error = QPropertyBindingError(QPropertyBindingError::BindingLoop);
+        return false;
+    }
+
+    /*
+     * Evaluating the binding might lead to the binding being broken. This can
+     * cause ref to reach zero at the end of the function.  However, the
+     * updateGuard's destructor will then still trigger, trying to set the
+     * updating bool to its old value
+     * To prevent this, we create a QPropertyBindingPrivatePtr which ensures
+     * that the object is still alive when updateGuard's dtor runs.
+     */
+    QPropertyBindingPrivatePtr keepAlive {this};
+    QScopedValueRollback<bool> updateGuard(updating, true);
+
+    BindingEvaluationState evaluationFrame(this);
+
+    bool changed = false;
+
+    if (hasStaticObserver && staticGuardCallback) {
+        if (isBool) {
+            auto propertyPtr = reinterpret_cast<QPropertyBase *>(propertyDataPtr);
+            bool newValue = propertyPtr->extraBit();
+            changed = staticGuardCallback(metaType, &newValue, evaluationFunction, staticObserver);
+            if (changed && !error.hasError())
+                propertyPtr->setExtraBit(newValue);
+        } else {
+            changed = staticGuardCallback(metaType, propertyDataPtr, evaluationFunction, staticObserver);
+        }
+    } else {
+        if (isBool) {
+            auto propertyPtr = reinterpret_cast<QPropertyBase *>(propertyDataPtr);
+            bool newValue = propertyPtr->extraBit();
+            changed = evaluationFunction(metaType, &newValue);
+            if (changed && !error.hasError())
+                propertyPtr->setExtraBit(newValue);
+        } else {
+            changed = evaluationFunction(metaType, propertyDataPtr);
+        }
+    }
+
+    dirty = false;
+    return changed;
+}
+
+QUntypedPropertyBinding::QUntypedPropertyBinding() = default;
+
+QUntypedPropertyBinding::QUntypedPropertyBinding(const QMetaType &metaType, QUntypedPropertyBinding::BindingEvaluationFunction function,
+                                                 const QPropertyBindingSourceLocation &location)
+{
+    d = new QPropertyBindingPrivate(metaType, std::move(function), std::move(location));
+}
+
+QUntypedPropertyBinding::QUntypedPropertyBinding(QUntypedPropertyBinding &&other)
+    : d(std::move(other.d))
+{
+}
+
+QUntypedPropertyBinding::QUntypedPropertyBinding(const QUntypedPropertyBinding &other)
+    : d(other.d)
+{
+}
+
+QUntypedPropertyBinding &QUntypedPropertyBinding::operator=(const QUntypedPropertyBinding &other)
+{
+    d = other.d;
+    return *this;
+}
+
+QUntypedPropertyBinding &QUntypedPropertyBinding::operator=(QUntypedPropertyBinding &&other)
+{
+    d = std::move(other.d);
+    return *this;
+}
+
+QUntypedPropertyBinding::QUntypedPropertyBinding(QPropertyBindingPrivate *priv)
+    : d(priv)
+{
+}
+
+QUntypedPropertyBinding::~QUntypedPropertyBinding()
+{
+}
+
+bool QUntypedPropertyBinding::isNull() const
+{
+    return !d;
+}
+
+QPropertyBindingError QUntypedPropertyBinding::error() const
+{
+    if (!d)
+        return QPropertyBindingError();
+    return d->bindingError();
+}
+
+QMetaType QUntypedPropertyBinding::valueMetaType() const
+{
+    if (!d)
+        return QMetaType();
+    return d->valueMetaType();
+}
 
 QPropertyBase::QPropertyBase(QPropertyBase &&other, void *propertyDataPtr)
 {
@@ -139,53 +298,6 @@ QPropertyBindingPrivate *QPropertyBase::binding()
     if (auto binding = d.bindingPtr())
         return binding;
     return nullptr;
-}
-
-QPropertyBindingPrivate *QPropertyBasePointer::bindingPtr() const
-{
-    if (ptr->d_ptr & QPropertyBase::BindingBit)
-        return reinterpret_cast<QPropertyBindingPrivate*>(ptr->d_ptr & ~QPropertyBase::FlagMask);
-    return nullptr;
-}
-
-void QPropertyBasePointer::setObservers(QPropertyObserver *observer)
-{
-    observer->prev = reinterpret_cast<QPropertyObserver**>(&(ptr->d_ptr));
-    ptr->d_ptr = (reinterpret_cast<quintptr>(observer) & ~QPropertyBase::FlagMask);
-}
-
-void QPropertyBasePointer::addObserver(QPropertyObserver *observer)
-{
-    if (auto *binding = bindingPtr()) {
-        observer->prev = &binding->firstObserver.ptr;
-        observer->next = binding->firstObserver.ptr;
-        if (observer->next)
-            observer->next->prev = &observer->next;
-        binding->firstObserver.ptr = observer;
-    } else {
-        auto firstObserver = reinterpret_cast<QPropertyObserver*>(ptr->d_ptr & ~QPropertyBase::FlagMask);
-        observer->prev = reinterpret_cast<QPropertyObserver**>(&ptr->d_ptr);
-        observer->next = firstObserver;
-        if (observer->next)
-            observer->next->prev = &observer->next;
-    }
-    setFirstObserver(observer);
-}
-
-void QPropertyBasePointer::setFirstObserver(QPropertyObserver *observer)
-{
-    if (auto *binding = bindingPtr()) {
-        binding->firstObserver.ptr = observer;
-        return;
-    }
-    ptr->d_ptr = reinterpret_cast<quintptr>(observer) | (ptr->d_ptr & QPropertyBase::FlagMask);
-}
-
-QPropertyObserverPointer QPropertyBasePointer::firstObserver() const
-{
-    if (auto *binding = bindingPtr())
-        return binding->firstObserver;
-    return {reinterpret_cast<QPropertyObserver*>(ptr->d_ptr & ~QPropertyBase::FlagMask)};
 }
 
 static thread_local BindingEvaluationState *currentBindingEvaluationState = nullptr;
