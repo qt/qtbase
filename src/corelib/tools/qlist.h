@@ -591,8 +591,6 @@ QList<T>::insert(qsizetype i, qsizetype n, parameter_type t)
     const size_t newSize = size() + n;
     if (d->needsDetach() || newSize > d->allocatedCapacity()) {
         typename Data::ArrayOptions flags = d->detachFlags() | Data::GrowsForward;
-        if (size_t(i) <= newSize / 4)
-            flags |= Data::GrowsBackwards;
 
         DataPointer detached(Data::allocate(d->detachCapacity(newSize), flags));
         const_iterator where = constBegin() + i;
@@ -622,8 +620,6 @@ QList<T>::emplace(qsizetype i, Args&&... args)
     const size_t newSize = size() + 1;
     if (d->needsDetach() || newSize > d->allocatedCapacity()) {
         typename Data::ArrayOptions flags = d->detachFlags() | Data::GrowsForward;
-        if (size_t(i) <= newSize / 4)
-            flags |= Data::GrowsBackwards;
 
         DataPointer detached(Data::allocate(d->detachCapacity(newSize), flags));
         const_iterator where = constBegin() + i;
