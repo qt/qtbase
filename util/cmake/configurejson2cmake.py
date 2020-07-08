@@ -1354,6 +1354,26 @@ def processSubconfigs(path, ctx, data):
             subconfCtx = ctx
             processJson(subconfDir, subconfCtx, subconfData)
 
+class special_cased_file:
+    def __init__(self, base_dir : str, file_name : str):
+        self.base_dir = base_dir
+        self.file_path = posixpath.join(base_dir, file_name)
+        self.gen_file_path = self.file_path + ".gen"
+
+    def __enter__(self):
+        self.file = open(self.gen_file_path, "w")
+        self.sc_handler = SpecialCaseHandler(
+            os.path.abspath(self.file_path),
+            os.path.abspath(self.gen_file_path),
+            os.path.abspath(self.base_dir),
+            debug=False,
+        )
+        return self.file
+
+    def __exit__(self, type, value, trace_back):
+        self.file.close()
+        if self.sc_handler.handle_special_cases():
+            os.replace(self.gen_file_path, self.file_path)
 
 def processJson(path, ctx, data):
     ctx["project_dir"] = path
@@ -1362,9 +1382,7 @@ def processJson(path, ctx, data):
 
     ctx = processFiles(ctx, data)
 
-    destination = posixpath.join(path, "configure.cmake")
-    generated_file = destination + '.gen'
-    with open(generated_file, "w") as cm_fh:
+    with special_cased_file(path, "configure.cmake") as cm_fh:
         cm_fh.write("\n\n#### Inputs\n\n")
 
         processInputs(ctx, data, cm_fh)
@@ -1393,16 +1411,6 @@ def processJson(path, ctx, data):
 
     # do this late:
     processSubconfigs(path, ctx, data)
-
-    handler = SpecialCaseHandler(
-        os.path.abspath(destination),
-        os.path.abspath(generated_file),
-        os.path.abspath(path),
-        debug=False,
-    )
-    if handler.handle_special_cases():
-        os.replace(generated_file, destination)
-
 
 def main():
     if len(sys.argv) != 2:
