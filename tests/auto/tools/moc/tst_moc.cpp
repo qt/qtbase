@@ -4195,19 +4195,19 @@ public:
 
         void onLazyTestPropertyChanged() { q->lazyTestPropertyChanged(); }
 
-        QNotifiedProperty<int, &Private::onLazyTestPropertyChanged> &lazyTestProperty() {
-            if (!lazyTestPropertyStorage)
-                lazyTestPropertyStorage.reset(new QNotifiedProperty<int, &Private::onLazyTestPropertyChanged>);
-            return *lazyTestPropertyStorage;
+        const QNotifiedProperty<int, &Private::onLazyTestPropertyChanged> *lazyTestProperty() const {
+            // Mind that this prevents the property read from being recorded.
+            // For real-world use cases some more logic is necessary here.
+            return lazyTestPropertyStorage.data();
         }
 
-        const QNotifiedProperty<int, &Private::onLazyTestPropertyChanged> &lazyTestProperty() const {
+        QNotifiedProperty<int, &Private::onLazyTestPropertyChanged> *lazyTestProperty() {
             if (!lazyTestPropertyStorage)
                 lazyTestPropertyStorage.reset(new QNotifiedProperty<int, &Private::onLazyTestPropertyChanged>);
-            return *lazyTestPropertyStorage;
+            return lazyTestPropertyStorage.data();
         }
 
-        mutable QScopedPointer<QNotifiedProperty<int, &Private::onLazyTestPropertyChanged>> lazyTestPropertyStorage;
+        QScopedPointer<QNotifiedProperty<int, &Private::onLazyTestPropertyChanged>> lazyTestPropertyStorage;
     };
     Private priv{this};
 
@@ -4245,7 +4245,7 @@ void tst_Moc::privateQPropertyShim()
     QCOMPARE(testObject.lazyTestProperty(), 0);
 
     // Explicitly set to something
-    testObject.priv.lazyTestProperty().setValue(&testObject.priv, 42);
+    testObject.priv.lazyTestProperty()->setValue(&testObject.priv, 42);
     QCOMPARE(testObject.property("lazyTestProperty").toInt(), 42);
 
     // Behave like a QProperty

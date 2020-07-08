@@ -1539,16 +1539,17 @@ void Moc::parsePrivateQProperty(ClassDef *def)
     if (test(COMMA))
         parsePropertyAttributes(propDef);
 
-    propDef.qpropertyname = (propDef.stored == "true") ? name : (name + "()");
+    const bool stored = propDef.stored == "true";
+    propDef.qpropertyname = stored ? name : (name + "()");
 
     def->privateQProperties += PrivateQPropertyDef {
             type, name, setter, accessor, propDef.qpropertyname
     };
 
     if (propDef.read.isEmpty())
-        propDef.read = propDef.qpropertyname + ".value";
+        propDef.read = propDef.qpropertyname + (stored ? ".value" : "->value");
     if (propDef.write.isEmpty())
-        propDef.write = propDef.qpropertyname + ".setValue";
+        propDef.write = propDef.qpropertyname + (stored ? ".setValue" : "->setValue");
 
     next(RPAREN);
 
@@ -1903,8 +1904,10 @@ void Moc::checkProperties(ClassDef *cdef)
                 }
                 continue;
             }
-            p.read = p.name + ".value";
-            p.write = p.name + ".setValue";
+            const bool stored = p.stored == "true";
+            p.qpropertyname = stored ? p.name : (p.name + "()");
+            p.read = p.qpropertyname + (stored ? ".value" : "->value");
+            p.write = p.qpropertyname + (stored ? ".setValue" : "->setValue");;
             p.isQProperty = true;
             const bool hasNotifier = knownQPropertyMember && qPropertyMemberIt.value();
             p.isQPropertyWithNotifier = hasNotifier;
