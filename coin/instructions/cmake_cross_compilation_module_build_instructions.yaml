@@ -16,7 +16,7 @@ instructions:
     directory: "{{.BuildDir}}"
   - type: EnvironmentVariable
     variableName: COIN_CMAKE_ARGS
-    variableValue: "{{.Env.CONFIGURE_ARGS}} -DBUILD_TESTING=OFF {{.SourceDir}}"
+    variableValue: "-DBUILD_TESTING=OFF {{.SourceDir}}"
   - !include "{{qt/qtbase}}/call_host_cmake.yaml"
   - type: ExecuteCommand
     command: "{{.Env.ENV_PREFIX}} cmake --build . --parallel -v"
@@ -41,7 +41,7 @@ instructions:
     directory: "{{.BuildDir}}"
   - type: EnvironmentVariable
     variableName: COIN_CMAKE_ARGS
-    variableValue: "{{.Env.TARGET_CONFIGURE_ARGS}} -DBUILD_TESTING=OFF {{.SourceDir}}"
+    variableValue: "-DBUILD_TESTING=OFF {{.SourceDir}}"
   - !include "{{qt/qtbase}}/call_target_cmake.yaml"
   - type: ExecuteCommand
     command: "{{.Env.TARGET_ENV_PREFIX}} cmake --build . --parallel -v"
