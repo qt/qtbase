@@ -95,8 +95,8 @@ QPropertyBase::~QPropertyBase()
 QUntypedPropertyBinding QPropertyBase::setBinding(const QUntypedPropertyBinding &binding,
                                                   void *propertyDataPtr,
                                                   void *staticObserver,
-                                                  void (*staticObserverCallback)(void*, void*),
-                                                  bool (*guardCallback)(void *, void*))
+                                                  QPropertyObserverCallback staticObserverCallback,
+                                                  QtPrivate::QPropertyGuardFunction guardCallback)
 {
     QPropertyBindingPrivatePtr oldBinding;
     QPropertyBindingPrivatePtr newBinding = binding.d;

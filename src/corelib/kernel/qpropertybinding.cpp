@@ -104,31 +104,26 @@ bool QPropertyBindingPrivate::evaluateIfDirtyAndReturnTrueIfValueChanged()
     BindingEvaluationState evaluationFrame(this);
 
     bool changed = false;
-    if (metaType.id() == QMetaType::Bool) {
-        auto propertyPtr = reinterpret_cast<QPropertyBase *>(propertyDataPtr);
-        bool newValue = false;
-        evaluationFunction(metaType, &newValue);
-        if (!error.hasError()) {
-            bool updateAllowed = true;
-            if (hasStaticObserver && staticGuardCallback)
-                updateAllowed = staticGuardCallback(staticObserver, &newValue);
-            if (updateAllowed && propertyPtr->extraBit() != newValue) {
+
+    if (hasStaticObserver && staticGuardCallback) {
+        if (metaType.id() == QMetaType::Bool) {
+            auto propertyPtr = reinterpret_cast<QPropertyBase *>(propertyDataPtr);
+            bool newValue = propertyPtr->extraBit();
+            changed = staticGuardCallback(metaType, &newValue, evaluationFunction, staticObserver);
+            if (changed && !error.hasError())
                 propertyPtr->setExtraBit(newValue);
-                changed = true;
-            }
+        } else {
+            changed = staticGuardCallback(metaType, propertyDataPtr, evaluationFunction, staticObserver);
         }
     } else {
-        QVariant resultVariant(metaType.id(), nullptr);
-        evaluationFunction(metaType, resultVariant.data());
-        if (!error.hasError()) {
-            bool updateAllowed = true;
-            if (hasStaticObserver && staticGuardCallback)
-                updateAllowed = staticGuardCallback(staticObserver, resultVariant.data());
-            if (updateAllowed && !metaType.equals(propertyDataPtr, resultVariant.constData())) {
-                changed = true;
-                metaType.destruct(propertyDataPtr);
-                metaType.construct(propertyDataPtr, resultVariant.constData());
-            }
+        if (metaType.id() == QMetaType::Bool) {
+            auto propertyPtr = reinterpret_cast<QPropertyBase *>(propertyDataPtr);
+            bool newValue = propertyPtr->extraBit();
+            changed = evaluationFunction(metaType, &newValue);
+            if (changed && !error.hasError())
+                propertyPtr->setExtraBit(newValue);
+        } else {
+            changed = evaluationFunction(metaType, propertyDataPtr);
         }
     }
 

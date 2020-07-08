@@ -120,7 +120,7 @@ class Q_CORE_EXPORT QUntypedPropertyBinding
 {
 public:
     // writes binding result into dataPtr
-    using BindingEvaluationFunction = std::function<void(const QMetaType &metaType, void *dataPtr)>;
+    using BindingEvaluationFunction = QtPrivate::QPropertyBindingFunction;
 
     QUntypedPropertyBinding();
     QUntypedPropertyBinding(const QMetaType &metaType, BindingEvaluationFunction function, const QPropertyBindingSourceLocation &location);
@@ -151,10 +151,14 @@ class QPropertyBinding : public QUntypedPropertyBinding
     struct BindingAdaptor
     {
         Functor impl;
-        void operator()(const QMetaType &/*metaType*/, void *dataPtr)
+        bool operator()(const QMetaType &/*metaType*/, void *dataPtr)
         {
             PropertyType *propertyPtr = static_cast<PropertyType *>(dataPtr);
-            *propertyPtr = impl();
+            PropertyType newValue = impl();
+            if (newValue == *propertyPtr)
+                return false;
+            *propertyPtr = std::move(newValue);
+            return true;
         }
     };
 
@@ -352,20 +356,12 @@ namespace Qt {
     }
 }
 
-namespace detail {
-    template <typename F>
-    struct ExtractClassFromFunctionPointer;
-
-    template<typename T, typename C>
-    struct ExtractClassFromFunctionPointer<T C::*> { using Class = C; };
-}
-
 template <typename T, auto Callback, auto ValueGuard=nullptr>
 class QNotifiedProperty
 {
 public:
     using value_type = T;
-    using Class = typename detail::ExtractClassFromFunctionPointer<decltype(Callback)>::Class;
+    using Class = typename QtPrivate::detail::ExtractClassFromFunctionPointer<decltype(Callback)>::Class;
 private:
     static bool constexpr ValueGuardModifiesArgument = std::is_invocable_r_v<bool, decltype(ValueGuard), Class, T&>;
     static bool constexpr CallbackAcceptsOldValue = std::is_invocable_v<decltype(Callback), Class, T>;
@@ -378,17 +374,8 @@ public:
             !HasValueGuard,
         "Guard has wrong signature");
 private:
-    // type erased guard functions, casts its arguments to the correct types
-    static constexpr bool (*GuardTEHelper)(void *, void*) = [](void *o, void *newValue){
-        if constexpr (HasValueGuard) { // Guard->* is invalid if Guard == nullptr
-            return (reinterpret_cast<Class *>(o)->*(ValueGuard))(*static_cast<T *>(newValue));
-        } else {
-            Q_UNUSED(o); // some compilers complain about unused variables
-            Q_UNUSED(newValue);
-            return true;
-        }
-    };
-    static constexpr bool(*GuardTE)(void *, void*)  = HasValueGuard ? GuardTEHelper : nullptr;
+    static constexpr QtPrivate::QPropertyGuardFunction GuardTE =
+            QtPrivate::QPropertyGuardFunctionHelper<T, Class, ValueGuard>::guard;
 public:
 
     QNotifiedProperty() = default;

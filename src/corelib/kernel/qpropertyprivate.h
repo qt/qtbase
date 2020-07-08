@@ -61,8 +61,16 @@ class QUntypedPropertyBinding;
 class QPropertyBindingPrivate;
 using QPropertyBindingPrivatePtr = QExplicitlySharedDataPointer<QPropertyBindingPrivate>;
 struct QPropertyBasePointer;
+class QMetaType;
 
 namespace QtPrivate {
+
+// writes binding result into dataPtr
+using QPropertyBindingFunction = std::function<bool(const QMetaType &metaType, void *dataPtr)>;
+
+using QPropertyGuardFunction = bool(*)(const QMetaType &, void *dataPtr,
+                                       QPropertyBindingFunction, void *owner);
+using QPropertyObserverCallback = void (*)(void *, void *);
 
 class Q_CORE_EXPORT QPropertyBase
 {
@@ -84,8 +92,8 @@ public:
 
     QUntypedPropertyBinding setBinding(const QUntypedPropertyBinding &newBinding,
                                        void *propertyDataPtr, void *staticObserver = nullptr,
-                                       void (*staticObserverCallback)(void *, void *) = nullptr,
-                                       bool (*guardCallback)(void *, void *) = nullptr);
+                                       QPropertyObserverCallback staticObserverCallback = nullptr,
+                                       QPropertyGuardFunction guardCallback = nullptr);
     QPropertyBindingPrivate *binding();
 
     void evaluateIfDirty();
@@ -209,6 +217,38 @@ public:
 
 private:
     quintptr *d = nullptr;
+};
+
+namespace detail {
+    template <typename F>
+    struct ExtractClassFromFunctionPointer;
+
+    template<typename T, typename C>
+    struct ExtractClassFromFunctionPointer<T C::*> { using Class = C; };
+}
+
+// type erased guard functions, casts its arguments to the correct types
+template<typename T, typename Class, auto Guard, bool = std::is_same_v<decltype(Guard), std::nullptr_t>>
+struct QPropertyGuardFunctionHelper
+{
+    static constexpr QPropertyGuardFunction guard = nullptr;
+};
+template<typename T, typename Class, auto Guard>
+struct QPropertyGuardFunctionHelper<T, Class, Guard, false>
+{
+    static auto guard(const QMetaType &metaType, void *dataPtr,
+                      QPropertyBindingFunction eval, void *owner) -> bool
+    {
+        T t;
+        eval(metaType, &t);
+        if (!(static_cast<Class *>(owner)->*Guard)(t))
+            return false;
+        T *data = static_cast<T *>(dataPtr);
+        if (*data == t)
+            return false;
+        *data = std::move(t);
+        return true;
+    };
 };
 
 } // namespace QtPrivate
