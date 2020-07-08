@@ -6,8 +6,6 @@ QT += \
     core-private gui-private \
     egl_support-private
 
-qtConfig(opengl): QT += opengl-private
-
 OTHER_FILES += $$PWD/android.json
 
 INCLUDEPATH += \

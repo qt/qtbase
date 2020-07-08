@@ -43,9 +43,6 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <QGuiApplication>
 #include <QOpenGLContext>
-#if QT_CONFIG(opengl)
-#include <QtOpenGL/qpa/qplatformbackingstoreopenglsupport.h>
-#endif
 #include <QOffscreenSurface>
 #include <QThread>
 

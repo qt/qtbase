@@ -60,11 +60,6 @@ qt_internal_add_plugin(QAndroidIntegrationPlugin
 ## Scopes:
 #####################################################################
 
-qt_extend_target(QAndroidIntegrationPlugin CONDITION QT_FEATURE_opengl
-    PUBLIC_LIBRARIES
-        Qt::OpenGLPrivate
-)
-
 qt_extend_target(QAndroidIntegrationPlugin CONDITION QT_FEATURE_android_style_assets
     SOURCES
         extract.cpp
