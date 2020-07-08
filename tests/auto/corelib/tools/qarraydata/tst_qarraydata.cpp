@@ -1373,10 +1373,10 @@ void tst_QArrayData::arrayOpsExtra()
         // empty ranges
         RUN_TEST_FUNC(testInsertRange, intData, 0, intArray.data(), intArray.data());
         RUN_TEST_FUNC(testInsertRange, strData, 0, stringArray.data(), stringArray.data());
-        // RUN_TEST_FUNC(testInsertRange, objData, 0, objArray.data(), objArray.data());  // ### crashes
+        RUN_TEST_FUNC(testInsertRange, objData, 0, objArray.data(), objArray.data());
         RUN_TEST_FUNC(testInsertValue, intData, 1, 0, int());
         RUN_TEST_FUNC(testInsertValue, strData, 1, 0, QString());
-        // RUN_TEST_FUNC(testInsertValue, objData, 1, 0, CountedObject());  // ### crashes
+        RUN_TEST_FUNC(testInsertValue, objData, 1, 0, CountedObject());
 
         // insert at the beginning
         RUN_TEST_FUNC(testInsertRange, intData, 0, intArray.data(), intArray.data() + 1);
@@ -1405,9 +1405,14 @@ void tst_QArrayData::arrayOpsExtra()
         RUN_TEST_FUNC(testInsertValue, strData, strData.size - 3, 3, QLatin1String("foo"));
         RUN_TEST_FUNC(testInsertValue, objData, objData.size - 3, 3, CountedObject());
 
-        // insert at the end (generic and movable operations allow it in value case)
+        // insert at the end
+        RUN_TEST_FUNC(testInsertRange, intData, intData.size, intArray.data(), intArray.data() + 3);
+        RUN_TEST_FUNC(testInsertRange, strData, strData.size, stringArray.data(),
+                      stringArray.data() + 3);
+        RUN_TEST_FUNC(testInsertRange, objData, objData.size, objArray.data(), objArray.data() + 3);
+        RUN_TEST_FUNC(testInsertValue, intData, intData.size, 1, int(-42));
         RUN_TEST_FUNC(testInsertValue, strData, strData.size, 1, QLatin1String("hello, world"));
-        // RUN_TEST_FUNC(testInsertValue, objData, objData.size, 1, CountedObject());  // ### crashes
+        RUN_TEST_FUNC(testInsertValue, objData, objData.size, 1, CountedObject());
     }
 
     // emplace

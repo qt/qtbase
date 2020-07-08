@@ -145,7 +145,7 @@ public:
     {
         Q_ASSERT(this->isMutable());
         Q_ASSERT(!this->isShared());
-        Q_ASSERT(where >= this->begin() && where < this->end()); // Use copyAppend at end
+        Q_ASSERT(where >= this->begin() && where <= this->end());
         Q_ASSERT(b <= e);
         Q_ASSERT(e <= where || b > this->end()); // No overlap
         Q_ASSERT(size_t(e - b) <= this->allocatedCapacity() - this->size);
@@ -159,7 +159,7 @@ public:
     void insert(T *where, size_t n, parameter_type t)
     {
         Q_ASSERT(!this->isShared());
-        Q_ASSERT(where >= this->begin() && where < this->end()); // Use copyAppend at end
+        Q_ASSERT(where >= this->begin() && where <= this->end());
         Q_ASSERT(this->allocatedCapacity() - this->size >= n);
 
         ::memmove(static_cast<void *>(where + n), static_cast<void *>(where),
@@ -351,7 +351,7 @@ struct QGenericArrayOps
     {
         Q_ASSERT(this->isMutable());
         Q_ASSERT(!this->isShared());
-        Q_ASSERT(where >= this->begin() && where < this->end()); // Use copyAppend at end
+        Q_ASSERT(where >= this->begin() && where <= this->end());
         Q_ASSERT(b <= e);
         Q_ASSERT(e <= where || b > this->end()); // No overlap
         Q_ASSERT(size_t(e - b) <= this->allocatedCapacity() - this->size);
@@ -388,10 +388,10 @@ struct QGenericArrayOps
         } destroyer(writeIter);
 
         // Construct new elements in array
-        do {
+        while (writeIter != step1End) {
             --readIter, --writeIter;
             new (writeIter) T(*readIter);
-        } while (writeIter != step1End);
+        }
 
         while (writeIter != end) {
             --e, --writeIter;
@@ -450,10 +450,10 @@ struct QGenericArrayOps
         } destroyer(writeIter);
 
         // Construct new elements in array
-        do {
+        while (writeIter != step1End) {
             --readIter, --writeIter;
             new (writeIter) T(*readIter);
-        } while (writeIter != step1End);
+        }
 
         while (writeIter != end) {
             --n, --writeIter;
@@ -551,7 +551,7 @@ struct QMovableArrayOps
     {
         Q_ASSERT(this->isMutable());
         Q_ASSERT(!this->isShared());
-        Q_ASSERT(where >= this->begin() && where < this->end()); // Use copyAppend at end
+        Q_ASSERT(where >= this->begin() && where <= this->end());
         Q_ASSERT(b <= e);
         Q_ASSERT(e <= where || b > this->end()); // No overlap
         Q_ASSERT(size_t(e - b) <= this->allocatedCapacity() - this->size);
