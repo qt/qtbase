@@ -103,7 +103,8 @@ public:
 
     QArrayDataPointer &operator=(QArrayDataPointer &&other) noexcept
     {
-        this->swap(other);
+        QArrayDataPointer moved(std::move(other));
+        swap(moved);
         return *this;
     }
 
