@@ -4243,24 +4243,19 @@ QSequentialIterable::const_iterator QSequentialIterable::end() const
     return it;
 }
 
-static const QVariant variantFromVariantDataHelper(const QtMetaTypePrivate::VariantData &d) {
-    QVariant v;
-    if (d.metaType == QMetaType::fromType<QVariant>())
-        v =  *reinterpret_cast<const QVariant*>(d.data);
-    else
-        v = QVariant(d.metaType, d.data);
-    if (d.flags & QVariantConstructionFlags::ShouldDeleteVariantData)
-        d.metaType.destroy(const_cast<void *>(d.data));
-    return v;
-}
-
 /*!
     Returns the element at position \a idx in the container.
 */
 QVariant QSequentialIterable::at(int idx) const
 {
-    const QtMetaTypePrivate::VariantData d = m_impl.at(idx);
-    return variantFromVariantDataHelper(d);
+    QVariant v(m_impl._metaType);
+    void *dataPtr;
+    if (m_impl._metaType == QMetaType::fromType<QVariant>())
+        dataPtr = &v;
+    else
+        dataPtr = v.data();
+    m_impl.at(idx, dataPtr);
+    return v;
 }
 
 /*!
@@ -4336,8 +4331,14 @@ QSequentialIterable::const_iterator::operator=(const const_iterator &other)
 */
 const QVariant QSequentialIterable::const_iterator::operator*() const
 {
-    const QtMetaTypePrivate::VariantData d = m_impl.getCurrent();
-    return variantFromVariantDataHelper(d);
+    QVariant v(m_impl._metaType);
+    void *dataPtr;
+    if (m_impl._metaType == QMetaType::fromType<QVariant>())
+        dataPtr = &v;
+    else
+        dataPtr = v.data();
+    m_impl.getCurrent(dataPtr);
+    return v;
 }
 
 /*!
@@ -4534,8 +4535,7 @@ void QAssociativeIterable::const_iterator::end()
 void QAssociativeIterable::const_iterator::find(const QVariant &key)
 {
     Q_ASSERT(key.metaType() == m_impl._metaType_key);
-    const QtMetaTypePrivate::VariantData dkey(key.metaType(), key.constData(), 0 /*key.flags()*/);
-    m_impl.find(dkey);
+    m_impl.find(key.constData());
 }
 
 /*!
@@ -4664,8 +4664,14 @@ QAssociativeIterable::const_iterator::operator=(const const_iterator &other)
 */
 const QVariant QAssociativeIterable::const_iterator::operator*() const
 {
-    const QtMetaTypePrivate::VariantData d = m_impl.getCurrentValue();
-    return variantFromVariantDataHelper(d);
+    QVariant v(m_impl._metaType_value);
+    void *dataPtr;
+    if (m_impl._metaType_value == QMetaType::fromType<QVariant>())
+        dataPtr = &v;
+    else
+        dataPtr = v.data();
+    m_impl.getCurrentValue(dataPtr);
+    return v;
 }
 
 /*!
@@ -4673,8 +4679,14 @@ const QVariant QAssociativeIterable::const_iterator::operator*() const
 */
 const QVariant QAssociativeIterable::const_iterator::key() const
 {
-    const QtMetaTypePrivate::VariantData d = m_impl.getCurrentKey();
-    return variantFromVariantDataHelper(d);
+    QVariant v(m_impl._metaType_key);
+    void *dataPtr;
+    if (m_impl._metaType_key == QMetaType::fromType<QVariant>())
+        dataPtr = &v;
+    else
+        dataPtr = v.data();
+    m_impl.getCurrentKey(dataPtr);
+    return v;
 }
 
 /*!

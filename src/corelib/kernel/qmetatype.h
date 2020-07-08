@@ -652,25 +652,6 @@ ConverterFunctor<From, To, UnaryFunction>::~ConverterFunctor()
 
 namespace QtMetaTypePrivate {
 
-struct VariantData
-{
-    VariantData(QMetaType metaType_,
-                const void *data_,
-                const uint flags_)
-      : metaType(std::move(metaType_))
-      , data(data_)
-      , flags(flags_)
-    {
-    }
-    VariantData(const VariantData &other) = delete;
-    const QMetaType metaType;
-    const void *data;
-    const uint flags;
-private:
-    // copy constructor allowed to be implicit to silence level 4 warning from MSVC
-    VariantData &operator=(const VariantData &) = delete;
-};
-
 template<typename const_iterator>
 struct IteratorOwnerCommon
 {
@@ -703,36 +684,17 @@ struct IteratorOwnerCommon
 template<typename const_iterator>
 struct IteratorOwner : IteratorOwnerCommon<const_iterator>
 {
-    static const void *getData(void * const *iterator)
+    static void getData(void * const *iterator, void *dataPtr)
     {
-        return &**static_cast<const_iterator*>(*iterator);
+        const_iterator *it = static_cast<const_iterator*>(*iterator);
+        typename const_iterator::value_type *data = static_cast<typename const_iterator::value_type *>(dataPtr);
+        *data = **it;
     }
 
-    static const void *getData(const_iterator it)
+    static void getData(const_iterator it, void *dataPtr)
     {
-        return &*it;
-    }
-};
-
-struct Q_CORE_EXPORT VectorBoolElements
-{
-  static const bool true_element;
-  static const bool false_element;
-};
-
-template<>
-struct IteratorOwner<std::vector<bool>::const_iterator> : IteratorOwnerCommon<std::vector<bool>::const_iterator>
-{
-public:
-    static const void *getData(void * const *iterator)
-    {
-        return **static_cast<std::vector<bool>::const_iterator*>(*iterator) ?
-            &VectorBoolElements::true_element : &VectorBoolElements::false_element;
-    }
-
-    static const void *getData(const std::vector<bool>::const_iterator& it)
-    {
-        return *it ? &VectorBoolElements::true_element : &VectorBoolElements::false_element;
+        typename const_iterator::value_type *data = static_cast<typename const_iterator::value_type *>(dataPtr);
+        *data = *it;
     }
 };
 
@@ -766,19 +728,19 @@ public:
     {
     }
 
-    static const void *getData(void * const *iterator)
+    static void getData(void * const *iterator, void *dataPtr)
     {
-        return *iterator;
+        *static_cast<value_type *>(dataPtr) = *static_cast<value_type * const>(*iterator);
     }
 
-    static const void *getData(const value_type_OR_Dummy *it)
+    static void getData(const value_type_OR_Dummy *it, void *dataPtr)
     {
-        return it;
+        *static_cast<value_type *>(dataPtr) = *static_cast<value_type const *>(it);
     }
 
     static bool equal(void * const *it, void * const *other)
     {
-        return static_cast<value_type*>(*it) == static_cast<value_type*>(*other);
+        return static_cast<value_type const *>(*it) == static_cast<value_type const *>(*other);
     }
 };
 
@@ -868,7 +830,6 @@ public:
     const void * _iterable;
     void *_iterator;
     QMetaType _metaType;
-    uint _metaType_flags;
     uint _iteratorCapabilities;
     // Iterator capabilities looks actually like
     // uint _iteratorCapabilities:4;
@@ -876,11 +837,11 @@ public:
     // uint _containerCapabilities:4;
     // uint _unused:21;
     typedef int(*sizeFunc)(const void *p);
-    typedef const void * (*atFunc)(const void *p, int);
+    typedef void (*atFunc)(const void *p, int, void *);
     enum Position { ToBegin, ToEnd };
     typedef void (*moveIteratorFunc)(const void *p, void **, Position position);
     typedef void (*advanceFunc)(void **p, int);
-    typedef VariantData (*getFunc)( void * const *p, const QMetaType &metaType, uint flags);
+    typedef void (*getFunc)( void * const *p, void *dataPtr);
     typedef void (*destroyIterFunc)(void **p);
     typedef bool (*equalIterFunc)(void * const *p, void * const *other);
     typedef void (*copyIterFunc)(void **, void * const *);
@@ -905,47 +866,34 @@ public:
     { return ContainerAPI<T>::size(static_cast<const T*>(p)); }
 
     template<class T>
-    static const void* atImpl(const void *p, int idx)
+    static void atImpl(const void *p, int idx, void *dataPtr)
     {
         typename T::const_iterator i = static_cast<const T*>(p)->begin();
         std::advance(i, idx);
-        return IteratorOwner<typename T::const_iterator>::getData(i);
+        IteratorOwner<typename T::const_iterator>::getData(i, dataPtr);
     }
-
-    template<class T>
-    static void moveToBeginImpl(const void *container, void **iterator)
-    { IteratorOwner<typename T::const_iterator>::assign(iterator, static_cast<const T*>(container)->begin()); }
-
-    template<class T>
-    static void moveToEndImpl(const void *container, void **iterator)
-    { IteratorOwner<typename T::const_iterator>::assign(iterator, static_cast<const T*>(container)->end()); }
 
     template<class Container>
     static void moveToImpl(const void *container, void **iterator, Position position)
     {
-        if (position == ToBegin)
-            moveToBeginImpl<Container>(container, iterator);
-        else
-            moveToEndImpl<Container>(container, iterator);
+        auto it = (position == ToBegin) ?
+                    static_cast<const Container *>(container)->begin() :
+                    static_cast<const Container *>(container)->end();
+        IteratorOwner<typename Container::const_iterator>::assign(iterator, it);
     }
-
-    template<class T>
-    static VariantData getImpl(void * const *iterator, const QMetaType &metaType, uint flags)
-    { return VariantData(metaType, IteratorOwner<typename T::const_iterator>::getData(iterator), flags); }
 
 public:
     template<class T> QSequentialIterableImpl(const T*p)
       : _iterable(p)
       , _iterator(nullptr)
       , _metaType(QMetaType::fromType<typename T::value_type>())
-      , _metaType_flags(QTypeInfo<typename T::value_type>::isPointer)
       , _iteratorCapabilities(ContainerAPI<T>::IteratorCapabilities | (0 << 4) | (ContainerCapabilitiesImpl<T>::ContainerCapabilities << (4+3)))
       , _size(sizeImpl<T>)
       , _at(atImpl<T>)
       , _moveTo(moveToImpl<T>)
       , _append(ContainerCapabilitiesImpl<T>::appendImpl)
       , _advance(IteratorOwner<typename T::const_iterator>::advance)
-      , _get(getImpl<T>)
+      , _get(IteratorOwner<typename T::const_iterator>::getData)
       , _destroyIter(IteratorOwner<typename T::const_iterator>::destroy)
       , _equalIter(IteratorOwner<typename T::const_iterator>::equal)
       , _copyIter(IteratorOwner<typename T::const_iterator>::assign)
@@ -955,7 +903,6 @@ public:
     QSequentialIterableImpl()
       : _iterable(nullptr)
       , _iterator(nullptr)
-      , _metaType_flags(0)
       , _iteratorCapabilities(0 | (0 << 4) ) // no iterator capabilities, revision 0
       , _size(nullptr)
       , _at(nullptr)
@@ -987,10 +934,10 @@ public:
             _append(_iterable, newElement);
     }
 
-    inline VariantData getCurrent() const { return _get(&_iterator, _metaType, _metaType_flags); }
+    inline void getCurrent(void *dataPtr) const { _get(&_iterator, dataPtr); }
 
-    VariantData at(int idx) const
-    { return VariantData(_metaType, _at(_iterable, idx), _metaType_flags); }
+    void at(int idx, void *dataPtr) const
+    { return _at(_iterable, idx, dataPtr); }
 
     int size() const { Q_ASSERT(_iterable); return _size(_iterable); }
 
@@ -1058,13 +1005,11 @@ public:
     void *_iterator;
     QMetaType _metaType_key;
     QMetaType _metaType_value;
-    uint _metaType_flags_key;
-    uint _metaType_flags_value;
     typedef int(*sizeFunc)(const void *p);
     typedef void (*findFunc)(const void *container, const void *p, void **iterator);
     typedef void (*beginFunc)(const void *p, void **);
     typedef void (*advanceFunc)(void **p, int);
-    typedef VariantData (*getFunc)(void * const *p, const QMetaType &metaTypeId, uint flags);
+    typedef void (*getFunc)(void * const *p, void *dataPtr);
     typedef void (*destroyIterFunc)(void **p);
     typedef bool (*equalIterFunc)(void * const *p, void * const *other);
     typedef void (*copyIterFunc)(void **, void * const *);
@@ -1103,12 +1048,18 @@ public:
     { IteratorOwner<typename T::const_iterator>::assign(iterator, static_cast<const T*>(container)->end()); }
 
     template<class T>
-    static VariantData getKeyImpl(void * const *iterator, const QMetaType &metaType, uint flags)
-    { return VariantData(metaType, &AssociativeContainerAccessor<T>::getKey(*static_cast<typename T::const_iterator*>(*iterator)), flags); }
+    static void getKeyImpl(void * const *iterator, void *dataPtr)
+    {
+        auto *data = static_cast<typename T::key_type *>(dataPtr);
+        *data = AssociativeContainerAccessor<T>::getKey(*static_cast<typename T::const_iterator*>(*iterator));
+    }
 
     template<class T>
-    static VariantData getValueImpl(void * const *iterator, const QMetaType &metaType, uint flags)
-    { return VariantData(metaType, &AssociativeContainerAccessor<T>::getValue(*static_cast<typename T::const_iterator*>(*iterator)), flags); }
+    static void getValueImpl(void * const *iterator, void *dataPtr)
+    {
+        auto *data = static_cast<typename T::mapped_type *>(dataPtr);
+        *data = AssociativeContainerAccessor<T>::getValue(*static_cast<typename T::const_iterator*>(*iterator));
+    }
 
 public:
     template<class T> QAssociativeIterableImpl(const T*p)
@@ -1116,8 +1067,6 @@ public:
       , _iterator(nullptr)
       , _metaType_key(QMetaType::fromType<typename T::key_type>())
       , _metaType_value(QMetaType::fromType<typename T::mapped_type>())
-      , _metaType_flags_key(QTypeInfo<typename T::key_type>::isPointer)
-      , _metaType_flags_value(QTypeInfo<typename T::mapped_type>::isPointer)
       , _size(sizeImpl<T>)
       , _find(findImpl<T>)
       , _begin(beginImpl<T>)
@@ -1134,8 +1083,6 @@ public:
     QAssociativeIterableImpl()
       : _iterable(nullptr)
       , _iterator(nullptr)
-      , _metaType_flags_key(0)
-      , _metaType_flags_value(0)
       , _size(nullptr)
       , _find(nullptr)
       , _begin(nullptr)
@@ -1156,11 +1103,11 @@ public:
 
     inline void destroyIter() { _destroyIter(&_iterator); }
 
-    inline VariantData getCurrentKey() const { return _getKey(&_iterator, _metaType_key, _metaType_flags_key); }
-    inline VariantData getCurrentValue() const { return _getValue(&_iterator, _metaType_value, _metaType_flags_value); }
+    inline void getCurrentKey(void *dataPtr) const { return _getKey(&_iterator, dataPtr); }
+    inline void getCurrentValue(void *dataPtr) const { return _getValue(&_iterator, dataPtr); }
 
-    inline void find(const VariantData &key)
-    { _find(_iterable, key.data, &_iterator); }
+    inline void find(const void *key)
+    { _find(_iterable, key, &_iterator); }
 
     int size() const { Q_ASSERT(_iterable); return _size(_iterable); }
 
@@ -1183,31 +1130,28 @@ struct QAssociativeIterableConvertFunctor
 
 class QPairVariantInterfaceImpl
 {
+public:
     const void *_pair;
     QMetaType _metaType_first;
     QMetaType _metaType_second;
-    uint _metaType_flags_first;
-    uint _metaType_flags_second;
 
-    typedef VariantData (*getFunc)(const void * const *p, const QMetaType &metaType, uint flags);
+    typedef void (*getFunc)(const void * const *p, void *);
 
     getFunc _getFirst;
     getFunc _getSecond;
 
     template<class T>
-    static VariantData getFirstImpl(const void * const *pair, const QMetaType &metaType, uint flags)
-    { return VariantData(metaType, &static_cast<const T*>(*pair)->first, flags); }
+    static void getFirstImpl(const void * const *pair, void *dataPtr)
+    { *static_cast<typename T::first_type *>(dataPtr) = static_cast<const T*>(*pair)->first; }
     template<class T>
-    static VariantData getSecondImpl(const void * const *pair, const QMetaType &metaType, uint flags)
-    { return VariantData(metaType, &static_cast<const T*>(*pair)->second, flags); }
+    static void getSecondImpl(const void * const *pair, void *dataPtr)
+    { *static_cast<typename T::second_type *>(dataPtr) = static_cast<const T*>(*pair)->second; }
 
 public:
     template<class T> QPairVariantInterfaceImpl(const T*p)
       : _pair(p)
       , _metaType_first(QMetaType::fromType<typename T::first_type>())
       , _metaType_second(QMetaType::fromType<typename T::second_type>())
-      , _metaType_flags_first(QTypeInfo<typename T::first_type>::isPointer)
-      , _metaType_flags_second(QTypeInfo<typename T::second_type>::isPointer)
       , _getFirst(getFirstImpl<T>)
       , _getSecond(getSecondImpl<T>)
     {
@@ -1215,15 +1159,13 @@ public:
 
     QPairVariantInterfaceImpl()
       : _pair(nullptr)
-      , _metaType_flags_first(0)
-      , _metaType_flags_second(0)
       , _getFirst(nullptr)
       , _getSecond(nullptr)
     {
     }
 
-    inline VariantData first() const { return _getFirst(&_pair, _metaType_first, _metaType_flags_first); }
-    inline VariantData second() const { return _getSecond(&_pair, _metaType_second, _metaType_flags_second); }
+    inline void first(void *dataPtr) const { _getFirst(&_pair, dataPtr); }
+    inline void second(void *dataPtr) const { _getSecond(&_pair, dataPtr); }
 };
 QT_METATYPE_PRIVATE_DECLARE_TYPEINFO(QPairVariantInterfaceImpl, Q_MOVABLE_TYPE)
 

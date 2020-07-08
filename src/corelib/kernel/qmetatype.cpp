@@ -1602,11 +1602,6 @@ static QtPrivate::QMetaTypeInterface *interfaceForType(int typeId)
 */
 QMetaType::QMetaType(int typeId) : QMetaType(interfaceForType(typeId)) {}
 
-namespace QtMetaTypePrivate {
-const bool VectorBoolElements::true_element = true;
-const bool VectorBoolElements::false_element = false;
-}
-
 namespace QtPrivate {
 #ifndef QT_BOOTSTRAPPED
 // Explicit instantiation definition

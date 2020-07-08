@@ -4512,7 +4512,6 @@ void tst_QVariant::shouldDeleteVariantDataWorksForSequential()
         iterator._iteratorCapabilities = QtMetaTypePrivate::RandomAccessCapability |
                                          QtMetaTypePrivate::BiDirectionalCapability |
                                          QtMetaTypePrivate::ForwardCapability;
-        iterator._metaType_flags = QVariantConstructionFlags::ShouldDeleteVariantData;
 
         iterator._size = [](const void *) {return 1;};
         iterator._metaType = QMetaType::fromType<MyType>();
@@ -4522,13 +4521,13 @@ void tst_QVariant::shouldDeleteVariantDataWorksForSequential()
         iterator._destroyIter = [](void **){};
         iterator._equalIter = [](void * const *, void * const *){return true; /*all iterators are nullptr*/};
         iterator._destroyIter = [](void **){};
-        iterator._at = [](const void *, int ) -> void const * {
+        iterator._at = [](const void *, int, void *dataPtr) -> void {
             MyType mytype {1, "eins"};
-            return QMetaType::create(qMetaTypeId<MyType>(), &mytype);
+            *static_cast<MyType *>(dataPtr) = mytype;
         };
-        iterator._get = [](void * const *, const QMetaType &, uint) -> QtMetaTypePrivate::VariantData {
+        iterator._get = [](void * const *, void *dataPtr) -> void {
             MyType mytype {2, "zwei"};
-            return {QMetaType::fromType<MyType>(), QMetaType::create(qMetaTypeId<MyType>(), &mytype),  QVariantConstructionFlags::ShouldDeleteVariantData};
+            *static_cast<MyType *>(dataPtr) = mytype;
         };
         QSequentialIterable iterable {iterator};
         QVariant value1 = iterable.at(0);
@@ -4546,8 +4545,6 @@ void tst_QVariant::shouldDeleteVariantDataWorksForAssociative()
     QCOMPARE(instanceCount, 0);
     {
         QtMetaTypePrivate::QAssociativeIterableImpl iterator {};
-        iterator._metaType_flags_key = QVariantConstructionFlags::ShouldDeleteVariantData;
-        iterator._metaType_flags_value = QVariantConstructionFlags::ShouldDeleteVariantData;
 
         iterator._size = [](const void *) {return 1;};
         iterator._metaType_value = QMetaType::fromType<MyType>();
@@ -4561,21 +4558,21 @@ void tst_QVariant::shouldDeleteVariantDataWorksForAssociative()
         iterator._find = [](const void *, const void *, void **iterator ) -> void  {
             (*iterator) =  reinterpret_cast<void *>(quintptr(42));
         };
-        iterator._getKey = [](void * const *iterator, const QMetaType &, uint) -> QtMetaTypePrivate::VariantData {
+        iterator._getKey = [](void * const *iterator, void *dataPtr) -> void {
             MyType mytype {1, "key"};
             if (reinterpret_cast<quintptr>(*iterator) == 42) {
                 mytype.number = 42;
                 mytype.text = "find_key";
             }
-            return {QMetaType::fromType<MyType>(), QMetaType::create(qMetaTypeId<MyType>(), &mytype),  QVariantConstructionFlags::ShouldDeleteVariantData};
+            *static_cast<MyType *>(dataPtr) = mytype;
         };
-        iterator._getValue = [](void * const *iterator, const QMetaType &, uint) -> QtMetaTypePrivate::VariantData {
+        iterator._getValue = [](void * const *iterator, void *dataPtr) -> void {
             MyType mytype {2, "value"};
             if (reinterpret_cast<quintptr>(*iterator) == 42) {
                 mytype.number = 42;
                 mytype.text = "find_value";
             }
-            return {QMetaType::fromType<MyType>(), QMetaType::create(qMetaTypeId<MyType>(), &mytype),  QVariantConstructionFlags::ShouldDeleteVariantData};
+            *static_cast<MyType *>(dataPtr) = mytype;
         };
         QAssociativeIterable iterable {iterator};
         auto it = iterable.begin();

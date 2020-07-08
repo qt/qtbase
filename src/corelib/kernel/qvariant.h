@@ -816,15 +816,20 @@ namespace QtPrivate {
 
             if (QMetaType::hasRegisteredConverterFunction(typeId, qMetaTypeId<QtMetaTypePrivate::QPairVariantInterfaceImpl>()) && !(typeId == qMetaTypeId<QPair<QVariant, QVariant> >())) {
                 QtMetaTypePrivate::QPairVariantInterfaceImpl pi = v.value<QtMetaTypePrivate::QPairVariantInterfaceImpl>();
-                const QtMetaTypePrivate::VariantData d1 = pi.first();
-                QVariant v1(d1.metaType, d1.data);
-                if (d1.metaType == QMetaType::fromType<QVariant>())
-                    v1 = *reinterpret_cast<const QVariant*>(d1.data);
+                QVariant v1(pi._metaType_first);
+                void *dataPtr;
+                if (pi._metaType_first == QMetaType::fromType<QVariant>())
+                    dataPtr = &v1;
+                else
+                    dataPtr = v1.data();
+                pi.first(dataPtr);
 
-                const QtMetaTypePrivate::VariantData d2 = pi.second();
-                QVariant v2(d2.metaType, d2.data);
-                if (d2.metaType == QMetaType::fromType<QVariant>())
-                    v2 = *reinterpret_cast<const QVariant*>(d2.data);
+                QVariant v2(pi._metaType_second);
+                if (pi._metaType_second == QMetaType::fromType<QVariant>())
+                    dataPtr = &v2;
+                else
+                    dataPtr = v2.data();
+                pi.second(dataPtr);
 
                 return QPair<QVariant, QVariant>(v1, v2);
             }
