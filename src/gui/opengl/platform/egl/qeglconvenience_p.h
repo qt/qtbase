@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -44,35 +44,51 @@
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
+// This file is not part of the Qt API. It exists purely as an
+// implementation detail. This header file may change from version to
 // version without notice, or even be removed.
 //
 // We mean it.
 //
 
-#include <QtGui/QSurfaceFormat>
-#include <QtCore/QList>
-#include <QtCore/QSizeF>
-#include <QtEglSupport/private/qt_egl_p.h>
+#include <QtGui/qsurfaceformat.h>
+#include <QtCore/qlist.h>
+#include <QtCore/qsize.h>
+
+#include <QtGui/private/qt_egl_p.h>
+
 
 QT_BEGIN_NAMESPACE
 
-QList<EGLint> q_createConfigAttributesFromFormat(const QSurfaceFormat &format);
-bool q_reduceConfigAttributes(QList<EGLint> *configAttributes);
-EGLConfig q_configFromGLFormat(EGLDisplay display, const QSurfaceFormat &format, bool highestPixelFormat = false, int surfaceType = EGL_WINDOW_BIT);
-QSurfaceFormat q_glFormatFromConfig(EGLDisplay display, const EGLConfig config, const QSurfaceFormat &referenceFormat = QSurfaceFormat());
-bool q_hasEglExtension(EGLDisplay display,const char* extensionName);
-void q_printEglConfig(EGLDisplay display, EGLConfig config);
+Q_GUI_EXPORT QList<EGLint> q_createConfigAttributesFromFormat(const QSurfaceFormat &format);
+
+Q_GUI_EXPORT bool q_reduceConfigAttributes(QList<EGLint> *configAttributes);
+
+Q_GUI_EXPORT EGLConfig q_configFromGLFormat(EGLDisplay display,
+                                               const QSurfaceFormat &format,
+                                               bool highestPixelFormat = false,
+                                               int surfaceType = EGL_WINDOW_BIT);
+
+Q_GUI_EXPORT QSurfaceFormat q_glFormatFromConfig(EGLDisplay display, const EGLConfig config,
+                                                    const QSurfaceFormat &referenceFormat = {});
+
+Q_GUI_EXPORT bool q_hasEglExtension(EGLDisplay display,const char* extensionName);
+
+Q_GUI_EXPORT void q_printEglConfig(EGLDisplay display, EGLConfig config);
 
 #ifdef Q_OS_UNIX
-QSizeF q_physicalScreenSizeFromFb(int framebufferDevice, const QSize &screenSize = QSize());
-QSize q_screenSizeFromFb(int framebufferDevice);
-int q_screenDepthFromFb(int framebufferDevice);
-qreal q_refreshRateFromFb(int framebufferDevice);
+Q_GUI_EXPORT QSizeF q_physicalScreenSizeFromFb(int framebufferDevice,
+                                                  const QSize &screenSize = {});
+
+Q_GUI_EXPORT  QSize q_screenSizeFromFb(int framebufferDevice);
+
+Q_GUI_EXPORT int q_screenDepthFromFb(int framebufferDevice);
+
+Q_GUI_EXPORT  qreal q_refreshRateFromFb(int framebufferDevice);
+
 #endif
 
-class QEglConfigChooser
+class Q_GUI_EXPORT QEglConfigChooser
 {
 public:
     QEglConfigChooser(EGLDisplay display);

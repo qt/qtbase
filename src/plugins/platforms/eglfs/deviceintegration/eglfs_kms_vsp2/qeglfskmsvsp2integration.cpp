@@ -45,7 +45,7 @@
 #include "private/qeglfswindow_p.h"
 
 #include <QtDeviceDiscoverySupport/private/qdevicediscovery_p.h>
-#include <QtEglSupport/private/qeglconvenience_p.h>
+#include <QtGui/private/qeglconvenience_p.h>
 #include <QtCore/QLoggingCategory>
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>

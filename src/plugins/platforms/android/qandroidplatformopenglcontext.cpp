@@ -43,7 +43,7 @@
 #include "qandroidplatformintegration.h"
 #include "qandroidplatformoffscreensurface.h"
 
-#include <QtEglSupport/private/qeglpbuffer_p.h>
+#include <QtGui/private/qeglpbuffer_p.h>
 
 #include <QSurface>
 #include <QtGui/private/qopenglcontext_p.h>

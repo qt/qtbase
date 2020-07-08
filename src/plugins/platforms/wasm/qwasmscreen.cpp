@@ -37,9 +37,9 @@
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 
-#include <QtEglSupport/private/qeglconvenience_p.h>
+#include <QtGui/private/qeglconvenience_p.h>
 #ifndef QT_NO_OPENGL
-# include <QtEglSupport/private/qeglplatformcontext_p.h>
+# include <QtGui/private/qeglplatformcontext_p.h>
 #endif
 #include <qpa/qwindowsysteminterface.h>
 #include <QtCore/qcoreapplication.h>

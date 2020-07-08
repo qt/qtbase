@@ -61,10 +61,10 @@
 #endif
 #include "qeglfsoffscreenwindow_p.h"
 
-#include <QtEglSupport/private/qeglconvenience_p.h>
+#include <QtGui/private/qeglconvenience_p.h>
 #ifndef QT_NO_OPENGL
-# include <QtEglSupport/private/qeglplatformcontext_p.h>
-# include <QtEglSupport/private/qeglpbuffer_p.h>
+# include <QtGui/private/qeglplatformcontext_p.h>
+# include <QtGui/private/qeglpbuffer_p.h>
 #endif
 
 #include <QtGui/private/qgenericunixfontdatabase_p.h>

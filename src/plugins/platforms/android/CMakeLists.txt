@@ -3,6 +3,7 @@
 #####################################################################
 ## QAndroidIntegrationPlugin Plugin:
 #####################################################################
+qt_find_package(EGL) # special case
 
 qt_internal_add_plugin(QAndroidIntegrationPlugin
     OUTPUT_NAME qtforandroid
@@ -46,13 +47,14 @@ qt_internal_add_plugin(QAndroidIntegrationPlugin
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${QT_SOURCE_TREE}/src/3rdparty/android
     PUBLIC_LIBRARIES
+        EGL::EGL
         Qt::Core
         Qt::CorePrivate
-        Qt::EglSupportPrivate
         Qt::Gui
         Qt::GuiPrivate
         android
         jnigraphics
+        EGL::EGL # special case
 )
 
 #### Keys ignored in scope 1:.:.:android.pro:<TRUE>:

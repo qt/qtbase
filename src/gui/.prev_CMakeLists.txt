@@ -331,6 +331,13 @@ qt_extend_target(Gui CONDITION WIN32
 #### Keys ignored in scope 7:.:.:gui.pro:WIN32:
 # CMAKE_WINDOWS_BUILD = "True"
 
+qt_extend_target(Gui CONDITION QT_FEATURE_egl
+    SOURCES
+        opengl/platform/egl/qeglconvenience.cpp opengl/platform/egl/qeglconvenience_p.h
+        opengl/platform/egl/qeglstreamconvenience.cpp opengl/platform/egl/qeglstreamconvenience_p.h
+        opengl/platform/egl/qt_egl_p.h
+)
+
 #### Keys ignored in scope 8:.:.:gui.pro:QT_FEATURE_egl:
 # CMAKE_EGL_LIBS = "$$cmakeProcessLibs($$QMAKE_LIBS_EGL)"
 
@@ -687,6 +694,29 @@ qt_extend_target(Gui CONDITION QT_FEATURE_opengl AND QT_FEATURE_xlib AND NOT QT_
         X11::X11
 )
 
+qt_extend_target(Gui CONDITION QT_FEATURE_egl AND QT_FEATURE_opengl
+    SOURCES
+        opengl/platform/egl/qeglpbuffer.cpp opengl/platform/egl/qeglpbuffer_p.h
+        opengl/platform/egl/qeglplatformcontext.cpp opengl/platform/egl/qeglplatformcontext_p.h
+)
+
+qt_extend_target(Gui CONDITION QT_FEATURE_egl AND QT_FEATURE_egl_x11
+    SOURCES
+        opengl/platform/egl/qxlibeglintegration.cpp opengl/platform/egl/qxlibeglintegration_p.h
+    LIBRARIES
+        X11::X11
+)
+
+qt_extend_target(Gui CONDITION QT_FEATURE_egl AND NOT QT_FEATURE_egl_x11
+    DEFINES
+        QT_EGL_NO_X11
+)
+
+qt_extend_target(Gui CONDITION QT_FEATURE_dlopen AND QT_FEATURE_egl
+    LIBRARIES
+        ${CMAKE_DL_LIBS}
+)
+
 qt_extend_target(Gui CONDITION QT_FEATURE_vulkan
     SOURCES
         rhi/qrhivulkan.cpp rhi/qrhivulkan_p.h
@@ -700,7 +730,7 @@ qt_extend_target(Gui CONDITION QT_FEATURE_vulkan
         Vulkan::Vulkan_nolink
 )
 
-#### Keys ignored in scope 104:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vkgen:
+#### Keys ignored in scope 110:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vkgen:
 # QMAKE_EXTRA_COMPILERS = "qvkgen_h" "qvkgen_ph" "qvkgen_pimpl"
 # QMAKE_QVKGEN_INPUT = "vulkan/vk.xml"
 # QMAKE_QVKGEN_LICENSE_HEADER = "$$QT_SOURCE_TREE/header.LGPL"
@@ -716,10 +746,10 @@ qt_extend_target(Gui CONDITION QT_FEATURE_vulkan
 # qvkgen_pimpl.input = "QMAKE_QVKGEN_INPUT"
 # qvkgen_pimpl.output = "$$OUT_PWD/vulkan/qvulkanfunctions_p.cpp"
 
-#### Keys ignored in scope 105:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
+#### Keys ignored in scope 111:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
 # qvkgen_h.variable_out = "HEADERS"
 
-#### Keys ignored in scope 106:.:vulkan:vulkan/vulkan.pri:else:
+#### Keys ignored in scope 112:.:vulkan:vulkan/vulkan.pri:else:
 # qvkgen_h.CONFIG = "target_predeps" "no_link"
 
 qt_extend_target(Gui CONDITION WASM

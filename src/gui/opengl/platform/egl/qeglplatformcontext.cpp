@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -41,8 +41,8 @@
 #include "qeglconvenience_p.h"
 #include "qeglpbuffer_p.h"
 #include <qpa/qplatformwindow.h>
-#include <QOpenGLContext>
-#include <QDebug>
+#include <QtGui/qopenglcontext.h>
+#include <QtCore/qdebug.h>
 
 #if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
 #include <QtCore/private/qjnihelpers_p.h>

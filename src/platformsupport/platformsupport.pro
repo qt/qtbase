@@ -10,8 +10,6 @@ qtConfig(evdev)|qtConfig(tslib)|qtConfig(libinput)|qtConfig(integrityhid)|qtConf
     input.depends += devicediscovery
 }
 
-qtConfig(egl): \
-    SUBDIRS += eglconvenience
 qtConfig(kms): \
     SUBDIRS += kmsconvenience
 

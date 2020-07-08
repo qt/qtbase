@@ -40,7 +40,7 @@
 #include "qandroidplatformoffscreensurface.h"
 
 #include <QtGui/QOffscreenSurface>
-#include <QtEglSupport/private/qeglconvenience_p.h>
+#include <QtGui/private/qeglconvenience_p.h>
 
 #include <android/native_window.h>
 

@@ -47,10 +47,10 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <QtGui/QScreen>
 
-#include <QtEglSupport/private/qeglplatformcontext_p.h>
-#include <QtEglSupport/private/qeglconvenience_p.h>
+#include <QtGui/private/qeglplatformcontext_p.h>
+#include <QtGui/private/qeglconvenience_p.h>
 
-#include <QtEglSupport/private/qt_egl_p.h>
+#include <QtGui/private/qt_egl_p.h>
 
 QT_BEGIN_NAMESPACE
 

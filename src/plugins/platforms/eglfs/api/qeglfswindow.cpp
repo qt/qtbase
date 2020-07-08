@@ -47,7 +47,7 @@
 # include <QtGui/QOpenGLContext>
 # include <QtOpenGL/private/qopenglcompositorbackingstore_p.h>
 #endif
-#include <QtEglSupport/private/qeglconvenience_p.h>
+#include <QtGui/private/qeglconvenience_p.h>
 
 #include "qeglfswindow_p.h"
 #ifndef QT_NO_OPENGL

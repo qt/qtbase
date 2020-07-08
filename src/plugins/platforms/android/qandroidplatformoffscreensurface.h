@@ -41,7 +41,7 @@
 #define QANDROIDPLATFORMOFFSCREENSURFACETEXTURE_H
 
 #include <qpa/qplatformoffscreensurface.h>
-#include <QtEglSupport/private/qeglplatformcontext_p.h>
+#include <QtGui/private/qeglplatformcontext_p.h>
 
 QT_BEGIN_NAMESPACE
 class QOffscreenSurface;

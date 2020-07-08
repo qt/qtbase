@@ -2,6 +2,7 @@
 
 # begin special case:
 qt_find_package(DirectFB)
+qt_find_package(EGL)
 # end special case:
 
 #####################################################################
@@ -24,6 +25,7 @@ qt_internal_add_plugin(QDirectFbIntegrationPlugin
         qdirectfbwindow.cpp qdirectfbwindow.h
     PUBLIC_LIBRARIES
         PkgConfig::DirectFB
+        EGL::EGL # special case
         Qt::Core
         Qt::CorePrivate
         Qt::Gui
@@ -41,8 +43,6 @@ qt_extend_target(QDirectFbIntegrationPlugin CONDITION QT_CONFIG___contains___dir
         qdirectfb_egl.cpp qdirectfb_egl.h
     DEFINES
         DIRECTFB_GL_EGL
-    PUBLIC_LIBRARIES
-        Qt::EglSupportPrivate
 )
 
 qt_extend_target(QDirectFbIntegrationPlugin CONDITION NOT DIRECTFB_PLATFORM_HOOKS_SOURCES_ISEMPTY

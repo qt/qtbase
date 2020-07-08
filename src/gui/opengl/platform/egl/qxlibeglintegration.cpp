@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,8 +37,10 @@
 **
 ****************************************************************************/
 
-#include <QLoggingCategory>
+#include <QtCore/qloggingcategory.h>
 #include "qxlibeglintegration_p.h"
+
+QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcXlibEglDebug, "qt.egl.xlib.debug")
 
@@ -160,3 +162,5 @@ VisualID QXlibEglIntegration::getCompatibleVisualId(Display *display, EGLDisplay
     qWarning("Unable to find an X11 visual which matches EGL config %d", configId);
     return (VisualID)0;
 }
+
+QT_END_NAMESPACE

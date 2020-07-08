@@ -4,8 +4,6 @@
 ## QXcbEglIntegrationPlugin Plugin:
 #####################################################################
 
-qt_find_package(EGL) # special case
-
 qt_internal_add_plugin(QXcbEglIntegrationPlugin
     OUTPUT_NAME qxcb-egl-integration
     TYPE xcbglintegrations
@@ -26,5 +24,4 @@ qt_internal_add_plugin(QXcbEglIntegrationPlugin
         Qt::Gui
         Qt::GuiPrivate
         Qt::XcbQpaPrivate
-        EGL::EGL # special case
 )

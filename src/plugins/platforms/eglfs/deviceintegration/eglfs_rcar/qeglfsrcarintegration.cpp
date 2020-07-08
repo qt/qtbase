@@ -38,7 +38,7 @@
 ****************************************************************************/
 
 #include <QDebug>
-#include <QtEglSupport/private/qeglconvenience_p.h>
+#include <QtGui/private/qeglconvenience_p.h>
 #include <EGL/egl.h>
 #include "INTEGRITY.h"
 #include "qeglfsrcarintegration.h"

@@ -40,7 +40,7 @@
 #include "qeglfsoffscreenwindow_p.h"
 #include "qeglfshooks_p.h"
 #include <QtGui/QOffscreenSurface>
-#include <QtEglSupport/private/qeglconvenience_p.h>
+#include <QtGui/private/qeglconvenience_p.h>
 
 QT_BEGIN_NAMESPACE
 

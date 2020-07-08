@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -44,8 +44,8 @@
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
+// This file is not part of the Qt API. It exists purely as an
+// implementation detail. This header file may change from version to
 // version without notice, or even be removed.
 //
 // We mean it.
@@ -54,14 +54,14 @@
 #include <QtCore/qtextstream.h>
 #include <qpa/qplatformwindow.h>
 #include <qpa/qplatformopenglcontext.h>
-#include <QtCore/QVariant>
-#include <QtEglSupport/private/qt_egl_p.h>
+#include <QtCore/qvariant.h>
+#include <QtGui/private/qt_egl_p.h>
 #include <QtGui/private/qopenglcontext_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QEGLPlatformContext : public QPlatformOpenGLContext,
-                            public QPlatformInterface::QEGLContext
+class Q_GUI_EXPORT QEGLPlatformContext : public QPlatformOpenGLContext,
+                                            public QPlatformInterface::QEGLContext
 {
 public:
     enum Flag {

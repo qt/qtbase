@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,14 +37,15 @@
 **
 ****************************************************************************/
 
-#include <QByteArray>
-#include <QOpenGLContext>
+
+#include <QtCore/qbytearray.h>
+#include <QtGui/qopenglcontext.h>
 
 #ifdef Q_OS_LINUX
 #include <sys/ioctl.h>
 #include <linux/fb.h>
 #endif
-#include <private/qmath_p.h>
+#include <QtGui/private/qmath_p.h>
 
 #include "qeglconvenience_p.h"
 

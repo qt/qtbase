@@ -1,7 +1,6 @@
 TARGET = qxcb-egl-integration
 
 include(../gl_integrations_plugin_base.pri)
-QT += egl_support-private
 
 CONFIG += egl
 

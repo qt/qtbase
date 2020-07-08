@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -44,15 +44,16 @@
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
+// This file is not part of the Qt API. It exists purely as an
+// implementation detail. This header file may change from version to
 // version without notice, or even be removed.
 //
 // We mean it.
 //
 
-#include <qglobal.h>
-#include <QtEglSupport/private/qt_egl_p.h>
+#include <QtGui/qtguiglobal.h>
+
+#include <QtGui/private/qt_egl_p.h>
 
 // This provides runtime EGLDevice/Output/Stream support even when eglext.h in
 // the sysroot is not up-to-date.
@@ -158,7 +159,7 @@ typedef EGLBoolean (EGLAPIENTRYP PFNEGLSTREAMCONSUMERRELEASEATTRIBNVPROC) (EGLDi
 
 QT_BEGIN_NAMESPACE
 
-class QEGLStreamConvenience
+class Q_GUI_EXPORT QEGLStreamConvenience
 {
 public:
     QEGLStreamConvenience();

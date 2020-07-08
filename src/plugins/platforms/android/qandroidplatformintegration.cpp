@@ -46,7 +46,7 @@
 #include <QOffscreenSurface>
 #include <QThread>
 
-#include <QtEglSupport/private/qeglpbuffer_p.h>
+#include <QtGui/private/qeglpbuffer_p.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatformwindow.h>
 #include <qpa/qplatformoffscreensurface.h>

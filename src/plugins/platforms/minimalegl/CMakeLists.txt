@@ -1,4 +1,5 @@
 # Generated from minimalegl.pro.
+qt_find_package(EGL) # special case
 
 #####################################################################
 ## QMinimalEglIntegrationPlugin Plugin:
@@ -18,9 +19,9 @@ qt_internal_add_plugin(QMinimalEglIntegrationPlugin
     PUBLIC_LIBRARIES
         Qt::Core
         Qt::CorePrivate
-        Qt::EglSupportPrivate
         Qt::Gui
         Qt::GuiPrivate
+        EGL::EGL # special case
 )
 
 #### Keys ignored in scope 1:.:.:minimalegl.pro:<TRUE>:

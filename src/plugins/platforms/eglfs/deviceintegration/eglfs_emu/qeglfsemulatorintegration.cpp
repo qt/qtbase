@@ -42,8 +42,8 @@
 #include "private/qeglfsintegration_p.h"
 
 #include <private/qguiapplication_p.h>
-#include <QtEglSupport/private/qeglconvenience_p.h>
-#include <QtEglSupport/private/qeglplatformcontext_p.h>
+#include <QtGui/private/qeglconvenience_p.h>
+#include <QtGui/private/qeglplatformcontext_p.h>
 
 #include <qpa/qwindowsysteminterface.h>
 

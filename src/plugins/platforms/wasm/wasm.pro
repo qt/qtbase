@@ -1,8 +1,7 @@
 TARGET = qwasm
 CONFIG += static plugin
 QT += \
-    core-private gui-private \
-    egl_support-private
+    core-private gui-private
 
 qtConfig(opengl): QT += opengl-private
 

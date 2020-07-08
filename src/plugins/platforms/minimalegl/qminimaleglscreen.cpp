@@ -40,9 +40,9 @@
 #include "qminimaleglscreen.h"
 #include "qminimaleglwindow.h"
 
-#include <QtEglSupport/private/qeglconvenience_p.h>
+#include <QtGui/private/qeglconvenience_p.h>
 #ifndef QT_NO_OPENGL
-# include <QtEglSupport/private/qeglplatformcontext_p.h>
+# include <QtGui/private/qeglplatformcontext_p.h>
 #endif
 
 #ifdef Q_OPENKODE

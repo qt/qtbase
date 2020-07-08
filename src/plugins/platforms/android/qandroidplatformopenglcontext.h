@@ -41,7 +41,7 @@
 #ifndef QANDROIDPLATFORMOPENGLCONTEXT_H
 #define QANDROIDPLATFORMOPENGLCONTEXT_H
 
-#include <QtEglSupport/private/qeglplatformcontext_p.h>
+#include <QtGui/private/qeglplatformcontext_p.h>
 
 QT_BEGIN_NAMESPACE
 

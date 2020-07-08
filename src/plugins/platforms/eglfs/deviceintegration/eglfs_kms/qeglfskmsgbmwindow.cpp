@@ -41,7 +41,7 @@
 #include "qeglfskmsgbmintegration.h"
 #include "qeglfskmsgbmscreen.h"
 
-#include <QtEglSupport/private/qeglconvenience_p.h>
+#include <QtGui/private/qeglconvenience_p.h>
 
 QT_BEGIN_NAMESPACE
 

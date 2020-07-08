@@ -46,7 +46,7 @@
 #include <QtGui/private/qcssparser_p.h>
 #include <QtGui/private/qtextengine_p.h>
 
-#include <QtEglSupport/private/qt_egl_p.h>
+#include <QtGui/private/qt_egl_p.h>
 
 QT_BEGIN_NAMESPACE
 

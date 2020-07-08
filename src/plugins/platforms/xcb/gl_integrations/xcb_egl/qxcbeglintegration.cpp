@@ -42,7 +42,7 @@
 #include "qxcbeglcontext.h"
 
 #include <QtGui/QOffscreenSurface>
-#include <QtEglSupport/private/qeglstreamconvenience_p.h>
+#include <QtGui/private/qeglstreamconvenience_p.h>
 
 #include "qxcbeglnativeinterfacehandler.h"
 

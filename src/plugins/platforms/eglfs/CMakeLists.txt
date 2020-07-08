@@ -23,7 +23,6 @@ qt_add_module(EglFSDeviceIntegration
     PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::DeviceDiscoverySupportPrivate
-        Qt::EglSupportPrivate
         Qt::FbSupportPrivate
         Qt::GuiPrivate
         Qt::PlatformHeadersPrivate

@@ -51,7 +51,7 @@
 
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatformscreen.h>
-#include <QtEglSupport/private/qeglconvenience_p.h>
+#include <QtGui/private/qeglconvenience_p.h>
 #include <android/native_window.h>
 #include <android/native_window_jni.h>
 

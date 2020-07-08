@@ -3,8 +3,7 @@ TARGET = qtforandroid
 LIBS += -ljnigraphics -landroid
 
 QT += \
-    core-private gui-private \
-    egl_support-private
+    core-private gui-private
 
 OTHER_FILES += $$PWD/android.json
 
@@ -85,6 +84,8 @@ qtConfig(vulkan) {
     HEADERS += $$PWD/qandroidplatformvulkaninstance.h \
                $$PWD/qandroidplatformvulkanwindow.h
 }
+
+QMAKE_USE += egl
 
 PLUGIN_TYPE = platforms
 PLUGIN_CLASS_NAME = QAndroidIntegrationPlugin

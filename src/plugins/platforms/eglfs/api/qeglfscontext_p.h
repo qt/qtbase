@@ -53,7 +53,7 @@
 
 #include "qeglfsglobal_p.h"
 #include "qeglfscursor_p.h"
-#include <QtEglSupport/private/qeglplatformcontext_p.h>
+#include <QtGui/private/qeglplatformcontext_p.h>
 #include <QtCore/QVariant>
 
 QT_BEGIN_NAMESPACE

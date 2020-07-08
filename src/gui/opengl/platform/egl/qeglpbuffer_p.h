@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -44,19 +44,19 @@
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
+// This file is not part of the Qt API. It exists purely as an
+// implementation detail. This header file may change from version to
 // version without notice, or even be removed.
 //
 // We mean it.
 //
 
 #include <qpa/qplatformoffscreensurface.h>
-#include <QtEglSupport/private/qeglplatformcontext_p.h>
+#include <QtGui/private/qeglplatformcontext_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QEGLPbuffer : public QPlatformOffscreenSurface
+class Q_GUI_EXPORT QEGLPbuffer : public QPlatformOffscreenSurface
 {
 public:
     QEGLPbuffer(EGLDisplay display, const QSurfaceFormat &format, QOffscreenSurface *offscreenSurface,

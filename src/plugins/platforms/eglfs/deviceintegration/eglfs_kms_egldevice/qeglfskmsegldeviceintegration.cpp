@@ -41,7 +41,7 @@
 #include "qeglfskmsegldeviceintegration.h"
 #include "qeglfskmsegldevice.h"
 #include "qeglfskmsegldevicescreen.h"
-#include <QtEglSupport/private/qeglconvenience_p.h>
+#include <QtGui/private/qeglconvenience_p.h>
 #include "private/qeglfswindow_p.h"
 #include "private/qeglfscursor_p.h"
 #include <QLoggingCategory>
