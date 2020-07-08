@@ -103,14 +103,12 @@ bool QPropertyBindingPrivate::evaluateIfDirtyAndReturnTrueIfValueChanged()
 
     BindingEvaluationState evaluationFrame(this);
 
-    QPropertyBindingError evalError;
-    QUntypedPropertyBinding::BindingEvaluationResult result;
     bool changed = false;
     if (metaType.id() == QMetaType::Bool) {
         auto propertyPtr = reinterpret_cast<QPropertyBase *>(propertyDataPtr);
         bool newValue = false;
-        evalError = evaluationFunction(metaType, &newValue);
-        if (evalError.type() == QPropertyBindingError::NoError) {
+        evaluationFunction(metaType, &newValue);
+        if (!error.hasError()) {
             bool updateAllowed = true;
             if (hasStaticObserver && staticGuardCallback)
                 updateAllowed = staticGuardCallback(staticObserver, &newValue);
@@ -121,8 +119,8 @@ bool QPropertyBindingPrivate::evaluateIfDirtyAndReturnTrueIfValueChanged()
         }
     } else {
         QVariant resultVariant(metaType.id(), nullptr);
-        evalError = evaluationFunction(metaType, resultVariant.data());
-        if (evalError.type() == QPropertyBindingError::NoError) {
+        evaluationFunction(metaType, resultVariant.data());
+        if (!error.hasError()) {
             bool updateAllowed = true;
             if (hasStaticObserver && staticGuardCallback)
                 updateAllowed = staticGuardCallback(staticObserver, resultVariant.data());
@@ -133,9 +131,6 @@ bool QPropertyBindingPrivate::evaluateIfDirtyAndReturnTrueIfValueChanged()
             }
         }
     }
-
-    if (evalError.type() != QPropertyBindingError::NoError)
-        error = evalError;
 
     dirty = false;
     return changed;

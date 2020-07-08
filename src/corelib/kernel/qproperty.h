@@ -119,9 +119,8 @@ private:
 class Q_CORE_EXPORT QUntypedPropertyBinding
 {
 public:
-    using BindingEvaluationResult = QPropertyBindingError;
     // writes binding result into dataPtr
-    using BindingEvaluationFunction = std::function<BindingEvaluationResult(const QMetaType &metaType, void *dataPtr)>;
+    using BindingEvaluationFunction = std::function<void(const QMetaType &metaType, void *dataPtr)>;
 
     QUntypedPropertyBinding();
     QUntypedPropertyBinding(const QMetaType &metaType, BindingEvaluationFunction function, const QPropertyBindingSourceLocation &location);
@@ -152,19 +151,10 @@ class QPropertyBinding : public QUntypedPropertyBinding
     struct BindingAdaptor
     {
         Functor impl;
-        QUntypedPropertyBinding::BindingEvaluationResult operator()(const QMetaType &/*metaType*/, void *dataPtr)
+        void operator()(const QMetaType &/*metaType*/, void *dataPtr)
         {
-            std::variant<PropertyType, QPropertyBindingError> result(impl());
-            if (auto errorPtr = std::get_if<QPropertyBindingError>(&result))
-                return *errorPtr;
-
-            if (auto valuePtr = std::get_if<PropertyType>(&result)) {
-                PropertyType *propertyPtr = reinterpret_cast<PropertyType *>(dataPtr);
-                *propertyPtr = std::move(*valuePtr);
-                return {};
-            }
-
-            return {};
+            PropertyType *propertyPtr = static_cast<PropertyType *>(dataPtr);
+            *propertyPtr = impl();
         }
     };
 
@@ -191,25 +181,12 @@ public:
     {}
 };
 
-namespace QtPrivate {
-    template<typename... Ts>
-    constexpr auto is_variant_v = false;
-    template<typename... Ts>
-    constexpr auto is_variant_v<std::variant<Ts...>> = true;
-}
-
 namespace Qt {
     template <typename Functor>
     auto makePropertyBinding(Functor &&f, const QPropertyBindingSourceLocation &location = QT_PROPERTY_DEFAULT_BINDING_LOCATION,
                              std::enable_if_t<std::is_invocable_v<Functor>> * = 0)
     {
-        if constexpr (QtPrivate::is_variant_v<std::invoke_result_t<Functor>>) {
-            return QPropertyBinding<std::variant_alternative_t<0, std::invoke_result_t<Functor>>>(std::forward<Functor>(f), location);
-        } else {
-            return QPropertyBinding<std::invoke_result_t<Functor>>(std::forward<Functor>(f), location);
-        }
-        // Work around bogus warning
-        Q_UNUSED(QtPrivate::is_variant_v<bool>);
+        return QPropertyBinding<std::invoke_result_t<Functor>>(std::forward<Functor>(f), location);
     }
 }
 

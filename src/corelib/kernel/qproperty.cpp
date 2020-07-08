@@ -206,6 +206,11 @@ BindingEvaluationState::~BindingEvaluationState()
     *currentState = previousState;
 }
 
+QPropertyBindingPrivate *QPropertyBindingPrivate::currentlyEvaluatingBinding()
+{
+    return currentBindingEvaluationState ? currentBindingEvaluationState->binding : nullptr;
+}
+
 void QPropertyBase::evaluateIfDirty()
 {
     QPropertyBasePointer d{this};

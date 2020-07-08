@@ -505,9 +505,10 @@ void tst_QProperty::bindingSourceLocation()
 
 void tst_QProperty::bindingError()
 {
-    QProperty<int> prop = Qt::makePropertyBinding([]() -> std::variant<int, QPropertyBindingError> {
+    QProperty<int> prop = Qt::makePropertyBinding([]() -> int {
         QPropertyBindingError error(QPropertyBindingError::UnknownError, QLatin1String("my error"));
-        return error;
+        QPropertyBindingPrivate::currentlyEvaluatingBinding()->setError(std::move(error));
+        return 0;
     });
     QCOMPARE(prop.value(), 0);
     QCOMPARE(prop.binding().error().description(), QString("my error"));
@@ -621,20 +622,18 @@ void tst_QProperty::genericPropertyBinding()
 
     {
         QUntypedPropertyBinding doubleBinding(QMetaType::fromType<double>(),
-                                              [](const QMetaType &, void *) -> QUntypedPropertyBinding::BindingEvaluationResult {
+                                              [](const QMetaType &, void *) -> void {
             Q_ASSERT(false);
-            return QPropertyBindingError::NoError;
         }, QPropertyBindingSourceLocation());
         QVERIFY(!property.setBinding(doubleBinding));
     }
 
     QUntypedPropertyBinding intBinding(QMetaType::fromType<int>(),
-                                    [](const QMetaType &metaType, void *dataPtr) -> QUntypedPropertyBinding::BindingEvaluationResult {
+                                    [](const QMetaType &metaType, void *dataPtr) -> void {
         Q_ASSERT(metaType.id() == qMetaTypeId<int>());
 
         int *intPtr = reinterpret_cast<int*>(dataPtr);
         *intPtr = 100;
-        return QPropertyBindingError::NoError;
     }, QPropertyBindingSourceLocation());
 
     QVERIFY(property.setBinding(intBinding));
@@ -649,10 +648,9 @@ void tst_QProperty::genericPropertyBindingBool()
     QVERIFY(!property.value());
 
     QUntypedPropertyBinding boolBinding(QMetaType::fromType<bool>(),
-            [](const QMetaType &, void *dataPtr) -> QUntypedPropertyBinding::BindingEvaluationResult {
+            [](const QMetaType &, void *dataPtr) -> void {
         auto boolPtr = reinterpret_cast<bool *>(dataPtr);
         *boolPtr = true;
-        return {};
     }, QPropertyBindingSourceLocation());
     QVERIFY(property.setBinding(boolBinding));
 

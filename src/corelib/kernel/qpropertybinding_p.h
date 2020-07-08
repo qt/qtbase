@@ -179,6 +179,11 @@ public:
 
     static QPropertyBindingPrivate *get(const QUntypedPropertyBinding &binding)
     { return binding.d.data(); }
+
+    void setError(QPropertyBindingError &&e)
+    { error = std::move(e); }
+
+    static QPropertyBindingPrivate *currentlyEvaluatingBinding();
 };
 
 QT_END_NAMESPACE
