@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -44,29 +44,50 @@
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
+// This file is not part of the Qt API. It exists purely as an
+// implementation detail. This header file may change from version to
 // version without notice, or even be removed.
 //
 // We mean it.
 //
 
-#include <QList>
-#include <QSurfaceFormat>
+#include <QtOpenGL/qtopenglglobal.h>
+#include <QtCore/qlist.h>
+#include <QtGui/qsurfaceformat.h>
 
 #include <X11/Xlib.h>
 #include <GL/glx.h>
+
+QT_BEGIN_NAMESPACE
 
 enum QGlxFlags
 {
     QGLX_SUPPORTS_SRGB = 0x01
 };
 
-QList<int> qglx_buildSpec(const QSurfaceFormat &format, int drawableBit = GLX_WINDOW_BIT, int flags = 0);
-XVisualInfo *qglx_findVisualInfo(Display *display, int screen, QSurfaceFormat *format, int drawableBit = GLX_WINDOW_BIT, int flags = 0);
-GLXFBConfig qglx_findConfig(Display *display, int screen, QSurfaceFormat format, bool highestPixelFormat = false, int drawableBit = GLX_WINDOW_BIT, int flags = 0);
-void qglx_surfaceFormatFromGLXFBConfig(QSurfaceFormat *format, Display *display, GLXFBConfig config, int flags = 0);
-void qglx_surfaceFormatFromVisualInfo(QSurfaceFormat *format, Display *display, XVisualInfo *visualInfo, int flags = 0);
-bool qglx_reduceFormat(QSurfaceFormat *format);
+Q_OPENGL_EXPORT QList<int> qglx_buildSpec(const QSurfaceFormat &format,
+                                          int drawableBit = GLX_WINDOW_BIT,
+                                          int flags = 0);
+
+Q_OPENGL_EXPORT XVisualInfo *qglx_findVisualInfo(Display *display, int screen,
+                                                 QSurfaceFormat *format,
+                                                 int drawableBit = GLX_WINDOW_BIT,
+                                                 int flags = 0);
+
+Q_OPENGL_EXPORT GLXFBConfig qglx_findConfig(Display *display, int screen,
+                                            QSurfaceFormat format,
+                                            bool highestPixelFormat = false,
+                                            int drawableBit = GLX_WINDOW_BIT,
+                                            int flags = 0);
+
+Q_OPENGL_EXPORT void qglx_surfaceFormatFromGLXFBConfig(QSurfaceFormat *format, Display *display,
+                                                       GLXFBConfig config, int flags = 0);
+
+Q_OPENGL_EXPORT void qglx_surfaceFormatFromVisualInfo(QSurfaceFormat *format, Display *display,
+                                                      XVisualInfo *visualInfo, int flags = 0);
+
+Q_OPENGL_EXPORT bool qglx_reduceFormat(QSurfaceFormat *format);
+
+QT_END_NAMESPACE
 
 #endif // QGLXCONVENIENCE_H

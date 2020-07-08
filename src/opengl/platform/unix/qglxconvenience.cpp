@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,20 +39,17 @@
 
 // We have to include this before the X11 headers dragged in by
 // qglxconvenience_p.h.
-#include <QtCore/QByteArray>
-#include <QtCore/QScopedPointer>
+#include <QtCore/qbytearray.h>
+#include <QtCore/qscopedpointer.h>
 
 #include <QtCore/qmetatype.h>
 #include <QtCore/qtextstream.h>
 #include "qglxconvenience_p.h"
 
-#include <QtCore/QList>
-#include <QtCore/QLoggingCategory>
-#include <QtCore/QVarLengthArray>
+#include <QtCore/qloggingcategory.h>
+#include <QtCore/qvarlengtharray.h>
 
 #include <GL/glxext.h>
-
-Q_LOGGING_CATEGORY(lcGlx, "qt.glx")
 
 enum {
     XFocusOut = FocusOut,
@@ -80,6 +77,10 @@ enum {
 #ifndef GLX_FRAMEBUFFER_SRGB_CAPABLE_ARB
 #define GLX_FRAMEBUFFER_SRGB_CAPABLE_ARB 0x20B2
 #endif
+
+QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcGlx, "qt.glx")
 
 QList<int> qglx_buildSpec(const QSurfaceFormat &format, int drawableBit, int flags)
 {
@@ -461,3 +462,5 @@ bool qglx_reduceFormat(QSurfaceFormat *format)
 
     return false;
 }
+
+QT_END_NAMESPACE

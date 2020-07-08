@@ -98,6 +98,16 @@ qt_extend_target(OpenGL CONDITION QT_FEATURE_egl
         qopenglcompositor.cpp qopenglcompositor_p.h
         qopenglcompositorbackingstore.cpp qopenglcompositorbackingstore_p.h
 )
+
+qt_extend_target(OpenGL CONDITION QT_FEATURE_opengl AND QT_FEATURE_xlib AND NOT QT_FEATURE_opengles2
+    SOURCES
+        platform/unix/qglxconvenience.cpp platform/unix/qglxconvenience_p.h
+    PUBLIC_LIBRARIES
+        X11::X11
+)
+
+
+qt_create_tracepoints(OpenGL qtopengl.tracepoints)
 qt_add_docs(OpenGL
     doc/qtopengl.qdocconf
 )

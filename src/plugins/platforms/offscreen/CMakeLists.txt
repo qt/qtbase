@@ -32,7 +32,7 @@ qt_extend_target(QOffscreenIntegrationPlugin CONDITION QT_FEATURE_opengl AND QT_
     SOURCES
         qoffscreenintegration_x11.cpp qoffscreenintegration_x11.h
     PUBLIC_LIBRARIES
-        Qt::GlxSupportPrivate
+        Qt::OpenGLPrivate
 )
 
 #### Keys ignored in scope 3:.:.:offscreen.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:

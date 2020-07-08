@@ -40,7 +40,7 @@
 #include "qxcbglxwindow.h"
 
 #include "qxcbscreen.h"
-#include <QtGlxSupport/private/qglxconvenience_p.h>
+#include <QtOpenGL/private/qglxconvenience_p.h>
 #include <QDebug>
 
 QT_BEGIN_NAMESPACE

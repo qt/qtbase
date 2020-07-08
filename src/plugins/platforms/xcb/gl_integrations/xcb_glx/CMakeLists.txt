@@ -21,9 +21,9 @@ qt_internal_add_plugin(QXcbGlxIntegrationPlugin
     PUBLIC_LIBRARIES
         Qt::Core
         Qt::CorePrivate
-        Qt::GlxSupportPrivate
         Qt::Gui
         Qt::GuiPrivate
+        Qt::OpenGLPrivate
         Qt::XcbQpaPrivate
 )
 

@@ -55,7 +55,7 @@
 #include <QtGui/QOffscreenSurface>
 
 #include "qglxintegration.h"
-#include <QtGlxSupport/private/qglxconvenience_p.h>
+#include <QtOpenGL/private/qglxconvenience_p.h>
 
 #include "qxcbglintegration.h"
 
