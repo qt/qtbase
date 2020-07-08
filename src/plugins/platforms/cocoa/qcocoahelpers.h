@@ -193,7 +193,7 @@ constexpr backwards_t<R> backwards(R&& r) { return {std::forward<R>(r)}; }
 
 // -------------------------------------------------------------------------
 
-#if !defined(Q_PROCESSOR_X86_64)
+#if QT_POINTER_SIZE == 4
 #error "32-bit builds are not supported"
 #endif
 
