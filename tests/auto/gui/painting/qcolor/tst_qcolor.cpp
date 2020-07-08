@@ -324,6 +324,9 @@ void tst_QColor::namehex_data()
     QTest::newRow("transparent red") << "#66ff0000" << QColor(255, 0, 0, 102);
     QTest::newRow("invalid red") << "#gg0000" << QColor();
     QTest::newRow("invalid transparent") << "#gg00ff00" << QColor();
+    // when configured with "-sanitize undefined", this resulted in:
+    // "runtime error: left shift of negative value -1"
+    QTest::newRow("oss-fuzz 23968") << "#ÿÿÿÿÿÿÿÿÿ" << QColor();
 }
 
 void tst_QColor::namehex()
