@@ -1284,6 +1284,64 @@ def processReportHelper(ctx, entries, cm_fh):
         else:
             print(f"    XXXX UNHANDLED REPORT TYPE {entry}.")
 
+def parseCommandLineCustomHandler(ctx, data, cm_fh):
+    cm_fh.write(f"qt_commandline_custom({data})\n")
+
+def parseCommandLineOptions(ctx, data, cm_fh):
+    for key in data:
+        args = [key]
+        option = data[key]
+        if isinstance(option, str):
+            args += ["TYPE", option]
+        else:
+            if "type" in option:
+                args += ["TYPE", option["type"]]
+            if "name" in option:
+                args += ["NAME", option["name"]]
+            if "value" in option:
+                args += ["VALUE", option["value"]]
+            if "values" in option:
+                values = option["values"]
+                if isinstance(values, list):
+                    args += ["VALUES", ' '.join(option["values"])]
+                else:
+                    args += ["MAPPING"]
+                    for lhs in values:
+                        args += [lhs, values[lhs]]
+
+        cm_fh.write(f"qt_commandline_option({' '.join(args)})\n")
+
+def parseCommandLinePrefixes(ctx, data, cm_fh):
+    for key in data:
+        cm_fh.write(f"qt_commandline_prefix({key} {data[key]})\n")
+
+def parseCommandLineAssignments(ctx, data, cm_fh):
+    for key in data:
+        cm_fh.write(f"qt_commandline_assignment({key} {data[key]})\n")
+
+def processCommandLine(ctx, data, cm_fh):
+    print("  commandline:")
+
+    if "subconfigs" in data:
+        for subconf in data["subconfigs"]:
+            cm_fh.write(f"qt_commandline_subconfig({subconf})\n")
+
+    if "commandline" not in data:
+        return
+
+    commandLine = data["commandline"]
+    if "custom" in commandLine:
+        print("    custom:")
+        parseCommandLineCustomHandler(ctx, commandLine["custom"], cm_fh)
+    if "options" in commandLine:
+        print("    options:")
+        parseCommandLineOptions(ctx, commandLine["options"], cm_fh)
+    if "prefix" in commandLine:
+        print("    prefix:")
+        parseCommandLinePrefixes(ctx, commandLine["prefix"], cm_fh)
+    if "assignments" in commandLine:
+        print("    assignments:")
+        parseCommandLineAssignments(ctx, commandLine["assignments"], cm_fh)
 
 def processInputs(ctx, data, cm_fh):
     print("  inputs:")
@@ -1376,6 +1434,9 @@ def processJson(path, ctx, data):
     ctx["test_dir"] = data.get("testDir", "config.tests")
 
     ctx = processFiles(ctx, data)
+
+    with special_cased_file(path, "qt_cmdline.cmake") as cm_fh:
+        processCommandLine(ctx, data, cm_fh)
 
     with special_cased_file(path, "configure.cmake") as cm_fh:
         cm_fh.write("\n\n#### Inputs\n\n")
