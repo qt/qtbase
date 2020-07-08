@@ -1897,7 +1897,8 @@ bool VCMIDLTool::parseOption(const char* option)
         WarnAsError = _True;
         break;
     case 0x3582fde: // /align {N}
-        offset = 3;  // Fallthrough
+        offset = 3;
+        Q_FALLTHROUGH();
     case 0x0003510: // /Zp {N}
         switch (*(option+offset+4)) {
         case '1':

@@ -1242,11 +1242,11 @@ static int indic_nextSyllableBoundary(QChar::Script script, const ushort *s, int
         case StressMark:
             if (state == VowelMark)
                 break;
-            // fall through
+            Q_FALLTHROUGH();
         case VowelMark:
             if (state == Matra || state == LengthMark || state == IndependentVowel)
                 break;
-            // fall through
+            Q_FALLTHROUGH();
         case Matra:
             if (state == Consonant || state == Nukta)
                 break;
