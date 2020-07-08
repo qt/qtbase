@@ -496,6 +496,7 @@ QString &decimalForm(const QString &zero, const QString &decimal, const QString 
             digits.append(zero);
         break;
     case PMChopTrailingZeros:
+        Q_ASSERT(digits.length() / digitWidth <= qMax(decpt, 1) || !digits.endsWith(zero));
         break;
     }
 
@@ -536,6 +537,7 @@ QString &exponentForm(const QString &zero, const QString &decimal, const QString
             digits.append(zero);
         break;
     case PMChopTrailingZeros:
+        Q_ASSERT(digits.length() / digitWidth <= 1 || !digits.endsWith(zero));
         break;
     }
 

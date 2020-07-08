@@ -3348,9 +3348,6 @@ QString QLocaleData::doubleToString(const QString &zero, const QString &plus, co
     if (width < 0)
         width = 0;
 
-    bool negative = false;
-    QString num_str;
-
     int decpt;
     int bufSize = 1;
     if (precision == QLocale::FloatingPointShortest)
@@ -3362,12 +3359,13 @@ QString QLocaleData::doubleToString(const QString &zero, const QString &plus, co
 
     QVarLengthArray<char> buf(bufSize);
     int length;
-
+    bool negative = false;
     qt_doubleToAscii(d, form, precision, buf.data(), bufSize, negative, length, decpt);
 
+    QString numStr;
     if (qstrncmp(buf.data(), "inf", 3) == 0 || qstrncmp(buf.data(), "nan", 3) == 0) {
-        num_str = QString::fromLatin1(buf.data(), length);
-    } else { // Handle normal numbers
+        numStr = QString::fromLatin1(buf.data(), length);
+    } else { // Handle finite values
         QString digits = QString::fromLatin1(buf.data(), length);
 
         if (zero == u"0") {
@@ -3391,45 +3389,83 @@ QString QLocaleData::doubleToString(const QString &zero, const QString &plus, co
                 reinterpret_cast<ushort *>(digits.data())[i] += z;
         }
 
-        bool always_show_decpt = (flags & ForcePoint);
+        const bool mustMarkDecimal = flags & ForcePoint;
+        const bool groupDigits = flags & ThousandsGroup;
         switch (form) {
-            case DFExponent: {
-                num_str = exponentForm(zero, decimal, exponential, group, plus, minus,
-                                       digits, decpt, precision, PMDecimalDigits,
-                                       always_show_decpt, flags & ZeroPadExponent);
-                break;
-            }
-            case DFDecimal: {
-                num_str = decimalForm(zero, decimal, group,
+            case DFExponent:
+                numStr = exponentForm(zero, decimal, exponential, group, plus, minus,
                                       digits, decpt, precision, PMDecimalDigits,
-                                      always_show_decpt, flags & ThousandsGroup);
+                                      mustMarkDecimal, flags & ZeroPadExponent);
                 break;
-            }
+            case DFDecimal:
+                numStr = decimalForm(zero, decimal, group,
+                                     digits, decpt, precision, PMDecimalDigits,
+                                     mustMarkDecimal, groupDigits);
+                break;
             case DFSignificantDigits: {
                 PrecisionMode mode = (flags & AddTrailingZeroes) ?
                             PMSignificantDigits : PMChopTrailingZeros;
 
-                const auto digitWidth = zero.size();
-                int cutoff = precision < 0 ? 6 : precision;
-                // Find out which representation is shorter
-                if (precision == QLocale::FloatingPointShortest && decpt > 0) {
-                    cutoff = digits.length() / digitWidth + 4; // 'e', '+'/'-', one digit exponent
-                    if (decpt <= 10)
-                        ++cutoff;
-                    else
-                        cutoff += decpt > 100 ? 2 : 1;
-                    if (!always_show_decpt && digits.length() / digitWidth > decpt)
-                        ++cutoff; // decpt shown in exponent form, but not in decimal form
+                const int minExponentDigits = flags & ZeroPadExponent ? 2 : 1;
+
+                /* POSIX specifies sprintf() to follow fprintf(), whose 'g/G'
+                   format says; with P = 6 if precision unspecified else 1 if
+                   precision is 0 else precision; when 'e/E' would have exponent
+                   X, use:
+                     * 'f/F' if P > X >= -4, with precision P-1-X
+                     * 'e/E' otherwise, with precision P-1
+                   Helpfully, we already have mapped precision < 0 to 6 - except
+                   for F.P.Shortest mode, which is its own story - and those of
+                   our callers with unspecified precision either used 6 or -1
+                   for it.
+                */
+                bool useDecimal;
+                if (precision == QLocale::FloatingPointShortest) {
+                    // Find out which representation is shorter.
+                    // Set bias to everything added to exponent form but not
+                    // decimal, minus the converse.
+
+                    // Exponent adds separator, sign and digits:
+                    int bias = 2 + minExponentDigits;
+                    // Decimal form may get grouping separators inserted:
+                    if (groupDigits && decpt > 3)
+                        bias -= (decpt - 1) / 3;
+                    // X = decpt - 1 needs two digits if decpt > 10:
+                    if (decpt > 10 && minExponentDigits == 1)
+                        ++bias;
+                    // Assume digitCount < 95, so we can ignore the 3-digit
+                    // exponent case (we'll set useDecimal false anyway).
+
+                    const int digitCount = digits.length() / zero.size();
+                    if (!mustMarkDecimal) {
+                        // Decimal separator is skipped if at end; adjust if
+                        // that happens for only one form:
+                        if (digitCount <= decpt && digitCount > 1)
+                            ++bias; // decimal but not exponent
+                        else if (digitCount == 1 && decpt <= 0)
+                            --bias; // exponent but not decimal
+                    }
+                    // When 0 < decpt <= digitCount, the forms have equal digit
+                    // counts, plus things bias has taken into account;
+                    // otherwise decimal form's digit count is right-padded with
+                    // zeros to decpt, when decpt is positive, otherwise it's
+                    // left-padded with 1 - decpt zeros.
+                    useDecimal = (decpt <= 0 ? 1 - decpt <= bias
+                                  : decpt <= digitCount ? 0 <= bias
+                                  : decpt <= digitCount + bias);
+                } else {
+                    // X == decpt - 1, POSIX's P; -4 <= X < P iff -4 < decpt <= P
+                    Q_ASSERT(precision >= 0);
+                    useDecimal = decpt > -4 && decpt <= (precision ? precision : 1);
                 }
 
-                if (decpt != digits.length() / digitWidth && (decpt <= -4 || decpt > cutoff))
-                    num_str = exponentForm(zero, decimal, exponential, group, plus, minus,
-                                           digits, decpt, precision, mode,
-                                           always_show_decpt, flags & ZeroPadExponent);
-                else
-                    num_str = decimalForm(zero, decimal, group,
-                                          digits, decpt, precision, mode,
-                                          always_show_decpt, flags & ThousandsGroup);
+                numStr = useDecimal
+                    ? decimalForm(zero, decimal, group,
+                                  digits, decpt, precision, mode,
+                                  mustMarkDecimal, groupDigits)
+                    : exponentForm(zero, decimal, exponential, group, plus, minus,
+                                   digits, decpt, precision, mode,
+                                   mustMarkDecimal, flags & ZeroPadExponent);
                 break;
             }
         }
@@ -3440,7 +3476,7 @@ QString QLocaleData::doubleToString(const QString &zero, const QString &plus, co
         // pad with zeros. LeftAdjusted overrides this flag. Also, we don't
         // pad special numbers
         if (flags & QLocaleData::ZeroPadded && !(flags & QLocaleData::LeftAdjusted)) {
-            int num_pad_chars = width - num_str.length() / zero.length();
+            int num_pad_chars = width - numStr.length() / zero.length();
             // leave space for the sign
             if (negative
                     || flags & QLocaleData::AlwaysShowSign
@@ -3448,22 +3484,22 @@ QString QLocaleData::doubleToString(const QString &zero, const QString &plus, co
                 --num_pad_chars;
 
             for (int i = 0; i < num_pad_chars; ++i)
-                num_str.prepend(zero);
+                numStr.prepend(zero);
         }
     }
 
     // add sign
     if (negative)
-        num_str.prepend(minus);
+        numStr.prepend(minus);
     else if (flags & QLocaleData::AlwaysShowSign)
-        num_str.prepend(plus);
+        numStr.prepend(plus);
     else if (flags & QLocaleData::BlankBeforePositive)
-        num_str.prepend(QLatin1Char(' '));
+        numStr.prepend(QLatin1Char(' '));
 
     if (flags & QLocaleData::CapitalEorX)
-        num_str = std::move(num_str).toUpper();
+        numStr = std::move(numStr).toUpper();
 
-    return num_str;
+    return numStr;
 }
 
 QString QLocaleData::longLongToString(qlonglong l, int precision,
