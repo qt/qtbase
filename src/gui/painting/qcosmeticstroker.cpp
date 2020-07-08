@@ -474,7 +474,7 @@ void QCosmeticStroker::calculateLastPoint(qreal rx1, qreal ry1, qreal rx2, qreal
             qSwap(y1, y2);
         }
         int yinc = F16Dot16FixedDiv(y2 - y1, x2 - x1);
-        int y = y1 << 10;
+        int y = y1 * (1 << 10);
 
         int x = (x1 + 32) >> 6;
         int xs = (x2 + 32) >> 6;
