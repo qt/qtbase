@@ -1398,7 +1398,6 @@ def processJson(path, ctx, data):
         os.path.abspath(destination),
         os.path.abspath(generated_file),
         os.path.abspath(path),
-        convertingProFiles=False,
         debug=False,
     )
     if handler.handle_special_cases():

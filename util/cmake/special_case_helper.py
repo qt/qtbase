@@ -222,7 +222,6 @@ class SpecialCaseHandler(object):
         base_dir: str,
         keep_temporary_files=False,
         debug=False,
-        convertingProFiles=True,
     ) -> None:
         self.base_dir = base_dir
         self.original_file_path = original_file_path
@@ -230,40 +229,31 @@ class SpecialCaseHandler(object):
         self.keep_temporary_files = keep_temporary_files
         self.use_heuristic = False
         self.debug = debug
-        self.convertingProFiles = convertingProFiles
 
     @property
     def prev_file_path(self) -> str:
-        if self.convertingProFiles:
-            filename = ".prev_CMakeLists.txt"
-        else:
-            filename = ".prev_configure.cmake"
+        filename = ".prev_" + os.path.basename(self.original_file_path)
         return os.path.join(self.base_dir, filename)
 
     @property
     def post_merge_file_path(self) -> str:
-        if self.convertingProFiles:
-            filename = "CMakeLists-post-merge.txt"
-        else:
-            filename = "configure-post-merge.cmake"
+        original_file_name = os.path.basename(self.original_file_path)
+        (original_file_basename, original_file_ext) = os.path.splitext(original_file_name)
+        filename = original_file_basename + "-post-merge" + original_file_ext
         return os.path.join(self.base_dir, filename)
 
     @property
     def no_special_file_path(self) -> str:
-        if self.convertingProFiles:
-            filename = "CMakeLists.no-special.txt"
-        else:
-            filename = "configure.no-special.cmake"
+        original_file_name = os.path.basename(self.original_file_path)
+        (original_file_basename, original_file_ext) = os.path.splitext(original_file_name)
+        filename = original_file_basename + ".no-special" + original_file_ext
         return os.path.join(self.base_dir, filename)
 
     def apply_git_merge_magic(self, no_special_cases_file_path: str) -> None:
         # Create new folder for temporary repo, and ch dir into it.
         repo = os.path.join(self.base_dir, "tmp_repo")
         repo_absolute_path = os.path.abspath(repo)
-        if self.convertingProFiles:
-            txt = "CMakeLists.txt"
-        else:
-            txt = "configure.cmake"
+        txt = os.path.basename(self.original_file_path)
 
         try:
             os.mkdir(repo)
