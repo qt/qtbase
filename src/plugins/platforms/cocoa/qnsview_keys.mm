@@ -68,8 +68,8 @@
     // ALT+E to be used as a shortcut with an English keyboard even though
     // pressing ALT+E will give a dead key while doing normal text input.
     if ([characters length] != 0 || [charactersIgnoringModifiers length] != 0) {
-        auto ctrlOrMetaModifier = qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta) ? Qt::ControlModifier : Qt::MetaModifier;
-        if (((modifiers & ctrlOrMetaModifier) || (modifiers & Qt::AltModifier)) && ([charactersIgnoringModifiers length] != 0))
+        if (nativeModifiers & (NSEventModifierFlagControl | NSEventModifierFlagOption)
+            && [charactersIgnoringModifiers length] != 0)
             ch = QChar([charactersIgnoringModifiers characterAtIndex:0]);
         else if ([characters length] != 0)
             ch = QChar([characters characterAtIndex:0]);
