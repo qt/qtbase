@@ -429,8 +429,7 @@
     if ([self hasMarkedText]) {
         [[NSTextInputContext currentInputContext] handleEvent:theEvent];
     } else {
-        auto ctrlOrMetaModifier = qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta) ? Qt::ControlModifier : Qt::MetaModifier;
-        if (!m_dontOverrideCtrlLMB && QCocoaKeyMapper::fromCocoaModifiers(theEvent.modifierFlags) & ctrlOrMetaModifier) {
+        if (!m_dontOverrideCtrlLMB && (theEvent.modifierFlags & NSEventModifierFlagControl)) {
             m_buttons |= Qt::RightButton;
             m_sendUpAsRightButton = true;
         } else {
