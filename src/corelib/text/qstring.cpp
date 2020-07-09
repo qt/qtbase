@@ -2272,7 +2272,7 @@ void QString::resize(qsizetype size)
         size = 0;
 
     if (d->needsDetach() || size > capacity())
-        reallocData(uint(size) + 1u, true);
+        reallocData(size_t(size) + 1u, true);
     d.size = size;
     if (d->allocatedCapacity())
         d.data()[size] = 0;
@@ -2558,7 +2558,7 @@ QString &QString::insert(qsizetype i, QLatin1String str)
         resize(size() + len);
 
     ::memmove(d.data() + i + len, d.data() + i, (d.size - i - len) * sizeof(QChar));
-    qt_from_latin1(d.data() + i, s, uint(len));
+    qt_from_latin1(d.data() + i, s, size_t(len));
     return *this;
 }
 
@@ -2578,10 +2578,10 @@ QString& QString::insert(qsizetype i, const QChar *unicode, qsizetype size)
     if (points_into_range(s, d.data(), d.data() + d.size))
         return insert(i, QStringView{QVarLengthArray(s, s + size)});
 
-    if (Q_UNLIKELY(i > int(d.size)))
+    if (Q_UNLIKELY(i > d.size))
         resize(i + size, QLatin1Char(' '));
     else
-        resize(int(d.size) + size);
+        resize(d.size + size);
 
     ::memmove(d.data() + i + size, d.data() + i, (d.size - i - size) * sizeof(QChar));
     memcpy(d.data() + i, s, size * sizeof(QChar));
@@ -2635,7 +2635,7 @@ QString &QString::append(const QString &str)
             operator=(str);
         } else {
             if (d->needsDetach() || size() + str.size() > capacity())
-                reallocData(uint(size() + str.size()) + 1u, true);
+                reallocData(size_t(size() + str.size()) + 1u, true);
             memcpy(d.data() + d.size, str.d.data(), str.d.size * sizeof(QChar));
             d.size += str.d.size;
             d.data()[d.size] = '\0';
@@ -2654,7 +2654,7 @@ QString &QString::append(const QChar *str, qsizetype len)
 {
     if (str && len > 0) {
         if (d->needsDetach() || size() + len > capacity())
-            reallocData(uint(size() + len) + 1u, true);
+            reallocData(size_t(size() + len) + 1u, true);
         memcpy(d.data() + d.size, str, len * sizeof(QChar));
         d.size += len;
         d.data()[d.size] = '\0';
@@ -2673,9 +2673,9 @@ QString &QString::append(QLatin1String str)
     if (s) {
         qsizetype len = str.size();
         if (d->needsDetach() || size() + len > capacity())
-            reallocData(uint(size() + len) + 1u, true);
+            reallocData(size_t(size() + len) + 1u, true);
         char16_t *i = d.data() + d.size;
-        qt_from_latin1(i, s, uint(len));
+        qt_from_latin1(i, s, size_t(len));
         i[len] = '\0';
         d.size += len;
     }
@@ -3710,8 +3710,7 @@ bool QString::operator>(QLatin1String other) const noexcept
 */
 qsizetype QString::indexOf(const QString &str, qsizetype from, Qt::CaseSensitivity cs) const
 {
-    // ### Qt6: qsizetype
-    return int(QtPrivate::findString(QStringView(unicode(), length()), from, QStringView(str.unicode(), str.length()), cs));
+    return QtPrivate::findString(QStringView(unicode(), length()), from, QStringView(str.unicode(), str.length()), cs);
 }
 #endif  // QT_STRINGVIEW_LEVEL < 2
 
@@ -3754,8 +3753,7 @@ qsizetype QString::indexOf(const QString &str, qsizetype from, Qt::CaseSensitivi
 
 qsizetype QString::indexOf(QLatin1String str, qsizetype from, Qt::CaseSensitivity cs) const
 {
-    // ### Qt6: qsizetype
-    return int(QtPrivate::findString(QStringView(unicode(), size()), from, str, cs));
+    return QtPrivate::findString(QStringView(unicode(), size()), from, str, cs);
 }
 
 /*!
@@ -3767,8 +3765,7 @@ qsizetype QString::indexOf(QLatin1String str, qsizetype from, Qt::CaseSensitivit
 */
 qsizetype QString::indexOf(QChar ch, qsizetype from, Qt::CaseSensitivity cs) const
 {
-    // ### Qt6: qsizetype
-    return int(qFindChar(QStringView(unicode(), length()), ch, from, cs));
+    return qFindChar(QStringView(unicode(), length()), ch, from, cs);
 }
 
 #if QT_STRINGVIEW_LEVEL < 2
@@ -3790,8 +3787,7 @@ qsizetype QString::indexOf(QChar ch, qsizetype from, Qt::CaseSensitivity cs) con
 */
 qsizetype QString::lastIndexOf(const QString &str, qsizetype from, Qt::CaseSensitivity cs) const
 {
-    // ### Qt6: qsizetype
-    return int(QtPrivate::lastIndexOf(QStringView(*this), from, str, cs));
+    return QtPrivate::lastIndexOf(QStringView(*this), from, str, cs);
 }
 
 #endif // QT_STRINGVIEW_LEVEL < 2
@@ -3817,8 +3813,7 @@ qsizetype QString::lastIndexOf(const QString &str, qsizetype from, Qt::CaseSensi
 */
 qsizetype QString::lastIndexOf(QLatin1String str, qsizetype from, Qt::CaseSensitivity cs) const
 {
-    // ### Qt6: qsizetype
-    return int(QtPrivate::lastIndexOf(*this, from, str, cs));
+    return QtPrivate::lastIndexOf(*this, from, str, cs);
 }
 
 /*!
@@ -3829,8 +3824,7 @@ qsizetype QString::lastIndexOf(QLatin1String str, qsizetype from, Qt::CaseSensit
 */
 qsizetype QString::lastIndexOf(QChar ch, qsizetype from, Qt::CaseSensitivity cs) const
 {
-    // ### Qt6: qsizetype
-    return int(qLastIndexOf(QStringView(*this), ch, from, cs));
+    return qLastIndexOf(QStringView(*this), ch, from, cs);
 }
 
 /*!
@@ -4001,8 +3995,7 @@ QString &QString::replace(const QRegularExpression &re, const QString &after)
 
 qsizetype QString::count(const QString &str, Qt::CaseSensitivity cs) const
 {
-    // ### Qt6: qsizetype
-    return int(QtPrivate::count(QStringView(unicode(), size()), QStringView(str.unicode(), str.size()), cs));
+    return QtPrivate::count(QStringView(unicode(), size()), QStringView(str.unicode(), str.size()), cs);
 }
 
 /*!
@@ -4018,8 +4011,7 @@ qsizetype QString::count(const QString &str, Qt::CaseSensitivity cs) const
 
 qsizetype QString::count(QChar ch, Qt::CaseSensitivity cs) const
 {
-    // ### Qt6: qsizetype
-    return int(QtPrivate::count(QStringView(unicode(), size()), ch, cs));
+    return QtPrivate::count(QStringView(unicode(), size()), ch, cs);
 }
 
 /*!
@@ -4035,8 +4027,7 @@ qsizetype QString::count(QChar ch, Qt::CaseSensitivity cs) const
 */
 qsizetype QString::count(QStringView str, Qt::CaseSensitivity cs) const
 {
-    // ### Qt6: qsizetype
-    return int(QtPrivate::count(*this, str, cs));
+    return QtPrivate::count(*this, str, cs);
 }
 
 #if QT_STRINGVIEW_LEVEL < 2
@@ -5803,7 +5794,7 @@ int QString::compare_helper(const QChar *data1, qsizetype length1, const char *d
     if (!data2)
         return length1;
     if (Q_UNLIKELY(length2 < 0))
-        length2 = int(strlen(data2));
+        length2 = qsizetype(strlen(data2));
     // ### make me nothrow in all cases
     QVarLengthArray<ushort> s2(length2);
     const auto beg = reinterpret_cast<QChar *>(s2.data());
@@ -6375,7 +6366,7 @@ QString QString::vasprintf(const char *cformat, va_list ap)
         const char *cb = c;
         while (*c != '\0' && *c != '%')
             c++;
-        append_utf8(result, cb, int(c - cb));
+        append_utf8(result, cb, qsizetype(c - cb));
 
         if (*c == '\0')
             break;
@@ -8387,7 +8378,7 @@ static QString argToQStringImpl(StringView pattern, size_t numArgs, const QtPriv
     ArgIndexToPlaceholderMap argIndexToPlaceholderMap = makeArgIndexToPlaceholderMap(parts);
 
     if (static_cast<size_t>(argIndexToPlaceholderMap.size()) > numArgs) // 3a
-        argIndexToPlaceholderMap.resize(int(numArgs));
+        argIndexToPlaceholderMap.resize(qsizetype(numArgs));
     else if (Q_UNLIKELY(static_cast<size_t>(argIndexToPlaceholderMap.size()) < numArgs)) // 3b
         qWarning("QString::arg: %d argument(s) missing in %ls",
                  int(numArgs - argIndexToPlaceholderMap.size()), qUtf16Printable(to_string(pattern)));
@@ -9550,11 +9541,11 @@ QDataStream &operator<<(QDataStream &out, const QString &str)
     } else {
         if (!str.isNull() || out.version() < 3) {
             if ((out.byteOrder() == QDataStream::BigEndian) == (QSysInfo::ByteOrder == QSysInfo::BigEndian)) {
-                out.writeBytes(reinterpret_cast<const char *>(str.unicode()), uint(sizeof(QChar) * str.length()));
+                out.writeBytes(reinterpret_cast<const char *>(str.unicode()), size_t(sizeof(QChar) * str.length()));
             } else {
                 QVarLengthArray<char16_t> buffer(str.length());
                 qbswap<sizeof(char16_t)>(str.constData(), str.length(), buffer.data());
-                out.writeBytes(reinterpret_cast<const char *>(buffer.data()), uint(sizeof(char16_t) * buffer.size()));
+                out.writeBytes(reinterpret_cast<const char *>(buffer.data()), size_t(sizeof(char16_t) * buffer.size()));
             }
         } else {
             // write null marker
@@ -10437,7 +10428,7 @@ QStringRef QStringRef::appendTo(QString *string) const
 */
 QStringRef QStringRef::left(int n) const
 {
-    if (uint(n) >= uint(m_size))
+    if (size_t(n) >= size_t(m_size))
         return *this;
     return QStringRef(m_string, m_position, n);
 }
@@ -10474,7 +10465,7 @@ QStringRef QString::leftRef(int n)  const
 */
 QStringRef QStringRef::right(int n) const
 {
-    if (uint(n) >= uint(m_size))
+    if (size_t(n) >= size_t(m_size))
         return *this;
     return QStringRef(m_string, m_size - n + m_position, n);
 }
@@ -11928,7 +11919,7 @@ QString QString::toHtmlEscaped() const
 {
     QString rich;
     const int len = length();
-    rich.reserve(int(len * 1.1));
+    rich.reserve(qsizetype(len * 1.1));
     for (int i = 0; i < len; ++i) {
         if (at(i) == QLatin1Char('<'))
             rich += QLatin1String("&lt;");
@@ -11994,7 +11985,7 @@ QString QString::toHtmlEscaped() const
  */
 void QAbstractConcatenable::appendLatin1To(const char *a, int len, QChar *out) noexcept
 {
-    qt_from_latin1(reinterpret_cast<char16_t *>(out), a, uint(len));
+    qt_from_latin1(reinterpret_cast<char16_t *>(out), a, size_t(len));
 }
 
 double QStringView::toDouble(bool *ok) const
