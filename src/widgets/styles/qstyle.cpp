@@ -2013,6 +2013,11 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
            of a QTabBar.
            This enum value has been introduced in Qt 6.1.
 
+    \value SH_Table_AlwaysDrawLeftTopGridLines
+           Determines if the far left and top grid lines are drawn in a table or
+           not when the header is hidden. Defaults to false.
+           This enum value has been introduced in Qt 6.2.
+
     \sa styleHint()
 */
 
