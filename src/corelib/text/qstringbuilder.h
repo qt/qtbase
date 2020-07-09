@@ -310,7 +310,7 @@ template <> struct QConcatenable<const char *> : private QAbstractConcatenable
     typedef const char *type;
     typedef QByteArray ConvertTo;
     enum { ExactSize = false };
-    static int size(const char *a) { return qstrlen(a); }
+    static qsizetype size(const char *a) { return qstrlen(a); }
 #ifndef QT_NO_CAST_FROM_ASCII
     static inline void QT_ASCII_CAST_WARN appendTo(const char *a, QChar *&out)
     { QAbstractConcatenable::convertFromAscii(a, -1, out); }

@@ -80,7 +80,7 @@ QOscBundle::QOscBundle(const QByteArray &data)
     // "followed by an OSC Time
     // Tag, followed by zero or more OSC Bundle Elements. The OSC-timetag is a
     // 64-bit fixed point time tag whose semantics are described below."
-    if (parsedBytes > (quint32)data.size() || data.size() - parsedBytes < sizeof(quint64))
+    if (parsedBytes > (quint32)data.size() || data.size() - parsedBytes < qsizetype(sizeof(quint64)))
         return;
 
     // "Time tags are represented by a 64 bit fixed point number. The first 32
@@ -113,7 +113,7 @@ QOscBundle::QOscBundle(const QByteArray &data)
         //
         // in practice, a bundle can contain multiple bundles or messages,
         // though, and each is prefixed by a size.
-        if (data.size() - parsedBytes < sizeof(quint32))
+        if (data.size() - parsedBytes < qsizetype(sizeof(quint32)))
             return;
 
         quint32 size = qFromBigEndian<quint32>((const uchar*)data.constData() + parsedBytes);

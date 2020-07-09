@@ -279,7 +279,7 @@ void Generator::generateCode()
         int idx = 0;
         for (int i = 0; i < strings.size(); ++i) {
             const QByteArray &str = strings.at(i);
-            fprintf(out, "QT_MOC_LITERAL(%d, %d)", idx, str.length());
+            fprintf(out, "QT_MOC_LITERAL(%d, %d)", idx, int(str.length()));
             if (i != strings.size() - 1)
                 fputc(',', out);
             const QByteArray comment = str.length() > 32 ? str.left(29) + "..." : str;

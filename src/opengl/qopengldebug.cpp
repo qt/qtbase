@@ -1540,7 +1540,7 @@ void QOpenGLDebugLogger::logMessage(const QOpenGLDebugMessage &debugMessage)
 
     if (rawMessage.length() > d->maxMessageLength) {
         qWarning("QOpenGLDebugLogger::logMessage(): message too long, truncating it\n"
-                 "    (%d bytes long, but the GL accepts up to %d bytes)", rawMessage.length(), d->maxMessageLength);
+                 "    (%d bytes long, but the GL accepts up to %d bytes)", int(rawMessage.length()), d->maxMessageLength);
         rawMessage.resize(d->maxMessageLength - 1);
         rawMessage.append('\0');
     }
@@ -1592,7 +1592,7 @@ void QOpenGLDebugLogger::pushGroup(const QString &name, GLuint id, QOpenGLDebugM
     rawName.append('\0');
     if (rawName.length() > d->maxMessageLength) {
         qWarning("QOpenGLDebugLogger::pushGroup(): group name too long, truncating it\n"
-                 "    (%d bytes long, but the GL accepts up to %d bytes)", rawName.length(), d->maxMessageLength);
+                 "    (%d bytes long, but the GL accepts up to %d bytes)", int(rawName.length()), d->maxMessageLength);
         rawName.resize(d->maxMessageLength - 1);
         rawName.append('\0');
     }

@@ -1636,7 +1636,7 @@ void QRhiMetal::enqueueSubresUpload(QMetalTexture *texD, void *mp, void *blitEnc
           destinationOrigin: MTLOriginMake(NSUInteger(dx), NSUInteger(dy), 0)
           options: MTLBlitOptionNone];
 
-        *curOfs += aligned(rawData.size(), QRhiMetalData::TEXBUF_ALIGN);
+        *curOfs += aligned<qsizetype>(rawData.size(), QRhiMetalData::TEXBUF_ALIGN);
     } else if (!rawData.isEmpty()) {
         const QSize subresSize = q->sizeForMipLevel(level, texD->m_pixelSize);
         const int subresw = subresSize.width();
@@ -1665,7 +1665,7 @@ void QRhiMetal::enqueueSubresUpload(QMetalTexture *texD, void *mp, void *blitEnc
           destinationOrigin: MTLOriginMake(NSUInteger(dp.x()), NSUInteger(dp.y()), 0)
           options: MTLBlitOptionNone];
 
-        *curOfs += aligned(rawData.size(), QRhiMetalData::TEXBUF_ALIGN);
+        *curOfs += aligned<qsizetype>(rawData.size(), QRhiMetalData::TEXBUF_ALIGN);
     } else {
         qWarning("Invalid texture upload for %p layer=%d mip=%d", texD, layer, level);
     }

@@ -516,7 +516,7 @@ static inline void write_icc_profile(const QImage &image, j_compress_ptr cinfo)
     const int markers = (iccProfile.size() + (maxIccMarkerSize - 1)) / maxIccMarkerSize;
     Q_ASSERT(markers < 256);
     for (int marker = 1; marker <= markers; ++marker) {
-        const int len = std::min(iccProfile.size() - index, maxIccMarkerSize);
+        const int len = qMin(iccProfile.size() - index, maxIccMarkerSize);
         const QByteArray block = iccSignature
                                + QByteArray(1, char(marker)) + QByteArray(1, char(markers))
                                + iccProfile.mid(index, len);

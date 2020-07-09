@@ -1023,9 +1023,9 @@ void tst_QByteArray::replace()
 void tst_QByteArray::replaceWithSpecifiedLength()
 {
     const char after[] = "zxc\0vbnmqwert";
-    int lenAfter = 6;
+    qsizetype lenAfter = 6;
     QByteArray ba("abcdefghjk");
-    ba.replace(0,2,after,lenAfter);
+    ba.replace(qsizetype(0), 2, after, lenAfter);
 
     const char _expected[] = "zxc\0vbcdefghjk";
     QByteArray expected(_expected,sizeof(_expected)-1);

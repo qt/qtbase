@@ -2250,9 +2250,9 @@ void tst_QCborValue::toDiagnosticNotation_data()
             if (t == QCborValue::Double)
                 return QTest::addRow("%sDouble:%g", prefix, v.toDouble());
             if (t == QCborValue::ByteArray)
-                return QTest::addRow("%sByteArray:%d", prefix, v.toByteArray().size());
+                return QTest::addRow("%sByteArray:%zd", prefix, size_t(v.toByteArray().size()));
             if (t == QCborValue::String)
-                return QTest::addRow("%sString:%d", prefix, v.toString().size());
+                return QTest::addRow("%sString:%zd", prefix, size_t(v.toString().size()));
 
             QByteArray typeString = me.valueToKey(t);
             Q_ASSERT(!typeString.isEmpty());
