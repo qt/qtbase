@@ -96,8 +96,6 @@ Q_CORE_EXPORT char *qstrcpy(char *dst, const char *src);
 Q_CORE_EXPORT char *qstrncpy(char *dst, const char *src, size_t len);
 
 Q_CORE_EXPORT int qstrcmp(const char *str1, const char *str2);
-static inline int qstrcmp(const char *str1, const QByteArray &str2)
-{ return -QtPrivate::compareMemory(str2, str1); }
 
 inline int qstrncmp(const char *str1, const char *str2, size_t len)
 {
@@ -559,41 +557,42 @@ inline int QByteArray::compare(const QByteArrayView &a, Qt::CaseSensitivity cs) 
     return cs == Qt::CaseSensitive ? QtPrivate::compareMemory(*this, a) :
                                      qstrnicmp(data(), size(), a.data(), a.size());
 }
-Q_CORE_EXPORT bool operator==(const QByteArray &a1, const QByteArray &a2) noexcept;
+inline bool operator==(const QByteArray &a1, const QByteArray &a2) noexcept
+{ return QByteArrayView(a1) == QByteArrayView(a2); }
 inline bool operator==(const QByteArray &a1, const char *a2) noexcept
 { return a2 ? QtPrivate::compareMemory(a1, a2) == 0 : a1.isEmpty(); }
 inline bool operator==(const char *a1, const QByteArray &a2) noexcept
-{ return a1 ? qstrcmp(a1,a2) == 0 : a2.isEmpty(); }
+{ return a1 ? QtPrivate::compareMemory(a1, a2) == 0 : a2.isEmpty(); }
 inline bool operator!=(const QByteArray &a1, const QByteArray &a2) noexcept
 { return !(a1==a2); }
 inline bool operator!=(const QByteArray &a1, const char *a2) noexcept
 { return a2 ? QtPrivate::compareMemory(a1, a2) != 0 : !a1.isEmpty(); }
 inline bool operator!=(const char *a1, const QByteArray &a2) noexcept
-{ return a1 ? qstrcmp(a1,a2) != 0 : !a2.isEmpty(); }
+{ return a1 ? QtPrivate::compareMemory(a1, a2) != 0 : !a2.isEmpty(); }
 inline bool operator<(const QByteArray &a1, const QByteArray &a2) noexcept
 { return QtPrivate::compareMemory(QByteArrayView(a1), QByteArrayView(a2)) < 0; }
  inline bool operator<(const QByteArray &a1, const char *a2) noexcept
 { return QtPrivate::compareMemory(a1, a2) < 0; }
 inline bool operator<(const char *a1, const QByteArray &a2) noexcept
-{ return qstrcmp(a1, a2) < 0; }
+{ return QtPrivate::compareMemory(a1, a2) < 0; }
 inline bool operator<=(const QByteArray &a1, const QByteArray &a2) noexcept
 { return QtPrivate::compareMemory(QByteArrayView(a1), QByteArrayView(a2)) <= 0; }
 inline bool operator<=(const QByteArray &a1, const char *a2) noexcept
 { return QtPrivate::compareMemory(a1, a2) <= 0; }
 inline bool operator<=(const char *a1, const QByteArray &a2) noexcept
-{ return qstrcmp(a1, a2) <= 0; }
+{ return QtPrivate::compareMemory(a1, a2) <= 0; }
 inline bool operator>(const QByteArray &a1, const QByteArray &a2) noexcept
 { return QtPrivate::compareMemory(QByteArrayView(a1), QByteArrayView(a2)) > 0; }
 inline bool operator>(const QByteArray &a1, const char *a2) noexcept
 { return QtPrivate::compareMemory(a1, a2) > 0; }
 inline bool operator>(const char *a1, const QByteArray &a2) noexcept
-{ return qstrcmp(a1, a2) > 0; }
+{ return QtPrivate::compareMemory(a1, a2) > 0; }
 inline bool operator>=(const QByteArray &a1, const QByteArray &a2) noexcept
 { return QtPrivate::compareMemory(QByteArrayView(a1), QByteArrayView(a2)) >= 0; }
 inline bool operator>=(const QByteArray &a1, const char *a2) noexcept
 { return QtPrivate::compareMemory(a1, a2) >= 0; }
 inline bool operator>=(const char *a1, const QByteArray &a2) noexcept
-{ return qstrcmp(a1, a2) >= 0; }
+{ return QtPrivate::compareMemory(a1, a2) >= 0; }
 #if !defined(QT_USE_QSTRINGBUILDER)
 inline const QByteArray operator+(const QByteArray &a1, const QByteArray &a2)
 { return QByteArray(a1) += a2; }
