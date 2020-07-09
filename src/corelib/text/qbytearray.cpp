@@ -67,6 +67,12 @@
 
 QT_BEGIN_NAMESPACE
 
+template <typename T, typename Cmp = std::less<>>
+static constexpr bool points_into_range(const T *p, const T *b, const T *e, Cmp less = {}) noexcept
+{
+    return !less(p, b) && less(p, e);
+}
+
 const char QByteArray::_empty = '\0';
 
 // ASCII case system, used by QByteArray::to{Upper,Lower}() and qstr(n)icmp():
@@ -470,7 +476,7 @@ static const quint16 crc_tbl[16] = {
     \relates QByteArray
     \since 5.9
 
-    Returns the CRC-16 checksum of the first \a len bytes of \a data.
+    Returns the CRC-16 checksum of \a data.
 
     The checksum is independent of the byte order (endianness) and will
     be calculated accorded to the algorithm published in \a standard.
@@ -479,7 +485,7 @@ static const quint16 crc_tbl[16] = {
     \note This function is a 16-bit cache conserving (16 entry table)
     implementation of the CRC-16-CCITT algorithm.
 */
-quint16 qChecksum(const char *data, qsizetype len, Qt::ChecksumType standard)
+quint16 qChecksum(QByteArrayView data, Qt::ChecksumType standard)
 {
     quint16 crc = 0x0000;
     switch (standard) {
@@ -491,7 +497,8 @@ quint16 qChecksum(const char *data, qsizetype len, Qt::ChecksumType standard)
         break;
     }
     uchar c;
-    const uchar *p = reinterpret_cast<const uchar *>(data);
+    const uchar *p = reinterpret_cast<const uchar *>(data.data());
+    qsizetype len = data.size();
     while (len--) {
         c = *p++;
         crc = ((crc >> 4) & 0x0fff) ^ crc_tbl[((crc ^ c) & 15)];
@@ -1697,7 +1704,9 @@ QByteArray QByteArray::nulTerminated() const
 }
 
 /*!
-    Prepends the byte array \a ba to this byte array and returns a
+    \fn QByteArray &QByteArray::prepend(QByteArrayView ba)
+
+    Prepends the byte array view \a ba to this byte array and returns a
     reference to this byte array.
 
     Example:
@@ -1705,60 +1714,31 @@ QByteArray QByteArray::nulTerminated() const
 
     This is the same as insert(0, \a ba).
 
-    Note: QByteArray is an \l{implicitly shared} class. Consequently,
-    if you prepend to an empty byte array, then the byte array will just
-    share the data held in \a ba. In this case, no copying of data is done,
-    taking \l{constant time}. If a shared instance is modified, it will
-    be copied (copy-on-write), taking \l{linear time}.
-
-    If the byte array being prepended to is not empty, a deep copy of the
-    data is performed, taking \l{linear time}.
-
     \sa append(), insert()
 */
 
-QByteArray &QByteArray::prepend(const QByteArray &ba)
-{
-    if (size() == 0 && ba.d.isMutable()) {
-        *this = ba;
-    } else if (ba.size() != 0) {
-        QByteArray tmp = *this;
-        *this = ba;
-        append(tmp);
-    }
-    return *this;
-}
+/*!
+    \fn QByteArray &QByteArray::prepend(const QByteArray &ba)
+    \overload
+
+    Prepends \a ba to this byte array.
+*/
 
 /*!
+    \fn QByteArray &QByteArray::prepend(const char *str)
     \overload
 
     Prepends the '\\0'-terminated string \a str to this byte array.
 */
 
-QByteArray &QByteArray::prepend(const char *str)
-{
-    return prepend(str, qstrlen(str));
-}
-
 /*!
+    \fn QByteArray &QByteArray::prepend(const char *str, qsizetype len)
     \overload
     \since 4.6
 
     Prepends \a len bytes starting at \a str to this byte array.
     The bytes prepended may include '\\0' bytes.
 */
-
-QByteArray &QByteArray::prepend(const char *str, qsizetype len)
-{
-    if (str) {
-        const bool shouldGrow = d->shouldGrowBeforeInsert(d.begin(), len);
-        if (d->needsDetach() || size() + len > capacity() || shouldGrow)
-            reallocGrowData(size_t(size() + len) + 1u, d->detachFlags() | Data::GrowsBackwards);
-        d->insert(d.begin(), str, str + len);
-        d.data()[d.size] = '\0';
-    }
-    return *this;
-}
 
 /*! \fn QByteArray &QByteArray::prepend(qsizetype count, char ch)
 
@@ -1769,20 +1749,11 @@ QByteArray &QByteArray::prepend(const char *str, qsizetype len)
 */
 
 /*!
+    \fn QByteArray &QByteArray::prepend(char ch)
     \overload
 
     Prepends the byte \a ch to this byte array.
 */
-
-QByteArray &QByteArray::prepend(char ch)
-{
-    const bool shouldGrow = d->shouldGrowBeforeInsert(d.begin(), 1);
-    if (d->needsDetach() || size() + 1 > capacity() || shouldGrow)
-        reallocGrowData(size_t(size()) + 2u, d->detachFlags() | Data::GrowsBackwards);
-    d->insert(d.begin(), 1, ch);
-    d.data()[d.size] = '\0';
-    return *this;
-}
 
 /*!
     Appends the byte array \a ba onto the end of this byte array.
@@ -1810,39 +1781,28 @@ QByteArray &QByteArray::prepend(char ch)
 
 QByteArray &QByteArray::append(const QByteArray &ba)
 {
-    if (size() == 0 && ba.d.isMutable()) {
-        *this = ba;
-    } else if (ba.size() != 0) {
-        const bool shouldGrow = d->shouldGrowBeforeInsert(d.end(), ba.size());
-        if (d->needsDetach() || size() + ba.size() > capacity() || shouldGrow)
-            reallocGrowData(size_t(size() + ba.size()) + 1u, d->detachFlags() | Data::GrowsForward);
-        d->copyAppend(ba.data(), ba.data() + ba.size());
-        d.data()[d.size] = '\0';
-    }
-    return *this;
+    if (size() == 0 && ba.d.isMutable())
+        return (*this = ba);
+    return append(QByteArrayView(ba));
 }
 
 /*!
+    \fn QByteArray &QByteArray::append(QByteArrayView data)
+    \overload
+
+    Appends \a data to this byte array.
+*/
+
+/*!
+    \fn QByteArray& QByteArray::append(const char *str)
     \overload
 
     Appends the '\\0'-terminated string \a str to this byte array.
 */
 
-QByteArray& QByteArray::append(const char *str)
-{
-    if (str) {
-        const qsizetype len = qsizetype(strlen(str));
-        const bool shouldGrow = d->shouldGrowBeforeInsert(d.end(), len);
-        if (d->needsDetach() || size() + len > capacity() || shouldGrow)
-            reallocGrowData(size_t(size() + len) + 1u, d->detachFlags() | Data::GrowsForward);
-        d->copyAppend(str, str + len);
-        d.data()[d.size] = '\0';
-    }
-    return *this;
-}
-
 /*!
-    \overload append()
+    \fn QByteArray &QByteArray::append(const char *str, qsizetype len)
+    \overload
 
     Appends the first \a len bytes starting at \a str to this byte array and
     returns a reference to this byte array. The bytes appended may include '\\0'
@@ -1855,20 +1815,6 @@ QByteArray& QByteArray::append(const char *str)
     If \a len is zero or \a str is null, nothing is appended to the byte
     array. Ensure that \a len is \e not longer than \a str.
 */
-
-QByteArray &QByteArray::append(const char *str, qsizetype len)
-{
-    if (len < 0)
-        len = qstrlen(str);
-    if (str && len) {
-        const bool shouldGrow = d->shouldGrowBeforeInsert(d.end(), len);
-        if (d->needsDetach() || size() + len > capacity() || shouldGrow)
-            reallocGrowData(size_t(size() + len) + 1u, d->detachFlags() | Data::GrowsForward);
-        d->copyAppend(str, str + len);
-        d.data()[d.size] = '\0';
-    }
-    return *this;
-}
 
 /*! \fn QByteArray &QByteArray::append(qsizetype count, char ch)
 
@@ -1898,62 +1844,26 @@ QByteArray& QByteArray::append(char ch)
 }
 
 /*!
-  \internal
-  Inserts \a len bytes from the array \a arr at position \a pos and returns a
-  reference the modified byte array.
-*/
-static inline QByteArray &qbytearray_insert(QByteArray *ba,
-                                            qsizetype pos, const char *arr, qsizetype len)
-{
-    return ba->insert(pos, arr, len);
-}
-
-/*!
-    Inserts the byte array \a ba at index position \a i and returns a
+    Inserts \a data at index position \a i and returns a
     reference to this byte array.
 
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 17
+    \since 6.0
 
     \sa append(), prepend(), replace(), remove()
 */
-
-QByteArray &QByteArray::insert(qsizetype i, const QByteArray &ba)
+QByteArray &QByteArray::insert(qsizetype i, QByteArrayView data)
 {
-    QByteArray copy(ba);
-    return qbytearray_insert(this, i, copy.constData(), copy.size());
-}
-
-/*!
-    \overload
-
-    Inserts the '\\0'-terminated string \a str at position \a i in the byte
-    array.
-
-    If \a i is greater than size(), the array is first extended using
-    resize().
-*/
-
-QByteArray &QByteArray::insert(qsizetype i, const char *str)
-{
-    return qbytearray_insert(this, i, str, qstrlen(str));
-}
-
-/*!
-    \overload
-    \since 4.6
-
-    Inserts \a len bytes, starting at \a str, at position \a i in the byte
-    array.
-
-    If \a i is greater than size(), the array is first extended using
-    resize().
-*/
-
-QByteArray &QByteArray::insert(qsizetype i, const char *str, qsizetype len)
-{
+    const char *str = data.data();
+    qsizetype len = data.size();
     if (i < 0 || str == nullptr || len <= 0)
         return *this;
+
+    if (points_into_range(str, d.data(), d.data() + d.size)) {
+        QVarLengthArray a(str, str + len);
+        return insert(i, a);
+    }
 
     const auto oldSize = size();
     const auto newSize = qMax(i, oldSize) + len;
@@ -1962,7 +1872,7 @@ QByteArray &QByteArray::insert(qsizetype i, const char *str, qsizetype len)
     // ### optimize me
     if (d->needsDetach() || newSize > capacity() || shouldGrow) {
         auto flags = d->detachFlags() | Data::GrowsForward;
-        if (i <= oldSize / 4)  // using QList's policy
+        if (oldSize != 0 && i <= oldSize / 4)  // using QList's policy
             flags |= Data::GrowsBackwards;
         reallocGrowData(newSize + 1, flags);
     }
@@ -1976,16 +1886,24 @@ QByteArray &QByteArray::insert(qsizetype i, const char *str, qsizetype len)
 }
 
 /*!
+    \fn QByteArray &QByteArray::insert(qsizetype i, const char *data, qsizetype len)
+    \overload
+    \since 4.6
+
+    Inserts \a len bytes, starting at \a data, at position \a i in the byte
+    array.
+
+    If \a i is greater than size(), the array is first extended using
+    resize().
+*/
+
+/*!
+    \fn QByteArray &QByteArray::insert(qsizetype i, char ch)
     \overload
 
     Inserts byte \a ch at index position \a i in the byte array. If \a i is
     greater than size(), the array is first extended using resize().
 */
-
-QByteArray &QByteArray::insert(qsizetype i, char ch)
-{
-    return qbytearray_insert(this, i, &ch, 1);
-}
 
 /*! \fn QByteArray &QByteArray::insert(qsizetype i, qsizetype count, char ch)
 
@@ -2057,32 +1975,21 @@ QByteArray &QByteArray::remove(qsizetype pos, qsizetype len)
     \sa insert(), remove()
 */
 
-QByteArray &QByteArray::replace(qsizetype pos, qsizetype len, const QByteArray &after)
+QByteArray &QByteArray::replace(qsizetype pos, qsizetype len, QByteArrayView after)
 {
+    if (points_into_range(after.data(), d.data(), d.data() + d.size)) {
+        QVarLengthArray copy(after.data(), after.data() + after.size());
+        return replace(pos, len, QByteArrayView{copy});
+    }
     if (len == after.size() && (pos + len <= size())) {
         detach();
         memmove(d.data() + pos, after.data(), len*sizeof(char));
         return *this;
     } else {
-        QByteArray copy(after);
         // ### optimize me
         remove(pos, len);
-        return insert(pos, copy);
+        return insert(pos, after);
     }
-}
-
-/*! \fn QByteArray &QByteArray::replace(qsizetype pos, qsizetype len, const char *after)
-
-    \overload
-
-    Replaces \a len bytes from index position \a pos with the
-    '\\0'-terminated string \a after.
-
-    Notice: this can change the length of the byte array.
-*/
-QByteArray &QByteArray::replace(qsizetype pos, qsizetype len, const char *after)
-{
-    return replace(pos,len,after,qstrlen(after));
 }
 
 /*! \fn QByteArray &QByteArray::replace(qsizetype pos, qsizetype len, const char *after, qsizetype alen)
@@ -2094,23 +2001,20 @@ QByteArray &QByteArray::replace(qsizetype pos, qsizetype len, const char *after)
 
     \since 4.7
 */
-QByteArray &QByteArray::replace(qsizetype pos, qsizetype len, const char *after, qsizetype alen)
-{
-    if (len == alen && (pos + len <= size())) {
-        detach();
-        memcpy(d.data() + pos, after, len*sizeof(char));
-        return *this;
-    } else {
-        remove(pos, len);
-        return qbytearray_insert(this, pos, after, alen);
-    }
-}
 
-// ### optimize all other replace method, by offering
-// QByteArray::replace(const char *before, qsizetype blen, const char *after, qsizetype alen)
+/*!
+    \fn QByteArray &QByteArray::replace(const char *before, qsizetype bsize, const char *after, qsizetype asize)
+    \overload
+
+    Replaces every occurrence of the \a bsize bytes starting at \a before with
+    the \a asize bytes starting at \a after. Since the sizes of the strings are
+    given by \a bsize and \a asize, they may contain '\\0' bytes and do not need
+    to be '\\0'-terminated.
+*/
 
 /*!
     \overload
+    \since 6.0
 
     Replaces every occurrence of the byte array \a before with the
     byte array \a after.
@@ -2119,56 +2023,27 @@ QByteArray &QByteArray::replace(qsizetype pos, qsizetype len, const char *after,
     \snippet code/src_corelib_text_qbytearray.cpp 20
 */
 
-QByteArray &QByteArray::replace(const QByteArray &before, const QByteArray &after)
+QByteArray &QByteArray::replace(QByteArrayView before, QByteArrayView after)
 {
-    return replace(before.constData(), before.size(), after.constData(), after.size());
-}
+    const char *b = before.data();
+    qsizetype bsize = before.size();
+    const char *a = after.data();
+    qsizetype asize = after.size();
 
-/*!
-    \fn QByteArray &QByteArray::replace(const char *before, const QByteArray &after)
-    \overload
-
-    Replaces every occurrence of the '\\0'-terminated string \a before with the
-    byte array \a after.
-*/
-
-QByteArray &QByteArray::replace(const char *c, const QByteArray &after)
-{
-    return replace(c, qstrlen(c), after.constData(), after.size());
-}
-
-/*!
-    \fn QByteArray &QByteArray::replace(const char *before, qsizetype bsize, const char *after, qsizetype asize)
-    \overload
-
-    Replaces every occurrence of the \a bsize bytes starting at \a before with
-    the \a size bytes starting at \a after. Since the sizes of the strings are
-    given by \a bsize and \a asize, they may contain '\\0' bytes and do not need
-    to be '\\0'-terminated.
-*/
-
-QByteArray &QByteArray::replace(const char *before, qsizetype bsize, const char *after, qsizetype asize)
-{
-    if (isNull() || (before == after && bsize == asize))
+    if (isNull() || (b == a && bsize == asize))
         return *this;
 
     // protect against before or after being part of this
-    const char *a = after;
-    const char *b = before;
-    if (after >= constBegin() && after < constEnd()) {
-        char *copy = (char *)malloc(asize);
-        Q_CHECK_PTR(copy);
-        memcpy(copy, after, asize);
-        a = copy;
+    if (points_into_range(a, d.data(), d.data() + d.size)) {
+        QVarLengthArray copy(a, a + asize);
+        return replace(before, QByteArrayView{copy});
     }
-    if (before >= constBegin() && before < constEnd()) {
-        char *copy = (char *)malloc(bsize);
-        Q_CHECK_PTR(copy);
-        memcpy(copy, before, bsize);
-        b = copy;
+    if (points_into_range(b, d.data(), d.data() + d.size)) {
+        QVarLengthArray copy(b, b + bsize);
+        return replace(QByteArrayView{copy}, after);
     }
 
-    QByteArrayMatcher matcher(before, bsize);
+    QByteArrayMatcher matcher(b, bsize);
     qsizetype index = 0;
     qsizetype len = size();
     char *d = data(); // detaches
@@ -2252,13 +2127,6 @@ QByteArray &QByteArray::replace(const char *before, qsizetype bsize, const char 
             }
         }
     }
-
-    if (a != after)
-        ::free(const_cast<char *>(a));
-    if (b != before)
-        ::free(const_cast<char *>(b));
-
-
     return *this;
 }
 
@@ -2280,24 +2148,11 @@ QByteArray &QByteArray::replace(const char *before, qsizetype bsize, const char 
 */
 
 /*!
+    \fn QByteArray &QByteArray::replace(char before, QByteArrayView after)
     \overload
 
     Replaces every occurrence of the byte \a before with the byte array \a
     after.
-*/
-
-QByteArray &QByteArray::replace(char before, const QByteArray &after)
-{
-    char b[2] = { before, '\0' };
-    return replace(b, 1, after.constData(), after.size());
-}
-
-/*! \fn QByteArray &QByteArray::replace(char before, const char *after)
-
-    \overload
-
-    Replaces every occurrence of the byte \a before with the '\\0'-terminated
-    string \a after.
 */
 
 /*!

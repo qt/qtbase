@@ -111,8 +111,14 @@ Q_CORE_EXPORT int qvsnprintf(char *str, size_t n, const char *fmt, va_list ap);
 Q_CORE_EXPORT int qsnprintf(char *str, size_t n, const char *fmt, ...);
 
 // qChecksum: Internet checksum
-Q_CORE_EXPORT quint16 qChecksum(const char *s, qsizetype len,
-                                Qt::ChecksumType standard = Qt::ChecksumIso3309);
+Q_CORE_EXPORT quint16 qChecksum(QByteArrayView data, Qt::ChecksumType standard = Qt::ChecksumIso3309);
+
+#if QT_DEPRECATED_SINCE(6, 0)
+QT_DEPRECATED_VERSION_X_6_0("Use the QByteArrayView overload.")
+inline quint16 qChecksum(const char *s, qsizetype len,
+                         Qt::ChecksumType standard = Qt::ChecksumIso3309)
+{ return qChecksum(QByteArrayView(s, len), standard); }
+#endif
 
 class QString;
 class QDataStream;
@@ -271,36 +277,55 @@ public:
     Q_REQUIRED_RESULT QByteArray leftJustified(qsizetype width, char fill = ' ', bool truncate = false) const;
     Q_REQUIRED_RESULT QByteArray rightJustified(qsizetype width, char fill = ' ', bool truncate = false) const;
 
-    QByteArray &prepend(char c);
+    QByteArray &prepend(char c)
+    { return insert(0, QByteArrayView(&c, 1)); }
     inline QByteArray &prepend(qsizetype count, char c);
-    QByteArray &prepend(const char *s);
-    QByteArray &prepend(const char *s, qsizetype len);
-    QByteArray &prepend(const QByteArray &a);
+    QByteArray &prepend(const char *s)
+    { return insert(0, QByteArrayView(s, qsizetype(qstrlen(s)))); }
+    QByteArray &prepend(const char *s, qsizetype len)
+    { return insert(0, QByteArrayView(s, len)); }
+    QByteArray &prepend(const QByteArray &a)
+    { return insert(0, a); }
+    QByteArray &prepend(QByteArrayView a)
+    { return insert(0, a); }
+
     QByteArray &append(char c);
     inline QByteArray &append(qsizetype count, char c);
-    QByteArray &append(const char *s);
-    QByteArray &append(const char *s, qsizetype len);
+    QByteArray &append(const char *s)
+    { return append(QByteArrayView(s, qsizetype(qstrlen(s)))); }
+    QByteArray &append(const char *s, qsizetype len)
+    { return append(QByteArrayView(s, len)); }
     QByteArray &append(const QByteArray &a);
-    QByteArray &insert(qsizetype i, char c);
+    QByteArray &append(QByteArrayView a)
+    { return insert(size(), a); }
+
+    QByteArray &insert(qsizetype i, QByteArrayView data);
     QByteArray &insert(qsizetype i, qsizetype count, char c);
-    QByteArray &insert(qsizetype i, const char *s);
-    QByteArray &insert(qsizetype i, const char *s, qsizetype len);
-    QByteArray &insert(qsizetype i, const QByteArray &a);
+    QByteArray &insert(qsizetype i, char c)
+    { return insert(i, QByteArrayView(&c, 1)); }
+    QByteArray &insert(qsizetype i, const char *s, qsizetype len)
+    { return insert(i, QByteArrayView(s, len)); }
+
     QByteArray &remove(qsizetype index, qsizetype len);
-    QByteArray &replace(qsizetype index, qsizetype len, const char *s);
-    QByteArray &replace(qsizetype index, qsizetype len, const char *s, qsizetype alen);
-    QByteArray &replace(qsizetype index, qsizetype len, const QByteArray &s);
-    inline QByteArray &replace(char before, const char *after);
-    QByteArray &replace(char before, const QByteArray &after);
-    inline QByteArray &replace(const char *before, const char *after);
-    QByteArray &replace(const char *before, qsizetype bsize, const char *after, qsizetype asize);
-    QByteArray &replace(const QByteArray &before, const QByteArray &after);
-    inline QByteArray &replace(const QByteArray &before, const char *after);
-    QByteArray &replace(const char *before, const QByteArray &after);
+
+    QByteArray &replace(qsizetype index, qsizetype len, const char *s, qsizetype alen)
+    { return replace(index, len, QByteArrayView(s, alen)); }
+    QByteArray &replace(qsizetype index, qsizetype len, QByteArrayView s);
+    QByteArray &replace(char before, QByteArrayView after)
+    { return replace(QByteArrayView(&before, 1), after); }
+    QByteArray &replace(const char *before, qsizetype bsize, const char *after, qsizetype asize)
+    { return replace(QByteArrayView(before, bsize), QByteArrayView(after, asize)); }
+    QByteArray &replace(QByteArrayView before, QByteArrayView after);
     QByteArray &replace(char before, char after);
-    inline QByteArray &operator+=(char c);
-    inline QByteArray &operator+=(const char *s);
-    inline QByteArray &operator+=(const QByteArray &a);
+
+    QByteArray &operator+=(char c)
+    { return append(c); }
+    QByteArray &operator+=(const char *s)
+    { return append(s); }
+    QByteArray &operator+=(const QByteArray &a)
+    { return append(a); }
+    QByteArray &operator+=(QByteArrayView a)
+    { return append(a); }
 
     QList<QByteArray> split(char sep) const;
 
@@ -531,12 +556,6 @@ inline QByteArray &QByteArray::append(qsizetype n, char ch)
 { return insert(size(), n, ch); }
 inline QByteArray &QByteArray::prepend(qsizetype n, char ch)
 { return insert(0, n, ch); }
-inline QByteArray &QByteArray::operator+=(char c)
-{ return append(c); }
-inline QByteArray &QByteArray::operator+=(const char *s)
-{ return append(s); }
-inline QByteArray &QByteArray::operator+=(const QByteArray &a)
-{ return append(a); }
 inline void QByteArray::push_back(char c)
 { append(c); }
 inline void QByteArray::push_back(const char *c)
@@ -606,12 +625,6 @@ inline const QByteArray operator+(const char *a1, const QByteArray &a2)
 inline const QByteArray operator+(char a1, const QByteArray &a2)
 { return QByteArray(&a1, 1) += a2; }
 #endif // QT_USE_QSTRINGBUILDER
-inline QByteArray &QByteArray::replace(char before, const char *c)
-{ return replace(&before, 1, c, qstrlen(c)); }
-inline QByteArray &QByteArray::replace(const QByteArray &before, const char *c)
-{ return replace(before.constData(), before.size(), c, qstrlen(c)); }
-inline QByteArray &QByteArray::replace(const char *before, const char *after)
-{ return replace(before, qstrlen(before), after, qstrlen(after)); }
 
 inline QByteArray &QByteArray::setNum(short n, int base)
 { return base == 10 ? setNum(qlonglong(n), base) : setNum(qulonglong(ushort(n)), base); }

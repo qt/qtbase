@@ -195,7 +195,7 @@ x.append(y);
 
 //! [17]
 QByteArray ba("Meal");
-ba.insert(1, QByteArray("ontr"));
+ba.insert(1, QByteArrayView("ontr"));
 // ba == "Montreal"
 //! [17]
 
