@@ -1037,6 +1037,13 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
     to append(\a other).
 */
 
+/*! \fn void QByteArray::push_back(QByteArrayView str)
+    \since 6.0
+    \overload
+
+    Same as append(\a str).
+*/
+
 /*! \fn void QByteArray::push_back(const char *str)
 
     \overload
@@ -1055,6 +1062,13 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
 
     This function is provided for STL compatibility. It is equivalent
     to prepend(\a other).
+*/
+
+/*! \fn void QByteArray::push_front(QByteArrayView str)
+    \since 6.0
+    \overload
+
+    Same as prepend(\a str).
 */
 
 /*! \fn void QByteArray::push_front(const char *str)

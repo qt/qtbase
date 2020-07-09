@@ -427,12 +427,22 @@ public:
     typedef char *pointer;
     typedef const char *const_pointer;
     typedef char value_type;
-    inline void push_back(char c);
-    inline void push_back(const char *c);
-    inline void push_back(const QByteArray &a);
-    inline void push_front(char c);
-    inline void push_front(const char *c);
-    inline void push_front(const QByteArray &a);
+    void push_back(char c)
+    { append(c); }
+    void push_back(const char *s)
+    { append(s); }
+    void push_back(const QByteArray &a)
+    { append(a); }
+    void push_back(QByteArrayView a)
+    { append(a); }
+    void push_front(char c)
+    { prepend(c); }
+    void push_front(const char *c)
+    { prepend(c); }
+    void push_front(const QByteArray &a)
+    { prepend(a); }
+    void push_front(QByteArrayView a)
+    { prepend(a); }
     void shrink_to_fit() { squeeze(); }
 
     static inline QByteArray fromStdString(const std::string &s);
@@ -556,18 +566,6 @@ inline QByteArray &QByteArray::append(qsizetype n, char ch)
 { return insert(size(), n, ch); }
 inline QByteArray &QByteArray::prepend(qsizetype n, char ch)
 { return insert(0, n, ch); }
-inline void QByteArray::push_back(char c)
-{ append(c); }
-inline void QByteArray::push_back(const char *c)
-{ append(c); }
-inline void QByteArray::push_back(const QByteArray &a)
-{ append(a); }
-inline void QByteArray::push_front(char c)
-{ prepend(c); }
-inline void QByteArray::push_front(const char *c)
-{ prepend(c); }
-inline void QByteArray::push_front(const QByteArray &a)
-{ prepend(a); }
 inline bool QByteArray::contains(char c) const
 { return indexOf(c) != -1; }
 inline bool QByteArray::contains(QByteArrayView bv) const
