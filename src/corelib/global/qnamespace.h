@@ -77,34 +77,6 @@ namespace Qt {
         transparent
     };
 
-    enum KeyboardModifier {
-        NoModifier           = 0x00000000,
-        ShiftModifier        = 0x02000000,
-        ControlModifier      = 0x04000000,
-        AltModifier          = 0x08000000,
-        MetaModifier         = 0x10000000,
-        KeypadModifier       = 0x20000000,
-        GroupSwitchModifier  = 0x40000000,
-        // Do not extend the mask to include 0x01000000
-        KeyboardModifierMask = 0xfe000000
-    };
-    Q_DECLARE_FLAGS(KeyboardModifiers, KeyboardModifier)
-    Q_DECLARE_OPERATORS_FOR_FLAGS(KeyboardModifiers)
-
-    //shorter names for shortcuts
-    // The use of all-caps identifiers has the potential for clashing with
-    // user-defined or third-party macros. More so when the identifiers are not
-    // "namespace"-prefixed. This is considered bad practice and is why
-    // KeypadModifier was not added to the Modifier enum.
-    // ### Qt 7: consider deprecating in favor of KeyboardModifier.
-    enum Modifier {
-        META          = Qt::MetaModifier,
-        SHIFT         = Qt::ShiftModifier,
-        CTRL          = Qt::ControlModifier,
-        ALT           = Qt::AltModifier,
-        MODIFIER_MASK = KeyboardModifierMask,
-    };
-
     enum MouseButton {
         NoButton         = 0x00000000,
         LeftButton       = 0x00000001,
@@ -564,77 +536,8 @@ namespace Qt {
     };
 
     enum Key {
-        Key_Escape = 0x01000000,                // misc keys
-        Key_Tab = 0x01000001,
-        Key_Backtab = 0x01000002,
-        Key_Backspace = 0x01000003,
-        Key_Return = 0x01000004,
-        Key_Enter = 0x01000005,
-        Key_Insert = 0x01000006,
-        Key_Delete = 0x01000007,
-        Key_Pause = 0x01000008,
-        Key_Print = 0x01000009,               // print screen
-        Key_SysReq = 0x0100000a,
-        Key_Clear = 0x0100000b,
-        Key_Home = 0x01000010,                // cursor movement
-        Key_End = 0x01000011,
-        Key_Left = 0x01000012,
-        Key_Up = 0x01000013,
-        Key_Right = 0x01000014,
-        Key_Down = 0x01000015,
-        Key_PageUp = 0x01000016,
-        Key_PageDown = 0x01000017,
-        Key_Shift = 0x01000020,                // modifiers
-        Key_Control = 0x01000021,
-        Key_Meta = 0x01000022,
-        Key_Alt = 0x01000023,
-        Key_CapsLock = 0x01000024,
-        Key_NumLock = 0x01000025,
-        Key_ScrollLock = 0x01000026,
-        Key_F1 = 0x01000030,                // function keys
-        Key_F2 = 0x01000031,
-        Key_F3 = 0x01000032,
-        Key_F4 = 0x01000033,
-        Key_F5 = 0x01000034,
-        Key_F6 = 0x01000035,
-        Key_F7 = 0x01000036,
-        Key_F8 = 0x01000037,
-        Key_F9 = 0x01000038,
-        Key_F10 = 0x01000039,
-        Key_F11 = 0x0100003a,
-        Key_F12 = 0x0100003b,
-        Key_F13 = 0x0100003c,
-        Key_F14 = 0x0100003d,
-        Key_F15 = 0x0100003e,
-        Key_F16 = 0x0100003f,
-        Key_F17 = 0x01000040,
-        Key_F18 = 0x01000041,
-        Key_F19 = 0x01000042,
-        Key_F20 = 0x01000043,
-        Key_F21 = 0x01000044,
-        Key_F22 = 0x01000045,
-        Key_F23 = 0x01000046,
-        Key_F24 = 0x01000047,
-        Key_F25 = 0x01000048,                // F25 .. F35 only on X11
-        Key_F26 = 0x01000049,
-        Key_F27 = 0x0100004a,
-        Key_F28 = 0x0100004b,
-        Key_F29 = 0x0100004c,
-        Key_F30 = 0x0100004d,
-        Key_F31 = 0x0100004e,
-        Key_F32 = 0x0100004f,
-        Key_F33 = 0x01000050,
-        Key_F34 = 0x01000051,
-        Key_F35 = 0x01000052,
-        Key_Super_L = 0x01000053,                 // extra keys
-        Key_Super_R = 0x01000054,
-        Key_Menu = 0x01000055,
-        Key_Hyper_L = 0x01000056,
-        Key_Hyper_R = 0x01000057,
-        Key_Help = 0x01000058,
-        Key_Direction_L = 0x01000059,
-        Key_Direction_R = 0x01000060,
-        Key_Space = 0x20,                // 7 bit printable ASCII
+        // Unicode Basic Latin block (0x00-0x7f)
+        Key_Space = 0x20,
         Key_Any = Key_Space,
         Key_Exclam = 0x21,
         Key_QuoteDbl = 0x22,
@@ -705,6 +608,7 @@ namespace Qt {
         Key_BraceRight = 0x7d,
         Key_AsciiTilde = 0x7e,
 
+        // Unicode Latin-1 Supplement block (0x80-0xff)
         Key_nobreakspace = 0x0a0,
         Key_exclamdown = 0x0a1,
         Key_cent = 0x0a2,
@@ -771,6 +675,84 @@ namespace Qt {
         Key_ssharp = 0x0df,
         Key_division = 0x0f7,
         Key_ydiaeresis = 0x0ff,
+
+        // The rest of the Unicode values are skipped here,
+        // so that we can represent them along with Qt::Keys
+        // in the same data type. The maximum Unicode value
+        // is 0x0010ffff, so we start our custom keys at
+        // 0x01000000 to not clash with the Unicode values,
+        // but still give plenty of room to grow.
+
+        Key_Escape = 0x01000000,                // misc keys
+        Key_Tab = 0x01000001,
+        Key_Backtab = 0x01000002,
+        Key_Backspace = 0x01000003,
+        Key_Return = 0x01000004,
+        Key_Enter = 0x01000005,
+        Key_Insert = 0x01000006,
+        Key_Delete = 0x01000007,
+        Key_Pause = 0x01000008,
+        Key_Print = 0x01000009,               // print screen
+        Key_SysReq = 0x0100000a,
+        Key_Clear = 0x0100000b,
+        Key_Home = 0x01000010,                // cursor movement
+        Key_End = 0x01000011,
+        Key_Left = 0x01000012,
+        Key_Up = 0x01000013,
+        Key_Right = 0x01000014,
+        Key_Down = 0x01000015,
+        Key_PageUp = 0x01000016,
+        Key_PageDown = 0x01000017,
+        Key_Shift = 0x01000020,                // modifiers
+        Key_Control = 0x01000021,
+        Key_Meta = 0x01000022,
+        Key_Alt = 0x01000023,
+        Key_CapsLock = 0x01000024,
+        Key_NumLock = 0x01000025,
+        Key_ScrollLock = 0x01000026,
+        Key_F1 = 0x01000030,                // function keys
+        Key_F2 = 0x01000031,
+        Key_F3 = 0x01000032,
+        Key_F4 = 0x01000033,
+        Key_F5 = 0x01000034,
+        Key_F6 = 0x01000035,
+        Key_F7 = 0x01000036,
+        Key_F8 = 0x01000037,
+        Key_F9 = 0x01000038,
+        Key_F10 = 0x01000039,
+        Key_F11 = 0x0100003a,
+        Key_F12 = 0x0100003b,
+        Key_F13 = 0x0100003c,
+        Key_F14 = 0x0100003d,
+        Key_F15 = 0x0100003e,
+        Key_F16 = 0x0100003f,
+        Key_F17 = 0x01000040,
+        Key_F18 = 0x01000041,
+        Key_F19 = 0x01000042,
+        Key_F20 = 0x01000043,
+        Key_F21 = 0x01000044,
+        Key_F22 = 0x01000045,
+        Key_F23 = 0x01000046,
+        Key_F24 = 0x01000047,
+        Key_F25 = 0x01000048,                // F25 .. F35 only on X11
+        Key_F26 = 0x01000049,
+        Key_F27 = 0x0100004a,
+        Key_F28 = 0x0100004b,
+        Key_F29 = 0x0100004c,
+        Key_F30 = 0x0100004d,
+        Key_F31 = 0x0100004e,
+        Key_F32 = 0x0100004f,
+        Key_F33 = 0x01000050,
+        Key_F34 = 0x01000051,
+        Key_F35 = 0x01000052,
+        Key_Super_L = 0x01000053,                 // extra keys
+        Key_Super_R = 0x01000054,
+        Key_Menu = 0x01000055,
+        Key_Hyper_L = 0x01000056,
+        Key_Hyper_R = 0x01000057,
+        Key_Help = 0x01000058,
+        Key_Direction_L = 0x01000059,
+        Key_Direction_R = 0x01000060,
 
         // International input method support (X keycode - 0xEE00, the
         // definition follows Qt/Embedded 2.3.7) Only interesting if
@@ -901,8 +883,8 @@ namespace Qt {
         Key_MediaPrevious  = 0x01000082,
         Key_MediaNext  = 0x01000083,
         Key_MediaRecord = 0x01000084,
-        Key_MediaPause = 0x1000085,
-        Key_MediaTogglePlayPause = 0x1000086,
+        Key_MediaPause = 0x01000085,
+        Key_MediaTogglePlayPause = 0x01000086,
         Key_HomePage  = 0x01000090,
         Key_Favorites  = 0x01000091,
         Key_Search  = 0x01000092,
@@ -1083,7 +1065,38 @@ namespace Qt {
         Key_Camera = 0x01100020,
         Key_CameraFocus = 0x01100021,
 
+        // WARNING: Do not add any keys in the range 0x01200000 to 0xffffffff,
+        // as those bits are reserved for the Qt::KeyboardModifier enum below.
+
         Key_unknown = 0x01ffffff
+    };
+
+    enum KeyboardModifier {
+        NoModifier           = 0x00000000,
+        ShiftModifier        = 0x02000000,
+        ControlModifier      = 0x04000000,
+        AltModifier          = 0x08000000,
+        MetaModifier         = 0x10000000,
+        KeypadModifier       = 0x20000000,
+        GroupSwitchModifier  = 0x40000000,
+        // Do not extend the mask to include 0x01000000
+        KeyboardModifierMask = 0xfe000000
+    };
+    Q_DECLARE_FLAGS(KeyboardModifiers, KeyboardModifier)
+    Q_DECLARE_OPERATORS_FOR_FLAGS(KeyboardModifiers)
+
+    //shorter names for shortcuts
+    // The use of all-caps identifiers has the potential for clashing with
+    // user-defined or third-party macros. More so when the identifiers are not
+    // "namespace"-prefixed. This is considered bad practice and is why
+    // KeypadModifier was not added to the Modifier enum.
+    // ### Qt 7: consider deprecating in favor of KeyboardModifier.
+    enum Modifier {
+        META          = Qt::MetaModifier,
+        SHIFT         = Qt::ShiftModifier,
+        CTRL          = Qt::ControlModifier,
+        ALT           = Qt::AltModifier,
+        MODIFIER_MASK = KeyboardModifierMask,
     };
 
     enum ArrowType {
