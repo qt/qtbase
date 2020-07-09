@@ -2538,7 +2538,7 @@ qsizetype QtPrivate::count(QByteArrayView haystack, QByteArrayView needle) noexc
     return num;
 }
 
-/*! \fn qsizetype QByteArray::count(QByteArrayView &bv) const
+/*! \fn qsizetype QByteArray::count(QByteArrayView bv) const
     \since 6.0
 
     Returns the number of (potentially overlapping) occurrences of the
@@ -2568,7 +2568,7 @@ qsizetype QByteArray::count(char ch) const
 */
 
 /*!
-    \fn int QByteArray::compare(const QByteArrayView &bv, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    \fn int QByteArray::compare(QByteArrayView bv, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
     \since 6.0
 
     Returns an integer less than, equal to, or greater than zero depending on

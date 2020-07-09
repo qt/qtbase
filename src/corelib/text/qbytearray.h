@@ -210,10 +210,10 @@ public:
     inline bool contains(char c) const;
     inline bool contains(QByteArrayView bv) const;
     qsizetype count(char c) const;
-    qsizetype count(const QByteArrayView &bv) const
+    qsizetype count(QByteArrayView bv) const
     { return QtPrivate::count(qToByteArrayViewIgnoringNull(*this), bv); }
 
-    inline int compare(const QByteArrayView &a, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
+    inline int compare(QByteArrayView a, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
 
     Q_REQUIRED_RESULT QByteArray left(qsizetype len) const;
     Q_REQUIRED_RESULT QByteArray right(qsizetype len) const;
@@ -552,7 +552,7 @@ inline bool QByteArray::contains(char c) const
 { return indexOf(c) != -1; }
 inline bool QByteArray::contains(QByteArrayView bv) const
 { return indexOf(bv) != -1; }
-inline int QByteArray::compare(const QByteArrayView &a, Qt::CaseSensitivity cs) const noexcept
+inline int QByteArray::compare(QByteArrayView a, Qt::CaseSensitivity cs) const noexcept
 {
     return cs == Qt::CaseSensitive ? QtPrivate::compareMemory(*this, a) :
                                      qstrnicmp(data(), size(), a.data(), a.size());
