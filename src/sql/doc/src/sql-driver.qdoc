@@ -97,7 +97,7 @@
     (or \c{MYSQL_PREFIX="C:/Program Files/MySQL/MySQL Connector C 6.1"} for Windows).
     The particulars for each driver are explained below.
 
-    If something goes wrong and you want qmake to recheck your
+    \note If something goes wrong and you want qmake to recheck your
     available drivers, you must remove \e{config.cache} in
     \e{<QTDIR>/qtbase/src/plugins/sqldrivers} - otherwise qmake will not
     search for the available drivers again. If you encounter an error during
