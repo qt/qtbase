@@ -847,7 +847,7 @@ static void QT_FASTCALL intermediate_adder(uint *b, uint *end, const Intermediat
 {
 #if defined(QT_COMPILER_SUPPORTS_AVX2)
     extern void QT_FASTCALL intermediate_adder_avx2(uint *b, uint *end, const IntermediateBuffer &intermediate, int offset, int &fx, int fdx);
-    if (qCpuHasFeature(AVX2))
+    if (qCpuHasFeature(ArchHaswell))
         return intermediate_adder_avx2(b, end, intermediate, offset, fx, fdx);
 #endif
 
