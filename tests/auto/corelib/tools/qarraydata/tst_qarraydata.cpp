@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -37,6 +37,7 @@
 #include <tuple>
 #include <algorithm>
 #include <vector>
+#include <stdexcept>
 
 // A wrapper for a test function. Calls a function, if it fails, reports failure
 #define RUN_TEST_FUNC(test, ...) \
@@ -75,6 +76,12 @@ private slots:
     void variadicLiterals();
     void rValueReferences();
     void grow();
+#ifndef QT_NO_EXCEPTIONS
+    void exceptionSafetyPrimitives_constructor();
+    void exceptionSafetyPrimitives_destructor();
+    void exceptionSafetyPrimitives_mover();
+    void exceptionSafetyPrimitives_displacer();
+#endif
 };
 
 template <class T> const T &const_(const T &t) { return t; }
@@ -1806,6 +1813,609 @@ void tst_QArrayData::grow()
         QCOMPARE(value, int(i + 1));
     }
 }
+
+#ifndef QT_NO_EXCEPTIONS
+struct ThrowingTypeWatcher
+{
+    std::vector<int> destroyedIds;
+    bool watch = false;
+    void destroyed(int id)
+    {
+        if (watch)
+            destroyedIds.push_back(id);
+    }
+};
+ThrowingTypeWatcher& throwingTypeWatcher() { static ThrowingTypeWatcher global; return global; }
+
+struct ThrowingType
+{
+    static unsigned int throwOnce;
+    static constexpr char throwString[] = "Requested to throw";
+    void checkThrow()  {
+        // deferred throw
+        if (throwOnce > 0) {
+            --throwOnce;
+            if (throwOnce == 0) {
+                throw std::runtime_error(throwString);
+            }
+        }
+        return;
+    }
+    int id = 0;
+
+    ThrowingType(int val = 0) : id(val)
+    {
+        checkThrow();
+    }
+    ThrowingType(const ThrowingType &other) : id(other.id)
+    {
+        checkThrow();
+    }
+    ThrowingType& operator=(const ThrowingType &other)
+    {
+        id = other.id;
+        checkThrow();
+        return *this;
+    }
+    ~ThrowingType()
+    {
+        throwingTypeWatcher().destroyed(id);  // notify global watcher
+        id = -1;
+    }
+};
+unsigned int ThrowingType::throwOnce = 0;
+bool operator==(const ThrowingType &a, const ThrowingType &b) {
+    return a.id == b.id;
+}
+QT_BEGIN_NAMESPACE
+Q_DECLARE_TYPEINFO(ThrowingType, Q_RELOCATABLE_TYPE);
+QT_END_NAMESPACE
+
+template<typename T>  // T must be constructible from a single int parameter
+static QArrayDataPointer<T> createDataPointer(qsizetype capacity, qsizetype initSize)
+{
+    QArrayDataPointer<T> adp(QTypedArrayData<T>::allocate(capacity));
+    adp->appendInitialize(initSize);
+    // assign unique values
+    int i = 0;
+    std::generate(adp.begin(), adp.end(), [&i] () { return T(i++); });
+    return adp;
+}
+
+void tst_QArrayData::exceptionSafetyPrimitives_constructor()
+{
+    using Prims = QtPrivate::QArrayExceptionSafetyPrimitives<ThrowingType>;
+    using Constructor = typename Prims::Constructor;
+
+    struct WatcherScope
+    {
+        WatcherScope() { throwingTypeWatcher().watch = true; }
+        ~WatcherScope()
+        {
+            throwingTypeWatcher().watch = false;
+            throwingTypeWatcher().destroyedIds.clear();
+        }
+    };
+
+    const auto doConstruction = [] (auto &dataPointer, auto where, auto op) {
+        Constructor ctor(where);
+        dataPointer.size += op(ctor);
+    };
+
+    // empty ranges
+    {
+        auto data = createDataPointer<ThrowingType>(20, 10);
+        const auto originalSize = data.size;
+        const std::array<ThrowingType, 0> emptyRange{};
+
+        doConstruction(data, data.end(), [] (Constructor &ctor) { return ctor.create(0); });
+        QCOMPARE(data.size, originalSize);
+
+        doConstruction(data, data.end(), [&emptyRange] (Constructor &ctor) {
+            return ctor.copy(emptyRange.begin(), emptyRange.end());
+        });
+        QCOMPARE(data.size, originalSize);
+
+        doConstruction(data, data.end(), [] (Constructor &ctor) {
+            return ctor.clone(0, ThrowingType(42));
+        });
+        QCOMPARE(data.size, originalSize);
+
+        doConstruction(data, data.end(), [emptyRange] (Constructor &ctor) mutable {
+            return ctor.move(emptyRange.begin(), emptyRange.end());
+        });
+        QCOMPARE(data.size, originalSize);
+    }
+
+    // successful create
+    {
+        auto data = createDataPointer<ThrowingType>(20, 10);
+        auto reference = createDataPointer<ThrowingType>(20, 10);
+        reference->appendInitialize(reference.size + 1);
+
+        doConstruction(data, data.end(), [] (Constructor &ctor) { return ctor.create(1); });
+
+        QCOMPARE(data.size, reference.size);
+        for (qsizetype i = 0; i < data.size; ++i)
+            QCOMPARE(data.data()[i], reference.data()[i]);
+    }
+
+    // successful copy
+    {
+        auto data = createDataPointer<ThrowingType>(20, 10);
+        auto reference = createDataPointer<ThrowingType>(20, 10);
+        const std::array<ThrowingType, 3> source = {
+            ThrowingType(42), ThrowingType(43), ThrowingType(44)
+        };
+        reference->copyAppend(source.begin(), source.end());
+
+        doConstruction(data, data.end(), [&source] (Constructor &ctor) {
+            return ctor.copy(source.begin(), source.end());
+        });
+
+        QCOMPARE(data.size, reference.size);
+        for (qsizetype i = 0; i < data.size; ++i)
+            QCOMPARE(data.data()[i], reference.data()[i]);
+
+        reference->copyAppend(2, source[0]);
+
+        doConstruction(data, data.end(), [&source] (Constructor &ctor) {
+            return ctor.clone(2, source[0]);
+        });
+
+        QCOMPARE(data.size, reference.size);
+        for (qsizetype i = 0; i < data.size; ++i)
+            QCOMPARE(data.data()[i], reference.data()[i]);
+    }
+
+    // successful move
+    {
+        auto data = createDataPointer<ThrowingType>(20, 10);
+        auto reference = createDataPointer<ThrowingType>(20, 10);
+        const std::array<ThrowingType, 3> source = {
+            ThrowingType(42), ThrowingType(43), ThrowingType(44)
+        };
+        reference->copyAppend(source.begin(), source.end());
+
+        doConstruction(data, data.end(), [source] (Constructor &ctor) mutable {
+            return ctor.move(source.begin(), source.end());
+        });
+
+        QCOMPARE(data.size, reference.size);
+        for (qsizetype i = 0; i < data.size; ++i)
+            QCOMPARE(data.data()[i], reference.data()[i]);
+    }
+
+    // failed create
+    {
+        auto data = createDataPointer<ThrowingType>(20, 10);
+        auto reference = createDataPointer<ThrowingType>(20, 10);
+
+        for (uint throwOnNthConstruction : {1, 3}) {
+            WatcherScope scope; Q_UNUSED(scope);
+            try {
+                ThrowingType::throwOnce = throwOnNthConstruction;
+                doConstruction(data, data.end(), [] (Constructor &ctor) {
+                    return ctor.create(5);
+                });
+            } catch (const std::runtime_error &e) {
+                QCOMPARE(std::string(e.what()), ThrowingType::throwString);
+                QCOMPARE(data.size, reference.size);
+                for (qsizetype i = 0; i < data.size; ++i)
+                    QCOMPARE(data.data()[i], reference.data()[i]);
+                QCOMPARE(throwingTypeWatcher().destroyedIds.size(), (throwOnNthConstruction - 1));
+                for (auto id : throwingTypeWatcher().destroyedIds)
+                    QCOMPARE(id, 0);
+            }
+        }
+    }
+
+    // failed copy
+    {
+        auto data = createDataPointer<ThrowingType>(20, 10);
+        auto reference = createDataPointer<ThrowingType>(20, 10);
+        const std::array<ThrowingType, 4> source = {
+            ThrowingType(42), ThrowingType(43), ThrowingType(44), ThrowingType(170)
+        };
+
+        // copy range
+        for (uint throwOnNthConstruction : {1, 3}) {
+            WatcherScope scope; Q_UNUSED(scope);
+            try {
+                ThrowingType::throwOnce = throwOnNthConstruction;
+                doConstruction(data, data.end(), [&source] (Constructor &ctor) {
+                    return ctor.copy(source.begin(), source.end());
+                });
+            } catch (const std::runtime_error &e) {
+                QCOMPARE(std::string(e.what()), ThrowingType::throwString);
+                QCOMPARE(data.size, reference.size);
+                for (qsizetype i = 0; i < data.size; ++i)
+                    QCOMPARE(data.data()[i], reference.data()[i]);
+                const auto destroyedSize = throwingTypeWatcher().destroyedIds.size();
+                QCOMPARE(destroyedSize, (throwOnNthConstruction - 1));
+                for (size_t i = 0; i < destroyedSize; ++i)
+                    QCOMPARE(throwingTypeWatcher().destroyedIds[i], source[destroyedSize - i - 1]);
+            }
+        }
+
+        // copy value
+        for (uint throwOnNthConstruction : {1, 3}) {
+            const ThrowingType value(512);
+            QVERIFY(QArrayDataPointer<ThrowingType>::pass_parameter_by_value == false);
+            WatcherScope scope; Q_UNUSED(scope);
+            try {
+                ThrowingType::throwOnce = throwOnNthConstruction;
+                doConstruction(data, data.end(), [&source, &value] (Constructor &ctor) {
+                    return ctor.clone(5, value);
+                });
+            } catch (const std::runtime_error &e) {
+                QCOMPARE(std::string(e.what()), ThrowingType::throwString);
+                QCOMPARE(data.size, reference.size);
+                for (qsizetype i = 0; i < data.size; ++i)
+                    QCOMPARE(data.data()[i], reference.data()[i]);
+                QCOMPARE(throwingTypeWatcher().destroyedIds.size(), (throwOnNthConstruction - 1));
+                for (auto id : throwingTypeWatcher().destroyedIds)
+                    QCOMPARE(id, 512);
+            }
+        }
+    }
+
+    // failed move
+    {
+        auto data = createDataPointer<ThrowingType>(20, 10);
+        auto reference = createDataPointer<ThrowingType>(20, 10);
+        const std::array<ThrowingType, 4> source = {
+            ThrowingType(42), ThrowingType(43), ThrowingType(44), ThrowingType(170)
+        };
+
+        for (uint throwOnNthConstruction : {1, 3}) {
+            WatcherScope scope; Q_UNUSED(scope);
+            try {
+                ThrowingType::throwOnce = throwOnNthConstruction;
+                doConstruction(data, data.end(), [source] (Constructor &ctor) mutable {
+                    return ctor.move(source.begin(), source.end());
+                });
+            } catch (const std::runtime_error &e) {
+                QCOMPARE(std::string(e.what()), ThrowingType::throwString);
+                QCOMPARE(data.size, reference.size);
+                for (qsizetype i = 0; i < data.size; ++i)
+                    QCOMPARE(data.data()[i], reference.data()[i]);
+                const auto destroyedSize = throwingTypeWatcher().destroyedIds.size();
+                QCOMPARE(destroyedSize, (throwOnNthConstruction - 1));
+                for (size_t i = 0; i < destroyedSize; ++i)
+                    QCOMPARE(throwingTypeWatcher().destroyedIds[i], source[destroyedSize - i - 1]);
+            }
+        }
+    }
+}
+
+void tst_QArrayData::exceptionSafetyPrimitives_destructor()
+{
+    using Prims = QtPrivate::QArrayExceptionSafetyPrimitives<ThrowingType>;
+    using Destructor = typename Prims::Destructor<>;
+
+    struct WatcherScope
+    {
+        WatcherScope() { throwingTypeWatcher().watch = true; }
+        ~WatcherScope()
+        {
+            throwingTypeWatcher().watch = false;
+            throwingTypeWatcher().destroyedIds.clear();
+        }
+    };
+
+    // successful operation with no rollback, elements added from left to right
+    {
+        auto data = createDataPointer<ThrowingType>(20, 10);
+        auto reference = createDataPointer<ThrowingType>(20, 10);
+        reference->insert(reference.end(), 2, ThrowingType(42));
+
+        WatcherScope scope; Q_UNUSED(scope);
+        {
+            auto where = data.end() - 1;
+            Destructor destroyer(where);
+            for (int i = 0; i < 2; ++i) {
+                new (where + 1) ThrowingType(42);
+                ++where;
+                ++data.size;
+            }
+            destroyer.commit();
+        }
+
+        QCOMPARE(data.size, reference.size);
+        for (qsizetype i = 0; i < data.size; ++i)
+            QCOMPARE(data.data()[i], reference.data()[i]);
+        QVERIFY(throwingTypeWatcher().destroyedIds.size() == 0);
+    }
+
+    // failed operation with rollback, elements added from left to right
+    {
+        auto data = createDataPointer<ThrowingType>(20, 10);
+        auto reference = createDataPointer<ThrowingType>(20, 10);
+
+        WatcherScope scope; Q_UNUSED(scope);
+        try {
+            auto where = data.end() - 1;
+            Destructor destroyer(where);
+            for (int i = 0; i < 2; ++i) {
+                new (where + 1) ThrowingType(42 + i);
+                ++where;
+                ThrowingType::throwOnce = 1;
+            }
+            QFAIL("Unreachable line!");
+            destroyer.commit();
+        } catch (const std::runtime_error &e) {
+            QCOMPARE(std::string(e.what()), ThrowingType::throwString);
+            QCOMPARE(data.size, reference.size);
+            for (qsizetype i = 0; i < data.size; ++i)
+                QCOMPARE(data.data()[i], reference.data()[i]);
+            QVERIFY(throwingTypeWatcher().destroyedIds.size() == 1);
+            QCOMPARE(throwingTypeWatcher().destroyedIds[0], 42);
+        }
+    }
+
+    // successful operation with no rollback, elements added from right to left
+    {
+        auto data = createDataPointer<ThrowingType>(20, 10);
+        auto reference = createDataPointer<ThrowingType>(20, 10);
+        reference->erase(reference.begin(), reference.begin() + 2);
+        reference->insert(reference.begin(), 2, ThrowingType(42));
+
+        data.begin()->~ThrowingType();
+        data.begin()->~ThrowingType();
+        data.size -= 2;
+        WatcherScope scope; Q_UNUSED(scope);
+        {
+            auto where = data.begin() + 2;  // Note: not updated data ptr, so begin + 2
+            Destructor destroyer(where);
+            for (int i = 0; i < 2; ++i) {
+                new (where - 1) ThrowingType(42);
+                --where;
+                ++data.size;
+            }
+            destroyer.commit();
+        }
+        QCOMPARE(data.size, reference.size);
+        for (qsizetype i = 0; i < data.size; ++i)
+            QCOMPARE(data.data()[i], reference.data()[i]);
+        QVERIFY(throwingTypeWatcher().destroyedIds.size() == 0);
+    }
+
+    // failed operation with rollback, elements added from right to left
+    {
+        auto data = createDataPointer<ThrowingType>(20, 10);
+        auto reference = createDataPointer<ThrowingType>(20, 10);
+        reference->erase(reference.begin(), reference.begin() + 2);
+
+        data.begin()->~ThrowingType();
+        data.begin()->~ThrowingType();
+        data.size -= 2;
+        WatcherScope scope; Q_UNUSED(scope);
+        try {
+            auto where = data.begin() + 2;  // Note: not updated data ptr, so begin + 2
+            Destructor destroyer(where);
+            for (int i = 0; i < 2; ++i) {
+                new (where - 1) ThrowingType(42 + i);
+                --where;
+                ThrowingType::throwOnce = 1;
+            }
+            QFAIL("Unreachable line!");
+            destroyer.commit();
+        } catch (const std::runtime_error &e) {
+            QCOMPARE(std::string(e.what()), ThrowingType::throwString);
+            QCOMPARE(data.size, reference.size);
+            for (qsizetype i = 0; i < data.size; ++i)
+                QCOMPARE(data.data()[i + 2], reference.data()[i]);
+            QVERIFY(throwingTypeWatcher().destroyedIds.size() == 1);
+            QCOMPARE(throwingTypeWatcher().destroyedIds[0], 42);
+        }
+    }
+
+    // extra: the very first operation throws - destructor has to do nothing,
+    //        since nothing is properly constructed
+    {
+        auto data = createDataPointer<ThrowingType>(20, 10);
+        auto reference = createDataPointer<ThrowingType>(20, 10);
+
+        WatcherScope scope; Q_UNUSED(scope);
+        try {
+            auto where = data.end() - 1;
+            Destructor destroyer(where);
+            ThrowingType::throwOnce = 1;
+            new (where + 1) ThrowingType(42);
+            ++where;
+            QFAIL("Unreachable line!");
+            destroyer.commit();
+        } catch (const std::runtime_error &e) {
+            QCOMPARE(data.size, reference.size);
+            for (qsizetype i = 0; i < data.size; ++i)
+                QCOMPARE(data.data()[i], reference.data()[i]);
+            QVERIFY(throwingTypeWatcher().destroyedIds.size() == 0);
+        }
+    }
+
+    // extra: special case when iterator is intentionally out of bounds: this is
+    // to cover the case when we work on the uninitialized memory region instead
+    // of being near the border
+    {
+        auto data = createDataPointer<ThrowingType>(20, 10);
+        auto reference = createDataPointer<ThrowingType>(20, 10);
+        reference->erase(reference.begin(), reference.begin() + 2);
+
+        data.begin()->~ThrowingType();
+        data.begin()->~ThrowingType();
+        data.size -= 2;
+        WatcherScope scope; Q_UNUSED(scope);
+        try {
+            auto where = data.begin() - 1;  // Note: intentionally out of range
+            Destructor destroyer(where);
+                for (int i = 0; i < 2; ++i) {
+                new (where + 1) ThrowingType(42);
+                ++where;
+                ThrowingType::throwOnce = 1;
+            }
+            QFAIL("Unreachable line!");
+            destroyer.commit();
+        } catch (const std::runtime_error &e) {
+            QCOMPARE(data.size, reference.size);
+            for (qsizetype i = 0; i < data.size; ++i)
+                QCOMPARE(data.data()[i + 2], reference.data()[i]);
+            QVERIFY(throwingTypeWatcher().destroyedIds.size() == 1);
+            QVERIFY(throwingTypeWatcher().destroyedIds[0] == 42);
+        }
+    }
+}
+
+void tst_QArrayData::exceptionSafetyPrimitives_mover()
+{
+    QVERIFY(QTypeInfo<ThrowingType>::isRelocatable);
+    using Prims = QtPrivate::QArrayExceptionSafetyPrimitives<ThrowingType>;
+    using Mover = typename Prims::Mover;
+
+    const auto testMoveLeft = [] (size_t posB, size_t posE) {
+        auto data = createDataPointer<ThrowingType>(20, 10);
+        auto reference = createDataPointer<ThrowingType>(20, 10);
+
+        ThrowingType *b = data.begin() + posB;
+        ThrowingType *e = data.begin() + posE;
+        const auto originalSize = data.size;
+        const auto length = std::distance(b, e);
+        {
+            Mover mover(e, static_cast<ThrowingType *>(data.end()) - e, data.size);
+            while (e != b)
+                (--e)->~ThrowingType();
+        }
+        QCOMPARE(data.size + length, originalSize);
+        qsizetype i = 0;
+        for (; i < std::distance(static_cast<ThrowingType *>(data.begin()), b); ++i)
+            QCOMPARE(data.data()[i], reference.data()[i]);
+        for (; i < data.size; ++i)
+            QCOMPARE(data.data()[i], reference.data()[i + length]);
+    };
+
+    const auto testMoveRight = [] (size_t posB, size_t posE) {
+        auto data = createDataPointer<ThrowingType>(20, 10);
+        auto reference = createDataPointer<ThrowingType>(20, 10);
+
+        ThrowingType *begin = data.begin();
+        ThrowingType *b = data.begin() + posB;
+        ThrowingType *e = data.begin() + posE;
+        const auto originalSize = data.size;
+        const auto length = std::distance(b, e);
+        {
+            Mover mover(begin, b - static_cast<ThrowingType *>(data.begin()), data.size);
+            while (b != e) {
+                ++begin;
+                (b++)->~ThrowingType();
+            }
+        }
+        QCOMPARE(data.size + length, originalSize);
+
+        // restore original data size
+        {
+            for (qsizetype i = 0; i < length; ++i) {
+                new (static_cast<ThrowingType *>(data.begin() + i)) ThrowingType(42);
+                ++data.size;
+            }
+        }
+
+        qsizetype i = length;
+        for (; i < std::distance(static_cast<ThrowingType *>(data.begin()), e); ++i)
+            QCOMPARE(data.data()[i], reference.data()[i - length]);
+        for (; i < data.size; ++i)
+            QCOMPARE(data.data()[i], reference.data()[i]);
+    };
+
+    // normal move left
+    RUN_TEST_FUNC(testMoveLeft, 2, 4);
+    // no move left
+    RUN_TEST_FUNC(testMoveLeft, 2, 2);
+    // normal move right
+    RUN_TEST_FUNC(testMoveRight, 3, 5);
+    // no move right
+    RUN_TEST_FUNC(testMoveRight, 4, 4);
+}
+
+void tst_QArrayData::exceptionSafetyPrimitives_displacer()
+{
+    QVERIFY(QTypeInfo<ThrowingType>::isRelocatable);
+    using Prims = QtPrivate::QArrayExceptionSafetyPrimitives<ThrowingType>;
+    const auto doDisplace = [] (auto &dataPointer, auto start, auto finish, qsizetype diff) {
+        typename Prims::Displacer displace(start, finish, diff);
+        new (start) ThrowingType(42);
+        ++dataPointer.size;
+        displace.commit();
+    };
+
+    // successful operation with displace to the right
+    {
+        auto data = createDataPointer<ThrowingType>(20, 10);
+        auto reference = createDataPointer<ThrowingType>(20, 10);
+        reference->insert(reference.end() - 1, 1, ThrowingType(42));
+
+        auto where = data.end() - 1;
+        doDisplace(data, where, data.end(), 1);
+
+        QCOMPARE(data.size, reference.size);
+        for (qsizetype i = 0; i < data.size; ++i)
+            QCOMPARE(data.data()[i], reference.data()[i]);
+    }
+
+    // failed operation with displace to the right
+    {
+        auto data = createDataPointer<ThrowingType>(20, 10);
+        auto reference = createDataPointer<ThrowingType>(20, 10);
+        try {
+            ThrowingType::throwOnce = 1;
+            doDisplace(data, data.end() - 1, data.end(), 1);
+            QFAIL("Unreachable line!");
+        } catch (const std::exception &e) {
+            QCOMPARE(std::string(e.what()), ThrowingType::throwString);
+            QCOMPARE(data.size, reference.size);
+            for (qsizetype i = 0; i < data.size; ++i)
+                QCOMPARE(data.data()[i], reference.data()[i]);
+        }
+    }
+
+    // successful operation with displace to the left
+    {
+        auto data = createDataPointer<ThrowingType>(20, 10);
+        auto reference = createDataPointer<ThrowingType>(20, 10);
+        reference.data()[0] = reference.data()[1];
+        reference.data()[1] = ThrowingType(42);
+
+        data.begin()->~ThrowingType();  // free space at begin
+        --data.size;
+        auto where = data.begin() + 1;
+        doDisplace(data, where, where + 1, -1);
+
+        QCOMPARE(data.size, reference.size);
+        for (qsizetype i = 0; i < data.size; ++i)
+            QCOMPARE(data.data()[i], reference.data()[i]);
+    }
+
+    // failed operation with displace to the left
+    {
+        auto data = createDataPointer<ThrowingType>(20, 10);
+        auto reference = createDataPointer<ThrowingType>(20, 10);
+        reference->erase(reference.begin(), reference.begin() + 1);
+
+        try {
+            data.begin()->~ThrowingType();  // free space at begin
+            --data.size;
+            ThrowingType::throwOnce = 1;
+            auto where = data.begin() + 1;
+            doDisplace(data, where, where + 1, -1);
+            QFAIL("Unreachable line!");
+        } catch (const std::exception &e) {
+            QCOMPARE(std::string(e.what()), ThrowingType::throwString);
+            QCOMPARE(data.size, reference.size);
+            for (qsizetype i = 0; i < data.size; ++i)
+                QCOMPARE(data.data()[i + 1], reference.data()[i]);
+        }
+    }
+}
+#endif  // QT_NO_EXCEPTIONS
 
 QTEST_APPLESS_MAIN(tst_QArrayData)
 #include "tst_qarraydata.moc"
