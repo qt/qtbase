@@ -80,21 +80,6 @@ QString qt_mac_applicationmenu_string(int type)
     }
 }
 
-static quint32 constructModifierMask(quint32 accel_key)
-{
-    quint32 ret = 0;
-    const bool dontSwap = qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta);
-    if ((accel_key & Qt::CTRL) == Qt::CTRL)
-        ret |= (dontSwap ? NSEventModifierFlagControl : NSEventModifierFlagCommand);
-    if ((accel_key & Qt::META) == Qt::META)
-        ret |= (dontSwap ? NSEventModifierFlagCommand : NSEventModifierFlagControl);
-    if ((accel_key & Qt::ALT) == Qt::ALT)
-        ret |= NSEventModifierFlagOption;
-    if ((accel_key & Qt::SHIFT) == Qt::SHIFT)
-        ret |= NSEventModifierFlagShift;
-    return ret;
-}
-
 #ifndef QT_NO_SHORTCUT
 // return an autoreleased string given a QKeySequence (currently only looks at the first one).
 NSString *keySequenceToKeyEqivalent(const QKeySequence &accel)
@@ -107,12 +92,6 @@ NSString *keySequenceToKeyEqivalent(const QKeySequence &accel)
     if (cocoa_key.unicode() == NSDeleteFunctionKey)
         cocoa_key = NSDeleteCharacter;
     return QStringView{&cocoa_key, 1}.toNSString();
-}
-
-// return the cocoa modifier mask for the QKeySequence (currently only looks at the first one).
-NSUInteger keySequenceModifierMask(const QKeySequence &accel)
-{
-    return constructModifierMask(accel[0]);
 }
 #endif
 
@@ -390,7 +369,8 @@ NSMenuItem *QCocoaMenuItem::sync()
 #ifndef QT_NO_SHORTCUT
     if (accel.count() == 1) {
         m_native.keyEquivalent = keySequenceToKeyEqivalent(accel);
-        m_native.keyEquivalentModifierMask = keySequenceModifierMask(accel);
+        auto modifiers = Qt::KeyboardModifiers(accel[0] & Qt::KeyboardModifierMask);
+        m_native.keyEquivalentModifierMask = QCocoaKeyMapper::toCocoaModifiers(modifiers);
     } else
 #endif
     {

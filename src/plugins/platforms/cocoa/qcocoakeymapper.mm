@@ -84,6 +84,19 @@ Qt::KeyboardModifiers QCocoaKeyMapper::fromCocoaModifiers(NSEventModifierFlags c
     return swapModifiersIfNeeded(qtModifiers);
 }
 
+NSEventModifierFlags QCocoaKeyMapper::toCocoaModifiers(Qt::KeyboardModifiers qtModifiers)
+{
+    qtModifiers = swapModifiersIfNeeded(qtModifiers);
+
+    NSEventModifierFlags cocoaModifiers = 0;
+    for (const auto &[cocoaModifier, qtModifier] : cocoaModifierMap) {
+        if (qtModifiers & qtModifier)
+            cocoaModifiers |= cocoaModifier;
+    }
+
+    return cocoaModifiers;
+}
+
 using CarbonModifiers = UInt32; // As opposed to EventModifiers which is UInt16
 
 static CarbonModifiers toCarbonModifiers(Qt::KeyboardModifiers qtModifiers)

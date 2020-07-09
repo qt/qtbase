@@ -714,7 +714,7 @@ qt_feature("openvg" PUBLIC
     LABEL "OpenVG"
     CONDITION libs.openvg OR FIXME
 )
-qt_feature("egl" PUBLIC PRIVATE
+qt_feature("egl" PUBLIC
     LABEL "EGL"
     CONDITION ( QT_FEATURE_opengl OR QT_FEATURE_openvg ) AND EGL_FOUND AND ( QT_FEATURE_dlopen OR NOT UNIX OR INTEGRITY )
 )
