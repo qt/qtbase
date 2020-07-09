@@ -1,0 +1,16 @@
+{
+    "Id": "blake2",
+    "Name": "BLAKE2 (reference implementation)",
+    "QDocModule": "qtcore",
+    "QtUsage": "Used in Qt Core (QCryptographicHash).",
+    "Files": "src/blake2b-ref.c src/blake2s-ref.c src/blake2.h src/blake2-impl.h",
+
+    "Description": "BLAKE2 is a cryptographic hash function faster than MD5, SHA-1, SHA-2, and SHA-3, yet is at least as secure as the latest standard SHA-3.",
+    "Homepage": "https://blake2.net/",
+    "Version": "3d6155ab1682e68c30f93064f988247508f55bbe",
+    "DownloadLocation": "https://github.com/BLAKE2/BLAKE2/tree/3d6155ab1682e68c30f93064f988247508f55bbe",
+    "License": "Creative Commons Zero v1.0 Universal or Apache License 2.0",
+    "LicenseId": "CC0-1.0 OR Apache-2.0",
+    "LicenseFile": "COPYING",
+    "Copyright": "Copyright 2012, Samuel Neves <sneves@dei.uc.pt>"
+}
