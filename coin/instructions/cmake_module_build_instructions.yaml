@@ -8,7 +8,8 @@ instructions:
     directory: "{{.BuildDir}}"
   - type: EnvironmentVariable
     variableName: COIN_CMAKE_ARGS
-    variableValue: "-DBUILD_TESTING=OFF {{.SourceDir}}"
+    # The lack of space between the non qtbase configure args and the rest of the args is important!
+    variableValue: "{{.Env.NON_QTBASE_CONFIGURE_ARGS}} -DBUILD_TESTING=OFF {{.SourceDir}}"
   - !include "{{qt/qtbase}}/call_cmake.yaml"
   - type: ExecuteCommand
     command: "{{.Env.ENV_PREFIX}} cmake --build . --parallel -v"
