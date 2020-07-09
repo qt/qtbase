@@ -1144,7 +1144,7 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, redirectPolicy());
     }
 
-#if QT_CONFIG(http)
+#if QT_CONFIG(http) || defined (Q_OS_WASM)
     if (!req.transferTimeout())
       req.setTransferTimeout(transferTimeout());
 #endif

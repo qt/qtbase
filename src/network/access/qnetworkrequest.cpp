@@ -905,7 +905,8 @@ void QNetworkRequest::setHttp2Configuration(const QHttp2Configuration &configura
 {
     d->h2Configuration = configuration;
 }
-
+#endif // QT_CONFIG(http) || defined(Q_CLANG_QDOC)
+#if QT_CONFIG(http) || defined(Q_CLANG_QDOC) || defined (Q_OS_WASM)
 /*!
     \since 5.15
 
@@ -939,7 +940,7 @@ void QNetworkRequest::setTransferTimeout(int timeout)
 {
     d->transferTimeout = timeout;
 }
-#endif // QT_CONFIG(http) || defined(Q_CLANG_QDOC)
+#endif // QT_CONFIG(http) || defined(Q_CLANG_QDOC) || defined (Q_OS_WASM)
 
 static QByteArray headerName(QNetworkRequest::KnownHeaders header)
 {

@@ -268,7 +268,7 @@ void QNetworkReplyWasmImplPrivate::doSendRequest()
     attr.onerror = QNetworkReplyWasmImplPrivate::downloadFailed;
     attr.onprogress = QNetworkReplyWasmImplPrivate::downloadProgress;
     attr.onreadystatechange = QNetworkReplyWasmImplPrivate::stateChange;
-    attr.timeoutMSecs = QNetworkRequest::DefaultTransferTimeoutConstant;
+    attr.timeoutMSecs = request.transferTimeout();
     attr.userData = reinterpret_cast<void *>(this);
 
     QString dPath = QStringLiteral("/home/web_user/") + request.url().fileName();
