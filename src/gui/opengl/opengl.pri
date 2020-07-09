@@ -15,3 +15,5 @@ qtConfig(opengl) {
                opengl/qopenglfunctions.cpp \
                opengl/qopenglprogrambinarycache.cpp
 }
+
+include(platform/platform.pri)

@@ -23,7 +23,6 @@ qt_internal_add_plugin(QXcbGlxIntegrationPlugin
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate
-        Qt::OpenGLPrivate
         Qt::XcbQpaPrivate
 )
 

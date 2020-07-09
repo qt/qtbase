@@ -151,8 +151,6 @@ qtConfig(egl) {
         qopenglcompositor_p.h
 }
 
-include(platform/platform.pri)
-
 load(qt_module)
 
 TRACEPOINT_PROVIDER = $$PWD/qtopengl.tracepoints

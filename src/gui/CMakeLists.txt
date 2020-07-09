@@ -786,6 +786,13 @@ qt_extend_target(Gui CONDITION QT_FEATURE_undogroup
         util/qundogroup.cpp util/qundogroup.h
 )
 
+qt_extend_target(Gui CONDITION QT_FEATURE_opengl AND QT_FEATURE_xlib AND NOT QT_FEATURE_opengles2
+    SOURCES
+        opengl/platform/unix/qglxconvenience.cpp opengl/platform/unix/qglxconvenience_p.h
+    PUBLIC_LIBRARIES
+        X11::X11
+)
+
 qt_extend_target(Gui CONDITION QT_FEATURE_vulkan
     SOURCES
         rhi/qrhivulkan.cpp rhi/qrhivulkan_p.h
@@ -855,10 +862,10 @@ add_custom_command(
 # qvkgen_pimpl.input = "QMAKE_QVKGEN_INPUT"
 # qvkgen_pimpl.output = "$$OUT_PWD/vulkan/qvulkanfunctions_p.cpp"
 
-#### Keys ignored in scope 102:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
+#### Keys ignored in scope 105:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
 # qvkgen_h.variable_out = "HEADERS"
 
-#### Keys ignored in scope 103:.:vulkan:vulkan/vulkan.pri:else:
+#### Keys ignored in scope 106:.:vulkan:vulkan/vulkan.pri:else:
 # qvkgen_h.CONFIG = "target_predeps" "no_link"
 
 qt_extend_target(Gui CONDITION WASM

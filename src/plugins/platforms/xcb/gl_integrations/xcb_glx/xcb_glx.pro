@@ -1,7 +1,6 @@
 TARGET = qxcb-glx-integration
 
 include(../gl_integrations_plugin_base.pri)
-QT += opengl-private
 
 DEFINES += QT_NO_FOREACH
 

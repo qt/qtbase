@@ -51,7 +51,6 @@
 // We mean it.
 //
 
-#include <QtOpenGL/qtopenglglobal.h>
 #include <QtCore/qlist.h>
 #include <QtGui/qsurfaceformat.h>
 
@@ -65,28 +64,28 @@ enum QGlxFlags
     QGLX_SUPPORTS_SRGB = 0x01
 };
 
-Q_OPENGL_EXPORT QList<int> qglx_buildSpec(const QSurfaceFormat &format,
-                                          int drawableBit = GLX_WINDOW_BIT,
-                                          int flags = 0);
+Q_GUI_EXPORT QList<int> qglx_buildSpec(const QSurfaceFormat &format,
+                                       int drawableBit = GLX_WINDOW_BIT,
+                                       int flags = 0);
 
-Q_OPENGL_EXPORT XVisualInfo *qglx_findVisualInfo(Display *display, int screen,
-                                                 QSurfaceFormat *format,
-                                                 int drawableBit = GLX_WINDOW_BIT,
-                                                 int flags = 0);
+Q_GUI_EXPORT XVisualInfo *qglx_findVisualInfo(Display *display, int screen,
+                                              QSurfaceFormat *format,
+                                              int drawableBit = GLX_WINDOW_BIT,
+                                              int flags = 0);
 
-Q_OPENGL_EXPORT GLXFBConfig qglx_findConfig(Display *display, int screen,
-                                            QSurfaceFormat format,
-                                            bool highestPixelFormat = false,
-                                            int drawableBit = GLX_WINDOW_BIT,
-                                            int flags = 0);
+Q_GUI_EXPORT GLXFBConfig qglx_findConfig(Display *display, int screen,
+                                         QSurfaceFormat format,
+                                         bool highestPixelFormat = false,
+                                         int drawableBit = GLX_WINDOW_BIT,
+                                         int flags = 0);
 
-Q_OPENGL_EXPORT void qglx_surfaceFormatFromGLXFBConfig(QSurfaceFormat *format, Display *display,
-                                                       GLXFBConfig config, int flags = 0);
+Q_GUI_EXPORT void qglx_surfaceFormatFromGLXFBConfig(QSurfaceFormat *format, Display *display,
+                                                    GLXFBConfig config, int flags = 0);
 
-Q_OPENGL_EXPORT void qglx_surfaceFormatFromVisualInfo(QSurfaceFormat *format, Display *display,
-                                                      XVisualInfo *visualInfo, int flags = 0);
+Q_GUI_EXPORT void qglx_surfaceFormatFromVisualInfo(QSurfaceFormat *format, Display *display,
+                                                   XVisualInfo *visualInfo, int flags = 0);
 
-Q_OPENGL_EXPORT bool qglx_reduceFormat(QSurfaceFormat *format);
+Q_GUI_EXPORT bool qglx_reduceFormat(QSurfaceFormat *format);
 
 QT_END_NAMESPACE
 
