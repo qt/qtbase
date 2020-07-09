@@ -92,7 +92,6 @@ private:
     bool updateKeyboard();
     void deleteLayouts();
     KeyboardLayoutItem *keyMapForKey(unsigned short macVirtualKey, QChar unicodeKey) const;
-    void clearMappings();
 
     QCFType<TISInputSourceRef> m_currentInputSource = nullptr;
 

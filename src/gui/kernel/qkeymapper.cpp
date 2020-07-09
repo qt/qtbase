@@ -89,8 +89,6 @@ QList<int> QKeyMapper::possibleKeys(QKeyEvent *e)
 extern bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event); // in qapplication_*.cpp
 void QKeyMapper::changeKeyboard()
 {
-    instance()->d_func()->clearMappings();
-
     // ## TODO: Support KeyboardLayoutChange on QPA
 #if 0
     // inform all toplevel widgets of the change
@@ -125,11 +123,6 @@ QKeyMapperPrivate::QKeyMapperPrivate()
 }
 
 QKeyMapperPrivate::~QKeyMapperPrivate()
-{
-    // clearMappings();
-}
-
-void QKeyMapperPrivate::clearMappings()
 {
 }
 

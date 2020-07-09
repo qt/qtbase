@@ -440,12 +440,6 @@ void QCocoaKeyMapper::deleteLayouts()
     }
 }
 
-void QCocoaKeyMapper::clearMappings()
-{
-    deleteLayouts();
-    updateKeyboard();
-}
-
 static constexpr Qt::KeyboardModifiers modifierCombinations[] = {
     Qt::NoModifier,                                             // 0
     Qt::ShiftModifier,                                          // 1
