@@ -80,21 +80,6 @@ QString qt_mac_applicationmenu_string(int type)
     }
 }
 
-#ifndef QT_NO_SHORTCUT
-// return an autoreleased string given a QKeySequence (currently only looks at the first one).
-NSString *keySequenceToKeyEqivalent(const QKeySequence &accel)
-{
-    quint32 accel_key = (accel[0] & ~Qt::MODIFIER_MASK);
-    QChar cocoa_key = QCocoaKeyMapper::toCocoaKey(Qt::Key(accel_key));
-    if (cocoa_key.isNull())
-        cocoa_key = QChar(accel_key).toLower().unicode();
-    // Similar to qt_mac_removePrivateUnicode change the delete key so the symbol is correctly seen in native menubar
-    if (cocoa_key.unicode() == NSDeleteFunctionKey)
-        cocoa_key = NSDeleteCharacter;
-    return QStringView{&cocoa_key, 1}.toNSString();
-}
-#endif
-
 QCocoaMenuItem::QCocoaMenuItem() :
     m_native(nil),
     m_itemView(nil),
@@ -368,8 +353,19 @@ NSMenuItem *QCocoaMenuItem::sync()
 
 #ifndef QT_NO_SHORTCUT
     if (accel.count() == 1) {
-        m_native.keyEquivalent = keySequenceToKeyEqivalent(accel);
-        auto modifiers = Qt::KeyboardModifiers(accel[0] & Qt::KeyboardModifierMask);
+        auto shortcut = accel[0];
+        auto key = Qt::Key(shortcut & ~Qt::KeyboardModifierMask);
+        auto modifiers = Qt::KeyboardModifiers(shortcut & Qt::KeyboardModifierMask);
+
+        QChar cocoaKey = QCocoaKeyMapper::toCocoaKey(key);
+        if (cocoaKey.isNull())
+            cocoaKey = QChar(key).toLower().unicode();
+        // Similar to qt_mac_removePrivateUnicode change the delete key,
+        // so the symbol is correctly seen in native menu bar.
+        if (cocoaKey.unicode() == NSDeleteFunctionKey)
+            cocoaKey = NSDeleteCharacter;
+
+        m_native.keyEquivalent = QStringView(&cocoaKey, 1).toNSString();
         m_native.keyEquivalentModifierMask = QCocoaKeyMapper::toCocoaModifiers(modifiers);
     } else
 #endif
