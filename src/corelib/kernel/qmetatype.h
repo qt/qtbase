@@ -214,11 +214,10 @@ inline Q_DECL_CONSTEXPR int qMetaTypeId();
     F(UInt, -1, uint, "quint32") \
     F(LongLong, -1, qlonglong, "qint64") \
     F(ULongLong, -1, qulonglong, "quint64") \
-    F(QVariantList, -1, QVariantList, "QVector<QVariant>") \
     F(QVariantList, -1, QVariantList, "QList<QVariant>") \
     F(QVariantMap, -1, QVariantMap, "QMap<QString,QVariant>") \
     F(QVariantHash, -1, QVariantHash, "QHash<QString,QVariant>") \
-    F(QByteArrayList, -1, QByteArrayList, "QVector<QByteArray>") \
+    F(QByteArrayList, -1, QByteArrayList, "QList<QByteArray>") \
 
 #define QT_FOR_EACH_STATIC_TYPE(F)\
     QT_FOR_EACH_STATIC_PRIMITIVE_TYPE(F)\
@@ -928,8 +927,8 @@ struct ContainerAPI : CapabilitiesImpl<T>
 };
 
 template<typename T>
-struct ContainerAPI<QVector<T> > : CapabilitiesImpl<QVector<T> >
-{ static int size(const QVector<T> *t) { return t->size(); } };
+struct ContainerAPI<QList<T>> : CapabilitiesImpl<QList<T>>
+{ static int size(const QList<T> *t) { return t->size(); } };
 
 template<typename T>
 struct ContainerAPI<std::vector<T> > : CapabilitiesImpl<std::vector<T> >

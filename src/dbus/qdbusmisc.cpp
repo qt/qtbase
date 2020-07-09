@@ -181,8 +181,8 @@ int qDBusParametersForMethod(const QList<QByteArray> &parameterTypes, QList<int>
             return -1;          // not allowed
         }
 
-        if (type.startsWith("QList<"))
-            type = "QVector<" + type.mid(sizeof("QList<") - 1);
+        if (type.startsWith("QVector<"))
+            type = "QList<" + type.mid(sizeof("QVector<") - 1);
 
         int id = QMetaType::type(type);
 #ifdef QT_BOOTSTRAPPED
