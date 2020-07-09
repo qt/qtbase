@@ -173,6 +173,8 @@ private slots:
     void devicePixelRatio_data();
     void devicePixelRatio();
 
+    void xpmBufferOverflow();
+
 private:
     QString prefix;
     QTemporaryDir m_temporaryDir;
@@ -2045,6 +2047,12 @@ void tst_QImageReader::devicePixelRatio()
     QImage img = r.read();
     QCOMPARE(img.size(), size);
     QCOMPARE(img.devicePixelRatio(), dpr);
+}
+
+void tst_QImageReader::xpmBufferOverflow()
+{
+    // Please note that the overflow only showed when Qt was configured with "-sanitize address".
+    QImageReader(":/images/oss-fuzz-23988.xpm").read();
 }
 
 QTEST_MAIN(tst_QImageReader)
