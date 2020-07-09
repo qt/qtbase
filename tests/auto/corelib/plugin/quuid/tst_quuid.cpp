@@ -358,7 +358,7 @@ void tst_QUuid::variants()
     QVERIFY( uuidA.variant() == QUuid::DCE );
     QVERIFY( uuidB.variant() == QUuid::DCE );
 
-    QUuid NCS = "{3a2f883c-4000-000d-0000-00fb40000000}";
+    QUuid NCS("{3a2f883c-4000-000d-0000-00fb40000000}");
     QVERIFY( NCS.variant() == QUuid::NCS );
 }
 
@@ -368,10 +368,10 @@ void tst_QUuid::versions()
     QVERIFY( uuidA.version() == QUuid::Random );
     QVERIFY( uuidB.version() == QUuid::Random );
 
-    QUuid DCE_time= "{406c45a0-3b7e-11d0-80a3-0000c08810a7}";
+    QUuid DCE_time("{406c45a0-3b7e-11d0-80a3-0000c08810a7}");
     QVERIFY( DCE_time.version() == QUuid::Time );
 
-    QUuid NCS = "{3a2f883c-4000-000d-0000-00fb40000000}";
+    QUuid NCS("{3a2f883c-4000-000d-0000-00fb40000000}");
     QVERIFY( NCS.version() == QUuid::VerUnknown );
 }
 

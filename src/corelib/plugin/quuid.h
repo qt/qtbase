@@ -123,13 +123,13 @@ public:
     }
 #endif
 
-    QUuid(const QString &);
+    explicit QUuid(const QString &);
     static QUuid fromString(QStringView string) noexcept;
     static QUuid fromString(QLatin1String string) noexcept;
-    QUuid(const char *);
+    explicit QUuid(const char *);
     QString toString() const;
     QString toString(StringFormat mode) const; // ### Qt6: merge with previous
-    QUuid(const QByteArray &);
+    explicit QUuid(const QByteArray &);
     QByteArray toByteArray() const;
     QByteArray toByteArray(StringFormat mode) const; // ### Qt6: merge with previous
     QByteArray toRfc4122() const;
