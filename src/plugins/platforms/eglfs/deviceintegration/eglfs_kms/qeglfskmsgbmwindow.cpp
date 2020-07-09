@@ -37,9 +37,9 @@
 **
 ****************************************************************************/
 
-#include "qeglfskmsgbmwindow.h"
-#include "qeglfskmsgbmintegration.h"
-#include "qeglfskmsgbmscreen.h"
+#include "qeglfskmsgbmwindow_p.h"
+#include "qeglfskmsgbmintegration_p.h"
+#include "qeglfskmsgbmscreen_p.h"
 
 #include <QtGui/private/qeglconvenience_p.h>
 

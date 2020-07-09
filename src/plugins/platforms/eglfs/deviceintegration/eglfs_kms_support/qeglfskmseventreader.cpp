@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#include "qeglfskmseventreader.h"
-#include "qeglfskmsdevice.h"
+#include "qeglfskmseventreader_p.h"
+#include "qeglfskmsdevice_p.h"
 #include <QSocketNotifier>
 #include <QCoreApplication>
 #include <QLoggingCategory>

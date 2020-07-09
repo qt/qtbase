@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qeglfskmsintegration.h"
-#include "qeglfskmsscreen.h"
+#include "qeglfskmsintegration_p.h"
+#include "qeglfskmsscreen_p.h"
 
 #include <QtKmsSupport/private/qkmsdevice_p.h>
 
@@ -55,18 +55,19 @@ QT_BEGIN_NAMESPACE
 Q_LOGGING_CATEGORY(qLcEglfsKmsDebug, "qt.qpa.eglfs.kms")
 
 QEglFSKmsIntegration::QEglFSKmsIntegration()
-    : m_device(nullptr),
-      m_screenConfig(new QKmsScreenConfig)
+    : m_device(nullptr)
 {
 }
 
 QEglFSKmsIntegration::~QEglFSKmsIntegration()
 {
-    delete m_screenConfig;
 }
 
 void QEglFSKmsIntegration::platformInit()
 {
+    qCDebug(qLcEglfsKmsDebug, "platformInit: Load Screen Config");
+    m_screenConfig = createScreenConfig();
+
     qCDebug(qLcEglfsKmsDebug, "platformInit: Opening DRM device");
     m_device = createDevice();
     if (Q_UNLIKELY(!m_device->open()))
@@ -79,6 +80,8 @@ void QEglFSKmsIntegration::platformDestroy()
     m_device->close();
     delete m_device;
     m_device = nullptr;
+    delete m_screenConfig;
+    m_screenConfig = nullptr;
 }
 
 EGLNativeDisplayType QEglFSKmsIntegration::platformDisplay() const
@@ -165,6 +168,14 @@ QKmsDevice *QEglFSKmsIntegration::device() const
 QKmsScreenConfig *QEglFSKmsIntegration::screenConfig() const
 {
     return m_screenConfig;
+}
+
+QKmsScreenConfig *QEglFSKmsIntegration::createScreenConfig()
+{
+    QKmsScreenConfig *screenConfig = new QKmsScreenConfig;
+    screenConfig->loadConfig();
+
+    return screenConfig;
 }
 
 QT_END_NAMESPACE

@@ -39,68 +39,43 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFSKMSGBMSCREEN_H
-#define QEGLFSKMSGBMSCREEN_H
+#ifndef QEGLFSKMSGBMWINDOW_H
+#define QEGLFSKMSGBMWINDOW_H
 
-#include "qeglfskmsscreen.h"
-#include <QMutex>
-#include <QWaitCondition>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#include <gbm.h>
+#include "private/qeglfswindow_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSKmsGbmCursor;
+class QEglFSKmsGbmIntegration;
 
-class QEglFSKmsGbmScreen : public QEglFSKmsScreen
+class Q_EGLFS_EXPORT QEglFSKmsGbmWindow : public QEglFSWindow
 {
 public:
-    QEglFSKmsGbmScreen(QEglFSKmsDevice *device, const QKmsOutput &output, bool headless);
-    ~QEglFSKmsGbmScreen();
+    QEglFSKmsGbmWindow(QWindow *w, const QEglFSKmsGbmIntegration *integration)
+        : QEglFSWindow(w),
+          m_integration(integration)
+    { }
 
-    QPlatformCursor *cursor() const override;
+    ~QEglFSKmsGbmWindow() { destroy(); }
 
-    gbm_surface *createSurface(EGLConfig eglConfig);
-    void resetSurface();
-
-    void initCloning(QPlatformScreen *screenThisScreenClones,
-                     const QList<QPlatformScreen *> &screensCloningThisScreen);
-
-    void waitForFlip() override;
-
-    void flip();
+    void resetSurface() override;
+    void invalidateSurface() override;
 
 private:
-    void flipFinished();
-    void ensureModeSet(uint32_t fb);
-    void cloneDestFlipFinished(QEglFSKmsGbmScreen *cloneDestScreen);
-    void updateFlipStatus();
-
-    gbm_surface *m_gbm_surface;
-
-    gbm_bo *m_gbm_bo_current;
-    gbm_bo *m_gbm_bo_next;
-    bool m_flipPending;
-
-    QMutex m_flipMutex;
-    QWaitCondition m_flipCond;
-
-    QScopedPointer<QEglFSKmsGbmCursor> m_cursor;
-
-    struct FrameBuffer {
-        uint32_t fb = 0;
-    };
-    static void bufferDestroyedHandler(gbm_bo *bo, void *data);
-    FrameBuffer *framebufferForBufferObject(gbm_bo *bo);
-
-    QEglFSKmsGbmScreen *m_cloneSource;
-    struct CloneDestination {
-        QEglFSKmsGbmScreen *screen = nullptr;
-        bool cloneFlipPending = false;
-    };
-    QList<CloneDestination> m_cloneDests;
+    const QEglFSKmsGbmIntegration *m_integration;
 };
 
 QT_END_NAMESPACE
 
-#endif // QEGLFSKMSGBMSCREEN_H
+#endif // QEGLFSKMSGBMWINDOW_H

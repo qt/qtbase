@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qeglfskmsscreen.h"
-#include "qeglfskmsdevice.h"
+#include "qeglfskmsscreen_p.h"
+#include "qeglfskmsdevice_p.h"
 #include "qeglfsintegration_p.h"
 
 #include <QtCore/QLoggingCategory>

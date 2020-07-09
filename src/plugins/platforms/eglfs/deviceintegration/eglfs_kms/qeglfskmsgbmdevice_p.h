@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2015 Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Copyright (C) 2016 Pelagicore AG
 ** Contact: https://www.qt.io/licensing/
@@ -38,31 +39,62 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFSKMSDEVICE_H
-#define QEGLFSKMSDEVICE_H
+#ifndef QEGLFSKMSGBMDEVICE_H
+#define QEGLFSKMSGBMDEVICE_H
 
-#include "private/qeglfsglobal_p.h"
-#include "qeglfskmseventreader.h"
-#include <QtKmsSupport/private/qkmsdevice_p.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include "qeglfskmsgbmcursor_p.h"
+#include <qeglfskmsdevice_p.h>
+
+#include <gbm.h>
 
 QT_BEGIN_NAMESPACE
 
-class Q_EGLFS_EXPORT QEglFSKmsDevice : public QKmsDevice
+class QEglFSKmsScreen;
+
+class Q_EGLFS_EXPORT QEglFSKmsGbmDevice: public QEglFSKmsDevice
 {
 public:
-    QEglFSKmsDevice(QKmsScreenConfig *screenConfig, const QString &path);
+    QEglFSKmsGbmDevice(QKmsScreenConfig *screenConfig, const QString &path);
 
+    bool open() override;
+    void close() override;
+
+    void *nativeDisplay() const override;
+    gbm_device *gbmDevice() const;
+
+    QPlatformCursor *globalCursor() const;
+    void destroyGlobalCursor();
+    void createGlobalCursor(QEglFSKmsGbmScreen *screen);
+
+    QPlatformScreen *createScreen(const QKmsOutput &output) override;
+    QPlatformScreen *createHeadlessScreen() override;
+    void registerScreenCloning(QPlatformScreen *screen,
+                               QPlatformScreen *screenThisScreenClones,
+                               const QList<QPlatformScreen *> &screensCloningThisScreen) override;
     void registerScreen(QPlatformScreen *screen,
                         bool isPrimary,
                         const QPoint &virtualPos,
                         const QList<QPlatformScreen *> &virtualSiblings) override;
 
-    QEglFSKmsEventReader *eventReader() { return &m_eventReader; }
+private:
+    Q_DISABLE_COPY(QEglFSKmsGbmDevice)
 
-protected:
-    QEglFSKmsEventReader m_eventReader;
+    gbm_device *m_gbm_device;
+
+    QEglFSKmsGbmCursor *m_globalCursor;
 };
 
 QT_END_NAMESPACE
 
-#endif // QEGLFSKMSDEVICE_H
+#endif // QEGLFSKMSGBMDEVICE_H

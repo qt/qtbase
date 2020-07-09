@@ -17,6 +17,8 @@
     "QtKmsSupport" => "$basedir/src/platformsupport/kmsconvenience",
     "QtZlib" => "!>$basedir/src/corelib;$basedir/src/3rdparty/zlib",
     "QtEglFSDeviceIntegration" => "$basedir/src/plugins/platforms/eglfs",
+    "QtEglFsKmsSupport" => "$basedir/src/plugins/platforms/eglfs/deviceintegration/eglfs_kms_support",
+    "QtEglFsKmsGbmSupport" => "$basedir/src/plugins/platforms/eglfs/deviceintegration/eglfs_kms",
     "QtMockPlugins1" => "$basedir/tests/auto/cmake/mockplugins/mockplugins1",
     "QtMockPlugins2" => "$basedir/tests/auto/cmake/mockplugins/mockplugins2",
     "QtMockPlugins3" => "$basedir/tests/auto/cmake/mockplugins/mockplugins3",

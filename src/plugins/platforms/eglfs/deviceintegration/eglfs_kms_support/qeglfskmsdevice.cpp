@@ -38,8 +38,8 @@
 **
 ****************************************************************************/
 
-#include "qeglfskmsdevice.h"
-#include "qeglfskmsscreen.h"
+#include "qeglfskmsdevice_p.h"
+#include "qeglfskmsscreen_p.h"
 #include "private/qeglfsintegration_p.h"
 #include <QtGui/private/qguiapplication_p.h>
 

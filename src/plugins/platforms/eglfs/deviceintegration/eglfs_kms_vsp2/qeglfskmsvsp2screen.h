@@ -42,7 +42,7 @@
 #ifndef QEGLFSKMSVSP2SCREEN_H
 #define QEGLFSKMSVSP2SCREEN_H
 
-#include "qeglfskmsscreen.h"
+#include "qeglfskmsscreen_p.h"
 #include "qvsp2blendingdevice.h"
 #include <QtCore/QMutex>
 

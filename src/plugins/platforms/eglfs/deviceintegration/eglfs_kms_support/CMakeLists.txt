@@ -6,13 +6,12 @@
 
 qt_internal_add_module(EglFsKmsSupport
     INTERNAL_MODULE
-    NO_MODULE_HEADERS
     SOURCES
-        qeglfskmsdevice.cpp qeglfskmsdevice.h
-        qeglfskmseventreader.cpp qeglfskmseventreader.h
-        qeglfskmshelpers.h
-        qeglfskmsintegration.cpp qeglfskmsintegration.h
-        qeglfskmsscreen.cpp qeglfskmsscreen.h
+        qeglfskmsdevice.cpp qeglfskmsdevice_p.h
+        qeglfskmseventreader.cpp qeglfskmseventreader_p.h
+        qeglfskmshelpers_p.h
+        qeglfskmsintegration.cpp qeglfskmsintegration_p.h
+        qeglfskmsscreen.cpp qeglfskmsscreen_p.h
     DEFINES
         QT_EGL_NO_X11
     INCLUDE_DIRECTORIES

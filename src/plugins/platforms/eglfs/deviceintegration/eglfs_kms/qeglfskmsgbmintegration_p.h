@@ -42,7 +42,18 @@
 #ifndef QEGLFSKMSGBMINTEGRATION_H
 #define QEGLFSKMSGBMINTEGRATION_H
 
-#include "qeglfskmsintegration.h"
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <private/qeglfskmsintegration_p.h>
 #include <QtCore/QMap>
 #include <QtCore/QVariant>
 
@@ -50,7 +61,7 @@ QT_BEGIN_NAMESPACE
 
 class QEglFSKmsDevice;
 
-class QEglFSKmsGbmIntegration : public QEglFSKmsIntegration
+class Q_EGLFS_EXPORT QEglFSKmsGbmIntegration : public QEglFSKmsIntegration
 {
 public:
     QEglFSKmsGbmIntegration();

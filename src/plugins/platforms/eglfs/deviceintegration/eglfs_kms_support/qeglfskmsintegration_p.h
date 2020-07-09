@@ -42,6 +42,17 @@
 #ifndef QEGLFSKMSINTEGRATION_H
 #define QEGLFSKMSINTEGRATION_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include "private/qeglfsdeviceintegration_p.h"
 #include <QtCore/QMap>
 #include <QtCore/QVariant>
@@ -77,9 +88,10 @@ public:
 
 protected:
     virtual QKmsDevice *createDevice() = 0;
+    virtual QKmsScreenConfig *createScreenConfig();
 
     QKmsDevice *m_device;
-    QKmsScreenConfig *m_screenConfig;
+    QKmsScreenConfig *m_screenConfig = nullptr;
 };
 
 QT_END_NAMESPACE

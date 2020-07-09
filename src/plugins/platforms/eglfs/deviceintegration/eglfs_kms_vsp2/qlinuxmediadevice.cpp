@@ -39,7 +39,7 @@
 
 #include "qeglfsintegration_p.h"
 #include "qlinuxmediadevice.h"
-#include <qeglfskmshelpers.h>
+#include <qeglfskmshelpers_p.h>
 
 #include <QtCore/QLoggingCategory>
 #include <QtCore/QSize>

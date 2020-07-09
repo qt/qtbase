@@ -1033,7 +1033,6 @@ QKmsScreenConfig::QKmsScreenConfig()
     , m_pbuffers(false)
     , m_virtualDesktopLayout(VirtualDesktopLayoutHorizontal)
 {
-    loadConfig();
 }
 
 void QKmsScreenConfig::loadConfig()

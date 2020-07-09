@@ -42,7 +42,7 @@
 #ifndef QEGLFSKMSVSP2INTEGRATION_H
 #define QEGLFSKMSVSP2INTEGRATION_H
 
-#include "qeglfskmsintegration.h"
+#include "qeglfskmsintegration_p.h"
 #include <QtCore/QMap>
 #include <QtCore/QVariant>
 

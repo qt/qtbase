@@ -42,7 +42,7 @@
 #ifndef QEGLFSKMSVSP2DEVICE_H
 #define QEGLFSKMSVSP2DEVICE_H
 
-#include <qeglfskmsdevice.h>
+#include <qeglfskmsdevice_p.h>
 
 #include <gbm.h>
 

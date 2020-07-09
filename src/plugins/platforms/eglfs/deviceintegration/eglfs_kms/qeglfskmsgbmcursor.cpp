@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qeglfskmsgbmcursor.h"
-#include "qeglfskmsgbmscreen.h"
-#include "qeglfskmsgbmdevice.h"
+#include "qeglfskmsgbmcursor_p.h"
+#include "qeglfskmsgbmscreen_p.h"
+#include "qeglfskmsgbmdevice_p.h"
 
 #include <QtCore/QFile>
 #include <QtCore/QJsonDocument>

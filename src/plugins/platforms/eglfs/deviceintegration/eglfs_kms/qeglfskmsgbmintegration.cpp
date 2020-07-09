@@ -39,11 +39,11 @@
 **
 ****************************************************************************/
 
-#include "qeglfskmsgbmintegration.h"
-#include "qeglfskmsgbmdevice.h"
-#include "qeglfskmsgbmscreen.h"
-#include "qeglfskmsgbmcursor.h"
-#include "qeglfskmsgbmwindow.h"
+#include "qeglfskmsgbmintegration_p.h"
+#include "qeglfskmsgbmdevice_p.h"
+#include "qeglfskmsgbmscreen_p.h"
+#include "qeglfskmsgbmcursor_p.h"
+#include "qeglfskmsgbmwindow_p.h"
 #include "private/qeglfscursor_p.h"
 
 #include <QtCore/QLoggingCategory>

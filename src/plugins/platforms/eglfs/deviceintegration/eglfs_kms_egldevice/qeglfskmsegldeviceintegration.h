@@ -41,7 +41,7 @@
 #ifndef QEGLFSKMSEGLDEVICEINTEGRATION_H
 #define QEGLFSKMSEGLDEVICEINTEGRATION_H
 
-#include <qeglfskmsintegration.h>
+#include <qeglfskmsintegration_p.h>
 
 #include <xf86drm.h>
 #include <xf86drmMode.h>

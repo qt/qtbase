@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qeglfskmsgbmdevice.h"
-#include "qeglfskmsgbmscreen.h"
+#include "qeglfskmsgbmdevice_p.h"
+#include "qeglfskmsgbmscreen_p.h"
 
 #include "qeglfsintegration_p.h"
 
@@ -131,14 +131,19 @@ void QEglFSKmsGbmDevice::destroyGlobalCursor()
     }
 }
 
-QPlatformScreen *QEglFSKmsGbmDevice::createScreen(const QKmsOutput &output)
+void QEglFSKmsGbmDevice::createGlobalCursor(QEglFSKmsGbmScreen *screen)
 {
-    QEglFSKmsGbmScreen *screen = new QEglFSKmsGbmScreen(this, output, false);
-
     if (!m_globalCursor && screenConfig()->hwCursor()) {
         qCDebug(qLcEglfsKmsDebug, "Creating new global GBM mouse cursor");
         m_globalCursor = new QEglFSKmsGbmCursor(screen);
     }
+}
+
+QPlatformScreen *QEglFSKmsGbmDevice::createScreen(const QKmsOutput &output)
+{
+    QEglFSKmsGbmScreen *screen = new QEglFSKmsGbmScreen(this, output, false);
+
+    createGlobalCursor(screen);
 
     return screen;
 }

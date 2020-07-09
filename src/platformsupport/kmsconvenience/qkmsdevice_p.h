@@ -111,6 +111,7 @@ public:
     };
 
     QKmsScreenConfig();
+    virtual ~QKmsScreenConfig() {}
 
     QString devicePath() const { return m_devicePath; }
 
@@ -122,10 +123,9 @@ public:
     VirtualDesktopLayout virtualDesktopLayout() const { return m_virtualDesktopLayout; }
 
     QMap<QString, QVariantMap> outputSettings() const { return m_outputSettings; }
+    virtual void loadConfig();
 
-private:
-    void loadConfig();
-
+protected:
     QString m_devicePath;
     bool m_headless;
     QSize m_headlessSize;

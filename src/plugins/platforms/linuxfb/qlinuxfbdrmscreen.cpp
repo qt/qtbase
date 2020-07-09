@@ -399,6 +399,7 @@ QLinuxFbDrmScreen::~QLinuxFbDrmScreen()
 bool QLinuxFbDrmScreen::initialize()
 {
     m_screenConfig = new QKmsScreenConfig;
+    m_screenConfig->loadConfig();
     m_device = new QLinuxFbDevice(m_screenConfig);
     if (!m_device->open())
         return false;

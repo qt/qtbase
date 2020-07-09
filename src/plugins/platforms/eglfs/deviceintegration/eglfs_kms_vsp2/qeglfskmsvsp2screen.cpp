@@ -41,7 +41,7 @@
 
 #include "qeglfskmsvsp2screen.h"
 #include "qeglfskmsvsp2device.h"
-#include <qeglfskmshelpers.h>
+#include <qeglfskmshelpers_p.h>
 
 #include <QtCore/QLoggingCategory>
 #include <QtGui/private/qguiapplication_p.h>

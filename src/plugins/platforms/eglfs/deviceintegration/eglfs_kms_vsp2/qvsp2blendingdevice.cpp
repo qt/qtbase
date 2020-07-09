@@ -38,7 +38,7 @@
 ****************************************************************************/
 
 #include "qvsp2blendingdevice.h"
-#include <qeglfskmshelpers.h>
+#include <qeglfskmshelpers_p.h>
 
 #include <QDebug>
 #include <QtCore/QLoggingCategory>

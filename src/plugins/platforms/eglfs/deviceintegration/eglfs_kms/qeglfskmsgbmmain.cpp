@@ -39,7 +39,7 @@
 ****************************************************************************/
 
 #include "private/qeglfsdeviceintegration_p.h"
-#include "qeglfskmsgbmintegration.h"
+#include "qeglfskmsgbmintegration_p.h"
 
 QT_BEGIN_NAMESPACE
 
