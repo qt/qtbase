@@ -1,3 +1,4 @@
+gradle/gradlew eol=lf
 libpng/projects/cbuilder5/libpng.bpf      -crlf
 libpng/projects/cbuilder5/libpng.bpg      -crlf
 libpng/projects/cbuilder5/libpng.bpr      -crlf
