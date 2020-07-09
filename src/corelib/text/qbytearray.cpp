@@ -2523,8 +2523,8 @@ qsizetype QtPrivate::count(QByteArrayView haystack, QByteArrayView needle) noexc
     qsizetype num = 0;
     qsizetype i = -1;
     if (haystack.size() > 500 && needle.size() > 5) {
-        QByteArrayMatcher matcher(needle.data());
-        while ((i = matcher.indexIn(haystack.data(), i + 1)) != -1)
+        QByteArrayMatcher matcher(needle.data(), needle.size());
+        while ((i = matcher.indexIn(haystack.data(), haystack.size(), i + 1)) != -1)
             ++num;
     } else {
         while ((i = haystack.indexOf(needle, i + 1)) != -1)

@@ -490,6 +490,13 @@ void tst_QByteArrayApiSymmetry::count_data()
 
     QTest::addRow("aaa") << QByteArray("aaa") << QByteArray("a") << 3;
     QTest::addRow("xyzaaaxyz") << QByteArray("xyzaaxyaxyz") << QByteArray("xyz") << 2;
+
+    const int len = 500;
+    QByteArray longData(len, 'a');
+    const QByteArray needle("abcdef");
+    longData.insert(0, needle);
+    longData.insert(len / 2, needle);
+    QTest::addRow("longInput") << longData << needle << 2;
 }
 
 template <typename Haystack, typename Needle>
