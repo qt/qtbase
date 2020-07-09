@@ -4909,12 +4909,44 @@ function(qt_add_simd_part target)
     endif()
 
     set(condition "QT_FEATURE_${arg_SIMD}")
+    string(TOUPPER "QT_CFLAGS_${arg_SIMD}" simd_flags_var_name)
+    set(simd_flags_expanded "")
+
+    # As per mkspecs/features/simd.prf, the arch_haswell SIMD compiler is enabled when
+    # qmake's CONFIG contains "avx2", which maps to CMake's QT_FEATURE_avx2.
+    # The list of dependencies 'avx2 bmi bmi2 f16c fma lzcnt popcnt' only influences whether
+    # the 'arch_haswell' SIMD flags need to be added explicitly to the compiler invocation.
+    # If the compiler adds them implicitly, they must be present in qmake's QT_CPU_FEATURES as
+    # detected by the architecture test, and thus they are present in TEST_subarch_result.
     if("${arg_SIMD}" STREQUAL arch_haswell)
-        set(condition "TEST_subarch_avx2 AND TEST_subarch_bmi AND TEST_subarch_bmi2 AND TEST_subarch_f16c AND TEST_subarch_fma AND TEST_subarch_lzcnt AND TEST_subarch_popcnt")
+        set(condition "QT_FEATURE_avx2")
+
+        # Use avx2 flags as per simd.prf, if there are no specific arch_haswell flags specified in
+        # QtCompilerOptimization.cmake.
+        if("${simd_flags_var_name}" STREQUAL "")
+            set(simd_flags_var_name "QT_CFLAGS_AVX2")
+        endif()
+
+    # The avx512 profiles dependencies DO influence if the SIMD compiler will be executed,
+    # so each of the profile dependencies have to be in qmake's CONFIG for the compiler to be
+    # enabled, which means the CMake features have to evaluate to true.
+    # Also the profile flags to be used are a combination of arch_haswell, avx512f and each of the
+    # dependencies.
     elseif("${arg_SIMD}" STREQUAL avx512common)
-        set(condition "TEST_subarch_avx512cd")
+        set(condition "QT_FEATURE_avx512cd")
+        list(APPEND simd_flags_expanded "${QT_CFLAGS_ARCH_HASWELL}")
+        list(APPEND simd_flags_expanded "${QT_CFLAGS_AVX512F}")
+        list(APPEND simd_flags_expanded "${QT_CFLAGS_AVX512CD}")
+        list(REMOVE_DUPLICATES simd_flags_expanded)
     elseif("${arg_SIMD}" STREQUAL avx512core)
-        set(condition "TEST_subarch_avx512cd AND TEST_subarch_avx512bw AND TEST_subarch_avx512dq AND TEST_subarch_avx512vl")
+        set(condition "QT_FEATURE_avx512cd AND QT_FEATURE_avx512bw AND QT_FEATURE_avx512dq AND QT_FEATURE_avx512vl")
+        list(APPEND simd_flags_expanded "${QT_CFLAGS_ARCH_HASWELL}")
+        list(APPEND simd_flags_expanded "${QT_CFLAGS_AVX512F}")
+        list(APPEND simd_flags_expanded "${QT_CFLAGS_AVX512CD}")
+        list(APPEND simd_flags_expanded "${QT_CFLAGS_AVX512BW}")
+        list(APPEND simd_flags_expanded "${QT_CFLAGS_AVX512DQ}")
+        list(APPEND simd_flags_expanded "${QT_CFLAGS_AVX512VL}")
+        list(REMOVE_DUPLICATES simd_flags_expanded)
     endif()
 
     set(name "${arg_NAME}")
@@ -4927,12 +4959,15 @@ function(qt_add_simd_part target)
         if(QT_CMAKE_DEBUG_EXTEND_TARGET)
             message("qt_add_simd_part(${target} SIMD ${arg_SIMD} ...): Evaluated")
         endif()
-        string(TOUPPER "QT_CFLAGS_${arg_SIMD}" simd_flags)
+
+        if(NOT simd_flags_expanded)
+            set(simd_flags_expanded "${${simd_flags_var_name}}")
+        endif()
 
         foreach(source IN LISTS arg_SOURCES)
             set_property(SOURCE "${source}" APPEND
                 PROPERTY COMPILE_OPTIONS
-                ${${simd_flags}}
+                ${simd_flags_expanded}
                 ${arg_COMPILE_FLAGS}
             )
         endforeach()

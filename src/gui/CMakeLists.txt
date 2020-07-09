@@ -305,15 +305,6 @@ if(QT_FEATURE_reduce_relocations AND UNIX AND GCC)
 endif()
 
 # special case begin
-# Replace arch_haswell with avx2 feature. That is what is used in the code requireing
-# this file, too!
-qt_add_simd_part(Gui SIMD avx2
-    SOURCES
-        painting/qdrawhelper_avx2.cpp
-)
-# special case end
-
-# special case begin
 qt_extend_target(Gui CONDITION QT_FEATURE_standarditemmodel
     SOURCES
         itemmodels/qstandarditemmodel.cpp itemmodels/qstandarditemmodel.h itemmodels/qstandarditemmodel_p.h
