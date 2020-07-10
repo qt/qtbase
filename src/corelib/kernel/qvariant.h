@@ -52,7 +52,6 @@
 #ifndef QT_BOOTSTRAPPED
 #include <QtCore/qbytearraylist.h>
 #endif
-
 #include <memory>
 
 #if __has_include(<variant>) && __cplusplus >= 201703L
@@ -405,9 +404,40 @@ class Q_CORE_EXPORT QVariant
  public:
     struct PrivateShared
     {
-        inline PrivateShared(void *v) : ptr(v), ref(1) { }
-        void *ptr;
-        QAtomicInt ref;
+    private:
+        inline PrivateShared() : ref(1) { }
+    public:
+        static PrivateShared *create(QMetaType type)
+        {
+            size_t size = type.sizeOf();
+            size_t align = type.alignOf();
+
+            size += sizeof(PrivateShared);
+            if (align > sizeof(PrivateShared)) {
+                // The alignment is larger than the alignment we can guarantee for the pointer
+                // directly following PrivateShared, so we need to allocate some additional
+                // memory to be able to fit the object into the available memory with suitable
+                // alignment.
+                size += align - sizeof(PrivateShared);
+            }
+            void *data = operator new(size);
+            auto *ps = new (data) QVariant::PrivateShared();
+            ps->offset = int(((quintptr(ps) + sizeof(PrivateShared) + align - 1) & ~(align - 1)) - quintptr(ps));
+            return ps;
+        }
+        static void free(PrivateShared *p)
+        {
+            p->~PrivateShared();
+            operator delete(p);
+        }
+
+        alignas(8) QAtomicInt ref;
+        int offset;
+
+        const void *data() const
+        { return reinterpret_cast<const unsigned char *>(this) + offset; }
+        void *data()
+        { return reinterpret_cast<unsigned char *>(this) + offset; }
     };
     struct Private
     {

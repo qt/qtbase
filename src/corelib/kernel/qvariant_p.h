@@ -89,7 +89,7 @@ template <typename T>
 inline const T *v_cast(const QVariant::Private *d, T * = nullptr)
 {
     return !QVariantIntegrator<T>::CanUseInternalSpace
-            ? static_cast<const T *>(d->data.shared->ptr)
+            ? static_cast<const T *>(d->data.shared->data())
             : static_cast<const T *>(static_cast<const void *>(&d->data.c));
 }
 
@@ -97,7 +97,7 @@ template <typename T>
 inline T *v_cast(QVariant::Private *d, T * = nullptr)
 {
     return !QVariantIntegrator<T>::CanUseInternalSpace
-            ? static_cast<T *>(d->data.shared->ptr)
+            ? static_cast<T *>(d->data.shared->data())
             : static_cast<T *>(static_cast<void *>(&d->data.c));
 }
 
@@ -106,17 +106,6 @@ inline T *v_cast(QVariant::Private *d, T * = nullptr)
 enum QVariantConstructionFlags : uint {
     Default = 0x0,
     PointerType = 0x1
-};
-
-//a simple template that avoids to allocate 2 memory chunks when creating a QVariant
-template <class T> class QVariantPrivateSharedEx : public QVariant::PrivateShared
-{
-public:
-    QVariantPrivateSharedEx() : QVariant::PrivateShared(&m_t), m_t() { }
-    QVariantPrivateSharedEx(const T&t) : QVariant::PrivateShared(&m_t), m_t(t) { }
-
-private:
-    T m_t;
 };
 
 template <class T>
@@ -129,7 +118,8 @@ inline void v_construct_helper(QVariant::Private *x, const T &t, std::true_type)
 template <class T>
 inline void v_construct_helper(QVariant::Private *x, const T &t, std::false_type)
 {
-    x->data.shared = new QVariantPrivateSharedEx<T>(t);
+    x->data.shared = QVariant::PrivateShared::create(QMetaType::fromType<T>());
+    new (x->data.shared->data()) T(t);
     x->is_shared = true;
 }
 
@@ -143,7 +133,8 @@ inline void v_construct_helper(QVariant::Private *x, std::true_type)
 template <class T>
 inline void v_construct_helper(QVariant::Private *x, std::false_type)
 {
-    x->data.shared = new QVariantPrivateSharedEx<T>;
+    x->data.shared = QVariant::PrivateShared::create(QMetaType::fromType<T>());
+    new (x->data.shared->data()) T();
     x->is_shared = true;
 }
 
@@ -170,9 +161,7 @@ inline void v_clear(QVariant::Private *d, T* = nullptr)
 {
 
     if (!QVariantIntegrator<T>::CanUseInternalSpace) {
-        //now we need to cast
-        //because QVariant::PrivateShared doesn't have a virtual destructor
-        delete static_cast<QVariantPrivateSharedEx<T>*>(d->data.shared);
+        delete static_cast<T *>(d->data.shared->data());
     } else {
         v_cast<T>(d)->~T();
     }
