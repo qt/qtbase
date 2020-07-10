@@ -139,7 +139,7 @@ void qt_doubleToAscii(double d, QLocaleData::DoubleForm form, int precision, cha
     if (precision > 999)
         precision = 999;
     else if (precision == QLocale::FloatingPointShortest)
-        precision = QLocaleData::DoubleMaxSignificant; // "shortest" mode not supported by snprintf
+        precision = std::numeric_limits<double>::max_digits10; // snprintf lacks "shortest" mode
 
     if (isZero(d)) {
         // Negative zero is expected as simple "0", not "-0". We cannot do d < 0, though.
@@ -167,8 +167,8 @@ void qt_doubleToAscii(double d, QLocaleData::DoubleForm form, int precision, cha
     switch (form) {
     case QLocaleData::DFDecimal:
         format[formatLength - 2] = 'f';
-        // <anything> '.' <precision> '\0' - optimize for numbers smaller than 512k
-        extraChars = (d > (1 << 19) ? QLocaleData::DoubleMaxDigitsBeforeDecimal : 6) + 2;
+        // <anything> '.' <precision> '\0'
+        extraChars = wholePartSpace(d) + 2;
         break;
     case QLocaleData::DFExponent:
         format[formatLength - 2] = 'e';
@@ -581,9 +581,10 @@ QString qdtoa(qreal d, int *decpt, int *sign)
     int length = 0;
 
     // Some versions of libdouble-conversion like an extra digit, probably for '\0'
-    char result[QLocaleData::DoubleMaxSignificant + 1];
-    qt_doubleToAscii(d, QLocaleData::DFSignificantDigits, QLocale::FloatingPointShortest, result,
-                     QLocaleData::DoubleMaxSignificant + 1, nonNullSign, length, nonNullDecpt);
+    constexpr int digits = std::numeric_limits<double>::max_digits10 + 1;
+    char result[digits];
+    qt_doubleToAscii(d, QLocaleData::DFSignificantDigits, QLocale::FloatingPointShortest,
+                     result, digits, nonNullSign, length, nonNullDecpt);
 
     if (sign)
         *sign = nonNullSign ? 1 : 0;

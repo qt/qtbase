@@ -182,17 +182,6 @@ public:
                                  QLocale::Country country);
     static const QLocaleData *c();
 
-    // Maximum number of significant digits needed to represent a double.
-    // We cannot use std::numeric_limits here without constexpr.
-    static const int DoubleMantissaBits = 53;
-    static const int Log10_2_100000 = 30103;    // log10(2) * 100000
-    // same as C++11 std::numeric_limits<T>::max_digits10
-    static const int DoubleMaxSignificant = (DoubleMantissaBits * Log10_2_100000) / 100000 + 2;
-
-    // Maximum number of digits before decimal point to represent a double
-    // Same as std::numeric_limits<double>::max_exponent10 + 1
-    static const int DoubleMaxDigitsBeforeDecimal = 309;
-
     enum DoubleForm {
         DFExponent = 0,
         DFDecimal,

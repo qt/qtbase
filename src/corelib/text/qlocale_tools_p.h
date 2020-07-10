@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -96,6 +96,15 @@ inline bool isZero(double d)
     } else {
         return !(ch[7] & 0x7F || ch[6] || ch[5] || ch[4] || ch[3] || ch[2] || ch[1] || ch[0]);
     }
+}
+
+// Enough space for the digits before the decimal separator:
+inline int wholePartSpace(double d)
+{
+    Q_ASSERT(d >= 0); // caller should call qAbs() if needed
+    // Optimize for numbers between -512k and 512k - otherwise, use the
+    // maximum number of digits in the whole number part of a double:
+    return d > (1 << 19) ? std::numeric_limits<double>::max_exponent10 + 1 : 6;
 }
 
 Q_CORE_EXPORT double qstrtod(const char *s00, char const **se, bool *ok);

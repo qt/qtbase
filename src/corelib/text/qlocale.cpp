@@ -3354,10 +3354,9 @@ QString QLocaleData::doubleToString(const QString &zero, const QString &plus, co
     int decpt;
     int bufSize = 1;
     if (precision == QLocale::FloatingPointShortest)
-        bufSize += DoubleMaxSignificant;
-    else if (form == DFDecimal) // optimize for numbers between -512k and 512k
-        bufSize += ((d > (1 << 19) || d < -(1 << 19)) ? DoubleMaxDigitsBeforeDecimal : 6) +
-                precision;
+        bufSize += std::numeric_limits<double>::max_digits10;
+    else if (form == DFDecimal)
+        bufSize += wholePartSpace(qAbs(d)) + precision;
     else // Add extra digit due to different interpretations of precision. Also, "nan" has to fit.
         bufSize += qMax(2, precision) + 1;
 
