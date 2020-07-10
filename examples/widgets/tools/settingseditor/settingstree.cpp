@@ -57,9 +57,10 @@
 #include <QSettings>
 
 SettingsTree::SettingsTree(QWidget *parent)
-    : QTreeWidget(parent)
+    : QTreeWidget(parent),
+      m_typeChecker(new TypeChecker)
 {
-    setItemDelegate(new VariantDelegate(this));
+    setItemDelegate(new VariantDelegate(m_typeChecker, this));
 
     setHeaderLabels({tr("Setting"), tr("Type"), tr("Value")});
     header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
@@ -76,6 +77,8 @@ SettingsTree::SettingsTree(QWidget *parent)
 
     connect(&refreshTimer, &QTimer::timeout, this, &SettingsTree::maybeRefresh);
 }
+
+SettingsTree::~SettingsTree() = default;
 
 void SettingsTree::setSettingsObject(const SettingsPtr &newSettings)
 {
@@ -211,6 +214,14 @@ void SettingsTree::updateChildItems(QTreeWidgetItem *parent)
         if (value.userType() == QMetaType::UnknownType) {
             child->setText(1, "Invalid");
         } else {
+            if (value.type() == QVariant::String) {
+                const QString stringValue = value.toString();
+                if (m_typeChecker->boolExp.match(stringValue).hasMatch()) {
+                    value.setValue(stringValue.compare("true", Qt::CaseInsensitive) == 0);
+                } else if (m_typeChecker->signedIntegerExp.match(stringValue).hasMatch())
+                    value.setValue(stringValue.toInt());
+            }
+
             child->setText(1, value.typeName());
         }
         child->setText(2, VariantDelegate::displayText(value));
