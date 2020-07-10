@@ -63,8 +63,7 @@ QT_BEGIN_NAMESPACE
 template<typename T>
 struct QVariantIntegrator
 {
-    static const bool CanUseInternalSpace = sizeof(T) <= sizeof(QVariant::Private::Data)
-            && ((QTypeInfoQuery<T>::isRelocatable) || std::is_enum<T>::value);
+    static const bool CanUseInternalSpace = sizeof(T) <= sizeof(QVariant::Private::Data);
     typedef std::integral_constant<bool, CanUseInternalSpace> CanUseInternalSpace_t;
 };
 static_assert(QVariantIntegrator<double>::CanUseInternalSpace);

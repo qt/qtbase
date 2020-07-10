@@ -1909,7 +1909,7 @@ void tst_QVariant::userType()
         QCOMPARE(instanceCount, 3);
         {
             QVariant second = myCarrier;
-            QCOMPARE(instanceCount, 3);
+            QCOMPARE(instanceCount, 4);
             second.detach();
             QCOMPARE(instanceCount, 4);
         }
@@ -3315,6 +3315,8 @@ struct MyNotMovable
         if (!ok) qFatal("MyNotMovable has been moved");
         return ok;
     }
+    // Make it too big to store it in the variant itself
+    void *dummy[4];
 };
 
 int MyNotMovable::count  = 0;
