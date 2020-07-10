@@ -2555,7 +2555,6 @@ void QRhiVulkan::updateShaderResourceBindings(QRhiShaderResourceBindings *srb, i
     const bool updateAll = descSetIdx < 0;
     int frameSlot = updateAll ? 0 : descSetIdx;
     while (frameSlot < (updateAll ? QVK_FRAMES_IN_FLIGHT : descSetIdx + 1)) {
-        srbD->boundResourceData[frameSlot].resize(srbD->sortedBindings.count());
         for (int i = 0, ie = srbD->sortedBindings.count(); i != ie; ++i) {
             const QRhiShaderResourceBinding::Data *b = srbD->sortedBindings.at(i).data();
             QVkShaderResourceBindings::BoundResourceData &bd(srbD->boundResourceData[frameSlot][i]);
@@ -6188,7 +6187,11 @@ bool QVkShaderResourceBindings::create()
     if (!rhiD->allocateDescriptorSet(&allocInfo, descSets, &poolIndex))
         return false;
 
-    rhiD->updateShaderResourceBindings(this);
+    for (int i = 0; i < QVK_FRAMES_IN_FLIGHT; ++i) {
+        boundResourceData[i].resize(sortedBindings.count());
+        for (BoundResourceData &bd : boundResourceData[i])
+            memset(&bd, 0, sizeof(BoundResourceData));
+    }
 
     lastActiveFrameSlot = -1;
     generation += 1;

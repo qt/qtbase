@@ -3006,54 +3006,8 @@ bool QMetalShaderResourceBindings::create()
 
     boundResourceData.resize(sortedBindings.count());
 
-    for (int i = 0, ie = sortedBindings.count(); i != ie; ++i) {
-        const QRhiShaderResourceBinding::Data *b = sortedBindings.at(i).data();
-        QMetalShaderResourceBindings::BoundResourceData &bd(boundResourceData[i]);
-        switch (b->type) {
-        case QRhiShaderResourceBinding::UniformBuffer:
-        {
-            QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, b->u.ubuf.buf);
-            bd.ubuf.id = bufD->m_id;
-            bd.ubuf.generation = bufD->generation;
-        }
-            break;
-        case QRhiShaderResourceBinding::SampledTexture:
-        {
-            const QRhiShaderResourceBinding::Data::SampledTextureData *data = &b->u.stex;
-            bd.stex.count = data->count;
-            for (int elem = 0; elem < data->count; ++elem) {
-                QMetalTexture *texD = QRHI_RES(QMetalTexture, data->texSamplers[elem].tex);
-                QMetalSampler *samplerD = QRHI_RES(QMetalSampler, data->texSamplers[elem].sampler);
-                bd.stex.d[elem].texId = texD->m_id;
-                bd.stex.d[elem].texGeneration = texD->generation;
-                bd.stex.d[elem].samplerId = samplerD->m_id;
-                bd.stex.d[elem].samplerGeneration = samplerD->generation;
-            }
-        }
-            break;
-        case QRhiShaderResourceBinding::ImageLoad:
-        case QRhiShaderResourceBinding::ImageStore:
-        case QRhiShaderResourceBinding::ImageLoadStore:
-        {
-            QMetalTexture *texD = QRHI_RES(QMetalTexture, b->u.simage.tex);
-            bd.simage.id = texD->m_id;
-            bd.simage.generation = texD->generation;
-        }
-            break;
-        case QRhiShaderResourceBinding::BufferLoad:
-        case QRhiShaderResourceBinding::BufferStore:
-        case QRhiShaderResourceBinding::BufferLoadStore:
-        {
-            QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, b->u.sbuf.buf);
-            bd.sbuf.id = bufD->m_id;
-            bd.sbuf.generation = bufD->generation;
-        }
-            break;
-        default:
-            Q_UNREACHABLE();
-            break;
-        }
-    }
+    for (BoundResourceData &bd : boundResourceData)
+        memset(&bd, 0, sizeof(BoundResourceData));
 
     generation += 1;
     return true;

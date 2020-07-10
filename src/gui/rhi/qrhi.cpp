@@ -2854,7 +2854,15 @@ bool QRhiShaderResourceBinding::isLayoutCompatible(const QRhiShaderResourceBindi
     \return a shader resource binding for the given binding number, pipeline
     stages, and buffer specified by \a binding, \a stage, and \a buf.
 
-    \note \a buf must have been created with QRhiBuffer::UniformBuffer.
+    \note When \a buf is not null, it must have been created with
+    QRhiBuffer::UniformBuffer.
+
+    \note \a buf can be null. It is valid to create a
+    QRhiShaderResourceBindings with unspecified resources, but such an object
+    cannot be used with QRhiCommandBuffer::setShaderResources(). It is however
+    suitable for creating pipelines. Such a pipeline must then always be used
+    together with another, layout compatible QRhiShaderResourceBindings with
+    resources present passed to QRhiCommandBuffer::setShaderResources().
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::uniformBuffer(
         int binding, StageFlags stage, QRhiBuffer *buf)
@@ -2880,7 +2888,15 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::uniformBuffer(
 
     \note \a size must be greater than 0.
 
-    \note \a buf must have been created with QRhiBuffer::UniformBuffer.
+    \note When \a buf is not null, it must have been created with
+    QRhiBuffer::UniformBuffer.
+
+    \note \a buf can be null. It is valid to create a
+    QRhiShaderResourceBindings with unspecified resources, but such an object
+    cannot be used with QRhiCommandBuffer::setShaderResources(). It is however
+    suitable for creating pipelines. Such a pipeline must then always be used
+    together with another, layout compatible QRhiShaderResourceBindings with
+    resources present passed to QRhiCommandBuffer::setShaderResources().
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::uniformBuffer(
         int binding, StageFlags stage, QRhiBuffer *buf, int offset, int size)
@@ -2901,7 +2917,15 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::uniformBuffer(
     size of the bound region is specified by \a size. Like with non-dynamic
     offsets, \c{offset + size} cannot exceed the size of \a buf.
 
-    \note \a buf must have been created with QRhiBuffer::UniformBuffer.
+    \note When \a buf is not null, it must have been created with
+    QRhiBuffer::UniformBuffer.
+
+    \note \a buf can be null. It is valid to create a
+    QRhiShaderResourceBindings with unspecified resources, but such an object
+    cannot be used with QRhiCommandBuffer::setShaderResources(). It is however
+    suitable for creating pipelines. Such a pipeline must then always be used
+    together with another, layout compatible QRhiShaderResourceBindings with
+    resources present passed to QRhiCommandBuffer::setShaderResources().
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::uniformBufferWithDynamicOffset(
         int binding, StageFlags stage, QRhiBuffer *buf, int size)
@@ -2918,6 +2942,13 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::uniformBufferWithDynamicOff
 
     \note This function is equivalent to calling sampledTextures() with a
     \c count of 1.
+
+    \note \a tex and \a sampler can be null. It is valid to create a
+    QRhiShaderResourceBindings with unspecified resources, but such an object
+    cannot be used with QRhiCommandBuffer::setShaderResources(). It is however
+    suitable for creating pipelines. Such a pipeline must then always be used
+    together with another, layout compatible QRhiShaderResourceBindings with
+    resources present passed to QRhiCommandBuffer::setShaderResources().
 
     \sa sampledTextures()
  */
@@ -2953,6 +2984,13 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::sampledTexture(
     advised to provide "dummy" samplers and textures if some array elements are
     not relevant (due to not being accessed in the shader).
 
+    \note \a texSamplers can be null. It is valid to create a
+    QRhiShaderResourceBindings with unspecified resources, but such an object
+    cannot be used with QRhiCommandBuffer::setShaderResources(). It is however
+    suitable for creating pipelines. Such a pipeline must then always be used
+    together with another, layout compatible QRhiShaderResourceBindings with
+    resources present passed to QRhiCommandBuffer::setShaderResources().
+
     \sa sampledTexture()
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::sampledTextures(
@@ -2964,8 +3002,12 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::sampledTextures(
     b.d.stage = stage;
     b.d.type = SampledTexture;
     b.d.u.stex.count = count;
-    for (int i = 0; i < count; ++i)
-        b.d.u.stex.texSamplers[i] = texSamplers[i];
+    for (int i = 0; i < count; ++i) {
+        if (texSamplers)
+            b.d.u.stex.texSamplers[i] = texSamplers[i];
+        else
+            b.d.u.stex.texSamplers[i] = {};
+    }
     return b;
 }
 
@@ -2975,7 +3017,15 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::sampledTextures(
    will have access to all layers of the specified \a level. (so if the texture
    is a cubemap, the shader must use imageCube instead of image2D)
 
-   \note \a tex must have been created with QRhiTexture::UsedWithLoadStore.
+   \note When \a tex is not null, it must have been created with
+   QRhiTexture::UsedWithLoadStore.
+
+   \note \a tex can be null. It is valid to create a QRhiShaderResourceBindings
+   with unspecified resources, but such an object cannot be used with
+   QRhiCommandBuffer::setShaderResources(). It is however suitable for creating
+   pipelines. Such a pipeline must then always be used together with another,
+   layout compatible QRhiShaderResourceBindings with resources present passed
+   to QRhiCommandBuffer::setShaderResources().
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::imageLoad(
         int binding, StageFlags stage, QRhiTexture *tex, int level)
@@ -2995,7 +3045,15 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::imageLoad(
    will have access to all layers of the specified \a level. (so if the texture
    is a cubemap, the shader must use imageCube instead of image2D)
 
-   \note \a tex must have been created with QRhiTexture::UsedWithLoadStore.
+   \note When \a tex is not null, it must have been created with
+   QRhiTexture::UsedWithLoadStore.
+
+   \note \a tex can be null. It is valid to create a QRhiShaderResourceBindings
+   with unspecified resources, but such an object cannot be used with
+   QRhiCommandBuffer::setShaderResources(). It is however suitable for creating
+   pipelines. Such a pipeline must then always be used together with another,
+   layout compatible QRhiShaderResourceBindings with resources present passed
+   to QRhiCommandBuffer::setShaderResources().
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::imageStore(
         int binding, StageFlags stage, QRhiTexture *tex, int level)
@@ -3011,7 +3069,15 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::imageStore(
    will have access to all layers of the specified \a level. (so if the texture
    is a cubemap, the shader must use imageCube instead of image2D)
 
-   \note \a tex must have been created with QRhiTexture::UsedWithLoadStore.
+   \note When \a tex is not null, it must have been created with
+   QRhiTexture::UsedWithLoadStore.
+
+   \note \a tex can be null. It is valid to create a QRhiShaderResourceBindings
+   with unspecified resources, but such an object cannot be used with
+   QRhiCommandBuffer::setShaderResources(). It is however suitable for creating
+   pipelines. Such a pipeline must then always be used together with another,
+   layout compatible QRhiShaderResourceBindings with resources present passed
+   to QRhiCommandBuffer::setShaderResources().
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::imageLoadStore(
         int binding, StageFlags stage, QRhiTexture *tex, int level)
@@ -3025,7 +3091,15 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::imageLoadStore(
     \return a shader resource binding for a read-only storage buffer with the
     given \a binding number and pipeline \a stage.
 
-    \note \a buf must have been created with QRhiBuffer::StorageBuffer.
+    \note When \a buf is not null, must have been created with
+    QRhiBuffer::StorageBuffer.
+
+    \note \a buf can be null. It is valid to create a
+    QRhiShaderResourceBindings with unspecified resources, but such an object
+    cannot be used with QRhiCommandBuffer::setShaderResources(). It is however
+    suitable for creating pipelines. Such a pipeline must then always be used
+    together with another, layout compatible QRhiShaderResourceBindings with
+    resources present passed to QRhiCommandBuffer::setShaderResources().
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferLoad(
         int binding, StageFlags stage, QRhiBuffer *buf)
@@ -3045,7 +3119,15 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferLoad(
     given \a binding number and pipeline \a stage. This overload binds a region
     only, as specified by \a offset and \a size.
 
-    \note \a buf must have been created with QRhiBuffer::StorageBuffer.
+    \note When \a buf is not null, must have been created with
+    QRhiBuffer::StorageBuffer.
+
+    \note \a buf can be null. It is valid to create a
+    QRhiShaderResourceBindings with unspecified resources, but such an object
+    cannot be used with QRhiCommandBuffer::setShaderResources(). It is however
+    suitable for creating pipelines. Such a pipeline must then always be used
+    together with another, layout compatible QRhiShaderResourceBindings with
+    resources present passed to QRhiCommandBuffer::setShaderResources().
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferLoad(
         int binding, StageFlags stage, QRhiBuffer *buf, int offset, int size)
@@ -3061,7 +3143,15 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferLoad(
     \return a shader resource binding for a write-only storage buffer with the
     given \a binding number and pipeline \a stage.
 
-    \note \a buf must have been created with QRhiBuffer::StorageBuffer.
+    \note When \a buf is not null, must have been created with
+    QRhiBuffer::StorageBuffer.
+
+    \note \a buf can be null. It is valid to create a
+    QRhiShaderResourceBindings with unspecified resources, but such an object
+    cannot be used with QRhiCommandBuffer::setShaderResources(). It is however
+    suitable for creating pipelines. Such a pipeline must then always be used
+    together with another, layout compatible QRhiShaderResourceBindings with
+    resources present passed to QRhiCommandBuffer::setShaderResources().
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferStore(
         int binding, StageFlags stage, QRhiBuffer *buf)
@@ -3076,7 +3166,15 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferStore(
     given \a binding number and pipeline \a stage. This overload binds a region
     only, as specified by \a offset and \a size.
 
-    \note \a buf must have been created with QRhiBuffer::StorageBuffer.
+    \note When \a buf is not null, must have been created with
+    QRhiBuffer::StorageBuffer.
+
+    \note \a buf can be null. It is valid to create a
+    QRhiShaderResourceBindings with unspecified resources, but such an object
+    cannot be used with QRhiCommandBuffer::setShaderResources(). It is however
+    suitable for creating pipelines. Such a pipeline must then always be used
+    together with another, layout compatible QRhiShaderResourceBindings with
+    resources present passed to QRhiCommandBuffer::setShaderResources().
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferStore(
         int binding, StageFlags stage, QRhiBuffer *buf, int offset, int size)
@@ -3092,7 +3190,15 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferStore(
     \return a shader resource binding for a read-write storage buffer with the
     given \a binding number and pipeline \a stage.
 
-    \note \a buf must have been created with QRhiBuffer::StorageBuffer.
+    \note When \a buf is not null, must have been created with
+    QRhiBuffer::StorageBuffer.
+
+    \note \a buf can be null. It is valid to create a
+    QRhiShaderResourceBindings with unspecified resources, but such an object
+    cannot be used with QRhiCommandBuffer::setShaderResources(). It is however
+    suitable for creating pipelines. Such a pipeline must then always be used
+    together with another, layout compatible QRhiShaderResourceBindings with
+    resources present passed to QRhiCommandBuffer::setShaderResources().
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferLoadStore(
         int binding, StageFlags stage, QRhiBuffer *buf)
@@ -3107,7 +3213,15 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferLoadStore(
     given \a binding number and pipeline \a stage. This overload binds a region
     only, as specified by \a offset and \a size.
 
-    \note \a buf must have been created with QRhiBuffer::StorageBuffer.
+    \note When \a buf is not null, must have been created with
+    QRhiBuffer::StorageBuffer.
+
+    \note \a buf can be null. It is valid to create a
+    QRhiShaderResourceBindings with unspecified resources, but such an object
+    cannot be used with QRhiCommandBuffer::setShaderResources(). It is however
+    suitable for creating pipelines. Such a pipeline must then always be used
+    together with another, layout compatible QRhiShaderResourceBindings with
+    resources present passed to QRhiCommandBuffer::setShaderResources().
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferLoadStore(
         int binding, StageFlags stage, QRhiBuffer *buf, int offset, int size)
