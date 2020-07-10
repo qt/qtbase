@@ -101,8 +101,7 @@ struct GuiTypesFilter {
     };
 };
 
-static bool convert(const QVariant::Private *d, int t,
-                 void *result, bool *ok)
+static bool convert(const QVariant::Private *d, int t, void *result)
 {
     switch (t) {
     case QMetaType::QByteArray:
@@ -222,15 +221,13 @@ static bool convert(const QVariant::Private *d, int t,
 #endif
 #ifndef QT_NO_ICON
     case QMetaType::QIcon: {
-        if (ok)
-            *ok = false;
         return false;
     }
 #endif
     default:
         break;
     }
-    return qcoreVariantHandler()->convert(d, t, result, ok);
+    return qcoreVariantHandler()->convert(d, t, result);
 }
 
 const QVariant::Handler qt_gui_variant_handler = {

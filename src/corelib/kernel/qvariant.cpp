@@ -372,22 +372,17 @@ static QMetaEnum metaEnumFromType(QMetaType t)
 
  Converts \a d to type \a t, which is placed in \a result.
  */
-static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
+static bool convert(const QVariant::Private *d, int t, void *result)
 {
     Q_ASSERT(d->type().id() != t);
     Q_ASSERT(result);
 
     if (d->type().id() >= QMetaType::User || t >= QMetaType::User) {
-        const bool isOk = QMetaType::convert(constData(*d), d->type().id(), result, t);
-        if (ok)
-            *ok = isOk;
-        if (isOk)
+        if (QMetaType::convert(constData(*d), d->type().id(), result, t))
             return true;
     }
 
-    bool dummy;
-    if (!ok)
-        ok = &dummy;
+    bool ok = true;
 
     switch (uint(t)) {
 #ifndef QT_BOOTSTRAPPED
@@ -504,8 +499,8 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             {
                 QMetaEnum en = metaEnumFromType(d->type());
                 if (en.isValid()) {
-                    *str = QString::fromUtf8(en.valueToKey(qConvertToNumber(d, ok)));
-                    return *ok;
+                    *str = QString::fromUtf8(en.valueToKey(qConvertToNumber(d, &ok)));
+                    return ok;
                 }
             }
 #endif
@@ -705,8 +700,8 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             {
                 QMetaEnum en = metaEnumFromType(d->type());
                 if (en.isValid()) {
-                    *ba = en.valueToKey(qConvertToNumber(d, ok));
-                    return *ok;
+                    *ba = en.valueToKey(qConvertToNumber(d, &ok));
+                    return ok;
                 }
             }
 #endif
@@ -715,38 +710,38 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
     }
     break;
     case QMetaType::Short:
-        *static_cast<short *>(result) = short(qConvertToNumber(d, ok));
-        return *ok;
+        *static_cast<short *>(result) = short(qConvertToNumber(d, &ok));
+        return ok;
     case QMetaType::Long:
-        *static_cast<long *>(result) = long(qConvertToNumber(d, ok));
-        return *ok;
+        *static_cast<long *>(result) = long(qConvertToNumber(d, &ok));
+        return ok;
     case QMetaType::UShort:
-        *static_cast<ushort *>(result) = ushort(qConvertToUnsignedNumber(d, ok));
-        return *ok;
+        *static_cast<ushort *>(result) = ushort(qConvertToUnsignedNumber(d, &ok));
+        return ok;
     case QMetaType::ULong:
-        *static_cast<ulong *>(result) = ulong(qConvertToUnsignedNumber(d, ok));
-        return *ok;
+        *static_cast<ulong *>(result) = ulong(qConvertToUnsignedNumber(d, &ok));
+        return ok;
     case QMetaType::Int:
-        *static_cast<int *>(result) = int(qConvertToNumber(d, ok));
-        return *ok;
+        *static_cast<int *>(result) = int(qConvertToNumber(d, &ok));
+        return ok;
     case QMetaType::UInt:
-        *static_cast<uint *>(result) = uint(qConvertToUnsignedNumber(d, ok));
-        return *ok;
+        *static_cast<uint *>(result) = uint(qConvertToUnsignedNumber(d, &ok));
+        return ok;
     case QMetaType::LongLong:
-        *static_cast<qlonglong *>(result) = qConvertToNumber(d, ok);
-        return *ok;
+        *static_cast<qlonglong *>(result) = qConvertToNumber(d, &ok);
+        return ok;
     case QMetaType::ULongLong: {
-        *static_cast<qulonglong *>(result) = qConvertToUnsignedNumber(d, ok);
-        return *ok;
+        *static_cast<qulonglong *>(result) = qConvertToUnsignedNumber(d, &ok);
+        return ok;
     }
     case QMetaType::SChar: {
-        signed char s = qConvertToNumber(d, ok);
+        signed char s = qConvertToNumber(d, &ok);
         *static_cast<signed char*>(result) = s;
-        return *ok;
+        return ok;
     }
     case QMetaType::UChar: {
-        *static_cast<uchar *>(result) = qConvertToUnsignedNumber(d, ok);
-        return *ok;
+        *static_cast<uchar *>(result) = qConvertToUnsignedNumber(d, &ok);
+        return ok;
     }
     case QMetaType::Bool: {
         bool *b = static_cast<bool *>(result);
@@ -799,11 +794,11 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
         double *f = static_cast<double *>(result);
         switch (d->type().id()) {
         case QMetaType::QString:
-            *f = v_cast<QString>(d)->toDouble(ok);
-            break;
+            *f = v_cast<QString>(d)->toDouble(&ok);
+            return ok;
         case QMetaType::QByteArray:
-            *f = v_cast<QByteArray>(d)->toDouble(ok);
-            break;
+            *f = v_cast<QByteArray>(d)->toDouble(&ok);
+            return ok;
         case QMetaType::Bool:
             *f = double(d->data.b);
             break;
@@ -847,11 +842,11 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
         float *f = static_cast<float *>(result);
         switch (d->type().id()) {
         case QMetaType::QString:
-            *f = v_cast<QString>(d)->toFloat(ok);
-            break;
+            *f = v_cast<QString>(d)->toFloat(&ok);
+            return ok;
         case QMetaType::QByteArray:
-            *f = v_cast<QByteArray>(d)->toFloat(ok);
-            break;
+            *f = v_cast<QByteArray>(d)->toFloat(&ok);
+            return ok;
         case QMetaType::Bool:
             *f = float(d->data.b);
             break;
@@ -994,8 +989,8 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
         break;
     case QMetaType::Char:
     {
-        *static_cast<qint8 *>(result) = qint8(qConvertToNumber(d, ok));
-        return *ok;
+        *static_cast<qint8 *>(result) = qint8(qConvertToNumber(d, &ok));
+        return ok;
     }
 #endif
     case QMetaType::QUuid:
@@ -1060,7 +1055,7 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
         case QMetaType::Char:
         case QMetaType::SChar:
         case QMetaType::Short:
-            *static_cast<QJsonValue *>(result) = QJsonValue(qConvertToRealNumber(d, ok));
+            *static_cast<QJsonValue *>(result) = QJsonValue(qConvertToRealNumber(d, &ok));
             Q_ASSERT(ok);
             break;
         case QMetaType::QString:
@@ -1188,12 +1183,12 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
         case QMetaType::Char:
         case QMetaType::SChar:
         case QMetaType::Short:
-            *static_cast<QCborValue *>(result) = QCborValue(qConvertToNumber(d, ok));
+            *static_cast<QCborValue *>(result) = QCborValue(qConvertToNumber(d, &ok));
             Q_ASSERT(ok);
             break;
         case QMetaType::Double:
         case QMetaType::Float:
-            *static_cast<QCborValue *>(result) = QCborValue(qConvertToRealNumber(d, ok));
+            *static_cast<QCborValue *>(result) = QCborValue(qConvertToRealNumber(d, &ok));
             Q_ASSERT(ok);
             break;
         case QMetaType::QString:
@@ -1332,8 +1327,8 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
                 QByteArray keys = (d->type().id() == QMetaType::QString)
                         ? v_cast<QString>(d)->toUtf8()
                         : *v_cast<QByteArray>(d);
-                int value = en.keysToValue(keys.constData(), ok);
-                if (*ok) {
+                int value = en.keysToValue(keys.constData(), &ok);
+                if (ok) {
                     switch (QMetaType::sizeOf(t)) {
                     case 1:
                         *static_cast<signed char *>(result) = value;
@@ -1354,8 +1349,8 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
 #endif
         if (QMetaType::typeFlags(t) & QMetaType::IsEnumeration
             || d->type().id() == QMetaType::QCborSimpleType) {
-            qlonglong value = qConvertToNumber(d, ok);
-            if (*ok) {
+            qlonglong value = qConvertToNumber(d, &ok);
+            if (ok) {
                 switch (QMetaType::sizeOf(t)) {
                 case 1:
                     *static_cast<signed char *>(result) = value;
@@ -1371,7 +1366,7 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
                     return true;
                 }
             }
-            return *ok;
+            return ok;
         }
         return false;
     }
@@ -1382,7 +1377,8 @@ const QVariant::Handler qt_kernel_variant_handler = {
     convert
 };
 
-static bool dummyConvert(const QVariant::Private *, int, void *, bool *) { Q_ASSERT_X(false, "QVariant", "Trying to convert an unknown type"); return false; }
+static bool dummyConvert(const QVariant::Private *, int, void *)
+{ Q_ASSERT_X(false, "QVariant", "Trying to convert an unknown type"); return false; }
 const QVariant::Handler qt_dummy_variant_handler = {
     dummyConvert,
 };
@@ -1421,16 +1417,14 @@ static void customClear(QVariant::Private *d)
     }
 }
 
-static bool customConvert(const QVariant::Private *d, int t, void *result, bool *ok)
+static bool customConvert(const QVariant::Private *d, int t, void *result)
 {
     if (d->type().id() >= QMetaType::User || t >= QMetaType::User) {
-        if (QMetaType::convert(constData(*d), d->type().id(), result, t)) {
-            if (ok)
-                *ok = true;
+        if (QMetaType::convert(constData(*d), d->type().id(), result, t))
             return true;
-        }
     }
-    return convert(d, t, result, ok);
+
+    return convert(d, t, result);
 }
 
 const QVariant::Handler qt_custom_variant_handler = {
@@ -2542,7 +2536,7 @@ inline T qVariantToHelper(const QVariant::Private &d)
             return ret;
     }
 
-    handlerManager[d.type().id()]->convert(&d, targetType.id(), &ret, nullptr);
+    handlerManager[d.type().id()]->convert(&d, targetType.id(), &ret);
     return ret;
 }
 
@@ -2975,8 +2969,9 @@ inline T qNumVariantToHelper(const QVariant::Private &d,
         && QMetaType::convert(constData(d), d.type().id(), &ret, t))
         return ret;
 
-    if (!handlerManager[d.type().id()]->convert(&d, t, &ret, ok) && ok)
-        *ok = false;
+    bool success = handlerManager[d.type().id()]->convert(&d, t, &ret);
+    if (ok)
+        *ok = success;
     return ret;
 }
 
@@ -3076,7 +3071,7 @@ bool QVariant::toBool() const
         return d.data.b;
 
     bool res = false;
-    handlerManager[d.type().id()]->convert(&d, Bool, &res, nullptr);
+    handlerManager[d.type().id()]->convert(&d, Bool, &res);
 
     return res;
 }
@@ -3613,10 +3608,8 @@ bool QVariant::convert(int targetTypeId)
         return true;
     }
 
-    bool isOk = true;
     int converterType = std::max(oldValue.userType(), targetTypeId);
-    if (!handlerManager[converterType]->convert(&oldValue.d, targetTypeId, data(), &isOk))
-        isOk = false;
+    bool isOk = handlerManager[converterType]->convert(&oldValue.d, targetTypeId, data());
     d.is_null = !isOk;
     return isOk;
 }
@@ -3628,7 +3621,7 @@ bool QVariant::convert(int targetTypeId)
 */
 bool QVariant::convert(const int type, void *ptr) const
 {
-    return handlerManager[type]->convert(&d, type, ptr, nullptr);
+    return handlerManager[type]->convert(&d, type, ptr);
 }
 
 
