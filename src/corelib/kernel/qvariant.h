@@ -513,15 +513,10 @@ protected:
 #ifndef QT_NO_DEBUG_STREAM
     friend Q_CORE_EXPORT QDebug operator<<(QDebug, const QVariant &);
 #endif
-// ### Qt6: FIXME: Remove the special Q_CC_MSVC handling, it was introduced to maintain BC for QTBUG-41810 .
-#if !defined(Q_NO_TEMPLATE_FRIENDS) && !defined(Q_CC_MSVC)
     template<typename T>
     friend inline T qvariant_cast(const QVariant &);
     template<typename T> friend struct QtPrivate::QVariantValueHelper;
 protected:
-#else
-public:
-#endif
     Private d;
     void create(int type, const void *copy);
     bool equals(const QVariant &other) const;

@@ -1184,7 +1184,6 @@ struct QPairVariantInterfaceConvertFunctor<std::pair<T, U> >
 }
 
 class QObject;
-class QWidget;
 
 #define QT_FORWARD_DECLARE_SHARED_POINTER_TYPES_ITER(Name) \
     template <class T> class Name; \

@@ -103,11 +103,6 @@ inline T *v_cast(QVariant::Private *d, T * = nullptr)
 
 #endif
 
-enum QVariantConstructionFlags : uint {
-    Default = 0x0,
-    PointerType = 0x1
-};
-
 template <class T>
 inline void v_construct_helper(QVariant::Private *x, const T &t, std::true_type)
 {
