@@ -100,14 +100,6 @@ public:
     // For backward compatibility
     QFuture<T> start(QThreadPool *pool) { return start({pool, 0});  }
 
-    void run() override {}
-    virtual void runFunctor() = 0;
-};
-
-template <typename T>
-class RunFunctionTask : public RunFunctionTaskBase<T>
-{
-public:
     void run() override
     {
         if (this->isCanceled()) {
@@ -117,7 +109,7 @@ public:
 #ifndef QT_NO_EXCEPTIONS
         try {
 #endif
-            this->runFunctor();
+            runFunctor();
 #ifndef QT_NO_EXCEPTIONS
         } catch (QException &e) {
             QFutureInterface<T>::reportException(e);
@@ -126,40 +118,33 @@ public:
         }
 #endif
 
+        reportResult();
+
+        this->reportFinished();
+    }
+
+protected:
+    virtual void runFunctor() = 0;
+    virtual void reportResult() {}
+};
+
+template <typename T>
+class RunFunctionTask : public RunFunctionTaskBase<T>
+{
+protected:
+    void reportResult() override
+    {
         if constexpr (std::is_move_constructible_v<T>)
             this->reportAndMoveResult(std::move(result));
         else if constexpr (std::is_copy_constructible_v<T>)
             this->reportResult(result);
-
-        this->reportFinished();
     }
+
     T result;
 };
 
 template <>
-class RunFunctionTask<void> : public RunFunctionTaskBase<void>
-{
-public:
-    void run() override
-    {
-        if (this->isCanceled()) {
-            this->reportFinished();
-            return;
-        }
-#ifndef QT_NO_EXCEPTIONS
-        try {
-#endif
-            this->runFunctor();
-#ifndef QT_NO_EXCEPTIONS
-        } catch (QException &e) {
-            QFutureInterface<void>::reportException(e);
-        } catch (...) {
-            QFutureInterface<void>::reportException(QUnhandledException());
-        }
-#endif
-        this->reportFinished();
-    }
-};
+class RunFunctionTask<void> : public RunFunctionTaskBase<void> {};
 
 } //namespace QtConcurrent
 

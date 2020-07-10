@@ -78,6 +78,7 @@ struct StoredFunctionCall : public RunFunctionTask<InvokeResultType<Function, Ar
         : data(std::move(_data))
     {}
 
+protected:
     void runFunctor() override
     {
         constexpr auto invoke = &std::invoke<std::decay_t<Function>,
@@ -89,6 +90,7 @@ struct StoredFunctionCall : public RunFunctionTask<InvokeResultType<Function, Ar
             this->result = std::apply(invoke, std::move(data));
     }
 
+private:
     DecayedTuple<Function, Args...> data;
 };
 
