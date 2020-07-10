@@ -880,20 +880,20 @@ public:
         return map.contains(k);
     }
 
-    bool insertIfNotContains(Key k, const T *f)
+    bool insertIfNotContains(Key k, const T &f)
     {
         const QWriteLocker locker(&lock);
-        const T* &fun = map[k];
-        if (fun)
+        if (map.contains(k))
             return false;
-        fun = f;
+        map.insert(k, f);
         return true;
     }
 
     const T *function(Key k) const
     {
         const QReadLocker locker(&lock);
-        return map.value(k, nullptr);
+        auto it = map.find(k);
+        return it == map.end() ? nullptr : std::addressof(*it);
     }
 
     void remove(int from, int to)
@@ -904,10 +904,10 @@ public:
     }
 private:
     mutable QReadWriteLock lock;
-    QHash<Key, const T *> map;
+    QHash<Key, T> map;
 };
 
-typedef QMetaTypeFunctionRegistry<QtPrivate::AbstractConverterFunction,QPair<int,int> >
+typedef QMetaTypeFunctionRegistry<QMetaType::ConverterFunction,QPair<int,int> >
 QMetaTypeConverterRegistry;
 
 Q_GLOBAL_STATIC(QMetaTypeConverterRegistry, customTypesConversionRegistry)
@@ -950,7 +950,7 @@ Q_GLOBAL_STATIC(QMetaTypeConverterRegistry, customTypesConversionRegistry)
     \since 5.2
     \internal
 */
-bool QMetaType::registerConverterFunction(const QtPrivate::AbstractConverterFunction *f, int from, int to)
+bool QMetaType::registerConverterFunction(const ConverterFunction &f, int from, int to)
 {
     if (!customTypesConversionRegistry()->insertIfNotContains(qMakePair(from, to), f)) {
         qWarning("Type conversion already registered from type %s to type %s",
@@ -1036,9 +1036,9 @@ bool QMetaType::hasRegisteredDebugStreamOperator() const
 */
 bool QMetaType::convert(const void *from, int fromTypeId, void *to, int toTypeId)
 {
-    const QtPrivate::AbstractConverterFunction * const f =
+    const QMetaType::ConverterFunction * const f =
         customTypesConversionRegistry()->function(qMakePair(fromTypeId, toTypeId));
-    return f && f->convert(f, from, to);
+    return f && (*f)(from, to);
 }
 
 /*!

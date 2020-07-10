@@ -58,6 +58,7 @@
 #include <list>
 #include <map>
 #include <optional>
+#include <functional>
 
 #ifdef Bool
 #error qmetatype.h must be included before any header file that defines Bool
@@ -266,78 +267,6 @@ To convertImplicit(const From& from)
     return from;
 }
 
-struct AbstractConverterFunction
-{
-    typedef bool (*Converter)(const AbstractConverterFunction *, const void *, void*);
-    explicit AbstractConverterFunction(Converter c = nullptr)
-        : convert(c) {}
-    Q_DISABLE_COPY(AbstractConverterFunction)
-    Converter convert;
-};
-
-template<typename From, typename To>
-struct ConverterMemberFunction : public AbstractConverterFunction
-{
-    explicit ConverterMemberFunction(To(From::*function)() const)
-        : AbstractConverterFunction(convert),
-          m_function(function) {}
-    ~ConverterMemberFunction();
-    static bool convert(const AbstractConverterFunction *_this, const void *in, void *out)
-    {
-        const From *f = static_cast<const From *>(in);
-        To *t = static_cast<To *>(out);
-        const ConverterMemberFunction *_typedThis =
-            static_cast<const ConverterMemberFunction *>(_this);
-        *t = (f->*_typedThis->m_function)();
-        return true;
-    }
-
-    To(From::* const m_function)() const;
-};
-
-template<typename From, typename To>
-struct ConverterMemberFunctionOk : public AbstractConverterFunction
-{
-    explicit ConverterMemberFunctionOk(To(From::*function)(bool *) const)
-        : AbstractConverterFunction(convert),
-          m_function(function) {}
-    ~ConverterMemberFunctionOk();
-    static bool convert(const AbstractConverterFunction *_this, const void *in, void *out)
-    {
-        const From *f = static_cast<const From *>(in);
-        To *t = static_cast<To *>(out);
-        bool ok = false;
-        const ConverterMemberFunctionOk *_typedThis =
-            static_cast<const ConverterMemberFunctionOk *>(_this);
-        *t = (f->*_typedThis->m_function)(&ok);
-        if (!ok)
-            *t = To();
-        return ok;
-    }
-
-    To(From::* const m_function)(bool*) const;
-};
-
-template<typename From, typename To, typename UnaryFunction>
-struct ConverterFunctor : public AbstractConverterFunction
-{
-    explicit ConverterFunctor(UnaryFunction function)
-        : AbstractConverterFunction(convert),
-          m_function(function) {}
-    ~ConverterFunctor();
-    static bool convert(const AbstractConverterFunction *_this, const void *in, void *out)
-    {
-        const From *f = static_cast<const From *>(in);
-        To *t = static_cast<To *>(out);
-        const ConverterFunctor *_typedThis =
-            static_cast<const ConverterFunctor *>(_this);
-        *t = _typedThis->m_function(*f);
-        return true;
-    }
-
-    UnaryFunction m_function;
-};
-
     template<typename T, bool>
     struct ValueTypeIsMetaType;
     template<typename T, bool>
@@ -517,6 +446,9 @@ public:
 #endif
 #endif
 
+    // type erased converter function
+    using ConverterFunction = std::function<bool(const void *src, void *target)>;
+
     // implicit conversion supported like double -> float
     template<typename From, typename To>
     static bool registerConverter()
@@ -541,8 +473,13 @@ public:
 
         const int fromTypeId = qMetaTypeId<From>();
         const int toTypeId = qMetaTypeId<To>();
-        static const QtPrivate::ConverterMemberFunction<From, To> f(function);
-        return registerConverterFunction(&f, fromTypeId, toTypeId);
+        auto converter = [function](const void *from, void *to) -> bool {
+            const From *f = static_cast<const From *>(from);
+            To *t = static_cast<To *>(to);
+            *t = (f->*function)();
+            return true;
+        };
+        return registerConverterFunction(converter, fromTypeId, toTypeId);
     }
 
     // member function as in "double QString::toDouble(bool *ok = nullptr) const"
@@ -554,8 +491,16 @@ public:
 
         const int fromTypeId = qMetaTypeId<From>();
         const int toTypeId = qMetaTypeId<To>();
-        static const QtPrivate::ConverterMemberFunctionOk<From, To> f(function);
-        return registerConverterFunction(&f, fromTypeId, toTypeId);
+        auto converter = [function](const void *from, void *to) -> bool {
+            const From *f = static_cast<const From *>(from);
+            To *t = static_cast<To *>(to);
+            bool result = true;
+            *t = (f->*function)(&result);
+            if (!result)
+                *t = To();
+            return result;
+        };
+        return registerConverterFunction(converter, fromTypeId, toTypeId);
     }
 
     // functor or function pointer
@@ -567,8 +512,13 @@ public:
 
         const int fromTypeId = qMetaTypeId<From>();
         const int toTypeId = qMetaTypeId<To>();
-        static const QtPrivate::ConverterFunctor<From, To, UnaryFunction> f(function);
-        return registerConverterFunction(&f, fromTypeId, toTypeId);
+        auto converter = [function](const void *from, void *to) -> bool {
+            const From *f = static_cast<const From *>(from);
+            To *t = static_cast<To *>(to);
+            *t = function(*f);
+            return true;
+        };
+        return registerConverterFunction(converter, fromTypeId, toTypeId);
     }
 #endif
 
@@ -607,14 +557,11 @@ public:
 
 #ifndef Q_CLANG_QDOC
     template<typename, bool> friend struct QtPrivate::ValueTypeIsMetaType;
-    template<typename, typename> friend struct QtPrivate::ConverterMemberFunction;
-    template<typename, typename> friend struct QtPrivate::ConverterMemberFunctionOk;
-    template<typename, typename, typename> friend struct QtPrivate::ConverterFunctor;
     template<typename, bool> friend struct QtPrivate::AssociativeValueTypeIsMetaType;
     template<typename, bool> friend struct QtPrivate::IsMetaTypePair;
     template<typename, typename> friend struct QtPrivate::MetaTypeSmartPointerHelper;
 #endif
-    static bool registerConverterFunction(const QtPrivate::AbstractConverterFunction *f, int from, int to);
+    static bool registerConverterFunction(const ConverterFunction &f, int from, int to);
     static void unregisterConverterFunction(int from, int to);
 private:
     friend class QVariant;
@@ -624,26 +571,6 @@ private:
 #undef QT_DEFINE_METATYPE_ID
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QMetaType::TypeFlags)
-
-namespace QtPrivate {
-
-template<typename From, typename To>
-ConverterMemberFunction<From, To>::~ConverterMemberFunction()
-{
-    QMetaType::unregisterConverterFunction(qMetaTypeId<From>(), qMetaTypeId<To>());
-}
-template<typename From, typename To>
-ConverterMemberFunctionOk<From, To>::~ConverterMemberFunctionOk()
-{
-    QMetaType::unregisterConverterFunction(qMetaTypeId<From>(), qMetaTypeId<To>());
-}
-template<typename From, typename To, typename UnaryFunction>
-ConverterFunctor<From, To, UnaryFunction>::~ConverterFunctor()
-{
-    QMetaType::unregisterConverterFunction(qMetaTypeId<From>(), qMetaTypeId<To>());
-}
-
-}
 
 #define QT_METATYPE_PRIVATE_DECLARE_TYPEINFO(C, F)  \
     }                                               \
@@ -1896,10 +1823,7 @@ struct MetaTypeSmartPointerHelper<SMART_POINTER<T> , \
         const int toId = QMetaType::QObjectStar; \
         if (!QMetaType::hasRegisteredConverterFunction(id, toId)) { \
             QtPrivate::QSmartPointerConvertFunctor<SMART_POINTER<T> > o; \
-            static const QtPrivate::ConverterFunctor<SMART_POINTER<T>, \
-                                    QObject*, \
-                                    QSmartPointerConvertFunctor<SMART_POINTER<T> > > f(o); \
-            return QMetaType::registerConverterFunction(&f, id, toId); \
+            return QMetaType::registerConverter<SMART_POINTER<T>, QObject*>(o); \
         } \
         return true; \
     } \
@@ -1984,10 +1908,7 @@ inline bool QtPrivate::IsMetaTypePair<T, true>::registerConverter(int id)
     const int toId = qMetaTypeId<QtMetaTypePrivate::QPairVariantInterfaceImpl>();
     if (!QMetaType::hasRegisteredConverterFunction(id, toId)) {
         QtMetaTypePrivate::QPairVariantInterfaceConvertFunctor<T> o;
-        static const QtPrivate::ConverterFunctor<T,
-                                    QtMetaTypePrivate::QPairVariantInterfaceImpl,
-                                    QtMetaTypePrivate::QPairVariantInterfaceConvertFunctor<T> > f(o);
-        return QMetaType::registerConverterFunction(&f, id, toId);
+        return QMetaType::registerConverter<T, QtMetaTypePrivate::QPairVariantInterfaceImpl>(o);
     }
     return true;
 }
@@ -2001,10 +1922,7 @@ namespace QtPrivate {
             const int toId = qMetaTypeId<QtMetaTypePrivate::QSequentialIterableImpl>();
             if (!QMetaType::hasRegisteredConverterFunction(id, toId)) {
                 QtMetaTypePrivate::QSequentialIterableConvertFunctor<T> o;
-                static const QtPrivate::ConverterFunctor<T,
-                        QtMetaTypePrivate::QSequentialIterableImpl,
-                QtMetaTypePrivate::QSequentialIterableConvertFunctor<T> > f(o);
-                return QMetaType::registerConverterFunction(&f, id, toId);
+                return QMetaType::registerConverter<T, QtMetaTypePrivate::QSequentialIterableImpl>(o);
             }
             return true;
         }
@@ -2018,10 +1936,7 @@ namespace QtPrivate {
             const int toId = qMetaTypeId<QtMetaTypePrivate::QAssociativeIterableImpl>();
             if (!QMetaType::hasRegisteredConverterFunction(id, toId)) {
                 QtMetaTypePrivate::QAssociativeIterableConvertFunctor<T> o;
-                static const QtPrivate::ConverterFunctor<T,
-                                            QtMetaTypePrivate::QAssociativeIterableImpl,
-                                            QtMetaTypePrivate::QAssociativeIterableConvertFunctor<T> > f(o);
-                return QMetaType::registerConverterFunction(&f, id, toId);
+                return QMetaType::registerConverter<T, QtMetaTypePrivate::QAssociativeIterableImpl>(o);
             }
             return true;
         }
