@@ -223,7 +223,7 @@ void tst_QVersionNumber::constructorDefault()
     QCOMPARE(version.majorVersion(), 0);
     QCOMPARE(version.minorVersion(), 0);
     QCOMPARE(version.microVersion(), 0);
-    QCOMPARE(version.segments(), QVector<int>());
+    QVERIFY(version.segments().isEmpty());
 }
 
 void tst_QVersionNumber::constructorVersioned_data()

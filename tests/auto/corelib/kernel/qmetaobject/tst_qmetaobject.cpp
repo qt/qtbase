@@ -1612,7 +1612,7 @@ void tst_QMetaObject::metaMethod()
     //wrong object
     //QVERIFY(!sl13.invoke(this, Q_RETURN_ARG(QList<QString>, returnValue), Q_ARG(QList<QString>, argument)));
     QVERIFY(!sl13.invoke(0,  Q_RETURN_ARG(QList<QString>, returnValue), Q_ARG(QList<QString>, argument)));
-    QCOMPARE(returnValue, QList<QString>());
+    QVERIFY(returnValue.isEmpty());
 
     QVERIFY(sl13.invoke(&obj, Q_RETURN_ARG(QList<QString>, returnValue), Q_ARG(QList<QString>, argument)));
     QCOMPARE(returnValue, argument);

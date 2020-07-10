@@ -944,7 +944,7 @@ void tst_QGraphicsView::rubberBandSelectionMode()
     // terminate the rubber band.
     view.viewport()->setMouseTracking(false);
 
-    QCOMPARE(scene.selectedItems(), QList<QGraphicsItem *>());
+    QVERIFY(scene.selectedItems().isEmpty());
     sendMousePress(view.viewport(), QPoint(), Qt::LeftButton);
     sendMouseMove(view.viewport(), view.viewport()->rect().center(),
                   Qt::LeftButton, Qt::LeftButton);
@@ -954,10 +954,10 @@ void tst_QGraphicsView::rubberBandSelectionMode()
     view.setRubberBandSelectionMode(Qt::ContainsItemShape);
     QCOMPARE(view.rubberBandSelectionMode(), Qt::ContainsItemShape);
     sendMousePress(view.viewport(), QPoint(), Qt::LeftButton);
-    QCOMPARE(scene.selectedItems(), QList<QGraphicsItem *>());
+    QVERIFY(scene.selectedItems().isEmpty());
     sendMouseMove(view.viewport(), view.viewport()->rect().center(),
                   Qt::LeftButton, Qt::LeftButton);
-    QCOMPARE(scene.selectedItems(), QList<QGraphicsItem *>());
+    QVERIFY(scene.selectedItems().isEmpty());
     sendMouseMove(view.viewport(), view.viewport()->rect().bottomRight(),
                   Qt::LeftButton, Qt::LeftButton);
     QCOMPARE(scene.selectedItems(), QList<QGraphicsItem *>() << rect);
@@ -1049,7 +1049,7 @@ void tst_QGraphicsView::rotated_rubberBand()
     // terminate the rubber band.
     view.viewport()->setMouseTracking(false);
 
-    QCOMPARE(scene.selectedItems(), QList<QGraphicsItem *>());
+    QVERIFY(scene.selectedItems().isEmpty());
     int midWidth = view.viewport()->width() / 2;
     sendMousePress(view.viewport(), QPoint(midWidth - 2, 0), Qt::LeftButton);
     sendMouseMove(view.viewport(), QPoint(midWidth + 2, view.viewport()->height()),

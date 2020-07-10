@@ -2869,8 +2869,8 @@ void tst_QAccessibility::listTest()
     QCOMPARE(cellInterface->columnIndex(), 0);
     QCOMPARE(cellInterface->rowExtent(), 1);
     QCOMPARE(cellInterface->columnExtent(), 1);
-    QCOMPARE(cellInterface->rowHeaderCells(), QList<QAccessibleInterface*>());
-    QCOMPARE(cellInterface->columnHeaderCells(), QList<QAccessibleInterface*>());
+    QVERIFY(cellInterface->rowHeaderCells().isEmpty());
+    QVERIFY(cellInterface->columnHeaderCells().isEmpty());
 
     QCOMPARE(cellInterface->table()->object(), listView);
 

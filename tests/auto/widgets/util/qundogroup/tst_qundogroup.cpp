@@ -253,7 +253,7 @@ void tst_QUndoGroup::addRemoveStack()
     QCOMPARE(group.stacks(), QList<QUndoStack*>() << &stack2);
 
     group.removeStack(&stack2);
-    QCOMPARE(group.stacks(), QList<QUndoStack*>());
+    QVERIFY(group.stacks().isEmpty());
 }
 
 void tst_QUndoGroup::deleteStack()
@@ -290,7 +290,7 @@ void tst_QUndoGroup::deleteStack()
     QCOMPARE(group.activeStack(), stack3);
 
     group.removeStack(stack3);
-    QCOMPARE(group.stacks(), QList<QUndoStack*>());
+    QVERIFY(group.stacks().isEmpty());
     QCOMPARE(group.activeStack(), nullptr);
 
     delete stack3;
