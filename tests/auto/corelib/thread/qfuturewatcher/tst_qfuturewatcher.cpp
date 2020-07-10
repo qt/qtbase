@@ -457,9 +457,9 @@ class ProgressEmitterTask : public RunFunctionTask<void>
 public:
     void runFunctor()
     {
-        setProgressRange(0, maxProgress);
+        promise.setProgressRange(0, maxProgress);
         for (int p = 0; p <= maxProgress; ++p)
-            setProgressValue(p);
+            promise.setProgressValue(p);
     }
 };
 
@@ -487,19 +487,19 @@ class ProgressTextTask : public RunFunctionTask<T>
 public:
     void runFunctor()
     {
-        this->setProgressValueAndText(1, QLatin1String("Foo 1"));
+        this->promise.setProgressValueAndText(1, QLatin1String("Foo 1"));
 
-        while (this->isProgressUpdateNeeded() == false)
+        while (this->promise.isProgressUpdateNeeded() == false)
             QTest::qSleep(1);
-        this->setProgressValueAndText(2, QLatin1String("Foo 2"));
+        this->promise.setProgressValueAndText(2, QLatin1String("Foo 2"));
 
-        while (this->isProgressUpdateNeeded() == false)
+        while (this->promise.isProgressUpdateNeeded() == false)
             QTest::qSleep(1);
-        this->setProgressValueAndText(3, QLatin1String("Foo 3"));
+        this->promise.setProgressValueAndText(3, QLatin1String("Foo 3"));
 
-        while (this->isProgressUpdateNeeded() == false)
+        while (this->promise.isProgressUpdateNeeded() == false)
             QTest::qSleep(1);
-        this->setProgressValueAndText(4, QLatin1String("Foo 4"));
+        this->promise.setProgressValueAndText(4, QLatin1String("Foo 4"));
     }
 };
 

@@ -79,7 +79,7 @@ struct TaskStartParameters
 };
 
 template <typename T>
-class RunFunctionTaskBase : public QFutureInterface<T> , public QRunnable
+class RunFunctionTaskBase : public QRunnable
 {
 public:
     QFuture<T> start()
@@ -89,10 +89,10 @@ public:
 
     QFuture<T> start(const TaskStartParameters &parameters)
     {
-        this->setThreadPool(parameters.threadPool);
-        this->setRunnable(this);
-        this->reportStarted();
-        QFuture<T> theFuture = this->future();
+        promise.setThreadPool(parameters.threadPool);
+        promise.setRunnable(this);
+        promise.reportStarted();
+        QFuture<T> theFuture = promise.future();
         parameters.threadPool->start(this, parameters.priority);
         return theFuture;
     }
@@ -102,8 +102,8 @@ public:
 
     void run() override
     {
-        if (this->isCanceled()) {
-            this->reportFinished();
+        if (promise.isCanceled()) {
+            promise.reportFinished();
             return;
         }
 #ifndef QT_NO_EXCEPTIONS
@@ -112,20 +112,22 @@ public:
             runFunctor();
 #ifndef QT_NO_EXCEPTIONS
         } catch (QException &e) {
-            QFutureInterface<T>::reportException(e);
+            promise.reportException(e);
         } catch (...) {
-            QFutureInterface<T>::reportException(QUnhandledException());
+            promise.reportException(QUnhandledException());
         }
 #endif
 
         reportResult();
 
-        this->reportFinished();
+        promise.reportFinished();
     }
 
 protected:
     virtual void runFunctor() = 0;
     virtual void reportResult() {}
+
+    QFutureInterface<T> promise;
 };
 
 template <typename T>
@@ -135,9 +137,9 @@ protected:
     void reportResult() override
     {
         if constexpr (std::is_move_constructible_v<T>)
-            this->reportAndMoveResult(std::move(result));
+            this->promise.reportAndMoveResult(std::move(result));
         else if constexpr (std::is_copy_constructible_v<T>)
-            this->reportResult(result);
+            this->promise.reportResult(result);
     }
 
     T result;
