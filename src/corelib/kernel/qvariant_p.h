@@ -56,8 +56,6 @@
 #include <QtCore/qvariant.h>
 #include <QtCore/private/qmetatype_p.h>
 
-#include "qmetatypeswitcher_p.h"
-
 QT_BEGIN_NAMESPACE
 
 template<typename T>

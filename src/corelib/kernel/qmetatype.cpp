@@ -54,7 +54,6 @@
 #include "quuid.h"
 #include "qvariant.h"
 #include "qdatastream.h"
-#include "qmetatypeswitcher_p.h"
 
 #if QT_CONFIG(regularexpression)
 #  include "qregularexpression.h"

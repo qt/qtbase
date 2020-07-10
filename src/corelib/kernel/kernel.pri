@@ -42,7 +42,6 @@ HEADERS += \
         kernel/qmath.h \
         kernel/qsystemerror_p.h \
         kernel/qmetatype_p.h \
-        kernel/qmetatypeswitcher_p.h \
         kernel/qtestsupport_core.h \
         kernel/qproperty.h \
         kernel/qpropertyprivate.h \

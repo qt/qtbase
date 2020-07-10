@@ -107,7 +107,6 @@ qt_add_module(Core
         kernel/qmetaobject_moc_p.h
         kernel/qmetaobjectbuilder.cpp kernel/qmetaobjectbuilder_p.h
         kernel/qmetatype.cpp kernel/qmetatype.h kernel/qmetatype_p.h
-        kernel/qmetatypeswitcher_p.h
         kernel/qmimedata.cpp kernel/qmimedata.h
         # kernel/qobject.cpp kernel/qobject.h kernel/qobject_p.h # special case
         kernel/qobject_impl.h
