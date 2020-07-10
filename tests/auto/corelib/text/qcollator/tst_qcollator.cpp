@@ -190,8 +190,10 @@ void tst_QCollator::compare()
     QFETCH(int, result);
     QFETCH(int, caseInsensitiveResult);
     QFETCH(bool, numericMode);
+#if !QT_CONFIG(icu)
     QFETCH(bool, ignorePunctuation);
     QFETCH(int, punctuationResult);
+#endif
 
     QCollator collator((QLocale(locale)));
     // Need to canonicalize sign to -1, 0 or 1, as .compare() can produce any -ve for <, any +ve for >.
