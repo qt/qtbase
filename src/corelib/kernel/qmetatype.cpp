@@ -47,6 +47,7 @@
 #include "qstringlist.h"
 #include "qlist.h"
 #include "qlocale.h"
+#include "qdebug.h"
 #if QT_CONFIG(easingcurve)
 #include "qeasingcurve.h"
 #endif
@@ -707,6 +708,9 @@ std::optional<int> QMetaType::compare(const void *lhs, const void *rhs) const
 {
     if (!lhs || !rhs)
         return std::optional<int>{};
+    if (d_ptr->flags & QMetaType::IsPointer)
+        return std::less<const void *>()(*reinterpret_cast<const void * const *>(lhs),
+                                         *reinterpret_cast<const void * const *>(rhs));
     if (d_ptr && d_ptr->lessThan) {
         if (d_ptr->equals && d_ptr->equals(d_ptr, lhs, rhs))
             return 0;
@@ -741,6 +745,9 @@ bool QMetaType::equals(const void *lhs, const void *rhs) const
     if (!lhs || !rhs)
         return false;
     if (d_ptr) {
+        if (d_ptr->flags & QMetaType::IsPointer)
+            return *reinterpret_cast<const void * const *>(lhs) == *reinterpret_cast<const void * const *>(rhs);
+
         if (d_ptr->equals)
             return d_ptr->equals(d_ptr, lhs, rhs);
         if (d_ptr->lessThan && !d_ptr->lessThan(d_ptr, lhs, rhs) && !d_ptr->lessThan(d_ptr, rhs, lhs))
@@ -757,7 +764,7 @@ bool QMetaType::equals(const void *lhs, const void *rhs) const
 */
 bool QMetaType::isEqualityComparable() const
 {
-    return d_ptr && (d_ptr->equals != nullptr || d_ptr->lessThan != nullptr);
+    return d_ptr && (d_ptr->flags & QMetaType::IsPointer || d_ptr->equals != nullptr || d_ptr->lessThan != nullptr);
 }
 
 /*!
@@ -768,7 +775,7 @@ bool QMetaType::isEqualityComparable() const
 */
 bool QMetaType::isOrdered() const
 {
-    return d_ptr && d_ptr->lessThan != nullptr;
+    return d_ptr && (d_ptr->flags & QMetaType::IsPointer || d_ptr->lessThan != nullptr);
 }
 
 void QtMetaTypePrivate::derefAndDestroy(NS(QtPrivate::QMetaTypeInterface) *d_ptr)
@@ -975,10 +982,15 @@ void QMetaType::unregisterConverterFunction(int from, int to)
 */
 bool QMetaType::debugStream(QDebug& dbg, const void *rhs)
 {
-    if (!isValid() || !d_ptr->debugStream)
-        return false;
-    d_ptr->debugStream(d_ptr, dbg, rhs);
-    return true;
+    if (d_ptr && d_ptr->flags & QMetaType::IsPointer) {
+        dbg << *reinterpret_cast<const void * const *>(rhs);
+        return true;
+    }
+    if (d_ptr && d_ptr->debugStream) {
+        d_ptr->debugStream(d_ptr, dbg, rhs);
+        return true;
+    }
+    return false;
 }
 
 /*!

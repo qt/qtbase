@@ -62,10 +62,9 @@ protected:
             // Chars insert '\0' into the qdebug stream, it is not possible to find a real string length
             return;
         }
-        if (QMetaType::typeFlags(currentId) & QMetaType::PointerToQObject) {
+        if (QMetaType::typeFlags(currentId) & QMetaType::IsPointer) {
             QByteArray currentName = QMetaType::typeName(currentId);
-            currentName.chop(1);
-            ok &= (msg.contains(", " + currentName) || msg.contains(", 0x0"));
+            ok &= msg.contains(currentName + ", 0x");
         }
         ok &= msg.endsWith(QLatin1Char(')'));
         QVERIFY2(ok, (QString::fromLatin1("Message is not correctly finished: '") + msg + '\'').toLatin1().constData());

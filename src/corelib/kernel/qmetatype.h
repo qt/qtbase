@@ -2487,7 +2487,7 @@ struct BuiltinMetaType<T, std::enable_if_t<QMetaTypeId2<T>::IsBuiltIn>>
 {
 };
 
-template<typename T, bool = QTypeTraits::has_operator_equal_v<T>>
+template<typename T, bool = (QTypeTraits::has_operator_equal_v<T> && !std::is_pointer_v<T>)>
 struct QEqualityOperatorForType
 {
     static bool equals(const QMetaTypeInterface *, const void *a, const void *b)
@@ -2500,7 +2500,7 @@ struct QEqualityOperatorForType <T, false>
     static constexpr QMetaTypeInterface::EqualsFn equals = nullptr;
 };
 
-template<typename T, bool = QTypeTraits::has_operator_less_than_v<T>>
+template<typename T, bool = (QTypeTraits::has_operator_less_than_v<T> && !std::is_pointer_v<T>)>
 struct QLessThanOperatorForType
 {
     static bool lessThan(const QMetaTypeInterface *, const void *a, const void *b)
@@ -2513,7 +2513,7 @@ struct QLessThanOperatorForType <T, false>
     static constexpr QMetaTypeInterface::LessThanFn lessThan = nullptr;
 };
 
-template<typename T, bool = QTypeTraits::has_ostream_operator_v<QDebug, T>>
+template<typename T, bool = (QTypeTraits::has_ostream_operator_v<QDebug, T> && !std::is_pointer_v<T>)>
 struct QDebugStreamOperatorForType
 {
     static void debugStream(const QMetaTypeInterface *, QDebug &dbg, const void *a)
