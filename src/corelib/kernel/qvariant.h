@@ -351,7 +351,8 @@ class Q_CORE_EXPORT QVariant
     static Type nameToType(const char *name);
 
     void *data();
-    const void *constData() const;
+    const void *constData() const
+    { return d.is_shared ? d.data.shared->data() : &d.data.ptr; }
     inline const void *data() const { return constData(); }
 
     template<typename T, typename = std::enable_if_t<!std::is_same_v<std::decay_t<T>, QVariant>>>

@@ -3872,19 +3872,12 @@ bool QVariant::equals(const QVariant &v) const
 }
 
 /*!
+    \fn const void *QVariant::constData() const
+    \fn const void* QVariant::data() const
     \internal
  */
 
-const void *QVariant::constData() const
-{
-    return d.is_shared ? d.data.shared->data() : reinterpret_cast<const void *>(&d.data);
-}
 
-/*!
-    \fn const void* QVariant::data() const
-
-    \internal
-*/
 
 /*!
     \internal
