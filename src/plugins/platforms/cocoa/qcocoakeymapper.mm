@@ -452,9 +452,6 @@ const QCocoaKeyMapper::KeyMap &QCocoaKeyMapper::keyMapForKey(VirtualKeyCode virt
 
     qCDebug(lcQpaKeyMapper, "Updating key map for virtual key = 0x%02x!", (uint)virtualKey);
 
-    UniCharCount maxStringLength = 10;
-    UniChar unicodeString[maxStringLength];
-
     for (int i = 0; i < 16; ++i) {
         Q_ASSERT(!i || keyMap[i] == 0);
 
@@ -462,6 +459,8 @@ const QCocoaKeyMapper::KeyMap &QCocoaKeyMapper::keyMapForKey(VirtualKeyCode virt
         auto carbonModifiers = toCarbonModifiers(qtModifiers);
         const UInt32 modifierKeyState = (carbonModifiers >> 8) & 0xFF;
 
+        static const UniCharCount maxStringLength = 10;
+        static UniChar unicodeString[maxStringLength];
         UniCharCount actualStringLength = 0;
         OSStatus err = UCKeyTranslate(m_keyboardLayoutFormat, virtualKey,
             kUCKeyActionDown, modifierKeyState, m_keyboardKind, OptionBits(0),
@@ -470,6 +469,23 @@ const QCocoaKeyMapper::KeyMap &QCocoaKeyMapper::keyMapForKey(VirtualKeyCode virt
         // Use translated unicode key if valid
         if (err == noErr && actualStringLength)
             unicodeKey = QChar(unicodeString[0]);
+
+        if (@available(macOS 10.15, *)) {
+            // Until we've verified that the Cocoa API works as expected
+            // we first run the event through the Carbon APIs and then
+            // compare the results to Cocoa.
+            Q_ASSERT(NSApp.currentEvent);
+            Q_ASSERT(NSApp.currentEvent.type == NSEventTypeKeyDown);
+            auto cocoaModifiers = toCocoaModifiers(qtModifiers);
+            auto *charactersWithModifiers = [NSApp.currentEvent charactersByApplyingModifiers:cocoaModifiers];
+            Q_ASSERT(charactersWithModifiers && charactersWithModifiers.length > 0);
+            auto cocoaUnicodeKey = QChar([charactersWithModifiers characterAtIndex:0]);
+            if (cocoaUnicodeKey != unicodeKey) {
+                qCWarning(lcQpaKeyMapper) << "Mismatch between Cocoa" << cocoaUnicodeKey
+                    << "and Carbon" << unicodeKey << "for virtual key" << virtualKey
+                    << "with" << qtModifiers;
+            }
+        }
 
         int qtkey = toKeyCode(unicodeKey, virtualKey, qtModifiers);
         if (qtkey == Qt::Key_unknown)
