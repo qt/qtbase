@@ -381,16 +381,6 @@ Qt::Key QCocoaKeyMapper::fromCocoaKey(QChar keyCode)
 
 // ------------------------------------------------
 
-QCocoaKeyMapper::QCocoaKeyMapper()
-{
-    memset(m_keyLayout, 0, sizeof(m_keyLayout));
-}
-
-QCocoaKeyMapper::~QCocoaKeyMapper()
-{
-    deleteLayouts();
-}
-
 Qt::KeyboardModifiers QCocoaKeyMapper::queryKeyboardModifiers()
 {
     return fromCocoaModifiers(NSEvent.modifierFlags);
@@ -410,7 +400,7 @@ bool QCocoaKeyMapper::updateKeyboard()
     m_keyboardKind = LMGetKbdType();
     m_deadKeyState = 0;
 
-    deleteLayouts();
+    m_keyMap.clear();
 
     if (auto data = CFDataRef(TISGetInputSourceProperty(source, kTISPropertyUnicodeKeyLayoutData))) {
         const UCKeyboardLayout *uchrData = reinterpret_cast<const UCKeyboardLayout *>(CFDataGetBytePtr(data));
@@ -427,17 +417,6 @@ bool QCocoaKeyMapper::updateKeyboard()
             m_currentInputSource, kTISPropertyLocalizedName)));
 
     return true;
-}
-
-void QCocoaKeyMapper::deleteLayouts()
-{
-    m_keyboardMode = NullMode;
-    for (int i = 0; i < 255; ++i) {
-        if (m_keyLayout[i]) {
-            delete m_keyLayout[i];
-            m_keyLayout[i] = nullptr;
-        }
-    }
 }
 
 static constexpr Qt::KeyboardModifiers modifierCombinations[] = {
@@ -460,31 +439,31 @@ static constexpr Qt::KeyboardModifiers modifierCombinations[] = {
 };
 
 /*
-    Returns a key map for the given \macVirtualKey based on all
+    Returns a key map for the given \virtualKey based on all
     possible modifier combinations.
 */
-KeyboardLayoutItem *QCocoaKeyMapper::keyMapForKey(unsigned short macVirtualKey, QChar unicodeKey) const
+const QCocoaKeyMapper::KeyMap &QCocoaKeyMapper::keyMapForKey(VirtualKeyCode virtualKey, QChar unicodeKey) const
 {
     const_cast<QCocoaKeyMapper *>(this)->updateKeyboard();
 
-    Q_ASSERT(macVirtualKey < 256);
-    if (auto *existingKeyMap = m_keyLayout[macVirtualKey])
-        return existingKeyMap;
+    auto &keyMap = m_keyMap[virtualKey];
+    if (keyMap[Qt::NoModifier] != Qt::Key_unknown)
+        return keyMap; // Already filled
 
-    qCDebug(lcQpaKeyMapper, "Updating key map for virtual key = 0x%02x!", (uint)macVirtualKey);
+    qCDebug(lcQpaKeyMapper, "Updating key map for virtual key = 0x%02x!", (uint)virtualKey);
 
     UniCharCount maxStringLength = 10;
     UniChar unicodeString[maxStringLength];
-    m_keyLayout[macVirtualKey] = new KeyboardLayoutItem;
 
     for (int i = 0; i < 16; ++i) {
-        UniCharCount actualStringLength = 0;
-        m_keyLayout[macVirtualKey]->qtKey[i] = 0;
+        Q_ASSERT(!i || keyMap[i] == 0);
 
         auto qtModifiers = modifierCombinations[i];
         auto carbonModifiers = toCarbonModifiers(qtModifiers);
         const UInt32 modifierKeyState = (carbonModifiers >> 8) & 0xFF;
-        OSStatus err = UCKeyTranslate(m_keyboardLayoutFormat, macVirtualKey,
+
+        UniCharCount actualStringLength = 0;
+        OSStatus err = UCKeyTranslate(m_keyboardLayoutFormat, virtualKey,
             kUCKeyActionDown, modifierKeyState, m_keyboardKind, OptionBits(0),
             &m_deadKeyState, maxStringLength, &actualStringLength, unicodeString);
 
@@ -492,36 +471,36 @@ KeyboardLayoutItem *QCocoaKeyMapper::keyMapForKey(unsigned short macVirtualKey, 
         if (err == noErr && actualStringLength)
             unicodeKey = QChar(unicodeString[0]);
 
-        int qtkey = toKeyCode(unicodeKey, macVirtualKey, qtModifiers);
+        int qtkey = toKeyCode(unicodeKey, virtualKey, qtModifiers);
         if (qtkey == Qt::Key_unknown)
             qtkey = unicodeKey.unicode();
 
-        m_keyLayout[macVirtualKey]->qtKey[i] = qtkey;
+        keyMap[i] = qtkey;
 
         qCDebug(lcQpaKeyMapper, "    [%d] (%d,0x%02x,'%c')", i, qtkey, qtkey, qtkey);
     }
 
-    return m_keyLayout[macVirtualKey];
+    return keyMap;
 }
 
 QList<int> QCocoaKeyMapper::possibleKeys(const QKeyEvent *event) const
 {
     QList<int> ret;
 
-    auto *keyMap = keyMapForKey(event->nativeVirtualKey(), QChar(event->key()));
-    Q_ASSERT(keyMap);
+    auto keyMap = keyMapForKey(event->nativeVirtualKey(), QChar(event->key()));
 
-    int baseKey = keyMap->qtKey[Qt::NoModifier];
+    auto unmodifiedKey = keyMap[Qt::NoModifier];
+    Q_ASSERT(unmodifiedKey != Qt::Key_unknown);
+
     auto eventModifiers = event->modifiers();
 
-    // The base key is always valid
-    ret << int(baseKey + eventModifiers);
+    // The base key, with the complete set of modifiers,
+    // is always valid, and the first priority.
+    ret << int(unmodifiedKey + eventModifiers);
 
     for (int i = 1; i < 8; ++i) {
-        int keyAfterApplyingModifiers = keyMap->qtKey[i];
-        if (!keyAfterApplyingModifiers)
-            continue;
-        if (keyAfterApplyingModifiers == baseKey)
+        auto keyAfterApplyingModifiers = keyMap[i];
+        if (keyAfterApplyingModifiers == unmodifiedKey)
             continue;
 
         // Include key if event modifiers includes, or matches
