@@ -60,14 +60,18 @@ QT_BEGIN_NAMESPACE
 class QSettings;
 QT_END_NAMESPACE
 
+struct TypeChecker;
+
 class SettingsTree : public QTreeWidget
 {
     Q_OBJECT
 
 public:
     using SettingsPtr = QSharedPointer<QSettings>;
+    using TypeCheckerPtr = QSharedPointer<TypeChecker>;
 
     SettingsTree(QWidget *parent = nullptr);
+    ~SettingsTree();
 
     void setSettingsObject(const SettingsPtr &settings);
     QSize sizeHint() const override;
@@ -94,6 +98,7 @@ private:
     void moveItemForward(QTreeWidgetItem *parent, int oldIndex, int newIndex);
 
     SettingsPtr settings;
+    TypeCheckerPtr m_typeChecker;
     QTimer refreshTimer;
     QIcon groupIcon;
     QIcon keyIcon;
