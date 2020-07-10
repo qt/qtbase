@@ -1102,6 +1102,10 @@ void tst_QDom::browseElements()
     root.appendChild(doc.createElement("bop"));
     root.appendChild(doc.createElement("bar"));
     root.appendChild(doc.createElement("bop"));
+    root.appendChild(doc.createElementNS("org.example.bar", "bar"));
+    root.appendChild(doc.createElementNS("org.example.foo", "flup"));
+    root.appendChild(doc.createElementNS("org.example.foo2", "flup"));
+    root.appendChild(doc.createElementNS("org.example.bar", "bar2"));
 
     QVERIFY(doc.firstChildElement("ding").isNull());
     QDomElement foo = doc.firstChildElement("foo");
@@ -1114,10 +1118,12 @@ void tst_QDom::browseElements()
 
     QDomElement bar = foo.firstChildElement("bar");
     QVERIFY(!bar.isNull());
+    QCOMPARE(bar.namespaceURI(), QString());
     QVERIFY(bar.previousSiblingElement("bar").isNull());
     QVERIFY(bar.previousSiblingElement().isNull());
     QCOMPARE(bar.nextSiblingElement("bar").tagName(), QLatin1String("bar"));
-    QVERIFY(bar.nextSiblingElement("bar").nextSiblingElement("bar").isNull());
+    QCOMPARE(bar.nextSiblingElement("bar").nextSiblingElement("bar").tagName(), QLatin1String("bar"));
+    QVERIFY(bar.nextSiblingElement("bar").nextSiblingElement("bar").nextSiblingElement("bar").isNull());
 
     QDomElement bop = foo.firstChildElement("bop");
     QVERIFY(!bop.isNull());
@@ -1125,6 +1131,65 @@ void tst_QDom::browseElements()
     QCOMPARE(bop.nextSiblingElement("bop"), foo.lastChildElement("bop"));
     QCOMPARE(bop.previousSiblingElement("bar"), foo.firstChildElement("bar"));
     QCOMPARE(bop.previousSiblingElement("bar"), foo.firstChildElement());
+
+    bar = foo.firstChildElement("bar", "org.example.bar");
+    QVERIFY(!bar.isNull());
+    QCOMPARE(bar.tagName(), QLatin1String("bar"));
+    QCOMPARE(bar.namespaceURI(), QLatin1String("org.example.bar"));
+    QVERIFY(bar.nextSiblingElement("bar", "org.example.bar").isNull());
+    QVERIFY(bar.nextSiblingElement("bar").isNull());
+    QVERIFY(bar.previousSiblingElement("bar", "org.example.bar").isNull());
+    QVERIFY(!bar.previousSiblingElement("bar").isNull());
+
+    bar = foo.firstChildElement("bar", "");
+    QCOMPARE(bar.namespaceURI(), QString());
+    bar = foo.lastChildElement("bar");
+    QCOMPARE(bar.namespaceURI(), QLatin1String("org.example.bar"));
+    bar = foo.lastChildElement("bar", "");
+    QCOMPARE(bar.namespaceURI(), QLatin1String("org.example.bar"));
+
+    QVERIFY(foo.firstChildElement("bar", "abc").isNull());
+    QVERIFY(foo.lastChildElement("bar", "abc").isNull());
+
+    QDomElement barNS = foo.firstChildElement(QString(), "org.example.bar");
+    QVERIFY(!barNS.isNull());
+    QCOMPARE(barNS.tagName(), "bar");
+    QVERIFY(!barNS.nextSiblingElement(QString(), "org.example.bar").isNull());
+    QVERIFY(barNS.previousSiblingElement(QString(), "org.example.bar").isNull());
+
+    barNS = foo.firstChildElement("", "org.example.bar");
+    QVERIFY(!barNS.isNull());
+    QCOMPARE(barNS.tagName(), "bar");
+    QVERIFY(!barNS.nextSiblingElement("", "org.example.bar").isNull());
+    QVERIFY(barNS.previousSiblingElement("", "org.example.bar").isNull());
+
+    barNS = foo.lastChildElement(QString(), "org.example.bar");
+    QVERIFY(!barNS.isNull());
+    QCOMPARE(barNS.tagName(), "bar2");
+    QVERIFY(barNS.nextSiblingElement(QString(), "org.example.bar").isNull());
+    QVERIFY(!barNS.previousSiblingElement(QString(), "org.example.bar").isNull());
+
+    barNS = foo.lastChildElement("", "org.example.bar");
+    QVERIFY(!barNS.isNull());
+    QCOMPARE(barNS.tagName(), "bar2");
+    QVERIFY(barNS.nextSiblingElement("", "org.example.bar").isNull());
+    QVERIFY(!barNS.previousSiblingElement("", "org.example.bar").isNull());
+
+    QDomElement flup = foo.firstChildElement("flup");
+    QVERIFY(!flup.isNull());
+    QCOMPARE(flup.namespaceURI(), QLatin1String("org.example.foo"));
+    QVERIFY(flup.previousSiblingElement("flup").isNull());
+    QVERIFY(!flup.nextSiblingElement("flup").isNull());
+    QVERIFY(flup.previousSiblingElement("flup", "org.example.foo").isNull());
+    QVERIFY(flup.nextSiblingElement("flup", "org.example.foo").isNull());
+    QVERIFY(flup.previousSiblingElement("flup", "org.example.foo2").isNull());
+    QVERIFY(!flup.nextSiblingElement("flup", "org.example.foo2").isNull());
+
+    QDomElement flup2 = flup.nextSiblingElement("flup");
+    QCOMPARE(flup2.namespaceURI(), QLatin1String("org.example.foo2"));
+
+    flup2 = foo.firstChildElement("flup", "org.example.foo2");
+    QCOMPARE(flup2.namespaceURI(), QLatin1String("org.example.foo2"));
 }
 
 void tst_QDom::domNodeMapAndList()

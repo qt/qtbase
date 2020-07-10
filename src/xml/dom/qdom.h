@@ -227,10 +227,10 @@ public:
 
     void save(QTextStream&, int, EncodingPolicy=QDomNode::EncodingFromDocument) const;
 
-    QDomElement firstChildElement(const QString &tagName = QString()) const;
-    QDomElement lastChildElement(const QString &tagName = QString()) const;
-    QDomElement previousSiblingElement(const QString &tagName = QString()) const;
-    QDomElement nextSiblingElement(const QString &taName = QString()) const;
+    QDomElement firstChildElement(const QString &tagName = QString(), const QString &namespaceURI = QString()) const;
+    QDomElement lastChildElement(const QString &tagName = QString(), const QString &namespaceURI = QString()) const;
+    QDomElement previousSiblingElement(const QString &tagName = QString(), const QString &namespaceURI = QString()) const;
+    QDomElement nextSiblingElement(const QString &taName = QString(), const QString &namespaceURI = QString()) const;
 
     int lineNumber() const;
     int columnNumber() const;

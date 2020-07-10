@@ -2417,17 +2417,19 @@ bool QDomNode::isComment() const
 #undef IMPL
 
 /*!
-    Returns the first child element with tag name \a tagName if tagName is non-empty;
-    otherwise returns the first child element.  Returns a null element if no
-    such child exists.
+    Returns the first child element with tag name \a tagName and namespace URI
+    \a namespaceURI. If \a tagName is empty, returns the first child element
+    with \a namespaceURI, and if \a namespaceURI is empty, returns the first
+    child element with \a tagName. If the both parameters are empty, returns
+    the first child element. Returns a null element if no such child exists.
 
     \sa lastChildElement(), previousSiblingElement(), nextSiblingElement()
 */
 
-QDomElement QDomNode::firstChildElement(const QString &tagName) const
+QDomElement QDomNode::firstChildElement(const QString &tagName, const QString &namespaceURI) const
 {
     for (QDomNode child = firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isElement()) {
+        if (child.isElement() && (namespaceURI.isEmpty() || child.namespaceURI() == namespaceURI)) {
             QDomElement elt = child.toElement();
             if (tagName.isEmpty() || elt.tagName() == tagName)
                 return elt;
@@ -2437,17 +2439,19 @@ QDomElement QDomNode::firstChildElement(const QString &tagName) const
 }
 
 /*!
-    Returns the last child element with tag name \a tagName if tagName is non-empty;
-    otherwise returns the last child element. Returns a null element if no
-    such child exists.
+    Returns the last child element with tag name \a tagName and namespace URI
+    \a namespaceURI. If \a tagName is empty, returns the last child element
+    with \a namespaceURI, and if \a namespaceURI is empty, returns the last
+    child element with \a tagName. If the both parameters are empty, returns
+    the last child element. Returns a null element if no such child exists.
 
     \sa firstChildElement(), previousSiblingElement(), nextSiblingElement()
 */
 
-QDomElement QDomNode::lastChildElement(const QString &tagName) const
+QDomElement QDomNode::lastChildElement(const QString &tagName, const QString &namespaceURI) const
 {
     for (QDomNode child = lastChild(); !child.isNull(); child = child.previousSibling()) {
-        if (child.isElement()) {
+        if (child.isElement() && (namespaceURI.isEmpty() || child.namespaceURI() == namespaceURI)) {
             QDomElement elt = child.toElement();
             if (tagName.isEmpty() || elt.tagName() == tagName)
                 return elt;
@@ -2457,17 +2461,20 @@ QDomElement QDomNode::lastChildElement(const QString &tagName) const
 }
 
 /*!
-    Returns the next sibling element with tag name \a tagName if \a tagName
-    is non-empty; otherwise returns any next sibling element.
-    Returns a null element if no such sibling exists.
+    Returns the next sibling element with tag name \a tagName and namespace URI
+    \a namespaceURI. If \a tagName is empty, returns the next sibling element
+    with \a namespaceURI, and if \a namespaceURI is empty, returns the next
+    sibling child element with \a tagName. If the both parameters are empty,
+    returns the next sibling element. Returns a null element if no such sibling
+    exists.
 
     \sa firstChildElement(), previousSiblingElement(), lastChildElement()
 */
 
-QDomElement QDomNode::nextSiblingElement(const QString &tagName) const
+QDomElement QDomNode::nextSiblingElement(const QString &tagName, const QString &namespaceURI) const
 {
     for (QDomNode sib = nextSibling(); !sib.isNull(); sib = sib.nextSibling()) {
-        if (sib.isElement()) {
+        if (sib.isElement() && (namespaceURI.isEmpty() || sib.namespaceURI() == namespaceURI)) {
             QDomElement elt = sib.toElement();
             if (tagName.isEmpty() || elt.tagName() == tagName)
                 return elt;
@@ -2477,17 +2484,20 @@ QDomElement QDomNode::nextSiblingElement(const QString &tagName) const
 }
 
 /*!
-    Returns the previous sibilng element with tag name \a tagName if \a tagName
-    is non-empty; otherwise returns any previous sibling element.
-    Returns a null element if no such sibling exists.
+    Returns the previous sibling element with tag name \a tagName and namespace
+    URI \a namespaceURI. If \a tagName is empty, returns the previous sibling
+    element with \a namespaceURI, and if \a namespaceURI is empty, returns the
+    previous sibling element with \a tagName. If the both parameters are empty,
+    returns the previous sibling element. Returns a null element if no such
+    sibling exists.
 
     \sa firstChildElement(), nextSiblingElement(), lastChildElement()
 */
 
-QDomElement QDomNode::previousSiblingElement(const QString &tagName) const
+QDomElement QDomNode::previousSiblingElement(const QString &tagName, const QString &namespaceURI) const
 {
     for (QDomNode sib = previousSibling(); !sib.isNull(); sib = sib.previousSibling()) {
-        if (sib.isElement()) {
+        if (sib.isElement() && (namespaceURI.isEmpty() || sib.namespaceURI() == namespaceURI)) {
             QDomElement elt = sib.toElement();
             if (tagName.isEmpty() || elt.tagName() == tagName)
                 return elt;
