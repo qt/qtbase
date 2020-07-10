@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="0" failures="40" tests="26" name="tst_Cmptest">
+<testsuite errors="0" failures="45" tests="28" name="tst_Cmptest">
   <properties>
     <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
     <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
@@ -70,9 +70,28 @@
    Expected (opB) size: 12" result="fail"/>
   </testcase>
   <testcase result="fail" name="compareQListInt">
-    <failure message="Compared lists differ at index 2.
-   Actual   (int1): 3
-   Expected (int2): 4" result="fail"/>
+    <failure tag="size mismatch" message="Compared lists have different sizes.
+   Actual   (actual) size: 2
+   Expected (expected) size: 3" result="fail"/>
+    <failure tag="value mismatch" message="Compared lists differ at index 2.
+   Actual   (actual): 4
+   Expected (expected): 3" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="compareQListIntToArray">
+    <failure tag="size mismatch" message="Compared lists have different sizes.
+   Actual   (actual) size: 2
+   Expected (expected) size: 3" result="fail"/>
+    <failure tag="value mismatch" message="Compared lists differ at index 2.
+   Actual   (actual): 4
+   Expected (expected): 3" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="compareQListIntToInitializerList">
+    <failure tag="size mismatch" message="Compared lists have different sizes.
+   Actual   (actual) size: 2
+   Expected (ARG({1, 2, 3})) size: 3" result="fail"/>
+    <failure tag="value mismatch" message="Compared lists differ at index 2.
+   Actual   (actual): 4
+   Expected (ARG({1, 2, 3})): 3" result="fail"/>
   </testcase>
   <testcase result="fail" name="compareQListDouble">
     <failure message="Compared lists differ at index 0.

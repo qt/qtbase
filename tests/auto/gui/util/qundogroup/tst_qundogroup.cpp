@@ -237,20 +237,21 @@ void tst_QUndoGroup::addRemoveStack()
     QUndoGroup group;
 
     QUndoStack stack1(&group);
-    QCOMPARE(group.stacks(), QList<QUndoStack*>() << &stack1);
+    QCOMPARE(group.stacks(), {&stack1});
 
     QUndoStack stack2;
+    QUndoStack *expected12[] = {&stack1, &stack2};
     group.addStack(&stack2);
-    QCOMPARE(group.stacks(), QList<QUndoStack*>() << &stack1 << &stack2);
+    QCOMPARE(group.stacks(), expected12);
 
     group.addStack(&stack1);
-    QCOMPARE(group.stacks(), QList<QUndoStack*>() << &stack1 << &stack2);
+    QCOMPARE(group.stacks(), expected12);
 
     group.removeStack(&stack1);
-    QCOMPARE(group.stacks(), QList<QUndoStack*>() << &stack2);
+    QCOMPARE(group.stacks(), {&stack2});
 
     group.removeStack(&stack1);
-    QCOMPARE(group.stacks(), QList<QUndoStack*>() << &stack2);
+    QCOMPARE(group.stacks(), {&stack2});
 
     group.removeStack(&stack2);
     QVERIFY(group.stacks().isEmpty());
@@ -280,7 +281,7 @@ void tst_QUndoGroup::deleteStack()
     QCOMPARE(group.activeStack(), stack1);
 
     delete stack1;
-    QCOMPARE(group.stacks(), QList<QUndoStack*>() << stack3);
+    QCOMPARE(group.stacks(), {stack3});
     QCOMPARE(group.activeStack(), nullptr);
 
     stack3->setActive(false);

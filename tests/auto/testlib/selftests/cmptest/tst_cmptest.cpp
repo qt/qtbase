@@ -141,7 +141,12 @@ private slots:
     void compare_tostring_data();
     void compareQStringLists();
     void compareQStringLists_data();
+    void compareQListInt_data();
     void compareQListInt();
+    void compareQListIntToArray_data();
+    void compareQListIntToArray();
+    void compareQListIntToInitializerList_data();
+    void compareQListIntToInitializerList();
     void compareQListDouble();
 #ifdef QT_GUI_LIB
     void compareQColor_data();
@@ -425,11 +430,48 @@ void tst_Cmptest::compareQStringLists()
     QCOMPARE(opA, opB);
 }
 
+using IntList = QList<int>;
+
+void tst_Cmptest::compareQListInt_data()
+{
+      QTest::addColumn<IntList>("actual");
+
+      QTest::newRow("match") << IntList{1, 2, 3};
+      QTest::newRow("size mismatch") << IntList{1, 2};
+      QTest::newRow("value mismatch") << IntList{1, 2, 4};
+}
+
 void tst_Cmptest::compareQListInt()
 {
-    QList<int> int1; int1 << 1 << 2 << 3;
-    QList<int> int2; int2 << 1 << 2 << 4;
-    QCOMPARE(int1, int2);
+    QFETCH(IntList, actual);
+    const QList<int> expected{1, 2, 3};
+    QCOMPARE(actual, expected);
+}
+
+void tst_Cmptest::compareQListIntToArray_data()
+{
+    compareQListInt_data();
+}
+
+void tst_Cmptest::compareQListIntToArray()
+{
+    QFETCH(IntList, actual);
+    const int expected[] = {1, 2, 3};
+    QCOMPARE(actual, expected);
+}
+
+void tst_Cmptest::compareQListIntToInitializerList_data()
+{
+    compareQListInt_data();
+}
+
+void tst_Cmptest::compareQListIntToInitializerList()
+{
+    QFETCH(IntList, actual);
+    // Protect ',' in the list
+#define ARG(...) __VA_ARGS__
+    QCOMPARE(actual,  ARG({1, 2, 3}));
+#undef ARG
 }
 
 void tst_Cmptest::compareQListDouble()

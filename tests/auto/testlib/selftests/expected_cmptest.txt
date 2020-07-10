@@ -71,9 +71,32 @@ FAIL!  : tst_Cmptest::compareQStringLists(short list first) Compared lists have 
    Actual   (opA) size: 1
    Expected (opB) size: 12
    Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
-FAIL!  : tst_Cmptest::compareQListInt() Compared lists differ at index 2.
-   Actual   (int1): 3
-   Expected (int2): 4
+PASS   : tst_Cmptest::compareQListInt(match)
+FAIL!  : tst_Cmptest::compareQListInt(size mismatch) Compared lists have different sizes.
+   Actual   (actual) size: 2
+   Expected (expected) size: 3
+   Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
+FAIL!  : tst_Cmptest::compareQListInt(value mismatch) Compared lists differ at index 2.
+   Actual   (actual): 4
+   Expected (expected): 3
+   Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
+PASS   : tst_Cmptest::compareQListIntToArray(match)
+FAIL!  : tst_Cmptest::compareQListIntToArray(size mismatch) Compared lists have different sizes.
+   Actual   (actual) size: 2
+   Expected (expected) size: 3
+   Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
+FAIL!  : tst_Cmptest::compareQListIntToArray(value mismatch) Compared lists differ at index 2.
+   Actual   (actual): 4
+   Expected (expected): 3
+   Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
+PASS   : tst_Cmptest::compareQListIntToInitializerList(match)
+FAIL!  : tst_Cmptest::compareQListIntToInitializerList(size mismatch) Compared lists have different sizes.
+   Actual   (actual) size: 2
+   Expected (ARG({1, 2, 3})) size: 3
+   Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
+FAIL!  : tst_Cmptest::compareQListIntToInitializerList(value mismatch) Compared lists differ at index 2.
+   Actual   (actual): 4
+   Expected (ARG({1, 2, 3})): 3
    Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
 FAIL!  : tst_Cmptest::compareQListDouble() Compared lists differ at index 0.
    Actual   (double1): 1.5
@@ -164,5 +187,5 @@ FAIL!  : tst_Cmptest::tryVerify2() 'opaqueFunc() < 2' returned FALSE. (42)
    Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
 PASS   : tst_Cmptest::verifyExplicitOperatorBool()
 PASS   : tst_Cmptest::cleanupTestCase()
-Totals: 18 passed, 40 failed, 0 skipped, 0 blacklisted, 0ms
+Totals: 21 passed, 45 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_Cmptest *********

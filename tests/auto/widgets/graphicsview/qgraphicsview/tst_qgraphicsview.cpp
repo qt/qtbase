@@ -948,7 +948,7 @@ void tst_QGraphicsView::rubberBandSelectionMode()
     sendMousePress(view.viewport(), QPoint(), Qt::LeftButton);
     sendMouseMove(view.viewport(), view.viewport()->rect().center(),
                   Qt::LeftButton, Qt::LeftButton);
-    QCOMPARE(scene.selectedItems(), QList<QGraphicsItem *>() << rect);
+    QCOMPARE(scene.selectedItems(), {rect});
     sendMouseRelease(view.viewport(), QPoint(), Qt::LeftButton);
 
     view.setRubberBandSelectionMode(Qt::ContainsItemShape);
@@ -960,7 +960,7 @@ void tst_QGraphicsView::rubberBandSelectionMode()
     QVERIFY(scene.selectedItems().isEmpty());
     sendMouseMove(view.viewport(), view.viewport()->rect().bottomRight(),
                   Qt::LeftButton, Qt::LeftButton);
-    QCOMPARE(scene.selectedItems(), QList<QGraphicsItem *>() << rect);
+    QCOMPARE(scene.selectedItems(), {rect});
 }
 
 void tst_QGraphicsView::rubberBandExtendSelection()
@@ -990,7 +990,7 @@ void tst_QGraphicsView::rubberBandExtendSelection()
 
    // select first item
    item1->setSelected(true);
-   QCOMPARE(scene.selectedItems(), QList<QGraphicsItem *>() << item1);
+   QCOMPARE(scene.selectedItems(), {item1});
 
    // first rubberband without modifier key
    sendMousePress(view.viewport(), view.mapFromScene(20, 115), Qt::LeftButton);

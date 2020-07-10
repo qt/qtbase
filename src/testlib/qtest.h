@@ -64,6 +64,7 @@
 #include <QtCore/qsize.h>
 #include <QtCore/qrect.h>
 
+#include <initializer_list>
 #include <memory>
 
 QT_BEGIN_NAMESPACE
@@ -276,27 +277,36 @@ inline bool qCompare(QLatin1String const &t1, QString const &t2, const char *act
     return qCompare(QString(t1), t2, actual, expected, file, line);
 }
 
-template <typename T>
-inline bool qCompare(QList<T> const &t1, QList<T> const &t2, const char *actual, const char *expected,
-                    const char *file, int line)
+namespace Internal {
+
+// Compare sequences of equal size
+template <typename ActualIterator, typename ExpectedIterator>
+bool compareSequence(ActualIterator actualIt, ActualIterator actualEnd,
+                     ExpectedIterator expectedBegin, ExpectedIterator expectedEnd,
+                     const char *actual, const char *expected,
+                     const char *file, int line)
 {
     char msg[1024];
     msg[0] = '\0';
-    bool isOk = true;
-    const int actualSize = t1.count();
-    const int expectedSize = t2.count();
-    if (actualSize != expectedSize) {
-        qsnprintf(msg, sizeof(msg), "Compared lists have different sizes.\n"
-                  "   Actual   (%s) size: %d\n"
-                  "   Expected (%s) size: %d", actual, actualSize, expected, expectedSize);
-        isOk = false;
-    }
-    for (int i = 0; isOk && i < actualSize; ++i) {
-        if (!(t1.at(i) == t2.at(i))) {
-            char *val1 = toString(t1.at(i));
-            char *val2 = toString(t2.at(i));
 
-            qsnprintf(msg, sizeof(msg), "Compared lists differ at index %d.\n"
+    const qsizetype actualSize = actualEnd - actualIt;
+    const qsizetype expectedSize = expectedEnd - expectedBegin;
+    bool isOk = actualSize == expectedSize;
+
+    if (!isOk) {
+        qsnprintf(msg, sizeof(msg), "Compared lists have different sizes.\n"
+                  "   Actual   (%s) size: %zd\n"
+                  "   Expected (%s) size: %zd", actual, actualSize,
+                  expected, expectedSize);
+    }
+
+    for (auto expectedIt = expectedBegin; isOk && expectedIt < expectedEnd; ++actualIt, ++expectedIt) {
+        if (!(*actualIt == *expectedIt)) {
+            const qsizetype i = qsizetype(expectedIt - expectedBegin);
+            char *val1 = QTest::toString(*actualIt);
+            char *val2 = QTest::toString(*expectedIt);
+
+            qsnprintf(msg, sizeof(msg), "Compared lists differ at index %zd.\n"
                       "   Actual   (%s): %s\n"
                       "   Expected (%s): %s", i, actual, val1 ? val1 : "<null>",
                       expected, val2 ? val2 : "<null>");
@@ -307,6 +317,35 @@ inline bool qCompare(QList<T> const &t1, QList<T> const &t2, const char *actual,
         }
     }
     return compare_helper(isOk, msg, nullptr, nullptr, actual, expected, file, line);
+}
+
+} // namespace Internal
+
+template <typename T>
+inline bool qCompare(QList<T> const &t1, QList<T> const &t2, const char *actual, const char *expected,
+                     const char *file, int line)
+{
+    return Internal::compareSequence(t1.cbegin(), t1.cend(), t2.cbegin(), t2.cend(),
+                                     actual, expected, file, line);
+}
+
+template <typename T, int N>
+bool qCompare(QList<T> const &t1, std::initializer_list<T> t2,
+              const char *actual, const char *expected,
+              const char *file, int line)
+{
+    return Internal::compareSequence(t1.cbegin(), t1.cend(), t2.cbegin(), t2.cend(),
+                                     actual, expected, file, line);
+}
+
+// Compare QList against array
+template <typename T, int N>
+bool qCompare(QList<T> const &t1, const T (& t2)[N],
+              const char *actual, const char *expected,
+              const char *file, int line)
+{
+    return Internal::compareSequence(t1.cbegin(), t1.cend(), t2, t2 + N,
+                                     actual, expected, file, line);
 }
 
 template <>

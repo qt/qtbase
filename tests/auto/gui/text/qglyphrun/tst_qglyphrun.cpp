@@ -493,6 +493,9 @@ void tst_QGlyphRun::drawMultiScriptText2()
 
 void tst_QGlyphRun::detach()
 {
+
+#define ARG(...) __VA_ARGS__
+
     QGlyphRun glyphs;
 
     glyphs.setGlyphIndexes(QList<quint32>() << 1 << 2 << 3);
@@ -504,8 +507,10 @@ void tst_QGlyphRun::detach()
 
     otherGlyphs.setGlyphIndexes(QList<quint32>() << 4 << 5 << 6);
 
-    QCOMPARE(otherGlyphs.glyphIndexes(), QList<quint32>() << 4 << 5 << 6);
-    QCOMPARE(glyphs.glyphIndexes(), QList<quint32>() << 1 << 2 << 3);
+    QCOMPARE(otherGlyphs.glyphIndexes(), ARG({4, 5, 6}));
+    QCOMPARE(glyphs.glyphIndexes(), ARG({1, 2, 3}));
+
+#undef ARG
 }
 
 void tst_QGlyphRun::drawRightToLeft()

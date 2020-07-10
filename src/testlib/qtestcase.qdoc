@@ -116,19 +116,28 @@
    Expected.  If the parameter order is swapped, debugging a failing test can be
    confusing and tests expecting zero may fail due to rounding errors.
 
-   When comparing floating-point types (\c float, \c double, and \c qfloat16),
-   \l qFuzzyCompare() is used for finite values. If qFuzzyIsNull() is true for
-   both values, they are also considered equal. Infinities match if they have
-   the same sign, and any NaN as actual value matches with any NaN as expected
-   value (even though NaN != NaN, even when they're identical).
-
    QCOMPARE() tries to output the contents of the values if the comparison fails,
    so it is visible from the test log why the comparison failed.
 
    Example:
    \snippet code/src_qtestlib_qtestcase.cpp 2
 
-   \note This macro can only be used in a test function that is invoked
+   When comparing floating-point types (\c float, \c double, and \c qfloat16),
+   \l qFuzzyCompare() is used for finite values. If qFuzzyIsNull() is true for
+   both values, they are also considered equal. Infinities match if they have
+   the same sign, and any NaN as actual value matches with any NaN as expected
+   value (even though NaN != NaN, even when they're identical).
+
+   When comparing QList, arrays and initializer lists of the value type
+   can be passed as expected value:
+   \snippet code/src_qtestlib_qtestcase.cpp 34
+
+   Note that using initializer lists requires a defining a helper macro
+   to prevent the preprocessor from interpreting the commas as macro argument
+   delimiters:
+   \snippet code/src_qtestlib_qtestcase.cpp 35
+
+   \note QCOMPARE() can only be used in a test function that is invoked
    by the test framework.
 
    For your own classes, you can use \l QTest::toString() to format values for

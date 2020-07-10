@@ -49,6 +49,9 @@
 ****************************************************************************/
 #include <QTest>
 #include <QSqlDatabase>
+#include <QtGui/qfontdatabase.h>
+
+#include <initializer_list>
 
 // dummy
 class TestBenchmark : public QObject
@@ -245,4 +248,21 @@ QVERIFY2(file.open(QIODevice::WriteOnly),
          qPrintable(QString("open %1: %2")
                     .arg(file.fileName()).arg(file.errorString())));
 //! [33]
+}
+
+void compareListToArray()
+{
+//! [34]
+    const int expected[] = {8, 10, 12, 16, 20, 24};
+    QCOMPARE(QFontDatabase::standardSizes(), expected);
+//! [34]
+}
+
+void compareListToInitializerList()
+{
+//! [35]
+ #define ARG(...) __VA_ARGS__
+     QCOMPARE(QFontDatabase::standardSizes(), ARG({8, 10, 12, 16, 20, 24}));
+ #undef ARG
+//! [35]
 }

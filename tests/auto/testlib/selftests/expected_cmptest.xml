@@ -149,10 +149,56 @@
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="compareQListInt">
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[match]]></DataTag>
+</Incident>
 <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
+    <DataTag><![CDATA[size mismatch]]></DataTag>
+    <Description><![CDATA[Compared lists have different sizes.
+   Actual   (actual) size: 2
+   Expected (expected) size: 3]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
+    <DataTag><![CDATA[value mismatch]]></DataTag>
     <Description><![CDATA[Compared lists differ at index 2.
-   Actual   (int1): 3
-   Expected (int2): 4]]></Description>
+   Actual   (actual): 4
+   Expected (expected): 3]]></Description>
+</Incident>
+    <Duration msecs="0"/>
+</TestFunction>
+<TestFunction name="compareQListIntToArray">
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[match]]></DataTag>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
+    <DataTag><![CDATA[size mismatch]]></DataTag>
+    <Description><![CDATA[Compared lists have different sizes.
+   Actual   (actual) size: 2
+   Expected (expected) size: 3]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
+    <DataTag><![CDATA[value mismatch]]></DataTag>
+    <Description><![CDATA[Compared lists differ at index 2.
+   Actual   (actual): 4
+   Expected (expected): 3]]></Description>
+</Incident>
+    <Duration msecs="0"/>
+</TestFunction>
+<TestFunction name="compareQListIntToInitializerList">
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[match]]></DataTag>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
+    <DataTag><![CDATA[size mismatch]]></DataTag>
+    <Description><![CDATA[Compared lists have different sizes.
+   Actual   (actual) size: 2
+   Expected (ARG({1, 2, 3})) size: 3]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
+    <DataTag><![CDATA[value mismatch]]></DataTag>
+    <Description><![CDATA[Compared lists differ at index 2.
+   Actual   (actual): 4
+   Expected (ARG({1, 2, 3})): 3]]></Description>
 </Incident>
     <Duration msecs="0"/>
 </TestFunction>
