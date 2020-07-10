@@ -797,7 +797,7 @@ void tst_QFuture::cancel()
         result = 3;
         futureInterface.reportResult(&result);
         futureInterface.reportFinished();
-        QCOMPARE(f.results(), QList<int>());
+        QVERIFY(f.results().isEmpty());
     }
 }
 

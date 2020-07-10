@@ -1115,7 +1115,7 @@ void tst_QSettings::setValue()
     QCOMPARE(settings.value("key 2").toStringList(), QStringList() << "" << "a" << "" << "bc" << "");
 
     settings.setValue("key 3", QList<QVariant>());
-    QCOMPARE(settings.value("key 3").toList(), QList<QVariant>());
+    QVERIFY(settings.value("key 3").toList().isEmpty());
     settings.setValue("key 3", QList<QVariant>() << 1 << QString("a"));
     QCOMPARE(settings.value("key 3").toList(), QList<QVariant>() << 1 << QString("a"));
 
