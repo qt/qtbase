@@ -1715,10 +1715,11 @@ QVariant::QVariant(const QVariant &p)
 {
     if (d.is_shared) {
         d.data.shared->ref.ref();
-    } else if (d.type().isValid()) {
-        customConstruct(&d, p.constData());
-        d.is_null = p.d.is_null;
+        return;
     }
+    QMetaType t = d.type();
+    if (t.isValid())
+        t.construct(&d, p.constData());
 }
 
 #ifndef QT_NO_DATASTREAM
@@ -2200,8 +2201,9 @@ QVariant& QVariant::operator=(const QVariant &variant)
         d = variant.d;
     } else {
         d = variant.d;
-        customConstruct(&d, reinterpret_cast<const void *>(&variant.d.data));
-        d.is_null = variant.d.is_null;
+        QMetaType t = d.type();
+        if (t.isValid())
+            t.construct(&d, variant.constData());
     }
 
     return *this;
