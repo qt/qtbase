@@ -23,6 +23,7 @@ qtConfig(intelcet) {
 uikit|qnx|winrt: DEFINES += PCRE2_DISABLE_JIT
 win32:contains(QT_ARCH, "arm"): DEFINES += PCRE2_DISABLE_JIT
 win32:contains(QT_ARCH, "arm64"): DEFINES += PCRE2_DISABLE_JIT
+macos:contains(QT_ARCH, "arm64"): DEFINES += PCRE2_DISABLE_JIT
 
 SOURCES += \
     $$PWD/src/pcre2_auto_possess.c \
