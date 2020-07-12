@@ -493,9 +493,28 @@ class Q_CORE_EXPORT QVariant
         quintptr packedType : sizeof(QMetaType) * 8 - 2;
         quintptr is_shared : 1;
         quintptr is_null : 1;
+
+        template<typename T>
+        static constexpr bool CanUseInternalSpace = sizeof(T) <= sizeof(QVariant::Private::Data);
+
+        const void *storage() const
+        { return is_shared ? data.shared->data() : &data; }
+
+        const void *internalStorage() const
+        { Q_ASSERT(is_shared); return &data; }
+
+        // determine internal storage at compile time
+        template<typename T>
+        const T &get() const
+        { return *static_cast<const T *>(CanUseInternalSpace<T> ? &data : data.shared->data()); }
+
         inline QMetaType type() const
         {
             return QMetaType(reinterpret_cast<QtPrivate::QMetaTypeInterface *>(packedType << 2));
+        }
+        inline int typeId() const
+        {
+            return type().id();
         }
     };
  public:
