@@ -293,11 +293,7 @@ private:
     qsizetype a;      // capacity
     qsizetype s;      // size
     T *ptr;     // data
-    union {
-        char array[Prealloc * sizeof(T)];
-        qint64 q_for_alignment_1;
-        double q_for_alignment_2;
-    };
+    std::aligned_storage_t<sizeof(T), alignof(T)> array[Prealloc];
 
     bool isValidIterator(const const_iterator &i) const
     {
