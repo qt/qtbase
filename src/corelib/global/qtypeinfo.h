@@ -41,6 +41,7 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qcontainerfwd.h>
 #include <variant>
+#include <optional>
 
 #ifndef QTYPEINFO_H
 #define QTYPEINFO_H
@@ -342,12 +343,16 @@ namespace QTypeTraits
 */
 namespace detail {
 
-// find out whether T has a value_type typedef
+// find out whether T is a conteiner
 // this is required to check the value type of containers for the existence of the comparison operator
 template <typename, typename = void>
-struct has_value_type : std::false_type {};
+struct is_container : std::false_type {};
 template <typename T>
-struct has_value_type<T, std::void_t<typename T::value_type>> : std::true_type {};
+struct is_container<T, std::void_t<
+        std::is_convertible<decltype(std::declval<T>().begin() != std::declval<T>().end()), bool>,
+        typename T::value_type
+>> : std::true_type {};
+
 
 // Checks the existence of the comparison operator for the class itself
 template <typename, typename = void>
@@ -357,7 +362,7 @@ struct has_operator_equal<T, std::void_t<decltype(bool(std::declval<const T&>() 
         : std::true_type {};
 
 // Two forward declarations
-template<typename T, bool = has_value_type<T>::value>
+template<typename T, bool = is_container<T>::value>
 struct expand_operator_equal_container;
 template<typename T>
 struct expand_operator_equal_tuple;
@@ -366,7 +371,7 @@ struct expand_operator_equal_tuple;
 template<typename T>
 using expand_operator_equal = expand_operator_equal_container<T>;
 
-// if T doesn't have a value_type member check if it's a tuple like object
+// if T isn't a container check if it's a tuple like object
 template<typename T, bool>
 struct expand_operator_equal_container : expand_operator_equal_tuple<T> {};
 // if T::value_type exists, check first T::value_type, then T itself
@@ -380,6 +385,8 @@ using expand_operator_equal_recursive = std::conjunction<expand_operator_equal<T
 
 template<typename T>
 struct expand_operator_equal_tuple : has_operator_equal<T> {};
+template<typename T>
+struct expand_operator_equal_tuple<std::optional<T>> : has_operator_equal<T> {};
 template<typename T1, typename T2>
 struct expand_operator_equal_tuple<std::pair<T1, T2>> : expand_operator_equal_recursive<T1, T2> {};
 template<typename ...T>
@@ -394,7 +401,7 @@ template <typename T>
 struct has_operator_less_than<T, std::void_t<decltype(bool(std::declval<const T&>() < std::declval<const T&>()))>>
         : std::true_type{};
 
-template<typename T, bool = has_value_type<T>::value>
+template<typename T, bool = is_container<T>::value>
 struct expand_operator_less_than_container;
 template<typename T>
 struct expand_operator_less_than_tuple;

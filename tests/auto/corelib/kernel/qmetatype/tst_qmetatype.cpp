@@ -101,6 +101,11 @@ static_assert(!QTypeTraits::has_operator_less_than_v<QHash<int, QString>>);
 static_assert(!QTypeTraits::has_operator_equal_v<QHash<int, NoOperators>>);
 static_assert(!QTypeTraits::has_operator_less_than_v<QHash<int, NoOperators>>);
 
+// QSharedPointer
+static_assert(QTypeTraits::has_operator_equal_v<QSharedPointer<QString>>);
+// smart pointer equality doesn't depend on T
+static_assert(QTypeTraits::has_operator_equal_v<QSharedPointer<NoOperators>>);
+
 // std::vector
 static_assert(QTypeTraits::has_operator_equal_v<std::vector<QString>>);
 static_assert(QTypeTraits::has_operator_less_than_v<std::vector<QString>>);
@@ -126,6 +131,10 @@ static_assert(QTypeTraits::has_operator_equal_v<std::map<int, QString>>);
 static_assert(QTypeTraits::has_operator_less_than_v<std::map<int, QString>>);
 static_assert(!QTypeTraits::has_operator_equal_v<std::map<int, NoOperators>>);
 static_assert(!QTypeTraits::has_operator_less_than_v<std::map<int, NoOperators>>);
+
+// std::optional
+static_assert(QTypeTraits::has_operator_equal_v<std::optional<QString>>);
+static_assert(!QTypeTraits::has_operator_equal_v<std::optional<NoOperators>>);
 
 // nested types
 static_assert(QTypeTraits::has_operator_equal_v<Nested>);
