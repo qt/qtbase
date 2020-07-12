@@ -308,6 +308,7 @@ void QCryptographicHash::reset()
 {
     switch (d->method) {
     case Sha1:
+        new (&d->sha1Context) Sha1State;
         sha1InitState(&d->sha1Context);
         break;
 #ifdef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
@@ -317,38 +318,39 @@ void QCryptographicHash::reset()
         break;
 #else
     case Md4:
+        new (&d->md4Context) md4_context;
         md4_init(&d->md4Context);
         break;
     case Md5:
+        new (&d->md5Context) MD5Context;
         MD5Init(&d->md5Context);
         break;
     case Sha224:
+        new (&d->sha224Context) SHA224Context;
         SHA224Reset(&d->sha224Context);
         break;
     case Sha256:
+        new (&d->sha256Context) SHA256Context;
         SHA256Reset(&d->sha256Context);
         break;
     case Sha384:
+        new (&d->sha384Context) SHA384Context;
         SHA384Reset(&d->sha384Context);
         break;
     case Sha512:
+        new (&d->sha512Context) SHA512Context;
         SHA512Reset(&d->sha512Context);
         break;
     case RealSha3_224:
     case Keccak_224:
-        sha3Init(&d->sha3Context, 224);
-        break;
     case RealSha3_256:
     case Keccak_256:
-        sha3Init(&d->sha3Context, 256);
-        break;
     case RealSha3_384:
     case Keccak_384:
-        sha3Init(&d->sha3Context, 384);
-        break;
     case RealSha3_512:
     case Keccak_512:
-        sha3Init(&d->sha3Context, 512);
+        new (&d->sha3Context) SHA3Context;
+        sha3Init(&d->sha3Context, hashLength(d->method) * 8);
         break;
 #endif
     }
