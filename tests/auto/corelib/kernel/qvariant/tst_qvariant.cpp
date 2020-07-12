@@ -351,7 +351,7 @@ void tst_QVariant::constructor_invalid()
         QVariant variant(static_cast<QVariant::Type>(typeId));
         QVERIFY(!variant.isValid());
         QVERIFY(variant.isNull());
-        QCOMPARE(variant.type(), int(QMetaType::UnknownType));
+        QCOMPARE(int(variant.type()), int(QMetaType::UnknownType));
         QCOMPARE(variant.userType(), int(QMetaType::UnknownType));
     }
     {
@@ -3285,6 +3285,7 @@ struct MyMovable
     MyMovable() { v = count++; }
     ~MyMovable() { count--; }
     MyMovable(const MyMovable &o) : v(o.v) { count++; }
+    MyMovable &operator=(const MyMovable &o) { v = o.v; return *this; }
 
     bool operator==(const MyMovable &o) const
     {
