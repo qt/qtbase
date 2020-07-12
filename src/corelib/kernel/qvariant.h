@@ -352,7 +352,7 @@ class Q_CORE_EXPORT QVariant
 
     void *data();
     const void *constData() const
-    { return d.is_shared ? d.data.shared->data() : &d.data.ptr; }
+    { return d.storage(); }
     inline const void *data() const { return constData(); }
 
     template<typename T, typename = std::enable_if_t<!std::is_same_v<std::decay_t<T>, QVariant>>>
@@ -442,7 +442,21 @@ class Q_CORE_EXPORT QVariant
     };
     struct Private
     {
-        Private() noexcept : packedType(0), is_shared(false), is_null(true) {}
+        static constexpr size_t MaxInternalSize = 3*sizeof(void *);
+        template<typename T>
+        static constexpr bool CanUseInternalSpace = (sizeof(T) <= MaxInternalSize);
+        static constexpr bool canUseInternalSpace(size_t s) { return s <= MaxInternalSize; }
+
+        alignas(std::max_align_t) union
+        {
+            uchar data[MaxInternalSize] = {};
+            PrivateShared *shared;
+        } data;
+        quintptr is_shared : 1;
+        quintptr is_null : 1;
+        quintptr packedType : sizeof(QMetaType) * 8 - 2;
+
+        Private() noexcept : is_shared(false), is_null(true), packedType(0) {}
         explicit Private(const QMetaType &type) noexcept : is_shared(false), is_null(false)
         {
             if (type.d_ptr)
@@ -468,45 +482,19 @@ class Q_CORE_EXPORT QVariant
         }
         Q_CORE_EXPORT ~Private();
 
-        union Data
-        {
-            void *threeptr[3] = { nullptr, nullptr, nullptr };
-            char c;
-            uchar uc;
-            short s;
-            signed char sc;
-            ushort us;
-            int i;
-            uint u;
-            long l;
-            ulong ul;
-            bool b;
-            double d;
-            float f;
-            qreal real;
-            qlonglong ll;
-            qulonglong ull;
-            QObject *o;
-            void *ptr;
-            PrivateShared *shared;
-        } data;
-        quintptr packedType : sizeof(QMetaType) * 8 - 2;
-        quintptr is_shared : 1;
-        quintptr is_null : 1;
-
-        template<typename T>
-        static constexpr bool CanUseInternalSpace = sizeof(T) <= sizeof(QVariant::Private::Data);
-
         const void *storage() const
-        { return is_shared ? data.shared->data() : &data; }
+        { return is_shared ? data.shared->data() : &data.data; }
 
         const void *internalStorage() const
-        { Q_ASSERT(is_shared); return &data; }
+        { Q_ASSERT(is_shared); return &data.data; }
 
         // determine internal storage at compile time
         template<typename T>
         const T &get() const
-        { return *static_cast<const T *>(CanUseInternalSpace<T> ? &data : data.shared->data()); }
+        { return *static_cast<const T *>(storage()); }
+        template<typename T>
+        void set(const T &t)
+        { *static_cast<T *>(CanUseInternalSpace<T> ? &data.data : data.shared->data()) = t; }
 
         inline QMetaType type() const
         {
@@ -750,7 +738,7 @@ namespace QtPrivate {
         static T object(const QVariant &v)
         {
             return qobject_cast<T>(QMetaType::typeFlags(v.userType()) & QMetaType::PointerToQObject
-                ? v.d.data.o
+                ? v.d.get<QObject *>()
                 : QVariantValueHelper::metaType(v));
         }
 #endif
