@@ -97,12 +97,6 @@ inline void v_construct(QVariant::Private *x, const T &t)
     }
 }
 
-Q_CORE_EXPORT const QVariant::Handler *qcoreVariantHandler();
-
-namespace QVariantPrivate {
-Q_CORE_EXPORT void registerHandler(const int /* Modules::Names */ name, const QVariant::Handler *handler);
-}
-
 QT_END_NAMESPACE
 
 #endif // QVARIANT_P_H

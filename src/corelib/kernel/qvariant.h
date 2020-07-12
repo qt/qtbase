@@ -499,11 +499,6 @@ class Q_CORE_EXPORT QVariant
         }
     };
  public:
-    typedef bool (*f_convert)(const QVariant::Private *d, int t, void *);
-    struct Handler {
-        f_convert convert;
-    };
-
     inline bool operator==(const QVariant &v) const
     { return equals(v); }
     inline bool operator!=(const QVariant &v) const

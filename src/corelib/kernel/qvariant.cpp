@@ -90,23 +90,6 @@
 QT_BEGIN_NAMESPACE
 
 namespace {
-class HandlersManager
-{
-    static const QVariant::Handler *Handlers[QModulesPrivate::ModulesCount];
-public:
-    const QVariant::Handler *operator[] (const uint typeId) const
-    {
-        return Handlers[QModulesPrivate::moduleForType(typeId)];
-    }
-
-    void registerHandler(const QModulesPrivate::Names name, const QVariant::Handler *handler)
-    {
-        Handlers[name] = handler;
-    }
-};
-}  // namespace
-
-namespace {
 struct CoreTypesFilter {
     template<typename T>
     struct Acceptor {
@@ -377,7 +360,7 @@ static bool convert(const QVariant::Private *d, int t, void *result)
     Q_ASSERT(d->type().id() != t);
     Q_ASSERT(result);
 
-    if (d->type().id() >= QMetaType::User || t >= QMetaType::User) {
+    if (d->type().id() >= QMetaType::LastCoreType || t >= QMetaType::LastCoreType) {
         if (QMetaType::convert(constData(*d), d->type().id(), result, t))
             return true;
     }
@@ -1373,16 +1356,6 @@ static bool convert(const QVariant::Private *d, int t, void *result)
     return true;
 }
 
-const QVariant::Handler qt_kernel_variant_handler = {
-    convert
-};
-
-static bool dummyConvert(const QVariant::Private *, int, void *)
-{ Q_ASSERT_X(false, "QVariant", "Trying to convert an unknown type"); return false; }
-const QVariant::Handler qt_dummy_variant_handler = {
-    dummyConvert,
-};
-
 // the type of d has already been set, but other field are not set
 static void customConstruct(QVariant::Private *d, const void *copy)
 {
@@ -1417,38 +1390,8 @@ static void customClear(QVariant::Private *d)
     }
 }
 
-static bool customConvert(const QVariant::Private *d, int t, void *result)
-{
-    if (d->type().id() >= QMetaType::User || t >= QMetaType::User) {
-        if (QMetaType::convert(constData(*d), d->type().id(), result, t))
-            return true;
-    }
-
-    return convert(d, t, result);
-}
-
-const QVariant::Handler qt_custom_variant_handler = {
-    customConvert
-};
 
 } // annonymous used to hide QVariant handlers
-
-static HandlersManager handlerManager;
-
-static_assert(!QModulesPrivate::Core, "Initialization assumes that ModulesNames::Core is 0");
-const QVariant::Handler *HandlersManager::Handlers[QModulesPrivate::ModulesCount]
-                                        = { &qt_kernel_variant_handler, &qt_dummy_variant_handler,
-                                            &qt_dummy_variant_handler, &qt_custom_variant_handler };
-
-Q_CORE_EXPORT const QVariant::Handler *qcoreVariantHandler()
-{
-    return &qt_kernel_variant_handler;
-}
-
-Q_CORE_EXPORT void QVariantPrivate::registerHandler(const int /* Modules::Names */name, const QVariant::Handler *handler)
-{
-    handlerManager.registerHandler(static_cast<QModulesPrivate::Names>(name), handler);
-}
 
 /*!
     \class QVariant
@@ -2530,13 +2473,13 @@ inline T qVariantToHelper(const QVariant::Private &d)
         return *v_cast<T>(&d);
 
     T ret;
-    if (d.type().id() >= QMetaType::User || targetType.id() >= QMetaType::User) {
+    if (d.type().id() >= QMetaType::LastCoreType || targetType.id() >= QMetaType::LastCoreType) {
         const void * const from = constData(d);
         if (QMetaType::convert(from, d.type().id(), &ret, targetType.id()))
             return ret;
     }
 
-    handlerManager[d.type().id()]->convert(&d, targetType.id(), &ret);
+    convert(&d, targetType.id(), &ret);
     return ret;
 }
 
@@ -2954,8 +2897,7 @@ QBitArray QVariant::toBitArray() const
 }
 
 template <typename T>
-inline T qNumVariantToHelper(const QVariant::Private &d,
-                             const HandlersManager &handlerManager, bool *ok, const T& val)
+inline T qNumVariantToHelper(const QVariant::Private &d, bool *ok, const T& val)
 {
     const uint t = qMetaTypeId<T>();
     if (ok)
@@ -2965,11 +2907,11 @@ inline T qNumVariantToHelper(const QVariant::Private &d,
         return val;
 
     T ret = 0;
-    if ((d.type().id() >= QMetaType::User || t >= QMetaType::User)
+    if ((d.type().id() >= QMetaType::LastCoreType || t >= QMetaType::LastCoreType)
         && QMetaType::convert(constData(d), d.type().id(), &ret, t))
         return ret;
 
-    bool success = handlerManager[d.type().id()]->convert(&d, t, &ret);
+    bool success = convert(&d, t, &ret);
     if (ok)
         *ok = success;
     return ret;
@@ -2994,7 +2936,7 @@ inline T qNumVariantToHelper(const QVariant::Private &d,
 */
 int QVariant::toInt(bool *ok) const
 {
-    return qNumVariantToHelper<int>(d, handlerManager, ok, d.data.i);
+    return qNumVariantToHelper<int>(d, ok, d.data.i);
 }
 
 /*!
@@ -3016,7 +2958,7 @@ int QVariant::toInt(bool *ok) const
 */
 uint QVariant::toUInt(bool *ok) const
 {
-    return qNumVariantToHelper<uint>(d, handlerManager, ok, d.data.u);
+    return qNumVariantToHelper<uint>(d, ok, d.data.u);
 }
 
 /*!
@@ -3033,7 +2975,7 @@ uint QVariant::toUInt(bool *ok) const
 */
 qlonglong QVariant::toLongLong(bool *ok) const
 {
-    return qNumVariantToHelper<qlonglong>(d, handlerManager, ok, d.data.ll);
+    return qNumVariantToHelper<qlonglong>(d, ok, d.data.ll);
 }
 
 /*!
@@ -3050,7 +2992,7 @@ qlonglong QVariant::toLongLong(bool *ok) const
 */
 qulonglong QVariant::toULongLong(bool *ok) const
 {
-    return qNumVariantToHelper<qulonglong>(d, handlerManager, ok, d.data.ull);
+    return qNumVariantToHelper<qulonglong>(d, ok, d.data.ull);
 }
 
 /*!
@@ -3071,7 +3013,14 @@ bool QVariant::toBool() const
         return d.data.b;
 
     bool res = false;
-    handlerManager[d.type().id()]->convert(&d, Bool, &res);
+
+    if (d.type().id() >= QMetaType::LastCoreType) {
+        const void * const from = constData();
+        if (QMetaType::convert(from, d.type().id(), &res, QMetaType::Bool))
+            return res;
+    }
+
+    ::convert(&d, Bool, &res);
 
     return res;
 }
@@ -3090,7 +3039,7 @@ bool QVariant::toBool() const
 */
 double QVariant::toDouble(bool *ok) const
 {
-    return qNumVariantToHelper<double>(d, handlerManager, ok, d.data.d);
+    return qNumVariantToHelper<double>(d, ok, d.data.d);
 }
 
 /*!
@@ -3109,7 +3058,7 @@ double QVariant::toDouble(bool *ok) const
 */
 float QVariant::toFloat(bool *ok) const
 {
-    return qNumVariantToHelper<float>(d, handlerManager, ok, d.data.f);
+    return qNumVariantToHelper<float>(d, ok, d.data.f);
 }
 
 /*!
@@ -3128,7 +3077,7 @@ float QVariant::toFloat(bool *ok) const
 */
 qreal QVariant::toReal(bool *ok) const
 {
-    return qNumVariantToHelper<qreal>(d, handlerManager, ok, d.data.real);
+    return qNumVariantToHelper<qreal>(d, ok, d.data.real);
 }
 
 /*!
@@ -3378,7 +3327,7 @@ bool QVariant::canConvert(int targetTypeId) const
         return true;
     }
 
-    if ((d.type().id() >= QMetaType::User || targetTypeId >= QMetaType::User)
+    if ((d.type().id() >= QMetaType::LastCoreType|| targetTypeId >= QMetaType::LastCoreType)
         && QMetaType::hasRegisteredConverterFunction(d.type().id(), targetTypeId)) {
         return true;
     }
@@ -3608,8 +3557,14 @@ bool QVariant::convert(int targetTypeId)
         return true;
     }
 
-    int converterType = std::max(oldValue.userType(), targetTypeId);
-    bool isOk = handlerManager[converterType]->convert(&oldValue.d, targetTypeId, data());
+    bool isOk = false;
+    if (oldValue.metaType().id() >= QMetaType::LastCoreType || targetTypeId >= QMetaType::LastCoreType) {
+        const void * const from = oldValue.constData();
+        isOk = QMetaType::convert(from, oldValue.metaType().id(), data(), targetTypeId);
+    }
+    if (!isOk)
+        isOk = ::convert(&oldValue.d, targetTypeId, data());
+
     d.is_null = !isOk;
     return isOk;
 }
@@ -3621,7 +3576,12 @@ bool QVariant::convert(int targetTypeId)
 */
 bool QVariant::convert(const int type, void *ptr) const
 {
-    return handlerManager[type]->convert(&d, type, ptr);
+    if (d.type().id() >= QMetaType::LastCoreType || type >= QMetaType::LastCoreType) {
+        const void * const from = constData();
+        if (QMetaType::convert(from, d.type().id(), ptr, type))
+            return true;
+    }
+    return ::convert(&d, type, ptr);
 }
 
 

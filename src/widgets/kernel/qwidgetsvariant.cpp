@@ -49,20 +49,6 @@ QT_BEGIN_NAMESPACE
 
 namespace {
 
-static bool convert(const QVariant::Private *d, int type, void *result, bool *ok)
-{
-    Q_UNUSED(d);
-    Q_UNUSED(type);
-    Q_UNUSED(result);
-    if (ok)
-        *ok = false;
-    return false;
-}
-
-static const QVariant::Handler widgets_handler = {
-    convert
-};
-
 static const struct : QMetaTypeModuleHelper
 {
     QtPrivate::QMetaTypeInterface *interfaceForType(int type) const override {
@@ -84,7 +70,6 @@ void qRegisterWidgetsVariant()
 {
     qRegisterMetaType<QWidget*>();
     qMetaTypeWidgetsHelper = &qVariantWidgetsHelper;
-    QVariantPrivate::registerHandler(QModulesPrivate::Widgets, &widgets_handler);
 }
 Q_CONSTRUCTOR_FUNCTION(qRegisterWidgetsVariant)
 

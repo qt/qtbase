@@ -128,10 +128,31 @@ QT_WARNING_POP
 #undef QT_DECLARE_GUI_MODULE_TYPES_ITER
 #undef QT_DECLARE_WIDGETS_MODULE_TYPES_ITER
 
+#define QMETATYPE_CONVERTER(To, From, assign_and_return) \
+    case makePair(QMetaType::To, QMetaType::From): \
+        if (onlyCheck) \
+            return true; \
+        { \
+            const From &source = *static_cast<const From *>(from); \
+            To &result = *static_cast<To *>(to); \
+            assign_and_return \
+        }
+#define QMETATYPE_CONVERTER_FUNCTION(To, assign_and_return) \
+        { \
+            To &result = *static_cast<To *>(r); \
+            assign_and_return \
+        }
+
 class QMetaTypeModuleHelper
 {
 public:
+    static constexpr auto makePair(int from, int to) -> quint64
+    {
+        return (quint64(from) << 32) + quint64(to);
+    };
+
     virtual QtPrivate::QMetaTypeInterface *interfaceForType(int) const = 0;
+    virtual bool convert(const void *, int, void *, int) const { return false; }
 };
 
 namespace QtMetaTypePrivate {

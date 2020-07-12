@@ -91,8 +91,6 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_CORE_EXPORT const QVariant::Handler *qcoreVariantHandler();
-
 namespace {
 struct GuiTypesFilter {
     template<typename T>
@@ -101,161 +99,89 @@ struct GuiTypesFilter {
     };
 };
 
-static bool convert(const QVariant::Private *d, int t, void *result)
-{
-    switch (t) {
-    case QMetaType::QByteArray:
-        if (d->type().id() == QMetaType::QColor) {
-            const QColor *c = v_cast<QColor>(d);
-            *static_cast<QByteArray *>(result) = c->name(c->alpha() != 255 ? QColor::HexArgb : QColor::HexRgb).toLatin1();
-            return true;
-        }
-        break;
-    case QMetaType::QString: {
-        QString *str = static_cast<QString *>(result);
-        switch (d->type().id()) {
-#if QT_CONFIG(shortcut)
-        case QMetaType::QKeySequence:
-            *str = (*v_cast<QKeySequence>(d)).toString(QKeySequence::NativeText);
-            return true;
-#endif
-        case QMetaType::QFont:
-            *str = v_cast<QFont>(d)->toString();
-            return true;
-        case QMetaType::QColor: {
-            const QColor *c = v_cast<QColor>(d);
-            *str = c->name(c->alpha() != 255 ? QColor::HexArgb : QColor::HexRgb);
-            return true;
-        }
-        default:
-            break;
-        }
-        break;
-    }
-    case QMetaType::QPixmap:
-        if (d->type().id() == QMetaType::QImage) {
-            *static_cast<QPixmap *>(result) = QPixmap::fromImage(*v_cast<QImage>(d));
-            return true;
-        } else if (d->type().id() == QMetaType::QBitmap) {
-            *static_cast<QPixmap *>(result) = *v_cast<QBitmap>(d);
-            return true;
-        } else if (d->type().id() == QMetaType::QBrush) {
-            if (v_cast<QBrush>(d)->style() == Qt::TexturePattern) {
-                *static_cast<QPixmap *>(result) = v_cast<QBrush>(d)->texture();
-                return true;
-            }
-        }
-        break;
-    case QMetaType::QImage:
-        if (d->type().id() == QMetaType::QPixmap) {
-            *static_cast<QImage *>(result) = v_cast<QPixmap>(d)->toImage();
-            return true;
-        } else if (d->type().id() == QMetaType::QBitmap) {
-            *static_cast<QImage *>(result) = v_cast<QBitmap>(d)->toImage();
-            return true;
-        }
-        break;
-    case QMetaType::QBitmap:
-        if (d->type().id() == QMetaType::QPixmap) {
-            *static_cast<QBitmap *>(result) = *v_cast<QPixmap>(d);
-            return true;
-        } else if (d->type().id() == QMetaType::QImage) {
-            *static_cast<QBitmap *>(result) = QBitmap::fromImage(*v_cast<QImage>(d));
-            return true;
-        }
-        break;
-#if QT_CONFIG(shortcut)
-    case QMetaType::Int:
-        if (d->type().id() == QMetaType::QKeySequence) {
-            const QKeySequence &seq = *v_cast<QKeySequence>(d);
-            *static_cast<int *>(result) = seq.isEmpty() ? 0 : seq[0];
-            return true;
-        }
-        break;
-#endif
-    case QMetaType::QFont:
-        if (d->type().id() == QMetaType::QString) {
-            QFont *f = static_cast<QFont *>(result);
-            f->fromString(*v_cast<QString>(d));
-            return true;
-        }
-        break;
-    case QMetaType::QColor:
-        if (d->type().id() == QMetaType::QString) {
-            static_cast<QColor *>(result)->setNamedColor(*v_cast<QString>(d));
-            return static_cast<QColor *>(result)->isValid();
-        } else if (d->type().id() == QMetaType::QByteArray) {
-            static_cast<QColor *>(result)->setNamedColor(QLatin1String(*v_cast<QByteArray>(d)));
-            return true;
-        } else if (d->type().id() == QMetaType::QBrush) {
-            if (v_cast<QBrush>(d)->style() == Qt::SolidPattern) {
-                *static_cast<QColor *>(result) = v_cast<QBrush>(d)->color();
-                return true;
-            }
-        }
-        break;
-    case QMetaType::QBrush:
-        if (d->type().id() == QMetaType::QColor) {
-            *static_cast<QBrush *>(result) = QBrush(*v_cast<QColor>(d));
-            return true;
-        } else if (d->type().id() == QMetaType::QPixmap) {
-            *static_cast<QBrush *>(result) = QBrush(*v_cast<QPixmap>(d));
-            return true;
-        }
-        break;
-#if QT_CONFIG(shortcut)
-    case QMetaType::QKeySequence: {
-        QKeySequence *seq = static_cast<QKeySequence *>(result);
-        switch (d->type().id()) {
-        case QMetaType::QString:
-            *seq = QKeySequence(*v_cast<QString>(d));
-            return true;
-        case QMetaType::Int:
-            *seq = QKeySequence(d->data.i);
-            return true;
-        default:
-            break;
-        }
-        break;
-    }
-#endif
-#ifndef QT_NO_ICON
-    case QMetaType::QIcon: {
-        return false;
-    }
-#endif
-    default:
-        break;
-    }
-    return qcoreVariantHandler()->convert(d, t, result);
-}
-
-const QVariant::Handler qt_gui_variant_handler = {
-    convert
-};
-
-#define QT_IMPL_METATYPEINTERFACE_GUI_TYPES(MetaTypeName, MetaTypeId, RealName) \
-    QT_METATYPE_INTERFACE_INIT(RealName),
 
 static const struct : QMetaTypeModuleHelper
 {
+#define QT_IMPL_METATYPEINTERFACE_GUI_TYPES(MetaTypeName, MetaTypeId, RealName) \
+    QT_METATYPE_INTERFACE_INIT(RealName),
+
     QtPrivate::QMetaTypeInterface *interfaceForType(int type) const override {
         switch (type) {
             QT_FOR_EACH_STATIC_GUI_CLASS(QT_METATYPE_CONVERT_ID_TO_TYPE)
             default: return nullptr;
         }
     }
+#undef QT_IMPL_METATYPEINTERFACE_GUI_TYPES
+
+    bool convert(const void *from, int fromTypeId, void *to, int toTypeId) const override
+    {
+        Q_ASSERT(fromTypeId != toTypeId);
+
+        bool onlyCheck = (from == nullptr && to == nullptr);
+
+        using Int = int;
+        switch (makePair(toTypeId, fromTypeId)) {
+        QMETATYPE_CONVERTER(QByteArray, QColor,
+            result = source.name(source.alpha() != 255 ?
+                                 QColor::HexArgb : QColor::HexRgb).toLatin1();
+            return true;
+        );
+        QMETATYPE_CONVERTER(QColor, QByteArray,
+            result.setNamedColor(QLatin1String(source));
+            return result.isValid();
+        );
+        QMETATYPE_CONVERTER(QString, QColor,
+            result = source.name(source.alpha() != 255 ?
+                                 QColor::HexArgb : QColor::HexRgb);
+            return true;
+        );
+        QMETATYPE_CONVERTER(QColor, QString,
+            result.setNamedColor(source);
+            return result.isValid();
+        );
+#if QT_CONFIG(shortcut)
+        QMETATYPE_CONVERTER(QString, QKeySequence,
+            result = source.toString(QKeySequence::NativeText);
+            return true;
+        );
+        QMETATYPE_CONVERTER(QKeySequence, QString, result = source; return true;);
+        QMETATYPE_CONVERTER(Int, QKeySequence,
+            result = source.isEmpty() ? 0 : source[0];
+            return true;
+        );
+        QMETATYPE_CONVERTER(QKeySequence, Int, result = source; return true;);
+#endif
+        QMETATYPE_CONVERTER(QString, QFont, result = source.toString(); return true;);
+        QMETATYPE_CONVERTER(QFont, QString, return result.fromString(source););
+        QMETATYPE_CONVERTER(QPixmap, QImage, result = QPixmap::fromImage(source); return true;);
+        QMETATYPE_CONVERTER(QImage, QPixmap, result = source.toImage(); return true;);
+        QMETATYPE_CONVERTER(QPixmap, QBitmap, result = source; return true;);
+        QMETATYPE_CONVERTER(QBitmap, QPixmap, result = source; return true;);
+        QMETATYPE_CONVERTER(QImage, QBitmap, result = source.toImage(); return true;);
+        QMETATYPE_CONVERTER(QBitmap, QImage, result = QBitmap::fromImage(source); return true;);
+        QMETATYPE_CONVERTER(QPixmap, QBrush, result = source.texture(); return true;);
+        QMETATYPE_CONVERTER(QBrush, QPixmap, result = source; return true;);
+        QMETATYPE_CONVERTER(QColor, QBrush,
+            if (source.style() == Qt::SolidPattern) {
+                result = source.color();
+                return true;
+            }
+            return false;
+        );
+        QMETATYPE_CONVERTER(QBrush, QColor, result = source; return true;);
+        default:
+            break;
+        }
+        return false;
+    }
 } qVariantGuiHelper;
 
-
-#undef QT_IMPL_METATYPEINTERFACE_GUI_TYPES
 } // namespace used to hide QVariant handler
 
 extern Q_CORE_EXPORT const QMetaTypeModuleHelper *qMetaTypeGuiHelper;
 
 void qRegisterGuiVariant()
 {
-    QVariantPrivate::registerHandler(QModulesPrivate::Gui, &qt_gui_variant_handler);
     qMetaTypeGuiHelper = &qVariantGuiHelper;
 }
 Q_CONSTRUCTOR_FUNCTION(qRegisterGuiVariant)

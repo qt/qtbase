@@ -1036,6 +1036,10 @@ bool QMetaType::hasRegisteredDebugStreamOperator() const
 */
 bool QMetaType::convert(const void *from, int fromTypeId, void *to, int toTypeId)
 {
+    if (auto moduleHelper = qModuleHelperForType(qMax(fromTypeId, toTypeId))) {
+        if (moduleHelper->convert(from, fromTypeId, to, toTypeId))
+            return true;
+    }
     const QMetaType::ConverterFunction * const f =
         customTypesConversionRegistry()->function(qMakePair(fromTypeId, toTypeId));
     return f && (*f)(from, to);
