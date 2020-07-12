@@ -58,36 +58,10 @@
 
 QT_BEGIN_NAMESPACE
 
-template<typename T>
-struct QVariantIntegrator
-{
-    static constexpr bool CanUseInternalSpace = sizeof(T) <= sizeof(QVariant::Private::Data);
-    typedef std::integral_constant<bool, CanUseInternalSpace> CanUseInternalSpace_t;
-};
-static_assert(QVariantIntegrator<double>::CanUseInternalSpace);
-static_assert(QVariantIntegrator<long int>::CanUseInternalSpace);
-static_assert(QVariantIntegrator<qulonglong>::CanUseInternalSpace);
-
-template <typename T>
-inline const T *v_cast(const QVariant::Private *d, T * = nullptr)
-{
-    return !QVariantIntegrator<T>::CanUseInternalSpace
-            ? static_cast<const T *>(d->data.shared->data())
-            : static_cast<const T *>(static_cast<const void *>(&d->data));
-}
-
-template <typename T>
-inline T *v_cast(QVariant::Private *d, T * = nullptr)
-{
-    return !QVariantIntegrator<T>::CanUseInternalSpace
-            ? static_cast<T *>(d->data.shared->data())
-            : static_cast<T *>(static_cast<void *>(&d->data));
-}
-
 template <class T>
 inline void v_construct(QVariant::Private *x, const T &t)
 {
-    if constexpr (QVariantIntegrator<T>::CanUseInternalSpace) {
+    if constexpr (QVariant::Private::CanUseInternalSpace<T>) {
         new (&x->data) T(t);
         x->is_shared = false;
     } else {
