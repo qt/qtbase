@@ -1932,8 +1932,8 @@ QList<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode &n
                     needsUnderline = true;
                     decl.d->property = QLatin1String("color");
                     decl.d->propertyId = QCss::Color;
-                    val.type = QCss::Value::Color;
-                    val.variant = QVariant(QGuiApplication::palette().link());
+                    val.type = QCss::Value::Function;
+                    val.variant = QStringList() << QLatin1String("palette") << QLatin1String("link");
                     decl.d->values = QList<QCss::Value> { val };
                     decl.d->inheritable = true;
                     decls << decl;
