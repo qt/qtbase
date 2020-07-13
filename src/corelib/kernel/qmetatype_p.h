@@ -155,6 +155,10 @@ public:
     virtual bool convert(const void *, int, void *, int) const { return false; }
 };
 
+extern Q_CORE_EXPORT const QMetaTypeModuleHelper *qMetaTypeGuiHelper;
+extern Q_CORE_EXPORT const QMetaTypeModuleHelper *qMetaTypeWidgetsHelper;
+
+
 namespace QtMetaTypePrivate {
 template<typename T>
 struct TypeDefinition {

@@ -178,8 +178,6 @@ static const struct : QMetaTypeModuleHelper
 
 } // namespace used to hide QVariant handler
 
-extern Q_CORE_EXPORT const QMetaTypeModuleHelper *qMetaTypeGuiHelper;
-
 void qRegisterGuiVariant()
 {
     qMetaTypeGuiHelper = &qVariantGuiHelper;

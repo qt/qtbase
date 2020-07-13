@@ -64,11 +64,8 @@ static const struct : QMetaTypeModuleHelper
 
 }  // namespace
 
-extern Q_CORE_EXPORT const QMetaTypeModuleHelper *qMetaTypeWidgetsHelper;
-
 void qRegisterWidgetsVariant()
 {
-    qRegisterMetaType<QWidget*>();
     qMetaTypeWidgetsHelper = &qVariantWidgetsHelper;
 }
 Q_CONSTRUCTOR_FUNCTION(qRegisterWidgetsVariant)

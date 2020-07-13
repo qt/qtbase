@@ -852,11 +852,29 @@ static const struct { const char * typeName; int typeNameLength; int type; } typ
     {nullptr, 0, QMetaType::UnknownType}
 };
 
+static const struct : QMetaTypeModuleHelper
+{
+    QtPrivate::QMetaTypeInterface *interfaceForType(int type) const override {
+        switch (type) {
+            QT_FOR_EACH_STATIC_PRIMITIVE_TYPE(QT_METATYPE_CONVERT_ID_TO_TYPE)
+            QT_FOR_EACH_STATIC_PRIMITIVE_POINTER(QT_METATYPE_CONVERT_ID_TO_TYPE)
+            QT_FOR_EACH_STATIC_CORE_CLASS(QT_METATYPE_CONVERT_ID_TO_TYPE)
+            QT_FOR_EACH_STATIC_CORE_POINTER(QT_METATYPE_CONVERT_ID_TO_TYPE)
+            QT_FOR_EACH_STATIC_CORE_TEMPLATE(QT_METATYPE_CONVERT_ID_TO_TYPE)
+        default:
+            return nullptr;
+        }
+    }
+} metatypeHelper;
+
+static const QMetaTypeModuleHelper *qMetaTypeCoreHelper = &metatypeHelper;
 Q_CORE_EXPORT const QMetaTypeModuleHelper *qMetaTypeGuiHelper = nullptr;
 Q_CORE_EXPORT const QMetaTypeModuleHelper *qMetaTypeWidgetsHelper = nullptr;
 
 static const QMetaTypeModuleHelper *qModuleHelperForType(int type)
 {
+    if (type <= QMetaType::LastCoreType)
+        return qMetaTypeCoreHelper;
     if (type >= QMetaType::FirstGuiType && type <= QMetaType::LastGuiType)
         return qMetaTypeGuiHelper;
     else if (type >= QMetaType::FirstWidgetsType && type <= QMetaType::LastWidgetsType)
@@ -1589,24 +1607,19 @@ const QMetaObject *QMetaType::metaObjectForType(int type)
 
 static QtPrivate::QMetaTypeInterface *interfaceForType(int typeId)
 {
+    QtPrivate::QMetaTypeInterface *iface = nullptr;
     if (typeId >= QMetaType::User) {
         if (auto reg = customTypeRegistry())
-            return reg->getCustomType(typeId);
+            iface = reg->getCustomType(typeId);
+    } else {
+        if (auto moduleHelper = qModuleHelperForType(typeId))
+            iface = moduleHelper->interfaceForType(typeId);
     }
-    if (auto moduleHelper = qModuleHelperForType(typeId))
-        return moduleHelper->interfaceForType(typeId);
 
-    switch (typeId) {
-        QT_FOR_EACH_STATIC_PRIMITIVE_TYPE(QT_METATYPE_CONVERT_ID_TO_TYPE)
-        QT_FOR_EACH_STATIC_PRIMITIVE_POINTER(QT_METATYPE_CONVERT_ID_TO_TYPE)
-        QT_FOR_EACH_STATIC_CORE_CLASS(QT_METATYPE_CONVERT_ID_TO_TYPE)
-        QT_FOR_EACH_STATIC_CORE_POINTER(QT_METATYPE_CONVERT_ID_TO_TYPE)
-        QT_FOR_EACH_STATIC_CORE_TEMPLATE(QT_METATYPE_CONVERT_ID_TO_TYPE)
-    default:
-        if (typeId != QMetaType::UnknownType)
-            qWarning("Trying to construct an instance of an invalid type, type id: %i", typeId);
-        return nullptr;
-    }
+    if (!iface && typeId != QMetaType::UnknownType)
+        qWarning("Trying to construct an instance of an invalid type, type id: %i", typeId);
+
+    return iface;
 }
 
 /*!
