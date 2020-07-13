@@ -96,51 +96,6 @@ public:
         return screenWidgets.value(qScreen);
     }
 
-    static inline int screenNumber(const QWidget *widget = nullptr)
-    {
-        if (!widget)
-            return 0;
-        return QGuiApplication::screens().indexOf(widget->screen());
-    }
-
-    static inline int screenNumber(const QPoint &point)
-    {
-        int screenNo = 0;
-        if (QScreen *screen = QGuiApplication::screenAt(point))
-            screenNo = QGuiApplication::screens().indexOf(screen);
-        return screenNo;
-    }
-
-    static inline QScreen *screen(int screenNo = -1)
-    {
-        const QList<QScreen *> screens = QGuiApplication::screens();
-        if (screenNo == -1)
-            screenNo = 0;
-        if (screenNo < 0 || screenNo >= screens.size())
-            return nullptr;
-        return screens.at(screenNo);
-    }
-
-    static inline QRect screenGeometry(int screenNo = -1)
-    {
-        QRect rect;
-        if (const QScreen *s = screen(screenNo))
-            rect = s->geometry();
-        return rect;
-    }
-    static inline QRect screenGeometry(const QPoint &point)
-    { return screenGeometry(screenNumber(point)); }
-
-    static inline QRect availableGeometry(int screenNo = -1)
-    {
-        QRect rect;
-        if (const QScreen *s = screen(screenNo))
-            rect = s->availableGeometry();
-        return rect;
-    }
-    static inline QRect availableGeometry(const QPoint &point)
-    { return availableGeometry(screenNumber(point)); }
-
     QFlatMap<QScreen*, QDesktopScreenWidget*> screenWidgets;
 };
 
