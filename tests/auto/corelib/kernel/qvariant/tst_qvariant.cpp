@@ -3432,17 +3432,12 @@ void tst_QVariant::moreCustomTypes()
         // Float is converted to double, adding insignificant bits
         PLAY_WITH_VARIANT(12.12f, false, "12.119999885559082", 12.12f, true);
 
-        PLAY_WITH_VARIANT('a', false, "a", 'a', true);
-        PLAY_WITH_VARIANT((unsigned char)('a'), false, "a", 'a', true);
-        PLAY_WITH_VARIANT( quint8(12), false, "\xc", 12, true);
-        PLAY_WITH_VARIANT(  qint8(13), false, "\xd", 13, true);
         PLAY_WITH_VARIANT(quint16(14), false, "14", 14, true);
         PLAY_WITH_VARIANT( qint16(15), false, "15", 15, true);
         PLAY_WITH_VARIANT(quint32(16), false, "16", 16, true);
         PLAY_WITH_VARIANT( qint32(17), false, "17", 17, true);
         PLAY_WITH_VARIANT(quint64(18), false, "18", 18, true);
         PLAY_WITH_VARIANT( qint64(19), false, "19", 19, true);
-        PLAY_WITH_VARIANT(  qint8(-12), false, QLatin1String("\xf4"), -12, true); // qint8 is char, so it gets converted via QChar
         PLAY_WITH_VARIANT( qint16(-13), false, "-13", -13, true);
         PLAY_WITH_VARIANT( qint32(-14), false, "-14", -14, true);
         PLAY_WITH_VARIANT( qint64(-15), false, "-15", -15, true);

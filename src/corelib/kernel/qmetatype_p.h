@@ -137,6 +137,9 @@ QT_WARNING_POP
             To &result = *static_cast<To *>(to); \
             assign_and_return \
         }
+#define QMETATYPE_CONVERTER_ASSIGN(To, From) \
+    QMETATYPE_CONVERTER(To, From, result = To(source); return true;)
+
 #define QMETATYPE_CONVERTER_FUNCTION(To, assign_and_return) \
         { \
             To &result = *static_cast<To *>(r); \

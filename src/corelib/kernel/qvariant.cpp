@@ -349,330 +349,28 @@ static bool convert(const QVariant::Private *d, int t, void *result)
     bool ok = true;
 
     switch (uint(t)) {
-#ifndef QT_BOOTSTRAPPED
-    case QMetaType::QUrl:
-        switch (d->typeId()) {
-        case QMetaType::QString:
-            *static_cast<QUrl *>(result) = QUrl(d->get<QString>());
-            break;
-        case QMetaType::QCborValue:
-            if (d->get<QCborValue>().isUrl()) {
-                *static_cast<QUrl *>(result) = d->get<QCborValue>().toUrl();
-                break;
-            }
-            return false;
-        default:
-            return false;
-        }
-        break;
-#endif // QT_BOOTSTRAPPED
-#if QT_CONFIG(itemmodel)
-    case QMetaType::QModelIndex:
-        switch (d->typeId()) {
-        case QMetaType::QPersistentModelIndex:
-            *static_cast<QModelIndex *>(result) = QModelIndex(d->get<QPersistentModelIndex>());
-            break;
-        default:
-            return false;
-        }
-        break;
-    case QMetaType::QPersistentModelIndex:
-        switch (d->typeId()) {
-        case QMetaType::QModelIndex:
-            *static_cast<QPersistentModelIndex *>(result) = QPersistentModelIndex(d->get<QModelIndex>());
-            break;
-        default:
-            return false;
-        }
-        break;
-#endif // QT_CONFIG(itemmodel)
     case QMetaType::QString: {
         QString *str = static_cast<QString *>(result);
-        switch (d->typeId()) {
-        case QMetaType::QChar:
-            *str = d->get<QChar>();
-            break;
-        case QMetaType::Char:
-        case QMetaType::SChar:
-        case QMetaType::UChar:
-            *str = QChar::fromLatin1(d->get<char>());
-            break;
-        case QMetaType::Short:
-        case QMetaType::Long:
-        case QMetaType::Int:
-        case QMetaType::LongLong:
-            *str = QString::number(qMetaTypeNumber(d));
-            break;
-        case QMetaType::UInt:
-        case QMetaType::ULongLong:
-        case QMetaType::UShort:
-        case QMetaType::ULong:
-            *str = QString::number(qMetaTypeUNumber(d));
-            break;
-        case QMetaType::Float:
-            *str = QString::number(d->get<float>(), 'g', QLocale::FloatingPointShortest);
-            break;
-        case QMetaType::Double:
-            *str = QString::number(d->get<double>(), 'g', QLocale::FloatingPointShortest);
-            break;
-#if QT_CONFIG(datestring)
-        case QMetaType::QDate:
-            *str = d->get<QDate>().toString(Qt::ISODate);
-            break;
-        case QMetaType::QTime:
-            *str = d->get<QTime>().toString(Qt::ISODateWithMs);
-            break;
-        case QMetaType::QDateTime:
-            *str = d->get<QDateTime>().toString(Qt::ISODateWithMs);
-            break;
-#endif
-        case QMetaType::Bool:
-            *str = d->get<bool>() ? QStringLiteral("true") : QStringLiteral("false");
-            break;
-        case QMetaType::QByteArray:
-            *str = QString::fromUtf8(d->get<QByteArray>().constData());
-            break;
-        case QMetaType::QStringList:
-            if (d->get<QStringList>().count() == 1)
-                *str = d->get<QStringList>().at(0);
-            break;
-#ifndef QT_BOOTSTRAPPED
-        case QMetaType::QUrl:
-            *str = d->get<QUrl>().toString();
-            break;
-        case QMetaType::QJsonValue:
-            if (d->get<QJsonValue>().isString())
-                *str = d->get<QJsonValue>().toString();
-            else if (!d->get<QJsonValue>().isNull())
-                return false;
-            break;
-        case QMetaType::QCborValue:
-            if (d->get<QCborValue>().isContainer() || d->get<QCborValue>().isTag())
-                return false;
-            *str = d->get<QCborValue>().toVariant().toString();
-            break;
-#endif
-        case QMetaType::QUuid:
-            *str = d->get<QUuid>().toString();
-            break;
-        case QMetaType::Nullptr:
-            *str = QString();
-            break;
-        default:
 #ifndef QT_NO_QOBJECT
-            {
-                QMetaEnum en = metaEnumFromType(d->type());
-                if (en.isValid()) {
-                    *str = QString::fromUtf8(en.valueToKey(qConvertToNumber(d, &ok)));
-                    return ok;
-                }
-            }
+        QMetaEnum en = metaEnumFromType(d->type());
+        if (en.isValid()) {
+            *str = QString::fromUtf8(en.valueToKey(qConvertToNumber(d, &ok)));
+            return ok;
+        }
 #endif
-            return false;
-        }
-        break;
-    }
-    case QMetaType::QChar: {
-        QChar *c = static_cast<QChar *>(result);
-        switch (d->typeId()) {
-        case QMetaType::Int:
-        case QMetaType::LongLong:
-        case QMetaType::Char:
-        case QMetaType::SChar:
-        case QMetaType::Short:
-        case QMetaType::Long:
-        case QMetaType::Float:
-            *c = QChar::fromUcs2(qMetaTypeNumber(d));
-            break;
-        case QMetaType::UInt:
-        case QMetaType::ULongLong:
-        case QMetaType::UChar:
-        case QMetaType::UShort:
-        case QMetaType::ULong:
-            *c = QChar::fromUcs2(qMetaTypeUNumber(d));
-            break;
-        default:
-            return false;
-        }
-        break;
-    }
-#ifndef QT_NO_GEOM_VARIANT
-    case QMetaType::QSize: {
-        QSize *s = static_cast<QSize *>(result);
-        switch (d->typeId()) {
-        case QMetaType::QSizeF:
-            *s = d->get<QSizeF>().toSize();
-            break;
-        default:
-            return false;
-        }
-        break;
-    }
-
-    case QMetaType::QSizeF: {
-        QSizeF *s = static_cast<QSizeF *>(result);
-        switch (d->typeId()) {
-        case QMetaType::QSize:
-            *s = QSizeF(d->get<QSize>());
-            break;
-        default:
-            return false;
-        }
-        break;
-    }
-
-    case QMetaType::QLine: {
-        QLine *s = static_cast<QLine *>(result);
-        switch (d->typeId()) {
-        case QMetaType::QLineF:
-            *s = d->get<QLineF>().toLine();
-            break;
-        default:
-            return false;
-        }
-        break;
-    }
-
-    case QMetaType::QLineF: {
-        QLineF *s = static_cast<QLineF *>(result);
-        switch (d->typeId()) {
-        case QMetaType::QLine:
-            *s = QLineF(d->get<QLine>());
-            break;
-        default:
-            return false;
-        }
-        break;
-    }
-#endif
-    case QMetaType::QStringList:
-        if (d->typeId() == QMetaType::QVariantList) {
-            QStringList *slst = static_cast<QStringList *>(result);
-            const QVariantList &list = d->get<QVariantList >();
-            const int size = list.size();
-            slst->reserve(size);
-            for (int i = 0; i < size; ++i)
-                slst->append(list.at(i).toString());
-        } else if (d->typeId() == QMetaType::QString) {
-            QStringList *slst = static_cast<QStringList *>(result);
-            *slst = QStringList(d->get<QString>());
-        } else {
-            return false;
-        }
-        break;
-    case QMetaType::QDate: {
-        QDate *dt = static_cast<QDate *>(result);
-        if (d->typeId() == QMetaType::QDateTime)
-            *dt = d->get<QDateTime>().date();
-#if QT_CONFIG(datestring)
-        else if (d->typeId() == QMetaType::QString)
-            *dt = QDate::fromString(d->get<QString>(), Qt::ISODate);
-#endif
-        else
-            return false;
-
-        return dt->isValid();
-    }
-    case QMetaType::QTime: {
-        QTime *t = static_cast<QTime *>(result);
-        switch (d->typeId()) {
-        case QMetaType::QDateTime:
-            *t = d->get<QDateTime>().time();
-            break;
-#if QT_CONFIG(datestring)
-        case QMetaType::QString:
-            *t = QTime::fromString(d->get<QString>(), Qt::ISODate);
-            break;
-#endif
-        default:
-            return false;
-        }
-        return t->isValid();
-    }
-    case QMetaType::QDateTime: {
-        QDateTime *dt = static_cast<QDateTime *>(result);
-        switch (d->typeId()) {
-#if QT_CONFIG(datestring)
-        case QMetaType::QString:
-            *dt = QDateTime::fromString(d->get<QString>(), Qt::ISODate);
-            break;
-#  ifndef QT_BOOTSTRAPPED
-        case QMetaType::QCborValue:
-            if (d->get<QCborValue>().isDateTime())
-                *dt = d->get<QCborValue>().toDateTime();
-            else
-                return false;
-            break;
-#  endif
-#endif
-        case QMetaType::QDate:
-            *dt = d->get<QDate>().startOfDay();
-            break;
-        default:
-            return false;
-        }
-        return dt->isValid();
+        return false;
     }
     case QMetaType::QByteArray: {
-        QByteArray *ba = static_cast<QByteArray *>(result);
-        switch (d->typeId()) {
-        case QMetaType::QString:
-            *ba = d->get<QString>().toUtf8();
-            break;
-        case QMetaType::Double:
-            *ba = QByteArray::number(d->get<double>(), 'g', QLocale::FloatingPointShortest);
-            break;
-        case QMetaType::Float:
-            *ba = QByteArray::number(d->get<float>(), 'g', QLocale::FloatingPointShortest);
-            break;
-        case QMetaType::Char:
-        case QMetaType::SChar:
-        case QMetaType::UChar:
-            *ba = QByteArray(1, d->get<char>());
-            break;
-        case QMetaType::Int:
-        case QMetaType::LongLong:
-        case QMetaType::Short:
-        case QMetaType::Long:
-            *ba = QByteArray::number(qMetaTypeNumber(d));
-            break;
-        case QMetaType::UInt:
-        case QMetaType::ULongLong:
-        case QMetaType::UShort:
-        case QMetaType::ULong:
-            *ba = QByteArray::number(qMetaTypeUNumber(d));
-            break;
-        case QMetaType::Bool:
-            *ba = QByteArray(d->get<bool>() ? "true" : "false");
-            break;
-        case QMetaType::QUuid:
-            *ba = d->get<QUuid>().toByteArray();
-            break;
-        case QMetaType::Nullptr:
-            *ba = QByteArray();
-            break;
-#ifndef QT_BOOTSTRAPPED
-        case QMetaType::QCborValue:
-            if (d->get<QCborValue>().isByteArray())
-                *ba = d->get<QCborValue>().toByteArray();
-            else
-                return false;
-            break;
-#endif
-        default:
 #ifndef QT_NO_QOBJECT
-            {
-                QMetaEnum en = metaEnumFromType(d->type());
-                if (en.isValid()) {
-                    *ba = en.valueToKey(qConvertToNumber(d, &ok));
-                    return ok;
-                }
-            }
-#endif
-            return false;
+        QMetaEnum en = metaEnumFromType(d->type());
+        if (en.isValid()) {
+            QByteArray *ba = static_cast<QByteArray *>(result);
+            *ba = en.valueToKey(qConvertToNumber(d, &ok));
+            return ok;
         }
+#endif
+        return false;
     }
-    break;
     case QMetaType::Short:
         *static_cast<short *>(result) = short(qConvertToNumber(d, &ok));
         return ok;
@@ -850,132 +548,11 @@ static bool convert(const QVariant::Private *d, int t, void *result)
         }
         break;
     }
-    case QMetaType::QVariantList:
-        if (d->typeId() == QMetaType::QStringList) {
-            QVariantList *lst = static_cast<QVariantList *>(result);
-            const QStringList &slist = d->get<QStringList>();
-            const int size = slist.size();
-            lst->reserve(size);
-            for (int i = 0; i < size; ++i)
-                lst->append(QVariant(slist.at(i)));
-#ifndef QT_BOOTSTRAPPED
-        } else if (d->typeId() == QMetaType::QCborValue) {
-            if (!d->get<QCborValue>().isArray())
-                return false;
-            *static_cast<QVariantList *>(result) = d->get<QCborValue>().toArray().toVariantList();
-        } else if (d->typeId() == QMetaType::QCborArray) {
-            *static_cast<QVariantList *>(result) = d->get<QCborArray>().toVariantList();
-        } else if (d->typeId() == QMetaType::QJsonValue) {
-            if (!d->get<QJsonValue>().isArray())
-                return false;
-            *static_cast<QVariantList *>(result) = d->get<QJsonValue>().toArray().toVariantList();
-        } else if (d->typeId() == QMetaType::QJsonArray) {
-            *static_cast<QVariantList *>(result) = d->get<QJsonArray>().toVariantList();
-#endif
-        } else {
-            return false;
-        }
-        break;
-    case QMetaType::QVariantMap:
-        if (d->typeId() == QMetaType::QVariantHash) {
-            QVariantMap *map = static_cast<QVariantMap *>(result);
-            const QVariantHash &hash = d->get<QVariantHash>();
-            const auto end = hash.end();
-            for (auto it = hash.begin(); it != end; ++it)
-                map->insert(it.key(), it.value());
-#ifndef QT_BOOTSTRAPPED
-        } else if (d->typeId() == QMetaType::QCborValue) {
-            if (!d->get<QCborValue>().isMap())
-                return false;
-            *static_cast<QVariantMap *>(result) = d->get<QCborValue>().toMap().toVariantMap();
-        } else if (d->typeId() == QMetaType::QCborMap) {
-            *static_cast<QVariantMap *>(result) = d->get<QCborMap>().toVariantMap();
-        } else if (d->typeId() == QMetaType::QJsonValue) {
-            if (!d->get<QJsonValue>().isObject())
-                return false;
-            *static_cast<QVariantMap *>(result) = d->get<QJsonValue>().toObject().toVariantMap();
-        } else if (d->typeId() == QMetaType::QJsonObject) {
-            *static_cast<QVariantMap *>(result) = d->get<QJsonObject>().toVariantMap();
-#endif
-        } else {
-            return false;
-        }
-        break;
-    case QMetaType::QVariantHash:
-        if (d->typeId() == QMetaType::QVariantMap) {
-            QVariantHash *hash = static_cast<QVariantHash *>(result);
-            const QVariantMap &map = d->get<QVariantMap>();
-            const auto end = map.end();
-            for (auto it = map.begin(); it != end; ++it)
-                hash->insert(it.key(), it.value());
-#ifndef QT_BOOTSTRAPPED
-        } else if (d->typeId() == QMetaType::QCborValue) {
-            if (!d->get<QCborValue>().isMap())
-                return false;
-            *static_cast<QVariantHash *>(result) = d->get<QCborValue>().toMap().toVariantHash();
-        } else if (d->typeId() == QMetaType::QCborMap) {
-            *static_cast<QVariantHash *>(result) = d->get<QCborMap>().toVariantHash();
-        } else if (d->typeId() == QMetaType::QJsonValue) {
-            if (!d->get<QJsonValue>().isObject())
-                return false;
-            *static_cast<QVariantHash *>(result) = d->get<QJsonValue>().toObject().toVariantHash();
-        } else if (d->typeId() == QMetaType::QJsonObject) {
-            *static_cast<QVariantHash *>(result) = d->get<QJsonObject>().toVariantHash();
-#endif
-        } else {
-            return false;
-        }
-        break;
-#ifndef QT_NO_GEOM_VARIANT
-    case QMetaType::QRect:
-        if (d->typeId() == QMetaType::QRectF)
-            *static_cast<QRect *>(result) = d->get<QRectF>().toRect();
-        else
-            return false;
-        break;
-    case QMetaType::QRectF:
-        if (d->typeId() == QMetaType::QRect)
-            *static_cast<QRectF *>(result) = d->get<QRect>();
-        else
-            return false;
-        break;
-    case QMetaType::QPointF:
-        if (d->typeId() == QMetaType::QPoint)
-            *static_cast<QPointF *>(result) = d->get<QPoint>();
-        else
-            return false;
-        break;
-    case QMetaType::QPoint:
-        if (d->typeId() == QMetaType::QPointF)
-            *static_cast<QPoint *>(result) = d->get<QPointF>().toPoint();
-        else
-            return false;
-        break;
     case QMetaType::Char:
     {
         *static_cast<qint8 *>(result) = qint8(qConvertToNumber(d, &ok));
         return ok;
     }
-#endif
-    case QMetaType::QUuid:
-        switch (d->typeId()) {
-        case QMetaType::QString:
-            *static_cast<QUuid *>(result) = QUuid(d->get<QString>());
-            break;
-        case QMetaType::QByteArray:
-            *static_cast<QUuid *>(result) = QUuid(d->get<QByteArray>());
-            break;
-#ifndef QT_BOOTSTRAPPED
-        case QMetaType::QCborValue:
-            if (!d->get<QCborValue>().isUuid())
-                return false;
-            *static_cast<QUuid *>(result) = d->get<QCborValue>().toUuid();
-            break;
-#endif
-        default:
-            return false;
-        }
-        break;
     case QMetaType::Nullptr:
         *static_cast<std::nullptr_t *>(result) = nullptr;
         if (QMetaType::typeFlags(t) & (QMetaType::PointerToGadget | QMetaType::PointerToQObject)
@@ -990,14 +567,6 @@ static bool convert(const QVariant::Private *d, int t, void *result)
         return false;
 
 #ifndef QT_BOOTSTRAPPED
-#if QT_CONFIG(regularexpression)
-    case QMetaType::QRegularExpression:
-        if (d->typeId() != QMetaType::QCborValue
-            || !d->get<QCborValue>().isRegularExpression())
-            return false;
-        *static_cast<QRegularExpression *>(result) = d->get<QCborValue>().toRegularExpression();
-        break;
-#endif
     case QMetaType::QJsonValue:
         switch (d->typeId()) {
         case QMetaType::Nullptr:
@@ -1062,67 +631,7 @@ static bool convert(const QVariant::Private *d, int t, void *result)
             return false;
         }
         break;
-    case QMetaType::QJsonArray:
-        switch (d->typeId()) {
-        case QMetaType::QStringList:
-            *static_cast<QJsonArray *>(result) = QJsonArray::fromStringList(d->get<QStringList>());
-            break;
-        case QMetaType::QVariantList:
-            *static_cast<QJsonArray *>(result) = QJsonArray::fromVariantList(d->get<QVariantList>());
-            break;
-        case QMetaType::QJsonValue:
-            if (!d->get<QJsonValue>().isArray())
-                return false;
-            *static_cast<QJsonArray *>(result) = d->get<QJsonValue>().toArray();
-            break;
-        case QMetaType::QJsonDocument:
-            if (!d->get<QJsonDocument>().isArray())
-                return false;
-            *static_cast<QJsonArray *>(result) = d->get<QJsonDocument>().array();
-            break;
-        case QMetaType::QCborValue:
-            if (!d->get<QCborValue>().isArray())
-                return false;
-            *static_cast<QJsonArray *>(result) = d->get<QCborValue>().toArray().toJsonArray();
-            break;
-        case QMetaType::QCborArray:
-            *static_cast<QJsonArray *>(result) = d->get<QCborArray>().toJsonArray();
-            break;
-        default:
-            return false;
-        }
-        break;
-    case QMetaType::QJsonObject:
-        switch (d->typeId()) {
-        case QMetaType::QVariantMap:
-            *static_cast<QJsonObject *>(result) = QJsonObject::fromVariantMap(d->get<QVariantMap>());
-            break;
-        case QMetaType::QVariantHash:
-            *static_cast<QJsonObject *>(result) = QJsonObject::fromVariantHash(d->get<QVariantHash>());
-            break;
-        case QMetaType::QJsonValue:
-            if (!d->get<QJsonValue>().isObject())
-                return false;
-            *static_cast<QJsonObject *>(result) = d->get<QJsonValue>().toObject();
-            break;
-        case QMetaType::QJsonDocument:
-            if (d->get<QJsonDocument>().isArray())
-                return false;
-            *static_cast<QJsonObject *>(result) = d->get<QJsonDocument>().object();
-            break;
-        case QMetaType::QCborValue:
-            if (!d->get<QCborValue>().isMap())
-                return false;
-            *static_cast<QJsonObject *>(result) = d->get<QCborValue>().toMap().toJsonObject();
-            break;
-        case QMetaType::QCborMap:
-            *static_cast<QJsonObject *>(result) = d->get<QCborMap>().toJsonObject();
-            break;
-        default:
-            return false;
-        }
-        break;
-    case QMetaType::QCborSimpleType:
+   case QMetaType::QCborSimpleType:
         if (d->typeId() == QMetaType::QCborValue && d->get<QCborValue>().isSimpleType()) {
             *static_cast<QCborSimpleType *>(result) = d->get<QCborValue>().toSimpleType();
             break;
@@ -1173,23 +682,6 @@ static bool convert(const QVariant::Private *d, int t, void *result)
         case QMetaType::QUrl:
             *static_cast<QCborValue *>(result) = QCborValue(d->get<QUrl>());
             break;
-#if QT_CONFIG(regularexpression)
-        case QMetaType::QRegularExpression:
-            *static_cast<QCborValue *>(result) = QCborValue(d->get<QRegularExpression>());
-            break;
-#endif
-        case QMetaType::QUuid:
-            *static_cast<QCborValue *>(result) = QCborValue(d->get<QUuid>());
-            break;
-        case QMetaType::QVariantList:
-            *static_cast<QCborValue *>(result) = QCborArray::fromVariantList(d->get<QVariantList>());
-            break;
-        case QMetaType::QVariantMap:
-            *static_cast<QCborValue *>(result) = QCborMap::fromVariantMap(d->get<QVariantMap>());
-            break;
-        case QMetaType::QVariantHash:
-            *static_cast<QCborValue *>(result) = QCborMap::fromVariantHash(d->get<QVariantHash>());
-            break;
         case QMetaType::QJsonValue:
             *static_cast<QCborValue *>(result) = QCborValue::fromJsonValue(d->get<QJsonValue>());
             break;
@@ -1218,66 +710,6 @@ static bool convert(const QVariant::Private *d, int t, void *result)
             break;
         default:
             *static_cast<QCborValue *>(result) = {};
-            return false;
-        }
-        break;
-    case QMetaType::QCborArray:
-        switch (d->typeId()) {
-        case QMetaType::QStringList:
-            *static_cast<QCborArray *>(result) = QCborArray::fromStringList(d->get<QStringList>());
-            break;
-        case QMetaType::QVariantList:
-            *static_cast<QCborArray *>(result) = QCborArray::fromVariantList(d->get<QVariantList>());
-            break;
-        case QMetaType::QCborValue:
-            if (!d->get<QCborValue>().isArray())
-                return false;
-            *static_cast<QCborArray *>(result) = d->get<QCborValue>().toArray();
-            break;
-        case QMetaType::QJsonDocument:
-            if (!d->get<QJsonDocument>().isArray())
-                return false;
-            *static_cast<QCborArray *>(result) = QCborArray::fromJsonArray(d->get<QJsonDocument>().array());
-            break;
-        case QMetaType::QJsonValue:
-            if (!d->get<QJsonValue>().isArray())
-                return false;
-            *static_cast<QCborArray *>(result) = QCborArray::fromJsonArray(d->get<QJsonValue>().toArray());
-            break;
-        case QMetaType::QJsonArray:
-            *static_cast<QCborArray *>(result) = QCborArray::fromJsonArray(d->get<QJsonArray>());
-            break;
-        default:
-            return false;
-        }
-        break;
-    case QMetaType::QCborMap:
-        switch (d->typeId()) {
-        case QMetaType::QVariantMap:
-            *static_cast<QCborMap *>(result) = QCborMap::fromVariantMap(d->get<QVariantMap>());
-            break;
-        case QMetaType::QVariantHash:
-            *static_cast<QCborMap *>(result) = QCborMap::fromVariantHash(d->get<QVariantHash>());
-            break;
-        case QMetaType::QCborValue:
-            if (!d->get<QCborValue>().isMap())
-                return false;
-            *static_cast<QCborMap *>(result) = d->get<QCborValue>().toMap();
-            break;
-        case QMetaType::QJsonDocument:
-            if (d->get<QJsonDocument>().isArray())
-                return false;
-            *static_cast<QCborMap *>(result) = QCborMap::fromJsonObject(d->get<QJsonDocument>().object());
-            break;
-        case QMetaType::QJsonValue:
-            if (!d->get<QJsonValue>().isObject())
-                return false;
-            *static_cast<QCborMap *>(result) = QCborMap::fromJsonObject(d->get<QJsonValue>().toObject());
-            break;
-        case QMetaType::QJsonObject:
-            *static_cast<QCborMap *>(result) = QCborMap::fromJsonObject(d->get<QJsonObject>());
-            break;
-        default:
             return false;
         }
         break;

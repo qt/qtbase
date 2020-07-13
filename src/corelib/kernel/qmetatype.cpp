@@ -865,6 +865,393 @@ static const struct : QMetaTypeModuleHelper
             return nullptr;
         }
     }
+
+    bool convert(const void *from, int fromTypeId, void *to, int toTypeId) const override
+    {
+        Q_ASSERT(fromTypeId != toTypeId);
+
+        bool onlyCheck = (from == nullptr && to == nullptr);
+
+        using Char = char;
+        using SChar = signed char;
+        using UChar = unsigned char;
+        using Short = short;
+        using UShort = unsigned short;
+        using Int = int;
+        using UInt = unsigned int;
+        using Long = long;
+        using LongLong = qlonglong;
+        using ULong = unsigned long;
+        using ULongLong = qulonglong;
+        using Float = float;
+        using Double = double;
+        using Bool = bool;
+        using Nullptr = std::nullptr_t;
+
+#define QMETATYPE_CONVERTER_ASSIGN_NUMBER(To, From) \
+        QMETATYPE_CONVERTER(To, From, result = To::number(source); return true;)
+
+        switch (makePair(toTypeId, fromTypeId)) {
+#ifndef QT_BOOTSTRAPPED
+        QMETATYPE_CONVERTER_ASSIGN(QUrl, QString);
+        QMETATYPE_CONVERTER(QUrl, QCborValue,
+            if (source.isUrl()) {
+                result = source.toUrl();
+                return true;
+             }
+            return false;
+        );
+#endif
+#if QT_CONFIG(itemmodel)
+        QMETATYPE_CONVERTER_ASSIGN(QModelIndex, QPersistentModelIndex);
+        QMETATYPE_CONVERTER_ASSIGN(QPersistentModelIndex, QModelIndex);
+#endif // QT_CONFIG(itemmodel)
+
+        // QChar methods
+#define QMETATYPE_CONVERTER_ASSIGN_QCHAR(From) \
+        QMETATYPE_CONVERTER(QChar, From, result = QChar::fromUcs2(source); return true;)
+        QMETATYPE_CONVERTER_ASSIGN_QCHAR(Char);
+        QMETATYPE_CONVERTER_ASSIGN_QCHAR(SChar);
+        QMETATYPE_CONVERTER_ASSIGN_QCHAR(Short);
+        QMETATYPE_CONVERTER_ASSIGN_QCHAR(Long);
+        QMETATYPE_CONVERTER_ASSIGN_QCHAR(Int);
+        QMETATYPE_CONVERTER_ASSIGN_QCHAR(LongLong);
+        QMETATYPE_CONVERTER_ASSIGN_QCHAR(Float);
+        QMETATYPE_CONVERTER_ASSIGN_QCHAR(UChar);
+        QMETATYPE_CONVERTER_ASSIGN_QCHAR(UShort);
+        QMETATYPE_CONVERTER_ASSIGN_QCHAR(ULong);
+        QMETATYPE_CONVERTER_ASSIGN_QCHAR(UInt);
+        QMETATYPE_CONVERTER_ASSIGN_QCHAR(ULongLong);
+
+        // conversions to QString
+        QMETATYPE_CONVERTER_ASSIGN(QString, QChar);
+        QMETATYPE_CONVERTER(QString, Bool,
+            result = source ? QStringLiteral("true") : QStringLiteral("false");
+            return true;
+        );
+        QMETATYPE_CONVERTER_ASSIGN_NUMBER(QString, Short);
+        QMETATYPE_CONVERTER_ASSIGN_NUMBER(QString, Long);
+        QMETATYPE_CONVERTER_ASSIGN_NUMBER(QString, Int);
+        QMETATYPE_CONVERTER_ASSIGN_NUMBER(QString, LongLong);
+        QMETATYPE_CONVERTER_ASSIGN_NUMBER(QString, UShort);
+        QMETATYPE_CONVERTER_ASSIGN_NUMBER(QString, ULong);
+        QMETATYPE_CONVERTER_ASSIGN_NUMBER(QString, UInt);
+        QMETATYPE_CONVERTER_ASSIGN_NUMBER(QString, ULongLong);
+        QMETATYPE_CONVERTER(QString, Float,
+            result = QString::number(source, 'g', QLocale::FloatingPointShortest);
+            return true;
+        );
+        QMETATYPE_CONVERTER(QString, Double,
+            result = QString::number(source, 'g', QLocale::FloatingPointShortest);
+            return true;
+        );
+        QMETATYPE_CONVERTER(QString, Char,
+            result = QString::fromLatin1(&source, 1);
+            return true;
+        );
+        QMETATYPE_CONVERTER(QString, SChar,
+            char s = source;
+            result = QString::fromLatin1(&s, 1);
+            return true;
+        );
+        QMETATYPE_CONVERTER(QString, UChar,
+            char s = source;
+            result = QString::fromLatin1(&s, 1);
+            return true;
+        );
+#if QT_CONFIG(datestring)
+        QMETATYPE_CONVERTER(QString, QDate, result = source.toString(Qt::ISODate); return true;);
+        QMETATYPE_CONVERTER(QString, QTime, result = source.toString(Qt::ISODateWithMs); return true;);
+        QMETATYPE_CONVERTER(QString, QDateTime, result = source.toString(Qt::ISODateWithMs); return true;);
+#endif
+        QMETATYPE_CONVERTER(QString, QByteArray, result = QString::fromUtf8(source); return true;);
+        QMETATYPE_CONVERTER(QString, QStringList,
+            return (source.count() == 1) ? (result = source.at(0), true) : false;
+        );
+#ifndef QT_BOOTSTRAPPED
+        QMETATYPE_CONVERTER(QString, QUrl, result = source.toString(); return true;);
+        QMETATYPE_CONVERTER(QString, QJsonValue,
+            if (source.isString() || source.isNull()) {
+                result = source.toString();
+                return true;
+            }
+            return false;
+        );
+#endif
+        QMETATYPE_CONVERTER(QString, Nullptr, Q_UNUSED(source); result = QString(); return true;);
+
+        // QByteArray
+        QMETATYPE_CONVERTER(QByteArray, QString, result = source.toUtf8(); return true;);
+        QMETATYPE_CONVERTER(QByteArray, Bool,
+            result = source ? "true" : "false";
+            return true;
+        );
+        QMETATYPE_CONVERTER(QByteArray, Char, result = QByteArray(source, 1); return true;);
+        QMETATYPE_CONVERTER(QByteArray, SChar, result = QByteArray(source, 1); return true;);
+        QMETATYPE_CONVERTER(QByteArray, UChar, result = QByteArray(source, 1); return true;);
+        QMETATYPE_CONVERTER_ASSIGN_NUMBER(QByteArray, Short);
+        QMETATYPE_CONVERTER_ASSIGN_NUMBER(QByteArray, Long);
+        QMETATYPE_CONVERTER_ASSIGN_NUMBER(QByteArray, Int);
+        QMETATYPE_CONVERTER_ASSIGN_NUMBER(QByteArray, LongLong);
+        QMETATYPE_CONVERTER_ASSIGN_NUMBER(QByteArray, UShort);
+        QMETATYPE_CONVERTER_ASSIGN_NUMBER(QByteArray, ULong);
+        QMETATYPE_CONVERTER_ASSIGN_NUMBER(QByteArray, UInt);
+        QMETATYPE_CONVERTER_ASSIGN_NUMBER(QByteArray, ULongLong);
+        QMETATYPE_CONVERTER(QByteArray, Float,
+            result = QByteArray::number(source, 'g', QLocale::FloatingPointShortest);
+            return true;
+        );
+        QMETATYPE_CONVERTER(QByteArray, Double,
+            result = QByteArray::number(source, 'g', QLocale::FloatingPointShortest);
+            return true;
+        );
+        QMETATYPE_CONVERTER(QByteArray, Nullptr, Q_UNUSED(source); result = QByteArray(); return true;);
+
+        QMETATYPE_CONVERTER(QString, QUuid, result = source.toString(); return true;);
+        QMETATYPE_CONVERTER(QUuid, QString, result = QUuid(source); return true;);
+        QMETATYPE_CONVERTER(QByteArray, QUuid, result = source.toByteArray(); return true;);
+        QMETATYPE_CONVERTER(QUuid, QByteArray, result = QUuid(source); return true;);
+
+#ifndef QT_NO_GEOM_VARIANT
+        QMETATYPE_CONVERTER(QSize, QSizeF, result = source.toSize(); return true;);
+        QMETATYPE_CONVERTER_ASSIGN(QSizeF, QSize);
+        QMETATYPE_CONVERTER(QLine, QLineF, result = source.toLine(); return true;);
+        QMETATYPE_CONVERTER_ASSIGN(QLineF, QLine);
+        QMETATYPE_CONVERTER(QRect, QRectF, result = source.toRect(); return true;);
+        QMETATYPE_CONVERTER_ASSIGN(QRectF, QRect);
+        QMETATYPE_CONVERTER(QPoint, QPointF, result = source.toPoint(); return true;);
+        QMETATYPE_CONVERTER_ASSIGN(QPointF, QPoint);
+ #endif
+
+        QMETATYPE_CONVERTER(QStringList, QVariantList,
+            result.reserve(source.size());
+            for (auto v: source)
+                result.append(v.toString());
+            return true;
+        );
+        QMETATYPE_CONVERTER(QVariantList, QStringList,
+            result.reserve(source.size());
+            for (auto v: source)
+                result.append(QVariant(v));
+            return true;
+        );
+        QMETATYPE_CONVERTER(QStringList, QString, result = QStringList() << source; return true;);
+
+        QMETATYPE_CONVERTER(QVariantHash, QVariantMap,
+            for (auto it = source.begin(); it != source.end(); ++it)
+                result.insert(it.key(), it.value());
+            return true;
+        );
+        QMETATYPE_CONVERTER(QVariantMap, QVariantHash,
+            for (auto it = source.begin(); it != source.end(); ++it)
+                result.insert(it.key(), it.value());
+            return true;
+        );
+
+#ifndef QT_BOOTSTRAPPED
+        QMETATYPE_CONVERTER_ASSIGN(QCborValue, QString);
+        QMETATYPE_CONVERTER(QString, QCborValue,
+            if (source.isContainer() || source.isTag())
+                 return false;
+            result = source.toVariant().toString();
+            return true;
+        );
+        QMETATYPE_CONVERTER_ASSIGN(QCborValue, QByteArray);
+        QMETATYPE_CONVERTER(QByteArray, QCborValue,
+            if (source.isByteArray()) {
+                result = source.toByteArray();
+                return true;
+            }
+            return false;
+        );
+        QMETATYPE_CONVERTER_ASSIGN(QCborValue, QUuid);
+        QMETATYPE_CONVERTER(QUuid, QCborValue,
+            if (!source.isUuid())
+                return false;
+            result = source.toUuid();
+            return true;
+        );
+        QMETATYPE_CONVERTER(QCborValue, QVariantList, result = QCborArray::fromVariantList(source); return true;);
+        QMETATYPE_CONVERTER(QVariantList, QCborValue,
+            if (!source.isArray())
+                return false;
+            result = source.toArray().toVariantList();
+            return true;
+        );
+        QMETATYPE_CONVERTER(QCborValue, QVariantMap, result = QCborMap::fromVariantMap(source); return true;);
+        QMETATYPE_CONVERTER(QVariantMap, QCborValue,
+            if (!source.isMap())
+                return false;
+                result = source.toMap().toVariantMap();
+            return true;
+        );
+        QMETATYPE_CONVERTER(QCborValue, QVariantHash, result = QCborMap::fromVariantHash(source); return true;);
+        QMETATYPE_CONVERTER(QVariantHash, QCborValue,
+            if (!source.isMap())
+                return false;
+            result = source.toMap().toVariantHash();
+            return true;
+        );
+#if QT_CONFIG(regularexpression)
+        QMETATYPE_CONVERTER(QCborValue, QRegularExpression, result = QCborValue(source); return true;);
+        QMETATYPE_CONVERTER(QRegularExpression, QCborValue,
+            if (!source.isRegularExpression())
+                return false;
+            result = source.toRegularExpression();
+            return true;
+        );
+#endif
+        QMETATYPE_CONVERTER(QDateTime, QCborValue,
+            if (source.isDateTime()) {
+                result = source.toDateTime();
+                return true;
+            }
+            return false;
+        );
+
+        QMETATYPE_CONVERTER(QCborArray, QVariantList, result = QCborArray::fromVariantList(source); return true;);
+        QMETATYPE_CONVERTER(QVariantList, QCborArray, result = source.toVariantList(); return true;);
+        QMETATYPE_CONVERTER(QCborArray, QStringList, result = QCborArray::fromStringList(source); return true;);
+        QMETATYPE_CONVERTER(QCborMap, QVariantMap, result = QCborMap::fromVariantMap(source); return true;);
+        QMETATYPE_CONVERTER(QVariantMap, QCborMap, result = source.toVariantMap(); return true;);
+        QMETATYPE_CONVERTER(QCborMap, QVariantHash, result = QCborMap::fromVariantHash(source); return true;);
+        QMETATYPE_CONVERTER(QVariantHash, QCborMap, result = source.toVariantHash(); return true;);
+
+        QMETATYPE_CONVERTER(QCborArray, QCborValue,
+            if (!source.isArray())
+                return false;
+            result = source.toArray();
+            return true;
+        );
+        QMETATYPE_CONVERTER(QCborArray, QJsonDocument,
+            if (!source.isArray())
+                return false;
+            result = QCborArray::fromJsonArray(source.array());
+            return true;
+        );
+        QMETATYPE_CONVERTER(QCborArray, QJsonValue,
+            if (!source.isArray())
+                return false;
+            result = QCborArray::fromJsonArray(source.toArray());
+            return true;
+        );
+        QMETATYPE_CONVERTER(QCborArray, QJsonArray,
+            result = QCborArray::fromJsonArray(source);
+            return true;
+        );
+        QMETATYPE_CONVERTER(QCborMap, QCborValue,
+            if (!source.isMap())
+                return false;
+            result = source.toMap();
+            return true;
+        );
+        QMETATYPE_CONVERTER(QCborMap, QJsonDocument,
+            if (source.isArray())
+                return false;
+            result = QCborMap::fromJsonObject(source.object());
+            return true;
+        );
+        QMETATYPE_CONVERTER(QCborMap, QJsonValue,
+            if (!source.isObject())
+                return false;
+            result = QCborMap::fromJsonObject(source.toObject());
+            return true;
+        );
+        QMETATYPE_CONVERTER(QCborMap, QJsonObject,
+            result = QCborMap::fromJsonObject(source);
+            return true;
+        );
+
+
+        QMETATYPE_CONVERTER(QVariantList, QJsonValue,
+            if (!source.isArray())
+                return false;
+            result = source.toArray().toVariantList();
+            return true;
+        );
+        QMETATYPE_CONVERTER(QVariantList, QJsonArray, result = source.toVariantList(); return true;);
+        QMETATYPE_CONVERTER(QVariantMap, QJsonValue,
+            if (!source.isObject())
+                return false;
+            result = source.toObject().toVariantMap();
+            return true;
+        );
+        QMETATYPE_CONVERTER(QVariantMap, QJsonObject, result = source.toVariantMap(); return true;);
+        QMETATYPE_CONVERTER(QVariantHash, QJsonValue,
+            if (!source.isObject())
+                return false;
+            result = source.toObject().toVariantHash();
+            return true;
+        );
+        QMETATYPE_CONVERTER(QVariantHash, QJsonObject, result = source.toVariantHash(); return true;);
+
+
+        QMETATYPE_CONVERTER(QJsonArray, QStringList, result = QJsonArray::fromStringList(source); return true;);
+        QMETATYPE_CONVERTER(QJsonArray, QVariantList, result = QJsonArray::fromVariantList(source); return true;);
+        QMETATYPE_CONVERTER(QJsonArray, QJsonValue,
+            if (!source.isArray())
+                return false;
+            result = source.toArray();
+            return true;
+        );
+        QMETATYPE_CONVERTER(QJsonArray, QJsonDocument,
+            if (!source.isArray())
+                return false;
+            result = source.array();
+            return true;
+        );
+        QMETATYPE_CONVERTER(QJsonArray, QCborValue,
+            if (!source.isArray())
+                return false;
+            result = source.toArray().toJsonArray();
+            return true;
+        );
+        QMETATYPE_CONVERTER(QJsonArray, QCborArray, result = source.toJsonArray(); return true;);
+        QMETATYPE_CONVERTER(QJsonObject, QVariantMap, result = QJsonObject::fromVariantMap(source); return true;);
+        QMETATYPE_CONVERTER(QJsonObject, QVariantHash, result = QJsonObject::fromVariantHash(source); return true;);
+        QMETATYPE_CONVERTER(QJsonObject, QJsonValue,
+            if (!source.isObject())
+                return false;
+            result = source.toObject();
+            return true;
+        );
+        QMETATYPE_CONVERTER(QJsonObject, QJsonDocument,
+            if (source.isArray())
+                return false;
+            result = source.object();
+            return true;
+        );
+        QMETATYPE_CONVERTER(QJsonObject, QCborValue,
+            if (!source.isMap())
+                return false;
+            result = source.toMap().toJsonObject();
+            return true;
+        );
+        QMETATYPE_CONVERTER(QJsonObject, QCborMap, result = source.toJsonObject(); return true; );
+
+#endif
+
+        QMETATYPE_CONVERTER(QDate, QDateTime, result = source.date(); return true;);
+        QMETATYPE_CONVERTER(QTime, QDateTime, result = source.time(); return true;);
+        QMETATYPE_CONVERTER(QDateTime, QDate, result = source.startOfDay(); return true;);
+#if QT_CONFIG(datestring)
+        QMETATYPE_CONVERTER(QDate, QString,
+            result = QDate::fromString(source, Qt::ISODate);
+            return result.isValid();
+        );
+        QMETATYPE_CONVERTER(QTime, QString,
+            result = QTime::fromString(source, Qt::ISODate);
+            return result.isValid();
+        );
+        QMETATYPE_CONVERTER(QDateTime, QString,
+            result = QDateTime::fromString(source, Qt::ISODate);
+            return result.isValid();
+        );
+#endif
+
+        }
+        return false;
+    }
 } metatypeHelper;
 
 static const QMetaTypeModuleHelper *qMetaTypeCoreHelper = &metatypeHelper;
