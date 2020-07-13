@@ -89,15 +89,6 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace {
-struct CoreTypesFilter {
-    template<typename T>
-    struct Acceptor {
-        static const bool IsAccepted = QModulesPrivate::QTypeModuleInfo<T>::IsCore && QtMetaTypePrivate::TypeDefinition<T>::IsAvailable;
-    };
-};
-} // annonymous
-
 namespace { // annonymous used to hide QVariant handlers
 
 /*!
