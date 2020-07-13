@@ -63,8 +63,6 @@ QT_BEGIN_NAMESPACE
 
 class QFile;
 class QAction;
-class QInputDevice;
-class QPointingDevice;
 class QPointerEvent;
 class QScreen;
 #if QT_CONFIG(gestures)
@@ -165,10 +163,6 @@ public:
     void setAccepted(bool accepted = true);
     QObject *exclusiveGrabber() const { return m_exclusiveGrabber.data(); }
     void setExclusiveGrabber(QObject *exclusiveGrabber);
-    void cancelExclusiveGrab();
-    void cancelPassiveGrab(QObject *grabber);
-    bool removePassiveGrabber(QObject *grabber);
-    void cancelAllGrabs(QObject *grabber);
     const QList<QPointer <QObject>> &passiveGrabbers() const { return m_passiveGrabbers; }
     void setPassiveGrabbers(const QList<QPointer <QObject>> &grabbers);
     void clearPassiveGrabbers();
