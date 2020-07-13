@@ -71,6 +71,7 @@
 #  include "qcborarray.h"
 #  include "qcbormap.h"
 #  include "qbytearraylist.h"
+#  include "qmetaobject.h"
 #endif
 
 #if QT_CONFIG(itemmodel)
@@ -86,6 +87,7 @@
 
 #include <bitset>
 #include <new>
+#include <cstring>
 
 QT_BEGIN_NAMESPACE
 
@@ -1541,6 +1543,138 @@ bool QMetaType::hasRegisteredDebugStreamOperator() const
 }
 #endif
 
+#ifndef QT_NO_QOBJECT
+/*!
+  \internal
+  returns a QMetaEnum for a given meta tape type id if possible
+*/
+static QMetaEnum metaEnumFromType(QMetaType t)
+{
+    if (t.flags() & QMetaType::IsEnumeration) {
+        if (const QMetaObject *metaObject = t.metaObject()) {
+            const QByteArray enumName = t.name();
+            const char *lastColon = std::strrchr(enumName, ':');
+            return metaObject->enumerator(metaObject->indexOfEnumerator(
+                    lastColon ? lastColon + 1 : enumName.constData()));
+        }
+    }
+    return QMetaEnum();
+}
+#endif
+
+static bool convertFromEnum(const void *from, const QMetaType &fromType, void *to, int toTypeId)
+{
+    qlonglong ll;
+    if (fromType.flags() & QMetaType::IsUnsignedEnumeration) {
+        qulonglong ull;
+        switch (fromType.sizeOf()) {
+        case 1:
+            ull = *static_cast<const unsigned char *>(from);
+            break;
+        case 2:
+            ull = *static_cast<const unsigned short *>(from);
+            break;
+        case 4:
+            ull = *static_cast<const unsigned int *>(from);
+            break;
+        case 8:
+            ull = *static_cast<const quint64 *>(from);
+            break;
+        default:
+            Q_UNREACHABLE();
+        }
+        if (toTypeId == QMetaType::ULongLong) {
+            *static_cast<qulonglong *>(to) = ull;
+            return true;
+        }
+        if (toTypeId != QMetaType::QString && toTypeId != QMetaType::QByteArray)
+            return QMetaType::convert(&ull, QMetaType::ULongLong, to, toTypeId);
+        ll = qlonglong(ull);
+    } else {
+        switch (fromType.sizeOf()) {
+        case 1:
+            ll = *static_cast<const signed char *>(from);
+            break;
+        case 2:
+            ll = *static_cast<const short *>(from);
+            break;
+        case 4:
+            ll = *static_cast<const int *>(from);
+            break;
+        case 8:
+            ll = *static_cast<const qint64 *>(from);
+            break;
+        default:
+            Q_UNREACHABLE();
+        }
+        if (toTypeId == QMetaType::LongLong) {
+            *static_cast<qlonglong *>(to) = ll;
+            return true;
+        }
+        if (toTypeId != QMetaType::QString && toTypeId != QMetaType::QByteArray)
+            return QMetaType::convert(&ll, QMetaType::LongLong, to, toTypeId);
+    }
+    Q_ASSERT(toTypeId == QMetaType::QString || toTypeId == QMetaType::QByteArray);
+#ifndef QT_NO_QOBJECT
+    QMetaEnum en = metaEnumFromType(fromType);
+    if (en.isValid()) {
+        const char *key = en.valueToKey(ll);
+        if (toTypeId == QMetaType::QString)
+            *static_cast<QString *>(to) = QString::fromUtf8(key);
+        else
+            *static_cast<QByteArray *>(to) = key;
+        return true;
+    }
+#endif
+    return false;
+}
+
+static bool convertToEnum(const void *from, int fromTypeId, void *to, const QMetaType &toType)
+{
+    qlonglong value;
+    bool ok = false;
+#ifndef QT_NO_QOBJECT
+    if (fromTypeId == QMetaType::QString || fromTypeId == QMetaType::QByteArray) {
+        QMetaEnum en = metaEnumFromType(toType);
+        if (!en.isValid())
+            return false;
+        QByteArray keys = (fromTypeId == QMetaType::QString)
+                ? static_cast<const QString *>(from)->toUtf8()
+                : *static_cast<const QByteArray *>(from);
+        value = en.keysToValue(keys.constData(), &ok);
+    }
+#endif
+    if (!ok) {
+        if (fromTypeId == QMetaType::LongLong) {
+            value = *static_cast<const qlonglong *>(from);
+            ok = true;
+        } else {
+            ok = QMetaType::convert(from, fromTypeId, &value, QMetaType::LongLong);
+        }
+    }
+
+    if (!ok)
+        return false;
+
+    switch (toType.sizeOf()) {
+    case 1:
+        *static_cast<signed char *>(to) = value;
+        return true;
+    case 2:
+        *static_cast<qint16 *>(to) = value;
+        return true;
+    case 4:
+        *static_cast<qint32 *>(to) = value;
+        return true;
+    case 8:
+        *static_cast<qint64 *>(to) = value;
+        return true;
+    default:
+        Q_UNREACHABLE();
+        return false;
+    }
+}
+
 /*!
     Converts the object at \a from from \a fromTypeId to the preallocated space at \a to
     typed \a toTypeId. Returns \c true, if the conversion succeeded, otherwise false.
@@ -1554,7 +1688,16 @@ bool QMetaType::convert(const void *from, int fromTypeId, void *to, int toTypeId
     }
     const QMetaType::ConverterFunction * const f =
         customTypesConversionRegistry()->function(qMakePair(fromTypeId, toTypeId));
-    return f && (*f)(from, to);
+    if (f)
+        return (*f)(from, to);
+
+    QMetaType fromType(fromTypeId);
+    if (fromType.flags() & QMetaType::IsEnumeration)
+        return convertFromEnum(from, fromType, to, toTypeId);
+    QMetaType toType(toTypeId);
+    if (toType.flags() & QMetaType::IsEnumeration)
+        return convertToEnum(from, fromTypeId, to, toType);
+    return false;
 }
 
 /*!

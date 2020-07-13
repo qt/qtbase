@@ -356,6 +356,7 @@ public:
         IsGadget = 0x200,
         PointerToGadget = 0x400,
         IsPointer = 0x800,
+        IsUnsignedEnumeration = 0x1000
     };
     Q_DECLARE_FLAGS(TypeFlags, TypeFlag)
 
@@ -1428,6 +1429,11 @@ namespace QtPrivate {
     template <typename Result, typename... Args>
     struct IsPointerToTypeDerivedFromQObject<Result(*)(Args...)> { enum { Value = false }; };
 
+    template<typename T, bool = std::is_enum<T>::value>
+    constexpr bool IsUnsignedEnum = false;
+    template<typename T>
+    constexpr bool IsUnsignedEnum<T, true> = !std::is_signed_v<std::underlying_type_t<T>>;
+
     template<typename T>
     struct QMetaTypeTypeFlags
     {
@@ -1442,6 +1448,7 @@ namespace QtPrivate {
                      | (IsGadgetHelper<T>::IsGadgetOrDerivedFrom ? QMetaType::IsGadget : 0)
                      | (IsPointerToGadgetHelper<T>::IsGadgetOrDerivedFrom ? QMetaType::PointerToGadget : 0)
                      | (QTypeInfo<T>::isPointer ? QMetaType::IsPointer : 0)
+                     | (IsUnsignedEnum<T> ? QMetaType::IsUnsignedEnumeration : 0)
              };
     };
 

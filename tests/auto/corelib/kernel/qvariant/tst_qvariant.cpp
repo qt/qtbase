@@ -4366,11 +4366,6 @@ template<typename Enum> void testVariant(Enum value, bool *ok)
     QCOMPARE(var.value<short>(), static_cast<short>(value));
     QCOMPARE(var.value<unsigned short>(), static_cast<unsigned short>(value));
     QCOMPARE(var.value<qint64>(), static_cast<qint64>(value));
-    if (sizeof(value) < 8 && static_cast<qint64>(value) < 0) {
-        QEXPECT_FAIL("", "The metatype system don't store the sign of enums", Continue);
-        // The value is stored internaly with 32 bit. When asked to convert it to 64 bit unsigned,
-        // we consider that the value was unsigned, so we don't extent the bit signs
-    }
     QCOMPARE(var.value<quint64>(), static_cast<quint64>(value));
 
     QVariant var2 = var;

@@ -312,25 +312,6 @@ inline bool qt_convertToBool(const QVariant::Private *const d)
     return !(str.isEmpty() || str == LiteralWrapper("0") || str == LiteralWrapper("false"));
 }
 
-#ifndef QT_NO_QOBJECT
-/*!
-  \internal
-  returns a QMetaEnum for a given meta tape type id if possible
-*/
-static QMetaEnum metaEnumFromType(QMetaType t)
-{
-    if (t.flags() & QMetaType::IsEnumeration) {
-        if (const QMetaObject *metaObject = t.metaObject()) {
-            const QByteArray enumName = t.name();
-            const char *lastColon = std::strrchr(enumName, ':');
-            return metaObject->enumerator(metaObject->indexOfEnumerator(
-                    lastColon ? lastColon + 1 : enumName.constData()));
-        }
-    }
-    return QMetaEnum();
-}
-#endif
-
 /*!
  \internal
 
@@ -349,28 +330,6 @@ static bool convert(const QVariant::Private *d, int t, void *result)
     bool ok = true;
 
     switch (uint(t)) {
-    case QMetaType::QString: {
-        QString *str = static_cast<QString *>(result);
-#ifndef QT_NO_QOBJECT
-        QMetaEnum en = metaEnumFromType(d->type());
-        if (en.isValid()) {
-            *str = QString::fromUtf8(en.valueToKey(qConvertToNumber(d, &ok)));
-            return ok;
-        }
-#endif
-        return false;
-    }
-    case QMetaType::QByteArray: {
-#ifndef QT_NO_QOBJECT
-        QMetaEnum en = metaEnumFromType(d->type());
-        if (en.isValid()) {
-            QByteArray *ba = static_cast<QByteArray *>(result);
-            *ba = en.valueToKey(qConvertToNumber(d, &ok));
-            return ok;
-        }
-#endif
-        return false;
-    }
     case QMetaType::Short:
         *static_cast<short *>(result) = short(qConvertToNumber(d, &ok));
         return ok;
@@ -716,54 +675,6 @@ static bool convert(const QVariant::Private *d, int t, void *result)
 #endif
 
     default:
-#ifndef QT_NO_QOBJECT
-        if (d->typeId() == QMetaType::QString || d->typeId() == QMetaType::QByteArray) {
-            QMetaEnum en = metaEnumFromType(QMetaType(t));
-            if (en.isValid()) {
-                QByteArray keys = (d->typeId() == QMetaType::QString)
-                        ? d->get<QString>().toUtf8()
-                        : d->get<QByteArray>();
-                int value = en.keysToValue(keys.constData(), &ok);
-                if (ok) {
-                    switch (QMetaType::sizeOf(t)) {
-                    case 1:
-                        *static_cast<signed char *>(result) = value;
-                        return true;
-                    case 2:
-                        *static_cast<qint16 *>(result) = value;
-                        return true;
-                    case 4:
-                        *static_cast<qint32 *>(result) = value;
-                        return true;
-                    case 8:
-                        *static_cast<qint64 *>(result) = value;
-                        return true;
-                    }
-                }
-            }
-        }
-#endif
-        if (QMetaType::typeFlags(t) & QMetaType::IsEnumeration
-            || d->typeId() == QMetaType::QCborSimpleType) {
-            qlonglong value = qConvertToNumber(d, &ok);
-            if (ok) {
-                switch (QMetaType::sizeOf(t)) {
-                case 1:
-                    *static_cast<signed char *>(result) = value;
-                    return true;
-                case 2:
-                    *static_cast<qint16 *>(result) = value;
-                    return true;
-                case 4:
-                    *static_cast<qint32 *>(result) = value;
-                    return true;
-                case 8:
-                    *static_cast<qint64 *>(result) = value;
-                    return true;
-                }
-            }
-            return ok;
-        }
         return false;
     }
     return true;
