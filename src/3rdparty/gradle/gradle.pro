@@ -1,3 +1,5 @@
+TEMPLATE = aux
+TARGET = dummy # Avoid a conflict with the existing gradle directory
 CONFIG -= qt android_install
 
 gradle.files = \
