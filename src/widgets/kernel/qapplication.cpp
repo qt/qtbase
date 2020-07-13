@@ -947,10 +947,7 @@ QStyle *QApplication::style()
         // Take ownership of the style
         defaultStyle->setParent(qApp);
 
-        if (testAttribute(Qt::AA_SetPalette))
-            defaultStyle->polish(*QGuiApplicationPrivate::app_pal);
-        else
-            QApplicationPrivate::initializeWidgetPalettesFromTheme();
+        QGuiApplicationPrivate::updatePalette();
 
 #ifndef QT_NO_STYLE_STYLESHEET
         if (!QApplicationPrivate::styleSheet.isEmpty()) {
@@ -1021,13 +1018,10 @@ void QApplication::setStyle(QStyle *style)
         QApplicationPrivate::app_style = style;
     QApplicationPrivate::app_style->setParent(qApp); // take ownership
 
-    // take care of possible palette requirements of certain gui
-    // styles. Do it before polishing the application since the style
-    // might call QApplication::setPalette() itself
-    if (testAttribute(Qt::AA_SetPalette))
-        QApplicationPrivate::app_style->polish(*QGuiApplicationPrivate::app_pal);
-    else
-        QApplicationPrivate::initializeWidgetPalettesFromTheme();
+    // Take care of possible palette requirements of certain
+    // styles. Do it before polishing the application since the
+    // style might call QApplication::setPalette() itself.
+    QGuiApplicationPrivate::updatePalette();
 
     // The default widget font hash is based on the platform theme,
     // not the style, but the widget fonts could in theory have been
@@ -1121,6 +1115,13 @@ QPalette QApplicationPrivate::basePalette() const
     if (const QPalette *themePalette = platformTheme() ? platformTheme()->palette() : nullptr)
         palette = themePalette->resolve(palette);
 
+    // Finish off by letting the application style polish the palette. This will
+    // not result in the polished palette becoming a user-set palette, as the
+    // resulting base palette is only used as a fallback, with the resolve mask
+    // set to 0.
+    if (app_style)
+        app_style->polish(palette);
+
     return palette;
 }
 
@@ -1194,17 +1195,19 @@ QPalette QApplication::palette(const char *className)
 */
 void QApplication::setPalette(const QPalette &palette, const char* className)
 {
-    QPalette polishedPalette = palette;
-
-    if (QApplicationPrivate::app_style)
-        QApplicationPrivate::app_style->polish(polishedPalette);
-
     if (className) {
+        QPalette polishedPalette = palette;
+        if (QApplicationPrivate::app_style) {
+            auto originalResolveMask = palette.resolve();
+            QApplicationPrivate::app_style->polish(polishedPalette);
+            polishedPalette.resolve(originalResolveMask);
+        }
+
         QApplicationPrivate::widgetPalettes.insert(className, polishedPalette);
         if (qApp)
             qApp->d_func()->handlePaletteChanged(className);
     } else {
-        QGuiApplication::setPalette(polishedPalette);
+        QGuiApplication::setPalette(palette);
     }
 }
 
@@ -1408,6 +1411,12 @@ void QApplicationPrivate::setSystemFont(const QFont &font)
 */
 QString QApplicationPrivate::desktopStyleKey()
 {
+#if defined(QT_BUILD_INTERNAL)
+    // Allow auto-tests to override the desktop style
+    if (qEnvironmentVariableIsSet("QT_DESKTOP_STYLE_KEY"))
+        return QString::fromLocal8Bit(qgetenv("QT_DESKTOP_STYLE_KEY"));
+#endif
+
     // The platform theme might return a style that is not available, find
     // first valid one.
     if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {

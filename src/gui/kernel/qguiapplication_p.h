@@ -329,6 +329,8 @@ public:
     virtual QShortcutPrivate *createShortcutPrivate() const;
 #endif
 
+    static void updatePalette();
+
 protected:
     virtual void notifyThemeChanged();
 
@@ -343,7 +345,6 @@ protected:
 
 private:
     static void clearPalette();
-    static void updatePalette();
 
     friend class QDragManager;
 

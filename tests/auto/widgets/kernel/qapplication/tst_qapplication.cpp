@@ -26,6 +26,8 @@
 **
 ****************************************************************************/
 
+#define QT_STATICPLUGIN
+#include <QtWidgets/qstyleplugin.h>
 
 #include <qdebug.h>
 
@@ -54,6 +56,7 @@
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/private/qapplication_p.h>
 #include <QtWidgets/QStyle>
+#include <QtWidgets/qproxystyle.h>
 
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qwindowsysteminterface_p.h>
@@ -128,6 +131,7 @@ private slots:
     void task109149();
 
     void style();
+    void applicationPalettePolish();
 
     void allWidgets();
     void topLevelWidgets();
@@ -1796,6 +1800,78 @@ void tst_QApplication::style()
 
     // qApp style can never be 0
     QVERIFY(QApplication::style() != nullptr);
+}
+
+class CustomStyle : public QProxyStyle
+{
+public:
+    CustomStyle() : QProxyStyle("Windows") { Q_ASSERT(!polished); }
+    ~CustomStyle() { polished = 0; }
+    void polish(QPalette &palette)
+    {
+        polished++;
+        palette.setColor(QPalette::Active, QPalette::Link, Qt::red);
+    }
+    static int polished;
+};
+
+int CustomStyle::polished = 0;
+
+class CustomStylePlugin : public QStylePlugin
+{
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QStyleFactoryInterface" FILE "customstyle.json")
+public:
+    QStyle *create(const QString &) { return new CustomStyle; }
+};
+
+Q_IMPORT_PLUGIN(CustomStylePlugin)
+
+void tst_QApplication::applicationPalettePolish()
+{
+    int argc = 1;
+
+#if defined(QT_BUILD_INTERNAL)
+    {
+        qputenv("QT_DESKTOP_STYLE_KEY", "customstyle");
+        QApplication app(argc, &argv0);
+        QVERIFY(CustomStyle::polished);
+        QVERIFY(!app.palette().resolve());
+        QCOMPARE(app.palette().color(QPalette::Link), Qt::red);
+        qunsetenv("QT_DESKTOP_STYLE_KEY");
+    }
+#endif
+
+    {
+        QApplication::setStyle(new CustomStyle);
+        QApplication app(argc, &argv0);
+        QVERIFY(CustomStyle::polished);
+        QVERIFY(!app.palette().resolve());
+        QCOMPARE(app.palette().color(QPalette::Link), Qt::red);
+    }
+
+    {
+        QApplication app(argc, &argv0);
+        app.setStyle(new CustomStyle);
+        QVERIFY(CustomStyle::polished);
+        QVERIFY(!app.palette().resolve());
+        QCOMPARE(app.palette().color(QPalette::Link), Qt::red);
+
+        CustomStyle::polished = 0;
+        app.setPalette(QPalette());
+        QVERIFY(CustomStyle::polished);
+        QVERIFY(!app.palette().resolve());
+        QCOMPARE(app.palette().color(QPalette::Link), Qt::red);
+
+        CustomStyle::polished = 0;
+        QPalette palette;
+        palette.setColor(QPalette::Active, QPalette::Highlight, Qt::green);
+        app.setPalette(palette);
+        QVERIFY(CustomStyle::polished);
+        QVERIFY(app.palette().resolve());
+        QCOMPARE(app.palette().color(QPalette::Link), Qt::red);
+        QCOMPARE(app.palette().color(QPalette::Highlight), Qt::green);
+    }
 }
 
 void tst_QApplication::allWidgets()
