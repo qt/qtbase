@@ -1139,7 +1139,7 @@ QString QDBusConnection::name() const
 */
 QDBusConnection::ConnectionCapabilities QDBusConnection::connectionCapabilities() const
 {
-    return d ? d->capabilities : ConnectionCapabilities();
+    return d ? d->connectionCapabilities() : ConnectionCapabilities();
 }
 
 /*!

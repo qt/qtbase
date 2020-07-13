@@ -282,7 +282,7 @@ QDBusMessage QDBusMessagePrivate::makeLocal(const QDBusConnectionPrivate &conn,
             // we must marshall and demarshall again so as to create QDBusArgument
             // entries for the complex types
             QDBusError error;
-            DBusMessage *message = toDBusMessage(asSent, conn.capabilities, &error);
+            DBusMessage *message = toDBusMessage(asSent, conn.connectionCapabilities(), &error);
             if (!message) {
                 // failed to marshall, so it's a call error
                 return QDBusMessage::createError(error);
@@ -290,7 +290,7 @@ QDBusMessage QDBusMessagePrivate::makeLocal(const QDBusConnectionPrivate &conn,
 
             q_dbus_message_set_sender(message, conn.baseService.toUtf8());
 
-            QDBusMessage retval = fromDBusMessage(message, conn.capabilities);
+            QDBusMessage retval = fromDBusMessage(message, conn.connectionCapabilities());
             retval.d_ptr->localMessage = true;
             q_dbus_message_unref(message);
             if (retval.d_ptr->service.isEmpty())

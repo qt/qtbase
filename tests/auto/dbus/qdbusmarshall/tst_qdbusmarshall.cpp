@@ -1110,8 +1110,9 @@ void tst_QDBusMarshall::receiveUnknownType()
         QSKIP("Your session bus does not allow sending Unix file descriptors");
 
     // make sure this QDBusConnection won't handle Unix file descriptors
-    QDBusConnection::ConnectionCapabilities &capabRef = QDBusConnectionPrivate::d(con)->capabilities;
-    SetResetValue<QDBusConnection::ConnectionCapabilities> resetter(capabRef, capabRef & ~QDBusConnection::UnixFileDescriptorPassing);
+    QAtomicInt &capabRef = QDBusConnectionPrivate::d(con)->capabilities;
+    SetResetValue<QAtomicInt> resetter(capabRef,
+                                       capabRef & ~QDBusConnection::UnixFileDescriptorPassing);
 
     if (qstrcmp(QTest::currentDataTag(), "in-call") == 0) {
         // create a call back to us containing a file descriptor
