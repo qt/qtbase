@@ -2462,11 +2462,9 @@ inline T qVariantToHelper(const QVariant::Private &d)
         return d.get<T>();
 
     T ret;
-    if (d.typeId() >= QMetaType::LastCoreType || targetType.id() >= QMetaType::LastCoreType) {
-        const void * const from = d.storage();
-        if (QMetaType::convert(from, d.typeId(), &ret, targetType.id()))
-            return ret;
-    }
+    const void * const from = d.storage();
+    if (QMetaType::convert(from, d.typeId(), &ret, targetType.id()))
+        return ret;
 
     convert(&d, targetType.id(), &ret);
     return ret;
@@ -2896,8 +2894,7 @@ inline T qNumVariantToHelper(const QVariant::Private &d, bool *ok, const T& val)
         return val;
 
     T ret = 0;
-    if ((d.typeId() >= QMetaType::LastCoreType || t >= QMetaType::LastCoreType)
-        && QMetaType::convert(d.storage(), d.typeId(), &ret, t))
+    if (QMetaType::convert(d.storage(), d.typeId(), &ret, t))
         return ret;
 
     bool success = convert(&d, t, &ret);
@@ -3003,11 +3000,8 @@ bool QVariant::toBool() const
 
     bool res = false;
 
-    if (d.typeId() >= QMetaType::LastCoreType) {
-        const void * const from = constData();
-        if (QMetaType::convert(from, d.typeId(), &res, QMetaType::Bool))
-            return res;
-    }
+    if (QMetaType::convert(constData(), d.typeId(), &res, QMetaType::Bool))
+        return res;
 
     ::convert(&d, Bool, &res);
 
@@ -3547,10 +3541,7 @@ bool QVariant::convert(int targetTypeId)
     }
 
     bool isOk = false;
-    if (oldValue.d.typeId() >= QMetaType::LastCoreType || targetTypeId >= QMetaType::LastCoreType) {
-        const void * const from = oldValue.constData();
-        isOk = QMetaType::convert(from, oldValue.d.typeId(), data(), targetTypeId);
-    }
+    isOk = QMetaType::convert(oldValue.constData(), oldValue.d.typeId(), data(), targetTypeId);
     if (!isOk)
         isOk = ::convert(&oldValue.d, targetTypeId, data());
 
@@ -3565,11 +3556,8 @@ bool QVariant::convert(int targetTypeId)
 */
 bool QVariant::convert(const int type, void *ptr) const
 {
-    if (d.typeId() >= QMetaType::LastCoreType || type >= QMetaType::LastCoreType) {
-        const void * const from = constData();
-        if (QMetaType::convert(from, d.typeId(), ptr, type))
-            return true;
-    }
+    if (QMetaType::convert(constData(), d.typeId(), ptr, type))
+        return true;
     return ::convert(&d, type, ptr);
 }
 
