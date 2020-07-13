@@ -854,6 +854,14 @@ static const struct { const char * typeName; int typeNameLength; int type; } typ
 
 static const struct : QMetaTypeModuleHelper
 {
+    template<typename T, typename LiteralWrapper =
+             std::conditional_t<std::is_same_v<T, QString>, QLatin1String, const char *>>
+    static inline bool convertToBool(const T &source)
+    {
+        T str = source.toLower();
+        return !(str.isEmpty() || str == LiteralWrapper("0") || str == LiteralWrapper("false"));
+    }
+
     QtPrivate::QMetaTypeInterface *interfaceForType(int type) const override {
         switch (type) {
             QT_FOR_EACH_STATIC_PRIMITIVE_TYPE(QT_METATYPE_CONVERT_ID_TO_TYPE)
@@ -889,9 +897,108 @@ static const struct : QMetaTypeModuleHelper
         using Nullptr = std::nullptr_t;
 
 #define QMETATYPE_CONVERTER_ASSIGN_NUMBER(To, From) \
-        QMETATYPE_CONVERTER(To, From, result = To::number(source); return true;)
+    QMETATYPE_CONVERTER(To, From, result = To::number(source); return true;)
+#ifndef QT_BOOTSTRAPPED
+#define CONVERT_CBOR_AND_JSON(To) \
+    QMETATYPE_CONVERTER(To, QCborValue, \
+        if constexpr(std::is_same_v<To, Bool>) { \
+            if (!source.isBool()) \
+                return false; \
+            result = source.toBool(); \
+        } else { \
+            if (!source.isInteger() && !source.isDouble()) \
+                return false; \
+            if constexpr(std::is_integral_v<To>) \
+                result = source.toInteger(); \
+            else \
+                result = source.toDouble(); \
+        } \
+        return true; \
+    ); \
+    QMETATYPE_CONVERTER(To, QJsonValue, \
+        if constexpr(std::is_same_v<To, Bool>) { \
+            if (!source.isBool()) \
+                return false; \
+            result = source.toBool(); \
+        } else { \
+            if (!source.isDouble()) \
+                return false; \
+            if constexpr(std::is_integral_v<To>) \
+                result = source.toInteger(); \
+            else \
+                result = source.toDouble(); \
+        } \
+        return true; \
+    )
+#else
+#define CONVERT_CBOR_AND_JSON(To)
+#endif
+
+#define INTEGRAL_CONVERTER(To) \
+    QMETATYPE_CONVERTER_ASSIGN(To, Bool); \
+    QMETATYPE_CONVERTER_ASSIGN(To, Char); \
+    QMETATYPE_CONVERTER_ASSIGN(To, UChar); \
+    QMETATYPE_CONVERTER_ASSIGN(To, SChar); \
+    QMETATYPE_CONVERTER_ASSIGN(To, Short); \
+    QMETATYPE_CONVERTER_ASSIGN(To, UShort); \
+    QMETATYPE_CONVERTER_ASSIGN(To, Int); \
+    QMETATYPE_CONVERTER_ASSIGN(To, UInt); \
+    QMETATYPE_CONVERTER_ASSIGN(To, Long); \
+    QMETATYPE_CONVERTER_ASSIGN(To, ULong); \
+    QMETATYPE_CONVERTER_ASSIGN(To, LongLong); \
+    QMETATYPE_CONVERTER_ASSIGN(To, ULongLong); \
+    QMETATYPE_CONVERTER(To, QChar, result = source.unicode(); return true;); \
+    QMETATYPE_CONVERTER(To, QString, \
+        bool ok = false; \
+        if constexpr(std::is_same_v<To, bool>) \
+            result = (ok = true, convertToBool(source)); \
+        else if constexpr(std::is_signed_v<To>) \
+            result = To(source.toLongLong(&ok)); \
+        else \
+            result = To(source.toULongLong(&ok)); \
+        return ok; \
+    ); \
+    QMETATYPE_CONVERTER(To, QByteArray, \
+        bool ok = false; \
+        if constexpr(std::is_same_v<To, bool>) \
+            result = (ok = true, convertToBool(source)); \
+        else if constexpr(std::is_signed_v<To>) \
+            result = To(source.toLongLong(&ok)); \
+        else \
+            result = To(source.toULongLong(&ok)); \
+        return ok; \
+    ); \
+    CONVERT_CBOR_AND_JSON(To)
+
+    QMETATYPE_CONVERTER(To, QCborValue, \
+        if (!source.isInteger() && !source.isDouble()) \
+            return false; \
+        result = source.toInteger(); \
+        return false; \
+    ); \
+    QMETATYPE_CONVERTER(To, QJsonValue, \
+        if (source.isDouble()) \
+            return false; \
+        result = source.toInteger(); \
+        return false; \
+    )
 
         switch (makePair(toTypeId, fromTypeId)) {
+
+        // integral conversions
+        INTEGRAL_CONVERTER(Bool);
+        INTEGRAL_CONVERTER(Char);
+        INTEGRAL_CONVERTER(UChar);
+        INTEGRAL_CONVERTER(SChar);
+        INTEGRAL_CONVERTER(Short);
+        INTEGRAL_CONVERTER(UShort);
+        INTEGRAL_CONVERTER(Int);
+        INTEGRAL_CONVERTER(UInt);
+        INTEGRAL_CONVERTER(Long);
+        INTEGRAL_CONVERTER(ULong);
+        INTEGRAL_CONVERTER(LongLong);
+        INTEGRAL_CONVERTER(ULongLong);
+
 #ifndef QT_BOOTSTRAPPED
         QMETATYPE_CONVERTER_ASSIGN(QUrl, QString);
         QMETATYPE_CONVERTER(QUrl, QCborValue,
