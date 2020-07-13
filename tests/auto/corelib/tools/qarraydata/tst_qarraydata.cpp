@@ -76,6 +76,8 @@ private slots:
     void variadicLiterals();
     void rValueReferences();
     void grow();
+    void freeSpace_data();
+    void freeSpace();
 #ifndef QT_NO_EXCEPTIONS
     void exceptionSafetyPrimitives_constructor();
     void exceptionSafetyPrimitives_destructor();
@@ -1812,6 +1814,43 @@ void tst_QArrayData::grow()
 
         QCOMPARE(value, int(i + 1));
     }
+}
+
+void tst_QArrayData::freeSpace_data()
+{
+    QTest::addColumn<QArrayData::ArrayOptions>("allocationOptions");
+    QTest::addColumn<size_t>("n");
+
+    for (const size_t n : {1, 3, 5, 7, 16, 25}) {
+        QString suffix = QString::number(n) + QLatin1String("-elements");
+        QTest::newRow(qPrintable(QLatin1String("default-alloc-") + suffix))
+            << QArrayData::ArrayOptions(QArrayData::DefaultAllocationFlags) << n;
+        QTest::newRow(qPrintable(QLatin1String("grows-forward-") + suffix))
+            << QArrayData::ArrayOptions(QArrayData::GrowsForward) << n;
+        QTest::newRow(qPrintable(QLatin1String("grows-bidirectional-") + suffix))
+            << QArrayData::ArrayOptions(QArrayData::GrowsForward | QArrayData::GrowsBackwards) << n;
+    }
+}
+
+void tst_QArrayData::freeSpace()
+{
+    QFETCH(QArrayData::ArrayOptions, allocationOptions);
+    QFETCH(size_t, n);
+    const auto testFreeSpace = [] (auto dummy, auto options, size_t n) {
+        using Type = std::decay_t<decltype(dummy)>;
+        using Data = QTypedArrayData<Type>;
+        using DataPointer = QArrayDataPointer<Type>;
+        Q_UNUSED(dummy);
+        DataPointer ptr(Data::allocate(n, options));
+        const auto alloc = qsizetype(ptr.constAllocatedCapacity());
+        QVERIFY(size_t(alloc) >= n);
+        QCOMPARE(ptr.freeSpaceAtBegin() + ptr.freeSpaceAtEnd(), alloc);
+    };
+    RUN_TEST_FUNC(testFreeSpace, char(0), allocationOptions, n);
+    RUN_TEST_FUNC(testFreeSpace, char16_t(0), allocationOptions, n);
+    RUN_TEST_FUNC(testFreeSpace, int(0), allocationOptions, n);
+    RUN_TEST_FUNC(testFreeSpace, QString(), allocationOptions, n);
+    RUN_TEST_FUNC(testFreeSpace, CountedObject(), allocationOptions, n);
 }
 
 #ifndef QT_NO_EXCEPTIONS

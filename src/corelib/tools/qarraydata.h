@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2019 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -234,6 +234,15 @@ struct QTypedArrayData
     {
         static_assert(sizeof(QTypedArrayData) == sizeof(QArrayData));
         QArrayData::deallocate(data, sizeof(T), alignof(AlignmentDummy));
+    }
+
+    static T *dataStart(QArrayData *data, qsizetype alignment) noexcept
+    {
+        // Alignment is a power of two
+        Q_ASSERT(alignment >= qsizetype(alignof(QArrayData)) && !(alignment & (alignment - 1)));
+        void *start =  reinterpret_cast<void *>(
+            (quintptr(data) + sizeof(QArrayData) + alignment - 1) & ~(alignment - 1));
+        return static_cast<T *>(start);
     }
 };
 

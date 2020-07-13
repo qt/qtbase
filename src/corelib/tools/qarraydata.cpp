@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -191,16 +191,15 @@ void *QArrayData::allocate(QArrayData **dptr, qsizetype objectSize, qsizetype al
 
     qsizetype allocSize = calculateBlockSize(capacity, objectSize, headerSize, options);
     QArrayData *header = allocateData(allocSize, options);
-    quintptr data = 0;
+    void *data = nullptr;
     if (header) {
         // find where offset should point to so that data() is aligned to alignment bytes
-        data = (quintptr(header) + sizeof(QArrayData) + alignment - 1)
-                & ~(alignment - 1);
+        data = QTypedArrayData<void>::dataStart(header, alignment);
         header->alloc = qsizetype(capacity);
     }
 
     *dptr = header;
-    return reinterpret_cast<void *>(data);
+    return data;
 }
 
 QPair<QArrayData *, void *>

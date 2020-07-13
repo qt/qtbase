@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -193,6 +193,20 @@ public:
     typename Data::ArrayOptions detachFlags() const noexcept { return d ? d->detachFlags() : Data::DefaultAllocationFlags; }
 
     Data *d_ptr() noexcept { return d; }
+
+    qsizetype freeSpaceAtBegin() const noexcept
+    {
+        if (d == nullptr)
+            return 0;
+        return this->ptr - Data::dataStart(d, alignof(typename Data::AlignmentDummy));
+    }
+
+    qsizetype freeSpaceAtEnd() const noexcept
+    {
+        if (d == nullptr)
+            return 0;
+        return d->constAllocatedCapacity() - freeSpaceAtBegin() - this->size;
+    }
 
 private:
     Q_REQUIRED_RESULT QPair<Data *, T *> clone(QArrayData::ArrayOptions options) const
