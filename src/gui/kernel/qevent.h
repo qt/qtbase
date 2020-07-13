@@ -216,7 +216,6 @@ public:
 class Q_GUI_EXPORT QSinglePointEvent : public QPointerEvent
 {
 public:
-    QSinglePointEvent();
     QSinglePointEvent(Type type, const QPointingDevice *dev, const QPointF &localPos,
                       const QPointF &scenePos, const QPointF &globalPos,
                       Qt::MouseButton button = Qt::NoButton, Qt::MouseButtons buttons = Qt::NoButton,
@@ -928,7 +927,6 @@ inline bool operator==(QKeyEvent *e, QKeySequence::StandardKey key){return (e ? 
 inline bool operator==(QKeySequence::StandardKey key, QKeyEvent *e){return (e ? e->matches(key) : false);}
 #endif // QT_CONFIG(shortcut)
 
-class QTouchEventTouchPointPrivate;
 class Q_GUI_EXPORT QTouchEvent : public QPointerEvent
 {
 public:
