@@ -156,6 +156,7 @@ struct PrivateQPropertyDef
     QByteArray setter;
     QByteArray accessor;
     QByteArray storage;
+    bool isNotifiedProperty;
 };
 Q_DECLARE_TYPEINFO(PrivateQPropertyDef, Q_MOVABLE_TYPE);
 

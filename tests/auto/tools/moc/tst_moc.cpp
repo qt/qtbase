@@ -4170,11 +4170,13 @@ class ClassWithPrivateQPropertyShim :public QObject
     Q_OBJECT
 public:
     Q_PRIVATE_QPROPERTY(d_func(), int, testProperty, setTestProperty, NOTIFY testPropertyChanged)
+    Q_PRIVATE_QPROPERTY(d_func(), int, testProperty2, setTestProperty2, NOTIFY false)
     Q_PRIVATE_QPROPERTY(d_func(), int, lazyTestProperty, setLazyTestProperty,
                         NOTIFY lazyTestPropertyChanged STORED false)
 
     Q_PRIVATE_QPROPERTIES_BEGIN
     Q_PRIVATE_QPROPERTY_IMPL(testProperty)
+    Q_PRIVATE_QPROPERTY_IMPL(testProperty2)
     Q_PRIVATE_QPROPERTY_IMPL(lazyTestProperty)
     Q_PRIVATE_QPROPERTIES_END
 
@@ -4192,6 +4194,7 @@ public:
 
         void onTestPropertyChanged() { q->testPropertyChanged(); }
         QNotifiedProperty<int, &Private::onTestPropertyChanged> testProperty;
+        QProperty<int> testProperty2;
 
         void onLazyTestPropertyChanged() { q->lazyTestPropertyChanged(); }
 
@@ -4258,6 +4261,10 @@ void tst_Moc::privateQPropertyShim()
     testObject.setLazyTestProperty(400);
     QVERIFY(!testObject.lazyTestProperty.hasBinding());
     QCOMPARE(testObject.lazyTestProperty(), 400);
+
+    // mo generates correct code for plain QProperty in PIMPL
+    testObject.testProperty2.setValue(42);
+    QCOMPARE(testObject.testProperty2.value(), 42);
 }
 
 QTEST_MAIN(tst_Moc)

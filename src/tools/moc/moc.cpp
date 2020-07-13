@@ -1387,8 +1387,19 @@ void Moc::parsePropertyAttributes(PropertyDef &propDef)
             checkIsFunction(propDef.designable, "DESIGNABLE");
             break;
         case 'N': if (l != "NOTIFY") error(2);
-            propDef.notify = v;
-            break;
+            if (v == "false") {
+                if (!propDef.isQProperty)
+                    error(1);
+                propDef.isQPropertyWithNotifier = false;
+                break;
+            } else if (v == "true") {
+                if (!propDef.isQProperty)
+                    error(1);
+                break;
+            } else {
+                propDef.notify = v;
+                break;
+            }
         case 'U': if (l != "USER") error(2);
             propDef.user = v + v2;
             checkIsFunction(propDef.user, "USER");
@@ -1543,7 +1554,7 @@ void Moc::parsePrivateQProperty(ClassDef *def)
     propDef.qpropertyname = stored ? name : (name + "()");
 
     def->privateQProperties += PrivateQPropertyDef {
-            type, name, setter, accessor, propDef.qpropertyname
+            type, name, setter, accessor, propDef.qpropertyname, propDef.isQPropertyWithNotifier
     };
 
     if (propDef.read.isEmpty())

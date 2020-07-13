@@ -1606,6 +1606,7 @@ void Generator::generateQPropertyApi()
         };
 
         const bool stored = (property.name == property.storage);
+        const bool isNotifiedProperty = property.isNotifiedProperty;
 
         // property accessor
         fprintf(out, "\n%s %s::_qt_property_api_%s::value() const\n{\n",
@@ -1630,10 +1631,16 @@ void Generator::generateQPropertyApi()
                 property.type.name.constData());
         printAccessor();
         if (stored) {
-            fprintf(out, "    thisPtr->%s->%s.setValue(thisPtr->%s, value);\n", property.accessor.constData(), property.storage.constData(), property.accessor.constData());
+            if (isNotifiedProperty)
+                fprintf(out, "    thisPtr->%s->%s.setValue(thisPtr->%s, value);\n", property.accessor.constData(), property.storage.constData(), property.accessor.constData());
+            else
+                fprintf(out, "    thisPtr->%s->%s.setValue(value);\n", property.accessor.constData(), property.storage.constData());
         } else {
             fprintf(out, "    if (auto *target = thisPtr->%s->%s)\n", property.accessor.constData(), property.storage.constData());
-            fprintf(out, "        target->setValue(thisPtr->%s, value);\n", property.accessor.constData());
+            if (isNotifiedProperty)
+                fprintf(out, "        target->setValue(thisPtr->%s, value);\n", property.accessor.constData());
+            else
+                fprintf(out, "        target->setValue(value);\n");
         }
         fprintf(out, "}\n");
 
@@ -1644,10 +1651,16 @@ void Generator::generateQPropertyApi()
                 property.type.name.constData());
         printAccessor();
         if (stored) {
-            fprintf(out, "    thisPtr->%s->%s.setValue(thisPtr->%s, std::move(value));\n", property.accessor.constData(), property.storage.constData(), property.accessor.constData());
+            if (isNotifiedProperty)
+                fprintf(out, "    thisPtr->%s->%s.setValue(thisPtr->%s, std::move(value));\n", property.accessor.constData(), property.storage.constData(), property.accessor.constData());
+            else
+                fprintf(out, "    thisPtr->%s->%s.setValue(std::move(value));\n", property.accessor.constData(), property.storage.constData());
         } else {
             fprintf(out, "    if (auto *target = thisPtr->%s->%s)\n", property.accessor.constData(), property.storage.constData());
-            fprintf(out, "        target->setValue(thisPtr->%s, std::move(value));\n", property.accessor.constData());
+            if (isNotifiedProperty)
+                fprintf(out, "        target->setValue(thisPtr->%s, std::move(value));\n", property.accessor.constData());
+            else
+                fprintf(out, "        target->setValue(std::move(value));\n");
         }
         fprintf(out, "}\n");
 
@@ -1659,10 +1672,16 @@ void Generator::generateQPropertyApi()
                 property.type.name.constData());
         printAccessor();
         if (stored) {
-            fprintf(out, "    return thisPtr->%s->%s.setBinding(thisPtr->%s, binding);\n", property.accessor.constData(), property.storage.constData(), property.accessor.constData());
+            if (isNotifiedProperty)
+                fprintf(out, "    return thisPtr->%s->%s.setBinding(thisPtr->%s, binding);\n", property.accessor.constData(), property.storage.constData(), property.accessor.constData());
+            else
+                fprintf(out, "    return thisPtr->%s->%s.setBinding(binding);\n", property.accessor.constData(), property.storage.constData());
         } else {
             fprintf(out, "    if (auto *target = thisPtr->%s->%s)\n", property.accessor.constData(), property.storage.constData());
-            fprintf(out, "        return target->setBinding(thisPtr->%s, binding);\n", property.accessor.constData());
+            if (isNotifiedProperty)
+                fprintf(out, "        return target->setBinding(thisPtr->%s, binding);\n", property.accessor.constData());
+            else
+                fprintf(out, "        return target->setBinding(binding);\n");
             fprintf(out, "    else\n");
             fprintf(out, "        return QPropertyBinding<%s>();\n", property.type.name.constData());
         }
@@ -1676,10 +1695,16 @@ void Generator::generateQPropertyApi()
                 property.type.name.constData());
         printAccessor();
         if (stored) {
-            fprintf(out, "    return thisPtr->%s->%s.setBinding(thisPtr->%s, std::move(binding));\n", property.accessor.constData(), property.storage.constData(), property.accessor.constData());
+            if (isNotifiedProperty)
+                fprintf(out, "    return thisPtr->%s->%s.setBinding(thisPtr->%s, std::move(binding));\n", property.accessor.constData(), property.storage.constData(), property.accessor.constData());
+            else
+                fprintf(out, "    return thisPtr->%s->%s.setBinding(std::move(binding));\n", property.accessor.constData(), property.storage.constData());
         } else {
             fprintf(out, "    if (auto *target = thisPtr->%s->%s)\n", property.accessor.constData(), property.storage.constData());
-            fprintf(out, "        return target->setBinding(thisPtr->%s, std::move(binding));\n", property.accessor.constData());
+            if (isNotifiedProperty)
+                fprintf(out, "        return target->setBinding(thisPtr->%s, std::move(binding));\n", property.accessor.constData());
+            else
+                fprintf(out, "        return target->setBinding(std::move(binding));\n");
             fprintf(out, "    else\n");
             fprintf(out, "        return QPropertyBinding<%s>();\n", property.type.name.constData());
         }
@@ -1691,10 +1716,16 @@ void Generator::generateQPropertyApi()
                 property.name.constData());
         printAccessor();
         if (stored) {
-            fprintf(out, "    return thisPtr->%s->%s.setBinding(thisPtr->%s, binding);\n", property.accessor.constData(), property.storage.constData(), property.accessor.constData());
+            if (isNotifiedProperty)
+                fprintf(out, "    return thisPtr->%s->%s.setBinding(thisPtr->%s, binding);\n", property.accessor.constData(), property.storage.constData(), property.accessor.constData());
+            else
+                fprintf(out, "    return thisPtr->%s->%s.setBinding(binding);\n", property.accessor.constData(), property.storage.constData());
         } else {
             fprintf(out, "    if (auto *target = thisPtr->%s->%s)\n", property.accessor.constData(), property.storage.constData());
-            fprintf(out, "        return target->setBinding(thisPtr->%s, binding);\n", property.accessor.constData());
+            if (isNotifiedProperty)
+                fprintf(out, "        return target->setBinding(thisPtr->%s, binding);\n", property.accessor.constData());
+            else
+                fprintf(out, "        return target->setBinding(binding);\n");
             fprintf(out, "    else\n");
             fprintf(out, "        return false;\n");
         }
