@@ -277,6 +277,8 @@ private:
 
     void _q_newConnection(QDBusConnectionPrivate *newConnection);
 
+    void handleAuthentication();
+
 protected:
     void timerEvent(QTimerEvent *e) override;
 
@@ -309,7 +311,11 @@ signals:
 
 public:
     QAtomicInt ref;
-    QDBusConnection::ConnectionCapabilities capabilities;
+    QAtomicInt capabilities;
+    QDBusConnection::ConnectionCapabilities connectionCapabilities() const
+    {
+        return (QDBusConnection::ConnectionCapabilities)capabilities.loadRelaxed();
+    }
     QString name;               // this connection's name
     QString baseService;        // this connection's base service
     QStringList serverConnectionNames;
@@ -342,6 +348,7 @@ public:
 
     bool anonymousAuthenticationAllowed;
     bool dispatchEnabled;               // protected by the dispatch lock, not the main lock
+    bool isAuthenticated;
 
 public:
     // static methods

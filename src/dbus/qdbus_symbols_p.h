@@ -213,6 +213,8 @@ DEFINEFUNC(DBusDispatchStatus , dbus_connection_dispatch,   (DBusConnection     
            (connection), return)
 DEFINEFUNC(DBusDispatchStatus , dbus_connection_get_dispatch_status, (DBusConnection             *connection),
            (connection), return)
+DEFINEFUNC(dbus_bool_t, dbus_connection_get_is_authenticated, (DBusConnection * connection),
+           (connection), return )
 DEFINEFUNC(dbus_bool_t        , dbus_connection_get_is_connected, (DBusConnection             *connection),
            (connection), return)
 DEFINEFUNC(DBusConnection*    , dbus_connection_open_private, (const char                 *address,

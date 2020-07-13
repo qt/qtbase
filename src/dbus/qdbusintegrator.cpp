@@ -526,7 +526,7 @@ qDBusSignalFilter(DBusConnection *connection, DBusMessage *message, void *data)
     if (d->mode == QDBusConnectionPrivate::InvalidMode)
         return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 
-    QDBusMessage amsg = QDBusMessagePrivate::fromDBusMessage(message, d->capabilities);
+    QDBusMessage amsg = QDBusMessagePrivate::fromDBusMessage(message, d->connectionCapabilities());
     qDBusDebug() << d << "got message (signal):" << amsg;
 
     return d->handleMessage(amsg) ?
@@ -1028,11 +1028,15 @@ void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const Q
 extern bool qDBusInitThreads();
 
 QDBusConnectionPrivate::QDBusConnectionPrivate(QObject *p)
-    : QObject(p), ref(1), mode(InvalidMode), busService(nullptr),
+    : QObject(p),
+      ref(1),
+      mode(InvalidMode),
+      busService(nullptr),
       connection(nullptr),
       rootNode(QString(QLatin1Char('/'))),
       anonymousAuthenticationAllowed(false),
-      dispatchEnabled(true)
+      dispatchEnabled(true),
+      isAuthenticated(false)
 {
     static const bool threads = q_dbus_threads_init_default();
     if (::isDebugging == -1)
@@ -1218,6 +1222,9 @@ void QDBusConnectionPrivate::socketRead(qintptr fd)
         }
         ++it;
     }
+    if ((mode == ClientMode || mode == PeerMode) && !isAuthenticated
+        && q_dbus_connection_get_is_authenticated(connection))
+        handleAuthentication();
     doDispatch();
 }
 
@@ -1232,6 +1239,9 @@ void QDBusConnectionPrivate::socketWrite(qintptr fd)
         }
         ++it;
     }
+    if ((mode == ClientMode || mode == PeerMode) && !isAuthenticated
+        && q_dbus_connection_get_is_authenticated(connection))
+        handleAuthentication();
 }
 
 void QDBusConnectionPrivate::objectDestroyed(QObject *obj)
@@ -1274,7 +1284,8 @@ void QDBusConnectionPrivate::relaySignal(QObject *obj, const QMetaObject *mo, in
     QDBusMessagePrivate::setParametersValidated(message, true);
     message.setArguments(args);
     QDBusError error;
-    DBusMessage *msg = QDBusMessagePrivate::toDBusMessage(message, capabilities, &error);
+    DBusMessage *msg =
+            QDBusMessagePrivate::toDBusMessage(message, connectionCapabilities(), &error);
     if (!msg) {
         qWarning("QDBusConnection: Could not emit signal %s.%s: %s", qPrintable(interface), memberName.constData(),
                  qPrintable(error.message()));
@@ -1794,6 +1805,12 @@ static QDBusConnection::ConnectionCapabilities connectionCapabilies(DBusConnecti
     return result;
 }
 
+void QDBusConnectionPrivate::handleAuthentication()
+{
+    capabilities.storeRelaxed(connectionCapabilies(connection));
+    isAuthenticated = true;
+}
+
 void QDBusConnectionPrivate::setConnection(DBusConnection *dbc, const QDBusErrorInternal &error)
 {
     mode = ClientMode;
@@ -1807,7 +1824,8 @@ void QDBusConnectionPrivate::setConnection(DBusConnection *dbc, const QDBusError
     const char *service = q_dbus_bus_get_unique_name(connection);
     Q_ASSERT(service);
     baseService = QString::fromUtf8(service);
-    capabilities = connectionCapabilies(connection);
+    // bus connections are already authenticated here because q_dbus_bus_register() has been called
+    handleAuthentication();
 
     q_dbus_connection_set_exit_on_disconnect(connection, false);
     q_dbus_connection_set_watch_functions(connection, qDBusAddWatch, qDBusRemoveWatch,
@@ -1876,7 +1894,7 @@ void QDBusConnectionPrivate::processFinishedCall(QDBusPendingCallPrivate *call)
         if (q_dbus_pending_call_get_completed(call->pending)) {
             // decode the message
             DBusMessage *reply = q_dbus_pending_call_steal_reply(call->pending);
-            msg = QDBusMessagePrivate::fromDBusMessage(reply, connection->capabilities);
+            msg = QDBusMessagePrivate::fromDBusMessage(reply, connection->connectionCapabilities());
             q_dbus_message_unref(reply);
         } else {
             msg = QDBusMessage::createError(QDBusError::Disconnected, QDBusUtil::disconnectedErrorMessage());
@@ -1930,7 +1948,8 @@ bool QDBusConnectionPrivate::send(const QDBusMessage& message)
                                 // through the d_ptr->localReply link
 
     QDBusError error;
-    DBusMessage *msg = QDBusMessagePrivate::toDBusMessage(message, capabilities, &error);
+    DBusMessage *msg =
+            QDBusMessagePrivate::toDBusMessage(message, connectionCapabilities(), &error);
     if (!msg) {
         if (message.type() == QDBusMessage::MethodCallMessage)
             qWarning("QDBusConnection: error: could not send message to service \"%s\" path \"%s\" interface \"%s\" member \"%s\": %s",
@@ -2144,7 +2163,8 @@ QDBusPendingCallPrivate *QDBusConnectionPrivate::sendWithReplyAsync(const QDBusM
     }
 
     QDBusError error;
-    DBusMessage *msg = QDBusMessagePrivate::toDBusMessage(message, capabilities, &error);
+    DBusMessage *msg =
+            QDBusMessagePrivate::toDBusMessage(message, connectionCapabilities(), &error);
     if (!msg) {
         qWarning("QDBusConnection: error: could not send message to service \"%s\" path \"%s\" interface \"%s\" member \"%s\": %s",
                  qPrintable(message.service()), qPrintable(message.path()),
