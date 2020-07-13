@@ -245,36 +245,6 @@ static qreal qConvertToRealNumber(const QVariant::Private *d, bool *ok)
     }
 }
 
-/*!
- \internal
-
- Converts \a d to type \a t, which is placed in \a result.
- */
-static bool convert(const QVariant::Private *d, int t, void *result)
-{
-    Q_ASSERT(d->typeId() != t);
-    Q_ASSERT(result);
-
-    switch (uint(t)) {
-    case QMetaType::Nullptr:
-        *static_cast<std::nullptr_t *>(result) = nullptr;
-        if (QMetaType::typeFlags(t) & (QMetaType::PointerToGadget | QMetaType::PointerToQObject)
-            || d->typeId() == QMetaType::VoidStar) {
-            if (d->get<const void *>() == nullptr)
-                break;
-        }
-#ifndef QT_BOOTSTRAPPED
-        if (d->typeId() == QMetaType::QCborValue && d->get<QCborValue>().isNull())
-            break;
-#endif
-        return false;
-
-    default:
-        return false;
-    }
-    return true;
-}
-
 // the type of d has already been set, but other field are not set
 static void customConstruct(QVariant::Private *d, const void *copy)
 {
@@ -1391,11 +1361,7 @@ inline T qVariantToHelper(const QVariant::Private &d)
         return d.get<T>();
 
     T ret;
-    const void * const from = d.storage();
-    if (QMetaType::convert(from, d.typeId(), &ret, targetType.id()))
-        return ret;
-
-    convert(&d, targetType.id(), &ret);
+    QMetaType::convert(d.storage(), d.typeId(), &ret, targetType.id());
     return ret;
 }
 
@@ -1823,10 +1789,7 @@ inline T qNumVariantToHelper(const QVariant::Private &d, bool *ok, const T& val)
         return val;
 
     T ret = 0;
-    if (QMetaType::convert(d.storage(), d.typeId(), &ret, t))
-        return ret;
-
-    bool success = convert(&d, t, &ret);
+    bool success = QMetaType::convert(d.storage(), d.typeId(), &ret, t);
     if (ok)
         *ok = success;
     return ret;
@@ -1928,12 +1891,7 @@ bool QVariant::toBool() const
         return d.get<bool>();
 
     bool res = false;
-
-    if (QMetaType::convert(constData(), d.typeId(), &res, QMetaType::Bool))
-        return res;
-
-    ::convert(&d, Bool, &res);
-
+    QMetaType::convert(constData(), d.typeId(), &res, QMetaType::Bool);
     return res;
 }
 
@@ -2469,13 +2427,9 @@ bool QVariant::convert(int targetTypeId)
         return true;
     }
 
-    bool isOk = false;
-    isOk = QMetaType::convert(oldValue.constData(), oldValue.d.typeId(), data(), targetTypeId);
-    if (!isOk)
-        isOk = ::convert(&oldValue.d, targetTypeId, data());
-
-    d.is_null = !isOk;
-    return isOk;
+    bool ok = QMetaType::convert(oldValue.constData(), oldValue.d.typeId(), data(), targetTypeId);
+    d.is_null = !ok;
+    return ok;
 }
 
 /*!
@@ -2485,9 +2439,7 @@ bool QVariant::convert(int targetTypeId)
 */
 bool QVariant::convert(const int type, void *ptr) const
 {
-    if (QMetaType::convert(constData(), d.typeId(), ptr, type))
-        return true;
-    return ::convert(&d, type, ptr);
+    return QMetaType::convert(constData(), d.typeId(), ptr, type);
 }
 
 

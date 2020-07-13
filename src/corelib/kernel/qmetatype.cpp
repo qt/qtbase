@@ -1236,6 +1236,10 @@ static const struct : QMetaTypeModuleHelper
             result = QCborValue(QCborValue::Null);
             return true;
         );
+        QMETATYPE_CONVERTER(Nullptr, QCborValue,
+            result = nullptr;
+            return source.isNull();
+        );
         QMETATYPE_CONVERTER_ASSIGN(QCborValue, Bool);
         QMETATYPE_CONVERTER_ASSIGN(QCborValue, Int);
         QMETATYPE_CONVERTER_ASSIGN(QCborValue, UInt);
@@ -1423,7 +1427,12 @@ static const struct : QMetaTypeModuleHelper
         QMETATYPE_CONVERTER(QJsonValue, Nullptr,
             Q_UNUSED(source);
             result = QJsonValue(QJsonValue::Null);
-            return true;);
+            return true;
+        );
+        QMETATYPE_CONVERTER(Nullptr, QJsonValue,
+            result = nullptr;
+            return source.isNull();
+        );
         QMETATYPE_CONVERTER(QJsonValue, Bool,
             result = QJsonValue(source);
             return true;);
@@ -1842,6 +1851,13 @@ bool QMetaType::convert(const void *from, int fromTypeId, void *to, int toTypeId
     QMetaType toType(toTypeId);
     if (toType.flags() & QMetaType::IsEnumeration)
         return convertToEnum(from, fromTypeId, to, toType);
+    if (toTypeId == Nullptr) {
+        *static_cast<std::nullptr_t *>(to) = nullptr;
+        if (fromType.flags() & QMetaType::IsPointer) {
+            if (*static_cast<const void * const *>(from) == nullptr)
+                return true;
+        }
+    }
     return false;
 }
 
