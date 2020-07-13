@@ -112,7 +112,8 @@ public:
                && option.features == cachedOption->features
                && option.icon.isNull() == cachedOption->icon.isNull()
                && option.font == cachedOption->font
-               && option.viewItemPosition == cachedOption->viewItemPosition);
+               && option.viewItemPosition == cachedOption->viewItemPosition
+               && option.showDecorationSelected == cachedOption->showDecorationSelected);
     }
 #endif
 #if QT_CONFIG(toolbutton)
