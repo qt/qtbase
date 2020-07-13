@@ -834,7 +834,7 @@ xcb_window_t QXcbConnection::clientLeader()
 
 
         QXcbWindow::setWindowTitle(connection(), m_clientLeader,
-                                   QStringLiteral("Qt Client Leader Window"));
+                                   QGuiApplication::applicationDisplayName());
 
         xcb_change_property(xcb_connection(),
                             XCB_PROP_MODE_REPLACE,
