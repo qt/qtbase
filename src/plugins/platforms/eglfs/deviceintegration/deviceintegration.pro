@@ -14,4 +14,5 @@ qtConfig(eglfs_openwfd): SUBDIRS += eglfs_openwfd
 qtConfig(opengl): SUBDIRS += eglfs_emu
 
 eglfs_kms_egldevice.depends = eglfs_kms_support
+eglfs_kms_vsp2.depends = eglfs_kms_support
 eglfs_kms.depends = eglfs_kms_support
