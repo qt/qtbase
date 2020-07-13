@@ -100,7 +100,7 @@ public:
     // RVCT compiler in debug build does not like about default values in const-
     // So as an workaround we define all constructor overloads here explicitly
     QSslError();
-    QSslError(SslError error);
+    explicit QSslError(SslError error);
     QSslError(SslError error, const QSslCertificate &certificate);
 
     QSslError(const QSslError &other);

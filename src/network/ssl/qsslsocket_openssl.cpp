@@ -468,7 +468,7 @@ QSslErrorEntry QSslErrorEntry::fromStoreContext(X509_STORE_CTX *ctx)
 
 #if QT_CONFIG(ocsp)
 
-QSslError qt_OCSP_response_status_to_QSslError(long code)
+QSslError::SslError qt_OCSP_response_status_to_SslError(long code)
 {
     switch (code) {
     case OCSP_RESPONSE_STATUS_MALFORMEDREQUEST:
@@ -1827,7 +1827,7 @@ bool QSslSocketBackendPrivate::checkOcspStatus()
     const unsigned char *responseData = nullptr;
     const long responseLength = q_SSL_get_tlsext_status_ocsp_resp(ssl, &responseData);
     if (responseLength <= 0 || !responseData) {
-        ocspErrors.push_back(QSslError::OcspNoResponseFound);
+        ocspErrors.push_back(QSslError(QSslError::OcspNoResponseFound));
         return false;
     }
 
@@ -1842,7 +1842,7 @@ bool QSslSocketBackendPrivate::checkOcspStatus()
     const int ocspStatus = q_OCSP_response_status(response);
     if (ocspStatus != OCSP_RESPONSE_STATUS_SUCCESSFUL) {
         // It's not a definitive response, it's an error message (not signed by the responder).
-        ocspErrors.push_back(qt_OCSP_response_status_to_QSslError(ocspStatus));
+        ocspErrors.push_back(QSslError(qt_OCSP_response_status_to_SslError(ocspStatus)));
         return false;
     }
 
@@ -1884,10 +1884,10 @@ bool QSslSocketBackendPrivate::checkOcspStatus()
     const unsigned long verificationFlags = 0;
     const int success = q_OCSP_basic_verify(basicResponse, peerChain, store, verificationFlags);
     if (success <= 0)
-        ocspErrors.push_back(QSslError::OcspResponseCannotBeTrusted);
+        ocspErrors.push_back(QSslError(QSslError::OcspResponseCannotBeTrusted));
 
     if (q_OCSP_resp_count(basicResponse) != 1) {
-        ocspErrors.push_back(QSslError::OcspMalformedResponse);
+        ocspErrors.push_back(QSslError(QSslError::OcspMalformedResponse));
         return false;
     }
 
