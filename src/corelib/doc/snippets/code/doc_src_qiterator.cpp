@@ -331,16 +331,6 @@ while (i.hasNext()) {
 //! [29]
 
 
-//! [30]
-QHashIterator<int, QWidget *> i(hash);
-i.toBack();
-while (i.hasPrevious()) {
-    i.previous();
-    qDebug() << i.key() << ": " << i.value();
-}
-//! [30]
-
-
 //! [31]
 QHashIterator<int, QWidget *> i(hash);
 while (i.findNext(widget)) {
@@ -399,16 +389,6 @@ while (i.hasNext()) {
     qDebug() << i.key() << ": " << i.value();
 }
 //! [36]
-
-
-//! [37]
-QMutableHashIterator<int, QWidget *> i(hash);
-i.toBack();
-while (i.hasPrevious()) {
-    i.previous();
-    qDebug() << i.key() << ": " << i.value();
-}
-//! [37]
 
 
 //! [38]

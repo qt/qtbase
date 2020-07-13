@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -1124,12 +1124,8 @@
 
     \image javaiterators1.png
 
-    Here's how to iterate over the elements in reverse order:
-
-    \snippet code/doc_src_qiterator.cpp 30
-
     If you want to find all occurrences of a particular value, use
-    findNext() or findPrevious() in a loop. For example:
+    findNext() in a loop. For example:
 
     \snippet code/doc_src_qiterator.cpp 31
 
@@ -1242,12 +1238,8 @@
 
     \image javaiterators1.png
 
-    Here's how to iterate over the elements in reverse order:
-
-    \snippet code/doc_src_qiterator.cpp 37
-
     If you want to find all occurrences of a particular value, use
-    findNext() or findPrevious() in a loop. For example:
+    findNext() in a loop. For example:
 
     \snippet code/doc_src_qiterator.cpp 38
 
@@ -1319,9 +1311,7 @@
 */
 
 /*! \fn template <class Key, class T> void QMapIterator<Key, T>::toBack()
-    \fn template <class Key, class T> void QHashIterator<Key, T>::toBack()
     \fn template <class Key, class T> void QMutableMapIterator<Key, T>::toBack()
-    \fn template <class Key, class T> void QMutableHashIterator<Key, T>::toBack()
 
     Moves the iterator to the back of the container (after the last
     item).
@@ -1329,10 +1319,18 @@
     \sa toFront(), previous()
 */
 
+/*!
+    \fn template <class Key, class T> void QHashIterator<Key, T>::toBack()
+    \fn template <class Key, class T> void QMutableHashIterator<Key, T>::toBack()
+
+    Moves the iterator to the back of the container (after the last
+    item).
+
+    \sa toFront()
+*/
+
 /*! \fn template <class Key, class T> bool QMapIterator<Key, T>::hasNext() const
-    \fn template <class Key, class T> bool QHashIterator<Key, T>::hasNext() const
     \fn template <class Key, class T> bool QMutableMapIterator<Key, T>::hasNext() const
-    \fn template <class Key, class T> bool QMutableHashIterator<Key, T>::hasNext() const
 
     Returns \c true if there is at least one item ahead of the iterator,
     i.e. the iterator is \e not at the back of the container;
@@ -1341,8 +1339,18 @@
     \sa hasPrevious(), next()
 */
 
+/*!
+    \fn template <class Key, class T> bool QHashIterator<Key, T>::hasNext() const
+    \fn template <class Key, class T> bool QMutableHashIterator<Key, T>::hasNext() const
+
+    Returns \c true if there is at least one item ahead of the iterator,
+    i.e. the iterator is \e not at the back of the container;
+    otherwise returns \c false.
+
+    \sa next()
+*/
+
 /*! \fn template <class Key, class T> QMapIterator<Key, T>::Item QMapIterator<Key, T>::next()
-    \fn template <class Key, class T> QHashIterator<Key, T>::Item QHashIterator<Key, T>::next()
 
     Returns the next item and advances the iterator by one position.
 
@@ -1356,7 +1364,6 @@
 */
 
 /*! \fn template <class Key, class T> QMutableMapIterator<Key, T>::Item QMutableMapIterator<Key, T>::next()
-    \fn template <class Key, class T> QMutableHashIterator<Key, T>::Item QMutableHashIterator<Key, T>::next()
 
     Returns the next item and advances the iterator by one position.
 
@@ -1369,8 +1376,35 @@
     \sa hasNext(), peekNext(), previous()
 */
 
+/*!
+    \fn template <class Key, class T> QHashIterator<Key, T>::Item QHashIterator<Key, T>::next()
+
+    Returns the next item and advances the iterator by one position.
+
+    Call key() on the return value to obtain the item's key, and
+    value() to obtain the value.
+
+    Calling this function on an iterator located at the back of the
+    container leads to undefined results.
+
+    \sa hasNext(), peekNext()
+*/
+
+/*!
+    \fn template <class Key, class T> QMutableHashIterator<Key, T>::Item QMutableHashIterator<Key, T>::next()
+
+    Returns the next item and advances the iterator by one position.
+
+    Call key() on the return value to obtain the item's key, and
+    value() to obtain the value.
+
+    Calling this function on an iterator located at the back of the
+    container leads to undefined results.
+
+    \sa hasNext(), peekNext()
+*/
+
 /*! \fn template <class Key, class T> QMapIterator<Key, T>::Item QMapIterator<Key, T>::peekNext() const
-    \fn template <class Key, class T> QHashIterator<Key, T>::Item QHashIterator<Key, T>::peekNext() const
 
     Returns the next item without moving the iterator.
 
@@ -1384,7 +1418,6 @@
 */
 
 /*! \fn template <class Key, class T> QMutableMapIterator<Key, T>::Item QMutableMapIterator<Key, T>::peekNext() const
-    \fn template <class Key, class T> QMutableHashIterator<Key, T>::Item QMutableHashIterator<Key, T>::peekNext() const
 
     Returns a reference to the next item without moving the iterator.
 
@@ -1397,10 +1430,58 @@
     \sa hasNext(), next(), peekPrevious()
 */
 
+/*!
+    \fn template <class Key, class T> QHashIterator<Key, T>::Item QHashIterator<Key, T>::peekNext() const
+
+    Returns the next item without moving the iterator.
+
+    Call key() on the return value to obtain the item's key, and
+    value() to obtain the value.
+
+    Calling this function on an iterator located at the back of the
+    container leads to undefined results.
+
+    \sa hasNext(), next()
+*/
+
+/*!
+    \fn template <class Key, class T> QMutableHashIterator<Key, T>::Item QMutableHashIterator<Key, T>::peekNext() const
+
+    Returns a reference to the next item without moving the iterator.
+
+    Call key() on the return value to obtain the item's key, and
+    value() to obtain the value.
+
+    Calling this function on an iterator located at the back of the
+    container leads to undefined results.
+
+    \sa hasNext(), next()
+*/
+
 /*! \fn template <class Key, class T> bool QMapIterator<Key, T>::hasPrevious() const
-    \fn template <class Key, class T> bool QHashIterator<Key, T>::hasPrevious() const
     \fn template <class Key, class T> bool QMutableMapIterator<Key, T>::hasPrevious() const
+
+    Returns \c true if there is at least one item behind the iterator,
+    i.e. the iterator is \e not at the front of the container;
+    otherwise returns \c false.
+
+    \sa hasNext(), previous()
+*/
+
+/*!
+    \fn template <class Key, class T> bool QHashIterator<Key, T>::hasPrevious() const
+    \obsolete Deprecated in order to align with std::unordered_set functionality.
+
+    Returns \c true if there is at least one item behind the iterator,
+    i.e. the iterator is \e not at the front of the container;
+    otherwise returns \c false.
+
+    \sa hasNext(), previous()
+*/
+
+/*!
     \fn template <class Key, class T> bool QMutableHashIterator<Key, T>::hasPrevious() const
+    \obsolete Deprecated in order to align with std::unordered_set functionality.
 
     Returns \c true if there is at least one item behind the iterator,
     i.e. the iterator is \e not at the front of the container;
@@ -1410,7 +1491,7 @@
 */
 
 /*! \fn template <class Key, class T> QMapIterator<Key, T>::Item QMapIterator<Key, T>::previous()
-    \fn template <class Key, class T> QHashIterator<Key, T>::Item QHashIterator<Key, T>::previous()
+    \fn template <class Key, class T> QMutableMapIterator<Key, T>::Item QMutableMapIterator<Key, T>::previous()
 
     Returns the previous item and moves the iterator back by one
     position.
@@ -1424,8 +1505,25 @@
     \sa hasPrevious(), peekPrevious(), next()
 */
 
-/*! \fn template <class Key, class T> QMutableMapIterator<Key, T>::Item QMutableMapIterator<Key, T>::previous()
+/*!
+    \fn template <class Key, class T> QHashIterator<Key, T>::Item QHashIterator<Key, T>::previous()
+    \obsolete Deprecated in order to align with std::unordered_set functionality.
+
+    Returns the previous item and moves the iterator back by one
+    position.
+
+    Call key() on the return value to obtain the item's key, and
+    value() to obtain the value.
+
+    Calling this function on an iterator located at the front of the
+    container leads to undefined results.
+
+    \sa hasPrevious(), peekPrevious(), next()
+*/
+
+/*!
     \fn template <class Key, class T> QMutableHashIterator<Key, T>::Item QMutableHashIterator<Key, T>::previous()
+    \obsolete Deprecated in order to align with std::unordered_set functionality.
 
     Returns the previous item and moves the iterator back by one
     position.
@@ -1440,7 +1538,7 @@
 */
 
 /*! \fn template <class Key, class T> QMapIterator<Key, T>::Item QMapIterator<Key, T>::peekPrevious() const
-    \fn template <class Key, class T> QHashIterator<Key, T>::Item QHashIterator<Key, T>::peekPrevious() const
+    \fn template <class Key, class T> QMutableMapIterator<Key, T>::Item QMutableMapIterator<Key, T>::peekPrevious() const
 
     Returns the previous item without moving the iterator.
 
@@ -1453,8 +1551,24 @@
     \sa hasPrevious(), previous(), peekNext()
 */
 
-/*! \fn template <class Key, class T> QMutableMapIterator<Key, T>::Item QMutableMapIterator<Key, T>::peekPrevious() const
+/*!
+    \fn template <class Key, class T> QHashIterator<Key, T>::Item QHashIterator<Key, T>::peekPrevious() const
+    \obsolete Deprecated in order to align with std::unordered_set functionality.
+
+    Returns the previous item without moving the iterator.
+
+    Call key() on the return value to obtain the item's key, and
+    value() to obtain the value.
+
+    Calling this function on an iterator located at the front of the
+    container leads to undefined results.
+
+    \sa hasPrevious(), previous(), peekNext()
+*/
+
+/*!
     \fn template <class Key, class T> QMutableHashIterator<Key, T>::Item QMutableHashIterator<Key, T>::peekPrevious() const
+    \obsolete Deprecated in order to align with std::unordered_set functionality.
 
     Returns the previous item without moving the iterator.
 
@@ -1468,7 +1582,6 @@
 */
 
 /*! \fn template <class Key, class T> const T &QMapIterator<Key, T>::value() const
-    \fn template <class Key, class T> const T &QHashIterator<Key, T>::value() const
 
     Returns the value of the last item that was jumped over using one
     of the traversal functions (next(), previous(), findNext(),
@@ -1483,7 +1596,6 @@
 
 /*!
     \fn template <class Key, class T> const T &QMutableMapIterator<Key, T>::value() const
-    \fn template <class Key, class T> const T &QMutableHashIterator<Key, T>::value() const
 
     Returns the value of the last item that was jumped over using one
     of the traversal functions (next(), previous(), findNext(),
@@ -1492,6 +1604,23 @@
     After a call to next() or findNext(), value() is
     equivalent to peekPrevious().value(). After a call to previous()
     or findPrevious(), value() is equivalent to peekNext().value().
+
+    \sa key(), setValue()
+*/
+
+/*! \fn template <class Key, class T> const T &QHashIterator<Key, T>::value() const
+
+    Returns the value of the last item that was jumped over using one
+    of the traversal functions (next(), findNext()).
+
+    \sa key()
+*/
+
+/*!
+    \fn template <class Key, class T> const T &QMutableHashIterator<Key, T>::value() const
+
+    Returns the value of the last item that was jumped over using one
+    of the traversal functions (next(), findNext()).
 
     \sa key(), setValue()
 */
@@ -1507,9 +1636,7 @@
 */
 
 /*! \fn template <class Key, class T> const Key &QMapIterator<Key, T>::key() const
-    \fn template <class Key, class T> const Key &QHashIterator<Key, T>::key() const
     \fn template <class Key, class T> const Key &QMutableMapIterator<Key, T>::key() const
-    \fn template <class Key, class T> const Key &QMutableHashIterator<Key, T>::key() const
 
     Returns the key of the last item that was jumped over using one
     of the traversal functions (next(), previous(), findNext(),
@@ -1522,10 +1649,17 @@
     \sa value()
 */
 
+/*! \fn template <class Key, class T> const Key &QHashIterator<Key, T>::key() const
+    \fn template <class Key, class T> const Key &QMutableHashIterator<Key, T>::key() const
+
+    Returns the key of the last item that was jumped over using one
+    of the traversal functions (next(), findNext()).
+
+    \sa value()
+*/
+
 /*! \fn template <class Key, class T> bool QMapIterator<Key, T>::findNext(const T &value)
-    \fn template <class Key, class T> bool QHashIterator<Key, T>::findNext(const T &value)
     \fn template <class Key, class T> bool QMutableMapIterator<Key, T>::findNext(const T &value)
-    \fn template <class Key, class T> bool QMutableHashIterator<Key, T>::findNext(const T &value)
 
     Searches for \a value starting from the current iterator position
     forward. Returns \c true if a (key, value) pair with value \a value
@@ -1538,10 +1672,50 @@
     \sa findPrevious()
 */
 
+/*! \fn template <class Key, class T> bool QHashIterator<Key, T>::findNext(const T &value)
+    \fn template <class Key, class T> bool QMutableHashIterator<Key, T>::findNext(const T &value)
+
+    Searches for \a value starting from the current iterator position
+    forward. Returns \c true if a (key, value) pair with value \a value
+    is found; otherwise returns \c false.
+
+    After the call, if \a value was found, the iterator is positioned
+    just after the matching item; otherwise, the iterator is
+    positioned at the back of the container.
+*/
+
 /*! \fn template <class Key, class T> bool QMapIterator<Key, T>::findPrevious(const T &value)
-    \fn template <class Key, class T> bool QHashIterator<Key, T>::findPrevious(const T &value)
     \fn template <class Key, class T> bool QMutableMapIterator<Key, T>::findPrevious(const T &value)
+
+    Searches for \a value starting from the current iterator position
+    backward. Returns \c true if a (key, value) pair with value \a value
+    is found; otherwise returns \c false.
+
+    After the call, if \a value was found, the iterator is positioned
+    just before the matching item; otherwise, the iterator is
+    positioned at the front of the container.
+
+    \sa findNext()
+*/
+
+/*!
+    \fn template <class Key, class T> bool QHashIterator<Key, T>::findPrevious(const T &value)
+    \obsolete Deprecated in order to align with std::unordered_set functionality.
+
+    Searches for \a value starting from the current iterator position
+    backward. Returns \c true if a (key, value) pair with value \a value
+    is found; otherwise returns \c false.
+
+    After the call, if \a value was found, the iterator is positioned
+    just before the matching item; otherwise, the iterator is
+    positioned at the front of the container.
+
+    \sa findNext()
+*/
+
+/*!
     \fn template <class Key, class T> bool QMutableHashIterator<Key, T>::findPrevious(const T &value)
+    \obsolete Deprecated in order to align with std::unordered_set functionality.
 
     Searches for \a value starting from the current iterator position
     backward. Returns \c true if a (key, value) pair with value \a value
@@ -1555,7 +1729,6 @@
 */
 
 /*! \fn template <class Key, class T> void QMutableMapIterator<Key, T>::remove()
-    \fn template <class Key, class T> void QMutableHashIterator<Key, T>::remove()
 
     Removes the last item that was jumped over using one of the
     traversal functions (next(), previous(), findNext(), findPrevious()).
@@ -1563,14 +1736,32 @@
     \sa setValue()
 */
 
+/*! \fn template <class Key, class T> void QMutableHashIterator<Key, T>::remove()
+
+    Removes the last item that was jumped over using one of the
+    traversal functions (next(), findNext()).
+
+    \sa setValue()
+*/
+
 /*! \fn template <class Key, class T> void QMutableMapIterator<Key, T>::setValue(const T &value)
-    \fn template <class Key, class T> void QMutableHashIterator<Key, T>::setValue(const T &value)
 
     Replaces the value of the last item that was jumped over using
     one of the traversal functions with \a value.
 
     The traversal functions are next(), previous(), findNext(), and
     findPrevious().
+
+    \sa key(), value(), remove()
+*/
+
+/*!
+    \fn template <class Key, class T> void QMutableHashIterator<Key, T>::setValue(const T &value)
+
+    Replaces the value of the last item that was jumped over using
+    one of the traversal functions with \a value.
+
+    The traversal functions are next() and findNext().
 
     \sa key(), value(), remove()
 */
