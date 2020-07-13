@@ -681,7 +681,7 @@
 
     \value TextDate The default Qt format, which includes the day and month name,
     the day number in the month, and the year in full. The day and month names will
-    be short, localized names. This is basically equivalent to using the date format
+    be short names in English. This is basically equivalent to using the date format
     string, "ddd MMM d yyyy". See QDate::toString() for more information.
 
     \value ISODate \l{ISO 8601} extended format: either \c{yyyy-MM-dd} for dates or
