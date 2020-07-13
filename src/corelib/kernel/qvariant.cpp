@@ -245,13 +245,6 @@ static qreal qConvertToRealNumber(const QVariant::Private *d, bool *ok)
     }
 }
 
-template<typename TInput, typename LiteralWrapper>
-inline bool qt_convertToBool(const QVariant::Private *const d)
-{
-    TInput str = d->get<TInput>().toLower();
-    return !(str.isEmpty() || str == LiteralWrapper("0") || str == LiteralWrapper("false"));
-}
-
 /*!
  \internal
 
@@ -261,11 +254,6 @@ static bool convert(const QVariant::Private *d, int t, void *result)
 {
     Q_ASSERT(d->typeId() != t);
     Q_ASSERT(result);
-
-    if (d->typeId() >= QMetaType::LastCoreType || t >= QMetaType::LastCoreType) {
-        if (QMetaType::convert(d->storage(), d->typeId(), result, t))
-            return true;
-    }
 
     bool ok = true;
 
