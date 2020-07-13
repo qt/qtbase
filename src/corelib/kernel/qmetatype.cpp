@@ -949,6 +949,8 @@ static const struct : QMetaTypeModuleHelper
     QMETATYPE_CONVERTER_ASSIGN(To, ULong); \
     QMETATYPE_CONVERTER_ASSIGN(To, LongLong); \
     QMETATYPE_CONVERTER_ASSIGN(To, ULongLong); \
+    QMETATYPE_CONVERTER(To, Float, result = qRound64(source); return true;); \
+    QMETATYPE_CONVERTER(To, Double, result = qRound64(source); return true;); \
     QMETATYPE_CONVERTER(To, QChar, result = source.unicode(); return true;); \
     QMETATYPE_CONVERTER(To, QString, \
         bool ok = false; \
@@ -972,18 +974,32 @@ static const struct : QMetaTypeModuleHelper
     ); \
     CONVERT_CBOR_AND_JSON(To)
 
-    QMETATYPE_CONVERTER(To, QCborValue, \
-        if (!source.isInteger() && !source.isDouble()) \
-            return false; \
-        result = source.toInteger(); \
-        return false; \
+#define FLOAT_CONVERTER(To) \
+    QMETATYPE_CONVERTER_ASSIGN(To, Bool); \
+    QMETATYPE_CONVERTER_ASSIGN(To, Char); \
+    QMETATYPE_CONVERTER_ASSIGN(To, UChar); \
+    QMETATYPE_CONVERTER_ASSIGN(To, SChar); \
+    QMETATYPE_CONVERTER_ASSIGN(To, Short); \
+    QMETATYPE_CONVERTER_ASSIGN(To, UShort); \
+    QMETATYPE_CONVERTER_ASSIGN(To, Int); \
+    QMETATYPE_CONVERTER_ASSIGN(To, UInt); \
+    QMETATYPE_CONVERTER_ASSIGN(To, Long); \
+    QMETATYPE_CONVERTER_ASSIGN(To, ULong); \
+    QMETATYPE_CONVERTER_ASSIGN(To, LongLong); \
+    QMETATYPE_CONVERTER_ASSIGN(To, ULongLong); \
+    QMETATYPE_CONVERTER_ASSIGN(To, Float); \
+    QMETATYPE_CONVERTER_ASSIGN(To, Double); \
+    QMETATYPE_CONVERTER(To, QString, \
+        bool ok = false; \
+        result = source.toDouble(&ok); \
+        return ok; \
     ); \
-    QMETATYPE_CONVERTER(To, QJsonValue, \
-        if (source.isDouble()) \
-            return false; \
-        result = source.toInteger(); \
-        return false; \
-    )
+    QMETATYPE_CONVERTER(To, QByteArray, \
+        bool ok = false; \
+        result = source.toDouble(&ok); \
+        return ok; \
+    ); \
+    CONVERT_CBOR_AND_JSON(To)
 
         switch (makePair(toTypeId, fromTypeId)) {
 
@@ -1000,6 +1016,8 @@ static const struct : QMetaTypeModuleHelper
         INTEGRAL_CONVERTER(ULong);
         INTEGRAL_CONVERTER(LongLong);
         INTEGRAL_CONVERTER(ULongLong);
+        FLOAT_CONVERTER(Float);
+        FLOAT_CONVERTER(Double);
 
 #ifndef QT_BOOTSTRAPPED
         QMETATYPE_CONVERTER_ASSIGN(QUrl, QString);
