@@ -898,6 +898,8 @@ static const struct : QMetaTypeModuleHelper
         using Bool = bool;
         using Nullptr = std::nullptr_t;
 
+#define QMETATYPE_CONVERTER_ASSIGN_DOUBLE(To, From) \
+    QMETATYPE_CONVERTER(To, From, result = double(source); return true;)
 #define QMETATYPE_CONVERTER_ASSIGN_NUMBER(To, From) \
     QMETATYPE_CONVERTER(To, From, result = To::number(source); return true;)
 #ifndef QT_BOOTSTRAPPED
@@ -1228,12 +1230,74 @@ static const struct : QMetaTypeModuleHelper
             return true;
         );
 #endif
+
+        QMETATYPE_CONVERTER(QCborValue, Nullptr,
+            Q_UNUSED(source);
+            result = QCborValue(QCborValue::Null);
+            return true;
+        );
+        QMETATYPE_CONVERTER_ASSIGN(QCborValue, Bool);
+        QMETATYPE_CONVERTER_ASSIGN(QCborValue, Int);
+        QMETATYPE_CONVERTER_ASSIGN(QCborValue, UInt);
+        QMETATYPE_CONVERTER(QCborValue, ULong, result = qlonglong(source); return true;);
+        QMETATYPE_CONVERTER(QCborValue, Long, result = qlonglong(source); return true;);
+        QMETATYPE_CONVERTER_ASSIGN(QCborValue, LongLong);
+        QMETATYPE_CONVERTER(QCborValue, ULongLong, result = qlonglong(source); return true;);
+        QMETATYPE_CONVERTER_ASSIGN(QCborValue, UShort);
+        QMETATYPE_CONVERTER_ASSIGN(QCborValue, UChar);
+        QMETATYPE_CONVERTER_ASSIGN(QCborValue, Char);
+        QMETATYPE_CONVERTER_ASSIGN(QCborValue, SChar);
+        QMETATYPE_CONVERTER_ASSIGN(QCborValue, Short);
+        QMETATYPE_CONVERTER_ASSIGN(QCborValue, Double);
+        QMETATYPE_CONVERTER_ASSIGN(QCborValue, Float);
+        QMETATYPE_CONVERTER(QCborValue, QStringList,
+            result = QCborArray::fromStringList(source);
+            return true;
+        );
+        QMETATYPE_CONVERTER(QCborValue, QDate,
+            result = QCborValue(source.startOfDay());
+            return true;
+        );
+        QMETATYPE_CONVERTER_ASSIGN(QCborValue, QUrl);
+        QMETATYPE_CONVERTER(QCborValue, QJsonValue,
+            result = QCborValue::fromJsonValue(source);
+            return true;
+        );
+        QMETATYPE_CONVERTER(QCborValue, QJsonObject,
+            result = QCborMap::fromJsonObject(source);
+            return true;
+        );
+        QMETATYPE_CONVERTER(QCborValue, QJsonArray,
+            result = QCborArray::fromJsonArray(source);
+            return true;
+        );
+        QMETATYPE_CONVERTER(QCborValue, QJsonDocument,
+            QJsonDocument doc = source;
+            if (doc.isArray())
+                result = QCborArray::fromJsonArray(doc.array());
+            else
+                result = QCborMap::fromJsonObject(doc.object());
+            return true;
+        );
+        QMETATYPE_CONVERTER_ASSIGN(QCborValue, QCborMap);
+        QMETATYPE_CONVERTER_ASSIGN(QCborValue, QCborArray);
+
+        QMETATYPE_CONVERTER_ASSIGN(QCborValue, QDateTime);
         QMETATYPE_CONVERTER(QDateTime, QCborValue,
             if (source.isDateTime()) {
                 result = source.toDateTime();
                 return true;
             }
             return false;
+        );
+
+        QMETATYPE_CONVERTER_ASSIGN(QCborValue, QCborSimpleType);
+        QMETATYPE_CONVERTER(QCborSimpleType, QCborValue,
+            if (source.isSimpleType()) {
+                 result = source.toSimpleType();
+                 return true;
+             }
+             return false;
         );
 
         QMETATYPE_CONVERTER(QCborArray, QVariantList, result = QCborArray::fromVariantList(source); return true;);
@@ -1355,6 +1419,69 @@ static const struct : QMetaTypeModuleHelper
             return true;
         );
         QMETATYPE_CONVERTER(QJsonObject, QCborMap, result = source.toJsonObject(); return true; );
+
+        QMETATYPE_CONVERTER(QJsonValue, Nullptr,
+            Q_UNUSED(source);
+            result = QJsonValue(QJsonValue::Null);
+            return true;);
+        QMETATYPE_CONVERTER(QJsonValue, Bool,
+            result = QJsonValue(source);
+            return true;);
+        QMETATYPE_CONVERTER_ASSIGN_DOUBLE(QJsonValue, Int);
+        QMETATYPE_CONVERTER_ASSIGN_DOUBLE(QJsonValue, UInt);
+        QMETATYPE_CONVERTER_ASSIGN_DOUBLE(QJsonValue, Double);
+        QMETATYPE_CONVERTER_ASSIGN_DOUBLE(QJsonValue, Float);
+        QMETATYPE_CONVERTER_ASSIGN_DOUBLE(QJsonValue, ULong);
+        QMETATYPE_CONVERTER_ASSIGN_DOUBLE(QJsonValue, Long);
+        QMETATYPE_CONVERTER_ASSIGN_DOUBLE(QJsonValue, LongLong);
+        QMETATYPE_CONVERTER_ASSIGN_DOUBLE(QJsonValue, ULongLong);
+        QMETATYPE_CONVERTER_ASSIGN_DOUBLE(QJsonValue, UShort);
+        QMETATYPE_CONVERTER_ASSIGN_DOUBLE(QJsonValue, UChar);
+        QMETATYPE_CONVERTER_ASSIGN_DOUBLE(QJsonValue, Char);
+        QMETATYPE_CONVERTER_ASSIGN_DOUBLE(QJsonValue, SChar);
+        QMETATYPE_CONVERTER_ASSIGN_DOUBLE(QJsonValue, Short);
+        QMETATYPE_CONVERTER_ASSIGN(QJsonValue, QString);
+        QMETATYPE_CONVERTER(QJsonValue, QStringList,
+            result = QJsonValue(QJsonArray::fromStringList(source));
+            return true;
+        );
+        QMETATYPE_CONVERTER(QJsonValue, QVariantList,
+            result = QJsonValue(QJsonArray::fromVariantList(source));
+            return true;
+        );
+        QMETATYPE_CONVERTER(QJsonValue, QVariantMap,
+            result = QJsonValue(QJsonObject::fromVariantMap(source));
+            return true;
+        );
+        QMETATYPE_CONVERTER(QJsonValue, QVariantHash,
+            result = QJsonValue(QJsonObject::fromVariantHash(source));
+            return true;
+        );
+        QMETATYPE_CONVERTER(QJsonValue, QJsonObject,
+            result = source;
+            return true;
+        );
+        QMETATYPE_CONVERTER(QJsonValue, QJsonArray,
+            result = source;
+            return true;
+        );
+        QMETATYPE_CONVERTER(QJsonValue, QJsonDocument,
+            QJsonDocument doc = source;
+            result = doc.isArray() ? QJsonValue(doc.array()) : QJsonValue(doc.object());
+            return true;
+        );
+        QMETATYPE_CONVERTER(QJsonValue, QCborValue,
+            result = source.toJsonValue();
+            return true;
+        );
+        QMETATYPE_CONVERTER(QJsonValue, QCborMap,
+            result = source.toJsonObject();
+            return true;
+        );
+        QMETATYPE_CONVERTER(QJsonValue, QCborArray,
+            result = source.toJsonArray();
+            return true;
+        );
 
 #endif
 
