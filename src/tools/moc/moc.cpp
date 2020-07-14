@@ -1318,8 +1318,6 @@ void Moc::parsePropertyAttributes(PropertyDef &propDef)
             propDef.final = true;
             continue;
         } else if (l[0] == 'N' && l == "NAME") {
-            if (!propDef.isQProperty)
-                error(1);
             next(IDENTIFIER);
             propDef.name = lexem();
             continue;
