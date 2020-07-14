@@ -540,7 +540,6 @@ Qt::MouseEventSource QMouseEvent::source() const
 
 /*!
     \since 5.3
-    \deprecated in 6.0
 
     Returns the mouse event flags.
 

@@ -653,7 +653,6 @@ void QGraphicsSceneMouseEvent::setSource(Qt::MouseEventSource source)
 
 /*!
      \since 5.4
-     \deprecated in 6.0
 
      Returns the mouse event flags.
 

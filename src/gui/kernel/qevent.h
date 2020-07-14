@@ -307,7 +307,6 @@ public:
     QT_DEPRECATED_VERSION_X_6_0("Use globalPosition()")
     QPointF screenPos() const { return globalPosition(); }
     Qt::MouseEventSource source() const;
-    QT_DEPRECATED_VERSION_X_6_0("Internal, don't use")
     Qt::MouseEventFlags flags() const;
 #endif // QT_DEPRECATED_SINCE(6, 0)
 };

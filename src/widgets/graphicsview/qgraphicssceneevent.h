@@ -121,12 +121,8 @@ public:
     Qt::MouseEventSource source() const;
     void setSource(Qt::MouseEventSource source);
 
-#if QT_DEPRECATED_SINCE(6, 0)
-    QT_DEPRECATED_VERSION_X_6_0("Internal, don't use")
     Qt::MouseEventFlags flags() const;
-    QT_DEPRECATED_VERSION_X_6_0("Internal, don't use")
     void setFlags(Qt::MouseEventFlags);
-#endif // QT_DEPRECATED_SINCE(6, 0)
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsSceneMouseEvent)
