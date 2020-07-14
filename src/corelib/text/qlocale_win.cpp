@@ -133,7 +133,7 @@ private:
     int getTimeFormat(DWORD flags, const SYSTEMTIME *date, LPCWSTR format, LPWSTR data, int size);
 
     SubstitutionType substitution();
-    QString &substituteDigits(QString &string);
+    QString substituteDigits(QString &&string);
 
     static QString winToQtFormat(QStringView sys_fmt);
 
@@ -230,7 +230,7 @@ QSystemLocalePrivate::SubstitutionType QSystemLocalePrivate::substitution()
     return substitutionType;
 }
 
-QString &QSystemLocalePrivate::substituteDigits(QString &string)
+QString QSystemLocalePrivate::substituteDigits(QString &&string)
 {
     zeroDigit(); // Ensure zero is set.
     switch (zero.size()) {
@@ -261,7 +261,7 @@ QString &QSystemLocalePrivate::substituteDigits(QString &string)
     case 0: // Apparently this locale info was not available.
         break;
     }
-    return string;
+    return std::move(string);
 }
 
 QVariant QSystemLocalePrivate::zeroDigit()
@@ -400,7 +400,7 @@ QVariant QSystemLocalePrivate::toString(QDate date, QLocale::FormatType type)
     if (getDateFormat(flags, &st, NULL, buf, 255)) {
         QString format = QString::fromWCharArray(buf);
         if (substitution() == SAlways)
-            substituteDigits(format);
+            format = substituteDigits(std::move(format));
         return format;
     }
     return QString();
@@ -424,7 +424,7 @@ QVariant QSystemLocalePrivate::toString(QTime time, QLocale::FormatType type)
     if (getTimeFormat(flags, &st, NULL, buf, 255)) {
         QString format = QString::fromWCharArray(buf);
         if (substitution() == SAlways)
-            substituteDigits(format);
+            format = substituteDigits(std::move(format));
         return format;
     }
     return QString();
@@ -585,7 +585,7 @@ QVariant QSystemLocalePrivate::toCurrencyString(const QSystemLocale::CurrencyToS
 
     value = QString::fromWCharArray(out.data());
     if (substitution() == SAlways)
-        substituteDigits( value);
+        value = substituteDigits(std::move(value));
     return value;
 }
 
