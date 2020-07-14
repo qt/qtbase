@@ -41,6 +41,7 @@
 #define QLIBRARY_H
 
 #include <QtCore/qobject.h>
+#include <QtCore/qtaggedpointer.h>
 
 QT_REQUIRE_CONFIG(library);
 
@@ -92,8 +93,12 @@ public:
     void setLoadHints(LoadHints hints);
     LoadHints loadHints() const;
 private:
-    QLibraryPrivate *d;
-    bool did_load;
+    enum LoadStatusTag {
+        NotLoaded,
+        Loaded
+    };
+
+    QTaggedPointer<QLibraryPrivate, LoadStatusTag> d = nullptr;
     Q_DISABLE_COPY(QLibrary)
 };
 

@@ -825,9 +825,10 @@ bool QLibrary::load()
 {
     if (!d)
         return false;
-    if (did_load)
+    if (d.tag() == Loaded)
         return d->pHnd.loadRelaxed();
-    did_load = true;
+    else
+        d.setTag(Loaded);
     return d->load();
 }
 
@@ -848,8 +849,8 @@ bool QLibrary::load()
 */
 bool QLibrary::unload()
 {
-    if (did_load) {
-        did_load = false;
+    if (d.tag() == Loaded) {
+        d.setTag(NotLoaded);
         return d->unload();
     }
     return false;
@@ -869,8 +870,7 @@ bool QLibrary::isLoaded() const
 /*!
     Constructs a library with the given \a parent.
  */
-QLibrary::QLibrary(QObject *parent)
-    :QObject(parent), d(nullptr), did_load(false)
+QLibrary::QLibrary(QObject *parent) : QObject(parent)
 {
 }
 
@@ -884,8 +884,7 @@ QLibrary::QLibrary(QObject *parent)
     suffix in accordance with the platform, e.g. ".so" on Unix,
     ".dylib" on \macos and iOS, and ".dll" on Windows. (See \l{fileName}.)
  */
-QLibrary::QLibrary(const QString& fileName, QObject *parent)
-    :QObject(parent), d(nullptr), did_load(false)
+QLibrary::QLibrary(const QString& fileName, QObject *parent) : QObject(parent)
 {
     setFileName(fileName);
 }
@@ -901,8 +900,7 @@ QLibrary::QLibrary(const QString& fileName, QObject *parent)
     suffix in accordance with the platform, e.g. ".so" on Unix,
     ".dylib" on \macos and iOS, and ".dll" on Windows. (See \l{fileName}.)
 */
-QLibrary::QLibrary(const QString& fileName, int verNum, QObject *parent)
-    :QObject(parent), d(nullptr), did_load(false)
+QLibrary::QLibrary(const QString& fileName, int verNum, QObject *parent) : QObject(parent)
 {
     setFileNameAndVersion(fileName, verNum);
 }
@@ -918,7 +916,7 @@ QLibrary::QLibrary(const QString& fileName, int verNum, QObject *parent)
     ".dylib" on \macos and iOS, and ".dll" on Windows. (See \l{fileName}.)
  */
 QLibrary::QLibrary(const QString& fileName, const QString &version, QObject *parent)
-    :QObject(parent), d(nullptr), did_load(false)
+    : QObject(parent)
 {
     setFileNameAndVersion(fileName, version);
 }
@@ -965,8 +963,7 @@ void QLibrary::setFileName(const QString &fileName)
     if (d) {
         lh = d->loadHints();
         d->release();
-        d = nullptr;
-        did_load = false;
+        d = {};
     }
     d = QLibraryPrivate::findOrCreate(fileName, QString(), lh);
 }
@@ -995,8 +992,7 @@ void QLibrary::setFileNameAndVersion(const QString &fileName, int verNum)
     if (d) {
         lh = d->loadHints();
         d->release();
-        d = nullptr;
-        did_load = false;
+        d = {};
     }
     d = QLibraryPrivate::findOrCreate(fileName, verNum >= 0 ? QString::number(verNum) : QString(), lh);
 }
@@ -1016,8 +1012,7 @@ void QLibrary::setFileNameAndVersion(const QString &fileName, const QString &ver
     if (d) {
         lh = d->loadHints();
         d->release();
-        d = nullptr;
-        did_load = false;
+        d = {};
     }
     d = QLibraryPrivate::findOrCreate(fileName, version, lh);
 }
