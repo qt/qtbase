@@ -323,23 +323,49 @@ static void xgetbv(uint in, uint &eax, uint &edx)
 #endif
 }
 
+// Flags from the XCR0 state register
+enum XCR0Flags {
+    X87             = 1 << 0,
+    XMM0_15         = 1 << 1,
+    YMM0_15Hi128    = 1 << 2,
+    BNDRegs         = 1 << 3,
+    BNDCSR          = 1 << 4,
+    OpMask          = 1 << 5,
+    ZMM0_15Hi256    = 1 << 6,
+    ZMM16_31        = 1 << 7,
+
+    SSEState        = XMM0_15,
+    AVXState        = XMM0_15 | YMM0_15Hi128,
+    AVX512State     = AVXState | OpMask | ZMM0_15Hi256 | ZMM16_31
+};
+
+static quint64 adjustedXcr0(quint64 xcr0)
+{
+    /*
+     * Some OSes hide their capability of context-switching the AVX512 state in
+     * the XCR0 register. They do that so the first time we execute an
+     * instruction that may access the AVX512 state (requiring the EVEX prefix)
+     * they allocate the necessary context switch space.
+     *
+     * This behavior is deprecated with the XFD (Extended Feature Disable)
+     * register, but we can't change existing OSes.
+     */
+#ifdef Q_OS_DARWIN
+    // from <machine/cpu_capabilities.h> in xnu
+    // <https://github.com/apple/darwin-xnu/blob/xnu-4903.221.2/osfmk/i386/cpu_capabilities.h>
+    constexpr quint64 kHasAVX512F = Q_UINT64_C(0x0000004000000000);
+    constexpr quintptr commpage = sizeof(void *) > 4 ? Q_UINT64_C(0x00007fffffe00000) : 0xffff0000;
+    constexpr quintptr cpu_capabilities64 = commpage + 0x10;
+    quint64 capab = *reinterpret_cast<quint64 *>(cpu_capabilities64);
+    if (capab & kHasAVX512F)
+        xcr0 |= AVX512State;
+#endif
+
+    return xcr0;
+}
+
 static quint64 detectProcessorFeatures()
 {
-    // Flags from the CR0 / XCR0 state register
-    enum XCR0Flags {
-        X87             = 1 << 0,
-        XMM0_15         = 1 << 1,
-        YMM0_15Hi128    = 1 << 2,
-        BNDRegs         = 1 << 3,
-        BNDCSR          = 1 << 4,
-        OpMask          = 1 << 5,
-        ZMM0_15Hi256    = 1 << 6,
-        ZMM16_31        = 1 << 7,
-
-        SSEState        = XMM0_15,
-        AVXState        = XMM0_15 | YMM0_15Hi128,
-        AVX512State     = AVXState | OpMask | ZMM0_15Hi256 | ZMM16_31
-    };
     static const quint64 AllAVX2 = CpuFeatureAVX2 | AllAVX512;
     static const quint64 AllAVX = CpuFeatureAVX | AllAVX2;
 
@@ -367,16 +393,22 @@ static quint64 detectProcessorFeatures()
     }
 
     // now check the AVX state
-    uint xgetbvA = 0, xgetbvD = 0;
+    quint64 xcr0 = 0;
     if (results[Leaf1ECX] & (1u << 27)) {
         // XGETBV enabled
+        uint xgetbvA = 0, xgetbvD = 0;
         xgetbv(0, xgetbvA, xgetbvD);
+
+        xcr0 = xgetbvA;
+        if (sizeof(XCR0Flags) > sizeof(xgetbvA))
+            xcr0 |= quint64(xgetbvD) << 32;
+        xcr0 = adjustedXcr0(xcr0);
     }
 
-    if ((xgetbvA & AVXState) != AVXState) {
+    if ((xcr0 & AVXState) != AVXState) {
         // support for YMM registers is disabled, disable all AVX
         features &= ~AllAVX;
-    } else if ((xgetbvA & AVX512State) != AVX512State) {
+    } else if ((xcr0 & AVX512State) != AVX512State) {
         // support for ZMM registers or mask registers is disabled, disable all AVX512
         features &= ~AllAVX512;
     }
