@@ -88,4 +88,5 @@ foreach(_target_dep ${_target_deps})
     endif()
 endforeach()
 
+set(_@QT_CMAKE_EXPORT_NAMESPACE@@target@_MODULE_DEPENDENCIES "@qt_module_dependencies@")
 

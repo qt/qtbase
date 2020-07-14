@@ -19,6 +19,62 @@ if (NOT QT_NO_CREATE_TARGETS)
     if(NOT QT_NO_CREATE_VERSIONLESS_TARGETS)
         include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@VersionlessTargets.cmake")
     endif()
+
+    # DEPRECATED
+    # Provide old style variables for includes, compile definitions, etc.
+    # These variables are deprecated and only provided on a best-effort basis to facilitate porting.
+    # Consider using target_link_libraries(app PRIVATE @QT_CMAKE_EXPORT_NAMESPACE@@target@) instead.
+    set(@QT_CMAKE_EXPORT_NAMESPACE@@target@_LIBRARIES "@QT_CMAKE_EXPORT_NAMESPACE@::@target@")
+
+    get_target_property(_@QT_CMAKE_EXPORT_NAMESPACE@@target@_OWN_INCLUDE_DIRS
+                        @QT_CMAKE_EXPORT_NAMESPACE@::@target@ INTERFACE_INCLUDE_DIRECTORIES)
+    if(NOT _@QT_CMAKE_EXPORT_NAMESPACE@@target@_OWN_INCLUDE_DIRS)
+        set(_@QT_CMAKE_EXPORT_NAMESPACE@@target@_OWN_INCLUDE_DIRS "")
+    endif()
+
+    if(TARGET @QT_CMAKE_EXPORT_NAMESPACE@::@target@Private)
+        get_target_property(_@QT_CMAKE_EXPORT_NAMESPACE@@target@_OWN_PRIVATE_INCLUDE_DIRS
+                            @QT_CMAKE_EXPORT_NAMESPACE@::@target@Private INTERFACE_INCLUDE_DIRECTORIES)
+        if(NOT _@QT_CMAKE_EXPORT_NAMESPACE@@target@_OWN_PRIVATE_INCLUDE_DIRS)
+            set(_@QT_CMAKE_EXPORT_NAMESPACE@@target@_OWN_PRIVATE_INCLUDE_DIRS "")
+        endif()
+    endif()
+
+    get_target_property(@QT_CMAKE_EXPORT_NAMESPACE@@target@_DEFINITIONS
+                        @QT_CMAKE_EXPORT_NAMESPACE@::@target@ INTERFACE_COMPILE_DEFINITIONS)
+    if(NOT @QT_CMAKE_EXPORT_NAMESPACE@@target@_DEFINITIONS)
+        set(@QT_CMAKE_EXPORT_NAMESPACE@@target@_DEFINITIONS "")
+    else()
+        list(TRANSFORM @QT_CMAKE_EXPORT_NAMESPACE@@target@_DEFINITIONS PREPEND "-D")
+    endif()
+
+    get_target_property(@QT_CMAKE_EXPORT_NAMESPACE@@target@_COMPILE_DEFINITIONS
+                        @QT_CMAKE_EXPORT_NAMESPACE@::@target@ INTERFACE_COMPILE_DEFINITIONS)
+    if(NOT @QT_CMAKE_EXPORT_NAMESPACE@@target@_COMPILE_DEFINITIONS)
+        set(@QT_CMAKE_EXPORT_NAMESPACE@@target@_COMPILE_DEFINITIONS "")
+    endif()
+
+    set(@QT_CMAKE_EXPORT_NAMESPACE@@target@_INCLUDE_DIRS
+        ${_@QT_CMAKE_EXPORT_NAMESPACE@@target@_OWN_INCLUDE_DIRS})
+
+    set(@QT_CMAKE_EXPORT_NAMESPACE@@target@_PRIVATE_INCLUDE_DIRS
+        ${_@QT_CMAKE_EXPORT_NAMESPACE@@target@_OWN_PRIVATE_INCLUDE_DIRS})
+
+    foreach(_module_dep ${_@QT_CMAKE_EXPORT_NAMESPACE@@target@_MODULE_DEPENDENCIES})
+        list(APPEND @QT_CMAKE_EXPORT_NAMESPACE@@target@_INCLUDE_DIRS
+             ${@QT_CMAKE_EXPORT_NAMESPACE@${_module_dep}_INCLUDE_DIRS})
+        list(APPEND @QT_CMAKE_EXPORT_NAMESPACE@@target@_PRIVATE_INCLUDE_DIRS
+             ${@QT_CMAKE_EXPORT_NAMESPACE@${_module_dep}_PRIVATE_INCLUDE_DIRS})
+        list(APPEND @QT_CMAKE_EXPORT_NAMESPACE@@target@_DEFINITIONS
+             ${@QT_CMAKE_EXPORT_NAMESPACE@${_module_dep}_DEFINITIONS})
+        list(APPEND @QT_CMAKE_EXPORT_NAMESPACE@@target@_COMPILE_DEFINITIONS
+             ${@QT_CMAKE_EXPORT_NAMESPACE@${_module_dep}_COMPILE_DEFINITIONS})
+    endforeach()
+
+    list(REMOVE_DUPLICATES @QT_CMAKE_EXPORT_NAMESPACE@@target@_INCLUDE_DIRS)
+    list(REMOVE_DUPLICATES @QT_CMAKE_EXPORT_NAMESPACE@@target@_PRIVATE_INCLUDE_DIRS)
+    list(REMOVE_DUPLICATES @QT_CMAKE_EXPORT_NAMESPACE@@target@_DEFINITIONS)
+    list(REMOVE_DUPLICATES @QT_CMAKE_EXPORT_NAMESPACE@@target@_COMPILE_DEFINITIONS)
 endif()
 
 foreach(extra_cmake_include @extra_cmake_includes@)

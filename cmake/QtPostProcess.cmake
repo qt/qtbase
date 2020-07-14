@@ -77,6 +77,7 @@ function(qt_internal_create_module_depends_file target)
     # ModuleDependencies.cmake.
     get_target_property(target_deps "${target}" _qt_target_deps)
     set(target_deps_seen "")
+    set(qt_module_dependencies "")
 
     if(NOT arg_HEADER_MODULE)
         get_target_property(extra_depends "${target}" QT_EXTRA_PACKAGE_DEPENDENCIES)
@@ -164,6 +165,10 @@ function(qt_internal_create_module_depends_file target)
                 endif()
 
                 list(APPEND target_deps_seen "${dep_name}\;${dep_ver}")
+
+                if (dep_name MATCHES "${INSTALL_CMAKE_NAMESPACE}(.*)")
+                    list(APPEND qt_module_dependencies "${CMAKE_MATCH_1}")
+                endif()
             endif()
         endif()
     endforeach()
