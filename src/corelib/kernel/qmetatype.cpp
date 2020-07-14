@@ -408,10 +408,10 @@ Q_GLOBAL_STATIC(QMetaTypeCustomRegistry, customTypeRegistry)
     \value MovableType An instance of a type having this attribute can be safely moved by memcpy.
     \omitvalue SharedPointerToQObject
     \value IsEnumeration This type is an enumeration
+    \value If the type is an Enumeration, its underlying type is unsigned
     \value PointerToQObject This type is a pointer to a derived of QObject
     \omitvalue WeakPointerToQObject
     \omitvalue TrackingPointerToQObject
-    \omitvalue WasDeclaredAsMetaType
     \omitvalue IsGadget \omit This type is a Q_GADGET and it's corresponding QMetaObject can be accessed with QMetaType::metaObject Since 5.5. \endomit
     \omitvalue PointerToGadget
 */

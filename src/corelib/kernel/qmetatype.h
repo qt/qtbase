@@ -354,11 +354,10 @@ public:
         SharedPointerToQObject = 0x20,
         WeakPointerToQObject = 0x40,
         TrackingPointerToQObject = 0x80,
-        WasDeclaredAsMetaType = 0x100,
+        IsUnsignedEnumeration = 0x100,
         IsGadget = 0x200,
         PointerToGadget = 0x400,
         IsPointer = 0x800,
-        IsUnsignedEnumeration = 0x1000
     };
     Q_DECLARE_FLAGS(TypeFlags, TypeFlag)
 
