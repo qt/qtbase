@@ -2048,6 +2048,15 @@ bool QMetaType::convert(const void *from, int fromTypeId, void *to, int toTypeId
     if (toTypeId == qMetaTypeId<QAssociativeIterable>())
         return convertToAssociativeIterable(from, fromTypeId, to);
 
+#ifndef QT_BOOTSTRAPPED
+    // handle QObject conversion
+    if ((fromType.flags() & QMetaType::PointerToQObject) && (toType.flags() & QMetaType::PointerToQObject)) {
+        QObject *fromObject = *static_cast<QObject * const *>(from);
+        *static_cast<QObject **>(to) = fromObject ? fromObject->metaObject()->cast(fromObject) : nullptr;
+        return true;
+    }
+#endif
+
     return false;
 }
 

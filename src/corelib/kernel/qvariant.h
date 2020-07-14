@@ -94,39 +94,6 @@ class QVariantComparisonHelper;
 template<typename T>
 inline T qvariant_cast(const QVariant &);
 
-namespace QtPrivate {
-
-    template <typename Derived, typename Argument, typename ReturnType>
-    struct ObjectInvoker
-    {
-        static ReturnType invoke(Argument a)
-        {
-            return Derived::object(a);
-        }
-    };
-
-    template <typename Derived, typename Argument, typename ReturnType>
-    struct MetaTypeInvoker
-    {
-        static ReturnType invoke(Argument a)
-        {
-            return Derived::metaType(a);
-        }
-    };
-
-    template <typename Derived, typename T, typename Argument, typename ReturnType, bool = IsPointerToTypeDerivedFromQObject<T>::Value>
-    struct TreatAsQObjectBeforeMetaType : ObjectInvoker<Derived, Argument, ReturnType>
-    {
-    };
-
-    template <typename Derived, typename T, typename Argument, typename ReturnType>
-    struct TreatAsQObjectBeforeMetaType<Derived, T, Argument, ReturnType, false> : MetaTypeInvoker<Derived, Argument, ReturnType>
-    {
-    };
-
-    template<typename T> struct QVariantValueHelper;
-}
-
 class Q_CORE_EXPORT QVariant
 {
  public:
@@ -518,7 +485,6 @@ protected:
 #endif
     template<typename T>
     friend inline T qvariant_cast(const QVariant &);
-    template<typename T> friend struct QtPrivate::QVariantValueHelper;
 protected:
     Private d;
     void create(int type, const void *copy);
@@ -722,39 +688,16 @@ public:
 };
 
 #ifndef QT_MOC
-namespace QtPrivate {
-    template<typename T>
-    struct QVariantValueHelper : TreatAsQObjectBeforeMetaType<QVariantValueHelper<T>, T, const QVariant &, T>
-    {
-        static T metaType(const QVariant &v)
-        {
-            const int vid = qMetaTypeId<T>();
-            if (vid == v.userType())
-                return *reinterpret_cast<const T *>(v.constData());
-            T t;
-            if (v.convert(vid, &t))
-                return t;
-            return T();
-        }
-#ifndef QT_NO_QOBJECT
-        static T object(const QVariant &v)
-        {
-            return qobject_cast<T>(QMetaType::typeFlags(v.userType()) & QMetaType::PointerToQObject
-                ? v.d.get<QObject *>()
-                : QVariantValueHelper::metaType(v));
-        }
-#endif
-    };
-
-    template<typename T>
-    struct QVariantValueHelperInterface : QVariantValueHelper<T>
-    {
-    };
-}
 
 template<typename T> inline T qvariant_cast(const QVariant &v)
 {
-    return QtPrivate::QVariantValueHelperInterface<T>::invoke(v);
+    QMetaType targetType = QMetaType::fromType<T>();
+    if (v.d.type() == targetType)
+        return v.d.get<T>();
+
+    T t{};
+    QMetaType::convert(v.constData(), v.userType(), &t, qMetaTypeId<T>());
+    return t;
 }
 
 template<> inline QVariant qvariant_cast<QVariant>(const QVariant &v)
