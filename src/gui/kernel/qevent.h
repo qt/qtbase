@@ -372,11 +372,6 @@ protected:
 class Q_GUI_EXPORT QTabletEvent : public QSinglePointEvent
 {
 public:
-    QTabletEvent(Type t, const QPointF &pos, const QPointF &globalPos,
-                 int deviceType, int pointerType, qreal pressure, int xTilt, int yTilt,
-                 qreal tangentialPressure, qreal rotation, int z,
-                 Qt::KeyboardModifiers keyState, qint64 uniqueID,
-                 Qt::MouseButton button, Qt::MouseButtons buttons);
     QTabletEvent(Type t, const QPointingDevice *device,
                  const QPointF &pos, const QPointF &globalPos,
                  qreal pressure, int xTilt, int yTilt,
