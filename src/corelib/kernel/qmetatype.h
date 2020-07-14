@@ -1485,12 +1485,7 @@ namespace QtPrivate {
 }
 
 template <typename T>
-int qRegisterNormalizedMetaType(const QT_PREPEND_NAMESPACE(QByteArray) &normalizedTypeName
-#ifndef Q_CLANG_QDOC
-    , T * = 0
-    , typename QtPrivate::MetaTypeDefinedHelper<T, QMetaTypeId2<T>::Defined && !QMetaTypeId2<T>::IsBuiltIn>::DefinedType  = QtPrivate::MetaTypeDefinedHelper<T, QMetaTypeId2<T>::Defined && !QMetaTypeId2<T>::IsBuiltIn>::Defined
-#endif
-)
+int qRegisterNormalizedMetaType(const QT_PREPEND_NAMESPACE(QByteArray) &normalizedTypeName)
 {
 #ifndef QT_NO_QOBJECT
     Q_ASSERT_X(normalizedTypeName == QMetaObject::normalizedType(normalizedTypeName.constData()), "qRegisterNormalizedMetaType", "qRegisterNormalizedMetaType was called with a not normalized type name, please call qRegisterMetaType instead.");
@@ -1511,19 +1506,14 @@ int qRegisterNormalizedMetaType(const QT_PREPEND_NAMESPACE(QByteArray) &normaliz
 }
 
 template <typename T>
-int qRegisterMetaType(const char *typeName
-#ifndef Q_CLANG_QDOC
-    , T * dummy = nullptr
-    , typename QtPrivate::MetaTypeDefinedHelper<T, QMetaTypeId2<T>::Defined && !QMetaTypeId2<T>::IsBuiltIn>::DefinedType defined = QtPrivate::MetaTypeDefinedHelper<T, QMetaTypeId2<T>::Defined && !QMetaTypeId2<T>::IsBuiltIn>::Defined
-#endif
-)
+int qRegisterMetaType(const char *typeName)
 {
 #ifdef QT_NO_QOBJECT
     QT_PREPEND_NAMESPACE(QByteArray) normalizedTypeName = typeName;
 #else
     QT_PREPEND_NAMESPACE(QByteArray) normalizedTypeName = QMetaObject::normalizedType(typeName);
 #endif
-    return qRegisterNormalizedMetaType<T>(normalizedTypeName, dummy, defined);
+    return qRegisterNormalizedMetaType<T>(normalizedTypeName);
 }
 
 template <typename T>
@@ -1539,20 +1529,9 @@ inline constexpr int qMetaTypeId()
 template <typename T>
 inline constexpr int qRegisterMetaType()
 {
-    return qMetaTypeId<T>();
+    int id = qMetaTypeId<T>();
+    return id;
 }
-
-#if QT_DEPRECATED_SINCE(5, 1) && !defined(Q_CLANG_QDOC)
-// There used to be a T *dummy = 0 argument in Qt 4.0 to support MSVC6
-template <typename T>
-QT_DEPRECATED inline constexpr int qMetaTypeId(T *)
-{ return qMetaTypeId<T>(); }
-#ifndef Q_CC_SUN
-template <typename T>
-QT_DEPRECATED inline constexpr int qRegisterMetaType(T *)
-{ return qRegisterMetaType<T>(); }
-#endif
-#endif
 
 #ifndef QT_NO_QOBJECT
 template <typename T>
@@ -1571,9 +1550,7 @@ struct QMetaTypeIdQObject<T*, QMetaType::PointerToQObject>
         QByteArray typeName;
         typeName.reserve(int(strlen(cName)) + 1);
         typeName.append(cName).append('*');
-        const int newId = qRegisterNormalizedMetaType<T*>(
-                        typeName,
-                        reinterpret_cast<T**>(quintptr(-1)));
+        const int newId = qRegisterNormalizedMetaType<T*>(typeName);
         metatype_id.storeRelease(newId);
         return newId;
     }
@@ -1592,9 +1569,7 @@ struct QMetaTypeIdQObject<T, QMetaType::IsGadget>
         if (const int id = metatype_id.loadAcquire())
             return id;
         const char * const cName = T::staticMetaObject.className();
-        const int newId = qRegisterNormalizedMetaType<T>(
-            cName,
-            reinterpret_cast<T*>(quintptr(-1)));
+        const int newId = qRegisterNormalizedMetaType<T>(cName);
         metatype_id.storeRelease(newId);
         return newId;
     }
@@ -1616,9 +1591,7 @@ struct QMetaTypeIdQObject<T*, QMetaType::PointerToGadget>
         QByteArray typeName;
         typeName.reserve(int(strlen(cName)) + 1);
         typeName.append(cName).append('*');
-        const int newId = qRegisterNormalizedMetaType<T*>(
-            typeName,
-            reinterpret_cast<T**>(quintptr(-1)));
+        const int newId = qRegisterNormalizedMetaType<T*>(typeName);
         metatype_id.storeRelease(newId);
         return newId;
     }
@@ -1641,9 +1614,7 @@ struct QMetaTypeIdQObject<T, QMetaType::IsEnumeration>
         QByteArray typeName;
         typeName.reserve(int(strlen(cName) + 2 + strlen(eName)));
         typeName.append(cName).append("::").append(eName);
-        const int newId = qRegisterNormalizedMetaType<T>(
-            typeName,
-            reinterpret_cast<T*>(quintptr(-1)));
+        const int newId = qRegisterNormalizedMetaType<T>(typeName);
         metatype_id.storeRelease(newId);
         return newId;
     }
@@ -1673,8 +1644,7 @@ struct QMetaTypeIdQObject<T, QMetaType::IsEnumeration>
                 static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0); \
                 if (const int id = metatype_id.loadAcquire())           \
                     return id;                                          \
-                const int newId = qRegisterMetaType< TYPE >(#TYPE,      \
-                              reinterpret_cast< TYPE *>(quintptr(-1))); \
+                const int newId = qRegisterMetaType< TYPE >(#TYPE);     \
                 metatype_id.storeRelease(newId);                        \
                 return newId;                                           \
             }                                                           \
@@ -1733,9 +1703,7 @@ struct QMetaTypeId< SINGLE_ARG_TEMPLATE<T> > \
         typeName.append(#SINGLE_ARG_TEMPLATE, int(sizeof(#SINGLE_ARG_TEMPLATE)) - 1) \
             .append('<').append(tName, tNameLen); \
         typeName.append('>'); \
-        const int newId = qRegisterNormalizedMetaType< SINGLE_ARG_TEMPLATE<T> >( \
-                        typeName, \
-                        reinterpret_cast< SINGLE_ARG_TEMPLATE<T> *>(quintptr(-1))); \
+        const int newId = qRegisterNormalizedMetaType< SINGLE_ARG_TEMPLATE<T> >(typeName); \
         metatype_id.storeRelease(newId); \
         return newId; \
     } \
@@ -1773,9 +1741,7 @@ struct QMetaTypeId< DOUBLE_ARG_TEMPLATE<T, U> > \
         typeName.append(#DOUBLE_ARG_TEMPLATE, int(sizeof(#DOUBLE_ARG_TEMPLATE)) - 1) \
             .append('<').append(tName, tNameLen).append(',').append(uName, uNameLen); \
         typeName.append('>'); \
-        const int newId = qRegisterNormalizedMetaType< DOUBLE_ARG_TEMPLATE<T, U> >(\
-                        typeName, \
-                        reinterpret_cast< DOUBLE_ARG_TEMPLATE<T, U> *>(quintptr(-1))); \
+        const int newId = qRegisterNormalizedMetaType< DOUBLE_ARG_TEMPLATE<T, U> >(typeName); \
         metatype_id.storeRelease(newId); \
         return newId; \
     } \
@@ -1817,9 +1783,7 @@ struct SharedPointerMetaTypeIdHelper<SMART_POINTER<T>, true> \
         typeName.reserve(int(sizeof(#SMART_POINTER) + 1 + strlen(cName) + 1)); \
         typeName.append(#SMART_POINTER, int(sizeof(#SMART_POINTER)) - 1) \
             .append('<').append(cName).append('>'); \
-        const int newId = qRegisterNormalizedMetaType< SMART_POINTER<T> >( \
-                        typeName, \
-                        reinterpret_cast< SMART_POINTER<T> *>(quintptr(-1))); \
+        const int newId = qRegisterNormalizedMetaType< SMART_POINTER<T> >(typeName); \
         metatype_id.storeRelease(newId); \
         return newId; \
     } \
