@@ -1,9 +1,9 @@
 
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.14)
 
 project(test_private_targets)
 
-find_package(Qt5Gui REQUIRED)
+find_package(Qt6Gui REQUIRED)
 
 add_executable(testapp main.cpp)
-target_link_libraries(testapp Qt5::GuiPrivate)
+target_link_libraries(testapp Qt::GuiPrivate)

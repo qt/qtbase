@@ -1,5 +1,5 @@
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.14)
 
 project(no_link_gui)
 
@@ -9,25 +9,23 @@ if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/FindPackageHints.cmake")
     include("${CMAKE_CURRENT_LIST_DIR}/FindPackageHints.cmake")
 endif()
 
-find_package(Qt5Gui REQUIRED HINTS ${Qt5Tests_PREFIX_PATH})
-find_package(Qt5Test REQUIRED HINTS ${Qt5Tests_PREFIX_PATH})
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Core_EXECUTABLE_COMPILE_FLAGS}")
+find_package(Qt6Gui REQUIRED HINTS ${Qt6Tests_PREFIX_PATH})
+find_package(Qt6Test REQUIRED HINTS ${Qt6Tests_PREFIX_PATH})
 
 include_directories(
-    ${Qt5Gui_INCLUDE_DIRS}
-    ${Qt5Test_INCLUDE_DIRS}
+    ${Qt6Gui_INCLUDE_DIRS}
+    ${Qt6Test_INCLUDE_DIRS}
 )
 
 add_definitions(
-    ${Qt5Gui_DEFINITIONS}
-    ${Qt5Test_DEFINITIONS}
+    ${Qt6Gui_DEFINITIONS}
+    ${Qt6Test_DEFINITIONS}
 )
 
 set(main_file "main.cpp")
 set(moc_file "${CMAKE_CURRENT_BINARY_DIR}/main.moc")
 
-qt5_generate_moc("${main_file}" "${moc_file}")
+qt_generate_moc("${main_file}" "${moc_file}")
 
 # The core_test is expected to fail to build because
 # QT_GUI_LIB is defined, which affects the contents of
@@ -39,12 +37,12 @@ qt5_generate_moc("${main_file}" "${moc_file}")
 # be necessary to comment out the core_test and re-run cmake)
 add_executable(core_test "${main_file}" "${moc_file}")
 target_link_libraries(core_test
-    ${Qt5Core_LIBRARIES}
-    ${Qt5Test_LIBRARIES}
+    ${Qt6Core_LIBRARIES}
+    ${Qt6Test_LIBRARIES}
 )
 
 add_executable(gui_test "${main_file}" "${moc_file}")
 target_link_libraries(gui_test
-    ${Qt5Gui_LIBRARIES}
-    ${Qt5Test_LIBRARIES}
+    ${Qt6Gui_LIBRARIES}
+    ${Qt6Test_LIBRARIES}
 )

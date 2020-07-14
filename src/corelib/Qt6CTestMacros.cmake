@@ -19,11 +19,11 @@ endforeach()
 
 set(BUILD_OPTIONS_LIST)
 
-if (CMAKE_C_COMPILER)
+if (CMAKE_C_COMPILER AND NOT CMAKE_CROSSCOMPILING)
   list(APPEND BUILD_OPTIONS_LIST "-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}")
 endif()
 
-if (CMAKE_CXX_COMPILER)
+if (CMAKE_CXX_COMPILER AND NOT CMAKE_CROSSCOMPILING)
   list(APPEND BUILD_OPTIONS_LIST "-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}")
 endif()
 
@@ -49,20 +49,6 @@ if (NO_DBUS)
   list(APPEND BUILD_OPTIONS_LIST "-DNO_DBUS=True")
 endif()
 
-# Qt requires C++11 features in header files, which means
-# the buildsystem needs to add a -std flag for certain compilers
-# CMake adds the flag automatically in most cases, but notably not
-# on Windows prior to CMake 3.3
-if (CMAKE_VERSION VERSION_LESS 3.3)
-    if (CMAKE_CXX_COMPILER_ID STREQUAL AppleClang
-            OR (APPLE AND CMAKE_CXX_COMPILER_ID STREQUAL Clang))
-        list(APPEND BUILD_OPTIONS_LIST "-DCMAKE_CXX_FLAGS=-std=gnu++0x -stdlib=libc++")
-    elseif (CMAKE_CXX_COMPILER_ID STREQUAL GNU
-            OR CMAKE_CXX_COMPILER_ID STREQUAL Clang)
-        list(APPEND BUILD_OPTIONS_LIST "-DCMAKE_CXX_FLAGS=-std=gnu++0x")
-    endif()
-endif()
-
 foreach(module ${CMAKE_MODULES_UNDER_TEST})
     list(APPEND BUILD_OPTIONS_LIST
         "-DCMAKE_${module}_MODULE_MAJOR_VERSION=${CMAKE_${module}_MODULE_MAJOR_VERSION}"
@@ -71,21 +57,83 @@ foreach(module ${CMAKE_MODULES_UNDER_TEST})
     )
 endforeach()
 
+function(_qt_internal_set_up_test_run_environment testname)
+    # This is copy-pasted from qt_add_test and adapted to the standalone project case.
+    if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
+        set(QT_PATH_SEPARATOR "\\;")
+    else()
+        set(QT_PATH_SEPARATOR ":")
+    endif()
+
+    if(NOT INSTALL_BINDIR)
+        set(INSTALL_BINDIR bin)
+    endif()
+
+    if(NOT INSTALL_PLUGINSDIR)
+        set(INSTALL_PLUGINSDIR "plugins")
+    endif()
+
+    set(install_prefixes "")
+    if(NOT CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+        set(install_prefixes "${CMAKE_INSTALL_PREFIX}")
+    endif()
+
+    # If part of Qt build or standalone tests, use the build internals install prefix.
+    # If the tests are configured as a separate project, use the Qt6 package provided install
+    # prefix.
+    if(QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX)
+        list(APPEND install_prefixes "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}")
+    else()
+        list(APPEND install_prefixes "${QT6_INSTALL_PREFIX}")
+    endif()
+
+    set(test_env_path "PATH=${CMAKE_CURRENT_BINARY_DIR}")
+    foreach(install_prefix ${install_prefixes})
+        set(test_env_path "${test_env_path}${QT_PATH_SEPARATOR}${install_prefix}/${INSTALL_BINDIR}")
+    endforeach()
+    set(test_env_path "${test_env_path}${QT_PATH_SEPARATOR}$ENV{PATH}")
+    string(REPLACE ";" "\;" test_env_path "${test_env_path}")
+    set_property(TEST "${testname}" APPEND PROPERTY ENVIRONMENT "${test_env_path}")
+    set_property(TEST "${testname}" APPEND PROPERTY ENVIRONMENT "QT_TEST_RUNNING_IN_CTEST=1")
+
+    # Add the install prefix to list of plugin paths when doing a prefix build
+    if(NOT QT_INSTALL_DIR)
+        foreach(install_prefix ${install_prefixes})
+            list(APPEND plugin_paths "${install_prefix}/${INSTALL_PLUGINSDIR}")
+        endforeach()
+    endif()
+
+    #TODO: Collect all paths from known repositories when performing a super
+    # build.
+    list(APPEND plugin_paths "${PROJECT_BINARY_DIR}/${INSTALL_PLUGINSDIR}")
+    list(JOIN plugin_paths "${QT_PATH_SEPARATOR}" plugin_paths_joined)
+    set_property(TEST "${testname}"
+                 APPEND PROPERTY ENVIRONMENT "QT_PLUGIN_PATH=${plugin_paths_joined}")
+
+endfunction()
+
 macro(expect_pass _dir)
   cmake_parse_arguments(_ARGS "" "BINARY" "" ${ARGN})
   string(REPLACE "(" "_" testname "${_dir}")
   string(REPLACE ")" "_" testname "${testname}")
-  add_test(${testname} ${CMAKE_CTEST_COMMAND}
-    --build-and-test
-    "${CMAKE_CURRENT_SOURCE_DIR}/${_dir}"
-    "${CMAKE_CURRENT_BINARY_DIR}/${_dir}"
-    --build-config "${CMAKE_BUILD_TYPE}"
-    --build-generator ${CMAKE_GENERATOR}
-    --build-makeprogram ${CMAKE_MAKE_PROGRAM}
-    --build-project ${_dir}
-    --build-options "-DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}" ${BUILD_OPTIONS_LIST}
-    --test-command ${_ARGS_BINARY}
-  )
+
+  set(__expect_pass__prefixes "${CMAKE_PREFIX_PATH}")
+  string(REPLACE ";" "\;" __expect_pass__prefixes "${__expect_pass__prefixes}")
+
+  set(ctest_command_args
+      --build-and-test
+      "${CMAKE_CURRENT_SOURCE_DIR}/${_dir}"
+      "${CMAKE_CURRENT_BINARY_DIR}/${_dir}"
+      --build-config "${CMAKE_BUILD_TYPE}"
+      --build-generator "${CMAKE_GENERATOR}"
+      --build-makeprogram "${CMAKE_MAKE_PROGRAM}"
+      --build-project "${_dir}"
+      --build-options "-DCMAKE_PREFIX_PATH=${__expect_pass__prefixes}" ${BUILD_OPTIONS_LIST}
+      --test-command ${_ARGS_BINARY})
+  add_test(${testname} ${CMAKE_CTEST_COMMAND} ${ctest_command_args})
+  if(_ARGS_BINARY)
+      _qt_internal_set_up_test_run_environment("${testname}")
+  endif()
 endmacro()
 
 macro(expect_fail _dir)
@@ -94,11 +142,11 @@ macro(expect_fail _dir)
   file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/failbuild/${_dir}")
   file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/${_dir}" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/failbuild/${_dir}")
 
-  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/failbuild/${_dir}/${_dir}/FindPackageHints.cmake" "set(Qt5Tests_PREFIX_PATH \"${CMAKE_PREFIX_PATH}\")")
+  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/failbuild/${_dir}/${_dir}/FindPackageHints.cmake" "set(Qt6Tests_PREFIX_PATH \"${CMAKE_PREFIX_PATH}\")")
 
   file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/failbuild/${_dir}/CMakeLists.txt"
     "
-      cmake_minimum_required(VERSION 2.8)
+      cmake_minimum_required(VERSION 3.14)
       project(${_dir})
 
       try_compile(Result \${CMAKE_CURRENT_BINARY_DIR}/${_dir}
@@ -117,9 +165,9 @@ macro(expect_fail _dir)
     "${CMAKE_CURRENT_BINARY_DIR}/failbuild/${_dir}"
     "${CMAKE_CURRENT_BINARY_DIR}/failbuild/${_dir}/build"
     --build-config "${CMAKE_BUILD_TYPE}"
-    --build-generator ${CMAKE_GENERATOR}
-    --build-makeprogram ${CMAKE_MAKE_PROGRAM}
-    --build-project ${_dir}
+    --build-generator "${CMAKE_GENERATOR}"
+    --build-makeprogram "${CMAKE_MAKE_PROGRAM}"
+    --build-project "${_dir}"
     --build-options "-DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}" ${BUILD_OPTIONS_LIST}
   )
 endmacro()
@@ -130,11 +178,11 @@ function(test_module_includes)
   set(packages_string "")
   set(libraries_string "")
 
-  foreach(_package ${Qt5_MODULE_TEST_DEPENDS})
+  foreach(_package ${Qt6_MODULE_TEST_DEPENDS})
     set(packages_string
       "
       ${packages_string}
-      find_package(Qt5${_package} 5.0.0 REQUIRED)
+      find_package(Qt6${_package} 6.0.0 REQUIRED)
       "
     )
   endforeach()
@@ -147,51 +195,35 @@ function(test_module_includes)
 
     set(packages_string
       "${packages_string}
-      find_package(Qt5${qtmodule} 5.0.0 REQUIRED)
-      include_directories(\${Qt5${qtmodule}_INCLUDE_DIRS})
-      add_definitions(\${Qt5${qtmodule}_DEFINITIONS})\n")
+      find_package(Qt6${qtmodule} 6.0.0 REQUIRED)\n")
 
     list(FIND CMAKE_MODULES_UNDER_TEST ${qtmodule} _findIndex)
     if (NOT _findIndex STREQUAL -1)
         set(packages_string
           "${packages_string}
-          if(NOT \"\${Qt5${qtmodule}_VERSION}\" VERSION_EQUAL ${CMAKE_MODULE_VERSION})
-            message(SEND_ERROR \"Qt5${qtmodule}_VERSION variable was not ${CMAKE_MODULE_VERSION}. Got \${Qt5${qtmodule}_VERSION} instead.\")
+          if(NOT \"\${Qt6${qtmodule}_VERSION}\" VERSION_EQUAL ${CMAKE_MODULE_VERSION})
+            message(SEND_ERROR \"Qt6${qtmodule}_VERSION variable was not ${CMAKE_MODULE_VERSION}. Got \${Qt6${qtmodule}_VERSION} instead.\")
           endif()
-          if(NOT \"\${Qt5${qtmodule}_VERSION_MAJOR}\" VERSION_EQUAL ${CMAKE_${qtmodule}_MODULE_MAJOR_VERSION})
-            message(SEND_ERROR \"Qt5${qtmodule}_VERSION_MAJOR variable was not ${CMAKE_${qtmodule}_MODULE_MAJOR_VERSION}. Got \${Qt5${qtmodule}_VERSION_MAJOR} instead.\")
+          if(NOT \"\${Qt6${qtmodule}_VERSION_MAJOR}\" VERSION_EQUAL ${CMAKE_${qtmodule}_MODULE_MAJOR_VERSION})
+            message(SEND_ERROR \"Qt6${qtmodule}_VERSION_MAJOR variable was not ${CMAKE_${qtmodule}_MODULE_MAJOR_VERSION}. Got \${Qt6${qtmodule}_VERSION_MAJOR} instead.\")
           endif()
-          if(NOT \"\${Qt5${qtmodule}_VERSION_MINOR}\" VERSION_EQUAL ${CMAKE_${qtmodule}_MODULE_MINOR_VERSION})
-            message(SEND_ERROR \"Qt5${qtmodule}_VERSION_MINOR variable was not ${CMAKE_${qtmodule}_MODULE_MINOR_VERSION}. Got \${Qt5${qtmodule}_VERSION_MINOR} instead.\")
+          if(NOT \"\${Qt6${qtmodule}_VERSION_MINOR}\" VERSION_EQUAL ${CMAKE_${qtmodule}_MODULE_MINOR_VERSION})
+            message(SEND_ERROR \"Qt6${qtmodule}_VERSION_MINOR variable was not ${CMAKE_${qtmodule}_MODULE_MINOR_VERSION}. Got \${Qt6${qtmodule}_VERSION_MINOR} instead.\")
           endif()
-          if(NOT \"\${Qt5${qtmodule}_VERSION_PATCH}\" VERSION_EQUAL ${CMAKE_${qtmodule}_MODULE_PATCH_VERSION})
-            message(SEND_ERROR \"Qt5${qtmodule}_VERSION_PATCH variable was not ${CMAKE_${qtmodule}_MODULE_PATCH_VERSION}. Got \${Qt5${qtmodule}_VERSION_PATCH} instead.\")
-          endif()
-          if(NOT \"\${Qt5${qtmodule}_VERSION_STRING}\" VERSION_EQUAL ${CMAKE_MODULE_VERSION})
-            message(SEND_ERROR \"Qt5${qtmodule}_VERSION_STRING variable was not ${CMAKE_MODULE_VERSION}. Got \${Qt5${qtmodule}_VERSION_STRING} instead.\")
+          if(NOT \"\${Qt6${qtmodule}_VERSION_PATCH}\" VERSION_EQUAL ${CMAKE_${qtmodule}_MODULE_PATCH_VERSION})
+            message(SEND_ERROR \"Qt6${qtmodule}_VERSION_PATCH variable was not ${CMAKE_${qtmodule}_MODULE_PATCH_VERSION}. Got \${Qt6${qtmodule}_VERSION_PATCH} instead.\")
           endif()\n"
         )
     endif()
-    set(libraries_string "${libraries_string} Qt5::${qtmodule}")
+    set(libraries_string "${libraries_string} Qt6::${qtmodule}")
   endwhile()
 
   file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/module_includes/CMakeLists.txt"
     "
-      cmake_minimum_required(VERSION 2.8)
+      cmake_minimum_required(VERSION 3.14)
       project(module_includes)
 
       ${packages_string}
-
-      set(CMAKE_CXX_FLAGS \"\${CMAKE_CXX_FLAGS} \${Qt5Core_EXECUTABLE_COMPILE_FLAGS}\")
-      if (CMAKE_VERSION VERSION_LESS 3.3)
-          if (CMAKE_CXX_COMPILER_ID STREQUAL AppleClang
-                  OR (APPLE AND CMAKE_CXX_COMPILER_ID STREQUAL Clang))
-              set(CMAKE_CXX_FLAGS \"\${CMAKE_CXX_FLAGS} -std=gnu++0x -stdlib=libc++\")
-          elseif (CMAKE_CXX_COMPILER_ID STREQUAL GNU
-                  OR CMAKE_CXX_COMPILER_ID STREQUAL Clang)
-              set(CMAKE_CXX_FLAGS \"\${CMAKE_CXX_FLAGS} -std=gnu++0x\")
-          endif()
-      endif()
 
       add_executable(module_includes_exe \"\${CMAKE_CURRENT_SOURCE_DIR}/main.cpp\")
       target_link_libraries(module_includes_exe ${libraries_string})\n"
@@ -235,8 +267,8 @@ function(test_module_includes)
     "${CMAKE_CURRENT_BINARY_DIR}/module_includes/"
     "${CMAKE_CURRENT_BINARY_DIR}/module_includes/build"
     --build-config "${CMAKE_BUILD_TYPE}"
-    --build-generator ${CMAKE_GENERATOR}
-    --build-makeprogram ${CMAKE_MAKE_PROGRAM}
+    --build-generator "${CMAKE_GENERATOR}"
+    --build-makeprogram "${CMAKE_MAKE_PROGRAM}"
     --build-project module_includes
     --build-options "-DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}" ${BUILD_OPTIONS_LIST}
   )

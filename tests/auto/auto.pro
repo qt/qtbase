@@ -11,7 +11,6 @@ uikit {
 SUBDIRS += testlib
 qtConfig(process):!cross_compile: SUBDIRS += tools
 SUBDIRS += corelib
-!cross_compile: SUBDIRS += cmake
 qtHaveModule(concurrent): SUBDIRS += concurrent
 # QTBUG-63915: boot2qt fails dbus
 qtHaveModule(dbus):!cross_compile:!boot2qt {
@@ -32,7 +31,5 @@ qtHaveModule(printsupport): SUBDIRS += printsupport
 qtHaveModule(sql): SUBDIRS += sql
 qtHaveModule(widgets): SUBDIRS += widgets
 qtHaveModule(xml): SUBDIRS += xml
-!cross_compile: SUBDIRS += installed_cmake
 SUBDIRS += other
 
-installed_cmake.depends = cmake

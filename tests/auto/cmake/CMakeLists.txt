@@ -1,10 +1,13 @@
+# special case skip regeneration
 
 # This is an automatic test for the CMake configuration files.
 # To run it manually,
 # 1) mkdir build   # Create a build directory
 # 2) cd build
-# 3) cmake ..      # Run cmake on this directory.
+# 3) # Run cmake on this directory
+#    `$qt_prefix/bin/qt-cmake ..` or `cmake -DCMAKE_PREFIX_PATH=/path/to/qt ..`
 # 4) ctest         # Run ctest
+# 5) ctest -V -R test_wrap_cpp_options # Run single test
 #
 # The expected output is something like:
 #
@@ -37,15 +40,46 @@
 # needs to be set to the installation prefix or build prefix of Qt
 # before running these tests.
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.14)
 
-project(qmake_cmake_files)
+project(cmake_usage_tests)
 
 enable_testing()
 
-find_package(Qt5Core REQUIRED)
+# Most of the tests fail to build on Boot2qt / qemu with undefined references to QtDBus because
+# it's a private dependency of QtGui, and CMake for some reason doesn't generate an -rpath-link
+# flag. Notably -rpath is specified which should implicitly enable -rpath-link, but that
+# doesn't seem to be the case.
+# Until this is figured out, disable the tests when cross-compiling to Linux.
+if(UNIX AND NOT APPLE AND NOT WIN32 AND CMAKE_CROSSCOMPILING AND NOT QT_ENABLE_CMAKE_BOOT2QT_TESTS)
+    message(STATUS "Running CMake tests is disabled when cross-compiling to Linux / Boot2Qt.")
+    return()
+endif()
 
-include("${_Qt5CTestMacros}")
+set(required_packages Core Network Xml Sql Test)
+set(optional_packages DBus Gui Widgets PrintSupport OpenGL Concurrent)
+
+# Setup the test when called as a completely standalone project.
+find_package(Qt6 REQUIRED COMPONENTS ${required_packages})
+find_package(Qt6 OPTIONAL_COMPONENTS ${optional_packages})
+
+# Setup common test variables which were previously set by ctest_testcase_common.prf.
+set(CMAKE_MODULES_UNDER_TEST "${required_packages}")
+foreach(qt_package ${optional_packages})
+    set(package_name "${QT_CMAKE_EXPORT_NAMESPACE}${qt_package}")
+    list(APPEND CMAKE_MODULES_UNDER_TEST "${qt_package}")
+endforeach()
+
+foreach(qt_package ${CMAKE_MODULES_UNDER_TEST})
+    if(${package_name}_FOUND)
+        set(CMAKE_${qt_package}_MODULE_MAJOR_VERSION "${${package_name}_VERSION_MAJOR}")
+        set(CMAKE_${qt_package}_MODULE_MINOR_VERSION "${${package_name}_VERSION_MINOR}")
+        set(CMAKE_${qt_package}_MODULE_PATCH_VERSION "${${package_name}_VERSION_PATCH}")
+    endif()
+endforeach()
+
+
+include("${_Qt6CTestMacros}")
 
 expect_pass(test_umbrella_config)
 expect_pass(test_wrap_cpp_and_resources)
@@ -58,7 +92,7 @@ expect_fail(test_wrap_cpp_options)
 expect_pass(test_platform_defs_include)
 expect_pass(test_qtmainwin_library)
 
-if (HAVE_NINJA)
+if (CMAKE_GENERATOR STREQUAL Ninja AND UNIX AND NOT WIN32)
     make_directory("${CMAKE_CURRENT_SOURCE_DIR}/test_QFINDTESTDATA/build")
     add_test(test_QFINDTESTDATA ${CMAKE_CTEST_COMMAND}
       --build-and-test
@@ -66,10 +100,12 @@ if (HAVE_NINJA)
       # Build in a subdir of the source dir.
       # This causes Ninja to use relative paths.
       "${CMAKE_CURRENT_SOURCE_DIR}/test_QFINDTESTDATA/build"
-      --build-generator Ninja
-      --build-options "-DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}"
+      --build-config "${CMAKE_BUILD_TYPE}"
+      --build-generator "${CMAKE_GENERATOR}"
+      --build-makeprogram "${CMAKE_MAKE_PROGRAM}"
+      --build-options "-DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}" ${BUILD_OPTIONS_LIST}
     )
-    add_test(NAME run_test_QFINDTESTDATA COMMAND sh -c "cd \"${CMAKE_SOURCE_DIR}/test_QFINDTESTDATA/build/tests\" && ./test_QFINDTESTDATA -v2")
+    add_test(NAME run_test_QFINDTESTDATA COMMAND sh -c "cd \"${CMAKE_CURRENT_SOURCE_DIR}/test_QFINDTESTDATA/build/tests\" && ./test_QFINDTESTDATA -v2")
 
     set_property(TEST run_test_QFINDTESTDATA
         PROPERTY DEPENDS test_QFINDTESTDATA
@@ -118,7 +154,7 @@ endif()
 if (NOT NO_WIDGETS)
   list(APPEND qt_module_includes
     Widgets QWidget
-    OpenGL QGLBuffer
+    OpenGL QOpenGLBuffer
     PrintSupport QPrinter
   )
 endif()
@@ -133,9 +169,6 @@ test_module_includes(
   ${qt_module_includes}
 )
 expect_pass(test_concurrent_module)
-if (QT_WITH_ANGLE OR (NOT WIN32 AND NOT APPLE AND NOT NO_EGL))
-    expect_pass(test_egl_lib)
-endif()
 expect_pass(test_opengl_lib)
 
 if (NOT NO_WIDGETS)
@@ -145,19 +178,17 @@ endif()
 expect_pass(test_interface_link_libraries)
 expect_pass(test_moc_macro_target)
 
-if (NOT CMAKE_VERSION VERSION_LESS 3.9)
-    # The modification of TARGET_OBJECTS needs the following change in cmake
-    # https://gitlab.kitware.com/cmake/cmake/commit/93c89bc75ceee599ba7c08b8fe1ac5104942054f
-    expect_pass(test_add_big_resource)
-endif()
+# The modification of TARGET_OBJECTS needs the following change in cmake
+# https://gitlab.kitware.com/cmake/cmake/commit/93c89bc75ceee599ba7c08b8fe1ac5104942054f
+# FIXME: Doesn't currently work with namespaced Qt builds QTBUG-85620
+# expect_pass(test_add_big_resource)
 
-if (NOT CMAKE_VERSION VERSION_LESS 3.8)
-    # With earlier CMake versions, this test would simply run moc multiple times and lead to:
-    # /usr/bin/ld: error: CMakeFiles/mywidget.dir/mywidget_automoc.cpp.o: multiple definition of 'MyWidget::qt_static_metacall(QObject*, QMetaObject::Call, int, void**)'
-    # /usr/bin/ld: CMakeFiles/mywidget.dir/moc_mywidget.cpp.o: previous definition here
-    # Reason: SKIP_* properties were added in CMake 3.8 only
-    expect_pass(test_QTBUG-63422)
-endif()
+# With earlier CMake versions, this test would simply run moc multiple times and lead to:
+# /usr/bin/ld: error: CMakeFiles/mywidget.dir/mywidget_automoc.cpp.o: multiple definition of 'MyWidget::qt_static_metacall(QObject*, QMetaObject::Call, int, void**)'
+# /usr/bin/ld: CMakeFiles/mywidget.dir/moc_mywidget.cpp.o: previous definition here
+# Reason: SKIP_* properties were added in CMake 3.8 only
+expect_pass(test_QTBUG-63422)
 
-expect_pass(test_import_plugins BINARY ${CMAKE_CTEST_COMMAND})
+# FIXME: Needs porting of the qmake .pro files to create the modules and plugins in Qt6 CMake land.
+# expect_pass(test_import_plugins BINARY ${CMAKE_CTEST_COMMAND})
 expect_pass(test_versionless_targets)

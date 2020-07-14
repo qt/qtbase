@@ -34,7 +34,8 @@
 int main(int argc, char **argv)
 {
     QByteArray bytearray = "hello world";
-    QtConcurrent::run(bytearray, &QByteArray::split, ',');
+    auto result = QtConcurrent::run(&QByteArray::split, bytearray, ',');
+    Q_UNUSED(result);
 
     return 0;
 }

@@ -1,23 +1,23 @@
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.14)
 
 project(test_moc_macro_target)
 
-find_package(Qt5Core REQUIRED)
+find_package(Qt6Core REQUIRED)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-qt5_generate_moc(main_gen_test.cpp
+qt_generate_moc(main_gen_test.cpp
   "${CMAKE_CURRENT_BINARY_DIR}/main_gen_test.moc"
-  TARGET Qt5GenerateMacroTest
+  TARGET QtGenerateMacroTest
 )
-add_executable(Qt5GenerateMacroTest main_gen_test.cpp "${CMAKE_CURRENT_BINARY_DIR}/main_gen_test.moc")
-target_include_directories(Qt5GenerateMacroTest PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/interface")
-target_link_libraries(Qt5GenerateMacroTest Qt5::Core)
+add_executable(QtGenerateMacroTest main_gen_test.cpp "${CMAKE_CURRENT_BINARY_DIR}/main_gen_test.moc")
+target_include_directories(QtGenerateMacroTest PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/interface")
+target_link_libraries(QtGenerateMacroTest PRIVATE Qt6::Core)
 
-qt5_wrap_cpp(moc_file mywrapobject.h
-  TARGET Qt5WrapMacroTest
+qt_wrap_cpp(moc_file mywrapobject.h
+  TARGET QtWrapMacroTest
 )
-add_executable(Qt5WrapMacroTest main_wrap_test.cpp ${moc_file})
-target_include_directories(Qt5WrapMacroTest PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/interface")
-target_link_libraries(Qt5WrapMacroTest Qt5::Core)
+add_executable(QtWrapMacroTest main_wrap_test.cpp ${moc_file})
+target_include_directories(QtWrapMacroTest PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/interface")
+target_link_libraries(QtWrapMacroTest PRIVATE Qt::Core)

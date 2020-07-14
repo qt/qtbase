@@ -1,13 +1,13 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.14)
 
 project(versionless_targets)
 
 set(QT_NO_CREATE_VERSIONLESS_TARGETS ON)
 
-find_package(Qt5Core REQUIRED)
+find_package(Qt6Core REQUIRED)
 
-if (NOT TARGET Qt5::Core)
-    message(SEND_ERROR "Qt5::Core target not defined!")
+if (NOT TARGET Qt6::Core)
+    message(SEND_ERROR "Qt6::Core target not defined!")
 endif()
 
 if (TARGET Qt::Core)
@@ -16,7 +16,7 @@ endif()
 
 set(QT_NO_CREATE_VERSIONLESS_TARGETS OFF)
 
-find_package(Qt5Core REQUIRED)
+find_package(Qt6Core REQUIRED)
 
 if (NOT TARGET Qt::Core)
     message(SEND_ERROR "Qt::Core target not defined!")

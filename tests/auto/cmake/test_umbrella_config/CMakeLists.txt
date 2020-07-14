@@ -1,20 +1,20 @@
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.14)
 
 project(test_umbrella_config)
 
 add_subdirectory(components_found)
 
-if (Qt5_FOUND)
-    message(SEND_ERROR "Qt5_FOUND variable leaked!")
+if (Qt6_FOUND)
+    message(SEND_ERROR "Qt6_FOUND variable leaked!")
 endif()
 
-if (Qt5Core_FOUND)
-    message(SEND_ERROR "Qt5Core_FOUND variable leaked!")
+if (Qt6Core_FOUND)
+    message(SEND_ERROR "Qt6Core_FOUND variable leaked!")
 endif()
 
-if (TARGET Qt5::Core)
-    message(SEND_ERROR "Qt5::Core target leaked!")
+if (TARGET Qt6::Core)
+    message(SEND_ERROR "Qt6::Core target leaked!")
 endif()
 
 add_subdirectory(components_not_found)

@@ -255,6 +255,10 @@ qt_add_module(Core
         Threads::Threads # special case
     PUBLIC_LIBRARIES  # special case:
         Qt::Platform # special case:
+    # special case begin
+    # Generated in QtBaseGlobalTargets
+    EXTRA_CMAKE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/Qt6CTestMacros.cmake"
+    # special case end
 )
 
 # special case begin

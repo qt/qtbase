@@ -17,7 +17,7 @@ if (NOT CMAKE_CROSSCOMPILE AND QT_FEATURE_process)
      add_subdirectory(tools)
 endif()
 add_subdirectory(corelib)
-# add_subdirectory(cmake) ## FIXME: Does this still make sense in this form?
+add_subdirectory(cmake)
 if (TARGET Qt::Concurrent)
      add_subdirectory(concurrent)
 endif()

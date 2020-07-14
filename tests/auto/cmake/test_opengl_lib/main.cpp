@@ -28,30 +28,11 @@
 
 
 #include <qglobal.h>
-#ifndef QT_OPENGL_DYNAMIC
-#  if defined(GL_IMPLEMENTATION_GLES2)
-#    include <GLES2/gl2.h>
-#  elif defined(GL_IMPLEMENTATION_GL)
-#    ifdef Q_OS_WIN
-#      include <qt_windows.h>
-#    endif
-#    ifdef Q_OS_MAC
-#      include <OpenGL/gl.h>
-#    else
-#      include <GL/gl.h>
-#    endif
-#  endif
-#else
-#  include <QOpenGLFunctions>
-#endif
+#include <QOpenGLFunctions>
 
 int main(int argc, char **argv)
 {
-#ifndef QT_OPENGL_DYNAMIC
-    glGetError();
-#else
     QOpenGLFunctions functions;
     functions.glGetError();
-#endif
     return 0;
 }
