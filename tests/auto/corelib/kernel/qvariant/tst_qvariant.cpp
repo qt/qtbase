@@ -477,7 +477,7 @@ void tst_QVariant::canConvert_data()
         << var << N << N << Y << N << Y << N << N << N << N << Y << N << N << Y << N << Y << N << Y << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
     var = QVariant();
     QTest::newRow("Invalid")
-        << var << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N;
+        << var << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N;
     var = QVariant(QList<QVariant>());
     QTest::newRow("List")
         << var << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N;
@@ -520,12 +520,12 @@ void tst_QVariant::canConvert_data()
     var = QVariant::fromValue<signed char>(-1);
     QTest::newRow("SChar")
         << var << N << N << Y << N << Y << N << N << N << N << Y << N << N << Y << N << N << N << Y << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
-    var = QVariant((short)-3);
+    var = QVariant::fromValue((short)-3);
     QTest::newRow("Short")
-        << var << N << N << Y << N << Y << N << N << N << N << Y << N << N << Y << N << Y << N << Y << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
-    var = QVariant((ushort)7);
+        << var << N << N << Y << N << Y << N << N << N << N << Y << N << N << Y << N << N << N << Y << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
+    var = QVariant::fromValue((ushort)7);
     QTest::newRow("UShort")
-        << var << N << N << Y << N << Y << N << N << N << N << Y << N << N << Y << N << Y << N << Y << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
+        << var << N << N << Y << N << Y << N << N << N << N << Y << N << N << Y << N << N << N << Y << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
     var = QVariant::fromValue<QJsonValue>(QJsonValue(QStringLiteral("hello")));
     QTest::newRow("JsonValue")
         << var << N << N << Y << N << N << N << N << N << N << Y << N << N << Y << N << N << Y << Y << Y << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
@@ -2705,17 +2705,17 @@ void tst_QVariant::canConvertQStringList_data() const
     QTest::addColumn<QStringList>("input");
     QTest::addColumn<QString>("result");
 
-    QTest::newRow("An empty list") << false << QStringList() << QString();
+    QTest::newRow("An empty list") << true << QStringList() << QString();
     QTest::newRow("A single item") << true << QStringList(QLatin1String("foo")) << QString::fromLatin1("foo");
     QTest::newRow("A single, but empty item") << true << QStringList(QString()) << QString();
 
     QStringList l;
     l << "a" << "b";
 
-    QTest::newRow("Two items") << false << l << QString();
+    QTest::newRow("Two items") << true << l << QString();
 
     l << "c";
-    QTest::newRow("Three items") << false << l << QString();
+    QTest::newRow("Three items") << true << l << QString();
 }
 
 template<typename T> void convertMetaType()

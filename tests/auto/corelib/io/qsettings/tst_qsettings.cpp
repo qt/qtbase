@@ -929,7 +929,8 @@ void tst_QSettings::testIniParsing()
 
     if ( settings.status() == QSettings::NoError ) { // else no point proceeding
         QVariant v = settings.value(key);
-        QVERIFY(v.canConvert(expect.type()));
+        if (expect.isValid())
+            QVERIFY(v.canConvert(expect.type()));
         // check some types so as to give prettier error messages
         if ( v.type() == QVariant::String ) {
             QCOMPARE(v.toString(), expect.toString());

@@ -1829,6 +1829,18 @@ static bool convertToEnum(const void *from, int fromTypeId, void *to, const QMet
     }
 }
 
+#ifndef QT_BOOTSTRAPPED
+static bool canConvertMetaObject(const QMetaType &fromType, const QMetaType &toType)
+{
+    if ((fromType.flags() & QMetaType::PointerToQObject) && (toType.flags() & QMetaType::PointerToQObject)) {
+        return fromType.metaObject()->inherits(toType.metaObject()) ||
+                toType.metaObject()->inherits(fromType.metaObject());
+    }
+    return false;
+}
+#endif
+
+
 /*!
     Converts the object at \a from from \a fromTypeId to the preallocated space at \a to
     typed \a toTypeId. Returns \c true, if the conversion succeeded, otherwise false.
@@ -1836,6 +1848,16 @@ static bool convertToEnum(const void *from, int fromTypeId, void *to, const QMet
 */
 bool QMetaType::convert(const void *from, int fromTypeId, void *to, int toTypeId)
 {
+    if (fromTypeId == UnknownType || toTypeId == UnknownType)
+        return false;
+
+    if (fromTypeId == toTypeId) {
+        // just make a copy
+        QMetaType(fromTypeId).destruct(to);
+        QMetaType(fromTypeId).construct(to, from);
+        return true;
+    }
+
     if (auto moduleHelper = qModuleHelperForType(qMax(fromTypeId, toTypeId))) {
         if (moduleHelper->convert(from, fromTypeId, to, toTypeId))
             return true;
@@ -1860,6 +1882,126 @@ bool QMetaType::convert(const void *from, int fromTypeId, void *to, int toTypeId
     }
     return false;
 }
+
+/*!
+    Returns \c true if QMetaType::convert can convert from \a fromType to
+    \a toType.
+
+    The following conversions are supported by Qt:
+
+    \table
+    \header \li Type \li Automatically Cast To
+    \row \li \l QMetaType::Bool \li \l QMetaType::QChar, \l QMetaType::Double,
+        \l QMetaType::Int, \l QMetaType::LongLong, \l QMetaType::QString,
+        \l QMetaType::UInt, \l QMetaType::ULongLong
+    \row \li \l QMetaType::QByteArray \li \l QMetaType::Double,
+        \l QMetaType::Int, \l QMetaType::LongLong, \l QMetaType::QString,
+        \l QMetaType::UInt, \l QMetaType::ULongLong, \l QMetaType::QUuid
+    \row \li \l QMetaType::QChar \li \l QMetaType::Bool, \l QMetaType::Int,
+        \l QMetaType::UInt, \l QMetaType::LongLong, \l QMetaType::ULongLong
+    \row \li \l QMetaType::QColor \li \l QMetaType::QString
+    \row \li \l QMetaType::QDate \li \l QMetaType::QDateTime,
+        \l QMetaType::QString
+    \row \li \l QMetaType::QDateTime \li \l QMetaType::QDate,
+        \l QMetaType::QString, \l QMetaType::QTime
+    \row \li \l QMetaType::Double \li \l QMetaType::Bool, \l QMetaType::Int,
+        \l QMetaType::LongLong, \l QMetaType::QString, \l QMetaType::UInt,
+        \l QMetaType::ULongLong
+    \row \li \l QMetaType::QFont \li \l QMetaType::QString
+    \row \li \l QMetaType::Int \li \l QMetaType::Bool, \l QMetaType::QChar,
+        \l QMetaType::Double, \l QMetaType::LongLong, \l QMetaType::QString,
+        \l QMetaType::UInt, \l QMetaType::ULongLong
+    \row \li \l QMetaType::QKeySequence \li \l QMetaType::Int,
+        \l QMetaType::QString
+    \row \li \l QMetaType::QVariantList \li \l QMetaType::QStringList (if the
+        list's items can be converted to QStrings)
+    \row \li \l QMetaType::LongLong \li \l QMetaType::Bool,
+        \l QMetaType::QByteArray, \l QMetaType::QChar, \l QMetaType::Double,
+        \l QMetaType::Int, \l QMetaType::QString, \l QMetaType::UInt,
+        \l QMetaType::ULongLong
+    \row \li \l QMetaType::QPoint \li QMetaType::QPointF
+    \row \li \l QMetaType::QRect \li QMetaType::QRectF
+    \row \li \l QMetaType::QString \li \l QMetaType::Bool,
+        \l QMetaType::QByteArray, \l QMetaType::QChar, \l QMetaType::QColor,
+        \l QMetaType::QDate, \l QMetaType::QDateTime, \l QMetaType::Double,
+        \l QMetaType::QFont, \l QMetaType::Int, \l QMetaType::QKeySequence,
+        \l QMetaType::LongLong, \l QMetaType::QStringList, \l QMetaType::QTime,
+        \l QMetaType::UInt, \l QMetaType::ULongLong, \l QMetaType::QUuid
+    \row \li \l QMetaType::QStringList \li \l QMetaType::QVariantList,
+        \l QMetaType::QString (if the list contains exactly one item)
+    \row \li \l QMetaType::QTime \li \l QMetaType::QString
+    \row \li \l QMetaType::UInt \li \l QMetaType::Bool, \l QMetaType::QChar,
+        \l QMetaType::Double, \l QMetaType::Int, \l QMetaType::LongLong,
+        \l QMetaType::QString, \l QMetaType::ULongLong
+    \row \li \l QMetaType::ULongLong \li \l QMetaType::Bool,
+        \l QMetaType::QChar, \l QMetaType::Double, \l QMetaType::Int,
+        \l QMetaType::LongLong, \l QMetaType::QString, \l QMetaType::UInt
+    \row \li \l QMetaType::QUuid \li \l QMetaType::QByteArray, \l QMetaType::QString
+    \endtable
+
+    Casting between primitive type (int, float, bool etc.) is supported.
+
+    Converting between pointers of types derived from QObject will also return true for this
+    function if a qobject_cast from the type described by \a fromType to the type described
+    by \a toType would succeed.
+
+    A cast from a sequential container will also return true for this
+    function if the \a toType is QVariantList.
+
+    Similarly, a cast from an associative container will also return true for this
+    function the \a toType is QVariantHash or QVariantMap.
+
+    \sa convert(), QSequentialIterable, Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE(), QAssociativeIterable,
+        Q_DECLARE_ASSOCIATIVE_CONTAINER_METATYPE()
+*/
+bool QMetaType::canConvert(const QMetaType &fromType, const QMetaType &toType)
+{
+    int fromTypeId = fromType.id();
+    int toTypeId = toType.id();
+
+    if (fromTypeId == UnknownType || toTypeId == UnknownType)
+        return false;
+
+    if (fromTypeId == toTypeId)
+        return true;
+
+    if (auto moduleHelper = qModuleHelperForType(qMax(fromTypeId, toTypeId))) {
+        if (moduleHelper->convert(nullptr, fromTypeId, nullptr, toTypeId))
+            return true;
+    }
+    const QMetaType::ConverterFunction * const f =
+        customTypesConversionRegistry()->function(qMakePair(fromTypeId, toTypeId));
+    if (f)
+        return true;
+
+    if (fromType.flags() & QMetaType::IsEnumeration) {
+        if (toTypeId == QMetaType::QString || toTypeId == QMetaType::QByteArray)
+            return true;
+        return QMetaType::canConvert(QMetaType(LongLong), toType);
+    }
+    if (toType.flags() & QMetaType::IsEnumeration) {
+        if (fromTypeId == QMetaType::QString || fromTypeId == QMetaType::QByteArray)
+            return true;
+        return QMetaType::canConvert(fromType, QMetaType(LongLong));
+    }
+    if (toTypeId == Nullptr && fromType.flags() & QMetaType::IsPointer)
+        return true;
+#ifndef QT_BOOTSTRAPPED
+    if (canConvertMetaObject(fromType, toType))
+        return true;
+#endif
+
+    return false;
+}
+
+/*!
+    bool QMetaType::compare(const void *lhs, const void *rhs, int typeId, int* result)
+    \deprecated Use the non-static compare method instead
+
+    Compares the objects at \a lhs and \a rhs. Both objects need to be of type \a typeId.
+    \a result is set to less than, equal to or greater than zero, if \a lhs is less than, equal to
+    or greater than \a rhs. Returns \c true, if the comparison succeeded, otherwise \c false.
+*/
 
 /*!
     \fn bool QMetaType::hasRegisteredConverterFunction()

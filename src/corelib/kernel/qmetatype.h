@@ -524,6 +524,7 @@ public:
 #endif
 
     static bool convert(const void *from, int fromTypeId, void *to, int toTypeId);
+    static bool canConvert(const QMetaType &fromType, const QMetaType &toType);
 #if QT_DEPRECATED_SINCE(6, 0)
     QT_DEPRECATED_VERSION_6_0
     static bool compare(const void *lhs, const void *rhs, int typeId, int *result)

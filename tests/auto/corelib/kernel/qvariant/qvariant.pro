@@ -1,6 +1,6 @@
 CONFIG += testcase
 TARGET = tst_qvariant
-QT = core-private testlib
+QT = core-private gui testlib
 INCLUDEPATH += $$PWD/../../../other/qvariant_common
 SOURCES = tst_qvariant.cpp
 RESOURCES += qvariant.qrc

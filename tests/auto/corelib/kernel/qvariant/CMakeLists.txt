@@ -13,6 +13,7 @@ qt_add_test(tst_qvariant
         ../../../other/qvariant_common
     PUBLIC_LIBRARIES
         Qt::CorePrivate
+        Qt::Gui
 )
 
 # Resources:
