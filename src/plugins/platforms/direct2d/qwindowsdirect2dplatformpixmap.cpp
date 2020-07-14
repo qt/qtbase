@@ -139,8 +139,6 @@ void QWindowsDirect2DPlatformPixmap::fromImage(const QImage &image,
 int QWindowsDirect2DPlatformPixmap::metric(QPaintDevice::PaintDeviceMetric metric) const
 {
     Q_D(const QWindowsDirect2DPlatformPixmap);
-
-    Q_GUI_EXPORT int qt_paint_device_metric(const QPaintDevice *device, QPaintDevice::PaintDeviceMetric metric);
     return qt_paint_device_metric(d->device.data(), metric);
 }
 
