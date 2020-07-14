@@ -2,7 +2,6 @@
 
 add_subdirectory(devicediscovery)
 add_subdirectory(fbconvenience)
-add_subdirectory(linuxofono)
 if(QT_FEATURE_evdev OR QT_FEATURE_integrityhid OR QT_FEATURE_libinput OR QT_FEATURE_tslib OR QT_FEATURE_xkbcommon)
     add_subdirectory(input)
 endif()

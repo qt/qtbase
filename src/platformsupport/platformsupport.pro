@@ -13,6 +13,3 @@ qtConfig(evdev)|qtConfig(tslib)|qtConfig(libinput)|qtConfig(integrityhid)|qtConf
 qtConfig(kms): \
     SUBDIRS += kmsconvenience
 
-!android:linux*:qtHaveModule(dbus) \
-    SUBDIRS += linuxofono
-
