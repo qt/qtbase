@@ -145,7 +145,7 @@ function(qt_internal_create_module_depends_file target)
             "${INSTALL_CMAKE_NAMESPACE}${target}Tools\;${PROJECT_VERSION}")
     endif()
 
-    # Dirty hack because https://gitlab.kitware.com/cmake/cmake/issues/19200
+    # Dirty deduplication hack because of https://gitlab.kitware.com/cmake/cmake/issues/19200
     foreach(dep ${target_deps})
         if(dep)
             list(FIND target_deps_seen "${dep}" dep_seen)
@@ -156,6 +156,12 @@ function(qt_internal_create_module_depends_file target)
                 endif()
                 list(GET dep 0 dep_name)
                 list(GET dep 1 dep_ver)
+
+                # Skip over Qt6 dependency, because we will manually handle it in the Dependencies
+                # file before everything else, to ensure that find_package(Qt6Core)-style works.
+                if(dep_name STREQUAL INSTALL_CMAKE_NAMESPACE)
+                    continue()
+                endif()
 
                 list(APPEND target_deps_seen "${dep_name}\;${dep_ver}")
             endif()
