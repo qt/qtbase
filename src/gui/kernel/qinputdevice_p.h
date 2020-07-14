@@ -98,7 +98,7 @@ public:
         availableVirtualGeometry = a;
         capabilities |= qint32(QInputDevice::Capability::NormalizedPosition);
         Q_Q(QInputDevice);
-        emit q->availableVirtualGeometryChanged(availableVirtualGeometry);
+        Q_EMIT q->availableVirtualGeometryChanged(availableVirtualGeometry);
     }
 
     inline static QInputDevicePrivate *get(QInputDevice *q)
