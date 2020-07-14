@@ -655,6 +655,7 @@ public:
     friend struct const_iterator;
 
     explicit QSequentialIterable(const QtMetaTypePrivate::QSequentialIterableImpl &impl);
+    QSequentialIterable() {}
 
     const_iterator begin() const;
     const_iterator end() const;
@@ -709,6 +710,7 @@ public:
     friend struct const_iterator;
 
     explicit QAssociativeIterable(const QtMetaTypePrivate::QAssociativeIterableImpl &impl);
+    QAssociativeIterable() {}
 
     const_iterator begin() const;
     const_iterator end() const;
@@ -747,122 +749,6 @@ namespace QtPrivate {
     template<typename T>
     struct QVariantValueHelperInterface : QVariantValueHelper<T>
     {
-    };
-
-    template<>
-    struct QVariantValueHelperInterface<QSequentialIterable>
-    {
-        static QSequentialIterable invoke(const QVariant &v)
-        {
-            const int typeId = v.userType();
-            if (typeId == qMetaTypeId<QVariantList>()) {
-                return QSequentialIterable(QtMetaTypePrivate::QSequentialIterableImpl(reinterpret_cast<const QVariantList*>(v.constData())));
-            }
-            if (typeId == qMetaTypeId<QStringList>()) {
-                return QSequentialIterable(QtMetaTypePrivate::QSequentialIterableImpl(reinterpret_cast<const QStringList*>(v.constData())));
-            }
-#ifndef QT_BOOTSTRAPPED
-            if (typeId == qMetaTypeId<QByteArrayList>()) {
-                return QSequentialIterable(QtMetaTypePrivate::QSequentialIterableImpl(reinterpret_cast<const QByteArrayList*>(v.constData())));
-            }
-#endif
-            return QSequentialIterable(qvariant_cast<QtMetaTypePrivate::QSequentialIterableImpl>(v));
-        }
-    };
-    template<>
-    struct QVariantValueHelperInterface<QAssociativeIterable>
-    {
-        static QAssociativeIterable invoke(const QVariant &v)
-        {
-            const int typeId = v.userType();
-            if (typeId == qMetaTypeId<QVariantMap>()) {
-                return QAssociativeIterable(QtMetaTypePrivate::QAssociativeIterableImpl(reinterpret_cast<const QVariantMap*>(v.constData())));
-            }
-            if (typeId == qMetaTypeId<QVariantHash>()) {
-                return QAssociativeIterable(QtMetaTypePrivate::QAssociativeIterableImpl(reinterpret_cast<const QVariantHash*>(v.constData())));
-            }
-            return QAssociativeIterable(qvariant_cast<QtMetaTypePrivate::QAssociativeIterableImpl>(v));
-        }
-    };
-    template<>
-    struct QVariantValueHelperInterface<QVariantList>
-    {
-        static QVariantList invoke(const QVariant &v)
-        {
-            const int typeId = v.userType();
-            if (typeId == qMetaTypeId<QStringList>() || typeId == qMetaTypeId<QByteArrayList>() ||
-                (QMetaType::hasRegisteredConverterFunction(typeId, qMetaTypeId<QtMetaTypePrivate::QSequentialIterableImpl>()) && !QMetaType::hasRegisteredConverterFunction(typeId, qMetaTypeId<QVariantList>()))) {
-                QSequentialIterable iter = QVariantValueHelperInterface<QSequentialIterable>::invoke(v);
-                QVariantList l;
-                l.reserve(iter.size());
-                for (QSequentialIterable::const_iterator it = iter.begin(), end = iter.end(); it != end; ++it)
-                    l << *it;
-                return l;
-            }
-            return QVariantValueHelper<QVariantList>::invoke(v);
-        }
-    };
-    template<>
-    struct QVariantValueHelperInterface<QVariantHash>
-    {
-        static QVariantHash invoke(const QVariant &v)
-        {
-            const int typeId = v.userType();
-            if (typeId == qMetaTypeId<QVariantMap>() || ((QMetaType::hasRegisteredConverterFunction(typeId, qMetaTypeId<QtMetaTypePrivate::QAssociativeIterableImpl>())) && !QMetaType::hasRegisteredConverterFunction(typeId, qMetaTypeId<QVariantHash>()))) {
-                QAssociativeIterable iter = QVariantValueHelperInterface<QAssociativeIterable>::invoke(v);
-                QVariantHash l;
-                l.reserve(iter.size());
-                for (QAssociativeIterable::const_iterator it = iter.begin(), end = iter.end(); it != end; ++it)
-                    l.insert(it.key().toString(), it.value());
-                return l;
-            }
-            return QVariantValueHelper<QVariantHash>::invoke(v);
-        }
-    };
-    template<>
-    struct QVariantValueHelperInterface<QVariantMap>
-    {
-        static QVariantMap invoke(const QVariant &v)
-        {
-            const int typeId = v.userType();
-            if (typeId == qMetaTypeId<QVariantHash>() || (QMetaType::hasRegisteredConverterFunction(typeId, qMetaTypeId<QtMetaTypePrivate::QAssociativeIterableImpl>()) && !QMetaType::hasRegisteredConverterFunction(typeId, qMetaTypeId<QVariantMap>()))) {
-                QAssociativeIterable iter = QVariantValueHelperInterface<QAssociativeIterable>::invoke(v);
-                QVariantMap l;
-                for (QAssociativeIterable::const_iterator it = iter.begin(), end = iter.end(); it != end; ++it)
-                    l.insert(it.key().toString(), it.value());
-                return l;
-            }
-            return QVariantValueHelper<QVariantMap>::invoke(v);
-        }
-    };
-    template<>
-    struct QVariantValueHelperInterface<QPair<QVariant, QVariant> >
-    {
-        static QPair<QVariant, QVariant> invoke(const QVariant &v)
-        {
-            const int typeId = v.userType();
-
-            if (QMetaType::hasRegisteredConverterFunction(typeId, qMetaTypeId<QtMetaTypePrivate::QPairVariantInterfaceImpl>()) && !(typeId == qMetaTypeId<QPair<QVariant, QVariant> >())) {
-                QtMetaTypePrivate::QPairVariantInterfaceImpl pi = v.value<QtMetaTypePrivate::QPairVariantInterfaceImpl>();
-                QVariant v1(pi._metaType_first);
-                void *dataPtr;
-                if (pi._metaType_first == QMetaType::fromType<QVariant>())
-                    dataPtr = &v1;
-                else
-                    dataPtr = v1.data();
-                pi.first(dataPtr);
-
-                QVariant v2(pi._metaType_second);
-                if (pi._metaType_second == QMetaType::fromType<QVariant>())
-                    dataPtr = &v2;
-                else
-                    dataPtr = v2.data();
-                pi.second(dataPtr);
-
-                return QPair<QVariant, QVariant>(v1, v2);
-            }
-            return QVariantValueHelper<QPair<QVariant, QVariant> >::invoke(v);
-        }
     };
 }
 

@@ -162,6 +162,7 @@ inline constexpr int qMetaTypeId();
     F(QVariantMap, 8, QVariantMap) \
     F(QVariantList, 9, QVariantList) \
     F(QVariantHash, 28, QVariantHash) \
+    F(QVariantPair, 58, QVariantPair) \
     F(QByteArrayList, 49, QByteArrayList) \
 
 #if QT_CONFIG(shortcut)
@@ -219,6 +220,7 @@ inline constexpr int qMetaTypeId();
     F(QVariantList, -1, QVariantList, "QList<QVariant>") \
     F(QVariantMap, -1, QVariantMap, "QMap<QString,QVariant>") \
     F(QVariantHash, -1, QVariantHash, "QHash<QString,QVariant>") \
+    F(QVariantPair, -1, QVariantPair, "QPair<QVariant,QVariant>") \
     F(QByteArrayList, -1, QByteArrayList, "QList<QByteArray>") \
 
 #define QT_FOR_EACH_STATIC_TYPE(F)\
@@ -295,7 +297,7 @@ public:
         QT_FOR_EACH_STATIC_TYPE(QT_DEFINE_METATYPE_ID)
 
         FirstCoreType = Bool,
-        LastCoreType = Char32,
+        LastCoreType = QVariantPair,
         FirstGuiType = QFont,
         LastGuiType = QColorSpace,
         FirstWidgetsType = QSizePolicy,
@@ -337,7 +339,7 @@ public:
 
         // Widget types
         QSizePolicy = 121,
-        LastCoreType = QCborMap,
+        LastCoreType = Char32,
         LastGuiType = QColorSpace,
         User = 1024
     };
@@ -1704,6 +1706,7 @@ QT_FOR_EACH_STATIC_WIDGETS_CLASS(QT_FORWARD_DECLARE_STATIC_TYPES_ITER)
 typedef QList<QVariant> QVariantList;
 typedef QMap<QString, QVariant> QVariantMap;
 typedef QHash<QString, QVariant> QVariantHash;
+typedef QPair<QVariant, QVariant> QVariantPair;
 #ifdef Q_CLANG_QDOC
 class QByteArrayList;
 #else

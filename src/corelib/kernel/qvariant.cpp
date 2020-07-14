@@ -1974,27 +1974,6 @@ bool QVariant::canConvert(int targetTypeId) const
     if (d.typeId() == targetTypeId && targetTypeId != QMetaType::UnknownType)
         return true;
 
-    if (targetTypeId == QMetaType::QVariantList
-        && (d.typeId() == QMetaType::QVariantList || d.typeId() == QMetaType::QStringList
-            || d.typeId() == QMetaType::QByteArrayList
-            || QMetaType::hasRegisteredConverterFunction(
-                    d.typeId(), qMetaTypeId<QtMetaTypePrivate::QSequentialIterableImpl>()))) {
-        return true;
-    }
-
-    if ((targetTypeId == QMetaType::QVariantHash || targetTypeId == QMetaType::QVariantMap)
-        && (d.typeId() == QMetaType::QVariantMap || d.typeId() == QMetaType::QVariantHash
-            || QMetaType::hasRegisteredConverterFunction(
-                    d.typeId(), qMetaTypeId<QtMetaTypePrivate::QAssociativeIterableImpl>()))) {
-        return true;
-    }
-
-    if (targetTypeId == qMetaTypeId<QPair<QVariant, QVariant>>()
-        && QMetaType::hasRegisteredConverterFunction(
-                d.typeId(), qMetaTypeId<QtMetaTypePrivate::QPairVariantInterfaceImpl>())) {
-        return true;
-    }
-
     return QMetaType::canConvert(d.type(), QMetaType(targetTypeId));
 }
 

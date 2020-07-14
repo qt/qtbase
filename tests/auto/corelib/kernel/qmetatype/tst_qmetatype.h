@@ -121,6 +121,10 @@ template<> struct TestValueFactory<QMetaType::QVariantMap> {
 template<> struct TestValueFactory<QMetaType::QVariantHash> {
     static QVariantHash *create() { return new QVariantHash(); }
 };
+template<> struct TestValueFactory<QMetaType::QVariantPair> {
+    static QVariantPair *create() { return new QVariantPair(); }
+};
+
 template<> struct TestValueFactory<QMetaType::QVariantList> {
     static QVariantList *create() { return new QVariantList(QVariantList() << 123 << "Q" << "Variant" << "List"); }
 };
