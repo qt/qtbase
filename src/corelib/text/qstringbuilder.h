@@ -260,7 +260,8 @@ template <> struct QConcatenable<QString> : private QAbstractConcatenable
     static inline void appendTo(const QString &a, QChar *&out)
     {
         const int n = a.size();
-        memcpy(out, reinterpret_cast<const char*>(a.constData()), sizeof(QChar) * n);
+        if (n)
+            memcpy(out, reinterpret_cast<const char*>(a.constData()), sizeof(QChar) * n);
         out += n;
     }
 };
@@ -274,7 +275,8 @@ template <> struct QConcatenable<QStringRef> : private QAbstractConcatenable
     static inline void appendTo(const QStringRef &a, QChar *&out)
     {
         const int n = a.size();
-        memcpy(out, reinterpret_cast<const char*>(a.constData()), sizeof(QChar) * n);
+        if (n)
+            memcpy(out, reinterpret_cast<const char*>(a.constData()), sizeof(QChar) * n);
         out += n;
     }
 };
@@ -288,7 +290,8 @@ template <> struct QConcatenable<QStringView> : private QAbstractConcatenable
     static inline void appendTo(QStringView a, QChar *&out)
     {
         const auto n = a.size();
-        memcpy(out, a.data(), sizeof(QChar) * n);
+        if (n)
+            memcpy(out, a.data(), sizeof(QChar) * n);
         out += n;
     }
 };

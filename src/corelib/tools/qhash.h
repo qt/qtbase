@@ -397,7 +397,8 @@ struct Span {
         // we only add storage if the previous storage was fully filled, so
         // simply copy the old data over
         if constexpr (isRelocatable<Node>()) {
-            memcpy(newEntries, entries, allocated*sizeof(Entry));
+            if (allocated)
+                memcpy(newEntries, entries, allocated*sizeof(Entry));
         } else {
             for (size_t i = 0; i < allocated; ++i) {
                 new (&newEntries[i].node()) Node(std::move(entries[i].node()));

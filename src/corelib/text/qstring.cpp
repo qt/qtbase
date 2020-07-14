@@ -2364,7 +2364,8 @@ void QString::reallocData(size_t alloc, bool grow)
 
     if (d->needsDetach()) {
         DataPointer dd(Data::allocate(alloc, allocOptions), qMin(qsizetype(alloc) - 1, d.size));
-        ::memcpy(dd.data(), d.data(), dd.size * sizeof(QChar));
+        if (dd.size > 0)
+            ::memcpy(dd.data(), d.data(), dd.size * sizeof(QChar));
         dd.data()[dd.size] = 0;
         d = dd;
     } else {

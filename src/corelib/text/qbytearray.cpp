@@ -411,9 +411,11 @@ int qstrnicmp(const char *str1, qsizetype len1, const char *str2, qsizetype len2
  */
 int QtPrivate::compareMemory(QByteArrayView lhs, QByteArrayView rhs)
 {
-    int ret = memcmp(lhs.data(), rhs.data(), qMin(lhs.size(), rhs.size()));
-    if (ret != 0)
-        return ret;
+    if (!lhs.isNull() && !rhs.isNull()) {
+        int ret = memcmp(lhs.data(), rhs.data(), qMin(lhs.size(), rhs.size()));
+        if (ret != 0)
+            return ret;
+    }
 
     // they matched qMin(l1, l2) bytes
     // so the longer one is lexically after the shorter one
@@ -1638,7 +1640,8 @@ void QByteArray::reallocData(uint alloc, Data::ArrayOptions options)
 {
     if (d->needsDetach()) {
         DataPointer dd(Data::allocate(alloc, options), qMin(qsizetype(alloc) - 1, d.size));
-        ::memcpy(dd.data(), d.data(), dd.size);
+        if (dd.size > 0)
+            ::memcpy(dd.data(), d.data(), dd.size);
         dd.data()[dd.size] = 0;
         d = dd;
     } else {
