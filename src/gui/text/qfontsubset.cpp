@@ -913,11 +913,11 @@ static int convertToRelative(QList<TTF_POINT> *points)
 
 static void getGlyphData(QTtfGlyph *glyph, const QList<TTF_POINT> &points, const QList<int> &endPoints, int point_array_size)
 {
-    const int max_size = 5*sizeof(qint16) // header
-                         + endPoints.size()*sizeof(quint16) // end points of contours
-                         + sizeof(quint16) // instruction length == 0
-                         + points.size()*(1) // flags
-                         + point_array_size; // coordinates
+    const int max_size = int(5 * sizeof(qint16) // header
+                             + endPoints.size() * sizeof(quint16) // end points of contours
+                             + sizeof(quint16) // instruction length == 0
+                             + points.size()*(1) // flags
+                             + point_array_size); // coordinates
 
     glyph->data.resize(max_size);
 

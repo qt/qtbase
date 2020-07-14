@@ -763,7 +763,7 @@ bool QWindowsMimeURI::convertFromMime(const FORMATETC &formatetc, const QMimeDat
         if (getCf(formatetc) == CF_HDROP) {
             const auto &urls = mimeData->urls();
             QStringList fileNames;
-            int size = sizeof(DROPFILES)+2;
+            size_t size = sizeof(DROPFILES) + 2;
             for (const QUrl &url : urls) {
                 const QString fn = QDir::toNativeSeparators(url.toLocalFile());
                 if (!fn.isEmpty()) {
@@ -772,7 +772,7 @@ bool QWindowsMimeURI::convertFromMime(const FORMATETC &formatetc, const QMimeDat
                 }
             }
 
-            QByteArray result(size, '\0');
+            QByteArray result(int(size), '\0');
             auto* d = reinterpret_cast<DROPFILES *>(result.data());
             d->pFiles = sizeof(DROPFILES);
             GetCursorPos(&d->pt); // try

@@ -1276,7 +1276,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
 
     // Output the methods in the class.
     Q_ASSERT(!buf || dataIndex == pmeta->methodData);
-    int parameterMetaTypesIndex = d->properties.size();
+    int parameterMetaTypesIndex = int(d->properties.size());
     for (const auto &method : d->methods) {
         int name = strings.enter(method.name());
         int argc = method.parameterCount();

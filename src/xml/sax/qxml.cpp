@@ -1272,7 +1272,8 @@ void QXmlInputSource::fetchData()
         if (!device) {
             if (d->inputStream && d->inputStream->string()) {
                 QString *s = d->inputStream->string();
-                rawData = QByteArray((const char *) s->constData(), s->size() * sizeof(QChar));
+                rawData = QByteArray(reinterpret_cast<const char *>(s->constData()),
+                                     int(s->size() * sizeof(QChar)));
             }
         } else if (device->isOpen() || device->open(QIODevice::ReadOnly)) {
             rawData.resize(BufferSize);

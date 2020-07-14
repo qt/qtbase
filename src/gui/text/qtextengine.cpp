@@ -2661,8 +2661,8 @@ QTextEngine::LayoutData::LayoutData(const QString &str, void **stack_memory, int
 {
     allocated = _allocated;
 
-    int space_charAttributes = sizeof(QCharAttributes)*string.length()/sizeof(void*) + 1;
-    int space_logClusters = sizeof(unsigned short)*string.length()/sizeof(void*) + 1;
+    int space_charAttributes = int(sizeof(QCharAttributes) * string.length() / sizeof(void*) + 1);
+    int space_logClusters = int(sizeof(unsigned short) * string.length() / sizeof(void*) + 1);
     available_glyphs = ((int)allocated - space_charAttributes - space_logClusters)*(int)sizeof(void*)/(int)QGlyphLayout::SpaceNeeded;
 
     if (available_glyphs < str.length()) {
@@ -2703,8 +2703,8 @@ bool QTextEngine::LayoutData::reallocate(int totalGlyphs)
         return true;
     }
 
-    int space_charAttributes = sizeof(QCharAttributes)*string.length()/sizeof(void*) + 1;
-    int space_logClusters = sizeof(unsigned short)*string.length()/sizeof(void*) + 1;
+    int space_charAttributes = int(sizeof(QCharAttributes) * string.length() / sizeof(void*) + 1);
+    int space_logClusters = int(sizeof(unsigned short) * string.length() / sizeof(void*) + 1);
     int space_glyphs = (totalGlyphs * QGlyphLayout::SpaceNeeded) / sizeof(void *) + 2;
 
     int newAllocated = space_charAttributes + space_glyphs + space_logClusters;

@@ -56,8 +56,8 @@ void QBspTree::create(int n, int d)
     }
     depth = qMax(depth, uint(1));
 
-    nodes.resize((1 << depth) - 1); // resize to number of nodes
-    leaves.resize(1 << depth); // resize to number of leaves
+    nodes.resize((1ll << depth) - 1); // resize to number of nodes
+    leaves.resize(1ll << depth); // resize to number of leaves
 }
 
 void QBspTree::destroy()

@@ -801,7 +801,7 @@ bool QODBCDriverPrivate::setConnectionOptions(const QString& connOpts)
             val.utf16(); // 0 terminate
             r = SQLSetConnectAttr(hDbc, SQL_ATTR_CURRENT_CATALOG,
                                     toSQLTCHAR(val).data(),
-                                    val.length()*sizeof(SQLTCHAR));
+                                    SQLINTEGER(val.length() * sizeof(SQLTCHAR)));
         } else if (opt.toUpper() == QLatin1String("SQL_ATTR_METADATA_ID")) {
             if (val.toUpper() == QLatin1String("SQL_TRUE")) {
                 v = SQL_TRUE;
@@ -819,7 +819,7 @@ bool QODBCDriverPrivate::setConnectionOptions(const QString& connOpts)
             val.utf16(); // 0 terminate
             r = SQLSetConnectAttr(hDbc, SQL_ATTR_TRACEFILE,
                                     toSQLTCHAR(val).data(),
-                                    val.length()*sizeof(SQLTCHAR));
+                                    SQLINTEGER(val.length() * sizeof(SQLTCHAR)));
         } else if (opt.toUpper() == QLatin1String("SQL_ATTR_TRACE")) {
             if (val.toUpper() == QLatin1String("SQL_OPT_TRACE_OFF")) {
                 v = SQL_OPT_TRACE_OFF;
@@ -1582,7 +1582,7 @@ bool QODBCResult::exec()
                     QString str = val.toString();
                     if (*ind != SQL_NULL_DATA)
                         *ind = str.length() * sizeof(SQLTCHAR);
-                    int strSize = str.length() * sizeof(SQLTCHAR);
+                    const qsizetype strSize = str.length() * sizeof(SQLTCHAR);
 
                     if (bindValueType(i) & QSql::Out) {
                         const QVarLengthArray<SQLTCHAR> a(toSQLTCHAR(str));
@@ -1599,7 +1599,8 @@ bool QODBCResult::exec()
                                             ind);
                         break;
                     }
-                    ba = QByteArray ((const char *)toSQLTCHAR(str).constData(), str.size()*sizeof(SQLTCHAR));
+                    ba = QByteArray(reinterpret_cast<const char *>(toSQLTCHAR(str).constData()),
+                                    int(strSize));
                     r = SQLBindParameter(d->hStmt,
                                           i + 1,
                                           qParamType[bindValueType(i) & QSql::InOut],

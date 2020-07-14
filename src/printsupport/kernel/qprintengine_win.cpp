@@ -1555,7 +1555,7 @@ HGLOBAL *QWin32PrintEngine::createGlobalDevNames()
 {
     Q_D(QWin32PrintEngine);
 
-    int size = sizeof(DEVNAMES) + d->m_printDevice.id().length() * 2 + 2;
+    const size_t size = sizeof(DEVNAMES) + d->m_printDevice.id().length() * 2 + 2;
     auto hGlobal = reinterpret_cast<HGLOBAL *>(GlobalAlloc(GMEM_MOVEABLE, size));
     auto dn = reinterpret_cast<DEVNAMES*>(GlobalLock(hGlobal));
 
