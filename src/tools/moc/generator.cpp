@@ -1846,11 +1846,12 @@ void Generator::generatePluginMetaData()
     if (cdef->pluginData.iid.isEmpty())
         return;
 
-    fputs("\nQT_PLUGIN_METADATA_SECTION\n"
-          "static constexpr unsigned char qt_pluginMetaData[] = {\n"
+    fprintf(out, "\nQT_PLUGIN_METADATA_SECTION\n"
+          "static constexpr unsigned char qt_pluginMetaData_%s[] = {\n"
           "    'Q', 'T', 'M', 'E', 'T', 'A', 'D', 'A', 'T', 'A', ' ', '!',\n"
           "    // metadata version, Qt version, architectural requirements\n"
-          "    0, QT_VERSION_MAJOR, QT_VERSION_MINOR, qPluginArchRequirements(),", out);
+          "    0, QT_VERSION_MAJOR, QT_VERSION_MINOR, qPluginArchRequirements(),",
+          cdef->classname.constData());
 
 
     CborDevice dev(out);
