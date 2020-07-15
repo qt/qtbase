@@ -59,7 +59,7 @@ QT_REQUIRE_CONFIG(harfbuzz);
 #include <QtCore/qchar.h>
 
 #if defined(QT_BUILD_GUI_LIB)
-#  include <harfbuzz/hb.h>
+#  include <hb.h>
 #else
 // a minimal set of HB types required for Qt libs other than Gui
 

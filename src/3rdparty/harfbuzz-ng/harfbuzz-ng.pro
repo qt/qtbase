@@ -5,7 +5,7 @@ CONFIG += \
     hide_symbols \
     exceptions_off rtti_off warn_off
 
-MODULE_INCLUDEPATH += $$PWD/include
+MODULE_INCLUDEPATH += $$PWD/include/harfbuzz
 
 load(qt_helper_lib)
 

@@ -236,7 +236,7 @@
                     "hb_buffer_destroy(buffer);"
                 ]
             },
-            "headers": "harfbuzz/hb.h",
+            "headers": "hb.h",
             "sources": [
                 "-lharfbuzz"
             ]

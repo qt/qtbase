@@ -61,7 +61,7 @@ qt_add_3rdparty_library(BundledHarfbuzz
         $<TARGET_PROPERTY:Core,INCLUDE_DIRECTORIES> # special case
         "${CMAKE_CURRENT_SOURCE_DIR}" # special case
     PUBLIC_INCLUDE_DIRECTORIES
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/harfbuzz>
 )
 qt_disable_warnings(BundledHarfbuzz)
 qt_set_symbol_visibility_hidden(BundledHarfbuzz)

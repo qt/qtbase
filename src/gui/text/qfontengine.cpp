@@ -55,7 +55,7 @@
 
 #if QT_CONFIG(harfbuzz)
 #  include "qharfbuzzng_p.h"
-#  include <harfbuzz/hb-ot.h>
+#  include <hb-ot.h>
 #endif
 
 #include <algorithm>
