@@ -350,6 +350,12 @@ QSinglePointEvent::QSinglePointEvent(QEvent::Type type, const QPointingDevice *d
       m_reserved(0)
 {
     QMutableEventPoint &mut = QMutableEventPoint::from(m_point);
+    if (button == Qt::NoButton)
+        mut.setState(QEventPoint::State::Updated); // stationary only happens with touch events, not single-point events
+    else if ((button | buttons) == buttons)
+        mut.setState(QEventPoint::State::Pressed);
+    else
+        mut.setState(QEventPoint::State::Released);
     mut.setPosition(localPos);
     mut.setScenePosition(scenePos);
     mut.setGlobalPosition(globalPos);
