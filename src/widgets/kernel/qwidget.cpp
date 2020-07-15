@@ -6337,11 +6337,6 @@ void QWidget::setFocus(Qt::FocusReason reason)
 
         QApplicationPrivate::setFocusWidget(f, reason);
 #ifndef QT_NO_ACCESSIBILITY
-# ifdef Q_OS_WIN
-        // The negation of the condition in setFocus_sys
-        if (!(testAttribute(Qt::WA_WState_Created) && window()->windowType() != Qt::Popup && internalWinId()))
-            //setFocusWidget will already post a focus event for us (that the AT client receives) on Windows
-# endif
         // menus update the focus manually and this would create bogus events
         if (!(f->inherits("QMenuBar") || f->inherits("QMenu") || f->inherits("QMenuItem")))
         {
