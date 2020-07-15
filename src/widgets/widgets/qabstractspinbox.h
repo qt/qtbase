@@ -160,7 +160,7 @@ protected:
     void timerEvent(QTimerEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
     void showEvent(QShowEvent *event) override;
-    void initStyleOption(QStyleOptionSpinBox *option) const;
+    virtual void initStyleOption(QStyleOptionSpinBox *option) const;
 
     QLineEdit *lineEdit() const;
     void setLineEdit(QLineEdit *edit);

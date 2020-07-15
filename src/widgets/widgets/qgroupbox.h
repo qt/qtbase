@@ -94,7 +94,7 @@ protected:
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
-    void initStyleOption(QStyleOptionGroupBox *option) const;
+    virtual void initStyleOption(QStyleOptionGroupBox *option) const;
 
 
 private:

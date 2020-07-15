@@ -1629,6 +1629,8 @@ void QAbstractSpinBoxPrivate::init()
     edit->setValidator(validator);
 
     QStyleOptionSpinBox opt;
+    // ### This is called from the ctor and thus we shouldn't call initStyleOption yet
+    // ### as we only call the base class implementation of initStyleOption called.
     q->initStyleOption(&opt);
     spinClickTimerInterval = q->style()->styleHint(QStyle::SH_SpinBox_ClickAutoRepeatRate, &opt, q);
     spinClickThresholdTimerInterval = q->style()->styleHint(QStyle::SH_SpinBox_ClickAutoRepeatThreshold, &opt, q);

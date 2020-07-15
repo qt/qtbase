@@ -193,7 +193,7 @@ protected:
     StepEnabled stepEnabled() const override;
     void mousePressEvent(QMouseEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
-    void initStyleOption(QStyleOptionSpinBox *option) const;
+    void initStyleOption(QStyleOptionSpinBox *option) const override;
 
     QDateTimeEdit(const QVariant &val, QMetaType::Type parserType, QWidget *parent = nullptr);
 private:

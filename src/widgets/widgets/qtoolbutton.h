@@ -119,7 +119,7 @@ protected:
 
     bool hitButton(const QPoint &pos) const override;
     void nextCheckState() override;
-    void initStyleOption(QStyleOptionToolButton *option) const;
+    virtual void initStyleOption(QStyleOptionToolButton *option) const;
 
 private:
     Q_DISABLE_COPY(QToolButton)

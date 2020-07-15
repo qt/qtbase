@@ -64,7 +64,7 @@ protected:
 
     bool eventFilter(QObject *, QEvent *) override;
     void paintEvent(QPaintEvent *) override;
-    void initStyleOption(QStyleOption *option) const;
+    virtual void initStyleOption(QStyleOption *option) const;
 
 private:
     Q_DECLARE_PRIVATE(QFocusFrame)

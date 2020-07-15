@@ -111,7 +111,7 @@ Q_SIGNALS:
 protected:
     bool event(QEvent *e) override;
     void paintEvent(QPaintEvent *) override;
-    void initStyleOption(QStyleOptionProgressBar *option) const;
+    virtual void initStyleOption(QStyleOptionProgressBar *option) const;
 
 private:
     Q_DECLARE_PRIVATE(QProgressBar)

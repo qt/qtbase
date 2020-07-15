@@ -81,7 +81,7 @@ protected:
     void nextCheckState() override;
     void paintEvent(QPaintEvent *) override;
     void mouseMoveEvent(QMouseEvent *) override;
-    void initStyleOption(QStyleOptionButton *option) const;
+    virtual void initStyleOption(QStyleOptionButton *option) const;
 
 
 private:

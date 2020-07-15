@@ -230,7 +230,7 @@ protected:
     void contextMenuEvent(QContextMenuEvent *e) override;
 #endif // QT_NO_CONTEXTMENU
     void inputMethodEvent(QInputMethodEvent *) override;
-    void initStyleOption(QStyleOptionComboBox *option) const;
+    virtual void initStyleOption(QStyleOptionComboBox *option) const;
 
 
 protected:

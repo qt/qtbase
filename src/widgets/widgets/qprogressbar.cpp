@@ -107,6 +107,8 @@ void QProgressBarPrivate::resetLayoutItemMargins()
 {
     Q_Q(QProgressBar);
     QStyleOptionProgressBar option;
+    // ### It seems like this can be called directly from the constructor which should be avoided
+    // ### if possible, since we will not call a possible re-implemented version
     q->initStyleOption(&option);
     setLayoutItemMargins(QStyle::SE_ProgressBarLayoutItem, &option);
 }

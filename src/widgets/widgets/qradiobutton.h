@@ -68,7 +68,7 @@ protected:
     bool hitButton(const QPoint &) const override;
     void paintEvent(QPaintEvent *) override;
     void mouseMoveEvent(QMouseEvent *) override;
-    void initStyleOption(QStyleOptionButton *button) const;
+    virtual void initStyleOption(QStyleOptionButton *button) const;
 
 
 private:

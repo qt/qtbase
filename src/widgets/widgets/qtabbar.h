@@ -212,7 +212,7 @@ protected:
     void keyPressEvent(QKeyEvent *) override;
     void changeEvent(QEvent *) override;
     void timerEvent(QTimerEvent *event) override;
-    void initStyleOption(QStyleOptionTab *option, int tabIndex) const;
+    virtual void initStyleOption(QStyleOptionTab *option, int tabIndex) const;
 
 #ifndef QT_NO_ACCESSIBILITY
     friend class QAccessibleTabBar;

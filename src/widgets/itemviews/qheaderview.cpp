@@ -3385,6 +3385,14 @@ void QHeaderView::initStyleOption(QStyleOptionHeader *option) const
     option->section = 0;
 }
 
+void QHeaderView::initStyleOption(QStyleOptionFrame *option) const
+{
+    // The QFrame version is only here to avoid compiler warnings.
+    // If invoked (it can be invoked with QFrame *f = headerview; f->initStyleOption()),
+    // and here we just pass it on to the frame version.
+    QFrame::initStyleOption(option);
+}
+
 bool QHeaderViewPrivate::isSectionSelected(int section) const
 {
     int i = section * 2;

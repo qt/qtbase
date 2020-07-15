@@ -76,7 +76,7 @@ protected:
 #ifndef QT_NO_CONTEXTMENU
     void contextMenuEvent(QContextMenuEvent *) override;
 #endif
-    void initStyleOption(QStyleOptionSlider *option) const;
+    virtual void initStyleOption(QStyleOptionSlider *option) const;
 
 
 private:

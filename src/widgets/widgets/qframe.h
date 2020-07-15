@@ -116,7 +116,7 @@ protected:
 
 protected:
     QFrame(QFramePrivate &dd, QWidget* parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-    void initStyleOption(QStyleOptionFrame *option) const;
+    virtual void initStyleOption(QStyleOptionFrame *option) const;
 
 private:
     Q_DISABLE_COPY(QFrame)

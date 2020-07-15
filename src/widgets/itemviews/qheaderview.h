@@ -230,12 +230,14 @@ protected:
     QModelIndex moveCursor(CursorAction, Qt::KeyboardModifiers) override;
     void setSelection(const QRect& rect, QItemSelectionModel::SelectionFlags flags) override;
     QRegion visualRegionForSelection(const QItemSelection &selection) const override;
-    void initStyleOption(QStyleOptionHeader *option) const;
+    virtual void initStyleOption(QStyleOptionHeader *option) const;
 
     friend class QTableView;
     friend class QTreeView;
 
 private:
+    void initStyleOption(QStyleOptionFrame *option) const override;
+
     // ### Qt6: make them protected slots in QHeaderViewPrivate
     Q_PRIVATE_SLOT(d_func(), void _q_sectionsRemoved(const QModelIndex &parent, int logicalFirst, int logicalLast))
     Q_PRIVATE_SLOT(d_func(), void _q_sectionsAboutToBeMoved(const QModelIndex &sourceParent, int logicalStart, int logicalEnd, const QModelIndex &destinationParent, int logicalDestination))

@@ -150,7 +150,7 @@ protected:
     void timerEvent(QTimerEvent *) override;
     bool eventFilter(QObject *, QEvent *) override;
     bool event(QEvent *) override;
-    void initStyleOption(QStyleOptionMenuItem *option, const QAction *action) const;
+    virtual void initStyleOption(QStyleOptionMenuItem *option, const QAction *action) const;
 
 private:
     Q_DECLARE_PRIVATE(QMenuBar)

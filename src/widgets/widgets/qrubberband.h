@@ -79,7 +79,7 @@ protected:
     void showEvent(QShowEvent *) override;
     void resizeEvent(QResizeEvent *) override;
     void moveEvent(QMoveEvent *) override;
-    void initStyleOption(QStyleOptionRubberBand *option) const;
+    virtual void initStyleOption(QStyleOptionRubberBand *option) const;
 
 private:
     Q_DECLARE_PRIVATE(QRubberBand)

@@ -181,7 +181,7 @@ protected:
     void changeEvent(QEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
     bool event(QEvent *event) override;
-    void initStyleOption(QStyleOptionToolBar *option) const;
+    virtual void initStyleOption(QStyleOptionToolBar *option) const;
 
 
 private:

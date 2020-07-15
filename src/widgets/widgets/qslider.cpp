@@ -91,6 +91,8 @@ void QSliderPrivate::resetLayoutItemMargins()
 {
     Q_Q(QSlider);
     QStyleOptionSlider opt;
+    // ### This is (also) reached from the ctor which is unfortunate since a possible
+    // ### re-implementation of initStyleOption is then not called.
     q->initStyleOption(&opt);
     setLayoutItemMargins(QStyle::SE_SliderLayoutItem, &opt);
 }

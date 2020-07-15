@@ -90,7 +90,7 @@ protected:
     void mouseMoveEvent(QMouseEvent *me) override;
 
     void sliderChange(SliderChange change) override;
-    void initStyleOption(QStyleOptionSlider *option) const;
+    virtual void initStyleOption(QStyleOptionSlider *option) const;
 
 
 private:

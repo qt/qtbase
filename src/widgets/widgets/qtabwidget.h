@@ -171,7 +171,7 @@ protected:
     void setTabBar(QTabBar *);
     void changeEvent(QEvent *) override;
     bool event(QEvent *) override;
-    void initStyleOption(QStyleOptionTabWidgetFrame *option) const;
+    virtual void initStyleOption(QStyleOptionTabWidgetFrame *option) const;
 
 
 private:

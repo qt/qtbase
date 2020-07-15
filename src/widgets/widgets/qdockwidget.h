@@ -116,7 +116,7 @@ protected:
     void closeEvent(QCloseEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
     bool event(QEvent *event) override;
-    void initStyleOption(QStyleOptionDockWidget *option) const;
+    virtual void initStyleOption(QStyleOptionDockWidget *option) const;
 
 private:
     Q_DECLARE_PRIVATE(QDockWidget)

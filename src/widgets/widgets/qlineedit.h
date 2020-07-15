@@ -229,7 +229,7 @@ protected:
 #endif
 
     void inputMethodEvent(QInputMethodEvent *) override;
-    void initStyleOption(QStyleOptionFrame *option) const;
+    virtual void initStyleOption(QStyleOptionFrame *option) const;
 public:
     QVariant inputMethodQuery(Qt::InputMethodQuery) const override;
     Q_INVOKABLE QVariant inputMethodQuery(Qt::InputMethodQuery property, QVariant argument) const;

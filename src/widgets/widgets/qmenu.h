@@ -257,7 +257,7 @@ protected:
     void timerEvent(QTimerEvent *) override;
     bool event(QEvent *) override;
     bool focusNextPrevChild(bool next) override;
-    void initStyleOption(QStyleOptionMenuItem *option, const QAction *action) const;
+    virtual void initStyleOption(QStyleOptionMenuItem *option, const QAction *action) const;
 
 private Q_SLOTS:
     void internalDelayedPopup();

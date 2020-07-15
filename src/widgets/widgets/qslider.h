@@ -89,7 +89,7 @@ protected:
     void mousePressEvent(QMouseEvent *ev) override;
     void mouseReleaseEvent(QMouseEvent *ev) override;
     void mouseMoveEvent(QMouseEvent *ev) override;
-    void initStyleOption(QStyleOptionSlider *option) const;
+    virtual void initStyleOption(QStyleOptionSlider *option) const;
 
 
 private:
