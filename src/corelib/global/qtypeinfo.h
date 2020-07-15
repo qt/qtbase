@@ -324,6 +324,16 @@ struct expand_operator_less_than_tuple<std::variant<T...>> : expand_operator_les
 
 }
 
+template<typename T, typename = void>
+struct is_dereferenceable : std::false_type {};
+
+template<typename T>
+struct is_dereferenceable<T, std::void_t<decltype(std::declval<T>().operator->())> >
+    : std::true_type {};
+
+template <typename T>
+constexpr bool is_dereferenceable_v = is_dereferenceable<T>::value;
+
 template<typename T>
 struct has_operator_equal : detail::expand_operator_equal<T> {};
 template<typename T>

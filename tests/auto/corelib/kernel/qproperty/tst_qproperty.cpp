@@ -69,6 +69,7 @@ private slots:
     void setBindingFunctor();
     void multipleObservers();
     void propertyAlias();
+    void arrowAndStarOperator();
     void notifiedProperty();
     void notifiedPropertyWithOldValueCallback();
     void notifiedPropertyWithGuard();
@@ -751,6 +752,34 @@ void tst_QProperty::propertyAlias()
     QCOMPARE(alias.value(), int());
     QCOMPARE(value1, 22);
     QCOMPARE(value2, 22);
+}
+
+void tst_QProperty::arrowAndStarOperator()
+{
+    QString str("Hello");
+    QProperty<QString *> prop(&str);
+
+    QCOMPARE(prop->size(), str.size());
+    QCOMPARE(**prop, str);
+
+    struct Dereferenceable {
+        QString x;
+        QString *operator->() { return &x; }
+        const QString *operator->() const { return &x; }
+    };
+    static_assert(QTypeTraits::is_dereferenceable_v<Dereferenceable>);
+
+    QProperty<Dereferenceable> prop2(Dereferenceable{str});
+    QCOMPARE(prop2->size(), str.size());
+    QCOMPARE(**prop, str);
+
+    QObject *object = new QObject;
+    object->setObjectName("Hello");
+    QProperty<QSharedPointer<QObject>> prop3(QSharedPointer<QObject>{object});
+
+    QCOMPARE(prop3->objectName(), str);
+    QCOMPARE(*prop3, object);
+
 }
 
 struct ClassWithNotifiedProperty

@@ -136,7 +136,7 @@ public:
     QPropertyValueStorage(QPropertyValueStorage &&other) : value(std::move(other.value)), priv(std::move(other.priv), this) {}
     QPropertyValueStorage &operator=(QPropertyValueStorage &&other) { value = std::move(other.value); priv.moveAssign(std::move(other.priv), &value); return *this; }
 
-    T getValue() const { return value; }
+    T const& getValue() const { return value; }
     bool setValueAndReturnTrueIfChanged(T &&v)
     {
         if constexpr (QTypeTraits::has_operator_equal_v<T>) {

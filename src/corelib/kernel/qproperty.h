@@ -192,8 +192,15 @@ struct QPropertyBasePointer;
 template <typename T>
 class QProperty
 {
+    class DisableRValueRefs {};
+    static constexpr bool UseReferences = !(std::is_arithmetic_v<T> || std::is_enum_v<T> || std::is_pointer_v<T>);
+
 public:
     using value_type = T;
+    using parameter_type = std::conditional_t<UseReferences, const T &, T>;
+    using rvalue_ref = typename std::conditional_t<UseReferences, T &&, DisableRValueRefs>;
+    using arrow_operator_result = std::conditional_t<std::is_pointer_v<T>, const T &,
+                                        std::conditional_t<QTypeTraits::is_dereferenceable_v<T>, const T &, void>>;
 
     QProperty() = default;
     explicit QProperty(const T &initialValue) : d(initialValue) {}
@@ -218,7 +225,7 @@ public:
 #endif
     ~QProperty() = default;
 
-    T value() const
+    parameter_type value() const
     {
         if (d.priv.hasBinding())
             d.priv.evaluateIfDirty();
@@ -226,32 +233,49 @@ public:
         return d.getValue();
     }
 
-    operator T() const
+    arrow_operator_result operator->() const
+    {
+        if constexpr (QTypeTraits::is_dereferenceable_v<T>) {
+            return value();
+        } else if constexpr (std::is_pointer_v<T>) {
+            value();
+            return this->val;
+        } else {
+            return;
+        }
+    }
+
+    parameter_type operator*() const
     {
         return value();
     }
 
-    void setValue(T &&newValue)
+    operator parameter_type() const
+    {
+        return value();
+    }
+
+    void setValue(rvalue_ref newValue)
     {
         d.priv.removeBinding();
         if (d.setValueAndReturnTrueIfChanged(std::move(newValue)))
             notify();
     }
 
-    void setValue(const T &newValue)
+    void setValue(parameter_type newValue)
     {
         d.priv.removeBinding();
         if (d.setValueAndReturnTrueIfChanged(newValue))
             notify();
     }
 
-    QProperty<T> &operator=(T &&newValue)
+    QProperty<T> &operator=(rvalue_ref newValue)
     {
         setValue(std::move(newValue));
         return *this;
     }
 
-    QProperty<T> &operator=(const T &newValue)
+    QProperty<T> &operator=(parameter_type newValue)
     {
         setValue(newValue);
         return *this;
@@ -260,12 +284,6 @@ public:
     QProperty<T> &operator=(const QPropertyBinding<T> &newBinding)
     {
         setBinding(newBinding);
-        return *this;
-    }
-
-    QProperty<T> &operator=(QPropertyBinding<T> &&newBinding)
-    {
-        setBinding(std::move(newBinding));
         return *this;
     }
 
