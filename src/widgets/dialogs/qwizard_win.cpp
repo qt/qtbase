@@ -52,6 +52,7 @@
 #include <QtCore/QDebug>
 #include <QtGui/QMouseEvent>
 #include <QtGui/QWindow>
+#include <QtGui/private/qhighdpiscaling_p.h>
 
 #include <uxtheme.h>
 #include <vssym32.h>
@@ -501,6 +502,12 @@ void QVistaHelper::mouseReleaseEvent(QMouseEvent *event)
     event->ignore();
 }
 
+static inline LPARAM pointToLParam(const QPointF &p, const QWidget *w)
+{
+    const auto point = QHighDpi::toNativePixels(p, w->screen()).toPoint();
+    return MAKELPARAM(point.x(), point.y());
+}
+
 bool QVistaHelper::eventFilter(QObject *obj, QEvent *event)
 {
     if (obj != wizard)
@@ -512,7 +519,7 @@ bool QVistaHelper::eventFilter(QObject *obj, QEvent *event)
         MSG msg;
         msg.message = WM_NCHITTEST;
         msg.wParam  = 0;
-        msg.lParam = MAKELPARAM(mouseEvent->globalX(), mouseEvent->globalY());
+        msg.lParam = pointToLParam(mouseEvent->globalPosition(), wizard);
         msg.hwnd = wizardHWND();
         winEvent(&msg, &result);
         msg.wParam = result;
@@ -526,7 +533,7 @@ bool QVistaHelper::eventFilter(QObject *obj, QEvent *event)
             MSG msg;
             msg.message = WM_NCHITTEST;
             msg.wParam  = 0;
-            msg.lParam = MAKELPARAM(mouseEvent->globalX(), mouseEvent->globalY());
+            msg.lParam = pointToLParam(mouseEvent->globalPosition(), wizard);
             msg.hwnd = wizardHWND();
             winEvent(&msg, &result);
             msg.wParam = result;
@@ -541,7 +548,7 @@ bool QVistaHelper::eventFilter(QObject *obj, QEvent *event)
             MSG msg;
             msg.message = WM_NCHITTEST;
             msg.wParam  = 0;
-            msg.lParam = MAKELPARAM(mouseEvent->globalX(), mouseEvent->globalY());
+            msg.lParam = pointToLParam(mouseEvent->globalPosition(), wizard);
             msg.hwnd = wizardHWND();
             winEvent(&msg, &result);
             msg.wParam = result;
