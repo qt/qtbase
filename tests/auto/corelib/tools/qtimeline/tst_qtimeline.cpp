@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -306,13 +306,13 @@ void tst_QTimeLine::loopCount()
 void tst_QTimeLine::interpolation()
 {
     QTimeLine timeLine(400);
-    QCOMPARE(timeLine.curveShape(), QTimeLine::EaseInOutCurve);
+    QCOMPARE(timeLine.easingCurve(), QEasingCurve::InOutSine);
     timeLine.setFrameRange(100, 200);
-    timeLine.setCurveShape(QTimeLine::LinearCurve);
-    QCOMPARE(timeLine.curveShape(), QTimeLine::LinearCurve);
+    timeLine.setEasingCurve(QEasingCurve::Linear);
+    QCOMPARE(timeLine.easingCurve(), QEasingCurve::Linear);
 
     // smooth
-    timeLine.setCurveShape(QTimeLine::EaseInOutCurve);
+    timeLine.setEasingCurve(QEasingCurve::InOutSine);
     timeLine.start();
     QTest::qWait(100);
     QCOMPARE(timeLine.state(), QTimeLine::Running);
@@ -323,7 +323,7 @@ void tst_QTimeLine::interpolation()
     timeLine.setCurrentTime(0);
 
     // linear
-    timeLine.setCurveShape(QTimeLine::LinearCurve);
+    timeLine.setEasingCurve(QEasingCurve::Linear);
     timeLine.start();
     QTest::qWait(100);
     QCOMPARE(timeLine.state(), QTimeLine::Running);
@@ -373,7 +373,7 @@ void tst_QTimeLine::reverse()
     QFETCH(int, wait2);
 
     QTimeLine timeLine(duration);
-    timeLine.setCurveShape(QTimeLine::LinearCurve);
+    timeLine.setEasingCurve(QEasingCurve::Linear);
     timeLine.setFrameRange(start, end);
 
     timeLine.setDirection((QTimeLine::Direction)direction);
@@ -419,7 +419,7 @@ void tst_QTimeLine::toggleDirection()
 void tst_QTimeLine::frameChanged()
 {
     QTimeLine timeLine;
-    timeLine.setCurveShape(QTimeLine::LinearCurve);
+    timeLine.setEasingCurve(QEasingCurve::Linear);
     timeLine.setFrameRange(0,9);
     timeLine.setUpdateInterval(800);
     QSignalSpy spy(&timeLine, &QTimeLine::frameChanged);
@@ -519,7 +519,7 @@ void tst_QTimeLine::multipleTimeLines()
 void tst_QTimeLine::sineCurve()
 {
     QTimeLine timeLine(1000);
-    timeLine.setCurveShape(QTimeLine::SineCurve);
+    timeLine.setEasingCurve(QEasingCurve::SineCurve);
     QCOMPARE(timeLine.valueForTime(0), qreal(0));
     QCOMPARE(timeLine.valueForTime(250), qreal(0.5));
     QCOMPARE(timeLine.valueForTime(500), qreal(1));
@@ -530,7 +530,7 @@ void tst_QTimeLine::sineCurve()
 void tst_QTimeLine::cosineCurve()
 {
     QTimeLine timeLine(1000);
-    timeLine.setCurveShape(QTimeLine::CosineCurve);
+    timeLine.setEasingCurve(QEasingCurve::CosineCurve);
     QCOMPARE(timeLine.valueForTime(0), qreal(0.5));
     QCOMPARE(timeLine.valueForTime(250), qreal(1));
     QCOMPARE(timeLine.valueForTime(500), qreal(0.5));
@@ -544,7 +544,7 @@ void tst_QTimeLine::outOfRange()
     QCOMPARE(timeLine.valueForTime(-100), qreal(0));
     QCOMPARE(timeLine.valueForTime(2000), qreal(1));
 
-    timeLine.setCurveShape(QTimeLine::SineCurve);
+    timeLine.setEasingCurve(QEasingCurve::SineCurve);
     QCOMPARE(timeLine.valueForTime(2000), qreal(0));
 }
 
