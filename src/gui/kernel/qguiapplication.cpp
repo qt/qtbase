@@ -188,7 +188,7 @@ QPalette *QGuiApplicationPrivate::app_pal = nullptr;        // default applicati
 
 ulong QGuiApplicationPrivate::mousePressTime = 0;
 Qt::MouseButton QGuiApplicationPrivate::mousePressButton = Qt::NoButton;
-int QGuiApplicationPrivate::mousePressX = 0;
+int QGuiApplicationPrivate::mousePressX = 0; // TODO use QPointF and store it in QPointingDevicePrivate
 int QGuiApplicationPrivate::mousePressY = 0;
 
 static int mouseDoubleClickDistance = -1;
@@ -2155,6 +2155,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     modifier_buttons = e->modifiers;
     QPointF localPoint = e->localPos;
     QPointF globalPoint = e->globalPos;
+    const QPointF lastGlobalPosition = QGuiApplicationPrivate::lastCursorPosition;
     bool doubleClick = false;
 
     if (mouseMove) {
@@ -2215,6 +2216,9 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
 
     QMouseEvent ev(type, localPoint, localPoint, globalPoint, button, e->buttons, e->modifiers, e->source, device);
     ev.setTimestamp(e->timestamp);
+    QMutableEventPoint &mutPt = QMutableSinglePointEvent::from(ev).mutablePoint();
+    mutPt.setGlobalLastPosition(lastGlobalPosition);
+    mutPt.setGlobalPressPosition(QPointF(mousePressX, mousePressY));
 
     if (window->d_func()->blockedByModalWindow && !qApp->d_func()->popupActive()) {
         // a modal window is blocking this window, don't allow mouse events through
