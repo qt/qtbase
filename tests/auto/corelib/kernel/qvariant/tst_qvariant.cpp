@@ -1711,7 +1711,8 @@ void tst_QVariant::typeName_data()
     QTest::newRow("20") << int(QVariant::Region) << QByteArray("QRegion");
     QTest::newRow("21") << int(QVariant::Bitmap) << QByteArray("QBitmap");
     QTest::newRow("22") << int(QVariant::Cursor) << QByteArray("QCursor");
-    QTest::newRow("23") << int(QVariant::SizePolicy) << QByteArray("QSizePolicy");
+    // The test below doesn't work as long as we don't link against widgets
+//    QTest::newRow("23") << int(QVariant::SizePolicy) << QByteArray("QSizePolicy");
     QTest::newRow("24") << int(QVariant::Date) << QByteArray("QDate");
     QTest::newRow("25") << int(QVariant::Time) << QByteArray("QTime");
     QTest::newRow("26") << int(QVariant::DateTime) << QByteArray("QDateTime");

@@ -377,17 +377,8 @@ public:
     static void destruct(int type, void *where);
 
     explicit QMetaType(int type);
-    explicit QMetaType(QtPrivate::QMetaTypeInterface *d);
-    constexpr QMetaType() : d_ptr(nullptr) {}
-    ~QMetaType();
-    QMetaType(const QMetaType &other) : QMetaType(other.d_ptr) {}
-    QMetaType &operator=(const QMetaType &);
-    QMetaType(QMetaType &&other) : d_ptr(other.d_ptr) { other.d_ptr = nullptr; }
-    QMetaType &operator=(QMetaType &&other)
-    {
-        qSwap(d_ptr, other.d_ptr);
-        return *this;
-    }
+    explicit constexpr QMetaType(QtPrivate::QMetaTypeInterface *d) : d_ptr(d) {}
+    constexpr QMetaType() = default;
 
     bool isValid() const;
     bool isRegistered() const;
@@ -566,6 +557,10 @@ public:
 #endif
     static bool registerConverterFunction(const ConverterFunction &f, int from, int to);
     static void unregisterConverterFunction(int from, int to);
+
+    static void unregisterMetaType(QMetaType type);
+    QtPrivate::QMetaTypeInterface *iface() { return d_ptr; }
+
 private:
     friend class QVariant;
     QtPrivate::QMetaTypeInterface *d_ptr = nullptr;
@@ -1922,19 +1917,13 @@ namespace QtPrivate {
 class QMetaTypeInterface
 {
 public:
-    uint revision; // 0 in Qt 6.0. Can increase if new field are added
+    ushort revision; // 0 in Qt 6.0. Can increase if new field are added
+    ushort alignment;
     uint size;
-    uint alignment;
     uint flags;
+    QBasicAtomicInt typeId;
     const QMetaObject *metaObject;
     const char *name;
-
-    QBasicAtomicInt typeId;
-    QtPrivate::RefCount ref;
-
-    // Called when the type is unregistered, to delete this
-    using DeleteSelf = void (*)(QMetaTypeInterface *);
-    DeleteSelf deleteSelf;
 
     using DefaultCtrFn = void (*)(const QMetaTypeInterface *, void *);
     DefaultCtrFn defaultCtr;
@@ -2504,14 +2493,12 @@ public:
 template<typename T>
 QMetaTypeInterface QMetaTypeForType<T>::metaType = {
     /*.revision=*/ 0,
-    /*.size=*/ sizeof(T),
     /*.alignment=*/ alignof(T),
+    /*.size=*/ sizeof(T),
     /*.flags=*/ QMetaTypeTypeFlags<T>::Flags,
+    /*.typeId=*/ BuiltinMetaType<T>::value,
     /*.metaObject=*/ MetaObjectForType<T>::value(),
     /*.name=*/ getName(),
-    /*.typeId=*/ BuiltinMetaType<T>::value,
-    /*.ref=*/ Q_REFCOUNT_INITIALIZE_STATIC,
-    /*.deleteSelf=*/ nullptr,
     /*.defaultCtr=*/ getDefaultCtr<T>(),
     /*.copyCtr=*/ getCopyCtr<T>(),
     /*.moveCtr=*/ getMoveCtr<T>(),
@@ -2536,14 +2523,12 @@ public:
     static inline QMetaTypeInterface metaType =
     {
         /*.revision=*/ 0,
-        /*.size=*/ 0,
         /*.alignment=*/ 0,
+        /*.size=*/ 0,
         /*.flags=*/ 0,
+        /*.typeId=*/ BuiltinMetaType<void>::value,
         /*.metaObject=*/ nullptr,
         /*.name=*/ "void",
-        /*.typeId=*/ BuiltinMetaType<void>::value,
-        /*.ref=*/ Q_REFCOUNT_INITIALIZE_STATIC,
-        /*.deleteSelf=*/ nullptr,
         /*.defaultCtr=*/ nullptr,
         /*.copyCtr=*/ nullptr,
         /*.moveCtr=*/ nullptr,

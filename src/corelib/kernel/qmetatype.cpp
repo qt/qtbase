@@ -779,13 +779,16 @@ bool QMetaType::isOrdered() const
     return d_ptr && (d_ptr->flags & QMetaType::IsPointer || d_ptr->lessThan != nullptr);
 }
 
-void QtMetaTypePrivate::derefAndDestroy(NS(QtPrivate::QMetaTypeInterface) *d_ptr)
+
+/*!
+   \internal
+*/
+void QMetaType::unregisterMetaType(QMetaType type)
 {
-    if (d_ptr && !d_ptr->ref.deref()) {
+    if (type.d_ptr && type.d_ptr->typeId.loadRelaxed() >= QMetaType::User) {
         if (auto reg = customTypeRegistry())
-            reg->unregisterDynamicType(d_ptr->typeId.loadRelaxed());
-        Q_ASSERT(d_ptr->deleteSelf);
-        d_ptr->deleteSelf(d_ptr);
+            reg->unregisterDynamicType(type.d_ptr->typeId.loadRelaxed());
+        type.d_ptr->typeId.storeRelease(0);
     }
 }
 
@@ -794,25 +797,7 @@ void QtMetaTypePrivate::derefAndDestroy(NS(QtPrivate::QMetaTypeInterface) *d_ptr
 
     Destructs this object.
 */
-QMetaType::~QMetaType()
-{
-    QtMetaTypePrivate::derefAndDestroy(d_ptr);
-}
 
-QMetaType::QMetaType(QtPrivate::QMetaTypeInterface *d) : d_ptr(d)
-{
-    if (d_ptr)
-        d_ptr->ref.ref();
-}
-
-QMetaType &QMetaType::operator=(const QMetaType &other)
-{
-    if (d_ptr != other.d_ptr) {
-        this->~QMetaType();
-        new (this) QMetaType(other.d_ptr);
-    }
-    return *this;
-}
 
 /*!
     \fn template<typename T> QMetaType QMetaType::fromType()

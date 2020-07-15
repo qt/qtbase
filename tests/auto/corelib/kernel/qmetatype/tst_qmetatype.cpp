@@ -414,9 +414,7 @@ void tst_QMetaType::registerGadget(const char *name, const QList<GadgetPropertyT
     const auto flags = QMetaType::IsGadget | QMetaType::NeedsConstruction | QMetaType::NeedsDestruction;
     using TypeInfo = QtPrivate::QMetaTypeInterface;
     auto typeInfo = new TypeInfo {
-        0, sizeof(GenericGadgetType), alignof(GenericGadgetType), uint(flags), meta, name, 0,
-        QtPrivate::RefCount{ 0 },
-        [](TypeInfo *self) { delete self; },
+        0, alignof(GenericGadgetType), sizeof(GenericGadgetType), uint(flags), 0, meta, name,
         [](const TypeInfo *self, void *where) { GadgetTypedConstructor(self->typeId, where, nullptr); },
         [](const TypeInfo *self, void *where, const void *copy) { GadgetTypedConstructor(self->typeId, where, copy); },
         [](const TypeInfo *self, void *where, void *copy) { GadgetTypedConstructor(self->typeId, where, copy); },
@@ -1322,9 +1320,7 @@ void tst_QMetaType::typedConstruct()
     const auto flags = QMetaType::NeedsConstruction | QMetaType::NeedsDestruction;
     using TypeInfo = QtPrivate::QMetaTypeInterface;
     auto typeInfo = new TypeInfo {
-        0, sizeof(GenericGadgetType), alignof(GenericGadgetType), uint(flags), nullptr, podTypeName,
-        0, QtPrivate::RefCount{0},
-        [](TypeInfo *self) { delete self; },
+        0, alignof(GenericGadgetType), sizeof(GenericGadgetType), uint(flags), 0, nullptr, podTypeName,
         [](const TypeInfo *self, void *where) { GadgetTypedConstructor(self->typeId, where, nullptr); },
         [](const TypeInfo *self, void *where, const void *copy) { GadgetTypedConstructor(self->typeId, where, copy); },
         [](const TypeInfo *self, void *where, void *copy) { GadgetTypedConstructor(self->typeId, where, copy); },

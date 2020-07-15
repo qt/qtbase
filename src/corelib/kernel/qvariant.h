@@ -426,28 +426,11 @@ class Q_CORE_EXPORT QVariant
         Private() noexcept : is_shared(false), is_null(true), packedType(0) {}
         explicit Private(const QMetaType &type) noexcept : is_shared(false), is_null(false)
         {
-            if (type.d_ptr)
-                type.d_ptr->ref.ref();
             quintptr mt = quintptr(type.d_ptr);
             Q_ASSERT((mt & 0x3) == 0);
             packedType = mt >> 2;
         }
         explicit Private(int type) noexcept : Private(QMetaType(type)) {}
-        Private(const Private &other) : Private(other.type())
-        {
-            data = other.data;
-            is_shared = other.is_shared;
-            is_null = other.is_null;
-        }
-        Private &operator=(const Private &other)
-        {
-            if (&other != this) {
-                this->~Private();
-                new (this) Private(other);
-            }
-            return *this;
-        }
-        Q_CORE_EXPORT ~Private();
 
         const void *storage() const
         { return is_shared ? data.shared->data() : &data.data; }

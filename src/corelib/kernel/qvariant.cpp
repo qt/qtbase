@@ -3201,10 +3201,4 @@ QAssociativeIterable::const_iterator QAssociativeIterable::const_iterator::opera
     return const_iterator(impl, new QAtomicInt(0));
 }
 
-QVariant::Private::~Private()
-{
-    QtMetaTypePrivate::derefAndDestroy(
-            reinterpret_cast<QtPrivate::QMetaTypeInterface *>(packedType << 2));
-}
-
 QT_END_NAMESPACE
