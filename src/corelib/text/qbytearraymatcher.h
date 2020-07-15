@@ -52,7 +52,7 @@ class Q_CORE_EXPORT QByteArrayMatcher
 public:
     QByteArrayMatcher();
     explicit QByteArrayMatcher(const QByteArray &pattern);
-    explicit QByteArrayMatcher(const char *pattern, int length);
+    explicit QByteArrayMatcher(const char *pattern, qsizetype length);
     QByteArrayMatcher(const QByteArrayMatcher &other);
     ~QByteArrayMatcher();
 
@@ -60,8 +60,8 @@ public:
 
     void setPattern(const QByteArray &pattern);
 
-    int indexIn(const QByteArray &ba, int from = 0) const;
-    int indexIn(const char *str, int len, int from = 0) const;
+    qsizetype indexIn(const QByteArray &ba, qsizetype from = 0) const;
+    qsizetype indexIn(const char *str, qsizetype len, qsizetype from = 0) const;
     inline QByteArray pattern() const
     {
         if (q_pattern.isNull())
@@ -75,7 +75,7 @@ private:
     struct Data {
         uchar q_skiptable[256];
         const uchar *p;
-        int l;
+        qsizetype l;
     };
     union {
         uint dummy[256];

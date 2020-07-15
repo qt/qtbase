@@ -128,8 +128,7 @@ QByteArrayMatcher::QByteArrayMatcher()
   has the given \a length. \a pattern must remain in scope, but
   the destructor does not delete \a pattern.
  */
-QByteArrayMatcher::QByteArrayMatcher(const char *pattern, int length)
-    : d(nullptr)
+QByteArrayMatcher::QByteArrayMatcher(const char *pattern, qsizetype length) : d(nullptr)
 {
     p.p = reinterpret_cast<const uchar *>(pattern);
     p.l = length;
@@ -196,7 +195,7 @@ void QByteArrayMatcher::setPattern(const QByteArray &pattern)
     setPattern(). Returns the position where the pattern() matched in
     \a ba, or -1 if no match was found.
 */
-int QByteArrayMatcher::indexIn(const QByteArray &ba, int from) const
+qsizetype QByteArrayMatcher::indexIn(const QByteArray &ba, qsizetype from) const
 {
     if (from < 0)
         from = 0;
@@ -211,7 +210,7 @@ int QByteArrayMatcher::indexIn(const QByteArray &ba, int from) const
     most recent call to setPattern(). Returns the position where the
     pattern() matched in \a str, or -1 if no match was found.
 */
-int QByteArrayMatcher::indexIn(const char *str, int len, int from) const
+qsizetype QByteArrayMatcher::indexIn(const char *str, qsizetype len, qsizetype from) const
 {
     if (from < 0)
         from = 0;
