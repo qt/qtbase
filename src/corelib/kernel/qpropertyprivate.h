@@ -139,15 +139,19 @@ public:
     T getValue() const { return value; }
     bool setValueAndReturnTrueIfChanged(T &&v)
     {
-        if (v == value)
-            return false;
+        if constexpr (QTypeTraits::has_operator_equal_v<T>) {
+            if (v == value)
+                return false;
+        }
         value = std::move(v);
         return true;
     }
     bool setValueAndReturnTrueIfChanged(const T &v)
     {
-        if (v == value)
-            return false;
+        if constexpr (QTypeTraits::has_operator_equal_v<T>) {
+            if (v == value)
+                return false;
+        }
         value = v;
         return true;
     }

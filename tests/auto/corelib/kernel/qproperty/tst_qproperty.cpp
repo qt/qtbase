@@ -72,6 +72,7 @@ private slots:
     void notifiedProperty();
     void notifiedPropertyWithOldValueCallback();
     void notifiedPropertyWithGuard();
+    void typeNoOperatorEqual();
 };
 
 void tst_QProperty::functorBinding()
@@ -985,6 +986,77 @@ void tst_QProperty::notifiedPropertyWithGuard()
     }
 }
 
+void tst_QProperty::typeNoOperatorEqual()
+{
+    struct Uncomparable
+    {
+        int data = -1;
+        bool changedCalled = false;
+
+        Uncomparable(int value = 0)
+        : data(value)
+        {}
+        Uncomparable(const Uncomparable &other)
+        {
+            data = other.data;
+            changedCalled = false;
+        }
+        Uncomparable(Uncomparable &&other)
+        {
+            data = other.data;
+            changedCalled = false;
+            other.data = -1;
+            other.changedCalled = false;
+        }
+        Uncomparable &operator=(const Uncomparable &other)
+        {
+            data = other.data;
+            return *this;
+        }
+        Uncomparable &operator=(Uncomparable &&other)
+        {
+            data = other.data;
+            changedCalled = false;
+            other.data = -1;
+            other.changedCalled = false;
+            return *this;
+        }
+        bool operator==(const Uncomparable&) = delete;
+        bool operator!=(const Uncomparable&) = delete;
+
+        void changed()
+        {
+            changedCalled = true;
+        }
+    };
+
+    Uncomparable u1 = { 13 };
+    Uncomparable u2 = { 27 };
+
+    QProperty<Uncomparable> p1;
+    QProperty<Uncomparable> p2 = Qt::makePropertyBinding(p1);
+
+    QCOMPARE(p1.value().data, p2.value().data);
+    p1.setValue(u1);
+    QCOMPARE(p1.value().data, u1.data);
+    QCOMPARE(p1.value().data, p2.value().data);
+    p2.setValue(u2);
+    QCOMPARE(p1.value().data, u1.data);
+    QCOMPARE(p2.value().data, u2.data);
+
+    QProperty<Uncomparable> p3 = Qt::makePropertyBinding(p1);
+    p1.setValue(u1);
+    QCOMPARE(p1.value().data, p3.value().data);
+
+    QNotifiedProperty<Uncomparable, &Uncomparable::changed> np;
+    QVERIFY(np.value().data != u1.data);
+    np.setValue(&u1, u1);
+    QVERIFY(u1.changedCalled);
+    u1.changedCalled = false;
+    QCOMPARE(np.value().data, u1.data);
+    np.setValue(&u1, u1);
+    QVERIFY(u1.changedCalled);
+}
 
 QTEST_MAIN(tst_QProperty);
 

@@ -155,8 +155,10 @@ class QPropertyBinding : public QUntypedPropertyBinding
         {
             PropertyType *propertyPtr = static_cast<PropertyType *>(dataPtr);
             PropertyType newValue = impl();
-            if (newValue == *propertyPtr)
-                return false;
+            if constexpr (QTypeTraits::has_operator_equal_v<PropertyType>) {
+                if (newValue == *propertyPtr)
+                    return false;
+            }
             *propertyPtr = std::move(newValue);
             return true;
         }
