@@ -623,29 +623,6 @@ bool QResource::isValid() const
     \sa isDir()
 */
 
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \obsolete
-
-    Returns \c true if the resource represents a file and the data backing it
-    is in a compressed format, false otherwise. If the data is compressed,
-    check compressionAlgorithm() to verify what algorithm to use to decompress
-    the data.
-
-    \note This function is deprecated and can be replaced with
-    \code
-      compressionAlgorithm() != NoCompression
-    \endcode
-
-    \sa data(), compressionAlgorithm(), isFile()
-*/
-
-bool QResource::isCompressed() const
-{
-    return compressionAlgorithm() != NoCompression;
-}
-#endif
-
 /*!
     \since 5.13
 
@@ -796,50 +773,6 @@ QStringList QResource::children() const
     d->ensureChildren();
     return d->children;
 }
-
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-  \obsolete
-
-  Use QDir::addSearchPath() with a prefix instead.
-
-  Adds \a path to the search paths searched in to find resources that are
-  not specified with an absolute path. The \a path must be an absolute
-  path (start with \c{/}).
-
-  The default search path is to search only in the root (\c{:/}). The last
-  path added will be consulted first upon next QResource creation.
-*/
-void
-QResource::addSearchPath(const QString &path)
-{
-    if (!path.startsWith(QLatin1Char('/'))) {
-        qWarning("QResource::addResourceSearchPath: Search paths must be absolute (start with /) [%ls]",
-                 qUtf16Printable(path));
-        return;
-    }
-    const auto locker = qt_scoped_lock(resourceMutex());
-    resourceSearchPaths()->prepend(path);
-}
-
-/*!
-  \obsolete
-
-  Use QDir::searchPaths() instead.
-
-  Returns the current search path list. This list is consulted when
-  creating a relative resource.
-
-  \sa QDir::addSearchPath(), QDir::setSearchPaths()
-*/
-
-QStringList
-QResource::searchPaths()
-{
-    const auto locker = qt_scoped_lock(resourceMutex());
-    return *resourceSearchPaths();
-}
-#endif
 
 inline uint QResourceRoot::hash(int node) const
 {

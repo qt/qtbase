@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2019 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -79,17 +79,6 @@ public:
     qint64 uncompressedSize() const;
     QByteArray uncompressedData() const;
     QDateTime lastModified() const;
-
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X("Use QDir::addSearchPath() instead")
-    static void addSearchPath(const QString &path);
-    QT_DEPRECATED_X("Use QDir::searchPaths() instead")
-    static QStringList searchPaths();
-#endif
-#if QT_DEPRECATED_SINCE(5, 15)
-    QT_DEPRECATED_VERSION_X_5_15("Use QResource::compressionAlgorithm() instead")
-    bool isCompressed() const;
-#endif
 
     static bool registerResource(const QString &rccFilename, const QString &resourceRoot=QString());
     static bool unregisterResource(const QString &rccFilename, const QString &resourceRoot=QString());
