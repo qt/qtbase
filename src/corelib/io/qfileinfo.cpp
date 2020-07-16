@@ -1194,7 +1194,6 @@ bool QFileInfo::isRoot() const
 }
 
 /*!
-    \fn QString QFileInfo::symLinkTarget() const
     \since 4.2
 
     Returns the absolute path to the file or directory a symbolic link
@@ -1207,19 +1206,6 @@ bool QFileInfo::isRoot() const
 
     \sa exists(), isSymLink(), isDir(), isFile()
 */
-
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \obsolete
-
-    Use symLinkTarget() instead.
-*/
-QString QFileInfo::readLink() const
-{
-    return symLinkTarget();
-}
-#endif
-
 QString QFileInfo::symLinkTarget() const
 {
     Q_D(const QFileInfo);
@@ -1389,32 +1375,6 @@ qint64 QFileInfo::size() const
             return d->fileSize;
         });
 }
-
-#if QT_DEPRECATED_SINCE(5, 10)
-/*!
-    \deprecated
-
-    Returns the date and time when the file was created, the time its metadata
-    was last changed or the time of last modification, whichever one of the
-    three is available (in that order).
-
-    This function is deprecated. Instead, use the birthTime() function to get
-    the time the file was created, metadataChangeTime() to get the time its
-    metadata was last changed, or lastModified() to get the time it was last modified.
-
-    If the file is a symlink, the time of the target file is returned
-    (not the symlink).
-
-    \sa birthTime(), metadataChangeTime(), lastModified(), lastRead()
-*/
-QDateTime QFileInfo::created() const
-{
-    QDateTime d = fileTime(QFile::FileBirthTime);
-    if (d.isValid())
-        return d;
-    return fileTime(QFile::FileMetadataChangeTime);
-}
-#endif
 
 /*!
     \since 5.10

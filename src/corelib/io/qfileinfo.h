@@ -151,10 +151,6 @@ public:
     bool isRoot() const;
     bool isBundle() const;
 
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X("Use QFileInfo::symLinkTarget() instead")
-    QString readLink() const;
-#endif
     QString symLinkTarget() const;
 #if QT_CONFIG(cxx17_filesystem)
     std::filesystem::path filesystemSymLinkTarget() const
@@ -172,10 +168,6 @@ public:
     qint64 size() const;
 
     // ### Qt6: inline these functions
-#if QT_DEPRECATED_SINCE(5, 10)
-    QT_DEPRECATED_X("Use either birthTime() or metadataChangeTime()")
-    QDateTime created() const;
-#endif
     QDateTime birthTime() const;
     QDateTime metadataChangeTime() const;
     QDateTime lastModified() const;
