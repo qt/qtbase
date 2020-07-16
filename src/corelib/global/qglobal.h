@@ -938,6 +938,7 @@ namespace SwapExceptionTester { // insulate users from the "using std::swap" bel
 }
 } // namespace QtPrivate
 
+// Documented in ../tools/qalgorithm.qdoc
 template <typename T>
 inline void qSwap(T &value1, T &value2)
     noexcept(noexcept(QtPrivate::SwapExceptionTester::checkSwap(value1)))

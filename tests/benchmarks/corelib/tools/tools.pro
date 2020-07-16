@@ -9,5 +9,4 @@ SUBDIRS = \
         qrect \
         qringbuffer \
         qstack \
-        qvector \
-        qalgorithms
+        qvector
