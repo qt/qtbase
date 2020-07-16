@@ -1274,24 +1274,24 @@ void tst_QStringConverter::utf8bom_data()
         << QString::fromLatin1("\240");
 
     {
-        static const ushort data[] = { 0x201d };
+        static const char16_t data[] = { 0x201d };
         QTest::newRow("nobom 2")
             << QByteArray("\342\200\235", 3)
-            << QString::fromUtf16(data, sizeof(data)/sizeof(short));
+            << QString::fromUtf16(data, std::size(data));
     }
 
     {
-        static const ushort data[] = { 0xf000 };
+        static const char16_t data[] = { 0xf000 };
         QTest::newRow("bom1")
             << QByteArray("\357\200\200", 3)
-            << QString::fromUtf16(data, sizeof(data)/sizeof(short));
+            << QString::fromUtf16(data, std::size(data));
     }
 
     {
-        static const ushort data[] = { 0xfec0 };
+        static const char16_t data[] = { 0xfec0 };
         QTest::newRow("bom2")
             << QByteArray("\357\273\200", 3)
-            << QString::fromUtf16(data, sizeof(data)/sizeof(short));
+            << QString::fromUtf16(data, std::size(data));
     }
 
     {
@@ -1301,17 +1301,18 @@ void tst_QStringConverter::utf8bom_data()
     }
 
     { // test the non-SIMD code-path
-        static const ushort data[] = { 0x61, 0xfeff, 0x62 };
+        static const char16_t data[] = { 0x61, 0xfeff, 0x62 };
         QTest::newRow("middle-bom (non SIMD)")
             << QByteArray("a\357\273\277b")
-            << QString::fromUtf16(data, sizeof(data)/sizeof(short));
+            << QString::fromUtf16(data, std::size(data));
     }
 
     { // test the SIMD code-path
-        static const ushort data[] = { 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6a, 0x6b, 0x6c, 0xfeff, 0x6d };
+        static const char16_t data[] = { 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67,
+                                         0x68, 0x69, 0x6a, 0x6b, 0x6c, 0xfeff, 0x6d };
         QTest::newRow("middle-bom (SIMD)")
             << QByteArray("abcdefghijkl\357\273\277m")
-            << QString::fromUtf16(data, sizeof(data)/sizeof(short));
+            << QString::fromUtf16(data, std::size(data));
     }
 }
 QT_WARNING_POP
