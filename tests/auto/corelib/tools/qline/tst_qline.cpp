@@ -28,7 +28,7 @@
 
 #include <QtTest/QtTest>
 #include <qline.h>
-#include <math.h>
+#include <qmath.h>
 
 #ifndef M_2PI
 #define M_2PI 6.28318530717958647692528676655900576
@@ -68,12 +68,6 @@ private slots:
 
     void testSet();
 };
-
-// Square root of two
-#define SQRT2 1.4142135623731
-
-// Length of unit vector projected to x from 45 degrees
-#define UNITX_45 0.707106781186547
 
 const qreal epsilon = sizeof(qreal) == sizeof(double) ? 1e-8 : 1e-4;
 
@@ -235,25 +229,25 @@ void tst_QLine::testLength_data()
     QTest::newRow("[-1,0]*2") << 0.0 << 0.0 << -1.0 << 0.0 << 1.0 << 2.0 << -2.0 << 0.0;
     QTest::newRow("[0,-1]*2") << 0.0 << 0.0 << 0.0 << -1.0 << 1.0 << 2.0 << 0.0 << -2.0;
     QTest::newRow("[1,1]->|1|") << 0.0 << 0.0 << 1.0 << 1.0
-                             << double(SQRT2) << 1.0 << double(UNITX_45) << double(UNITX_45);
+                             << M_SQRT2 << 1.0 << M_SQRT1_2 << M_SQRT1_2;
     QTest::newRow("[-1,1]->|1|") << 0.0 << 0.0 << -1.0 << 1.0
-                             << double(SQRT2) << 1.0 << double(-UNITX_45) << double(UNITX_45);
+                             << M_SQRT2 << 1.0 << -M_SQRT1_2 << M_SQRT1_2;
     QTest::newRow("[1,-1]->|1|") << 0.0 << 0.0 << 1.0 << -1.0
-                             << double(SQRT2) << 1.0 << double(UNITX_45) << double(-UNITX_45);
+                             << M_SQRT2 << 1.0 << M_SQRT1_2 << -M_SQRT1_2;
     QTest::newRow("[-1,-1]->|1|") << 0.0 << 0.0 << -1.0 << -1.0
-                             << double(SQRT2) << 1.0 << double(-UNITX_45) << double(-UNITX_45);
+                             << M_SQRT2 << 1.0 << -M_SQRT1_2 << -M_SQRT1_2;
     QTest::newRow("[1,0]*2 (2,2)") << 2.0 << 2.0 << 3.0 << 2.0 << 1.0 << 2.0 << 2.0 << 0.0;
     QTest::newRow("[0,1]*2 (2,2)") << 2.0 << 2.0 << 2.0 << 3.0 << 1.0 << 2.0 << 0.0 << 2.0;
     QTest::newRow("[-1,0]*2 (2,2)") << 2.0 << 2.0 << 1.0 << 2.0 << 1.0 << 2.0 << -2.0 << 0.0;
     QTest::newRow("[0,-1]*2 (2,2)") << 2.0 << 2.0 << 2.0 << 1.0 << 1.0 << 2.0 << 0.0 << -2.0;
     QTest::newRow("[1,1]->|1| (2,2)") << 2.0 << 2.0 << 3.0 << 3.0
-                                   << double(SQRT2) << 1.0 << double(UNITX_45) << double(UNITX_45);
+                                   << M_SQRT2 << 1.0 << M_SQRT1_2 << M_SQRT1_2;
     QTest::newRow("[-1,1]->|1| (2,2)") << 2.0 << 2.0 << 1.0 << 3.0
-                                    << double(SQRT2) << 1.0 << double(-UNITX_45) << double(UNITX_45);
+                                    << M_SQRT2 << 1.0 << -M_SQRT1_2 << M_SQRT1_2;
     QTest::newRow("[1,-1]->|1| (2,2)") << 2.0 << 2.0 << 3.0 << 1.0
-                                    << double(SQRT2) << 1.0 << double(UNITX_45) << double(-UNITX_45);
+                                    << M_SQRT2 << 1.0 << M_SQRT1_2 << -M_SQRT1_2;
     QTest::newRow("[-1,-1]->|1| (2,2)") << 2.0 << 2.0 << 1.0 << 1.0
-                                     << double(SQRT2) << 1.0 << double(-UNITX_45) << double(-UNITX_45);
+                                     << M_SQRT2 << 1.0 << -M_SQRT1_2 << -M_SQRT1_2;
 }
 
 void tst_QLine::testLength()
