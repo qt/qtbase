@@ -150,7 +150,7 @@ QEnterEvent::~QEnterEvent()
   \internal
 */
 QInputEvent::QInputEvent(Type type, const QInputDevice *dev, Qt::KeyboardModifiers modifiers)
-    : QEvent(type), m_dev(dev), modState(modifiers), ts(0)
+    : QEvent(type), m_dev(dev), m_modState(modifiers)
 {}
 
 /*!
@@ -804,7 +804,7 @@ Qt::MouseEventFlags QMouseEvent::flags() const
 */
 QHoverEvent::QHoverEvent(Type type, const QPointF &pos, const QPointF &oldPos,
                          Qt::KeyboardModifiers modifiers, const QPointingDevice *device)
-    : QSinglePointEvent(type, device, pos, pos, pos, Qt::NoButton, Qt::NoButton, modifiers), op(oldPos)
+    : QSinglePointEvent(type, device, pos, pos, pos, Qt::NoButton, Qt::NoButton, modifiers), m_oldPos(oldPos)
 {
 }
 
@@ -1088,9 +1088,9 @@ QWheelEvent::~QWheelEvent()
 */
 QKeyEvent::QKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers, const QString& text,
                      bool autorep, ushort count)
-    : QInputEvent(type, QInputDevice::primaryKeyboard(), modifiers), txt(text), k(key),
-      nScanCode(0), nVirtualKey(0), nModifiers(0),
-      c(count), autor(autorep)
+    : QInputEvent(type, QInputDevice::primaryKeyboard(), modifiers), m_text(text), m_key(key),
+      m_scanCode(0), m_virtualKey(0), m_modifiers(0),
+      m_count(count), m_autoRepeat(autorep)
 {
      if (type == QEvent::ShortcutOverride)
         ignore();
@@ -1117,9 +1117,9 @@ QKeyEvent::QKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers, const 
 QKeyEvent::QKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers,
                      quint32 nativeScanCode, quint32 nativeVirtualKey, quint32 nativeModifiers,
                      const QString &text, bool autorep, ushort count, const QInputDevice *device)
-    : QInputEvent(type, device, modifiers), txt(text), k(key),
-      nScanCode(nativeScanCode), nVirtualKey(nativeVirtualKey), nModifiers(nativeModifiers),
-      c(count), autor(autorep)
+    : QInputEvent(type, device, modifiers), m_text(text), m_key(key),
+      m_scanCode(nativeScanCode), m_virtualKey(nativeVirtualKey), m_modifiers(nativeModifiers),
+      m_count(count), m_autoRepeat(autorep)
 {
     if (type == QEvent::ShortcutOverride)
         ignore();
@@ -1422,7 +1422,7 @@ QPaintEvent::~QPaintEvent()
     \a pos and \a oldPos respectively.
 */
 QMoveEvent::QMoveEvent(const QPoint &pos, const QPoint &oldPos)
-    : QEvent(Move), p(pos), oldp(oldPos)
+    : QEvent(Move), m_pos(pos), m_oldPos(oldPos)
 {}
 
 /*!
@@ -1469,7 +1469,7 @@ QMoveEvent::~QMoveEvent()
 */
 QExposeEvent::QExposeEvent(const QRegion &exposeRegion)
     : QEvent(Expose)
-    , rgn(exposeRegion)
+    , m_region(exposeRegion)
 {
 }
 
@@ -1554,7 +1554,7 @@ QPlatformSurfaceEvent::~QPlatformSurfaceEvent()
     size and \a oldSize respectively.
 */
 QResizeEvent::QResizeEvent(const QSize &size, const QSize &oldSize)
-    : QEvent(Resize), s(size), olds(oldSize)
+    : QEvent(Resize), m_size(size), m_oldSize(oldSize)
 {}
 
 /*!
@@ -1726,7 +1726,7 @@ QContextMenuEvent::QContextMenuEvent(Reason reason, const QPoint &pos, const QPo
 */
 QContextMenuEvent::QContextMenuEvent(Reason reason, const QPoint &pos, const QPoint &globalPos,
                                      Qt::KeyboardModifiers modifiers)
-    : QInputEvent(ContextMenu, QPointingDevice::primaryPointingDevice(), modifiers), p(pos), gp(globalPos), reas(reason)
+    : QInputEvent(ContextMenu, QPointingDevice::primaryPointingDevice(), modifiers), m_pos(pos), m_globalPos(globalPos), m_reason(reason)
 {}
 
 
@@ -1749,10 +1749,10 @@ QContextMenuEvent::~QContextMenuEvent()
     position explicitly.
 */
 QContextMenuEvent::QContextMenuEvent(Reason reason, const QPoint &pos)
-    : QInputEvent(ContextMenu, QInputDevice::primaryKeyboard()), p(pos), reas(reason)
+    : QInputEvent(ContextMenu, QInputDevice::primaryKeyboard()), m_pos(pos), m_reason(reason)
 {
 #ifndef QT_NO_CURSOR
-    gp = QCursor::pos();
+    m_globalPos = QCursor::pos();
 #endif
 }
 
@@ -2025,7 +2025,7 @@ QContextMenuEvent::QContextMenuEvent(Reason reason, const QPoint &pos)
     \sa setCommitString()
 */
 QInputMethodEvent::QInputMethodEvent()
-    : QEvent(QEvent::InputMethod), replace_from(0), replace_length(0)
+    : QEvent(QEvent::InputMethod), m_replacementStart(0), m_replacementLength(0)
 {
 }
 
@@ -2040,8 +2040,8 @@ QInputMethodEvent::QInputMethodEvent()
     \sa preeditString(), attributes()
 */
 QInputMethodEvent::QInputMethodEvent(const QString &preeditText, const QList<Attribute> &attributes)
-    : QEvent(QEvent::InputMethod), preedit(preeditText), attrs(attributes),
-      replace_from(0), replace_length(0)
+    : QEvent(QEvent::InputMethod), m_preedit(preeditText), m_attributes(attributes),
+      m_replacementStart(0), m_replacementLength(0)
 {
 }
 
@@ -2049,8 +2049,8 @@ QInputMethodEvent::QInputMethodEvent(const QString &preeditText, const QList<Att
     Constructs a copy of \a other.
 */
 QInputMethodEvent::QInputMethodEvent(const QInputMethodEvent &other)
-    : QEvent(QEvent::InputMethod), preedit(other.preedit), attrs(other.attrs),
-      commit(other.commit), replace_from(other.replace_from), replace_length(other.replace_length)
+    : QEvent(QEvent::InputMethod), m_preedit(other.m_preedit), m_attributes(other.m_attributes),
+      m_commit(other.m_commit), m_replacementStart(other.m_replacementStart), m_replacementLength(other.m_replacementLength)
 {
 }
 
@@ -2076,9 +2076,9 @@ QInputMethodEvent::~QInputMethodEvent()
 */
 void QInputMethodEvent::setCommitString(const QString &commitString, int replaceFrom, int replaceLength)
 {
-    commit = commitString;
-    replace_from = replaceFrom;
-    replace_length = replaceLength;
+    m_commit = commitString;
+    m_replacementStart = replaceFrom;
+    m_replacementLength = replaceLength;
 }
 
 /*!
@@ -2325,10 +2325,10 @@ QTabletEvent::QTabletEvent(Type type, const QPointingDevice *dev, const QPointF 
                  Qt::KeyboardModifiers keyState,
                  Qt::MouseButton button, Qt::MouseButtons buttons)
     : QSinglePointEvent(type, dev, pos, pos, globalPos, button, buttons, keyState),
-      mXT(xTilt),
-      mYT(yTilt),
-      mZ(z),
-      mTangential(tangentialPressure)
+      m_xTilt(xTilt),
+      m_yTilt(yTilt),
+      m_zTilt(z),
+      m_tangential(tangentialPressure)
 {
     QMutableEventPoint &mut = QMutableEventPoint::from(m_point);
     mut.setPressure(pressure);
@@ -2597,8 +2597,9 @@ QTabletEvent::~QTabletEvent()
 */
 QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QPointingDevice *device, const QPointF &localPos, const QPointF &scenePos,
                                          const QPointF &globalPos, qreal realValue, ulong sequenceId, quint64 intValue)
-    : QSinglePointEvent(QEvent::NativeGesture, device, localPos, scenePos, globalPos, Qt::NoButton, Qt::NoButton, Qt::NoModifier), mGestureType(type),
-      mRealValue(realValue), mSequenceId(sequenceId), mIntValue(intValue)
+    : QSinglePointEvent(QEvent::NativeGesture, device, localPos, scenePos, globalPos, Qt::NoButton, Qt::NoButton, Qt::NoModifier),
+      m_gestureType(type), m_realValue(realValue), m_sequenceId(sequenceId),
+      m_intValue(intValue)
 {
 }
 
@@ -2685,7 +2686,7 @@ QNativeGestureEvent::~QNativeGestureEvent()
 QDragMoveEvent::QDragMoveEvent(const QPoint& pos, Qt::DropActions actions, const QMimeData *data,
                                Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Type type)
     : QDropEvent(pos, actions, data, buttons, modifiers, type)
-    , rect(pos, QSize(1, 1))
+    , m_rect(pos, QSize(1, 1))
 {}
 
 /*!
@@ -2797,12 +2798,12 @@ QDragMoveEvent::~QDragMoveEvent()
 */
 QDropEvent::QDropEvent(const QPointF& pos, Qt::DropActions actions, const QMimeData *data,
                        Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Type type)
-    : QEvent(type), p(pos), mouseState(buttons),
-      modState(modifiers), act(actions),
-      mdata(data)
+    : QEvent(type), m_pos(pos), m_mouseState(buttons),
+      m_modState(modifiers), m_actions(actions),
+      m_data(data)
 {
-    default_action = QGuiApplicationPrivate::platformIntegration()->drag()->defaultAction(act, modifiers);
-    drop_action = default_action;
+    m_defaultAction = m_dropAction =
+        QGuiApplicationPrivate::platformIntegration()->drag()->defaultAction(m_actions, modifiers);
     ignore();
 }
 
@@ -2833,9 +2834,9 @@ QObject* QDropEvent::source() const
 
 void QDropEvent::setDropAction(Qt::DropAction action)
 {
-    if (!(action & act) && action != Qt::IgnoreAction)
-        action = default_action;
-    drop_action = action;
+    if (!(action & m_actions) && action != Qt::IgnoreAction)
+        action = m_defaultAction;
+    m_dropAction = action;
 }
 
 /*!
@@ -3041,7 +3042,7 @@ QDragLeaveEvent::~QDragLeaveEvent()
     \sa pos(), globalPos()
 */
 QHelpEvent::QHelpEvent(Type type, const QPoint &pos, const QPoint &globalPos)
-    : QEvent(type), p(pos), gp(globalPos)
+    : QEvent(type), m_pos(pos), m_globalPos(globalPos)
 {}
 
 /*!
@@ -3150,7 +3151,7 @@ QHelpEvent::~QHelpEvent()
     \sa tip()
 */
 QStatusTipEvent::QStatusTipEvent(const QString &tip)
-    : QEvent(StatusTip), s(tip)
+    : QEvent(StatusTip), m_tip(tip)
 {}
 
 /*! \internal
@@ -3190,7 +3191,7 @@ QStatusTipEvent::~QStatusTipEvent()
     \sa href()
 */
 QWhatsThisClickedEvent::QWhatsThisClickedEvent(const QString &href)
-    : QEvent(WhatsThisClicked), s(href)
+    : QEvent(WhatsThisClicked), m_href(href)
 {}
 
 /*! \internal
@@ -3236,7 +3237,7 @@ QWhatsThisClickedEvent::~QWhatsThisClickedEvent()
     action \a before. If \a before is \nullptr, the action is appended.
 */
 QActionEvent::QActionEvent(int type, QAction *action, QAction *before)
-    : QEvent(static_cast<QEvent::Type>(type)), act(action), bef(before)
+    : QEvent(static_cast<QEvent::Type>(type)), m_action(action), m_before(before)
 {}
 
 /*! \internal
@@ -3370,7 +3371,7 @@ QShowEvent::~QShowEvent()
     Constructs a file open event for the given \a file.
 */
 QFileOpenEvent::QFileOpenEvent(const QString &file)
-    : QEvent(FileOpen), f(file), m_url(QUrl::fromLocalFile(file))
+    : QEvent(FileOpen), m_file(file), m_url(QUrl::fromLocalFile(file))
 {
 }
 
@@ -3380,7 +3381,7 @@ QFileOpenEvent::QFileOpenEvent(const QString &file)
     Constructs a file open event for the given \a url.
 */
 QFileOpenEvent::QFileOpenEvent(const QUrl &url)
-    : QEvent(FileOpen), f(url.toLocalFile()), m_url(url)
+    : QEvent(FileOpen), m_file(url.toLocalFile()), m_url(url)
 {
 }
 
@@ -3418,7 +3419,7 @@ QFileOpenEvent::~QFileOpenEvent()
 */
 bool QFileOpenEvent::openFile(QFile &file, QIODevice::OpenMode flags) const
 {
-    file.setFileName(f);
+    file.setFileName(m_file);
     return file.open(flags);
 }
 
@@ -3444,7 +3445,7 @@ bool QFileOpenEvent::openFile(QFile &file, QIODevice::OpenMode flags) const
     Construct a QToolBarChangeEvent given the current button state in \a state.
 */
 QToolBarChangeEvent::QToolBarChangeEvent(bool t)
-    : QEvent(ToolBarChange), tog(t)
+    : QEvent(ToolBarChange), m_toggle(t)
 {}
 
 /*! \internal
@@ -3480,7 +3481,7 @@ QToolBarChangeEvent::~QToolBarChangeEvent()
     for the same key sequence.
 */
 QShortcutEvent::QShortcutEvent(const QKeySequence &key, int id, bool ambiguous)
-    : QEvent(Shortcut), sequence(key), ambig(ambiguous), sid(id)
+    : QEvent(Shortcut), m_sequence(key), m_ambiguous(ambiguous), m_shortcutId(id)
 {
 }
 
@@ -4026,8 +4027,8 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
 
 /*! \internal
  */
-QWindowStateChangeEvent::QWindowStateChangeEvent(Qt::WindowStates s, bool isOverride)
-    : QEvent(WindowStateChange), ostate(s), m_override(isOverride)
+QWindowStateChangeEvent::QWindowStateChangeEvent(Qt::WindowStates oldState, bool isOverride)
+    : QEvent(WindowStateChange), m_oldStates(oldState), m_override(isOverride)
 {
 }
 

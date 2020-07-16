@@ -835,9 +835,11 @@ bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventLis
                  || cur.event->type() == QEvent::UpdateRequest) {
                 ;
             } else if (cur.event->type() == QEvent::Resize) {
-                ((QResizeEvent *)(cur.event))->s = ((QResizeEvent *)event)->s;
+                static_cast<QResizeEvent *>(cur.event)->m_size =
+                    static_cast<const QResizeEvent *>(event)->size();
             } else if (cur.event->type() == QEvent::Move) {
-                ((QMoveEvent *)(cur.event))->p = ((QMoveEvent *)event)->p;
+                static_cast<QMoveEvent *>(cur.event)->m_pos =
+                    static_cast<const QMoveEvent *>(event)->pos();
             } else if (cur.event->type() == QEvent::LanguageChange) {
                 ;
             } else {
@@ -3207,7 +3209,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 }
                 if (w->isWindow())
                     break;
-                dragEvent->p = w->mapToParent(dragEvent->p);
+                dragEvent->m_pos = w->mapToParent(dragEvent->m_pos);
                 w = w->parentWidget();
             }
         }
@@ -3232,7 +3234,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 QDropEvent *dragEvent = static_cast<QDropEvent *>(e);
                 QWidget *origReciver = static_cast<QWidget *>(receiver);
                 while (origReciver && w != origReciver) {
-                    dragEvent->p = origReciver->mapToParent(dragEvent->p);
+                    dragEvent->m_pos = origReciver->mapToParent(dragEvent->m_pos);
                     origReciver = origReciver->parentWidget();
                 }
             }

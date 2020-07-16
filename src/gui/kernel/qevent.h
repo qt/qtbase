@@ -76,15 +76,15 @@ public:
     ~QInputEvent();
     const QInputDevice *device() const { return m_dev; }
     QInputDevice::DeviceType deviceType() const { return m_dev ? m_dev->type() : QInputDevice::DeviceType::Unknown; }
-    inline Qt::KeyboardModifiers modifiers() const { return modState; }
-    inline void setModifiers(Qt::KeyboardModifiers amodifiers) { modState = amodifiers; }
-    inline ulong timestamp() const { return ts; }
-    inline void setTimestamp(ulong atimestamp) { ts = atimestamp; }
+    inline Qt::KeyboardModifiers modifiers() const { return m_modState; }
+    inline void setModifiers(Qt::KeyboardModifiers modifiers) { m_modState = modifiers; }
+    inline ulong timestamp() const { return m_timeStamp; }
+    inline void setTimestamp(ulong timestamp) { m_timeStamp = timestamp; }
 
 protected:
     const QInputDevice *m_dev = nullptr;
-    Qt::KeyboardModifiers modState = Qt::NoModifier;
-    ulong ts;
+    Qt::KeyboardModifiers m_modState = Qt::NoModifier;
+    ulong m_timeStamp = 0;
     qint64 m_extra = 0; // reserved, unused for now
 };
 
@@ -330,12 +330,12 @@ public:
 #endif // QT_DEPRECATED_SINCE(6, 0)
 
     // TODO deprecate when we figure out an actual replacement (point history?)
-    inline QPoint oldPos() const { return op.toPoint(); }
-    inline QPointF oldPosF() const { return op; }
+    inline QPoint oldPos() const { return m_oldPos.toPoint(); }
+    inline QPointF oldPosF() const { return m_oldPos; }
 
 protected:
-    quint32 mReserved : 16;
-    QPointF op; // TODO remove?
+    quint32 m_reserved : 16;
+    QPointF m_oldPos; // TODO remove?
 };
 
 #if QT_CONFIG(wheelevent)
@@ -406,15 +406,15 @@ public:
 #endif
     inline qreal pressure() const { return point(0).pressure(); }
     inline qreal rotation() const { return point(0).rotation(); }
-    inline int z() const { return mZ; }
-    inline qreal tangentialPressure() const { return mTangential; }
-    inline int xTilt() const { return mXT; }
-    inline int yTilt() const { return mYT; }
+    inline int z() const { return m_zTilt; }
+    inline qreal tangentialPressure() const { return m_tangential; }
+    inline int xTilt() const { return m_xTilt; }
+    inline int yTilt() const { return m_yTilt; }
 
 protected:
-    quint32 mReserved : 16;
-    int mXT, mYT, mZ;
-    qreal mTangential;
+    quint32 m_reserved : 16;
+    int m_xTilt, m_yTilt, m_zTilt;
+    qreal m_tangential;
 };
 #endif // QT_CONFIG(tabletevent)
 
@@ -425,8 +425,8 @@ public:
     QNativeGestureEvent(Qt::NativeGestureType type, const QPointingDevice *dev, const QPointF &localPos, const QPointF &scenePos,
                         const QPointF &globalPos, qreal value, ulong sequenceId, quint64 intArgument);
     ~QNativeGestureEvent();
-    Qt::NativeGestureType gestureType() const { return Qt::NativeGestureType(mGestureType); }
-    qreal value() const { return mRealValue; }
+    Qt::NativeGestureType gestureType() const { return Qt::NativeGestureType(m_gestureType); }
+    qreal value() const { return m_realValue; }
 
 #if QT_DEPRECATED_SINCE(6, 0)
 #ifndef QT_NO_INTEGER_EVENT_COORDINATES
@@ -444,11 +444,11 @@ public:
 #endif
 
 protected:
-    quint32 mGestureType : 4;
-    quint32 mReserved : 12;
-    qreal mRealValue;
-    ulong mSequenceId;
-    quint64 mIntValue;
+    quint32 m_gestureType : 4;
+    quint32 m_reserved : 12;
+    qreal m_realValue;
+    ulong m_sequenceId;
+    quint64 m_intValue;
 };
 #endif // QT_CONFIG(gestures)
 
@@ -463,27 +463,27 @@ public:
               const QInputDevice *device = QInputDevice::primaryKeyboard());
     ~QKeyEvent();
 
-    int key() const { return k; }
+    int key() const { return m_key; }
 #if QT_CONFIG(shortcut)
     bool matches(QKeySequence::StandardKey key) const;
 #endif
     Qt::KeyboardModifiers modifiers() const;
-    inline QString text() const { return txt; }
-    inline bool isAutoRepeat() const { return autor; }
-    inline int count() const { return int(c); }
+    inline QString text() const { return m_text; }
+    inline bool isAutoRepeat() const { return m_autoRepeat; }
+    inline int count() const { return int(m_count); }
 
-    inline quint32 nativeScanCode() const { return nScanCode; }
-    inline quint32 nativeVirtualKey() const { return nVirtualKey; }
-    inline quint32 nativeModifiers() const { return nModifiers; }
+    inline quint32 nativeScanCode() const { return m_scanCode; }
+    inline quint32 nativeVirtualKey() const { return m_virtualKey; }
+    inline quint32 nativeModifiers() const { return m_modifiers; }
 
 protected:
-    QString txt;
-    int k;
-    quint32 nScanCode;
-    quint32 nVirtualKey;
-    quint32 nModifiers;
-    ushort c;
-    ushort autor:1;
+    QString m_text;
+    int m_key;
+    quint32 m_scanCode;
+    quint32 m_virtualKey;
+    quint32 m_modifiers;
+    ushort m_count;
+    ushort m_autoRepeat:1;
     // ushort reserved:15;
 };
 
@@ -526,23 +526,23 @@ public:
     QMoveEvent(const QPoint &pos, const QPoint &oldPos);
     ~QMoveEvent();
 
-    inline const QPoint &pos() const { return p; }
-    inline const QPoint &oldPos() const { return oldp;}
+    inline const QPoint &pos() const { return m_pos; }
+    inline const QPoint &oldPos() const { return m_oldPos;}
 protected:
-    QPoint p, oldp;
+    QPoint m_pos, m_oldPos;
     friend class QApplication;
 };
 
 class Q_GUI_EXPORT QExposeEvent : public QEvent
 {
 public:
-    explicit QExposeEvent(const QRegion &rgn);
+    explicit QExposeEvent(const QRegion &m_region);
     ~QExposeEvent();
 
-    inline const QRegion &region() const { return rgn; }
+    inline const QRegion &region() const { return m_region; }
 
 protected:
-    QRegion rgn;
+    QRegion m_region;
 };
 
 class Q_GUI_EXPORT QPlatformSurfaceEvent : public QEvent
@@ -568,10 +568,10 @@ public:
     QResizeEvent(const QSize &size, const QSize &oldSize);
     ~QResizeEvent();
 
-    inline const QSize &size() const { return s; }
-    inline const QSize &oldSize()const { return olds;}
+    inline const QSize &size() const { return m_size; }
+    inline const QSize &oldSize()const { return m_oldSize;}
 protected:
-    QSize s, olds;
+    QSize m_size, m_oldSize;
     friend class QApplication;
 };
 
@@ -619,20 +619,20 @@ public:
     QContextMenuEvent(Reason reason, const QPoint &pos);
     ~QContextMenuEvent();
 
-    inline int x() const { return p.x(); }
-    inline int y() const { return p.y(); }
-    inline int globalX() const { return gp.x(); }
-    inline int globalY() const { return gp.y(); }
+    inline int x() const { return m_pos.x(); }
+    inline int y() const { return m_pos.y(); }
+    inline int globalX() const { return m_globalPos.x(); }
+    inline int globalY() const { return m_globalPos.y(); }
 
-    inline const QPoint& pos() const { return p; }
-    inline const QPoint& globalPos() const { return gp; }
+    inline const QPoint& pos() const { return m_pos; }
+    inline const QPoint& globalPos() const { return m_globalPos; }
 
-    inline Reason reason() const { return Reason(reas); }
+    inline Reason reason() const { return Reason(m_reason); }
 
 protected:
-    QPoint p;
-    QPoint gp;
-    uint reas : 8;
+    QPoint m_pos;
+    QPoint m_globalPos;
+    uint m_reason : 8;
 };
 #endif // QT_NO_CONTEXTMENU
 
@@ -662,21 +662,21 @@ public:
     ~QInputMethodEvent();
 
     void setCommitString(const QString &commitString, int replaceFrom = 0, int replaceLength = 0);
-    inline const QList<Attribute> &attributes() const { return attrs; }
-    inline const QString &preeditString() const { return preedit; }
+    inline const QList<Attribute> &attributes() const { return m_attributes; }
+    inline const QString &preeditString() const { return m_preedit; }
 
-    inline const QString &commitString() const { return commit; }
-    inline int replacementStart() const { return replace_from; }
-    inline int replacementLength() const { return replace_length; }
+    inline const QString &commitString() const { return m_commit; }
+    inline int replacementStart() const { return m_replacementStart; }
+    inline int replacementLength() const { return m_replacementLength; }
 
     QInputMethodEvent(const QInputMethodEvent &other);
 
 private:
-    QString preedit;
-    QList<Attribute> attrs;
-    QString commit;
-    int replace_from;
-    int replace_length;
+    QString m_preedit;
+    QList<Attribute> m_attributes;
+    QString m_commit;
+    int m_replacementStart;
+    int m_replacementLength;
 };
 Q_DECLARE_TYPEINFO(QInputMethodEvent::Attribute, Q_MOVABLE_TYPE);
 
@@ -725,29 +725,29 @@ public:
     inline Qt::KeyboardModifiers keyboardModifiers() const { return modifiers(); }
 #endif // QT_DEPRECATED_SINCE(6, 0)
 
-    QPointF position() const { return p; }
-    inline Qt::MouseButtons buttons() const { return mouseState; }
-    inline Qt::KeyboardModifiers modifiers() const { return modState; }
+    QPointF position() const { return m_pos; }
+    inline Qt::MouseButtons buttons() const { return m_mouseState; }
+    inline Qt::KeyboardModifiers modifiers() const { return m_modState; }
 
-    inline Qt::DropActions possibleActions() const { return act; }
-    inline Qt::DropAction proposedAction() const { return default_action; }
-    inline void acceptProposedAction() { drop_action = default_action; accept(); }
+    inline Qt::DropActions possibleActions() const { return m_actions; }
+    inline Qt::DropAction proposedAction() const { return m_defaultAction; }
+    inline void acceptProposedAction() { m_dropAction = m_defaultAction; accept(); }
 
-    inline Qt::DropAction dropAction() const { return drop_action; }
+    inline Qt::DropAction dropAction() const { return m_dropAction; }
     void setDropAction(Qt::DropAction action);
 
     QObject* source() const;
-    inline const QMimeData *mimeData() const { return mdata; }
+    inline const QMimeData *mimeData() const { return m_data; }
 
 protected:
     friend class QApplication;
-    QPointF p;
-    Qt::MouseButtons mouseState;
-    Qt::KeyboardModifiers modState;
-    Qt::DropActions act;
-    Qt::DropAction drop_action;
-    Qt::DropAction default_action;
-    const QMimeData *mdata;
+    QPointF m_pos;
+    Qt::MouseButtons m_mouseState;
+    Qt::KeyboardModifiers m_modState;
+    Qt::DropActions m_actions;
+    Qt::DropAction m_dropAction;
+    Qt::DropAction m_defaultAction;
+    const QMimeData *m_data;
 };
 
 
@@ -758,16 +758,16 @@ public:
                    Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Type type = DragMove);
     ~QDragMoveEvent();
 
-    inline QRect answerRect() const { return rect; }
+    inline QRect answerRect() const { return m_rect; }
 
     inline void accept() { QDropEvent::accept(); }
     inline void ignore() { QDropEvent::ignore(); }
 
-    inline void accept(const QRect & r) { accept(); rect = r; }
-    inline void ignore(const QRect & r) { ignore(); rect = r; }
+    inline void accept(const QRect & r) { accept(); m_rect = r; }
+    inline void ignore(const QRect & r) { ignore(); m_rect = r; }
 
 protected:
-    QRect rect;
+    QRect m_rect;
 };
 
 
@@ -795,17 +795,17 @@ public:
     QHelpEvent(Type type, const QPoint &pos, const QPoint &globalPos);
     ~QHelpEvent();
 
-    inline int x() const { return p.x(); }
-    inline int y() const { return p.y(); }
-    inline int globalX() const { return gp.x(); }
-    inline int globalY() const { return gp.y(); }
+    inline int x() const { return m_pos.x(); }
+    inline int y() const { return m_pos.y(); }
+    inline int globalX() const { return m_globalPos.x(); }
+    inline int globalY() const { return m_globalPos.y(); }
 
-    inline const QPoint& pos()  const { return p; }
-    inline const QPoint& globalPos() const { return gp; }
+    inline const QPoint& pos()  const { return m_pos; }
+    inline const QPoint& globalPos() const { return m_globalPos; }
 
 private:
-    QPoint p;
-    QPoint gp;
+    QPoint m_pos;
+    QPoint m_globalPos;
 };
 
 #ifndef QT_NO_STATUSTIP
@@ -815,9 +815,9 @@ public:
     explicit QStatusTipEvent(const QString &tip);
     ~QStatusTipEvent();
 
-    inline QString tip() const { return s; }
+    inline QString tip() const { return m_tip; }
 private:
-    QString s;
+    QString m_tip;
 };
 #endif
 
@@ -828,22 +828,22 @@ public:
     explicit QWhatsThisClickedEvent(const QString &href);
     ~QWhatsThisClickedEvent();
 
-    inline QString href() const { return s; }
+    inline QString href() const { return m_href; }
 private:
-    QString s;
+    QString m_href;
 };
 #endif
 
 #if QT_CONFIG(action)
 class Q_GUI_EXPORT QActionEvent : public QEvent
 {
-    QAction *act, *bef;
+    QAction *m_action, *m_before;
 public:
     QActionEvent(int type, QAction *action, QAction *before = nullptr);
     ~QActionEvent();
 
-    inline QAction *action() const { return act; }
-    inline QAction *before() const { return bef; }
+    inline QAction *action() const { return m_action; }
+    inline QAction *before() const { return m_before; }
 };
 #endif // QT_CONFIG(action)
 
@@ -854,11 +854,11 @@ public:
     explicit QFileOpenEvent(const QUrl &url);
     ~QFileOpenEvent();
 
-    inline QString file() const { return f; }
+    inline QString file() const { return m_file; }
     QUrl url() const { return m_url; }
     bool openFile(QFile &file, QIODevice::OpenMode flags) const;
 private:
-    QString f;
+    QString m_file;
     QUrl m_url;
 };
 
@@ -869,9 +869,9 @@ public:
     explicit QToolBarChangeEvent(bool t);
     ~QToolBarChangeEvent();
 
-    inline bool toggle() const { return tog; }
+    inline bool toggle() const { return m_toggle; }
 private:
-    uint tog : 1;
+    uint m_toggle : 1;
 };
 #endif
 
@@ -882,27 +882,27 @@ public:
     QShortcutEvent(const QKeySequence &key, int id, bool ambiguous = false);
     ~QShortcutEvent();
 
-    inline const QKeySequence &key() const { return sequence; }
-    inline int shortcutId() const { return sid; }
-    inline bool isAmbiguous() const { return ambig; }
+    inline const QKeySequence &key() const { return m_sequence; }
+    inline int shortcutId() const { return m_shortcutId; }
+    inline bool isAmbiguous() const { return m_ambiguous; }
 protected:
-    QKeySequence sequence;
-    bool ambig;
-    int  sid;
+    QKeySequence m_sequence;
+    bool m_ambiguous;
+    int  m_shortcutId;
 };
 #endif
 
 class Q_GUI_EXPORT QWindowStateChangeEvent: public QEvent
 {
 public:
-    explicit QWindowStateChangeEvent(Qt::WindowStates aOldState, bool isOverride = false);
+    explicit QWindowStateChangeEvent(Qt::WindowStates oldState, bool isOverride = false);
     ~QWindowStateChangeEvent();
 
-    inline Qt::WindowStates oldState() const { return ostate; }
+    inline Qt::WindowStates oldState() const { return m_oldStates; }
     bool isOverride() const;
 
 private:
-    Qt::WindowStates ostate;
+    Qt::WindowStates m_oldStates;
     bool m_override;
 };
 
