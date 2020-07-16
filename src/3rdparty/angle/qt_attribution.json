@@ -61,5 +61,17 @@
         "LicenseId": "BSD-3-Clause",
         "LicenseFile": "TRACEEVENT_LICENSE",
         "Copyright": "Copyright (c) 2013 The Chromium Authors."
+    },
+    {
+        "Id": "angle-khronos",
+        "Name": "ANGLE: Khronos Headers",
+        "QDocModule": "qtgui",
+        "QtUsage": "Used on Windows to implement OpenGL ES on top of DirectX. Configure with -no-opengl, or -opengl desktop to exclude.",
+
+        "Path": "include",
+        "License": "MIT License",
+        "LicenseId": "MIT",
+        "LicenseFile": "KHRONOS_LICENSE",
+        "Copyright": "Copyright (c) 2007-2017 The Khronos Group Inc."
     }
 ]
