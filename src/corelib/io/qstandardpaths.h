@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -96,9 +96,6 @@ public:
 
     static QString findExecutable(const QString &executableName, const QStringList &paths = QStringList());
 
-#if QT_DEPRECATED_SINCE(5, 2)
-    static QT_DEPRECATED void enableTestMode(bool testMode);
-#endif
     static void setTestModeEnabled(bool testMode);
     static bool isTestModeEnabled();
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -600,13 +600,6 @@ QString QStandardPaths::displayName(StandardLocation type)
 */
 
 static bool qsp_testMode = false;
-
-#if QT_DEPRECATED_SINCE(5, 2)
-void QStandardPaths::enableTestMode(bool testMode)
-{
-    qsp_testMode = testMode;
-}
-#endif
 
 void QStandardPaths::setTestModeEnabled(bool testMode)
 {
