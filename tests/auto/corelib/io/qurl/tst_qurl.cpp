@@ -27,8 +27,6 @@
 **
 ****************************************************************************/
 
-#define QT_DEPRECATED
-#define QT_DISABLE_DEPRECATED_BEFORE 0
 #include <qurl.h>
 #include <QtTest/QtTest>
 #include <QtCore/QDebug>

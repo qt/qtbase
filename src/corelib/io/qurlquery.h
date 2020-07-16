@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -43,10 +44,6 @@
 #include <QtCore/qpair.h>
 #include <QtCore/qshareddata.h>
 #include <QtCore/qurl.h>
-
-#if QT_DEPRECATED_SINCE(5,0)
-#include <QtCore/qstringlist.h>
-#endif
 
 #include <initializer_list>
 
@@ -115,64 +112,6 @@ public:
 };
 
 Q_DECLARE_SHARED(QUrlQuery)
-
-#if QT_DEPRECATED_SINCE(5,0)
-inline void QUrl::setQueryItems(const QList<QPair<QString, QString> > &qry)
-{ QUrlQuery q(*this); q.setQueryItems(qry); setQuery(q); }
-inline void QUrl::addQueryItem(const QString &key, const QString &value)
-{ QUrlQuery q(*this); q.addQueryItem(key, value); setQuery(q); }
-inline QList<QPair<QString, QString> > QUrl::queryItems() const
-{ return QUrlQuery(*this).queryItems(); }
-inline bool QUrl::hasQueryItem(const QString &key) const
-{ return QUrlQuery(*this).hasQueryItem(key); }
-inline QString QUrl::queryItemValue(const QString &key) const
-{ return QUrlQuery(*this).queryItemValue(key); }
-inline QStringList QUrl::allQueryItemValues(const QString &key) const
-{ return QUrlQuery(*this).allQueryItemValues(key); }
-inline void QUrl::removeQueryItem(const QString &key)
-{ QUrlQuery q(*this); q.removeQueryItem(key); setQuery(q); }
-inline void QUrl::removeAllQueryItems(const QString &key)
-{ QUrlQuery q(*this); q.removeAllQueryItems(key); setQuery(q); }
-
-inline void QUrl::addEncodedQueryItem(const QByteArray &key, const QByteArray &value)
-{ QUrlQuery q(*this); q.addQueryItem(fromEncodedComponent_helper(key), fromEncodedComponent_helper(value)); setQuery(q); }
-inline bool QUrl::hasEncodedQueryItem(const QByteArray &key) const
-{ return QUrlQuery(*this).hasQueryItem(fromEncodedComponent_helper(key)); }
-inline QByteArray QUrl::encodedQueryItemValue(const QByteArray &key) const
-{ return QUrlQuery(*this).queryItemValue(fromEncodedComponent_helper(key), QUrl::FullyEncoded).toLatin1(); }
-inline void QUrl::removeEncodedQueryItem(const QByteArray &key)
-{ QUrlQuery q(*this); q.removeQueryItem(fromEncodedComponent_helper(key)); setQuery(q); }
-inline void QUrl::removeAllEncodedQueryItems(const QByteArray &key)
-{ QUrlQuery q(*this); q.removeAllQueryItems(fromEncodedComponent_helper(key)); setQuery(q); }
-
-inline void QUrl::setEncodedQueryItems(const QList<QPair<QByteArray, QByteArray> > &qry)
-{
-    QUrlQuery q;
-    QList<QPair<QByteArray, QByteArray> >::ConstIterator it = qry.constBegin();
-    for ( ; it != qry.constEnd(); ++it)
-        q.addQueryItem(fromEncodedComponent_helper(it->first), fromEncodedComponent_helper(it->second));
-    setQuery(q);
-}
-inline QList<QPair<QByteArray, QByteArray> > QUrl::encodedQueryItems() const
-{
-    QList<QPair<QString, QString> > items = QUrlQuery(*this).queryItems(QUrl::FullyEncoded);
-    QList<QPair<QString, QString> >::ConstIterator it = items.constBegin();
-    QList<QPair<QByteArray, QByteArray> > result;
-    result.reserve(items.size());
-    for ( ; it != items.constEnd(); ++it)
-        result << qMakePair(it->first.toLatin1(), it->second.toLatin1());
-    return result;
-}
-inline QList<QByteArray> QUrl::allEncodedQueryItemValues(const QByteArray &key) const
-{
-    const QStringList items = QUrlQuery(*this).allQueryItemValues(fromEncodedComponent_helper(key), QUrl::FullyEncoded);
-    QList<QByteArray> result;
-    result.reserve(items.size());
-    for (const QString &item : items)
-        result << item.toLatin1();
-    return result;
-}
-#endif
 
 QT_END_NAMESPACE
 

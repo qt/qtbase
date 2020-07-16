@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -279,72 +279,6 @@ public:
     NSURL *toNSURL() const Q_DECL_NS_RETURNS_AUTORELEASED;
 #endif
 
-#if QT_DEPRECATED_SINCE(5,0)
-    QT_DEPRECATED static QString fromPunycode(const QByteArray &punycode)
-    { return fromAce(punycode); }
-    QT_DEPRECATED static QByteArray toPunycode(const QString &string)
-    { return toAce(string); }
-
-    QT_DEPRECATED inline void setQueryItems(const QList<QPair<QString, QString> > &qry);
-    QT_DEPRECATED inline void addQueryItem(const QString &key, const QString &value);
-    QT_DEPRECATED inline QList<QPair<QString, QString> > queryItems() const;
-    QT_DEPRECATED inline bool hasQueryItem(const QString &key) const;
-    QT_DEPRECATED inline QString queryItemValue(const QString &key) const;
-    QT_DEPRECATED inline QStringList allQueryItemValues(const QString &key) const;
-    QT_DEPRECATED inline void removeQueryItem(const QString &key);
-    QT_DEPRECATED inline void removeAllQueryItems(const QString &key);
-
-    QT_DEPRECATED inline void setEncodedQueryItems(const QList<QPair<QByteArray, QByteArray> > &query);
-    QT_DEPRECATED inline void addEncodedQueryItem(const QByteArray &key, const QByteArray &value);
-    QT_DEPRECATED inline QList<QPair<QByteArray, QByteArray> > encodedQueryItems() const;
-    QT_DEPRECATED inline bool hasEncodedQueryItem(const QByteArray &key) const;
-    QT_DEPRECATED inline QByteArray encodedQueryItemValue(const QByteArray &key) const;
-    QT_DEPRECATED inline QList<QByteArray> allEncodedQueryItemValues(const QByteArray &key) const;
-    QT_DEPRECATED inline void removeEncodedQueryItem(const QByteArray &key);
-    QT_DEPRECATED inline void removeAllEncodedQueryItems(const QByteArray &key);
-
-    QT_DEPRECATED void setEncodedUrl(const QByteArray &u, ParsingMode mode = TolerantMode)
-    { setUrl(fromEncodedComponent_helper(u), mode); }
-
-    QT_DEPRECATED QByteArray encodedUserName() const
-    { return userName(FullyEncoded).toLatin1(); }
-    QT_DEPRECATED void setEncodedUserName(const QByteArray &value)
-    { setUserName(fromEncodedComponent_helper(value)); }
-
-    QT_DEPRECATED QByteArray encodedPassword() const
-    { return password(FullyEncoded).toLatin1(); }
-    QT_DEPRECATED void setEncodedPassword(const QByteArray &value)
-    { setPassword(fromEncodedComponent_helper(value)); }
-
-    QT_DEPRECATED QByteArray encodedHost() const
-    { return host(FullyEncoded).toLatin1(); }
-    QT_DEPRECATED void setEncodedHost(const QByteArray &value)
-    { setHost(fromEncodedComponent_helper(value)); }
-
-    QT_DEPRECATED QByteArray encodedPath() const
-    { return path(FullyEncoded).toLatin1(); }
-    QT_DEPRECATED void setEncodedPath(const QByteArray &value)
-    { setPath(fromEncodedComponent_helper(value)); }
-
-    QT_DEPRECATED QByteArray encodedQuery() const
-    { return toLatin1_helper(query(FullyEncoded)); }
-    QT_DEPRECATED void setEncodedQuery(const QByteArray &value)
-    { setQuery(fromEncodedComponent_helper(value)); }
-
-    QT_DEPRECATED QByteArray encodedFragment() const
-    { return toLatin1_helper(fragment(FullyEncoded)); }
-    QT_DEPRECATED void setEncodedFragment(const QByteArray &value)
-    { setFragment(fromEncodedComponent_helper(value)); }
-
-private:
-    // helper function for the encodedQuery and encodedFragment functions
-    static QByteArray toLatin1_helper(const QString &string)
-    {
-        if (string.isEmpty())
-            return string.isNull() ? QByteArray() : QByteArray("");
-        return string.toLatin1();
-    }
-#endif
 private:
     static QString fromEncodedComponent_helper(const QByteArray &ba);
 
@@ -411,9 +345,5 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, const QUrl &);
 #endif
 
 QT_END_NAMESPACE
-
-#if QT_DEPRECATED_SINCE(5,0)
-# include <QtCore/qurlquery.h>
-#endif
 
 #endif // QURL_H
