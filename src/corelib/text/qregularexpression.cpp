@@ -2651,13 +2651,6 @@ QDebug operator<<(QDebug debug, QRegularExpression::PatternOptions patternOption
             flags.append("DontCaptureOption|");
         if (patternOptions & QRegularExpression::UseUnicodePropertiesOption)
             flags.append("UseUnicodePropertiesOption|");
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-        if (patternOptions & QRegularExpression::OptimizeOnFirstUsageOption)
-            flags.append("OptimizeOnFirstUsageOption|");
-        if (patternOptions & QRegularExpression::DontAutomaticallyOptimizeOption)
-            flags.append("DontAutomaticallyOptimizeOption|");
-QT_WARNING_POP
         flags.chop(1);
     }
 

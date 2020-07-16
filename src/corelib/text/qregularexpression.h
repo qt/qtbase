@@ -73,8 +73,9 @@ public:
         InvertedGreedinessOption       = 0x0010,
         DontCaptureOption              = 0x0020,
         UseUnicodePropertiesOption     = 0x0040,
-        OptimizeOnFirstUsageOption Q_DECL_ENUMERATOR_DEPRECATED_X("This option does not have any effect since Qt 5.12") = 0x0080,
-        DontAutomaticallyOptimizeOption Q_DECL_ENUMERATOR_DEPRECATED_X("This option does not have any effect since Qt 5.12") = 0x0100,
+        // Formerly (no-ops deprecated in 5.12, removed 6.0):
+        // OptimizeOnFirstUsageOption = 0x0080,
+        // DontAutomaticallyOptimizeOption = 0x0100,
     };
     Q_DECLARE_FLAGS(PatternOptions, PatternOption)
 
@@ -110,8 +111,9 @@ public:
 
     enum MatchOption {
         NoMatchOption              = 0x0000,
-        AnchoredMatchOption Q_DECL_ENUMERATOR_DEPRECATED_X("Use AnchorAtOffsetMatchOption instead") = 0x0001,
         AnchorAtOffsetMatchOption  = 0x0001,
+        AnchoredMatchOption Q_DECL_ENUMERATOR_DEPRECATED_X(
+            "Use AnchorAtOffsetMatchOption instead") = AnchorAtOffsetMatchOption, // Rename@Qt6.0
         DontCheckSubjectStringMatchOption = 0x0002
     };
     Q_DECLARE_FLAGS(MatchOptions, MatchOption)
