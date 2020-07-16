@@ -3322,41 +3322,6 @@ QSettings::Format QSettings::defaultFormat()
     return globalDefaultFormat;
 }
 
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \obsolete
-
-    Use setPath() instead.
-
-    \oldcode
-        setSystemIniPath(path);
-    \newcode
-        setPath(QSettings::NativeFormat, QSettings::SystemScope, path);
-        setPath(QSettings::IniFormat, QSettings::SystemScope, path);
-    \endcode
-*/
-void QSettings::setSystemIniPath(const QString &dir)
-{
-    setPath(IniFormat, SystemScope, dir);
-#if !defined(Q_OS_WIN) && !defined(Q_OS_MAC)
-    setPath(NativeFormat, SystemScope, dir);
-#endif
-}
-
-/*!
-    \obsolete
-
-    Use setPath() instead.
-*/
-
-void QSettings::setUserIniPath(const QString &dir)
-{
-    setPath(IniFormat, UserScope, dir);
-#if !defined(Q_OS_WIN) && !defined(Q_OS_MAC)
-    setPath(NativeFormat, UserScope, dir);
-#endif
-}
-#endif
 /*!
     \since 4.1
 
