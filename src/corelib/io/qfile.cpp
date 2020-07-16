@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2017 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -462,19 +462,6 @@ QString QFile::symLinkTarget() const
     return d->engine()->fileName(QAbstractFileEngine::LinkName);
 }
 
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \obsolete
-
-    Use symLinkTarget() instead.
-*/
-QString
-QFile::readLink() const
-{
-    return symLinkTarget();
-}
-#endif
-
 /*!
     \fn static QString QFile::symLinkTarget(const QString &fileName)
     \since 4.2
@@ -490,19 +477,6 @@ QString QFile::symLinkTarget(const QString &fileName)
 {
     return QFileInfo(fileName).symLinkTarget();
 }
-
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \obsolete
-
-    Use symLinkTarget() instead.
-*/
-QString
-QFile::readLink(const QString &fileName)
-{
-    return symLinkTarget(fileName);
-}
-#endif
 
 /*!
     Removes the file specified by fileName(). Returns \c true if successful;

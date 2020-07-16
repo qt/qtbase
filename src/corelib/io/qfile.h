@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -166,22 +166,9 @@ public:
     }
 #endif
 
-#if QT_DEPRECATED_SINCE(5,0)
-    typedef QByteArray (*EncoderFn)(const QString &fileName);
-    typedef QString (*DecoderFn)(const QByteArray &localfileName);
-    QT_DEPRECATED static void setEncodingFunction(EncoderFn) {}
-    QT_DEPRECATED static void setDecodingFunction(DecoderFn) {}
-#endif
-
     bool exists() const;
     static bool exists(const QString &fileName);
 
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X("Use QFile::symLinkTarget() instead")
-    QString readLink() const;
-    QT_DEPRECATED_X("Use QFile::symLinkTarget(QString) instead")
-    static QString readLink(const QString &fileName);
-#endif
     QString symLinkTarget() const;
     static QString symLinkTarget(const QString &fileName);
 
