@@ -59,9 +59,6 @@ class Q_CORE_EXPORT QTimeLine : public QObject
     Q_PROPERTY(int currentTime READ currentTime WRITE setCurrentTime)
     Q_PROPERTY(Direction direction READ direction WRITE setDirection)
     Q_PROPERTY(int loopCount READ loopCount WRITE setLoopCount)
-#if QT_DEPRECATED_SINCE(5, 15)
-    Q_PROPERTY(CurveShape curveShape READ curveShape WRITE setCurveShape)
-#endif
     Q_PROPERTY(QEasingCurve easingCurve READ easingCurve WRITE setEasingCurve)
 public:
     enum State {
@@ -73,16 +70,6 @@ public:
         Forward,
         Backward
     };
-#if QT_DEPRECATED_SINCE(5, 15)
-    enum CurveShape {
-        EaseInCurve,
-        EaseOutCurve,
-        EaseInOutCurve,
-        LinearCurve,
-        SineCurve,
-        CosineCurve
-    };
-#endif
 
     explicit QTimeLine(int duration = 1000, QObject *parent = nullptr);
     virtual ~QTimeLine();
@@ -106,13 +93,6 @@ public:
 
     int updateInterval() const;
     void setUpdateInterval(int interval);
-
-#if QT_DEPRECATED_SINCE(5, 15)
-    QT_DEPRECATED_X("Access easingCurve directly")
-    CurveShape curveShape() const;
-    QT_DEPRECATED_X("Access easingCurve directly")
-    void setCurveShape(CurveShape shape);
-#endif
 
     QEasingCurve easingCurve() const;
     void setEasingCurve(const QEasingCurve &curve);
