@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -51,16 +51,7 @@ class QObject;
 class Q_CORE_EXPORT QBasicTimer
 {
     int id;
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     Q_DISABLE_COPY(QBasicTimer)
-#elif QT_DEPRECATED_SINCE(5, 14)
-public:
-    // Just here to preserve BC, we can't remove them yet
-    QT_DEPRECATED_X("copy-construction is unsupported; use move-construction instead")
-    QBasicTimer(const QBasicTimer &);
-    QT_DEPRECATED_X("copy-assignment is unsupported; use move-assignment instead")
-    QBasicTimer &operator=(const QBasicTimer &);
-#endif
 
 public:
     constexpr QBasicTimer() noexcept : id{0} {}

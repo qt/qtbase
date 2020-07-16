@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -104,29 +104,6 @@ QT_BEGIN_NAMESPACE
 
     \sa stop(), isActive(), swap()
 */
-
-#if QT_DEPRECATED_SINCE(5, 14)
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-/*!
-    \internal
-*/
-QBasicTimer::QBasicTimer(const QBasicTimer &other)
-    : id{other.id}
-{
-    qWarning("QBasicTimer can't be copied");
-}
-
-/*!
-    \internal
-*/
-QBasicTimer &QBasicTimer::operator=(const QBasicTimer &other)
-{
-    id = other.id;
-    qWarning("QBasicTimer can't be assigned to");
-    return *this;
-}
-#endif
-#endif
 
 /*!
     \fn QBasicTimer::~QBasicTimer()
