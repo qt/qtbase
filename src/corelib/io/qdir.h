@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -121,10 +121,6 @@ public:
     ~QDir();
 
     QDir &operator=(const QDir &);
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X("Use QDir::setPath() instead")
-    QDir &operator=(const QString &path);
-#endif
     QDir &operator=(QDir &&other) noexcept { swap(other); return *this; }
 
     void swap(QDir &other) noexcept
@@ -151,11 +147,6 @@ public:
     std::filesystem::path filesystemCanonicalPath() const
     { return QtPrivate::toFilesystemPath(canonicalPath()); }
 #endif // QT_CONFIG(cxx17_filesystem)
-
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X("Use QDir::addSearchPath() instead")
-    static void addResourceSearchPath(const QString &path);
-#endif
 
     static void setSearchPaths(const QString &prefix, const QStringList &searchPaths);
     static void addSearchPath(const QString &prefix, const QString &path);
