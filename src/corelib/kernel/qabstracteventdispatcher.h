@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -81,12 +81,6 @@ public:
     virtual void registerSocketNotifier(QSocketNotifier *notifier) = 0;
     virtual void unregisterSocketNotifier(QSocketNotifier *notifier) = 0;
 
-#if QT_DEPRECATED_SINCE(5,0)
-    QT_DEPRECATED inline int registerTimer(int interval, QObject *object)
-    { return registerTimer(interval, Qt::CoarseTimer, object); }
-    QT_DEPRECATED inline void registerTimer(int timerId, int interval, QObject *object)
-    { registerTimer(timerId, interval, Qt::CoarseTimer, object); }
-#endif
     // ### Qt6: change interval range to qint64 (or use QDeadlineTimer)
     int registerTimer(int interval, Qt::TimerType timerType, QObject *object);
     virtual void registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object) = 0;
@@ -114,10 +108,6 @@ public:
     bool filterNativeEvent(const QByteArray &eventType, void *message, qintptr *result);
 #else
     bool filterNativeEvent(const QByteArray &eventType, void *message, long *result);
-#endif
-#if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED bool filterEvent(void *message)
-    { return filterNativeEvent("", message, nullptr); }
 #endif
 
 Q_SIGNALS:
