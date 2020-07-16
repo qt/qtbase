@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -712,26 +712,6 @@ QCoreApplication::QCoreApplication(QCoreApplicationPrivate &p)
     // QCoreApplicationPrivate::eventDispatcher->startingUp();
 }
 
-#ifndef QT_NO_QOBJECT
-/*!
-    \deprecated
-    This function is equivalent to calling \c {QCoreApplication::eventDispatcher()->flush()},
-    which also is deprecated, see QAbstractEventDispatcher::flush(). Use sendPostedEvents()
-    and processEvents() for more fine-grained control of the event loop instead.
-
-    Historically this functions was used to flush the platform-specific native event queues.
-
-    \sa sendPostedEvents(), processEvents(), QAbstractEventDispatcher::flush()
-*/
-#if QT_DEPRECATED_SINCE(5, 9)
-void QCoreApplication::flush()
-{
-    if (self && self->d_func()->eventDispatcher)
-        self->d_func()->eventDispatcher->flush();
-}
-#endif
-#endif
-
 /*!
     Constructs a Qt core application. Core applications are applications without
     a graphical user interface. Such applications are used at the console or as
@@ -1029,20 +1009,6 @@ void QCoreApplication::setQuitLockEnabled(bool enabled)
 {
     quitLockRefEnabled = enabled;
 }
-
-#if QT_DEPRECATED_SINCE(5, 6)
-/*!
-  \internal
-  \deprecated
-
-  This function is here to make it possible for Qt extensions to
-  hook into event notification without subclassing QApplication
-*/
-bool QCoreApplication::notifyInternal(QObject *receiver, QEvent *event)
-{
-    return notifyInternal2(receiver, event);
-}
-#endif
 
 /*!
   \internal
@@ -2931,29 +2897,6 @@ void QCoreApplication::removeNativeEventFilter(QAbstractNativeEventFilter *filte
         return;
     eventDispatcher->removeNativeEventFilter(filterObject);
 }
-
-/*!
-    \deprecated
-
-    This function returns \c true if there are pending events; otherwise
-    returns \c false. Pending events can be either from the window
-    system or posted events using postEvent().
-
-    \note this function is not thread-safe. It may only be called in the main
-    thread and only if there are no other threads running in the application
-    (including threads Qt starts for its own purposes).
-
-    \sa QAbstractEventDispatcher::hasPendingEvents()
-*/
-#if QT_DEPRECATED_SINCE(5, 3)
-bool QCoreApplication::hasPendingEvents()
-{
-    QAbstractEventDispatcher *eventDispatcher = QAbstractEventDispatcher::instance();
-    if (eventDispatcher)
-        return eventDispatcher->hasPendingEvents();
-    return false;
-}
-#endif
 
 /*!
     Returns a pointer to the event dispatcher object for the main thread. If no
