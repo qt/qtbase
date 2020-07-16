@@ -921,13 +921,19 @@ if [ "$BUILD_WITH_CMAKE" = "yes" ]; then
     checkTopLevelBuild "$@"
     getOptAndQMakeCmdLines "$@"
     if [ -z "$optfile" ]; then   # only write optfile if not currently redoing
-        optfile=${outpathPrefix}config.opt
-        if [ -f "$optfile" ]; then rm "$optfile"; fi
+        optfilename=config.opt
+        optfilepath=${outpathPrefix}${optfilename}
+        if [ -f "$optfilepath" ]; then rm "$optfilepath"; fi
         for arg in "$@"; do
-            echo $arg >> "$optfile"
+            echo $arg >> "$optfilepath"
         done
     fi
-    cmake "-DOPTFILE=$optfile" -P "$relpath/cmake/QtProcessConfigureArgs.cmake"
+
+    if [ -n "$CFG_TOPLEVEL" ]; then
+        cd ..
+    fi
+
+    cmake "-DOPTFILE=$optfilename" -P "$relpath/cmake/QtProcessConfigureArgs.cmake"
 else
     findPerl
     findAwk
