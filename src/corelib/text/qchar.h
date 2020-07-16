@@ -394,13 +394,6 @@ public:
         Joining_Transparent
     };
 
-#if QT_DEPRECATED_SINCE(5, 3)
-    enum Joining
-    {
-        OtherJoining, Dual, Right, Center
-    };
-#endif
-
     enum CombiningClass
     {
         Combining_BelowLeftAttached       = 200,
@@ -456,20 +449,6 @@ public:
     inline Category category() const noexcept { return QChar::category(ucs); }
     inline Direction direction() const noexcept { return QChar::direction(ucs); }
     inline JoiningType joiningType() const noexcept { return QChar::joiningType(ucs); }
-#if QT_DEPRECATED_SINCE(5, 3)
-    QT_DEPRECATED inline Joining joining() const noexcept
-    {
-        switch (QChar::joiningType(ucs)) {
-        case QChar::Joining_Causing: return QChar::Center;
-        case QChar::Joining_Dual: return QChar::Dual;
-        case QChar::Joining_Right: return QChar::Right;
-        case QChar::Joining_None:
-        case QChar::Joining_Left:
-        case QChar::Joining_Transparent:
-        default: return QChar::OtherJoining;
-        }
-    }
-#endif
     inline unsigned char combiningClass() const noexcept { return QChar::combiningClass(ucs); }
 
     inline QChar mirroredChar() const noexcept { return QChar(QChar::mirroredChar(ucs)); }
@@ -488,17 +467,10 @@ public:
 
     inline UnicodeVersion unicodeVersion() const noexcept { return QChar::unicodeVersion(ucs); }
 
-#if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED Q_DECL_CONSTEXPR inline char toAscii() const noexcept { return toLatin1(); }
-#endif
     Q_DECL_CONSTEXPR inline char toLatin1() const noexcept { return ucs > 0xff ? '\0' : char(ucs); }
     Q_DECL_CONSTEXPR inline char16_t unicode() const noexcept { return ucs; }
     Q_DECL_RELAXED_CONSTEXPR inline char16_t &unicode() noexcept { return ucs; }
 
-#if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED static Q_DECL_CONSTEXPR inline QChar fromAscii(char c) noexcept
-    { return fromLatin1(c); }
-#endif
     static Q_DECL_CONSTEXPR QChar fromLatin1(char c) noexcept { return QLatin1Char(c); }
 
     Q_DECL_CONSTEXPR inline bool isNull() const noexcept { return ucs == 0; }
@@ -566,9 +538,6 @@ public:
     static Category QT_FASTCALL category(char32_t ucs4) noexcept Q_DECL_CONST_FUNCTION;
     static Direction QT_FASTCALL direction(char32_t ucs4) noexcept Q_DECL_CONST_FUNCTION;
     static JoiningType QT_FASTCALL joiningType(char32_t ucs4) noexcept Q_DECL_CONST_FUNCTION;
-#if QT_DEPRECATED_SINCE(5, 3)
-    QT_DEPRECATED static Joining QT_FASTCALL joining(char32_t ucs4) noexcept Q_DECL_CONST_FUNCTION;
-#endif
     static unsigned char QT_FASTCALL combiningClass(char32_t ucs4) noexcept Q_DECL_CONST_FUNCTION;
 
     static char32_t QT_FASTCALL mirroredChar(char32_t ucs4) noexcept Q_DECL_CONST_FUNCTION;

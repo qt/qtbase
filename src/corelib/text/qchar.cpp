@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -537,24 +537,6 @@ QT_BEGIN_NAMESPACE
 
     \sa joiningType()
 */
-
-#if QT_DEPRECATED_SINCE(5, 3)
-/*!
-    \enum QChar::Joining
-    \deprecated in 5.3, use JoiningType instead.
-
-    This enum type defines the Unicode joining attributes. See the
-    \l{http://www.unicode.org/}{Unicode Standard} for a description
-    of the values.
-
-    \value Center
-    \value Dual
-    \value OtherJoining
-    \value Right
-
-    \sa joining()
-*/
-#endif
 
 /*!
     \enum QChar::CombiningClass
@@ -1269,38 +1251,6 @@ QChar::JoiningType QChar::joiningType(char32_t ucs4) noexcept
         return QChar::Joining_None;
     return QChar::JoiningType(qGetProp(ucs4)->joining);
 }
-
-#if QT_DEPRECATED_SINCE(5, 3)
-/*!
-    \fn QChar::Joining QChar::joining() const
-    \deprecated in 5.3, use joiningType() instead.
-
-    Returns information about the joining properties of the character
-    (needed for certain languages such as Arabic).
-*/
-
-/*!
-    \overload
-    \deprecated in 5.3, use joiningType() instead.
-
-    Returns information about the joining properties of the UCS-4-encoded
-    character specified by \a ucs4 (needed for certain languages such as Arabic).
-
-    \note Before Qt 6, this function took a \c uint argument.
-*/
-QChar::Joining QChar::joining(char32_t ucs4) noexcept
-{
-    if (ucs4 > LastValidCodePoint)
-        return QChar::OtherJoining;
-    switch (qGetProp(ucs4)->joining) {
-    case QChar::Joining_Causing: return QChar::Center;
-    case QChar::Joining_Dual: return QChar::Dual;
-    case QChar::Joining_Right: return QChar::Right;
-    default: break;
-    }
-    return QChar::OtherJoining;
-}
-#endif
 
 /*!
     \fn bool QChar::hasMirrored() const

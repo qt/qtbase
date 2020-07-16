@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -75,9 +75,6 @@ private slots:
     void normalizationCorrections();
     void unicodeVersion();
 };
-
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
 
 void tst_QChar::fromChar16_t()
 {
