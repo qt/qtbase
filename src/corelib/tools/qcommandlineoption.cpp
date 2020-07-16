@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2013 Laszlo Papp <lpapp@kde.org>
 ** Copyright (C) 2013 David Faure <faure@kde.org>
 ** Contact: https://www.qt.io/licensing/
@@ -390,36 +391,6 @@ QStringList QCommandLineOption::defaultValues() const
 {
     return d->defaultValues;
 }
-
-#if QT_DEPRECATED_SINCE(5, 8)
-/*!
-    Sets whether to hide this option in the user-visible help output.
-
-    All options are visible by default. Setting \a hide to true for
-    a particular option makes it internal, i.e. not listed in the help output.
-
-    \since 5.6
-    \obsolete Use setFlags(QCommandLineOption::HiddenFromHelp), QCommandLineOption::HiddenFromHelp
-    \sa isHidden
- */
-void QCommandLineOption::setHidden(bool hide)
-{
-    d->flags.setFlag(HiddenFromHelp, hide);
-}
-
-/*!
-    Returns true if this option is omitted from the help output,
-    false if the option is listed.
-
-    \since 5.6
-    \obsolete Use flags() & QCommandLineOption::HiddenFromHelp
-    \sa setHidden(), QCommandLineOption::HiddenFromHelp
- */
-bool QCommandLineOption::isHidden() const
-{
-    return d->flags & HiddenFromHelp;
-}
-#endif
 
 /*!
     Returns a set of flags that affect this command-line option.

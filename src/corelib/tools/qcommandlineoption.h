@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2013 Laszlo Papp <lpapp@kde.org>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -90,14 +91,6 @@ public:
 
     Flags flags() const;
     void setFlags(Flags aflags);
-
-#if QT_DEPRECATED_SINCE(5, 8)
-    QT_DEPRECATED_X("Use setFlags() with HiddenFromHelp")
-    void setHidden(bool hidden);
-    QT_DEPRECATED_X("Use flags() and HiddenFromHelp")
-    bool isHidden() const;
-#endif
-
 
 private:
     QSharedDataPointer<QCommandLineOptionPrivate> d;
