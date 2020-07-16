@@ -416,11 +416,10 @@ LengthData ValueExtractor::lengthValue(const Value& v)
 
 static int lengthValueFromData(const LengthData& data, const QFont& f)
 {
-    if (data.unit == LengthData::Ex)
-        return qRound(QFontMetrics(f).xHeight() * data.number);
-    else if (data.unit == LengthData::Em)
-        return qRound(QFontMetrics(f).height() * data.number);
-    return qRound(data.number);
+    const int scale = (data.unit == LengthData::Ex ? QFontMetrics(f).xHeight()
+                      : data.unit == LengthData::Em ? QFontMetrics(f).height() : 1);
+    // raised lower limit due to the implementation of qRound()
+    return qRound(qBound(double(INT_MIN) + 0.1, scale * data.number, double(INT_MAX)));
 }
 
 int ValueExtractor::lengthValue(const Declaration &decl)
