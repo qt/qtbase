@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -250,13 +250,6 @@ public:
     Q_REQUIRED_RESULT Q_DECL_CONSTEXPR inline QLineF normalVector() const;
 
     IntersectionType intersects(const QLineF &l, QPointF *intersectionPoint) const;
-
-#if QT_DEPRECATED_SINCE(5, 14)
-    QT_DEPRECATED_VERSION_X(5, 14, "Use intersects() instead")
-    IntersectType intersect(const QLineF &l, QPointF *intersectionPoint) const;
-    QT_DEPRECATED_X("Use qMin(l1.angleTo(l2), l2.angleTo(l1)) instead")
-    qreal angle(const QLineF &l) const;
-#endif
 
     Q_DECL_CONSTEXPR inline QPointF pointAt(qreal t) const;
     inline void translate(const QPointF &p);

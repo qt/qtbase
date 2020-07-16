@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -664,25 +664,6 @@ QLineF QLineF::unitVector() const
     return f;
 }
 
-#if QT_DEPRECATED_SINCE(5, 14)
-/*!
-    \fn QLineF::IntersectType QLineF::intersect(const QLineF &line, QPointF *intersectionPoint) const
-    \obsolete Use intersects() instead
-
-    Returns a value indicating whether or not \e this line intersects
-    with the given \a line.
-
-    The actual intersection point is extracted to \a intersectionPoint
-    (if the pointer is valid). If the lines are parallel, the
-    intersection point is undefined.
-*/
-
-QLineF::IntersectType QLineF::intersect(const QLineF &l, QPointF *intersectionPoint) const
-{
-    return intersects(l, intersectionPoint);
-}
-#endif
-
 /*!
     \fn QLineF::IntersectionType QLineF::intersects(const QLineF &line, QPointF *intersectionPoint) const
     \since 5.14
@@ -830,42 +811,6 @@ qreal QLineF::angleTo(const QLineF &l) const
     else
         return delta_normalized;
 }
-
-#if QT_DEPRECATED_SINCE(5, 14)
-/*!
-  \fn qreal QLineF::angle(const QLineF &line) const
-
-  \obsolete
-
-  Returns the angle (in degrees) between this line and the given \a
-  line, taking the direction of the lines into account. If the lines
-  do not intersect within their range, it is the intersection point of
-  the extended lines that serves as origin (see
-  QLineF::UnboundedIntersection).
-
-  \table
-  \row
-  \li \inlineimage qlinef-angle-identicaldirection.png
-  \li \inlineimage qlinef-angle-oppositedirection.png
-  \endtable
-
-  When the lines are parallel, this function returns 0 if they have
-  the same direction; otherwise it returns 180.
-
-  \sa intersect()
-*/
-qreal QLineF::angle(const QLineF &l) const
-{
-    if (isNull() || l.isNull())
-        return 0;
-    qreal cos_line = (dx()*l.dx() + dy()*l.dy()) / (length()*l.length());
-    qreal rad = 0;
-    // only accept cos_line in the range [-1,1], if it is outside, use 0 (we return 0 rather than PI for those cases)
-    if (cos_line >= -1.0 && cos_line <= 1.0) rad = qAcos( cos_line );
-    return rad * 360 / M_2PI;
-}
-#endif
-
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QLineF &p)
