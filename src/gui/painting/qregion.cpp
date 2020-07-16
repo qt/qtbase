@@ -50,6 +50,10 @@
 
 #include <private/qdebug_p.h>
 
+#ifdef Q_OS_WIN
+#  include <qt_windows.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -4314,4 +4318,65 @@ bool QRegion::intersects(const QRect &rect) const
 
 
 #endif
+
+#if defined(Q_OS_WIN) || defined(Q_QDOC)
+
+static inline HRGN qt_RectToHRGN(const QRect &rc)
+{
+    return CreateRectRgn(rc.left(), rc.top(), rc.right() + 1, rc.bottom() + 1);
+}
+
+/*!
+    \since 6.0
+
+    Returns a HRGN that is equivalent to the given region.
+*/
+HRGN QRegion::toHRGN() const
+{
+    const int size = rectCount();
+    if (size == 0)
+        return nullptr;
+
+    HRGN resultRgn = nullptr;
+    const auto rects = begin();
+    resultRgn = qt_RectToHRGN(rects[0]);
+    for (int i = 1; i < size; ++i) {
+        HRGN tmpRgn = qt_RectToHRGN(rects[i]);
+        int err = CombineRgn(resultRgn, resultRgn, tmpRgn, RGN_OR);
+        if (err == ERROR)
+            qWarning("Error combining HRGNs.");
+        DeleteObject(tmpRgn);
+    }
+    return resultRgn;
+}
+
+/*!
+    \since 6.0
+
+    Returns a QRegion that is equivalent to the given \a hrgn.
+ */
+QRegion QRegion::fromHRGN(HRGN hrgn)
+{
+    DWORD regionDataSize = GetRegionData(hrgn, 0, nullptr);
+    if (regionDataSize == 0)
+        return QRegion();
+
+    auto regionData = reinterpret_cast<LPRGNDATA>(malloc(regionDataSize));
+    if (!regionData)
+        return QRegion();
+
+    QRegion region;
+    if (GetRegionData(hrgn, regionDataSize, regionData) == regionDataSize) {
+        auto pRect = reinterpret_cast<LPRECT>(regionData->Buffer);
+        for (DWORD i = 0; i < regionData->rdh.nCount; ++i)
+            region += QRect(pRect[i].left, pRect[i].top,
+                            pRect[i].right - pRect[i].left,
+                            pRect[i].bottom - pRect[i].top);
+    }
+
+    free(regionData);
+    return region;
+}
+#endif // Q_OS_WIN || Q_QDOC
+
 QT_END_NAMESPACE

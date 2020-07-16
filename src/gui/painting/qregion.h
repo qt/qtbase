@@ -134,6 +134,12 @@ public:
     inline bool operator!=(const QRegion &r) const { return !(operator==(r)); }
     operator QVariant() const;
 
+    // Platform specific conversion functions
+#if defined(Q_OS_WIN) || defined(Q_QDOC)
+    HRGN toHRGN() const;
+    static QRegion fromHRGN(HRGN hrgn);
+#endif
+
 #ifndef QT_NO_DATASTREAM
     friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QRegion &);
     friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QRegion &);

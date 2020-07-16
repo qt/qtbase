@@ -35,6 +35,10 @@
 #include <qpainterpath.h>
 #include <qpolygon.h>
 
+#ifdef Q_OS_WIN
+#  include <qt_windows.h>
+#endif
+
 class tst_QRegion : public QObject
 {
     Q_OBJECT
@@ -85,6 +89,10 @@ private slots:
 #ifdef QT_BUILD_INTERNAL
     void regionToPath_data();
     void regionToPath();
+#endif
+
+#ifdef Q_OS_WIN
+    void winConversion();
 #endif
 };
 
@@ -1061,7 +1069,21 @@ void tst_QRegion::regionToPath()
         QCOMPARE(a.boundingRect(), b.boundingRect());
     }
 }
-#endif
+#endif // QT_BUILD_INTERNAL
+
+#ifdef Q_OS_WIN
+void tst_QRegion::winConversion()
+{
+    const QList<QRect> rects{QRect(10, 10, 10, 10), QRect(10, 20, 10, 10),
+                             QRect(30, 20, 10, 10), QRect(10, 30, 10, 10)};
+    QRegion region;
+    region.setRects(rects.constData(), rects.size());
+    auto hrgn = region.toHRGN();
+    QVERIFY(hrgn);
+    QRegion convertedBack = QRegion::fromHRGN(hrgn);
+    QCOMPARE(region, convertedBack);
+}
+#endif // Q_OS_WIN
 
 QTEST_MAIN(tst_QRegion)
 #include "tst_qregion.moc"
