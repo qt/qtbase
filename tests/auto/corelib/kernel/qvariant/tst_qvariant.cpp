@@ -2487,18 +2487,6 @@ void tst_QVariant::qvariant_cast_QObject_wrapper()
         QVERIFY(spVar.canConvert<QObject*>());
         QCOMPARE(f, spVar.value<QObject*>());
     }
-#if QT_DEPRECATED_SINCE(5, 0)
-    {
-        QFile *f = new QFile(this);
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-        QWeakPointer<QFile> sp(f);
-QT_WARNING_POP
-        QVariant spVar = QVariant::fromValue(sp);
-        QVERIFY(spVar.canConvert<QObject*>());
-        QCOMPARE(f, spVar.value<QObject*>());
-    }
-#endif
     {
         QFile *f = new QFile(this);
         QSharedPointer<QObject> sp(f);

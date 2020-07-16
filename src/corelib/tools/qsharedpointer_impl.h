@@ -63,9 +63,6 @@ QT_END_NAMESPACE
 #include <new>
 #include <QtCore/qatomic.h>
 #include <QtCore/qobject.h>    // for qobject_cast
-#if QT_DEPRECATED_SINCE(5, 6)
-#include <QtCore/qhash.h>
-#endif
 #include <QtCore/qhashfunctions.h>
 
 #include <memory>
@@ -555,28 +552,8 @@ public:
     explicit operator bool() const noexcept { return !isNull(); }
     bool operator !() const noexcept { return isNull(); }
 
-#if QT_DEPRECATED_SINCE(5, 14)
-    QT_DEPRECATED_X("Use toStrongRef() instead, and data() on the returned QSharedPointer")
-    T *data() const noexcept { return internalData(); }
-#endif
-
     inline QWeakPointer() noexcept : d(nullptr), value(nullptr) { }
     inline ~QWeakPointer() { if (d && !d->weakref.deref()) delete d; }
-
-#ifndef QT_NO_QOBJECT
-    // special constructor that is enabled only if X derives from QObject
-#if QT_DEPRECATED_SINCE(5, 0)
-    template <class X, IfCompatible<X> = true>
-    QT_DEPRECATED inline QWeakPointer(X *ptr) : d(ptr ? Data::getAndRef(ptr) : nullptr), value(ptr)
-    { }
-#endif
-#endif
-
-#if QT_DEPRECATED_SINCE(5, 0)
-    template <class X, IfCompatible<X> = true>
-    QT_DEPRECATED inline QWeakPointer &operator=(X *ptr)
-    { return *this = QWeakPointer(ptr); }
-#endif
 
     QWeakPointer(const QWeakPointer &other) noexcept : d(other.d), value(other.value)
     { if (d) d->weakref.ref(); }
