@@ -40,6 +40,7 @@
 #ifndef QRECT_H
 #define QRECT_H
 
+#include <QtCore/qhashfunctions.h>
 #include <QtCore/qmargins.h>
 #include <QtCore/qsize.h>
 #include <QtCore/qpoint.h>
@@ -147,6 +148,7 @@ public:
 
     friend Q_DECL_CONSTEXPR inline bool operator==(const QRect &, const QRect &) noexcept;
     friend Q_DECL_CONSTEXPR inline bool operator!=(const QRect &, const QRect &) noexcept;
+    friend Q_DECL_CONSTEXPR inline size_t qHash(const QRect &, size_t) noexcept;
 
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
     Q_REQUIRED_RESULT CGRect toCGRect() const noexcept;
@@ -454,6 +456,11 @@ Q_DECL_CONSTEXPR inline bool operator==(const QRect &r1, const QRect &r2) noexce
 Q_DECL_CONSTEXPR inline bool operator!=(const QRect &r1, const QRect &r2) noexcept
 {
     return r1.x1!=r2.x1 || r1.x2!=r2.x2 || r1.y1!=r2.y1 || r1.y2!=r2.y2;
+}
+
+Q_DECL_CONSTEXPR inline size_t qHash(const QRect &r, size_t seed = 0) noexcept
+{
+    return qHashMulti(seed, r.x1, r.x2, r.y1, r.y2);
 }
 
 Q_DECL_CONSTEXPR inline QRect operator+(const QRect &rectangle, const QMargins &margins) noexcept

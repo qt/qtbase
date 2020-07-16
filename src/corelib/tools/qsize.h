@@ -41,6 +41,7 @@
 #define QSIZE_H
 
 #include <QtCore/qnamespace.h>
+#include <QtCore/qhashfunctions.h>
 #include <QtCore/qmargins.h>
 
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
@@ -90,6 +91,7 @@ public:
 
     friend inline Q_DECL_CONSTEXPR bool operator==(const QSize &, const QSize &) noexcept;
     friend inline Q_DECL_CONSTEXPR bool operator!=(const QSize &, const QSize &) noexcept;
+    friend inline Q_DECL_CONSTEXPR size_t qHash(const QSize &, size_t) noexcept;
     friend inline Q_DECL_CONSTEXPR const QSize operator+(const QSize &, const QSize &) noexcept;
     friend inline Q_DECL_CONSTEXPR const QSize operator-(const QSize &, const QSize &) noexcept;
     friend inline Q_DECL_CONSTEXPR const QSize operator*(const QSize &, qreal) noexcept;
@@ -177,6 +179,9 @@ Q_DECL_CONSTEXPR inline bool operator==(const QSize &s1, const QSize &s2) noexce
 
 Q_DECL_CONSTEXPR inline bool operator!=(const QSize &s1, const QSize &s2) noexcept
 { return s1.wd != s2.wd || s1.ht != s2.ht; }
+
+Q_DECL_CONSTEXPR inline size_t qHash(const QSize &s, size_t seed = 0) noexcept
+{ return qHashMulti(seed, s.wd, s.ht); }
 
 Q_DECL_CONSTEXPR inline const QSize operator+(const QSize & s1, const QSize & s2) noexcept
 { return QSize(s1.wd+s2.wd, s1.ht+s2.ht); }
