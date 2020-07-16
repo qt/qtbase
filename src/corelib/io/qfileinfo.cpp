@@ -1377,6 +1377,7 @@ qint64 QFileInfo::size() const
 }
 
 /*!
+    \fn QDateTime QFileInfo::birthTime() const
     \since 5.10
     Returns the date and time when the file was created / born.
 
@@ -1388,12 +1389,9 @@ qint64 QFileInfo::size() const
 
     \sa lastModified(), lastRead(), metadataChangeTime()
 */
-QDateTime QFileInfo::birthTime() const
-{
-    return fileTime(QFile::FileBirthTime);
-}
 
 /*!
+    \fn QDateTime QFileInfo::metadataChangeTime() const
     \since 5.10
     Returns the date and time when the file metadata was changed. A metadata
     change occurs when the file is created, but it also occurs whenever the
@@ -1405,12 +1403,10 @@ QDateTime QFileInfo::birthTime() const
 
     \sa lastModified(), lastRead()
 */
-QDateTime QFileInfo::metadataChangeTime() const
-{
-    return fileTime(QFile::FileMetadataChangeTime);
-}
 
 /*!
+    \fn QDateTime QFileInfo::lastModified() const
+
     Returns the date and local time when the file was last modified.
 
     If the file is a symlink, the time of the target file is returned
@@ -1418,12 +1414,10 @@ QDateTime QFileInfo::metadataChangeTime() const
 
     \sa birthTime(), lastRead(), metadataChangeTime(), fileTime()
 */
-QDateTime QFileInfo::lastModified() const
-{
-    return fileTime(QFile::FileModificationTime);
-}
 
 /*!
+    \fn QDateTime QFileInfo::lastRead() const
+
     Returns the date and local time when the file was last read (accessed).
 
     On platforms where this information is not available, returns the
@@ -1434,10 +1428,6 @@ QDateTime QFileInfo::lastModified() const
 
     \sa birthTime(), lastModified(), metadataChangeTime(), fileTime()
 */
-QDateTime QFileInfo::lastRead() const
-{
-    return fileTime(QFile::FileAccessTime);
-}
 
 /*!
     \since 5.10
