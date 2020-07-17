@@ -84,6 +84,7 @@
 #include <QtCore/qurl.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qscopedvaluerollback.h>
+#include <QtCore/qscopeguard.h>
 #include <QtCore/qlibrary.h>
 #include <QtCore/qoperatingsystemversion.h>
 
@@ -1801,6 +1802,10 @@ bool QSslSocketBackendPrivate::checkOcspStatus()
     Q_ASSERT(ssl);
     Q_ASSERT(mode == QSslSocket::SslClientMode); // See initSslContext() for SslServerMode
     Q_ASSERT(configuration.peerVerifyMode != QSslSocket::VerifyNone);
+
+    const auto clearErrorQueue = qScopeGuard([] {
+        logAndClearErrorQueue();
+    });
 
     ocspResponses.clear();
     ocspErrorDescription.clear();
