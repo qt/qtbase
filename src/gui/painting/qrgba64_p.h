@@ -195,7 +195,7 @@ Q_ALWAYS_INLINE uint toArgb32(uint16x4_t v)
 }
 #endif
 
-inline uint toArgb32(QRgba64 rgba64)
+Q_ALWAYS_INLINE uint toArgb32(QRgba64 rgba64)
 {
 #if defined __SSE2__
     __m128i v = _mm_loadl_epi64((const __m128i *)&rgba64);
@@ -215,7 +215,7 @@ inline uint toArgb32(QRgba64 rgba64)
 #endif
 }
 
-inline uint toRgba8888(QRgba64 rgba64)
+Q_ALWAYS_INLINE uint toRgba8888(QRgba64 rgba64)
 {
 #if defined __SSE2__
     __m128i v = _mm_loadl_epi64((const __m128i *)&rgba64);
