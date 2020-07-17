@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMWINDOW_P_H
-#define QPLATFORMWINDOW_P_H
+#ifndef QPLATFORMMENU_P_H
+#define QPLATFORMMENU_P_H
 
 //
 //  W A R N I N G
@@ -52,28 +52,29 @@
 //
 
 #include <QtGui/private/qtguiglobal_p.h>
-#include <QtCore/qbasictimer.h>
-#include <QtCore/qrect.h>
 
 QT_BEGIN_NAMESPACE
 
-class QPlatformWindowPrivate
-{
-public:
-    QRect rect;
-    QBasicTimer updateTimer;
-};
-
 // ----------------- QPlatformInterface -----------------
+
+QT_END_NAMESPACE
+Q_FORWARD_DECLARE_OBJC_CLASS(NSMenu);
+QT_BEGIN_NAMESPACE
 
 namespace QPlatformInterface::Private {
 
 #if defined(Q_OS_MACOS)
-struct Q_GUI_EXPORT QCocoaWindow
+struct Q_GUI_EXPORT QCocoaMenu
 {
-    QT_DECLARE_PLATFORM_INTERFACE(QCocoaWindow)
-    virtual void setContentBorderEnabled(bool enable) = 0;
-    virtual QPoint bottomLeftClippedByNSWindowOffset() const = 0;
+    QT_DECLARE_PLATFORM_INTERFACE(QCocoaMenu)
+    virtual NSMenu *nsMenu() const = 0;
+    virtual void setAsDockMenu() const = 0;
+};
+
+struct Q_GUI_EXPORT QCocoaMenuBar
+{
+    QT_DECLARE_PLATFORM_INTERFACE(QCocoaMenuBar)
+    virtual NSMenu *nsMenu() const = 0;
 };
 #endif
 
@@ -81,4 +82,4 @@ struct Q_GUI_EXPORT QCocoaWindow
 
 QT_END_NAMESPACE
 
-#endif // QPLATFORMWINDOW_P_H
+#endif // QPLATFORMMENU_P_H

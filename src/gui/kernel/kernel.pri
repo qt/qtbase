@@ -32,6 +32,7 @@ HEADERS += \
         kernel/qplatformclipboard.h \
         kernel/qplatformnativeinterface.h \
         kernel/qplatformmenu.h \
+        kernel/qplatformmenu_p.h \
         kernel/qsurfaceformat.h \
         kernel/qguiapplication.h \
         kernel/qguiapplication_p.h \

@@ -68,6 +68,7 @@
 #endif
 #include "qwidgetanimator_p.h"
 #include <QtGui/qpa/qplatformwindow.h>
+#include <QtGui/qpa/qplatformwindow_p.h>
 
 QT_BEGIN_NAMESPACE
 

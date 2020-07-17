@@ -41,6 +41,7 @@
 #define QCOCOAWINDOW_H
 
 #include <qpa/qplatformwindow.h>
+#include <qpa/qplatformwindow_p.h>
 #include <QRect>
 #include <QPointer>
 

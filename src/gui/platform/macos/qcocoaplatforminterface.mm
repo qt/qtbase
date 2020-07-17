@@ -41,8 +41,8 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformopenglcontext.h>
 #include <qpa/qplatformintegration.h>
-#include <qpa/qplatformwindow.h>
-#include <qpa/qplatformmenu.h>
+#include <qpa/qplatformwindow_p.h>
+#include <qpa/qplatformmenu_p.h>
 
 #include <AppKit/AppKit.h>
 
