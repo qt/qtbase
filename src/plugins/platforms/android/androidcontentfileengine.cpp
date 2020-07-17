@@ -92,13 +92,21 @@ AndroidContentFileEngine::FileFlags AndroidContentFileEngine::fileFlags(FileFlag
 {
     FileFlags commonFlags(ReadOwnerPerm|ReadUserPerm|ReadGroupPerm|ReadOtherPerm|ExistsFlag);
     FileFlags flags;
-    const bool exists = QJNIObjectPrivate::callStaticMethod<jboolean>(
+    const bool isDir = QJNIObjectPrivate::callStaticMethod<jboolean>(
+            "org/qtproject/qt5/android/QtNative", "checkIfDir",
+            "(Landroid/content/Context;Ljava/lang/String;)Z", QtAndroidPrivate::context(),
+            QJNIObjectPrivate::fromString(fileName(DefaultName)).object());
+    // If it is a directory then we know it exists so there is no reason to explicitly check
+    const bool exists = isDir ? true : QJNIObjectPrivate::callStaticMethod<jboolean>(
             "org/qtproject/qt5/android/QtNative", "checkFileExists",
             "(Landroid/content/Context;Ljava/lang/String;)Z", QtAndroidPrivate::context(),
             QJNIObjectPrivate::fromString(fileName(DefaultName)).object());
-    if (!exists)
+    if (!exists && !isDir)
         return flags;
-    flags = FileType | commonFlags;
+    if (isDir)
+        flags = DirectoryType | commonFlags;
+    else
+        flags = FileType | commonFlags;
     return type & flags;
 }
 
@@ -122,6 +130,16 @@ QString AndroidContentFileEngine::fileName(FileName f) const
     }
 }
 
+QAbstractFileEngine::Iterator *AndroidContentFileEngine::beginEntryList(QDir::Filters filters, const QStringList &filterNames)
+{
+    return new AndroidContentFileEngineIterator(filters, filterNames);
+}
+
+QAbstractFileEngine::Iterator *AndroidContentFileEngine::endEntryList()
+{
+    return nullptr;
+}
+
 AndroidContentFileEngineHandler::AndroidContentFileEngineHandler() = default;
 AndroidContentFileEngineHandler::~AndroidContentFileEngineHandler() = default;
 
@@ -132,4 +150,59 @@ QAbstractFileEngine* AndroidContentFileEngineHandler::create(const QString &file
     }
 
     return new AndroidContentFileEngine(fileName);
+}
+
+AndroidContentFileEngineIterator::AndroidContentFileEngineIterator(QDir::Filters filters,
+                                                                   const QStringList &filterNames)
+    : QAbstractFileEngineIterator(filters, filterNames)
+{
+}
+
+AndroidContentFileEngineIterator::~AndroidContentFileEngineIterator()
+{
+}
+
+QString AndroidContentFileEngineIterator::next()
+{
+    if (!hasNext())
+        return QString();
+    ++m_index;
+    return currentFilePath();
+}
+
+bool AndroidContentFileEngineIterator::hasNext() const
+{
+    if (m_index == -1) {
+        if (path().isEmpty())
+            return false;
+        const bool isDir = QJNIObjectPrivate::callStaticMethod<jboolean>(
+                             "org/qtproject/qt5/android/QtNative", "checkIfDir",
+                             "(Landroid/content/Context;Ljava/lang/String;)Z",
+                             QtAndroidPrivate::context(),
+                             QJNIObjectPrivate::fromString(path()).object());
+        if (isDir) {
+            QJNIObjectPrivate objArray = QJNIObjectPrivate::callStaticObjectMethod("org/qtproject/qt5/android/QtNative",
+                                           "listContentsFromTreeUri",
+                                           "(Landroid/content/Context;Ljava/lang/String;)[Ljava/lang/String;",
+                                           QtAndroidPrivate::context(),
+                                           QJNIObjectPrivate::fromString(path()).object());
+            if (objArray.isValid()) {
+                QJNIEnvironmentPrivate env;
+                const jsize length = env->GetArrayLength(static_cast<jarray>(objArray.object()));
+                for (int i = 0; i != length; ++i) {
+                    m_entries << QJNIObjectPrivate(env->GetObjectArrayElement(
+                                static_cast<jobjectArray>(objArray.object()), i)).toString();
+                }
+            }
+        }
+        m_index = 0;
+    }
+    return m_index < m_entries.size();
+}
+
+QString AndroidContentFileEngineIterator::currentFileName() const
+{
+    if (m_index <= 0 || m_index > m_entries.size())
+        return QString();
+    return m_entries.at(m_index - 1);
 }

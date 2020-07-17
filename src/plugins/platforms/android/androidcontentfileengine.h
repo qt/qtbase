@@ -50,6 +50,8 @@ public:
     qint64 size() const override;
     FileFlags fileFlags(FileFlags type = FileInfoAll) const override;
     QString fileName(FileName file = DefaultName) const override;
+    QAbstractFileEngine::Iterator *beginEntryList(QDir::Filters filters, const QStringList &filterNames) override;
+    QAbstractFileEngine::Iterator *endEntryList() override;
 private:
     QString m_file;
 
@@ -61,6 +63,19 @@ public:
     AndroidContentFileEngineHandler();
     ~AndroidContentFileEngineHandler();
     QAbstractFileEngine *create(const QString &fileName) const override;
+};
+
+class AndroidContentFileEngineIterator : public QAbstractFileEngineIterator
+{
+public:
+    AndroidContentFileEngineIterator(QDir::Filters filters, const QStringList &filterNames);
+    ~AndroidContentFileEngineIterator();
+    QString next() override;
+    bool hasNext() const override;
+    QString currentFileName() const override;
+private:
+    mutable QStringList m_entries;
+    mutable int m_index = -1;
 };
 
 #endif // ANDROIDCONTENTFILEENGINE_H
