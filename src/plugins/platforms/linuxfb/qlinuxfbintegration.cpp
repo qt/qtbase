@@ -70,8 +70,6 @@
 #include <QtInputSupport/private/qtslib_p.h>
 #endif
 
-#include <QtPlatformHeaders/private/qlinuxfbfunctions_p.h>
-
 QT_BEGIN_NAMESPACE
 
 QLinuxFbIntegration::QLinuxFbIntegration(const QStringList &paramList)
@@ -181,40 +179,26 @@ QPlatformNativeInterface *QLinuxFbIntegration::nativeInterface() const
 
 QFunctionPointer QLinuxFbIntegration::platformFunction(const QByteArray &function) const
 {
-#if QT_CONFIG(evdev)
-    if (function == QLinuxFbFunctions::loadKeymapTypeIdentifier())
-        return QFunctionPointer(loadKeymapStatic);
-    else if (function == QLinuxFbFunctions::switchLangTypeIdentifier())
-        return QFunctionPointer(switchLangStatic);
-#else
     Q_UNUSED(function);
-#endif
-
     return 0;
 }
 
-void QLinuxFbIntegration::loadKeymapStatic(const QString &filename)
-{
 #if QT_CONFIG(evdev)
-    QLinuxFbIntegration *self = static_cast<QLinuxFbIntegration *>(QGuiApplicationPrivate::platformIntegration());
-    if (self->m_kbdMgr)
-        self->m_kbdMgr->loadKeymap(filename);
+void QLinuxFbIntegration::loadKeymap(const QString &filename)
+{
+    if (m_kbdMgr)
+        m_kbdMgr->loadKeymap(filename);
     else
         qWarning("QLinuxFbIntegration: Cannot load keymap, no keyboard handler found");
-#else
-    Q_UNUSED(filename);
-#endif
 }
 
-void QLinuxFbIntegration::switchLangStatic()
+void QLinuxFbIntegration::switchLang()
 {
-#if QT_CONFIG(evdev)
-    QLinuxFbIntegration *self = static_cast<QLinuxFbIntegration *>(QGuiApplicationPrivate::platformIntegration());
-    if (self->m_kbdMgr)
-        self->m_kbdMgr->switchLang();
+    if (m_kbdMgr)
+        m_kbdMgr->switchLang();
     else
         qWarning("QLinuxFbIntegration: Cannot switch language, no keyboard handler found");
-#endif
 }
+#endif
 
 QT_END_NAMESPACE

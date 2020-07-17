@@ -47,6 +47,8 @@
 #include <qpa/qplatformscreen_p.h>
 #include <qpa/qplatformwindow_p.h>
 
+#include <QtGui/private/qkeymapper_p.h>
+
 QT_BEGIN_NAMESPACE
 
 using namespace QPlatformInterface::Private;
@@ -84,6 +86,16 @@ QOpenGLContext *QPlatformInterface::QEGLContext::fromNative(EGLContext context, 
 #if QT_CONFIG(xcb)
 QT_DEFINE_PRIVATE_PLATFORM_INTERFACE(QXcbScreen);
 QT_DEFINE_PRIVATE_PLATFORM_INTERFACE(QXcbWindow);
+#endif
+
+#if QT_CONFIG(evdev)
+QT_DEFINE_PRIVATE_PLATFORM_INTERFACE(QEvdevKeyMapper);
+
+template <>
+QEvdevKeyMapper *QKeyMapper::platformInterface<QEvdevKeyMapper>() const
+{
+    return dynamic_cast<QEvdevKeyMapper*>(QGuiApplicationPrivate::platformIntegration());
+}
 #endif
 
 #endif // QT_NO_OPENGL

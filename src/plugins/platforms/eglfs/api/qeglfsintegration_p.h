@@ -59,6 +59,7 @@
 #include <qpa/qplatformnativeinterface.h>
 #include <qpa/qplatformopenglcontext.h>
 #include <qpa/qplatformscreen.h>
+#include <QtGui/private/qkeymapper_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -68,8 +69,11 @@ class QFbVtHandler;
 class QEvdevKeyboardManager;
 
 class Q_EGLFS_EXPORT QEglFSIntegration : public QPlatformIntegration, public QPlatformNativeInterface
+#if QT_CONFIG(evdev)
+    , public QPlatformInterface::Private::QEvdevKeyMapper
+#endif
 #ifndef QT_NO_OPENGL
-                                       , public QPlatformInterface::Private::QEGLIntegration
+    , public QPlatformInterface::Private::QEGLIntegration
 #endif
 {
 public:
@@ -116,11 +120,14 @@ public:
     QPointer<QWindow> pointerWindow() { return m_pointerWindow; }
     void setPointerWindow(QWindow *pointerWindow) { m_pointerWindow = pointerWindow; }
 
+#if QT_CONFIG(evdev)
+    void loadKeymap(const QString &filename) override;
+    void switchLang() override;
+#endif
+
 private:
     EGLNativeDisplayType nativeDisplay() const;
     void createInputHandlers();
-    static void loadKeymapStatic(const QString &filename);
-    static void switchLangStatic();
 
     EGLDisplay m_display;
     QPlatformInputContext *m_inputContext;

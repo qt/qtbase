@@ -42,6 +42,7 @@
 
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformnativeinterface.h>
+#include <QtGui/private/qkeymapper_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -51,6 +52,9 @@ class QFbVtHandler;
 class QEvdevKeyboardManager;
 
 class QLinuxFbIntegration : public QPlatformIntegration, public QPlatformNativeInterface
+#if QT_CONFIG(evdev)
+    , public QPlatformInterface::Private::QEvdevKeyMapper
+#endif
 {
 public:
     QLinuxFbIntegration(const QStringList &paramList);
@@ -74,10 +78,13 @@ public:
 
     QFunctionPointer platformFunction(const QByteArray &function) const override;
 
+#if QT_CONFIG(evdev)
+    void loadKeymap(const QString &filename) override;
+    void switchLang() override;
+#endif
+
 private:
     void createInputHandlers();
-    static void loadKeymapStatic(const QString &filename);
-    static void switchLangStatic();
 
     QFbScreen *m_primaryScreen;
     QPlatformInputContext *m_inputContext;

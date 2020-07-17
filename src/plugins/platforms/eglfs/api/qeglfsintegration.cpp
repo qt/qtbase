@@ -432,39 +432,26 @@ QPlatformNativeInterface::NativeResourceForContextFunction QEglFSIntegration::na
 
 QFunctionPointer QEglFSIntegration::platformFunction(const QByteArray &function) const
 {
-#if QT_CONFIG(evdev)
-    if (function == QEglFSFunctions::loadKeymapTypeIdentifier())
-        return QFunctionPointer(loadKeymapStatic);
-    else if (function == QEglFSFunctions::switchLangTypeIdentifier())
-        return QFunctionPointer(switchLangStatic);
-#endif
-
     return qt_egl_device_integration()->platformFunction(function);
 }
 
-void QEglFSIntegration::loadKeymapStatic(const QString &filename)
-{
 #if QT_CONFIG(evdev)
-    QEglFSIntegration *self = static_cast<QEglFSIntegration *>(QGuiApplicationPrivate::platformIntegration());
-    if (self->m_kbdMgr)
-        self->m_kbdMgr->loadKeymap(filename);
+void QEglFSIntegration::loadKeymap(const QString &filename)
+{
+    if (m_kbdMgr)
+        m_kbdMgr->loadKeymap(filename);
     else
         qWarning("QEglFSIntegration: Cannot load keymap, no keyboard handler found");
-#else
-    Q_UNUSED(filename);
-#endif
 }
 
-void QEglFSIntegration::switchLangStatic()
+void QEglFSIntegration::switchLang()
 {
-#if QT_CONFIG(evdev)
-    QEglFSIntegration *self = static_cast<QEglFSIntegration *>(QGuiApplicationPrivate::platformIntegration());
-    if (self->m_kbdMgr)
-        self->m_kbdMgr->switchLang();
+    if (m_kbdMgr)
+        m_kbdMgr->switchLang();
     else
         qWarning("QEglFSIntegration: Cannot switch language, no keyboard handler found");
-#endif
 }
+#endif
 
 void QEglFSIntegration::createInputHandlers()
 {

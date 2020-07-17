@@ -72,6 +72,9 @@ public:
     static void changeKeyboard();
     static QList<int> possibleKeys(QKeyEvent *e);
 
+    template <typename T>
+    T *platformInterface() const;
+
 private:
     friend QKeyMapperPrivate *qt_keymapper_private();
     Q_DECLARE_PRIVATE(QKeyMapper)
@@ -95,6 +98,22 @@ public:
 };
 
 QKeyMapperPrivate *qt_keymapper_private(); // from qkeymapper.cpp
+
+// ----------------- QPlatformInterface -----------------
+
+namespace QPlatformInterface::Private {
+
+#if QT_CONFIG(evdev)
+struct Q_GUI_EXPORT QEvdevKeyMapper
+{
+    QT_DECLARE_PLATFORM_INTERFACE(QEvdevKeyMapper)
+    virtual void loadKeymap(const QString &filename) = 0;
+    virtual void switchLang() = 0;
+};
+#endif
+
+} // QPlatformInterface::Private
+
 
 QT_END_NAMESPACE
 

@@ -5,7 +5,6 @@ include(eglfsfunctions/eglfsfunctions.pri)
 include(windowsfunctions/windowsfunctions.pri)
 include(helper/helper.pri)
 include(waylandfunctions/waylandfunctions.pri)
-include(linuxfbfunctions/linuxfbfunctions.pri)
 
 QMAKE_DOCS = $$PWD/doc/qtplatformheaders.qdocconf
 
