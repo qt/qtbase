@@ -1361,7 +1361,7 @@ void QComboBoxPrivate::_q_returnPressed()
             break;
         case QComboBox::InsertAlphabetically:
             index = 0;
-            for (int i=0; i< q->count(); i++, index++ ) {
+            for (int i = 0; i < q->count(); ++i, ++index) {
                 if (text.toLower() < q->itemText(i).toLower())
                     break;
             }
