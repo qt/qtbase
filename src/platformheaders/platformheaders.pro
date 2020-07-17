@@ -2,7 +2,6 @@ TARGET = QtPlatformHeaders
 CONFIG += header_module
 
 include(eglfsfunctions/eglfsfunctions.pri)
-include(windowsfunctions/windowsfunctions.pri)
 include(helper/helper.pri)
 include(waylandfunctions/waylandfunctions.pri)
 

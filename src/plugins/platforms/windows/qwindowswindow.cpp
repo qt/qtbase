@@ -1182,6 +1182,17 @@ QPoint QWindowsBaseWindow::mapFromGlobal(const QPoint &pos) const
     return QWindowsGeometryHint::mapFromGlobal(handle(), pos);
 }
 
+void QWindowsBaseWindow::setHasBorderInFullScreen(bool)
+{
+    Q_UNIMPLEMENTED();
+}
+
+bool QWindowsBaseWindow::hasBorderInFullScreen() const
+{
+    Q_UNIMPLEMENTED();
+    return false;
+}
+
 /*!
     \class QWindowsDesktopWindow
     \brief Window wrapping GetDesktopWindow not allowing any manipulation.
@@ -3113,9 +3124,14 @@ void QWindowsWindow::setHasBorderInFullScreenDefault(bool border)
     m_borderInFullScreenDefault = border;
 }
 
+bool QWindowsWindow::hasBorderInFullScreen() const
+{
+    return testFlag(HasBorderInFullScreen);
+}
+
 void QWindowsWindow::setHasBorderInFullScreen(bool border)
 {
-    if (testFlag(HasBorderInFullScreen) == border)
+    if (hasBorderInFullScreen() == border)
         return;
     if (border)
         setFlag(HasBorderInFullScreen);

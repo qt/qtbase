@@ -41,6 +41,8 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformopenglcontext.h>
 #include <qpa/qplatformintegration.h>
+#include <qpa/qplatformwindow.h>
+#include <qpa/qplatformwindow_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -66,5 +68,6 @@ QOpenGLContext *QPlatformInterface::QWGLContext::fromNative(HGLRC context, HWND 
 #endif // QT_NO_OPENGL
 
 QT_DEFINE_PRIVATE_PLATFORM_INTERFACE(QWindowsApplication);
+QT_DEFINE_PRIVATE_PLATFORM_INTERFACE(QWindowsWindow);
 
 QT_END_NAMESPACE

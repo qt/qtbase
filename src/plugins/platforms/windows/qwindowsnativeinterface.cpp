@@ -256,15 +256,6 @@ QFont QWindowsNativeInterface::logFontToQFont(const void *logFont, int verticalD
     return QWindowsFontDatabase::LOGFONT_to_QFont(*reinterpret_cast<const LOGFONT *>(logFont), verticalDpi);
 }
 
-QFunctionPointer QWindowsNativeInterface::platformFunction(const QByteArray &function) const
-{
-    if (function == QWindowsWindowFunctions::setHasBorderInFullScreenIdentifier())
-        return QFunctionPointer(QWindowsWindow::setHasBorderInFullScreenStatic);
-    if (function == QWindowsWindowFunctions::setHasBorderInFullScreenDefaultIdentifier())
-        return QFunctionPointer(QWindowsWindow::setHasBorderInFullScreenDefault);
-    return nullptr;
-}
-
 QVariant QWindowsNativeInterface::gpu() const
 {
     return GpuDescription::detect().toVariant();

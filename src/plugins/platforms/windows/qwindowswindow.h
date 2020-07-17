@@ -46,7 +46,7 @@
 #include "qwindowscursor.h"
 
 #include <qpa/qplatformwindow.h>
-#include <QtPlatformHeaders/private/qwindowswindowfunctions_p.h>
+#include <qpa/qplatformwindow_p.h>
 
 #if QT_CONFIG(vulkan)
 #include "qwindowsvulkaninstance.h"
@@ -124,7 +124,8 @@ struct QWindowsWindowData
                                      const QString &title);
 };
 
-class QWindowsBaseWindow : public QPlatformWindow
+class QWindowsBaseWindow : public QPlatformWindow,
+                           public QPlatformInterface::Private::QWindowsWindow
 {
     Q_DISABLE_COPY_MOVE(QWindowsBaseWindow)
 public:
@@ -139,6 +140,9 @@ public:
     QPoint mapToGlobal(const QPoint &pos) const override;
     QPoint mapFromGlobal(const QPoint &pos) const override;
     virtual QMargins fullFrameMargins() const { return frameMargins_sys(); }
+
+    void setHasBorderInFullScreen(bool border) override;
+    bool hasBorderInFullScreen() const override;
 
     using QPlatformWindow::screenForGeometry;
 
@@ -358,7 +362,8 @@ public:
     void registerTouchWindow();
     static void setHasBorderInFullScreenStatic(QWindow *window, bool border);
     static void setHasBorderInFullScreenDefault(bool border);
-    void setHasBorderInFullScreen(bool border);
+    void setHasBorderInFullScreen(bool border) override;
+    bool hasBorderInFullScreen() const override;
     static QString formatWindowTitle(const QString &title);
 
     static const char *embeddedNativeParentHandleProperty;

@@ -107,7 +107,17 @@ struct Q_GUI_EXPORT QXcbWindow
     virtual void setWindowIconText(const QString &text) = 0;
     virtual uint visualId() const = 0;
 };
-#endif
+#endif // xcb
+
+#ifdef Q_OS_WIN
+struct Q_GUI_EXPORT QWindowsWindow
+{
+    QT_DECLARE_PLATFORM_INTERFACE(QWindowsWindow)
+
+    virtual void setHasBorderInFullScreen(bool border) = 0;
+    virtual bool hasBorderInFullScreen() const = 0;
+};
+#endif // Q_OS_WIN
 
 } // QPlatformInterface::Private
 

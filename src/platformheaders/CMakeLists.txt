@@ -11,7 +11,6 @@ qt_add_module(PlatformHeaders
     #     eglfsfunctions/qeglfsfunctions_p.h
     #     helper/qplatformheaderhelper_p.h
     #     waylandfunctions/qwaylandwindowfunctions_p.h
-    #     windowsfunctions/qwindowswindowfunctions_p.h
     # special case end
     PUBLIC_LIBRARIES
         Qt::Core

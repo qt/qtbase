@@ -42,7 +42,6 @@
 
 #include <QtGui/qfont.h>
 #include <QtGui/qpa/qplatformnativeinterface.h>
-#include <QtPlatformHeaders/private/qwindowswindowfunctions_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -103,8 +102,6 @@ public:
     QVariant windowProperty(QPlatformWindow *window, const QString &name) const override;
     QVariant windowProperty(QPlatformWindow *window, const QString &name, const QVariant &defaultValue) const override;
     void setWindowProperty(QPlatformWindow *window, const QString &name, const QVariant &value) override;
-
-    QFunctionPointer platformFunction(const QByteArray &function) const override;
 
 Q_SIGNALS:
     void darkModeChanged(bool);
