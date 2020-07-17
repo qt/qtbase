@@ -1,7 +1,6 @@
 TARGET = QtPlatformHeaders
 CONFIG += header_module
 
-include(xcbfunctions/xcbfunctions.pri)
 include(eglfsfunctions/eglfsfunctions.pri)
 include(windowsfunctions/windowsfunctions.pri)
 include(helper/helper.pri)

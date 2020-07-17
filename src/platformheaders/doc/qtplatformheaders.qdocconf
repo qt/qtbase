@@ -33,7 +33,6 @@ depends += \
 
 headerdirs  += ..
 sourcedirs  += ..
-exampledirs += snippets
 imagedirs   += images
 
 tagfile = qtplatformheaders.tags

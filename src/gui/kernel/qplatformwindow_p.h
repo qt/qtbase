@@ -77,6 +77,38 @@ struct Q_GUI_EXPORT QCocoaWindow
 };
 #endif
 
+#if QT_CONFIG(xcb)
+struct Q_GUI_EXPORT QXcbWindow
+{
+    QT_DECLARE_PLATFORM_INTERFACE(QXcbWindow)
+
+    enum WindowType {
+        None         = 0x000000,
+        Normal       = 0x000001,
+        Desktop      = 0x000002,
+        Dock         = 0x000004,
+        Toolbar      = 0x000008,
+        Menu         = 0x000010,
+        Utility      = 0x000020,
+        Splash       = 0x000040,
+        Dialog       = 0x000080,
+        DropDownMenu = 0x000100,
+        PopupMenu    = 0x000200,
+        Tooltip      = 0x000400,
+        Notification = 0x000800,
+        Combo        = 0x001000,
+        Dnd          = 0x002000,
+        KdeOverride  = 0x004000
+    };
+    Q_DECLARE_FLAGS(WindowTypes, WindowType)
+
+    virtual void setWindowType(WindowTypes type) = 0;
+    virtual void setWindowRole(const QString &role) = 0;
+    virtual void setWindowIconText(const QString &text) = 0;
+    virtual uint visualId() const = 0;
+};
+#endif
+
 } // QPlatformInterface::Private
 
 QT_END_NAMESPACE

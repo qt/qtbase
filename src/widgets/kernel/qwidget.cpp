@@ -62,6 +62,7 @@
 # include "qaccessible.h"
 #endif
 #include <qpa/qplatformwindow.h>
+#include <qpa/qplatformwindow_p.h>
 #include "private/qwidgetwindow_p.h"
 #include "qpainter.h"
 #if QT_CONFIG(tooltip)
@@ -113,8 +114,6 @@
 
 #include "qwindowcontainer_p.h"
 
-#include <QtPlatformHeaders/private/qxcbwindowfunctions_p.h>
-
 #include <private/qmemory_p.h>
 
 // widget/widget data creation count
@@ -122,6 +121,8 @@
 //#define ALIEN_DEBUG
 
 QT_BEGIN_NAMESPACE
+
+using namespace QPlatformInterface::Private;
 
 Q_LOGGING_CATEGORY(lcWidgetPainting, "qt.widgets.painting", QtWarningMsg);
 
@@ -1334,8 +1335,12 @@ void QWidgetPrivate::create()
     if (!win->isTopLevel()) // In a Widget world foreign windows can only be top level
       data.window_flags &= ~Qt::ForeignWindow;
 
-    if (!topData()->role.isNull())
-        QXcbWindowFunctions::setWmWindowRole(win, topData()->role.toLatin1());
+#if QT_CONFIG(xcb)
+    if (!topData()->role.isNull()) {
+        if (auto *xcbWindow = dynamic_cast<QXcbWindow*>(win->handle()))
+            xcbWindow->setWindowRole(topData()->role);
+    }
+#endif
 
     QBackingStore *store = q->backingStore();
 
@@ -5896,11 +5901,17 @@ void QWidgetPrivate::setWindowIconText_helper(const QString &title)
 
 void QWidgetPrivate::setWindowIconText_sys(const QString &iconText)
 {
+#if QT_CONFIG(xcb)
     Q_Q(QWidget);
     // ### The QWidget property is deprecated, but the XCB window function is not.
     // It should remain available for the rare application that needs it.
-    if (QWindow *window = q->windowHandle())
-        QXcbWindowFunctions::setWmWindowIconText(window, iconText);
+    if (QWindow *window = q->windowHandle()) {
+        if (auto *xcbWindow = dynamic_cast<QXcbWindow*>(window->handle()))
+            xcbWindow->setWindowIconText(iconText);
+    }
+#else
+    Q_UNUSED(iconText);
+#endif
 }
 
 /*!
@@ -6140,11 +6151,17 @@ QString QWidget::windowRole() const
 */
 void QWidget::setWindowRole(const QString &role)
 {
+#if QT_CONFIG(xcb)
     Q_D(QWidget);
     d->createTLExtra();
     d->topData()->role = role;
-    if (windowHandle())
-        QXcbWindowFunctions::setWmWindowRole(windowHandle(), role.toLatin1());
+    if (windowHandle()) {
+        if (auto *xcbWindow = dynamic_cast<QXcbWindow*>(windowHandle()->handle()))
+            xcbWindow->setWindowRole(role);
+    }
+#else
+    Q_UNUSED(role);
+#endif
 }
 
 /*!
@@ -12738,43 +12755,48 @@ void QWidgetPrivate::setWidgetParentHelper(QObject *widgetAsObject, QObject *new
 
 void QWidgetPrivate::setNetWmWindowTypes(bool skipIfMissing)
 {
+#if QT_CONFIG(xcb)
     Q_Q(QWidget);
 
     if (!q->windowHandle())
         return;
 
-    int wmWindowType = 0;
+    QXcbWindow::WindowTypes wmWindowType = QXcbWindow::None;
     if (q->testAttribute(Qt::WA_X11NetWmWindowTypeDesktop))
-        wmWindowType |= QXcbWindowFunctions::Desktop;
+        wmWindowType |= QXcbWindow::Desktop;
     if (q->testAttribute(Qt::WA_X11NetWmWindowTypeDock))
-        wmWindowType |= QXcbWindowFunctions::Dock;
+        wmWindowType |= QXcbWindow::Dock;
     if (q->testAttribute(Qt::WA_X11NetWmWindowTypeToolBar))
-        wmWindowType |= QXcbWindowFunctions::Toolbar;
+        wmWindowType |= QXcbWindow::Toolbar;
     if (q->testAttribute(Qt::WA_X11NetWmWindowTypeMenu))
-        wmWindowType |= QXcbWindowFunctions::Menu;
+        wmWindowType |= QXcbWindow::Menu;
     if (q->testAttribute(Qt::WA_X11NetWmWindowTypeUtility))
-        wmWindowType |= QXcbWindowFunctions::Utility;
+        wmWindowType |= QXcbWindow::Utility;
     if (q->testAttribute(Qt::WA_X11NetWmWindowTypeSplash))
-        wmWindowType |= QXcbWindowFunctions::Splash;
+        wmWindowType |= QXcbWindow::Splash;
     if (q->testAttribute(Qt::WA_X11NetWmWindowTypeDialog))
-        wmWindowType |= QXcbWindowFunctions::Dialog;
+        wmWindowType |= QXcbWindow::Dialog;
     if (q->testAttribute(Qt::WA_X11NetWmWindowTypeDropDownMenu))
-        wmWindowType |= QXcbWindowFunctions::DropDownMenu;
+        wmWindowType |= QXcbWindow::DropDownMenu;
     if (q->testAttribute(Qt::WA_X11NetWmWindowTypePopupMenu))
-        wmWindowType |= QXcbWindowFunctions::PopupMenu;
+        wmWindowType |= QXcbWindow::PopupMenu;
     if (q->testAttribute(Qt::WA_X11NetWmWindowTypeToolTip))
-        wmWindowType |= QXcbWindowFunctions::Tooltip;
+        wmWindowType |= QXcbWindow::Tooltip;
     if (q->testAttribute(Qt::WA_X11NetWmWindowTypeNotification))
-        wmWindowType |= QXcbWindowFunctions::Notification;
+        wmWindowType |= QXcbWindow::Notification;
     if (q->testAttribute(Qt::WA_X11NetWmWindowTypeCombo))
-        wmWindowType |= QXcbWindowFunctions::Combo;
+        wmWindowType |= QXcbWindow::Combo;
     if (q->testAttribute(Qt::WA_X11NetWmWindowTypeDND))
-        wmWindowType |= QXcbWindowFunctions::Dnd;
+        wmWindowType |= QXcbWindow::Dnd;
 
-    if (wmWindowType == 0 && skipIfMissing)
+    if (wmWindowType == QXcbWindow::None && skipIfMissing)
         return;
 
-    QXcbWindowFunctions::setWmWindowType(q->windowHandle(), static_cast<QXcbWindowFunctions::WmWindowType>(wmWindowType));
+    if (auto *xcbWindow = dynamic_cast<QXcbWindow*>(q->windowHandle()->handle()))
+        xcbWindow->setWindowType(wmWindowType);
+#else
+    Q_UNUSED(skipIfMissing);
+#endif
 }
 
 #ifndef QT_NO_DEBUG_STREAM

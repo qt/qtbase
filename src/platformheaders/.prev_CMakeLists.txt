@@ -12,7 +12,6 @@ qt_add_module(PlatformHeaders
         linuxfbfunctions/qlinuxfbfunctions_p.h
         waylandfunctions/qwaylandwindowfunctions_p.h
         windowsfunctions/qwindowswindowfunctions_p.h
-        xcbfunctions/qxcbwindowfunctions_p.h
     PUBLIC_LIBRARIES
         Qt::Core
         Qt::Gui

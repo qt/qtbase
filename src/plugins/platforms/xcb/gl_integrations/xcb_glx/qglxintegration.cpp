@@ -51,6 +51,7 @@
 #if QT_CONFIG(regularexpression)
 #  include <QtCore/QRegularExpression>
 #endif
+#include <QtGui/qguiapplication.h>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QOffscreenSurface>
 

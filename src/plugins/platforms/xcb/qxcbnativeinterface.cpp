@@ -53,8 +53,6 @@
 #include <QtGui/qopenglcontext.h>
 #include <QtGui/qscreen.h>
 
-#include <QtPlatformHeaders/private/qxcbwindowfunctions_p.h>
-
 #include <stdio.h>
 
 #include <algorithm>
@@ -310,23 +308,8 @@ QPlatformNativeInterface::NativeResourceForBackingStoreFunction QXcbNativeInterf
 QFunctionPointer QXcbNativeInterface::platformFunction(const QByteArray &function) const
 {
     const QByteArray lowerCaseFunction = function.toLower();
-    QFunctionPointer func = handlerPlatformFunction(lowerCaseFunction);
-    if (func)
+    if (QFunctionPointer func = handlerPlatformFunction(lowerCaseFunction))
         return func;
-
-    //case sensitive
-    if (function == QXcbWindowFunctions::setWmWindowTypeIdentifier())
-        return QFunctionPointer(QXcbWindowFunctions::SetWmWindowType(QXcbWindow::setWmWindowTypeStatic));
-
-    if (function == QXcbWindowFunctions::setWmWindowRoleIdentifier())
-        return QFunctionPointer(QXcbWindowFunctions::SetWmWindowRole(QXcbWindow::setWmWindowRoleStatic));
-
-    if (function == QXcbWindowFunctions::setWmWindowIconTextIdentifier())
-        return QFunctionPointer(QXcbWindowFunctions::SetWmWindowIconText(QXcbWindow::setWindowIconTextStatic));
-
-    if (function == QXcbWindowFunctions::visualIdIdentifier()) {
-        return QFunctionPointer(QXcbWindowFunctions::VisualId(QXcbWindow::visualIdStatic));
-    }
 
     return nullptr;
 }

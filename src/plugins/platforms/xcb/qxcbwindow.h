@@ -41,6 +41,7 @@
 #define QXCBWINDOW_H
 
 #include <qpa/qplatformwindow.h>
+#include <qpa/qplatformwindow_p.h>
 #include <QtGui/QSurfaceFormat>
 #include <QtGui/QImage>
 
@@ -49,8 +50,6 @@
 
 #include "qxcbobject.h"
 
-#include <QtPlatformHeaders/private/qxcbwindowfunctions_p.h>
-
 QT_BEGIN_NAMESPACE
 
 class QXcbScreen;
@@ -58,6 +57,7 @@ class QXcbSyncWindowRequest;
 class QIcon;
 
 class Q_XCB_EXPORT QXcbWindow : public QXcbObject, public QXcbWindowEventListener, public QPlatformWindow
+                              , public QPlatformInterface::Private::QXcbWindow
 {
 public:
     enum NetWmState {
@@ -93,7 +93,7 @@ public:
     QPoint mapFromGlobal(const QPoint &pos) const override;
 
     void setWindowTitle(const QString &title) override;
-    void setWindowIconText(const QString &title);
+    void setWindowIconText(const QString &title) override;
     void setWindowIcon(const QIcon &icon) override;
     void raise() override;
     void lower() override;
@@ -148,19 +148,14 @@ public:
 
     void updateNetWmUserTime(xcb_timestamp_t timestamp);
 
-    static void setWmWindowTypeStatic(QWindow *window, QXcbWindowFunctions::WmWindowTypes windowTypes);
-    static void setWmWindowRoleStatic(QWindow *window, const QByteArray &role);
-    static uint visualIdStatic(QWindow *window);
-
-    QXcbWindowFunctions::WmWindowTypes wmWindowTypes() const;
-    void setWmWindowType(QXcbWindowFunctions::WmWindowTypes types, Qt::WindowFlags flags);
-    void setWmWindowRole(const QByteArray &role);
-
-    static void setWindowIconTextStatic(QWindow *window, const QString &text);
+    WindowTypes wmWindowTypes() const;
+    void setWmWindowType(WindowTypes types, Qt::WindowFlags flags);
+    void setWindowType(WindowTypes windowTypes) override { setWmWindowType(windowTypes, window()->flags()); }
+    void setWindowRole(const QString &role) override;
 
     void setParentRelativeBackPixmap();
     bool requestSystemTrayWindowDock();
-    uint visualId() const;
+    uint visualId() const override;
 
     bool needsSync() const;
 
