@@ -43,6 +43,22 @@ import os
 import subprocess
 import re
 
+
+TESTS = ['assert', 'badxml', 'benchlibcallgrind', 'benchlibcounting',
+         'benchlibeventcounter', 'benchliboptions', 'benchlibtickcounter',
+         'benchlibwalltime', 'blacklisted', 'cmptest', 'commandlinedata',
+         'counting', 'crashes', 'datatable', 'datetime', 'deleteLater',
+         'deleteLater_noApp', 'differentexec', 'exceptionthrow', 'expectfail',
+         'failcleanup', 'faildatatype', 'failfetchtype', 'failinit',
+         'failinitdata', 'fetchbogus', 'findtestdata', 'float', 'globaldata',
+         'longstring', 'maxwarnings', 'multiexec', 'pairdiagnostics', 'pass',
+         'printdatatags', 'printdatatagswithglobaltags', 'qexecstringlist',
+         'signaldumper', 'silent', 'singleskip', 'skip', 'skipcleanup',
+         'skipinit', 'skipinitdata', 'sleep', 'strcmp', 'subtest', 'testlib',
+         'tuplediagnostics', 'verbose1', 'verbose2', 'verifyexceptionthrown',
+         'warnings', 'watchdog', 'xunit']
+
+
 class Fail (Exception): pass
 
 class Cleaner (object):
@@ -184,52 +200,24 @@ class Scanner (object):
     list.  Its .subdirs() can then filter a user-supplied list of
     subdirs or generate the full list, when the user supplied
     none."""
-    def __init__(self, srcDir):
-        self.__tested = tuple(self.__scan_cpp(os.path.join(srcDir, 'tst_selftests.cpp')))
-
-    @staticmethod
-    def __scan_cpp(name,
-                   trimc = re.compile(r'/\*.*?\*/').sub,
-                   trimcpp = re.compile(r'//.*$').sub,
-                   first = re.compile(r'(QStringList|auto)\s+tests\s*=\s*QStringList\(\)').match,
-                   match = re.compile(r'(?:tests\s*)?<<\s*"(\w+)"').match,
-                   last = re.compile(r'\bfor.*\b(LoggerSet|auto)\b.*\ballLoggerSets\(\)').search):
-        """Scans tst_selftests.cpp to find which subdirs matter.
-
-        There's a list, tests, to which all subdir names get added, if
-        they're to be tested.  Other sub-dirs aren't tested, so
-        there's no sense in generating output for them."""
-        scan = False
-        with open(name) as src:
-            for line in src:
-                line = trimcpp('', trimc('', line.strip())).strip()
-                if not scan:
-                    got = first(line)
-                    if got:
-                        scan, line = True, line[len(got.group()):]
-                if scan:
-                    if last(line): break
-                    got = match(line)
-                    while got:
-                        yield got.group(1)
-                        line = line[len(got.group()):].strip()
-                        got = match(line)
+    def __init__(self):
+        pass
 
     def subdirs(self, given):
         if given:
             for d in given:
                 if not os.path.isdir(d):
                     print('No such directory:', d, '- skipped')
-                elif d in self.__tested:
+                elif d in TESTS:
                     yield d
                 else:
-                    print('Directory', d, 'is not tested by tst_selftests.cpp')
+                    print('Directory', d, 'is not in the list of tests')
         else:
             for d in self.__tested:
                 if os.path.isdir(d):
                     yield d
                 else:
-                    print('tst_selftests.cpp names', d, "as a test, but it doesn't exist")
+                    print('directory ', d, " doesn't exist, was it removed?")
 del re
 
 # Keep in sync with tst_selftests.cpp's processEnvironment():
@@ -324,7 +312,7 @@ def main(name, *args):
     herePath = os.getcwd()
     cleaner = Cleaner(herePath, name)
 
-    tests = tuple(Scanner(cleaner.sourceDir).subdirs(args))
+    tests = tuple(Scanner().subdirs(args))
     print("Generating", len(tests), "test results for", cleaner.version, "in:", herePath)
     for path in tests:
         generateTestData(path, cleaner.clean)
