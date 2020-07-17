@@ -45,6 +45,7 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 import java.io.IOException;
+import java.util.HashMap;
 
 import android.app.Activity;
 import android.app.Service;
@@ -72,6 +73,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.InputDevice;
 import android.database.Cursor;
+import android.provider.DocumentsContract;
 
 import java.lang.reflect.Method;
 import java.security.KeyStore;
@@ -112,6 +114,9 @@ public class QtNative
     private static boolean m_usePrimaryClip = false;
     public static QtThread m_qtThread = new QtThread();
     private static Method m_addItemMethod = null;
+    private static HashMap<String, Uri> m_cachedUris = new HashMap<String, Uri>();
+    private static ArrayList<String> m_knownDirs = new ArrayList<String>();
+
     private static final Runnable runPendingCppRunnablesRunnable = new Runnable() {
         @Override
         public void run() {
@@ -229,7 +234,9 @@ public class QtNative
 
     public static int openFdForContentUrl(Context context, String contentUrl, String openMode)
     {
-        Uri uri = getUriWithValidPermission(context, contentUrl, openMode);
+        Uri uri = m_cachedUris.get(contentUrl);
+        if (uri == null)
+            uri = getUriWithValidPermission(context, contentUrl, openMode);
         int error = -1;
 
         if (uri == null) {
@@ -253,20 +260,24 @@ public class QtNative
 
     public static long getSize(Context context, String contentUrl)
     {
-        Uri uri = getUriWithValidPermission(context, contentUrl, "r");
         long size = -1;
+        Uri uri = m_cachedUris.get(contentUrl);
+        if (uri == null)
+            uri = getUriWithValidPermission(context, contentUrl, "r");
 
         if (uri == null) {
             Log.e(QtTAG, "getSize(): No permissions to open Uri");
             return size;
+        } else {
+            m_cachedUris.putIfAbsent(contentUrl, uri);
         }
 
         try {
             ContentResolver resolver = context.getContentResolver();
-            Cursor cur = resolver.query(uri, null, null, null, null);
+            Cursor cur = resolver.query(uri, new String[] { DocumentsContract.Document.COLUMN_SIZE }, null, null, null);
             if (cur != null) {
                 if (cur.moveToFirst())
-                    size = cur.getLong(5); // size column
+                    size = cur.getLong(0);
                 cur.close();
             }
             return size;
@@ -283,12 +294,16 @@ public class QtNative
 
     public static boolean checkFileExists(Context context, String contentUrl)
     {
-        Uri uri = getUriWithValidPermission(context, contentUrl, "r");
         boolean exists = false;
-
+        Uri uri = m_cachedUris.get(contentUrl);
+        if (uri == null)
+            uri = getUriWithValidPermission(context, contentUrl, "r");
         if (uri == null) {
             Log.e(QtTAG, "checkFileExists(): No permissions to open Uri");
             return exists;
+        } else {
+            if (!m_cachedUris.containsKey(contentUrl))
+                m_cachedUris.put(contentUrl, uri);
         }
 
         try {
@@ -310,6 +325,88 @@ public class QtNative
         }
     }
 
+    public static boolean checkIfDir(Context context, String contentUrl)
+    {
+        boolean isDir = false;
+        Uri uri = m_cachedUris.get(contentUrl);
+        if (m_knownDirs.contains(contentUrl))
+            return true;
+        if (uri == null) {
+            uri = getUriWithValidPermission(context, contentUrl, "r");
+        }
+        if (uri == null) {
+            Log.e(QtTAG, "isDir(): No permissions to open Uri");
+            return isDir;
+        } else {
+            if (!m_cachedUris.containsKey(contentUrl))
+                m_cachedUris.put(contentUrl, uri);
+        }
+
+        try {
+            final List<String> paths = uri.getPathSegments();
+            // getTreeDocumentId will throw an exception if it is not a directory so check manually
+            if (!paths.get(0).equals("tree"))
+                return false;
+            ContentResolver resolver = context.getContentResolver();
+            Uri docUri = DocumentsContract.buildDocumentUriUsingTree(uri, DocumentsContract.getTreeDocumentId(uri));
+            if (!docUri.toString().startsWith(uri.toString()))
+                return false;
+            Cursor cur = resolver.query(docUri, new String[] { DocumentsContract.Document.COLUMN_MIME_TYPE }, null, null, null);
+            if (cur != null) {
+                if (cur.moveToFirst()) {
+                    final String dirStr = new String(DocumentsContract.Document.MIME_TYPE_DIR);
+                    isDir = cur.getString(0).equals(dirStr);
+                    if (isDir)
+                        m_knownDirs.add(contentUrl);
+                }
+                cur.close();
+            }
+            return isDir;
+        } catch (IllegalArgumentException e) {
+            Log.e(QtTAG, "checkIfDir(): Invalid Uri");
+            e.printStackTrace();
+            return false;
+        } catch (UnsupportedOperationException e) {
+            Log.e(QtTAG, "checkIfDir(): Unsupported operation for given Uri");
+            e.printStackTrace();
+            return false;
+        }
+    }
+    public static String[] listContentsFromTreeUri(Context context, String contentUrl)
+    {
+        Uri treeUri = Uri.parse(contentUrl);
+        final ArrayList<String> results = new ArrayList<String>();
+        if (treeUri == null) {
+            Log.e(QtTAG, "listContentsFromTreeUri(): Invalid uri");
+            return results.toArray(new String[results.size()]);
+        }
+        final ContentResolver resolver = context.getContentResolver();
+        final Uri docUri = DocumentsContract.buildDocumentUriUsingTree(treeUri,
+                DocumentsContract.getTreeDocumentId(treeUri));
+        final Uri childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(docUri,
+                                DocumentsContract.getDocumentId(docUri));
+        Cursor c = null;
+        final String dirStr = new String(DocumentsContract.Document.MIME_TYPE_DIR);
+        try {
+            c = resolver.query(childrenUri, new String[] {
+                    DocumentsContract.Document.COLUMN_DOCUMENT_ID, DocumentsContract.Document.COLUMN_DISPLAY_NAME, DocumentsContract.Document.COLUMN_MIME_TYPE }, null, null, null);
+            while (c.moveToNext()) {
+                final String fileString = c.getString(1);
+                if (!m_cachedUris.containsKey(contentUrl + "/" + fileString)) {
+                    m_cachedUris.put(contentUrl + "/" + fileString,
+                                     DocumentsContract.buildDocumentUriUsingTree(treeUri, c.getString(0)));
+                }
+                results.add(fileString);
+                if (c.getString(2).equals(dirStr))
+                    m_knownDirs.add(contentUrl + "/" + fileString);
+            }
+            c.close();
+        } catch (Exception e) {
+            Log.w(QtTAG, "Failed query: " + e);
+            return results.toArray(new String[results.size()]);
+        }
+        return results.toArray(new String[results.size()]);
+    }
     // this method loads full path libs
     public static void loadQtLibraries(final ArrayList<String> libraries)
     {
