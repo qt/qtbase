@@ -216,22 +216,24 @@ static QWidget *createColorsPage(QWidget *parent)
     QWidget *result = new QWidget(parent);
     QGridLayout *grid = new QGridLayout;
     const QPalette palette = QGuiApplication::palette();
-    int row = 0;
     for (int r = 0; r < int(QPalette::NColorRoles); ++r) {
         const QPalette::ColorRole role = static_cast<QPalette::ColorRole>(r);
-        const QColor color = palette.color(QPalette::Active, role);
-        if (color.isValid()) {
-            const QString description =
+        const QString description =
                 formatEnumValue(role) + QLatin1Char('(') + QString::number(r)
-                + QLatin1String(") ") + color.name(QColor::HexArgb);
-            grid->addWidget(new QLabel(description), row, 0);
-            QLabel *displayLabel = new QLabel;
-            QPixmap pixmap(20, 20);
-            pixmap.fill(color);
-            displayLabel->setPixmap(pixmap);
-            displayLabel->setFrameShape(QFrame::Box);
-            grid->addWidget(displayLabel, row, 1);
-            ++row;
+                + QLatin1String(") ") + palette.color(QPalette::Active, role).name(QColor::HexArgb);
+        grid->addWidget(new QLabel(description), r, 0);
+        int col = 1;
+        for (int g : {QPalette::Active, QPalette::Inactive, QPalette::Disabled}) {
+            const QColor color = palette.color(QPalette::ColorGroup(g), role);
+            if (color.isValid()) {
+                QLabel *displayLabel = new QLabel;
+                QPixmap pixmap(20, 20);
+                pixmap.fill(color);
+                displayLabel->setPixmap(pixmap);
+                displayLabel->setFrameShape(QFrame::Box);
+                grid->addWidget(displayLabel, r, col);
+            }
+            ++col;
         }
     }
     QHBoxLayout *hBox = new QHBoxLayout;
