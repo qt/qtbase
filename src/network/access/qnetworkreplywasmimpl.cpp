@@ -218,13 +218,15 @@ void QNetworkReplyWasmImplPrivate::doSendRequest()
 
     QList<QByteArray> headersData = request.rawHeaderList();
     int arrayLength = getArraySize(headersData.count());
+    const char* customHeaders[arrayLength];
 
     if (headersData.count() > 0) {
-        const char* customHeaders[arrayLength];
         int i = 0;
-        for (i; i < headersData.count(); i++) {
-            customHeaders[i] = headersData[i].constData();
-            customHeaders[i + 1] = request.rawHeader(headersData[i]).constData();
+        for (int j = 0; j < headersData.count(); j++) {
+            customHeaders[i] = headersData[j].constData();
+            i += 1;
+            customHeaders[i] = request.rawHeader(headersData[j]).constData();
+            i += 1;
         }
         customHeaders[i] = nullptr;
         attr.requestHeaders = customHeaders;
@@ -370,8 +372,8 @@ void QNetworkReplyWasmImplPrivate::headersReceived(const QByteArray &buffer)
 
         for (int i = 0; i < headers.size(); i++) {
             if (headers.at(i).contains(':')) { // headers include final \x00, so skip
-                QByteArray headerName = headers.at(i).split(': ').at(0).trimmed();
-                QByteArray headersValue = headers.at(i).split(': ').at(1).trimmed();
+                QByteArray headerName = headers.at(i).split(':').at(0).trimmed();
+                QByteArray headersValue = headers.at(i).split(':').at(1).trimmed();
 
                 if (headerName.isEmpty() || headersValue.isEmpty())
                     continue;
