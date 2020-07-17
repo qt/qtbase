@@ -44,6 +44,7 @@
 
 #include <qpa/qplatformopenglcontext.h>
 #include <qpa/qplatformintegration.h>
+#include <qpa/qplatformscreen_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -77,6 +78,10 @@ QOpenGLContext *QPlatformInterface::QEGLContext::fromNative(EGLContext context, 
     return QGuiApplicationPrivate::platformIntegration()->call<
         &QEGLIntegration::createOpenGLContext>(context, display, shareContext);
 }
+#endif
+
+#if QT_CONFIG(xcb)
+QT_DEFINE_PRIVATE_PLATFORM_INTERFACE(QXcbScreen);
 #endif
 
 #endif // QT_NO_OPENGL

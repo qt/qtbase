@@ -54,7 +54,6 @@
 #include <QtGui/qscreen.h>
 
 #include <QtPlatformHeaders/private/qxcbwindowfunctions_p.h>
-#include <QtPlatformHeaders/private/qxcbscreenfunctions_p.h>
 
 #include <stdio.h>
 
@@ -328,9 +327,6 @@ QFunctionPointer QXcbNativeInterface::platformFunction(const QByteArray &functio
     if (function == QXcbWindowFunctions::visualIdIdentifier()) {
         return QFunctionPointer(QXcbWindowFunctions::VisualId(QXcbWindow::visualIdStatic));
     }
-
-    if (function == QXcbScreenFunctions::virtualDesktopNumberIdentifier())
-        return QFunctionPointer(QXcbScreenFunctions::VirtualDesktopNumber(reinterpret_cast<void *>(QXcbScreen::virtualDesktopNumberStatic)));
 
     return nullptr;
 }

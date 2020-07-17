@@ -41,6 +41,7 @@
 #define QXCBSCREEN_H
 
 #include <qpa/qplatformscreen.h>
+#include <qpa/qplatformscreen_p.h>
 #include <QtCore/QString>
 
 #include <xcb/xcb.h>
@@ -137,6 +138,7 @@ private:
 };
 
 class Q_XCB_EXPORT QXcbScreen : public QXcbObject, public QPlatformScreen
+                              , public QPlatformInterface::Private::QXcbScreen
 {
 public:
     QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDesktop,
@@ -171,7 +173,7 @@ public:
     bool isPrimary() const { return m_primary; }
 
     int screenNumber() const { return m_virtualDesktop->number(); }
-    static int virtualDesktopNumberStatic(const QScreen *screen);
+    int virtualDesktopNumber() const override { return screenNumber(); }
 
     xcb_screen_t *screen() const { return m_virtualDesktop->screen(); }
     xcb_window_t root() const { return screen()->root; }

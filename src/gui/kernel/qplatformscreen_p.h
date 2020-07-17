@@ -53,6 +53,8 @@
 
 #include <QtGui/private/qtguiglobal_p.h>
 
+#include <QtCore/qpointer.h>
+
 QT_BEGIN_NAMESPACE
 
 class QScreen;
@@ -62,6 +64,20 @@ class QPlatformScreenPrivate
 public:
     QPointer<QScreen> screen;
 };
+
+// ----------------- QPlatformInterface -----------------
+
+namespace QPlatformInterface::Private {
+
+#if QT_CONFIG(xcb)
+struct Q_GUI_EXPORT QXcbScreen
+{
+    QT_DECLARE_PLATFORM_INTERFACE(QXcbScreen)
+    virtual int virtualDesktopNumber() const = 0;
+};
+#endif
+
+} // QPlatformInterface::Private
 
 QT_END_NAMESPACE
 
