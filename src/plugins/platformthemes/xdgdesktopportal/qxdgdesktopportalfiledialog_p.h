@@ -80,6 +80,8 @@ public:
     void setFilter() override;
     void selectNameFilter(const QString &filter) override;
     QString selectedNameFilter() const override;
+    void selectMimeTypeFilter(const QString &filter) override;
+    QString selectedMimeTypeFilter() const override;
 
     void exec() override;
     bool show(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent) override;
