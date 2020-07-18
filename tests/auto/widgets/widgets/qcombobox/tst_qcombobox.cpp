@@ -3314,6 +3314,7 @@ void tst_QComboBox::task_QTBUG_49831_scrollerNotActivated()
             if (scroller->isVisible()) {
                 QSignalSpy doScrollSpy(scroller, SIGNAL(doScroll(int)));
                 QTest::mouseMove(scroller, QPoint(5, 5), 500);
+                QTest::mouseMove(scroller, QPoint(6, 5), 500);
                 QTRY_VERIFY(doScrollSpy.count() > 0);
             }
         }
