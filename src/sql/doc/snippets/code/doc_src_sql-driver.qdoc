@@ -91,16 +91,9 @@ nmake install
 //! [5]
 
 
-//! [6]
-cd $QTDIR/qtbase/src/plugins/sqldrivers
-qmake -- OCI_INCDIR="$ORACLE_HOME/rdbms/public" OCI_LIBDIR="$ORACLE_HOME/lib" OCI_LIBS="-lclntsh -lwtc9"
-make sub-oci
-//! [6]
-
-
 //! [7]
 cd $QTDIR/qtbase/src/plugins/sqldrivers
-qmake -- OCI_INCDIR=/usr/include/oracle/10.1.0.3/client OCI_LIBDIR=/usr/lib/oracle/10.1.0.3/client/lib
+qmake -- OCI_INCDIR=/usr/include/oracle/11.2/client OCI_LIBDIR=/usr/lib/oracle/11.2/client/lib
 make sub-oci
 //! [7]
 

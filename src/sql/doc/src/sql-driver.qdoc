@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -48,8 +48,8 @@
     \header \li Driver name \li DBMS
     \row \li \l{#QDB2}{QDB2} \li IBM DB2 (version 7.1 and above)
     \row \li \l{#QIBASE}{QIBASE} \li Borland InterBase
-    \row \li \l{#QMYSQL}{QMYSQL / MARIADB} \li MySQL or MariaDB (version 5.0 and above)
-    \row \li \l{#QOCI}{QOCI} \li Oracle Call Interface Driver
+    \row \li \l{#QMYSQL}{QMYSQL / MARIADB} \li MySQL or MariaDB (version 5.6 and above)
+    \row \li \l{#QOCI}{QOCI} \li Oracle Call Interface Driver (version 12.1 and above)
     \row \li \l{#QODBC}{QODBC}
          \li Open Database Connectivity (ODBC) - Microsoft SQL Server and other
             ODBC-compliant databases
@@ -121,7 +121,7 @@
     \section1 Driver Specifics
 
     \target QMYSQL
-    \section2 QMYSQL for MySQL or MariaDB 5 and higher
+    \section2 QMYSQL for MySQL or MariaDB 5.6 and higher
 
     MariaDB is a fork of MySQL intended to remain free and open-source software
     under the GNU General Public License. MariaDB intended to maintain high
@@ -216,9 +216,10 @@
     \target QOCI
     \section2 QOCI for the Oracle Call Interface (OCI)
 
-    The Qt OCI plugin supports Oracle 9i, 10g and higher. After
-    connecting to the Oracle server, the plugin will auto-detect the
-    database version and enable features accordingly.
+    The Qt OCI plugin supports connecting to Oracle database as determined by
+    the version of the instant client used. This is dependent on what Oracle
+    indicates it supports. The plugin will auto-detect the database version
+    and enable features accordingly.
 
     It's possible to connect to a Oracle database without a tnsnames.ora file.
     This requires that the database SID is passed to the driver as the database
@@ -246,25 +247,20 @@
 
     \section3 How to Build the OCI Plugin on Unix and \macos
 
-    For Oracle 10g, all you need is the "Instant Client Package - Basic" and
-    "Instant Client Package - SDK". For Oracle prior to 10g, you require
-    the standard Oracle client and the SDK packages.
+    All you need is the "Instant Client Package - Basic" and "Instant Client
+    Package - SDK".
 
     Oracle library files required to build the driver:
 
     \list
     \li \c libclntsh.so (all versions)
-    \li \c libwtc9.so (only Oracle 9)
     \endlist
 
     Tell \c qmake where to find the Oracle header files and shared
     libraries and run make:
 
-    For Oracle version 9:
-    \snippet code/doc_src_sql-driver.qdoc 6
-
-    For Oracle version 10, we assume that you installed the RPM packages of the
-    Instant Client Package SDK (you need to adjust the version number accordingly):
+    We assume that you installed the RPM packages of the Instant Client Package SDK
+    (you need to adjust the version number accordingly):
     \snippet code/doc_src_sql-driver.qdoc 7
 
     \b{Note:} If you are using the Oracle Instant Client package,
