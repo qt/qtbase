@@ -4636,10 +4636,6 @@ Qt::ApplicationState QApplicationStateChangeEvent::applicationState() const
     This class is a thin wrapper around an integer ID. You pass it into and out of
     functions by value.
 
-    This type actively prevents you from holding it in a QList, because doing so would
-    be very inefficient. Use a QList instead, which has the same API as QList, but more
-    efficient storage.
-
     \sa QEventPoint
 */
 
