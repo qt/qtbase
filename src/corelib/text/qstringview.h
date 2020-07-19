@@ -304,7 +304,7 @@ public:
     { return QtPrivate::compareStrings(*this, other, cs); }
     Q_REQUIRED_RESULT inline int compare(QLatin1String other, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
     Q_REQUIRED_RESULT Q_DECL_CONSTEXPR int compare(QChar c) const noexcept
-    { return empty() || front() == c ? size() - 1 : *utf16() - c.unicode() ; }
+    { return size() >= 1 ? compare_single_char_helper(*utf16() - c.unicode()) : -1; }
     Q_REQUIRED_RESULT int compare(QChar c, Qt::CaseSensitivity cs) const noexcept
     { return QtPrivate::compareStrings(*this, QStringView(&c, 1), cs); }
 
@@ -408,6 +408,9 @@ public:
 private:
     qsizetype m_size;
     const storage_type *m_data;
+
+    Q_DECL_CONSTEXPR int compare_single_char_helper(int diff) const noexcept
+    { return diff ? diff : size() > 1 ? 1 : 0; }
 };
 Q_DECLARE_TYPEINFO(QStringView, Q_PRIMITIVE_TYPE);
 
