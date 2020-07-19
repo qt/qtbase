@@ -87,5 +87,13 @@ qt_extend_target(QJpegPlugin CONDITION NOT QT_FEATURE_system_jpeg
         ../../../3rdparty/libjpeg/src
 )
 
+# special case begin
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"
+    OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang"
+    OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+    target_compile_options(QJpegPlugin PRIVATE "-Wno-unused-parameter")
+endif()
+# special case end
+
 #### Keys ignored in scope 5:.:../../../3rdparty:../../../3rdparty/libjpeg.pri:GCC:
 # QMAKE_CFLAGS_WARN_ON = "-Wno-unused-parameter" "-Wno-main"

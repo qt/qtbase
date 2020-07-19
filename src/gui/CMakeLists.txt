@@ -38,10 +38,11 @@ if (QT_FEATURE_gui)
     set(QT_QPA_DEFAULT_PLATFORM "${_default_platform}" CACHE STRING "QPA default platform")
 endif()
 
+# Silence warnings in 3rdparty code
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    set_source_files_properties(../3rdparty/md4c/md4c.c PROPERTIES COMPILE_FLAGS "-Wno-error=unused-parameter -Wno-error=sign-compare -Wno-error=missing-field-initializers")
+    set_source_files_properties(../3rdparty/md4c/md4c.c PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter -Wno-sign-compare -Wno-missing-field-initializers")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
-    set_source_files_properties(../3rdparty/md4c/md4c.c PROPERTIES COMPILE_FLAGS "-Wno-error=unused-parameter -Wno-error=sign-compare -Wno-error=missing-field-initializers -Wno-error=missing-braces")
+    set_source_files_properties(../3rdparty/md4c/md4c.c PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter -Wno-sign-compare -Wno-missing-field-initializers -Wno-missing-braces")
 endif()
 
 unset(qmake_module_config)
