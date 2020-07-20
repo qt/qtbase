@@ -3105,43 +3105,6 @@ QLocale QTextStream::locale() const
     return d->locale;
 }
 
-#if QT_DEPRECATED_SINCE(5, 15) && !defined(Q_QDOC)
-// Deprecated source compatible migration versions:
-namespace QTextStreamFunctions {
-QTextStream &bin(QTextStream &s) { return Qt::bin(s); }
-QTextStream &oct(QTextStream &s) { return Qt::oct(s); }
-QTextStream &dec(QTextStream &s) { return Qt::dec(s); }
-QTextStream &hex(QTextStream &s) { return Qt::hex(s); }
-
-QTextStream &showbase(QTextStream &s) { return Qt::showbase(s); }
-QTextStream &forcesign(QTextStream &s) { return Qt::forcesign(s); }
-QTextStream &forcepoint(QTextStream &s) { return Qt::forcepoint(s); }
-QTextStream &noshowbase(QTextStream &s) { return Qt::noshowbase(s); }
-QTextStream &noforcesign(QTextStream &s) { return Qt::noforcesign(s); }
-QTextStream &noforcepoint(QTextStream &s) { return Qt::noforcepoint(s); }
-
-QTextStream &uppercasebase(QTextStream &s) { return Qt::uppercasebase(s); }
-QTextStream &uppercasedigits(QTextStream &s) { return Qt::uppercasedigits(s); }
-QTextStream &lowercasebase(QTextStream &s) { return Qt::lowercasebase(s); }
-QTextStream &lowercasedigits(QTextStream &s) { return Qt::lowercasedigits(s); }
-
-QTextStream &fixed(QTextStream &s) { return Qt::fixed(s); }
-QTextStream &scientific(QTextStream &s) { return Qt::scientific(s); }
-
-QTextStream &left(QTextStream &s) { return Qt::left(s); }
-QTextStream &right(QTextStream &s) { return Qt::right(s); }
-QTextStream &center(QTextStream &s) { return Qt::center(s); }
-
-QTextStream &endl(QTextStream &s) { return Qt::endl(s); }
-QTextStream &flush(QTextStream &s) { return Qt::flush(s); }
-QTextStream &reset(QTextStream &s) { return Qt::reset(s); }
-
-QTextStream &ws(QTextStream &s) { return Qt::ws(s); }
-
-QTextStream &bom(QTextStream &s) { return Qt::bom(s); }
-} // namespace QTextStreamFunctions
-#endif
-
 QT_END_NAMESPACE
 
 #ifndef QT_NO_QOBJECT
