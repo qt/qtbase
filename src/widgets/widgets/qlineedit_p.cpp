@@ -68,12 +68,13 @@ QT_BEGIN_NAMESPACE
 const int QLineEditPrivate::verticalMargin(1);
 const int QLineEditPrivate::horizontalMargin(2);
 
+// Needs to be kept in sync with QLineEdit::paintEvent
 QRect QLineEditPrivate::adjustedControlRect(const QRect &rect) const
 {
     QRect widgetRect = !rect.isEmpty() ? rect : q_func()->rect();
     QRect cr = adjustedContentsRect();
     int cix = cr.x() - hscroll + horizontalMargin;
-    return widgetRect.translated(QPoint(cix, vscroll));
+    return widgetRect.translated(QPoint(cix, vscroll - control->ascent() + q_func()->fontMetrics().ascent()));
 }
 
 int QLineEditPrivate::xToPos(int x, QTextLine::CursorPosition betweenOrOn) const
