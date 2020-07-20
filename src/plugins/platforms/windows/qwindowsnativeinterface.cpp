@@ -38,7 +38,6 @@
 ****************************************************************************/
 
 #include "qwindowsnativeinterface.h"
-#include "qwindowsclipboard.h"
 #include "qwindowswindow.h"
 #include "qwindowsscreen.h"
 #include "qwindowscontext.h"
@@ -83,9 +82,6 @@ static int resourceType(const QByteArray &key)
         result = std::find(names, end, key.toLower());
     return int(result - names);
 }
-
-QWindowsWindowFunctions::WindowActivationBehavior QWindowsNativeInterface::m_windowActivationBehavior =
-    QWindowsWindowFunctions::DefaultActivateWindow;
 
 void *QWindowsNativeInterface::nativeResourceForWindow(const QByteArray &resource, QWindow *window)
 {
@@ -260,15 +256,6 @@ QFont QWindowsNativeInterface::logFontToQFont(const void *logFont, int verticalD
     return QWindowsFontDatabase::LOGFONT_to_QFont(*reinterpret_cast<const LOGFONT *>(logFont), verticalDpi);
 }
 
-bool QWindowsNativeInterface::isTabletMode()
-{
-#if QT_CONFIG(clipboard)
-    if (const QWindowsClipboard *clipboard = QWindowsClipboard::instance())
-        return qt_windowsIsTabletMode(clipboard->clipboardViewer());
-#endif
-    return false;
-}
-
 QFunctionPointer QWindowsNativeInterface::platformFunction(const QByteArray &function) const
 {
     if (function == QWindowsWindowFunctions::setTouchWindowTouchTypeIdentifier())
@@ -277,12 +264,6 @@ QFunctionPointer QWindowsNativeInterface::platformFunction(const QByteArray &fun
         return QFunctionPointer(QWindowsWindow::setHasBorderInFullScreenStatic);
     if (function == QWindowsWindowFunctions::setHasBorderInFullScreenDefaultIdentifier())
         return QFunctionPointer(QWindowsWindow::setHasBorderInFullScreenDefault);
-    if (function == QWindowsWindowFunctions::setWindowActivationBehaviorIdentifier())
-        return QFunctionPointer(QWindowsNativeInterface::setWindowActivationBehavior);
-    if (function == QWindowsWindowFunctions::isTabletModeIdentifier())
-        return QFunctionPointer(QWindowsNativeInterface::isTabletMode);
-    if (function == QWindowsWindowFunctions::setWinTabEnabledIdentifier())
-        return QFunctionPointer(QWindowsIntegration::setWinTabEnabled);
     return nullptr;
 }
 

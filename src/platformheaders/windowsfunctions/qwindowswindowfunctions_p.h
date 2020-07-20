@@ -68,11 +68,6 @@ public:
 
     Q_DECLARE_FLAGS(TouchWindowTouchTypes, TouchWindowTouchType)
 
-    enum WindowActivationBehavior {
-        DefaultActivateWindow,
-        AlwaysActivateWindow
-    };
-
     typedef void (*SetTouchWindowTouchType)(QWindow *window, QWindowsWindowFunctions::TouchWindowTouchTypes touchType);
     static const QByteArray setTouchWindowTouchTypeIdentifier() { return QByteArrayLiteral("WindowsSetTouchWindowTouchType"); }
 
@@ -101,32 +96,6 @@ public:
             func(border);
     }
 
-    typedef void (*SetWindowActivationBehaviorType)(WindowActivationBehavior);
-    static const QByteArray setWindowActivationBehaviorIdentifier() { return QByteArrayLiteral("WindowsSetWindowActivationBehavior"); }
-
-    static void setWindowActivationBehavior(WindowActivationBehavior behavior)
-    {
-        SetWindowActivationBehaviorType func = reinterpret_cast<SetWindowActivationBehaviorType>(QGuiApplication::platformFunction(setWindowActivationBehaviorIdentifier()));
-        if (func)
-            func(behavior);
-    }
-
-    typedef bool (*IsTabletModeType)();
-    static const QByteArray isTabletModeIdentifier() { return QByteArrayLiteral("WindowsIsTabletMode"); }
-
-    static bool isTabletMode()
-    {
-        IsTabletModeType func = reinterpret_cast<IsTabletModeType>(QGuiApplication::platformFunction(isTabletModeIdentifier()));
-        return func && func();
-    }
-
-    typedef bool (*SetWinTabEnabled)(bool enabled);
-    static const QByteArray setWinTabEnabledIdentifier() { return QByteArrayLiteral("WindowsSetWinTabEnabled"); }
-    static bool setWinTabEnabled(bool enabled)
-    {
-        SetWinTabEnabled func = reinterpret_cast<SetWinTabEnabled>(QGuiApplication::platformFunction(setWinTabEnabledIdentifier()));
-        return func && func(enabled);
-    }
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWindowsWindowFunctions::TouchWindowTouchTypes)

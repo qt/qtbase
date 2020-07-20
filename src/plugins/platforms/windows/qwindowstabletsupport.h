@@ -140,8 +140,8 @@ public:
     bool translateTabletProximityEvent(WPARAM wParam, LPARAM lParam);
     bool translateTabletPacketEvent();
 
-    int absoluteRange() const { return m_absoluteRange; }
-    void setAbsoluteRange(int a) { m_absoluteRange = a; }
+    static int absoluteRange() { return m_absoluteRange; }
+    static void setAbsoluteRange(int a) { m_absoluteRange = a; }
 
 private:
     unsigned options() const;
@@ -150,7 +150,7 @@ private:
     static QWindowsWinTab32DLL m_winTab32DLL;
     const HWND m_window;
     const HCTX m_context;
-    int m_absoluteRange = 20;
+    static int m_absoluteRange;
     bool m_tiltSupport = false;
     QList<QWindowsTabletDeviceData> m_devices;
     int m_currentDevice = -1;

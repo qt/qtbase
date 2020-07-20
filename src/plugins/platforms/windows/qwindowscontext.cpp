@@ -374,9 +374,8 @@ bool QWindowsContext::initTouch(unsigned integrationOptions)
     return true;
 }
 
-bool QWindowsContext::initTablet(unsigned integrationOptions)
+bool QWindowsContext::initTablet()
 {
-    Q_UNUSED(integrationOptions);
 #if QT_CONFIG(tabletevent)
     d->m_tabletSupport.reset(QWindowsTabletSupport::create());
     return true;
@@ -462,8 +461,7 @@ bool QWindowsContext::initPowerNotificationHandler()
 void QWindowsContext::setTabletAbsoluteRange(int a)
 {
 #if QT_CONFIG(tabletevent)
-    if (!d->m_tabletSupport.isNull())
-        d->m_tabletSupport->setAbsoluteRange(a);
+    QWindowsTabletSupport::setAbsoluteRange(a);
 #else
     Q_UNUSED(a);
 #endif

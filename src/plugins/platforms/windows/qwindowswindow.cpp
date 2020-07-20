@@ -2547,8 +2547,9 @@ void QWindowsWindow::requestActivateWindow()
         // when activating windows of inactive applications. Attach to the input of the
         // currently active window while setting the foreground window to always activate
         // the window when desired.
+        const auto activationBehavior = QWindowsIntegration::instance()->windowActivationBehavior();
         if (QGuiApplication::applicationState() != Qt::ApplicationActive
-            && QWindowsNativeInterface::windowActivationBehavior() == QWindowsWindowFunctions::AlwaysActivateWindow) {
+            && activationBehavior == QWindowsApplication::AlwaysActivateWindow) {
             if (const HWND foregroundWindow = GetForegroundWindow()) {
                 foregroundThread = GetWindowThreadProcessId(foregroundWindow, nullptr);
                 if (foregroundThread && foregroundThread != currentThread)

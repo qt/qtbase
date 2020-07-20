@@ -12,6 +12,7 @@ qt_internal_add_plugin(QWindowsIntegrationPlugin
         main.cpp
         qtwindowsglobal.h
         qwin10helpers.cpp qwin10helpers.h
+        qwindowsapplication.cpp qwindowsapplication.h
         qwindowsbackingstore.cpp qwindowsbackingstore.h
         qwindowscombase.h
         qwindowscontext.cpp qwindowscontext.h

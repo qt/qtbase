@@ -368,6 +368,32 @@ Q_GUI_EXPORT size_t qHash(const QGuiApplicationPrivate::ActiveTouchPointsKey &k,
 Q_GUI_EXPORT bool operator==(const QGuiApplicationPrivate::ActiveTouchPointsKey &a,
                              const QGuiApplicationPrivate::ActiveTouchPointsKey &b);
 
+// ----------------- QPlatformInterface -----------------
+
+namespace QPlatformInterface::Private {
+
+#if defined(Q_OS_WIN)
+struct Q_GUI_EXPORT QWindowsApplication
+{
+    QT_DECLARE_PLATFORM_INTERFACE(QWindowsApplication)
+
+    enum WindowActivationBehavior {
+        DefaultActivateWindow,
+        AlwaysActivateWindow
+    };
+
+    virtual WindowActivationBehavior windowActivationBehavior() const = 0;
+    virtual void setWindowActivationBehavior(WindowActivationBehavior behavior) = 0;
+
+    virtual bool isTabletMode() const = 0;
+
+    virtual bool isWinTabEnabled() const = 0;
+    virtual bool setWinTabEnabled(bool enabled) = 0;
+};
+#endif // Q_OS_WIN
+
+} // QPlatformInterface::Private
+
 QT_END_NAMESPACE
 
 #endif // QGUIAPPLICATION_P_H

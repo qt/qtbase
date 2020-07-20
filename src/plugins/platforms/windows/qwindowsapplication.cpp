@@ -3,7 +3,7 @@
 ** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,34 +37,47 @@
 **
 ****************************************************************************/
 
-#include <QtGui/qopenglcontext.h>
-#include <QtGui/private/qguiapplication_p.h>
-#include <qpa/qplatformopenglcontext.h>
-#include <qpa/qplatformintegration.h>
+#include "qwindowsapplication.h"
+#include "qwindowsclipboard.h"
+#include "qwindowscontext.h"
+#include "qwin10helpers.h"
+
 
 QT_BEGIN_NAMESPACE
 
-using namespace QPlatformInterface::Private;
-
-#ifndef QT_NO_OPENGL
-
-QT_DEFINE_PLATFORM_INTERFACE(QWGLContext, QOpenGLContext);
-QT_DEFINE_PRIVATE_PLATFORM_INTERFACE(QWindowsGLIntegration);
-
-HMODULE QPlatformInterface::QWGLContext::openGLModuleHandle()
+QWindowsApplication::WindowActivationBehavior QWindowsApplication::windowActivationBehavior() const
 {
-    return QGuiApplicationPrivate::platformIntegration()->call<
-        &QWindowsGLIntegration::openGLModuleHandle>();
+   return m_windowActivationBehavior;
 }
 
-QOpenGLContext *QPlatformInterface::QWGLContext::fromNative(HGLRC context, HWND window, QOpenGLContext *shareContext)
+void QWindowsApplication::setWindowActivationBehavior(WindowActivationBehavior behavior)
 {
-    return QGuiApplicationPrivate::platformIntegration()->call<
-        &QWindowsGLIntegration::createOpenGLContext>(context, window, shareContext);
+    m_windowActivationBehavior = behavior;
 }
 
-#endif // QT_NO_OPENGL
+bool QWindowsApplication::isTabletMode() const
+{
+#if QT_CONFIG(clipboard)
+    if (const QWindowsClipboard *clipboard = QWindowsClipboard::instance())
+        return qt_windowsIsTabletMode(clipboard->clipboardViewer());
+#endif
+    return false;
+}
 
-QT_DEFINE_PRIVATE_PLATFORM_INTERFACE(QWindowsApplication);
+bool QWindowsApplication::isWinTabEnabled() const
+{
+    auto ctx = QWindowsContext::instance();
+    return ctx != nullptr && ctx->tabletSupport() != nullptr;
+}
+
+bool QWindowsApplication::setWinTabEnabled(bool enabled)
+{
+    if (enabled == isWinTabEnabled())
+        return true;
+    auto ctx = QWindowsContext::instance();
+    if (!ctx)
+        return false;
+    return enabled ? ctx->initTablet() : ctx->disposeTablet();
+}
 
 QT_END_NAMESPACE

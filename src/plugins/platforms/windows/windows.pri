@@ -19,6 +19,7 @@ QMAKE_USE_PRIVATE += \
 DEFINES *= QT_NO_CAST_FROM_ASCII QT_NO_FOREACH
 
 SOURCES += \
+    $$PWD/qwindowsapplication.cpp \
     $$PWD/qwindowswindow.cpp \
     $$PWD/qwindowsintegration.cpp \
     $$PWD/qwindowscontext.cpp \
@@ -41,6 +42,7 @@ SOURCES += \
     $$PWD/qwin10helpers.cpp
 
 HEADERS += \
+    $$PWD/qwindowsapplication.h \
     $$PWD/qwindowscombase.h \
     $$PWD/qwindowswindow.h \
     $$PWD/qwindowsintegration.h \

@@ -41,6 +41,8 @@
 #ifndef QWINDOWSINTEGRATION_H
 #define QWINDOWSINTEGRATION_H
 
+#include "qwindowsapplication.h"
+
 #include <qpa/qplatformintegration.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtGui/private/qwindowsfontdatabase_p.h>
@@ -58,6 +60,7 @@ class QWindowsIntegration : public QPlatformIntegration
 #ifndef QT_NO_OPENGL
     , public QPlatformInterface::Private::QWindowsGLIntegration
 #endif
+    , public QWindowsApplication
 {
     Q_DISABLE_COPY_MOVE(QWindowsIntegration)
 public:
@@ -118,8 +121,6 @@ public:
     QList<int> possibleKeys(const QKeyEvent *e) const override;
 
     static QWindowsIntegration *instance() { return m_instance; }
-
-    static bool setWinTabEnabled(bool enabled);
 
     unsigned options() const;
 

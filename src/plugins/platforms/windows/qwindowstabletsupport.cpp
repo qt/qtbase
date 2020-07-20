@@ -206,6 +206,8 @@ bool QWindowsWinTab32DLL::init()
     \since 5.2
 */
 
+int QWindowsTabletSupport::m_absoluteRange = 20;
+
 QWindowsTabletSupport::QWindowsTabletSupport(HWND window, HCTX context)
     : m_window(window)
     , m_context(context)

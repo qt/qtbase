@@ -173,7 +173,7 @@ public:
 
     bool initTouch();
     bool initTouch(unsigned integrationOptions); // For calls from QWindowsIntegration::QWindowsIntegration() only.
-    bool initTablet(unsigned integrationOptions);
+    bool initTablet();
     bool initPointer(unsigned integrationOptions);
     bool disposeTablet();
 
@@ -223,7 +223,7 @@ public:
     QSharedPointer<QWindowCreationContext> setWindowCreationContext(const QSharedPointer<QWindowCreationContext> &ctx);
     QSharedPointer<QWindowCreationContext> windowCreationContext() const;
 
-    void setTabletAbsoluteRange(int a);
+    static void setTabletAbsoluteRange(int a);
     void setProcessDpiAwareness(QtWindows::ProcessDpiAwareness dpiAwareness);
     static int processDpiAwareness();
 

@@ -104,20 +104,10 @@ public:
     QVariant windowProperty(QPlatformWindow *window, const QString &name, const QVariant &defaultValue) const override;
     void setWindowProperty(QPlatformWindow *window, const QString &name, const QVariant &value) override;
 
-    static QWindowsWindowFunctions::WindowActivationBehavior windowActivationBehavior()
-        { return QWindowsNativeInterface::m_windowActivationBehavior; }
-    static void setWindowActivationBehavior(QWindowsWindowFunctions::WindowActivationBehavior b)
-        { QWindowsNativeInterface::m_windowActivationBehavior = b; }
-
-    static bool isTabletMode();
-
     QFunctionPointer platformFunction(const QByteArray &function) const override;
 
 Q_SIGNALS:
     void darkModeChanged(bool);
-
-private:
-    static QWindowsWindowFunctions::WindowActivationBehavior m_windowActivationBehavior;
 };
 
 QT_END_NAMESPACE

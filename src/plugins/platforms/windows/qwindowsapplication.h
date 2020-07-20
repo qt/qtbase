@@ -3,7 +3,7 @@
 ** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,34 +37,28 @@
 **
 ****************************************************************************/
 
-#include <QtGui/qopenglcontext.h>
+#ifndef QWINDOWSAPPLICATION_H
+#define QWINDOWSAPPLICATION_H
+
 #include <QtGui/private/qguiapplication_p.h>
-#include <qpa/qplatformopenglcontext.h>
-#include <qpa/qplatformintegration.h>
 
 QT_BEGIN_NAMESPACE
 
-using namespace QPlatformInterface::Private;
-
-#ifndef QT_NO_OPENGL
-
-QT_DEFINE_PLATFORM_INTERFACE(QWGLContext, QOpenGLContext);
-QT_DEFINE_PRIVATE_PLATFORM_INTERFACE(QWindowsGLIntegration);
-
-HMODULE QPlatformInterface::QWGLContext::openGLModuleHandle()
+class QWindowsApplication : public QPlatformInterface::Private::QWindowsApplication
 {
-    return QGuiApplicationPrivate::platformIntegration()->call<
-        &QWindowsGLIntegration::openGLModuleHandle>();
-}
+public:
+    WindowActivationBehavior windowActivationBehavior() const override;
+    void setWindowActivationBehavior(WindowActivationBehavior behavior) override;
 
-QOpenGLContext *QPlatformInterface::QWGLContext::fromNative(HGLRC context, HWND window, QOpenGLContext *shareContext)
-{
-    return QGuiApplicationPrivate::platformIntegration()->call<
-        &QWindowsGLIntegration::createOpenGLContext>(context, window, shareContext);
-}
+    bool isTabletMode() const override;
 
-#endif // QT_NO_OPENGL
+    bool isWinTabEnabled() const override;
+    bool setWinTabEnabled(bool enabled) override;
 
-QT_DEFINE_PRIVATE_PLATFORM_INTERFACE(QWindowsApplication);
+private:
+    WindowActivationBehavior m_windowActivationBehavior = DefaultActivateWindow;
+};
 
 QT_END_NAMESPACE
+
+#endif // QWINDOWSAPPLICATION_H
