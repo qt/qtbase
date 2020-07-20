@@ -213,7 +213,7 @@ class Scanner (object):
                 else:
                     print('Directory', d, 'is not in the list of tests')
         else:
-            for d in self.__tested:
+            for d in TESTS:
                 if os.path.isdir(d):
                     yield d
                 else:
