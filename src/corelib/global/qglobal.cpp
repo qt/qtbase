@@ -1212,49 +1212,6 @@ bool qSharedBuild() noexcept
            the application is compiled (32 or 64).
 */
 
-#if QT_DEPRECATED_SINCE(5, 9)
-/*!
-    \deprecated
-    \variable QSysInfo::WindowsVersion
-    \brief the version of the Windows operating system on which the
-           application is run.
-
-    Use QOperatingSystemVersion::current() instead.
-*/
-
-/*!
-    \deprecated
-    \fn QSysInfo::WindowsVersion QSysInfo::windowsVersion()
-    \since 4.4
-
-    Use QOperatingSystemVersion::current() instead.
-
-    Returns the version of the Windows operating system on which the
-    application is run, or WV_None if the operating system is not
-    Windows.
-*/
-
-/*!
-    \deprecated
-    \variable QSysInfo::MacintoshVersion
-    \brief the version of the Macintosh operating system on which
-           the application is run.
-
-    Use QOperatingSystemVersion::current() instead.
-*/
-
-/*!
-    \deprecated
-    \fn QSysInfo::MacVersion QSysInfo::macVersion()
-
-    Use QOperatingSystemVersion::current() instead.
-
-    Returns the version of Darwin (\macos or iOS) on which the
-    application is run, or MV_None if the operating system
-    is not a version of Darwin.
-*/
-#endif
-
 /*!
     \enum QSysInfo::Endian
 
@@ -1263,144 +1220,6 @@ bool qSharedBuild() noexcept
     \value ByteOrder  Equals BigEndian or LittleEndian, depending on
                       the platform's byte order.
 */
-
-#if QT_DEPRECATED_SINCE(5, 9)
-/*!
-    \deprecated
-    \enum QSysInfo::WinVersion
-
-    Use the versions defined in QOperatingSystemVersion instead.
-
-    This enum provides symbolic names for the various versions of the
-    Windows operating system. On Windows, the
-    QSysInfo::WindowsVersion variable gives the version of the system
-    on which the application is run.
-
-    MS-DOS-based versions:
-
-    \value WV_32s   Windows 3.1 with Win 32s
-    \value WV_95    Windows 95
-    \value WV_98    Windows 98
-    \value WV_Me    Windows Me
-
-    NT-based versions (note that each operating system version is only represented once rather than each Windows edition):
-
-    \value WV_NT    Windows NT (operating system version 4.0)
-    \value WV_2000  Windows 2000 (operating system version 5.0)
-    \value WV_XP    Windows XP (operating system version 5.1)
-    \value WV_2003  Windows Server 2003, Windows Server 2003 R2, Windows Home Server, Windows XP Professional x64 Edition (operating system version 5.2)
-    \value WV_VISTA Windows Vista, Windows Server 2008 (operating system version 6.0)
-    \value WV_WINDOWS7 Windows 7, Windows Server 2008 R2 (operating system version 6.1)
-    \value WV_WINDOWS8 Windows 8 (operating system version 6.2)
-    \value WV_WINDOWS8_1 Windows 8.1 (operating system version 6.3), introduced in Qt 5.2
-    \value WV_WINDOWS10 Windows 10 (operating system version 10.0), introduced in Qt 5.5
-
-    Alternatively, you may use the following macros which correspond directly to the Windows operating system version number:
-
-    \value WV_4_0   Operating system version 4.0, corresponds to Windows NT
-    \value WV_5_0   Operating system version 5.0, corresponds to Windows 2000
-    \value WV_5_1   Operating system version 5.1, corresponds to Windows XP
-    \value WV_5_2   Operating system version 5.2, corresponds to Windows Server 2003, Windows Server 2003 R2, Windows Home Server, and Windows XP Professional x64 Edition
-    \value WV_6_0   Operating system version 6.0, corresponds to Windows Vista and Windows Server 2008
-    \value WV_6_1   Operating system version 6.1, corresponds to Windows 7 and Windows Server 2008 R2
-    \value WV_6_2   Operating system version 6.2, corresponds to Windows 8
-    \value WV_6_3   Operating system version 6.3, corresponds to Windows 8.1, introduced in Qt 5.2
-    \value WV_10_0  Operating system version 10.0, corresponds to Windows 10, introduced in Qt 5.5
-
-    The following masks can be used for testing whether a Windows
-    version is MS-DOS-based or NT-based:
-
-    \value WV_DOS_based MS-DOS-based version of Windows
-    \value WV_NT_based  NT-based version of Windows
-
-    \value WV_None Operating system other than Windows.
-
-    \omitvalue WV_CE
-    \omitvalue WV_CENET
-    \omitvalue WV_CE_5
-    \omitvalue WV_CE_6
-    \omitvalue WV_CE_based
-
-    \sa MacVersion
-*/
-
-/*!
-    \deprecated
-    \enum QSysInfo::MacVersion
-
-    Use the versions defined in QOperatingSystemVersion instead.
-
-    This enum provides symbolic names for the various versions of the
-    Darwin operating system, covering both \macos and iOS. The
-    QSysInfo::MacintoshVersion variable gives the version of the
-    system on which the application is run.
-
-    \value MV_9        \macos 9
-    \value MV_10_0     \macos 10.0
-    \value MV_10_1     \macos 10.1
-    \value MV_10_2     \macos 10.2
-    \value MV_10_3     \macos 10.3
-    \value MV_10_4     \macos 10.4
-    \value MV_10_5     \macos 10.5
-    \value MV_10_6     \macos 10.6
-    \value MV_10_7     \macos 10.7
-    \value MV_10_8     \macos 10.8
-    \value MV_10_9     \macos 10.9
-    \value MV_10_10    \macos 10.10
-    \value MV_10_11    \macos 10.11
-    \value MV_10_12    \macos 10.12
-    \value MV_Unknown  An unknown and currently unsupported platform
-
-    \value MV_CHEETAH  Apple codename for MV_10_0
-    \value MV_PUMA     Apple codename for MV_10_1
-    \value MV_JAGUAR   Apple codename for MV_10_2
-    \value MV_PANTHER  Apple codename for MV_10_3
-    \value MV_TIGER    Apple codename for MV_10_4
-    \value MV_LEOPARD  Apple codename for MV_10_5
-    \value MV_SNOWLEOPARD  Apple codename for MV_10_6
-    \value MV_LION     Apple codename for MV_10_7
-    \value MV_MOUNTAINLION Apple codename for MV_10_8
-    \value MV_MAVERICKS    Apple codename for MV_10_9
-    \value MV_YOSEMITE     Apple codename for MV_10_10
-    \value MV_ELCAPITAN    Apple codename for MV_10_11
-    \value MV_SIERRA       Apple codename for MV_10_12
-
-    \value MV_IOS      iOS (any)
-    \value MV_IOS_4_3  iOS 4.3
-    \value MV_IOS_5_0  iOS 5.0
-    \value MV_IOS_5_1  iOS 5.1
-    \value MV_IOS_6_0  iOS 6.0
-    \value MV_IOS_6_1  iOS 6.1
-    \value MV_IOS_7_0  iOS 7.0
-    \value MV_IOS_7_1  iOS 7.1
-    \value MV_IOS_8_0  iOS 8.0
-    \value MV_IOS_8_1  iOS 8.1
-    \value MV_IOS_8_2  iOS 8.2
-    \value MV_IOS_8_3  iOS 8.3
-    \value MV_IOS_8_4  iOS 8.4
-    \value MV_IOS_9_0  iOS 9.0
-    \value MV_IOS_9_1  iOS 9.1
-    \value MV_IOS_9_2  iOS 9.2
-    \value MV_IOS_9_3  iOS 9.3
-    \value MV_IOS_10_0 iOS 10.0
-
-    \value MV_TVOS          tvOS (any)
-    \value MV_TVOS_9_0      tvOS 9.0
-    \value MV_TVOS_9_1      tvOS 9.1
-    \value MV_TVOS_9_2      tvOS 9.2
-    \value MV_TVOS_10_0     tvOS 10.0
-
-    \value MV_WATCHOS       watchOS (any)
-    \value MV_WATCHOS_2_0   watchOS 2.0
-    \value MV_WATCHOS_2_1   watchOS 2.1
-    \value MV_WATCHOS_2_2   watchOS 2.2
-    \value MV_WATCHOS_3_0   watchOS 3.0
-
-    \value MV_None     Not a Darwin operating system
-
-    \sa WinVersion
-*/
-#endif
 
 /*!
     \macro Q_OS_DARWIN
@@ -2100,28 +1919,6 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include "qnamespace.h"
 QT_END_INCLUDE_NAMESPACE
 
-#if QT_DEPRECATED_SINCE(5, 9)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-QSysInfo::MacVersion QSysInfo::macVersion()
-{
-    const auto version = QOperatingSystemVersion::current();
-#if defined(Q_OS_MACOS)
-    return QSysInfo::MacVersion(Q_MV_OSX(version.majorVersion(), version.minorVersion()));
-#elif defined(Q_OS_IOS)
-    return QSysInfo::MacVersion(Q_MV_IOS(version.majorVersion(), version.minorVersion()));
-#elif defined(Q_OS_TVOS)
-    return QSysInfo::MacVersion(Q_MV_TVOS(version.majorVersion(), version.minorVersion()));
-#elif defined(Q_OS_WATCHOS)
-    return QSysInfo::MacVersion(Q_MV_WATCHOS(version.majorVersion(), version.minorVersion()));
-#else
-    return QSysInfo::MV_Unknown;
-#endif
-}
-const QSysInfo::MacVersion QSysInfo::MacintoshVersion = QSysInfo::macVersion();
-QT_WARNING_POP
-#endif
-
 #ifdef Q_OS_DARWIN
 static const char *osVer_helper(QOperatingSystemVersion version = QOperatingSystemVersion::current())
 {
@@ -2185,26 +1982,6 @@ QWindowsSockInit::~QWindowsSockInit()
 }
 Q_GLOBAL_STATIC(QWindowsSockInit, winsockInit)
 #  endif // QT_BOOTSTRAPPED
-
-#if QT_DEPRECATED_SINCE(5, 9)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-QSysInfo::WinVersion QSysInfo::windowsVersion()
-{
-    const auto version = QOperatingSystemVersion::current();
-    if (version.majorVersion() == 6 && version.minorVersion() == 1)
-        return QSysInfo::WV_WINDOWS7;
-    if (version.majorVersion() == 6 && version.minorVersion() == 2)
-        return QSysInfo::WV_WINDOWS8;
-    if (version.majorVersion() == 6 && version.minorVersion() == 3)
-        return QSysInfo::WV_WINDOWS8_1;
-    if (version.majorVersion() == 10 && version.minorVersion() == 0)
-        return QSysInfo::WV_WINDOWS10;
-    return QSysInfo::WV_NT_based;
-}
-const QSysInfo::WinVersion QSysInfo::WindowsVersion = QSysInfo::windowsVersion();
-QT_WARNING_POP
-#endif
 
 static QString readVersionRegistryString(const wchar_t *subKey)
 {

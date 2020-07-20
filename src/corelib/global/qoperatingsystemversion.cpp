@@ -64,10 +64,6 @@ QT_BEGIN_NAMESPACE
     operating system version (as opposed to the kernel version number or
     marketing version).
 
-    This class is also a complete replacement for QSysInfo::macVersion and
-    QSysInfo::windowsVersion, additionally providing access to the third (micro)
-    version number component.
-
     Presently, Android, Apple Platforms (iOS, macOS, tvOS, and watchOS),
     and Windows are supported.
 
