@@ -790,7 +790,7 @@ void checkErrorOutput(const QString &test, const QByteArray &errorOutput)
         return;
 #endif
 
-    INFO(errorOutput);
+    INFO(errorOutput.toStdString());
     REQUIRE(errorOutput.isEmpty());
 }
 
@@ -913,7 +913,7 @@ void checkTestOutput(const QString &test, const TestLogger &logger, const QByteA
         }
     }
 
-    INFO(outputMessage);
+    INFO(outputMessage.toStdString());
     CHECK(expectationMatched);
 }
 
