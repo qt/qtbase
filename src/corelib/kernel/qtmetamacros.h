@@ -154,8 +154,6 @@ QT_BEGIN_NAMESPACE
 // full set of tr functions
 #  define QT_TR_FUNCTIONS \
     static inline QString tr(const char *s, const char *c = nullptr, int n = -1) \
-        { return staticMetaObject.tr(s, c, n); } \
-    QT_DEPRECATED static inline QString trUtf8(const char *s, const char *c = nullptr, int n = -1) \
         { return staticMetaObject.tr(s, c, n); }
 #else
 // inherit the ones from QObject
