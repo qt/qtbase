@@ -2031,6 +2031,7 @@ void QLineEdit::paintEvent(QPaintEvent *)
     }
 
     // the y offset is there to keep the baseline constant in case we have script changes in the text.
+    // Needs to be kept in sync with QLineEditPrivate::adjustedControlRect
     QPoint topLeft = lineRect.topLeft() - QPoint(d->hscroll, d->control->ascent() - fm.ascent());
 
     // draw text, selections and cursors
