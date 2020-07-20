@@ -127,10 +127,6 @@ public:
 
     QIODevice *device() const;
     void setDevice(QIODevice *);
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X("Use QDataStream::setDevice(nullptr) instead")
-    void unsetDevice();
-#endif
 
     bool atEnd() const;
 
