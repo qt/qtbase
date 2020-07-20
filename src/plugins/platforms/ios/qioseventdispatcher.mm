@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -473,7 +473,8 @@ bool QIOSEventDispatcher::processPostedEvents()
         return false;
 
     QT_APPLE_SCOPED_LOG_ACTIVITY(lcEventDispatcher().isDebugEnabled(), "sendWindowSystemEvents");
-    QEventLoop::ProcessEventsFlags flags = QEventLoop::ProcessEventsFlags(m_processEvents.flags.load());
+    QEventLoop::ProcessEventsFlags flags
+        = QEventLoop::ProcessEventsFlags(m_processEvents.flags.loadRelaxed());
     qCDebug(lcEventDispatcher) << "Sending window system events for" << flags;
     QWindowSystemInterface::sendWindowSystemEvents(flags);
 
