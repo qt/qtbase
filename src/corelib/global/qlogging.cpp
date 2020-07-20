@@ -1487,12 +1487,6 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
     return message;
 }
 
-#if !QT_DEPRECATED_SINCE(5, 0)
-// make sure they're defined to be exported
-typedef void (*QtMsgHandler)(QtMsgType, const char *);
-Q_CORE_EXPORT QtMsgHandler qInstallMsgHandler(QtMsgHandler);
-#endif
-
 static void qDefaultMsgHandler(QtMsgType type, const char *buf);
 static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &buf);
 
@@ -1960,7 +1954,7 @@ void qErrnoWarning(int code, const char *msg, ...)
     \snippet code/src_corelib_global_qglobal.cpp 7
 
     This typedef is deprecated, you should use QtMessageHandler instead.
-    \sa QtMsgType, QtMessageHandler, qInstallMsgHandler(), qInstallMessageHandler()
+    \sa QtMsgType, QtMessageHandler, qInstallMessageHandler()
 */
 
 /*!
@@ -2010,16 +2004,6 @@ void qErrnoWarning(int code, const char *msg, ...)
     {Debugging Techniques}
 */
 
-/*!
-    \fn QtMsgHandler qInstallMsgHandler(QtMsgHandler handler)
-    \relates <QtGlobal>
-    \deprecated
-
-    Installs a Qt message \a handler which has been defined
-    previously. This method is deprecated, use qInstallMessageHandler
-    instead.
-    \sa QtMsgHandler, qInstallMessageHandler()
-*/
 /*!
     \fn void qSetMessagePattern(const QString &pattern)
     \relates <QtGlobal>
@@ -2094,15 +2078,6 @@ QtMessageHandler qInstallMessageHandler(QtMessageHandler h)
         return old;
     else
         return qDefaultMessageHandler;
-}
-
-QtMsgHandler qInstallMsgHandler(QtMsgHandler h)
-{
-    const auto old = msgHandler.fetchAndStoreOrdered(h);
-    if (old)
-        return old;
-    else
-        return qDefaultMsgHandler;
 }
 
 void qSetMessagePattern(const QString &pattern)

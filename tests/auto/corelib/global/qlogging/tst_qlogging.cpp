@@ -48,10 +48,6 @@ private slots:
 
     void defaultHandler();
     void installMessageHandler();
-#if QT_DEPRECATED_SINCE(5, 0)
-    void installMsgHandler();
-    void installBothHandler();
-#endif
 
 #ifdef QT_BUILD_INTERNAL
     void cleanupFuncinfo_data();
@@ -114,9 +110,6 @@ void tst_qmessagehandler::initTestCase()
 
 void tst_qmessagehandler::cleanup()
 {
-#if QT_DEPRECATED_SINCE(5, 0)
-    qInstallMsgHandler(0);
-#endif
     qInstallMessageHandler((QtMessageHandler)0);
     s_type = QtFatalMsg;
     s_file = 0;
@@ -146,38 +139,6 @@ void tst_qmessagehandler::installMessageHandler()
     QtMessageHandler myHandler = qInstallMessageHandler(oldHandler);
     QCOMPARE((void*)myHandler, (void*)customMessageHandler);
 }
-
-#if QT_DEPRECATED_SINCE(5, 0)
-void tst_qmessagehandler::installMsgHandler()
-{
-    QtMsgHandler oldHandler = qInstallMsgHandler(customMsgHandler);
-
-    qDebug("installMsgHandler");
-
-    QCOMPARE(s_type, QtDebugMsg);
-    QCOMPARE(s_message, QString::fromLocal8Bit("installMsgHandler"));
-    QCOMPARE(s_file, (const char*)0);
-    QCOMPARE(s_function, (const char*)0);
-    QCOMPARE(s_line, 0);
-
-    QtMsgHandler myHandler = qInstallMsgHandler(oldHandler);
-    QCOMPARE((void*)myHandler, (void*)customMsgHandler);
-}
-
-void tst_qmessagehandler::installBothHandler()
-{
-    qInstallMessageHandler(customMessageHandler);
-    qInstallMsgHandler(customMsgHandler);
-
-    qDebug("installBothHandler"); int line = __LINE__;
-
-    QCOMPARE(s_type, QtDebugMsg);
-    QCOMPARE(s_message, QString::fromLocal8Bit("installBothHandler"));
-    QCOMPARE(s_file, __FILE__);
-    QCOMPARE(s_function, Q_FUNC_INFO);
-    QCOMPARE(s_line, line);
-}
-#endif
 
 # define ADD(x)          QTest::newRow(x) << Q_FUNC_INFO << x;
 

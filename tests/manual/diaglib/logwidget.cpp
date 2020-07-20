@@ -122,35 +122,16 @@ static void messageHandler(QtMsgType type, const QString &text)
     n++;
 }
 
-#if QT_VERSION >= 0x050000
-
-static void qt5MessageHandler(QtMsgType type, const QMessageLogContext &, const QString &text)
+static void qtMessageHandler(QtMsgType type, const QMessageLogContext &, const QString &text)
 { messageHandler(type, text); }
 
 void LogWidget::install()
 {
-    qInstallMessageHandler(qt5MessageHandler);
+    qInstallMessageHandler(qtMessageHandler);
     qInfo("%s", qPrintable(LogWidget::startupMessage()));
 }
 
 void LogWidget::uninstall() { qInstallMessageHandler(nullptr); }
-
-#else // Qt 5
-
-static QtMsgHandler oldHandler = 0;
-
-static void qt4MessageHandler(QtMsgType type, const char *text)
-{ messageHandler(type, QString::fromLocal8Bit(text)); }
-
-void LogWidget::install()
-{
-    oldHandler = qInstallMsgHandler(qt4MessageHandler);
-    qDebug("%s", qPrintable(LogWidget::startupMessage()));
-}
-
-void LogWidget::uninstall() { qInstallMsgHandler(oldHandler); }
-
-#endif // Qt 4
 
 void LogWidget::appendText(const QString &message)
 {

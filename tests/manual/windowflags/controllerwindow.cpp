@@ -318,11 +318,7 @@ LogWidget::~LogWidget()
 
 void LogWidget::install()
 {
-#if QT_VERSION >= 0x050000
     qInstallMessageHandler(qt5MessageHandler);
-#else
-    qInstallMsgHandler(qt4MessageHandler);
-#endif
 }
 
 QString LogWidget::startupMessage()
