@@ -4113,46 +4113,6 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
     \sa fromValue()
 */
 
-#if QT_DEPRECATED_SINCE(5, 14)
-/*!
-    \fn template<typename T> QVariant qVariantFromValue(const T &value)
-    \relates QVariant
-    \obsolete
-
-    Returns a variant containing a copy of the given \a value
-    with template type \c{T}.
-
-    This function is equivalent to QVariant::fromValue(\a value).
-
-    \note This function was provided as a workaround for MSVC 6
-    which did not support member template functions. It is advised
-    to use the other form in new code.
-
-    For example, a QObject pointer can be stored in a variant with the
-    following code:
-
-    \snippet code/src_corelib_kernel_qvariant.cpp 8
-
-    \sa QVariant::fromValue()
-*/
-
-/*! \fn template<typename T> void qVariantSetValue(QVariant &variant, const T &value)
-    \relates QVariant
-    \obsolete
-
-    Sets the contents of the given \a variant to a copy of the
-    \a value with the specified template type \c{T}.
-
-    This function is equivalent to QVariant::setValue(\a value).
-
-    \note This function was provided as a workaround for MSVC 6
-    which did not support member template functions. It is advised
-    to use the other form in new code.
-
-    \sa QVariant::setValue()
-*/
-#endif
-
 /*!
     \fn template<typename T> T qvariant_cast(const QVariant &value)
     \relates QVariant
