@@ -67,15 +67,6 @@
 #include <QtCore/qtcore-config.h>
 #endif
 
-// The QT_SUPPORTS macro is deprecated. Don't use it in new code.
-// Instead, use QT_CONFIG(feature)
-// ### Qt6: remove macro
-#ifdef _MSC_VER
-#  define QT_SUPPORTS(FEATURE) (!defined QT_NO_##FEATURE)
-#else
-#  define QT_SUPPORTS(FEATURE) (!defined(QT_NO_##FEATURE))
-#endif
-
 /*
     The QT_CONFIG macro implements a safe compile time check for features of Qt.
     Features can be in three states:
@@ -209,10 +200,6 @@ namespace QT_NAMESPACE {}
 # define QT_END_INCLUDE_NAMESPACE
 
 #endif /* __cplusplus */
-
-// ### Qt6: remove me.
-#define QT_BEGIN_HEADER
-#define QT_END_HEADER
 
 #if defined(Q_OS_DARWIN) && !defined(QT_LARGEFILE_SUPPORT)
 #  define QT_LARGEFILE_SUPPORT 64
@@ -578,13 +565,6 @@ using qsizetype = QIntegerForSizeof<std::size_t>::Signed;
 #else
 #  define Q_NEVER_INLINE
 #  define Q_ALWAYS_INLINE inline
-#endif
-
-#if defined(Q_CC_GNU) && defined(Q_OS_WIN) && !defined(QT_NO_DATA_RELOCATION)
-// ### Qt6: you can remove me
-#  define QT_INIT_METAOBJECT __attribute__((init_priority(101)))
-#else
-#  define QT_INIT_METAOBJECT
 #endif
 
 //defines the type for the WNDPROC on windows
