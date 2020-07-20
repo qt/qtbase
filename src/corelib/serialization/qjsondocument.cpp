@@ -52,12 +52,6 @@
 #include "qjson_p.h"
 #include "qdatastream.h"
 
-#if QT_CONFIG(binaryjson)
-#include "qbinaryjson_p.h"
-#include "qbinaryjsonobject_p.h"
-#include "qbinaryjsonarray_p.h"
-#endif
-
 #include <private/qmemory_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -71,9 +65,9 @@ QT_BEGIN_NAMESPACE
 
     \brief The QJsonDocument class provides a way to read and write JSON documents.
 
-    QJsonDocument is a class that wraps a complete JSON document and can read and
-    write this document both from a UTF-8 encoded text based representation as well
-    as Qt's own binary format.
+    QJsonDocument is a class that wraps a complete JSON document and can read
+    this document from, and write it to, a UTF-8 encoded text-based
+    representation.
 
     A JSON document can be converted from its text-based representation to a QJsonDocument
     using QJsonDocument::fromJson(). toJson() converts it back to text. The parser is very
@@ -84,9 +78,6 @@ QT_BEGIN_NAMESPACE
     A document can be queried as to whether it contains an array or an object using isArray()
     and isObject(). The array or object contained in the document can be retrieved using
     array() or object() and then read or manipulated.
-
-    A document can also be created from a stored binary representation using fromBinaryData() or
-    fromRawData().
 
     \sa {JSON Support in Qt}, {JSON Save Game Example}
 */
@@ -224,180 +215,6 @@ QJsonDocument &QJsonDocument::operator =(const QJsonDocument &other)
 
     Swaps the document \a other with this. This operation is very fast and never fails.
 */
-
-
-/*! \enum QJsonDocument::DataValidation
-
-  This value is used to tell QJsonDocument whether to validate the binary data
-  when converting to a QJsonDocument using fromBinaryData() or fromRawData().
-
-  \value Validate Validate the data before using it. This is the default.
-  \value BypassValidation Bypasses data validation. Only use if you received the
-  data from a trusted place and know it's valid, as using of invalid data can crash
-  the application.
-  */
-
-#if QT_CONFIG(binaryjson) && QT_DEPRECATED_SINCE(5, 15)
-/*!
- \deprecated
-
- Creates a QJsonDocument that uses the first \a size bytes from
- \a data. It assumes \a data contains a binary encoded JSON document.
- The created document does not take ownership of \a data. The data is
- copied into a different data structure, and the original data can be
- deleted or modified afterwards.
-
- \a data has to be aligned to a 4 byte boundary.
-
- \a validation decides whether the data is checked for validity before being used.
- By default the data is validated. If the \a data is not valid, the method returns
- a null document.
-
- Returns a QJsonDocument representing the data.
-
- \note Deprecated in Qt 5.15. The binary JSON encoding is only retained for backwards
- compatibility. It is undocumented and restrictive in the maximum size of JSON
- documents that can be encoded. Qt JSON types can be converted to Qt CBOR types,
- which can in turn be serialized into the CBOR binary format and vice versa. The
- CBOR format is a well-defined and less restrictive binary representation for a
- superset of JSON.
-
- \note Before Qt 5.15, the caller had to guarantee that \a data would not be
- deleted or modified as long as any QJsonDocument, QJsonObject or QJsonArray
- still referenced the data. From Qt 5.15 on, this is not necessary anymore.
-
- \sa rawData(), fromBinaryData(), isNull(), DataValidation, QCborValue
- */
-QJsonDocument QJsonDocument::fromRawData(const char *data, int size, DataValidation validation)
-{
-    if (quintptr(data) & 3) {
-        qWarning("QJsonDocument::fromRawData: data has to have 4 byte alignment");
-        return QJsonDocument();
-    }
-
-    if (size < 0 || uint(size) < sizeof(QBinaryJsonPrivate::Header) + sizeof(QBinaryJsonPrivate::Base))
-        return QJsonDocument();
-
-    std::unique_ptr<QBinaryJsonPrivate::ConstData> binaryData
-            = qt_make_unique<QBinaryJsonPrivate::ConstData>(data, size);
-
-    return (validation == BypassValidation || binaryData->isValid())
-            ? binaryData->toJsonDocument()
-            : QJsonDocument();
-}
-
-/*!
-  \deprecated
-
-  Returns the raw binary representation of the data
-  \a size will contain the size of the returned data.
-
-  This method is useful to e.g. stream the JSON document
-  in its binary form to a file.
-
-  \note Deprecated in Qt 5.15. The binary JSON encoding is only retained for backwards
-  compatibility. It is undocumented and restrictive in the maximum size of JSON
-  documents that can be encoded. Qt JSON types can be converted to Qt CBOR types,
-  which can in turn be serialized into the CBOR binary format and vice versa. The
-  CBOR format is a well-defined and less restrictive binary representation for a
-  superset of JSON.
-
-  \sa QCborValue
- */
-const char *QJsonDocument::rawData(int *size) const
-{
-    if (!d) {
-        *size = 0;
-        return nullptr;
-    }
-
-    if (!d->rawData) {
-        if (isObject()) {
-            QBinaryJsonObject o = QBinaryJsonObject::fromJsonObject(object());
-            d->rawData = o.takeRawData(&(d->rawDataSize));
-        } else {
-            QBinaryJsonArray a = QBinaryJsonArray::fromJsonArray(array());
-            d->rawData = a.takeRawData(&(d->rawDataSize));
-        }
-    }
-
-    // It would be quite miraculous if not, as we should have hit the 128MB limit then.
-    Q_ASSERT(d->rawDataSize <= uint(std::numeric_limits<int>::max()));
-
-    *size = d->rawDataSize;
-    return d->rawData;
-}
-
-/*!
- \deprecated
- Creates a QJsonDocument from \a data.
-
- \a validation decides whether the data is checked for validity before being used.
- By default the data is validated. If the \a data is not valid, the method returns
- a null document.
-
- \note Deprecated in Qt 5.15. The binary JSON encoding is only retained for backwards
- compatibility. It is undocumented and restrictive in the maximum size of JSON
- documents that can be encoded. Qt JSON types can be converted to Qt CBOR types,
- which can in turn be serialized into the CBOR binary format and vice versa. The
- CBOR format is a well-defined and less restrictive binary representation for a
- superset of JSON.
-
- \sa toBinaryData(), fromRawData(), isNull(), DataValidation, QCborValue
- */
-QJsonDocument QJsonDocument::fromBinaryData(const QByteArray &data, DataValidation validation)
-{
-    if (uint(data.size()) < sizeof(QBinaryJsonPrivate::Header) + sizeof(QBinaryJsonPrivate::Base))
-        return QJsonDocument();
-
-    QBinaryJsonPrivate::Header h;
-    memcpy(&h, data.constData(), sizeof(QBinaryJsonPrivate::Header));
-    QBinaryJsonPrivate::Base root;
-    memcpy(&root, data.constData() + sizeof(QBinaryJsonPrivate::Header),
-           sizeof(QBinaryJsonPrivate::Base));
-
-    const uint size = sizeof(QBinaryJsonPrivate::Header) + root.size;
-    if (h.tag != QJsonDocument::BinaryFormatTag || h.version != 1U || size > uint(data.size()))
-        return QJsonDocument();
-
-    std::unique_ptr<QBinaryJsonPrivate::ConstData> d
-            = qt_make_unique<QBinaryJsonPrivate::ConstData>(data.constData(), size);
-
-    return (validation == BypassValidation || d->isValid())
-            ? d->toJsonDocument()
-            : QJsonDocument();
-}
-
-/*!
- \deprecated
- Returns a binary representation of the document.
-
- The binary representation is also the native format used internally in Qt,
- and is very efficient and fast to convert to and from.
-
- The binary format can be stored on disk and interchanged with other applications
- or computers. fromBinaryData() can be used to convert it back into a
- JSON document.
-
- \note Deprecated in Qt 5.15. The binary JSON encoding is only retained for backwards
- compatibility. It is undocumented and restrictive in the maximum size of JSON
- documents that can be encoded. Qt JSON types can be converted to Qt CBOR types,
- which can in turn be serialized into the CBOR binary format and vice versa. The
- CBOR format is a well-defined and less restrictive binary representation for a
- superset of JSON.
-
- \sa fromBinaryData(), QCborValue
- */
-QByteArray QJsonDocument::toBinaryData() const
-{
-    int size = 0;
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    const char *raw = rawData(&size);
-QT_WARNING_POP
-    return QByteArray(raw, size);
-}
-#endif // QT_CONFIG(binaryjson) && QT_DEPRECATED_SINCE(5, 15)
 
 /*!
  Creates a QJsonDocument from the QVariant \a variant.

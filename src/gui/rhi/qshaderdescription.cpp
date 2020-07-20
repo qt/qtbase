@@ -367,26 +367,6 @@ void QShaderDescription::serialize(QDataStream *stream) const
     d->writeToStream(stream);
 }
 
-#if QT_CONFIG(binaryjson) && QT_DEPRECATED_SINCE(5, 15)
-/*!
-    \deprecated
-
-    Deserializes the given binary JSON \a data and returns a new
-    QShaderDescription.
-
-    \sa fromCbor()
- */
-QShaderDescription QShaderDescription::fromBinaryJson(const QByteArray &data)
-{
-    QShaderDescription desc;
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    QShaderDescriptionPrivate::get(&desc)->loadDoc(QJsonDocument::fromBinaryData(data));
-QT_WARNING_POP
-    return desc;
-}
-#endif
-
 /*!
     Deserializes the given CBOR \a data and returns a new QShaderDescription.
  */

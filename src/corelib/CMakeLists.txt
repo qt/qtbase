@@ -1104,14 +1104,6 @@ qt_extend_target(Core CONDITION QT_FEATURE_cborstreamwriter
         serialization/qcborstreamwriter.cpp serialization/qcborstreamwriter.h
 )
 
-qt_extend_target(Core CONDITION QT_FEATURE_binaryjson
-    SOURCES
-        serialization/qbinaryjson.cpp serialization/qbinaryjson_p.h
-        serialization/qbinaryjsonarray.cpp serialization/qbinaryjsonarray_p.h
-        serialization/qbinaryjsonobject.cpp serialization/qbinaryjsonobject_p.h
-        serialization/qbinaryjsonvalue.cpp serialization/qbinaryjsonvalue_p.h
-)
-
 qt_extend_target(Core CONDITION QT_FEATURE_qeventtransition
     SOURCES
         statemachine/qeventtransition.cpp statemachine/qeventtransition.h statemachine/qeventtransition_p.h

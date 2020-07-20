@@ -55,20 +55,6 @@ qtConfig(cborstreamwriter): {
         serialization/qcborstreamwriter.h
 }
 
-qtConfig(binaryjson): {
-    HEADERS += \
-        serialization/qbinaryjson_p.h \
-        serialization/qbinaryjsonarray_p.h \
-        serialization/qbinaryjsonobject_p.h \
-        serialization/qbinaryjsonvalue_p.h
-
-    SOURCES += \
-        serialization/qbinaryjson.cpp \
-        serialization/qbinaryjsonarray.cpp \
-        serialization/qbinaryjsonobject.cpp \
-        serialization/qbinaryjsonvalue.cpp \
-}
-
 false: SOURCES += \
     serialization/qcborarray.cpp \
     serialization/qcbormap.cpp

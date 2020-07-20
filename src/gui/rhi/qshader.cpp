@@ -446,17 +446,8 @@ QShader QShader::fromSerialized(const QByteArray &data)
         ds >> descBin;
         d->desc = QShaderDescription::fromCbor(descBin);
     } else {
-#if QT_CONFIG(binaryjson) && QT_DEPRECATED_SINCE(5, 15)
-        QT_WARNING_PUSH
-        QT_WARNING_DISABLE_DEPRECATED
-        QByteArray descBin;
-        ds >> descBin;
-        d->desc = QShaderDescription::fromBinaryJson(descBin);
-        QT_WARNING_POP
-#else
-        qWarning("Cannot load QShaderDescription from binary JSON due to disabled binaryjson feature");
+        qWarning("Can no longer load QShaderDescription from binary JSON.");
         d->desc = QShaderDescription();
-#endif
     }
     int count;
     ds >> count;

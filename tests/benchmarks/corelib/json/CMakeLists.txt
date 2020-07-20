@@ -1,12 +1,12 @@
 # Generated from json.pro.
 
 #####################################################################
-## tst_bench_qtbinaryjson Binary:
+## tst_bench_qtjson Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_qtbinaryjson
+qt_add_benchmark(tst_bench_qtjson
     SOURCES
-        tst_bench_qtbinaryjson.cpp
+        tst_bench_qtjson.cpp
     PUBLIC_LIBRARIES
         Qt::Test
 )

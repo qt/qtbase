@@ -958,11 +958,6 @@ qt_feature("cborstreamwriter" PUBLIC
     LABEL "CBOR stream writing"
     PURPOSE "Provides support for writing the CBOR binary format."
 )
-qt_feature("binaryjson" PUBLIC
-    SECTION "Utilities"
-    LABEL "Binary JSON (deprecated)"
-    PURPOSE "Provides support for the deprecated binary JSON format."
-)
 qt_configure_add_summary_section(NAME "Qt Core")
 qt_configure_add_summary_entry(ARGS "doubleconversion")
 qt_configure_add_summary_entry(ARGS "system-doubleconversion")

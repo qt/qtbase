@@ -1042,12 +1042,6 @@ Note that this is required for plugin loading. Qt GUI needs QPA plugins for basi
             "purpose": "Provides support for writing the CBOR binary format.",
             "section": "Utilities",
             "output": [ "publicFeature" ]
-        },
-        "binaryjson": {
-            "label": "Binary JSON (deprecated)",
-            "purpose": "Provides support for the deprecated binary JSON format.",
-            "section": "Utilities",
-            "output": [ "publicFeature" ]
         }
     },
 

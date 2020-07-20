@@ -30,11 +30,11 @@
 #include <qjsondocument.h>
 #include <qjsonobject.h>
 
-class BenchmarkQtBinaryJson: public QObject
+class BenchmarkQtJson: public QObject
 {
     Q_OBJECT
 public:
-    BenchmarkQtBinaryJson(QObject *parent = 0);
+    BenchmarkQtJson(QObject *parent = 0);
 
 private Q_SLOTS:
     void initTestCase();
@@ -46,39 +46,36 @@ private Q_SLOTS:
     void parseJson();
     void parseJsonToVariant();
 
-    void toByteArray();
-    void fromByteArray();
-
     void jsonObjectInsert();
     void variantMapInsert();
 };
 
-BenchmarkQtBinaryJson::BenchmarkQtBinaryJson(QObject *parent) : QObject(parent)
+BenchmarkQtJson::BenchmarkQtJson(QObject *parent) : QObject(parent)
 {
 
 }
 
-void BenchmarkQtBinaryJson::initTestCase()
+void BenchmarkQtJson::initTestCase()
 {
 
 }
 
-void BenchmarkQtBinaryJson::cleanupTestCase()
+void BenchmarkQtJson::cleanupTestCase()
 {
 
 }
 
-void BenchmarkQtBinaryJson::init()
+void BenchmarkQtJson::init()
 {
 
 }
 
-void BenchmarkQtBinaryJson::cleanup()
+void BenchmarkQtJson::cleanup()
 {
 
 }
 
-void BenchmarkQtBinaryJson::parseNumbers()
+void BenchmarkQtJson::parseNumbers()
 {
     QString testFile = QFINDTESTDATA("numbers.json");
     QVERIFY2(!testFile.isEmpty(), "cannot find test file numbers.json!");
@@ -92,7 +89,7 @@ void BenchmarkQtBinaryJson::parseNumbers()
     }
 }
 
-void BenchmarkQtBinaryJson::parseJson()
+void BenchmarkQtJson::parseJson()
 {
     QString testFile = QFINDTESTDATA("test.json");
     QVERIFY2(!testFile.isEmpty(), "cannot find test file test.json!");
@@ -106,7 +103,7 @@ void BenchmarkQtBinaryJson::parseJson()
     }
 }
 
-void BenchmarkQtBinaryJson::parseJsonToVariant()
+void BenchmarkQtJson::parseJsonToVariant()
 {
     QString testFile = QFINDTESTDATA("test.json");
     QVERIFY2(!testFile.isEmpty(), "cannot find test file test.json!");
@@ -120,37 +117,7 @@ void BenchmarkQtBinaryJson::parseJsonToVariant()
     }
 }
 
-void BenchmarkQtBinaryJson::toByteArray()
-{
-    // Example: send information over a datastream to another process
-    // Measure performance of creating and processing data into bytearray
-    QBENCHMARK {
-        QVariantMap message;
-        message.insert("command", 1);
-        message.insert("key", "some information");
-        message.insert("env", "some environment variables");
-        QByteArray msg = QJsonDocument(QJsonObject::fromVariantMap(message)).toBinaryData();
-    }
-}
-
-void BenchmarkQtBinaryJson::fromByteArray()
-{
-    // Example: receive information over a datastream from another process
-    // Measure performance of converting content back to QVariantMap
-    // We need to recreate the bytearray but here we only want to measure the latter
-    QVariantMap message;
-    message.insert("command", 1);
-    message.insert("key", "some information");
-    message.insert("env", "some environment variables");
-    QByteArray msg = QJsonDocument(QJsonObject::fromVariantMap(message)).toBinaryData();
-
-    QBENCHMARK {
-        QVariantMap message;
-        message = QJsonDocument::fromBinaryData(msg, QJsonDocument::Validate).object().toVariantMap();
-    }
-}
-
-void BenchmarkQtBinaryJson::jsonObjectInsert()
+void BenchmarkQtJson::jsonObjectInsert()
 {
     QJsonObject object;
     QString test(QStringLiteral("testString"));
@@ -162,7 +129,7 @@ void BenchmarkQtBinaryJson::jsonObjectInsert()
     }
 }
 
-void BenchmarkQtBinaryJson::variantMapInsert()
+void BenchmarkQtJson::variantMapInsert()
 {
     QVariantMap object;
     QString test(QStringLiteral("testString"));
@@ -174,6 +141,6 @@ void BenchmarkQtBinaryJson::variantMapInsert()
     }
 }
 
-QTEST_MAIN(BenchmarkQtBinaryJson)
-#include "tst_bench_qtbinaryjson.moc"
+QTEST_MAIN(BenchmarkQtJson)
+#include "tst_bench_qtjson.moc"
 
