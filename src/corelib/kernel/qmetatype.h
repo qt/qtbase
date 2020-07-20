@@ -1186,12 +1186,9 @@ public:
     { IteratorOwner<typename T::const_iterator>::assign(iterator,
                                                         static_cast<const T*>(container)->find(*static_cast<const typename T::key_type*>(p))); }
 
-    QT_WARNING_PUSH
-    QT_WARNING_DISABLE_DEPRECATED // Hits on the deprecated QHash::iterator::operator--()
     template<class T>
     static void advanceImpl(void **p, int step)
     { std::advance(*static_cast<typename T::const_iterator*>(*p), step); }
-    QT_WARNING_POP
 
     template<class T>
     static void beginImpl(const void *container, void **iterator)
