@@ -638,7 +638,7 @@ void tst_QFileDialog2::task226366_lowerCaseHardDriveWindows()
     QLineEdit *edit = fd.findChild<QLineEdit*>("fileNameEdit");
     QToolButton *buttonParent = fd.findChild<QToolButton*>("toParentButton");
     QTest::qWait(200);
-    QTest::mouseClick(buttonParent, Qt::LeftButton,0,QPoint(0,0));
+    QTest::mouseClick(buttonParent, Qt::LeftButton, {}, QPoint(0, 0));
     QTest::qWait(2000);
     QTest::keyClick(edit, Qt::Key_C);
     QTest::qWait(200);

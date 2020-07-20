@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -76,10 +76,10 @@ struct KeyboardState
 
 struct ImeState
 {
-    ImeState() : currentState(0), focusObject(0) {}
+    ImeState() = default;
     Qt::InputMethodQueries update(Qt::InputMethodQueries properties);
-    QInputMethodQueryEvent currentState;
-    QObject *focusObject;
+    QInputMethodQueryEvent currentState = QInputMethodQueryEvent({});
+    QObject *focusObject = nullptr;
 };
 
 class QIOSInputContext : public QPlatformInputContext

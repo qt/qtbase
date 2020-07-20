@@ -93,10 +93,6 @@ class QFlags
                       "long long will overflow.");
     static_assert((std::is_enum<Enum>::value), "QFlags is only usable on enumeration types.");
 
-#if QT_DEPRECATED_SINCE(5,15)
-    struct Private;
-    typedef int (Private::*Zero);
-#endif
 public:
 #if defined(Q_CC_MSVC) || defined(Q_CLANG_QDOC)
     // see above for MSVC
@@ -117,9 +113,6 @@ public:
 #endif
     constexpr inline QFlags() noexcept : i(0) {}
     constexpr inline QFlags(Enum flags) noexcept : i(Int(flags)) {}
-#if QT_DEPRECATED_SINCE(5,15)
-    QT_DEPRECATED_X("Use default constructor instead") constexpr inline QFlags(Zero) noexcept : i(0) {}
-#endif
     constexpr inline QFlags(QFlag flag) noexcept : i(flag) {}
 
     constexpr inline QFlags(std::initializer_list<Enum> flags) noexcept
