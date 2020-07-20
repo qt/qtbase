@@ -704,8 +704,7 @@ void QWidget::setAutoFillBackground(bool enabled)
     is no need to write double-buffering code in paintEvent() to avoid
     flicker.
 
-    Since Qt 4.1, the Qt::WA_ContentsPropagated widget attribute has been
-    deprecated. Instead, the contents of parent widgets are propagated by
+    Since Qt 4.1, the contents of parent widgets are propagated by
     default to each of their children as long as Qt::WA_PaintOnScreen is not
     set. Custom widgets can be written to take advantage of this feature by
     updating irregular regions (to create non-rectangular child widgets), or

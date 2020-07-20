@@ -755,8 +755,6 @@ void QDockWidgetPrivate::updateButtons()
     button->setAccessibleName(QDockWidget::tr("Close"));
     button->setAccessibleDescription(QDockWidget::tr("Closes the dock widget"));
 #endif
-    q->setAttribute(Qt::WA_ContentsPropagated,
-                    (canFloat || canClose) && !hideButtons);
 
     layout->invalidate();
 }

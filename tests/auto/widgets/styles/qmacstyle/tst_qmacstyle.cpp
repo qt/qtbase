@@ -200,7 +200,6 @@ void tst_QMacStyle::sizeHints()
     QDateTimeEdit dateTime1(&w);
     QCOMPARE(sh(&dateTime1).height(), h1);
 
-    ok1.setAttribute(Qt::WA_MacMetalStyle, true);
     QSize s2 = sh(&ok1);
     if (size == Normal) {
         QVERIFY(s2.height() >= 21 && s2.height() <= 32);

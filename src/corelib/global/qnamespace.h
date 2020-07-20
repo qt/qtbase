@@ -356,7 +356,9 @@ public:
         WA_Disabled = 0,
         WA_UnderMouse = 1,
         WA_MouseTracking = 2,
-        WA_ContentsPropagated = 3, // ## deprecated
+#if QT_DEPRECATED_SINCE(5, 15) // commented as such since 4.5.1
+        WA_ContentsPropagated Q_DECL_ENUMERATOR_DEPRECATED = 3,
+#endif
         WA_OpaquePaintEvent = 4,
 #if QT_DEPRECATED_SINCE(5, 14)
         WA_NoBackground Q_DECL_ENUMERATOR_DEPRECATED = WA_OpaquePaintEvent,
@@ -411,14 +413,16 @@ public:
         WA_WState_Reparented = 63,
         WA_WState_ConfigPending = 64,
         WA_WState_Polished = 66,
-        WA_WState_DND = 67, // ## deprecated
+#if QT_DEPRECATED_SINCE(5, 15) // commented as such in 4.5.1
+        WA_WState_DND Q_DECL_ENUMERATOR_DEPRECATED = 67,
+#endif
         WA_WState_OwnSizePolicy = 68,
         WA_WState_ExplicitShowHide = 69,
 
-        WA_ShowModal = 70, // ## deprecated
+        WA_ShowModal = 70, // ## deprecated since since 4.5.1 but still in use :-(
         WA_MouseNoMask = 71,
-        WA_GroupLeader = 72, // ## deprecated
-        WA_NoMousePropagation = 73, // ## for now, might go away.
+        WA_GroupLeader = 72, // ## deprecated since since 4.5.1 but still in use :-(
+        WA_NoMousePropagation = 73, // for now, might go away.
         WA_Hover = 74,
         WA_InputMethodTransparent = 75, // Don't reset IM when user clicks on this (for virtual keyboards on embedded)
         WA_QuitOnClose = 76,
@@ -427,7 +431,9 @@ public:
 
         WA_AcceptDrops = 78,
         WA_DropSiteRegistered = 79, // internal
-        WA_ForceAcceptDrops = WA_DropSiteRegistered, // ## deprecated
+#if QT_DEPRECATED_SINCE(5, 15) // commented as such since 4.5.1
+        WA_ForceAcceptDrops Q_DECL_ENUMERATOR_DEPRECATED_X("WA_ForceAcceptDrops is deprecated. Use WA_DropSiteRegistered instead") = WA_DropSiteRegistered,
+#endif
 
         WA_WindowPropagation = 80,
 
