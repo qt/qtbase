@@ -813,16 +813,18 @@ function(qt_get_platform_try_compile_vars out_var)
     endforeach()
 
     # Pass darwin specific options.
-    if(UIKIT)
-        if(CMAKE_OSX_ARCHITECTURES)
-            list(GET CMAKE_OSX_ARCHITECTURES 0 osx_first_arch)
+    # The architectures need to be passed explicitly to project-based try_compile calls even on
+    # macOS, so that arm64 compilation works on Apple silicon.
+    if(CMAKE_OSX_ARCHITECTURES)
+        list(GET CMAKE_OSX_ARCHITECTURES 0 osx_first_arch)
 
-            # Do what qmake does, aka when doing a simulator_and_device build, build the
-            # target architecture test only with the first given architecture, which should be the
-            # device architecture, aka some variation of "arm" (armv7, arm64).
-            list(APPEND flags_cmd_line "-DCMAKE_OSX_ARCHITECTURES:STRING=${osx_first_arch}")
-        endif()
-        # Also specify the sysroot, but only if not doing a simulator_and_device build.
+        # Do what qmake does, aka when doing a simulator_and_device build, build the
+        # target architecture test only with the first given architecture, which should be the
+        # device architecture, aka some variation of "arm" (armv7, arm64).
+        list(APPEND flags_cmd_line "-DCMAKE_OSX_ARCHITECTURES:STRING=${osx_first_arch}")
+    endif()
+    if(UIKIT)
+        # Specify the sysroot, but only if not doing a simulator_and_device build.
         # So keep the sysroot empty for simulator_and_device builds.
         if(QT_UIKIT_SDK)
             list(APPEND flags_cmd_line "-DCMAKE_OSX_SYSROOT:STRING=${QT_UIKIT_SDK}")
