@@ -206,8 +206,7 @@ public:
         if (d->needsDetach()
                 || capacity() - size() < size_t(last - first)
                 || shouldGrow) {
-            // QTBUG-84320: change to GrowsBackwards once supported in operations
-            auto flags = d->detachFlags() | Data::GrowsForward;
+            const auto flags = d->detachFlags() | Data::GrowsBackwards;
             SimpleVector detached(DataPointer::allocateGrow(d, d->detachCapacity(newSize), newSize,
                                                             flags));
 
@@ -273,8 +272,11 @@ public:
         if (d->needsDetach()
                 || capacity() - size() < size_t(last - first)
                 || shouldGrow) {
+            auto flags = d->detachFlags() | Data::GrowsForward;
+            if (size_t(position) <= (size() + (last - first)) / 4)
+                flags |= Data::GrowsBackwards;
             SimpleVector detached(DataPointer::allocateGrow(d, d->detachCapacity(newSize), newSize,
-                                                            d->detachFlags() | Data::GrowsForward));
+                                                            flags));
 
             if (position)
                 detached.d->copyAppend(begin, where);

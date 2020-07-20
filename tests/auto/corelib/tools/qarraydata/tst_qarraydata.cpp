@@ -861,8 +861,11 @@ void tst_QArrayData::arrayOps()
         QVERIFY(vs[i].isSharedWith(referenceString));
 
         QCOMPARE(vo[i].id, referenceObject.id);
-        QCOMPARE(int(vo[i].flags), CountedObject::CopyConstructed
-                | CountedObject::DefaultConstructed);
+
+        // A temporary object is created as DefaultConstructed |
+        // CopyConstructed, then it is used instead of the original value to
+        // construct elements in the container which are CopyConstructed only
+        QCOMPARE(int(vo[i].flags), CountedObject::CopyConstructed);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -912,8 +915,12 @@ void tst_QArrayData::arrayOps()
         QVERIFY(vs[i].isSharedWith(stringArray[i % 5]));
 
         QCOMPARE(vo[i].id, objArray[i % 5].id);
+
+        // Insertion at begin (prepend) caused the elements to move, meaning
+        // that instead of being displaced, newly added elements got constructed
+        // in uninitialized memory with DefaultConstructed | CopyConstructed
         QCOMPARE(int(vo[i].flags), CountedObject::DefaultConstructed
-                | CountedObject::CopyAssigned);
+                | CountedObject::CopyConstructed);
     }
 
     for (int i = 5; i < 15; ++i) {
@@ -1083,8 +1090,12 @@ void tst_QArrayData::arrayOps2()
         QVERIFY(vs[i].isNull());
 
         QCOMPARE(vo[i].id, i);
+
+        // Erasing closer to begin causes smaller region [begin, begin + 2) to
+        // be moved. Thus, to-be-erased region gets reassigned with the elements
+        // at the beginning
         QCOMPARE(int(vo[i].flags), CountedObject::DefaultConstructed
-                | CountedObject::CopyConstructed);
+                | CountedObject::CopyConstructed | CountedObject::CopyAssigned);
     }
 
     for (size_t i = 2; i < 4; ++i) {
@@ -1092,8 +1103,9 @@ void tst_QArrayData::arrayOps2()
         QVERIFY(vs[i].isNull());
 
         QCOMPARE(vo[i].id, i + 8);
-        QCOMPARE(int(vo[i].flags), int(CountedObject::DefaultConstructed)
-                | CountedObject::CopyAssigned);
+
+        // Erasing closer to begin does not affect [begin + 2, begin + 4) region
+        QCOMPARE(int(vo[i].flags), CountedObject::DefaultConstructed);
     }
 
     for (size_t i = 4; i < 7; ++i) {
@@ -1101,8 +1113,9 @@ void tst_QArrayData::arrayOps2()
         QCOMPARE(vs[i], QString::number(i + 3));
 
         QCOMPARE(vo[i].id, i + 3);
-        QCOMPARE(int(vo[i].flags), CountedObject::DefaultConstructed
-                | CountedObject::CopyAssigned);
+
+        // Erasing closer to begin does not affect [begin + 2, begin + 4) region
+        QCOMPARE(int(vo[i].flags), CountedObject::DefaultConstructed);
     }
 }
 
@@ -1134,15 +1147,18 @@ void tst_QArrayData::arrayOpsExtra()
 
     const auto setupDataPointers = [&allocationOptions] (size_t capacity, size_t initialSize = 0) {
         const qsizetype alloc = qsizetype(capacity);
-        // QTBUG-84320: change to growing function once supported
-        QArrayDataPointer<int> i(QTypedArrayData<int>::allocate(alloc, allocationOptions));
-        QArrayDataPointer<QString> s(QTypedArrayData<QString>::allocate(alloc, allocationOptions));
-        QArrayDataPointer<CountedObject> o(QTypedArrayData<CountedObject>::allocate(alloc, allocationOptions));
+        auto i = QArrayDataPointer<int>::allocateGrow(QArrayDataPointer<int>(), alloc,
+                                                      initialSize, allocationOptions);
+        auto s = QArrayDataPointer<QString>::allocateGrow(QArrayDataPointer<QString>(), alloc,
+                                                          initialSize, allocationOptions);
+        auto o = QArrayDataPointer<CountedObject>::allocateGrow(QArrayDataPointer<CountedObject>(), alloc,
+                                                                initialSize, allocationOptions);
         if (initialSize) {
             i->appendInitialize(initialSize);
             s->appendInitialize(initialSize);
             o->appendInitialize(initialSize);
         }
+
         // assign unique values
         std::generate(i.begin(), i.end(), [] () { static int i = 0; return i++; });
         std::generate(s.begin(), s.end(), [] () { static int i = 0; return QString::number(i++); });
@@ -1209,11 +1225,6 @@ void tst_QArrayData::arrayOpsExtra()
         RUN_TEST_FUNC(testCopyAppend, strData, stringArray.begin(), stringArray.end());
         RUN_TEST_FUNC(testCopyAppend, objData, objArray.begin(), objArray.end());
 
-        // from self
-        RUN_TEST_FUNC(testCopyAppend, intData, intData.begin() + 3, intData.begin() + 5);
-        RUN_TEST_FUNC(testCopyAppend, strData, strData.begin() + 3, strData.begin() + 5);
-        RUN_TEST_FUNC(testCopyAppend, objData, objData.begin() + 3, objData.begin() + 5);
-
         // append to full
         const size_t intDataFreeSpace = intData.constAllocatedCapacity() - intData.size;
         QVERIFY(intDataFreeSpace > 0);
@@ -1230,6 +1241,59 @@ void tst_QArrayData::arrayOpsExtra()
         QCOMPARE(size_t(intData.size), intData.constAllocatedCapacity());
         QCOMPARE(size_t(strData.size), strData.constAllocatedCapacity());
         QCOMPARE(size_t(objData.size), objData.constAllocatedCapacity());
+    }
+
+    // copyAppend (iterator version) - special case of copying from self iterators
+    {
+        CountedObject::LeakChecker localLeakChecker; Q_UNUSED(localLeakChecker);
+        const auto testCopyAppendSelf = [&] (auto &dataPointer, auto first, auto last) {
+            const size_t originalSize = dataPointer.size;
+            auto copy = cloneArrayDataPointer(dataPointer, dataPointer.size);
+            const size_t distance = std::distance(first, last);
+            auto firstCopy = copy->begin() + std::distance(dataPointer->begin(), first);
+
+            dataPointer->copyAppend(first, last);
+            QCOMPARE(size_t(dataPointer.size), originalSize + distance);
+            size_t i = 0;
+            for (; i < originalSize; ++i)
+                QCOMPARE(dataPointer.data()[i], copy.data()[i]);
+            for (; i < size_t(dataPointer.size); ++i)
+                QCOMPARE(dataPointer.data()[i], *(firstCopy + (i - originalSize)));
+        };
+
+        auto [intData, strData, objData] = setupDataPointers(inputSize * 2, inputSize / 2);
+        // make no free space at the end
+        intData->appendInitialize(intData.size + intData.freeSpaceAtEnd());
+        strData->appendInitialize(strData.size + strData.freeSpaceAtEnd());
+        objData->appendInitialize(objData.size + objData.freeSpaceAtEnd());
+
+        // make all values unique. this would ensure that we do not have erroneously passed test
+        int i = 0;
+        std::generate(intData.begin(), intData.end(), [&i] () { return i++; });
+        std::generate(strData.begin(), strData.end(), [&i] () { return QString::number(i++); });
+        std::generate(objData.begin(), objData.end(), [] () { return CountedObject(); });
+
+        // sanity checks:
+        if (allocationOptions & QArrayData::GrowsBackwards) {
+            QVERIFY(intData.freeSpaceAtBegin() > 0);
+            QVERIFY(strData.freeSpaceAtBegin() > 0);
+            QVERIFY(objData.freeSpaceAtBegin() > 0);
+        }
+        QVERIFY(intData.freeSpaceAtBegin() <= intData.size);
+        QVERIFY(strData.freeSpaceAtBegin() <= strData.size);
+        QVERIFY(objData.freeSpaceAtBegin() <= objData.size);
+        QVERIFY(intData.freeSpaceAtEnd() == 0);
+        QVERIFY(strData.freeSpaceAtEnd() == 0);
+        QVERIFY(objData.freeSpaceAtEnd() == 0);
+
+        // now, append to full size causing the data to move internally. passed
+        // iterators that refer to the object itself must be used correctly
+        RUN_TEST_FUNC(testCopyAppendSelf, intData, intData.begin(),
+                      intData.begin() + intData.freeSpaceAtBegin());
+        RUN_TEST_FUNC(testCopyAppendSelf, strData, strData.begin(),
+                      strData.begin() + strData.freeSpaceAtBegin());
+        RUN_TEST_FUNC(testCopyAppendSelf, objData, objData.begin(),
+                      objData.begin() + objData.freeSpaceAtBegin());
     }
 
     // copyAppend (value version)
@@ -1279,6 +1343,52 @@ void tst_QArrayData::arrayOpsExtra()
         QCOMPARE(size_t(objData.size), objData.constAllocatedCapacity());
     }
 
+    // copyAppend (value version) - special case of copying self value
+    {
+        CountedObject::LeakChecker localLeakChecker; Q_UNUSED(localLeakChecker);
+        const auto testCopyAppendSelf = [&] (auto &dataPointer, size_t n, const auto &value) {
+            const size_t originalSize = dataPointer.size;
+            auto copy = cloneArrayDataPointer(dataPointer, dataPointer.size);
+            auto valueCopy = value;
+
+            dataPointer->copyAppend(n, value);
+            QCOMPARE(size_t(dataPointer.size), originalSize + n);
+            size_t i = 0;
+            for (; i < originalSize; ++i)
+                QCOMPARE(dataPointer.data()[i], copy.data()[i]);
+            for (; i < size_t(dataPointer.size); ++i)
+                QCOMPARE(dataPointer.data()[i], valueCopy);
+        };
+
+        auto [intData, strData, objData] = setupDataPointers(inputSize * 2, inputSize / 2);
+        // make no free space at the end
+        intData->appendInitialize(intData.size + intData.freeSpaceAtEnd());
+        strData->appendInitialize(strData.size + strData.freeSpaceAtEnd());
+        objData->appendInitialize(objData.size + objData.freeSpaceAtEnd());
+
+        // make all values unique. this would ensure that we do not have erroneously passed test
+        int i = 0;
+        std::generate(intData.begin(), intData.end(), [&i] () { return i++; });
+        std::generate(strData.begin(), strData.end(), [&i] () { return QString::number(i++); });
+        std::generate(objData.begin(), objData.end(), [] () { return CountedObject(); });
+
+        // sanity checks:
+        if (allocationOptions & QArrayData::GrowsBackwards) {
+            QVERIFY(intData.freeSpaceAtBegin() > 0);
+            QVERIFY(strData.freeSpaceAtBegin() > 0);
+            QVERIFY(objData.freeSpaceAtBegin() > 0);
+        }
+        QVERIFY(intData.freeSpaceAtEnd() == 0);
+        QVERIFY(strData.freeSpaceAtEnd() == 0);
+        QVERIFY(objData.freeSpaceAtEnd() == 0);
+
+        // now, append to full size causing the data to move internally. passed
+        // value that refers to the object itself must be used correctly
+        RUN_TEST_FUNC(testCopyAppendSelf, intData, intData.freeSpaceAtBegin(), intData.data()[0]);
+        RUN_TEST_FUNC(testCopyAppendSelf, strData, strData.freeSpaceAtBegin(), strData.data()[0]);
+        RUN_TEST_FUNC(testCopyAppendSelf, objData, objData.freeSpaceAtBegin(), objData.data()[0]);
+    }
+
     // moveAppend
     {
         CountedObject::LeakChecker localLeakChecker; Q_UNUSED(localLeakChecker);
@@ -1325,6 +1435,63 @@ void tst_QArrayData::arrayOpsExtra()
         QCOMPARE(size_t(intData.size), intData.constAllocatedCapacity());
         QCOMPARE(size_t(strData.size), strData.constAllocatedCapacity());
         QCOMPARE(size_t(objData.size), objData.constAllocatedCapacity());
+    }
+
+    // moveAppend - special case of moving from self (this is legal yet rather useless)
+    {
+        CountedObject::LeakChecker localLeakChecker; Q_UNUSED(localLeakChecker);
+        const auto testMoveAppendSelf = [&] (auto &dataPointer, auto first, auto last) {
+            const size_t originalSize = dataPointer.size;
+            auto copy = cloneArrayDataPointer(dataPointer, dataPointer.size);
+            const size_t addedSize = std::distance(first, last);
+            const size_t firstPos = std::distance(dataPointer->begin(), first);
+            auto firstCopy = copy->begin() + firstPos;
+
+            dataPointer->moveAppend(first, last);
+            QCOMPARE(size_t(dataPointer.size), originalSize + addedSize);
+            size_t i = 0;
+            for (; i < originalSize; ++i) {
+                if (i >= firstPos && i < (firstPos + addedSize))  // skip "moved from" chunk
+                    continue;
+                QCOMPARE(dataPointer.data()[i], copy.data()[i]);
+            }
+            for (; i < size_t(dataPointer.size); ++i)
+                QCOMPARE(dataPointer.data()[i], *(firstCopy + (i - originalSize)));
+        };
+
+        auto [intData, strData, objData] = setupDataPointers(inputSize * 2, inputSize / 2);
+        // make no free space at the end
+        intData->appendInitialize(intData.size + intData.freeSpaceAtEnd());
+        strData->appendInitialize(strData.size + strData.freeSpaceAtEnd());
+        objData->appendInitialize(objData.size + objData.freeSpaceAtEnd());
+
+        // make all values unique. this would ensure that we do not have erroneously passed test
+        int i = 0;
+        std::generate(intData.begin(), intData.end(), [&i] () { return i++; });
+        std::generate(strData.begin(), strData.end(), [&i] () { return QString::number(i++); });
+        std::generate(objData.begin(), objData.end(), [] () { return CountedObject(); });
+
+        // sanity checks:
+        if (allocationOptions & QArrayData::GrowsBackwards) {
+            QVERIFY(intData.freeSpaceAtBegin() > 0);
+            QVERIFY(strData.freeSpaceAtBegin() > 0);
+            QVERIFY(objData.freeSpaceAtBegin() > 0);
+        }
+        QVERIFY(intData.freeSpaceAtBegin() <= intData.size);
+        QVERIFY(strData.freeSpaceAtBegin() <= strData.size);
+        QVERIFY(objData.freeSpaceAtBegin() <= objData.size);
+        QVERIFY(intData.freeSpaceAtEnd() == 0);
+        QVERIFY(strData.freeSpaceAtEnd() == 0);
+        QVERIFY(objData.freeSpaceAtEnd() == 0);
+
+        // now, append to full size causing the data to move internally. passed
+        // iterators that refer to the object itself must be used correctly
+        RUN_TEST_FUNC(testMoveAppendSelf, intData, intData.begin(),
+                      intData.begin() + intData.freeSpaceAtBegin());
+        RUN_TEST_FUNC(testMoveAppendSelf, strData, strData.begin(),
+                      strData.begin() + strData.freeSpaceAtBegin());
+        RUN_TEST_FUNC(testMoveAppendSelf, objData, objData.begin(),
+                      objData.begin() + objData.freeSpaceAtBegin());
     }
 
     // truncate
@@ -1432,6 +1599,55 @@ void tst_QArrayData::arrayOpsExtra()
         RUN_TEST_FUNC(testInsertValue, intData, intData.size, 1, int(-42));
         RUN_TEST_FUNC(testInsertValue, strData, strData.size, 1, QLatin1String("hello, world"));
         RUN_TEST_FUNC(testInsertValue, objData, objData.size, 1, CountedObject());
+    }
+
+    // insert - special case of inserting from self value. this test only makes
+    // sense for prepend - insert at begin.
+    {
+        const auto testInsertValueSelf = [&] (auto &dataPointer, size_t n, const auto &value) {
+            const size_t originalSize = dataPointer.size;
+            auto copy = cloneArrayDataPointer(dataPointer, dataPointer.size);
+            auto valueCopy = value;
+
+            dataPointer->insert(dataPointer.begin(), n, value);
+            QCOMPARE(size_t(dataPointer.size), originalSize + n);
+            size_t i = 0;
+            for (; i < n; ++i)
+                QCOMPARE(dataPointer.data()[i], valueCopy);
+            for (; i < size_t(dataPointer.size); ++i)
+                QCOMPARE(dataPointer.data()[i], copy.data()[i - n]);
+        };
+
+        CountedObject::LeakChecker localLeakChecker; Q_UNUSED(localLeakChecker);
+        auto [intData, strData, objData] = setupDataPointers(inputSize * 2, inputSize / 2);
+
+        // make no free space at the begin
+        intData->insert(intData.begin(), intData.freeSpaceAtBegin(), intData.data()[0]);
+        strData->insert(strData.begin(), strData.freeSpaceAtBegin(), strData.data()[0]);
+        objData->insert(objData.begin(), objData.freeSpaceAtBegin(), objData.data()[0]);
+
+        // make all values unique. this would ensure that we do not have erroneously passed test
+        int i = 0;
+        std::generate(intData.begin(), intData.end(), [&i] () { return i++; });
+        std::generate(strData.begin(), strData.end(), [&i] () { return QString::number(i++); });
+        std::generate(objData.begin(), objData.end(), [] () { return CountedObject(); });
+
+        // sanity checks:
+        QVERIFY(intData.freeSpaceAtEnd() > 0);
+        QVERIFY(strData.freeSpaceAtEnd() > 0);
+        QVERIFY(objData.freeSpaceAtEnd() > 0);
+        QVERIFY(intData.freeSpaceAtBegin() == 0);
+        QVERIFY(strData.freeSpaceAtBegin() == 0);
+        QVERIFY(objData.freeSpaceAtBegin() == 0);
+
+        // now, prepend to full size causing the data to move internally. passed
+        // value that refers to the object itself must be used correctly
+        RUN_TEST_FUNC(testInsertValueSelf, intData, intData.freeSpaceAtEnd(),
+                      intData.data()[intData.size - 1]);
+        RUN_TEST_FUNC(testInsertValueSelf, strData, strData.freeSpaceAtEnd(),
+                      strData.data()[strData.size - 1]);
+        RUN_TEST_FUNC(testInsertValueSelf, objData, objData.freeSpaceAtEnd(),
+                      objData.data()[objData.size - 1]);
     }
 
     // emplace
@@ -2428,6 +2644,29 @@ void tst_QArrayData::exceptionSafetyPrimitives_destructor()
             QVERIFY(throwingTypeWatcher().destroyedIds.size() == 1);
             QVERIFY(throwingTypeWatcher().destroyedIds[0] == 42);
         }
+    }
+
+    // extra: special case of freezing the position
+    {
+        auto data = createDataPointer<ThrowingType>(20, 10);
+        auto reference = createDataPointer<ThrowingType>(20, 10);
+        reference->erase(reference.end() - 1, reference.end());
+        data.data()[data.size - 1] = ThrowingType(42);
+
+        WatcherScope scope; Q_UNUSED(scope);
+        {
+            auto where = data.end();
+            Destructor destroyer(where);
+            for (int i = 0; i < 3; ++i) {
+                --where;
+                destroyer.freeze();
+            }
+        }
+        --data.size;  // destroyed 1 element above
+        for (qsizetype i = 0; i < data.size; ++i)
+            QCOMPARE(data.data()[i], reference.data()[i]);
+        QVERIFY(throwingTypeWatcher().destroyedIds.size() == 1);
+        QCOMPARE(throwingTypeWatcher().destroyedIds[0], 42);
     }
 }
 

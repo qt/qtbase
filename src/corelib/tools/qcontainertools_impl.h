@@ -2,6 +2,7 @@
 **
 ** Copyright (C) 2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Marc Mutz <marc.mutz@kdab.com>
 ** Copyright (C) 2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -147,6 +148,9 @@ template <typename Iterator>
 using IfAssociativeIteratorHasFirstAndSecond =
     typename std::enable_if<AssociativeIteratorHasFirstAndSecond<Iterator>::value, bool>::type;
 
+template <typename T, typename U>
+using IfIsNotSame =
+    typename std::enable_if<!std::is_same<T, U>::value, bool>::type;
 } // namespace QtPrivate
 
 QT_END_NAMESPACE
