@@ -122,12 +122,6 @@ extern "C" {
 
 QT_BEGIN_NAMESPACE
 
-#if !QT_DEPRECATED_SINCE(5, 0)
-// Make sure they're defined to be exported
-Q_CORE_EXPORT void *qMemCopy(void *dest, const void *src, size_t n);
-Q_CORE_EXPORT void *qMemSet(void *dest, int c, size_t n);
-#endif
-
 // Statically check assumptions about the environment we're running
 // in. The idea here is to error or warn if otherwise implicit Qt
 // assumptions are not fulfilled on new hardware or compilers
@@ -3164,9 +3158,6 @@ Q_CORE_EXPORT Q_DECL_CONST_FUNCTION unsigned int qt_int_sqrt(unsigned int n)
     }
     return p;
 }
-
-void *qMemCopy(void *dest, const void *src, size_t n) { return memcpy(dest, src, n); }
-void *qMemSet(void *dest, int c, size_t n) { return memset(dest, c, n); }
 
 // In the C runtime on all platforms access to the environment is not thread-safe. We
 // add thread-safety for the Qt wrappers.

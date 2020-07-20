@@ -968,13 +968,6 @@ inline void qSwap(T &value1, T &value2)
 
 QT_WARNING_POP
 
-#if QT_DEPRECATED_SINCE(5, 0)
-Q_CORE_EXPORT QT_DEPRECATED void *qMalloc(size_t size) Q_ALLOC_SIZE(1);
-Q_CORE_EXPORT QT_DEPRECATED void qFree(void *ptr);
-Q_CORE_EXPORT QT_DEPRECATED void *qRealloc(void *ptr, size_t size) Q_ALLOC_SIZE(2);
-Q_CORE_EXPORT QT_DEPRECATED void *qMemCopy(void *dest, const void *src, size_t n);
-Q_CORE_EXPORT QT_DEPRECATED void *qMemSet(void *dest, int c, size_t n);
-#endif
 Q_CORE_EXPORT void *qMallocAligned(size_t size, size_t alignment) Q_ALLOC_SIZE(1);
 Q_CORE_EXPORT void *qReallocAligned(void *ptr, size_t size, size_t oldsize, size_t alignment) Q_ALLOC_SIZE(2);
 Q_CORE_EXPORT void qFreeAligned(void *ptr);
@@ -1267,14 +1260,6 @@ Q_CORE_EXPORT int  qEnvironmentVariableIntValue(const char *varName, bool *ok=nu
 
 inline int qIntCast(double f) { return int(f); }
 inline int qIntCast(float f) { return int(f); }
-
-/*
-  Reentrant versions of basic rand() functions for random number generation
-*/
-#if QT_DEPRECATED_SINCE(5, 15)
-Q_CORE_EXPORT QT_DEPRECATED_VERSION_X_5_15("use QRandomGenerator instead") void qsrand(uint seed);
-Q_CORE_EXPORT QT_DEPRECATED_VERSION_X_5_15("use QRandomGenerator instead") int qrand();
-#endif
 
 #define QT_MODULE(x)
 

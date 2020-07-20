@@ -185,7 +185,7 @@ void tst_QGlobalStatic::threadStressTest()
         void run()
         {
             QReadLocker l(lock);
-            //usleep(qrand() * 200 / RAND_MAX);
+            //usleep(QRandomGenerator::global()->generate(200));
             // thundering herd
             try {
                 threadStressTestGS();
