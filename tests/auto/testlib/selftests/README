@@ -1,0 +1,71 @@
+
+Running the QtTestLib selftests with Catch2
+===========================================
+
+Catch2 [1] is a header only test framework that we use to allow
+testing QtTestLib without relying on any part of testlib itself.
+
+To run the test suite, execute 'make check' or './tst_selftests'
+as normal. This should print:
+
+    ===================================================================
+    All tests passed (2453 assertions in 5 test cases)
+
+To run specific tests, first lists the available tests:
+
+    ❯ ./tst_selftests -l
+    All available test cases:
+      Loggers support both old and new style arguments
+      Loggers can output to both file and stdout
+      Logging to file and stdout at the same time
+      All loggers can be enabled at the same time
+      Scenario: Test output of the loggers is as expected
+    5 test cases
+
+Then pass the name of the test in quotes as the first argument:
+
+    ❯ ./tst_selftests "Loggers support both old and new style arguments"
+    Filters: Loggers support both old and new style arguments
+    ==================================================================
+    All tests passed (96 assertions in 1 test case)
+
+You can find the tests in the sources as individual TEST_CASE
+entries. Note that each of these tests run the tests once per
+logger, and in the case of the test log check also all sub tests,
+so the amount of actual test assertions is much higher than the
+five tests listed above.
+
+To see what the tests is actually doing, pass the -s option.
+This will result in very verbose output. Each leaf test is
+prefixed with a heading:
+
+    ---------------------------------------------------------------
+          Given: The QTestLog::TAP logger
+           When: Passing arguments with new style
+    ---------------------------------------------------------------
+
+You can choose a specific subtest by passing the -c option:
+
+    ❯ ./tst_selftests "Scenario: Test output of the loggers is as expected" \
+        -c "Given: The QTestLog::Plain logger" \
+        -c 'And given: The "skip" subtest'
+
+It's possible to pass only the first -c options, to e.g. run all
+tests with the Plain logger, but it's unfortunately not possible
+to pass only the last -c option, to run the 'skip' subtest with
+all loggers.
+
+If a test fails it will print the expected, actual, and difference.
+The test results are also left in a temporary directory for closer
+inspection.
+
+Add new tests by modifying selftest.pri and CMakeLists.txt, adding
+a new subprogram.
+
+Generating new test expectations is done using the python script
+in this directory (generate_expected_output.py). In the future this
+will be done with the --rebase option to ./tst_selftest, but this
+is not fleshed out yet.
+
+[1] https://github.com/catchorg/Catch2
+
