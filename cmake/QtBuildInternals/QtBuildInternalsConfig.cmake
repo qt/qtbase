@@ -414,18 +414,24 @@ function(qt_set_up_fake_standalone_tests_install_prefix)
     set(CMAKE_INSTALL_PREFIX "${new_install_prefix}" PARENT_SCOPE)
 endfunction()
 
+# Mean to be called when configuring examples as part of the main build tree, as well as for CMake
+# tests (tests that call CMake to try and build CMake applications).
+macro(qt_internal_set_up_build_dir_package_paths)
+    list(APPEND CMAKE_PREFIX_PATH "${QT_BUILD_DIR}")
+    # Make sure the CMake config files do not recreate the already-existing targets
+    set(QT_NO_CREATE_TARGETS TRUE)
+    set(BACKUP_CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ${CMAKE_FIND_ROOT_PATH_MODE_PACKAGE})
+    set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE "BOTH")
+endmacro()
+
 macro(qt_examples_build_begin)
     # Examples that are built as part of the Qt build need to use the CMake config files from the
     # build dir, because they are not installed yet in a prefix build.
     # Appending to CMAKE_PREFIX_PATH helps find the initial Qt6Config.cmake.
     # Appending to QT_EXAMPLES_CMAKE_PREFIX_PATH helps find components of Qt6, because those
     # find_package calls use NO_DEFAULT_PATH, and thus CMAKE_PREFIX_PATH is ignored.
-    list(APPEND CMAKE_PREFIX_PATH "${QT_BUILD_DIR}")
+    qt_internal_set_up_build_dir_package_paths()
     list(APPEND QT_EXAMPLES_CMAKE_PREFIX_PATH "${QT_BUILD_DIR}")
-    # Also make sure the CMake config files do not recreate the already-existing targets
-    set(QT_NO_CREATE_TARGETS TRUE)
-    set(BACKUP_CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ${CMAKE_FIND_ROOT_PATH_MODE_PACKAGE})
-    set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE "BOTH")
 
     # Because CMAKE_INSTALL_RPATH is empty by default in the repo project, examples need to have
     # it set here, so they can run when installed.
