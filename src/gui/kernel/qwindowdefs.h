@@ -88,7 +88,7 @@ QT_END_NAMESPACE
 // Window system dependent definitions
 
 
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN) || defined(Q_QDOC)
 #  include <QtGui/qwindowdefs_win.h>
 #endif // Q_OS_WIN
 

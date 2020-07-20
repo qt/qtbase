@@ -400,7 +400,7 @@ public:
     {}
 #else
     template <typename Functor>
-    explicit QProperty(Class *owner, Functor &&f);
+    explicit QNotifiedProperty(Class *owner, Functor &&f);
 #endif
 
     ~QNotifiedProperty() = default;

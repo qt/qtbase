@@ -50,7 +50,7 @@
 QT_BEGIN_NAMESPACE
 
 // work around a compiler bug in GCC 7
-#if defined(Q_CC_GNU) && __GNUC__ == 7
+#if (defined(Q_CC_GNU) && __GNUC__ == 7) || defined(Q_QDOC)
 #define QSTRINGCONVERTER_CONSTEXPR
 #else
 #define QSTRINGCONVERTER_CONSTEXPR constexpr
