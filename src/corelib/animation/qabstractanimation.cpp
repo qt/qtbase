@@ -772,37 +772,6 @@ QAnimationDriver::~QAnimationDriver()
         uninstall();
 }
 
-
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    Sets the time at which an animation driver should start at.
-
-    This is to take into account that pauses can occur in running
-    animations which will stop the driver, but the time still
-    increases.
-
-    \obsolete
-
-    This logic is now handled internally in the animation system.
- */
-void QAnimationDriver::setStartTime(qint64)
-{
-}
-
-/*!
-    Returns the start time of the animation.
-
-    \obsolete
-
-    This logic is now handled internally in the animation system.
- */
-qint64 QAnimationDriver::startTime() const
-{
-    return 0;
-}
-#endif
-
-
 /*!
     Advances the animation based to the specified \a timeStep. This function should
     be continuously called by the driver subclasses while the animation is running.
