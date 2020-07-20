@@ -139,9 +139,6 @@ function(qt_auto_detect_ios)
         if(QT_UIKIT_SDK)
             set(CMAKE_OSX_SYSROOT "${QT_UIKIT_SDK}" CACHE STRING "")
         endif()
-        message(STATUS "CMAKE_OSX_SYSROOT set to: \"${CMAKE_OSX_SYSROOT}\".")
-
-        message(STATUS "CMAKE_OSX_ARCHITECTURES set to: \"${osx_architectures}\".")
         set(CMAKE_OSX_ARCHITECTURES "${osx_architectures}" CACHE STRING "")
 
         if(NOT DEFINED BUILD_SHARED_LIBS)
@@ -219,6 +216,20 @@ function(qt_internal_get_darwin_sdk_version out_var)
     endif()
 endfunction()
 
+function(qt_internal_get_xcode_version out_var)
+    if(APPLE)
+        execute_process(COMMAND /usr/bin/xcrun  xcodebuild -version
+                        OUTPUT_VARIABLE xcode_version
+                        ERROR_VARIABLE xcrun_error)
+        if(NOT xcode_version)
+            message(FATAL_ERROR "Can't determine Xcode version. Error: ${xcrun_error}")
+        endif()
+        string(REPLACE "\n" " " xcode_version "${xcode_version}")
+        string(STRIP "${xcode_version}" xcode_version)
+        set(${out_var} "${xcode_version}" PARENT_SCOPE)
+    endif()
+endfunction()
+
 function(qt_auto_detect_darwin)
     if(APPLE)
         # If no CMAKE_OSX_DEPLOYMENT_TARGET is provided, default to a value that Qt defines.
@@ -241,15 +252,12 @@ function(qt_auto_detect_darwin)
                 set(CMAKE_OSX_DEPLOYMENT_TARGET "${version}" CACHE STRING "${description}")
             endif()
         endif()
-        if(CMAKE_OSX_DEPLOYMENT_TARGET)
-            message(STATUS
-                "CMAKE_OSX_DEPLOYMENT_TARGET set to: \"${CMAKE_OSX_DEPLOYMENT_TARGET}\".")
-        endif()
 
         qt_internal_get_darwin_sdk_version(darwin_sdk_version)
         set(QT_MAC_SDK_VERSION "${darwin_sdk_version}" CACHE STRING "Darwin SDK version.")
-        message(STATUS
-            "QT_MAC_SDK_VERSION set to: \"${QT_MAC_SDK_VERSION}\".")
+
+        qt_internal_get_xcode_version(xcode_version)
+        set(QT_MAC_XCODE_VERSION "${xcode_version}" CACHE STRING "Xcode version.")
     endif()
 endfunction()
 
