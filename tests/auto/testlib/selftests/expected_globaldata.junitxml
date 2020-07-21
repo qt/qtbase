@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_globaldata" tests="6" failures="0" errors="43">
+<testsuite name="tst_globaldata" timestamp="@TEST_START_TIME@" tests="6" failures="0" errors="43" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtBuild" value=""/>
   </properties>
-  <testcase name="initTestCase" result="pass">
+  <testcase name="initTestCase" result="pass" time="@TEST_DURATION@">
     <!-- type="qdebug" message="initTestCase initTestCase (null)" -->
   </testcase>
-  <testcase name="testGlobal" result="pass">
+  <testcase name="testGlobal" result="pass" time="@TEST_DURATION@">
     <!-- type="qdebug" message="init testGlobal local=false" tag="global=false:local=false" -->
     <!-- type="qdebug" message="global: false" tag="global=false:local=false" -->
     <!-- type="qdebug" message="local: false" tag="global=false:local=false" -->
@@ -26,10 +26,10 @@
     <!-- type="qdebug" message="local: true" tag="global=true:local=true" -->
     <!-- type="qdebug" message="cleanup testGlobal local=true" tag="global=true:local=true" -->
   </testcase>
-  <testcase name="skip">
+  <testcase name="skip" time="@TEST_DURATION@">
     <!-- type="skip" message="skipping" tag="global=false" -->
   </testcase>
-  <testcase name="skipLocal">
+  <testcase name="skipLocal" time="@TEST_DURATION@">
     <!-- type="qdebug" message="init skipLocal local=false" tag="global=false:local=false" -->
     <!-- type="skip" message="skipping" tag="global=false:local=false" -->
     <!-- type="qdebug" message="cleanup skipLocal local=false" tag="global=false:local=false" -->
@@ -43,7 +43,7 @@
     <!-- type="skip" message="skipping" tag="global=true:local=true" -->
     <!-- type="qdebug" message="cleanup skipLocal local=true" tag="global=true:local=true" -->
   </testcase>
-  <testcase name="skipSingle" result="pass">
+  <testcase name="skipSingle" result="pass" time="@TEST_DURATION@">
     <!-- type="qdebug" message="init skipSingle local=false" tag="global=false:local=false" -->
     <!-- type="qdebug" message="global: false local: false" tag="global=false:local=false" -->
     <!-- type="qdebug" message="cleanup skipSingle local=false" tag="global=false:local=false" -->
@@ -57,7 +57,7 @@
     <!-- type="qdebug" message="global: true local: true" tag="global=true:local=true" -->
     <!-- type="qdebug" message="cleanup skipSingle local=true" tag="global=true:local=true" -->
   </testcase>
-  <testcase name="cleanupTestCase" result="pass">
+  <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@">
     <!-- type="qdebug" message="cleanupTestCase cleanupTestCase (null)" -->
   </testcase>
   <system-err>

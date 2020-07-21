@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_DateTime" tests="4" failures="3" errors="0">
+<testsuite name="tst_DateTime" timestamp="@TEST_START_TIME@" tests="4" failures="3" errors="0" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtBuild" value=""/>
   </properties>
-  <testcase name="initTestCase" result="pass"/>
-  <testcase name="dateTime" result="fail">
+  <testcase name="initTestCase" result="pass" time="@TEST_DURATION@"/>
+  <testcase name="dateTime" result="fail" time="@TEST_DURATION@">
     <failure result="fail" message="Compared values are not the same
    Actual   (local): 2000/05/03 04:03:04.000[UTC+00:02]
    Expected (utc)  : 2000/05/03 04:03:04.000[UTC]"/>
   </testcase>
-  <testcase name="qurl" result="fail">
+  <testcase name="qurl" result="fail" time="@TEST_DURATION@">
     <failure result="fail" message="Compared values are not the same
    Actual   (operandA): http://example.com
    Expected (operandB): Invalid URL: " tag="empty rhs"/>
@@ -19,6 +19,6 @@
    Actual   (operandA): Invalid URL: 
    Expected (operandB): http://example.com" tag="empty lhs"/>
   </testcase>
-  <testcase name="cleanupTestCase" result="pass"/>
+  <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@"/>
   <system-err/>
 </testsuite>

@@ -135,7 +135,9 @@ const char *QTestElementAttribute::name() const
         "metric",
         "tag",
         "value",
-        "iterations"
+        "iterations",
+        "time",
+        "timestamp"
     };
 
     if (attributeIndex != QTest::AI_Undefined)

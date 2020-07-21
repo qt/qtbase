@@ -1,54 +1,54 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_ExpectFail" tests="14" failures="6" errors="13">
+<testsuite name="tst_ExpectFail" timestamp="@TEST_START_TIME@" tests="14" failures="6" errors="13" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtBuild" value=""/>
   </properties>
-  <testcase name="initTestCase" result="pass"/>
-  <testcase name="xfailAndContinue" result="xfail">
+  <testcase name="initTestCase" result="pass" time="@TEST_DURATION@"/>
+  <testcase name="xfailAndContinue" result="xfail" time="@TEST_DURATION@">
     <!-- type="qdebug" message="begin" -->
     <!-- type="info" message="This should xfail" -->
     <!-- type="qdebug" message="after" -->
   </testcase>
-  <testcase name="xfailAndAbort" result="xfail">
+  <testcase name="xfailAndAbort" result="xfail" time="@TEST_DURATION@">
     <!-- type="qdebug" message="begin" -->
     <!-- type="info" message="This should xfail" -->
   </testcase>
-  <testcase name="xfailTwice" result="fail">
+  <testcase name="xfailTwice" result="fail" time="@TEST_DURATION@">
     <failure result="fail" message="Already expecting a fail"/>
   </testcase>
-  <testcase name="xfailWithQString" result="xfail">
+  <testcase name="xfailWithQString" result="xfail" time="@TEST_DURATION@">
     <!-- type="info" message="A string" -->
     <!-- type="info" message="Bug 5 (The message)" -->
   </testcase>
-  <testcase name="xfailDataDrivenWithQVerify" result="xfail">
+  <testcase name="xfailDataDrivenWithQVerify" result="xfail" time="@TEST_DURATION@">
     <!-- type="info" message="This test should xfail" tag="Abort" -->
     <!-- type="info" message="This test should xfail" tag="Continue" -->
   </testcase>
-  <testcase name="xfailDataDrivenWithQCompare" result="xfail">
+  <testcase name="xfailDataDrivenWithQCompare" result="xfail" time="@TEST_DURATION@">
     <!-- type="info" message="This test should xfail" tag="Abort" -->
     <!-- type="info" message="This test should xfail" tag="Continue" -->
   </testcase>
-  <testcase name="xfailOnWrongRow" result="pass"/>
-  <testcase name="xfailOnAnyRow" result="xfail">
+  <testcase name="xfailOnWrongRow" result="pass" time="@TEST_DURATION@"/>
+  <testcase name="xfailOnAnyRow" result="xfail" time="@TEST_DURATION@">
     <!-- type="info" message="This test should xfail" tag="first row" -->
     <!-- type="info" message="This test should xfail" tag="second row" -->
   </testcase>
-  <testcase name="xfailWithoutVerify" result="fail">
+  <testcase name="xfailWithoutVerify" result="fail" time="@TEST_DURATION@">
     <failure result="fail" message="QEXPECT_FAIL was called without any subsequent verification statements" tag="first row"/>
     <failure result="fail" message="QEXPECT_FAIL was called without any subsequent verification statements" tag="second row"/>
   </testcase>
-  <testcase name="xpass" result="xpass">
+  <testcase name="xpass" result="xpass" time="@TEST_DURATION@">
     <failure result="xpass" message="&apos;true&apos; returned TRUE unexpectedly. ()"/>
   </testcase>
-  <testcase name="xpassDataDrivenWithQVerify" result="xpass">
+  <testcase name="xpassDataDrivenWithQVerify" result="xpass" time="@TEST_DURATION@">
     <failure result="xpass" message="&apos;true&apos; returned TRUE unexpectedly. ()" tag="XPass"/>
   </testcase>
-  <testcase name="xpassDataDrivenWithQCompare" result="xpass">
+  <testcase name="xpassDataDrivenWithQCompare" result="xpass" time="@TEST_DURATION@">
     <failure result="xpass" message="QCOMPARE(1, 1) returned TRUE unexpectedly." tag="XPass"/>
   </testcase>
-  <testcase name="cleanupTestCase" result="pass"/>
+  <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@"/>
   <system-err>
 <![CDATA[begin]]>
 <![CDATA[This should xfail]]>

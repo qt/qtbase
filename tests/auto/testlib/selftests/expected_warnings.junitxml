@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_Warnings" tests="6" failures="4" errors="17">
+<testsuite name="tst_Warnings" timestamp="@TEST_START_TIME@" tests="6" failures="4" errors="17" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtBuild" value=""/>
   </properties>
-  <testcase name="initTestCase" result="pass"/>
-  <testcase name="testWarnings" result="pass">
+  <testcase name="initTestCase" result="pass" time="@TEST_DURATION@"/>
+  <testcase name="testWarnings" result="pass" time="@TEST_DURATION@">
     <!-- type="qwarn" message="Warning" -->
     <!-- type="qwarn" message="Warning" -->
     <!-- type="qdebug" message="Debug" -->
@@ -18,16 +18,16 @@
     <!-- type="qdebug" message="Bubublabla" -->
     <!-- type="qwarn" message="Babablabla" -->
   </testcase>
-  <testcase name="testMissingWarnings" result="fail">
+  <testcase name="testMissingWarnings" result="fail" time="@TEST_DURATION@">
     <!-- type="info" message="Did not receive message: &quot;Warning0&quot;" -->
     <!-- type="info" message="Did not receive message: &quot;Warning1&quot;" -->
     <failure result="fail" message="Not all expected messages were received"/>
   </testcase>
-  <testcase name="testMissingWarningsRegularExpression" result="fail">
+  <testcase name="testMissingWarningsRegularExpression" result="fail" time="@TEST_DURATION@">
     <!-- type="info" message="Did not receive any message matching: &quot;Warning\s\d&quot;" -->
     <failure result="fail" message="Not all expected messages were received"/>
   </testcase>
-  <testcase name="testMissingWarningsWithData" result="fail">
+  <testcase name="testMissingWarningsWithData" result="fail" time="@TEST_DURATION@">
     <!-- type="info" message="Did not receive message: &quot;Warning0&quot;" tag="first row" -->
     <!-- type="info" message="Did not receive message: &quot;Warning1&quot;" tag="first row" -->
     <failure result="fail" message="Not all expected messages were received" tag="first row"/>
@@ -35,7 +35,7 @@
     <!-- type="info" message="Did not receive message: &quot;Warning1&quot;" tag="second row" -->
     <failure result="fail" message="Not all expected messages were received" tag="second row"/>
   </testcase>
-  <testcase name="cleanupTestCase" result="pass"/>
+  <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@"/>
   <system-err>
 <![CDATA[Warning]]>
 <![CDATA[Warning]]>

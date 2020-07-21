@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_float" tests="6" failures="96" errors="0">
+<testsuite name="tst_float" timestamp="@TEST_START_TIME@" tests="6" failures="96" errors="0" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtBuild" value=""/>
   </properties>
-  <testcase name="initTestCase" result="pass"/>
-  <testcase name="doubleComparisons" result="fail">
+  <testcase name="initTestCase" result="pass" time="@TEST_DURATION@"/>
+  <testcase name="doubleComparisons" result="fail" time="@TEST_DURATION@">
     <failure result="fail" message="Compared doubles are not the same (fuzzy compare)
    Actual   (operandLeft) : 1
    Expected (operandRight): 3" tag="should FAIL 1"/>
@@ -101,7 +101,7 @@
    Actual   (operandLeft) : &#x002D;1.79769313486e+308
    Expected (operandRight): &#x002D;inf" tag="should FAIL: &#x002D;max != &#x002D;inf"/>
   </testcase>
-  <testcase name="floatComparisons" result="fail">
+  <testcase name="floatComparisons" result="fail" time="@TEST_DURATION@">
     <failure result="fail" message="Compared floats are not the same (fuzzy compare)
    Actual   (operandLeft) : 1
    Expected (operandRight): 3" tag="should FAIL 1"/>
@@ -196,7 +196,7 @@
    Actual   (operandLeft) : &#x002D;3.40282e+38
    Expected (operandRight): &#x002D;inf" tag="should FAIL: &#x002D;max != &#x002D;inf"/>
   </testcase>
-  <testcase name="float16Comparisons" result="fail">
+  <testcase name="float16Comparisons" result="fail" time="@TEST_DURATION@">
     <failure result="fail" message="Compared qfloat16s are not the same (fuzzy compare)
    Actual   (operandLeft) : 1
    Expected (operandRight): 3" tag="should FAIL 1"/>
@@ -291,7 +291,7 @@
    Actual   (operandLeft) : &#x002D;6.55e+04
    Expected (operandRight): &#x002D;inf" tag="should FAIL: &#x002D;max != &#x002D;inf"/>
   </testcase>
-  <testcase name="compareFloatTests" result="fail">
+  <testcase name="compareFloatTests" result="fail" time="@TEST_DURATION@">
     <failure result="fail" message="Compared floats are not the same (fuzzy compare)
    Actual   (t1): 1
    Expected (t3): 3" tag="1e0"/>
@@ -302,6 +302,6 @@
    Actual   (t1): 1e+07
    Expected (t3): 3e+07" tag="1e+7"/>
   </testcase>
-  <testcase name="cleanupTestCase" result="pass"/>
+  <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@"/>
   <system-err/>
 </testsuite>

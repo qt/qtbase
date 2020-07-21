@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_DataTable" tests="4" failures="0" errors="6">
+<testsuite name="tst_DataTable" timestamp="@TEST_START_TIME@" tests="4" failures="0" errors="6" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtBuild" value=""/>
   </properties>
-  <testcase name="initTestCase" result="pass"/>
-  <testcase name="fiveTablePasses" result="pass">
+  <testcase name="initTestCase" result="pass" time="@TEST_DURATION@"/>
+  <testcase name="fiveTablePasses" result="pass" time="@TEST_DURATION@">
     <!-- type="info" message="QVERIFY(test)" tag="fiveTablePasses_data1" -->
     <!-- type="info" message="QVERIFY(test)" tag="fiveTablePasses_data2" -->
     <!-- type="info" message="QVERIFY(test)" tag="fiveTablePasses_data3" -->
     <!-- type="info" message="QVERIFY(test)" tag="fiveTablePasses_data4" -->
     <!-- type="info" message="QVERIFY(test)" tag="fiveTablePasses_data5" -->
   </testcase>
-  <testcase name="fiveTablePasses" result="pass">
+  <testcase name="fiveTablePasses" result="pass" time="@TEST_DURATION@">
     <!-- type="info" message="QVERIFY(test)" tag="fiveTablePasses_data1" -->
   </testcase>
-  <testcase name="cleanupTestCase" result="pass"/>
+  <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@"/>
   <system-err>
 <![CDATA[QVERIFY(test)]]>
 <![CDATA[QVERIFY(test)]]>

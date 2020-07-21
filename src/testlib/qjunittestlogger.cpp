@@ -81,6 +81,11 @@ void QJUnitTestLogger::startLogging()
     currentTestSuite = new QTestElement(QTest::LET_TestSuite);
     currentTestSuite->addAttribute(QTest::AI_Name, QTestResult::currentTestObjectName());
 
+    auto localTime = QDateTime::currentDateTime();
+    auto localTimeWithUtcOffset = localTime.toOffsetFromUtc(localTime.offsetFromUtc());
+    currentTestSuite->addAttribute(QTest::AI_Timestamp,
+        localTimeWithUtcOffset.toString(Qt::ISODate).toUtf8().constData());
+
     QTestElement *property;
     QTestElement *properties = new QTestElement(QTest::LET_Properties);
 
@@ -115,6 +120,9 @@ void QJUnitTestLogger::stopLogging()
     qsnprintf(buf, sizeof(buf), "%i", errorCounter);
     currentTestSuite->addAttribute(QTest::AI_Errors, buf);
 
+    currentTestSuite->addAttribute(QTest::AI_Time,
+        QByteArray::number(QTestLog::msecsTotalTime() / 1000, 'f').constData());
+
     currentTestSuite->addLogElement(listOfTestcases);
 
     // For correct indenting, make sure every testcase knows its parent
@@ -147,6 +155,8 @@ void QJUnitTestLogger::enterTestFunction(const char *function)
 
 void QJUnitTestLogger::leaveTestFunction()
 {
+    currentLogElement->addAttribute(QTest::AI_Time,
+        QByteArray::number(QTestLog::msecsFunctionTime() / 1000, 'f').constData());
 }
 
 void QJUnitTestLogger::addIncident(IncidentTypes type, const char *description,

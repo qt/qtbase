@@ -1,36 +1,36 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_Xunit" tests="9" failures="3" errors="5">
+<testsuite name="tst_Xunit" timestamp="@TEST_START_TIME@" tests="9" failures="3" errors="5" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtBuild" value=""/>
   </properties>
-  <testcase name="initTestCase" result="pass"/>
-  <testcase name="testFunc1" result="pass">
+  <testcase name="initTestCase" result="pass" time="@TEST_DURATION@"/>
+  <testcase name="testFunc1" result="pass" time="@TEST_DURATION@">
     <!-- type="warn" message="just a QWARN() !" -->
   </testcase>
-  <testcase name="testFunc2" result="fail">
+  <testcase name="testFunc2" result="fail" time="@TEST_DURATION@">
     <!-- type="qdebug" message="a qDebug() call with comment&#x002D;ending stuff &#x002D;&#x002D;&gt;" -->
     <failure result="fail" message="Compared values are not the same
    Actual   (2): 2
    Expected (3): 3"/>
   </testcase>
-  <testcase name="testFunc3">
+  <testcase name="testFunc3" time="@TEST_DURATION@">
     <!-- type="skip" message="skipping this function!" -->
   </testcase>
-  <testcase name="testFunc4" result="fail">
+  <testcase name="testFunc4" result="fail" time="@TEST_DURATION@">
     <failure result="fail" message="a forced failure!"/>
   </testcase>
-  <testcase name="testFunc5" result="xfail">
+  <testcase name="testFunc5" result="xfail" time="@TEST_DURATION@">
     <!-- type="info" message="this failure is expected" -->
   </testcase>
-  <testcase name="testFunc6" result="xfail">
+  <testcase name="testFunc6" result="xfail" time="@TEST_DURATION@">
     <!-- type="info" message="this failure is also expected" -->
   </testcase>
-  <testcase name="testFunc7" result="xpass">
+  <testcase name="testFunc7" result="xpass" time="@TEST_DURATION@">
     <failure result="xpass" message="&apos;true&apos; returned TRUE unexpectedly. ()"/>
   </testcase>
-  <testcase name="cleanupTestCase" result="pass"/>
+  <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@"/>
   <system-err>
 <![CDATA[just a QWARN() !]]>
 <![CDATA[a qDebug() call with comment-ending stuff -->]]>

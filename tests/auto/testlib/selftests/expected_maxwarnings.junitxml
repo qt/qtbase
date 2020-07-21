@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="MaxWarnings" tests="3" failures="0" errors="2002">
+<testsuite name="MaxWarnings" timestamp="@TEST_START_TIME@" tests="3" failures="0" errors="2002" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtBuild" value=""/>
   </properties>
-  <testcase name="initTestCase" result="pass"/>
-  <testcase name="warn" result="pass">
+  <testcase name="initTestCase" result="pass" time="@TEST_DURATION@"/>
+  <testcase name="warn" result="pass" time="@TEST_DURATION@">
     <!-- type="qwarn" message="0" -->
     <!-- type="qwarn" message="1" -->
     <!-- type="qwarn" message="2" -->
@@ -2010,7 +2010,7 @@
     <!-- type="qwarn" message="2000" -->
     <!-- type="system" message="Maximum amount of warnings exceeded. Use &#x002D;maxwarnings to override." -->
   </testcase>
-  <testcase name="cleanupTestCase" result="pass"/>
+  <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@"/>
   <system-err>
 <![CDATA[0]]>
 <![CDATA[1]]>

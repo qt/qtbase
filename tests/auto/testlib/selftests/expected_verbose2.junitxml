@@ -1,74 +1,74 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_Counting" tests="15" failures="8" errors="28">
+<testsuite name="tst_Counting" timestamp="@TEST_START_TIME@" tests="15" failures="8" errors="28" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtBuild" value=""/>
   </properties>
-  <testcase name="initTestCase" result="pass"/>
-  <testcase name="testPassPass" result="pass">
+  <testcase name="initTestCase" result="pass" time="@TEST_DURATION@"/>
+  <testcase name="testPassPass" result="pass" time="@TEST_DURATION@">
     <!-- type="info" message="QVERIFY(true)" tag="row 1" -->
     <!-- type="info" message="QCOMPARE(2 + 1, 3)" tag="row 1" -->
     <!-- type="info" message="QVERIFY(true)" tag="row 2" -->
     <!-- type="info" message="QCOMPARE(2 + 1, 3)" tag="row 2" -->
   </testcase>
-  <testcase name="testPassSkip" result="pass">
+  <testcase name="testPassSkip" result="pass" time="@TEST_DURATION@">
     <!-- type="info" message="QVERIFY(true)" tag="row 1" -->
     <!-- type="info" message="QCOMPARE(2 + 1, 3)" tag="row 1" -->
     <!-- type="skip" message="Skipping" tag="row 2" -->
   </testcase>
-  <testcase name="testPassFail" result="fail">
+  <testcase name="testPassFail" result="fail" time="@TEST_DURATION@">
     <!-- type="info" message="QVERIFY(true)" tag="row 1" -->
     <!-- type="info" message="QCOMPARE(2 + 1, 3)" tag="row 1" -->
     <!-- type="info" message="QVERIFY(false)" tag="row 2" -->
     <failure result="fail" message="&apos;false&apos; returned FALSE. ()" tag="row 2"/>
   </testcase>
-  <testcase name="testSkipPass" result="pass">
+  <testcase name="testSkipPass" result="pass" time="@TEST_DURATION@">
     <!-- type="skip" message="Skipping" tag="row 1" -->
     <!-- type="info" message="QVERIFY(true)" tag="row 2" -->
     <!-- type="info" message="QCOMPARE(2 + 1, 3)" tag="row 2" -->
   </testcase>
-  <testcase name="testSkipSkip">
+  <testcase name="testSkipSkip" time="@TEST_DURATION@">
     <!-- type="skip" message="Skipping" tag="row 1" -->
     <!-- type="skip" message="Skipping" tag="row 2" -->
   </testcase>
-  <testcase name="testSkipFail" result="fail">
+  <testcase name="testSkipFail" result="fail" time="@TEST_DURATION@">
     <!-- type="skip" message="Skipping" tag="row 1" -->
     <!-- type="info" message="QVERIFY(false)" tag="row 2" -->
     <failure result="fail" message="&apos;false&apos; returned FALSE. ()" tag="row 2"/>
   </testcase>
-  <testcase name="testFailPass" result="fail">
+  <testcase name="testFailPass" result="fail" time="@TEST_DURATION@">
     <!-- type="info" message="QVERIFY(false)" tag="row 1" -->
     <failure result="fail" message="&apos;false&apos; returned FALSE. ()" tag="row 1"/>
     <!-- type="info" message="QVERIFY(true)" tag="row 2" -->
     <!-- type="info" message="QCOMPARE(2 + 1, 3)" tag="row 2" -->
   </testcase>
-  <testcase name="testFailSkip" result="fail">
+  <testcase name="testFailSkip" result="fail" time="@TEST_DURATION@">
     <!-- type="info" message="QVERIFY(false)" tag="row 1" -->
     <failure result="fail" message="&apos;false&apos; returned FALSE. ()" tag="row 1"/>
     <!-- type="skip" message="Skipping" tag="row 2" -->
   </testcase>
-  <testcase name="testFailFail" result="fail">
+  <testcase name="testFailFail" result="fail" time="@TEST_DURATION@">
     <!-- type="info" message="QVERIFY(false)" tag="row 1" -->
     <failure result="fail" message="&apos;false&apos; returned FALSE. ()" tag="row 1"/>
     <!-- type="info" message="QVERIFY(false)" tag="row 2" -->
     <failure result="fail" message="&apos;false&apos; returned FALSE. ()" tag="row 2"/>
   </testcase>
-  <testcase name="testFailInInit" result="fail">
+  <testcase name="testFailInInit" result="fail" time="@TEST_DURATION@">
     <failure result="fail" message="Fail in init()" tag="fail"/>
   </testcase>
-  <testcase name="testFailInCleanup" result="fail">
+  <testcase name="testFailInCleanup" result="fail" time="@TEST_DURATION@">
     <!-- type="qdebug" message="This test function should execute and then QFAIL in cleanup()" tag="fail" -->
     <failure result="fail" message="Fail in cleanup()" tag="fail"/>
   </testcase>
-  <testcase name="testSkipInInit" result="pass">
+  <testcase name="testSkipInInit" result="pass" time="@TEST_DURATION@">
     <!-- type="skip" message="Skip in init()" tag="skip" -->
   </testcase>
-  <testcase name="testSkipInCleanup" result="pass">
+  <testcase name="testSkipInCleanup" result="pass" time="@TEST_DURATION@">
     <!-- type="qdebug" message="This test function should execute and then QSKIP in cleanup()" tag="skip" -->
     <!-- type="skip" message="Skip in cleanup()" tag="skip" -->
   </testcase>
-  <testcase name="cleanupTestCase" result="pass"/>
+  <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@"/>
   <system-err>
 <![CDATA[QVERIFY(true)]]>
 <![CDATA[QCOMPARE(2 + 1, 3)]]>

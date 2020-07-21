@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_BenchlibWalltime" tests="5" failures="0" errors="0">
+<testsuite name="tst_BenchlibWalltime" timestamp="@TEST_START_TIME@" tests="5" failures="0" errors="0" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtBuild" value=""/>
   </properties>
-  <testcase name="initTestCase" result="pass"/>
-  <testcase name="waitForOneThousand" result="pass">
+  <testcase name="initTestCase" result="pass" time="@TEST_DURATION@"/>
+  <testcase name="waitForOneThousand" result="pass" time="@TEST_DURATION@">
   </testcase>
-  <testcase name="waitForFourThousand" result="pass">
+  <testcase name="waitForFourThousand" result="pass" time="@TEST_DURATION@">
   </testcase>
-  <testcase name="qbenchmark_once" result="pass">
+  <testcase name="qbenchmark_once" result="pass" time="@TEST_DURATION@">
   </testcase>
-  <testcase name="cleanupTestCase" result="pass"/>
+  <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@"/>
   <system-err/>
 </testsuite>

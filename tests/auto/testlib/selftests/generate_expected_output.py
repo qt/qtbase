@@ -96,6 +96,8 @@ class Cleaner (object):
             # Timings:
             (r'( *<Duration msecs=)"[\d\.]+"/>', r'\1"0"/>'), # xml, lightxml
             (r'(Totals:.*,) *[0-9.]+ms', r'\1 0ms'), # txt
+            (r'(<testsuite .*? timestamp=")[^"]+(".*>)', r'\1@TEST_START_TIME@\2'), # junit
+            (r'(<(testsuite|testcase) .*? time=")[^"]+(".*>)', r'\1@TEST_DURATION@\3'), # junit
             # Benchmarks:
             (r'[0-9,.]+( (?:CPU ticks|msecs) per iteration \(total:) [0-9,.]+ ', r'0\1 0, '), # txt
             (r'(<BenchmarkResult metric="(?:CPUTicks|WalltimeMilliseconds)".*\bvalue=)"[^"]+"', r'\1"0"'), # xml, lightxml

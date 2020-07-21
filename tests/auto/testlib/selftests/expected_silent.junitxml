@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_Silent" tests="7" failures="3" errors="9">
+<testsuite name="tst_Silent" timestamp="@TEST_START_TIME@" tests="7" failures="3" errors="9" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtBuild" value=""/>
   </properties>
-  <testcase name="initTestCase" result="pass"/>
-  <testcase name="pass" result="pass"/>
-  <testcase name="skip">
+  <testcase name="initTestCase" result="pass" time="@TEST_DURATION@"/>
+  <testcase name="pass" result="pass" time="@TEST_DURATION@"/>
+  <testcase name="skip" time="@TEST_DURATION@">
     <!-- type="skip" message="This test should skip" -->
   </testcase>
-  <testcase name="fail" result="fail">
+  <testcase name="fail" result="fail" time="@TEST_DURATION@">
     <failure result="fail" message="&apos;false&apos; returned FALSE. (This test should fail)"/>
   </testcase>
-  <testcase name="xfail" result="xfail">
+  <testcase name="xfail" result="xfail" time="@TEST_DURATION@">
     <!-- type="info" message="This test should XFAIL" -->
   </testcase>
-  <testcase name="xpass" result="xpass">
+  <testcase name="xpass" result="xpass" time="@TEST_DURATION@">
     <failure result="xpass" message="&apos;true&apos; returned TRUE unexpectedly. (This test should XPASS)"/>
   </testcase>
-  <testcase name="messages" result="fail">
+  <testcase name="messages" result="fail" time="@TEST_DURATION@">
     <!-- type="qwarn" message="This is a warning that should not appear in silent test output" -->
     <!-- type="warn" message="This is an internal testlib warning that should not appear in silent test output" -->
     <!-- type="qdebug" message="This is a debug message that should not appear in silent test output" -->

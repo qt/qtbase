@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_Blacklisted" tests="7" failures="3" errors="8">
+<testsuite name="tst_Blacklisted" timestamp="@TEST_START_TIME@" tests="7" failures="3" errors="8" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtBuild" value=""/>
   </properties>
-  <testcase name="initTestCase" result="pass"/>
-  <testcase name="pass" result="bpass"/>
-  <testcase name="skip">
+  <testcase name="initTestCase" result="pass" time="@TEST_DURATION@"/>
+  <testcase name="pass" result="bpass" time="@TEST_DURATION@"/>
+  <testcase name="skip" time="@TEST_DURATION@">
     <!-- type="skip" message="This test should SKIP" -->
   </testcase>
-  <testcase name="fail" result="bfail"/>
-  <testcase name="xfail" result="bxfail"/>
-  <testcase name="xpass" result="bxpass"/>
-  <testcase name="messages" result="bfail">
+  <testcase name="fail" result="bfail" time="@TEST_DURATION@"/>
+  <testcase name="xfail" result="bxfail" time="@TEST_DURATION@"/>
+  <testcase name="xpass" result="bxpass" time="@TEST_DURATION@"/>
+  <testcase name="messages" result="bfail" time="@TEST_DURATION@">
     <!-- type="qwarn" message="This is a warning that should not appear in silent test output" -->
     <!-- type="warn" message="This is an internal testlib warning that should not appear in silent test output" -->
     <!-- type="qdebug" message="This is a debug message that should not appear in silent test output" -->

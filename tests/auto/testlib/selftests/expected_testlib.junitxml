@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_TestLib" tests="5" failures="1" errors="0">
+<testsuite name="tst_TestLib" timestamp="@TEST_START_TIME@" tests="5" failures="1" errors="0" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtBuild" value=""/>
   </properties>
-  <testcase name="initTestCase" result="pass"/>
-  <testcase name="basics" result="fail">
+  <testcase name="initTestCase" result="pass" time="@TEST_DURATION@"/>
+  <testcase name="basics" result="fail" time="@TEST_DURATION@">
     <failure result="fail" message="Compared pointers are not the same"/>
   </testcase>
-  <testcase name="delays" result="pass"/>
-  <testcase name="reals" result="pass"/>
-  <testcase name="cleanupTestCase" result="pass"/>
+  <testcase name="delays" result="pass" time="@TEST_DURATION@"/>
+  <testcase name="reals" result="pass" time="@TEST_DURATION@"/>
+  <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@"/>
   <system-err/>
 </testsuite>

@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_Subtest" tests="5" failures="2" errors="31">
+<testsuite name="tst_Subtest" timestamp="@TEST_START_TIME@" tests="5" failures="2" errors="31" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtBuild" value=""/>
   </properties>
-  <testcase name="initTestCase" result="pass">
+  <testcase name="initTestCase" result="pass" time="@TEST_DURATION@">
     <!-- type="qdebug" message="initTestCase initTestCase (null)" -->
   </testcase>
-  <testcase name="test1" result="pass">
+  <testcase name="test1" result="pass" time="@TEST_DURATION@">
     <!-- type="qdebug" message="init test1 (null)" -->
     <!-- type="qdebug" message="test1 test1 (null)" -->
     <!-- type="qdebug" message="cleanup test1 (null)" -->
   </testcase>
-  <testcase name="test2" result="pass">
+  <testcase name="test2" result="pass" time="@TEST_DURATION@">
     <!-- type="qdebug" message="test2_data test2 (null)" -->
     <!-- type="qdebug" message="test2_data end" -->
     <!-- type="qdebug" message="init test2 data0" tag="data0" -->
@@ -29,7 +29,7 @@
     <!-- type="qdebug" message="test2 end" tag="data2" -->
     <!-- type="qdebug" message="cleanup test2 data2" tag="data2" -->
   </testcase>
-  <testcase name="test3" result="fail">
+  <testcase name="test3" result="fail" time="@TEST_DURATION@">
     <!-- type="qdebug" message="test3_data test3 (null)" -->
     <!-- type="qdebug" message="test3_data end" -->
     <!-- type="qdebug" message="init test3 data0" tag="data0" -->
@@ -49,7 +49,7 @@
    Expected (QString(&quot;hello0&quot;)): &quot;hello0&quot;" tag="data2"/>
     <!-- type="qdebug" message="cleanup test3 data2" tag="data2" -->
   </testcase>
-  <testcase name="cleanupTestCase" result="pass">
+  <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@">
     <!-- type="qdebug" message="cleanupTestCase cleanupTestCase (null)" -->
   </testcase>
   <system-err>

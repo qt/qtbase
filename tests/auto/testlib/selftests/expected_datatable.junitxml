@@ -1,37 +1,37 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_DataTable" tests="10" failures="13" errors="0">
+<testsuite name="tst_DataTable" timestamp="@TEST_START_TIME@" tests="10" failures="13" errors="0" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtBuild" value=""/>
   </properties>
-  <testcase name="initTestCase" result="pass"/>
-  <testcase name="singleTestFunction1" result="pass"/>
-  <testcase name="singleTestFunction2" result="pass"/>
-  <testcase name="fiveTablePasses" result="pass"/>
-  <testcase name="fiveTableFailures" result="fail">
+  <testcase name="initTestCase" result="pass" time="@TEST_DURATION@"/>
+  <testcase name="singleTestFunction1" result="pass" time="@TEST_DURATION@"/>
+  <testcase name="singleTestFunction2" result="pass" time="@TEST_DURATION@"/>
+  <testcase name="fiveTablePasses" result="pass" time="@TEST_DURATION@"/>
+  <testcase name="fiveTableFailures" result="fail" time="@TEST_DURATION@">
     <failure result="fail" message="&apos;test&apos; returned FALSE. ()" tag="fiveTableFailures_data 1"/>
     <failure result="fail" message="&apos;test&apos; returned FALSE. ()" tag="fiveTableFailures_data 2"/>
     <failure result="fail" message="&apos;test&apos; returned FALSE. ()" tag="fiveTableFailures_data 3"/>
     <failure result="fail" message="&apos;test&apos; returned FALSE. ()" tag="fiveTableFailures_data 4"/>
     <failure result="fail" message="&apos;test&apos; returned FALSE. ()" tag="fiveTableFailures_data 5"/>
   </testcase>
-  <testcase name="startsWithFailure" result="fail">
+  <testcase name="startsWithFailure" result="fail" time="@TEST_DURATION@">
     <failure result="fail" message="&apos;test&apos; returned FALSE. ()" tag="startsWithFailure_data 1"/>
   </testcase>
-  <testcase name="endsWithFailure" result="fail">
+  <testcase name="endsWithFailure" result="fail" time="@TEST_DURATION@">
     <failure result="fail" message="&apos;test&apos; returned FALSE. ()" tag="endsWithFailure 5"/>
   </testcase>
-  <testcase name="failureInMiddle" result="fail">
+  <testcase name="failureInMiddle" result="fail" time="@TEST_DURATION@">
     <failure result="fail" message="&apos;test&apos; returned FALSE. ()" tag="failureInMiddle_data 3"/>
   </testcase>
-  <testcase name="fiveIsolatedFailures" result="fail">
+  <testcase name="fiveIsolatedFailures" result="fail" time="@TEST_DURATION@">
     <failure result="fail" message="&apos;!test&apos; returned FALSE. ()" tag="fiveIsolatedFailures_data 1"/>
     <failure result="fail" message="&apos;!test&apos; returned FALSE. ()" tag="fiveIsolatedFailures_data 2"/>
     <failure result="fail" message="&apos;!test&apos; returned FALSE. ()" tag="fiveIsolatedFailures_data 3"/>
     <failure result="fail" message="&apos;!test&apos; returned FALSE. ()" tag="fiveIsolatedFailures_data 4"/>
     <failure result="fail" message="&apos;!test&apos; returned FALSE. ()" tag="fiveIsolatedFailures_data 5"/>
   </testcase>
-  <testcase name="cleanupTestCase" result="pass"/>
+  <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@"/>
   <system-err/>
 </testsuite>

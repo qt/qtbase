@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_FailInitData" tests="1" failures="1" errors="0">
+<testsuite name="tst_FailInitData" timestamp="@TEST_START_TIME@" tests="1" failures="1" errors="0" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtBuild" value=""/>
   </properties>
-  <testcase name="initTestCase" result="fail">
+  <testcase name="initTestCase" result="fail" time="@TEST_DURATION@">
     <failure result="fail" message="&apos;false&apos; returned FALSE. ()"/>
   </testcase>
   <system-err/>

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_FailFetchType" tests="2" failures="1" errors="1">
+<testsuite name="tst_FailFetchType" timestamp="@TEST_START_TIME@" tests="2" failures="1" errors="1" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtBuild" value=""/>
   </properties>
-  <testcase name="initTestCase" result="pass"/>
-  <testcase name="fetch" result="fail">
+  <testcase name="initTestCase" result="pass" time="@TEST_DURATION@"/>
+  <testcase name="fetch" result="fail" time="@TEST_DURATION@">
     <!-- type="qfatal" message="Requested type &apos;QString&apos; does not match available type &apos;bool&apos;." tag="bool" -->
     <failure result="fail" message="Received a fatal error." tag="bool"/>
   </testcase>

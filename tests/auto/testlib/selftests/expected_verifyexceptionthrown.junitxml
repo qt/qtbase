@@ -1,32 +1,32 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_VerifyExceptionThrown" tests="11" failures="6" errors="0">
+<testsuite name="tst_VerifyExceptionThrown" timestamp="@TEST_START_TIME@" tests="11" failures="6" errors="0" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtBuild" value=""/>
   </properties>
-  <testcase name="initTestCase" result="pass"/>
-  <testcase name="testCorrectStdTypes" result="pass"/>
-  <testcase name="testCorrectStdExceptions" result="pass"/>
-  <testcase name="testCorrectMyExceptions" result="pass"/>
-  <testcase name="testFailInt" result="fail">
+  <testcase name="initTestCase" result="pass" time="@TEST_DURATION@"/>
+  <testcase name="testCorrectStdTypes" result="pass" time="@TEST_DURATION@"/>
+  <testcase name="testCorrectStdExceptions" result="pass" time="@TEST_DURATION@"/>
+  <testcase name="testCorrectMyExceptions" result="pass" time="@TEST_DURATION@"/>
+  <testcase name="testFailInt" result="fail" time="@TEST_DURATION@">
     <failure result="fail" message="Expected exception of type double to be thrown but unknown exception caught"/>
   </testcase>
-  <testcase name="testFailStdString" result="fail">
+  <testcase name="testFailStdString" result="fail" time="@TEST_DURATION@">
     <failure result="fail" message="Expected exception of type char* to be thrown but unknown exception caught"/>
   </testcase>
-  <testcase name="testFailStdRuntimeError" result="fail">
+  <testcase name="testFailStdRuntimeError" result="fail" time="@TEST_DURATION@">
     <failure result="fail" message="Expected exception of type std::runtime_error to be thrown but std::exception caught with message: logic error"/>
   </testcase>
-  <testcase name="testFailMyException" result="fail">
+  <testcase name="testFailMyException" result="fail" time="@TEST_DURATION@">
     <failure result="fail" message="Expected exception of type MyBaseException to be thrown but std::exception caught with message: logic error"/>
   </testcase>
-  <testcase name="testFailMyDerivedException" result="fail">
+  <testcase name="testFailMyDerivedException" result="fail" time="@TEST_DURATION@">
     <failure result="fail" message="Expected exception of type std::runtime_error to be thrown but std::exception caught with message: MyDerivedException"/>
   </testcase>
-  <testcase name="testFailNoException" result="fail">
+  <testcase name="testFailNoException" result="fail" time="@TEST_DURATION@">
     <failure result="fail" message="Expected exception of type std::exception to be thrown but no exception caught"/>
   </testcase>
-  <testcase name="cleanupTestCase" result="pass"/>
+  <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@"/>
   <system-err/>
 </testsuite>

@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="FindTestData" tests="3" failures="0" errors="1">
+<testsuite name="FindTestData" timestamp="@TEST_START_TIME@" tests="3" failures="0" errors="1" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtBuild" value=""/>
   </properties>
-  <testcase name="initTestCase" result="pass"/>
-  <testcase name="paths" result="pass">
+  <testcase name="initTestCase" result="pass" time="@TEST_DURATION@"/>
+  <testcase name="paths" result="pass" time="@TEST_DURATION@">
     <!-- type="warn" message="testdata testfile could not be located!" -->
   </testcase>
-  <testcase name="cleanupTestCase" result="pass"/>
+  <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@"/>
   <system-err>
 <![CDATA[testdata testfile could not be located!]]>
   </system-err>

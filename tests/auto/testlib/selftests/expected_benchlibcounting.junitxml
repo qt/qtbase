@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_BenchlibCounting" tests="5" failures="1" errors="1">
+<testsuite name="tst_BenchlibCounting" timestamp="@TEST_START_TIME@" tests="5" failures="1" errors="1" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtBuild" value=""/>
   </properties>
-  <testcase name="initTestCase" result="pass"/>
-  <testcase name="passingBenchmark" result="pass">
+  <testcase name="initTestCase" result="pass" time="@TEST_DURATION@"/>
+  <testcase name="passingBenchmark" result="pass" time="@TEST_DURATION@">
   </testcase>
-  <testcase name="skippingBenchmark">
+  <testcase name="skippingBenchmark" time="@TEST_DURATION@">
     <!-- type="skip" message="This is a skipping benchmark" -->
   </testcase>
-  <testcase name="failingBenchmark" result="fail">
+  <testcase name="failingBenchmark" result="fail" time="@TEST_DURATION@">
     <failure result="fail" message="This is a failing benchmark"/>
   </testcase>
-  <testcase name="cleanupTestCase" result="pass"/>
+  <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@"/>
   <system-err>
 <![CDATA[This is a skipping benchmark]]>
   </system-err>

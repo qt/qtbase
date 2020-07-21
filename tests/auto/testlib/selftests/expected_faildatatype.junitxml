@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_FailDataType" tests="2" failures="1" errors="2">
+<testsuite name="tst_FailDataType" timestamp="@TEST_START_TIME@" tests="2" failures="1" errors="2" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtBuild" value=""/>
   </properties>
-  <testcase name="initTestCase" result="pass"/>
-  <testcase name="value" result="fail">
+  <testcase name="initTestCase" result="pass" time="@TEST_DURATION@"/>
+  <testcase name="value" result="fail" time="@TEST_DURATION@">
     <!-- type="qdebug" message="expected data of type &apos;QString&apos;, got &apos;bool&apos; for element 0 of data with tag &apos;bool&#x002D;as&#x002D;string&apos;" -->
     <!-- type="qfatal" message="ASSERT: &quot;false&quot; in file qtbase/src/testlib/qtestdata.cpp, line 0" -->
     <failure result="fail" message="Received a fatal error."/>

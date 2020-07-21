@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_BadXml" tests="6" failures="5" errors="13">
+<testsuite name="tst_BadXml" timestamp="@TEST_START_TIME@" tests="6" failures="5" errors="13" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtBuild" value=""/>
   </properties>
-  <testcase name="initTestCase" result="pass"/>
-  <testcase name="badDataTag" result="fail">
+  <testcase name="initTestCase" result="pass" time="@TEST_DURATION@"/>
+  <testcase name="badDataTag" result="fail" time="@TEST_DURATION@">
     <!-- type="qdebug" message="a message" tag="fail end cdata ]]&gt; text ]]&gt; more text" -->
     <failure result="fail" message="a failure" tag="fail end cdata ]]&gt; text ]]&gt; more text"/>
     <!-- type="qdebug" message="a message" tag="pass end cdata ]]&gt; text ]]&gt; more text" -->
@@ -20,19 +20,19 @@
     <failure result="fail" message="a failure" tag="fail all &gt; &quot; mixed ]]&gt; up &gt; &quot; in &lt; the ]]&gt; hopes &lt; of triggering &quot;&lt; ]]&gt; bugs"/>
     <!-- type="qdebug" message="a message" tag="pass all &gt; &quot; mixed ]]&gt; up &gt; &quot; in &lt; the ]]&gt; hopes &lt; of triggering &quot;&lt; ]]&gt; bugs" -->
   </testcase>
-  <testcase name="badMessage" result="pass">
+  <testcase name="badMessage" result="pass" time="@TEST_DURATION@">
     <!-- type="qdebug" message="end cdata ]]&gt; text ]]&gt; more text" tag="string 0" -->
     <!-- type="qdebug" message="quotes &quot; text&quot; more text" tag="string 1" -->
     <!-- type="qdebug" message="xml close &gt; open &lt; tags &lt; text" tag="string 2" -->
     <!-- type="qdebug" message="all &gt; &quot; mixed ]]&gt; up &gt; &quot; in &lt; the ]]&gt; hopes &lt; of triggering &quot;&lt; ]]&gt; bugs" tag="string 3" -->
   </testcase>
-  <testcase name="failWithNoFile" result="fail">
+  <testcase name="failWithNoFile" result="fail" time="@TEST_DURATION@">
     <failure result="fail" message="failure message"/>
   </testcase>
-  <testcase name="encoding" result="pass">
+  <testcase name="encoding" result="pass" time="@TEST_DURATION@">
     <!-- type="qdebug" message="&quot;Ülrich Ümläut&quot;" -->
   </testcase>
-  <testcase name="cleanupTestCase" result="pass"/>
+  <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@"/>
   <system-err>
 <![CDATA[a message]]>
 <![CDATA[a message]]>

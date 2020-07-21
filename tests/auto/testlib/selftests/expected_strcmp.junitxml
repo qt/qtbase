@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_StrCmp" tests="8" failures="5" errors="3">
+<testsuite name="tst_StrCmp" timestamp="@TEST_START_TIME@" tests="8" failures="5" errors="3" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtBuild" value=""/>
   </properties>
-  <testcase name="initTestCase" result="pass"/>
-  <testcase name="compareCharStars" result="pass"/>
-  <testcase name="compareByteArray" result="fail">
+  <testcase name="initTestCase" result="pass" time="@TEST_DURATION@"/>
+  <testcase name="compareCharStars" result="pass" time="@TEST_DURATION@"/>
+  <testcase name="compareByteArray" result="fail" time="@TEST_DURATION@">
     <!-- type="info" message="Next test should fail" -->
     <!-- type="info" message="Next test should fail" -->
     <!-- type="info" message="Next test should fail" -->
@@ -15,27 +15,27 @@
    Actual   (a): &quot;BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB&quot;...
    Expected (b): &quot;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&quot;..."/>
   </testcase>
-  <testcase name="failByteArray" result="fail">
+  <testcase name="failByteArray" result="fail" time="@TEST_DURATION@">
     <failure result="fail" message="Compared values are not the same
    Actual   (QByteArray(&quot;abc&quot;)): &quot;abc&quot;
    Expected (QByteArray(&quot;cba&quot;)): &quot;cba&quot;"/>
   </testcase>
-  <testcase name="failByteArrayNull" result="fail">
+  <testcase name="failByteArrayNull" result="fail" time="@TEST_DURATION@">
     <failure result="fail" message="Compared values are not the same
    Actual   (QByteArray(&quot;foo&quot;)): &quot;foo&quot;
    Expected (QByteArray())     : &quot;&quot;"/>
   </testcase>
-  <testcase name="failByteArrayEmpty" result="fail">
+  <testcase name="failByteArrayEmpty" result="fail" time="@TEST_DURATION@">
     <failure result="fail" message="Compared values are not the same
    Actual   (QByteArray(&quot;&quot;))   : &quot;&quot;
    Expected (QByteArray(&quot;foo&quot;)): &quot;foo&quot;"/>
   </testcase>
-  <testcase name="failByteArraySingleChars" result="fail">
+  <testcase name="failByteArraySingleChars" result="fail" time="@TEST_DURATION@">
     <failure result="fail" message="Compared values are not the same
    Actual   (QByteArray(&quot;6&quot;)): &quot;6&quot;
    Expected (QByteArray(&quot;7&quot;)): &quot;7&quot;"/>
   </testcase>
-  <testcase name="cleanupTestCase" result="pass"/>
+  <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@"/>
   <system-err>
 <![CDATA[Next test should fail]]>
 <![CDATA[Next test should fail]]>
