@@ -149,7 +149,7 @@ public:
     QXmlAttributes &operator=(const QXmlAttributes &) = default;
     QXmlAttributes &operator=(QXmlAttributes &&) noexcept = default;
 
-    QT6_NOT_VIRTUAL ~QXmlAttributes();
+    ~QXmlAttributes();
 
     void swap(QXmlAttributes &other) noexcept
     {

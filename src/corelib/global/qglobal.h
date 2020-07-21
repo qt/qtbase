@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2019 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -76,10 +76,6 @@
 */
 #define QT_CONFIG(feature) (1/QT_FEATURE_##feature == 1)
 #define QT_REQUIRE_CONFIG(feature) Q_STATIC_ASSERT_X(QT_FEATURE_##feature == 1, "Required feature " #feature " for file " __FILE__ " not available.")
-
-// ### Clean those up, once all code is adjusted
-#define QT6_VIRTUAL virtual
-#define QT6_NOT_VIRTUAL
 
 /* These two macros makes it possible to turn the builtin line expander into a
  * string literal. */

@@ -268,7 +268,7 @@ protected:
                            QWidget *widget = nullptr);
 
 protected Q_SLOTS:
-    QT6_VIRTUAL bool focusNextPrevChild(bool next);
+    virtual bool focusNextPrevChild(bool next);
 
 Q_SIGNALS:
     void changed(const QList<QRectF> &region);
