@@ -1,38 +1,38 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="13" failures="5" tests="6" name="tst_BadXml">
+<testsuite name="tst_BadXml" tests="6" failures="5" errors="13">
   <properties>
-    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
-    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
-    <property value="" name="QtBuild"/>
+    <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
+    <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
+    <property name="QtBuild" value=""/>
   </properties>
-  <testcase result="pass" name="initTestCase"/>
-  <testcase result="fail" name="badDataTag">
-    <!-- tag="fail end cdata ]]&gt; text ]]&gt; more text" message="a message" type="qdebug" -->
-    <failure tag="fail end cdata ]]&gt; text ]]&gt; more text" message="a failure" result="fail"/>
-    <!-- tag="pass end cdata ]]&gt; text ]]&gt; more text" message="a message" type="qdebug" -->
-    <!-- tag="fail quotes &quot; text&quot; more text" message="a message" type="qdebug" -->
-    <failure tag="fail quotes &quot; text&quot; more text" message="a failure" result="fail"/>
-    <!-- tag="pass quotes &quot; text&quot; more text" message="a message" type="qdebug" -->
-    <!-- tag="fail xml close &gt; open &lt; tags &lt; text" message="a message" type="qdebug" -->
-    <failure tag="fail xml close &gt; open &lt; tags &lt; text" message="a failure" result="fail"/>
-    <!-- tag="pass xml close &gt; open &lt; tags &lt; text" message="a message" type="qdebug" -->
-    <!-- tag="fail all &gt; &quot; mixed ]]&gt; up &gt; &quot; in &lt; the ]]&gt; hopes &lt; of triggering &quot;&lt; ]]&gt; bugs" message="a message" type="qdebug" -->
-    <failure tag="fail all &gt; &quot; mixed ]]&gt; up &gt; &quot; in &lt; the ]]&gt; hopes &lt; of triggering &quot;&lt; ]]&gt; bugs" message="a failure" result="fail"/>
-    <!-- tag="pass all &gt; &quot; mixed ]]&gt; up &gt; &quot; in &lt; the ]]&gt; hopes &lt; of triggering &quot;&lt; ]]&gt; bugs" message="a message" type="qdebug" -->
+  <testcase name="initTestCase" result="pass"/>
+  <testcase name="badDataTag" result="fail">
+    <!-- type="qdebug" message="a message" tag="fail end cdata ]]&gt; text ]]&gt; more text" -->
+    <failure result="fail" message="a failure" tag="fail end cdata ]]&gt; text ]]&gt; more text"/>
+    <!-- type="qdebug" message="a message" tag="pass end cdata ]]&gt; text ]]&gt; more text" -->
+    <!-- type="qdebug" message="a message" tag="fail quotes &quot; text&quot; more text" -->
+    <failure result="fail" message="a failure" tag="fail quotes &quot; text&quot; more text"/>
+    <!-- type="qdebug" message="a message" tag="pass quotes &quot; text&quot; more text" -->
+    <!-- type="qdebug" message="a message" tag="fail xml close &gt; open &lt; tags &lt; text" -->
+    <failure result="fail" message="a failure" tag="fail xml close &gt; open &lt; tags &lt; text"/>
+    <!-- type="qdebug" message="a message" tag="pass xml close &gt; open &lt; tags &lt; text" -->
+    <!-- type="qdebug" message="a message" tag="fail all &gt; &quot; mixed ]]&gt; up &gt; &quot; in &lt; the ]]&gt; hopes &lt; of triggering &quot;&lt; ]]&gt; bugs" -->
+    <failure result="fail" message="a failure" tag="fail all &gt; &quot; mixed ]]&gt; up &gt; &quot; in &lt; the ]]&gt; hopes &lt; of triggering &quot;&lt; ]]&gt; bugs"/>
+    <!-- type="qdebug" message="a message" tag="pass all &gt; &quot; mixed ]]&gt; up &gt; &quot; in &lt; the ]]&gt; hopes &lt; of triggering &quot;&lt; ]]&gt; bugs" -->
   </testcase>
-  <testcase result="pass" name="badMessage">
-    <!-- tag="string 0" message="end cdata ]]&gt; text ]]&gt; more text" type="qdebug" -->
-    <!-- tag="string 1" message="quotes &quot; text&quot; more text" type="qdebug" -->
-    <!-- tag="string 2" message="xml close &gt; open &lt; tags &lt; text" type="qdebug" -->
-    <!-- tag="string 3" message="all &gt; &quot; mixed ]]&gt; up &gt; &quot; in &lt; the ]]&gt; hopes &lt; of triggering &quot;&lt; ]]&gt; bugs" type="qdebug" -->
+  <testcase name="badMessage" result="pass">
+    <!-- type="qdebug" message="end cdata ]]&gt; text ]]&gt; more text" tag="string 0" -->
+    <!-- type="qdebug" message="quotes &quot; text&quot; more text" tag="string 1" -->
+    <!-- type="qdebug" message="xml close &gt; open &lt; tags &lt; text" tag="string 2" -->
+    <!-- type="qdebug" message="all &gt; &quot; mixed ]]&gt; up &gt; &quot; in &lt; the ]]&gt; hopes &lt; of triggering &quot;&lt; ]]&gt; bugs" tag="string 3" -->
   </testcase>
-  <testcase result="fail" name="failWithNoFile">
-    <failure message="failure message" result="fail"/>
+  <testcase name="failWithNoFile" result="fail">
+    <failure result="fail" message="failure message"/>
   </testcase>
-  <testcase result="pass" name="encoding">
-    <!-- message="&quot;Ülrich Ümläut&quot;" type="qdebug" -->
+  <testcase name="encoding" result="pass">
+    <!-- type="qdebug" message="&quot;Ülrich Ümläut&quot;" -->
   </testcase>
-  <testcase result="pass" name="cleanupTestCase"/>
+  <testcase name="cleanupTestCase" result="pass"/>
   <system-err>
 <![CDATA[a message]]>
 <![CDATA[a message]]>

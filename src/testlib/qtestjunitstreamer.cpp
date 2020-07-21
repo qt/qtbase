@@ -176,13 +176,12 @@ void QTestJUnitStreamer::outputElements(QTestElement *element, bool) const
 {
     QTestCharBuffer buf;
     bool hasChildren;
-    /*
-        Elements are in reverse order of occurrence, so start from the end and work
-        our way backwards.
-    */
-    while (element && element->nextElement()) {
+
+    // Elements are in reverse order of occurrence, so
+    // start from the end and work our way backwards.
+    while (element && element->nextElement())
         element = element->nextElement();
-    }
+
     while (element) {
         hasChildren = element->childElements();
 
@@ -208,10 +207,16 @@ void QTestJUnitStreamer::outputElements(QTestElement *element, bool) const
 void QTestJUnitStreamer::outputElementAttributes(const QTestElement* element, QTestElementAttribute *attribute) const
 {
     QTestCharBuffer buf;
+
+    // Attributes are in reverse order of occurrence, so
+    // start from the end and work our way backwards.
+    while (attribute && attribute->nextElement())
+        attribute = attribute->nextElement();
+
     while (attribute) {
         formatAttributes(element, attribute, &buf);
         outputString(buf.data());
-        attribute = attribute->nextElement();
+        attribute = attribute->previousElement();
     }
 }
 

@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="8" failures="3" tests="7" name="tst_Blacklisted">
+<testsuite name="tst_Blacklisted" tests="7" failures="3" errors="8">
   <properties>
-    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
-    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
-    <property value="" name="QtBuild"/>
+    <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
+    <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
+    <property name="QtBuild" value=""/>
   </properties>
-  <testcase result="pass" name="initTestCase"/>
-  <testcase result="bpass" name="pass"/>
+  <testcase name="initTestCase" result="pass"/>
+  <testcase name="pass" result="bpass"/>
   <testcase name="skip">
-    <!-- message="This test should SKIP" type="skip" -->
+    <!-- type="skip" message="This test should SKIP" -->
   </testcase>
-  <testcase result="bfail" name="fail"/>
-  <testcase result="bxfail" name="xfail"/>
-  <testcase result="bxpass" name="xpass"/>
-  <testcase result="bfail" name="messages">
-    <!-- message="This is a warning that should not appear in silent test output" type="qwarn" -->
-    <!-- message="This is an internal testlib warning that should not appear in silent test output" type="warn" -->
-    <!-- message="This is a debug message that should not appear in silent test output" type="qdebug" -->
-    <!-- message="This is a critical message that should not appear in silent test output" type="system" -->
-    <!-- message="This is an info message that should not appear in silent test output" type="qinfo" -->
-    <!-- message="This is an internal testlib info message that should not appear in silent test output" type="info" -->
-    <!-- message="This is a fatal error message that should still appear in silent test output" type="qfatal" -->
+  <testcase name="fail" result="bfail"/>
+  <testcase name="xfail" result="bxfail"/>
+  <testcase name="xpass" result="bxpass"/>
+  <testcase name="messages" result="bfail">
+    <!-- type="qwarn" message="This is a warning that should not appear in silent test output" -->
+    <!-- type="warn" message="This is an internal testlib warning that should not appear in silent test output" -->
+    <!-- type="qdebug" message="This is a debug message that should not appear in silent test output" -->
+    <!-- type="system" message="This is a critical message that should not appear in silent test output" -->
+    <!-- type="qinfo" message="This is an info message that should not appear in silent test output" -->
+    <!-- type="info" message="This is an internal testlib info message that should not appear in silent test output" -->
+    <!-- type="qfatal" message="This is a fatal error message that should still appear in silent test output" -->
   </testcase>
   <system-err>
 <![CDATA[This test should SKIP]]>

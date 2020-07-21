@@ -1,158 +1,158 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="124" failures="0" tests="13" name="tst_Signaldumper">
+<testsuite name="tst_Signaldumper" tests="13" failures="0" errors="124">
   <properties>
-    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
-    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
-    <property value="" name="QtBuild"/>
+    <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
+    <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
+    <property name="QtBuild" value=""/>
   </properties>
-  <testcase result="pass" name="initTestCase"/>
-  <testcase result="pass" name="noConnections">
-    <!-- message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" type="info" -->
-    <!-- message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" type="info" -->
+  <testcase name="initTestCase" result="pass"/>
+  <testcase name="noConnections" result="pass">
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" -->
   </testcase>
-  <testcase result="pass" name="oneSlot">
-    <!-- tag="direct" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" type="info" -->
-    <!-- tag="direct" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="direct" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" type="info" -->
-    <!-- tag="direct" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="direct" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" type="info" -->
-    <!-- tag="direct" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="queued" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" type="info" -->
-    <!-- tag="queued" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="queued" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" type="info" -->
-    <!-- tag="queued" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="queued" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" type="info" -->
-    <!-- tag="queued" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
+  <testcase name="oneSlot" result="pass">
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" tag="direct" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="direct" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" tag="direct" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="direct" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" tag="direct" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="direct" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" tag="queued" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="queued" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" tag="queued" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="queued" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" tag="queued" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="queued" -->
   </testcase>
-  <testcase result="pass" name="oneSlotOldSyntax">
-    <!-- tag="direct" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" type="info" -->
-    <!-- tag="direct" message="    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()" type="info" -->
-    <!-- tag="direct" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="direct" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" type="info" -->
-    <!-- tag="direct" message="    Slot: SignalSlotClass(_POINTER_) slotWithParameters(int,char)" type="info" -->
-    <!-- tag="direct" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="direct" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" type="info" -->
-    <!-- tag="direct" message="    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()" type="info" -->
-    <!-- tag="direct" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="queued" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" type="info" -->
-    <!-- tag="queued" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="queued" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" type="info" -->
-    <!-- tag="queued" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="queued" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" type="info" -->
-    <!-- tag="queued" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
+  <testcase name="oneSlotOldSyntax" result="pass">
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" tag="direct" -->
+    <!-- type="info" message="    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()" tag="direct" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="direct" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" tag="direct" -->
+    <!-- type="info" message="    Slot: SignalSlotClass(_POINTER_) slotWithParameters(int,char)" tag="direct" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="direct" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" tag="direct" -->
+    <!-- type="info" message="    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()" tag="direct" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="direct" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" tag="queued" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="queued" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" tag="queued" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="queued" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" tag="queued" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="queued" -->
   </testcase>
-  <testcase result="pass" name="twoSlots">
-    <!-- tag="direct" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" type="info" -->
-    <!-- tag="direct" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="direct" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" type="info" -->
-    <!-- tag="direct" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="direct" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" type="info" -->
-    <!-- tag="direct" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="queued" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" type="info" -->
-    <!-- tag="queued" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="queued" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" type="info" -->
-    <!-- tag="queued" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="queued" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" type="info" -->
-    <!-- tag="queued" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
+  <testcase name="twoSlots" result="pass">
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" tag="direct" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="direct" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" tag="direct" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="direct" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" tag="direct" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="direct" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" tag="queued" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="queued" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" tag="queued" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="queued" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" tag="queued" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="queued" -->
   </testcase>
-  <testcase result="pass" name="twoSlotsOldSyntax">
-    <!-- tag="direct" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" type="info" -->
-    <!-- tag="direct" message="    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()" type="info" -->
-    <!-- tag="direct" message="    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()" type="info" -->
-    <!-- tag="direct" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="direct" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" type="info" -->
-    <!-- tag="direct" message="    Slot: SignalSlotClass(_POINTER_) slotWithParameters(int,char)" type="info" -->
-    <!-- tag="direct" message="    Slot: SignalSlotClass(_POINTER_) slotWithParameters(int,char)" type="info" -->
-    <!-- tag="direct" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="direct" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" type="info" -->
-    <!-- tag="direct" message="    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()" type="info" -->
-    <!-- tag="direct" message="    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()" type="info" -->
-    <!-- tag="direct" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="queued" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" type="info" -->
-    <!-- tag="queued" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="queued" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" type="info" -->
-    <!-- tag="queued" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="queued" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" type="info" -->
-    <!-- tag="queued" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
+  <testcase name="twoSlotsOldSyntax" result="pass">
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" tag="direct" -->
+    <!-- type="info" message="    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()" tag="direct" -->
+    <!-- type="info" message="    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()" tag="direct" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="direct" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" tag="direct" -->
+    <!-- type="info" message="    Slot: SignalSlotClass(_POINTER_) slotWithParameters(int,char)" tag="direct" -->
+    <!-- type="info" message="    Slot: SignalSlotClass(_POINTER_) slotWithParameters(int,char)" tag="direct" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="direct" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" tag="direct" -->
+    <!-- type="info" message="    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()" tag="direct" -->
+    <!-- type="info" message="    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()" tag="direct" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="direct" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" tag="queued" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="queued" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" tag="queued" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="queued" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" tag="queued" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="queued" -->
   </testcase>
-  <testcase result="pass" name="signalForwarding">
-    <!-- tag="direct" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" type="info" -->
-    <!-- tag="direct" message="    Signal: SignalSlotClass(_POINTER_) nestedSignal ()" type="info" -->
-    <!-- tag="direct" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="direct" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" type="info" -->
-    <!-- tag="direct" message="    Signal: SignalSlotClass(_POINTER_) nestedSignalWithParameters (int(242), char(m))" type="info" -->
-    <!-- tag="direct" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="direct" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" type="info" -->
-    <!-- tag="direct" message="    Signal: SignalSlotClass(_POINTER_) nestedSignal ()" type="info" -->
-    <!-- tag="direct" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="queued" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" type="info" -->
-    <!-- tag="queued" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="queued" message="Signal: SignalSlotClass(_POINTER_) nestedSignal ()" type="info" -->
-    <!-- tag="queued" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" type="info" -->
-    <!-- tag="queued" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="queued" message="Signal: SignalSlotClass(_POINTER_) nestedSignalWithParameters (int(242), char(m))" type="info" -->
-    <!-- tag="queued" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" type="info" -->
-    <!-- tag="queued" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="queued" message="Signal: SignalSlotClass(_POINTER_) nestedSignal ()" type="info" -->
+  <testcase name="signalForwarding" result="pass">
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" tag="direct" -->
+    <!-- type="info" message="    Signal: SignalSlotClass(_POINTER_) nestedSignal ()" tag="direct" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="direct" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" tag="direct" -->
+    <!-- type="info" message="    Signal: SignalSlotClass(_POINTER_) nestedSignalWithParameters (int(242), char(m))" tag="direct" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="direct" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" tag="direct" -->
+    <!-- type="info" message="    Signal: SignalSlotClass(_POINTER_) nestedSignal ()" tag="direct" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="direct" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" tag="queued" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="queued" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) nestedSignal ()" tag="queued" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" tag="queued" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="queued" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) nestedSignalWithParameters (int(242), char(m))" tag="queued" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" tag="queued" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="queued" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) nestedSignal ()" tag="queued" -->
   </testcase>
-  <testcase result="pass" name="signalForwardingOldSyntax">
-    <!-- tag="direct" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" type="info" -->
-    <!-- tag="direct" message="    Slot: SignalSlotClass(_POINTER_) nestedSignal()" type="info" -->
-    <!-- tag="direct" message="    Signal: SignalSlotClass(_POINTER_) nestedSignal ()" type="info" -->
-    <!-- tag="direct" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="direct" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" type="info" -->
-    <!-- tag="direct" message="    Slot: SignalSlotClass(_POINTER_) nestedSignalWithParameters(int,char)" type="info" -->
-    <!-- tag="direct" message="    Signal: SignalSlotClass(_POINTER_) nestedSignalWithParameters (int(242), char(m))" type="info" -->
-    <!-- tag="direct" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="direct" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" type="info" -->
-    <!-- tag="direct" message="    Slot: SignalSlotClass(_POINTER_) nestedSignal()" type="info" -->
-    <!-- tag="direct" message="    Signal: SignalSlotClass(_POINTER_) nestedSignal ()" type="info" -->
-    <!-- tag="direct" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="queued" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" type="info" -->
-    <!-- tag="queued" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="queued" message="Signal: SignalSlotClass(_POINTER_) nestedSignal ()" type="info" -->
-    <!-- tag="queued" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" type="info" -->
-    <!-- tag="queued" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="queued" message="Signal: SignalSlotClass(_POINTER_) nestedSignalWithParameters (int(242), char(m))" type="info" -->
-    <!-- tag="queued" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" type="info" -->
-    <!-- tag="queued" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="queued" message="Signal: SignalSlotClass(_POINTER_) nestedSignal ()" type="info" -->
+  <testcase name="signalForwardingOldSyntax" result="pass">
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" tag="direct" -->
+    <!-- type="info" message="    Slot: SignalSlotClass(_POINTER_) nestedSignal()" tag="direct" -->
+    <!-- type="info" message="    Signal: SignalSlotClass(_POINTER_) nestedSignal ()" tag="direct" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="direct" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" tag="direct" -->
+    <!-- type="info" message="    Slot: SignalSlotClass(_POINTER_) nestedSignalWithParameters(int,char)" tag="direct" -->
+    <!-- type="info" message="    Signal: SignalSlotClass(_POINTER_) nestedSignalWithParameters (int(242), char(m))" tag="direct" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="direct" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" tag="direct" -->
+    <!-- type="info" message="    Slot: SignalSlotClass(_POINTER_) nestedSignal()" tag="direct" -->
+    <!-- type="info" message="    Signal: SignalSlotClass(_POINTER_) nestedSignal ()" tag="direct" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="direct" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" tag="queued" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="queued" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) nestedSignal ()" tag="queued" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" tag="queued" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="queued" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) nestedSignalWithParameters (int(242), char(m))" tag="queued" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" tag="queued" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="queued" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) nestedSignal ()" tag="queued" -->
   </testcase>
-  <testcase result="pass" name="slotEmittingSignal">
-    <!-- tag="direct" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" type="info" -->
-    <!-- tag="direct" message="    Signal: SignalSlotClass(_POINTER_) nestedSignal ()" type="info" -->
-    <!-- tag="direct" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="queued" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" type="info" -->
-    <!-- tag="queued" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="queued" message="Signal: SignalSlotClass(_POINTER_) nestedSignal ()" type="info" -->
+  <testcase name="slotEmittingSignal" result="pass">
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" tag="direct" -->
+    <!-- type="info" message="    Signal: SignalSlotClass(_POINTER_) nestedSignal ()" tag="direct" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="direct" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" tag="queued" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="queued" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) nestedSignal ()" tag="queued" -->
   </testcase>
-  <testcase result="pass" name="slotEmittingSignalOldSyntax">
-    <!-- tag="direct" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" type="info" -->
-    <!-- tag="direct" message="    Slot: SignalSlotClass(_POINTER_) emitSecondSignal()" type="info" -->
-    <!-- tag="direct" message="    Signal: SignalSlotClass(_POINTER_) nestedSignal ()" type="info" -->
-    <!-- tag="direct" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="queued" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" type="info" -->
-    <!-- tag="queued" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" type="info" -->
-    <!-- tag="queued" message="Signal: SignalSlotClass(_POINTER_) nestedSignal ()" type="info" -->
+  <testcase name="slotEmittingSignalOldSyntax" result="pass">
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" tag="direct" -->
+    <!-- type="info" message="    Slot: SignalSlotClass(_POINTER_) emitSecondSignal()" tag="direct" -->
+    <!-- type="info" message="    Signal: SignalSlotClass(_POINTER_) nestedSignal ()" tag="direct" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="direct" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" tag="queued" -->
+    <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" tag="queued" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) nestedSignal ()" tag="queued" -->
   </testcase>
-  <testcase result="pass" name="variousTypes">
-    <!-- message="Signal: SignalSlotClass(_POINTER_) qStringSignal (QString(Test string))" type="info" -->
-    <!-- message="Signal: SignalSlotClass(_POINTER_) qStringRefSignal ((QString&amp;)@_POINTER_)" type="info" -->
-    <!-- message="Signal: SignalSlotClass(_POINTER_) qStringConstRefSignal (QString(Test string))" type="info" -->
-    <!-- message="Signal: SignalSlotClass(_POINTER_) qByteArraySignal (QByteArray(Test bytearray))" type="info" -->
-    <!-- message="Signal: SignalSlotClass(_POINTER_) qListSignal (QList&lt;int&gt;())" type="info" -->
-    <!-- message="Signal: SignalSlotClass(_POINTER_) qVectorSignal (QList&lt;int&gt;())" type="info" -->
-    <!-- message="Signal: SignalSlotClass(_POINTER_) qVectorRefSignal ((QList&lt;int&gt;&amp;)@_POINTER_)" type="info" -->
-    <!-- message="Signal: SignalSlotClass(_POINTER_) qVectorConstRefSignal (QList&lt;int&gt;())" type="info" -->
-    <!-- message="Signal: SignalSlotClass(_POINTER_) qVectorConstPointerSignal ((const QList&lt;int&gt;*)_POINTER_)" type="info" -->
-    <!-- message="Signal: SignalSlotClass(_POINTER_) qVectorPointerConstSignal ((QList&lt;int&gt;*)_POINTER_)" type="info" -->
-    <!-- message="Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())" type="info" -->
-    <!-- message="Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())" type="info" -->
+  <testcase name="variousTypes" result="pass">
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) qStringSignal (QString(Test string))" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) qStringRefSignal ((QString&amp;)@_POINTER_)" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) qStringConstRefSignal (QString(Test string))" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) qByteArraySignal (QByteArray(Test bytearray))" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) qListSignal (QList&lt;int&gt;())" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) qVectorSignal (QList&lt;int&gt;())" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) qVectorRefSignal ((QList&lt;int&gt;&amp;)@_POINTER_)" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) qVectorConstRefSignal (QList&lt;int&gt;())" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) qVectorConstPointerSignal ((const QList&lt;int&gt;*)_POINTER_)" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) qVectorPointerConstSignal ((QList&lt;int&gt;*)_POINTER_)" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())" -->
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())" -->
   </testcase>
-  <testcase result="pass" name="deletingSender">
-    <!-- message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" type="info" -->
+  <testcase name="deletingSender" result="pass">
+    <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" -->
   </testcase>
-  <testcase result="pass" name="cleanupTestCase"/>
+  <testcase name="cleanupTestCase" result="pass"/>
   <system-err>
 <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
 <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>

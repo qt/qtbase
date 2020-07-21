@@ -221,7 +221,7 @@ bool compareOutput(const QString &logger, const QString &subdir,
 
         if (actualLineBA.startsWith("Config: Using QtTest library") // Text build string
             || actualLineBA.startsWith("    <QtBuild") // XML, Light XML build string
-            || (actualLineBA.startsWith("    <property value=") &&  actualLineBA.endsWith("name=\"QtBuild\"/>"))) { // XUNIT-XML build string
+            || (actualLineBA.startsWith("    <property name=\"QtBuild\" value="))) { // JUnit-XML build string
             continue;
         }
 

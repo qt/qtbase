@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="1" failures="0" tests="1" name="tst_SkipInitData">
+<testsuite name="tst_SkipInitData" tests="1" failures="0" errors="1">
   <properties>
-    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
-    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
-    <property value="" name="QtBuild"/>
+    <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
+    <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
+    <property name="QtBuild" value=""/>
   </properties>
   <testcase name="initTestCase">
-    <!-- message="Skip inside initTestCase_data. This should skip all tests in the class." type="skip" -->
+    <!-- type="skip" message="Skip inside initTestCase_data. This should skip all tests in the class." -->
   </testcase>
   <system-err>
 <![CDATA[Skip inside initTestCase_data. This should skip all tests in the class.]]>

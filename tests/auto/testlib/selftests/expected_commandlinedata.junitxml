@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="6" failures="0" tests="4" name="tst_DataTable">
+<testsuite name="tst_DataTable" tests="4" failures="0" errors="6">
   <properties>
-    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
-    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
-    <property value="" name="QtBuild"/>
+    <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
+    <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
+    <property name="QtBuild" value=""/>
   </properties>
-  <testcase result="pass" name="initTestCase"/>
-  <testcase result="pass" name="fiveTablePasses">
-    <!-- tag="fiveTablePasses_data1" message="QVERIFY(test)" type="info" -->
-    <!-- tag="fiveTablePasses_data2" message="QVERIFY(test)" type="info" -->
-    <!-- tag="fiveTablePasses_data3" message="QVERIFY(test)" type="info" -->
-    <!-- tag="fiveTablePasses_data4" message="QVERIFY(test)" type="info" -->
-    <!-- tag="fiveTablePasses_data5" message="QVERIFY(test)" type="info" -->
+  <testcase name="initTestCase" result="pass"/>
+  <testcase name="fiveTablePasses" result="pass">
+    <!-- type="info" message="QVERIFY(test)" tag="fiveTablePasses_data1" -->
+    <!-- type="info" message="QVERIFY(test)" tag="fiveTablePasses_data2" -->
+    <!-- type="info" message="QVERIFY(test)" tag="fiveTablePasses_data3" -->
+    <!-- type="info" message="QVERIFY(test)" tag="fiveTablePasses_data4" -->
+    <!-- type="info" message="QVERIFY(test)" tag="fiveTablePasses_data5" -->
   </testcase>
-  <testcase result="pass" name="fiveTablePasses">
-    <!-- tag="fiveTablePasses_data1" message="QVERIFY(test)" type="info" -->
+  <testcase name="fiveTablePasses" result="pass">
+    <!-- type="info" message="QVERIFY(test)" tag="fiveTablePasses_data1" -->
   </testcase>
-  <testcase result="pass" name="cleanupTestCase"/>
+  <testcase name="cleanupTestCase" result="pass"/>
   <system-err>
 <![CDATA[QVERIFY(test)]]>
 <![CDATA[QVERIFY(test)]]>

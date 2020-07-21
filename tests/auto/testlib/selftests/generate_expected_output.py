@@ -102,7 +102,7 @@ class Cleaner (object):
             # Build details:
             (r'(Config: Using QtTest library).*', r'\1'), # txt
             (r'( *<QtBuild)>[^<]+</QtBuild>', r'\1/>'), # xml, lightxml
-            (r'(<property value=")[^"]+(" name="QtBuild"/>)', r'\1\2'), # junitxml
+            (r'(<property name="QtBuild" value=")[^"]+"', r'\1"'), # junitxml
             # Line numbers in source files:
             (r'(ASSERT: ("|&quot;).*("|&quot;) in file .*, line) \d+', r'\1 0'), # lightxml
             (r'(Loc: \[[^[\]()]+)\(\d+\)', r'\1(0)'), # txt

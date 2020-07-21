@@ -1,56 +1,56 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="31" failures="2" tests="5" name="tst_Subtest">
+<testsuite name="tst_Subtest" tests="5" failures="2" errors="31">
   <properties>
-    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
-    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
-    <property value="" name="QtBuild"/>
+    <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
+    <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
+    <property name="QtBuild" value=""/>
   </properties>
-  <testcase result="pass" name="initTestCase">
-    <!-- message="initTestCase initTestCase (null)" type="qdebug" -->
+  <testcase name="initTestCase" result="pass">
+    <!-- type="qdebug" message="initTestCase initTestCase (null)" -->
   </testcase>
-  <testcase result="pass" name="test1">
-    <!-- message="init test1 (null)" type="qdebug" -->
-    <!-- message="test1 test1 (null)" type="qdebug" -->
-    <!-- message="cleanup test1 (null)" type="qdebug" -->
+  <testcase name="test1" result="pass">
+    <!-- type="qdebug" message="init test1 (null)" -->
+    <!-- type="qdebug" message="test1 test1 (null)" -->
+    <!-- type="qdebug" message="cleanup test1 (null)" -->
   </testcase>
-  <testcase result="pass" name="test2">
-    <!-- message="test2_data test2 (null)" type="qdebug" -->
-    <!-- message="test2_data end" type="qdebug" -->
-    <!-- tag="data0" message="init test2 data0" type="qdebug" -->
-    <!-- tag="data0" message="test2 test2 data0" type="qdebug" -->
-    <!-- tag="data0" message="test2 end" type="qdebug" -->
-    <!-- tag="data0" message="cleanup test2 data0" type="qdebug" -->
-    <!-- tag="data1" message="init test2 data1" type="qdebug" -->
-    <!-- tag="data1" message="test2 test2 data1" type="qdebug" -->
-    <!-- tag="data1" message="test2 end" type="qdebug" -->
-    <!-- tag="data1" message="cleanup test2 data1" type="qdebug" -->
-    <!-- tag="data2" message="init test2 data2" type="qdebug" -->
-    <!-- tag="data2" message="test2 test2 data2" type="qdebug" -->
-    <!-- tag="data2" message="test2 end" type="qdebug" -->
-    <!-- tag="data2" message="cleanup test2 data2" type="qdebug" -->
+  <testcase name="test2" result="pass">
+    <!-- type="qdebug" message="test2_data test2 (null)" -->
+    <!-- type="qdebug" message="test2_data end" -->
+    <!-- type="qdebug" message="init test2 data0" tag="data0" -->
+    <!-- type="qdebug" message="test2 test2 data0" tag="data0" -->
+    <!-- type="qdebug" message="test2 end" tag="data0" -->
+    <!-- type="qdebug" message="cleanup test2 data0" tag="data0" -->
+    <!-- type="qdebug" message="init test2 data1" tag="data1" -->
+    <!-- type="qdebug" message="test2 test2 data1" tag="data1" -->
+    <!-- type="qdebug" message="test2 end" tag="data1" -->
+    <!-- type="qdebug" message="cleanup test2 data1" tag="data1" -->
+    <!-- type="qdebug" message="init test2 data2" tag="data2" -->
+    <!-- type="qdebug" message="test2 test2 data2" tag="data2" -->
+    <!-- type="qdebug" message="test2 end" tag="data2" -->
+    <!-- type="qdebug" message="cleanup test2 data2" tag="data2" -->
   </testcase>
-  <testcase result="fail" name="test3">
-    <!-- message="test3_data test3 (null)" type="qdebug" -->
-    <!-- message="test3_data end" type="qdebug" -->
-    <!-- tag="data0" message="init test3 data0" type="qdebug" -->
-    <!-- tag="data0" message="test2 test3 data0" type="qdebug" -->
-    <!-- tag="data0" message="test2 end" type="qdebug" -->
-    <!-- tag="data0" message="cleanup test3 data0" type="qdebug" -->
-    <!-- tag="data1" message="init test3 data1" type="qdebug" -->
-    <!-- tag="data1" message="test2 test3 data1" type="qdebug" -->
-    <failure tag="data1" message="Compared values are not the same
+  <testcase name="test3" result="fail">
+    <!-- type="qdebug" message="test3_data test3 (null)" -->
+    <!-- type="qdebug" message="test3_data end" -->
+    <!-- type="qdebug" message="init test3 data0" tag="data0" -->
+    <!-- type="qdebug" message="test2 test3 data0" tag="data0" -->
+    <!-- type="qdebug" message="test2 end" tag="data0" -->
+    <!-- type="qdebug" message="cleanup test3 data0" tag="data0" -->
+    <!-- type="qdebug" message="init test3 data1" tag="data1" -->
+    <!-- type="qdebug" message="test2 test3 data1" tag="data1" -->
+    <failure result="fail" message="Compared values are not the same
    Actual   (str)              : &quot;hello1&quot;
-   Expected (QString(&quot;hello0&quot;)): &quot;hello0&quot;" result="fail"/>
-    <!-- tag="data1" message="cleanup test3 data1" type="qdebug" -->
-    <!-- tag="data2" message="init test3 data2" type="qdebug" -->
-    <!-- tag="data2" message="test2 test3 data2" type="qdebug" -->
-    <failure tag="data2" message="Compared values are not the same
+   Expected (QString(&quot;hello0&quot;)): &quot;hello0&quot;" tag="data1"/>
+    <!-- type="qdebug" message="cleanup test3 data1" tag="data1" -->
+    <!-- type="qdebug" message="init test3 data2" tag="data2" -->
+    <!-- type="qdebug" message="test2 test3 data2" tag="data2" -->
+    <failure result="fail" message="Compared values are not the same
    Actual   (str)              : &quot;hello2&quot;
-   Expected (QString(&quot;hello0&quot;)): &quot;hello0&quot;" result="fail"/>
-    <!-- tag="data2" message="cleanup test3 data2" type="qdebug" -->
+   Expected (QString(&quot;hello0&quot;)): &quot;hello0&quot;" tag="data2"/>
+    <!-- type="qdebug" message="cleanup test3 data2" tag="data2" -->
   </testcase>
-  <testcase result="pass" name="cleanupTestCase">
-    <!-- message="cleanupTestCase cleanupTestCase (null)" type="qdebug" -->
+  <testcase name="cleanupTestCase" result="pass">
+    <!-- type="qdebug" message="cleanupTestCase cleanupTestCase (null)" -->
   </testcase>
   <system-err>
 <![CDATA[initTestCase initTestCase (null)]]>

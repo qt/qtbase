@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="0" failures="1" tests="2" name="tst_FailInit">
+<testsuite name="tst_FailInit" tests="2" failures="1" errors="0">
   <properties>
-    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
-    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
-    <property value="" name="QtBuild"/>
+    <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
+    <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
+    <property name="QtBuild" value=""/>
   </properties>
-  <testcase result="fail" name="initTestCase">
-    <failure message="&apos;false&apos; returned FALSE. ()" result="fail"/>
+  <testcase name="initTestCase" result="fail">
+    <failure result="fail" message="&apos;false&apos; returned FALSE. ()"/>
   </testcase>
-  <testcase result="pass" name="cleanupTestCase"/>
+  <testcase name="cleanupTestCase" result="pass"/>
   <system-err/>
 </testsuite>

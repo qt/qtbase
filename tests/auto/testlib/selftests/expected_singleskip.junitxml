@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="1" failures="0" tests="3" name="tst_SingleSkip">
+<testsuite name="tst_SingleSkip" tests="3" failures="0" errors="1">
   <properties>
-    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
-    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
-    <property value="" name="QtBuild"/>
+    <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
+    <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
+    <property name="QtBuild" value=""/>
   </properties>
-  <testcase result="pass" name="initTestCase"/>
+  <testcase name="initTestCase" result="pass"/>
   <testcase name="myTest">
-    <!-- message="skipping test" type="skip" -->
+    <!-- type="skip" message="skipping test" -->
   </testcase>
-  <testcase result="pass" name="cleanupTestCase"/>
+  <testcase name="cleanupTestCase" result="pass"/>
   <system-err>
 <![CDATA[skipping test]]>
   </system-err>

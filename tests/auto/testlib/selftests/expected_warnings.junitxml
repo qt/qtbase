@@ -1,41 +1,41 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="17" failures="4" tests="6" name="tst_Warnings">
+<testsuite name="tst_Warnings" tests="6" failures="4" errors="17">
   <properties>
-    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
-    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
-    <property value="" name="QtBuild"/>
+    <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
+    <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
+    <property name="QtBuild" value=""/>
   </properties>
-  <testcase result="pass" name="initTestCase"/>
-  <testcase result="pass" name="testWarnings">
-    <!-- message="Warning" type="qwarn" -->
-    <!-- message="Warning" type="qwarn" -->
-    <!-- message="Debug" type="qdebug" -->
-    <!-- message="Debug" type="qdebug" -->
-    <!-- message="Info" type="qinfo" -->
-    <!-- message="Info" type="qinfo" -->
-    <!-- message="Baba" type="qdebug" -->
-    <!-- message="Baba" type="qdebug" -->
-    <!-- message="Bubublabla" type="qdebug" -->
-    <!-- message="Babablabla" type="qwarn" -->
+  <testcase name="initTestCase" result="pass"/>
+  <testcase name="testWarnings" result="pass">
+    <!-- type="qwarn" message="Warning" -->
+    <!-- type="qwarn" message="Warning" -->
+    <!-- type="qdebug" message="Debug" -->
+    <!-- type="qdebug" message="Debug" -->
+    <!-- type="qinfo" message="Info" -->
+    <!-- type="qinfo" message="Info" -->
+    <!-- type="qdebug" message="Baba" -->
+    <!-- type="qdebug" message="Baba" -->
+    <!-- type="qdebug" message="Bubublabla" -->
+    <!-- type="qwarn" message="Babablabla" -->
   </testcase>
-  <testcase result="fail" name="testMissingWarnings">
-    <!-- message="Did not receive message: &quot;Warning0&quot;" type="info" -->
-    <!-- message="Did not receive message: &quot;Warning1&quot;" type="info" -->
-    <failure message="Not all expected messages were received" result="fail"/>
+  <testcase name="testMissingWarnings" result="fail">
+    <!-- type="info" message="Did not receive message: &quot;Warning0&quot;" -->
+    <!-- type="info" message="Did not receive message: &quot;Warning1&quot;" -->
+    <failure result="fail" message="Not all expected messages were received"/>
   </testcase>
-  <testcase result="fail" name="testMissingWarningsRegularExpression">
-    <!-- message="Did not receive any message matching: &quot;Warning\s\d&quot;" type="info" -->
-    <failure message="Not all expected messages were received" result="fail"/>
+  <testcase name="testMissingWarningsRegularExpression" result="fail">
+    <!-- type="info" message="Did not receive any message matching: &quot;Warning\s\d&quot;" -->
+    <failure result="fail" message="Not all expected messages were received"/>
   </testcase>
-  <testcase result="fail" name="testMissingWarningsWithData">
-    <!-- tag="first row" message="Did not receive message: &quot;Warning0&quot;" type="info" -->
-    <!-- tag="first row" message="Did not receive message: &quot;Warning1&quot;" type="info" -->
-    <failure tag="first row" message="Not all expected messages were received" result="fail"/>
-    <!-- tag="second row" message="Did not receive message: &quot;Warning0&quot;" type="info" -->
-    <!-- tag="second row" message="Did not receive message: &quot;Warning1&quot;" type="info" -->
-    <failure tag="second row" message="Not all expected messages were received" result="fail"/>
+  <testcase name="testMissingWarningsWithData" result="fail">
+    <!-- type="info" message="Did not receive message: &quot;Warning0&quot;" tag="first row" -->
+    <!-- type="info" message="Did not receive message: &quot;Warning1&quot;" tag="first row" -->
+    <failure result="fail" message="Not all expected messages were received" tag="first row"/>
+    <!-- type="info" message="Did not receive message: &quot;Warning0&quot;" tag="second row" -->
+    <!-- type="info" message="Did not receive message: &quot;Warning1&quot;" tag="second row" -->
+    <failure result="fail" message="Not all expected messages were received" tag="second row"/>
   </testcase>
-  <testcase result="pass" name="cleanupTestCase"/>
+  <testcase name="cleanupTestCase" result="pass"/>
   <system-err>
 <![CDATA[Warning]]>
 <![CDATA[Warning]]>

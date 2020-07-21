@@ -1,36 +1,36 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="5" failures="3" tests="9" name="tst_Xunit">
+<testsuite name="tst_Xunit" tests="9" failures="3" errors="5">
   <properties>
-    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
-    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
-    <property value="" name="QtBuild"/>
+    <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
+    <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
+    <property name="QtBuild" value=""/>
   </properties>
-  <testcase result="pass" name="initTestCase"/>
-  <testcase result="pass" name="testFunc1">
-    <!-- message="just a QWARN() !" type="warn" -->
+  <testcase name="initTestCase" result="pass"/>
+  <testcase name="testFunc1" result="pass">
+    <!-- type="warn" message="just a QWARN() !" -->
   </testcase>
-  <testcase result="fail" name="testFunc2">
-    <!-- message="a qDebug() call with comment&#x002D;ending stuff &#x002D;&#x002D;&gt;" type="qdebug" -->
-    <failure message="Compared values are not the same
+  <testcase name="testFunc2" result="fail">
+    <!-- type="qdebug" message="a qDebug() call with comment&#x002D;ending stuff &#x002D;&#x002D;&gt;" -->
+    <failure result="fail" message="Compared values are not the same
    Actual   (2): 2
-   Expected (3): 3" result="fail"/>
+   Expected (3): 3"/>
   </testcase>
   <testcase name="testFunc3">
-    <!-- message="skipping this function!" type="skip" -->
+    <!-- type="skip" message="skipping this function!" -->
   </testcase>
-  <testcase result="fail" name="testFunc4">
-    <failure message="a forced failure!" result="fail"/>
+  <testcase name="testFunc4" result="fail">
+    <failure result="fail" message="a forced failure!"/>
   </testcase>
-  <testcase result="xfail" name="testFunc5">
-    <!-- message="this failure is expected" type="info" -->
+  <testcase name="testFunc5" result="xfail">
+    <!-- type="info" message="this failure is expected" -->
   </testcase>
-  <testcase result="xfail" name="testFunc6">
-    <!-- message="this failure is also expected" type="info" -->
+  <testcase name="testFunc6" result="xfail">
+    <!-- type="info" message="this failure is also expected" -->
   </testcase>
-  <testcase result="xpass" name="testFunc7">
-    <failure message="&apos;true&apos; returned TRUE unexpectedly. ()" result="xpass"/>
+  <testcase name="testFunc7" result="xpass">
+    <failure result="xpass" message="&apos;true&apos; returned TRUE unexpectedly. ()"/>
   </testcase>
-  <testcase result="pass" name="cleanupTestCase"/>
+  <testcase name="cleanupTestCase" result="pass"/>
   <system-err>
 <![CDATA[just a QWARN() !]]>
 <![CDATA[a qDebug() call with comment-ending stuff -->]]>

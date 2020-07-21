@@ -1,55 +1,55 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="10" failures="8" tests="15" name="tst_Counting">
+<testsuite name="tst_Counting" tests="15" failures="8" errors="10">
   <properties>
-    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
-    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
-    <property value="" name="QtBuild"/>
+    <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
+    <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
+    <property name="QtBuild" value=""/>
   </properties>
-  <testcase result="pass" name="initTestCase"/>
-  <testcase result="pass" name="testPassPass"/>
-  <testcase result="pass" name="testPassSkip">
-    <!-- tag="row 2" message="Skipping" type="skip" -->
+  <testcase name="initTestCase" result="pass"/>
+  <testcase name="testPassPass" result="pass"/>
+  <testcase name="testPassSkip" result="pass">
+    <!-- type="skip" message="Skipping" tag="row 2" -->
   </testcase>
-  <testcase result="fail" name="testPassFail">
-    <failure tag="row 2" message="&apos;false&apos; returned FALSE. ()" result="fail"/>
+  <testcase name="testPassFail" result="fail">
+    <failure result="fail" message="&apos;false&apos; returned FALSE. ()" tag="row 2"/>
   </testcase>
-  <testcase result="pass" name="testSkipPass">
-    <!-- tag="row 1" message="Skipping" type="skip" -->
+  <testcase name="testSkipPass" result="pass">
+    <!-- type="skip" message="Skipping" tag="row 1" -->
   </testcase>
   <testcase name="testSkipSkip">
-    <!-- tag="row 1" message="Skipping" type="skip" -->
-    <!-- tag="row 2" message="Skipping" type="skip" -->
+    <!-- type="skip" message="Skipping" tag="row 1" -->
+    <!-- type="skip" message="Skipping" tag="row 2" -->
   </testcase>
-  <testcase result="fail" name="testSkipFail">
-    <!-- tag="row 1" message="Skipping" type="skip" -->
-    <failure tag="row 2" message="&apos;false&apos; returned FALSE. ()" result="fail"/>
+  <testcase name="testSkipFail" result="fail">
+    <!-- type="skip" message="Skipping" tag="row 1" -->
+    <failure result="fail" message="&apos;false&apos; returned FALSE. ()" tag="row 2"/>
   </testcase>
-  <testcase result="fail" name="testFailPass">
-    <failure tag="row 1" message="&apos;false&apos; returned FALSE. ()" result="fail"/>
+  <testcase name="testFailPass" result="fail">
+    <failure result="fail" message="&apos;false&apos; returned FALSE. ()" tag="row 1"/>
   </testcase>
-  <testcase result="fail" name="testFailSkip">
-    <failure tag="row 1" message="&apos;false&apos; returned FALSE. ()" result="fail"/>
-    <!-- tag="row 2" message="Skipping" type="skip" -->
+  <testcase name="testFailSkip" result="fail">
+    <failure result="fail" message="&apos;false&apos; returned FALSE. ()" tag="row 1"/>
+    <!-- type="skip" message="Skipping" tag="row 2" -->
   </testcase>
-  <testcase result="fail" name="testFailFail">
-    <failure tag="row 1" message="&apos;false&apos; returned FALSE. ()" result="fail"/>
-    <failure tag="row 2" message="&apos;false&apos; returned FALSE. ()" result="fail"/>
+  <testcase name="testFailFail" result="fail">
+    <failure result="fail" message="&apos;false&apos; returned FALSE. ()" tag="row 1"/>
+    <failure result="fail" message="&apos;false&apos; returned FALSE. ()" tag="row 2"/>
   </testcase>
-  <testcase result="fail" name="testFailInInit">
-    <failure tag="fail" message="Fail in init()" result="fail"/>
+  <testcase name="testFailInInit" result="fail">
+    <failure result="fail" message="Fail in init()" tag="fail"/>
   </testcase>
-  <testcase result="fail" name="testFailInCleanup">
-    <!-- tag="fail" message="This test function should execute and then QFAIL in cleanup()" type="qdebug" -->
-    <failure tag="fail" message="Fail in cleanup()" result="fail"/>
+  <testcase name="testFailInCleanup" result="fail">
+    <!-- type="qdebug" message="This test function should execute and then QFAIL in cleanup()" tag="fail" -->
+    <failure result="fail" message="Fail in cleanup()" tag="fail"/>
   </testcase>
-  <testcase result="pass" name="testSkipInInit">
-    <!-- tag="skip" message="Skip in init()" type="skip" -->
+  <testcase name="testSkipInInit" result="pass">
+    <!-- type="skip" message="Skip in init()" tag="skip" -->
   </testcase>
-  <testcase result="pass" name="testSkipInCleanup">
-    <!-- tag="skip" message="This test function should execute and then QSKIP in cleanup()" type="qdebug" -->
-    <!-- tag="skip" message="Skip in cleanup()" type="skip" -->
+  <testcase name="testSkipInCleanup" result="pass">
+    <!-- type="qdebug" message="This test function should execute and then QSKIP in cleanup()" tag="skip" -->
+    <!-- type="skip" message="Skip in cleanup()" tag="skip" -->
   </testcase>
-  <testcase result="pass" name="cleanupTestCase"/>
+  <testcase name="cleanupTestCase" result="pass"/>
   <system-err>
 <![CDATA[Skipping]]>
 <![CDATA[Skipping]]>
