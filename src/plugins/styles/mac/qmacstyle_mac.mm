@@ -2611,7 +2611,7 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
         ret = true;
         break;
     case SH_Slider_AbsoluteSetButtons:
-        ret = Qt::LeftButton|Qt::MidButton;
+        ret = Qt::LeftButton|Qt::MiddleButton;
         break;
     case SH_Slider_PageSetButtons:
         ret = 0;
