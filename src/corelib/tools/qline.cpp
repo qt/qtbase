@@ -310,11 +310,6 @@ QDataStream &operator>>(QDataStream &stream, QLine &line)
 
 #endif // QT_NO_DATASTREAM
 
-
-#ifndef M_2PI
-#define M_2PI 6.28318530717958647692528676655900576
-#endif
-
 /*!
     \class QLineF
     \inmodule QtCore
@@ -597,7 +592,7 @@ qreal QLineF::angle() const
     const qreal dx = pt2.x() - pt1.x();
     const qreal dy = pt2.y() - pt1.y();
 
-    const qreal theta = qAtan2(-dy, dx) * 360.0 / M_2PI;
+    const qreal theta = qRadiansToDegrees(qAtan2(-dy, dx));
 
     const qreal theta_normalized = theta < 0 ? theta + 360 : theta;
 
@@ -621,7 +616,7 @@ qreal QLineF::angle() const
 */
 void QLineF::setAngle(qreal angle)
 {
-    const qreal angleR = angle * M_2PI / 360.0;
+    const qreal angleR = qDegreesToRadians(angle);
     const qreal l = length();
 
     const qreal dx = qCos(angleR) * l;
@@ -643,7 +638,7 @@ void QLineF::setAngle(qreal angle)
 */
 QLineF QLineF::fromPolar(qreal length, qreal angle)
 {
-    const qreal angleR = angle * M_2PI / 360.0;
+    const qreal angleR = qDegreesToRadians(angle);
     return QLineF(0, 0, qCos(angleR) * length, -qSin(angleR) * length);
 }
 
