@@ -1511,15 +1511,8 @@ void QCocoaWindow::recreateWindowIfNeeded()
         setWindowFilePath(window()->filePath()); // Also sets window icon
         setWindowState(window()->windowState());
     } else {
-        // Child windows have no NSWindow, link the NSViews instead.
+        // Child windows have no NSWindow, re-parent to superview instead
         [parentCocoaWindow->m_view addSubview:m_view];
-        QRect rect = windowGeometry();
-        // Prevent setting a (0,0) window size; causes opengl context
-        // "Invalid Drawable" warnings.
-        if (rect.isNull())
-            rect.setSize(QSize(1, 1));
-        NSRect frame = NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height());
-        [m_view setFrame:frame];
         [m_view setHidden:!window()->isVisible()];
     }
 
