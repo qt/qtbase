@@ -1,6 +1,5 @@
 TAP version 13
 # tst_Signaldumper
-# Signal: QThread(_POINTER_) started ()
 ok 1 - initTestCase()
 # Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()
 # Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))
@@ -146,7 +145,6 @@ ok 19 - variousTypes()
 # Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()
 ok 20 - deletingSender()
 ok 21 - cleanupTestCase()
-#     Signal: QThread(_POINTER_) finished ()
 1..21
 # tests 21
 # pass 21

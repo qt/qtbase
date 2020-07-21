@@ -1,6 +1,5 @@
 ##teamcity[testSuiteStarted name='tst_Signaldumper' flowId='tst_Signaldumper']
 ##teamcity[testStarted name='initTestCase()' flowId='tst_Signaldumper']
-##teamcity[testStdOut name='initTestCase()' out='INFO: Signal: QThread(_POINTER_) started ()' flowId='tst_Signaldumper']
 ##teamcity[testFinished name='initTestCase()' flowId='tst_Signaldumper']
 ##teamcity[testStarted name='noConnections()' flowId='tst_Signaldumper']
 ##teamcity[testStdOut name='noConnections()' out='INFO: Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()|nINFO: Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))' flowId='tst_Signaldumper']

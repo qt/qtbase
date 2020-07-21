@@ -60,11 +60,14 @@ class QByteArray;
 class QSignalDumper
 {
 public:
+    static void setEnabled(bool);
     static void startDump();
     static void endDump();
 
     static void ignoreClass(const QByteArray &klass);
     static void clearIgnoredClasses();
+private:
+    static bool s_isEnabled;
 };
 
 QT_END_NAMESPACE

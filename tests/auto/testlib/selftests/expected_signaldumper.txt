@@ -1,6 +1,5 @@
 ********* Start testing of tst_Signaldumper *********
 Config: Using QtTest library
-INFO   : tst_Signaldumper::initTestCase() Signal: QThread(_POINTER_) started ()
 PASS   : tst_Signaldumper::initTestCase()
 INFO   : tst_Signaldumper::noConnections() Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()
 INFO   : tst_Signaldumper::noConnections() Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))
@@ -146,6 +145,5 @@ PASS   : tst_Signaldumper::variousTypes()
 INFO   : tst_Signaldumper::deletingSender() Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()
 PASS   : tst_Signaldumper::deletingSender()
 PASS   : tst_Signaldumper::cleanupTestCase()
-INFO   : tst_Signaldumper::UnknownTestFunc()     Signal: QThread(_POINTER_) finished ()
 Totals: 21 passed, 0 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_Signaldumper *********

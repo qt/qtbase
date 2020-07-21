@@ -643,7 +643,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
         } else if (strcmp(argv[i], "-v2") == 0) {
             QTestLog::setVerboseLevel(2);
         } else if (strcmp(argv[i], "-vs") == 0) {
-            QSignalDumper::startDump();
+            QSignalDumper::setEnabled(true);
         } else if (strcmp(argv[i], "-o") == 0) {
             if (i + 1 >= argc) {
                 fprintf(stderr, "-o needs an extra parameter specifying the filename and optional format\n");
@@ -1485,6 +1485,8 @@ void TestMethods::invokeTests(QObject *testObject) const
         watchDog.reset(new WatchDog);
     }
 
+    QSignalDumper::startDump();
+
     if (!QTestResult::skipCurrentTest() && !QTest::currentTestFailed()) {
         if (m_initTestCaseMethod.isValid())
             m_initTestCaseMethod.invoke(testObject, Qt::DirectConnection);
@@ -1517,6 +1519,8 @@ void TestMethods::invokeTests(QObject *testObject) const
     }
     QTestResult::finishedCurrentTestFunction();
     QTestResult::setCurrentTestFunction(nullptr);
+
+    QSignalDumper::endDump();
 }
 
 #if defined(Q_OS_WIN)
@@ -1964,8 +1968,6 @@ void QTest::qCleanup()
 
     delete QBenchmarkGlobalData::current;
     QBenchmarkGlobalData::current = nullptr;
-
-    QSignalDumper::endDump();
 
 #if defined(Q_OS_MACOS)
     IOPMAssertionRelease(macPowerSavingDisabled);
