@@ -363,19 +363,12 @@ QDataStream &operator>>(QDataStream &stream, QLine &line)
 */
 
 /*!
-    \enum QLineF::IntersectType
+    \typealias QLineF::IntersectType
     \obsolete Use QLineF::IntersectionType instead.
-
-    \value NoIntersection
-           Lines do not intersect.
-    \value UnboundedIntersection
-           Lines intersect, but not within the range defined by their lengths.
-    \value BoundedIntersection
-           Lnes intersect within the range defined by their lengths.
 */
 
 /*!
-    \typealias QLineF::IntersectionType
+    \enum QLineF::IntersectionType
 
     Describes the intersection between two lines.
 

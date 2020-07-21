@@ -213,11 +213,12 @@ Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QLine &);
 /*******************************************************************************
  * class QLineF
  *******************************************************************************/
-class Q_CORE_EXPORT QLineF {
+class Q_CORE_EXPORT QLineF
+{
 public:
 
-    enum IntersectType { NoIntersection, BoundedIntersection, UnboundedIntersection };
-    using IntersectionType = IntersectType;
+    enum IntersectionType { NoIntersection, BoundedIntersection, UnboundedIntersection };
+    using IntersectType = IntersectionType; // deprecated name
 
     constexpr inline QLineF();
     constexpr inline QLineF(const QPointF &pt1, const QPointF &pt2);
