@@ -2292,15 +2292,6 @@ QXmlStreamAttribute::QXmlStreamAttribute()
     m_isDefault = false;
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-/*!
-  Destructs an attribute.
- */
-QXmlStreamAttribute::~QXmlStreamAttribute()
-{
-}
-#endif
-
 /*!  Constructs an attribute in the namespace described with \a
   namespaceUri with \a name and value \a value.
  */
@@ -2374,30 +2365,6 @@ QXmlStreamAttribute::QXmlStreamAttribute(const QString &qualifiedName, const QSt
     not equal; otherwise returns \c false.
  */
 
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-/*!
-  Creates a copy of \a other.
- */
-QXmlStreamAttribute::QXmlStreamAttribute(const QXmlStreamAttribute &other)
-{
-    *this = other;
-}
-
-/*!
-  Assigns \a other to this attribute.
- */
-QXmlStreamAttribute& QXmlStreamAttribute::operator=(const QXmlStreamAttribute &other)
-{
-    m_name = other.m_name;
-    m_namespaceUri = other.m_namespaceUri;
-    m_qualifiedName = other.m_qualifiedName;
-    m_value = other.m_value;
-    m_isDefault = other.m_isDefault;
-    return *this;
-}
-#endif
-
 /*!
     \class QXmlStreamAttributes
     \inmodule QtCore
@@ -2452,34 +2419,6 @@ QXmlStreamAttribute& QXmlStreamAttribute::operator=(const QXmlStreamAttribute &o
 QXmlStreamNotationDeclaration::QXmlStreamNotationDeclaration()
 {
 }
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-/*!
-  Creates a copy of \a other.
- */
-QXmlStreamNotationDeclaration::QXmlStreamNotationDeclaration(const QXmlStreamNotationDeclaration &other)
-{
-    *this = other;
-}
-
-/*!
-  Assigns \a other to this notation declaration.
- */
-QXmlStreamNotationDeclaration& QXmlStreamNotationDeclaration::operator=(const QXmlStreamNotationDeclaration &other)
-{
-    m_name = other.m_name;
-    m_systemId = other.m_systemId;
-    m_publicId = other.m_publicId;
-    return *this;
-}
-
-/*!
-Destructs this notation declaration.
-*/
-QXmlStreamNotationDeclaration::~QXmlStreamNotationDeclaration()
-{
-}
-#endif
 
 /*! \fn QStringRef QXmlStreamNotationDeclaration::name() const
 
@@ -2552,32 +2491,6 @@ QXmlStreamNamespaceDeclaration::QXmlStreamNamespaceDeclaration(const QString &pr
     m_namespaceUri = namespaceUri;
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-/*!
-  Creates a copy of \a other.
- */
-QXmlStreamNamespaceDeclaration::QXmlStreamNamespaceDeclaration(const QXmlStreamNamespaceDeclaration &other)
-{
-    *this = other;
-}
-
-/*!
-  Assigns \a other to this namespace declaration.
- */
-QXmlStreamNamespaceDeclaration& QXmlStreamNamespaceDeclaration::operator=(const QXmlStreamNamespaceDeclaration &other)
-{
-    m_prefix = other.m_prefix;
-    m_namespaceUri = other.m_namespaceUri;
-    return *this;
-}
-/*!
-Destructs this namespace declaration.
-*/
-QXmlStreamNamespaceDeclaration::~QXmlStreamNamespaceDeclaration()
-{
-}
-#endif
-
 /*! \fn QStringRef QXmlStreamNamespaceDeclaration::prefix() const
 
 Returns the prefix.
@@ -2623,36 +2536,6 @@ Returns the namespaceUri.
 QXmlStreamEntityDeclaration::QXmlStreamEntityDeclaration()
 {
 }
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-/*!
-  Creates a copy of \a other.
- */
-QXmlStreamEntityDeclaration::QXmlStreamEntityDeclaration(const QXmlStreamEntityDeclaration &other)
-{
-    *this = other;
-}
-
-/*!
-  Assigns \a other to this entity declaration.
- */
-QXmlStreamEntityDeclaration& QXmlStreamEntityDeclaration::operator=(const QXmlStreamEntityDeclaration &other)
-{
-    m_name = other.m_name;
-    m_notationName = other.m_notationName;
-    m_systemId = other.m_systemId;
-    m_publicId = other.m_publicId;
-    m_value = other.m_value;
-    return *this;
-}
-
-/*!
-  Destructs this entity declaration.
-*/
-QXmlStreamEntityDeclaration::~QXmlStreamEntityDeclaration()
-{
-}
-#endif
 
 /*! \fn QXmlStreamStringRef::swap(QXmlStreamStringRef &other)
     \since 5.6

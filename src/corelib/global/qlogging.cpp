@@ -1944,20 +1944,6 @@ void qErrnoWarning(int code, const char *msg, ...)
 }
 
 /*!
-    \typedef QtMsgHandler
-    \relates <QtGlobal>
-    \deprecated
-
-    This is a typedef for a pointer to a function with the following
-    signature:
-
-    \snippet code/src_corelib_global_qglobal.cpp 7
-
-    This typedef is deprecated, you should use QtMessageHandler instead.
-    \sa QtMsgType, QtMessageHandler, qInstallMessageHandler()
-*/
-
-/*!
     \typedef QtMessageHandler
     \relates <QtGlobal>
     \since 5.0

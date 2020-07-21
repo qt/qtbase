@@ -1790,21 +1790,6 @@ inline char qToLower(char ch)
     \sa fromRawData(), QChar, QLatin1String, QByteArray, QStringRef
 */
 
-/*!
-    \enum QString::SplitBehavior
-
-    \obsolete
-    Use Qt::SplitBehavior instead.
-
-    This enum specifies how the split() function should behave with
-    respect to empty strings.
-
-    \value KeepEmptyParts  If a field is empty, keep it in the result.
-    \value SkipEmptyParts  If a field is empty, don't include it in the result.
-
-    \sa split()
-*/
-
 /*! \typedef QString::ConstIterator
 
     Qt-style synonym for QString::const_iterator.
@@ -2476,20 +2461,6 @@ QString &QString::operator=(QChar ch)
     \sa append(), prepend(), replace(), remove()
 */
 
-
-/*!
-    \fn QString& QString::insert(qsizetype position, const QStringRef &str)
-    \since 5.5
-    \overload insert()
-
-    Inserts the string reference \a str at the given index \a position and
-    returns a reference to this string.
-
-    If the given \a position is greater than size(), the array is
-    first extended using resize().
-*/
-
-
 /*!
     \fn QString& QString::insert(qsizetype position, QStringView str)
     \since 6.0
@@ -2750,14 +2721,6 @@ QString &QString::append(QChar ch)
     \overload prepend()
 
     Prepends \a len characters from the QChar array \a str to this string and
-    returns a reference to this string.
-*/
-
-/*! \fn QString &QString::prepend(const QStringRef &str)
-    \since 5.5
-    \overload prepend()
-
-    Prepends the string reference \a str to the beginning of this string and
     returns a reference to this string.
 */
 
@@ -4062,20 +4025,6 @@ qsizetype QString::count(QStringView str, Qt::CaseSensitivity cs) const
     Returns \c true if this string contains an occurrence of the
     character \a ch; otherwise returns \c false.
 */
-
-#if QT_STRINGVIEW_LEVEL < 2
-/*! \fn bool QString::contains(const QStringRef &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
-    \since 4.8
-
-    Returns \c true if this string contains an occurrence of the string
-    reference \a str; otherwise returns \c false.
-
-    If \a cs is Qt::CaseSensitive (default), the search is
-    case sensitive; otherwise the search is case insensitive.
-
-    \sa indexOf(), count()
-*/
-#endif // QT_STRINGVIEW_LEVEL < 2
 
 /*! \fn bool QString::contains(QStringView str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
     \since 5.14
@@ -5548,13 +5497,6 @@ QString& QString::fill(QChar ch, qsizetype size)
     for example.
 
     \sa QT_NO_CAST_FROM_ASCII
-*/
-
-/*! \fn QString &QString::operator+=(const QStringRef &str)
-
-    \overload operator+=()
-
-    Appends the string section referenced by \a str to this string.
 */
 
 /*! \fn QString &QString::operator+=(QStringView str)
@@ -11896,13 +11838,6 @@ float QStringRef::toFloat(bool *ok) const
 {
     return QLocaleData::convertDoubleToFloat(toDouble(ok), ok);
 }
-
-/*!
-    \obsolete
-    \fn QString Qt::escape(const QString &plain)
-
-    Use QString::toHtmlEscaped() instead.
-*/
 
 /*!
     \since 5.0

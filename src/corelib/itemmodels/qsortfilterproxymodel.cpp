@@ -2832,7 +2832,8 @@ void QSortFilterProxyModel::setRecursiveFilteringEnabled(bool recursive)
 
 /*!
     \since 6.0
-    \fn void QSortFilterProxyModel::showMatchesChildrenChanged(bool autoAcceptChildRows)
+    \fn void QSortFilterProxyModel::autoAcceptChildRowsChanged(bool autoAcceptChildRows)
+
     \brief This signals is emitted when the value of the \a autoAcceptChildRows property is changed.
 
     \sa autoAcceptChildRows

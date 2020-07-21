@@ -2745,11 +2745,9 @@
                                 default delegate. (Qt::Alignment)
     \value BackgroundRole       The background brush used for items rendered with
                                 the default delegate. (QBrush)
-    \value BackgroundColorRole  This role is obsolete. Use BackgroundRole instead.
     \value ForegroundRole       The foreground brush (text color, typically)
                                 used for items rendered with the default delegate.
                                 (QBrush)
-    \value TextColorRole        This role is obsolete. Use ForegroundRole instead.
     \value CheckStateRole       This role is used to obtain the checked state of
                                 an item. (Qt::CheckState)
     \value InitialSortOrderRole This role is used to obtain the initial sort order

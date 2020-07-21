@@ -2103,7 +2103,7 @@ QByteArray &QByteArray::replace(const char *c, const QByteArray &after)
     \overload
 
     Replaces every occurrence of the \a bsize bytes starting at \a before with
-    the \asize bytes starting at \a after. Since the sizes of the strings are
+    the \a size bytes starting at \a after. Since the sizes of the strings are
     given by \a bsize and \a asize, they may contain '\\0' bytes and do not need
     to be '\\0'-terminated.
 */

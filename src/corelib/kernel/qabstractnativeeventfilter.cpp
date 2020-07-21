@@ -74,9 +74,8 @@ QAbstractNativeEventFilter::~QAbstractNativeEventFilter()
         eventDispatcher->removeNativeEventFilter(this);
 }
 
-// ### fixme Qt 6: result will be qintptr *
 /*!
-    \fn bool QAbstractNativeEventFilter::nativeEventFilter(const QByteArray &eventType, void *message, long *result)
+    \fn bool QAbstractNativeEventFilter::nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result)
 
     This method is called for every native event.
 

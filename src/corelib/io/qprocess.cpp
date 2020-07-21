@@ -766,13 +766,6 @@ void QProcessPrivate::Channel::clear()
 */
 
 /*!
-    \fn void QProcess::error(QProcess::ProcessError error)
-    \obsolete
-
-    Use errorOccurred() instead.
-*/
-
-/*!
     \fn void QProcess::errorOccurred(QProcess::ProcessError error)
     \since 5.6
 

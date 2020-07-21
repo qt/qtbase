@@ -660,7 +660,7 @@
 */
 
 /*!
-    \fn int QByteArrayView::count(QByteArrayView &bv) const
+    \fn qizetype QByteArrayView::count(QByteArrayView bv) const
 
     Returns the number of (potentially overlapping) occurrences of the
     sequence of bytes viewed by \a bv in this byte array view.

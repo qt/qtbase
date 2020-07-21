@@ -863,21 +863,6 @@ bool QTemporaryFile::rename(const QString &newName)
 }
 
 /*!
-  \fn QTemporaryFile *QTemporaryFile::createLocalFile(const QString &fileName)
-  \overload
-  \obsolete
-
-  Use QTemporaryFile::createNativeFile(const QString &fileName) instead.
-*/
-
-/*!
-  \fn QTemporaryFile *QTemporaryFile::createLocalFile(QFile &file)
-  \obsolete
-
-  Use QTemporaryFile::createNativeFile(QFile &file) instead.
-*/
-
-/*!
   \fn QTemporaryFile *QTemporaryFile::createNativeFile(const QString &fileName)
   \overload
 

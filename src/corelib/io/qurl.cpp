@@ -1932,21 +1932,6 @@ void QUrl::setUrl(const QString &url, ParsingMode parsingMode)
 }
 
 /*!
-    \fn void QUrl::setEncodedUrl(const QByteArray &encodedUrl, ParsingMode parsingMode)
-    \deprecated
-    Constructs a URL by parsing the contents of \a encodedUrl.
-
-    \a encodedUrl is assumed to be a URL string in percent encoded
-    form, containing only ASCII characters.
-
-    The parsing mode \a parsingMode is used for parsing \a encodedUrl.
-
-    \obsolete Use setUrl(QString::fromUtf8(encodedUrl), parsingMode)
-
-    \sa setUrl()
-*/
-
-/*!
     Sets the scheme of the URL to \a scheme. As a scheme can only
     contain ASCII characters, no conversion or decoding is done on the
     input. It must also start with an ASCII letter.
@@ -2215,35 +2200,6 @@ QString QUrl::userName(ComponentFormattingOptions options) const
 }
 
 /*!
-    \fn void QUrl::setEncodedUserName(const QByteArray &userName)
-    \deprecated
-    \since 4.4
-
-    Sets the URL's user name to the percent-encoded \a userName. The \a
-    userName is part of the user info element in the authority of the
-    URL, as described in setUserInfo().
-
-    \obsolete Use setUserName(QString::fromUtf8(userName))
-
-    \sa setUserName(), encodedUserName(), setUserInfo()
-*/
-
-/*!
-    \fn QByteArray QUrl::encodedUserName() const
-    \deprecated
-    \since 4.4
-
-    Returns the user name of the URL if it is defined; otherwise
-    an empty string is returned. The returned value will have its
-    non-ASCII and other control characters percent-encoded, as in
-    toEncoded().
-
-    \obsolete Use userName(QUrl::FullyEncoded).toLatin1()
-
-    \sa setEncodedUserName()
-*/
-
-/*!
     Sets the URL's password to \a password. The \a password is part of
     the user info element in the authority of the URL, as described in
     setUserInfo().
@@ -2305,35 +2261,6 @@ QString QUrl::password(ComponentFormattingOptions options) const
         d->appendPassword(result, options);
     return result;
 }
-
-/*!
-    \fn void QUrl::setEncodedPassword(const QByteArray &password)
-    \deprecated
-    \since 4.4
-
-    Sets the URL's password to the percent-encoded \a password. The \a
-    password is part of the user info element in the authority of the
-    URL, as described in setUserInfo().
-
-    \obsolete Use setPassword(QString::fromUtf8(password));
-
-    \sa setPassword(), encodedPassword(), setUserInfo()
-*/
-
-/*!
-    \fn QByteArray QUrl::encodedPassword() const
-    \deprecated
-    \since 4.4
-
-    Returns the password of the URL if it is defined; otherwise an
-    empty string is returned. The returned value will have its
-    non-ASCII and other control characters percent-encoded, as in
-    toEncoded().
-
-    \obsolete Use password(QUrl::FullyEncoded).toLatin1()
-
-    \sa setEncodedPassword(), toEncoded()
-*/
 
 /*!
     Sets the host of the URL to \a host. The host is part of the
@@ -2415,40 +2342,6 @@ QString QUrl::host(ComponentFormattingOptions options) const
     }
     return result;
 }
-
-/*!
-    \fn void QUrl::setEncodedHost(const QByteArray &host)
-    \deprecated
-    \since 4.4
-
-    Sets the URL's host to the ACE- or percent-encoded \a host. The \a
-    host is part of the user info element in the authority of the
-    URL, as described in setAuthority().
-
-    \obsolete Use setHost(QString::fromUtf8(host)).
-
-    \sa setHost(), encodedHost(), setAuthority(), fromAce()
-*/
-
-/*!
-    \fn QByteArray QUrl::encodedHost() const
-    \deprecated
-    \since 4.4
-
-    Returns the host part of the URL if it is defined; otherwise
-    an empty string is returned.
-
-    Note: encodedHost() does not return percent-encoded hostnames. Instead,
-    the ACE-encoded (bare ASCII in Punycode encoding) form will be
-    returned for any non-ASCII hostname.
-
-    This function is equivalent to calling QUrl::toAce() on the return
-    value of host().
-
-    \obsolete Use host(QUrl::FullyEncoded).toLatin1() or toAce(host()).
-
-    \sa setEncodedHost()
-*/
 
 /*!
     Sets the port of the URL to \a port. The port is part of the
@@ -2576,42 +2469,6 @@ QString QUrl::path(ComponentFormattingOptions options) const
 }
 
 /*!
-    \fn void QUrl::setEncodedPath(const QByteArray &path)
-    \deprecated
-    \since 4.4
-
-    Sets the URL's path to the percent-encoded \a path.  The path is
-    the part of the URL that comes after the authority but before the
-    query string.
-
-    \image qurl-ftppath.png
-
-    For non-hierarchical schemes, the path will be everything
-    following the scheme declaration, as in the following example:
-
-    \image qurl-mailtopath.png
-
-    \obsolete Use setPath(QString::fromUtf8(path)).
-
-    \sa setPath(), encodedPath(), setUserInfo()
-*/
-
-/*!
-    \fn QByteArray QUrl::encodedPath() const
-    \deprecated
-    \since 4.4
-
-    Returns the path of the URL if it is defined; otherwise an
-    empty string is returned. The returned value will have its
-    non-ASCII and other control characters percent-encoded, as in
-    toEncoded().
-
-    \obsolete Use path(QUrl::FullyEncoded).toLatin1().
-
-    \sa setEncodedPath(), toEncoded()
-*/
-
-/*!
     \since 5.2
 
     Returns the name of the file, excluding the directory path.
@@ -2704,29 +2561,6 @@ void QUrl::setQuery(const QString &query, ParsingMode mode)
 }
 
 /*!
-    \fn void QUrl::setEncodedQuery(const QByteArray &query)
-    \deprecated
-
-    Sets the query string of the URL to \a query. The string is
-    inserted as-is, and no further encoding is performed when calling
-    toEncoded().
-
-    This function is useful if you need to pass a query string that
-    does not fit into the key-value pattern, or that uses a different
-    scheme for encoding special characters than what is suggested by
-    QUrl.
-
-    Passing a value of QByteArray() to \a query (a null QByteArray) unsets
-    the query completely. However, passing a value of QByteArray("")
-    will set the query to an empty value, as if the original URL
-    had a lone "?".
-
-    \obsolete Use setQuery, which has the same null / empty behavior.
-
-    \sa encodedQuery(), hasQuery()
-*/
-
-/*!
     \overload
     \since 5.0
     Sets the query string of the URL to \a query.
@@ -2749,248 +2583,6 @@ void QUrl::setQuery(const QUrlQuery &query)
     else
         d->sectionIsPresent |= QUrlPrivate::Query;
 }
-
-/*!
-    \fn void QUrl::setQueryItems(const QList<QPair<QString, QString> > &query)
-    \deprecated
-
-    Sets the query string of the URL to an encoded version of \a
-    query. The contents of \a query are converted to a string
-    internally, each pair delimited by the character returned by
-    \l {QUrlQuery::queryPairDelimiter()}{queryPairDelimiter()}, and the key and value are delimited by
-    \l {QUrlQuery::queryValueDelimiter()}{queryValueDelimiter()}
-
-    \note This method does not encode spaces (ASCII 0x20) as plus (+) signs,
-    like HTML forms do. If you need that kind of encoding, you must encode
-    the value yourself and use QUrl::setEncodedQueryItems.
-
-    \obsolete Use QUrlQuery and setQuery().
-
-    \sa queryItems(), setEncodedQueryItems()
-*/
-
-/*!
-    \fn void QUrl::setEncodedQueryItems(const QList<QPair<QByteArray, QByteArray> > &query)
-    \deprecated
-    \since 4.4
-
-    Sets the query string of the URL to the encoded version of \a
-    query. The contents of \a query are converted to a string
-    internally, each pair delimited by the character returned by
-    \l {QUrlQuery::queryPairDelimiter()}{queryPairDelimiter()}, and the key and value are delimited by
-    \l {QUrlQuery::queryValueDelimiter()}{queryValueDelimiter()}.
-
-    \obsolete Use QUrlQuery and setQuery().
-
-    \sa encodedQueryItems(), setQueryItems()
-*/
-
-/*!
-    \fn void QUrl::addQueryItem(const QString &key, const QString &value)
-    \deprecated
-
-    Inserts the pair \a key = \a value into the query string of the
-    URL.
-
-    The key-value pair is encoded before it is added to the query. The
-    pair is converted into separate strings internally. The \a key and
-    \a value is first encoded into UTF-8 and then delimited by the
-    character returned by \l {QUrlQuery::queryValueDelimiter()}{queryValueDelimiter()}.
-    Each key-value pair is delimited by the character returned by
-    \l {QUrlQuery::queryPairDelimiter()}{queryPairDelimiter()}
-
-    \note This method does not encode spaces (ASCII 0x20) as plus (+) signs,
-    like HTML forms do. If you need that kind of encoding, you must encode
-    the value yourself and use QUrl::addEncodedQueryItem.
-
-    \obsolete Use QUrlQuery and setQuery().
-
-    \sa addEncodedQueryItem()
-*/
-
-/*!
-    \fn void QUrl::addEncodedQueryItem(const QByteArray &key, const QByteArray &value)
-    \deprecated
-    \since 4.4
-
-    Inserts the pair \a key = \a value into the query string of the
-    URL.
-
-    \obsolete Use QUrlQuery and setQuery().
-
-    \sa addQueryItem()
-*/
-
-/*!
-    \fn QList<QPair<QString, QString> > QUrl::queryItems() const
-    \deprecated
-
-    Returns the query string of the URL, as a map of keys and values.
-
-    \note This method does not decode spaces plus (+) signs as spaces (ASCII
-    0x20), like HTML forms do. If you need that kind of decoding, you must
-    use QUrl::encodedQueryItems and decode the data yourself.
-
-    \obsolete Use QUrlQuery.
-
-    \sa setQueryItems(), setEncodedQuery()
-*/
-
-/*!
-    \fn QList<QPair<QByteArray, QByteArray> > QUrl::encodedQueryItems() const
-    \deprecated
-    \since 4.4
-
-    Returns the query string of the URL, as a map of encoded keys and values.
-
-    \obsolete Use QUrlQuery.
-
-    \sa setEncodedQueryItems(), setQueryItems(), setEncodedQuery()
-*/
-
-/*!
-    \fn bool QUrl::hasQueryItem(const QString &key) const
-    \deprecated
-
-    Returns \c true if there is a query string pair whose key is equal
-    to \a key from the URL.
-
-    \obsolete Use QUrlQuery.
-
-    \sa hasEncodedQueryItem()
-*/
-
-/*!
-    \fn bool QUrl::hasEncodedQueryItem(const QByteArray &key) const
-    \deprecated
-    \since 4.4
-
-    Returns \c true if there is a query string pair whose key is equal
-    to \a key from the URL.
-
-    \obsolete Use QUrlQuery.
-
-    \sa hasQueryItem()
-*/
-
-/*!
-    \fn QString QUrl::queryItemValue(const QString &key) const
-    \deprecated
-
-    Returns the first query string value whose key is equal to \a key
-    from the URL.
-
-    \note This method does not decode spaces plus (+) signs as spaces (ASCII
-    0x20), like HTML forms do. If you need that kind of decoding, you must
-    use QUrl::encodedQueryItemValue and decode the data yourself.
-
-    \obsolete Use QUrlQuery.
-
-    \sa allQueryItemValues()
-*/
-
-/*!
-    \fn QByteArray QUrl::encodedQueryItemValue(const QByteArray &key) const
-    \deprecated
-    \since 4.4
-
-    Returns the first query string value whose key is equal to \a key
-    from the URL.
-
-    \obsolete Use QUrlQuery.
-
-    \sa queryItemValue(), allQueryItemValues()
-*/
-
-/*!
-    \fn QStringList QUrl::allQueryItemValues(const QString &key) const
-    \deprecated
-
-    Returns the a list of query string values whose key is equal to
-    \a key from the URL.
-
-    \note This method does not decode spaces plus (+) signs as spaces (ASCII
-    0x20), like HTML forms do. If you need that kind of decoding, you must
-    use QUrl::allEncodedQueryItemValues and decode the data yourself.
-
-    \obsolete Use QUrlQuery.
-
-    \sa queryItemValue()
-*/
-
-/*!
-    \fn QList<QByteArray> QUrl::allEncodedQueryItemValues(const QByteArray &key) const
-    \deprecated
-    \since 4.4
-
-    Returns the a list of query string values whose key is equal to
-    \a key from the URL.
-
-    \obsolete Use QUrlQuery.
-
-    \sa allQueryItemValues(), queryItemValue(), encodedQueryItemValue()
-*/
-
-/*!
-    \fn void QUrl::removeQueryItem(const QString &key)
-    \deprecated
-
-    Removes the first query string pair whose key is equal to \a key
-    from the URL.
-
-    \obsolete Use QUrlQuery.
-
-    \sa removeAllQueryItems()
-*/
-
-/*!
-    \fn void QUrl::removeEncodedQueryItem(const QByteArray &key)
-    \deprecated
-    \since 4.4
-
-    Removes the first query string pair whose key is equal to \a key
-    from the URL.
-
-    \obsolete Use QUrlQuery.
-
-    \sa removeQueryItem(), removeAllQueryItems()
-*/
-
-/*!
-    \fn void QUrl::removeAllQueryItems(const QString &key)
-    \deprecated
-
-    Removes all the query string pairs whose key is equal to \a key
-    from the URL.
-
-    \obsolete Use QUrlQuery.
-
-   \sa removeQueryItem()
-*/
-
-/*!
-    \fn void QUrl::removeAllEncodedQueryItems(const QByteArray &key)
-    \deprecated
-    \since 4.4
-
-    Removes all the query string pairs whose key is equal to \a key
-    from the URL.
-
-    \obsolete Use QUrlQuery.
-
-   \sa removeQueryItem()
-*/
-
-/*!
-    \fn QByteArray QUrl::encodedQuery() const
-    \deprecated
-
-    Returns the query string of the URL in percent encoded form.
-
-    \obsolete Use query(QUrl::FullyEncoded).toLatin1()
-
-    \sa setEncodedQuery(), query()
-*/
 
 /*!
     Returns the query string of the URL if there's a query string, or an empty
@@ -3092,45 +2684,6 @@ QString QUrl::fragment(ComponentFormattingOptions options) const
     }
     return result;
 }
-
-/*!
-    \fn void QUrl::setEncodedFragment(const QByteArray &fragment)
-    \deprecated
-    \since 4.4
-
-    Sets the URL's fragment to the percent-encoded \a fragment. The fragment is the
-    last part of the URL, represented by a '#' followed by a string of
-    characters. It is typically used in HTTP for referring to a
-    certain link or point on a page:
-
-    \image qurl-fragment.png
-
-    The fragment is sometimes also referred to as the URL "reference".
-
-    Passing an argument of QByteArray() (a null QByteArray) will unset the fragment.
-    Passing an argument of QByteArray("") (an empty but not null QByteArray)
-    will set the fragment to an empty string (as if the original URL
-    had a lone "#").
-
-    \obsolete Use setFragment(), which has the same behavior of null / empty.
-
-    \sa setFragment(), encodedFragment()
-*/
-
-/*!
-    \fn QByteArray QUrl::encodedFragment() const
-    \deprecated
-    \since 4.4
-
-    Returns the fragment of the URL if it is defined; otherwise an
-    empty string is returned. The returned value will have its
-    non-ASCII and other control characters percent-encoded, as in
-    toEncoded().
-
-    \obsolete Use query(QUrl::FullyEncoded).toLatin1().
-
-    \sa setEncodedFragment(), toEncoded()
-*/
 
 /*!
     \since 4.2

@@ -4091,21 +4091,6 @@ static void dumpRecursive(int level, const QObject *object)
     }
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-/*!
-    \overload
-    \obsolete
-
-    Dumps a tree of children to the debug output.
-
-    \sa dumpObjectInfo()
-*/
-
-void QObject::dumpObjectTree()
-{
-    const_cast<const QObject *>(this)->dumpObjectTree();
-}
-#endif
 
 /*!
     Dumps a tree of children to the debug output.
@@ -4119,23 +4104,6 @@ void QObject::dumpObjectTree() const
 {
     dumpRecursive(0, this);
 }
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-/*!
-    \overload
-    \obsolete
-
-    Dumps information about signal connections, etc. for this object
-    to the debug output.
-
-    \sa dumpObjectTree()
-*/
-
-void QObject::dumpObjectInfo()
-{
-    const_cast<const QObject *>(this)->dumpObjectInfo();
-}
-#endif
 
 /*!
     Dumps information about signal connections, etc. for this object
