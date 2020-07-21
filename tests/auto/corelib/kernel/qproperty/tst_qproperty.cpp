@@ -73,6 +73,7 @@ private slots:
     void notifiedPropertyWithOldValueCallback();
     void notifiedPropertyWithGuard();
     void typeNoOperatorEqual();
+    void bindingValueReplacement();
 };
 
 void tst_QProperty::functorBinding()
@@ -1056,6 +1057,34 @@ void tst_QProperty::typeNoOperatorEqual()
     QCOMPARE(np.value().data, u1.data);
     np.setValue(&u1, u1);
     QVERIFY(u1.changedCalled);
+}
+
+
+struct Test {
+    void notify() {};
+    bool bindText(int);
+    bool bindIconText(int);
+    QProperty<int> text;
+    QNotifiedProperty<int, &Test::notify, &Test::bindIconText> iconText;
+};
+
+bool Test::bindIconText(int) {
+    Q_UNUSED(iconText.value()); // force read
+    if (!iconText.hasBinding()) {
+        iconText.setBinding(this, [=]() { return 0; });
+    }
+    return true;
+}
+
+void tst_QProperty::bindingValueReplacement()
+{
+    Test test;
+    test.text = 0;
+    test.bindIconText(0);
+    test.iconText.setValue(&test, 42); // should not crash
+    QCOMPARE(test.iconText.value(), 42);
+    test.text = 1;
+    QCOMPARE(test.iconText.value(), 42);
 }
 
 QTEST_MAIN(tst_QProperty);

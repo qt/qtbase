@@ -338,10 +338,10 @@ void QPropertyBase::removeBinding()
 
     if (auto *existingBinding = d.bindingPtr()) {
         auto observer = existingBinding->takeObservers();
-        existingBinding->unlinkAndDeref();
         d_ptr &= ExtraBit;
         if (observer)
             d.setObservers(observer.ptr);
+        existingBinding->unlinkAndDeref();
     }
 }
 
