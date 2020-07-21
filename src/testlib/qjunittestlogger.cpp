@@ -43,6 +43,7 @@
 #include <QtTest/qtestcase.h>
 #include <QtTest/private/qtestresult_p.h>
 #include <QtTest/private/qbenchmark_p.h>
+#include <QtTest/private/qtestlog_p.h>
 
 #ifdef min // windows.h without NOMINMAX is included by the benchmark headers.
 #  undef min
@@ -64,7 +65,7 @@ QJUnitTestLogger::QJUnitTestLogger(const char *filename)
 
 QJUnitTestLogger::~QJUnitTestLogger()
 {
-    delete currentLogElement;
+    Q_ASSERT(!currentTestSuite);
     delete logFormatter;
 }
 
@@ -75,25 +76,10 @@ void QJUnitTestLogger::startLogging()
     logFormatter = new QTestJUnitStreamer(this);
     delete errorLogElement;
     errorLogElement = new QTestElement(QTest::LET_SystemError);
-}
 
-void QJUnitTestLogger::stopLogging()
-{
-    QTestElement *iterator = listOfTestcases;
-
-    char buf[10];
-
-    currentLogElement = new QTestElement(QTest::LET_TestSuite);
-    currentLogElement->addAttribute(QTest::AI_Name, QTestResult::currentTestObjectName());
-
-    qsnprintf(buf, sizeof(buf), "%i", testCounter);
-    currentLogElement->addAttribute(QTest::AI_Tests, buf);
-
-    qsnprintf(buf, sizeof(buf), "%i", failureCounter);
-    currentLogElement->addAttribute(QTest::AI_Failures, buf);
-
-    qsnprintf(buf, sizeof(buf), "%i", errorCounter);
-    currentLogElement->addAttribute(QTest::AI_Errors, buf);
+    Q_ASSERT(!currentTestSuite);
+    currentTestSuite = new QTestElement(QTest::LET_TestSuite);
+    currentTestSuite->addAttribute(QTest::AI_Name, QTestResult::currentTestObjectName());
 
     QTestElement *property;
     QTestElement *properties = new QTestElement(QTest::LET_Properties);
@@ -113,21 +99,37 @@ void QJUnitTestLogger::stopLogging()
     property->addAttribute(QTest::AI_PropertyValue, QLibraryInfo::build());
     properties->addLogElement(property);
 
-    currentLogElement->addLogElement(properties);
+    currentTestSuite->addLogElement(properties);
+}
 
-    currentLogElement->addLogElement(iterator);
+void QJUnitTestLogger::stopLogging()
+{
+    char buf[10];
 
-    /* For correct indenting, make sure every testcase knows its parent */
-    QTestElement* testcase = iterator;
+    qsnprintf(buf, sizeof(buf), "%i", testCounter);
+    currentTestSuite->addAttribute(QTest::AI_Tests, buf);
+
+    qsnprintf(buf, sizeof(buf), "%i", failureCounter);
+    currentTestSuite->addAttribute(QTest::AI_Failures, buf);
+
+    qsnprintf(buf, sizeof(buf), "%i", errorCounter);
+    currentTestSuite->addAttribute(QTest::AI_Errors, buf);
+
+    currentTestSuite->addLogElement(listOfTestcases);
+
+    // For correct indenting, make sure every testcase knows its parent
+    QTestElement *testcase = listOfTestcases;
     while (testcase) {
-        testcase->setParent(currentLogElement);
+        testcase->setParent(currentTestSuite);
         testcase = testcase->nextElement();
     }
 
-    currentLogElement->addLogElement(errorLogElement);
+    currentTestSuite->addLogElement(errorLogElement);
 
-    QTestElement *it = currentLogElement;
-    logFormatter->output(it);
+    logFormatter->output(currentTestSuite);
+
+    delete currentTestSuite;
+    currentTestSuite = nullptr;
 
     QAbstractTestLogger::stopLogging();
 }
@@ -137,6 +139,8 @@ void QJUnitTestLogger::enterTestFunction(const char *function)
     currentLogElement = new QTestElement(QTest::LET_TestCase);
     currentLogElement->addAttribute(QTest::AI_Name, function);
     currentLogElement->addToList(&listOfTestcases);
+
+    // The element will be deleted when the suite is deleted
 
     ++testCounter;
 }

@@ -79,6 +79,7 @@ class QJUnitTestLogger : public QAbstractTestLogger
                     const char *file = nullptr, int line = 0) override;
 
     private:
+        QTestElement *currentTestSuite = nullptr;
         QTestElement *listOfTestcases = nullptr;
         QTestElement *currentLogElement = nullptr;
         QTestElement *errorLogElement = nullptr;
