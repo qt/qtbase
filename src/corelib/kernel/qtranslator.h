@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -66,16 +66,17 @@ public:
     QString language() const;
     QString filePath() const;
 
-    bool load(const QString & filename,
-              const QString & directory = QString(),
-              const QString & search_delimiters = QString(),
-              const QString & suffix = QString());
-    bool load(const QLocale & locale,
-              const QString & filename,
-              const QString & prefix = QString(),
-              const QString & directory = QString(),
-              const QString & suffix = QString());
-    bool load(const uchar *data, int len, const QString &directory = QString());
+    Q_REQUIRED_RESULT bool load(const QString & filename,
+                                const QString & directory = QString(),
+                                const QString & search_delimiters = QString(),
+                                const QString & suffix = QString());
+    Q_REQUIRED_RESULT bool load(const QLocale & locale,
+                                const QString & filename,
+                                const QString & prefix = QString(),
+                                const QString & directory = QString(),
+                                const QString & suffix = QString());
+    Q_REQUIRED_RESULT bool load(const uchar *data, int len,
+                                const QString &directory = QString());
 
 private:
     Q_DISABLE_COPY(QTranslator)

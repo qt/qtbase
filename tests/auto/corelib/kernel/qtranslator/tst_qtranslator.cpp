@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -284,7 +284,7 @@ void tst_QTranslator::dependencies()
     {
         // load
         QTranslator tor;
-        tor.load("dependencies_la");
+        QVERIFY(tor.load("dependencies_la"));
         QVERIFY(!tor.isEmpty());
         QCOMPARE(tor.translate("QPushButton", "Hello world!"), QLatin1String("Hallo Welt!"));
 
