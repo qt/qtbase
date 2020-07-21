@@ -1105,11 +1105,9 @@ void QCocoaWindow::setParent(const QPlatformWindow *parentWindow)
 {
     qCDebug(lcQpaWindow) << "QCocoaWindow::setParent" << window() << (parentWindow ? parentWindow->window() : 0);
 
-    // recreate the window for compatibility
-    bool unhideAfterRecreate = parentWindow && !isEmbedded() && ![m_view isHidden];
+    // Recreate in case we need to get rid of a NSWindow, or create one
     recreateWindowIfNeeded();
-    if (unhideAfterRecreate)
-        [m_view setHidden:NO];
+
     setCocoaGeometry(geometry());
 }
 
