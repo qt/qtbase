@@ -193,6 +193,7 @@ public:
     typename Data::ArrayOptions detachFlags() const noexcept { return d ? d->detachFlags() : Data::DefaultAllocationFlags; }
 
     Data *d_ptr() noexcept { return d; }
+    void setBegin(T *begin) noexcept { ptr = begin; }
 
     qsizetype freeSpaceAtBegin() const noexcept
     {

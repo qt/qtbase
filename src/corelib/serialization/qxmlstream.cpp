@@ -1535,7 +1535,7 @@ uint QXmlStreamReaderPrivate::getChar_helper()
     return StreamEOF;
 }
 
-QStringRef QXmlStreamReaderPrivate::namespaceForPrefix(QStringView prefix)
+XmlStringRef QXmlStreamReaderPrivate::namespaceForPrefix(QStringView prefix)
 {
      for (const NamespaceDeclaration &namespaceDeclaration : reversed(namespaceDeclarations)) {
          if (namespaceDeclaration.prefix == prefix) {
@@ -1548,7 +1548,7 @@ QStringRef QXmlStreamReaderPrivate::namespaceForPrefix(QStringView prefix)
          raiseWellFormedError(QXmlStream::tr("Namespace prefix '%1' not declared").arg(prefix));
 #endif
 
-     return QStringRef();
+     return XmlStringRef();
 }
 
 /*
@@ -1575,7 +1575,7 @@ void QXmlStreamReaderPrivate::resolveTag()
                 NamespaceDeclaration &namespaceDeclaration = namespaceDeclarations.push();
                 namespaceDeclaration.prefix.clear();
 
-                const QStringRef ns(dtdAttribute.defaultValue);
+                const XmlStringRef ns(dtdAttribute.defaultValue);
                 if(ns == QLatin1String("http://www.w3.org/2000/xmlns/") ||
                    ns == QLatin1String("http://www.w3.org/XML/1998/namespace"))
                     raiseWellFormedError(QXmlStream::tr("Illegal namespace declaration."));
@@ -1583,8 +1583,8 @@ void QXmlStreamReaderPrivate::resolveTag()
                     namespaceDeclaration.namespaceUri = ns;
             } else if (dtdAttribute.attributePrefix == QLatin1String("xmlns")) {
                 NamespaceDeclaration &namespaceDeclaration = namespaceDeclarations.push();
-                QStringRef namespacePrefix = dtdAttribute.attributeName;
-                QStringRef namespaceUri = dtdAttribute.defaultValue;
+                XmlStringRef namespacePrefix = dtdAttribute.attributeName;
+                XmlStringRef namespaceUri = dtdAttribute.defaultValue;
                 if (((namespacePrefix == QLatin1String("xml"))
                      ^ (namespaceUri == QLatin1String("http://www.w3.org/XML/1998/namespace")))
                     || namespaceUri == QLatin1String("http://www.w3.org/2000/xmlns/")
@@ -1605,18 +1605,18 @@ void QXmlStreamReaderPrivate::resolveTag()
     for (qsizetype i = 0; i < n; ++i) {
         QXmlStreamAttribute &attribute = attributes[i];
         Attribute &attrib = attributeStack[i];
-        QStringRef prefix(symPrefix(attrib.key));
-        QStringRef name(symString(attrib.key));
-        QStringRef qualifiedName(symName(attrib.key));
-        QStringRef value(symString(attrib.value));
+        XmlStringRef prefix(symPrefix(attrib.key));
+        XmlStringRef name(symString(attrib.key));
+        XmlStringRef qualifiedName(symName(attrib.key));
+        XmlStringRef value(symString(attrib.value));
 
         attribute.m_name = name;
         attribute.m_qualifiedName = qualifiedName;
         attribute.m_value = value;
 
         if (!prefix.isEmpty()) {
-            QStringRef attributeNamespaceUri = namespaceForPrefix(prefix);
-            attribute.m_namespaceUri = attributeNamespaceUri;
+            XmlStringRef attributeNamespaceUri = namespaceForPrefix(prefix);
+            attribute.m_namespaceUri = XmlStringRef(attributeNamespaceUri);
         }
 
         for (qsizetype j = 0; j < i; ++j) {
@@ -1650,8 +1650,8 @@ void QXmlStreamReaderPrivate::resolveTag()
         attribute.m_value = dtdAttribute.defaultValue;
 
         if (!dtdAttribute.attributePrefix.isEmpty()) {
-            QStringRef attributeNamespaceUri = namespaceForPrefix(dtdAttribute.attributePrefix);
-            attribute.m_namespaceUri = attributeNamespaceUri;
+            XmlStringRef attributeNamespaceUri = namespaceForPrefix(dtdAttribute.attributePrefix);
+            attribute.m_namespaceUri = XmlStringRef(attributeNamespaceUri);
         }
         attribute.m_isDefault = true;
         attributes.append(std::move(attribute));
@@ -1701,11 +1701,11 @@ uint QXmlStreamReaderPrivate::resolveCharRef(int symbolIndex)
 {
     bool ok = true;
     uint s;
-    // ### add toXShort to QStringRef?
+    // ### add toXShort to XmlString?
     if (sym(symbolIndex).c == 'x')
-        s = symString(symbolIndex, 1).toUInt(&ok, 16);
+        s = symString(symbolIndex, 1).view().toUInt(&ok, 16);
     else
-        s = symString(symbolIndex).toUInt(&ok, 10);
+        s = symString(symbolIndex).view().toUInt(&ok, 10);
 
     ok &= (s == 0x9 || s == 0xa || s == 0xd || (s >= 0x20 && s <= 0xd7ff)
            || (s >= 0xe000 && s <= 0xfffd) || (s >= 0x10000 && s <= QChar::LastValidCodePoint));
@@ -1765,7 +1765,7 @@ void QXmlStreamReaderPrivate::startDocument()
 {
     QString err;
     if (documentVersion != QLatin1String("1.0")) {
-        if (documentVersion.contains(QLatin1Char(' ')))
+        if (documentVersion.view().contains(QLatin1Char(' ')))
             err = QXmlStream::tr("Invalid XML version string.");
         else
             err = QXmlStream::tr("Unsupported XML version.");
@@ -1780,9 +1780,9 @@ void QXmlStreamReaderPrivate::startDocument()
 
     for (qsizetype i = 0; err.isNull() && i < n; ++i) {
         Attribute &attrib = attributeStack[i];
-        QStringRef prefix(symPrefix(attrib.key));
-        QStringRef key(symString(attrib.key));
-        QStringRef value(symString(attrib.value));
+        XmlStringRef prefix(symPrefix(attrib.key));
+        XmlStringRef key(symString(attrib.key));
+        XmlStringRef value(symString(attrib.value));
 
         if (prefix.isEmpty() && key == QLatin1String("encoding")) {
             documentEncoding = value;
@@ -2119,7 +2119,7 @@ QString QXmlStreamReader::readElementText(ReadElementTextBehaviour behaviour)
             switch (readNext()) {
             case Characters:
             case EntityReference:
-                result.insert(result.size(), d->text.unicode(), d->text.size());
+                result.insert(result.size(), d->text);
                 break;
             case EndElement:
                 return result;
@@ -2296,10 +2296,10 @@ QXmlStreamAttribute::QXmlStreamAttribute()
  */
 QXmlStreamAttribute::QXmlStreamAttribute(const QString &namespaceUri, const QString &name, const QString &value)
 {
-    m_namespaceUri = QStringRef(&namespaceUri);
-    m_name = m_qualifiedName = QStringRef(&name);
-    m_value = QStringRef(&value);
-    m_namespaceUri = QStringRef(&namespaceUri);
+    m_namespaceUri = namespaceUri;
+    m_name = m_qualifiedName = name;
+    m_value = value;
+    m_namespaceUri = namespaceUri;
 }
 
 /*!
@@ -2308,9 +2308,9 @@ QXmlStreamAttribute::QXmlStreamAttribute(const QString &namespaceUri, const QStr
 QXmlStreamAttribute::QXmlStreamAttribute(const QString &qualifiedName, const QString &value)
 {
     int colon = qualifiedName.indexOf(QLatin1Char(':'));
-    m_name = QStringRef(&qualifiedName, colon + 1, qualifiedName.size() - (colon + 1));
-    m_qualifiedName = QStringRef(&qualifiedName);
-    m_value = QStringRef(&value);
+    m_name = qualifiedName.mid(colon + 1);
+    m_qualifiedName = qualifiedName;
+    m_value = value;
 }
 
 /*! \fn QStringView QXmlStreamAttribute::namespaceUri() const
@@ -2861,7 +2861,7 @@ public:
             delete device;
     }
 
-    void write(const QStringRef &);
+    void write(const XmlStringRef &);
     void write(const QString &);
     void writeEscaped(const QString &, bool escapeWhitespace = false);
     void write(const char *s, int len);
@@ -2910,7 +2910,7 @@ QXmlStreamWriterPrivate::QXmlStreamWriterPrivate(QXmlStreamWriter *q)
     namespacePrefixCount = 0;
 }
 
-void QXmlStreamWriterPrivate::write(const QStringRef &s)
+void QXmlStreamWriterPrivate::write(const XmlStringRef &s)
 {
     if (device) {
         if (hasIoError)
@@ -2924,7 +2924,7 @@ void QXmlStreamWriterPrivate::write(const QStringRef &s)
             hasIoError = true;
     }
     else if (stringDevice)
-        s.appendTo(stringDevice);
+        stringDevice->append(s);
     else
         qWarning("QXmlStreamWriter: No device");
 }

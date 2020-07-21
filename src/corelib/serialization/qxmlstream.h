@@ -51,34 +51,25 @@
 QT_BEGIN_NAMESPACE
 
 namespace QtPrivate {
-    class QXmlString {
-        QStringPrivate m_string;
-    public:
-        inline constexpr QXmlString() {}
-        inline QXmlString(const QStringRef &aString)
-        {
-            if (!aString.string())
-                return;
-            m_string = aString.string()->data_ptr();
-            m_string = { m_string.d_ptr(), m_string.data() + aString.position(), size_t(aString.size()) };
-            // need to manually call ref(), as the constructor above does not do it
-            m_string.ref();
-        }
-        QXmlString(const QString &aString) : m_string(aString.data_ptr()) {}
-        QXmlString(QString &&aString) noexcept
-        { qSwap(m_string, aString.data_ptr()); }
 
-        QXmlString &operator=(const QStringRef &s)
-        { *this = QXmlString(s); return *this; }
+class QXmlString {
+    QStringPrivate m_string;
+public:
+    QXmlString(QStringPrivate &&d) : m_string(std::move(d)) {}
+    QXmlString(const QString &s) : m_string(s.data_ptr()) {}
+    QXmlString & operator=(const QString &s) { m_string = s.data_ptr(); return *this; }
+    QXmlString & operator=(QString &&s) { qSwap(m_string, s.data_ptr()); return *this; }
+    inline constexpr QXmlString() {}
 
-        void swap(QXmlString &other) noexcept
-        {
-            qSwap(m_string, other.m_string);
-        }
+    void swap(QXmlString &other) noexcept
+    {
+        qSwap(m_string, other.m_string);
+    }
 
-        inline operator QStringView() const { return QStringView(m_string.data(), m_string.size); }
-        inline int size() const { return m_string.size; }
-    };
+    inline operator QStringView() const { return QStringView(m_string.data(), m_string.size); }
+    inline int size() const { return m_string.size; }
+};
+
 }
 Q_DECLARE_SHARED(QtPrivate::QXmlString)
 

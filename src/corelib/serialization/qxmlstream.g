@@ -235,7 +235,7 @@ bool QXmlStreamReaderPrivate::parse()
         attributes.clear();
         if (isEmptyElement) {
             setType(QXmlStreamReader::EndElement);
-            Tag &tag = tagStack_pop();
+            Tag tag = tagStack_pop();
             namespaceUri = tag.namespaceDeclaration.namespaceUri;
             name = tag.name;
             qualifiedName = tag.qualifiedName;
@@ -753,7 +753,7 @@ attlist_decl ::= langle_bang ATTLIST qname attdef_list space_opt RANGLE;
             if (referenceToUnparsedEntityDetected && !standalone)
                 break;
             int n = dtdAttributes.size();
-            QStringRef tagName = addToStringStorage(symName(3));
+            XmlStringRef tagName = addToStringStorage(symName(3));
             while (n--) {
                 DtdAttribute &dtdAttribute = dtdAttributes[n];
                 if (!dtdAttribute.tagName.isNull())
@@ -850,7 +850,7 @@ entity_decl ::= entity_decl_start entity_value space_opt RANGLE;
             if (!entityDeclaration.external)
                 entityDeclaration.value = symString(2);
             auto &hash = entityDeclaration.parameter ? parameterEntityHash : entityHash;
-            if (!hash.contains(qToStringViewIgnoringNull(entityDeclaration.name))) {
+            if (!hash.contains(entityDeclaration.name)) {
                 Entity entity(entityDeclaration.name.toString(),
                               entityDeclaration.value.toString());
                 entity.unparsed = (!entityDeclaration.notationName.isNull());
@@ -868,8 +868,8 @@ processing_instruction ::= LANGLE QUESTIONMARK name space;
             int pos = sym(4).pos + sym(4).len;
             processingInstructionTarget = symString(3);
             if (scanUntil("?>")) {
-                processingInstructionData = QStringRef(&textBuffer, pos, textBuffer.size() - pos - 2);
-                if (!processingInstructionTarget.compare(QLatin1String("xml"), Qt::CaseInsensitive)) {
+                processingInstructionData = XmlStringRef(&textBuffer, pos, textBuffer.size() - pos - 2);
+                if (!processingInstructionTarget.view().compare(QLatin1String("xml"), Qt::CaseInsensitive)) {
                     raiseWellFormedError(QXmlStream::tr("XML declaration not at start of document."));
                 }
                 else if (!QXmlUtils::isNCName(processingInstructionTarget))
@@ -887,7 +887,7 @@ processing_instruction ::= LANGLE QUESTIONMARK name QUESTIONMARK RANGLE;
         case $rule_number:
             setType(QXmlStreamReader::ProcessingInstruction);
             processingInstructionTarget = symString(3);
-            if (!processingInstructionTarget.compare(QLatin1String("xml"), Qt::CaseInsensitive))
+            if (!processingInstructionTarget.view().compare(QLatin1String("xml"), Qt::CaseInsensitive))
                 raiseWellFormedError(QXmlStream::tr("Invalid processing instruction name."));
         break;
 ./
@@ -918,7 +918,7 @@ comment ::= comment_start RANGLE;
         case $rule_number: {
             setType(QXmlStreamReader::Comment);
             int pos = sym(1).pos + 4;
-            text = QStringRef(&textBuffer, pos, textBuffer.size() - pos - 3);
+            text = XmlStringRef(&textBuffer, pos, textBuffer.size() - pos - 3);
         } break;
 ./
 
@@ -931,7 +931,7 @@ cdata ::= langle_bang CDATA_START;
             isWhitespace = false;
             int pos = sym(2).pos;
             if (scanUntil("]]>", -1)) {
-                text = QStringRef(&textBuffer, pos, textBuffer.size() - pos - 3);
+                text = XmlStringRef(&textBuffer, pos, textBuffer.size() - pos - 3);
             } else {
                 resume($rule_number);
                 return false;
@@ -1179,14 +1179,14 @@ attribute_value_content ::= literal_content | char_ref | entity_ref_in_attribute
 attribute ::= qname space_opt EQ space_opt attribute_value;
 /.
         case $rule_number: {
-            QStringRef prefix = symPrefix(1);
+            XmlStringRef prefix = symPrefix(1);
             if (prefix.isEmpty() && symString(1) == QLatin1String("xmlns") && namespaceProcessing) {
                 NamespaceDeclaration &namespaceDeclaration = namespaceDeclarations.push();
                 namespaceDeclaration.prefix.clear();
 
-                const QStringRef ns(symString(5));
-                if (ns == QLatin1String("http://www.w3.org/2000/xmlns/") ||
-                    ns == QLatin1String("http://www.w3.org/XML/1998/namespace"))
+                const XmlStringRef ns(symString(5));
+                if (ns.view() == QLatin1String("http://www.w3.org/2000/xmlns/") ||
+                    ns.view() == QLatin1String("http://www.w3.org/XML/1998/namespace"))
                     raiseWellFormedError(QXmlStream::tr("Illegal namespace declaration."));
                 else
                     namespaceDeclaration.namespaceUri = addToStringStorage(ns);
@@ -1195,7 +1195,7 @@ attribute ::= qname space_opt EQ space_opt attribute_value;
                 attribute.key = sym(1);
                 attribute.value = sym(5);
 
-                QStringRef attributeQualifiedName = symName(1);
+                XmlStringRef attributeQualifiedName = symName(1);
                 bool normalize = false;
                 for (int a = 0; a < dtdAttributes.size(); ++a) {
                     DtdAttribute &dtdAttribute = dtdAttributes[a];
@@ -1232,8 +1232,8 @@ attribute ::= qname space_opt EQ space_opt attribute_value;
                 }
                 if (prefix == QLatin1String("xmlns") && namespaceProcessing) {
                     NamespaceDeclaration &namespaceDeclaration = namespaceDeclarations.push();
-                    QStringRef namespacePrefix = symString(attribute.key);
-                    QStringRef namespaceUri = symString(attribute.value);
+                    XmlStringRef namespacePrefix = symString(attribute.key);
+                    XmlStringRef namespaceUri = symString(attribute.value);
                     attributeStack.pop();
                     if (((namespacePrefix == QLatin1String("xml"))
                          ^ (namespaceUri == QLatin1String("http://www.w3.org/XML/1998/namespace")))
@@ -1292,7 +1292,7 @@ etag ::= LANGLE SLASH qname space_opt RANGLE;
 /.
         case $rule_number: {
             setType(QXmlStreamReader::EndElement);
-            Tag &tag = tagStack_pop();
+            Tag tag = tagStack_pop();
 
             namespaceUri = tag.namespaceDeclaration.namespaceUri;
             name = tag.name;

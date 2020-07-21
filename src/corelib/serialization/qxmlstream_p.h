@@ -53,10 +53,52 @@
 #include <qxmlstream.h>
 #include "qxmlstreamgrammar_p.h"
 
+#include <memory>
+
 #ifndef QXMLSTREAM_P_H
 #define QXMLSTREAM_P_H
 
 QT_BEGIN_NAMESPACE
+
+namespace QtPrivate {
+
+class XmlStringRef
+{
+public:
+    const QString *m_string = nullptr;
+    qsizetype m_pos = 0;
+    qsizetype m_size = 0;
+
+    constexpr XmlStringRef() = default;
+    constexpr inline XmlStringRef(const QString *string, int pos, int length)
+        : m_string(string), m_pos(pos), m_size(length)
+    {
+    }
+    XmlStringRef(const QString *string)
+        : XmlStringRef(string, 0, string->length())
+    {
+    }
+
+    operator QXmlString() const {
+        if (!m_string)
+            return QXmlString();
+        QStringPrivate d = m_string->data_ptr();
+        d.setBegin(d.data() + m_pos);
+        d.size = m_size;
+        return QXmlString(std::move(d));
+    }
+    operator QStringView() const { return view(); }
+
+    void clear() { m_string = nullptr; m_pos = 0; m_size= 0; }
+    QStringView view() const { return m_string ? QStringView(m_string->data() + m_pos, m_size) : QStringView(); }
+    bool isEmpty() const { return m_size == 0; }
+    bool isNull() const { return !m_string; }
+    QString toString() const { return view().toString(); }
+};
+
+}
+
+using namespace QtPrivate;
 
 template <typename T> class QXmlStreamSimpleStack
 {
@@ -116,14 +158,14 @@ class QXmlStreamPrivateTagStack {
 public:
     struct NamespaceDeclaration
     {
-        QStringRef prefix;
-        QStringRef namespaceUri;
+        XmlStringRef prefix;
+        XmlStringRef namespaceUri;
     };
 
     struct Tag
     {
-        QStringRef name;
-        QStringRef qualifiedName;
+        XmlStringRef name;
+        XmlStringRef qualifiedName;
         NamespaceDeclaration namespaceDeclaration;
         int tagStackStringStorageSize;
         qsizetype namespaceDeclarationsSize;
@@ -137,13 +179,7 @@ public:
     int initialTagStackStringStorageSize;
     bool tagsDone;
 
-    inline QStringRef addToStringStorage(const QStringRef &s) {
-        return addToStringStorage(qToStringViewIgnoringNull(s));
-    }
-    inline QStringRef addToStringStorage(const QString &s) {
-        return addToStringStorage(qToStringViewIgnoringNull(s));
-    }
-    QStringRef addToStringStorage(QStringView s)
+    XmlStringRef addToStringStorage(QStringView s)
     {
         int pos = tagStackStringStorageSize;
         int sz = s.size();
@@ -151,7 +187,7 @@ public:
             tagStackStringStorage.resize(pos);
         tagStackStringStorage.append(s.data(), sz);
         tagStackStringStorageSize += sz;
-        return QStringRef(&tagStackStringStorage, pos, sz);
+        return XmlStringRef(&tagStackStringStorage, pos, sz);
     }
 
     QXmlStreamSimpleStack<Tag> tagStack;
@@ -253,7 +289,7 @@ public:
 
 
     QXmlStreamAttributes attributes;
-    QStringRef namespaceForPrefix(QStringView prefix);
+    XmlStringRef namespaceForPrefix(QStringView prefix);
     void resolveTag();
     void resolvePublicNamespaces();
     void resolveDtd();
@@ -264,33 +300,33 @@ public:
     void checkPublicLiteral(QStringView publicId);
 
     bool scanDtd;
-    QStringRef lastAttributeValue;
+    XmlStringRef lastAttributeValue;
     bool lastAttributeIsCData;
     struct DtdAttribute {
-        QStringRef tagName;
-        QStringRef attributeQualifiedName;
-        QStringRef attributePrefix;
-        QStringRef attributeName;
-        QStringRef defaultValue;
+        XmlStringRef tagName;
+        XmlStringRef attributeQualifiedName;
+        XmlStringRef attributePrefix;
+        XmlStringRef attributeName;
+        XmlStringRef defaultValue;
         bool isCDATA;
         bool isNamespaceAttribute;
     };
     QXmlStreamSimpleStack<DtdAttribute> dtdAttributes;
     struct NotationDeclaration {
-        QStringRef name;
-        QStringRef publicId;
-        QStringRef systemId;
+        XmlStringRef name;
+        XmlStringRef publicId;
+        XmlStringRef systemId;
     };
     QXmlStreamSimpleStack<NotationDeclaration> notationDeclarations;
     QXmlStreamNotationDeclarations publicNotationDeclarations;
     QXmlStreamNamespaceDeclarations publicNamespaceDeclarations;
 
     struct EntityDeclaration {
-        QStringRef name;
-        QStringRef notationName;
-        QStringRef publicId;
-        QStringRef systemId;
-        QStringRef value;
+        XmlStringRef name;
+        XmlStringRef notationName;
+        XmlStringRef publicId;
+        XmlStringRef systemId;
+        XmlStringRef value;
         bool parameter;
         bool external;
         inline void clear() {
@@ -305,12 +341,12 @@ public:
     QXmlStreamSimpleStack<EntityDeclaration> entityDeclarations;
     QXmlStreamEntityDeclarations publicEntityDeclarations;
 
-    QStringRef text;
+    XmlStringRef text;
 
-    QStringRef prefix, namespaceUri, qualifiedName, name;
-    QStringRef processingInstructionTarget, processingInstructionData;
-    QStringRef dtdName, dtdPublicId, dtdSystemId;
-    QStringRef documentVersion, documentEncoding;
+    XmlStringRef prefix, namespaceUri, qualifiedName, name;
+    XmlStringRef processingInstructionTarget, processingInstructionData;
+    XmlStringRef dtdName, dtdPublicId, dtdSystemId;
+    XmlStringRef documentVersion, documentEncoding;
     uint isEmptyElement : 1;
     uint isWhitespace : 1;
     uint isCDATA : 1;
@@ -364,39 +400,39 @@ public:
     };
     QXmlStreamSimpleStack<Attribute> attributeStack;
 
-    inline QStringRef symString(int index) {
+    inline XmlStringRef symString(int index) {
         const Value &symbol = sym(index);
-        return QStringRef(&textBuffer, symbol.pos + symbol.prefix, symbol.len - symbol.prefix);
+        return XmlStringRef(&textBuffer, symbol.pos + symbol.prefix, symbol.len - symbol.prefix);
     }
     QStringView symView(int index) const
     {
         const Value &symbol = sym(index);
         return QStringView(textBuffer.data() + symbol.pos, symbol.len).mid(symbol.prefix);
     }
-    inline QStringRef symName(int index) {
+    inline XmlStringRef symName(int index) {
         const Value &symbol = sym(index);
-        return QStringRef(&textBuffer, symbol.pos, symbol.len);
+        return XmlStringRef(&textBuffer, symbol.pos, symbol.len);
     }
-    inline QStringRef symString(int index, int offset) {
+    inline XmlStringRef symString(int index, int offset) {
         const Value &symbol = sym(index);
-        return QStringRef(&textBuffer, symbol.pos + symbol.prefix + offset, symbol.len - symbol.prefix -  offset);
+        return XmlStringRef(&textBuffer, symbol.pos + symbol.prefix + offset, symbol.len - symbol.prefix -  offset);
     }
-    inline QStringRef symPrefix(int index) {
+    inline XmlStringRef symPrefix(int index) {
         const Value &symbol = sym(index);
         if (symbol.prefix)
-            return QStringRef(&textBuffer, symbol.pos, symbol.prefix - 1);
-        return QStringRef();
+            return XmlStringRef(&textBuffer, symbol.pos, symbol.prefix - 1);
+        return XmlStringRef();
     }
-    inline QStringRef symString(const Value &symbol) {
-        return QStringRef(&textBuffer, symbol.pos + symbol.prefix, symbol.len - symbol.prefix);
+    inline XmlStringRef symString(const Value &symbol) {
+        return XmlStringRef(&textBuffer, symbol.pos + symbol.prefix, symbol.len - symbol.prefix);
     }
-    inline QStringRef symName(const Value &symbol) {
-        return QStringRef(&textBuffer, symbol.pos, symbol.len);
+    inline XmlStringRef symName(const Value &symbol) {
+        return XmlStringRef(&textBuffer, symbol.pos, symbol.len);
     }
-    inline QStringRef symPrefix(const Value &symbol) {
+    inline XmlStringRef symPrefix(const Value &symbol) {
         if (symbol.prefix)
-            return QStringRef(&textBuffer, symbol.pos, symbol.prefix - 1);
-        return QStringRef();
+            return XmlStringRef(&textBuffer, symbol.pos, symbol.prefix - 1);
+        return XmlStringRef();
     }
 
     inline void clearSym() { Value &val = sym(1); val.pos = textBuffer.size(); val.len = 0; }

@@ -481,7 +481,7 @@ bool QXmlStreamReaderPrivate::parse()
             if (referenceToUnparsedEntityDetected && !standalone)
                 break;
             int n = dtdAttributes.size();
-            QStringRef tagName = addToStringStorage(symName(3));
+            XmlStringRef tagName = addToStringStorage(symName(3));
             while (n--) {
                 DtdAttribute &dtdAttribute = dtdAttributes[n];
                 if (!dtdAttribute.tagName.isNull())
@@ -557,7 +557,7 @@ bool QXmlStreamReaderPrivate::parse()
             if (!entityDeclaration.external)
                 entityDeclaration.value = symString(2);
             auto &hash = entityDeclaration.parameter ? parameterEntityHash : entityHash;
-            if (!hash.contains(qToStringViewIgnoringNull(entityDeclaration.name))) {
+            if (!hash.contains(entityDeclaration.name)) {
                 Entity entity(entityDeclaration.name.toString(),
                               entityDeclaration.value.toString());
                 entity.unparsed = (!entityDeclaration.notationName.isNull());
@@ -571,8 +571,8 @@ bool QXmlStreamReaderPrivate::parse()
             int pos = sym(4).pos + sym(4).len;
             processingInstructionTarget = symString(3);
             if (scanUntil("?>")) {
-                processingInstructionData = QStringRef(&textBuffer, pos, textBuffer.size() - pos - 2);
-                if (!processingInstructionTarget.compare(QLatin1String("xml"), Qt::CaseInsensitive)) {
+                processingInstructionData = XmlStringRef(&textBuffer, pos, textBuffer.size() - pos - 2);
+                if (!processingInstructionTarget.view().compare(QLatin1String("xml"), Qt::CaseInsensitive)) {
                     raiseWellFormedError(QXmlStream::tr("XML declaration not at start of document."));
                 }
                 else if (!QXmlUtils::isNCName(processingInstructionTarget))
@@ -587,7 +587,7 @@ bool QXmlStreamReaderPrivate::parse()
         case 97:
             setType(QXmlStreamReader::ProcessingInstruction);
             processingInstructionTarget = symString(3);
-            if (!processingInstructionTarget.compare(QLatin1String("xml"), Qt::CaseInsensitive))
+            if (!processingInstructionTarget.view().compare(QLatin1String("xml"), Qt::CaseInsensitive))
                 raiseWellFormedError(QXmlStream::tr("Invalid processing instruction name."));
         break;
 
@@ -608,7 +608,7 @@ bool QXmlStreamReaderPrivate::parse()
         case 100: {
             setType(QXmlStreamReader::Comment);
             int pos = sym(1).pos + 4;
-            text = QStringRef(&textBuffer, pos, textBuffer.size() - pos - 3);
+            text = XmlStringRef(&textBuffer, pos, textBuffer.size() - pos - 3);
         } break;
 
         case 101: {
@@ -617,7 +617,7 @@ bool QXmlStreamReaderPrivate::parse()
             isWhitespace = false;
             int pos = sym(2).pos;
             if (scanUntil("]]>", -1)) {
-                text = QStringRef(&textBuffer, pos, textBuffer.size() - pos - 3);
+                text = XmlStringRef(&textBuffer, pos, textBuffer.size() - pos - 3);
             } else {
                 resume(101);
                 return false;
@@ -744,14 +744,14 @@ bool QXmlStreamReaderPrivate::parse()
         break;
 
         case 229: {
-            QStringRef prefix = symPrefix(1);
+            XmlStringRef prefix = symPrefix(1);
             if (prefix.isEmpty() && symString(1) == QLatin1String("xmlns") && namespaceProcessing) {
                 NamespaceDeclaration &namespaceDeclaration = namespaceDeclarations.push();
                 namespaceDeclaration.prefix.clear();
 
-                const QStringRef ns(symString(5));
-                if (ns == QLatin1String("http://www.w3.org/2000/xmlns/") ||
-                    ns == QLatin1String("http://www.w3.org/XML/1998/namespace"))
+                const XmlStringRef ns(symString(5));
+                if (ns.view() == QLatin1String("http://www.w3.org/2000/xmlns/") ||
+                    ns.view() == QLatin1String("http://www.w3.org/XML/1998/namespace"))
                     raiseWellFormedError(QXmlStream::tr("Illegal namespace declaration."));
                 else
                     namespaceDeclaration.namespaceUri = addToStringStorage(ns);
@@ -760,7 +760,7 @@ bool QXmlStreamReaderPrivate::parse()
                 attribute.key = sym(1);
                 attribute.value = sym(5);
 
-                QStringRef attributeQualifiedName = symName(1);
+                XmlStringRef attributeQualifiedName = symName(1);
                 bool normalize = false;
                 for (int a = 0; a < dtdAttributes.size(); ++a) {
                     DtdAttribute &dtdAttribute = dtdAttributes[a];
@@ -797,8 +797,8 @@ bool QXmlStreamReaderPrivate::parse()
                 }
                 if (prefix == QLatin1String("xmlns") && namespaceProcessing) {
                     NamespaceDeclaration &namespaceDeclaration = namespaceDeclarations.push();
-                    QStringRef namespacePrefix = symString(attribute.key);
-                    QStringRef namespaceUri = symString(attribute.value);
+                    XmlStringRef namespacePrefix = symString(attribute.key);
+                    XmlStringRef namespaceUri = symString(attribute.value);
                     attributeStack.pop();
                     if (((namespacePrefix == QLatin1String("xml"))
                          ^ (namespaceUri == QLatin1String("http://www.w3.org/XML/1998/namespace")))
