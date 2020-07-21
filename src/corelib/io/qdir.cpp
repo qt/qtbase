@@ -1969,6 +1969,8 @@ QFileInfoList QDir::drives()
 }
 
 /*!
+    \fn QChar QDir::separator()
+
     Returns the native directory separator: "/" under Unix
     and "\\" under Windows.
 
@@ -1980,14 +1982,6 @@ QFileInfoList QDir::drives()
 
     \sa listSeparator()
 */
-QChar QDir::separator()
-{
-#if defined(Q_OS_WIN)
-    return QLatin1Char('\\');
-#else
-    return QLatin1Char('/');
-#endif
-}
 
 /*!
     \fn QDir::listSeparator()

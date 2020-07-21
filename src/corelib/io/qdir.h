@@ -239,7 +239,14 @@ public:
 #endif
     }
 
-    static QChar separator(); // ### Qt6: Make it inline
+    static QChar separator()
+    {
+#if defined(Q_OS_WIN)
+        return QLatin1Char('\\');
+#else
+        return QLatin1Char('/');
+#endif
+    }
 
     static bool setCurrent(const QString &path);
     static inline QDir current() { return QDir(currentPath()); }
