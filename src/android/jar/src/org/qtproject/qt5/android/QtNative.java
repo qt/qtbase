@@ -54,7 +54,7 @@ import android.content.Context;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.pm.ActivityInfo;
+import android.content.pm.ApplicationInfo;
 import android.content.UriPermission;
 import android.net.Uri;
 import android.os.Build;
@@ -448,8 +448,8 @@ public class QtNative
                         if (!f.exists()) {
                             Log.i(QtTAG, "Can't find '" + f.getAbsolutePath());
                             try {
-                                ActivityInfo info = m_activity.getPackageManager().getActivityInfo(m_activity.getComponentName(),
-                                                                                           PackageManager.GET_META_DATA);
+                                ApplicationInfo info = getContext().getApplicationContext().getPackageManager()
+                                    .getApplicationInfo(getContext().getPackageName(), PackageManager.GET_META_DATA);
                                 String systemLibraryDir = QtNativeLibrariesDir.systemLibrariesDir;
                                 if (info.metaData.containsKey("android.app.system_libs_prefix"))
                                     systemLibraryDir = info.metaData.getString("android.app.system_libs_prefix");
@@ -482,8 +482,8 @@ public class QtNative
                     File f = new File(nativeLibraryDir + mainLibNameTemplate);
                     if (!f.exists()) {
                         try {
-                            ActivityInfo info = m_activity.getPackageManager().getActivityInfo(m_activity.getComponentName(),
-                                    PackageManager.GET_META_DATA);
+                            ApplicationInfo info = getContext().getApplicationContext().getPackageManager()
+                                    .getApplicationInfo(getContext().getPackageName(), PackageManager.GET_META_DATA);
                             String systemLibraryDir = QtNativeLibrariesDir.systemLibrariesDir;
                             if (info.metaData.containsKey("android.app.system_libs_prefix"))
                                 systemLibraryDir = info.metaData.getString("android.app.system_libs_prefix");
