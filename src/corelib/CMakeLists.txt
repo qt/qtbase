@@ -54,7 +54,6 @@ qt_add_module(Core
         global/qsysinfo.h
         global/qsystemdetection.h
         global/qtypeinfo.h
-        global/qtypetraits.h
         global/qversiontagging.cpp global/qversiontagging.h  # special case
         io/qabstractfileengine.cpp io/qabstractfileengine_p.h
         io/qbuffer.cpp io/qbuffer.h

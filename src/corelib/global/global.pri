@@ -23,7 +23,6 @@ HEADERS +=  \
         global/qisenum.h \
         global/qsimd.h \
         global/qsimd_p.h \
-        global/qtypetraits.h \
         global/qflags.h \
         global/qrandom.h \
         global/qrandom_p.h \
