@@ -68,13 +68,8 @@ public:
         qSwap(m_size, other.m_size);
     }
 
-    inline void clear() { m_string.clear(); m_position = m_size = 0; }
-    inline operator QStringRef() const { return QStringRef(&m_string, m_position, m_size); }
     inline operator QStringView() const { return QStringView(m_string.constData() + m_position, m_size); }
-    inline const QString *string() const { return &m_string; }
-    inline int position() const { return m_position; }
     inline int size() const { return m_size; }
-    inline QString toString() const { return QString(m_string.constData() + m_position, m_size); }
 };
 Q_DECLARE_SHARED(QXmlStreamStringRef)
 
@@ -95,8 +90,7 @@ public:
     inline QStringView name() const { return m_name; }
     inline QStringView qualifiedName() const { return m_qualifiedName; }
     inline QStringView prefix() const {
-        return QStringView(m_qualifiedName.string()->constData() + m_qualifiedName.position(),
-                          qMax(0, m_qualifiedName.size() - m_name.size() - 1));
+        return QStringView(m_qualifiedName).left(qMax(0, m_qualifiedName.size() - m_name.size() - 1));
     }
     inline QStringView value() const { return m_value; }
     inline bool isDefault() const { return m_isDefault; }
