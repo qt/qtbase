@@ -172,10 +172,18 @@ void QCocoaWindow::initialize()
     if (!m_view)
         m_view = [[QNSView alloc] initWithCocoaWindow:this];
 
-    setGeometry(initialGeometry(window(), windowGeometry(), defaultWindowWidth, defaultWindowHeight));
+    // Compute the initial geometry based on the geometry set on the
+    // QWindow. This geometry has already been reflected to the
+    // QPlatformWindow in the constructor, so to ensure that the
+    // resulting setGeometry call does not think the geometry has
+    // already been applied, we reset the QPlatformWindow's view
+    // of the geometry first.
+    auto initialGeometry = QPlatformWindow::initialGeometry(window(),
+        windowGeometry(), defaultWindowWidth, defaultWindowHeight);
+    QPlatformWindow::d_ptr->rect = QRect();
+    setGeometry(initialGeometry);
 
     recreateWindowIfNeeded();
-    window()->setGeometry(geometry());
 
     m_initialized = true;
 }
