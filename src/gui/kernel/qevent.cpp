@@ -362,6 +362,30 @@ QSinglePointEvent::QSinglePointEvent(QEvent::Type type, const QPointingDevice *d
 }
 
 /*!
+    Returns true if this event represents a \l {button()}{button} being pressed.
+*/
+bool QSinglePointEvent::isPressEvent() const
+{
+    return m_button != Qt::NoButton && m_mouseState.testFlag(m_button);
+}
+
+/*!
+    Returns true if this event does not include a change in \l {buttons()}{button state}.
+*/
+bool QSinglePointEvent::isUpdateEvent() const
+{
+    return m_button == Qt::NoButton;
+}
+
+/*!
+    Returns true if this event represents a \l {button()}{button} being released.
+*/
+bool QSinglePointEvent::isReleaseEvent() const
+{
+    return m_button != Qt::NoButton && !m_mouseState.testFlag(m_button);
+}
+
+/*!
     \fn QPointingDevice::PointerType QPointerEvent::pointerType() const
 
     Returns the type of point that generated the event.
@@ -4223,6 +4247,32 @@ QTouchEvent::QTouchEvent(QEvent::Type eventType,
 */
 QTouchEvent::~QTouchEvent()
 { }
+
+/*!
+    Returns true if this event includes at least one newly-pressed touchpoint.
+*/
+bool QTouchEvent::isPressEvent() const
+{
+    return m_touchPointStates.testFlag(QEventPoint::State::Pressed);
+}
+
+/*!
+    Returns true if this event does not include newly-pressed or newly-released
+    touchpoints.
+*/
+bool QTouchEvent::isUpdateEvent() const
+{
+    return !m_touchPointStates.testFlag(QEventPoint::State::Pressed) &&
+           !m_touchPointStates.testFlag(QEventPoint::State::Released);
+}
+
+/*!
+    Returns true if this event includes at least one newly-released touchpoint.
+*/
+bool QTouchEvent::isReleaseEvent() const
+{
+    return m_touchPointStates.testFlag(QEventPoint::State::Released);
+}
 
 /*! \fn QObject *QTouchEvent::target() const
 

@@ -217,6 +217,7 @@ public:
 private slots:
     void cleanup();
     void qPointerUniqueId();
+    void state();
     void touchDisabledByDefault();
     void touchEventAcceptedByDefault();
     void touchBeginPropagatesWhenIgnored();
@@ -288,6 +289,39 @@ void tst_QTouchEvent::qPointerUniqueId()
 
     set.insert(id4);
     QCOMPARE(set.size(), 2);
+}
+
+void tst_QTouchEvent::state()
+{
+    QTouchEvent touchEvent(QEvent::TouchBegin, touchScreenDevice,
+                           Qt::NoModifier, QList<QEventPoint>() <<
+                           QEventPoint(0, QEventPoint::State::Stationary, {}, {}) <<
+                           QEventPoint(1, QEventPoint::State::Pressed, {}, {}));
+    QCOMPARE(touchEvent.touchPointStates(), QEventPoint::State::Stationary | QEventPoint::State::Pressed);
+    QCOMPARE(touchEvent.pointCount(), 2);
+    QVERIFY(touchEvent.isPressEvent());
+    QVERIFY(!touchEvent.isUpdateEvent());
+    QVERIFY(!touchEvent.isReleaseEvent());
+
+    touchEvent = QTouchEvent(QEvent::TouchBegin, touchScreenDevice,
+                             Qt::NoModifier, QList<QEventPoint>() <<
+                             QEventPoint(0, QEventPoint::State::Updated, {}, {}) <<
+                             QEventPoint(1, QEventPoint::State::Pressed, {}, {}));
+    QCOMPARE(touchEvent.touchPointStates(), QEventPoint::State::Updated | QEventPoint::State::Pressed);
+    QCOMPARE(touchEvent.pointCount(), 2);
+    QVERIFY(touchEvent.isPressEvent());
+    QVERIFY(!touchEvent.isUpdateEvent());
+    QVERIFY(!touchEvent.isReleaseEvent());
+
+    touchEvent = QTouchEvent(QEvent::TouchBegin, touchScreenDevice,
+                             Qt::NoModifier, QList<QEventPoint>() <<
+                             QEventPoint(0, QEventPoint::State::Updated, {}, {}) <<
+                             QEventPoint(1, QEventPoint::State::Released, {}, {}));
+    QCOMPARE(touchEvent.touchPointStates(), QEventPoint::State::Updated | QEventPoint::State::Released);
+    QCOMPARE(touchEvent.pointCount(), 2);
+    QVERIFY(!touchEvent.isPressEvent());
+    QVERIFY(!touchEvent.isUpdateEvent());
+    QVERIFY(touchEvent.isReleaseEvent());
 }
 
 void tst_QTouchEvent::touchDisabledByDefault()

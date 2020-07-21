@@ -200,6 +200,9 @@ public:
     virtual ~QPointerEvent();
     virtual int pointCount() const = 0;
     virtual const QEventPoint &point(int i) const = 0;
+    virtual bool isPressEvent() const { return false; }
+    virtual bool isUpdateEvent() const { return false; }
+    virtual bool isReleaseEvent() const { return false; }
 
     explicit QPointerEvent(Type type, const QPointingDevice *dev, Qt::KeyboardModifiers modifiers = Qt::NoModifier);
     const QPointingDevice *pointingDevice() const;
@@ -224,6 +227,10 @@ public:
     inline QPointF position() const { return m_point.position(); }
     inline QPointF scenePosition() const { return m_point.scenePosition(); }
     inline QPointF globalPosition() const { return m_point.globalPosition(); }
+
+    bool isPressEvent() const override;
+    bool isUpdateEvent() const override;
+    bool isReleaseEvent() const override;
 
 protected:
     QEventPoint m_point;
@@ -329,6 +336,8 @@ public:
     QT_DEPRECATED_VERSION_X_6_0("Use position()")
     inline QPointF posF() const { return position(); }
 #endif // QT_DEPRECATED_SINCE(6, 0)
+
+    bool isUpdateEvent() const override  { return true; }
 
     // TODO deprecate when we figure out an actual replacement (point history?)
     inline QPoint oldPos() const { return m_oldPos.toPoint(); }
@@ -954,6 +963,9 @@ public:
     inline QObject *target() const { return m_target; }
     inline QEventPoint::States touchPointStates() const { return m_touchPointStates; }
     const QList<QEventPoint> &touchPoints() const { return m_touchPoints; }
+    bool isPressEvent() const override;
+    bool isUpdateEvent() const override;
+    bool isReleaseEvent() const override;
 
 protected:
     QObject *m_target = nullptr;
