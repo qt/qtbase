@@ -93,7 +93,12 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
 # Generate toolchain file for convenience
 if(QT_HOST_PATH)
     get_filename_component(init_qt_host_path "${QT_HOST_PATH}" ABSOLUTE)
+    # TODO: Figure out how to make these relocatable.
     set(init_qt_host_path "set(QT_HOST_PATH \"${init_qt_host_path}\" CACHE PATH \"\" FORCE)")
+    get_filename_component(QT_HOST_PATH_CMAKE_DIR
+        "${Qt${PROJECT_VERSION_MAJOR}HostInfo_DIR}/.." ABSOLUTE)
+    set(init_qt_host_path_cmake_dir
+        "set(QT_HOST_PATH_CMAKE_DIR \"${QT_HOST_PATH_CMAKE_DIR}\" CACHE PATH \"\" FORCE)")
 endif()
 
 if(CMAKE_TOOLCHAIN_FILE)

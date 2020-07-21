@@ -165,14 +165,15 @@ option(QT_BUILD_BENCHMARKS "Build Qt Benchmarks" ${__build_benchmarks})
 set(QT_HOST_PATH "" CACHE PATH "Installed Qt host directory path, used for cross compiling.")
 
 if (CMAKE_CROSSCOMPILING)
-    if(NOT IS_DIRECTORY ${QT_HOST_PATH})
+    if(NOT IS_DIRECTORY "${QT_HOST_PATH}")
         message(FATAL_ERROR "You need to set QT_HOST_PATH to cross compile Qt.")
     endif()
-    list(PREPEND CMAKE_PREFIX_PATH "${QT_HOST_PATH}")
-    list(PREPEND CMAKE_FIND_ROOT_PATH "${QT_HOST_PATH}")
-    find_package(Qt${PROJECT_VERSION_MAJOR}HostInfo REQUIRED)
-    list(POP_FRONT CMAKE_PREFIX_PATH)
-    list(POP_FRONT CMAKE_FIND_ROOT_PATH)
+    find_package(Qt${PROJECT_VERSION_MAJOR}HostInfo
+                 CONFIG
+                 REQUIRED
+                 PATHS "${QT_HOST_PATH}" "${QT_HOST_PATH}/lib/cmake"
+                 NO_CMAKE_FIND_ROOT_PATH
+                 NO_DEFAULT_PATH)
 endif()
 
 ## Android platform settings

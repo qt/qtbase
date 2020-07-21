@@ -1,6 +1,7 @@
 @init_platform@
 
 @init_qt_host_path@
+@init_qt_host_path_cmake_dir@
 
 @init_original_toolchain_file@
 
@@ -27,10 +28,16 @@ get_filename_component(QT_TOOLCHAIN_RELOCATABLE_INSTALL_PREFIX
                        ${CMAKE_CURRENT_LIST_DIR}/../@qt_path_from_cmake_config_dir_to_prefix@
                        ABSOLUTE)
 
-list(PREPEND CMAKE_PREFIX_PATH "${QT_TOOLCHAIN_RELOCATABLE_INSTALL_PREFIX}")
+# Compute the path to the installed Qt lib/cmake folder.
+# We assume that the Qt toolchain location is inside the CMake Qt6 package, and thus the directory
+# one level higher is what we're looking for.
+get_filename_component(QT_TOOLCHAIN_RELOCATABLE_CMAKE_DIR "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
+
+# There's a subdirectory check in cmake's cmFindCommon::RerootPaths() function, that doesn't handle
+# the case of CMAKE_PREFIX_PATH == CMAKE_FIND_ROOT_PATH for a particular pair of entries.
+# Instead of collapsing the search prefix (which is the case when one is a subdir of the other),
+# it concatenates them creating an invalid path. Workaround it by setting the root path to the
+# Qt install prefix, and the prefix path to the lib/cmake subdir.
+list(PREPEND CMAKE_PREFIX_PATH "${QT_TOOLCHAIN_RELOCATABLE_CMAKE_DIR}")
 list(PREPEND CMAKE_FIND_ROOT_PATH "${QT_TOOLCHAIN_RELOCATABLE_INSTALL_PREFIX}")
 
-if(QT_HOST_PATH)
-    list(APPEND CMAKE_PREFIX_PATH "${QT_HOST_PATH}")
-    list(APPEND CMAKE_FIND_ROOT_PATH "${QT_HOST_PATH}")
-endif()

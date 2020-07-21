@@ -44,7 +44,7 @@ if(QT_HOST_PATH)
      # Make sure that the tools find the host tools first
      set(BACKUP_@target@_CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH})
      set(BACKUP_@target@_CMAKE_FIND_ROOT_PATH ${CMAKE_FIND_ROOT_PATH})
-     list(PREPEND CMAKE_PREFIX_PATH "${QT_HOST_PATH}")
+     list(PREPEND CMAKE_PREFIX_PATH "${QT_HOST_PATH_CMAKE_DIR}")
      list(PREPEND CMAKE_FIND_ROOT_PATH "${QT_HOST_PATH}")
 endif()
 
