@@ -197,27 +197,14 @@ static void setBoolLane(QBasicAtomicInt *atomic, bool enable, int shift)
 */
 
 /*!
-    Constructs a QLoggingCategory object with the provided \a category name.
-    All message types for this category are enabled by default.
-
-    If \a category is \c{0}, the category name is changed to \c "default".
-
-    \note \a category must be kept valid during the lifetime of this object.
-*/
-QLoggingCategory::QLoggingCategory(const char *category)
-    : d(nullptr),
-      name(nullptr)
-{
-    init(category, QtDebugMsg);
-}
-
-/*!
     Constructs a QLoggingCategory object with the provided \a category name,
-    and enables all messages with types more severe or equal than \a enableForLevel.
+    and enables all messages with types at least as verbose as \a enableForLevel,
+    which defaults to QtDebugMsg (which enables all categories).
 
-    If \a category is \c{0}, the category name is changed to \c "default".
+    If \a category is \nullptr, the category name \c "default" is used.
 
     \note \a category must be kept valid during the lifetime of this object.
+    Using a string literal for it is the usual way to achieve this.
 
     \since 5.4
 */

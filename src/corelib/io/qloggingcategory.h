@@ -49,9 +49,7 @@ class Q_CORE_EXPORT QLoggingCategory
 {
     Q_DISABLE_COPY(QLoggingCategory)
 public:
-    // ### Qt 6: Merge constructors
-    explicit QLoggingCategory(const char *category);
-    QLoggingCategory(const char *category, QtMsgType severityLevel);
+    explicit QLoggingCategory(const char *category, QtMsgType severityLevel = QtDebugMsg);
     ~QLoggingCategory();
 
     bool isEnabled(QtMsgType type) const;
