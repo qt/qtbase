@@ -37,6 +37,7 @@ HEADERS +=  \
         tools/qscopedpointer_p.h \
         tools/qscopedvaluerollback.h \
         tools/qshareddata.h \
+        tools/qshareddata_impl.h \
         tools/qsharedpointer.h \
         tools/qsharedpointer_impl.h \
         tools/qset.h \

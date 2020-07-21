@@ -228,6 +228,7 @@ qt_add_module(Core
         tools/qscopeguard.h
         tools/qset.h
         tools/qshareddata.cpp tools/qshareddata.h
+        tools/qshareddata_impl.h
         tools/qsharedpointer.cpp tools/qsharedpointer.h
         tools/qsharedpointer_impl.h
         tools/qsize.cpp tools/qsize.h
