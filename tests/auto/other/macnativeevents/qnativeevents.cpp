@@ -130,8 +130,8 @@ static QString getButtonAsString(const QNativeMouseButtonEvent *e)
         case Qt::RightButton:
             return "button = RightButton";
             break;
-        case Qt::MidButton:
-            return "button = MidButton";
+        case Qt::MiddleButton:
+            return "button = MiddleButton";
             break;
         default:
             return "button = Other";
@@ -292,7 +292,7 @@ QTextStream &operator>>(QTextStream &s, QNativeMouseButtonEvent *e)
             e->button = Qt::RightButton;
             break;
         case 3:
-            e->button = Qt::MidButton;
+            e->button = Qt::MiddleButton;
             break;
         default:
             e->button = Qt::NoButton;
@@ -319,7 +319,7 @@ QTextStream &operator>>(QTextStream &s, QNativeMouseDragEvent *e)
             e->button = Qt::RightButton;
             break;
         case 3:
-            e->button = Qt::MidButton;
+            e->button = Qt::MiddleButton;
             break;
         default:
             e->button = Qt::NoButton;

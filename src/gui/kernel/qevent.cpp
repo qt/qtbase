@@ -525,7 +525,7 @@ Qt::MouseEventFlags QMouseEvent::flags() const
 
     Returns the button state when the event was generated. The button
     state is a combination of Qt::LeftButton, Qt::RightButton,
-    Qt::MidButton using the OR operator. For mouse move events,
+    Qt::MiddleButton using the OR operator. For mouse move events,
     this is all buttons that are pressed down. For mouse press and
     double click events this includes the button that caused the
     event. For mouse release events this excludes the button that

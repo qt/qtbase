@@ -127,8 +127,10 @@ public:
         NoButton         = 0x00000000,
         LeftButton       = 0x00000001,
         RightButton      = 0x00000002,
-        MidButton        = 0x00000004, // ### Qt 6: remove me
-        MiddleButton     = MidButton,
+        MiddleButton     = 0x00000004,
+#if QT_DEPRECATED_SINCE(5, 15) // commented as such since 4.7.0
+        MidButton Q_DECL_ENUMERATOR_DEPRECATED_X("MidButton is deprecated. Use MiddleButton instead") = MiddleButton,
+#endif
         BackButton       = 0x00000008,
         XButton1         = BackButton,
         ExtraButton1     = XButton1,

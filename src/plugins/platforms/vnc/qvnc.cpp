@@ -425,7 +425,7 @@ bool QRfbPointerEvent::read(QTcpSocket *s)
     if (buttonMask & 1)
         buttons |= Qt::LeftButton;
     if (buttonMask & 2)
-        buttons |= Qt::MidButton;
+        buttons |= Qt::MiddleButton;
     if (buttonMask & 4)
         buttons |= Qt::RightButton;
 

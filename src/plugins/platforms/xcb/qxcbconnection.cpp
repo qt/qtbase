@@ -459,7 +459,7 @@ static Qt::MouseButtons translateMouseButtons(int s)
     if (s & XCB_BUTTON_MASK_1)
         ret |= Qt::LeftButton;
     if (s & XCB_BUTTON_MASK_2)
-        ret |= Qt::MidButton;
+        ret |= Qt::MiddleButton;
     if (s & XCB_BUTTON_MASK_3)
         ret |= Qt::RightButton;
     return ret;
@@ -475,7 +475,7 @@ Qt::MouseButton QXcbConnection::translateMouseButton(xcb_button_t s)
 {
     switch (s) {
     case 1: return Qt::LeftButton;
-    case 2: return Qt::MidButton;
+    case 2: return Qt::MiddleButton;
     case 3: return Qt::RightButton;
     // Button values 4-7 were already handled as Wheel events, and won't occur here.
     case 8: return Qt::BackButton;      // Also known as Qt::ExtraButton1
