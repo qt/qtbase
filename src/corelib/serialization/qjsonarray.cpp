@@ -159,22 +159,6 @@ QJsonArray::QJsonArray(QCborContainerPrivate *array)
 }
 
 /*!
-    This method replaces part of QJsonArray(std::initializer_list<QJsonValue> args) .
-    The constructor needs to be inline, but we do not want to leak implementation details
-    of this class.
-    \note this method is called for an uninitialized object
-    \internal
- */
-void QJsonArray::initialize()
-{
-    // Because we're being called with uninitialized state, we can't do:
-    //    a = nullptr;
-    // QExplicitlyDataSharedPointer::operator= will read the current value
-    void *ptr = &a;
-    memset(ptr, 0, sizeof(a));
-}
-
-/*!
     Deletes the array.
  */
 QJsonArray::~QJsonArray() = default;
@@ -391,7 +375,7 @@ void QJsonArray::removeAt(int i)
 {
     if (!a || i < 0 || i >= a->elements.length())
         return;
-    detach2();
+    detach();
     a->removeAt(i);
 }
 
@@ -428,7 +412,7 @@ QJsonValue QJsonArray::takeAt(int i)
     if (!a || i < 0 || i >= a->elements.length())
         return QJsonValue(QJsonValue::Undefined);
 
-    detach2();
+    detach();
     const QJsonValue v = QJsonPrivate::Value::fromTrustedCbor(a->extractAt(i));
     a->removeAt(i);
     return v;
@@ -444,7 +428,7 @@ QJsonValue QJsonArray::takeAt(int i)
 void QJsonArray::insert(int i, const QJsonValue &value)
 {
     if (a)
-        detach2(a->elements.length() + 1);
+        detach(a->elements.length() + 1);
     else
         a = new QCborContainerPrivate;
 
@@ -480,7 +464,7 @@ void QJsonArray::insert(int i, const QJsonValue &value)
 void QJsonArray::replace(int i, const QJsonValue &value)
 {
     Q_ASSERT (a && i >= 0 && i < a->elements.length());
-    detach2();
+    detach();
     a->replaceAt(i, QCborValue::fromJsonValue(value));
 }
 
@@ -952,11 +936,6 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
     \internal
 */
 
-/*! \fn QJsonArray::const_iterator::const_iterator(const const_iterator &other)
-
-    Constructs a copy of \a other.
-*/
-
 /*! \fn QJsonArray::const_iterator::const_iterator(const iterator &other)
 
     Constructs a copy of \a other.
@@ -1103,34 +1082,15 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
     other and the item pointed to by this iterator.
 */
 
-
 /*!
     \internal
  */
-void QJsonArray::detach(uint reserve)
-{
-    Q_UNUSED(reserve);
-    Q_ASSERT(!reserve);
-    detach2(0);
-}
-
-/*!
-    \internal
- */
-bool QJsonArray::detach2(uint reserve)
+bool QJsonArray::detach(uint reserve)
 {
     if (!a)
         return true;
     a = a->detach(a.data(), reserve ? reserve : size());
     return a;
-}
-
-/*!
-    \internal
- */
-void QJsonArray::compact()
-{
-    a->compact(a->elements.size());
 }
 
 size_t qHash(const QJsonArray &array, size_t seed)

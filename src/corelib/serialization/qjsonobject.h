@@ -233,10 +233,10 @@ public:
     friend class const_iterator;
 
     // STL style
-    inline iterator begin() { detach2(); return iterator(this, 0); }
+    inline iterator begin() { detach(); return iterator(this, 0); }
     inline const_iterator begin() const { return const_iterator(this, 0); }
     inline const_iterator constBegin() const { return const_iterator(this, 0); }
-    inline iterator end() { detach2(); return iterator(this, size()); }
+    inline iterator end() { detach(); return iterator(this, size()); }
     inline const_iterator end() const { return const_iterator(this, size()); }
     inline const_iterator constEnd() const { return const_iterator(this, size()); }
     iterator erase(iterator it);
@@ -274,11 +274,7 @@ private:
     friend Q_CORE_EXPORT QDebug operator<<(QDebug, const QJsonObject &);
 
     QJsonObject(QCborContainerPrivate *object);
-    void initialize();
-    // ### Qt 6: remove me and merge with detach2
-    void detach(uint reserve = 0);
-    bool detach2(uint reserve = 0);
-    void compact();
+    bool detach(uint reserve = 0);
 
     template <typename T> QJsonValue valueImpl(T key) const;
     template <typename T> QJsonValueRef atImpl(T key);
@@ -295,8 +291,6 @@ private:
     void removeAt(int i);
     template <typename T> iterator insertAt(int i, T key, const QJsonValue &val, bool exists);
 
-    // ### Qt 6: remove
-    void *dead = nullptr;
     QExplicitlySharedDataPointer<QCborContainerPrivate> o;
 };
 

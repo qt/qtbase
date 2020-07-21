@@ -141,23 +141,6 @@ QJsonObject::QJsonObject(QCborContainerPrivate *object)
 }
 
 /*!
-    This method replaces part of the QJsonObject(std::initializer_list<QPair<QString, QJsonValue>> args) body.
-    The constructor needs to be inline, but we do not want to leak implementation details
-    of this class.
-    \note this method is called for an uninitialized object
-    \internal
- */
-
-void QJsonObject::initialize()
-{
-    // Because we're being called with uninitialized state, we can't do:
-    //    o = nullptr;
-    // QExplicitlyDataSharedPointer::operator= will read the current value
-    void *ptr = &o;
-    memset(ptr, 0, sizeof(o));
-}
-
-/*!
     Destroys the object.
  */
 QJsonObject::~QJsonObject() = default;
@@ -452,7 +435,7 @@ QJsonValueRef QJsonObject::atImpl(T key)
     bool keyExists = false;
     int index = indexOf(o, key, &keyExists);
     if (!keyExists) {
-        detach2(o->elements.length() / 2 + 1);
+        detach(o->elements.length() / 2 + 1);
         o->insertAt(index, key);
         o->insertAt(index + 1, QCborValue::fromJsonValue(QJsonValue()));
     }
@@ -520,7 +503,7 @@ template <typename T>
 QJsonObject::iterator QJsonObject::insertAt(int pos, T key, const QJsonValue &value, bool keyExists)
 {
     if (o)
-        detach2(o->elements.length() / 2 + (keyExists ? 0 : 1));
+        detach(o->elements.length() / 2 + (keyExists ? 0 : 1));
     else
         o = new QCborContainerPrivate;
 
@@ -770,7 +753,7 @@ QJsonObject::iterator QJsonObject::findImpl(T key)
     int index = o ? indexOf(o, key, &keyExists) : 0;
     if (!keyExists)
         return end();
-    detach2();
+    detach();
     return {this, index / 2};
 }
 
@@ -1419,31 +1402,12 @@ QJsonObject::const_iterator QJsonObject::constFindImpl(T key) const
 /*!
     \internal
  */
-void QJsonObject::detach(uint reserve)
-{
-    Q_UNUSED(reserve);
-    Q_ASSERT(!reserve);
-    detach2(reserve);
-}
-
-bool QJsonObject::detach2(uint reserve)
+bool QJsonObject::detach(uint reserve)
 {
     if (!o)
         return true;
     o = QCborContainerPrivate::detach(o.data(), reserve ? reserve * 2 : o->elements.length());
     return o;
-}
-
-/*!
-    \internal
- */
-void QJsonObject::compact()
-{
-    if (!o)
-        return;
-
-    detach2();
-    o->compact(o->elements.length());
 }
 
 /*!
@@ -1471,7 +1435,7 @@ QJsonValue QJsonObject::valueAt(int i) const
 void QJsonObject::setValueAt(int i, const QJsonValue &val)
 {
     Q_ASSERT(o && i >= 0 && 2 * i + 1 < o->elements.length());
-    detach2();
+    detach();
     if (val.isUndefined()) {
         o->removeAt(2 * i + 1);
         o->removeAt(2 * i);
@@ -1485,7 +1449,7 @@ void QJsonObject::setValueAt(int i, const QJsonValue &val)
  */
 void QJsonObject::removeAt(int index)
 {
-    detach2();
+    detach();
     o->removeAt(2 * index + 1);
     o->removeAt(2 * index);
 }

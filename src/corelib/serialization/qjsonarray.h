@@ -164,9 +164,6 @@ public:
 
         inline const_iterator() : a(nullptr), i(0) { }
         explicit inline const_iterator(const QJsonArray *array, int index) : a(array), i(index) { }
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        inline const_iterator(const const_iterator &o) : a(o.a), i(o.i) {} // ### Qt 6: Removed so class can be trivially-copyable
-#endif
         inline const_iterator(const iterator &o) : a(o.a), i(o.i) {}
 
         inline QJsonValue operator*() const { return a->at(i); }
@@ -195,11 +192,11 @@ public:
     friend class const_iterator;
 
     // stl style
-    inline iterator begin() { detach2(); return iterator(this, 0); }
+    inline iterator begin() { detach(); return iterator(this, 0); }
     inline const_iterator begin() const { return const_iterator(this, 0); }
     inline const_iterator constBegin() const { return const_iterator(this, 0); }
     inline const_iterator cbegin() const { return const_iterator(this, 0); }
-    inline iterator end() { detach2(); return iterator(this, size()); }
+    inline iterator end() { detach(); return iterator(this, size()); }
     inline const_iterator end() const { return const_iterator(this, size()); }
     inline const_iterator constEnd() const { return const_iterator(this, size()); }
     inline const_iterator cend() const { return const_iterator(this, size()); }
@@ -239,14 +236,8 @@ private:
     friend Q_CORE_EXPORT QDebug operator<<(QDebug, const QJsonArray &);
 
     QJsonArray(QCborContainerPrivate *array);
-    void initialize();
-    void compact();
-    // ### Qt 6: remove me and merge with detach2
-    void detach(uint reserve = 0);
-    bool detach2(uint reserve = 0);
+    bool detach(uint reserve = 0);
 
-    // ### Qt 6: remove
-    void *dead = nullptr;
     QExplicitlySharedDataPointer<QCborContainerPrivate> a;
 };
 
