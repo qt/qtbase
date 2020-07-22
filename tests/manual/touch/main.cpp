@@ -440,8 +440,7 @@ MainWindow *MainWindow::createMainWindow()
     const QSize screenSize = QGuiApplication::primaryScreen()->availableGeometry().size();
     result->resize(screenSize / 2);
     const QSize sizeDiff = screenSize - result->size();
-    const QPoint pos = QPoint(sizeDiff.width() / 2, sizeDiff.height() / 2)
-                       + mainWindows.size() * QPoint(30, 10);
+    const QPoint pos = QPoint(sizeDiff.width() / 2, sizeDiff.height() / 2);
     result->move(pos);
     result->show();
 
@@ -536,7 +535,7 @@ void MainWindow::dumpTouchDevices()
 {
     QString message;
     QDebug debug(&message);
-    const QList<const QPointingDevice *> devices = QPointingDevice::devices();
+    const auto devices = QPointingDevice::devices();
     debug << devices.size() << "Device(s):\n";
     for (int i = 0; i < devices.size(); ++i)
         debug << "Device #" << i << devices.at(i) << '\n';
