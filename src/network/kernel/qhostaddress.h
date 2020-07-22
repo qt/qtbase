@@ -93,7 +93,6 @@ public:
 
     QHostAddress();
     explicit QHostAddress(quint32 ip4Addr);
-    explicit QHostAddress(quint8 *ip6Addr); // ### Qt 6: remove me
     explicit QHostAddress(const quint8 *ip6Addr);
     explicit QHostAddress(const Q_IPV6ADDR &ip6Addr);
     explicit QHostAddress(const sockaddr *address);
@@ -105,16 +104,11 @@ public:
     QHostAddress &operator=(QHostAddress &&other) noexcept
     { swap(other); return *this; }
     QHostAddress &operator=(const QHostAddress &other);
-#if QT_DEPRECATED_SINCE(5, 8)
-    QT_DEPRECATED_X("use = QHostAddress(string) instead")
-    QHostAddress &operator=(const QString &address);
-#endif
     QHostAddress &operator=(SpecialAddress address);
 
     void swap(QHostAddress &other) noexcept { d.swap(other.d); }
 
     void setAddress(quint32 ip4Addr);
-    void setAddress(quint8 *ip6Addr);   // ### Qt 6: remove me
     void setAddress(const quint8 *ip6Addr);
     void setAddress(const Q_IPV6ADDR &ip6Addr);
     void setAddress(const sockaddr *address);
@@ -122,8 +116,7 @@ public:
     void setAddress(SpecialAddress address);
 
     QAbstractSocket::NetworkLayerProtocol protocol() const;
-    quint32 toIPv4Address() const; // ### Qt6: merge with next overload
-    quint32 toIPv4Address(bool *ok) const;
+    quint32 toIPv4Address(bool *ok = nullptr) const;
     Q_IPV6ADDR toIPv6Address() const;
 
     QString toString() const;

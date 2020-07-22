@@ -364,23 +364,9 @@ void tst_QHostAddress::isEqual()
     QCOMPARE(second.isEqual(first, QHostAddress::ConversionModeFlag(flags)), result);
 }
 
-QT_WARNING_PUSH
-#ifdef QT_WARNING_DISABLE_DEPRECATED
-QT_WARNING_DISABLE_DEPRECATED
-#endif
-
 void tst_QHostAddress::assignment()
 {
     QHostAddress address;
-
-#if QT_DEPRECATED_SINCE(5, 8)
-    address = "127.0.0.1";
-    QCOMPARE(address, QHostAddress("127.0.0.1"));
-
-    address = "::1";
-    QCOMPARE(address, QHostAddress("::1"));
-#endif
-
     QHostAddress addr("4.2.2.1");
     sockaddr_in sockAddr;
     sockAddr.sin_family = AF_INET;
@@ -388,8 +374,6 @@ void tst_QHostAddress::assignment()
     address.setAddress((sockaddr *)&sockAddr);
     QCOMPARE(address, addr);
 }
-
-QT_WARNING_POP
 
 void tst_QHostAddress::scopeId()
 {
