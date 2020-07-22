@@ -128,7 +128,7 @@ else: \
 lib_bundle {
    # Set the CFBundleIdentifier prefix for Qt frameworks
    QMAKE_TARGET_BUNDLE_PREFIX = org.qt-project
-   #QMAKE_FRAMEWORK_VERSION = 4.0
+   QMAKE_FRAMEWORK_VERSION = "A" # Not based on Qt major version
    CONFIG += sliced_bundle
    header_module {
         CONFIG += bundle

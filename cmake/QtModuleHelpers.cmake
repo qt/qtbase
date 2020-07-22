@@ -54,7 +54,7 @@ function(qt_internal_add_module target)
         set(is_framework 1)
         set_target_properties(${target} PROPERTIES
             FRAMEWORK TRUE
-            FRAMEWORK_VERSION ${PROJECT_VERSION_MAJOR}
+            FRAMEWORK_VERSION "A" # Not based on Qt major version
             MACOSX_FRAMEWORK_IDENTIFIER org.qt-project.Qt${target}
             MACOSX_FRAMEWORK_BUNDLE_VERSION ${PROJECT_VERSION}
             MACOSX_FRAMEWORK_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}

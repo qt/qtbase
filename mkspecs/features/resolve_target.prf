@@ -56,9 +56,10 @@ win32 {
                     framework_ext = $$QMAKE_BUNDLE_EXTENSION
                 QMAKE_RESOLVED_BUNDLE = $${QMAKE_RESOLVED_TARGET}$${framework_target}$${framework_ext}
                 !shallow_bundle {
-                    TEMP_VERSION = $$section(VERSION, ., 0, 0)
-                    isEmpty(TEMP_VERSION):TEMP_VERSION = A
-                    QMAKE_RESOLVED_TARGET = $${QMAKE_RESOLVED_BUNDLE}/Versions/$${TEMP_VERSION}/$${TARGET}
+                    framework_version = $$QMAKE_FRAMEWORK_VERSION
+                    isEmpty(framework_version):framework_version = $$section(VERSION, ., 0, 0)
+                    isEmpty(framework_version):framework_version = A
+                    QMAKE_RESOLVED_TARGET = $${QMAKE_RESOLVED_BUNDLE}/Versions/$${framework_version}/$${TARGET}
                 } else {
                     QMAKE_RESOLVED_TARGET = $${QMAKE_RESOLVED_BUNDLE}/$${TARGET}
                 }

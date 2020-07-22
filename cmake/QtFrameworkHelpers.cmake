@@ -47,7 +47,7 @@ function(qt_internal_find_apple_system_framework out_var framework_name)
     endif()
 endfunction()
 
-# Copy header files to QtXYZ.framework/Versions/6/Headers/
+# Copy header files to QtXYZ.framework/Versions/A/Headers/
 # Use this function for header files that
 #   - are not added as source files to the target
 #   - are not marked as PUBLIC_HEADER
