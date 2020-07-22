@@ -56,7 +56,7 @@ TESTS = ['assert', 'badxml', 'benchlibcallgrind', 'benchlibcounting',
          'signaldumper', 'silent', 'singleskip', 'skip', 'skipcleanup',
          'skipinit', 'skipinitdata', 'sleep', 'strcmp', 'subtest', 'testlib',
          'tuplediagnostics', 'verbose1', 'verbose2', 'verifyexceptionthrown',
-         'warnings', 'watchdog', 'xunit']
+         'warnings', 'watchdog', 'xunit', 'keyboard']
 
 
 class Fail (Exception): pass
