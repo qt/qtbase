@@ -30,7 +30,7 @@ QOBJS = \
 	qarraydata.o qbitarray.o qbytearray.o qbytearraylist.o qbytearraymatcher.o \
 	qcalendar.o qgregoriancalendar.o qromancalendar.o \
         qcryptographichash.o qdatetime.o qhash.o \
-        qlocale.o qlocale_tools.o qmap.o qregularexpression.o qringbuffer.o \
+        qlocale.o qlocale_tools.o qregularexpression.o qringbuffer.o \
         qstringbuilder.o qstring.o qstringconverter.o qstringlist.o qversionnumber.o \
 	qvsnprintf.o \
         pcre2_auto_possess.o pcre2_chartables.o pcre2_compile.o pcre2_config.o \
@@ -129,7 +129,6 @@ DEPEND_SRC = \
 	   $(SOURCE_PATH)/src/corelib/tools/qbitarray.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qcryptographichash.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qhash.cpp \
-	   $(SOURCE_PATH)/src/corelib/tools/qmap.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qringbuffer.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qversionnumber.cpp \
 	   $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_auto_possess.c \

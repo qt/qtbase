@@ -203,7 +203,11 @@ inline QDBusIntrospection::Argument arg(const char* type, const char *name = 0)
 
 template<typename T>
 inline QMap<QString, T>& operator<<(QMap<QString, T>& map, const T& m)
-{ map.insertMulti(m.name, m); return map; }
+{ map.insert(m.name, m); return map; }
+
+template<typename T>
+inline QMultiMap<QString, T>& operator<<(QMultiMap<QString, T>& map, const T& m)
+{ map.insert(m.name, m); return map; }
 
 inline const char* mapName(const MethodMap&)
 { return "MethodMap"; }
@@ -263,11 +267,11 @@ QString printable(const QDBusIntrospection::Property& p)
     return result;
 }
 
-template<typename T>
-char* printableMap(const QMap<QString, T>& map)
+template<typename Map>
+char* printableMap(const Map& map)
 {
     QString contents = "\n";
-    typename QMap<QString, T>::const_iterator it = map.begin();
+    auto it = map.begin();
     for ( ; it != map.end(); ++it) {
         if (it.key() != it.value().name)
             contents += it.value().name + ":";

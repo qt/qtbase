@@ -104,7 +104,6 @@ SOURCES += \
            ../../corelib/tools/qcommandlineoption.cpp \
            ../../corelib/tools/qcryptographichash.cpp \
            ../../corelib/tools/qhash.cpp \
-           ../../corelib/tools/qmap.cpp \
            ../../corelib/tools/qringbuffer.cpp \
            ../../corelib/tools/qpoint.cpp \
            ../../corelib/tools/qrect.cpp \

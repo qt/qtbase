@@ -213,7 +213,7 @@ qt_add_module(Core
         tools/qline.cpp tools/qline.h
         tools/qlist.cpp tools/qlist.h
         tools/qmakearray_p.h
-        tools/qmap.cpp tools/qmap.h
+        tools/qmap.h
         tools/qmargins.cpp tools/qmargins.h
         tools/qmessageauthenticationcode.cpp tools/qmessageauthenticationcode.h
         tools/qoffsetstringarray_p.h

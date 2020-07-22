@@ -709,15 +709,15 @@
     \class QMapIterator
     \inmodule QtCore
 
-    \brief The QMapIterator class provides a Java-style const iterator for QMap and QMultiMap.
+    \brief The QMapIterator class provides a Java-style const iterator for QMap.
 
     QMap has both \l{Java-style iterators} and \l{STL-style
     iterators}. The Java-style iterators are more high-level and
     easier to use than the STL-style iterators; on the other hand,
     they are slightly less efficient.
 
-    QMapIterator\<Key, T\> allows you to iterate over a QMap (or a
-    QMultiMap). If you want to modify the map as you iterate over
+    QMapIterator\<Key, T\> allows you to iterate over a QMap.
+    If you want to modify the map as you iterate over
     it, use QMutableMapIterator instead.
 
     The QMapIterator constructor takes a QMap as argument. After
@@ -755,6 +755,57 @@
     copy.
 
     \sa QMutableMapIterator, QMap::const_iterator
+*/
+
+/*!
+    \class QMultiMapIterator
+    \inmodule QtCore
+
+    \brief The QMultiMapIterator class provides a Java-style const iterator for QMultiMap.
+    QMultiMap has both \l{Java-style iterators} and \l{STL-style
+    iterators}. The Java-style iterators are more high-level and
+    easier to use than the STL-style iterators; on the other hand,
+    they are slightly less efficient.
+
+    QMultiMapIterator\<Key, T\> allows you to iterate over a QMultiMap.
+    If you want to modify the map as you iterate over
+    it, use QMutableMultiMapIterator instead.
+
+    The QMultiMapIterator constructor takes a QMultiMap as argument. After
+    construction, the iterator is located at the very beginning of
+    the map (before the first item). Here's how to iterate over all
+    the elements sequentially:
+
+    \snippet code/doc_src_qiterator.cpp 26multi
+
+    The next() function returns the next item in the map and
+    advances the iterator. The key() and value() functions return the
+    key and value of the last item that was jumped over.
+
+    Unlike STL-style iterators, Java-style iterators point \e between
+    items rather than directly \e at items. The first call to next()
+    advances the iterator to the position between the first and
+    second item, and returns the first item; the second call to
+    next() advances the iterator to the position between the second
+    and third item; and so on.
+
+    \image javaiterators1.png
+
+    Here's how to iterate over the elements in reverse order:
+
+    \snippet code/doc_src_qiterator.cpp 27multi
+
+    If you want to find all occurrences of a particular value, use
+    findNext() or findPrevious() in a loop. For example:
+
+    \snippet code/doc_src_qiterator.cpp 28multi
+
+    Multiple iterators can be used on the same map. If the map is
+    modified while a QMultiMapIterator is active, the QMultiMapIterator will
+    continue iterating over the original map, ignoring the modified
+    copy.
+
+    \sa QMutableMultiMapIterator, QMultiMapIterator::const_iterator
 */
 
 /*!
@@ -809,7 +860,7 @@
     \class QMutableMapIterator
     \inmodule QtCore
 
-    \brief The QMutableMapIterator class provides a Java-style non-const iterator for QMap and QMultiMap.
+    \brief The QMutableMapIterator class provides a Java-style non-const iterator for QMap.
 
     QMap has both \l{Java-style iterators} and \l{STL-style
     iterators}. The Java-style iterators are more high-level and
@@ -817,7 +868,7 @@
     they are slightly less efficient.
 
     QMutableMapIterator\<Key, T\> allows you to iterate over a QMap
-    (or a QMultiMap) and modify the map. If you don't want to modify
+    and modify the map. If you don't want to modify
     the map (or have a const QMap), use the slightly faster
     QMapIterator instead.
 
@@ -868,6 +919,71 @@
     undefined behavior.
 
     \sa QMapIterator, QMap::iterator
+*/
+
+/*!
+    \class QMutableMultiMapIterator
+    \inmodule QtCore
+
+    \brief The QMutableMultiMapIterator class provides a Java-style non-const iterator for QMultiMap.
+
+    QMultiMap has both \l{Java-style iterators} and \l{STL-style
+    iterators}. The Java-style iterators are more high-level and
+    easier to use than the STL-style iterators; on the other hand,
+    they are slightly less efficient.
+
+    QMutableMultiMapIterator\<Key, T\> allows you to iterate over a QMultiMap
+    and modify the map. If you don't want to modify
+    the map (or have a const QMultiMap), use the slightly faster
+    QMultiMapIterator instead.
+
+    The QMutableMultiMapIterator constructor takes a QMultiMap as argument.
+    After construction, the iterator is located at the very beginning
+    of the map (before the first item). Here's how to iterate over
+    all the elements sequentially:
+
+    \snippet code/doc_src_qiterator.cpp 32multi
+
+    The next() function returns the next item in the map and
+    advances the iterator. The key() and value() functions return the
+    key and value of the last item that was jumped over.
+
+    Unlike STL-style iterators, Java-style iterators point \e between
+    items rather than directly \e at items. The first call to next()
+    advances the iterator to the position between the first and
+    second item, and returns the first item; the second call to
+    next() advances the iterator to the position between the second
+    and third item; and so on.
+
+    \image javaiterators1.png
+
+    Here's how to iterate over the elements in reverse order:
+
+    \snippet code/doc_src_qiterator.cpp 33multi
+
+    If you want to find all occurrences of a particular value, use
+    findNext() or findPrevious() in a loop. For example:
+
+    \snippet code/doc_src_qiterator.cpp 34multi
+
+    If you want to remove items as you iterate over the map, use
+    remove(). If you want to modify the value of an item, use
+    setValue().
+
+    Example:
+
+    \snippet code/doc_src_qiterator.cpp 35multi
+
+    The example removes all (key, value) pairs where the key and the
+    value are the same.
+
+    Only one mutable iterator can be active on a given map at any
+    time. Furthermore, no changes should be done directly to the map
+    while the iterator is active (as opposed to through the
+    iterator), since this could invalidate the iterator and lead to
+    undefined behavior.
+
+    \sa QMultiMapIterator, QMultiMap::iterator
 */
 
 /*!
@@ -933,6 +1049,8 @@
 
 /*! \fn template <class Key, class T> QMapIterator<Key, T>::QMapIterator(const QMap<Key, T> &map)
     \fn template <class Key, class T> QMutableMapIterator<Key, T>::QMutableMapIterator(QMap<Key, T> &map)
+    \fn template <class Key, class T> QMultiMapIterator<Key, T>::QMultiMapIterator(const QMultiMap<Key, T> &map)
+    \fn template <class Key, class T> QMutableMultiMapIterator<Key, T>::QMutableMultiMapIterator(QMultiMap<Key, T> &map)
 
     Constructs an iterator for traversing \a map. The iterator is set
     to be at the front of the map (before the first item).
@@ -951,6 +1069,8 @@
 
 /*! \fn template <class Key, class T> QMapIterator &QMapIterator<Key, T>::operator=(const QMap<Key, T> &map)
     \fn template <class Key, class T> QMutableMapIterator &QMutableMapIterator<Key, T>::operator=(QMap<Key, T> &map)
+    \fn template <class Key, class T> QMultiMapIterator &QMultiMapIterator<Key, T>::operator=(const QMultiMap<Key, T> &map)
+    \fn template <class Key, class T> QMutableMultiMapIterator &QMutableMultiMapIterator<Key, T>::operator=(QMultiMap<Key, T> &map)
 
     Makes the iterator operate on \a map. The iterator is set to be
     at the front of the map (before the first item).
@@ -968,8 +1088,10 @@
 */
 
 /*! \fn template <class Key, class T> void QMapIterator<Key, T>::toFront()
+    \fn template <class Key, class T> void QMultiMapIterator<Key, T>::toFront()
     \fn template <class Key, class T> void QHashIterator<Key, T>::toFront()
     \fn template <class Key, class T> void QMutableMapIterator<Key, T>::toFront()
+    \fn template <class Key, class T> void QMutableMultiMapIterator<Key, T>::toFront()
     \fn template <class Key, class T> void QMutableHashIterator<Key, T>::toFront()
 
     Moves the iterator to the front of the container (before the
@@ -979,7 +1101,9 @@
 */
 
 /*! \fn template <class Key, class T> void QMapIterator<Key, T>::toBack()
+    \fn template <class Key, class T> void QMultiMapIterator<Key, T>::toBack()
     \fn template <class Key, class T> void QMutableMapIterator<Key, T>::toBack()
+    \fn template <class Key, class T> void QMutableMultiMapIterator<Key, T>::toBack()
 
     Moves the iterator to the back of the container (after the last
     item).
@@ -998,7 +1122,9 @@
 */
 
 /*! \fn template <class Key, class T> bool QMapIterator<Key, T>::hasNext() const
+    \fn template <class Key, class T> bool QMultiMapIterator<Key, T>::hasNext() const
     \fn template <class Key, class T> bool QMutableMapIterator<Key, T>::hasNext() const
+    \fn template <class Key, class T> bool QMutableMultiMapIterator<Key, T>::hasNext() const
 
     Returns \c true if there is at least one item ahead of the iterator,
     i.e. the iterator is \e not at the back of the container;
@@ -1019,6 +1145,7 @@
 */
 
 /*! \fn template <class Key, class T> QMapIterator<Key, T>::Item QMapIterator<Key, T>::next()
+    \fn template <class Key, class T> QMultiMapIterator<Key, T>::Item QMultiMapIterator<Key, T>::next()
 
     Returns the next item and advances the iterator by one position.
 
@@ -1032,6 +1159,7 @@
 */
 
 /*! \fn template <class Key, class T> QMutableMapIterator<Key, T>::Item QMutableMapIterator<Key, T>::next()
+    \fn template <class Key, class T> QMutableMultiMapIterator<Key, T>::Item QMutableMultiMapIterator<Key, T>::next()
 
     Returns the next item and advances the iterator by one position.
 
@@ -1073,6 +1201,7 @@
 */
 
 /*! \fn template <class Key, class T> QMapIterator<Key, T>::Item QMapIterator<Key, T>::peekNext() const
+    \fn template <class Key, class T> QMutableMapIterator<Key, T>::Item QMutableMapIterator<Key, T>::peekNext()
 
     Returns the next item without moving the iterator.
 
@@ -1086,6 +1215,7 @@
 */
 
 /*! \fn template <class Key, class T> QMutableMapIterator<Key, T>::Item QMutableMapIterator<Key, T>::peekNext() const
+    \fn template <class Key, class T> QMutableMultiMapIterator<Key, T>::Item QMutableMultiMapIterator<Key, T>::peekNext()
 
     Returns a reference to the next item without moving the iterator.
 
@@ -1127,7 +1257,9 @@
 */
 
 /*! \fn template <class Key, class T> bool QMapIterator<Key, T>::hasPrevious() const
+    \fn template <class Key, class T> bool QMultiMapIterator<Key, T>::hasPrevious() const
     \fn template <class Key, class T> bool QMutableMapIterator<Key, T>::hasPrevious() const
+    \fn template <class Key, class T> bool QMutableMultiMapIterator<Key, T>::hasPrevious() const
 
     Returns \c true if there is at least one item behind the iterator,
     i.e. the iterator is \e not at the front of the container;
@@ -1160,6 +1292,8 @@
 
 /*! \fn template <class Key, class T> QMapIterator<Key, T>::Item QMapIterator<Key, T>::previous()
     \fn template <class Key, class T> QMutableMapIterator<Key, T>::Item QMutableMapIterator<Key, T>::previous()
+    \fn template <class Key, class T> QMultiMapIterator<Key, T>::Item QMultiMapIterator<Key, T>::previous()
+    \fn template <class Key, class T> QMutableMultiMapIterator<Key, T>::Item QMutableMultiMapIterator<Key, T>::previous()
 
     Returns the previous item and moves the iterator back by one
     position.
@@ -1207,6 +1341,8 @@
 
 /*! \fn template <class Key, class T> QMapIterator<Key, T>::Item QMapIterator<Key, T>::peekPrevious() const
     \fn template <class Key, class T> QMutableMapIterator<Key, T>::Item QMutableMapIterator<Key, T>::peekPrevious() const
+    \fn template <class Key, class T> QMultiMapIterator<Key, T>::Item QMultiMapIterator<Key, T>::peekPrevious() const
+    \fn template <class Key, class T> QMutableMultiMapIterator<Key, T>::Item QMutableMultiMapIterator<Key, T>::peekPrevious() const
 
     Returns the previous item without moving the iterator.
 
@@ -1250,6 +1386,7 @@
 */
 
 /*! \fn template <class Key, class T> const T &QMapIterator<Key, T>::value() const
+    \fn template <class Key, class T> const T &QMultiMapIterator<Key, T>::value() const
 
     Returns the value of the last item that was jumped over using one
     of the traversal functions (next(), previous(), findNext(),
@@ -1264,6 +1401,7 @@
 
 /*!
     \fn template <class Key, class T> const T &QMutableMapIterator<Key, T>::value() const
+    \fn template <class Key, class T> const T &QMutableMultiMapIterator<Key, T>::value() const
 
     Returns the value of the last item that was jumped over using one
     of the traversal functions (next(), previous(), findNext(),
@@ -1295,6 +1433,7 @@
 
 /*!
     \fn template <class Key, class T> T &QMutableMapIterator<Key, T>::value()
+    \fn template <class Key, class T> T &QMutableMultiMapIterator<Key, T>::value()
     \fn template <class Key, class T> T &QMutableHashIterator<Key, T>::value()
     \overload
 
@@ -1305,6 +1444,8 @@
 
 /*! \fn template <class Key, class T> const Key &QMapIterator<Key, T>::key() const
     \fn template <class Key, class T> const Key &QMutableMapIterator<Key, T>::key() const
+    \fn template <class Key, class T> const Key &QMultiMapIterator<Key, T>::key() const
+    \fn template <class Key, class T> const Key &QMutableMultiMapIterator<Key, T>::key() const
 
     Returns the key of the last item that was jumped over using one
     of the traversal functions (next(), previous(), findNext(),
@@ -1328,6 +1469,8 @@
 
 /*! \fn template <class Key, class T> bool QMapIterator<Key, T>::findNext(const T &value)
     \fn template <class Key, class T> bool QMutableMapIterator<Key, T>::findNext(const T &value)
+    \fn template <class Key, class T> bool QMultiMapIterator<Key, T>::findNext(const T &value)
+    \fn template <class Key, class T> bool QMutableMultiMapIterator<Key, T>::findNext(const T &value)
 
     Searches for \a value starting from the current iterator position
     forward. Returns \c true if a (key, value) pair with value \a value
@@ -1354,6 +1497,8 @@
 
 /*! \fn template <class Key, class T> bool QMapIterator<Key, T>::findPrevious(const T &value)
     \fn template <class Key, class T> bool QMutableMapIterator<Key, T>::findPrevious(const T &value)
+    \fn template <class Key, class T> bool QMultiMapIterator<Key, T>::findPrevious(const T &value)
+    \fn template <class Key, class T> bool QMutableMultiMapIterator<Key, T>::findPrevious(const T &value)
 
     Searches for \a value starting from the current iterator position
     backward. Returns \c true if a (key, value) pair with value \a value
@@ -1397,6 +1542,7 @@
 */
 
 /*! \fn template <class Key, class T> void QMutableMapIterator<Key, T>::remove()
+    \fn template <class Key, class T> void QMutableMultiMapIterator<Key, T>::remove()
 
     Removes the last item that was jumped over using one of the
     traversal functions (next(), previous(), findNext(), findPrevious()).
@@ -1413,6 +1559,7 @@
 */
 
 /*! \fn template <class Key, class T> void QMutableMapIterator<Key, T>::setValue(const T &value)
+    \fn template <class Key, class T> void QMutableMultiMapIterator<Key, T>::setValue(const T &value)
 
     Replaces the value of the last item that was jumped over using
     one of the traversal functions with \a value.

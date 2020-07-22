@@ -296,7 +296,7 @@ void MainWindow::on_printPreviewAction_triggered()
 void MainWindow::printPage(int index, QPainter *painter, QPrinter *printer)
 {
 #if defined(QT_PRINTSUPPORT_LIB) && QT_CONFIG(printdialog)
-    const QString family = (pageMap.begin() + index).key();
+    const QString family = std::next(pageMap.begin(), index).key();
     const StyleItems items = pageMap.value(family);
 
     // Find the dimensions of the text on each page.

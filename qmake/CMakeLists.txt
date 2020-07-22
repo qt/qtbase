@@ -112,7 +112,7 @@ qt_add_tool(${target_name}
         ../src/corelib/tools/qlist.cpp ../src/corelib/tools/qlist.h
         ../src/corelib/text/qlocale.cpp ../src/corelib/text/qlocale.h
         ../src/corelib/text/qlocale_tools.cpp ../src/corelib/text/qlocale_tools_p.h
-        ../src/corelib/tools/qmap.cpp ../src/corelib/tools/qmap.h
+        ../src/corelib/tools/qmap.h
         ../src/corelib/text/qregularexpression.cpp ../src/corelib/text/qregularexpression.h
         ../src/corelib/tools/qringbuffer.cpp # special case
         ../src/corelib/text/qstring.cpp ../src/corelib/text/qstring.h

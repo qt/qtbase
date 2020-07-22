@@ -149,7 +149,6 @@ SOURCES += \
     qlocale_tools.cpp \
     qlogging.cpp \
     qmalloc.cpp \
-    qmap.cpp \
     qmetatype.cpp \
     qnumeric.cpp \
     qregularexpression.cpp \

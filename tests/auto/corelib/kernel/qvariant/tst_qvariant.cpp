@@ -4290,10 +4290,10 @@ void tst_QVariant::iterateContainerElements()
         QAssociativeIterable iter = var.value<QAssociativeIterable>();
         QAssociativeIterable::const_iterator it = iter.begin();
         QAssociativeIterable::const_iterator end = iter.end();
-        QCOMPARE(*(mapping.begin() + 1), (*(it + 1)).toString());
+        QCOMPARE(*(++mapping.begin()), (*(it + 1)).toString());
         int i = 0;
         for ( ; it != end; ++it, ++i) {
-            QCOMPARE(*(mapping.begin() + i), (*it).toString());
+            QCOMPARE(*(std::next(mapping.begin(), i)), (*it).toString());
         }
 
         QVariantList nums;

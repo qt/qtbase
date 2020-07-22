@@ -36,8 +36,8 @@ class tst_QMap : public QObject
 {
     Q_OBJECT
 protected:
-    template <class KEY, class VALUE>
-    void sanityCheckTree(const QMap<KEY, VALUE> &m, int calledFromLine);
+    template <class Map>
+    void sanityCheckTree(const Map &m, int calledFromLine);
 public slots:
     void init();
 private slots:
@@ -119,15 +119,15 @@ QDebug operator << (QDebug d, const MyClass &c) {
     return d;
 }
 
-template <class KEY, class VALUE>
-void tst_QMap::sanityCheckTree(const QMap<KEY, VALUE> &m, int calledFromLine)
+template <class Map>
+void tst_QMap::sanityCheckTree(const Map &m, int calledFromLine)
 {
     QString possibleFrom;
     possibleFrom.setNum(calledFromLine);
     possibleFrom = "Called from line: " + possibleFrom;
     int count = 0;
-    typename QMap<KEY, VALUE>::const_iterator oldite = m.constBegin();
-    for (typename QMap<KEY, VALUE>::const_iterator i = m.constBegin(); i != m.constEnd(); ++i) {
+    typename Map::const_iterator oldite = m.constBegin();
+    for (typename Map::const_iterator i = m.constBegin(); i != m.constEnd(); ++i) {
         count++;
         bool oldIteratorIsLarger = i.key() < oldite.key();
         QVERIFY2(!oldIteratorIsLarger, possibleFrom.toUtf8());
@@ -594,7 +594,7 @@ void tst_QMap::contains()
 
 void tst_QMap::find()
 {
-    QMap<int, QString> map1;
+    QMultiMap<int, QString> map1;
     QString testString="Teststring %0";
     QString compareString;
     int i,count=0;
@@ -614,7 +614,7 @@ void tst_QMap::find()
         QCOMPARE(map1.count(4), i - 2);
     }
 
-    QMap<int, QString>::const_iterator it=map1.constFind(4);
+    QMultiMap<int, QString>::const_iterator it=map1.constFind(4);
 
     for(i = 9; i > 2 && it != map1.constEnd() && it.key() == 4; --i) {
         compareString = testString.arg(i);
@@ -627,7 +627,7 @@ void tst_QMap::find()
 
 void tst_QMap::constFind()
 {
-    QMap<int, QString> map1;
+    QMultiMap<int, QString> map1;
     QString testString="Teststring %0";
     QString compareString;
     int i,count=0;
@@ -648,7 +648,7 @@ void tst_QMap::constFind()
         map1.insertMulti(4, compareString);
     }
 
-    QMap<int, QString>::const_iterator it=map1.constFind(4);
+    QMultiMap<int, QString>::const_iterator it=map1.constFind(4);
 
     for(i = 9; i > 2 && it != map1.constEnd() && it.key() == 4; --i) {
         compareString = testString.arg(i);
@@ -661,7 +661,7 @@ void tst_QMap::constFind()
 
 void tst_QMap::lowerUpperBound()
 {
-    QMap<int, QString> map1;
+    QMultiMap<int, QString> map1;
 
     map1.insert(1, "one");
     map1.insert(5, "five");
@@ -712,7 +712,7 @@ void tst_QMap::lowerUpperBound()
 
 void tst_QMap::mergeCompare()
 {
-    QMap<int, QString> map1, map2, map3, map1b, map2b;
+    QMultiMap<int, QString> map1, map2, map3, map1b, map2b;
 
     map1.insert(1,"ett");
     map1.insert(3,"tre");
@@ -770,13 +770,13 @@ void tst_QMap::iterators()
     QMap<int, QString>::iterator stlIt = map.begin();
     QCOMPARE(stlIt.value(), QLatin1String("Teststring 1"));
 
-    stlIt+=5;
+    std::advance(stlIt, 5);
     QCOMPARE(stlIt.value(), QLatin1String("Teststring 6"));
 
     stlIt++;
     QCOMPARE(stlIt.value(), QLatin1String("Teststring 7"));
 
-    stlIt-=3;
+    std::advance(stlIt, -3);
     QCOMPARE(stlIt.value(), QLatin1String("Teststring 4"));
 
     stlIt--;
@@ -791,13 +791,13 @@ void tst_QMap::iterators()
     QMap<int, QString>::const_iterator cstlIt = map.constBegin();
     QCOMPARE(cstlIt.value(), QLatin1String("Teststring 1"));
 
-    cstlIt+=5;
+    std::advance(cstlIt, 5);
     QCOMPARE(cstlIt.value(), QLatin1String("Teststring 6"));
 
     cstlIt++;
     QCOMPARE(cstlIt.value(), QLatin1String("Teststring 7"));
 
-    cstlIt-=3;
+    std::advance(cstlIt, -3);
     QCOMPARE(cstlIt.value(), QLatin1String("Teststring 4"));
 
     cstlIt--;
@@ -926,28 +926,23 @@ void tst_QMap::keyValueIterator()
 
 void tst_QMap::keys_values_uniqueKeys()
 {
-    QMap<QString, int> map;
-    QVERIFY(map.uniqueKeys().isEmpty());
+    QMultiMap<QString, int> map;
     QVERIFY(map.keys().isEmpty());
     QVERIFY(map.values().isEmpty());
 
     map.insertMulti("alpha", 1);
     QVERIFY(map.keys() == (QList<QString>() << "alpha"));
-    QVERIFY(map.uniqueKeys() == map.keys());
     QVERIFY(map.values() == (QList<int>() << 1));
 
     map.insertMulti("beta", -2);
     QVERIFY(map.keys() == (QList<QString>() << "alpha" << "beta"));
-    QVERIFY(map.keys() == map.uniqueKeys());
     QVERIFY(map.values() == (QList<int>() << 1 << -2));
 
     map.insertMulti("alpha", 2);
-    QVERIFY(map.uniqueKeys() == (QList<QString>() << "alpha" << "beta"));
     QVERIFY(map.keys() == (QList<QString>() << "alpha" << "alpha" << "beta"));
     QVERIFY(map.values() == (QList<int>() << 2 << 1 << -2));
 
     map.insertMulti("beta", 4);
-    QVERIFY(map.uniqueKeys() == (QList<QString>() << "alpha" << "beta"));
     QVERIFY(map.keys() == (QList<QString>() << "alpha" << "alpha" << "beta" << "beta"));
     QVERIFY(map.values() == (QList<int>() << 2 << 1 << 4 << -2));
 }
@@ -1077,14 +1072,14 @@ void tst_QMap::const_shared_null()
 
 void tst_QMap::equal_range()
 {
-    QMap<int, QString> map;
-    const QMap<int, QString> &cmap = map;
+    QMultiMap<int, QString> map;
+    const QMultiMap<int, QString> &cmap = map;
 
-    QPair<QMap<int, QString>::iterator, QMap<int, QString>::iterator> result = map.equal_range(0);
+    QPair<QMultiMap<int, QString>::iterator, QMultiMap<int, QString>::iterator> result = map.equal_range(0);
     QCOMPARE(result.first, map.end());
     QCOMPARE(result.second, map.end());
 
-    QPair<QMap<int, QString>::const_iterator, QMap<int, QString>::const_iterator> cresult = cmap.equal_range(0);
+    QPair<QMultiMap<int, QString>::const_iterator, QMultiMap<int, QString>::const_iterator> cresult = cmap.equal_range(0);
     QCOMPARE(cresult.first, cmap.cend());
     QCOMPARE(cresult.second, cmap.cend());
 
@@ -1294,10 +1289,10 @@ void tst_QMap::insertMap()
         // make sure this isn't adding multiple entries with the
         // same key to the QMap.
         QMap<int, int> map;
-        QMultiMap<int, int> map2;
-        map2.insert(0, 0);
+        map.insert(0, 0);
+
+        QMap<int, int> map2;
         map2.insert(0, 1);
-        map2.insert(0, 2);
 
         map.insert(map2);
 
@@ -1452,11 +1447,11 @@ void tst_QMap::testInsertWithHint()
 
 void tst_QMap::testInsertMultiWithHint()
 {
-    QMap<int, int> map;
+    QMultiMap<int, int> map;
 
     map.insertMulti(map.end(), 64, 65);
-    map[128] = 129;
-    map[256] = 257;
+    map.insert(128, 129);
+    map.insert(256, 257);
     sanityCheckTree(map, __LINE__);
 
     map.insertMulti(map.end(), 512, 513);
@@ -1467,11 +1462,11 @@ void tst_QMap::testInsertMultiWithHint()
     sanityCheckTree(map, __LINE__);
     QCOMPARE(map.size(), 6);
 
-    QMap<int, int>::iterator i = map.insertMulti(map.constBegin(), 256, 259); // wrong hint
+    QMultiMap<int, int>::iterator i = map.insertMulti(map.constBegin(), 256, 259); // wrong hint
     sanityCheckTree(map, __LINE__);
     QCOMPARE(map.size(), 7);
 
-    QMap<int, int>::iterator j = map.insertMulti(map.constBegin(), 69, 66);
+    QMultiMap<int, int>::iterator j = map.insertMulti(map.constBegin(), 69, 66);
     sanityCheckTree(map, __LINE__);
     QCOMPARE(map.size(), 8);
 
@@ -1502,14 +1497,14 @@ void tst_QMap::testInsertMultiWithHint()
 
 void tst_QMap::eraseValidIteratorOnSharedMap()
 {
-    QMap<int, int> a, b;
+    QMultiMap<int, int> a, b;
     a.insert(10, 10);
     a.insertMulti(10, 40);
     a.insertMulti(10, 25);
     a.insertMulti(10, 30);
     a.insert(20, 20);
 
-    QMap<int, int>::iterator i = a.begin();
+    QMultiMap<int, int>::iterator i = a.begin();
     while (i.value() != 25)
         ++i;
 
@@ -1529,12 +1524,12 @@ void tst_QMap::eraseValidIteratorOnSharedMap()
     QCOMPARE(itemsWith10, 4);
 
     // Border cases
-    QMap <QString, QString> ms1, ms2, ms3;
+    QMultiMap <QString, QString> ms1, ms2, ms3;
     ms1.insert("foo", "bar");
     ms1.insertMulti("foo", "quux");
     ms1.insertMulti("foo", "bar");
 
-    QMap <QString, QString>::iterator si = ms1.begin();
+    QMultiMap <QString, QString>::iterator si = ms1.begin();
     ms2 = ms1;
     ms1.erase(si);
     si = ms1.begin();

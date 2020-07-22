@@ -2157,7 +2157,7 @@ QList<StyleRule> StyleSelector::styleRulesForNode(NodePtr node)
     }
 
     rules.reserve(weightedRules.count());
-    QMap<uint, StyleRule>::const_iterator it = weightedRules.constBegin();
+    QMultiMap<uint, StyleRule>::const_iterator it = weightedRules.constBegin();
     for ( ; it != weightedRules.constEnd() ; ++it)
         rules += *it;
 

@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2020 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -37,348 +38,10 @@
 **
 ****************************************************************************/
 
-#include "qmap.h"
-
-#include <stdlib.h>
-
-#ifdef QT_QMAP_DEBUG
-# include <qstring.h>
-# include <qlist.h>
-#endif
-
-QT_BEGIN_NAMESPACE
-
-const QMapDataBase QMapDataBase::shared_null = { Q_REFCOUNT_INITIALIZE_STATIC, 0, { 0, nullptr, nullptr }, nullptr };
-
-const QMapNodeBase *QMapNodeBase::nextNode() const
-{
-    const QMapNodeBase *n = this;
-    if (n->right) {
-        n = n->right;
-        while (n->left)
-            n = n->left;
-    } else {
-        const QMapNodeBase *y = n->parent();
-        while (y && n == y->right) {
-            n = y;
-            y = n->parent();
-        }
-        n = y;
-    }
-    return n;
-}
-
-const QMapNodeBase *QMapNodeBase::previousNode() const
-{
-    const QMapNodeBase *n = this;
-    if (n->left) {
-        n = n->left;
-        while (n->right)
-            n = n->right;
-    } else {
-        const QMapNodeBase *y = n->parent();
-        while (y && n == y->left) {
-            n = y;
-            y = n->parent();
-        }
-        n = y;
-    }
-    return n;
-}
-
-
-void QMapDataBase::rotateLeft(QMapNodeBase *x)
-{
-    QMapNodeBase *&root = header.left;
-    QMapNodeBase *y = x->right;
-    x->right = y->left;
-    if (y->left != nullptr)
-        y->left->setParent(x);
-    y->setParent(x->parent());
-    if (x == root)
-        root = y;
-    else if (x == x->parent()->left)
-        x->parent()->left = y;
-    else
-        x->parent()->right = y;
-    y->left = x;
-    x->setParent(y);
-}
-
-
-void QMapDataBase::rotateRight(QMapNodeBase *x)
-{
-    QMapNodeBase *&root = header.left;
-    QMapNodeBase *y = x->left;
-    x->left = y->right;
-    if (y->right != nullptr)
-        y->right->setParent(x);
-    y->setParent(x->parent());
-    if (x == root)
-        root = y;
-    else if (x == x->parent()->right)
-        x->parent()->right = y;
-    else
-        x->parent()->left = y;
-    y->right = x;
-    x->setParent(y);
-}
-
-
-void QMapDataBase::rebalance(QMapNodeBase *x)
-{
-    QMapNodeBase *&root = header.left;
-    x->setColor(QMapNodeBase::Red);
-    while (x != root && x->parent()->color() == QMapNodeBase::Red) {
-        if (x->parent() == x->parent()->parent()->left) {
-            QMapNodeBase *y = x->parent()->parent()->right;
-            if (y && y->color() == QMapNodeBase::Red) {
-                x->parent()->setColor(QMapNodeBase::Black);
-                y->setColor(QMapNodeBase::Black);
-                x->parent()->parent()->setColor(QMapNodeBase::Red);
-                x = x->parent()->parent();
-            } else {
-                if (x == x->parent()->right) {
-                    x = x->parent();
-                    rotateLeft(x);
-                }
-                x->parent()->setColor(QMapNodeBase::Black);
-                x->parent()->parent()->setColor(QMapNodeBase::Red);
-                rotateRight (x->parent()->parent());
-            }
-        } else {
-            QMapNodeBase *y = x->parent()->parent()->left;
-            if (y && y->color() == QMapNodeBase::Red) {
-                x->parent()->setColor(QMapNodeBase::Black);
-                y->setColor(QMapNodeBase::Black);
-                x->parent()->parent()->setColor(QMapNodeBase::Red);
-                x = x->parent()->parent();
-            } else {
-                if (x == x->parent()->left) {
-                    x = x->parent();
-                    rotateRight(x);
-                }
-                x->parent()->setColor(QMapNodeBase::Black);
-                x->parent()->parent()->setColor(QMapNodeBase::Red);
-                rotateLeft(x->parent()->parent());
-            }
-        }
-    }
-    root->setColor(QMapNodeBase::Black);
-}
-
-void QMapDataBase::freeNodeAndRebalance(QMapNodeBase *z)
-{
-    QMapNodeBase *&root = header.left;
-    QMapNodeBase *y = z;
-    QMapNodeBase *x;
-    QMapNodeBase *x_parent;
-    if (y->left == nullptr) {
-        x = y->right;
-        if (y == mostLeftNode) {
-            if (x)
-                mostLeftNode = x; // It cannot have (left) children due the red black invariant.
-            else
-                mostLeftNode = y->parent();
-        }
-    } else {
-        if (y->right == nullptr) {
-            x = y->left;
-        } else {
-            y = y->right;
-            while (y->left != nullptr)
-                y = y->left;
-            x = y->right;
-        }
-    }
-    if (y != z) {
-        z->left->setParent(y);
-        y->left = z->left;
-        if (y != z->right) {
-            x_parent = y->parent();
-            if (x)
-                x->setParent(y->parent());
-            y->parent()->left = x;
-            y->right = z->right;
-            z->right->setParent(y);
-        } else {
-            x_parent = y;
-        }
-        if (root == z)
-            root = y;
-        else if (z->parent()->left == z)
-            z->parent()->left = y;
-        else
-            z->parent()->right = y;
-        y->setParent(z->parent());
-        // Swap the colors
-        QMapNodeBase::Color c = y->color();
-        y->setColor(z->color());
-        z->setColor(c);
-        y = z;
-    } else {
-        x_parent = y->parent();
-        if (x)
-            x->setParent(y->parent());
-        if (root == z)
-            root = x;
-        else if (z->parent()->left == z)
-            z->parent()->left = x;
-        else
-            z->parent()->right = x;
-    }
-    if (y->color() != QMapNodeBase::Red) {
-        while (x != root && (x == nullptr || x->color() == QMapNodeBase::Black)) {
-            if (x == x_parent->left) {
-                QMapNodeBase *w = x_parent->right;
-                if (w->color() == QMapNodeBase::Red) {
-                    w->setColor(QMapNodeBase::Black);
-                    x_parent->setColor(QMapNodeBase::Red);
-                    rotateLeft(x_parent);
-                    w = x_parent->right;
-                }
-                if ((w->left == nullptr || w->left->color() == QMapNodeBase::Black) &&
-                    (w->right == nullptr || w->right->color() == QMapNodeBase::Black)) {
-                    w->setColor(QMapNodeBase::Red);
-                    x = x_parent;
-                    x_parent = x_parent->parent();
-                } else {
-                    if (w->right == nullptr || w->right->color() == QMapNodeBase::Black) {
-                        if (w->left)
-                            w->left->setColor(QMapNodeBase::Black);
-                        w->setColor(QMapNodeBase::Red);
-                        rotateRight(w);
-                        w = x_parent->right;
-                    }
-                    w->setColor(x_parent->color());
-                    x_parent->setColor(QMapNodeBase::Black);
-                    if (w->right)
-                        w->right->setColor(QMapNodeBase::Black);
-                    rotateLeft(x_parent);
-                    break;
-                }
-            } else {
-            QMapNodeBase *w = x_parent->left;
-            if (w->color() == QMapNodeBase::Red) {
-                w->setColor(QMapNodeBase::Black);
-                x_parent->setColor(QMapNodeBase::Red);
-                rotateRight(x_parent);
-                w = x_parent->left;
-            }
-            if ((w->right == nullptr || w->right->color() == QMapNodeBase::Black) &&
-                (w->left == nullptr|| w->left->color() == QMapNodeBase::Black)) {
-                w->setColor(QMapNodeBase::Red);
-                x = x_parent;
-                x_parent = x_parent->parent();
-            } else {
-                if (w->left == nullptr || w->left->color() == QMapNodeBase::Black) {
-                    if (w->right)
-                        w->right->setColor(QMapNodeBase::Black);
-                    w->setColor(QMapNodeBase::Red);
-                    rotateLeft(w);
-                    w = x_parent->left;
-                }
-                w->setColor(x_parent->color());
-                x_parent->setColor(QMapNodeBase::Black);
-                if (w->left)
-                    w->left->setColor(QMapNodeBase::Black);
-                rotateRight(x_parent);
-                break;
-            }
-        }
-    }
-    if (x)
-        x->setColor(QMapNodeBase::Black);
-    }
-    free(y);
-    --size;
-}
-
-void QMapDataBase::recalcMostLeftNode()
-{
-    mostLeftNode = &header;
-    while (mostLeftNode->left)
-        mostLeftNode = mostLeftNode->left;
-}
-
-static inline size_t qMapAlignmentThreshold()
-{
-    // malloc on 32-bit platforms should return pointers that are 8-byte
-    // aligned or more while on 64-bit platforms they should be 16-byte aligned
-    // or more
-    return 2 * sizeof(void*);
-}
-
-static inline void *qMapAllocate(size_t alloc, size_t alignment)
-{
-    return alignment > qMapAlignmentThreshold()
-        ? qMallocAligned(alloc, alignment)
-        : ::malloc(alloc);
-}
-
-static inline void qMapDeallocate(QMapNodeBase *node, size_t alignment)
-{
-    if (alignment > qMapAlignmentThreshold())
-        qFreeAligned(node);
-    else
-        ::free(node);
-}
-
-QMapNodeBase *QMapDataBase::createNode(size_t alloc, size_t alignment, QMapNodeBase *parent, bool left)
-{
-    QMapNodeBase *node = static_cast<QMapNodeBase *>(qMapAllocate(alloc, alignment));
-    Q_CHECK_PTR(node);
-
-    memset(node, 0, alloc);
-    ++size;
-
-    if (parent) {
-        if (left) {
-            parent->left = node;
-            if (parent == mostLeftNode)
-                mostLeftNode = node;
-        } else {
-            parent->right = node;
-        }
-        node->setParent(parent);
-        rebalance(node);
-    }
-    return node;
-}
-
-void QMapDataBase::freeTree(QMapNodeBase *root, size_t alignment)
-{
-    if (root->left)
-        freeTree(root->left, alignment);
-    if (root->right)
-        freeTree(root->right, alignment);
-    qMapDeallocate(root, alignment);
-}
-
-QMapDataBase *QMapDataBase::createData()
-{
-    QMapDataBase *d = new QMapDataBase;
-
-    d->ref.initializeOwned();
-    d->size = 0;
-
-    d->header.p = 0;
-    d->header.left = nullptr;
-    d->header.right = nullptr;
-    d->mostLeftNode = &(d->header);
-
-    return d;
-}
-
-void QMapDataBase::freeData(QMapDataBase *d)
-{
-    delete d;
-}
-
 /*!
     \class QMap
     \inmodule QtCore
-    \brief The QMap class is a template class that provides a red-black-tree-based dictionary.
+    \brief The QMap class is a template class that provides an associative array.
 
     \ingroup tools
     \ingroup shared
@@ -468,14 +131,13 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \snippet code/src_corelib_tools_qmap.cpp 9
 
     However, you can store multiple values per key by using
-    using the subclass QMultiMap. If you want
+    QMultiMap. If you want
     to retrieve all the values for a single key, you can use
     values(const Key &key), which returns a QList<T>:
 
     \snippet code/src_corelib_tools_qmap.cpp 10
 
-    The items that share the same key are available from most
-    recently to least recently inserted. Another approach is to call
+    Another approach is to call
     find() to get the STL-style iterator for the first item with a
     key and iterate from there:
 
@@ -496,7 +158,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
     but the compiler won't let you, for example, store a QWidget as a
     value; instead, store a QWidget *. In addition, QMap's key type
     must provide operator<(). QMap uses it to keep its items sorted,
-    and assumes that two keys \c x and \c y are equal if neither \c{x
+    and assumes that two keys \c x and \c y are equivalent if neither \c{x
     < y} nor \c{y < x} is true.
 
     Example:
@@ -515,15 +177,6 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \sa clear()
 */
 
-/*!
-    \fn template <class Key, class T> QMap<Key, T>::QMap(QMap<Key, T> &&other)
-
-    Move-constructs a QMap instance, making it point at the same
-    object that \a other was pointing to.
-
-    \since 5.2
-*/
-
 /*! \fn template <class Key, class T> QMap<Key, T>::QMap(const QMap<Key, T> &other)
 
     Constructs a copy of \a other.
@@ -533,35 +186,15 @@ void QMapDataBase::freeData(QMapDataBase *d)
     function very fast. If a shared instance is modified, it will be
     copied (copy-on-write), and this takes \l{linear time}.
 
-    \sa operator=()
+    \sa operator=
 */
 
-/*! \fn template <class Key, class T> QMap<Key, T>::QMap(const typename std::map<Key, T> & other)
+/*!
+    \fn template <class Key, class T> QMap<Key, T>::QMap(QMap<Key, T> &&other)
 
-    Constructs a copy of \a other.
+    Move-constructs a QMap instance.
 
-    \sa toStdMap()
-*/
-
-/*! \fn template <class Key, class T> QMap<Key, T>::QMap(std::initializer_list<std::pair<Key,T> > list)
-    \since 5.1
-
-    Constructs a map with a copy of each of the elements in the
-    initializer list \a list.
-
-    This function is only available if the program is being
-    compiled in C++11 mode.
-*/
-
-/*! \fn template <class Key, class T> std::map<Key, T> QMap<Key, T>::toStdMap() const
-
-    Returns an STL map equivalent to this QMap.
-*/
-
-/*! \fn template <class Key, class T> QMap<Key, T>::~QMap()
-
-    Destroys the map. References to the values in the map, and all
-    iterators over this map, become invalid.
+    \since 5.2
 */
 
 /*! \fn template <class Key, class T> QMap<Key, T> &QMap<Key, T>::operator=(const QMap<Key, T> &other)
@@ -577,49 +210,76 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \since 5.2
 */
 
-/*! \fn template <class Key, class T> void QMap<Key, T>::swap(QMap<Key, T> &other)
+/*! \fn template <class Key, class T> QMap<Key, T>::~QMap()
+
+    Destroys the map. References to the values in the map, and all
+    iterators over this map, become invalid.
+*/
+
+/*! \fn template <class Key, class T> void QMap<Key, T>::swap(QMap<Key, T> &other) noexcept
     \since 4.8
 
     Swaps map \a other with this map. This operation is very
     fast and never fails.
 */
 
-/*! \fn template <class Key, class T> void QMultiMap<Key, T>::swap(QMultiMap<Key, T> &other)
-    \since 4.8
+/*! \fn template <class Key, class T> QMap<Key, T>::QMap(std::initializer_list<std::pair<Key,T> > list)
+    \since 5.1
 
-    Swaps map \a other with this map. This operation is very
-    fast and never fails.
+    Constructs a map with a copy of each of the elements in the
+    initializer list \a list.
 */
 
-/*! \fn template <class Key, class T> bool QMap<Key, T>::operator==(const QMap<Key, T> &other) const
+/*! \fn template <class Key, class T> QMap<Key, T>::QMap(const std::map<Key, T> & other)
 
-    Returns \c true if \a other is equal to this map; otherwise returns
+    Constructs a copy of \a other.
+
+    \sa toStdMap()
+*/
+
+/*! \fn template <class Key, class T> QMap<Key, T>::QMap(std::map<Key, T> && other)
+
+    Constructs a map by moving from \a other.
+
+    \sa toStdMap()
+*/
+
+/*! \fn template <class Key, class T> std::map<Key, T> QMap<Key, T>::toStdMap() const
+
+    Returns an STL map equivalent to this QMap.
+*/
+
+/*! \fn template <class Key, class T> bool operator==(const QMap<Key, T> &lhs, const QMap<Key, T> &rhs) const
+    \relates QMap
+
+    Returns \c true if \a lhs is equal to \a rhs; otherwise returns
     false.
 
     Two maps are considered equal if they contain the same (key,
     value) pairs.
 
-    This function requires the value type to implement \c
+    This function requires the key and the value types to implement \c
     operator==().
 
     \sa operator!=()
 */
 
-/*! \fn template <class Key, class T> bool QMap<Key, T>::operator!=(const QMap<Key, T> &other) const
+/*! \fn template <class Key, class T> bool operator!=(const QMap<Key, T> &lhs, const QMap<Key, T> &rhs) const
+    \relates QMap
 
-    Returns \c true if \a other is not equal to this map; otherwise
-    returns \c false.
+    Returns \c true if \a lhs is not equal to \a rhs; otherwise returns
+    false.
 
     Two maps are considered equal if they contain the same (key,
     value) pairs.
 
-    This function requires the value type to implement \c
+    This function requires the key and the value types to implement \c
     operator==().
 
     \sa operator==()
 */
 
-/*! \fn template <class Key, class T> qsizetype QMap<Key, T>::size() const
+/*! \fn template <class Key, class T> size_type QMap<Key, T>::size() const
 
     Returns the number of (key, value) pairs in the map.
 
@@ -655,11 +315,6 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \sa detach()
 */
 
-/*! \fn template <class Key, class T> void QMap<Key, T>::setSharable(bool sharable)
-
-    \internal
-*/
-
 /*! \fn template <class Key, class T> bool QMap<Key, T>::isSharedWith(const QMap<Key, T> &other) const
 
     \internal
@@ -672,13 +327,13 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \sa remove()
 */
 
-/*! \fn template <class Key, class T> qsizetype QMap<Key, T>::remove(const Key &key)
+/*! \fn template <class Key, class T> size_type QMap<Key, T>::remove(const Key &key)
 
     Removes all the items that have the key \a key from the map.
     Returns the number of items removed which will be 1 if the key
     exists in the map, and 0 otherwise.
 
-    \sa clear(), take(), QMultiMap::remove()
+    \sa clear(), take()
 */
 
 /*! \fn template <class Key, class T> T QMap<Key, T>::take(const Key &key)
@@ -701,7 +356,24 @@ void QMapDataBase::freeData(QMapDataBase *d)
     Returns \c true if the map contains an item with key \a key;
     otherwise returns \c false.
 
-    \sa count(), QMultiMap::contains()
+    \sa count()
+*/
+
+/*!
+    \fn template <class Key, class T> Key QMap<Key, T>::key(const T &value, const Key &defaultKey) const
+    \since 4.3
+    \overload
+
+    Returns the first key with value \a value, or \a defaultKey if
+    the map contains no item with value \a value. If no \a defaultKey
+    is provided the function returns a
+    \l{default-constructed value}{default-constructed key}.
+
+    This function can be slow (\l{linear time}), because QMap's
+    internal data structure is optimized for fast lookup by key, not
+    by value.
+
+    \sa value(), keys()
 */
 
 /*! \fn template <class Key, class T> T QMap<Key, T>::value(const Key &key, const T &defaultValue) const
@@ -710,9 +382,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
 
     If the map contains no item with key \a key, the function returns
     \a defaultValue. If no \a defaultValue is specified, the function
-    returns a \l{default-constructed value}. If there are multiple
-    items for \a key in the map, the value of the most recently
-    inserted one is returned.
+    returns a \l{default-constructed value}.
 
     \sa key(), values(), contains(), operator[]()
 */
@@ -731,31 +401,17 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \sa insert(), value()
 */
 
-/*! \fn template <class Key, class T> const T QMap<Key, T>::operator[](const Key &key) const
+/*! \fn template <class Key, class T> T QMap<Key, T>::operator[](const Key &key) const
 
     \overload
 
     Same as value().
 */
 
-/*! \fn template <class Key, class T> QList<Key> QMap<Key, T>::uniqueKeys() const
-    \since 4.2
-    \obsolete Use QMultiMap for storing multiple values with the same key.
-
-    Returns a list containing all the keys in the map in ascending
-    order. Keys that occur multiple times in the map (because items
-    were inserted with insertMulti(), or unite() was used) occur only
-    once in the returned list.
-
-    \sa QMultiMap::uniqueKeys()
-*/
-
 /*! \fn template <class Key, class T> QList<Key> QMap<Key, T>::keys() const
 
     Returns a list containing all the keys in the map in ascending
-    order. Keys that occur multiple times in the map (because the
-    method is operating on a QMultiMap) also occur multiple times
-    in the list.
+    order.
 
     The order is guaranteed to be the same as that used by values().
 
@@ -778,23 +434,6 @@ void QMapDataBase::freeData(QMapDataBase *d)
     by value.
 */
 
-/*!
-    \fn template <class Key, class T> Key QMap<Key, T>::key(const T &value, const Key &defaultKey) const
-    \since 4.3
-    \overload
-
-    Returns the first key with value \a value, or \a defaultKey if
-    the map contains no item with value \a value. If no \a defaultKey
-    is provided the function returns a
-    \l{default-constructed value}{default-constructed key}.
-
-    This function can be slow (\l{linear time}), because QMap's
-    internal data structure is optimized for fast lookup by key, not
-    by value.
-
-    \sa value(), keys()
-*/
-
 /*! \fn template <class Key, class T> QList<T> QMap<Key, T>::values() const
 
     Returns a list containing all the values in the map, in ascending
@@ -809,29 +448,74 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \sa keys(), value()
 */
 
-/*! \fn template <class Key, class T> QList<T> QMap<Key, T>::values(const Key &key) const
-    \overload
-    \obsolete Use QMultiMap for maps storing multiple values with the same key.
-
-    Returns a list containing all the values associated with key
-    \a key, from the most recently inserted to the least recently
-    inserted one.
-
-    \sa QMultiMap::values()
-*/
-
-/*! \fn template <class Key, class T> qsizetype QMap<Key, T>::count(const Key &key) const
+/*! \fn template <class Key, class T> size_type QMap<Key, T>::count(const Key &key) const
 
     Returns the number of items associated with key \a key.
 
-    \sa contains(), QMultiMap::count()
+    \sa contains()
 */
 
-/*! \fn template <class Key, class T> qsizetype QMap<Key, T>::count() const
+/*! \fn template <class Key, class T> size_type QMap<Key, T>::count() const
 
     \overload
 
     Same as size().
+*/
+
+/*! \fn template <class Key, class T> const Key &QMap<Key, T>::firstKey() const
+    \since 5.2
+
+    Returns a reference to the smallest key in the map.
+    This function assumes that the map is not empty.
+
+    This executes in \l{constant time}.
+
+    \sa lastKey(), first(), keyBegin(), isEmpty()
+*/
+
+/*! \fn template <class Key, class T> const Key &QMap<Key, T>::lastKey() const
+    \since 5.2
+
+    Returns a reference to the largest key in the map.
+    This function assumes that the map is not empty.
+
+    This executes in \l{logarithmic time}.
+
+    \sa firstKey(), last(), keyEnd(), isEmpty()
+*/
+
+/*! \fn template <class Key, class T> T &QMap<Key, T>::first()
+    \since 5.2
+
+    Returns a reference to the first value in the map, that is the value mapped
+    to the smallest key. This function assumes that the map is not empty.
+
+    When unshared (or const version is called), this executes in \l{constant time}.
+
+    \sa last(), firstKey(), isEmpty()
+*/
+
+/*! \fn template <class Key, class T> const T &QMap<Key, T>::first() const
+    \since 5.2
+
+    \overload
+*/
+
+/*! \fn template <class Key, class T> T &QMap<Key, T>::last()
+    \since 5.2
+
+    Returns a reference to the last value in the map, that is the value mapped
+    to the largest key. This function assumes that the map is not empty.
+
+    When unshared (or const version is called), this executes in \l{logarithmic time}.
+
+    \sa first(), lastKey(), isEmpty()
+*/
+
+/*! \fn template <class Key, class T> const T &QMap<Key, T>::last() const
+    \since 5.2
+
+    \overload
 */
 
 /*! \fn template <class Key, class T> QMap<Key, T>::iterator QMap<Key, T>::begin()
@@ -967,63 +651,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \sa constKeyValueBegin()
 */
 
-/*! \fn template <class Key, class T> const Key &QMap<Key, T>::firstKey() const
-    \since 5.2
-
-    Returns a reference to the smallest key in the map.
-    This function assumes that the map is not empty.
-
-    This executes in \l{constant time}.
-
-    \sa lastKey(), first(), keyBegin(), isEmpty()
-*/
-
-/*! \fn template <class Key, class T> const Key &QMap<Key, T>::lastKey() const
-    \since 5.2
-
-    Returns a reference to the largest key in the map.
-    This function assumes that the map is not empty.
-
-    This executes in \l{logarithmic time}.
-
-    \sa firstKey(), last(), keyEnd(), isEmpty()
-*/
-
-/*! \fn template <class Key, class T> T &QMap<Key, T>::first()
-    \since 5.2
-
-    Returns a reference to the first value in the map, that is the value mapped
-    to the smallest key. This function assumes that the map is not empty.
-
-    When unshared (or const version is called), this executes in \l{constant time}.
-
-    \sa last(), firstKey(), isEmpty()
-*/
-
-/*! \fn template <class Key, class T> const T &QMap<Key, T>::first() const
-    \since 5.2
-
-    \overload
-*/
-
-/*! \fn template <class Key, class T> T &QMap<Key, T>::last()
-    \since 5.2
-
-    Returns a reference to the last value in the map, that is the value mapped
-    to the largest key. This function assumes that the map is not empty.
-
-    When unshared (or const version is called), this executes in \l{logarithmic time}.
-
-    \sa first(), lastKey(), isEmpty()
-*/
-
-/*! \fn template <class Key, class T> const T &QMap<Key, T>::last() const
-    \since 5.2
-
-    \overload
-*/
-
-/*! \fn template <class Key, class T> QMap<Key, T>::iterator QMap<Key, T>::erase(iterator pos)
+/*! \fn template <class Key, class T> QMap<Key, T>::iterator QMap<Key, T>::erase(const_iterator pos)
 
     Removes the (key, value) pair pointed to by the iterator \a pos
     from the map, and returns an iterator to the next item in the
@@ -1040,15 +668,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
     If the map contains no item with key \a key, the function
     returns end().
 
-    If the map contains multiple items with key \a key, this
-    function returns an iterator that points to the most recently
-    inserted value. The other values are accessible by incrementing
-    the iterator. For example, here's some code that iterates over all
-    the items with the same key:
-
-    \snippet code/src_corelib_tools_qmap.cpp 14
-
-    \sa constFind(), value(), values(), lowerBound(), upperBound(), QMultiMap::find()
+    \sa constFind(), value(), values(), lowerBound(), upperBound()
 */
 
 /*! \fn template <class Key, class T> QMap<Key, T>::const_iterator QMap<Key, T>::find(const Key &key) const
@@ -1065,7 +685,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
     If the map contains no item with key \a key, the function
     returns constEnd().
 
-    \sa find(), QMultiMap::constFind()
+    \sa find()
 */
 
 /*! \fn template <class Key, class T> QMap<Key, T>::iterator QMap<Key, T>::lowerBound(const Key &key)
@@ -1074,17 +694,6 @@ void QMapDataBase::freeData(QMapDataBase *d)
     the map. If the map contains no item with key \a key, the
     function returns an iterator to the nearest item with a greater
     key.
-
-    Example:
-    \snippet code/src_corelib_tools_qmap.cpp 15
-
-    If the map contains multiple items with key \a key, this
-    function returns an iterator that points to the most recently
-    inserted value. The other values are accessible by incrementing
-    the iterator. For example, here's some code that iterates over all
-    the items with the same key:
-
-    \snippet code/src_corelib_tools_qmap.cpp 16
 
     \sa upperBound(), find()
 */
@@ -1119,9 +728,6 @@ void QMapDataBase::freeData(QMapDataBase *d)
     If there is already an item with the key \a key, that item's value
     is replaced with \a value.
 
-    If there are multiple items with the key \a key, the most
-    recently inserted item's value is replaced with \a value.
-
     \sa QMultiMap::insert()
 */
 
@@ -1137,9 +743,6 @@ void QMapDataBase::freeData(QMapDataBase *d)
     If the hint \a pos is wrong it is ignored and a regular insert is done.
 
     If there is already an item with the key \a key, that item's value
-    is replaced with \a value.
-
-    If there are multiple items with the key \a key, then exactly one of them
     is replaced with \a value.
 
     If the hint is correct and the map is unshared, the insert executes in amortized \l{constant time}.
@@ -1166,50 +769,6 @@ void QMapDataBase::freeData(QMapDataBase *d)
     final value of the key is undefined.
 
     \sa QMultiMap::insert()
-*/
-
-/*! \fn template <class Key, class T> QMap<Key, T>::iterator QMap<Key, T>::insertMulti(const Key &key, const T &value)
-    \obsolete Use QMultiMap for storing multiple values with the same key.
-
-    Inserts a new item with the key \a key and a value of \a value.
-
-    If there is already an item with the same key in the map, this
-    function will simply create a new one. (This behavior is
-    different from insert(), which overwrites the value of an
-    existing item.)
-
-    \sa QMultiMap::insert()
-*/
-
-/*! \fn template <class Key, class T> QMap<Key, T>::iterator QMap<Key, T>::insertMulti(const_iterator pos, const Key &key, const T &value)
-    \overload
-    \since 5.1
-    \obsolete Use QMultiMap for storing multiple values with the same key.
-    Inserts a new item with the key \a key and value \a value and with hint \a pos
-    suggesting where to do the insert.
-
-    If constBegin() is used as hint it indicates that the \a key is less than any key in the map
-    while constEnd() suggests that the \a key is larger than any key in the map.
-    Otherwise the hint should meet the condition (\a pos - 1).key() < \a key <= pos.key().
-    If the hint \a pos is wrong it is ignored and a regular insertMulti is done.
-
-    If there is already an item with the same key in the map, this function will simply create a new one.
-
-    \b {Note:} Be careful with the hint. Providing an iterator from an older shared instance might
-    crash but there is also a risk that it will silently corrupt both the map and the \a pos map.
-
-    \sa QMultiMap::insert()
-*/
-
-
-/*! \fn template <class Key, class T> QMap<Key, T> &QMap<Key, T>::unite(const QMap<Key, T> &other)
-    \obsolete Use QMultiMap for storing multiple values with the same key.
-
-    Inserts all the items in the \a other map into this map. If a
-    key is common to both maps, the resulting map will contain the
-    key multiple times.
-
-    \sa QMultiMap::unite()
 */
 
 /*! \typedef QMap::Iterator
@@ -1266,7 +825,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
 
 /*! \class QMap::iterator
     \inmodule QtCore
-    \brief The QMap::iterator class provides an STL-style non-const iterator for QMap and QMultiMap.
+    \brief The QMap::iterator class provides an STL-style non-const iterator for QMap.
 
     QMap features both \l{STL-style iterators} and \l{Java-style
     iterators}. The STL-style iterators are more low-level and more
@@ -1274,8 +833,8 @@ void QMapDataBase::freeData(QMapDataBase *d)
     and, for developers who already know STL, have the advantage of
     familiarity.
 
-    QMap\<Key, T\>::iterator allows you to iterate over a QMap (or
-    QMultiMap) and to modify the value (but not the key) stored under
+    QMap\<Key, T\>::iterator allows you to iterate over a QMap
+    and to modify the value (but not the key) stored under
     a particular key. If you want to iterate over a const QMap, you
     should use QMap::const_iterator. It is generally good practice to
     use QMap::const_iterator on a non-const QMap as well, unless you
@@ -1291,9 +850,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \snippet code/src_corelib_tools_qmap.cpp 18
 
     Unlike QHash, which stores its items in an arbitrary order, QMap
-    stores its items ordered by key. Items that share the same key
-    (because the map is a QMultiMap) will appear consecutively,
-    from the most recently to the least recently inserted value.
+    stores its items ordered by key.
 
     Let's see a few examples of things we can do with a
     QMap::iterator that we cannot do with a QMap::const_iterator.
@@ -1370,11 +927,6 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \sa QMap::begin(), QMap::end()
 */
 
-/*! \fn template <class Key, class T> QMap<Key, T>::iterator::iterator(Node *)
-
-    \internal
-*/
-
 /*! \fn template <class Key, class T> const Key &QMap<Key, T>::iterator::key() const
 
     Returns the current item's key as a const reference.
@@ -1434,7 +986,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \sa operator==()
 */
 
-/*! \fn template <class Key, class T> QMap<Key, T>::iterator QMap<Key, T>::iterator::operator++()
+/*! \fn template <class Key, class T> QMap<Key, T>::iterator &QMap<Key, T>::iterator::operator++()
 
     The prefix ++ operator (\c{++i}) advances the iterator to the
     next item in the map and returns an iterator to the new current
@@ -1454,7 +1006,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
     current item.
 */
 
-/*! \fn template <class Key, class T> QMap<Key, T>::iterator QMap<Key, T>::iterator::operator--()
+/*! \fn template <class Key, class T> QMap<Key, T>::iterator &QMap<Key, T>::iterator::operator--()
 
     The prefix -- operator (\c{--i}) makes the preceding item
     current and returns an iterator pointing to the new current item.
@@ -1474,46 +1026,9 @@ void QMapDataBase::freeData(QMapDataBase *d)
     current item.
 */
 
-/*! \fn template <class Key, class T> QMap<Key, T>::iterator QMap<Key, T>::iterator::operator+(qsizetype j) const
-
-    Returns an iterator to the item at \a j positions forward from
-    this iterator. (If \a j is negative, the iterator goes backward.)
-
-    This operation can be slow for large \a j values.
-
-    \sa operator-()
-
-*/
-
-/*! \fn template <class Key, class T> QMap<Key, T>::iterator QMap<Key, T>::iterator::operator-(qsizetype j) const
-
-    Returns an iterator to the item at \a j positions backward from
-    this iterator. (If \a j is negative, the iterator goes forward.)
-
-    This operation can be slow for large \a j values.
-
-    \sa operator+()
-*/
-
-/*! \fn template <class Key, class T> QMap<Key, T>::iterator &QMap<Key, T>::iterator::operator+=(qsizetype j)
-
-    Advances the iterator by \a j items. (If \a j is negative, the
-    iterator goes backward.)
-
-    \sa operator-=(), operator+()
-*/
-
-/*! \fn template <class Key, class T> QMap<Key, T>::iterator &QMap<Key, T>::iterator::operator-=(qsizetype j)
-
-    Makes the iterator go back by \a j items. (If \a j is negative,
-    the iterator goes forward.)
-
-    \sa operator+=(), operator-()
-*/
-
 /*! \class QMap::const_iterator
     \inmodule QtCore
-    \brief The QMap::const_iterator class provides an STL-style const iterator for QMap and QMultiMap.
+    \brief The QMap::const_iterator class provides an STL-style const iterator for QMap.
 
     QMap features both \l{STL-style iterators} and \l{Java-style
     iterators}. The STL-style iterators are more low-level and more
@@ -1521,8 +1036,8 @@ void QMapDataBase::freeData(QMapDataBase *d)
     and, for developers who already know STL, have the advantage of
     familiarity.
 
-    QMap\<Key, T\>::const_iterator allows you to iterate over a QMap
-    (or a QMultiMap). If you want to modify the QMap as you iterate
+    QMap\<Key, T\>::const_iterator allows you to iterate over a QMap.
+    If you want to modify the QMap as you iterate
     over it, you must use QMap::iterator instead. It is generally
     good practice to use QMap::const_iterator on a non-const QMap as
     well, unless you need to change the QMap through the iterator.
@@ -1538,9 +1053,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \snippet code/src_corelib_tools_qmap.cpp 24
 
     Unlike QHash, which stores its items in an arbitrary order, QMap
-    stores its items ordered by key. Items that share the same key
-    (because the map is a QMultiMap) will appear consecutively,
-    from the most recently to the least recently inserted value.
+    stores its items ordered by key.
 
     Multiple iterators can be used on the same map. If you add items
     to the map, existing iterators will remain valid. If you remove
@@ -1590,11 +1103,6 @@ void QMapDataBase::freeData(QMapDataBase *d)
     value to it before using it.
 
     \sa QMap::constBegin(), QMap::constEnd()
-*/
-
-/*! \fn template <class Key, class T> QMap<Key, T>::const_iterator::const_iterator(const Node *)
-
-    \internal
 */
 
 /*! \fn template <class Key, class T> QMap<Key, T>::const_iterator::const_iterator(const iterator &other)
@@ -1648,7 +1156,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \sa operator==()
 */
 
-/*! \fn template <class Key, class T> QMap<Key, T>::const_iterator QMap<Key, T>::const_iterator::operator++()
+/*! \fn template <class Key, class T> QMap<Key, T>::const_iterator &QMap<Key, T>::const_iterator::operator++()
 
     The prefix ++ operator (\c{++i}) advances the iterator to the
     next item in the map and returns an iterator to the new current
@@ -1688,50 +1196,10 @@ void QMapDataBase::freeData(QMapDataBase *d)
     current item.
 */
 
-/*! \fn template <class Key, class T> QMap<Key, T>::const_iterator QMap<Key, T>::const_iterator::operator+(qsizetype j) const
-
-    Returns an iterator to the item at \a j positions forward from
-    this iterator. (If \a j is negative, the iterator goes backward.)
-
-    This operation can be slow for large \a j values.
-
-    \sa operator-()
-*/
-
-/*! \fn template <class Key, class T> QMap<Key, T>::const_iterator QMap<Key, T>::const_iterator::operator-(qsizetype j) const
-
-    Returns an iterator to the item at \a j positions backward from
-    this iterator. (If \a j is negative, the iterator goes forward.)
-
-    This operation can be slow for large \a j values.
-
-    \sa operator+()
-*/
-
-/*! \fn template <class Key, class T> QMap<Key, T>::const_iterator &QMap<Key, T>::const_iterator::operator+=(qsizetype j)
-
-    Advances the iterator by \a j items. (If \a j is negative, the
-    iterator goes backward.)
-
-    This operation can be slow for large \a j values.
-
-    \sa operator-=(), operator+()
-*/
-
-/*! \fn template <class Key, class T> QMap<Key, T>::const_iterator &QMap<Key, T>::const_iterator::operator-=(qsizetype j)
-
-    Makes the iterator go back by \a j items. (If \a j is negative,
-    the iterator goes forward.)
-
-    This operation can be slow for large \a j values.
-
-    \sa operator+=(), operator-()
-*/
-
 /*! \class QMap::key_iterator
     \inmodule QtCore
     \since 5.6
-    \brief The QMap::key_iterator class provides an STL-style const iterator for QMap and QMultiMap keys.
+    \brief The QMap::key_iterator class provides an STL-style const iterator for QMap keys.
 
     QMap::key_iterator is essentially the same as QMap::const_iterator
     with the difference that operator*() and operator->() return a key
@@ -1859,7 +1327,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
 /*! \typedef QMap::const_key_value_iterator
     \inmodule QtCore
     \since 5.10
-    \brief The QMap::const_key_value_iterator typedef provides an STL-style iterator for QMap and QMultiMap.
+    \brief The QMap::const_key_value_iterator typedef provides an STL-style iterator for QMap.
 
     QMap::const_key_value_iterator is essentially the same as QMap::const_iterator
     with the difference that operator*() returns a key/value pair instead of a
@@ -1871,7 +1339,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
 /*! \typedef QMap::key_value_iterator
     \inmodule QtCore
     \since 5.10
-    \brief The QMap::key_value_iterator typedef provides an STL-style iterator for QMap and QMultiMap.
+    \brief The QMap::key_value_iterator typedef provides an STL-style iterator for QMap.
 
     QMap::key_value_iterator is essentially the same as QMap::iterator
     with the difference that operator*() returns a key/value pair instead of a
@@ -1901,240 +1369,3 @@ void QMapDataBase::freeData(QMapDataBase *d)
 
     \sa{Serializing Qt Data Types}{Format of the QDataStream operators}
 */
-
-/*! \class QMultiMap
-    \inmodule QtCore
-    \brief The QMultiMap class is a convenience QMap subclass that provides multi-valued maps.
-
-    \ingroup tools
-    \ingroup shared
-
-    \reentrant
-
-    QMultiMap\<Key, T\> is one of Qt's generic \l{container classes}.
-    It inherits QMap and extends it with a few functions
-    that make it able to store multi-valued maps. A multi-valued map
-    is a map that allows multiple values with the same key; QMap
-    doesn't allow that.
-
-    Because QMultiMap inherits QMap, all of QMap's functionality also
-    applies to QMultiMap. For example, you can use isEmpty() to test
-    whether the map is empty, and you can traverse a QMultiMap using
-    QMap's iterator classes (for example, QMapIterator). But in
-    addition, it provides an insert() function that inserts but does
-    not overwrite any previous value if the key already exists,
-    and a replace() function that corresponds which does overwite
-    an existing value if they key is already in the map.
-    It also provides convenient operator+() and operator+=().
-
-    Example:
-    \snippet code/src_corelib_tools_qmap.cpp 25
-
-    Unlike QMap, QMultiMap provides no operator[]. Use value() or
-    replace() if you want to access the most recently inserted item
-    with a certain key.
-
-    If you want to retrieve all the values for a single key, you can
-    use values(const Key &key), which returns a QList<T>:
-
-    \snippet code/src_corelib_tools_qmap.cpp 26
-
-    The items that share the same key are available from most
-    recently to least recently inserted.
-
-    If you prefer the STL-style iterators, you can call find() to get
-    the iterator for the first item with a key and iterate from
-    there:
-
-    \snippet code/src_corelib_tools_qmap.cpp 27
-
-    QMultiMap's key and value data types must be \l{assignable data
-    types}. This covers most data types you are likely to encounter,
-    but the compiler won't let you, for example, store a QWidget as a
-    value; instead, store a QWidget *. In addition, QMultiMap's key type
-    must provide operator<(). See the QMap documentation for details.
-
-    \sa QMap, QMapIterator, QMutableMapIterator, QMultiHash
-*/
-
-/*! \fn template <class Key, class T> QMultiMap<Key, T>::QMultiMap()
-
-    Constructs an empty map.
-*/
-
-/*! \fn template <class Key, class T> QMultiMap<Key, T>::QMultiMap(std::initializer_list<std::pair<Key,T> > list)
-    \since 5.1
-
-    Constructs a multi-map with a copy of each of the elements in the
-    initializer list \a list.
-
-    This function is only available if the program is being
-    compiled in C++11 mode.
-*/
-
-/*! \fn template <class Key, class T> QMultiMap<Key, T>::QMultiMap(const QMap<Key, T> &other)
-
-    Constructs a copy of \a other (which can be a QMap or a
-    QMultiMap).
-
-    \sa operator=()
-*/
-
-/*! \fn template <class Key, class T> QMultiMap<Key, T>::iterator QMultiMap<Key, T>::replace(const Key &key, const T &value)
-
-    Inserts a new item with the key \a key and a value of \a value.
-
-    If there is already an item with the key \a key, that item's value
-    is replaced with \a value.
-
-    If there are multiple items with the key \a key, the most
-    recently inserted item's value is replaced with \a value.
-
-    \sa insert()
-*/
-
-/*! \fn template <class Key, class T> QMultiMap<Key, T>::iterator QMultiMap<Key, T>::insert(const Key &key, const T &value)
-
-    Inserts a new item with the key \a key and a value of \a value.
-
-    If there is already an item with the same key in the map, this
-    function will simply create a new one. (This behavior is
-    different from replace(), which overwrites the value of an
-    existing item.)
-
-    \sa replace()
-*/
-
-/*! \fn [qmultimap-insert-pos] template <class Key, class T> typename QMultiMap<Key, T>::iterator QMultiMap<Key, T>::insert(typename QMultiMap<Key, T>::const_iterator pos, const Key &key, const T &value)
-
-    \since 5.1
-    Inserts a new item with the key \a key and value \a value and with hint \a pos
-    suggesting where to do the insert.
-
-    If constBegin() is used as hint it indicates that the \a key is less than any key in the map
-    while constEnd() suggests that the \a key is larger than any key in the map.
-    Otherwise the hint should meet the condition (\a pos - 1).key() < \a key <= pos.key().
-    If the hint \a pos is wrong it is ignored and a regular insert is done.
-
-    If there is already an item with the same key in the map, this function will simply create a new one.
-
-    \b {Note:} Be careful with the hint. Providing an iterator from an older shared instance might
-    crash but there is also a risk that it will silently corrupt both the map and the \a pos map.
-*/
-
-/*! \fn template <class Key, class T> QMultiMap &QMultiMap<Key, T>::operator+=(const QMultiMap &other)
-
-    Inserts all the items in the \a other map into this map and
-    returns a reference to this map.
-
-    \sa insert(), operator+()
-*/
-
-/*! \fn template <class Key, class T> QMultiMap QMultiMap<Key, T>::operator+(const QMultiMap &other) const
-
-    Returns a map that contains all the items in this map in
-    addition to all the items in \a other. If a key is common to both
-    maps, the resulting map will contain the key multiple times.
-
-    \sa operator+=()
-*/
-
-/*!
-    \fn template <class Key, class T> bool QMultiMap<Key, T>::contains(const Key &key, const T &value) const
-    \since 4.3
-
-    Returns \c true if the map contains an item with key \a key and
-    value \a value; otherwise returns \c false.
-
-    \sa QMap::contains()
-*/
-
-/*!
-    \fn template <class Key, class T> qsizetype QMultiMap<Key, T>::remove(const Key &key, const T &value)
-    \since 4.3
-
-    Removes all the items that have the key \a key and the value \a
-    value from the map. Returns the number of items removed.
-
-    \sa QMap::remove()
-*/
-
-/*!
-    \fn template <class Key, class T> qsizetype QMultiMap<Key, T>::count(const Key &key, const T &value) const
-    \since 4.3
-
-    Returns the number of items with key \a key and value \a value.
-
-    \sa QMap::count()
-*/
-
-/*!
-    \fn template <class Key, class T> typename QMap<Key, T>::iterator QMultiMap<Key, T>::find(const Key &key, const T &value)
-    \since 4.3
-
-    Returns an iterator pointing to the item with key \a key and
-    value \a value in the map.
-
-    If the map contains no such item, the function returns end().
-
-    If the map contains multiple items with key \a key, this
-    function returns an iterator that points to the most recently
-    inserted value.
-
-    \sa QMap::find()
-*/
-
-/*!
-    \fn template <class Key, class T> typename QMap<Key, T>::const_iterator QMultiMap<Key, T>::find(const Key &key, const T &value) const
-    \since 4.3
-    \overload
-
-    Returns a const iterator pointing to the item with the given \a key and
-    \a value in the map.
-
-    If the map contains no such item, the function returns end().
-
-    If the map contains multiple items with the specified \a key, this
-    function returns a const iterator that points to the most recently
-    inserted value.
-
-    \sa QMap::find()
-*/
-
-/*!
-    \fn template <class Key, class T> typename QMap<Key, T>::const_iterator QMultiMap<Key, T>::constFind(const Key &key, const T &value) const
-    \since 4.3
-
-    Returns an iterator pointing to the item with key \a key and the
-    value \a value in the map.
-
-    If the map contains no such item, the function returns
-    constEnd().
-
-    \sa QMap::constFind()
-*/
-
-/*! \fn template <class Key, class T> QList<T> QMultiMap<Key, T>::values(const Key &key) const
-
-    Returns a list containing all the values associated with key
-    \a key, from the most recently inserted to the least recently
-    inserted one.
-*/
-
-/*! \fn template <class Key, class T> QList<Key> QMultiMap<Key, T>::uniqueKeys() const
-    \since 4.2
-
-    Returns a list containing all the keys in the map in ascending
-    order. Keys that occur multiple times in the map occur only
-    once in the returned list.
-*/
-
-/*!
-    \fn [qmultimap-unite] template <class Key, class T> QMultiMap<Key, T> &QMultiMap<Key, T>::unite(const QMultiMap<Key, T> &other)
-
-    Inserts all the items in the \a other map into this map. If a
-    key is common to both maps, the resulting map will contain the
-    key multiple times.
-*/
-
-QT_END_NAMESPACE

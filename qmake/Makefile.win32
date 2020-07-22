@@ -99,7 +99,6 @@ QTOBJS= \
 	qlocale_win.obj \
 	qversionnumber.obj \
 	qmalloc.obj \
-	qmap.obj \
 	qoperatingsystemversion.obj \
 	qoperatingsystemversion_win.obj \
 	qromancalendar.obj \

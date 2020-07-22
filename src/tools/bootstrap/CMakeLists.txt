@@ -119,7 +119,6 @@ qt_extend_target(Bootstrap
         ../../corelib/tools/qcryptographichash.cpp
         ../../corelib/tools/qhash.cpp
         ../../corelib/tools/qline.cpp
-        ../../corelib/tools/qmap.cpp
         ../../corelib/tools/qpoint.cpp
         ../../corelib/tools/qrect.cpp
         ../../corelib/tools/qringbuffer.cpp
