@@ -752,7 +752,7 @@ bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
 #ifdef QT_KEYPAD_NAVIGATION
         case Qt::Key_Select:
 #endif
-            if (view->currentIndex().isValid() && (view->currentIndex().flags() & Qt::ItemIsEnabled) ) {
+            if (view->currentIndex().isValid() && view->currentIndex().flags().testFlag(Qt::ItemIsEnabled)) {
                 combo->hidePopup();
                 emit itemSelected(view->currentIndex());
             }
@@ -798,8 +798,8 @@ bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
         QMouseEvent *m = static_cast<QMouseEvent *>(e);
         if (isVisible() && view->rect().contains(m->position().toPoint()) && view->currentIndex().isValid()
             && !blockMouseReleaseTimer.isActive() && !ignoreEvent
-            && (view->currentIndex().flags() & Qt::ItemIsEnabled)
-            && (view->currentIndex().flags() & Qt::ItemIsSelectable)) {
+            && (view->currentIndex().flags().testFlag(Qt::ItemIsEnabled))
+            && (view->currentIndex().flags().testFlag(Qt::ItemIsSelectable))) {
             combo->hidePopup();
             emit itemSelected(view->currentIndex());
             return true;
