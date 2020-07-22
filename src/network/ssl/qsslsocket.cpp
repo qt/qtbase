@@ -921,25 +921,6 @@ bool QSslSocket::atEnd() const
 }
 
 /*!
-    This function writes as much as possible from the internal write buffer to
-    the underlying network socket, without blocking. If any data was written,
-    this function returns \c true; otherwise false is returned.
-
-    Call this function if you need QSslSocket to start sending buffered data
-    immediately. The number of bytes successfully written depends on the
-    operating system. In most cases, you do not need to call this function,
-    because QAbstractSocket will start sending data automatically once control
-    goes back to the event loop. In the absence of an event loop, call
-    waitForBytesWritten() instead.
-
-    \sa write(), waitForBytesWritten()
-*/
-bool QSslSocket::flush()
-{
-    return d_func()->flush();
-}
-
-/*!
     \since 4.4
 
     Sets the size of QSslSocket's internal read buffer to be \a size bytes.
