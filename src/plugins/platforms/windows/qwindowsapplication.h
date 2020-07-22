@@ -47,6 +47,9 @@ QT_BEGIN_NAMESPACE
 class QWindowsApplication : public QPlatformInterface::Private::QWindowsApplication
 {
 public:
+    void setTouchWindowTouchType(TouchWindowTouchTypes type) override;
+    TouchWindowTouchTypes touchWindowTouchType() const override;
+
     WindowActivationBehavior windowActivationBehavior() const override;
     void setWindowActivationBehavior(WindowActivationBehavior behavior) override;
 
@@ -57,6 +60,7 @@ public:
 
 private:
     WindowActivationBehavior m_windowActivationBehavior = DefaultActivateWindow;
+    TouchWindowTouchTypes m_touchWindowTouchTypes = NormalTouch;
 };
 
 QT_END_NAMESPACE

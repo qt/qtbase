@@ -173,6 +173,7 @@ public:
 
     bool initTouch();
     bool initTouch(unsigned integrationOptions); // For calls from QWindowsIntegration::QWindowsIntegration() only.
+    void registerTouchWindows();
     bool initTablet();
     bool initPointer(unsigned integrationOptions);
     bool disposeTablet();

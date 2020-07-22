@@ -1128,6 +1128,20 @@ QMargins QWindowsBaseWindow::frameMargins_sys() const
     return QWindowsGeometryHint::frame(handle(), style(), exStyle());
 }
 
+std::optional<QWindowsBaseWindow::TouchWindowTouchTypes>
+    QWindowsBaseWindow::touchWindowTouchTypes_sys() const
+{
+    ULONG touchFlags = 0;
+    if (IsTouchWindow(handle(), &touchFlags) == FALSE)
+        return {};
+    TouchWindowTouchTypes result;
+    if ((touchFlags & TWF_FINETOUCH) != 0)
+        result.setFlag(TouchWindowTouchType::FineTouch);
+    if ((touchFlags & TWF_WANTPALM) != 0)
+        result.setFlag(TouchWindowTouchType::WantPalmTouch);
+    return result;
+}
+
 void QWindowsBaseWindow::hide_sys() // Normal hide, do not activate other windows.
 {
     SetWindowPos(handle(), nullptr , 0, 0, 0, 0,
@@ -1345,7 +1359,11 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const QWindowsWindowData &data)
 #endif
     updateDropSite(window()->isTopLevel());
 
-    registerTouchWindow();
+    // Register touch unless if the flags are already set by a hook
+    // such as HCBT_CREATEWND
+    if (!touchWindowTouchTypes_sys().has_value())
+        registerTouchWindow();
+
     const qreal opacity = qt_window_private(aWindow)->opacity;
     if (!qFuzzyCompare(opacity, qreal(1.0)))
         setOpacity(opacity);
@@ -3040,28 +3058,28 @@ void QWindowsWindow::invalidateSurface()
 #endif // QT_NO_OPENGL
 }
 
-void QWindowsWindow::setTouchWindowTouchTypeStatic(QWindow *window, QWindowsWindowFunctions::TouchWindowTouchTypes touchTypes)
+void QWindowsWindow::registerTouchWindow()
 {
-    if (!window->handle())
+    if ((QWindowsContext::instance()->systemInfo() & QWindowsContext::SI_SupportsTouch) == 0)
         return;
-    static_cast<QWindowsWindow *>(window->handle())->registerTouchWindow(touchTypes);
-}
 
-void QWindowsWindow::registerTouchWindow(QWindowsWindowFunctions::TouchWindowTouchTypes touchTypes)
-{
-    if ((QWindowsContext::instance()->systemInfo() & QWindowsContext::SI_SupportsTouch)
-        && !testFlag(TouchRegistered)) {
-        ULONG touchFlags = 0;
-        const bool ret = IsTouchWindow(m_data.hwnd, &touchFlags);
-        // Return if it is not a touch window or the flags are already set by a hook
-        // such as HCBT_CREATEWND
-        if (ret || touchFlags != 0)
+    // Initially register or re-register to change the flags
+    const auto touchTypes = QWindowsIntegration::instance()->touchWindowTouchType();
+    if (testFlag(TouchRegistered)) {
+        const auto currentTouchTypes = touchWindowTouchTypes_sys();
+        if (currentTouchTypes.has_value() && currentTouchTypes.value() == touchTypes)
             return;
-        if (RegisterTouchWindow(m_data.hwnd, ULONG(touchTypes)))
-            setFlag(TouchRegistered);
-        else
-            qErrnoWarning("RegisterTouchWindow() failed for window '%s'.", qPrintable(window()->objectName()));
     }
+
+    ULONG touchFlags = 0;
+    if (touchTypes.testFlag(TouchWindowTouchType::FineTouch))
+        touchFlags |= TWF_FINETOUCH;
+    if (touchTypes.testFlag(TouchWindowTouchType::WantPalmTouch))
+        touchFlags |= TWF_WANTPALM;
+    if (RegisterTouchWindow(m_data.hwnd, touchFlags))
+        setFlag(TouchRegistered);
+    else
+        qErrnoWarning("RegisterTouchWindow() failed for window '%s'.", qPrintable(window()->objectName()));
 }
 
 void QWindowsWindow::aboutToMakeCurrent()

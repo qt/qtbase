@@ -382,6 +382,17 @@ struct Q_GUI_EXPORT QWindowsApplication
         AlwaysActivateWindow
     };
 
+    enum TouchWindowTouchType {
+        NormalTouch   = 0x00000000,
+        FineTouch     = 0x00000001,
+        WantPalmTouch = 0x00000002
+    };
+
+    Q_DECLARE_FLAGS(TouchWindowTouchTypes, TouchWindowTouchType)
+
+    virtual void setTouchWindowTouchType(TouchWindowTouchTypes type) = 0;
+    virtual TouchWindowTouchTypes touchWindowTouchType() const = 0;
+
     virtual WindowActivationBehavior windowActivationBehavior() const = 0;
     virtual void setWindowActivationBehavior(WindowActivationBehavior behavior) = 0;
 
@@ -393,6 +404,10 @@ struct Q_GUI_EXPORT QWindowsApplication
 #endif // Q_OS_WIN
 
 } // QPlatformInterface::Private
+
+#if defined(Q_OS_WIN)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QPlatformInterface::Private::QWindowsApplication::TouchWindowTouchTypes)
+#endif
 
 QT_END_NAMESPACE
 

@@ -42,36 +42,6 @@
 */
 
 /*!
-    \enum QWindowsWindowFunctions::TouchWindowTouchType
-
-    This enum represents the supported TouchWindow touch flags for RegisterTouchWindow().
-
-    \value NormalTouch
-    \value FineTouch
-    \value WantPalmTouch
-*/
-
-/*!
-    \typedef QWindowsWindowFunctions::SetTouchWindowTouchType
-
-    This is the typedef for the function returned by QGuiApplication::platformFunction when passed setTouchWindowTouchTypeIdentifier.
-*/
-
-/*!
-    \fn QByteArray QWindowsWindowFunctions::setTouchWindowTouchTypeIdentifier()
-
-    This function returns the bytearray that can be used to query
-    QGuiApplication::platformFunction to retrieve the SetTouchWindowTouchType function.
-*/
-
-/*!
-    \fn void QWindowsWindowFunctions::setTouchWindowTouchType(QWindow *window, TouchWindowTouchTypes type)
-
-    This is a convenience function that can be used directly instead of resolving the function pointer.
-    \a window and \a type will be relayed to the function retrieved by QGuiApplication
-*/
-
-/*!
     \typedef QWindowsWindowFunctions::SetHasBorderInFullScreen
 
     This is the typedef for the function returned by QGuiApplication::platformFunction when passed setHasBorderInFullScreenIdentifier.

@@ -42,6 +42,7 @@
 
 #include <QtCore/qt_windows.h>
 #include <QtCore/qpointer.h>
+#include "qwindowsapplication.h"
 #include "qwindowscursor.h"
 
 #include <qpa/qplatformwindow.h>
@@ -50,6 +51,8 @@
 #if QT_CONFIG(vulkan)
 #include "qwindowsvulkaninstance.h"
 #endif
+
+#include <optional>
 
 QT_BEGIN_NAMESPACE
 
@@ -125,6 +128,9 @@ class QWindowsBaseWindow : public QPlatformWindow
 {
     Q_DISABLE_COPY_MOVE(QWindowsBaseWindow)
 public:
+    using TouchWindowTouchType = QPlatformInterface::Private::QWindowsApplication::TouchWindowTouchType;
+    using TouchWindowTouchTypes = QPlatformInterface::Private::QWindowsApplication::TouchWindowTouchTypes;
+
     explicit QWindowsBaseWindow(QWindow *window) : QPlatformWindow(window) {}
 
     WId winId() const override { return WId(handle()); }
@@ -153,6 +159,7 @@ protected:
     QRect geometry_sys() const;
     void setGeometry_sys(const QRect &rect) const;
     QMargins frameMargins_sys() const;
+    std::optional<TouchWindowTouchTypes> touchWindowTouchTypes_sys() const;
     void hide_sys();
     void raise_sys();
     void lower_sys();
@@ -348,8 +355,7 @@ public:
     enum ScreenChangeMode { FromGeometryChange, FromDpiChange };
     void checkForScreenChanged(ScreenChangeMode mode = FromGeometryChange);
 
-    static void setTouchWindowTouchTypeStatic(QWindow *window, QWindowsWindowFunctions::TouchWindowTouchTypes touchTypes);
-    void registerTouchWindow(QWindowsWindowFunctions::TouchWindowTouchTypes touchTypes = QWindowsWindowFunctions::NormalTouch);
+    void registerTouchWindow();
     static void setHasBorderInFullScreenStatic(QWindow *window, bool border);
     static void setHasBorderInFullScreenDefault(bool border);
     void setHasBorderInFullScreen(bool border);

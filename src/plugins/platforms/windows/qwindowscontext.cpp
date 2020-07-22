@@ -366,12 +366,18 @@ bool QWindowsContext::initTouch(unsigned integrationOptions)
     d->m_systemInfo |= QWindowsContext::SI_SupportsTouch;
 
     // A touch device was plugged while the app is running. Register all windows for touch.
-    if (QGuiApplicationPrivate::is_app_running) {
+    registerTouchWindows();
+
+    return true;
+}
+
+void QWindowsContext::registerTouchWindows()
+{
+    if (QGuiApplicationPrivate::is_app_running
+        && (d->m_systemInfo & QWindowsContext::SI_SupportsTouch) != 0) {
         for (QWindowsWindow *w : qAsConst(d->m_windows))
             w->registerTouchWindow();
     }
-
-    return true;
 }
 
 bool QWindowsContext::initTablet()

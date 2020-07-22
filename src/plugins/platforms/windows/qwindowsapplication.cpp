@@ -45,6 +45,20 @@
 
 QT_BEGIN_NAMESPACE
 
+void QWindowsApplication::setTouchWindowTouchType(QWindowsApplication::TouchWindowTouchTypes type)
+{
+    if (m_touchWindowTouchTypes == type)
+        return;
+    m_touchWindowTouchTypes = type;
+    if (auto ctx = QWindowsContext::instance())
+        ctx->registerTouchWindows();
+}
+
+QWindowsApplication::TouchWindowTouchTypes QWindowsApplication::touchWindowTouchType() const
+{
+    return m_touchWindowTouchTypes;
+}
+
 QWindowsApplication::WindowActivationBehavior QWindowsApplication::windowActivationBehavior() const
 {
    return m_windowActivationBehavior;

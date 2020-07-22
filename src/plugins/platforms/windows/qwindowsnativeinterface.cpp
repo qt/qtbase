@@ -258,8 +258,6 @@ QFont QWindowsNativeInterface::logFontToQFont(const void *logFont, int verticalD
 
 QFunctionPointer QWindowsNativeInterface::platformFunction(const QByteArray &function) const
 {
-    if (function == QWindowsWindowFunctions::setTouchWindowTouchTypeIdentifier())
-        return QFunctionPointer(QWindowsWindow::setTouchWindowTouchTypeStatic);
     if (function == QWindowsWindowFunctions::setHasBorderInFullScreenIdentifier())
         return QFunctionPointer(QWindowsWindow::setHasBorderInFullScreenStatic);
     if (function == QWindowsWindowFunctions::setHasBorderInFullScreenDefaultIdentifier())

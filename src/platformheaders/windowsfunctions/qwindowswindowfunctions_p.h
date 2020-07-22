@@ -60,24 +60,6 @@ class QWindow;
 
 class QWindowsWindowFunctions {
 public:
-    enum TouchWindowTouchType {
-        NormalTouch   = 0x00000000,
-        FineTouch     = 0x00000001,
-        WantPalmTouch = 0x00000002
-    };
-
-    Q_DECLARE_FLAGS(TouchWindowTouchTypes, TouchWindowTouchType)
-
-    typedef void (*SetTouchWindowTouchType)(QWindow *window, QWindowsWindowFunctions::TouchWindowTouchTypes touchType);
-    static const QByteArray setTouchWindowTouchTypeIdentifier() { return QByteArrayLiteral("WindowsSetTouchWindowTouchType"); }
-
-    static void setTouchWindowTouchType(QWindow *window, TouchWindowTouchTypes type)
-    {
-        SetTouchWindowTouchType func = reinterpret_cast<SetTouchWindowTouchType>(QGuiApplication::platformFunction(setTouchWindowTouchTypeIdentifier()));
-        if (func)
-            func(window, type);
-    }
-
     typedef void (*SetHasBorderInFullScreen)(QWindow *window, bool border);
     static const QByteArray setHasBorderInFullScreenIdentifier() { return QByteArrayLiteral("WindowsSetHasBorderInFullScreen"); }
     static void setHasBorderInFullScreen(QWindow *window, bool border)
@@ -97,8 +79,6 @@ public:
     }
 
 };
-
-Q_DECLARE_OPERATORS_FOR_FLAGS(QWindowsWindowFunctions::TouchWindowTouchTypes)
 
 QT_END_NAMESPACE
 
