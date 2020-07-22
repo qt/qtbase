@@ -868,6 +868,7 @@ void checkTestOutput(const QString &test, const TestLogger &logger, const QByteA
         return true;
     };
 
+    bool foundExpectionFile = false;
     for (int version = 0; !expectationMatched; ++version) {
         // Look for a test expectation file. Most tests only have a single
         // expectation file, while some have multiple versions that should
@@ -888,12 +889,14 @@ void checkTestOutput(const QString &test, const TestLogger &logger, const QByteA
             } else {
                 // No more versions found, and still no match
                 assert(!expectationMatched);
-                outputMessage += "Could not find any expectation files for subtest '" + test + "'";
+                if (!foundExpectionFile)
+                    outputMessage += "Could not find any expectation files for subtest '" + test + "'";
                 break;
             }
         }
 
         // Found expected result
+        foundExpectionFile = true;
         QString errorMessage;
         auto expectedLines = splitLines(expected);
         if (compareOutput(logger.shortName(), test, actual, actualLines, expectedLines, &errorMessage)) {
