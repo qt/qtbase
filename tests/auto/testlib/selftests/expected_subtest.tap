@@ -40,9 +40,9 @@ not ok 7 - test3(data1)
   found: "hello1" (str)
   expected: "hello0" (QString("hello0"))
   actual: "hello1" (str)
-  at: tst_Subtest::test3() (qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp:141)
+  at: tst_Subtest::test3() (qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp
-  line: 141
+  line: 0
   ...
 # cleanup test3 data1
 # init test3 data2
@@ -55,9 +55,9 @@ not ok 8 - test3(data2)
   found: "hello2" (str)
   expected: "hello0" (QString("hello0"))
   actual: "hello2" (str)
-  at: tst_Subtest::test3() (qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp:141)
+  at: tst_Subtest::test3() (qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp
-  line: 141
+  line: 0
   ...
 # cleanup test3 data2
 # cleanupTestCase cleanupTestCase (null)

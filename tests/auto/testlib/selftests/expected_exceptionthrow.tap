@@ -4,9 +4,9 @@ ok 1 - initTestCase()
 not ok 2 - throwException()
   ---
   # Caught unhandled exception
-  at: tst_Exception::throwException() (qtbase/src/testlib/qtestcase.cpp:1846)
+  at: tst_Exception::throwException() (qtbase/src/testlib/qtestcase.cpp:0)
   file: qtbase/src/testlib/qtestcase.cpp
-  line: 1846
+  line: 0
   ...
 1..2
 # tests 2

@@ -10,9 +10,9 @@ not ok 3 - testSimpleTuple()
   found: std::tuple(1) (std::tuple<int>{1})
   expected: std::tuple(2) (std::tuple<int>{2})
   actual: std::tuple(1) (std::tuple<int>{1})
-  at: tst_TupleDiagnostics::testSimpleTuple() (qtbase/tests/auto/testlib/selftests/tuplediagnostics/tst_tuplediagnostics.cpp:53)
+  at: tst_TupleDiagnostics::testSimpleTuple() (qtbase/tests/auto/testlib/selftests/tuplediagnostics/tst_tuplediagnostics.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/tuplediagnostics/tst_tuplediagnostics.cpp
-  line: 53
+  line: 0
   ...
 not ok 4 - testTuple()
   ---
@@ -22,9 +22,9 @@ not ok 4 - testTuple()
   found: std::tuple(42, 'Y', "tuple1") (tuple1)
   expected: std::tuple(42, 'Y', "tuple2") (tuple2)
   actual: std::tuple(42, 'Y', "tuple1") (tuple1)
-  at: tst_TupleDiagnostics::testTuple() (qtbase/tests/auto/testlib/selftests/tuplediagnostics/tst_tuplediagnostics.cpp:60)
+  at: tst_TupleDiagnostics::testTuple() (qtbase/tests/auto/testlib/selftests/tuplediagnostics/tst_tuplediagnostics.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/tuplediagnostics/tst_tuplediagnostics.cpp
-  line: 60
+  line: 0
   ...
 ok 5 - cleanupTestCase()
 1..5

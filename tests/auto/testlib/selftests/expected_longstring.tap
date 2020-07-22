@@ -12,9 +12,9 @@ Nam pretium turpis et arcu. Duis arcu tortor, suscipit eget, imperdiet nec, impe
 Curabitur ligula sapien, tincidunt non, euismod vitae, posuere imperdiet, leo. Maecenas malesuada. Praesent congue erat at massa. Sed cursus turpis vitae tortor. Donec posuere vulputate arcu. Phasellus accumsan cursus velit. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Sed aliquam, nisi quis porttitor congue, elit erat euismod orci, ac placerat dolor lectus quis orci. Phasellus consectetuer vestibulum elit. Aenean tellus metus, bibendum sed, posuere ac, mattis non, nunc. Vestibulum fringilla pede sit amet augue. In turpis. Pellentesque posuere. Praesent turpis.
 
 Aenean posuere, tortor sed cursus feugiat, nunc augue blandit nunc, eu sollicitudin urna dolor sagittis lacus. Donec elit libero, sodales nec, volutpat a, suscipit non, turpis. Nullam sagittis. Suspendisse pulvinar, augue ac venenatis condimentum, sem libero volutpat nibh, nec pellentesque velit pede quis nunc. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Fusce id purus. Ut varius tincidunt libero. Phasellus dolor. Maecenas vestibulum mollis diam. Pellentesque ut neque. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.
-  at: tst_LongString::failWithLongString() (qtbase/tests/auto/testlib/selftests/longstring/tst_longstring.cpp:54)
+  at: tst_LongString::failWithLongString() (qtbase/tests/auto/testlib/selftests/longstring/tst_longstring.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/longstring/tst_longstring.cpp
-  line: 54
+  line: 0
   ...
 ok 3 - cleanupTestCase()
 1..3

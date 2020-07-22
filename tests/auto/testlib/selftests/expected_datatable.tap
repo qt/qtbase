@@ -16,9 +16,9 @@ not ok 9 - fiveTableFailures(fiveTableFailures_data 1)
   found: false (test)
   expected: true (test)
   actual: false (test)
-  at: tst_DataTable::fiveTableFailures() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:78)
+  at: tst_DataTable::fiveTableFailures() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp
-  line: 78
+  line: 0
   ...
 not ok 10 - fiveTableFailures(fiveTableFailures_data 2)
   ---
@@ -28,9 +28,9 @@ not ok 10 - fiveTableFailures(fiveTableFailures_data 2)
   found: false (test)
   expected: true (test)
   actual: false (test)
-  at: tst_DataTable::fiveTableFailures() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:78)
+  at: tst_DataTable::fiveTableFailures() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp
-  line: 78
+  line: 0
   ...
 not ok 11 - fiveTableFailures(fiveTableFailures_data 3)
   ---
@@ -40,9 +40,9 @@ not ok 11 - fiveTableFailures(fiveTableFailures_data 3)
   found: false (test)
   expected: true (test)
   actual: false (test)
-  at: tst_DataTable::fiveTableFailures() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:78)
+  at: tst_DataTable::fiveTableFailures() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp
-  line: 78
+  line: 0
   ...
 not ok 12 - fiveTableFailures(fiveTableFailures_data 4)
   ---
@@ -52,9 +52,9 @@ not ok 12 - fiveTableFailures(fiveTableFailures_data 4)
   found: false (test)
   expected: true (test)
   actual: false (test)
-  at: tst_DataTable::fiveTableFailures() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:78)
+  at: tst_DataTable::fiveTableFailures() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp
-  line: 78
+  line: 0
   ...
 not ok 13 - fiveTableFailures(fiveTableFailures_data 5)
   ---
@@ -64,9 +64,9 @@ not ok 13 - fiveTableFailures(fiveTableFailures_data 5)
   found: false (test)
   expected: true (test)
   actual: false (test)
-  at: tst_DataTable::fiveTableFailures() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:78)
+  at: tst_DataTable::fiveTableFailures() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp
-  line: 78
+  line: 0
   ...
 not ok 14 - startsWithFailure(startsWithFailure_data 1)
   ---
@@ -76,9 +76,9 @@ not ok 14 - startsWithFailure(startsWithFailure_data 1)
   found: false (test)
   expected: true (test)
   actual: false (test)
-  at: tst_DataTable::startsWithFailure() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:78)
+  at: tst_DataTable::startsWithFailure() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp
-  line: 78
+  line: 0
   ...
 ok 15 - startsWithFailure(startsWithFailure_data 2)
 ok 16 - startsWithFailure(startsWithFailure_data 3)
@@ -96,9 +96,9 @@ not ok 23 - endsWithFailure(endsWithFailure 5)
   found: false (test)
   expected: true (test)
   actual: false (test)
-  at: tst_DataTable::endsWithFailure() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:78)
+  at: tst_DataTable::endsWithFailure() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp
-  line: 78
+  line: 0
   ...
 ok 24 - failureInMiddle(failureInMiddle_data 1)
 ok 25 - failureInMiddle(failureInMiddle_data 2)
@@ -110,9 +110,9 @@ not ok 26 - failureInMiddle(failureInMiddle_data 3)
   found: false (test)
   expected: true (test)
   actual: false (test)
-  at: tst_DataTable::failureInMiddle() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:78)
+  at: tst_DataTable::failureInMiddle() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp
-  line: 78
+  line: 0
   ...
 ok 27 - failureInMiddle(failureInMiddle_data 4)
 ok 28 - failureInMiddle(failureInMiddle_data 5)
@@ -124,9 +124,9 @@ not ok 29 - fiveIsolatedFailures(fiveIsolatedFailures_data 1)
   found: false (!test)
   expected: true (!test)
   actual: false (!test)
-  at: tst_DataTable::fiveIsolatedFailures() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:160)
+  at: tst_DataTable::fiveIsolatedFailures() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp
-  line: 160
+  line: 0
   ...
 not ok 30 - fiveIsolatedFailures(fiveIsolatedFailures_data 2)
   ---
@@ -136,9 +136,9 @@ not ok 30 - fiveIsolatedFailures(fiveIsolatedFailures_data 2)
   found: false (!test)
   expected: true (!test)
   actual: false (!test)
-  at: tst_DataTable::fiveIsolatedFailures() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:160)
+  at: tst_DataTable::fiveIsolatedFailures() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp
-  line: 160
+  line: 0
   ...
 not ok 31 - fiveIsolatedFailures(fiveIsolatedFailures_data 3)
   ---
@@ -148,9 +148,9 @@ not ok 31 - fiveIsolatedFailures(fiveIsolatedFailures_data 3)
   found: false (!test)
   expected: true (!test)
   actual: false (!test)
-  at: tst_DataTable::fiveIsolatedFailures() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:160)
+  at: tst_DataTable::fiveIsolatedFailures() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp
-  line: 160
+  line: 0
   ...
 not ok 32 - fiveIsolatedFailures(fiveIsolatedFailures_data 4)
   ---
@@ -160,9 +160,9 @@ not ok 32 - fiveIsolatedFailures(fiveIsolatedFailures_data 4)
   found: false (!test)
   expected: true (!test)
   actual: false (!test)
-  at: tst_DataTable::fiveIsolatedFailures() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:160)
+  at: tst_DataTable::fiveIsolatedFailures() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp
-  line: 160
+  line: 0
   ...
 not ok 33 - fiveIsolatedFailures(fiveIsolatedFailures_data 5)
   ---
@@ -172,9 +172,9 @@ not ok 33 - fiveIsolatedFailures(fiveIsolatedFailures_data 5)
   found: false (!test)
   expected: true (!test)
   actual: false (!test)
-  at: tst_DataTable::fiveIsolatedFailures() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:160)
+  at: tst_DataTable::fiveIsolatedFailures() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp
-  line: 160
+  line: 0
   ...
 ok 34 - cleanupTestCase()
 1..34

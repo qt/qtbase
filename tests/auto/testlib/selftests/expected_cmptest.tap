@@ -4,9 +4,9 @@ ok 1 - initTestCase()
 not ok 2 - compare_unregistered_enums()
   ---
   # Compared values are not the same
-  at: tst_Cmptest::compare_unregistered_enums() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:176)
+  at: tst_Cmptest::compare_unregistered_enums() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 176
+  line: 0
   ...
 not ok 3 - compare_registered_enums()
   ---
@@ -16,9 +16,9 @@ not ok 3 - compare_registered_enums()
   found: Monday (Qt::Monday)
   expected: Sunday (Qt::Sunday)
   actual: Monday (Qt::Monday)
-  at: tst_Cmptest::compare_registered_enums() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:183)
+  at: tst_Cmptest::compare_registered_enums() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 183
+  line: 0
   ...
 not ok 4 - compare_class_enums()
   ---
@@ -28,9 +28,9 @@ not ok 4 - compare_class_enums()
   found: MyClassEnumValue1 (MyClassEnum::MyClassEnumValue1)
   expected: MyClassEnumValue2 (MyClassEnum::MyClassEnumValue2)
   actual: MyClassEnumValue1 (MyClassEnum::MyClassEnumValue1)
-  at: tst_Cmptest::compare_class_enums() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:189)
+  at: tst_Cmptest::compare_class_enums() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 189
+  line: 0
   ...
 ok 5 - test_windowflags(pass)
 not ok 6 - test_windowflags(fail1)
@@ -41,9 +41,9 @@ not ok 6 - test_windowflags(fail1)
   found: Window|WindowSystemMenuHint|WindowStaysOnBottomHint (actualWindowFlags)
   expected: Window|FramelessWindowHint|WindowSystemMenuHint|WindowStaysOnBottomHint (expectedWindowFlags)
   actual: Window|WindowSystemMenuHint|WindowStaysOnBottomHint (actualWindowFlags)
-  at: tst_Cmptest::test_windowflags() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:214)
+  at: tst_Cmptest::test_windowflags() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 214
+  line: 0
   ...
 not ok 7 - test_windowflags(fail2)
   ---
@@ -53,9 +53,9 @@ not ok 7 - test_windowflags(fail2)
   found: Window (actualWindowFlags)
   expected: Window|FramelessWindowHint (expectedWindowFlags)
   actual: Window (actualWindowFlags)
-  at: tst_Cmptest::test_windowflags() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:214)
+  at: tst_Cmptest::test_windowflags() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 214
+  line: 0
   ...
 ok 8 - test_unregistered_flags(pass)
 not ok 9 - test_unregistered_flags(fail1)
@@ -66,9 +66,9 @@ not ok 9 - test_unregistered_flags(fail1)
   found: 0x3 (actualFlags)
   expected: 0x5 (expectedFlags)
   actual: 0x3 (actualFlags)
-  at: tst_Cmptest::test_unregistered_flags() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:247)
+  at: tst_Cmptest::test_unregistered_flags() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 247
+  line: 0
   ...
 not ok 10 - test_unregistered_flags(fail2)
   ---
@@ -78,9 +78,9 @@ not ok 10 - test_unregistered_flags(fail2)
   found: 0x1 (actualFlags)
   expected: 0x5 (expectedFlags)
   actual: 0x1 (actualFlags)
-  at: tst_Cmptest::test_unregistered_flags() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:247)
+  at: tst_Cmptest::test_unregistered_flags() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 247
+  line: 0
   ...
 ok 11 - compare_boolfuncs()
 ok 12 - compare_to_nullptr()
@@ -93,9 +93,9 @@ not ok 14 - compare_tostring(int, string)
   found: QVariant(int,123) (actual)
   expected: QVariant(QString,hi) (expected)
   actual: QVariant(int,123) (actual)
-  at: tst_Cmptest::compare_tostring() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:336)
+  at: tst_Cmptest::compare_tostring() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 336
+  line: 0
   ...
 ok 15 - compare_tostring(both invalid)
 not ok 16 - compare_tostring(null hash, invalid)
@@ -106,9 +106,9 @@ not ok 16 - compare_tostring(null hash, invalid)
   found: QVariant(QVariantHash) (actual)
   expected: QVariant() (expected)
   actual: QVariant(QVariantHash) (actual)
-  at: tst_Cmptest::compare_tostring() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:336)
+  at: tst_Cmptest::compare_tostring() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 336
+  line: 0
   ...
 not ok 17 - compare_tostring(string, null user type)
   ---
@@ -118,9 +118,9 @@ not ok 17 - compare_tostring(string, null user type)
   found: QVariant(QString,A simple string) (actual)
   expected: QVariant(PhonyClass) (expected)
   actual: QVariant(QString,A simple string) (actual)
-  at: tst_Cmptest::compare_tostring() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:336)
+  at: tst_Cmptest::compare_tostring() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 336
+  line: 0
   ...
 not ok 18 - compare_tostring(both non-null user type)
   ---
@@ -130,9 +130,9 @@ not ok 18 - compare_tostring(both non-null user type)
   found: QVariant(PhonyClass,<value not representable as string>) (actual)
   expected: QVariant(PhonyClass,<value not representable as string>) (expected)
   actual: QVariant(PhonyClass,<value not representable as string>) (actual)
-  at: tst_Cmptest::compare_tostring() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:336)
+  at: tst_Cmptest::compare_tostring() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 336
+  line: 0
   ...
 ok 19 - compareQStringLists(empty lists)
 ok 20 - compareQStringLists(equal lists)
@@ -144,9 +144,9 @@ not ok 21 - compareQStringLists(last item different)
   found: "string3" (opA)
   expected: "DIFFERS" (opB)
   actual: "string3" (opA)
-  at: tst_Cmptest::compareQStringLists() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:430)
+  at: tst_Cmptest::compareQStringLists() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 430
+  line: 0
   ...
 not ok 22 - compareQStringLists(second-last item different)
   ---
@@ -156,36 +156,36 @@ not ok 22 - compareQStringLists(second-last item different)
   found: "string3" (opA)
   expected: "DIFFERS" (opB)
   actual: "string3" (opA)
-  at: tst_Cmptest::compareQStringLists() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:430)
+  at: tst_Cmptest::compareQStringLists() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 430
+  line: 0
   ...
 not ok 23 - compareQStringLists(prefix)
   ---
   # Compared lists have different sizes.
    Actual   (opA) size: 2
    Expected (opB) size: 1
-  at: tst_Cmptest::compareQStringLists() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:430)
+  at: tst_Cmptest::compareQStringLists() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 430
+  line: 0
   ...
 not ok 24 - compareQStringLists(short list second)
   ---
   # Compared lists have different sizes.
    Actual   (opA) size: 12
    Expected (opB) size: 1
-  at: tst_Cmptest::compareQStringLists() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:430)
+  at: tst_Cmptest::compareQStringLists() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 430
+  line: 0
   ...
 not ok 25 - compareQStringLists(short list first)
   ---
   # Compared lists have different sizes.
    Actual   (opA) size: 1
    Expected (opB) size: 12
-  at: tst_Cmptest::compareQStringLists() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:430)
+  at: tst_Cmptest::compareQStringLists() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 430
+  line: 0
   ...
 ok 26 - compareQListInt(match)
 not ok 27 - compareQListInt(size mismatch)
@@ -193,9 +193,9 @@ not ok 27 - compareQListInt(size mismatch)
   # Compared lists have different sizes.
    Actual   (actual) size: 2
    Expected (expected) size: 3
-  at: tst_Cmptest::compareQListInt() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:448)
+  at: tst_Cmptest::compareQListInt() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 448
+  line: 0
   ...
 not ok 28 - compareQListInt(value mismatch)
   ---
@@ -205,9 +205,9 @@ not ok 28 - compareQListInt(value mismatch)
   found: 4 (actual)
   expected: 3 (expected)
   actual: 4 (actual)
-  at: tst_Cmptest::compareQListInt() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:448)
+  at: tst_Cmptest::compareQListInt() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 448
+  line: 0
   ...
 ok 29 - compareQListIntToArray(match)
 not ok 30 - compareQListIntToArray(size mismatch)
@@ -215,9 +215,9 @@ not ok 30 - compareQListIntToArray(size mismatch)
   # Compared lists have different sizes.
    Actual   (actual) size: 2
    Expected (expected) size: 3
-  at: tst_Cmptest::compareQListIntToArray() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:460)
+  at: tst_Cmptest::compareQListIntToArray() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 460
+  line: 0
   ...
 not ok 31 - compareQListIntToArray(value mismatch)
   ---
@@ -227,9 +227,9 @@ not ok 31 - compareQListIntToArray(value mismatch)
   found: 4 (actual)
   expected: 3 (expected)
   actual: 4 (actual)
-  at: tst_Cmptest::compareQListIntToArray() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:460)
+  at: tst_Cmptest::compareQListIntToArray() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 460
+  line: 0
   ...
 ok 32 - compareQListIntToInitializerList(match)
 not ok 33 - compareQListIntToInitializerList(size mismatch)
@@ -237,9 +237,9 @@ not ok 33 - compareQListIntToInitializerList(size mismatch)
   # Compared lists have different sizes.
    Actual   (actual) size: 2
    Expected (ARG({1, 2, 3})) size: 3
-  at: tst_Cmptest::compareQListIntToInitializerList() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:473)
+  at: tst_Cmptest::compareQListIntToInitializerList() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 473
+  line: 0
   ...
 not ok 34 - compareQListIntToInitializerList(value mismatch)
   ---
@@ -249,9 +249,9 @@ not ok 34 - compareQListIntToInitializerList(value mismatch)
   found: 4 (actual)
   expected: 3 (ARG({1, 2, 3}))
   actual: 4 (actual)
-  at: tst_Cmptest::compareQListIntToInitializerList() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:473)
+  at: tst_Cmptest::compareQListIntToInitializerList() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 473
+  line: 0
   ...
 not ok 35 - compareQListDouble()
   ---
@@ -261,9 +261,9 @@ not ok 35 - compareQListDouble()
   found: 1.5 (double1)
   expected: 1 (double2)
   actual: 1.5 (double1)
-  at: tst_Cmptest::compareQListDouble() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:481)
+  at: tst_Cmptest::compareQListDouble() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 481
+  line: 0
   ...
 ok 36 - compareQColor(Qt::yellow vs "yellow")
 not ok 37 - compareQColor(Qt::yellow vs Qt::green)
@@ -274,9 +274,9 @@ not ok 37 - compareQColor(Qt::yellow vs Qt::green)
   found: #ffffff00 (colorA)
   expected: #ff00ff00 (colorB)
   actual: #ffffff00 (colorA)
-  at: tst_Cmptest::compareQColor() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:500)
+  at: tst_Cmptest::compareQColor() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 500
+  line: 0
   ...
 not ok 38 - compareQColor(0x88ff0000 vs 0xffff0000)
   ---
@@ -286,9 +286,9 @@ not ok 38 - compareQColor(0x88ff0000 vs 0xffff0000)
   found: #88ff0000 (colorA)
   expected: #ffff0000 (colorB)
   actual: #88ff0000 (colorA)
-  at: tst_Cmptest::compareQColor() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:500)
+  at: tst_Cmptest::compareQColor() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 500
+  line: 0
   ...
 ok 39 - compareQPixmaps(both null)
 not ok 40 - compareQPixmaps(one null)
@@ -299,9 +299,9 @@ not ok 40 - compareQPixmaps(one null)
   found: 1 (opA).isNull()
   expected: 0 (opB).isNull()
   actual: 1 (opA).isNull()
-  at: tst_Cmptest::compareQPixmaps() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:528)
+  at: tst_Cmptest::compareQPixmaps() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 528
+  line: 0
   ...
 not ok 41 - compareQPixmaps(other null)
   ---
@@ -311,9 +311,9 @@ not ok 41 - compareQPixmaps(other null)
   found: 0 (opA).isNull()
   expected: 1 (opB).isNull()
   actual: 0 (opA).isNull()
-  at: tst_Cmptest::compareQPixmaps() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:528)
+  at: tst_Cmptest::compareQPixmaps() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 528
+  line: 0
   ...
 ok 42 - compareQPixmaps(equal)
 not ok 43 - compareQPixmaps(different size)
@@ -324,16 +324,16 @@ not ok 43 - compareQPixmaps(different size)
   found: 11x20 (opA)
   expected: 20x20 (opB)
   actual: 11x20 (opA)
-  at: tst_Cmptest::compareQPixmaps() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:528)
+  at: tst_Cmptest::compareQPixmaps() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 528
+  line: 0
   ...
 not ok 44 - compareQPixmaps(different pixels)
   ---
   # Compared values are not the same
-  at: tst_Cmptest::compareQPixmaps() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:528)
+  at: tst_Cmptest::compareQPixmaps() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 528
+  line: 0
   ...
 not ok 45 - compareQPixmaps(different dpr)
   ---
@@ -343,9 +343,9 @@ not ok 45 - compareQPixmaps(different dpr)
   found: 1 (opA)
   expected: 2 (opB)
   actual: 1 (opA)
-  at: tst_Cmptest::compareQPixmaps() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:528)
+  at: tst_Cmptest::compareQPixmaps() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 528
+  line: 0
   ...
 ok 46 - compareQImages(both null)
 not ok 47 - compareQImages(one null)
@@ -356,9 +356,9 @@ not ok 47 - compareQImages(one null)
   found: 1 (opA).isNull()
   expected: 0 (opB).isNull()
   actual: 1 (opA).isNull()
-  at: tst_Cmptest::compareQImages() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:558)
+  at: tst_Cmptest::compareQImages() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 558
+  line: 0
   ...
 not ok 48 - compareQImages(other null)
   ---
@@ -368,9 +368,9 @@ not ok 48 - compareQImages(other null)
   found: 0 (opA).isNull()
   expected: 1 (opB).isNull()
   actual: 0 (opA).isNull()
-  at: tst_Cmptest::compareQImages() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:558)
+  at: tst_Cmptest::compareQImages() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 558
+  line: 0
   ...
 ok 49 - compareQImages(equal)
 not ok 50 - compareQImages(different size)
@@ -381,9 +381,9 @@ not ok 50 - compareQImages(different size)
   found: 11x20 (opA)
   expected: 20x20 (opB)
   actual: 11x20 (opA)
-  at: tst_Cmptest::compareQImages() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:558)
+  at: tst_Cmptest::compareQImages() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 558
+  line: 0
   ...
 not ok 51 - compareQImages(different format)
   ---
@@ -393,16 +393,16 @@ not ok 51 - compareQImages(different format)
   found: 6 (opA)
   expected: 3 (opB)
   actual: 6 (opA)
-  at: tst_Cmptest::compareQImages() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:558)
+  at: tst_Cmptest::compareQImages() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 558
+  line: 0
   ...
 not ok 52 - compareQImages(different pixels)
   ---
   # Compared values are not the same
-  at: tst_Cmptest::compareQImages() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:558)
+  at: tst_Cmptest::compareQImages() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 558
+  line: 0
   ...
 not ok 53 - compareQImages(different dpr)
   ---
@@ -412,9 +412,9 @@ not ok 53 - compareQImages(different dpr)
   found: 1 (opA)
   expected: 2 (opB)
   actual: 1 (opA)
-  at: tst_Cmptest::compareQImages() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:558)
+  at: tst_Cmptest::compareQImages() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 558
+  line: 0
   ...
 ok 54 - compareQRegion(equal-empty)
 not ok 55 - compareQRegion(1-empty)
@@ -425,9 +425,9 @@ not ok 55 - compareQRegion(1-empty)
   found: QRegion(200x50+10+10) (rA)
   expected: QRegion(null) (rB)
   actual: QRegion(200x50+10+10) (rA)
-  at: tst_Cmptest::compareQRegion() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:581)
+  at: tst_Cmptest::compareQRegion() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 581
+  line: 0
   ...
 ok 56 - compareQRegion(equal)
 not ok 57 - compareQRegion(different lists)
@@ -438,9 +438,9 @@ not ok 57 - compareQRegion(different lists)
   found: QRegion(200x50+10+10) (rA)
   expected: QRegion(2 rectangles, 50x200+100+200, 200x50+10+10) (rB)
   actual: QRegion(200x50+10+10) (rA)
-  at: tst_Cmptest::compareQRegion() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:581)
+  at: tst_Cmptest::compareQRegion() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 581
+  line: 0
   ...
 not ok 58 - compareQVector2D()
   ---
@@ -450,9 +450,9 @@ not ok 58 - compareQVector2D()
   found: QVector2D(1, 2) (v2a)
   expected: QVector2D(1, 3) (v2b)
   actual: QVector2D(1, 2) (v2a)
-  at: tst_Cmptest::compareQVector2D() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:590)
+  at: tst_Cmptest::compareQVector2D() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 590
+  line: 0
   ...
 not ok 59 - compareQVector3D()
   ---
@@ -462,9 +462,9 @@ not ok 59 - compareQVector3D()
   found: QVector3D(1, 2, 3) (v3a)
   expected: QVector3D(1, 3, 3) (v3b)
   actual: QVector3D(1, 2, 3) (v3a)
-  at: tst_Cmptest::compareQVector3D() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:599)
+  at: tst_Cmptest::compareQVector3D() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 599
+  line: 0
   ...
 not ok 60 - compareQVector4D()
   ---
@@ -474,9 +474,9 @@ not ok 60 - compareQVector4D()
   found: QVector4D(1, 2, 3, 4) (v4a)
   expected: QVector4D(1, 3, 3, 4) (v4b)
   actual: QVector4D(1, 2, 3, 4) (v4a)
-  at: tst_Cmptest::compareQVector4D() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:608)
+  at: tst_Cmptest::compareQVector4D() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 608
+  line: 0
   ...
 not ok 61 - verify()
   ---
@@ -486,9 +486,9 @@ not ok 61 - verify()
   found: false (opaqueFunc() < 2)
   expected: true (opaqueFunc() < 2)
   actual: false (opaqueFunc() < 2)
-  at: tst_Cmptest::verify() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:620)
+  at: tst_Cmptest::verify() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 620
+  line: 0
   ...
 not ok 62 - verify2()
   ---
@@ -498,9 +498,9 @@ not ok 62 - verify2()
   found: false (opaqueFunc() < 2)
   expected: true (opaqueFunc() < 2)
   actual: false (opaqueFunc() < 2)
-  at: tst_Cmptest::verify2() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:626)
+  at: tst_Cmptest::verify2() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 626
+  line: 0
   ...
 not ok 63 - tryVerify()
   ---
@@ -510,9 +510,9 @@ not ok 63 - tryVerify()
   found: false (opaqueFunc() < 2)
   expected: true (opaqueFunc() < 2)
   actual: false (opaqueFunc() < 2)
-  at: tst_Cmptest::tryVerify() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:632)
+  at: tst_Cmptest::tryVerify() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 632
+  line: 0
   ...
 not ok 64 - tryVerify2()
   ---
@@ -522,9 +522,9 @@ not ok 64 - tryVerify2()
   found: false (opaqueFunc() < 2)
   expected: true (opaqueFunc() < 2)
   actual: false (opaqueFunc() < 2)
-  at: tst_Cmptest::tryVerify2() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:638)
+  at: tst_Cmptest::tryVerify2() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 638
+  line: 0
   ...
 ok 65 - verifyExplicitOperatorBool()
 ok 66 - cleanupTestCase()

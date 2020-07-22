@@ -108,6 +108,8 @@ class Cleaner (object):
             (r'(Loc: \[[^[\]()]+)\(\d+\)', r'\1(0)'), # txt
             (r'(\[Loc: [^[\]()]+)\(\d+\)', r'\1(0)'), # teamcity
             (r'(<(?:Incident|Message)\b.*\bfile=.*\bline=)"\d+"', r'\1"0"'), # lightxml, xml
+            (r'(at: .*?):\d+\)', r'\1:0)'), # tap
+            (r'(line:) \d+', r'\1 0'), # tap
             # Pointers printed by signal dumper:
             (r'\(\b[a-f0-9]{8,}\b\)', r'(_POINTER_)'),
             # Example/for reference:

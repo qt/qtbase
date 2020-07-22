@@ -5,9 +5,9 @@ ok 1 - initTestCase()
 not ok 2 - badDataTag(fail end cdata ]]> text ]]> more text)
   ---
   # a failure
-  at: tst_BadXml::badDataTag() (qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp:101)
+  at: tst_BadXml::badDataTag() (qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp
-  line: 101
+  line: 0
   ...
 # a message
 ok 3 - badDataTag(pass end cdata ]]> text ]]> more text)
@@ -15,9 +15,9 @@ ok 3 - badDataTag(pass end cdata ]]> text ]]> more text)
 not ok 4 - badDataTag(fail quotes " text" more text)
   ---
   # a failure
-  at: tst_BadXml::badDataTag() (qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp:101)
+  at: tst_BadXml::badDataTag() (qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp
-  line: 101
+  line: 0
   ...
 # a message
 ok 5 - badDataTag(pass quotes " text" more text)
@@ -25,9 +25,9 @@ ok 5 - badDataTag(pass quotes " text" more text)
 not ok 6 - badDataTag(fail xml close > open < tags < text)
   ---
   # a failure
-  at: tst_BadXml::badDataTag() (qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp:101)
+  at: tst_BadXml::badDataTag() (qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp
-  line: 101
+  line: 0
   ...
 # a message
 ok 7 - badDataTag(pass xml close > open < tags < text)
@@ -35,9 +35,9 @@ ok 7 - badDataTag(pass xml close > open < tags < text)
 not ok 8 - badDataTag(fail all > " mixed ]]> up > " in < the ]]> hopes < of triggering "< ]]> bugs)
   ---
   # a failure
-  at: tst_BadXml::badDataTag() (qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp:101)
+  at: tst_BadXml::badDataTag() (qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp
-  line: 101
+  line: 0
   ...
 # a message
 ok 9 - badDataTag(pass all > " mixed ]]> up > " in < the ]]> hopes < of triggering "< ]]> bugs)

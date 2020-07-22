@@ -10,9 +10,9 @@ not ok 3 - cleanupTestCase()
   found: false (false)
   expected: true (false)
   actual: false (false)
-  at: tst_FailCleanup::cleanupTestCase() (qtbase/tests/auto/testlib/selftests/failcleanup/tst_failcleanup.cpp:46)
+  at: tst_FailCleanup::cleanupTestCase() (qtbase/tests/auto/testlib/selftests/failcleanup/tst_failcleanup.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/failcleanup/tst_failcleanup.cpp
-  line: 46
+  line: 0
   ...
 1..3
 # tests 3

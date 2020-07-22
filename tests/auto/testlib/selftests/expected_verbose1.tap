@@ -14,9 +14,9 @@ not ok 7 - testPassFail(row 2)
   found: false (false)
   expected: true (false)
   actual: false (false)
-  at: tst_Counting::testPassFail() (qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp:102)
+  at: tst_Counting::testPassFail() (qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp
-  line: 102
+  line: 0
   ...
 ok 8 - testSkipPass(row 1) # SKIP Skipping
 ok 9 - testSkipPass(row 2)
@@ -31,9 +31,9 @@ not ok 13 - testSkipFail(row 2)
   found: false (false)
   expected: true (false)
   actual: false (false)
-  at: tst_Counting::testSkipFail() (qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp:102)
+  at: tst_Counting::testSkipFail() (qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp
-  line: 102
+  line: 0
   ...
 not ok 14 - testFailPass(row 1)
   ---
@@ -43,9 +43,9 @@ not ok 14 - testFailPass(row 1)
   found: false (false)
   expected: true (false)
   actual: false (false)
-  at: tst_Counting::testFailPass() (qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp:102)
+  at: tst_Counting::testFailPass() (qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp
-  line: 102
+  line: 0
   ...
 ok 15 - testFailPass(row 2)
 not ok 16 - testFailSkip(row 1)
@@ -56,9 +56,9 @@ not ok 16 - testFailSkip(row 1)
   found: false (false)
   expected: true (false)
   actual: false (false)
-  at: tst_Counting::testFailSkip() (qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp:102)
+  at: tst_Counting::testFailSkip() (qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp
-  line: 102
+  line: 0
   ...
 ok 17 - testFailSkip(row 2) # SKIP Skipping
 not ok 18 - testFailFail(row 1)
@@ -69,9 +69,9 @@ not ok 18 - testFailFail(row 1)
   found: false (false)
   expected: true (false)
   actual: false (false)
-  at: tst_Counting::testFailFail() (qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp:102)
+  at: tst_Counting::testFailFail() (qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp
-  line: 102
+  line: 0
   ...
 not ok 19 - testFailFail(row 2)
   ---
@@ -81,17 +81,17 @@ not ok 19 - testFailFail(row 2)
   found: false (false)
   expected: true (false)
   actual: false (false)
-  at: tst_Counting::testFailFail() (qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp:102)
+  at: tst_Counting::testFailFail() (qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp
-  line: 102
+  line: 0
   ...
 ok 20 - testFailInInit(before)
 not ok 21 - testFailInInit(fail)
   ---
   # Fail in init()
-  at: tst_Counting::testFailInInit() (qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp:221)
+  at: tst_Counting::testFailInInit() (qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp
-  line: 221
+  line: 0
   ...
 ok 22 - testFailInInit(after)
 ok 23 - testFailInCleanup(before)
@@ -99,9 +99,9 @@ ok 23 - testFailInCleanup(before)
 not ok 24 - testFailInCleanup(fail)
   ---
   # Fail in cleanup()
-  at: tst_Counting::testFailInCleanup() (qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp:229)
+  at: tst_Counting::testFailInCleanup() (qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp
-  line: 229
+  line: 0
   ...
 ok 25 - testFailInCleanup(after)
 ok 26 - testSkipInInit(before)

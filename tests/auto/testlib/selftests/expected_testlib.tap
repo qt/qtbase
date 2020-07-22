@@ -4,9 +4,9 @@ ok 1 - initTestCase()
 not ok 2 - basics()
   ---
   # Compared pointers are not the same
-  at: tst_TestLib::basics() (qtbase/tests/auto/testlib/selftests/testlib/tst_testlib.cpp:54)
+  at: tst_TestLib::basics() (qtbase/tests/auto/testlib/selftests/testlib/tst_testlib.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/testlib/tst_testlib.cpp
-  line: 54
+  line: 0
   ...
 ok 3 - delays()
 ok 4 - reals(zero)
