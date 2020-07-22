@@ -22,5 +22,5 @@ INFO   : tst_Blacklisted::messages() This is an internal testlib info message th
 QFATAL : tst_Blacklisted::messages() This is a fatal error message that should still appear in silent test output
 BFAIL  : tst_Blacklisted::messages() Received a fatal error.
    Loc: [Unknown file(0)]
-Totals: 1 passed, 0 failed, 1 skipped, 5 blacklisted, 0ms
+Totals: 1 passed, 0 failed, 1 skipped, 6 blacklisted, 0ms
 ********* Finished testing of tst_Blacklisted *********

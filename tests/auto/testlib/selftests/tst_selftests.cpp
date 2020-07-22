@@ -708,7 +708,6 @@ bool TestLogger::shouldIgnoreTest(const QString &test) const
             || test == "multiexec"
             || test == "qexecstringlist"
             || test == "benchliboptions"
-            || test == "blacklisted"
             || test == "printdatatags"
             || test == "printdatatagswithglobaltags"
             || test == "silent")

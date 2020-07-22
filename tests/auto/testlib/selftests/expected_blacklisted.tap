@@ -15,15 +15,15 @@ not ok 4 - fail() # TODO 'false' returned FALSE. (This test should BFAIL)
   file: qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp
   line: 0
   ...
-not ok 4 - xfail() # TODO This test should BXFAIL then BPASS
+not ok 5 - xfail() # TODO This test should BXFAIL then BPASS
   ---
   # This test should BXFAIL then BPASS
   at: tst_Blacklisted::xfail() (qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp
   line: 0
   ...
-ok 5 - xfail() # TODO 
-ok 6 - xpass() # TODO 'true' returned TRUE unexpectedly. (This test should BXPASS)
+ok 6 - xfail() # TODO 
+ok 7 - xpass() # TODO 'true' returned TRUE unexpectedly. (This test should BXPASS)
 # This is a warning that should not appear in silent test output
 # This is an internal testlib warning that should not appear in silent test output
 # This is a debug message that should not appear in silent test output
@@ -31,14 +31,14 @@ ok 6 - xpass() # TODO 'true' returned TRUE unexpectedly. (This test should BXPAS
 # This is an info message that should not appear in silent test output
 # This is an internal testlib info message that should not appear in silent test output
 # This is a fatal error message that should still appear in silent test output
-not ok 7 - messages() # TODO Received a fatal error.
+not ok 8 - messages() # TODO Received a fatal error.
   ---
   # Received a fatal error.
   at: tst_Blacklisted::messages() (Unknown file:0)
   file: Unknown file
   line: 0
   ...
-1..7
-# tests 7
+1..8
+# tests 8
 # pass 1
 # fail 0
