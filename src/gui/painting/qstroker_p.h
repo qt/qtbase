@@ -209,7 +209,11 @@ public:
     QStroker();
     ~QStroker();
 
-    void setStrokeWidth(qfixed width) { m_strokeWidth = width; m_curveThreshold = qt_real_to_fixed(qBound(0.025, 1.0/width, 0.25)); }
+    void setStrokeWidth(qfixed width)
+    {
+        m_strokeWidth = width;
+        m_curveThreshold = qt_real_to_fixed(qBound(0.00025, 1.0 / qt_fixed_to_real(width), 0.25));
+    }
     qfixed strokeWidth() const { return m_strokeWidth; }
 
     void setCapStyle(Qt::PenCapStyle capStyle) { m_capStyle = joinModeForCap(capStyle); }
