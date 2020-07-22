@@ -1,4 +1,4 @@
 TEMPLATE = app
-QT = core gui widgets
+QT = core gui gui-private widgets
 CONFIG -= app_bundle
 SOURCES += main.cpp

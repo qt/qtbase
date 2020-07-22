@@ -49,6 +49,15 @@
 #include <QToolBar>
 #include <QWindow>
 
+#ifdef Q_OS_WIN
+#  include <QCheckBox>
+#  include <QDialog>
+#  include <QDialogButtonBox>
+#  include <QVBoxLayout>
+#  include <QtGui/private/qguiapplication_p.h>
+#  include <QtGui/qpa/qplatformintegration.h>
+#endif
+
 static bool optIgnoreTouch = false;
 static QList<Qt::GestureType> optGestures;
 
@@ -410,6 +419,62 @@ void TouchTestWidget::paintEvent(QPaintEvent *)
         gp->draw(geom, painter);
 }
 
+#ifdef Q_OS_WIN
+class SettingsDialog : public QDialog
+{
+    Q_OBJECT
+public:
+    explicit SettingsDialog(QWidget *parent);
+
+private slots:
+    void touchTypeToggled();
+
+private:
+    using QWindowsApplication = QPlatformInterface::Private::QWindowsApplication;
+    using TouchWindowTouchType = QWindowsApplication::TouchWindowTouchType;
+    using TouchWindowTouchTypes = QWindowsApplication::QWindowsApplication::TouchWindowTouchTypes;
+
+    QCheckBox *m_fineCheckBox;
+    QCheckBox *m_palmCheckBox;
+};
+
+SettingsDialog::SettingsDialog(QWidget *parent) : QDialog(parent)
+{
+    setWindowTitle("Settings");
+    auto layout = new QVBoxLayout(this);
+
+    TouchWindowTouchTypes touchTypes;
+    if (auto nativeWindowsApp = dynamic_cast<QWindowsApplication *>(QGuiApplicationPrivate::platformIntegration()))
+        touchTypes = nativeWindowsApp->touchWindowTouchType();
+
+    m_fineCheckBox = new QCheckBox("Fine Touch", this);
+    m_fineCheckBox->setChecked(touchTypes.testFlag(TouchWindowTouchType::FineTouch));
+    layout->addWidget(m_fineCheckBox);
+    connect(m_fineCheckBox, &QAbstractButton::toggled, this, &SettingsDialog::touchTypeToggled);
+    m_palmCheckBox = new QCheckBox("Palm Touch", this);
+    connect(m_palmCheckBox, &QAbstractButton::toggled, this, &SettingsDialog::touchTypeToggled);
+    m_palmCheckBox->setChecked(touchTypes.testFlag(TouchWindowTouchType::WantPalmTouch));
+    layout->addWidget(m_palmCheckBox);
+
+    auto box = new QDialogButtonBox(QDialogButtonBox::Close);
+    connect(box, &QDialogButtonBox::rejected, this, &QDialog::reject);
+    layout->addWidget(box);
+}
+
+void SettingsDialog::touchTypeToggled()
+{
+    TouchWindowTouchTypes types;
+    if (m_fineCheckBox->isChecked())
+        types.setFlag(TouchWindowTouchType::FineTouch);
+    if (m_palmCheckBox->isChecked())
+        types.setFlag(TouchWindowTouchType::WantPalmTouch);
+    if (auto nativeWindowsApp = dynamic_cast<QWindowsApplication *>(QGuiApplicationPrivate::platformIntegration()))
+        nativeWindowsApp->setTouchWindowTouchType(types);
+    else
+        qWarning("Missing Interface QWindowsApplication");
+}
+#endif // Q_OS_WIN
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -424,6 +489,9 @@ public:
 public slots:
     void appendToLog(const QString &text) { m_logTextEdit->appendPlainText(text); }
     void dumpTouchDevices();
+
+private slots:
+    void settingsDialog();
 
 private:
     void updateScreenLabel();
@@ -495,6 +563,15 @@ MainWindow::MainWindow()
     connect(quitAction, &QAction::triggered, qApp, &QCoreApplication::quit);
     toolBar->addAction(quitAction);
 
+    auto settingsMenu = menuBar()->addMenu("Settings");
+    auto settingsAction = settingsMenu->addAction("Settings",
+                                                  this, &MainWindow::settingsDialog);
+#ifdef Q_OS_WIN
+    Q_UNUSED(settingsAction);
+#else
+    settingsAction->setEnabled(false);
+#endif
+
     QSplitter *mainSplitter = new QSplitter(Qt::Vertical, this);
 
     m_touchWidget->setObjectName(QStringLiteral("TouchWidget"));
@@ -508,6 +585,14 @@ MainWindow::MainWindow()
     statusBar()->addPermanentWidget(m_screenLabel);
 
     dumpTouchDevices();
+}
+
+void MainWindow::settingsDialog()
+{
+#ifdef Q_OS_WIN
+    SettingsDialog dialog(this);
+    dialog.exec();
+#endif
 }
 
 void MainWindow::setVisible(bool visible)
