@@ -2828,12 +2828,21 @@ template<typename T>
 using qRemovePointerLike_t = typename qRemovePointerLike<T>::type;
 #undef Q_REMOVE_POINTER_LIKE_IMPL
 
-template<typename Unique, typename T>
+template<typename T, typename ForceComplete_>
+struct TypeAndForceComplete
+{
+    using type = T;
+    using ForceComplete = ForceComplete_;
+};
+
+template<typename Unique, typename TypeCompletePair>
 constexpr QMetaTypeInterface *qTryMetaTypeInterfaceForType()
 {
+    using T = typename TypeCompletePair::type;
+    using ForceComplete = typename TypeCompletePair::ForceComplete;
     using Ty = std::remove_cv_t<std::remove_reference_t<T>>;
     using Tz = qRemovePointerLike_t<Ty>;
-    if constexpr (!is_complete<Tz, Unique>::value) {
+    if constexpr (!is_complete<Tz, Unique>::value && !ForceComplete::value) {
         return nullptr;
     } else {
         return &QMetaTypeForType<Ty>::metaType;

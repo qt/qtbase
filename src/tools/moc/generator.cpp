@@ -580,17 +580,26 @@ void Generator::generateCode()
         }
         for (int i = 0; i < cdef->propertyList.count(); ++i) {
             const PropertyDef &p = cdef->propertyList.at(i);
-            fprintf(out, "%s%s", needsComma ? ", " : "", p.type.data());
+            if (requireCompleteTypes)
+                fprintf(out, "%s%s", needsComma ? ", " : "", p.type.data());
+            else
+                fprintf(out, "%sQtPrivate::TypeAndForceComplete<%s, std::true_type>", needsComma ? ", " : "", p.type.data());
             needsComma = true;
         }
         for (const QList<FunctionDef> &methodContainer :
              { cdef->signalList, cdef->slotList, cdef->methodList }) {
             for (int i = 0; i< methodContainer.count(); ++i) {
                 const FunctionDef& fdef = methodContainer.at(i);
-                fprintf(out, "%s%s", needsComma ? ", " : "", fdef.type.name.data());
+                if (requireCompleteTypes)
+                    fprintf(out, "%s%s", needsComma ? ", " : "", fdef.type.name.data());
+                else
+                    fprintf(out, "%sQtPrivate::TypeAndForceComplete<%s, std::false_type>", needsComma ? ", " : "", fdef.type.name.data());
                 needsComma = true;
                 for (const auto &argument: fdef.arguments) {
-                    fprintf(out, ", %s", argument.type.name.data());
+                    if (requireCompleteTypes)
+                        fprintf(out, ", %s", argument.type.name.data());
+                    else
+                        fprintf(out, ", QtPrivate::TypeAndForceComplete<%s, std::false_type>", argument.type.name.data());
                 }
             }
             fprintf(out, "\n");
@@ -598,7 +607,10 @@ void Generator::generateCode()
         for (int i = 0; i< cdef->constructorList.count(); ++i) {
             const FunctionDef& fdef = cdef->constructorList.at(i);
             for (const auto &argument: fdef.arguments) {
-                fprintf(out, "%s%s", needsComma ? ", " : "", argument.type.name.data());
+                if (requireCompleteTypes)
+                    fprintf(out, "%s%s", needsComma ? ", " : "", argument.type.name.data());
+                else
+                    fprintf(out, "%sQtPrivate::TypeAndForceComplete<%s, std::false_type>", needsComma ? ", " : "", argument.type.name.data());
                 needsComma = true;
             }
         }
