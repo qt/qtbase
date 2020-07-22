@@ -1243,6 +1243,8 @@ int main(int argc, char **argv)
         qDebug() << "Test outputs left in" << qUtf8Printable(testOutputDir.path());
         testOutputDir.setAutoRemove(false);
     }
+
+    return result;
 #endif
 }
 
