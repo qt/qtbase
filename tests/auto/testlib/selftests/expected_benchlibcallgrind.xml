@@ -5,13 +5,6 @@
     <QtBuild/>
     <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
 </Environment>
-<?xml version="1.0" encoding="UTF-8"?>
-<TestCase name="tst_BenchlibCallgrind">
-<Environment>
-    <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
-    <QtBuild/>
-    <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
-</Environment>
 <TestFunction name="initTestCase">
 <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
@@ -26,7 +19,5 @@
 <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
 </TestFunction>
-<Duration msecs="0"/>
-</TestCase>
 <Duration msecs="0"/>
 </TestCase>
