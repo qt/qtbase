@@ -8,7 +8,7 @@
   <testcase result="pass" name="initTestCase"/>
   <testcase result="fail" name="value">
     <!-- message="expected data of type &apos;QString&apos;, got &apos;bool&apos; for element 0 of data with tag &apos;bool&#x002D;as&#x002D;string&apos;" type="qdebug" -->
-    <!-- message="ASSERT: &quot;false&quot; in file qtbase/src/testlib/qtestdata.cpp, line 92" type="qfatal" -->
+    <!-- message="ASSERT: &quot;false&quot; in file qtbase/src/testlib/qtestdata.cpp, line 0" type="qfatal" -->
     <failure message="Received a fatal error." result="fail"/>
   </testcase>
   <system-err>

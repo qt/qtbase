@@ -104,7 +104,7 @@ class Cleaner (object):
             (r'( *<QtBuild)>[^<]+</QtBuild>', r'\1/>'), # xml, lightxml
             (r'(<property value=")[^"]+(" name="QtBuild"/>)', r'\1\2'), # junitxml
             # Line numbers in source files:
-            (r'(ASSERT: ".*" in file .*, line) \d+', r'\1 0'), # lightxml
+            (r'(ASSERT: ("|&quot;).*("|&quot;) in file .*, line) \d+', r'\1 0'), # lightxml
             (r'(Loc: \[[^[\]()]+)\(\d+\)', r'\1(0)'), # txt
             (r'(\[Loc: [^[\]()]+)\(\d+\)', r'\1(0)'), # teamcity
             (r'(<(?:Incident|Message)\b.*\bfile=.*\bline=)"\d+"', r'\1"0"'), # lightxml, xml
