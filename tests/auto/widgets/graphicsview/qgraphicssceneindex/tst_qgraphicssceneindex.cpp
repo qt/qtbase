@@ -356,7 +356,7 @@ void tst_QGraphicsSceneIndex::clear()
     MyItem *item = new MyItem;
     scene.addItem(item);
     qApp->processEvents();
-    QTRY_COMPARE(item->numPaints, 1);
+    QTRY_VERIFY(item->numPaints > 0);
 }
 
 QTEST_MAIN(tst_QGraphicsSceneIndex)
