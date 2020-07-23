@@ -575,6 +575,8 @@ bool QWindowsFontDatabaseBase::init(QSharedPointer<QWindowsFontEngineData> d)
             return false;
         }
     }
+#else
+    Q_UNUSED(d);
 #endif // directwrite && direct2d
     return true;
 }
