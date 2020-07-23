@@ -310,14 +310,16 @@ QFseventsFileSystemWatcherEngine::~QFseventsFileSystemWatcherEngine()
 {
     QMacAutoReleasePool pool;
 
-    // Stop the stream in case we have to wait for the lock below to be acquired.
-    if (stream)
-        FSEventStreamStop(stream);
+    dispatch_sync(queue, ^{
+        // Stop the stream in case we have to wait for the lock below to be acquired.
+        if (stream)
+            FSEventStreamStop(stream);
 
-    // The assumption with the locking strategy is that this class cannot and will not be subclassed!
-    QMutexLocker locker(&lock);
+        // The assumption with the locking strategy is that this class cannot and will not be subclassed!
+        QMutexLocker locker(&lock);
 
-    stopStream(true);
+        stopStream(true);
+    });
     dispatch_release(queue);
 }
 
