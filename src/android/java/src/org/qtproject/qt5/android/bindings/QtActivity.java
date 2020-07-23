@@ -1116,4 +1116,9 @@ public class QtActivity extends Activity
     {
         QtNative.activityDelegate().updateSelection(selStart, selEnd, candidatesStart, candidatesEnd);
     }
+
+    public void setFullScreen(boolean enterFullScreen)
+    {
+        QtNative.activityDelegate().setFullScreen(enterFullScreen);
+    }
 }
