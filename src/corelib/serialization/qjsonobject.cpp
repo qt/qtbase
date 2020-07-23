@@ -700,12 +700,10 @@ bool QJsonObject::operator!=(const QJsonObject &other) const
  */
 QJsonObject::iterator QJsonObject::erase(QJsonObject::iterator it)
 {
-    if (it.o != this || it.i < 0 || it.i >= o->elements.length())
+    if (it.item.o != this || it.item.index < 0 || it.item.index >= o->elements.length())
         return {this, int(o->elements.length())};
 
-    int index = it.i;
-
-    removeAt(index);
+    removeAt(it.item.index);
 
     // iterator hasn't changed
     return it;
@@ -1233,14 +1231,14 @@ QJsonObject::const_iterator QJsonObject::constFindImpl(T key) const
     \sa value()
 */
 
-/*! \fn QJsonValue QJsonObject::const_iterator::value() const
+/*! \fn QJsonValueRef QJsonObject::const_iterator::value() const
 
     Returns the current item's value.
 
     \sa key(), operator*()
 */
 
-/*! \fn QJsonValue QJsonObject::const_iterator::operator*() const
+/*! \fn const QJsonValueRef QJsonObject::const_iterator::operator*() const
 
     Returns the current item's value.
 
@@ -1249,7 +1247,7 @@ QJsonObject::const_iterator QJsonObject::constFindImpl(T key) const
     \sa key()
 */
 
-/*! \fn QJsonValue *QJsonObject::const_iterator::operator->() const
+/*! \fn const QJsonValueRef *QJsonObject::const_iterator::operator->() const
 
     Returns a pointer to the current item.
 */

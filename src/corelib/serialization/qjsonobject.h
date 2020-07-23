@@ -125,110 +125,128 @@ public:
     {
         friend class const_iterator;
         friend class QJsonObject;
-        QJsonObject *o;
-        int i;
+        mutable QJsonValueRef item;
 
     public:
         typedef std::random_access_iterator_tag iterator_category;
         typedef int difference_type;
         typedef QJsonValue value_type;
         typedef QJsonValueRef reference;
-        typedef QJsonValuePtr pointer;
+        typedef QJsonValueRef *pointer;
 
-        Q_DECL_CONSTEXPR inline iterator() : o(nullptr), i(0) {}
-        Q_DECL_CONSTEXPR inline iterator(QJsonObject *obj, int index) : o(obj), i(index) {}
+        inline iterator() : item(static_cast<QJsonObject*>(nullptr), 0) { }
+        inline iterator(QJsonObject *obj, int index) : item(obj, index) { }
 
-        inline QString key() const { return o->keyAt(i); }
-        inline QJsonValueRef value() const { return QJsonValueRef(o, i); }
-        inline QJsonValueRef operator*() const { return QJsonValueRef(o, i); }
-#ifdef Q_QDOC
-        inline QJsonValueRef* operator->() const;
-#else
-        inline QJsonValueRefPtr operator->() const { return QJsonValueRefPtr(o, i); }
-#endif
-        const QJsonValueRef operator[](int j) { return QJsonValueRef(o, i + j); }
+        constexpr iterator(const iterator &other) = default;
+        iterator &operator=(const iterator &other)
+        {
+            item.o = other.item.o;
+            item.index = other.item.index;
+            return *this;
+        }
 
-        inline bool operator==(const iterator &other) const { return i == other.i; }
-        inline bool operator!=(const iterator &other) const { return i != other.i; }
-        bool operator<(const iterator& other) const { return i < other.i; }
-        bool operator<=(const iterator& other) const { return i <= other.i; }
-        bool operator>(const iterator& other) const { return i > other.i; }
-        bool operator>=(const iterator& other) const { return i >= other.i; }
+        inline QString key() const { return item.o->keyAt(item.index); }
+        inline QJsonValueRef value() const { return item; }
+        inline QJsonValueRef operator*() const { return item; }
+        inline QJsonValueRef *operator->() const { return &item; }
+        const QJsonValueRef operator[](int j) { return { item.o, int(item.index) + j }; }
 
-        inline iterator &operator++() { ++i; return *this; }
-        inline iterator operator++(int) { iterator r = *this; ++i; return r; }
-        inline iterator &operator--() { --i; return *this; }
-        inline iterator operator--(int) { iterator r = *this; --i; return r; }
+        inline bool operator==(const iterator &other) const
+        { return item.o == other.item.o && item.index == other.item.index; }
+        inline bool operator!=(const iterator &other) const { return !(*this == other); }
+        bool operator<(const iterator& other) const
+        { Q_ASSERT(item.o == other.item.o); return item.index < other.item.index; }
+        bool operator<=(const iterator& other) const
+        { Q_ASSERT(item.o == other.item.o); return item.index < other.item.index; }
+        bool operator>(const iterator& other) const { return !(*this <= other); }
+        bool operator>=(const iterator& other) const { return !(*this < other); }
+
+        inline iterator &operator++() { ++item.index; return *this; }
+        inline iterator operator++(int) { iterator r = *this; ++item.index; return r; }
+        inline iterator &operator--() { --item.index; return *this; }
+        inline iterator operator--(int) { iterator r = *this; --item.index; return r; }
         inline iterator operator+(int j) const
-        { iterator r = *this; r.i += j; return r; }
+        { iterator r = *this; r.item.index += j; return r; }
         inline iterator operator-(int j) const { return operator+(-j); }
-        inline iterator &operator+=(int j) { i += j; return *this; }
-        inline iterator &operator-=(int j) { i -= j; return *this; }
-        int operator-(iterator j) const { return i - j.i; }
+        inline iterator &operator+=(int j) { item.index += j; return *this; }
+        inline iterator &operator-=(int j) { item.index -= j; return *this; }
+        int operator-(iterator j) const { return item.index - j.item.index; }
 
     public:
-        inline bool operator==(const const_iterator &other) const { return i == other.i; }
-        inline bool operator!=(const const_iterator &other) const { return i != other.i; }
-        bool operator<(const const_iterator& other) const { return i < other.i; }
-        bool operator<=(const const_iterator& other) const { return i <= other.i; }
-        bool operator>(const const_iterator& other) const { return i > other.i; }
-        bool operator>=(const const_iterator& other) const { return i >= other.i; }
+        inline bool operator==(const const_iterator &other) const
+        { return item.o == other.item.o && item.index == other.item.index; }
+        inline bool operator!=(const const_iterator &other) const { return !(*this == other); }
+        bool operator<(const const_iterator& other) const
+        { Q_ASSERT(item.o == other.item.o); return item.index < other.item.index; }
+        bool operator<=(const const_iterator& other) const
+        { Q_ASSERT(item.o == other.item.o); return item.index <= other.item.index; }
+        bool operator>(const const_iterator& other) const { return !(*this <= other); }
+        bool operator>=(const const_iterator& other) const { return !(*this < other); }
     };
     friend class iterator;
 
     class const_iterator
     {
         friend class iterator;
-        const QJsonObject *o;
-        int i;
+        QJsonValueRef item;
 
     public:
         typedef std::random_access_iterator_tag iterator_category;
         typedef int difference_type;
         typedef QJsonValue value_type;
-        typedef QJsonValue reference;
-        typedef QJsonValuePtr pointer;
+        typedef const QJsonValueRef reference;
+        typedef const QJsonValueRef *pointer;
 
-        Q_DECL_CONSTEXPR inline const_iterator() : o(nullptr), i(0) {}
-        Q_DECL_CONSTEXPR inline const_iterator(const QJsonObject *obj, int index)
-            : o(obj), i(index) {}
+        inline const_iterator() : item(static_cast<QJsonObject*>(nullptr), 0) { }
+        inline const_iterator(const QJsonObject *obj, int index)
+            : item(const_cast<QJsonObject*>(obj), index) { }
         inline const_iterator(const iterator &other)
-            : o(other.o), i(other.i) {}
+            : item(other.item) { }
 
-        inline QString key() const { return o->keyAt(i); }
-        inline QJsonValue value() const { return o->valueAt(i); }
-        inline QJsonValue operator*() const { return o->valueAt(i); }
-#ifdef Q_QDOC
-        inline QJsonValue* operator->() const;
-#else
-        inline QJsonValuePtr operator->() const { return QJsonValuePtr(o->valueAt(i)); }
-#endif
-        const QJsonValue operator[](int j) { return o->valueAt(i + j); }
+        constexpr const_iterator(const const_iterator &other) = default;
+        const_iterator &operator=(const const_iterator &other)
+        {
+            item.o = other.item.o;
+            item.index = other.item.index;
+            return *this;
+        }
 
-        inline bool operator==(const const_iterator &other) const { return i == other.i; }
-        inline bool operator!=(const const_iterator &other) const { return i != other.i; }
-        bool operator<(const const_iterator& other) const { return i < other.i; }
-        bool operator<=(const const_iterator& other) const { return i <= other.i; }
-        bool operator>(const const_iterator& other) const { return i > other.i; }
-        bool operator>=(const const_iterator& other) const { return i >= other.i; }
+        inline QString key() const { return item.o->keyAt(item.index); }
+        inline QJsonValueRef value() const { return item; }
+        inline const QJsonValueRef operator*() const { return item; }
+        inline const QJsonValueRef *operator->() const { return &item; }
+        const QJsonValueRef operator[](int j) { return { item.o, int(item.index) + j }; }
 
-        inline const_iterator &operator++() { ++i; return *this; }
-        inline const_iterator operator++(int) { const_iterator r = *this; ++i; return r; }
-        inline const_iterator &operator--() { --i; return *this; }
-        inline const_iterator operator--(int) { const_iterator r = *this; --i; return r; }
+        inline bool operator==(const const_iterator &other) const
+        { return item.o == other.item.o && item.index == other.item.index; }
+        inline bool operator!=(const const_iterator &other) const { return !(*this == other); }
+        bool operator<(const const_iterator& other) const
+        { Q_ASSERT(item.o == other.item.o); return item.index < other.item.index; }
+        bool operator<=(const const_iterator& other) const
+        { Q_ASSERT(item.o == other.item.o); return item.index <= other.item.index; }
+        bool operator>(const const_iterator& other) const { return !(*this <= other); }
+        bool operator>=(const const_iterator& other) const { return !(*this < other); }
+
+        inline const_iterator &operator++() { ++item.index; return *this; }
+        inline const_iterator operator++(int) { const_iterator r = *this; ++item.index; return r; }
+        inline const_iterator &operator--() { --item.index; return *this; }
+        inline const_iterator operator--(int) { const_iterator r = *this; --item.index; return r; }
         inline const_iterator operator+(int j) const
-        { const_iterator r = *this; r.i += j; return r; }
+        { const_iterator r = *this; r.item.index += j; return r; }
         inline const_iterator operator-(int j) const { return operator+(-j); }
-        inline const_iterator &operator+=(int j) { i += j; return *this; }
-        inline const_iterator &operator-=(int j) { i -= j; return *this; }
-        int operator-(const_iterator j) const { return i - j.i; }
+        inline const_iterator &operator+=(int j) { item.index += j; return *this; }
+        inline const_iterator &operator-=(int j) { item.index -= j; return *this; }
+        int operator-(const_iterator j) const { return item.index - j.item.index; }
 
-        inline bool operator==(const iterator &other) const { return i == other.i; }
-        inline bool operator!=(const iterator &other) const { return i != other.i; }
-        bool operator<(const iterator& other) const { return i < other.i; }
-        bool operator<=(const iterator& other) const { return i <= other.i; }
-        bool operator>(const iterator& other) const { return i > other.i; }
-        bool operator>=(const iterator& other) const { return i >= other.i; }
+        inline bool operator==(const iterator &other) const
+        { return item.o == other.item.o && item.index == other.item.index; }
+        inline bool operator!=(const iterator &other) const { return !(*this == other); }
+        bool operator<(const iterator& other) const
+        { Q_ASSERT(item.o == other.item.o); return item.index < other.item.index; }
+        bool operator<=(const iterator& other) const
+        { Q_ASSERT(item.o == other.item.o); return item.index <= other.item.index; }
+        bool operator>(const iterator& other) const { return !(*this <= other); }
+        bool operator>=(const iterator& other) const { return !(*this < other); }
     };
     friend class const_iterator;
 

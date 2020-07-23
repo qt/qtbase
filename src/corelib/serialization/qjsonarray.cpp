@@ -941,12 +941,12 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
     Constructs a copy of \a other.
 */
 
-/*! \fn QJsonValue QJsonArray::const_iterator::operator*() const
+/*! \fn const QJsonValueRef QJsonArray::const_iterator::operator*() const
 
     Returns the current item.
 */
 
-/*! \fn QJsonValue *QJsonArray::const_iterator::operator->() const
+/*! \fn const QJsonValueRef *QJsonArray::const_iterator::operator->() const
 
     Returns a pointer to the current item.
 */

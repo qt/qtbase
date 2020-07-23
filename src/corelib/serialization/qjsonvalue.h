@@ -164,6 +164,8 @@ public:
     QJsonValueRef(QJsonObject *object, int idx)
         : o(object), is_object(true), index(static_cast<uint>(idx)) {}
 
+    QJsonValueRef(const QJsonValueRef &) = default;
+
     inline operator QJsonValue() const { return toValue(); }
     QJsonValueRef &operator = (const QJsonValue &val);
     QJsonValueRef &operator = (const QJsonValueRef &val);
@@ -203,31 +205,9 @@ private:
     };
     uint is_object : 1;
     uint index : 31;
-};
 
-// ### Qt 6: Get rid of these fake pointer classes
-class QJsonValuePtr
-{
-    QJsonValue value;
-public:
-    explicit QJsonValuePtr(const QJsonValue& val)
-        : value(val) {}
-
-    QJsonValue& operator*() { return value; }
-    QJsonValue* operator->() { return &value; }
-};
-
-class QJsonValueRefPtr
-{
-    QJsonValueRef valueRef;
-public:
-    QJsonValueRefPtr(QJsonArray *array, int idx)
-        : valueRef(array, idx) {}
-    QJsonValueRefPtr(QJsonObject *object, int idx)
-        : valueRef(object, idx)  {}
-
-    QJsonValueRef& operator*() { return valueRef; }
-    QJsonValueRef* operator->() { return &valueRef; }
+    friend class QJsonArray;
+    friend class QJsonObject;
 };
 
 Q_DECLARE_SHARED(QJsonValue)
