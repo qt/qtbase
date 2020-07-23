@@ -1,5 +1,6 @@
 # Generated from qicon.pro.
 
+add_definitions(-DTESTCASE_LOWDPI) # special case
 #####################################################################
 ## tst_qicon Test:
 #####################################################################
