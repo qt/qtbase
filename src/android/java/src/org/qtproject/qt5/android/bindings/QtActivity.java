@@ -60,6 +60,7 @@ import android.view.View;
 import android.view.WindowManager.LayoutParams;
 import android.view.accessibility.AccessibilityEvent;
 
+import org.qtproject.qt5.android.QtNative;
 
 public class QtActivity extends Activity
 {
@@ -991,5 +992,128 @@ public class QtActivity extends Activity
             QtApplication.invokeDelegateMethod(QtApplication.onRequestPermissionsResult, requestCode , permissions, grantResults);
             return;
         }
+    }
+
+    public void bringChildToBack(int id)
+    {
+        QtNative.activityDelegate().bringChildToBack(id);
+    }
+
+    public void bringChildToFront(int id)
+    {
+        QtNative.activityDelegate().bringChildToFront(id);
+    }
+
+    public void closeContextMenu()
+    {
+        QtNative.activityDelegate().closeContextMenu();
+    }
+
+    public void createSurface(int id, boolean onTop, int x, int y, int w, int h, int imageDepth)
+    {
+        QtNative.activityDelegate().createSurface(id, onTop, x, y, w, h, imageDepth);
+    }
+
+    public void destroySurface(int id)
+    {
+        QtNative.activityDelegate().destroySurface(id);
+    }
+
+    public int getSurfaceCount()
+    {
+        return QtNative.activityDelegate().getSurfaceCount();
+    }
+
+    public void hideSoftwareKeyboard()
+    {
+        QtNative.activityDelegate().hideSoftwareKeyboard();
+    }
+
+    public void hideSplashScreen()
+    {
+        QtNative.activityDelegate().hideSplashScreen();
+    }
+
+    public void hideSplashScreen(final int duration)
+    {
+        QtNative.activityDelegate().hideSplashScreen(duration);
+    }
+
+    public void initializeAccessibility()
+    {
+        QtNative.activityDelegate().initializeAccessibility();
+    }
+
+    public void insertNativeView(int id, View view, int x, int y, int w, int h)
+    {
+        QtNative.activityDelegate().insertNativeView(id, view, x, y, w, h);
+    }
+
+    public boolean loadApplication(Activity activity, ClassLoader classLoader, Bundle loaderParams)
+    {
+        return QtNative.activityDelegate().loadApplication(activity, classLoader, loaderParams);
+    }
+
+    public void onCreatePopupMenu(Menu menu)
+    {
+        QtNative.activityDelegate().onCreatePopupMenu(menu);
+    }
+
+    public void onTerminate()
+    {
+        QtNative.activityDelegate().onTerminate();
+    }
+
+    public void openContextMenu(final int x, final int y, final int w, final int h)
+    {
+        QtNative.activityDelegate().openContextMenu(x, y, w, h);
+    }
+
+    public void resetOptionsMenu()
+    {
+        QtNative.activityDelegate().resetOptionsMenu();
+    }
+
+    public void resetSoftwareKeyboard()
+    {
+        QtNative.activityDelegate().resetSoftwareKeyboard();
+    }
+
+    public boolean setKeyboardVisibility(boolean visibility, long timeStamp)
+    {
+        return QtNative.activityDelegate().setKeyboardVisibility(visibility, timeStamp);
+    }
+
+    public void setSurfaceGeometry(int id, int x, int y, int w, int h)
+    {
+        QtNative.activityDelegate().setSurfaceGeometry(id, x, y, w, h);
+    }
+
+    public void showSoftwareKeyboard(final int x, final int y, final int width,
+                                     final int height, final int inputHints,
+                                     final int enterKeyType)
+    {
+        QtNative.activityDelegate().showSoftwareKeyboard(x, y, width, height, inputHints, enterKeyType);
+    }
+
+    public boolean startApplication()
+    {
+        return QtNative.activityDelegate().startApplication();
+    }
+
+    public void updateFullScreen()
+    {
+        QtNative.activityDelegate().updateFullScreen();
+    }
+
+    public void updateHandles(int mode, int editX, int editY, int editButtons,
+                              int x1, int y1, int x2, int y2, boolean rtl)
+    {
+        QtNative.activityDelegate().updateHandles(mode, editX, editY, editButtons, x1, y1, x2, y2, rtl);
+    }
+
+    public void updateSelection(int selStart, int selEnd, int candidatesStart, int candidatesEnd)
+    {
+        QtNative.activityDelegate().updateSelection(selStart, selEnd, candidatesStart, candidatesEnd);
     }
 }
