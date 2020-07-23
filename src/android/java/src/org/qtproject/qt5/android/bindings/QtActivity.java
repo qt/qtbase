@@ -1084,6 +1084,11 @@ public class QtActivity extends Activity
         QtNative.activityDelegate().setSurfaceGeometry(id, x, y, w, h);
     }
 
+    public void setSystemUiVisibility(int systemUiVisibility)
+    {
+        QtNative.activityDelegate().setSystemUiVisibility(systemUiVisibility);
+    }
+
     public void showSoftwareKeyboard(final int x, final int y, final int width,
                                      final int height, final int inputHints,
                                      final int enterKeyType)
