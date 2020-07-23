@@ -80,20 +80,20 @@ public:
     {
     }
 
-    bool processEvents(QEventLoop::ProcessEventsFlags flags)
+    bool processEvents(QEventLoop::ProcessEventsFlags flags) override
     {
         bool didSendEvents = BaseEventDispatcher::processEvents(flags);
 
         return QWindowSystemInterface::sendWindowSystemEvents(flags) || didSendEvents;
     }
 
-    bool hasPendingEvents()
+    bool hasPendingEvents() override
     {
         return BaseEventDispatcher::hasPendingEvents()
             || QWindowSystemInterface::windowSystemEventsQueued();
     }
 
-    void flush()
+    void flush() override
     {
         if (qApp)
             qApp->sendPostedEvents();

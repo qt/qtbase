@@ -95,7 +95,8 @@ public:
     static QWindowsStaticOpenGLContext *staticOpenGLContext();
 
     HMODULE openGLModuleHandle() const override;
-    QOpenGLContext *createOpenGLContext(HGLRC context, HWND window, QOpenGLContext *shareContext) const;
+    QOpenGLContext *createOpenGLContext(HGLRC context, HWND window,
+                                        QOpenGLContext *shareContext) const override;
 #endif
     QAbstractEventDispatcher *createEventDispatcher() const override;
     void initialize() override;

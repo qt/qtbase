@@ -231,8 +231,8 @@ public:
     void createCursors();
 
     // IDropSource methods
-    STDMETHOD(QueryContinueDrag)(BOOL fEscapePressed, DWORD grfKeyState);
-    STDMETHOD(GiveFeedback)(DWORD dwEffect);
+    STDMETHOD(QueryContinueDrag)(BOOL fEscapePressed, DWORD grfKeyState) override;
+    STDMETHOD(GiveFeedback)(DWORD dwEffect) override;
 
 private:
     struct CursorEntry {

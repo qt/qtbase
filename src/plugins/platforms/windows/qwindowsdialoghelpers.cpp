@@ -273,7 +273,7 @@ public:
 
     explicit QWindowsDialogThread(const QWindowsNativeDialogBasePtr &d, HWND owner)
         : m_dialog(d), m_owner(owner) {}
-    void run();
+    void run() override;
 
 private:
     const QWindowsNativeDialogBasePtr m_dialog;
@@ -508,14 +508,21 @@ public:
     static IFileDialogEvents *create(QWindowsNativeFileDialogBase *nativeFileDialog);
 
     // IFileDialogEvents methods
-    IFACEMETHODIMP OnFileOk(IFileDialog *);
-    IFACEMETHODIMP OnFolderChange(IFileDialog *) { return S_OK; }
-    IFACEMETHODIMP OnFolderChanging(IFileDialog *, IShellItem *);
+    IFACEMETHODIMP OnFileOk(IFileDialog *) override;
+    IFACEMETHODIMP OnFolderChange(IFileDialog *) override { return S_OK; }
+    IFACEMETHODIMP OnFolderChanging(IFileDialog *, IShellItem *) override;
     IFACEMETHODIMP OnHelp(IFileDialog *) { return S_OK; }
-    IFACEMETHODIMP OnSelectionChange(IFileDialog *);
-    IFACEMETHODIMP OnShareViolation(IFileDialog *, IShellItem *, FDE_SHAREVIOLATION_RESPONSE *) { return S_OK; }
-    IFACEMETHODIMP OnTypeChange(IFileDialog *);
-    IFACEMETHODIMP OnOverwrite(IFileDialog *, IShellItem *, FDE_OVERWRITE_RESPONSE *) { return S_OK; }
+    IFACEMETHODIMP OnSelectionChange(IFileDialog *) override;
+    IFACEMETHODIMP OnShareViolation(IFileDialog *, IShellItem *,
+                                    FDE_SHAREVIOLATION_RESPONSE *) override
+    {
+        return S_OK;
+    }
+    IFACEMETHODIMP OnTypeChange(IFileDialog *) override;
+    IFACEMETHODIMP OnOverwrite(IFileDialog *, IShellItem *, FDE_OVERWRITE_RESPONSE *) override
+    {
+        return S_OK;
+    }
 
     QWindowsNativeFileDialogEventHandler(QWindowsNativeFileDialogBase *nativeFileDialog) :
         m_nativeFileDialog(nativeFileDialog) {}
