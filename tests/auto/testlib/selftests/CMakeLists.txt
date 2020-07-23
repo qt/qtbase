@@ -8,6 +8,7 @@ include(../../../../src/testlib/selfcover.cmake)
 qt_add_test(tst_selftests
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
     EXCEPTIONS
+    CATCH
     SOURCES
         ../../../shared/emulationdetector.h
         tst_selftests.cpp

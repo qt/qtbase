@@ -4134,7 +4134,7 @@ endfunction()
 # This function creates a CMake test target with the specified name for use with CTest.
 function(qt_add_test name)
     qt_parse_all_arguments(arg "qt_add_test"
-        "RUN_SERIAL;EXCEPTIONS;GUI;QMLTEST"
+        "RUN_SERIAL;EXCEPTIONS;GUI;QMLTEST;CATCH"
         "OUTPUT_DIRECTORY;WORKING_DIRECTORY;TIMEOUT;VERSION"
         "QML_IMPORTPATH;TESTDATA;${__default_private_args};${__default_public_args}" ${ARGN}
     )
@@ -4236,7 +4236,11 @@ function(qt_add_test name)
             set(test_executable "${name}")
         endif()
 
-        add_test(NAME "${name}" COMMAND ${test_executable} ${extra_test_args} -o ${name}.xml,xml -o -,txt  WORKING_DIRECTORY "${test_working_dir}")
+        if (NOT arg_CATCH)
+            list(APPEND test_outputs "-o" "${name}.xml,xml" "-o" "-,txt")
+        endif()
+
+        add_test(NAME "${name}" COMMAND ${test_executable} ${extra_test_args} ${test_outputs} WORKING_DIRECTORY "${test_working_dir}")
     endif()
     set_tests_properties("${name}" PROPERTIES RUN_SERIAL "${arg_RUN_SERIAL}" LABELS "${label}")
     if (arg_TIMEOUT)

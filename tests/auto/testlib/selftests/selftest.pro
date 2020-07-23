@@ -1,4 +1,4 @@
-CONFIG += testcase
+CONFIG += testcase catch
 SOURCES += tst_selftests.cpp catch.cpp
 QT = core testlib-private
 

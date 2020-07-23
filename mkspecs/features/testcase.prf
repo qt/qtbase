@@ -83,7 +83,7 @@ unix {
 }
 
 # Allow for custom arguments to tests
-$${type}.commands += $(TESTARGS)
+!catch: $${type}.commands += $(TESTARGS)
 
 !isEmpty(TESTRUN_CWD):!contains(TESTRUN_CWD, ^\\./?): \
     $${type}.commands = $$QMAKE_CD $$shell_path($$TESTRUN_CWD) && $$eval($${type}.commands)
