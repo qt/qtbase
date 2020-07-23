@@ -233,7 +233,7 @@ int main(int argc, char *argv[])
 
     parser.process(QCoreApplication::arguments());
 
-    QtDiag::EventFilter::EventCategories eventCategories = 0;
+    QtDiag::EventFilter::EventCategories eventCategories = {};
     for (int i = 0; i < eventFilterOptionCount; ++i) {
         if (parser.isSet(QLatin1String(eventFilterOptions[i].name)))
             eventCategories |= eventFilterOptions[i].categories;

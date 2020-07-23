@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -41,7 +41,7 @@ void SlowWidget::setGeometry(const QRectF &rect)
             qDebug() << "currentBenchmarkIteration:" << stats.currentBenchmarkIteration;
             if (stats.currentBenchmarkIteration == m_window->m_benchmarkIterationsSpinBox->value()) {
                 if (stats.output)
-                    stats.output->setText(tr("DONE. Elapsed: %1, setGeometryCount: %2").arg(stats.time.elapsed()).arg(stats.setGeometryCount));
+                    stats.output->setText(tr("DONE. Elapsed: %1, setGeometryCount: %2").arg(stats.timer.elapsed()).arg(stats.setGeometryCount));
             } else {
                 reiterate = true;
             }
@@ -57,4 +57,3 @@ void SlowWidget::setGeometry(const QRectF &rect)
         //QTimer::singleShot(0, m_window, SLOT(doAgain()));
     }
 }
-

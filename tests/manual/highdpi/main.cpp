@@ -286,7 +286,7 @@ DemoController::DemoController(DemoContainerList demos, QCommandLineParser *pars
             button->setChecked(true);
         }
     }
-    connect(m_group, QOverload<int,bool>::of(&QButtonGroup::buttonToggled),
+    connect(m_group, &QButtonGroup::idToggled,
             this, &DemoController::handleButton);
 }
 

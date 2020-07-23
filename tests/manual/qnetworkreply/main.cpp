@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2014 BlackBerry Limited. All rights reserved.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -37,6 +37,7 @@
 #include <QtNetwork/qsslconfiguration.h>
 #include <QtNetwork/qhttpmultipart.h>
 #include <QtNetwork/qauthenticator.h>
+#include <QtCore/QElapsedTimer>
 #include <QtCore/QJsonDocument>
 #include "../../auto/network-settings.h"
 
@@ -99,7 +100,7 @@ class HttpReceiver : public QObject
     }
 protected:
     QTimer *timer;
-    QTime stopwatch;
+    QElapsedTimer stopwatch;
 };
 
 void tst_qnetworkreply::initTestCase()

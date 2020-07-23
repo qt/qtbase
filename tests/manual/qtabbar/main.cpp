@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -231,7 +231,7 @@ int main(int argc, char *argv[])
         QApplication::sendEvent(&tabBar, new QEvent(QEvent::StyleChange));
     });
 
-    layout->setMargin(12);
+    layout->setContentsMargins(12, 12, 12, 12);
     widget.show();
 
     return app.exec();

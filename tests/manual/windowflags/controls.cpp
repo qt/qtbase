@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -72,7 +72,8 @@ HintControl::HintControl(QWidget *parent)
     connect(transparentForInputCheckBox, SIGNAL(clicked()), this, SLOT(slotCheckBoxChanged()));
     QGridLayout *layout = new QGridLayout(this);
     layout->setSpacing(0);
-    layout->setMargin(ControlLayoutMargin);
+    layout->setContentsMargins(ControlLayoutMargin, ControlLayoutMargin,
+                               ControlLayoutMargin, ControlLayoutMargin);
     layout->addWidget(msWindowsFixedSizeDialogCheckBox, 0, 0);
     layout->addWidget(x11BypassWindowManagerCheckBox, 1, 0);
     layout->addWidget(framelessWindowCheckBox, 2, 0);
@@ -171,7 +172,8 @@ WindowStateControl::WindowStateControl(QWidget *parent)
 {
     QHBoxLayout *layout = new QHBoxLayout(this);
     group->setExclusive(false);
-    layout->setMargin(ControlLayoutMargin);
+    layout->setContentsMargins(ControlLayoutMargin, ControlLayoutMargin,
+                               ControlLayoutMargin, ControlLayoutMargin);
     group->addButton(restoreButton, Qt::WindowNoState);
     restoreButton->setEnabled(false);
     layout->addWidget(restoreButton);
@@ -214,7 +216,8 @@ WindowStatesControl::WindowStatesControl(QWidget *parent)
 {
     QHBoxLayout *layout = new QHBoxLayout(this);
     layout->setSpacing(0);
-    layout->setMargin(ControlLayoutMargin);
+    layout->setContentsMargins(ControlLayoutMargin, ControlLayoutMargin,
+                               ControlLayoutMargin, ControlLayoutMargin);
     connect(visibleCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(changed()));
     layout->addWidget(visibleCheckBox);
     connect(activeCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(changed()));
@@ -280,7 +283,8 @@ TypeControl::TypeControl(QWidget *parent)
     group->setExclusive(true);
     QGridLayout *layout = new QGridLayout(this);
     layout->setSpacing(0);
-    layout->setMargin(ControlLayoutMargin);
+    layout->setContentsMargins(ControlLayoutMargin, ControlLayoutMargin,
+                               ControlLayoutMargin, ControlLayoutMargin);
     group->addButton(windowRadioButton, Qt::Window);
     layout->addWidget(windowRadioButton, 0, 0);
     group->addButton(dialogRadioButton, Qt::Dialog);

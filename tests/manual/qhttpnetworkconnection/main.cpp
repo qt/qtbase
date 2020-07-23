@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -33,6 +33,7 @@
 #include <QtNetwork/qnetworkreply.h>
 #include <QtNetwork/qnetworkrequest.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
+#include <QtCore/QElapsedTimer>
 
 class tst_qhttpnetworkconnection : public QObject
 {
@@ -48,7 +49,7 @@ void tst_qhttpnetworkconnection::bigRemoteFile()
 {
     QNetworkAccessManager manager;
     qint64 size;
-    QTime t;
+    QElapsedTimer t;
     QNetworkRequest request(QUrl(QString::fromLatin1(urlC)));
     QNetworkReply* reply = manager.get(request);
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()), Qt::QueuedConnection);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -43,7 +43,7 @@
 #include <QApplication>
 #include <QThread>
 #include <QMap>
-#include <QTime>
+#include <QElapsedTimer>
 #include <QDebug>
 
 struct Statistics {
@@ -52,7 +52,7 @@ struct Statistics {
     {
     }
     QMap<QGraphicsWidget*, int> setGeometryTracker;
-    QTime time;
+    QElapsedTimer timer;
     int setGeometryCount;
     int sleepMsecs;
     QLabel *output;
@@ -227,7 +227,7 @@ private slots:
             m_stats.setGeometryCount = 0;
             m_stats.setGeometryTracker.clear();
             m_stats.sleepMsecs = m_sleepSpinBox->value();
-            m_stats.time.start();
+            m_stats.timer.start();
             m_stats.currentBenchmarkIteration = 0;
             m_leaf->setMinimumSize(sz);
             m_leaf->setMaximumSize(sz);

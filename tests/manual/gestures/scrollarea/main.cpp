@@ -203,7 +203,7 @@ public:
         QWidget *w = new QWidget;
         w->setMinimumWidth(700);
         QVBoxLayout *l = new QVBoxLayout(w);
-        l->setMargin(20);
+        l->setContentsMargins(20, 20, 20, 20);
         for (int i = 0; i < 100; ++i) {
             QWidget *w = new QWidget;
             QHBoxLayout *ll = new QHBoxLayout(w);

@@ -32,107 +32,6 @@
 
 #include <stdio.h>
 
-#if QT_DEPRECATED_SINCE(5, 9)
-#define CASE_VERSION(v)     case QSysInfo::v:   return QT_STRINGIFY(v)
-
-QByteArray windowsVersionToString(QSysInfo::WinVersion v)
-{
-    switch (v) {
-    CASE_VERSION(WV_None);
-
-    CASE_VERSION(WV_32s);
-    CASE_VERSION(WV_95);
-    CASE_VERSION(WV_98);
-    CASE_VERSION(WV_Me);
-    case QSysInfo::WV_DOS_based: // shouldn't happen
-        break;
-
-    CASE_VERSION(WV_NT);
-    CASE_VERSION(WV_2000);
-    CASE_VERSION(WV_XP);
-    CASE_VERSION(WV_2003);
-    CASE_VERSION(WV_VISTA);
-    CASE_VERSION(WV_WINDOWS7);
-    CASE_VERSION(WV_WINDOWS8);
-    CASE_VERSION(WV_WINDOWS8_1);
-    CASE_VERSION(WV_WINDOWS10);
-    case QSysInfo::WV_NT_based: // shouldn't happen
-    case QSysInfo::WV_CE:
-    case QSysInfo::WV_CENET:
-    case QSysInfo::WV_CE_5:
-    case QSysInfo::WV_CE_6:
-    case QSysInfo::WV_CE_based:
-        break;
-    }
-
-    return "WinVersion(0x" + QByteArray::number(v, 16) + ')';
-}
-
-QByteArray macVersionToString(QSysInfo::MacVersion v)
-{
-    switch (v) {
-    CASE_VERSION(MV_None);
-    CASE_VERSION(MV_Unknown);
-
-    CASE_VERSION(MV_9);
-    CASE_VERSION(MV_10_0);
-    CASE_VERSION(MV_10_1);
-    CASE_VERSION(MV_10_2);
-    CASE_VERSION(MV_10_3);
-    CASE_VERSION(MV_10_4);
-    CASE_VERSION(MV_10_5);
-    CASE_VERSION(MV_10_6);
-    CASE_VERSION(MV_10_7);
-    CASE_VERSION(MV_10_8);
-    CASE_VERSION(MV_10_9);
-    CASE_VERSION(MV_10_10);
-    CASE_VERSION(MV_10_11);
-    CASE_VERSION(MV_10_12);
-
-    CASE_VERSION(MV_IOS_4_3);
-    CASE_VERSION(MV_IOS_5_0);
-    CASE_VERSION(MV_IOS_5_1);
-    CASE_VERSION(MV_IOS_6_0);
-    CASE_VERSION(MV_IOS_6_1);
-    CASE_VERSION(MV_IOS_7_0);
-    CASE_VERSION(MV_IOS_7_1);
-    CASE_VERSION(MV_IOS_8_0);
-    CASE_VERSION(MV_IOS_8_1);
-    CASE_VERSION(MV_IOS_8_2);
-    CASE_VERSION(MV_IOS_8_3);
-    CASE_VERSION(MV_IOS_8_4);
-    CASE_VERSION(MV_IOS_9_0);
-    CASE_VERSION(MV_IOS_9_1);
-    CASE_VERSION(MV_IOS_9_2);
-    CASE_VERSION(MV_IOS_9_3);
-    CASE_VERSION(MV_IOS_10_0);
-    case QSysInfo::MV_IOS:      // shouldn't happen:
-    case QSysInfo::MV_TVOS:
-    case QSysInfo::MV_WATCHOS:
-        break;
-
-    CASE_VERSION(MV_TVOS_9_0);
-    CASE_VERSION(MV_TVOS_9_1);
-    CASE_VERSION(MV_TVOS_9_2);
-    CASE_VERSION(MV_TVOS_10_0);
-
-    CASE_VERSION(MV_WATCHOS_2_0);
-    CASE_VERSION(MV_WATCHOS_2_1);
-    CASE_VERSION(MV_WATCHOS_2_2);
-    CASE_VERSION(MV_WATCHOS_3_0);
-    }
-
-    if (v & QSysInfo::MV_IOS) {
-        int major = (v >> 4) & 0xf;
-        int minor = v & 0xf;
-        return "MacVersion(Q_MV_IOS("
-                + QByteArray::number(major) + ", "
-                + QByteArray::number(minor) + "))";
-    }
-    return "MacVersion(Q_MV_OSX(10, " + QByteArray::number(v - 2) + "))";
-}
-#endif
-
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
@@ -140,12 +39,6 @@ int main(int argc, char *argv[])
     printf("QSysInfo::WordSize = %d\n", QSysInfo::WordSize);
     printf("QSysInfo::ByteOrder = QSysInfo::%sEndian\n",
            QSysInfo::ByteOrder == QSysInfo::LittleEndian ? "Little" : "Big");
-#if QT_DEPRECATED_SINCE(5, 9)
-    printf("QSysInfo::WindowsVersion = QSysInfo::%s\n",
-           windowsVersionToString(QSysInfo::WindowsVersion).constData());
-    printf("QSysInfo::MacintoshVersion = QSysInfo::%s\n",
-           macVersionToString(QSysInfo::MacintoshVersion).constData());
-#endif
     printf("QSysInfo::buildCpuArchitecture() = %s\n", qPrintable(QSysInfo::buildCpuArchitecture()));
     printf("QSysInfo::currentCpuArchitecture() = %s\n", qPrintable(QSysInfo::currentCpuArchitecture()));
     printf("QSysInfo::buildAbi() = %s\n", qPrintable(QSysInfo::buildAbi()));
