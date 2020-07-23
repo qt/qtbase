@@ -220,9 +220,6 @@ _qt_library_map = [
     LibraryMapping("oauth", "Qt6", "Qt::NetworkAuth", extra=["COMPONENTS", "NetworkAuth"]),
     LibraryMapping("opcua", "Qt6", "Qt::OpcUa", extra=["COMPONENTS", "OpcUa"]),
     LibraryMapping("opcua_private", "Qt6", "Qt::OpcUaPrivate", extra=["COMPONENTS", "OpcUaPrivate"]),
-    LibraryMapping(
-        "openglextensions", "Qt6", "Qt::OpenGLExtensions", extra=["COMPONENTS", "OpenGLExtensions"]
-    ),
     LibraryMapping("opengl", "Qt6", "Qt::OpenGL", extra=["COMPONENTS", "OpenGL"]),
     LibraryMapping(
         "openglwidgets", "Qt6", "Qt::OpenGLWidgets", extra=["COMPONENTS", "OpenGLWidgets"]
