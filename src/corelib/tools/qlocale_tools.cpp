@@ -280,6 +280,11 @@ void qt_doubleToAscii(double d, QLocaleData::DoubleForm form, int precision, cha
 double qt_asciiToDouble(const char *num, int numLen, bool &ok, int &processed,
                         StrayCharacterMode strayCharMode)
 {
+    auto string_equals = [](const char *needle, const char *haystack, qsizetype haystackLen) {
+        qsizetype needleLen = strlen(needle);
+        return needleLen == haystackLen && memcmp(needle, haystack, haystackLen) == 0;
+    };
+
     if (*num == '\0') {
         ok = false;
         processed = 0;
@@ -291,10 +296,10 @@ double qt_asciiToDouble(const char *num, int numLen, bool &ok, int &processed,
     // We have to catch NaN before because we need NaN as marker for "garbage" in the
     // libdouble-conversion case and, in contrast to libdouble-conversion or sscanf, we don't allow
     // "-nan" or "+nan"
-    if (qstrcmp(num, "nan") == 0) {
+    if (string_equals("nan", num, numLen)) {
         processed = 3;
         return qt_snan();
-    } else if ((num[0] == '-' || num[0] == '+') && qstrcmp(num + 1, "nan") == 0) {
+    } else if (string_equals("+nan", num, numLen) || string_equals("-nan", num, numLen)) {
         processed = 0;
         ok = false;
         return 0.0;
@@ -302,13 +307,13 @@ double qt_asciiToDouble(const char *num, int numLen, bool &ok, int &processed,
 
     // Infinity values are implementation defined in the sscanf case. In the libdouble-conversion
     // case we need infinity as overflow marker.
-    if (qstrcmp(num, "+inf") == 0) {
+    if (string_equals("+inf", num, numLen)) {
         processed = 4;
         return qt_inf();
-    } else if (qstrcmp(num, "inf") == 0) {
+    } else if (string_equals("inf", num, numLen)) {
         processed = 3;
         return qt_inf();
-    } else if (qstrcmp(num, "-inf") == 0) {
+    } else if (string_equals("-inf", num, numLen)) {
         processed = 4;
         return -qt_inf();
     }
@@ -337,8 +342,22 @@ double qt_asciiToDouble(const char *num, int numLen, bool &ok, int &processed,
         }
     }
 #else
-    if (qDoubleSscanf(num, QT_CLOCALE, "%lf%n", &d, &processed) < 1)
+    // need to ensure that our input is null-terminated for sscanf
+    // (this is a QVarLengthArray<char, 128> but this code here is too low-level for QVLA)
+    char reasonableBuffer[128];
+    char *buffer;
+    if (numLen < qsizetype(sizeof(reasonableBuffer)) - 1)
+        buffer = reasonableBuffer;
+    else
+        buffer = static_cast<char *>(malloc(numLen + 1));
+    memcpy(buffer, num, numLen);
+    buffer[numLen] = '\0';
+
+    if (qDoubleSscanf(buffer, QT_CLOCALE, "%lf%n", &d, &processed) < 1)
         processed = 0;
+
+    if (buffer != reasonableBuffer)
+        free(buffer);
 
     if ((strayCharMode == TrailingJunkProhibited && processed != numLen) || qIsNaN(d)) {
         // Implementation defined nan symbol or garbage found. We don't accept it.
