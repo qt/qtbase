@@ -279,10 +279,6 @@ public:
     NSURL *toNSURL() const Q_DECL_NS_RETURNS_AUTORELEASED;
 #endif
 
-private:
-    static QString fromEncodedComponent_helper(const QByteArray &ba);
-
-public:
     static QString fromAce(const QByteArray &);
     static QByteArray toAce(const QString &);
     static QStringList idnWhitelist();
