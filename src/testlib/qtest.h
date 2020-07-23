@@ -319,6 +319,14 @@ bool compareSequence(ActualIterator actualIt, ActualIterator actualEnd,
     return compare_helper(isOk, msg, nullptr, nullptr, actual, expected, file, line);
 }
 
+#if defined(TESTCASE_LOWDPI)
+void disableHighDpi()
+{
+    QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps, false);
+}
+Q_CONSTRUCTOR_FUNCTION(disableHighDpi);
+#endif
+
 } // namespace Internal
 
 template <typename T>

@@ -22,6 +22,8 @@ testcase_lowdpi {
     } else {
         # TODO: Add support for other platforms if possible
     }
+
+    DEFINES += TESTCASE_LOWDPI
 }
 
 benchmark: type = benchmark
