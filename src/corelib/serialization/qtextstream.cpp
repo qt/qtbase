@@ -3142,41 +3142,6 @@ QTextStream &bom(QTextStream &s) { return Qt::bom(s); }
 } // namespace QTextStreamFunctions
 #endif
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0) && !defined(Q_QDOC)
-// Binary compatible definitions for Qt<5.14
-Q_CORE_EXPORT QTextStream &bin(QTextStream &s) { return Qt::bin(s); }
-Q_CORE_EXPORT QTextStream &oct(QTextStream &s) { return Qt::oct(s); }
-Q_CORE_EXPORT QTextStream &dec(QTextStream &s) { return Qt::dec(s); }
-Q_CORE_EXPORT QTextStream &hex(QTextStream &s) { return Qt::hex(s); }
-
-Q_CORE_EXPORT QTextStream &showbase(QTextStream &s) { return Qt::showbase(s); }
-Q_CORE_EXPORT QTextStream &forcesign(QTextStream &s) { return Qt::forcesign(s); }
-Q_CORE_EXPORT QTextStream &forcepoint(QTextStream &s) { return Qt::forcepoint(s); }
-Q_CORE_EXPORT QTextStream &noshowbase(QTextStream &s) { return Qt::noshowbase(s); }
-Q_CORE_EXPORT QTextStream &noforcesign(QTextStream &s) { return Qt::noforcesign(s); }
-Q_CORE_EXPORT QTextStream &noforcepoint(QTextStream &s) { return Qt::noforcepoint(s); }
-
-Q_CORE_EXPORT QTextStream &uppercasebase(QTextStream &s) { return Qt::uppercasebase(s); }
-Q_CORE_EXPORT QTextStream &uppercasedigits(QTextStream &s) { return Qt::uppercasedigits(s); }
-Q_CORE_EXPORT QTextStream &lowercasebase(QTextStream &s) { return Qt::lowercasebase(s); }
-Q_CORE_EXPORT QTextStream &lowercasedigits(QTextStream &s) { return Qt::lowercasedigits(s); }
-
-Q_CORE_EXPORT QTextStream &fixed(QTextStream &s) { return Qt::fixed(s); }
-Q_CORE_EXPORT QTextStream &scientific(QTextStream &s) { return Qt::scientific(s); }
-
-Q_CORE_EXPORT QTextStream &left(QTextStream &s) { return Qt::left(s); }
-Q_CORE_EXPORT QTextStream &right(QTextStream &s) { return Qt::right(s); }
-Q_CORE_EXPORT QTextStream &center(QTextStream &s) { return Qt::center(s); }
-
-Q_CORE_EXPORT QTextStream &endl(QTextStream &s) { return Qt::endl(s); }
-Q_CORE_EXPORT QTextStream &flush(QTextStream &s) { return Qt::flush(s); }
-Q_CORE_EXPORT QTextStream &reset(QTextStream &s) { return Qt::reset(s); }
-
-Q_CORE_EXPORT QTextStream &ws(QTextStream &s) { return Qt::ws(s); }
-
-Q_CORE_EXPORT QTextStream &bom(QTextStream &s) { return Qt::bom(s); }
-#endif
-
 QT_END_NAMESPACE
 
 #ifndef QT_NO_QOBJECT

@@ -52,11 +52,7 @@ public:
     QAbstractNativeEventFilter();
     virtual ~QAbstractNativeEventFilter();
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     virtual bool nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result) = 0;
-#else
-    virtual bool nativeEventFilter(const QByteArray &eventType, void *message, long *result) = 0;
-#endif
 
 private:
     Q_DISABLE_COPY(QAbstractNativeEventFilter)

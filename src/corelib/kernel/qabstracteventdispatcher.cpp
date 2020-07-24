@@ -477,11 +477,7 @@ void QAbstractEventDispatcher::removeNativeEventFilter(QAbstractNativeEventFilte
     \sa installNativeEventFilter(), QAbstractNativeEventFilter::nativeEventFilter()
     \since 5.0
 */
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 bool QAbstractEventDispatcher::filterNativeEvent(const QByteArray &eventType, void *message, qintptr *result)
-#else
-bool QAbstractEventDispatcher::filterNativeEvent(const QByteArray &eventType, void *message, long *result)
-#endif
 {
     Q_D(QAbstractEventDispatcher);
     if (!d->eventFilters.isEmpty()) {

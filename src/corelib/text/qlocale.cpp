@@ -4065,17 +4065,6 @@ QString QLocale::toCurrencyString(qulonglong value, const QString &symbol) const
     return d->m_data->currencyFormat().getData(currency_format_data).arg(str, sym);
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-/*!
-    \since 4.8
-    \overload
-*/
-QString QLocale::toCurrencyString(double value, const QString &symbol) const
-{
-    return toCurrencyString(value, symbol, d->m_data->m_currency_digits);
-}
-#endif
-
 /*!
     \since 5.7
     \overload toCurrencyString()
@@ -4129,19 +4118,6 @@ QString QLocale::toCurrencyString(double value, const QString &symbol, int preci
 
     \sa formattedDataSize()
 */
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-/*!
-    \obsolete
-
-    Use the const version instead.
-*/
-QString QLocale::formattedDataSize(qint64 bytes, int precision, DataSizeFormats format)
-{
-    const auto *that = this;
-    return that->formattedDataSize(bytes, precision, format);
-}
-#endif
 
 /*!
     \since 5.10

@@ -120,28 +120,6 @@ QString QCoreApplicationPrivate::appVersion() const
     return applicationVersion;
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-Q_CORE_EXPORT HINSTANCE qWinAppInst()                // get Windows app handle
-{
-    return GetModuleHandle(0);
-}
-
-Q_CORE_EXPORT HINSTANCE qWinAppPrevInst()                // get Windows prev app handle
-{
-    return 0;
-}
-
-Q_CORE_EXPORT int qWinAppCmdShow()                        // get main window show command
-{
-    STARTUPINFO startupInfo;
-    GetStartupInfo(&startupInfo);
-
-    return (startupInfo.dwFlags & STARTF_USESHOWWINDOW)
-        ? startupInfo.wShowWindow
-        : SW_SHOWDEFAULT;
-}
-#endif
-
 #ifndef QT_NO_QOBJECT
 
 #if defined(Q_OS_WIN) && !defined(QT_NO_DEBUG_STREAM)

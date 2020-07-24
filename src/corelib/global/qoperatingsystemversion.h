@@ -145,7 +145,7 @@ private:
 
     static int compare(const QOperatingSystemVersion &v1, const QOperatingSystemVersion &v2);
 };
-Q_DECLARE_TYPEINFO(QOperatingSystemVersion, QT_VERSION < QT_VERSION_CHECK(6, 0, 0) ? Q_RELOCATABLE_TYPE : Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(QOperatingSystemVersion, Q_PRIMITIVE_TYPE);
 
 #ifndef QT_NO_DEBUG_STREAM
 class QDebug;

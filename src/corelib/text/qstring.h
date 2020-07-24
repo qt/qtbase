@@ -928,9 +928,6 @@ private:
     friend inline bool operator> (QChar, QLatin1String) noexcept;
 
     void reallocData(size_t alloc, bool grow = false);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    void expand(int i);
-#endif
     static int compare_helper(const QChar *data1, qsizetype length1,
                               const QChar *data2, qsizetype length2,
                               Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
@@ -1369,21 +1366,6 @@ public:
     inline QStringRef() : m_string(nullptr), m_position(0), m_size(0) {}
     inline QStringRef(const QString *string, int position, int size);
     inline QStringRef(const QString *string);
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    // ### Qt 6: remove all of these, the implicit ones are fine
-    QStringRef(const QStringRef &other) noexcept
-        :m_string(other.m_string), m_position(other.m_position), m_size(other.m_size)
-        {}
-    QStringRef(QStringRef &&other) noexcept : m_string(other.m_string), m_position(other.m_position), m_size(other.m_size) {}
-    QStringRef &operator=(QStringRef &&other) noexcept { return *this = other; }
-    QStringRef &operator=(const QStringRef &other) noexcept
-    {
-        m_string = other.m_string; m_position = other.m_position;
-        m_size = other.m_size; return *this;
-    }
-    inline ~QStringRef(){}
-#endif // Qt < 6.0.0
 
     inline const QString *string() const { return m_string; }
     inline int position() const { return m_position; }

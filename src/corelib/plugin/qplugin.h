@@ -72,21 +72,16 @@ inline constexpr unsigned char qPluginArchRequirements()
 }
 
 typedef QObject *(*QtPluginInstanceFunction)();
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-typedef const char *(*QtPluginMetaDataFunction)();
-#else
 struct QPluginMetaData
 {
     const uchar *data;
     size_t size;
 };
 typedef QPluginMetaData (*QtPluginMetaDataFunction)();
-#endif
 
 
 struct Q_CORE_EXPORT QStaticPlugin
 {
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 public:
     constexpr QStaticPlugin(QtPluginInstanceFunction i, QtPluginMetaDataFunction m)
         : instance(i), rawMetaData(m().data), rawMetaDataSize(m().size)
@@ -97,17 +92,6 @@ private:
     const void *rawMetaData;
     qsizetype rawMetaDataSize;
 public:
-#elif !defined(Q_QDOC)
-    // Note: This struct is initialized using an initializer list.
-    // As such, it cannot have any new constructors or variables.
-    QtPluginInstanceFunction instance;
-    QtPluginMetaDataFunction rawMetaData;
-#else
-    // Since qdoc gets confused by the use of function
-    // pointers, we add these dummes for it to parse instead:
-    QObject *instance();
-    const char *rawMetaData();
-#endif
     QJsonObject metaData() const;
 };
 Q_DECLARE_TYPEINFO(QStaticPlugin, Q_PRIMITIVE_TYPE);
@@ -161,7 +145,6 @@ void Q_CORE_EXPORT qRegisterStaticPluginFunction(QStaticPlugin staticPlugin);
 
 #if defined(QT_STATICPLUGIN)
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #  define QT_MOC_EXPORT_PLUGIN(PLUGINCLASS, PLUGINCLASSNAME) \
     static QT_PREPEND_NAMESPACE(QObject) *qt_plugin_instance_##PLUGINCLASSNAME() \
     Q_PLUGIN_INSTANCE(PLUGINCLASS) \
@@ -170,19 +153,8 @@ void Q_CORE_EXPORT qRegisterStaticPluginFunction(QStaticPlugin staticPlugin);
     const QT_PREPEND_NAMESPACE(QStaticPlugin) qt_static_plugin_##PLUGINCLASSNAME() { \
         return { qt_plugin_instance_##PLUGINCLASSNAME, qt_plugin_query_metadata_##PLUGINCLASSNAME}; \
     }
-#else
-#  define QT_MOC_EXPORT_PLUGIN(PLUGINCLASS, PLUGINCLASSNAME) \
-    static QT_PREPEND_NAMESPACE(QObject) *qt_plugin_instance_##PLUGINCLASSNAME() \
-    Q_PLUGIN_INSTANCE(PLUGINCLASS) \
-    static const char *qt_plugin_query_metadata_##PLUGINCLASSNAME() { return reinterpret_cast<const char *>(qt_pluginMetaData_##PLUGINCLASSNAME); } \
-    const QT_PREPEND_NAMESPACE(QStaticPlugin) qt_static_plugin_##PLUGINCLASSNAME() { \
-        QT_PREPEND_NAMESPACE(QStaticPlugin) plugin = { qt_plugin_instance_##PLUGINCLASSNAME, qt_plugin_query_metadata_##PLUGINCLASSNAME}; \
-        return plugin; \
-    }
-#endif
 
 #else
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 
 #  define QT_MOC_EXPORT_PLUGIN(PLUGINCLASS, PLUGINCLASSNAME)      \
             Q_EXTERN_C Q_DECL_EXPORT \
@@ -190,17 +162,6 @@ void Q_CORE_EXPORT qRegisterStaticPluginFunction(QStaticPlugin staticPlugin);
             { return { qt_pluginMetaData_##PLUGINCLASSNAME, sizeof qt_pluginMetaData_##PLUGINCLASSNAME }; } \
             Q_EXTERN_C Q_DECL_EXPORT QT_PREPEND_NAMESPACE(QObject) *qt_plugin_instance() \
             Q_PLUGIN_INSTANCE(PLUGINCLASS)
-
-#else
-
-#  define QT_MOC_EXPORT_PLUGIN(PLUGINCLASS, PLUGINCLASSNAME)      \
-            Q_EXTERN_C Q_DECL_EXPORT \
-            const char *qt_plugin_query_metadata() \
-            { return reinterpret_cast<const char *>(qt_pluginMetaData_##PLUGINCLASSNAME); } \
-            Q_EXTERN_C Q_DECL_EXPORT QT_PREPEND_NAMESPACE(QObject) *qt_plugin_instance() \
-            Q_PLUGIN_INSTANCE(PLUGINCLASS)
-
-#endif
 
 #endif
 

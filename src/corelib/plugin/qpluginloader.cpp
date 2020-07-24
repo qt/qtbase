@@ -482,13 +482,7 @@ QList<QStaticPlugin> QPluginLoader::staticPlugins()
 */
 QJsonObject QStaticPlugin::metaData() const
 {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    // the data is already loaded, so this doesn't matter
-    qsizetype rawMetaDataSize = INT_MAX;
-    const char *ptr = rawMetaData();
-#else
     auto ptr = static_cast<const char *>(rawMetaData);
-#endif
 
     QString errMsg;
     QJsonDocument doc = qJsonFromRawLibraryMetaData(ptr, rawMetaDataSize, &errMsg);

@@ -173,12 +173,10 @@
 #if defined(Q_OS_WIN32) || defined(Q_OS_WIN64)
 #  define Q_OS_WINDOWS
 #  define Q_OS_WIN
-#  if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 // On Windows, pointers to dllimport'ed variables are not constant expressions,
 // so to keep to certain initializations (like QMetaObject) constexpr, we need
 // to use functions instead.
-#    define QT_NO_DATA_RELOCATION
-#  endif
+#  define QT_NO_DATA_RELOCATION
 #endif
 
 #if defined(Q_OS_WIN)

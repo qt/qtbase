@@ -1065,22 +1065,10 @@ public:
     inline QString toCurrencyString(ushort, const QString &symbol = QString()) const;
     inline QString toCurrencyString(int, const QString &symbol = QString()) const;
     inline QString toCurrencyString(uint, const QString &symbol = QString()) const;
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     QString toCurrencyString(double, const QString &symbol = QString(), int precision = -1) const;
     inline QString toCurrencyString(float i, const QString &symbol = QString(), int precision = -1) const
     { return toCurrencyString(double(i), symbol, precision); }
-#else
-    QString toCurrencyString(double, const QString &symbol = QString()) const;
-    QString toCurrencyString(double, const QString &symbol, int precision) const;
-    inline QString toCurrencyString(float i, const QString &symbol = QString()) const
-    { return toCurrencyString(double(i), symbol); }
-    inline QString toCurrencyString(float i, const QString &symbol, int precision) const
-    { return toCurrencyString(double(i), symbol, precision); }
-#endif
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    QString formattedDataSize(qint64 bytes, int precision = 2, DataSizeFormats format = DataSizeIecFormat);
-#endif
     QString formattedDataSize(qint64 bytes, int precision = 2, DataSizeFormats format = DataSizeIecFormat) const;
 
     QStringList uiLanguages() const;

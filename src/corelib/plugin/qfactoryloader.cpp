@@ -133,22 +133,6 @@ QJsonDocument qJsonFromRawLibraryMetaData(const char *raw, qsizetype sectionSize
     raw += metaDataSignatureLength();
     sectionSize -= metaDataSignatureLength();
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    if (Q_UNLIKELY(raw[-1] == ' ')) {
-        // the size of the embedded JSON object can be found 8 bytes into the data (see qjson_p.h)
-        uint size = qFromLittleEndian<uint>(raw + 8);
-        // but the maximum size of binary JSON is 128 MB
-        size = qMin(size, 128U * 1024 * 1024);
-        // and it doesn't include the size of the header (8 bytes)
-        size += 8;
-        // finally, it can't be bigger than the file or section size
-        size = qMin(sectionSize, qsizetype(size));
-
-        QByteArray json(raw, size);
-        return QJsonDocument::fromBinaryData(json);
-    }
-#endif
-
     return jsonFromCborMetaData(raw, sectionSize, errMsg);
 }
 QT_WARNING_POP

@@ -714,17 +714,10 @@ bool QLibrary::isLibrary(const QString &fileName)
 
 static bool qt_get_metadata(QLibraryPrivate *priv, QString *errMsg)
 {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    auto getMetaData = [](QFunctionPointer fptr) {
-        auto f = reinterpret_cast<const char * (*)()>(fptr);
-        return qMakePair<const char *, size_t>(f(), INT_MAX);
-    };
-#else
     auto getMetaData = [](QFunctionPointer fptr) {
         auto f = reinterpret_cast<QPluginMetaData (*)()>(fptr);
         return f();
     };
-#endif
 
     QFunctionPointer pfn = priv->resolve("qt_plugin_query_metadata");
     if (!pfn)

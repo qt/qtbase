@@ -368,11 +368,6 @@ public:
     }
 #endif //Q_CLANG_QDOC
 
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    void dumpObjectTree(); // ### Qt 6: remove
-    void dumpObjectInfo(); // ### Qt 6: remove
-#endif
     void dumpObjectTree() const;
     void dumpObjectInfo() const;
 

@@ -81,9 +81,6 @@ class QXmlStreamReaderPrivate;
 class QXmlStreamAttributes;
 class Q_CORE_EXPORT QXmlStreamAttribute {
     QXmlStreamStringRef m_name, m_namespaceUri, m_qualifiedName, m_value;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    void *reserved;
-#endif
     uint m_isDefault : 1;
     friend class QXmlStreamReaderPrivate;
     friend class QXmlStreamAttributes;
@@ -145,9 +142,6 @@ public:
 
 class Q_CORE_EXPORT QXmlStreamNamespaceDeclaration {
     QXmlStreamStringRef m_prefix, m_namespaceUri;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    void *reserved;
-#endif
 
     friend class QXmlStreamReaderPrivate;
 public:
@@ -168,9 +162,6 @@ typedef QList<QXmlStreamNamespaceDeclaration> QXmlStreamNamespaceDeclarations;
 
 class Q_CORE_EXPORT QXmlStreamNotationDeclaration {
     QXmlStreamStringRef m_name, m_systemId, m_publicId;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    void *reserved;
-#endif
 
     friend class QXmlStreamReaderPrivate;
 public:
@@ -192,9 +183,6 @@ typedef QList<QXmlStreamNotationDeclaration> QXmlStreamNotationDeclarations;
 
 class Q_CORE_EXPORT QXmlStreamEntityDeclaration {
     QXmlStreamStringRef m_name, m_notationName, m_systemId, m_publicId, m_value;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    void *reserved;
-#endif
 
     friend class QXmlStreamReaderPrivate;
 public:

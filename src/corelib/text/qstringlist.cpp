@@ -320,20 +320,6 @@ QStringList QtPrivate::QStringList_filter(const QStringList *that, QStringView s
     return res;
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-/// Not really needed anymore, but kept for binary compatibility
-QStringList QtPrivate::QStringList_filter(const QStringList *that, const QString &str,
-                                          Qt::CaseSensitivity cs)
-{
-    QStringMatcher matcher(str, cs);
-    QStringList res;
-    for (qsizetype i = 0; i < that->size(); ++i)
-        if (matcher.indexIn(that->at(i)) != -1)
-            res << that->at(i);
-    return res;
-}
-#endif
-
 template<typename T>
 static bool stringList_contains(const QStringList &stringList, const T &str, Qt::CaseSensitivity cs)
 {
@@ -355,15 +341,6 @@ static bool stringList_contains(const QStringList &stringList, const T &str, Qt:
 
     \sa indexOf(), lastIndexOf(), QString::contains()
  */
-#endif
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-/// Not really needed anymore, but kept for binary compatibility
-bool QtPrivate::QStringList_contains(const QStringList *that, const QString &str,
-                                     Qt::CaseSensitivity cs)
-{
-    return stringList_contains(*that, str, cs);
-}
 #endif
 
 /*!
@@ -509,16 +486,6 @@ void QtPrivate::QStringList_replaceInStrings(QStringList *that, QStringView befo
     for (qsizetype i = 0; i < that->size(); ++i)
         (*that)[i].replace(before.data(), before.length(), after.data(), after.length(), cs);
 }
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-/// Not really needed anymore, but kept for binary compatibility
-void QtPrivate::QStringList_replaceInStrings(QStringList *that, const QString &before,
-                                             const QString &after, Qt::CaseSensitivity cs)
-{
-    for (qsizetype i = 0; i < that->size(); ++i)
-        (*that)[i].replace(before, after, cs);
-}
-#endif
 
 #if QT_CONFIG(regularexpression)
 /*!

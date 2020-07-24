@@ -165,22 +165,10 @@ namespace QtPrivate {
     Q_CORE_EXPORT QString QStringList_join(const QStringList &list, QLatin1String sep);
     QStringList Q_CORE_EXPORT QStringList_filter(const QStringList *that, QStringView str,
                                                Qt::CaseSensitivity cs);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    QStringList Q_CORE_EXPORT QStringList_filter(const QStringList *that, const QString &str,
-                                               Qt::CaseSensitivity cs);
-#endif
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    bool Q_CORE_EXPORT QStringList_contains(const QStringList *that, const QString &str, Qt::CaseSensitivity cs);
-#endif
     bool Q_CORE_EXPORT QStringList_contains(const QStringList *that, QStringView str, Qt::CaseSensitivity cs);
     bool Q_CORE_EXPORT QStringList_contains(const QStringList *that, QLatin1String str, Qt::CaseSensitivity cs);
     void Q_CORE_EXPORT QStringList_replaceInStrings(QStringList *that, QStringView before, QStringView after,
                                       Qt::CaseSensitivity cs);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    void Q_CORE_EXPORT QStringList_replaceInStrings(QStringList *that, const QString &before, const QString &after,
-                                      Qt::CaseSensitivity cs);
-#endif
 
 #if QT_CONFIG(regularexpression)
     void Q_CORE_EXPORT QStringList_replaceInStrings(QStringList *that, const QRegularExpression &rx, const QString &after);

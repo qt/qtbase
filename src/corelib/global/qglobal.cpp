@@ -2621,12 +2621,7 @@ QString QSysInfo::productType()
 #elif defined(Q_OS_WATCHOS)
     return QStringLiteral("watchos");
 #elif defined(Q_OS_MACOS)
-    // ### Qt6: remove fallback
-#  if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     return QStringLiteral("macos");
-#  else
-    return QStringLiteral("osx");
-#  endif
 #elif defined(Q_OS_DARWIN)
     return QStringLiteral("darwin");
 

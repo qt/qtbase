@@ -150,11 +150,7 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
     msg.wParam = wp;
     msg.lParam = lp;
     QAbstractEventDispatcher* dispatcher = QAbstractEventDispatcher::instance();
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     qintptr result;
-#else
-    long result;
-#endif
     if (!dispatcher) {
         if (message == WM_TIMER)
             KillTimer(hwnd, wp);

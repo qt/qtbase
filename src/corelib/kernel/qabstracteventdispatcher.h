@@ -104,11 +104,7 @@ public:
 
     void installNativeEventFilter(QAbstractNativeEventFilter *filterObj);
     void removeNativeEventFilter(QAbstractNativeEventFilter *filterObj);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     bool filterNativeEvent(const QByteArray &eventType, void *message, qintptr *result);
-#else
-    bool filterNativeEvent(const QByteArray &eventType, void *message, long *result);
-#endif
 
 Q_SIGNALS:
     void aboutToBlock();
@@ -119,7 +115,7 @@ protected:
                              QObject *parent);
 };
 
-Q_DECLARE_TYPEINFO(QAbstractEventDispatcher::TimerInfo, (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) ? Q_PRIMITIVE_TYPE : Q_RELOCATABLE_TYPE));
+Q_DECLARE_TYPEINFO(QAbstractEventDispatcher::TimerInfo, Q_PRIMITIVE_TYPE);
 
 QT_END_NAMESPACE
 
