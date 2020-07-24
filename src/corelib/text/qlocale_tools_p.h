@@ -62,7 +62,8 @@ enum StrayCharacterMode {
     WhitespacesAllowed
 };
 
-double qt_asciiToDouble(const char *num, int numLen, bool &ok, int &processed,
+// API note: this function can't process a number with more than 2.1 billion digits
+double qt_asciiToDouble(const char *num, qsizetype numLen, bool &ok, int &processed,
                         StrayCharacterMode strayCharMode = TrailingJunkProhibited);
 void qt_doubleToAscii(double d, QLocaleData::DoubleForm form, int precision, char *buf, int bufSize,
                       bool &sign, int &length, int &decpt);
@@ -106,8 +107,13 @@ inline UcsInt unicodeForDigit(uint digit, UcsInt zero)
     return zero + digit;
 }
 
-Q_CORE_EXPORT double qstrtod(const char *s00, char const **se, bool *ok);
-Q_CORE_EXPORT double qstrntod(const char *s00, int len, char const **se, bool *ok);
+Q_CORE_EXPORT double qstrntod(const char *s00, qsizetype len, char const **se, bool *ok);
+inline double qstrtod(const char *s00, char const **se, bool *ok)
+{
+    qsizetype len = qsizetype(strlen(s00));
+    return qstrntod(s00, len, se, ok);
+}
+
 qlonglong qstrtoll(const char *nptr, const char **endptr, int base, bool *ok);
 qulonglong qstrtoull(const char *nptr, const char **endptr, int base, bool *ok);
 

@@ -278,7 +278,7 @@ void qt_doubleToAscii(double d, QLocaleData::DoubleForm form, int precision, cha
         --length;
 }
 
-double qt_asciiToDouble(const char *num, int numLen, bool &ok, int &processed,
+double qt_asciiToDouble(const char *num, qsizetype numLen, bool &ok, int &processed,
                         StrayCharacterMode strayCharMode)
 {
     auto string_equals = [](const char *needle, const char *haystack, qsizetype haystackLen) {
@@ -329,7 +329,14 @@ double qt_asciiToDouble(const char *num, int numLen, bool &ok, int &processed,
                 | double_conversion::StringToDoubleConverter::ALLOW_TRAILING_SPACES;
     }
     double_conversion::StringToDoubleConverter conv(conv_flags, 0.0, qt_qnan(), nullptr, nullptr);
-    d = conv.StringToDouble(num, numLen, &processed);
+    if (int(numLen) != numLen) {
+        // a number over 2 GB in length is silly, just assume it isn't valid
+        ok = false;
+        processed = 0;
+        return 0.0;
+    } else {
+        d = conv.StringToDouble(num, numLen, &processed);
+    }
 
     if (!qIsFinite(d)) {
         ok = false;
@@ -487,19 +494,12 @@ QString qulltoa(qulonglong number, int base, const QStringView zero)
     return QString(reinterpret_cast<QChar *>(p), end - p);
 }
 
-double qstrtod(const char *s00, const char **se, bool *ok)
-{
-    const int len = static_cast<int>(strlen(s00));
-    Q_ASSERT(len >= 0);
-    return qstrntod(s00, len, se, ok);
-}
-
 /*!
   \internal
 
   Converts the initial portion of the string pointed to by \a s00 to a double, using the 'C' locale.
  */
-double qstrntod(const char *s00, int len, const char **se, bool *ok)
+double qstrntod(const char *s00, qsizetype len, const char **se, bool *ok)
 {
     int processed = 0;
     bool nonNullOk = false;
