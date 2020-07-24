@@ -144,6 +144,9 @@ public:
     void setHasBorderInFullScreen(bool border) override;
     bool hasBorderInFullScreen() const override;
 
+    QMargins customMargins() const override;
+    void setCustomMargins(const QMargins &margins) override;
+
     using QPlatformWindow::screenForGeometry;
 
     virtual HWND handle() const = 0;
@@ -304,8 +307,8 @@ public:
     QWindowsMenuBar *menuBar() const;
     void setMenuBar(QWindowsMenuBar *mb);
 
-    QMargins customMargins() const { return m_data.customMargins; }
-    void setCustomMargins(const QMargins &m);
+    QMargins customMargins() const override { return m_data.customMargins; }
+    void setCustomMargins(const QMargins &m) override;
 
     void setStyle(unsigned s) const;
     void setExStyle(unsigned s) const;

@@ -144,37 +144,6 @@ void *QWindowsNativeInterface::nativeResourceForCursor(const QByteArray &resourc
 }
 #endif // !QT_NO_CURSOR
 
-static const char customMarginPropertyC[] = "WindowsCustomMargins";
-
-QVariant QWindowsNativeInterface::windowProperty(QPlatformWindow *window, const QString &name) const
-{
-    auto *platformWindow = static_cast<QWindowsWindow *>(window);
-    if (name == QLatin1String(customMarginPropertyC))
-        return QVariant::fromValue(platformWindow->customMargins());
-    return QVariant();
-}
-
-QVariant QWindowsNativeInterface::windowProperty(QPlatformWindow *window, const QString &name, const QVariant &defaultValue) const
-{
-    const QVariant result = windowProperty(window, name);
-    return result.isValid() ? result : defaultValue;
-}
-
-void QWindowsNativeInterface::setWindowProperty(QPlatformWindow *window, const QString &name, const QVariant &value)
-{
-    auto *platformWindow = static_cast<QWindowsWindow *>(window);
-    if (name == QLatin1String(customMarginPropertyC))
-        platformWindow->setCustomMargins(qvariant_cast<QMargins>(value));
-}
-
-QVariantMap QWindowsNativeInterface::windowProperties(QPlatformWindow *window) const
-{
-    QVariantMap result;
-    const QString customMarginProperty = QLatin1String(customMarginPropertyC);
-    result.insert(customMarginProperty, windowProperty(window, customMarginProperty));
-    return result;
-}
-
 void *QWindowsNativeInterface::nativeResourceForIntegration(const QByteArray &resource)
 {
 #ifdef QT_NO_OPENGL

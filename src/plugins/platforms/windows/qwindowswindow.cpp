@@ -1193,6 +1193,16 @@ bool QWindowsBaseWindow::hasBorderInFullScreen() const
     return false;
 }
 
+QMargins QWindowsBaseWindow::customMargins() const
+{
+    return {};
+}
+
+void QWindowsBaseWindow::setCustomMargins(const QMargins &)
+{
+    Q_UNIMPLEMENTED();
+}
+
 /*!
     \class QWindowsDesktopWindow
     \brief Window wrapping GetDesktopWindow not allowing any manipulation.

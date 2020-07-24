@@ -98,11 +98,6 @@ public:
     QVariant gpu() const;
     QVariant gpuList() const;
 
-    QVariantMap windowProperties(QPlatformWindow *window) const override;
-    QVariant windowProperty(QPlatformWindow *window, const QString &name) const override;
-    QVariant windowProperty(QPlatformWindow *window, const QString &name, const QVariant &defaultValue) const override;
-    void setWindowProperty(QPlatformWindow *window, const QString &name, const QVariant &value) override;
-
 Q_SIGNALS:
     void darkModeChanged(bool);
 };

@@ -57,6 +57,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QMargins;
+
 class QPlatformWindowPrivate
 {
 public:
@@ -116,6 +118,9 @@ struct Q_GUI_EXPORT QWindowsWindow
 
     virtual void setHasBorderInFullScreen(bool border) = 0;
     virtual bool hasBorderInFullScreen() const = 0;
+
+    virtual QMargins customMargins() const = 0;
+    virtual void setCustomMargins(const QMargins &margins) = 0;
 };
 #endif // Q_OS_WIN
 
