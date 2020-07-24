@@ -372,7 +372,7 @@ Q_GUI_EXPORT bool operator==(const QGuiApplicationPrivate::ActiveTouchPointsKey 
 
 namespace QPlatformInterface::Private {
 
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
 
 class QWindowsMime;
 

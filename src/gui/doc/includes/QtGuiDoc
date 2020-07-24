@@ -1,0 +1,9 @@
+#include <QtGui/QtGui>
+
+// native platform interfaces
+#include <QtGui/qpa/qplatformmenu_p.h>
+#include <QtGui/qpa/qplatformwindow_p.h>
+#include <QtGui/qpa/qplatformscreen_p.h>
+#include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/private/qkeymapper_p.h>
+#include <QtGui/private/qwindowsmime_p.h>

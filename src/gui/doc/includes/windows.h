@@ -37,53 +37,22 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMMENU_P_H
-#define QPLATFORMMENU_P_H
+#pragma once
 
 //
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
+// This file is not part of the Qt API. It exists purely as an
+// implementation detail. This header file may change from version to
 // version without notice, or even be removed.
 //
 // We mean it.
 //
 
-#include <QtGui/private/qtguiglobal_p.h>
-
-QT_BEGIN_NAMESPACE
-
-// ----------------- QPlatformInterface -----------------
-
-#if !defined(Q_OS_MACOS) && defined(Q_CLANG_QDOC)
-typedef void NSMenu;
-#else
-QT_END_NAMESPACE
-Q_FORWARD_DECLARE_OBJC_CLASS(NSMenu);
-QT_BEGIN_NAMESPACE
+// Dummy declarations for generating docs on non-Windows platforms
+#if !defined(Q_OS_WIN) && defined(Q_CLANG_QDOC)
+typedef struct _FORMATETC {} FORMATETC;
+typedef struct _STGMEDIUM {} STGMEDIUM;
+typedef void *IDataObject;
 #endif
-
-namespace QPlatformInterface::Private {
-
-#if defined(Q_OS_MACOS) || defined(Q_CLANG_QDOC)
-struct Q_GUI_EXPORT QCocoaMenu
-{
-    QT_DECLARE_PLATFORM_INTERFACE(QCocoaMenu)
-    virtual NSMenu *nsMenu() const = 0;
-    virtual void setAsDockMenu() const = 0;
-};
-
-struct Q_GUI_EXPORT QCocoaMenuBar
-{
-    QT_DECLARE_PLATFORM_INTERFACE(QCocoaMenuBar)
-    virtual NSMenu *nsMenu() const = 0;
-};
-#endif
-
-} // QPlatformInterface::Private
-
-QT_END_NAMESPACE
-
-#endif // QPLATFORMMENU_P_H

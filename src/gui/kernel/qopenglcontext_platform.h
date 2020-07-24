@@ -58,11 +58,15 @@ typedef void *EGLContext;
 typedef void *EGLDisplay;
 #endif
 
+#if !defined(Q_OS_MACOS) && defined(Q_CLANG_QDOC)
+typedef void *NSOpenGLContext;
+#endif
+
 QT_BEGIN_NAMESPACE
 
 namespace QPlatformInterface {
 
-#if defined(Q_OS_MACOS)
+#if defined(Q_OS_MACOS) || defined(Q_CLANG_QDOC)
 struct Q_GUI_EXPORT QCocoaGLContext
 {
     QT_DECLARE_PLATFORM_INTERFACE(QCocoaGLContext)
@@ -71,7 +75,7 @@ struct Q_GUI_EXPORT QCocoaGLContext
 };
 #endif
 
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
 struct Q_GUI_EXPORT QWGLContext
 {
     QT_DECLARE_PLATFORM_INTERFACE(QWGLContext)
@@ -81,7 +85,7 @@ struct Q_GUI_EXPORT QWGLContext
 };
 #endif
 
-#if defined(Q_OS_LINUX)
+#if defined(Q_OS_LINUX) || defined(Q_CLANG_QDOC)
 struct Q_GUI_EXPORT QGLXContext
 {
     QT_DECLARE_PLATFORM_INTERFACE(QGLXContext)

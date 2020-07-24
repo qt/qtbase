@@ -8,6 +8,9 @@ project                 = QtGui
 description             = Qt GUI Reference Documentation
 version                 = $QT_VERSION
 
+includepaths           += ./includes
+moduleheader            = QtGuiDoc
+
 examplesinstallpath     = gui
 
 qhp.projects            = QtGui

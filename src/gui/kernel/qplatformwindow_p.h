@@ -70,7 +70,7 @@ public:
 
 namespace QPlatformInterface::Private {
 
-#if defined(Q_OS_MACOS)
+#if defined(Q_OS_MACOS) || defined(Q_CLANG_QDOC)
 struct Q_GUI_EXPORT QCocoaWindow
 {
     QT_DECLARE_PLATFORM_INTERFACE(QCocoaWindow)
@@ -79,7 +79,7 @@ struct Q_GUI_EXPORT QCocoaWindow
 };
 #endif
 
-#if QT_CONFIG(xcb)
+#if QT_CONFIG(xcb) || defined(Q_CLANG_QDOC)
 struct Q_GUI_EXPORT QXcbWindow
 {
     QT_DECLARE_PLATFORM_INTERFACE(QXcbWindow)
@@ -111,7 +111,7 @@ struct Q_GUI_EXPORT QXcbWindow
 };
 #endif // xcb
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
 struct Q_GUI_EXPORT QWindowsWindow
 {
     QT_DECLARE_PLATFORM_INTERFACE(QWindowsWindow)

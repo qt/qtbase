@@ -103,7 +103,7 @@ QKeyMapperPrivate *qt_keymapper_private(); // from qkeymapper.cpp
 
 namespace QPlatformInterface::Private {
 
-#if QT_CONFIG(evdev)
+#if QT_CONFIG(evdev) || defined(Q_CLANG_QDOC)
 struct Q_GUI_EXPORT QEvdevKeyMapper
 {
     QT_DECLARE_PLATFORM_INTERFACE(QEvdevKeyMapper)
