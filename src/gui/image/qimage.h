@@ -298,6 +298,11 @@ public:
     // Platform specific conversion functions
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
     CGImageRef toCGImage() const Q_DECL_CF_RETURNS_RETAINED;
+#elif defined(Q_OS_WIN) || defined(Q_QDOC)
+    HBITMAP toHBITMAP() const;
+    HICON toHICON(const QImage &mask = {}) const;
+    static QImage fromHBITMAP(HBITMAP hbitmap);
+    static QImage fromHICON(HICON icon);
 #endif
 
 protected:

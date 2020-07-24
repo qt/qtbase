@@ -3777,10 +3777,6 @@ void tst_QImage::wideImage()
 }
 
 #if defined(Q_OS_WIN)
-QT_BEGIN_NAMESPACE
-Q_GUI_EXPORT HBITMAP qt_imageToWinHBITMAP(const QImage &p, int hbitmapFormat = 0);
-Q_GUI_EXPORT QImage qt_imageFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat = 0);
-QT_END_NAMESPACE
 
 static inline QColor COLORREFToQColor(COLORREF cr)
 {
@@ -3844,7 +3840,7 @@ void tst_QImage::toWinHBITMAP()
         ? createTestImage(QImage::Format_RGB32, width, height, color, bottomRightColor).convertToFormat(format)
         : createTestImage(format, width, height, color, bottomRightColor);
 
-    const HBITMAP bitmap = qt_imageToWinHBITMAP(image);
+    const HBITMAP bitmap = image.toHBITMAP();
 
     QVERIFY(bitmap != 0);
 
@@ -3867,7 +3863,7 @@ void tst_QImage::toWinHBITMAP()
     QCOMPARE(COLORREFToQColor(GetPixel(bitmapDc, 3, height - 1)), color);
     QCOMPARE(COLORREFToQColor(GetPixel(bitmapDc, width - 1, height - 1)), bottomRightColor);
 
-    const QImage convertedBack = qt_imageFromWinHBITMAP(bitmap);
+    const QImage convertedBack = QImage::fromHBITMAP(bitmap);
     QCOMPARE(convertedBack.convertToFormat(QImage::Format_ARGB32_Premultiplied),
              image.convertToFormat(QImage::Format_ARGB32_Premultiplied));
 
@@ -3884,7 +3880,7 @@ void tst_QImage::fromMonoHBITMAP() // QTBUG-72343, corruption for mono bitmaps
     char bitmapData[size];
     memset(bitmapData, 0, size);
     const HBITMAP hbitmap  = CreateBitmap(width, height, /* planes */ 1, /* bitcount */ 1, bitmapData);
-    const QImage image = qt_imageFromWinHBITMAP(hbitmap);
+    const QImage image = QImage::fromHBITMAP(hbitmap);
     QCOMPARE(image.size(), QSize(width, height));
     QCOMPARE(image.scanLine(0)[0], 0u);
     DeleteObject(hbitmap);
