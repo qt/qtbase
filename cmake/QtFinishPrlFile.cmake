@@ -60,3 +60,18 @@ foreach(line ${lines})
     endif()
 endforeach()
 file(WRITE "${OUT_FILE}" "${content}")
+
+# Read the prl meta file to find out where should the final prl file be placed,
+# Copy it there, if the contents hasn't changed.
+file(STRINGS "${IN_META_FILE}" lines)
+
+foreach(line ${lines})
+    if(line MATCHES "^FINAL_PRL_FILE_PATH = (.*)")
+        set(final_prl_file_path "${CMAKE_MATCH_1}")
+        configure_file(
+            "${OUT_FILE}"
+            "${final_prl_file_path}"
+            COPYONLY
+            )
+    endif()
+endforeach()
