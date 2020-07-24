@@ -275,7 +275,6 @@ public:
     qint64 stringToLongLong(QStringView str, int base, bool *ok, QLocale::NumberOptions options) const;
     quint64 stringToUnsLongLong(QStringView str, int base, bool *ok, QLocale::NumberOptions options) const;
 
-    static double bytearrayToDouble(const char *num, bool *ok);
     // this function is used in QIntValidator (QtGui)
     Q_CORE_EXPORT static qint64 bytearrayToLongLong(const char *num, int base, bool *ok);
     static quint64 bytearrayToUnsLongLong(const char *num, int base, bool *ok);
