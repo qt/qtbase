@@ -4134,7 +4134,7 @@ endfunction()
 # This function creates a CMake test target with the specified name for use with CTest.
 function(qt_add_test name)
     qt_parse_all_arguments(arg "qt_add_test"
-        "RUN_SERIAL;EXCEPTIONS;GUI;QMLTEST;CATCH"
+        "RUN_SERIAL;EXCEPTIONS;GUI;QMLTEST;CATCH;LOWDPI"
         "OUTPUT_DIRECTORY;WORKING_DIRECTORY;TIMEOUT;VERSION"
         "QML_IMPORTPATH;TESTDATA;${__default_private_args};${__default_public_args}" ${ARGN}
     )
@@ -4218,6 +4218,14 @@ function(qt_add_test name)
     # Generate a label in the form tests/auto/foo/bar/tst_baz
     # and use it also for XML output
     file(RELATIVE_PATH label "${PROJECT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/${name}")
+
+    if (arg_LOWDPI)
+        target_compile_definitions("${name}" PUBLIC TESTCASE_LOWDPI)
+        if (MACOS)
+            set_property(TARGET "${name}" PROPERTY MACOSX_BUNDLE_INFO_PLIST "${QT_MKSPECS_DIR}/macx-clang/Info.plist.disable_highdpi")
+            set_property(TARGET "${name}" PROPERTY PROPERTY MACOSX_BUNDLE TRUE)
+        endif()
+    endif()
 
     if (ANDROID)
         qt_android_add_test("${name}")
