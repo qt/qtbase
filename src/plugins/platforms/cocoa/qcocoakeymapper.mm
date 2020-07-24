@@ -444,6 +444,8 @@ static constexpr Qt::KeyboardModifiers modifierCombinations[] = {
 */
 const QCocoaKeyMapper::KeyMap &QCocoaKeyMapper::keyMapForKey(VirtualKeyCode virtualKey, QChar unicodeKey) const
 {
+    static_assert(sizeof(modifierCombinations) / sizeof(Qt::KeyboardModifiers) == kNumModifierCombinations);
+
     const_cast<QCocoaKeyMapper *>(this)->updateKeyboard();
 
     auto &keyMap = m_keyMap[virtualKey];
@@ -452,7 +454,7 @@ const QCocoaKeyMapper::KeyMap &QCocoaKeyMapper::keyMapForKey(VirtualKeyCode virt
 
     qCDebug(lcQpaKeyMapper, "Updating key map for virtual key = 0x%02x!", (uint)virtualKey);
 
-    for (int i = 0; i < 16; ++i) {
+    for (int i = 0; i < kNumModifierCombinations; ++i) {
         Q_ASSERT(!i || keyMap[i] == 0);
 
         auto qtModifiers = modifierCombinations[i];
@@ -514,6 +516,7 @@ QList<int> QCocoaKeyMapper::possibleKeys(const QKeyEvent *event) const
     // is always valid, and the first priority.
     ret << int(unmodifiedKey + eventModifiers);
 
+    // FIXME: We only compute the first 8 combinations. Why?
     for (int i = 1; i < 8; ++i) {
         auto keyAfterApplyingModifiers = keyMap[i];
         if (keyAfterApplyingModifiers == unmodifiedKey)

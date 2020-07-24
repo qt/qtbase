@@ -49,27 +49,6 @@
 
 QT_BEGIN_NAMESPACE
 
-/*
-    \internal
-    A Mac KeyboardLayoutItem has 8 possible states:
-        1. Unmodified
-        2. Shift
-        3. Control
-        4. Control + Shift
-        5. Alt
-        6. Alt + Shift
-        7. Alt + Control
-        8. Alt + Control + Shift
-        9. Meta
-        10. Meta + Shift
-        11. Meta + Control
-        12. Meta + Control + Shift
-        13. Meta + Alt
-        14. Meta + Alt + Shift
-        15. Meta + Alt + Control
-        16. Meta + Alt + Control + Shift
-*/
-
 class QCocoaKeyMapper
 {
 public:
@@ -83,8 +62,8 @@ public:
     static Qt::Key fromCocoaKey(QChar keyCode);
 
 private:
-    using VirtualKeyCode = unsigned short;
-    struct KeyMap : std::array<char32_t, 16>
+    static constexpr int kNumModifierCombinations = 16;
+    struct KeyMap : std::array<char32_t, kNumModifierCombinations>
     {
         // Initialize first element to a sentinel that allows us
         // to distinguish an uninitialized map from an initialized.
@@ -94,6 +73,8 @@ private:
     };
 
     bool updateKeyboard();
+
+    using VirtualKeyCode = unsigned short;
     const KeyMap &keyMapForKey(VirtualKeyCode virtualKey, QChar unicodeKey) const;
 
     QCFType<TISInputSourceRef> m_currentInputSource = nullptr;
