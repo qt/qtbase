@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -688,6 +688,16 @@ void tst_QFuture::futureInterface()
 
         VoidResult a;
         a.run().waitForFinished();
+    }
+
+    {
+        QFutureInterface<int> i1;
+        i1.reportResult(1);
+        QFutureInterface<int> i2;
+        i2.reportResult(2);
+        swap(i1, i2);  // ADL must resolve this
+        QCOMPARE(i1.resultReference(0), 2);
+        QCOMPARE(i2.resultReference(0), 1);
     }
 }
 

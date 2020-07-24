@@ -43,6 +43,8 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qfuture.h>
 
+#include <utility>
+
 QT_REQUIRE_CONFIG(future);
 
 QT_BEGIN_NAMESPACE
@@ -59,13 +61,12 @@ public:
     Q_DISABLE_COPY(QPromise)
     QPromise(QPromise<T> &&other) : d(other.d)
     {
-        // In constructor, there's no need to perform swap(). Assign new
-        // QFutureInterface to other.d instead which is slightly cheaper.
         other.d = QFutureInterface<T>();
     }
     QPromise& operator=(QPromise<T> &&other)
     {
-        swap(other);
+        QPromise<T> tmp(std::move(other));
+        tmp.swap(*this);
         return *this;
     }
     ~QPromise()
@@ -110,23 +111,24 @@ public:
         d.setProgressValueAndText(progressValue, progressText);
     }
 
+    void swap(QPromise<T> &other) noexcept
+    {
+        qSwap(this->d, other.d);
+    }
+
 #if defined(Q_CLANG_QDOC)  // documentation-only simplified signatures
     void addResult(const T &result, int index = -1) { }
     void addResult(T &&result, int index = -1) { }
 #endif
-
 private:
     mutable QFutureInterface<T> d = QFutureInterface<T>();
-
-    void swap(QPromise<T> &other)
-    {
-        // Note: copy operations are expensive! They trigger several atomic
-        //       reference counts
-        auto tmp = this->d;
-        this->d = other.d;
-        other.d = tmp;
-    }
 };
+
+template<typename T>
+inline void swap(QPromise<T> &a, QPromise<T> &b) noexcept
+{
+    a.swap(b);
+}
 
 QT_END_NAMESPACE
 

@@ -229,3 +229,8 @@
     \sa QFuture::progressValue(), QFuture::progressText(), QFuture::cancel(),
     reportFinished()
 */
+
+/*! \fn template<typename T> void QPromise<T>::swap(QPromise<T> &other) noexcept
+
+    Swaps promise \a other with this promise. This operation is very fast and never fails.
+*/

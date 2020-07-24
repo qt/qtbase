@@ -64,7 +64,7 @@ private slots:
     void cancelWhenDestroyed();
 #endif
     void cancelWhenReassigned();
-    void finishWhenMoved();
+    void finishWhenSwapped();
     void cancelWhenMoved();
     void waitUntilResumed();
     void waitUntilCanceled();
@@ -470,7 +470,7 @@ void tst_QPromise::cancelWhenReassigned()
     QCOMPARE(f.isCanceled(), true);
 }
 
-void tst_QPromise::finishWhenMoved()
+void tst_QPromise::finishWhenSwapped()
 {
     QPromise<int> promise1;
     auto f1 = promise1.future();
@@ -482,8 +482,11 @@ void tst_QPromise::finishWhenMoved()
 
     ThreadWrapper thr([&promise1, &promise2] () mutable {
         QThread::msleep(100);
-        // There is swap semantics in move, so promise #1 and #2 just swap
-        promise1 = std::move(promise2);
+        promise1.addResult(0);
+        promise2.addResult(1);
+        swap(promise1, promise2);  // ADL must resolve this
+        promise1.addResult(2);
+        promise2.addResult(3);
         promise1.reportFinished();  // this finish is for future #2
         promise2.reportFinished();  // this finish is for future #1
     });
@@ -497,6 +500,12 @@ void tst_QPromise::finishWhenMoved()
 
     QCOMPARE(f2.isFinished(), true);
     QCOMPARE(f2.isCanceled(), false);
+
+    QCOMPARE(f1.resultAt(0), 0);
+    QCOMPARE(f1.resultAt(1), 3);
+
+    QCOMPARE(f2.resultAt(0), 1);
+    QCOMPARE(f2.resultAt(1), 2);
 }
 
 void tst_QPromise::cancelWhenMoved()
@@ -512,7 +521,6 @@ void tst_QPromise::cancelWhenMoved()
     // Move promises to local scope to test cancellation behavior
     ThreadWrapper thr([p1 = std::move(promise1), p2 = std::move(promise2)] () mutable {
         QThread::msleep(100);
-        // There is swap semantics in move, so promise #1 and #2 just swap
         p1 = std::move(p2);
         p1.reportFinished();  // this finish is for future #2
     });

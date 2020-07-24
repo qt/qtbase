@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -162,6 +162,8 @@ public:
     inline bool operator==(const QFutureInterfaceBase &other) const { return d == other.d; }
     inline bool operator!=(const QFutureInterfaceBase &other) const { return d != other.d; }
     QFutureInterfaceBase &operator=(const QFutureInterfaceBase &other);
+
+    void swap(QFutureInterfaceBase &other) noexcept;
 
 protected:
     bool refT() const;
@@ -425,6 +427,12 @@ public:
         QFutureInterfaceBase::runContinuation();
     }
 };
+
+template<typename T>
+inline void swap(QFutureInterface<T> &a, QFutureInterface<T> &b) noexcept
+{
+    a.swap(b);
+}
 
 QT_END_NAMESPACE
 

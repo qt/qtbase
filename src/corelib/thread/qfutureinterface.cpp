@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -543,6 +543,11 @@ QFutureInterfaceBase &QFutureInterfaceBase::operator=(const QFutureInterfaceBase
         delete d;
     d = other.d;
     return *this;
+}
+
+void QFutureInterfaceBase::swap(QFutureInterfaceBase &other) noexcept
+{
+    qSwap(d, other.d);
 }
 
 bool QFutureInterfaceBase::refT() const
