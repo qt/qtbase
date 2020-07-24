@@ -3896,18 +3896,6 @@ qulonglong QLocaleData::stringToUnsLongLong(QStringView str, int base, bool *ok,
     return bytearrayToUnsLongLong(buff.constData(), base, ok);
 }
 
-double QLocaleData::bytearrayToDouble(const char *num, bool *ok)
-{
-    bool nonNullOk = false;
-    int len = static_cast<int>(strlen(num));
-    Q_ASSERT(len >= 0);
-    int processed = 0;
-    double d = qt_asciiToDouble(num, len, nonNullOk, processed);
-    if (ok != nullptr)
-        *ok = nonNullOk;
-    return d;
-}
-
 qlonglong QLocaleData::bytearrayToLongLong(const char *num, int base, bool *ok)
 {
     bool _ok;
