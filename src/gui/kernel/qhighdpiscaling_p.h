@@ -204,7 +204,7 @@ inline QRegion scale(const QRegion &region, qreal scaleFactor, QPoint origin = Q
 
     QRegion scaled;
     for (const QRect &rect : region)
-        scaled += scale(rect, scaleFactor, origin);
+        scaled += scale(QRectF(rect), scaleFactor, origin).toRect();
     return scaled;
 }
 
