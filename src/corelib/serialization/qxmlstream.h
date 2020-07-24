@@ -50,34 +50,43 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace QtPrivate {
+    class QXmlString {
+        QStringPrivate m_string;
+    public:
+        inline constexpr QXmlString() {}
+        inline QXmlString(const QStringRef &aString)
+        {
+            if (!aString.string())
+                return;
+            m_string = aString.string()->data_ptr();
+            m_string = { m_string.d_ptr(), m_string.data() + aString.position(), size_t(aString.size()) };
+            // need to manually call ref(), as the constructor above does not do it
+            m_string.ref();
+        }
+        QXmlString(const QString &aString) : m_string(aString.data_ptr()) {}
+        QXmlString(QString &&aString) noexcept
+        { qSwap(m_string, aString.data_ptr()); }
 
-class Q_CORE_EXPORT QXmlStreamStringRef {
-    QString m_string;
-    int m_position, m_size;
-public:
-    inline QXmlStreamStringRef():m_position(0), m_size(0){}
-    inline QXmlStreamStringRef(const QStringRef &aString)
-        :m_string(aString.string()?*aString.string():QString()), m_position(aString.position()), m_size(aString.size()){}
-    QXmlStreamStringRef(const QString &aString) : m_string(aString), m_position(0), m_size(m_string.size()) {}
-    QXmlStreamStringRef(QString &&aString) noexcept : m_string(std::move(aString)), m_position(0), m_size(m_string.size()) {}
+        QXmlString &operator=(const QStringRef &s)
+        { *this = QXmlString(s); return *this; }
 
-    void swap(QXmlStreamStringRef &other) noexcept
-    {
-        qSwap(m_string, other.m_string);
-        qSwap(m_position, other.m_position);
-        qSwap(m_size, other.m_size);
-    }
+        void swap(QXmlString &other) noexcept
+        {
+            qSwap(m_string, other.m_string);
+        }
 
-    inline operator QStringView() const { return QStringView(m_string.constData() + m_position, m_size); }
-    inline int size() const { return m_size; }
-};
-Q_DECLARE_SHARED(QXmlStreamStringRef)
+        inline operator QStringView() const { return QStringView(m_string.data(), m_string.size); }
+        inline int size() const { return m_string.size; }
+    };
+}
+Q_DECLARE_SHARED(QtPrivate::QXmlString)
 
 
 class QXmlStreamReaderPrivate;
 class QXmlStreamAttributes;
 class Q_CORE_EXPORT QXmlStreamAttribute {
-    QXmlStreamStringRef m_name, m_namespaceUri, m_qualifiedName, m_value;
+    QtPrivate::QXmlString m_name, m_namespaceUri, m_qualifiedName, m_value;
     uint m_isDefault : 1;
     friend class QXmlStreamReaderPrivate;
     friend class QXmlStreamAttributes;
@@ -138,7 +147,7 @@ public:
 };
 
 class Q_CORE_EXPORT QXmlStreamNamespaceDeclaration {
-    QXmlStreamStringRef m_prefix, m_namespaceUri;
+    QtPrivate::QXmlString m_prefix, m_namespaceUri;
 
     friend class QXmlStreamReaderPrivate;
 public:
@@ -158,7 +167,7 @@ Q_DECLARE_TYPEINFO(QXmlStreamNamespaceDeclaration, Q_MOVABLE_TYPE);
 typedef QList<QXmlStreamNamespaceDeclaration> QXmlStreamNamespaceDeclarations;
 
 class Q_CORE_EXPORT QXmlStreamNotationDeclaration {
-    QXmlStreamStringRef m_name, m_systemId, m_publicId;
+    QtPrivate::QXmlString m_name, m_systemId, m_publicId;
 
     friend class QXmlStreamReaderPrivate;
 public:
@@ -179,7 +188,7 @@ Q_DECLARE_TYPEINFO(QXmlStreamNotationDeclaration, Q_MOVABLE_TYPE);
 typedef QList<QXmlStreamNotationDeclaration> QXmlStreamNotationDeclarations;
 
 class Q_CORE_EXPORT QXmlStreamEntityDeclaration {
-    QXmlStreamStringRef m_name, m_notationName, m_systemId, m_publicId, m_value;
+    QtPrivate::QXmlString m_name, m_notationName, m_systemId, m_publicId, m_value;
 
     friend class QXmlStreamReaderPrivate;
 public:

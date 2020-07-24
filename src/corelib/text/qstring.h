@@ -974,6 +974,7 @@ private:
 
 public:
     inline DataPointer &data_ptr() { return d; }
+    inline const DataPointer &data_ptr() const { return d; }
 };
 
 //

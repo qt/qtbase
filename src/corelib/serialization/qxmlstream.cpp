@@ -75,6 +75,8 @@ private:
 
 QT_BEGIN_NAMESPACE
 
+using namespace QtPrivate;
+
 enum { StreamEOF = ~0U };
 
 namespace {
@@ -1608,13 +1610,13 @@ void QXmlStreamReaderPrivate::resolveTag()
         QStringRef qualifiedName(symName(attrib.key));
         QStringRef value(symString(attrib.value));
 
-        attribute.m_name = QXmlStreamStringRef(name);
-        attribute.m_qualifiedName = QXmlStreamStringRef(qualifiedName);
-        attribute.m_value = QXmlStreamStringRef(value);
+        attribute.m_name = name;
+        attribute.m_qualifiedName = qualifiedName;
+        attribute.m_value = value;
 
         if (!prefix.isEmpty()) {
             QStringRef attributeNamespaceUri = namespaceForPrefix(prefix);
-            attribute.m_namespaceUri = QXmlStreamStringRef(attributeNamespaceUri);
+            attribute.m_namespaceUri = attributeNamespaceUri;
         }
 
         for (qsizetype j = 0; j < i; ++j) {
@@ -1643,13 +1645,13 @@ void QXmlStreamReaderPrivate::resolveTag()
 
 
         QXmlStreamAttribute attribute;
-        attribute.m_name = QXmlStreamStringRef(dtdAttribute.attributeName);
-        attribute.m_qualifiedName = QXmlStreamStringRef(dtdAttribute.attributeQualifiedName);
-        attribute.m_value = QXmlStreamStringRef(dtdAttribute.defaultValue);
+        attribute.m_name = dtdAttribute.attributeName;
+        attribute.m_qualifiedName = dtdAttribute.attributeQualifiedName;
+        attribute.m_value = dtdAttribute.defaultValue;
 
         if (!dtdAttribute.attributePrefix.isEmpty()) {
             QStringRef attributeNamespaceUri = namespaceForPrefix(dtdAttribute.attributePrefix);
-            attribute.m_namespaceUri = QXmlStreamStringRef(attributeNamespaceUri);
+            attribute.m_namespaceUri = attributeNamespaceUri;
         }
         attribute.m_isDefault = true;
         attributes.append(std::move(attribute));
@@ -1664,8 +1666,8 @@ void QXmlStreamReaderPrivate::resolvePublicNamespaces()
     for (qsizetype i = 0; i < n; ++i) {
         const NamespaceDeclaration &namespaceDeclaration = namespaceDeclarations.at(tag.namespaceDeclarationsSize + i);
         QXmlStreamNamespaceDeclaration &publicNamespaceDeclaration = publicNamespaceDeclarations[i];
-        publicNamespaceDeclaration.m_prefix = QXmlStreamStringRef(namespaceDeclaration.prefix);
-        publicNamespaceDeclaration.m_namespaceUri = QXmlStreamStringRef(namespaceDeclaration.namespaceUri);
+        publicNamespaceDeclaration.m_prefix = namespaceDeclaration.prefix;
+        publicNamespaceDeclaration.m_namespaceUri = namespaceDeclaration.namespaceUri;
     }
 }
 
@@ -1675,9 +1677,9 @@ void QXmlStreamReaderPrivate::resolveDtd()
     for (qsizetype i = 0; i < notationDeclarations.size(); ++i) {
         const QXmlStreamReaderPrivate::NotationDeclaration &notationDeclaration = notationDeclarations.at(i);
         QXmlStreamNotationDeclaration &publicNotationDeclaration = publicNotationDeclarations[i];
-        publicNotationDeclaration.m_name = QXmlStreamStringRef(notationDeclaration.name);
-        publicNotationDeclaration.m_systemId = QXmlStreamStringRef(notationDeclaration.systemId);
-        publicNotationDeclaration.m_publicId = QXmlStreamStringRef(notationDeclaration.publicId);
+        publicNotationDeclaration.m_name = notationDeclaration.name;
+        publicNotationDeclaration.m_systemId = notationDeclaration.systemId;
+        publicNotationDeclaration.m_publicId = notationDeclaration.publicId;
 
     }
     notationDeclarations.clear();
@@ -1685,11 +1687,11 @@ void QXmlStreamReaderPrivate::resolveDtd()
     for (qsizetype i = 0; i < entityDeclarations.size(); ++i) {
         const QXmlStreamReaderPrivate::EntityDeclaration &entityDeclaration = entityDeclarations.at(i);
         QXmlStreamEntityDeclaration &publicEntityDeclaration = publicEntityDeclarations[i];
-        publicEntityDeclaration.m_name = QXmlStreamStringRef(entityDeclaration.name);
-        publicEntityDeclaration.m_notationName = QXmlStreamStringRef(entityDeclaration.notationName);
-        publicEntityDeclaration.m_systemId = QXmlStreamStringRef(entityDeclaration.systemId);
-        publicEntityDeclaration.m_publicId = QXmlStreamStringRef(entityDeclaration.publicId);
-        publicEntityDeclaration.m_value = QXmlStreamStringRef(entityDeclaration.value);
+        publicEntityDeclaration.m_name = entityDeclaration.name;
+        publicEntityDeclaration.m_notationName = entityDeclaration.notationName;
+        publicEntityDeclaration.m_systemId = entityDeclaration.systemId;
+        publicEntityDeclaration.m_publicId = entityDeclaration.publicId;
+        publicEntityDeclaration.m_value = entityDeclaration.value;
     }
     entityDeclarations.clear();
     parameterEntityHash.clear();
@@ -2294,10 +2296,10 @@ QXmlStreamAttribute::QXmlStreamAttribute()
  */
 QXmlStreamAttribute::QXmlStreamAttribute(const QString &namespaceUri, const QString &name, const QString &value)
 {
-    m_namespaceUri = QXmlStreamStringRef(QStringRef(&namespaceUri));
-    m_name = m_qualifiedName = QXmlStreamStringRef(QStringRef(&name));
-    m_value = QXmlStreamStringRef(QStringRef(&value));
-    m_namespaceUri = QXmlStreamStringRef(QStringRef(&namespaceUri));
+    m_namespaceUri = QStringRef(&namespaceUri);
+    m_name = m_qualifiedName = QStringRef(&name);
+    m_value = QStringRef(&value);
+    m_namespaceUri = QStringRef(&namespaceUri);
 }
 
 /*!
@@ -2306,11 +2308,9 @@ QXmlStreamAttribute::QXmlStreamAttribute(const QString &namespaceUri, const QStr
 QXmlStreamAttribute::QXmlStreamAttribute(const QString &qualifiedName, const QString &value)
 {
     int colon = qualifiedName.indexOf(QLatin1Char(':'));
-    m_name = QXmlStreamStringRef(QStringRef(&qualifiedName,
-                                            colon + 1,
-                                            qualifiedName.size() - (colon + 1)));
-    m_qualifiedName = QXmlStreamStringRef(QStringRef(&qualifiedName));
-    m_value = QXmlStreamStringRef(QStringRef(&value));
+    m_name = QStringRef(&qualifiedName, colon + 1, qualifiedName.size() - (colon + 1));
+    m_qualifiedName = QStringRef(&qualifiedName);
+    m_value = QStringRef(&value);
 }
 
 /*! \fn QStringView QXmlStreamAttribute::namespaceUri() const
@@ -2508,9 +2508,9 @@ Returns the namespaceUri.
 */
 
 /*!
-    \class QXmlStreamStringRef
+    \class QXmlString
     \inmodule QtCore
-    \since 4.3
+    \since 6.0
     \internal
 */
 
@@ -2534,8 +2534,8 @@ QXmlStreamEntityDeclaration::QXmlStreamEntityDeclaration()
 {
 }
 
-/*! \fn QXmlStreamStringRef::swap(QXmlStreamStringRef &other)
-    \since 5.6
+/*! \fn QXmlString::swap(QXmlString &other)
+    \since 6.0
 
     Swaps this string reference's contents with \a other.
     This function is very fast and never fails.
