@@ -59,8 +59,8 @@ class QExplicitlySharedDataPointerV2
 public:
     constexpr QExplicitlySharedDataPointerV2() noexcept : d(nullptr) {}
 
-    explicit QExplicitlySharedDataPointerV2(T *d) noexcept
-        : d(d)
+    explicit QExplicitlySharedDataPointerV2(T *t) noexcept
+        : d(t)
     {
         if (d)
             d->ref.ref();
