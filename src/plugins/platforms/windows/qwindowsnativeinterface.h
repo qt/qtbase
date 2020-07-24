@@ -63,8 +63,6 @@ class QWindowsNativeInterface : public QPlatformNativeInterface
 {
     Q_OBJECT
     Q_PROPERTY(bool asyncExpose READ asyncExpose WRITE setAsyncExpose)
-    Q_PROPERTY(bool darkMode READ isDarkMode STORED false NOTIFY darkModeChanged)
-    Q_PROPERTY(bool darkModeStyle READ isDarkModeStyle STORED false)
     Q_PROPERTY(QVariant gpu READ gpu STORED false)
     Q_PROPERTY(QVariant gpuList READ gpuList STORED false)
 
@@ -92,14 +90,8 @@ public:
     bool asyncExpose() const;
     void setAsyncExpose(bool value);
 
-    bool isDarkMode() const;
-    bool isDarkModeStyle() const;
-
     QVariant gpu() const;
     QVariant gpuList() const;
-
-Q_SIGNALS:
-    void darkModeChanged(bool);
 };
 
 QT_END_NAMESPACE

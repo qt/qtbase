@@ -390,6 +390,13 @@ struct Q_GUI_EXPORT QWindowsApplication
 
     Q_DECLARE_FLAGS(TouchWindowTouchTypes, TouchWindowTouchType)
 
+    enum DarkModeHandlingFlag {
+        DarkModeWindowFrames = 0x1,
+        DarkModeStyle = 0x2
+    };
+
+    Q_DECLARE_FLAGS(DarkModeHandling, DarkModeHandlingFlag)
+
     virtual void setTouchWindowTouchType(TouchWindowTouchTypes type) = 0;
     virtual TouchWindowTouchTypes touchWindowTouchType() const = 0;
 
@@ -400,6 +407,11 @@ struct Q_GUI_EXPORT QWindowsApplication
 
     virtual bool isWinTabEnabled() const = 0;
     virtual bool setWinTabEnabled(bool enabled) = 0;
+
+    virtual bool isDarkMode() const = 0;
+
+    virtual DarkModeHandling darkModeHandling() const = 0;
+    virtual void setDarkModeHandling(DarkModeHandling handling) = 0;
 };
 #endif // Q_OS_WIN
 
@@ -407,6 +419,7 @@ struct Q_GUI_EXPORT QWindowsApplication
 
 #if defined(Q_OS_WIN)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QPlatformInterface::Private::QWindowsApplication::TouchWindowTouchTypes)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QPlatformInterface::Private::QWindowsApplication::DarkModeHandling)
 #endif
 
 QT_END_NAMESPACE

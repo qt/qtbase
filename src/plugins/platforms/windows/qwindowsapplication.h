@@ -58,9 +58,14 @@ public:
     bool isWinTabEnabled() const override;
     bool setWinTabEnabled(bool enabled) override;
 
+    bool isDarkMode() const override;
+    DarkModeHandling darkModeHandling() const override;
+    void setDarkModeHandling(DarkModeHandling handling) override;
+
 private:
     WindowActivationBehavior m_windowActivationBehavior = DefaultActivateWindow;
     TouchWindowTouchTypes m_touchWindowTouchTypes = NormalTouch;
+    DarkModeHandling m_darkModeHandling;
 };
 
 QT_END_NAMESPACE

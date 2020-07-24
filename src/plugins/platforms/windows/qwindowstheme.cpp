@@ -533,7 +533,7 @@ void QWindowsTheme::refreshPalettes()
         return;
     const bool light =
         !QWindowsContext::isDarkMode()
-        || (QWindowsIntegration::instance()->options() & QWindowsIntegration::DarkModeStyle) == 0;
+        || !QWindowsIntegration::instance()->darkModeHandling().testFlag(QWindowsApplication::DarkModeStyle);
     m_palettes[SystemPalette] = new QPalette(systemPalette(light));
     m_palettes[ToolTipPalette] = new QPalette(toolTipPalette(*m_palettes[SystemPalette], light));
     m_palettes[MenuPalette] = new QPalette(menuPalette(*m_palettes[SystemPalette], light));

@@ -85,7 +85,7 @@
 #include <qpa/qplatformscreen.h>
 #include <private/qguiapplication_p.h>
 #include <private/qhighdpiscaling_p.h>
-#include <qpa/qplatformnativeinterface.h>
+#include <qpa/qplatformintegration.h>
 #include <private/qwidget_p.h>
 
 #include <private/qstylehelper_p.h>
@@ -133,13 +133,12 @@ bool QWindowsStylePrivate::isDarkMode()
 {
     bool result = false;
 #ifdef Q_OS_WIN
+    using QWindowsApplication = QPlatformInterface::Private::QWindowsApplication;
     // Windows only: Return whether dark mode style support is desired and
     // dark mode is in effect.
-    if (auto ni = QGuiApplication::platformNativeInterface()) {
-        const QVariant darkModeStyleP = ni->property("darkModeStyle");
-        result = darkModeStyleP.type() == QVariant::Bool
-                 && darkModeStyleP.value<bool>()
-                 && ni->property("darkMode").value<bool>();
+    if (auto windowsApp = dynamic_cast<QWindowsApplication *>(QGuiApplicationPrivate::platformIntegration())) {
+        result = windowsApp->isDarkMode()
+            && windowsApp->darkModeHandling().testFlag(QWindowsApplication::DarkModeStyle);
     }
 #endif
     return result;

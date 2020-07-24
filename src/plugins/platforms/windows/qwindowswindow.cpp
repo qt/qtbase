@@ -821,7 +821,7 @@ QWindowsWindowData
     }
 
     if (QWindowsContext::isDarkMode()
-        && (QWindowsIntegration::instance()->options() & QWindowsIntegration::DarkModeWindowFrames) != 0
+        && QWindowsIntegration::instance()->darkModeHandling().testFlag(QWindowsApplication::DarkModeWindowFrames)
         && shouldApplyDarkFrame(w)) {
         QWindowsWindow::setDarkBorderToWindow(result.hwnd, true);
     }

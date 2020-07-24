@@ -135,8 +135,10 @@ QT_BEGIN_NAMESPACE
 struct QWindowsIntegrationPrivate
 {
     Q_DISABLE_COPY_MOVE(QWindowsIntegrationPrivate)
-    explicit QWindowsIntegrationPrivate(const QStringList &paramList);
+    explicit QWindowsIntegrationPrivate() = default;
     ~QWindowsIntegrationPrivate();
+
+    void parseOptions(QWindowsIntegration *q, const QStringList &paramList);
 
     unsigned m_options = 0;
     QWindowsContext m_context;
@@ -181,9 +183,13 @@ bool parseIntOption(const QString &parameter,const QLatin1String &option,
     return true;
 }
 
+using DarkModeHandlingFlag = QPlatformInterface::Private::QWindowsApplication::DarkModeHandlingFlag;
+using DarkModeHandling = QPlatformInterface::Private::QWindowsApplication::DarkModeHandling;
+
 static inline unsigned parseOptions(const QStringList &paramList,
                                     int *tabletAbsoluteRange,
-                                    QtWindows::ProcessDpiAwareness *dpiAwareness)
+                                    QtWindows::ProcessDpiAwareness *dpiAwareness,
+                                    DarkModeHandling *darkModeHandling)
 {
     unsigned options = 0;
     for (const QString &param : paramList) {
@@ -223,9 +229,10 @@ static inline unsigned parseOptions(const QStringList &paramList,
         } else if (param == u"reverse") {
             options |= QWindowsIntegration::RtlEnabled;
         } else if (param == u"darkmode=1") {
-            options |= QWindowsIntegration::DarkModeWindowFrames;
+            darkModeHandling->setFlag(DarkModeHandlingFlag::DarkModeWindowFrames);
         } else if (param == u"darkmode=2") {
-            options |= QWindowsIntegration::DarkModeWindowFrames | QWindowsIntegration::DarkModeStyle;
+            darkModeHandling->setFlag(DarkModeHandlingFlag::DarkModeWindowFrames);
+            darkModeHandling->setFlag(DarkModeHandlingFlag::DarkModeStyle);
         } else {
             qWarning() << "Unknown option" << param;
         }
@@ -233,7 +240,7 @@ static inline unsigned parseOptions(const QStringList &paramList,
     return options;
 }
 
-QWindowsIntegrationPrivate::QWindowsIntegrationPrivate(const QStringList &paramList)
+void QWindowsIntegrationPrivate::parseOptions(QWindowsIntegration *q, const QStringList &paramList)
 {
     initOpenGlBlacklistResources();
 
@@ -242,7 +249,9 @@ QWindowsIntegrationPrivate::QWindowsIntegrationPrivate(const QStringList &paramL
     // are connected to Windows 8.1
     QtWindows::ProcessDpiAwareness dpiAwareness = QtWindows::ProcessPerMonitorDpiAware;
     int tabletAbsoluteRange = -1;
-    m_options = parseOptions(paramList, &tabletAbsoluteRange, &dpiAwareness);
+    DarkModeHandling darkModeHandling;
+    m_options = ::parseOptions(paramList, &tabletAbsoluteRange, &dpiAwareness, &darkModeHandling);
+    q->setDarkModeHandling(darkModeHandling);
     QWindowsFontDatabase::setFontOptions(m_options);
     if (tabletAbsoluteRange >= 0)
         QWindowsContext::setTabletAbsoluteRange(tabletAbsoluteRange);
@@ -276,9 +285,10 @@ QWindowsIntegrationPrivate::~QWindowsIntegrationPrivate()
 QWindowsIntegration *QWindowsIntegration::m_instance = nullptr;
 
 QWindowsIntegration::QWindowsIntegration(const QStringList &paramList) :
-    d(new QWindowsIntegrationPrivate(paramList))
+    d(new QWindowsIntegrationPrivate)
 {
     m_instance = this;
+    d->parseOptions(this, paramList);
 #if QT_CONFIG(clipboard)
     d->m_clipboard.registerViewer();
 #endif

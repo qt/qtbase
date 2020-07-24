@@ -239,15 +239,4 @@ QVariant QWindowsNativeInterface::gpuList() const
     return result;
 }
 
-bool QWindowsNativeInterface::isDarkMode() const
-{
-    return QWindowsContext::isDarkMode();
-}
-
-// Dark mode support level 2 (style)
-bool QWindowsNativeInterface::isDarkModeStyle() const
-{
-    return (QWindowsIntegration::instance()->options() & QWindowsIntegration::DarkModeStyle) != 0;
-}
-
 QT_END_NAMESPACE
