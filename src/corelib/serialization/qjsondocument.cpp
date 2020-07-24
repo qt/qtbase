@@ -451,18 +451,6 @@ QVariant QJsonDocument::toVariant() const
 }
 
 /*!
- Converts the QJsonDocument to an indented, UTF-8 encoded JSON document.
-
- \sa fromJson()
- */
-#if !defined(QT_JSON_READONLY) || defined(Q_CLANG_QDOC)
-QByteArray QJsonDocument::toJson() const
-{
-    return toJson(Indented);
-}
-#endif
-
-/*!
     \enum QJsonDocument::JsonFormat
     \since 5.1
 

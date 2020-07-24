@@ -136,8 +136,7 @@ public:
     static QJsonDocument fromJson(const QByteArray &json, QJsonParseError *error = nullptr);
 
 #if !defined(QT_JSON_READONLY) || defined(Q_CLANG_QDOC)
-    QByteArray toJson() const; //### Merge in Qt6
-    QByteArray toJson(JsonFormat format) const;
+    QByteArray toJson(JsonFormat format = Indented) const;
 #endif
 
     bool isEmpty() const;

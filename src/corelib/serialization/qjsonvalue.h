@@ -180,18 +180,12 @@ public:
     inline bool isObject() const { return type() == QJsonValue::Object; }
     inline bool isUndefined() const { return type() == QJsonValue::Undefined; }
 
-    inline bool toBool() const { return toValue().toBool(); }
-    inline int toInt() const { return toValue().toInt(); }
-    inline double toDouble() const { return toValue().toDouble(); }
-    inline QString toString() const { return toValue().toString(); }
+    inline bool toBool(bool defaultValue = false) const { return toValue().toBool(defaultValue); }
+    inline int toInt(int defaultValue = 0) const { return toValue().toInt(defaultValue); }
+    inline double toDouble(double defaultValue = 0) const { return toValue().toDouble(defaultValue); }
+    inline QString toString(const QString &defaultValue = {}) const { return toValue().toString(defaultValue); }
     QJsonArray toArray() const;
     QJsonObject toObject() const;
-
-    // ### Qt 6: Add default values
-    inline bool toBool(bool defaultValue) const { return toValue().toBool(defaultValue); }
-    inline int toInt(int defaultValue) const { return toValue().toInt(defaultValue); }
-    inline double toDouble(double defaultValue) const { return toValue().toDouble(defaultValue); }
-    inline QString toString(const QString &defaultValue) const { return toValue().toString(defaultValue); }
 
     inline bool operator==(const QJsonValue &other) const { return toValue() == other; }
     inline bool operator!=(const QJsonValue &other) const { return toValue() != other; }
