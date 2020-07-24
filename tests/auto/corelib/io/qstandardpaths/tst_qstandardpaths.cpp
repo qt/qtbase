@@ -1,6 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2020 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -26,12 +27,11 @@
 **
 ****************************************************************************/
 
+#include <qstandardpaths.h>
 #include <QtTest/QtTest>
-#include <qstandardpaths.h>
 #include <qdebug.h>
-#include <qstandardpaths.h>
 #include <qfileinfo.h>
-#include <qsysinfo.h>
+#include <qplatformdefs.h>
 #include <qregularexpression.h>
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 #  include <qt_windows.h>
@@ -40,13 +40,12 @@
 #ifdef Q_OS_UNIX
 #include <unistd.h>
 #include <sys/types.h>
+#include <pwd.h>
 #endif
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(Q_OS_ANDROID)
 #define Q_XDG_PLATFORM
 #endif
-
-#include "emulationdetector.h"
 
 // Update this when adding new enum values; update enumNames too
 static const int MaxStandardLocation = QStandardPaths::AppConfigLocation;
@@ -68,6 +67,7 @@ private slots:
     void testFindExecutable();
     void testFindExecutableLinkToDirectory();
     void testRuntimeDirectory();
+    void testCustomRuntimeDirectory_data();
     void testCustomRuntimeDirectory();
     void testAllWritableLocations_data();
     void testAllWritableLocations();
@@ -460,11 +460,182 @@ void tst_qstandardpaths::testFindExecutableLinkToDirectory()
 #endif
 }
 
+using RuntimeDirSetup = QString (*)(QDir &);
+Q_DECLARE_METATYPE(RuntimeDirSetup);
+
 void tst_qstandardpaths::testRuntimeDirectory()
 {
 #ifdef Q_XDG_PLATFORM
     const QString runtimeDir = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
     QVERIFY(!runtimeDir.isEmpty());
+#endif
+}
+
+#ifdef Q_XDG_PLATFORM
+static QString fallbackXdgRuntimeDir()
+{
+    static QString username = [] {
+        struct passwd *pw = getpwuid(geteuid());
+        return QString::fromLocal8Bit(pw->pw_name);
+    }();
+
+    // QDir::temp() might change from call to call
+    return QDir::temp().filePath("runtime-" + username);
+}
+#endif
+
+static QString updateRuntimeDir(const QString &path)
+{
+    qputenv("XDG_RUNTIME_DIR", QFile::encodeName(path));
+    return path;
+}
+
+static void clearRuntimeDir()
+{
+    qunsetenv("XDG_RUNTIME_DIR");
+#ifdef Q_XDG_PLATFORM
+#ifndef Q_OS_WASM
+    QTest::ignoreMessage(QtWarningMsg,
+                         qPrintable("QStandardPaths: XDG_RUNTIME_DIR not set, defaulting to '"
+                                    + fallbackXdgRuntimeDir() + '\''));
+#endif
+#endif
+}
+
+void tst_qstandardpaths::testCustomRuntimeDirectory_data()
+{
+#if defined(Q_XDG_PLATFORM)
+    QTest::addColumn<RuntimeDirSetup>("setup");
+    auto addRow = [](const char *name, RuntimeDirSetup f) {
+        QTest::newRow(name) << f;
+    };
+
+
+#  if defined(Q_OS_UNIX)
+    if (::getuid() == 0)
+        QSKIP("Running this test as root doesn't make sense");
+#  endif
+
+    addRow("environment:non-existing", [](QDir &d) {
+        return updateRuntimeDir(d.filePath("runtime"));
+    });
+
+    addRow("environment:existing", [](QDir &d) {
+        QString p = d.filePath("runtime");
+        d.mkdir("runtime");
+        QFile::setPermissions(p, QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner);
+        return updateRuntimeDir(p);
+    });
+
+    addRow("environment-to-existing-wrong-perm", [](QDir &d) {
+        QString p = d.filePath("runtime");
+        d.mkdir("runtime");
+        QFile::setPermissions(p, QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner |
+                                 QFile::ExeGroup | QFile::ExeOther);
+        return updateRuntimeDir(p);
+    });
+
+    addRow("environment:wrong-owner", [](QDir &) {
+        QT_STATBUF st;
+        QT_STAT("/", &st);
+
+        updateRuntimeDir("/");
+        QTest::ignoreMessage(QtWarningMsg,
+                             QString("QStandardPaths: runtime directory '/' is not owned by UID "
+                                     "%1, but a directory permissions %2 owned by UID %3 GID %4")
+                             .arg(getuid())
+                             .arg(st.st_mode & 07777, 4, 8, QChar('0'))
+                             .arg(st.st_uid)
+                             .arg(st.st_gid).toLatin1());
+        return fallbackXdgRuntimeDir();
+    });
+
+    addRow("environment:file", [](QDir &d) {
+        QString p = d.filePath("file");
+        QFile f(p);
+        f.open(QIODevice::WriteOnly);
+        f.setPermissions(QFile::ReadOwner | QFile::WriteOwner);
+
+        updateRuntimeDir(p);
+        QTest::ignoreMessage(QtWarningMsg,
+                             QString("QStandardPaths: runtime directory '%1' is not a directory, "
+                                     "but a regular file permissions 0600 owned by UID %2 GID %3")
+                             .arg(p).arg(getuid()).arg(getgid()).toLatin1());
+        return fallbackXdgRuntimeDir();
+    });
+
+    addRow("environment:broken-symlink", [](QDir &d) {
+        QString p = d.filePath("link");
+        QFile::link(d.filePath("this-goes-nowhere"), p);
+        updateRuntimeDir(p);
+        QTest::ignoreMessage(QtWarningMsg,
+                             QString("QStandardPaths: runtime directory '%1' is not a directory, "
+                                     "but a broken symlink")
+                             .arg(p).toLatin1());
+        return fallbackXdgRuntimeDir();
+    });
+
+    addRow("environment:symlink-to-dir", [](QDir &d) {
+        QString p = d.filePath("link");
+        d.mkdir("dir");
+        QFile::link(d.filePath("dir"), p);
+        QFile::setPermissions(p, QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner);
+        updateRuntimeDir(p);
+        QTest::ignoreMessage(QtWarningMsg,
+                             QString("QStandardPaths: runtime directory '%1' is not a directory, "
+                                     "but a symbolic link to a directory permissions 0700 owned by UID %2 GID %3")
+                             .arg(p).arg(getuid()).arg(getgid()).toLatin1());
+        return fallbackXdgRuntimeDir();
+    });
+
+    addRow("no-environment:non-existing", [](QDir &) {
+        clearRuntimeDir();
+        return fallbackXdgRuntimeDir();
+    });
+
+    addRow("no-environment:existing", [](QDir &d) {
+        clearRuntimeDir();
+        QString p = fallbackXdgRuntimeDir();
+        d.mkdir(p);         // probably has wrong permissions
+        return p;
+    });
+
+    addRow("no-environment:fallback-is-file", [](QDir &) {
+        QString p = fallbackXdgRuntimeDir();
+        QFile f(p);
+        f.open(QIODevice::WriteOnly);
+        f.setPermissions(QFile::ReadOwner | QFile::WriteOwner);
+
+        clearRuntimeDir();
+        QTest::ignoreMessage(QtWarningMsg,
+                             QString("QStandardPaths: runtime directory '%1' is not a directory, "
+                                     "but a regular file permissions 0600 owned by UID %2 GID %3")
+                             .arg(p).arg(getuid()).arg(getgid()).toLatin1());
+        return QString();
+    });
+
+    addRow("environment-and-fallback-are-files", [](QDir &d) {
+        QString p = d.filePath("file1");
+        QFile f(p);
+        f.open(QIODevice::WriteOnly);
+        f.setPermissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ReadGroup);
+        updateRuntimeDir(p);
+        QTest::ignoreMessage(QtWarningMsg,
+                             QString("QStandardPaths: runtime directory '%1' is not a directory, "
+                                     "but a regular file permissions 0640 owned by UID %2 GID %3")
+                             .arg(p).arg(getuid()).arg(getgid()).toLatin1());
+
+        f.close();
+        f.setFileName(fallbackXdgRuntimeDir());
+        f.open(QIODevice::WriteOnly);
+        f.setPermissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ReadGroup);
+        QTest::ignoreMessage(QtWarningMsg,
+                             QString("QStandardPaths: runtime directory '%1' is not a directory, "
+                                     "but a regular file permissions 0640 owned by UID %2 GID %3")
+                             .arg(f.fileName()).arg(getuid()).arg(getgid()).toLatin1());
+
+        return QString();
+    });
 #endif
 }
 
@@ -478,63 +649,38 @@ void tst_qstandardpaths::testCustomRuntimeDirectory()
 #ifdef Q_XDG_PLATFORM
     struct EnvVarRestorer
     {
-        EnvVarRestorer() : origRuntimeDir(qgetenv("XDG_RUNTIME_DIR")) {}
-        ~EnvVarRestorer() { qputenv("XDG_RUNTIME_DIR", origRuntimeDir.constData()); }
-        const QByteArray origRuntimeDir;
+        ~EnvVarRestorer()
+        {
+            qputenv("XDG_RUNTIME_DIR", origRuntimeDir);
+            qputenv("TMPDIR", origTempDir);
+        }
+        const QByteArray origRuntimeDir = qgetenv("XDG_RUNTIME_DIR");
+        const QByteArray origTempDir = qgetenv("TMPDIR");
     };
     EnvVarRestorer restorer;
 
-    // When $XDG_RUNTIME_DIR points to a directory with wrong ownership, QStandardPaths should warn
-    QByteArray rootOwnedFileName = "/tmp";
-    if (EmulationDetector::isRunningArmOnX86()) {
-        // Directory "tmp" under toolchain sysroot is detected by qemu and has same uid as current user.
-        // Try /opt instead, it might not be located in the sysroot.
-        QFileInfo rootOwnedFile = QFileInfo(QString::fromLatin1(rootOwnedFileName));
-        if (rootOwnedFile.ownerId() == ::geteuid()) {
-            rootOwnedFileName = "/opt";
-        }
+    // set up the environment to point to a place we control
+    QTemporaryDir tempDir;
+    QVERIFY2(tempDir.isValid(), qPrintable(tempDir.errorString()));
+
+    QDir d(tempDir.path());
+    qputenv("TMPDIR", QFile::encodeName(tempDir.path()));
+
+    QFETCH(RuntimeDirSetup, setup);
+    QString expected = setup(d);
+
+    QString runtimeDir = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
+    QCOMPARE(runtimeDir, expected);
+
+    if (!runtimeDir.isEmpty()) {
+        QFileInfo runtimeInfo(runtimeDir);
+        QVERIFY(runtimeInfo.isDir());
+        QVERIFY(!runtimeInfo.isSymLink());
+        auto expectedPerms = QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner
+                | QFile::ReadUser | QFile::WriteUser | QFile::ExeUser;
+        QCOMPARE(QString::number(runtimeInfo.permissions(), 16),
+                 QString::number(expectedPerms, 16));
     }
-    qputenv("XDG_RUNTIME_DIR", QFile::encodeName(rootOwnedFileName));
-
-    // It's very unlikely that /tmp is 0600 or that we can chmod it
-    // The call below outputs
-    //   "QStandardPaths: wrong ownership on runtime directory /tmp, 0 instead of $UID"
-    // but we can't reliably expect that it's owned by uid 0, I think.
-    const uid_t uid = geteuid();
-    QTest::ignoreMessage(QtWarningMsg,
-            qPrintable(QString::fromLatin1("QStandardPaths: wrong ownership on runtime directory " + rootOwnedFileName + ", 0 instead of %1").arg(uid)));
-    const QString runtimeDir = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
-    QVERIFY2(runtimeDir.isEmpty(), qPrintable(runtimeDir));
-
-    // When $XDG_RUNTIME_DIR points to a directory with wrong permissions, QStandardPaths should warn
-    const QByteArray wrongPermissionFileName = "wrong_permissions";
-    QDir::current().mkdir(wrongPermissionFileName);
-    QFile wrongPermissionFile(wrongPermissionFileName);
-    const QFile::Permissions wantedPerms = QFile::ReadUser | QFile::WriteUser | QFile::ExeUser;
-    QVERIFY(wrongPermissionFile.setPermissions(wantedPerms | QFile::ExeGroup));
-
-    qputenv("XDG_RUNTIME_DIR", wrongPermissionFileName);
-    QTest::ignoreMessage(QtWarningMsg,
-           qPrintable(QString::fromLatin1("QStandardPaths: wrong permissions on runtime directory " + wrongPermissionFileName + ", 7710 instead of 7700")));
-    const QString wrongPermissionRuntimeDir = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
-    QVERIFY(wrongPermissionRuntimeDir.isEmpty());
-    QDir::current().rmdir(wrongPermissionFileName);
-
-    // When $XDG_RUNTIME_DIR points to a non-existing directory, QStandardPaths should create it first
-    const QByteArray nonExistingDir = "does_not_exist";
-    qputenv("XDG_RUNTIME_DIR", nonExistingDir);
-    const QString nonExistingRuntimeDir = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
-    QVERIFY2(!nonExistingRuntimeDir.compare(nonExistingDir), qPrintable(nonExistingRuntimeDir));
-    QVERIFY(QDir::current().exists(nonExistingRuntimeDir));
-    QDir::current().rmdir(nonExistingRuntimeDir);
-
-    // When $XDG_RUNTIME_DIR points to a file, QStandardPaths should warn
-    const QString file = QFINDTESTDATA("tst_qstandardpaths.cpp");
-    QVERIFY(!file.isEmpty());
-    qputenv("XDG_RUNTIME_DIR", QFile::encodeName(file));
-    QTest::ignoreMessage(QtWarningMsg, qPrintable(QString::fromLatin1("QStandardPaths: XDG_RUNTIME_DIR points to '%1' which is not a directory").arg(file)));
-    const QString noRuntimeDir = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
-    QVERIFY2(noRuntimeDir.isEmpty(), qPrintable(file));
 #endif
 }
 

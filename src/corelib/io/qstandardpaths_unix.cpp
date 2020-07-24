@@ -1,6 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2020 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -93,6 +94,111 @@ static QLatin1String xdg_key_name(QStandardPaths::StandardLocation type)
 }
 #endif
 
+static bool checkXdgRuntimeDir(const QString &xdgRuntimeDir)
+{
+    auto describeMetaData = [](const QFileSystemMetaData &metaData) -> QByteArray {
+        if (!metaData.exists())
+            return "a broken symlink";
+
+        QByteArray description;
+        if (metaData.isLink())
+            description = "a symbolic link to ";
+
+        if (metaData.isFile())
+            description += "a regular file";
+        else if (metaData.isDirectory())
+            description += "a directory";
+        else if (metaData.isSequential())
+            description += "a character device, socket or FIFO";
+        else
+            description += "a block device";
+
+        // convert QFileSystemMetaData permissions back to Unix
+        mode_t perms = 0;
+        if (metaData.permissions() & QFile::ReadOwner)
+            perms |= S_IRUSR;
+        if (metaData.permissions() & QFile::WriteOwner)
+            perms |= S_IWUSR;
+        if (metaData.permissions() & QFile::ExeOwner)
+            perms |= S_IXUSR;
+        if (metaData.permissions() & QFile::ReadGroup)
+            perms |= S_IRGRP;
+        if (metaData.permissions() & QFile::WriteGroup)
+            perms |= S_IWGRP;
+        if (metaData.permissions() & QFile::ExeGroup)
+            perms |= S_IXGRP;
+        if (metaData.permissions() & QFile::ReadOther)
+            perms |= S_IROTH;
+        if (metaData.permissions() & QFile::WriteOther)
+            perms |= S_IWOTH;
+        if (metaData.permissions() & QFile::ExeOther)
+            perms |= S_IXOTH;
+        description += " permissions 0" + QByteArray::number(perms, 8);
+
+        return description
+                + " owned by UID " + QByteArray::number(metaData.userId())
+                + " GID " + QByteArray::number(metaData.groupId());
+    };
+
+    // http://standards.freedesktop.org/basedir-spec/latest/
+    const uint myUid = uint(geteuid());
+    const QFile::Permissions wantedPerms = QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner;
+    const QFileSystemMetaData::MetaDataFlags statFlags = QFileSystemMetaData::PosixStatFlags
+                                                         | QFileSystemMetaData::LinkType;
+    QFileSystemMetaData metaData;
+    QFileSystemEntry entry(xdgRuntimeDir);
+
+    // Check that the xdgRuntimeDir is a directory by attempting to create it.
+    // A stat() before mkdir() that concluded it doesn't exist is a meaningless
+    // result: we'd race against someone else attempting to create it.
+    // ### QFileSystemEngine::createDirectory cannot take the extra mode argument.
+    if (QT_MKDIR(entry.nativeFilePath(), 0700) == 0)
+        return true;
+    if (errno != EEXIST) {
+        qErrnoWarning("QStandardPaths: error creating runtime directory '%ls'",
+                      qUtf16Printable(xdgRuntimeDir));
+        return false;
+    }
+
+    // We use LinkType to force an lstat(), but fillMetaData() still returns error
+    // on broken symlinks.
+    if (!QFileSystemEngine::fillMetaData(entry, metaData, statFlags) && !metaData.isLink()) {
+        qErrnoWarning("QStandardPaths: error obtaining permissions of runtime directory '%ls'",
+                      qUtf16Printable(xdgRuntimeDir));
+        return false;
+    }
+
+    // Checks:
+    // - is a directory
+    // - is not a symlink (even is pointing to a directory)
+    if (metaData.isLink() || !metaData.isDirectory()) {
+        qWarning("QStandardPaths: runtime directory '%ls' is not a directory, but %s",
+                 qUtf16Printable(xdgRuntimeDir), describeMetaData(metaData).constData());
+        return false;
+    }
+
+    // - "The directory MUST be owned by the user"
+    if (metaData.userId() != myUid) {
+        qWarning("QStandardPaths: runtime directory '%ls' is not owned by UID %d, but %s",
+                 qUtf16Printable(xdgRuntimeDir), myUid, describeMetaData(metaData).constData());
+        return false;
+    }
+
+    // "and he MUST be the only one having read and write access to it. Its Unix access mode MUST be 0700."
+    if (metaData.permissions() != wantedPerms) {
+        // attempt to correct:
+        QSystemError error;
+        if (!QFileSystemEngine::setPermissions(entry, wantedPerms, error)) {
+            qErrnoWarning("QStandardPaths: could not set correct permissions on runtime directory "
+                          "'%ls', which is %s", qUtf16Printable(xdgRuntimeDir),
+                          describeMetaData(metaData).constData());
+            return false;
+        }
+    }
+
+    return true;
+}
+
 QString QStandardPaths::writableLocation(StandardLocation type)
 {
     switch (type) {
@@ -142,58 +248,22 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     }
     case RuntimeLocation:
     {
-        // http://standards.freedesktop.org/basedir-spec/latest/
-        const uint myUid = uint(geteuid());
-        // since the current user is the owner, set both xxxUser and xxxOwner
-        const QFile::Permissions wantedPerms = QFile::ReadUser | QFile::WriteUser | QFile::ExeUser
-                                               | QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner;
-        QFileInfo fileInfo;
         QString xdgRuntimeDir = QFile::decodeName(qgetenv("XDG_RUNTIME_DIR"));
-        if (xdgRuntimeDir.isEmpty()) {
+        bool fromEnv = !xdgRuntimeDir.isEmpty();
+        if (xdgRuntimeDir.isEmpty() || !checkXdgRuntimeDir(xdgRuntimeDir)) {
+            // environment variable not set or is set to something unsuitable
+            const uint myUid = uint(geteuid());
             const QString userName = QFileSystemEngine::resolveUserName(myUid);
             xdgRuntimeDir = QDir::tempPath() + QLatin1String("/runtime-") + userName;
-            fileInfo.setFile(xdgRuntimeDir);
+
+            if (!fromEnv) {
 #ifndef Q_OS_WASM
-            qWarning("QStandardPaths: XDG_RUNTIME_DIR not set, defaulting to '%ls'", qUtf16Printable(xdgRuntimeDir));
+                qWarning("QStandardPaths: XDG_RUNTIME_DIR not set, defaulting to '%ls'", qUtf16Printable(xdgRuntimeDir));
 #endif
-        } else {
-            fileInfo.setFile(xdgRuntimeDir);
-        }
-        if (fileInfo.exists()) {
-            if (!fileInfo.isDir()) {
-                qWarning("QStandardPaths: XDG_RUNTIME_DIR points to '%ls' which is not a directory",
-                         qUtf16Printable(xdgRuntimeDir));
-                return QString();
             }
-        } else {
-            QFileSystemEntry entry(xdgRuntimeDir);
-            if (!QFileSystemEngine::createDirectory(entry, false)) {
-                if (errno != EEXIST) {
-                    qErrnoWarning("QStandardPaths: error creating runtime directory %ls",
-                                  qUtf16Printable(xdgRuntimeDir));
-                    return QString();
-                }
-            } else {
-                QSystemError error;
-                if (!QFileSystemEngine::setPermissions(entry, wantedPerms, error)) {
-                    qWarning("QStandardPaths: could not set correct permissions on runtime directory %ls: %ls",
-                             qUtf16Printable(xdgRuntimeDir), qUtf16Printable(error.toString()));
-                    return QString();
-                }
-            }
-        }
-        // "The directory MUST be owned by the user"
-        if (fileInfo.ownerId() != myUid) {
-            qWarning("QStandardPaths: wrong ownership on runtime directory %ls, %d instead of %d",
-                     qUtf16Printable(xdgRuntimeDir),
-                     fileInfo.ownerId(), myUid);
-            return QString();
-        }
-        // "and he MUST be the only one having read and write access to it. Its Unix access mode MUST be 0700."
-        if (fileInfo.permissions() != wantedPerms) {
-            qWarning("QStandardPaths: wrong permissions on runtime directory %ls, %x instead of %x",
-                     qUtf16Printable(xdgRuntimeDir), uint(fileInfo.permissions()), uint(wantedPerms));
-            return QString();
+
+            if (!checkXdgRuntimeDir(xdgRuntimeDir))
+                xdgRuntimeDir.clear();
         }
 
         return xdgRuntimeDir;
