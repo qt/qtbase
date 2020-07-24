@@ -1598,17 +1598,26 @@ function(qt_create_nolink_target target dependee_target)
     if(NOT TARGET "${nolink_target}")
         add_library("${nolink_target}" INTERFACE)
         set(prefixed_nolink_target "${target}_nolink")
-        set_target_properties("${nolink_target}" PROPERTIES
-                              INTERFACE_INCLUDE_DIRECTORIES
-                              $<TARGET_PROPERTY:${target},INTERFACE_INCLUDE_DIRECTORIES>
-                              INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
-                              $<TARGET_PROPERTY:${target},INTERFACE_SYSTEM_INCLUDE_DIRECTORIES>
-                              INTERFACE_COMPILE_DEFINITIONS
-                              $<TARGET_PROPERTY:${target},INTERFACE_COMPILE_DEFINITIONS>
-                              INTERFACE_COMPILE_OPTIONS
-                              $<TARGET_PROPERTY:${target},INTERFACE_COMPILE_OPTIONS>
-                              INTERFACE_COMPILE_FEATURES
-                              $<TARGET_PROPERTY:${target},INTERFACE_COMPILE_FEATURES>)
+
+        # Whe configuring an example with qmake, if QtGui is built with Vulkan support but the
+        # user's machine where Qt is installed doesn't have Vulkan, qmake doesn't fail saying
+        # that vulkan is not installed. Instead it silently configures and just doesn't add
+        # the include headers.
+        # To mimic that in CMake, if the Vulkan CMake package is not found, we shouldn't fail
+        # at generation time saying that the Vulkan target does not exist. Instead check with a
+        # genex that the target exists to query the properties, otherwise just silently continue.
+        # FIXME: If we figure out that such behavior should only be applied to Vulkan, and not the
+        # other _nolink targets, we'll have to modify this to be configurable.
+        set(target_exists_genex "$<TARGET_EXISTS:${target}>")
+        set(props_to_set INTERFACE_INCLUDE_DIRECTORIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
+                         INTERFACE_COMPILE_DEFINITIONS INTERFACE_COMPILE_OPTIONS
+                         INTERFACE_COMPILE_FEATURES)
+        foreach(prop ${props_to_set})
+            set_target_properties(
+                "${nolink_target}" PROPERTIES
+                ${prop} $<${target_exists_genex}:$<TARGET_PROPERTY:${target},${prop}>>
+                )
+        endforeach()
 
         add_library(${prefixed_nolink_target} ALIAS ${nolink_target})
         add_library("${INSTALL_CMAKE_NAMESPACE}::${nolink_target}" ALIAS ${nolink_target})
