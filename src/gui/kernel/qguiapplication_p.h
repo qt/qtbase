@@ -96,6 +96,7 @@ public:
     bool shouldQuitInternal(const QWindowList &processedWindows);
     virtual bool tryCloseAllWindows();
 
+    static void captureGlobalModifierState(QEvent *e);
     static Qt::KeyboardModifiers modifier_buttons;
     static Qt::MouseButtons mouse_buttons;
 
