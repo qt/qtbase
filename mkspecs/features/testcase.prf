@@ -19,6 +19,10 @@ testcase_lowdpi {
             error("QMAKE_INFO_PLIST already set, can't apply testcase_lowdpi")
 
         QMAKE_INFO_PLIST = $$QMAKESPEC/Info.plist.disable_highdpi
+        # Needs to be bundle so that Launch Services will pick
+        # up and apply the NSHighResolutionCapable=NO state.
+        CONFIG += app_bundle
+
     } else {
         # TODO: Add support for other platforms if possible
     }
