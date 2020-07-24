@@ -286,7 +286,7 @@ double qt_asciiToDouble(const char *num, int numLen, bool &ok, int &processed,
         return needleLen == haystackLen && memcmp(needle, haystack, haystackLen) == 0;
     };
 
-    if (*num == '\0') {
+    if (numLen == 0) {
         ok = false;
         processed = 0;
         return 0.0;
