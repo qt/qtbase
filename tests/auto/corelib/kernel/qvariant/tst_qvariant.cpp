@@ -3629,7 +3629,7 @@ void tst_QVariant::userConversion()
         QVERIFY(!(QMetaType::hasRegisteredConverterFunction<double, BigConvertible>()));
         QVERIFY(!(QMetaType::hasRegisteredConverterFunction<QString, BigConvertible>()));
 
-        BigConvertible c = { 123, 0, 0 };
+        BigConvertible c = { 123, { 0, 0 } };
         QVariant v = QVariant::fromValue(c);
 
         bool ok;
