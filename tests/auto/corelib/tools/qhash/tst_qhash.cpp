@@ -331,6 +331,8 @@ void tst_QHash::insert1()
         QVERIFY(hash.size() == 2);
         QVERIFY(!hash.isEmpty());
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wself-assign-overloaded")
         {
             Hash hash2 = hash;
             hash2 = hash;
@@ -343,6 +345,7 @@ void tst_QHash::insert1()
             QVERIFY(hash2.isEmpty());
         }
         QVERIFY(hash.size() == 2);
+QT_WARNING_POP
 
         {
             Hash hash2 = hash;

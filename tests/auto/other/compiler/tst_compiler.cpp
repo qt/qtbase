@@ -1224,8 +1224,11 @@ void tst_Compiler::cxx11_rvalue_refs()
 #else
     // we require std::move:
     {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wself-move")
         int i = 1;
         i = std::move(i);
+QT_WARNING_POP
 
         MoveDefinedQString s("Hello");
         MoveDefinedQString t = std::move(s);

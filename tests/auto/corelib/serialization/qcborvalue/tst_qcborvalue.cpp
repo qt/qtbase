@@ -468,9 +468,12 @@ void tst_QCborValue::copyCompare()
     QFETCH(QCborValue, v);
     QCborValue other = v;
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wself-move")
     // self-moving
     v = std::move(v);
     QCOMPARE(v, other); // make sure it's still valid
+QT_WARNING_POP
 
     // moving
     v = std::move(other);

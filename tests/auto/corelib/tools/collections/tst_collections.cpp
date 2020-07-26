@@ -455,7 +455,10 @@ void tst_Collections::list()
         {
             QList<int> list;
             list.append(1);
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wself-assign-overloaded")
             list = list;
+QT_WARNING_POP
             QVERIFY(list.size() == 1);
         }
     }
@@ -1143,6 +1146,8 @@ void tst_Collections::hash()
         QVERIFY(hash.size() == 2);
         QVERIFY(!hash.isEmpty());
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wself-assign-overloaded")
         {
             Hash hash2 = hash;
             hash2 = hash;
@@ -1155,6 +1160,7 @@ void tst_Collections::hash()
             QVERIFY(hash2.isEmpty());
         }
         QVERIFY(hash.size() == 2);
+QT_WARNING_POP
 
         {
             Hash hash2 = hash;
@@ -1366,6 +1372,8 @@ void tst_Collections::map()
         QVERIFY(map.size() == 2);
         QVERIFY(!map.isEmpty());
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wself-assign-overloaded")
         {
             Map map2 = map;
             map2 = map;
@@ -1378,6 +1386,7 @@ void tst_Collections::map()
             QVERIFY(map2.isEmpty());
         }
         QVERIFY(map.size() == 2);
+QT_WARNING_POP
 
         {
             Map map2 = map;

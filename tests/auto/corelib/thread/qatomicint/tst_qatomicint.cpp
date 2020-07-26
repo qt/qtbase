@@ -840,9 +840,12 @@ void tst_QAtomicInt::operators()
     QCOMPARE(int(atomic), x);
     QCOMPARE(int(atomic), 0x13);
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wself-assign-overloaded")
     x = (atomic ^= atomic);
     QCOMPARE(int(atomic), x);
     QCOMPARE(int(atomic), 0);
+QT_WARNING_POP
 }
 
 void tst_QAtomicInt::testAndSet_loop()

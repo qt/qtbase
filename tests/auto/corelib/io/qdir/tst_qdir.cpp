@@ -1653,7 +1653,10 @@ void tst_QDir::dirName()
 void tst_QDir::operator_eq()
 {
     QDir dir1(".");
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wself-assign-overloaded")
     dir1 = dir1;
+QT_WARNING_POP
     dir1.setPath("..");
 }
 

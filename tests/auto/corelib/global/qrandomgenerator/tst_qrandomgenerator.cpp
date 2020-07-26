@@ -147,6 +147,9 @@ void tst_QRandomGenerator::basics()
     // default constructible
     QRandomGenerator rng;
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wself-move")
+QT_WARNING_DISABLE_CLANG("-Wself-assign-overloaded")
     // copyable && movable
     rng = rng;
     rng = std::move(rng);
@@ -155,6 +158,7 @@ void tst_QRandomGenerator::basics()
     QRandomGenerator64 rng64;
     rng64 = rng64;
     rng64 = std::move(rng64);
+QT_WARNING_POP
 
     // 32- and 64-bit should be interchangeable:
     rng = rng64;
