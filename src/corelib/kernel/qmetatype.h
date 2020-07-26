@@ -404,8 +404,8 @@ public:
     bool isValid() const;
     bool isRegistered() const;
     int id() const;
-    int sizeOf() const;
-    int alignOf() const;
+    qsizetype sizeOf() const;
+    qsizetype alignOf() const;
     TypeFlags flags() const;
     const QMetaObject *metaObject() const;
     const char *name() const;

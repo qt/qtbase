@@ -505,7 +505,7 @@ int QMetaType::id() const
 
     \sa QMetaType::construct(), QMetaType::sizeOf(), QMetaType::alignOf()
 */
-int QMetaType::sizeOf() const
+qsizetype QMetaType::sizeOf() const
 {
     if (d_ptr)
         return d_ptr->size;
@@ -526,7 +526,7 @@ int QMetaType::sizeOf() const
   \sa QMetaType::construct(), QMetaType::sizeOf()
 
  */
-int QMetaType::alignOf() const
+qsizetype QMetaType::alignOf() const
 {
     if (d_ptr)
         return d_ptr->alignment;
