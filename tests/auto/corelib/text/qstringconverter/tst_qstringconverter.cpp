@@ -1262,6 +1262,8 @@ void tst_QStringConverter::utf8Codec()
     QCOMPARE(str, res);
 }
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 void tst_QStringConverter::utf8bom_data()
 {
     QTest::addColumn<QByteArray>("data");
@@ -1312,6 +1314,7 @@ void tst_QStringConverter::utf8bom_data()
             << QString::fromUtf16(data, sizeof(data)/sizeof(short));
     }
 }
+QT_WARNING_POP
 
 void tst_QStringConverter::utf8bom()
 {

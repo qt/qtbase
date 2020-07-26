@@ -27,6 +27,8 @@
 ****************************************************************************/
 #include <QtTest/QtTest>
 
+QT_WARNING_DISABLE_DEPRECATED
+
 class tst_QRand: public QObject
 {
     Q_OBJECT

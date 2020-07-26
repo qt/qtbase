@@ -28,6 +28,8 @@
 
 #include <QtTest/QtTest>
 
+QT_WARNING_DISABLE_DEPRECATED
+
 #include <qcoreapplication.h>
 #include <qdebug.h>
 #include <qxml.h>

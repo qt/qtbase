@@ -28,6 +28,8 @@
 
 #include <QtTest>
 
+QT_WARNING_DISABLE_DEPRECATED
+
 #include "qjsonarray.h"
 #include "qjsonobject.h"
 #include "qjsonvalue.h"

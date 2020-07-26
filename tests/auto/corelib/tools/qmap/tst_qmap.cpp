@@ -30,6 +30,7 @@
 #include <QtTest/QtTest>
 #include <QDebug>
 
+QT_WARNING_DISABLE_DEPRECATED
 
 class tst_QMap : public QObject
 {

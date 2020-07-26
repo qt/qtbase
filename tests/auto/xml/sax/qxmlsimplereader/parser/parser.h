@@ -30,6 +30,8 @@
 
 #include <qglobal.h>
 
+QT_WARNING_DISABLE_DEPRECATED
+
 #if QT_DEPRECATED_SINCE(5, 15)
 
 #include <qfile.h>
