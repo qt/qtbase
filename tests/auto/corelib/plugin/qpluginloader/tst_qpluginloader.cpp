@@ -384,7 +384,7 @@ void tst_QPluginLoader::loadMachO()
         return;
 
     QVERIFY(pos > 0);
-    QVERIFY(len >= sizeof(void*));
+    QVERIFY(size_t(len) >= sizeof(void*));
     QVERIFY(pos + long(len) < data.size());
     QCOMPARE(pos & (sizeof(void*) - 1), 0UL);
 
