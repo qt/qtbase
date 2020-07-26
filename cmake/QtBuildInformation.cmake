@@ -21,16 +21,15 @@ function(qt_print_build_instructions)
     set(build_command "cmake --build . --parallel")
     set(install_command "cmake --install .")
 
-    message("Qt is now configured for building. Just run '${build_command}'")
+    message("Qt is now configured for building. Just run '${build_command}'\n")
     if(QT_WILL_INSTALL)
         message("Once everything is built, you must run '${install_command}'")
         message("Qt will be installed into '${CMAKE_INSTALL_PREFIX}'")
     else()
-        message("Once everything is built, Qt is installed.")
-        message("You should NOT run '${install_command}'")
+        message("Once everything is built, Qt is installed. You should NOT run '${install_command}'")
         message("Note that this build cannot be deployed to other machines or devices.")
     endif()
-    message("To configure and build other modules, you can use the following convenience script:
+    message("\nTo configure and build other modules, you can use the following convenience script:
         ${QT_STAGING_PREFIX}/${INSTALL_BINDIR}/qt-cmake")
     message("\nIf reconfiguration fails for some reason, try to remove 'CMakeCache.txt' \
 from the build directory \n")
