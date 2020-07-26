@@ -535,7 +535,7 @@ void tst_QArrayData::reallocate()
 
 class Unaligned
 {
-    char dummy[8];
+    Q_DECL_UNUSED_MEMBER char dummy[8];
 };
 
 void tst_QArrayData::alignment_data()

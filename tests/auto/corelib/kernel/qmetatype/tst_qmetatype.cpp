@@ -986,9 +986,9 @@ public:
 };
 Q_DECLARE_METATYPE(CustomMultiInheritanceObject*);
 
-class C { char _[4]; public: C() = default; C(const C&) {} };
-class M { char _[4]; public: M() {} };
-class P { char _[4]; };
+class C { Q_DECL_UNUSED_MEMBER char _[4]; public: C() = default; C(const C&) {} };
+class M { Q_DECL_UNUSED_MEMBER char _[4]; public: M() {} };
+class P { Q_DECL_UNUSED_MEMBER char _[4]; };
 
 QT_BEGIN_NAMESPACE
 #if defined(Q_CC_GNU) && Q_CC_GNU < 501

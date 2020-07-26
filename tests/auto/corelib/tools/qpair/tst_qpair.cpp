@@ -43,9 +43,9 @@ private Q_SLOTS:
     void testDeductionRules();
 };
 
-class C { C() {} char _[4]; };
-class M { M() {} char _[4]; };
-class P { char _[4]; };
+class C { C() {} Q_DECL_UNUSED_MEMBER char _[4]; };
+class M { M() {} Q_DECL_UNUSED_MEMBER char _[4]; };
+class P { Q_DECL_UNUSED_MEMBER char _[4]; };
 
 QT_BEGIN_NAMESPACE
 Q_DECLARE_TYPEINFO(M, Q_MOVABLE_TYPE);
