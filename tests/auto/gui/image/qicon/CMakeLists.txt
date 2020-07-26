@@ -1,6 +1,5 @@
 # Generated from qicon.pro.
 
-add_definitions(-DTESTCASE_LOWDPI) # special case
 #####################################################################
 ## tst_qicon Test:
 #####################################################################
@@ -32,6 +31,7 @@ file(GLOB_RECURSE test_data_glob
 list(APPEND test_data ${test_data_glob})
 
 qt_add_test(tst_qicon
+    LOWDPI # special case
     SOURCES
         tst_qicon.cpp
     PUBLIC_LIBRARIES
