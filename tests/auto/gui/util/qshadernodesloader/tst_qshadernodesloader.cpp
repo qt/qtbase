@@ -225,7 +225,7 @@ void tst_QShaderNodesLoader::shouldLoadFromJsonStream_data()
                            "    }"
                            "}";
 
-    const auto smallProtos = [this]{
+    const auto smallProtos = [&]{
         const auto openGLES2 = createFormat(QShaderFormat::OpenGLES, 2, 0);
         const auto openGLES2Extended = createFormat(QShaderFormat::OpenGLES, 2, 0, {"ext1", "ext2"}, "kdab");
         const auto openGL2 = createFormat(QShaderFormat::OpenGLCompatibilityProfile, 2, 1);

@@ -276,7 +276,7 @@ void tst_QShaderGraphLoader::shouldManipulateLoaderMembers()
 
 
     // WHEN
-    const auto prototypes = [this]{
+    const auto prototypes = [&]{
         auto res = QHash<QString, QShaderNode>();
         res.insert("foo", createNode({}));
         return res;
@@ -332,7 +332,7 @@ void tst_QShaderGraphLoader::shouldLoadFromJsonStream_data()
                            "    ]"
                            "}";
 
-    const auto smallProtos = [this]{
+    const auto smallProtos = [&]{
         auto protos = PrototypeHash();
 
         auto input = createNode({
@@ -353,7 +353,7 @@ void tst_QShaderGraphLoader::shouldLoadFromJsonStream_data()
         return protos;
     }();
 
-    const auto smallGraph = [this]{
+    const auto smallGraph = [&]{
         auto graph = QShaderGraph();
 
         auto input = createNode({
@@ -485,7 +485,7 @@ void tst_QShaderGraphLoader::shouldLoadFromJsonStream_data()
                              "    ]"
                              "}";
 
-    const auto complexProtos = [this]{
+    const auto complexProtos = [&]{
         const auto openGLES2 = createFormat(QShaderFormat::OpenGLES, 2, 0);
         const auto openGL3 = createFormat(QShaderFormat::OpenGLCoreProfile, 3, 0);
 
