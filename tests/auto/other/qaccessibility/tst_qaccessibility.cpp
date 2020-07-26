@@ -292,7 +292,7 @@ void tst_QAccessibility::cleanup()
 {
     const EventList list = QTestAccessibility::events();
     if (!list.isEmpty()) {
-        qWarning("%d accessibility event(s) were not handled in testfunction '%s':", list.count(),
+        qWarning("%zd accessibility event(s) were not handled in testfunction '%s':", size_t(list.count()),
                  QString(QTest::currentTestFunction()).toLatin1().constData());
         for (int i = 0; i < list.count(); ++i)
             qWarning(" %d: Object: %p Event: '%s' Child: %d", i + 1, list.at(i)->object(),

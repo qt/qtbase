@@ -605,8 +605,8 @@ static bool compareStates(const QSignalSpy& spy, const StateList &expectedStates
 
         }
         qDebug("\n"
-               "expected (count == %d): %s\n"
-               "actual   (count == %d): %s\n", expectedStates.count(), qPrintable(e), spy.count(), qPrintable(a));
+               "expected (count == %zd): %s\n"
+               "actual   (count == %zd): %s\n", size_t(expectedStates.count()), qPrintable(e), size_t(spy.count()), qPrintable(a));
     }
     return equals;
 }

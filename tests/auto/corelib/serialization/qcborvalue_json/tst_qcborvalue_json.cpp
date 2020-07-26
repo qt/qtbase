@@ -80,7 +80,7 @@ void tst_QCborValue_Json::toVariant_data()
             if (v.type() == QCborValue::Double)
                 return QTest::addRow("Double:%g", exp.toDouble());
             if (v.type() == QCborValue::ByteArray || v.type() == QCborValue::String)
-                return QTest::addRow("%s:%d", typeString, exp.toString().size());
+                return QTest::addRow("%s:%zd", typeString, size_t(exp.toString().size()));
             if (v.type() >= 0x10000)
                 return QTest::newRow(exp.typeName());
             return QTest::newRow(typeString);
