@@ -2886,7 +2886,7 @@ void tst_QList::fromReadOnlyData() const
 
         QVERIFY(v.constData() == data);
         QVERIFY(!v.isEmpty());
-        QCOMPARE(v.size(), size_t(11));
+        QCOMPARE(v.size(), qsizetype(11));
         // v.capacity() is unspecified, for now
 
         QCOMPARE((void*)(const char*)(v.constBegin() + v.size()), (void*)(const char*)v.constEnd());
