@@ -580,7 +580,6 @@ private slots:
     void truncateWithNegative() const;
     void QCharRefMutableUnicode() const;
     void QCharRefDetaching() const;
-    void sprintfZU() const;
     void repeatedSignature() const;
     void repeated() const;
     void repeated_data() const;
@@ -1257,6 +1256,33 @@ void tst_QString::asprintf()
     QCOMPARE(QString::asprintf("%lf", 1.23456789), QLatin1String("1.234568"));
     QCOMPARE(QString::asprintf("%p", ptrValue(0xbfffd350)), QLatin1String("0xbfffd350"));
     QCOMPARE(QString::asprintf("%p", ptrValue(0)), QLatin1String("0x0"));
+    QCOMPARE(QString::asprintf("%td", ptrdiff_t(6)), QString::fromLatin1("6"));
+    QCOMPARE(QString::asprintf("%td", ptrdiff_t(-6)), QString::fromLatin1("-6"));
+    QCOMPARE(QString::asprintf("%zu", size_t(6)), QString::fromLatin1("6"));
+    QCOMPARE(QString::asprintf("%zu", size_t(1) << 31), QString::fromLatin1("2147483648"));
+
+    // cross z and t
+    using ssize_t = std::make_signed<size_t>::type;         // should be ptrdiff_t
+    using uptrdiff_t = std::make_unsigned<ptrdiff_t>::type; // should be size_t
+    QCOMPARE(QString::asprintf("%tu", uptrdiff_t(6)), QString::fromLatin1("6"));
+    QCOMPARE(QString::asprintf("%tu", uptrdiff_t(1) << 31), QString::fromLatin1("2147483648"));
+    QCOMPARE(QString::asprintf("%zd", ssize_t(-6)), QString::fromLatin1("-6"));
+
+    if (sizeof(qsizetype) > sizeof(int)) {
+        // 64-bit test
+        QCOMPARE(QString::asprintf("%zu", SIZE_MAX), QString::fromLatin1("18446744073709551615"));
+        QCOMPARE(QString::asprintf("%td", PTRDIFF_MAX), QString::fromLatin1("9223372036854775807"));
+        QCOMPARE(QString::asprintf("%td", PTRDIFF_MIN), QString::fromLatin1("-9223372036854775808"));
+
+        // sign extension is easy, make sure we can get something middle-ground
+        // (24 + 8 = 32; addition used to avoid warning about shifting more
+        // than size type on 32-bit systems)
+        size_t ubig = size_t(1) << (24 + sizeof(size_t));
+        ptrdiff_t sbig = ptrdiff_t(1) << (24 + sizeof(ptrdiff_t));
+        QCOMPARE(QString::asprintf("%zu", ubig), QString::fromLatin1("4294967296"));
+        QCOMPARE(QString::asprintf("%td", sbig), QString::fromLatin1("4294967296"));
+        QCOMPARE(QString::asprintf("%td", -sbig), QString::fromLatin1("-4294967296"));
+    }
 
     int i = 6;
     long l = -2;
@@ -1265,6 +1291,14 @@ void tst_QString::asprintf()
 
     double d = -514.25683;
     QCOMPARE(QString::asprintf("%f", d), QLatin1String("-514.256830"));
+
+    {
+        /* This code crashed. I don't know how to reduce it further. In other words,
+         * both %zu and %s needs to be present. */
+        size_t s = 6;
+        QCOMPARE(QString::asprintf("%zu%s", s, "foo"), QString::fromLatin1("6foo"));
+        QCOMPARE(QString::asprintf("%zu %s\n", s, "foo"), QString::fromLatin1("6 foo\n"));
+    }
 }
 
 void tst_QString::asprintfS()
@@ -6365,30 +6399,6 @@ void tst_QString::QCharRefDetaching() const
         str[0] = QLatin1Char('S');
 
         QCOMPARE(buf[0], ushort('s'));
-    }
-}
-
-void tst_QString::sprintfZU() const
-{
-    {
-        size_t s = 6;
-        QCOMPARE(QString::asprintf("%zu", s), QString::fromLatin1("6"));
-    }
-
-    {
-        QCOMPARE(QString::asprintf("%s\n", "foo"), QString::fromLatin1("foo\n"));
-    }
-
-    {
-        /* This code crashed. I don't know how to reduce it further. In other words,
-         * both %zu and %s needs to be present. */
-        size_t s = 6;
-        QCOMPARE(QString::asprintf("%zu%s", s, "foo"), QString::fromLatin1("6foo"));
-    }
-
-    {
-        size_t s = 6;
-        QCOMPARE(QString::asprintf("%zu %s\n", s, "foo"), QString::fromLatin1("6 foo\n"));
     }
 }
 

@@ -6383,8 +6383,10 @@ QString QString::vasprintf(const char *cformat, va_list ap)
                     case lm_l: i = va_arg(ap, long int); break;
                     case lm_ll: i = va_arg(ap, qint64); break;
                     case lm_j: i = va_arg(ap, long int); break;
-                    case lm_z: i = va_arg(ap, size_t); break;
-                    case lm_t: i = va_arg(ap, int); break;
+
+                    /* ptrdiff_t actually, but it should be the same for us */
+                    case lm_z: i = va_arg(ap, qsizetype); break;
+                    case lm_t: i = va_arg(ap, qsizetype); break;
                     default: i = 0; break;
                 }
                 subst = QLocaleData::c()->longLongToString(i, precision, 10, width, flags);
@@ -6402,6 +6404,7 @@ QString QString::vasprintf(const char *cformat, va_list ap)
                     case lm_h: u = va_arg(ap, uint); break;
                     case lm_l: u = va_arg(ap, ulong); break;
                     case lm_ll: u = va_arg(ap, quint64); break;
+                    case lm_t: u = va_arg(ap, size_t); break;
                     case lm_z: u = va_arg(ap, size_t); break;
                     default: u = 0; break;
                 }
