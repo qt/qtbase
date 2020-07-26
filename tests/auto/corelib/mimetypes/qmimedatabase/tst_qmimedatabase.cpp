@@ -858,14 +858,14 @@ void tst_QMimeDatabase::fromThreads()
     QThreadPool tp;
     tp.setMaxThreadCount(20);
     // Note that data-based tests cannot be used here (QTest::fetchData asserts).
-    QtConcurrent::run(&tp, &tst_QMimeDatabase::mimeTypeForName, this);
-    QtConcurrent::run(&tp, &tst_QMimeDatabase::aliases, this);
-    QtConcurrent::run(&tp, &tst_QMimeDatabase::allMimeTypes, this);
-    QtConcurrent::run(&tp, &tst_QMimeDatabase::icons, this);
-    QtConcurrent::run(&tp, &tst_QMimeDatabase::inheritance, this);
-    QtConcurrent::run(&tp, &tst_QMimeDatabase::knownSuffix, this);
-    QtConcurrent::run(&tp, &tst_QMimeDatabase::mimeTypeForFileWithContent, this);
-    QtConcurrent::run(&tp, &tst_QMimeDatabase::allMimeTypes, this); // a second time
+    Q_UNUSED(QtConcurrent::run(&tp, &tst_QMimeDatabase::mimeTypeForName, this));
+    Q_UNUSED(QtConcurrent::run(&tp, &tst_QMimeDatabase::aliases, this));
+    Q_UNUSED(QtConcurrent::run(&tp, &tst_QMimeDatabase::allMimeTypes, this));
+    Q_UNUSED(QtConcurrent::run(&tp, &tst_QMimeDatabase::icons, this));
+    Q_UNUSED(QtConcurrent::run(&tp, &tst_QMimeDatabase::inheritance, this));
+    Q_UNUSED(QtConcurrent::run(&tp, &tst_QMimeDatabase::knownSuffix, this));
+    Q_UNUSED(QtConcurrent::run(&tp, &tst_QMimeDatabase::mimeTypeForFileWithContent, this));
+    Q_UNUSED(QtConcurrent::run(&tp, &tst_QMimeDatabase::allMimeTypes, this)); // a second time
     QVERIFY(tp.waitForDone(60000));
 }
 

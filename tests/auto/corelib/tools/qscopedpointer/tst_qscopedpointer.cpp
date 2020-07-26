@@ -252,7 +252,7 @@ void tst_QScopedPointer::negationOperatorSignature()
     !p;
 
     /* The return value should be bool. */
-    static_cast<bool>(!p);
+    Q_UNUSED(static_cast<bool>(!p));
 }
 
 void tst_QScopedPointer::operatorBool()
@@ -302,7 +302,7 @@ void tst_QScopedPointer::isNullSignature()
     const QScopedPointer<int> p(new int(69));
 
     /* The signature should be const and return bool. */
-    static_cast<bool>(p.isNull());
+    Q_UNUSED(static_cast<bool>(p.isNull()));
 }
 
 void tst_QScopedPointer::objectSize()
