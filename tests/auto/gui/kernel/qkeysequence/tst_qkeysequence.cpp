@@ -77,11 +77,6 @@ static bool operator<(const MacSpecialKey &entry, int key)
     return entry.key < key;
 }
 
-static bool operator<(int key, const MacSpecialKey &entry)
-{
-    return key < entry.key;
-}
-
 static const MacSpecialKey * const MacSpecialKeyEntriesEnd = entries + NumEntries;
 
 static QChar macSymbolForQtKey(int key)

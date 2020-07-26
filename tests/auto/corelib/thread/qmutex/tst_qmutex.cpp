@@ -715,7 +715,6 @@ void tst_QMutex::try_lock_for_recursive()
     public:
         void run()
         {
-            const std::chrono::milliseconds systemTimersResolutionAsDuration(systemTimersResolution);
             testsTurn.release();
 
             threadsTurn.acquire();

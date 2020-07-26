@@ -859,7 +859,6 @@ void tst_QSqlTableModel::insertRowFailure()
     values.setGenerated(1, true);
 
     // populate 1 row
-    const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
     QVERIFY_SQL(model, insertRecord(0, values));
     QVERIFY_SQL(model, submitAll());
     QVERIFY_SQL(model, select());

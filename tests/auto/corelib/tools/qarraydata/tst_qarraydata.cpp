@@ -1041,22 +1041,6 @@ void tst_QArrayData::arrayOps2()
 
 Q_DECLARE_METATYPE(QArrayDataPointer<int>)
 
-static inline bool arrayIsFilledWith(const QArrayDataPointer<int> &array,
-        int fillValue, size_t size)
-{
-    const int *iter = array->begin();
-    const int *const end = array->end();
-
-    for (size_t i = 0; i < size; ++i, ++iter)
-        if (*iter != fillValue)
-            return false;
-
-    if (iter != end)
-        return false;
-
-    return true;
-}
-
 struct ResetOnDtor
 {
     ResetOnDtor()

@@ -608,10 +608,12 @@ void tst_QMdiArea::showWindows()
 
 //#define USE_SHOW
 
+#if !defined(Q_OS_DARWIN)
 static inline QString windowTitle(const QString &t, const QString &f)
 {
     return t + QLatin1String(" - [") + f + QLatin1Char(']');
 }
+#endif
 
 void tst_QMdiArea::changeWindowTitle()
 {

@@ -359,7 +359,7 @@ void tst_QDialog::showSizeGrip()
 {
     QDialog dialog(nullptr);
     dialog.show();
-    QWidget *ext = new QWidget(&dialog);
+    new QWidget(&dialog);
     QVERIFY(!dialog.isSizeGripEnabled());
 
     dialog.setSizeGripEnabled(true);

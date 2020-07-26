@@ -955,17 +955,11 @@ void tst_QPainterPath::operators()
     QCOMPARE(test, expected);
 }
 
-static inline bool pathFuzzyCompare(double p1, double p2)
+template <typename T>
+static inline bool pathFuzzyCompare(T p1, T p2)
 {
     return qAbs(p1 - p2) < 0.001;
 }
-
-
-static inline bool pathFuzzyCompare(float p1, float p2)
-{
-    return qAbs(p1 - p2) < 0.001;
-}
-
 
 void tst_QPainterPath::testArcMoveTo()
 {

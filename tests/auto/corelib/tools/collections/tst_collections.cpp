@@ -2737,14 +2737,12 @@ void instantiatePairAssociative()
 {
     instantiateMutableIterationContainer<ContainerType, KeyType>();
 
-    typename ContainerType::iterator it;
-    typename ContainerType::const_iterator constIt;
     const KeyType key = KeyType();
     const ValueType value = ValueType();
     ContainerType container;
     const ContainerType constContainer(container);
 
-    it = container.insert(key, value);
+    auto it = container.insert(key, value);
     container.erase(it);
     container.find(key);
     container.constFind(key);

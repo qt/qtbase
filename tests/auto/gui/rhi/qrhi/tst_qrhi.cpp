@@ -475,13 +475,13 @@ void tst_QRhi::nativeHandles()
         rt->setRenderPassDescriptor(rpDesc.data());
         QVERIFY(rt->create());
 
-        const QRhiNativeHandles *rpHandles = rpDesc->nativeHandles();
         switch (impl) {
         case QRhi::Null:
             break;
 #ifdef TST_VK
         case QRhi::Vulkan:
         {
+            const QRhiNativeHandles *rpHandles = rpDesc->nativeHandles();
             const QRhiVulkanRenderPassNativeHandles *vkHandles = static_cast<const QRhiVulkanRenderPassNativeHandles *>(rpHandles);
             QVERIFY(vkHandles);
             QVERIFY(vkHandles->renderPass);
