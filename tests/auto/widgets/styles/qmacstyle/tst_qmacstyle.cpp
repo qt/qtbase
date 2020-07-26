@@ -295,6 +295,8 @@ QSize tst_QMacStyle::gap(QWidget *widget1, QWidget *widget2)
 void tst_QMacStyle::setSize(QWidget *widget, QStyleHelper::WidgetSizePolicy size)
 {
     switch (size) {
+    case QStyleHelper::SizeDefault:
+        break;
     case QStyleHelper::SizeLarge:
         widget->setAttribute(Qt::WA_MacNormalSize, true);
         break;
