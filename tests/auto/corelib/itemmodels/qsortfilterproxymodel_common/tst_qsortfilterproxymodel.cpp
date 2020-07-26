@@ -3500,7 +3500,7 @@ public:
     }
 
 private slots:
-  void resetInternalData()
+  void resetInternalData() override
   {
       m_backgroundColours.clear();
   }
