@@ -161,7 +161,7 @@ public:
     char *func_Pchar() { ADD("TestClass1::func_Pchar"); return 0; }
     const char *func_KPchar() { ADD("TestClass1::func_KPchar"); return 0; }
     const volatile char *func_VKPchar() { ADD("TestClass1::func_VKPchar"); return 0; }
-    const volatile unsigned long long * const volatile func_KVPKVull() { ADD("TestClass1::func_KVPKVull"); return 0; }
+    const volatile unsigned long long * func_KVPull() { ADD("TestClass1::func_KVPull"); return 0; }
     const void * const volatile *func_KPKVvoid() { ADD("TestClass1::func_KPKVvoid"); return 0; }
 
     QList<int> func_ai() { ADD("TestClass1::func_ai"); return QList<int>(); }
@@ -248,7 +248,7 @@ public:
             func_Pchar();
             func_KPchar();
             func_VKPchar();
-            func_KVPKVull();
+            func_KVPull();
             func_KPKVvoid();
             func_ai();
             func_aptr();
@@ -455,11 +455,11 @@ void tst_qmessagehandler::cleanupFuncinfo_data()
         << "TestClass1::func_VKPchar";
 
     QTest::newRow("msvc_13")
-        << "volatile const unsigned __int64 *volatile const __thiscall TestClass1::func_KVPKVull(void)"
-        << "TestClass1::func_KVPKVull";
+        << "volatile const unsigned __int64 *__thiscall TestClass1::func_KVPull(void)"
+        << "TestClass1::func_KVPull";
     QTest::newRow("gcc_13")
-        << "const volatile long long unsigned int* const volatile TestClass1::func_KVPKVull()"
-        << "TestClass1::func_KVPKVull";
+        << "const volatile long long unsigned int* TestClass1::func_KVPull()"
+        << "TestClass1::func_KVPull";
 
     QTest::newRow("msvc_14")
         << "const void *volatile const *__thiscall TestClass1::func_KPKVvoid(void)"
