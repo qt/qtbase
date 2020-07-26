@@ -46,11 +46,75 @@
 #include <QtConcurrent/qtconcurrentrunbase.h>
 #include <type_traits>
 
+#include <qpromise.h>
+
 QT_BEGIN_NAMESPACE
 
 #ifndef Q_QDOC
 
 namespace QtConcurrent {
+
+template<typename...>
+struct NonMemberFunctionResolver;
+
+template <class Function, class PromiseType, class... Args>
+struct NonMemberFunctionResolver<Function, PromiseType, Args...>
+{
+    using Type = std::tuple<std::decay_t<Function>, QPromise<PromiseType> &, std::decay_t<Args>...>;
+    static_assert(std::is_invocable_v<std::decay_t<Function>, QPromise<PromiseType> &, std::decay_t<Args>...>,
+                  "It's not possible to invoke the function with passed arguments.");
+    static_assert(std::is_void_v<std::invoke_result_t<std::decay_t<Function>, QPromise<PromiseType> &, std::decay_t<Args>...>>,
+                  "The function must return void type.");
+
+    static constexpr decltype (auto) invokePointer()
+    {
+        return &std::invoke<std::decay_t<Function>, QPromise<PromiseType> &, std::decay_t<Args>...>;
+    }
+    static Type initData(Function &&f, QPromise<PromiseType> &promise, Args &&...args)
+    {
+        return Type { std::forward<Function>(f), std::ref(promise), std::forward<Args>(args)... };
+    }
+};
+
+template<typename...>
+struct MemberFunctionResolver;
+
+template <typename Function, typename PromiseType, typename Arg, typename ... Args>
+struct MemberFunctionResolver<Function, PromiseType, Arg, Args...>
+{
+    using Type = std::tuple<std::decay_t<Function>, std::decay_t<Arg>, QPromise<PromiseType> &, std::decay_t<Args>...>;
+    static_assert(std::is_invocable_v<std::decay_t<Function>, std::decay_t<Arg>, QPromise<PromiseType> &, std::decay_t<Args>...>,
+                  "It's not possible to invoke the function with passed arguments.");
+    static_assert(std::is_void_v<std::invoke_result_t<std::decay_t<Function>, std::decay_t<Arg>, QPromise<PromiseType> &, std::decay_t<Args>...>>,
+                  "The function must return void type.");
+
+    static constexpr decltype (auto) invokePointer()
+    {
+        return &std::invoke<std::decay_t<Function>, std::decay_t<Arg>, QPromise<PromiseType> &, std::decay_t<Args>...>;
+    }
+    static Type initData(Function &&f, QPromise<PromiseType> &promise, Arg &&fa, Args &&...args)
+    {
+        return Type { std::forward<Function>(f), std::forward<Arg>(fa), std::ref(promise), std::forward<Args>(args)... };
+    }
+};
+
+template <class IsMember, class Function, class PromiseType, class... Args>
+struct FunctionResolverHelper;
+
+template <class Function, class PromiseType, class... Args>
+struct FunctionResolverHelper<std::false_type, Function, PromiseType, Args...> : public NonMemberFunctionResolver<Function, PromiseType, Args...>
+{
+};
+
+template <class Function, class PromiseType, class... Args>
+struct FunctionResolverHelper<std::true_type, Function, PromiseType, Args...> : public MemberFunctionResolver<Function, PromiseType, Args...>
+{
+};
+
+template <class Function, class PromiseType, class... Args>
+struct FunctionResolver : public FunctionResolverHelper<typename std::is_member_function_pointer<std::decay_t<Function>>::type, Function, PromiseType, Args...>
+{
+};
 
 template <class Function, class ...Args>
 struct InvokeResult
@@ -92,6 +156,31 @@ protected:
 
 private:
     DecayedTuple<Function, Args...> data;
+};
+
+template <class Function, class PromiseType, class ...Args>
+struct StoredFunctionCallWithPromise : public RunFunctionTaskBase<PromiseType>
+{
+    using Resolver = FunctionResolver<Function, PromiseType, Args...>;
+    using DataType = typename Resolver::Type;
+    StoredFunctionCallWithPromise(Function &&f, Args &&...args)
+        : prom(this->promise),
+          data(std::move(Resolver::initData(std::forward<Function>(f), std::ref(prom), std::forward<Args>(args)...)))
+    {}
+
+    StoredFunctionCallWithPromise(DataType &&_data)
+        : data(std::move(_data))
+    {}
+
+protected:
+    void runFunctor() override
+    {
+        std::apply(Resolver::invokePointer(), std::move(data));
+    }
+
+private:
+    QPromise<PromiseType> prom;
+    DataType data;
 };
 
 } //namespace QtConcurrent

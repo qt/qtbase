@@ -39,6 +39,7 @@ private slots:
     void runLightFunction();
     void runHeavyFunction();
     void returnValue();
+    void reportValueWithPromise();
     void functionObject();
     void memberFunctions();
     void implicitConvertibleTypes();
@@ -51,11 +52,39 @@ private slots:
     void functor();
     void lambda();
     void callableObjectWithState();
+    void withPromise();
+    void withPromiseInThreadPool();
+    void moveOnlyType();
+    void crefFunction();
 };
 
 void light()
 {
     qDebug("in function");
+    qDebug("done function");
+}
+
+void lightOverloaded()
+{
+    qDebug("in function");
+    qDebug("done function");
+}
+
+void lightOverloaded(int)
+{
+    qDebug("in function with arg");
+    qDebug("done function");
+}
+
+void lightOverloaded(QPromise<int> &)
+{
+    qDebug("in function with promise");
+    qDebug("done function");
+}
+
+void lightOverloaded(QPromise<double> &, int)
+{
+    qDebug("in function with promise and with arg");
     qDebug("done function");
 }
 
@@ -68,13 +97,40 @@ void heavy()
     qDebug("done function");
 }
 
-
 void tst_QtConcurrentRun::runLightFunction()
 {
     qDebug("starting function");
     QFuture<void> future = run(light);
     qDebug("waiting");
     future.waitForFinished();
+    qDebug("done");
+
+    void (*f1)() = lightOverloaded;
+    qDebug("starting function");
+    QFuture<void> future1 = run(f1);
+    qDebug("waiting");
+    future1.waitForFinished();
+    qDebug("done");
+
+    void (*f2)(int) = lightOverloaded;
+    qDebug("starting function with arg");
+    QFuture<void> future2 = run(f2, 2);
+    qDebug("waiting");
+    future2.waitForFinished();
+    qDebug("done");
+
+    void (*f3)(QPromise<int> &) = lightOverloaded;
+    qDebug("starting function with promise");
+    QFuture<void> future3 = runWithPromise(f3);
+    qDebug("waiting");
+    future3.waitForFinished();
+    qDebug("done");
+
+    void (*f4)(QPromise<double> &, int v) = lightOverloaded;
+    qDebug("starting function with promise and with arg");
+    QFuture<void> future4 = runWithPromise(f4, 2);
+    qDebug("waiting");
+    future4.waitForFinished();
     qDebug("done");
 }
 
@@ -147,6 +203,11 @@ void tst_QtConcurrentRun::returnValue()
     QCOMPARE(f.result(), 10);
     f = run(&pool, returnInt0);
     QCOMPARE(f.result(), 10);
+    f = run(returnInt1, 4);
+    QCOMPARE(f.result(), 4);
+    f = run(&pool, returnInt1, 4);
+    QCOMPARE(f.result(), 4);
+
 
     A a;
     f = run(&A::member0, &a);
@@ -189,6 +250,7 @@ void tst_QtConcurrentRun::returnValue()
     f = run(&pool, std::ref(a), 20);
     QCOMPARE(f.result(), 20);
 
+
     const AConst aConst = AConst();
     f = run(&AConst::member0, &aConst);
     QCOMPARE(f.result(), 10);
@@ -229,6 +291,7 @@ void tst_QtConcurrentRun::returnValue()
     QCOMPARE(f.result(), 20);
     f = run(&pool, std::ref(aConst), 20);
     QCOMPARE(f.result(), 20);
+
 
     ANoExcept aNoExcept;
     f = run(&ANoExcept::member0, &aNoExcept);
@@ -271,6 +334,7 @@ void tst_QtConcurrentRun::returnValue()
     f = run(&pool, std::ref(aNoExcept), 20);
     QCOMPARE(f.result(), 20);
 
+
     const AConstNoExcept aConstNoExcept = AConstNoExcept();
     f = run(&AConstNoExcept::member0, &aConstNoExcept);
     QCOMPARE(f.result(), 10);
@@ -311,6 +375,195 @@ void tst_QtConcurrentRun::returnValue()
     QCOMPARE(f.result(), 20);
     f = run(&pool, std::ref(aConstNoExcept), 20);
     QCOMPARE(f.result(), 20);
+}
+
+void reportInt0(QPromise<int> &promise)
+{
+    promise.addResult(0);
+}
+
+void reportIntPlusOne(QPromise<int> &promise, int i)
+{
+    promise.addResult(i + 1);
+}
+
+class AWithPromise
+{
+public:
+    void member0(QPromise<int> &promise) { promise.addResult(10); }
+    void member1(QPromise<int> &promise, int in) { promise.addResult(in); }
+
+    void operator()(QPromise<int> &promise) { promise.addResult(10); }
+};
+
+class AConstWithPromise
+{
+public:
+    void member0(QPromise<int> &promise) const { promise.addResult(10); }
+    void member1(QPromise<int> &promise, int in) const { promise.addResult(in); }
+
+    void operator()(QPromise<int> &promise) const { promise.addResult(10); }
+};
+
+class ANoExceptWithPromise
+{
+public:
+    void member0(QPromise<int> &promise) noexcept { promise.addResult(10); }
+    void member1(QPromise<int> &promise, int in) noexcept { promise.addResult(in); }
+
+    void operator()(QPromise<int> &promise) noexcept { promise.addResult(10); }
+};
+
+class AConstNoExceptWithPromise
+{
+public:
+    void member0(QPromise<int> &promise) const noexcept { promise.addResult(10); }
+    void member1(QPromise<int> &promise, int in) const noexcept { promise.addResult(in); }
+
+    void operator()(QPromise<int> &promise) const noexcept { promise.addResult(10); }
+};
+
+void tst_QtConcurrentRun::reportValueWithPromise()
+{
+    QThreadPool pool;
+    QFuture<int> f;
+
+    f = runWithPromise(reportInt0);
+    QCOMPARE(f.result(), 0);
+    f = runWithPromise(&pool, reportInt0);
+    QCOMPARE(f.result(), 0);
+    f = runWithPromise(reportIntPlusOne, 5);
+    QCOMPARE(f.result(), 6);
+    f = runWithPromise(&pool, reportIntPlusOne, 5);
+    QCOMPARE(f.result(), 6);
+
+
+    AWithPromise a;
+    f = runWithPromise(&AWithPromise::member0, &a);
+    QCOMPARE(f.result(), 10);
+    f = runWithPromise(&pool, &AWithPromise::member0, &a);
+    QCOMPARE(f.result(), 10);
+
+    f = runWithPromise(&AWithPromise::member1, &a, 20);
+    QCOMPARE(f.result(), 20);
+    f = runWithPromise(&pool, &AWithPromise::member1, &a, 20);
+    QCOMPARE(f.result(), 20);
+
+    f = runWithPromise(&AWithPromise::member0, a);
+    QCOMPARE(f.result(), 10);
+    f = runWithPromise(&pool, &AWithPromise::member0, a);
+    QCOMPARE(f.result(), 10);
+
+    f = runWithPromise(&AWithPromise::member1, a, 20);
+    QCOMPARE(f.result(), 20);
+    f = runWithPromise(&pool, &AWithPromise::member1, a, 20);
+    QCOMPARE(f.result(), 20);
+
+    f = runWithPromise(a);
+    QCOMPARE(f.result(), 10);
+    f = runWithPromise(&pool, a);
+    QCOMPARE(f.result(), 10);
+
+    f = runWithPromise(std::ref(a));
+    QCOMPARE(f.result(), 10);
+    f = runWithPromise(&pool, std::ref(a));
+    QCOMPARE(f.result(), 10);
+
+
+    const AConstWithPromise aConst = AConstWithPromise();
+    f = runWithPromise(&AConstWithPromise::member0, &aConst);
+    QCOMPARE(f.result(), 10);
+    f = runWithPromise(&pool, &AConstWithPromise::member0, &aConst);
+    QCOMPARE(f.result(), 10);
+
+    f = runWithPromise(&AConstWithPromise::member1, &aConst, 20);
+    QCOMPARE(f.result(), 20);
+    f = runWithPromise(&pool, &AConstWithPromise::member1, &aConst, 20);
+    QCOMPARE(f.result(), 20);
+
+    f = runWithPromise(&AConstWithPromise::member0, aConst);
+    QCOMPARE(f.result(), 10);
+    f = runWithPromise(&pool, &AConstWithPromise::member0, aConst);
+    QCOMPARE(f.result(), 10);
+
+    f = runWithPromise(&AConstWithPromise::member1, aConst, 20);
+    QCOMPARE(f.result(), 20);
+    f = runWithPromise(&pool, &AConstWithPromise::member1, aConst, 20);
+    QCOMPARE(f.result(), 20);
+
+    f = runWithPromise(aConst);
+    QCOMPARE(f.result(), 10);
+    f = runWithPromise(&pool, aConst);
+    QCOMPARE(f.result(), 10);
+
+    f = runWithPromise(std::ref(a));
+    QCOMPARE(f.result(), 10);
+    f = runWithPromise(&pool, std::ref(a));
+    QCOMPARE(f.result(), 10);
+
+
+    ANoExceptWithPromise aNoExcept;
+    f = runWithPromise(&ANoExceptWithPromise::member0, &aNoExcept);
+    QCOMPARE(f.result(), 10);
+    f = runWithPromise(&pool, &ANoExceptWithPromise::member0, &aNoExcept);
+    QCOMPARE(f.result(), 10);
+
+    f = runWithPromise(&ANoExceptWithPromise::member1, &aNoExcept, 20);
+    QCOMPARE(f.result(), 20);
+    f = runWithPromise(&pool, &ANoExceptWithPromise::member1, &aNoExcept, 20);
+    QCOMPARE(f.result(), 20);
+
+    f = runWithPromise(&ANoExceptWithPromise::member0, aNoExcept);
+    QCOMPARE(f.result(), 10);
+    f = runWithPromise(&pool, &ANoExceptWithPromise::member0, aNoExcept);
+    QCOMPARE(f.result(), 10);
+
+    f = runWithPromise(&ANoExceptWithPromise::member1, aNoExcept, 20);
+    QCOMPARE(f.result(), 20);
+    f = runWithPromise(&pool, &ANoExceptWithPromise::member1, aNoExcept, 20);
+    QCOMPARE(f.result(), 20);
+
+    f = runWithPromise(aNoExcept);
+    QCOMPARE(f.result(), 10);
+    f = runWithPromise(&pool, aNoExcept);
+    QCOMPARE(f.result(), 10);
+
+    f = runWithPromise(std::ref(aNoExcept));
+    QCOMPARE(f.result(), 10);
+    f = runWithPromise(&pool, std::ref(aNoExcept));
+    QCOMPARE(f.result(), 10);
+
+
+    const AConstNoExceptWithPromise aConstNoExcept = AConstNoExceptWithPromise();
+    f = runWithPromise(&AConstNoExceptWithPromise::member0, &aConstNoExcept);
+    QCOMPARE(f.result(), 10);
+    f = runWithPromise(&pool, &AConstNoExceptWithPromise::member0, &aConstNoExcept);
+    QCOMPARE(f.result(), 10);
+
+    f = runWithPromise(&AConstNoExceptWithPromise::member1, &aConstNoExcept, 20);
+    QCOMPARE(f.result(), 20);
+    f = runWithPromise(&pool, &AConstNoExceptWithPromise::member1, &aConstNoExcept, 20);
+    QCOMPARE(f.result(), 20);
+
+    f = runWithPromise(&AConstNoExceptWithPromise::member0, aConstNoExcept);
+    QCOMPARE(f.result(), 10);
+    f = runWithPromise(&pool, &AConstNoExceptWithPromise::member0, aConstNoExcept);
+    QCOMPARE(f.result(), 10);
+
+    f = runWithPromise(&AConstNoExceptWithPromise::member1, aConstNoExcept, 20);
+    QCOMPARE(f.result(), 20);
+    f = runWithPromise(&pool, &AConstNoExceptWithPromise::member1, aConstNoExcept, 20);
+    QCOMPARE(f.result(), 20);
+
+    f = runWithPromise(aConstNoExcept);
+    QCOMPARE(f.result(), 10);
+    f = runWithPromise(&pool, aConstNoExcept);
+    QCOMPARE(f.result(), 10);
+
+    f = runWithPromise(std::ref(aConstNoExcept));
+    QCOMPARE(f.result(), 10);
+    f = runWithPromise(&pool, std::ref(aConstNoExcept));
+    QCOMPARE(f.result(), 10);
 }
 
 struct TestClass
@@ -651,6 +904,17 @@ struct Functor {
     void operator()(int, int, int, int, int, int) { }
 };
 
+struct FunctorWithPromise {
+    void operator()(QPromise<int> &, double) { }
+};
+
+struct OverloadedFunctorWithPromise {
+    void operator()(QPromise<int> &) { }
+    void operator()(QPromise<double> &) { }
+    void operator()(QPromise<int> &, int) { }
+    void operator()(QPromise<double> &, int) { }
+};
+
 // This tests functor without result_type; decltype need to be supported by the compiler.
 void tst_QtConcurrentRun::functor()
 {
@@ -673,6 +937,17 @@ void tst_QtConcurrentRun::functor()
         QtConcurrent::run(f, 1,2,3).waitForFinished();
         QtConcurrent::run(f, 1,2,3,4).waitForFinished();
         QtConcurrent::run(f, 1,2,3,4,5).waitForFinished();
+    }
+    FunctorWithPromise fWithPromise;
+    {
+        QtConcurrent::runWithPromise(fWithPromise, 1.5).waitForFinished();
+    }
+    OverloadedFunctorWithPromise ofWithPromise;
+    {
+        QtConcurrent::runWithPromise<int>(ofWithPromise).waitForFinished();
+        QtConcurrent::runWithPromise<double>(ofWithPromise).waitForFinished();
+        QtConcurrent::runWithPromise<int>(ofWithPromise, 1).waitForFinished();
+        QtConcurrent::runWithPromise<double>(ofWithPromise, 1).waitForFinished();
     }
     // and now with explicit pool:
     QThreadPool pool;
@@ -705,6 +980,9 @@ void tst_QtConcurrentRun::lambda()
     QCOMPARE(QtConcurrent::run([](int a, double b){ return a + b; }, 12, 15).result(), double(12+15));
     QCOMPARE(QtConcurrent::run([](int a , int, int, int, int b){ return a + b; }, 1, 2, 3, 4, 5).result(), 1 + 5);
 
+    QCOMPARE(QtConcurrent::runWithPromise([](QPromise<int> &promise){ promise.addResult(45); }).result(), 45);
+    QCOMPARE(QtConcurrent::runWithPromise([](QPromise<int> &promise, double input){ promise.addResult(input / 2.0); }, 15.0).result(), 7);
+
     {
         QString str { "Hello World Foo" };
         QFuture<QStringList> f1 = QtConcurrent::run([&](){ return str.split(' '); });
@@ -736,6 +1014,15 @@ struct CallableWithState
     int state = defaultState();
 };
 
+struct CallableWithStateWithPromise
+{
+    void setNewState(QPromise<int> &, int newState) { state = newState; }
+    void operator()(QPromise<int> &promise, int newState) { state = newState; promise.addResult(newState); }
+
+    static constexpr int defaultState() { return 42; }
+    int state = defaultState();
+};
+
 void tst_QtConcurrentRun::callableObjectWithState()
 {
     CallableWithState o;
@@ -754,6 +1041,339 @@ void tst_QtConcurrentRun::callableObjectWithState()
 
     // Explicitly run on a temporary object
     QCOMPARE(run(CallableWithState(), 15).result(), 15);
+
+    CallableWithStateWithPromise oWithPromise;
+
+    // Run method setNewState explicitly
+    runWithPromise(&CallableWithStateWithPromise::setNewState, &oWithPromise, CallableWithStateWithPromise::defaultState() + 1).waitForFinished();
+    QCOMPARE(oWithPromise.state, CallableWithStateWithPromise::defaultState() + 1);
+
+    // Run operator()(int) explicitly
+    runWithPromise(std::ref(oWithPromise), CallableWithStateWithPromise::defaultState() + 2).waitForFinished();
+    QCOMPARE(oWithPromise.state, CallableWithStateWithPromise::defaultState() + 2);
+
+    // Run on a copy of object (original object remains unchanged)
+    runWithPromise(oWithPromise, CallableWithStateWithPromise::defaultState() + 3).waitForFinished();
+    QCOMPARE(oWithPromise.state, CallableWithStateWithPromise::defaultState() + 2);
+
+    // Explicitly run on a temporary object
+    QCOMPARE(runWithPromise(CallableWithStateWithPromise(), 15).result(), 15);
+}
+
+void report3(QPromise<int> &promise)
+{
+    promise.addResult(0);
+    promise.addResult(2);
+    promise.addResult(1);
+}
+
+void reportN(QPromise<double> &promise, int n)
+{
+    for (int i = 0; i < n; ++i)
+        promise.addResult(0);
+}
+
+void reportString1(QPromise<QString> &promise, const QString &s)
+{
+    promise.addResult(s);
+}
+
+void reportString2(QPromise<QString> &promise, QString s)
+{
+    promise.addResult(s);
+}
+
+class Callable {
+public:
+    void operator()(QPromise<double> &promise, int n) const
+    {
+        for (int i = 0; i < n; ++i)
+            promise.addResult(0);
+    }
+};
+
+class MyObject {
+public:
+    static void staticMember0(QPromise<double> &promise)
+    {
+        promise.addResult(0);
+        promise.addResult(2);
+        promise.addResult(1);
+    }
+
+    static void staticMember1(QPromise<double> &promise, int n)
+    {
+        for (int i = 0; i < n; ++i)
+            promise.addResult(0);
+    }
+
+    void member0(QPromise<double> &promise) const
+    {
+        promise.addResult(0);
+        promise.addResult(2);
+        promise.addResult(1);
+    }
+
+    void member1(QPromise<double> &promise, int n) const
+    {
+        for (int i = 0; i < n; ++i)
+            promise.addResult(0);
+    }
+
+    void memberString1(QPromise<QString> &promise, const QString &s) const
+    {
+        promise.addResult(s);
+    }
+
+    void memberString2(QPromise<QString> &promise, QString s) const
+    {
+        promise.addResult(s);
+    }
+
+    void nonConstMember(QPromise<double> &promise)
+    {
+        promise.addResult(0);
+        promise.addResult(2);
+        promise.addResult(1);
+    }
+};
+
+void tst_QtConcurrentRun::withPromise()
+{
+    // free function pointer
+    QCOMPARE(runWithPromise(&report3).results(),
+             QList<int>({0, 2, 1}));
+    QCOMPARE(runWithPromise(report3).results(),
+             QList<int>({0, 2, 1}));
+
+    QCOMPARE(runWithPromise(reportN, 4).results(),
+             QList<double>({0, 0, 0, 0}));
+    QCOMPARE(runWithPromise(reportN, 2).results(),
+             QList<double>({0, 0}));
+
+    QString s = QLatin1String("string");
+    const QString &crs = QLatin1String("cr string");
+    const QString cs = QLatin1String("c string");
+
+    QCOMPARE(runWithPromise(reportString1, s).results(),
+             QList<QString>({s}));
+    QCOMPARE(runWithPromise(reportString1, crs).results(),
+             QList<QString>({crs}));
+    QCOMPARE(runWithPromise(reportString1, cs).results(),
+             QList<QString>({cs}));
+    QCOMPARE(runWithPromise(reportString1, QString(QLatin1String("rvalue"))).results(),
+             QList<QString>({QString(QLatin1String("rvalue"))}));
+
+    QCOMPARE(runWithPromise(reportString2, s).results(),
+             QList<QString>({s}));
+    QCOMPARE(runWithPromise(reportString2, crs).results(),
+             QList<QString>({crs}));
+    QCOMPARE(runWithPromise(reportString2, cs).results(),
+             QList<QString>({cs}));
+    QCOMPARE(runWithPromise(reportString2, QString(QLatin1String("rvalue"))).results(),
+             QList<QString>({QString(QLatin1String("rvalue"))}));
+
+    // lambda
+    QCOMPARE(runWithPromise([](QPromise<double> &promise, int n) {
+                 for (int i = 0; i < n; ++i)
+                     promise.addResult(0);
+             }, 3).results(),
+             QList<double>({0, 0, 0}));
+
+    // std::function
+    const std::function<void(QPromise<double> &, int)> fun = [](QPromise<double> &promise, int n) {
+        for (int i = 0; i < n; ++i)
+            promise.addResult(0);
+    };
+    QCOMPARE(runWithPromise(fun, 2).results(),
+             QList<double>({0, 0}));
+
+    // operator()
+    QCOMPARE(runWithPromise(Callable(), 3).results(),
+             QList<double>({0, 0, 0}));
+    const Callable c{};
+    QCOMPARE(runWithPromise(c, 2).results(),
+             QList<double>({0, 0}));
+
+    // static member functions
+    QCOMPARE(runWithPromise(&MyObject::staticMember0).results(),
+             QList<double>({0, 2, 1}));
+    QCOMPARE(runWithPromise(&MyObject::staticMember1, 2).results(),
+             QList<double>({0, 0}));
+
+    // member functions
+    const MyObject obj{};
+    QCOMPARE(runWithPromise(&MyObject::member0, &obj).results(),
+             QList<double>({0, 2, 1}));
+    QCOMPARE(runWithPromise(&MyObject::member1, &obj, 4).results(),
+             QList<double>({0, 0, 0, 0}));
+    QCOMPARE(runWithPromise(&MyObject::memberString1, &obj, s).results(),
+             QList<QString>({s}));
+    QCOMPARE(runWithPromise(&MyObject::memberString1, &obj, crs).results(),
+             QList<QString>({crs}));
+    QCOMPARE(runWithPromise(&MyObject::memberString1, &obj, cs).results(),
+             QList<QString>({cs}));
+    QCOMPARE(runWithPromise(&MyObject::memberString1, &obj, QString(QLatin1String("rvalue"))).results(),
+             QList<QString>({QString(QLatin1String("rvalue"))}));
+    QCOMPARE(runWithPromise(&MyObject::memberString2, &obj, s).results(),
+             QList<QString>({s}));
+    QCOMPARE(runWithPromise(&MyObject::memberString2, &obj, crs).results(),
+             QList<QString>({crs}));
+    QCOMPARE(runWithPromise(&MyObject::memberString2, &obj, cs).results(),
+             QList<QString>({cs}));
+    QCOMPARE(runWithPromise(&MyObject::memberString2, &obj, QString(QLatin1String("rvalue"))).results(),
+             QList<QString>({QString(QLatin1String("rvalue"))}));
+    MyObject nonConstObj{};
+    QCOMPARE(runWithPromise(&MyObject::nonConstMember, &nonConstObj).results(),
+             QList<double>({0, 2, 1}));
+}
+
+void tst_QtConcurrentRun::withPromiseInThreadPool()
+{
+    QScopedPointer<QThreadPool> pool(new QThreadPool);
+    // free function pointer
+    QCOMPARE(runWithPromise(pool.data(), &report3).results(),
+             QList<int>({0, 2, 1}));
+    QCOMPARE(runWithPromise(pool.data(), report3).results(),
+             QList<int>({0, 2, 1}));
+
+    QCOMPARE(runWithPromise(pool.data(), reportN, 4).results(),
+             QList<double>({0, 0, 0, 0}));
+    QCOMPARE(runWithPromise(pool.data(), reportN, 2).results(),
+             QList<double>({0, 0}));
+
+    QString s = QLatin1String("string");
+    const QString &crs = QLatin1String("cr string");
+    const QString cs = QLatin1String("c string");
+
+    QCOMPARE(runWithPromise(pool.data(), reportString1, s).results(),
+             QList<QString>({s}));
+    QCOMPARE(runWithPromise(pool.data(), reportString1, crs).results(),
+             QList<QString>({crs}));
+    QCOMPARE(runWithPromise(pool.data(), reportString1, cs).results(),
+             QList<QString>({cs}));
+    QCOMPARE(runWithPromise(pool.data(), reportString1, QString(QLatin1String("rvalue"))).results(),
+             QList<QString>({QString(QLatin1String("rvalue"))}));
+
+    QCOMPARE(runWithPromise(pool.data(), reportString2, s).results(),
+             QList<QString>({s}));
+    QCOMPARE(runWithPromise(pool.data(), reportString2, crs).results(),
+             QList<QString>({crs}));
+    QCOMPARE(runWithPromise(pool.data(), reportString2, cs).results(),
+             QList<QString>({cs}));
+    QCOMPARE(runWithPromise(pool.data(), reportString2, QString(QLatin1String("rvalue"))).results(),
+             QList<QString>({QString(QLatin1String("rvalue"))}));
+
+    // lambda
+    QCOMPARE(runWithPromise(pool.data(), [](QPromise<double> &promise, int n) {
+                 for (int i = 0; i < n; ++i)
+                     promise.addResult(0);
+             }, 3).results(),
+             QList<double>({0, 0, 0}));
+
+    // std::function
+    const std::function<void(QPromise<double> &, int)> fun = [](QPromise<double> &promise, int n) {
+        for (int i = 0; i < n; ++i)
+            promise.addResult(0);
+    };
+    QCOMPARE(runWithPromise(pool.data(), fun, 2).results(),
+             QList<double>({0, 0}));
+
+    // operator()
+    QCOMPARE(runWithPromise(pool.data(), Callable(), 3).results(),
+             QList<double>({0, 0, 0}));
+    const Callable c{};
+    QCOMPARE(runWithPromise(pool.data(), c, 2).results(),
+             QList<double>({0, 0}));
+
+    // static member functions
+    QCOMPARE(runWithPromise(pool.data(), &MyObject::staticMember0).results(),
+             QList<double>({0, 2, 1}));
+    QCOMPARE(runWithPromise(pool.data(), &MyObject::staticMember1, 2).results(),
+             QList<double>({0, 0}));
+
+    // member functions
+    const MyObject obj{};
+    QCOMPARE(runWithPromise(pool.data(), &MyObject::member0, &obj).results(),
+             QList<double>({0, 2, 1}));
+    QCOMPARE(runWithPromise(pool.data(), &MyObject::member1, &obj, 4).results(),
+             QList<double>({0, 0, 0, 0}));
+    QCOMPARE(runWithPromise(pool.data(), &MyObject::memberString1, &obj, s).results(),
+             QList<QString>({s}));
+    QCOMPARE(runWithPromise(pool.data(), &MyObject::memberString1, &obj, crs).results(),
+             QList<QString>({crs}));
+    QCOMPARE(runWithPromise(pool.data(), &MyObject::memberString1, &obj, cs).results(),
+             QList<QString>({cs}));
+    QCOMPARE(runWithPromise(pool.data(), &MyObject::memberString1, &obj, QString(QLatin1String("rvalue"))).results(),
+             QList<QString>({QString(QLatin1String("rvalue"))}));
+    QCOMPARE(runWithPromise(pool.data(), &MyObject::memberString2, &obj, s).results(),
+             QList<QString>({s}));
+    QCOMPARE(runWithPromise(pool.data(), &MyObject::memberString2, &obj, crs).results(),
+             QList<QString>({crs}));
+    QCOMPARE(runWithPromise(pool.data(), &MyObject::memberString2, &obj, cs).results(),
+             QList<QString>({cs}));
+    QCOMPARE(runWithPromise(pool.data(), &MyObject::memberString2, &obj, QString(QLatin1String("rvalue"))).results(),
+             QList<QString>({QString(QLatin1String("rvalue"))}));
+}
+
+class MoveOnlyType
+{
+public:
+    MoveOnlyType() = default;
+    MoveOnlyType(const MoveOnlyType &) = delete;
+    MoveOnlyType(MoveOnlyType &&) = default;
+    MoveOnlyType &operator=(const MoveOnlyType &) = delete;
+    MoveOnlyType &operator=(MoveOnlyType &&) = default;
+};
+
+class MoveOnlyCallable : public MoveOnlyType
+{
+public:
+    void operator()(QPromise<int> &promise, const MoveOnlyType &)
+    {
+        promise.addResult(1);
+    }
+};
+
+void tst_QtConcurrentRun::moveOnlyType()
+{
+    QCOMPARE(runWithPromise(MoveOnlyCallable(), MoveOnlyType()).results(),
+             QList<int>({1}));
+}
+
+void tst_QtConcurrentRun::crefFunction()
+{
+    // free function pointer with promise
+    auto fun = &report3;
+    QCOMPARE(runWithPromise(std::cref(fun)).results(),
+             QList<int>({0, 2, 1}));
+
+    // lambda with promise
+    auto lambda = [](QPromise<double> &promise, int n) {
+        for (int i = 0; i < n; ++i)
+            promise.addResult(0);
+    };
+    QCOMPARE(runWithPromise(std::cref(lambda), 3).results(),
+             QList<double>({0, 0, 0}));
+
+    // std::function with promise
+    const std::function<void(QPromise<double> &, int)> funObj = [](QPromise<double> &promise, int n) {
+        for (int i = 0; i < n; ++i)
+            promise.addResult(0);
+    };
+    QCOMPARE(runWithPromise(std::cref(funObj), 2).results(),
+             QList<double>({0, 0}));
+
+    // callable with promise
+    const Callable c{};
+    QCOMPARE(runWithPromise(std::cref(c), 2).results(),
+             QList<double>({0, 0}));
+
+    // member functions with promise
+    auto member = &MyObject::member0;
+    const MyObject obj{};
+    QCOMPARE(runWithPromise(std::cref(member), &obj).results(),
+             QList<double>({0, 2, 1}));
 }
 
 QTEST_MAIN(tst_QtConcurrentRun)

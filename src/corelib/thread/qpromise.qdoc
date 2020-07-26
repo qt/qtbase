@@ -78,6 +78,16 @@
     \sa operator=()
 */
 
+/*! \fn template <typename T> QPromise<T>::QPromise(QFutureInterface<T> &other)
+
+    \internal
+    Constructs a QPromise with a passed QFutureInterface \a other.
+    Used internally for QtConcurrent::runWithPromise.
+
+    \sa operator=()
+*/
+
+
 /*! \fn template <typename T> QPromise<T> &QPromise<T>::operator=(QPromise<T> &&other)
 
     Move assigns \a other to this promise and returns a reference to this

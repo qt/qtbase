@@ -63,6 +63,7 @@ public:
     {
         other.d = QFutureInterface<T>();
     }
+    QPromise(QFutureInterface<T> &other) : d(other) {}
     QPromise& operator=(QPromise<T> &&other)
     {
         QPromise<T> tmp(std::move(other));
