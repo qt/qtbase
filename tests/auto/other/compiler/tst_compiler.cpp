@@ -981,9 +981,10 @@ void tst_Compiler::cxx11_noexcept()
 #ifndef Q_COMPILER_NOEXCEPT
     QSKIP("Compiler does not support C++11 feature");
 #else
+    extern void may_throw();
     extern void noexcept_f() noexcept;
     extern void g() noexcept(noexcept(noexcept_f()));
-    QCOMPARE(noexcept(cxx11_noexcept()), false);
+    QCOMPARE(noexcept(may_throw()), false);
     QCOMPARE(noexcept(noexcept_f), true);
     QCOMPARE(noexcept(g), true);
 #endif
