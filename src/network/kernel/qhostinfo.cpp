@@ -159,11 +159,11 @@ void QHostInfoResult::postResultsReady(const QHostInfo &info)
     auto metaCallEvent = new QMetaCallEvent(slotObj, nullptr, signal_index, nargs);
     Q_CHECK_PTR(metaCallEvent);
     void **args = metaCallEvent->args();
-    int *types = metaCallEvent->types();
+    QMetaType *types = metaCallEvent->types();
     auto voidType = QMetaType::fromType<void>();
     auto hostInfoType = QMetaType::fromType<QHostInfo>();
-    types[0] = voidType.id();
-    types[1] = hostInfoType.id();
+    types[0] = voidType;
+    types[1] = hostInfoType;
     args[0] = nullptr;
     args[1] = hostInfoType.create(&info);
     Q_CHECK_PTR(args[1]);

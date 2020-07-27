@@ -548,8 +548,8 @@ public:
     inline int id() const { return d.method_offset_ + d.method_relative_; }
     inline const void * const* args() const { return d.args_; }
     inline void ** args() { return d.args_; }
-    inline const int *types() const { return reinterpret_cast<int*>(d.args_ + d.nargs_); }
-    inline int *types() { return reinterpret_cast<int*>(d.args_ + d.nargs_); }
+    inline const QMetaType *types() const { return reinterpret_cast<QMetaType *>(d.args_ + d.nargs_); }
+    inline QMetaType *types() { return reinterpret_cast<QMetaType *>(d.args_ + d.nargs_); }
 
     virtual void placeMetaCall(QObject *object) override;
 
@@ -565,7 +565,7 @@ private:
         ushort method_relative_;
     } d;
     // preallocate enough space for three arguments
-    char prealloc_[3*(sizeof(void*) + sizeof(int))];
+    alignas(void *) char prealloc_[3*sizeof(void*) + 3*sizeof(QMetaType)];
 };
 
 class QBoolBlocker

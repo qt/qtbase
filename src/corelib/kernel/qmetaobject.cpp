@@ -2309,24 +2309,24 @@ bool QMetaMethod::invoke(QObject *object,
         }
 
         QScopedPointer<QMetaCallEvent> event(new QMetaCallEvent(idx_offset, idx_relative, callFunction, nullptr, -1, paramCount));
-        int *types = event->types();
+        QMetaType *types = event->types();
         void **args = event->args();
 
         int argIndex = 0;
         for (int i = 1; i < paramCount; ++i) {
-            types[i] = QMetaType::fromName(typeNames[i]).id();
-            if (types[i] == QMetaType::UnknownType && param[i]) {
+            types[i] = QMetaType::fromName(typeNames[i]);
+            if (!types[i].isValid() && param[i]) {
                 // Try to register the type and try again before reporting an error.
                 void *argv[] = { &types[i], &argIndex };
                 QMetaObject::metacall(object, QMetaObject::RegisterMethodArgumentMetaType,
                                       idx_relative + idx_offset, argv);
-                if (types[i] == -1) {
+                if (!types[i].isValid()) {
                     qWarning("QMetaMethod::invoke: Unable to handle unregistered datatype '%s'",
                             typeNames[i]);
                     return false;
                 }
             }
-            if (types[i] != QMetaType::UnknownType) {
+            if (types[i].isValid()) {
                 args[i] = QMetaType(types[i]).create(param[i]);
                 ++argIndex;
             }

@@ -246,7 +246,7 @@ static QByteArray qtTypeName(const QString &signature, const QDBusIntrospection:
         return std::move(qttype).toLatin1();
     }
 
-    return QVariant::typeToName(QVariant::Type(type));
+    return QMetaType(type).name();
 }
 
 static QString nonConstRefArg(const QByteArray &arg)

@@ -104,7 +104,7 @@ static QString addFunction(const FunctionDef &mm, bool isSignal = false) {
                                     isSignal ? "signal" : "method", mm.name.constData());
 
     // check the return type first
-    int typeId = QMetaType::type(mm.normalizedType.constData());
+    int typeId = QMetaType::fromName(mm.normalizedType).id();
     if (typeId != QMetaType::Void) {
         if (typeId) {
             const char *typeName = QDBusMetaType::typeToSignature(typeId);
@@ -158,7 +158,7 @@ static QString addFunction(const FunctionDef &mm, bool isSignal = false) {
 
         // do we need to describe this argument?
         if (QDBusMetaType::signatureToType(signature) == QMetaType::UnknownType) {
-            const char *typeName = QMetaType::typeName(types.at(j));
+            const char *typeName = QMetaType(types.at(j)).name();
             xml += QString::fromLatin1("      <annotation name=\"org.qtproject.QtDBus.QtTypeName.%1%2\" value=\"%3\"/>\n")
                     .arg(isOutput ? QLatin1String("Out") : QLatin1String("In"))
                     .arg(isOutput && !isSignal ? j - inputCount : j - 1)
@@ -208,7 +208,7 @@ static QString generateInterfaceXml(const ClassDef *mo)
             if (!mp.write.isEmpty())
                 access |= 2;
 
-            int typeId = QMetaType::type(mp.type.constData());
+            int typeId = QMetaType::fromName(mp.type).id();
             if (!typeId) {
                 fprintf(stderr, PROGRAMNAME ": unregistered type: '%s', ignoring\n",
                         mp.type.constData());

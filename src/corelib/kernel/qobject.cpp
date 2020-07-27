@@ -506,7 +506,7 @@ inline void QMetaCallEvent::allocArgs()
     if (!d.nargs_)
         return;
 
-    constexpr size_t each = sizeof(void*) + sizeof(int);
+    constexpr size_t each = sizeof(void*) + sizeof(QMetaType);
     void *const memory = d.nargs_ * each > sizeof(prealloc_) ?
         calloc(d.nargs_, each) : prealloc_;
 
@@ -588,10 +588,10 @@ QMetaCallEvent::QMetaCallEvent(QtPrivate::QSlotObjectBase *slotO,
 QMetaCallEvent::~QMetaCallEvent()
 {
     if (d.nargs_) {
-        int *typeIDs = types();
+        QMetaType *t = types();
         for (int i = 0; i < d.nargs_; ++i) {
-            if (typeIDs[i] && d.args_[i])
-                QMetaType(typeIDs[i]).destroy(d.args_[i]);
+            if (t[i].isValid() && d.args_[i])
+                t[i].destroy(d.args_[i]);
         }
         if (reinterpret_cast<void*>(d.args_) != reinterpret_cast<void*>(prealloc_))
             free(d.args_);
@@ -3644,17 +3644,17 @@ static void queued_activate(QObject *sender, int signal, QObjectPrivate::Connect
         new QMetaCallEvent(c->method_offset, c->method_relative, c->callFunction, sender, signal, nargs);
 
     void **args = ev->args();
-    int *types = ev->types();
+    QMetaType *types = ev->types();
 
-    types[0] = 0; // return type
+    types[0] = QMetaType(); // return type
     args[0] = nullptr; // return value
 
     if (nargs > 1) {
         for (int n = 1; n < nargs; ++n)
-            types[n] = argumentTypes[n-1];
+            types[n] = QMetaType(argumentTypes[n-1]);
 
         for (int n = 1; n < nargs; ++n)
-            args[n] = QMetaType(types[n]).create(argv[n]);
+            args[n] = types[n].create(argv[n]);
     }
 
     locker.relock();
