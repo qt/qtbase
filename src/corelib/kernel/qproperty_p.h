@@ -166,7 +166,7 @@ public:
     // public because the auto-tests access it, too.
     size_t dependencyObserverCount = 0;
 
-    QPropertyBindingPrivate(const QMetaType &metaType, QUntypedPropertyBinding::BindingEvaluationFunction evaluationFunction,
+    QPropertyBindingPrivate(QMetaType metaType, QUntypedPropertyBinding::BindingEvaluationFunction evaluationFunction,
                             const QPropertyBindingSourceLocation &location)
         : isBool(metaType.id() == QMetaType::Bool)
         , evaluationFunction(std::move(evaluationFunction))

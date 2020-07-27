@@ -443,7 +443,7 @@ class Q_CORE_EXPORT QVariant
         quintptr packedType : sizeof(QMetaType) * 8 - 2;
 
         Private() noexcept : is_shared(false), is_null(true), packedType(0) {}
-        explicit Private(const QMetaType &type) noexcept : is_shared(false), is_null(false)
+        explicit Private(QMetaType type) noexcept : is_shared(false), is_null(false)
         {
             quintptr mt = quintptr(type.d_ptr);
             Q_ASSERT((mt & 0x3) == 0);

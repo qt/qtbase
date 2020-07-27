@@ -54,6 +54,7 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/QExplicitlySharedDataPointer>
 #include <QtCore/qtaggedpointer.h>
+#include <QtCore/qmetatype.h>
 
 #include <functional>
 
@@ -63,14 +64,13 @@ class QUntypedPropertyBinding;
 class QPropertyBindingPrivate;
 using QPropertyBindingPrivatePtr = QExplicitlySharedDataPointer<QPropertyBindingPrivate>;
 struct QPropertyBasePointer;
-class QMetaType;
 
 namespace QtPrivate {
 
 // writes binding result into dataPtr
-using QPropertyBindingFunction = std::function<bool(const QMetaType &metaType, void *dataPtr)>;
+using QPropertyBindingFunction = std::function<bool(QMetaType metaType, void *dataPtr)>;
 
-using QPropertyGuardFunction = bool(*)(const QMetaType &, void *dataPtr,
+using QPropertyGuardFunction = bool(*)(QMetaType, void *dataPtr,
                                        QPropertyBindingFunction, void *owner);
 using QPropertyObserverCallback = void (*)(void *, void *);
 
@@ -242,7 +242,7 @@ struct QPropertyGuardFunctionHelper
 template<typename T, typename Class, auto Guard>
 struct QPropertyGuardFunctionHelper<T, Class, Guard, false>
 {
-    static auto guard(const QMetaType &metaType, void *dataPtr,
+    static auto guard(const QMetaType metaType, void *dataPtr,
                       QPropertyBindingFunction eval, void *owner) -> bool
     {
         T t = T();

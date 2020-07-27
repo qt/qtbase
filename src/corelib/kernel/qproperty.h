@@ -43,7 +43,6 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/QSharedDataPointer>
 #include <QtCore/QString>
-#include <QtCore/qmetatype.h>
 #include <functional>
 #include <type_traits>
 #include <variant>
@@ -123,7 +122,7 @@ public:
     using BindingEvaluationFunction = QtPrivate::QPropertyBindingFunction;
 
     QUntypedPropertyBinding();
-    QUntypedPropertyBinding(const QMetaType &metaType, BindingEvaluationFunction function, const QPropertyBindingSourceLocation &location);
+    QUntypedPropertyBinding(QMetaType metaType, BindingEvaluationFunction function, const QPropertyBindingSourceLocation &location);
     QUntypedPropertyBinding(QUntypedPropertyBinding &&other);
     QUntypedPropertyBinding(const QUntypedPropertyBinding &other);
     QUntypedPropertyBinding &operator=(const QUntypedPropertyBinding &other);
@@ -151,7 +150,7 @@ class QPropertyBinding : public QUntypedPropertyBinding
     struct BindingAdaptor
     {
         Functor impl;
-        bool operator()(const QMetaType &/*metaType*/, void *dataPtr)
+        bool operator()(QMetaType /*metaType*/, void *dataPtr)
         {
             PropertyType *propertyPtr = static_cast<PropertyType *>(dataPtr);
             PropertyType newValue = impl();

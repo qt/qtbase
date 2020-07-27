@@ -438,8 +438,8 @@ public:
     static QMetaType fromType();
     static QMetaType fromName(QByteArrayView name);
 
-    friend bool operator==(const QMetaType &a, const QMetaType &b) { return a.id() == b.id(); }
-    friend bool operator!=(const QMetaType &a, const QMetaType &b) { return !(a == b); }
+    friend bool operator==(QMetaType a, QMetaType b) { return a.id() == b.id(); }
+    friend bool operator!=(QMetaType a, QMetaType b) { return !(a == b); }
 
 public:
 
@@ -538,7 +538,7 @@ public:
 #endif
 
     static bool convert(QMetaType fromType, const void *from, QMetaType toType, void *to);
-    static bool canConvert(const QMetaType &fromType, const QMetaType &toType);
+    static bool canConvert(QMetaType fromType, QMetaType toType);
 #if QT_DEPRECATED_SINCE(6, 0)
     QT_DEPRECATED_VERSION_6_0
     static bool convert(const void *from, int fromTypeId, void *to, int toTypeId)

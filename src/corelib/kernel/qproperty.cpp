@@ -150,7 +150,7 @@ bool QPropertyBindingPrivate::evaluateIfDirtyAndReturnTrueIfValueChanged()
 
 QUntypedPropertyBinding::QUntypedPropertyBinding() = default;
 
-QUntypedPropertyBinding::QUntypedPropertyBinding(const QMetaType &metaType, QUntypedPropertyBinding::BindingEvaluationFunction function,
+QUntypedPropertyBinding::QUntypedPropertyBinding(QMetaType metaType, QUntypedPropertyBinding::BindingEvaluationFunction function,
                                                  const QPropertyBindingSourceLocation &location)
 {
     d = new QPropertyBindingPrivate(metaType, std::move(function), std::move(location));

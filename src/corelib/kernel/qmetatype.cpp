@@ -806,7 +806,7 @@ void QMetaType::unregisterMetaType(QMetaType type)
     Returns the QMetaType corresponding to the type in the template parameter.
 */
 
-/*! \fn bool operator==(const QMetaType &a, const QMetaType &b)
+/*! \fn bool operator==(QMetaType a, QMetaType b)
     \since 5.15
     \relates QMetaType
     \overload
@@ -815,7 +815,7 @@ void QMetaType::unregisterMetaType(QMetaType type)
     as the QMetaType \a b, otherwise returns \c false.
 */
 
-/*! \fn bool operator!=(const QMetaType &a, const QMetaType &b)
+/*! \fn bool operator!=(QMetaType a, QMetaType b)
     \since 5.15
     \relates QMetaType
     \overload
@@ -1714,7 +1714,7 @@ static QMetaEnum metaEnumFromType(QMetaType t)
 }
 #endif
 
-static bool convertFromEnum(const QMetaType &fromType, const void *from, QMetaType toType, void *to)
+static bool convertFromEnum(QMetaType fromType, const void *from, QMetaType toType, void *to)
 {
     qlonglong ll;
     if (fromType.flags() & QMetaType::IsUnsignedEnumeration) {
@@ -1966,7 +1966,7 @@ static bool convertToAssociativeIterable(QMetaType fromType, const void *from, v
 
 
 #ifndef QT_BOOTSTRAPPED
-static bool canConvertMetaObject(const QMetaType &fromType, const QMetaType &toType)
+static bool canConvertMetaObject(QMetaType fromType, QMetaType toType)
 {
     if ((fromType.flags() & QMetaType::PointerToQObject) && (toType.flags() & QMetaType::PointerToQObject)) {
         return fromType.metaObject()->inherits(toType.metaObject()) ||
@@ -2128,7 +2128,7 @@ bool QMetaType::convert(QMetaType fromType, const void *from, QMetaType toType, 
     \sa convert(), QSequentialIterable, Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE(), QAssociativeIterable,
         Q_DECLARE_ASSOCIATIVE_CONTAINER_METATYPE()
 */
-bool QMetaType::canConvert(const QMetaType &fromType, const QMetaType &toType)
+bool QMetaType::canConvert(QMetaType fromType, QMetaType toType)
 {
     int fromTypeId = fromType.id();
     int toTypeId = toType.id();
