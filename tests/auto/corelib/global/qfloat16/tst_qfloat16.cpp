@@ -54,6 +54,7 @@ private slots:
     void finite();
     void properties();
     void limits();
+    void mantissaOverflow();
 };
 
 void tst_qfloat16::fuzzyCompare_data()
@@ -200,11 +201,8 @@ void tst_qfloat16::infinity()
     QCOMPARE(huge, huge);
     QCOMPARE(-huge, -huge);
 
-    // QTBUG-75812 - see overOptimized in the limits() test.
-    if (qfloat16(9.785e-4f) == qfloat16(9.794e-4f)) {
-        QCOMPARE(one / huge, zero);
-        QVERIFY(qFuzzyCompare(one / huge, zero)); // (same thing)
-    }
+    QCOMPARE(one / huge, zero);
+    QVERIFY(qFuzzyCompare(one / huge, zero)); // (same thing)
 
     QVERIFY(qIsInf(huge));
     QVERIFY(qIsInf(-huge));
@@ -348,20 +346,21 @@ void tst_qfloat16::arithOps()
 
 void tst_qfloat16::floatToFloat16()
 {
-    float in[63];
-    qfloat16 out[63];
-    qfloat16 expected[63];
+    constexpr int count = 10000;
+    float in[count];
+    qfloat16 out[count];
+    qfloat16 expected[count];
 
-    for (int i = 0; i < 63; ++i)
-        in[i] = i * (1/13.f);
+    for (int i = 0; i < count; ++i)
+        in[i] = (i - count/2) * (1/13.f);
 
-    for (int i = 0; i < 63; ++i)
+    for (int i = 0; i < count; ++i)
         expected[i] = qfloat16(in[i]);
 
-    qFloatToFloat16(out, in, 63);
+    qFloatToFloat16(out, in, count);
 
-    for (int i = 0; i < 63; ++i)
-        QVERIFY(qFuzzyCompare(out[i], expected[i]));
+    for (int i = 0; i < count; ++i)
+        QVERIFY(out[i] == expected[i]);
 }
 
 void tst_qfloat16::floatFromFloat16()
@@ -506,15 +505,8 @@ void tst_qfloat16::limits() // See also: qNaN() and infinity()
     QCOMPARE(qFpClassify(high10), FP_NORMAL);
 
     // How many digits are significant ?  (Casts avoid linker errors ...)
-    QCOMPARE(int(Bounds::digits10), 3); // 9.79e-4 has enough sigificant digits:
-    qfloat16 below(9.785e-4f), above(9.794e-4f);
-#if 0 // Sadly, the QEMU x-compile for arm64 "optimizes" comparisons:
-    const bool overOptimized = false;
-#else
-    const bool overOptimized = (below != above);
-    if (overOptimized)
-        QEXPECT_FAIL("", "Over-optimized on ARM", Continue);
-#endif // (but it did, so should, pass everywhere else, confirming digits10 is indeed 3).
+    QCOMPARE(int(Bounds::digits10), 3); // ~9.78e-4 has enough sigificant digits:
+    qfloat16 below(9.781e-4f), above(9.789e-4f); // both round to ~9.785e-4
     QVERIFY(below == above);
     QCOMPARE(int(Bounds::max_digits10), 5); // we need 5 to distinguish these two:
     QVERIFY(qfloat16(1000.5f) != qfloat16(1001.4f));
@@ -522,9 +514,7 @@ void tst_qfloat16::limits() // See also: qNaN() and infinity()
     // Actual limiting values of the type:
     const qfloat16 rose(one + Bounds::epsilon());
     QVERIFY(rose > one);
-    if (overOptimized)
-        QEXPECT_FAIL("", "Over-optimized on ARM", Continue);
-    QVERIFY(one + Bounds::epsilon() / rose == one);
+    QVERIFY(one + Bounds::epsilon() / two == one);
 
     QVERIFY(Bounds::max() > zero);
     QVERIFY(qIsInf(Bounds::max() * rose));
@@ -536,14 +526,24 @@ void tst_qfloat16::limits() // See also: qNaN() and infinity()
     QVERIFY(!(Bounds::min() / rose).isNormal());
 
     QVERIFY(Bounds::denorm_min() > zero);
-    if (overOptimized)
-        QEXPECT_FAIL("", "Over-optimized on ARM", Continue);
-    QVERIFY(Bounds::denorm_min() / rose == zero);
-    if (overOptimized)
-        QEXPECT_FAIL("", "Over-optimized on ARM", Continue);
-    const qfloat16 under = (-Bounds::denorm_min()) / rose;
+    QVERIFY(Bounds::denorm_min() / two == zero);
+    const qfloat16 under = (-Bounds::denorm_min()) / two;
     QVERIFY(under == -zero);
     QCOMPARE(qfloat16(1).copySign(under), qfloat16(-1));
+}
+
+void tst_qfloat16::mantissaOverflow()
+{
+    // Test we don't change category due to mantissa overflow when rounding.
+    quint32 in = 0x7fffffff;
+    float f;
+    memcpy(&f, &in, 4);
+
+    qfloat16 f16 = f;
+    qfloat16 f16s[1];
+    qFloatToFloat16(f16s, &f, 1);
+    QCOMPARE(f16, f16s[0]);
+    QVERIFY(qIsNaN(f16));
 }
 
 QTEST_APPLESS_MAIN(tst_qfloat16)

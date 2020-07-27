@@ -172,8 +172,20 @@ inline qfloat16::qfloat16(float f) noexcept
 #else
     quint32 u;
     memcpy(&u, &f, sizeof(quint32));
-    b16 = quint16(basetable[(u >> 23) & 0x1ff]
-                  + ((u & 0x007fffff) >> shifttable[(u >> 23) & 0x1ff]));
+    const quint32 signAndExp = u >> 23;
+    const quint32 base = basetable[signAndExp];
+    const quint32 shift = shifttable[signAndExp];
+    quint32 mantissa = (u & 0x007fffff);
+    if ((signAndExp & 0xff) == 0xff) {
+        if (mantissa) // keep nan from truncating to inf
+            mantissa = qMax(1U << shift, mantissa);
+    } else {
+        mantissa += (1U << (shift - 1)) - 1; // rounding
+    }
+
+    // We use add as the mantissa may overflow causing
+    // the exp part to shift exactly one value.
+    b16 = quint16(base + (mantissa >> shift));
 #endif
 }
 QT_WARNING_POP
