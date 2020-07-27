@@ -698,7 +698,7 @@ template<typename T> inline T qvariant_cast(const QVariant &v)
         return v.d.get<T>();
 
     T t{};
-    QMetaType::convert(v.constData(), v.userType(), &t, qMetaTypeId<T>());
+    QMetaType::convert(v.metaType(), v.constData(), targetType, &t);
     return t;
 }
 

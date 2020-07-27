@@ -1714,7 +1714,7 @@ static QMetaEnum metaEnumFromType(QMetaType t)
 }
 #endif
 
-static bool convertFromEnum(const void *from, const QMetaType &fromType, void *to, int toTypeId)
+static bool convertFromEnum(const QMetaType &fromType, const void *from, QMetaType toType, void *to)
 {
     qlonglong ll;
     if (fromType.flags() & QMetaType::IsUnsignedEnumeration) {
@@ -1735,12 +1735,12 @@ static bool convertFromEnum(const void *from, const QMetaType &fromType, void *t
         default:
             Q_UNREACHABLE();
         }
-        if (toTypeId == QMetaType::ULongLong) {
+        if (toType.id() == QMetaType::ULongLong) {
             *static_cast<qulonglong *>(to) = ull;
             return true;
         }
-        if (toTypeId != QMetaType::QString && toTypeId != QMetaType::QByteArray)
-            return QMetaType::convert(&ull, QMetaType::ULongLong, to, toTypeId);
+        if (toType.id() != QMetaType::QString && toType.id() != QMetaType::QByteArray)
+            return QMetaType::convert(QMetaType::fromType<qulonglong>(), &ull, toType, to);
         ll = qlonglong(ull);
     } else {
         switch (fromType.sizeOf()) {
@@ -1759,19 +1759,19 @@ static bool convertFromEnum(const void *from, const QMetaType &fromType, void *t
         default:
             Q_UNREACHABLE();
         }
-        if (toTypeId == QMetaType::LongLong) {
+        if (toType.id() == QMetaType::LongLong) {
             *static_cast<qlonglong *>(to) = ll;
             return true;
         }
-        if (toTypeId != QMetaType::QString && toTypeId != QMetaType::QByteArray)
-            return QMetaType::convert(&ll, QMetaType::LongLong, to, toTypeId);
+        if (toType.id() != QMetaType::QString && toType.id() != QMetaType::QByteArray)
+            return QMetaType::convert(QMetaType::fromType<qlonglong>(), &ll, toType, to);
     }
-    Q_ASSERT(toTypeId == QMetaType::QString || toTypeId == QMetaType::QByteArray);
+    Q_ASSERT(toType.id() == QMetaType::QString || toType.id() == QMetaType::QByteArray);
 #ifndef QT_NO_QOBJECT
     QMetaEnum en = metaEnumFromType(fromType);
     if (en.isValid()) {
         const char *key = en.valueToKey(ll);
-        if (toTypeId == QMetaType::QString)
+        if (toType.id() == QMetaType::QString)
             *static_cast<QString *>(to) = QString::fromUtf8(key);
         else
             *static_cast<QByteArray *>(to) = key;
@@ -1781,8 +1781,9 @@ static bool convertFromEnum(const void *from, const QMetaType &fromType, void *t
     return false;
 }
 
-static bool convertToEnum(const void *from, int fromTypeId, void *to, const QMetaType &toType)
+static bool convertToEnum(QMetaType fromType, const void *from, QMetaType toType, void *to)
 {
+    int fromTypeId = fromType.id();
     qlonglong value;
     bool ok = false;
 #ifndef QT_NO_QOBJECT
@@ -1801,7 +1802,7 @@ static bool convertToEnum(const void *from, int fromTypeId, void *to, const QMet
             value = *static_cast<const qlonglong *>(from);
             ok = true;
         } else {
-            ok = QMetaType::convert(from, fromTypeId, &value, QMetaType::LongLong);
+            ok = QMetaType::convert(fromType, from, QMetaType::fromType<qlonglong>(), &value);
         }
     }
 
@@ -1827,10 +1828,10 @@ static bool convertToEnum(const void *from, int fromTypeId, void *to, const QMet
     }
 }
 
-static bool convertIterableToVariantList(const void *from, int fromTypeId, void *to)
+static bool convertIterableToVariantList(QMetaType fromType, const void *from, void *to)
 {
     const QMetaType::ConverterFunction * const f =
-        customTypesConversionRegistry()->function(qMakePair(fromTypeId,
+        customTypesConversionRegistry()->function(qMakePair(fromType.id(),
                                                             qMetaTypeId<QtMetaTypePrivate::QSequentialIterableImpl>()));
     if (!f)
         return false;
@@ -1847,10 +1848,10 @@ static bool convertIterableToVariantList(const void *from, int fromTypeId, void 
     return true;
 }
 
-static bool convertIterableToVariantMap(const void *from, int fromTypeId, void *to)
+static bool convertIterableToVariantMap(QMetaType fromType, const void *from, void *to)
 {
     const QMetaType::ConverterFunction * const f =
-        customTypesConversionRegistry()->function(qMakePair(fromTypeId,
+        customTypesConversionRegistry()->function(qMakePair(fromType.id(),
                                                             qMetaTypeId<QtMetaTypePrivate::QAssociativeIterableImpl>()));
     if (!f)
         return false;
@@ -1866,10 +1867,10 @@ static bool convertIterableToVariantMap(const void *from, int fromTypeId, void *
     return true;
 }
 
-static bool convertIterableToVariantHash(const void *from, int fromTypeId, void *to)
+static bool convertIterableToVariantHash(QMetaType fromType, const void *from, void *to)
 {
     const QMetaType::ConverterFunction * const f =
-        customTypesConversionRegistry()->function(qMakePair(fromTypeId,
+        customTypesConversionRegistry()->function(qMakePair(fromType.id(),
                                                             qMetaTypeId<QtMetaTypePrivate::QAssociativeIterableImpl>()));
     if (!f)
         return false;
@@ -1886,10 +1887,10 @@ static bool convertIterableToVariantHash(const void *from, int fromTypeId, void 
     return true;
 }
 
-static bool convertIterableToVariantPair(const void *from, int fromTypeId, void *to)
+static bool convertIterableToVariantPair(QMetaType fromType, const void *from, void *to)
 {
     const QMetaType::ConverterFunction * const f =
-        customTypesConversionRegistry()->function(qMakePair(fromTypeId,
+        customTypesConversionRegistry()->function(qMakePair(fromType.id(),
                                                             qMetaTypeId<QtMetaTypePrivate::QPairVariantInterfaceImpl>()));
     if (!f)
         return false;
@@ -1916,9 +1917,10 @@ static bool convertIterableToVariantPair(const void *from, int fromTypeId, void 
     return true;
 }
 
-static bool convertToSequentialIterable(const void *from, int fromTypeId, void *to)
+static bool convertToSequentialIterable(QMetaType fromType, const void *from, void *to)
 {
     using namespace QtMetaTypePrivate;
+    int fromTypeId = fromType.id();
 
     QSequentialIterable &i = *static_cast<QSequentialIterable *>(to);
     if (fromTypeId == QMetaType::QVariantList) {
@@ -1934,28 +1936,28 @@ static bool convertToSequentialIterable(const void *from, int fromTypeId, void *
         return true;
     }
     QSequentialIterableImpl impl;
-    if (QMetaType::convert(from, fromTypeId, &impl, qMetaTypeId<QtMetaTypePrivate::QSequentialIterableImpl>())) {
+    if (QMetaType::convert(fromType, from, QMetaType::fromType<QtMetaTypePrivate::QSequentialIterableImpl>(), &impl)) {
         i = QSequentialIterable(impl);
         return true;
     }
     return false;
 }
 
-static bool convertToAssociativeIterable(const void *from, int fromTypeId, void *to)
+static bool convertToAssociativeIterable(QMetaType fromType, const void *from, void *to)
 {
     using namespace QtMetaTypePrivate;
 
     QAssociativeIterable &i = *static_cast<QAssociativeIterable *>(to);
-    if (fromTypeId == QMetaType::QVariantMap) {
+    if (fromType.id() == QMetaType::QVariantMap) {
         i = QAssociativeIterable(QAssociativeIterableImpl(reinterpret_cast<const QVariantMap *>(from)));
         return true;
     }
-    if (fromTypeId == QMetaType::QVariantHash) {
+    if (fromType.id() == QMetaType::QVariantHash) {
         i = QAssociativeIterable(QAssociativeIterableImpl(reinterpret_cast<const QVariantHash *>(from)));
         return true;
     }
     QAssociativeIterableImpl impl;
-    if (QMetaType::convert(from, fromTypeId, &impl, qMetaTypeId<QtMetaTypePrivate::QAssociativeIterableImpl>())) {
+    if (QMetaType::convert(fromType, from, QMetaType::fromType<QtMetaTypePrivate::QAssociativeIterableImpl>(), &impl)) {
         i = QAssociativeIterable(impl);
         return true;
     }
@@ -1975,21 +1977,33 @@ static bool canConvertMetaObject(const QMetaType &fromType, const QMetaType &toT
 #endif
 
 /*!
+    \fn bool QMetaType::convert(const void *from, int fromTypeId, void *to, int toTypeId)
+    \obsolete
+
     Converts the object at \a from from \a fromTypeId to the preallocated space at \a to
     typed \a toTypeId. Returns \c true, if the conversion succeeded, otherwise false.
     \since 5.2
 */
-bool QMetaType::convert(const void *from, int fromTypeId, void *to, int toTypeId)
+
+/*!
+    Converts the object at \a from from \a fromType to the preallocated space at \a to
+    typed \a toType. Returns \c true, if the conversion succeeded, otherwise false.
+    \since 5.2
+*/
+bool QMetaType::convert(QMetaType fromType, const void *from, QMetaType toType, void *to)
 {
-    if (fromTypeId == UnknownType || toTypeId == UnknownType)
+    if (!fromType.isValid() || !toType.isValid())
         return false;
 
-    if (fromTypeId == toTypeId) {
+    if (fromType == toType) {
         // just make a copy
-        QMetaType(fromTypeId).destruct(to);
-        QMetaType(fromTypeId).construct(to, from);
+        fromType.destruct(to);
+        fromType.construct(to, from);
         return true;
     }
+
+    int fromTypeId = fromType.id();
+    int toTypeId = toType.id();
 
     if (auto moduleHelper = qModuleHelperForType(qMax(fromTypeId, toTypeId))) {
         if (moduleHelper->convert(from, fromTypeId, to, toTypeId))
@@ -2000,12 +2014,10 @@ bool QMetaType::convert(const void *from, int fromTypeId, void *to, int toTypeId
     if (f)
         return (*f)(from, to);
 
-    QMetaType fromType(fromTypeId);
     if (fromType.flags() & QMetaType::IsEnumeration)
-        return convertFromEnum(from, fromType, to, toTypeId);
-    QMetaType toType(toTypeId);
+        return convertFromEnum(fromType, from, toType, to);
     if (toType.flags() & QMetaType::IsEnumeration)
-        return convertToEnum(from, fromTypeId, to, toType);
+        return convertToEnum(fromType, from, toType, to);
     if (toTypeId == Nullptr) {
         *static_cast<std::nullptr_t *>(to) = nullptr;
         if (fromType.flags() & QMetaType::IsPointer) {
@@ -2015,23 +2027,23 @@ bool QMetaType::convert(const void *from, int fromTypeId, void *to, int toTypeId
     }
 
     // handle iterables
-    if (toTypeId == QVariantList && convertIterableToVariantList(from, fromTypeId, to))
+    if (toTypeId == QVariantList && convertIterableToVariantList(fromType, from, to))
         return true;
 
-    if (toTypeId == QVariantMap && convertIterableToVariantMap(from, fromTypeId, to))
+    if (toTypeId == QVariantMap && convertIterableToVariantMap(fromType, from, to))
         return true;
 
-    if (toTypeId == QVariantHash && convertIterableToVariantHash(from, fromTypeId, to))
+    if (toTypeId == QVariantHash && convertIterableToVariantHash(fromType, from, to))
         return true;
 
-    if (toTypeId == QVariantPair && convertIterableToVariantPair(from, fromTypeId, to))
+    if (toTypeId == QVariantPair && convertIterableToVariantPair(fromType, from, to))
         return true;
 
     if (toTypeId == qMetaTypeId<QSequentialIterable>())
-        return convertToSequentialIterable(from, fromTypeId, to);
+        return convertToSequentialIterable(fromType, from, to);
 
     if (toTypeId == qMetaTypeId<QAssociativeIterable>())
-        return convertToAssociativeIterable(from, fromTypeId, to);
+        return convertToAssociativeIterable(fromType, from, to);
 
 #ifndef QT_BOOTSTRAPPED
     // handle QObject conversion

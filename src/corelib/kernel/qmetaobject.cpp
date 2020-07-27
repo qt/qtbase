@@ -3185,7 +3185,7 @@ bool QMetaProperty::write(QObject *object, const QVariant &value) const
             if (isResettable())
                 return reset(object);
             v = QVariant(t, nullptr);
-        } else if (!v.convert(t.id())) {
+        } else if (!v.convert(t)) {
             return false;
         }
     }

@@ -710,7 +710,7 @@ static Qt::Alignment parseAlignment(const QCss::Value *values, int count)
 static ColorData parseColorValue(QCss::Value v)
 {
     if (v.type == Value::Identifier || v.type == Value::String) {
-        v.variant.convert(QMetaType::QColor);
+        v.variant.convert(QMetaType::fromType<QColor>());
         v.type = Value::Color;
     }
 
@@ -2759,7 +2759,7 @@ bool Parser::parseTerm(Value *value)
     switch (lookup()) {
         case NUMBER:
             value->type = Value::Number;
-            value->variant.convert(QMetaType::Double);
+            value->variant.convert(QMetaType::fromType<double>());
             break;
         case PERCENTAGE:
             value->type = Value::Percentage;

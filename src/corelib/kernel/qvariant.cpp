@@ -1765,15 +1765,15 @@ QBitArray QVariant::toBitArray() const
 template <typename T>
 inline T qNumVariantToHelper(const QVariant::Private &d, bool *ok, const T& val)
 {
-    const uint t = qMetaTypeId<T>();
+    QMetaType t = QMetaType::fromType<T>();
     if (ok)
         *ok = true;
 
-    if (d.typeId() == t)
+    if (d.type() == t)
         return val;
 
     T ret = 0;
-    bool success = QMetaType::convert(d.storage(), d.typeId(), &ret, t);
+    bool success = QMetaType::convert(d.type(), d.storage(), t, &ret);
     if (ok)
         *ok = success;
     return ret;
@@ -1871,11 +1871,12 @@ qulonglong QVariant::toULongLong(bool *ok) const
 */
 bool QVariant::toBool() const
 {
-    if (d.type() == QMetaType::fromType<bool>())
+    auto boolType = QMetaType::fromType<bool>();
+    if (d.type() == boolType)
         return d.get<bool>();
 
     bool res = false;
-    QMetaType::convert(constData(), d.typeId(), &res, QMetaType::Bool);
+    QMetaType::convert(d.type(), constData(), boolType, &res);
     return res;
 }
 
@@ -2027,7 +2028,7 @@ bool QVariant::convert(QMetaType targetType)
     if (oldValue.d.is_null && oldValue.d.typeId() != QMetaType::Nullptr)
         return false;
 
-    bool ok = QMetaType::convert(oldValue.constData(), oldValue.d.typeId(), data(), targetType.id());
+    bool ok = QMetaType::convert(oldValue.d.type(), oldValue.constData(), targetType, data());
     d.is_null = !ok;
     return ok;
 }
@@ -2039,7 +2040,7 @@ bool QVariant::convert(QMetaType targetType)
 */
 bool QVariant::convert(const int type, void *ptr) const
 {
-    return QMetaType::convert(constData(), d.typeId(), ptr, type);
+    return QMetaType::convert(d.type(), constData(), QMetaType(type), ptr);
 }
 
 
