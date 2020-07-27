@@ -1580,21 +1580,20 @@ bool QPSQLDriver::subscribeToNotification(const QString &name)
         return false;
     }
 
-    if (d->seid.contains(name)) {
-        qWarning("QPSQLDriver::subscribeToNotificationImplementation: already subscribing to '%s'.",
-            qPrintable(name));
-        return false;
-    }
-
+    const bool alreadyContained = d->seid.contains(name);
     int socket = PQsocket(d->connection);
     if (socket) {
         // Add the name to the list of subscriptions here so that QSQLDriverPrivate::exec knows
-        // to check for notifications immediately after executing the LISTEN
-        d->seid << name;
+        // to check for notifications immediately after executing the LISTEN. If it has already
+        // been subscribed then LISTEN Will do nothing. But we do the call anyway in case the
+        // connection was lost and this is a re-subscription.
+        if (!alreadyContained)
+            d->seid << name;
         QString query = QStringLiteral("LISTEN ") + escapeIdentifier(name, QSqlDriver::TableName);
         PGresult *result = d->exec(query);
         if (PQresultStatus(result) != PGRES_COMMAND_OK) {
-            d->seid.removeLast();
+            if (!alreadyContained)
+                d->seid.removeLast();
             setLastError(qMakeError(tr("Unable to subscribe"), QSqlError::StatementError, d, result));
             PQclear(result);
             return false;
