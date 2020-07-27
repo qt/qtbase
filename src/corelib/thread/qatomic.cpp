@@ -1705,9 +1705,7 @@ static_assert(sizeof(QAtomicInteger<long>));
 static_assert(sizeof(QAtomicInteger<unsigned long>));
 static_assert(sizeof(QAtomicInteger<quintptr>));
 static_assert(sizeof(QAtomicInteger<qptrdiff>));
-#ifdef Q_COMPILER_UNICODE_STRINGS
 static_assert(sizeof(QAtomicInteger<char32_t>));
-#endif
 
 #ifdef Q_ATOMIC_INT16_IS_SUPPORTED
 static_assert(sizeof(QAtomicInteger<short>));
@@ -1715,9 +1713,7 @@ static_assert(sizeof(QAtomicInteger<unsigned short>));
 #  if WCHAR_MAX < 0x10000
 static_assert(sizeof(QAtomicInteger<wchar_t>));
 #  endif
-#  ifdef Q_COMPILER_UNICODE_STRINGS
 static_assert(sizeof(QAtomicInteger<char16_t>));
-#  endif
 #endif
 
 #ifdef Q_ATOMIC_INT64_IS_SUPPORTED

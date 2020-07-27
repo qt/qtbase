@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -102,9 +102,7 @@ public:
     constexpr QChar(int rc) noexcept : ucs(char16_t(rc & 0xffff)) {}
     constexpr QChar(SpecialCharacter s) noexcept : ucs(char16_t(s)) {} // implicit
     constexpr QChar(QLatin1Char ch) noexcept : ucs(ch.unicode()) {} // implicit
-#if defined(Q_COMPILER_UNICODE_STRINGS)
     constexpr QChar(char16_t ch) noexcept : ucs(ch) {} // implicit
-#endif
 #if defined(Q_OS_WIN)
     static_assert(sizeof(wchar_t) == sizeof(char16_t));
 #endif

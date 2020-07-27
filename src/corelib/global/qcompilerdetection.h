@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -991,6 +991,8 @@
 
 #ifdef Q_COMPILER_UNICODE_STRINGS
 #  define Q_STDLIB_UNICODE_STRINGS
+#elif defined(__cplusplus)
+#  error "Qt6 requires Unicode string support in both the compiler and the standard library"
 #endif
 
 #ifdef __cplusplus

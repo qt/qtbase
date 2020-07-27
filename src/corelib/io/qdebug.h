@@ -129,10 +129,8 @@ public:
     inline QDebug &operator<<(char t) { stream->ts << t; return maybeSpace(); }
     inline QDebug &operator<<(signed short t) { stream->ts << t; return maybeSpace(); }
     inline QDebug &operator<<(unsigned short t) { stream->ts << t; return maybeSpace(); }
-#ifdef Q_COMPILER_UNICODE_STRINGS
     inline QDebug &operator<<(char16_t t) { return *this << QChar(ushort(t)); }
     inline QDebug &operator<<(char32_t t) { putUcs4(t); return maybeSpace(); }
-#endif
     inline QDebug &operator<<(signed int t) { stream->ts << t; return maybeSpace(); }
     inline QDebug &operator<<(unsigned int t) { stream->ts << t; return maybeSpace(); }
     inline QDebug &operator<<(signed long t) { stream->ts << t; return maybeSpace(); }

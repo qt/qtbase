@@ -1311,9 +1311,6 @@ void tst_Compiler::cxx11_udl()
 
 void tst_Compiler::cxx11_unicode_strings()
 {
-#ifndef Q_COMPILER_UNICODE_STRINGS
-    QSKIP("Compiler does not support C++11 feature");
-#else
     static const char16_t u[] = u"\u200BHello\u00A0World";
     QCOMPARE(u[0], char16_t(0x200B));
 
@@ -1322,7 +1319,6 @@ void tst_Compiler::cxx11_unicode_strings()
 
     QCOMPARE(u"\U00010000"[0], char16_t(0xD800));
     QCOMPARE(u"\U00010000"[1], char16_t(0xDC00));
-#endif
 }
 
 static void noop(QPair<int, int>) {}

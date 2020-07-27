@@ -78,14 +78,10 @@ private slots:
 
 void tst_QChar::fromChar16_t()
 {
-#if defined(Q_COMPILER_UNICODE_STRINGS)
     QChar aUmlaut = u'\u00E4'; // German small letter a-umlaut
     QCOMPARE(aUmlaut, QChar(0xE4));
     QChar replacementCharacter = u'\uFFFD';
     QCOMPARE(replacementCharacter, QChar(QChar::ReplacementCharacter));
-#else
-    QSKIP("This test requires C++11 char16_t support enabled in the compiler.");
-#endif
 }
 
 void tst_QChar::fromUcs4_data()

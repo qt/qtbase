@@ -187,7 +187,6 @@ template <> struct QConcatenable<char> : private QAbstractConcatenable
     { *out++ = c; }
 };
 
-#if defined(Q_COMPILER_UNICODE_STRINGS)
 template <> struct QConcatenable<char16_t> : private QAbstractConcatenable
 {
     typedef char16_t type;
@@ -197,7 +196,6 @@ template <> struct QConcatenable<char16_t> : private QAbstractConcatenable
     static inline void appendTo(char16_t c, QChar *&out)
     { *out++ = c; }
 };
-#endif
 
 template <> struct QConcatenable<QLatin1Char>
 {
@@ -329,7 +327,6 @@ template <> struct QConcatenable<char *> : QConcatenable<const char*>
     typedef char *type;
 };
 
-#if defined(Q_COMPILER_UNICODE_STRINGS)
 template <int N> struct QConcatenable<const char16_t[N]> : private QAbstractConcatenable
 {
     using type = const char16_t[N];
@@ -367,7 +364,6 @@ template <> struct QConcatenable<char16_t *> : QConcatenable<const char16_t*>
 {
     typedef char16_t *type;
 };
-#endif // UNICODE_STRINGS
 
 template <> struct QConcatenable<QByteArray> : private QAbstractConcatenable
 {

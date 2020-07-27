@@ -905,12 +905,10 @@ public:
     static inline QString fromStdWString(const std::wstring &s);
     inline std::wstring toStdWString() const;
 
-#if defined(Q_STDLIB_UNICODE_STRINGS) || defined(Q_QDOC)
     static inline QString fromStdU16String(const std::u16string &s);
     inline std::u16string toStdU16String() const;
     static inline QString fromStdU32String(const std::u32string &s);
     inline std::u32string toStdU32String() const;
-#endif
 
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
     static QString fromCFString(CFStringRef string);
@@ -1380,7 +1378,6 @@ inline std::wstring QString::toStdWString() const
 inline QString QString::fromStdWString(const std::wstring &s)
 { return fromWCharArray(s.data(), int(s.size())); }
 
-#if defined(Q_STDLIB_UNICODE_STRINGS)
 inline QString QString::fromStdU16String(const std::u16string &s)
 { return fromUtf16(s.data(), int(s.size())); }
 
@@ -1398,7 +1395,6 @@ inline std::u32string QString::toStdU32String() const
     u32str.resize(len);
     return u32str;
 }
-#endif
 
 #if !defined(QT_NO_DATASTREAM) || (defined(QT_BOOTSTRAPPED) && !defined(QT_BUILD_QMAKE))
 Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QString &);

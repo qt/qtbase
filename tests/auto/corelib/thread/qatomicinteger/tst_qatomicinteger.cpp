@@ -75,9 +75,7 @@
     || (defined(WCHAR_MAX) && (WCHAR_MAX-0 > 0x10000))
 #  define TYPE_SUPPORTED_wchar_t    1
 #endif
-#ifdef Q_COMPILER_UNICODE_STRINGS
-#  define TYPE_SUPPORTED_char32_t   1
-#endif
+#define TYPE_SUPPORTED_char32_t   1
 
 #ifdef Q_ATOMIC_INT8_IS_SUPPORTED
 #  define TYPE_SUPPORTED_char       1
@@ -87,9 +85,7 @@
 #ifdef Q_ATOMIC_INT16_IS_SUPPORTED
 #  define TYPE_SUPPORTED_short      1
 #  define TYPE_SUPPORTED_ushort     1
-#  ifdef Q_COMPILER_UNICODE_STRINGS
-#    define TYPE_SUPPORTED_char16_t 1
-#  endif
+#  define TYPE_SUPPORTED_char16_t 1
 #  ifndef TYPE_SUPPORTED_wchar_t
 #    define TYPE_SUPPORTED_wchar_t  1
 #  endif

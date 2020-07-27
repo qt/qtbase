@@ -2481,15 +2481,11 @@ QString QSysInfo::currentCpuArchitecture()
 */
 QString QSysInfo::buildAbi()
 {
-#ifdef Q_COMPILER_UNICODE_STRINGS
     // ARCH_FULL is a concatenation of strings (incl. ARCH_PROCESSOR), which breaks
     // QStringLiteral on MSVC. Since the concatenation behavior we want is specified
     // the same C++11 paper as the Unicode strings, we'll use that macro and hope
     // that Microsoft implements the new behavior when they add support for Unicode strings.
     return QStringLiteral(ARCH_FULL);
-#else
-    return QLatin1String(ARCH_FULL);
-#endif
 }
 
 static QString unknownText()
