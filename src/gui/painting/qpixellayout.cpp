@@ -219,7 +219,7 @@ inline void QT_FASTCALL storePixel<QPixelLayout::BPP24>(uchar *dest, int index, 
 }
 
 template<QImage::Format Format>
-static Q_ALWAYS_INLINE uint convertPixelToRGB32(uint s)
+static inline uint convertPixelToRGB32(uint s)
 {
     Q_CONSTEXPR uint redMask = ((1 << redWidth<Format>()) - 1);
     Q_CONSTEXPR uint greenMask = ((1 << greenWidth<Format>()) - 1);
@@ -274,7 +274,7 @@ static const uint *QT_FASTCALL fetchRGBToRGB32(uint *buffer, const uchar *src, i
 }
 
 template<QImage::Format Format>
-static Q_ALWAYS_INLINE QRgba64 convertPixelToRGB64(uint s)
+static inline QRgba64 convertPixelToRGB64(uint s)
 {
     return QRgba64::fromArgb32(convertPixelToRGB32<Format>(s));
 }
@@ -298,7 +298,7 @@ static const QRgba64 *QT_FASTCALL fetchRGBToRGB64(QRgba64 *buffer, const uchar *
 }
 
 template<QImage::Format Format>
-static Q_ALWAYS_INLINE uint convertPixelToARGB32PM(uint s)
+static inline uint convertPixelToARGB32PM(uint s)
 {
     Q_CONSTEXPR uint alphaMask = ((1 << alphaWidth<Format>()) - 1);
     Q_CONSTEXPR uint redMask = ((1 << redWidth<Format>()) - 1);
@@ -365,7 +365,7 @@ static const uint *QT_FASTCALL fetchARGBPMToARGB32PM(uint *buffer, const uchar *
 }
 
 template<QImage::Format Format>
-static Q_ALWAYS_INLINE QRgba64 convertPixelToRGBA64PM(uint s)
+static inline QRgba64 convertPixelToRGBA64PM(uint s)
 {
     return QRgba64::fromArgb32(convertPixelToARGB32PM<Format>(s));
 }

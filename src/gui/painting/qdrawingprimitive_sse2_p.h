@@ -232,7 +232,7 @@ QT_END_NAMESPACE
 QT_BEGIN_NAMESPACE
 #if QT_COMPILER_SUPPORTS_HERE(SSE4_1)
 QT_FUNCTION_TARGET(SSE2)
-Q_ALWAYS_INLINE void Q_DECL_VECTORCALL reciprocal_mul_ss(__m128 &ia, const __m128 a, float mul)
+static inline void Q_DECL_VECTORCALL reciprocal_mul_ss(__m128 &ia, const __m128 a, float mul)
 {
     ia = _mm_rcp_ss(a); // Approximate 1/a
     // Improve precision of ia using Newton-Raphson
@@ -242,7 +242,7 @@ Q_ALWAYS_INLINE void Q_DECL_VECTORCALL reciprocal_mul_ss(__m128 &ia, const __m12
 }
 
 QT_FUNCTION_TARGET(SSE4_1)
-inline QRgb qUnpremultiply_sse4(QRgb p)
+static inline QRgb qUnpremultiply_sse4(QRgb p)
 {
     const uint alpha = qAlpha(p);
     if (alpha == 255)
@@ -262,7 +262,7 @@ inline QRgb qUnpremultiply_sse4(QRgb p)
 
 template<enum QtPixelOrder PixelOrder>
 QT_FUNCTION_TARGET(SSE4_1)
-inline uint qConvertArgb32ToA2rgb30_sse4(QRgb p)
+static inline uint qConvertArgb32ToA2rgb30_sse4(QRgb p)
 {
     const uint alpha = qAlpha(p);
     if (alpha == 255)
@@ -292,7 +292,7 @@ inline uint qConvertArgb32ToA2rgb30_sse4(QRgb p)
 
 template<enum QtPixelOrder PixelOrder>
 QT_FUNCTION_TARGET(SSE4_1)
-inline uint qConvertRgba64ToRgb32_sse4(QRgba64 p)
+static inline uint qConvertRgba64ToRgb32_sse4(QRgba64 p)
 {
     if (p.isTransparent())
         return 0;

@@ -73,7 +73,7 @@ inline QRgba64 multiplyAlpha65535(QRgba64 rgba64, uint alpha65535)
 }
 
 #ifdef __SSE2__
-Q_ALWAYS_INLINE __m128i multiplyAlpha65535(__m128i rgba64, __m128i va)
+static inline __m128i Q_DECL_VECTORCALL multiplyAlpha65535(__m128i rgba64, __m128i va)
 {
     __m128i vs = rgba64;
     vs = _mm_unpacklo_epi16(_mm_mullo_epi16(vs, va), _mm_mulhi_epu16(vs, va));
@@ -83,21 +83,19 @@ Q_ALWAYS_INLINE __m128i multiplyAlpha65535(__m128i rgba64, __m128i va)
     vs = _mm_packs_epi32(vs, _mm_setzero_si128());
     return vs;
 }
-Q_ALWAYS_INLINE __m128i multiplyAlpha65535(__m128i rgba64, uint alpha65535)
+static inline __m128i Q_DECL_VECTORCALL multiplyAlpha65535(__m128i rgba64, uint alpha65535)
 {
     const __m128i va = _mm_shufflelo_epi16(_mm_cvtsi32_si128(alpha65535), _MM_SHUFFLE(0, 0, 0, 0));
     return multiplyAlpha65535(rgba64, va);
 }
-#endif
-
-#if defined(__ARM_NEON__)
-Q_ALWAYS_INLINE uint16x4_t multiplyAlpha65535(uint16x4_t rgba64, uint16x4_t alpha65535)
+#elif defined(__ARM_NEON__)
+static inline uint16x4_t multiplyAlpha65535(uint16x4_t rgba64, uint16x4_t alpha65535)
 {
     uint32x4_t vs32 = vmull_u16(rgba64, alpha65535); // vs = vs * alpha
     vs32 = vsraq_n_u32(vs32, vs32, 16); // vs = vs + (vs >> 16)
     return vrshrn_n_u32(vs32, 16); // vs = (vs + 0x8000) >> 16
 }
-Q_ALWAYS_INLINE uint16x4_t multiplyAlpha65535(uint16x4_t rgba64, uint alpha65535)
+static inline uint16x4_t multiplyAlpha65535(uint16x4_t rgba64, uint alpha65535)
 {
     uint32x4_t vs32 = vmull_n_u16(rgba64, alpha65535); // vs = vs * alpha
     vs32 = vsraq_n_u32(vs32, vs32, 16); // vs = vs + (vs >> 16)
@@ -106,7 +104,7 @@ Q_ALWAYS_INLINE uint16x4_t multiplyAlpha65535(uint16x4_t rgba64, uint alpha65535
 #endif
 
 template<typename T>
-inline T multiplyAlpha255(T rgba64, uint alpha255)
+static inline T Q_DECL_VECTORCALL multiplyAlpha255(T rgba64, uint alpha255)
 {
 #if defined(__SSE2__) || defined(__ARM_NEON__)
     return multiplyAlpha65535(rgba64, alpha255 * 257);
@@ -124,14 +122,14 @@ inline QRgba64 interpolate255(QRgba64 x, uint alpha1, QRgba64 y, uint alpha2)
 }
 
 #if defined __SSE2__
-Q_ALWAYS_INLINE __m128i interpolate255(__m128i x, uint alpha1, __m128i y, uint alpha2)
+static inline __m128i Q_DECL_VECTORCALL interpolate255(__m128i x, uint alpha1, __m128i y, uint alpha2)
 {
     return _mm_add_epi32(multiplyAlpha255(x, alpha1), multiplyAlpha255(y, alpha2));
 }
 #endif
 
 #if defined __ARM_NEON__
-Q_ALWAYS_INLINE uint16x4_t interpolate255(uint16x4_t x, uint alpha1, uint16x4_t y, uint alpha2)
+inline uint16x4_t interpolate255(uint16x4_t x, uint alpha1, uint16x4_t y, uint alpha2)
 {
     return vadd_u16(multiplyAlpha255(x, alpha1), multiplyAlpha255(y, alpha2));
 }
@@ -143,23 +141,23 @@ inline QRgba64 interpolate65535(QRgba64 x, uint alpha1, QRgba64 y, uint alpha2)
 }
 
 #if defined __SSE2__
-Q_ALWAYS_INLINE __m128i interpolate65535(__m128i x, uint alpha1, __m128i y, uint alpha2)
+static inline __m128i Q_DECL_VECTORCALL interpolate65535(__m128i x, uint alpha1, __m128i y, uint alpha2)
 {
     return _mm_add_epi32(multiplyAlpha65535(x, alpha1), multiplyAlpha65535(y, alpha2));
 }
 // alpha2 below is const-ref because otherwise MSVC2015 complains that it can't 16-byte align the argument.
-Q_ALWAYS_INLINE __m128i interpolate65535(__m128i x, __m128i alpha1, __m128i y, const __m128i &alpha2)
+static inline __m128i Q_DECL_VECTORCALL interpolate65535(__m128i x, __m128i alpha1, __m128i y, const __m128i &alpha2)
 {
     return _mm_add_epi32(multiplyAlpha65535(x, alpha1), multiplyAlpha65535(y, alpha2));
 }
 #endif
 
 #if defined __ARM_NEON__
-Q_ALWAYS_INLINE uint16x4_t interpolate65535(uint16x4_t x, uint alpha1, uint16x4_t y, uint alpha2)
+inline uint16x4_t interpolate65535(uint16x4_t x, uint alpha1, uint16x4_t y, uint alpha2)
 {
     return vadd_u16(multiplyAlpha65535(x, alpha1), multiplyAlpha65535(y, alpha2));
 }
-Q_ALWAYS_INLINE uint16x4_t interpolate65535(uint16x4_t x, uint16x4_t alpha1, uint16x4_t y, uint16x4_t alpha2)
+inline uint16x4_t interpolate65535(uint16x4_t x, uint16x4_t alpha1, uint16x4_t y, uint16x4_t alpha2)
 {
     return vadd_u16(multiplyAlpha65535(x, alpha1), multiplyAlpha65535(y, alpha2));
 }
@@ -175,7 +173,7 @@ inline QRgba64 addWithSaturation(QRgba64 a, QRgba64 b)
 
 #if QT_COMPILER_SUPPORTS_HERE(SSE2)
 QT_FUNCTION_TARGET(SSE2)
-Q_ALWAYS_INLINE uint toArgb32(__m128i v)
+static inline uint Q_DECL_VECTORCALL toArgb32(__m128i v)
 {
     v = _mm_unpacklo_epi16(v, _mm_setzero_si128());
     v = _mm_add_epi32(v, _mm_set1_epi32(128));
@@ -186,7 +184,7 @@ Q_ALWAYS_INLINE uint toArgb32(__m128i v)
     return _mm_cvtsi128_si32(v);
 }
 #elif defined __ARM_NEON__
-Q_ALWAYS_INLINE uint toArgb32(uint16x4_t v)
+static inline uint toArgb32(uint16x4_t v)
 {
     v = vsub_u16(v, vrshr_n_u16(v, 8));
     v = vrshr_n_u16(v, 8);
@@ -195,7 +193,7 @@ Q_ALWAYS_INLINE uint toArgb32(uint16x4_t v)
 }
 #endif
 
-Q_ALWAYS_INLINE uint toArgb32(QRgba64 rgba64)
+static inline uint toArgb32(QRgba64 rgba64)
 {
 #if defined __SSE2__
     __m128i v = _mm_loadl_epi64((const __m128i *)&rgba64);
@@ -215,7 +213,7 @@ Q_ALWAYS_INLINE uint toArgb32(QRgba64 rgba64)
 #endif
 }
 
-Q_ALWAYS_INLINE uint toRgba8888(QRgba64 rgba64)
+static inline uint toRgba8888(QRgba64 rgba64)
 {
 #if defined __SSE2__
     __m128i v = _mm_loadl_epi64((const __m128i *)&rgba64);
@@ -228,7 +226,7 @@ Q_ALWAYS_INLINE uint toRgba8888(QRgba64 rgba64)
 #endif
 }
 
-inline QRgba64 rgbBlend(QRgba64 d, QRgba64 s, uint rgbAlpha)
+static inline QRgba64 rgbBlend(QRgba64 d, QRgba64 s, uint rgbAlpha)
 {
     QRgba64 blend;
 #if defined(__SSE2__)
@@ -274,7 +272,7 @@ inline QRgba64 rgbBlend(QRgba64 d, QRgba64 s, uint rgbAlpha)
     return blend;
 }
 
-static Q_ALWAYS_INLINE void blend_pixel(QRgba64 &dst, QRgba64 src)
+static inline void blend_pixel(QRgba64 &dst, QRgba64 src)
 {
     if (src.isOpaque())
         dst = src;
@@ -282,7 +280,7 @@ static Q_ALWAYS_INLINE void blend_pixel(QRgba64 &dst, QRgba64 src)
         dst = src + multiplyAlpha65535(dst, 65535 - src.alpha());
 }
 
-static Q_ALWAYS_INLINE void blend_pixel(QRgba64 &dst, QRgba64 src, const int const_alpha)
+static inline void blend_pixel(QRgba64 &dst, QRgba64 src, const int const_alpha)
 {
     if (const_alpha == 255)
         return blend_pixel(dst, src);
