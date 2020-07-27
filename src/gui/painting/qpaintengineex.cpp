@@ -951,7 +951,7 @@ void QPaintEngineEx::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, con
 {
     QBrush brush(state()->pen.color(), pixmap);
     QTransform xform = QTransform::fromTranslate(r.x() - s.x(), r.y() - s.y());
-    if (!qFuzzyCompare(pixmap.devicePixelRatioF(), 1.0))
+    if (!qFuzzyCompare(pixmap.devicePixelRatioF(), qreal(1.0)))
         xform.scale(1.0/pixmap.devicePixelRatioF(), 1.0/pixmap.devicePixelRatioF());
     brush.setTransform(xform);
 

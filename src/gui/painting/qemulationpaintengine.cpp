@@ -104,7 +104,7 @@ void QEmulationPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
         }
     } else if (style == Qt::TexturePattern) {
         qreal dpr = qHasPixmapTexture(brush) ? brush.texture().devicePixelRatioF() : brush.textureImage().devicePixelRatioF();
-        if (!qFuzzyCompare(dpr, 1.0)) {
+        if (!qFuzzyCompare(dpr, qreal(1.0))) {
             QBrush copy = brush;
             combineXForm(&copy, QRectF(0, 0, 1.0/dpr, 1.0/dpr));
             real_engine->fill(path, copy);

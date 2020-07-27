@@ -720,7 +720,7 @@ QGuiApplication::~QGuiApplication()
     QGuiApplicationPrivate::desktopFileName = nullptr;
     QGuiApplicationPrivate::mouse_buttons = Qt::NoButton;
     QGuiApplicationPrivate::modifier_buttons = Qt::NoModifier;
-    QGuiApplicationPrivate::lastCursorPosition = {qInf(), qInf()};
+    QGuiApplicationPrivate::lastCursorPosition = {qreal(qInf()), qreal(qInf())};
     QGuiApplicationPrivate::currentMousePressWindow = QGuiApplicationPrivate::currentMouseWindow = nullptr;
     QGuiApplicationPrivate::applicationState = Qt::ApplicationInactive;
     QGuiApplicationPrivate::highDpiScalingUpdated = false;
