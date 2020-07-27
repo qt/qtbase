@@ -35,7 +35,11 @@
 #include <QtCore/qpoint.h>
 #include <emscripten/html5.h>
 #include "qwasmwindow.h"
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <QtGui/qinputdevice.h>
+#else
 #include <QtGui/qpointingdevice.h>
+#endif
 #include <QHash>
 
 QT_BEGIN_NAMESPACE
@@ -89,8 +93,12 @@ private:
     QWasmWindow::ResizeMode resizeMode;
     QPoint resizePoint;
     QRect resizeStartRect;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     QPointingDevice *touchDevice;
-    quint64 getTimestamp();
+#else
+    QTouchDevice *touchDevice;
+#endif
+    static quint64 getTimestamp();
 
     Qt::Key m_emDeadKey = Qt::Key_unknown;
     bool m_emStickyDeadKey = false;
