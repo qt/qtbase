@@ -288,7 +288,7 @@ DEFINEFUNC(const EVP_CIPHER *, EVP_aes_192_cbc, DUMMYARG, DUMMYARG, return nullp
 DEFINEFUNC(const EVP_CIPHER *, EVP_aes_256_cbc, DUMMYARG, DUMMYARG, return nullptr, return)
 #endif
 DEFINEFUNC(const EVP_MD *, EVP_sha1, DUMMYARG, DUMMYARG, return nullptr, return)
-DEFINEFUNC3(int, EVP_PKEY_assign, EVP_PKEY *a, a, int b, b, char *c, c, return -1, return)
+DEFINEFUNC3(int, EVP_PKEY_assign, EVP_PKEY *a, a, int b, b, void *r, r, return -1, return)
 DEFINEFUNC2(int, EVP_PKEY_set1_RSA, EVP_PKEY *a, a, RSA *b, b, return -1, return)
 DEFINEFUNC2(int, EVP_PKEY_set1_DSA, EVP_PKEY *a, a, DSA *b, b, return -1, return)
 DEFINEFUNC2(int, EVP_PKEY_set1_DH, EVP_PKEY *a, a, DH *b, b, return -1, return)

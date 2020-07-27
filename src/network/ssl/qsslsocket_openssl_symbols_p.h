@@ -415,7 +415,7 @@ const EVP_CIPHER *q_EVP_aes_256_cbc();
 #endif // OPENSSL_NO_AES
 
 Q_AUTOTEST_EXPORT const EVP_MD *q_EVP_sha1();
-int q_EVP_PKEY_assign(EVP_PKEY *a, int b, char *c);
+int q_EVP_PKEY_assign(EVP_PKEY *a, int b, void *r);
 Q_AUTOTEST_EXPORT int q_EVP_PKEY_set1_RSA(EVP_PKEY *a, RSA *b);
 Q_AUTOTEST_EXPORT int q_EVP_PKEY_set1_DSA(EVP_PKEY *a, DSA *b);
 Q_AUTOTEST_EXPORT int q_EVP_PKEY_set1_DH(EVP_PKEY *a, DH *b);
