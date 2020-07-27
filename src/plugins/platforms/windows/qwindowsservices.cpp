@@ -65,7 +65,7 @@ static inline bool shellExecute(const QUrl &url)
                                                 nullptr, nullptr, SW_SHOWNORMAL));
     // ShellExecute returns a value greater than 32 if successful
     if (result <= 32) {
-        qWarning("ShellExecute '%s' failed (error %s).", qPrintable(url.toString()), qPrintable(QString::number(result)));
+        qWarning("ShellExecute '%ls' failed (error %zu).", qUtf16Printable(url.toString()), result);
         return false;
     }
     return true;
@@ -104,7 +104,7 @@ static inline bool launchMail(const QUrl &url)
 {
     QString command = mailCommand();
     if (command.isEmpty()) {
-        qWarning("Cannot launch '%s': There is no mail program installed.", qPrintable(url.toString()));
+        qWarning("Cannot launch '%ls': There is no mail program installed.", qUtf16Printable(url.toString()));
         return false;
     }
     //Make sure the path for the process is in quotes
@@ -129,7 +129,7 @@ static inline bool launchMail(const QUrl &url)
     si.cb = sizeof(si);
     if (!CreateProcess(nullptr, reinterpret_cast<wchar_t *>(const_cast<ushort *>(command.utf16())),
                        nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi)) {
-        qErrnoWarning("Unable to launch '%s'", qPrintable(command));
+        qErrnoWarning("Unable to launch '%ls'", qUtf16Printable(command));
         return false;
     }
     CloseHandle(pi.hProcess);
