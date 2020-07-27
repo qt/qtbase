@@ -331,6 +331,7 @@ set(__export_targets Platform
                      PlatformCommonInternal
                      PlatformModuleInternal
                      PlatformPluginInternal
+                     PlatformAppInternal
                      PlatformToolInternal)
 set(__export_name "${INSTALL_CMAKE_NAMESPACE}Targets")
 qt_install(TARGETS ${__export_targets} EXPORT "${__export_name}")
@@ -347,6 +348,7 @@ qt_internal_export_modern_cmake_config_targets_file(TARGETS ${__export_targets}
 qt_copy_or_install(FILES
                    cmake/ModuleDescription.json.in
                    cmake/Qt3rdPartyLibraryConfig.cmake.in
+                   cmake/QtApp.cmake
                    cmake/QtBuild.cmake
                    cmake/QtBuildInformation.cmake
                    cmake/QtCompilerFlags.cmake

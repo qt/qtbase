@@ -2503,6 +2503,8 @@ function(qt_watch_current_list_dir variable access value current_list_file stack
                     qt_finalize_module(${a1} ${a2} ${a3} ${a4} ${a5} ${a6} ${a7} ${a8} ${a9})
                 elseif(func STREQUAL "qt_finalize_plugin")
                     qt_finalize_plugin(${a1} ${a2} ${a3} ${a4} ${a5} ${a6} ${a7} ${a8} ${a9})
+                elseif(func STREQUAL "qt_internal_finalize_app")
+                    qt_internal_finalize_app(${a1} ${a2} ${a3} ${a4} ${a5} ${a6} ${a7} ${a8} ${a9})
                 else()
                     message(FATAL_ERROR "qt_watch_current_list_dir doesn't know about ${func}. Consider adding it.")
                 endif()
@@ -2567,6 +2569,32 @@ function(qt_set_target_info_properties target)
         QT_TARGET_DESCRIPTION "${arg_TARGET_DESCRIPTION}"
         QT_TARGET_COPYRIGHT "${arg_TARGET_COPYRIGHT}"
         QT_TARGET_PRODUCT_NAME "${arg_TARGET_PRODUCT}")
+endfunction()
+
+# Uses the QT_DELAYED_TARGET_* property values to set the final QT_TARGET_* properties.
+# Needed when doing executable finalization at the end of a subdirectory scope
+# (aka scope finalization).
+function(qt_internal_set_target_info_properties_from_delayed_properties target)
+    set(args "")
+    foreach(prop ${__default_target_info_args})
+        get_target_property(prop_value "${target}" "QT_DELAYED_${prop}")
+        list(APPEND args "${prop}" "${prop_value}")
+    endforeach()
+    qt_set_target_info_properties(${target} ${args})
+endfunction()
+
+# Updates the QT_DELAYED_ properties with values from the QT_ variants, in case if they were
+# set in-between a qt_add_* call and before scope finalization.
+function(qt_internal_update_delayed_target_info_properties target)
+    foreach(prop ${__default_target_info_args})
+        get_target_property(prop_value "${target}" "QT_${prop}")
+        get_target_property(delayed_prop_value ${target} "QT_DELAYED_${prop}")
+        set(final_value "${delayed_prop_value}")
+        if(prop_value)
+            set(final_value "${prop_value}")
+        endif()
+        set_target_properties(${target} PROPERTIES "QT_DELAYED_${prop}" "${final_value}")
+    endforeach()
 endfunction()
 
 # This is the main entry function for creating a Qt module, that typically
@@ -3962,7 +3990,7 @@ endfunction()
 # Collection of qt_add_executable arguments so they can be shared across qt_add_executable
 # and qt_add_test_helper.
 set(__qt_add_executable_optional_args
-    "GUI;BOOTSTRAP;NO_QT;NO_INSTALL;EXCEPTIONS"
+    "GUI;BOOTSTRAP;NO_QT;NO_INSTALL;EXCEPTIONS;DELAY_RC;DELAY_TARGET_INFO"
 )
 set(__qt_add_executable_single_args
     "OUTPUT_DIRECTORY;INSTALL_DIRECTORY;VERSION"
@@ -4023,15 +4051,27 @@ function(qt_add_executable name)
         endif()
     endif()
 
-    if("${arg_TARGET_DESCRIPTION}" STREQUAL "")
-        set(arg_TARGET_DESCRIPTION "Qt ${name}")
+    if(arg_DELAY_TARGET_INFO)
+        # Delay the setting of target info properties if requested. Needed for scope finalization
+        # of Qt apps.
+        set_target_properties("${name}" PROPERTIES
+            QT_DELAYED_TARGET_VERSION "${arg_VERSION}"
+            QT_DELAYED_TARGET_PRODUCT "${arg_TARGET_PRODUCT}"
+            QT_DELAYED_TARGET_DESCRIPTION "${arg_TARGET_DESCRIPTION}"
+            QT_DELAYED_TARGET_COMPANY "${arg_TARGET_COMPANY}"
+            QT_DELAYED_TARGET_COPYRIGHT "${arg_TARGET_COPYRIGHT}"
+            )
+    else()
+        if("${arg_TARGET_DESCRIPTION}" STREQUAL "")
+            set(arg_TARGET_DESCRIPTION "Qt ${name}")
+        endif()
+        qt_set_target_info_properties(${name} ${ARGN}
+            TARGET_DESCRIPTION "${arg_TARGET_DESCRIPTION}"
+            TARGET_VERSION "${arg_VERSION}")
     endif()
 
-    qt_set_target_info_properties(${name} ${ARGN}
-        TARGET_DESCRIPTION "${arg_TARGET_DESCRIPTION}"
-        TARGET_VERSION "${arg_VERSION}")
 
-    if (WIN32)
+    if (WIN32 AND NOT arg_DELAY_RC)
         qt6_generate_win32_rc_file(${name})
     endif()
 
@@ -6026,6 +6066,8 @@ function(qt_internal_apply_win_prefix_and_suffix target)
         endif()
     endif()
 endfunction()
+
+include(QtApp)
 
 # Compatibility macros that should be removed once all their usages are removed.
 function(extend_target)

@@ -81,14 +81,18 @@ add_library(PlatformPluginInternal INTERFACE)
 add_library(Qt::PlatformPluginInternal ALIAS PlatformPluginInternal)
 target_link_libraries(PlatformPluginInternal INTERFACE PlatformCommonInternal)
 
+add_library(PlatformAppInternal INTERFACE)
+add_library(Qt::PlatformAppInternal ALIAS PlatformAppInternal)
+target_link_libraries(PlatformAppInternal INTERFACE PlatformCommonInternal)
+
 add_library(PlatformToolInternal INTERFACE)
 add_library(Qt::PlatformToolInternal ALIAS PlatformToolInternal)
-target_link_libraries(PlatformToolInternal INTERFACE PlatformCommonInternal)
+target_link_libraries(PlatformToolInternal INTERFACE PlatformAppInternal)
 
 if(WARNINGS_ARE_ERRORS)
     qt_internal_set_warnings_are_errors_flags(PlatformModuleInternal)
     qt_internal_set_warnings_are_errors_flags(PlatformPluginInternal)
-    qt_internal_set_warnings_are_errors_flags(PlatformToolInternal)
+    qt_internal_set_warnings_are_errors_flags(PlatformAppInternal)
 endif()
 if(WIN32)
     # Needed for M_PI define. Same as mkspecs/features/qt_module.prf.
