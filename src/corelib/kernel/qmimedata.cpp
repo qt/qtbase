@@ -169,7 +169,9 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QMetaType::T
         }
         case QMetaType::QColor: {
             QVariant newData = data;
+QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
             newData.convert(QMetaType::QColor);
+QT_WARNING_POP
             return newData;
         }
         case QMetaType::QVariantList: {

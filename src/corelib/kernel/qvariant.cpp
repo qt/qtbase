@@ -1947,21 +1947,29 @@ QVariantList QVariant::toList() const
 }
 
 /*!
+    \fn bool QVariant::canConvert(int targetTypeId) const
+    \overload
+    \obsolete
+
+    \sa QMetaType::canConvert()
+*/
+
+/*!
+    \fn bool QVariant::canConvert(QMetaType type) const
+    \since 6.0
+
     Returns \c true if the variant's type can be cast to the requested
     type, \a targetTypeId. Such casting is done automatically when calling the
     toInt(), toBool(), ... methods.
 
     \sa QMetaType::canConvert()
 */
-bool QVariant::canConvert(int targetTypeId) const
-{
-    if (d.typeId() == targetTypeId && targetTypeId != QMetaType::UnknownType)
-        return true;
 
-    return QMetaType::canConvert(d.type(), QMetaType(targetTypeId));
-}
 
 /*!
+    \fn bool QVariant::convert(int targetTypeId)
+    \obsolete
+
     Casts the variant to the requested type, \a targetTypeId. If the cast cannot be
     done, the variant is still changed to the requested type, but is left in a cleared
     null state similar to that constructed by QVariant(Type).
@@ -1981,23 +1989,45 @@ bool QVariant::canConvert(int targetTypeId) const
     \sa canConvert(int targetTypeId), clear()
 */
 
-bool QVariant::convert(int targetTypeId)
+/*!
+    Casts the variant to the requested type, \a targetTypeId. If the cast cannot be
+    done, the variant is still changed to the requested type, but is left in a cleared
+    null state similar to that constructed by QVariant(Type).
+
+    Returns \c true if the current type of the variant was successfully cast;
+    otherwise returns \c false.
+
+    A QVariant containing a pointer to a type derived from QObject will also convert
+    and return true for this function if a qobject_cast to the type described
+    by \a targetTypeId would succeed. Note that this only works for QObject subclasses
+    which use the Q_OBJECT macro.
+
+    \note converting QVariants that are null due to not being initialized or having
+    failed a previous conversion will always fail, changing the type, remaining null,
+    and returning \c false.
+
+    \since 6.0
+
+    \sa canConvert(int targetTypeId), clear()
+*/
+
+bool QVariant::convert(QMetaType targetType)
 {
-    if (d.typeId() == targetTypeId)
-        return (targetTypeId != QMetaType::UnknownType);
+    if (d.type() == targetType)
+        return targetType.isValid();
 
     QVariant oldValue = *this;
 
     clear();
-    if (!oldValue.canConvert(targetTypeId))
+    if (!oldValue.canConvert(targetType))
         return false;
 
-    create(targetTypeId, nullptr);
+    create(targetType.id(), nullptr);
     // Fail if the value is not initialized or was forced null by a previous failed convert.
     if (oldValue.d.is_null && oldValue.d.typeId() != QMetaType::Nullptr)
         return false;
 
-    bool ok = QMetaType::convert(oldValue.constData(), oldValue.d.typeId(), data(), targetTypeId);
+    bool ok = QMetaType::convert(oldValue.constData(), oldValue.d.typeId(), data(), targetType.id());
     d.is_null = !ok;
     return ok;
 }
@@ -2945,7 +2975,7 @@ QAssociativeIterable::const_iterator QAssociativeIterable::find(const QVariant &
 {
     const_iterator it(*this, new QAtomicInt(0));
     QVariant key_ = key;
-    if (key_.canConvert(m_impl._metaType_key.id()) && key_.convert(m_impl._metaType_key.id()))
+    if (key_.canConvert(m_impl._metaType_key) && key_.convert(m_impl._metaType_key))
         it.find(key_);
     else
         it.end();

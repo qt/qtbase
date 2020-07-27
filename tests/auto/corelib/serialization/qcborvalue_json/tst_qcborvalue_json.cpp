@@ -148,8 +148,8 @@ void tst_QCborValue_Json::toVariant()
     QCOMPARE(v.toVariant(), variant);
     if (variant.isValid()) {
         QVariant variant2 = QVariant::fromValue(v);
-        QVERIFY(variant2.canConvert(variant.userType()));
-        QVERIFY(variant2.convert(variant.userType()));
+        QVERIFY(variant2.canConvert(variant.metaType()));
+        QVERIFY(variant2.convert(variant.metaType()));
         QCOMPARE(variant2, variant);
     }
 

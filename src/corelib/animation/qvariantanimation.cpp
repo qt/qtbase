@@ -190,14 +190,15 @@ QVariantAnimationPrivate::QVariantAnimationPrivate() : duration(250), interpolat
 
 void QVariantAnimationPrivate::convertValues(int t)
 {
+    auto type = QMetaType(t);
     //this ensures that all the keyValues are of type t
     for (int i = 0; i < keyValues.count(); ++i) {
         QVariantAnimation::KeyValue &pair = keyValues[i];
-        pair.second.convert(t);
+        pair.second.convert(type);
     }
     //we also need update to the current interval if needed
-    currentInterval.start.second.convert(t);
-    currentInterval.end.second.convert(t);
+    currentInterval.start.second.convert(type);
+    currentInterval.end.second.convert(type);
 
     //... and the interpolator
     updateInterpolator();

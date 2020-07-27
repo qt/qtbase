@@ -249,8 +249,18 @@ class Q_CORE_EXPORT QVariant
     const char *typeName() const;
     QMetaType metaType() const;
 
-    bool canConvert(int targetTypeId) const;
-    bool convert(int targetTypeId);
+    bool canConvert(QMetaType targetType) const
+    { return QMetaType::canConvert(d.type(), targetType); }
+    bool convert(QMetaType type);
+
+#if QT_DEPRECATED_SINCE(6, 0)
+    QT_DEPRECATED_VERSION_6_0
+    bool canConvert(int targetTypeId) const
+    { return QMetaType::canConvert(d.type(), QMetaType(targetTypeId)); }
+    QT_DEPRECATED_VERSION_6_0
+    bool convert(int targetTypeId)
+    { return convert(QMetaType(targetTypeId)); }
+#endif
 
     inline bool isValid() const;
     bool isNull() const;
@@ -376,7 +386,7 @@ class Q_CORE_EXPORT QVariant
 
     template<typename T>
     bool canConvert() const
-    { return canConvert(qMetaTypeId<T>()); }
+    { return canConvert(QMetaType::fromType<T>()); }
 
  public:
     struct PrivateShared

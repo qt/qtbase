@@ -2331,14 +2331,14 @@ template<typename From, typename To>
 void testCustomTypeNotYetConvertible()
 {
     QVERIFY((!hasRegisteredConverterFunction<From, To>()));
-    QVERIFY((!QVariant::fromValue<From>(From()).canConvert(qMetaTypeId<To>())));
+    QVERIFY((!QVariant::fromValue<From>(From()).template canConvert<To>()));
 }
 
 template<typename From, typename To>
 void testCustomTypeConvertible()
 {
     QVERIFY((hasRegisteredConverterFunction<From, To>()));
-    QVERIFY((QVariant::fromValue<From>(From()).canConvert(qMetaTypeId<To>())));
+    QVERIFY((QVariant::fromValue<From>(From()).template canConvert<To>()));
 }
 
 void customTypeNotYetConvertible()

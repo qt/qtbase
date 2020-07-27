@@ -3699,7 +3699,7 @@ void QHeaderViewPrivate::flipSortIndicator(int section)
         sortOrder = (sortIndicatorOrder == Qt::DescendingOrder) ? Qt::AscendingOrder : Qt::DescendingOrder;
     } else {
         const QVariant value = model->headerData(section, orientation, Qt::InitialSortOrderRole);
-        if (value.canConvert(QMetaType::Int))
+        if (value.canConvert<int>())
             sortOrder = static_cast<Qt::SortOrder>(value.toInt());
         else
             sortOrder = Qt::AscendingOrder;

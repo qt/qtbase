@@ -1852,7 +1852,7 @@ void tst_QVariant::userType()
             QCOMPARE(userVar.userType(), qMetaTypeId<MyType>());
             QCOMPARE(userVar.typeName(), "MyType");
             QVERIFY(!userVar.isNull());
-            QVERIFY(!userVar.canConvert(QVariant::String));
+            QVERIFY(!userVar.canConvert<QString>());
 
             QVariant userVar2(userVar);
             QCOMPARE(userVar, userVar2);
@@ -1881,7 +1881,7 @@ void tst_QVariant::userType()
             QCOMPARE(userVar.userType(), qMetaTypeId<MyType*>());
             QCOMPARE(userVar.typeName(), "MyType*");
             QVERIFY(!userVar.isNull());
-            QVERIFY(!userVar.canConvert(QVariant::String));
+            QVERIFY(!userVar.canConvert<QString>());
 
             QVariant userVar2(userVar);
             QCOMPARE(userVar, userVar2);
@@ -2696,7 +2696,7 @@ void tst_QVariant::canConvertQStringList() const
 
     QVariant v(input);
 
-    QCOMPARE(v.canConvert(QVariant::String), canConvert);
+    QCOMPARE(v.canConvert<QString>(), canConvert);
     QCOMPARE(v.toString(), result);
 }
 
@@ -2722,7 +2722,7 @@ void tst_QVariant::canConvertQStringList_data() const
 template<typename T> void convertMetaType()
 {
     QVERIFY(QVariant::fromValue<T>(10).isValid());
-    QVERIFY(QVariant::fromValue<T>(10).canConvert(QVariant::Int));
+    QVERIFY(QVariant::fromValue<T>(10).template canConvert<int>());
     QCOMPARE(QVariant::fromValue<T>(10).toInt(), 10);
     QCOMPARE(QVariant::fromValue<T>(10), QVariant::fromValue<T>(10));
 }
@@ -2878,7 +2878,7 @@ void tst_QVariant::compareCustomTypes() const
 void tst_QVariant::timeToDateTime() const
 {
     const QVariant val(QTime::currentTime());
-    QVERIFY(!val.canConvert(QVariant::DateTime));
+    QVERIFY(!val.canConvert<QDateTime>());
     QVERIFY(!val.toDateTime().isValid());
 }
 
@@ -3098,7 +3098,7 @@ void tst_QVariant::toIntFromDouble() const
     QCOMPARE((int)d, 2147483630);
 
     QVariant var(d);
-    QVERIFY( var.canConvert( QVariant::Int ) );
+    QVERIFY(var.canConvert<int>());
 
     bool ok;
     int result = var.toInt(&ok);
@@ -3653,7 +3653,7 @@ void tst_QVariant::userConversion()
 void tst_QVariant::modelIndexConversion()
 {
     QVariant modelIndexVariant = QModelIndex();
-    QVERIFY(modelIndexVariant.canConvert(QMetaType::QPersistentModelIndex));
+    QVERIFY(modelIndexVariant.canConvert<QPersistentModelIndex>());
     QVERIFY(modelIndexVariant.convert(QMetaType::QPersistentModelIndex));
     QCOMPARE(modelIndexVariant.type(), QVariant::PersistentModelIndex);
     QVERIFY(modelIndexVariant.canConvert(QMetaType::QModelIndex));

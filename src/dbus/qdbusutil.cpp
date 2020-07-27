@@ -148,7 +148,7 @@ static bool variantToString(const QVariant &arg, QString &out)
         if (!variantToString(v, out))
             return false;
         out += QLatin1Char(']');
-    } else if (arg.canConvert(QMetaType::QString)) {
+    } else if (arg.canConvert<QString>()) {
         out += QLatin1Char('\"') + arg.toString() + QLatin1Char('\"');
     } else {
         out += QLatin1Char('[');
