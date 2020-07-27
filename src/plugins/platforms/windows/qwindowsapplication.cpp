@@ -42,7 +42,9 @@
 #include "qwindowscontext.h"
 #include "qwindowsmime.h"
 #include "qwin10helpers.h"
+#include "qwindowsopengltester.h"
 
+#include <QtCore/QVariant>
 
 QT_BEGIN_NAMESPACE
 
@@ -125,6 +127,45 @@ void QWindowsApplication::unregisterMime(QPlatformInterface::Private::QWindowsMi
 int QWindowsApplication::registerMimeType(const QString &mime)
 {
     return QWindowsMimeConverter::registerMimeType(mime);
+}
+
+HWND QWindowsApplication::createMessageWindow(const QString &classNameTemplate,
+                                              const QString &windowName,
+                                              QFunctionPointer eventProc) const
+{
+    QWindowsContext *ctx = QWindowsContext::instance();
+    if (!ctx)
+        return nullptr;
+    auto wndProc = eventProc ? reinterpret_cast<WNDPROC>(eventProc) : DefWindowProc;
+    return ctx->createDummyWindow(classNameTemplate,
+                                  reinterpret_cast<const wchar_t*>(windowName.utf16()),
+                                  wndProc);
+}
+
+bool QWindowsApplication::asyncExpose() const
+{
+    QWindowsContext *ctx = QWindowsContext::instance();
+    return ctx && ctx->asyncExpose();
+}
+
+void QWindowsApplication::setAsyncExpose(bool value)
+{
+    if (QWindowsContext *ctx = QWindowsContext::instance())
+        ctx->setAsyncExpose(value);
+}
+
+QVariant QWindowsApplication::gpu() const
+{
+    return GpuDescription::detect().toVariant();
+}
+
+QVariant QWindowsApplication::gpuList() const
+{
+    QVariantList result;
+    const auto gpus = GpuDescription::detectAll();
+    for (const auto &gpu : gpus)
+        result.append(gpu.toVariant());
+    return result;
 }
 
 QT_END_NAMESPACE

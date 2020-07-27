@@ -43,7 +43,6 @@
 #include "qwindowscontext.h"
 #include "qwindowscursor.h"
 #include "qwindowsopenglcontext.h"
-#include "qwindowsopengltester.h"
 #include "qwindowsintegration.h"
 #include "qwindowstheme.h"
 #include "qwin10helpers.h"
@@ -52,7 +51,6 @@
 #include <QtGui/qopenglcontext.h>
 #include <QtGui/qscreen.h>
 #include <qpa/qplatformscreen.h>
-#include <QtGui/private/qwindowsfontdatabase_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -169,58 +167,5 @@ void *QWindowsNativeInterface::nativeResourceForContext(const QByteArray &resour
     return nullptr;
 }
 #endif // !QT_NO_OPENGL
-
-/*!
-    \brief Creates a non-visible window handle for filtering messages.
-*/
-
-void *QWindowsNativeInterface::createMessageWindow(const QString &classNameTemplate,
-                                                   const QString &windowName,
-                                                   void *eventProc) const
-{
-    QWindowsContext *ctx = QWindowsContext::instance();
-    const HWND hwnd = ctx->createDummyWindow(classNameTemplate,
-                                             (wchar_t*)windowName.utf16(),
-                                             (WNDPROC)eventProc);
-    return hwnd;
-}
-
-/*!
-    \brief Registers a unique window class with a callback function based on \a classNameIn.
-*/
-
-QString QWindowsNativeInterface::registerWindowClass(const QString &classNameIn, void *eventProc) const
-{
-    return QWindowsContext::instance()->registerWindowClass(classNameIn, (WNDPROC)eventProc);
-}
-
-bool QWindowsNativeInterface::asyncExpose() const
-{
-    return QWindowsContext::instance()->asyncExpose();
-}
-
-void QWindowsNativeInterface::setAsyncExpose(bool value)
-{
-    QWindowsContext::instance()->setAsyncExpose(value);
-}
-
-QFont QWindowsNativeInterface::logFontToQFont(const void *logFont, int verticalDpi)
-{
-    return QWindowsFontDatabase::LOGFONT_to_QFont(*reinterpret_cast<const LOGFONT *>(logFont), verticalDpi);
-}
-
-QVariant QWindowsNativeInterface::gpu() const
-{
-    return GpuDescription::detect().toVariant();
-}
-
-QVariant QWindowsNativeInterface::gpuList() const
-{
-    QVariantList result;
-    const auto gpus = GpuDescription::detectAll();
-    for (const auto &gpu : gpus)
-        result.append(gpu.toVariant());
-    return result;
-}
 
 QT_END_NAMESPACE

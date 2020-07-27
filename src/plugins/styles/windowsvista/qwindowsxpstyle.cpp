@@ -42,7 +42,6 @@
 #include <private/qobject_p.h>
 #include <private/qpaintengine_raster_p.h>
 #include <private/qapplication_p.h>
-#include <qpa/qplatformnativeinterface.h>
 #include <private/qstylehelper_p.h>
 #include <private/qwidget_p.h>
 #include <qpainter.h>
@@ -52,7 +51,7 @@
 #include <qapplication.h>
 #include <qpixmapcache.h>
 #include <private/qapplication_p.h>
-#include <qpa/qplatformnativeinterface.h>
+#include <qpa/qplatformintegration.h>
 
 #if QT_CONFIG(toolbutton)
 #include <qtoolbutton.h>
@@ -279,18 +278,13 @@ void QWindowsXPStylePrivate::cleanup(bool force)
 
 static inline HWND createTreeViewHelperWindow()
 {
-    if (QPlatformNativeInterface *ni = QGuiApplication::platformNativeInterface()) {
-        void *hwnd = nullptr;
-        void *wndProc = reinterpret_cast<void *>(DefWindowProc);
-        if (QMetaObject::invokeMethod(ni, "createMessageWindow", Qt::DirectConnection,
-                                  Q_RETURN_ARG(void*, hwnd),
-                                  Q_ARG(QString, QStringLiteral("QTreeViewThemeHelperWindowClass")),
-                                  Q_ARG(QString, QStringLiteral("QTreeViewThemeHelperWindow")),
-                                  Q_ARG(void*, wndProc)) && hwnd) {
-            return reinterpret_cast<HWND>(hwnd);
-        }
-    }
-    return nullptr;
+    using QWindowsApplication = QPlatformInterface::Private::QWindowsApplication;
+
+    HWND result = nullptr;
+    if (auto nativeWindowsApp = dynamic_cast<QWindowsApplication *>(QGuiApplicationPrivate::platformIntegration()))
+        result = nativeWindowsApp->createMessageWindow(QStringLiteral("QTreeViewThemeHelperWindowClass"),
+                                                       QStringLiteral("QTreeViewThemeHelperWindow"));
+    return result;
 }
 
 bool QWindowsXPStylePrivate::initVistaTreeViewTheming()

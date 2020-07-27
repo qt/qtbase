@@ -43,6 +43,7 @@
 
 #include "qwizard_win_p.h"
 #include <private/qapplication_p.h>
+#include <private/qwindowsfontdatabasebase_p.h>
 #include <qpa/qplatformwindow.h>
 #include <qpa/qplatformwindow_p.h>
 #include "qwizard.h"
@@ -259,11 +260,8 @@ static bool getCaptionQFont(int dpi, QFont *result)
         return false;
     // Call into QWindowsNativeInterface to convert the LOGFONT into a QFont.
     const LOGFONT logFont = getCaptionLogFont(hTheme);
-    QPlatformNativeInterface *ni = QGuiApplication::platformNativeInterface();
-    return ni && QMetaObject::invokeMethod(ni, "logFontToQFont", Qt::DirectConnection,
-                                           Q_RETURN_ARG(QFont, *result),
-                                           Q_ARG(const void*, &logFont),
-                                           Q_ARG(int, dpi));
+    *result = QWindowsFontDatabaseBase::LOGFONT_to_QFont(logFont, dpi);
+    return true;
 }
 
 void QVistaHelper::drawTitleBar(QPainter *painter)

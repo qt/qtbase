@@ -420,6 +420,16 @@ struct Q_GUI_EXPORT QWindowsApplication
     virtual void unregisterMime(QWindowsMime *mime) = 0;
 
     virtual int registerMimeType(const QString &mime) = 0;
+
+    virtual HWND createMessageWindow(const QString &classNameTemplate,
+                                     const QString &windowName,
+                                     QFunctionPointer eventProc = nullptr) const = 0;
+
+    virtual bool asyncExpose() const = 0; // internal, used by Active Qt
+    virtual void setAsyncExpose(bool value) = 0;
+
+    virtual QVariant gpu() const = 0; // internal, used by qtdiag
+    virtual QVariant gpuList() const = 0;
 };
 #endif // Q_OS_WIN
 

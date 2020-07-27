@@ -67,6 +67,16 @@ public:
 
     int registerMimeType(const QString &mime) override;
 
+    HWND createMessageWindow(const QString &classNameTemplate,
+                             const QString &windowName,
+                             QFunctionPointer eventProc = nullptr) const override;
+
+    bool asyncExpose() const override;
+    void setAsyncExpose(bool value) override;
+
+    QVariant gpu() const override;
+    QVariant gpuList() const override;
+
 private:
     WindowActivationBehavior m_windowActivationBehavior = DefaultActivateWindow;
     TouchWindowTouchTypes m_touchWindowTouchTypes = NormalTouch;
