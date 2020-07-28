@@ -53,9 +53,6 @@
 
 #include <algorithm>
 
-#include <mach-o/dyld.h>
-#include <dlfcn.h>
-
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcQpaWindow, "qt.qpa.window");
@@ -366,88 +363,6 @@ Qt::MouseButtons currentlyPressedMouseButtons()
 QString qt_mac_removeAmpersandEscapes(QString s)
 {
     return QPlatformTheme::removeMnemonics(s).trimmed();
-}
-
-// -------------------------------------------------------------------------
-
-QOperatingSystemVersion QMacVersion::buildSDK(VersionTarget target)
-{
-    switch (target) {
-    case ApplicationBinary: return applicationVersion().second;
-    case QtLibraries: return libraryVersion().second;
-    }
-    Q_UNREACHABLE();
-}
-
-QOperatingSystemVersion QMacVersion::deploymentTarget(VersionTarget target)
-{
-    switch (target) {
-    case ApplicationBinary: return applicationVersion().first;
-    case QtLibraries: return libraryVersion().first;
-    }
-    Q_UNREACHABLE();
-}
-
-QOperatingSystemVersion QMacVersion::currentRuntime()
-{
-    return QOperatingSystemVersion::current();
-}
-
-QMacVersion::VersionTuple QMacVersion::versionsForImage(const mach_header *machHeader)
-{
-    static auto makeVersionTuple = [](uint32_t dt, uint32_t sdk) {
-        return qMakePair(
-            QOperatingSystemVersion(QOperatingSystemVersion::MacOS,
-                dt >> 16 & 0xffff, dt >> 8 & 0xff, dt & 0xff),
-            QOperatingSystemVersion(QOperatingSystemVersion::MacOS,
-                sdk >> 16 & 0xffff, sdk >> 8 & 0xff, sdk & 0xff)
-        );
-    };
-
-    auto commandCursor = uintptr_t(machHeader) + sizeof(mach_header_64);
-    for (uint32_t i = 0; i < machHeader->ncmds; ++i) {
-        load_command *loadCommand = reinterpret_cast<load_command *>(commandCursor);
-        if (loadCommand->cmd == LC_VERSION_MIN_MACOSX) {
-            auto versionCommand = reinterpret_cast<version_min_command *>(loadCommand);
-            return makeVersionTuple(versionCommand->version, versionCommand->sdk);
-#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_13)
-        } else if (loadCommand->cmd == LC_BUILD_VERSION) {
-            auto versionCommand = reinterpret_cast<build_version_command *>(loadCommand);
-            return makeVersionTuple(versionCommand->minos, versionCommand->sdk);
-#endif
-        }
-        commandCursor += loadCommand->cmdsize;
-    }
-    Q_ASSERT_X(false, "QCocoaIntegration", "Could not find any version load command");
-    Q_UNREACHABLE();
-}
-
-QMacVersion::VersionTuple QMacVersion::applicationVersion()
-{
-    static VersionTuple version = []() {
-        const mach_header *executableHeader = nullptr;
-        for (uint32_t i = 0; i < _dyld_image_count(); ++i) {
-            auto header = _dyld_get_image_header(i);
-            if (header->filetype == MH_EXECUTE) {
-                executableHeader = header;
-                break;
-            }
-        }
-        Q_ASSERT_X(executableHeader, "QCocoaIntegration", "Failed to resolve Mach-O header of executable");
-        return versionsForImage(executableHeader);
-    }();
-    return version;
-}
-
-QMacVersion::VersionTuple QMacVersion::libraryVersion()
-{
-    static VersionTuple version = []() {
-        Dl_info cocoaPluginImage;
-        dladdr((const void *)&QMacVersion::libraryVersion, &cocoaPluginImage);
-        Q_ASSERT_X(cocoaPluginImage.dli_fbase, "QCocoaIntegration", "Failed to resolve Mach-O header of Cocoa plugin");
-        return versionsForImage(static_cast<mach_header*>(cocoaPluginImage.dli_fbase));
-    }();
-    return version;
 }
 
 QT_END_NAMESPACE

@@ -52,7 +52,6 @@
 //
 
 #include <private/qguiapplication_p.h>
-#include <QtCore/qoperatingsystemversion.h>
 #include <QtCore/qloggingcategory.h>
 #include <QtGui/qpalette.h>
 #include <QtGui/qscreen.h>
@@ -190,34 +189,6 @@ struct backwards_t {
 };
 template<class R>
 constexpr backwards_t<R> backwards(R&& r) { return {std::forward<R>(r)}; }
-
-// -------------------------------------------------------------------------
-
-#if QT_POINTER_SIZE == 4
-#error "32-bit builds are not supported"
-#endif
-
-class QMacVersion
-{
-public:
-    enum VersionTarget {
-        ApplicationBinary,
-        QtLibraries
-    };
-
-    static QOperatingSystemVersion buildSDK(VersionTarget target = ApplicationBinary);
-    static QOperatingSystemVersion deploymentTarget(VersionTarget target = ApplicationBinary);
-    static QOperatingSystemVersion currentRuntime();
-
-private:
-    QMacVersion() = default;
-    using VersionTuple = QPair<QOperatingSystemVersion, QOperatingSystemVersion>;
-    static VersionTuple versionsForImage(const mach_header *machHeader);
-    static VersionTuple applicationVersion();
-    static VersionTuple libraryVersion();
-};
-
-// -------------------------------------------------------------------------
 
 QT_END_NAMESPACE
 

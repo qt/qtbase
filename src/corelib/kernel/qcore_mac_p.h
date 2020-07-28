@@ -53,6 +53,9 @@
 
 #include "private/qglobal_p.h"
 
+#include <QtCore/qoperatingsystemversion.h>
+struct mach_header;
+
 #ifndef __IMAGECAPTURE__
 #  define __IMAGECAPTURE__
 #endif
@@ -411,6 +414,32 @@ private:
     std::unique_ptr<Callback> callback;
 
     static KeyValueObserver *observer;
+};
+
+// -------------------------------------------------------------------------
+
+#if QT_POINTER_SIZE == 4
+#error "32-bit builds are not supported"
+#endif
+
+class Q_CORE_EXPORT QMacVersion
+{
+public:
+    enum VersionTarget {
+        ApplicationBinary,
+        QtLibraries
+    };
+
+    static QOperatingSystemVersion buildSDK(VersionTarget target = ApplicationBinary);
+    static QOperatingSystemVersion deploymentTarget(VersionTarget target = ApplicationBinary);
+    static QOperatingSystemVersion currentRuntime();
+
+private:
+    QMacVersion() = default;
+    using VersionTuple = QPair<QOperatingSystemVersion, QOperatingSystemVersion>;
+    static VersionTuple versionsForImage(const mach_header *machHeader);
+    static VersionTuple applicationVersion();
+    static VersionTuple libraryVersion();
 };
 
 // -------------------------------------------------------------------------
