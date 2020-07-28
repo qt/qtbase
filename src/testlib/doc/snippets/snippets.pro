@@ -6,8 +6,7 @@ QT = core sql widgets
 QT += testlib
 #! [qmake_use]
 
-SOURCES += code/src_qtestlib_qtestcase.cpp \
-           code/doc_src_qtestlib.cpp \
+SOURCES += code/doc_src_qtestlib.cpp \
            code/doc_src_qtestevent.cpp \
            code/doc_src_qtqskip.cpp \
            code/doc_src_qttest.cpp \
