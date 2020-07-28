@@ -62,6 +62,11 @@ public:
     DarkModeHandling darkModeHandling() const override;
     void setDarkModeHandling(DarkModeHandling handling) override;
 
+    void registerMime(QPlatformInterface::Private::QWindowsMime *mime) override;
+    void unregisterMime(QPlatformInterface::Private::QWindowsMime *mime) override;
+
+    int registerMimeType(const QString &mime) override;
+
 private:
     WindowActivationBehavior m_windowActivationBehavior = DefaultActivateWindow;
     TouchWindowTouchTypes m_touchWindowTouchTypes = NormalTouch;

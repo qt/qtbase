@@ -103,7 +103,7 @@ QWindowsOleDataObject::GetData(LPFORMATETC pformatetc, LPSTGMEDIUM pmedium)
 
     if (data) {
         const QWindowsMimeConverter &mc = QWindowsContext::instance()->mimeConverter();
-        if (QWindowsMime *converter = mc.converterFromMime(*pformatetc, data))
+        if (auto converter = mc.converterFromMime(*pformatetc, data))
             if (converter->convertFromMime(*pformatetc, data, pmedium))
                 hr = ResultFromScode(S_OK);
     }

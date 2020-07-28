@@ -40,6 +40,7 @@
 #include "qwindowsapplication.h"
 #include "qwindowsclipboard.h"
 #include "qwindowscontext.h"
+#include "qwindowsmime.h"
 #include "qwin10helpers.h"
 
 
@@ -107,6 +108,23 @@ QWindowsApplication::DarkModeHandling QWindowsApplication::darkModeHandling() co
 void QWindowsApplication::setDarkModeHandling(QWindowsApplication::DarkModeHandling handling)
 {
     m_darkModeHandling = handling;
+}
+
+void QWindowsApplication::registerMime(QPlatformInterface::Private::QWindowsMime *mime)
+{
+    if (auto ctx = QWindowsContext::instance())
+        ctx->mimeConverter().registerMime(mime);
+}
+
+void QWindowsApplication::unregisterMime(QPlatformInterface::Private::QWindowsMime *mime)
+{
+    if (auto ctx = QWindowsContext::instance())
+        ctx->mimeConverter().unregisterMime(mime);
+}
+
+int QWindowsApplication::registerMimeType(const QString &mime)
+{
+    return QWindowsMimeConverter::registerMimeType(mime);
 }
 
 QT_END_NAMESPACE

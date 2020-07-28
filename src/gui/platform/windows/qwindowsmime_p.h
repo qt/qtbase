@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,60 +37,38 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSNATIVEINTERFACE_H
-#define QWINDOWSNATIVEINTERFACE_H
+#ifndef QWINDOWSMIME_P_H
+#define QWINDOWSMIME_P_H
 
-#include <QtGui/qfont.h>
-#include <QtGui/qpa/qplatformnativeinterface.h>
+#include <QtCore/qt_windows.h>
+#include <QtCore/qvariant.h>
+
+#include <QtGui/qtguiglobal.h>
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \class QWindowsNativeInterface
-    \brief Provides access to native handles.
+class QMimeData;
 
-    Currently implemented keys
-    \list
-    \li handle (HWND)
-    \li getDC (DC)
-    \li releaseDC Releases the previously acquired DC and returns 0.
-    \endlist
+namespace QPlatformInterface::Private {
 
-    \internal
-*/
-
-class QWindowsNativeInterface : public QPlatformNativeInterface
+class Q_GUI_EXPORT QWindowsMime
 {
-    Q_OBJECT
-    Q_PROPERTY(bool asyncExpose READ asyncExpose WRITE setAsyncExpose)
-    Q_PROPERTY(QVariant gpu READ gpu STORED false)
-    Q_PROPERTY(QVariant gpuList READ gpuList STORED false)
-
 public:
-    void *nativeResourceForIntegration(const QByteArray &resource) override;
-#ifndef QT_NO_OPENGL
-    void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context) override;
-#endif
-    void *nativeResourceForWindow(const QByteArray &resource, QWindow *window) override;
-    void *nativeResourceForScreen(const QByteArray &resource, QScreen *screen) override;
-#ifndef QT_NO_CURSOR
-    void *nativeResourceForCursor(const QByteArray &resource, const QCursor &cursor) override;
-#endif
-    Q_INVOKABLE void *createMessageWindow(const QString &classNameTemplate,
-                                          const QString &windowName,
-                                          void *eventProc) const;
+    virtual ~QWindowsMime() = default;
 
-    Q_INVOKABLE QString registerWindowClass(const QString &classNameIn, void *eventProc) const;
+    // for converting from Qt
+    virtual bool canConvertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData) const = 0;
+    virtual bool convertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData, STGMEDIUM * pmedium) const = 0;
+    virtual QList<FORMATETC> formatsForMime(const QString &mimeType, const QMimeData *mimeData) const = 0;
 
-    Q_INVOKABLE QFont logFontToQFont(const void *logFont, int verticalDpi);
-
-    bool asyncExpose() const;
-    void setAsyncExpose(bool value);
-
-    QVariant gpu() const;
-    QVariant gpuList() const;
+    // for converting to Qt
+    virtual bool canConvertToMime(const QString &mimeType, IDataObject *pDataObj) const = 0;
+    virtual QVariant convertToMime(const QString &mimeType, IDataObject *pDataObj, QVariant::Type preferredType) const = 0;
+    virtual QString mimeForFormat(const FORMATETC &formatetc) const = 0;
 };
+
+} // QPlatformInterface::Private
 
 QT_END_NAMESPACE
 
-#endif // QWINDOWSNATIVEINTERFACE_H
+#endif // QWINDOWSMIME_P_H

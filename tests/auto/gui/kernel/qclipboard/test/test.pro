@@ -1,7 +1,7 @@
 CONFIG += testcase
 SOURCES  += ../tst_qclipboard.cpp
 TARGET = ../tst_qclipboard
-QT += testlib
+QT += testlib gui-private
 
 osx: LIBS += -framework AppKit
 

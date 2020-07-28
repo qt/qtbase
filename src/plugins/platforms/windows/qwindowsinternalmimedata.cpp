@@ -41,6 +41,8 @@
 #include "qwindowscontext.h"
 #include "qwindowsmime.h"
 #include <QtCore/qdebug.h>
+#include <QtCore/qvariant.h>
+
 /*!
     \class QWindowsInternalMimeDataBase
     \brief Base for implementations of QInternalMimeData using a IDataObject COM object.
@@ -97,7 +99,7 @@ QVariant QWindowsInternalMimeData::retrieveData_sys(const QString &mimeType,
 
     QVariant result;
     const QWindowsMimeConverter &mc = QWindowsContext::instance()->mimeConverter();
-    if (const QWindowsMime *converter = mc.converterToMime(mimeType, pDataObj))
+    if (auto converter = mc.converterToMime(mimeType, pDataObj))
         result = converter->convertToMime(mimeType, pDataObj, type);
     releaseDataObject(pDataObj);
     if (QWindowsContext::verbose) {

@@ -10,6 +10,7 @@ qt_add_test(tst_qclipboard
         ../tst_qclipboard.cpp
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::GuiPrivate
 )
 
 ## Scopes:
