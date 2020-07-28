@@ -29,6 +29,7 @@ qt_internal_add_plugin(QIOSIntegrationPlugin
     PUBLIC_LIBRARIES
         ${FWAudioToolbox}
         ${FWFoundation}
+        ${FWMetal}
         ${FWQuartzCore}
         ${FWUIKit}
         Qt::CorePrivate

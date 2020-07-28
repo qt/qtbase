@@ -10,7 +10,7 @@ QT += \
 
 qtConfig(opengl): QT += opengl-private
 
-LIBS += -framework Foundation -framework UIKit -framework QuartzCore -framework AudioToolbox
+LIBS += -framework Foundation -framework UIKit -framework QuartzCore -framework AudioToolbox -framework Metal
 
 OBJECTIVE_SOURCES = \
     plugin.mm \
