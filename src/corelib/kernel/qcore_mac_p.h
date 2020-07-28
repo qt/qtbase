@@ -53,6 +53,9 @@
 
 #include "private/qglobal_p.h"
 
+#include <QtCore/qoperatingsystemversion.h>
+struct mach_header;
+
 #ifndef __IMAGECAPTURE__
 #  define __IMAGECAPTURE__
 #endif
@@ -72,6 +75,7 @@
 
 #include "qstring.h"
 #include "qscopedpointer.h"
+#include "qpair.h"
 
 #if defined( __OBJC__) && defined(QT_NAMESPACE)
 #define QT_NAMESPACE_ALIAS_OBJC_CLASS(__KLASS__) @compatibility_alias __KLASS__ QT_MANGLE_NAMESPACE(__KLASS__)
@@ -394,6 +398,28 @@ private:
     static KeyValueObserver *observer;
 };
 #endif
+
+// -------------------------------------------------------------------------
+
+class Q_CORE_EXPORT QMacVersion
+{
+public:
+    enum VersionTarget {
+        ApplicationBinary,
+        QtLibraries
+    };
+
+    static QOperatingSystemVersion buildSDK(VersionTarget target = ApplicationBinary);
+    static QOperatingSystemVersion deploymentTarget(VersionTarget target = ApplicationBinary);
+    static QOperatingSystemVersion currentRuntime();
+
+private:
+    QMacVersion() = default;
+    using VersionTuple = QPair<QOperatingSystemVersion, QOperatingSystemVersion>;
+    static VersionTuple versionsForImage(const mach_header *machHeader);
+    static VersionTuple applicationVersion();
+    static VersionTuple libraryVersion();
+};
 
 // -------------------------------------------------------------------------
 

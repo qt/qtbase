@@ -178,28 +178,6 @@ T qt_mac_resolveOption(const T &fallback, QWindow *window, const QByteArray &pro
 
 // -------------------------------------------------------------------------
 
-class QMacVersion
-{
-public:
-    enum VersionTarget {
-        ApplicationBinary,
-        QtLibraries
-    };
-
-    static QOperatingSystemVersion buildSDK(VersionTarget target = ApplicationBinary);
-    static QOperatingSystemVersion deploymentTarget(VersionTarget target = ApplicationBinary);
-    static QOperatingSystemVersion currentRuntime();
-
-private:
-    QMacVersion() = default;
-    using VersionTuple = QPair<QOperatingSystemVersion, QOperatingSystemVersion>;
-    static VersionTuple versionsForImage(const mach_header *machHeader);
-    static VersionTuple applicationVersion();
-    static VersionTuple libraryVersion();
-};
-
-// -------------------------------------------------------------------------
-
 QT_END_NAMESPACE
 
 // @compatibility_alias doesn't work with protocols

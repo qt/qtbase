@@ -234,6 +234,9 @@
 #  if !defined(__MAC_10_15)
 #       define __MAC_10_15 101500
 #  endif
+#  if !defined(__MAC_10_16)
+#       define __MAC_10_16 101600
+#  endif
 #  if !defined(MAC_OS_X_VERSION_10_11)
 #       define MAC_OS_X_VERSION_10_11 __MAC_10_11
 #  endif
@@ -248,6 +251,9 @@
 #  endif
 #  if !defined(MAC_OS_X_VERSION_10_15)
 #       define MAC_OS_X_VERSION_10_15 __MAC_10_15
+#  endif
+#  if !defined(MAC_OS_X_VERSION_10_16)
+#       define MAC_OS_X_VERSION_10_16 __MAC_10_16
 #  endif
 #
 #  if !defined(__IPHONE_10_0)
