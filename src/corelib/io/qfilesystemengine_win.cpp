@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -1146,13 +1146,15 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
         if (ok) {
             data.fillFromFindData(findData, false, fname.isDriveRoot());
         } else {
-            if (!tryFindFallback(fname, data))
-                if (!tryDriveUNCFallback(fname, data)) {
+            const DWORD lastError = GetLastError();
+            if (lastError == ERROR_LOGON_FAILURE || lastError == ERROR_BAD_NETPATH // disconnected drive
+                || (!tryFindFallback(fname, data) && !tryDriveUNCFallback(fname, data))) {
+                data.clearFlags();
 #ifndef Q_OS_WINRT
-                    SetErrorMode(oldmode);
+                SetErrorMode(oldmode);
 #endif
-                    return false;
-                }
+                return false;
+            }
         }
 #ifndef Q_OS_WINRT
         SetErrorMode(oldmode);
