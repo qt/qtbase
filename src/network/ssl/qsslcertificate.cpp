@@ -133,7 +133,7 @@
 #ifndef QT_NO_OPENSSL
 #include "qsslsocket_openssl_symbols_p.h"
 #endif
-#ifdef Q_OS_WINRT
+#if defined(Q_OS_WINRT) && QT_CONFIG(ssl)
 #include "qsslsocket_winrt_p.h"
 #endif
 #ifdef QT_SECURETRANSPORT
