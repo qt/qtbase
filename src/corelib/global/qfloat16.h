@@ -80,9 +80,9 @@ public:
     inline operator float() const noexcept;
 
     // Support for qIs{Inf,NaN,Finite}:
-    bool isInf() const noexcept { return ((b16 >> 8) & 0x7e) == 0x7c; }
-    bool isNaN() const noexcept { return ((b16 >> 8) & 0x7e) == 0x7e; }
-    bool isFinite() const noexcept { return ((b16 >> 8) & 0x7c) != 0x7c; }
+    bool isInf() const noexcept { return (b16 & 0x7fff) == 0x7c00; }
+    bool isNaN() const noexcept { return (b16 & 0x7fff) > 0x7c00; }
+    bool isFinite() const noexcept { return (b16 & 0x7fff) < 0x7c00; }
     Q_CORE_EXPORT int fpClassify() const noexcept;
     // Can't specialize std::copysign() for qfloat16
     qfloat16 copySign(qfloat16 sign) const noexcept
@@ -96,10 +96,10 @@ public:
     static constexpr qfloat16 _limit_infinity()   noexcept { return qfloat16(Wrap(0x7c00)); }
     static constexpr qfloat16 _limit_quiet_NaN()  noexcept { return qfloat16(Wrap(0x7e00)); }
 #if QT_CONFIG(signaling_nan)
-    static constexpr qfloat16 _limit_signaling_NaN() noexcept { return qfloat16(Wrap(0x7f00)); }
+    static constexpr qfloat16 _limit_signaling_NaN() noexcept { return qfloat16(Wrap(0x7d00)); }
 #endif
     inline constexpr bool isNormal() const noexcept
-    { return (b16 & 0x7fff) == 0 || ((b16 & 0x7c00) && (b16 & 0x7c00) != 0x7c00); }
+    { return (b16 & 0x7c00) && (b16 & 0x7c00) != 0x7c00; }
 private:
     quint16 b16;
     constexpr inline explicit qfloat16(Wrap nibble) noexcept : b16(nibble.b16) {}

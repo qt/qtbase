@@ -423,7 +423,7 @@ void tst_qfloat16::finite()
 {
     QFETCH(qfloat16, value);
     QFETCH(int, mode);
-    QCOMPARE(value.isNormal(), mode != FP_SUBNORMAL);
+    QCOMPARE(value.isNormal(), mode == FP_NORMAL);
     QCOMPARE(value, value); // Fuzzy
     QVERIFY(value == value); // Exact
     QVERIFY(qIsFinite(value));
