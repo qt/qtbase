@@ -48,7 +48,7 @@ class QTsLibPlugin : public QGenericPlugin
     Q_PLUGIN_METADATA(IID QGenericPluginFactoryInterface_iid FILE "tslib.json")
 
 public:
-    QObject* create(const QString &key, const QString &specification);
+    QObject* create(const QString &key, const QString &specification) override;
 };
 
 QObject* QTsLibPlugin::create(const QString &key,
