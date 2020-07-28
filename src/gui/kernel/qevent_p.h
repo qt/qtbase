@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
 // Private subclasses to allow accessing and modifying protected variables.
 // These should NOT hold any extra state.
 
-class QMutableEventPoint : public QEventPoint
+class Q_GUI_EXPORT QMutableEventPoint : public QEventPoint
 {
 public:
     QMutableEventPoint(int pointId = -1, State state = QEventPoint::State::Stationary,
@@ -127,7 +127,7 @@ public:
 
 static_assert(sizeof(QMutableEventPoint) == sizeof(QEventPoint));
 
-class QMutableTouchEvent : public QTouchEvent
+class Q_GUI_EXPORT QMutableTouchEvent : public QTouchEvent
 {
 public:
     QMutableTouchEvent(QEvent::Type eventType,
@@ -147,7 +147,7 @@ public:
 
 static_assert(sizeof(QMutableTouchEvent) == sizeof(QTouchEvent));
 
-class QMutableSinglePointEvent : public QSinglePointEvent
+class Q_GUI_EXPORT QMutableSinglePointEvent : public QSinglePointEvent
 {
 public:
     static QMutableSinglePointEvent *from(QSinglePointEvent *e) { return static_cast<QMutableSinglePointEvent *>(e); }
