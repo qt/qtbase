@@ -55,6 +55,7 @@
 #include <QtGui/private/qopenglcontext_p.h>
 #include <QtOpenGL/private/qopenglframebufferobject_p.h>
 #include <QtOpenGL/private/qopenglpaintdevice_p.h>
+#include <QtOpenGL/qpa/qplatformbackingstoreopenglsupport.h>
 
 #include <QtWidgets/private/qwidget_p.h>
 
@@ -1410,6 +1411,8 @@ bool QOpenGLWidget::event(QEvent *e)
     }
     return QWidget::event(e);
 }
+
+Q_CONSTRUCTOR_FUNCTION(qt_registerDefaultPlatformBackingStoreOpenGLSupport);
 
 QT_END_NAMESPACE
 

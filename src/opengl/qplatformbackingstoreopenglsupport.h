@@ -78,6 +78,8 @@ private:
     QOpenGLTextureBlitter *blitter = nullptr;
 };
 
+Q_OPENGL_EXPORT void qt_registerDefaultPlatformBackingStoreOpenGLSupport();
+
 QT_END_NAMESPACE
 
 #endif // QT_NO_OPENGL

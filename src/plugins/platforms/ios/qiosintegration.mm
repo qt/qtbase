@@ -66,10 +66,6 @@
 
 #import <AudioToolbox/AudioServices.h>
 
-#if QT_CONFIG(opengl)
-#include <QtOpenGL/qpa/qplatformbackingstoreopenglsupport.h>
-#endif
-
 #include <QtDebug>
 
 QT_BEGIN_NAMESPACE

@@ -43,6 +43,8 @@
 #include <QtGui/QOpenGLContext>
 #include <QtGui/private/qwindow_p.h>
 
+#include <QtOpenGL/qpa/qplatformbackingstoreopenglsupport.h>
+
 #include <QtDebug>
 
 QT_BEGIN_NAMESPACE
@@ -87,5 +89,7 @@ void QIOSBackingStore::flush(QWindow *window, const QRegion &region, const QPoin
     static QPlatformTextureList emptyTextureList;
     composeAndFlush(window, region, offset, &emptyTextureList, false);
 }
+
+Q_CONSTRUCTOR_FUNCTION(qt_registerDefaultPlatformBackingStoreOpenGLSupport);
 
 QT_END_NAMESPACE

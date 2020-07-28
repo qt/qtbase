@@ -450,17 +450,14 @@ GLuint QPlatformBackingStoreOpenGLSupport::toTexture(const QRegion &dirtyRegion,
     return textureId;
 }
 
-static QPlatformBackingStoreOpenGLSupportBase *createOpenGLSupport()
+void qt_registerDefaultPlatformBackingStoreOpenGLSupport()
 {
-    return new QPlatformBackingStoreOpenGLSupport;
+    if (!QPlatformBackingStoreOpenGLSupportBase::factoryFunction()) {
+        QPlatformBackingStoreOpenGLSupportBase::setFactoryFunction([]() -> QPlatformBackingStoreOpenGLSupportBase* {
+            return new QPlatformBackingStoreOpenGLSupport;
+        });
+    }
 }
-
-static void setDefaultOpenGLSupportFactoryFunction()
-{
-    if (!QPlatformBackingStoreOpenGLSupportBase::factoryFunction())
-        QPlatformBackingStoreOpenGLSupportBase::setFactoryFunction(createOpenGLSupport);
-}
-Q_CONSTRUCTOR_FUNCTION(setDefaultOpenGLSupportFactoryFunction);
 
 #endif // QT_NO_OPENGL
 
