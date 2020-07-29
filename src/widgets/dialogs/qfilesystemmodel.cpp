@@ -1393,8 +1393,14 @@ QString QFileSystemModel::filePath(const QModelIndex &index) const
 #endif
         && d->resolvedSymLinks.contains(fullPath)
         && dirNode->isDir()) {
-        QFileInfo resolvedInfo(fullPath);
-        resolvedInfo = resolvedInfo.canonicalFilePath();
+        QFileInfo fullPathInfo(dirNode->fileInfo());
+        if (!dirNode->hasInformation())
+            fullPathInfo = QFileInfo(fullPath);
+        QString canonicalPath = fullPathInfo.canonicalFilePath();
+        auto *canonicalNode = d->node(fullPathInfo.canonicalFilePath(), false);
+        QFileInfo resolvedInfo = canonicalNode->fileInfo();
+        if (!canonicalNode->hasInformation())
+            resolvedInfo = QFileInfo(canonicalPath);
         if (resolvedInfo.exists())
             return resolvedInfo.filePath();
     }
@@ -1485,12 +1491,9 @@ QModelIndex QFileSystemModel::setRootPath(const QString &newPath)
 #else
     QString longNewPath = newPath;
 #endif
-    QDir newPathDir(longNewPath);
     //we remove .. and . from the given path if exist
-    if (!newPath.isEmpty()) {
+    if (!newPath.isEmpty())
         longNewPath = QDir::cleanPath(longNewPath);
-        newPathDir.setPath(longNewPath);
-    }
 
     d->setRootPath = true;
 
@@ -1501,8 +1504,15 @@ QModelIndex QFileSystemModel::setRootPath(const QString &newPath)
     if (d->rootDir.path() == longNewPath)
         return d->index(rootPath());
 
+    auto node = d->node(longNewPath);
+    QFileInfo newPathInfo;
+    if (node && node->hasInformation())
+        newPathInfo = node->fileInfo();
+    else
+        newPathInfo = QFileInfo(longNewPath);
+
     bool showDrives = (longNewPath.isEmpty() || longNewPath == QFileSystemModelPrivate::myComputer());
-    if (!showDrives && !newPathDir.exists())
+    if (!showDrives && !newPathInfo.exists())
         return d->index(rootPath());
 
     //We remove the watcher on the previous path
@@ -1518,13 +1528,13 @@ QModelIndex QFileSystemModel::setRootPath(const QString &newPath)
     }
 
     // We have a new valid root path
-    d->rootDir = newPathDir;
+    d->rootDir = QDir(longNewPath);
     QModelIndex newRootIndex;
     if (showDrives) {
         // otherwise dir will become '.'
         d->rootDir.setPath(QLatin1String(""));
     } else {
-        newRootIndex = d->index(newPathDir.path());
+        newRootIndex = d->index(d->rootDir.path());
     }
     fetchMore(newRootIndex);
     emit rootPathChanged(longNewPath);
