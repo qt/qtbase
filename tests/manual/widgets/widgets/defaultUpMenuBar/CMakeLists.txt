@@ -9,7 +9,7 @@ qt_add_manual_test(defaultUpMenuBar
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES
-        Qt::Gui
+        Qt::GuiPrivate
         Qt::Widgets
 )
 

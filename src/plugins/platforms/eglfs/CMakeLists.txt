@@ -25,7 +25,6 @@ qt_add_module(EglFSDeviceIntegration
         Qt::DeviceDiscoverySupportPrivate
         Qt::FbSupportPrivate
         Qt::GuiPrivate
-        Qt::PlatformHeadersPrivate
         EGL::EGL # special case
 )
 
@@ -98,7 +97,6 @@ qt_internal_add_plugin(QEglFSIntegrationPlugin
     PUBLIC_LIBRARIES
         Qt::CorePrivate # special case
         Qt::EglFSDeviceIntegrationPrivate
-        Qt::PlatformHeadersPrivate
         EGL::EGL # special case
 )
 

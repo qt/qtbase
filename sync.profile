@@ -15,7 +15,6 @@
     "QtInputSupport" => "$basedir/src/platformsupport/input",
     "QtFbSupport" => "$basedir/src/platformsupport/fbconvenience",
     "QtKmsSupport" => "$basedir/src/platformsupport/kmsconvenience",
-    "QtPlatformHeaders" => "$basedir/src/platformheaders",
     "QtZlib" => "!>$basedir/src/corelib;$basedir/src/3rdparty/zlib",
     "QtEglFSDeviceIntegration" => "$basedir/src/plugins/platforms/eglfs",
     "QtMockPlugins1" => "$basedir/tests/auto/cmake/mockplugins/mockplugins1",
@@ -66,7 +65,7 @@
     }
 );
 
-@qpa_headers = ( qr/^(?!qplatformheaderhelper)qplatform/, qr/^qwindowsystem/ );
+@qpa_headers = ( qr/^qplatform/, qr/^qwindowsystem/ );
 my @internal_zlib_headers = ( "crc32.h", "deflate.h", "gzguts.h", "inffast.h", "inffixed.h", "inflate.h", "inftrees.h", "trees.h", "zutil.h" );
 my @zlib_headers = ( "zconf.h", "zlib.h" );
 @ignore_headers = ( @internal_zlib_headers );

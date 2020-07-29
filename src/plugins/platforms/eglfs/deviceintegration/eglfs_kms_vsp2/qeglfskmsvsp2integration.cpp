@@ -52,7 +52,6 @@
 #include <QtCore/QJsonArray>
 #include <QtGui/qpa/qplatformwindow.h>
 #include <QtGui/QScreen>
-#include <QtPlatformHeaders/private/qeglfsfunctions_p.h>
 
 #include <xf86drm.h>
 #include <xf86drmMode.h>
@@ -123,24 +122,6 @@ void QEglFSKmsVsp2Integration::presentBuffer(QPlatformSurface *surface)
     screen->flip();
 }
 
-QFunctionPointer QEglFSKmsVsp2Integration::platformFunction(const QByteArray &function) const
-{
-    if (function == QEglFSFunctions::vsp2AddLayerTypeIdentifier())
-        return QFunctionPointer(addLayerStatic);
-    if (function == QEglFSFunctions::vsp2RemoveLayerTypeIdentifier())
-        return QFunctionPointer(removeLayerStatic);
-    if (function == QEglFSFunctions::vsp2SetLayerBufferTypeIdentifier())
-        return QFunctionPointer(setLayerBufferStatic);
-    if (function == QEglFSFunctions::vsp2SetLayerPositionTypeIdentifier())
-        return QFunctionPointer(setLayerPositionStatic);
-    if (function == QEglFSFunctions::vsp2SetLayerAlphaTypeIdentifier())
-        return QFunctionPointer(setLayerAlphaStatic);
-    if (function == QEglFSFunctions::vsp2AddBlendListenerTypeIdentifier())
-        return QFunctionPointer(addBlendListenerStatic);
-
-    return nullptr;
-}
-
 QKmsDevice *QEglFSKmsVsp2Integration::createDevice()
 {
     QString path = screenConfig()->devicePath();
@@ -160,42 +141,6 @@ QKmsDevice *QEglFSKmsVsp2Integration::createDevice()
     }
 
     return new QEglFSKmsVsp2Device(screenConfig(), path);
-}
-
-int QEglFSKmsVsp2Integration::addLayerStatic(const QScreen *screen, int dmabufFd, const QSize &size, const QPoint &position, uint pixelFormat, uint bytesPerLine)
-{
-    auto vsp2Screen = static_cast<QEglFSKmsVsp2Screen *>(screen->handle());
-    return vsp2Screen->addLayer(dmabufFd, size, position, pixelFormat, bytesPerLine);
-}
-
-bool QEglFSKmsVsp2Integration::removeLayerStatic(const QScreen *screen, int id)
-{
-    auto vsp2Screen = static_cast<QEglFSKmsVsp2Screen *>(screen->handle());
-    return vsp2Screen->removeLayer(id);
-}
-
-void QEglFSKmsVsp2Integration::setLayerBufferStatic(const QScreen *screen, int id, int dmabufFd)
-{
-    auto vsp2Screen = static_cast<QEglFSKmsVsp2Screen *>(screen->handle());
-    vsp2Screen->setLayerBuffer(id, dmabufFd);
-}
-
-void QEglFSKmsVsp2Integration::setLayerPositionStatic(const QScreen *screen, int id, const QPoint &position)
-{
-    auto vsp2Screen = static_cast<QEglFSKmsVsp2Screen *>(screen->handle());
-    vsp2Screen->setLayerPosition(id, position);
-}
-
-void QEglFSKmsVsp2Integration::setLayerAlphaStatic(const QScreen *screen, int id, qreal alpha)
-{
-    auto vsp2Screen = static_cast<QEglFSKmsVsp2Screen *>(screen->handle());
-    vsp2Screen->setLayerAlpha(id, alpha);
-}
-
-void QEglFSKmsVsp2Integration::addBlendListenerStatic(const QScreen *screen, void(*callback)())
-{
-    auto vsp2Screen = static_cast<QEglFSKmsVsp2Screen *>(screen->handle());
-    vsp2Screen->addBlendListener(callback);
 }
 
 class QEglFSKmsVsp2Window : public QEglFSWindow

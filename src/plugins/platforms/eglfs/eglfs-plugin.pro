@@ -1,6 +1,6 @@
 TARGET = qeglfs
 
-QT += eglfsdeviceintegration-private platformheaders-private
+QT += eglfsdeviceintegration-private
 
 CONFIG += egl
 

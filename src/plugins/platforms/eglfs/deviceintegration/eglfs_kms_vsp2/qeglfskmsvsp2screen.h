@@ -46,11 +46,14 @@
 #include "qvsp2blendingdevice.h"
 #include <QtCore/QMutex>
 
+#include <qpa/qplatformscreen_p.h>
+
 #include <gbm.h>
 
 QT_BEGIN_NAMESPACE
 
 class QEglFSKmsVsp2Screen : public QEglFSKmsScreen
+    , public QPlatformInterface::Private::QVsp2Screen
 {
 public:
     QEglFSKmsVsp2Screen(QEglFSKmsDevice *device, const QKmsOutput &output);
@@ -63,12 +66,12 @@ public:
     void initQtLayer();
 
     //TODO: use a fixed index API instead of auto increment?
-    int addLayer(int dmabufFd, const QSize &size, const QPoint &position, uint drmPixelFormat, uint bytesPerLine);
-    void setLayerBuffer(int id, int dmabufFd);
-    void setLayerPosition(int id, const QPoint &position);
-    void setLayerAlpha(int id, qreal alpha);
-    bool removeLayer(int id);
-    void addBlendListener(void (*callback)());
+    int addLayer(int dmabufFd, const QSize &size, const QPoint &position, uint drmPixelFormat, uint bytesPerLine) override;
+    void setLayerBuffer(int id, int dmabufFd) override;
+    void setLayerPosition(int id, const QPoint &position) override;
+    void setLayerAlpha(int id, qreal alpha) override;
+    bool removeLayer(int id) override;
+    void addBlendListener(void (*callback)()) override;
 
     void flip();
     void blendAndFlipDrm();

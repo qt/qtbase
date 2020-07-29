@@ -54,7 +54,6 @@ qt_internal_add_plugin(QWindowsIntegrationPlugin
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate
-        Qt::PlatformHeadersPrivate
         dwmapi
         imm32
         oleaut32

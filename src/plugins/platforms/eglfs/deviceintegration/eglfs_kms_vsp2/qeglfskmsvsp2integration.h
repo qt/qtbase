@@ -62,18 +62,8 @@ public:
     void presentBuffer(QPlatformSurface *surface) override;
     QEglFSWindow *createWindow(QWindow *window) const override;
 
-    QFunctionPointer platformFunction(const QByteArray &function) const override;
-
 protected:
     QKmsDevice *createDevice() override;
-
-private:
-    static int addLayerStatic(const QScreen *screen, int dmabufFd, const QSize &size, const QPoint &position, uint pixelFormat, uint bytesPerLine);
-    static bool removeLayerStatic(const QScreen *screen, int id);
-    static void setLayerBufferStatic(const QScreen *screen, int id, int dmabufFd);
-    static void setLayerPositionStatic(const QScreen *screen, int id, const QPoint &position);
-    static void setLayerAlphaStatic(const QScreen *screen, int id, qreal alpha);
-    static void addBlendListenerStatic(const QScreen *screen, void(*callback)());
 };
 
 QT_END_NAMESPACE

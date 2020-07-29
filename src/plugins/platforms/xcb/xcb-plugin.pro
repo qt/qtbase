@@ -1,6 +1,6 @@
 TARGET = qxcb
 
-QT += core-private gui-private xcb_qpa_lib-private platformheaders-private
+QT += core-private gui-private xcb_qpa_lib-private
 
 DEFINES += QT_NO_FOREACH
 

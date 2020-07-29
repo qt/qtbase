@@ -10,7 +10,6 @@ MODULE = eglfsdeviceintegration
 
 QT += \
     core-private gui-private \
-    platformheaders-private \
     devicediscovery_support-private \
     fb_support-private
 

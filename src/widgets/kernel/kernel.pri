@@ -3,8 +3,6 @@
 # Only used on platforms with CONFIG += precompile_header
 PRECOMPILED_HEADER = kernel/qt_widgets_pch.h
 
-QT_PRIVATE += platformheaders-private
-
 KERNEL_P= kernel
 HEADERS += \
         kernel/qtwidgetsglobal.h \

@@ -60,10 +60,6 @@ QT_BEGIN_NAMESPACE
 
     There is no public constructor nor any public factory function.
 
-    QPlatformGraphicsBuffer is intended to be created by using platform specific
-    APIs available from QtPlatformHeaders, or there might be accessor functions
-    similar to the accessor function that QPlatformBackingstore has.
-
     \internal
 */
 

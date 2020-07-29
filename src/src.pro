@@ -117,17 +117,13 @@ src_gui.subdir = $$PWD/gui
 src_gui.target = sub-gui
 src_gui.depends = src_corelib src_tools_rcc
 
-src_platformheaders.subdir = $$PWD/platformheaders
-src_platformheaders.target = sub-platformheaders
-src_platformheaders.depends = src_corelib src_gui
-
 src_platformsupport.subdir = $$PWD/platformsupport
 src_platformsupport.target = sub-platformsupport
-src_platformsupport.depends = src_corelib src_gui src_platformheaders
+src_platformsupport.depends = src_corelib src_gui
 
 src_widgets.subdir = $$PWD/widgets
 src_widgets.target = sub-widgets
-src_widgets.depends = src_corelib src_gui src_tools_uic src_platformheaders
+src_widgets.depends = src_corelib src_gui src_tools_uic
 
 src_opengl.subdir = $$PWD/opengl
 src_opengl.target = sub-opengl
@@ -212,13 +208,13 @@ qtConfig(gui) {
         src_gui.depends += src_tools_qvkgen
         TOOLS += src_tools_qvkgen
     }
-    SUBDIRS += src_gui src_platformsupport src_platformheaders
+    SUBDIRS += src_gui src_platformsupport
     qtConfig(opengl) {
         SUBDIRS += src_opengl
         src_plugins.depends += src_opengl
         src_platformsupport.depends += src_opengl
     }
-    src_plugins.depends += src_gui src_platformsupport src_platformheaders
+    src_plugins.depends += src_gui src_platformsupport
     src_testlib.depends += src_gui      # if QtGui is enabled, QtTest requires QtGui's headers
     qtConfig(widgets) {
         SUBDIRS += src_tools_uic src_widgets

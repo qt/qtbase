@@ -42,7 +42,6 @@ qt_add_module(XcbQpa
         PkgConfig::XKB_COMMON_X11
         Qt::CorePrivate
         Qt::GuiPrivate
-        Qt::PlatformHeadersPrivate
         XCB::ICCCM
         XCB::IMAGE
         XCB::KEYSYMS
@@ -169,7 +168,6 @@ qt_internal_add_plugin(QXcbIntegrationPlugin
     PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
-        Qt::PlatformHeadersPrivate
         Qt::XcbQpaPrivate
 )
 

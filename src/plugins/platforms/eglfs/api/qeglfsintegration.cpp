@@ -94,8 +94,6 @@
 #include <QtInputSupport/qintegrityhidmanager.h>
 #endif
 
-#include <QtPlatformHeaders/private/qeglfsfunctions_p.h>
-
 static void initResources()
 {
 #ifndef QT_NO_CURSOR

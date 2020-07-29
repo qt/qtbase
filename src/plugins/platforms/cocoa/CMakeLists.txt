@@ -64,7 +64,6 @@ qt_internal_add_plugin(QCocoaIntegrationPlugin
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate
-        Qt::PlatformHeadersPrivate
 )
 
 # special case begin
