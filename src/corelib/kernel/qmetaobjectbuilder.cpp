@@ -1669,7 +1669,7 @@ static const QMetaObject *resolveClassName
     if (name == QByteArray("QObject"))
         return &QObject::staticMetaObject;
     else
-        return references.value(name, 0);
+        return references.value(name, nullptr);
 }
 
 /*!

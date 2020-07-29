@@ -90,7 +90,7 @@ static const QFontEngineQPF2::TagType tagTypes[QFontEngineQPF2::NumTags] = {
 #define READ_VERIFY(type, variable) \
     if (tagPtr + sizeof(type) > endPtr) { \
         DEBUG_VERIFY() << "read verify failed in line" << __LINE__; \
-        return 0; \
+        return nullptr; \
     } \
     variable = qFromBigEndian<type>(tagPtr); \
     DEBUG_VERIFY() << "read value" << variable << "of type " #type; \
@@ -113,7 +113,7 @@ T readValue(const uchar *&data)
 #define VERIFY_TAG(condition) \
     if (!(condition)) { \
         DEBUG_VERIFY() << "verifying tag condition " #condition " failed in line" << __LINE__ << "with tag" << tag; \
-        return 0; \
+        return nullptr; \
     }
 
 static inline const uchar *verifyTag(const uchar *tagPtr, const uchar *endPtr)

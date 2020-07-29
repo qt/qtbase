@@ -1601,7 +1601,7 @@ QTextObject *QTextDocumentPrivate::objectForIndex(int objectIndex) const
     if (objectIndex < 0)
         return nullptr;
 
-    QTextObject *object = objects.value(objectIndex, 0);
+    QTextObject *object = objects.value(objectIndex, nullptr);
     if (!object) {
         QTextDocumentPrivate *that = const_cast<QTextDocumentPrivate *>(this);
         QTextFormat fmt = formats.objectFormat(objectIndex);

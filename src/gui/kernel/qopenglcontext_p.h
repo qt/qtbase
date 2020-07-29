@@ -174,7 +174,7 @@ public:
         // Have to use our own mutex here, not the group's, since
         // m_groups has to be protected too against any concurrent access.
         QMutexLocker locker(&m_mutex);
-        T *resource = static_cast<T *>(group->d_func()->m_resources.value(this, 0));
+        T *resource = static_cast<T *>(group->d_func()->m_resources.value(this, nullptr));
         if (!resource) {
             resource = new T(context);
             insert(context, resource);

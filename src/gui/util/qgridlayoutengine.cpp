@@ -1255,7 +1255,7 @@ void QGridLayoutEngine::maybeExpandGrid(int row, int column, Qt::Orientation ori
 
                     Q_ASSERT(newIndex > oldIndex);
                     q_grid[newIndex] = q_grid[oldIndex];
-                    q_grid[oldIndex] = 0;
+                    q_grid[oldIndex] = nullptr;
                 }
             }
         }
@@ -1264,7 +1264,7 @@ void QGridLayoutEngine::maybeExpandGrid(int row, int column, Qt::Orientation ori
 
 void QGridLayoutEngine::regenerateGrid()
 {
-    q_grid.fill(0);
+    q_grid.fill(nullptr);
 
     for (int i = q_items.count() - 1; i >= 0; --i) {
         QGridLayoutItem *item = q_items.at(i);

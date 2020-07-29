@@ -189,7 +189,7 @@ void QStandardItemPrivate::childDeleted(QStandardItem *child)
     int index = childIndex(child);
     Q_ASSERT(index != -1);
     const auto modelIndex = child->index();
-    children.replace(index, 0);
+    children.replace(index, nullptr);
     emit model->dataChanged(modelIndex, modelIndex);
 }
 
@@ -481,7 +481,7 @@ bool QStandardItemPrivate::insertRows(int row, const QList<QStandardItem*> &item
         rows += count;
         int index = childIndex(row, 0);
         if (index != -1)
-            children.insert(index, columnCount() * count, 0);
+            children.insert(index, columnCount() * count, nullptr);
     }
     for (int i = 0; i < items.count(); ++i) {
         QStandardItem *item = items.at(i);
@@ -511,7 +511,7 @@ bool QStandardItemPrivate::insertRows(int row, int count, const QList<QStandardI
         rows += count;
         int index = childIndex(row, 0);
         if (index != -1)
-            children.insert(index, columnCount() * count, 0);
+            children.insert(index, columnCount() * count, nullptr);
     }
     if (!items.isEmpty()) {
         int index = childIndex(row, 0);
@@ -555,7 +555,7 @@ bool QStandardItemPrivate::insertColumns(int column, int count, const QList<QSta
         columns += count;
         int index = childIndex(0, column);
         for (int row = 0; row < rowCount(); ++row) {
-            children.insert(index, count, 0);
+            children.insert(index, count, nullptr);
             index += columnCount();
         }
     }
@@ -661,7 +661,7 @@ void QStandardItemModelPrivate::rowsInserted(QStandardItem *parent,
 {
     Q_Q(QStandardItemModel);
     if (parent == root.data())
-        rowHeaderItems.insert(row, count, 0);
+        rowHeaderItems.insert(row, count, nullptr);
     q->endInsertRows();
 }
 
@@ -673,7 +673,7 @@ void QStandardItemModelPrivate::columnsInserted(QStandardItem *parent,
 {
     Q_Q(QStandardItemModel);
     if (parent == root.data())
-        columnHeaderItems.insert(column, count, 0);
+        columnHeaderItems.insert(column, count, nullptr);
     q->endInsertColumns();
 }
 
@@ -1881,7 +1881,7 @@ QStandardItem *QStandardItem::takeChild(int row, int column)
         item = d->children.at(index);
         if (item)
             item->d_func()->setParentAndModel(nullptr, nullptr);
-        d->children.replace(index, 0);
+        d->children.replace(index, nullptr);
     }
     return item;
 }
@@ -2195,9 +2195,9 @@ QStandardItemModel::QStandardItemModel(int rows, int columns, QObject *parent)
     Q_D(QStandardItemModel);
     d->init();
     d->root->insertColumns(0, columns);
-    d->columnHeaderItems.insert(0, columns, 0);
+    d->columnHeaderItems.insert(0, columns, nullptr);
     d->root->insertRows(0, rows);
-    d->rowHeaderItems.insert(0, rows, 0);
+    d->rowHeaderItems.insert(0, rows, nullptr);
     d->root->d_func()->setModel(this);
 }
 
@@ -2754,7 +2754,7 @@ QStandardItem *QStandardItemModel::takeHorizontalHeaderItem(int column)
     QStandardItem *headerItem = d->columnHeaderItems.at(column);
     if (headerItem) {
         headerItem->d_func()->setParentAndModel(nullptr, nullptr);
-        d->columnHeaderItems.replace(column, 0);
+        d->columnHeaderItems.replace(column, nullptr);
     }
     return headerItem;
 }
@@ -2776,7 +2776,7 @@ QStandardItem *QStandardItemModel::takeVerticalHeaderItem(int row)
     QStandardItem *headerItem = d->rowHeaderItems.at(row);
     if (headerItem) {
         headerItem->d_func()->setParentAndModel(nullptr, nullptr);
-        d->rowHeaderItems.replace(row, 0);
+        d->rowHeaderItems.replace(row, nullptr);
     }
     return headerItem;
 }

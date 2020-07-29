@@ -242,7 +242,7 @@ int runMoc(int argc, char **argv)
     QString filename;
     QString output;
     QFile in;
-    FILE *out = 0;
+    FILE *out = nullptr;
 
     // Note that moc isn't translated.
     // If you use this code as an example for a translated app, make sure to translate the strings.

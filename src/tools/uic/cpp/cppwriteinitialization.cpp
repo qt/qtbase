@@ -649,7 +649,7 @@ void WriteInitialization::acceptWidget(DomWidget *node)
     }
 
     if (node->elementLayout().isEmpty())
-        m_layoutChain.push(0);
+        m_layoutChain.push(nullptr);
 
     m_layoutWidget = false;
     if (className == QLatin1String("QWidget") && !node->hasAttributeNative()) {
@@ -662,7 +662,7 @@ void WriteInitialization::acceptWidget(DomWidget *node)
         }
     }
     m_widgetChain.push(node);
-    m_layoutChain.push(0);
+    m_layoutChain.push(nullptr);
     TreeWalker::acceptWidget(node);
     m_layoutChain.pop();
     m_widgetChain.pop();

@@ -80,16 +80,16 @@ Q_DECLARE_LOGGING_CATEGORY(qLcTray)
 
 ResourceHelper::ResourceHelper()
 {
-    std::fill(palettes, palettes + QPlatformTheme::NPalettes, static_cast<QPalette *>(0));
-    std::fill(fonts, fonts + QPlatformTheme::NFonts, static_cast<QFont *>(0));
+    std::fill(palettes, palettes + QPlatformTheme::NPalettes, static_cast<QPalette *>(nullptr));
+    std::fill(fonts, fonts + QPlatformTheme::NFonts, static_cast<QFont *>(nullptr));
 }
 
 void ResourceHelper::clear()
 {
     qDeleteAll(palettes, palettes + QPlatformTheme::NPalettes);
     qDeleteAll(fonts, fonts + QPlatformTheme::NFonts);
-    std::fill(palettes, palettes + QPlatformTheme::NPalettes, static_cast<QPalette *>(0));
-    std::fill(fonts, fonts + QPlatformTheme::NFonts, static_cast<QFont *>(0));
+    std::fill(palettes, palettes + QPlatformTheme::NPalettes, static_cast<QPalette *>(nullptr));
+    std::fill(fonts, fonts + QPlatformTheme::NFonts, static_cast<QFont *>(nullptr));
 }
 
 const char *QGenericUnixTheme::name = "generic";
@@ -162,7 +162,7 @@ const QFont *QGenericUnixTheme::font(Font type) const
     case QPlatformTheme::FixedFont:
         return &d->fixedFont;
     default:
-        return 0;
+        return nullptr;
     }
 }
 
@@ -532,7 +532,7 @@ QFont *QKdeThemePrivate::kdeFont(const QVariant &fontValue)
                 return new QFont(font);
         }
     }
-    return 0;
+    return nullptr;
 }
 
 
@@ -621,7 +621,7 @@ QPlatformTheme *QKdeTheme::createKdeTheme()
     const QByteArray kdeVersionBA = qgetenv("KDE_SESSION_VERSION");
     const int kdeVersion = kdeVersionBA.toInt();
     if (kdeVersion < 4)
-        return 0;
+        return nullptr;
 
     if (kdeVersion > 4)
         // Plasma 5 follows XDG spec
@@ -665,7 +665,7 @@ QPlatformTheme *QKdeTheme::createKdeTheme()
     kdeDirs.removeDuplicates();
     if (kdeDirs.isEmpty()) {
         qWarning("Unable to determine KDE dirs");
-        return 0;
+        return nullptr;
     }
 
     return new QKdeTheme(kdeDirs, kdeVersion);
@@ -782,7 +782,7 @@ const QFont *QGnomeTheme::font(Font type) const
     case QPlatformTheme::FixedFont:
         return d->fixedFont;
     default:
-        return 0;
+        return nullptr;
     }
 }
 

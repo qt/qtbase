@@ -1247,14 +1247,14 @@ void QOpenGLMultiGroupSharedResource::insert(QOpenGLContext *context, QOpenGLSha
 QOpenGLSharedResource *QOpenGLMultiGroupSharedResource::value(QOpenGLContext *context)
 {
     QOpenGLContextGroup *group = context->shareGroup();
-    return group->d_func()->m_resources.value(this, 0);
+    return group->d_func()->m_resources.value(this, nullptr);
 }
 
 QList<QOpenGLSharedResource *> QOpenGLMultiGroupSharedResource::resources() const
 {
     QList<QOpenGLSharedResource *> result;
     for (QList<QOpenGLContextGroup *>::const_iterator it = m_groups.constBegin(); it != m_groups.constEnd(); ++it) {
-        QOpenGLSharedResource *resource = (*it)->d_func()->m_resources.value(const_cast<QOpenGLMultiGroupSharedResource *>(this), 0);
+        QOpenGLSharedResource *resource = (*it)->d_func()->m_resources.value(const_cast<QOpenGLMultiGroupSharedResource *>(this), nullptr);
         if (resource)
             result << resource;
     }

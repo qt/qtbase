@@ -64,7 +64,7 @@ public:
     static QSqlQueryPrivate* shared_null();
 };
 
-Q_GLOBAL_STATIC_WITH_ARGS(QSqlQueryPrivate, nullQueryPrivate, (0))
+Q_GLOBAL_STATIC_WITH_ARGS(QSqlQueryPrivate, nullQueryPrivate, (nullptr))
 Q_GLOBAL_STATIC(QSqlNullDriver, nullDriver)
 Q_GLOBAL_STATIC_WITH_ARGS(QSqlNullResult, nullResult, (nullDriver()))
 

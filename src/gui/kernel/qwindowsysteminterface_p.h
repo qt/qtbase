@@ -471,7 +471,7 @@ public:
         void prepend(WindowSystemEvent *e)
         { const QMutexLocker locker(&mutex); impl.prepend(e); }
         WindowSystemEvent *takeFirstOrReturnNull()
-        { const QMutexLocker locker(&mutex); return impl.empty() ? 0 : impl.takeFirst(); }
+        { const QMutexLocker locker(&mutex); return impl.empty() ? nullptr : impl.takeFirst(); }
         WindowSystemEvent *takeFirstNonUserInputOrReturnNull()
         {
             const QMutexLocker locker(&mutex);

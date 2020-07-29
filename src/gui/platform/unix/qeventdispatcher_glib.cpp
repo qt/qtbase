@@ -64,7 +64,7 @@ static gboolean userEventSourcePrepare(GSource *source, gint *timeout)
 
 static gboolean userEventSourceCheck(GSource *source)
 {
-    return userEventSourcePrepare(source, 0);
+    return userEventSourcePrepare(source, nullptr);
 }
 
 static gboolean userEventSourceDispatch(GSource *source, GSourceFunc, gpointer)
@@ -111,7 +111,7 @@ QPAEventDispatcherGlib::~QPAEventDispatcherGlib()
 
     g_source_destroy(&d->userEventSource->source);
     g_source_unref(&d->userEventSource->source);
-    d->userEventSource = 0;
+    d->userEventSource = nullptr;
 }
 
 bool QPAEventDispatcherGlib::processEvents(QEventLoop::ProcessEventsFlags flags)

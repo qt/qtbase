@@ -880,9 +880,9 @@ void PathSimplifier::connectElements()
 #ifndef QT_NO_DEBUG
     for (int i = 0; i < m_elements.size(); ++i) {
         const Element *element = m_elements.at(i);
-        Q_ASSERT(element->next == 0 || element->next->previous == element);
-        Q_ASSERT(element->previous == 0 || element->previous->next == element);
-        Q_ASSERT((element->next == 0) == (element->previous == 0));
+        Q_ASSERT(element->next == nullptr || element->next->previous == element);
+        Q_ASSERT(element->previous == nullptr || element->previous->next == element);
+        Q_ASSERT((element->next == nullptr) == (element->previous == nullptr));
     }
 #endif
 }
@@ -1442,7 +1442,7 @@ bool PathSimplifier::elementIsLeftOf(const Element *left, const Element *right)
 QPair<PathSimplifier::RBNode *, PathSimplifier::RBNode *> PathSimplifier::outerBounds(const QPoint &point)
 {
     RBNode *current = m_elementList.root;
-    QPair<RBNode *, RBNode *> result(0, 0);
+    QPair<RBNode *, RBNode *> result(nullptr, nullptr);
 
     while (current) {
         const Element *element = current->data;

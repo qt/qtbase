@@ -196,7 +196,7 @@ static QString generateInterfaceXml(const ClassDef *mo)
     // start with properties:
     if (flags & (QDBusConnection::ExportScriptableProperties |
                  QDBusConnection::ExportNonScriptableProperties)) {
-        static const char *accessvalues[] = {0, "read", "write", "readwrite"};
+        static const char *accessvalues[] = {nullptr, "read", "write", "readwrite"};
         for (const PropertyDef &mp : mo->propertyList) {
             if (!((!mp.scriptable.isEmpty() && (flags & QDBusConnection::ExportScriptableProperties)) ||
                   (!mp.scriptable.isEmpty() && (flags & QDBusConnection::ExportNonScriptableProperties))))

@@ -2909,7 +2909,7 @@ void QTextDocumentLayoutPrivate::positionFloat(QTextFrame *frame, QTextLine *cur
 
     // If the frame is a table, then positioning it will affect the size if it covers more than
     // one page, because of page breaks and repeating the header.
-    if (qobject_cast<QTextTable *>(frame) != 0)
+    if (qobject_cast<QTextTable *>(frame) != nullptr)
         fd->sizeDirty = frameSpansIntoNextPage;
 }
 

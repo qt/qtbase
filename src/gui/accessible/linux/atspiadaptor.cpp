@@ -858,7 +858,7 @@ QAccessibleInterface *AtSpiAdaptor::interfaceFromPath(const QString& dbusPath) c
     QStringList parts = dbusPath.split(QLatin1Char('/'));
     if (parts.size() != 6) {
         qCDebug(lcAccessibilityAtspi) << "invalid path: " << dbusPath;
-        return 0;
+        return nullptr;
     }
 
     QString objectString = parts.at(5);
@@ -1613,7 +1613,7 @@ bool AtSpiAdaptor::componentInterface(QAccessibleInterface *interface, const QSt
         }
 
         QAccessibleInterface * childInterface(interface->childAt(x, y));
-        QAccessibleInterface * iface = 0;
+        QAccessibleInterface * iface = nullptr;
         while (childInterface) {
             iface = childInterface;
             childInterface = iface->childAt(x, y);
@@ -2301,7 +2301,7 @@ bool AtSpiAdaptor::tableInterface(QAccessibleInterface *interface, const QString
         connection.send(message.createReply(QVariant::fromValue(QDBusVariant(
             QVariant::fromValue(interface->tableInterface()->selectedRowCount())))));
     } else if (function == QLatin1String("GetSummary")) {
-        QAccessibleInterface * summary = interface->tableInterface() ? interface->tableInterface()->summary() : 0;
+        QAccessibleInterface *summary = interface->tableInterface() ? interface->tableInterface()->summary() : nullptr;
         QSpiObjectReference ref(connection, QDBusObjectPath(pathForInterface(summary)));
         connection.send(message.createReply(QVariant::fromValue(QDBusVariant(QVariant::fromValue(ref)))));
     } else if (function == QLatin1String("GetAccessibleAt")) {

@@ -235,7 +235,7 @@ QUnifiedTimer *QUnifiedTimer::instance(bool create)
         inst = new QUnifiedTimer;
         unifiedTimer()->setLocalData(inst);
     } else {
-        inst = unifiedTimer() ? unifiedTimer()->localData() : 0;
+        inst = unifiedTimer() ? unifiedTimer()->localData() : nullptr;
     }
     return inst;
 }
@@ -565,7 +565,7 @@ QAnimationTimer *QAnimationTimer::instance(bool create)
         inst = new QAnimationTimer;
         animationTimer()->setLocalData(inst);
     } else {
-        inst = animationTimer() ? animationTimer()->localData() : 0;
+        inst = animationTimer() ? animationTimer()->localData() : nullptr;
     }
 #else
     Q_UNUSED(create);

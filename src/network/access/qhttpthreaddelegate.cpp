@@ -257,7 +257,7 @@ void QHttpThreadDelegate::startRequestSynchronously()
     synchronousRequestLoop.exec();
 
     connections.localData()->releaseEntry(cacheKey);
-    connections.setLocalData(0);
+    connections.setLocalData(nullptr);
 
 #ifdef QHTTPTHREADDELEGATE_DEBUG
     qDebug() << "QHttpThreadDelegate::startRequestSynchronously() thread=" << QThread::currentThreadId() << "finished";

@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
 */
 
 QSpiAccessibleBridge::QSpiAccessibleBridge()
-    : cache(0), dec(0), dbusAdaptor(0)
+    : cache(nullptr), dec(nullptr), dbusAdaptor(nullptr)
 {
     dbusConnection = new DBusConnection();
     connect(dbusConnection, SIGNAL(enabledChanged(bool)), this, SLOT(enabledChanged(bool)));

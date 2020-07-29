@@ -271,7 +271,7 @@ void QPropertyAnimation::updateState(QAbstractAnimation::State newState,
         QPropertyAnimationPair key(d->targetValue, d->propertyName);
         if (newState == Running) {
             d->updateMetaProperty();
-            animToStop = hash.value(key, 0);
+            animToStop = hash.value(key, nullptr);
             hash.insert(key, this);
             locker.unlock();
             // update the default start value

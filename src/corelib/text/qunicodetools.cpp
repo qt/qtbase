@@ -1323,8 +1323,8 @@ typedef int (*th_brk_def) (const unsigned char*, int*, size_t);
 typedef size_t (*th_next_cell_def) (const unsigned char *, size_t, struct thcell_t *, int);
 
 /* libthai related function handles */
-static th_brk_def th_brk = 0;
-static th_next_cell_def th_next_cell = 0;
+static th_brk_def th_brk = nullptr;
+static th_next_cell_def th_next_cell = nullptr;
 
 static int init_libthai() {
     static bool initialized = false;
@@ -1363,7 +1363,7 @@ static void thaiAssignAttributes(const ushort *string, uint len, QCharAttributes
 {
     char s[128];
     char *cstr = s;
-    int *break_positions = 0;
+    int *break_positions = nullptr;
     int brp[128];
     int brp_size = 0;
     uint numbreaks, i, j, cell_length;

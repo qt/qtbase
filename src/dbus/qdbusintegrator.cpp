@@ -930,7 +930,7 @@ void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const Q
     // let's create the parameter list
 
     // first one is the return type -- add it below
-    params.append(0);
+    params.append(nullptr);
 
     // add the input parameters
     int i;
@@ -1186,7 +1186,7 @@ bool QDBusConnectionPrivate::handleError(const QDBusErrorInternal &error)
 void QDBusConnectionPrivate::timerEvent(QTimerEvent *e)
 {
     {
-        DBusTimeout *timeout = timeouts.value(e->timerId(), 0);
+        DBusTimeout *timeout = timeouts.value(e->timerId(), nullptr);
         if (timeout)
             q_dbus_timeout_handle(timeout);
     }
@@ -2582,7 +2582,7 @@ QDBusConnectionPrivate::findMetaObject(const QString &service, const QString &pa
     // service must be a unique connection name
     if (!interface.isEmpty()) {
         QDBusReadLocker locker(FindMetaObject1Action, this);
-        QDBusMetaObject *mo = cachedMetaObjects.value(interface, 0);
+        QDBusMetaObject *mo = cachedMetaObjects.value(interface, nullptr);
         if (mo)
             return mo;
     }
@@ -2599,7 +2599,7 @@ QDBusConnectionPrivate::findMetaObject(const QString &service, const QString &pa
     QDBusWriteLocker locker(FindMetaObject2Action, this);
     QDBusMetaObject *mo = nullptr;
     if (!interface.isEmpty())
-        mo = cachedMetaObjects.value(interface, 0);
+        mo = cachedMetaObjects.value(interface, nullptr);
     if (mo)
         // maybe it got created when we switched from read to write lock
         return mo;

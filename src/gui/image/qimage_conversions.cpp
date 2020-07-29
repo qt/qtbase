@@ -224,8 +224,8 @@ void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversio
                     buffer = reinterpret_cast<uint *>(destData) + x;
                 else
                     l = qMin(l, BufferSize);
-                const uint *ptr = fetch(buffer, srcData, x, l, 0, ditherPtr);
-                store(destData, ptr, x, l, 0, ditherPtr);
+                const uint *ptr = fetch(buffer, srcData, x, l, nullptr, ditherPtr);
+                store(destData, ptr, x, l, nullptr, ditherPtr);
                 x += l;
             }
             srcData += src->bytes_per_line;

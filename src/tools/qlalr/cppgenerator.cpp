@@ -325,10 +325,10 @@ void CppGenerator::operator () ()
   compressed_goto (pgoto, state_count, non_terminal_count);
 
   delete[] table;
-  table = 0;
+  table = nullptr;
 
   delete[] pgoto;
-  pgoto = 0;
+  pgoto = nullptr;
 
 #undef ACTION
 #undef GOTO

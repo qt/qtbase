@@ -2667,7 +2667,7 @@ void QFontCache::cleanup()
         // no cache - just ignore
     }
     if (cache && cache->hasLocalData())
-        cache->setLocalData(0);
+        cache->setLocalData(nullptr);
 }
 
 static QBasicAtomicInt font_cache_id = Q_BASIC_ATOMIC_INITIALIZER(0);

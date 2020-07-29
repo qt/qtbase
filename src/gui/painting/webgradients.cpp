@@ -572,7 +572,7 @@ static Q_CONSTEXPR QGradient::QGradientData qt_preset_gradient_data[] = {
 static void *qt_preset_gradient_dummy()
 {
     union {void *p; uint i;};
-    p = 0;
+    p = nullptr;
     i |= uint(QGradient::ObjectMode);
     return p;
 }

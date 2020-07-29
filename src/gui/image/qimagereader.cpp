@@ -538,7 +538,7 @@ bool QImageReaderPrivate::initHandler()
 
     // probe the file extension
     if (deleteDevice && !device->isOpen() && !device->open(QIODevice::ReadOnly) && autoDetectImageFormat) {
-        Q_ASSERT(qobject_cast<QFile*>(device) != 0); // future-proofing; for now this should always be the case, so...
+        Q_ASSERT(qobject_cast<QFile*>(device) != nullptr); // future-proofing; for now this should always be the case, so...
         QFile *file = static_cast<QFile *>(device);
 
         if (file->error() == QFileDevice::ResourceError) {

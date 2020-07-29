@@ -220,7 +220,7 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
 
     QtFreetypeData *freetypeData = qt_getFreetypeData();
 
-    QFreetypeFace *freetype = freetypeData->faces.value(face_id, 0);
+    QFreetypeFace *freetype = freetypeData->faces.value(face_id, nullptr);
     if (freetype) {
         freetype->ref.ref();
     } else {
@@ -1396,7 +1396,7 @@ void QFontEngineFT::TransformedGlyphSets::moveToFront(int i)
 QFontEngineFT::QGlyphSet *QFontEngineFT::loadGlyphSet(const QTransform &matrix)
 {
     if (matrix.type() > QTransform::TxShear || !cacheEnabled)
-        return 0;
+        return nullptr;
 
     // FT_Set_Transform only supports scalable fonts
     if (!FT_IS_SCALABLE(freetype->face))

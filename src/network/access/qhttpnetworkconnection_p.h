@@ -101,9 +101,9 @@ public:
 
     explicit QHttpNetworkConnection(const QString &hostName, quint16 port = 80, bool encrypt = false,
                                     ConnectionType connectionType = ConnectionTypeHTTP,
-                                    QObject *parent = 0);
+                                    QObject *parent = nullptr);
     QHttpNetworkConnection(quint16 channelCount, const QString &hostName, quint16 port = 80,
-                           bool encrypt = false, QObject *parent = 0,
+                           bool encrypt = false, QObject *parent = nullptr,
                            ConnectionType connectionType = ConnectionTypeHTTP);
     ~QHttpNetworkConnection();
 

@@ -99,7 +99,7 @@ QDBusConnectionPrivate *QDBusConnectionManager::busConnection(QDBusConnection::B
 
 QDBusConnectionPrivate *QDBusConnectionManager::connection(const QString &name) const
 {
-    return connectionHash.value(name, 0);
+    return connectionHash.value(name, nullptr);
 }
 
 void QDBusConnectionManager::removeConnection(const QString &name)

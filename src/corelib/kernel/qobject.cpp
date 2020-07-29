@@ -2035,7 +2035,7 @@ void QObjectPrivate::deleteChildren()
     // delete siblings
     for (int i = 0; i < children.count(); ++i) {
         currentChildBeingDeleted = children.at(i);
-        children[i] = 0;
+        children[i] = nullptr;
         delete currentChildBeingDeleted;
     }
     children.clear();
@@ -2076,7 +2076,7 @@ void QObjectPrivate::setParent_helper(QObject *o)
             if (index < 0) {
                 // we're probably recursing into setParent() from a ChildRemoved event, don't do anything
             } else if (parentD->isDeletingChildren) {
-                parentD->children[index] = 0;
+                parentD->children[index] = nullptr;
             } else {
                 parentD->children.removeAt(index);
                 if (sendChildEvents && parentD->receiveChildEvents) {

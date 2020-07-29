@@ -1567,7 +1567,7 @@ void QtSharedPointer::internalSafetyCheckAdd(const void *d_ptr, const volatile v
 
     //qDebug("Adding d=%p value=%p", d_ptr, ptr);
 
-    const void *other_d_ptr = kp->dataPointers.value(ptr, 0);
+    const void *other_d_ptr = kp->dataPointers.value(ptr, nullptr);
     if (Q_UNLIKELY(other_d_ptr)) {
 #  ifdef BACKTRACE_SUPPORTED
         printBacktrace(knownPointers()->dPointers.value(other_d_ptr).backtrace);

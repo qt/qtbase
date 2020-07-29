@@ -66,7 +66,7 @@ QBasicPlatformVulkanInstance::QBasicPlatformVulkanInstance()
       m_vkGetInstanceProcAddr(nullptr),
       m_ownsVkInst(false),
       m_errorCode(VK_SUCCESS),
-      m_debugCallback(0)
+      m_debugCallback(VK_NULL_HANDLE)
 {
 }
 

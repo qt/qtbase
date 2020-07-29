@@ -1061,7 +1061,7 @@ template <typename T>
 QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> QTriangulator<T>::ComplexToSimple::bounds(const QPodPoint &point) const
 {
     QRBTree<int>::Node *current = m_edgeList.root;
-    QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> result(0, 0);
+    QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> result(nullptr, nullptr);
     while (current) {
         const QPodPoint &v1 = m_parent->m_vertices.at(m_edges.at(current->data).lower());
         const QPodPoint &v2 = m_parent->m_vertices.at(m_edges.at(current->data).upper());
@@ -1110,7 +1110,7 @@ template <typename T>
 QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> QTriangulator<T>::ComplexToSimple::outerBounds(const QPodPoint &point) const
 {
     QRBTree<int>::Node *current = m_edgeList.root;
-    QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> result(0, 0);
+    QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> result(nullptr, nullptr);
 
     while (current) {
         const QPodPoint &v1 = m_parent->m_vertices.at(m_edges.at(current->data).lower());
@@ -1309,7 +1309,7 @@ void QTriangulator<T>::ComplexToSimple::calculateIntersections()
         int vertex = (event.type == Event::Upper ? m_edges.at(event.edge).upper() : m_edges.at(event.edge).lower());
         QIntersectionPoint eventPoint = QT_PREPEND_NAMESPACE(qIntersectionPoint)(event.point);
 
-        if (range.first != 0) {
+        if (range.first != nullptr) {
             splitEdgeListRange(range.first, range.second, vertex, eventPoint);
             reorderEdgeListRange(range.first, range.second);
         }

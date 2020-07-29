@@ -312,7 +312,7 @@ void QTextOdfWriter::writeBlock(QXmlStreamWriter &writer, const QTextBlock &bloc
                             .arg(block.textList()->formatIndex()));
                 }
                 else {
-                    m_listStack.push(0);
+                    m_listStack.push(nullptr);
                 }
             }
         }

@@ -3038,7 +3038,7 @@ void QPdfEnginePrivate::drawTextItem(const QPointF &p, const QTextItemInt &ti)
         noEmbed = true;
     }
 
-    QFontSubset *font = fonts.value(face_id, 0);
+    QFontSubset *font = fonts.value(face_id, nullptr);
     if (!font) {
         font = new QFontSubset(fe, requestObject());
         font->noEmbed = noEmbed;

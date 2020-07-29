@@ -74,10 +74,10 @@ public:
 public:
   inline UncompressedRow ():
     _M_index (0),
-    _M_begin (0),
-    _M_end (0),
-    _M_beginNonZeros (0),
-    _M_endNonZeros (0) {}
+    _M_begin (nullptr),
+    _M_end (nullptr),
+    _M_beginNonZeros (nullptr),
+    _M_endNonZeros (nullptr) {}
 
   inline UncompressedRow (int index, const_iterator begin, const_iterator end)
   { assign (index, begin, end); }

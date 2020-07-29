@@ -419,7 +419,7 @@ inline void QLibraryStore::cleanup()
 #endif
             }
             delete lib;
-            it.value() = 0;
+            it.value() = nullptr;
         }
     }
 

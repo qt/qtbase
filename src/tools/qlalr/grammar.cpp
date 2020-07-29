@@ -33,8 +33,8 @@ QT_BEGIN_NAMESPACE
 
 const char *const grammar::spell [] = {
     "end of file", "identifier", "string literal", "%decl", "%expect", "%expect-lr", "%impl", "%left", "%merged_output", "%nonassoc",
-    "%parser", "%prec", "%right", "%start", "%token", "%token_prefix", ":", "|", ";", 0,
-    0, 0
+    "%parser", "%prec", "%right", "%start", "%token", "%token_prefix", ":", "|", ";", nullptr,
+    nullptr, nullptr
 };
 
 const short grammar::lhs [] = {

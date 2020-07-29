@@ -133,7 +133,7 @@ void (*qdbus_resolve_conditionally(const char *name))()
 #else
     Q_UNUSED(name);
 #endif
-    return 0;
+    return nullptr;
 }
 
 void (*qdbus_resolve_me(const char *name))()
@@ -149,7 +149,7 @@ void (*qdbus_resolve_me(const char *name))()
     return ptr;
 #else
     Q_UNUSED(name);
-    return 0;
+    return nullptr;
 #endif
 }
 

@@ -92,7 +92,7 @@ QThreadStorageData::QThreadStorageData(void (*func)(void *))
         return;
     }
     for (id = 0; id < destr->count(); id++) {
-        if (destr->at(id) == 0)
+        if (destr->at(id) == nullptr)
             break;
     }
     if (id == destr->count()) {
@@ -108,7 +108,7 @@ QThreadStorageData::~QThreadStorageData()
     DEBUG_MSG("QThreadStorageData: Released id %d", id);
     QMutexLocker locker(&destructorsMutex);
     if (destructors())
-        (*destructors())[id] = 0;
+        (*destructors())[id] = nullptr;
 }
 
 void **QThreadStorageData::get() const
@@ -152,7 +152,7 @@ void **QThreadStorageData::set(void *p)
 
         QMutexLocker locker(&destructorsMutex);
         DestructorMap *destr = destructors();
-        void (*destructor)(void *) = destr ? destr->value(id) : 0;
+        void (*destructor)(void *) = destr ? destr->value(id) : nullptr;
         locker.unlock();
 
         void *q = value;
@@ -201,7 +201,7 @@ void QThreadStorageData::finish(void **p)
 
         if (tls->size() > i) {
             //re reset the tls in case it has been recreated by its own destructor.
-            (*tls)[i] = 0;
+            (*tls)[i] = nullptr;
         }
     }
     tls->clear();
