@@ -227,16 +227,11 @@ void QEglFSKmsGbmScreen::ensureModeSet(uint32_t fb)
 
         bool doModeSet = true;
         drmModeCrtcPtr currentMode = drmModeGetCrtc(fd, op.crtc_id);
-        const bool alreadySet = currentMode && !memcmp(&currentMode->mode, &op.modes[op.mode], sizeof(drmModeModeInfo));
+        const bool alreadySet = currentMode && currentMode->buffer_id == fb && !memcmp(&currentMode->mode, &op.modes[op.mode], sizeof(drmModeModeInfo));
         if (currentMode)
             drmModeFreeCrtc(currentMode);
-        if (alreadySet) {
-            static bool alwaysDoSet = qEnvironmentVariableIntValue("QT_QPA_EGLFS_ALWAYS_SET_MODE");
-            if (!alwaysDoSet) {
-                qCDebug(qLcEglfsKmsDebug, "Mode already set, skipping modesetting for screen %s", qPrintable(name()));
-                doModeSet = false;
-            }
-        }
+        if (alreadySet)
+            doModeSet = false;
 
         if (doModeSet) {
             qCDebug(qLcEglfsKmsDebug, "Setting mode for screen %s", qPrintable(name()));
