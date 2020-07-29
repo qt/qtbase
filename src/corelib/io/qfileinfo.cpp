@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -1556,6 +1556,23 @@ void QFileInfo::setCaching(bool enable)
 {
     Q_D(QFileInfo);
     d->cache_enabled = enable;
+}
+
+/*!
+    \internal
+
+    Reads all attributes from the file system.
+
+    This is useful when information about the file system is collected in a
+    worker thread, and then passed to the UI in the form of caching QFileInfo
+    instances.
+
+    \sa setCaching(), refresh()
+*/
+void QFileInfo::stat()
+{
+    Q_D(QFileInfo);
+    QFileSystemEngine::fillMetaData(d->fileEntry, d->metaData, QFileSystemMetaData::AllMetaDataFlags);
 }
 
 /*!
