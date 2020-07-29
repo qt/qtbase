@@ -308,6 +308,8 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
     refreshes the file information: refresh(). If you want to switch
     off a QFileInfo's caching and force it to access the file system
     every time you request information from it call setCaching(false).
+    If you want to make sure that all information is read from the
+    file system, use stat().
 
     \sa QDir, QFile
 */
@@ -1509,8 +1511,6 @@ void QFileInfo::setCaching(bool enable)
 }
 
 /*!
-    \internal
-
     Reads all attributes from the file system.
 
     This is useful when information about the file system is collected in a

@@ -175,13 +175,12 @@ public:
 
     bool caching() const;
     void setCaching(bool on);
+    void stat();
 
 protected:
     QSharedDataPointer<QFileInfoPrivate> d_ptr;
 
 private:
-    friend class QFileInfoGatherer;
-    void stat();
     QFileInfoPrivate* d_func();
     inline const QFileInfoPrivate* d_func() const
     {

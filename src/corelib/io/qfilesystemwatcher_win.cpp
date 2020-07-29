@@ -372,6 +372,7 @@ QStringList QWindowsFileSystemWatcherEngine::addPaths(const QStringList &paths,
             normalPath.chop(1);
         }
         QFileInfo fileInfo(normalPath);
+        fileInfo.stat();
         if (!fileInfo.exists())
             continue;
 
