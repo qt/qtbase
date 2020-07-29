@@ -1237,6 +1237,8 @@ static int qt_compare_strings(QLatin1String lhs, QLatin1String rhs, Qt::CaseSens
     Case-sensitive comparison is based exclusively on the numeric Unicode values
     of the characters and is very fast, but is not what a human would expect.
     Consider sorting user-visible strings with QString::localeAwareCompare().
+
+    \sa {Comparing Strings}
 */
 int QtPrivate::compareStrings(QStringView lhs, QStringView rhs, Qt::CaseSensitivity cs) noexcept
 {
@@ -1257,6 +1259,8 @@ int QtPrivate::compareStrings(QStringView lhs, QStringView rhs, Qt::CaseSensitiv
     Case-sensitive comparison is based exclusively on the numeric Unicode values
     of the characters and is very fast, but is not what a human would expect.
     Consider sorting user-visible strings with QString::localeAwareCompare().
+
+    \sa {Comparing Strings}
 */
 int QtPrivate::compareStrings(QStringView lhs, QLatin1String rhs, Qt::CaseSensitivity cs) noexcept
 {
@@ -1277,6 +1281,8 @@ int QtPrivate::compareStrings(QStringView lhs, QLatin1String rhs, Qt::CaseSensit
     Case-sensitive comparison is based exclusively on the numeric Unicode values
     of the characters and is very fast, but is not what a human would expect.
     Consider sorting user-visible strings with QString::localeAwareCompare().
+
+    \sa {Comparing Strings}
 */
 int QtPrivate::compareStrings(QLatin1String lhs, QStringView rhs, Qt::CaseSensitivity cs) noexcept
 {
@@ -1297,6 +1303,8 @@ int QtPrivate::compareStrings(QLatin1String lhs, QStringView rhs, Qt::CaseSensit
     Case-sensitive comparison is based exclusively on the numeric Latin-1 values
     of the characters and is very fast, but is not what a human would expect.
     Consider sorting user-visible strings with QString::localeAwareCompare().
+
+    \sa {Comparing Strings}
 */
 int QtPrivate::compareStrings(QLatin1String lhs, QLatin1String rhs, Qt::CaseSensitivity cs) noexcept
 {
@@ -1569,17 +1577,30 @@ const QString::Null QString::null = { };
     how many times a particular character or substring occurs in the
     string, use count().
 
+    To obtain a pointer to the actual character data, call data() or
+    constData(). These functions return a pointer to the beginning of
+    the QChar data. The pointer is guaranteed to remain valid until a
+    non-const function is called on the QString.
+
+    \section2 Comparing Strings
+
     QStrings can be compared using overloaded operators such as \l
     operator<(), \l operator<=(), \l operator==(), \l operator>=(),
     and so on.  Note that the comparison is based exclusively on the
     numeric Unicode values of the characters. It is very fast, but is
     not what a human would expect; the QString::localeAwareCompare()
-    function is a better choice for sorting user-interface strings.
+    function is usually a better choice for sorting user-interface
+    strings, when such a comparison is available.
 
-    To obtain a pointer to the actual character data, call data() or
-    constData(). These functions return a pointer to the beginning of
-    the QChar data. The pointer is guaranteed to remain valid until a
-    non-const function is called on the QString.
+    On Unix-like platforms (including Linux, \macos and iOS), when Qt
+    is linked with the ICU library (which it usually is), its
+    locale-aware sorting is used.  Otherwise, on \macos and iOS, \l
+    localeAwareCompare() compares according the "Order for sorted
+    lists" setting in the International preferences panel. On other
+    Unix-like systems without ICU, the comparison falls back to the
+    system library's \c strcoll(), falling back when it considers
+    strings equal to QString's (locale-unaware) comparison, described
+    above,
 
     \section1 Converting Between 8-Bit Strings and Unicode Strings
 
@@ -3396,10 +3417,7 @@ QString &QString::replace(QChar c, QLatin1String after, Qt::CaseSensitivity cs)
   Returns \c true if string \a s1 is equal to string \a s2; otherwise
   returns \c false.
 
-  The comparison is based exclusively on the numeric Unicode values of
-  the characters and is very fast, but is not what a human would
-  expect. Consider sorting user-interface strings with
-  localeAwareCompare().
+  \sa {Comparing Strings}
 */
 bool operator==(const QString &s1, const QString &s2) noexcept
 {
@@ -3461,10 +3479,7 @@ bool QString::operator==(QLatin1String other) const noexcept
     Returns \c true if string \a s1 is lexically less than string
     \a s2; otherwise returns \c false.
 
-    The comparison is based exclusively on the numeric Unicode values
-    of the characters and is very fast, but is not what a human would
-    expect. Consider sorting user-interface strings using the
-    QString::localeAwareCompare() function.
+    \sa {Comparing Strings}
 */
 bool operator<(const QString &s1, const QString &s2) noexcept
 {
@@ -3523,10 +3538,7 @@ bool QString::operator<(QLatin1String other) const noexcept
     Returns \c true if string \a s1 is lexically less than or equal to
     string \a s2; otherwise returns \c false.
 
-    The comparison is based exclusively on the numeric Unicode values
-    of the characters and is very fast, but is not what a human would
-    expect. Consider sorting user-interface strings with
-    localeAwareCompare().
+    \sa {Comparing Strings}
 */
 
 /*! \fn bool QString::operator<=(QLatin1String other) const
@@ -3574,10 +3586,7 @@ bool QString::operator<(QLatin1String other) const noexcept
     Returns \c true if string \a s1 is lexically greater than string \a s2;
     otherwise returns \c false.
 
-    The comparison is based exclusively on the numeric Unicode values
-    of the characters and is very fast, but is not what a human would
-    expect. Consider sorting user-interface strings with
-    localeAwareCompare().
+    \sa {Comparing Strings}
 */
 
 /*!
@@ -3628,10 +3637,7 @@ bool QString::operator>(QLatin1String other) const noexcept
     Returns \c true if string \a s1 is lexically greater than or equal to
     string \a s2; otherwise returns \c false.
 
-    The comparison is based exclusively on the numeric Unicode values
-    of the characters and is very fast, but is not what a human would
-    expect. Consider sorting user-interface strings with
-    localeAwareCompare().
+    \sa {Comparing Strings}
 */
 
 /*! \fn bool QString::operator>=(QLatin1String other) const
@@ -3679,10 +3685,7 @@ bool QString::operator>(QLatin1String other) const noexcept
     Returns \c true if string \a s1 is not equal to string \a s2;
     otherwise returns \c false.
 
-    The comparison is based exclusively on the numeric Unicode values
-    of the characters and is very fast, but is not what a human would
-    expect. Consider sorting user-interface strings with
-    localeAwareCompare().
+    \sa {Comparing Strings}
 */
 
 /*! \fn bool QString::operator!=(QLatin1String other) const
@@ -6139,10 +6142,7 @@ QString& QString::fill(QChar ch, int size)
     returns \c false.  For \a s1 != 0, this is equivalent to \c
     {compare(s1, s2) < 0}.
 
-    The comparison is based exclusively on the numeric Unicode values
-    of the characters and is very fast, but is not what a human would
-    expect. Consider sorting user-interface strings using the
-    QString::localeAwareCompare() function.
+    \sa {Comparing Strings}
 */
 
 /*!
@@ -6153,10 +6153,7 @@ QString& QString::fill(QChar ch, int size)
     otherwise returns \c false.  For \a s1 != 0, this is equivalent to \c
     {compare(s1, s2) <= 0}.
 
-    The comparison is based exclusively on the numeric Unicode values
-    of the characters and is very fast, but is not what a human would
-    expect. Consider sorting user-interface strings with
-    QString::localeAwareCompare().
+    \sa {Comparing Strings}
 */
 
 /*!
@@ -6166,10 +6163,7 @@ QString& QString::fill(QChar ch, int size)
     Returns \c true if \a s1 is lexically greater than \a s2; otherwise
     returns \c false.  Equivalent to \c {compare(s1, s2) > 0}.
 
-    The comparison is based exclusively on the numeric Unicode values
-    of the characters and is very fast, but is not what a human would
-    expect. Consider sorting user-interface strings using the
-    QString::localeAwareCompare() function.
+    \sa {Comparing Strings}
 */
 
 /*!
@@ -6180,10 +6174,7 @@ QString& QString::fill(QChar ch, int size)
     otherwise returns \c false.  For \a s1 != 0, this is equivalent to \c
     {compare(s1, s2) >= 0}.
 
-    The comparison is based exclusively on the numeric Unicode values
-    of the characters and is very fast, but is not what a human would
-    expect. Consider sorting user-interface strings using the
-    QString::localeAwareCompare() function.
+    \sa {Comparing Strings}
 */
 
 /*!
@@ -6250,7 +6241,7 @@ QString& QString::fill(QChar ch, int size)
 
     \snippet qstring/main.cpp 16
 
-    \sa operator==(), operator<(), operator>()
+    \sa operator==(), operator<(), operator>(), {Comparing Strings}
 */
 
 /*!
@@ -6394,10 +6385,7 @@ int QString::compare_helper(const QChar *data1, int length1, QLatin1String s2,
     platform-dependent manner. Use this function to present sorted
     lists of strings to the user.
 
-    On \macos and iOS this function compares according the
-    "Order for sorted lists" setting in the International preferences panel.
-
-    \sa compare(), QLocale
+    \sa compare(), QLocale, {Comparing Strings}
 */
 
 /*!
@@ -6414,6 +6402,8 @@ int QString::compare_helper(const QChar *data1, int length1, QLatin1String s2,
     lists of strings to the user.
 
     Same as \c {localeAwareCompare(*this, other)}.
+
+    \sa {Comparing Strings}
 */
 
 /*!
@@ -6428,6 +6418,8 @@ int QString::compare_helper(const QChar *data1, int length1, QLatin1String s2,
     The comparison is performed in a locale- and also
     platform-dependent manner. Use this function to present sorted
     lists of strings to the user.
+
+    \sa {Comparing Strings}
 */
 
 
@@ -6449,6 +6441,8 @@ int QString::compare_helper(const QChar *data1, int length1, QLatin1String s2,
     lists of strings to the user.
 
     Same as \c {localeAwareCompare(*this, other)}.
+
+    \sa {Comparing Strings}
 */
 int QString::localeAwareCompare(const QString &other) const
 {
@@ -10017,10 +10011,7 @@ QString &QString::setRawData(const QChar *unicode, int size)
     Returns \c true if this string is equal to string \a other;
     otherwise returns \c false.
 
-    The comparison is based exclusively on the numeric Unicode values
-    of the characters and is very fast, but is not what a human would
-    expect. Consider sorting user-interface strings with
-    QString::localeAwareCompare().
+    \sa {Comparing Strings}
 */
 
 /*!
@@ -10060,10 +10051,7 @@ QString &QString::setRawData(const QChar *unicode, int size)
     Returns \c true if this string is not equal to string \a other;
     otherwise returns \c false.
 
-    The comparison is based exclusively on the numeric Unicode values
-    of the characters and is very fast, but is not what a human would
-    expect. Consider sorting user-interface strings with
-    QString::localeAwareCompare().
+    \sa {Comparing Strings}
 */
 
 /*!
@@ -10104,10 +10092,7 @@ QString &QString::setRawData(const QChar *unicode, int size)
     Returns \c true if this string is lexically greater than string \a
     other; otherwise returns \c false.
 
-    The comparison is based exclusively on the numeric Unicode values
-    of the characters and is very fast, but is not what a human would
-    expect. Consider sorting user-interface strings with
-    QString::localeAwareCompare().
+    \sa {Comparing Strings}
 */
 
 /*!
@@ -10148,10 +10133,7 @@ QString &QString::setRawData(const QChar *unicode, int size)
     Returns \c true if this string is lexically less than the \a other
     string; otherwise returns \c false.
 
-    The comparison is based exclusively on the numeric Unicode values
-    of the characters and is very fast, but is not what a human would
-    expect. Consider sorting user-interface strings using the
-    QString::localeAwareCompare() function.
+    \sa {Comparing Strings}
 */
 
 /*!
@@ -10192,10 +10174,7 @@ QString &QString::setRawData(const QChar *unicode, int size)
     Returns \c true if this string is lexically greater than or equal
     to string \a other; otherwise returns \c false.
 
-    The comparison is based exclusively on the numeric Unicode values
-    of the characters and is very fast, but is not what a human would
-    expect. Consider sorting user-interface strings with
-    QString::localeAwareCompare().
+    \sa {Comparing Strings}
 */
 
 /*!
@@ -10235,10 +10214,7 @@ QString &QString::setRawData(const QChar *unicode, int size)
     Returns \c true if this string is lexically less than or equal
     to string \a other; otherwise returns \c false.
 
-    The comparison is based exclusively on the numeric Unicode values
-    of the characters and is very fast, but is not what a human would
-    expect. Consider sorting user-interface strings with
-    QString::localeAwareCompare().
+    \sa {Comparing Strings}
 */
 
 /*!
@@ -10753,10 +10729,7 @@ bool operator==(QLatin1String s1, const QStringRef &s2) noexcept
     Returns \c true if string reference \a s1 is lexically less than
     string reference \a s2; otherwise returns \c false.
 
-    The comparison is based exclusively on the numeric Unicode values
-    of the characters and is very fast, but is not what a human would
-    expect. Consider sorting user-interface strings using the
-    QString::localeAwareCompare() function.
+    \sa {Comparing Strings}
 */
 bool operator<(const QStringRef &s1,const QStringRef &s2) noexcept
 {
@@ -10770,10 +10743,7 @@ bool operator<(const QStringRef &s1,const QStringRef &s2) noexcept
     Returns \c true if string reference \a s1 is lexically less than
     or equal to string reference \a s2; otherwise returns \c false.
 
-    The comparison is based exclusively on the numeric Unicode values
-    of the characters and is very fast, but is not what a human would
-    expect. Consider sorting user-interface strings using the
-    QString::localeAwareCompare() function.
+    \sa {Comparing Strings}
 */
 
 /*!\fn bool operator>=(const QStringRef &s1,const QStringRef &s2)
@@ -10783,10 +10753,7 @@ bool operator<(const QStringRef &s1,const QStringRef &s2) noexcept
     Returns \c true if string reference \a s1 is lexically greater than
     or equal to string reference \a s2; otherwise returns \c false.
 
-    The comparison is based exclusively on the numeric Unicode values
-    of the characters and is very fast, but is not what a human would
-    expect. Consider sorting user-interface strings using the
-    QString::localeAwareCompare() function.
+    \sa {Comparing Strings}
 */
 
 /*!\fn bool operator>(const QStringRef &s1,const QStringRef &s2)
@@ -10796,10 +10763,7 @@ bool operator<(const QStringRef &s1,const QStringRef &s2) noexcept
     Returns \c true if string reference \a s1 is lexically greater than
     string reference \a s2; otherwise returns \c false.
 
-    The comparison is based exclusively on the numeric Unicode values
-    of the characters and is very fast, but is not what a human would
-    expect. Consider sorting user-interface strings using the
-    QString::localeAwareCompare() function.
+    \sa {Comparing Strings}
 */
 
 
@@ -11146,10 +11110,7 @@ QStringRef QStringRef::appendTo(QString *string) const
     platform-dependent manner. Use this function to present sorted
     lists of strings to the user.
 
-    On \macos and iOS, this function compares according the
-    "Order for sorted lists" setting in the International prefereces panel.
-
-    \sa compare(), QLocale
+    \sa compare(), QLocale, {Comparing Strings}
 */
 
 /*!
@@ -11165,6 +11126,7 @@ QStringRef QStringRef::appendTo(QString *string) const
     platform-dependent manner. Use this function to present sorted
     lists of strings to the user.
 
+    \sa {Comparing Strings}
 */
 
 /*!
@@ -11179,6 +11141,8 @@ QStringRef QStringRef::appendTo(QString *string) const
     The comparison is performed in a locale- and also
     platform-dependent manner. Use this function to present sorted
     lists of strings to the user.
+
+    \sa {Comparing Strings}
 */
 
 /*!
@@ -11193,6 +11157,8 @@ QStringRef QStringRef::appendTo(QString *string) const
     The comparison is performed in a locale- and also
     platform-dependent manner. Use this function to present sorted
     lists of strings to the user.
+
+    \sa {Comparing Strings}
 */
 
 /*!
