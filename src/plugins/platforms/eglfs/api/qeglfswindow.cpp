@@ -148,12 +148,8 @@ void QEglFSWindow::create()
         compositor->setRotation(qEnvironmentVariableIntValue("QT_QPA_EGLFS_ROTATION"));
         // If there is a "root" window into which raster and QOpenGLWidget content is
         // composited, all other contexts must share with its context.
-        if (!qt_gl_global_share_context()) {
+        if (!qt_gl_global_share_context())
             qt_gl_set_global_share_context(m_rasterCompositingContext);
-            // What we set up here is in effect equivalent to the application setting
-            // AA_ShareOpenGLContexts. Set the attribute to be fully consistent.
-            QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
-        }
     }
 #endif // QT_NO_OPENGL
 }
