@@ -538,17 +538,6 @@ QVariant::QVariant(const QVariant &p)
         t.construct(&d, p.constData());
 }
 
-#ifndef QT_NO_DATASTREAM
-/*!
-    Reads the variant from the data stream, \a s.
-*/
-QVariant::QVariant(QDataStream &s)
-{
-    d.is_null = true;
-    s >> *this;
-}
-#endif //QT_NO_DATASTREAM
-
 /*!
   \fn QVariant::QVariant(const QString &val)
 

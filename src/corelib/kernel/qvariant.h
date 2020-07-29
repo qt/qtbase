@@ -177,10 +177,6 @@ class Q_CORE_EXPORT QVariant
     explicit QVariant(QMetaType type, const void *copy = nullptr);
     QVariant(const QVariant &other);
 
-#ifndef QT_NO_DATASTREAM
-    explicit QVariant(QDataStream &s);
-#endif
-
     QVariant(int i);
     QVariant(uint ui);
     QVariant(qlonglong ll);
