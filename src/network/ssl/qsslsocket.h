@@ -57,7 +57,6 @@ class QDir;
 class QSslCipher;
 class QSslCertificate;
 class QSslConfiguration;
-class QSslEllipticCurve;
 class QSslPreSharedKeyAuthenticator;
 class QOcspResponse;
 
