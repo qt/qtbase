@@ -134,17 +134,32 @@ void tst_QIcon::actualSize()
     QFETCH(QSize, argument);
     QFETCH(QSize, result);
 
+    // Skip two corner cases
+    if (qApp->devicePixelRatio() > 1 && (qstrcmp(QTest::currentDataTag(), "resource9") == 0
+                                      || qstrcmp(QTest::currentDataTag(), "external9") == 0))
+        QSKIP("Behavior is unspecified for devicePixelRatio > 1", QTest::QSkipAll);
+
+    auto expectedDeviceSize = [](QSize deviceIndependentExpectedSize, QSize maxSourceImageSize) -> QSize {
+        qreal dpr = qApp->devicePixelRatio();
+        return QSize(qMin(int(deviceIndependentExpectedSize.width() * dpr), maxSourceImageSize.width()),
+                     qMin(int(deviceIndependentExpectedSize.height() * dpr), maxSourceImageSize.height()));
+    };
+
+    QSize sourceSize = QImage(source).size();
+    QSize deviceIndependentSize = result;
+    QSize deviceSize = expectedDeviceSize(result, sourceSize);
+
     {
         QPixmap pixmap(source);
         QIcon icon(pixmap);
-        QCOMPARE(icon.actualSize(argument), result);
-        QCOMPARE(icon.pixmap(argument).size(), result);
+        QCOMPARE(icon.actualSize(argument), deviceIndependentSize);
+        QCOMPARE(icon.pixmap(argument).size(), deviceSize);
     }
 
     {
         QIcon icon(source);
-        QCOMPARE(icon.actualSize(argument), result);
-        QCOMPARE(icon.pixmap(argument).size(), result);
+        QCOMPARE(icon.actualSize(argument), deviceIndependentSize);
+        QCOMPARE(icon.pixmap(argument).size(), deviceSize);
     }
 }
 
@@ -167,6 +182,9 @@ void tst_QIcon::actualSize2_data()
 
 void tst_QIcon::actualSize2()
 {
+    if (qApp->devicePixelRatio() > 1)
+        QSKIP("Behavior is unspecified for devicePixelRatio > 1", QTest::SkipAll);
+
     QIcon icon;
     icon.addPixmap(m_pngImageFileName);
     icon.addPixmap(m_pngRectFileName);
@@ -380,7 +398,11 @@ void tst_QIcon::detach()
 
     img1 = icon1.pixmap(32, 32).toImage();
     img2 = icon2.pixmap(32, 32).toImage();
-    QCOMPARE(img1, img2);
+
+    if (qApp->devicePixelRatio() > 1)
+        QVERIFY(img1 != img2); // we get an e.g. 64x64 image in dpr=2 displays
+    else
+        QCOMPARE(img1, img2);
 }
 
 void tst_QIcon::addFile()
@@ -388,23 +410,41 @@ void tst_QIcon::addFile()
     QIcon icon;
     icon.addFile(QLatin1String(":/styles/commonstyle/images/standardbutton-open-16.png"));
     icon.addFile(QLatin1String(":/styles/commonstyle/images/standardbutton-open-32.png"));
+    icon.addFile(QLatin1String(":/styles/commonstyle/images/standardbutton-open-64.png"));
     icon.addFile(QLatin1String(":/styles/commonstyle/images/standardbutton-open-128.png"));
     icon.addFile(QLatin1String(":/styles/commonstyle/images/standardbutton-save-16.png"), QSize(), QIcon::Selected);
     icon.addFile(QLatin1String(":/styles/commonstyle/images/standardbutton-save-32.png"), QSize(), QIcon::Selected);
+    icon.addFile(QLatin1String(":/styles/commonstyle/images/standardbutton-save-64.png"), QSize(), QIcon::Selected);
     icon.addFile(QLatin1String(":/styles/commonstyle/images/standardbutton-save-128.png"), QSize(), QIcon::Selected);
 
-    QVERIFY(icon.pixmap(16, QIcon::Normal).toImage() ==
-            QPixmap(QLatin1String(":/styles/commonstyle/images/standardbutton-open-16.png")).toImage());
-    QVERIFY(icon.pixmap(32, QIcon::Normal).toImage() ==
-            QPixmap(QLatin1String(":/styles/commonstyle/images/standardbutton-open-32.png")).toImage());
-    QVERIFY(icon.pixmap(128, QIcon::Normal).toImage() ==
-            QPixmap(QLatin1String(":/styles/commonstyle/images/standardbutton-open-128.png")).toImage());
-    QVERIFY(icon.pixmap(16, QIcon::Selected).toImage() ==
-            QPixmap(QLatin1String(":/styles/commonstyle/images/standardbutton-save-16.png")).toImage());
-    QVERIFY(icon.pixmap(32, QIcon::Selected).toImage() ==
-            QPixmap(QLatin1String(":/styles/commonstyle/images/standardbutton-save-32.png")).toImage());
-    QVERIFY(icon.pixmap(128, QIcon::Selected).toImage() ==
-            QPixmap(QLatin1String(":/styles/commonstyle/images/standardbutton-save-128.png")).toImage());
+    const int maxImageSize = 128;
+
+    auto expectedHighDpiImage = [=](int deviceIndependentSize, const QString &imagePathTemplate) -> QImage {
+        const int expectedImageSize = qMin(maxImageSize, deviceIndependentSize * qCeil(qApp->devicePixelRatio()));
+        const int expectedImageDpr = expectedImageSize / deviceIndependentSize;
+        const QString path = imagePathTemplate.arg(expectedImageSize);
+        QPixmap image(path);
+        image.setDevicePixelRatio(expectedImageDpr);
+        return image.toImage();
+    };
+
+    QCOMPARE(icon.pixmap(16, QIcon::Normal).toImage(),
+        expectedHighDpiImage(16, ":/styles/commonstyle/images/standardbutton-open-%1.png"));
+    QCOMPARE(icon.pixmap(32, QIcon::Normal).toImage(),
+        expectedHighDpiImage(32, ":/styles/commonstyle/images/standardbutton-open-%1.png"));
+    QCOMPARE(icon.pixmap(64, QIcon::Normal).toImage(),
+        expectedHighDpiImage(64, ":/styles/commonstyle/images/standardbutton-open-%1.png"));
+    QCOMPARE(icon.pixmap(128, QIcon::Normal).toImage(),
+        expectedHighDpiImage(128, ":/styles/commonstyle/images/standardbutton-open-%1.png"));
+
+    QCOMPARE(icon.pixmap(16, QIcon::Selected).toImage(),
+        expectedHighDpiImage(16, ":/styles/commonstyle/images/standardbutton-save-%1.png"));
+    QCOMPARE(icon.pixmap(32, QIcon::Selected).toImage(),
+        expectedHighDpiImage(32, ":/styles/commonstyle/images/standardbutton-save-%1.png"));
+    QCOMPARE(icon.pixmap(64, QIcon::Selected).toImage(),
+        expectedHighDpiImage(64, ":/styles/commonstyle/images/standardbutton-save-%1.png"));
+    QCOMPARE(icon.pixmap(128, QIcon::Selected).toImage(),
+        expectedHighDpiImage(128, ":/styles/commonstyle/images/standardbutton-save-%1.png"));
 }
 
 static bool sizeLess(const QSize &a, const QSize &b)
@@ -605,13 +645,15 @@ void tst_QIcon::fromTheme()
     noIcon = QIcon::fromTheme("svg-icon", abIcon);
     QVERIFY(!noIcon.availableSizes().isEmpty());
 
-    // Pixmaps should be no larger than the requested size (QTBUG-17953)
-    QCOMPARE(appointmentIcon.pixmap(22).size(), QSize(22, 22)); // exact
-    QCOMPARE(appointmentIcon.pixmap(32).size(), QSize(32, 32)); // exact
-    QCOMPARE(appointmentIcon.pixmap(48).size(), QSize(32, 32)); // smaller
-    QCOMPARE(appointmentIcon.pixmap(16).size(), QSize(16, 16)); // scaled down
-    QCOMPARE(appointmentIcon.pixmap(8).size(), QSize(8, 8)); // scaled down
-    QCOMPARE(appointmentIcon.pixmap(16).size(), QSize(16, 16)); // scaled down
+    // Pixmaps should be no larger than the requested size (for devicePixelRatio 1) (QTBUG-17953)
+    if (qApp->devicePixelRatio() == 1) {
+        QCOMPARE(appointmentIcon.pixmap(22).size(), QSize(22, 22)); // exact
+        QCOMPARE(appointmentIcon.pixmap(32).size(), QSize(32, 32)); // exact
+        QCOMPARE(appointmentIcon.pixmap(48).size(), QSize(32, 32)); // smaller
+        QCOMPARE(appointmentIcon.pixmap(16).size(), QSize(16, 16)); // scaled down
+        QCOMPARE(appointmentIcon.pixmap(8).size(), QSize(8, 8)); // scaled down
+        QCOMPARE(appointmentIcon.pixmap(16).size(), QSize(16, 16)); // scaled down
+    }
 
     QByteArray ba;
     // write to QByteArray

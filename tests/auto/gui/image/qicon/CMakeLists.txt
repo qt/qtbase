@@ -31,7 +31,6 @@ file(GLOB_RECURSE test_data_glob
 list(APPEND test_data ${test_data_glob})
 
 qt_add_test(tst_qicon
-    LOWDPI # special case
     SOURCES
         tst_qicon.cpp
     PUBLIC_LIBRARIES
@@ -60,9 +59,11 @@ set(tst_qicon_resource_files
     "./styles/commonstyle/images/standardbutton-open-128.png"
     "./styles/commonstyle/images/standardbutton-open-16.png"
     "./styles/commonstyle/images/standardbutton-open-32.png"
+    "./styles/commonstyle/images/standardbutton-open-64.png"
     "./styles/commonstyle/images/standardbutton-save-128.png"
     "./styles/commonstyle/images/standardbutton-save-16.png"
     "./styles/commonstyle/images/standardbutton-save-32.png"
+    "./styles/commonstyle/images/standardbutton-save-64.png"
     "image.png"
     "rect.png"
     "tst_qicon.cpp"

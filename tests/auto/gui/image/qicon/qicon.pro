@@ -1,4 +1,4 @@
-CONFIG += testcase testcase_lowdpi
+CONFIG += testcase
 TARGET = tst_qicon
 
 QT += testlib
