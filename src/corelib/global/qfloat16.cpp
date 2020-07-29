@@ -65,6 +65,10 @@ QT_BEGIN_NAMESPACE
     stating that it supports all arithmetic operators incident to floating point
     types.
 
+    \note On x86 and x86-64 that to get hardware accelerated conversions you must
+    compile with F16C or AVX2 enabled, or use qFloatToFloat16() and qFloatFromFloat16()
+    which will detect F16C at runtime.
+
     \since 5.9
 */
 
@@ -262,6 +266,9 @@ static void qFloatFromFloat16_fast(float *, const quint16 *, qsizetype) noexcept
 
     Converts \a len floats from \a in to qfloat16 and stores them in \a out.
     Both \a in and \a out must have \a len allocated entries.
+
+    This function is faster than converting values one by one, and will do runtime
+    F16C detection on x86 and x86-64 hardware.
 */
 Q_CORE_EXPORT void qFloatToFloat16(qfloat16 *out, const float *in, qsizetype len) noexcept
 {
@@ -278,6 +285,9 @@ Q_CORE_EXPORT void qFloatToFloat16(qfloat16 *out, const float *in, qsizetype len
 
     Converts \a len qfloat16 from \a in to floats and stores them in \a out.
     Both \a in and \a out must have \a len allocated entries.
+
+    This function is faster than converting values one by one, and will do runtime
+    F16C detection on x86 and x86-64 hardware.
 */
 Q_CORE_EXPORT void qFloatFromFloat16(float *out, const qfloat16 *in, qsizetype len) noexcept
 {
