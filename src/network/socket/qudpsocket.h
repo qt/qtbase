@@ -83,7 +83,7 @@ public:
         { return writeDatagram(datagram.constData(), datagram.size(), host, port); }
 
 private:
-    Q_DISABLE_COPY(QUdpSocket)
+    Q_DISABLE_COPY_MOVE(QUdpSocket)
     Q_DECLARE_PRIVATE(QUdpSocket)
 };
 

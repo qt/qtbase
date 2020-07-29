@@ -131,7 +131,7 @@ struct FallbackCookieSecret
 
     QByteArray key;
 
-    Q_DISABLE_COPY(FallbackCookieSecret)
+    Q_DISABLE_COPY_MOVE(FallbackCookieSecret)
 };
 
 QByteArray fallbackSecret()

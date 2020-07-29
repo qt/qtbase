@@ -230,7 +230,7 @@ protected:
 
 private:
     Q_DECLARE_PRIVATE(QAbstractSocket)
-    Q_DISABLE_COPY(QAbstractSocket)
+    Q_DISABLE_COPY_MOVE(QAbstractSocket)
 
     Q_PRIVATE_SLOT(d_func(), void _q_connectToNextAddress())
     Q_PRIVATE_SLOT(d_func(), void _q_startConnecting(const QHostInfo &))

@@ -182,7 +182,7 @@ private:
     bool continueHandshake(QUdpSocket *socket, const QByteArray &dgram);
 
     Q_DECLARE_PRIVATE(QDtls)
-    Q_DISABLE_COPY(QDtls)
+    Q_DISABLE_COPY_MOVE(QDtls)
 };
 
 QT_END_NAMESPACE

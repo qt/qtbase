@@ -62,7 +62,7 @@ protected:
                QObject *parent = nullptr);
 
 private:
-    Q_DISABLE_COPY(QTcpSocket)
+    Q_DISABLE_COPY_MOVE(QTcpSocket)
     Q_DECLARE_PRIVATE(QTcpSocket)
 };
 
