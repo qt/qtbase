@@ -671,6 +671,19 @@ public:
 
     QInputMethodEvent(const QInputMethodEvent &other);
 
+    inline friend bool operator==(const QInputMethodEvent::Attribute &lhs,
+                                  const QInputMethodEvent::Attribute &rhs)
+    {
+        return lhs.type == rhs.type && lhs.start == rhs.start
+                && lhs.length == rhs.length && lhs.value == rhs.value;
+    }
+
+    inline friend bool operator!=(const QInputMethodEvent::Attribute &lhs,
+                                  const QInputMethodEvent::Attribute &rhs)
+    {
+        return !(lhs == rhs);
+    }
+
 private:
     QString m_preedit;
     QList<Attribute> m_attributes;
