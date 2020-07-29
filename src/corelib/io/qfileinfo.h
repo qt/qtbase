@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -151,6 +151,8 @@ protected:
     QSharedDataPointer<QFileInfoPrivate> d_ptr;
 
 private:
+    friend class QFileInfoGatherer;
+    void stat();
     QFileInfoPrivate* d_func();
     inline const QFileInfoPrivate* d_func() const
     {

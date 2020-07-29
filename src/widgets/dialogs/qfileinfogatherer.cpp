@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -40,6 +40,7 @@
 #include "qfileinfogatherer_p.h"
 #include <qdebug.h>
 #include <qdiriterator.h>
+#include <private/qfileinfo_p.h>
 #ifndef Q_OS_WIN
 #  include <unistd.h>
 #  include <sys/types.h>
@@ -378,12 +379,15 @@ void QFileInfoGatherer::getFileInfos(const QString &path, const QStringList &fil
             for (const auto &file : files)
                 infoList << QFileInfo(file);
         }
+        QVector<QPair<QString,QFileInfo> > updatedFiles;
+        updatedFiles.reserve(infoList.count());
         for (int i = infoList.count() - 1; i >= 0; --i) {
-            QString driveName = translateDriveName(infoList.at(i));
-            QVector<QPair<QString,QFileInfo> > updatedFiles;
-            updatedFiles.append(QPair<QString,QFileInfo>(driveName, infoList.at(i)));
-            emit updates(path, updatedFiles);
+            QFileInfo driveInfo = infoList.at(i);
+            driveInfo.stat();
+            QString driveName = translateDriveName(driveInfo);
+            updatedFiles.append(QPair<QString,QFileInfo>(driveName, driveInfo));
         }
+        emit updates(path, updatedFiles);
         return;
     }
 
@@ -400,6 +404,7 @@ void QFileInfoGatherer::getFileInfos(const QString &path, const QStringList &fil
         while (!abort.loadRelaxed() && dirIt.hasNext()) {
             dirIt.next();
             fileInfo = dirIt.fileInfo();
+            fileInfo.stat();
             allFiles.append(fileInfo.fileName());
             fetch(fileInfo, base, firstTime, updatedFiles, path);
         }
@@ -411,6 +416,7 @@ void QFileInfoGatherer::getFileInfos(const QString &path, const QStringList &fil
     while (!abort.loadRelaxed() && filesIt != filesToCheck.constEnd()) {
         fileInfo.setFile(path + QDir::separator() + *filesIt);
         ++filesIt;
+        fileInfo.stat();
         fetch(fileInfo, base, firstTime, updatedFiles, path);
     }
     if (!updatedFiles.isEmpty())
