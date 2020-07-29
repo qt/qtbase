@@ -32,6 +32,10 @@
 
 #include <math.h>
 
+//#define DO_FULL_TEST
+
+static_assert(sizeof(float) == sizeof(quint32), "Float not 32-bit");
+
 class tst_qfloat16: public QObject
 {
     Q_OBJECT
@@ -48,6 +52,11 @@ private slots:
     void promotionTests();
     void arithOps_data();
     void arithOps();
+#if defined DO_FULL_TEST
+    void floatToFloat16Full_data();
+    void floatToFloat16Full();
+    void floatFromFloat16Full();
+#endif
     void floatToFloat16();
     void floatFromFloat16();
     void finite_data();
@@ -344,6 +353,63 @@ void tst_qfloat16::arithOps()
     QVERIFY(qFuzzyCompare(r4,1.f/val2));
 }
 
+#if defined DO_FULL_TEST
+void tst_qfloat16::floatToFloat16Full_data()
+{
+    QTest::addColumn<quint32>("group");
+    for (quint32 j = 0x00; j < 0x100; ++j)
+        QTest::addRow("%02x", j) << j;
+
+}
+
+void tst_qfloat16::floatToFloat16Full()
+{
+    QFETCH(quint32, group);
+    for (quint32 j = 0x00; j < 0x100; ++j) {
+        quint32 data[1<<16];
+        qfloat16 out[1<<16];
+        qfloat16 expected[1<<16];
+        float in[1<<16];
+
+        for (int i = 0; i < (1<<16); ++i)
+            data[i] = (group << 24) | (j << 16) | i;
+
+        memcpy(in, data, (1<<16)*sizeof(float));
+
+        for (int i = 0; i < (1<<16); ++i)
+            expected[i] = qfloat16(in[i]);
+
+        qFloatToFloat16(out, in, 1<<16);
+
+        for (int i = 0; i < (1<<16); ++i) {
+            if (out[i] != expected[i])
+                QVERIFY(qIsNaN(out[i]) && qIsNaN(expected[i]));
+        }
+    }
+}
+
+void tst_qfloat16::floatFromFloat16Full()
+{
+    quint16 data[1<<16];
+    float out[1<<16];
+    float expected[1<<16];
+
+    for (int i = 0; i < (1<<16); ++i)
+        data[i] = i;
+
+    const qfloat16 *in = reinterpret_cast<const qfloat16 *>(data);
+
+    for (int i = 0; i < (1<<16); ++i)
+        expected[i] = float(in[i]);
+
+    qFloatFromFloat16(out, in, 1<<16);
+
+    for (int i = 0; i < (1<<16); ++i)
+        if (out[i] != expected[i])
+            QVERIFY(qIsNaN(out[i]) && qIsNaN(expected[i]));
+}
+#endif
+
 void tst_qfloat16::floatToFloat16()
 {
     constexpr int count = 10000;
@@ -505,8 +571,8 @@ void tst_qfloat16::limits() // See also: qNaN() and infinity()
     QCOMPARE(qFpClassify(high10), FP_NORMAL);
 
     // How many digits are significant ?  (Casts avoid linker errors ...)
-    QCOMPARE(int(Bounds::digits10), 3); // ~9.78e-4 has enough sigificant digits:
-    qfloat16 below(9.781e-4f), above(9.789e-4f); // both round to ~9.785e-4
+    QCOMPARE(int(Bounds::digits10), 3); // ~9.88e-4 has enough sigificant digits:
+    qfloat16 below(9.876e-4f), above(9.884e-4f); // both round to ~9.88e-4
     QVERIFY(below == above);
     QCOMPARE(int(Bounds::max_digits10), 5); // we need 5 to distinguish these two:
     QVERIFY(qfloat16(1000.5f) != qfloat16(1001.4f));

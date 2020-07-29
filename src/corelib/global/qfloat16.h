@@ -107,8 +107,9 @@ private:
     Q_CORE_EXPORT static const quint32 mantissatable[];
     Q_CORE_EXPORT static const quint32 exponenttable[];
     Q_CORE_EXPORT static const quint32 offsettable[];
-    Q_CORE_EXPORT static const quint32 basetable[];
-    Q_CORE_EXPORT static const quint32 shifttable[];
+    Q_CORE_EXPORT static const quint16 basetable[];
+    Q_CORE_EXPORT static const quint16 shifttable[];
+    Q_CORE_EXPORT static const quint32 roundtable[];
 
     friend bool qIsNull(qfloat16 f) noexcept;
 #if !defined(QT_NO_FLOAT16_OPERATORS)
@@ -173,14 +174,18 @@ inline qfloat16::qfloat16(float f) noexcept
     quint32 u;
     memcpy(&u, &f, sizeof(quint32));
     const quint32 signAndExp = u >> 23;
-    const quint32 base = basetable[signAndExp];
-    const quint32 shift = shifttable[signAndExp];
+    const quint16 base = basetable[signAndExp];
+    const quint16 shift = shifttable[signAndExp];
+    const quint32 round = roundtable[signAndExp];
     quint32 mantissa = (u & 0x007fffff);
     if ((signAndExp & 0xff) == 0xff) {
         if (mantissa) // keep nan from truncating to inf
             mantissa = qMax(1U << shift, mantissa);
     } else {
-        mantissa += (1U << (shift - 1)) - 1; // rounding
+        // round half to even
+        mantissa += round;
+        if (mantissa & (1 << shift))
+            --mantissa;
     }
 
     // We use add as the mantissa may overflow causing

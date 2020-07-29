@@ -2,6 +2,7 @@
 **
 ** Copyright (C) 2016 by Southwest Research Institute (R)
 ** Copyright (C) 2019 Intel Corporation.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -71,6 +72,7 @@ uint32_t convertmantissa(int32_t i)
 // to more closely map the implementation given in the paper.
 uint32_t basetable[512];
 uint32_t shifttable[512];
+uint32_t roundtable[512];
 
 int main()
 {
@@ -113,47 +115,73 @@ int main()
     int32_t e;
     for (i = 0; i < 256; ++i) {
         e = i - 127;
-        if (e < -24) {   // Very small numbers map to zero
+        if (e < -25) {   // Very small numbers map to zero
             basetable[i | 0x000] = 0x0000;
             basetable[i | 0x100] = 0x8000;
             shifttable[i | 0x000] = 24;
             shifttable[i | 0x100] = 24;
+            roundtable[i | 0x000] = 0;
+            roundtable[i | 0x100] = 0;
 
         } else if (e < -14) {             // Small numbers map to denorms
             basetable[i | 0x000] = (0x0400 >> (-e - 14));
             basetable[i | 0x100] = (0x0400 >> (-e - 14)) | 0x8000;
             shifttable[i | 0x000] = -e - 1;
             shifttable[i | 0x100] = -e - 1;
+            if (e == -25) {
+                // rounds up
+                roundtable[i | 0x000] = (1 << 24);
+                roundtable[i | 0x100] = (1 << 24);
+            } else if (e == -24) {
+                // rounds half up
+                roundtable[i | 0x000] = (1 << 22) + 1;
+                roundtable[i | 0x100] = (1 << 22) + 1;
+            } else {
+                roundtable[i | 0x000] = (1 << (-e - 2));
+                roundtable[i | 0x100] = (1 << (-e - 2));
+            }
 
         } else if (e <= 15) {            // Normal numbers just lose precision
             basetable[i | 0x000] = ((e + 15) << 10);
             basetable[i | 0x100] = ((e + 15) << 10) | 0x8000;
             shifttable[i | 0x000] = 13;
             shifttable[i | 0x100] = 13;
+            roundtable[i | 0x000] = (1 << 12);
+            roundtable[i | 0x100] = (1 << 12);
 
         } else if (e < 128) {            // Large numbers map to Infinity
             basetable[i | 0x000] = 0x7C00;
             basetable[i | 0x100] = 0xFC00;
             shifttable[i | 0x000] = 24;
             shifttable[i | 0x100] = 24;
+            roundtable[i | 0x000] = 0;
+            roundtable[i | 0x100] = 0;
 
         } else {                     // Infinity and NaN's stay Infinity and NaN's
             basetable[i | 0x000] = 0x7C00;
             basetable[i | 0x100] = 0xFC00;
             shifttable[i | 0x000] = 13;
             shifttable[i | 0x100] = 13;
+            roundtable[i | 0x000] = 0;
+            roundtable[i | 0x100] = 0;
         }
     }
 
-    printf("const quint32 qfloat16::basetable[512] = {\n");
+    printf("const quint16 qfloat16::basetable[512] = {\n");
     for (i = 0; i < 512; i++)
         printf("0x%XU,\n", basetable[i]);
 
     printf("};\n\n");
 
-    printf("const quint32 qfloat16::shifttable[512] = {\n");
+    printf("const quint16 qfloat16::shifttable[512] = {\n");
     for (i = 0; i < 512; i++)
         printf("0x%XU,\n", shifttable[i]);
+
+    printf("};\n\n");
+
+    printf("const quint32 qfloat16::roundtable[512] = {\n");
+    for (i = 0; i < 512; i++)
+        printf("0x%XU,\n", roundtable[i]);
 
     printf("};\n\n");
 
