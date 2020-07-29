@@ -197,6 +197,8 @@ private slots:
     void sizeOf();
     void sizeOfStaticLess_data();
     void sizeOfStaticLess();
+    void alignOf_data();
+    void alignOf();
     void flags_data();
     void flags();
     void flagsStaticLess_data();
@@ -949,6 +951,42 @@ void tst_QMetaType::sizeOfStaticLess()
     QFETCH(int, type);
     QFETCH(size_t, size);
     QCOMPARE(size_t(QMetaType(type).sizeOf()), size);
+}
+
+template <typename T>
+auto getAlignOf()
+{
+    if constexpr (std::is_same_v<T, void>)
+        return 0;
+    else
+        return alignof(T);
+}
+
+void tst_QMetaType::alignOf_data()
+{
+    QTest::addColumn<int>("type");
+    QTest::addColumn<size_t>("size");
+
+    QTest::newRow("QMetaType::UnknownType") << int(QMetaType::UnknownType) << size_t(0);
+#define ADD_METATYPE_TEST_ROW(MetaTypeName, MetaTypeId, RealType) \
+    QTest::newRow(#RealType) << int(QMetaType::MetaTypeName) << size_t(getAlignOf<RealType>());
+FOR_EACH_CORE_METATYPE(ADD_METATYPE_TEST_ROW)
+#undef ADD_METATYPE_TEST_ROW
+
+    QTest::newRow("Whity<double>") << ::qMetaTypeId<Whity<double> >() << alignof(Whity<double>);
+    QTest::newRow("Whity<int>") << ::qMetaTypeId<Whity<int> >() << alignof(Whity<int>);
+    QTest::newRow("Testspace::Foo") << ::qMetaTypeId<TestSpace::Foo>() << alignof(TestSpace::Foo);
+
+    QTest::newRow("-1") << -1 << size_t(0);
+    QTest::newRow("-124125534") << -124125534 << size_t(0);
+    QTest::newRow("124125534") << 124125534 << size_t(0);
+}
+
+void tst_QMetaType::alignOf()
+{
+    QFETCH(int, type);
+    QFETCH(size_t, size);
+    QCOMPARE(size_t(QMetaType(type).alignOf()), size);
 }
 
 struct CustomMovable { CustomMovable() {} };

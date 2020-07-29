@@ -500,12 +500,33 @@ int QMetaType::id() const
     This function is typically used together with construct()
     to perform low-level management of the memory used by a type.
 
-    \sa QMetaType::construct(), QMetaType::sizeOf()
+    \sa QMetaType::construct(), QMetaType::sizeOf(), QMetaType::alignOf()
 */
 int QMetaType::sizeOf() const
 {
     if (d_ptr)
         return d_ptr->size;
+    return 0;
+}
+
+/*!
+  \fn int QMetaType::alignOf() const
+  \since 6.0
+
+  Returns the alignment of the type in bytes (i.e. alignof(T),
+  where T is the actual type for which this QMetaType instance
+  was constructed for).
+
+  This function is typically used together with construct()
+  to perform low-level management of the memory used by a type.
+
+  \sa QMetaType::construct(), QMetaType::sizeOf()
+
+ */
+int QMetaType::alignOf() const
+{
+    if (d_ptr)
+        return d_ptr->alignment;
     return 0;
 }
 
@@ -1585,7 +1606,7 @@ void QMetaType::destruct(int type, void *where)
     This function is typically used together with construct()
     to perform low-level management of the memory used by a type.
 
-    \sa construct()
+    \sa construct(), QMetaType::alignOf()
 */
 int QMetaType::sizeOf(int type)
 {

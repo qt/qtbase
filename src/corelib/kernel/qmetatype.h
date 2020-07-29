@@ -505,6 +505,7 @@ public:
     bool isRegistered() const;
     int id() const;
     int sizeOf() const;
+    int alignOf() const;
     TypeFlags flags() const;
     const QMetaObject *metaObject() const;
     QT_PREPEND_NAMESPACE(QByteArray) name() const;
