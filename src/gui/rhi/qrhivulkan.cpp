@@ -44,7 +44,10 @@
 #ifdef QT_DEBUG
 #define VMA_DEBUG_INITIALIZE_ALLOCATIONS 1
 #endif
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_GCC("-Wsuggest-override")
 #include "vk_mem_alloc.h"
+QT_WARNING_POP
 
 #include <qmath.h>
 #include <QVulkanFunctions>
