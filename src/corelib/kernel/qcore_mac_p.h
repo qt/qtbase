@@ -75,6 +75,7 @@ struct mach_header;
 
 #include "qstring.h"
 #include "qscopedpointer.h"
+#include "qpair.h"
 
 #if defined( __OBJC__) && defined(QT_NAMESPACE)
 #define QT_NAMESPACE_ALIAS_OBJC_CLASS(__KLASS__) @compatibility_alias __KLASS__ QT_MANGLE_NAMESPACE(__KLASS__)
