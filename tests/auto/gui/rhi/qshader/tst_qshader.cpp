@@ -75,9 +75,9 @@ void tst_QShader::serializeDeserialize()
 
 void tst_QShader::simpleCompileCheckResults()
 {
-    QShader s = getShader(QLatin1String(":/data/color_spirv_v1.vert.qsb"));
+    QShader s = getShader(QLatin1String(":/data/color_spirv_v5.vert.qsb"));
     QVERIFY(s.isValid());
-    QCOMPARE(QShaderPrivate::get(&s)->qsbVersion, 1);
+    QCOMPARE(QShaderPrivate::get(&s)->qsbVersion, 5);
     QCOMPARE(s.availableShaders().count(), 1);
 
     const QShaderCode shader = s.shader(QShaderKey(QShader::SpirvShader,
@@ -148,11 +148,11 @@ void tst_QShader::simpleCompileCheckResults()
 
 void tst_QShader::genVariants()
 {
-    QShader s = getShader(QLatin1String(":/data/color_all_v1.vert.qsb"));
+    QShader s = getShader(QLatin1String(":/data/color_all_v5.vert.qsb"));
     // spirv, glsl 100, glsl 330, glsl 120, hlsl 50, msl 12
     // + batchable variants
     QVERIFY(s.isValid());
-    QCOMPARE(QShaderPrivate::get(&s)->qsbVersion, 1);
+    QCOMPARE(QShaderPrivate::get(&s)->qsbVersion, 5);
     QCOMPARE(s.availableShaders().count(), 2 * 6);
 
     int batchableVariantCount = 0;
@@ -173,9 +173,9 @@ void tst_QShader::genVariants()
 
 void tst_QShader::shaderDescImplicitSharing()
 {
-    QShader s = getShader(QLatin1String(":/data/color_spirv_v1.vert.qsb"));
+    QShader s = getShader(QLatin1String(":/data/color_spirv_v5.vert.qsb"));
     QVERIFY(s.isValid());
-    QCOMPARE(QShaderPrivate::get(&s)->qsbVersion, 1);
+    QCOMPARE(QShaderPrivate::get(&s)->qsbVersion, 5);
     QCOMPARE(s.availableShaders().count(), 1);
     QVERIFY(s.availableShaders().contains(QShaderKey(QShader::SpirvShader, QShaderVersion(100))));
 
@@ -211,9 +211,9 @@ void tst_QShader::shaderDescImplicitSharing()
 
 void tst_QShader::bakedShaderImplicitSharing()
 {
-    QShader s0 = getShader(QLatin1String(":/data/color_spirv_v1.vert.qsb"));
+    QShader s0 = getShader(QLatin1String(":/data/color_spirv_v5.vert.qsb"));
     QVERIFY(s0.isValid());
-    QCOMPARE(QShaderPrivate::get(&s0)->qsbVersion, 1);
+    QCOMPARE(QShaderPrivate::get(&s0)->qsbVersion, 5);
     QCOMPARE(s0.availableShaders().count(), 1);
     QVERIFY(s0.availableShaders().contains(QShaderKey(QShader::SpirvShader, QShaderVersion(100))));
 
@@ -262,9 +262,9 @@ void tst_QShader::bakedShaderImplicitSharing()
 
 void tst_QShader::mslResourceMapping()
 {
-    QShader s = getShader(QLatin1String(":/data/texture_all_v2.frag.qsb"));
+    QShader s = getShader(QLatin1String(":/data/texture_all_v4.frag.qsb"));
     QVERIFY(s.isValid());
-    QCOMPARE(QShaderPrivate::get(&s)->qsbVersion, 2);
+    QCOMPARE(QShaderPrivate::get(&s)->qsbVersion, 4);
 
     const QList<QShaderKey> availableShaders = s.availableShaders();
     QCOMPARE(availableShaders.count(), 7);
@@ -430,7 +430,7 @@ void tst_QShader::comparison()
     {
         QShader s1 = getShader(QLatin1String(":/data/texture_all_v4.frag.qsb"));
         QVERIFY(s1.isValid());
-        QShader s2 = getShader(QLatin1String(":/data/color_all_v1.vert.qsb"));
+        QShader s2 = getShader(QLatin1String(":/data/color_all_v5.vert.qsb"));
         QVERIFY(s2.isValid());
 
         QVERIFY(s1.description().isValid());
