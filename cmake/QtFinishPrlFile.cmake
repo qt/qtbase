@@ -3,28 +3,26 @@
 # - Replaces occurrences of the build libdir with $$[QT_INSTALL_LIBDIR].
 # - Strips version number suffixes from absolute paths, because qmake's lflag
 #   merging does not handle them correctly.
+# - Transforms absolute library paths into link flags
+#   aka from "/usr/lib/x86_64-linux-gnu/libcups.so" to "-lcups"
+# - Replaces Qt absolute framework paths into a combination of -F$$[QT_INSTALL_LIBS] and
+#   -framework QtFoo
+# - Prepends '-l' to values that are not absolute paths, and don't start with either '-l' or
+#   '-framework'.
 #
 # This file is to be used in CMake script mode with the following variables set:
 # IN_FILE: path to the preliminary .prl file
 # OUT_FILE: path to the final .prl file that's going to be installed
 # QT_BUILD_LIBDIR: path to Qt's libdir when building (those paths get replaced)
 # LIBRARY_SUFFIXES: list of known library extensions, e.g. .so;.a on Linux
+# LIBRARY_PREFIXES: list of known library prefies, e.g. the "lib" in "libz" on on Linux
+# LINK_LIBRARY_FLAG: flag used to link a shared library to an executable, e.g. -l on UNIX
 
-function(strip_library_version_suffix out_var file_path)
-    get_filename_component(dir "${file_path}" DIRECTORY)
-    get_filename_component(basename "${file_path}" NAME_WE)
-    get_filename_component(ext "${file_path}" EXT)
-    foreach(libsuffix ${LIBRARY_SUFFIXES})
-        if(ext MATCHES "^${libsuffix}(\\.[0-9]+)+")
-            set(ext ${libsuffix})
-            break()
-        endif()
-    endforeach()
-    set(${out_var} "${dir}/${basename}${ext}" PARENT_SCOPE)
-endfunction()
+include("${CMAKE_CURRENT_LIST_DIR}/QtGenerateLibHelpers.cmake")
 
 file(STRINGS "${IN_FILE}" lines)
 set(content "")
+set(qt_framework_search_path_inserted FALSE)
 foreach(line ${lines})
     if(line MATCHES "^RCC_OBJECTS = (.*)")
         set(rcc_objects ${CMAKE_MATCH_1})
@@ -35,12 +33,22 @@ foreach(line ${lines})
                 continue()
             endif()
             if(IS_ABSOLUTE "${lib}")
-                strip_library_version_suffix(lib "${lib}")
                 file(RELATIVE_PATH relative_lib "${QT_BUILD_LIBDIR}" "${lib}")
                 if(IS_ABSOLUTE "${relative_lib}" OR (relative_lib MATCHES "^\\.\\."))
-                    list(APPEND adjusted_libs "${lib}")
+                    qt_transform_absolute_library_paths_to_link_flags(lib_with_link_flag "${lib}")
+                    list(APPEND adjusted_libs "${lib_with_link_flag}")
                 else()
-                    list(APPEND adjusted_libs "$$[QT_INSTALL_LIBS]/${relative_lib}")
+                    # Transform Qt framework paths into -framework flags.
+                    if(relative_lib MATCHES "^(Qt(.+))\\.framework/")
+                        if(NOT qt_framework_search_path_inserted)
+                            set(qt_framework_search_path_inserted TRUE)
+                            list(APPEND adjusted_libs "-F$$[QT_INSTALL_LIBS]")
+                        endif()
+                        list(APPEND adjusted_libs "-framework" "${CMAKE_MATCH_1}")
+                    else()
+                        qt_strip_library_version_suffix(relative_lib "${relative_lib}")
+                        list(APPEND adjusted_libs "$$[QT_INSTALL_LIBS]/${relative_lib}")
+                    endif()
                 endif()
             else()
                 if(NOT lib MATCHES "^-l" AND NOT lib MATCHES "^-framework")

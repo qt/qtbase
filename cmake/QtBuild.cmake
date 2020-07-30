@@ -949,7 +949,9 @@ QT.${config_module_name}_private.disabled_features = ${disabled_private_features
         ${CMAKE_STATIC_LIBRARY_SUFFIX})
     add_custom_command(
         OUTPUT "${private_pri_file_path}"
-        DEPENDS ${inputs} "${QT_CMAKE_DIR}/QtGenerateLibPri.cmake"
+        DEPENDS ${inputs}
+                "${QT_CMAKE_DIR}/QtGenerateLibPri.cmake"
+                "${QT_CMAKE_DIR}/QtGenerateLibHelpers.cmake"
         COMMAND ${CMAKE_COMMAND} "-DIN_FILES=${inputs}" "-DOUT_FILE=${private_pri_file_path}"
                 "-DLIBRARY_PREFIXES=${library_prefixes}"
                 "-DLIBRARY_SUFFIXES=${library_suffixes}"
@@ -1393,7 +1395,9 @@ CONFIG += ${private_config_joined}
         ${CMAKE_STATIC_LIBRARY_SUFFIX})
     add_custom_command(
         OUTPUT "${qmodule_pri_target_path}"
-        DEPENDS ${inputs} "${QT_CMAKE_DIR}/QtGenerateLibPri.cmake"
+        DEPENDS ${inputs}
+                "${QT_CMAKE_DIR}/QtGenerateLibPri.cmake"
+                "${QT_CMAKE_DIR}/QtGenerateLibHelpers.cmake"
         COMMAND ${CMAKE_COMMAND} "-DIN_FILES=${inputs}" "-DOUT_FILE=${qmodule_pri_target_path}"
                 "-DLIBRARY_PREFIXES=${library_prefixes}"
                 "-DLIBRARY_SUFFIXES=${library_suffixes}"
@@ -3398,7 +3402,11 @@ QMAKE_PRL_LIBS_FOR_CMAKE = ${prl_libs}
          CONTENT
          "FINAL_PRL_FILE_PATH = ${final_prl_file_path}")
 
-    set(library_suffixes ${CMAKE_SHARED_LIBRARY_SUFFIX} ${CMAKE_STATIC_LIBRARY_SUFFIX})
+    set(library_prefixes ${CMAKE_SHARED_LIBRARY_PREFIX} ${CMAKE_STATIC_LIBRARY_PREFIX})
+    set(library_suffixes
+        ${CMAKE_SHARED_LIBRARY_SUFFIX}
+        ${CMAKE_EXTRA_SHARED_LIBRARY_SUFFIXES}
+        ${CMAKE_STATIC_LIBRARY_SUFFIX})
 
     if(QT_GENERATOR_IS_MULTI_CONFIG)
         set(configs ${CMAKE_CONFIGURATION_TYPES})
@@ -3421,13 +3429,17 @@ QMAKE_PRL_LIBS_FOR_CMAKE = ${prl_libs}
                      "${prl_meta_info_name_prefix}${config}${prl_meta_info_name_suffix}")
         add_custom_command(
             OUTPUT  "${prl_step2_path}"
-            DEPENDS "${prl_step1_path}" "${prl_meta_info_path}"
+            DEPENDS "${prl_step1_path}"
+                    "${prl_meta_info_path}"
                     "${QT_CMAKE_DIR}/QtFinishPrlFile.cmake"
+                    "${QT_CMAKE_DIR}/QtGenerateLibHelpers.cmake"
             COMMAND ${CMAKE_COMMAND}
                     "-DIN_FILE=${prl_step1_path}"
                     "-DIN_META_FILE=${prl_meta_info_path}"
                     "-DOUT_FILE=${prl_step2_path}"
+                    "-DLIBRARY_PREFIXES=${library_prefixes}"
                     "-DLIBRARY_SUFFIXES=${library_suffixes}"
+                    "-DLINK_LIBRARY_FLAG=${CMAKE_LINK_LIBRARY_FLAG}"
                     "-DQT_BUILD_LIBDIR=${QT_BUILD_DIR}/${INSTALL_LIBDIR}"
                     -P "${QT_CMAKE_DIR}/QtFinishPrlFile.cmake"
             VERBATIM

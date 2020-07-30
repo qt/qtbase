@@ -360,6 +360,7 @@ qt_copy_or_install(FILES
                    cmake/QtFileConfigure.txt.in
                    cmake/QtGenerateExtPri.cmake
                    cmake/QtGenerateLibPri.cmake
+                   cmake/QtGenerateLibHelpers.cmake
                    cmake/QtPlatformSupport.cmake
                    cmake/QtPlatformAndroid.cmake
                    cmake/QtPostProcess.cmake
