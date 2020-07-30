@@ -1655,9 +1655,7 @@ inline char qToLower(char ch)
     localeAwareCompare() compares according the "Order for sorted
     lists" setting in the International preferences panel. On other
     Unix-like systems without ICU, the comparison falls back to the
-    system library's \c strcoll(), falling back when it considers
-    strings equal to QString's (locale-unaware) comparison, described
-    above,
+    system library's \c strcoll(),
 
     \section1 Converting Between encoded strings data and QString
 
@@ -5931,11 +5929,8 @@ int QString::localeAwareCompare_helper(const QChar *data1, qsizetype length1,
     CFRelease(otherString);
     return result;
 #  elif defined(Q_OS_UNIX)
-    // declared in <string.h>
-    int delta = strcoll(lhs.toLocal8Bit().constData(), rhs.toLocal8Bit().constData());
-    if (delta == 0)
-        delta = qt_compare_strings(lhs, rhs, Qt::CaseSensitive);
-    return delta;
+    // declared in <string.h> (no better than qt_compare_strings() on Android, sadly)
+    return strcoll(lhs.toLocal8Bit().constData(), rhs.toLocal8Bit().constData());
 #  else
 #     error "This case shouldn't happen"
     return qt_compare_strings(lhs, rhs, Qt::CaseSensitive);
