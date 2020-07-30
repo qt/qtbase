@@ -3459,7 +3459,8 @@ void QRhiGles2::gatherUniforms(GLuint program,
             const int baseOffset = blockMember.offset;
             if (blockMember.arrayDims.isEmpty()) {
                 for (const QShaderDescription::BlockVariable &structMember : blockMember.structMembers)
-                    registerUniformIfActive(structMember, structPrefix, ub.binding, baseOffset, program, dst);
+                    registerUniformIfActive(structMember, structPrefix + ".", ub.binding,
+                                            baseOffset, program, dst);
             } else {
                 if (blockMember.arrayDims.count() > 1) {
                     qWarning("Array of struct '%s' has more than one dimension. Only the first "
