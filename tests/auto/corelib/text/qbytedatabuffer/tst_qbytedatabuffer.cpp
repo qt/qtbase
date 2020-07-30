@@ -43,6 +43,7 @@ private Q_SLOTS:
     void readCompleteBuffer();
     void readPartialBuffer_data();
     void readPartialBuffer();
+    void readPointer();
 private:
     void readBuffer(int size, int readSize);
 };
@@ -168,6 +169,60 @@ void tst_QByteDataBuffer::readPartialBuffer()
     // QIODevice::readAll() reads in QIODEVICE_BUFFERSIZE size
     // increments.
     readBuffer(size, QIODEVICE_BUFFERSIZE);
+}
+
+void tst_QByteDataBuffer::readPointer()
+{
+    QByteDataBuffer buffer;
+
+    auto view = buffer.readPointer();
+    QCOMPARE(view.size(), 0);
+    QCOMPARE(view, "");
+
+    buffer.append("Hello");
+    buffer.append("World");
+
+    qint64 initialSize = buffer.byteAmount();
+    view = buffer.readPointer();
+
+    QCOMPARE(initialSize, buffer.byteAmount());
+    QCOMPARE(view.size(), 5);
+    QCOMPARE(view, "Hello");
+
+    buffer.advanceReadPointer(2);
+    view = buffer.readPointer();
+
+    QCOMPARE(initialSize - 2, buffer.byteAmount());
+    QCOMPARE(view.size(), 3);
+    QCOMPARE(view, "llo");
+
+    buffer.advanceReadPointer(3);
+    view = buffer.readPointer();
+
+    QCOMPARE(initialSize - 5, buffer.byteAmount());
+    QCOMPARE(view.size(), 5);
+    QCOMPARE(view, "World");
+
+    buffer.advanceReadPointer(5);
+    view = buffer.readPointer();
+
+    QVERIFY(buffer.isEmpty());
+    QCOMPARE(view.size(), 0);
+    QCOMPARE(view, "");
+
+    // Advance past the current view's size
+    buffer.append("Hello");
+    buffer.append("World");
+
+    buffer.advanceReadPointer(6);
+    view = buffer.readPointer();
+    QCOMPARE(view, "orld");
+    QCOMPARE(buffer.byteAmount(), 4);
+
+    // Advance past the end of all contained data
+    buffer.advanceReadPointer(6);
+    view = buffer.readPointer();
+    QCOMPARE(view, "");
 }
 
 QTEST_MAIN(tst_QByteDataBuffer)

@@ -193,6 +193,55 @@ public:
         return originalAmount;
     }
 
+    /*!
+        \internal
+        Returns a view into the first QByteArray contained inside,
+        ignoring any already read data. Call advanceReadPointer()
+        to advance the view forward. When a QByteArray is exhausted
+        the view returned by this function will view into another
+        QByteArray if any. Returns a default constructed view if
+        no data is available.
+
+        \sa advanceReadPointer
+    */
+    QByteArrayView readPointer() const
+    {
+        if (isEmpty())
+            return {};
+        return { buffers.first().constData() + qsizetype(firstPos),
+                 buffers.first().size() - qsizetype(firstPos) };
+    }
+
+    /*!
+        \internal
+        Advances the read pointer by \a distance.
+
+        \sa readPointer
+    */
+    void advanceReadPointer(qint64 distance)
+    {
+        qint64 newPos = firstPos + distance;
+        if (isEmpty()) {
+            newPos = 0;
+        } else if (auto size = buffers.first().size(); newPos >= size) {
+            while (newPos >= size) {
+                bufferCompleteSize -= (size - firstPos);
+                newPos -= size;
+                buffers.pop_front();
+                if (isEmpty()) {
+                    size = 0;
+                    newPos = 0;
+                    break;
+                }
+                size = buffers.front().size();
+            }
+            bufferCompleteSize -= newPos;
+        } else {
+            bufferCompleteSize -= newPos - firstPos;
+        }
+        firstPos = newPos;
+    }
+
     inline char getChar()
     {
         char c;
