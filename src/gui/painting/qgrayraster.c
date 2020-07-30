@@ -216,11 +216,8 @@ typedef ptrdiff_t  QT_FT_PtrDist;
 #define PIXEL_BITS  8
 
 #define ONE_PIXEL       ( 1L << PIXEL_BITS )
-#define TRUNC( x )      ( (TCoord)( (x) >> PIXEL_BITS ) )
-#define SUBPIXELS( x )  ( (TPos)(x) * ONE_PIXEL )
-#define FLOOR( x )      ( (x) & -ONE_PIXEL )
-#define CEILING( x )    ( ( (x) + ONE_PIXEL - 1 ) & -ONE_PIXEL )
-#define ROUND( x )      ( ( (x) + ONE_PIXEL / 2 ) & -ONE_PIXEL )
+#define TRUNC( x )      (TCoord)( (x) >> PIXEL_BITS )
+#define FRACT( x )      (TCoord)( (x) & ( ONE_PIXEL - 1 ) )
 
 #if PIXEL_BITS >= 6
 #define UPSCALE( x )    ( (x) * ( ONE_PIXEL >> 6 ) )
@@ -548,17 +545,13 @@ QT_FT_END_STMNT
                                  TPos    x2,
                                  TCoord  y2 )
   {
-    TCoord  ex1, ex2, fx1, fx2, delta, mod;
-    int     p, first, dx;
+    TCoord  ex1, ex2, fx1, fx2, first, dy, delta, mod;
+    TPos    p, dx;
     int     incr;
 
 
-    dx = x2 - x1;
-
     ex1 = TRUNC( x1 );
     ex2 = TRUNC( x2 );
-    fx1 = (TCoord)( x1 - SUBPIXELS( ex1 ) );
-    fx2 = (TCoord)( x2 - SUBPIXELS( ex2 ) );
 
     /* trivial case.  Happens often */
     if ( y1 == y2 )
@@ -567,26 +560,27 @@ QT_FT_END_STMNT
       return;
     }
 
+    fx1   = FRACT( x1 );
+    fx2   = FRACT( x2 );
+
     /* everything is located in a single cell.  That is easy! */
     /*                                                        */
     if ( ex1 == ex2 )
-    {
-      delta      = y2 - y1;
-      ras.area  += (TArea)( fx1 + fx2 ) * delta;
-      ras.cover += delta;
-      return;
-    }
+      goto End;
 
     /* ok, we'll have to render a run of adjacent cells on the same */
     /* scanline...                                                  */
     /*                                                              */
-    p     = ( ONE_PIXEL - fx1 ) * ( y2 - y1 );
-    first = ONE_PIXEL;
-    incr  = 1;
+    dx = x2 - x1;
+    dy = y2 - y1;
 
-    if ( dx < 0 )
+    if ( dx > 0 )
     {
-      p     = fx1 * ( y2 - y1 );
+      p     = ( ONE_PIXEL - fx1 ) * dy;
+      first = ONE_PIXEL;
+      incr  = 1;
+    } else {
+      p     = fx1 * dy;
       first = 0;
       incr  = -1;
       dx    = -dx;
@@ -596,42 +590,42 @@ QT_FT_END_STMNT
 
     ras.area  += (TArea)( fx1 + first ) * delta;
     ras.cover += delta;
-
-    ex1 += incr;
+    y1        += delta;
+    ex1       += incr;
     gray_set_cell( RAS_VAR_ ex1, ey );
-    y1  += delta;
 
     if ( ex1 != ex2 )
     {
       TCoord  lift, rem;
 
 
-      p = ONE_PIXEL * ( y2 - y1 + delta );
+      p = ONE_PIXEL * dy;
       QT_FT_DIV_MOD( TCoord, p, dx, lift, rem );
 
-      mod -= (int)dx;
-
-      while ( ex1 != ex2 )
+      do
       {
         delta = lift;
         mod  += rem;
-        if ( mod >= 0 )
+        if ( mod >= (TCoord)dx )
         {
           mod -= (TCoord)dx;
           delta++;
         }
 
-        ras.area  += (TArea)ONE_PIXEL * delta;
+        ras.area  += (TArea)( ONE_PIXEL * delta );
         ras.cover += delta;
         y1        += delta;
         ex1       += incr;
         gray_set_cell( RAS_VAR_ ex1, ey );
-      }
+      } while ( ex1 != ex2 );
     }
+    fx1 = ONE_PIXEL - first;
 
-    delta      = y2 - y1;
-    ras.area  += (TArea)( fx2 + ONE_PIXEL - first ) * delta;
-    ras.cover += delta;
+  End:
+    dy = y2 - y1;
+
+    ras.area  += (TArea)( ( fx1 + fx2 ) * dy );
+    ras.cover += dy;
   }
 
 
@@ -643,24 +637,20 @@ QT_FT_END_STMNT
   gray_render_line( RAS_ARG_ TPos  to_x,
                              TPos  to_y )
   {
-    TCoord  ey1, ey2, fy1, fy2, mod;
-    TPos    dx, dy, x, x2;
-    int     p, first;
-    int     delta, rem, lift, incr;
-
+    TCoord  ey1, ey2, fy1, fy2, first, delta, mod;
+    TPos    p, dx, dy, x, x2;
+    int     incr;
 
     ey1 = TRUNC( ras.y );
     ey2 = TRUNC( to_y );     /* if (ey2 >= ras.max_ey) ey2 = ras.max_ey-1; */
-    fy1 = (TCoord)( ras.y - SUBPIXELS( ey1 ) );
-    fy2 = (TCoord)( to_y - SUBPIXELS( ey2 ) );
-
-    dx = to_x - ras.x;
-    dy = to_y - ras.y;
 
     /* perform vertical clipping */
     if ( ( ey1 >= ras.max_ey && ey2 >= ras.max_ey ) ||
          ( ey1 <  ras.min_ey && ey2 <  ras.min_ey ) )
       goto End;
+
+    fy1 = FRACT( ras.y );
+    fy2 = FRACT( to_y );
 
     /* everything is on a single scanline */
     if ( ey1 == ey2 )
@@ -669,23 +659,31 @@ QT_FT_END_STMNT
       goto End;
     }
 
+    dx = to_x - ras.x;
+    dy = to_y - ras.y;
+
     /* vertical line - avoid calling gray_render_scanline */
     if ( dx == 0 )
     {
       TCoord  ex     = TRUNC( ras.x );
-      TCoord  two_fx = (TCoord)( ( ras.x - SUBPIXELS( ex ) ) << 1 );
+      TCoord  two_fx = FRACT( ras.x ) << 1;
       TPos    area, max_ey1;
 
 
-      first = ONE_PIXEL;
-      if ( dy < 0 )
+      if ( dy > 0)
+      {
+        first = ONE_PIXEL;
+      }
+      else
+      {
         first = 0;
+      }
 
-      delta      = (int)( first - fy1 );
+      delta      = first - fy1;
       ras.area  += (TArea)two_fx * delta;
       ras.cover += delta;
 
-      delta = (int)( first + first - ONE_PIXEL );
+      delta = first + first - ONE_PIXEL;
       area  = (TArea)two_fx * delta;
       max_ey1 = ras.count_ey + ras.min_ey;
       if (dy < 0) {
@@ -738,11 +736,13 @@ QT_FT_END_STMNT
     }
 
     /* ok, we have to render several scanlines */
-    p     = ( ONE_PIXEL - fy1 ) * dx;
-    first = ONE_PIXEL;
-    incr  = 1;
-
-    if ( dy < 0 )
+    if ( dy > 0)
+    {
+      p     = ( ONE_PIXEL - fy1 ) * dx;
+      first = ONE_PIXEL;
+      incr  = 1;
+    }
+    else
     {
       p     = fy1 * dx;
       first = 0;
@@ -750,13 +750,9 @@ QT_FT_END_STMNT
       dy    = -dy;
     }
 
-    delta = (int)( p / dy );
-    mod   = (int)( p % dy );
-    if ( mod < 0 )
-    {
-      delta--;
-      mod += (TCoord)dy;
-    }
+    /* the fractional part of x-delta is mod/dy. It is essential to */
+    /* keep track of its accumulation for accurate rendering.       */
+    QT_FT_DIV_MOD( TCoord, p, dy, delta, mod );
 
     x = ras.x + delta;
     gray_render_scanline( RAS_VAR_ ey1, ras.x, fy1, x, (TCoord)first );
@@ -766,34 +762,36 @@ QT_FT_END_STMNT
 
     if ( ey1 != ey2 )
     {
-      p     = ONE_PIXEL * dx;
-      QT_FT_DIV_MOD( int, p, dy, lift, rem );
-      mod -= (int)dy;
+      TCoord  lift, rem;
 
-      while ( ey1 != ey2 )
+
+      p    = ONE_PIXEL * dx;
+      QT_FT_DIV_MOD( TCoord, p, dy, lift, rem );
+
+      do
       {
         delta = lift;
         mod  += rem;
-        if ( mod >= 0 )
+        if ( mod >= (TCoord)dy )
         {
-          mod -= (int)dy;
+          mod -= (TCoord)dy;
           delta++;
         }
 
         x2 = x + delta;
-        gray_render_scanline( RAS_VAR_ ey1, x,
-                                       (TCoord)( ONE_PIXEL - first ), x2,
-                                       (TCoord)first );
+        gray_render_scanline( RAS_VAR_ ey1,
+                                       x, ONE_PIXEL - first,
+                                       x2, first );
         x = x2;
 
         ey1 += incr;
         gray_set_cell( RAS_VAR_ TRUNC( x ), ey1 );
-      }
+      } while ( ey1 != ey2 );
     }
 
-    gray_render_scanline( RAS_VAR_ ey1, x,
-                                   (TCoord)( ONE_PIXEL - first ), to_x,
-                                   fy2 );
+    gray_render_scanline( RAS_VAR_ ey1,
+                                   x, ONE_PIXEL - first,
+                                   to_x, fy2 );
 
   End:
     ras.x       = to_x;
@@ -828,8 +826,8 @@ QT_FT_END_STMNT
     dx = to_x - ras.x;
     dy = to_y - ras.y;
 
-    fx1 = ras.x - SUBPIXELS( ex1 );
-    fy1 = ras.y - SUBPIXELS( ey1 );
+    fx1 = FRACT( ras.x );
+    fy1 = FRACT( ras.y );
 
     if ( ex1 == ex2 && ey1 == ey2 )       /* inside one cell */
       ;
@@ -926,8 +924,8 @@ QT_FT_END_STMNT
       } while ( ex1 != ex2 || ey1 != ey2 );
     }
 
-    fx2 = to_x - SUBPIXELS( ex2 );
-    fy2 = to_y - SUBPIXELS( ey2 );
+    fx2 = FRACT( to_x );
+    fy2 = FRACT( to_y );
 
     ras.cover += ( fy2 - fy1 );
     ras.area  += ( fy2 - fy1 ) * ( fx1 + fx2 );
