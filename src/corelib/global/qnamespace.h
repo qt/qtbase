@@ -82,9 +82,6 @@ namespace Qt {
         LeftButton       = 0x00000001,
         RightButton      = 0x00000002,
         MiddleButton     = 0x00000004,
-#if QT_DEPRECATED_SINCE(5, 15) // commented as such since 4.7.0
-        MidButton Q_DECL_ENUMERATOR_DEPRECATED_X("MidButton is deprecated. Use MiddleButton instead") = MiddleButton,
-#endif
         BackButton       = 0x00000008,
         XButton1         = BackButton,
         ExtraButton1     = XButton1,
@@ -308,22 +305,15 @@ namespace Qt {
         WA_Disabled = 0,
         WA_UnderMouse = 1,
         WA_MouseTracking = 2,
-#if QT_DEPRECATED_SINCE(5, 15) // commented as such since 4.5.1
-        WA_ContentsPropagated Q_DECL_ENUMERATOR_DEPRECATED = 3,
-#endif
+        // Formerly, 3 was WA_ContentsPropagated.
         WA_OpaquePaintEvent = 4,
-#if QT_DEPRECATED_SINCE(5, 14)
-        WA_NoBackground Q_DECL_ENUMERATOR_DEPRECATED = WA_OpaquePaintEvent,
-#endif
         WA_StaticContents = 5,
         WA_LaidOut = 7,
         WA_PaintOnScreen = 8,
         WA_NoSystemBackground = 9,
         WA_UpdatesDisabled = 10,
         WA_Mapped = 11,
-#if QT_DEPRECATED_SINCE(5, 14)
-        WA_MacNoClickThrough Q_DECL_ENUMERATOR_DEPRECATED = 12,
-#endif
+        // Formerly, 12 was WA_MacNoClickThrough.
         WA_InputMethodEnabled = 14,
         WA_WState_Visible = 15,
         WA_WState_Hidden = 16,
@@ -341,10 +331,7 @@ namespace Qt {
         WA_Moved = 43,
         WA_PendingUpdate = 44,
         WA_InvalidSize = 45,
-#if QT_DEPRECATED_SINCE(5, 14)
-        WA_MacBrushedMetal Q_DECL_ENUMERATOR_DEPRECATED = 46,
-        WA_MacMetalStyle Q_DECL_ENUMERATOR_DEPRECATED = 46,
-#endif
+        // Formerly 46 was WA_MacBrushedMetal and WA_MacMetalStyle.
         WA_CustomWhatsThis = 47,
         WA_LayoutOnEntireRect = 48,
         WA_OutsideWSRange = 49,
@@ -365,9 +352,7 @@ namespace Qt {
         WA_WState_Reparented = 63,
         WA_WState_ConfigPending = 64,
         WA_WState_Polished = 66,
-#if QT_DEPRECATED_SINCE(5, 15) // commented as such in 4.5.1
-        WA_WState_DND Q_DECL_ENUMERATOR_DEPRECATED = 67,
-#endif
+        // Formerly, 67 was WA_WState_DND.
         WA_WState_OwnSizePolicy = 68,
         WA_WState_ExplicitShowHide = 69,
 
@@ -383,9 +368,6 @@ namespace Qt {
 
         WA_AcceptDrops = 78,
         WA_DropSiteRegistered = 79, // internal
-#if QT_DEPRECATED_SINCE(5, 15) // commented as such since 4.5.1
-        WA_ForceAcceptDrops Q_DECL_ENUMERATOR_DEPRECATED_X("WA_ForceAcceptDrops is deprecated. Use WA_DropSiteRegistered instead") = WA_DropSiteRegistered,
-#endif
 
         WA_WindowPropagation = 80,
 
@@ -405,9 +387,7 @@ namespace Qt {
 
         WA_LayoutUsesWidgetRect = 92,
         WA_StyledBackground = 93, // internal
-#if QT_DEPRECATED_SINCE(5, 14)
-        WA_MSWindowsUseDirect3D Q_DECL_ENUMERATOR_DEPRECATED = 94,
-#endif
+        // Formerly, 94 was WA_MSWindowsUseDirect3D.
         WA_CanHostQMdiSubWindowTitleBar = 95, // Internal
 
         WA_MacAlwaysShowToolWindow = 96, // Mac only
@@ -439,9 +419,7 @@ namespace Qt {
         WA_X11NetWmWindowTypeNotification = 114,
         WA_X11NetWmWindowTypeCombo = 115,
         WA_X11NetWmWindowTypeDND = 116,
-#if QT_DEPRECATED_SINCE(5, 14)
-        WA_MacFrameworkScaled Q_DECL_ENUMERATOR_DEPRECATED = 117,
-#endif
+        // Formerly, 117 was WA_MacFrameworkScaled.
         WA_SetWindowModality = 118,
         WA_WState_WindowOpacitySet = 119, // internal
         WA_TranslucentBackground = 120,
@@ -1388,9 +1366,6 @@ namespace Qt {
     enum InputMethodQuery {
         ImEnabled = 0x1,
         ImCursorRectangle = 0x2,
-#if QT_DEPRECATED_SINCE(5, 14)
-        ImMicroFocus Q_DECL_ENUMERATOR_DEPRECATED = 0x2,
-#endif
         ImFont = 0x4,
         ImCursorPosition = 0x8,
         ImSurroundingText = 0x10,
@@ -1545,9 +1520,6 @@ namespace Qt {
         ItemIsUserCheckable = 16,
         ItemIsEnabled = 32,
         ItemIsAutoTristate = 64,
-#if QT_DEPRECATED_SINCE(5, 6)
-        ItemIsTristate = ItemIsAutoTristate,
-#endif
         ItemNeverHasChildren = 128,
         ItemIsUserTristate = 256
     };
@@ -1560,9 +1532,6 @@ namespace Qt {
         MatchStartsWith = 2,
         MatchEndsWith = 3,
         MatchRegularExpression = 4,
-#if QT_DEPRECATED_SINCE(5, 15)
-        MatchRegExp Q_DECL_ENUMERATOR_DEPRECATED_X("MatchRegExp is deprecated. Use MatchRegularExpression instead") = MatchRegularExpression,
-#endif
         MatchWildcard = 5,
         MatchFixedString = 8,
         MatchCaseSensitive = 16,
@@ -1573,9 +1542,6 @@ namespace Qt {
     Q_DECLARE_OPERATORS_FOR_FLAGS(MatchFlags)
 
     typedef void * HANDLE;
-#if QT_DEPRECATED_SINCE(5, 0)
-    typedef WindowFlags WFlags;
-#endif
 
     enum WindowModality {
         NonModal,

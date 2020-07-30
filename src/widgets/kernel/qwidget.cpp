@@ -843,7 +843,6 @@ QWidgetSet *QWidgetPrivate::allWidgets = nullptr;         // widgets with no wid
   \li Qt::WA_WState_InPaintEvent Currently processing a paint event.
   \li Qt::WA_WState_Reparented The widget has been reparented.
   \li Qt::WA_WState_ConfigPending A configuration (resize/move) event is pending.
-  \li Qt::WA_WState_DND (Deprecated) The widget supports drag and drop, see setAcceptDrops().
   \endlist
 */
 

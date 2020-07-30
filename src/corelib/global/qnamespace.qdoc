@@ -316,7 +316,6 @@
            left-handed mice.)
     \value RightButton     The right button.
     \value MiddleButton    The middle button.
-    \omitvalue MidButton
 
     \value BackButton      The 'Back' button. (Typically present on
            the 'thumb' side of a mouse with extra buttons. This is NOT
@@ -354,7 +353,6 @@
     \value ExtraButton23   The 26th non-wheel Mouse Button.
     \value ExtraButton24   The 27th non-wheel Mouse Button.
 
-    \omitvalue MidButton
     \omitvalue MaxMouseButton
     \omitvalue MouseButtonMask
 
@@ -901,10 +899,6 @@
 
     \value WA_AlwaysShowToolTips Enables tooltips for inactive windows.
 
-    \value WA_ContentsPropagated This flag is superfluous and
-    obsolete; it no longer has any effect. Since Qt 4.1, all widgets
-    that do not set WA_PaintOnScreen propagate their contents.
-
     \value WA_CustomWhatsThis Indicates that the widget wants to
     continue operating normally in "What's This?" mode. This is set by the
     widget's author.
@@ -974,8 +968,6 @@
     \value WA_LayoutUsesWidgetRect Ignore the layout item rect from the style
     when laying out this widget with QLayout.
 
-    \value WA_MacNoClickThrough This value is obsolete and has no effect.
-
     \value WA_MacOpaqueSizeGrip Indicates that the native size grip
     should be opaque instead of transparent (the default). This attribute
     is only applicable to \macos and is set by the widget's author.
@@ -1003,8 +995,6 @@
     alternative sizes for widgets to avoid clipping.
     This attribute is only applicable to \macos.
 
-    \value WA_MacBrushedMetal This value is obsolete and has no effect.
-
     \value WA_Mapped Indicates that the widget is mapped on screen.
     This is set/cleared by the Qt kernel.
 
@@ -1019,12 +1009,6 @@
     \value WA_Moved Indicates that the widget has an explicit
     position. This is set/cleared by QWidget::move() and
     by QWidget::setGeometry().
-
-    \value WA_MSWindowsUseDirect3D This value is obsolete and has no
-    effect.
-
-    \value WA_NoBackground This value is obsolete. Use
-    WA_OpaquePaintEvent instead.
 
     \value WA_NoChildEventsForParent Indicates that the widget does
     not want ChildAdded or ChildRemoved events sent to its
@@ -1261,8 +1245,6 @@
     http://standards.freedesktop.org/wm-spec/ for more details. This attribute
     has no effect on non-X11 platforms. \b Note: Qt automatically sets this
     attribute on the feedback widget used during a drag.
-
-    \value WA_MacFrameworkScaled This value is obsolete and has no effect.
 
     \value WA_AcceptTouchEvents Allows touch events (see QTouchEvent)
     to be sent to the widget. Must be set on all widgets that can
@@ -2084,14 +2066,6 @@
 */
 
 /*!
-    \typedef Qt::WFlags
-    \obsolete
-    This typedef is obsolete. Use Qt::WindowFlags instead.
-
-    Synonym for Qt::WindowFlags.
-*/
-
-/*!
     \enum Qt::WindowType
 
     \keyword window flag
@@ -2638,7 +2612,6 @@
     \enum Qt::InputMethodQuery
 
     \value ImEnabled            The widget accepts input method input.
-    \value ImMicroFocus         This query is obsolete. Use \c ImCursorRectangle instead.
     \value ImCursorRectangle    The rectangle covering the area of the input cursor in widget coordinates.
     \value ImFont               The currently used font for text input.
     \value ImCursorPosition     The logical position of the cursor within the text surrounding the input area
@@ -2781,8 +2754,6 @@
            This enables automatic management of the state of parent items in QTreeWidget
            (checked if all children are checked, unchecked if all children are unchecked,
            or partially checked if only some children are checked).
-    \value ItemIsTristate \e{This enum value is deprecated.} Use Qt::ItemIsAutoTristate
-    instead.
     \value ItemNeverHasChildren The item never has child items.
            This is used for optimization purposes only.
     \value ItemIsUserTristate The user can cycle through three separate states.
@@ -2814,8 +2785,6 @@
     \value MatchStartsWith         The search term matches the start of the item.
     \value MatchEndsWith           The search term matches the end of the item.
     \value MatchCaseSensitive      The search is case sensitive.
-    \value MatchRegExp             Same as MatchRegularExpression
-           \e{This enum value is deprecated since Qt 5.15.}
     \value MatchRegularExpression  Performs string-based matching using a regular
            expression as the search term. Uses QRegularExpression.
            When using this flag, a QRegularExpression object can be passed as
