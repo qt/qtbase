@@ -83,7 +83,7 @@ void QCUPSSupport::clearCupsOptions(QPrinter *printer)
     setCupsOptions(printer, QStringList());
 }
 
-static inline QString jobHoldToString(const QCUPSSupport::JobHoldUntil jobHold, const QTime holdUntilTime)
+static inline QString jobHoldToString(const QCUPSSupport::JobHoldUntil jobHold, QTime holdUntilTime)
 {
     switch (jobHold) {
     case QCUPSSupport::Indefinite:
