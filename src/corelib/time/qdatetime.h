@@ -60,7 +60,7 @@ class QTimeZone;
 #endif
 class QDateTime;
 
-class Q_CORE_EXPORT QDate // ### Qt 6: change to be used by value, not const &
+class Q_CORE_EXPORT QDate
 {
     explicit constexpr QDate(qint64 julianDay) : jd(julianDay) {}
 public:
@@ -156,7 +156,7 @@ private:
 };
 Q_DECLARE_TYPEINFO(QDate, Q_MOVABLE_TYPE);
 
-class Q_CORE_EXPORT QTime // ### Qt 6: change to be used by value, not const &
+class Q_CORE_EXPORT QTime
 {
     explicit constexpr QTime(int ms) : mds(ms)
     {}

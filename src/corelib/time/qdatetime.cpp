@@ -344,11 +344,12 @@ static int fromOffsetString(QStringView offsetString, bool *valid) noexcept
     \reentrant
     \brief The QDate class provides date functions.
 
-    A QDate object represents a particular day, regardless of calendar,
-    locale or other settings used when creating it or supplied by the system.
-    It can report the year, month and day of the month that represent the
-    day with respect to the proleptic Gregorian calendar or any calendar supplied
-    as a QCalendar object.
+    A QDate object represents a particular day, regardless of calendar, locale
+    or other settings used when creating it or supplied by the system.  It can
+    report the year, month and day of the month that represent the day with
+    respect to the proleptic Gregorian calendar or any calendar supplied as a
+    QCalendar object. QDate objects should be passed by value rather than by
+    reference to const; they simply package \c qint64.
 
     A QDate object is typically created by giving the year, month, and day
     numbers explicitly. Note that QDate interprets year numbers less than 100 as
@@ -1655,7 +1656,8 @@ bool QDate::isLeapYear(int y)
     A QTime object contains a clock time, which it can express as the numbers of
     hours, minutes, seconds, and milliseconds since midnight. It provides
     functions for comparing times and for manipulating a time by adding a number
-    of milliseconds.
+    of milliseconds. QTime objects should be passed by value rather than by
+    reference to const; they simply package \c int.
 
     QTime uses the 24-hour clock format; it has no concept of AM/PM.
     Unlike QDateTime, QTime knows nothing about time zones or
