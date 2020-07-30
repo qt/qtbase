@@ -1050,7 +1050,7 @@ static inline int mix_alpha(int da, int sa)
 
 static inline uint mix_alpha_rgb64(uint da, uint sa)
 {
-    return 65535 - ((65535 - sa) * (65535 - da) >> 16);
+    return 65535U - ((65535U - sa) * (65535U - da) >> 16);
 }
 
 /*
@@ -1164,7 +1164,7 @@ void QT_FASTCALL comp_func_solid_Multiply(uint *dest, int length, uint color, ui
 #if QT_CONFIG(raster_64bit)
 static inline uint multiply_op_rgb64(uint dst, uint src, uint da, uint sa)
 {
-    return qt_div_65535(src * dst + src * (65535 - da) + dst * (65535 - sa));
+    return qt_div_65535(src * dst + src * (65535U - da) + dst * (65535U - sa));
 }
 
 template <typename T>
@@ -1307,7 +1307,7 @@ static inline void comp_func_solid_Screen_impl(QRgba64 *dest, int length, QRgba6
         QRgba64 d = dest[i];
         uint da = d.alpha();
 
-#define OP(a, b) 65535 - qt_div_65535((65535-a) * (65535-b))
+#define OP(a, b) 65535 - qt_div_65535((65535U-a) * (65535U-b))
         uint r = OP(  d.red(), sr);
         uint b = OP( d.blue(), sb);
         uint g = OP(d.green(), sg);
@@ -1367,7 +1367,7 @@ static inline void comp_func_Screen_impl(QRgba64 *Q_DECL_RESTRICT dest, const QR
         uint da = d.alpha();
         uint sa = s.alpha();
 
-#define OP(a, b) 65535 - (((65535-a) * (65535-b)) >> 16)
+#define OP(a, b) 65535U - (((65535U-a) * (65535U-b)) >> 16)
         uint r = OP(  d.red(),   s.red());
         uint b = OP( d.blue(),  s.blue());
         uint g = OP(d.green(), s.green());
@@ -1436,7 +1436,7 @@ void QT_FASTCALL comp_func_solid_Overlay(uint *dest, int length, uint color, uin
 #if QT_CONFIG(raster_64bit)
 static inline uint overlay_op_rgb64(uint dst, uint src, uint da, uint sa)
 {
-    const uint temp = src * (65535 - da) + dst * (65535 - sa);
+    const uint temp = src * (65535U - da) + dst * (65535U - sa);
     if (2 * dst < da)
         return qt_div_65535(2 * src * dst + temp);
     else
@@ -1578,7 +1578,7 @@ void QT_FASTCALL comp_func_solid_Darken(uint *dest, int length, uint color, uint
 #if QT_CONFIG(raster_64bit)
 static inline uint darken_op_rgb64(uint dst, uint src, uint da, uint sa)
 {
-    return qt_div_65535(qMin(src * da, dst * sa) + src * (65535 - da) + dst * (65535 - sa));
+    return qt_div_65535(qMin(src * da, dst * sa) + src * (65535U - da) + dst * (65535U - sa));
 }
 
 template <typename T>
@@ -1717,7 +1717,7 @@ void QT_FASTCALL comp_func_solid_Lighten(uint *dest, int length, uint color, uin
 #if QT_CONFIG(raster_64bit)
 static inline uint lighten_op_rgb64(uint dst, uint src, uint da, uint sa)
 {
-    return qt_div_65535(qMax(src * da, dst * sa) + src * (65535 - da) + dst * (65535 - sa));
+    return qt_div_65535(qMax(src * da, dst * sa) + src * (65535U - da) + dst * (65535U - sa));
 }
 
 template <typename T>
@@ -1873,13 +1873,13 @@ static inline uint color_dodge_op_rgb64(qint64 dst, qint64 src, qint64 da, qint6
     const qint64 dst_sa = dst * sa;
     const qint64 src_da = src * da;
 
-    const qint64 temp = src * (65535 - da) + dst * (65535 - sa);
+    const qint64 temp = src * (65535U - da) + dst * (65535U - sa);
     if (src_da + dst_sa > sa_da)
         return qt_div_65535(sa_da + temp);
     else if (src == sa || sa == 0)
         return qt_div_65535(temp);
     else
-        return qt_div_65535(65535 * dst_sa / (65535 - 65535 * src / sa) + temp);
+        return qt_div_65535(65535U * dst_sa / (65535U - 65535U * src / sa) + temp);
 }
 
 template <typename T>
@@ -2035,7 +2035,7 @@ static inline uint color_burn_op_rgb64(qint64 dst, qint64 src, qint64 da, qint64
     const qint64 dst_sa = dst * sa;
     const qint64 sa_da = sa * da;
 
-    const qint64 temp = src * (65535 - da) + dst * (65535 - sa);
+    const qint64 temp = src * (65535U - da) + dst * (65535U - sa);
 
     if (src_da + dst_sa < sa_da)
         return qt_div_65535(temp);
@@ -2186,7 +2186,7 @@ void QT_FASTCALL comp_func_solid_HardLight(uint *dest, int length, uint color, u
 #if QT_CONFIG(raster_64bit)
 static inline uint hardlight_op_rgb64(uint dst, uint src, uint da, uint sa)
 {
-    const uint temp = src * (65535 - da) + dst * (65535 - sa);
+    const uint temp = src * (65535U - da) + dst * (65535U - sa);
 
     if (2 * src < sa)
         return qt_div_65535(2 * src * dst + temp);
@@ -2336,16 +2336,16 @@ static inline void comp_func_solid_SoftLight_impl(uint *dest, int length, uint c
 static inline uint soft_light_op_rgb64(qint64 dst, qint64 src, qint64 da, qint64 sa)
 {
     const qint64 src2 = src << 1;
-    const qint64 dst_np = da != 0 ? (65535 * dst) / da : 0;
-    const qint64 temp = (src * (65535 - da) + dst * (65535 - sa)) * 65535;
-    const qint64 factor = qint64(65535) * 65535;
+    const qint64 dst_np = da != 0 ? (65535U * dst) / da : 0;
+    const qint64 temp = (src * (65535U - da) + dst * (65535U - sa)) * 65535U;
+    const qint64 factor = Q_UINT64_C(65535) * 65535U;
 
     if (src2 < sa)
-        return (dst * (sa * 65535 + (src2 - sa) * (65535 - dst_np)) + temp) / factor;
+        return (dst * (sa * 65535U + (src2 - sa) * (65535U - dst_np)) + temp) / factor;
     else if (4 * dst <= da)
-        return (dst * sa * 65535 + da * (src2 - sa) * ((((16 * dst_np - 12 * 65535) * dst_np + 3 * factor) * dst_np) / factor) + temp) / factor;
+        return (dst * sa * 65535U + da * (src2 - sa) * ((((16 * dst_np - 12 * 65535U) * dst_np + 3 * factor) * dst_np) / factor) + temp) / factor;
     else {
-        return (dst * sa * 65535 + da * (src2 - sa) * (int(qSqrt(qreal(dst_np * 65535))) - dst_np) + temp) / factor;
+        return (dst * sa * 65535U + da * (src2 - sa) * (int(qSqrt(qreal(dst_np * 65535U))) - dst_np) + temp) / factor;
     }
 }
 
