@@ -50,7 +50,6 @@ import xml.etree.ElementTree as ET
 
 from argparse import ArgumentParser
 from textwrap import dedent
-from textwrap import indent as textwrap_indent
 from functools import lru_cache
 from shutil import copyfile
 from collections import defaultdict
@@ -548,7 +547,7 @@ def write_add_qt_resource_call(
             " PROPERTIES QT_SKIP_QUICKCOMPILER 1)\n\n"
         )
 
-    prefix_expanded = scope.expandString(prefix)
+    prefix_expanded = scope.expandString(str(prefix))
     if prefix_expanded:
         prefix = prefix_expanded
     params = ""
@@ -1478,7 +1477,7 @@ def unwrap_if(input_string):
     # Compute the grammar only once.
     if not hasattr(unwrap_if, "if_grammar"):
 
-        def handle_expr_with_parentheses(s, l, t):
+        def handle_expr_with_parentheses(s, l_unused, t):
             # The following expression unwraps the condition via the
             # additional info set by originalTextFor, thus returning the
             # condition without parentheses.
@@ -3270,7 +3269,7 @@ def write_generic_library(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> s
     return target_name
 
 
-def forward_target_info(scope: Scope, extra: [str], skip: Optional[Dict[str]] = None):
+def forward_target_info(scope: Scope, extra: List[str], skip: Optional[Dict[str, bool]] = None):
     s = scope.get_string("QMAKE_TARGET_PRODUCT")
     if s:
         extra.append(f'TARGET_PRODUCT "{s}"')
@@ -3349,7 +3348,7 @@ def write_module(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
     return target_name
 
 
-def write_tool(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
+def write_tool(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> Tuple[str, str]:
     tool_name = scope.TARGET
 
     if "force_bootstrap" in scope.get("CONFIG"):
@@ -3380,7 +3379,7 @@ def write_tool(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
 def write_qt_app(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
     app_name = scope.TARGET
 
-    extra = []
+    extra: List[str] = []
 
     target_info_skip = {}
     target_info_skip["QMAKE_TARGET_DESCRIPTION"] = True
@@ -3493,8 +3492,8 @@ def write_find_package_section(
     packages = []  # type: List[LibraryMapping]
     all_libs = public_libs + private_libs
 
-    for l in all_libs:
-        info = find_library_info_for_target(l)
+    for one_lib in all_libs:
+        info = find_library_info_for_target(one_lib)
         if info and info not in packages:
             packages.append(info)
 
@@ -4154,7 +4153,7 @@ def create_top_level_cmake_conf():
     try:
         with open(conf_file_name, "x") as file:
             file.write('set(QT_REPO_MODULE_VERSION "6.0.0")\n')
-    except FileExistsError as _:
+    except FileExistsError:
         pass
 
 

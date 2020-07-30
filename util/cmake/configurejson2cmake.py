@@ -586,7 +586,7 @@ qt_config_compile_test("{config_test_name}"
         if packages:
             packages_string = " ".join(packages)
             cm_fh.write(f"                   PACKAGES {packages_string}")
-        cm_fh.write(f")\n")
+        cm_fh.write(")\n")
 
 
 def write_compile_test(
@@ -1205,7 +1205,7 @@ def processSummaryHelper(ctx, entries, cm_fh):
             entry_args_string = "".join(function_args)
             cm_fh.write(f"qt_configure_add_summary_entry(\n{entry_args_string})\n")
         elif "type" in entry and entry["type"] == "buildTypeAndConfig":
-            cm_fh.write(f"qt_configure_add_summary_build_type_and_config()\n")
+            cm_fh.write("qt_configure_add_summary_build_type_and_config()\n")
         elif "type" in entry and entry["type"] == "buildMode":
             message = entry["message"]
             cm_fh.write(f"qt_configure_add_summary_build_mode({message})\n")

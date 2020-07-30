@@ -760,12 +760,12 @@ def generate_find_package_info(
     if cmake_target_name.endswith("_nolink") or cmake_target_name.endswith("/nolink"):
         cmake_target_name = cmake_target_name[:-7]
 
-    initial_package_name = lib.packageName
-    package_name = initial_package_name
+    initial_package_name: str = lib.packageName if lib.packageName else ""
+    package_name: str = initial_package_name
     if use_system_package_name:
         replace_args = ["Wrap", "WrapSystem"]
-        package_name = package_name.replace(*replace_args)
-        cmake_target_name = cmake_target_name.replace(*replace_args)
+        package_name = package_name.replace(*replace_args) # type: ignore
+        cmake_target_name = cmake_target_name.replace(*replace_args) # type: ignore
 
     if use_qt_find_package:
         if cmake_target_name:

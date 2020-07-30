@@ -11,7 +11,7 @@ black_format_check:
 	black *.py --line-length 100 --check
 
 flake8:
-	flake8 *.py --ignore=E501,E266,E203,W503
+	flake8 *.py --ignore=E501,E266,E203,W503,F541
 
 pytest:
 	pytest

@@ -71,9 +71,9 @@ def fixup_comments(contents: str) -> str:
     return contents
 
 
-def flatten_list(l):
+def flatten_list(input_list):
     """ Flattens an irregular nested list into a simple list."""
-    for el in l:
+    for el in input_list:
         if isinstance(el, collections.abc.Iterable) and not isinstance(el, (str, bytes)):
             yield from flatten_list(el)
         else:
@@ -227,7 +227,7 @@ class QmakeParser:
         Option = add_element("Option", pp.Keyword("option") + CallArgs("option"))
         RequiresCondition = add_element("RequiresCondition", pp.originalTextFor(pp.nestedExpr()))
 
-        def parse_requires_condition(s, l, t):
+        def parse_requires_condition(s, l_unused, t):
             # The following expression unwraps the condition via the additional info
             # set by originalTextFor.
             condition_without_parentheses = s[t._original_start + 1 : t._original_end - 1]
