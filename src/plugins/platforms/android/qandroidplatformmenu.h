@@ -40,6 +40,7 @@
 #ifndef QANDROIDPLATFORMMENU_H
 #define QANDROIDPLATFORMMENU_H
 
+#include <qhash.h>
 #include <qpa/qplatformmenu.h>
 #include <qlist.h>
 #include <qmutex.h>
