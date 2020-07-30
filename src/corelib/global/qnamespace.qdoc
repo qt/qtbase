@@ -362,6 +362,7 @@
     \value ExtraButton23   The 26th non-wheel Mouse Button.
     \value ExtraButton24   The 27th non-wheel Mouse Button.
 
+    \omitvalue MidButton
     \omitvalue MaxMouseButton
     \omitvalue MouseButtonMask
 
@@ -803,11 +804,6 @@
            different colors than the size of the color table of the destination format.
     \value AutoDither (default) - Only dither when down-converting to 1 or 8-bit indexed formats.
 
-    \omitvalue ColorMode_Mask
-    \omitvalue Dither_Mask
-    \omitvalue AlphaDither_Mask
-    \omitvalue DitherMode_Mask
-
     \value NoOpaqueDetection Do not check whether the image contains non-opaque
            pixels. Use this if you know that the image is semi-transparent and
            you want to avoid the overhead of checking the pixels in the image
@@ -819,6 +815,11 @@
            Can be useful when converting a QImage to a QPixmap for a one-time
            rendering operation for example. Note that a QPixmap not in the
            preferred format will be much slower as a paint device.
+
+    \omitvalue ColorMode_Mask
+    \omitvalue Dither_Mask
+    \omitvalue AlphaDither_Mask
+    \omitvalue DitherMode_Mask
 */
 
 /*!
@@ -927,9 +928,6 @@
     \value WA_DontShowOnScreen Indicates that the widget is hidden or is
     not a part of the viewable Desktop.
 
-    \omitvalue WA_DropSiteRegistered
-    \omitvalue WA_ForceAcceptDrops
-
     \value WA_ForceDisabled Indicates that the widget is
     explicitly disabled, i.e. it will remain disabled even when all
     its ancestors are set to the enabled state. This implies
@@ -942,9 +940,8 @@
     This implies WA_UpdatesDisabled. This is set/cleared by
     QWidget::setUpdatesEnabled().
 
-    \value WA_GroupLeader
-        \e{This attribute has been deprecated.} Use QWidget::windowModality
-        instead.
+    \value WA_GroupLeader \e{This attribute has been deprecated.} Use
+    QWidget::windowModality instead.
 
     \value WA_Hover Forces Qt to generate paint events when the mouse
     enters or leaves the widget. This feature is typically used when
@@ -1015,8 +1012,6 @@
     This attribute is only applicable to \macos.
 
     \value WA_MacBrushedMetal This value is obsolete and has no effect.
-
-    \omitvalue WA_MacMetalStyle
 
     \value WA_Mapped Indicates that the widget is mapped on screen.
     This is set/cleared by the Qt kernel.
@@ -1296,37 +1291,6 @@
     underneath. It is strongly recommended to call update() on the widget's
     top-level window after enabling or disabling this attribute.
 
-    \omitvalue WA_SetLayoutDirection
-    \omitvalue WA_InputMethodTransparent
-    \omitvalue WA_WState_CompressKeys
-    \omitvalue WA_WState_ConfigPending
-    \omitvalue WA_WState_Created
-    \omitvalue WA_WState_DND
-    \omitvalue WA_WState_ExplicitShowHide
-    \omitvalue WA_WState_Hidden
-    \omitvalue WA_WState_InPaintEvent
-    \omitvalue WA_WState_OwnSizePolicy
-    \omitvalue WA_WState_Polished
-    \omitvalue WA_WState_Reparented
-    \omitvalue WA_WState_Visible
-    \omitvalue WA_SetWindowIcon
-    \omitvalue WA_PendingUpdate
-    \omitvalue WA_LaidOut
-    \omitvalue WA_GrabbedShortcut
-    \omitvalue WA_DontShowOnScreen
-    \omitvalue WA_InvalidSize
-    \omitvalue WA_ForceUpdatesDisabled
-    \omitvalue WA_NoX11EventCompression
-    \omitvalue WA_TintedBackground
-    \omitvalue WA_X11OpenGLOverlay
-    \omitvalue WA_CanHostQMdiSubWindowTitleBar
-    \omitvalue WA_AttributeCount
-    \omitvalue WA_StyleSheet
-    \omitvalue WA_X11BypassTransientForHint
-    \omitvalue WA_SetWindowModality
-    \omitvalue WA_WState_WindowOpacitySet
-    \omitvalue WA_WState_AcceptedTouchBeginEvent
-    \omitvalue WA_MacNoShadow
     \value WA_ContentsMarginsRespectsSafeArea A QWidget respects the safe
     area margins of a window by incorporating the margins into its contents'
     margins by default. This means, that a QLayout will use the content area
@@ -1335,6 +1299,39 @@
     layout, to allow for example a background image to underlay the status bar and other
     system areas on an iOS device, while still allowing child widgets of
     that background to be inset based on the safe area.
+
+    \omitvalue WA_LaidOut
+    \omitvalue WA_WState_Visible
+    \omitvalue WA_WState_Hidden
+    \omitvalue WA_PendingUpdate
+    \omitvalue WA_InvalidSize
+    \omitvalue WA_GrabbedShortcut
+    \omitvalue WA_SetWindowIcon
+    \omitvalue WA_SetLayoutDirection
+    \omitvalue WA_ForceUpdatesDisabled
+    \omitvalue WA_WState_Created
+    \omitvalue WA_WState_CompressKeys
+    \omitvalue WA_WState_InPaintEvent
+    \omitvalue WA_WState_Reparented
+    \omitvalue WA_WState_ConfigPending
+    \omitvalue WA_WState_Polished
+    \omitvalue WA_WState_OwnSizePolicy
+    \omitvalue WA_WState_ExplicitShowHide
+    \omitvalue WA_InputMethodTransparent
+    \omitvalue WA_DropSiteRegistered
+    \omitvalue WA_ForceAcceptDrops
+    \omitvalue WA_NoX11EventCompression
+    \omitvalue WA_TintedBackground
+    \omitvalue WA_X11OpenGLOverlay
+    \omitvalue WA_CanHostQMdiSubWindowTitleBar
+    \omitvalue WA_X11BypassTransientForHint
+    \omitvalue WA_DontShowOnScreen
+    \omitvalue WA_SetWindowModality
+    \omitvalue WA_WState_WindowOpacitySet
+    \omitvalue WA_WState_AcceptedTouchBeginEvent
+    \omitvalue WA_MacNoShadow
+    \omitvalue WA_StyleSheet
+    \omitvalue WA_AttributeCount
 */
 
 /*! \typedef Qt::HANDLE
