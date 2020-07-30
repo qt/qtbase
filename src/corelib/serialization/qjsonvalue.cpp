@@ -530,7 +530,7 @@ QJsonValue QJsonValue::fromVariant(const QVariant &variant)
 
     \value Null     QMetaType::Nullptr
     \value Bool     QMetaType::Bool
-    \value Double   QMetaType::Double
+    \value Double   QMetaType::Double or QMetaType::LongLong
     \value String   QString
     \value Array    QVariantList
     \value Object   QVariantMap
@@ -546,6 +546,7 @@ QVariant QJsonValue::toVariant() const
     case QCborValue::False:
         return false;
     case QCborValue::Integer:
+        return n;
     case QCborValue::Double:
         return toDouble();
     case QCborValue::String:
