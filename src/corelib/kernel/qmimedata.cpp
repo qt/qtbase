@@ -583,11 +583,9 @@ QByteArray QMimeData::data(const QString &mimeType) const
 
     Note that if you want to use a custom data type in an item view drag and drop
     operation, you must register it as a Qt \l{QMetaType}{meta type}, using the
-    Q_DECLARE_METATYPE() macro, and implement stream operators for it. The stream
-    operators must then be registered with the qRegisterMetaTypeStreamOperators()
-    function.
+    Q_DECLARE_METATYPE() macro, and implement stream operators for it.
 
-    \sa hasFormat(), QMetaType, {QMetaType::}{qRegisterMetaTypeStreamOperators()}
+    \sa hasFormat(), QMetaType, {QMetaType::}{Q_DECLARE_METATYPE()}
 */
 void QMimeData::setData(const QString &mimeType, const QByteArray &data)
 {

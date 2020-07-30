@@ -97,11 +97,6 @@ qRegisterMetaType<MyClass>("MyClass");
 //! [4]
 
 
-//! [5]
-qRegisterMetaTypeStreamOperators<MyClass>("MyClass");
-//! [5]
-
-
 //! [6]
 QDataStream &operator<<(QDataStream &out, const MyClass &myObj);
 QDataStream &operator>>(QDataStream &in, MyClass &myObj);

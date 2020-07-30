@@ -105,14 +105,6 @@ struct QMetaTypeCustomRegistry
     QReadWriteLock lock;
     QList<QtPrivate::QMetaTypeInterface *> registry;
     QHash<QByteArray, QtPrivate::QMetaTypeInterface *> aliases;
-#ifndef QT_NO_DATASTREAM
-    struct DataStreamOps
-    {
-        QMetaType::SaveOperator saveOp;
-        QMetaType::LoadOperator loadOp;
-    };
-    QHash<int, DataStreamOps> dataStreamOp;
-#endif
     // index of first empty (unregistered) type in registry, if any.
     int firstEmpty = 0;
 
@@ -245,6 +237,15 @@ Q_GLOBAL_STATIC(QMetaTypeCustomRegistry, customTypeRegistry)
     \li Enumerations registered with Q_ENUM or Q_FLAG
     \li Classes that have a Q_GADGET macro
     \endlist
+
+    \note This method also registers the stream and debug operators for the type if they
+    are visible at registration time. As this is done automatically in some places,
+    it is strongly recommended to declare the stream operators for a type directly
+    after the type itself.
+
+    The stream operators should have the following signatures:
+
+    \snippet code/src_corelib_kernel_qmetatype.cpp 6
 
     \sa qRegisterMetaType()
 */
@@ -902,11 +903,8 @@ private:
 
 typedef QMetaTypeFunctionRegistry<QtPrivate::AbstractConverterFunction,QPair<int,int> >
 QMetaTypeConverterRegistry;
-typedef QMetaTypeFunctionRegistry<QtPrivate::AbstractDebugStreamFunction,int>
-QMetaTypeDebugStreamRegistry;
 
 Q_GLOBAL_STATIC(QMetaTypeConverterRegistry, customTypesConversionRegistry)
-Q_GLOBAL_STATIC(QMetaTypeDebugStreamRegistry, customTypesDebugStreamRegistry)
 
 /*!
     \fn bool QMetaType::registerConverter()
@@ -939,15 +937,6 @@ Q_GLOBAL_STATIC(QMetaTypeDebugStreamRegistry, customTypesDebugStreamRegistry)
     to type To in the meta type system. Returns \c true if the registration succeeded, otherwise false.
 */
 
-#ifndef QT_NO_DEBUG_STREAM
-/*!
-    \fn bool QMetaType::registerDebugStreamOperator()
-    Registers the debug stream operator for the user-registered type T. This requires T to have
-    an operator<<(QDebug dbg, T).
-    Returns \c true if the registration succeeded, otherwise false.
-*/
-#endif
-
 /*!
     Registers function \a f as converter function from type id \a from to \a to.
     If there's already a conversion registered, this does nothing but deleting \a f.
@@ -978,30 +967,54 @@ void QMetaType::unregisterConverterFunction(int from, int to)
 }
 
 #ifndef QT_NO_DEBUG_STREAM
-bool QMetaType::registerDebugStreamOperatorFunction(const QtPrivate::AbstractDebugStreamFunction *f,
-                                                    int type)
+
+/*!
+    Streams the object at \a rhs of type \a typeId to the debug stream \a dbg. Returns \c true
+    on success, otherwise false.
+    \since 5.2
+*/
+bool QMetaType::debugStream(QDebug& dbg, const void *rhs)
 {
-    if (!customTypesDebugStreamRegistry()->insertIfNotContains(type, f)) {
-        qWarning("Debug stream operator already registered for type %s", QMetaType::typeName(type));
+    if (!isValid() || !d_ptr->debugStream)
         return false;
-    }
+    d_ptr->debugStream(d_ptr, dbg, rhs);
     return true;
 }
 
 /*!
+    \fn bool QMetaType::debugStream(QDebug& dbg, const void *rhs, int typeId)
+    \overload
+    \obsolete
+*/
+
+/*!
     \fn bool QMetaType::hasRegisteredDebugStreamOperator()
-    Returns \c true, if the meta type system has a registered debug stream operator for type T.
+    \obsolete
     \since 5.2
+
+    Returns \c true, if the meta type system has a registered debug stream operator for type T.
  */
 
 /*!
+    \fn bool QMetaType::hasRegisteredDebugStreamOperator(int typeId)
+    \obsolete
+
     Returns \c true, if the meta type system has a registered debug stream operator for type
     id \a typeId.
     \since 5.2
 */
-bool QMetaType::hasRegisteredDebugStreamOperator(int typeId)
+
+/*!
+    \fn bool QMetaType::hasRegisteredDebugStreamOperator(int typeId)
+    \since 6.0
+
+    Returns \c true, if the meta type system has a registered debug stream operator for this
+    meta type.
+*/
+bool QMetaType::hasRegisteredDebugStreamOperator() const
+
 {
-    return customTypesDebugStreamRegistry()->contains(typeId);
+    return d_ptr && d_ptr->debugStream != nullptr;
 }
 #endif
 
@@ -1015,20 +1028,6 @@ bool QMetaType::convert(const void *from, int fromTypeId, void *to, int toTypeId
     const QtPrivate::AbstractConverterFunction * const f =
         customTypesConversionRegistry()->function(qMakePair(fromTypeId, toTypeId));
     return f && f->convert(f, from, to);
-}
-
-/*!
-    Streams the object at \a rhs of type \a typeId to the debug stream \a dbg. Returns \c true
-    on success, otherwise false.
-    \since 5.2
-*/
-bool QMetaType::debugStream(QDebug& dbg, const void *rhs, int typeId)
-{
-    const QtPrivate::AbstractDebugStreamFunction * const f = customTypesDebugStreamRegistry()->function(typeId);
-    if (!f)
-        return false;
-    f->stream(f, dbg, rhs);
-    return true;
 }
 
 /*!
@@ -1047,32 +1046,6 @@ bool QMetaType::hasRegisteredConverterFunction(int fromTypeId, int toTypeId)
 {
     return customTypesConversionRegistry()->contains(qMakePair(fromTypeId, toTypeId));
 }
-
-#ifndef QT_NO_DATASTREAM
-/*!
-    \internal
-*/
-void QMetaType::registerStreamOperators(const char *typeName, SaveOperator saveOp,
-                                        LoadOperator loadOp)
-{
-    registerStreamOperators(type(typeName), saveOp, loadOp);
-}
-
-/*!
-    \internal
-*/
-void QMetaType::registerStreamOperators(int idx, SaveOperator saveOp,
-                                        LoadOperator loadOp)
-{
-    if (idx < User)
-        return; //builtin types should not be registered;
-
-    if (auto reg = customTypeRegistry()) {
-        QWriteLocker locker(&reg->lock);
-        reg->dataStreamOp[idx] = { saveOp, loadOp };
-    }
-}
-#endif // QT_NO_DATASTREAM
 
 // We don't officially support constexpr in MSVC 2015, but the limited support it
 // has is enough for the code below.
@@ -1315,218 +1288,90 @@ int QMetaType::type(const QT_PREPEND_NAMESPACE(QByteArray) &typeName)
 }
 
 #ifndef QT_NO_DATASTREAM
-namespace
-{
-
-template<typename T>
-class HasStreamOperator
-{
-    struct Yes { char unused[1]; };
-    struct No { char unused[2]; };
-    static_assert(sizeof(Yes) != sizeof(No));
-
-    template<class C> static decltype(std::declval<QDataStream&>().operator>>(std::declval<C&>()), Yes()) load(int);
-    template<class C> static decltype(operator>>(std::declval<QDataStream&>(), std::declval<C&>()), Yes()) load(int);
-    template<class C> static No load(...);
-    template<class C> static decltype(operator<<(std::declval<QDataStream&>(), std::declval<const C&>()), Yes()) saveFunction(int);
-    template<class C> static decltype(std::declval<QDataStream&>().operator<<(std::declval<const C&>()), Yes()) saveMethod(int);
-    template<class C> static No saveMethod(...);
-    template<class C> static No saveFunction(...);
-    static constexpr bool LoadValue = QtMetaTypePrivate::TypeDefinition<T>::IsAvailable && (sizeof(load<T>(0)) == sizeof(Yes));
-    static constexpr bool SaveValue = QtMetaTypePrivate::TypeDefinition<T>::IsAvailable &&
-        ((sizeof(saveMethod<T>(0)) == sizeof(Yes)) || (sizeof(saveFunction<T>(0)) == sizeof(Yes)));
-public:
-    static constexpr bool Value = LoadValue && SaveValue;
-};
-
-// Quick sanity checks
-static_assert(HasStreamOperator<NS(QJsonDocument)>::Value);
-static_assert(!HasStreamOperator<void*>::Value);
-static_assert(HasStreamOperator<qint8>::Value);
-
-template<typename T, bool IsAcceptedType = DefinedTypesFilter::Acceptor<T>::IsAccepted && HasStreamOperator<T>::Value>
-struct FilteredOperatorSwitch
-{
-    static bool load(QDataStream &stream, T *data, int)
-    {
-        stream >> *data;
-        return true;
-    }
-    static bool save(QDataStream &stream, const T *data, int)
-    {
-        stream << *data;
-        return true;
-    }
-};
-
-template<typename T>
-struct FilteredOperatorSwitch<T, /* IsAcceptedType = */ false>
-{
-    static const QMetaTypeModuleHelper *getMetaTypeInterface()
-    {
-        if (QModulesPrivate::QTypeModuleInfo<T>::IsGui)
-            return qMetaTypeGuiHelper;
-        else if (QModulesPrivate::QTypeModuleInfo<T>::IsWidget)
-            return qMetaTypeWidgetsHelper;
-        return nullptr;
-    }
-    static bool save(QDataStream &stream, const T *data, int type)
-    {
-        if (auto interface = getMetaTypeInterface()) {
-            return interface->save(stream, type, data);
-        }
-        return false;
-    }
-    static bool load(QDataStream &stream, T *data, int type)
-    {
-        if (auto interface = getMetaTypeInterface()) {
-            return interface->load(stream, type, data);
-        }
-        return false;
-    }
-};
-
-class SaveOperatorSwitch
-{
-public:
-    QDataStream &stream;
-    int m_type;
-
-    template<typename T>
-    bool delegate(const T *data)
-    {
-        return FilteredOperatorSwitch<T>::save(stream, data, m_type);
-    }
-    bool delegate(const char *data)
-    {
-        // force a char to be signed
-        stream << qint8(*data);
-        return true;
-    }
-    bool delegate(const long *data)
-    {
-        stream << qlonglong(*data);
-        return true;
-    }
-    bool delegate(const unsigned long *data)
-    {
-        stream << qulonglong(*data);
-        return true;
-    }
-    bool delegate(const QMetaTypeSwitcher::NotBuiltinType *data)
-    {
-        auto ct = customTypeRegistry();
-        if (!ct)
-            return false;
-        QMetaType::SaveOperator op = nullptr;
-        {
-            QReadLocker lock(&ct->lock);
-            op = ct->dataStreamOp.value(m_type).saveOp;
-        }
-        if (!op)
-            return false;
-        op(stream, data);
-        return true;
-    }
-    bool delegate(const void*) { return false; }
-    bool delegate(const QMetaTypeSwitcher::UnknownType*) { return false; }
-};
-class LoadOperatorSwitch
-{
-public:
-    QDataStream &stream;
-    int m_type;
-
-    template<typename T>
-    bool delegate(const T *data)
-    {
-        return FilteredOperatorSwitch<T>::load(stream, const_cast<T*>(data), m_type);
-    }
-    bool delegate(const char *data)
-    {
-        // force a char to be signed
-        qint8 c;
-        stream >> c;
-        *const_cast<char*>(data) = c;
-        return true;
-    }
-    bool delegate(const long *data)
-    {
-        qlonglong l;
-        stream >> l;
-        *const_cast<long*>(data) = l;
-        return true;
-    }
-    bool delegate(const unsigned long *data)
-    {
-        qlonglong l;
-        stream >> l;
-        *const_cast<unsigned long*>(data) = l;
-        return true;
-    }
-    bool delegate(const QMetaTypeSwitcher::NotBuiltinType *data)
-    {
-        auto ct = customTypeRegistry();
-        if (!ct)
-            return false;
-        QMetaType::LoadOperator op = nullptr;
-        {
-            QReadLocker lock(&ct->lock);
-            op = ct->dataStreamOp.value(m_type).loadOp;
-        }
-        if (!op)
-            return false;
-        op(stream, const_cast<QMetaTypeSwitcher::NotBuiltinType *>(data));
-        return true;
-    }
-    bool delegate(const void*) { return false; }
-    bool delegate(const QMetaTypeSwitcher::UnknownType*) { return false; }
-};
-}  // namespace
-
 /*!
     Writes the object pointed to by \a data with the ID \a type to
     the given \a stream. Returns \c true if the object is saved
     successfully; otherwise returns \c false.
 
-    The type must have been registered with qRegisterMetaType() and
-    qRegisterMetaTypeStreamOperators() beforehand.
+    The type must have been registered with Q_DECLARE_METATYPE()
+    beforehand.
 
     Normally, you should not need to call this function directly.
     Instead, use QVariant's \c operator<<(), which relies on save()
     to stream custom types.
 
-    \sa load(), qRegisterMetaTypeStreamOperators()
+    \sa load()
 */
-bool QMetaType::save(QDataStream &stream, int type, const void *data)
+bool QMetaType::save(QDataStream &stream, const void *data) const
 {
-    if (!data)
+    if (!data || !isValid())
         return false;
-    SaveOperatorSwitch saveOp{stream, type};
-    return QMetaTypeSwitcher::switcher<bool>(saveOp, type, data);
+
+    // keep compatibility for long/ulong
+    if (id() == QMetaType::Long) {
+        stream << qlonglong(*(long *)data);
+        return true;
+    } else if (id() == QMetaType::ULong) {
+        stream << qlonglong(*(unsigned long *)data);
+        return true;
+    }
+
+    if (!d_ptr->dataStreamOut)
+        return false;
+
+    d_ptr->dataStreamOut(d_ptr, stream, data);
+    return true;
 }
+
+/*!
+   \fn bool QMetaType::save(QDataStream &stream, int type, const void *data)
+   \overload
+   \obsolete
+*/
 
 /*!
     Reads the object of the specified \a type from the given \a
     stream into \a data. Returns \c true if the object is loaded
     successfully; otherwise returns \c false.
 
-    The type must have been registered with qRegisterMetaType() and
-    qRegisterMetaTypeStreamOperators() beforehand.
+    The type must have been registered with Q_DECLARE_METATYPE()
+    beforehand.
 
     Normally, you should not need to call this function directly.
     Instead, use QVariant's \c operator>>(), which relies on load()
     to stream custom types.
 
-    \sa save(), qRegisterMetaTypeStreamOperators()
+    \sa save()
 */
-bool QMetaType::load(QDataStream &stream, int type, void *data)
+bool QMetaType::load(QDataStream &stream, void *data) const
 {
-   if (!data)
+    if (!data || !isValid())
         return false;
-    LoadOperatorSwitch loadOp{stream, type};
-    return QMetaTypeSwitcher::switcher<bool>(loadOp, type, data);
+
+    // keep compatibility for long/ulong
+    if (id() == QMetaType::Long) {
+        qlonglong ll;
+        stream >> ll;
+        *(long *)data = long(ll);
+        return true;
+    } else if (id() == QMetaType::ULong) {
+        qulonglong ull;
+        stream >> ull;
+        *(unsigned long *)data = (unsigned long)(ull);
+        return true;
+    }
+    if (!d_ptr->dataStreamIn)
+        return false;
+
+    d_ptr->dataStreamIn(d_ptr, stream, data);
+    return true;
 }
+
+/*!
+   \fn bool QMetaType::load(QDataStream &stream, int type, void *data)
+   \overload
+   \obsolete
+*/
 #endif // QT_NO_DATASTREAM
 
 /*!
@@ -1668,29 +1513,7 @@ const QMetaObject *QMetaType::metaObjectForType(int type)
     \warning This function is useful only for registering an alias (typedef)
     for every other use case Q_DECLARE_METATYPE and qMetaTypeId() should be used instead.
 
-    \sa {QMetaType::}{qRegisterMetaTypeStreamOperators()}, {QMetaType::}{isRegistered()},
-        Q_DECLARE_METATYPE()
-*/
-
-/*!
-    \fn void qRegisterMetaTypeStreamOperators(const char *typeName)
-    \relates QMetaType
-    \threadsafe
-
-    Registers the stream operators for the type \c{T} called \a
-    typeName.
-
-    Afterward, the type can be streamed using QMetaType::load() and
-    QMetaType::save(). These functions are used when streaming a
-    QVariant.
-
-    \snippet code/src_corelib_kernel_qmetatype.cpp 5
-
-    The stream operators should have the following signatures:
-
-    \snippet code/src_corelib_kernel_qmetatype.cpp 6
-
-    \sa qRegisterMetaType(), QMetaType::isRegistered(), Q_DECLARE_METATYPE()
+    \sa {QMetaType::}{isRegistered()}, Q_DECLARE_METATYPE()
 */
 
 /*!

@@ -1405,6 +1405,20 @@ struct CustomType
     int value() { return i1 + i2 + i3; }
 };
 
+QDataStream &operator<<(QDataStream &stream, const CustomType &ct)
+{
+    stream << ct.i1 << ct.i2 << ct.i3;
+    return stream;
+}
+
+QDataStream &operator>>(QDataStream &stream, CustomType &ct)
+{
+    stream >> ct.i1;
+    stream >> ct.i2;
+    stream >> ct.i3;
+    return stream;
+}
+
 Q_DECLARE_METATYPE(CustomType*)
 Q_DECLARE_METATYPE(CustomType)
 
@@ -1475,26 +1489,11 @@ void tst_QObject::customTypes()
     QCOMPARE(instanceCount, 3);
 }
 
-QDataStream &operator<<(QDataStream &stream, const CustomType &ct)
-{
-    stream << ct.i1 << ct.i2 << ct.i3;
-    return stream;
-}
-
-QDataStream &operator>>(QDataStream &stream, CustomType &ct)
-{
-    stream >> ct.i1;
-    stream >> ct.i2;
-    stream >> ct.i3;
-    return stream;
-}
-
 void tst_QObject::streamCustomTypes()
 {
     QByteArray ba;
 
     int idx = qRegisterMetaType<CustomType>("CustomType");
-    qRegisterMetaTypeStreamOperators<CustomType>("CustomType");
 
     {
         CustomType t1(1, 2, 3);

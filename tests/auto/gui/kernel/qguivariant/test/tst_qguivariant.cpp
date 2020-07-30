@@ -741,8 +741,6 @@ void tst_QGuiVariant::guiVariantAtExit()
 
 void tst_QGuiVariant::qt4QPolygonFDataStream()
 {
-    qRegisterMetaTypeStreamOperators<QPolygonF>();
-
     QByteArray data;
     QDataStream stream(&data, QIODevice::WriteOnly);
     stream.setVersion(QDataStream::Qt_4_8);

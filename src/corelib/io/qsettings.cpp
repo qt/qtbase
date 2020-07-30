@@ -1979,8 +1979,9 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
 
     \snippet code/src_corelib_io_qsettings.cpp 1
 
-    Custom types registered using qRegisterMetaType() and
-    qRegisterMetaTypeStreamOperators() can be stored using QSettings.
+    Custom types registered using qRegisterMetaType() that have
+    operators for streaming to and from a QDataStream can be stored
+    using QSettings.
 
     \section1 Section and Key Syntax
 

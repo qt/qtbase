@@ -249,7 +249,6 @@ inline constexpr int qMetaTypeId();
     F(QPointer)
 
 class QDataStream;
-class QMetaTypeInterface;
 struct QMetaObject;
 
 namespace QtPrivate
@@ -266,36 +265,6 @@ To convertImplicit(const From& from)
 {
     return from;
 }
-
-#ifndef QT_NO_DEBUG_STREAM
-struct AbstractDebugStreamFunction
-{
-    typedef void (*Stream)(const AbstractDebugStreamFunction *, QDebug&, const void *);
-    typedef void (*Destroy)(AbstractDebugStreamFunction *);
-    explicit AbstractDebugStreamFunction(Stream s = nullptr, Destroy d = nullptr)
-        : stream(s), destroy(d) {}
-    Q_DISABLE_COPY(AbstractDebugStreamFunction)
-    Stream stream;
-    Destroy destroy;
-};
-
-template<typename T>
-struct BuiltInDebugStreamFunction : public AbstractDebugStreamFunction
-{
-    BuiltInDebugStreamFunction()
-        : AbstractDebugStreamFunction(stream, destroy) {}
-    static void stream(const AbstractDebugStreamFunction *, QDebug& dbg, const void *r)
-    {
-        const T *rhs = static_cast<const T *>(r);
-        operator<<(dbg, *rhs);
-    }
-
-    static void destroy(AbstractDebugStreamFunction *_this)
-    {
-        delete static_cast<BuiltInDebugStreamFunction *>(_this);
-    }
-};
-#endif
 
 struct AbstractConverterFunction
 {
@@ -461,14 +430,6 @@ public:
     };
     Q_DECLARE_FLAGS(TypeFlags, TypeFlag)
 
-    typedef void (*SaveOperator)(QDataStream &, const void *);
-    typedef void (*LoadOperator)(QDataStream &, void *);
-#ifndef QT_NO_DATASTREAM
-    static void registerStreamOperators(const char *typeName, SaveOperator saveOp,
-                                        LoadOperator loadOp);
-    static void registerStreamOperators(int type, SaveOperator saveOp,
-                                        LoadOperator loadOp);
-#endif
     static void registerNormalizedTypedef(const QT_PREPEND_NAMESPACE(QByteArray) &normalizedTypeName, QMetaType type);
 
     static int type(const char *typeName);
@@ -483,11 +444,6 @@ public:
     static void destroy(int type, void *data);
     static void *construct(int type, void *where, const void *copy);
     static void destruct(int type, void *where);
-
-#ifndef QT_NO_DATASTREAM
-    static bool save(QDataStream &stream, int type, const void *data);
-    static bool load(QDataStream &stream, int type, void *data);
-#endif
 
     explicit QMetaType(int type);
     explicit QMetaType(QtPrivate::QMetaTypeInterface *d);
@@ -521,6 +477,20 @@ public:
     bool isEqualityComparable() const;
     bool isOrdered() const;
 
+#ifndef QT_NO_DATASTREAM
+    bool save(QDataStream &stream, const void *data) const;
+    bool load(QDataStream &stream, void *data) const;
+
+#if QT_DEPRECATED_SINCE(6, 0)
+    QT_DEPRECATED_VERSION_6_0
+    static bool save(QDataStream &stream, int type, const void *data)
+    { return QMetaType(type).save(stream, data); }
+    QT_DEPRECATED_VERSION_6_0
+    static bool load(QDataStream &stream, int type, void *data)
+    { return QMetaType(type).load(stream, data); }
+#endif
+#endif
+
     template<typename T>
     static QMetaType fromType();
 
@@ -530,22 +500,21 @@ public:
 public:
 
 #ifndef QT_NO_DEBUG_STREAM
-    template<typename T>
-    static bool registerDebugStreamOperator()
-    {
-        static_assert((!QMetaTypeId2<T>::IsBuiltIn),
-            "QMetaType::registerDebugStreamOperator: The type must be a custom type.");
+    bool debugStream(QDebug& dbg, const void *rhs);
+    bool hasRegisteredDebugStreamOperator() const;
 
-        const int typeId = qMetaTypeId<T>();
-        static const QtPrivate::BuiltInDebugStreamFunction<T> f;
-        return registerDebugStreamOperatorFunction(&f, typeId);
-    }
+#if QT_DEPRECATED_SINCE(6, 0)
+    QT_DEPRECATED_VERSION_6_0
+    static bool debugStream(QDebug& dbg, const void *rhs, int typeId)
+    { return QMetaType(typeId).debugStream(dbg, rhs); }
     template<typename T>
+    QT_DEPRECATED_VERSION_6_0
     static bool hasRegisteredDebugStreamOperator()
-    {
-        return hasRegisteredDebugStreamOperator(qMetaTypeId<T>());
-    }
-    static bool hasRegisteredDebugStreamOperator(int typeId);
+    { return QMetaType::fromType<T>().hasRegisteredDebugStreamOperator(); }
+    QT_DEPRECATED_VERSION_6_0
+    static bool hasRegisteredDebugStreamOperator(int typeId)
+    { return QMetaType(typeId).hasRegisteredDebugStreamOperator(); }
+#endif
 #endif
 
     // implicit conversion supported like double -> float
@@ -628,8 +597,6 @@ public:
     }
 #endif
 
-    static bool debugStream(QDebug& dbg, const void *rhs, int typeId);
-
     template<typename From, typename To>
     static bool hasRegisteredConverterFunction()
     {
@@ -637,10 +604,6 @@ public:
     }
 
     static bool hasRegisteredConverterFunction(int fromTypeId, int toTypeId);
-
-#ifndef QT_NO_DEBUG_STREAM
-    static bool registerDebugStreamOperatorFunction(const QtPrivate::AbstractDebugStreamFunction *f, int type);
-#endif
 
 #ifndef Q_CLANG_QDOC
     template<typename, bool> friend struct QtPrivate::ValueTypeIsMetaType;
@@ -1751,20 +1714,6 @@ int qRegisterMetaType(const char *typeName
     return qRegisterNormalizedMetaType<T>(normalizedTypeName, dummy, defined);
 }
 
-#ifndef QT_NO_DATASTREAM
-template <typename T>
-void qRegisterMetaTypeStreamOperators(const char *typeName
-#ifndef Q_CLANG_QDOC
-    , T * /* dummy */ = nullptr
-#endif
-)
-{
-    qRegisterMetaType<T>(typeName);
-    QMetaType::registerStreamOperators(typeName, QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Save,
-                                                 QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Load);
-}
-#endif // QT_NO_DATASTREAM
-
 template <typename T>
 inline constexpr int qMetaTypeId()
 {
@@ -1887,17 +1836,6 @@ struct QMetaTypeIdQObject<T, QMetaType::IsEnumeration>
         return newId;
     }
 };
-#endif
-
-#ifndef QT_NO_DATASTREAM
-template <typename T>
-inline int qRegisterMetaTypeStreamOperators()
-{
-    int id = qMetaTypeId<T>();
-    QMetaType::registerStreamOperators(id, QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Save,
-                                           QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Load);
-    return id;
-}
 #endif
 
 #define Q_DECLARE_OPAQUE_POINTER(POINTER)                               \
@@ -2245,6 +2183,12 @@ public:
     EqualsFn equals;
     using LessThanFn = bool (*)(const QMetaTypeInterface *, const void *, const void *);
     LessThanFn lessThan;
+    using DebugStreamFn = void (*)(const QMetaTypeInterface *, QDebug &, const void *);
+    DebugStreamFn debugStream;
+    using DataStreamOutFn = void (*)(const QMetaTypeInterface *, QDataStream &, const void *);
+    DataStreamOutFn dataStreamOut;
+    using DataStreamInFn = void (*)(const QMetaTypeInterface *, QDataStream &, void *);
+    DataStreamInFn dataStreamIn;
 
     using LegacyRegisterOp = void (*)();
     LegacyRegisterOp legacyRegisterOp;
@@ -2692,6 +2636,35 @@ struct QLessThanOperatorForType <T, false>
     static constexpr QMetaTypeInterface::LessThanFn lessThan = nullptr;
 };
 
+template<typename T, bool = QTypeTraits::has_ostream_operator_v<QDebug, T>>
+struct QDebugStreamOperatorForType
+{
+    static void debugStream(const QMetaTypeInterface *, QDebug &dbg, const void *a)
+    { dbg << *reinterpret_cast<const T *>(a); }
+};
+
+template<typename T>
+struct QDebugStreamOperatorForType <T, false>
+{
+    static constexpr QMetaTypeInterface::DebugStreamFn debugStream = nullptr;
+};
+
+template<typename T, bool = QTypeTraits::has_stream_operator_v<QDataStream, T>>
+struct QDataStreamOperatorForType
+{
+    static void dataStreamOut(const QMetaTypeInterface *, QDataStream &ds, const void *a)
+    { ds << *reinterpret_cast<const T *>(a); }
+    static void dataStreamIn(const QMetaTypeInterface *, QDataStream &ds, void *a)
+    { ds >> *reinterpret_cast<T *>(a); }
+};
+
+template<typename T>
+struct QDataStreamOperatorForType <T, false>
+{
+    static constexpr QMetaTypeInterface::DataStreamOutFn dataStreamOut = nullptr;
+    static constexpr QMetaTypeInterface::DataStreamInFn dataStreamIn = nullptr;
+};
+
 template<typename S>
 class QMetaTypeForType
 {
@@ -2780,6 +2753,9 @@ QMetaTypeInterface QMetaTypeForType<T>::metaType = {
     /*.dtor=*/ getDtor<T>(),
     /*.equals=*/ QEqualityOperatorForType<T>::equals,
     /*.lessThan=*/ QLessThanOperatorForType<T>::lessThan,
+    /*.debugStream=*/ QDebugStreamOperatorForType<T>::debugStream,
+    /*.dataStreamOut=*/ QDataStreamOperatorForType<T>::dataStreamOut,
+    /*.dataStreamIn=*/ QDataStreamOperatorForType<T>::dataStreamIn,
     /*.legacyRegisterOp=*/ getLegacyRegister<T>()
 };
 
@@ -2809,6 +2785,9 @@ public:
         /*.dtor=*/ nullptr,
         /*.equals=*/ nullptr,
         /*.lessThan=*/ nullptr,
+        /*.debugStream=*/ nullptr,
+        /*.dataStreamOut=*/ nullptr,
+        /*.dataStreamIn=*/ nullptr,
         /*.legacyRegisterOp=*/ nullptr
     };
 };

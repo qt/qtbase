@@ -48,8 +48,10 @@ QT_BEGIN_NAMESPACE
 class QBitRef;
 class Q_CORE_EXPORT QBitArray
 {
+#ifndef QT_NO_DATASTREAM
     friend Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QBitArray &);
     friend Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QBitArray &);
+#endif
     friend Q_CORE_EXPORT size_t qHash(const QBitArray &key, size_t seed) noexcept;
     QByteArray d;
 

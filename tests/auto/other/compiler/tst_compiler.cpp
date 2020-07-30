@@ -297,35 +297,6 @@ namespace QtTestInternal
         };
 #endif
     };
-
-    template<bool>
-    struct DataStreamOpHelper
-    {
-        template <typename T>
-        struct Getter {
-            static QMetaType::SaveOperator saveOp() { return 0; }
-        };
-    };
-
-    template<>
-    struct DataStreamOpHelper<true>
-    {
-        template <typename T>
-        struct Getter {
-            static QMetaType::SaveOperator saveOp()
-            {
-                return ::QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Save;
-            }
-        };
-
-    };
-
-    template<typename T>
-    inline QMetaType::SaveOperator getSaveOperator(T * = 0)
-    {
-        typedef typename DataStreamOpHelper<DataStreamChecker<T>::HasDataStream>::template Getter<T> GetterHelper;
-        return GetterHelper::saveOp();
-    }
 };
 
 struct MyString: public QString {};
@@ -344,14 +315,6 @@ void tst_Compiler::detectDataStream()
     QVERIFY(QtTestInternal::DataStreamChecker<QString>::HasDataStream);
     QVERIFY(QtTestInternal::DataStreamChecker<MyString>::HasDataStream);
     QVERIFY(!QtTestInternal::DataStreamChecker<Qxxx>::HasDataStream);
-
-    QVERIFY(QtTestInternal::getSaveOperator<int>() != 0);
-    QVERIFY(QtTestInternal::getSaveOperator<uint>() != 0);
-    QVERIFY(QtTestInternal::getSaveOperator<char *>() != 0);
-    QVERIFY(QtTestInternal::getSaveOperator<double>() != 0);
-    QVERIFY(QtTestInternal::getSaveOperator<QString>() != 0);
-    QVERIFY(QtTestInternal::getSaveOperator<MyString>() != 0);
-    QVERIFY(!QtTestInternal::getSaveOperator<Qxxx>());
 }
 #else
 void tst_Compiler::detectDataStream()

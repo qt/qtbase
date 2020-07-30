@@ -217,7 +217,6 @@ private slots:
     void isRegisteredStaticLess_data();
     void isRegisteredStaticLess();
     void isEnum();
-    void registerStreamBuiltin();
     void automaticTemplateRegistration();
     void saveAndLoadBuiltin_data();
     void saveAndLoadBuiltin();
@@ -351,12 +350,12 @@ static void *GadgetTypedConstructor(int type, void *where, const void *copy)
     return it->first->constructor(type, where, copy);
 }
 
-static void GadgetSaveOperator(QDataStream & out, const void *data)
+static void GadgetSaveOperator(const QtPrivate::QMetaTypeInterface *, QDataStream & out, const void *data)
 {
     reinterpret_cast<const BaseGenericType *>(data)->saveOperator(out);
 }
 
-static void GadgetLoadOperator(QDataStream &in, void *data)
+static void GadgetLoadOperator(const QtPrivate::QMetaTypeInterface *, QDataStream &in, void *data)
 {
     reinterpret_cast<BaseGenericType *>(data)->loadOperator(in);
 }
@@ -424,12 +423,15 @@ void tst_QMetaType::registerGadget(const char *name, const QList<GadgetPropertyT
         [](const TypeInfo *self, void *ptr) { GadgetTypedDestructor(self->typeId, ptr); },
         nullptr,
         nullptr,
-        nullptr };
+        nullptr,
+        GadgetSaveOperator,
+        GadgetLoadOperator,
+        nullptr
+    };
     QMetaType gadgetMetaType(typeInfo);
     dynamicGadgetProperties->m_metatype = gadgetMetaType;
     int gadgetTypeId = QMetaType(typeInfo).id();
     QVERIFY(gadgetTypeId > 0);
-    QMetaType::registerStreamOperators(gadgetTypeId, &GadgetSaveOperator, &GadgetLoadOperator);
     s_managedTypes[gadgetTypeId] = qMakePair(dynamicGadgetProperties, std::shared_ptr<QMetaObject>{meta, [](QMetaObject *ptr){ ::free(ptr); }});
 }
 
@@ -1326,12 +1328,17 @@ void tst_QMetaType::typedConstruct()
         [](const TypeInfo *self, void *where, const void *copy) { GadgetTypedConstructor(self->typeId, where, copy); },
         [](const TypeInfo *self, void *where, void *copy) { GadgetTypedConstructor(self->typeId, where, copy); },
         [](const TypeInfo *self, void *ptr) { GadgetTypedDestructor(self->typeId, ptr); },
-        nullptr, nullptr, nullptr };
+        nullptr,
+        nullptr,
+        nullptr,
+        GadgetSaveOperator,
+        GadgetLoadOperator,
+        nullptr
+    };
     QMetaType metatype(typeInfo);
     dynamicGadgetProperties->m_metatype = metatype;
     int podTypeId = metatype.id();
     QVERIFY(podTypeId > 0);
-    QMetaType::registerStreamOperators(podTypeId, &GadgetSaveOperator, &GadgetLoadOperator);
     s_managedTypes[podTypeId] = qMakePair(dynamicGadgetProperties, std::shared_ptr<QMetaObject>{});
 
     // Test POD
@@ -1550,13 +1557,6 @@ void tst_QMetaType::isRegisteredStaticLess()
     QFETCH(int, typeId);
     QFETCH(bool, registered);
     QCOMPARE(QMetaType(typeId).isRegistered(), registered);
-}
-
-void tst_QMetaType::registerStreamBuiltin()
-{
-    //should not crash;
-    qRegisterMetaTypeStreamOperators<QString>("QString");
-    qRegisterMetaTypeStreamOperators<QVariant>("QVariant");
 }
 
 typedef QHash<int, uint> IntUIntHash;
@@ -2044,7 +2044,6 @@ struct CustomStreamableType
 {
     int a;
 };
-Q_DECLARE_METATYPE(CustomStreamableType)
 
 QDataStream &operator<<(QDataStream &out, const CustomStreamableType &t)
 {
@@ -2059,6 +2058,7 @@ QDataStream &operator>>(QDataStream &in, CustomStreamableType &t)
         t.a = a;
     return in;
 }
+Q_DECLARE_METATYPE(CustomStreamableType)
 
 void tst_QMetaType::saveAndLoadCustom()
 {
@@ -2068,12 +2068,7 @@ void tst_QMetaType::saveAndLoadCustom()
     int id = ::qMetaTypeId<CustomStreamableType>();
     QByteArray ba;
     QDataStream stream(&ba, QIODevice::ReadWrite);
-    QVERIFY(!QMetaType::save(stream, id, &t));
-    QCOMPARE(stream.status(), QDataStream::Ok);
-    QVERIFY(!QMetaType::load(stream, id, &t));
-    QCOMPARE(stream.status(), QDataStream::Ok);
 
-    qRegisterMetaTypeStreamOperators<CustomStreamableType>("CustomStreamableType");
     QVERIFY(QMetaType::save(stream, id, &t));
     QCOMPARE(stream.status(), QDataStream::Ok);
 
@@ -2274,6 +2269,11 @@ struct CustomConvertibleType2
 };
 
 struct CustomDebugStreamableType
+{
+    QString toString() const { return "test"; }
+};
+
+struct CustomDebugStreamableType2
 {
     QString toString() const { return "test"; }
 };
@@ -2607,16 +2607,14 @@ void tst_QMetaType::customDebugStream()
 {
     MessageHandlerCustom handler(::qMetaTypeId<CustomDebugStreamableType>());
     QVariant v1 = QVariant::fromValue(CustomDebugStreamableType());
-    handler.expectedMessage = "QVariant(CustomDebugStreamableType, )";
-    qDebug() << v1;
-
-    QMetaType::registerConverter<CustomDebugStreamableType, QString>(&CustomDebugStreamableType::toString);
-    handler.expectedMessage = "QVariant(CustomDebugStreamableType, \"test\")";
-    qDebug() << v1;
-
-    QMetaType::registerDebugStreamOperator<CustomDebugStreamableType>();
     handler.expectedMessage = "QVariant(CustomDebugStreamableType, string-content)";
     qDebug() << v1;
+
+    MessageHandlerCustom handler2(::qMetaTypeId<CustomDebugStreamableType2>());
+    QMetaType::registerConverter<CustomDebugStreamableType2, QString>(&CustomDebugStreamableType2::toString);
+    handler2.expectedMessage = "QVariant(CustomDebugStreamableType2, \"test\")";
+    QVariant v2 = QVariant::fromValue(CustomDebugStreamableType2());
+    qDebug() << v2;
 }
 
 void tst_QMetaType::unknownType()

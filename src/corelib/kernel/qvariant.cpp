@@ -2437,7 +2437,8 @@ void QVariant::load(QDataStream &s)
     }
 
     // const cast is safe since we operate on a newly constructed variant
-    if (!QMetaType::load(s, d.type().id(), const_cast<void *>(constData()))) {
+    void *data = const_cast<void *>(constData());
+    if (!d.type().load(s, data)) {
         s.setStatus(QDataStream::ReadCorruptData);
         qWarning("QVariant::load: unable to load type %d.", d.type().id());
     }
@@ -2512,7 +2513,7 @@ void QVariant::save(QDataStream &s) const
         return;
     }
 
-    if (!QMetaType::save(s, d.type().id(), constData())) {
+    if (!d.type().save(s, constData())) {
         qWarning("QVariant::save: unable to save type '%s' (type id: %d).\n",
                  QMetaType::typeName(d.type().id()), d.type().id());
         Q_ASSERT_X(false, "QVariant::save", "Invalid type to save");
@@ -3977,7 +3978,7 @@ QDebug operator<<(QDebug dbg, const QVariant &v)
         bool userStream = false;
         bool canConvertToString = false;
         if (typeId >= QMetaType::User) {
-            userStream = QMetaType::debugStream(dbg, constData(v.d), typeId);
+            userStream = v.d.type().debugStream(dbg, constData(v.d));
             canConvertToString = v.canConvert<QString>();
         }
         if (!userStream && canConvertToString)

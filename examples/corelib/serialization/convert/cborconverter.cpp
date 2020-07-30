@@ -232,8 +232,6 @@ void CborDiagnosticDumper::saveFile(QIODevice *f, const QVariant &contents, cons
 CborConverter::CborConverter()
 {
     qRegisterMetaType<QCborTag>();
-    qRegisterMetaTypeStreamOperators<QCborTag>();
-    QMetaType::registerDebugStreamOperator<QCborTag>();
 }
 
 QString CborConverter::name()

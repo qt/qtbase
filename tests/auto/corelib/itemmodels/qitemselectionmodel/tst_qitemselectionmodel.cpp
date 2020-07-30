@@ -106,6 +106,8 @@ private:
     QItemSelectionModel *selection;
 };
 
+QT_BEGIN_NAMESPACE
+
 QDataStream &operator<<(QDataStream &, const QModelIndex &);
 QDataStream &operator>>(QDataStream &, QModelIndex &);
 QDataStream &operator<<(QDataStream &, const QModelIndexList &);
@@ -177,6 +179,8 @@ QDataStream &operator>>(QDataStream &s, QModelIndexList &output)
     }
     return s;
 }
+
+QT_END_NAMESPACE
 
 tst_QItemSelectionModel::tst_QItemSelectionModel()
     : model(0), selection(0)

@@ -1222,7 +1222,6 @@ struct CustomStreamableClass
         return i == other.i;
     }
 };
-Q_DECLARE_METATYPE(CustomStreamableClass);
 
 QDataStream &operator<<(QDataStream &out, const CustomStreamableClass &myObj)
 {
@@ -1233,11 +1232,10 @@ QDataStream &operator>>(QDataStream &in, CustomStreamableClass &myObj)
 {
     return in >> myObj.i;
 }
+Q_DECLARE_METATYPE(CustomStreamableClass);
 
 void tst_QVariant::writeToReadFromDataStream_data()
 {
-    qRegisterMetaTypeStreamOperators<CustomStreamableClass>();
-
     QTest::addColumn<QVariant>("writeVariant");
     QTest::addColumn<bool>("isNull");
     {
@@ -2183,8 +2181,6 @@ void tst_QVariant::saveLoadCustomTypes()
     Blah i = { 42 };
     auto tp = QMetaType::fromType<Blah>();
     QVariant v = QVariant(tp, &i);
-
-    qRegisterMetaTypeStreamOperators<Blah>("Blah");
 
     QCOMPARE(v.userType(), tp.id());
     QCOMPARE(v.type(), QVariant::UserType);
@@ -4639,8 +4635,6 @@ void tst_QVariant::fromStdVariant()
 
 void tst_QVariant::qt4UuidDataStream()
 {
-    qRegisterMetaTypeStreamOperators<QUuid>();
-
     QByteArray data;
     QDataStream stream(&data, QIODevice::WriteOnly);
     stream.setVersion(QDataStream::Qt_4_8);

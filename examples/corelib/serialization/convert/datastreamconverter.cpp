@@ -171,7 +171,6 @@ void DataStreamDumper::saveFile(QIODevice *f, const QVariant &contents, const QS
 DataStreamConverter::DataStreamConverter()
 {
     qRegisterMetaType<VariantOrderedMap>();
-    qRegisterMetaTypeStreamOperators<VariantOrderedMap>();
 }
 
 QString DataStreamConverter::name()
