@@ -495,13 +495,17 @@ struct QGenericArrayOps
 
         // Construct new elements in array
         while (writeIter != step1End) {
-            --readIter, --writeIter;
-            new (writeIter) T(*readIter);
+            --readIter;
+            // If exception happens on construction, we should not call ~T()
+            new (writeIter - 1) T(*readIter);
+            --writeIter;
         }
 
         while (writeIter != end) {
-            --e, --writeIter;
-            new (writeIter) T(*e);
+            --e;
+            // If exception happens on construction, we should not call ~T()
+            new (writeIter - 1) T(*e);
+            --writeIter;
         }
 
         destroyer.commit();
@@ -538,13 +542,17 @@ struct QGenericArrayOps
 
         // Construct new elements in array
         while (writeIter != step1End) {
-            --readIter, --writeIter;
-            new (writeIter) T(*readIter);
+            --readIter;
+            // If exception happens on construction, we should not call ~T()
+            new (writeIter - 1) T(*readIter);
+            --writeIter;
         }
 
         while (writeIter != end) {
-            --n, --writeIter;
-            new (writeIter) T(t);
+            --n;
+            // If exception happens on construction, we should not call ~T()
+            new (writeIter - 1) T(t);
+            --writeIter;
         }
 
         destroyer.commit();
@@ -597,8 +605,9 @@ struct QGenericArrayOps
         // destroy the final elements at the end
         // here, b points to the new end and e to the actual end
         do {
-            (--e)->~T();
+            // Exceptions or not, dtor called once per instance
             --this->size;
+            (--e)->~T();
         } while (e != b);
     }
 
