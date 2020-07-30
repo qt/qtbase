@@ -1061,7 +1061,7 @@ bool QCborStreamReader::next(int maxRecursion)
                 d->handleError(CborErrorDataTooLarge);
                 break;
             }
-            if (isString() && !QUtf8::isValidUtf8(r.data, r.data.size()).isValidUtf8) {
+            if (isString() && !QUtf8::isValidUtf8(r.data).isValidUtf8) {
                 d->handleError(CborErrorInvalidUtf8TextString);
                 break;
             }
@@ -1350,7 +1350,7 @@ QCborStreamReader::StringResult<QString> QCborStreamReader::_readString_helper()
             err = CborErrorDataTooLarge;
         } else {
             QStringConverter::State cs(QStringConverter::Flag::Stateless);
-            result.data = QUtf8::convertToUnicode(r.data, r.data.size(), &cs);
+            result.data = QUtf8::convertToUnicode(r.data, &cs);
             if (cs.invalidChars != 0 || cs.remainingChars != 0)
                 err = CborErrorInvalidUtf8TextString;
         }

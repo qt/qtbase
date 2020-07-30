@@ -1621,7 +1621,7 @@ void QCborContainerPrivate::decodeStringFromCbor(QCborStreamReader &reader)
     while (r.status == QCborStreamReader::Ok) {
         if (e.type == QCborValue::String && len) {
             // verify UTF-8 string validity
-            auto utf8result = QUtf8::isValidUtf8(dataPtr() + data.size() - len, len);
+            auto utf8result = QUtf8::isValidUtf8(QByteArrayView(dataPtr(), data.size()).last(len));
             if (!utf8result.isValidUtf8) {
                 r.status = QCborStreamReader::Error;
                 setErrorInReader(reader, { QCborError::InvalidUtf8String });

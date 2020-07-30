@@ -1505,14 +1505,14 @@ uint QXmlStreamReaderPrivate::getChar_helper()
             atEnd = true;
             return StreamEOF;
         }
-        auto encoding = QStringDecoder::encodingForData(rawReadBuffer.constData(), rawReadBuffer.size(), char16_t('<'));
+        auto encoding = QStringDecoder::encodingForData(rawReadBuffer, char16_t('<'));
         if (!encoding)
             // assume utf-8
             encoding = QStringDecoder::Utf8;
         decoder = QStringDecoder(*encoding);
     }
 
-    readBuffer = decoder(rawReadBuffer.constData(), nbytesread);
+    readBuffer = decoder(QByteArrayView(rawReadBuffer).first(nbytesread));
 
     if (lockEncoding && decoder.hasError()) {
         raiseWellFormedError(QXmlStream::tr("Encountered incorrectly encoded content."));
@@ -1794,7 +1794,7 @@ void QXmlStreamReaderPrivate::startDocument()
                     if (!decoder.isValid()) {
                         err = QXmlStream::tr("Encoding %1 is unsupported").arg(value);
                     } else {
-                        readBuffer = decoder(rawReadBuffer.data(), nbytesread);
+                        readBuffer = decoder(QByteArrayView(rawReadBuffer).first(nbytesread));
                     }
                 }
             }

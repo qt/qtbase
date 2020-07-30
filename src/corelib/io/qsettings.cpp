@@ -667,7 +667,7 @@ void QSettingsPrivate::iniEscapedString(const QString &str, QByteArray &result)
                 escapeNextIfDigit = true;
             } else if (useCodec) {
                 // slow
-                result += toUtf8(&unicode[i], 1);
+                result += toUtf8(unicode[i]);
             } else {
                 result += (char)ch;
             }
@@ -815,7 +815,7 @@ StNormal:
                 ++j;
             }
 
-            stringResult += fromUtf8(str.constData() + i, j - i);
+            stringResult += fromUtf8(QByteArrayView(str).first(j).sliced(i));
             i = j;
         }
         }

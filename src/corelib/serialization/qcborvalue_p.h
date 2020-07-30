@@ -364,12 +364,12 @@ public:
 
     static int compareUtf8(const QtCbor::ByteData *b, const QLatin1String &s)
     {
-        return QUtf8::compareUtf8(b->byte(), b->len, s);
+        return QUtf8::compareUtf8(QByteArrayView(b->byte(), b->len), s);
     }
 
     static int compareUtf8(const QtCbor::ByteData *b, QStringView s)
     {
-        return QUtf8::compareUtf8(b->byte(), b->len, s.data(), s.size());
+        return QUtf8::compareUtf8(QByteArrayView(b->byte(), b->len), s);
     }
 
     template<typename String>

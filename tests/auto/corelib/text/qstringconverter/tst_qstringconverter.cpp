@@ -129,21 +129,21 @@ void tst_QStringConverter::convertUtf8()
         QVERIFY(decoder.isValid());
         QString uniString;
         for (int i = 0; i < ba.size(); ++i)
-            uniString += decoder(ba.constData() + i, 1);
+            uniString += decoder(QByteArrayView(ba).sliced(i, 1));
         QCOMPARE(uniString, QString::fromUtf8(ba));
         uniString.clear();
         for (int i = 0; i < ba.size(); ++i)
-            uniString += decoder.decode(ba.constData() + i, 1);
+            uniString += decoder.decode(QByteArrayView(ba).sliced(i, 1));
         QCOMPARE(uniString, QString::fromUtf8(ba));
 
         QStringEncoder encoder(QStringEncoder::Utf8);
         QByteArray reencoded;
         for (int i = 0; i < uniString.size(); ++i)
-            reencoded += encoder(uniString.constData() + i, 1);
+            reencoded += encoder(QStringView(uniString).sliced(i, 1));
         QCOMPARE(ba, encoder(uniString));
         reencoded.clear();
         for (int i = 0; i < uniString.size(); ++i)
-            reencoded += encoder.encode(uniString.constData() + i, 1);
+            reencoded += encoder.encode(QStringView(uniString).sliced(i, 1));
         QCOMPARE(ba, encoder(uniString));
     }
 }
@@ -1254,8 +1254,7 @@ void tst_QStringConverter::utf8Codec()
     QFETCH(int, len);
 
     QStringDecoder decoder(QStringDecoder::Utf8, QStringDecoder::Flag::Stateless);
-    QString str = decoder(utf8.isNull() ? 0 : utf8.constData(),
-                                   len < 0 ? qstrlen(utf8.constData()) : len);
+    QString str = decoder(QByteArrayView(utf8).first(len < 0 ? qstrlen(utf8.constData()) : len));
     QCOMPARE(str, res);
 
     str = QString::fromUtf8(utf8.isNull() ? 0 : utf8.constData(), len);
@@ -1324,7 +1323,7 @@ void tst_QStringConverter::utf8bom()
 
     QStringDecoder decoder(QStringDecoder::Utf8);
 
-    QCOMPARE(decoder(data.constData(), data.length()), result);
+    QCOMPARE(decoder(data), result);
 }
 
 void tst_QStringConverter::utf8stateful_data()
@@ -1409,9 +1408,9 @@ void tst_QStringConverter::utf8stateful()
 
         QString decoded;
         for (char c : buffer1)
-            decoded += decoder(&c, 1);
+            decoded += decoder(QByteArrayView(&c, 1));
         for (char c : buffer2)
-            decoded += decoder(&c, 1);
+            decoded += decoder(QByteArrayView(&c, 1));
         if (result.isNull()) {
             QVERIFY(decoder.hasError());
         } else {
@@ -1607,7 +1606,7 @@ void tst_QStringConverter::utfHeaders()
 
         QString result;
         for (char c : encoded)
-            result += decode(&c, 1);
+            result += decode(QByteArrayView(&c, 1));
         QCOMPARE(result.length(), unicode.length());
         QCOMPARE(result, unicode);
     }
@@ -1625,7 +1624,7 @@ void tst_QStringConverter::utfHeaders()
             QVERIFY(encode.isValid());
             QByteArray reencoded;
             for (QChar c : unicode)
-                reencoded += encode(&c, 1);
+                reencoded += encode(QStringView(&c, 1));
             QCOMPARE(reencoded, encoded);
         }
     }
@@ -1729,7 +1728,7 @@ void tst_QStringConverter::encodingForData()
     QFETCH(QByteArray, encoded);
     QFETCH(std::optional<QStringConverter::Encoding>, encoding);
 
-    auto e = QStringConverter::encodingForData(encoded.constData(), encoded.size(), char16_t('<'));
+    auto e = QStringConverter::encodingForData(encoded, char16_t('<'));
     QCOMPARE(e, encoding);
 }
 
@@ -1816,7 +1815,7 @@ void tst_QStringConverter::encodingForHtml()
     QFETCH(QByteArray, html);
     QFETCH(std::optional<QStringConverter::Encoding>, encoding);
 
-    QCOMPARE(QStringConverter::encodingForHtml(html.constData(), html.size()), encoding);
+    QCOMPARE(QStringConverter::encodingForHtml(html), encoding);
 }
 
 class LoadAndConvert: public QRunnable

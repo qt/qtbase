@@ -326,48 +326,48 @@ enum DataEndianness
 
 struct QUtf8
 {
-    Q_CORE_EXPORT static QChar *convertToUnicode(QChar *, const char *, qsizetype) noexcept;
-    static QString convertToUnicode(const char *, qsizetype);
-    Q_CORE_EXPORT static QString convertToUnicode(const char *, qsizetype, QStringConverter::State *);
-    static QChar *convertToUnicode(QChar *out, const char *in, qsizetype length, QStringConverter::State *state);
-    Q_CORE_EXPORT static QByteArray convertFromUnicode(const QChar *, qsizetype);
-    Q_CORE_EXPORT static QByteArray convertFromUnicode(const QChar *, qsizetype, QStringConverter::State *);
+    Q_CORE_EXPORT static QChar *convertToUnicode(QChar *buffer, QByteArrayView in) noexcept;
+    static QString convertToUnicode(QByteArrayView in);
+    Q_CORE_EXPORT static QString convertToUnicode(QByteArrayView in, QStringConverter::State *state);
+    static QChar *convertToUnicode(QChar *out, QByteArrayView in, QStringConverter::State *state);
+    Q_CORE_EXPORT static QByteArray convertFromUnicode(QStringView in);
+    Q_CORE_EXPORT static QByteArray convertFromUnicode(QStringView in, QStringConverterBase::State *state);
     static char *convertFromUnicode(char *out, QStringView in, QStringConverter::State *state);
     struct ValidUtf8Result {
         bool isValidUtf8;
         bool isValidAscii;
     };
-    static ValidUtf8Result isValidUtf8(const char *, qsizetype);
-    static int compareUtf8(const char *, qsizetype, const QChar *, qsizetype) noexcept;
-    static int compareUtf8(const char *, qsizetype, QLatin1String s);
+    static ValidUtf8Result isValidUtf8(QByteArrayView in);
+    static int compareUtf8(QByteArrayView utf8, QStringView utf16) noexcept;
+    static int compareUtf8(QByteArrayView utf8, QLatin1String s);
 };
 
 struct QUtf16
 {
-    Q_CORE_EXPORT static QString convertToUnicode(const char *, qsizetype, QStringConverter::State *, DataEndianness = DetectEndianness);
-    static QChar *convertToUnicode(QChar *out, const char *chars, qsizetype len, QStringConverter::State *state, DataEndianness endian);
-    Q_CORE_EXPORT static QByteArray convertFromUnicode(const QChar *, qsizetype, QStringConverter::State *, DataEndianness = DetectEndianness);
+    Q_CORE_EXPORT static QString convertToUnicode(QByteArrayView, QStringConverter::State *, DataEndianness = DetectEndianness);
+    static QChar *convertToUnicode(QChar *out, QByteArrayView, QStringConverter::State *state, DataEndianness endian);
+    Q_CORE_EXPORT static QByteArray convertFromUnicode(QStringView, QStringConverter::State *, DataEndianness = DetectEndianness);
     static char *convertFromUnicode(char *out, QStringView in, QStringConverter::State *state, DataEndianness endian);
 };
 
 struct QUtf32
 {
-    static QChar *convertToUnicode(QChar *out, const char *chars, qsizetype len, QStringConverter::State *state, DataEndianness endian);
-    Q_CORE_EXPORT static QString convertToUnicode(const char *, qsizetype, QStringConverter::State *, DataEndianness = DetectEndianness);
-    Q_CORE_EXPORT static QByteArray convertFromUnicode(const QChar *, qsizetype, QStringConverter::State *, DataEndianness = DetectEndianness);
+    static QChar *convertToUnicode(QChar *out, QByteArrayView, QStringConverter::State *state, DataEndianness endian);
+    Q_CORE_EXPORT static QString convertToUnicode(QByteArrayView, QStringConverter::State *, DataEndianness = DetectEndianness);
+    Q_CORE_EXPORT static QByteArray convertFromUnicode(QStringView, QStringConverter::State *, DataEndianness = DetectEndianness);
     static char *convertFromUnicode(char *out, QStringView in, QStringConverter::State *state, DataEndianness endian);
 };
 
 struct Q_CORE_EXPORT QLocal8Bit
 {
 #if !defined(Q_OS_WIN) || defined(QT_BOOTSTRAPPED)
-    static QString convertToUnicode(const char *chars, qsizetype len, QStringConverter::State *state)
-    { return QUtf8::convertToUnicode(chars, len, state); }
-    static QByteArray convertFromUnicode(const QChar *chars, qsizetype len, QStringConverter::State *state)
-    { return QUtf8::convertFromUnicode(chars, len, state); }
+    static QString convertToUnicode(QByteArrayView in, QStringConverter::State *state)
+    { return QUtf8::convertToUnicode(in, state); }
+    static QByteArray convertFromUnicode(QStringView in, QStringConverter::State *state)
+    { return QUtf8::convertFromUnicode(in, state); }
 #else
-    static QString convertToUnicode(const char *, qsizetype, QStringConverter::State *);
-    static QByteArray convertFromUnicode(const QChar *, qsizetype, QStringConverter::State *);
+    static QString convertToUnicode(QByteArrayView, QStringConverter::State *);
+    static QByteArray convertFromUnicode(QStringView, QStringConverter::State *);
 #endif
 };
 

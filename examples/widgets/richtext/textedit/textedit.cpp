@@ -418,7 +418,7 @@ bool TextEdit::load(const QString &f)
     QByteArray data = file.readAll();
     QMimeDatabase db;
     if (db.mimeTypeForFileNameAndData(f, data).name() == QLatin1String("text/html")) {
-        auto encoding = QStringDecoder::encodingForHtml(data.constData(), data.size());
+        auto encoding = QStringDecoder::encodingForHtml(data);
         QString str = QStringDecoder(encoding ? *encoding : QStringDecoder::Utf8)(data);
         QUrl baseUrl = (f.front() == QLatin1Char(':') ? QUrl(f) : QUrl::fromLocalFile(f)).adjusted(QUrl::RemoveFilename);
         textEdit->document()->setBaseUrl(baseUrl);

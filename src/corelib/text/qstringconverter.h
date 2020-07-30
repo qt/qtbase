@@ -142,8 +142,7 @@ protected:
 
     struct Interface
     {
-        // ### FIXME: need a QByteArrayView
-        using DecoderFn = QChar * (*)(QChar *out, const char *in, qsizetype length, State *state);
+        using DecoderFn = QChar * (*)(QChar *out, QByteArrayView in, State *state);
         using LengthFn = qsizetype (*)(qsizetype inLength);
         using EncoderFn = char * (*)(char *out, QStringView in, State *state);
         const char *name = nullptr;
@@ -179,8 +178,8 @@ public:
 
     Q_CORE_EXPORT static std::optional<Encoding> encodingForName(const char *name);
     Q_CORE_EXPORT static const char *nameForEncoding(Encoding e);
-    Q_CORE_EXPORT static std::optional<Encoding> encodingForData(const char *buf, qsizetype arraySize, char16_t expectedFirstCharacter = 0);
-    Q_CORE_EXPORT static std::optional<Encoding> encodingForHtml(const char *buf, qsizetype arraySize);
+    Q_CORE_EXPORT static std::optional<Encoding> encodingForData(QByteArrayView data, char16_t expectedFirstCharacter = 0);
+    Q_CORE_EXPORT static std::optional<Encoding> encodingForHtml(QByteArrayView data);
 
 protected:
     const Interface *iface;
@@ -209,36 +208,32 @@ public:
 #if defined(Q_QDOC)
     QByteArray operator()(const QString &in);
     QByteArray operator()(QStringView in);
-    QByteArray operator()(const QChar *in, qsizetype length);
     QByteArray encode(const QString &in);
     QByteArray encode(QStringView in);
-    QByteArray encode(const QChar *in, qsizetype length);
 #else
     template<typename T>
     struct DecodedData
     {
         QStringEncoder *encoder;
         T data;
-        operator QByteArray() const { return encoder->encodeAsByteArray(QStringView(data)); }
+        operator QByteArray() const { return encoder->encodeAsByteArray(data); }
     };
+    Q_WEAK_OVERLOAD
     DecodedData<const QString &> operator()(const QString &str)
     { return DecodedData<const QString &>{this, str}; }
     DecodedData<QStringView> operator()(QStringView in)
     { return DecodedData<QStringView>{this, in}; }
-    DecodedData<QStringView> operator()(const QChar *in, qsizetype length)
-    { return (*this)(QStringView(in, length)); }
+    Q_WEAK_OVERLOAD
     DecodedData<const QString &> encode(const QString &str)
     { return DecodedData<const QString &>{this, str}; }
     DecodedData<QStringView> encode(QStringView in)
     { return DecodedData<QStringView>{this, in}; }
-    DecodedData<QStringView> encode(const QChar *in, qsizetype length)
-    { return (*this)(QStringView(in, length)); }
 #endif
 
     qsizetype requiredSpace(qsizetype inputLength) const
     { return iface->fromUtf16Len(inputLength); }
-    char *appendToBuffer(char *out, const QChar *in, qsizetype length)
-    { return iface->fromUtf16(out, QStringView(in, length), &state); }
+    char *appendToBuffer(char *out, QStringView in)
+    { return iface->fromUtf16(out, in, &state); }
 private:
     QByteArray encodeAsByteArray(QStringView in)
     {
@@ -253,13 +248,6 @@ private:
 
 class QStringDecoder : public QStringConverter
 {
-    struct View {
-        const char *ch;
-        qsizetype l;
-        const char *data() const { return ch; }
-        qsizetype length() const { return l; }
-    };
-
 protected:
     QSTRINGCONVERTER_CONSTEXPR QStringDecoder(const Interface *i)
         : QStringConverter(i)
@@ -277,44 +265,38 @@ public:
 
 #if defined(Q_QDOC)
     QString operator()(const QByteArray &ba);
-    QString operator()(const char *in, qsizetype size);
-    QString operator()(const char *chars);
+    QString operator()(QByteArrayView ba);
     QString decode(const QByteArray &ba);
-    QString decode(const char *in, qsizetype size);
-    QString decode(const char *chars);
+    QString decode(QByteArrayView ba);
 #else
     template<typename T>
     struct EncodedData
     {
         QStringDecoder *decoder;
         T data;
-        operator QString() const { return decoder->decodeAsString(data.data(), data.length()); }
+        operator QString() const { return decoder->decodeAsString(data); }
     };
+    Q_WEAK_OVERLOAD
     EncodedData<const QByteArray &> operator()(const QByteArray &ba)
     { return EncodedData<const QByteArray &>{this, ba}; }
-    EncodedData<View> operator()(const char *in, qsizetype length)
-    { return EncodedData<View>{this, {in, length}}; }
-    EncodedData<View> operator()(const char *chars)
-    { return EncodedData<View>{this, {chars, qsizetype(strlen(chars))}}; }
+    EncodedData<QByteArrayView> operator()(QByteArrayView ba)
+    { return EncodedData<QByteArrayView>{this, ba}; }
+    Q_WEAK_OVERLOAD
     EncodedData<const QByteArray &> decode(const QByteArray &ba)
     { return EncodedData<const QByteArray &>{this, ba}; }
-    EncodedData<View> decode(const char *in, qsizetype length)
-    { return EncodedData<View>{this, {in, length}}; }
-    EncodedData<View> decode(const char *chars)
-    { return EncodedData<View>{this, {chars, qsizetype(strlen(chars))}}; }
+    EncodedData<QByteArrayView> decode(QByteArrayView ba)
+    { return EncodedData<QByteArrayView>{this, ba}; }
 #endif
 
     qsizetype requiredSpace(qsizetype inputLength) const
     { return iface->toUtf16Len(inputLength); }
-    QChar *appendToBuffer(QChar *out, const char *in, qsizetype length)
-    { return iface->toUtf16(out, in, length, &state); }
+    QChar *appendToBuffer(QChar *out, QByteArrayView ba)
+    { return iface->toUtf16(out, ba, &state); }
 private:
-    QString decodeAsString(const char *in, qsizetype length)
+    QString decodeAsString(QByteArrayView in)
     {
-        QString result(iface->toUtf16Len(length), Qt::Uninitialized);
-        QChar *out  = result.data();
-        // ### Fixme: state handling needs to be moved into the conversion methods
-        out = iface->toUtf16(out, in, length, &state);
+        QString result(iface->toUtf16Len(in.size()), Qt::Uninitialized);
+        const QChar *out = iface->toUtf16(result.data(), in, &state);
         result.truncate(out - result.constData());
         return result;
     }
@@ -329,10 +311,10 @@ struct QConcatenable<QStringDecoder::EncodedData<T>>
     typedef QChar type;
     typedef QString ConvertTo;
     enum { ExactSize = false };
-    static qsizetype size(const QStringDecoder::EncodedData<T> &s) { return s.decoder->requiredSpace(s.data.length()); }
+    static qsizetype size(const QStringDecoder::EncodedData<T> &s) { return s.decoder->requiredSpace(s.data.size()); }
     static inline void appendTo(const QStringDecoder::EncodedData<T> &s, QChar *&out)
     {
-        out = s.decoder->appendToBuffer(out, s.data.data(), s.data.length());
+        out = s.decoder->appendToBuffer(out, s.data);
     }
 };
 
@@ -343,10 +325,10 @@ struct QConcatenable<QStringEncoder::DecodedData<T>>
     typedef char type;
     typedef QByteArray ConvertTo;
     enum { ExactSize = false };
-    static qsizetype size(const QStringEncoder::DecodedData<T> &s) { return s.encoder->requiredSpace(s.data.length()); }
+    static qsizetype size(const QStringEncoder::DecodedData<T> &s) { return s.encoder->requiredSpace(s.data.size()); }
     static inline void appendTo(const QStringEncoder::DecodedData<T> &s, char *&out)
     {
-        out = s.encoder->appendToBuffer(out, s.data.data(), s.data.length());
+        out = s.encoder->appendToBuffer(out, s.data);
     }
 };
 

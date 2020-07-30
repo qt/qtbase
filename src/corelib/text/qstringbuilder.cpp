@@ -124,14 +124,9 @@ QT_BEGIN_NAMESPACE
 /*!
     \internal
  */
-void QAbstractConcatenable::convertFromAscii(const char *a, int len, QChar *&out) noexcept
+void QAbstractConcatenable::convertFromUtf8(QByteArrayView in, QChar *&out) noexcept
 {
-    if (Q_UNLIKELY(len == -1)) {
-        if (!a)
-            return;
-        len = int(strlen(a));
-    }
-    out = QUtf8::convertToUnicode(out, a, len);
+    out = QUtf8::convertToUnicode(out, in);
 }
 
 QT_END_NAMESPACE

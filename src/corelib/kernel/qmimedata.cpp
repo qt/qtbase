@@ -159,7 +159,7 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QMetaType ty
         case QMetaType::QString: {
             const QByteArray ba = data.toByteArray();
             if (format == QLatin1String("text/html")) {
-                auto encoding = QStringConverter::encodingForHtml(ba.constData(), ba.size());
+                auto encoding = QStringConverter::encodingForHtml(ba);
                 if (encoding) {
                     QStringDecoder toUtf16(*encoding);
                     return QString(toUtf16(ba));

@@ -434,7 +434,7 @@ bool QTextStreamPrivate::fillReadBuffer(qint64 maxBytes)
     if (autoDetectUnicode) {
         autoDetectUnicode = false;
 
-        auto e = QStringConverter::encodingForData(buf, bytesRead);
+        auto e = QStringConverter::encodingForData(QByteArrayView(buf, bytesRead));
         // QStringConverter::Locale implies unknown, so keep the current encoding
         if (e) {
             encoding = *e;
@@ -452,7 +452,7 @@ bool QTextStreamPrivate::fillReadBuffer(qint64 maxBytes)
 #endif
 
     int oldReadBufferSize = readBuffer.size();
-    readBuffer += toUtf16(buf, bytesRead);
+    readBuffer += toUtf16(QByteArrayView(buf, bytesRead));
 
     // remove all '\r\n' in the string.
     if (readBuffer.size() > oldReadBufferSize && textModeEnabled) {
@@ -2247,7 +2247,7 @@ QTextStream &QTextStream::operator>>(char *c)
     }
 
     QStringEncoder encoder(QStringConverter::Utf8);
-    char *e = encoder.appendToBuffer(c, ptr, length);
+    char *e = encoder.appendToBuffer(c, QStringView(ptr, length));
     *e = '\0';
     d->consumeLastToken();
     return *this;

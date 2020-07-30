@@ -1285,7 +1285,7 @@ static int qt_compare_strings(QLatin1String lhs, QLatin1String rhs, Qt::CaseSens
 static int qt_compare_strings(QBasicUtf8StringView<false> lhs, QStringView rhs, Qt::CaseSensitivity cs) noexcept
 {
     if (cs == Qt::CaseSensitive)
-        return QUtf8::compareUtf8(lhs.data(), lhs.size(), rhs.data(), rhs.size());
+        return QUtf8::compareUtf8(lhs, rhs);
     else
         return ucstricmp8(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
 }
@@ -5059,7 +5059,7 @@ static QByteArray qt_convert_to_utf8(QStringView str)
     if (str.isNull())
         return QByteArray();
 
-    return QUtf8::convertFromUnicode(str.data(), str.length());
+    return QUtf8::convertFromUnicode(str);
 }
 
 /*!
@@ -5210,7 +5210,7 @@ QString QString::fromLocal8Bit(QByteArrayView ba)
     if (ba.isEmpty())
         return QString(DataPointer::fromRawData(&_empty, 0));
     QStringDecoder toUtf16(QStringDecoder::System, QStringDecoder::Flag::Stateless);
-    return toUtf16(ba.data(), ba.size());
+    return toUtf16(ba);
 }
 
 /*! \fn QString QString::fromUtf8(const char *str, qsizetype size)
@@ -5263,7 +5263,7 @@ QString QString::fromUtf8(QByteArrayView ba)
         return QString();
     if (ba.isEmpty())
         return QString(DataPointer::fromRawData(&_empty, 0));
-    return QUtf8::convertToUnicode(ba.data(), ba.size());
+    return QUtf8::convertToUnicode(ba);
 }
 
 /*!
@@ -5293,7 +5293,7 @@ QString QString::fromUtf16(const char16_t *unicode, qsizetype size)
             ++size;
     }
     QStringDecoder toUtf16(QStringDecoder::Utf16, QStringDecoder::Flag::Stateless);
-    return toUtf16(reinterpret_cast<const char *>(unicode), size*2);
+    return toUtf16(QByteArrayView(reinterpret_cast<const char *>(unicode), size * 2));
 }
 
 /*!
@@ -5331,7 +5331,7 @@ QString QString::fromUcs4(const char32_t *unicode, qsizetype size)
             ++size;
     }
     QStringDecoder toUtf16(QStringDecoder::Utf32, QStringDecoder::Flag::Stateless);
-    return toUtf16(reinterpret_cast<const char *>(unicode), size*4);
+    return toUtf16(QByteArrayView(reinterpret_cast<const char *>(unicode), size * 4));
 }
 
 
@@ -5951,7 +5951,7 @@ int QString::compare_helper(const QChar *data1, qsizetype length1, const char *d
     // ### make me nothrow in all cases
     QVarLengthArray<ushort> s2(length2);
     const auto beg = reinterpret_cast<QChar *>(s2.data());
-    const auto end = QUtf8::convertToUnicode(beg, data2, length2);
+    const auto end = QUtf8::convertToUnicode(beg, QByteArrayView(data2, length2));
     return qt_compare_strings(QStringView(data1, length1), QStringView(beg, end - beg), cs);
 }
 
@@ -6423,7 +6423,7 @@ static void append_utf8(QString &qs, const char *cs, int len)
 {
     const int oldSize = qs.size();
     qs.resize(oldSize + len);
-    const QChar *newEnd = QUtf8::convertToUnicode(qs.data() + oldSize, cs, len);
+    const QChar *newEnd = QUtf8::convertToUnicode(qs.data() + oldSize, QByteArrayView(cs, len));
     qs.resize(newEnd - qs.constData());
 }
 
@@ -10228,9 +10228,9 @@ QString QString::toHtmlEscaped() const
 /*!
     \internal
  */
-void QAbstractConcatenable::appendLatin1To(const char *a, int len, QChar *out) noexcept
+void QAbstractConcatenable::appendLatin1To(QLatin1String in, QChar *out) noexcept
 {
-    qt_from_latin1(reinterpret_cast<char16_t *>(out), a, size_t(len));
+    qt_from_latin1(reinterpret_cast<char16_t *>(out), in.data(), size_t(in.size()));
 }
 
 double QStringView::toDouble(bool *ok) const

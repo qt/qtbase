@@ -58,12 +58,12 @@ QT_BEGIN_NAMESPACE
 struct Q_CORE_EXPORT QAbstractConcatenable
 {
 protected:
-    static void convertFromAscii(const char *a, int len, QChar *&out) noexcept;
+    static void convertFromUtf8(QByteArrayView in, QChar *&out) noexcept;
     static inline void convertFromAscii(char a, QChar *&out) noexcept
     {
         *out++ = QLatin1Char(a);
     }
-    static void appendLatin1To(const char *a, int len, QChar *out) noexcept;
+    static void appendLatin1To(QLatin1String in, QChar *out) noexcept;
 };
 
 template <typename T> struct QConcatenable {};
@@ -237,7 +237,7 @@ template <> struct QConcatenable<QLatin1String> : private QAbstractConcatenable
     static qsizetype size(const QLatin1String a) { return a.size(); }
     static inline void appendTo(const QLatin1String a, QChar *&out)
     {
-        appendLatin1To(a.latin1(), a.size(), out);
+        appendLatin1To(a, out);
         out += a.size();
     }
     static inline void appendTo(const QLatin1String a, char *&out)
@@ -288,7 +288,7 @@ template <int N> struct QConcatenable<const char[N]> : private QAbstractConcaten
 #ifndef QT_NO_CAST_FROM_ASCII
     QT_ASCII_CAST_WARN static inline void appendTo(const char a[N], QChar *&out)
     {
-        QAbstractConcatenable::convertFromAscii(a, N - 1, out);
+        QAbstractConcatenable::convertFromUtf8(QByteArrayView(a, N - 1), out);
     }
 #endif
     static inline void appendTo(const char a[N], char *&out)
@@ -311,7 +311,7 @@ template <> struct QConcatenable<const char *> : private QAbstractConcatenable
     static qsizetype size(const char *a) { return qstrlen(a); }
 #ifndef QT_NO_CAST_FROM_ASCII
     QT_ASCII_CAST_WARN static inline void appendTo(const char *a, QChar *&out)
-    { QAbstractConcatenable::convertFromAscii(a, -1, out); }
+    { QAbstractConcatenable::convertFromUtf8(QByteArrayView(a), out); }
 #endif
     static inline void appendTo(const char *a, char *&out)
     {
@@ -374,7 +374,7 @@ template <> struct QConcatenable<QByteArray> : private QAbstractConcatenable
 #ifndef QT_NO_CAST_FROM_ASCII
     QT_ASCII_CAST_WARN static inline void appendTo(const QByteArray &ba, QChar *&out)
     {
-        QAbstractConcatenable::convertFromAscii(ba.constData(), ba.size(), out);
+        QAbstractConcatenable::convertFromUtf8(ba, out);
     }
 #endif
     static inline void appendTo(const QByteArray &ba, char *&out)

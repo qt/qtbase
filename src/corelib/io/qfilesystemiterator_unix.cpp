@@ -56,7 +56,7 @@ static bool checkNameDecodable(const char *d_name, qsizetype len)
     // This function is called in a loop from advance() below, but the loop is
     // usually run only once.
 
-    return QUtf8::isValidUtf8(d_name, len).isValidUtf8;
+    return QUtf8::isValidUtf8(QByteArrayView(d_name, len)).isValidUtf8;
 }
 
 QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Filters filters,
