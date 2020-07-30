@@ -81,7 +81,7 @@ QT_BEGIN_NAMESPACE
     position, and the translated() function returns a translated copy
     of this rectangle.
 
-    The size() function returns the rectange's dimensions as a
+    The size() function returns the rectangle's dimensions as a
     QSize. The dimensions can also be retrieved separately using the
     width() and height() functions. To manipulate the dimensions use
     the setSize(), setWidth() or setHeight() functions. Alternatively,
@@ -1326,7 +1326,7 @@ QDebug operator<<(QDebug dbg, const QRect &r)
     current position, and the translated() function returns a
     translated copy of this rectangle.
 
-    The size() function returns the rectange's dimensions as a
+    The size() function returns the rectangle's dimensions as a
     QSizeF. The dimensions can also be retrieved separately using the
     width() and height() functions. To manipulate the dimensions use
     the setSize(), setWidth() or setHeight() functions. Alternatively,

@@ -328,7 +328,7 @@ void qNormalizeRadii(const QRect &br, const QSize *radii,
         *trr = *brr = QSize(0, 0);
 }
 
-// Determines if Edge e1 draws over Edge e2. Depending on this trapezoids or rectanges are drawn
+// Determines if Edge e1 draws over Edge e2. Depending on this trapezoids or rectangles are drawn
 static bool paintsOver(const QCss::BorderStyle *styles, const QBrush *colors, QCss::Edge e1, QCss::Edge e2)
 {
     QCss::BorderStyle s1 = styles[e1];

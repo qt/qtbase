@@ -434,7 +434,7 @@
     \li
     A vectorial specification of a 2D shape. Painter paths are the
     ultimate painting primitive, in the sense that any shape
-    (rectange, ellipse, spline) or combination of shapes can be
+    (rectangle, ellipse, spline) or combination of shapes can be
     expressed as a path. A path specifies both an outline and an area.
     \row
     \li QRegion
