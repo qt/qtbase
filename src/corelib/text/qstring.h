@@ -669,29 +669,32 @@ public:
     [[nodiscard]] QList<uint> toUcs4() const;
 
     // note - this are all inline so we can benefit from strlen() compile time optimizations
-    static inline QString fromLatin1(const char *str, qsizetype size = -1)
+    static QString fromLatin1(QByteArrayView ba);
+    Q_WEAK_OVERLOAD
+    static inline QString fromLatin1(const QByteArray &ba) { return fromLatin1(QByteArrayView(ba)); }
+    static inline QString fromLatin1(const char *str, qsizetype size)
     {
-        return QString(fromLatin1_helper(str, (str && size == -1)  ? qsizetype(strlen(str)) : size));
+        return fromLatin1(QByteArrayView(str, !str || size < 0 ? qstrlen(str) : size));
     }
-    static inline QString fromUtf8(const char *str, qsizetype size = -1)
+    static QString fromUtf8(QByteArrayView utf8);
+    Q_WEAK_OVERLOAD
+    static inline QString fromUtf8(const QByteArray &ba) { return fromUtf8(QByteArrayView(ba)); }
+    static inline QString fromUtf8(const char *utf8, qsizetype size)
     {
-        return fromUtf8_helper(str, (str && size == -1) ? qsizetype(strlen(str)) : size);
+        return fromUtf8(QByteArrayView(utf8, !utf8 || size < 0 ? qstrlen(utf8) : size));
     }
 #ifdef __cpp_char8_t
     Q_WEAK_OVERLOAD
-    static inline QString fromUtf8(const char8_t *str, qsizetype size = -1)
+    static inline QString fromUtf8(const char8_t *str, qsizetype size)
     { return fromUtf8(reinterpret_cast<const char *>(str), int(size)); }
 #endif
-    static inline QString fromLocal8Bit(const char *str, qsizetype size = -1)
+    static QString fromLocal8Bit(QByteArrayView ba);
+    Q_WEAK_OVERLOAD
+    static inline QString fromLocal8Bit(const QByteArray &ba) { return fromLocal8Bit(QByteArrayView(ba)); }
+    static inline QString fromLocal8Bit(const char *str, qsizetype size)
     {
-        return fromLocal8Bit_helper(str, (str && size == -1) ? qsizetype(strlen(str)) : size);
+        return fromLocal8Bit(QByteArrayView(str, !str || size < 0 ? qstrlen(str) : size));
     }
-    static inline QString fromLatin1(const QByteArray &str)
-    { return str.isNull() ? QString() : fromLatin1(str.data(), qstrnlen(str.constData(), str.size())); }
-    static inline QString fromUtf8(const QByteArray &str)
-    { return str.isNull() ? QString() : fromUtf8(str.data(), qstrnlen(str.constData(), str.size())); }
-    static inline QString fromLocal8Bit(const QByteArray &str)
-    { return str.isNull() ? QString() : fromLocal8Bit(str.data(), qstrnlen(str.constData(), str.size())); }
     static QString fromUtf16(const char16_t *, qsizetype size = -1);
     static QString fromUcs4(const char32_t *, qsizetype size = -1);
     static QString fromRawData(const QChar *, qsizetype size);
@@ -964,9 +967,6 @@ private:
     static QString trimmed_helper(QString &str);
     static QString simplified_helper(const QString &str);
     static QString simplified_helper(QString &str);
-    static DataPointer fromLatin1_helper(const char *str, qsizetype size = -1);
-    static QString fromUtf8_helper(const char *str, qsizetype size);
-    static QString fromLocal8Bit_helper(const char *, qsizetype size);
     static QByteArray toLatin1_helper(const QString &);
     static QByteArray toLatin1_helper_inplace(QString &);
     static QByteArray toUtf8_helper(const QString &);
@@ -1057,8 +1057,8 @@ QString QAnyStringView::toString() const
 //
 // QString inline members
 //
-inline QString::QString(QLatin1String aLatin1) : d(fromLatin1_helper(aLatin1.latin1(), aLatin1.size()))
-{ }
+inline QString::QString(QLatin1String latin1)
+{ *this = QString::fromLatin1(latin1.data(), latin1.size()); }
 inline const QChar QString::at(qsizetype i) const
 { Q_ASSERT(size_t(i) < size_t(size())); return QChar(d.data()[i]); }
 inline const QChar QString::operator[](qsizetype i) const
@@ -1304,9 +1304,9 @@ QT_ASCII_CAST_WARN inline bool QLatin1String::operator>=(const QByteArray &s) co
 { return QString::fromUtf8(s) <= *this; }
 
 QT_ASCII_CAST_WARN inline bool QString::operator==(const QByteArray &s) const
-{ return QString::compare_helper(constData(), size(), s.constData(), qstrnlen(s.constData(), s.size())) == 0; }
+{ return QString::compare_helper(constData(), size(), s.constData(), s.size()) == 0; }
 QT_ASCII_CAST_WARN inline bool QString::operator!=(const QByteArray &s) const
-{ return QString::compare_helper(constData(), size(), s.constData(), qstrnlen(s.constData(), s.size())) != 0; }
+{ return QString::compare_helper(constData(), size(), s.constData(), s.size()) != 0; }
 QT_ASCII_CAST_WARN inline bool QString::operator<(const QByteArray &s) const
 { return QString::compare_helper(constData(), size(), s.constData(), s.size()) < 0; }
 QT_ASCII_CAST_WARN inline bool QString::operator>(const QByteArray &s) const

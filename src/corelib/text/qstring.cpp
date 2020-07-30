@@ -5133,30 +5133,36 @@ QList<uint> QtPrivate::convertToUcs4(QStringView string)
     return qt_convert_to_ucs4(string);
 }
 
-QString::DataPointer QString::fromLatin1_helper(const char *str, qsizetype size)
+/*!
+    \fn QString QString::fromLatin1(QByteArrayView str)
+    \overload
+    \since 6.0
+
+    Returns a QString initialized with the Latin-1 string \a str.
+*/
+QString QString::fromLatin1(QByteArrayView ba)
 {
     DataPointer d;
-    if (!str) {
+    if (!ba.data()) {
         // nothing to do
-    } else if (size == 0 || (!*str && size < 0)) {
+    } else if (ba.size() == 0) {
         d = DataPointer::fromRawData(&_empty, 0);
     } else {
-        if (size < 0)
-            size = qstrlen(str);
-        d = DataPointer(Data::allocate(size), size);
-        d.data()[size] = '\0';
+        d = DataPointer(Data::allocate(ba.size()), ba.size());
+        d.data()[ba.size()] = '\0';
         char16_t *dst = d.data();
-        qt_from_latin1(dst, str, size_t(size));
+
+        qt_from_latin1(dst, ba.data(), size_t(ba.size()));
     }
-    return d;
+    return QString(std::move(d));
 }
 
-/*! \fn QString QString::fromLatin1(const char *str, qsizetype size)
+/*!
+    \fn QString QString::fromLatin1(const char *str, qsizetype size)
     Returns a QString initialized with the first \a size characters
     of the Latin-1 string \a str.
 
-    If \a size is -1 (default), it is taken to be strlen(\a
-    str).
+    If \a size is \c{-1}, \c{strlen(str)} is used instead.
 
     \sa toLatin1(), fromUtf8(), fromLocal8Bit()
 */
@@ -5169,12 +5175,12 @@ QString::DataPointer QString::fromLatin1_helper(const char *str, qsizetype size)
     Returns a QString initialized with the Latin-1 string \a str.
 */
 
-/*! \fn QString QString::fromLocal8Bit(const char *str, qsizetype size)
+/*!
+    \fn QString QString::fromLocal8Bit(const char *str, qsizetype size)
     Returns a QString initialized with the first \a size characters
     of the 8-bit string \a str.
 
-    If \a size is -1 (default), it is taken to be strlen(\a
-    str).
+    If \a size is \c{-1}, \c{strlen(str)} is used instead.
 
     On Unix systems this is equivalen to fromUtf8(), on Windows the systems
     current code page is being used.
@@ -5189,24 +5195,29 @@ QString::DataPointer QString::fromLatin1_helper(const char *str, qsizetype size)
 
     Returns a QString initialized with the 8-bit string \a str.
 */
-QString QString::fromLocal8Bit_helper(const char *str, qsizetype size)
+
+/*!
+    \fn QString QString::fromLocal8Bit(QByteArrayView str)
+    \overload
+    \since 6.0
+
+    Returns a QString initialized with the 8-bit string \a str.
+*/
+QString QString::fromLocal8Bit(QByteArrayView ba)
 {
-    if (!str)
+    if (ba.isNull())
         return QString();
-    if (size < 0)
-        size = qstrlen(str);
-    if (size == 0)
+    if (ba.isEmpty())
         return QString(DataPointer::fromRawData(&_empty, 0));
     QStringDecoder toUtf16(QStringDecoder::System, QStringDecoder::Flag::Stateless);
-    return toUtf16(str, size);
+    return toUtf16(ba.data(), ba.size());
 }
 
 /*! \fn QString QString::fromUtf8(const char *str, qsizetype size)
     Returns a QString initialized with the first \a size bytes
     of the UTF-8 string \a str.
 
-    If \a size is -1 (default), it is taken to be strlen(\a
-    str).
+    If \a size is \c{-1}, \c{strlen(str)} is used instead.
 
     UTF-8 is a Unicode codec and can represent all characters in a Unicode
     string like QString. However, invalid sequences are possible with UTF-8
@@ -5238,13 +5249,21 @@ QString QString::fromLocal8Bit_helper(const char *str, qsizetype size)
 
     Returns a QString initialized with the UTF-8 string \a str.
 */
-QString QString::fromUtf8_helper(const char *str, qsizetype size)
-{
-    if (!str)
-        return QString();
 
-    Q_ASSERT(size != -1);
-    return QUtf8::convertToUnicode(str, size);
+/*!
+    \fn QString QString::fromUtf8(QByteArrayView str)
+    \overload
+    \since 6.0
+
+    Returns a QString initialized with the UTF-8 string \a str.
+*/
+QString QString::fromUtf8(QByteArrayView ba)
+{
+    if (ba.isNull())
+        return QString();
+    if (ba.isEmpty())
+        return QString(DataPointer::fromRawData(&_empty, 0));
+    return QUtf8::convertToUnicode(ba.data(), ba.size());
 }
 
 /*!

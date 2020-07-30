@@ -245,7 +245,7 @@ static QString deviceModelIdentifier()
     char value[size];
     sysctlbyname(key, &value, &size, NULL, 0);
 
-    return QString::fromLatin1(value);
+    return QString::fromLatin1(QByteArrayView(value, qsizetype(size)));
 #endif
 }
 

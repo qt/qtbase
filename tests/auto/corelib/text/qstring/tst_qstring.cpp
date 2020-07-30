@@ -1102,7 +1102,7 @@ void tst_QString::constructorQByteArray_data()
     ba1[5] = 'e';
     ba1[6] = 'f';
 
-    QTest::newRow( "2" ) << ba1 << QString("abc");
+    QTest::newRow( "2" ) << ba1 << QString::fromUtf16(u"abc\0def", 7);
 
     QTest::newRow( "3" ) << QByteArray::fromRawData("abcd", 3) << QString("abc");
     QTest::newRow( "4" ) << QByteArray("\xc3\xa9") << QString("\xc3\xa9");
@@ -1115,23 +1115,28 @@ void tst_QString::constructorQByteArray()
     QFETCH(QByteArray, src);
     QFETCH(QString, expected);
 
-    QString str1(src);
-    QCOMPARE(str1.length(), expected.length());
-    QCOMPARE( str1, expected );
-
     QString strBA(src);
     QCOMPARE( strBA, expected );
 
     // test operator= too
-    if (src.constData()[src.length()] == '\0') {
-        str1.clear();
-        str1 = src.constData();
-        QCOMPARE( str1, expected );
-    }
-
     strBA.clear();
     strBA = src;
     QCOMPARE( strBA, expected );
+
+    // test constructor/operator=(const char *)
+    if (src.constData()[src.length()] == '\0') {
+        qsizetype zero = expected.indexOf(QLatin1Char('\0'));
+        if (zero < 0)
+            zero = expected.length();
+
+        QString str1(src.constData());
+        QCOMPARE(str1.length(), zero);
+        QCOMPARE(str1, expected.left(zero));
+
+        str1.clear();
+        str1 = src.constData();
+        QCOMPARE(str1, expected.left(zero));
+    }
 }
 
 void tst_QString::STL()
@@ -2522,7 +2527,7 @@ void tst_QString::append_bytearray_special_cases()
     }
 
     QFETCH( QByteArray, ba );
-    if (ba.constData()[ba.length()] == '\0') {
+    if (!ba.contains('\0') && ba.constData()[ba.length()] == '\0') {
         QFETCH( QString, str );
 
         str.append(ba.constData());
@@ -2571,7 +2576,7 @@ void tst_QString::operator_pluseq_bytearray_special_cases()
     }
 
     QFETCH( QByteArray, ba );
-    if (ba.constData()[ba.length()] == '\0') {
+    if (!ba.contains('\0') && ba.constData()[ba.length()] == '\0') {
         QFETCH( QString, str );
 
         str += ba.constData();
@@ -2592,7 +2597,7 @@ void tst_QString::operator_eqeq_bytearray()
     QVERIFY(expected == src);
     QVERIFY(!(expected != src));
 
-    if (src.constData()[src.length()] == '\0') {
+    if (!src.contains('\0') && src.constData()[src.length()] == '\0') {
         QVERIFY(expected == src.constData());
         QVERIFY(!(expected != src.constData()));
     }
@@ -2653,7 +2658,7 @@ void tst_QString::prepend_bytearray_special_cases_data()
     // byte array with only a 0
     ba.resize( 1 );
     ba[0] = 0;
-    QTest::newRow( "emptyString" ) << QString("foobar ") << ba << QString("foobar ");
+    QTest::newRow( "emptyString" ) << QString("foobar ") << ba << QStringView::fromArray(u"\0foobar ").chopped(1).toString();
 
     // empty byte array
     ba.resize( 0 );
@@ -2685,7 +2690,7 @@ void tst_QString::prepend_bytearray_special_cases()
     }
 
     QFETCH( QByteArray, ba );
-    if (ba.constData()[ba.length()] == '\0') {
+    if (!ba.contains('\0') && ba.constData()[ba.length()] == '\0') {
         QFETCH( QString, str );
 
         str.prepend(ba.constData());
@@ -4136,9 +4141,7 @@ void tst_QString::fromUtf8_data()
 
     QTest::newRow("null-1") << QByteArray() << QString() << -1;
     QTest::newRow("null0") << QByteArray() << QString() << 0;
-    QTest::newRow("null5") << QByteArray() << QString() << 5;
     QTest::newRow("empty-1") << QByteArray("\0abcd", 5) << QString() << -1;
-    QTest::newRow("empty0") << QByteArray() << QString() << 0;
     QTest::newRow("empty5") << QByteArray("\0abcd", 5) << QString::fromLatin1("\0abcd", 5) << 5;
     QTest::newRow("other-1") << QByteArray("ab\0cd", 5) << QString::fromLatin1("ab") << -1;
     QTest::newRow("other5") << QByteArray("ab\0cd", 5) << QString::fromLatin1("ab\0cd", 5) << 5;
@@ -4473,8 +4476,6 @@ void tst_QString::fromLatin1()
     QVERIFY(a.isEmpty());
 
     a = QString::fromLatin1(0, 0);
-    QVERIFY(a.isNull());
-    a = QString::fromLatin1(0, 5);
     QVERIFY(a.isNull());
     a = QString::fromLatin1("\0abcd", 0);
     QVERIFY(!a.isNull());
