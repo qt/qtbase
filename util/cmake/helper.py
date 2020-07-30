@@ -168,7 +168,9 @@ _qt_library_map = [
         "gsttools", "Qt6", "Qt::MultimediaGstTools", extra=["COMPONENTS", "MultimediaGstTools"]
     ),
     LibraryMapping("gui", "Qt6", "Qt::Gui", extra=["COMPONENTS", "Gui"]),
-    LibraryMapping("platformheaders", "Qt6", "Qt::PlatformHeaders", extra=["COMPONENTS", "PlatformHeaders"]),
+    LibraryMapping(
+        "platformheaders", "Qt6", "Qt::PlatformHeaders", extra=["COMPONENTS", "PlatformHeaders"]
+    ),
     LibraryMapping("help", "Qt6", "Qt::Help", extra=["COMPONENTS", "Help"]),
     LibraryMapping(
         "hunspellinputmethod",
@@ -219,7 +221,9 @@ _qt_library_map = [
     LibraryMapping("nfc", "Qt6", "Qt::Nfc", extra=["COMPONENTS", "Nfc"]),
     LibraryMapping("oauth", "Qt6", "Qt::NetworkAuth", extra=["COMPONENTS", "NetworkAuth"]),
     LibraryMapping("opcua", "Qt6", "Qt::OpcUa", extra=["COMPONENTS", "OpcUa"]),
-    LibraryMapping("opcua_private", "Qt6", "Qt::OpcUaPrivate", extra=["COMPONENTS", "OpcUaPrivate"]),
+    LibraryMapping(
+        "opcua_private", "Qt6", "Qt::OpcUaPrivate", extra=["COMPONENTS", "OpcUaPrivate"]
+    ),
     LibraryMapping("opengl", "Qt6", "Qt::OpenGL", extra=["COMPONENTS", "OpenGL"]),
     LibraryMapping(
         "openglwidgets", "Qt6", "Qt::OpenGLWidgets", extra=["COMPONENTS", "OpenGLWidgets"]
@@ -362,12 +366,8 @@ _qt_library_map = [
         "webkitwidgets", "Qt6", "Qt::WebKitWidgets", extra=["COMPONENTS", "WebKitWidgets"]
     ),
     LibraryMapping("zlib", "Qt6", "Qt::Zlib", extra=["COMPONENTS", "Zlib"]),
-    LibraryMapping(
-        "httpserver", "Qt6", "Qt::HttpServer", extra=["COMPONENTS", "HttpServer"]
-    ),
-    LibraryMapping(
-        "sslserver", "Qt6", "Qt::SslServer", extra=["COMPONENTS", "HttpServer"]
-    )
+    LibraryMapping("httpserver", "Qt6", "Qt::HttpServer", extra=["COMPONENTS", "HttpServer"]),
+    LibraryMapping("sslserver", "Qt6", "Qt::SslServer", extra=["COMPONENTS", "HttpServer"]),
 ]
 
 # Note that the library map is adjusted dynamically further down.

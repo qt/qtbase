@@ -240,9 +240,11 @@ def parseLib(ctx, lib, data, cm_fh, cmake_find_packages_set):
                 if "condition" in use:
                     has_condition = True
                     indentation = "    "
-                    condition = map_condition(use['condition'])
+                    condition = map_condition(use["condition"])
                     cm_fh.write(f"if({condition})\n")
-                cm_fh.write(f"{indentation}qt_add_qmake_lib_dependency({newlib.soName} {use['lib']})\n")
+                cm_fh.write(
+                    f"{indentation}qt_add_qmake_lib_dependency({newlib.soName} {use['lib']})\n"
+                )
                 if has_condition:
                     cm_fh.write("endif()\n")
 
@@ -846,10 +848,7 @@ def get_feature_mapping():
         "alloc_malloc_h": None,
         "alloc_stdlib_h": None,
         "build_all": None,
-        "ccache": {
-            "autoDetect": "1",
-            "condition": "QT_USE_CCACHE"
-        },
+        "ccache": {"autoDetect": "1", "condition": "QT_USE_CCACHE"},
         "compiler-flags": None,
         "cross_compile": {"condition": "CMAKE_CROSSCOMPILING"},
         "debug_and_release": {
@@ -868,9 +867,7 @@ def get_feature_mapping():
         "framework": {
             "condition": "APPLE AND BUILD_SHARED_LIBS AND NOT CMAKE_BUILD_TYPE STREQUAL Debug"
         },
-        "gc_binaries": {
-            "condition" : "NOT QT_FEATURE_shared"
-        },
+        "gc_binaries": {"condition": "NOT QT_FEATURE_shared"},
         "gcc-sysroot": None,
         "gcov": None,
         "GNUmake": None,
@@ -879,10 +876,7 @@ def get_feature_mapping():
             "condition": "NOT QT_FEATURE_icu AND QT_FEATURE_textcodec AND NOT WIN32 AND NOT QNX AND NOT ANDROID AND NOT APPLE AND WrapIconv_FOUND",
         },
         "incredibuild_xge": None,
-        "ltcg": {
-            "autoDetect": "1",
-            "condition": "CMAKE_INTERPROCEDURAL_OPTIMIZATION"
-        },
+        "ltcg": {"autoDetect": "1", "condition": "CMAKE_INTERPROCEDURAL_OPTIMIZATION"},
         "msvc_mp": None,
         "optimize_debug": None,
         "optimize_size": None,
@@ -898,7 +892,6 @@ def get_feature_mapping():
             "autoDetect": "1",
             "condition": "BUILD_SHARED_LIBS AND UNIX AND NOT WIN32 AND NOT ANDROID",
         },
-
         "shared": {
             "condition": "BUILD_SHARED_LIBS",
             "output": [
@@ -1230,7 +1223,7 @@ def processSummaryHelper(ctx, entries, cm_fh):
 
 report_condition_mapping = {
     "(features.rpath || features.rpath_dir) && !features.shared": "(features.rpath || QT_EXTRA_RPATHS) && !features.shared",
-    "(features.rpath || features.rpath_dir) && var.QMAKE_LFLAGS_RPATH == ''": None
+    "(features.rpath || features.rpath_dir) && var.QMAKE_LFLAGS_RPATH == ''": None,
 }
 
 
@@ -1354,8 +1347,9 @@ def processSubconfigs(path, ctx, data):
             subconfCtx = ctx
             processJson(subconfDir, subconfCtx, subconfData)
 
+
 class special_cased_file:
-    def __init__(self, base_dir : str, file_name : str):
+    def __init__(self, base_dir: str, file_name: str):
         self.base_dir = base_dir
         self.file_path = posixpath.join(base_dir, file_name)
         self.gen_file_path = self.file_path + ".gen"
@@ -1374,6 +1368,7 @@ class special_cased_file:
         self.file.close()
         if self.sc_handler.handle_special_cases():
             os.replace(self.gen_file_path, self.file_path)
+
 
 def processJson(path, ctx, data):
     ctx["project_dir"] = path
@@ -1411,6 +1406,7 @@ def processJson(path, ctx, data):
 
     # do this late:
     processSubconfigs(path, ctx, data)
+
 
 def main():
     if len(sys.argv) != 2:
