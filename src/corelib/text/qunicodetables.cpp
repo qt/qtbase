@@ -9638,7 +9638,6 @@ Q_CORE_EXPORT LineBreakClass QT_FASTCALL lineBreakClass(char32_t ucs4) noexcept
     return static_cast<LineBreakClass>(qGetProp(ucs4)->lineBreakClass);
 }
 
-
 static const unsigned short specialCaseMap[] = {
     0x0, // placeholder
     0x1, 0x2c65,
@@ -9947,7 +9946,6 @@ static const unsigned short specialCaseMap[] = {
 };
 
 const unsigned int MaxSpecialCaseLength = 3;
-
 
 static const unsigned short uc_decomposition_trie[] = {
     // 0 - 0x3400
@@ -11831,10 +11829,10 @@ static const unsigned short uc_decomposition_trie[] = {
 
 #define GET_DECOMPOSITION_INDEX(ucs4) \
        (ucs4 < 0x3400 \
-        ? (uc_decomposition_trie[uc_decomposition_trie[ucs4>>4] + (ucs4 & 0xf)]) \
-        : (ucs4 < 0x30000 \
-           ? uc_decomposition_trie[uc_decomposition_trie[((ucs4 - 0x3400)>>8) + 0x340] + (ucs4 & 0xff)] \
-           : 0xffff))
+        ? (uc_decomposition_trie[uc_decomposition_trie[ucs4 >> 4] + (ucs4 & 0xf)]) \
+        : ucs4 < 0x30000 \
+        ? uc_decomposition_trie[uc_decomposition_trie[((ucs4 - 0x3400) >> 8) + 0x340] + (ucs4 & 0xff)] \
+        : 0xffff)
 
 static const unsigned short uc_decomposition_map[] = {
     0x103, 0x20, 0x210, 0x20, 0x308, 0x109, 0x61, 0x210,
@@ -14070,10 +14068,10 @@ static const unsigned short uc_ligature_trie[] = {
 
 #define GET_LIGATURE_INDEX(ucs4) \
        (ucs4 < 0x3100 \
-        ? (uc_ligature_trie[uc_ligature_trie[ucs4>>5] + (ucs4 & 0x1f)]) \
-        : (ucs4 < 0x12000 \
-           ? uc_ligature_trie[uc_ligature_trie[((ucs4 - 0x3100)>>8) + 0x188] + (ucs4 & 0xff)] \
-           : 0xffff))
+        ? (uc_ligature_trie[uc_ligature_trie[ucs4 >> 5] + (ucs4 & 0x1f)]) \
+        : ucs4 < 0x12000 \
+        ? uc_ligature_trie[uc_ligature_trie[((ucs4 - 0x3100) >> 8) + 0x188] + (ucs4 & 0xff)] \
+        : 0xffff)
 
 static const unsigned short uc_ligature_map[] = {
     0x54, 0x41, 0xc0, 0x45, 0xc8, 0x49, 0xcc, 0x4e,
@@ -14324,7 +14322,6 @@ static const unsigned short uc_ligature_map[] = {
     0xd805, 0xddba, 0xd805, 0xddb9, 0xd805, 0xddbb, 0x1, 0xd806,
     0xdd35, 0xd806, 0xdd38
 };
-
 
 struct NormalizationCorrection {
     uint ucs4;
