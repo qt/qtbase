@@ -2406,8 +2406,6 @@ void QAbstractSocket::abort()
     qDebug("QAbstractSocket::abort()");
 #endif
     d->setWriteChannelCount(0);
-    if (d->state == UnconnectedState)
-        return;
 #ifndef QT_NO_SSL
     if (QSslSocket *socket = qobject_cast<QSslSocket *>(this)) {
         socket->abort();
