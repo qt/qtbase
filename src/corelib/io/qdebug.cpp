@@ -597,9 +597,24 @@ QDebug &QDebug::resetFormat()
 /*!
     \fn QDebug &QDebug::operator<<(const char *t)
 
-    Writes the '\\0'-terminated string, \a t, to the stream and returns a
-    reference to the stream. The string is never quoted nor transformed to the
-    output, but note that some QDebug backends might not be 8-bit clean.
+    Writes the '\\0'-terminated UTF-8 string, \a t, to the stream and returns a
+    reference to the stream. The string is never quoted or escaped for the
+    output. Note that QDebug buffers internally as UTF-16 and may need to
+    transform to 8-bit using the locale's codec in order to use some backends,
+    which may cause garbled output (mojibake). Restricting to US-ASCII strings
+    is recommended.
+*/
+
+/*!
+    \fn QDebug &QDebug::operator<<(const char16_t *t)
+    \since 6.0
+
+    Writes the u'\\0'-terminated UTF-16 string, \a t, to the stream and returns
+    a reference to the stream. The string is never quoted or escaped for the
+    output. Note that QDebug buffers internally as UTF-16 and may need to
+    transform to 8-bit using the locale's codec in order to use some backends,
+    which may cause garbled output (mojibake). Restricting to US-ASCII strings
+    is recommended.
 */
 
 /*!
@@ -950,18 +965,18 @@ QDebug qt_QMetaEnum_debugOperator(QDebug &dbg, int value, const QMetaObject *met
     const int verbosity = dbg.verbosity();
     if (verbosity >= QDebug::DefaultVerbosity) {
         if (const char *scope = me.scope())
-            dbg << scope << "::";
+            dbg << scope << u"::";
     }
 
     const char *key = me.valueToKey(value);
     const bool scoped = me.isScoped() || verbosity & 1;
     if (scoped || !key)
-        dbg << me.enumName() << (!key ? "(" : "::");
+        dbg << me.enumName() << (!key ? u"(" : u"::");
 
     if (key)
         dbg << key;
     else
-        dbg << value << ")";
+        dbg << value << ')';
 
     return dbg;
 }
@@ -1008,18 +1023,18 @@ QDebug qt_QMetaEnum_flagDebugOperator(QDebug &debug, quint64 value, const QMetaO
 
     const bool classScope = verbosity >= QDebug::DefaultVerbosity;
     if (classScope) {
-        debug << "QFlags<";
+        debug << u"QFlags<";
 
         if (const char *scope = me.scope())
-            debug << scope << "::";
+            debug << scope << u"::";
     }
 
     const bool enumScope = me.isScoped() || verbosity > QDebug::MinimumVerbosity;
     if (enumScope) {
         debug << me.enumName();
         if (classScope)
-            debug << ">";
-        debug << "(";
+            debug << '>';
+        debug << '(';
     }
 
     debug << me.valueToKeys(value);

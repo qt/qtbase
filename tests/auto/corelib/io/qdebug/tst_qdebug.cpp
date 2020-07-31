@@ -49,6 +49,7 @@ private slots:
     void assignment() const;
     void warningWithoutDebug() const;
     void criticalWithoutDebug() const;
+    void basics() const;
     void debugWithBool() const;
     void debugSpaceHandling() const;
     void debugNoQuotes() const;
@@ -154,6 +155,46 @@ void tst_QDebug::criticalWithoutDebug() const
     QCOMPARE(QString::fromLatin1(s_file), file);
     QCOMPARE(s_line, line);
     QCOMPARE(QString::fromLatin1(s_function), function);
+}
+
+void tst_QDebug::basics() const
+{
+    // test simple types, without quoting or other modifications
+    // (bool tested in the next function)
+    MessageHandlerSetter mhs(myMessageHandler);
+
+    qDebug() << 'X';
+    QCOMPARE(s_msg, "X");
+
+    qDebug() << 123;
+    QCOMPARE(s_msg, "123");
+
+    qDebug() << 456U;
+    QCOMPARE(s_msg, "456");
+
+    qDebug() << -123L;
+    QCOMPARE(s_msg, "-123");
+
+    qDebug() << 456UL;
+    QCOMPARE(s_msg, "456");
+
+    qDebug() << Q_INT64_C(-123);
+    QCOMPARE(s_msg, "-123");
+
+    qDebug() << Q_UINT64_C(456);
+    QCOMPARE(s_msg, "456");
+
+    qDebug() << "Hello";
+    QCOMPARE(s_msg, "Hello");
+
+    qDebug() << u"World";
+    QCOMPARE(s_msg, "World");
+
+    qDebug() << (void *)0xfff;
+    QCOMPARE(s_msg, "0xfff");
+
+    qDebug() << nullptr;
+    QCOMPARE(s_msg, "(nullptr)");
 }
 
 void tst_QDebug::debugWithBool() const
