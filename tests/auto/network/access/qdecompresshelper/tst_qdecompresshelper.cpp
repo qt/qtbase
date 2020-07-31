@@ -347,20 +347,24 @@ void tst_QDecompressHelper::decompressBigData_data()
     QTest::addColumn<QByteArray>("encoding");
     QTest::addColumn<QString>("path");
     QTest::addColumn<qint64>("size");
+    QTest::addColumn<bool>("countAhead");
 
     qint64 fourGiB = 4ll * 1024ll * 1024ll * 1024ll;
     qint64 fiveGiB = 5ll * 1024ll * 1024ll * 1024ll;
 
-    QTest::newRow("gzip-4G") << QByteArray("gzip") << QString(":/4G.gz") << fourGiB;
+    // Only use countAhead on one of these since they share codepath anyway
+    QTest::newRow("gzip-counted-4G") << QByteArray("gzip") << QString(":/4G.gz") << fourGiB << true;
     QTest::newRow("deflate-5G") << QByteArray("deflate") << QString(":/5GiB.txt.inflate")
-                                << fiveGiB;
+                                << fiveGiB << false;
 
 #if QT_CONFIG(brotli)
-    QTest::newRow("brotli-4G") << QByteArray("br") << (srcDir + "/4G.br") << fourGiB;
+    QTest::newRow("brotli-4G") << QByteArray("br") << (srcDir + "/4G.br") << fourGiB << false;
+    QTest::newRow("brotli-counted-4G") << QByteArray("br") << (srcDir + "/4G.br") << fourGiB << true;
 #endif
 
 #if QT_CONFIG(zstd)
-    QTest::newRow("zstandard-4G") << QByteArray("zstd") << (":/4G.zst") << fourGiB;
+    QTest::newRow("zstandard-4G") << QByteArray("zstd") << (":/4G.zst") << fourGiB << false;
+    QTest::newRow("zstandard-counted-4G") << QByteArray("zstd") << (":/4G.zst") << fourGiB << true;
 #endif
 }
 
@@ -373,16 +377,20 @@ void tst_QDecompressHelper::decompressBigData()
     const qint64 third = file.bytesAvailable() / 3;
 
     QDecompressHelper helper;
+    QFETCH(bool, countAhead);
+    helper.setCountingBytesEnabled(countAhead);
     helper.setDecompressedSafetyCheckThreshold(-1);
     QFETCH(QByteArray, encoding);
     helper.setEncoding(encoding);
 
-    QByteArray output(32 * 1024, Qt::Uninitialized);
+    // The size of 'output' should be at least QDecompressHelper::MaxDecompressedDataBufferSize + 1
+    QByteArray output(10 * 1024 * 1024 + 1, Qt::Uninitialized);
     qint64 totalSize = 0;
     while (!file.atEnd()) {
         helper.feed(file.read(third));
         while (helper.hasData()) {
             qsizetype bytesRead = helper.read(output.data(), output.size());
+            QVERIFY(bytesRead >= 0);
             QVERIFY(bytesRead <= output.size());
             totalSize += bytesRead;
             const auto isZero = [](char c) { return c == '\0'; };
@@ -449,10 +457,10 @@ void tst_QDecompressHelper::bigZlib()
     helper.feed(compressedData.mid(firstHalf.size()));
 
     // We need the whole thing in one go... which is why this test is not available for 32-bit
-    qint64 expected = 5ll * 1024ll * 1024ll * 1024ll;
-    // This can be replaced with QByteArray after the qsizetype change is merged
-    std::unique_ptr<char[]> output(new char[expected]);
-    qsizetype size = helper.read(output.get(), expected);
+    const qint64 expected = 5ll * 1024ll * 1024ll * 1024ll;
+    // Request a few more byte than what is available, to verify exact size
+    QByteArray output(expected + 42, Qt::Uninitialized);
+    const qsizetype size = helper.read(output.data(), output.size());
     QCOMPARE(size, expected);
 #endif
 }

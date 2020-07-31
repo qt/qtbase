@@ -237,7 +237,13 @@ void QDecompressHelper::setCountingBytesEnabled(bool shouldCount)
 qint64 QDecompressHelper::uncompressedSize() const
 {
     Q_ASSERT(countDecompressed);
-    return uncompressedBytes;
+    // Use the 'totalUncompressedBytes' from the countHelper if it exceeds the amount of bytes
+    // that we know about.
+    auto totalUncompressed =
+            countHelper && countHelper->totalUncompressedBytes > totalUncompressedBytes
+            ? countHelper->totalUncompressedBytes
+            : totalUncompressedBytes;
+    return totalUncompressed - totalBytesRead;
 }
 
 /*!
@@ -262,10 +268,9 @@ void QDecompressHelper::feed(QByteArray &&data)
 {
     Q_ASSERT(contentEncoding != None);
     totalCompressedBytes += data.size();
-    if (!countInternal(data))
+    compressedDataBuffer.append(std::move(data));
+    if (!countInternal(compressedDataBuffer[compressedDataBuffer.bufferCount() - 1]))
         clear(); // If our counting brother failed then so will we :|
-    else
-        compressedDataBuffer.append(std::move(data));
 }
 
 /*!
@@ -276,10 +281,9 @@ void QDecompressHelper::feed(const QByteDataBuffer &buffer)
 {
     Q_ASSERT(contentEncoding != None);
     totalCompressedBytes += buffer.byteAmount();
+    compressedDataBuffer.append(buffer);
     if (!countInternal(buffer))
         clear(); // If our counting brother failed then so will we :|
-    else
-        compressedDataBuffer.append(buffer);
 }
 
 /*!
@@ -290,10 +294,10 @@ void QDecompressHelper::feed(QByteDataBuffer &&buffer)
 {
     Q_ASSERT(contentEncoding != None);
     totalCompressedBytes += buffer.byteAmount();
-    if (!countInternal(buffer))
+    const QByteDataBuffer copy(buffer);
+    compressedDataBuffer.append(std::move(buffer));
+    if (!countInternal(copy))
         clear(); // If our counting brother failed then so will we :|
-    else
-        compressedDataBuffer.append(std::move(buffer));
 }
 
 /*!
@@ -303,19 +307,34 @@ void QDecompressHelper::feed(QByteDataBuffer &&buffer)
     This lets us know the final size, unfortunately at the cost of
     increased computation.
 
-    Potential @future improvement:
-    Decompress XX MiB/KiB before starting the count.
-        For smaller files the extra decompression can then be avoided.
+    To save on some of the computation we will store the data until
+    we reach \c MaxDecompressedDataBufferSize stored. In this case the
+    "penalty" is completely removed from users who read the data on
+    readyRead rather than waiting for it all to be received. And
+    any file smaller than \c MaxDecompressedDataBufferSize will
+    avoid this issue as well.
 */
 bool QDecompressHelper::countInternal()
 {
     Q_ASSERT(countDecompressed);
+    while (hasDataInternal()
+           && decompressedDataBuffer.byteAmount() < MaxDecompressedDataBufferSize) {
+        const qsizetype toRead = 256 * 1024;
+        QByteArray buffer(toRead, Qt::Uninitialized);
+        qsizetype bytesRead = readInternal(buffer.data(), buffer.size());
+        if (bytesRead == -1)
+            return false;
+        buffer.truncate(bytesRead);
+        decompressedDataBuffer.append(std::move(buffer));
+    }
+    if (!hasDataInternal())
+        return true; // handled all the data so far, just return
+
     while (countHelper->hasData()) {
         std::array<char, 1024> temp;
         qsizetype bytesRead = countHelper->read(temp.data(), temp.size());
         if (bytesRead == -1)
             return false;
-        uncompressedBytes += bytesRead;
     }
     return true;
 }
@@ -358,13 +377,45 @@ bool QDecompressHelper::countInternal(const QByteDataBuffer &buffer)
 
 qsizetype QDecompressHelper::read(char *data, qsizetype maxSize)
 {
+    if (maxSize <= 0)
+        return 0;
+
     if (!isValid())
         return -1;
 
-    qsizetype bytesRead = -1;
     if (!hasData())
         return 0;
 
+    qsizetype cachedRead = 0;
+    if (!decompressedDataBuffer.isEmpty()) {
+        cachedRead = decompressedDataBuffer.read(data, maxSize);
+        data += cachedRead;
+        maxSize -= cachedRead;
+    }
+
+    qsizetype bytesRead = readInternal(data, maxSize);
+    if (bytesRead == -1)
+        return -1;
+    totalBytesRead += bytesRead + cachedRead;
+    return bytesRead + cachedRead;
+}
+
+/*!
+    \internal
+    Like read() but without attempting to read the
+    cached/already-decompressed data.
+*/
+qsizetype QDecompressHelper::readInternal(char *data, qsizetype maxSize)
+{
+    Q_ASSERT(isValid());
+
+    if (maxSize <= 0)
+        return 0;
+
+    if (!hasDataInternal())
+        return 0;
+
+    qsizetype bytesRead = -1;
     switch (contentEncoding) {
     case None:
         Q_UNREACHABLE();
@@ -382,8 +433,6 @@ qsizetype QDecompressHelper::read(char *data, qsizetype maxSize)
     }
     if (bytesRead == -1)
         clear();
-    else if (countDecompressed)
-        uncompressedBytes -= bytesRead;
 
     totalUncompressedBytes += bytesRead;
     if (isPotentialArchiveBomb())
@@ -450,6 +499,16 @@ bool QDecompressHelper::isPotentialArchiveBomb() const
 */
 bool QDecompressHelper::hasData() const
 {
+    return hasDataInternal() || !decompressedDataBuffer.isEmpty();
+}
+
+/*!
+    \internal
+    Like hasData() but internally the buffer of decompressed data is
+    not interesting.
+*/
+bool QDecompressHelper::hasDataInternal() const
+{
     return encodedBytesAvailable() || decoderHasData;
 }
 
@@ -497,11 +556,12 @@ void QDecompressHelper::clear()
     contentEncoding = None;
 
     compressedDataBuffer.clear();
+    decompressedDataBuffer.clear();
     decoderHasData = false;
 
     countDecompressed = false;
     countHelper.reset();
-    uncompressedBytes = 0;
+    totalBytesRead = 0;
     totalUncompressedBytes = 0;
     totalCompressedBytes = 0;
 }

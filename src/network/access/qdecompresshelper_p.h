@@ -98,6 +98,8 @@ public:
 
 private:
     bool isPotentialArchiveBomb() const;
+    bool hasDataInternal() const;
+    qsizetype readInternal(char *data, qsizetype maxSize);
 
     bool countInternal();
     bool countInternal(const QByteArray &data);
@@ -111,16 +113,18 @@ private:
     qsizetype readZstandard(char *data, qsizetype maxSize);
 
     QByteDataBuffer compressedDataBuffer;
+    QByteDataBuffer decompressedDataBuffer;
+    const qsizetype MaxDecompressedDataBufferSize = 10 * 1024 * 1024;
     bool decoderHasData = false;
 
     bool countDecompressed = false;
     std::unique_ptr<QDecompressHelper> countHelper;
-    qint64 uncompressedBytes = 0;
 
     // Used for calculating the ratio
     qint64 archiveBombCheckThreshold = 10 * 1024 * 1024;
     qint64 totalUncompressedBytes = 0;
     qint64 totalCompressedBytes = 0;
+    qint64 totalBytesRead = 0;
 
     ContentEncoding contentEncoding = None;
 
