@@ -2439,17 +2439,6 @@ static QByteArray createPropertyInfo()
         out.chop(2);
     out += "\n};\n\n";
 
-    out += "#define GET_PROP_INDEX(ucs4) \\\n"
-           "       (ucs4 < 0x" + QByteArray::number(BMP_END, 16) + " \\\n"
-           "        ? (uc_property_trie[uc_property_trie[ucs4>>" + QByteArray::number(BMP_SHIFT) +
-           "] + (ucs4 & 0x" + QByteArray::number(BMP_BLOCKSIZE-1, 16)+ ")]) \\\n"
-           "        : (uc_property_trie[uc_property_trie[((ucs4 - 0x" + QByteArray::number(BMP_END, 16) +
-           ")>>" + QByteArray::number(SMP_SHIFT) + ") + 0x" + QByteArray::number(BMP_END/BMP_BLOCKSIZE, 16) + "]"
-           " + (ucs4 & 0x" + QByteArray::number(SMP_BLOCKSIZE-1, 16) + ")]))\n\n"
-           "#define GET_PROP_INDEX_UCS2(ucs2) \\\n"
-           "       (uc_property_trie[uc_property_trie[ucs2>>" + QByteArray::number(BMP_SHIFT) +
-           "] + (ucs2 & 0x" + QByteArray::number(BMP_BLOCKSIZE-1, 16)+ ")])\n\n";
-
     out += "static const Properties uc_properties[] = {";
     // keep in sync with the property declaration
     for (int i = 0; i < uniqueProperties.size(); ++i) {
@@ -2520,15 +2509,26 @@ static QByteArray createPropertyInfo()
         out.chop(1);
     out += "\n};\n\n";
 
-
     out += "Q_DECL_CONST_FUNCTION static inline const Properties *qGetProp(char32_t ucs4) noexcept\n"
            "{\n"
-           "    return uc_properties + GET_PROP_INDEX(ucs4);\n"
+           "    if (ucs4 < 0x" + QByteArray::number(BMP_END, 16) + ")\n"
+           "        return uc_properties + uc_property_trie[uc_property_trie[ucs4 >> "
+           + QByteArray::number(BMP_SHIFT) + "] + (ucs4 & 0x"
+           + QByteArray::number(BMP_BLOCKSIZE - 1, 16)+ ")];\n"
+           "\n"
+           "    return uc_properties\n"
+           "        + uc_property_trie[uc_property_trie[((ucs4 - 0x"
+           + QByteArray::number(BMP_END, 16) + ") >> "
+           + QByteArray::number(SMP_SHIFT) + ") + 0x"
+           + QByteArray::number(BMP_END / BMP_BLOCKSIZE, 16) + "] + (ucs4 & 0x"
+           + QByteArray::number(SMP_BLOCKSIZE - 1, 16) + ")];\n"
            "}\n"
            "\n"
            "Q_DECL_CONST_FUNCTION static inline const Properties *qGetProp(char16_t ucs2) noexcept\n"
            "{\n"
-           "    return uc_properties + GET_PROP_INDEX_UCS2(ucs2);\n"
+           "    return uc_properties + uc_property_trie[uc_property_trie[ucs2 >> "
+           + QByteArray::number(BMP_SHIFT) + "] + (ucs2 & 0x"
+           + QByteArray::number(BMP_BLOCKSIZE - 1, 16) + ")];\n"
            "}\n"
            "\n"
            "Q_DECL_CONST_FUNCTION Q_CORE_EXPORT const Properties * QT_FASTCALL properties(char32_t ucs4) noexcept\n"

@@ -6695,14 +6695,6 @@ static const unsigned short uc_property_trie[] = {
     2891, 2891, 2891, 2891, 2891, 2891, 2885, 2885
 };
 
-#define GET_PROP_INDEX(ucs4) \
-       (ucs4 < 0x11000 \
-        ? (uc_property_trie[uc_property_trie[ucs4>>5] + (ucs4 & 0x1f)]) \
-        : (uc_property_trie[uc_property_trie[((ucs4 - 0x11000)>>8) + 0x880] + (ucs4 & 0xff)]))
-
-#define GET_PROP_INDEX_UCS2(ucs2) \
-       (uc_property_trie[uc_property_trie[ucs2>>5] + (ucs2 & 0x1f)])
-
 static const Properties uc_properties[] = {
     { 9, 18, 0, 0, -1, 0, 1, 0,  { {0, 0}, {0, 0}, {0, 0}, {0, 0} }, 3, 0, 21, 0, 2 },
     { 9, 8, 0, 0, -1, 0, 1, 0,  { {0, 0}, {0, 0}, {0, 0}, {0, 0} }, 3, 0, 17, 5, 2 },
@@ -9600,12 +9592,16 @@ static const Properties uc_properties[] = {
 
 Q_DECL_CONST_FUNCTION static inline const Properties *qGetProp(char32_t ucs4) noexcept
 {
-    return uc_properties + GET_PROP_INDEX(ucs4);
+    if (ucs4 < 0x11000)
+        return uc_properties + uc_property_trie[uc_property_trie[ucs4 >> 5] + (ucs4 & 0x1f)];
+
+    return uc_properties
+        + uc_property_trie[uc_property_trie[((ucs4 - 0x11000) >> 8) + 0x880] + (ucs4 & 0xff)];
 }
 
 Q_DECL_CONST_FUNCTION static inline const Properties *qGetProp(char16_t ucs2) noexcept
 {
-    return uc_properties + GET_PROP_INDEX_UCS2(ucs2);
+    return uc_properties + uc_property_trie[uc_property_trie[ucs2 >> 5] + (ucs2 & 0x1f)];
 }
 
 Q_DECL_CONST_FUNCTION Q_CORE_EXPORT const Properties * QT_FASTCALL properties(char32_t ucs4) noexcept
