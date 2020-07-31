@@ -479,10 +479,6 @@
 #include <qscopedvaluerollback.h>
 #include <qvarlengtharray.h>
 
-#ifndef QT_NO_SSL
-#include <QtNetwork/qsslsocket.h>
-#endif
-
 #include <private/qthread_p.h>
 
 #ifdef QABSTRACTSOCKET_DEBUG
@@ -2406,13 +2402,6 @@ void QAbstractSocket::abort()
     qDebug("QAbstractSocket::abort()");
 #endif
     d->setWriteChannelCount(0);
-#ifndef QT_NO_SSL
-    if (QSslSocket *socket = qobject_cast<QSslSocket *>(this)) {
-        socket->abort();
-        return;
-    }
-#endif
-
     d->abortCalled = true;
     close();
 }

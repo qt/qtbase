@@ -899,13 +899,19 @@ void QSslSocket::close()
 #endif
     Q_D(QSslSocket);
 
-    // We don't want any CA roots fetched anymore.
+    // On Windows, CertGetCertificateChain is probably still doing its
+    // job, if the socket is re-used, we want to ignore its reported
+    // root CA.
     d->caToFetch = QSslCertificate{};
 
-    if (encryptedBytesToWrite() || !d->writeBuffer.isEmpty())
+    if (!d->abortCalled && (encryptedBytesToWrite() || !d->writeBuffer.isEmpty()))
         flush();
-    if (d->plainSocket)
-        d->plainSocket->close();
+    if (d->plainSocket) {
+        if (d->abortCalled)
+            d->plainSocket->abort();
+        else
+            d->plainSocket->close();
+    }
     QTcpSocket::close();
 
     // must be cleared, reading/writing not possible on closed socket:
@@ -936,29 +942,6 @@ void QSslSocket::setReadBufferSize(qint64 size)
 
     if (d->plainSocket)
         d->plainSocket->setReadBufferSize(size);
-}
-
-/*!
-    Aborts the current connection and resets the socket. Unlike
-    disconnectFromHost(), this function immediately closes the socket,
-    clearing any pending data in the write buffer.
-
-    \sa disconnectFromHost(), close()
-*/
-void QSslSocket::abort()
-{
-    Q_D(QSslSocket);
-#ifdef QSSLSOCKET_DEBUG
-    qCDebug(lcSsl) << "QSslSocket::abort()";
-#endif
-    // On Windows, CertGetCertificateChain is probably still doing its
-    // job, if the socket is re-used, we want to ignore its reported
-    // root CA.
-    d->caToFetch = QSslCertificate{};
-
-    if (d->plainSocket)
-        d->plainSocket->abort();
-    close();
 }
 
 /*!
@@ -1883,6 +1866,7 @@ void QSslSocketPrivate::init()
     connectionEncrypted = false;
     ignoreAllSslErrors = false;
     shutdown = false;
+    abortCalled = false;
     pendingClose = false;
     flushTriggered = false;
     ocspResponses.clear();
