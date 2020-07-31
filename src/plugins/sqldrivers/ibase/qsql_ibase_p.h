@@ -106,7 +106,7 @@ public:
     bool subscribeToNotification(const QString &name) override;
     bool unsubscribeFromNotification(const QString &name) override;
     QStringList subscribedToNotifications() const override;
-
+    int maximumIdentifierLength(IdentifierType type) const override;
 private Q_SLOTS:
     void qHandleEventNotification(void* updatedResultBuffer);
 };

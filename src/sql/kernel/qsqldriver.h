@@ -130,7 +130,7 @@ public:
     QSql::NumericalPrecisionPolicy numericalPrecisionPolicy() const;
 
     DbmsType dbmsType() const;
-
+    virtual int maximumIdentifierLength(IdentifierType type) const;
 public Q_SLOTS:
     virtual bool cancelQuery();
 

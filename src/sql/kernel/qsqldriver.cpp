@@ -46,6 +46,8 @@
 #include "private/qobject_p.h"
 #include "private/qsqldriver_p.h"
 
+#include <limits.h>
+
 QT_BEGIN_NAMESPACE
 
 static QString prepareIdentifier(const QString &identifier,
@@ -827,6 +829,19 @@ QSqlDriver::DbmsType QSqlDriver::dbmsType() const
 bool QSqlDriver::cancelQuery()
 {
     return false;
+}
+
+/*!
+    \since 6.0
+
+    Returns the maximum length for the identifier \a type according to the database settings. Returns
+    INT_MAX by default if the is no maximum for the database.
+*/
+
+int QSqlDriver::maximumIdentifierLength(QSqlDriver::IdentifierType type) const
+{
+    Q_UNUSED(type);
+    return INT_MAX;
 }
 
 QT_END_NAMESPACE

@@ -590,8 +590,9 @@ QString QSqlRelationalTableModel::selectStatement() const
                 QString displayColumn = relation.displayColumn();
                 if (d->db.driver()->isIdentifierEscaped(displayColumn, QSqlDriver::FieldName))
                     displayColumn = d->db.driver()->stripDelimiters(displayColumn, QSqlDriver::FieldName);
-                const QString alias = QString::fromLatin1("%1_%2_%3")
+                QString alias = QString::fromLatin1("%1_%2_%3")
                                       .arg(relTableName, displayColumn, QString::number(fieldNames.value(fieldList[i])));
+                alias.truncate(d->db.driver()->maximumIdentifierLength(QSqlDriver::FieldName));
                 displayTableField = Sql::as(displayTableField, alias);
                 --fieldNames[fieldList[i]];
             }

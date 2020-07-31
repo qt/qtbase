@@ -1884,4 +1884,10 @@ QString QIBaseDriver::escapeIdentifier(const QString &identifier, IdentifierType
     return res;
 }
 
+int QIBaseDriver::maximumIdentifierLength(IdentifierType type) const
+{
+    Q_UNUSED(type);
+    return 31;
+}
+
 QT_END_NAMESPACE
