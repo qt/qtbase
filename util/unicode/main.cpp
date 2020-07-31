@@ -2295,7 +2295,7 @@ static void computeUniqueProperties()
         }
         d.propertyIndex = index;
     }
-    qDebug("    %d unique unicode properties found", uniqueProperties.size());
+    qDebug("    %zd unique unicode properties found", ssize_t(uniqueProperties.size()));
 }
 
 struct UniqueBlock {
@@ -2592,7 +2592,7 @@ static QByteArray createSpecialCaseMap()
     out += QByteArray::number(maxN);
     out += ";\n\n\n";
 
-    qDebug("    memory usage: %ld bytes", specialCaseMap.size()*sizeof(unsigned short));
+    qDebug("    memory usage: %zd bytes", ssize_t(specialCaseMap.size() * sizeof(unsigned short)));
 
     return out;
 }
