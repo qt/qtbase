@@ -504,11 +504,11 @@ public:
     }
     static constexpr inline bool isHighSurrogate(char32_t ucs4) noexcept
     {
-        return ((ucs4 & 0xfffffc00) == 0xd800);
+        return (ucs4 & 0xfffffc00) == 0xd800; // 0xd800 + up to 1023 (0x3ff)
     }
     static constexpr inline bool isLowSurrogate(char32_t ucs4) noexcept
     {
-        return ((ucs4 & 0xfffffc00) == 0xdc00);
+        return (ucs4 & 0xfffffc00) == 0xdc00; // 0xdc00 + up to 1023 (0x3ff)
     }
     static constexpr inline bool isSurrogate(char32_t ucs4) noexcept
     {
@@ -520,6 +520,8 @@ public:
     }
     static constexpr inline char32_t surrogateToUcs4(char16_t high, char16_t low) noexcept
     {
+        // 0x010000 through 0x10ffff, provided params are actual high, low surrogates.
+        // 0x010000 + ((high - 0xd800) << 10) + (low - 0xdc00), optimized:
         return (char32_t(high)<<10) + low - 0x35fdc00;
     }
     static constexpr inline char32_t surrogateToUcs4(QChar high, QChar low) noexcept

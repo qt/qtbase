@@ -9592,6 +9592,7 @@ static const Properties uc_properties[] = {
 
 Q_DECL_CONST_FUNCTION static inline const Properties *qGetProp(char32_t ucs4) noexcept
 {
+    Q_ASSERT(ucs4 <= QChar::LastValidCodePoint);
     if (ucs4 < 0x11000)
         return uc_properties + uc_property_trie[uc_property_trie[ucs4 >> 5] + (ucs4 & 0x1f)];
 

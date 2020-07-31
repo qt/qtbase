@@ -4755,7 +4755,7 @@ bool QString::isUpper() const
     QStringIterator it(*this);
 
     while (it.hasNext()) {
-        const char32_t uc = it.nextUnchecked();
+        const char32_t uc = it.next();
         if (qGetProp(uc)->cases[QUnicodeTables::UpperCase].diff)
             return false;
     }
@@ -4781,7 +4781,7 @@ bool QString::isLower() const
     QStringIterator it(*this);
 
     while (it.hasNext()) {
-        const char32_t uc = it.nextUnchecked();
+        const char32_t uc = it.next();
         if (qGetProp(uc)->cases[QUnicodeTables::LowerCase].diff)
             return false;
     }
@@ -6143,7 +6143,7 @@ static QString detachAndConvertCase(T &str, QStringIterator it, QUnicodeTables::
     QChar *pp = s.begin() + it.index(); // will detach if necessary
 
     do {
-        const auto folded = fullConvertCase(it.nextUnchecked(), which);
+        const auto folded = fullConvertCase(it.next(), which);
         if (Q_UNLIKELY(folded.size() > 1)) {
             if (folded.chars[0] == *pp && folded.size() == 2) {
                 // special case: only second actually changed (e.g. surrogate pairs),
@@ -6183,9 +6183,9 @@ static QString convertCase(T &str, QUnicodeTables::Case which)
 
     QStringIterator it(p, e);
     while (it.hasNext()) {
-        const char32_t uc = it.nextUnchecked();
+        const char32_t uc = it.next();
         if (qGetProp(uc)->cases[which].diff) {
-            it.recedeUnchecked();
+            it.recede();
             return detachAndConvertCase(str, it, which);
         }
     }

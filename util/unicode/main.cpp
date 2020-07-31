@@ -2501,6 +2501,7 @@ static QByteArray createPropertyInfo()
 
     out += "Q_DECL_CONST_FUNCTION static inline const Properties *qGetProp(char32_t ucs4) noexcept\n"
            "{\n"
+           "    Q_ASSERT(ucs4 <= QChar::LastValidCodePoint);\n"
            "    if (ucs4 < 0x" + QByteArray::number(BMP_END, 16) + ")\n"
            "        return uc_properties + uc_property_trie[uc_property_trie[ucs4 >> "
            + QByteArray::number(BMP_SHIFT) + "] + (ucs4 & 0x"

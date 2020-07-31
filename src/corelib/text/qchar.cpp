@@ -1553,6 +1553,7 @@ static auto fullConvertCase(char32_t uc, QUnicodeTables::Case which) noexcept
         auto data() const { return chars; }
         auto size() const { return sz; }
     } result;
+    Q_ASSERT(uc <= QChar::LastValidCodePoint);
 
     auto pp = result.chars;
 

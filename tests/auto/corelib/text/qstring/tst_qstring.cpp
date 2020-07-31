@@ -458,6 +458,8 @@ private slots:
     void simplified_data();
     void simplified();
     void trimmed();
+    void unicodeTableAccess_data();
+    void unicodeTableAccess();
     void toUpper();
     void toLower();
     void isLower_isUpper_data();
@@ -1947,6 +1949,32 @@ void tst_QString::rightJustified()
     QCOMPARE(a.rightJustified(1,' ',true), QLatin1String("A"));
     QCOMPARE(a.rightJustified(0,' ',true), QLatin1String(""));
     QCOMPARE(a, QLatin1String("ABC"));
+}
+
+void tst_QString::unicodeTableAccess_data()
+{
+    QTest::addColumn<QString>("invalid");
+
+    const auto join = [](char16_t high, char16_t low) {
+        const QChar pair[2] = { high, low };
+        return QString(pair, 2);
+    };
+    // Least high surrogate for which an invalid successor produces an error:
+    QTest::newRow("least-high") << join(0xdbf8, 0xfc00);
+    // Least successor that, after a high surrogate, produces invalid:
+    QTest::newRow("least-follow") << join(0xdbff, 0xe000);
+}
+
+void tst_QString::unicodeTableAccess()
+{
+    // QString processing must not access unicode tables out of bounds.
+    QFETCH(QString, invalid);
+    // Exercise methods, to see if any assertions trigger:
+    const auto upper = invalid.toUpper();
+    const auto lower = invalid.toLower();
+    const auto folded = invalid.toCaseFolded();
+    // Fatuous test, just to use those.
+    QVERIFY(upper == invalid || lower == invalid || folded == invalid || lower != upper);
 }
 
 void tst_QString::toUpper()
