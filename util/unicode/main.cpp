@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the utils of the Qt Toolkit.
@@ -1638,7 +1638,7 @@ static QByteArray createNormalizationCorrections()
             qFatal("unknown unicode version in NormalizationCorrection.txt");
 
         out += "    { 0x" + QByteArray::number(c.codepoint, 16) + ", 0x" + QByteArray::number(c.mapped, 16)
-             + ", " + QString::number(c.version) + " },\n";
+             + ", " + QByteArray::number(c.version) + " },\n";
         ++numCorrections;
         maxVersion = qMax(c.version, maxVersion);
     }
