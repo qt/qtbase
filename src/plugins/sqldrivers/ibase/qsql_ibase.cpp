@@ -1055,10 +1055,10 @@ bool QIBaseResult::exec()
     }
 
     if (ok) {
+        isc_dsql_free_statement(d->status, &d->stmt, DSQL_close);
+        if (d->isError(QT_TRANSLATE_NOOP("QIBaseResult", "Unable to close statement")))
+            return false;
         if (colCount() && d->queryType != isc_info_sql_stmt_exec_procedure) {
-            isc_dsql_free_statement(d->status, &d->stmt, DSQL_close);
-            if (d->isError(QT_TRANSLATE_NOOP("QIBaseResult", "Unable to close statement")))
-                return false;
             cleanup();
         }
         if (d->queryType == isc_info_sql_stmt_exec_procedure)
