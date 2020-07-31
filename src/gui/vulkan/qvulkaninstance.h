@@ -62,6 +62,9 @@ typedef void* VkInstance;
 typedef void* VkPhysicalDevice;
 typedef void* VkDevice;
 typedef int VkResult;
+typedef int VkImageLayout;
+typedef int VkDebugReportFlagsEXT;
+typedef int VkDebugReportObjectTypeEXT;
 #endif
 
 #include <QtCore/qbytearraylist.h>
