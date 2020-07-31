@@ -34,10 +34,6 @@
 #include <QThread>
 #include <QElapsedTimer>
 
-QString test;
-QString test2;
-QString test3;
-
 // In order to catch when the warning message occurs, indicating that the database belongs to another
 // thread, we have to install our own message handler. To ensure that the test reporting still happens
 // as before, we call the originating one.
@@ -164,16 +160,6 @@ private:
 
 tst_QSqlTableModel::tst_QSqlTableModel()
 {
-    static QSqlDatabase static_qtest_db_1 = QSqlDatabase();
-    test = qTableName("test1", __FILE__, static_qtest_db_1);
-
-    static QSqlDatabase static_qtest_db_2 = QSqlDatabase();
-    test2 = qTableName("test2", __FILE__, static_qtest_db_2);
-
-    static QSqlDatabase static_qtest_db_3 = QSqlDatabase();
-    test3 = qTableName("test3", __FILE__, static_qtest_db_3);
-
-    QVERIFY(dbs.open());
 }
 
 tst_QSqlTableModel::~tst_QSqlTableModel()
@@ -190,9 +176,9 @@ void tst_QSqlTableModel::dropTestTables()
             QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
 
         QStringList tableNames;
-        tableNames << test
-                   << test2
-                   << test3
+        tableNames << qTableName("test1", __FILE__, db)
+                   << qTableName("test2", __FILE__, db)
+                   << qTableName("test3", __FILE__, db)
                    << qTableName("test4", __FILE__, db)
                    << qTableName("emptytable", __FILE__, db)
                    << qTableName("bigtable", __FILE__, db)
@@ -216,11 +202,11 @@ void tst_QSqlTableModel::createTestTables()
         QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
         QSqlQuery q(db);
 
-        QVERIFY_SQL( q, exec("create table " + test + "(id int, name varchar(20), title int)"));
+        QVERIFY_SQL( q, exec("create table " + qTableName("test1", __FILE__, db) + "(id int, name varchar(20), title int)"));
 
-        QVERIFY_SQL( q, exec("create table " + test2 + "(id int, title varchar(20))"));
+        QVERIFY_SQL( q, exec("create table " + qTableName("test2", __FILE__, db) + "(id int, title varchar(20))"));
 
-        QVERIFY_SQL( q, exec("create table " + test3 + "(id int, random varchar(20), randomtwo varchar(20))"));
+        QVERIFY_SQL( q, exec("create table " + qTableName("test3", __FILE__, db) + "(id int, random varchar(20), randomtwo varchar(20))"));
 
         if (dbType != QSqlDriver::MSSqlServer)
             QVERIFY_SQL(q, exec("create table " + qTableName("test4", __FILE__, db) + "(column1 varchar(50), column2 varchar(50), column3 varchar(50))"));
@@ -244,6 +230,9 @@ void tst_QSqlTableModel::repopulateTestTables()
     for (int i = 0; i < dbs.dbNames.count(); ++i) {
         QSqlDatabase db = QSqlDatabase::database(dbs.dbNames.at(i));
         QSqlQuery q(db);
+        const auto test = qTableName("test1", __FILE__, db);
+        const auto test2 = qTableName("test2", __FILE__, db);
+        const auto test3 = qTableName("test3", __FILE__, db);
 
         q.exec("delete from " + test);
         QVERIFY_SQL( q, exec("insert into " + test + " values(1, 'harry', 1)"));
@@ -316,6 +305,7 @@ void tst_QSqlTableModel::select()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    const auto test = qTableName("test1", __FILE__, db);
 
     QSqlTableModel model(0, db);
     model.setTable(test);
@@ -462,6 +452,7 @@ void tst_QSqlTableModel::insertColumns()
     QSqlTableModel::EditStrategy submitpolicy = (QSqlTableModel::EditStrategy) submitpolicy_i;
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    const auto test = qTableName("test1", __FILE__, db);
 
     QSqlTableModel model(0, db);
     model.setTable(test);
@@ -534,6 +525,7 @@ void tst_QSqlTableModel::setData()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    const auto test = qTableName("test1", __FILE__, db);
 
     QSqlTableModel model(0, db);
     model.setEditStrategy(QSqlTableModel::OnManualSubmit);
@@ -605,6 +597,7 @@ void tst_QSqlTableModel::setRecord()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    const auto test3 = qTableName("test3", __FILE__, db);
 
     QList<QSqlTableModel::EditStrategy> policies = QList<QSqlTableModel::EditStrategy>() << QSqlTableModel::OnFieldChange << QSqlTableModel::OnRowChange << QSqlTableModel::OnManualSubmit;
 
@@ -676,6 +669,8 @@ void tst_QSqlTableModel::setRecordReimpl()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    const auto test3 = qTableName("test3", __FILE__, db);
+
     SetRecordReimplModel model(0, db);
     model.setEditStrategy(QSqlTableModel::OnManualSubmit);
     model.setTable(test3);
@@ -712,6 +707,8 @@ void tst_QSqlTableModel::recordReimpl()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    const auto test3 = qTableName("test3", __FILE__, db);
+
     RecordReimplModel model(0, db);
     model.setEditStrategy(QSqlTableModel::OnManualSubmit);
     model.setTable(test3);
@@ -739,6 +736,7 @@ void tst_QSqlTableModel::insertRow()
     QSqlTableModel::EditStrategy submitpolicy = (QSqlTableModel::EditStrategy) submitpolicy_i;
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    const auto test = qTableName("test1", __FILE__, db);
 
     QSqlTableModel model(0, db);
     model.setEditStrategy(submitpolicy);
@@ -912,6 +910,7 @@ void tst_QSqlTableModel::insertRecord()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    const auto test = qTableName("test1", __FILE__, db);
 
     QSqlTableModel model(0, db);
     model.setEditStrategy(QSqlTableModel::OnManualSubmit);
@@ -945,6 +944,7 @@ void tst_QSqlTableModel::insertMultiRecords()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    const auto test = qTableName("test1", __FILE__, db);
 
     QSqlTableModel model(0, db);
     model.setEditStrategy(QSqlTableModel::OnManualSubmit);
@@ -1060,6 +1060,7 @@ void tst_QSqlTableModel::submitAll()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    const auto test = qTableName("test1", __FILE__, db);
 
     QSqlTableModel model(0, db);
     model.setTable(test);
@@ -1095,6 +1096,7 @@ void tst_QSqlTableModel::removeRow()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    const auto test = qTableName("test1", __FILE__, db);
 
     QSqlTableModel model(0, db);
     model.setTable(test);
@@ -1143,6 +1145,7 @@ void tst_QSqlTableModel::removeRows()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    const auto test = qTableName("test1", __FILE__, db);
 
     QSqlTableModel model(0, db);
     model.setTable(test);
@@ -1216,6 +1219,7 @@ void tst_QSqlTableModel::removeInsertedRow()
     QSqlTableModel::EditStrategy submitpolicy = (QSqlTableModel::EditStrategy) submitpolicy_i;
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    const auto test = qTableName("test1", __FILE__, db);
 
     QSqlTableModel model(0, db);
     model.setTable(test);
@@ -1279,6 +1283,7 @@ void tst_QSqlTableModel::removeInsertedRows()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    const auto test = qTableName("test1", __FILE__, db);
 
     QSqlTableModel model(0, db);
     model.setTable(test);
@@ -1476,6 +1481,7 @@ void tst_QSqlTableModel::isDirty()
     QSqlTableModel::EditStrategy submitpolicy = (QSqlTableModel::EditStrategy) submitpolicy_i;
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    const auto test = qTableName("test1", __FILE__, db);
 
     QSqlTableModel model(0, db);
     model.setEditStrategy(submitpolicy);
@@ -1760,6 +1766,7 @@ void tst_QSqlTableModel::setInvalidFilter()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    const auto test = qTableName("test1", __FILE__, db);
 
     // set an invalid filter, make sure it fails
     QSqlTableModel model(0, db);
@@ -1779,6 +1786,7 @@ void tst_QSqlTableModel::setFilter()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    const auto test = qTableName("test1", __FILE__, db);
 
     QSqlTableModel model(0, db);
     model.setTable(test);
@@ -1844,6 +1852,7 @@ void tst_QSqlTableModel::insertRecordBeforeSelect()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    const auto test = qTableName("test1", __FILE__, db);
 
     QSqlTableModel model(0, db);
     model.setTable(test);
@@ -1914,6 +1923,7 @@ void tst_QSqlTableModel::insertRecordsInLoop()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    const auto test = qTableName("test1", __FILE__, db);
 
     QSqlTableModel model(0, db);
     model.setTable(test);
@@ -2053,6 +2063,7 @@ void tst_QSqlTableModel::removeColumnAndRow()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    const auto test = qTableName("test1", __FILE__, db);
 
     QSqlTableModel model(0, db);
     model.setTable(test);
@@ -2081,6 +2092,7 @@ void tst_QSqlTableModel::insertBeforeDelete()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    const auto test = qTableName("test1", __FILE__, db);
 
     QSqlQuery q(db);
     QVERIFY_SQL( q, exec("insert into " + test + " values(9, 'andrew', 9)"));
@@ -2107,6 +2119,7 @@ void tst_QSqlTableModel::invalidFilterAndHeaderData()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    const auto test = qTableName("test1", __FILE__, db);
 
     QSqlTableModel model(0, db);
     model.setTable(test);

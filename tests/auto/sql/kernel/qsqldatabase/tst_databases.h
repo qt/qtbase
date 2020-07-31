@@ -67,9 +67,6 @@ static QString qGetHostName()
     return hostname;
 }
 
-// to prevent nameclashes on our database server, each machine
-// will use its own set of table names. Call this function to get
-// "tablename_hostname"
 inline QString fixupTableName(const QString &tableName, QSqlDatabase db)
 {
     QString tbName = tableName;
@@ -77,16 +74,21 @@ inline QString fixupTableName(const QString &tableName, QSqlDatabase db)
     QSqlDriverPrivate *d = static_cast<QSqlDriverPrivate *>(QObjectPrivate::get(db.driver()));
     if (d && d->dbmsType == QSqlDriver::Oracle)
         tbName.truncate(30);
+    // On Interbase we are limited to 31 character tablenames
+    if (d && d->dbmsType == QSqlDriver::Interbase)
+        tbName.truncate(31);
     return tbName;
 }
 
+// to prevent nameclashes on our database server, each machine
+// will use its own set of table names. Call this function to get
+// "tablename_hostname"
 inline static QString qTableName(const QString &prefix, const char *sourceFileName,
                                  QSqlDatabase db, bool escape = true)
 {
-    const auto tableStr = fixupTableName(QString(QLatin1String("dbtst") + db.driverName() +
-                                                 QString::number(qHash(QLatin1String(sourceFileName) +
-                                                 "_" + qGetHostName().replace("-", "_")), 16) +
-                                                 "_" + prefix), db);
+    const auto tableStr = fixupTableName(QString(QLatin1String("dbtst") + db.driverName() + "_" +
+                                                 prefix + QString::number(qHash(QLatin1String(sourceFileName) +
+                                                 "_" + qGetHostName().replace("-", "_")), 16)), db);
     return escape ? db.driver()->escapeIdentifier(tableStr, QSqlDriver::TableName) : tableStr;
 }
 
@@ -452,6 +454,8 @@ public:
             return QLatin1String("timestamptz");
         if (dbType == QSqlDriver::Oracle && getOraVersion(db) >= 9)
             return QLatin1String("timestamp(0)");
+        if (dbType == QSqlDriver::Interbase)
+            return QLatin1String("timestamp");
         return QLatin1String("datetime");
     }
 

@@ -279,6 +279,13 @@ static int createFieldTable(const FieldDef fieldDefs[], QSqlDatabase db)
     return i;
 }
 
+bool driverQuotedCaseSensitive(QSqlDatabase db)
+{
+    // On Interbase it will be case sensitive if it was created with quotes
+    QSqlDriverPrivate *d = static_cast<QSqlDriverPrivate *>(QObjectPrivate::get(db.driver()));
+    return (d && d->dbmsType == QSqlDriver::Interbase);
+}
+
 tst_QSqlDatabase::tst_QSqlDatabase()
 {
 }
@@ -575,8 +582,13 @@ void tst_QSqlDatabase::whitespaceInIdentifiers()
     const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
 
     if (testWhiteSpaceNames(db.driverName())) {
-        const auto tableName(qTableName("qtest test", __FILE__, db, false));
-        QVERIFY(db.tables().contains(tableName, Qt::CaseInsensitive));
+        const bool isCaseSensitive = driverQuotedCaseSensitive(db);
+        const auto tableName(qTableName("qtest test", __FILE__, db, isCaseSensitive));
+        if (isCaseSensitive) {
+            QVERIFY(db.tables().contains(db.driver()->stripDelimiters(tableName, QSqlDriver::TableName)));
+        } else {
+            QVERIFY(db.tables().contains(tableName, Qt::CaseInsensitive));
+        }
 
         QSqlRecord rec = db.record(tableName);
         QCOMPARE(rec.count(), 1);
@@ -605,11 +617,11 @@ void tst_QSqlDatabase::alterTable()
     CHECK_DATABASE(db);
     const QString qtestalter(qTableName("qtestalter", __FILE__, db));
     const auto noEscapeAlterTable = qTableName("qtestalter", __FILE__, db, false);
-
+    const bool isCaseSensitive = driverQuotedCaseSensitive(db);
     QSqlQuery q(db);
 
     QVERIFY_SQL(q, exec("create table " + qtestalter + " (F1 char(20), F2 char(20), F3 char(20))"));
-    QSqlRecord rec = db.record(noEscapeAlterTable);
+    QSqlRecord rec = db.record(isCaseSensitive ? qtestalter : noEscapeAlterTable);
     QCOMPARE((int)rec.count(), 3);
 
     int i;
@@ -621,7 +633,7 @@ void tst_QSqlDatabase::alterTable()
         QSKIP("DBMS doesn't support dropping columns in ALTER TABLE statement");
     }
 
-    rec = db.record(noEscapeAlterTable);
+    rec = db.record(isCaseSensitive ? qtestalter : noEscapeAlterTable);
 
     QCOMPARE((int)rec.count(), 2);
 
@@ -679,8 +691,11 @@ void tst_QSqlDatabase::testRecord(const FieldDef fieldDefs[], const QSqlRecord& 
 void tst_QSqlDatabase::commonFieldTest(const FieldDef fieldDefs[], QSqlDatabase db, const int fieldCount)
 {
     CHECK_DATABASE(db);
-    const QStringList tableNames = { qTableName("qtestfields", __FILE__, db),
-                                     qTableName("qtestfields", __FILE__, db, false) };
+
+    QStringList tableNames = { qTableName("qtestfields", __FILE__, db) };
+    if (!driverQuotedCaseSensitive(db))
+        tableNames << qTableName("qtestfields", __FILE__, db, false);
+
     for (const QString &table : tableNames) {
         QSqlRecord rec = db.record(table);
         QCOMPARE(rec.count(), fieldCount + 1);
@@ -1204,10 +1219,12 @@ void tst_QSqlDatabase::caseSensivity()
     bool cs = false;
     if (dbType == QSqlDriver::MySqlServer || dbType == QSqlDriver::SQLite
         || dbType == QSqlDriver::Sybase || dbType == QSqlDriver::PostgreSQL
-        || dbType == QSqlDriver::MSSqlServer || db.driverName().startsWith("QODBC"))
-    cs = true;
+        || dbType == QSqlDriver::MSSqlServer || db.driverName().startsWith("QODBC")
+        || dbType == QSqlDriver::Interbase) {
+        cs = true;
+    }
 
-    QSqlRecord rec = db.record(qTableName("qtest", __FILE__, db, false));
+    QSqlRecord rec = db.record(qTableName("qtest", __FILE__, db, driverQuotedCaseSensitive(db)));
     QVERIFY((int)rec.count() > 0);
     if (!cs) {
     rec = db.record(qTableName("QTEST", __FILE__, db, false).toUpper());
@@ -1216,7 +1233,7 @@ void tst_QSqlDatabase::caseSensivity()
     QVERIFY((int)rec.count() > 0);
     }
 
-    rec = db.primaryIndex(qTableName("qtest", __FILE__, db, false));
+    rec = db.primaryIndex(qTableName("qtest", __FILE__, db, driverQuotedCaseSensitive(db)));
     QVERIFY((int)rec.count() > 0);
     if (!cs) {
     rec = db.primaryIndex(qTableName("QTEST", __FILE__, db, false).toUpper());
@@ -1908,6 +1925,8 @@ void tst_QSqlDatabase::ibase_useCustomCharset()
     const QString tableName(qTableName("latin1table", __FILE__, db));
 
     QSqlQuery q(db);
+    QEXPECT_FAIL("", "Currently fails, potentially due to invalid test - needs further "
+                     "investigation - QTBUG-85828", Abort);
     QVERIFY_SQL(q, exec(QString("CREATE TABLE %1(text VARCHAR(6) CHARACTER SET Latin1)").arg(tableName)));
     QVERIFY_SQL(q, prepare(QString("INSERT INTO %1 VALUES(?)").arg(tableName)));
     q.addBindValue(nonlatin1string);

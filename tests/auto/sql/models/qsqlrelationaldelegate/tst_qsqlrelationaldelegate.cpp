@@ -34,9 +34,6 @@
 
 #include "../../kernel/qsqldatabase/tst_databases.h"
 
-QString reltest1;
-QString reltest2;
-
 class tst_QSqlRelationalDelegate : public QObject
 {
     Q_OBJECT
@@ -62,11 +59,6 @@ private:
 
 tst_QSqlRelationalDelegate::tst_QSqlRelationalDelegate()
 {
-    static QSqlDatabase static_qtest_db_1 = QSqlDatabase();
-    reltest1 = qTableName("reltest1", __FILE__, static_qtest_db_1);
-
-    static QSqlDatabase static_qtest_db_2 = QSqlDatabase();
-    reltest2 = qTableName("reltest2", __FILE__, static_qtest_db_2);
 }
 
 void tst_QSqlRelationalDelegate::initTestCase_data()
@@ -78,11 +70,23 @@ void tst_QSqlRelationalDelegate::initTestCase_data()
 
 void tst_QSqlRelationalDelegate::recreateTestTables(QSqlDatabase db)
 {
+    const auto reltest1 = qTableName("reltest1", __FILE__, db);
+    const auto reltest2 = qTableName("reltest2", __FILE__, db);
+
     dropTestTables(db);
 
     QSqlQuery q(db);
+    const auto idField = db.driver()->escapeIdentifier(QLatin1String("id"), QSqlDriver::FieldName);
+    const auto nameField = db.driver()->escapeIdentifier(QLatin1String("name"), QSqlDriver::FieldName);
+    const auto titleKeyField = db.driver()->escapeIdentifier(QLatin1String("title_key"),
+                                                             QSqlDriver::FieldName);
+    const auto anotherTitleField = db.driver()->escapeIdentifier(QLatin1String("another_title_key"),
+                                                                 QSqlDriver::FieldName);
+    const auto titleField = db.driver()->escapeIdentifier(QLatin1String("title"),
+                                                          QSqlDriver::FieldName);
     QVERIFY_SQL(q, exec("create table " + reltest1 +
-            " (id int not null primary key, name varchar(20), title_key int, another_title_key int)"));
+            " (" + idField + " int not null primary key, " + nameField + " varchar(20), " +
+            titleKeyField + " int, " + anotherTitleField + "int)"));
     QVERIFY_SQL(q, exec("insert into " + reltest1 + " values(1, 'harry', 1, 2)"));
     QVERIFY_SQL(q, exec("insert into " + reltest1 + " values(2, 'trond', 2, 1)"));
     QVERIFY_SQL(q, exec("insert into " + reltest1 + " values(3, 'vohi', 1, 2)"));
@@ -90,7 +94,8 @@ void tst_QSqlRelationalDelegate::recreateTestTables(QSqlDatabase db)
     QVERIFY_SQL(q, exec("insert into " + reltest1 + " values(5, 'nat', NULL, NULL)"));
     QVERIFY_SQL(q, exec("insert into " + reltest1 + " values(6, 'ale', NULL, 2)"));
 
-    QVERIFY_SQL(q, exec("create table " + reltest2 + " (id int not null primary key, title varchar(20))"));
+    QVERIFY_SQL(q, exec("create table " + reltest2 + " (" + idField + " int not null primary key, "
+                        + titleKeyField + " varchar(20))"));
     QVERIFY_SQL(q, exec("insert into " + reltest2 + " values(1, 'herr')"));
     QVERIFY_SQL(q, exec("insert into " + reltest2 + " values(2, 'mister')"));
 }
@@ -124,7 +129,7 @@ void tst_QSqlRelationalDelegate::cleanupTestCase()
 
 void tst_QSqlRelationalDelegate::dropTestTables(QSqlDatabase db)
 {
-    QStringList tableNames = { reltest1, reltest2 };
+    QStringList tableNames = { qTableName("reltest1", __FILE__, db), qTableName("reltest2", __FILE__, db) };
     tst_Databases::safeDropTables(db, tableNames);
 }
 
@@ -142,12 +147,18 @@ void tst_QSqlRelationalDelegate::comboBoxEditor()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
+    const auto reltest1 = qTableName("reltest1", __FILE__, db);
+    const auto reltest2 = qTableName("reltest2", __FILE__, db);
+    const auto idField = db.driver()->escapeIdentifier(QLatin1String("id"), QSqlDriver::FieldName);
+    const auto nameField = db.driver()->escapeIdentifier(QLatin1String("name"), QSqlDriver::FieldName);
+    const auto titleKeyField = db.driver()->escapeIdentifier(QLatin1String("title_key"),
+                                                             QSqlDriver::FieldName);
     QTableView tv;
     QSqlRelationalTableModel model(0, db);
     model.setEditStrategy(QSqlTableModel::OnManualSubmit);
     model.setTable(reltest1);
-    model.setRelation(2, QSqlRelation(reltest2, "id", "title"));
-    model.setRelation(3, QSqlRelation(reltest2, "id", "title"));
+    model.setRelation(2, QSqlRelation(reltest2, idField, titleKeyField));
+    model.setRelation(3, QSqlRelation(reltest2, idField, titleKeyField));
     tv.setModel(&model);
     QVERIFY_SQL(model, select());
 
@@ -171,7 +182,7 @@ void tst_QSqlRelationalDelegate::comboBoxEditor()
     QVERIFY_SQL(model, submitAll());
 
     QSqlQuery qry(db);
-    QVERIFY_SQL(qry, exec("SELECT title_key FROM " + reltest1 + " WHERE id=1"));
+    QVERIFY_SQL(qry, exec("SELECT " + titleKeyField + " FROM " + reltest1 + " WHERE " + idField + "=1"));
     QVERIFY(qry.next());
     QCOMPARE(qry.value(0).toString(), "2");
 }

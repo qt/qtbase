@@ -845,16 +845,17 @@ void tst_QSqlQuery::storedProceduresIBase()
     CHECK_DATABASE( db );
 
     QSqlQuery q( db );
-    q.exec("drop procedure " + qTableName("TESTPROC", __FILE__, db));
+    const auto procName = qTableName("TESTPROC", __FILE__, db);
+    q.exec("drop procedure " + procName);
 
-    QVERIFY_SQL(q, exec("create procedure " + qTableName("TESTPROC", __FILE__, db) +
+    QVERIFY_SQL(q, exec("create procedure " + procName +
                             " RETURNS (x integer, y varchar(20)) "
                             "AS BEGIN "
                             "  x = 42; "
                             "  y = 'Hello Anders'; "
                             "END" ) );
 
-    QVERIFY_SQL(q, prepare("execute procedure " + qTableName("TestProc", __FILE__, db)));
+    QVERIFY_SQL(q, prepare("execute procedure " + procName));
     QVERIFY_SQL( q, exec() );
 
     // check for a valid result set
@@ -871,7 +872,7 @@ void tst_QSqlQuery::storedProceduresIBase()
     // the second next shall fail
     QVERIFY( !q.next() );
 
-    q.exec("drop procedure " + qTableName("TestProc", __FILE__, db));
+    q.exec("drop procedure " + procName);
 }
 
 void tst_QSqlQuery::outValuesDB2()
@@ -2467,9 +2468,18 @@ void tst_QSqlQuery::batchExec()
     QSqlQuery q( db );
     const QString tableName = qTableName("qtest_batch", __FILE__, db);
     tst_Databases::safeDropTable(db, tableName);
+
+    const auto dbType = tst_Databases::getDatabaseType(db);
+    QString timeStampString;
+    if (dbType == QSqlDriver::Interbase)
+        timeStampString = QLatin1String("TIMESTAMP");
+    else
+        timeStampString = QLatin1String("TIMESTAMP (3)");
+
     QVERIFY_SQL(q, exec(QStringLiteral("create table ") + tableName +
                         QStringLiteral(" (id int, name varchar(20), dt date, num numeric(8, 4), "
-                                       "dtstamp TIMESTAMP(3), extraId int, extraName varchar(20))")));
+                                       "dtstamp ") + timeStampString +
+                                       QStringLiteral(", extraId int, extraName varchar(20))")));
 
     const QVariantList intCol = { 1, 2, QVariant(QVariant::Int) };
     const QVariantList charCol = { QStringLiteral("harald"), QStringLiteral("boris"),
@@ -3357,6 +3367,11 @@ void tst_QSqlQuery::timeStampParsing()
         QVERIFY_SQL(q, exec(QStringLiteral("CREATE TABLE ") + tableName + QStringLiteral("("
                             "id integer NOT NULL AUTO_INCREMENT,"
                             "datefield timestamp, primary key(id));")));
+    } else if (dbType == QSqlDriver::Interbase) {
+        // Since there is no auto-increment feature in Interbase we allow it to be null
+        QVERIFY_SQL(q, exec(QStringLiteral("CREATE TABLE ") + tableName + QStringLiteral("("
+                            "id integer,"
+                            "datefield timestamp);")));
     } else {
         QVERIFY_SQL(q, exec(QStringLiteral("CREATE TABLE ") + tableName + QStringLiteral("("
                             "\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT,"
@@ -4273,7 +4288,7 @@ void tst_QSqlQuery::aggregateFunctionTypes()
     QVariant::Type countType = intType;
     // QPSQL uses LongLong for manipulation of integers
     const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
-    if (dbType == QSqlDriver::PostgreSQL) {
+    if (dbType == QSqlDriver::PostgreSQL || dbType == QSqlDriver::Interbase) {
         sumType = countType = QVariant::LongLong;
     } else if (dbType == QSqlDriver::Oracle) {
         intType = sumType = countType = QVariant::Double;
@@ -4312,7 +4327,7 @@ void tst_QSqlQuery::aggregateFunctionTypes()
             QCOMPARE(q.record().field(0).metaType().id(), QVariant::Double);
         } else {
             QCOMPARE(q.value(0).toInt(), 1);
-            QCOMPARE(q.record().field(0).metaType().id(), QVariant::Int);
+            QCOMPARE(q.record().field(0).metaType().id(), (dbType == QSqlDriver::Interbase ? QVariant::LongLong : QVariant::Int));
         }
 
         QVERIFY_SQL(q, exec("SELECT COUNT(id) FROM " + tableName));
