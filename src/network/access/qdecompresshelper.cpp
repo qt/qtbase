@@ -510,16 +510,12 @@ qsizetype QDecompressHelper::readZLib(char *data, const qsizetype maxSize)
     static const size_t zlibMaxSize =
             size_t(std::numeric_limits<decltype(inflateStream->avail_in)>::max());
 
-    QByteArray input;
-    if (!compressedDataBuffer.isEmpty()) {
-        if (zlibMaxSize < size_t(compressedDataBuffer.sizeNextBlock()))
-            input = compressedDataBuffer.read(zlibMaxSize);
-        else
-            input = compressedDataBuffer.read();
-    }
+    QByteArrayView input = compressedDataBuffer.readPointer();
+    if (size_t(input.size()) > zlibMaxSize)
+        input = input.sliced(zlibMaxSize);
 
     inflateStream->avail_in = input.size();
-    inflateStream->next_in = reinterpret_cast<Bytef *>(input.data());
+    inflateStream->next_in = reinterpret_cast<Bytef *>(const_cast<char *>(input.data()));
 
     bool bigMaxSize = (zlibMaxSize < size_t(maxSize));
     qsizetype adjustedAvailableOut = bigMaxSize ? qsizetype(zlibMaxSize) : maxSize;
@@ -547,7 +543,8 @@ qsizetype QDecompressHelper::readZLib(char *data, const qsizetype maxSize)
                 return -1;
             } else {
                 inflateStream->avail_in = input.size();
-                inflateStream->next_in = reinterpret_cast<Bytef *>(input.data());
+                inflateStream->next_in =
+                        reinterpret_cast<Bytef *>(const_cast<char *>(input.data()));
                 continue;
             }
         } else if (ret < 0 || ret == Z_NEED_DICT) {
@@ -569,6 +566,7 @@ qsizetype QDecompressHelper::readZLib(char *data, const qsizetype maxSize)
                     delete inflateStream;
                     decoderPointer = nullptr;
                     // Failed to reinitialize, so we'll just return what we have
+                    compressedDataBuffer.advanceReadPointer(input.size() - avail_in);
                     return bytesDecoded;
                 } else {
                     inflateStream->next_in = next_in;
@@ -577,6 +575,7 @@ qsizetype QDecompressHelper::readZLib(char *data, const qsizetype maxSize)
                 }
             } else {
                 // No extra data, stream is at the end. We're done.
+                compressedDataBuffer.advanceReadPointer(input.size());
                 return bytesDecoded;
             }
         }
@@ -589,23 +588,19 @@ qsizetype QDecompressHelper::readZLib(char *data, const qsizetype maxSize)
             inflateStream->next_out = reinterpret_cast<Bytef *>(data + bytesDecoded);
         }
 
-        if (inflateStream->avail_in == 0 && inflateStream->avail_out > 0
-            && !compressedDataBuffer.isEmpty()) {
+        if (inflateStream->avail_in == 0 && inflateStream->avail_out > 0) {
             // Grab the next input!
-            if (zlibMaxSize < size_t(compressedDataBuffer.sizeNextBlock()))
-                input = compressedDataBuffer.read(zlibMaxSize);
-            else
-                input = compressedDataBuffer.read();
+            compressedDataBuffer.advanceReadPointer(input.size());
+            input = compressedDataBuffer.readPointer();
+            if (size_t(input.size()) > zlibMaxSize)
+                input = input.sliced(zlibMaxSize);
             inflateStream->avail_in = input.size();
-            inflateStream->next_in = reinterpret_cast<Bytef *>(input.data());
+            inflateStream->next_in =
+                    reinterpret_cast<Bytef *>(const_cast<char *>(input.data()));
         }
     } while (inflateStream->avail_out > 0 && inflateStream->avail_in > 0);
 
-    if (inflateStream->avail_in) {
-        // Some input was left unused; move back to the buffer
-        input = input.right(inflateStream->avail_in);
-        compressedDataBuffer.prepend(input);
-    }
+    compressedDataBuffer.advanceReadPointer(input.size() - inflateStream->avail_in);
 
     return bytesDecoded;
 }
@@ -645,10 +640,8 @@ qsizetype QDecompressHelper::readBrotli(char *data, const qsizetype maxSize)
         return bytesDecoded;
     Q_ASSERT(bytesDecoded < maxSize);
 
-    QByteArray input;
-    if (!compressedDataBuffer.isEmpty())
-        input = compressedDataBuffer.read();
-    const uint8_t *encodedPtr = reinterpret_cast<const uint8_t *>(input.constData());
+    QByteArrayView input = compressedDataBuffer.readPointer();
+    const uint8_t *encodedPtr = reinterpret_cast<const uint8_t *>(input.data());
     size_t encodedBytesRemaining = input.size();
 
     uint8_t *decodedPtr = reinterpret_cast<uint8_t *>(data + bytesDecoded);
@@ -668,10 +661,12 @@ qsizetype QDecompressHelper::readBrotli(char *data, const qsizetype maxSize)
         case BROTLI_DECODER_RESULT_SUCCESS:
             BrotliDecoderDestroyInstance(brotliDecoderState);
             decoderPointer = nullptr;
+            compressedDataBuffer.clear();
             return bytesDecoded;
         case BROTLI_DECODER_RESULT_NEEDS_MORE_INPUT:
-            if (!compressedDataBuffer.isEmpty()) {
-                input = compressedDataBuffer.read();
+            compressedDataBuffer.advanceReadPointer(input.size());
+            input = compressedDataBuffer.readPointer();
+            if (!input.isEmpty()) {
                 encodedPtr = reinterpret_cast<const uint8_t *>(input.constData());
                 encodedBytesRemaining = input.size();
                 break;
@@ -684,11 +679,7 @@ qsizetype QDecompressHelper::readBrotli(char *data, const qsizetype maxSize)
             break;
         }
     }
-    if (encodedBytesRemaining) {
-        // Some input was left unused; move back to the buffer
-        input = input.right(QByteArray::size_type(encodedBytesRemaining));
-        compressedDataBuffer.prepend(input);
-    }
+    compressedDataBuffer.advanceReadPointer(input.size() - encodedBytesRemaining);
     return bytesDecoded;
 #endif
 }
@@ -702,10 +693,8 @@ qsizetype QDecompressHelper::readZstandard(char *data, const qsizetype maxSize)
 #else
     ZSTD_DStream *zstdStream = toZstandardPointer(decoderPointer);
 
-    QByteArray input;
-    if (!compressedDataBuffer.isEmpty())
-        input = compressedDataBuffer.read();
-    ZSTD_inBuffer inBuf { input.constData(), size_t(input.size()), 0 };
+    QByteArrayView input = compressedDataBuffer.readPointer();
+    ZSTD_inBuffer inBuf { input.data(), size_t(input.size()), 0 };
 
     ZSTD_outBuffer outBuf { data, size_t(maxSize), 0 };
 
@@ -721,17 +710,14 @@ qsizetype QDecompressHelper::readZstandard(char *data, const qsizetype maxSize)
             // if pos == size then there may be data left over in internal buffers
             if (outBuf.pos == outBuf.size) {
                 decoderHasData = true;
-            } else if (inBuf.pos == inBuf.size && !compressedDataBuffer.isEmpty()) {
-                input = compressedDataBuffer.read();
+            } else if (inBuf.pos == inBuf.size) {
+                compressedDataBuffer.advanceReadPointer(input.size());
+                input = compressedDataBuffer.readPointer();
                 inBuf = { input.constData(), size_t(input.size()), 0 };
             }
         }
     }
-    if (inBuf.pos < inBuf.size) {
-        // Some input was left unused; move back to the buffer
-        input = input.mid(QByteArray::size_type(inBuf.pos));
-        compressedDataBuffer.prepend(std::move(input));
-    }
+    compressedDataBuffer.advanceReadPointer(inBuf.pos);
     return bytesDecoded;
 #endif
 }
