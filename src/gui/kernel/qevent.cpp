@@ -84,7 +84,7 @@ static const QString pointDeviceName(const QEventPoint &point)
 */
 
 /*!
-    Constructs an enter event object.
+    Constructs an enter event object originating from \a device.
 
     The points \a localPos, \a scenePos and \a globalPos specify the
     mouse cursor's position relative to the receiving widget or item,
@@ -339,7 +339,7 @@ QSizeF QEventPoint::ellipseDiameters() const
 bool QEventPoint::isAccepted() const
 { return d->accept; }
 
-/*
+/*!
     Sets the accepted state of the point.
 
     In widget-based applications, this function is not used so far, because
@@ -359,17 +359,17 @@ void QEventPoint::setAccepted(bool accepted)
     d->accept = accepted;
 }
 
-/*! \internal
-    void QMutableEventPoint::setPosition(const QPointF &pos)
+/*!
+    \obsolete
+    Deprecated since Qt 6.0. Use globalPosition() instead.
 
-    Sets the localized position.
+    Returns the normalized position of this point.
 
-    Often events need to be localized before delivery to specific widgets or
-    items. This can be done directly, or in a copy (for which we have a copy
-    constructor), depending on whether the original point needs to be retained.
-    Usually it's calculated by mapping scenePosition() to the target anyway.
+    The coordinates are normalized to QInputDevice::availableVirtualGeometry(),
+    i.e. (0, 0) is the top-left corner and (1, 1) is the bottom-right corner.
+
+    \sa startNormalizedPos(), lastNormalizedPos(), pos()
 */
-
 QPointF QEventPoint::normalizedPos() const
 {
     auto geom = d->device->availableVirtualGeometry();
@@ -378,6 +378,12 @@ QPointF QEventPoint::normalizedPos() const
     return (globalPosition() - geom.topLeft()) / geom.width();
 }
 
+/*!
+    \obsolete
+    Deprecated since Qt 6.0. Use globalPressPosition() instead.
+
+    Returns the normalized press position of this point.
+*/
 QPointF QEventPoint::startNormalizedPos() const
 {
     auto geom = d->device->availableVirtualGeometry();
@@ -386,6 +392,18 @@ QPointF QEventPoint::startNormalizedPos() const
     return (globalPressPosition() - geom.topLeft()) / geom.width();
 }
 
+/*!
+    \obsolete
+    Deprecated since Qt 6.0. Use globalLastPosition() instead.
+
+    Returns the normalized position of this touch point from the
+    previous touch event.
+
+    The coordinates are normalized to QInputDevice::availableVirtualGeometry(),
+    i.e. (0, 0) is the top-left corner and (1, 1) is the bottom-right corner.
+
+    \sa normalizedPos(), startNormalizedPos()
+*/
 QPointF QEventPoint::lastNormalizedPos() const
 {
     auto geom = d->device->availableVirtualGeometry();
@@ -414,6 +432,44 @@ void QMutableEventPoint::detach()
     d = new QEventPointPrivate(*d);
 }
 
+/*! \internal
+    void QMutableEventPoint::setPosition(const QPointF &pos)
+    Sets the localized position.
+    Often events need to be localized before delivery to specific widgets or
+    items. This can be done directly, or in a copy (for which we have a copy
+    constructor), depending on whether the original point needs to be retained.
+    Usually it's calculated by mapping scenePosition() to the target anyway.
+*/
+
+/*!
+    \class QPointerEvent
+    \since 6.0
+    \inmodule QtGui
+
+    \brief A base class for pointer events.
+*/
+
+/*!
+    \fn int QPointerEvent::pointCount() const
+
+    Returns the number of points in this pointer event.
+*/
+
+/*!
+    \fn const QEventPoint &QPointerEvent::point(int i) const
+
+    Returns a QEventPoint reference for a point at index \a i.
+*/
+
+/*!
+    \fn QPointingDevice::PointerType QPointerEvent::pointerType() const
+
+    Returns the type of point that generated the event.
+*/
+
+/*!
+    \internal
+*/
 QPointerEvent::QPointerEvent(QEvent::Type type, const QPointingDevice *dev, Qt::KeyboardModifiers modifiers)
     : QInputEvent(type, QEvent::PointerEventTag{}, dev, modifiers)
 {
@@ -423,8 +479,7 @@ QPointerEvent::~QPointerEvent()
 {
 }
 
-/*! \fn QPointingDevice* QPointerEvent::pointingDevice() const
-
+/*!
     Returns the source device from which this event originates.
 
     This is the same as QInputEvent::device() but typecast for convenience.
@@ -533,6 +588,93 @@ void QPointerEvent::clearPassiveGrabbers(const QEventPoint &point)
     point.d->passiveGrabbers.clear();
 }
 
+/*!
+    \class QSinglePointEvent
+    \since 6.0
+    \inmodule QtGui
+
+    \brief A base class for pointer events containing a single point, such as
+           mouse events.
+*/
+
+/*! \fn int QSinglePointEvent::pointCount() const
+
+    Returns the number of points in the event. For a QSinglePointEvent, this
+    is always 1.
+*/
+
+/*! \fn const QEventPoint &QSinglePointEvent::point(int i) const
+
+    Returns a reference to a point at index \a i. For a QSinglePointEvent,
+    \a i must be 0.
+*/
+
+/*! \fn Qt::MouseButton QSinglePointEvent::button() const
+
+    Returns the button that caused the event.
+
+    The returned value is always Qt::NoButton for mouse move events, as
+    well as \l TabletMove, \l TabletEnterProximity, and
+    \l TabletLeaveProximity events.
+
+    \sa buttons()
+*/
+
+/*! \fn Qt::MouseButtons QSinglePointEvent::buttons() const
+
+    Returns the button state when the event was generated.
+
+    The button state is a combination of Qt::LeftButton, Qt::RightButton,
+    and Qt::MidButton using the OR operator.
+
+    For mouse move or \l TabletMove events, this is all buttons that are
+    pressed down.
+
+    For mouse press, double click, or \l TabletPress events, this includes
+    the button that caused the event.
+
+    For mouse release or \l TabletRelease events, this excludes the button
+    that caused the event.
+
+    \sa button()
+*/
+
+/*! \fn QPointF QSinglePointEvent::position() const
+
+    Returns the position of the point in this event, relative to the widget or
+    item that received the event.
+
+    If you move your widgets around in response to mouse events, use
+    globalPosition() instead.
+
+    \sa globalPosition()
+*/
+
+/*! \fn QPointF QSinglePointEvent::scenePosition() const
+
+    Returns the position of the point in this event, relative to the window or
+    scene.
+
+    \sa QEventPoint::scenePosition()
+*/
+
+/*! \fn QPointF QSinglePointEvent::globalPosition() const
+
+    Returns the position of the point in this event on the screen or virtual
+    desktop.
+
+    \note The global position of a mouse pointer is recorded \e{at the time
+    of the event}. This is important on asynchronous window systems
+    such as X11; whenever you move your widgets around in response to
+    mouse events, globalPosition() can differ a lot from the current
+    cursor position returned by QCursor::pos().
+
+    \sa position()
+*/
+
+/*!
+    \internal
+*/
 QSinglePointEvent::QSinglePointEvent(QEvent::Type type, const QPointingDevice *dev, const QPointF &localPos, const QPointF &scenePos,
                                      const QPointF &globalPos, Qt::MouseButton button, Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers)
     : QPointerEvent(type, dev, modifiers),
@@ -556,7 +698,7 @@ QSinglePointEvent::QSinglePointEvent(QEvent::Type type, const QPointingDevice *d
 }
 
 /*!
-    Returns true if this event represents a \l {button()}{button} being pressed.
+    Returns \c true if this event represents a \l {button()}{button} being pressed.
 */
 bool QSinglePointEvent::isPressEvent() const
 {
@@ -564,7 +706,7 @@ bool QSinglePointEvent::isPressEvent() const
 }
 
 /*!
-    Returns true if this event does not include a change in \l {buttons()}{button state}.
+    Returns \c true if this event does not include a change in \l {buttons()}{button state}.
 */
 bool QSinglePointEvent::isUpdateEvent() const
 {
@@ -572,18 +714,12 @@ bool QSinglePointEvent::isUpdateEvent() const
 }
 
 /*!
-    Returns true if this event represents a \l {button()}{button} being released.
+    Returns \c true if this event represents a \l {button()}{button} being released.
 */
 bool QSinglePointEvent::isReleaseEvent() const
 {
     return m_button != Qt::NoButton && !m_mouseState.testFlag(m_button);
 }
-
-/*!
-    \fn QPointingDevice::PointerType QPointerEvent::pointerType() const
-
-    Returns the type of point that generated the event.
-*/
 
 /*!
     \class QMouseEvent
@@ -635,7 +771,7 @@ bool QSinglePointEvent::isReleaseEvent() const
 */
 
 /*!
-    Constructs a mouse event object.
+    Constructs a mouse event object originating from \a device.
 
     The \a type parameter must be one of QEvent::MouseButtonPress,
     QEvent::MouseButtonRelease, QEvent::MouseButtonDblClick,
@@ -667,7 +803,7 @@ QMouseEvent::QMouseEvent(Type type, const QPointF &localPos, Qt::MouseButton but
 }
 
 /*!
-    Constructs a mouse event object.
+    Constructs a mouse event object originating from \a device.
 
     The \a type parameter must be QEvent::MouseButtonPress,
     QEvent::MouseButtonRelease, QEvent::MouseButtonDblClick,
@@ -1010,7 +1146,7 @@ Qt::MouseEventFlags QMouseEvent::flags() const
 */
 
 /*!
-    Constructs a hover event object.
+    Constructs a hover event object originating from \a device.
 
     The \a type parameter must be QEvent::HoverEnter,
     QEvent::HoverLeave, or QEvent::HoverMove.
@@ -1051,7 +1187,7 @@ QHoverEvent::~QHoverEvent()
     have high-resolution trackpads, such as \macos. If that is the
     case, device()->type() will return QInputDevice::DeviceType::Touchpad.
 
-    The functions pos() and globalPos() return the mouse cursor's
+    The functions position() and globalPosition() return the mouse cursor's
     location at the time of the event.
 
     A wheel event contains a special accept flag that indicates
@@ -1072,12 +1208,6 @@ QHoverEvent::~QHoverEvent()
   \internal
 
   \value DefaultDeltasPerStep Defaqult deltas per step
-*/
-
-/*!
-    \fn Qt::MouseButtons QWheelEvent::buttons() const
-
-    Returns the mouse state when the event occurred.
 */
 
 /*!
@@ -1140,7 +1270,9 @@ QHoverEvent::~QHoverEvent()
     The mouse and keyboard states at the time of the event are specified by
     \a buttons and \a modifiers.
 
-    The scrolling phase of the event is specified by \a phase.
+    The scrolling phase of the event is specified by \a phase, and the
+    \a source indicates whether this is a genuine or artificial (synthesized)
+    event.
 
     If the system is configured to invert the delta values delivered with the
     event (such as natural scrolling of the touchpad on macOS), \a inverted
@@ -1223,31 +1355,6 @@ QWheelEvent::~QWheelEvent()
     \endlist
 
     \sa pixelDelta()
-*/
-
-/*!
-    \fn QPoint QWheelEvent::position() const
-    \since 5.14
-
-    Returns the position of the mouse cursor relative to the widget
-    or item that received the event.
-
-    If you move your widgets around in response to mouse events,
-    use globalPosition() instead of this function.
-
-    \sa globalPosition()
-*/
-
-/*!
-    \fn QPoint QWheelEvent::globalPosition() const
-
-    Returns the global position of the mouse pointer \e{at the time
-    of the event}. This is important on asynchronous window systems
-    such as X11; whenever you move your widgets around in response to
-    mouse events, globalPosition() can differ a lot from the current
-    cursor position returned by QCursor::pos().
-
-    \sa position()
 */
 
 /*!
@@ -2476,11 +2583,6 @@ QVariant QInputMethodQueryEvent::value(Qt::InputMethodQuery query) const
     If the tablet events are rejected, the synthetic mouse events may be
     compressed for efficiency.
 
-    New in Qt 5.4: QTabletEvent includes all information available from the
-    device, including \l QTabletEvent::buttons(). Previously it was not
-    possible to accept all tablet events and also know which stylus buttons
-    were pressed.
-
     Note that pressing the stylus button while the stylus hovers over the
     tablet will generate a button press on some types of tablets, while on
     other types it will be necessary to press the stylus against the tablet
@@ -2508,23 +2610,13 @@ QVariant QInputMethodQueryEvent::value(Qt::InputMethodQuery query) const
     The \a pos parameter indicates where the event occurred in the widget;
     \a globalPos is the corresponding position in absolute coordinates.
 
-    \a pressure gives the pressure exerted on the \a device.
-
-    \a deviceType, of type \l QInputDevice::DeviceType,
-    indicates the type of stylus or other tool the event comes from.
-
-    \a pointerType should be one of QPointingDevice::PointerType::Pen or
-    QPointingDevice::PointerType::Eraser, depending on which end of the
-    stylus the event comes from; or QPointingDevice::PointerType::Cursor
-    if \a deviceType is QInputDevice::DeviceType::Puck.
+    \a pressure gives the pressure exerted on the device \a dev.
 
     \a xTilt and \a yTilt give the device's degree of tilt from the
     x and y axes respectively.
 
     \a keyState specifies which keyboard modifiers are pressed (e.g.,
     \uicontrol{Ctrl}).
-
-    The \a uniqueID parameter gives the serial number of the current tool.
 
     The \a z parameter gives the Z coordinate of the device on the tablet;
     this is usually given by a wheel on a 4D mouse. If the device does not
@@ -2572,30 +2664,6 @@ QTabletEvent::QTabletEvent(Type type, const QPointingDevice *dev, const QPointF 
 QTabletEvent::~QTabletEvent()
 {
 }
-
-/*!
-    \fn Qt::MouseButton QTabletEvent::button() const
-
-    Returns the button that caused the event.
-
-    Note that the returned value is always Qt::NoButton for \l TabletMove,
-    \l TabletEnterProximity and \l TabletLeaveProximity events.
-
-    \sa buttons(), Qt::MouseButton
-*/
-
-/*!
-    \fn Qt::MouseButtons QTabletEvent::buttons() const
-
-    Returns the button state when the event was generated. The button state is
-    a combination of buttons from the \l Qt::MouseButton enum using the OR
-    operator. For \l TabletMove events, this is all buttons that are pressed
-    down. For \l TabletPress events this includes the button that caused the
-    event. For \l TabletRelease events this excludes the button that caused the
-    event.
-
-    \sa button(), Qt::MouseButton
-*/
 
 /*!
     \fn qreal QTabletEvent::tangentialPressure() const
@@ -2836,13 +2904,6 @@ QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QPoin
 
 QNativeGestureEvent::~QNativeGestureEvent()
     = default;
-
-/*!
-    \fn const QPointingDevice *QNativeGestureEvent::device() const
-    \since 5.10
-
-    Returns the device.
-*/
 
 /*!
     \fn QNativeGestureEvent::gestureType() const
@@ -4431,7 +4492,8 @@ QTouchEvent::QTouchEvent(QEvent::Type eventType,
 }
 
 /*!
-    \obsolete Try to use another constructor, because \a touchPointStates
+    \obsolete
+    Try to use another constructor, because \a touchPointStates
     can be calculated from the given \a touchPoints.
 
     Constructs a QTouchEvent with the given \a eventType, \a device, and
@@ -4508,16 +4570,39 @@ bool QTouchEvent::isReleaseEvent() const
     \inmodule QtGui
 */
 
-/*! \fn int QEventPoint::id() const
-    Returns the id number of this touch point.
+/*!
+    \enum QEventPoint::State
 
-    Do not assume that id numbers start at zero or that they are sequential.
-    Such an assumption is often false due to the way the underlying drivers work.
+    Specifies the state of this event point.
+
+    \value  Unknown
+            Unknown state.
+
+    \value  Stationary
+            The event point did not move.
+
+    \value  Pressed
+            The touch point or button is pressed.
+
+    \value  Updated
+            The event point was updated.
+
+    \value  Released
+            The touch point or button was released.
+*/
+
+/*! \fn int QEventPoint::id() const
+
+    Returns the ID number of this event point.
+
+    \note Do not assume that ID numbers start at zero or that they are
+          sequential. Such an assumption is often false due to the way
+          the underlying drivers work.
 */
 
 /*! \fn QPointingDeviceUniqueId QEventPoint::uniqueId() const
-    \since 5.8
-    Returns the unique ID of this touch point or token, if any.
+
+    Returns the unique ID of this point or token, if any.
 
     It is often invalid (see \l {QPointingDeviceUniqueId::isValid()} {isValid()}),
     because touchscreens cannot uniquely identify fingers.
@@ -4527,8 +4612,6 @@ bool QTouchEvent::isReleaseEvent() const
 
     It may identify a specific token (fiducial object) when the TUIO driver is
     in use with a touchscreen that supports them.
-
-    \sa flags
 */
 
 /*! \fn QEventPoint::State QEventPoint::state() const
@@ -4536,6 +4619,14 @@ bool QTouchEvent::isReleaseEvent() const
 */
 
 /*! \fn QPointF QEventPoint::position() const
+
+    Returns the position of this point, relative to the widget
+    or item that received the event.
+*/
+
+/*! \fn QPointF QEventPoint::pos() const
+    \obsolete
+    Deprecated since Qt 6.0. Use position() instead.
 
     Returns the position of this point, relative to the widget
     or item that received the event.
@@ -4555,17 +4646,6 @@ bool QTouchEvent::isReleaseEvent() const
     Returns the position of this point on the screen or virtual desktop.
 
     \sa globalPressPosition(), position(), scenePosition()
-*/
-
-/*! \fn QPointF QEventPoint::normalizedPos() const
-    \deprecated in Qt 6.0. Use globalPosition() instead.
-
-    Returns the normalized position of this point.
-
-    The coordinates are normalized to QInputDevice::availableVirtualGeometry(),
-    i.e. (0,0) is the top-left corner and (1,1) is the bottom-right corner.
-
-    \sa startNormalizedPos(), lastNormalizedPos(), pos()
 */
 
 /*! \fn QPointF QEventPoint::pressPosition() const
@@ -4595,10 +4675,10 @@ bool QTouchEvent::isReleaseEvent() const
     Returns the position of this point from the previous event,
     relative to the widget or QGraphicsItem that received the event.
 
-    \sa pos(), startPos()
+    \sa position(), pressPosition()
 */
 
-/*! \fn QPointF QEventPoint::lastScenePosition() const
+/*! \fn QPointF QEventPoint::sceneLastPosition() const
     Returns the scene position of this point from the previous event.
 
     The scene position is the position in QGraphicsScene coordinates
@@ -4606,18 +4686,7 @@ bool QTouchEvent::isReleaseEvent() const
     reimplementation, and identical to the screen position for
     widgets.
 
-    \sa scenePos(), startScenePos()
-*/
-
-/*! \fn QPointF QEventPoint::lastNormalizedPos() const
-    \deprecated in 6.0: use globalLastPosition()
-    Returns the normalized position of this touch point from the
-    previous touch event.
-
-    The coordinates are normalized to QInputDevice::availableVirtualGeometry(),
-    i.e. (0,0) is the top-left corner and (1,1) is the bottom-right corner.
-
-    \sa normalizedPos(), startNormalizedPos()
+    \sa scenePosition(), scenePressPosition()
 */
 
 /*! \fn qreal QEventPoint::pressure() const
@@ -4626,7 +4695,7 @@ bool QTouchEvent::isReleaseEvent() const
 */
 
 /*! \fn qreal QEventPoint::rotation() const
-    \since 5.8
+
     Returns the angular orientation of this point. The return value is in degrees,
     where zero (the default) indicates the finger, token or stylus is pointing upwards,
     a negative angle means it's rotated to the left, and a positive angle means
@@ -4635,21 +4704,22 @@ bool QTouchEvent::isReleaseEvent() const
 */
 
 /*! \fn QSizeF QEventPoint::ellipseDiameters() const
-    \since 5.9
+
     Returns the width and height of the bounding ellipse of the touch point.
     The return value is in logical pixels. Most touchscreens do not detect the
-    shape of the contact point, and no mice or tablet devices can do detect it,
+    shape of the contact point, and no mice or tablet devices can detect it,
     so a null size is the most common value. On some touchscreens the diameters
-    may be nonzero and equal (the ellipse is approximated as a circle).
+    may be nonzero and always equal (the ellipse is approximated as a circle).
 */
 
 /*!
+    \fn QVector2D QEventPoint::velocity() const
     Returns a velocity vector for this point.
     The vector is in the screen's coordinate system, using pixels per seconds for the magnitude.
 
     \note The returned vector is only valid if the device's capabilities include QInputDevice::Velocity.
 
-    \sa QInputDevice::capabilities(), device()
+    \sa QInputDevice::capabilities(), QInputEvent::device()
 */
 
 /*!
@@ -4664,8 +4734,8 @@ bool QTouchEvent::isReleaseEvent() const
     The object receiving this event should set viewportSize, maxContentPos and contentPos.
     It also should accept this event to indicate that scrolling should be started.
 
-    It is not guaranteed that a QScrollEvent will be sent after an acceepted
-    QScrollPrepareEvent, e.g. in a case where the maximum content position is (0,0).
+    It is not guaranteed that a QScrollEvent will be sent after an accepted
+    QScrollPrepareEvent, e.g. in a case where the maximum content position is (0, 0).
 
     \sa QScrollEvent, QScroller
 */

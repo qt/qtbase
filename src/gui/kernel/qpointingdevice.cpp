@@ -103,6 +103,9 @@ Q_DECLARE_LOGGING_CATEGORY(lcQpaInputDevices)
         A device that is similar to a flat mouse with a transparent circle with
         cross-hairs.
 
+    \value Keyboard
+        A keyboard.
+
     \value AllDevices
         Any of the above (used as a default filter value).
 */
@@ -133,38 +136,10 @@ Q_DECLARE_LOGGING_CATEGORY(lcQpaInputDevices)
     \value Eraser
         The other end of the stylus (if it has a virtual eraser on the other end).
     \value Cursor
-        A transparent circle with cross-hairs as found on a \l {DeviceType.Puck}{Puck} device.
+        A transparent circle with cross-hairs as found on a
+        \l {QInputDevice::DeviceType}{Puck} device.
     \value AllPointerTypes
         Any of the above (used as a default filter value).
-*/
-
-/*! \enum QPointingDevice::Capability
-
-    This enum is used with QPointingDevice::capabilities() to indicate what kind of information the
-    touch device or its driver can provide.
-
-    \value Position
-        Indicates that position information is available, meaning that the
-        pos() family of functions in the touch points return valid points.
-
-    \value Area
-        Indicates that touch area information is available, meaning that the
-        rect() family of functions in the touch points return valid rectangles.
-
-    \value Pressure
-        Indicates that pressure information is available, meaning that
-        QPointerEvent::EventPoint::pressure() returns a valid value.
-
-    \value Velocity
-        Indicates that velocity information is available, meaning that
-        QPointerEvent::EventPoint::velocity() returns a valid vector.
-
-    \value NormalizedPosition
-        Indicates that the normalized position is available, meaning that
-        QPointerEvent::EventPoint::normalizedPos() returns a valid value.
-
-    \value MouseEmulation
-        Indicates that the device synthesizes mouse events.
 */
 
 /*!
@@ -183,8 +158,8 @@ QPointingDevice::~QPointingDevice()
 
 /*!
     Creates a new pointing device instance with the given
-    \a deviceType, \a pointerType, \a capabilities, \a maxPoints,
-    \a buttonCount, \a name, \a id and \a seatId.
+    \a name, \a deviceType, \a pointerType, \a capabilities, \a maxPoints,
+    \a buttonCount, \a seatName, \a uniqueId and \a parent.
 */
 QPointingDevice::QPointingDevice(const QString &name, qint64 id, QInputDevice::DeviceType deviceType,
                                  QPointingDevice::PointerType pointerType, Capabilities capabilities, int maxPoints, int buttonCount,

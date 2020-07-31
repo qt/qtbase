@@ -68,6 +68,67 @@ Q_DECLARE_LOGGING_CATEGORY(lcQpaInputDevices)
 */
 
 /*!
+    \enum QInputDevice::Capability
+
+    Indicates what kind of information the input device or its driver can
+    provide.
+
+    \value None
+           No information about input device capabilities available.
+
+    \value Position
+           Indicates that position information is available, meaning that the
+           position() family of functions in the touch points return valid points.
+
+    \value Area
+           Indicates that touch area information is available, meaning that
+           QEventPoint::ellipseDiameters() in the touch points return valid
+           values.
+
+    \value Pressure
+           Indicates that pressure information is available, meaning that
+           QEventPoint::pressure() returns a valid value.
+
+    \value Velocity
+           Indicates that velocity information is available, meaning that
+           QEventPoint::velocity() returns a valid vector.
+
+    \value NormalizedPosition
+           Indicates that the normalized position is available, meaning that
+           QEventPoint::globalPosition() returns a valid value.
+
+    \value MouseEmulation
+           Indicates that the device synthesizes mouse events.
+
+    \value Scroll
+           Indicates that the device has a scroll capability.
+
+    \value Hover
+           Indicates that the device has a hover capability.
+
+    \value Rotation
+           Indicates that \l {QEventPoint::}{rotation} information is available.
+
+    \value XTilt
+           Indicates that \l {QTabletEvent::xTilt()}{tilt} information is
+           available for the X-axis.
+
+    \value YTilt
+           Indicates that \l {QTabletEvent::yTilt()}{tilt} information is
+           available for the Y-axis.
+
+    \value TangentialPressure
+           Indicates that \l {QTabletEvent::tangentialPressure()}
+           {tangential pressure} information is  available.
+
+    \value ZPosition
+           Indicates that position information for the \l {QTabletEvent::z()}
+           {Z-axis} is available.
+
+    \value All
+*/
+
+/*!
     Creates a new invalid input device instance.
 */
 QInputDevice::QInputDevice()
@@ -116,17 +177,17 @@ QInputDevice::QInputDevice(QInputDevicePrivate &d, QObject *parent)
     Returns the region within the \l{QScreen::availableVirtualGeometry}{virtual desktop}
     that this device can access.
 
-    For example a \l {QInputDevice::DeviceType::TouchScreen}{TouchScreen} input
+    For example a \l {QInputDevice::DeviceType}{TouchScreen} input
     device is fixed in place upon a single physical screen, and usually
     calibrated so that this area is the same as QScreen::geometry(); whereas a
-    \l {QInputDevice::DeviceType::Mouse}{Mouse} can probably access all screens
+    \l {QInputDevice::DeviceType}{Mouse} can probably access all screens
     on the virtual desktop. A Wacom graphics tablet may be configured in a way
     that it's mapped to all screens, or only to the screen where the user
     prefers to create drawings, or to the window in which drawing occurs.
-    A \l {QInputDevice::DeviceType::Stylus}{Stylus} device that is integrated
+    A \l {QInputDevice::DeviceType}{Stylus} device that is integrated
     with a touchscreen may be physically limited to that screen.
 
-    If the returned rectangle is \l {null}{QRect::isNull()}, it means this device
+    If the returned rectangle is \l {QRect::isNull()}{null}, it means this device
     can access the entire virtual desktop.
 */
 QRect QInputDevice::availableVirtualGeometry() const
@@ -207,7 +268,7 @@ static QBasicMutex devicesMutex;
 
     \note The returned list cannot be used to add new devices. To add a simulated
     touch screen for an autotest, QTest::createTouchDevice() can be used.
-    Platform plugins should call \l QWindowSystemInterface::registerInputDevice()
+    Platform plugins should call QWindowSystemInterface::registerInputDevice()
     to add devices as they are discovered.
 */
 QList<const QInputDevice *> QInputDevice::devices()
