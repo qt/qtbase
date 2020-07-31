@@ -209,6 +209,33 @@ public:
         return d->constAllocatedCapacity() - freeSpaceAtBegin() - this->size;
     }
 
+    static QArrayDataPointer allocateGrow(const QArrayDataPointer &from, qsizetype capacity,
+                                          qsizetype newSize, QArrayData::ArrayOptions options)
+    {
+        auto [header, dataPtr] = Data::allocate(capacity, options);
+        const bool valid = header != nullptr && dataPtr != nullptr;
+        const bool grows = (options & (Data::GrowsForward | Data::GrowsBackwards));
+        if (!valid || !grows)
+            return QArrayDataPointer(header, dataPtr);
+
+        // when growing, special rules apply to memory layout
+
+        if (from.needsDetach()) {
+            // When detaching: the free space reservation is biased towards
+            // append as in Qt5 QList. If we're growing backwards, put the data
+            // in the middle instead of at the end - assuming that prepend is
+            // uncommon and even initial prepend will eventually be followed by
+            // at least some appends.
+            if (options & Data::GrowsBackwards)
+                dataPtr += (header->alloc - newSize) / 2;
+        } else {
+            // When not detaching: fake ::realloc() policy - preserve existing
+            // free space at beginning.
+            dataPtr += from.freeSpaceAtBegin();
+        }
+        return QArrayDataPointer(header, dataPtr);
+    }
+
 private:
     Q_REQUIRED_RESULT QPair<Data *, T *> clone(QArrayData::ArrayOptions options) const
     {

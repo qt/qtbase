@@ -560,10 +560,12 @@ inline void QList<T>::append(const_iterator i1, const_iterator i2)
 {
     if (i1 == i2)
         return;
-    const size_t newSize = size() + std::distance(i1, i2);
-    if (d->needsDetach() || newSize > d->allocatedCapacity()) {
-        DataPointer detached(Data::allocate(d->detachCapacity(newSize),
-                                            d->detachFlags() | Data::GrowsForward));
+    const size_t distance = std::distance(i1, i2);
+    const size_t newSize = size() + distance;
+    const bool shouldGrow = d->shouldGrowBeforeInsert(d.end(), qsizetype(distance));
+    if (d->needsDetach() || newSize > d->allocatedCapacity() || shouldGrow) {
+        DataPointer detached(DataPointer::allocateGrow(d, d->detachCapacity(newSize), newSize,
+                                                       d->detachFlags() | Data::GrowsForward));
         detached->copyAppend(constBegin(), constEnd());
         detached->copyAppend(i1, i2);
         d.swap(detached);
@@ -582,9 +584,10 @@ inline void QList<T>::append(QList<T> &&other)
         return append(other);
 
     const size_t newSize = size() + other.size();
-    if (d->needsDetach() || newSize > d->allocatedCapacity()) {
-        DataPointer detached(Data::allocate(d->detachCapacity(newSize),
-                                            d->detachFlags() | Data::GrowsForward));
+    const bool shouldGrow = d->shouldGrowBeforeInsert(d.end(), other.size());
+    if (d->needsDetach() || newSize > d->allocatedCapacity() || shouldGrow) {
+        DataPointer detached(DataPointer::allocateGrow(d, d->detachCapacity(newSize), newSize,
+                                                       d->detachFlags() | Data::GrowsForward));
 
         if (!d->needsDetach())
             detached->moveAppend(begin(), end());
@@ -610,10 +613,12 @@ QList<T>::insert(qsizetype i, qsizetype n, parameter_type t)
     // it's not worth wasting CPU cycles for that
 
     const size_t newSize = size() + n;
-    if (d->needsDetach() || newSize > d->allocatedCapacity()) {
+    const bool shouldGrow = d->shouldGrowBeforeInsert(d.begin() + i, n);
+    if (d->needsDetach() || newSize > d->allocatedCapacity() || shouldGrow) {
         typename Data::ArrayOptions flags = d->detachFlags() | Data::GrowsForward;
 
-        DataPointer detached(Data::allocate(d->detachCapacity(newSize), flags));
+        DataPointer detached(DataPointer::allocateGrow(d, d->detachCapacity(newSize), newSize,
+                                                       flags));
         const_iterator where = constBegin() + i;
         detached->copyAppend(constBegin(), where);
         detached->copyAppend(n, t);
@@ -638,11 +643,13 @@ QList<T>::emplace(qsizetype i, Args&&... args)
 {
      Q_ASSERT_X(i >= 0 && i <= d->size, "QList<T>::insert", "index out of range");
 
+    const bool shouldGrow = d->shouldGrowBeforeInsert(d.begin() + i, 1);
     const size_t newSize = size() + 1;
-    if (d->needsDetach() || newSize > d->allocatedCapacity()) {
+    if (d->needsDetach() || newSize > d->allocatedCapacity() || shouldGrow) {
         typename Data::ArrayOptions flags = d->detachFlags() | Data::GrowsForward;
 
-        DataPointer detached(Data::allocate(d->detachCapacity(newSize), flags));
+        DataPointer detached(DataPointer::allocateGrow(d, d->detachCapacity(newSize), newSize,
+                                                       flags));
         const_iterator where = constBegin() + i;
 
         // First, create an element to handle cases, when a user moves

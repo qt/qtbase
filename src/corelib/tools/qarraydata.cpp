@@ -145,7 +145,7 @@ static inline qsizetype calculateBlockSize(qsizetype &capacity, qsizetype object
     // Calculate the byte size
     // allocSize = objectSize * capacity + headerSize, but checked for overflow
     // plus padded to grow in size
-    if (options & QArrayData::GrowsForward) {
+    if (options & (QArrayData::GrowsForward | QArrayData::GrowsBackwards)) {
         auto r = qCalculateGrowingBlockSize(capacity, objectSize, headerSize);
         capacity = r.elementCount;
         return r.size;

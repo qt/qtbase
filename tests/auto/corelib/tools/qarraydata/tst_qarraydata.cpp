@@ -38,6 +38,7 @@
 #include <algorithm>
 #include <vector>
 #include <stdexcept>
+#include <functional>
 
 // A wrapper for a test function. Calls a function, if it fails, reports failure
 #define RUN_TEST_FUNC(test, ...) \
@@ -78,6 +79,10 @@ private slots:
     void grow();
     void freeSpace_data();
     void freeSpace();
+    void dataPointerAllocate_data() { arrayOps_data(); }
+    void dataPointerAllocate();
+    void dataPointerAllocateAlignedWithReallocate_data();
+    void dataPointerAllocateAlignedWithReallocate();
 #ifndef QT_NO_EXCEPTIONS
     void exceptionSafetyPrimitives_constructor();
     void exceptionSafetyPrimitives_destructor();
@@ -473,7 +478,8 @@ void tst_QArrayData::allocate_data()
     } options[] = {
         { "Default", QArrayData::DefaultAllocationFlags, false },
         { "Reserved", QArrayData::CapacityReserved, true },
-        { "Grow", QArrayData::GrowsForward, false }
+        { "Grow", QArrayData::GrowsForward, false },
+        { "GrowBack", QArrayData::GrowsBackwards, false }
     };
 
     for (size_t i = 0; i < sizeof(types)/sizeof(types[0]); ++i)
@@ -507,7 +513,7 @@ void tst_QArrayData::allocate()
 
         keeper.headers.append(data);
 
-        if (allocateOptions & QArrayData::GrowsForward)
+        if (allocateOptions & (QArrayData::GrowsForward | QArrayData::GrowsBackwards))
             QVERIFY(data->allocatedCapacity() > capacity);
         else
             QCOMPARE(data->allocatedCapacity(), capacity);
@@ -549,7 +555,7 @@ void tst_QArrayData::reallocate()
     keeper.headers.clear();
     keeper.headers.append(data);
 
-    if (allocateOptions & QArrayData::GrowsForward)
+    if (allocateOptions & (QArrayData::GrowsForward | QArrayData::GrowsBackwards))
         QVERIFY(data->allocatedCapacity() > newCapacity);
     else
         QCOMPARE(data->allocatedCapacity(), newCapacity);
@@ -1128,6 +1134,7 @@ void tst_QArrayData::arrayOpsExtra()
 
     const auto setupDataPointers = [&allocationOptions] (size_t capacity, size_t initialSize = 0) {
         const qsizetype alloc = qsizetype(capacity);
+        // QTBUG-84320: change to growing function once supported
         QArrayDataPointer<int> i(QTypedArrayData<int>::allocate(alloc, allocationOptions));
         QArrayDataPointer<QString> s(QTypedArrayData<QString>::allocate(alloc, allocationOptions));
         QArrayDataPointer<CountedObject> o(QTypedArrayData<CountedObject>::allocate(alloc, allocationOptions));
@@ -1839,14 +1846,14 @@ void tst_QArrayData::freeSpace()
 {
     QFETCH(QArrayData::ArrayOptions, allocationOptions);
     QFETCH(size_t, n);
-    const auto testFreeSpace = [] (auto dummy, auto options, size_t n) {
+    const auto testFreeSpace = [] (auto dummy, auto options, qsizetype n) {
         using Type = std::decay_t<decltype(dummy)>;
-        using Data = QTypedArrayData<Type>;
         using DataPointer = QArrayDataPointer<Type>;
         Q_UNUSED(dummy);
-        DataPointer ptr(Data::allocate(n, options));
+        const qsizetype capacity = n + 1;
+        auto ptr = DataPointer::allocateGrow(DataPointer(), capacity, n, options);
         const auto alloc = qsizetype(ptr.constAllocatedCapacity());
-        QVERIFY(size_t(alloc) >= n);
+        QVERIFY(alloc >= capacity);
         QCOMPARE(ptr.freeSpaceAtBegin() + ptr.freeSpaceAtEnd(), alloc);
     };
     RUN_TEST_FUNC(testFreeSpace, char(0), allocationOptions, n);
@@ -1854,6 +1861,122 @@ void tst_QArrayData::freeSpace()
     RUN_TEST_FUNC(testFreeSpace, int(0), allocationOptions, n);
     RUN_TEST_FUNC(testFreeSpace, QString(), allocationOptions, n);
     RUN_TEST_FUNC(testFreeSpace, CountedObject(), allocationOptions, n);
+}
+
+void tst_QArrayData::dataPointerAllocate()
+{
+    QFETCH(QArrayData::ArrayOptions, allocationOptions);
+    const auto createDataPointer = [] (qsizetype capacity, auto initValue) {
+        using Type = std::decay_t<decltype(initValue)>;
+        Q_UNUSED(initValue);
+        return QArrayDataPointer<Type>(QTypedArrayData<Type>::allocate(capacity));
+    };
+
+    const auto testRealloc = [&] (qsizetype capacity, qsizetype newSize, auto initValue) {
+        using Type = std::decay_t<decltype(initValue)>;
+        using DataPointer = QArrayDataPointer<Type>;
+
+        auto oldDataPointer = createDataPointer(capacity, initValue);
+        oldDataPointer->insert(oldDataPointer.begin(), 1, initValue);  // trigger prepend
+        QVERIFY(!oldDataPointer.needsDetach());
+
+        auto newDataPointer = DataPointer::allocateGrow(
+            oldDataPointer, oldDataPointer->detachCapacity(newSize), newSize, allocationOptions);
+        const auto newAlloc = newDataPointer.constAllocatedCapacity();
+        const auto freeAtBegin = newDataPointer.freeSpaceAtBegin();
+        const auto freeAtEnd = newDataPointer.freeSpaceAtEnd();
+
+        QVERIFY(newAlloc > oldDataPointer.constAllocatedCapacity());
+        QCOMPARE(size_t(freeAtBegin + freeAtEnd), newAlloc);
+        // when not detached, the behavior is the same as of ::realloc
+        if (allocationOptions & (QArrayData::GrowsForward | QArrayData::GrowsBackwards))
+            QCOMPARE(freeAtBegin, oldDataPointer.freeSpaceAtBegin());
+        else
+            QCOMPARE(freeAtBegin, 0);
+    };
+
+    for (size_t n : {10, 512, 1000}) {
+        RUN_TEST_FUNC(testRealloc, n, n + 1, int(0));
+        RUN_TEST_FUNC(testRealloc, n, n + 1, char('a'));
+        RUN_TEST_FUNC(testRealloc, n, n + 1, char16_t(u'a'));
+        RUN_TEST_FUNC(testRealloc, n, n + 1, QString("hello, world!"));
+        RUN_TEST_FUNC(testRealloc, n, n + 1, CountedObject());
+    }
+
+    const auto testDetachRealloc = [&] (qsizetype capacity, qsizetype newSize, auto initValue) {
+        using Type = std::decay_t<decltype(initValue)>;
+        using DataPointer = QArrayDataPointer<Type>;
+
+        auto oldDataPointer = createDataPointer(capacity, initValue);
+        oldDataPointer->insert(oldDataPointer.begin(), 1, initValue);  // trigger prepend
+        auto oldDataPointerCopy = oldDataPointer;  // force detach later
+        QVERIFY(oldDataPointer.needsDetach());
+
+        auto newDataPointer = DataPointer::allocateGrow(
+            oldDataPointer, oldDataPointer->detachCapacity(newSize), newSize, allocationOptions);
+        const auto newAlloc = newDataPointer.constAllocatedCapacity();
+        const auto freeAtBegin = newDataPointer.freeSpaceAtBegin();
+        const auto freeAtEnd = newDataPointer.freeSpaceAtEnd();
+
+        QVERIFY(newAlloc > oldDataPointer.constAllocatedCapacity());
+        QCOMPARE(size_t(freeAtBegin + freeAtEnd), newAlloc);
+        if (allocationOptions & QArrayData::GrowsBackwards) {
+            QCOMPARE(size_t(freeAtBegin), (newAlloc - newSize) / 2);
+        } else {
+            QCOMPARE(freeAtBegin, 0);
+        }
+    };
+
+    for (size_t n : {10, 512, 1000}) {
+        RUN_TEST_FUNC(testDetachRealloc, n, n + 1, int(0));
+        RUN_TEST_FUNC(testDetachRealloc, n, n + 1, char('a'));
+        RUN_TEST_FUNC(testDetachRealloc, n, n + 1, char16_t(u'a'));
+        RUN_TEST_FUNC(testDetachRealloc, n, n + 1, QString("hello, world!"));
+        RUN_TEST_FUNC(testDetachRealloc, n, n + 1, CountedObject());
+    }
+}
+
+void tst_QArrayData::dataPointerAllocateAlignedWithReallocate_data()
+{
+    QTest::addColumn<QArrayData::ArrayOptions>("initFlags");
+    QTest::addColumn<QArrayData::ArrayOptions>("newFlags");
+
+    QTest::newRow("default-flags") << QArrayData::ArrayOptions(QArrayData::DefaultAllocationFlags)
+                                   << QArrayData::ArrayOptions(QArrayData::DefaultAllocationFlags);
+    QTest::newRow("no-grows-backwards") << QArrayData::ArrayOptions(QArrayData::GrowsForward)
+                                        << QArrayData::ArrayOptions(QArrayData::GrowsForward);
+    QTest::newRow("grows-backwards") << QArrayData::ArrayOptions(QArrayData::GrowsBackwards)
+                                     << QArrayData::ArrayOptions(QArrayData::GrowsBackwards);
+    QTest::newRow("removed-grows-backwards") << QArrayData::ArrayOptions(QArrayData::GrowsBackwards)
+                                             << QArrayData::ArrayOptions(QArrayData::GrowsForward);
+    QTest::newRow("removed-growth") << QArrayData::ArrayOptions(QArrayData::GrowsBackwards)
+                                    << QArrayData::ArrayOptions(QArrayData::DefaultAllocationFlags);
+}
+
+void tst_QArrayData::dataPointerAllocateAlignedWithReallocate()
+{
+    QFETCH(QArrayData::ArrayOptions, initFlags);
+    QFETCH(QArrayData::ArrayOptions, newFlags);
+
+    // Note: using the same type to ensure alignment and padding are the same.
+    //       otherwise, we may get differences in the allocated size
+    auto a = QArrayDataPointer<int>::allocateGrow(QArrayDataPointer<int>(), 50, 0, initFlags);
+    auto b = QArrayDataPointer<int>::allocateGrow(QArrayDataPointer<int>(), 50, 0, initFlags);
+
+    if (initFlags & QArrayData::GrowsBackwards) {
+        QVERIFY(a.freeSpaceAtBegin() > 0);
+    } else {
+        QVERIFY(a.freeSpaceAtBegin() == 0);
+    }
+    QCOMPARE(a.freeSpaceAtBegin(), b.freeSpaceAtBegin());
+
+    a->reallocate(100, newFlags);
+    b = QArrayDataPointer<int>::allocateGrow(b, 100, b.size, newFlags);
+
+    // It is enough to test that the behavior of reallocate is the same as the
+    // behavior of allocate w.r.t. pointer adjustment in case of
+    // GrowsBackwards. Actual values are not that interesting
+    QCOMPARE(a.freeSpaceAtBegin(), b.freeSpaceAtBegin());
 }
 
 #ifndef QT_NO_EXCEPTIONS

@@ -465,6 +465,19 @@ public:
 
     void reallocate(qsizetype alloc, typename Data::ArrayOptions options)
     {
+        // when reallocating, take care of the situation when no growth is
+        // happening - need to move the data in this case, unfortunately
+        const bool grows = options & (Data::GrowsForward | Data::GrowsBackwards);
+
+        // ### optimize me: there may be cases when moving is not obligatory
+        if (this->d && !grows) {
+            const auto gap = this->freeSpaceAtBegin();
+            auto oldBegin = this->begin();
+            this->ptr -= gap;
+            ::memmove(static_cast<void *>(this->begin()), static_cast<void *>(oldBegin),
+                      this->size * sizeof(T));
+        }
+
         auto pair = Data::reallocateUnaligned(this->d, this->ptr, alloc, options);
         this->d = pair.first;
         this->ptr = pair.second;
@@ -1033,11 +1046,55 @@ struct QArrayOpsSelector<T,
     typedef QMovableArrayOps<T> Type;
 };
 
+template <class T>
+struct QCommonArrayOps : QArrayOpsSelector<T>::Type
+{
+    using Base = typename QArrayOpsSelector<T>::Type;
+    using parameter_type = typename Base::parameter_type;
+    using iterator = typename Base::iterator;
+    using const_iterator = typename Base::const_iterator;
+
+    // Returns whether reallocation is desirable before adding more elements
+    // into the container. This is a helper function that one can use to
+    // theoretically improve average operations performance. Ignoring this
+    // function does not affect the correctness of the array operations.
+    bool shouldGrowBeforeInsert(const_iterator where, qsizetype n) const noexcept
+    {
+        if (this->d == nullptr)
+            return true;
+        if (this->d->flags & QArrayData::CapacityReserved)
+            return false;
+        if (!(this->d->flags & (QArrayData::GrowsForward | QArrayData::GrowsBackwards)))
+            return false;
+        Q_ASSERT(where >= this->begin() && where <= this->end());  // in range
+
+        const qsizetype freeAtBegin = this->freeSpaceAtBegin();
+        const qsizetype freeAtEnd = this->freeSpaceAtEnd();
+        const qsizetype capacity = this->constAllocatedCapacity();
+
+        if (where == this->begin()) {  // prepend
+            // Qt5 QList in prepend: not enough space at begin && 33% full
+            // Now (below):
+            return freeAtBegin < n && (this->size >= (capacity / 3));
+        }
+
+        if (where == this->end()) {  // append
+            // Qt5 QList in append: not enough space at end && less than 66% free space at front
+            // Now (below):
+            return freeAtEnd < n && !((freeAtBegin - n) >= (2 * capacity / 3));
+        }
+
+        // Qt5 QList in insert: no free space
+        // Now: no free space OR not enough space on either of the sides (bad perf. case)
+        return (freeAtBegin + freeAtEnd) < n || (freeAtBegin < n && freeAtEnd < n);
+    }
+};
+
 } // namespace QtPrivate
 
 template <class T>
 struct QArrayDataOps
-    : QtPrivate::QArrayOpsSelector<T>::Type
+    : QtPrivate::QCommonArrayOps<T>
 {
 };
 

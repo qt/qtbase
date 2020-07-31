@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -40,6 +40,7 @@ struct SimpleVector
 {
 private:
     typedef QTypedArrayData<T> Data;
+    typedef QArrayDataPointer<T> DataPointer;
 
 public:
     typedef T value_type;
@@ -78,6 +79,11 @@ public:
 
     explicit SimpleVector(QPair<Data*, T*> ptr, size_t len = 0)
         : d(ptr, len)
+    {
+    }
+
+    SimpleVector(const QArrayDataPointer<T> &other)
+        : d(other)
     {
     }
 
@@ -195,11 +201,15 @@ public:
             return;
 
         T *const begin = d->begin();
+        const bool shouldGrow = d->shouldGrowBeforeInsert(d.begin(), last - first);
+        const auto newSize = size() + (last - first);
         if (d->needsDetach()
-                || capacity() - size() < size_t(last - first)) {
-            SimpleVector detached(Data::allocate(
-                        d->detachCapacity(size() + (last - first)),
-                        d->detachFlags() | Data::GrowsForward));
+                || capacity() - size() < size_t(last - first)
+                || shouldGrow) {
+            // QTBUG-84320: change to GrowsBackwards once supported in operations
+            auto flags = d->detachFlags() | Data::GrowsForward;
+            SimpleVector detached(DataPointer::allocateGrow(d, d->detachCapacity(newSize), newSize,
+                                                            flags));
 
             detached.d->copyAppend(first, last);
             detached.d->copyAppend(begin, begin + d->size);
@@ -216,11 +226,13 @@ public:
         if (first == last)
             return;
 
+        const bool shouldGrow = d->shouldGrowBeforeInsert(d.end(), last - first);
+        const auto newSize = size() + (last - first);
         if (d->needsDetach()
-                || capacity() - size() < size_t(last - first)) {
-            SimpleVector detached(Data::allocate(
-                        d->detachCapacity(size() + (last - first)),
-                        d->detachFlags() | Data::GrowsForward));
+                || capacity() - size() < size_t(last - first)
+                || shouldGrow) {
+            SimpleVector detached(DataPointer::allocateGrow(d, d->detachCapacity(newSize), newSize,
+                                                            d->detachFlags() | Data::GrowsForward));
 
             if (d->size) {
                 const T *const begin = constBegin();
@@ -256,11 +268,13 @@ public:
         const iterator begin = d->begin();
         const iterator where = begin + position;
         const iterator end = begin + d->size;
+        const bool shouldGrow = d->shouldGrowBeforeInsert(d.begin() + position, last - first);
+        const auto newSize = size() + (last - first);
         if (d->needsDetach()
-                || capacity() - size() < size_t(last - first)) {
-            SimpleVector detached(Data::allocate(
-                        d->detachCapacity(size() + (last - first)),
-                        d->detachFlags() | Data::GrowsForward));
+                || capacity() - size() < size_t(last - first)
+                || shouldGrow) {
+            SimpleVector detached(DataPointer::allocateGrow(d, d->detachCapacity(newSize), newSize,
+                                                            d->detachFlags() | Data::GrowsForward));
 
             if (position)
                 detached.d->copyAppend(begin, where);
@@ -329,7 +343,7 @@ public:
 
     static SimpleVector fromRawData(const T *data, size_t size)
     {
-        return SimpleVector({ nullptr, const_cast<T *>(data), size });
+        return SimpleVector(QArrayDataPointer<T>::fromRawData(data, size));
     }
 
 private:
