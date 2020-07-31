@@ -1627,8 +1627,6 @@ void QMatrix4x4::copyDataTo(float *values) const
     third row and third column of the QMatrix4x4.  This is suitable
     for implementing orthographic projections where the z co-ordinate
     should be dropped rather than projected.
-
-    \sa toAffine()
 */
 QTransform QMatrix4x4::toTransform() const
 {
@@ -1651,8 +1649,6 @@ QTransform QMatrix4x4::toTransform() const
     of the QMatrix4x4.  This is suitable for implementing
     orthographic projections where the z co-ordinate should
     be dropped rather than projected.
-
-    \sa toAffine()
 */
 QTransform QMatrix4x4::toTransform(float distanceToPlane) const
 {

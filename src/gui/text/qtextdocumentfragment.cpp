@@ -1257,15 +1257,6 @@ void QTextHtmlImporter::appendBlock(const QTextBlockFormat &format, QTextCharFor
 
 #endif // QT_NO_TEXTHTMLPARSER
 
-/*!
-    \fn QTextDocumentFragment QTextDocumentFragment::fromHtml(const QString &text)
-
-    Returns a QTextDocumentFragment based on the arbitrary piece of
-    HTML in the given \a text. The formatting is preserved as much as
-    possible; for example, "<b>bold</b>" will become a document
-    fragment with the text "bold" with a bold character format.
-*/
-
 #ifndef QT_NO_TEXTHTMLPARSER
 /*!
     \fn QTextDocumentFragment QTextDocumentFragment::fromHtml(const QString &text, const QTextDocument *resourceProvider)

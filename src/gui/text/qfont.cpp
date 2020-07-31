@@ -611,7 +611,7 @@ QFontEngineData::~QFontEngineData()
 */
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-/*!
+/*
   \obsolete
   Constructs a font from \a font for use on the paint device \a pd.
 */
@@ -1922,7 +1922,7 @@ void QFont::removeSubstitutions(const QString &familyName)
 /*!
     Returns a sorted list of substituted family names.
 
-    \sa insertSubstitution(), removeSubstitution(), substitute()
+    \sa insertSubstitution(), removeSubstitutions(), substitute()
 */
 QStringList QFont::substitutions()
 {

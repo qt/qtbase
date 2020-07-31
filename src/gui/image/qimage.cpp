@@ -1476,7 +1476,7 @@ void QImage::setDevicePixelRatio(qreal scaleFactor)
     \since 5.10
     Returns the image data size in bytes.
 
-    \sa byteCount(), bytesPerLine(), bits(), {QImage#Image Information}{Image
+    \sa bytesPerLine(), bits(), {QImage#Image Information}{Image
     Information}
 */
 qsizetype QImage::sizeInBytes() const
@@ -4278,7 +4278,7 @@ bool QImage::isDetached() const
     The operation is similar to painting \a alphaChannel as an alpha image
     over this image using \c QPainter::CompositionMode_DestinationIn.
 
-    \sa hasAlphaChannel(), alphaChannel(),
+    \sa hasAlphaChannel(),
         {QImage#Image Transformations}{Image Transformations},
         {QImage#Image Formats}{Image Formats}
 */

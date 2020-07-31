@@ -518,7 +518,7 @@ QRect QScreen::availableVirtualGeometry() const
     based on how it is being held; in that case, this \c orientation property
     will change.
 
-    \sa primaryOrientation(), QWindow::contentOrientation(), QOrientationSensor
+    \sa primaryOrientation(), QWindow::contentOrientation()
 */
 Qt::ScreenOrientation QScreen::orientation() const
 {

@@ -347,7 +347,7 @@ void QOpenGLContextPrivate::_q_screenDestroyed(QObject *object)
 }
 
 /*!
-    \fn template<typename T> T *QOpenGLContext::platformInterface<T>()
+    \fn template <typename T> T *QOpenGLContext::platformInterface() const
 
     Returns a platform interface of type T for the context.
 

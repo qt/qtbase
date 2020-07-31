@@ -207,7 +207,7 @@ void QStaticText::detach()
   making changes, you can use the prepare() function and pass in the \a matrix and \a font you
   expect to use when drawing the text.
 
-  \sa QPainter::setFont(), QPainter::setMatrix()
+  \sa QPainter::setFont(), QPainter::setWorldTransform()
 */
 void QStaticText::prepare(const QTransform &matrix, const QFont &font)
 {

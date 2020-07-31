@@ -220,10 +220,7 @@ QShortcut::QShortcut(const QKeySequence &key, QObject *parent,
 
 
 /*!
-    \fn template<typename Functor>
-        QShortcut(const QKeySequence &key, QObject *parent,
-                  Functor functor,
-                  Qt::ShortcutContext shortcutContext = Qt::WindowShortcut);
+    \fn template<typename Functor> QShortcut::QShortcut(const QKeySequence &key, QObject *parent, Functor functor, Qt::ShortcutContext shortcutContext = Qt::WindowShortcut)
     \since 5.15
     \overload
 
@@ -231,10 +228,7 @@ QShortcut::QShortcut(const QKeySequence &key, QObject *parent,
     \l{QShortcut::activated()}{activated()} signal to the \a functor.
 */
 /*!
-    \fn template<typename Functor>
-        QShortcut(const QKeySequence &key, QObject *parent,
-                  const QObject *context, Functor functor,
-                  Qt::ShortcutContext shortcutContext = Qt::WindowShortcut);
+    \fn template<typename Functor> QShortcut::QShortcut(const QKeySequence &key, QObject *parent, const QObject *context, Functor functor, Qt::ShortcutContext shortcutContext = Qt::WindowShortcut)
     \since 5.15
     \overload
 
@@ -246,46 +240,38 @@ QShortcut::QShortcut(const QKeySequence &key, QObject *parent,
     If the \a context object is destroyed, the \a functor will not be called.
 */
 /*!
-    \fn template<typename Functor, typename FunctorAmbiguous>
-        QShortcut(const QKeySequence &key, QObject *parent,
-                  const QObject *context1, Functor functor,
-                  FunctorAmbiguous functorAmbiguous,
-                  Qt::ShortcutContext shortcutContext = Qt::WindowShortcut);
+    \fn template<typename Functor, typename FunctorAmbiguous> QShortcut::QShortcut(const QKeySequence &key, QObject *parent, const QObject *context, Functor functor, FunctorAmbiguous functorAmbiguous, Qt::ShortcutContext shortcutContext = Qt::WindowShortcut)
     \since 5.15
     \overload
 
     This is a QShortcut convenience constructor which connects the shortcut's
     \l{QShortcut::activated()}{activated()} signal to the \a functor and
     \l{QShortcut::activatedAmbiguously()}{activatedAmbiguously()}
-    signal to the \a FunctorAmbiguous.
+    signal to the \a functorAmbiguous.
 
-    The \a functor and \a FunctorAmbiguous can be a pointer to a member
+    The \a functor and \a functorAmbiguous can be a pointer to a member
     function of the \a context object.
 
     If the \a context object is destroyed, the \a functor and
-    \a FunctorAmbiguous will not be called.
+    \a functorAmbiguous will not be called.
 */
 /*!
-    \fn template<typename Functor, typename FunctorAmbiguous>
-        QShortcut(const QKeySequence &key, QObject *parent,
-                  const QObject *context1, Functor functor,
-                  const QObject *context2, FunctorAmbiguous functorAmbiguous,
-                  Qt::ShortcutContext shortcutContext = Qt::WindowShortcut);
+    \fn template<typename Functor, typename FunctorAmbiguous> QShortcut::QShortcut(const QKeySequence &key, QObject *parent, const QObject *context1, Functor functor, const QObject *context2, FunctorAmbiguous functorAmbiguous, Qt::ShortcutContext shortcutContext = Qt::WindowShortcut)
     \since 5.15
     \overload
 
     This is a QShortcut convenience constructor which connects the shortcut's
     \l{QShortcut::activated()}{activated()} signal to the \a functor and
     \l{QShortcut::activatedAmbiguously()}{activatedAmbiguously()}
-    signal to the \a FunctorAmbiguous.
+    signal to the \a functorAmbiguous.
 
     The \a functor can be a pointer to a member function of the
     \a context1 object.
-    The \a FunctorAmbiguous can be a pointer to a member function of the
+    The \a functorAmbiguous can be a pointer to a member function of the
     \a context2 object.
 
     If the \a context1 object is destroyed, the \a functor will not be called.
-    If the \a context2 object is destroyed, the \a FunctorAmbiguous
+    If the \a context2 object is destroyed, the \a functorAmbiguous
     will not be called.
 */
 
@@ -412,8 +398,7 @@ bool QShortcut::autoRepeat() const
 
 
 /*!
-    \property QShortcut::whatsThis
-    \brief the shortcut's "What's This?" help text
+    Sets the shortcut's "What's This?" help \a text.
 
     The text will be shown when a widget application is in "What's
     This?" mode and the user types the shortcut key() sequence.
@@ -421,9 +406,9 @@ bool QShortcut::autoRepeat() const
     To set "What's This?" help on a menu item (with or without a
     shortcut key), set the help on the item's action.
 
-    By default, this property contains an empty string.
+    By default, the help text is an empty string.
 
-    This property has no effect in applications that don't use
+    This function has no effect in applications that don't use
     widgets.
 
     \sa QWhatsThis::inWhatsThisMode(), QAction::setWhatsThis()
@@ -434,12 +419,16 @@ void QShortcut::setWhatsThis(const QString &text)
     d->sc_whatsthis = text;
 }
 
+/*!
+    Returns the shortcut's "What's This?" help text.
+
+    \sa setWhatsThis()
+*/
 QString QShortcut::whatsThis() const
 {
     Q_D(const QShortcut);
     return d->sc_whatsthis;
 }
-
 
 /*!
     Returns the shortcut's ID.

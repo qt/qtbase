@@ -356,9 +356,13 @@ QTextLayout::QTextLayout(const QString& text)
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 /*!
+\if !defined(qt6)
     \fn QTextLayout::QTextLayout(const QString &text, const QFont &font, QPaintDevice *paintdevice)
     \obsolete
     Identical to QTextLayout::QTextLayout(const QString &text, const QFont &font, const QPaintDevice *paintdevice)
+\else
+    \nothing
+\endif
 */
 
 QTextLayout::QTextLayout(const QString &text, const QFont &font, QPaintDevice *paintdevice)

@@ -843,11 +843,15 @@ QColor::QColor(Spec spec) noexcept
 
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 /*!
+\if !defined(qt6)
     \fn QColor::QColor(const QColor &color)
 
     Constructs a color that is a copy of \a color.
 
     \sa isValid()
+\else
+    \nothing
+\endif
 */
 #endif
 

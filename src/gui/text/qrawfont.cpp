@@ -579,7 +579,7 @@ bool QRawFont::glyphIndexesForChars(const QChar *chars, int numChars, quint32 *g
    to make it appear as if the two glyphs are unspaced. How the advances are calculated is
    controlled by \a layoutFlags.
 
-   \sa QTextLine::horizontalAdvance(), QFontMetricsF::width()
+   \sa QTextLine::horizontalAdvance(), QFontMetricsF::horizontalAdvance()
 */
 
 /*!
@@ -592,7 +592,7 @@ bool QRawFont::glyphIndexesForChars(const QChar *chars, int numChars, quint32 *g
    to make it appear as if the two glyphs are unspaced. The advance of each glyph is calculated
    separately.
 
-   \sa QTextLine::horizontalAdvance(), QFontMetricsF::width()
+   \sa QTextLine::horizontalAdvance(), QFontMetricsF::horizontalAdvance()
 */
 
 /*!
@@ -604,7 +604,7 @@ bool QRawFont::glyphIndexesForChars(const QChar *chars, int numChars, quint32 *g
    array \a glyphIndexes while the results are returned through \a advances, both of them must
    have \a numGlyphs elements. How the advances are calculated is controlled by \a layoutFlags.
 
-   \sa QTextLine::horizontalAdvance(), QFontMetricsF::width()
+   \sa QTextLine::horizontalAdvance(), QFontMetricsF::horizontalAdvance()
 */
 bool QRawFont::advancesForGlyphIndexes(const quint32 *glyphIndexes, QPointF *advances, int numGlyphs, LayoutFlags layoutFlags) const
 {
@@ -640,7 +640,7 @@ bool QRawFont::advancesForGlyphIndexes(const quint32 *glyphIndexes, QPointF *adv
    array \a glyphIndexes while the results are returned through \a advances, both of them must
    have \a numGlyphs elements. The advance of each glyph is calculated separately
 
-   \sa QTextLine::horizontalAdvance(), QFontMetricsF::width()
+   \sa QTextLine::horizontalAdvance(), QFontMetricsF::horizontalAdvance()
 */
 bool QRawFont::advancesForGlyphIndexes(const quint32 *glyphIndexes, QPointF *advances, int numGlyphs) const
 {

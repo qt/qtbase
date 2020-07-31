@@ -493,7 +493,7 @@ Q_GUI_EXPORT QImage qt_imageFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat = 0
 /*!
     \since 6.0
 
-    Returns a QImage that is equivalent to the given \a bitmap.
+    Returns a QImage that is equivalent to the given \a hbitmap.
 
     HBITMAP does not store information about the alpha channel.
 

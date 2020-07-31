@@ -1085,7 +1085,7 @@ QPair< int, int > QAccessible::qAccessibleTextBoundaryHelper(const QTextCursor &
     relations, unless they are handled in a specific way such as in tree views.
     It will typically return the labelled-by and label relations.
 
-    It is possible to filter the relations by using \a match.
+    It is possible to filter the relations by using the optional parameter.
     It should never return itself.
 
     \sa parent(), child()

@@ -1108,7 +1108,7 @@ QVariant QAction::data() const
 }
 
 /*!
-  Sets the action's internal data to the given \a userData.
+  Sets the action's internal data to the given \a data.
 
   \sa data()
 */

@@ -257,9 +257,6 @@ void QPicture::setData(const char* data, uint size)
     Loads a picture from the file specified by \a fileName and returns
     true if successful; otherwise invalidates the picture and returns \c false.
 
-    Please note that the \a format parameter has been deprecated and
-    will have no effect.
-
     \sa save()
 */
 
@@ -291,9 +288,6 @@ bool QPicture::load(QIODevice *dev)
 /*!
     Saves a picture to the file specified by \a fileName and returns
     true if successful; otherwise returns \c false.
-
-    Please note that the \a format parameter has been deprecated and
-    will have no effect.
 
     \sa load()
 */

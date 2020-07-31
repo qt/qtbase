@@ -67,8 +67,6 @@ QPlatformScreen::~QPlatformScreen()
 }
 
 /*!
-    \fn QPixmap QPlatformScreen::grabWindow(WId window, int x, int y, int width, int height) const
-
     This function is called when Qt needs to be able to grab the content of a window.
 
     Returns the content of the window specified with the WId handle within the boundaries of

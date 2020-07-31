@@ -339,7 +339,7 @@ QRasterPaintEnginePrivate::QRasterPaintEnginePrivate() :
     \sa QPaintEngine
 */
 
-/*!
+/*
     \fn QPaintEngine::Type QRasterPaintEngine::type() const
     \reimp
 */
@@ -4909,7 +4909,7 @@ static void drawEllipse_midpoint_i(const QRect &rect, const QRect &clip,
     }
 }
 
-/*!
+/*
     \fn void QRasterPaintEngine::drawPoints(const QPoint *points, int pointCount)
     \overload
     \reimp

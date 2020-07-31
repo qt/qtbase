@@ -520,6 +520,7 @@ bool operator==(const QShader &lhs, const QShader &rhs) noexcept
 }
 
 /*!
+    \internal
     \fn bool operator!=(const QShader &lhs, const QShader &rhs)
 
     Returns \c false if the values in the two QShader objects \a a and \a b
@@ -555,6 +556,7 @@ bool operator==(const QShaderVersion &lhs, const QShaderVersion &rhs) noexcept
 }
 
 /*!
+    \internal
     \fn bool operator!=(const QShaderVersion &lhs, const QShaderVersion &rhs)
 
     Returns \c false if the values in the two QShaderVersion objects \a a
@@ -575,6 +577,7 @@ bool operator==(const QShaderKey &lhs, const QShaderKey &rhs) noexcept
 }
 
 /*!
+    \internal
     \fn bool operator!=(const QShaderKey &lhs, const QShaderKey &rhs)
 
     Returns \c false if the values in the two QShaderKey objects \a a
@@ -608,6 +611,7 @@ bool operator==(const QShaderCode &lhs, const QShaderCode &rhs) noexcept
 }
 
 /*!
+    \internal
     \fn bool operator!=(const QShaderCode &lhs, const QShaderCode &rhs)
 
     Returns \c false if the values in the two QShaderCode objects \a a

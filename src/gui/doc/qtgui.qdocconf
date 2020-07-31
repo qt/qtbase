@@ -1,6 +1,9 @@
 include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 include($QT_INSTALL_DOCS/config/exampleurl-qtbase.qdocconf)
 
+includepaths += .
+moduleheader = QtGuiDoc
+
 project                 = QtGui
 description             = Qt GUI Reference Documentation
 version                 = $QT_VERSION
@@ -58,7 +61,8 @@ imagedirs   += images \
                ../../../doc/src/images
 
 # Included in qttestlib.qdocconf instead
-excludefiles += ../kernel/qtestsupport_gui.cpp
+excludefiles += ../kernel/qtestsupport_gui.cpp \
+                ../painting/qdrawhelper_ssse3.cpp
 
 manifestmeta.highlighted.names      = "QtGui/Analog Clock Window Example"
 

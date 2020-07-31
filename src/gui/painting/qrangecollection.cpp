@@ -96,7 +96,7 @@ QRangeCollection::~QRangeCollection()
 }
 
 /*!
-    Inserts a single number into the collection.
+    Inserts a single number \a pageNumber into the collection.
  */
 void QRangeCollection::addPage(int pageNumber)
 {
@@ -110,7 +110,7 @@ void QRangeCollection::addPage(int pageNumber)
 }
 
 /*!
-    Inserts a range into the collection.
+    Inserts a range specified with \a from and \a to into the collection.
  */
 void QRangeCollection::addRange(int from, int to)
 {
@@ -146,12 +146,14 @@ void QRangeCollection::clear()
 }
 
 /*!
-    Constructs the range collection from a string representation.
+    Constructs the range collection from a string representation of \a ranges.
 
     \code
     QPrinter printer;
     printer->rangeCollection()->parse("1-3,6-7");
     \endcode
+
+    Returns \c true on success.
  */
 bool QRangeCollection::parse(const QString &ranges)
 {
@@ -233,6 +235,8 @@ QString QRangeCollection::toString() const
 }
 
 /*!
+    \fn bool QRangeCollection::contains(const int pageNumber) const
+
     Returns \c true if the collection contains an occurrence
     or a bounding range of \a pageNumber; otherwise returns
     \c false.

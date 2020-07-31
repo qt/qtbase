@@ -929,12 +929,6 @@ bool QTextBlock::isValid() const
 */
 
 /*!
-    \fn QTextBlock::iterator::iterator(const iterator &other)
-
-    Copy constructor. Constructs a copy of the \a other iterator.
-*/
-
-/*!
     \fn bool QTextBlock::iterator::atEnd() const
 
     Returns \c true if the current item is the last item in the text block.

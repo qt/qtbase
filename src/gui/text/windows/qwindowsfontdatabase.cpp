@@ -95,7 +95,7 @@ static inline bool useDirectWrite(QFont::HintingPreference hintingPreference,
 #endif // !QT_NO_DIRECTWRITE
 
 /*!
-    \struct QWindowsFontEngineData
+    \class QWindowsFontEngineData
     \brief Static constant data shared by the font engines.
     \internal
 */

@@ -108,7 +108,8 @@ const QStringList& qt_mac_enabledDraggedTypes()
 //#define DEBUG_MIME_MAPS
 
 /*!
-  \class QMacPasteboardMime
+  \class QMacInternalPasteboardMime
+  \internal
   \brief The QMacPasteboardMime class converts between a MIME type and a
   \l{http://developer.apple.com/macosx/uniformtypeidentifiers.html}{Uniform
   Type Identifier (UTI)} format.
@@ -151,11 +152,12 @@ const QStringList& qt_mac_enabledDraggedTypes()
   compatibility reasons, and should now be understood as UTIs.
 */
 
-/*! \enum QMacPasteboardMime::QMacPasteboardMimeType
+/*
+    \enum QMacPasteboardMime::QMacPasteboardMimeType
     \internal
 */
 
-/*!
+/*
   Constructs a new conversion object of type \a t, adding it to the
   globally accessed list of available convertors.
 */
@@ -164,7 +166,7 @@ QMacInternalPasteboardMime::QMacInternalPasteboardMime(char t) : type(t)
     qt_mac_addToGlobalMimeList(this);
 }
 
-/*!
+/*
   Destroys a conversion object, removing it from the global
   list of available convertors.
 */
@@ -173,7 +175,7 @@ QMacInternalPasteboardMime::~QMacInternalPasteboardMime()
     qt_mac_removeFromGlobalMimeList(this);
 }
 
-/*!
+/*
   Returns the item count for the given \a mimeData
 */
 int QMacInternalPasteboardMime::count(QMimeData *mimeData)
@@ -918,7 +920,7 @@ void QMacInternalPasteboardMime::destroyMimeTypes()
         delete mimes->takeFirst();
 }
 
-/*!
+/*
   Returns the most-recently created QMacPasteboardMime of type \a t that can convert
   between the \a mime and \a flav formats.  Returns 0 if no such convertor
   exists.
@@ -946,7 +948,7 @@ QMacInternalPasteboardMime::convertor(uchar t, const QString &mime, QString flav
     }
     return 0;
 }
-/*!
+/*
   Returns a MIME type of type \a t for \a flav, or 0 if none exists.
 */
 QString QMacInternalPasteboardMime::flavorToMime(uchar t, QString flav)
@@ -969,7 +971,7 @@ QString QMacInternalPasteboardMime::flavorToMime(uchar t, QString flav)
     return QString();
 }
 
-/*!
+/*
   Returns a list of all currently defined QMacPasteboardMime objects of type \a t.
 */
 QList<QMacInternalPasteboardMime*> QMacInternalPasteboardMime::all(uchar t)
@@ -984,7 +986,7 @@ QList<QMacInternalPasteboardMime*> QMacInternalPasteboardMime::all(uchar t)
 }
 
 
-/*!
+/*
   \fn QString QMacPasteboardMime::convertorName()
 
   Returns a name for the convertor.
@@ -992,7 +994,7 @@ QList<QMacInternalPasteboardMime*> QMacInternalPasteboardMime::all(uchar t)
   All subclasses must reimplement this pure virtual function.
 */
 
-/*!
+/*
   \fn bool QMacPasteboardMime::canConvert(const QString &mime, QString flav)
 
   Returns \c true if the convertor can convert (both ways) between
@@ -1001,7 +1003,7 @@ QList<QMacInternalPasteboardMime*> QMacInternalPasteboardMime::all(uchar t)
   All subclasses must reimplement this pure virtual function.
 */
 
-/*!
+/*
   \fn QString QMacPasteboardMime::mimeFor(QString flav)
 
   Returns the MIME UTI used for Mac flavor \a flav, or 0 if this
@@ -1010,7 +1012,7 @@ QList<QMacInternalPasteboardMime*> QMacInternalPasteboardMime::all(uchar t)
   All subclasses must reimplement this pure virtual function.
 */
 
-/*!
+/*
   \fn QString QMacPasteboardMime::flavorFor(const QString &mime)
 
   Returns the Mac UTI used for MIME type \a mime, or 0 if this
@@ -1019,7 +1021,7 @@ QList<QMacInternalPasteboardMime*> QMacInternalPasteboardMime::all(uchar t)
   All subclasses must reimplement this pure virtual function.
 */
 
-/*!
+/*
     \fn QVariant QMacPasteboardMime::convertToMime(const QString &mime, QList<QByteArray> data, QString flav)
 
     Returns \a data converted from Mac UTI \a flav to MIME type \a
@@ -1031,7 +1033,7 @@ QList<QMacInternalPasteboardMime*> QMacInternalPasteboardMime::all(uchar t)
     All subclasses must reimplement this pure virtual function.
 */
 
-/*!
+/*
   \fn QList<QByteArray> QMacPasteboardMime::convertFromMime(const QString &mime, QVariant data, QString flav)
 
   Returns \a data converted from MIME type \a mime

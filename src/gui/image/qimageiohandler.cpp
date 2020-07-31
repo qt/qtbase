@@ -170,8 +170,10 @@
     the transformation metadata of an image. A handler that supports this option
     should not apply the transformation itself.
 
+\if !defined(qt6)
     \value TransformedByDefault. A handler that reports support for this feature
     will have image transformation metadata applied by default on read.
+\endif
 */
 
 /*! \enum QImageIOHandler::Transformation

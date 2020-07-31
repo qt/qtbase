@@ -1579,8 +1579,8 @@ bool QVulkanWindow::event(QEvent *e)
 /*!
     \typedef QVulkanWindow::QueueCreateInfoModifier
 
-    A function function that is called during graphics initialization to add
-    additAional queues that should be created.
+    A function that is called during graphics initialization to add
+    additional queues that should be created.
 
     Set if the renderer needs additional queues besides the default graphics
     queue (e.g. a transfer queue).
@@ -1588,17 +1588,17 @@ bool QVulkanWindow::event(QEvent *e)
     the additional queues.
     The renderer can subsequently request the actual queue in initResources().
 
-    Note when requesting additional graphics queues: Qt itself always requests
-    a graphics queue, you'll need to search queueCreateInfo for the appropriate
+    \note When requesting additional graphics queues, Qt itself always requests
+    a graphics queue. You'll need to search queueCreateInfo for the appropriate
     entry and manipulate it to obtain the additional queue.
 
     \sa setQueueCreateInfoModifier()
  */
 
 /*!
-    Set a queue create info modification function.
+    Sets the queue create info modification function \a modifier.
 
-    \sa queueCreateInfoModifier()
+    \sa QueueCreateInfoModifier
 
     \since 5.15
  */
@@ -1746,7 +1746,7 @@ void QVulkanWindowRenderer::releaseResources()
 }
 
 /*!
-    \fn QVulkanWindowRenderer::startNextFrame()
+    \fn void QVulkanWindowRenderer::startNextFrame()
 
     This virtual function is called when the draw calls for the next frame are
     to be added to the command buffer.
