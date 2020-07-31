@@ -1232,7 +1232,6 @@ static void readUnicodeData()
                 Q_ASSERT(QChar::lowSurrogate(codepoint) + diff == QChar::lowSurrogate(upperCase));
             }
             if (qAbs(diff) >= (1<<13)) {
-                qWarning() << "upperCaseDiff exceeded (" << hex << codepoint << "->" << upperCase << "); map it for special case";
                 data.p.upperCaseSpecial = true;
                 data.p.upperCaseDiff = appendToSpecialCaseMap(QList<int>() << upperCase);
             } else {
@@ -1251,7 +1250,6 @@ static void readUnicodeData()
                 Q_ASSERT(QChar::lowSurrogate(codepoint) + diff == QChar::lowSurrogate(lowerCase));
             }
             if (qAbs(diff) >= (1<<13)) {
-                qWarning() << "lowerCaseDiff exceeded (" << hex << codepoint << "->" << lowerCase << "); map it for special case";
                 data.p.lowerCaseSpecial = true;
                 data.p.lowerCaseDiff = appendToSpecialCaseMap(QList<int>() << lowerCase);
             } else {
@@ -1273,7 +1271,6 @@ static void readUnicodeData()
                 Q_ASSERT(QChar::lowSurrogate(codepoint) + diff == QChar::lowSurrogate(titleCase));
             }
             if (qAbs(diff) >= (1<<13)) {
-                qWarning() << "titleCaseDiff exceeded (" << hex << codepoint << "->" << titleCase << "); map it for special case";
                 data.p.titleCaseSpecial = true;
                 data.p.titleCaseDiff = appendToSpecialCaseMap(QList<int>() << titleCase);
             } else {
@@ -1462,7 +1459,7 @@ static void readDerivedAge()
         }
 
         QChar::UnicodeVersion age = age_map.value(l[1].trimmed(), QChar::Unicode_Unassigned);
-        //qDebug() << hex << from << ".." << to << ba << age;
+        //qDebug() << Qt::hex << from << ".." << to << ba << age;
         if (age == QChar::Unicode_Unassigned)
             qFatal("unassigned or unhandled age value: %s", l[1].constData());
 
@@ -1742,7 +1739,7 @@ static void readSpecialCasing()
         // lower/upper/title casing code and case folding code
         Q_ASSERT(!QChar::requiresSurrogates(codepoint));
 
-//         qDebug() << "codepoint" << hex << codepoint;
+//         qDebug() << "codepoint" << Qt::hex << codepoint;
 //         qDebug() << line;
 
         QList<QByteArray> lower = l[1].trimmed().split(' ');
@@ -1826,7 +1823,7 @@ static void readCaseFolding()
         if (l[1] == "F" || l[1] == "T")
             continue;
 
-//         qDebug() << "codepoint" << hex << codepoint;
+//         qDebug() << "codepoint" << Qt::hex << codepoint;
 //         qDebug() << line;
         QList<QByteArray> fold = l[2].trimmed().split(' ');
         QList<int> foldMap;
@@ -1847,7 +1844,6 @@ static void readCaseFolding()
                 Q_ASSERT(QChar::lowSurrogate(codepoint) + diff == QChar::lowSurrogate(caseFolded));
             }
             if (qAbs(diff) >= (1<<13)) {
-                qWarning() << "caseFoldDiff exceeded (" << hex << codepoint << "->" << caseFolded << "); map it for special case";
                 ud.p.caseFoldSpecial = true;
                 ud.p.caseFoldDiff = appendToSpecialCaseMap(foldMap);
             } else {
@@ -1856,7 +1852,7 @@ static void readCaseFolding()
             }
         } else {
             qFatal("we currently don't support full case foldings");
-//             qDebug() << "special" << hex << foldMap;
+//             qDebug() << "special" << Qt::hex << foldMap;
             ud.p.caseFoldSpecial = true;
             ud.p.caseFoldDiff = appendToSpecialCaseMap(foldMap);
         }
@@ -3150,11 +3146,11 @@ int main(int, char **)
             "#endif // QUNICODETABLES_P_H\n");
     f.close();
 
-    qDebug() << "maxMirroredDiff  = " << hex << maxMirroredDiff;
-    qDebug() << "maxLowerCaseDiff = " << hex << maxLowerCaseDiff;
-    qDebug() << "maxUpperCaseDiff = " << hex << maxUpperCaseDiff;
-    qDebug() << "maxTitleCaseDiff = " << hex << maxTitleCaseDiff;
-    qDebug() << "maxCaseFoldDiff  = " << hex << maxCaseFoldDiff;
+    qDebug() << "maxMirroredDiff  = " << Qt::hex << maxMirroredDiff;
+    qDebug() << "maxLowerCaseDiff = " << Qt::hex << maxLowerCaseDiff;
+    qDebug() << "maxUpperCaseDiff = " << Qt::hex << maxUpperCaseDiff;
+    qDebug() << "maxTitleCaseDiff = " << Qt::hex << maxTitleCaseDiff;
+    qDebug() << "maxCaseFoldDiff  = " << Qt::hex << maxCaseFoldDiff;
 #if 0
 //     dump(0, 0x7f);
 //     dump(0x620, 0x640);
