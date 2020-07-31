@@ -847,6 +847,14 @@ QByteArray qUncompress(const uchar* data, int nbytes)
     such a pointer, without a length, will interpret it as this sequence of
     bytes. Such a sequence, by construction, cannot contain a '\\0' byte.
 
+    Take care when passing fixed size C arrays to QByteArray methods that accept
+    a QByteArrayView: the length of the data on which the method will operate is
+    determined by array size. A \c{char [N]} array will be handled as a view of
+    size \c{N-1}, on the expectation that the array is a string literal with a '\\0'
+    at index \c{N-1}. For example:
+
+    \snippet code/src_corelib_text_qbytearray.cpp 54
+
     Other overloads accept a start-pointer and a byte-count; these use the given
     number of bytes, following the start address, regardless of whether any of
     them happen to be '\\0' bytes. In some cases, where there is no overload
