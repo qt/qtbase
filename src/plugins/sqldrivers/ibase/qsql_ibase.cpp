@@ -514,20 +514,6 @@ static QList<QVariant> toList(char** buf, int count, T* = 0)
     }
     return res;
 }
-/* char** ? seems like bad influence from oracle ... */
-template<>
-QList<QVariant> toList<long>(char** buf, int count, long*)
-{
-    QList<QVariant> res;
-    for (int i = 0; i < count; ++i) {
-        if (sizeof(int) == sizeof(long))
-            res.append(int((*(long*)(*buf))));
-        else
-            res.append((qint64)(*(long*)(*buf)));
-        *buf += sizeof(long);
-    }
-    return res;
-}
 
 static char* readArrayBuffer(QList<QVariant>& list, char *buffer, short curDim,
                              short* numElements, ISC_ARRAY_DESC *arrayDesc,
@@ -564,7 +550,7 @@ static char* readArrayBuffer(QList<QVariant>& list, char *buffer, short curDim,
                 }
                 break; }
             case blr_long:
-                valList = toList<long>(&buffer, numElements[dim], static_cast<long *>(0));
+                valList = toList<int>(&buffer, numElements[dim], static_cast<int *>(0));
                 break;
             case blr_short:
                 valList = toList<short>(&buffer, numElements[dim]);
@@ -614,7 +600,7 @@ QVariant QIBaseResultPrivate::fetchArray(int pos, ISC_QUAD *arr)
         return list;
 
     QByteArray relname(sqlda->sqlvar[pos].relname, sqlda->sqlvar[pos].relname_length);
-    QByteArray sqlname(sqlda->sqlvar[pos].aliasname, sqlda->sqlvar[pos].aliasname_length);
+    QByteArray sqlname(sqlda->sqlvar[pos].sqlname, sqlda->sqlvar[pos].sqlname_length);
 
     isc_array_lookup_bounds(status, &ibase, &trans, relname.data(), sqlname.data(), &desc);
     if (isError(QT_TRANSLATE_NOOP("QIBaseResult", "Could not find array"),
@@ -802,7 +788,7 @@ bool QIBaseResultPrivate::writeArray(int column, const QList<QVariant> &list)
     ISC_ARRAY_DESC desc;
 
     QByteArray relname(inda->sqlvar[column].relname, inda->sqlvar[column].relname_length);
-    QByteArray sqlname(inda->sqlvar[column].aliasname, inda->sqlvar[column].aliasname_length);
+    QByteArray sqlname(inda->sqlvar[column].sqlname, inda->sqlvar[column].sqlname_length);
 
     isc_array_lookup_bounds(status, &ibase, &trans, relname.data(), sqlname.data(), &desc);
     if (isError(QT_TRANSLATE_NOOP("QIBaseResult", "Could not find array"),

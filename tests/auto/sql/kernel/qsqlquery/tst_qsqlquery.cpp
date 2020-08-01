@@ -259,6 +259,9 @@ private slots:
     void dateTime_data();
     void dateTime();
 
+    void ibaseArray_data() { generic_data("QIBASE"); }
+    void ibaseArray();
+
 private:
     // returns all database connections
     void generic_data(const QString &engine=QString());
@@ -4731,6 +4734,32 @@ void tst_QSqlQuery::mysql_timeType()
         QVERIFY(qry.next());
         QCOMPARE(qry.value(0).toTime(), time);
     }
+}
+
+void tst_QSqlQuery::ibaseArray()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    const auto arrayTable = qTableName("ibasearray", __FILE__, db);
+    tst_Databases::safeDropTable(db, arrayTable);
+    QSqlQuery qry(db);
+    QVERIFY_SQL(qry, exec("create table " + arrayTable + " (intData int[0:4], longData bigint[5], "
+                          "charData varchar(255)[5])"));
+    QVERIFY_SQL(qry, prepare("insert into " + arrayTable + " (intData, longData, charData) "
+                             "values(?, ?, ?)"));
+    const auto intArray = QVariant{QVariantList{1, 2, 3, 4711, 815}};
+    const auto charArray = QVariant{QVariantList{"AAA", "BBB", "CCC", "DDD", "EEE"}};
+    qry.bindValue(0, intArray);
+    qry.bindValue(1, intArray);
+    qry.bindValue(2, charArray);
+    QVERIFY_SQL(qry, exec());
+    QVERIFY_SQL(qry, exec("select * from " + arrayTable));
+    QVERIFY(qry.next());
+    QCOMPARE(qry.value(0).toList(), intArray.toList());
+    QCOMPARE(qry.value(1).toList(), intArray.toList());
+    QCOMPARE(qry.value(2).toList(), charArray.toList());
 }
 
 QTEST_MAIN( tst_QSqlQuery )
