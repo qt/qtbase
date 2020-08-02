@@ -10,7 +10,7 @@ build_pass:armeabi-v7a {
     QT_ARCH = x86_64
 } else:count(ALL_ANDROID_ABIS, 1) {
     QT_ARCH = $$ALL_ANDROID_ABIS
-    CONFIG += singleAndroidAbi $$QT_ARCH
+    CONFIG += single_android_abi $$QT_ARCH
 } else {
     # default architecture
     QT_ARCH = arm64-v8a
