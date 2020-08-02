@@ -64,6 +64,11 @@ QT_BEGIN_NAMESPACE
 #define SQLDA_CURRENT_VERSION SQLDA_VERSION1
 #endif
 
+// Firebird uses blr_bool and not blr_boolean_dtype which is what Interbase uses
+#ifndef blr_boolean_dtype
+#define blr_boolean_dtype blr_bool
+#endif
+
 enum { QIBaseChunkSize = SHRT_MAX / 2 };
 
 static bool getIBaseError(QString& msg, const ISC_STATUS* status, ISC_LONG &sqlcode)
@@ -117,6 +122,7 @@ static void initDA(XSQLDA *sqlda)
         case SQL_TYPE_DATE:
         case SQL_TEXT:
         case SQL_BLOB:
+        case SQL_BOOLEAN:
             sqlda->sqlvar[i].sqldata = new char[sqlda->sqlvar[i].sqllen];
             break;
         case SQL_ARRAY:
@@ -179,6 +185,8 @@ static QVariant::Type qIBaseTypeName(int iType, bool hasScale)
     case blr_d_float:
     case blr_double:
         return QVariant::Double;
+    case blr_boolean_dtype:
+        return QVariant::Bool;
     }
     qWarning("qIBaseTypeName: unknown datatype: %d", iType);
     return QVariant::Invalid;
@@ -208,6 +216,8 @@ static QVariant::Type qIBaseTypeName2(int iType, bool hasScale)
         return QVariant::List;
     case SQL_BLOB:
         return QVariant::ByteArray;
+    case SQL_BOOLEAN:
+        return QVariant::Bool;
     default:
         return QVariant::Invalid;
     }
@@ -378,7 +388,6 @@ public:
     bool writeBlob(int i, const QByteArray &ba);
     QVariant fetchArray(int pos, ISC_QUAD *arr);
     bool writeArray(int i, const QList<QVariant> &list);
-
 public:
     ISC_STATUS status[20];
     isc_tr_handle trans;
@@ -548,6 +557,9 @@ static char* readArrayBuffer(QList<QVariant>& list, char *buffer, short curDim,
                     valList.append(fromDate(buffer));
                     buffer += sizeof(ISC_DATE);
                 }
+                break;
+            case blr_boolean_dtype:
+                valList = toList<bool>(&buffer, numElements[dim]);
                 break;
         }
     }
@@ -738,6 +750,9 @@ static char* createArrayBuffer(char *buffer, const QList<QVariant> &list,
                 *((ISC_TIMESTAMP*)buffer) = toTimeStamp(list.at(i).toDateTime());
                 buffer += sizeof(ISC_TIMESTAMP);
             }
+            break;
+        case QVariant::Bool:
+            buffer = fillList<bool>(buffer, list);
             break;
         default:
             break;
@@ -1032,6 +1047,9 @@ bool QIBaseResult::exec()
             case SQL_ARRAY:
                     ok &= d->writeArray(para, val.toList());
                     break;
+            case SQL_BOOLEAN:
+                *((bool*)d->inda->sqlvar[para].sqldata) = val.toBool();
+                break;
             default:
                     qWarning("QIBaseResult::exec: Unknown datatype %d",
                              d->inda->sqlvar[para].sqltype & ~1);
@@ -1183,6 +1201,9 @@ bool QIBaseResult::gotoNext(QSqlCachedResult::ValueCache& row, int rowIdx)
             break;
         case SQL_ARRAY:
             row[idx] = d->fetchArray(i, (ISC_QUAD*)buf);
+            break;
+        case SQL_BOOLEAN:
+            row[idx] = QVariant(bool((*(bool*)buf)));
             break;
         default:
             // unknown type - don't even try to fetch

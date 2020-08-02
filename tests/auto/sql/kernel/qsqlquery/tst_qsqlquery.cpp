@@ -620,7 +620,8 @@ void tst_QSqlQuery::bindBool()
     const QString tableName(qTableName("bindBool", __FILE__, db));
 
     q.exec("DROP TABLE " + tableName);
-    QString colType = dbType == QSqlDriver::PostgreSQL ? QLatin1String("BOOLEAN") : QLatin1String("INT");
+    const bool useBooleanType = (dbType == QSqlDriver::PostgreSQL || dbType == QSqlDriver::Interbase);
+    const QString colType = useBooleanType ? QLatin1String("BOOLEAN") : QLatin1String("INT");
     QVERIFY_SQL(q, exec("CREATE TABLE " + tableName + " (id INT, flag " + colType + " NOT NULL, PRIMARY KEY(id))"));
 
     for (int i = 0; i < 2; ++i) {
@@ -4777,20 +4778,23 @@ void tst_QSqlQuery::ibaseArray()
     tst_Databases::safeDropTable(db, arrayTable);
     QSqlQuery qry(db);
     QVERIFY_SQL(qry, exec("create table " + arrayTable + " (intData int[0:4], longData bigint[5], "
-                          "charData varchar(255)[5])"));
-    QVERIFY_SQL(qry, prepare("insert into " + arrayTable + " (intData, longData, charData) "
-                             "values(?, ?, ?)"));
+                          "charData varchar(255)[5], boolData boolean[2])"));
+    QVERIFY_SQL(qry, prepare("insert into " + arrayTable + " (intData, longData, charData, boolData) "
+                             "values(?, ?, ?, ?)"));
     const auto intArray = QVariant{QVariantList{1, 2, 3, 4711, 815}};
     const auto charArray = QVariant{QVariantList{"AAA", "BBB", "CCC", "DDD", "EEE"}};
+    const auto boolArray = QVariant{QVariantList{true, false}};
     qry.bindValue(0, intArray);
     qry.bindValue(1, intArray);
     qry.bindValue(2, charArray);
+    qry.bindValue(3, boolArray);
     QVERIFY_SQL(qry, exec());
     QVERIFY_SQL(qry, exec("select * from " + arrayTable));
     QVERIFY(qry.next());
     QCOMPARE(qry.value(0).toList(), intArray.toList());
     QCOMPARE(qry.value(1).toList(), intArray.toList());
     QCOMPARE(qry.value(2).toList(), charArray.toList());
+    QCOMPARE(qry.value(3).toList(), boolArray.toList());
 }
 
 QTEST_MAIN( tst_QSqlQuery )

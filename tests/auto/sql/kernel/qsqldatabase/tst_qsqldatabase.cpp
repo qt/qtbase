@@ -1000,6 +1000,7 @@ void tst_QSqlDatabase::recordIBase()
         FieldDef("time", QVariant::Time, QTime::currentTime()),
         FieldDef("decimal(18)", QVariant::LongLong, Q_INT64_C(9223372036854775807)),
         FieldDef("numeric(5,2)", QVariant::Double, 123.45),
+        FieldDef("boolean", QVariant::Bool, true),
 
         FieldDef()
     };
