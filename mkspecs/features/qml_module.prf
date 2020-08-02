@@ -61,7 +61,7 @@ qmlfiles.path = $${qmldir.path}
 INSTALL_QML_FILES = false
 
 android {
-    build_pass {
+    single_android_abi|build_pass {
         isEmpty(ANDROID_ABIS): ANDROID_ABIS = $$ALL_ANDROID_ABIS
         ABI = $$first(ANDROID_ABIS)
         equals(ABI,  $$QT_ARCH): INSTALL_QML_FILES = true
