@@ -566,12 +566,30 @@ QOperatingSystemVersion QMacVersion::currentRuntime()
 
 QMacVersion::VersionTuple QMacVersion::versionsForImage(const mach_header *machHeader)
 {
-    static auto makeVersionTuple = [](uint32_t dt, uint32_t sdk) {
+    static auto osForLoadCommand = [](uint32_t cmd) {
+        switch (cmd) {
+        case LC_VERSION_MIN_MACOSX: return QOperatingSystemVersion::MacOS;
+        case LC_VERSION_MIN_IPHONEOS: return QOperatingSystemVersion::IOS;
+        case LC_VERSION_MIN_TVOS: return QOperatingSystemVersion::TvOS;
+        case LC_VERSION_MIN_WATCHOS: return QOperatingSystemVersion::WatchOS;
+        default: return QOperatingSystemVersion::Unknown;
+        }
+    };
+
+    static auto osForPlatform = [](uint32_t platform) {
+        switch (platform) {
+        case 1: return QOperatingSystemVersion::MacOS;
+        case 2: return QOperatingSystemVersion::IOS;
+        case 3: return QOperatingSystemVersion::TvOS;
+        case 4: return QOperatingSystemVersion::WatchOS;
+        default: return QOperatingSystemVersion::Unknown;
+        }
+    };
+
+    static auto makeVersionTuple = [](uint32_t dt, uint32_t sdk, QOperatingSystemVersion::OSType osType) {
         return qMakePair(
-            QOperatingSystemVersion(QOperatingSystemVersion::currentType(),
-                dt >> 16 & 0xffff, dt >> 8 & 0xff, dt & 0xff),
-            QOperatingSystemVersion(QOperatingSystemVersion::currentType(),
-                sdk >> 16 & 0xffff, sdk >> 8 & 0xff, sdk & 0xff)
+            QOperatingSystemVersion(osType, dt >> 16 & 0xffff, dt >> 8 & 0xff, dt & 0xff),
+            QOperatingSystemVersion(osType, sdk >> 16 & 0xffff, sdk >> 8 & 0xff, sdk & 0xff)
         );
     };
 
@@ -581,11 +599,11 @@ QMacVersion::VersionTuple QMacVersion::versionsForImage(const mach_header *machH
         if (loadCommand->cmd == LC_VERSION_MIN_MACOSX || loadCommand->cmd == LC_VERSION_MIN_IPHONEOS
             || loadCommand->cmd == LC_VERSION_MIN_TVOS || loadCommand->cmd == LC_VERSION_MIN_WATCHOS) {
             auto versionCommand = reinterpret_cast<version_min_command *>(loadCommand);
-            return makeVersionTuple(versionCommand->version, versionCommand->sdk);
+            return makeVersionTuple(versionCommand->version, versionCommand->sdk, osForLoadCommand(loadCommand->cmd));
 #if QT_DARWIN_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_13, __IPHONE_11_0, __TVOS_11_0, __WATCHOS_4_0)
         } else if (loadCommand->cmd == LC_BUILD_VERSION) {
             auto versionCommand = reinterpret_cast<build_version_command *>(loadCommand);
-            return makeVersionTuple(versionCommand->minos, versionCommand->sdk);
+            return makeVersionTuple(versionCommand->minos, versionCommand->sdk, osForPlatform(versionCommand->platform));
 #endif
         }
         commandCursor += loadCommand->cmdsize;
