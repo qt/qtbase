@@ -127,12 +127,23 @@ QDpi QWasmScreen::logicalDpi() const
 
 qreal QWasmScreen::devicePixelRatio() const
 {
-    // FIXME: The effective device pixel ratio may be different from the
-    // HTML window dpr if the OpenGL driver/GPU allocates a less than
-    // full resolution surface. Use emscripten_webgl_get_drawing_buffer_size()
-    // and compute the dpr instead.
-    double htmlWindowDpr = emscripten::val::global("window")["devicePixelRatio"].as<double>();
-    return qreal(htmlWindowDpr);
+    // window.devicePixelRatio gives us the scale factor between CSS and device pixels.
+    // This property reflects hardware configuration, and also browser zoom on desktop.
+    //
+    // window.visualViewport.scale gives us the zoom factor on mobile. If the html page is
+    // configured with "<meta name="viewport" content="width=device-width">" then this scale
+    // factor will be 1. Omitting the viewport configuration typically results on a zoomed-out
+    // viewport, with a scale factor <1. User pinch-zoom will change the scale factor; an event
+    // handler is installed in the QWasmIntegration constructor. Changing zoom level on desktop
+    // does not appear to change visualViewport.scale.
+    //
+    // The effective devicePixelRatio is the product of these two scale factors, upper-bounded
+    // by window.devicePixelRatio in order to avoid e.g. allocating a 10x widget backing store.
+    double dpr = emscripten::val::global("window")["devicePixelRatio"].as<double>();
+    emscripten::val visualViewport = emscripten::val::global("window")["visualViewport"];
+    double scale = visualViewport.isUndefined() ? 1.0 : visualViewport["scale"].as<double>();
+    double effectiveDevicePixelRatio = std::min(dpr * scale, dpr);
+    return qreal(effectiveDevicePixelRatio);
 }
 
 QString QWasmScreen::name() const

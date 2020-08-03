@@ -87,6 +87,12 @@ static void qtUpdateDpi()
     QWasmIntegration::get()->updateDpi();
 }
 
+static void resizeAllScreens(emscripten::val event)
+{
+    Q_UNUSED(event);
+    QWasmIntegration::get()->resizeAllScreens();
+}
+
 EMSCRIPTEN_BINDINGS(qtQWasmIntegraton)
 {
     function("qtBrowserBeforeUnload", &browserBeforeUnload);
@@ -94,6 +100,7 @@ EMSCRIPTEN_BINDINGS(qtQWasmIntegraton)
     function("qtRemoveCanvasElement", &removeCanvasElement);
     function("qtResizeCanvasElement", &resizeCanvasElement);
     function("qtUpdateDpi", &qtUpdateDpi);
+    function("qtResizeAllScreens", &resizeAllScreens);
 }
 
 QWasmIntegration *QWasmIntegration::s_instance;
@@ -136,6 +143,13 @@ QWasmIntegration::QWasmIntegration()
         return 0;
     };
     emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, 1, onWindowResize);
+
+    // install visualViewport resize handler which picks up size and scale change on mobile.
+    emscripten::val visualViewport = emscripten::val::global("window")["visualViewport"];
+    if (!visualViewport.isUndefined()) {
+        visualViewport.call<void>("addEventListener", val("resize"),
+                          val::module_property("qtResizeAllScreens"));
+    }
 }
 
 QWasmIntegration::~QWasmIntegration()
