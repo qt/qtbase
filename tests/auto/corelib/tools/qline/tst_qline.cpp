@@ -40,6 +40,8 @@ private slots:
     void testLength();
     void testLength_data();
 
+    void testSetLength();
+
     void testCenter();
     void testCenter_data();
 
@@ -256,6 +258,15 @@ void tst_QLine::testLength()
     QCOMPARE(l.length(), qreal(lengthToSet));
     QCOMPARE(l.dx(), qreal(vx));
     QCOMPARE(l.dy(), qreal(vy));
+}
+
+void tst_QLine::testSetLength()
+{
+    QLineF l(0, 0, 4e-323, 5e-324);
+    const qreal newLength = 1892;
+    const qreal oldLength = l.length();
+    l.setLength(newLength);
+    QCOMPARE(l.length(), oldLength ? newLength : 0);
 }
 
 void tst_QLine::testCenter()
