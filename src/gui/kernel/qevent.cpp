@@ -4260,10 +4260,13 @@ QTouchEvent::~QTouchEvent()
     Returns the unique ID of this touch point or token, if any.
 
     It is often invalid (see \l {QPointingDeviceUniqueId::isValid()} {isValid()}),
-    because touchscreens cannot uniquely identify fingers. But when the
-    \l {TouchPoint::InfoFlag} {Token} flag is set, it is expected to uniquely
-    identify a specific token (fiducial object). When it comes from a QTabletEvent,
-    it identifies the serial number of the stylus in use.
+    because touchscreens cannot uniquely identify fingers.
+
+    When it comes from a QTabletEvent, it identifies the serial number of the
+    stylus in use.
+
+    It may identify a specific token (fiducial object) when the TUIO driver is
+    in use with a touchscreen that supports them.
 
     \sa flags
 */
