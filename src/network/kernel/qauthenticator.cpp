@@ -463,8 +463,10 @@ void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByt
         break;
     case DigestMd5: {
         this->options[QLatin1String("realm")] = realm = QString::fromLatin1(options.value("realm"));
-        if (options.value("stale").compare("true", Qt::CaseInsensitive) == 0)
+        if (options.value("stale").compare("true", Qt::CaseInsensitive) == 0) {
             phase = Start;
+            nonceCount = 0;
+        }
         if (user.isEmpty() && password.isEmpty())
             phase = Done;
         break;
