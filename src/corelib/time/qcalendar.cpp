@@ -55,7 +55,7 @@
 #include <qhash.h>
 #include <qdebug.h>
 
-#include <unordered_map>
+#include <vector>
 
 QT_BEGIN_NAMESPACE
 
