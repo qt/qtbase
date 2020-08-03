@@ -122,52 +122,25 @@ static QCFType<CFPropertyListRef> macValue(const QVariant &value)
         break;
     case QVariant::Map:
         {
-            /*
-                QMap<QString, QVariant> is potentially a multimap,
-                whereas CFDictionary is a single-valued map. To allow
-                for multiple values with the same key, we store
-                multiple values in a CFArray. To avoid ambiguities,
-                we also wrap lists in a CFArray singleton.
-            */
-            QMap<QString, QVariant> map = value.toMap();
-            QMap<QString, QVariant>::const_iterator i = map.constBegin();
+            const QVariantMap &map = value.toMap();
+            const int mapSize = map.size();
 
-            int maxUniqueKeys = map.size();
-            int numUniqueKeys = 0;
-            QVarLengthArray<QCFType<CFPropertyListRef> > cfkeys(maxUniqueKeys);
-            QVarLengthArray<QCFType<CFPropertyListRef> > cfvalues(maxUniqueKeys);
+            QVarLengthArray<QCFType<CFPropertyListRef>> cfkeys;
+            cfkeys.reserve(mapSize);
+            std::transform(map.keyBegin(), map.keyEnd(),
+                           std::back_inserter(cfkeys),
+                           [](const auto &key) { return key.toCFString(); });
 
-            while (i != map.constEnd()) {
-                const QString &key = i.key();
-                QList<QVariant> values;
-
-                do {
-                    values << i.value();
-                    ++i;
-                } while (i != map.constEnd() && i.key() == key);
-
-                bool singleton = (values.count() == 1);
-                if (singleton) {
-                    switch (values.constFirst().type()) {
-                    // should be same as above (look for LIST)
-                    case QVariant::List:
-                    case QVariant::StringList:
-                    case QVariant::Polygon:
-                        singleton = false;
-                    default:
-                        ;
-                    }
-                }
-
-                cfkeys[numUniqueKeys] = key.toCFString();
-                cfvalues[numUniqueKeys] = singleton ? macValue(values.constFirst()) : macList(values);
-                ++numUniqueKeys;
-            }
+            QVarLengthArray<QCFType<CFPropertyListRef>> cfvalues;
+            cfvalues.reserve(mapSize);
+            std::transform(map.begin(), map.end(),
+                           std::back_inserter(cfvalues),
+                           [](const auto &value) { return macValue(value); });
 
             result = CFDictionaryCreate(kCFAllocatorDefault,
                                         reinterpret_cast<const void **>(cfkeys.data()),
                                         reinterpret_cast<const void **>(cfvalues.data()),
-                                        CFIndex(numUniqueKeys),
+                                        CFIndex(mapSize),
                                         &kCFTypeDictionaryKeyCallBacks,
                                         &kCFTypeDictionaryValueCallBacks);
         }
@@ -283,15 +256,18 @@ static QVariant qtValue(CFPropertyListRef cfvalue)
         QVarLengthArray<CFPropertyListRef> values(size);
         CFDictionaryGetKeysAndValues(cfdict, keys.data(), values.data());
 
-        QMultiMap<QString, QVariant> map;
+        QVariantMap map;
         for (int i = 0; i < size; ++i) {
             QString key = QString::fromCFString(static_cast<CFStringRef>(keys[i]));
 
             if (CFGetTypeID(values[i]) == arrayTypeId) {
                 CFArrayRef cfarray = static_cast<CFArrayRef>(values[i]);
                 CFIndex arraySize = CFArrayGetCount(cfarray);
-                for (CFIndex j = arraySize - 1; j >= 0; --j)
-                    map.insert(key, qtValue(CFArrayGetValueAtIndex(cfarray, j)));
+                QVariantList list;
+                list.reserve(arraySize);
+                for (CFIndex j = 0; j < arraySize; ++j)
+                    list.append(qtValue(CFArrayGetValueAtIndex(cfarray, j)));
+                map.insert(key, list);
             } else {
                 map.insert(key, qtValue(values[i]));
             }
