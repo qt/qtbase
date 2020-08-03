@@ -140,7 +140,7 @@ void VulkanRenderer::initResources()
     m_devFuncs = inst->deviceFunctions(m_window->device());
 
     QString info;
-    info += QString::asprintf("Number of physical devices: %d\n", m_window->availablePhysicalDevices().count());
+    info += QString::asprintf("Number of physical devices: %zd\n", ssize_t(m_window->availablePhysicalDevices().count()));
 
     QVulkanFunctions *f = inst->functions();
     VkPhysicalDeviceProperties props;
