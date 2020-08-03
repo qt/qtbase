@@ -162,22 +162,10 @@ public:
 
     void swap(QList<T> &other) noexcept { qSwap(d, other.d); }
 
-    template <typename U = T>
-    friend QTypeTraits::compare_eq_result<U> operator==(const QList &l, const QList &r)
-    {
-        if (l.size() != r.size())
-            return false;
-        if (l.begin() == r.begin())
-            return true;
-
-        // do element-by-element comparison
-        return l.d->compare(l.begin(), r.begin(), l.size());
-    }
-    template <typename U = T>
-    friend QTypeTraits::compare_eq_result<U> operator!=(const QList &l, const QList &r)
-    {
-        return !(l == r);
-    }
+    template <typename U>
+    friend QTypeTraits::compare_eq_result<U> operator==(const QList<U> &l, const QList<U> &r);
+    template <typename U>
+    friend QTypeTraits::compare_eq_result<U> operator!=(const QList<U> &l, const QList<U> &r);
 
     qsizetype size() const noexcept { return d->size; }
     qsizetype count() const noexcept { return size(); }
@@ -790,6 +778,24 @@ size_t qHash(const QList<T> &key, size_t seed = 0)
     noexcept(noexcept(qHashRange(key.cbegin(), key.cend(), seed)))
 {
     return qHashRange(key.cbegin(), key.cend(), seed);
+}
+
+template <typename U>
+QTypeTraits::compare_eq_result<U> operator==(const QList<U> &l, const QList<U> &r)
+{
+    if (l.size() != r.size())
+        return false;
+    if (l.begin() == r.begin())
+        return true;
+
+    // do element-by-element comparison
+    return l.d->compare(l.begin(), r.begin(), l.size());
+}
+
+template <typename U>
+QTypeTraits::compare_eq_result<U> operator!=(const QList<U> &l, const QList<U> &r)
+{
+    return !(l == r);
 }
 
 template <typename T>
