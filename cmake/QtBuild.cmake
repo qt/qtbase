@@ -3325,12 +3325,11 @@ function(qt_generate_prl_file target install_dir)
         unset(rcc_objects)
     endif()
 
-    unset(prl_libs)
-    qt_collect_libs(${target} prl_libs)
-
     unset(prl_config)
+    set(is_static FALSE)
     if(target_type STREQUAL "STATIC_LIBRARY")
         list(APPEND prl_config static)
+        set(is_static TRUE)
     elseif(target_type STREQUAL "SHARED_LIBRARY")
         list(APPEND prl_config shared)
     endif()
@@ -3387,16 +3386,25 @@ function(qt_generate_prl_file target install_dir)
 
     # Generate the prl content and its final file name into configuration specific files
     # whose names we know, and can be used in add_custom_command.
-    file(GENERATE
-        OUTPUT "${prl_step1_path}"
-        CONTENT
+    set(prl_step1_content
         "RCC_OBJECTS = ${rcc_objects}
 QMAKE_PRL_BUILD_DIR = ${CMAKE_CURRENT_BINARY_DIR}
 QMAKE_PRL_TARGET = $<TARGET_FILE_NAME:${target}>
 QMAKE_PRL_CONFIG = ${prl_config}
 QMAKE_PRL_VERSION = ${PROJECT_VERSION}
-QMAKE_PRL_LIBS_FOR_CMAKE = ${prl_libs}
 ")
+    if(NOT is_static AND WIN32)
+        # Do nothing. Prl files for shared libraries on Windows shouldn't have the libs listed,
+        # as per qt_build_config.prf and the conditional CONFIG+=explicitlib assignment.
+    else()
+        set(prl_libs "")
+        qt_collect_libs(${target} prl_libs)
+        string(APPEND prl_step1_content "QMAKE_PRL_LIBS_FOR_CMAKE = ${prl_libs}\n")
+    endif()
+
+    file(GENERATE
+        OUTPUT "${prl_step1_path}"
+        CONTENT "${prl_step1_content}")
     file(GENERATE
          OUTPUT "${prl_meta_info_path}"
          CONTENT
