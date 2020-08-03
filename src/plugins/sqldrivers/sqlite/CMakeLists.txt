@@ -33,7 +33,6 @@ qt_extend_target(QSQLiteDriverPlugin CONDITION QT_FEATURE_system_sqlite
 
 # special case begin
 if (NOT QT_FEATURE_system_sqlite)
-    qt_find_package(Threads REQUIRED PROVIDED_TARGETS Threads::Threads)
     # On newer compilers compiling sqlite.c produces warnings
     qt_disable_warnings(QSQLiteDriverPlugin)
 endif()
@@ -52,8 +51,6 @@ qt_extend_target(QSQLiteDriverPlugin CONDITION NOT QT_FEATURE_system_sqlite
         SQLITE_OMIT_COMPLETE
     INCLUDE_DIRECTORIES
         ../../../3rdparty/sqlite
-    PUBLIC_LIBRARIES # special case
-        Threads::Threads # special case
 )
 
 qt_extend_target(QSQLiteDriverPlugin CONDITION CMAKE_BUILD_TYPE STREQUAL Release AND NOT QT_FEATURE_system_sqlite

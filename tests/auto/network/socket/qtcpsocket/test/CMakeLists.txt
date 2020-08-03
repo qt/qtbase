@@ -21,12 +21,6 @@ qt_extend_target(tst_qtcpsocket CONDITION WIN32
         ws2_32
 )
 
-# special case begin
-set(THREADS_PREFER_PTHREAD_FLAG 1)
-find_package(Threads)
-target_link_libraries(tst_qtcpsocket PRIVATE Threads::Threads)
-# special case end
-
 #### Keys ignored in scope 4:.:.:test.pro:(CMAKE_BUILD_TYPE STREQUAL Debug):
 # DESTDIR = "../debug"
 

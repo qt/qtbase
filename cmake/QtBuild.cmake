@@ -3256,7 +3256,12 @@ function(qt_internal_walk_libs target out_var dict_name operation)
                 set(lib_target ${lib})
             endif()
 
-            if(TARGET ${lib_target})
+            # Skip CMAKE_DIRECTORY_ID_SEP. If a target_link_libraries is applied to a target
+            # that was defined in a different scope, CMake appends and prepends a special directory
+            # id separator. Filter those out.
+            if(lib_target MATCHES "^::@")
+                continue()
+            elseif(TARGET ${lib_target})
                 if ("${lib_target}" MATCHES "^Qt::(.*)")
                     # If both, Qt::Foo and Foo targets exist, prefer the target name without
                     # namespace. Which one is preferred doesn't really matter. This code exists to

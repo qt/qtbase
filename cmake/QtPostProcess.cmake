@@ -262,9 +262,56 @@ function(qt_internal_create_plugin_depends_file target)
     endif()
 endfunction()
 
+function(qt_internal_create_qt6_dependencies_file)
+    # This is used for substitution in the configured file.
+    set(target "${INSTALL_CMAKE_NAMESPACE}")
+
+    # This is the actual target we're querying.
+    set(actual_target Platform)
+    get_target_property(public_depends "${actual_target}" INTERFACE_LINK_LIBRARIES)
+
+    # We need to collect third party deps that are set on the public Platform target,
+    # like Threads::Threads.
+    # This mimics find_package part of the CONFIG += thread assignment in mkspecs/features/qt.prf.
+    qt_collect_third_party_deps(${actual_target})
+
+    # For Threads we also need to write an extra variable assignment.
+    set(third_party_extra "")
+    if(third_party_deps MATCHES "Threads")
+        string(APPEND third_party_extra "if(NOT QT_NO_THREADS_PREFER_PTHREAD_FLAG)
+    set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+endif()")
+    endif()
+
+    if(third_party_deps)
+        # Setup build and install paths.
+        set(path_suffix "${INSTALL_CMAKE_NAMESPACE}")
+
+        qt_path_join(config_build_dir ${QT_CONFIG_BUILD_DIR} ${path_suffix})
+        qt_path_join(config_install_dir ${QT_CONFIG_INSTALL_DIR} ${path_suffix})
+
+        # Configure and install QtDependencies file.
+        configure_file(
+            "${QT_CMAKE_DIR}/QtConfigDependencies.cmake.in"
+            "${config_build_dir}/${target}Dependencies.cmake"
+            @ONLY
+        )
+
+        qt_install(FILES
+            "${config_build_dir}/${target}Dependencies.cmake"
+            DESTINATION "${config_install_dir}"
+            COMPONENT Devel
+        )
+    endif()
+endfunction()
+
 # Create Depends.cmake & Depends.h files for all modules and plug-ins.
 function(qt_internal_create_depends_files)
     qt_internal_get_qt_repo_known_modules(repo_known_modules)
+
+    if(PROJECT_NAME STREQUAL "QtBase")
+        qt_internal_create_qt6_dependencies_file()
+    endif()
 
     foreach (target ${repo_known_modules})
         qt_internal_create_module_depends_file(${target})

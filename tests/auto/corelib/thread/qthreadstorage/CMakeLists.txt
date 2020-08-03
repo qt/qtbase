@@ -8,9 +8,6 @@
 add_qt_test(tst_qthreadstorage
     SOURCES
         tst_qthreadstorage.cpp
-    LIBRARIES # special case
-        Threads::Threads # special case
-
 )
 
 ## Scopes:

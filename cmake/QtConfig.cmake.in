@@ -49,6 +49,19 @@ if(APPLE AND (NOT CMAKE_SYSTEM_NAME OR CMAKE_SYSTEM_NAME STREQUAL "Darwin"))
     list(APPEND CMAKE_MODULE_PATH "${_qt_import_prefix}/macos")
 endif()
 
+# Find required dependencies, if any.
+include(CMakeFindDependencyMacro)
+set(@INSTALL_CMAKE_NAMESPACE@_DEPENDENCIES_FOUND TRUE)
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@Dependencies.cmake")
+    include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@Dependencies.cmake")
+endif()
+if(NOT @INSTALL_CMAKE_NAMESPACE@_DEPENDENCIES_FOUND)
+    set(@INSTALL_CMAKE_NAMESPACE@_FOUND False)
+    message(FATAL_ERROR
+    "Failed to find Qt Platform dependency:
+    ${@INSTALL_CMAKE_NAMESPACE@_DEPENDENCY_NOT_FOUND_MESSAGE}")
+endif()
+
 foreach(module ${@INSTALL_CMAKE_NAMESPACE@_FIND_COMPONENTS})
     find_package(@INSTALL_CMAKE_NAMESPACE@${module}
         ${_@INSTALL_CMAKE_NAMESPACE@_FIND_PARTS_QUIET}

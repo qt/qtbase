@@ -249,7 +249,6 @@ qt_add_module(Core
         ../3rdparty/tinycbor/src
     LIBRARIES
         Qt::GlobalConfigPrivate # special case
-        Threads::Threads # special case
     PRECOMPILED_HEADER
         "global/qt_pch.h"
     NO_PCH_SOURCES
@@ -275,6 +274,13 @@ else()
 endif()
 
 qt_generate_qconfig_cpp()
+
+# Handle qtConfig(thread): CONFIG += thread like in qt.prf.
+# Aka if the feature is enabled, publically link against the threading library.
+# This also ensures the link flag is in the .prl file.
+if(QT_FEATURE_thread)
+    target_link_libraries(Platform INTERFACE Threads::Threads)
+endif()
 
 # Handle QObject: Automoc does not work for this as it would
 # require to spill internals into users:

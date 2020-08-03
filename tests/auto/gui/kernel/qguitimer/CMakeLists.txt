@@ -10,5 +10,4 @@ qt_add_test(tst_qguitimer
     PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::Gui
-        Threads::Threads # special case
 )

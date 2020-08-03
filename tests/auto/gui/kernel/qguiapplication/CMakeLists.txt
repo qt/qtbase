@@ -28,7 +28,6 @@ qt_add_test(tst_qguiapplication
     PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
-        Threads::Threads # special case
 )
 
 # Resources:

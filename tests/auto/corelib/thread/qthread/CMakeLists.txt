@@ -10,8 +10,6 @@ qt_add_test(tst_qthread
         tst_qthread.cpp
     INCLUDE_DIRECTORIES
         ../../../../shared
-    LIBRARIES # special case
-        Threads::Threads # special case
 )
 
 ## Scopes:

@@ -16,7 +16,6 @@ qt_add_test(tst_qmetatype
         ../../../other/qvariant_common
     PUBLIC_LIBRARIES
         Qt::CorePrivate
-        Threads::Threads # special case
     TESTDATA ${test_data}
 )
 
