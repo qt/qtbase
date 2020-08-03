@@ -123,6 +123,8 @@ struct Registry {
 
         for (int i = 0; i <= int(QCalendar::System::Last); ++i)
             (void)QCalendar(QCalendar::System(i));
+
+        populated = true;
     }
 };
 
