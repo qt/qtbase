@@ -47,8 +47,8 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-#include <QtGui>
+#include <QApplication>
+#include <QTextBrowser>
 
 int main(int argc, char **argv)
 {

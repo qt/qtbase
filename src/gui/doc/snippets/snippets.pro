@@ -10,5 +10,6 @@ contains(QT_BUILD_PARTS, tests) {
         qfontdatabase \
         textdocument-blocks \
         textdocument-charformats \
+        textdocument-css \
         textdocument-end
 }
