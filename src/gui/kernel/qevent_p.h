@@ -88,6 +88,8 @@ public:
 
     void setTimestamp(const ulong t) { m_timestamp = t; }
 
+    void setPressTimestamp(const ulong t) { m_pressTimestamp = t; }
+
     void setState(QEventPoint::State state) { m_state = state; }
 
     void setUniqueId(const QPointingDeviceUniqueId &uid) { m_uniqueId = uid; }

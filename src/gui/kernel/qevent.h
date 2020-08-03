@@ -154,6 +154,7 @@ public:
     State state() const { return m_state; }
     int id() const { return m_pointId; }
     QPointingDeviceUniqueId uniqueId() const { return m_uniqueId; }
+    ulong pressTimestamp() const { return m_pressTimestamp; }
     qreal timeHeld() const { return (m_timestamp - m_pressTimestamp) / qreal(1000); }
     qreal pressure() const { return m_pressure; }
     qreal rotation() const { return m_rotation; }
@@ -177,7 +178,7 @@ protected:
     QVector2D m_velocity;
     QPointer<QObject> m_exclusiveGrabber;
     QList<QPointer <QObject> > m_passiveGrabbers;
-    ulong m_timestamp = 0;
+    ulong m_timestamp = 0; // redundant with m_parent->timestamp(), but keeps timeHeld() working in a saved copy
     ulong m_pressTimestamp = 0;
     QPointingDeviceUniqueId m_uniqueId;
     int m_pointId = -1;
