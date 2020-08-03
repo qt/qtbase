@@ -160,6 +160,8 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QMetaType::T
 #if QT_CONFIG(textcodec)
         case QMetaType::QString: {
             const QByteArray ba = data.toByteArray();
+            if (ba.isNull())
+                return QString();
             QTextCodec *codec = QTextCodec::codecForName("utf-8");
             if (format == QLatin1String("text/html"))
                 codec = QTextCodec::codecForHtml(ba, codec);
