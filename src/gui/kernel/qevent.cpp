@@ -50,6 +50,7 @@
 #include "qmimedata.h"
 #include "qevent_p.h"
 #include "qmath.h"
+#include "qloggingcategory.h"
 
 #if QT_CONFIG(draganddrop)
 #include <qpa/qplatformdrag.h>
@@ -59,6 +60,18 @@
 #include <private/qdebug_p.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcPointerGrab, "qt.pointer.grab")
+
+static const QString pointDeviceName(const QEventPoint *point)
+{
+    if (!point->event())
+        return {};
+    auto device = point->event()->device();
+    QString deviceName = (device ? device->name() : QLatin1String("null device"));
+    deviceName.resize(16, u' '); // shorten, and align in case of sequential output
+    return deviceName;
+}
 
 /*!
     \class QEnterEvent
@@ -262,6 +275,12 @@ void QEventPoint::setAccepted(bool accepted)
 */
 void QEventPoint::setExclusiveGrabber(QObject *exclusiveGrabber)
 {
+    if (m_exclusiveGrabber == exclusiveGrabber)
+        return;
+    if (Q_UNLIKELY(lcPointerGrab().isDebugEnabled())) {
+        qCDebug(lcPointerGrab) << pointDeviceName(this) << "point" << Qt::hex << m_pointId << m_state << "@" << m_scenePos
+                               << ": grab" << m_exclusiveGrabber << "->" << exclusiveGrabber;
+    }
     m_exclusiveGrabber = exclusiveGrabber;
     m_globalGrabPos = m_globalPos;
 }
@@ -276,10 +295,18 @@ void QEventPoint::setExclusiveGrabber(QObject *exclusiveGrabber)
 void QEventPoint::setPassiveGrabbers(const QList<QPointer<QObject> > &grabbers)
 {
     m_passiveGrabbers = grabbers;
+    if (Q_UNLIKELY(lcPointerGrab().isDebugEnabled())) {
+        qCDebug(lcPointerGrab) << pointDeviceName(this) << "point" << Qt::hex << m_pointId << m_state
+                               << ": grab (passive)" << grabbers;
+    }
 }
 
 void QEventPoint::clearPassiveGrabbers()
 {
+    if (Q_UNLIKELY(lcPointerGrab().isDebugEnabled())) {
+        qCDebug(lcPointerGrab) << pointDeviceName(this) << "point" << Qt::hex << m_pointId << m_state
+                               << ": clearing" << m_passiveGrabbers;
+    }
     m_passiveGrabbers.clear();
 }
 
