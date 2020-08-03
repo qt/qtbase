@@ -2833,23 +2833,25 @@ bool QHeaderView::viewportEvent(QEvent *e)
 }
 
 /*!
-    Paints the section specified by the given \a logicalIndex, using the given
-    \a painter and \a rect.
+    \fn void QHeaderView::initStyleOptionForIndex(QStyleOptionHeader *option, int logicalIndex)
+    \since 6.0
 
-    Normally, you do not have to call this function.
+    Initializes the style \a option from the specified \a logicalIndex.
+    This function is called by the default implementation of paintSection after
+    initStyleOption has been called.
+
+    \sa paintSection(), initStyleOption()
 */
 
-void QHeaderView::paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const
+void QHeaderView::initStyleOptionForIndex(QStyleOptionHeader *option, int logicalIndex) const
 {
     Q_D(const QHeaderView);
-    if (!rect.isValid())
+
+    if (!option)
         return;
-    // get the state of the section
-    QStyleOptionHeader opt;
-    initStyleOption(&opt);
+    QStyleOptionHeader &opt = *option;
+
     QStyle::State state = QStyle::State_None;
-    if (isEnabled())
-        state |= QStyle::State_Enabled;
     if (window()->isActiveWindow())
         state |= QStyle::State_Active;
     if (d->clickableSections) {
@@ -2863,7 +2865,6 @@ void QHeaderView::paintSection(QPainter *painter, const QRect &rect, int logical
             if (d->isSectionSelected(logicalIndex))
                 state |= QStyle::State_Sunken;
         }
-
     }
     if (isSortIndicatorShown() && sortIndicatorSection() == logicalIndex)
         opt.sortIndicator = (sortIndicatorOrder() == Qt::AscendingOrder)
@@ -2872,7 +2873,6 @@ void QHeaderView::paintSection(QPainter *painter, const QRect &rect, int logical
     // setup the style options structure
     QVariant textAlignment = d->model->headerData(logicalIndex, d->orientation,
                                                   Qt::TextAlignmentRole);
-    opt.rect = rect;
     opt.section = logicalIndex;
     opt.state |= state;
     opt.textAlignment = Qt::Alignment(textAlignment.isValid()
@@ -2909,13 +2909,11 @@ void QHeaderView::paintSection(QPainter *painter, const QRect &rect, int logical
     if (foregroundBrush.canConvert<QBrush>())
         opt.palette.setBrush(QPalette::ButtonText, qvariant_cast<QBrush>(foregroundBrush));
 
-    QPointF oldBO = painter->brushOrigin();
     QVariant backgroundBrush = d->model->headerData(logicalIndex, d->orientation,
                                                     Qt::BackgroundRole);
     if (backgroundBrush.canConvert<QBrush>()) {
         opt.palette.setBrush(QPalette::Button, qvariant_cast<QBrush>(backgroundBrush));
         opt.palette.setBrush(QPalette::Window, qvariant_cast<QBrush>(backgroundBrush));
-        painter->setBrushOrigin(opt.rect.topLeft());
     }
 
     // the section position
@@ -2943,9 +2941,42 @@ void QHeaderView::paintSection(QPainter *painter, const QRect &rect, int logical
         opt.selectedPosition = QStyleOptionHeader::NextIsSelected;
     else
         opt.selectedPosition = QStyleOptionHeader::NotAdjacent;
-    // draw the section
-    style()->drawControl(QStyle::CE_Header, &opt, painter, this);
+}
 
+/*!
+    Paints the section specified by the given \a logicalIndex, using the given
+    \a painter and \a rect.
+
+    Normally, you do not have to call this function.
+*/
+
+void QHeaderView::paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const
+{
+    if (!rect.isValid())
+        return;
+
+    QStyleOptionHeader opt;
+    QPointF oldBO = painter->brushOrigin();
+
+    initStyleOption(&opt);
+
+    QBrush oBrushButton = opt.palette.brush(QPalette::Button);
+    QBrush oBrushWindow = opt.palette.brush(QPalette::Window);
+
+    initStyleOptionForIndex(&opt, logicalIndex);
+    // We set rect here. If it needs to be changed it can be changed by overriding this function
+    opt.rect = rect;
+
+    QBrush nBrushButton = opt.palette.brush(QPalette::Button);
+    QBrush nBrushWindow = opt.palette.brush(QPalette::Window);
+
+    // If relevant brushes are not the same as from the regular widgets we set the brush origin
+    if (oBrushButton != nBrushButton || oBrushWindow != nBrushWindow) {
+        painter->setBrushOrigin(opt.rect.topLeft());
+    }
+
+    // draw the section.
+    style()->drawControl(QStyle::CE_Header, &opt, painter, this);
     painter->setBrushOrigin(oldBO);
 }
 
@@ -3370,7 +3401,7 @@ void QHeaderViewPrivate::updateSectionIndicator(int section, int position)
     useful for subclasses when they need a QStyleOptionHeader, but do not want
     to fill in all the information themselves.
 
-    \sa QStyleOption::initFrom()
+    \sa QStyleOption::initFrom(), initStyleOptionForIndex()
 */
 void QHeaderView::initStyleOption(QStyleOptionHeader *option) const
 {
@@ -3388,8 +3419,7 @@ void QHeaderView::initStyleOption(QStyleOptionHeader *option) const
 void QHeaderView::initStyleOption(QStyleOptionFrame *option) const
 {
     // The QFrame version is only here to avoid compiler warnings.
-    // If invoked (it can be invoked with QFrame *f = headerview; f->initStyleOption()),
-    // and here we just pass it on to the frame version.
+    // If invoked we just pass it on to the base class.
     QFrame::initStyleOption(option);
 }
 

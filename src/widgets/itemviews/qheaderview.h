@@ -230,6 +230,7 @@ protected:
     QModelIndex moveCursor(CursorAction, Qt::KeyboardModifiers) override;
     void setSelection(const QRect& rect, QItemSelectionModel::SelectionFlags flags) override;
     QRegion visualRegionForSelection(const QItemSelection &selection) const override;
+    virtual void initStyleOptionForIndex(QStyleOptionHeader *option, int logicalIndex) const;
     virtual void initStyleOption(QStyleOptionHeader *option) const;
 
     friend class QTableView;
