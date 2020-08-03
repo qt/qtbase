@@ -301,6 +301,8 @@ static ShiftResult shift(const QBezier *orig, QBezier *shifted, qreal offset, qr
     QPointF points_shifted[4];
 
     QLineF prev = QLineF(QPointF(), points[1] - points[0]);
+    if (!prev.length())
+        return Discard;
     QPointF prev_normal = prev.normalVector().unitVector().p2();
 
     points_shifted[0] = points[0] + offset * prev_normal;
