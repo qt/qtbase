@@ -83,6 +83,8 @@ QOpenGLContext *QPlatformInterface::QEGLContext::fromNative(EGLContext context, 
 }
 #endif
 
+#endif // QT_NO_OPENGL
+
 #if QT_CONFIG(xcb)
 QT_DEFINE_PRIVATE_PLATFORM_INTERFACE(QXcbScreen);
 QT_DEFINE_PRIVATE_PLATFORM_INTERFACE(QXcbWindow);
@@ -101,7 +103,5 @@ QEvdevKeyMapper *QKeyMapper::platformInterface<QEvdevKeyMapper>() const
     return dynamic_cast<QEvdevKeyMapper*>(QGuiApplicationPrivate::platformIntegration());
 }
 #endif
-
-#endif // QT_NO_OPENGL
 
 QT_END_NAMESPACE
