@@ -9,5 +9,6 @@ contains(QT_BUILD_PARTS, tests) {
         draganddrop \
         qfontdatabase \
         textdocument-blocks \
+        textdocument-charformats \
         textdocument-end
 }
