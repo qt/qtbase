@@ -47,16 +47,15 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-#include <QtGui>
 #include "textedit.h"
+#include <QApplication>
 
 int main(int argc, char * argv[])
 {
     QApplication app(argc, argv);
 
-    TextEdit *textEdit = new TextEdit;
-    textEdit->show();
+    TextEdit textEdit;
+    textEdit.show();
 
     return app.exec();
 }

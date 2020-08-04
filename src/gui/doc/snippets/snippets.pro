@@ -13,5 +13,7 @@ contains(QT_BUILD_PARTS, tests) {
         textdocument-css \
         textdocument-cursors \
         textdocument-end \
-        textdocument-find
+        textdocument-find \
+        textdocument-frames \
+        textdocument-imagedrop
 }
