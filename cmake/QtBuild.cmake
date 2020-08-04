@@ -4975,6 +4975,11 @@ function(qt_add_tool target_name)
     qt_internal_add_target_aliases("${target_name}")
     _qt_internal_apply_strict_cpp("${target_name}")
 
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.19.0" AND QT_FEATURE_debug_and_release)
+        set_property(TARGET "${target_name}"
+            PROPERTY EXCLUDE_FROM_ALL "$<NOT:$<CONFIG:${QT_MULTI_CONFIG_FIRST_CONFIG}>>")
+    endif()
+
     if (NOT target_name STREQUAL name)
         set_target_properties(${target_name} PROPERTIES
             OUTPUT_NAME ${name}
