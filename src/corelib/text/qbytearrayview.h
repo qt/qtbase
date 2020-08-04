@@ -289,19 +289,24 @@ public:
     [[nodiscard]] constexpr char first() const { return front(); }
     [[nodiscard]] constexpr char last()  const { return back(); }
 
+    friend inline bool operator==(QByteArrayView lhs, QByteArrayView rhs) noexcept
+    { return lhs.size() == rhs.size() && QtPrivate::compareMemory(lhs, rhs) == 0; }
+    friend inline bool operator!=(QByteArrayView lhs, QByteArrayView rhs) noexcept
+    { return !(lhs == rhs); }
+    friend inline bool operator< (QByteArrayView lhs, QByteArrayView rhs) noexcept
+    { return QtPrivate::compareMemory(lhs, rhs) <  0; }
+    friend inline bool operator<=(QByteArrayView lhs, QByteArrayView rhs) noexcept
+    { return QtPrivate::compareMemory(lhs, rhs) <= 0; }
+    friend inline bool operator> (QByteArrayView lhs, QByteArrayView rhs) noexcept
+    { return !(lhs <= rhs); }
+    friend inline bool operator>=(QByteArrayView lhs, QByteArrayView rhs) noexcept
+    { return !(lhs < rhs); }
+
 private:
     qsizetype m_size;
     const storage_type *m_data;
 };
 Q_DECLARE_TYPEINFO(QByteArrayView, Q_PRIMITIVE_TYPE);
-
-// QByteArrayView <> QByteArrayView
-inline bool operator==(QByteArrayView lhs, QByteArrayView rhs) noexcept { return lhs.size() == rhs.size() && QtPrivate::compareMemory(lhs, rhs) == 0; }
-inline bool operator!=(QByteArrayView lhs, QByteArrayView rhs) noexcept { return !(lhs == rhs); }
-inline bool operator< (QByteArrayView lhs, QByteArrayView rhs) noexcept { return QtPrivate::compareMemory(lhs, rhs) <  0; }
-inline bool operator<=(QByteArrayView lhs, QByteArrayView rhs) noexcept { return QtPrivate::compareMemory(lhs, rhs) <= 0; }
-inline bool operator> (QByteArrayView lhs, QByteArrayView rhs) noexcept { return !(lhs <= rhs); }
-inline bool operator>=(QByteArrayView lhs, QByteArrayView rhs) noexcept { return !(lhs < rhs); }
 
 template<typename QByteArrayLike,
          std::enable_if_t<std::is_same_v<QByteArrayLike, QByteArray>, bool> = true>
