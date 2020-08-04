@@ -885,7 +885,7 @@ void tst_QRandomGenerator::stdUniformRealDistribution_data()
     newRow(0, 1);   // canonical
     newRow(0, 200);
     newRow(0, numeric_limits<quint32>::max() + 1.);
-    newRow(0, numeric_limits<quint64>::max() + 1.);
+    newRow(0, double(numeric_limits<quint64>::max()) + 1.);
     newRow(-1, 1.6);
 }
 
