@@ -16,5 +16,6 @@ contains(QT_BUILD_PARTS, tests) {
         textdocument-find \
         textdocument-frames \
         textdocument-imagedrop \
-        textdocument-imageformat
+        textdocument-imageformat \
+        textdocument-images
 }
