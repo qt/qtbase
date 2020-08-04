@@ -353,7 +353,7 @@ void QWasmEventTranslator::initEventHandlers()
     if (platform == MacOSPlatform) {
         g_useNaturalScrolling = false; // make this !default on macOS
 
-        if (emscripten::val::global("window")["safari"].isUndefined()) {
+        if (!emscripten::val::global("window")["safari"].isUndefined()) {
             val canvas = screen()->canvas();
             canvas.call<void>("addEventListener",
                               val("wheel"),
