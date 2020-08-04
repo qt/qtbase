@@ -103,9 +103,9 @@ QLocale::Language QLocalePrivate::codeToLanguage(QStringView code) noexcept
     const auto len = code.size();
     if (len != 2 && len != 3)
         return QLocale::C;
-    ushort uc1 = code[0].toLower().unicode();
-    ushort uc2 = code[1].toLower().unicode();
-    ushort uc3 = len > 2 ? code[2].toLower().unicode() : 0;
+    char16_t uc1 = code[0].toLower().unicode();
+    char16_t uc2 = code[1].toLower().unicode();
+    char16_t uc3 = len > 2 ? code[2].toLower().unicode() : 0;
 
     const unsigned char *c = language_code_list;
     for (; *c != 0; c += 3) {
@@ -168,9 +168,9 @@ QLocale::Country QLocalePrivate::codeToCountry(QStringView code) noexcept
     if (len != 2 && len != 3)
         return QLocale::AnyCountry;
 
-    ushort uc1 = code[0].toUpper().unicode();
-    ushort uc2 = code[1].toUpper().unicode();
-    ushort uc3 = len > 2 ? code[2].toUpper().unicode() : 0;
+    char16_t uc1 = code[0].toUpper().unicode();
+    char16_t uc2 = code[1].toUpper().unicode();
+    char16_t uc3 = len > 2 ? code[2].toUpper().unicode() : 0;
 
     const unsigned char *c = country_code_list;
     for (; *c != 0; c += 3) {
@@ -879,7 +879,7 @@ QString QLocaleData::zeroDigit() const
     return zero().getData(single_character_data);
 }
 
-uint QLocaleData::zeroUcs() const
+char32_t QLocaleData::zeroUcs() const
 {
 #ifndef QT_NO_SYSTEMLOCALE
     if (this == systemData()) {
@@ -3326,7 +3326,7 @@ QString QLocaleData::doubleToString(double d, int precision, DoubleForm form,
             QString converted;
             converted.reserve(2 * digits.size());
             for (int i = 0; i < digits.length(); ++i) {
-                const uint digit = unicodeForDigit(digits.at(i).unicode() - '0', zeroUcs4);
+                const char32_t digit = unicodeForDigit(digits.at(i).unicode() - '0', zeroUcs4);
                 Q_ASSERT(QChar::requiresSurrogates(digit));
                 converted.append(QChar::highSurrogate(digit));
                 converted.append(QChar::lowSurrogate(digit));
@@ -3335,8 +3335,8 @@ QString QLocaleData::doubleToString(double d, int precision, DoubleForm form,
         } else {
             Q_ASSERT(zero.size() == 1);
             Q_ASSERT(!zero.at(0).isSurrogate());
-            ushort z = zero.at(0).unicode();
-            ushort *const value = reinterpret_cast<ushort *>(digits.data());
+            char16_t z = zero.at(0).unicode();
+            char16_t *const value = reinterpret_cast<char16_t *>(digits.data());
             for (int i = 0; i < digits.length(); ++i)
                 value[i] = unicodeForDigit(value[i] - '0', z);
         }

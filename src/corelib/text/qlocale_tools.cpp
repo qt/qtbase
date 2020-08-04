@@ -461,8 +461,8 @@ QString qulltoa(qulonglong number, int base, const QStringView zero)
     // per digit. We do not need a terminator.
     const unsigned maxlen = 128;
     static_assert(CHAR_BIT * sizeof(number) <= maxlen);
-    ushort buff[maxlen];
-    ushort *const end = buff + maxlen, *p = end;
+    char16_t buff[maxlen];
+    char16_t *const end = buff + maxlen, *p = end;
 
     if (base != 10 || zero == u"0") {
         while (number != 0) {
@@ -471,16 +471,16 @@ QString qulltoa(qulonglong number, int base, const QStringView zero)
             number /= base;
         }
     } else if (zero.size() && !zero.at(0).isSurrogate()) {
-        const ushort zeroUcs4 = zero.at(0).unicode();
+        const char16_t zeroUcs2 = zero.at(0).unicode();
         while (number != 0) {
-            *(--p) = unicodeForDigit(number % base, zeroUcs4);
+            *(--p) = unicodeForDigit(number % base, zeroUcs2);
 
             number /= base;
         }
     } else if (zero.size() == 2 && zero.at(0).isHighSurrogate()) {
-        const uint zeroUcs4 = QChar::surrogateToUcs4(zero.at(0), zero.at(1));
+        const char32_t zeroUcs4 = QChar::surrogateToUcs4(zero.at(0), zero.at(1));
         while (number != 0) {
-            const uint digit = unicodeForDigit(number % base, zeroUcs4);
+            const char32_t digit = unicodeForDigit(number % base, zeroUcs4);
 
             *(--p) = QChar::lowSurrogate(digit);
             *(--p) = QChar::highSurrogate(digit);

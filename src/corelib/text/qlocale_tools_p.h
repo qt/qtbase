@@ -100,8 +100,8 @@ inline UcsInt unicodeForDigit(uint digit, UcsInt zero)
         return zero;
 
     // See QTBUG-85409: Suzhou's digits are U+3007, U+2021, ..., U+3029
-    if (zero == 0x3007u)
-        return 0x3020u + digit;
+    if (zero == u'\u3007')
+        return u'\u3020' + digit;
     // At CLDR 36.1, no other number system's digits were discontinuous.
 
     return zero + digit;

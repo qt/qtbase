@@ -282,7 +282,7 @@ public:
     QString listSeparator() const;
     QString percentSign() const;
     QString zeroDigit() const;
-    uint zeroUcs() const;
+    char32_t zeroUcs() const;
     QString positiveSign() const;
     QString negativeSign() const;
     QString exponentSeparator() const;
@@ -309,7 +309,7 @@ public:
         {
             return listEntry(table, index).viewData(table);
         }
-        uint ucsFirst(const char16_t *table) const
+        char32_t ucsFirst(const char16_t *table) const
         {
             if (size && !QChar::isSurrogate(table[offset]))
                 return table[offset];
@@ -462,21 +462,18 @@ inline char QLocaleData::numericToCLocale(QStringView in) const
     if ((group == u"\xa0" || group == u"\x202f") && in == u" ")
         return ',';
 
-    const uint inUcs4 = in.size() == 2
+    const char32_t inUcs4 = in.size() == 2
         ? QChar::surrogateToUcs4(in.at(0), in.at(1)) : in.at(0).unicode();
-    const uint zeroUcs4 = zeroUcs();
+    const char32_t zeroUcs4 = zeroUcs();
     // Must match qlocale_tools.h's unicodeForDigit()
-    if (zeroUcs4 == 0x3007u) {
+    if (zeroUcs4 == u'\u3007') {
         // QTBUG-85409: Suzhou's digits aren't contiguous !
         if (inUcs4 == zeroUcs4)
             return '0';
-        if (inUcs4 > 0x3020u && inUcs4 <= 0x3029u)
-            return inUcs4 - 0x3020u;
-    } else {
-        const uint tenUcs4 = zeroUcs4 + 10;
-
-        if (zeroUcs4 <= inUcs4 && inUcs4 < tenUcs4)
-            return '0' + inUcs4 - zeroUcs4;
+        if (inUcs4 > u'\u3020' && inUcs4 <= u'\u3029')
+            return inUcs4 - u'\u3020';
+    } else if (zeroUcs4 <= inUcs4 && inUcs4 < zeroUcs4 + 10) {
+        return '0' + inUcs4 - zeroUcs4;
     }
     if ('0' <= inUcs4 && inUcs4 <= '9')
         return inUcs4;
