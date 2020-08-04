@@ -84,6 +84,7 @@ void QTriangulatingStroker::process(const QVectorPath &path, const QPen &pen, co
     const qreal *pts = path.points();
     const QPainterPath::ElementType *types = path.elements();
     int count = path.elementCount();
+    m_vertices.reset();
     if (count < 2)
         return;
 
@@ -100,7 +101,6 @@ void QTriangulatingStroker::process(const QVectorPath &path, const QPen &pen, co
 
     m_join_style = qpen_joinStyle(pen);
     m_cap_style = qpen_capStyle(pen);
-    m_vertices.reset();
     m_miter_limit = pen.miterLimit() * qpen_widthf(pen);
 
     // The curvyness is based on the notion that I originally wanted
