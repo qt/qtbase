@@ -398,7 +398,7 @@ _library_map = [
     LibraryMapping("gbm", "gbm", "gbm::gbm"),
     LibraryMapping("glib", "GLIB2", "GLIB2::GLIB2"),
     LibraryMapping("iconv", "WrapIconv", "WrapIconv::WrapIconv"),
-    LibraryMapping("gtk3", "GTK3", "PkgConfig::GTK3"),
+    LibraryMapping("gtk3", "GTK3", "PkgConfig::GTK3", extra=["3.6"]),
     LibraryMapping("gssapi", "GSSAPI", "GSSAPI::GSSAPI"),
     LibraryMapping(
         "harfbuzz", "WrapHarfbuzz", "WrapHarfbuzz::WrapHarfbuzz", is_bundled_with_qt=True,
@@ -473,7 +473,7 @@ _library_map = [
         "xcb",
         "XCB",
         "XCB::XCB",
-        extra=["1.9"],
+        extra=["1.11"],
         resultVariable="TARGET XCB::XCB",
         appendFoundSuffix=False,
     ),
@@ -481,16 +481,16 @@ _library_map = [
         "xcb_glx", "XCB", "XCB::GLX", extra=["COMPONENTS", "GLX"], resultVariable="XCB_GLX"
     ),
     LibraryMapping(
-        "xcb_icccm", "XCB", "XCB::ICCCM", extra=["COMPONENTS", "ICCCM"], resultVariable="XCB_ICCCM"
+        "xcb_icccm", "XCB", "XCB::ICCCM", extra=["0.3.9", "COMPONENTS", "ICCCM"], resultVariable="XCB_ICCCM"
     ),
     LibraryMapping(
-        "xcb_image", "XCB", "XCB::IMAGE", extra=["COMPONENTS", "IMAGE"], resultVariable="XCB_IMAGE"
+        "xcb_image", "XCB", "XCB::IMAGE", extra=["0.3.9", "COMPONENTS", "IMAGE"], resultVariable="XCB_IMAGE"
     ),
     LibraryMapping(
         "xcb_keysyms",
         "XCB",
         "XCB::KEYSYMS",
-        extra=["COMPONENTS", "KEYSYMS"],
+        extra=["0.3.9", "COMPONENTS", "KEYSYMS"],
         resultVariable="XCB_KEYSYMS",
     ),
     LibraryMapping(
@@ -507,7 +507,7 @@ _library_map = [
         "xcb_renderutil",
         "XCB",
         "XCB::RENDERUTIL",
-        extra=["COMPONENTS", "RENDERUTIL"],
+        extra=["0.3.9", "COMPONENTS", "RENDERUTIL"],
         resultVariable="XCB_RENDERUTIL",
     ),
     LibraryMapping(
@@ -544,7 +544,7 @@ _library_map = [
         "xcb_xinput",
         "XCB",
         "XCB::XINPUT",
-        extra=["COMPONENTS", "XINPUT"],
+        extra=["1.12", "COMPONENTS", "XINPUT"],
         resultVariable="XCB_XINPUT",
     ),
     LibraryMapping(
@@ -552,11 +552,11 @@ _library_map = [
     ),
     LibraryMapping("xcb_xlib", "X11_XCB", "X11::XCB"),
     LibraryMapping("xcomposite", "XComposite", "PkgConfig::XComposite"),
-    LibraryMapping("xkbcommon_evdev", "XKB", "XKB::XKB", extra=["0.4.1"]),  # see also xkbcommon
-    LibraryMapping("xkbcommon_x11", "XKB_COMMON_X11", "PkgConfig::XKB_COMMON_X11", extra=["0.4.1"]),
-    LibraryMapping("xkbcommon", "XKB", "XKB::XKB", extra=["0.4.1"]),
+    LibraryMapping("xkbcommon_evdev", "XKB", "XKB::XKB", extra=["0.5.0"]),  # see also xkbcommon
+    LibraryMapping("xkbcommon_x11", "XKB_COMMON_X11", "PkgConfig::XKB_COMMON_X11", extra=["0.5.0"]),
+    LibraryMapping("xkbcommon", "XKB", "XKB::XKB", extra=["0.5.0"]),
     LibraryMapping("xlib", "X11", "X11::X11"),
-    LibraryMapping("xrender", "XRender", "PkgConfig::XRender"),
+    LibraryMapping("xrender", "XRender", "PkgConfig::XRender", extra=["0.6"]),
     LibraryMapping("zlib", "ZLIB", "ZLIB::ZLIB", extra=["1.0.8"]),
     LibraryMapping("zstd", "ZSTD", "ZSTD::ZSTD", extra=["1.3"]),
     LibraryMapping("tiff", "TIFF", "TIFF::TIFF"),
