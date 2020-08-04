@@ -47,8 +47,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-#include <QtGui>
+#include <QApplication>
+#include <QTextBlock>
+#include <QTextEdit>
 
 QString tr(const char *text)
 {
