@@ -12,5 +12,6 @@ contains(QT_BUILD_PARTS, tests) {
         textdocument-charformats \
         textdocument-css \
         textdocument-cursors \
-        textdocument-end
+        textdocument-end \
+        textdocument-find
 }
