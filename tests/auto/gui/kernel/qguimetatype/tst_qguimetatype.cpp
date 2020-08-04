@@ -219,7 +219,7 @@ void tst_QGuiMetaType::create_data()
 {
     QTest::addColumn<QMetaType::Type>("type");
 #define ADD_METATYPE_TEST_ROW(TYPE, ID) \
-    QTest::newRow(QMetaType::typeName(QMetaType::ID)) << QMetaType::ID;
+    QTest::newRow(QMetaType(QMetaType::ID).name()) << QMetaType::ID;
 FOR_EACH_GUI_METATYPE(ADD_METATYPE_TEST_ROW)
 #undef ADD_METATYPE_TEST_ROW
 }
@@ -228,11 +228,11 @@ template <int ID>
 static void testCreateHelper()
 {
     typedef typename MetaEnumToType<ID>::Type Type;
-    void *actual = QMetaType::create(ID);
+    void *actual = QMetaType(ID).create();
     Type *expected = DefaultValueFactory<ID>::create();
     QVERIFY(TypeComparator<ID>::equal(*static_cast<Type *>(actual), *expected));
     delete expected;
-    QMetaType::destroy(ID, actual);
+    QMetaType(ID).destroy(actual);
 }
 
 typedef void (*TypeTestFunction)();
@@ -268,9 +268,9 @@ static void testCreateCopyHelper()
 {
     typedef typename MetaEnumToType<ID>::Type Type;
     Type *expected = TestValueFactory<ID>::create();
-    void *actual = QMetaType::create(ID, expected);
+    void *actual = QMetaType(ID).create(expected);
     QVERIFY(TypeComparator<ID>::equal(*static_cast<Type*>(actual), *expected));
-    QMetaType::destroy(ID, actual);
+    QMetaType(ID).destroy(actual);
     delete expected;
 }
 
@@ -300,7 +300,7 @@ void tst_QGuiMetaType::sizeOf_data()
     QTest::addColumn<QMetaType::Type>("type");
     QTest::addColumn<int>("size");
 #define ADD_METATYPE_TEST_ROW(TYPE, ID) \
-    QTest::newRow(QMetaType::typeName(QMetaType::ID)) << QMetaType::ID << int(sizeof(TYPE));
+    QTest::newRow(QMetaType(QMetaType::ID).name()) << QMetaType::ID << int(sizeof(TYPE));
 FOR_EACH_GUI_METATYPE(ADD_METATYPE_TEST_ROW)
 #undef ADD_METATYPE_TEST_ROW
 }
@@ -309,7 +309,7 @@ void tst_QGuiMetaType::sizeOf()
 {
     QFETCH(QMetaType::Type, type);
     QFETCH(int, size);
-    QCOMPARE(QMetaType::sizeOf(type), size);
+    QCOMPARE(QMetaType(type).sizeOf(), size);
 }
 
 template<class T>
@@ -336,9 +336,9 @@ void tst_QGuiMetaType::flags()
     QFETCH(bool, isRelocatable);
     QFETCH(bool, isComplex);
 
-    QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::NeedsConstruction), isComplex);
-    QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::NeedsDestruction), isComplex);
-    QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::MovableType), isRelocatable);
+    QCOMPARE(bool(QMetaType(type).flags() & QMetaType::NeedsConstruction), isComplex);
+    QCOMPARE(bool(QMetaType(type).flags() & QMetaType::NeedsDestruction), isComplex);
+    QCOMPARE(bool(QMetaType(type).flags() & QMetaType::MovableType), isRelocatable);
 }
 
 
@@ -351,14 +351,14 @@ template <int ID>
 static void testConstructHelper()
 {
     typedef typename MetaEnumToType<ID>::Type Type;
-    int size = QMetaType::sizeOf(ID);
+    int size = QMetaType(ID).sizeOf();
     void *storage = qMallocAligned(size, TypeAlignment<Type>::Value);
-    void *actual = QMetaType::construct(ID, storage, /*copy=*/0);
+    void *actual = QMetaType(ID).construct(storage, /*copy=*/0);
     QCOMPARE(actual, storage);
     Type *expected = DefaultValueFactory<ID>::create();
-    QVERIFY2(TypeComparator<ID>::equal(*static_cast<Type *>(actual), *expected), QMetaType::typeName(ID));
+    QVERIFY2(TypeComparator<ID>::equal(*static_cast<Type *>(actual), *expected), QMetaType(ID).name());
     delete expected;
-    QMetaType::destruct(ID, actual);
+    QMetaType(ID).destruct(actual);
     qFreeAligned(storage);
 }
 
@@ -393,12 +393,12 @@ static void testConstructCopyHelper()
 {
     typedef typename MetaEnumToType<ID>::Type Type;
     Type *expected = TestValueFactory<ID>::create();
-    int size = QMetaType::sizeOf(ID);
+    int size = QMetaType(ID).sizeOf();
     void *storage = qMallocAligned(size, TypeAlignment<Type>::Value);
-    void *actual = QMetaType::construct(ID, storage, expected);
+    void *actual = QMetaType(ID).construct(storage, expected);
     QCOMPARE(actual, storage);
-    QVERIFY2(TypeComparator<ID>::equal(*static_cast<Type*>(actual), *expected), QMetaType::typeName(ID));
-    QMetaType::destruct(ID, actual);
+    QVERIFY2(TypeComparator<ID>::equal(*static_cast<Type*>(actual), *expected), QMetaType(ID).name());
+    QMetaType(ID).destruct(actual);
     qFreeAligned(storage);
     delete expected;
 }
@@ -447,25 +447,25 @@ void tst_QGuiMetaType::saveAndLoadBuiltin()
     QFETCH(int, type);
     QFETCH(bool, isStreamable);
 
-    void *value = QMetaType::create(type);
+    void *value = QMetaType(type).create();
 
     QByteArray ba;
     QDataStream stream(&ba, QIODevice::ReadWrite);
-    QCOMPARE(QMetaType::save(stream, type, value), isStreamable);
+    QCOMPARE(QMetaType(type).save(stream, value), isStreamable);
     QCOMPARE(stream.status(), QDataStream::Ok);
 
     if (isStreamable)
-        QVERIFY(QMetaType::load(stream, type, value));
+        QVERIFY(QMetaType(type).load(stream, value));
 
     stream.device()->seek(0);
     stream.resetStatus();
-    QCOMPARE(QMetaType::load(stream, type, value), isStreamable);
+    QCOMPARE(QMetaType(type).load(stream, value), isStreamable);
     QCOMPARE(stream.status(), QDataStream::Ok);
 
     if (isStreamable)
-        QVERIFY(QMetaType::load(stream, type, value));
+        QVERIFY(QMetaType(type).load(stream, value));
 
-    QMetaType::destroy(type, value);
+    QMetaType(type).destroy(value);
 }
 
 QTEST_MAIN(tst_QGuiMetaType)

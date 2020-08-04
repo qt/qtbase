@@ -104,7 +104,7 @@ static int *queuedConnectionTypes(const QList<QByteArray> &typeNames)
         if (typeName.endsWith('*'))
             types[i] = QMetaType::VoidStar;
         else
-            types[i] = QMetaType::type(typeName);
+            types[i] = QMetaType::fromName(typeName).id();
 
         if (!types[i]) {
             qWarning("QObject::connect: Cannot queue arguments of type '%s'\n"
@@ -129,7 +129,7 @@ static int *queuedConnectionTypes(const QArgumentType *argumentTypes, int argc)
         else if (type.name().endsWith('*'))
             types[i] = QMetaType::VoidStar;
         else
-            types[i] = QMetaType::type(type.name());
+            types[i] = QMetaType::fromName(type.name()).id();
 
         if (!types[i]) {
             qWarning("QObject::connect: Cannot queue arguments of type '%s'\n"
@@ -591,7 +591,7 @@ QMetaCallEvent::~QMetaCallEvent()
         int *typeIDs = types();
         for (int i = 0; i < d.nargs_; ++i) {
             if (typeIDs[i] && d.args_[i])
-                QMetaType::destroy(typeIDs[i], d.args_[i]);
+                QMetaType(typeIDs[i]).destroy(d.args_[i]);
         }
         if (reinterpret_cast<void*>(d.args_) != reinterpret_cast<void*>(prealloc_))
             free(d.args_);
@@ -3654,7 +3654,7 @@ static void queued_activate(QObject *sender, int signal, QObjectPrivate::Connect
             types[n] = argumentTypes[n-1];
 
         for (int n = 1; n < nargs; ++n)
-            args[n] = QMetaType::create(types[n], argv[n]);
+            args[n] = QMetaType(types[n]).create(argv[n]);
     }
 
     locker.relock();

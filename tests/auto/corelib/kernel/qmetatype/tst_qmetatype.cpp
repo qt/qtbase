@@ -268,8 +268,8 @@ struct GenericGadgetType : BaseGenericType
         if (_c == QMetaObject::ReadProperty) {
             if (_id < properties.size()) {
                 const auto &prop = properties.at(_id);
-                QMetaType::destruct(int(prop.userType()), _a[0]);
-                QMetaType::construct(int(prop.userType()), _a[0], prop.constData());
+                prop.metaType().destruct(_a[0]);
+                prop.metaType().construct(_a[0], prop.constData());
             }
         } else if (_c == QMetaObject::WriteProperty) {
             if (_id < properties.size()) {
@@ -402,7 +402,7 @@ void tst_QMetaType::registerGadget(const char *name, const QList<GadgetPropertyT
     gadgetBuilder.setFlags(metaObjectflags);
     auto dynamicGadgetProperties = std::make_shared<GenericGadgetType>();
     for (const auto &prop : gadgetProperties) {
-        int propertyType = QMetaType::type(prop.type);
+        int propertyType = QMetaType::fromName(prop.type).id();
         dynamicGadgetProperties->properties.push_back(QVariant(QMetaType(propertyType)));
         auto dynamicPropery = gadgetBuilder.addProperty(prop.name, prop.type);
         dynamicPropery.setWritable(true);
@@ -715,6 +715,9 @@ void tst_QMetaType::typeName()
     QFETCH(int, aType);
     QFETCH(QString, aTypeName);
 
+    if (aType >= QMetaType::FirstWidgetsType)
+        QSKIP("The test doesn't link against QtWidgets.");
+
     const char *rawname = QMetaType::typeName(aType);
     QString name = QString::fromLatin1(rawname);
 
@@ -753,6 +756,8 @@ void tst_QMetaType::type()
     QFETCH(int, aType);
     QFETCH(QByteArray, aTypeName);
 
+    if (aType >= QMetaType::FirstWidgetsType)
+        QSKIP("The test doesn't link against QtWidgets.");
     // QMetaType::type(QByteArray)
     QCOMPARE(QMetaType::type(aTypeName), aType);
     // QMetaType::type(const char *)
@@ -1977,11 +1982,6 @@ DECLARE_NONSTREAMABLE(QModelIndex)
 DECLARE_NONSTREAMABLE(QPersistentModelIndex)
 DECLARE_NONSTREAMABLE(QObject*)
 DECLARE_NONSTREAMABLE(QWidget*)
-
-#define DECLARE_GUI_CLASS_NONSTREAMABLE(MetaTypeName, MetaTypeId, RealType) \
-    DECLARE_NONSTREAMABLE(RealType)
-QT_FOR_EACH_STATIC_GUI_CLASS(DECLARE_GUI_CLASS_NONSTREAMABLE)
-#undef DECLARE_GUI_CLASS_NONSTREAMABLE
 
 #define DECLARE_WIDGETS_CLASS_NONSTREAMABLE(MetaTypeName, MetaTypeId, RealType) \
     DECLARE_NONSTREAMABLE(RealType)

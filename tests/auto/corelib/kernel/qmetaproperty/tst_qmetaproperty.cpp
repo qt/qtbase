@@ -211,20 +211,20 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(EnumFlagsTester::TestFlags)
 
 void tst_QMetaProperty::readAndWriteWithLazyRegistration()
 {
-    QCOMPARE(QMetaType::type("CustomReadObject*"), int(QMetaType::UnknownType));
-    QCOMPARE(QMetaType::type("CustomWriteObject*"), int(QMetaType::UnknownType));
+    QVERIFY(!QMetaType::fromName("CustomReadObject*").isValid());
+    QVERIFY(!QMetaType::fromName("CustomWriteObject*").isValid());
 
     TypeLazyRegistration o;
     QVERIFY(o.property("read").isValid());
-    QVERIFY(QMetaType::type("CustomReadObject*") != QMetaType::UnknownType);
-    QCOMPARE(QMetaType::type("CustomWriteObject*"), int(QMetaType::UnknownType));
+    QVERIFY(QMetaType::fromName("CustomReadObject*").isValid());
+    QVERIFY(!QMetaType::fromName("CustomWriteObject*").isValid());
 
     CustomWriteObjectChild data;
     QVariant value = QVariant::fromValue(&data); // this register CustomWriteObjectChild
     // check if base classes are not registered automatically, otherwise this test would be meaningless
-    QCOMPARE(QMetaType::type("CustomWriteObject*"), int(QMetaType::UnknownType));
+    QVERIFY(!QMetaType::fromName("CustomWriteObject*").isValid());
     QVERIFY(o.setProperty("write", value));
-    QVERIFY(QMetaType::type("CustomWriteObject*") != QMetaType::UnknownType);
+    QVERIFY(QMetaType::fromName("CustomWriteObject*").isValid());
     QCOMPARE(o.property("write").value<CustomWriteObjectChild*>(), &data);
 }
 

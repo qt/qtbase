@@ -160,10 +160,12 @@ void QHostInfoResult::postResultsReady(const QHostInfo &info)
     Q_CHECK_PTR(metaCallEvent);
     void **args = metaCallEvent->args();
     int *types = metaCallEvent->types();
-    types[0] = QMetaType::type("void");
-    types[1] = QMetaType::type("QHostInfo");
+    auto voidType = QMetaType::fromType<void>();
+    auto hostInfoType = QMetaType::fromType<QHostInfo>();
+    types[0] = voidType.id();
+    types[1] = hostInfoType.id();
     args[0] = nullptr;
-    args[1] = QMetaType::create(types[1], &info);
+    args[1] = hostInfoType.create(&info);
     Q_CHECK_PTR(args[1]);
     qApp->postEvent(result, metaCallEvent);
 }

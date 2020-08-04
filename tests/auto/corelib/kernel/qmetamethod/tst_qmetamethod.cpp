@@ -629,7 +629,7 @@ void tst_QMetaMethod::method()
     QVERIFY(method.typeName() != 0);
     if (QByteArray(method.typeName()) != returnTypeName) {
         // QMetaMethod should always produce a semantically equivalent typename
-        QCOMPARE(QMetaType::type(method.typeName()), QMetaType::type(returnTypeName));
+        QCOMPARE(QMetaType::fromName(method.typeName()), QMetaType::fromName(returnTypeName));
     }
 
     if (method.parameterTypes() != parameterTypeNames) {
@@ -637,8 +637,8 @@ void tst_QMetaMethod::method()
         QList<QByteArray> actualTypeNames = method.parameterTypes();
         QCOMPARE(actualTypeNames.size(), parameterTypeNames.size());
         for (int i = 0; i < parameterTypeNames.size(); ++i) {
-            QCOMPARE(QMetaType::type(actualTypeNames.at(i)),
-                     QMetaType::type(parameterTypeNames.at(i)));
+            QCOMPARE(QMetaType::fromName(actualTypeNames.at(i)),
+                     QMetaType::fromName(parameterTypeNames.at(i)));
         }
     }
     QCOMPARE(method.parameterNames(), parameterNames);

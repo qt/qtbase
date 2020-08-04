@@ -960,8 +960,8 @@ void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const Q
         } else {
             qFatal("Internal error: got invalid meta type %d (%s) "
                    "when trying to convert to meta type %d (%s)",
-                   arg.userType(), QMetaType::typeName(arg.userType()),
-                   id, QMetaType::typeName(id));
+                   arg.userType(), arg.metaType().name(),
+                   id, QMetaType(id).name());
         }
     }
 

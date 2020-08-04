@@ -164,7 +164,7 @@ int qDBusParametersForMethod(const QList<QByteArray> &parameterTypes, QList<int>
             QByteArray basictype = type;
             basictype.truncate(type.length() - 1);
 
-            int id = QMetaType::type(basictype);
+            int id = QMetaType::fromName(basictype).id();
             if (id == 0) {
                 errorMsg = QLatin1String("Unregistered output type in parameter list: ") + QLatin1String(type);
                 return -1;
@@ -184,7 +184,7 @@ int qDBusParametersForMethod(const QList<QByteArray> &parameterTypes, QList<int>
         if (type.startsWith("QVector<"))
             type = "QList<" + type.mid(sizeof("QVector<") - 1);
 
-        int id = QMetaType::type(type);
+        int id = QMetaType::fromName(type).id();
 #ifdef QT_BOOTSTRAPPED
         // in bootstrap mode QDBusMessage isn't included, thus we need to resolve it manually here
         if (type == "QDBusMessage") {

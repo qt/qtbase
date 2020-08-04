@@ -334,7 +334,7 @@ void VariantDelegate::setModelData(QWidget *editor, QAbstractItemModel *model,
             break;
         default:
             value = text;
-            value.convert(originalValue.userType());
+            value.convert(originalValue.metaType());
         }
     }
 

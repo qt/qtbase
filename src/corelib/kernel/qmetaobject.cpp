@@ -171,7 +171,7 @@ static inline const char *rawTypeNameFromTypeInfo(const QMetaObject *mo, uint ty
     if (typeInfo & IsUnresolvedType) {
         return rawStringData(mo, typeInfo & TypeNameIndexMask);
     } else {
-        return QMetaType::typeName(typeInfo);
+        return QMetaType(typeInfo).name();
     }
 }
 
@@ -180,9 +180,7 @@ static inline QByteArray typeNameFromTypeInfo(const QMetaObject *mo, uint typeIn
     if (typeInfo & IsUnresolvedType) {
         return stringData(mo, typeInfo & TypeNameIndexMask);
     } else {
-        // ### Use the QMetaType::typeName() that returns QByteArray
-        const char *t = QMetaType::typeName(typeInfo);
-        return QByteArray::fromRawData(t, qstrlen(t));
+        return QMetaType(typeInfo).name();
     }
 }
 
@@ -190,7 +188,7 @@ static inline int typeFromTypeInfo(const QMetaObject *mo, uint typeInfo)
 {
     if (!(typeInfo & IsUnresolvedType))
         return typeInfo;
-    return QMetaType::type(rawStringData(mo, typeInfo & TypeNameIndexMask));
+    return QMetaType::fromName(rawStringData(mo, typeInfo & TypeNameIndexMask)).id();
 }
 
 class QMetaMethodPrivate : public QMetaMethod
@@ -1739,7 +1737,7 @@ const char *QMetaMethodPrivate::rawReturnTypeName() const
     if (typeInfo & IsUnresolvedType)
         return rawStringData(mobj, typeInfo & TypeNameIndexMask);
     else
-        return QMetaType::typeName(typeInfo);
+        return QMetaType(typeInfo).name();
 }
 
 int QMetaMethodPrivate::returnType() const
@@ -2230,7 +2228,7 @@ bool QMetaMethod::invoke(QObject *object,
             if (qstrcmp(normalized.constData(), retType) != 0) {
                 // String comparison failed, try compare the metatype.
                 int t = returnType();
-                if (t == QMetaType::UnknownType || t != QMetaType::type(normalized))
+                if (t == QMetaType::UnknownType || t != QMetaType::fromName(normalized).id())
                     return false;
             }
         }
@@ -2316,7 +2314,7 @@ bool QMetaMethod::invoke(QObject *object,
 
         int argIndex = 0;
         for (int i = 1; i < paramCount; ++i) {
-            types[i] = QMetaType::type(typeNames[i]);
+            types[i] = QMetaType::fromName(typeNames[i]).id();
             if (types[i] == QMetaType::UnknownType && param[i]) {
                 // Try to register the type and try again before reporting an error.
                 void *argv[] = { &types[i], &argIndex };
@@ -2329,7 +2327,7 @@ bool QMetaMethod::invoke(QObject *object,
                 }
             }
             if (types[i] != QMetaType::UnknownType) {
-                args[i] = QMetaType::create(types[i], param[i]);
+                args[i] = QMetaType(types[i]).create(param[i]);
                 ++argIndex;
             }
         }
@@ -2453,7 +2451,7 @@ bool QMetaMethod::invokeOnGadget(void *gadget,
             if (qstrcmp(normalized.constData(), retType) != 0) {
                 // String comparison failed, try compare the metatype.
                 int t = returnType();
-                if (t == QMetaType::UnknownType || t != QMetaType::type(normalized))
+                if (t == QMetaType::UnknownType || t != QMetaType::fromName(normalized).id())
                     return false;
             }
         }

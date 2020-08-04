@@ -119,7 +119,7 @@ enum EnumFlags {
     EnumIsScoped = 0x2
 };
 
-extern int qMetaTypeTypeInternal(const char *);
+Q_CORE_EXPORT int qMetaTypeTypeInternal(const char *);
 
 class QArgumentType
 {
@@ -138,7 +138,7 @@ public:
     QByteArray name() const
     {
         if (_type && _name.isEmpty())
-            const_cast<QArgumentType *>(this)->_name = QMetaType::typeName(_type);
+            const_cast<QArgumentType *>(this)->_name = QMetaType(_type).name();
         return _name;
     }
     bool operator==(const QArgumentType &other) const

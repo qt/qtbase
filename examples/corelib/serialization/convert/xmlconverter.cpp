@@ -294,7 +294,7 @@ static QVariant variantFromXml(QXmlStreamReader &xml, Converter::Options options
         else if (type == QLatin1String("regex"))
             id = QMetaType::QRegularExpression;
         else
-            id = QMetaType::type(type.toLatin1());
+            id = QMetaType::fromName(type.toLatin1()).id();
         if (id == QMetaType::UnknownType) {
             fprintf(stderr, "%lld:%lld: Invalid XML: unknown type '%s'.\n",
                     xml.lineNumber(), xml.columnNumber(), qPrintable(type.toString()));
@@ -302,7 +302,7 @@ static QVariant variantFromXml(QXmlStreamReader &xml, Converter::Options options
         }
 
         result = text.toString();
-        if (!result.convert(id)) {
+        if (!result.convert(QMetaType(id))) {
             fprintf(stderr, "%lld:%lld: Invalid XML: could not parse content as type '%s'.\n",
                     xml.lineNumber(), xml.columnNumber(), qPrintable(type.toString()));
             exit(EXIT_FAILURE);
@@ -433,7 +433,7 @@ static void variantToXml(QXmlStreamWriter &xml, const QVariant &v)
                 // does this convert to string?
                 const char *typeName = v.typeName();
                 QVariant copy = v;
-                if (copy.convert(QMetaType::QString)) {
+                if (copy.convert(QMetaType(QMetaType::QString))) {
                     xml.writeAttribute(typeString, QString::fromLatin1(typeName));
                     xml.writeCharacters(copy.toString());
                 } else {

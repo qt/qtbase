@@ -176,24 +176,24 @@ void tst_QWidgetsVariant::qvariant_cast_QObject()
     if (success) {
         QCOMPARE(o->objectName(), QString::fromLatin1("Hello"));
         QVERIFY(data.canConvert<QObject*>());
-        QVERIFY(data.canConvert(QMetaType::QObjectStar));
-        QVERIFY(data.canConvert(::qMetaTypeId<QObject*>()));
+        QVERIFY(data.canConvert(QMetaType(QMetaType::QObjectStar)));
+        QVERIFY(data.canConvert(QMetaType::fromType<QObject*>()));
         QVERIFY(data.value<QObject*>());
-        QVERIFY(data.convert(QMetaType::QObjectStar));
-        QCOMPARE(data.userType(), int(QMetaType::QObjectStar));
+        QVERIFY(data.convert(QMetaType(QMetaType::QObjectStar)));
+        QCOMPARE(data.metaType().id(), int(QMetaType::QObjectStar));
 
         QVERIFY(data.canConvert<QWidget*>());
-        QVERIFY(data.canConvert(::qMetaTypeId<QWidget*>()));
+        QVERIFY(data.canConvert(QMetaType::fromType<QWidget*>()));
         QVERIFY(data.value<QWidget*>());
-        QVERIFY(data.convert(qMetaTypeId<QWidget*>()));
-        QCOMPARE(data.userType(), qMetaTypeId<QWidget*>());
+        QVERIFY(data.convert(QMetaType::fromType<QWidget*>()));
+        QCOMPARE(data.metaType(), QMetaType::fromType<QWidget*>());
     } else {
         QVERIFY(!data.canConvert<QObject*>());
-        QVERIFY(!data.canConvert(QMetaType::QObjectStar));
-        QVERIFY(!data.canConvert(::qMetaTypeId<QObject*>()));
+        QVERIFY(!data.canConvert(QMetaType(QMetaType::QObjectStar)));
+        QVERIFY(!data.canConvert(QMetaType::fromType<QObject*>()));
         QVERIFY(!data.value<QObject*>());
-        QVERIFY(!data.convert(QMetaType::QObjectStar));
-        QVERIFY(data.userType() != QMetaType::QObjectStar);
+        QVERIFY(!data.convert(QMetaType(QMetaType::QObjectStar)));
+        QVERIFY(data.metaType().id() != QMetaType::QObjectStar);
     }
     delete o;
 }
@@ -215,7 +215,7 @@ void tst_QWidgetsVariant::debugStream_data()
     QTest::addColumn<QVariant>("variant");
     QTest::addColumn<int>("typeId");
     for (int id = QMetaType::LastGuiType + 1; id < QMetaType::User; ++id) {
-        const char *tagName = QMetaType::typeName(id);
+        const char *tagName = QMetaType(id).name();
         if (!tagName)
             continue;
         QTest::newRow(tagName) << QVariant(static_cast<QVariant::Type>(id)) << id;

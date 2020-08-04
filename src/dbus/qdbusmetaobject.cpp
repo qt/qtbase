@@ -134,11 +134,8 @@ static int registerComplexDBusType(const QByteArray &typeName)
         const QByteArray name;
         QDBusRawTypeHandler(const QByteArray &name)
             : QtPrivate::QMetaTypeInterface {
-                0, sizeof(void *), sizeof(void *), QMetaType::MovableType, nullptr,
-                name.constData(), 0, QtPrivate::RefCount{0},
-                [](QtPrivate::QMetaTypeInterface *self) {
-                    delete static_cast<QDBusRawTypeHandler *>(self);
-                },
+                0, sizeof(void *), sizeof(void *), QMetaType::MovableType, 0, nullptr,
+                name.constData(),
                 nullptr, nullptr, nullptr, nullptr,
                 nullptr, nullptr, nullptr,
                 nullptr, nullptr, nullptr
@@ -148,7 +145,14 @@ static int registerComplexDBusType(const QByteArray &typeName)
     };
 
     static QBasicMutex mutex;
-    static QHash<QByteArray, QMetaType> hash;
+    static struct Hash : QHash<QByteArray, QMetaType>
+    {
+        ~Hash()
+        {
+            for (QMetaType entry : *this)
+                QMetaType::unregisterMetaType(std::move(entry));
+        }
+    } hash;
     QMutexLocker lock(&mutex);
     QMetaType &metatype = hash[typeName];
     if (!metatype.isValid())
@@ -192,7 +196,7 @@ QDBusMetaObjectGenerator::findType(const QByteArray &signature,
 
         if (!typeName.isEmpty()) {
             // type name found
-            type = QMetaType::type(typeName);
+            type = QMetaType::fromName(typeName).id();
         }
 
         if (type == QMetaType::UnknownType || signature != QDBusMetaType::typeToSignature(type)) {
@@ -221,7 +225,7 @@ QDBusMetaObjectGenerator::findType(const QByteArray &signature,
             type = registerComplexDBusType(result.name);
         }
     } else {
-        result.name = QMetaType::typeName(type);
+        result.name = QMetaType(type).name();
     }
 
     result.id = type;
@@ -501,7 +505,7 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
                     Q_ASSERT(mm.outputTypes.size() > 1);
                     type = mm.outputTypes.at(i - mm.inputTypes.size() + 1);
                     // Output parameters are references; type id not available
-                    typeName = QMetaType::typeName(type);
+                    typeName = QMetaType(type).name();
                     typeName.append('&');
                 }
                 Q_ASSERT(type != QMetaType::UnknownType);

@@ -1452,7 +1452,7 @@ void tst_QMetaObject::customPropertyType()
     QCOMPARE(prop.metaType(), QMetaType::fromType<MyStruct>());
 
     qRegisterMetaType<MyStruct>("MyStruct");
-    QCOMPARE(prop.userType(), QMetaType::type("MyStruct"));
+    QCOMPARE(prop.userType(), QMetaType::fromName("MyStruct").id());
 
     prop = metaObject()->property(metaObject()->indexOfProperty("value4"));
     QCOMPARE(prop.type(), QVariant::List);

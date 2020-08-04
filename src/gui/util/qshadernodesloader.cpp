@@ -160,13 +160,13 @@ void QShaderNodesLoader::load(const QJsonObject &prototypesObject)
                 if (parameterValue.isObject()) {
                     const QJsonObject parameterObject = parameterValue.toObject();
                     const QString type = parameterObject.value(QStringLiteral("type")).toString();
-                    const int typeId = QMetaType::type(type.toUtf8());
+                    const int typeId = QMetaType::fromName(type.toUtf8()).id();
 
                     const QString value = parameterObject.value(QStringLiteral("value")).toString();
                     auto variant = QVariant(value);
 
-                    if (QMetaType::typeFlags(typeId) & QMetaType::IsEnumeration) {
-                        const QMetaObject *metaObject = QMetaType::metaObjectForType(typeId);
+                    if (QMetaType(typeId).flags() & QMetaType::IsEnumeration) {
+                        const QMetaObject *metaObject = QMetaType(typeId).metaObject();
                         const char *className = metaObject->className();
                         const QByteArray enumName = type.mid(static_cast<int>(qstrlen(className)) + 2).toUtf8();
                         const QMetaEnum metaEnum = metaObject->enumerator(metaObject->indexOfEnumerator(enumName));

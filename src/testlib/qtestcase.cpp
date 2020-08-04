@@ -1205,8 +1205,8 @@ void *fetchData(QTestData *data, const char *tagName, int typeId)
 
     if (Q_UNLIKELY(typeId != data->parent()->elementTypeId(idx))) {
         qFatal("Requested type '%s' does not match available type '%s'.",
-               QMetaType::typeName(typeId),
-               QMetaType::typeName(data->parent()->elementTypeId(idx)));
+               QMetaType(typeId).name(),
+               QMetaType(data->parent()->elementTypeId(idx)).name());
     }
 
     return data->data(idx);

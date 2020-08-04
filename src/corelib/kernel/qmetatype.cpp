@@ -539,7 +539,7 @@ int QMetaType::alignOf() const
 
     Returns flags of the type for which this QMetaType instance was constructed.
 
-    \sa QMetaType::TypeFlags, QMetaType::typeFlags()
+    \sa QMetaType::TypeFlags, QMetaType::flags()
 */
 QMetaType::TypeFlags QMetaType::flags() const
 {
@@ -566,7 +566,7 @@ QMetaType::TypeFlags QMetaType::flags() const
     returns the QMetaObject of the enclosing object if the enum was registered as a Q_ENUM or
     \nullptr otherwise
 
-    \sa QMetaType::metaObjectForType(), QMetaType::flags()
+    \sa QMetaType::flags()
 */
 const QMetaObject *QMetaType::metaObject() const
 {
@@ -1620,7 +1620,7 @@ bool QMetaType::registerConverterFunction(const ConverterFunction &f, int from, 
 {
     if (!customTypesConversionRegistry()->insertIfNotContains(qMakePair(from, to), f)) {
         qWarning("Type conversion already registered from type %s to type %s",
-                 QMetaType::typeName(from), QMetaType::typeName(to));
+                 QMetaType(from).name(), QMetaType(to).name());
         return false;
     }
     return true;
@@ -2194,107 +2194,16 @@ bool QMetaType::hasRegisteredConverterFunction(int fromTypeId, int toTypeId)
     return customTypesConversionRegistry()->contains(qMakePair(fromTypeId, toTypeId));
 }
 
-// We don't officially support constexpr in MSVC 2015, but the limited support it
-// has is enough for the code below.
-
-#define STRINGIFY_TYPE_NAME(MetaTypeName, TypeId, RealName) \
-    #RealName "\0"
-#define CALCULATE_TYPE_LEN(MetaTypeName, TypeId, RealName) \
-    short(sizeof(#RealName)),
-#define MAP_TYPE_ID_TO_IDX(MetaTypeName, TypeId, RealName) \
-    TypeId,
-
-namespace {
-// All type names in one long string.
-constexpr char metaTypeStrings[] = QT_FOR_EACH_STATIC_TYPE(STRINGIFY_TYPE_NAME);
-
-// The sizes of the strings in the metaTypeStrings string (including terminating null)
-constexpr short metaTypeNameSizes[] = {
-    QT_FOR_EACH_STATIC_TYPE(CALCULATE_TYPE_LEN)
-};
-
-// The type IDs, in the order of the metaTypeStrings data
-constexpr short metaTypeIds[] = {
-    QT_FOR_EACH_STATIC_TYPE(MAP_TYPE_ID_TO_IDX)
-};
-
-constexpr int MetaTypeNameCount = sizeof(metaTypeNameSizes) / sizeof(metaTypeNameSizes[0]);
-
-template <typename IntegerSequence> struct MetaTypeOffsets;
-template <int... TypeIds> struct MetaTypeOffsets<QtPrivate::IndexesList<TypeIds...>>
-{
-    // This would have been a lot easier if the meta types that the macro
-    // QT_FOR_EACH_STATIC_TYPE declared were in sorted, ascending order, but
-    // they're not (i.e., the first one declared is QMetaType::Void == 43,
-    // followed by QMetaType::Bool == 1)... As a consequence, we need to use
-    // the C++11 constexpr function calculateOffsetForTypeId below in order to
-    // create the offset array.
-
-    static constexpr int findTypeId(int typeId, int i = 0)
-    {
-        return i >= MetaTypeNameCount ? -1 :
-                metaTypeIds[i] == typeId ? i : findTypeId(typeId, i + 1);
-    }
-
-    static constexpr short calculateOffsetForIdx(int i)
-    {
-        return i < 0 ? -1 :
-               i == 0 ? 0 : metaTypeNameSizes[i - 1] + calculateOffsetForIdx(i - 1);
-    }
-
-    static constexpr short calculateOffsetForTypeId(int typeId)
-    {
-        return calculateOffsetForIdx(findTypeId(typeId));
-#if 0
-        // same as, but this is only valid in C++14:
-        short offset = 0;
-        for (int i = 0; i < MetaTypeNameCount; ++i) {
-            if (metaTypeIds[i] == typeId)
-                return offset;
-            offset += metaTypeNameSizes[i];
-        }
-        return -1;
-#endif
-    }
-
-    short offsets[sizeof...(TypeIds)];
-    constexpr MetaTypeOffsets() : offsets{calculateOffsetForTypeId(TypeIds)...} {}
-
-    const char *operator[](int typeId) const noexcept
-    {
-        short o = offsets[typeId];
-        return o < 0 ? nullptr : metaTypeStrings + o;
-    }
-};
-} // anonymous namespace
-
-constexpr MetaTypeOffsets<QtPrivate::Indexes<QMetaType::HighestInternalId + 1>::Value> metaTypeNames {};
-#undef STRINGIFY_TYPE_NAME
-#undef CALCULATE_TYPE_LEN
-#undef MAP_TYPE_ID_TO_IDX
-
 /*!
+    \fn const char *QMetaType::typeName(int typeId)
+    \deprecated
+
     Returns the type name associated with the given \a typeId, or a null
     pointer if no matching type was found. The returned pointer must not be
     deleted.
 
     \sa type(), isRegistered(), Type, name()
 */
-const char *QMetaType::typeName(int typeId)
-{
-    const uint type = typeId;
-    if (Q_LIKELY(type <= QMetaType::HighestInternalId)) {
-        return metaTypeNames[typeId];
-    } else if (Q_UNLIKELY(type < QMetaType::User)) {
-        return nullptr; // It can happen when someone cast int to QVariant::Type, we should not crash...
-    }
-
-    if (auto reg = customTypeRegistry()) {
-        if (auto ti = reg->getCustomType(typeId))
-            return ti->name;
-    }
-    return nullptr;
-}
 
 /*!
     \since 5.15
@@ -2305,7 +2214,7 @@ const char *QMetaType::typeName(int typeId)
 
     \sa typeName()
 */
-QByteArray QMetaType::name() const
+const char *QMetaType::name() const
 {
     return d_ptr ? d_ptr->name : nullptr;
 }
@@ -2398,15 +2307,14 @@ static inline int qMetaTypeTypeImpl(const char *typeName, int length)
 }
 
 /*!
+    \fn int QMetaType::type(const char *typeName)
+    \deprecated
+
     Returns a handle to the type called \a typeName, or QMetaType::UnknownType if there is
     no such type.
 
     \sa isRegistered(), typeName(), Type
 */
-int QMetaType::type(const char *typeName)
-{
-    return qMetaTypeTypeImpl</*tryNormalizedType=*/true>(typeName, qstrlen(typeName));
-}
 
 /*!
     \a internal
@@ -2415,24 +2323,23 @@ int QMetaType::type(const char *typeName)
     doesn't attempt to normalize the type name (i.e., the lookup will fail
     for type names in non-normalized form).
 */
-int qMetaTypeTypeInternal(const char *typeName)
+Q_CORE_EXPORT int qMetaTypeTypeInternal(const char *typeName)
 {
     return qMetaTypeTypeImpl</*tryNormalizedType=*/false>(typeName, qstrlen(typeName));
 }
 
 /*!
+    \fn int QMetaType::type(const QByteArray &typeName)
+
     \since 5.5
     \overload
+    \deprecated
 
     Returns a handle to the type called \a typeName, or 0 if there is
     no such type.
 
     \sa isRegistered(), typeName()
 */
-int QMetaType::type(const QT_PREPEND_NAMESPACE(QByteArray) &typeName)
-{
-    return qMetaTypeTypeImpl</*tryNormalizedType=*/true>(typeName.constData(), typeName.size());
-}
 
 #ifndef QT_NO_DATASTREAM
 /*!
@@ -2522,28 +2429,36 @@ bool QMetaType::load(QDataStream &stream, void *data) const
 #endif // QT_NO_DATASTREAM
 
 /*!
+    Returns a QMetaType matching \a typeName. The returned object is
+    not valid if the typeName is not known to QMetaType
+ */
+QMetaType QMetaType::fromName(QByteArrayView typeName)
+{
+    return QMetaType(qMetaTypeTypeImpl</*tryNormalizedType=*/true>(typeName.data(), typeName.size()));
+}
+
+/*!
+    \fn void *QMetaType::create(int type, const void *copy)
+    \deprecated
+
     Returns a copy of \a copy, assuming it is of type \a type. If \a
     copy is zero, creates a default constructed instance.
 
     \sa destroy(), isRegistered(), Type
 */
-void *QMetaType::create(int type, const void *copy)
-{
-    return QMetaType(type).create(copy);
-}
 
 /*!
+    \fn void QMetaType::destroy(int type, void *data)
+    \deprecated
     Destroys the \a data, assuming it is of the \a type given.
 
     \sa create(), isRegistered(), Type
 */
-void QMetaType::destroy(int type, void *data)
-{
-    QMetaType(type).destroy(data);
-}
 
 /*!
+    \fn void *QMetaType::construct(int type, void *where, const void *copy)
     \since 5.0
+    \deprecated
 
     Constructs a value of the given \a type in the existing memory
     addressed by \a where, that is a copy of \a copy, and returns
@@ -2568,14 +2483,12 @@ void QMetaType::destroy(int type, void *data)
 
     \sa destruct(), sizeOf()
 */
-void *QMetaType::construct(int type, void *where, const void *copy)
-{
-    return QMetaType(type).construct(where, copy);
-}
 
 
 /*!
+    \fn void QMetaType::destruct(int type, void *where)
     \since 5.0
+    \deprecated
 
     Destructs the value of the given \a type, located at \a where.
 
@@ -2584,13 +2497,11 @@ void *QMetaType::construct(int type, void *where, const void *copy)
 
     \sa construct()
 */
-void QMetaType::destruct(int type, void *where)
-{
-    return QMetaType(type).destruct(where);
-}
 
 /*!
+    \fn int QMetaType::sizeOf(int type)
     \since 5.0
+    \deprecated
 
     Returns the size of the given \a type in bytes (i.e. sizeof(T),
     where T is the actual type identified by the \a type argument).
@@ -2600,35 +2511,26 @@ void QMetaType::destruct(int type, void *where)
 
     \sa construct(), QMetaType::alignOf()
 */
-int QMetaType::sizeOf(int type)
-{
-    return QMetaType(type).sizeOf();
-}
 
 /*!
+    \fn QMetaType::TypeFlags QMetaType::typeFlags(int type)
     \since 5.0
+    \deprecated
 
     Returns flags of the given \a type.
 
     \sa QMetaType::TypeFlags
 */
-QMetaType::TypeFlags QMetaType::typeFlags(int type)
-{
-    return QMetaType(type).flags();
-}
-
 
 /*!
+    \fn const QMetaObject *QMetaType::metaObjectForType(int type)
     \since 5.0
+    \deprecated
 
     returns QMetaType::metaObject for \a type
 
     \sa metaObject()
 */
-const QMetaObject *QMetaType::metaObjectForType(int type)
-{
-    return QMetaType(type).metaObject();
-}
 
 /*!
     \fn int qRegisterMetaType(const char *typeName)

@@ -2662,15 +2662,15 @@ void tst_QVectorND::properties()
 
 void tst_QVectorND::metaTypes()
 {
-    QCOMPARE(QMetaType::type("QVector2D"), int(QMetaType::QVector2D));
-    QCOMPARE(QMetaType::type("QVector3D"), int(QMetaType::QVector3D));
-    QCOMPARE(QMetaType::type("QVector4D"), int(QMetaType::QVector4D));
+    QCOMPARE(QMetaType::fromName("QVector2D").id(), int(QMetaType::QVector2D));
+    QCOMPARE(QMetaType::fromName("QVector3D").id(), int(QMetaType::QVector3D));
+    QCOMPARE(QMetaType::fromName("QVector4D").id(), int(QMetaType::QVector4D));
 
-    QCOMPARE(QByteArray(QMetaType::typeName(QMetaType::QVector2D)),
+    QCOMPARE(QByteArray(QMetaType(QMetaType::QVector2D).name()),
              QByteArray("QVector2D"));
-    QCOMPARE(QByteArray(QMetaType::typeName(QMetaType::QVector3D)),
+    QCOMPARE(QByteArray(QMetaType(QMetaType::QVector3D).name()),
              QByteArray("QVector3D"));
-    QCOMPARE(QByteArray(QMetaType::typeName(QMetaType::QVector4D)),
+    QCOMPARE(QByteArray(QMetaType(QMetaType::QVector4D).name()),
              QByteArray("QVector4D"));
 
     QVERIFY(QMetaType::isRegistered(QMetaType::QVector2D));

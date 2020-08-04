@@ -1,6 +1,6 @@
 CONFIG += testcase
 TARGET = tst_qmetatype
-QT = core-private testlib
+QT = core-private testlib gui
 INCLUDEPATH += $$PWD/../../../other/qvariant_common
 SOURCES = tst_qmetatype.cpp
 TESTDATA=./typeFlags.bin

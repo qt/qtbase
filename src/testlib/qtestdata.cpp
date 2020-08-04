@@ -72,7 +72,7 @@ QTestData::~QTestData()
 {
     for (int i = 0; i < d->dataCount; ++i) {
         if (d->data[i])
-            QMetaType::destroy(d->parent->elementTypeId(i), d->data[i]);
+            QMetaType(d->parent->elementTypeId(i)).destroy(d->data[i]);
     }
     delete [] d->data;
     delete [] d->tag;
@@ -99,12 +99,12 @@ void QTestData::append(int type, const void *data)
     }
     if (expectedType != type) {
         qDebug("expected data of type '%s', got '%s' for element %d of data with tag '%s'",
-                QMetaType::typeName(expectedType),
-                QMetaType::typeName(type),
+                QMetaType(expectedType).name(),
+                QMetaType(type).name(),
                 d->dataCount, d->tag);
         QTEST_ASSERT(false);
     }
-    d->data[d->dataCount] = QMetaType::create(type, data);
+    d->data[d->dataCount] = QMetaType(type).create(data);
     ++d->dataCount;
 }
 

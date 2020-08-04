@@ -16,6 +16,7 @@ qt_add_test(tst_qmetatype
         ../../../other/qvariant_common
     PUBLIC_LIBRARIES
         Qt::CorePrivate
+        Qt::Gui
     TESTDATA ${test_data}
 )
 

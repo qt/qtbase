@@ -522,7 +522,7 @@ bool compareToArgument(const QDBusArgument &arg, const QVariant &v2)
 
     qWarning() << "Unexpected QVariant type" << v2.userType()
                << QByteArray(QDBusMetaType::typeToSignature(v2.userType()))
-               << QMetaType::typeName(v2.userType());
+               << v2.metaType().name();
     return false;
 }
 
@@ -531,7 +531,7 @@ template<> bool compare(const QVariant &v1, const QVariant &v2)
     // v1 is the one that came from the network
     // v2 is the one that we sent
 
-    if (v1.userType() == qMetaTypeId<QDBusArgument>())
+    if (v1.metaType() == QMetaType::fromType<QDBusArgument>())
         // this argument has been left un-demarshalled
         return compareToArgument(qvariant_cast<QDBusArgument>(v1), v2);
 

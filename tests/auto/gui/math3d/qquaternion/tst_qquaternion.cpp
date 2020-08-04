@@ -1323,10 +1323,9 @@ void tst_QQuaternion::properties()
 
 void tst_QQuaternion::metaTypes()
 {
-    QCOMPARE(QMetaType::type("QQuaternion"), int(QMetaType::QQuaternion));
+    QCOMPARE(QMetaType::fromName("QQuaternion").id(), int(QMetaType::QQuaternion));
 
-    QCOMPARE(QByteArray(QMetaType::typeName(QMetaType::QQuaternion)),
-             QByteArray("QQuaternion"));
+    QCOMPARE(QByteArray(QMetaType(QMetaType::QQuaternion).name()), QByteArray("QQuaternion"));
 
     QVERIFY(QMetaType::isRegistered(QMetaType::QQuaternion));
 

@@ -64,10 +64,10 @@ static_assert((!QMetaTypeId2<QMap<QString,QSizePolicy> >::IsBuiltIn));
 
 void tst_QWidgetMetaType::metaObject()
 {
-    QCOMPARE(QMetaType::metaObjectForType(qMetaTypeId<QWidget*>()), &QWidget::staticMetaObject);
-    QCOMPARE(QMetaType::metaObjectForType(qMetaTypeId<QLabel*>()), &QLabel::staticMetaObject);
-    QCOMPARE(QMetaType::metaObjectForType(qMetaTypeId<CustomWidget*>()), &CustomWidget::staticMetaObject);
-    QCOMPARE(QMetaType::metaObjectForType(qMetaTypeId<QSizePolicy>()), &QSizePolicy::staticMetaObject);
+    QCOMPARE(QMetaType::fromType<QWidget*>().metaObject(), &QWidget::staticMetaObject);
+    QCOMPARE(QMetaType::fromType<QLabel*>().metaObject(), &QLabel::staticMetaObject);
+    QCOMPARE(QMetaType::fromType<CustomWidget*>().metaObject(), &CustomWidget::staticMetaObject);
+    QCOMPARE(QMetaType::fromType<QSizePolicy>().metaObject(), &QSizePolicy::staticMetaObject);
 }
 
 template <typename T>
@@ -93,25 +93,25 @@ void tst_QWidgetMetaType::saveAndLoadBuiltin()
     QFETCH(int, type);
     QFETCH(bool, isStreamable);
 
-    void *value = QMetaType::create(type);
+    void *value = QMetaType(type).create();
 
     QByteArray ba;
     QDataStream stream(&ba, QIODevice::ReadWrite);
-    QCOMPARE(QMetaType::save(stream, type, value), isStreamable);
+    QCOMPARE(QMetaType(type).save(stream, value), isStreamable);
     QCOMPARE(stream.status(), QDataStream::Ok);
 
     if (isStreamable)
-        QVERIFY(QMetaType::load(stream, type, value));
+        QVERIFY(QMetaType(type).load(stream, value));
 
     stream.device()->seek(0);
     stream.resetStatus();
-    QCOMPARE(QMetaType::load(stream, type, value), isStreamable);
+    QCOMPARE(QMetaType(type).load(stream, value), isStreamable);
     QCOMPARE(stream.status(), QDataStream::Ok);
 
     if (isStreamable)
-        QVERIFY(QMetaType::load(stream, type, value));
+        QVERIFY(QMetaType(type).load(stream, value));
 
-    QMetaType::destroy(type, value);
+    QMetaType(type).destroy(value);
 }
 
 

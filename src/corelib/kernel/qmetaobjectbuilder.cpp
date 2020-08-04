@@ -81,7 +81,7 @@ QT_BEGIN_NAMESPACE
 namespace QtPrivate {
 Q_CORE_EXPORT bool isBuiltinType(const QByteArray &type)
 {
-    int id = QMetaType::type(type);
+    int id = QMetaType::fromName(type).id();
     if (!id && !type.isEmpty() && type != "void")
         return false;
     return (id < QMetaType::User);
@@ -1316,7 +1316,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
                 const QByteArray &typeName = (i < 0) ? method.returnType : paramTypeNames.at(i);
                 int typeInfo;
                 if (QtPrivate::isBuiltinType(typeName))
-                    typeInfo = QMetaType::type(typeName);
+                    typeInfo = QMetaType::fromName(typeName).id();
                 else
                     typeInfo = IsUnresolvedType | strings.enter(typeName);
                 if (buf)
@@ -1343,7 +1343,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
 
         int typeInfo;
         if (QtPrivate::isBuiltinType(prop.type))
-            typeInfo = QMetaType::type(prop.type);
+            typeInfo = QMetaType::fromName(prop.type).id();
         else
             typeInfo = IsUnresolvedType | strings.enter(prop.type);
 
@@ -1438,23 +1438,23 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
         if (buf) {
             meta->d.metaTypes = types;
             for (const auto &prop : d->properties) {
-                QMetaType mt(QMetaType::type(prop.type));
+                QMetaType mt = QMetaType::fromName(prop.type);
                 *types = reinterpret_cast<QtPrivate::QMetaTypeInterface *&>(mt);
                 types++;
             }
             for (const auto &method: d->methods) {
-                QMetaType mt(QMetaType::type(method.returnType));
+                QMetaType mt(QMetaType::fromName(method.returnType).id());
                 *types = reinterpret_cast<QtPrivate::QMetaTypeInterface *&>(mt);
                 types++;
                 for (const auto &parameterType: method.parameterTypes()) {
-                    QMetaType mt(QMetaType::type(parameterType));
+                    QMetaType mt = QMetaType::fromName(parameterType);
                     *types = reinterpret_cast<QtPrivate::QMetaTypeInterface *&>(mt);
                     types++;
                 }
             }
             for (const auto &constructor: d->constructors) {
                 for (const auto &parameterType: constructor.parameterTypes()) {
-                    QMetaType mt(QMetaType::type(parameterType));
+                    QMetaType mt = QMetaType::fromName(parameterType);
                     *types = reinterpret_cast<QtPrivate::QMetaTypeInterface *&>(mt);
                     types++;
                 }

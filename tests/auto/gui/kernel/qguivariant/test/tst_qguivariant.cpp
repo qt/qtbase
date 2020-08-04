@@ -225,7 +225,7 @@ void tst_QGuiVariant::toInt()
     QFETCH( QVariant, value );
     QFETCH( int, result );
     QFETCH( bool, valueOK );
-    QVERIFY( value.isValid() == value.canConvert( QVariant::Int ) );
+    QVERIFY(value.isValid() == value.canConvert(QMetaType(QMetaType::Int)));
     bool ok;
     int i = value.toInt( &ok );
     QCOMPARE( i, result );
@@ -255,10 +255,10 @@ void tst_QGuiVariant::toColor()
     QFETCH( QVariant, value );
     QFETCH( QColor, result );
     QVERIFY( value.isValid() );
-    QVERIFY( value.canConvert( QVariant::Color ) );
+    QVERIFY(value.canConvert(QMetaType(QMetaType::QColor)));
     QColor d = qvariant_cast<QColor>(value);
     QCOMPARE( d, result );
-    QVERIFY(value.convert(QMetaType::QColor));
+    QVERIFY(value.convert(QMetaType(QMetaType::QColor)));
     QCOMPARE(d, QColor(value.toString()));
 }
 
@@ -281,7 +281,7 @@ void tst_QGuiVariant::toPixmap()
     QFETCH( QVariant, value );
     QFETCH( QPixmap, result );
     QVERIFY( value.isValid() );
-    QVERIFY( value.canConvert( QVariant::Pixmap ) );
+    QVERIFY(value.canConvert(QMetaType(QMetaType::QPixmap)));
     QPixmap d = qvariant_cast<QPixmap>(value);
     QCOMPARE( d, result );
 }
@@ -301,7 +301,7 @@ void tst_QGuiVariant::toImage()
     QFETCH( QVariant, value );
     QFETCH( QImage, result );
     QVERIFY( value.isValid() );
-    QVERIFY( value.canConvert( QVariant::Image ) );
+    QVERIFY( value.canConvert(QMetaType(QMetaType::QImage)));
     QImage d = qvariant_cast<QImage>(value);
     QCOMPARE( d, result );
 }
@@ -323,7 +323,7 @@ void tst_QGuiVariant::toBrush()
     QFETCH( QVariant, value );
     QFETCH( QBrush, result );
     QVERIFY( value.isValid() );
-    QVERIFY( value.canConvert( QVariant::Brush ) );
+    QVERIFY(value.canConvert(QMetaType(QMetaType::QBrush)));
     QBrush d = qvariant_cast<QBrush>(value);
     QCOMPARE( d, result );
 }
@@ -342,7 +342,7 @@ void tst_QGuiVariant::toFont()
     QFETCH( QVariant, value );
     QFETCH( QFont, result );
     QVERIFY( value.isValid() );
-    QVERIFY( value.canConvert( QVariant::Font ) );
+    QVERIFY(value.canConvert(QMetaType(QMetaType::QFont)));
     QFont d = qvariant_cast<QFont>(value);
     QCOMPARE( d, result );
 }
@@ -366,7 +366,7 @@ void tst_QGuiVariant::toKeySequence()
     QFETCH( QVariant, value );
     QFETCH( QKeySequence, result );
     QVERIFY( value.isValid() );
-    QVERIFY( value.canConvert( QVariant::KeySequence ) );
+    QVERIFY(value.canConvert(QMetaType(QMetaType::QKeySequence)));
     QKeySequence d = qvariant_cast<QKeySequence>(value);
     QCOMPARE( d, result );
 }
@@ -393,7 +393,7 @@ void tst_QGuiVariant::toString()
     QFETCH( QVariant, value );
     QFETCH( QString, result );
     QVERIFY( value.isValid() );
-    QVERIFY( value.canConvert( QVariant::String ) );
+    QVERIFY(value.canConvert(QMetaType(QMetaType::QString)));
     QString str = value.toString();
     QCOMPARE( str, result );
 }
@@ -408,9 +408,9 @@ void tst_QGuiVariant::matrix4x4()
     variant.setValue(m);
     QCOMPARE(m, qvariant_cast<QMatrix4x4>(variant));
 
-    void *mmatrix = QMetaType::create(QVariant::Matrix4x4, 0);
+    void *mmatrix = QMetaType(QMetaType::QMatrix4x4).create();
     QVERIFY(mmatrix);
-    QMetaType::destroy(QVariant::Matrix4x4, mmatrix);
+    QMetaType(QMetaType::QMatrix4x4).destroy(mmatrix);
 }
 
 void tst_QGuiVariant::transform()
@@ -421,9 +421,9 @@ void tst_QGuiVariant::transform()
     variant.setValue(QTransform().rotate(90));
     QCOMPARE(QTransform().rotate(90), qvariant_cast<QTransform>(variant));
 
-    void *mmatrix = QMetaType::create(QVariant::Transform, 0);
+    void *mmatrix = QMetaType(QMetaType::QTransform).create();
     QVERIFY(mmatrix);
-    QMetaType::destroy(QVariant::Transform, mmatrix);
+    QMetaType(QMetaType::QTransform).destroy(mmatrix);
 }
 
 
@@ -435,9 +435,9 @@ void tst_QGuiVariant::vector2D()
     variant.setValue(QVector2D(0.1f, 0.2f));
     QCOMPARE(QVector2D(0.1f, 0.2f), qvariant_cast<QVector2D>(variant));
 
-    void *pvector = QMetaType::create(QVariant::Vector2D, 0);
+    void *pvector = QMetaType(QMetaType::QVector2D).create();
     QVERIFY(pvector);
-    QMetaType::destroy(QVariant::Vector2D, pvector);
+    QMetaType(QMetaType::QVector2D).destroy(pvector);
 }
 
 void tst_QGuiVariant::vector3D()
@@ -448,9 +448,9 @@ void tst_QGuiVariant::vector3D()
     variant.setValue(QVector3D(0.1f, 0.2f, 0.3f));
     QCOMPARE(QVector3D(0.1f, 0.2f, 0.3f), qvariant_cast<QVector3D>(variant));
 
-    void *pvector = QMetaType::create(QVariant::Vector3D, 0);
+    void *pvector = QMetaType(QMetaType::QVector3D).create();
     QVERIFY(pvector);
-    QMetaType::destroy(QVariant::Vector3D, pvector);
+    QMetaType(QMetaType::QVector3D).destroy(pvector);
 }
 
 void tst_QGuiVariant::vector4D()
@@ -461,9 +461,9 @@ void tst_QGuiVariant::vector4D()
     variant.setValue(QVector4D(0.1f, 0.2f, 0.3f, 0.4f));
     QCOMPARE(QVector4D(0.1f, 0.2f, 0.3f, 0.4f), qvariant_cast<QVector4D>(variant));
 
-    void *pvector = QMetaType::create(QVariant::Vector4D, 0);
+    void *pvector = QMetaType(QMetaType::QVector4D).create();
     QVERIFY(pvector);
-    QMetaType::destroy(QVariant::Vector4D, pvector);
+    QMetaType(QMetaType::QVector4D).destroy(pvector);
 }
 
 void tst_QGuiVariant::quaternion()
@@ -474,9 +474,9 @@ void tst_QGuiVariant::quaternion()
     variant.setValue(QQuaternion(0.1f, 0.2f, 0.3f, 0.4f));
     QCOMPARE(QQuaternion(0.1f, 0.2f, 0.3f, 0.4f), qvariant_cast<QQuaternion>(variant));
 
-    void *pquaternion = QMetaType::create(QVariant::Quaternion, 0);
+    void *pquaternion = QMetaType(QMetaType::QQuaternion).create();
     QVERIFY(pquaternion);
-    QMetaType::destroy(QVariant::Quaternion, pquaternion);
+    QMetaType(QMetaType::QQuaternion).destroy(pquaternion);
 }
 
 void tst_QGuiVariant::writeToReadFromDataStream_data()
@@ -513,9 +513,9 @@ void tst_QGuiVariant::writeToReadFromDataStream_data()
 void tst_QGuiVariant::invalidQColor()
 {
     QVariant va("An invalid QColor::name() value.");
-    QVERIFY(va.canConvert(QVariant::Color));
+    QVERIFY(va.canConvert(QMetaType(QMetaType::QColor)));
 
-    QVERIFY(!va.convert(QVariant::Color));
+    QVERIFY(!va.convert(QMetaType(QMetaType::QColor)));
 
     QVERIFY(!qvariant_cast<QColor>(va).isValid());
 }
@@ -524,13 +524,13 @@ void tst_QGuiVariant::validQColor()
 {
     QColor col(Qt::red);
     QVariant va(col.name());
-    QVERIFY(va.canConvert(QVariant::Color));
+    QVERIFY(va.canConvert(QMetaType(QMetaType::QColor)));
 
-    QVERIFY(va.convert(QVariant::Color));
+    QVERIFY(va.convert(QMetaType(QMetaType::QColor)));
 
     QVERIFY(col.isValid());
 
-    QVERIFY(va.convert(QVariant::String));
+    QVERIFY(va.convert(QMetaType(QMetaType::QString)));
 
     QCOMPARE(qvariant_cast<QString>(va), col.name());
 }
@@ -538,15 +538,15 @@ void tst_QGuiVariant::validQColor()
 void tst_QGuiVariant::colorInteger()
 {
     QVariant v = QColor(Qt::red);
-    QCOMPARE(v.type(), QVariant::Color);
+    QCOMPARE(v.metaType(), QMetaType(QMetaType::QColor));
     QCOMPARE(v.value<QColor>(), QColor(Qt::red));
 
     v.setValue(1000);
-    QCOMPARE(v.type(), QVariant::Int);
+    QCOMPARE(v.metaType(), QMetaType(QMetaType::Int));
     QCOMPARE(v.toInt(), 1000);
 
     v.setValue(QColor(Qt::yellow));
-    QCOMPARE(v.type(), QVariant::Color);
+    QCOMPARE(v.metaType(), QMetaType(QMetaType::QColor));
     QCOMPARE(v.value<QColor>(), QColor(Qt::yellow));
 }
 
@@ -652,7 +652,7 @@ void tst_QGuiVariant::debugStream_data()
     QTest::addColumn<QVariant>("variant");
     QTest::addColumn<int>("typeId");
     for (int id = QMetaType::FirstGuiType; id <= QMetaType::LastGuiType; ++id) {
-        const char *tagName = QMetaType::typeName(id);
+        const char *tagName = QMetaType(id).name();
         if (!tagName)
             continue;
         QTest::newRow(tagName) << QVariant(static_cast<QVariant::Type>(id)) << id;

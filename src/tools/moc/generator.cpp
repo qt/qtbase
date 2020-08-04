@@ -53,7 +53,7 @@ uint nameToBuiltinType(const QByteArray &name)
     if (name.isEmpty())
         return 0;
 
-    uint tp = QMetaType::type(name.constData());
+    uint tp = qMetaTypeTypeInternal(name.constData());
     return tp < uint(QMetaType::User) ? tp : uint(QMetaType::UnknownType);
 }
 
@@ -62,7 +62,7 @@ uint nameToBuiltinType(const QByteArray &name)
 */
 bool isBuiltinType(const QByteArray &type)
  {
-    int id = QMetaType::type(type.constData());
+    int id = qMetaTypeTypeInternal(type.constData());
     if (id == QMetaType::UnknownType)
         return false;
     return (id < QMetaType::User);

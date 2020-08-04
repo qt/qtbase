@@ -314,8 +314,17 @@ class Q_CORE_EXPORT QVariant
     void load(QDataStream &ds);
     void save(QDataStream &ds) const;
 #endif
-    static const char *typeToName(int typeId);
-    static Type nameToType(const char *name);
+#if QT_DEPRECATED_SINCE(6, 0)
+    QT_DEPRECATED_VERSION_6_0
+    static const char *typeToName(int typeId)
+    { return QMetaType(typeId).name(); }
+    QT_DEPRECATED_VERSION_6_0
+    static Type nameToType(const char *name)
+    {
+        int metaType = QMetaType::fromName(name).id();
+        return metaType <= int(UserType) ? QVariant::Type(metaType) : UserType;
+    }
+#endif
 
     void *data();
     const void *constData() const

@@ -546,10 +546,9 @@ void tst_QEasingCurve::properties()
 
 void tst_QEasingCurve::metaTypes()
 {
-    QVERIFY(QMetaType::type("QEasingCurve") == QMetaType::QEasingCurve);
+    QVERIFY(QMetaType::fromName("QEasingCurve").id() == QMetaType::QEasingCurve);
 
-    QCOMPARE(QByteArray(QMetaType::typeName(QMetaType::QEasingCurve)),
-             QByteArray("QEasingCurve"));
+    QCOMPARE(QByteArray(QMetaType(QMetaType::QEasingCurve).name()), QByteArray("QEasingCurve"));
 
     QVERIFY(QMetaType::isRegistered(QMetaType::QEasingCurve));
 

@@ -199,8 +199,8 @@ bool QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, void *retu
         if (type == QMetaType::QVariant) {
             *reinterpret_cast<QVariant*>(returnValuePtr) = value;
         } else {
-            QMetaType::destruct(type, returnValuePtr);
-            QMetaType::construct(type, returnValuePtr, value.constData());
+            QMetaType(type).destruct(returnValuePtr);
+            QMetaType(type).construct(returnValuePtr, value.constData());
         }
         return true;
     }

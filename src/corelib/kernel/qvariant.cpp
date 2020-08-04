@@ -1065,8 +1065,7 @@ void QVariant::detach()
 */
 const char *QVariant::typeName() const
 {
-    // Cannot use d.type().name because we must return a char*
-    return QMetaType::typeName(d.typeId());
+    return d.type().name();
 }
 
 /*!
@@ -1081,29 +1080,26 @@ void QVariant::clear()
 }
 
 /*!
+    \fn const char *QVariant::typeToName(int typeId)
+    \deprecated Use QMetaType instead
+
     Converts the int representation of the storage type, \a typeId, to
     its string representation.
 
     Returns \nullptr if the type is QMetaType::UnknownType or doesn't exist.
 */
-const char *QVariant::typeToName(int typeId)
-{
-    return QMetaType::typeName(typeId);
-}
 
 
 /*!
+    \fn QVariant::Type QVariant::nameToType(const char *name)
+    \deprecated Use QMetaType instead
+
     Converts the string representation of the storage type given in \a
     name, to its enum representation.
 
     If the string representation cannot be converted to any enum
     representation, the variant is set to \c Invalid.
 */
-QVariant::Type QVariant::nameToType(const char *name)
-{
-    int metaType = QMetaType::type(name);
-    return metaType <= int(UserType) ? QVariant::Type(metaType) : UserType;
-}
 
 #ifndef QT_NO_DATASTREAM
 enum { MapFromThreeCount = 36 };
@@ -1190,11 +1186,11 @@ void QVariant::load(QDataStream &s)
         s >> is_null;
     if (typeId == 27) {
         // used to be QRegExp in Qt 4/5
-        typeId = QMetaType::type("QRegExp");
+        typeId = QMetaType::fromName("QRegExp").id();
     } else if (typeId == QVariant::UserType) {
         QByteArray name;
         s >> name;
-        typeId = QMetaType::type(name.constData());
+        typeId = QMetaType::fromName(name).id();
         if (typeId == QMetaType::UnknownType) {
             s.setStatus(QDataStream::ReadCorruptData);
             qWarning("QVariant::load: unknown user type with name %s.", name.constData());
@@ -1273,7 +1269,7 @@ void QVariant::save(QDataStream &s) const
     }
     const char *typeName = nullptr;
     if (saveAsUserType) {
-        typeName = QMetaType::typeName(d.typeId());
+        typeName = d.type().name();
         if (!strcmp(typeName, "QRegExp")) {
             typeId = 27; // QRegExp in Qt 4/5
             typeName = nullptr;
@@ -1283,7 +1279,7 @@ void QVariant::save(QDataStream &s) const
     if (s.version() >= QDataStream::Qt_4_2)
         s << qint8(d.is_null);
     if (typeName)
-        s << QMetaType::typeName(userType());
+        s << d.type().name();
 
     if (!isValid()) {
         if (s.version() < QDataStream::Qt_5_0)
@@ -1293,7 +1289,7 @@ void QVariant::save(QDataStream &s) const
 
     if (!d.type().save(s, constData())) {
         qWarning("QVariant::save: unable to save type '%s' (type id: %d).\n",
-                 QMetaType::typeName(d.typeId()), d.typeId());
+                 d.type().name(), d.typeId());
         Q_ASSERT_X(false, "QVariant::save", "Invalid type to save");
     }
 }
@@ -2001,11 +1997,6 @@ bool QVariant::convert(int targetTypeId)
     if (oldValue.d.is_null && oldValue.d.typeId() != QMetaType::Nullptr)
         return false;
 
-    if ((QMetaType::typeFlags(oldValue.userType()) & QMetaType::PointerToQObject) && (QMetaType::typeFlags(targetTypeId) & QMetaType::PointerToQObject)) {
-        create(targetTypeId, &oldValue.d.get<QObject *>());
-        return true;
-    }
-
     bool ok = QMetaType::convert(oldValue.constData(), oldValue.d.typeId(), data(), targetTypeId);
     d.is_null = !ok;
     return ok;
@@ -2308,7 +2299,7 @@ QDebug operator<<(QDebug dbg, const QVariant &v)
     const uint typeId = v.d.typeId();
     dbg.nospace() << "QVariant(";
     if (typeId != QMetaType::UnknownType) {
-        dbg << QMetaType::typeName(typeId) << ", ";
+        dbg << v.d.type().name() << ", ";
         bool streamed = v.d.type().debugStream(dbg, v.d.storage());
         if (!streamed && v.canConvert<QString>())
             dbg << v.toString();
@@ -2324,7 +2315,7 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
     QDebugStateSaver saver(dbg);
     dbg.nospace() << "QVariant::"
                   << (int(p) != int(QMetaType::UnknownType)
-                     ? QMetaType::typeName(p)
+                     ? QMetaType(p).name()
                      : "Invalid");
     return dbg;
 }

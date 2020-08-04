@@ -363,18 +363,39 @@ public:
 
     static void registerNormalizedTypedef(const QT_PREPEND_NAMESPACE(QByteArray) &normalizedTypeName, QMetaType type);
 
-    static int type(const char *typeName);
-
-    static int type(const QT_PREPEND_NAMESPACE(QByteArray) &typeName);
-    static const char *typeName(int type);
-    static int sizeOf(int type);
-    static TypeFlags typeFlags(int type);
-    static const QMetaObject *metaObjectForType(int type);
+#if QT_DEPRECATED_SINCE(6, 0)
+    QT_DEPRECATED_VERSION_6_0
+    static int type(const char *typeName)
+    { return QMetaType::fromName(typeName).id(); }
+    QT_DEPRECATED_VERSION_6_0
+    static int type(const QT_PREPEND_NAMESPACE(QByteArray) &typeName)
+    { return QMetaType::fromName(typeName).id(); }
+    QT_DEPRECATED_VERSION_6_0
+    static const char *typeName(int type)
+    { return QMetaType(type).name(); }
+    QT_DEPRECATED_VERSION_6_0
+    static int sizeOf(int type)
+    { return QMetaType(type).sizeOf(); }
+    QT_DEPRECATED_VERSION_6_0
+    static TypeFlags typeFlags(int type)
+    { return QMetaType(type).flags(); }
+    QT_DEPRECATED_VERSION_6_0
+    static const QMetaObject *metaObjectForType(int type)
+    { return QMetaType(type).metaObject(); }
+    QT_DEPRECATED_VERSION_6_0
+    static void *create(int type, const void *copy = nullptr)
+    { return QMetaType(type).create(copy); }
+    QT_DEPRECATED_VERSION_6_0
+    static void destroy(int type, void *data)
+    { return QMetaType(type).destroy(data); }
+    QT_DEPRECATED_VERSION_6_0
+    static void *construct(int type, void *where, const void *copy)
+    { return QMetaType(type).construct(where, copy); }
+    QT_DEPRECATED_VERSION_6_0
+    static void destruct(int type, void *where)
+    { return QMetaType(type).destruct(where); }
+#endif
     static bool isRegistered(int type);
-    static void *create(int type, const void *copy = nullptr);
-    static void destroy(int type, void *data);
-    static void *construct(int type, void *where, const void *copy);
-    static void destruct(int type, void *where);
 
     explicit QMetaType(int type);
     explicit constexpr QMetaType(QtPrivate::QMetaTypeInterface *d) : d_ptr(d) {}
@@ -387,7 +408,7 @@ public:
     int alignOf() const;
     TypeFlags flags() const;
     const QMetaObject *metaObject() const;
-    QT_PREPEND_NAMESPACE(QByteArray) name() const;
+    const char *name() const;
 
     void *create(const void *copy = nullptr) const;
     void destroy(void *data) const;
@@ -415,6 +436,7 @@ public:
 
     template<typename T>
     static QMetaType fromType();
+    static QMetaType fromName(QByteArrayView name);
 
     friend bool operator==(const QMetaType &a, const QMetaType &b) { return a.id() == b.id(); }
     friend bool operator!=(const QMetaType &a, const QMetaType &b) { return !(a == b); }
@@ -1690,7 +1712,7 @@ struct QMetaTypeId< SINGLE_ARG_TEMPLATE<T> > \
         static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0); \
         if (const int id = metatype_id.loadRelaxed()) \
             return id; \
-        const char *tName = QMetaType::typeName(qMetaTypeId<T>()); \
+        const char *tName = QMetaType::fromType<T>().name(); \
         Q_ASSERT(tName); \
         const int tNameLen = int(qstrlen(tName)); \
         QByteArray typeName; \
@@ -1725,8 +1747,8 @@ struct QMetaTypeId< DOUBLE_ARG_TEMPLATE<T, U> > \
         static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0); \
         if (const int id = metatype_id.loadAcquire()) \
             return id; \
-        const char *tName = QMetaType::typeName(qMetaTypeId<T>()); \
-        const char *uName = QMetaType::typeName(qMetaTypeId<U>()); \
+        const char *tName = QMetaType::fromType<T>().name(); \
+        const char *uName = QMetaType::fromType<U>().name(); \
         Q_ASSERT(tName); \
         Q_ASSERT(uName); \
         const int tNameLen = int(qstrlen(tName)); \
