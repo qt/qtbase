@@ -1,29 +1,39 @@
 # We can't create the same interface imported target multiple times, CMake will complain if we do
 # that. This can happen if the find_package call is done in multiple different subdirectories.
 if(TARGET WrapSystemPNG::WrapSystemPNG)
-    set(WrapSystemPNG_FOUND ON)
+    set(WrapSystemPNG_FOUND TRUE)
     return()
 endif()
+set(WrapSystemPNG_REQUIRED_VARS __png_found)
 
-set(WrapSystemPNG_FOUND OFF)
+find_package(PNG ${${CMAKE_FIND_PACKAGE_NAME}_FIND_VERSION} QUIET)
 
-find_package(PNG QUIET)
+set(__png_target_name "PNG::PNG")
+if(PNG_FOUND AND TARGET "${__png_target_name}")
+    set(__png_found TRUE)
+    if(PNG_VERSION)
+        set(WrapSystemPNG_VERSION "${PNG_VERSION}")
+    endif()
+endif()
 
-if(PNG_FOUND)
-    set(potential_target_names PNG::PNG)
-    foreach(target_name ${potential_target_names})
-        if(TARGET ${target_name})
-            set(WrapSystemPNG_FOUND ON)
-            set(final_target_name ${target_name})
-
-            add_library(WrapSystemPNG::WrapSystemPNG INTERFACE IMPORTED)
-            target_link_libraries(WrapSystemPNG::WrapSystemPNG INTERFACE
-                                  ${final_target_name})
-
-            break()
-        endif()
-    endforeach()
+if(PNG_LIBRARIES)
+    list(PREPEND WrapSystemPNG_REQUIRED_VARS PNG_LIBRARIES)
+endif()
+if(PNG_VERSION)
+    set(WrapSystemPNG_VERSION "${PNG_VERSION}")
+elseif(PNG_VERSION_STRING)
+    set(WrapSystemPNG_VERSION "${PNG_VERSION_STRING}")
 endif()
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(WrapSystemPNG DEFAULT_MSG WrapSystemPNG_FOUND)
+find_package_handle_standard_args(WrapSystemPNG
+                                  REQUIRED_VARS ${WrapSystemPNG_REQUIRED_VARS}
+                                  VERSION_VAR WrapSystemPNG_VERSION)
+
+if(WrapSystemPNG_FOUND)
+    add_library(WrapSystemPNG::WrapSystemPNG INTERFACE IMPORTED)
+    target_link_libraries(WrapSystemPNG::WrapSystemPNG
+                          INTERFACE "${__png_target_name}")
+endif()
+unset(__png_target_name)
+unset(__png_found)

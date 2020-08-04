@@ -377,7 +377,7 @@ _library_map = [
     LibraryMapping("cups", "Cups", "Cups::Cups"),
     LibraryMapping("directfb", "DirectFB", "PkgConfig::DirectFB"),
     LibraryMapping("db2", "DB2", "DB2::DB2"),
-    LibraryMapping("dbus", "WrapDBus1", "dbus-1", resultVariable="DBus1"),
+    LibraryMapping("dbus", "WrapDBus1", "dbus-1", resultVariable="DBus1", extra=["1.2"]),
     LibraryMapping(
         "doubleconversion", "WrapDoubleConversion", "WrapDoubleConversion::WrapDoubleConversion"
     ),
@@ -392,7 +392,7 @@ _library_map = [
         "freetype",
         "WrapFreetype",
         "WrapFreetype::WrapFreetype",
-        extra=["REQUIRED"],
+        extra=["2.2.0", "REQUIRED"],
         is_bundled_with_qt=True,
     ),
     LibraryMapping("gbm", "gbm", "gbm::gbm"),
@@ -401,7 +401,8 @@ _library_map = [
     LibraryMapping("gtk3", "GTK3", "PkgConfig::GTK3"),
     LibraryMapping("gssapi", "GSSAPI", "GSSAPI::GSSAPI"),
     LibraryMapping(
-        "harfbuzz", "WrapHarfbuzz", "WrapHarfbuzz::WrapHarfbuzz", is_bundled_with_qt=True
+        "harfbuzz", "WrapHarfbuzz", "WrapHarfbuzz::WrapHarfbuzz", is_bundled_with_qt=True,
+        extra=["2.6.0"]
     ),
     LibraryMapping("host_dbus", None, None),
     LibraryMapping(
@@ -445,7 +446,7 @@ _library_map = [
     ),
     LibraryMapping("oci", "Oracle", "Oracle::OCI"),
     LibraryMapping(
-        "pcre2", "WrapPCRE2", "WrapPCRE2::WrapPCRE2", extra=["REQUIRED"], is_bundled_with_qt=True
+        "pcre2", "WrapPCRE2", "WrapPCRE2::WrapPCRE2", extra=["10.20", "REQUIRED"], is_bundled_with_qt=True
     ),
     LibraryMapping("pps", "PPS", "PPS::PPS"),
     LibraryMapping("psql", "PostgreSQL", "PostgreSQL::PostgreSQL"),
@@ -556,8 +557,8 @@ _library_map = [
     LibraryMapping("xkbcommon", "XKB", "XKB::XKB", extra=["0.4.1"]),
     LibraryMapping("xlib", "X11", "X11::X11"),
     LibraryMapping("xrender", "XRender", "PkgConfig::XRender"),
-    LibraryMapping("zlib", "ZLIB", "ZLIB::ZLIB"),
-    LibraryMapping("zstd", "ZSTD", "ZSTD::ZSTD"),
+    LibraryMapping("zlib", "ZLIB", "ZLIB::ZLIB", extra=["1.0.8"]),
+    LibraryMapping("zstd", "ZSTD", "ZSTD::ZSTD", extra=["1.3"]),
     LibraryMapping("tiff", "TIFF", "TIFF::TIFF"),
     LibraryMapping("webp", "WrapWebP", "WrapWebP::WrapWebP"),
     LibraryMapping("jasper", "WrapJasper", "WrapJasper::WrapJasper"),

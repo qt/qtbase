@@ -19,7 +19,7 @@ if(DEFINED ENV{PKG_CONFIG_LIBDIR})
     set(__qt_dbus_pcl "$ENV{PKG_CONFIG_LIBDIR}")
 endif()
 
-find_package(DBus1 QUIET)
+find_package(DBus1 ${${CMAKE_FIND_PACKAGE_NAME}_FIND_VERSION} QUIET)
 
 if(DEFINED __qt_dbus_pcd)
     set(ENV{PKG_CONFIG_DIR} "${__qt_dbus_pcd}")
@@ -42,4 +42,6 @@ if(DBus1_FOUND)
 endif()
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(WrapDBus1 DEFAULT_MSG WrapDBus1_FOUND)
+find_package_handle_standard_args(WrapDBus1 REQUIRED_VARS
+                                            DBus1_LIBRARY DBus1_INCLUDE_DIR WrapDBus1_FOUND
+                                            VERSION_VAR DBus1_VERSION)

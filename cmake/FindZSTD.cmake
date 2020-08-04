@@ -32,7 +32,8 @@ find_library(ZSTD_LIBRARIES
 )
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(ZSTD DEFAULT_MSG ZSTD_LIBRARIES ZSTD_INCLUDE_DIRS)
+find_package_handle_standard_args(ZSTD REQUIRED_VARS ZSTD_LIBRARIES ZSTD_INCLUDE_DIRS
+                                       VERSION_VAR PC_ZSTD_VERSION)
 
 if(ZSTD_FOUND AND NOT TARGET ZSTD::ZSTD)
   add_library(ZSTD::ZSTD UNKNOWN IMPORTED)
