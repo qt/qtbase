@@ -878,6 +878,14 @@ static const QByteArray sizeOfPropertiesStructCheck =
         "static_assert(sizeof(Properties) == " + QByteArray::number(SizeOfPropertiesStruct) + ");\n\n";
 
 struct PropertyFlags {
+    PropertyFlags()
+        : combiningClass(0)
+        , category(QChar::Other_NotAssigned) // Cn
+        , direction(QChar::DirL)
+        , joining(QChar::Joining_None)
+        , age(QChar::Unicode_Unassigned)
+        , mirrorDiff(0) {}
+
     bool operator==(const PropertyFlags &o) const {
         return (combiningClass == o.combiningClass
                 && category == o.category
@@ -910,25 +918,25 @@ struct PropertyFlags {
     QChar::JoiningType joining : 3;
     // from DerivedAge.txt
     QChar::UnicodeVersion age : 5;
-    int digitValue;
+    int digitValue = -1;
 
     int mirrorDiff : 16;
 
-    int lowerCaseDiff;
-    int upperCaseDiff;
-    int titleCaseDiff;
-    int caseFoldDiff;
-    bool lowerCaseSpecial;
-    bool upperCaseSpecial;
-    bool titleCaseSpecial;
-    bool caseFoldSpecial;
-    GraphemeBreakClass graphemeBreakClass;
-    WordBreakClass wordBreakClass;
-    SentenceBreakClass sentenceBreakClass;
-    LineBreakClass lineBreakClass;
-    int script;
+    int lowerCaseDiff = 0;
+    int upperCaseDiff = 0;
+    int titleCaseDiff = 0;
+    int caseFoldDiff = 0;
+    bool lowerCaseSpecial = 0;
+    bool upperCaseSpecial = 0;
+    bool titleCaseSpecial = 0;
+    bool caseFoldSpecial = 0;
+    GraphemeBreakClass graphemeBreakClass = GraphemeBreak_Any;
+    WordBreakClass wordBreakClass = WordBreak_Any;
+    SentenceBreakClass sentenceBreakClass = SentenceBreak_Any;
+    LineBreakClass lineBreakClass = LineBreak_AL;
+    int script = QChar::Script_Unknown;
     // from DerivedNormalizationProps.txt
-    uchar nfQuickCheck;
+    uchar nfQuickCheck = 0;
 };
 
 
@@ -1006,9 +1014,6 @@ static inline bool isDefaultIgnorable(uint ucs4)
 
 struct UnicodeData {
     UnicodeData(int codepoint = 0) {
-        p.category = QChar::Other_NotAssigned; // Cn
-        p.combiningClass = 0;
-
         p.direction = QChar::DirL;
         // DerivedBidiClass.txt
         // The unassigned code points that default to AL are in the ranges:
@@ -1066,28 +1071,6 @@ struct UnicodeData {
         else if (codepoint >= 0x20A0 && codepoint <= 0x20CF) {
             p.lineBreakClass = LineBreak_PR;
         }
-
-        mirroredChar = 0;
-        decompositionType = QChar::NoDecomposition;
-        p.joining = QChar::Joining_None;
-        p.age = QChar::Unicode_Unassigned;
-        p.mirrorDiff = 0;
-        p.digitValue = -1;
-        p.lowerCaseDiff = 0;
-        p.upperCaseDiff = 0;
-        p.titleCaseDiff = 0;
-        p.caseFoldDiff = 0;
-        p.lowerCaseSpecial = 0;
-        p.upperCaseSpecial = 0;
-        p.titleCaseSpecial = 0;
-        p.caseFoldSpecial = 0;
-        p.graphemeBreakClass = GraphemeBreak_Any;
-        p.wordBreakClass = WordBreak_Any;
-        p.sentenceBreakClass = SentenceBreak_Any;
-        p.script = QChar::Script_Unknown;
-        p.nfQuickCheck = 0;
-        propertyIndex = -1;
-        excludedComposition = false;
     }
 
     static UnicodeData &valueRef(int codepoint);
@@ -1095,19 +1078,19 @@ struct UnicodeData {
     PropertyFlags p;
 
     // from UnicodeData.txt
-    QChar::Decomposition decompositionType;
+    QChar::Decomposition decompositionType = QChar::NoDecomposition;
     QList<int> decomposition;
 
     QList<int> specialFolding;
 
     // from BidiMirroring.txt
-    int mirroredChar;
+    int mirroredChar = 0;
 
     // DerivedNormalizationProps.txt
-    bool excludedComposition;
+    bool excludedComposition = false;
 
     // computed position of unicode property set
-    int propertyIndex;
+    int propertyIndex = -1;
 };
 
 static QList<UnicodeData> unicodeData;
