@@ -49,6 +49,9 @@
 ****************************************************************************/
 
 #include <QtGui>
+#include <QLabel>
+#include <QHBoxLayout>
+#include <QApplication>
 
 #include "dragwidget.h"
 

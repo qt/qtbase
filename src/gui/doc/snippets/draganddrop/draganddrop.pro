@@ -1,5 +1,9 @@
-HEADERS     = dragwidget.h \
-              mainwindow.h
-SOURCES     = dragwidget.cpp \
-              main.cpp \
-              mainwindow.cpp
+TEMPLATE = lib
+TARGET = draganddrop_snippets
+QT += core gui widgets
+
+HEADERS = \
+    dragwidget.h
+
+SOURCES = \
+    dragwidget.cpp

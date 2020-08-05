@@ -66,7 +66,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(dragWidget, &DragWidget::mimeTypes,
             this, &MainWindow::setMimeTypes);
-    connect(dragWidget, &DragWidget:dragResult,
+    connect(dragWidget, &DragWidget::dragResult,
             this, &MainWindow::setDragResult);
 
     QVBoxLayout *mainLayout = new QVBoxLayout(centralWidget);
