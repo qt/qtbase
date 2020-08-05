@@ -419,11 +419,12 @@ void QXcbDrag::move(const QPoint &globalPos, Qt::MouseButtons b, Qt::KeyboardMod
         auto reply = Q_XCB_REPLY(xcb_get_property, xcb_connection(),
                                  false, proxy_target,
                                  atom(QXcbAtom::XdndAware), XCB_GET_PROPERTY_TYPE_ANY, 0, 1);
-        if (!reply || reply->type == XCB_NONE)
+        if (!reply || reply->type == XCB_NONE) {
             target = 0;
-
-        target_version = *(uint32_t *)xcb_get_property_value(reply.get());
-        target_version = qMin(xdnd_version, target_version ? target_version : 1);
+        } else {
+            target_version = *(uint32_t *)xcb_get_property_value(reply.get());
+            target_version = qMin(xdnd_version, target_version ? target_version : 1);
+        }
     }
 
     if (target != current_target) {
