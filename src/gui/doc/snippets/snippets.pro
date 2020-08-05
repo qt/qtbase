@@ -21,5 +21,7 @@ contains(QT_BUILD_PARTS, tests) {
         textdocument-listitems \
         textdocument-listitemstyles \
         textdocument-lists \
-        textdocument-printing
+        textdocument-printing \
+        textdocument-resources \
+        textdocument-selections
 }

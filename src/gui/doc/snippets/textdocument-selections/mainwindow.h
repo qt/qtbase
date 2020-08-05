@@ -77,12 +77,12 @@ public slots:
     void updateMenus();
 
 private:
-    QAction *cutAction;
-    QAction *copyAction;
-    QAction *pasteAction;
+    QAction *cutAction = nullptr;
+    QAction *copyAction = nullptr;
+    QAction *pasteAction = nullptr;
     QString currentFile;
-    QTextEdit *editor;
-    QTextDocument *document;
+    QTextEdit *editor = nullptr;
+    QTextDocument *document = nullptr;
     QTextDocumentFragment selection;
 };
 

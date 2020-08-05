@@ -47,10 +47,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "mainwindow.h"
 
 #include <QtWidgets>
-
-#include "mainwindow.h"
 
 MainWindow::MainWindow()
 {
@@ -151,7 +150,6 @@ void MainWindow::pasteSelection()
 void MainWindow::selectWord()
 {
     QTextCursor cursor = editor->textCursor();
-    QTextBlock block = cursor.block();
 
 //! [0]
     cursor.beginEditBlock();
@@ -168,7 +166,6 @@ void MainWindow::selectWord()
 void MainWindow::selectLine()
 {
     QTextCursor cursor = editor->textCursor();
-    QTextBlock block = cursor.block();
 
     cursor.beginEditBlock();
     cursor.movePosition(QTextCursor::StartOfLine);
@@ -181,7 +178,6 @@ void MainWindow::selectLine()
 void MainWindow::selectBlock()
 {
     QTextCursor cursor = editor->textCursor();
-    QTextBlock block = cursor.block();
 
     cursor.beginEditBlock();
     cursor.movePosition(QTextCursor::StartOfBlock);

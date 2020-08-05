@@ -47,10 +47,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-#include <QtGui>
-
 #include "mainwindow.h"
+
+#include <QApplication>
 
 int main(int argc, char *argv[])
 {
