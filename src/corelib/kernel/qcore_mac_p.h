@@ -419,10 +419,6 @@ private:
 
 // -------------------------------------------------------------------------
 
-#if QT_POINTER_SIZE == 4
-#error "32-bit builds are not supported"
-#endif
-
 class Q_CORE_EXPORT QMacVersion
 {
 public:

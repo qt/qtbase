@@ -593,7 +593,9 @@ QMacVersion::VersionTuple QMacVersion::versionsForImage(const mach_header *machH
         );
     };
 
-    auto commandCursor = uintptr_t(machHeader) + sizeof(mach_header_64);
+    const bool is64Bit = machHeader->magic == MH_MAGIC_64 || machHeader->magic == MH_CIGAM_64;
+    auto commandCursor = uintptr_t(machHeader) + (is64Bit ? sizeof(mach_header_64) : sizeof(mach_header));
+
     for (uint32_t i = 0; i < machHeader->ncmds; ++i) {
         load_command *loadCommand = reinterpret_cast<load_command *>(commandCursor);
         if (loadCommand->cmd == LC_VERSION_MIN_MACOSX || loadCommand->cmd == LC_VERSION_MIN_IPHONEOS
