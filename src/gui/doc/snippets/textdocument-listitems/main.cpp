@@ -49,6 +49,8 @@
 ****************************************************************************/
 
 #include <QtGui>
+#include <QApplication>
+#include <QTextEdit>
 
 #include "mainwindow.h"
 
