@@ -70,13 +70,14 @@ public slots:
     void openFile();
     void printFile();
     void printPdf();
+    void updateMenus();
 
 private:
-    QAction *printAction;
-    QAction *pdfPrintAction;
+    QAction *printAction = nullptr;
+    QAction *pdfPrintAction = nullptr;
     QString currentFile;
-    QTextEdit *editor;
-    QTextDocument *document;
+    QTextEdit *editor = nullptr;
+    QTextDocument *document = nullptr;
 };
 
 #endif
