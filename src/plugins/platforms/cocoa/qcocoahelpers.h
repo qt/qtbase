@@ -178,10 +178,6 @@ T qt_mac_resolveOption(const T &fallback, QWindow *window, const QByteArray &pro
 
 // -------------------------------------------------------------------------
 
-#if QT_POINTER_SIZE == 4
-#error "32-bit builds are not supported"
-#endif
-
 class QMacVersion
 {
 public:
