@@ -58,21 +58,6 @@ protected:
     QCFType<CGColorSpaceRef> colorSpace() const;
 };
 
-class QNSWindowBackingStore : public QCocoaBackingStore
-{
-public:
-    QNSWindowBackingStore(QWindow *window);
-    ~QNSWindowBackingStore();
-
-    void resize(const QSize &size, const QRegion &staticContents) override;
-    void flush(QWindow *, const QRegion &, const QPoint &) override;
-
-private:
-    bool windowHasUnifiedToolbar() const;
-    QImage::Format format() const override;
-    void redrawRoundedBottomCorners(CGRect) const;
-};
-
 class QCALayerBackingStore : public QObject, public QCocoaBackingStore
 {
     Q_OBJECT

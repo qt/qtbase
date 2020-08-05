@@ -261,8 +261,6 @@ public: // for QNSView
     bool m_inSetStyleMask;
     QCocoaMenuBar *m_menubar;
 
-    bool m_needsInvalidateShadow;
-
     bool m_frameStrutEventsEnabled;
     QRect m_exposedRect;
     int m_registerTouchCount;

@@ -145,7 +145,6 @@ QCocoaWindow::QCocoaWindow(QWindow *win, WId nativeHandle)
     , m_inSetGeometry(false)
     , m_inSetStyleMask(false)
     , m_menubar(nullptr)
-    , m_needsInvalidateShadow(false)
     , m_frameStrutEventsEnabled(false)
     , m_registerTouchCount(0)
     , m_resizableTransientParent(false)
@@ -1056,27 +1055,15 @@ void QCocoaWindow::setMask(const QRegion &region)
 {
     qCDebug(lcQpaWindow) << "QCocoaWindow::setMask" << window() << region;
 
-    if (m_view.layer) {
-        if (!region.isEmpty()) {
-            QCFType<CGMutablePathRef> maskPath = CGPathCreateMutable();
-            for (const QRect &r : region)
-                CGPathAddRect(maskPath, nullptr, r.toCGRect());
-            CAShapeLayer *maskLayer = [CAShapeLayer layer];
-            maskLayer.path = maskPath;
-            m_view.layer.mask = maskLayer;
-        } else {
-            m_view.layer.mask = nil;
-        }
+    if (!region.isEmpty()) {
+        QCFType<CGMutablePathRef> maskPath = CGPathCreateMutable();
+        for (const QRect &r : region)
+            CGPathAddRect(maskPath, nullptr, r.toCGRect());
+        CAShapeLayer *maskLayer = [CAShapeLayer layer];
+        maskLayer.path = maskPath;
+        m_view.layer.mask = maskLayer;
     } else {
-        if (isContentView()) {
-            // Setting the mask requires invalidating the NSWindow shadow, but that needs
-            // to happen after the backingstore has been redrawn, so that AppKit can pick
-            // up the new window shape based on the backingstore content. Doing a display
-            // directly here is not an option, as the window might not be exposed at this
-            // time, and so would not result in an updated backingstore.
-            m_needsInvalidateShadow = true;
-            [m_view setNeedsDisplay:YES];
-        }
+        m_view.layer.mask = nil;
     }
 }
 

@@ -81,7 +81,6 @@ private:
     static NSOpenGLPixelFormat *pixelFormatForSurfaceFormat(const QSurfaceFormat &format);
 
     bool setDrawable(QPlatformSurface *surface);
-    void prepareDrawable(QCocoaWindow *platformWindow);
     void updateSurfaceFormat();
 
     NSOpenGLContext *m_context = nil;

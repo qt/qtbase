@@ -393,8 +393,6 @@ bool QCocoaGLContext::setDrawable(QPlatformSurface *surface)
     if (view == QT_IGNORE_DEPRECATIONS(m_context.view))
         return true;
 
-    prepareDrawable(cocoaWindow);
-
     // Setting the drawable may happen on a separate thread as a result of
     // a call to makeCurrent, so we need to set up the observers before we
     // associate the view with the context. That way we will guarantee that
@@ -410,12 +408,8 @@ bool QCocoaGLContext::setDrawable(QPlatformSurface *surface)
 
     m_updateObservers.clear();
 
-    if (view.layer) {
-        m_updateObservers.append(QMacNotificationObserver(view, NSViewFrameDidChangeNotification, updateCallback));
-        m_updateObservers.append(QMacNotificationObserver(view.window, NSWindowDidChangeScreenNotification, updateCallback));
-    } else {
-        m_updateObservers.append(QMacNotificationObserver(view, QT_IGNORE_DEPRECATIONS(NSViewGlobalFrameDidChangeNotification), updateCallback));
-    }
+    m_updateObservers.append(QMacNotificationObserver(view, NSViewFrameDidChangeNotification, updateCallback));
+    m_updateObservers.append(QMacNotificationObserver(view.window, NSWindowDidChangeScreenNotification, updateCallback));
 
     m_updateObservers.append(QMacNotificationObserver([NSApplication sharedApplication],
         NSApplicationDidChangeScreenParametersNotification, updateCallback));
@@ -435,30 +429,6 @@ bool QCocoaGLContext::setDrawable(QPlatformSurface *surface)
 
     qCInfo(lcQpaOpenGLContext) << "Set drawable for" << m_context << "to" << QT_IGNORE_DEPRECATIONS(m_context.view);
     return true;
-}
-
-void QCocoaGLContext::prepareDrawable(QCocoaWindow *platformWindow)
-{
-    // We generally want high-DPI GL surfaces, unless the user has explicitly disabled them
-    bool prefersBestResolutionOpenGLSurface = qt_mac_resolveOption(YES,
-        platformWindow->window(), "_q_mac_wantsBestResolutionOpenGLSurface",
-        "QT_MAC_WANTS_BEST_RESOLUTION_OPENGL_SURFACE");
-
-    auto *view = platformWindow->view();
-
-    // The only case we have to opt out ourselves is when using the Apple software renderer
-    // in combination with surface-backed views, as these together do not support high-DPI.
-    if (prefersBestResolutionOpenGLSurface) {
-        int rendererID = 0;
-        [m_context getValues:&rendererID forParameter:NSOpenGLContextParameterCurrentRendererID];
-        bool isSoftwareRenderer = (rendererID & kCGLRendererIDMatchingMask) == kCGLRendererGenericFloatID;
-        if (isSoftwareRenderer && !view.layer) {
-            qCInfo(lcQpaOpenGLContext) << "Disabling high resolution GL surface due to software renderer";
-            prefersBestResolutionOpenGLSurface = false;
-        }
-    }
-
-    QT_IGNORE_DEPRECATIONS(view.wantsBestResolutionOpenGLSurface) = prefersBestResolutionOpenGLSurface;
 }
 
 // NSOpenGLContext is not re-entrant. Even when using separate contexts per thread,
@@ -494,19 +464,17 @@ void QCocoaGLContext::swapBuffers(QPlatformSurface *surface)
         return;
     }
 
-    if (QT_IGNORE_DEPRECATIONS(m_context.view).layer) {
-        // Flushing an NSOpenGLContext will hit the screen immediately, ignoring
-        // any Core Animation transactions in place. This may result in major
-        // visual artifacts if the flush happens out of sync with the size
-        // of the layer, view, and window reflected by other parts of the UI,
-        // e.g. if the application flushes in the resize event or a timer during
-        // window resizing, instead of in the expose event.
-        auto *cocoaWindow = static_cast<QCocoaWindow *>(surface);
-        if (cocoaWindow->geometry().size() != cocoaWindow->m_exposedRect.size()) {
-            qCInfo(lcQpaOpenGLContext) << "Window exposed size does not match geometry (yet)."
-                << "Skipping flush to avoid visual artifacts.";
-            return;
-        }
+    // Flushing an NSOpenGLContext will hit the screen immediately, ignoring
+    // any Core Animation transactions in place. This may result in major
+    // visual artifacts if the flush happens out of sync with the size
+    // of the layer, view, and window reflected by other parts of the UI,
+    // e.g. if the application flushes in the resize event or a timer during
+    // window resizing, instead of in the expose event.
+    auto *cocoaWindow = static_cast<QCocoaWindow *>(surface);
+    if (cocoaWindow->geometry().size() != cocoaWindow->m_exposedRect.size()) {
+        qCInfo(lcQpaOpenGLContext) << "Window exposed size does not match geometry (yet)."
+            << "Skipping flush to avoid visual artifacts.";
+        return;
     }
 
     QMutexLocker locker(&s_reentrancyMutex);

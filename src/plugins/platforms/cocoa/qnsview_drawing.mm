@@ -43,7 +43,13 @@
 
 - (void)initDrawing
 {
-    [self updateLayerBacking];
+    if (qt_mac_resolveOption(-1, m_platformWindow->window(),
+        "_q_mac_wantsLayer", "QT_MAC_WANTS_LAYER") != -1) {
+        qCWarning(lcQpaDrawing) << "Layer-backing is always enabled."
+            << " QT_MAC_WANTS_LAYER/_q_mac_wantsLayer has no effect.";
+    }
+
+    self.wantsLayer = YES;
 }
 
 - (BOOL)isOpaque
@@ -59,40 +65,6 @@
 }
 
 // ----------------------- Layer setup -----------------------
-
-- (void)updateLayerBacking
-{
-    self.wantsLayer = [self layerEnabledByMacOS]
-        || [self layerExplicitlyRequested]
-        || [self shouldUseMetalLayer];
-}
-
-- (BOOL)layerEnabledByMacOS
-{
-    // AppKit has its own logic for this, but if we rely on that, our layers are created
-    // by AppKit at a point where we've already set up other parts of the platform plugin
-    // based on the presence of layers or not. Once we've rewritten these parts to support
-    // dynamically picking up layer enablement we can let AppKit do its thing.
-    return QMacVersion::buildSDK() >= QOperatingSystemVersion::MacOSMojave
-        && QMacVersion::currentRuntime() >= QOperatingSystemVersion::MacOSMojave;
-}
-
-- (BOOL)layerExplicitlyRequested
-{
-    static bool wantsLayer = [&]() {
-        int wantsLayer = qt_mac_resolveOption(-1, m_platformWindow->window(),
-            "_q_mac_wantsLayer", "QT_MAC_WANTS_LAYER");
-
-        if (wantsLayer != -1 && [self layerEnabledByMacOS]) {
-            qCWarning(lcQpaDrawing) << "Layer-backing cannot be explicitly controlled on 10.14 when built against the 10.14 SDK";
-            return true;
-        }
-
-        return wantsLayer == 1;
-    }();
-
-    return wantsLayer;
-}
 
 - (BOOL)shouldUseMetalLayer
 {
@@ -146,8 +118,7 @@
 {
     qCDebug(lcQpaDrawing) << "Making" << self
         << (self.wantsLayer ? "layer-backed" : "layer-hosted")
-        << "with" << layer << "due to being" << ([self layerExplicitlyRequested] ? "explicitly requested"
-            : [self shouldUseMetalLayer] ? "needed by surface type" : "enabled by macOS");
+        << "with" << layer;
 
     if (layer.delegate && layer.delegate != self) {
         qCWarning(lcQpaDrawing) << "Layer already has delegate" << layer.delegate
@@ -244,22 +215,6 @@
 {
     Q_ASSERT_X(!self.layer, "QNSView",
         "The drawRect code path should not be hit when we are layer backed");
-
-    if (!m_platformWindow)
-        return;
-
-    QRegion exposedRegion;
-    const NSRect *dirtyRects;
-    NSInteger numDirtyRects;
-    [self getRectsBeingDrawn:&dirtyRects count:&numDirtyRects];
-    for (int i = 0; i < numDirtyRects; ++i)
-        exposedRegion += QRectF::fromCGRect(dirtyRects[i]).toRect();
-
-    if (exposedRegion.isEmpty())
-        exposedRegion = QRectF::fromCGRect(dirtyBoundingRect).toRect();
-
-    qCDebug(lcQpaDrawing) << "[QNSView drawRect:]" << m_platformWindow->window() << exposedRegion;
-    m_platformWindow->handleExposeEvent(exposedRegion);
 }
 
 /*

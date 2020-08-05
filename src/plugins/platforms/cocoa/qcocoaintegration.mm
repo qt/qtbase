@@ -259,8 +259,8 @@ bool QCocoaIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
         // AppKit expects rendering to happen on the main thread, and we can
         // easily end up in situations where rendering on secondary threads
         // will result in visual artifacts, bugs, or even deadlocks, when
-        // building with SDK 10.14 or higher which enbles view layer-backing.
-        return QMacVersion::buildSDK() < QOperatingSystemVersion(QOperatingSystemVersion::MacOSMojave);
+        // layer-backed.
+        return false;
     case OpenGL:
     case BufferQueueingOpenGL:
 #endif
@@ -333,13 +333,7 @@ QPlatformBackingStore *QCocoaIntegration::createPlatformBackingStore(QWindow *wi
         return nullptr;
     }
 
-    QPlatformBackingStore *backingStore = nullptr;
-    if (platformWindow->view().layer)
-        backingStore = new QCALayerBackingStore(window);
-    else
-        backingStore = new QNSWindowBackingStore(window);
-
-    return backingStore;
+    return new QCALayerBackingStore(window);
 }
 
 QAbstractEventDispatcher *QCocoaIntegration::createEventDispatcher() const
