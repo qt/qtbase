@@ -326,7 +326,7 @@ void tst_QTextMarkdownImporter::nestedSpans()
                          << "monospace" << QFontInfo(fmt.font()).fixedPitch() // depends on installed fonts (QTBUG-75649)
                                         << fmt.fontFixedPitch() // returns false even when font family is "monospace"
                                         << fmt.hasProperty(QTextFormat::FontFixedPitch); // works
-        QCOMPARE(fmt.fontWeight() > 50, expectedFormat.testFlag(Bold));
+        QCOMPARE(fmt.fontWeight() > QFont::Normal, expectedFormat.testFlag(Bold));
         QCOMPARE(fmt.fontItalic(), expectedFormat.testFlag(Italic));
         QCOMPARE(fmt.fontStrikeOut(), expectedFormat.testFlag(Strikeout));
         QCOMPARE(fmt.isAnchor(), expectedFormat.testFlag(Link));

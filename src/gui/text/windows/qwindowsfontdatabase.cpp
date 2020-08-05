@@ -526,7 +526,7 @@ static bool addFontToDatabase(QString familyName,
     const int size = scalable ? SMOOTH_SCALABLE : textmetric->tmHeight;
     const QFont::Style style = textmetric->tmItalic ? QFont::StyleItalic : QFont::StyleNormal;
     const bool antialias = false;
-    const QFont::Weight weight = QPlatformFontDatabase::weightFromInteger(textmetric->tmWeight);
+    const QFont::Weight weight = static_cast<QFont::Weight>(textmetric->tmWeight);
     const QFont::Stretch stretch = QFont::Unstretched;
 
 #ifndef QT_NO_DEBUG_OUTPUT
@@ -995,7 +995,7 @@ QStringList QWindowsFontDatabase::addApplicationFont(const QByteArray &fontData,
             if (applicationFont != nullptr) {
                 QFontDatabasePrivate::ApplicationFont::Properties properties;
                 properties.style = values.isItalic ? QFont::StyleItalic : QFont::StyleNormal;
-                properties.weight = QPlatformFontDatabase::weightFromInteger(values.weight);
+                properties.weight = static_cast<int>(values.weight);
                 properties.familyName = familyName;
                 properties.styleName = styleName;
 
@@ -1042,7 +1042,7 @@ QStringList QWindowsFontDatabase::addApplicationFont(const QByteArray &fontData,
 
                 QFontDatabasePrivate::ApplicationFont::Properties properties;
                 properties.style = values.isItalic ? QFont::StyleItalic : QFont::StyleNormal;
-                properties.weight = QPlatformFontDatabase::weightFromInteger(values.weight);
+                properties.weight = static_cast<int>(values.weight);
                 properties.familyName = familyName;
                 properties.styleName = styleName;
 

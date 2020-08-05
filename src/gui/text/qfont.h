@@ -94,17 +94,16 @@ public:
     };
     Q_ENUM(HintingPreference)
 
-    // Mapping OpenType weight value.
     enum Weight {
-        Thin     = 0,    // 100
-        ExtraLight = 12, // 200
-        Light    = 25,   // 300
-        Normal   = 50,   // 400
-        Medium   = 57,   // 500
-        DemiBold = 63,   // 600
-        Bold     = 75,   // 700
-        ExtraBold = 81,  // 800
-        Black    = 87    // 900
+        Thin = 100,
+        ExtraLight = 200,
+        Light = 300,
+        Normal = 400,
+        Medium = 500,
+        DemiBold = 600,
+        Bold = 700,
+        ExtraBold = 800,
+        Black = 900
     };
     Q_ENUM(Weight)
 
@@ -197,8 +196,8 @@ public:
     int pixelSize() const;
     void setPixelSize(int);
 
-    int weight() const;
-    void setWeight(int);
+    Weight weight() const;
+    void setWeight(Weight weight);
 
     inline bool bold() const;
     inline void setBold(bool);

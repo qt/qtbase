@@ -2308,7 +2308,7 @@ QString QTextHtmlExporter::toHtml(ExportMode mode)
         }
 
         html += QLatin1String(" font-weight:");
-        html += QString::number(defaultCharFormat.fontWeight() * 8);
+        html += QString::number(defaultCharFormat.fontWeight());
         html += QLatin1Char(';');
 
         html += QLatin1String(" font-style:");
@@ -2421,7 +2421,7 @@ bool QTextHtmlExporter::emitCharFormatStyle(const QTextCharFormat &format)
     if (format.hasProperty(QTextFormat::FontWeight)
         && format.fontWeight() != defaultCharFormat.fontWeight()) {
         html += QLatin1String(" font-weight:");
-        html += QString::number(format.fontWeight() * 8);
+        html += QString::number(format.fontWeight());
         html += QLatin1Char(';');
         attributesEmitted = true;
     }

@@ -169,7 +169,7 @@ QStringList QFreeTypeFontDatabase::addTTFile(const QByteArray &fontData, const Q
             writingSystems = QPlatformFontDatabase::writingSystemsFromTrueTypeBits(unicodeRange, codePageRange);
 
             if (os2->usWeightClass) {
-                weight = QPlatformFontDatabase::weightFromInteger(os2->usWeightClass);
+                weight = static_cast<QFont::Weight>(os2->usWeightClass);
             } else if (os2->panose[2]) {
                 int w = os2->panose[2];
                 if (w <= 1)

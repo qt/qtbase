@@ -1623,8 +1623,57 @@ QString WriteInitialization::writeFontProperties(const DomFont *f)
             << language::boolValue(f->elementUnderline()) << ')' << language::eol;
     }
     if (f->hasElementWeight() && f->elementWeight() > 0) {
-        m_output << m_indent << fontName << ".setWeight("
-            << f->elementWeight() << ")" << language::eol;
+        int weight = f->elementWeight();
+        if (!f->hasAttributeScale()) {
+            // Convert from old Qt scale to OpenType scale.
+            // (not a linear conversion, so we adapt the known values and approximate the others).
+            // Note that we cannot use qt_legacyToOpenTypeWeight from qfont_p.h here due to
+            // dependency issues.
+
+            switch (f->elementWeight()) {
+            case 0:
+                weight = 100;
+                break;
+            case 12:
+                weight = 200;
+                break;
+            case 25:
+                weight = 300;
+                break;
+            case 50:
+                weight = 400;
+                break;
+            case 57:
+                weight = 500;
+                break;
+            case 63:
+                weight = 600;
+                break;
+            case 75:
+                weight = 700;
+                break;
+            case 81:
+                weight = 800;
+                break;
+            case 87:
+                weight = 900;
+                break;
+            default:
+                weight *= 8;
+                weight += 100;
+                break;
+            }
+        }
+
+        switch (language::language()) {
+        case Language::Cpp:
+            m_output << m_indent << fontName << ".setWeight(QFont::Weight(" << weight << "))"
+                     << language::eol;
+            break;
+        case Language::Python:
+            m_output << m_indent << fontName << ".setWeight(" << weight << ")" << language::eol;
+            break;
+        }
     }
     if (f->hasElementStrikeOut()) {
          m_output << m_indent << fontName << ".setStrikeOut("

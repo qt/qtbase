@@ -681,7 +681,7 @@ void QTextOdfWriter::writeCharacterFormat(QXmlStreamWriter &writer, QTextCharFor
         if (format.fontWeight() == QFont::Bold)
             value = QString::fromLatin1("bold");
         else
-            value = QString::number(format.fontWeight() * 10);
+            value = QString::number(format.fontWeight());
         writer.writeAttribute(foNS, QString::fromLatin1("font-weight"), value);
     }
     if (format.hasProperty(QTextFormat::FontFamily))

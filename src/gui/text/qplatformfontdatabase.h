@@ -131,7 +131,6 @@ public:
     // helper
     static QSupportedWritingSystems writingSystemsFromTrueTypeBits(quint32 unicodeRange[4], quint32 codePageRange[2]);
     static QSupportedWritingSystems writingSystemsFromOS2Table(const char *os2Table, size_t length);
-    static QFont::Weight weightFromInteger(int weight);
 
     //callback
     static void registerFont(const QString &familyname, const QString &stylename,

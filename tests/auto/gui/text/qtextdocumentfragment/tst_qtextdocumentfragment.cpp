@@ -2427,7 +2427,7 @@ void tst_QTextDocumentFragment::defaultFont()
     doc->setDefaultFont(f);
     doc->setPlainText("Hello World");
     const QString html = doc->toHtml();
-    QLatin1String str("<body style=\" font-family:'Courier New'; font-size:100pt; font-weight:600; font-style:italic;\">");
+    QLatin1String str("<body style=\" font-family:'Courier New'; font-size:100pt; font-weight:700; font-style:italic;\">");
     QVERIFY(html.contains(str));
 }
 
@@ -2756,7 +2756,7 @@ void tst_QTextDocumentFragment::css_fontWeight()
 {
     setHtml("<p style=\"font-weight:bold\">blah</p>");
     QCOMPARE(doc->begin().charFormat().fontWeight(), int(QFont::Bold));
-    setHtml("<p style=\"font-weight:600\">blah</p>");
+    setHtml("<p style=\"font-weight:700\">blah</p>");
     QCOMPARE(doc->begin().charFormat().fontWeight(), int(QFont::Bold));
 
 }

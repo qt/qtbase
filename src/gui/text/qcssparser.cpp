@@ -1192,7 +1192,7 @@ static bool setFontWeightFromValue(const QCss::Value &value, QFont *font)
     }
     if (value.type != Value::Number)
         return false;
-    font->setWeight(qMin(value.variant.toInt() / 8, 99));
+    font->setWeight(QFont::Weight(value.variant.toInt()));
     return true;
 }
 

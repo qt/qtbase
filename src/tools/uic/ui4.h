@@ -1619,6 +1619,16 @@ public:
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
 
+    // attribute accessors
+    inline bool hasAttributeScale() const { return m_has_attr_scale; }
+    inline QString attributeScale() const { return m_attr_scale; }
+    inline void setAttributeScale(const QString &a)
+    {
+        m_attr_scale = a;
+        m_has_attr_scale = true;
+    }
+    inline void clearAttributeScale() { m_has_attr_scale = false; }
+
     // child element accessors
     inline QString elementFamily() const { return m_family; }
     void setElementFamily(const QString &a);
@@ -1671,6 +1681,9 @@ public:
     void clearElementKerning();
 
 private:
+    // attribute data
+    QString m_attr_scale;
+    bool m_has_attr_scale = false;
 
     // child element data
     uint m_children = 0;

@@ -84,7 +84,7 @@ public:
         siteDescription->setObjectName(QString::fromUtf8("siteDescription"));
         QFont font;
         font.setBold(true);
-        font.setWeight(75);
+        font.setWeight(QFont::Weight(700));
         siteDescription->setFont(font);
         siteDescription->setWordWrap(true);
 

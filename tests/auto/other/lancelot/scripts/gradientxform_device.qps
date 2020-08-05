@@ -24,7 +24,7 @@ setPen brush 30
 setBrush lightblue
 drawRect 175 15 70 70
 
-setFont "times" 110 99
+setFont "times" 110 1000
 drawText 270 100 "X"
 
 restore

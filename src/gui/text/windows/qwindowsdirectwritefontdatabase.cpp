@@ -100,7 +100,7 @@ static QFont::Stretch fromDirectWriteStretch(DWRITE_FONT_STRETCH stretch)
 
 static QFont::Weight fromDirectWriteWeight(DWRITE_FONT_WEIGHT weight)
 {
-    return QPlatformFontDatabase::weightFromInteger(int(weight));
+    return static_cast<QFont::Weight>(weight);
 }
 
 static DWRITE_FONT_STYLE toDirectWriteStyle(QFont::Style style)

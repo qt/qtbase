@@ -65,8 +65,6 @@
 
 QT_BEGIN_NAMESPACE
 
-static const int maxWeight = 99;
-
 static inline int mapToQtWeightForRange(int fcweight, int fcLower, int fcUpper, int qtLower, int qtUpper)
 {
     return qtLower + ((fcweight - fcLower) * (qtUpper - qtLower)) / (fcUpper - fcLower);
@@ -75,7 +73,7 @@ static inline int mapToQtWeightForRange(int fcweight, int fcLower, int fcUpper, 
 static inline int weightFromFcWeight(int fcweight)
 {
     // Font Config uses weights from 0 to 215 (the highest enum value) while QFont ranges from
-    // 0 to 99. The spacing between the values for the enums are uneven so a linear mapping from
+    // 1 to 1000. The spacing between the values for the enums are uneven so a linear mapping from
     // Font Config values to Qt would give surprising results.  So, we do a piecewise linear
     // mapping.  This ensures that where there is a corresponding enum on both sides (for example
     // FC_WEIGHT_DEMIBOLD and QFont::DemiBold) we map one to the other but other values map
@@ -100,8 +98,9 @@ static inline int weightFromFcWeight(int fcweight)
     if (fcweight <= FC_WEIGHT_BLACK)
         return mapToQtWeightForRange(fcweight, FC_WEIGHT_ULTRABOLD, FC_WEIGHT_BLACK, QFont::ExtraBold, QFont::Black);
     if (fcweight <= FC_WEIGHT_ULTRABLACK)
-        return mapToQtWeightForRange(fcweight, FC_WEIGHT_BLACK, FC_WEIGHT_ULTRABLACK, QFont::Black, maxWeight);
-    return maxWeight;
+        return mapToQtWeightForRange(fcweight, FC_WEIGHT_BLACK, FC_WEIGHT_ULTRABLACK, QFont::Black,
+                                     QFONT_WEIGHT_MAX);
+    return QFONT_WEIGHT_MAX;
 }
 
 static inline int stretchFromFcWidth(int fcwidth)

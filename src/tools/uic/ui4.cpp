@@ -3099,6 +3099,16 @@ DomFont::~DomFont() = default;
 
 void DomFont::read(QXmlStreamReader &reader)
 {
+    const QXmlStreamAttributes &attributes = reader.attributes();
+    for (const QXmlStreamAttribute &attribute : attributes) {
+        const auto name = attribute.name();
+        if (name == QLatin1String("scale")) {
+            setAttributeScale(attribute.value().toString());
+            continue;
+        }
+        reader.raiseError(QLatin1String("Unexpected attribute ") + name);
+    }
+
     while (!reader.hasError()) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
@@ -3157,6 +3167,9 @@ void DomFont::read(QXmlStreamReader &reader)
 void DomFont::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("font") : tagName.toLower());
+
+    if (hasAttributeScale())
+        writer.writeAttribute(QStringLiteral("scale"), attributeScale());
 
     if (m_children & Family)
         writer.writeTextElement(QStringLiteral("family"), m_family);

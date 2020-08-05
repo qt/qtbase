@@ -113,7 +113,7 @@ struct Q_GUI_EXPORT QtFontStyle
         {}
 
         uint style          : 2;
-        signed int  weight  : 8;
+        uint weight         : 10;
         signed int stretch  : 12;
 
         bool operator==(const Key &other) const noexcept

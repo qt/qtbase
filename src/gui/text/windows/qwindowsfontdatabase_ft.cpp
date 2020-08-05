@@ -187,7 +187,7 @@ static bool addFontToDatabase(QString familyName,
     const int size = scalable ? SMOOTH_SCALABLE : textmetric->tmHeight;
     const QFont::Style style = textmetric->tmItalic ? QFont::StyleItalic : QFont::StyleNormal;
     const bool antialias = false;
-    const QFont::Weight weight = QPlatformFontDatabase::weightFromInteger(textmetric->tmWeight);
+    const QFont::Weight weight = static_cast<QFont::Weight>(textmetric->tmWeight);
     const QFont::Stretch stretch = QFont::Unstretched;
 
 #ifndef QT_NO_DEBUG_STREAM

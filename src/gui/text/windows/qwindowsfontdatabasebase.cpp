@@ -226,7 +226,7 @@ void QWindowsFontDatabaseBase::EmbeddedFont::updateFromOS2Table(QFontEngine *fon
         else
             fontEngine->fontDef.style = QFont::StyleNormal;
 
-        fontEngine->fontDef.weight = QPlatformFontDatabase::weightFromInteger(qFromBigEndian<quint16>(os2Table->weightClass));
+        fontEngine->fontDef.weight = qFromBigEndian<quint16>(os2Table->weightClass);
     }
 }
 
@@ -642,10 +642,10 @@ LOGFONT QWindowsFontDatabaseBase::fontDefToLOGFONT(const QFontDef &request, cons
     lf.lfWidth                = 0;
     lf.lfEscapement        = 0;
     lf.lfOrientation        = 0;
-    if (request.weight == 50)
+    if (request.weight == QFont::Normal)
         lf.lfWeight = FW_DONTCARE;
     else
-        lf.lfWeight = (request.weight*900)/99;
+        lf.lfWeight = request.weight;
     lf.lfItalic         = request.style != QFont::StyleNormal;
     lf.lfCharSet        = DEFAULT_CHARSET;
 
@@ -735,7 +735,7 @@ QFont QWindowsFontDatabaseBase::LOGFONT_to_QFont(const LOGFONT& logFont, int ver
     QFont qFont(QString::fromWCharArray(logFont.lfFaceName));
     qFont.setItalic(logFont.lfItalic);
     if (logFont.lfWeight != FW_DONTCARE)
-        qFont.setWeight(QPlatformFontDatabase::weightFromInteger(logFont.lfWeight));
+        qFont.setWeight(QFont::Weight(logFont.lfWeight));
     const qreal logFontHeight = qAbs(logFont.lfHeight);
     qFont.setPointSizeF(logFontHeight * 72.0 / qreal(verticalDPI_In));
     qFont.setUnderline(logFont.lfUnderline);

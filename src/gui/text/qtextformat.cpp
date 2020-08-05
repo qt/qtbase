@@ -375,7 +375,7 @@ void QTextFormatPrivate::recalcFont() const
                 const QVariant weightValue = props.at(i).value;
                 int weight = weightValue.toInt();
                 if (weight >= 0 && weightValue.isValid())
-                    f.setWeight(weight);
+                    f.setWeight(QFont::Weight(weight));
                 break; }
             case QTextFormat::FontItalic:
                 f.setItalic(props.at(i).value.toBool());
