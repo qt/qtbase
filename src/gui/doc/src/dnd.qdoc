@@ -377,8 +377,6 @@
     using one of the MIME types that can be used to represent it:
 
     \snippet clipboard/clipwindow.cpp 1
-    \dots
-    \snippet clipboard/clipwindow.cpp 2
 
     The \l{QClipboard::selectionChanged()}{selectionChanged()} signal can
     be used on X11 to monitor the mouse selection.
