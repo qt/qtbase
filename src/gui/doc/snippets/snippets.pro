@@ -18,5 +18,6 @@ contains(QT_BUILD_PARTS, tests) {
         textdocument-imagedrop \
         textdocument-imageformat \
         textdocument-images \
-        textdocument-listitems
+        textdocument-listitems \
+        textdocument-listitemstyles
 }

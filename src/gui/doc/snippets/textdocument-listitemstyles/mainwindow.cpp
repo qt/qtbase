@@ -47,10 +47,11 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-#include <QtGui>
-
 #include "mainwindow.h"
+
+#include <QMenu>
+#include <QMenuBar>
+#include <QTextEdit>
 
 MainWindow::MainWindow()
 {

@@ -68,8 +68,8 @@ public slots:
 
 private:
     QString currentFile;
-    QTextEdit *editor;
-    QTextDocument *document;
+    QTextEdit *editor = nullptr;
+    QTextDocument *document = nullptr;
 };
 
 #endif
