@@ -3247,6 +3247,12 @@ function(qt_internal_walk_libs target out_var dict_name operation)
                     lib "${lib}")
             endwhile()
 
+            # Skip static plugins.
+            set(_is_plugin_marker_genex "\\$<BOOL:QT_IS_PLUGIN_GENEX>")
+            if(lib MATCHES "${_is_plugin_marker_genex}")
+                continue()
+            endif()
+
             if(lib MATCHES "^\\$<TARGET_OBJECTS:")
                 # Skip object files.
                 continue()

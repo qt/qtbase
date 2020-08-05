@@ -19,6 +19,9 @@ if(NOT @BUILD_SHARED_LIBS@)
     set(_manual_plugins_genex "$<GENEX_EVAL:$<TARGET_PROPERTY:QT_PLUGINS>>")
     set(_no_plugins_genex "$<GENEX_EVAL:$<TARGET_PROPERTY:QT_NO_PLUGINS>>")
 
+    # Plugin genex marker for prl processing.
+    set(_is_plugin_marker_genex "$<BOOL:QT_IS_PLUGIN_GENEX>")
+
     # In super builds the rules below pollute the dependency rule for the
     # plugin target when it's being build, causing cyclic dependencies.
     # to overcome this, we check if the current target where this rule evaluates
@@ -94,6 +97,7 @@ if(NOT @BUILD_SHARED_LIBS@)
         # Complete condition that defines whether a static plugin is linked
         string(CONCAT _plugin_condition
             "$<BOOL:$<AND:"
+                "${_is_plugin_marker_genex},"
                 "${_build_allow_plugin_link_rules_genex},"
                 "$<OR:"
                     "${_plugin_is_whitelisted},"
