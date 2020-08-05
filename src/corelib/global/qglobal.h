@@ -1316,6 +1316,17 @@ template <typename T> struct QEnableIf<true, T> { typedef T Type; };
 #define QT_DEFINE_PLATFORM_INTERFACE(...) QT_OVERLOADED_MACRO(QT_DEFINE_PLATFORM_INTERFACE, QPlatformInterface, __VA_ARGS__)
 #define QT_DEFINE_PRIVATE_PLATFORM_INTERFACE(...) QT_OVERLOADED_MACRO(QT_DEFINE_PLATFORM_INTERFACE, QPlatformInterface::Private, __VA_ARGS__)
 
+// This macro can be used to calculate member offsets for types with a non standard layout.
+// It uses the fact that offsetof() is allowed to support those types since C++17 as an optional
+// feature. All our compilers do support this, but some issue a warning, so we wrap the offsetof()
+// call in a macro that disables the compiler warning.
+#define Q_OFFSETOF(Class, member) \
+    []() -> size_t { \
+        QT_WARNING_PUSH QT_WARNING_DISABLE_INVALID_OFFSETOF \
+        return offsetof(Class, member); \
+        QT_WARNING_POP \
+    }()
+
 QT_END_NAMESPACE
 
 // We need to keep QTypeInfo, QSysInfo, QFlags, qDebug & family in qglobal.h for compatibility with Qt 4.

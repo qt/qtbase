@@ -1613,7 +1613,7 @@ void Generator::generateQPropertyApi()
     for (const PrivateQPropertyDef &property: cdef->privateQProperties) {
         auto printAccessor = [this, property](bool constAccessor = false) {
             const char *constOrNot = constAccessor ? "const " : " ";
-            fprintf(out, "    const size_t propertyMemberOffset = reinterpret_cast<size_t>(&(static_cast<%s *>(nullptr)->%s));\n", cdef->qualified.constData(), property.name.constData());
+            fprintf(out, "    const size_t propertyMemberOffset = Q_OFFSETOF(%s, %s);\n", cdef->qualified.constData(), property.name.constData());
             fprintf(out, "    %sauto *thisPtr = reinterpret_cast<%s%s *>(reinterpret_cast<%schar *>(this) - propertyMemberOffset);\n", constOrNot, constOrNot, cdef->qualified.constData(), constOrNot);
         };
 
