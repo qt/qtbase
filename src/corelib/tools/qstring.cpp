@@ -560,31 +560,12 @@ bool QtPrivate::isLatin1(QStringView s) Q_DECL_NOTHROW
     const QChar *ptr = s.begin();
     const QChar *end = s.end();
 
-#if defined(__SSE4_1__)
+#ifdef __SSE2__
     const char *ptr8 = reinterpret_cast<const char *>(ptr);
     const char *end8 = reinterpret_cast<const char *>(end);
     if (!simdTestMask(ptr8, end8, 0xff00ff00))
         return false;
     ptr = reinterpret_cast<const QChar *>(ptr8);
-#elif defined(__SSE2__)
-    // Testing if every other byte is non-zero can be done efficiently by
-    // using PUNPCKHBW (unpack high order bytes) and comparing that to zero.
-    while (ptr + 32 < end) {
-        __m128i data1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
-        __m128i data2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr + 16));
-        __m128i high = _mm_unpackhi_epi8(data1, data2);
-        __m128i comparison = _mm_cmpeq_epi16(high, _mm_setzero_si128());
-        if (_mm_movemask_epi8(comparison))
-            return false;
-        ptr += 16;
-    }
-    if (ptr + 16 < end) {
-        __m128i data1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
-        __m128i high = _mm_unpackhi_epi8(data1, data1);
-        __m128i comparison = _mm_cmpeq_epi16(high, _mm_setzero_si128());
-        if (_mm_movemask_epi8(comparison))
-            return false;
-    }
 #endif
 
     while (ptr != end) {
