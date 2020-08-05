@@ -47,8 +47,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-#include <QtGui>
+#include <QApplication>
+#include <QTextEdit>
+#include <QTextTable>
 
 int main(int argc, char * argv[])
 {

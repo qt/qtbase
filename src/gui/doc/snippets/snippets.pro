@@ -24,5 +24,6 @@ contains(QT_BUILD_PARTS, tests) {
         textdocument-printing \
         textdocument-resources \
         textdocument-selections \
-        textdocument-tables
+        textdocument-tables \
+        textdocument-texttable
 }
