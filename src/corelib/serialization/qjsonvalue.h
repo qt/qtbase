@@ -126,7 +126,7 @@ public:
 #endif
     const QJsonValue operator[](QStringView key) const;
     const QJsonValue operator[](QLatin1String key) const;
-    const QJsonValue operator[](int i) const;
+    const QJsonValue operator[](qsizetype i) const;
 
     bool operator==(const QJsonValue &other) const;
     bool operator!=(const QJsonValue &other) const;
@@ -159,10 +159,10 @@ private:
 class Q_CORE_EXPORT QJsonValueRef
 {
 public:
-    QJsonValueRef(QJsonArray *array, int idx)
-        : a(array), is_object(false), index(static_cast<uint>(idx)) {}
-    QJsonValueRef(QJsonObject *object, int idx)
-        : o(object), is_object(true), index(static_cast<uint>(idx)) {}
+    QJsonValueRef(QJsonArray *array, qsizetype idx)
+        : a(array), is_object(false), index(static_cast<quint64>(idx)) {}
+    QJsonValueRef(QJsonObject *object, qsizetype idx)
+        : o(object), is_object(true), index(static_cast<quint64>(idx)) {}
 
     QJsonValueRef(const QJsonValueRef &) = default;
 
@@ -182,6 +182,7 @@ public:
 
     inline bool toBool(bool defaultValue = false) const { return toValue().toBool(defaultValue); }
     inline int toInt(int defaultValue = 0) const { return toValue().toInt(defaultValue); }
+    inline qint64 toInteger(qint64 defaultValue = 0) const { return toValue().toInteger(defaultValue); }
     inline double toDouble(double defaultValue = 0) const { return toValue().toDouble(defaultValue); }
     inline QString toString(const QString &defaultValue = {}) const { return toValue().toString(defaultValue); }
     QJsonArray toArray() const;
@@ -197,8 +198,8 @@ private:
         QJsonArray *a;
         QJsonObject *o;
     };
-    uint is_object : 1;
-    uint index : 31;
+    quint64 is_object : 1;
+    quint64 index : 63;
 
     friend class QJsonArray;
     friend class QJsonObject;

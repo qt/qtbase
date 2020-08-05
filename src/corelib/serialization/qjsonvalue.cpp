@@ -101,7 +101,7 @@ QT_BEGIN_NAMESPACE
 
     The following methods return QJsonValueRef:
     \list
-    \li \l {QJsonArray}::operator[](int i)
+    \li \l {QJsonArray}::operator[](qsizetype i)
     \li \l {QJsonObject}::operator[](const QString & key) const
     \endlist
 
@@ -840,7 +840,7 @@ const QJsonValue QJsonValue::operator[](QLatin1String key) const
 
     \sa QJsonValue, QJsonValue::isUndefined(), QJsonArray
  */
-const QJsonValue QJsonValue::operator[](int i) const
+const QJsonValue QJsonValue::operator[](qsizetype i) const
 {
     if (!isArray())
         return QJsonValue(QJsonValue::Undefined);

@@ -129,7 +129,7 @@ struct ObjectIterator
     ObjectIterator &operator-=(difference_type n) { it -= 2 * n; return *this; }
 
     reference operator*() const { return *it; }
-    reference operator[](int n) const { return it[n * 2]; }
+    reference operator[](qsizetype n) const { return it[n * 2]; }
 
     bool operator<(ObjectIterator other) const { return it < other.it; }
     bool operator>(ObjectIterator other) const { return it > other.it; }
@@ -149,7 +149,7 @@ inline ObjectIterator<Element, ElementsIterator> operator+(
 }
 template<typename Element, typename ElementsIterator>
 inline ObjectIterator<Element, ElementsIterator> operator+(
-        int n, ObjectIterator<Element, ElementsIterator> a)
+        qsizetype n, ObjectIterator<Element, ElementsIterator> a)
 {
     return {a.elementsIterator() + 2 * n};
 }
@@ -161,7 +161,7 @@ inline ObjectIterator<Element, ElementsIterator> operator-(
     return {a.elementsIterator() - 2 * n};
 }
 template<typename Element, typename ElementsIterator>
-inline int operator-(
+inline qsizetype operator-(
         ObjectIterator<Element, ElementsIterator> a,
         ObjectIterator<Element, ElementsIterator> b)
 {

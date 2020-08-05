@@ -482,7 +482,7 @@ const QJsonValue QJsonDocument::operator[](QLatin1String key) const
 
     \sa QJsonValue, QJsonValue::isUndefined(), QJsonArray
  */
-const QJsonValue QJsonDocument::operator[](int i) const
+const QJsonValue QJsonDocument::operator[](qsizetype i) const
 {
     if (!isArray())
         return QJsonValue(QJsonValue::Undefined);

@@ -93,7 +93,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \typedef QJsonArray::size_type
 
-    Typedef for int. Provided for STL compatibility.
+    Typedef for qsizetype. Provided for STL compatibility.
 */
 
 /*!
@@ -105,7 +105,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \typedef QJsonArray::difference_type
 
-    Typedef for int. Provided for STL compatibility.
+    Typedef for qsizetype. Provided for STL compatibility.
 */
 
 /*!
@@ -285,7 +285,7 @@ QVariantList QJsonArray::toVariantList() const
 /*!
     Returns the number of values stored in the array.
  */
-int QJsonArray::size() const
+qsizetype QJsonArray::size() const
 {
     return a ? a->elements.size() : 0;
 }
@@ -314,7 +314,7 @@ bool QJsonArray::isEmpty() const
     The returned QJsonValue is \c Undefined, if \a i is out of bounds.
 
  */
-QJsonValue QJsonArray::at(int i) const
+QJsonValue QJsonArray::at(qsizetype i) const
 {
     if (!a || i < 0 || i >= a->elements.size())
         return QJsonValue(QJsonValue::Undefined);
@@ -374,7 +374,7 @@ void QJsonArray::append(const QJsonValue &value)
 
     \sa insert(), replace()
  */
-void QJsonArray::removeAt(int i)
+void QJsonArray::removeAt(qsizetype i)
 {
     if (!a || i < 0 || i >= a->elements.length())
         return;
@@ -410,7 +410,7 @@ void QJsonArray::removeAt(int i)
 
     \sa removeAt()
  */
-QJsonValue QJsonArray::takeAt(int i)
+QJsonValue QJsonArray::takeAt(qsizetype i)
 {
     if (!a || i < 0 || i >= a->elements.length())
         return QJsonValue(QJsonValue::Undefined);
@@ -428,7 +428,7 @@ QJsonValue QJsonArray::takeAt(int i)
 
     \sa append(), prepend(), replace(), removeAt()
  */
-void QJsonArray::insert(int i, const QJsonValue &value)
+void QJsonArray::insert(qsizetype i, const QJsonValue &value)
 {
     if (a)
         detach(a->elements.length() + 1);
@@ -464,7 +464,7 @@ void QJsonArray::insert(int i, const QJsonValue &value)
 
     \sa operator[](), removeAt()
  */
-void QJsonArray::replace(int i, const QJsonValue &value)
+void QJsonArray::replace(qsizetype i, const QJsonValue &value)
 {
     Q_ASSERT (a && i >= 0 && i < a->elements.length());
     detach();
@@ -478,7 +478,7 @@ void QJsonArray::replace(int i, const QJsonValue &value)
  */
 bool QJsonArray::contains(const QJsonValue &value) const
 {
-    for (int i = 0; i < size(); i++) {
+    for (qsizetype i = 0; i < size(); i++) {
         if (at(i) == value)
             return true;
     }
@@ -498,7 +498,7 @@ bool QJsonArray::contains(const QJsonValue &value) const
 
     \sa at()
  */
-QJsonValueRef QJsonArray::operator [](int i)
+QJsonValueRef QJsonArray::operator [](qsizetype i)
 {
     Q_ASSERT(a && i >= 0 && i < a->elements.length());
     return QJsonValueRef(this, i);
@@ -509,7 +509,7 @@ QJsonValueRef QJsonArray::operator [](int i)
 
     Same as at().
  */
-QJsonValue QJsonArray::operator[](int i) const
+QJsonValue QJsonArray::operator[](qsizetype i) const
 {
     return at(i);
 }
@@ -529,7 +529,7 @@ bool QJsonArray::operator==(const QJsonArray &other) const
     if (a->elements.length() != other.a->elements.length())
         return false;
 
-    for (int i = 0; i < a->elements.length(); ++i) {
+    for (qsizetype i = 0; i < a->elements.length(); ++i) {
         if (a->valueAt(i) != other.a->valueAt(i))
             return false;
     }
@@ -700,7 +700,7 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
     \sa QJsonArray::begin(), QJsonArray::end()
 */
 
-/*! \fn QJsonArray::iterator::iterator(QJsonArray *array, int index)
+/*! \fn QJsonArray::iterator::iterator(QJsonArray *array, qsizetype index)
     \internal
 */
 
@@ -724,7 +724,7 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
     Returns a pointer to a modifiable reference to the current item.
 */
 
-/*! \fn QJsonValueRef QJsonArray::iterator::operator[](int j) const
+/*! \fn QJsonValueRef QJsonArray::iterator::operator[](qsizetype j) const
 
     Returns a modifiable reference to the item at offset \a j from the
     item pointed to by this iterator (the item at position \c{*this + j}).
@@ -831,7 +831,7 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
     current and returns an iterator to the previously current item.
 */
 
-/*! \fn QJsonArray::iterator &QJsonArray::iterator::operator+=(int j)
+/*! \fn QJsonArray::iterator &QJsonArray::iterator::operator+=(qsizetype j)
 
     Advances the iterator by \a j items. If \a j is negative, the
     iterator goes backward.
@@ -839,7 +839,7 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
     \sa operator-=(), operator+()
 */
 
-/*! \fn QJsonArray::iterator &QJsonArray::iterator::operator-=(int j)
+/*! \fn QJsonArray::iterator &QJsonArray::iterator::operator-=(qsizetype j)
 
     Makes the iterator go back by \a j items. If \a j is negative,
     the iterator goes forward.
@@ -847,7 +847,7 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
     \sa operator+=(), operator-()
 */
 
-/*! \fn QJsonArray::iterator QJsonArray::iterator::operator+(int j) const
+/*! \fn QJsonArray::iterator QJsonArray::iterator::operator+(qsizetype j) const
 
     Returns an iterator to the item at \a j positions forward from
     this iterator. If \a j is negative, the iterator goes backward.
@@ -855,7 +855,7 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
     \sa operator-(), operator+=()
 */
 
-/*! \fn QJsonArray::iterator QJsonArray::iterator::operator-(int j) const
+/*! \fn QJsonArray::iterator QJsonArray::iterator::operator-(qsizetype j) const
 
     Returns an iterator to the item at \a j positions backward from
     this iterator. If \a j is negative, the iterator goes forward.
@@ -863,7 +863,7 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
     \sa operator+(), operator-=()
 */
 
-/*! \fn int QJsonArray::iterator::operator-(iterator other) const
+/*! \fn qsizetype QJsonArray::iterator::operator-(iterator other) const
 
     Returns the number of items between the item pointed to by \a
     other and the item pointed to by this iterator.
@@ -909,7 +909,7 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
     \sa QJsonArray::constBegin(), QJsonArray::constEnd()
 */
 
-/*! \fn QJsonArray::const_iterator::const_iterator(const QJsonArray *array, int index)
+/*! \fn QJsonArray::const_iterator::const_iterator(const QJsonArray *array, qsizetype index)
     \internal
 */
 
@@ -954,7 +954,7 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
     Returns a pointer to the current item.
 */
 
-/*! \fn QJsonValue QJsonArray::const_iterator::operator[](int j) const
+/*! \fn QJsonValue QJsonArray::const_iterator::operator[](qsizetype j) const
 
     Returns the item at offset \a j from the item pointed to by this iterator (the item at
     position \c{*this + j}).
@@ -1047,7 +1047,7 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
     current and returns an iterator to the previously current item.
 */
 
-/*! \fn QJsonArray::const_iterator &QJsonArray::const_iterator::operator+=(int j)
+/*! \fn QJsonArray::const_iterator &QJsonArray::const_iterator::operator+=(qsizetype j)
 
     Advances the iterator by \a j items. If \a j is negative, the
     iterator goes backward.
@@ -1055,7 +1055,7 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
     \sa operator-=(), operator+()
 */
 
-/*! \fn QJsonArray::const_iterator &QJsonArray::const_iterator::operator-=(int j)
+/*! \fn QJsonArray::const_iterator &QJsonArray::const_iterator::operator-=(qsizetype j)
 
     Makes the iterator go back by \a j items. If \a j is negative,
     the iterator goes forward.
@@ -1063,7 +1063,7 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
     \sa operator+=(), operator-()
 */
 
-/*! \fn QJsonArray::const_iterator QJsonArray::const_iterator::operator+(int j) const
+/*! \fn QJsonArray::const_iterator QJsonArray::const_iterator::operator+(qsizetype j) const
 
     Returns an iterator to the item at \a j positions forward from
     this iterator. If \a j is negative, the iterator goes backward.
@@ -1071,7 +1071,7 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
     \sa operator-(), operator+=()
 */
 
-/*! \fn QJsonArray::const_iterator QJsonArray::const_iterator::operator-(int j) const
+/*! \fn QJsonArray::const_iterator QJsonArray::const_iterator::operator-(qsizetype j) const
 
     Returns an iterator to the item at \a j positions backward from
     this iterator. If \a j is negative, the iterator goes forward.
@@ -1079,7 +1079,7 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
     \sa operator+(), operator-=()
 */
 
-/*! \fn int QJsonArray::const_iterator::operator-(const_iterator other) const
+/*! \fn qsizetype QJsonArray::const_iterator::operator-(const_iterator other) const
 
     Returns the number of items between the item pointed to by \a
     other and the item pointed to by this iterator.
@@ -1088,7 +1088,7 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
 /*!
     \internal
  */
-bool QJsonArray::detach(uint reserve)
+bool QJsonArray::detach(qsizetype reserve)
 {
     if (!a)
         return true;
