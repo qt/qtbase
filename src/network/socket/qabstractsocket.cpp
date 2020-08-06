@@ -1361,20 +1361,23 @@ void QAbstractSocketPrivate::fetchConnectionParameters()
     emit q->connected();
 }
 
-/*! \internal
+/*! \reimp
 */
-qint64 QAbstractSocketPrivate::skip(qint64 maxSize)
+qint64 QAbstractSocket::skipData(qint64 maxSize)
 {
+    Q_D(const QAbstractSocket);
+
     // if we're not connected, return -1 indicating EOF
-    if (!socketEngine || !socketEngine->isValid() || state != QAbstractSocket::ConnectedState)
+    if (!d->socketEngine || !d->socketEngine->isValid()
+        || d->state != QAbstractSocket::ConnectedState)
         return -1;
 
     // Caller, QIODevice::skip(), has ensured buffer is empty. So, wait
     // for more data in buffered mode.
-    if (isBuffered)
+    if (d->isBuffered)
         return 0;
 
-    return QIODevicePrivate::skip(maxSize);
+    return QIODevice::skipData(maxSize);
 }
 
 void QAbstractSocketPrivate::pauseSocketNotifiers(QAbstractSocket *socket)

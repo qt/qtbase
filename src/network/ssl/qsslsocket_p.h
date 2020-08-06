@@ -190,7 +190,6 @@ public:
 
     virtual qint64 peek(char *data, qint64 maxSize) override;
     virtual QByteArray peek(qint64 maxSize) override;
-    qint64 skip(qint64 maxSize) override;
     bool flush() override;
 
     // Platform specific functions

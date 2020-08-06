@@ -152,6 +152,11 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn qint64 QLocalSocket::skipData(qint64 maxSize)
+    \reimp
+*/
+
+/*!
     \fn qint64 QLocalSocket::writeData(const char *data, qint64 c)
     \reimp
 */

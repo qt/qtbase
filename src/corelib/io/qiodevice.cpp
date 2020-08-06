@@ -1915,7 +1915,7 @@ QByteArray QIODevice::peek(qint64 maxSize)
     For random-access devices, skip() can be used to seek forward from the
     current position. Negative \a maxSize values are not allowed.
 
-    \sa peek(), seek(), read()
+    \sa skipData(), peek(), seek(), read()
 */
 qint64 QIODevice::skip(qint64 maxSize)
 {
@@ -1968,7 +1968,7 @@ qint64 QIODevice::skip(qint64 maxSize)
         }
     }
 
-    const qint64 skipResult = d->skip(maxSize);
+    const qint64 skipResult = skipData(maxSize);
     if (skippedSoFar == 0)
         return skipResult;
 
@@ -2008,14 +2008,23 @@ qint64 QIODevicePrivate::skipByReading(qint64 maxSize)
 }
 
 /*!
-    \internal
+    \since 6.0
+
+    Skips up to \a maxSize bytes from the device. Returns the number of bytes
+    actually skipped, or -1 on error.
+
+    This function is called by QIODevice. Consider reimplementing it
+    when creating a subclass of QIODevice.
+
+    The base implementation discards the data by reading into a dummy buffer.
+    This is slow, but works for all types of devices. Subclasses can
+    reimplement this function to improve on that.
+
+    \sa skip(), peek(), seek(), read()
 */
-qint64 QIODevicePrivate::skip(qint64 maxSize)
+qint64 QIODevice::skipData(qint64 maxSize)
 {
-    // Base implementation discards the data by reading into the dummy buffer.
-    // It's slow, but this works for all types of devices. Subclasses can
-    // reimplement this function to improve on that.
-    return skipByReading(maxSize);
+    return d_func()->skipByReading(maxSize);
 }
 
 /*!

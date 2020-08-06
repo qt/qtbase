@@ -87,11 +87,6 @@ void QLocalSocketPrivate::init()
     unixSocket.setParent(q);
 }
 
-qint64 QLocalSocketPrivate::skip(qint64 maxSize)
-{
-    return unixSocket.skip(maxSize);
-}
-
 void QLocalSocketPrivate::_q_errorOccurred(QAbstractSocket::SocketError socketError)
 {
     Q_Q(QLocalSocket);
@@ -396,6 +391,11 @@ qint64 QLocalSocket::readData(char *data, qint64 c)
 {
     Q_D(QLocalSocket);
     return d->unixSocket.read(data, c);
+}
+
+qint64 QLocalSocket::skipData(qint64 maxSize)
+{
+    return d_func()->unixSocket.skip(maxSize);
 }
 
 qint64 QLocalSocket::writeData(const char *data, qint64 c)

@@ -122,6 +122,7 @@ Q_SIGNALS:
 
 protected:
     virtual qint64 readData(char*, qint64) override;
+    qint64 skipData(qint64 maxSize) override;
     virtual qint64 writeData(const char*, qint64) override;
 
 private:

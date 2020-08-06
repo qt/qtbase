@@ -120,7 +120,6 @@ public:
     void init();
 
 #if defined(QT_LOCALSOCKET_TCP)
-    qint64 skip(qint64 maxSize) override;
     QLocalUnixSocket* tcpSocket;
     bool ownsTcpSocket;
     void setSocket(QLocalUnixSocket*);
@@ -139,7 +138,6 @@ public:
     QWindowsPipeReader *pipeReader;
     QLocalSocket::LocalSocketError error;
 #else
-    qint64 skip(qint64 maxSize) override;
     QLocalUnixSocket unixSocket;
     QString generateErrorString(QLocalSocket::LocalSocketError, const QString &function) const;
     void setErrorAndEmit(QLocalSocket::LocalSocketError, const QString &function);
