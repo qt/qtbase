@@ -478,11 +478,34 @@ Options parseOptions()
                 options.apkPath = arguments.at(++i);
         } else if (argument.compare(QLatin1String("--sign"), Qt::CaseInsensitive) == 0) {
             if (i + 2 >= arguments.size()) {
-                options.helpRequested = true;
+                const QString keyStore = qEnvironmentVariable("QT_ANDROID_KEYSTORE_PATH");
+                const QString storeAlias = qEnvironmentVariable("QT_ANDROID_KEYSTORE_ALIAS");
+                if (keyStore.isEmpty() || storeAlias.isEmpty()) {
+                    options.helpRequested = true;
+                } else {
+                    fprintf(stdout,
+                            "Using package signing path and alias values found from the "
+                            "environment variables.\n");
+                    options.releasePackage = true;
+                    options.keyStore = keyStore;
+                    options.keyStoreAlias = storeAlias;
+                }
             } else {
                 options.releasePackage = true;
                 options.keyStore = arguments.at(++i);
                 options.keyStoreAlias = arguments.at(++i);
+            }
+
+            // Do not override if the passwords are provided through arguments
+            if (options.keyStorePassword.isEmpty()) {
+                fprintf(stdout, "Using package signing store password found from the environment "
+                        "variable.\n");
+                options.keyStorePassword = qEnvironmentVariable("QT_ANDROID_KEYSTORE_STORE_PASS");
+            }
+            if (options.keyPass.isEmpty()) {
+                fprintf(stdout, "Using package signing key password found from the environment "
+                                "variable.\n");
+                options.keyPass = qEnvironmentVariable("QT_ANDROID_KEYSTORE_KEY_PASS");
             }
         } else if (argument.compare(QLatin1String("--storepass"), Qt::CaseInsensitive) == 0) {
             if (i + 1 == arguments.size())
@@ -606,6 +629,12 @@ void printHelp()
                     "         --protected: Keystore has protected authentication path.\n"
                     "         --jarsigner: Force jarsigner usage, otherwise apksigner will be\n"
                     "           used if available.\n"
+                    "       NOTE: To conceal the keystore information, the environment variables\n"
+                    "         QT_ANDROID_KEYSTORE_PATH, and QT_ANDROID_KEYSTORE_ALIAS are used to\n"
+                    "         set the values keysotore and alias respectively.\n"
+                    "         Also the environment variables QT_ANDROID_KEYSTORE_STORE_PASS,\n"
+                    "         and QT_ANDROID_KEYSTORE_KEY_PASS are used to set the store and key\n"
+                    "         passwords respectively. This option needs only the --sign parameter.\n"
                     "    --jdk <path/to/jdk>: Used to find the jarsigner tool when used\n"
                     "       in combination with the --release argument. By default,\n"
                     "       an attempt is made to detect the tool using the JAVA_HOME and\n"
