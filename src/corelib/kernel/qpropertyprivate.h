@@ -245,7 +245,7 @@ struct QPropertyGuardFunctionHelper<T, Class, Guard, false>
     static auto guard(const QMetaType &metaType, void *dataPtr,
                       QPropertyBindingFunction eval, void *owner) -> bool
     {
-        T t;
+        T t = T();
         eval(metaType, &t);
         if (!(static_cast<Class *>(owner)->*Guard)(t))
             return false;
