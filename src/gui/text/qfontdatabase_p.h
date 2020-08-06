@@ -116,18 +116,18 @@ struct Q_GUI_EXPORT QtFontStyle
         signed int  weight  : 8;
         signed int stretch  : 12;
 
-        bool operator==(const Key &other)
+        bool operator==(const Key &other) const noexcept
         {
             return (style == other.style && weight == other.weight &&
                     (stretch == 0 || other.stretch == 0 || stretch == other.stretch));
         }
 
-        bool operator!=(const Key &other)
+        bool operator!=(const Key &other) const noexcept
         {
             return !operator==(other);
         }
 
-        bool operator<(const Key &o)
+        bool operator<(const Key &o) const noexcept
         {
             int x = (style << 12) + (weight << 14) + stretch;
             int y = (o.style << 12) + (o.weight << 14) + o.stretch;
