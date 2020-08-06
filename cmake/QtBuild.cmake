@@ -1843,8 +1843,8 @@ function(qt_internal_module_info result target)
     string(REPLACE "." "_" define "${define}")
     set("${result}_upper" "${upper}" PARENT_SCOPE)
     set("${result}_lower" "${lower}" PARENT_SCOPE)
-    set("${result}_repo_include_dir" "${QT_BUILD_DIR}/${INSTALL_INCLUDEDIR}" PARENT_SCOPE)
-    set("${result}_include_dir" "${QT_BUILD_DIR}/${INSTALL_INCLUDEDIR}/${module}" PARENT_SCOPE)
+    set("${result}_repo_include_dir" "${QT_BUILD_DIR}/include" PARENT_SCOPE)
+    set("${result}_include_dir" "${QT_BUILD_DIR}/include/${module}" PARENT_SCOPE)
     set("${result}_define" "${define}" PARENT_SCOPE)
 endfunction()
 
@@ -2184,7 +2184,7 @@ function(qt_install_injections target build_dir install_dir)
         # ${qtbase_build_dir}.
         #
         # In the code below, ${some_prefix} == ${build_dir}.
-        set(lower_case_forwarding_header_path "${build_dir}/${INSTALL_INCLUDEDIR}/${module}")
+        set(lower_case_forwarding_header_path "${build_dir}/include/${module}")
         if(destinationdir)
             string(APPEND lower_case_forwarding_header_path "/${destinationdir}")
         endif()
@@ -2219,7 +2219,7 @@ function(qt_install_injections target build_dir install_dir)
 
         # Generate UpperCaseNamed forwarding headers (part 3).
         foreach(fwd_hdr ${fwd_hdrs})
-            set(upper_case_forwarding_header_path "${INSTALL_INCLUDEDIR}/${module}")
+            set(upper_case_forwarding_header_path "include/${module}")
             if(destinationdir)
                 string(APPEND upper_case_forwarding_header_path "/${destinationdir}")
             endif()
@@ -2234,8 +2234,7 @@ function(qt_install_injections target build_dir install_dir)
                     "${build_dir}/${upper_case_forwarding_header_path}/${fwd_hdr}")
             else()
                 # Install the forwarding header.
-                qt_path_join(install_destination
-                            ${install_dir} ${upper_case_forwarding_header_path})
+                qt_path_join(install_destination "${install_dir}" "${INSTALL_INCLUDEDIR}" ${module})
                 qt_install(FILES "${build_dir}/${upper_case_forwarding_header_path}/${fwd_hdr}"
                         DESTINATION ${install_destination} OPTIONAL)
             endif()
@@ -2782,7 +2781,7 @@ function(qt_add_module target)
         set_target_properties("${target}" PROPERTIES INTERFACE_MODULE_HAS_HEADERS ON)
 
         ### FIXME: Can we replace headers.pri?
-        set(module_include_dir "${QT_BUILD_DIR}/${INSTALL_INCLUDEDIR}/${module_include_name}")
+        set(module_include_dir "${QT_BUILD_DIR}/include/${module_include_name}")
         qt_read_headers_pri("${module_include_dir}" "module_headers")
         set(module_depends_header "${module_include_dir}/${module}Depends")
         if(is_framework)
@@ -4279,7 +4278,7 @@ function(qt_add_test name)
         set(private_includes
             "${CMAKE_CURRENT_SOURCE_DIR}"
             "${CMAKE_CURRENT_BINARY_DIR}"
-            "$<BUILD_INTERFACE:${QT_BUILD_DIR}/${INSTALL_INCLUDEDIR}>"
+            "$<BUILD_INTERFACE:${QT_BUILD_DIR}/include>"
              ${arg_INCLUDE_DIRECTORIES}
         )
 
