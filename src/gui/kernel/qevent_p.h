@@ -84,7 +84,7 @@ public:
 
     void setId(int pointId) { m_pointId = pointId; }
 
-    void setParent(const QPointerEvent *p) { m_parent = p; }
+    void setDevice(const QPointingDevice *device) { m_device = device; }
 
     void setTimestamp(const ulong t) { m_timestamp = t; }
 

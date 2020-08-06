@@ -106,10 +106,9 @@ public:
     Q_DECLARE_FLAGS(States, State)
     Q_FLAG(States)
 
-    QEventPoint(int id = -1, const QPointerEvent *parent = nullptr);
+    QEventPoint(int id = -1, const QPointingDevice *device = nullptr);
     QEventPoint(int pointId, State state, const QPointF &scenePosition, const QPointF &globalPosition);
 
-    const QPointerEvent *event() const { return m_parent; }
     QPointF position() const { return m_pos; }
     QPointF pressPosition() const { return m_globalPressPos - m_globalPos + m_pos; }
     QPointF grabPosition() const { return m_globalGrabPos - m_globalPos + m_pos; }
@@ -152,6 +151,7 @@ public:
 #endif // QT_DEPRECATED_SINCE(6, 0)
     QVector2D velocity() const { return m_velocity; }
     State state() const { return m_state; }
+    const QPointingDevice *device() const { return m_device; }
     int id() const { return m_pointId; }
     QPointingDeviceUniqueId uniqueId() const { return m_uniqueId; }
     ulong pressTimestamp() const { return m_pressTimestamp; }
@@ -169,7 +169,7 @@ public:
     void clearPassiveGrabbers();
 
 protected:
-    const QPointerEvent *m_parent = nullptr;
+    const QPointingDevice *m_device = nullptr;
     QPointF m_pos, m_scenePos, m_globalPos,
             m_globalPressPos, m_globalGrabPos, m_globalLastPos;
     qreal m_pressure = 1;
@@ -178,7 +178,7 @@ protected:
     QVector2D m_velocity;
     QPointer<QObject> m_exclusiveGrabber;
     QList<QPointer <QObject> > m_passiveGrabbers;
-    ulong m_timestamp = 0; // redundant with m_parent->timestamp(), but keeps timeHeld() working in a saved copy
+    ulong m_timestamp = 0;
     ulong m_pressTimestamp = 0;
     QPointingDeviceUniqueId m_uniqueId;
     int m_pointId = -1;

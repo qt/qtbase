@@ -79,7 +79,7 @@ public:
             seenTouchBegin = !seenTouchBegin && !seenTouchUpdate && !seenTouchEnd;
             auto touchEvent = static_cast<QTouchEvent *>(event);
             touchBeginPoints = touchEvent->touchPoints();
-            Q_ASSERT(touchBeginPoints.first().event() == event);
+            Q_ASSERT(touchBeginPoints.first().device() == touchEvent->pointingDevice());
             for (const QEventPoint &pt : touchEvent->touchPoints())
                 lastNormalizedPositions << pt.normalizedPos();
             timestamp = touchEvent->timestamp();

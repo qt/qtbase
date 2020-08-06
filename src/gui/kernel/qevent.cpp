@@ -65,9 +65,7 @@ Q_LOGGING_CATEGORY(lcPointerGrab, "qt.pointer.grab")
 
 static const QString pointDeviceName(const QEventPoint *point)
 {
-    if (!point->event())
-        return {};
-    auto device = point->event()->device();
+    const auto device = point->device();
     QString deviceName = (device ? device->name() : QLatin1String("null device"));
     deviceName.resize(16, u' '); // shorten, and align in case of sequential output
     return deviceName;
@@ -228,13 +226,14 @@ QInputEvent::~QInputEvent()
 
 /*!
     \internal
-    Constructs an invalid event point with the given \a id and \a parent.
+    Constructs an invalid event point with the given \a id and the \a device
+    from which it originated.
 
     This acts as a default constructor in usages like QMap<int, QEventPoint>,
     as in qgraphicsscene_p.h.
 */
-QEventPoint::QEventPoint(int id, const QPointerEvent *parent)
-    : m_parent(parent), m_pointId(id), m_state(State::Unknown), m_accept(false), m_stationaryWithModifiedProperty(false), m_reserved(0)
+QEventPoint::QEventPoint(int id, const QPointingDevice *device)
+    : m_device(device), m_pointId(id), m_state(State::Unknown), m_accept(false), m_stationaryWithModifiedProperty(false), m_reserved(0)
 {
 }
 
@@ -323,7 +322,7 @@ void QEventPoint::clearPassiveGrabbers()
 
 QPointF QEventPoint::normalizedPos() const
 {
-    auto geom = event()->device()->availableVirtualGeometry();
+    auto geom = m_device->availableVirtualGeometry();
     if (geom.isNull())
         return QPointF();
     return (globalPosition() - geom.topLeft()) / geom.width();
@@ -331,7 +330,7 @@ QPointF QEventPoint::normalizedPos() const
 
 QPointF QEventPoint::startNormalizedPos() const
 {
-    auto geom = event()->device()->availableVirtualGeometry();
+    auto geom = m_device->availableVirtualGeometry();
     if (geom.isNull())
         return QPointF();
     return (globalPressPosition() - geom.topLeft()) / geom.width();
@@ -339,7 +338,7 @@ QPointF QEventPoint::startNormalizedPos() const
 
 QPointF QEventPoint::lastNormalizedPos() const
 {
-    auto geom = event()->device()->availableVirtualGeometry();
+    auto geom = m_device->availableVirtualGeometry();
     if (geom.isNull())
         return QPointF();
     return (globalLastPosition() - geom.topLeft()) / geom.width();
@@ -369,7 +368,7 @@ const QPointingDevice *QPointerEvent::pointingDevice() const
 QSinglePointEvent::QSinglePointEvent(QEvent::Type type, const QPointingDevice *dev, const QPointF &localPos, const QPointF &scenePos,
                                      const QPointF &globalPos, Qt::MouseButton button, Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers)
     : QPointerEvent(type, dev, modifiers),
-      m_point(0, this),
+      m_point(0, dev),
       m_button(button),
       m_mouseState(buttons),
       m_source(Qt::MouseEventNotSynthesized),
@@ -4243,7 +4242,7 @@ QTouchEvent::QTouchEvent(QEvent::Type eventType,
 {
     for (QEventPoint &point : m_touchPoints) {
         m_touchPointStates |= point.state();
-        QMutableEventPoint::from(point).setParent(this);
+        QMutableEventPoint::from(point).setDevice(device);
     }
 }
 
@@ -4266,7 +4265,7 @@ QTouchEvent::QTouchEvent(QEvent::Type eventType,
       m_touchPoints(touchPoints)
 {
     for (QEventPoint &point : m_touchPoints)
-        QMutableEventPoint::from(point).setParent(this);
+        QMutableEventPoint::from(point).setDevice(device);
 }
 
 /*!
