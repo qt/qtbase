@@ -104,6 +104,23 @@ QT_BEGIN_NAMESPACE
   calendar pop-up by calling the setCalendarWidget() function. The existing
   calendar widget can be retrieved with calendarWidget().
 
+  \section1 Keyboard Tracking
+
+  When \l{QAbstractSpinBox::keyboardTracking}{keyboard tracking} is enabled
+  (the default), every keystroke of editing a field triggers signals for value
+  changes.
+
+  When the allowed \l{QDateTimeEdit::setDateTimeRange}{range} is narrower than
+  some time interval whose end it straddles, keyboard tracking prevents the
+  user editing the date or time to access the later part of the interval. For
+  example, for a range from 29.04.2020 to 02.05.2020 and an initial date of
+  30.04.2020, the user can change neither the month (May 30th is outside the
+  range) nor the day (April 2nd is outside the range).
+
+  When keyboard tracking is disabled, changes are only signalled when focus
+  leaves the text field after edits have modified the content. This allows the
+  user to edit via an invalid date-time to reach a valid one.
+
   \sa QDateEdit, QTimeEdit, QDate, QTime
 */
 
@@ -128,6 +145,8 @@ QT_BEGIN_NAMESPACE
 
   This signal is emitted whenever the date or time is changed. The
   new date and time is passed in \a datetime.
+
+  \sa {Keyboard Tracking}
 */
 
 /*!
@@ -135,6 +154,8 @@ QT_BEGIN_NAMESPACE
 
   This signal is emitted whenever the time is changed. The new time
   is passed in \a time.
+
+  \sa {Keyboard Tracking}
 */
 
 /*!
@@ -142,6 +163,8 @@ QT_BEGIN_NAMESPACE
 
   This signal is emitted whenever the date is changed. The new date
   is passed in \a date.
+
+  \sa {Keyboard Tracking}
 */
 
 
@@ -352,7 +375,8 @@ void QDateTimeEdit::setCalendar(QCalendar calendar)
   property's default is the start of September 14, 1752 CE. This default can be
   restored with clearMinimumDateTime().
 
-  \sa maximumDateTime, minimumTime, minimumDate, setDateTimeRange(), QDateTime::isValid()
+  \sa maximumDateTime, minimumTime, minimumDate, setDateTimeRange(),
+      QDateTime::isValid(), {Keyboard Tracking}
 */
 
 QDateTime QDateTimeEdit::minimumDateTime() const
@@ -393,7 +417,8 @@ void QDateTimeEdit::setMinimumDateTime(const QDateTime &dt)
   default for this property. This default can be restored with
   clearMaximumDateTime().
 
-  \sa minimumDateTime, maximumTime, maximumDate(), setDateTimeRange(), QDateTime::isValid()
+  \sa minimumDateTime, maximumTime, maximumDate(), setDateTimeRange(),
+      QDateTime::isValid(), {Keyboard Tracking}
 */
 
 QDateTime QDateTimeEdit::maximumDateTime() const
@@ -433,7 +458,12 @@ void QDateTimeEdit::setMaximumDateTime(const QDateTime &dt)
   If either \a min or \a max is invalid, this function does nothing. If \a max
   is less than \a min, \a min is used also as \a max.
 
-  \sa minimumDateTime, maximumDateTime, setDateRange(), setTimeRange(), QDateTime::isValid()
+  If the range is narrower then a time interval whose end it spans, for example
+  a week that spans the end of a month, users can only edit the date-time to one
+  in the later part of the range if keyboard-tracking is disabled.
+
+  \sa minimumDateTime, maximumDateTime, setDateRange(), setTimeRange(),
+      QDateTime::isValid(), {Keyboard Tracking}
 */
 
 void QDateTimeEdit::setDateTimeRange(const QDateTime &min, const QDateTime &max)
@@ -463,7 +493,8 @@ void QDateTimeEdit::setDateTimeRange(const QDateTime &min, const QDateTime &max)
   default for this property is September 14, 1752 CE. This default can be
   restored with clearMinimumDateTime().
 
-  \sa maximumDate, minimumTime, minimumDateTime, setDateRange(), QDate::isValid()
+  \sa maximumDate, minimumTime, minimumDateTime, setDateRange(),
+      QDate::isValid(), {Keyboard Tracking}
 */
 
 QDate QDateTimeEdit::minimumDate() const
@@ -503,7 +534,8 @@ void QDateTimeEdit::clearMinimumDate()
   default for this property. This default can be restored with
   clearMaximumDateTime().
 
-  \sa minimumDate, maximumTime, maximumDateTime, setDateRange(), QDate::isValid()
+  \sa minimumDate, maximumTime, maximumDateTime, setDateRange(),
+      QDate::isValid(), {Keyboard Tracking}
 */
 
 QDate QDateTimeEdit::maximumDate() const
@@ -540,7 +572,8 @@ void QDateTimeEdit::clearMaximumDate()
   contains a time of 00:00:00 and 0 milliseconds. This default can be restored
   with clearMinimumTime().
 
-  \sa maximumTime, minimumDate, minimumDateTime, setTimeRange(), QTime::isValid()
+  \sa maximumTime, minimumDate, minimumDateTime, setTimeRange(),
+      QTime::isValid(), {Keyboard Tracking}
 */
 
 QTime QDateTimeEdit::minimumTime() const
@@ -579,7 +612,8 @@ void QDateTimeEdit::clearMinimumTime()
   contains a time of 23:59:59 and 999 milliseconds. This default can be restored
   with clearMaximumTime().
 
-  \sa minimumTime, maximumDate, maximumDateTime, setTimeRange(), QTime::isValid()
+  \sa minimumTime, maximumDate, maximumDateTime, setTimeRange(),
+      QTime::isValid(), {Keyboard Tracking}
 */
 QTime QDateTimeEdit::maximumTime() const
 {
@@ -620,7 +654,11 @@ void QDateTimeEdit::clearMaximumTime()
   minimumTime property, the \l maximumTime property is set to the \l minimumTime
   property. Otherwise, this preserves the \l maximumTime property.
 
-  \sa minimumDate, maximumDate, setDateTimeRange(), QDate::isValid()
+  If the range is narrower then a time interval whose end it spans, for example
+  a week that spans the end of a month, users can only edit the date to one in
+  the later part of the range if keyboard-tracking is disabled.
+
+  \sa minimumDate, maximumDate, setDateTimeRange(), QDate::isValid(), {Keyboard Tracking}
 */
 
 void QDateTimeEdit::setDateRange(QDate min, QDate max)
@@ -654,7 +692,12 @@ void QDateTimeEdit::setDateRange(QDate min, QDate max)
   function preserves the \l minimumDate and \l maximumDate properties. If those
   properties coincide and \a max is less than \a min, \a min is used as \a max.
 
-  \sa minimumTime, maximumTime, setDateTimeRange(), QTime::isValid()
+  If the range is narrower then a time interval whose end it spans, for example
+  the interval from ten to an hour to ten past the same hour, users can only
+  edit the time to one in the later part of the range if keyboard-tracking is
+  disabled.
+
+  \sa minimumTime, maximumTime, setDateTimeRange(), QTime::isValid(), {Keyboard Tracking}
 */
 
 void QDateTimeEdit::setTimeRange(QTime min, QTime max)
