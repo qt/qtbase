@@ -564,6 +564,19 @@ QOperatingSystemVersion QMacVersion::currentRuntime()
     return QOperatingSystemVersion::current();
 }
 
+// Mach-O platforms
+enum Platform {
+   macOS = 1,
+   iOS = 2,
+   tvOS = 3,
+   watchOS = 4,
+   bridgeOS = 5,
+   macCatalyst = 6,
+   iOSSimulator = 7,
+   tvOSSimulator = 8,
+   watchOSSimulator = 9
+};
+
 QMacVersion::VersionTuple QMacVersion::versionsForImage(const mach_header *machHeader)
 {
     static auto osForLoadCommand = [](uint32_t cmd) {
@@ -578,11 +591,19 @@ QMacVersion::VersionTuple QMacVersion::versionsForImage(const mach_header *machH
 
     static auto osForPlatform = [](uint32_t platform) {
         switch (platform) {
-        case 1: return QOperatingSystemVersion::MacOS;
-        case 2: return QOperatingSystemVersion::IOS;
-        case 3: return QOperatingSystemVersion::TvOS;
-        case 4: return QOperatingSystemVersion::WatchOS;
-        default: return QOperatingSystemVersion::Unknown;
+        case Platform::macOS:
+            return QOperatingSystemVersion::MacOS;
+        case Platform::iOS:
+        case Platform::iOSSimulator:
+            return QOperatingSystemVersion::IOS;
+        case Platform::tvOS:
+        case Platform::tvOSSimulator:
+            return QOperatingSystemVersion::TvOS;
+        case Platform::watchOS:
+        case Platform::watchOSSimulator:
+            return QOperatingSystemVersion::WatchOS;
+        default:
+            return QOperatingSystemVersion::Unknown;
         }
     };
 
