@@ -106,7 +106,10 @@ endif()
 
 # We can't use the gold linker on android with the NDK, which is the default
 # linker. To build our own target we will use the lld linker.
-if (ANDROID)
+# TODO: Why not?
+# Linking Android libs with lld on Windows sometimes deadlocks. Don't use lld on
+# Windows. qmake doesn't use lld to build Android on any host platform.
+if (ANDROID AND NOT CMAKE_HOST_WIN32)
     target_link_options(PlatformModuleInternal INTERFACE -fuse-ld=lld)
 endif()
 
