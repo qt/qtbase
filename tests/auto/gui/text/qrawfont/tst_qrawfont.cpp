@@ -156,7 +156,7 @@ void tst_QRawFont::explicitRawFontNotLoadedInDatabase()
     QRawFont font(testFont, 10, hintingPreference);
     QVERIFY(font.isValid());
 
-    QVERIFY(!QFontDatabase().families().contains(font.familyName()));
+    QVERIFY(!QFontDatabase::families().contains(font.familyName()));
 }
 
 void tst_QRawFont::explicitRawFontNotAvailableInSystem_data()

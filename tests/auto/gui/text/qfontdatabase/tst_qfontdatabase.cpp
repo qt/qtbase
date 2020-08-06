@@ -166,7 +166,7 @@ void tst_QFontDatabase::systemFixedFont() // QTBUG-54623
 {
     QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
     QFontInfo fontInfo(font);
-    bool fdbSaysFixed = QFontDatabase().isFixedPitch(fontInfo.family(), fontInfo.styleName());
+    bool fdbSaysFixed = QFontDatabase::isFixedPitch(fontInfo.family(), fontInfo.styleName());
     qCDebug(lcTests) << "system fixed font is" << font << "really fixed?" << fdbSaysFixed << fontInfo.fixedPitch();
     QVERIFY(fdbSaysFixed);
     QVERIFY(fontInfo.fixedPitch());
@@ -296,8 +296,8 @@ void tst_QFontDatabase::addTwoAppFontsFromFamily()
     QString italicFontName = QFontDatabase::applicationFontFamilies(italicId).first();
     QCOMPARE(regularFontName, italicFontName);
 
-    QFont italicFont = QFontDatabase().font(italicFontName,
-                                            QString::fromLatin1("Italic"), 14);
+    QFont italicFont = QFontDatabase::font(italicFontName,
+                                           QString::fromLatin1("Italic"), 14);
     QVERIFY(italicFont.italic());
 
     QFontDatabase::removeApplicationFont(regularId);
@@ -426,7 +426,7 @@ void tst_QFontDatabase::rasterFonts()
     if (fontInfo.family() != font.family())
         QSKIP("Fixedsys font not available.");
 
-    QVERIFY(!QFontDatabase().isSmoothlyScalable(font.family()));
+    QVERIFY(!QFontDatabase::isSmoothlyScalable(font.family()));
     QVERIFY(fontInfo.pointSize() != font.pointSize());
 }
 
@@ -439,8 +439,8 @@ void tst_QFontDatabase::smoothFonts()
         QSKIP("Arial font not available.");
 
     // Smooth and bitmap scaling are mutually exclusive
-    QVERIFY(QFontDatabase().isSmoothlyScalable(font.family()));
-    QVERIFY(!QFontDatabase().isBitmapScalable(font.family()));
+    QVERIFY(QFontDatabase::isSmoothlyScalable(font.family()));
+    QVERIFY(!QFontDatabase::isBitmapScalable(font.family()));
 }
 
 void tst_QFontDatabase::registerOpenTypePreferredNamesSystem()

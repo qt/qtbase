@@ -116,29 +116,29 @@ public:
 
     QFontDatabase();
 
-    QList<WritingSystem> writingSystems() const;
-    QList<WritingSystem> writingSystems(const QString &family) const;
+    static QList<WritingSystem> writingSystems();
+    static QList<WritingSystem> writingSystems(const QString &family);
 
-    QStringList families(WritingSystem writingSystem = Any) const;
-    QStringList styles(const QString &family) const;
-    QList<int> pointSizes(const QString &family, const QString &style = QString());
-    QList<int> smoothSizes(const QString &family, const QString &style);
-    QString styleString(const QFont &font);
-    QString styleString(const QFontInfo &fontInfo);
+    static QStringList families(WritingSystem writingSystem = Any);
+    static QStringList styles(const QString &family);
+    static QList<int> pointSizes(const QString &family, const QString &style = QString());
+    static QList<int> smoothSizes(const QString &family, const QString &style);
+    static QString styleString(const QFont &font);
+    static QString styleString(const QFontInfo &fontInfo);
 
-    QFont font(const QString &family, const QString &style, int pointSize) const;
+    static QFont font(const QString &family, const QString &style, int pointSize);
 
-    bool isBitmapScalable(const QString &family, const QString &style = QString()) const;
-    bool isSmoothlyScalable(const QString &family, const QString &style = QString()) const;
-    bool isScalable(const QString &family, const QString &style = QString()) const;
-    bool isFixedPitch(const QString &family, const QString &style = QString()) const;
+    static bool isBitmapScalable(const QString &family, const QString &style = QString());
+    static bool isSmoothlyScalable(const QString &family, const QString &style = QString());
+    static bool isScalable(const QString &family, const QString &style = QString());
+    static bool isFixedPitch(const QString &family, const QString &style = QString());
 
-    bool italic(const QString &family, const QString &style) const;
-    bool bold(const QString &family, const QString &style) const;
-    int weight(const QString &family, const QString &style) const;
+    static bool italic(const QString &family, const QString &style);
+    static bool bold(const QString &family, const QString &style);
+    static int weight(const QString &family, const QString &style);
 
-    bool hasFamily(const QString &family) const;
-    bool isPrivateFamily(const QString &family) const;
+    static bool hasFamily(const QString &family);
+    static bool isPrivateFamily(const QString &family);
 
     static QString writingSystemName(WritingSystem writingSystem);
     static QString writingSystemSample(WritingSystem writingSystem);
@@ -157,6 +157,7 @@ private:
     static QString resolveFontFamilyAlias(const QString &family);
     static QFontEngine *findFont(const QFontDef &request, int script /* QChar::Script */);
     static void load(const QFontPrivate *d, int script /* QChar::Script */);
+    static QFontDatabasePrivate *ensureFontDatabase();
 
     friend struct QFontDef;
     friend class QFontPrivate;
@@ -164,8 +165,6 @@ private:
     friend class QFontDialogPrivate;
     friend class QFontEngineMulti;
     friend class QRawFont;
-
-    QFontDatabasePrivate *d;
 };
 
 QT_END_NAMESPACE

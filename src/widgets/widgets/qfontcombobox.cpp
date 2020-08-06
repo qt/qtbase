@@ -134,7 +134,7 @@ static QFontDatabase::WritingSystem writingSystemFromLocale()
 
 static QFontDatabase::WritingSystem writingSystemForFont(const QFont &font, bool *hasLatin)
 {
-    QList<QFontDatabase::WritingSystem> writingSystems = QFontDatabase().writingSystems(font.family());
+    QList<QFontDatabase::WritingSystem> writingSystems = QFontDatabase::writingSystems(font.family());
 //     qDebug() << font.family() << writingSystems;
 
     // this just confuses the algorithm below. Vietnamese is Latin with lots of special chars
@@ -231,7 +231,7 @@ void QFontFamilyDelegate::paint(QPainter *painter,
     }
 
     const QIcon *icon = &bitmap;
-    if (QFontDatabase().isSmoothlyScalable(text)) {
+    if (QFontDatabase::isSmoothlyScalable(text)) {
         icon = &truetype;
     }
     const QSize actualSize = icon->actualSize(r.size());
@@ -267,7 +267,7 @@ void QFontFamilyDelegate::paint(QPainter *painter,
     if (system != QFontDatabase::Any) {
         int w = painter->fontMetrics().horizontalAdvance(text + QLatin1String("  "));
         painter->setFont(font2);
-        QString sample = QFontDatabase().writingSystemSample(system);
+        QString sample = QFontDatabase::writingSystemSample(system);
         if (option.direction == Qt::RightToLeft)
             r.setRight(r.right() - w);
         else

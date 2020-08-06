@@ -66,7 +66,7 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
         QString family(QCFString((CFStringRef)CTFontDescriptorCopyAttribute(font, kCTFontFamilyNameAttribute)));
         QString style(QCFString(((CFStringRef)CTFontDescriptorCopyAttribute(font, kCTFontStyleNameAttribute))));
 
-        newFont = QFontDatabase().font(family, style, pSize);
+        newFont = QFontDatabase::font(family, style, pSize);
         newFont.setUnderline(resolveFont.underline());
         newFont.setStrikeOut(resolveFont.strikeOut());
     }

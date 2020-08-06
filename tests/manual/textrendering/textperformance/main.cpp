@@ -152,7 +152,7 @@ public:
     {
         static QStringList samples;
         if (samples.isEmpty()) {
-            foreach (const QFontDatabase::WritingSystem system, QFontDatabase().writingSystems())
+            foreach (const QFontDatabase::WritingSystem system, QFontDatabase::writingSystems())
                 if (system != QFontDatabase::Ogham && system != QFontDatabase::Runic)
                     samples.append(QFontDatabase::writingSystemSample(system));
         }
