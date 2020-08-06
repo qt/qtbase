@@ -90,7 +90,7 @@ struct Q_AUTOTEST_EXPORT QPropertyBasePointer
     template <typename T>
     static QPropertyBasePointer get(QProperty<T> &property)
     {
-        return QPropertyBasePointer{&property.d.priv};
+        return QPropertyBasePointer{&property.propertyBase()};
     }
 };
 

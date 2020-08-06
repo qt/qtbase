@@ -818,6 +818,12 @@ QString QPropertyBindingError::description() const
 */
 
 /*!
+  \fn template <typename T> QtPrivate::QPropertyBase &QProperty<T>::propertyBase() const
+  \internal
+*/
+
+
+/*!
   \class QNotifiedProperty
   \inmodule QtCore
   \brief The QNotifiedProperty class is a template class that enables automatic property bindings
@@ -1040,6 +1046,12 @@ QString QPropertyBindingError::description() const
   The returned property change handler object keeps track of the subscription. When it
   goes out of scope, the callback is unsubscribed.
 */
+
+/*!
+  \fn template <typename T> QtPrivate::QPropertyBase &QNotifiedProperty<T, Callback>::propertyBase() const
+  \internal
+*/
+
 
 /*!
   \class QPropertyChangeHandler

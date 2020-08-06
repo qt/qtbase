@@ -82,10 +82,6 @@ struct Q_CORE_EXPORT QPropertyBindingSourceLocation
 };
 
 template <typename Functor> class QPropertyChangeHandler;
-
-template <typename T> class QProperty;
-template <typename T, auto callbackMember, auto guardCallback> class QNotifiedProperty;
-
 class QPropertyBindingErrorPrivate;
 
 class Q_CORE_EXPORT QPropertyBindingError
@@ -171,13 +167,9 @@ public:
         : QUntypedPropertyBinding(QMetaType::fromType<PropertyType>(), BindingAdaptor<Functor>{std::forward<Functor>(f)}, location)
     {}
 
-    QPropertyBinding(const QProperty<PropertyType> &property)
-        : QUntypedPropertyBinding(property.d.priv.binding())
-    {}
-
-    template<auto notifier, auto guard>
-    QPropertyBinding(const QNotifiedProperty<PropertyType, notifier, guard> &property)
-        : QUntypedPropertyBinding(property.d.priv.binding())
+    template<typename Property, typename = std::void_t<decltype(&Property::propertyBase)>>
+    QPropertyBinding(const Property &property)
+        : QUntypedPropertyBinding(property.propertyBase().binding())
     {}
 
     // Internal
@@ -331,6 +323,7 @@ public:
     template<typename Functor>
     QPropertyChangeHandler<Functor> subscribe(Functor f);
 
+    const QtPrivate::QPropertyBase &propertyBase() const { return d.priv; }
 private:
     void notify()
     {
@@ -339,9 +332,6 @@ private:
 
     Q_DISABLE_COPY(QProperty)
 
-    friend struct QPropertyBasePointer;
-    friend class QPropertyBinding<T>;
-    friend class QPropertyObserver;
     // Mutable because querying for the value may require evalating the binding expression, calling
     // non-const functions on QPropertyBase.
     mutable QtPrivate::QPropertyValueStorage<T> d;
@@ -539,6 +529,7 @@ public:
     template<typename Functor>
     QPropertyChangeHandler<Functor> subscribe(Functor f);
 
+    const QtPrivate::QPropertyBase &propertyBase() const { return d.priv; }
 private:
     void notify(Class *owner, T *oldValue=nullptr)
     {
@@ -553,8 +544,6 @@ private:
 
     Q_DISABLE_COPY_MOVE(QNotifiedProperty)
 
-    friend class QPropertyBinding<T>;
-    friend class QPropertyObserver;
     // Mutable because querying for the value may require evalating the binding expression, calling
     // non-const functions on QPropertyBase.
     mutable QtPrivate::QPropertyValueStorage<T> d;
@@ -578,13 +567,9 @@ public:
     QPropertyObserver &operator=(QPropertyObserver &&other);
     ~QPropertyObserver();
 
-    template <typename PropertyType>
-    void setSource(const QProperty<PropertyType> &property)
-    { setSource(property.d.priv); }
-
-    template <typename PropertyType, auto notifier, auto guard>
-    void setSource(const QNotifiedProperty<PropertyType, notifier, guard> &property)
-    { setSource(property.d.priv); }
+    template<typename Property, typename = std::enable_if_t<std::is_same_v<decltype(std::declval<Property>().propertyBase()), QtPrivate::QPropertyBase &>>>
+    void setSource(const Property &property)
+    { setSource(property.propertyBase()); }
 
 protected:
     QPropertyObserver(void (*callback)(QPropertyObserver*, void *));
@@ -632,19 +617,8 @@ public:
     {
     }
 
-    template <typename PropertyType>
-    QPropertyChangeHandler(const QProperty<PropertyType> &property, Functor handler)
-        : QPropertyObserver([](QPropertyObserver *self, void *) {
-              auto This = static_cast<QPropertyChangeHandler<Functor>*>(self);
-              This->m_handler();
-          })
-        , m_handler(handler)
-    {
-        setSource(property);
-    }
-
-    template <typename PropertyType, auto Callback, auto Guard>
-    QPropertyChangeHandler(const QNotifiedProperty<PropertyType, Callback, Guard> &property, Functor handler)
+    template<typename Property, typename = std::void_t<decltype(&Property::propertyBase)>>
+    QPropertyChangeHandler(const Property &property, Functor handler)
         : QPropertyObserver([](QPropertyObserver *self, void *) {
               auto This = static_cast<QPropertyChangeHandler<Functor>*>(self);
               This->m_handler();
