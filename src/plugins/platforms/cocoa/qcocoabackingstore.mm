@@ -357,6 +357,14 @@ QCALayerBackingStore::QCALayerBackingStore(QWindow *window)
     NSView *view = static_cast<QCocoaWindow *>(window->handle())->view();
     m_backingPropertiesObserver = QMacNotificationObserver(view.window,
         NSWindowDidChangeBackingPropertiesNotification, [this]() {
+            if (!this->window()->handle()) {
+                // The platform window has been destroyed, but the backingstore
+                // is still alive, as that's tied to a QWindow. The original
+                // NSWindow we were observing is also likely gone. FIXME:
+                // We should listen for surface events from the QWindow and
+                // remove and re-attach our observer based on those.
+                return;
+            }
             qCDebug(lcQpaBackingStore) << "Backing properties for"
                 << this->window() << "did change";
             backingPropertiesChanged();
