@@ -276,20 +276,11 @@ public:
         return oldBinding;
     }
 
-    QPropertyBinding<T> setBinding(QPropertyBinding<T> &&newBinding)
-    {
-        QPropertyBinding<T> b(std::move(newBinding));
-        QPropertyBinding<T> oldBinding(d.priv.setBinding(b, &d));
-        notify();
-        return oldBinding;
-    }
-
     bool setBinding(const QUntypedPropertyBinding &newBinding)
     {
         if (newBinding.valueMetaType().id() != qMetaTypeId<T>())
             return false;
-        d.priv.setBinding(newBinding, &d);
-        notify();
+        setBinding(static_cast<const QPropertyBinding<T> &>(newBinding));
         return true;
     }
 
@@ -461,41 +452,11 @@ public:
         }
     }
 
-    QPropertyBinding<T> setBinding(Class *owner, QPropertyBinding<T> &&newBinding)
-    {
-        QPropertyBinding<T> b(std::move(newBinding));
-        if constexpr (CallbackAcceptsOldValue) {
-            T oldValue = value();
-            QPropertyBinding<T> oldBinding(d.priv.setBinding(b, &d, owner, [](void *o, void *oldVal) {
-                (reinterpret_cast<Class *>(o)->*Callback)(*reinterpret_cast<T *>(oldVal));
-            }, GuardTE));
-            notify(owner, &oldValue);
-            return oldBinding;
-        } else {
-            QPropertyBinding<T> oldBinding(d.priv.setBinding(b, &d, owner, [](void *o, void *) {
-                (reinterpret_cast<Class *>(o)->*Callback)();
-            }, GuardTE));
-            notify(owner);
-            return oldBinding;
-        }
-    }
-
     bool setBinding(Class *owner, const QUntypedPropertyBinding &newBinding)
     {
         if (newBinding.valueMetaType().id() != qMetaTypeId<T>())
             return false;
-        if constexpr (CallbackAcceptsOldValue) {
-            T oldValue = value();
-            d.priv.setBinding(newBinding, &d, owner, [](void *o, void *oldVal) {
-                (reinterpret_cast<Class *>(o)->*Callback)(*reinterpret_cast<T *>(oldVal));
-            }, GuardTE);
-            notify(owner, &oldValue);
-        } else {
-            d.priv.setBinding(newBinding, &d, owner, [](void *o, void *) {
-                (reinterpret_cast<Class *>(o)->*Callback)();
-            }, GuardTE);
-            notify(owner);
-        }
+        setBinding(owner, static_cast<const QPropertyBinding<T> &>(newBinding));
         return true;
     }
 
