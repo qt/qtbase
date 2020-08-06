@@ -123,7 +123,7 @@
     The constant scaling factor used is devicePixelRatioFScale(). This enum value
     has been introduced in Qt 5.6.
 
-    \sa metric(), devicePixelRatioF()
+    \sa metric(), devicePixelRatio()
 */
 
 /*!
@@ -284,7 +284,7 @@
 */
 
 /*!
-    \fn int QPaintDevice::devicePixelRatio() const
+    \fn qreal QPaintDevice::devicePixelRatio() const
 
     Returns the device pixel ratio for device.
 

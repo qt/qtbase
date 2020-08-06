@@ -83,8 +83,8 @@ public:
     int logicalDpiY() const { return metric(PdmDpiY); }
     int physicalDpiX() const { return metric(PdmPhysicalDpiX); }
     int physicalDpiY() const { return metric(PdmPhysicalDpiY); }
-    int devicePixelRatio() const { return metric(PdmDevicePixelRatio); }
-    qreal devicePixelRatioF()  const { return metric(PdmDevicePixelRatioScaled) / devicePixelRatioFScale(); }
+    qreal devicePixelRatio() const { return metric(PdmDevicePixelRatioScaled) / devicePixelRatioFScale(); }
+    qreal devicePixelRatioF()  const { return devicePixelRatio(); }
     int colorCount() const { return metric(PdmNumColors); }
     int depth() const { return metric(PdmDepth); }
 
