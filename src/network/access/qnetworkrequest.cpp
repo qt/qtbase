@@ -269,7 +269,7 @@ QT_BEGIN_NAMESPACE
         to different policies.
 
     \value Http2AllowedAttribute
-        Requests only, type: QMetaType::Bool (default: false)
+        Requests only, type: QMetaType::Bool (default: true)
         Indicates whether the QNetworkAccessManager code is
         allowed to use HTTP/2 with this request. This applies
         to SSL requests or 'cleartext' HTTP/2.

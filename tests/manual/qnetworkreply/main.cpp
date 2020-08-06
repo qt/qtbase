@@ -386,7 +386,6 @@ void tst_qnetworkreply::npnWithEmptyList() // QTBUG-40714
 
     QUrl url(QStringLiteral("https://www.ossifrage.net/"));
     QNetworkRequest request(url);
-    request.setAttribute(QNetworkRequest::Http2AllowedAttribute, QVariant(true));
     QNetworkReply *reply = m_manager.get(request);
     QObject::connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
 

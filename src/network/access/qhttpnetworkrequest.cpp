@@ -45,7 +45,7 @@ QT_BEGIN_NAMESPACE
 QHttpNetworkRequestPrivate::QHttpNetworkRequestPrivate(QHttpNetworkRequest::Operation op,
         QHttpNetworkRequest::Priority pri, const QUrl &newUrl)
     : QHttpNetworkHeaderPrivate(newUrl), operation(op), priority(pri), uploadByteDevice(nullptr),
-      autoDecompress(false), pipeliningAllowed(false), http2Allowed(false),
+      autoDecompress(false), pipeliningAllowed(false), http2Allowed(true),
       http2Direct(false), withCredentials(true), preConnect(false), redirectCount(0),
       redirectPolicy(QNetworkRequest::ManualRedirectPolicy)
 {

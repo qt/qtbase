@@ -755,8 +755,10 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
     if (newHttpRequest.attribute(QNetworkRequest::HttpPipeliningAllowedAttribute).toBool())
         httpRequest.setPipeliningAllowed(true);
 
-    if (request.attribute(QNetworkRequest::Http2AllowedAttribute).toBool())
-        httpRequest.setHTTP2Allowed(true);
+    if (auto allowed = request.attribute(QNetworkRequest::Http2AllowedAttribute);
+        allowed.isValid() && allowed.canConvert<bool>()) {
+        httpRequest.setHTTP2Allowed(allowed.value<bool>());
+    }
 
     if (request.attribute(QNetworkRequest::Http2DirectAttribute).toBool()) {
         // Intentionally mutually exclusive - cannot be both direct and 'allowed'

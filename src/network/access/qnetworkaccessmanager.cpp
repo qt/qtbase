@@ -931,9 +931,9 @@ QNetworkReply *QNetworkAccessManager::deleteResource(const QNetworkRequest &requ
     \a sslConfiguration. This function is useful to complete the TCP and SSL handshake
     to a host before the HTTPS request is made, resulting in a lower network latency.
 
-    \note Preconnecting a SPDY connection can be done by calling setAllowedNextProtocols()
-    on \a sslConfiguration with QSslConfiguration::NextProtocolSpdy3_0 contained in
-    the list of allowed protocols. When using SPDY, one single connection per host is
+    \note Preconnecting a HTTP/2 connection can be done by calling setAllowedNextProtocols()
+    on \a sslConfiguration with QSslConfiguration::ALPNProtocolHTTP2 contained in
+    the list of allowed protocols. When using HTTP/2, one single connection per host is
     enough, i.e. calling this method multiple times per host will not result in faster
     network transactions.
 
@@ -957,9 +957,9 @@ void QNetworkAccessManager::connectToHostEncrypted(const QString &hostName, quin
     validation. This function is useful to complete the TCP and SSL handshake
     to a host before the HTTPS request is made, resulting in a lower network latency.
 
-    \note Preconnecting a SPDY connection can be done by calling setAllowedNextProtocols()
-    on \a sslConfiguration with QSslConfiguration::NextProtocolSpdy3_0 contained in
-    the list of allowed protocols. When using SPDY, one single connection per host is
+    \note Preconnecting a HTTP/2 connection can be done by calling setAllowedNextProtocols()
+    on \a sslConfiguration with QSslConfiguration::ALPNProtocolHTTP2 contained in
+    the list of allowed protocols. When using HTTP/2, one single connection per host is
     enough, i.e. calling this method multiple times per host will not result in faster
     network transactions.
 
@@ -980,10 +980,10 @@ void QNetworkAccessManager::connectToHostEncrypted(const QString &hostName, quin
     if (sslConfiguration != QSslConfiguration::defaultConfiguration())
         request.setSslConfiguration(sslConfiguration);
 
-    // There is no way to enable HTTP2 via a request, so we need to check
-    // the ssl configuration whether HTTP2 is allowed here.
-    if (sslConfiguration.allowedNextProtocols().contains(QSslConfiguration::ALPNProtocolHTTP2))
-        request.setAttribute(QNetworkRequest::Http2AllowedAttribute, true);
+    // There is no way to enable HTTP2 via a request after having established the connection,
+    // so we need to check the ssl configuration whether HTTP2 is allowed here.
+    if (!sslConfiguration.allowedNextProtocols().contains(QSslConfiguration::ALPNProtocolHTTP2))
+        request.setAttribute(QNetworkRequest::Http2AllowedAttribute, false);
 
     request.setPeerVerifyName(peerName);
     get(request);
