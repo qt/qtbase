@@ -820,7 +820,8 @@ QPixmap QIcon::pixmap(const QSize &size, Mode mode, State state) const
 {
     if (!d)
         return QPixmap();
-    return pixmap(nullptr, size, mode, state);
+    const qreal dpr = -1; // don't know target dpr
+    return pixmap(size, dpr, mode, state);
 }
 
 /*!
@@ -849,18 +850,36 @@ QPixmap QIcon::pixmap(const QSize &size, Mode mode, State state) const
     images will have a devicePixelRatio larger than 1.
 */
 
-/*!  Returns the actual size of the icon for the requested \a size, \a
-  mode, and \a state. The result might be smaller than requested, but
-  never larger. The returned size is in device-independent pixels (This
-  is relevant for high-dpi pixmaps.)
+/*!
+  \overload
+  \since 6.0
 
-  \sa pixmap(), paint()
+  Returns a pixmap with the requested \a size, \a devicePixelRatio, \a mode, and \a
+  state, generating one if necessary.
+
+  \sa  actualSize(), paint()
 */
-QSize QIcon::actualSize(const QSize &size, Mode mode, State state) const
+QPixmap QIcon::pixmap(const QSize &size, qreal devicePixelRatio, Mode mode, State state) const
 {
     if (!d)
-        return QSize();
-    return actualSize(nullptr, size, mode, state);
+        return QPixmap();
+
+    // Use the global devicePixelRatio if the caller does not know the target dpr
+    if (devicePixelRatio == -1)
+        devicePixelRatio = qApp->devicePixelRatio();
+
+    // Handle the simple normal-dpi case
+    if (!(devicePixelRatio > 1.0)) {
+        QPixmap pixmap = d->engine->pixmap(size, mode, state);
+        pixmap.setDevicePixelRatio(1.0);
+        return pixmap;
+    }
+
+    // Try get a pixmap that is big enough to be displayed at device pixel resolution.
+    QIconEngine::ScaledPixmapArgument scalePixmapArg = { size * devicePixelRatio, mode, state, devicePixelRatio, QPixmap() };
+    d->engine->virtual_hook(QIconEngine::ScaledPixmapHook, reinterpret_cast<void*>(&scalePixmapArg));
+    scalePixmapArg.pixmap.setDevicePixelRatio(d->pixmapDevicePixelRatio(devicePixelRatio, size, scalePixmapArg.pixmap.size()));
+    return scalePixmapArg.pixmap;
 }
 
 /*!
@@ -881,19 +900,22 @@ QPixmap QIcon::pixmap(QWindow *window, const QSize &size, Mode mode, State state
         return QPixmap();
 
     qreal devicePixelRatio = qt_effective_device_pixel_ratio(window);
+    return pixmap(size, devicePixelRatio, mode, state);
+}
 
-    // Handle the simple normal-dpi case:
-    if (!(devicePixelRatio > 1.0)) {
-        QPixmap pixmap = d->engine->pixmap(size, mode, state);
-        pixmap.setDevicePixelRatio(1.0);
-        return pixmap;
-    }
 
-    // Try get a pixmap that is big enough to be displayed at device pixel resolution.
-    QIconEngine::ScaledPixmapArgument scalePixmapArg = { size * devicePixelRatio, mode, state, devicePixelRatio, QPixmap() };
-    d->engine->virtual_hook(QIconEngine::ScaledPixmapHook, reinterpret_cast<void*>(&scalePixmapArg));
-    scalePixmapArg.pixmap.setDevicePixelRatio(d->pixmapDevicePixelRatio(devicePixelRatio, size, scalePixmapArg.pixmap.size()));
-    return scalePixmapArg.pixmap;
+/*!  Returns the actual size of the icon for the requested \a size, \a
+  mode, and \a state. The result might be smaller than requested, but
+  never larger. The returned size is in device-independent pixels (This
+  is relevant for high-dpi pixmaps.)
+
+  \sa pixmap(), paint()
+*/
+QSize QIcon::actualSize(const QSize &size, Mode mode, State state) const
+{
+    if (!d)
+        return QSize();
+    return actualSize(nullptr, size, mode, state);
 }
 
 /*!

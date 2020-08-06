@@ -55,6 +55,7 @@ private slots:
     void cacheKey();
     void detach();
     void addFile();
+    void pixmap();
     void availableSizes();
     void name();
     void streamAvailableSizes_data();
@@ -445,6 +446,19 @@ void tst_QIcon::addFile()
         expectedHighDpiImage(64, ":/styles/commonstyle/images/standardbutton-save-%1.png"));
     QCOMPARE(icon.pixmap(128, QIcon::Selected).toImage(),
         expectedHighDpiImage(128, ":/styles/commonstyle/images/standardbutton-save-%1.png"));
+}
+
+void tst_QIcon::pixmap()
+{
+    QIcon icon;
+    icon.addFile(m_pngImageFileName, QSize(64, 64));
+
+    // Exercise all pixmap() API overloads
+    QVERIFY(icon.pixmap(16).size().width() >= 16);
+    QVERIFY(icon.pixmap(16, 16).size().width() >= 16);
+    QVERIFY(icon.pixmap(QSize(16, 16)).size().width() >= 16);
+    QVERIFY(icon.pixmap(QSize(16, 16), 1).size().width() == 16);
+    QVERIFY(icon.pixmap(nullptr, QSize(16, 16)).size().width() >= 16);
 }
 
 static bool sizeLess(const QSize &a, const QSize &b)
