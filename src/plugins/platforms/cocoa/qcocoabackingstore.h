@@ -96,6 +96,9 @@ public:
     QPlatformGraphicsBuffer *graphicsBuffer() const override;
 
 private:
+    void observeBackingPropertiesChanges();
+    bool eventFilter(QObject *watched, QEvent *event) override;
+
     QSize m_requestedSize;
     QRegion m_paintedRegion;
 

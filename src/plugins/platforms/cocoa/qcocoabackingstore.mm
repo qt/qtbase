@@ -340,29 +340,37 @@ QCALayerBackingStore::QCALayerBackingStore(QWindow *window)
     qCDebug(lcQpaBackingStore) << "Creating QCALayerBackingStore for" << window;
     m_buffers.resize(1);
 
-    // Ideally this would be plumbed from the platform layer to QtGui, and
-    // the QBackingStore would be recreated, but we don't have that code yet,
-    // so at least make sure we update our backingstore when the backing
-    // properties (color space e.g.) are changed.
-    NSView *view = static_cast<QCocoaWindow *>(window->handle())->view();
-    m_backingPropertiesObserver = QMacNotificationObserver(view.window,
-        NSWindowDidChangeBackingPropertiesNotification, [this]() {
-            if (!this->window()->handle()) {
-                // The platform window has been destroyed, but the backingstore
-                // is still alive, as that's tied to a QWindow. The original
-                // NSWindow we were observing is also likely gone. FIXME:
-                // We should listen for surface events from the QWindow and
-                // remove and re-attach our observer based on those.
-                return;
-            }
-            qCDebug(lcQpaBackingStore) << "Backing properties for"
-                << this->window() << "did change";
-            backingPropertiesChanged();
-        });
+    observeBackingPropertiesChanges();
+    window->installEventFilter(this);
 }
 
 QCALayerBackingStore::~QCALayerBackingStore()
 {
+}
+
+void QCALayerBackingStore::observeBackingPropertiesChanges()
+{
+    Q_ASSERT(window()->handle());
+    NSView *view = static_cast<QCocoaWindow *>(window()->handle())->view();
+    m_backingPropertiesObserver = QMacNotificationObserver(view.window,
+        NSWindowDidChangeBackingPropertiesNotification, [this]() {
+            backingPropertiesChanged();
+        });
+}
+
+bool QCALayerBackingStore::eventFilter(QObject *watched, QEvent *event)
+{
+    Q_ASSERT(watched == window());
+
+    if (event->type() == QEvent::PlatformSurface) {
+        auto *surfaceEvent = static_cast<QPlatformSurfaceEvent*>(event);
+        if (surfaceEvent->surfaceEventType() == QPlatformSurfaceEvent::SurfaceCreated)
+            observeBackingPropertiesChanges();
+        else
+            m_backingPropertiesObserver = QMacNotificationObserver();
+    }
+
+    return false;
 }
 
 void QCALayerBackingStore::resize(const QSize &size, const QRegion &staticContents)
@@ -662,6 +670,15 @@ QImage QCALayerBackingStore::toImage() const
 
 void QCALayerBackingStore::backingPropertiesChanged()
 {
+    // Ideally this would be plumbed from the platform layer to QtGui, and
+    // the QBackingStore would be recreated, but we don't have that code yet,
+    // so at least make sure we update our backingstore when the backing
+    // properties (color space e.g.) are changed.
+
+    Q_ASSERT(window()->handle());
+
+    qCDebug(lcQpaBackingStore) << "Backing properties for" << window() << "did change";
+
     qCDebug(lcQpaBackingStore) << "Updating color space of existing buffers";
     for (auto &buffer : m_buffers) {
         if (buffer)
