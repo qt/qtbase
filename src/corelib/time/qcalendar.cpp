@@ -203,8 +203,15 @@ QCalendar::System QCalendarBackend::calendarSystem() const
 }
 
 /*!
+    \fn QString QCalendarBackend::name() const;
+
+    This pure virtual method should be overloaded by each backend implementation
+    to return the name that the backend passes to the base-class as its name.
+*/
+
+/*!
     The primary name of this calendar.
- */
+*/
 QString QCalendar::name() const
 {
     return d ? d->name() : QString();
