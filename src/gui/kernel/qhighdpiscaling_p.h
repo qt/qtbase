@@ -134,9 +134,9 @@ private:
 
     static qreal m_factor;
     static bool m_active;
-    static bool m_usePixelDensity;
+    static bool m_usePlatformPluginDpi;
+    static bool m_platformPluginDpiScalingActive;
     static bool m_globalScalingActive;
-    static bool m_pixelDensityScalingActive;
     static bool m_screenFactorSet;
     static QDpi m_logicalDpi;
 };
