@@ -214,9 +214,16 @@
     initializer list \a list.
 */
 
-/*! \fn template <class Key, class T> QMultiMap<Key, T>::QMultiMap(const typename std::multimap<Key, T> & other)
+/*! \fn template <class Key, class T> QMultiMap<Key, T>::QMultiMap(const std::multimap<Key, T> &other)
 
     Constructs a copy of \a other.
+
+    \sa toStdMultiMap()
+*/
+
+/*! \fn template <class Key, class T> QMultiMap<Key, T>::QMultiMap(std::multimap<Key, T> &&other)
+
+    Constructs a multi map by moving from \a other.
 
     \sa toStdMultiMap()
 */
