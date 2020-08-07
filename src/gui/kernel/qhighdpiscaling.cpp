@@ -495,6 +495,8 @@ void QHighDpiScaling::updateHighDpiScaling()
     if (QCoreApplication::testAttribute(Qt::AA_DisableHighDpiScaling))
         return;
 
+    m_usePixelDensity = usePixelDensity();
+
     if (m_usePixelDensity && !m_pixelDensityScalingActive) {
         const auto screens = QGuiApplication::screens();
         for (QScreen *screen : screens) {
