@@ -220,6 +220,8 @@ class QMap
     using MapData = QMapData<std::map<Key, T>>;
     QtPrivate::QExplicitlySharedDataPointerV2<MapData> d;
 
+    friend class QMultiMap<Key, T>;
+
 public:
     using key_type = Key;
     using mapped_type = T;
@@ -776,6 +778,35 @@ public:
     void swap(QMultiMap<Key, T> &other) noexcept
     {
         qSwap(d, other.d);
+    }
+
+    explicit QMultiMap(const QMap<Key, T> &other)
+        : d(other.isEmpty() ? nullptr : new MapData)
+    {
+        if (d) {
+            Q_ASSERT(other.d);
+            d->m.insert(other.d->m.begin(),
+                        other.d->m.end());
+        }
+    }
+
+    explicit QMultiMap(QMap<Key, T> &&other)
+        : d(other.isEmpty() ? nullptr : new MapData)
+    {
+        if (d) {
+            Q_ASSERT(other.d);
+            if (other.d.isShared()) {
+                d->m.insert(other.d->m.begin(),
+                            other.d->m.end());
+            } else {
+#ifdef __cpp_lib_node_extract
+                d->m.merge(std::move(other.d->m));
+#else
+                d->m.insert(std::make_move_iterator(other.d->m.begin()),
+                            std::make_move_iterator(other.d->m.end()));
+#endif
+            }
+        }
     }
 
     explicit QMultiMap(const std::multimap<Key, T> &other)
