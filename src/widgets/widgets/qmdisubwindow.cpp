@@ -170,6 +170,7 @@
 #if QT_CONFIG(menu)
 #include <QMenu>
 #endif
+#include <QProxyStyle>
 
 QT_BEGIN_NAMESPACE
 
@@ -203,7 +204,9 @@ static const int BoundaryMargin = 5;
 
 static inline bool isMacStyle(QStyle *style)
 {
-    return style->inherits("QMacStyle");
+    auto proxyStyle = qobject_cast<QProxyStyle *>(style);
+    auto styleToCheck = proxyStyle ? proxyStyle->baseStyle() : style;
+    return styleToCheck->inherits("QMacStyle");
 }
 
 static inline int getMoveDeltaComponent(uint cflags, uint moveFlag, uint resizeFlag,
