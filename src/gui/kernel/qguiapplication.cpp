@@ -3133,6 +3133,8 @@ void QGuiApplicationPrivate::processScreenLogicalDotsPerInchChange(QWindowSystem
     if (QCoreApplication::startingUp())
         return;
 
+    QHighDpiScaling::updateHighDpiScaling();
+
     if (!e->screen)
         return;
 
