@@ -222,11 +222,14 @@ QJsonObject &QJsonObject::operator =(const QJsonObject &other)
     The keys in \a map will be used as the keys in the JSON object,
     and the QVariant values will be converted to JSON values.
 
+    \note Conversion from \l QVariant is not completely lossless. Please see
+    the documentation in QJsonValue::fromVariant() for more information.
+
     \sa fromVariantHash(), toVariantMap(), QJsonValue::fromVariant()
  */
 QJsonObject QJsonObject::fromVariantMap(const QVariantMap &map)
 {
-    return QCborMap::fromVariantMap(map).toJsonObject();
+    return QJsonPrivate::Variant::toJsonObject(map);
 }
 
 /*!
@@ -247,6 +250,9 @@ QVariantMap QJsonObject::toVariantMap() const
 
     The keys in \a hash will be used as the keys in the JSON object,
     and the QVariant values will be converted to JSON values.
+
+    \note Conversion from \l QVariant is not completely lossless. Please see
+    the documentation in QJsonValue::fromVariant() for more information.
 
     \sa fromVariantMap(), toVariantHash(), QJsonValue::fromVariant()
  */

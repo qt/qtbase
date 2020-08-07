@@ -55,6 +55,8 @@ QT_BEGIN_NAMESPACE
 
 using namespace QtCbor;
 
+enum class ConversionMode { FromRaw, FromVariantToJson };
+
 static QJsonValue fpToJson(double v)
 {
     return qt_is_finite(v) ? QJsonValue(v) : QJsonValue();
@@ -89,7 +91,8 @@ static QString encodeByteArray(const QCborContainerPrivate *d, qsizetype idx, QC
     return QString::fromLatin1(data, data.size());
 }
 
-static QString makeString(const QCborContainerPrivate *d, qsizetype idx);
+static QString makeString(const QCborContainerPrivate *d, qsizetype idx,
+                          ConversionMode mode = ConversionMode::FromRaw);
 
 static QString maybeEncodeTag(const QCborContainerPrivate *d)
 {
@@ -134,7 +137,8 @@ static QString encodeTag(const QCborContainerPrivate *d)
     return s;
 }
 
-static Q_NEVER_INLINE QString makeString(const QCborContainerPrivate *d, qsizetype idx)
+static Q_NEVER_INLINE QString makeString(const QCborContainerPrivate *d, qsizetype idx,
+                                         ConversionMode mode)
 {
     const auto &e = d->elements.at(idx);
 
@@ -146,7 +150,9 @@ static Q_NEVER_INLINE QString makeString(const QCborContainerPrivate *d, qsizety
         return QString::number(e.fpvalue());
 
     case QCborValue::ByteArray:
-        return encodeByteArray(d, idx, QCborTag(QCborKnownTags::ExpectedBase64url));
+        return mode == ConversionMode::FromVariantToJson
+                ? d->stringAt(idx)
+                : encodeByteArray(d, idx, QCborTag(QCborKnownTags::ExpectedBase64url));
 
     case QCborValue::String:
         return d->stringAt(idx);
@@ -190,7 +196,8 @@ static Q_NEVER_INLINE QString makeString(const QCborContainerPrivate *d, qsizety
     return simpleTypeString(e.type);
 }
 
-QJsonValue qt_convertToJson(QCborContainerPrivate *d, qsizetype idx);
+QJsonValue qt_convertToJson(QCborContainerPrivate *d, qsizetype idx,
+                            ConversionMode mode = ConversionMode::FromRaw);
 
 static QJsonValue convertExtendedTypeToJson(QCborContainerPrivate *d)
 {
@@ -222,35 +229,37 @@ static QJsonValue convertExtendedTypeToJson(QCborContainerPrivate *d)
 }
 
 // We need to do this because sub-objects may need conversion.
-static QJsonArray convertToJsonArray(QCborContainerPrivate *d)
+static QJsonArray convertToJsonArray(QCborContainerPrivate *d,
+                                     ConversionMode mode = ConversionMode::FromRaw)
 {
     QJsonArray a;
     if (d) {
         for (qsizetype idx = 0; idx < d->elements.size(); ++idx)
-            a.append(qt_convertToJson(d, idx));
+            a.append(qt_convertToJson(d, idx, mode));
     }
     return a;
 }
 
 // We need to do this because the keys need to be sorted and converted to strings
 // and sub-objects may need recursive conversion.
-static QJsonObject convertToJsonObject(QCborContainerPrivate *d)
+static QJsonObject convertToJsonObject(QCborContainerPrivate *d,
+                                       ConversionMode mode = ConversionMode::FromRaw)
 {
     QJsonObject o;
     if (d) {
         for (qsizetype idx = 0; idx < d->elements.size(); idx += 2)
-            o.insert(makeString(d, idx), qt_convertToJson(d, idx + 1));
+            o.insert(makeString(d, idx), qt_convertToJson(d, idx + 1, mode));
     }
     return o;
 }
 
-QJsonValue qt_convertToJson(QCborContainerPrivate *d, qsizetype idx)
+QJsonValue qt_convertToJson(QCborContainerPrivate *d, qsizetype idx, ConversionMode mode)
 {
     // encoding the container itself
     if (idx == -QCborValue::Array)
-        return convertToJsonArray(d);
+        return convertToJsonArray(d, mode);
     if (idx == -QCborValue::Map)
-        return convertToJsonObject(d);
+        return convertToJsonObject(d, mode);
     if (idx < 0) {
         // tag-like type
         if (!d || d->elements.size() != 2)
@@ -265,6 +274,15 @@ QJsonValue qt_convertToJson(QCborContainerPrivate *d, qsizetype idx)
         return QJsonPrivate::Value::fromTrustedCbor(e.value);
 
     case QCborValue::ByteArray:
+        if (mode == ConversionMode::FromVariantToJson) {
+            const auto value = makeString(d, idx, mode);
+            return value.isEmpty() ? QJsonValue() : QJsonPrivate::Value::fromTrustedCbor(value);
+        }
+        break;
+    case QCborValue::RegularExpression:
+        if (mode == ConversionMode::FromVariantToJson)
+            return QJsonValue();
+        break;
     case QCborValue::String:
     case QCborValue::SimpleType:
         // make string
@@ -275,10 +293,10 @@ QJsonValue qt_convertToJson(QCborContainerPrivate *d, qsizetype idx)
     case QCborValue::Tag:
     case QCborValue::DateTime:
     case QCborValue::Url:
-    case QCborValue::RegularExpression:
     case QCborValue::Uuid:
         // recurse
-        return qt_convertToJson(e.flags & Element::IsContainer ? e.container : nullptr, -e.type);
+        return qt_convertToJson(e.flags & Element::IsContainer ? e.container : nullptr, -e.type,
+                                mode);
 
     case QCborValue::Null:
     case QCborValue::Undefined:
@@ -295,7 +313,7 @@ QJsonValue qt_convertToJson(QCborContainerPrivate *d, qsizetype idx)
         return fpToJson(e.fpvalue());
     }
 
-    return QJsonPrivate::Value::fromTrustedCbor(makeString(d, idx));
+    return QJsonPrivate::Value::fromTrustedCbor(makeString(d, idx, mode));
 }
 
 /*!
@@ -430,6 +448,12 @@ QJsonArray QCborArray::toJsonArray() const
     return convertToJsonArray(d.data());
 }
 
+QJsonArray QJsonPrivate::Variant::toJsonArray(const QVariantList &list)
+{
+    const auto cborArray = QCborArray::fromVariantList(list);
+    return convertToJsonArray(cborArray.d.data(), ConversionMode::FromVariantToJson);
+}
+
 /*!
     Recursively converts every \l QCborValue value in this map to JSON using
     QCborValue::toJsonValue() and creates a string key for all keys that aren't
@@ -470,6 +494,12 @@ QJsonArray QCborArray::toJsonArray() const
 QJsonObject QCborMap::toJsonObject() const
 {
     return convertToJsonObject(d.data());
+}
+
+QJsonObject QJsonPrivate::Variant::toJsonObject(const QVariantMap &map)
+{
+    const auto cborMap = QCborMap::fromVariantMap(map);
+    return convertToJsonObject(cborMap.d.data(), ConversionMode::FromVariantToJson);
 }
 
 /*!

@@ -54,6 +54,8 @@ typedef QHash<QString, QVariant> QVariantHash;
 class QJsonObject;
 class QDataStream;
 
+namespace QJsonPrivate { class Variant; }
+
 class QCborContainerPrivate;
 class Q_CORE_EXPORT QCborMap
 {
@@ -327,6 +329,7 @@ public:
 private:
     friend class QCborValue;
     friend class QCborValueRef;
+    friend class QJsonPrivate::Variant;
     void detach(qsizetype reserve = 0);
 
     explicit QCborMap(QCborContainerPrivate &dd) noexcept;

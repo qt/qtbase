@@ -349,7 +349,6 @@ void QJsonValue::swap(QJsonValue &other) noexcept
     error cases as e.g. accessing a non existing key in a QJsonObject.
  */
 
-
 /*!
     Converts \a variant to a QJsonValue and returns it.
 
@@ -459,7 +458,11 @@ void QJsonValue::swap(QJsonValue &other) noexcept
     For other types not listed above, a conversion to string will be attempted,
     usually but not always by calling QVariant::toString(). If the conversion
     fails the value is replaced by a null JSON value. Note that
-    QVariant::toString() is also lossy for the majority of types.
+    QVariant::toString() is also lossy for the majority of types. For example,
+    if the passed QVariant is representing raw byte array data, it is recommended
+    to pre-encode it to \l {https://www.ietf.org/rfc/rfc4648.txt}{Base64} (or
+    another lossless encoding), otherwise a lossy conversion using QString::fromUtf8()
+    will be used.
 
     Please note that the conversions via QVariant::toString() are subject to
     change at any time. Both QVariant and QJsonValue may be extended in the
@@ -480,8 +483,10 @@ QJsonValue QJsonValue::fromVariant(const QVariant &variant)
     case QMetaType::Double:
     case QMetaType::LongLong:
     case QMetaType::ULongLong:
-    case QMetaType::UInt:
-        return QJsonValue(variant.toDouble());
+    case QMetaType::UInt: {
+        double v = variant.toDouble();
+        return qt_is_finite(v) ? QJsonValue(v) : QJsonValue();
+    }
     case QMetaType::QString:
         return QJsonValue(variant.toString());
     case QMetaType::QStringList:

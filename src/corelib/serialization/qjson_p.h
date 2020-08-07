@@ -215,6 +215,13 @@ public:
     }
 };
 
+class Variant
+{
+public:
+    static QJsonObject toJsonObject(const QVariantMap &map);
+    static QJsonArray toJsonArray(const QVariantList &list);
+};
+
 } // namespace QJsonPrivate
 
 QT_END_NAMESPACE

@@ -277,11 +277,14 @@ QJsonArray QJsonArray::fromStringList(const QStringList &list)
 
     The QVariant values in \a list will be converted to JSON values.
 
+    \note Conversion from \l QVariant is not completely lossless. Please see
+    the documentation in QJsonValue::fromVariant() for more information.
+
     \sa toVariantList(), QJsonValue::fromVariant()
  */
 QJsonArray QJsonArray::fromVariantList(const QVariantList &list)
 {
-    return QCborArray::fromVariantList(list).toJsonArray();
+    return QJsonPrivate::Variant::toJsonArray(list);
 }
 
 /*!
