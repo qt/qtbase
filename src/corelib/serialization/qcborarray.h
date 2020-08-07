@@ -49,6 +49,8 @@ QT_BEGIN_NAMESPACE
 class QJsonArray;
 class QDataStream;
 
+namespace QJsonPrivate { class Variant; }
+
 class QCborContainerPrivate;
 class Q_CORE_EXPORT QCborArray
 {
@@ -273,6 +275,7 @@ private:
 
     friend QCborValue;
     friend QCborValueRef;
+    friend class QJsonPrivate::Variant;
     explicit QCborArray(QCborContainerPrivate &dd) noexcept;
     QExplicitlySharedDataPointer<QCborContainerPrivate> d;
 };
