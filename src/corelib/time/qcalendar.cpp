@@ -59,6 +59,8 @@
 
 QT_BEGIN_NAMESPACE
 
+static const QCalendarBackend *backendFromEnum(QCalendar::System system);
+
 namespace {
 
 struct CalendarName : public QString
@@ -131,8 +133,10 @@ struct Registry {
         if (populated)
             return;
 
-        for (int i = 0; i <= int(QCalendar::System::Last); ++i)
-            (void)QCalendar(QCalendar::System(i));
+        for (int i = 0; i <= int(QCalendar::System::Last); ++i) {
+            if (!byId[i])
+                (void)backendFromEnum(QCalendar::System(i));
+        }
 
         populated = true;
     }
@@ -142,6 +146,32 @@ struct Registry {
 
 Q_GLOBAL_STATIC(Registry, calendarRegistry);
 
+static const QCalendarBackend *backendFromEnum(QCalendar::System system)
+{
+    switch (system) {
+    case QCalendar::System::Gregorian:
+        return new QGregorianCalendar;
+#ifndef QT_BOOTSTRAPPED
+    case QCalendar::System::Julian:
+        return new QJulianCalendar;
+    case QCalendar::System::Milankovic:
+        return new QMilankovicCalendar;
+#endif
+#if QT_CONFIG(jalalicalendar)
+    case QCalendar::System::Jalali:
+        return new QJalaliCalendar;
+#endif
+#if QT_CONFIG(islamiccivilcalendar)
+    case QCalendar::System::IslamicCivil:
+        return new QIslamicCivilCalendar;
+#else // When highest-numbered system isn't enabled, ensure we have a case for Last:
+    case QCalendar::System::Last:
+#endif
+    case QCalendar::System::User:
+        Q_UNREACHABLE();
+    }
+    return nullptr;
+}
 
 /*!
     \since 5.14
@@ -169,7 +199,7 @@ Q_GLOBAL_STATIC(Registry, calendarRegistry);
     Most backends are pure code, with no data elements. Such backends should
     normally be implemented as singletons. For a backend to be added to the
     QCalendar::System \c enum, it should be such a singleton, with a case in
-    QCalendar::fromEnum()'s switch statement to instantiate it.
+    backendFromEnum()'s switch statement (above) to instantiate it.
 
     Non-singleton calendar backends should ensure that each instance is created
     with a distinct primary name. Later instances attempting to register with a
@@ -642,29 +672,7 @@ const QCalendarBackend *QCalendarBackend::fromEnum(QCalendar::System system)
     Q_ASSERT(calendarRegistry->byId.size() >= size_t(system));
     if (auto *c = calendarRegistry->byId[size_t(system)])
         return c;
-    switch (system) {
-    case QCalendar::System::Gregorian:
-        return new QGregorianCalendar;
-#ifndef QT_BOOTSTRAPPED
-    case QCalendar::System::Julian:
-        return new QJulianCalendar;
-    case QCalendar::System::Milankovic:
-        return new QMilankovicCalendar;
-#endif
-#if QT_CONFIG(jalalicalendar)
-    case QCalendar::System::Jalali:
-        return new QJalaliCalendar;
-#endif
-#if QT_CONFIG(islamiccivilcalendar)
-    case QCalendar::System::IslamicCivil:
-        return new QIslamicCivilCalendar;
-#else // When highest-numbered system isn't enabled, ensure we have a case for Last:
-    case QCalendar::System::Last:
-#endif
-    case QCalendar::System::User:
-        Q_UNREACHABLE();
-    }
-    return nullptr;
+    return backendFromEnum(system);
 }
 
 /*!
@@ -737,7 +745,10 @@ QCalendar::QCalendar()
 }
 
 QCalendar::QCalendar(QCalendar::System system)
-    : d(QCalendarBackend::fromEnum(system)) {}
+    : d(QCalendarBackend::fromEnum(system))
+{
+    Q_ASSERT(d);
+}
 
 QCalendar::QCalendar(QLatin1String name)
     : d(QCalendarBackend::fromName(name)) {}
