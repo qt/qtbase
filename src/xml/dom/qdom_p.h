@@ -46,6 +46,7 @@
 #include <qstring.h>
 #include <qlist.h>
 #include <qxml.h>
+#include <qshareddata.h>
 
 QT_BEGIN_NAMESPACE
 

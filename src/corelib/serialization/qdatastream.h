@@ -41,8 +41,7 @@
 #define QDATASTREAM_H
 
 #include <QtCore/qscopedpointer.h>
-#include <QtCore/qiodevice.h>
-#include <QtCore/qpair.h>
+#include <QtCore/qiodevicebase.h>
 #include <QtCore/qcontainerfwd.h>
 
 #ifdef Status
@@ -60,7 +59,7 @@ class QDataStreamPrivate;
 namespace QtPrivate {
 class StreamStateSaver;
 }
-class Q_CORE_EXPORT QDataStream
+class Q_CORE_EXPORT QDataStream : public QIODeviceBase
 {
 public:
     enum Version {
@@ -122,7 +121,7 @@ public:
 
     QDataStream();
     explicit QDataStream(QIODevice *);
-    QDataStream(QByteArray *, QIODevice::OpenMode flags);
+    QDataStream(QByteArray *, OpenMode flags);
     QDataStream(const QByteArray &);
     ~QDataStream();
 
@@ -199,6 +198,7 @@ public:
     void rollbackTransaction();
     void abortTransaction();
 
+    bool isDeviceTransactionStarted() const;
 private:
     Q_DISABLE_COPY(QDataStream)
 
@@ -222,7 +222,7 @@ class StreamStateSaver
 public:
     inline StreamStateSaver(QDataStream *s) : stream(s), oldStatus(s->status())
     {
-        if (!stream->dev || !stream->dev->isTransactionStarted())
+        if (!stream->isDeviceTransactionStarted())
             stream->resetStatus();
     }
     inline ~StreamStateSaver()

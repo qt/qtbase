@@ -42,6 +42,7 @@
 
 #include <qstack.h>
 #include <qmap.h>
+#include <qhash.h>
 #include <qxml.h>
 
 #include <stack>

@@ -60,7 +60,7 @@
 QT_BEGIN_NAMESPACE
 
 
-class Q_CORE_EXPORT QDebug
+class Q_CORE_EXPORT QDebug : public QIODeviceBase
 {
     friend class QMessageLogger;
     friend class QDebugStateSaver;
@@ -70,9 +70,9 @@ class Q_CORE_EXPORT QDebug
 
         Stream(QIODevice *device) : ts(device), ref(1), type(QtDebugMsg),
             space(true), message_output(false), flags(DefaultVerbosity << VerbosityShift) {}
-        Stream(QString *string) : ts(string, QIODevice::WriteOnly), ref(1), type(QtDebugMsg),
+        Stream(QString *string) : ts(string, WriteOnly), ref(1), type(QtDebugMsg),
             space(true), message_output(false), flags(DefaultVerbosity << VerbosityShift) {}
-        Stream(QtMsgType t) : ts(&buffer, QIODevice::WriteOnly), ref(1), type(t),
+        Stream(QtMsgType t) : ts(&buffer, WriteOnly), ref(1), type(t),
             space(true), message_output(true), flags(DefaultVerbosity << VerbosityShift) {}
         QTextStream ts;
         QString buffer;

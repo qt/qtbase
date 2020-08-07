@@ -53,6 +53,8 @@
 //
 
 #include <QtCore/private/qglobal_p.h>
+#include "qiodevice.h"
+#include "qlocale.h"
 #include "qtextstream.h"
 
 QT_BEGIN_NAMESPACE

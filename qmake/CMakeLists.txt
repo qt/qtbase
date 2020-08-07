@@ -61,6 +61,7 @@ qt_add_tool(${target_name}
         ../src/corelib/io/qfilesystementry.cpp
         ../src/corelib/io/qfsfileengine.cpp
         ../src/corelib/io/qfsfileengine_iterator.cpp
+        ../src/corelib/io/qiodevicebase.h
         ../src/corelib/io/qiodevice.cpp ../src/corelib/io/qiodevice.h
         ../src/corelib/io/qsettings.cpp
         ../src/corelib/io/qtemporaryfile.cpp ../src/corelib/io/qtemporaryfile.h

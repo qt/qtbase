@@ -302,7 +302,7 @@ QDataStream::QDataStream(QIODevice *d)
 }
 
 /*!
-    \fn QDataStream::QDataStream(QByteArray *a, QIODevice::OpenMode mode)
+    \fn QDataStream::QDataStream(QByteArray *a, OpenMode mode)
 
     Constructs a data stream that operates on a byte array, \a a. The
     \a mode describes how the device is to be used.
@@ -314,7 +314,7 @@ QDataStream::QDataStream(QIODevice *d)
     is created to wrap the byte array.
 */
 
-QDataStream::QDataStream(QByteArray *a, QIODevice::OpenMode flags)
+QDataStream::QDataStream(QByteArray *a, OpenMode flags)
 {
     QBuffer *buf = new QBuffer(a);
 #ifndef QT_NO_QOBJECT
@@ -753,6 +753,14 @@ void QDataStream::abortTransaction()
 
     CHECK_STREAM_PRECOND(Q_VOID)
     dev->commitTransaction();
+}
+
+/*!
+   \internal
+*/
+bool QDataStream::isDeviceTransactionStarted() const
+{
+   return dev && dev->isTransactionStarted();
 }
 
 /*****************************************************************************

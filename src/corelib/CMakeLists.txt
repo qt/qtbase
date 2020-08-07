@@ -71,6 +71,7 @@ qt_add_module(Core
         io/qfilesystemmetadata_p.h
         io/qfsfileengine.cpp io/qfsfileengine_p.h
         io/qfsfileengine_iterator.cpp io/qfsfileengine_iterator_p.h
+        io/qiodevicebase.h
         io/qiodevice.cpp io/qiodevice.h io/qiodevice_p.h
         io/qipaddress.cpp io/qipaddress_p.h
         io/qlockfile.cpp io/qlockfile.h io/qlockfile_p.h

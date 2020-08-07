@@ -1919,7 +1919,7 @@ QMimeData *QAbstractItemModel::mimeData(const QModelIndexList &indexes) const
     QMimeData *data = new QMimeData();
     QString format = types.at(0);
     QByteArray encoded;
-    QDataStream stream(&encoded, QIODevice::WriteOnly);
+    QDataStream stream(&encoded, QDataStream::WriteOnly);
     encodeData(indexes, stream);
     data->setData(format, encoded);
     return data;
@@ -2007,7 +2007,7 @@ bool QAbstractItemModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
         column = 0;
     // decode and insert
     QByteArray encoded = data->data(format);
-    QDataStream stream(&encoded, QIODevice::ReadOnly);
+    QDataStream stream(&encoded, QDataStream::ReadOnly);
     return decodeData(row, column, parent, stream);
 }
 
@@ -3730,7 +3730,7 @@ bool QAbstractTableModel::dropMimeData(const QMimeData *data, Qt::DropAction act
         return false;
 
     QByteArray encoded = data->data(format);
-    QDataStream stream(&encoded, QIODevice::ReadOnly);
+    QDataStream stream(&encoded, QDataStream::ReadOnly);
 
     // if the drop is on an item, replace the data in the items
     if (parent.isValid() && row == -1 && column == -1) {
@@ -3781,7 +3781,7 @@ bool QAbstractListModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
         return false;
 
     QByteArray encoded = data->data(format);
-    QDataStream stream(&encoded, QIODevice::ReadOnly);
+    QDataStream stream(&encoded, QDataStream::ReadOnly);
 
     // if the drop is on an item, replace the data in the items
     if (parent.isValid() && row == -1 && column == -1) {

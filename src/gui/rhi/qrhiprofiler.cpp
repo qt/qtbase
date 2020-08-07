@@ -36,6 +36,7 @@
 
 #include "qrhiprofiler_p_p.h"
 #include "qrhi_p_p.h"
+#include <QtCore/qiodevice.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -47,6 +47,7 @@
 #include <QtCore/qbytearray.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qrefcount.h>
+#include <QtCore/qdatastream.h>
 #ifndef QT_NO_QOBJECT
 #include <QtCore/qobjectdefs.h>
 #endif

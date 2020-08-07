@@ -42,13 +42,13 @@
 QT_BEGIN_NAMESPACE
 QTextStream &qerr()
 {
-    static QTextStream result(stderr, QIODevice::WriteOnly);
+    static QTextStream result(stderr, QTextStream::WriteOnly);
     return result;
 }
 
 QTextStream &qout()
 {
-    static QTextStream result(stdout, QIODevice::WriteOnly);
+    static QTextStream result(stdout, QTextStream::WriteOnly);
     return result;
 }
 QT_END_NAMESPACE

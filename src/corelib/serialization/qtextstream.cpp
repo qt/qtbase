@@ -368,7 +368,7 @@ void QTextStreamPrivate::reset()
     deleteDevice = false;
     string = nullptr;
     stringOffset = 0;
-    stringOpenMode = QIODevice::NotOpen;
+    stringOpenMode = QTextStream::NotOpen;
 
     readBufferOffset = 0;
     readBufferStartDevicePos = 0;
@@ -983,7 +983,7 @@ QTextStream::QTextStream(QIODevice *device)
     Constructs a QTextStream that operates on \a string, using \a
     openMode to define the open mode.
 */
-QTextStream::QTextStream(QString *string, QIODevice::OpenMode openMode)
+QTextStream::QTextStream(QString *string, OpenMode openMode)
     : d_ptr(new QTextStreamPrivate(this))
 {
 #if defined (QTEXTSTREAM_DEBUG)
@@ -1001,7 +1001,7 @@ QTextStream::QTextStream(QString *string, QIODevice::OpenMode openMode)
     openMode to define the open mode. Internally, the array is wrapped
     by a QBuffer.
 */
-QTextStream::QTextStream(QByteArray *array, QIODevice::OpenMode openMode)
+QTextStream::QTextStream(QByteArray *array, OpenMode openMode)
     : d_ptr(new QTextStreamPrivate(this))
 {
 #if defined (QTEXTSTREAM_DEBUG)
@@ -1028,7 +1028,7 @@ QTextStream::QTextStream(QByteArray *array, QIODevice::OpenMode openMode)
 
     \snippet code/src_corelib_io_qtextstream.cpp 3
 */
-QTextStream::QTextStream(const QByteArray &array, QIODevice::OpenMode openMode)
+QTextStream::QTextStream(const QByteArray &array, OpenMode openMode)
     : d_ptr(new QTextStreamPrivate(this))
 {
 #if defined (QTEXTSTREAM_DEBUG)
@@ -1059,7 +1059,7 @@ QTextStream::QTextStream(const QByteArray &array, QIODevice::OpenMode openMode)
     \snippet code/src_corelib_io_qtextstream.cpp 4
 */
 
-QTextStream::QTextStream(FILE *fileHandle, QIODevice::OpenMode openMode)
+QTextStream::QTextStream(FILE *fileHandle, OpenMode openMode)
     : d_ptr(new QTextStreamPrivate(this))
 {
 #if defined (QTEXTSTREAM_DEBUG)
@@ -1272,7 +1272,7 @@ QIODevice *QTextStream::device() const
 
     \sa string(), setDevice()
 */
-void QTextStream::setString(QString *string, QIODevice::OpenMode openMode)
+void QTextStream::setString(QString *string, OpenMode openMode)
 {
     Q_D(QTextStream);
     flush();

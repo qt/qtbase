@@ -15,6 +15,7 @@ HEADERS +=  \
         io/qfileinfo.h \
         io/qfileinfo_p.h \
         io/qipaddress_p.h \
+        io/qiodevicebase.h \
         io/qiodevice.h \
         io/qiodevice_p.h \
         io/qlockfile.h \

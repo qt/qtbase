@@ -39,6 +39,7 @@
 #include <algorithm>
 #include <functional>
 #include <set>
+#include <list>
 
 class Rule;
 class State;

@@ -186,7 +186,7 @@ QAsn1Element QAsn1Element::fromVector(const QList<QAsn1Element> &items)
 {
     QAsn1Element seq;
     seq.mType = SequenceType;
-    QDataStream stream(&seq.mValue, QIODevice::WriteOnly);
+    QDataStream stream(&seq.mValue, QDataStream::WriteOnly);
     for (auto it = items.cbegin(), end = items.cend(); it != end; ++it)
         it->write(stream);
     return seq;

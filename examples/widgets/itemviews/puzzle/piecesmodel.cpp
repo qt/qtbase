@@ -132,7 +132,7 @@ QMimeData *PiecesModel::mimeData(const QModelIndexList &indexes) const
     QMimeData *mimeData = new QMimeData();
     QByteArray encodedData;
 
-    QDataStream stream(&encodedData, QIODevice::WriteOnly);
+    QDataStream stream(&encodedData, QDataStream::WriteOnly);
 
     for (const QModelIndex &index : indexes) {
         if (index.isValid()) {
@@ -170,7 +170,7 @@ bool PiecesModel::dropMimeData(const QMimeData *data, Qt::DropAction action,
     }
 
     QByteArray encodedData = data->data("image/x-puzzle-piece");
-    QDataStream stream(&encodedData, QIODevice::ReadOnly);
+    QDataStream stream(&encodedData, QDataStream::ReadOnly);
 
     while (!stream.atEnd()) {
         QPixmap pixmap;

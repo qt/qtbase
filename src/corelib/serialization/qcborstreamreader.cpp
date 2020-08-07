@@ -45,6 +45,7 @@
 #include <private/qbytearray_p.h>
 #include <private/qnumeric_p.h>
 #include <private/qstringconverter_p.h>
+#include <qiodevice.h>
 #include <qdebug.h>
 #include <qstack.h>
 

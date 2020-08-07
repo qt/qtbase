@@ -305,7 +305,7 @@ QIODevicePrivate::~QIODevicePrivate()
 */
 
 /*!
-    \enum QIODevice::OpenModeFlag
+    \enum QIODeviceBase::OpenModeFlag
 
     This enum is used with open() to describe the mode in which a device
     is opened. It is also returned by openMode().

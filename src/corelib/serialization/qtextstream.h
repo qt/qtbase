@@ -40,10 +40,9 @@
 #ifndef QTEXTSTREAM_H
 #define QTEXTSTREAM_H
 
-#include <QtCore/qiodevice.h>
+#include <QtCore/qiodevicebase.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qchar.h>
-#include <QtCore/qlocale.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qstringconverter.h>
 
@@ -55,8 +54,11 @@
 
 QT_BEGIN_NAMESPACE
 
+class QIODevice;
+class QLocale;
+
 class QTextStreamPrivate;
-class Q_CORE_EXPORT QTextStream                                // text stream class
+class Q_CORE_EXPORT QTextStream : public QIODeviceBase
 {
     Q_DECLARE_PRIVATE(QTextStream)
 
@@ -89,10 +91,10 @@ public:
 
     QTextStream();
     explicit QTextStream(QIODevice *device);
-    explicit QTextStream(FILE *fileHandle, QIODevice::OpenMode openMode = QIODevice::ReadWrite);
-    explicit QTextStream(QString *string, QIODevice::OpenMode openMode = QIODevice::ReadWrite);
-    explicit QTextStream(QByteArray *array, QIODevice::OpenMode openMode = QIODevice::ReadWrite);
-    explicit QTextStream(const QByteArray &array, QIODevice::OpenMode openMode = QIODevice::ReadOnly);
+    explicit QTextStream(FILE *fileHandle, OpenMode openMode = ReadWrite);
+    explicit QTextStream(QString *string, OpenMode openMode = ReadWrite);
+    explicit QTextStream(QByteArray *array, OpenMode openMode = ReadWrite);
+    explicit QTextStream(const QByteArray &array, OpenMode openMode = ReadOnly);
     virtual ~QTextStream();
 
     void setEncoding(QStringConverter::Encoding encoding);
@@ -108,7 +110,7 @@ public:
     void setDevice(QIODevice *device);
     QIODevice *device() const;
 
-    void setString(QString *string, QIODevice::OpenMode openMode = QIODevice::ReadWrite);
+    void setString(QString *string, OpenMode openMode = ReadWrite);
     QString *string() const;
 
     Status status() const;
