@@ -2501,6 +2501,7 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                                  GL_COLOR_BUFFER_BIT,
                                  GL_LINEAR);
             f->glBindFramebuffer(GL_FRAMEBUFFER, ctx->defaultFramebufferObject());
+            f->glDeleteFramebuffers(2, fbo);
         }
             break;
         case QGles2CommandBuffer::Command::GenMip:
