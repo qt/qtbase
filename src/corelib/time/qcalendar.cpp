@@ -110,11 +110,11 @@ struct Registry {
     }
     /*
         \internal
-        Ensures each enum-available calendar has been instantiated.
+        Ensures each \c{enum}-available calendar has been instantiated.
 
         This arranges for each to register itself by name; it only does anything on
         its first call, which ensures that name-based lookups can always find all
-        the calendars available via the enum.
+        the calendars available via the \c enum.
     */
     void populate()
     {
@@ -158,7 +158,7 @@ Q_GLOBAL_STATIC(Registry, calendarRegistry);
 
     Most backends are pure code, with no data elements. Such backends should
     normally be implemented as singletons. For a backend to be added to the
-    QCalendar::System enum, it should be such a singleton, with a case in
+    QCalendar::System \c enum, it should be such a singleton, with a case in
     QCalendar::fromEnum()'s switch statement to instantiate it.
 
     Non-singleton calendar backends should ensure that each instance is created
@@ -191,9 +191,9 @@ QCalendarBackend::~QCalendarBackend()
 /*!
     The calendar system of this calendar.
 
-    Each calendar backend constructible from the QCalendar::System enum should
-    return the member of that enum that produces it. Other calendars should
-    return User.
+    Each calendar backend constructible from the QCalendar::System \c enum
+    should return the member of that \c enum that produces it. Other calendars
+    should return User.
 
     \sa QCalendarBackend::fromEnum()
 */
@@ -583,6 +583,7 @@ bool QCalendarBackend::registerAlias(const QString &name)
 }
 
 /*!
+    \internal
     Returns a pointer to a named calendar backend.
 
     If the given \a name is present in availableCalendars(), the backend
@@ -590,7 +591,7 @@ bool QCalendarBackend::registerAlias(const QString &name)
     names ignores case. Note that this won't provoke construction of a calendar
     backend, it will only return ones that have been instantiated (and not yet
     destroyed) by some other means. However, calendars available via the
-    QCalendar::System enum are always registered when this is called.
+    QCalendar::System \c enum are always registered when this is called.
 
     \sa availableCalendars(), registerAlias(), fromEnum()
 */
@@ -604,6 +605,7 @@ const QCalendarBackend *QCalendarBackend::fromName(QStringView name)
 }
 
 /*!
+    \internal
     \overload
  */
 const QCalendarBackend *QCalendarBackend::fromName(QLatin1String name)
@@ -616,7 +618,8 @@ const QCalendarBackend *QCalendarBackend::fromName(QLatin1String name)
 }
 
 /*!
-    Returns a pointer to a calendar backend, specified by enum.
+    \internal
+    Returns a pointer to a calendar backend, specified by \c enum.
 
     This will instantiate the indicated calendar (which will enable fromName()
     to return it subsequently), but only for the Qt-supported calendars for
