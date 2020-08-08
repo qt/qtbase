@@ -184,6 +184,8 @@ private slots:
     void sqliteVirtualTable();
     void mysql_timeType_data() { generic_data("QMYSQL"); }
     void mysql_timeType();
+    void ibase_executeBlock_data() { generic_data("QIBASE"); }
+    void ibase_executeBlock();
 
     void task_217003_data() { generic_data(); }
     void task_217003();
@@ -4795,6 +4797,26 @@ void tst_QSqlQuery::ibaseArray()
     QCOMPARE(qry.value(1).toList(), intArray.toList());
     QCOMPARE(qry.value(2).toList(), charArray.toList());
     QCOMPARE(qry.value(3).toList(), boolArray.toList());
+}
+
+void tst_QSqlQuery::ibase_executeBlock()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+    QSqlQuery qry(db);
+    QVERIFY_SQL(qry, prepare("execute block (x double precision = ?, y double precision = ?) "
+                             "returns (total double precision) "
+                             "as "
+                             "begin "
+                             "total = :x + :y; "
+                             "suspend; "
+                             "end"));
+    qry.bindValue(0, 2);
+    qry.bindValue(1, 2);
+    QVERIFY_SQL(qry, exec());
+    QVERIFY(qry.next());
+    QCOMPARE(qry.value(0).toInt(), 4);
 }
 
 QTEST_MAIN( tst_QSqlQuery )
