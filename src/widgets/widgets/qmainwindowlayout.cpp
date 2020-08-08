@@ -1895,8 +1895,10 @@ void QMainWindowLayout::raise(QDockWidget *widget)
 
 int QMainWindowLayout::count() const
 {
-    qWarning("QMainWindowLayout::count: ?");
-    return 0; //#################################################
+    int result = 0;
+    while (itemAt(result))
+        ++result;
+    return result;
 }
 
 QLayoutItem *QMainWindowLayout::itemAt(int index) const
