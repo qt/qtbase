@@ -191,8 +191,8 @@ private:
 
     QDataBuffer<Line *> m_active;
 
-    template <typename T>
-    friend void qScanConvert(QScanConverter &d, T allVertical);
+    template <bool AllVertical>
+    void scanConvert();
 };
 
 class QRasterizerPrivate
@@ -301,71 +301,58 @@ static void split(QT_FT_Vector *b)
     }
 }
 
-static inline bool topOrder(const QScanConverter::Line &a, const QScanConverter::Line &b)
+template <bool AllVertical>
+void QScanConverter::scanConvert()
 {
-    return a.top < b.top;
-}
-
-static inline bool xOrder(const QScanConverter::Line *a, const QScanConverter::Line *b)
-{
-    return a->x < b->x;
-}
-
-template <bool B>
-struct QBoolToType
-{
-    inline bool operator()() const
-    {
-        return B;
-    }
-};
-
-// should be a member function but VC6 doesn't support member template functions
-template <typename T>
-void qScanConvert(QScanConverter &d, T allVertical)
-{
-    if (!d.m_lines.size()) {
-        d.m_active.reset();
+    if (!m_lines.size()) {
+        m_active.reset();
         return;
     }
-    std::sort(d.m_lines.data(), d.m_lines.data() + d.m_lines.size(), QT_PREPEND_NAMESPACE(topOrder));
+    constexpr auto topOrder = [](const Line &a, const Line &b) {
+        return a.top < b.top;
+    };
+    constexpr auto xOrder = [](const Line *a, const Line *b) {
+        return a->x < b->x;
+    };
+
+    std::sort(m_lines.data(), m_lines.data() + m_lines.size(), topOrder);
     int line = 0;
-    for (int y = d.m_lines.first().top; y <= d.m_bottom; ++y) {
-        for (; line < d.m_lines.size() && d.m_lines.at(line).top == y; ++line) {
+    for (int y = m_lines.first().top; y <= m_bottom; ++y) {
+        for (; line < m_lines.size() && m_lines.at(line).top == y; ++line) {
             // add node to active list
-            if (allVertical()) {
-                QScanConverter::Line *l = &d.m_lines.at(line);
-                d.m_active.resize(d.m_active.size() + 1);
+            if constexpr(AllVertical) {
+                QScanConverter::Line *l = &m_lines.at(line);
+                m_active.resize(m_active.size() + 1);
                 int j;
-                for (j = d.m_active.size() - 2; j >= 0 && QT_PREPEND_NAMESPACE(xOrder)(l, d.m_active.at(j)); --j)
-                    d.m_active.at(j+1) = d.m_active.at(j);
-                d.m_active.at(j+1) = l;
+                for (j = m_active.size() - 2; j >= 0 && xOrder(l, m_active.at(j)); --j)
+                    m_active.at(j+1) = m_active.at(j);
+                m_active.at(j+1) = l;
             } else {
-                d.m_active << &d.m_lines.at(line);
+                m_active << &m_lines.at(line);
             }
         }
 
-        int numActive = d.m_active.size();
-        if (!allVertical()) {
-        // use insertion sort instead of qSort, as the active edge list is quite small
-        // and in the average case already sorted
+        int numActive = m_active.size();
+        if constexpr(!AllVertical) {
+            // use insertion sort instead of std::sort, as the active edge list is quite small
+            // and in the average case already sorted
             for (int i = 1; i < numActive; ++i) {
-                QScanConverter::Line *l = d.m_active.at(i);
+                QScanConverter::Line *l = m_active.at(i);
                 int j;
-                for (j = i-1; j >= 0 && QT_PREPEND_NAMESPACE(xOrder)(l, d.m_active.at(j)); --j)
-                    d.m_active.at(j+1) = d.m_active.at(j);
-                d.m_active.at(j+1) = l;
+                for (j = i-1; j >= 0 && xOrder(l, m_active.at(j)); --j)
+                    m_active.at(j+1) = m_active.at(j);
+                m_active.at(j+1) = l;
             }
         }
 
         int x = 0;
         int winding = 0;
         for (int i = 0; i < numActive; ++i) {
-            QScanConverter::Line *node = d.m_active.at(i);
+            QScanConverter::Line *node = m_active.at(i);
 
             const int current = Q16Dot16ToInt(node->x);
-            if (winding & d.m_fillRuleMask)
-                d.m_spanBuffer->addSpan(x, current - x, y, 0xff);
+            if (winding & m_fillRuleMask)
+                m_spanBuffer->addSpan(x, current - x, y, 0xff);
 
             x = current;
             winding += node->winding;
@@ -373,15 +360,17 @@ void qScanConvert(QScanConverter &d, T allVertical)
             if (node->bottom == y) {
                 // remove node from active list
                 for (int j = i; j < numActive - 1; ++j)
-                    d.m_active.at(j) = d.m_active.at(j+1);
+                    m_active.at(j) = m_active.at(j+1);
 
-                d.m_active.resize(--numActive);
+                m_active.resize(--numActive);
                 --i;
-            } else if (!allVertical())
-                node->x += node->delta;
+            } else {
+                if constexpr(!AllVertical)
+                    node->x += node->delta;
+            }
         }
     }
-    d.m_active.reset();
+    m_active.reset();
 }
 
 void QScanConverter::end()
@@ -398,9 +387,9 @@ void QScanConverter::end()
             }
         }
         if (allVertical)
-            qScanConvert(*this, QBoolToType<true>());
+            scanConvert<true>();
         else
-            qScanConvert(*this, QBoolToType<false>());
+            scanConvert<false>();
     } else {
         for (int chunkTop = m_top; chunkTop <= m_bottom; chunkTop += CHUNK_SIZE) {
             prepareChunk();
