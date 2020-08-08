@@ -66,7 +66,7 @@ public:
     QWidget *currentWidget() const;
     int currentIndex() const;
 
-    int indexOf(QWidget *) const;
+    int indexOf(const QWidget *) const;
     QWidget *widget(int) const;
     int count() const;
 

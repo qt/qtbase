@@ -254,7 +254,7 @@ void QStackedWidget::setCurrentWidget(QWidget *widget)
 
     \sa currentIndex(), widget()
 */
-int QStackedWidget::indexOf(QWidget *widget) const
+int QStackedWidget::indexOf(const QWidget *widget) const
 {
     return d_func()->layout->indexOf(widget);
 }

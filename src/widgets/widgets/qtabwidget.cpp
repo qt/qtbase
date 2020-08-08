@@ -719,7 +719,7 @@ void QTabWidget::setCurrentIndex(int index)
     Returns the index position of the page occupied by the widget \a
     w, or -1 if the widget cannot be found.
 */
-int QTabWidget::indexOf(QWidget* w) const
+int QTabWidget::indexOf(const QWidget *w) const
 {
     Q_D(const QTabWidget);
     return d->stack->indexOf(w);

@@ -104,7 +104,7 @@ public:
     int currentIndex() const;
     QWidget *currentWidget() const;
     QWidget *widget(int index) const;
-    int indexOf(QWidget *widget) const;
+    int indexOf(const QWidget *widget) const;
     int count() const;
 
     enum TabPosition { North, South, West, East };

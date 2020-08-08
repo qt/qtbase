@@ -560,7 +560,7 @@ QWidget *QToolBox::widget(int index) const
     exist.
 */
 
-int QToolBox::indexOf(QWidget *widget) const
+int QToolBox::indexOf(const QWidget *widget) const
 {
     Q_D(const QToolBox);
     const QToolBoxPrivate::Page *c = (widget ? d->page(widget) : nullptr);
