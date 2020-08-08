@@ -153,6 +153,8 @@ struct QTypedArrayData
         inline constexpr bool operator<=(iterator other) const { return i <= other.i; }
         inline constexpr bool operator>(iterator other) const { return i > other.i; }
         inline constexpr bool operator>=(iterator other) const { return i >= other.i; }
+        inline constexpr bool operator==(pointer p) const { return i == p; }
+        inline constexpr bool operator!=(pointer p) const { return i != p; }
         inline iterator &operator++() { ++i; return *this; }
         inline iterator operator++(int) { T *n = i; ++i; return n; }
         inline iterator &operator--() { i--; return *this; }
@@ -181,12 +183,16 @@ struct QTypedArrayData
         inline const T &operator*() const { return *i; }
         inline const T *operator->() const { return i; }
         inline const T &operator[](qsizetype j) const { return *(i + j); }
-        inline bool operator==(const_iterator o) const { return i == o.i; }
-        inline bool operator!=(const_iterator o) const { return i != o.i; }
-        inline bool operator<(const_iterator other) const { return i < other.i; }
-        inline bool operator<=(const_iterator other) const { return i <= other.i; }
-        inline bool operator>(const_iterator other) const { return i > other.i; }
-        inline bool operator>=(const_iterator other) const { return i >= other.i; }
+        inline constexpr bool operator==(const_iterator o) const { return i == o.i; }
+        inline constexpr bool operator!=(const_iterator o) const { return i != o.i; }
+        inline constexpr bool operator<(const_iterator other) const { return i < other.i; }
+        inline constexpr bool operator<=(const_iterator other) const { return i <= other.i; }
+        inline constexpr bool operator>(const_iterator other) const { return i > other.i; }
+        inline constexpr bool operator>=(const_iterator other) const { return i >= other.i; }
+        inline constexpr bool operator==(iterator o) const { return i == const_iterator(o).i; }
+        inline constexpr bool operator!=(iterator o) const { return i != const_iterator(o).i; }
+        inline constexpr bool operator==(pointer p) const { return i == p; }
+        inline constexpr bool operator!=(pointer p) const { return i != p; }
         inline const_iterator &operator++() { ++i; return *this; }
         inline const_iterator operator++(int) { const T *n = i; ++i; return n; }
         inline const_iterator &operator--() { i--; return *this; }
