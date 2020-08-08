@@ -1134,7 +1134,7 @@ QLayoutItem *QLayout::replaceWidget(QWidget *from, QWidget *to, Qt::FindChildOpt
     \fn QLayoutItem *QLayout::itemAt(int index) const
 
     Must be implemented in subclasses to return the layout item at \a
-    index. If there is no such item, the function must return 0.
+    index. If there is no such item, the function must return \nullptr.
     Items are numbered consecutively from 0. If an item is deleted, other items will be renumbered.
 
     This function can be used to iterate over a layout. The following
