@@ -50,6 +50,10 @@
 #include <qt_windows.h>
 #endif
 
+#if __has_include(<bit>)
+#include <bit>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 enum { Endian = 0, Data = 1 };
@@ -60,12 +64,16 @@ static const uchar utf8bom[] = { 0xef, 0xbb, 0xbf };
     || (defined(__ARM_NEON__) && defined(Q_PROCESSOR_ARM_64))
 static Q_ALWAYS_INLINE uint qBitScanReverse(unsigned v) noexcept
 {
+#if defined(__cpp_lib_int_pow2) && __cpp_lib_int_pow2 >= 202002L
+     return std::bit_width(v) - 1;
+#else
     uint result = qCountLeadingZeroBits(v);
     // Now Invert the result: clz will count *down* from the msb to the lsb, so the msb index is 31
     // and the lsb index is 0. The result for _bit_scan_reverse is expected to be the index when
     // counting up: msb index is 0 (because it starts there), and the lsb index is 31.
     result ^= sizeof(unsigned) * 8 - 1;
     return result;
+#endif
 }
 #endif
 

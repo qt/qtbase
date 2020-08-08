@@ -47,6 +47,10 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qalgorithms.h>
 
+#if __has_include(<bit>)
+#include <bit>
+#endif
+
 #ifndef _USE_MATH_DEFINES
 #  define _USE_MATH_DEFINES
 #  define undef_USE_MATH_DEFINES
@@ -298,7 +302,9 @@ constexpr inline quint64 qConstexprNextPowerOfTwo(qint64 v)
 
 constexpr inline quint32 qNextPowerOfTwo(quint32 v)
 {
-#if defined(QT_HAS_BUILTIN_CLZ)
+#if defined(__cpp_lib_int_pow2) && __cpp_lib_int_pow2 >= 202002L
+    return std::bit_ceil(v + 1);
+#elif defined(QT_HAS_BUILTIN_CLZ)
     if (v == 0)
         return 1;
     return 2U << (31 ^ QAlgorithmsPrivate::qt_builtin_clz(v));
@@ -309,7 +315,9 @@ constexpr inline quint32 qNextPowerOfTwo(quint32 v)
 
 constexpr inline quint64 qNextPowerOfTwo(quint64 v)
 {
-#if defined(QT_HAS_BUILTIN_CLZLL)
+#if defined(__cpp_lib_int_pow2) && __cpp_lib_int_pow2 >= 202002L
+    return std::bit_ceil(v + 1);
+#elif defined(QT_HAS_BUILTIN_CLZLL)
     if (v == 0)
         return 1;
     return Q_UINT64_C(2) << (63 ^ QAlgorithmsPrivate::qt_builtin_clzll(v));

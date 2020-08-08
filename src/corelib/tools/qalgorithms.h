@@ -42,6 +42,10 @@
 
 #include <QtCore/qglobal.h>
 
+#if __has_include(<bit>)
+#include <bit>
+#endif
+
 #ifdef Q_CC_MSVC
 #include <intrin.h>
 #endif
@@ -139,8 +143,6 @@ constexpr Q_ALWAYS_INLINE uint qt_builtin_popcountll(quint64 v) noexcept
     return __builtin_popcountll(v);
 }
 #elif defined(Q_CC_MSVC) && !defined(Q_PROCESSOR_ARM)
-#define QT_POPCOUNT_CONSTEXPR
-#define QT_POPCOUNT_RELAXED_CONSTEXPR
 #define QT_HAS_BUILTIN_CTZ
 Q_ALWAYS_INLINE unsigned long qt_builtin_ctz(quint32 val)
 {
@@ -199,7 +201,11 @@ Q_ALWAYS_INLINE uint qt_builtin_clzs(quint16 v) noexcept
 //    architecture), but unlike the other compilers, MSVC has no option
 //    to generate code for those processors.
 // So it's an acceptable compromise.
-#if defined(__AVX__) || defined(__SSE4_2__) || defined(__POPCNT__)
+#if defined(__cpp_lib_bitops) && __cpp_lib_bitops >= 201907L
+// We use C++20 <bit> operations instead which ensures constexpr popcount
+#elif defined(__AVX__) || defined(__SSE4_2__) || defined(__POPCNT__)
+#define QT_POPCOUNT_CONSTEXPR
+#define QT_POPCOUNT_RELAXED_CONSTEXPR
 #define QALGORITHMS_USE_BUILTIN_POPCOUNT
 #define QALGORITHMS_USE_BUILTIN_POPCOUNTLL
 Q_ALWAYS_INLINE uint qt_builtin_popcount(quint32 v) noexcept
@@ -237,7 +243,9 @@ Q_ALWAYS_INLINE uint qt_builtin_popcountll(quint64 v) noexcept
 
 Q_DECL_CONST_FUNCTION QT_POPCOUNT_CONSTEXPR inline uint qPopulationCount(quint32 v) noexcept
 {
-#ifdef QALGORITHMS_USE_BUILTIN_POPCOUNT
+#if defined(__cpp_lib_bitops) && __cpp_lib_bitops >= 201907L
+    return std::popcount(v);
+#elif defined QALGORITHMS_USE_BUILTIN_POPCOUNT
     return QAlgorithmsPrivate::qt_builtin_popcount(v);
 #else
     // See http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel
@@ -250,7 +258,9 @@ Q_DECL_CONST_FUNCTION QT_POPCOUNT_CONSTEXPR inline uint qPopulationCount(quint32
 
 Q_DECL_CONST_FUNCTION QT_POPCOUNT_CONSTEXPR inline uint qPopulationCount(quint8 v) noexcept
 {
-#ifdef QALGORITHMS_USE_BUILTIN_POPCOUNT
+#if defined(__cpp_lib_bitops) && __cpp_lib_bitops >= 201907L
+    return std::popcount(v);
+#elif defined QALGORITHMS_USE_BUILTIN_POPCOUNT
     return QAlgorithmsPrivate::qt_builtin_popcount(v);
 #else
     return
@@ -260,7 +270,9 @@ Q_DECL_CONST_FUNCTION QT_POPCOUNT_CONSTEXPR inline uint qPopulationCount(quint8 
 
 Q_DECL_CONST_FUNCTION QT_POPCOUNT_CONSTEXPR inline uint qPopulationCount(quint16 v) noexcept
 {
-#ifdef QALGORITHMS_USE_BUILTIN_POPCOUNT
+#if defined(__cpp_lib_bitops) && __cpp_lib_bitops >= 201907L
+    return std::popcount(v);
+#elif defined QALGORITHMS_USE_BUILTIN_POPCOUNT
     return QAlgorithmsPrivate::qt_builtin_popcount(v);
 #else
     return
@@ -271,7 +283,9 @@ Q_DECL_CONST_FUNCTION QT_POPCOUNT_CONSTEXPR inline uint qPopulationCount(quint16
 
 Q_DECL_CONST_FUNCTION QT_POPCOUNT_CONSTEXPR inline uint qPopulationCount(quint64 v) noexcept
 {
-#ifdef QALGORITHMS_USE_BUILTIN_POPCOUNTLL
+#if defined(__cpp_lib_bitops) && __cpp_lib_bitops >= 201907L
+    return std::popcount(v);
+#elif defined QALGORITHMS_USE_BUILTIN_POPCOUNTLL
     return QAlgorithmsPrivate::qt_builtin_popcountll(v);
 #else
     return
@@ -289,7 +303,7 @@ Q_DECL_CONST_FUNCTION QT_POPCOUNT_CONSTEXPR inline uint qPopulationCount(long un
     return qPopulationCount(static_cast<quint64>(v));
 }
 
-#if defined(Q_CC_GNU) && !defined(Q_CC_CLANG)
+#if defined(QALGORITHMS_USE_BUILTIN_POPCOUNT)
 #undef QALGORITHMS_USE_BUILTIN_POPCOUNT
 #endif
 #undef QT_POPCOUNT_CONSTEXPR
@@ -347,7 +361,9 @@ constexpr inline uint qConstexprCountTrailingZeroBits(unsigned long v) noexcept
 
 constexpr inline uint qCountTrailingZeroBits(quint32 v) noexcept
 {
-#if defined(QT_HAS_BUILTIN_CTZ)
+#if defined(__cpp_lib_bitops) && __cpp_lib_bitops >= 201907L
+    return std::countr_zero(v);
+#elif defined(QT_HAS_BUILTIN_CTZ)
     return v ? QAlgorithmsPrivate::qt_builtin_ctz(v) : 32U;
 #else
     return QtPrivate::qConstexprCountTrailingZeroBits(v);
@@ -356,7 +372,9 @@ constexpr inline uint qCountTrailingZeroBits(quint32 v) noexcept
 
 constexpr inline uint qCountTrailingZeroBits(quint8 v) noexcept
 {
-#if defined(QT_HAS_BUILTIN_CTZ)
+#if defined(__cpp_lib_bitops) && __cpp_lib_bitops >= 201907L
+    return std::countr_zero(v);
+#elif defined(QT_HAS_BUILTIN_CTZ)
     return v ? QAlgorithmsPrivate::qt_builtin_ctz(v) : 8U;
 #else
     return QtPrivate::qConstexprCountTrailingZeroBits(v);
@@ -365,7 +383,9 @@ constexpr inline uint qCountTrailingZeroBits(quint8 v) noexcept
 
 constexpr inline uint qCountTrailingZeroBits(quint16 v) noexcept
 {
-#if defined(QT_HAS_BUILTIN_CTZS)
+#if defined(__cpp_lib_bitops) && __cpp_lib_bitops >= 201907L
+    return std::countr_zero(v);
+#elif defined(QT_HAS_BUILTIN_CTZS)
     return v ? QAlgorithmsPrivate::qt_builtin_ctzs(v) : 16U;
 #else
     return QtPrivate::qConstexprCountTrailingZeroBits(v);
@@ -374,7 +394,9 @@ constexpr inline uint qCountTrailingZeroBits(quint16 v) noexcept
 
 constexpr inline uint qCountTrailingZeroBits(quint64 v) noexcept
 {
-#if defined(QT_HAS_BUILTIN_CTZLL)
+#if defined(__cpp_lib_bitops) && __cpp_lib_bitops >= 201907L
+    return std::countr_zero(v);
+#elif defined(QT_HAS_BUILTIN_CTZLL)
     return v ? QAlgorithmsPrivate::qt_builtin_ctzll(v) : 64;
 #else
     return QtPrivate::qConstexprCountTrailingZeroBits(v);
@@ -386,9 +408,11 @@ constexpr inline uint qCountTrailingZeroBits(unsigned long v) noexcept
     return qCountTrailingZeroBits(QIntegerForSizeof<long>::Unsigned(v));
 }
 
-constexpr inline uint qCountLeadingZeroBits(quint32 v) noexcept
+QT_POPCOUNT_RELAXED_CONSTEXPR inline uint qCountLeadingZeroBits(quint32 v) noexcept
 {
-#if defined(QT_HAS_BUILTIN_CLZ)
+#if defined(__cpp_lib_bitops) && __cpp_lib_bitops >= 201907L
+    return std::countl_zero(v);
+#elif defined(QT_HAS_BUILTIN_CLZ)
     return v ? QAlgorithmsPrivate::qt_builtin_clz(v) : 32U;
 #else
     // Hacker's Delight, 2nd ed. Fig 5-16, p. 102
@@ -403,7 +427,9 @@ constexpr inline uint qCountLeadingZeroBits(quint32 v) noexcept
 
 QT_POPCOUNT_RELAXED_CONSTEXPR inline uint qCountLeadingZeroBits(quint8 v) noexcept
 {
-#if defined(QT_HAS_BUILTIN_CLZ)
+#if defined(__cpp_lib_bitops) && __cpp_lib_bitops >= 201907L
+    return std::countl_zero(v);
+#elif defined(QT_HAS_BUILTIN_CLZ)
     return v ? QAlgorithmsPrivate::qt_builtin_clz(v)-24U : 8U;
 #else
     v = v | (v >> 1);
@@ -415,7 +441,9 @@ QT_POPCOUNT_RELAXED_CONSTEXPR inline uint qCountLeadingZeroBits(quint8 v) noexce
 
 QT_POPCOUNT_RELAXED_CONSTEXPR inline uint qCountLeadingZeroBits(quint16 v) noexcept
 {
-#if defined(QT_HAS_BUILTIN_CLZS)
+#if defined(__cpp_lib_bitops) && __cpp_lib_bitops >= 201907L
+    return std::countl_zero(v);
+#elif defined(QT_HAS_BUILTIN_CLZS)
     return v ? QAlgorithmsPrivate::qt_builtin_clzs(v) : 16U;
 #else
     v = v | (v >> 1);
@@ -428,7 +456,9 @@ QT_POPCOUNT_RELAXED_CONSTEXPR inline uint qCountLeadingZeroBits(quint16 v) noexc
 
 QT_POPCOUNT_RELAXED_CONSTEXPR inline uint qCountLeadingZeroBits(quint64 v) noexcept
 {
-#if defined(QT_HAS_BUILTIN_CLZLL)
+#if defined(__cpp_lib_bitops) && __cpp_lib_bitops >= 201907L
+    return std::countl_zero(v);
+#elif defined(QT_HAS_BUILTIN_CLZLL)
     return v ? QAlgorithmsPrivate::qt_builtin_clzll(v) : 64U;
 #else
     v = v | (v >> 1);
@@ -445,6 +475,8 @@ QT_POPCOUNT_RELAXED_CONSTEXPR inline uint qCountLeadingZeroBits(unsigned long v)
 {
     return qCountLeadingZeroBits(QIntegerForSizeof<long>::Unsigned(v));
 }
+
+#undef QT_POPCOUNT_RELAXED_CONSTEXPR
 
 QT_END_NAMESPACE
 
