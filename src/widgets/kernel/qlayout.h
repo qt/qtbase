@@ -117,8 +117,8 @@ public:
     virtual void setGeometry(const QRect&) override;
     virtual QLayoutItem *itemAt(int index) const = 0;
     virtual QLayoutItem *takeAt(int index) = 0;
-    virtual int indexOf(QWidget *) const;
-    QT6_VIRTUAL int indexOf(QLayoutItem *) const;
+    virtual int indexOf(const QWidget *) const;
+    virtual int indexOf(const QLayoutItem *) const;
     virtual int count() const = 0;
     bool isEmpty() const override;
     QSizePolicy::ControlTypes controlTypes() const override;

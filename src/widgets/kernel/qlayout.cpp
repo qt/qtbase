@@ -1177,9 +1177,9 @@ QLayoutItem *QLayout::replaceWidget(QWidget *from, QWidget *to, Qt::FindChildOpt
 
     Returns the index of \a widget, or -1 if \a widget is not found.
 
-    The default implementation iterates over all items using itemAt()
+    The default implementation iterates over all items using itemAt().
 */
-int QLayout::indexOf(QWidget *widget) const
+int QLayout::indexOf(const QWidget *widget) const
 {
     int i = 0;
     QLayoutItem *item = itemAt(i);
@@ -1199,7 +1199,7 @@ int QLayout::indexOf(QWidget *widget) const
 
     Returns the index of \a layoutItem, or -1 if \a layoutItem is not found.
 */
-int QLayout::indexOf(QLayoutItem *layoutItem) const
+int QLayout::indexOf(const QLayoutItem *layoutItem) const
 {
     int i = 0;
     QLayoutItem *item = itemAt(i);
