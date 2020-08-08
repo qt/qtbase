@@ -7480,7 +7480,7 @@ QMargins QWidgetPrivate::safeAreaMargins() const
             if (layout->geometry().isNull())
                 continue; // Layout hasn't been activated yet
 
-            if (layout->indexOf(const_cast<QWidget *>(w)) < 0)
+            if (layout->indexOf(w) < 0)
                 continue; // Widget is not in layout
 
             assumedSafeWidget = w;
