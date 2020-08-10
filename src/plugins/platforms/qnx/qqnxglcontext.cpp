@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 
 static QEGLPlatformContext::Flags makeFlags()
 {
-    QEGLPlatformContext::Flags result = 0;
+    QEGLPlatformContext::Flags result = {};
 
     if (!QQnxIntegration::instance()->options().testFlag(QQnxIntegration::SurfacelessEGLContext))
         result |= QEGLPlatformContext::NoSurfaceless;
@@ -69,7 +69,7 @@ static QEGLPlatformContext::Flags makeFlags()
 }
 
 QQnxGLContext::QQnxGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share)
-    : QEGLPlatformContext(format, share, QQnxIntegration::instance()->eglDisplay(), 0, QVariant(),
+    : QEGLPlatformContext(format, share, QQnxIntegration::instance()->eglDisplay(), nullptr,
                           makeFlags())
 {
 }
