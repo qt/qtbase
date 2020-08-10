@@ -2491,19 +2491,17 @@ static bool qt_localtime(qint64 msecsSinceEpoch, QDate *localDate, QTime *localT
 #if QT_CONFIG(thread) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
     // Use the reentrant version of localtime() where available
     // as is thread-safe and doesn't use a shared static data area
-    tm *res = nullptr;
-    res = localtime_r(&secsSinceEpoch, &local);
-    if (res)
+    if (tm *res = localtime_r(&secsSinceEpoch, &local)) {
+        Q_ASSERT(res == &local);
         valid = true;
+    }
 #elif defined(Q_CC_MSVC)
     if (!_localtime64_s(&local, &secsSinceEpoch))
         valid = true;
 #else
     // Returns shared static data which may be overwritten at any time
     // So copy the result asap
-    tm *res = nullptr;
-    res = localtime(&secsSinceEpoch);
-    if (res) {
+    if (tm *res = localtime(&secsSinceEpoch)) {
         local = *res;
         valid = true;
     }
