@@ -1891,9 +1891,11 @@ void QFileDialogComboBox::setHistory(const QStringList &paths)
     m_history = paths;
     // Only populate the first item, showPopup will populate the rest if needed
     QList<QUrl> list;
-    QModelIndex idx = d_ptr->model->index(d_ptr->rootPath());
+    const QModelIndex idx = d_ptr->model->index(d_ptr->rootPath());
     //On windows the popup display the "C:\", convert to nativeSeparators
-    QUrl url = QUrl::fromLocalFile(QDir::toNativeSeparators(idx.data(QFileSystemModel::FilePathRole).toString()));
+    const QUrl url = idx.isValid()
+                   ? QUrl::fromLocalFile(QDir::toNativeSeparators(idx.data(QFileSystemModel::FilePathRole).toString()))
+                   : QUrl(QLatin1String("file:"));
     if (url.isValid())
         list.append(url);
     urlModel->setUrls(list);
@@ -3351,8 +3353,7 @@ void QFileDialogPrivate::saveHistorySelection()
 void QFileDialogPrivate::_q_pathChanged(const QString &newPath)
 {
     Q_Q(QFileDialog);
-    QDir dir(model->rootDirectory());
-    qFileDialogUi->toParentButton->setEnabled(dir.exists());
+    qFileDialogUi->toParentButton->setEnabled(QFileInfo::exists(model->rootPath()));
     qFileDialogUi->sidebar->selectUrl(QUrl::fromLocalFile(newPath));
     q->setHistory(qFileDialogUi->lookInCombo->history());
 
