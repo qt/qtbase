@@ -98,15 +98,15 @@ class QPlatformDialogHelper;
 
 struct QFileDialogArgs
 {
-    QFileDialogArgs() : parent(nullptr), mode(QFileDialog::AnyFile) {}
+    QFileDialogArgs(const QUrl &url = {});
 
-    QWidget *parent;
+    QWidget *parent = nullptr;
     QString caption;
     QUrl directory;
     QString selection;
     QString filter;
-    QFileDialog::FileMode mode;
-    QFileDialog::Options options;
+    QFileDialog::FileMode mode = QFileDialog::AnyFile;
+    QFileDialog::Options options = {};
 };
 
 #define UrlRole (Qt::UserRole + 1)
@@ -133,12 +133,9 @@ public:
     void createMenuActions();
     void createWidgets();
 
-    void init(const QUrl &directory = QUrl(), const QString &nameFilter = QString(),
-              const QString &caption = QString());
+    void init(const QFileDialogArgs &args);
     bool itemViewKeyboardEvent(QKeyEvent *event);
     QString getEnvironmentVariable(const QString &string);
-    static QUrl workingDirectory(const QUrl &path);
-    static QString initialSelection(const QUrl &path);
     QStringList typedFiles() const;
     QList<QUrl> userSelectedFiles() const;
     QStringList addDefaultSuffixToFiles(const QStringList &filesToFix) const;
