@@ -210,7 +210,7 @@ function(qt_internal_create_module_depends_file target)
 endfunction()
 
 function(qt_internal_create_plugin_depends_file target)
-    get_target_property(qt_module "${target}" QT_MODULE)
+    get_target_property(plugin_install_package_suffix "${target}" _qt_plugin_install_package_suffix)
     get_target_property(depends "${target}" LINK_LIBRARIES)
     get_target_property(public_depends "${target}" INTERFACE_LINK_LIBRARIES)
     get_target_property(target_deps "${target}" _qt_target_deps)
@@ -238,8 +238,14 @@ function(qt_internal_create_plugin_depends_file target)
 
     if(third_party_deps OR target_deps)
         # Setup build and install paths
-        if(qt_module)
-            set(path_suffix "${INSTALL_CMAKE_NAMESPACE}${qt_module}")
+        set(find_dependency_paths "\${CMAKE_CURRENT_LIST_DIR}/..")
+        if(plugin_install_package_suffix)
+            set(path_suffix "${INSTALL_CMAKE_NAMESPACE}${plugin_install_package_suffix}")
+            if(plugin_install_package_suffix MATCHES "/QmlPlugins")
+                # Qml plugins are one folder deeper.
+                set(find_dependency_paths "\${CMAKE_CURRENT_LIST_DIR}/../..")
+            endif()
+
         else()
             set(path_suffix "${INSTALL_CMAKE_NAMESPACE}${target}")
         endif()
@@ -250,12 +256,12 @@ function(qt_internal_create_plugin_depends_file target)
         # Configure and install ModuleDependencies file.
         configure_file(
             "${QT_CMAKE_DIR}/QtPluginDependencies.cmake.in"
-            "${config_build_dir}/${target}Dependencies.cmake"
+            "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Dependencies.cmake"
             @ONLY
         )
 
         qt_install(FILES
-            "${config_build_dir}/${target}Dependencies.cmake"
+            "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Dependencies.cmake"
             DESTINATION "${config_install_dir}"
             COMPONENT Devel
         )
@@ -346,8 +352,21 @@ function(qt_internal_create_plugins_files)
         get_target_property(qt_plugins "${QT_MODULE}" QT_PLUGINS)
         if(qt_plugins)
             foreach (pluginTarget ${qt_plugins})
-                set(QT_MODULE_PLUGIN_INCLUDES "${QT_MODULE_PLUGIN_INCLUDES}include(\"\${CMAKE_CURRENT_LIST_DIR}/${pluginTarget}Config.cmake\")\n")
+                set(QT_MODULE_PLUGIN_INCLUDES "${QT_MODULE_PLUGIN_INCLUDES}include(\"\${CMAKE_CURRENT_LIST_DIR}/${INSTALL_CMAKE_NAMESPACE}${pluginTarget}Config.cmake\")\n")
             endforeach()
+        endif()
+
+        if(QT_MODULE STREQUAL "Qml")
+            set(QT_MODULE_PLUGIN_INCLUDES "${QT_MODULE_PLUGIN_INCLUDES}
+file(GLOB __qt_qml_plugins_config_file_list \"\${CMAKE_CURRENT_LIST_DIR}/QmlPlugins/${INSTALL_CMAKE_NAMESPACE}*Config.cmake\")
+if (__qt_qml_plugins_config_file_list AND NOT QT_SKIP_AUTO_QML_PLUGIN_INCLUSION)
+    foreach(__qt_qml_plugin_config_file \${__qt_qml_plugins_config_file_list})
+        include(\${__qt_qml_plugin_config_file})
+    endforeach()
+endif()")
+        endif()
+
+        if(QT_MODULE_PLUGIN_INCLUDES)
             configure_file(
                 "${QT_CMAKE_DIR}/QtPlugins.cmake.in"
                 "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${QT_MODULE}Plugins.cmake"

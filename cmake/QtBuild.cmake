@@ -3804,11 +3804,24 @@ function(qt_internal_add_plugin target)
     if(NOT plugin_type_escaped STREQUAL "qml_plugin")
         qt_get_module_for_plugin("${target}" "${plugin_type_escaped}")
         get_target_property(qt_module "${target}" QT_MODULE)
+        set(plugin_install_package_suffix "${qt_module}")
     endif()
 
     # Add the plug-in to the list of plug-ins of this module
     if(TARGET "${qt_module}")
         set_property(TARGET "${qt_module}" APPEND PROPERTY QT_PLUGINS "${target}")
+    endif()
+
+    # Change the configuration file install location for qml plugins into the Qml package location.
+    if(plugin_type_escaped STREQUAL "qml_plugin" AND TARGET "${INSTALL_CMAKE_NAMESPACE}::Qml")
+        set(plugin_install_package_suffix "Qml/QmlPlugins")
+    endif()
+
+    # Save the install package suffix as a property, so that the Dependencies file is placed
+    # in the current location.
+    if(plugin_install_package_suffix)
+        set_target_properties("${target}" PROPERTIES
+                              _qt_plugin_install_package_suffix "${plugin_install_package_suffix}")
     endif()
 
     set(_default_plugin 1)
@@ -3882,9 +3895,12 @@ function(qt_internal_add_plugin target)
 
     if (NOT arg_SKIP_INSTALL)
         # Handle creation of cmake files for consumers of find_package().
-        # If we are part of a Qt module, the plugin cmake files are installed as part of that module.
-        if(qt_module)
-            set(path_suffix "${INSTALL_CMAKE_NAMESPACE}${qt_module}")
+        # If we are part of a Qt module, the plugin cmake files are installed as part of that
+        # module.
+        # For qml plugins, they are all installed into the QtQml package location for automatic
+        # discovery.
+        if(plugin_install_package_suffix)
+            set(path_suffix "${INSTALL_CMAKE_NAMESPACE}${plugin_install_package_suffix}")
         else()
             set(path_suffix "${INSTALL_CMAKE_NAMESPACE}${target}")
         endif()
@@ -3894,18 +3910,18 @@ function(qt_internal_add_plugin target)
 
         configure_package_config_file(
             "${QT_CMAKE_DIR}/QtPluginConfig.cmake.in"
-            "${config_build_dir}/${target}Config.cmake"
+            "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Config.cmake"
             INSTALL_DESTINATION "${config_install_dir}"
         )
         write_basic_package_version_file(
-            "${config_build_dir}/${target}ConfigVersion.cmake"
+            "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigVersion.cmake"
             VERSION ${PROJECT_VERSION}
             COMPATIBILITY AnyNewerVersion
         )
 
         qt_install(FILES
-            "${config_build_dir}/${target}Config.cmake"
-            "${config_build_dir}/${target}ConfigVersion.cmake"
+            "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Config.cmake"
+            "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigVersion.cmake"
             DESTINATION "${config_install_dir}"
             COMPONENT Devel
         )
