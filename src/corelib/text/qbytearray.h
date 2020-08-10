@@ -426,6 +426,7 @@ public:
 
 private:
     void reallocData(size_t alloc, Data::ArrayOptions options);
+    void reallocGrowData(size_t alloc, Data::ArrayOptions options);
     void expand(qsizetype i);
     QByteArray nulTerminated() const;
 
