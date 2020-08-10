@@ -134,6 +134,8 @@ private Q_SLOTS:
     void objectEquals();
     void arrayEquals_data();
     void arrayEquals();
+    void documentEquals_data();
+    void documentEquals();
 
     void bom();
     void nesting();
@@ -2752,6 +2754,12 @@ void tst_QtJson::objectEquals()
     QCOMPARE(QJsonValue(left) != QJsonValue(right), !result);
     QCOMPARE(QJsonValue(right) == QJsonValue(left), result);
     QCOMPARE(QJsonValue(right) != QJsonValue(left), !result);
+
+    // The same, but from a QJsonDocument perspective
+    QCOMPARE(QJsonDocument(left) == QJsonDocument(right), result);
+    QCOMPARE(QJsonDocument(left) != QJsonDocument(right), !result);
+    QCOMPARE(QJsonDocument(right) == QJsonDocument(left), result);
+    QCOMPARE(QJsonDocument(right) != QJsonDocument(left), !result);
 }
 
 void tst_QtJson::arrayEquals_data()
@@ -2805,6 +2813,59 @@ void tst_QtJson::arrayEquals()
     QCOMPARE(QJsonValue(left) != QJsonValue(right), !result);
     QCOMPARE(QJsonValue(right) == QJsonValue(left), result);
     QCOMPARE(QJsonValue(right) != QJsonValue(left), !result);
+
+    // The same but from QJsonDocument perspective
+    QCOMPARE(QJsonDocument(left) == QJsonDocument(right), result);
+    QCOMPARE(QJsonDocument(left) != QJsonDocument(right), !result);
+    QCOMPARE(QJsonDocument(right) == QJsonDocument(left), result);
+    QCOMPARE(QJsonDocument(right) != QJsonDocument(left), !result);
+}
+
+void tst_QtJson::documentEquals_data()
+{
+    QTest::addColumn<QJsonDocument>("left");
+    QTest::addColumn<QJsonDocument>("right");
+    QTest::addColumn<bool>("result");
+
+    QTest::newRow("two defaults") << QJsonDocument() << QJsonDocument() << true;
+
+    QJsonDocument emptyobj(QJsonObject{});
+    QJsonDocument emptyarr(QJsonArray{});
+    QTest::newRow("emptyarray vs default") << emptyarr << QJsonDocument() << false;
+    QTest::newRow("emptyobject vs default") << emptyobj << QJsonDocument() << false;
+    QTest::newRow("emptyarray vs emptyobject") << emptyarr << emptyobj << false;
+
+    QJsonDocument array1(QJsonArray{1});
+    QJsonDocument array2(QJsonArray{2});
+    QTest::newRow("emptyarray vs emptyarray") << emptyarr << emptyarr << true;
+    QTest::newRow("emptyarray vs array") << emptyarr << array1 << false;
+    QTest::newRow("array vs array") << array1 << array1 << true;
+    QTest::newRow("array vs otherarray") << array1 << array2 << false;
+
+    QJsonDocument object1(QJsonObject{{"hello", "world"}});
+    QJsonDocument object2(QJsonObject{{"hello", 2}});
+    QTest::newRow("emptyobject vs emptyobject") << emptyobj << emptyobj << true;
+    QTest::newRow("emptyobject vs object") << emptyobj << object1 << false;
+    QTest::newRow("object vs object") << object1 << object1 << true;
+    QTest::newRow("object vs otherobject") << object1 << object2 << false;
+
+    QTest::newRow("object vs array") << array1 << object1 << false;
+}
+
+void tst_QtJson::documentEquals()
+{
+    QFETCH(QJsonDocument, left);
+    QFETCH(QJsonDocument, right);
+    QFETCH(bool, result);
+
+    QCOMPARE(left == right, result);
+    QCOMPARE(right == left, result);
+
+    // invariants checks
+    QCOMPARE(left, left);
+    QCOMPARE(right, right);
+    QCOMPARE(left != right, !result);
+    QCOMPARE(right != left, !result);
 }
 
 void tst_QtJson::bom()

@@ -690,7 +690,9 @@ const QJsonValue QJsonDocument::operator[](int i) const
  */
 bool QJsonDocument::operator==(const QJsonDocument &other) const
 {
-    return (!d) ? (!other.d) : (d->value == other.d->value);
+    if (d && other.d)
+        return d->value == other.d->value;
+    return !d == !other.d;
 }
 
 /*!
