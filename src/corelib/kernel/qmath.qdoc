@@ -205,6 +205,30 @@
 */
 
 /*!
+    \fn long double qDegreesToRadians(long double degrees)
+    \relates <QtMath>
+    \since 6.0
+
+    This function converts the \a degrees in double to radians.
+
+    \sa qRadiansToDegrees()
+*/
+
+/*!
+    \fn template <typename Integral> double qDegreesToRadians(Integral degrees)
+    \relates <QtMath>
+    \since 6.0
+
+    This function converts the \a degrees in double to radians;
+    the angle is casted to a double before the conversion.
+
+    This function participates in overload resolution if and only if
+    \c Integral is an integral type.
+
+    \sa qRadiansToDegrees()
+*/
+
+/*!
     \fn float qRadiansToDegrees(float radians)
     \relates <QtMath>
     \since 5.1
@@ -228,6 +252,16 @@
     Example:
 
     \snippet code/src_corelib_kernel_qmath.cpp 3
+
+    \sa qDegreesToRadians()
+*/
+
+/*!
+    \fn long double qRadiansToDegrees(long double radians)
+    \relates <QtMath>
+    \since 6.0
+
+    This function converts the \a radians in double to degrees.
 
     \sa qDegreesToRadians()
 */

@@ -233,6 +233,17 @@ Q_DECL_CONSTEXPR inline double qDegreesToRadians(double degrees)
     return degrees * (M_PI / 180);
 }
 
+Q_DECL_CONSTEXPR inline long double qDegreesToRadians(long double degrees)
+{
+    return degrees * (M_PI / 180);
+}
+
+template <typename T, std::enable_if_t<std::is_integral_v<T>, bool> = true>
+Q_DECL_CONSTEXPR inline double qDegreesToRadians(T degrees)
+{
+    return qDegreesToRadians(static_cast<double>(degrees));
+}
+
 Q_DECL_CONSTEXPR inline float qRadiansToDegrees(float radians)
 {
     return radians * float(180/M_PI);
@@ -242,6 +253,15 @@ Q_DECL_CONSTEXPR inline double qRadiansToDegrees(double radians)
 {
     return radians * (180 / M_PI);
 }
+
+Q_DECL_CONSTEXPR inline long double qRadiansToDegrees(long double radians)
+{
+    return radians * (180 / M_PI);
+}
+
+// A qRadiansToDegrees(Integral) overload isn't here; it's extremely
+// questionable that someone is manipulating quantities in radians
+// using integral datatypes...
 
 namespace QtPrivate {
 constexpr inline quint32 qConstexprNextPowerOfTwo(quint32 v) {
