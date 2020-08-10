@@ -627,10 +627,9 @@ void tst_QDateTime::setMSecsSinceEpoch_data()
             << QDateTime(QDate::fromJulianDay(0x7fffffff), QTime(21, 59, 59, 999), Qt::UTC)
             << QDateTime(QDate::fromJulianDay(0x7fffffff), QTime(23, 59, 59, 999));
     QTest::newRow("min")
-            // Use -max(), which is min() + 1, to simplify filtering out overflow cases:
-            << -std::numeric_limits<qint64>::max()
-            << QDateTime(QDate(-292275056, 5, 16), QTime(16, 47, 4, 193), Qt::UTC)
-            << QDateTime(QDate(-292275056, 5, 16), QTime(17, 47, 4, 193), Qt::LocalTime);
+            << std::numeric_limits<qint64>::min()
+            << QDateTime(QDate(-292275056, 5, 16), QTime(16, 47, 4, 192), Qt::UTC)
+            << QDateTime(QDate(-292275056, 5, 16), QTime(17, 47, 4, 192), Qt::LocalTime);
     QTest::newRow("max")
             << std::numeric_limits<qint64>::max()
             << QDateTime(QDate(292278994, 8, 17), QTime(7, 12, 55, 807), Qt::UTC)
@@ -732,11 +731,14 @@ void tst_QDateTime::fromMSecsSinceEpoch()
     QDateTime dtLocal = QDateTime::fromMSecsSinceEpoch(msecs, Qt::LocalTime);
     QDateTime dtUtc = QDateTime::fromMSecsSinceEpoch(msecs, Qt::UTC);
     QDateTime dtOffset = QDateTime::fromMSecsSinceEpoch(msecs, Qt::OffsetFromUTC, 60*60);
-
+    using Bound = std::numeric_limits<qint64>;
     // LocalTime will overflow for "min" or "max" tests, depending on whether
     // you're East or West of Greenwich.  In UTC, we won't overflow.
-    if (localTimeType == LocalTimeIsUtc
-            || msecs != std::numeric_limits<qint64>::max() * localTimeType)
+    const bool localOverflow = (localTimeType == LocalTimeAheadOfUtc ? msecs == Bound::max()
+                                : localTimeType == LocalTimeBehindUtc ? msecs == Bound::min()
+                                : false);
+
+    if (!localOverflow)
         QCOMPARE(dtLocal, utc);
 
     QCOMPARE(dtUtc, utc);
@@ -745,8 +747,7 @@ void tst_QDateTime::fromMSecsSinceEpoch()
 
     QCOMPARE(dtOffset, utc);
     QCOMPARE(dtOffset.offsetFromUtc(), 60*60);
-    // // OffsetFromUTC will overflow for max
-    if (msecs != std::numeric_limits<qint64>::max())
+    if (msecs != Bound::max()) // Offset is positive, so overflows max
         QCOMPARE(dtOffset.time(), utc.time().addMSecs(60*60*1000));
 
     if (zoneIsCET) {
@@ -755,8 +756,7 @@ void tst_QDateTime::fromMSecsSinceEpoch()
         QCOMPARE(dtOffset.toLocalTime(), cet);
     }
 
-    // LocalTime will overflow for max
-    if (msecs != std::numeric_limits<qint64>::max())
+    if (!localOverflow)
         QCOMPARE(dtLocal.toMSecsSinceEpoch(), msecs);
     QCOMPARE(dtUtc.toMSecsSinceEpoch(), msecs);
     QCOMPARE(dtOffset.toMSecsSinceEpoch(), msecs);
@@ -768,8 +768,7 @@ void tst_QDateTime::fromMSecsSinceEpoch()
     }
 
     QDateTime reference(QDate(1970, 1, 1), QTime(), Qt::UTC);
-    // LocalTime will overflow for max
-    if (msecs != std::numeric_limits<qint64>::max())
+    if (!localOverflow)
         QCOMPARE(dtLocal, reference.addMSecs(msecs));
     QCOMPARE(dtUtc, reference.addMSecs(msecs));
     QCOMPARE(dtOffset, reference.addMSecs(msecs));
