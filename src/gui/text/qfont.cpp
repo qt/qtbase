@@ -1988,7 +1988,13 @@ QString QFont::toString() const
         QString::number((int) underline()) + comma +
         QString::number((int) strikeOut()) + comma +
         QString::number((int)fixedPitch()) + comma +
-        QString::number((int)   false);
+        QString::number((int)   false) + comma +
+        QString::number((int)capitalization()) + comma +
+        QString::number((int)letterSpacingType()) + comma +
+        QString::number(letterSpacing()) + comma +
+        QString::number(wordSpacing()) + comma +
+        QString::number(stretch()) + comma +
+        QString::number((int)styleStrategy());
 
     QString fontStyle = styleName();
     if (!fontStyle.isEmpty())
@@ -2022,7 +2028,7 @@ bool QFont::fromString(const QString &descrip)
     const auto sr = QStringView(descrip).trimmed();
     const auto l = sr.split(QLatin1Char(','));
     const int count = l.count();
-    if (!count || (count > 2 && count < 9) || count > 11 ||
+    if (!count || (count > 2 && count < 9) || count == 9 || count > 17 ||
         l.first().isEmpty()) {
         qWarning("QFont::fromString: Invalid description '%s'",
                  descrip.isEmpty() ? "(empty)" : descrip.toLatin1().data());
@@ -2048,8 +2054,15 @@ bool QFont::fromString(const QString &descrip)
         setUnderline(l[6].toInt());
         setStrikeOut(l[7].toInt());
         setFixedPitch(l[8].toInt());
-        if (count == 11)
-            d->request.styleName = l[10].toString();
+        if (count >= 16) {
+            setCapitalization((Capitalization)l[10].toInt());
+            setLetterSpacing((SpacingType)l[11].toInt(), l[12].toDouble());
+            setWordSpacing(l[13].toDouble());
+            setStretch(l[14].toInt());
+            setStyleStrategy((StyleStrategy)l[15].toInt());
+        }
+        if (count == 11 || count == 17)
+            d->request.styleName = l[count - 1].toString();
         else
             d->request.styleName.clear();
     }
