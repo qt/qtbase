@@ -141,14 +141,24 @@ QQnxScreenEventHandler::QQnxScreenEventHandler(QQnxIntegration *integration)
     , m_lastButtonState(Qt::NoButton)
     , m_lastMouseWindow(0)
     , m_touchDevice(0)
+    , m_mouseDevice(0)
     , m_eventThread(0)
     , m_focusLostTimer(-1)
 {
     // Create a touch device
-    m_touchDevice = new QPointingDevice;
-    m_touchDevice->setType(QInputDevice::DeviceType::TouchScreen);
-    m_touchDevice->setCapabilities(QPointingDevice::Capability::Position | QPointingDevice::Capability::Area | QPointingDevice::Capability::Pressure | QPointingDevice::Capability::NormalizedPosition);
+    m_touchDevice = new QPointingDevice(
+            QLatin1String("touchscreen"), 1, QInputDevice::DeviceType::TouchScreen,
+            QPointingDevice::PointerType::Finger,
+            QPointingDevice::Capability::Position | QPointingDevice::Capability::Area
+                    | QPointingDevice::Capability::Pressure
+                    | QPointingDevice::Capability::NormalizedPosition,
+            MaximumTouchPoints, 8);
     QWindowSystemInterface::registerInputDevice(m_touchDevice);
+
+    m_mouseDevice = new QPointingDevice(QLatin1String("mouse"), 2, QInputDevice::DeviceType::Mouse,
+                                        QPointingDevice::PointerType::Generic,
+                                        QPointingDevice::Capability::Position, 1, 8);
+    QWindowSystemInterface::registerInputDevice(m_mouseDevice);
 
     // initialize array of touch points
     for (int i = 0; i < MaximumTouchPoints; i++) {
@@ -377,6 +387,10 @@ void QQnxScreenEventHandler::handlePointerEvent(screen_event_t event)
             screen_get_event_property_iv(event, SCREEN_PROPERTY_MOUSE_WHEEL, &wheelDelta),
             "Failed to query event wheel delta");
 
+    long long timestamp;
+    Q_SCREEN_CHECKERROR(screen_get_event_property_llv(event, SCREEN_PROPERTY_TIMESTAMP, &timestamp),
+                        "Failed to get timestamp");
+
     // Map window handle to top-level QWindow
     QWindow *w = QQnxIntegration::instance()->window(qnxWindow);
 
@@ -431,8 +445,9 @@ void QQnxScreenEventHandler::handlePointerEvent(screen_event_t event)
     if (w) {
         // Inject mouse event into Qt only if something has changed.
         if (m_lastGlobalMousePoint != globalPoint || m_lastLocalMousePoint != localPoint) {
-            QWindowSystemInterface::handleMouseEvent(w, localPoint, globalPoint, buttons,
-                                                     Qt::NoButton, QEvent::MouseMove);
+            QWindowSystemInterface::handleMouseEvent(w, timestamp, m_mouseDevice, localPoint,
+                                                     globalPoint, buttons, Qt::NoButton,
+                                                     QEvent::MouseMove);
             qScreenEventDebug() << "Qt mouse move, w=" << w << ", (" << localPoint.x() << ","
                                 << localPoint.y() << "), b=" << static_cast<int>(buttons);
         }
@@ -446,7 +461,8 @@ void QQnxScreenEventHandler::handlePointerEvent(screen_event_t event)
             int releasedButtons = (m_lastButtonState ^ buttons) & ~buttons;
             for (auto button : supportedButtons) {
                 if (releasedButtons & button) {
-                    QWindowSystemInterface::handleMouseEvent(w, localPoint, globalPoint, buttons,
+                    QWindowSystemInterface::handleMouseEvent(w, timestamp, m_mouseDevice,
+                                                             localPoint, globalPoint, buttons,
                                                              button, QEvent::MouseButtonRelease);
                     qScreenEventDebug() << "Qt mouse release, w=" << w << ", (" << localPoint.x()
                                         << "," << localPoint.y() << "), b=" << button;
@@ -460,7 +476,8 @@ void QQnxScreenEventHandler::handlePointerEvent(screen_event_t event)
             int pressedButtons = (m_lastButtonState ^ buttons) & buttons;
             for (auto button : supportedButtons) {
                 if (pressedButtons & button) {
-                    QWindowSystemInterface::handleMouseEvent(w, localPoint, globalPoint, buttons,
+                    QWindowSystemInterface::handleMouseEvent(w, timestamp, m_mouseDevice,
+                                                             localPoint, globalPoint, buttons,
                                                              button, QEvent::MouseButtonPress);
                     qScreenEventDebug() << "Qt mouse press, w=" << w << ", (" << localPoint.x()
                                         << "," << localPoint.y() << "), b=" << button;
@@ -472,7 +489,8 @@ void QQnxScreenEventHandler::handlePointerEvent(screen_event_t event)
             // Screen only supports a single wheel, so we will assume Vertical orientation for
             // now since that is pretty much standard.
             QPoint angleDelta(0, wheelDelta);
-            QWindowSystemInterface::handleWheelEvent(w, localPoint, globalPoint, QPoint(), angleDelta);
+            QWindowSystemInterface::handleWheelEvent(w, timestamp, m_mouseDevice, localPoint,
+                                                     globalPoint, QPoint(), angleDelta);
             qScreenEventDebug() << "Qt wheel, w=" << w << ", (" << localPoint.x() << ","
                                 << localPoint.y() << "), d=" << static_cast<int>(wheelDelta);
         }
