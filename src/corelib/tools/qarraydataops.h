@@ -215,6 +215,10 @@ struct QArrayExceptionSafetyPrimitives
     };
 };
 
+// Tags for compile-time dispatch based on backwards vs forward growing policy
+struct GrowsForwardTag {};
+struct GrowsBackwardsTag {};
+
 QT_WARNING_PUSH
 #if defined(Q_CC_GNU) && Q_CC_GNU >= 700
 QT_WARNING_DISABLE_GCC("-Wstringop-overflow")
@@ -285,6 +289,9 @@ public:
     }
 
     void insert(T *where, const T *b, const T *e)
+    { insert(GrowsForwardTag{}, where, b, e); }
+
+    void insert(GrowsForwardTag, T *where, const T *b, const T *e)
     {
         Q_ASSERT(this->isMutable() || (b == e && where == this->end()));
         Q_ASSERT(!this->isShared() || (b == e && where == this->end()));
@@ -299,7 +306,28 @@ public:
         this->size += (e - b);
     }
 
+    void insert(GrowsBackwardsTag, T *where, const T *b, const T *e)
+    {
+        Q_ASSERT(this->isMutable() || (b == e && where == this->end()));
+        Q_ASSERT(!this->isShared() || (b == e && where == this->end()));
+        Q_ASSERT(where >= this->begin() && where <= this->end());
+        Q_ASSERT(b <= e);
+        Q_ASSERT(e <= where || b > this->end() || where == this->end()); // No overlap or append
+        Q_ASSERT((e - b) <= this->freeSpaceAtBegin());
+
+        auto oldBegin = this->begin();
+        this->ptr -= (e - b);
+        ::memmove(static_cast<void *>(this->begin()), static_cast<void *>(oldBegin),
+                  (where - static_cast<const T*>(oldBegin)) * sizeof(T));
+        ::memcpy(static_cast<void *>(where - (e - b)), static_cast<const void *>(b),
+                 (e - b) * sizeof(T));
+        this->size += (e - b);
+    }
+
     void insert(T *where, size_t n, parameter_type t)
+    { insert(GrowsForwardTag{}, where, n, t); }
+
+    void insert(GrowsForwardTag, T *where, size_t n, parameter_type t)
     {
         Q_ASSERT(!this->isShared() || (n == 0 && where == this->end()));
         Q_ASSERT(where >= this->begin() && where <= this->end());
@@ -312,11 +340,31 @@ public:
             *where++ = t;
     }
 
+    void insert(GrowsBackwardsTag, T *where, size_t n, parameter_type t)
+    {
+        Q_ASSERT(!this->isShared() || (n == 0 && where == this->end()));
+        Q_ASSERT(where >= this->begin() && where <= this->end());
+        Q_ASSERT(size_t(this->freeSpaceAtBegin()) >= n);
+
+        auto oldBegin = this->begin();
+        this->ptr -= n;
+        ::memmove(static_cast<void *>(this->begin()), static_cast<void *>(oldBegin),
+                  (where - static_cast<const T*>(oldBegin)) * sizeof(T));
+        this->size += qsizetype(n); // PODs can't throw on copy
+        where -= n;
+        while (n--)
+            *where++ = t;
+    }
+
     template <typename ...Args>
     void createInPlace(T *where, Args&&... args) { new (where) T(std::forward<Args>(args)...); }
 
     template <typename ...Args>
     void emplace(T *where, Args&&... args)
+    { emplace(GrowsForwardTag{}, where, std::forward<Args>(args)...); }
+
+    template <typename ...Args>
+    void emplace(GrowsForwardTag, T *where, Args&&... args)
     {
         Q_ASSERT(!this->isShared());
         Q_ASSERT(where >= this->begin() && where <= this->end());
@@ -336,8 +384,34 @@ public:
         ++this->size;
     }
 
+    template <typename ...Args>
+    void emplace(GrowsBackwardsTag, T *where, Args&&... args)
+    {
+        Q_ASSERT(!this->isShared());
+        Q_ASSERT(where >= this->begin() && where <= this->end());
+        Q_ASSERT(this->freeSpaceAtBegin() >= 1);
+
+        if (where == this->begin()) {
+            new (this->begin() - 1) T(std::forward<Args>(args)...);
+            --this->ptr;
+        } else {
+            // Preserve the value, because it might be a reference to some part of the moved chunk
+            T t(std::forward<Args>(args)...);
+            auto oldBegin = this->begin();
+            --this->ptr;
+
+            ::memmove(static_cast<void *>(this->begin()), static_cast<void *>(oldBegin),
+                      (where - oldBegin) * sizeof(T));
+            *(where - 1) = t;
+        }
+
+        ++this->size;
+    }
 
     void erase(T *b, T *e)
+    { erase(GrowsForwardTag{}, b, e); }
+
+    void erase(GrowsForwardTag, T *b, T *e)
     {
         Q_ASSERT(this->isMutable());
         Q_ASSERT(b < e);
@@ -346,6 +420,20 @@ public:
 
         ::memmove(static_cast<void *>(b), static_cast<void *>(e),
                   (static_cast<T *>(this->end()) - e) * sizeof(T));
+        this->size -= (e - b);
+    }
+
+    void erase(GrowsBackwardsTag, T *b, T *e)
+    {
+        Q_ASSERT(this->isMutable());
+        Q_ASSERT(b < e);
+        Q_ASSERT(b >= this->begin() && b < this->end());
+        Q_ASSERT(e > this->begin() && e <= this->end());
+
+        const auto oldBegin = this->begin();
+        this->ptr += (e - b);
+        ::memmove(static_cast<void *>(this->begin()), static_cast<void *>(oldBegin),
+                  (b - static_cast<T *>(oldBegin)) * sizeof(T));
         this->size -= (e - b);
     }
 
@@ -473,6 +561,9 @@ struct QGenericArrayOps
     }
 
     void insert(T *where, const T *b, const T *e)
+    { insert(GrowsForwardTag{}, where, b, e); }
+
+    void insert(GrowsForwardTag, T *where, const T *b, const T *e)
     {
         Q_ASSERT(this->isMutable() || (b == e && where == this->end()));
         Q_ASSERT(!this->isShared() || (b == e && where == this->end()));
@@ -523,7 +614,56 @@ struct QGenericArrayOps
         }
     }
 
+    void insert(GrowsBackwardsTag, T *where, const T *b, const T *e)
+    {
+        Q_ASSERT(this->isMutable() || (b == e && where == this->end()));
+        Q_ASSERT(!this->isShared() || (b == e && where == this->end()));
+        Q_ASSERT(where >= this->begin() && where <= this->end());
+        Q_ASSERT(b <= e);
+        Q_ASSERT(e <= where || b > this->end() || where == this->end()); // No overlap or append
+        Q_ASSERT((e - b) <= this->freeSpaceAtBegin());
+
+        typedef typename QArrayExceptionSafetyPrimitives<T>::template Destructor<T *> Destructor;
+
+        T *const begin = this->begin();
+        const T *readIter = begin;
+        T *writeIter = begin - (e - b);
+
+        const T *const step1End = where - qMax(e - b, where - begin);
+
+        Destructor destroyer(writeIter);
+
+        // Construct new elements in array
+        while (writeIter != step1End) {
+            new (writeIter) T(*readIter);
+            ++readIter, ++writeIter;
+        }
+
+        while (writeIter != begin) {
+            new (writeIter) T(*b);
+            ++b, ++writeIter;
+        }
+
+        destroyer.commit();
+        this->size += begin - destroyer.end;
+        this->ptr -= begin - destroyer.end;
+
+        // Copy assign over existing elements
+        while (readIter != where) {
+            *writeIter = *readIter;
+            ++readIter, ++writeIter;
+        }
+
+        while (writeIter != where) {
+            *writeIter = *b;
+            ++b, ++writeIter;
+        }
+    }
+
     void insert(T *where, size_t n, parameter_type t)
+    { insert(GrowsForwardTag{}, where, n, t); }
+
+    void insert(GrowsForwardTag, T *where, size_t n, parameter_type t)
     {
         Q_ASSERT(!this->isShared() || (n == 0 && where == this->end()));
         Q_ASSERT(where >= this->begin() && where <= this->end());
@@ -570,11 +710,58 @@ struct QGenericArrayOps
         }
     }
 
+    void insert(GrowsBackwardsTag, T *where, size_t n, parameter_type t)
+    {
+        Q_ASSERT(!this->isShared() || (n == 0 && where == this->end()));
+        Q_ASSERT(where >= this->begin() && where <= this->end());
+        Q_ASSERT(size_t(this->freeSpaceAtBegin()) >= n);
+
+        typedef typename QArrayExceptionSafetyPrimitives<T>::template Destructor<T *> Destructor;
+
+        T *const begin = this->begin();
+        const T *readIter = begin;
+        T *writeIter = begin - n;
+
+        const T *const step1End = where - qMax<size_t>(n, where - begin);
+
+        Destructor destroyer(writeIter);
+
+        // Construct new elements in array
+        while (writeIter != step1End) {
+            new (writeIter) T(*readIter);
+            ++readIter, ++writeIter;
+        }
+
+        while (writeIter != begin) {
+            new (writeIter) T(t);
+            ++writeIter;
+        }
+
+        destroyer.commit();
+        this->size += begin - destroyer.end;
+        this->ptr -= begin - destroyer.end;
+
+        // Copy assign over existing elements
+        while (readIter != where) {
+            *writeIter = *readIter;
+            ++readIter, ++writeIter;
+        }
+
+        while (writeIter != where) {
+            *writeIter = t;
+            ++writeIter;
+        }
+    }
+
     template <typename ...Args>
     void createInPlace(T *where, Args&&... args) { new (where) T(std::forward<Args>(args)...); }
 
     template <typename iterator, typename ...Args>
     void emplace(iterator where, Args&&... args)
+    { emplace(GrowsForwardTag{}, where, std::forward<Args>(args)...); }
+
+    template <typename iterator, typename ...Args>
+    void emplace(GrowsForwardTag, iterator where, Args&&... args)
     {
         Q_ASSERT(!this->isShared());
         Q_ASSERT(where >= this->begin() && where <= this->end());
@@ -586,7 +773,24 @@ struct QGenericArrayOps
         std::rotate(where, this->end() - 1, this->end());
     }
 
+    template <typename iterator, typename ...Args>
+    void emplace(GrowsBackwardsTag, iterator where, Args&&... args)
+    {
+        Q_ASSERT(!this->isShared());
+        Q_ASSERT(where >= this->begin() && where <= this->end());
+        Q_ASSERT(this->freeSpaceAtBegin() >= 1);
+
+        createInPlace(this->begin() - 1, std::forward<Args>(args)...);
+        --this->ptr;
+        ++this->size;
+
+        std::rotate(this->begin(), this->begin() + 1, where);
+    }
+
     void erase(T *b, T *e)
+    { erase(GrowsForwardTag{}, b, e); }
+
+    void erase(GrowsForwardTag, T *b, T *e)
     {
         Q_ASSERT(this->isMutable());
         Q_ASSERT(b < e);
@@ -610,6 +814,33 @@ struct QGenericArrayOps
             (--e)->~T();
         } while (e != b);
     }
+
+    void erase(GrowsBackwardsTag, T *b, T *e)
+    {
+        Q_ASSERT(this->isMutable());
+        Q_ASSERT(b < e);
+        Q_ASSERT(b >= this->begin() && b < this->end());
+        Q_ASSERT(e > this->begin() && e <= this->end());
+
+        const T *const begin = this->begin();
+
+        // move (by assignment) the elements from begin to b
+        // onto the new begin to e
+        while (b != begin) {
+            --b, --e;
+            *e = *b;
+        }
+
+        // destroy the final elements at the begin
+        // here, e points to the new begin and b to the actual begin
+        do {
+            // Exceptions or not, dtor called once per instance
+            ++this->ptr;
+            --this->size;
+            (b++)->~T();
+        } while (b != e);
+    }
+
 
     void assign(T *b, T *e, parameter_type t)
     {
@@ -645,6 +876,9 @@ struct QMovableArrayOps
     typedef typename QGenericArrayOps<T>::parameter_type parameter_type;
 
     void insert(T *where, const T *b, const T *e)
+    { insert(GrowsForwardTag{}, where, b, e); }
+
+    void insert(GrowsForwardTag, T *where, const T *b, const T *e)
     {
         Q_ASSERT(this->isMutable() || (b == e && where == this->end()));
         Q_ASSERT(!this->isShared() || (b == e && where == this->end()));
@@ -666,7 +900,33 @@ struct QMovableArrayOps
         this->size += copiedSize;
     }
 
+    void insert(GrowsBackwardsTag, T *where, const T *b, const T *e)
+    {
+        Q_ASSERT(this->isMutable() || (b == e && where == this->end()));
+        Q_ASSERT(!this->isShared() || (b == e && where == this->end()));
+        Q_ASSERT(where >= this->begin() && where <= this->end());
+        Q_ASSERT(b <= e);
+        Q_ASSERT(e <= where || b > this->end() || where == this->end()); // No overlap or append
+        Q_ASSERT((e - b) <= this->freeSpaceAtBegin());
+
+        typedef typename QArrayExceptionSafetyPrimitives<T>::Constructor CopyConstructor;
+        typedef typename QArrayExceptionSafetyPrimitives<T>::Displacer ReversibleDisplace;
+
+        // Provides strong exception safety guarantee,
+        // provided T::~T() nothrow
+
+        ReversibleDisplace displace(this->begin(), where, -(e - b));
+        CopyConstructor copier(where - (e - b));
+        const auto copiedSize = copier.copy(b, e);
+        displace.commit();
+        this->ptr -= copiedSize;
+        this->size += copiedSize;
+    }
+
     void insert(T *where, size_t n, parameter_type t)
+    { insert(GrowsForwardTag{}, where, n, t); }
+
+    void insert(GrowsForwardTag, T *where, size_t n, parameter_type t)
     {
         Q_ASSERT(!this->isShared() || (n == 0 && where == this->end()));
         Q_ASSERT(where >= this->begin() && where <= this->end());
@@ -685,10 +945,33 @@ struct QMovableArrayOps
         this->size += copiedSize;
     }
 
+    void insert(GrowsBackwardsTag, T *where, size_t n, parameter_type t)
+    {
+        Q_ASSERT(!this->isShared() || (n == 0 && where == this->end()));
+        Q_ASSERT(where >= this->begin() && where <= this->end());
+        Q_ASSERT(size_t(this->freeSpaceAtBegin()) >= n);
+
+        typedef typename QArrayExceptionSafetyPrimitives<T>::Constructor CopyConstructor;
+        typedef typename QArrayExceptionSafetyPrimitives<T>::Displacer ReversibleDisplace;
+
+        // Provides strong exception safety guarantee,
+        // provided T::~T() nothrow
+
+        ReversibleDisplace displace(this->begin(), where, -qsizetype(n));
+        CopyConstructor copier(where - n);
+        const auto copiedSize = copier.clone(n, t);
+        displace.commit();
+        this->ptr -= copiedSize;
+        this->size += copiedSize;
+    }
+
     // use moving insert
     using QGenericArrayOps<T>::insert;
 
     void erase(T *b, T *e)
+    { erase(GrowsForwardTag{}, b, e); }
+
+    void erase(GrowsForwardTag, T *b, T *e)
     {
         Q_ASSERT(this->isMutable());
         Q_ASSERT(b < e);
@@ -704,6 +987,25 @@ struct QMovableArrayOps
             // Exceptions or not, dtor called once per instance
             (--e)->~T();
         } while (e != b);
+    }
+
+    void erase(GrowsBackwardsTag, T *b, T *e)
+    {
+        Q_ASSERT(this->isMutable());
+        Q_ASSERT(b < e);
+        Q_ASSERT(b >= this->begin() && b < this->end());
+        Q_ASSERT(e > this->begin() && e <= this->end());
+
+        typedef typename QArrayExceptionSafetyPrimitives<T>::Mover Mover;
+
+        Mover mover(this->ptr, b - static_cast<const T *>(this->begin()), this->size);
+
+        // destroy the elements we're erasing
+        do {
+            // Exceptions or not, dtor called once per instance
+            ++this->ptr;
+            (b++)->~T();
+        } while (b != e);
     }
 };
 
