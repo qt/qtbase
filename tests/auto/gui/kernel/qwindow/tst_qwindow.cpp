@@ -1604,18 +1604,85 @@ void tst_QWindow::sizes()
 
 void tst_QWindow::close()
 {
-    QWindow a;
-    a.setTitle(QLatin1String(QTest::currentTestFunction()));
-    QWindow b;
-    QWindow c(&a);
+    {
+        QWindow a;
+        QWindow b;
+        QWindow c(&a);
 
-    a.show();
-    b.show();
+        a.show();
+        b.show();
 
-    // we can not close a non top level window
-    QVERIFY(!c.close());
-    QVERIFY(a.close());
-    QVERIFY(b.close());
+        // we can not close a non top level window
+        QVERIFY(!c.close());
+        QVERIFY(a.close());
+        QVERIFY(b.close());
+    }
+
+    // Verify that closing a QWindow deletes its platform window,
+    // independent of API used to close the window.
+    {
+        // Close with QWindow::close
+        {
+            QWindow w;
+            w.create();
+            QVERIFY(w.handle());
+            w.close();
+            QVERIFY(!w.handle());
+        }
+
+        // Close with QWindowSystemInterface::handleCloseEvent();
+        {
+            QWindow w;
+            w.create();
+            QVERIFY(w.handle());
+            QWindowSystemInterface::handleCloseEvent(&w);
+            QCoreApplication::processEvents();
+            QVERIFY(!w.handle());
+        }
+    }
+
+    // Verify that closing a QWindow deletes the platform window for
+    // child windows
+    {
+        QWindow w;
+        QWindow c(&w);
+        w.create();
+        c.create();
+        QVERIFY(w.handle());
+        QVERIFY(c.handle());
+        w.close();
+        QVERIFY(!w.handle());
+        QVERIFY(!c.handle());
+    }
+
+    // Verify that re-creating closed windows is possble.
+    {
+        // Re-create top-level window
+        {
+            QWindow w;
+            w.create();
+            QVERIFY(w.handle());
+            w.close();
+            QVERIFY(!w.handle());
+            w.create();
+            QVERIFY(w.handle());
+        }
+
+        // Re-create top-level window with child window
+        {
+            QWindow w;
+            QWindow c(&w);
+            c.create();
+            QVERIFY(w.handle());
+            QVERIFY(c.handle());
+            w.close();
+            QVERIFY(!w.handle());
+            QVERIFY(!c.handle());
+            c.create();
+            QVERIFY(w.handle());
+            QVERIFY(c.handle());
+        }
+    }
 }
 
 void tst_QWindow::activateAndClose()
