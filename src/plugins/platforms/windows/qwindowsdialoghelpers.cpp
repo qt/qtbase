@@ -511,7 +511,6 @@ public:
     IFACEMETHODIMP OnFileOk(IFileDialog *) override;
     IFACEMETHODIMP OnFolderChange(IFileDialog *) override { return S_OK; }
     IFACEMETHODIMP OnFolderChanging(IFileDialog *, IShellItem *) override;
-    IFACEMETHODIMP OnHelp(IFileDialog *) { return S_OK; }
     IFACEMETHODIMP OnSelectionChange(IFileDialog *) override;
     IFACEMETHODIMP OnShareViolation(IFileDialog *, IShellItem *,
                                     FDE_SHAREVIOLATION_RESPONSE *) override
