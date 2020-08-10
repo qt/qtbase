@@ -69,13 +69,9 @@ public:
 
     bool isValid() const;
 
-#if QT_CONFIG(cborstreamwriter)
-    QByteArray toCbor() const;
-#endif
     void serialize(QDataStream *stream) const;
     QByteArray toJson() const;
 
-    static QShaderDescription fromCbor(const QByteArray &data);
     static QShaderDescription deserialize(QDataStream *stream, int version);
 
     enum VariableType {

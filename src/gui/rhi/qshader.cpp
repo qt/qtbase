@@ -442,9 +442,8 @@ QShader QShader::fromSerialized(const QByteArray &data)
     if (d->qsbVersion > QShaderPrivate::QSB_VERSION_WITH_CBOR) {
         d->desc = QShaderDescription::deserialize(&ds, d->qsbVersion);
     } else if (d->qsbVersion > QShaderPrivate::QSB_VERSION_WITH_BINARY_JSON) {
-        QByteArray descBin;
-        ds >> descBin;
-        d->desc = QShaderDescription::fromCbor(descBin);
+        qWarning("Can no longer load QShaderDescription from CBOR.");
+        d->desc = QShaderDescription();
     } else {
         qWarning("Can no longer load QShaderDescription from binary JSON.");
         d->desc = QShaderDescription();

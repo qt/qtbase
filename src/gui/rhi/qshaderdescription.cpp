@@ -40,9 +40,6 @@
 #include <QDataStream>
 #include <QJsonObject>
 #include <QJsonArray>
-#include <QCborValue>
-#include <QCborMap>
-#include <QCborArray>
 
 QT_BEGIN_NAMESPACE
 
@@ -103,12 +100,13 @@ QT_BEGIN_NAMESPACE
     of 68 bytes and two members, a 4x4 matrix named \c mvp at offset 0, and a
     float \c opacity at offset 64.
 
-    All this is described by a QShaderDescription object. QShaderDescription
-    can also be serialized to JSON and CBOR, and can be deserialized
-    from CBOR. In practice this is rarely needed since QShader
-    takes care of the associated QShaderDescription automatically, but if the
-    QShaderDescription of the above shader would be written out as JSON, it
-    would look like the following:
+    All this is described by a QShaderDescription object. QShaderDescription can
+    be serialized to JSON and to a binary format via QDataStream, and can be
+    deserialized from this binary format. In practice this is rarely needed
+    since QShader takes care of the associated QShaderDescription automatically,
+    but if the QShaderDescription of the above shader would be written out as
+    JSON (like it is done by the \c qsb tool's \c{-d} option), it would look
+    like the following:
 
     \badcode
         {
@@ -337,54 +335,34 @@ bool QShaderDescription::isValid() const
         || !d->combinedImageSamplers.isEmpty() || !d->storageImages.isEmpty();
 }
 
-#if QT_CONFIG(cborstreamwriter)
-/*!
-   \return a serialized binary version of the data in CBOR (Concise Binary
-   Object Representation) format.
-
-   \sa QCborValue, toJson()
- */
-QByteArray QShaderDescription::toCbor() const
-{
-    return QCborValue::fromJsonValue(d->makeDoc().object()).toCbor();
-}
-#endif
-
 /*!
     \return a serialized JSON text version of the data.
 
     \note There is no deserialization method provided for JSON text.
 
-    \sa toCbor()
+    \sa serialize()
  */
 QByteArray QShaderDescription::toJson() const
 {
     return d->makeDoc().toJson();
 }
 
+/*!
+    Serializes this QShaderDescription to \a stream.
+
+    \sa deserialize(), toJson()
+ */
 void QShaderDescription::serialize(QDataStream *stream) const
 {
     d->writeToStream(stream);
 }
 
 /*!
-    Deserializes the given CBOR \a data and returns a new QShaderDescription.
- */
-QShaderDescription QShaderDescription::fromCbor(const QByteArray &data)
-{
-    QShaderDescription desc;
-    const QCborValue cbor = QCborValue::fromCbor(data);
-    if (cbor.isMap()) {
-        const QJsonDocument doc(cbor.toMap().toJsonObject());
-        QShaderDescriptionPrivate::get(&desc)->loadDoc(doc);
-    }
-    if (cbor.isArray()) {
-        const QJsonDocument doc(cbor.toArray().toJsonArray());
-        QShaderDescriptionPrivate::get(&desc)->loadDoc(doc);
-    }
-    return desc;
-}
+    \return a new QShaderDescription loaded from \a stream. \a version specifies
+    the qsb version.
 
+    \sa serialize()
+ */
 QShaderDescription QShaderDescription::deserialize(QDataStream *stream, int version)
 {
     QShaderDescription desc;
@@ -656,15 +634,6 @@ static QString typeStr(const QShaderDescription::VariableType &t)
     return QString();
 }
 
-static QShaderDescription::VariableType mapType(const QString &t)
-{
-    for (size_t i = 0; i < sizeof(typeTab) / sizeof(TypeTab); ++i) {
-        if (typeTab[i].k == t)
-            return typeTab[i].v;
-    }
-    return QShaderDescription::Unknown;
-}
-
 static struct ImageFormatTab {
     QString k;
     QShaderDescription::ImageFormat v;
@@ -718,15 +687,6 @@ static QString imageFormatStr(const QShaderDescription::ImageFormat &f)
             return imageFormatTab[i].k;
     }
     return QString();
-}
-
-static QShaderDescription::ImageFormat mapImageFormat(const QString &f)
-{
-    for (size_t i = 0; i < sizeof(imageFormatTab) / sizeof(ImageFormatTab); ++i) {
-        if (imageFormatTab[i].k == f)
-            return imageFormatTab[i].v;
-    }
-    return QShaderDescription::ImageFormatUnknown;
 }
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -1106,29 +1066,6 @@ void QShaderDescriptionPrivate::writeToStream(QDataStream *stream)
         (*stream) << localSize[i];
 }
 
-static QShaderDescription::InOutVariable inOutVar(const QJsonObject &obj)
-{
-    QShaderDescription::InOutVariable var;
-    var.name = obj[nameKey].toString().toUtf8();
-    var.type = mapType(obj[typeKey].toString());
-    if (obj.contains(locationKey))
-        var.location = obj[locationKey].toInt();
-    if (obj.contains(bindingKey))
-        var.binding = obj[bindingKey].toInt();
-    if (obj.contains(setKey))
-        var.descriptorSet = obj[setKey].toInt();
-    if (obj.contains(imageFormatKey))
-        var.imageFormat = mapImageFormat(obj[imageFormatKey].toString());
-    if (obj.contains(imageFlagsKey))
-        var.imageFlags = QShaderDescription::ImageFlags(obj[imageFlagsKey].toInt());
-    if (obj.contains(arrayDimsKey)) {
-        QJsonArray dimArr = obj[arrayDimsKey].toArray();
-        for (int i = 0; i < dimArr.count(); ++i)
-            var.arrayDims.append(dimArr.at(i).toInt());
-    }
-    return var;
-}
-
 static void deserializeDecorations(QDataStream *stream, int version, QShaderDescription::InOutVariable *v)
 {
     (*stream) >> v->location;
@@ -1161,32 +1098,6 @@ static QShaderDescription::InOutVariable deserializeInOutVar(QDataStream *stream
     return var;
 }
 
-static QShaderDescription::BlockVariable blockVar(const QJsonObject &obj)
-{
-    QShaderDescription::BlockVariable var;
-    var.name = obj[nameKey].toString().toUtf8();
-    var.type = mapType(obj[typeKey].toString());
-    var.offset = obj[offsetKey].toInt();
-    var.size = obj[sizeKey].toInt();
-    if (obj.contains(arrayDimsKey)) {
-        QJsonArray dimArr = obj[arrayDimsKey].toArray();
-        for (int i = 0; i < dimArr.count(); ++i)
-            var.arrayDims.append(dimArr.at(i).toInt());
-    }
-    if (obj.contains(arrayStrideKey))
-        var.arrayStride = obj[arrayStrideKey].toInt();
-    if (obj.contains(matrixStrideKey))
-        var.matrixStride = obj[matrixStrideKey].toInt();
-    if (obj.contains(matrixRowMajorKey))
-        var.matrixIsRowMajor = obj[matrixRowMajorKey].toBool();
-    if (obj.contains(structMembersKey)) {
-        QJsonArray arr = obj[structMembersKey].toArray();
-        for (int i = 0; i < arr.count(); ++i)
-            var.structMembers.append(blockVar(arr.at(i).toObject()));
-    }
-    return var;
-}
-
 static QShaderDescription::BlockVariable deserializeBlockMemberVar(QDataStream *stream, int version)
 {
     QShaderDescription::BlockVariable var;
@@ -1211,110 +1122,6 @@ static QShaderDescription::BlockVariable deserializeBlockMemberVar(QDataStream *
     for (int i = 0; i < count; ++i)
         var.structMembers[i] = deserializeBlockMemberVar(stream, version);
     return var;
-}
-
-void QShaderDescriptionPrivate::loadDoc(const QJsonDocument &doc)
-{
-    if (doc.isNull()) {
-        qWarning("QShaderDescription: JSON document is empty");
-        return;
-    }
-
-    Q_ASSERT(ref.loadRelaxed() == 1); // must be detached
-
-    inVars.clear();
-    outVars.clear();
-    uniformBlocks.clear();
-    pushConstantBlocks.clear();
-    storageBlocks.clear();
-    combinedImageSamplers.clear();
-    storageImages.clear();
-
-    QJsonObject root = doc.object();
-
-    if (root.contains(inputsKey)) {
-        QJsonArray inputs = root[inputsKey].toArray();
-        for (int i = 0; i < inputs.count(); ++i)
-            inVars.append(inOutVar(inputs[i].toObject()));
-    }
-
-    if (root.contains(outputsKey)) {
-        QJsonArray outputs = root[outputsKey].toArray();
-        for (int i = 0; i < outputs.count(); ++i)
-            outVars.append(inOutVar(outputs[i].toObject()));
-    }
-
-    if (root.contains(uniformBlocksKey)) {
-        QJsonArray ubs = root[uniformBlocksKey].toArray();
-        for (int i = 0; i < ubs.count(); ++i) {
-            QJsonObject ubObj = ubs[i].toObject();
-            QShaderDescription::UniformBlock ub;
-            ub.blockName = ubObj[blockNameKey].toString().toUtf8();
-            ub.structName = ubObj[structNameKey].toString().toUtf8();
-            ub.size = ubObj[sizeKey].toInt();
-            if (ubObj.contains(bindingKey))
-                ub.binding = ubObj[bindingKey].toInt();
-            if (ubObj.contains(setKey))
-                ub.descriptorSet = ubObj[setKey].toInt();
-            QJsonArray members = ubObj[membersKey].toArray();
-            for (const QJsonValue &member : members)
-                ub.members.append(blockVar(member.toObject()));
-            uniformBlocks.append(ub);
-        }
-    }
-
-    if (root.contains(pushConstantBlocksKey)) {
-        QJsonArray pcs = root[pushConstantBlocksKey].toArray();
-        for (int i = 0; i < pcs.count(); ++i) {
-            QJsonObject pcObj = pcs[i].toObject();
-            QShaderDescription::PushConstantBlock pc;
-            pc.name = pcObj[nameKey].toString().toUtf8();
-            pc.size = pcObj[sizeKey].toInt();
-            QJsonArray members = pcObj[membersKey].toArray();
-            for (const QJsonValue &member : members)
-                pc.members.append(blockVar(member.toObject()));
-            pushConstantBlocks.append(pc);
-        }
-    }
-
-    if (root.contains(storageBlocksKey)) {
-        QJsonArray ubs = root[storageBlocksKey].toArray();
-        for (int i = 0; i < ubs.count(); ++i) {
-            QJsonObject sbObj = ubs[i].toObject();
-            QShaderDescription::StorageBlock sb;
-            sb.blockName = sbObj[blockNameKey].toString().toUtf8();
-            sb.instanceName = sbObj[instanceNameKey].toString().toUtf8();
-            sb.knownSize = sbObj[knownSizeKey].toInt();
-            if (sbObj.contains(bindingKey))
-                sb.binding = sbObj[bindingKey].toInt();
-            if (sbObj.contains(setKey))
-                sb.descriptorSet = sbObj[setKey].toInt();
-            QJsonArray members = sbObj[membersKey].toArray();
-            for (const QJsonValue &member : members)
-                sb.members.append(blockVar(member.toObject()));
-            storageBlocks.append(sb);
-        }
-    }
-
-    if (root.contains(combinedImageSamplersKey)) {
-        QJsonArray samplers = root[combinedImageSamplersKey].toArray();
-        for (int i = 0; i < samplers.count(); ++i)
-            combinedImageSamplers.append(inOutVar(samplers[i].toObject()));
-    }
-
-    if (root.contains(storageImagesKey)) {
-        QJsonArray images = root[storageImagesKey].toArray();
-        for (int i = 0; i < images.count(); ++i)
-            storageImages.append(inOutVar(images[i].toObject()));
-    }
-
-    if (root.contains(localSizeKey)) {
-        QJsonArray localSizeArr = root[localSizeKey].toArray();
-        if (localSizeArr.count() == 3) {
-            for (int i = 0; i < 3; ++i)
-                localSize[i] = localSizeArr[i].toInt();
-        }
-    }
 }
 
 void QShaderDescriptionPrivate::loadFromStream(QDataStream *stream, int version)

@@ -42,7 +42,6 @@ private slots:
     void shaderDescImplicitSharing();
     void bakedShaderImplicitSharing();
     void mslResourceMapping();
-    void loadV3();
     void serializeShaderDesc();
     void comparison();
     void loadV4();
@@ -289,80 +288,6 @@ void tst_QShader::mslResourceMapping()
     QCOMPARE(resMap->count(), 2);
     QCOMPARE(resMap->value(0).first, 0); // mapped to native buffer index 0
     QCOMPARE(resMap->value(1), qMakePair(0, 0)); // mapped to native texture index 0 and sampler index 0
-}
-
-void tst_QShader::loadV3()
-{
-    // qsb version 3: QShaderDescription is serialized as CBOR. Ensure the deserialized data is as expected.
-    QShader s = getShader(QLatin1String(":/data/texture_all_v3.frag.qsb"));
-    QVERIFY(s.isValid());
-    QCOMPARE(QShaderPrivate::get(&s)->qsbVersion, 3);
-
-    const QList<QShaderKey> availableShaders = s.availableShaders();
-    QCOMPARE(availableShaders.count(), 7);
-    QVERIFY(availableShaders.contains(QShaderKey(QShader::SpirvShader, QShaderVersion(100))));
-    QVERIFY(availableShaders.contains(QShaderKey(QShader::MslShader, QShaderVersion(12))));
-    QVERIFY(availableShaders.contains(QShaderKey(QShader::HlslShader, QShaderVersion(50))));
-    QVERIFY(availableShaders.contains(QShaderKey(QShader::GlslShader, QShaderVersion(100, QShaderVersion::GlslEs))));
-    QVERIFY(availableShaders.contains(QShaderKey(QShader::GlslShader, QShaderVersion(120))));
-    QVERIFY(availableShaders.contains(QShaderKey(QShader::GlslShader, QShaderVersion(150))));
-    QVERIFY(availableShaders.contains(QShaderKey(QShader::GlslShader, QShaderVersion(330))));
-
-    const QShaderDescription desc = s.description();
-    QVERIFY(desc.isValid());
-    QCOMPARE(desc.inputVariables().count(), 1);
-    for (const QShaderDescription::InOutVariable &v : desc.inputVariables()) {
-        switch (v.location) {
-        case 0:
-            QCOMPARE(v.name, QByteArrayLiteral("qt_TexCoord"));
-            QCOMPARE(v.type, QShaderDescription::Vec2);
-            break;
-        default:
-            QVERIFY(false);
-            break;
-        }
-    }
-    QCOMPARE(desc.outputVariables().count(), 1);
-    for (const QShaderDescription::InOutVariable &v : desc.outputVariables()) {
-        switch (v.location) {
-        case 0:
-            QCOMPARE(v.name, QByteArrayLiteral("fragColor"));
-            QCOMPARE(v.type, QShaderDescription::Vec4);
-            break;
-        default:
-            QVERIFY(false);
-            break;
-        }
-    }
-    QCOMPARE(desc.uniformBlocks().count(), 1);
-    const QShaderDescription::UniformBlock blk = desc.uniformBlocks().first();
-    QCOMPARE(blk.blockName, QByteArrayLiteral("buf"));
-    QCOMPARE(blk.structName, QByteArrayLiteral("ubuf"));
-    QCOMPARE(blk.size, 68);
-    QCOMPARE(blk.binding, 0);
-    QCOMPARE(blk.descriptorSet, 0);
-    QCOMPARE(blk.members.count(), 2);
-    for (int i = 0; i < blk.members.count(); ++i) {
-        const QShaderDescription::BlockVariable v = blk.members[i];
-        switch (i) {
-        case 0:
-            QCOMPARE(v.offset, 0);
-            QCOMPARE(v.size, 64);
-            QCOMPARE(v.name, QByteArrayLiteral("qt_Matrix"));
-            QCOMPARE(v.type, QShaderDescription::Mat4);
-            QCOMPARE(v.matrixStride, 16);
-            break;
-        case 1:
-            QCOMPARE(v.offset, 64);
-            QCOMPARE(v.size, 4);
-            QCOMPARE(v.name, QByteArrayLiteral("opacity"));
-            QCOMPARE(v.type, QShaderDescription::Float);
-            break;
-        default:
-            QVERIFY(false);
-            break;
-        }
-    }
 }
 
 void tst_QShader::serializeShaderDesc()
