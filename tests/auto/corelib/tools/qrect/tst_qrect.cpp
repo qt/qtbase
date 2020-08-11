@@ -2505,16 +2505,11 @@ void tst_QRect::newMoveLeft_data()
 
     {
         // QTest::newRow( "LargestCoordQRect_MinimumInt" ) -- Not tested as it would cause an overflow
-        QTest::newRow( "LargestCoordQRect_MiddleNegativeInt" ) << getQRectCase( LargestCoordQRect ) << getIntCase( MiddleNegativeInt )
-                                                       << QRect( QPoint( INT_MIN/2, INT_MIN ), QPoint(INT_MIN/2-1, INT_MAX ) );
-        QTest::newRow( "LargestCoordQRect_ZeroInt" ) << getQRectCase( LargestCoordQRect ) << getIntCase( ZeroInt )
-                                             << QRect( QPoint( 0, INT_MIN ), QPoint(-1, INT_MAX ) );
-        QTest::newRow( "LargestCoordQRect_MiddlePositiveInt" ) << getQRectCase( LargestCoordQRect ) << getIntCase( MiddlePositiveInt )
-                                                       << QRect( QPoint( INT_MAX/2, INT_MIN ), QPoint(INT_MAX/2-1, INT_MAX ) );
-        QTest::newRow( "LargestCoordQRect_MaximumInt" ) << getQRectCase( LargestCoordQRect ) << getIntCase( MaximumInt )
-                                                << QRect( QPoint( INT_MAX, INT_MIN ), QPoint(INT_MAX-1, INT_MAX ) );
-        QTest::newRow( "LargestCoordQRect_RandomInt" ) << getQRectCase( LargestCoordQRect ) << getIntCase( RandomInt )
-                                               << QRect( QPoint( 4953, INT_MIN ), QPoint(4952, INT_MAX ) );
+        // QTest::newRow( "LargestCoordQRect_MiddleNegativeInt" ) -- Not tested as it would cause an overflow
+        // QTest::newRow( "LargestCoordQRect_ZeroInt" ) -- Not tested as it would cause an overflow
+        // QTest::newRow( "LargestCoordQRect_MiddlePositiveInt" ) -- Not tested as it would cause an overflow
+        // QTest::newRow( "LargestCoordQRect_MaximumInt" ) -- Not tested as it would cause an overflow
+        // QTest::newRow( "LargestCoordQRect_RandomInt" ) -- Not tested as it would cause an overflow
     }
 
     {
@@ -2674,16 +2669,11 @@ void tst_QRect::newMoveTop_data()
 
     {
         // QTest::newRow( "LargestCoordQRect_MinimumInt" ) -- Not tested as it would cause an overflow
-        QTest::newRow( "LargestCoordQRect_MiddleNegativeInt" ) << getQRectCase( LargestCoordQRect ) << getIntCase( MiddleNegativeInt )
-                                                       << QRect( QPoint(INT_MIN,INT_MIN/2), QPoint(INT_MAX,INT_MIN/2-1) );
-        QTest::newRow( "LargestCoordQRect_ZeroInt" ) << getQRectCase( LargestCoordQRect ) << getIntCase( ZeroInt )
-                                             << QRect( QPoint(INT_MIN,0), QPoint(INT_MAX,-1) );
-        QTest::newRow( "LargestCoordQRect_MiddlePositiveInt" ) << getQRectCase( LargestCoordQRect ) << getIntCase( MiddlePositiveInt )
-                                                       << QRect( QPoint(INT_MIN,INT_MAX/2), QPoint(INT_MAX,INT_MAX/2-1) );
-        QTest::newRow( "LargestCoordQRect_MaximumInt" ) << getQRectCase( LargestCoordQRect ) << getIntCase( MaximumInt )
-                                                << QRect( QPoint(INT_MIN,INT_MAX), QPoint(INT_MAX,INT_MAX-1) );
-        QTest::newRow( "LargestCoordQRect_RandomInt" ) << getQRectCase( LargestCoordQRect ) << getIntCase( RandomInt )
-                                               << QRect( QPoint(INT_MIN,4953), QPoint(INT_MAX,4952) );
+        // QTest::newRow( "LargestCoordQRect_MiddleNegativeInt" ) -- Not tested as it would cause an overflow
+        // QTest::newRow( "LargestCoordQRect_ZeroInt" ) -- Not tested as it would cause an overflow
+        // QTest::newRow( "LargestCoordQRect_MiddlePositiveInt" ) -- Not tested as it would cause an overflow
+        // QTest::newRow( "LargestCoordQRect_MaximumInt" ) -- Not tested as it would cause an overflow
+        // QTest::newRow( "LargestCoordQRect_RandomInt" ) -- Not tested as it would cause an overflow
     }
 
     {
