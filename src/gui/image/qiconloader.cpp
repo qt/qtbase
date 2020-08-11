@@ -834,55 +834,46 @@ QString QIconLoaderEngine::key() const
     return QLatin1String("QIconLoaderEngine");
 }
 
-void QIconLoaderEngine::virtual_hook(int id, void *data)
+QString QIconLoaderEngine::iconName()
 {
     ensureLoaded();
+    return m_info.iconName;
+}
 
-    switch (id) {
-    case QIconEngine::AvailableSizesHook:
-        {
-            QIconEngine::AvailableSizesArgument &arg
-                    = *reinterpret_cast<QIconEngine::AvailableSizesArgument*>(data);
-            const int N = m_info.entries.size();
-            QList<QSize> sizes;
-            sizes.reserve(N);
+bool QIconLoaderEngine::isNull()
+{
+    ensureLoaded();
+    return m_info.entries.isEmpty();
+}
 
-            // Gets all sizes from the DirectoryInfo entries
-            for (int i = 0; i < N; ++i) {
-                const QIconLoaderEngineEntry *entry = m_info.entries.at(i);
-                if (entry->dir.type == QIconDirInfo::Fallback) {
-                    sizes.append(QIcon(entry->filename).availableSizes());
-                } else {
-                    int size = entry->dir.size;
-                    sizes.append(QSize(size, size));
-                }
-            }
-            arg.sizes.swap(sizes); // commit
+QPixmap QIconLoaderEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIcon::State state, qreal scale)
+{
+    ensureLoaded();
+    const int integerScale = qCeil(scale);
+    QIconLoaderEngineEntry *entry = entryForSize(m_info, size / integerScale, integerScale);
+    return entry ? entry->pixmap(size, mode, state) : QPixmap();
+}
+
+QList<QSize> QIconLoaderEngine::availableSizes(QIcon::Mode mode, QIcon::State state)
+{
+    Q_UNUSED(mode);
+    Q_UNUSED(state);
+    ensureLoaded();
+    const int N = m_info.entries.size();
+    QList<QSize> sizes;
+    sizes.reserve(N);
+
+    // Gets all sizes from the DirectoryInfo entries
+    for (int i = 0; i < N; ++i) {
+        const QIconLoaderEngineEntry *entry = m_info.entries.at(i);
+        if (entry->dir.type == QIconDirInfo::Fallback) {
+            sizes.append(QIcon(entry->filename).availableSizes());
+        } else {
+            int size = entry->dir.size;
+            sizes.append(QSize(size, size));
         }
-        break;
-    case QIconEngine::IconNameHook:
-        {
-            QString &name = *reinterpret_cast<QString*>(data);
-            name = m_info.iconName;
-        }
-        break;
-    case QIconEngine::IsNullHook:
-        {
-            *reinterpret_cast<bool*>(data) = m_info.entries.isEmpty();
-        }
-        break;
-    case QIconEngine::ScaledPixmapHook:
-        {
-            QIconEngine::ScaledPixmapArgument &arg = *reinterpret_cast<QIconEngine::ScaledPixmapArgument*>(data);
-            // QIcon::pixmap() multiplies size by the device pixel ratio.
-            const int integerScale = qCeil(arg.scale);
-            QIconLoaderEngineEntry *entry = entryForSize(m_info, arg.size / integerScale, integerScale);
-            arg.pixmap = entry ? entry->pixmap(arg.size, arg.mode, arg.state) : QPixmap();
-        }
-        break;
-    default:
-        QIconEngine::virtual_hook(id, data);
     }
+    return sizes;
 }
 
 QT_END_NAMESPACE
