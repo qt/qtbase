@@ -133,8 +133,7 @@ public:
 
     qint64 write(const char *data, qint64 len);
     qint64 write(const char *data);
-    inline qint64 write(const QByteArray &data)
-    { return write(data.constData(), data.size()); }
+    qint64 write(const QByteArray &data);
 
     qint64 peek(char *data, qint64 maxlen);
     QByteArray peek(qint64 maxlen);

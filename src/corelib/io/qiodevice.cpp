@@ -1739,8 +1739,7 @@ qint64 QIODevice::write(const char *data)
     return write(data, qstrlen(data));
 }
 
-/*! \fn qint64 QIODevice::write(const QByteArray &byteArray)
-
+/*!
     \overload
 
     Writes the content of \a byteArray to the device. Returns the number of
@@ -1748,6 +1747,11 @@ qint64 QIODevice::write(const char *data)
 
     \sa read(), writeData()
 */
+
+qint64 QIODevice::write(const QByteArray &data)
+{
+    return write(data.constData(), data.size());
+}
 
 /*!
     Puts the character \a c back into the device, and decrements the
