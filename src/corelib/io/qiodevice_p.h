@@ -124,13 +124,14 @@ public:
     QRingBufferRef writeBuffer;
     qint64 pos;
     qint64 devicePos;
+    qint64 transactionPos;
     int readChannelCount;
     int writeChannelCount;
     int currentReadChannel;
     int currentWriteChannel;
     int readBufferChunkSize;
     int writeBufferChunkSize;
-    qint64 transactionPos;
+    const QByteArray *currentWriteChunk;
     bool transactionStarted;
     bool baseReadLineDataCalled;
 
@@ -175,6 +176,7 @@ public:
     virtual qint64 peek(char *data, qint64 maxSize);
     virtual QByteArray peek(qint64 maxSize);
     qint64 skipByReading(qint64 maxSize);
+    void write(const char *data, qint64 size);
 
 #ifdef QT_NO_QOBJECT
     QIODevice *q_ptr;

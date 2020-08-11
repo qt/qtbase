@@ -1819,7 +1819,7 @@ qint64 QSslSocket::writeData(const char *data, qint64 len)
     if (d->mode == UnencryptedMode && !d->autoStartHandshake)
         return d->plainSocket->write(data, len);
 
-    d->writeBuffer.append(data, len);
+    d->write(data, len);
 
     // make sure we flush to the plain socket's buffer
     if (!d->flushTriggered) {

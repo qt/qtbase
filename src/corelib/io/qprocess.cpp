@@ -1899,7 +1899,7 @@ qint64 QProcess::writeData(const char *data, qint64 len)
     }
 #endif
 
-    d->writeBuffer.append(data, len);
+    d->write(data, len);
 #ifdef Q_OS_WIN
     if (!d->stdinWriteTrigger->isActive())
         d->stdinWriteTrigger->start();

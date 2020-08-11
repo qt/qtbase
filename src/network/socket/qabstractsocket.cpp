@@ -2542,7 +2542,7 @@ qint64 QAbstractSocket::writeData(const char *data, qint64 size)
     // We just write to our write buffer and enable the write notifier
     // The write notifier then flush()es the buffer.
 
-    d->writeBuffer.append(data, size);
+    d->write(data, size);
     qint64 written = size;
 
     if (d->socketEngine && !d->writeBuffer.isEmpty())

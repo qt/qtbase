@@ -158,13 +158,14 @@ static void checkWarnMessage(const QIODevice *device, const char *function, cons
 QIODevicePrivate::QIODevicePrivate()
     : openMode(QIODevice::NotOpen),
       pos(0), devicePos(0),
+      transactionPos(0),
       readChannelCount(0),
       writeChannelCount(0),
       currentReadChannel(0),
       currentWriteChannel(0),
       readBufferChunkSize(QIODEVICE_BUFFERSIZE),
       writeBufferChunkSize(0),
-      transactionPos(0),
+      currentWriteChunk(nullptr),
       transactionStarted(false)
        , baseReadLineDataCalled(false)
        , accessMode(Unset)
@@ -1750,7 +1751,34 @@ qint64 QIODevice::write(const char *data)
 
 qint64 QIODevice::write(const QByteArray &data)
 {
-    return write(data.constData(), data.size());
+    Q_D(QIODevice);
+
+    // Keep the chunk pointer for further processing in
+    // QIODevicePrivate::write(). To reduce fragmentation,
+    // the chunk size must be sufficiently large.
+    if (data.size() >= QRINGBUFFER_CHUNKSIZE)
+        d->currentWriteChunk = &data;
+
+    const qint64 ret = write(data.constData(), data.size());
+
+    d->currentWriteChunk = nullptr;
+    return ret;
+}
+
+/*!
+    \internal
+*/
+void QIODevicePrivate::write(const char *data, qint64 size)
+{
+    if (currentWriteChunk != nullptr
+        && currentWriteChunk->constData() == data
+        && currentWriteChunk->size() == size) {
+        // We are called from write(const QByteArray &) overload.
+        // So, we can make a shallow copy of chunk.
+        writeBuffer.append(*currentWriteChunk);
+    } else {
+        writeBuffer.append(data, size);
+    }
 }
 
 /*!
