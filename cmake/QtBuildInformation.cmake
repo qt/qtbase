@@ -29,8 +29,8 @@ function(qt_print_build_instructions)
         message("Once everything is built, Qt is installed. You should NOT run '${install_command}'")
         message("Note that this build cannot be deployed to other machines or devices.")
     endif()
-    message("\nTo configure and build other modules, you can use the following convenience script:
-        ${QT_STAGING_PREFIX}/${INSTALL_BINDIR}/qt-cmake")
+    message("\nTo configure and build other Qt modules, you can use the following convenience script:
+        ${QT_STAGING_PREFIX}/${INSTALL_BINDIR}/qt-cmake-private")
     message("\nIf reconfiguration fails for some reason, try to remove 'CMakeCache.txt' \
 from the build directory \n")
 endfunction()
