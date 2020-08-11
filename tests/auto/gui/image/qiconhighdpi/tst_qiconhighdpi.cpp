@@ -53,19 +53,18 @@ void tst_QIconHighDpi::initTestCase()
 void tst_QIconHighDpi::fromTheme_data()
 {
     QTest::addColumn<int>("requestedSize");
+    QTest::addColumn<qreal>("requestedDpr");
     QTest::addColumn<int>("expectedSize");
     QTest::addColumn<qreal>("expectedDpr");
 
     // The pixmaps that we have available can be found in tst_qiconhighdpi.qrc.
-    // Currently we only have @1 and @2 icons available.
-    const int dpr = qCeil(qApp->devicePixelRatio());
+    // Currently we only have @1 and @2 icons available, which limits the expected
+    // devicePixelRatio when testing at e.g. devicePixelRatio 3.
 
     // We have an @2 high DPI version of the 22x22 size of this icon.
-    switch (dpr) {
-    case 1: QTest::newRow("22x22,dpr=1") << 22 << 22 << 1.0; break;
-    case 2: QTest::newRow("22x22,dpr=2") << 22 << 44 << 2.0; break;
-    case 3: QTest::newRow("22x22,dpr=3") << 22 << 44 << 2.0; break;
-    }
+    QTest::newRow("22x22,dpr=1") << 22 << 1.0 << 22 << 1.0;
+    QTest::newRow("22x22,dpr=2") << 22 << 2.0 << 44 << 2.0;
+    QTest::newRow("22x22,dpr=3") << 22 << 3.0 << 44 << 2.0;
 
     // We don't have a high DPI version of the 16x16 size of this icon,
     // so directoryMatchesSize() will return false for all directories.
@@ -86,13 +85,11 @@ void tst_QIconHighDpi::fromTheme_data()
     // Both of these functions are implementations of the freedesktop icon theme spec,
     // which dictates that if there is no matching scale, directorySizeDistance() determines
     // the winner, regardless of whether or not the scale is too low for the requested scale.
-    switch (dpr) {
-    case 1: QTest::newRow("16x16,dpr=1") << 16 << 16 << 1.0; break;
+    QTest::newRow("16x16,dpr=1") << 16 << 1.0 << 16 << 1.0;
     // PixmapEntry::pixmap() will only downscale the pixmap if actualSize.width() > size.width().
     // In this case, 22 > 32 is false, so a 22x22 pixmap is returned.
-    case 2: QTest::newRow("16x16,dpr=2") << 16 << 22 << 1.375; break;
-    case 3: QTest::newRow("16x16,dpr=3") << 16 << 44 << 2.75; break;
-    }
+    QTest::newRow("16x16,dpr=2") << 16 << 2.0 << 22 << 1.375;
+    QTest::newRow("16x16,dpr=3") << 16 << 3.0 << 44 << 2.75;
 
     // We don't have an 8x8 size of this icon, so:
     // Available size | Available scale | Requested size | Requested scale | Distance
@@ -107,11 +104,9 @@ void tst_QIconHighDpi::fromTheme_data()
     //        22      *        2        -       8        *        3        =    20
     //        22      *        1        -       8        *        3        =     2 < (22x22)
     //        16      *        1        -       8        *        3        =     8
-    switch (dpr) {
-    case 1: QTest::newRow("8x8,dpr=1") << 8 << 8 << 1.0; break;
-    case 2: QTest::newRow("8x8,dpr=2") << 8 << 16 << 2.0; break;
-    case 3: QTest::newRow("8x8,dpr=3") << 8 << 22 << 2.75; break;
-    }
+    QTest::newRow("8x8,dpr=1") << 8 << 1.0 << 8 << 1.0;
+    QTest::newRow("8x8,dpr=2") << 8 << 2.0 << 16 << 2.0;
+    QTest::newRow("8x8,dpr=3") << 8 << 3.0 << 22 << 2.75;
 
     // We don't have a 44x44 size of this icon, so:
     // Available size | Available scale | Requested size | Requested scale | Distance
@@ -126,11 +121,9 @@ void tst_QIconHighDpi::fromTheme_data()
     //        22      *        2        -       44       *        3        =    88 < (22x22@2)
     //        22      *        1        -       44       *        3        =   110
     //        16      *        1        -       44       *        3        =   116
-    switch (dpr) {
-    case 1: QTest::newRow("44x44,dpr=1") << 44 << 44 << 1.0; break;
-    case 2: QTest::newRow("44x44,dpr=2") << 44 << 44 << 1.0; break;
-    case 3: QTest::newRow("44x44,dpr=3") << 44 << 44 << 1.0; break;
-    }
+    QTest::newRow("44x44,dpr=1") << 44 << 1.0 << 44 << 1.0;
+    QTest::newRow("44x44,dpr=2") << 44 << 2.0 << 44 << 1.0;
+    QTest::newRow("44x44,dpr=3") << 44 << 3.0 << 44 << 1.0;
 
     // We don't have a 20x20 size of this icon, so:
     // Available size | Available scale | Requested size | Requested scale | Distance
@@ -145,18 +138,17 @@ void tst_QIconHighDpi::fromTheme_data()
     //        22      *        2        -       20       *        3        =    16 < (22x22@2)
     //        22      *        1        -       20       *        3        =    38
     //        16      *        1        -       20       *        3        =    44
-    switch (dpr) {
-    case 1: QTest::newRow("20x20,dpr=1") << 20 << 20 << 1.0; break;
+    QTest::newRow("20x20,dpr=1") << 20 << 1.0 << 20 << 1.0;
     // PixmapEntry::pixmap() will only downscale the pixmap if actualSize.width() > size.width().
     // In this case, 44 > 40 is true, so the 44x44 pixmap is downscaled to 40x40.
-    case 2: QTest::newRow("20x20,dpr=2") << 20 << 40 << 2.0; break;
-    case 3: QTest::newRow("20x20,dpr=3") << 20 << 44 << 2.2; break;
-    }
+    QTest::newRow("20x20,dpr=2") << 20 << 2.0 << 40 << 2.0;
+    QTest::newRow("20x20,dpr=3") << 20 << 3.0 << 44 << 2.2;
 }
 
 void tst_QIconHighDpi::fromTheme()
 {
     QFETCH(int, requestedSize);
+    QFETCH(qreal, requestedDpr);
     QFETCH(int, expectedSize);
     QFETCH(qreal, expectedDpr);
 
@@ -175,11 +167,9 @@ void tst_QIconHighDpi::fromTheme()
     QVERIFY(appointmentIcon.availableSizes().contains(QSize(16, 16)));
     QVERIFY(appointmentIcon.availableSizes().contains(QSize(22, 22)));
 
-    const QPixmap pixmap = appointmentIcon.pixmap(requestedSize);
+    const QPixmap pixmap = appointmentIcon.pixmap(QSize(requestedSize, requestedSize), requestedDpr);
     QCOMPARE(pixmap.size(), QSize(expectedSize, expectedSize));
     // We should get the high DPI version of an image if it exists in the correct directory.
-    // Note that we didn't pass the QWindow to QIcon::pixmap(),
-    // because QGuiApplication::devicePixelRatio() will be used if no window was given.
     QCOMPARE(pixmap.devicePixelRatio(), expectedDpr);
 }
 
@@ -203,7 +193,6 @@ void tst_QIconHighDpi::ninePatch()
 
 int main(int argc, char *argv[])
 {
-    QGuiApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     QGuiApplication app(argc, argv);
     Q_UNUSED(app);
     tst_QIconHighDpi test;
