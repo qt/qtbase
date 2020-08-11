@@ -111,7 +111,7 @@ class QCache
         {
             return Node(k, std::move(t));
         }
-        void replace(const Value &t) noexcept(std::is_nothrow_assignable_v<T>)
+        void replace(const Value &t) noexcept(std::is_nothrow_assignable_v<T, T>)
         {
             value = t;
         }
