@@ -94,7 +94,7 @@ public:
         SpdyWasUsedAttribute,
 #endif // QT_DEPRECATED_SINCE(5, 15)
         EmitAllUploadProgressSignalsAttribute = BackgroundRequestAttribute + 3,
-        FollowRedirectsAttribute,
+        FollowRedirectsAttribute Q_DECL_ENUMERATOR_DEPRECATED_X("Use RedirectPolicyAttribute"),
         Http2AllowedAttribute,
         Http2WasUsedAttribute,
 #if QT_DEPRECATED_SINCE(5, 15)
