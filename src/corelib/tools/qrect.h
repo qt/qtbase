@@ -146,6 +146,8 @@ public:
     constexpr inline QRect &operator+=(const QMargins &margins) noexcept;
     constexpr inline QRect &operator-=(const QMargins &margins) noexcept;
 
+    Q_REQUIRED_RESULT static constexpr inline QRect span(const QPoint &p1, const QPoint &p2) noexcept;
+
     friend constexpr inline bool operator==(const QRect &, const QRect &) noexcept;
     friend constexpr inline bool operator!=(const QRect &, const QRect &) noexcept;
     friend constexpr inline size_t qHash(const QRect &, size_t) noexcept;
@@ -503,6 +505,12 @@ constexpr inline QRect &QRect::operator-=(const QMargins &margins) noexcept
 {
     *this = marginsRemoved(margins);
     return *this;
+}
+
+constexpr QRect QRect::span(const QPoint &p1, const QPoint &p2) noexcept
+{
+    return QRect(QPoint(qMin(p1.x(), p2.x()), qMin(p1.y(), p2.y())),
+                 QPoint(qMax(p1.x(), p2.x()), qMax(p1.y(), p2.y())));
 }
 
 #ifndef QT_NO_DEBUG_STREAM

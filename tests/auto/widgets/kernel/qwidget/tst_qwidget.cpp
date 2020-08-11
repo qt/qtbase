@@ -8780,7 +8780,7 @@ public:
 
     void resizeEvent(QResizeEvent *) override
     {
-        setMask(QRegion(QRect(0, 0, width(), 10).normalized()));
+        setMask(QRegion(QRect(0, 0, width(), 10)));
     }
 
     QRegion paintedRegion;
@@ -9288,7 +9288,7 @@ class MaskResizeTestWidget : public QWidget
 public:
     explicit MaskResizeTestWidget(QWidget* p = nullptr) : QWidget(p)
     {
-        setMask(QRegion(QRect(0, 0, 100, 100).normalized()));
+        setMask(QRegion(QRect(0, 0, 100, 100)));
     }
 
     void paintEvent(QPaintEvent* event) override
@@ -9304,12 +9304,12 @@ public:
 
 public slots:
     void enlargeMask() {
-        QRegion newMask(QRect(0, 0, 150, 150).normalized());
+        QRegion newMask(QRect(0, 0, 150, 150));
         setMask(newMask);
     }
 
     void shrinkMask() {
-        QRegion newMask(QRect(0, 0, 50, 50).normalized());
+        QRegion newMask(QRect(0, 0, 50, 50));
         setMask(newMask);
     }
 
