@@ -876,10 +876,9 @@ QPixmap QIcon::pixmap(const QSize &size, qreal devicePixelRatio, Mode mode, Stat
     }
 
     // Try get a pixmap that is big enough to be displayed at device pixel resolution.
-    QIconEngine::ScaledPixmapArgument scalePixmapArg = { size * devicePixelRatio, mode, state, devicePixelRatio, QPixmap() };
-    d->engine->virtual_hook(QIconEngine::ScaledPixmapHook, reinterpret_cast<void*>(&scalePixmapArg));
-    scalePixmapArg.pixmap.setDevicePixelRatio(d->pixmapDevicePixelRatio(devicePixelRatio, size, scalePixmapArg.pixmap.size()));
-    return scalePixmapArg.pixmap;
+    QPixmap pixmap = d->engine->scaledPixmap(size * devicePixelRatio, mode, state, devicePixelRatio);
+    pixmap.setDevicePixelRatio(d->pixmapDevicePixelRatio(devicePixelRatio, size, pixmap.size()));
+    return pixmap;
 }
 
 /*!

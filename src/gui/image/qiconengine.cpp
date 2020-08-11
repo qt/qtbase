@@ -342,12 +342,12 @@ void QIconEngine::virtual_hook(int id, void *data)
 
     \include qiconengine-virtualhookhelper.qdocinc
  */
-QList<QSize> QIconEngine::availableSizes(QIcon::Mode mode, QIcon::State state) const
+QList<QSize> QIconEngine::availableSizes(QIcon::Mode mode, QIcon::State state)
 {
     AvailableSizesArgument arg;
     arg.mode = mode;
     arg.state = state;
-    const_cast<QIconEngine *>(this)->virtual_hook(QIconEngine::AvailableSizesHook, reinterpret_cast<void*>(&arg));
+    this->virtual_hook(QIconEngine::AvailableSizesHook, reinterpret_cast<void*>(&arg));
     return arg.sizes;
 }
 
@@ -358,10 +358,10 @@ QList<QSize> QIconEngine::availableSizes(QIcon::Mode mode, QIcon::State state) c
 
     \include qiconengine-virtualhookhelper.qdocinc
  */
-QString QIconEngine::iconName() const
+QString QIconEngine::iconName()
 {
     QString name;
-    const_cast<QIconEngine *>(this)->virtual_hook(QIconEngine::IconNameHook, reinterpret_cast<void*>(&name));
+    virtual_hook(QIconEngine::IconNameHook, reinterpret_cast<void*>(&name));
     return name;
 }
 
@@ -372,10 +372,10 @@ QString QIconEngine::iconName() const
 
     \include qiconengine-virtualhookhelper.qdocinc
  */
-bool QIconEngine::isNull() const
+bool QIconEngine::isNull()
 {
     bool isNull = false;
-    const_cast<QIconEngine *>(this)->virtual_hook(QIconEngine::IsNullHook, &isNull);
+    virtual_hook(QIconEngine::IsNullHook, &isNull);
     return isNull;
 }
 

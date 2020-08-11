@@ -74,11 +74,11 @@ public:
     };
 
     virtual QList<QSize> availableSizes(QIcon::Mode mode = QIcon::Normal,
-                                    QIcon::State state = QIcon::Off) const;
+                                    QIcon::State state = QIcon::Off);
 
-    virtual QString iconName() const;
-    bool isNull() const; // ### Qt6 make virtual
-    QPixmap scaledPixmap(const QSize &size, QIcon::Mode mode, QIcon::State state, qreal scale); // ### Qt6 make virtual
+    virtual QString iconName();
+    virtual bool isNull();
+    virtual QPixmap scaledPixmap(const QSize &size, QIcon::Mode mode, QIcon::State state, qreal scale);
 
     struct ScaledPixmapArgument
     {
@@ -89,7 +89,6 @@ public:
         QPixmap pixmap;
     };
 
-    // ### Qt6: move content to proper virtual functions
     virtual void virtual_hook(int id, void *data);
 
 protected:

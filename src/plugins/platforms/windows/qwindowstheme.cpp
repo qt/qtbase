@@ -888,7 +888,7 @@ public:
     explicit QWindowsFileIconEngine(const QFileInfo &info, QPlatformTheme::IconOptions opts) :
         QAbstractFileIconEngine(info, opts) {}
 
-    QList<QSize> availableSizes(QIcon::Mode = QIcon::Normal, QIcon::State = QIcon::Off) const override
+    QList<QSize> availableSizes(QIcon::Mode = QIcon::Normal, QIcon::State = QIcon::Off) override
     { return QWindowsTheme::instance()->availableFileIconSizes(); }
 
 protected:
