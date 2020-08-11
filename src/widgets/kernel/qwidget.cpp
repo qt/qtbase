@@ -11150,7 +11150,7 @@ bool QWidget::testAttribute_helper(Qt::WidgetAttribute attribute) const
 
   \warning Changing this property from opaque to transparent might issue a
   paint event that needs to be processed before the window is displayed
-  correctly. This affects mainly the use of QPixmap::grabWindow(). Also note
+  correctly. This affects mainly the use of QScreen::grabWindow(). Also note
   that semi-transparent windows update and resize significantly slower than
   opaque windows.
 
