@@ -355,14 +355,13 @@ QLineEditPrivate *QLineEditIconButton::lineEditPrivate() const
 void QLineEditIconButton::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
-    QWindow *window = qt_widget_private(this)->windowHandle(QWidgetPrivate::WindowHandleMode::Closest);
     QIcon::Mode state = QIcon::Disabled;
     if (isEnabled())
         state = isDown() ? QIcon::Active : QIcon::Normal;
     const QLineEditPrivate *lep = lineEditPrivate();
     const int iconWidth = lep ? lep->sideWidgetParameters().iconSize : 16;
     const QSize iconSize(iconWidth, iconWidth);
-    const QPixmap iconPixmap = icon().pixmap(window, iconSize, state, QIcon::Off);
+    const QPixmap iconPixmap = icon().pixmap(iconSize, devicePixelRatio(), state, QIcon::Off);
     QRect pixmapRect = QRect(QPoint(0, 0), iconSize);
     pixmapRect.moveCenter(rect().center());
     painter.setOpacity(m_opacity);

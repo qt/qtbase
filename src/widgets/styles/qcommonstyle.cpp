@@ -121,9 +121,9 @@
 
 QT_BEGIN_NAMESPACE
 
-static QWindow *qt_getWindow(const QWidget *widget)
+static qreal qt_getDevicePixelRatio(const QWidget *widget)
 {
-    return widget ? widget->window()->windowHandle() : nullptr;
+    return widget ? widget->devicePixelRatio() : qApp->devicePixelRatio();
 }
 
 /*!
@@ -441,7 +441,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
             mode = QIcon::Disabled;
 
         QIcon::State state = opt->state & State_Sunken ? QIcon::On : QIcon::Off;
-        QPixmap pixmap = d->tabBarcloseButtonIcon.pixmap(qt_getWindow(widget), QSize(size, size), mode, state);
+        QPixmap pixmap = d->tabBarcloseButtonIcon.pixmap(QSize(size, size), p->device()->devicePixelRatio(), mode, state);
         proxy()->drawItemPixmap(p, opt->rect, Qt::AlignCenter, pixmap);
         break;
     }
@@ -1371,7 +1371,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                 if (button->state & State_On)
                     state = QIcon::On;
 
-                QPixmap pixmap = button->icon.pixmap(qt_getWindow(widget), button->iconSize, mode, state);
+                QPixmap pixmap = button->icon.pixmap(button->iconSize, p->device()->devicePixelRatio(), mode, state);
                 int pixmapWidth = pixmap.width() / pixmap.devicePixelRatio();
                 int pixmapHeight = pixmap.height() / pixmap.devicePixelRatio();
                 int labelWidth = pixmapWidth;
@@ -1449,7 +1449,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             QPixmap pix;
             QRect textRect = btn->rect;
             if (!btn->icon.isNull()) {
-                pix = btn->icon.pixmap(qt_getWindow(widget), btn->iconSize, btn->state & State_Enabled ? QIcon::Normal : QIcon::Disabled);
+                pix = btn->icon.pixmap(btn->iconSize, p->device()->devicePixelRatio(), btn->state & State_Enabled ? QIcon::Normal : QIcon::Disabled);
                 proxy()->drawItemPixmap(p, btn->rect, alignment, pix);
                 if (btn->direction == Qt::RightToLeft)
                     textRect.setRight(textRect.right() - btn->iconSize.width() - 4);
@@ -1491,7 +1491,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             if (!proxy()->styleHint(SH_UnderlineShortcut, mbi, widget))
                 alignment |= Qt::TextHideMnemonic;
             int iconExtent = proxy()->pixelMetric(PM_SmallIconSize, opt);
-            QPixmap pix = mbi->icon.pixmap(qt_getWindow(widget), QSize(iconExtent, iconExtent), (mbi->state & State_Enabled) ? QIcon::Normal : QIcon::Disabled);
+            QPixmap pix = mbi->icon.pixmap(QSize(iconExtent, iconExtent), p->device()->devicePixelRatio(), (mbi->state & State_Enabled) ? QIcon::Normal : QIcon::Disabled);
             if (!pix.isNull())
                 proxy()->drawItemPixmap(p,mbi->rect, alignment, pix);
             else
@@ -1648,7 +1648,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             if (!header->icon.isNull()) {
                 int iconExtent = proxy()->pixelMetric(PM_SmallIconSize, opt);
                 QPixmap pixmap
-                    = header->icon.pixmap(qt_getWindow(widget), QSize(iconExtent, iconExtent), (header->state & State_Enabled) ? QIcon::Normal : QIcon::Disabled);
+                    = header->icon.pixmap(QSize(iconExtent, iconExtent), p->device()->devicePixelRatio(), (header->state & State_Enabled) ? QIcon::Normal : QIcon::Disabled);
                 int pixw = pixmap.width() / pixmap.devicePixelRatio();
 
                 QRect aligned = alignedRect(header->direction, QFlag(header->iconAlignment), pixmap.size() / pixmap.devicePixelRatio(), rect);
@@ -1708,7 +1708,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                         mode = QIcon::Active;
                     else
                         mode = QIcon::Normal;
-                    pm = toolbutton->icon.pixmap(qt_getWindow(widget), toolbutton->rect.size().boundedTo(toolbutton->iconSize),
+                    pm = toolbutton->icon.pixmap(toolbutton->rect.size().boundedTo(toolbutton->iconSize), p->device()->devicePixelRatio(),
                                                  mode, state);
                     pmSize = pm.size() / pm.devicePixelRatio();
                 }
@@ -1931,7 +1931,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             bool enabled = tb->state & State_Enabled;
             bool selected = tb->state & State_Selected;
             int iconExtent = proxy()->pixelMetric(QStyle::PM_SmallIconSize, tb, widget);
-            QPixmap pm = tb->icon.pixmap(qt_getWindow(widget), QSize(iconExtent, iconExtent),
+            QPixmap pm = tb->icon.pixmap(QSize(iconExtent, iconExtent), p->device()->devicePixelRatio(),
                                          enabled ? QIcon::Normal : QIcon::Disabled);
 
             QRect cr = subElementRect(QStyle::SE_ToolBoxTabContents, tb, widget);
@@ -2005,7 +2005,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             tr = proxy()->subElementRect(SE_TabBarTabText, opt, widget); //we compute tr twice because the style may override subElementRect
 
             if (!tab->icon.isNull()) {
-                QPixmap tabIcon = tab->icon.pixmap(qt_getWindow(widget), tab->iconSize,
+                QPixmap tabIcon = tab->icon.pixmap(tab->iconSize, p->device()->devicePixelRatio(),
                                                    (tab->state & State_Enabled) ? QIcon::Normal
                                                                                 : QIcon::Disabled,
                                                    (tab->state & State_Selected) ? QIcon::On
@@ -2205,7 +2205,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             if (!cb->currentIcon.isNull()) {
                 QIcon::Mode mode = cb->state & State_Enabled ? QIcon::Normal
                                                              : QIcon::Disabled;
-                QPixmap pixmap = cb->currentIcon.pixmap(qt_getWindow(widget), cb->iconSize, mode);
+                QPixmap pixmap = cb->currentIcon.pixmap(cb->iconSize, p->device()->devicePixelRatio(), mode);
                 QRect iconRect(editRect);
                 iconRect.setWidth(cb->iconSize.width() + 4);
                 iconRect = alignedRect(cb->direction,
@@ -2513,7 +2513,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
             if (!btn->icon.isNull()) {
                 iconRect = itemPixmapRect(cr, Qt::AlignAbsolute | Qt::AlignLeft | Qt::AlignVCenter
                                         | Qt::TextShowMnemonic,
-                                   btn->icon.pixmap(qt_getWindow(widget), btn->iconSize, QIcon::Normal));
+                                   btn->icon.pixmap(btn->iconSize, qt_getDevicePixelRatio(widget), QIcon::Normal));
                 if (!textRect.isEmpty())
                     textRect.translate(iconRect.right() + 4, 0);
             }
@@ -2561,7 +2561,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
             }
             if (!btn->icon.isNull()) {
                 iconRect = itemPixmapRect(cr, Qt::AlignAbsolute | Qt::AlignLeft | Qt::AlignVCenter | Qt::TextShowMnemonic,
-                                   btn->icon.pixmap(qt_getWindow(widget), btn->iconSize, QIcon::Normal));
+                                   btn->icon.pixmap(btn->iconSize, qt_getDevicePixelRatio(widget), QIcon::Normal));
                 if (!textRect.isEmpty())
                     textRect.translate(iconRect.right() + 4, 0);
             }
@@ -3554,9 +3554,9 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                     || qobject_cast<const QDockWidget *>(widget)
 #endif
                     )
-                    pm = proxy()->standardIcon(SP_DockWidgetCloseButton, &tool, widget).pixmap(qt_getWindow(widget), QSize(10, 10));
+                    pm = proxy()->standardIcon(SP_DockWidgetCloseButton, &tool, widget).pixmap(QSize(10, 10), p->device()->devicePixelRatio());
                 else
-                    pm = proxy()->standardIcon(SP_TitleBarCloseButton, &tool, widget).pixmap(qt_getWindow(widget), QSize(10, 10));
+                    pm = proxy()->standardIcon(SP_TitleBarCloseButton, &tool, widget).pixmap(QSize(10, 10), p->device()->devicePixelRatio());
                 tool.rect = ir;
                 tool.state = down ? State_Sunken : State_Raised;
                 proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
@@ -3575,7 +3575,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 ir = proxy()->subControlRect(CC_TitleBar, tb, SC_TitleBarMaxButton, widget);
 
                 down = tb->activeSubControls & SC_TitleBarMaxButton && (opt->state & State_Sunken);
-                pm = proxy()->standardIcon(SP_TitleBarMaxButton, &tool, widget).pixmap(qt_getWindow(widget), QSize(10, 10));
+                pm = proxy()->standardIcon(SP_TitleBarMaxButton, &tool, widget).pixmap(QSize(10, 10), p->device()->devicePixelRatio());
                 tool.rect = ir;
                 tool.state = down ? State_Sunken : State_Raised;
                 proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
@@ -3593,7 +3593,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                     && !(tb->titleBarState & Qt::WindowMinimized)) {
                 ir = proxy()->subControlRect(CC_TitleBar, tb, SC_TitleBarMinButton, widget);
                 down = tb->activeSubControls & SC_TitleBarMinButton && (opt->state & State_Sunken);
-                pm = proxy()->standardIcon(SP_TitleBarMinButton, &tool, widget).pixmap(qt_getWindow(widget), QSize(10, 10));
+                pm = proxy()->standardIcon(SP_TitleBarMinButton, &tool, widget).pixmap(QSize(10, 10), p->device()->devicePixelRatio());
                 tool.rect = ir;
                 tool.state = down ? State_Sunken : State_Raised;
                 proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
@@ -3615,7 +3615,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
             if (drawNormalButton) {
                 ir = proxy()->subControlRect(CC_TitleBar, tb, SC_TitleBarNormalButton, widget);
                 down = tb->activeSubControls & SC_TitleBarNormalButton && (opt->state & State_Sunken);
-                pm = proxy()->standardIcon(SP_TitleBarNormalButton, &tool, widget).pixmap(qt_getWindow(widget), QSize(10, 10));
+                pm = proxy()->standardIcon(SP_TitleBarNormalButton, &tool, widget).pixmap(QSize(10, 10), p->device()->devicePixelRatio());
                 tool.rect = ir;
                 tool.state = down ? State_Sunken : State_Raised;
                 proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
@@ -3633,7 +3633,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                     && !(tb->titleBarState & Qt::WindowMinimized)) {
                 ir = proxy()->subControlRect(CC_TitleBar, tb, SC_TitleBarShadeButton, widget);
                 down = (tb->activeSubControls & SC_TitleBarShadeButton && (opt->state & State_Sunken));
-                pm = proxy()->standardIcon(SP_TitleBarShadeButton, &tool, widget).pixmap(qt_getWindow(widget), QSize(10, 10));
+                pm = proxy()->standardIcon(SP_TitleBarShadeButton, &tool, widget).pixmap(QSize(10, 10), p->device()->devicePixelRatio());
                 tool.rect = ir;
                 tool.state = down ? State_Sunken : State_Raised;
                 proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
@@ -3651,7 +3651,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 ir = proxy()->subControlRect(CC_TitleBar, tb, SC_TitleBarUnshadeButton, widget);
 
                 down = tb->activeSubControls & SC_TitleBarUnshadeButton  && (opt->state & State_Sunken);
-                pm = proxy()->standardIcon(SP_TitleBarUnshadeButton, &tool, widget).pixmap(qt_getWindow(widget), QSize(10, 10));
+                pm = proxy()->standardIcon(SP_TitleBarUnshadeButton, &tool, widget).pixmap(QSize(10, 10), p->device()->devicePixelRatio());
                 tool.rect = ir;
                 tool.state = down ? State_Sunken : State_Raised;
                 proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
@@ -3667,7 +3667,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 ir = proxy()->subControlRect(CC_TitleBar, tb, SC_TitleBarContextHelpButton, widget);
 
                 down = tb->activeSubControls & SC_TitleBarContextHelpButton  && (opt->state & State_Sunken);
-                pm = proxy()->standardIcon(SP_TitleBarContextHelpButton, &tool, widget).pixmap(qt_getWindow(widget), QSize(10, 10));
+                pm = proxy()->standardIcon(SP_TitleBarContextHelpButton, &tool, widget).pixmap(QSize(10, 10), p->device()->devicePixelRatio());
                 tool.rect = ir;
                 tool.state = down ? State_Sunken : State_Raised;
                 proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
@@ -3684,7 +3684,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                     tb->icon.paint(p, ir);
                 } else {
                     int iconSize = proxy()->pixelMetric(PM_SmallIconSize, tb, widget);
-                    pm = proxy()->standardIcon(SP_TitleBarMenuButton, &tool, widget).pixmap(qt_getWindow(widget), QSize(iconSize, iconSize));
+                    pm = proxy()->standardIcon(SP_TitleBarMenuButton, &tool, widget).pixmap(QSize(iconSize, iconSize), p->device()->devicePixelRatio());
                     tool.rect = ir;
                     p->save();
                     proxy()->drawItemPixmap(p, ir, Qt::AlignCenter, pm);
@@ -3873,7 +3873,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 }
                 btnOpt.rect = proxy()->subControlRect(CC_MdiControls, opt, SC_MdiCloseButton, widget);
                 proxy()->drawPrimitive(PE_PanelButtonCommand, &btnOpt, p, widget);
-                QPixmap pm = proxy()->standardIcon(SP_TitleBarCloseButton).pixmap(qt_getWindow(widget), buttonIconSize);
+                QPixmap pm = proxy()->standardIcon(SP_TitleBarCloseButton).pixmap(buttonIconSize, p->device()->devicePixelRatio());
                 proxy()->drawItemPixmap(p, btnOpt.rect.translated(bsx, bsy), Qt::AlignCenter, pm);
             }
             if (opt->subControls & QStyle::SC_MdiNormalButton) {
@@ -3890,7 +3890,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 }
                 btnOpt.rect = proxy()->subControlRect(CC_MdiControls, opt, SC_MdiNormalButton, widget);
                 proxy()->drawPrimitive(PE_PanelButtonCommand, &btnOpt, p, widget);
-                QPixmap pm = proxy()->standardIcon(SP_TitleBarNormalButton).pixmap(qt_getWindow(widget), buttonIconSize);
+                QPixmap pm = proxy()->standardIcon(SP_TitleBarNormalButton).pixmap(buttonIconSize, p->device()->devicePixelRatio());
                 proxy()->drawItemPixmap(p, btnOpt.rect.translated(bsx, bsy), Qt::AlignCenter, pm);
             }
             if (opt->subControls & QStyle::SC_MdiMinButton) {
@@ -3907,7 +3907,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 }
                 btnOpt.rect = proxy()->subControlRect(CC_MdiControls, opt, SC_MdiMinButton, widget);
                 proxy()->drawPrimitive(PE_PanelButtonCommand, &btnOpt, p, widget);
-                QPixmap pm = proxy()->standardIcon(SP_TitleBarMinButton).pixmap(qt_getWindow(widget), buttonIconSize);
+                QPixmap pm = proxy()->standardIcon(SP_TitleBarMinButton).pixmap(buttonIconSize, p->device()->devicePixelRatio());
                 proxy()->drawItemPixmap(p, btnOpt.rect.translated(bsx, bsy), Qt::AlignCenter, pm);
             }
         }
@@ -6023,8 +6023,8 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
                     const QList<QSize> sizes = baseIcon.availableSizes(QIcon::Normal, QIcon::Off);
                     for (int i = 0 ; i < sizes.size() ; ++i) {
                         int size = sizes[i].width();
-                        QPixmap basePixmap = baseIcon.pixmap(qt_getWindow(widget), QSize(size, size));
-                        QPixmap linkPixmap = linkIcon.pixmap(qt_getWindow(widget), QSize(size / 2, size / 2));
+                        QPixmap basePixmap = baseIcon.pixmap(QSize(size, size), qt_getDevicePixelRatio(widget));
+                        QPixmap linkPixmap = linkIcon.pixmap(QSize(size / 2, size / 2), qt_getDevicePixelRatio(widget));
                         QPainter painter(&basePixmap);
                         painter.drawPixmap(size/2, size/2, linkPixmap);
                         icon.addPixmap(basePixmap);
@@ -6040,8 +6040,8 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
                     const QList<QSize> sizes = baseIcon.availableSizes(QIcon::Normal, QIcon::Off);
                     for (int i = 0 ; i < sizes.size() ; ++i) {
                         int size = sizes[i].width();
-                        QPixmap basePixmap = baseIcon.pixmap(qt_getWindow(widget), QSize(size, size));
-                        QPixmap linkPixmap = linkIcon.pixmap(qt_getWindow(widget), QSize(size / 2, size / 2));
+                        QPixmap basePixmap = baseIcon.pixmap(QSize(size, size), qt_getDevicePixelRatio(widget));
+                        QPixmap linkPixmap = linkIcon.pixmap(QSize(size / 2, size / 2), qt_getDevicePixelRatio(widget));
                         QPainter painter(&basePixmap);
                         painter.drawPixmap(size/2, size/2, linkPixmap);
                         icon.addPixmap(basePixmap);

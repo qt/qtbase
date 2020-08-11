@@ -2662,10 +2662,8 @@ QPixmap QMessageBoxPrivate::standardIcon(QMessageBox::Icon icon, QMessageBox *mb
         break;
     }
     if (!tmpIcon.isNull()) {
-        QWindow *window = mb
-            ? qt_widget_private(mb)->windowHandle(QWidgetPrivate::WindowHandleMode::Closest)
-            : nullptr;
-        return tmpIcon.pixmap(window, QSize(iconSize, iconSize));
+        qreal dpr = mb ? mb->devicePixelRatio() : qApp->devicePixelRatio();
+        return tmpIcon.pixmap(QSize(iconSize, iconSize), dpr);
     }
     return QPixmap();
 }
