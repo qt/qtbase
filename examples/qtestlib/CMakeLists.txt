@@ -1,6 +1,6 @@
 # Generated from qtestlib.pro.
 
-if(NOT QT_BUILD_PARTS___contains___tools OR NOT TARGET Qt::Widgets)
+if(NOT TARGET Qt::Widgets)
     return()
 endif()
 add_subdirectory(tutorial1)
