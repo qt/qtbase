@@ -1817,11 +1817,6 @@ void QAccessibleInterface::virtual_hook(int /*id*/, void * /*data*/)
     interfaces. For example a line edit should implement the
     QAccessibleTextInterface.
 
-    Qt's QLineEdit for example has its accessibility support
-    implemented in QAccessibleLineEdit.
-
-    \snippet code/src_gui_accessible_qaccessible.cpp 3
-
     \sa QAccessible::InterfaceType, QAccessibleTextInterface,
     QAccessibleValueInterface, QAccessibleActionInterface,
     QAccessibleTableInterface, QAccessibleTableCellInterface
