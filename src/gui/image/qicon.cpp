@@ -875,6 +875,7 @@ QPixmap QIcon::pixmap(const QSize &size, qreal devicePixelRatio, Mode mode, Stat
 
 /*!
   \since 5.1
+  \deprecated
 
   Returns a pixmap with the requested \a window \a size, \a mode, and \a
   state, generating one if necessary.
@@ -883,8 +884,12 @@ QPixmap QIcon::pixmap(const QSize &size, qreal devicePixelRatio, Mode mode, Stat
   a high-dpi display the pixmap can be larger. In that case it will have
   a devicePixelRatio larger than 1.
 
+  \obsolete Use the overload which takes qreal devicePixelRatio instead.
+
   \sa  actualSize(), paint()
 */
+
+#if QT_DEPRECATED_SINCE(6, 0)
 QPixmap QIcon::pixmap(QWindow *window, const QSize &size, Mode mode, State state) const
 {
     if (!d)
@@ -893,6 +898,7 @@ QPixmap QIcon::pixmap(QWindow *window, const QSize &size, Mode mode, State state
     qreal devicePixelRatio = qt_effective_device_pixel_ratio(window);
     return pixmap(size, devicePixelRatio, mode, state);
 }
+#endif
 
 
 /*!  Returns the actual size of the icon for the requested \a size, \a
@@ -920,6 +926,8 @@ QSize QIcon::actualSize(const QSize &size, Mode mode, State state) const
 
   \sa actualSize(), pixmap(), paint()
 */
+
+#if QT_DEPRECATED_SINCE(6, 0)
 QSize QIcon::actualSize(QWindow *window, const QSize &size, Mode mode, State state) const
 {
     if (!d)
@@ -934,6 +942,7 @@ QSize QIcon::actualSize(QWindow *window, const QSize &size, Mode mode, State sta
     QSize actualSize = d->engine->actualSize(size * devicePixelRatio, mode, state);
     return actualSize / d->pixmapDevicePixelRatio(devicePixelRatio, size, actualSize);
 }
+#endif
 
 /*!
     Uses the \a painter to paint the icon with specified \a alignment,
