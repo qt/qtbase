@@ -1484,7 +1484,8 @@ uint QXmlStreamReaderPrivate::getChar_helper()
     const int BUFFER_SIZE = 8192;
     characterOffset += readBufferPos;
     readBufferPos = 0;
-    readBuffer.resize(0);
+    if (readBuffer.size())
+        readBuffer.resize(0);
 #if QT_CONFIG(textcodec)
     if (decoder)
 #endif
