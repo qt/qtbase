@@ -1190,8 +1190,7 @@ void QHttpNetworkConnectionChannel::_q_encrypted()
         // after establishing a secure connection we immediately start sending
         // HTTP/2 frames.
         switch (sslSocket->sslConfiguration().nextProtocolNegotiationStatus()) {
-        case QSslConfiguration::NextProtocolNegotiationNegotiated:
-        case QSslConfiguration::NextProtocolNegotiationUnsupported: {
+        case QSslConfiguration::NextProtocolNegotiationNegotiated: {
             QByteArray nextProtocol = sslSocket->sslConfiguration().nextNegotiatedProtocol();
             if (nextProtocol == QSslConfiguration::NextProtocolHttp1_1) {
                 // fall through to create a QHttpProtocolHandler
@@ -1207,6 +1206,7 @@ void QHttpNetworkConnectionChannel::_q_encrypted()
             }
         }
             Q_FALLTHROUGH();
+        case QSslConfiguration::NextProtocolNegotiationUnsupported: // No agreement, try HTTP/1(.1)
         case QSslConfiguration::NextProtocolNegotiationNone: {
             protocolHandler.reset(new QHttpProtocolHandler(this));
             if (!sslConfiguration.data()) {
