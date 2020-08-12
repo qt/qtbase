@@ -48,26 +48,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QDesktopScreenWidget::QDesktopScreenWidget(QScreen *screen, const QRect &geometry)
-    : QWidget(nullptr, Qt::Desktop)
-{
-    setVisible(false);
-    if (QWindow *winHandle = windowHandle())
-        winHandle->setScreen(screen);
-    setGeometry(geometry);
-}
-
-QScreen *QDesktopScreenWidget::screen() const
-{
-    const QDesktopWidgetPrivate *desktopWidgetP
-        = static_cast<const QDesktopWidgetPrivate *>(qt_widget_private(QApplication::desktop()));
-    for (auto it : qAsConst(desktopWidgetP->screenWidgets)) {
-        if (it.second == this)
-            return it.first;
-    }
-    return nullptr;
-}
-
 QDesktopWidgetPrivate::~QDesktopWidgetPrivate()
 {
     qDeleteAll(screenWidgets.values());
@@ -81,15 +61,19 @@ void QDesktopWidgetPrivate::updateScreens()
     // Re-build our screens list. This is the easiest way to later compute which signals to emit.
     // Create new screen widgets as necessary.
     // Furthermore, we note which screens have changed, and compute the overall virtual geometry.
-    QFlatMap<QScreen*, QDesktopScreenWidget*> newScreenWidgets;
+    QFlatMap<QScreen*, QWidget*> newScreenWidgets;
     QRegion virtualGeometry;
 
     for (QScreen *screen : screenList) {
         const QRect screenGeometry = screen->geometry();
-        QDesktopScreenWidget *screenWidget = screenWidgets.value(screen);
+        QWidget *screenWidget = screenWidgets.value(screen);
         if (!screenWidget) {
             // a new screen, create a widget and connect the signals.
-            screenWidget = new QDesktopScreenWidget(screen, screenGeometry);
+            screenWidget = new QWidget(nullptr, Qt::Desktop);
+            screenWidget->setVisible(false);
+            screenWidget->setScreen(screen);
+            screenWidget->setGeometry(screenGeometry);
+            screenWidget->setObjectName(QLatin1String("qt_desktop_widget_%1").arg(screen->name()));
             QObjectPrivate::connect(screen, &QScreen::geometryChanged,
                                     this, &QDesktopWidgetPrivate::updateScreens, Qt::QueuedConnection);
             QObjectPrivate::connect(screen, &QObject::destroyed,
@@ -105,7 +89,7 @@ void QDesktopWidgetPrivate::updateScreens()
     Q_ASSERT(screenWidgets.size() == screenList.length());
     q->setGeometry(virtualGeometry.boundingRect());
 
-    // Delete the QDesktopScreenWidget that are not used any more.
+    // Delete the screen widgets that are not used any more.
     for (auto it : qAsConst(newScreenWidgets)) {
         if (!screenWidgets.contains(it.first))
             delete it.second;

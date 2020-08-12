@@ -222,8 +222,6 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
         iface = new QAccessibleDockWidget(widget);
 #endif
 
-    } else if (classname == QLatin1String("QDesktopScreenWidget")) {
-        iface = nullptr;
     } else if (classname == QLatin1String("QWidget")) {
         iface = new QAccessibleWidget(widget);
     } else if (classname == QLatin1String("QWindowContainer")) {

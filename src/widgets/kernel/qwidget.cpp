@@ -42,7 +42,6 @@
 #include "qapplication_p.h"
 #include "qbrush.h"
 #include "qcursor.h"
-#include "qdesktopwidget_p.h"
 #include "qevent.h"
 #include "qlayout.h"
 #if QT_CONFIG(menu)
@@ -990,13 +989,6 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     if (allWidgets)
         allWidgets->insert(q);
 
-    QScreen *targetScreen = nullptr;
-    if (parentWidget && parentWidget->windowType() == Qt::Desktop) {
-        const QDesktopScreenWidget *sw = qobject_cast<const QDesktopScreenWidget *>(parentWidget);
-        targetScreen = sw ? sw->screen() : nullptr;
-        parentWidget = nullptr;
-    }
-
     q->data = &data;
 
 #if QT_CONFIG(thread)
@@ -1005,12 +997,6 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
                    "Widgets must be created in the GUI thread.");
     }
 #endif
-
-    if (targetScreen) {
-        topData()->initialScreen = targetScreen;
-        if (QWindow *window = q->windowHandle())
-            window->setScreen(targetScreen);
-    }
 
     data.fstrut_dirty = true;
 
@@ -2424,8 +2410,7 @@ bool QWidgetPrivate::setScreen(QScreen *screen)
         return false;
     const QScreen *currentScreen = windowHandle() ? windowHandle()->screen() : nullptr;
     if (currentScreen != screen) {
-        if (!windowHandle()) // Try to create a window handle if not created.
-            createWinId();
+        topData()->initialScreen = screen;
         if (windowHandle())
             windowHandle()->setScreen(screen);
         return true;
@@ -2512,6 +2497,24 @@ QScreen *QWidget::screen() const
             return screenByPos;
     }
     return QGuiApplication::primaryScreen();
+}
+
+/*!
+    Sets the screen on which the widget should be shown to \a screen.
+
+    Setting the screen only makes sense for windows. If necessary, the widget's
+    window will get recreated on \a screen.
+
+    \note If the screen is part of a virtual desktop of multiple screens,
+    the window will not move automatically to \a newScreen. To place the
+    window relative to the screen, use the screen's topLeft() position.
+
+    \sa QWindow::setScreen
+*/
+void QWidget::setScreen(QScreen *screen)
+{
+    Q_D(QWidget);
+    d->setScreen(screen);
 }
 
 #ifndef QT_NO_STYLE_STYLESHEET
@@ -10508,8 +10511,7 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
     if (newparent && newparent->windowType() == Qt::Desktop) {
         // make sure the widget is created on the same screen as the
         // programmer specified desktop widget
-        const QDesktopScreenWidget *sw = qobject_cast<const QDesktopScreenWidget *>(newparent);
-        targetScreen = sw ? sw->screen() : nullptr;
+        targetScreen = newparent->screen();
         newparent = nullptr;
     }
 
@@ -10539,10 +10541,8 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
 
     if (!newparent) {
         f |= Qt::Window;
-        if (!targetScreen) {
-            if (parent)
-                targetScreen = q->parentWidget()->window()->screen();
-        }
+        if (parent)
+            targetScreen = q->parentWidget()->window()->screen();
     }
 
     bool explicitlyHidden = q->testAttribute(Qt::WA_WState_Hidden) && q->testAttribute(Qt::WA_WState_ExplicitShowHide);

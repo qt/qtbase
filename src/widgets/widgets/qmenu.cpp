@@ -2377,7 +2377,7 @@ void QMenuPrivate::popup(const QPoint &p, QAction *atAction, PositionFunction po
     updateLayoutDirection();
 
     // Ensure that we get correct sizeHints by placing this window on the correct screen.
-    // However if the QMenu was constructed with a QDesktopScreenWidget as its parent,
+    // However if the QMenu was constructed with a Qt::Desktop widget as its parent,
     // then initialScreenIndex was set, so we should respect that for the lifetime of this menu.
     // However if eventLoop exists, then exec() already did this by calling createWinId(); so leave it alone. (QTBUG-76162)
     if (!eventLoop) {

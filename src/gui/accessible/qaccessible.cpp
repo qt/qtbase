@@ -707,7 +707,7 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
         QAccessiblePlugin *factory = qAccessiblePlugins()->value(cn);
         if (factory) {
             QAccessibleInterface *result = factory->create(cn, object);
-            if (result) {   // Need this condition because of QDesktopScreenWidget
+            if (result) {
                 QAccessibleCache::instance()->insert(object, result);
                 Q_ASSERT(QAccessibleCache::instance()->containsObject(object));
             }

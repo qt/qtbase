@@ -196,6 +196,7 @@ private slots:
     void activation();
 #endif
     void reparent();
+    void setScreen();
     void windowState();
     void showMaximized();
     void showFullScreen();
@@ -2941,6 +2942,29 @@ void tst_QWidget::reparent()
 
     QCOMPARE(child.geometry().topLeft(), childPos);
     QTRY_COMPARE(childTLW.pos(), tlwPos);
+}
+
+void tst_QWidget::setScreen()
+{
+    const auto screens = QApplication::screens();
+    if (screens.count() < 2)
+        QSKIP("This test tests nothing on a machine with a single screen.");
+
+    QScreen *screen0 = screens.at(0);
+    QScreen *screen1 = screens.at(1);
+
+    QWidget window;
+    window.setWindowFlags(Qt::CustomizeWindowHint | Qt::FramelessWindowHint);
+    window.setScreen(screen0);
+    QCOMPARE(window.screen(), screen0);
+    window.setScreen(screen1);
+    QCOMPARE(window.screen(), screen1);
+
+    // calling setScreen on a widget that is not a window does nothing
+    QWidget child(&window);
+    const QScreen *childScreen = child.screen();
+    child.setScreen(childScreen == screen0 ? screen1 : screen0);
+    QCOMPARE(child.screen(), childScreen);
 }
 
 // Qt/Embedded does it differently.

@@ -598,10 +598,9 @@ public:
 
     QWindow *windowHandle() const;
     QScreen *screen() const;
+    void setScreen(QScreen *);
 
     static QWidget *createWindowContainer(QWindow *window, QWidget *parent=nullptr, Qt::WindowFlags flags=Qt::WindowFlags());
-
-    friend class QDesktopScreenWidget;
 
 Q_SIGNALS:
     void windowTitleChanged(const QString &title);
