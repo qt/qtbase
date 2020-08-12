@@ -126,7 +126,7 @@ static_assert(!CanConvert<std::list<char16_t>>::value);
 // wchar_t
 //
 
-Q_CONSTEXPR bool CanConvertFromWCharT =
+constexpr bool CanConvertFromWCharT =
 #ifdef Q_OS_WIN
         true
 #else

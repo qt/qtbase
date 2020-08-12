@@ -603,16 +603,16 @@ using qsizetype = QIntegerForSizeof<std::size_t>::Signed;
 */
 
 template <typename T>
-Q_DECL_CONSTEXPR inline T qAbs(const T &t) { return t >= 0 ? t : -t; }
+constexpr inline T qAbs(const T &t) { return t >= 0 ? t : -t; }
 
-Q_DECL_CONSTEXPR inline int qRound(double d)
+constexpr inline int qRound(double d)
 { return d >= 0.0 ? int(d + 0.5) : int(d - double(int(d-1)) + 0.5) + int(d-1); }
-Q_DECL_CONSTEXPR inline int qRound(float d)
+constexpr inline int qRound(float d)
 { return d >= 0.0f ? int(d + 0.5f) : int(d - float(int(d-1)) + 0.5f) + int(d-1); }
 
-Q_DECL_CONSTEXPR inline qint64 qRound64(double d)
+constexpr inline qint64 qRound64(double d)
 { return d >= 0.0 ? qint64(d + 0.5) : qint64(d - double(qint64(d-1)) + 0.5) + qint64(d-1); }
-Q_DECL_CONSTEXPR inline qint64 qRound64(float d)
+constexpr inline qint64 qRound64(float d)
 { return d >= 0.0f ? qint64(d + 0.5f) : qint64(d - float(qint64(d-1)) + 0.5f) + qint64(d-1); }
 
 namespace QTypeTraits {
@@ -888,22 +888,22 @@ typedef void (*QFunctionPointer)();
 #  define Q_UNIMPLEMENTED() qWarning("Unimplemented code.")
 #endif
 
-Q_REQUIRED_RESULT Q_DECL_CONSTEXPR static inline Q_DECL_UNUSED bool qFuzzyCompare(double p1, double p2)
+Q_REQUIRED_RESULT constexpr static inline Q_DECL_UNUSED bool qFuzzyCompare(double p1, double p2)
 {
     return (qAbs(p1 - p2) * 1000000000000. <= qMin(qAbs(p1), qAbs(p2)));
 }
 
-Q_REQUIRED_RESULT Q_DECL_CONSTEXPR static inline Q_DECL_UNUSED bool qFuzzyCompare(float p1, float p2)
+Q_REQUIRED_RESULT constexpr static inline Q_DECL_UNUSED bool qFuzzyCompare(float p1, float p2)
 {
     return (qAbs(p1 - p2) * 100000.f <= qMin(qAbs(p1), qAbs(p2)));
 }
 
-Q_REQUIRED_RESULT Q_DECL_CONSTEXPR static inline Q_DECL_UNUSED bool qFuzzyIsNull(double d)
+Q_REQUIRED_RESULT constexpr static inline Q_DECL_UNUSED bool qFuzzyIsNull(double d)
 {
     return qAbs(d) <= 0.000000000001;
 }
 
-Q_REQUIRED_RESULT Q_DECL_CONSTEXPR static inline Q_DECL_UNUSED  bool qFuzzyIsNull(float f)
+Q_REQUIRED_RESULT constexpr static inline Q_DECL_UNUSED  bool qFuzzyIsNull(float f)
 {
     return qAbs(f) <= 0.00001f;
 }
@@ -911,12 +911,12 @@ Q_REQUIRED_RESULT Q_DECL_CONSTEXPR static inline Q_DECL_UNUSED  bool qFuzzyIsNul
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_FLOAT_COMPARE
 
-Q_REQUIRED_RESULT Q_DECL_CONSTEXPR static inline Q_DECL_UNUSED bool qIsNull(double d) noexcept
+Q_REQUIRED_RESULT constexpr static inline Q_DECL_UNUSED bool qIsNull(double d) noexcept
 {
     return d == 0.0;
 }
 
-Q_REQUIRED_RESULT Q_DECL_CONSTEXPR static inline Q_DECL_UNUSED bool qIsNull(float f) noexcept
+Q_REQUIRED_RESULT constexpr static inline Q_DECL_UNUSED bool qIsNull(float f) noexcept
 {
     return f == 0.0f;
 }
@@ -1029,14 +1029,14 @@ inline bool qt_is_permutation(ForwardIterator1 first1, ForwardIterator1 last1,
 
 // this adds const to non-const objects (like std::as_const)
 template <typename T>
-Q_DECL_CONSTEXPR typename std::add_const<T>::type &qAsConst(T &t) noexcept { return t; }
+constexpr typename std::add_const<T>::type &qAsConst(T &t) noexcept { return t; }
 // prevent rvalue arguments:
 template <typename T>
 void qAsConst(const T &&) = delete;
 
 // like std::exchange
 template <typename T, typename U = T>
-Q_DECL_RELAXED_CONSTEXPR T qExchange(T &t, U &&newValue)
+constexpr T qExchange(T &t, U &&newValue)
 {
     T old = std::move(t);
     t = std::forward<U>(newValue);
@@ -1200,11 +1200,11 @@ template <typename... Args>
 struct QNonConstOverload
 {
     template <typename R, typename T>
-    Q_DECL_CONSTEXPR auto operator()(R (T::*ptr)(Args...)) const noexcept -> decltype(ptr)
+    constexpr auto operator()(R (T::*ptr)(Args...)) const noexcept -> decltype(ptr)
     { return ptr; }
 
     template <typename R, typename T>
-    static Q_DECL_CONSTEXPR auto of(R (T::*ptr)(Args...)) noexcept -> decltype(ptr)
+    static constexpr auto of(R (T::*ptr)(Args...)) noexcept -> decltype(ptr)
     { return ptr; }
 };
 
@@ -1212,11 +1212,11 @@ template <typename... Args>
 struct QConstOverload
 {
     template <typename R, typename T>
-    Q_DECL_CONSTEXPR auto operator()(R (T::*ptr)(Args...) const) const noexcept -> decltype(ptr)
+    constexpr auto operator()(R (T::*ptr)(Args...) const) const noexcept -> decltype(ptr)
     { return ptr; }
 
     template <typename R, typename T>
-    static Q_DECL_CONSTEXPR auto of(R (T::*ptr)(Args...) const) noexcept -> decltype(ptr)
+    static constexpr auto of(R (T::*ptr)(Args...) const) noexcept -> decltype(ptr)
     { return ptr; }
 };
 
@@ -1229,18 +1229,18 @@ struct QOverload : QConstOverload<Args...>, QNonConstOverload<Args...>
     using QNonConstOverload<Args...>::operator();
 
     template <typename R>
-    Q_DECL_CONSTEXPR auto operator()(R (*ptr)(Args...)) const noexcept -> decltype(ptr)
+    constexpr auto operator()(R (*ptr)(Args...)) const noexcept -> decltype(ptr)
     { return ptr; }
 
     template <typename R>
-    static Q_DECL_CONSTEXPR auto of(R (*ptr)(Args...)) noexcept -> decltype(ptr)
+    static constexpr auto of(R (*ptr)(Args...)) noexcept -> decltype(ptr)
     { return ptr; }
 };
 
 #if defined(__cpp_variable_templates) && __cpp_variable_templates >= 201304 // C++14
-template <typename... Args> Q_CONSTEXPR Q_DECL_UNUSED QOverload<Args...> qOverload = {};
-template <typename... Args> Q_CONSTEXPR Q_DECL_UNUSED QConstOverload<Args...> qConstOverload = {};
-template <typename... Args> Q_CONSTEXPR Q_DECL_UNUSED QNonConstOverload<Args...> qNonConstOverload = {};
+template <typename... Args> constexpr Q_DECL_UNUSED QOverload<Args...> qOverload = {};
+template <typename... Args> constexpr Q_DECL_UNUSED QConstOverload<Args...> qConstOverload = {};
+template <typename... Args> constexpr Q_DECL_UNUSED QNonConstOverload<Args...> qNonConstOverload = {};
 #endif
 
 #endif

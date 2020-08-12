@@ -1046,25 +1046,25 @@ void tst_QAlgorithms::binaryFindOnLargeContainer() const
 #endif // QT_DEPRECATED_SINCE(5, 2)
 
 // alternative implementation of qPopulationCount for comparison:
-static Q_DECL_CONSTEXPR const uint bitsSetInNibble[] = {
+static constexpr const uint bitsSetInNibble[] = {
     0, 1, 1, 2, 1, 2, 2, 3,
     1, 2, 2, 3, 2, 3, 3, 4,
 };
 static_assert(sizeof bitsSetInNibble / sizeof *bitsSetInNibble == 16);
 
-static Q_DECL_CONSTEXPR uint bitsSetInByte(quint8 byte)
+static constexpr uint bitsSetInByte(quint8 byte)
 {
     return bitsSetInNibble[byte & 0xF] + bitsSetInNibble[byte >> 4];
 }
-static Q_DECL_CONSTEXPR uint bitsSetInShort(quint16 word)
+static constexpr uint bitsSetInShort(quint16 word)
 {
     return bitsSetInByte(word & 0xFF) + bitsSetInByte(word >> 8);
 }
-static Q_DECL_CONSTEXPR uint bitsSetInInt(quint32 word)
+static constexpr uint bitsSetInInt(quint32 word)
 {
     return bitsSetInShort(word & 0xFFFF) + bitsSetInShort(word >> 16);
 }
-static Q_DECL_CONSTEXPR uint bitsSetInInt64(quint64 word)
+static constexpr uint bitsSetInInt64(quint64 word)
 {
     return bitsSetInInt(word & 0xFFFFFFFF) + bitsSetInInt(word >> 32);
 }

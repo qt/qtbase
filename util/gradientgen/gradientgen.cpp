@@ -278,7 +278,7 @@ int main()
     p.printLine("}");
     p.printLine();
 
-    p.printLine("static Q_CONSTEXPR QGradient::QGradientData qt_preset_gradient_data[] = {");
+    p.printLine("static constexpr QGradient::QGradientData qt_preset_gradient_data[] = {");
     {
         Printer::Indenter i(p);
         printGradientData(p, presets);

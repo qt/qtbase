@@ -49,7 +49,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_CONSTEXPR int MutexPoolSize = 17;
+constexpr int MutexPoolSize = 17;
 static QBasicMutex mutexPool[MutexPoolSize];
 namespace QMutexPool {
     static QBasicMutex *globalInstanceGet(const void *addr)

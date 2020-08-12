@@ -140,7 +140,7 @@ void tst_QByteArrayMatcher::indexIn()
 void tst_QByteArrayMatcher::staticByteArrayMatcher()
 {
     {
-        static Q_RELAXED_CONSTEXPR auto smatcher = qMakeStaticByteArrayMatcher("Hello");
+        static constexpr auto smatcher = qMakeStaticByteArrayMatcher("Hello");
         QCOMPARE(smatcher.pattern(), QByteArrayLiteral("Hello"));
 
         QCOMPARE(smatcher.indexIn(QByteArray("Hello, World!")),     0);
@@ -186,7 +186,7 @@ void tst_QByteArrayMatcher::staticByteArrayMatcher()
     }
 
     {
-        static Q_RELAXED_CONSTEXPR auto smatcher = qMakeStaticByteArrayMatcher(LONG_STRING_256);
+        static constexpr auto smatcher = qMakeStaticByteArrayMatcher(LONG_STRING_256);
         QCOMPARE(smatcher.pattern(), QByteArrayLiteral(LONG_STRING_256));
 
         QCOMPARE(smatcher.indexIn(QByteArray("a" LONG_STRING_256)),        1);

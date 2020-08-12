@@ -3094,7 +3094,7 @@ void tst_QList::fromReadOnlyData() const
     {
         struct LiteralType {
             int value;
-            Q_DECL_CONSTEXPR LiteralType(int v = 0) : value(v) {}
+            constexpr LiteralType(int v = 0) : value(v) {}
         };
         const LiteralType literal[] = {LiteralType(0), LiteralType(1), LiteralType(2)};
 

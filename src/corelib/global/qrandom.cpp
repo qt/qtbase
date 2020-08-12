@@ -155,7 +155,7 @@ struct QRandomGenerator::SystemGenerator
             qt_safe_close(fd);
     }
 
-    Q_DECL_CONSTEXPR SystemGenerator() : fdp1 Q_BASIC_ATOMIC_INITIALIZER(0) {}
+    constexpr SystemGenerator() : fdp1 Q_BASIC_ATOMIC_INITIALIZER(0) {}
 
     qsizetype fillBuffer(void *buffer, qsizetype count)
     {
@@ -1057,7 +1057,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
     \sa QRandomGenerator::generate(), QRandomGenerator::generate64()
  */
 
-Q_DECL_CONSTEXPR QRandomGenerator::Storage::Storage()
+constexpr QRandomGenerator::Storage::Storage()
     : dummy(0)
 {
     // nothing

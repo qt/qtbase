@@ -71,7 +71,7 @@ template <typename T>
 struct QMetaTypeId2;
 
 template <typename T>
-inline Q_DECL_CONSTEXPR int qMetaTypeId();
+inline constexpr int qMetaTypeId();
 
 // F is a tuple: (QMetaType::TypeName, QMetaType::TypeNameID, RealType)
 // ### Qt6: reorder the types to match the C++ integral type ranking
@@ -1636,7 +1636,7 @@ template <typename T>
 struct QMetaTypeId2
 {
     enum { Defined = QMetaTypeId<T>::Defined, IsBuiltIn=false };
-    static inline Q_DECL_CONSTEXPR int qt_metatype_id() { return QMetaTypeId<T>::qt_metatype_id(); }
+    static inline constexpr int qt_metatype_id() { return QMetaTypeId<T>::qt_metatype_id(); }
 };
 
 template <typename T>
@@ -1648,11 +1648,11 @@ struct QMetaTypeId2<T&> { enum {Defined = false }; };
 namespace QtPrivate {
     template <typename T, bool Defined = QMetaTypeId2<T>::Defined>
     struct QMetaTypeIdHelper {
-        static inline Q_DECL_CONSTEXPR int qt_metatype_id()
+        static inline constexpr int qt_metatype_id()
         { return QMetaTypeId2<T>::qt_metatype_id(); }
     };
     template <typename T> struct QMetaTypeIdHelper<T, false> {
-        static inline Q_DECL_CONSTEXPR int qt_metatype_id()
+        static inline constexpr int qt_metatype_id()
         { return -1; }
     };
 
@@ -1764,7 +1764,7 @@ void qRegisterMetaTypeStreamOperators(const char *typeName
 #endif // QT_NO_DATASTREAM
 
 template <typename T>
-inline Q_DECL_CONSTEXPR int qMetaTypeId()
+inline constexpr int qMetaTypeId()
 {
     if constexpr (bool(QMetaTypeId2<T>::IsBuiltIn)) {
         return QMetaTypeId2<T>::MetaType;
@@ -1774,7 +1774,7 @@ inline Q_DECL_CONSTEXPR int qMetaTypeId()
 }
 
 template <typename T>
-inline Q_DECL_CONSTEXPR int qRegisterMetaType()
+inline constexpr int qRegisterMetaType()
 {
     return qMetaTypeId<T>();
 }
@@ -1782,11 +1782,11 @@ inline Q_DECL_CONSTEXPR int qRegisterMetaType()
 #if QT_DEPRECATED_SINCE(5, 1) && !defined(Q_CLANG_QDOC)
 // There used to be a T *dummy = 0 argument in Qt 4.0 to support MSVC6
 template <typename T>
-QT_DEPRECATED inline Q_DECL_CONSTEXPR int qMetaTypeId(T *)
+QT_DEPRECATED inline constexpr int qMetaTypeId(T *)
 { return qMetaTypeId<T>(); }
 #ifndef Q_CC_SUN
 template <typename T>
-QT_DEPRECATED inline Q_DECL_CONSTEXPR int qRegisterMetaType(T *)
+QT_DEPRECATED inline constexpr int qRegisterMetaType(T *)
 { return qRegisterMetaType<T>(); }
 #endif
 #endif
@@ -1935,7 +1935,7 @@ inline int qRegisterMetaTypeStreamOperators()
     template<> struct QMetaTypeId2<NAME> \
     { \
         enum { Defined = 1, IsBuiltIn = true, MetaType = METATYPEID };   \
-        static inline Q_DECL_CONSTEXPR int qt_metatype_id() { return METATYPEID; } \
+        static inline constexpr int qt_metatype_id() { return METATYPEID; } \
         static constexpr const char * const name = #NAME; \
     }; \
     QT_END_NAMESPACE

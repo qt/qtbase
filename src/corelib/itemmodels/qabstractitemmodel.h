@@ -57,11 +57,11 @@ class QModelIndex
 {
     friend class QAbstractItemModel;
 public:
-    Q_DECL_CONSTEXPR inline QModelIndex() noexcept : r(-1), c(-1), i(0), m(nullptr) {}
+    constexpr inline QModelIndex() noexcept : r(-1), c(-1), i(0), m(nullptr) {}
     // compiler-generated copy/move ctors/assignment operators are fine!
-    Q_DECL_CONSTEXPR inline int row() const noexcept { return r; }
-    Q_DECL_CONSTEXPR inline int column() const noexcept { return c; }
-    Q_DECL_CONSTEXPR inline quintptr internalId() const noexcept { return i; }
+    constexpr inline int row() const noexcept { return r; }
+    constexpr inline int column() const noexcept { return c; }
+    constexpr inline quintptr internalId() const noexcept { return i; }
     inline void *internalPointer() const noexcept { return reinterpret_cast<void*>(i); }
     inline const void *constInternalPointer() const noexcept { return reinterpret_cast<const void *>(i); }
     inline QModelIndex parent() const;
@@ -70,13 +70,13 @@ public:
     inline QModelIndex siblingAtRow(int row) const;
     inline QVariant data(int role = Qt::DisplayRole) const;
     inline Qt::ItemFlags flags() const;
-    Q_DECL_CONSTEXPR inline const QAbstractItemModel *model() const noexcept { return m; }
-    Q_DECL_CONSTEXPR inline bool isValid() const noexcept { return (r >= 0) && (c >= 0) && (m != nullptr); }
-    Q_DECL_CONSTEXPR inline bool operator==(const QModelIndex &other) const noexcept
+    constexpr inline const QAbstractItemModel *model() const noexcept { return m; }
+    constexpr inline bool isValid() const noexcept { return (r >= 0) && (c >= 0) && (m != nullptr); }
+    constexpr inline bool operator==(const QModelIndex &other) const noexcept
         { return (other.r == r) && (other.i == i) && (other.c == c) && (other.m == m); }
-    Q_DECL_CONSTEXPR inline bool operator!=(const QModelIndex &other) const noexcept
+    constexpr inline bool operator!=(const QModelIndex &other) const noexcept
         { return !(*this == other); }
-    Q_DECL_CONSTEXPR inline bool operator<(const QModelIndex &other) const noexcept
+    constexpr inline bool operator<(const QModelIndex &other) const noexcept
         {
             return  r <  other.r
                 || (r == other.r && (c <  other.c
@@ -86,7 +86,7 @@ public:
 private:
     inline QModelIndex(int arow, int acolumn, const void *ptr, const QAbstractItemModel *amodel) noexcept
         : r(arow), c(acolumn), i(reinterpret_cast<quintptr>(ptr)), m(amodel) {}
-    Q_DECL_CONSTEXPR inline QModelIndex(int arow, int acolumn, quintptr id, const QAbstractItemModel *amodel) noexcept
+    constexpr inline QModelIndex(int arow, int acolumn, quintptr id, const QAbstractItemModel *amodel) noexcept
         : r(arow), c(acolumn), i(id), m(amodel) {}
     int r, c;
     quintptr i;

@@ -115,8 +115,8 @@ public:
     void invalidatePersistentIndex(const QModelIndex &index);
 
     struct Change {
-        Q_DECL_CONSTEXPR Change() : parent(), first(-1), last(-1), needsAdjust(false) {}
-        Q_DECL_CONSTEXPR Change(const QModelIndex &p, int f, int l) : parent(p), first(f), last(l), needsAdjust(false) {}
+        constexpr Change() : parent(), first(-1), last(-1), needsAdjust(false) {}
+        constexpr Change(const QModelIndex &p, int f, int l) : parent(p), first(f), last(l), needsAdjust(false) {}
 
         QModelIndex parent;
         int first, last;
@@ -136,7 +136,7 @@ public:
         // rowsMoved signal.
         bool needsAdjust;
 
-        Q_DECL_CONSTEXPR bool isValid() const { return first >= 0 && last >= 0; }
+        constexpr bool isValid() const { return first >= 0 && last >= 0; }
     };
     QStack<Change> changes;
 

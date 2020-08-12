@@ -82,7 +82,7 @@ MAKE_ALL(const char*, QChar)
 #undef MAKE_RELOP
 // END FIXME
 
-static Q_DECL_CONSTEXPR int sign(int i) noexcept
+static constexpr int sign(int i) noexcept
 {
     return i < 0 ? -1 :
            i > 0 ? +1 :

@@ -1259,10 +1259,10 @@ struct IsNotValid {
     typedef bool result_type;
     struct is_transparent : std::true_type {};
     template <typename T>
-    Q_DECL_CONSTEXPR bool operator()(T &t) const noexcept(noexcept(t.isValid()))
+    constexpr bool operator()(T &t) const noexcept(noexcept(t.isValid()))
     { return !t.isValid(); }
     template <typename T>
-    Q_DECL_CONSTEXPR bool operator()(T *t) const noexcept(noexcept(t->isValid()))
+    constexpr bool operator()(T *t) const noexcept(noexcept(t->isValid()))
     { return !t->isValid(); }
 };
 }

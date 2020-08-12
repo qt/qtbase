@@ -52,21 +52,21 @@ class QFlag
 {
     int i;
 public:
-    Q_DECL_CONSTEXPR inline QFlag(int value) noexcept : i(value) {}
-    Q_DECL_CONSTEXPR inline operator int() const noexcept { return i; }
+    constexpr inline QFlag(int value) noexcept : i(value) {}
+    constexpr inline operator int() const noexcept { return i; }
 
 #if !defined(Q_CC_MSVC)
     // Microsoft Visual Studio has buggy behavior when it comes to
     // unsigned enums: even if the enum is unsigned, the enum tags are
     // always signed
 #  if !defined(__LP64__) && !defined(Q_CLANG_QDOC)
-    Q_DECL_CONSTEXPR inline QFlag(long value) noexcept : i(int(value)) {}
-    Q_DECL_CONSTEXPR inline QFlag(ulong value) noexcept : i(int(long(value))) {}
+    constexpr inline QFlag(long value) noexcept : i(int(value)) {}
+    constexpr inline QFlag(ulong value) noexcept : i(int(long(value))) {}
 #  endif
-    Q_DECL_CONSTEXPR inline QFlag(uint value) noexcept : i(int(value)) {}
-    Q_DECL_CONSTEXPR inline QFlag(short value) noexcept : i(int(value)) {}
-    Q_DECL_CONSTEXPR inline QFlag(ushort value) noexcept : i(int(uint(value))) {}
-    Q_DECL_CONSTEXPR inline operator uint() const noexcept { return uint(i); }
+    constexpr inline QFlag(uint value) noexcept : i(int(value)) {}
+    constexpr inline QFlag(short value) noexcept : i(int(value)) {}
+    constexpr inline QFlag(ushort value) noexcept : i(int(uint(value))) {}
+    constexpr inline operator uint() const noexcept { return uint(i); }
 #endif
 };
 Q_DECLARE_TYPEINFO(QFlag, Q_PRIMITIVE_TYPE);
@@ -75,12 +75,12 @@ class QIncompatibleFlag
 {
     int i;
 public:
-    Q_DECL_CONSTEXPR inline explicit QIncompatibleFlag(int i) noexcept;
-    Q_DECL_CONSTEXPR inline operator int() const noexcept { return i; }
+    constexpr inline explicit QIncompatibleFlag(int i) noexcept;
+    constexpr inline operator int() const noexcept { return i; }
 };
 Q_DECLARE_TYPEINFO(QIncompatibleFlag, Q_PRIMITIVE_TYPE);
 
-Q_DECL_CONSTEXPR inline QIncompatibleFlag::QIncompatibleFlag(int value) noexcept : i(value) {}
+constexpr inline QIncompatibleFlag::QIncompatibleFlag(int value) noexcept : i(value) {}
 
 
 #ifndef Q_NO_TYPESAFE_FLAGS
@@ -114,48 +114,48 @@ public:
     typedef Enum enum_type;
     // compiler-generated copy/move ctor/assignment operators are fine!
 #ifdef Q_CLANG_QDOC
-    Q_DECL_CONSTEXPR inline QFlags(const QFlags &other);
-    Q_DECL_CONSTEXPR inline QFlags &operator=(const QFlags &other);
+    constexpr inline QFlags(const QFlags &other);
+    constexpr inline QFlags &operator=(const QFlags &other);
 #endif
-    Q_DECL_CONSTEXPR inline QFlags() noexcept : i(0) {}
-    Q_DECL_CONSTEXPR inline QFlags(Enum flags) noexcept : i(Int(flags)) {}
+    constexpr inline QFlags() noexcept : i(0) {}
+    constexpr inline QFlags(Enum flags) noexcept : i(Int(flags)) {}
 #if QT_DEPRECATED_SINCE(5,15)
-    QT_DEPRECATED_X("Use default constructor instead") Q_DECL_CONSTEXPR inline QFlags(Zero) noexcept : i(0) {}
+    QT_DEPRECATED_X("Use default constructor instead") constexpr inline QFlags(Zero) noexcept : i(0) {}
 #endif
-    Q_DECL_CONSTEXPR inline QFlags(QFlag flag) noexcept : i(flag) {}
+    constexpr inline QFlags(QFlag flag) noexcept : i(flag) {}
 
-    Q_DECL_CONSTEXPR inline QFlags(std::initializer_list<Enum> flags) noexcept
+    constexpr inline QFlags(std::initializer_list<Enum> flags) noexcept
         : i(initializer_list_helper(flags.begin(), flags.end())) {}
 
-    Q_DECL_RELAXED_CONSTEXPR inline QFlags &operator&=(int mask) noexcept { i &= mask; return *this; }
-    Q_DECL_RELAXED_CONSTEXPR inline QFlags &operator&=(uint mask) noexcept { i &= mask; return *this; }
-    Q_DECL_RELAXED_CONSTEXPR inline QFlags &operator&=(Enum mask) noexcept { i &= Int(mask); return *this; }
-    Q_DECL_RELAXED_CONSTEXPR inline QFlags &operator|=(QFlags other) noexcept { i |= other.i; return *this; }
-    Q_DECL_RELAXED_CONSTEXPR inline QFlags &operator|=(Enum other) noexcept { i |= Int(other); return *this; }
-    Q_DECL_RELAXED_CONSTEXPR inline QFlags &operator^=(QFlags other) noexcept { i ^= other.i; return *this; }
-    Q_DECL_RELAXED_CONSTEXPR inline QFlags &operator^=(Enum other) noexcept { i ^= Int(other); return *this; }
+    constexpr inline QFlags &operator&=(int mask) noexcept { i &= mask; return *this; }
+    constexpr inline QFlags &operator&=(uint mask) noexcept { i &= mask; return *this; }
+    constexpr inline QFlags &operator&=(Enum mask) noexcept { i &= Int(mask); return *this; }
+    constexpr inline QFlags &operator|=(QFlags other) noexcept { i |= other.i; return *this; }
+    constexpr inline QFlags &operator|=(Enum other) noexcept { i |= Int(other); return *this; }
+    constexpr inline QFlags &operator^=(QFlags other) noexcept { i ^= other.i; return *this; }
+    constexpr inline QFlags &operator^=(Enum other) noexcept { i ^= Int(other); return *this; }
 
-    Q_DECL_CONSTEXPR inline operator Int() const noexcept { return i; }
+    constexpr inline operator Int() const noexcept { return i; }
 
-    Q_DECL_CONSTEXPR inline QFlags operator|(QFlags other) const noexcept { return QFlags(QFlag(i | other.i)); }
-    Q_DECL_CONSTEXPR inline QFlags operator|(Enum other) const noexcept { return QFlags(QFlag(i | Int(other))); }
-    Q_DECL_CONSTEXPR inline QFlags operator^(QFlags other) const noexcept { return QFlags(QFlag(i ^ other.i)); }
-    Q_DECL_CONSTEXPR inline QFlags operator^(Enum other) const noexcept { return QFlags(QFlag(i ^ Int(other))); }
-    Q_DECL_CONSTEXPR inline QFlags operator&(int mask) const noexcept { return QFlags(QFlag(i & mask)); }
-    Q_DECL_CONSTEXPR inline QFlags operator&(uint mask) const noexcept { return QFlags(QFlag(i & mask)); }
-    Q_DECL_CONSTEXPR inline QFlags operator&(Enum other) const noexcept { return QFlags(QFlag(i & Int(other))); }
-    Q_DECL_CONSTEXPR inline QFlags operator~() const noexcept { return QFlags(QFlag(~i)); }
+    constexpr inline QFlags operator|(QFlags other) const noexcept { return QFlags(QFlag(i | other.i)); }
+    constexpr inline QFlags operator|(Enum other) const noexcept { return QFlags(QFlag(i | Int(other))); }
+    constexpr inline QFlags operator^(QFlags other) const noexcept { return QFlags(QFlag(i ^ other.i)); }
+    constexpr inline QFlags operator^(Enum other) const noexcept { return QFlags(QFlag(i ^ Int(other))); }
+    constexpr inline QFlags operator&(int mask) const noexcept { return QFlags(QFlag(i & mask)); }
+    constexpr inline QFlags operator&(uint mask) const noexcept { return QFlags(QFlag(i & mask)); }
+    constexpr inline QFlags operator&(Enum other) const noexcept { return QFlags(QFlag(i & Int(other))); }
+    constexpr inline QFlags operator~() const noexcept { return QFlags(QFlag(~i)); }
 
-    Q_DECL_CONSTEXPR inline bool operator!() const noexcept { return !i; }
+    constexpr inline bool operator!() const noexcept { return !i; }
 
-    Q_DECL_CONSTEXPR inline bool testFlag(Enum flag) const noexcept { return (i & Int(flag)) == Int(flag) && (Int(flag) != 0 || i == Int(flag) ); }
-    Q_DECL_RELAXED_CONSTEXPR inline QFlags &setFlag(Enum flag, bool on = true) noexcept
+    constexpr inline bool testFlag(Enum flag) const noexcept { return (i & Int(flag)) == Int(flag) && (Int(flag) != 0 || i == Int(flag) ); }
+    constexpr inline QFlags &setFlag(Enum flag, bool on = true) noexcept
     {
         return on ? (*this |= flag) : (*this &= ~Int(flag));
     }
 
 private:
-    Q_DECL_CONSTEXPR static inline Int initializer_list_helper(typename std::initializer_list<Enum>::const_iterator it,
+    constexpr static inline Int initializer_list_helper(typename std::initializer_list<Enum>::const_iterator it,
                                                                typename std::initializer_list<Enum>::const_iterator end)
     noexcept
     {
@@ -171,13 +171,13 @@ typedef QFlags<Enum> Flags;
 #endif
 
 #define Q_DECLARE_INCOMPATIBLE_FLAGS(Flags) \
-Q_DECL_CONSTEXPR inline QIncompatibleFlag operator|(Flags::enum_type f1, int f2) noexcept \
+constexpr inline QIncompatibleFlag operator|(Flags::enum_type f1, int f2) noexcept \
 { return QIncompatibleFlag(int(f1) | f2); }
 
 #define Q_DECLARE_OPERATORS_FOR_FLAGS(Flags) \
-Q_DECL_CONSTEXPR inline QFlags<Flags::enum_type> operator|(Flags::enum_type f1, Flags::enum_type f2) noexcept \
+constexpr inline QFlags<Flags::enum_type> operator|(Flags::enum_type f1, Flags::enum_type f2) noexcept \
 { return QFlags<Flags::enum_type>(f1) | f2; } \
-Q_DECL_CONSTEXPR inline QFlags<Flags::enum_type> operator|(Flags::enum_type f1, QFlags<Flags::enum_type> f2) noexcept \
+constexpr inline QFlags<Flags::enum_type> operator|(Flags::enum_type f1, QFlags<Flags::enum_type> f2) noexcept \
 { return f2 | f1; } Q_DECLARE_INCOMPATIBLE_FLAGS(Flags)
 
 

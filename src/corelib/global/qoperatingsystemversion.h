@@ -85,7 +85,7 @@ public:
     static const QOperatingSystemVersion AndroidNougat_MR1;
     static const QOperatingSystemVersion AndroidOreo;
 
-    Q_DECL_CONSTEXPR QOperatingSystemVersion(OSType osType,
+    constexpr QOperatingSystemVersion(OSType osType,
                                              int vmajor, int vminor = -1, int vmicro = -1)
         : m_os(osType),
           m_major(qMax(-1, vmajor)),
@@ -95,7 +95,7 @@ public:
 
     static QOperatingSystemVersion current();
 
-    static Q_DECL_CONSTEXPR OSType currentType()
+    static constexpr OSType currentType()
     {
 #if defined(Q_OS_WIN)
         return Windows;
@@ -114,15 +114,15 @@ public:
 #endif
     }
 
-    Q_DECL_CONSTEXPR int majorVersion() const { return m_major; }
-    Q_DECL_CONSTEXPR int minorVersion() const { return m_minor; }
-    Q_DECL_CONSTEXPR int microVersion() const { return m_micro; }
+    constexpr int majorVersion() const { return m_major; }
+    constexpr int minorVersion() const { return m_minor; }
+    constexpr int microVersion() const { return m_micro; }
 
-    Q_DECL_CONSTEXPR int segmentCount() const
+    constexpr int segmentCount() const
     { return m_micro >= 0 ? 3 : m_minor >= 0 ? 2 : m_major >= 0 ? 1 : 0; }
 
     bool isAnyOfType(std::initializer_list<OSType> types) const;
-    Q_DECL_CONSTEXPR OSType type() const { return m_os; }
+    constexpr OSType type() const { return m_os; }
     QString name() const;
 
     friend bool operator>(const QOperatingSystemVersion &lhs, const QOperatingSystemVersion &rhs)

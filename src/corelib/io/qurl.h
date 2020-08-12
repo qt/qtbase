@@ -66,12 +66,12 @@ class QUrlTwoFlags
     int i;
     typedef int QUrlTwoFlags:: *Zero;
 public:
-    Q_DECL_CONSTEXPR inline QUrlTwoFlags(E1 f) : i(f) {}
-    Q_DECL_CONSTEXPR inline QUrlTwoFlags(E2 f) : i(f) {}
-    Q_DECL_CONSTEXPR inline QUrlTwoFlags(QFlag f) : i(f) {}
-    Q_DECL_CONSTEXPR inline QUrlTwoFlags(QFlags<E1> f) : i(f.operator typename QFlags<E1>::Int()) {}
-    Q_DECL_CONSTEXPR inline QUrlTwoFlags(QFlags<E2> f) : i(f.operator typename QFlags<E2>::Int()) {}
-    Q_DECL_CONSTEXPR inline QUrlTwoFlags(Zero = 0) : i(0) {}
+    constexpr inline QUrlTwoFlags(E1 f) : i(f) {}
+    constexpr inline QUrlTwoFlags(E2 f) : i(f) {}
+    constexpr inline QUrlTwoFlags(QFlag f) : i(f) {}
+    constexpr inline QUrlTwoFlags(QFlags<E1> f) : i(f.operator typename QFlags<E1>::Int()) {}
+    constexpr inline QUrlTwoFlags(QFlags<E2> f) : i(f.operator typename QFlags<E2>::Int()) {}
+    constexpr inline QUrlTwoFlags(Zero = 0) : i(0) {}
 
     inline QUrlTwoFlags &operator&=(int mask) { i &= mask; return *this; }
     inline QUrlTwoFlags &operator&=(uint mask) { i &= mask; return *this; }
@@ -82,36 +82,36 @@ public:
     inline QUrlTwoFlags &operator^=(E1 f) { i ^= f; return *this; }
     inline QUrlTwoFlags &operator^=(E2 f) { i ^= f; return *this; }
 
-    Q_DECL_CONSTEXPR inline operator QFlags<E1>() const { return QFlag(i); }
-    Q_DECL_CONSTEXPR inline operator QFlags<E2>() const { return QFlag(i); }
-    Q_DECL_CONSTEXPR inline operator int() const { return i; }
-    Q_DECL_CONSTEXPR inline bool operator!() const { return !i; }
+    constexpr inline operator QFlags<E1>() const { return QFlag(i); }
+    constexpr inline operator QFlags<E2>() const { return QFlag(i); }
+    constexpr inline operator int() const { return i; }
+    constexpr inline bool operator!() const { return !i; }
 
-    Q_DECL_CONSTEXPR inline QUrlTwoFlags operator|(QUrlTwoFlags f) const
+    constexpr inline QUrlTwoFlags operator|(QUrlTwoFlags f) const
     { return QUrlTwoFlags(QFlag(i | f.i)); }
-    Q_DECL_CONSTEXPR inline QUrlTwoFlags operator|(E1 f) const
+    constexpr inline QUrlTwoFlags operator|(E1 f) const
     { return QUrlTwoFlags(QFlag(i | f)); }
-    Q_DECL_CONSTEXPR inline QUrlTwoFlags operator|(E2 f) const
+    constexpr inline QUrlTwoFlags operator|(E2 f) const
     { return QUrlTwoFlags(QFlag(i | f)); }
-    Q_DECL_CONSTEXPR inline QUrlTwoFlags operator^(QUrlTwoFlags f) const
+    constexpr inline QUrlTwoFlags operator^(QUrlTwoFlags f) const
     { return QUrlTwoFlags(QFlag(i ^ f.i)); }
-    Q_DECL_CONSTEXPR inline QUrlTwoFlags operator^(E1 f) const
+    constexpr inline QUrlTwoFlags operator^(E1 f) const
     { return QUrlTwoFlags(QFlag(i ^ f)); }
-    Q_DECL_CONSTEXPR inline QUrlTwoFlags operator^(E2 f) const
+    constexpr inline QUrlTwoFlags operator^(E2 f) const
     { return QUrlTwoFlags(QFlag(i ^ f)); }
-    Q_DECL_CONSTEXPR inline QUrlTwoFlags operator&(int mask) const
+    constexpr inline QUrlTwoFlags operator&(int mask) const
     { return QUrlTwoFlags(QFlag(i & mask)); }
-    Q_DECL_CONSTEXPR inline QUrlTwoFlags operator&(uint mask) const
+    constexpr inline QUrlTwoFlags operator&(uint mask) const
     { return QUrlTwoFlags(QFlag(i & mask)); }
-    Q_DECL_CONSTEXPR inline QUrlTwoFlags operator&(E1 f) const
+    constexpr inline QUrlTwoFlags operator&(E1 f) const
     { return QUrlTwoFlags(QFlag(i & f)); }
-    Q_DECL_CONSTEXPR inline QUrlTwoFlags operator&(E2 f) const
+    constexpr inline QUrlTwoFlags operator&(E2 f) const
     { return QUrlTwoFlags(QFlag(i & f)); }
-    Q_DECL_CONSTEXPR inline QUrlTwoFlags operator~() const
+    constexpr inline QUrlTwoFlags operator~() const
     { return QUrlTwoFlags(QFlag(~i)); }
 
-    Q_DECL_CONSTEXPR inline bool testFlag(E1 f) const { return (i & f) == f && (f != 0 || i == int(f)); }
-    Q_DECL_CONSTEXPR inline bool testFlag(E2 f) const { return (i & f) == f && (f != 0 || i == int(f)); }
+    constexpr inline bool testFlag(E1 f) const { return (i & f) == f && (f != 0 || i == int(f)); }
+    constexpr inline bool testFlag(E2 f) const { return (i & f) == f && (f != 0 || i == int(f)); }
 };
 
 template<typename E1, typename E2>
@@ -302,29 +302,29 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QUrl::ComponentFormattingOptions)
 //Q_DECLARE_OPERATORS_FOR_FLAGS(QUrl::FormattingOptions)
 
 #ifndef Q_QDOC
-Q_DECL_CONSTEXPR inline QUrl::FormattingOptions operator|(QUrl::UrlFormattingOption f1, QUrl::UrlFormattingOption f2)
+constexpr inline QUrl::FormattingOptions operator|(QUrl::UrlFormattingOption f1, QUrl::UrlFormattingOption f2)
 { return QUrl::FormattingOptions(f1) | f2; }
-Q_DECL_CONSTEXPR inline QUrl::FormattingOptions operator|(QUrl::UrlFormattingOption f1, QUrl::FormattingOptions f2)
+constexpr inline QUrl::FormattingOptions operator|(QUrl::UrlFormattingOption f1, QUrl::FormattingOptions f2)
 { return f2 | f1; }
-Q_DECL_CONSTEXPR inline QIncompatibleFlag operator|(QUrl::UrlFormattingOption f1, int f2)
+constexpr inline QIncompatibleFlag operator|(QUrl::UrlFormattingOption f1, int f2)
 { return QIncompatibleFlag(int(f1) | f2); }
 
 // add operators for OR'ing the two types of flags
 inline QUrl::FormattingOptions &operator|=(QUrl::FormattingOptions &i, QUrl::ComponentFormattingOptions f)
 { i |= QUrl::UrlFormattingOption(int(f)); return i; }
-Q_DECL_CONSTEXPR inline QUrl::FormattingOptions operator|(QUrl::UrlFormattingOption i, QUrl::ComponentFormattingOption f)
+constexpr inline QUrl::FormattingOptions operator|(QUrl::UrlFormattingOption i, QUrl::ComponentFormattingOption f)
 { return i | QUrl::UrlFormattingOption(int(f)); }
-Q_DECL_CONSTEXPR inline QUrl::FormattingOptions operator|(QUrl::UrlFormattingOption i, QUrl::ComponentFormattingOptions f)
+constexpr inline QUrl::FormattingOptions operator|(QUrl::UrlFormattingOption i, QUrl::ComponentFormattingOptions f)
 { return i | QUrl::UrlFormattingOption(int(f)); }
-Q_DECL_CONSTEXPR inline QUrl::FormattingOptions operator|(QUrl::ComponentFormattingOption f, QUrl::UrlFormattingOption i)
+constexpr inline QUrl::FormattingOptions operator|(QUrl::ComponentFormattingOption f, QUrl::UrlFormattingOption i)
 { return i | QUrl::UrlFormattingOption(int(f)); }
-Q_DECL_CONSTEXPR inline QUrl::FormattingOptions operator|(QUrl::ComponentFormattingOptions f, QUrl::UrlFormattingOption i)
+constexpr inline QUrl::FormattingOptions operator|(QUrl::ComponentFormattingOptions f, QUrl::UrlFormattingOption i)
 { return i | QUrl::UrlFormattingOption(int(f)); }
-Q_DECL_CONSTEXPR inline QUrl::FormattingOptions operator|(QUrl::FormattingOptions i, QUrl::ComponentFormattingOptions f)
+constexpr inline QUrl::FormattingOptions operator|(QUrl::FormattingOptions i, QUrl::ComponentFormattingOptions f)
 { return i | QUrl::UrlFormattingOption(int(f)); }
-Q_DECL_CONSTEXPR inline QUrl::FormattingOptions operator|(QUrl::ComponentFormattingOption f, QUrl::FormattingOptions i)
+constexpr inline QUrl::FormattingOptions operator|(QUrl::ComponentFormattingOption f, QUrl::FormattingOptions i)
 { return i | QUrl::UrlFormattingOption(int(f)); }
-Q_DECL_CONSTEXPR inline QUrl::FormattingOptions operator|(QUrl::ComponentFormattingOptions f, QUrl::FormattingOptions i)
+constexpr inline QUrl::FormattingOptions operator|(QUrl::ComponentFormattingOptions f, QUrl::FormattingOptions i)
 { return i | QUrl::UrlFormattingOption(int(f)); }
 
 //inline QUrl::UrlFormattingOption &operator=(const QUrl::UrlFormattingOption &i, QUrl::ComponentFormattingOptions f)

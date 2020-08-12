@@ -93,9 +93,9 @@ public:
 
 #if defined(Q_COMPILER_UNIFORM_INIT) && !defined(Q_CLANG_QDOC)
 
-    Q_DECL_CONSTEXPR QUuid() noexcept : data1(0), data2(0), data3(0), data4{0,0,0,0,0,0,0,0} {}
+    constexpr QUuid() noexcept : data1(0), data2(0), data3(0), data4{0,0,0,0,0,0,0,0} {}
 
-    Q_DECL_CONSTEXPR QUuid(uint l, ushort w1, ushort w2, uchar b1, uchar b2, uchar b3,
+    constexpr QUuid(uint l, ushort w1, ushort w2, uchar b1, uchar b2, uchar b3,
                            uchar b4, uchar b5, uchar b6, uchar b7, uchar b8) noexcept
         : data1(l), data2(w1), data3(w2), data4{b1, b2, b3, b4, b5, b6, b7, b8} {}
 #else
@@ -136,7 +136,7 @@ public:
     static QUuid fromRfc4122(const QByteArray &);
     bool isNull() const noexcept;
 
-    Q_DECL_RELAXED_CONSTEXPR bool operator==(const QUuid &orig) const noexcept
+    constexpr bool operator==(const QUuid &orig) const noexcept
     {
         if (data1 != orig.data1 || data2 != orig.data2 ||
              data3 != orig.data3)
@@ -149,7 +149,7 @@ public:
         return true;
     }
 
-    Q_DECL_RELAXED_CONSTEXPR bool operator!=(const QUuid &orig) const noexcept
+    constexpr bool operator!=(const QUuid &orig) const noexcept
     {
         return !(*this == orig);
     }
@@ -161,7 +161,7 @@ public:
     // On Windows we have a type GUID that is used by the platform API, so we
     // provide convenience operators to cast from and to this type.
 #if defined(Q_COMPILER_UNIFORM_INIT) && !defined(Q_CLANG_QDOC)
-    Q_DECL_CONSTEXPR QUuid(const GUID &guid) noexcept
+    constexpr QUuid(const GUID &guid) noexcept
         : data1(guid.Data1), data2(guid.Data2), data3(guid.Data3),
           data4{guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3],
                 guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]} {}
@@ -176,24 +176,24 @@ public:
     }
 #endif
 
-    Q_DECL_RELAXED_CONSTEXPR QUuid &operator=(const GUID &guid) noexcept
+    constexpr QUuid &operator=(const GUID &guid) noexcept
     {
         *this = QUuid(guid);
         return *this;
     }
 
-    Q_DECL_RELAXED_CONSTEXPR operator GUID() const noexcept
+    constexpr operator GUID() const noexcept
     {
         GUID guid = { data1, data2, data3, { data4[0], data4[1], data4[2], data4[3], data4[4], data4[5], data4[6], data4[7] } };
         return guid;
     }
 
-    Q_DECL_RELAXED_CONSTEXPR bool operator==(const GUID &guid) const noexcept
+    constexpr bool operator==(const GUID &guid) const noexcept
     {
         return *this == QUuid(guid);
     }
 
-    Q_DECL_RELAXED_CONSTEXPR bool operator!=(const GUID &guid) const noexcept
+    constexpr bool operator!=(const GUID &guid) const noexcept
     {
         return !(*this == guid);
     }

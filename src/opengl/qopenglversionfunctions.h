@@ -89,12 +89,12 @@ struct QOpenGLVersionStatus
         InvalidStatus
     };
 
-    Q_DECL_CONSTEXPR QOpenGLVersionStatus()
+    constexpr QOpenGLVersionStatus()
         : version(0, 0),
           status(InvalidStatus)
     {}
 
-    Q_DECL_CONSTEXPR QOpenGLVersionStatus(int majorVersion, int minorVersion, QOpenGLVersionStatus::OpenGLStatus functionStatus)
+    constexpr QOpenGLVersionStatus(int majorVersion, int minorVersion, QOpenGLVersionStatus::OpenGLStatus functionStatus)
         : version(majorVersion, minorVersion),
           status(functionStatus)
     {}
@@ -109,12 +109,12 @@ inline size_t qHash(const QOpenGLVersionStatus &v, size_t seed = 0) noexcept
                + v.version.first * 100 + v.version.second * 10, seed);
 }
 
-Q_DECL_CONSTEXPR inline bool operator==(const QOpenGLVersionStatus &lhs, const QOpenGLVersionStatus &rhs)
+constexpr inline bool operator==(const QOpenGLVersionStatus &lhs, const QOpenGLVersionStatus &rhs)
 {
     return lhs.status == rhs.status && lhs.version == rhs.version;
 }
 
-Q_DECL_CONSTEXPR inline bool operator!=(const QOpenGLVersionStatus &lhs, const QOpenGLVersionStatus &rhs)
+constexpr inline bool operator!=(const QOpenGLVersionStatus &lhs, const QOpenGLVersionStatus &rhs)
 {
     return !operator==(lhs, rhs);
 }
@@ -251,7 +251,7 @@ public:
         init();
     }
 
-    Q_DECL_CONSTEXPR static Version versionStatus()
+    constexpr static Version versionStatus()
     { return OpenGL_1_0_Core; }
 
     // OpenGL 1.0 core functions
@@ -317,7 +317,7 @@ public:
         init();
     }
 
-    Q_DECL_CONSTEXPR static Version versionStatus()
+    constexpr static Version versionStatus()
     { return OpenGL_1_1_Core; }
 
     // OpenGL 1.1 core functions
@@ -351,7 +351,7 @@ public:
         init();
     }
 
-    Q_DECL_CONSTEXPR static Version versionStatus()
+    constexpr static Version versionStatus()
     { return OpenGL_1_2_Core; }
 
     // OpenGL 1.2 core functions
@@ -375,7 +375,7 @@ public:
         init();
     }
 
-    Q_DECL_CONSTEXPR static Version versionStatus()
+    constexpr static Version versionStatus()
     { return OpenGL_1_3_Core; }
 
     // OpenGL 1.3 core functions
@@ -402,7 +402,7 @@ public:
         init();
     }
 
-    Q_DECL_CONSTEXPR static Version versionStatus()
+    constexpr static Version versionStatus()
     { return OpenGL_1_4_Core; }
 
     // OpenGL 1.4 core functions
@@ -427,7 +427,7 @@ public:
         init();
     }
 
-    Q_DECL_CONSTEXPR static Version versionStatus()
+    constexpr static Version versionStatus()
     { return OpenGL_1_5_Core; }
 
     // OpenGL 1.5 core functions
@@ -464,7 +464,7 @@ public:
         init();
     }
 
-    Q_DECL_CONSTEXPR static Version versionStatus()
+    constexpr static Version versionStatus()
     { return OpenGL_2_0_Core; }
 
     // OpenGL 2.0 core functions
@@ -575,7 +575,7 @@ public:
         init();
     }
 
-    Q_DECL_CONSTEXPR static Version versionStatus()
+    constexpr static Version versionStatus()
     { return OpenGL_2_1_Core; }
 
     // OpenGL 2.1 core functions
@@ -599,7 +599,7 @@ public:
         init();
     }
 
-    Q_DECL_CONSTEXPR static Version versionStatus()
+    constexpr static Version versionStatus()
     { return OpenGL_3_0_Core; }
 
     // OpenGL 3.0 core functions
@@ -701,7 +701,7 @@ public:
         init();
     }
 
-    Q_DECL_CONSTEXPR static Version versionStatus()
+    constexpr static Version versionStatus()
     { return OpenGL_3_1_Core; }
 
     // OpenGL 3.1 core functions
@@ -731,7 +731,7 @@ public:
         init();
     }
 
-    Q_DECL_CONSTEXPR static Version versionStatus()
+    constexpr static Version versionStatus()
     { return OpenGL_3_2_Core; }
 
     // OpenGL 3.2 core functions
@@ -768,7 +768,7 @@ public:
         init();
     }
 
-    Q_DECL_CONSTEXPR static Version versionStatus()
+    constexpr static Version versionStatus()
     { return OpenGL_3_3_Core; }
 
     // OpenGL 3.3 core functions
@@ -844,7 +844,7 @@ public:
         init();
     }
 
-    Q_DECL_CONSTEXPR static Version versionStatus()
+    constexpr static Version versionStatus()
     { return OpenGL_4_0_Core; }
 
     // OpenGL 4.0 core functions
@@ -908,7 +908,7 @@ public:
         init();
     }
 
-    Q_DECL_CONSTEXPR static Version versionStatus()
+    constexpr static Version versionStatus()
     { return OpenGL_4_1_Core; }
 
     // OpenGL 4.1 core functions
@@ -1014,7 +1014,7 @@ public:
         init();
     }
 
-    Q_DECL_CONSTEXPR static Version versionStatus()
+    constexpr static Version versionStatus()
     { return OpenGL_4_2_Core; }
 
     // OpenGL 4.2 core functions
@@ -1044,7 +1044,7 @@ public:
         init();
     }
 
-    Q_DECL_CONSTEXPR static Version versionStatus()
+    constexpr static Version versionStatus()
     { return OpenGL_4_3_Core; }
 
     // OpenGL 4.3 core functions
@@ -1105,7 +1105,7 @@ public:
         init();
     }
 
-    Q_DECL_CONSTEXPR static Version versionStatus()
+    constexpr static Version versionStatus()
     { return OpenGL_4_4_Core; }
 
     // OpenGL 4.4 core functions
@@ -1132,7 +1132,7 @@ public:
         init();
     }
 
-    Q_DECL_CONSTEXPR static Version versionStatus()
+    constexpr static Version versionStatus()
     { return OpenGL_4_5_Core; }
 
     // OpenGL 4.5 core functions
@@ -1256,7 +1256,7 @@ public:
         init();
     }
 
-    Q_DECL_CONSTEXPR static Version versionStatus()
+    constexpr static Version versionStatus()
     { return OpenGL_1_0_Deprecated; }
 
     // OpenGL 1.0 deprecated functions
@@ -1532,7 +1532,7 @@ public:
         init();
     }
 
-    Q_DECL_CONSTEXPR static Version versionStatus()
+    constexpr static Version versionStatus()
     { return OpenGL_1_1_Deprecated; }
 
     // OpenGL 1.1 deprecated functions
@@ -1567,7 +1567,7 @@ public:
         init();
     }
 
-    Q_DECL_CONSTEXPR static Version versionStatus()
+    constexpr static Version versionStatus()
     { return OpenGL_1_2_Deprecated; }
 
     // OpenGL 1.2 deprecated functions
@@ -1617,7 +1617,7 @@ public:
         init();
     }
 
-    Q_DECL_CONSTEXPR static Version versionStatus()
+    constexpr static Version versionStatus()
     { return OpenGL_1_3_Deprecated; }
 
     // OpenGL 1.3 deprecated functions
@@ -1672,7 +1672,7 @@ public:
         init();
     }
 
-    Q_DECL_CONSTEXPR static Version versionStatus()
+    constexpr static Version versionStatus()
     { return OpenGL_1_4_Deprecated; }
 
     // OpenGL 1.4 deprecated functions
@@ -1728,7 +1728,7 @@ public:
         init();
     }
 
-    Q_DECL_CONSTEXPR static Version versionStatus()
+    constexpr static Version versionStatus()
     { return OpenGL_2_0_Deprecated; }
 
     // OpenGL 2.0 deprecated functions
@@ -1782,7 +1782,7 @@ public:
         init();
     }
 
-    Q_DECL_CONSTEXPR static Version versionStatus()
+    constexpr static Version versionStatus()
     { return OpenGL_3_0_Deprecated; }
 
     // OpenGL 3.0 deprecated functions
@@ -1820,7 +1820,7 @@ public:
         init();
     }
 
-    Q_DECL_CONSTEXPR static Version versionStatus()
+    constexpr static Version versionStatus()
     { return OpenGL_3_3_Deprecated; }
 
     // OpenGL 3.3 deprecated functions
@@ -1868,7 +1868,7 @@ public:
         init();
     }
 
-    Q_DECL_CONSTEXPR static Version versionStatus()
+    constexpr static Version versionStatus()
     { return OpenGL_4_5_Deprecated; }
 
     // OpenGL 4.5 deprecated functions

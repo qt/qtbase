@@ -206,7 +206,7 @@ private:
         int used;
         int zeroes;
         State state;
-        Q_DECL_CONSTEXPR ParsedSection(State ok = Invalid,
+        constexpr ParsedSection(State ok = Invalid,
                                        int val = 0, int read = 0, int zs = 0)
             : value(ok == Invalid ? -1 : val), used(read), zeroes(zs), state(ok)
             {}

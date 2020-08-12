@@ -2454,7 +2454,7 @@ static QString make_where_clause(const QString &user, Expression e)
         "WMSYS",
     };
     static const char joinC[][4] = { "or" , "and" };
-    static Q_CONSTEXPR QLatin1Char bang[] = { QLatin1Char(' '), QLatin1Char('!') };
+    static constexpr QLatin1Char bang[] = { QLatin1Char(' '), QLatin1Char('!') };
 
     const QLatin1String join(joinC[e]);
 

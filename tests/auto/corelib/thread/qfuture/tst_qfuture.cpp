@@ -1711,7 +1711,7 @@ void tst_QFuture::nestedExceptions()
 
 void tst_QFuture::nonGlobalThreadPool()
 {
-    static Q_CONSTEXPR int Answer = 42;
+    static constexpr int Answer = 42;
 
     struct UselessTask : QRunnable, QFutureInterface<int>
     {

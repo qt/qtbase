@@ -52,39 +52,39 @@ QT_BEGIN_NAMESPACE
 class Q_CORE_EXPORT QLine
 {
 public:
-    Q_DECL_CONSTEXPR inline QLine();
-    Q_DECL_CONSTEXPR inline QLine(const QPoint &pt1, const QPoint &pt2);
-    Q_DECL_CONSTEXPR inline QLine(int x1, int y1, int x2, int y2);
+    constexpr inline QLine();
+    constexpr inline QLine(const QPoint &pt1, const QPoint &pt2);
+    constexpr inline QLine(int x1, int y1, int x2, int y2);
 
-    Q_DECL_CONSTEXPR inline bool isNull() const;
+    constexpr inline bool isNull() const;
 
-    Q_DECL_CONSTEXPR inline QPoint p1() const;
-    Q_DECL_CONSTEXPR inline QPoint p2() const;
+    constexpr inline QPoint p1() const;
+    constexpr inline QPoint p2() const;
 
-    Q_DECL_CONSTEXPR inline int x1() const;
-    Q_DECL_CONSTEXPR inline int y1() const;
+    constexpr inline int x1() const;
+    constexpr inline int y1() const;
 
-    Q_DECL_CONSTEXPR inline int x2() const;
-    Q_DECL_CONSTEXPR inline int y2() const;
+    constexpr inline int x2() const;
+    constexpr inline int y2() const;
 
-    Q_DECL_CONSTEXPR inline int dx() const;
-    Q_DECL_CONSTEXPR inline int dy() const;
+    constexpr inline int dx() const;
+    constexpr inline int dy() const;
 
     inline void translate(const QPoint &p);
     inline void translate(int dx, int dy);
 
-    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR inline QLine translated(const QPoint &p) const;
-    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR inline QLine translated(int dx, int dy) const;
+    Q_REQUIRED_RESULT constexpr inline QLine translated(const QPoint &p) const;
+    Q_REQUIRED_RESULT constexpr inline QLine translated(int dx, int dy) const;
 
-    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR inline QPoint center() const;
+    Q_REQUIRED_RESULT constexpr inline QPoint center() const;
 
     inline void setP1(const QPoint &p1);
     inline void setP2(const QPoint &p2);
     inline void setPoints(const QPoint &p1, const QPoint &p2);
     inline void setLine(int x1, int y1, int x2, int y2);
 
-    Q_DECL_CONSTEXPR inline bool operator==(const QLine &d) const;
-    Q_DECL_CONSTEXPR inline bool operator!=(const QLine &d) const { return !(*this == d); }
+    constexpr inline bool operator==(const QLine &d) const;
+    constexpr inline bool operator!=(const QLine &d) const { return !(*this == d); }
 
 private:
     QPoint pt1, pt2;
@@ -95,53 +95,53 @@ Q_DECLARE_TYPEINFO(QLine, Q_MOVABLE_TYPE);
  * class QLine inline members
  *******************************************************************************/
 
-Q_DECL_CONSTEXPR inline QLine::QLine() { }
+constexpr inline QLine::QLine() { }
 
-Q_DECL_CONSTEXPR inline QLine::QLine(const QPoint &pt1_, const QPoint &pt2_) : pt1(pt1_), pt2(pt2_) { }
+constexpr inline QLine::QLine(const QPoint &pt1_, const QPoint &pt2_) : pt1(pt1_), pt2(pt2_) { }
 
-Q_DECL_CONSTEXPR inline QLine::QLine(int x1pos, int y1pos, int x2pos, int y2pos) : pt1(QPoint(x1pos, y1pos)), pt2(QPoint(x2pos, y2pos)) { }
+constexpr inline QLine::QLine(int x1pos, int y1pos, int x2pos, int y2pos) : pt1(QPoint(x1pos, y1pos)), pt2(QPoint(x2pos, y2pos)) { }
 
-Q_DECL_CONSTEXPR inline bool QLine::isNull() const
+constexpr inline bool QLine::isNull() const
 {
     return pt1 == pt2;
 }
 
-Q_DECL_CONSTEXPR inline int QLine::x1() const
+constexpr inline int QLine::x1() const
 {
     return pt1.x();
 }
 
-Q_DECL_CONSTEXPR inline int QLine::y1() const
+constexpr inline int QLine::y1() const
 {
     return pt1.y();
 }
 
-Q_DECL_CONSTEXPR inline int QLine::x2() const
+constexpr inline int QLine::x2() const
 {
     return pt2.x();
 }
 
-Q_DECL_CONSTEXPR inline int QLine::y2() const
+constexpr inline int QLine::y2() const
 {
     return pt2.y();
 }
 
-Q_DECL_CONSTEXPR inline QPoint QLine::p1() const
+constexpr inline QPoint QLine::p1() const
 {
     return pt1;
 }
 
-Q_DECL_CONSTEXPR inline QPoint QLine::p2() const
+constexpr inline QPoint QLine::p2() const
 {
     return pt2;
 }
 
-Q_DECL_CONSTEXPR inline int QLine::dx() const
+constexpr inline int QLine::dx() const
 {
     return pt2.x() - pt1.x();
 }
 
-Q_DECL_CONSTEXPR inline int QLine::dy() const
+constexpr inline int QLine::dy() const
 {
     return pt2.y() - pt1.y();
 }
@@ -157,17 +157,17 @@ inline void QLine::translate(int adx, int ady)
     this->translate(QPoint(adx, ady));
 }
 
-Q_DECL_CONSTEXPR inline QLine QLine::translated(const QPoint &p) const
+constexpr inline QLine QLine::translated(const QPoint &p) const
 {
     return QLine(pt1 + p, pt2 + p);
 }
 
-Q_DECL_CONSTEXPR inline QLine QLine::translated(int adx, int ady) const
+constexpr inline QLine QLine::translated(int adx, int ady) const
 {
     return translated(QPoint(adx, ady));
 }
 
-Q_DECL_CONSTEXPR inline QPoint QLine::center() const
+constexpr inline QPoint QLine::center() const
 {
     return QPoint(int((qint64(pt1.x()) + pt2.x()) / 2), int((qint64(pt1.y()) + pt2.y()) / 2));
 }
@@ -194,7 +194,7 @@ inline void QLine::setLine(int aX1, int aY1, int aX2, int aY2)
     pt2 = QPoint(aX2, aY2);
 }
 
-Q_DECL_CONSTEXPR inline bool QLine::operator==(const QLine &d) const
+constexpr inline bool QLine::operator==(const QLine &d) const
 {
     return pt1 == d.pt1 && pt2 == d.pt2;
 }
@@ -217,26 +217,26 @@ public:
     enum IntersectType { NoIntersection, BoundedIntersection, UnboundedIntersection };
     using IntersectionType = IntersectType;
 
-    Q_DECL_CONSTEXPR inline QLineF();
-    Q_DECL_CONSTEXPR inline QLineF(const QPointF &pt1, const QPointF &pt2);
-    Q_DECL_CONSTEXPR inline QLineF(qreal x1, qreal y1, qreal x2, qreal y2);
-    Q_DECL_CONSTEXPR inline QLineF(const QLine &line) : pt1(line.p1()), pt2(line.p2()) { }
+    constexpr inline QLineF();
+    constexpr inline QLineF(const QPointF &pt1, const QPointF &pt2);
+    constexpr inline QLineF(qreal x1, qreal y1, qreal x2, qreal y2);
+    constexpr inline QLineF(const QLine &line) : pt1(line.p1()), pt2(line.p2()) { }
 
     Q_REQUIRED_RESULT static QLineF fromPolar(qreal length, qreal angle);
 
-    Q_DECL_CONSTEXPR bool isNull() const;
+    constexpr bool isNull() const;
 
-    Q_DECL_CONSTEXPR inline QPointF p1() const;
-    Q_DECL_CONSTEXPR inline QPointF p2() const;
+    constexpr inline QPointF p1() const;
+    constexpr inline QPointF p2() const;
 
-    Q_DECL_CONSTEXPR inline qreal x1() const;
-    Q_DECL_CONSTEXPR inline qreal y1() const;
+    constexpr inline qreal x1() const;
+    constexpr inline qreal y1() const;
 
-    Q_DECL_CONSTEXPR inline qreal x2() const;
-    Q_DECL_CONSTEXPR inline qreal y2() const;
+    constexpr inline qreal x2() const;
+    constexpr inline qreal y2() const;
 
-    Q_DECL_CONSTEXPR inline qreal dx() const;
-    Q_DECL_CONSTEXPR inline qreal dy() const;
+    constexpr inline qreal dx() const;
+    constexpr inline qreal dy() const;
 
     qreal length() const;
     void setLength(qreal len);
@@ -247,28 +247,28 @@ public:
     qreal angleTo(const QLineF &l) const;
 
     Q_REQUIRED_RESULT QLineF unitVector() const;
-    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR inline QLineF normalVector() const;
+    Q_REQUIRED_RESULT constexpr inline QLineF normalVector() const;
 
     IntersectionType intersects(const QLineF &l, QPointF *intersectionPoint) const;
 
-    Q_DECL_CONSTEXPR inline QPointF pointAt(qreal t) const;
+    constexpr inline QPointF pointAt(qreal t) const;
     inline void translate(const QPointF &p);
     inline void translate(qreal dx, qreal dy);
 
-    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR inline QLineF translated(const QPointF &p) const;
-    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR inline QLineF translated(qreal dx, qreal dy) const;
+    Q_REQUIRED_RESULT constexpr inline QLineF translated(const QPointF &p) const;
+    Q_REQUIRED_RESULT constexpr inline QLineF translated(qreal dx, qreal dy) const;
 
-    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR inline QPointF center() const;
+    Q_REQUIRED_RESULT constexpr inline QPointF center() const;
 
     inline void setP1(const QPointF &p1);
     inline void setP2(const QPointF &p2);
     inline void setPoints(const QPointF &p1, const QPointF &p2);
     inline void setLine(qreal x1, qreal y1, qreal x2, qreal y2);
 
-    Q_DECL_CONSTEXPR inline bool operator==(const QLineF &d) const;
-    Q_DECL_CONSTEXPR inline bool operator!=(const QLineF &d) const { return !(*this == d); }
+    constexpr inline bool operator==(const QLineF &d) const;
+    constexpr inline bool operator!=(const QLineF &d) const { return !(*this == d); }
 
-    Q_DECL_CONSTEXPR QLine toLine() const;
+    constexpr QLine toLine() const;
 
 private:
     QPointF pt1, pt2;
@@ -279,66 +279,66 @@ Q_DECLARE_TYPEINFO(QLineF, Q_MOVABLE_TYPE);
  * class QLineF inline members
  *******************************************************************************/
 
-Q_DECL_CONSTEXPR inline QLineF::QLineF()
+constexpr inline QLineF::QLineF()
 {
 }
 
-Q_DECL_CONSTEXPR inline QLineF::QLineF(const QPointF &apt1, const QPointF &apt2)
+constexpr inline QLineF::QLineF(const QPointF &apt1, const QPointF &apt2)
     : pt1(apt1), pt2(apt2)
 {
 }
 
-Q_DECL_CONSTEXPR inline QLineF::QLineF(qreal x1pos, qreal y1pos, qreal x2pos, qreal y2pos)
+constexpr inline QLineF::QLineF(qreal x1pos, qreal y1pos, qreal x2pos, qreal y2pos)
     : pt1(x1pos, y1pos), pt2(x2pos, y2pos)
 {
 }
 
-Q_DECL_CONSTEXPR inline qreal QLineF::x1() const
+constexpr inline qreal QLineF::x1() const
 {
     return pt1.x();
 }
 
-Q_DECL_CONSTEXPR inline qreal QLineF::y1() const
+constexpr inline qreal QLineF::y1() const
 {
     return pt1.y();
 }
 
-Q_DECL_CONSTEXPR inline qreal QLineF::x2() const
+constexpr inline qreal QLineF::x2() const
 {
     return pt2.x();
 }
 
-Q_DECL_CONSTEXPR inline qreal QLineF::y2() const
+constexpr inline qreal QLineF::y2() const
 {
     return pt2.y();
 }
 
-Q_DECL_CONSTEXPR inline bool QLineF::isNull() const
+constexpr inline bool QLineF::isNull() const
 {
     return qFuzzyCompare(pt1.x(), pt2.x()) && qFuzzyCompare(pt1.y(), pt2.y());
 }
 
-Q_DECL_CONSTEXPR inline QPointF QLineF::p1() const
+constexpr inline QPointF QLineF::p1() const
 {
     return pt1;
 }
 
-Q_DECL_CONSTEXPR inline QPointF QLineF::p2() const
+constexpr inline QPointF QLineF::p2() const
 {
     return pt2;
 }
 
-Q_DECL_CONSTEXPR inline qreal QLineF::dx() const
+constexpr inline qreal QLineF::dx() const
 {
     return pt2.x() - pt1.x();
 }
 
-Q_DECL_CONSTEXPR inline qreal QLineF::dy() const
+constexpr inline qreal QLineF::dy() const
 {
     return pt2.y() - pt1.y();
 }
 
-Q_DECL_CONSTEXPR inline QLineF QLineF::normalVector() const
+constexpr inline QLineF QLineF::normalVector() const
 {
     return QLineF(p1(), p1() + QPointF(dy(), -dx()));
 }
@@ -354,17 +354,17 @@ inline void QLineF::translate(qreal adx, qreal ady)
     this->translate(QPointF(adx, ady));
 }
 
-Q_DECL_CONSTEXPR inline QLineF QLineF::translated(const QPointF &p) const
+constexpr inline QLineF QLineF::translated(const QPointF &p) const
 {
     return QLineF(pt1 + p, pt2 + p);
 }
 
-Q_DECL_CONSTEXPR inline QLineF QLineF::translated(qreal adx, qreal ady) const
+constexpr inline QLineF QLineF::translated(qreal adx, qreal ady) const
 {
     return translated(QPointF(adx, ady));
 }
 
-Q_DECL_CONSTEXPR inline QPointF QLineF::center() const
+constexpr inline QPointF QLineF::center() const
 {
     return QPointF(0.5 * pt1.x() + 0.5 * pt2.x(), 0.5 * pt1.y() + 0.5 * pt2.y());
 }
@@ -377,12 +377,12 @@ inline void QLineF::setLength(qreal len)
     pt2 = QPointF(pt1.x() + v.dx() * len, pt1.y() + v.dy() * len);
 }
 
-Q_DECL_CONSTEXPR inline QPointF QLineF::pointAt(qreal t) const
+constexpr inline QPointF QLineF::pointAt(qreal t) const
 {
     return QPointF(pt1.x() + (pt2.x() - pt1.x()) * t, pt1.y() + (pt2.y() - pt1.y()) * t);
 }
 
-Q_DECL_CONSTEXPR inline QLine QLineF::toLine() const
+constexpr inline QLine QLineF::toLine() const
 {
     return QLine(pt1.toPoint(), pt2.toPoint());
 }
@@ -411,7 +411,7 @@ inline void QLineF::setLine(qreal aX1, qreal aY1, qreal aX2, qreal aY2)
 }
 
 
-Q_DECL_CONSTEXPR inline bool QLineF::operator==(const QLineF &d) const
+constexpr inline bool QLineF::operator==(const QLineF &d) const
 {
     return pt1 == d.pt1 && pt2 == d.pt2;
 }

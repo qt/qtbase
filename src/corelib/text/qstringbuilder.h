@@ -193,7 +193,7 @@ template <> struct QConcatenable<char16_t> : private QAbstractConcatenable
     typedef char16_t type;
     typedef QString ConvertTo;
     enum { ExactSize = true };
-    static Q_DECL_CONSTEXPR int size(char16_t) { return 1; }
+    static constexpr int size(char16_t) { return 1; }
     static inline void appendTo(char16_t c, QChar *&out)
     { *out++ = c; }
 };

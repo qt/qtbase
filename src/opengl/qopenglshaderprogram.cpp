@@ -489,13 +489,13 @@ static const char blendEquationAdvancedHeader[] =
 
 struct QVersionDirectivePosition
 {
-    Q_DECL_CONSTEXPR QVersionDirectivePosition(int position = 0, int line = -1)
+    constexpr QVersionDirectivePosition(int position = 0, int line = -1)
         : position(position)
         , line(line)
     {
     }
 
-    Q_DECL_CONSTEXPR bool hasPosition() const
+    constexpr bool hasPosition() const
     {
         return position > 0;
     }

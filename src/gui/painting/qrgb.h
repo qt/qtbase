@@ -51,34 +51,34 @@ typedef unsigned int QRgb;                        // RGB triplet
 // non-namespaced Qt global variable
 const Q_DECL_UNUSED QRgb  RGB_MASK    = 0x00ffffff;     // masks RGB values
 
-inline Q_DECL_CONSTEXPR int qRed(QRgb rgb)                // get red part of RGB
+inline constexpr int qRed(QRgb rgb)                     // get red part of RGB
 { return ((rgb >> 16) & 0xff); }
 
-inline Q_DECL_CONSTEXPR int qGreen(QRgb rgb)                // get green part of RGB
+inline constexpr int qGreen(QRgb rgb)                   // get green part of RGB
 { return ((rgb >> 8) & 0xff); }
 
-inline Q_DECL_CONSTEXPR int qBlue(QRgb rgb)                // get blue part of RGB
+inline constexpr int qBlue(QRgb rgb)                    // get blue part of RGB
 { return (rgb & 0xff); }
 
-inline Q_DECL_CONSTEXPR int qAlpha(QRgb rgb)                // get alpha part of RGBA
+inline constexpr int qAlpha(QRgb rgb)                   // get alpha part of RGBA
 { return rgb >> 24; }
 
-inline Q_DECL_CONSTEXPR QRgb qRgb(int r, int g, int b)// set RGB value
+inline constexpr QRgb qRgb(int r, int g, int b)         // set RGB value
 { return (0xffu << 24) | ((r & 0xffu) << 16) | ((g & 0xffu) << 8) | (b & 0xffu); }
 
-inline Q_DECL_CONSTEXPR QRgb qRgba(int r, int g, int b, int a)// set RGBA value
+inline constexpr QRgb qRgba(int r, int g, int b, int a) // set RGBA value
 { return ((a & 0xffu) << 24) | ((r & 0xffu) << 16) | ((g & 0xffu) << 8) | (b & 0xffu); }
 
-inline Q_DECL_CONSTEXPR int qGray(int r, int g, int b)// convert R,G,B to gray 0..255
+inline constexpr int qGray(int r, int g, int b)         // convert R,G,B to gray 0..255
 { return (r*11+g*16+b*5)/32; }
 
-inline Q_DECL_CONSTEXPR int qGray(QRgb rgb)                // convert RGB to gray 0..255
+inline constexpr int qGray(QRgb rgb)                    // convert RGB to gray 0..255
 { return qGray(qRed(rgb), qGreen(rgb), qBlue(rgb)); }
 
-inline Q_DECL_CONSTEXPR bool qIsGray(QRgb rgb)
+inline constexpr bool qIsGray(QRgb rgb)
 { return qRed(rgb) == qGreen(rgb) && qRed(rgb) == qBlue(rgb); }
 
-inline Q_DECL_RELAXED_CONSTEXPR QRgb qPremultiply(QRgb x)
+inline constexpr QRgb qPremultiply(QRgb x)
 {
     const uint a = qAlpha(x);
     uint t = (x & 0xff00ff) * a;

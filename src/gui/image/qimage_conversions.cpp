@@ -622,7 +622,7 @@ static bool convert_ARGB_to_RGBA_inplace(QImageData *data, Qt::ImageConversionFl
 
     const int pad = (data->bytes_per_line >> 2) - data->width;
     quint32 *rgb_data = (quint32 *) data->data;
-    Q_CONSTEXPR uint mask = (DestFormat == QImage::Format_RGBX8888) ? 0xff000000 : 0;
+    constexpr uint mask = (DestFormat == QImage::Format_RGBX8888) ? 0xff000000 : 0;
 
     for (int i = 0; i < data->height; ++i) {
         const quint32 *end = rgb_data + data->width;
@@ -668,7 +668,7 @@ static bool convert_RGBA_to_ARGB_inplace(QImageData *data, Qt::ImageConversionFl
 
     const int pad = (data->bytes_per_line >> 2) - data->width;
     QRgb *rgb_data = (QRgb *) data->data;
-    Q_CONSTEXPR uint mask = (DestFormat == QImage::Format_RGB32) ? 0xff000000 : 0;
+    constexpr uint mask = (DestFormat == QImage::Format_RGB32) ? 0xff000000 : 0;
 
     for (int i = 0; i < data->height; ++i) {
         const QRgb *end = rgb_data + data->width;

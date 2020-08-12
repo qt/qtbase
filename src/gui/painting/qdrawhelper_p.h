@@ -858,10 +858,10 @@ static inline uint BYTE_MUL_RGB16_32(uint x, uint a) {
 }
 
 // qt_div_255 is a fast rounded division by 255 using an approximation that is accurate for all positive 16-bit integers
-static Q_DECL_CONSTEXPR inline int qt_div_255(int x) { return (x + (x>>8) + 0x80) >> 8; }
-static Q_DECL_CONSTEXPR inline uint qt_div_257_floor(uint x) { return  (x - (x >> 8)) >> 8; }
-static Q_DECL_CONSTEXPR inline uint qt_div_257(uint x) { return qt_div_257_floor(x + 128); }
-static Q_DECL_CONSTEXPR inline uint qt_div_65535(uint x) { return (x + (x>>16) + 0x8000U) >> 16; }
+static constexpr inline int qt_div_255(int x) { return (x + (x>>8) + 0x80) >> 8; }
+static constexpr inline uint qt_div_257_floor(uint x) { return  (x - (x >> 8)) >> 8; }
+static constexpr inline uint qt_div_257(uint x) { return qt_div_257_floor(x + 128); }
+static constexpr inline uint qt_div_65535(uint x) { return (x + (x>>16) + 0x8000U) >> 16; }
 
 template <class T> inline void qt_memfill_template(T *dest, T color, qsizetype count)
 {
@@ -1008,7 +1008,7 @@ inline uint comp_func_Plus_one_pixel(uint d, const uint s)
 #undef AMIX
 
 // must be multiple of 4 for easier SIMD implementations
-static Q_CONSTEXPR int BufferSize = 2048;
+static constexpr int BufferSize = 2048;
 
 // A buffer of intermediate results used by simple bilinear scaling.
 struct IntermediateBuffer

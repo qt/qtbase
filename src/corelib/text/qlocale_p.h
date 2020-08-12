@@ -494,7 +494,7 @@ enum { AsciiSpaceMask = (1u << (' ' - 1)) |
                         (1u << ('\v' - 1)) |   // 11: VT - vertical tab
                         (1u << ('\f' - 1)) |   // 12: FF - form feed
                         (1u << ('\r' - 1)) };  // 13: CR - carriage return
-Q_DECL_CONSTEXPR inline bool ascii_isspace(uchar c)
+constexpr inline bool ascii_isspace(uchar c)
 {
     return c >= 1u && c <= 32u && (AsciiSpaceMask >> uint(c - 1)) & 1u;
 }

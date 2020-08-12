@@ -206,8 +206,8 @@ typedef void (QTextStream::*QTSMFC)(QChar); // manipulator w/QChar argument
 class Q_CORE_EXPORT QTextStreamManipulator
 {
 public:
-    Q_DECL_CONSTEXPR QTextStreamManipulator(QTSMFI m, int a) noexcept : mf(m), mc(nullptr), arg(a), ch() {}
-    Q_DECL_CONSTEXPR QTextStreamManipulator(QTSMFC m, QChar c) noexcept : mf(nullptr), mc(m), arg(-1), ch(c) {}
+    constexpr QTextStreamManipulator(QTSMFI m, int a) noexcept : mf(m), mc(nullptr), arg(a), ch() {}
+    constexpr QTextStreamManipulator(QTSMFC m, QChar c) noexcept : mf(nullptr), mc(m), arg(-1), ch(c) {}
     void exec(QTextStream &s) { if (mf) { (s.*mf)(arg); } else { (s.*mc)(ch); } }
 
 private:

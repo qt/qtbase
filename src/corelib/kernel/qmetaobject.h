@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 class Q_CORE_EXPORT QMetaMethod
 {
 public:
-    Q_DECL_CONSTEXPR inline QMetaMethod() : mobj(nullptr), data({ nullptr }) {}
+    constexpr inline QMetaMethod() : mobj(nullptr), data({ nullptr }) {}
 
     QByteArray methodSignature() const;
     QByteArray name() const;
@@ -218,7 +218,7 @@ inline bool operator!=(const QMetaMethod &m1, const QMetaMethod &m2)
 class Q_CORE_EXPORT QMetaEnum
 {
 public:
-    Q_DECL_CONSTEXPR inline QMetaEnum() : mobj(nullptr), data({ nullptr }) {}
+    constexpr inline QMetaEnum() : mobj(nullptr), data({ nullptr }) {}
 
     const char *name() const;
     const char *enumName() const;
@@ -347,7 +347,7 @@ private:
 class Q_CORE_EXPORT QMetaClassInfo
 {
 public:
-    Q_DECL_CONSTEXPR inline QMetaClassInfo() : mobj(nullptr), data({ nullptr }) {}
+    constexpr inline QMetaClassInfo() : mobj(nullptr), data({ nullptr }) {}
     const char *name() const;
     const char *value() const;
     inline const QMetaObject *enclosingMetaObject() const { return mobj; }

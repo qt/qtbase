@@ -93,7 +93,7 @@ void tst_QFlags::testFlagMultiBits() const
 
 template <unsigned int N, typename T> bool verifyConstExpr(T n) { return n == N; }
 
-Q_DECL_RELAXED_CONSTEXPR Qt::MouseButtons testRelaxedConstExpr()
+constexpr Qt::MouseButtons testRelaxedConstExpr()
 {
     Qt::MouseButtons value;
     value = Qt::LeftButton | Qt::RightButton;

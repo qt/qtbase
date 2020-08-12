@@ -265,8 +265,8 @@ class CharStarContainer
 {
     const char *str;
 public:
-    explicit Q_DECL_CONSTEXPR CharStarContainer(const char *s = nullptr) : str(s) {}
-    Q_DECL_CONSTEXPR operator const char *() const { return str; }
+    explicit constexpr CharStarContainer(const char *s = nullptr) : str(s) {}
+    constexpr operator const char *() const { return str; }
 };
 
 } // unnamed namespace

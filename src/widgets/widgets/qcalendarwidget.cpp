@@ -426,7 +426,7 @@ QString QCalendarYearValidator::text(QDate date, QCalendar cal, int repeat) cons
 ///////////////////////////////////
 
 struct SectionToken {
-    Q_DECL_CONSTEXPR SectionToken(QCalendarDateSectionValidator *v, int rep)
+    constexpr SectionToken(QCalendarDateSectionValidator *v, int rep)
         : validator(v), repeat(rep) {}
 
     QCalendarDateSectionValidator *validator;
@@ -826,9 +826,9 @@ class StaticDayOfWeekAssociativeArray {
     bool contained[7];
     T data[7];
 
-    static Q_DECL_CONSTEXPR int day2idx(Qt::DayOfWeek day) noexcept { return int(day) - 1; } // alt: day % 7
+    static constexpr int day2idx(Qt::DayOfWeek day) noexcept { return int(day) - 1; } // alt: day % 7
 public:
-    Q_DECL_CONSTEXPR StaticDayOfWeekAssociativeArray() noexcept(noexcept(T()))
+    constexpr StaticDayOfWeekAssociativeArray() noexcept(noexcept(T()))
 #ifdef Q_COMPILER_CONSTEXPR
         : contained{}, data{}   // arrays require uniform initialization
 #else
@@ -836,17 +836,17 @@ public:
 #endif
     {}
 
-    Q_DECL_CONSTEXPR bool contains(Qt::DayOfWeek day) const noexcept { return contained[day2idx(day)]; }
-    Q_DECL_CONSTEXPR const T &value(Qt::DayOfWeek day) const noexcept { return data[day2idx(day)]; }
+    constexpr bool contains(Qt::DayOfWeek day) const noexcept { return contained[day2idx(day)]; }
+    constexpr const T &value(Qt::DayOfWeek day) const noexcept { return data[day2idx(day)]; }
 
-    Q_DECL_RELAXED_CONSTEXPR T &operator[](Qt::DayOfWeek day) noexcept
+    constexpr T &operator[](Qt::DayOfWeek day) noexcept
     {
         const int idx = day2idx(day);
         contained[idx] = true;
         return data[idx];
     }
 
-    Q_DECL_RELAXED_CONSTEXPR void insert(Qt::DayOfWeek day, T v) noexcept
+    constexpr void insert(Qt::DayOfWeek day, T v) noexcept
     {
         operator[](day).swap(v);
     }

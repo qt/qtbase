@@ -2943,8 +2943,8 @@ struct Overloaded
     {
         return {};
     }
-    static const Q_CONSTEXPR uint base1Called = sizeof(std::array<int, 1>);
-    static const Q_CONSTEXPR uint base2Called = sizeof(std::array<int, 2>);
+    static const constexpr uint base1Called = sizeof(std::array<int, 1>);
+    static const constexpr uint base2Called = sizeof(std::array<int, 2>);
 
     void test()
     {

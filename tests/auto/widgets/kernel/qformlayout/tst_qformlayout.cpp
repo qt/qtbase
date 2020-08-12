@@ -52,7 +52,7 @@ using namespace QTestPrivate;
 
 // ItemRole has enumerators for numerical values 0..2, thus the only
 // valid numerical values for storing into an ItemRole variable are 0..3:
-Q_CONSTEXPR QFormLayout::ItemRole invalidRole = QFormLayout::ItemRole(3);
+constexpr QFormLayout::ItemRole invalidRole = QFormLayout::ItemRole(3);
 
 struct QFormLayoutTakeRowResultHolder {
     QFormLayoutTakeRowResultHolder(QFormLayout::TakeRowResult result) noexcept

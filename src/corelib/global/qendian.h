@@ -89,7 +89,7 @@ template <typename T> Q_ALWAYS_INLINE T qFromUnaligned(const void *src)
 
 // These definitions are written so that they are recognized by most compilers
 // as bswap and replaced with single instruction builtins if available.
-inline Q_DECL_CONSTEXPR quint64 qbswap_helper(quint64 source)
+inline constexpr quint64 qbswap_helper(quint64 source)
 {
     return 0
         | ((source & Q_UINT64_C(0x00000000000000ff)) << 56)
@@ -102,7 +102,7 @@ inline Q_DECL_CONSTEXPR quint64 qbswap_helper(quint64 source)
         | ((source & Q_UINT64_C(0xff00000000000000)) >> 56);
 }
 
-inline Q_DECL_CONSTEXPR quint32 qbswap_helper(quint32 source)
+inline constexpr quint32 qbswap_helper(quint32 source)
 {
     return 0
         | ((source & 0x000000ff) << 24)
@@ -111,14 +111,14 @@ inline Q_DECL_CONSTEXPR quint32 qbswap_helper(quint32 source)
         | ((source & 0xff000000) >> 24);
 }
 
-inline Q_DECL_CONSTEXPR quint16 qbswap_helper(quint16 source)
+inline constexpr quint16 qbswap_helper(quint16 source)
 {
     return quint16( 0
                     | ((source & 0x00ff) << 8)
                     | ((source & 0xff00) >> 8) );
 }
 
-inline Q_DECL_CONSTEXPR quint8 qbswap_helper(quint8 source)
+inline constexpr quint8 qbswap_helper(quint8 source)
 {
     return source;
 }
@@ -130,7 +130,7 @@ inline Q_DECL_CONSTEXPR quint8 qbswap_helper(quint8 source)
  * and it is therefore a bit more convenient and in most cases more efficient.
 */
 template <typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
-inline Q_DECL_CONSTEXPR T qbswap(T source)
+inline constexpr T qbswap(T source)
 {
     return T(qbswap_helper(typename QIntegerForSizeof<T>::Unsigned(source)));
 }
@@ -182,13 +182,13 @@ template<> Q_CORE_EXPORT void *qbswap<8>(const void *source, qsizetype count, vo
 
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN
 
-template <typename T> inline Q_DECL_CONSTEXPR T qToBigEndian(T source)
+template <typename T> inline constexpr T qToBigEndian(T source)
 { return source; }
-template <typename T> inline Q_DECL_CONSTEXPR T qFromBigEndian(T source)
+template <typename T> inline constexpr T qFromBigEndian(T source)
 { return source; }
-template <typename T> inline Q_DECL_CONSTEXPR T qToLittleEndian(T source)
+template <typename T> inline constexpr T qToLittleEndian(T source)
 { return qbswap(source); }
-template <typename T> inline Q_DECL_CONSTEXPR T qFromLittleEndian(T source)
+template <typename T> inline constexpr T qFromLittleEndian(T source)
 { return qbswap(source); }
 template <typename T> inline void qToBigEndian(T src, void *dest)
 { qToUnaligned<T>(src, dest); }
@@ -205,13 +205,13 @@ template <typename T> inline void qFromLittleEndian(const void *source, qsizetyp
 { qbswap<sizeof(T)>(source, count, dest); }
 #else // Q_LITTLE_ENDIAN
 
-template <typename T> inline Q_DECL_CONSTEXPR T qToBigEndian(T source)
+template <typename T> inline constexpr T qToBigEndian(T source)
 { return qbswap(source); }
-template <typename T> inline Q_DECL_CONSTEXPR T qFromBigEndian(T source)
+template <typename T> inline constexpr T qFromBigEndian(T source)
 { return qbswap(source); }
-template <typename T> inline Q_DECL_CONSTEXPR T qToLittleEndian(T source)
+template <typename T> inline constexpr T qToLittleEndian(T source)
 { return source; }
-template <typename T> inline Q_DECL_CONSTEXPR T qFromLittleEndian(T source)
+template <typename T> inline constexpr T qFromLittleEndian(T source)
 { return source; }
 template <typename T> inline void qToBigEndian(T src, void *dest)
 { qbswap<T>(src, dest); }
@@ -265,7 +265,7 @@ class QSpecialInteger
     T val;
 public:
     QSpecialInteger() = default;
-    explicit Q_DECL_CONSTEXPR QSpecialInteger(T i) : val(S::toSpecial(i)) {}
+    explicit constexpr QSpecialInteger(T i) : val(S::toSpecial(i)) {}
 
     QSpecialInteger &operator =(T i) { val = S::toSpecial(i); return *this; }
     operator T() const { return S::fromSpecial(val); }
@@ -310,9 +310,9 @@ public:
         return pre;
     }
 
-    static Q_DECL_CONSTEXPR QSpecialInteger max()
+    static constexpr QSpecialInteger max()
     { return QSpecialInteger(std::numeric_limits<T>::max()); }
-    static Q_DECL_CONSTEXPR QSpecialInteger min()
+    static constexpr QSpecialInteger min()
     { return QSpecialInteger(std::numeric_limits<T>::min()); }
 };
 
@@ -320,23 +320,23 @@ template<typename T>
 class QLittleEndianStorageType {
 public:
     typedef T StorageType;
-    static Q_DECL_CONSTEXPR T toSpecial(T source) { return qToLittleEndian(source); }
-    static Q_DECL_CONSTEXPR T fromSpecial(T source) { return qFromLittleEndian(source); }
+    static constexpr T toSpecial(T source) { return qToLittleEndian(source); }
+    static constexpr T fromSpecial(T source) { return qFromLittleEndian(source); }
 };
 
 template<typename T>
 class QBigEndianStorageType {
 public:
     typedef T StorageType;
-    static Q_DECL_CONSTEXPR T toSpecial(T source) { return qToBigEndian(source); }
-    static Q_DECL_CONSTEXPR T fromSpecial(T source) { return qFromBigEndian(source); }
+    static constexpr T toSpecial(T source) { return qToBigEndian(source); }
+    static constexpr T fromSpecial(T source) { return qFromBigEndian(source); }
 };
 
 #ifdef Q_CLANG_QDOC
 template<typename T>
 class QLEInteger {
 public:
-    explicit Q_DECL_CONSTEXPR QLEInteger(T i);
+    explicit constexpr QLEInteger(T i);
     QLEInteger &operator =(T i);
     operator T() const;
     bool operator ==(QLEInteger i) const;
@@ -356,14 +356,14 @@ public:
     QLEInteger &operator ++(int);
     QLEInteger &operator --(int);
 
-    static Q_DECL_CONSTEXPR QLEInteger max();
-    static Q_DECL_CONSTEXPR QLEInteger min();
+    static constexpr QLEInteger max();
+    static constexpr QLEInteger min();
 };
 
 template<typename T>
 class QBEInteger {
 public:
-    explicit Q_DECL_CONSTEXPR QBEInteger(T i);
+    explicit constexpr QBEInteger(T i);
     QBEInteger &operator =(T i);
     operator T() const;
     bool operator ==(QBEInteger i) const;
@@ -383,8 +383,8 @@ public:
     QBEInteger &operator ++(int);
     QBEInteger &operator --(int);
 
-    static Q_DECL_CONSTEXPR QBEInteger max();
-    static Q_DECL_CONSTEXPR QBEInteger min();
+    static constexpr QBEInteger max();
+    static constexpr QBEInteger min();
 };
 #else
 

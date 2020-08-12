@@ -85,37 +85,37 @@ template <bool...B> class BoolList;
 class QLatin1String
 {
 public:
-    Q_DECL_CONSTEXPR inline QLatin1String() noexcept : m_size(0), m_data(nullptr) {}
-    Q_DECL_CONSTEXPR inline explicit QLatin1String(const char *s) noexcept : m_size(s ? int(strlen(s)) : 0), m_data(s) {}
-    Q_DECL_CONSTEXPR explicit QLatin1String(const char *f, const char *l)
+    constexpr inline QLatin1String() noexcept : m_size(0), m_data(nullptr) {}
+    constexpr inline explicit QLatin1String(const char *s) noexcept : m_size(s ? int(strlen(s)) : 0), m_data(s) {}
+    constexpr explicit QLatin1String(const char *f, const char *l)
         : QLatin1String(f, int(l - f)) {}
-    Q_DECL_CONSTEXPR inline explicit QLatin1String(const char *s, int sz) noexcept : m_size(sz), m_data(s) {}
+    constexpr inline explicit QLatin1String(const char *s, int sz) noexcept : m_size(sz), m_data(s) {}
     inline explicit QLatin1String(const QByteArray &s) noexcept : m_size(int(qstrnlen(s.constData(), s.size()))), m_data(s.constData()) {}
 
     inline QString toString() const;
 
-    Q_DECL_CONSTEXPR const char *latin1() const noexcept { return m_data; }
-    Q_DECL_CONSTEXPR int size() const noexcept { return m_size; }
-    Q_DECL_CONSTEXPR const char *data() const noexcept { return m_data; }
+    constexpr const char *latin1() const noexcept { return m_data; }
+    constexpr int size() const noexcept { return m_size; }
+    constexpr const char *data() const noexcept { return m_data; }
 
-    Q_DECL_CONSTEXPR bool isNull() const noexcept { return !data(); }
-    Q_DECL_CONSTEXPR bool isEmpty() const noexcept { return !size(); }
+    constexpr bool isNull() const noexcept { return !data(); }
+    constexpr bool isEmpty() const noexcept { return !size(); }
 
     template <typename...Args>
     Q_REQUIRED_RESULT inline QString arg(Args &&...args) const;
 
-    Q_DECL_CONSTEXPR QLatin1Char at(int i) const
+    constexpr QLatin1Char at(int i) const
     { return Q_ASSERT(i >= 0), Q_ASSERT(i < size()), QLatin1Char(m_data[i]); }
-    Q_DECL_CONSTEXPR QLatin1Char operator[](int i) const { return at(i); }
+    constexpr QLatin1Char operator[](int i) const { return at(i); }
 
-    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QLatin1Char front() const { return at(0); }
-    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QLatin1Char back() const { return at(size() - 1); }
+    Q_REQUIRED_RESULT constexpr QLatin1Char front() const { return at(0); }
+    Q_REQUIRED_RESULT constexpr QLatin1Char back() const { return at(size() - 1); }
 
     Q_REQUIRED_RESULT int compare(QStringView other, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::compareStrings(*this, other, cs); }
     Q_REQUIRED_RESULT int compare(QLatin1String other, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::compareStrings(*this, other, cs); }
-    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR int compare(QChar c) const noexcept
+    Q_REQUIRED_RESULT constexpr int compare(QChar c) const noexcept
     { return isEmpty() || front() == c ? size() - 1 : uchar(m_data[0]) - c.unicode() ; }
     Q_REQUIRED_RESULT int compare(QChar c, Qt::CaseSensitivity cs) const noexcept
     { return QtPrivate::compareStrings(*this, QStringView(&c, 1), cs); }
@@ -124,7 +124,7 @@ public:
     { return QtPrivate::startsWith(*this, s, cs); }
     Q_REQUIRED_RESULT bool startsWith(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::startsWith(*this, s, cs); }
-    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR bool startsWith(QChar c) const noexcept
+    Q_REQUIRED_RESULT constexpr bool startsWith(QChar c) const noexcept
     { return !isEmpty() && front() == c; }
     Q_REQUIRED_RESULT inline bool startsWith(QChar c, Qt::CaseSensitivity cs) const noexcept
     { return QtPrivate::startsWith(*this, QStringView(&c, 1), cs); }
@@ -133,7 +133,7 @@ public:
     { return QtPrivate::endsWith(*this, s, cs); }
     Q_REQUIRED_RESULT bool endsWith(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::endsWith(*this, s, cs); }
-    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR bool endsWith(QChar c) const noexcept
+    Q_REQUIRED_RESULT constexpr bool endsWith(QChar c) const noexcept
     { return !isEmpty() && back() == c; }
     Q_REQUIRED_RESULT inline bool endsWith(QChar c, Qt::CaseSensitivity cs) const noexcept
     { return QtPrivate::endsWith(*this, QStringView(&c, 1), cs); }
@@ -167,10 +167,10 @@ public:
     using difference_type = int; // violates Container concept requirements
     using size_type = int;       // violates Container concept requirements
 
-    Q_DECL_CONSTEXPR const_iterator begin() const noexcept { return data(); }
-    Q_DECL_CONSTEXPR const_iterator cbegin() const noexcept { return data(); }
-    Q_DECL_CONSTEXPR const_iterator end() const noexcept { return data() + size(); }
-    Q_DECL_CONSTEXPR const_iterator cend() const noexcept { return data() + size(); }
+    constexpr const_iterator begin() const noexcept { return data(); }
+    constexpr const_iterator cbegin() const noexcept { return data(); }
+    constexpr const_iterator end() const noexcept { return data() + size(); }
+    constexpr const_iterator cend() const noexcept { return data() + size(); }
 
     using reverse_iterator = std::reverse_iterator<iterator>;
     using const_reverse_iterator = reverse_iterator;
@@ -200,12 +200,12 @@ public:
             n = size();
         return QLatin1String(m_data + m_size - n, n);
     }
-    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QLatin1String chopped(int n) const
+    Q_REQUIRED_RESULT constexpr QLatin1String chopped(int n) const
     { return Q_ASSERT(n >= 0), Q_ASSERT(n <= size()), QLatin1String(m_data, m_size - n); }
 
-    Q_DECL_RELAXED_CONSTEXPR void chop(int n)
+    constexpr void chop(int n)
     { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); m_size -= n; }
-    Q_DECL_RELAXED_CONSTEXPR void truncate(int n)
+    constexpr void truncate(int n)
     { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); m_size = n; }
 
     Q_REQUIRED_RESULT QLatin1String trimmed() const noexcept { return QtPrivate::trimmed(*this); }
@@ -250,7 +250,7 @@ Q_DECLARE_TYPEINFO(QLatin1String, Q_MOVABLE_TYPE);
 //
 // QLatin1String inline implementations
 //
-Q_DECL_CONSTEXPR bool QtPrivate::isLatin1(QLatin1String) noexcept
+constexpr bool QtPrivate::isLatin1(QLatin1String) noexcept
 { return true; }
 
 //
@@ -1796,13 +1796,13 @@ struct ArgBase {
 struct QStringViewArg : ArgBase {
     QStringView string;
     QStringViewArg() = default;
-    Q_DECL_CONSTEXPR explicit QStringViewArg(QStringView v) noexcept : ArgBase{U16}, string{v} {}
+    constexpr explicit QStringViewArg(QStringView v) noexcept : ArgBase{U16}, string{v} {}
 };
 
 struct QLatin1StringArg : ArgBase {
     QLatin1String string;
     QLatin1StringArg() = default;
-    Q_DECL_CONSTEXPR explicit QLatin1StringArg(QLatin1String v) noexcept : ArgBase{L1}, string{v} {}
+    constexpr explicit QLatin1StringArg(QLatin1String v) noexcept : ArgBase{L1}, string{v} {}
 };
 
 Q_REQUIRED_RESULT Q_CORE_EXPORT QString argToQString(QStringView pattern, size_t n, const ArgBase **args);
@@ -1815,10 +1815,10 @@ Q_REQUIRED_RESULT Q_ALWAYS_INLINE QString argToQStringDispatch(StringView patter
     return QtPrivate::argToQString(pattern, sizeof...(Args), argBases);
 }
 
-                 inline QStringViewArg   qStringLikeToArg(const QString &s) noexcept { return QStringViewArg{qToStringViewIgnoringNull(s)}; }
-Q_DECL_CONSTEXPR inline QStringViewArg   qStringLikeToArg(QStringView s) noexcept { return QStringViewArg{s}; }
-                 inline QStringViewArg   qStringLikeToArg(const QChar &c) noexcept { return QStringViewArg{QStringView{&c, 1}}; }
-Q_DECL_CONSTEXPR inline QLatin1StringArg qStringLikeToArg(QLatin1String s) noexcept { return QLatin1StringArg{s}; }
+          inline QStringViewArg   qStringLikeToArg(const QString &s) noexcept { return QStringViewArg{qToStringViewIgnoringNull(s)}; }
+constexpr inline QStringViewArg   qStringLikeToArg(QStringView s) noexcept { return QStringViewArg{s}; }
+          inline QStringViewArg   qStringLikeToArg(const QChar &c) noexcept { return QStringViewArg{QStringView{&c, 1}}; }
+constexpr inline QLatin1StringArg qStringLikeToArg(QLatin1String s) noexcept { return QLatin1StringArg{s}; }
 
 } // namespace QtPrivate
 

@@ -413,7 +413,7 @@ void tst_QImageWriter::supportsOption()
     QFETCH(QString, fileName);
     QFETCH(QIntList, options);
 
-    static Q_CONSTEXPR QImageIOHandler::ImageOption allOptions[] = {
+    static constexpr QImageIOHandler::ImageOption allOptions[] = {
         QImageIOHandler::Size,
         QImageIOHandler::ClipRect,
         QImageIOHandler::Description,

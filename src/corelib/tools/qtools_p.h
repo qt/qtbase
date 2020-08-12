@@ -57,17 +57,17 @@
 QT_BEGIN_NAMESPACE
 
 namespace QtMiscUtils {
-Q_DECL_CONSTEXPR inline char toHexUpper(uint value) noexcept
+constexpr inline char toHexUpper(uint value) noexcept
 {
     return "0123456789ABCDEF"[value & 0xF];
 }
 
-Q_DECL_CONSTEXPR inline char toHexLower(uint value) noexcept
+constexpr inline char toHexLower(uint value) noexcept
 {
     return "0123456789abcdef"[value & 0xF];
 }
 
-Q_DECL_CONSTEXPR inline int fromHex(uint c) noexcept
+constexpr inline int fromHex(uint c) noexcept
 {
     return ((c >= '0') && (c <= '9')) ? int(c - '0') :
            ((c >= 'A') && (c <= 'F')) ? int(c - 'A' + 10) :
@@ -75,12 +75,12 @@ Q_DECL_CONSTEXPR inline int fromHex(uint c) noexcept
            /* otherwise */              -1;
 }
 
-Q_DECL_CONSTEXPR inline char toOct(uint value) noexcept
+constexpr inline char toOct(uint value) noexcept
 {
     return char('0' + (value & 0x7));
 }
 
-Q_DECL_CONSTEXPR inline int fromOct(uint c) noexcept
+constexpr inline int fromOct(uint c) noexcept
 {
     return ((c >= '0') && (c <= '7')) ? int(c - '0') : -1;
 }

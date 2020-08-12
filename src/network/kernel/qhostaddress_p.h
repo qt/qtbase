@@ -78,7 +78,7 @@ class QNetmask
     // stores 0-32 for IPv4, 0-128 for IPv6, or 255 for invalid
     quint8 length;
 public:
-    Q_DECL_CONSTEXPR QNetmask() : length(255) {}
+    constexpr QNetmask() : length(255) {}
 
     bool setAddress(const QHostAddress &address);
     QHostAddress address(QAbstractSocket::NetworkLayerProtocol protocol) const;

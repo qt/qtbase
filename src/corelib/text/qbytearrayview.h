@@ -156,7 +156,7 @@ private:
     template <typename Byte>
     static const storage_type *castHelper(const Byte *data) noexcept
     { return reinterpret_cast<const storage_type*>(data); }
-    static Q_DECL_CONSTEXPR const storage_type *castHelper(const storage_type *data) noexcept
+    static constexpr const storage_type *castHelper(const storage_type *data) noexcept
     { return data; }
 
 public:

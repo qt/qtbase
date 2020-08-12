@@ -934,8 +934,8 @@ QVariant QWindowsMimeHtml::convertToMime(const QString &mime, IDataObject *pData
     QVariant result;
     if (canConvertToMime(mime, pDataObj)) {
         QByteArray html = getData(CF_HTML, pDataObj);
-        static Q_RELAXED_CONSTEXPR auto startMatcher = qMakeStaticByteArrayMatcher("StartHTML:");
-        static Q_RELAXED_CONSTEXPR auto endMatcher   = qMakeStaticByteArrayMatcher("EndHTML:");
+        static constexpr auto startMatcher = qMakeStaticByteArrayMatcher("StartHTML:");
+        static constexpr auto endMatcher   = qMakeStaticByteArrayMatcher("EndHTML:");
         qCDebug(lcQpaMime) << __FUNCTION__ << "raw:" << html;
         int start = startMatcher.indexIn(html);
         int end = endMatcher.indexIn(html);
@@ -978,8 +978,8 @@ bool QWindowsMimeHtml::convertFromMime(const FORMATETC &formatetc, const QMimeDa
             "StartFragment:0000000000\r\n"       // 56-81
             "EndFragment:0000000000\r\n\r\n";    // 82-107
 
-        static Q_RELAXED_CONSTEXPR auto startFragmentMatcher = qMakeStaticByteArrayMatcher("<!--StartFragment-->");
-        static Q_RELAXED_CONSTEXPR auto endFragmentMatcher   = qMakeStaticByteArrayMatcher("<!--EndFragment-->");
+        static constexpr auto startFragmentMatcher = qMakeStaticByteArrayMatcher("<!--StartFragment-->");
+        static constexpr auto endFragmentMatcher   = qMakeStaticByteArrayMatcher("<!--EndFragment-->");
 
         if (startFragmentMatcher.indexIn(data) == -1)
             result += "<!--StartFragment-->";

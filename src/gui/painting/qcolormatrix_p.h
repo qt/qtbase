@@ -62,8 +62,8 @@ class QColorVector
 {
 public:
     QColorVector() = default;
-    Q_DECL_CONSTEXPR QColorVector(float x, float y, float z) : x(x), y(y), z(z) { }
-    explicit Q_DECL_CONSTEXPR QColorVector(const QPointF &chr) // from XY chromaticity
+    constexpr QColorVector(float x, float y, float z) : x(x), y(y), z(z) { }
+    explicit constexpr QColorVector(const QPointF &chr) // from XY chromaticity
             : x(chr.x() / chr.y())
             , y(1.0f)
             , z((1.0 - chr.x() - chr.y()) / chr.y())
@@ -92,10 +92,10 @@ public:
     }
 
     // Common whitepoints:
-    static Q_DECL_CONSTEXPR QPointF D50Chromaticity() { return QPointF(0.34567, 0.35850); }
-    static Q_DECL_CONSTEXPR QPointF D65Chromaticity() { return QPointF(0.31271, 0.32902); }
-    static Q_DECL_CONSTEXPR QColorVector D50() { return QColorVector(D50Chromaticity()); }
-    static Q_DECL_CONSTEXPR QColorVector D65() { return QColorVector(D65Chromaticity()); }
+    static constexpr QPointF D50Chromaticity() { return QPointF(0.34567, 0.35850); }
+    static constexpr QPointF D65Chromaticity() { return QPointF(0.31271, 0.32902); }
+    static constexpr QColorVector D50() { return QColorVector(D50Chromaticity()); }
+    static constexpr QColorVector D65() { return QColorVector(D65Chromaticity()); }
 };
 
 inline bool operator==(const QColorVector &v1, const QColorVector &v2)

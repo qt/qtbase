@@ -221,7 +221,7 @@ public:
 
     static QFileInfoList drives();
 
-    Q_DECL_CONSTEXPR static inline QChar listSeparator() noexcept
+    constexpr static inline QChar listSeparator() noexcept
     {
 #if defined(Q_OS_WIN)
         return QLatin1Char(';');

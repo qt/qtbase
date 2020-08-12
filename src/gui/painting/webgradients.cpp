@@ -386,7 +386,7 @@ static QList<QGradientStop> qt_preset_gradient_stops(QGradient::Preset preset)
     return {};
 }
 
-static Q_CONSTEXPR QGradient::QGradientData qt_preset_gradient_data[] = {
+static constexpr QGradient::QGradientData qt_preset_gradient_data[] = {
     { { 0, 1, 1, 0 } },
     { { 0.5, 1, 0.5, 0 } },
     { { 0.5, 1, 0.5, 0 } },

@@ -701,7 +701,7 @@ static const struct {
     { Qt::Key_TouchpadOff,  QT_TRANSLATE_NOOP("QShortcut", "Touchpad Off") },
 
 };
-static Q_CONSTEXPR int numKeyNames = sizeof keyname / sizeof *keyname;
+static constexpr int numKeyNames = sizeof keyname / sizeof *keyname;
 
 /*!
     \enum QKeySequence::StandardKey

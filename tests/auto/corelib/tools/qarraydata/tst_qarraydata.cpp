@@ -1149,7 +1149,7 @@ void tst_QArrayData::literals()
 
     struct LiteralType {
         int value;
-        Q_DECL_CONSTEXPR LiteralType(int v = 0) : value(v) {}
+        constexpr LiteralType(int v = 0) : value(v) {}
     };
 
     {
@@ -1226,17 +1226,17 @@ struct CompilerHasCxx11ImplicitMoves
 
     struct DetectConstructor
     {
-        Q_DECL_CONSTEXPR DetectConstructor()
+        constexpr DetectConstructor()
             : constructor(DefaultConstructor)
         {
         }
 
-        Q_DECL_CONSTEXPR DetectConstructor(const DetectConstructor &)
+        constexpr DetectConstructor(const DetectConstructor &)
             : constructor(CopyConstructor)
         {
         }
 
-        Q_DECL_CONSTEXPR DetectConstructor(DetectConstructor &&)
+        constexpr DetectConstructor(DetectConstructor &&)
             : constructor(MoveConstructor)
         {
         }

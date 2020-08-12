@@ -127,9 +127,9 @@ using namespace QtFutex;
  */
 
 #if defined(FUTEX_OP) && QT_POINTER_SIZE > 4
-static Q_CONSTEXPR bool futexHasWaiterCount = true;
+static constexpr bool futexHasWaiterCount = true;
 #else
-static Q_CONSTEXPR bool futexHasWaiterCount = false;
+static constexpr bool futexHasWaiterCount = false;
 #endif
 
 static const quintptr futexNeedsWakeAllBit =

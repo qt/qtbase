@@ -325,12 +325,12 @@ private:
         return d;
     }
 
-    Q_DECL_CONSTEXPR static Type type_helper(QCborSimpleType st)
+    constexpr static Type type_helper(QCborSimpleType st)
     {
         return Type(quint8(st) | SimpleType);
     }
 
-    Q_DECL_CONSTEXPR static bool isTag_helper(Type tt)
+    constexpr static bool isTag_helper(Type tt)
     {
         return tt == Tag || tt >= 0x10000;
     }
@@ -470,7 +470,7 @@ private:
     QCborValue::Type concreteType() const noexcept { return concreteType(*this); }
 
     // this will actually be invalid...
-    Q_DECL_CONSTEXPR QCborValueRef() : d(nullptr), i(0) {}
+    constexpr QCborValueRef() : d(nullptr), i(0) {}
 
     QCborValueRef(QCborContainerPrivate *dd, qsizetype ii)
         : d(dd), i(ii)

@@ -85,7 +85,7 @@ public:
     void setZ(float z);
     void setScalar(float scalar);
 
-    Q_DECL_CONSTEXPR static inline float dotProduct(const QQuaternion &q1, const QQuaternion &q2);
+    constexpr static inline float dotProduct(const QQuaternion &q1, const QQuaternion &q2);
 
     float length() const;
     float lengthSquared() const;
@@ -197,7 +197,7 @@ inline void QQuaternion::setY(float aY) { yp = aY; }
 inline void QQuaternion::setZ(float aZ) { zp = aZ; }
 inline void QQuaternion::setScalar(float aScalar) { wp = aScalar; }
 
-Q_DECL_CONSTEXPR inline float QQuaternion::dotProduct(const QQuaternion &q1, const QQuaternion &q2)
+constexpr inline float QQuaternion::dotProduct(const QQuaternion &q1, const QQuaternion &q2)
 {
     return q1.wp * q2.wp + q1.xp * q2.xp + q1.yp * q2.yp + q1.zp * q2.zp;
 }

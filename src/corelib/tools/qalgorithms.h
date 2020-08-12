@@ -533,7 +533,7 @@ QT_DEPRECATED_X("Use std::binary_search") Q_OUTOFLINE_TEMPLATE RandomAccessItera
 #if defined QT_HAS_CONSTEXPR_BUILTINS
 #if defined(Q_CC_GNU) || defined(Q_CC_CLANG)
 #  define QT_HAS_BUILTIN_CTZS
-Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_builtin_ctzs(quint16 v) noexcept
+constexpr Q_ALWAYS_INLINE uint qt_builtin_ctzs(quint16 v) noexcept
 {
 #  if __has_builtin(__builtin_ctzs)
     return __builtin_ctzs(v);
@@ -542,7 +542,7 @@ Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_builtin_ctzs(quint16 v) noexcept
 #  endif
 }
 #define QT_HAS_BUILTIN_CLZS
-Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_builtin_clzs(quint16 v) noexcept
+constexpr Q_ALWAYS_INLINE uint qt_builtin_clzs(quint16 v) noexcept
 {
 #  if __has_builtin(__builtin_clzs)
     return __builtin_clzs(v);
@@ -551,40 +551,40 @@ Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_builtin_clzs(quint16 v) noexcept
 #  endif
 }
 #define QT_HAS_BUILTIN_CTZ
-Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_builtin_ctz(quint32 v) noexcept
+constexpr Q_ALWAYS_INLINE uint qt_builtin_ctz(quint32 v) noexcept
 {
     return __builtin_ctz(v);
 }
 #define QT_HAS_BUILTIN_CLZ
-Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_builtin_clz(quint32 v) noexcept
+constexpr Q_ALWAYS_INLINE uint qt_builtin_clz(quint32 v) noexcept
 {
     return __builtin_clz(v);
 }
 #define QT_HAS_BUILTIN_CTZLL
-Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_builtin_ctzll(quint64 v) noexcept
+constexpr Q_ALWAYS_INLINE uint qt_builtin_ctzll(quint64 v) noexcept
 {
     return __builtin_ctzll(v);
 }
 #define QT_HAS_BUILTIN_CLZLL
-Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_builtin_clzll(quint64 v) noexcept
+constexpr Q_ALWAYS_INLINE uint qt_builtin_clzll(quint64 v) noexcept
 {
     return __builtin_clzll(v);
 }
 #define QALGORITHMS_USE_BUILTIN_POPCOUNT
-Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_builtin_popcount(quint32 v) noexcept
+constexpr Q_ALWAYS_INLINE uint qt_builtin_popcount(quint32 v) noexcept
 {
     return __builtin_popcount(v);
 }
-Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_builtin_popcount(quint8 v) noexcept
+constexpr Q_ALWAYS_INLINE uint qt_builtin_popcount(quint8 v) noexcept
 {
     return __builtin_popcount(v);
 }
-Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_builtin_popcount(quint16 v) noexcept
+constexpr Q_ALWAYS_INLINE uint qt_builtin_popcount(quint16 v) noexcept
 {
     return __builtin_popcount(v);
 }
 #define QALGORITHMS_USE_BUILTIN_POPCOUNTLL
-Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_builtin_popcountll(quint64 v) noexcept
+constexpr Q_ALWAYS_INLINE uint qt_builtin_popcountll(quint64 v) noexcept
 {
     return __builtin_popcountll(v);
 }
@@ -679,8 +679,8 @@ Q_ALWAYS_INLINE uint qt_builtin_popcountll(quint64 v) noexcept
 #endif // QT_HAS_CONSTEXPR_BUILTINS
 
 #ifndef QT_POPCOUNT_CONSTEXPR
-#define QT_POPCOUNT_CONSTEXPR Q_DECL_CONSTEXPR
-#define QT_POPCOUNT_RELAXED_CONSTEXPR Q_DECL_RELAXED_CONSTEXPR
+#define QT_POPCOUNT_CONSTEXPR constexpr
+#define QT_POPCOUNT_RELAXED_CONSTEXPR constexpr
 #endif
 
 } //namespace QAlgorithmsPrivate
@@ -836,7 +836,7 @@ constexpr inline uint qCountTrailingZeroBits(unsigned long v) noexcept
     return qCountTrailingZeroBits(QIntegerForSizeof<long>::Unsigned(v));
 }
 
-Q_DECL_RELAXED_CONSTEXPR inline uint qCountLeadingZeroBits(quint32 v) noexcept
+constexpr inline uint qCountLeadingZeroBits(quint32 v) noexcept
 {
 #if defined(QT_HAS_BUILTIN_CLZ)
     return v ? QAlgorithmsPrivate::qt_builtin_clz(v) : 32U;

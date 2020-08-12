@@ -3194,9 +3194,9 @@ struct StaticPolygonF
 {
     QPointF data[N];
 
-    Q_DECL_CONSTEXPR int size() const { return N; }
-    Q_DECL_CONSTEXPR const QPointF *cbegin() const { return data; }
-    Q_DECL_CONSTEXPR const QPointF &operator[](int idx) const { return data[idx]; }
+    constexpr int size() const { return N; }
+    constexpr const QPointF *cbegin() const { return data; }
+    constexpr const QPointF &operator[](int idx) const { return data[idx]; }
 };
 
 static StaticPolygonF<3> calcArrow(const QStyleOptionSlider *dial, qreal &a)

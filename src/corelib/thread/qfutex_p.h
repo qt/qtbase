@@ -56,7 +56,7 @@
 QT_BEGIN_NAMESPACE
 
 namespace QtDummyFutex {
-    Q_DECL_CONSTEXPR inline bool futexAvailable() { return false; }
+    constexpr inline bool futexAvailable() { return false; }
     template <typename Atomic>
     inline bool futexWait(Atomic &, typename Atomic::Type, int = 0)
     { Q_UNREACHABLE(); return false; }

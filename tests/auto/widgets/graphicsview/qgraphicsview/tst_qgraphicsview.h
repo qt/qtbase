@@ -34,7 +34,7 @@
 // value to add/remove has to be obtained in test run using the actual style.
 
 struct ExpectedValueDescription {
-    Q_DECL_CONSTEXPR ExpectedValueDescription(int v = 0, int sbeta = 0, int sta = 0)
+    constexpr ExpectedValueDescription(int v = 0, int sbeta = 0, int sta = 0)
         : value(v)
         , scrollBarExtentsToAdd(sbeta)
         , spacingsToAdd(sta)
@@ -55,7 +55,7 @@ struct ExpectedValueDescription {
 // Describes how often the scroll bar width/height has to be added to/removed
 // from the according side of the sceneRect.
 struct ScrollBarCount {
-    Q_DECL_CONSTEXPR ScrollBarCount(int l = 0, int t = 0, int r = 0, int b = 0 )
+    constexpr ScrollBarCount(int l = 0, int t = 0, int r = 0, int b = 0 )
         : left(l)
         , top(t)
         , right(r)

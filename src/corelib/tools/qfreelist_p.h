@@ -190,7 +190,7 @@ class QFreeList
     Q_DISABLE_COPY_MOVE(QFreeList)
 
 public:
-    Q_DECL_CONSTEXPR inline QFreeList();
+    constexpr inline QFreeList();
     inline ~QFreeList();
 
     // returns the payload for the given index \a x
@@ -206,7 +206,7 @@ public:
 };
 
 template <typename T, typename ConstantsType>
-Q_DECL_CONSTEXPR inline QFreeList<T, ConstantsType>::QFreeList()
+constexpr inline QFreeList<T, ConstantsType>::QFreeList()
     :
 #if defined(Q_COMPILER_CONSTEXPR)
       _v{}, // uniform initialization required

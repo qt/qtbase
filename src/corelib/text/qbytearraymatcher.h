@@ -90,7 +90,7 @@ class QStaticByteArrayMatcherBase
         uchar data[256];
     } m_skiptable;
 protected:
-    explicit Q_DECL_RELAXED_CONSTEXPR QStaticByteArrayMatcherBase(const char *pattern, uint n) noexcept
+    explicit constexpr QStaticByteArrayMatcherBase(const char *pattern, uint n) noexcept
         : m_skiptable(generate(pattern, n)) {}
     // compiler-generated copy/more ctors/assignment operators are ok!
     // compiler-generated dtor is ok!
@@ -98,7 +98,7 @@ protected:
     Q_CORE_EXPORT int indexOfIn(const char *needle, uint nlen, const char *haystack, int hlen, int from) const noexcept;
 
 private:
-    static Q_DECL_RELAXED_CONSTEXPR Skiptable generate(const char *pattern, uint n) noexcept
+    static constexpr Skiptable generate(const char *pattern, uint n) noexcept
     {
         const auto uchar_max = (std::numeric_limits<uchar>::max)();
         uchar max = n > uchar_max ? uchar_max : uchar(n);
@@ -140,7 +140,7 @@ class QStaticByteArrayMatcher : QStaticByteArrayMatcherBase
     char m_pattern[N];
     static_assert(N > 2, "QStaticByteArrayMatcher makes no sense for finding a single-char pattern");
 public:
-    explicit Q_DECL_RELAXED_CONSTEXPR QStaticByteArrayMatcher(const char (&patternToMatch)[N]) noexcept
+    explicit constexpr QStaticByteArrayMatcher(const char (&patternToMatch)[N]) noexcept
         : QStaticByteArrayMatcherBase(patternToMatch, N - 1), m_pattern()
     {
         for (uint i = 0; i < N; ++i)
@@ -156,7 +156,7 @@ public:
 };
 
 template <uint N>
-Q_DECL_RELAXED_CONSTEXPR QStaticByteArrayMatcher<N> qMakeStaticByteArrayMatcher(const char (&pattern)[N]) noexcept
+constexpr QStaticByteArrayMatcher<N> qMakeStaticByteArrayMatcher(const char (&pattern)[N]) noexcept
 { return QStaticByteArrayMatcher<N>(pattern); }
 
 QT_END_NAMESPACE

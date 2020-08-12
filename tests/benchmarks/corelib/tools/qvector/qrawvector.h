@@ -204,12 +204,12 @@ private:
 
     class AlignmentDummy { QVectorData header; T array[1]; };
 
-    static Q_DECL_CONSTEXPR int offsetOfTypedData()
+    static constexpr int offsetOfTypedData()
     {
         // (non-POD)-safe offsetof(AlignmentDummy, array)
         return (sizeof(QVectorData) + (alignOfTypedData() - 1)) & ~(alignOfTypedData() - 1);
     }
-    static Q_DECL_CONSTEXPR int alignOfTypedData()
+    static constexpr int alignOfTypedData()
     {
         return alignof(AlignmentDummy);
     }

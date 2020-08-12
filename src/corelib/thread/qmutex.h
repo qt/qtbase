@@ -287,7 +287,7 @@ class Q_CORE_EXPORT QMutex
 public:
     enum RecursionMode { NonRecursive, Recursive };
 
-    inline Q_DECL_CONSTEXPR explicit QMutex(RecursionMode = NonRecursive) noexcept { }
+    inline constexpr explicit QMutex(RecursionMode = NonRecursive) noexcept { }
 
     inline void lock() noexcept {}
     inline bool tryLock(int timeout = 0) noexcept { Q_UNUSED(timeout); return true; }

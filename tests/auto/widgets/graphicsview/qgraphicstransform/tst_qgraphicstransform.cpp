@@ -116,7 +116,7 @@ void tst_QGraphicsTransform::scale()
 
 // fuzzyCompareNonZero is a very slightly looser version of qFuzzyCompare
 // for use with values that are not very close to zero
-Q_DECL_CONSTEXPR static inline bool fuzzyCompareNonZero(float p1, float p2)
+constexpr static inline bool fuzzyCompareNonZero(float p1, float p2)
 {
     return (qAbs(p1 - p2) <= 0.00003f * qMin(qAbs(p1), qAbs(p2)));
 }

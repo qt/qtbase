@@ -964,7 +964,7 @@ static inline int pathHashKey(QSettings::Format format, QSettings::Scope scope)
 #ifndef Q_OS_WIN
 static QString make_user_path()
 {
-    static Q_CONSTEXPR QChar sep = QLatin1Char('/');
+    static constexpr QChar sep = QLatin1Char('/');
 #ifndef QSETTINGS_USE_QSTANDARDPATHS
     // Non XDG platforms (OS X, iOS, Android...) have used this code path erroneously
     // for some time now. Moving away from that would require migrating existing settings.

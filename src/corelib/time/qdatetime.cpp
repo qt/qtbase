@@ -2716,20 +2716,20 @@ static inline bool msecsCanBeSmall(qint64 msecs)
     return sd.msecs == msecs;
 }
 
-static Q_DECL_CONSTEXPR inline
+static constexpr inline
 QDateTimePrivate::StatusFlags mergeSpec(QDateTimePrivate::StatusFlags status, Qt::TimeSpec spec)
 {
     return QDateTimePrivate::StatusFlags((status & ~QDateTimePrivate::TimeSpecMask) |
                                          (int(spec) << QDateTimePrivate::TimeSpecShift));
 }
 
-static Q_DECL_CONSTEXPR inline Qt::TimeSpec extractSpec(QDateTimePrivate::StatusFlags status)
+static constexpr inline Qt::TimeSpec extractSpec(QDateTimePrivate::StatusFlags status)
 {
     return Qt::TimeSpec((status & QDateTimePrivate::TimeSpecMask) >> QDateTimePrivate::TimeSpecShift);
 }
 
 // Set the Daylight Status if LocalTime set via msecs
-static Q_DECL_RELAXED_CONSTEXPR inline QDateTimePrivate::StatusFlags
+static constexpr inline QDateTimePrivate::StatusFlags
 mergeDaylightStatus(QDateTimePrivate::StatusFlags sf, QDateTimePrivate::DaylightStatus status)
 {
     sf &= ~QDateTimePrivate::DaylightMask;
@@ -2742,7 +2742,7 @@ mergeDaylightStatus(QDateTimePrivate::StatusFlags sf, QDateTimePrivate::Daylight
 }
 
 // Get the DST Status if LocalTime set via msecs
-static Q_DECL_RELAXED_CONSTEXPR inline
+static constexpr inline
 QDateTimePrivate::DaylightStatus extractDaylightStatus(QDateTimePrivate::StatusFlags status)
 {
     if (status & QDateTimePrivate::SetToDaylightTime)

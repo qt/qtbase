@@ -169,8 +169,8 @@ public:
     void seed(quint32 s = 1) { *this = { s }; }
     void seed(std::seed_seq &sseq) noexcept { *this = { sseq }; }
     Q_CORE_EXPORT void discard(unsigned long long z);
-    static Q_DECL_CONSTEXPR result_type min() { return std::numeric_limits<result_type>::min(); }
-    static Q_DECL_CONSTEXPR result_type max() { return std::numeric_limits<result_type>::max(); }
+    static constexpr result_type min() { return std::numeric_limits<result_type>::min(); }
+    static constexpr result_type max() { return std::numeric_limits<result_type>::max(); }
 
     static inline Q_DECL_CONST_FUNCTION QRandomGenerator *system();
     static inline Q_DECL_CONST_FUNCTION QRandomGenerator *global();
@@ -203,7 +203,7 @@ private:
 
         static_assert(std::is_trivially_destructible<RandomEngine>::value,
                           "std::mersenne_twister not trivially destructible as expected");
-        Q_DECL_CONSTEXPR Storage();
+        constexpr Storage();
     };
     uint type;
     Storage storage;
@@ -245,8 +245,8 @@ public:
         QRandomGenerator::discard(z * 2);
     }
 
-    static Q_DECL_CONSTEXPR result_type min() { return std::numeric_limits<result_type>::min(); }
-    static Q_DECL_CONSTEXPR result_type max() { return std::numeric_limits<result_type>::max(); }
+    static constexpr result_type min() { return std::numeric_limits<result_type>::min(); }
+    static constexpr result_type max() { return std::numeric_limits<result_type>::max(); }
     static Q_DECL_CONST_FUNCTION Q_CORE_EXPORT QRandomGenerator64 *system();
     static Q_DECL_CONST_FUNCTION Q_CORE_EXPORT QRandomGenerator64 *global();
     static Q_CORE_EXPORT QRandomGenerator64 securelySeeded();

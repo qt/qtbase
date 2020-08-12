@@ -218,7 +218,7 @@ private:
     inline int startTimer(int){ return -1;}
     inline void killTimer(int){}
 
-    static Q_DECL_CONSTEXPR Qt::TimerType defaultTypeFor(int msecs) noexcept
+    static constexpr Qt::TimerType defaultTypeFor(int msecs) noexcept
     { return msecs >= 2000 ? Qt::CoarseTimer : Qt::PreciseTimer; }
     static void singleShotImpl(int msec, Qt::TimerType timerType,
                                const QObject *receiver, QtPrivate::QSlotObjectBase *slotObj);

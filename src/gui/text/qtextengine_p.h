@@ -332,7 +332,7 @@ public:
 
 struct QScriptItem
 {
-    Q_DECL_CONSTEXPR QScriptItem(int p, QScriptAnalysis a) noexcept
+    constexpr QScriptItem(int p, QScriptAnalysis a) noexcept
         : position(p), analysis(a),
           num_glyphs(0), descent(-1), ascent(-1), leading(-1), width(-1),
           glyph_data_offset(0) {}
@@ -345,7 +345,7 @@ struct QScriptItem
     QFixed leading;
     QFixed width;
     int glyph_data_offset;
-    Q_DECL_CONSTEXPR QFixed height() const noexcept { return ascent + descent; }
+    constexpr QFixed height() const noexcept { return ascent + descent; }
 private:
     friend class QList<QScriptItem>;
     QScriptItem() {} // for QList, don't use

@@ -65,7 +65,7 @@ protected:
     typedef typename S::StorageType T;
     typedef typename std::make_unsigned<T>::type UT;
 
-    static Q_DECL_CONSTEXPR UT mask()
+    static constexpr UT mask()
     {
         return ((UT(1) << width) - 1) << pos;
     }

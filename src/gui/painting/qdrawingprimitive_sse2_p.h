@@ -269,7 +269,7 @@ static inline uint qConvertArgb32ToA2rgb30_sse4(QRgb p)
         return qConvertRgb32ToRgb30<PixelOrder>(p);
     if (alpha == 0)
         return 0;
-    Q_CONSTEXPR float mult = 1023.0f / (255 >> 6);
+    constexpr float mult = 1023.0f / (255 >> 6);
     const uint newalpha = (alpha >> 6);
     const __m128 va = _mm_set1_ps(alpha);
     __m128 via;

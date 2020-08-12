@@ -269,23 +269,23 @@ template <> struct QAtomicWindowsType<4> { typedef long Type; };
 
 template <int N> struct QAtomicOpsBySize : QGenericAtomicOps<QAtomicOpsBySize<N> >
 {
-    static inline Q_DECL_CONSTEXPR bool isReferenceCountingNative() noexcept { return true; }
-    static inline Q_DECL_CONSTEXPR bool isReferenceCountingWaitFree() noexcept { return true; }
+    static inline constexpr bool isReferenceCountingNative() noexcept { return true; }
+    static inline constexpr bool isReferenceCountingWaitFree() noexcept { return true; }
     template <typename T> static bool ref(T &_q_value) noexcept;
     template <typename T> static bool deref(T &_q_value) noexcept;
 
-    static inline Q_DECL_CONSTEXPR bool isTestAndSetNative() noexcept { return true; }
-    static inline Q_DECL_CONSTEXPR bool isTestAndSetWaitFree() noexcept { return true; }
+    static inline constexpr bool isTestAndSetNative() noexcept { return true; }
+    static inline constexpr bool isTestAndSetWaitFree() noexcept { return true; }
     template <typename T> static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) noexcept;
     template <typename T>
     static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue) noexcept;
 
-    static inline Q_DECL_CONSTEXPR bool isFetchAndStoreNative() noexcept { return true; }
-    static inline Q_DECL_CONSTEXPR bool isFetchAndStoreWaitFree() noexcept { return true; }
+    static inline constexpr bool isFetchAndStoreNative() noexcept { return true; }
+    static inline constexpr bool isFetchAndStoreWaitFree() noexcept { return true; }
     template <typename T> static T fetchAndStoreRelaxed(T &_q_value, T newValue) noexcept;
 
-    static inline Q_DECL_CONSTEXPR bool isFetchAndAddNative() noexcept { return true; }
-    static inline Q_DECL_CONSTEXPR bool isFetchAndAddWaitFree() noexcept { return true; }
+    static inline constexpr bool isFetchAndAddNative() noexcept { return true; }
+    static inline constexpr bool isFetchAndAddWaitFree() noexcept { return true; }
     template <typename T> static T fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) noexcept;
 
 private:
@@ -423,17 +423,17 @@ struct QAtomicOps<T *> : QGenericAtomicOps<QAtomicOps<T *> >
 {
     typedef T *Type;
 
-    static inline Q_DECL_CONSTEXPR bool isTestAndSetNative() noexcept { return true; }
-    static inline Q_DECL_CONSTEXPR bool isTestAndSetWaitFree() noexcept { return true; }
+    static inline constexpr bool isTestAndSetNative() noexcept { return true; }
+    static inline constexpr bool isTestAndSetWaitFree() noexcept { return true; }
     static bool testAndSetRelaxed(T *&_q_value, T *expectedValue, T *newValue) noexcept;
     static bool testAndSetRelaxed(T *&_q_value, T *expectedValue, T *newValue, T **currentValue) noexcept;
 
-    static inline Q_DECL_CONSTEXPR bool isFetchAndStoreNative() noexcept { return true; }
-    static inline Q_DECL_CONSTEXPR bool isFetchAndStoreWaitFree() noexcept { return true; }
+    static inline constexpr bool isFetchAndStoreNative() noexcept { return true; }
+    static inline constexpr bool isFetchAndStoreWaitFree() noexcept { return true; }
     static T *fetchAndStoreRelaxed(T *&_q_value, T *newValue) noexcept;
 
-    static inline Q_DECL_CONSTEXPR bool isFetchAndAddNative() noexcept { return true; }
-    static inline Q_DECL_CONSTEXPR bool isFetchAndAddWaitFree() noexcept { return true; }
+    static inline constexpr bool isFetchAndAddNative() noexcept { return true; }
+    static inline constexpr bool isFetchAndAddWaitFree() noexcept { return true; }
     static T *fetchAndAddRelaxed(T *&_q_value, qptrdiff valueToAdd) noexcept;
 };
 

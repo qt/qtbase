@@ -285,9 +285,9 @@ struct QTzTransitionRule
     quint8 abbreviationIndex;
 };
 Q_DECLARE_TYPEINFO(QTzTransitionRule, Q_PRIMITIVE_TYPE);
-Q_DECL_CONSTEXPR inline bool operator==(const QTzTransitionRule &lhs, const QTzTransitionRule &rhs) noexcept
+constexpr inline bool operator==(const QTzTransitionRule &lhs, const QTzTransitionRule &rhs) noexcept
 { return lhs.stdOffset == rhs.stdOffset && lhs.dstOffset == rhs.dstOffset && lhs.abbreviationIndex == rhs.abbreviationIndex; }
-Q_DECL_CONSTEXPR inline bool operator!=(const QTzTransitionRule &lhs, const QTzTransitionRule &rhs) noexcept
+constexpr inline bool operator!=(const QTzTransitionRule &lhs, const QTzTransitionRule &rhs) noexcept
 { return !operator==(lhs, rhs); }
 
 // These are stored separately from QTzTimeZonePrivate so that they can be

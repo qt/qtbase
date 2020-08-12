@@ -46,22 +46,6 @@
 
 QT_BEGIN_NAMESPACE
 
-// gcc < 4.8.0 has problems with init'ing variant members in constexpr ctors
-// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=54922
-#if !defined(Q_CC_GNU) || defined(Q_CC_INTEL) || defined(Q_CC_CLANG) || Q_CC_GNU >= 408
-# define QT_SIZEPOLICY_CONSTEXPR Q_DECL_CONSTEXPR
-# if defined(Q_COMPILER_UNIFORM_INIT)
-#  define QT_SIZEPOLICY_CONSTEXPR_AND_UNIFORM_INIT Q_DECL_CONSTEXPR
-# endif // uniform-init
-#endif
-
-#ifndef QT_SIZEPOLICY_CONSTEXPR
-# define QT_SIZEPOLICY_CONSTEXPR
-#endif
-#ifndef QT_SIZEPOLICY_CONSTEXPR_AND_UNIFORM_INIT
-# define QT_SIZEPOLICY_CONSTEXPR_AND_UNIFORM_INIT
-#endif
-
 class QVariant;
 class QSizePolicy;
 
@@ -110,60 +94,47 @@ public:
     Q_DECLARE_FLAGS(ControlTypes, ControlType)
     Q_FLAG(ControlTypes)
 
-    QT_SIZEPOLICY_CONSTEXPR QSizePolicy() noexcept : data(0) { }
+    constexpr QSizePolicy() noexcept : data(0) { }
 
-#if defined(Q_COMPILER_UNIFORM_INIT) && !defined(Q_QDOC)
-    QT_SIZEPOLICY_CONSTEXPR QSizePolicy(Policy horizontal, Policy vertical, ControlType type = DefaultType) noexcept
+    constexpr QSizePolicy(Policy horizontal, Policy vertical, ControlType type = DefaultType) noexcept
         : bits{0, 0, quint32(horizontal), quint32(vertical),
                type == DefaultType ? 0 : toControlTypeFieldValue(type), 0, 0, 0}
     {}
-#else
-    QSizePolicy(Policy horizontal, Policy vertical, ControlType type = DefaultType) noexcept
-        : data(0) {
-        bits.horPolicy = horizontal;
-        bits.verPolicy = vertical;
-        setControlType(type);
-    }
-#endif // uniform-init
-    QT_SIZEPOLICY_CONSTEXPR Policy horizontalPolicy() const noexcept { return static_cast<Policy>(bits.horPolicy); }
-    QT_SIZEPOLICY_CONSTEXPR Policy verticalPolicy() const noexcept { return static_cast<Policy>(bits.verPolicy); }
+    constexpr Policy horizontalPolicy() const noexcept { return static_cast<Policy>(bits.horPolicy); }
+    constexpr Policy verticalPolicy() const noexcept { return static_cast<Policy>(bits.verPolicy); }
     ControlType controlType() const noexcept;
 
-    Q_DECL_RELAXED_CONSTEXPR void setHorizontalPolicy(Policy d) noexcept { bits.horPolicy = d; }
-    Q_DECL_RELAXED_CONSTEXPR void setVerticalPolicy(Policy d) noexcept { bits.verPolicy = d; }
+    constexpr void setHorizontalPolicy(Policy d) noexcept { bits.horPolicy = d; }
+    constexpr void setVerticalPolicy(Policy d) noexcept { bits.verPolicy = d; }
     void setControlType(ControlType type) noexcept;
 
-    QT_SIZEPOLICY_CONSTEXPR Qt::Orientations expandingDirections() const noexcept {
+    constexpr Qt::Orientations expandingDirections() const noexcept {
         return ( (verticalPolicy()   & ExpandFlag) ? Qt::Vertical   : Qt::Orientations() )
              | ( (horizontalPolicy() & ExpandFlag) ? Qt::Horizontal : Qt::Orientations() ) ;
     }
 
-    Q_DECL_RELAXED_CONSTEXPR void setHeightForWidth(bool b) noexcept { bits.hfw = b;  }
-    QT_SIZEPOLICY_CONSTEXPR bool hasHeightForWidth() const noexcept { return bits.hfw; }
-    Q_DECL_RELAXED_CONSTEXPR void setWidthForHeight(bool b) noexcept { bits.wfh = b;  }
-    QT_SIZEPOLICY_CONSTEXPR bool hasWidthForHeight() const noexcept { return bits.wfh; }
+    constexpr void setHeightForWidth(bool b) noexcept { bits.hfw = b;  }
+    constexpr bool hasHeightForWidth() const noexcept { return bits.hfw; }
+    constexpr void setWidthForHeight(bool b) noexcept { bits.wfh = b;  }
+    constexpr bool hasWidthForHeight() const noexcept { return bits.wfh; }
 
-    QT_SIZEPOLICY_CONSTEXPR bool operator==(const QSizePolicy& s) const noexcept { return data == s.data; }
-    QT_SIZEPOLICY_CONSTEXPR bool operator!=(const QSizePolicy& s) const noexcept { return data != s.data; }
+    constexpr bool operator==(const QSizePolicy& s) const noexcept { return data == s.data; }
+    constexpr bool operator!=(const QSizePolicy& s) const noexcept { return data != s.data; }
 
     friend Q_DECL_CONST_FUNCTION size_t qHash(QSizePolicy key, size_t seed) noexcept { return qHash(key.data, seed); }
 
     operator QVariant() const;
 
-    QT_SIZEPOLICY_CONSTEXPR int horizontalStretch() const noexcept { return static_cast<int>(bits.horStretch); }
-    QT_SIZEPOLICY_CONSTEXPR int verticalStretch() const noexcept { return static_cast<int>(bits.verStretch); }
-    Q_DECL_RELAXED_CONSTEXPR void setHorizontalStretch(int stretchFactor) { bits.horStretch = static_cast<quint32>(qBound(0, stretchFactor, 255)); }
-    Q_DECL_RELAXED_CONSTEXPR void setVerticalStretch(int stretchFactor) { bits.verStretch = static_cast<quint32>(qBound(0, stretchFactor, 255)); }
+    constexpr int horizontalStretch() const noexcept { return static_cast<int>(bits.horStretch); }
+    constexpr int verticalStretch() const noexcept { return static_cast<int>(bits.verStretch); }
+    constexpr void setHorizontalStretch(int stretchFactor) { bits.horStretch = static_cast<quint32>(qBound(0, stretchFactor, 255)); }
+    constexpr void setVerticalStretch(int stretchFactor) { bits.verStretch = static_cast<quint32>(qBound(0, stretchFactor, 255)); }
 
-    QT_SIZEPOLICY_CONSTEXPR bool retainSizeWhenHidden() const noexcept { return bits.retainSizeWhenHidden; }
-    Q_DECL_RELAXED_CONSTEXPR void setRetainSizeWhenHidden(bool retainSize) noexcept { bits.retainSizeWhenHidden = retainSize; }
+    constexpr bool retainSizeWhenHidden() const noexcept { return bits.retainSizeWhenHidden; }
+    constexpr void setRetainSizeWhenHidden(bool retainSize) noexcept { bits.retainSizeWhenHidden = retainSize; }
 
-    Q_DECL_RELAXED_CONSTEXPR void transpose() noexcept { *this = transposed(); }
-    Q_REQUIRED_RESULT
-#ifndef Q_QDOC
-    QT_SIZEPOLICY_CONSTEXPR_AND_UNIFORM_INIT
-#endif
-    QSizePolicy transposed() const noexcept
+    constexpr void transpose() noexcept { *this = transposed(); }
+    Q_REQUIRED_RESULT constexpr QSizePolicy transposed() const noexcept
     {
         return QSizePolicy(bits.transposed());
     }
@@ -173,11 +144,11 @@ private:
     friend Q_WIDGETS_EXPORT QDataStream &operator<<(QDataStream &, const QSizePolicy &);
     friend Q_WIDGETS_EXPORT QDataStream &operator>>(QDataStream &, QSizePolicy &);
 #endif
-    QT_SIZEPOLICY_CONSTEXPR QSizePolicy(int i) noexcept : data(i) { }
+    constexpr QSizePolicy(int i) noexcept : data(i) { }
     struct Bits;
-    QT_SIZEPOLICY_CONSTEXPR explicit QSizePolicy(Bits b) noexcept : bits(b) { }
+    constexpr explicit QSizePolicy(Bits b) noexcept : bits(b) { }
 
-    static Q_DECL_RELAXED_CONSTEXPR quint32 toControlTypeFieldValue(ControlType type) noexcept
+    static constexpr quint32 toControlTypeFieldValue(ControlType type) noexcept
     {
         /*
           The control type is a flag type, with values 0x1, 0x2, 0x4, 0x8, 0x10,
@@ -206,8 +177,7 @@ private:
         quint32 wfh : 1;
         quint32 retainSizeWhenHidden : 1;
 
-        QT_SIZEPOLICY_CONSTEXPR_AND_UNIFORM_INIT
-        Bits transposed() const noexcept
+        constexpr Bits transposed() const noexcept
         {
             return {verStretch, // \ swap
                     horStretch, // /
@@ -237,10 +207,6 @@ Q_WIDGETS_EXPORT QDataStream &operator>>(QDataStream &, QSizePolicy &);
 #ifndef QT_NO_DEBUG_STREAM
 Q_WIDGETS_EXPORT QDebug operator<<(QDebug dbg, const QSizePolicy &);
 #endif
-
-
-#undef QT_SIZEPOLICY_CONSTEXPR
-#undef QT_SIZEPOLICY_CONSTEXPR_AND_UNIFORM_INIT
 
 QT_END_NAMESPACE
 

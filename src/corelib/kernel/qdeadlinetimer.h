@@ -63,16 +63,16 @@ class Q_CORE_EXPORT QDeadlineTimer
 public:
     enum ForeverConstant { Forever };
 
-    Q_DECL_CONSTEXPR QDeadlineTimer(Qt::TimerType type_ = Qt::CoarseTimer) noexcept
+    constexpr QDeadlineTimer(Qt::TimerType type_ = Qt::CoarseTimer) noexcept
         : t1(0), t2(0), type(type_) {}
-    Q_DECL_CONSTEXPR QDeadlineTimer(ForeverConstant, Qt::TimerType type_ = Qt::CoarseTimer) noexcept
+    constexpr QDeadlineTimer(ForeverConstant, Qt::TimerType type_ = Qt::CoarseTimer) noexcept
         : t1(std::numeric_limits<qint64>::max()), t2(0), type(type_) {}
     explicit QDeadlineTimer(qint64 msecs, Qt::TimerType type = Qt::CoarseTimer) noexcept;
 
     void swap(QDeadlineTimer &other) noexcept
     { qSwap(t1, other.t1); qSwap(t2, other.t2); qSwap(type, other.type); }
 
-    Q_DECL_CONSTEXPR bool isForever() const noexcept
+    constexpr bool isForever() const noexcept
     { return t1 == (std::numeric_limits<qint64>::max)(); }
     bool hasExpired() const noexcept;
 

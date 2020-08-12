@@ -56,13 +56,13 @@ class Q_GUI_EXPORT QPointingDeviceUniqueId
     Q_PROPERTY(qint64 numericId READ numericId CONSTANT)
 public:
     Q_ALWAYS_INLINE
-    Q_DECL_CONSTEXPR QPointingDeviceUniqueId() noexcept : m_numericId(-1) {}
+    constexpr QPointingDeviceUniqueId() noexcept : m_numericId(-1) {}
     // compiler-generated copy/move ctor/assignment operators are ok!
     // compiler-generated dtor is ok!
 
     static QPointingDeviceUniqueId fromNumericId(qint64 id);
 
-    Q_ALWAYS_INLINE Q_DECL_CONSTEXPR bool isValid() const noexcept { return m_numericId != -1; }
+    Q_ALWAYS_INLINE constexpr bool isValid() const noexcept { return m_numericId != -1; }
     qint64 numericId() const noexcept;
 
 private:

@@ -223,38 +223,38 @@ inline qreal qFastCos(qreal x)
     return qt_sine_table[si] - (qt_sine_table[ci] + 0.5 * qt_sine_table[si] * d) * d;
 }
 
-Q_DECL_CONSTEXPR inline float qDegreesToRadians(float degrees)
+constexpr inline float qDegreesToRadians(float degrees)
 {
     return degrees * float(M_PI/180);
 }
 
-Q_DECL_CONSTEXPR inline double qDegreesToRadians(double degrees)
+constexpr inline double qDegreesToRadians(double degrees)
 {
     return degrees * (M_PI / 180);
 }
 
-Q_DECL_CONSTEXPR inline long double qDegreesToRadians(long double degrees)
+constexpr inline long double qDegreesToRadians(long double degrees)
 {
     return degrees * (M_PI / 180);
 }
 
 template <typename T, std::enable_if_t<std::is_integral_v<T>, bool> = true>
-Q_DECL_CONSTEXPR inline double qDegreesToRadians(T degrees)
+constexpr inline double qDegreesToRadians(T degrees)
 {
     return qDegreesToRadians(static_cast<double>(degrees));
 }
 
-Q_DECL_CONSTEXPR inline float qRadiansToDegrees(float radians)
+constexpr inline float qRadiansToDegrees(float radians)
 {
     return radians * float(180/M_PI);
 }
 
-Q_DECL_CONSTEXPR inline double qRadiansToDegrees(double radians)
+constexpr inline double qRadiansToDegrees(double radians)
 {
     return radians * (180 / M_PI);
 }
 
-Q_DECL_CONSTEXPR inline long double qRadiansToDegrees(long double radians)
+constexpr inline long double qRadiansToDegrees(long double radians)
 {
     return radians * (180 / M_PI);
 }

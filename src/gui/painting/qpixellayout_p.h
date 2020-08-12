@@ -77,7 +77,7 @@ inline QRgb qRepremultiply(QRgb p)
     if (alpha == 255 || alpha == 0)
         return p;
     p = qUnpremultiply(p);
-    Q_CONSTEXPR  uint mult = 255 / (255 >> Shift);
+    constexpr  uint mult = 255 / (255 >> Shift);
     const uint newAlpha = mult * (alpha >> Shift);
     p = (p & ~0xff000000) | (newAlpha<<24);
     return qPremultiply(p);
@@ -90,7 +90,7 @@ inline QRgba64 qRepremultiply(QRgba64 p)
     if (alpha == 65535 || alpha == 0)
         return p;
     p = p.unpremultiplied();
-    Q_CONSTEXPR  uint mult = 65535 / (65535 >> Shift);
+    constexpr  uint mult = 65535 / (65535 >> Shift);
     p.setAlpha(mult * (alpha >> Shift));
     return p.premultiplied();
 }

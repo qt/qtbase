@@ -174,15 +174,15 @@ void tst_QPair::structuredBindings()
 
 void tst_QPair::testConstexpr()
 {
-    Q_CONSTEXPR QPair<int, double> pID = qMakePair(0, 0.0);
+    constexpr QPair<int, double> pID = qMakePair(0, 0.0);
     Q_UNUSED(pID);
 
-    Q_CONSTEXPR QPair<double, double> pDD  = qMakePair(0.0, 0.0);
-    Q_CONSTEXPR QPair<double, double> pDD2 = qMakePair(0, 0.0);   // involes (rvalue) conversion ctor
-    Q_CONSTEXPR bool equal = pDD2 == pDD;
+    constexpr QPair<double, double> pDD  = qMakePair(0.0, 0.0);
+    constexpr QPair<double, double> pDD2 = qMakePair(0, 0.0);   // involes (rvalue) conversion ctor
+    constexpr bool equal = pDD2 == pDD;
     QVERIFY(equal);
 
-    Q_CONSTEXPR QPair<QSize, int> pSI = qMakePair(QSize(4, 5), 6);
+    constexpr QPair<QSize, int> pSI = qMakePair(QSize(4, 5), 6);
     Q_UNUSED(pSI);
 }
 

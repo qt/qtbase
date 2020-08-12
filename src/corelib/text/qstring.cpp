@@ -588,7 +588,7 @@ bool QtPrivate::isLatin1(QStringView s) noexcept
 
 bool QtPrivate::isValidUtf16(QStringView s) noexcept
 {
-    Q_CONSTEXPR char32_t InvalidCodePoint = UINT_MAX;
+    constexpr char32_t InvalidCodePoint = UINT_MAX;
 
     QStringIterator i(s);
     while (i.hasNext()) {
@@ -1187,7 +1187,7 @@ static int ucstrncmp(const QChar *a, const uchar *c, size_t l)
 }
 
 template <typename Number>
-Q_DECL_CONSTEXPR int lencmp(Number lhs, Number rhs) noexcept
+constexpr int lencmp(Number lhs, Number rhs) noexcept
 {
     return lhs == rhs ? 0 :
            lhs >  rhs ? 1 :
@@ -8245,9 +8245,9 @@ namespace {
 struct Part
 {
     Part() = default; // for QVarLengthArray; do not use
-    Q_DECL_CONSTEXPR Part(QStringView s, int num = -1)
+    constexpr Part(QStringView s, int num = -1)
         : tag{QtPrivate::ArgBase::U16}, number{num}, data{s.utf16()}, size{s.size()} {}
-    Q_DECL_CONSTEXPR Part(QLatin1String s, int num = -1)
+    constexpr Part(QLatin1String s, int num = -1)
         : tag{QtPrivate::ArgBase::L1}, number{num}, data{s.data()}, size{s.size()} {}
 
     void reset(QStringView s) noexcept { *this = {s, number}; }

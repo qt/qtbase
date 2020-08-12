@@ -217,7 +217,7 @@ Q_DECLARE_TYPEINFO(CborEncoder, Q_PRIMITIVE_TYPE);
 class QCborStreamWriterPrivate
 {
 public:
-    static Q_CONSTEXPR quint64 IndefiniteLength = (std::numeric_limits<quint64>::max)();
+    static constexpr quint64 IndefiniteLength = (std::numeric_limits<quint64>::max)();
 
     QIODevice *device;
     CborEncoder encoder;

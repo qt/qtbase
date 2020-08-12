@@ -902,7 +902,7 @@ void tst_QPainterPath::testArcMoveTo_data()
     QTest::addColumn<QRectF>("rect");
     QTest::addColumn<qreal>("angle");
 
-    static Q_CONSTEXPR QRectF rects[] = {
+    static constexpr QRectF rects[] = {
         QRectF(100, 100, 100, 100),
         QRectF(100, 100, -100, 100),
         QRectF(100, 100, 100, -100),

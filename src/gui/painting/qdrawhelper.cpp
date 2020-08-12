@@ -1484,7 +1484,7 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
 {
     const qreal cx = x + qreal(0.5);
     const qreal cy = y + qreal(0.5);
-    Q_CONSTEXPR int tiled = (blendType == BlendTransformedBilinearTiled) ? 1 : 0;
+    constexpr int tiled = (blendType == BlendTransformedBilinearTiled) ? 1 : 0;
 
     uint *end = buffer + length;
     uint *b = buffer;

@@ -69,10 +69,10 @@ public:
     enum Spec { Invalid, Rgb, Hsv, Cmyk, Hsl, ExtendedRgb };
     enum NameFormat { HexRgb, HexArgb };
 
-    Q_DECL_CONSTEXPR QColor() noexcept
+    constexpr QColor() noexcept
         : cspec(Invalid), ct(USHRT_MAX, 0, 0, 0, 0) {}
     QColor(Qt::GlobalColor color) noexcept;
-    Q_DECL_CONSTEXPR QColor(int r, int g, int b, int a = 255) noexcept
+    constexpr QColor(int r, int g, int b, int a = 255) noexcept
         : cspec(isRgbaValid(r, g, b, a) ? Rgb : Invalid),
           ct(ushort(cspec == Rgb ? a * 0x0101 : 0),
              ushort(cspec == Rgb ? r * 0x0101 : 0),
@@ -235,7 +235,7 @@ private:
     template <typename String>
     bool setColorFromString(String name);
 
-    static Q_DECL_CONSTEXPR bool isRgbaValid(int r, int g, int b, int a = 255) noexcept Q_DECL_CONST_FUNCTION
+    static constexpr bool isRgbaValid(int r, int g, int b, int a = 255) noexcept Q_DECL_CONST_FUNCTION
     {
         return uint(r) <= 255 && uint(g) <= 255 && uint(b) <= 255 && uint(a) <= 255;
     }
@@ -244,7 +244,7 @@ private:
     union CT {
 #ifdef Q_COMPILER_UNIFORM_INIT
         CT() {} // doesn't init anything, thus can't be constexpr
-        Q_DECL_CONSTEXPR explicit CT(ushort a1, ushort a2, ushort a3, ushort a4, ushort a5) noexcept
+        constexpr explicit CT(ushort a1, ushort a2, ushort a3, ushort a4, ushort a5) noexcept
             : array{a1, a2, a3, a4, a5} {}
 #endif
         struct {
@@ -293,7 +293,7 @@ private:
 
 #ifdef Q_COMPILER_UNIFORM_INIT
 public: // can't give friendship to a namespace, so it needs to be public
-    Q_DECL_CONSTEXPR explicit QColor(Spec spec, ushort a1, ushort a2, ushort a3, ushort a4, ushort a5=0) noexcept
+    constexpr explicit QColor(Spec spec, ushort a1, ushort a2, ushort a3, ushort a4, ushort a5=0) noexcept
         : cspec(spec), ct(a1, a2, a3, a4, a5) {}
 #endif // Q_COMPILER_UNIFORM_INIT
 };

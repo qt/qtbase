@@ -62,14 +62,14 @@ class QDateTime;
 
 class Q_CORE_EXPORT QDate // ### Qt 6: change to be used by value, not const &
 {
-    explicit Q_DECL_CONSTEXPR QDate(qint64 julianDay) : jd(julianDay) {}
+    explicit constexpr QDate(qint64 julianDay) : jd(julianDay) {}
 public:
-    Q_DECL_CONSTEXPR QDate() : jd(nullJd()) {}
+    constexpr QDate() : jd(nullJd()) {}
     QDate(int y, int m, int d);
     QDate(int y, int m, int d, QCalendar cal);
 
-    Q_DECL_CONSTEXPR bool isNull() const { return !isValid(); }
-    Q_DECL_CONSTEXPR bool isValid() const { return jd >= minJd() && jd <= maxJd(); }
+    constexpr bool isNull() const { return !isValid(); }
+    constexpr bool isValid() const { return jd >= minJd() && jd <= maxJd(); }
 
     // Gregorian-optimized:
     int year() const;
@@ -116,12 +116,12 @@ public:
     Q_REQUIRED_RESULT QDate addYears(int years, QCalendar cal) const;
     qint64 daysTo(QDate d) const;
 
-    Q_DECL_CONSTEXPR bool operator==(QDate other) const { return jd == other.jd; }
-    Q_DECL_CONSTEXPR bool operator!=(QDate other) const { return jd != other.jd; }
-    Q_DECL_CONSTEXPR bool operator< (QDate other) const { return jd <  other.jd; }
-    Q_DECL_CONSTEXPR bool operator<=(QDate other) const { return jd <= other.jd; }
-    Q_DECL_CONSTEXPR bool operator> (QDate other) const { return jd >  other.jd; }
-    Q_DECL_CONSTEXPR bool operator>=(QDate other) const { return jd >= other.jd; }
+    constexpr bool operator==(QDate other) const { return jd == other.jd; }
+    constexpr bool operator!=(QDate other) const { return jd != other.jd; }
+    constexpr bool operator< (QDate other) const { return jd <  other.jd; }
+    constexpr bool operator<=(QDate other) const { return jd <= other.jd; }
+    constexpr bool operator> (QDate other) const { return jd >  other.jd; }
+    constexpr bool operator>=(QDate other) const { return jd >= other.jd; }
 
     static QDate currentDate();
 #if QT_CONFIG(datestring)
@@ -135,15 +135,15 @@ public:
     static bool isValid(int y, int m, int d);
     static bool isLeapYear(int year);
 
-    static Q_DECL_CONSTEXPR inline QDate fromJulianDay(qint64 jd_)
+    static constexpr inline QDate fromJulianDay(qint64 jd_)
     { return jd_ >= minJd() && jd_ <= maxJd() ? QDate(jd_) : QDate() ; }
-    Q_DECL_CONSTEXPR inline qint64 toJulianDay() const { return jd; }
+    constexpr inline qint64 toJulianDay() const { return jd; }
 
 private:
     // using extra parentheses around min to avoid expanding it if it is a macro
-    static Q_DECL_CONSTEXPR inline qint64 nullJd() { return (std::numeric_limits<qint64>::min)(); }
-    static Q_DECL_CONSTEXPR inline qint64 minJd() { return Q_INT64_C(-784350574879); }
-    static Q_DECL_CONSTEXPR inline qint64 maxJd() { return Q_INT64_C( 784354017364); }
+    static constexpr inline qint64 nullJd() { return (std::numeric_limits<qint64>::min)(); }
+    static constexpr inline qint64 minJd() { return Q_INT64_C(-784350574879); }
+    static constexpr inline qint64 maxJd() { return Q_INT64_C( 784354017364); }
 
     qint64 jd;
 
@@ -158,14 +158,14 @@ Q_DECLARE_TYPEINFO(QDate, Q_MOVABLE_TYPE);
 
 class Q_CORE_EXPORT QTime // ### Qt 6: change to be used by value, not const &
 {
-    explicit Q_DECL_CONSTEXPR QTime(int ms) : mds(ms)
+    explicit constexpr QTime(int ms) : mds(ms)
     {}
 public:
-    Q_DECL_CONSTEXPR QTime(): mds(NullTime)
+    constexpr QTime(): mds(NullTime)
     {}
     QTime(int h, int m, int s = 0, int ms = 0);
 
-    Q_DECL_CONSTEXPR bool isNull() const { return mds == NullTime; }
+    constexpr bool isNull() const { return mds == NullTime; }
     bool isValid() const;
 
     int hour() const;
@@ -186,15 +186,15 @@ public:
     Q_REQUIRED_RESULT QTime addMSecs(int ms) const;
     int msecsTo(QTime t) const;
 
-    Q_DECL_CONSTEXPR bool operator==(QTime other) const { return mds == other.mds; }
-    Q_DECL_CONSTEXPR bool operator!=(QTime other) const { return mds != other.mds; }
-    Q_DECL_CONSTEXPR bool operator< (QTime other) const { return mds <  other.mds; }
-    Q_DECL_CONSTEXPR bool operator<=(QTime other) const { return mds <= other.mds; }
-    Q_DECL_CONSTEXPR bool operator> (QTime other) const { return mds >  other.mds; }
-    Q_DECL_CONSTEXPR bool operator>=(QTime other) const { return mds >= other.mds; }
+    constexpr bool operator==(QTime other) const { return mds == other.mds; }
+    constexpr bool operator!=(QTime other) const { return mds != other.mds; }
+    constexpr bool operator< (QTime other) const { return mds <  other.mds; }
+    constexpr bool operator<=(QTime other) const { return mds <= other.mds; }
+    constexpr bool operator> (QTime other) const { return mds >  other.mds; }
+    constexpr bool operator>=(QTime other) const { return mds >= other.mds; }
 
-    static Q_DECL_CONSTEXPR inline QTime fromMSecsSinceStartOfDay(int msecs) { return QTime(msecs); }
-    Q_DECL_CONSTEXPR inline int msecsSinceStartOfDay() const { return mds == NullTime ? 0 : mds; }
+    static constexpr inline QTime fromMSecsSinceStartOfDay(int msecs) { return QTime(msecs); }
+    constexpr inline int msecsSinceStartOfDay() const { return mds == NullTime ? 0 : mds; }
 
     static QTime currentTime();
 #if QT_CONFIG(datestring)
@@ -205,7 +205,7 @@ public:
 
 private:
     enum TimeFlag { NullTime = -1 };
-    Q_DECL_CONSTEXPR inline int ds() const { return mds == -1 ? 0 : mds; }
+    constexpr inline int ds() const { return mds == -1 ? 0 : mds; }
     int mds;
 
     friend class QDateTime;

@@ -46,146 +46,146 @@
 
 QT_BEGIN_NAMESPACE
 
-template<QImage::Format> Q_DECL_CONSTEXPR uint redWidth();
-template<QImage::Format> Q_DECL_CONSTEXPR uint redShift();
-template<QImage::Format> Q_DECL_CONSTEXPR uint greenWidth();
-template<QImage::Format> Q_DECL_CONSTEXPR uint greenShift();
-template<QImage::Format> Q_DECL_CONSTEXPR uint blueWidth();
-template<QImage::Format> Q_DECL_CONSTEXPR uint blueShift();
-template<QImage::Format> Q_DECL_CONSTEXPR uint alphaWidth();
-template<QImage::Format> Q_DECL_CONSTEXPR uint alphaShift();
+template<QImage::Format> constexpr uint redWidth();
+template<QImage::Format> constexpr uint redShift();
+template<QImage::Format> constexpr uint greenWidth();
+template<QImage::Format> constexpr uint greenShift();
+template<QImage::Format> constexpr uint blueWidth();
+template<QImage::Format> constexpr uint blueShift();
+template<QImage::Format> constexpr uint alphaWidth();
+template<QImage::Format> constexpr uint alphaShift();
 
-template<> Q_DECL_CONSTEXPR uint redWidth<QImage::Format_RGB16>() { return 5; }
-template<> Q_DECL_CONSTEXPR uint redWidth<QImage::Format_RGB444>() { return 4; }
-template<> Q_DECL_CONSTEXPR uint redWidth<QImage::Format_RGB555>() { return 5; }
-template<> Q_DECL_CONSTEXPR uint redWidth<QImage::Format_RGB666>() { return 6; }
-template<> Q_DECL_CONSTEXPR uint redWidth<QImage::Format_RGB888>() { return 8; }
-template<> Q_DECL_CONSTEXPR uint redWidth<QImage::Format_BGR888>() { return 8; }
-template<> Q_DECL_CONSTEXPR uint redWidth<QImage::Format_ARGB4444_Premultiplied>() { return 4; }
-template<> Q_DECL_CONSTEXPR uint redWidth<QImage::Format_ARGB8555_Premultiplied>() { return 5; }
-template<> Q_DECL_CONSTEXPR uint redWidth<QImage::Format_ARGB8565_Premultiplied>() { return 5; }
-template<> Q_DECL_CONSTEXPR uint redWidth<QImage::Format_ARGB6666_Premultiplied>() { return 6; }
-template<> Q_DECL_CONSTEXPR uint redWidth<QImage::Format_RGBX8888>() { return 8; }
-template<> Q_DECL_CONSTEXPR uint redWidth<QImage::Format_RGBA8888>() { return 8; }
-template<> Q_DECL_CONSTEXPR uint redWidth<QImage::Format_RGBA8888_Premultiplied>() { return 8; }
+template<> constexpr uint redWidth<QImage::Format_RGB16>() { return 5; }
+template<> constexpr uint redWidth<QImage::Format_RGB444>() { return 4; }
+template<> constexpr uint redWidth<QImage::Format_RGB555>() { return 5; }
+template<> constexpr uint redWidth<QImage::Format_RGB666>() { return 6; }
+template<> constexpr uint redWidth<QImage::Format_RGB888>() { return 8; }
+template<> constexpr uint redWidth<QImage::Format_BGR888>() { return 8; }
+template<> constexpr uint redWidth<QImage::Format_ARGB4444_Premultiplied>() { return 4; }
+template<> constexpr uint redWidth<QImage::Format_ARGB8555_Premultiplied>() { return 5; }
+template<> constexpr uint redWidth<QImage::Format_ARGB8565_Premultiplied>() { return 5; }
+template<> constexpr uint redWidth<QImage::Format_ARGB6666_Premultiplied>() { return 6; }
+template<> constexpr uint redWidth<QImage::Format_RGBX8888>() { return 8; }
+template<> constexpr uint redWidth<QImage::Format_RGBA8888>() { return 8; }
+template<> constexpr uint redWidth<QImage::Format_RGBA8888_Premultiplied>() { return 8; }
 
-template<> Q_DECL_CONSTEXPR uint redShift<QImage::Format_RGB16>() { return  11; }
-template<> Q_DECL_CONSTEXPR uint redShift<QImage::Format_RGB444>() { return  8; }
-template<> Q_DECL_CONSTEXPR uint redShift<QImage::Format_RGB555>() { return 10; }
-template<> Q_DECL_CONSTEXPR uint redShift<QImage::Format_RGB666>() { return 12; }
-template<> Q_DECL_CONSTEXPR uint redShift<QImage::Format_RGB888>() { return 16; }
-template<> Q_DECL_CONSTEXPR uint redShift<QImage::Format_BGR888>() { return 0; }
-template<> Q_DECL_CONSTEXPR uint redShift<QImage::Format_ARGB4444_Premultiplied>() { return  8; }
-template<> Q_DECL_CONSTEXPR uint redShift<QImage::Format_ARGB8555_Premultiplied>() { return 18; }
-template<> Q_DECL_CONSTEXPR uint redShift<QImage::Format_ARGB8565_Premultiplied>() { return 19; }
-template<> Q_DECL_CONSTEXPR uint redShift<QImage::Format_ARGB6666_Premultiplied>() { return 12; }
+template<> constexpr uint redShift<QImage::Format_RGB16>() { return  11; }
+template<> constexpr uint redShift<QImage::Format_RGB444>() { return  8; }
+template<> constexpr uint redShift<QImage::Format_RGB555>() { return 10; }
+template<> constexpr uint redShift<QImage::Format_RGB666>() { return 12; }
+template<> constexpr uint redShift<QImage::Format_RGB888>() { return 16; }
+template<> constexpr uint redShift<QImage::Format_BGR888>() { return 0; }
+template<> constexpr uint redShift<QImage::Format_ARGB4444_Premultiplied>() { return  8; }
+template<> constexpr uint redShift<QImage::Format_ARGB8555_Premultiplied>() { return 18; }
+template<> constexpr uint redShift<QImage::Format_ARGB8565_Premultiplied>() { return 19; }
+template<> constexpr uint redShift<QImage::Format_ARGB6666_Premultiplied>() { return 12; }
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN
-template<> Q_DECL_CONSTEXPR uint redShift<QImage::Format_RGBX8888>() { return 24; }
-template<> Q_DECL_CONSTEXPR uint redShift<QImage::Format_RGBA8888>() { return 24; }
-template<> Q_DECL_CONSTEXPR uint redShift<QImage::Format_RGBA8888_Premultiplied>() { return 24; }
+template<> constexpr uint redShift<QImage::Format_RGBX8888>() { return 24; }
+template<> constexpr uint redShift<QImage::Format_RGBA8888>() { return 24; }
+template<> constexpr uint redShift<QImage::Format_RGBA8888_Premultiplied>() { return 24; }
 #else
-template<> Q_DECL_CONSTEXPR uint redShift<QImage::Format_RGBX8888>() { return 0; }
-template<> Q_DECL_CONSTEXPR uint redShift<QImage::Format_RGBA8888>() { return 0; }
-template<> Q_DECL_CONSTEXPR uint redShift<QImage::Format_RGBA8888_Premultiplied>() { return 0; }
+template<> constexpr uint redShift<QImage::Format_RGBX8888>() { return 0; }
+template<> constexpr uint redShift<QImage::Format_RGBA8888>() { return 0; }
+template<> constexpr uint redShift<QImage::Format_RGBA8888_Premultiplied>() { return 0; }
 #endif
-template<> Q_DECL_CONSTEXPR uint greenWidth<QImage::Format_RGB16>() { return 6; }
-template<> Q_DECL_CONSTEXPR uint greenWidth<QImage::Format_RGB444>() { return 4; }
-template<> Q_DECL_CONSTEXPR uint greenWidth<QImage::Format_RGB555>() { return 5; }
-template<> Q_DECL_CONSTEXPR uint greenWidth<QImage::Format_RGB666>() { return 6; }
-template<> Q_DECL_CONSTEXPR uint greenWidth<QImage::Format_RGB888>() { return 8; }
-template<> Q_DECL_CONSTEXPR uint greenWidth<QImage::Format_BGR888>() { return 8; }
-template<> Q_DECL_CONSTEXPR uint greenWidth<QImage::Format_ARGB4444_Premultiplied>() { return 4; }
-template<> Q_DECL_CONSTEXPR uint greenWidth<QImage::Format_ARGB8555_Premultiplied>() { return 5; }
-template<> Q_DECL_CONSTEXPR uint greenWidth<QImage::Format_ARGB8565_Premultiplied>() { return 6; }
-template<> Q_DECL_CONSTEXPR uint greenWidth<QImage::Format_ARGB6666_Premultiplied>() { return 6; }
-template<> Q_DECL_CONSTEXPR uint greenWidth<QImage::Format_RGBX8888>() { return 8; }
-template<> Q_DECL_CONSTEXPR uint greenWidth<QImage::Format_RGBA8888>() { return 8; }
-template<> Q_DECL_CONSTEXPR uint greenWidth<QImage::Format_RGBA8888_Premultiplied>() { return 8; }
+template<> constexpr uint greenWidth<QImage::Format_RGB16>() { return 6; }
+template<> constexpr uint greenWidth<QImage::Format_RGB444>() { return 4; }
+template<> constexpr uint greenWidth<QImage::Format_RGB555>() { return 5; }
+template<> constexpr uint greenWidth<QImage::Format_RGB666>() { return 6; }
+template<> constexpr uint greenWidth<QImage::Format_RGB888>() { return 8; }
+template<> constexpr uint greenWidth<QImage::Format_BGR888>() { return 8; }
+template<> constexpr uint greenWidth<QImage::Format_ARGB4444_Premultiplied>() { return 4; }
+template<> constexpr uint greenWidth<QImage::Format_ARGB8555_Premultiplied>() { return 5; }
+template<> constexpr uint greenWidth<QImage::Format_ARGB8565_Premultiplied>() { return 6; }
+template<> constexpr uint greenWidth<QImage::Format_ARGB6666_Premultiplied>() { return 6; }
+template<> constexpr uint greenWidth<QImage::Format_RGBX8888>() { return 8; }
+template<> constexpr uint greenWidth<QImage::Format_RGBA8888>() { return 8; }
+template<> constexpr uint greenWidth<QImage::Format_RGBA8888_Premultiplied>() { return 8; }
 
-template<> Q_DECL_CONSTEXPR uint greenShift<QImage::Format_RGB16>() { return  5; }
-template<> Q_DECL_CONSTEXPR uint greenShift<QImage::Format_RGB444>() { return 4; }
-template<> Q_DECL_CONSTEXPR uint greenShift<QImage::Format_RGB555>() { return 5; }
-template<> Q_DECL_CONSTEXPR uint greenShift<QImage::Format_RGB666>() { return 6; }
-template<> Q_DECL_CONSTEXPR uint greenShift<QImage::Format_RGB888>() { return 8; }
-template<> Q_DECL_CONSTEXPR uint greenShift<QImage::Format_BGR888>() { return 8; }
-template<> Q_DECL_CONSTEXPR uint greenShift<QImage::Format_ARGB4444_Premultiplied>() { return  4; }
-template<> Q_DECL_CONSTEXPR uint greenShift<QImage::Format_ARGB8555_Premultiplied>() { return 13; }
-template<> Q_DECL_CONSTEXPR uint greenShift<QImage::Format_ARGB8565_Premultiplied>() { return 13; }
-template<> Q_DECL_CONSTEXPR uint greenShift<QImage::Format_ARGB6666_Premultiplied>() { return  6; }
+template<> constexpr uint greenShift<QImage::Format_RGB16>() { return  5; }
+template<> constexpr uint greenShift<QImage::Format_RGB444>() { return 4; }
+template<> constexpr uint greenShift<QImage::Format_RGB555>() { return 5; }
+template<> constexpr uint greenShift<QImage::Format_RGB666>() { return 6; }
+template<> constexpr uint greenShift<QImage::Format_RGB888>() { return 8; }
+template<> constexpr uint greenShift<QImage::Format_BGR888>() { return 8; }
+template<> constexpr uint greenShift<QImage::Format_ARGB4444_Premultiplied>() { return  4; }
+template<> constexpr uint greenShift<QImage::Format_ARGB8555_Premultiplied>() { return 13; }
+template<> constexpr uint greenShift<QImage::Format_ARGB8565_Premultiplied>() { return 13; }
+template<> constexpr uint greenShift<QImage::Format_ARGB6666_Premultiplied>() { return  6; }
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN
-template<> Q_DECL_CONSTEXPR uint greenShift<QImage::Format_RGBX8888>() { return 16; }
-template<> Q_DECL_CONSTEXPR uint greenShift<QImage::Format_RGBA8888>() { return 16; }
-template<> Q_DECL_CONSTEXPR uint greenShift<QImage::Format_RGBA8888_Premultiplied>() { return 16; }
+template<> constexpr uint greenShift<QImage::Format_RGBX8888>() { return 16; }
+template<> constexpr uint greenShift<QImage::Format_RGBA8888>() { return 16; }
+template<> constexpr uint greenShift<QImage::Format_RGBA8888_Premultiplied>() { return 16; }
 #else
-template<> Q_DECL_CONSTEXPR uint greenShift<QImage::Format_RGBX8888>() { return 8; }
-template<> Q_DECL_CONSTEXPR uint greenShift<QImage::Format_RGBA8888>() { return 8; }
-template<> Q_DECL_CONSTEXPR uint greenShift<QImage::Format_RGBA8888_Premultiplied>() { return 8; }
+template<> constexpr uint greenShift<QImage::Format_RGBX8888>() { return 8; }
+template<> constexpr uint greenShift<QImage::Format_RGBA8888>() { return 8; }
+template<> constexpr uint greenShift<QImage::Format_RGBA8888_Premultiplied>() { return 8; }
 #endif
-template<> Q_DECL_CONSTEXPR uint blueWidth<QImage::Format_RGB16>() { return 5; }
-template<> Q_DECL_CONSTEXPR uint blueWidth<QImage::Format_RGB444>() { return 4; }
-template<> Q_DECL_CONSTEXPR uint blueWidth<QImage::Format_RGB555>() { return 5; }
-template<> Q_DECL_CONSTEXPR uint blueWidth<QImage::Format_RGB666>() { return 6; }
-template<> Q_DECL_CONSTEXPR uint blueWidth<QImage::Format_RGB888>() { return 8; }
-template<> Q_DECL_CONSTEXPR uint blueWidth<QImage::Format_BGR888>() { return 8; }
-template<> Q_DECL_CONSTEXPR uint blueWidth<QImage::Format_ARGB4444_Premultiplied>() { return 4; }
-template<> Q_DECL_CONSTEXPR uint blueWidth<QImage::Format_ARGB8555_Premultiplied>() { return 5; }
-template<> Q_DECL_CONSTEXPR uint blueWidth<QImage::Format_ARGB8565_Premultiplied>() { return 5; }
-template<> Q_DECL_CONSTEXPR uint blueWidth<QImage::Format_ARGB6666_Premultiplied>() { return 6; }
-template<> Q_DECL_CONSTEXPR uint blueWidth<QImage::Format_RGBX8888>() { return 8; }
-template<> Q_DECL_CONSTEXPR uint blueWidth<QImage::Format_RGBA8888>() { return 8; }
-template<> Q_DECL_CONSTEXPR uint blueWidth<QImage::Format_RGBA8888_Premultiplied>() { return 8; }
+template<> constexpr uint blueWidth<QImage::Format_RGB16>() { return 5; }
+template<> constexpr uint blueWidth<QImage::Format_RGB444>() { return 4; }
+template<> constexpr uint blueWidth<QImage::Format_RGB555>() { return 5; }
+template<> constexpr uint blueWidth<QImage::Format_RGB666>() { return 6; }
+template<> constexpr uint blueWidth<QImage::Format_RGB888>() { return 8; }
+template<> constexpr uint blueWidth<QImage::Format_BGR888>() { return 8; }
+template<> constexpr uint blueWidth<QImage::Format_ARGB4444_Premultiplied>() { return 4; }
+template<> constexpr uint blueWidth<QImage::Format_ARGB8555_Premultiplied>() { return 5; }
+template<> constexpr uint blueWidth<QImage::Format_ARGB8565_Premultiplied>() { return 5; }
+template<> constexpr uint blueWidth<QImage::Format_ARGB6666_Premultiplied>() { return 6; }
+template<> constexpr uint blueWidth<QImage::Format_RGBX8888>() { return 8; }
+template<> constexpr uint blueWidth<QImage::Format_RGBA8888>() { return 8; }
+template<> constexpr uint blueWidth<QImage::Format_RGBA8888_Premultiplied>() { return 8; }
 
-template<> Q_DECL_CONSTEXPR uint blueShift<QImage::Format_RGB16>() { return 0; }
-template<> Q_DECL_CONSTEXPR uint blueShift<QImage::Format_RGB444>() { return 0; }
-template<> Q_DECL_CONSTEXPR uint blueShift<QImage::Format_RGB555>() { return 0; }
-template<> Q_DECL_CONSTEXPR uint blueShift<QImage::Format_RGB666>() { return 0; }
-template<> Q_DECL_CONSTEXPR uint blueShift<QImage::Format_RGB888>() { return 0; }
-template<> Q_DECL_CONSTEXPR uint blueShift<QImage::Format_BGR888>() { return 16; }
-template<> Q_DECL_CONSTEXPR uint blueShift<QImage::Format_ARGB4444_Premultiplied>() { return 0; }
-template<> Q_DECL_CONSTEXPR uint blueShift<QImage::Format_ARGB8555_Premultiplied>() { return 8; }
-template<> Q_DECL_CONSTEXPR uint blueShift<QImage::Format_ARGB8565_Premultiplied>() { return 8; }
-template<> Q_DECL_CONSTEXPR uint blueShift<QImage::Format_ARGB6666_Premultiplied>() { return 0; }
+template<> constexpr uint blueShift<QImage::Format_RGB16>() { return 0; }
+template<> constexpr uint blueShift<QImage::Format_RGB444>() { return 0; }
+template<> constexpr uint blueShift<QImage::Format_RGB555>() { return 0; }
+template<> constexpr uint blueShift<QImage::Format_RGB666>() { return 0; }
+template<> constexpr uint blueShift<QImage::Format_RGB888>() { return 0; }
+template<> constexpr uint blueShift<QImage::Format_BGR888>() { return 16; }
+template<> constexpr uint blueShift<QImage::Format_ARGB4444_Premultiplied>() { return 0; }
+template<> constexpr uint blueShift<QImage::Format_ARGB8555_Premultiplied>() { return 8; }
+template<> constexpr uint blueShift<QImage::Format_ARGB8565_Premultiplied>() { return 8; }
+template<> constexpr uint blueShift<QImage::Format_ARGB6666_Premultiplied>() { return 0; }
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN
-template<> Q_DECL_CONSTEXPR uint blueShift<QImage::Format_RGBX8888>() { return 8; }
-template<> Q_DECL_CONSTEXPR uint blueShift<QImage::Format_RGBA8888>() { return 8; }
-template<> Q_DECL_CONSTEXPR uint blueShift<QImage::Format_RGBA8888_Premultiplied>() { return 8; }
+template<> constexpr uint blueShift<QImage::Format_RGBX8888>() { return 8; }
+template<> constexpr uint blueShift<QImage::Format_RGBA8888>() { return 8; }
+template<> constexpr uint blueShift<QImage::Format_RGBA8888_Premultiplied>() { return 8; }
 #else
-template<> Q_DECL_CONSTEXPR uint blueShift<QImage::Format_RGBX8888>() { return 16; }
-template<> Q_DECL_CONSTEXPR uint blueShift<QImage::Format_RGBA8888>() { return 16; }
-template<> Q_DECL_CONSTEXPR uint blueShift<QImage::Format_RGBA8888_Premultiplied>() { return 16; }
+template<> constexpr uint blueShift<QImage::Format_RGBX8888>() { return 16; }
+template<> constexpr uint blueShift<QImage::Format_RGBA8888>() { return 16; }
+template<> constexpr uint blueShift<QImage::Format_RGBA8888_Premultiplied>() { return 16; }
 #endif
-template<> Q_DECL_CONSTEXPR uint alphaWidth<QImage::Format_RGB16>() { return 0; }
-template<> Q_DECL_CONSTEXPR uint alphaWidth<QImage::Format_RGB444>() { return 0; }
-template<> Q_DECL_CONSTEXPR uint alphaWidth<QImage::Format_RGB555>() { return 0; }
-template<> Q_DECL_CONSTEXPR uint alphaWidth<QImage::Format_RGB666>() { return 0; }
-template<> Q_DECL_CONSTEXPR uint alphaWidth<QImage::Format_RGB888>() { return 0; }
-template<> Q_DECL_CONSTEXPR uint alphaWidth<QImage::Format_BGR888>() { return 0; }
-template<> Q_DECL_CONSTEXPR uint alphaWidth<QImage::Format_ARGB4444_Premultiplied>() { return  4; }
-template<> Q_DECL_CONSTEXPR uint alphaWidth<QImage::Format_ARGB8555_Premultiplied>() { return  8; }
-template<> Q_DECL_CONSTEXPR uint alphaWidth<QImage::Format_ARGB8565_Premultiplied>() { return  8; }
-template<> Q_DECL_CONSTEXPR uint alphaWidth<QImage::Format_ARGB6666_Premultiplied>() { return  6; }
-template<> Q_DECL_CONSTEXPR uint alphaWidth<QImage::Format_RGBX8888>() { return 0; }
-template<> Q_DECL_CONSTEXPR uint alphaWidth<QImage::Format_RGBA8888>() { return 8; }
-template<> Q_DECL_CONSTEXPR uint alphaWidth<QImage::Format_RGBA8888_Premultiplied>() { return 8; }
+template<> constexpr uint alphaWidth<QImage::Format_RGB16>() { return 0; }
+template<> constexpr uint alphaWidth<QImage::Format_RGB444>() { return 0; }
+template<> constexpr uint alphaWidth<QImage::Format_RGB555>() { return 0; }
+template<> constexpr uint alphaWidth<QImage::Format_RGB666>() { return 0; }
+template<> constexpr uint alphaWidth<QImage::Format_RGB888>() { return 0; }
+template<> constexpr uint alphaWidth<QImage::Format_BGR888>() { return 0; }
+template<> constexpr uint alphaWidth<QImage::Format_ARGB4444_Premultiplied>() { return  4; }
+template<> constexpr uint alphaWidth<QImage::Format_ARGB8555_Premultiplied>() { return  8; }
+template<> constexpr uint alphaWidth<QImage::Format_ARGB8565_Premultiplied>() { return  8; }
+template<> constexpr uint alphaWidth<QImage::Format_ARGB6666_Premultiplied>() { return  6; }
+template<> constexpr uint alphaWidth<QImage::Format_RGBX8888>() { return 0; }
+template<> constexpr uint alphaWidth<QImage::Format_RGBA8888>() { return 8; }
+template<> constexpr uint alphaWidth<QImage::Format_RGBA8888_Premultiplied>() { return 8; }
 
-template<> Q_DECL_CONSTEXPR uint alphaShift<QImage::Format_RGB16>() { return 0; }
-template<> Q_DECL_CONSTEXPR uint alphaShift<QImage::Format_RGB444>() { return 0; }
-template<> Q_DECL_CONSTEXPR uint alphaShift<QImage::Format_RGB555>() { return 0; }
-template<> Q_DECL_CONSTEXPR uint alphaShift<QImage::Format_RGB666>() { return 0; }
-template<> Q_DECL_CONSTEXPR uint alphaShift<QImage::Format_RGB888>() { return 0; }
-template<> Q_DECL_CONSTEXPR uint alphaShift<QImage::Format_BGR888>() { return 0; }
-template<> Q_DECL_CONSTEXPR uint alphaShift<QImage::Format_ARGB4444_Premultiplied>() { return 12; }
-template<> Q_DECL_CONSTEXPR uint alphaShift<QImage::Format_ARGB8555_Premultiplied>() { return  0; }
-template<> Q_DECL_CONSTEXPR uint alphaShift<QImage::Format_ARGB8565_Premultiplied>() { return  0; }
-template<> Q_DECL_CONSTEXPR uint alphaShift<QImage::Format_ARGB6666_Premultiplied>() { return 18; }
+template<> constexpr uint alphaShift<QImage::Format_RGB16>() { return 0; }
+template<> constexpr uint alphaShift<QImage::Format_RGB444>() { return 0; }
+template<> constexpr uint alphaShift<QImage::Format_RGB555>() { return 0; }
+template<> constexpr uint alphaShift<QImage::Format_RGB666>() { return 0; }
+template<> constexpr uint alphaShift<QImage::Format_RGB888>() { return 0; }
+template<> constexpr uint alphaShift<QImage::Format_BGR888>() { return 0; }
+template<> constexpr uint alphaShift<QImage::Format_ARGB4444_Premultiplied>() { return 12; }
+template<> constexpr uint alphaShift<QImage::Format_ARGB8555_Premultiplied>() { return  0; }
+template<> constexpr uint alphaShift<QImage::Format_ARGB8565_Premultiplied>() { return  0; }
+template<> constexpr uint alphaShift<QImage::Format_ARGB6666_Premultiplied>() { return 18; }
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN
-template<> Q_DECL_CONSTEXPR uint alphaShift<QImage::Format_RGBX8888>() { return 0; }
-template<> Q_DECL_CONSTEXPR uint alphaShift<QImage::Format_RGBA8888>() { return 0; }
-template<> Q_DECL_CONSTEXPR uint alphaShift<QImage::Format_RGBA8888_Premultiplied>() { return 0; }
+template<> constexpr uint alphaShift<QImage::Format_RGBX8888>() { return 0; }
+template<> constexpr uint alphaShift<QImage::Format_RGBA8888>() { return 0; }
+template<> constexpr uint alphaShift<QImage::Format_RGBA8888_Premultiplied>() { return 0; }
 #else
-template<> Q_DECL_CONSTEXPR uint alphaShift<QImage::Format_RGBX8888>() { return 24; }
-template<> Q_DECL_CONSTEXPR uint alphaShift<QImage::Format_RGBA8888>() { return 24; }
-template<> Q_DECL_CONSTEXPR uint alphaShift<QImage::Format_RGBA8888_Premultiplied>() { return 24; }
+template<> constexpr uint alphaShift<QImage::Format_RGBX8888>() { return 24; }
+template<> constexpr uint alphaShift<QImage::Format_RGBA8888>() { return 24; }
+template<> constexpr uint alphaShift<QImage::Format_RGBA8888_Premultiplied>() { return 24; }
 #endif
 
 template<QImage::Format> constexpr QPixelLayout::BPP bitsPerPixel();
@@ -221,17 +221,17 @@ inline void QT_FASTCALL storePixel<QPixelLayout::BPP24>(uchar *dest, int index, 
 template<QImage::Format Format>
 static inline uint convertPixelToRGB32(uint s)
 {
-    Q_CONSTEXPR uint redMask = ((1 << redWidth<Format>()) - 1);
-    Q_CONSTEXPR uint greenMask = ((1 << greenWidth<Format>()) - 1);
-    Q_CONSTEXPR uint blueMask = ((1 << blueWidth<Format>()) - 1);
+    constexpr uint redMask = ((1 << redWidth<Format>()) - 1);
+    constexpr uint greenMask = ((1 << greenWidth<Format>()) - 1);
+    constexpr uint blueMask = ((1 << blueWidth<Format>()) - 1);
 
-    Q_CONSTEXPR uchar redLeftShift = 8 - redWidth<Format>();
-    Q_CONSTEXPR uchar greenLeftShift = 8 - greenWidth<Format>();
-    Q_CONSTEXPR uchar blueLeftShift = 8 - blueWidth<Format>();
+    constexpr uchar redLeftShift = 8 - redWidth<Format>();
+    constexpr uchar greenLeftShift = 8 - greenWidth<Format>();
+    constexpr uchar blueLeftShift = 8 - blueWidth<Format>();
 
-    Q_CONSTEXPR uchar redRightShift = 2 * redWidth<Format>() - 8;
-    Q_CONSTEXPR uchar greenRightShift = 2 * greenWidth<Format>() - 8;
-    Q_CONSTEXPR uchar blueRightShift = 2 * blueWidth<Format>() - 8;
+    constexpr uchar redRightShift = 2 * redWidth<Format>() - 8;
+    constexpr uchar greenRightShift = 2 * greenWidth<Format>() - 8;
+    constexpr uchar blueRightShift = 2 * blueWidth<Format>() - 8;
 
     uint red   = (s >> redShift<Format>()) & redMask;
     uint green = (s >> greenShift<Format>()) & greenMask;
@@ -300,22 +300,22 @@ static const QRgba64 *QT_FASTCALL fetchRGBToRGB64(QRgba64 *buffer, const uchar *
 template<QImage::Format Format>
 static inline uint convertPixelToARGB32PM(uint s)
 {
-    Q_CONSTEXPR uint alphaMask = ((1 << alphaWidth<Format>()) - 1);
-    Q_CONSTEXPR uint redMask = ((1 << redWidth<Format>()) - 1);
-    Q_CONSTEXPR uint greenMask = ((1 << greenWidth<Format>()) - 1);
-    Q_CONSTEXPR uint blueMask = ((1 << blueWidth<Format>()) - 1);
+    constexpr uint alphaMask = ((1 << alphaWidth<Format>()) - 1);
+    constexpr uint redMask = ((1 << redWidth<Format>()) - 1);
+    constexpr uint greenMask = ((1 << greenWidth<Format>()) - 1);
+    constexpr uint blueMask = ((1 << blueWidth<Format>()) - 1);
 
-    Q_CONSTEXPR uchar alphaLeftShift = 8 - alphaWidth<Format>();
-    Q_CONSTEXPR uchar redLeftShift = 8 - redWidth<Format>();
-    Q_CONSTEXPR uchar greenLeftShift = 8 - greenWidth<Format>();
-    Q_CONSTEXPR uchar blueLeftShift = 8 - blueWidth<Format>();
+    constexpr uchar alphaLeftShift = 8 - alphaWidth<Format>();
+    constexpr uchar redLeftShift = 8 - redWidth<Format>();
+    constexpr uchar greenLeftShift = 8 - greenWidth<Format>();
+    constexpr uchar blueLeftShift = 8 - blueWidth<Format>();
 
-    Q_CONSTEXPR uchar alphaRightShift = 2 * alphaWidth<Format>() - 8;
-    Q_CONSTEXPR uchar redRightShift = 2 * redWidth<Format>() - 8;
-    Q_CONSTEXPR uchar greenRightShift = 2 * greenWidth<Format>() - 8;
-    Q_CONSTEXPR uchar blueRightShift = 2 * blueWidth<Format>() - 8;
+    constexpr uchar alphaRightShift = 2 * alphaWidth<Format>() - 8;
+    constexpr uchar redRightShift = 2 * redWidth<Format>() - 8;
+    constexpr uchar greenRightShift = 2 * greenWidth<Format>() - 8;
+    constexpr uchar blueRightShift = 2 * blueWidth<Format>() - 8;
 
-    Q_CONSTEXPR bool mustMin = (alphaWidth<Format>() != redWidth<Format>()) ||
+    constexpr bool mustMin = (alphaWidth<Format>() != redWidth<Format>()) ||
                                (alphaWidth<Format>() != greenWidth<Format>()) ||
                                (alphaWidth<Format>() != blueWidth<Format>());
 
@@ -393,19 +393,19 @@ template<QImage::Format Format, bool fromRGB>
 static void QT_FASTCALL storeRGBFromARGB32PM(uchar *dest, const uint *src, int index, int count,
                                              const QList<QRgb> *, QDitherInfo *dither)
 {
-    Q_CONSTEXPR uchar rWidth = redWidth<Format>();
-    Q_CONSTEXPR uchar gWidth = greenWidth<Format>();
-    Q_CONSTEXPR uchar bWidth = blueWidth<Format>();
+    constexpr uchar rWidth = redWidth<Format>();
+    constexpr uchar gWidth = greenWidth<Format>();
+    constexpr uchar bWidth = blueWidth<Format>();
     constexpr QPixelLayout::BPP BPP = bitsPerPixel<Format>();
 
     // RGB32 -> RGB888 is not a precision loss.
     if (!dither || (rWidth == 8 && gWidth == 8 && bWidth == 8)) {
-        Q_CONSTEXPR uint rMask = (1 << redWidth<Format>()) - 1;
-        Q_CONSTEXPR uint gMask = (1 << greenWidth<Format>()) - 1;
-        Q_CONSTEXPR uint bMask = (1 << blueWidth<Format>()) - 1;
-        Q_CONSTEXPR uchar rRightShift = 24 - redWidth<Format>();
-        Q_CONSTEXPR uchar gRightShift = 16 - greenWidth<Format>();
-        Q_CONSTEXPR uchar bRightShift =  8 - blueWidth<Format>();
+        constexpr uint rMask = (1 << redWidth<Format>()) - 1;
+        constexpr uint gMask = (1 << greenWidth<Format>()) - 1;
+        constexpr uint bMask = (1 << blueWidth<Format>()) - 1;
+        constexpr uchar rRightShift = 24 - redWidth<Format>();
+        constexpr uchar gRightShift = 16 - greenWidth<Format>();
+        constexpr uchar bRightShift =  8 - blueWidth<Format>();
 
         for (int i = 0; i < count; ++i) {
             const uint c = fromRGB ? src[i] : qUnpremultiply(src[i]);
@@ -447,17 +447,17 @@ static void QT_FASTCALL storeARGBPMFromARGB32PM(uchar *dest, const uint *src, in
 {
     constexpr QPixelLayout::BPP BPP = bitsPerPixel<Format>();
     if (!dither) {
-        Q_CONSTEXPR uint aMask = (1 << alphaWidth<Format>()) - 1;
-        Q_CONSTEXPR uint rMask = (1 << redWidth<Format>()) - 1;
-        Q_CONSTEXPR uint gMask = (1 << greenWidth<Format>()) - 1;
-        Q_CONSTEXPR uint bMask = (1 << blueWidth<Format>()) - 1;
+        constexpr uint aMask = (1 << alphaWidth<Format>()) - 1;
+        constexpr uint rMask = (1 << redWidth<Format>()) - 1;
+        constexpr uint gMask = (1 << greenWidth<Format>()) - 1;
+        constexpr uint bMask = (1 << blueWidth<Format>()) - 1;
 
-        Q_CONSTEXPR uchar aRightShift = 32 - alphaWidth<Format>();
-        Q_CONSTEXPR uchar rRightShift = 24 - redWidth<Format>();
-        Q_CONSTEXPR uchar gRightShift = 16 - greenWidth<Format>();
-        Q_CONSTEXPR uchar bRightShift =  8 - blueWidth<Format>();
+        constexpr uchar aRightShift = 32 - alphaWidth<Format>();
+        constexpr uchar rRightShift = 24 - redWidth<Format>();
+        constexpr uchar gRightShift = 16 - greenWidth<Format>();
+        constexpr uchar bRightShift =  8 - blueWidth<Format>();
 
-        Q_CONSTEXPR uint aOpaque = aMask << alphaShift<Format>();
+        constexpr uint aOpaque = aMask << alphaShift<Format>();
         for (int i = 0; i < count; ++i) {
             const uint c = src[i];
             const uint a = fromRGB ? aOpaque : (((c >> aRightShift) & aMask) << alphaShift<Format>());
@@ -467,10 +467,10 @@ static void QT_FASTCALL storeARGBPMFromARGB32PM(uchar *dest, const uint *src, in
             storePixel<BPP>(dest, index + i, a | r | g | b);
         };
     } else {
-        Q_CONSTEXPR uchar aWidth = alphaWidth<Format>();
-        Q_CONSTEXPR uchar rWidth = redWidth<Format>();
-        Q_CONSTEXPR uchar gWidth = greenWidth<Format>();
-        Q_CONSTEXPR uchar bWidth = blueWidth<Format>();
+        constexpr uchar aWidth = alphaWidth<Format>();
+        constexpr uchar rWidth = redWidth<Format>();
+        constexpr uchar gWidth = greenWidth<Format>();
+        constexpr uchar bWidth = blueWidth<Format>();
 
         const uint *bayer_line = qt_bayer_matrix[dither->y & 15];
         for (int i = 0; i < count; ++i) {
@@ -503,19 +503,19 @@ static void QT_FASTCALL storeARGBPMFromARGB32PM(uchar *dest, const uint *src, in
 template<QImage::Format Format>
 static void QT_FASTCALL rbSwap(uchar *dst, const uchar *src, int count)
 {
-    Q_CONSTEXPR uchar aWidth = alphaWidth<Format>();
-    Q_CONSTEXPR uchar aShift = alphaShift<Format>();
-    Q_CONSTEXPR uchar rWidth = redWidth<Format>();
-    Q_CONSTEXPR uchar rShift = redShift<Format>();
-    Q_CONSTEXPR uchar gWidth = greenWidth<Format>();
-    Q_CONSTEXPR uchar gShift = greenShift<Format>();
-    Q_CONSTEXPR uchar bWidth = blueWidth<Format>();
-    Q_CONSTEXPR uchar bShift = blueShift<Format>();
+    constexpr uchar aWidth = alphaWidth<Format>();
+    constexpr uchar aShift = alphaShift<Format>();
+    constexpr uchar rWidth = redWidth<Format>();
+    constexpr uchar rShift = redShift<Format>();
+    constexpr uchar gWidth = greenWidth<Format>();
+    constexpr uchar gShift = greenShift<Format>();
+    constexpr uchar bWidth = blueWidth<Format>();
+    constexpr uchar bShift = blueShift<Format>();
 #ifdef Q_COMPILER_CONSTEXPR
     static_assert(rWidth == bWidth);
 #endif
-    Q_CONSTEXPR uint redBlueMask = (1 << rWidth) - 1;
-    Q_CONSTEXPR uint alphaGreenMask = (((1 << aWidth) - 1) << aShift)
+    constexpr uint redBlueMask = (1 << rWidth) - 1;
+    constexpr uint alphaGreenMask = (((1 << aWidth) - 1) << aShift)
                                     | (((1 << gWidth) - 1) << gShift);
     constexpr QPixelLayout::BPP bpp = bitsPerPixel<Format>();
 
@@ -570,7 +570,7 @@ static void QT_FASTCALL rbSwap_rgb30(uchar *d, const uchar *s, int count)
     UNALIASED_CONVERSION_LOOP(dest, src, count, qRgbSwapRgb30);
 }
 
-template<QImage::Format Format> Q_DECL_CONSTEXPR static inline QPixelLayout pixelLayoutRGB()
+template<QImage::Format Format> constexpr static inline QPixelLayout pixelLayoutRGB()
 {
     return QPixelLayout{
         false,
@@ -586,7 +586,7 @@ template<QImage::Format Format> Q_DECL_CONSTEXPR static inline QPixelLayout pixe
     };
 }
 
-template<QImage::Format Format> Q_DECL_CONSTEXPR static inline QPixelLayout pixelLayoutARGBPM()
+template<QImage::Format Format> constexpr static inline QPixelLayout pixelLayoutARGBPM()
 {
     return QPixelLayout{
         true,

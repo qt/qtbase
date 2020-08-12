@@ -4884,7 +4884,7 @@ QDebug operator<<(QDebug dbg, const QImage &i)
 }
 #endif
 
-static Q_CONSTEXPR QPixelFormat pixelformats[] = {
+static constexpr QPixelFormat pixelformats[] = {
         //QImage::Format_Invalid:
         QPixelFormat(),
         //QImage::Format_Mono:

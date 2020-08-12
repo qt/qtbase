@@ -90,7 +90,7 @@ enum {
 };
 
 #if __has_include(<chrono>)
-static Q_CONSTEXPR std::chrono::milliseconds waitTimeAsDuration(waitTime);
+static constexpr std::chrono::milliseconds waitTimeAsDuration(waitTime);
 #endif
 
 void tst_QMutex::convertToMilliseconds_data()
@@ -164,9 +164,9 @@ void tst_QMutex::convertToMilliseconds()
     QFETCH(qint64, intValue);
     QFETCH(qint64, expected);
 
-    Q_CONSTEXPR qint64 maxShort = std::numeric_limits<short>::max();
-    Q_CONSTEXPR qint64 maxInt = std::numeric_limits<int>::max();
-    Q_CONSTEXPR qint64 maxUInt = std::numeric_limits<uint>::max();
+    constexpr qint64 maxShort = std::numeric_limits<short>::max();
+    constexpr qint64 maxInt = std::numeric_limits<int>::max();
+    constexpr qint64 maxUInt = std::numeric_limits<uint>::max();
 
     switch (unit) {
 #define CASE(Unit, Period) \

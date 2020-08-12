@@ -78,8 +78,8 @@ public:
         typedef QPair<const QCborValueRef, QCborValueRef> reference;
         typedef QPair<const QCborValueRef, QCborValueRef> pointer;
 
-        Q_DECL_CONSTEXPR Iterator() = default;
-        Q_DECL_CONSTEXPR Iterator(const Iterator &) = default;
+        constexpr Iterator() = default;
+        constexpr Iterator(const Iterator &) = default;
         Iterator &operator=(const Iterator &other)
         {
             // rebind the reference
@@ -130,8 +130,8 @@ public:
         typedef QPair<const QCborValueRef, const QCborValueRef> reference;
         typedef QPair<const QCborValueRef, const QCborValueRef> pointer;
 
-        Q_DECL_CONSTEXPR ConstIterator() = default;
-        Q_DECL_CONSTEXPR ConstIterator(const ConstIterator &) = default;
+        constexpr ConstIterator() = default;
+        constexpr ConstIterator(const ConstIterator &) = default;
         ConstIterator &operator=(const ConstIterator &other)
         {
             // rebind the reference

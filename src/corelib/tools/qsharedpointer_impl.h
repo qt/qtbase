@@ -306,10 +306,10 @@ public:
     T &operator*() const { return *data(); }
     T *operator->() const noexcept { return data(); }
 
-    Q_DECL_CONSTEXPR QSharedPointer() noexcept : value(nullptr), d(nullptr) { }
+    constexpr QSharedPointer() noexcept : value(nullptr), d(nullptr) { }
     ~QSharedPointer() { deref(); }
 
-    Q_DECL_CONSTEXPR QSharedPointer(std::nullptr_t) noexcept : value(nullptr), d(nullptr) { }
+    constexpr QSharedPointer(std::nullptr_t) noexcept : value(nullptr), d(nullptr) { }
 
     template <class X, IfCompatible<X> = true>
     inline explicit QSharedPointer(X *ptr) : value(ptr) // noexcept
