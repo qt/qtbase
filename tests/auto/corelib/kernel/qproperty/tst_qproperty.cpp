@@ -259,8 +259,6 @@ void tst_QProperty::propertyArrays()
 
 void tst_QProperty::boolProperty()
 {
-    static_assert(sizeof(QProperty<bool>) == sizeof(void*), "Size of QProperty<bool> specialization must not exceed size of pointer");
-
     QProperty<bool> first(true);
     QProperty<bool> second(false);
     QProperty<bool> all;

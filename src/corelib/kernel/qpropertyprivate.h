@@ -157,28 +157,6 @@ public:
     }
 };
 
-template<>
-struct QPropertyValueStorage<bool>
-{
-    QPropertyBase priv;
-
-    QPropertyValueStorage() = default;
-    Q_DISABLE_COPY(QPropertyValueStorage)
-    explicit QPropertyValueStorage(bool initialValue) { priv.setExtraBit(initialValue); }
-    QPropertyValueStorage &operator=(bool newValue) { priv.setExtraBit(newValue); return *this; }
-    QPropertyValueStorage(QPropertyValueStorage &&other) : priv(std::move(other.priv), this) {}
-    QPropertyValueStorage &operator=(QPropertyValueStorage &&other) { priv.moveAssign(std::move(other.priv), this); return *this; }
-
-    bool getValue() const { return priv.extraBit(); }
-    bool setValueAndReturnTrueIfChanged(bool v)
-    {
-        if (v == priv.extraBit())
-            return false;
-        priv.setExtraBit(v);
-        return true;
-    }
-};
-
 template <typename T, typename Tag>
 class QTagPreservingPointerToPointer
 {

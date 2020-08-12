@@ -86,15 +86,8 @@ void QPropertyBindingPrivate::markDirtyAndNotifyObservers()
     dirty = true;
     if (firstObserver)
         firstObserver.notify(this, propertyDataPtr);
-    if (hasStaticObserver) {
-        if (isBool) {
-            auto propertyPtr = reinterpret_cast<QPropertyBase *>(propertyDataPtr);
-            bool oldValue = propertyPtr->extraBit();
-            staticObserverCallback(staticObserver, &oldValue);
-        } else {
-            staticObserverCallback(staticObserver, propertyDataPtr);
-        }
-    }
+    if (hasStaticObserver)
+        staticObserverCallback(staticObserver, propertyDataPtr);
 }
 
 bool QPropertyBindingPrivate::evaluateIfDirtyAndReturnTrueIfValueChanged()
@@ -123,25 +116,9 @@ bool QPropertyBindingPrivate::evaluateIfDirtyAndReturnTrueIfValueChanged()
     bool changed = false;
 
     if (hasStaticObserver && staticGuardCallback) {
-        if (isBool) {
-            auto propertyPtr = reinterpret_cast<QPropertyBase *>(propertyDataPtr);
-            bool newValue = propertyPtr->extraBit();
-            changed = staticGuardCallback(metaType, &newValue, evaluationFunction, staticObserver);
-            if (changed && !error.hasError())
-                propertyPtr->setExtraBit(newValue);
-        } else {
-            changed = staticGuardCallback(metaType, propertyDataPtr, evaluationFunction, staticObserver);
-        }
+        changed = staticGuardCallback(metaType, propertyDataPtr, evaluationFunction, staticObserver);
     } else {
-        if (isBool) {
-            auto propertyPtr = reinterpret_cast<QPropertyBase *>(propertyDataPtr);
-            bool newValue = propertyPtr->extraBit();
-            changed = evaluationFunction(metaType, &newValue);
-            if (changed && !error.hasError())
-                propertyPtr->setExtraBit(newValue);
-        } else {
-            changed = evaluationFunction(metaType, propertyDataPtr);
-        }
+        changed = evaluationFunction(metaType, propertyDataPtr);
     }
 
     dirty = false;

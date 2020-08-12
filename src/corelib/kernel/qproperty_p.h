@@ -140,7 +140,6 @@ private:
     bool dirty = false;
     bool updating = false;
     bool hasStaticObserver = false;
-    bool isBool = false;
 
     QUntypedPropertyBinding::BindingEvaluationFunction evaluationFunction;
 
@@ -168,8 +167,7 @@ public:
 
     QPropertyBindingPrivate(QMetaType metaType, QUntypedPropertyBinding::BindingEvaluationFunction evaluationFunction,
                             const QPropertyBindingSourceLocation &location)
-        : isBool(metaType.id() == QMetaType::Bool)
-        , evaluationFunction(std::move(evaluationFunction))
+        : evaluationFunction(std::move(evaluationFunction))
         , inlineDependencyObservers() // Explicit initialization required because of union
         , location(location)
         , metaType(metaType)
