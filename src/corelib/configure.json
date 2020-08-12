@@ -319,7 +319,7 @@
                     "std::future<int> f = std::async([]() { return 42; });",
                     "(void)f.get();"
                 ],
-                "qmake": "unix:LIBS += -lpthread"
+                "qmake": "unix:!android:LIBS += -lpthread"
             }
         },
         "cxx11_random": {

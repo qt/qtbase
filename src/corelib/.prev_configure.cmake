@@ -119,15 +119,9 @@ int pipes[2];
 }
 ")
 
-# special case begin
 # cxx11_future
-if (UNIX AND NOT ANDROID)
-    set(cxx11_future_TEST_LIBRARIES pthread)
-endif()
 qt_config_compile_test(cxx11_future
     LABEL "C++11 <future>"
-    LIBRARIES
-     "${cxx11_future_TEST_LIBRARIES}"
     CODE
 "
 #include <future>
@@ -141,8 +135,8 @@ std::future<int> f = std::async([]() { return 42; });
     /* END TEST: */
     return 0;
 }
-")
-# special case end
+"# FIXME: qmake: unix:!android:LIBS += -lpthread
+)
 
 # cxx11_random
 qt_config_compile_test(cxx11_random
