@@ -26,10 +26,16 @@ function(qt_configure_process_path name default docstring)
             # file(RELATIVE_PATH) returns an empty string if the given absolute paths are equal
             set(rel_path ".")
         elseif(rel_path MATCHES "^\.\./")
-            message(FATAL_ERROR
-                "Path component '${name}' is outside computed install prefix: ${rel_path} ")
+            # INSTALL_SYSCONFDIR is allowed to be outside the prefix.
+            if(NOT name STREQUAL "INSTALL_SYSCONFDIR")
+                message(FATAL_ERROR
+                    "Path component '${name}' is outside computed install prefix: ${rel_path} ")
+                return()
+            endif()
+            set("${name}" "${${name}}" CACHE STRING "${docstring}" FORCE)
+        else()
+            set("${name}" "${rel_path}" CACHE STRING "${docstring}" FORCE)
         endif()
-        set("${name}" "${rel_path}" CACHE STRING "${docstring}" FORCE)
     endif()
 endfunction()
 
@@ -116,9 +122,14 @@ qt_configure_process_path(INSTALL_DATADIR "." "Arch-independent data [PREFIX]")
 qt_configure_process_path(INSTALL_DOCDIR "${INSTALL_DATADIR}/doc" "Documentation [DATADIR/doc]")
 qt_configure_process_path(INSTALL_TRANSLATIONSDIR "${INSTALL_DATADIR}/translations"
     "Translations [DATADIR/translations]")
+if(APPLE)
+    set(QT_DEFAULT_SYS_CONF_DIR "/Library/Preferences/Qt")
+else()
+    set(QT_DEFAULT_SYS_CONF_DIR "etc/xdg")
+endif()
 qt_configure_process_path(INSTALL_SYSCONFDIR
-                          "etc/xdg"
-                          "Settings used by Qt programs [PREFIX/etc/xdg]")
+                          "${QT_DEFAULT_SYS_CONF_DIR}"
+                          "Settings used by Qt programs [PREFIX/etc/xdg]/[/Library/Preferences/Qt]")
 qt_configure_process_path(INSTALL_EXAMPLESDIR "examples" "Examples [PREFIX/examples]")
 qt_configure_process_path(INSTALL_TESTSDIR "tests" "Tests [PREFIX/tests]")
 qt_configure_process_path(INSTALL_DESCRIPTIONSDIR
@@ -5830,11 +5841,7 @@ function(qt_generate_qconfig_cpp)
     set(QT_CONFIG_STRS_SECOND "${QT_CONFIG_STRS}")
 
     # Settings path / sysconf dir.
-    if(APPLE)
-        set(QT_DEFAULT_SYS_CONF_DIR "/Library/Preferences/Qt")
-    else()
-        set(QT_DEFAULT_SYS_CONF_DIR "etc/xdg")
-    endif()
+    set(QT_SYS_CONF_DIR "${INSTALL_SYSCONFDIR}")
 
     # Compute and set relocation prefixes.
     # TODO: Clean this up, there's a bunch of unrealistic assumptions here.
