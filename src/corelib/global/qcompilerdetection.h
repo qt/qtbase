@@ -1129,8 +1129,8 @@
 # define Q_DECL_ALIGN(n)   alignas(n)
 #endif
 
-#if __has_cpp_attribute(nodiscard) && !defined(Q_CC_CLANG)         // P0188R1
-// Can't use [[nodiscard]] with Clang, see https://bugs.llvm.org/show_bug.cgi?id=33518
+#if __has_cpp_attribute(nodiscard) && (!defined(Q_CC_CLANG) || __cplusplus > 201402L) // P0188R1
+// Can't use [[nodiscard]] with Clang and C++11/14, see https://bugs.llvm.org/show_bug.cgi?id=33518
 #  undef Q_REQUIRED_RESULT
 #  define Q_REQUIRED_RESULT [[nodiscard]]
 #endif

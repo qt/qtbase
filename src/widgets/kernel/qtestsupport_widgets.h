@@ -47,8 +47,8 @@ QT_BEGIN_NAMESPACE
 class QWidget;
 
 namespace QTest {
-Q_WIDGETS_EXPORT Q_REQUIRED_RESULT bool qWaitForWindowActive(QWidget *widget, int timeout = 5000);
-Q_WIDGETS_EXPORT Q_REQUIRED_RESULT bool qWaitForWindowExposed(QWidget *widget, int timeout = 5000);
+Q_REQUIRED_RESULT Q_WIDGETS_EXPORT bool qWaitForWindowActive(QWidget *widget, int timeout = 5000);
+Q_REQUIRED_RESULT Q_WIDGETS_EXPORT bool qWaitForWindowExposed(QWidget *widget, int timeout = 5000);
 }
 
 QT_END_NAMESPACE

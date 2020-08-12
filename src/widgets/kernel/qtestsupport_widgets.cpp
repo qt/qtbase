@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
 
     \sa qWaitForWindowExposed(), QWidget::isActiveWindow()
 */
-Q_WIDGETS_EXPORT Q_REQUIRED_RESULT bool QTest::qWaitForWindowActive(QWidget *widget, int timeout)
+Q_WIDGETS_EXPORT bool QTest::qWaitForWindowActive(QWidget *widget, int timeout)
 {
     if (QWindow *window = widget->window()->windowHandle())
         return QTest::qWaitForWindowActive(window, timeout);
@@ -80,7 +80,7 @@ Q_WIDGETS_EXPORT Q_REQUIRED_RESULT bool QTest::qWaitForWindowActive(QWidget *wid
 
     \sa qWaitForWindowActive()
 */
-Q_WIDGETS_EXPORT Q_REQUIRED_RESULT bool QTest::qWaitForWindowExposed(QWidget *widget, int timeout)
+Q_WIDGETS_EXPORT bool QTest::qWaitForWindowExposed(QWidget *widget, int timeout)
 {
     if (QWindow *window = widget->window()->windowHandle())
         return QTest::qWaitForWindowExposed(window, timeout);
