@@ -3578,6 +3578,7 @@ endif()
         "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigVersion.cmake"
         VERSION ${PROJECT_VERSION}
         COMPATIBILITY AnyNewerVersion
+        ARCH_INDEPENDENT
     )
 
     qt_install(FILES
@@ -4916,8 +4917,6 @@ function(qt_add_tool target_name)
         # in the host system.
         set(BACKUP_CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ${CMAKE_FIND_ROOT_PATH_MODE_PACKAGE})
         set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE "BOTH")
-        set(BACKUP_CMAKE_SIZEOF_VOID_P "${CMAKE_SIZEOF_VOID_P}")
-        set(CMAKE_SIZEOF_VOID_P "")
         find_package(
             ${tools_package_name}
             ${PROJECT_VERSION}
@@ -4927,7 +4926,6 @@ function(qt_add_tool target_name)
             NO_CMAKE_PACKAGE_REGISTRY
             NO_CMAKE_SYSTEM_PATH
             NO_CMAKE_SYSTEM_PACKAGE_REGISTRY)
-        set(CMAKE_SIZEOF_VOID_P "${BACKUP_CMAKE_SIZEOF_VOID_P}")
         set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE "${BACKUP_CMAKE_FIND_ROOT_PATH_MODE_PACKAGE}")
         set(CMAKE_PREFIX_PATH "${BACKUP_CMAKE_PREFIX_PATH}")
 
