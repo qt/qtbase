@@ -1,3 +1,5 @@
+include(QtFeatureCommon)
+
 function(qt_feature_module_begin)
     qt_parse_all_arguments(arg "qt_feature_module_begin"
         "NO_MODULE;ONLY_EVALUATE_FEATURES"
@@ -33,16 +35,6 @@ function(qt_feature_module_begin)
     set(__QtFeature_config_definitions "" PARENT_SCOPE)
 
     set(__QtFeature_define_definitions "" PARENT_SCOPE)
-endfunction()
-
-function(qt_feature_normalize_name name out_var)
-    # Normalize the feature name to something CMake can deal with.
-    if(name MATCHES "c\\+\\+")
-        string(REGEX REPLACE "[^a-zA-Z0-9_]" "x" name "${name}")
-    else()
-        string(REGEX REPLACE "[^a-zA-Z0-9_]" "_" name "${name}")
-    endif()
-    set(${out_var} "${name}" PARENT_SCOPE)
 endfunction()
 
 function(qt_feature feature)
