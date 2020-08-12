@@ -119,44 +119,6 @@ public:
     static const quintptr FlagMask = BindingBit | ExtraBit;
 };
 
-template <typename T>
-struct QPropertyValueStorage
-{
-private:
-    T value;
-public:
-    QPropertyBase priv;
-
-    QPropertyValueStorage() : value() {}
-    Q_DISABLE_COPY(QPropertyValueStorage)
-    explicit QPropertyValueStorage(const T &initialValue) : value(initialValue) {}
-    QPropertyValueStorage &operator=(const T &newValue) { value = newValue; return *this; }
-    explicit QPropertyValueStorage(T &&initialValue) : value(std::move(initialValue)) {}
-    QPropertyValueStorage &operator=(T &&newValue) { value = std::move(newValue); return *this; }
-    QPropertyValueStorage(QPropertyValueStorage &&other) : value(std::move(other.value)), priv(std::move(other.priv), this) {}
-    QPropertyValueStorage &operator=(QPropertyValueStorage &&other) { value = std::move(other.value); priv.moveAssign(std::move(other.priv), &value); return *this; }
-
-    T const& getValue() const { return value; }
-    bool setValueAndReturnTrueIfChanged(T &&v)
-    {
-        if constexpr (QTypeTraits::has_operator_equal_v<T>) {
-            if (v == value)
-                return false;
-        }
-        value = std::move(v);
-        return true;
-    }
-    bool setValueAndReturnTrueIfChanged(const T &v)
-    {
-        if constexpr (QTypeTraits::has_operator_equal_v<T>) {
-            if (v == value)
-                return false;
-        }
-        value = v;
-        return true;
-    }
-};
-
 template <typename T, typename Tag>
 class QTagPreservingPointerToPointer
 {

@@ -192,9 +192,19 @@ struct QPropertyBasePointer;
 template <typename T>
 class QProperty
 {
+    T val = T();
+    QtPrivate::QPropertyBase d;
+    bool is_equal(const T &v)
+    {
+        if constexpr (QTypeTraits::has_operator_equal_v<T>) {
+            if (v == val)
+                return true;
+        }
+        return false;
+    }
+
     class DisableRValueRefs {};
     static constexpr bool UseReferences = !(std::is_arithmetic_v<T> || std::is_enum_v<T> || std::is_pointer_v<T>);
-
 public:
     using value_type = T;
     using parameter_type = std::conditional_t<UseReferences, const T &, T>;
@@ -203,10 +213,10 @@ public:
                                         std::conditional_t<QTypeTraits::is_dereferenceable_v<T>, const T &, void>>;
 
     QProperty() = default;
-    explicit QProperty(const T &initialValue) : d(initialValue) {}
-    explicit QProperty(T &&initialValue) : d(std::move(initialValue)) {}
-    QProperty(QProperty &&other) : d(std::move(other.d)) { notify(); }
-    QProperty &operator=(QProperty &&other) { d = std::move(other.d); notify(); return *this; }
+    explicit QProperty(const T &initialValue) : val(initialValue) {}
+    explicit QProperty(T &&initialValue) : val(std::move(initialValue)) {}
+    QProperty(QProperty &&other) : val(std::move(other.val)), d(std::move(other.d), &val) { notify(); }
+    QProperty &operator=(QProperty &&other) { val = std::move(other.val); d.moveAssign(std::move(other.d), &val); notify(); return *this; }
     QProperty(const QPropertyBinding<T> &binding)
         : QProperty()
     { operator=(binding); }
@@ -227,10 +237,10 @@ public:
 
     parameter_type value() const
     {
-        if (d.priv.hasBinding())
-            d.priv.evaluateIfDirty();
-        d.priv.registerWithCurrentlyEvaluatingBinding();
-        return d.getValue();
+        if (d.hasBinding())
+            d.evaluateIfDirty();
+        d.registerWithCurrentlyEvaluatingBinding();
+        return val;
     }
 
     arrow_operator_result operator->() const
@@ -257,16 +267,20 @@ public:
 
     void setValue(rvalue_ref newValue)
     {
-        d.priv.removeBinding();
-        if (d.setValueAndReturnTrueIfChanged(std::move(newValue)))
-            notify();
+        d.removeBinding();
+        if (is_equal(newValue))
+            return;
+        val = std::move(newValue);
+        notify();
     }
 
     void setValue(parameter_type newValue)
     {
-        d.priv.removeBinding();
-        if (d.setValueAndReturnTrueIfChanged(newValue))
-            notify();
+        d.removeBinding();
+        if (is_equal(newValue))
+            return;
+        val = newValue;
+        notify();
     }
 
     QProperty<T> &operator=(rvalue_ref newValue)
@@ -289,7 +303,7 @@ public:
 
     QPropertyBinding<T> setBinding(const QPropertyBinding<T> &newBinding)
     {
-        QPropertyBinding<T> oldBinding(d.priv.setBinding(newBinding, &d));
+        QPropertyBinding<T> oldBinding(d.setBinding(newBinding, &val));
         notify();
         return oldBinding;
     }
@@ -315,7 +329,7 @@ public:
     QPropertyBinding<T> setBinding(Functor f);
 #endif
 
-    bool hasBinding() const { return d.priv.hasBinding(); }
+    bool hasBinding() const { return d.hasBinding(); }
 
     QPropertyBinding<T> binding() const
     {
@@ -324,7 +338,7 @@ public:
 
     QPropertyBinding<T> takeBinding()
     {
-        return QPropertyBinding<T>(d.priv.setBinding(QUntypedPropertyBinding(), &d));
+        return QPropertyBinding<T>(d.setBinding(QUntypedPropertyBinding(), &d));
     }
 
     template<typename Functor>
@@ -332,18 +346,14 @@ public:
     template<typename Functor>
     QPropertyChangeHandler<Functor> subscribe(Functor f);
 
-    const QtPrivate::QPropertyBase &propertyBase() const { return d.priv; }
+    const QtPrivate::QPropertyBase &propertyBase() const { return d; }
 private:
     void notify()
     {
-        d.priv.notifyObservers(&d);
+        d.notifyObservers(&d);
     }
 
     Q_DISABLE_COPY(QProperty)
-
-    // Mutable because querying for the value may require evalating the binding expression, calling
-    // non-const functions on QPropertyBase.
-    mutable QtPrivate::QPropertyValueStorage<T> d;
 };
 
 namespace Qt {
@@ -359,6 +369,17 @@ namespace Qt {
 template <typename T, auto Callback, auto ValueGuard=nullptr>
 class QNotifiedProperty
 {
+    T val = T();
+    QtPrivate::QPropertyBase d;
+    bool is_equal(const T &v)
+    {
+        if constexpr (QTypeTraits::has_operator_equal_v<T>) {
+            if (v == val)
+                return true;
+        }
+        return false;
+    }
+
 public:
     using value_type = T;
     using Class = typename QtPrivate::detail::ExtractClassFromFunctionPointer<decltype(Callback)>::Class;
@@ -380,8 +401,8 @@ public:
 
     QNotifiedProperty() = default;
 
-    explicit QNotifiedProperty(const T &initialValue) : d(initialValue) {}
-    explicit QNotifiedProperty(T &&initialValue) : d(std::move(initialValue)) {}
+    explicit QNotifiedProperty(const T &initialValue) : val(initialValue) {}
+    explicit QNotifiedProperty(T &&initialValue) : val(std::move(initialValue)) {}
 
     QNotifiedProperty(Class *owner, const QPropertyBinding<T> &binding)
         : QNotifiedProperty()
@@ -405,10 +426,10 @@ public:
 
     T value() const
     {
-        if (d.priv.hasBinding())
-            d.priv.evaluateIfDirty();
-        d.priv.registerWithCurrentlyEvaluatingBinding();
-        return d.getValue();
+        if (d.hasBinding())
+            d.evaluateIfDirty();
+        d.registerWithCurrentlyEvaluatingBinding();
+        return val;
     }
 
     operator T() const
@@ -423,15 +444,17 @@ public:
             if (!(owner->*ValueGuard)(newValue))
                 return;
         }
+        if (is_equal(newValue))
+            return;
         if constexpr (CallbackAcceptsOldValue) {
-            T oldValue = value(); // TODO: kind of pointless if there was no change
-            if (d.setValueAndReturnTrueIfChanged(std::move(newValue)))
-                notify(owner, &oldValue);
+            T oldValue = value();
+            val = std::move(newValue);
+            notify(owner, &oldValue);
         } else {
-            if (d.setValueAndReturnTrueIfChanged(std::move(newValue)))
-                notify(owner);
+            val = std::move(newValue);
+            notify(owner);
         }
-        d.priv.removeBinding();
+        d.removeBinding();
     }
 
     void setValue(Class *owner, std::conditional_t<ValueGuardModifiesArgument, T, const T &> newValue)
@@ -440,29 +463,30 @@ public:
             if (!(owner->*ValueGuard)(newValue))
                 return;
         }
+        if (is_equal(newValue))
+            return;
         if constexpr (CallbackAcceptsOldValue) {
-            // When newValue is T, we move it, if it's const T& it stays const T& and won't get moved
             T oldValue = value();
-            if (d.setValueAndReturnTrueIfChanged(std::move(newValue)))
-                notify(owner, &oldValue);
+            val = newValue;
+            notify(owner, &oldValue);
         } else {
-            if (d.setValueAndReturnTrueIfChanged(std::move(newValue)))
-                notify(owner);
+            val = newValue;
+            notify(owner);
         }
-        d.priv.removeBinding();
+        d.removeBinding();
     }
 
     QPropertyBinding<T> setBinding(Class *owner, const QPropertyBinding<T> &newBinding)
     {
         if constexpr (CallbackAcceptsOldValue) {
             T oldValue = value();
-            QPropertyBinding<T> oldBinding(d.priv.setBinding(newBinding, &d, owner, [](void *o, void *oldVal) {
+            QPropertyBinding<T> oldBinding(d.setBinding(newBinding, &val, owner, [](void *o, void *oldVal) {
                 (reinterpret_cast<Class *>(o)->*Callback)(*reinterpret_cast<T *>(oldVal));
             }, GuardTE));
             notify(owner, &oldValue);
             return oldBinding;
         } else {
-            QPropertyBinding<T> oldBinding(d.priv.setBinding(newBinding, &d, owner, [](void *o, void *) {
+            QPropertyBinding<T> oldBinding(d.setBinding(newBinding, &val, owner, [](void *o, void *) {
                 (reinterpret_cast<Class *>(o)->*Callback)();
             }, GuardTE));
             notify(owner);
@@ -491,7 +515,7 @@ public:
     QPropertyBinding<T> setBinding(Class *owner, Functor f);
 #endif
 
-    bool hasBinding() const { return d.priv.hasBinding(); }
+    bool hasBinding() const { return d.hasBinding(); }
 
     QPropertyBinding<T> binding() const
     {
@@ -500,7 +524,7 @@ public:
 
     QPropertyBinding<T> takeBinding()
     {
-        return QPropertyBinding<T>(d.priv.setBinding(QUntypedPropertyBinding(), &d));
+        return QPropertyBinding<T>(d.setBinding(QUntypedPropertyBinding(), &d));
     }
 
     template<typename Functor>
@@ -508,11 +532,11 @@ public:
     template<typename Functor>
     QPropertyChangeHandler<Functor> subscribe(Functor f);
 
-    const QtPrivate::QPropertyBase &propertyBase() const { return d.priv; }
+    const QtPrivate::QPropertyBase &propertyBase() const { return d; }
 private:
     void notify(Class *owner, T *oldValue=nullptr)
     {
-        d.priv.notifyObservers(&d);
+        d.notifyObservers(&d);
         if constexpr (std::is_invocable_v<decltype(Callback), Class>) {
             Q_UNUSED(oldValue);
             (owner->*Callback)();
@@ -522,10 +546,6 @@ private:
     }
 
     Q_DISABLE_COPY_MOVE(QNotifiedProperty)
-
-    // Mutable because querying for the value may require evalating the binding expression, calling
-    // non-const functions on QPropertyBase.
-    mutable QtPrivate::QPropertyValueStorage<T> d;
 };
 
 struct QPropertyObserverPrivate;
