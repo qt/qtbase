@@ -103,7 +103,6 @@ qt_extend_target(Bootstrap
         ../../corelib/text/qlocale_tools.cpp
         ../../corelib/text/qregularexpression.cpp
         ../../corelib/text/qstring.cpp
-        ../../corelib/text/qstring_compat.cpp
         ../../corelib/text/qstringbuilder.cpp
         ../../corelib/text/qstringconverter.cpp
         ../../corelib/text/qstringlist.cpp

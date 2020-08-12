@@ -246,14 +246,7 @@ public:
     void truncate(int pos);
     void chop(int n);
 
-#if defined(Q_COMPILER_REF_QUALIFIERS) && !defined(QT_COMPILING_QSTRING_COMPAT_CPP) && !defined(Q_CLANG_QDOC)
-#  if defined(Q_CC_GNU) && !defined(Q_CC_CLANG) && !defined(Q_CC_INTEL) && !__has_cpp_attribute(nodiscard)
-    // required due to https://gcc.gnu.org/bugzilla/show_bug.cgi?id=61941
-#    pragma push_macro("Q_REQUIRED_RESULT")
-#    undef Q_REQUIRED_RESULT
-#    define Q_REQUIRED_RESULT
-#    define Q_REQUIRED_RESULT_pushed
-#  endif
+#if !defined(Q_CLANG_QDOC)
     Q_REQUIRED_RESULT QByteArray toLower() const &
     { return toLower_helper(*this); }
     Q_REQUIRED_RESULT QByteArray toLower() &&
@@ -270,9 +263,6 @@ public:
     { return simplified_helper(*this); }
     Q_REQUIRED_RESULT QByteArray simplified() &&
     { return simplified_helper(*this); }
-#  ifdef Q_REQUIRED_RESULT_pushed
-#    pragma pop_macro("Q_REQUIRED_RESULT")
-#  endif
 #else
     Q_REQUIRED_RESULT QByteArray toLower() const;
     Q_REQUIRED_RESULT QByteArray toUpper() const;

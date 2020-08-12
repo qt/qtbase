@@ -91,7 +91,6 @@ SOURCES += \
            ../../corelib/text/qstring.cpp \
            ../../corelib/text/qstringbuilder.cpp \
            ../../corelib/text/qstringconverter.cpp \
-           ../../corelib/text/qstring_compat.cpp \
            ../../corelib/text/qstringlist.cpp \
            ../../corelib/text/qvsnprintf.cpp \
            ../../corelib/time/qcalendar.cpp \

@@ -170,7 +170,6 @@ qt_add_module(Core
         text/qlocale_data_p.h
         text/qlocale_tools.cpp text/qlocale_tools_p.h
         text/qstring.cpp text/qstring.h
-        text/qstring_compat.cpp
         text/qstringalgorithms.h text/qstringalgorithms_p.h
         text/qstringbuilder.cpp text/qstringbuilder.h
         text/qstringconverter.cpp text/qstringconverter.h text/qstringconverter_p.h
@@ -256,8 +255,6 @@ qt_add_module(Core
         Qt::GlobalConfigPrivate # special case
     PRECOMPILED_HEADER
         "global/qt_pch.h"
-    NO_PCH_SOURCES
-        "text/qstring_compat.cpp"
     PUBLIC_LIBRARIES  # special case:
         Qt::Platform # special case:
     # special case begin

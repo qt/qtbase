@@ -50,9 +50,6 @@ SOURCES += \
         text/qunicodetools.cpp \
         text/qvsnprintf.cpp
 
-NO_PCH_SOURCES += text/qstring_compat.cpp
-false: SOURCES += $$NO_PCH_SOURCES # Hack for QtCreator
-
 !nacl:darwin: {
     SOURCES += text/qlocale_mac.mm
 }
