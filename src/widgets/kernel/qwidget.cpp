@@ -11713,7 +11713,7 @@ void QWidgetPrivate::stackUnder_sys(QWidget*)
     \note This function is available with widgets that derive from user
     interface descriptions created using \l{uic}.
 
-    \sa {Using a Designer UI File in Your Application}
+    \sa {Using a Designer UI File in Your C++ Application}
 */
 
 QRect QWidgetPrivate::frameStrut() const
