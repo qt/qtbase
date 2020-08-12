@@ -844,6 +844,7 @@ public:
               maxTextureSize(2048),
               maxDrawBuffers(4),
               msaaRenderBuffer(false),
+              multisampledTexture(false),
               npotTextureFull(true),
               gles(false),
               fixedIndexPrimitiveRestart(false),
@@ -879,6 +880,7 @@ public:
         // Multisample fb and blit are supported (GLES 3.0 or OpenGL 3.x). Not
         // the same as multisample textures!
         uint msaaRenderBuffer : 1;
+        uint multisampledTexture : 1;
         uint npotTextureFull : 1;
         uint gles : 1;
         uint fixedIndexPrimitiveRestart : 1;

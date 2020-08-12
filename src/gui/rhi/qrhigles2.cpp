@@ -297,6 +297,10 @@ QT_BEGIN_NAMESPACE
 #define GL_MAP_READ_BIT                   0x0001
 #endif
 
+#ifndef GL_TEXTURE_2D_MULTISAMPLE
+#define GL_TEXTURE_2D_MULTISAMPLE         0x9100
+#endif
+
 /*!
     Constructs a new QRhiGles2InitParams.
 
@@ -527,6 +531,13 @@ bool QRhiGles2::create(QRhi::Flags flags)
     caps.texelFetch = caps.ctxMajor >= 3; // 3.0 or ES 3.0
     caps.uintAttributes = caps.ctxMajor >= 3; // 3.0 or ES 3.0
     caps.screenSpaceDerivatives = f->hasOpenGLExtension(QOpenGLExtensions::StandardDerivatives);
+
+    // TO DO: We could also check for ARB_texture_multisample but it is not
+    // currently in QOpenGLExtensions
+    // 3.0 or ES 3.1
+    caps.multisampledTexture = caps.gles
+            ? (caps.ctxMajor > 3 || (caps.ctxMajor >= 3 && caps.ctxMinor >= 1))
+            : (caps.ctxMajor >= 3);
 
     if (!caps.gles) {
         f->glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
@@ -850,7 +861,7 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
 {
     switch (feature) {
     case QRhi::MultisampleTexture:
-        return false;
+        return caps.multisampledTexture;
     case QRhi::MultisampleRenderBuffer:
         return caps.msaaRenderBuffer;
     case QRhi::DebugMarkers:
@@ -3810,7 +3821,8 @@ bool QGles2Texture::prepareCreate(QSize *adjustedSize)
     const bool hasMipMaps = m_flags.testFlag(MipMapped);
     const bool isCompressed = rhiD->isCompressedFormat(m_format);
 
-    target = isCube ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
+    target = isCube ? GL_TEXTURE_CUBE_MAP
+                    : m_sampleCount > 1 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
     mipLevelCount = hasMipMaps ? rhiD->q->mipLevelsForSize(size) : 1;
     gltype = GL_UNSIGNED_BYTE;
 
@@ -4119,7 +4131,8 @@ bool QGles2TextureRenderTarget::create()
             }
         } else {
             QGles2Texture *depthTexD = QRHI_RES(QGles2Texture, m_desc.depthTexture());
-            rhiD->f->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexD->texture, 0);
+            rhiD->f->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexD->target,
+                                            depthTexD->texture, 0);
             if (d.colorAttCount == 0) {
                 d.pixelSize = depthTexD->pixelSize();
                 d.sampleCount = 1;
