@@ -116,6 +116,7 @@ public:
     QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state) override;
     QPixmapIconEngineEntry *bestMatch(const QSize &size, QIcon::Mode mode, QIcon::State state, bool sizeOnly);
     QSize actualSize(const QSize &size, QIcon::Mode mode, QIcon::State state) override;
+    QList<QSize> availableSizes(QIcon::Mode mode, QIcon::State state) override;
     void addPixmap(const QPixmap &pixmap, QIcon::Mode mode, QIcon::State state) override;
     void addFile(const QString &fileName, const QSize &size, QIcon::Mode mode, QIcon::State state) override;
 
@@ -123,7 +124,6 @@ public:
     QIconEngine *clone() const override;
     bool read(QDataStream &in) override;
     bool write(QDataStream &out) const override;
-    void virtual_hook(int id, void *data) override;
 
 private:
     QPixmapIconEngineEntry *tryMatch(const QSize &size, QIcon::Mode mode, QIcon::State state);
