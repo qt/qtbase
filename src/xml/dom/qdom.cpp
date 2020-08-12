@@ -6198,9 +6198,9 @@ bool QDomDocument::setContent(const QString& text, bool namespaceProcessing, QSt
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
     QXmlInputSource source;
-QT_WARNING_POP
     source.setData(text);
     return IMPL->setContent(&source, namespaceProcessing, errorMsg, errorLine, errorColumn);
+QT_WARNING_POP
 #else
     QXmlStreamReader streamReader(text);
     streamReader.setNamespaceProcessing(namespaceProcessing);

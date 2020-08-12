@@ -37,6 +37,11 @@
 **
 ****************************************************************************/
 
+#include "qglobal.h"
+
+// Disable warning about use of deprecated QXmlStreamLocator in QScopedPointer<>
+QT_WARNING_DISABLE_MSVC(4996)
+
 #include "qxml.h"
 #include "qxml_p.h"
 #if QT_CONFIG(textcodec)
