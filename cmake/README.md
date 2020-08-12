@@ -110,7 +110,8 @@ the source directory next to them using the helper script
 ``path_to_qtbase_source/util/cmake/configurejson2cmake.py``. They are checked into the repository.
 If the feature in configure.json has the name "dlopen", you can specify whether to enable or disable that
 feature in CMake with a -D flag on the CMake command line. So for example -DFEATURE_dlopen=ON or
--DFEATURE_sql_mysql=OFF. At the moment, if you change a FEATURE flag's value, you have to remove the
+-DFEATURE_sql_mysql=OFF. Remember to convert all '-' to '_' in the feature name.
+At the moment, if you change a FEATURE flag's value, you have to remove the
 CMakeCache.txt file and reconfigure with CMake. And even then you might stumble on some issues when
 reusing an existing build, because of an automoc bug in upstream CMake.
 
