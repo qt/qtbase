@@ -190,20 +190,6 @@ static inline Qt::KeyboardModifiers toQtKeyboardModifiers(DWORD keyState)
     return modifiers;
 }
 
-static inline Qt::MouseButtons toQtMouseButtons(DWORD keyState)
-{
-    Qt::MouseButtons buttons = Qt::NoButton;
-
-    if (keyState & MK_LBUTTON)
-        buttons |= Qt::LeftButton;
-    if (keyState & MK_RBUTTON)
-        buttons |= Qt::RightButton;
-    if (keyState & MK_MBUTTON)
-        buttons |= Qt::MidButton;
-
-    return buttons;
-}
-
 static Qt::KeyboardModifiers lastModifiers = Qt::NoModifier;
 static Qt::MouseButtons lastButtons = Qt::NoButton;
 
@@ -386,7 +372,10 @@ void QWindowsOleDropSource::createCursors()
 QT_ENSURE_STACK_ALIGNED_FOR_SSE STDMETHODIMP
 QWindowsOleDropSource::QueryContinueDrag(BOOL fEscapePressed, DWORD grfKeyState)
 {
-    Qt::MouseButtons buttons = toQtMouseButtons(grfKeyState);
+    // In some rare cases, when a mouse button is released but the mouse is static,
+    // grfKeyState will not be updated with these released buttons until the mouse
+    // is moved. So we use the async key state given by queryMouseButtons() instead.
+    Qt::MouseButtons buttons = QWindowsMouseHandler::queryMouseButtons();
 
     SCODE result = S_OK;
     if (fEscapePressed || QWindowsDrag::isCanceled()) {
@@ -505,7 +494,7 @@ void QWindowsOleDropTarget::handleDrag(QWindow *window, DWORD grfKeyState,
     const Qt::DropActions actions = translateToQDragDropActions(*pdwEffect);
 
     lastModifiers = toQtKeyboardModifiers(grfKeyState);
-    lastButtons = toQtMouseButtons(grfKeyState);
+    lastButtons = QWindowsMouseHandler::queryMouseButtons();
 
     const QPlatformDragQtResponse response =
           QWindowSystemInterface::handleDrag(window, windowsDrag->dropData(),
@@ -603,7 +592,7 @@ QWindowsOleDropTarget::Drop(LPDATAOBJECT pDataObj, DWORD grfKeyState,
     QWindowsDrag *windowsDrag = QWindowsDrag::instance();
 
     lastModifiers = toQtKeyboardModifiers(grfKeyState);
-    lastButtons = toQtMouseButtons(grfKeyState);
+    lastButtons = QWindowsMouseHandler::queryMouseButtons();
 
     const QPlatformDropQtResponse response =
         QWindowSystemInterface::handleDrop(m_window, windowsDrag->dropData(),
