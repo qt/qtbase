@@ -8,6 +8,9 @@ DEFINES += \
     QT_NO_COMPRESS \
     QT_NO_FOREACH
 
+# strerror() is safe to use because moc is single-threaded
+msvc: DEFINES += _CRT_SECURE_NO_WARNINGS
+
 include(moc.pri)
 HEADERS += qdatetime_p.h
 SOURCES += main.cpp

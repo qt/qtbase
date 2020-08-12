@@ -1,6 +1,8 @@
 # Disable warnings in 3rdparty code due to unused arguments
 gcc: QMAKE_CFLAGS_WARN_ON += -Wno-unused-parameter -Wno-main
 
+# Do not warn about sprintf, getenv, sscanf ... use
+msvc: DEFINES += _CRT_SECURE_NO_WARNINGS
 
 INCLUDEPATH += \
     $$PWD/libjpeg \

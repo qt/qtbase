@@ -193,11 +193,11 @@ int QDomDocumentLocator::line() const
 
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
+
 void QSAXDocumentLocator::setLocator(QXmlLocator *l)
 {
     locator = l;
 }
-QT_WARNING_POP
 
 int QSAXDocumentLocator::column() const
 {
@@ -214,6 +214,8 @@ int QSAXDocumentLocator::line() const
 
     return static_cast<int>(locator->lineNumber());
 }
+
+QT_WARNING_POP
 
 #endif // QT_DEPRECATED_SINCE(5, 15)
 
