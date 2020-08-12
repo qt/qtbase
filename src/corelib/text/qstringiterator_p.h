@@ -120,16 +120,20 @@ public:
     {
         Q_ASSERT_X(hasNext(), Q_FUNC_INFO, "iterator hasn't a next item");
 
-        if (Q_UNLIKELY((pos++)->isHighSurrogate()))
+        if (Q_UNLIKELY((pos++)->isHighSurrogate())) {
+            Q_ASSERT(pos < e && pos->isLowSurrogate());
             ++pos;
+        }
     }
 
     inline char32_t peekNextUnchecked() const
     {
         Q_ASSERT_X(hasNext(), Q_FUNC_INFO, "iterator hasn't a next item");
 
-        if (Q_UNLIKELY(pos->isHighSurrogate()))
+        if (Q_UNLIKELY(pos->isHighSurrogate())) {
+            Q_ASSERT(pos + 1 < e && pos[1].isLowSurrogate());
             return QChar::surrogateToUcs4(pos[0], pos[1]);
+        }
 
         return pos->unicode();
     }
@@ -155,8 +159,10 @@ public:
         Q_ASSERT_X(hasNext(), Q_FUNC_INFO, "iterator hasn't a next item");
 
         const QChar cur = *pos++;
-        if (Q_UNLIKELY(cur.isHighSurrogate()))
+        if (Q_UNLIKELY(cur.isHighSurrogate())) {
+            Q_ASSERT(pos < e && pos->isLowSurrogate());
             return QChar::surrogateToUcs4(cur, *pos++);
+        }
         return cur.unicode();
     }
 
@@ -196,16 +202,20 @@ public:
     {
         Q_ASSERT_X(hasPrevious(), Q_FUNC_INFO, "iterator hasn't a previous item");
 
-        if (Q_UNLIKELY((--pos)->isLowSurrogate()))
+        if (Q_UNLIKELY((--pos)->isLowSurrogate())) {
+            Q_ASSERT(pos > i && pos[-1].isHighSurrogate());
             --pos;
+        }
     }
 
     inline char32_t peekPreviousUnchecked() const
     {
         Q_ASSERT_X(hasPrevious(), Q_FUNC_INFO, "iterator hasn't a previous item");
 
-        if (Q_UNLIKELY(pos[-1].isLowSurrogate()))
+        if (Q_UNLIKELY(pos[-1].isLowSurrogate())) {
+            Q_ASSERT(pos > i + 1 && pos[-2].isHighSurrogate());
             return QChar::surrogateToUcs4(pos[-2], pos[-1]);
+        }
         return pos[-1].unicode();
     }
 
@@ -230,8 +240,10 @@ public:
         Q_ASSERT_X(hasPrevious(), Q_FUNC_INFO, "iterator hasn't a previous item");
 
         const QChar cur = *--pos;
-        if (Q_UNLIKELY(cur.isLowSurrogate()))
+        if (Q_UNLIKELY(cur.isLowSurrogate())) {
+            Q_ASSERT(pos > i && pos[-1].isHighSurrogate());
             return QChar::surrogateToUcs4(*--pos, cur);
+        }
         return cur.unicode();
     }
 
