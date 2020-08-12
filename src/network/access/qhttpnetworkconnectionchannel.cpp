@@ -884,8 +884,11 @@ void QHttpNetworkConnectionChannel::_q_connected()
         }
         connection->d_func()->networkLayerDetected(networkLayerPreference);
     } else {
-        if (((connection->d_func()->networkLayerState == QHttpNetworkConnectionPrivate::IPv4) && (networkLayerPreference != QAbstractSocket::IPv4Protocol))
-            || ((connection->d_func()->networkLayerState == QHttpNetworkConnectionPrivate::IPv6) && (networkLayerPreference != QAbstractSocket::IPv6Protocol))) {
+        bool anyProtocol = networkLayerPreference == QAbstractSocket::AnyIPProtocol;
+        if (((connection->d_func()->networkLayerState == QHttpNetworkConnectionPrivate::IPv4)
+             && (networkLayerPreference != QAbstractSocket::IPv4Protocol && !anyProtocol))
+            || ((connection->d_func()->networkLayerState == QHttpNetworkConnectionPrivate::IPv6)
+                && (networkLayerPreference != QAbstractSocket::IPv6Protocol && !anyProtocol))) {
             close();
             // This is the second connection so it has to be closed and we can schedule it for another request.
             QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
