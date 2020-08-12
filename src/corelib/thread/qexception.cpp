@@ -112,12 +112,7 @@ QT_BEGIN_NAMESPACE
     \internal
 */
 
-QException::~QException()
-#ifdef Q_COMPILER_NOEXCEPT
-    noexcept
-#else
-    throw()
-#endif
+QException::~QException() noexcept
 {
     // must stay empty until ### Qt 6
 }
@@ -133,12 +128,7 @@ QException *QException::clone() const
     return new QException(*this);
 }
 
-QUnhandledException::~QUnhandledException()
-#ifdef Q_COMPILER_NOEXCEPT
-    noexcept
-#else
-    throw()
-#endif
+QUnhandledException::~QUnhandledException() noexcept
 {
     // must stay empty until ### Qt 6
 }

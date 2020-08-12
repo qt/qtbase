@@ -123,12 +123,12 @@ bool QShaderFormat::supports(const QShaderFormat &other) const noexcept
     return true;
 }
 
-QShaderFormat::ShaderType QShaderFormat::shaderType() const Q_DECL_NOTHROW
+QShaderFormat::ShaderType QShaderFormat::shaderType() const noexcept
 {
     return m_shaderType;
 }
 
-void QShaderFormat::setShaderType(QShaderFormat::ShaderType shaderType) Q_DECL_NOTHROW
+void QShaderFormat::setShaderType(QShaderFormat::ShaderType shaderType) noexcept
 {
     m_shaderType = shaderType;
 }

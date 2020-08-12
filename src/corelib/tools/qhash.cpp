@@ -393,7 +393,7 @@ static uint siphash(const uint8_t *in, uint inlen, const uint seed)
 #  define AESHASH
 
 QT_FUNCTION_TARGET(AES)
-static size_t aeshash(const uchar *p, size_t len, size_t seed) Q_DECL_NOTHROW
+static size_t aeshash(const uchar *p, size_t len, size_t seed) noexcept
 {
     __m128i key;
     if (sizeof(size_t) == 8) {

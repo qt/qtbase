@@ -715,7 +715,7 @@ QRhiDepthStencilClearValue::QRhiDepthStencilClearValue(float d, quint32 s)
 
     \relates QRhiDepthStencilClearValue
  */
-bool operator==(const QRhiDepthStencilClearValue &a, const QRhiDepthStencilClearValue &b) Q_DECL_NOTHROW
+bool operator==(const QRhiDepthStencilClearValue &a, const QRhiDepthStencilClearValue &b) noexcept
 {
     return a.depthClearValue() == b.depthClearValue()
             && a.stencilClearValue() == b.stencilClearValue();
@@ -727,7 +727,7 @@ bool operator==(const QRhiDepthStencilClearValue &a, const QRhiDepthStencilClear
 
     \relates QRhiDepthStencilClearValue
 */
-bool operator!=(const QRhiDepthStencilClearValue &a, const QRhiDepthStencilClearValue &b) Q_DECL_NOTHROW
+bool operator!=(const QRhiDepthStencilClearValue &a, const QRhiDepthStencilClearValue &b) noexcept
 {
     return !(a == b);
 }
@@ -737,7 +737,7 @@ bool operator!=(const QRhiDepthStencilClearValue &a, const QRhiDepthStencilClear
 
     \relates QRhiDepthStencilClearValue
  */
-size_t qHash(const QRhiDepthStencilClearValue &v, size_t seed) Q_DECL_NOTHROW
+size_t qHash(const QRhiDepthStencilClearValue &v, size_t seed) noexcept
 {
     return seed * (uint(qFloor(qreal(v.depthClearValue()) * 100)) + v.stencilClearValue());
 }
@@ -810,7 +810,7 @@ QRhiViewport::QRhiViewport(float x, float y, float w, float h, float minDepth, f
 
     \relates QRhiViewport
  */
-bool operator==(const QRhiViewport &a, const QRhiViewport &b) Q_DECL_NOTHROW
+bool operator==(const QRhiViewport &a, const QRhiViewport &b) noexcept
 {
     return a.viewport() == b.viewport()
             && a.minDepth() == b.minDepth()
@@ -823,7 +823,7 @@ bool operator==(const QRhiViewport &a, const QRhiViewport &b) Q_DECL_NOTHROW
 
     \relates QRhiViewport
 */
-bool operator!=(const QRhiViewport &a, const QRhiViewport &b) Q_DECL_NOTHROW
+bool operator!=(const QRhiViewport &a, const QRhiViewport &b) noexcept
 {
     return !(a == b);
 }
@@ -833,7 +833,7 @@ bool operator!=(const QRhiViewport &a, const QRhiViewport &b) Q_DECL_NOTHROW
 
     \relates QRhiViewport
  */
-size_t qHash(const QRhiViewport &v, size_t seed) Q_DECL_NOTHROW
+size_t qHash(const QRhiViewport &v, size_t seed) noexcept
 {
     const std::array<float, 4> r = v.viewport();
     return seed + uint(r[0]) + uint(r[1]) + uint(r[2]) + uint(r[3])
@@ -903,7 +903,7 @@ QRhiScissor::QRhiScissor(int x, int y, int w, int h)
 
     \relates QRhiScissor
  */
-bool operator==(const QRhiScissor &a, const QRhiScissor &b) Q_DECL_NOTHROW
+bool operator==(const QRhiScissor &a, const QRhiScissor &b) noexcept
 {
     return a.scissor() == b.scissor();
 }
@@ -914,7 +914,7 @@ bool operator==(const QRhiScissor &a, const QRhiScissor &b) Q_DECL_NOTHROW
 
     \relates QRhiScissor
 */
-bool operator!=(const QRhiScissor &a, const QRhiScissor &b) Q_DECL_NOTHROW
+bool operator!=(const QRhiScissor &a, const QRhiScissor &b) noexcept
 {
     return !(a == b);
 }
@@ -924,7 +924,7 @@ bool operator!=(const QRhiScissor &a, const QRhiScissor &b) Q_DECL_NOTHROW
 
     \relates QRhiScissor
  */
-size_t qHash(const QRhiScissor &v, size_t seed) Q_DECL_NOTHROW
+size_t qHash(const QRhiScissor &v, size_t seed) noexcept
 {
     const std::array<int, 4> r = v.scissor();
     return seed + uint(r[0]) + uint(r[1]) + uint(r[2]) + uint(r[3]);
@@ -1035,7 +1035,7 @@ QRhiVertexInputBinding::QRhiVertexInputBinding(quint32 stride, Classification cl
 
     \relates QRhiVertexInputBinding
  */
-bool operator==(const QRhiVertexInputBinding &a, const QRhiVertexInputBinding &b) Q_DECL_NOTHROW
+bool operator==(const QRhiVertexInputBinding &a, const QRhiVertexInputBinding &b) noexcept
 {
     return a.stride() == b.stride()
             && a.classification() == b.classification()
@@ -1048,7 +1048,7 @@ bool operator==(const QRhiVertexInputBinding &a, const QRhiVertexInputBinding &b
 
     \relates QRhiVertexInputBinding
 */
-bool operator!=(const QRhiVertexInputBinding &a, const QRhiVertexInputBinding &b) Q_DECL_NOTHROW
+bool operator!=(const QRhiVertexInputBinding &a, const QRhiVertexInputBinding &b) noexcept
 {
     return !(a == b);
 }
@@ -1058,7 +1058,7 @@ bool operator!=(const QRhiVertexInputBinding &a, const QRhiVertexInputBinding &b
 
     \relates QRhiVertexInputBinding
  */
-size_t qHash(const QRhiVertexInputBinding &v, size_t seed) Q_DECL_NOTHROW
+size_t qHash(const QRhiVertexInputBinding &v, size_t seed) noexcept
 {
     return seed + v.stride() + v.classification();
 }
@@ -1187,7 +1187,7 @@ QRhiVertexInputAttribute::QRhiVertexInputAttribute(int binding, int location, Fo
 
     \relates QRhiVertexInputAttribute
  */
-bool operator==(const QRhiVertexInputAttribute &a, const QRhiVertexInputAttribute &b) Q_DECL_NOTHROW
+bool operator==(const QRhiVertexInputAttribute &a, const QRhiVertexInputAttribute &b) noexcept
 {
     return a.binding() == b.binding()
             && a.location() == b.location()
@@ -1201,7 +1201,7 @@ bool operator==(const QRhiVertexInputAttribute &a, const QRhiVertexInputAttribut
 
     \relates QRhiVertexInputAttribute
 */
-bool operator!=(const QRhiVertexInputAttribute &a, const QRhiVertexInputAttribute &b) Q_DECL_NOTHROW
+bool operator!=(const QRhiVertexInputAttribute &a, const QRhiVertexInputAttribute &b) noexcept
 {
     return !(a == b);
 }
@@ -1211,7 +1211,7 @@ bool operator!=(const QRhiVertexInputAttribute &a, const QRhiVertexInputAttribut
 
     \relates QRhiVertexInputAttribute
  */
-size_t qHash(const QRhiVertexInputAttribute &v, size_t seed) Q_DECL_NOTHROW
+size_t qHash(const QRhiVertexInputAttribute &v, size_t seed) noexcept
 {
     return seed + uint(v.binding()) + uint(v.location()) + uint(v.format()) + v.offset();
 }
@@ -1251,7 +1251,7 @@ QDebug operator<<(QDebug dbg, const QRhiVertexInputAttribute &a)
 
     \relates QRhiVertexInputLayout
  */
-bool operator==(const QRhiVertexInputLayout &a, const QRhiVertexInputLayout &b) Q_DECL_NOTHROW
+bool operator==(const QRhiVertexInputLayout &a, const QRhiVertexInputLayout &b) noexcept
 {
     return a.m_bindings == b.m_bindings && a.m_attributes == b.m_attributes;
 }
@@ -1262,7 +1262,7 @@ bool operator==(const QRhiVertexInputLayout &a, const QRhiVertexInputLayout &b) 
 
     \relates QRhiVertexInputLayout
 */
-bool operator!=(const QRhiVertexInputLayout &a, const QRhiVertexInputLayout &b) Q_DECL_NOTHROW
+bool operator!=(const QRhiVertexInputLayout &a, const QRhiVertexInputLayout &b) noexcept
 {
     return !(a == b);
 }
@@ -1272,7 +1272,7 @@ bool operator!=(const QRhiVertexInputLayout &a, const QRhiVertexInputLayout &b) 
 
     \relates QRhiVertexInputLayout
  */
-size_t qHash(const QRhiVertexInputLayout &v, size_t seed) Q_DECL_NOTHROW
+size_t qHash(const QRhiVertexInputLayout &v, size_t seed) noexcept
 {
     return qHash(v.m_bindings, seed) + qHash(v.m_attributes, seed);
 }
@@ -1339,7 +1339,7 @@ QRhiShaderStage::QRhiShaderStage(Type type, const QShader &shader, QShader::Vari
 
     \relates QRhiShaderStage
  */
-bool operator==(const QRhiShaderStage &a, const QRhiShaderStage &b) Q_DECL_NOTHROW
+bool operator==(const QRhiShaderStage &a, const QRhiShaderStage &b) noexcept
 {
     return a.type() == b.type()
             && a.shader() == b.shader()
@@ -1352,7 +1352,7 @@ bool operator==(const QRhiShaderStage &a, const QRhiShaderStage &b) Q_DECL_NOTHR
 
     \relates QRhiShaderStage
 */
-bool operator!=(const QRhiShaderStage &a, const QRhiShaderStage &b) Q_DECL_NOTHROW
+bool operator!=(const QRhiShaderStage &a, const QRhiShaderStage &b) noexcept
 {
     return !(a == b);
 }
@@ -1362,7 +1362,7 @@ bool operator!=(const QRhiShaderStage &a, const QRhiShaderStage &b) Q_DECL_NOTHR
 
     \relates QRhiShaderStage
  */
-size_t qHash(const QRhiShaderStage &v, size_t seed) Q_DECL_NOTHROW
+size_t qHash(const QRhiShaderStage &v, size_t seed) noexcept
 {
     return v.type() + qHash(v.shader(), seed) + v.shaderVariant();
 }
@@ -3243,7 +3243,7 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferLoadStore(
 
     \relates QRhiShaderResourceBinding
  */
-bool operator==(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBinding &b) Q_DECL_NOTHROW
+bool operator==(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBinding &b) noexcept
 {
     const QRhiShaderResourceBinding::Data *da = a.data();
     const QRhiShaderResourceBinding::Data *db = b.data();
@@ -3316,7 +3316,7 @@ bool operator==(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBind
 
     \relates QRhiShaderResourceBinding
  */
-bool operator!=(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBinding &b) Q_DECL_NOTHROW
+bool operator!=(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBinding &b) noexcept
 {
     return !(a == b);
 }
@@ -3326,7 +3326,7 @@ bool operator!=(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBind
 
     \relates QRhiShaderResourceBinding
  */
-size_t qHash(const QRhiShaderResourceBinding &b, size_t seed) Q_DECL_NOTHROW
+size_t qHash(const QRhiShaderResourceBinding &b, size_t seed) noexcept
 {
     const QRhiShaderResourceBinding::Data *d = b.data();
     return seed + uint(d->binding) + 10 * uint(d->stage) + 100 * uint(d->type)

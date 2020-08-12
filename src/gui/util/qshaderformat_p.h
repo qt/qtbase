@@ -96,8 +96,8 @@ public:
     Q_GUI_EXPORT bool isValid() const noexcept;
     Q_GUI_EXPORT bool supports(const QShaderFormat &other) const noexcept;
 
-    Q_GUI_EXPORT ShaderType shaderType() const Q_DECL_NOTHROW;
-    Q_GUI_EXPORT void setShaderType(ShaderType shaderType) Q_DECL_NOTHROW;
+    Q_GUI_EXPORT ShaderType shaderType() const noexcept;
+    Q_GUI_EXPORT void setShaderType(ShaderType shaderType) noexcept;
 
 private:
     Api m_api;

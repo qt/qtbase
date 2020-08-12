@@ -57,13 +57,7 @@ QT_BEGIN_NAMESPACE
 class Q_CORE_EXPORT QException : public std::exception
 {
 public:
-    ~QException()
-#ifdef Q_COMPILER_NOEXCEPT
-    noexcept
-#else
-    throw()
-#endif
-    ;
+    ~QException() noexcept;
     virtual void raise() const;
     virtual QException *clone() const;
 };
@@ -71,13 +65,7 @@ public:
 class Q_CORE_EXPORT QUnhandledException : public QException
 {
 public:
-    ~QUnhandledException()
-#ifdef Q_COMPILER_NOEXCEPT
-    noexcept
-#else
-    throw()
-#endif
-    ;
+    ~QUnhandledException() noexcept;
     void raise() const override;
     QUnhandledException *clone() const override;
 };

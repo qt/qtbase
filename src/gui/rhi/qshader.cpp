@@ -512,7 +512,7 @@ QShaderKey::QShaderKey(QShader::Source s,
 
     \relates QShader
  */
-bool operator==(const QShader &lhs, const QShader &rhs) Q_DECL_NOTHROW
+bool operator==(const QShader &lhs, const QShader &rhs) noexcept
 {
     return lhs.d->stage == rhs.d->stage
             && lhs.d->shaders == rhs.d->shaders;
@@ -533,7 +533,7 @@ bool operator==(const QShader &lhs, const QShader &rhs) Q_DECL_NOTHROW
 
     \relates QShader
  */
-size_t qHash(const QShader &s, size_t seed) Q_DECL_NOTHROW
+size_t qHash(const QShader &s, size_t seed) noexcept
 {
     QtPrivate::QHashCombine hash;
     seed = hash(seed, s.stage());
@@ -549,7 +549,7 @@ size_t qHash(const QShader &s, size_t seed) Q_DECL_NOTHROW
 
     \relates QShaderVersion
  */
-bool operator==(const QShaderVersion &lhs, const QShaderVersion &rhs) Q_DECL_NOTHROW
+bool operator==(const QShaderVersion &lhs, const QShaderVersion &rhs) noexcept
 {
     return lhs.version() == rhs.version() && lhs.flags() == rhs.flags();
 }
@@ -568,7 +568,7 @@ bool operator==(const QShaderVersion &lhs, const QShaderVersion &rhs) Q_DECL_NOT
 
     \relates QShaderKey
  */
-bool operator==(const QShaderKey &lhs, const QShaderKey &rhs) Q_DECL_NOTHROW
+bool operator==(const QShaderKey &lhs, const QShaderKey &rhs) noexcept
 {
     return lhs.source() == rhs.source() && lhs.sourceVersion() == rhs.sourceVersion()
             && lhs.sourceVariant() == rhs.sourceVariant();
@@ -588,7 +588,7 @@ bool operator==(const QShaderKey &lhs, const QShaderKey &rhs) Q_DECL_NOTHROW
 
     \relates QShaderKey
  */
-size_t qHash(const QShaderKey &k, size_t seed) Q_DECL_NOTHROW
+size_t qHash(const QShaderKey &k, size_t seed) noexcept
 {
     return qHashMulti(seed,
                       k.source(),
@@ -602,7 +602,7 @@ size_t qHash(const QShaderKey &k, size_t seed) Q_DECL_NOTHROW
 
     \relates QShaderCode
  */
-bool operator==(const QShaderCode &lhs, const QShaderCode &rhs) Q_DECL_NOTHROW
+bool operator==(const QShaderCode &lhs, const QShaderCode &rhs) noexcept
 {
     return lhs.shader() == rhs.shader() && lhs.entryPoint() == rhs.entryPoint();
 }

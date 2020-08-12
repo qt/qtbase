@@ -64,7 +64,7 @@
 
 struct Movable
 {
-    explicit Movable(int i = 0) Q_DECL_NOTHROW
+    explicit Movable(int i = 0) noexcept
         : i(i)
     {
         ++instanceCount;
@@ -86,11 +86,11 @@ struct Movable
 };
 
 int Movable::instanceCount = 0;
-bool operator==(Movable lhs, Movable rhs) Q_DECL_NOTHROW { return lhs.i == rhs.i; }
-bool operator!=(Movable lhs, Movable rhs) Q_DECL_NOTHROW { return lhs.i != rhs.i; }
-bool operator<(Movable lhs, Movable rhs) Q_DECL_NOTHROW { return lhs.i < rhs.i; }
+bool operator==(Movable lhs, Movable rhs) noexcept { return lhs.i == rhs.i; }
+bool operator!=(Movable lhs, Movable rhs) noexcept { return lhs.i != rhs.i; }
+bool operator<(Movable lhs, Movable rhs) noexcept { return lhs.i < rhs.i; }
 
-size_t qHash(Movable m, size_t seed = 0) Q_DECL_NOTHROW { return qHash(m.i, seed); }
+size_t qHash(Movable m, size_t seed = 0) noexcept { return qHash(m.i, seed); }
 QDebug &operator<<(QDebug &d, Movable m)
 {
     const QDebugStateSaver saver(d);
@@ -103,7 +103,7 @@ QT_END_NAMESPACE
 
 struct Complex
 {
-    explicit Complex(int i = 0) Q_DECL_NOTHROW
+    explicit Complex(int i = 0) noexcept
         : i(i)
     {
         ++instanceCount;
@@ -125,11 +125,11 @@ struct Complex
 };
 
 int Complex::instanceCount = 0;
-bool operator==(Complex lhs, Complex rhs) Q_DECL_NOTHROW { return lhs.i == rhs.i; }
-bool operator!=(Complex lhs, Complex rhs) Q_DECL_NOTHROW { return lhs.i != rhs.i; }
-bool operator<(Complex lhs, Complex rhs) Q_DECL_NOTHROW { return lhs.i < rhs.i; }
+bool operator==(Complex lhs, Complex rhs) noexcept { return lhs.i == rhs.i; }
+bool operator!=(Complex lhs, Complex rhs) noexcept { return lhs.i != rhs.i; }
+bool operator<(Complex lhs, Complex rhs) noexcept { return lhs.i < rhs.i; }
 
-size_t qHash(Complex c, size_t seed = 0) Q_DECL_NOTHROW { return qHash(c.i, seed); }
+size_t qHash(Complex c, size_t seed = 0) noexcept { return qHash(c.i, seed); }
 QDebug &operator<<(QDebug &d, Complex c)
 {
     const QDebugStateSaver saver(d);
@@ -139,7 +139,7 @@ QDebug &operator<<(QDebug &d, Complex c)
 
 struct DuplicateStrategyTestType
 {
-    explicit DuplicateStrategyTestType(int i = 0) Q_DECL_NOTHROW
+    explicit DuplicateStrategyTestType(int i = 0) noexcept
         : i(i),
           j(++counter)
     {
@@ -155,27 +155,27 @@ int DuplicateStrategyTestType::counter = 0;
 
 // only look at the i member, not j. j allows us to identify which instance
 // gets inserted in containers that don't allow for duplicates
-bool operator==(DuplicateStrategyTestType lhs, DuplicateStrategyTestType rhs) Q_DECL_NOTHROW
+bool operator==(DuplicateStrategyTestType lhs, DuplicateStrategyTestType rhs) noexcept
 {
     return lhs.i == rhs.i;
 }
 
-bool operator!=(DuplicateStrategyTestType lhs, DuplicateStrategyTestType rhs) Q_DECL_NOTHROW
+bool operator!=(DuplicateStrategyTestType lhs, DuplicateStrategyTestType rhs) noexcept
 {
     return lhs.i != rhs.i;
 }
 
-bool operator<(DuplicateStrategyTestType lhs, DuplicateStrategyTestType rhs) Q_DECL_NOTHROW
+bool operator<(DuplicateStrategyTestType lhs, DuplicateStrategyTestType rhs) noexcept
 {
     return lhs.i < rhs.i;
 }
 
-size_t qHash(DuplicateStrategyTestType c, size_t seed = 0) Q_DECL_NOTHROW
+size_t qHash(DuplicateStrategyTestType c, size_t seed = 0) noexcept
 {
     return qHash(c.i, seed);
 }
 
-bool reallyEqual(DuplicateStrategyTestType lhs, DuplicateStrategyTestType rhs) Q_DECL_NOTHROW
+bool reallyEqual(DuplicateStrategyTestType lhs, DuplicateStrategyTestType rhs) noexcept
 {
     return lhs.i == rhs.i && lhs.j == rhs.j;
 }
@@ -191,7 +191,7 @@ namespace std {
 template<>
 struct hash<Movable>
 {
-    std::size_t operator()(Movable m) const Q_DECL_NOTHROW
+    std::size_t operator()(Movable m) const noexcept
     {
         return hash<int>()(m.i);
     }
@@ -200,7 +200,7 @@ struct hash<Movable>
 template<>
 struct hash<Complex>
 {
-    std::size_t operator()(Complex m) const Q_DECL_NOTHROW
+    std::size_t operator()(Complex m) const noexcept
     {
         return hash<int>()(m.i);
     }
@@ -209,7 +209,7 @@ struct hash<Complex>
 template<>
 struct hash<DuplicateStrategyTestType>
 {
-    std::size_t operator()(DuplicateStrategyTestType m) const Q_DECL_NOTHROW
+    std::size_t operator()(DuplicateStrategyTestType m) const noexcept
     {
         return hash<int>()(m.i);
     }

@@ -1223,7 +1223,7 @@ void QShaderDescriptionPrivate::loadFromStream(QDataStream *stream, int version)
 
     \relates QShaderDescription
  */
-bool operator==(const QShaderDescription &lhs, const QShaderDescription &rhs) Q_DECL_NOTHROW
+bool operator==(const QShaderDescription &lhs, const QShaderDescription &rhs) noexcept
 {
     if (lhs.d == rhs.d)
         return true;
@@ -1244,7 +1244,7 @@ bool operator==(const QShaderDescription &lhs, const QShaderDescription &rhs) Q_
 
     \relates QShaderDescription::InOutVariable
  */
-bool operator==(const QShaderDescription::InOutVariable &lhs, const QShaderDescription::InOutVariable &rhs) Q_DECL_NOTHROW
+bool operator==(const QShaderDescription::InOutVariable &lhs, const QShaderDescription::InOutVariable &rhs) noexcept
 {
     return lhs.name == rhs.name
             && lhs.type == rhs.type
@@ -1262,7 +1262,7 @@ bool operator==(const QShaderDescription::InOutVariable &lhs, const QShaderDescr
 
     \relates QShaderDescription::BlockVariable
  */
-bool operator==(const QShaderDescription::BlockVariable &lhs, const QShaderDescription::BlockVariable &rhs) Q_DECL_NOTHROW
+bool operator==(const QShaderDescription::BlockVariable &lhs, const QShaderDescription::BlockVariable &rhs) noexcept
 {
     return lhs.name == rhs.name
             && lhs.type == rhs.type
@@ -1281,7 +1281,7 @@ bool operator==(const QShaderDescription::BlockVariable &lhs, const QShaderDescr
 
     \relates QShaderDescription::UniformBlock
  */
-bool operator==(const QShaderDescription::UniformBlock &lhs, const QShaderDescription::UniformBlock &rhs) Q_DECL_NOTHROW
+bool operator==(const QShaderDescription::UniformBlock &lhs, const QShaderDescription::UniformBlock &rhs) noexcept
 {
     return lhs.blockName == rhs.blockName
             && lhs.structName == rhs.structName
@@ -1297,7 +1297,7 @@ bool operator==(const QShaderDescription::UniformBlock &lhs, const QShaderDescri
 
     \relates QShaderDescription::PushConstantBlock
  */
-bool operator==(const QShaderDescription::PushConstantBlock &lhs, const QShaderDescription::PushConstantBlock &rhs) Q_DECL_NOTHROW
+bool operator==(const QShaderDescription::PushConstantBlock &lhs, const QShaderDescription::PushConstantBlock &rhs) noexcept
 {
     return lhs.name == rhs.name
             && lhs.size == rhs.size
@@ -1310,7 +1310,7 @@ bool operator==(const QShaderDescription::PushConstantBlock &lhs, const QShaderD
 
     \relates QShaderDescription::StorageBlock
  */
-bool operator==(const QShaderDescription::StorageBlock &lhs, const QShaderDescription::StorageBlock &rhs) Q_DECL_NOTHROW
+bool operator==(const QShaderDescription::StorageBlock &lhs, const QShaderDescription::StorageBlock &rhs) noexcept
 {
     return lhs.blockName == rhs.blockName
             && lhs.instanceName == rhs.instanceName
