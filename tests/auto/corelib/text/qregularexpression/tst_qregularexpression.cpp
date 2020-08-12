@@ -75,7 +75,7 @@ private slots:
     void regularExpressionMatch();
     void JOptionUsage_data();
     void JOptionUsage();
-    void QStringAndQStringRefEquivalence();
+    void QStringAndQStringViewEquivalence();
     void threadSafety_data();
     void threadSafety();
 
@@ -1706,7 +1706,7 @@ void tst_QRegularExpression::JOptionUsage()
     QCOMPARE(re.isValid(), isValid);
 }
 
-void tst_QRegularExpression::QStringAndQStringRefEquivalence()
+void tst_QRegularExpression::QStringAndQStringViewEquivalence()
 {
     const QString subject = QStringLiteral("Mississippi");
     {
@@ -1722,7 +1722,7 @@ void tst_QRegularExpression::QStringAndQStringRefEquivalence()
             QCOMPARE(match.capturedEnd(), 4);
         }
         {
-            const QRegularExpressionMatch match = re.match(QStringRef(&subject));
+            const QRegularExpressionMatch match = re.match(QStringView(subject));
             consistencyCheck(match);
             QVERIFY(match.isValid());
             QVERIFY(match.hasMatch());
@@ -1740,7 +1740,7 @@ void tst_QRegularExpression::QStringAndQStringRefEquivalence()
             QCOMPARE(match.capturedEnd(), 4);
         }
         {
-            const QRegularExpressionMatch match = re.match(QStringRef(&subject), 1);
+            const QRegularExpressionMatch match = re.match(QStringView(subject), 1);
             consistencyCheck(match);
             QVERIFY(match.isValid());
             QVERIFY(match.hasMatch());
@@ -1758,7 +1758,7 @@ void tst_QRegularExpression::QStringAndQStringRefEquivalence()
             QCOMPARE(match.capturedEnd(), 6);
         }
         {
-            const QRegularExpressionMatch match = re.match(subject.midRef(1));
+            const QRegularExpressionMatch match = re.match(QStringView(subject).mid(1));
             consistencyCheck(match);
             QVERIFY(match.isValid());
             QVERIFY(match.hasMatch());
@@ -1776,7 +1776,7 @@ void tst_QRegularExpression::QStringAndQStringRefEquivalence()
             QCOMPARE(match.capturedEnd(), 6);
         }
         {
-            const QRegularExpressionMatch match = re.match(subject.midRef(1), 1);
+            const QRegularExpressionMatch match = re.match(QStringView(subject).mid(1), 1);
             consistencyCheck(match);
             QVERIFY(match.isValid());
             QVERIFY(match.hasMatch());
@@ -1794,7 +1794,7 @@ void tst_QRegularExpression::QStringAndQStringRefEquivalence()
             QCOMPARE(match.capturedEnd(), 7);
         }
         {
-            const QRegularExpressionMatch match = re.match(QStringRef(&subject), 4);
+            const QRegularExpressionMatch match = re.match(QStringView(subject), 4);
             consistencyCheck(match);
             QVERIFY(match.isValid());
             QVERIFY(match.hasMatch());
@@ -1809,7 +1809,7 @@ void tst_QRegularExpression::QStringAndQStringRefEquivalence()
             QVERIFY(!match.hasMatch());
         }
         {
-            const QRegularExpressionMatch match = re.match(subject.midRef(4));
+            const QRegularExpressionMatch match = re.match(QStringView(subject).mid(4));
             consistencyCheck(match);
             QVERIFY(match.isValid());
             QVERIFY(!match.hasMatch());
@@ -1842,7 +1842,7 @@ void tst_QRegularExpression::QStringAndQStringRefEquivalence()
             QVERIFY(!i.hasNext());
         }
         {
-            QRegularExpressionMatchIterator i = re.globalMatch(QStringRef(&subject));
+            QRegularExpressionMatchIterator i = re.globalMatch(QStringView(subject));
             QVERIFY(i.isValid());
 
             consistencyCheck(i);
@@ -1894,7 +1894,7 @@ void tst_QRegularExpression::QStringAndQStringRefEquivalence()
             QVERIFY(!i.hasNext());
         }
         {
-            QRegularExpressionMatchIterator i = re.globalMatch(QStringRef(&subject), 1);
+            QRegularExpressionMatchIterator i = re.globalMatch(QStringView(subject), 1);
             QVERIFY(i.isValid());
 
             consistencyCheck(i);
@@ -1936,7 +1936,7 @@ void tst_QRegularExpression::QStringAndQStringRefEquivalence()
             QVERIFY(!i.hasNext());
         }
         {
-            QRegularExpressionMatchIterator i = re.globalMatch(subject.midRef(1));
+            QRegularExpressionMatchIterator i = re.globalMatch(QStringView(subject).mid(1));
             QVERIFY(i.isValid());
 
             consistencyCheck(i);
@@ -1968,7 +1968,7 @@ void tst_QRegularExpression::QStringAndQStringRefEquivalence()
             QVERIFY(!i.hasNext());
         }
         {
-            QRegularExpressionMatchIterator i = re.globalMatch(subject.midRef(1), 1);
+            QRegularExpressionMatchIterator i = re.globalMatch(QStringView(subject).mid(1), 1);
             QVERIFY(i.isValid());
 
             consistencyCheck(i);
@@ -2000,7 +2000,7 @@ void tst_QRegularExpression::QStringAndQStringRefEquivalence()
             QVERIFY(!i.hasNext());
         }
         {
-            QRegularExpressionMatchIterator i = re.globalMatch(subject.midRef(1), 1);
+            QRegularExpressionMatchIterator i = re.globalMatch(QStringView(subject).mid(1), 1);
             QVERIFY(i.isValid());
 
             consistencyCheck(i);
@@ -2033,7 +2033,7 @@ void tst_QRegularExpression::QStringAndQStringRefEquivalence()
             QVERIFY(!i.hasNext());
         }
         {
-            QRegularExpressionMatchIterator i = re.globalMatch(QStringRef(&subject), 4);
+            QRegularExpressionMatchIterator i = re.globalMatch(QStringView(subject), 4);
             QVERIFY(i.isValid());
 
             consistencyCheck(i);
@@ -2055,7 +2055,7 @@ void tst_QRegularExpression::QStringAndQStringRefEquivalence()
             QVERIFY(!i.hasNext());
         }
         {
-            QRegularExpressionMatchIterator i = re.globalMatch(subject.midRef(4));
+            QRegularExpressionMatchIterator i = re.globalMatch(QStringView(subject).mid(4));
             consistencyCheck(i);
             QVERIFY(i.isValid());
             QVERIFY(!i.hasNext());

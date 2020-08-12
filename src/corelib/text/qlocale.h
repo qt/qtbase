@@ -65,7 +65,6 @@ class Q_CORE_EXPORT QLocale
 {
     Q_GADGET
     friend class QString;
-    friend class QStringRef;
     friend class QByteArray;
     friend class QIntValidator;
     friend class QDoubleValidatorPrivate;

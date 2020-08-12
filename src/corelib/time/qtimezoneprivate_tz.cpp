@@ -1200,7 +1200,7 @@ private:
             path = QFile::symLinkTarget(path);
             int index = path.indexOf(zoneinfo);
             if (index >= 0) // Found zoneinfo file; extract zone name from path:
-                return path.midRef(index + zoneinfo.size()).toUtf8();
+                return QStringView{ path }.mid(index + zoneinfo.size()).toUtf8();
         } while (!path.isEmpty() && --iteration > 0);
 
         return QByteArray();

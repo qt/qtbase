@@ -381,7 +381,7 @@ void ArthurFrame::showSource()
     const QString html = QStringLiteral("<html><pre>") + contents + QStringLiteral("</pre></html>");
 
     QTextBrowser *sourceViewer = new QTextBrowser;
-    sourceViewer->setWindowTitle(tr("Source: %1").arg(m_sourceFileName.midRef(5)));
+    sourceViewer->setWindowTitle(tr("Source: %1").arg(QStringView{ m_sourceFileName }.mid(5)));
     sourceViewer->setParent(this, Qt::Dialog);
     sourceViewer->setAttribute(Qt::WA_DeleteOnClose);
     sourceViewer->setLineWrapMode(QTextEdit::NoWrap);

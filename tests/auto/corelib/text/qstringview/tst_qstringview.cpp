@@ -30,7 +30,6 @@
 #include <QStringTokenizer>
 #include <QString>
 #include <QChar>
-#include <QStringRef>
 #include <QVarLengthArray>
 #include <QList>
 
@@ -71,12 +70,6 @@ static_assert(CanConvert<      QString >::value);
 static_assert(CanConvert<const QString >::value);
 static_assert(CanConvert<      QString&>::value);
 static_assert(CanConvert<const QString&>::value);
-
-static_assert(CanConvert<      QStringRef >::value);
-static_assert(CanConvert<const QStringRef >::value);
-static_assert(CanConvert<      QStringRef&>::value);
-static_assert(CanConvert<const QStringRef&>::value);
-
 
 //
 // ushort
@@ -169,7 +162,6 @@ private Q_SLOTS:
     void arg() const;
 
     void fromQString() const;
-    void fromQStringRef() const;
 
     void fromQCharStar() const
     {
@@ -502,20 +494,6 @@ void tst_QStringView::fromQString() const
     conversion_tests(QString("Hello World!"));
 }
 
-void tst_QStringView::fromQStringRef() const
-{
-    QStringRef null;
-    QString emptyS = "";
-    QStringRef empty(&emptyS);
-
-    QVERIFY( QStringView(null).isNull());
-    QVERIFY( QStringView(null).isEmpty());
-    QVERIFY( QStringView(empty).isEmpty());
-    QVERIFY(!QStringView(empty).isNull());
-
-    conversion_tests(QString("Hello World!").midRef(6));
-}
-
 void tst_QStringView::tokenize_data() const
 {
     // copied from tst_QString
@@ -568,20 +546,6 @@ void tst_QStringView::tokenize() const
     {
         auto rit = result.cbegin();
         for (auto sv : QStringView{str}.tokenize(QString{sep}))
-            QCOMPARE(sv, *rit++);
-    }
-
-    // (rvalue) QStringRef
-#ifdef __cpp_deduction_guides
-    {
-        auto rit = result.cbegin();
-        for (auto sv : QStringTokenizer{str, sep.midRef(0)})
-            QCOMPARE(sv, *rit++);
-    }
-#endif
-    {
-        auto rit = result.cbegin();
-        for (auto sv : QStringView{str}.tokenize(sep.midRef(0)))
             QCOMPARE(sv, *rit++);
     }
 
@@ -649,15 +613,6 @@ void tst_QStringView::tokenize() const
     {
         QStringList actual;
         const QStringTokenizer tok{str, QString{sep}};
-        std::ranges::transform(tok, std::back_inserter(actual),
-                               [](auto sv) { return sv.toString(); });
-        QCOMPARE(result, actual);
-    }
-
-    // (rvalue) QStringRef
-    {
-        QStringList actual;
-        const QStringTokenizer tok{str, sep.midRef(0)};
         std::ranges::transform(tok, std::back_inserter(actual),
                                [](auto sv) { return sv.toString(); });
         QCOMPARE(result, actual);
@@ -886,13 +841,6 @@ void tst_QStringView::overloadResolution()
         QStringViewOverloadResolution::test(ushortArray);
         ushort *ushortPointer = ushortArray;
         QStringViewOverloadResolution::test(ushortPointer);
-    }
-
-    {
-        QStringRef stringRef;
-        QStringViewOverloadResolution::test(stringRef);
-        QStringViewOverloadResolution::test(qAsConst(stringRef));
-        QStringViewOverloadResolution::test(std::move(stringRef));
     }
 
 #if defined(Q_OS_WIN)

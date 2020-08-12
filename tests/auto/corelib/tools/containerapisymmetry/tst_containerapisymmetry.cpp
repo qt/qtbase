@@ -471,7 +471,6 @@ private Q_SLOTS:
     void front_back_QList() { front_back_impl<QList<qintptr>>(); }
     void front_back_QVarLengthArray() { front_back_impl<QVarLengthArray<int>>(); }
     void front_back_QString() { front_back_impl<QString>(); }
-    void front_back_QStringRef() { front_back_impl<QStringRef>(); }
     void front_back_QStringView() { front_back_impl<QStringView>(); }
     void front_back_QLatin1String() { front_back_impl<QLatin1String>(); }
     void front_back_QByteArray() { front_back_impl<QByteArray>(); }
@@ -773,7 +772,6 @@ Container make(int size)
 
 static QString s_string = QStringLiteral("\1\2\3\4\5\6\7");
 
-template <> QStringRef    make(int size) { return s_string.leftRef(size); }
 template <> QStringView   make(int size) { return QStringView(s_string).left(size); }
 template <> QLatin1String make(int size) { return QLatin1String("\1\2\3\4\5\6\7", size); }
 

@@ -83,7 +83,7 @@ private:
     static QStringList findQmFiles();
     static QString languageName(const QString &qmFile);
     static QColor colorForLanguage(const QString &language);
-    static bool languageMatch(const QString &lang, const QString &qmFile);
+    static bool languageMatch(QStringView lang, QStringView qmFile);
 
     QGroupBox *groupBox;
     QDialogButtonBox *buttonBox;

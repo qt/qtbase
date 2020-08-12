@@ -107,7 +107,6 @@ public:
         ba(LITERAL),
         string(l1string),
         stdstring(LITERAL),
-        stringref(&string, 2, 10),
         achar('c'),
         r2(QLatin1String(LITERAL LITERAL)),
         r3(QLatin1String(LITERAL LITERAL LITERAL)),
@@ -188,18 +187,6 @@ private slots:
     void s_2_string() {
         QBENCHMARK { stdr = stdstring + stdstring; }
         COMPARE(stdr, stdstring + stdstring);
-    }
-
-
-    void separator_2c() { SEP("2 string refs"); }
-
-    void b_2_stringref() {
-        QBENCHMARK { r = stringref % stringref; }
-        COMPARE(r, QString(stringref.toString() + stringref.toString()));
-    }
-    void q_2_stringref() {
-        QBENCHMARK { r = stringref.toString() + stringref.toString(); }
-        COMPARE(r, QString(stringref % stringref));
     }
 
 
@@ -413,7 +400,6 @@ private:
     const QByteArray ba;
     const QString string;
     const std::string stdstring;
-    const QStringRef stringref;
     const QLatin1Char achar;
     const QString r2, r3, r4, r5;
 

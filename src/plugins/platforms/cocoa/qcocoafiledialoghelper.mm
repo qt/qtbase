@@ -435,7 +435,7 @@ static QString strippedText(QString s)
     Q_UNUSED(sender);
     if (mHelper && [mSavePanel isVisible]) {
         QString selection = QString::fromNSString([[mSavePanel URL] path]);
-        if (selection != mCurrentSelection) {
+        if (selection != *mCurrentSelection) {
             *mCurrentSelection = selection;
             mHelper->QNSOpenSavePanelDelegate_selectionChanged(selection);
         }

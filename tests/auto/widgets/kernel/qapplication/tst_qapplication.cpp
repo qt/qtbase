@@ -414,7 +414,7 @@ static char **QString2cstrings(const QString &args)
 {
     static QByteArrayList cache;
 
-    const auto &list = args.splitRef(' ');
+    const auto &list = QStringView{ args }.split(' ');
     auto argarray = new char*[list.count() + 1];
 
     int i = 0;

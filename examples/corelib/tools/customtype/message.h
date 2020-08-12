@@ -65,7 +65,7 @@ public:
 
     Message(const QString &body, const QStringList &headers);
 
-    QString body() const;
+    QStringView body() const;
     QStringList headers() const;
 
 private:

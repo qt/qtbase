@@ -69,7 +69,7 @@ QT_BEGIN_NAMESPACE
 
     When used as an interface type, QStringView allows a single function to accept
     a wide variety of UTF-16 string data sources. One function accepting QStringView
-    thus replaces three function overloads (taking QString, QStringRef, and
+    thus replaces three function overloads (taking QString and
     \c{(const QChar*, int)}), while at the same time enabling even more string data
     sources to be passed to the function, such as \c{u"Hello World"}, a \c char16_t
     string literal.
@@ -105,7 +105,7 @@ QT_BEGIN_NAMESPACE
     allowed in \c constexpr functions). You can use an indexed loop and/or utf16() in
     \c constexpr contexts instead.
 
-    \sa QString, QStringRef
+    \sa QString
 */
 
 /*!
@@ -305,16 +305,6 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringView::QStringView(const QStringRef &str)
-
-    Constructs a string view on \a str.
-
-    \c{str.data()} must remain valid for the lifetime of this string view object.
-
-    The string view will be null if and only if \c{str.isNull()}.
-*/
-
-/*!
     \fn template <typename StdBasicString> QStringView::QStringView(const StdBasicString &str)
 
     Constructs a string view on \a str. The length is taken from \c{str.size()}.
@@ -496,7 +486,7 @@ QT_BEGIN_NAMESPACE
 
     Returns the size of this string view, in UTF-16 code points (that is,
     surrogate pairs count as two for the purposes of this function, the same
-    as in QString and QStringRef).
+    as in QString).
 
     \sa empty(), isEmpty(), isNull(), length()
 */
@@ -918,10 +908,10 @@ QT_BEGIN_NAMESPACE
 
     Returns a string-view that references \a{s}' data, but is never null.
 
-    This is a faster way to convert a QString or QStringRef to a QStringView,
+    This is a faster way to convert a QString to a QStringView,
     if null QStrings can legitimately be treated as empty ones.
 
-    \sa QString::isNull(), QStringRef::isNull(), QStringView
+    \sa QString::isNull(), QStringView
 */
 
 /*!

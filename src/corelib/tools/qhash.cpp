@@ -1049,13 +1049,6 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 
-/*! \fn size_t qHash(const QStringRef &key, size_t seed = 0)
-    \relates QHash
-    \since 5.0
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
-*/
-
 /*! \fn size_t qHash(QStringView key, size_t seed = 0)
     \relates QStringView
     \since 5.10

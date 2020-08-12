@@ -335,8 +335,8 @@ QToolBox *WidgetGallery::createTextToolBox()
                             "How I wonder what you are!\n");
     // Create centered/italic HTML rich text
     QString richText = QLatin1String("<html><head/><body><i>");
-    for (const auto &line : plainText.splitRef(QLatin1Char('\n')))
-        richText += QLatin1String("<center>") + line + QLatin1String("</center>");
+    for (const auto &line : QStringView{ plainText }.split(QLatin1Char('\n')))
+        richText += QString::fromLatin1("<center>%1</center>").arg(line);
     richText += QLatin1String("</i></body></html>");
 
     auto textEdit = createWidget1<QTextEdit>(richText, "textEdit");

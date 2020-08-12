@@ -59,7 +59,6 @@
 template <typename T> QString toQString(const T &t);
 
 template <> QString toQString(const QString &s) { return s; }
-template <> QString toQString(const QStringRef &r) { return r.toString(); }
 template <> QString toQString(const QStringView &v) { return v.toString(); }
 template <> QString toQString(const QLatin1String &l) { return l; }
 template <> QString toQString(const QLatin1Char &l) { return QChar(l); }
@@ -84,8 +83,7 @@ void runScenario()
     // strings default to utf8.
     QLatin1String l1string(LITERAL);
     QString string(l1string);
-    QStringRef stringref(&string, 2, 10);
-    QStringView stringview(stringref);
+    QStringView stringview = QStringView{ string }.mid(2, 10);
     QLatin1Char lchar('c');
     QChar qchar(lchar);
     QChar::SpecialCharacter special(QChar::Nbsp);
@@ -109,7 +107,6 @@ void runScenario()
 
     CHECK(P, l1string, l1string);
     CHECK(P, l1string, string);
-    CHECK(P, l1string, stringref);
     CHECK(Q, l1string, stringview);
     CHECK(P, l1string, lchar);
     CHECK(P, l1string, qchar);
@@ -120,7 +117,6 @@ void runScenario()
     CHECK(Q, l1string, u16charstar);
 
     CHECK(P, string, string);
-    CHECK(P, string, stringref);
     CHECK(Q, string, stringview);
     CHECK(P, string, lchar);
     CHECK(P, string, qchar);
@@ -129,16 +125,6 @@ void runScenario()
     CHECK(Q, string, u16char);
     CHECK(Q, string, u16chararray);
     CHECK(Q, string, u16charstar);
-
-    CHECK(P, stringref, stringref);
-    CHECK(Q, stringref, stringview);
-    CHECK(P, stringref, lchar);
-    CHECK(P, stringref, qchar);
-    CHECK(P, stringref, special);
-    CHECK(P, stringref, QStringLiteral(LITERAL));
-    CHECK(Q, stringref, u16char);
-    CHECK(Q, stringref, u16chararray);
-    CHECK(Q, stringref, u16charstar);
 
     CHECK(Q, stringview, stringview);
     CHECK(Q, stringview, lchar);
@@ -191,7 +177,7 @@ void runScenario()
              toQByteArray(a1).append(toQByteArray(a2))) \
     /* end */
 
-    QByteArray bytearray = stringref.toUtf8();
+    QByteArray bytearray = stringview.toUtf8();
     char *charstar = bytearray.data();
     char chararray[3] = { 'H', 'i', '\0' };
     const char constchararray[3] = { 'H', 'i', '\0' };
@@ -224,9 +210,9 @@ void runScenario()
     QString r;
 
     // self-assignment:
-    r = stringref.toString();
+    r = stringview.toString();
     r = lchar + r;
-    QCOMPARE(r, QString(lchar P stringref));
+    QCOMPARE(r, QString(lchar P stringview));
 
 #ifdef Q_COMPILER_UNICODE_STRINGS
     r = QStringLiteral(UNICODE_LITERAL);

@@ -87,9 +87,7 @@ public:
     void lastIndexOfFunction();
     void leftFunction();
     void leftJustifiedFunction();
-    void leftRefFunction();
     void midFunction();
-    void midRefFunction();
     void numberFunction();
 
     void prependFunction();
@@ -99,7 +97,6 @@ public:
     void resizeFunction();
     void rightFunction();
     void rightJustifiedFunction();
-    void rightRefFunction();
     void sectionFunction();
     void setNumFunction();
     void simplifiedFunction();
@@ -957,31 +954,6 @@ void Widget::arrayOperator()
     if (str[0] == QChar('?'))
         str[0] = QChar('_');
     //! [85]
-}
-
-void Widget::midRefFunction()
-{
-    //! [midRef]
-    QString x = "Nine pineapples";
-    QStringRef y = x.midRef(5, 4);      // y == "pine"
-    QStringRef z = x.midRef(5);         // z == "pineapples"
-    //! [midRef]
-}
-
-void Widget::leftRefFunction()
-{
-    //! [leftRef]
-    QString x = "Pineapple";
-    QStringRef y = x.leftRef(4);        // y == "Pine"
-    //! [leftRef]
-}
-
-void Widget::rightRefFunction()
-{
-    //! [rightRef]
-    QString x = "Pineapple";
-    QStringRef y = x.rightRef(5);       // y == "apple"
-    //! [rightRef]
 }
 
 

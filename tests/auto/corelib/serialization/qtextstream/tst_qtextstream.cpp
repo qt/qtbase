@@ -2528,10 +2528,10 @@ void tst_QTextStream::stringref_write_operator_ToDevice()
     stream.setEncoding(QStringConverter::Latin1);
     stream.setAutoDetectUnicode(true);
 
-    const QString expected = "No explicit lengthExplicit length";
+    const QStringView expected = u"No explicit lengthExplicit length";
 
-    stream << expected.leftRef(18);
-    stream << expected.midRef(18);
+    stream << expected.left(18);
+    stream << expected.mid(18);
     stream.flush();
     QCOMPARE(buf.buffer().constData(), "No explicit lengthExplicit length");
 }

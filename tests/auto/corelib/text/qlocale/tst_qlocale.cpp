@@ -910,7 +910,7 @@ void tst_QLocale::stringToDouble()
     QFETCH(QString, num_str);
     QFETCH(bool, good);
     QFETCH(double, num);
-    QStringRef num_strRef = num_str.leftRef(-1);
+    QStringView num_strRef{ num_str };
 
     QLocale locale(locale_name);
     QCOMPARE(locale.name(), locale_name);
@@ -996,7 +996,7 @@ void tst_QLocale::stringToFloat()
     QFETCH(QString, num_str);
     QFETCH(bool, good);
     QFETCH(double, num);
-    QStringRef num_strRef = num_str.leftRef(-1);
+    QStringView num_strRef{ num_str };
     float fnum = num;
 
     QLocale locale(locale_name);
@@ -1289,8 +1289,8 @@ void tst_QLocale::strtod()
         QCOMPARE(actualOk, ok);
     }
 
-    // and QStringRef, but we can limit the length without allocating memory
-    QStringRef num_strref(&num_str, 0, processed);
+    // and QStringView, but we can limit the length without allocating memory
+    QStringView num_strref = QStringView{ num_str }.mid(0, processed);
     actualOk = false;
     QCOMPARE(QLocale::c().toDouble(num_strref, &actualOk), num);
     QCOMPARE(actualOk, ok);
@@ -1355,7 +1355,7 @@ void tst_QLocale::long_long_conversion()
     QFETCH(QString, num_str);
     QFETCH(bool, good);
     QFETCH(qlonglong, num);
-    QStringRef num_strRef = num_str.leftRef(-1);
+    QStringView num_strRef{ num_str };
 
     QLocale locale(locale_name);
     QCOMPARE(locale.name(), locale_name);

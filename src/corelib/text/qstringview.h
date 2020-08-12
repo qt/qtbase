@@ -46,9 +46,7 @@
     1. offer QStringView, overload some functions taking QString with
     QStringView
 
-    2. like 1, but remove all overloads of functions taking QStringRef,
-    leaving only the function taking QStringView.  Do this only where
-    QStringRef overloads tradionally existed.
+    2. Obsolete: QStringRef and its overloads have been removed.
 
     3. like 2, but replace functions taking QString, too.
 */
@@ -71,7 +69,6 @@ Q_FORWARD_DECLARE_OBJC_CLASS(NSString);
 QT_BEGIN_NAMESPACE
 
 class QString;
-class QStringRef;
 class QStringView;
 class QRegularExpression;
 
@@ -113,7 +110,6 @@ struct IsContainerCompatibleWithQStringView<T, std::enable_if_t<std::conjunction
 
             // These need to be treated specially due to the empty vs null distinction
             std::negation<std::is_same<std::decay_t<T>, QString>>,
-            std::negation<std::is_same<std::decay_t<T>, QStringRef>>,
 
             // Don't make an accidental copy constructor
             std::negation<std::is_same<std::decay_t<T>, QStringView>>
@@ -146,7 +142,7 @@ private:
     using if_compatible_pointer = typename std::enable_if<QtPrivate::IsCompatiblePointer<Pointer>::value, bool>::type;
 
     template <typename T>
-    using if_compatible_qstring_like = typename std::enable_if<std::is_same<T, QString>::value || std::is_same<T, QStringRef>::value, bool>::type;
+    using if_compatible_qstring_like = typename std::enable_if<std::is_same<T, QString>::value, bool>::type;
 
     template <typename T>
     using if_compatible_container = typename std::enable_if<QtPrivate::IsContainerCompatibleWithQStringView<T>::value, bool>::type;
@@ -217,7 +213,6 @@ public:
 
 #ifdef Q_CLANG_QDOC
     QStringView(const QString &str) noexcept;
-    QStringView(const QStringRef &str) noexcept;
 #else
     template <typename String, if_compatible_qstring_like<String> = true>
     QStringView(const String &str) noexcept
@@ -415,7 +410,7 @@ private:
 Q_DECLARE_TYPEINFO(QStringView, Q_PRIMITIVE_TYPE);
 
 template <typename QStringLike, typename std::enable_if<
-    std::is_same<QStringLike, QString>::value || std::is_same<QStringLike, QStringRef>::value,
+    std::is_same<QStringLike, QString>::value,
     bool>::type = true>
 inline QStringView qToStringViewIgnoringNull(const QStringLike &s) noexcept
 { return QStringView(s.data(), s.size()); }

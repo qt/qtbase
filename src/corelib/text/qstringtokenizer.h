@@ -173,7 +173,6 @@ namespace Tok {
     template <> struct ViewForImpl<QLatin1String> { using type = QLatin1String; };
     template <> struct ViewForImpl<QChar>         { using type = QChar; };
     template <> struct ViewForImpl<QString>     : ViewForImpl<QStringView> {};
-    template <> struct ViewForImpl<QStringRef>  : ViewForImpl<QStringView> {};
     template <> struct ViewForImpl<QLatin1Char> : ViewForImpl<QChar> {};
     template <> struct ViewForImpl<char16_t>    : ViewForImpl<QChar> {};
     template <> struct ViewForImpl<char16_t*>   : ViewForImpl<QStringView> {};

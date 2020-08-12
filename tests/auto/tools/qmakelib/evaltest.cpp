@@ -2869,12 +2869,13 @@ void tst_qmakelib::proEval()
     globals.environment = m_env;
     globals.setProperties(m_prop);
     globals.setDirectories(m_indir, m_outdir);
-    ProFile *outPro = parser.parsedProBlock(QStringRef(&out), 0, "out", 1, QMakeParser::FullGrammar);
+    ProFile *outPro =
+            parser.parsedProBlock(out, 0, "out", 1, QMakeParser::FullGrammar);
     if (!outPro->isOk()) {
         qWarning("Expected output is malformed");
         verified = false;
     }
-    ProFile *pro = parser.parsedProBlock(QStringRef(&in), 0, infile, 1, QMakeParser::FullGrammar);
+    ProFile *pro = parser.parsedProBlock(in, 0, infile, 1, QMakeParser::FullGrammar);
     QMakeEvaluator visitor(&globals, &parser, &vfs, &handler);
     visitor.setOutputDir(m_outdir);
 #ifdef Q_OS_WIN

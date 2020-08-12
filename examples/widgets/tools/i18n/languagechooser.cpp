@@ -97,12 +97,12 @@ LanguageChooser::LanguageChooser(const QString &defaultLang, QWidget *parent)
     setWindowTitle("I18N");
 }
 
-bool LanguageChooser::languageMatch(const QString &lang, const QString &qmFile)
+bool LanguageChooser::languageMatch(QStringView lang, QStringView qmFile)
 {
     //qmFile: i18n_xx.qm
-    const QString prefix = "i18n_";
+    const QStringView prefix{ u"i18n_" };
     const int langTokenLength = 2; /*FIXME: is checking two chars enough?*/
-    return qmFile.midRef(qmFile.indexOf(prefix) + prefix.length(), langTokenLength) == lang.leftRef(langTokenLength);
+    return qmFile.mid(qmFile.indexOf(prefix) + prefix.length(), langTokenLength) == lang.left(langTokenLength);
 }
 
 bool LanguageChooser::eventFilter(QObject *object, QEvent *event)

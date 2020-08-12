@@ -55,7 +55,7 @@ void tst_QStringMatcher::qstringmatcher()
 void tst_QStringMatcher::caseSensitivity()
 {
     const QString haystack = QStringLiteral("foobarFoo");
-    const QStringRef needle = haystack.rightRef(3); // "Foo"
+    const QStringView needle = QStringView{ haystack }.right(3); // "Foo"
     QStringMatcher matcher(needle.data(), needle.size());
 
     QCOMPARE(matcher.caseSensitivity(), Qt::CaseSensitive);

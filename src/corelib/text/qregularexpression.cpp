@@ -2191,7 +2191,7 @@ QString QRegularExpressionMatch::captured(QStringView name) const
     there is no capturing group named \a name, returns a null QStringView.
 
     \sa captured(), capturedStart(), capturedEnd(), capturedLength(),
-    QStringRef::isNull()
+    QStringView::isNull()
 */
 QStringView QRegularExpressionMatch::capturedView(QStringView name) const
 {

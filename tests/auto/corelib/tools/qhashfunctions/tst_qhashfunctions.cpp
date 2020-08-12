@@ -69,12 +69,8 @@ private Q_SLOTS:
 void tst_QHashFunctions::consistent()
 {
     // QString-like
-    {
-        const QString s = QStringLiteral("abcdefghijklmnopqrstuvxyz").repeated(16);
-
-        QCOMPARE(qHash(s), qHash(QStringRef(&s)));
-        QCOMPARE(qHash(s), qHash(QStringView(s)));
-    }
+    const QString s = QStringLiteral("abcdefghijklmnopqrstuvxyz").repeated(16);
+    QCOMPARE(qHash(s), qHash(QStringView(s)));
 }
 
 void tst_QHashFunctions::initTestCase()
@@ -175,10 +171,6 @@ void tst_QHashFunctions::qhash_of_empty_and_null_qstring()
     QString null, empty("");
     QCOMPARE(null, empty);
     QCOMPARE(qHash(null, seed), qHash(empty, seed));
-
-    QStringRef nullRef, emptyRef(&empty);
-    QCOMPARE(nullRef, emptyRef);
-    QCOMPARE(qHash(nullRef, seed), qHash(emptyRef, seed));
 
     QStringView nullView, emptyView(empty);
     QCOMPARE(nullView, emptyView);

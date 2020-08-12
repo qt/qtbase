@@ -62,7 +62,6 @@ QT_BEGIN_NAMESPACE
 class QBitArray;
 class QByteArray;
 class QString;
-class QStringRef;
 class QLatin1String;
 
 Q_CORE_EXPORT int qGlobalQHashSeed();
@@ -159,8 +158,6 @@ Q_CORE_EXPORT Q_DECL_PURE_FUNCTION size_t qHash(const QByteArrayView &key, size_
 Q_CORE_EXPORT Q_DECL_PURE_FUNCTION size_t qHash(QStringView key, size_t seed = 0) noexcept;
 #if QT_STRINGVIEW_LEVEL < 2
 inline Q_DECL_PURE_FUNCTION size_t qHash(const QString &key, size_t seed = 0) noexcept
-{ return qHash(QStringView{key}, seed); }
-inline Q_DECL_PURE_FUNCTION size_t qHash(const QStringRef &key, size_t seed = 0) noexcept
 { return qHash(QStringView{key}, seed); }
 #endif
 Q_CORE_EXPORT Q_DECL_PURE_FUNCTION size_t qHash(const QBitArray &key, size_t seed = 0) noexcept;
@@ -290,7 +287,6 @@ template <typename T1, typename T2> inline size_t qHash(const std::pair<T1, T2> 
     QT_SPECIALIZE_STD_HASH_TO_CALL_QHASH(Class, argument_type)
 
 QT_SPECIALIZE_STD_HASH_TO_CALL_QHASH_BY_CREF(QString)
-QT_SPECIALIZE_STD_HASH_TO_CALL_QHASH_BY_CREF(QStringRef)
 QT_SPECIALIZE_STD_HASH_TO_CALL_QHASH_BY_VALUE(QStringView)
 QT_SPECIALIZE_STD_HASH_TO_CALL_QHASH_BY_VALUE(QLatin1String)
 QT_SPECIALIZE_STD_HASH_TO_CALL_QHASH_BY_CREF(QByteArray)

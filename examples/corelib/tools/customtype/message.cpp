@@ -60,8 +60,7 @@ Message::Message(const QString &body, const QStringList &headers)
 //! [custom type streaming operator]
 QDebug operator<<(QDebug dbg, const Message &message)
 {
-    const QString body = message.body();
-    QList<QStringRef> pieces = body.splitRef(QLatin1String("\r\n"), Qt::SkipEmptyParts);
+    QList<QStringView> pieces = message.body().split(u"\r\n", Qt::SkipEmptyParts);
     if (pieces.isEmpty())
         dbg.nospace() << "Message()";
     else if (pieces.size() == 1)
@@ -73,7 +72,7 @@ QDebug operator<<(QDebug dbg, const Message &message)
 //! [custom type streaming operator]
 
 //! [getter functions]
-QString Message::body() const
+QStringView Message::body() const
 {
     return m_body;
 }
