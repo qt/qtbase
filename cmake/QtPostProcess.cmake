@@ -35,6 +35,8 @@ macro(qt_collect_third_party_deps target)
             set(dep ${base_dep})
         endif()
 
+        # Strip any directory scope tokens.
+        qt_internal_strip_target_directory_scope_token("${dep}" dep)
         if(TARGET ${dep})
             list(FIND third_party_deps_seen ${dep} dep_seen)
 
