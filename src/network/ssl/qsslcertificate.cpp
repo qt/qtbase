@@ -121,7 +121,8 @@
 
     \value Wildcard This provides a simple pattern matching syntax
     similar to that used by shells (command interpreters) for "file
-    globbing". See \l{QRegularExpression Wildcard matching}.
+    globbing". See \l {QRegularExpression#Wildcard matching}
+    {QRegularExpression Wildcard Matching}.
 
     \value FixedString The pattern is a fixed string. This is
     equivalent to using the RegularExpression pattern on a string in

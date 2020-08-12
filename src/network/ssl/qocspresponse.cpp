@@ -145,14 +145,14 @@ QOcspResponse::~QOcspResponse() = default;
 /*!
     \since 5.13
 
-    Copy-assigns and returns a reference to this response.
+    Copy-assigns \a other and returns a reference to this response.
 */
 QOcspResponse &QOcspResponse::operator=(const QOcspResponse &) = default;
 
 /*!
     \since 5.13
 
-    Move-assigns to this QOcspResponse instance.
+    Move-assigns \a other to this QOcspResponse instance.
 */
 QOcspResponse &QOcspResponse::operator=(QOcspResponse &&) noexcept = default;
 
