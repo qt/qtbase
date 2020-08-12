@@ -291,15 +291,6 @@ QT_WARNING_POP
 
 #endif // QT_DEPRECATED_SINCE(5, 15)
 
-inline QString stringRefToString(const QStringRef &stringRef)
-{
-    // Calling QStringRef::toString() on a NULL QStringRef in some cases returns
-    // an empty string (i.e. QString("")) instead of a NULL string (i.e. QString()).
-    // QDom implementation differentiates between NULL and empty strings, so
-    // we need this as workaround to keep the current behavior unchanged.
-    return stringRef.isNull() ? QString() : stringRef.toString();
-}
-
 bool QDomBuilder::startElement(const QString &nsURI, const QString &qName,
                                const QXmlStreamAttributes &atts)
 {
@@ -317,12 +308,12 @@ bool QDomBuilder::startElement(const QString &nsURI, const QString &qName,
     for (const auto &attr : atts) {
         auto domElement = static_cast<QDomElementPrivate *>(node);
         if (nsProcessing) {
-            domElement->setAttributeNS(stringRefToString(attr.namespaceUri()),
-                                       stringRefToString(attr.qualifiedName()),
-                                       stringRefToString(attr.value()));
+            domElement->setAttributeNS(attr.namespaceUri().toString(),
+                                       attr.qualifiedName().toString(),
+                                       attr.value().toString());
         } else {
-            domElement->setAttribute(stringRefToString(attr.qualifiedName()),
-                                     stringRefToString(attr.value()));
+            domElement->setAttribute(attr.qualifiedName().toString(),
+                                     attr.value().toString());
         }
     }
 
@@ -513,9 +504,9 @@ bool QDomParser::parseProlog()
             }
             foundDtd = true;
 
-            if (!domBuilder.startDTD(stringRefToString(reader->dtdName()),
-                                     stringRefToString(reader->dtdPublicId()),
-                                     stringRefToString(reader->dtdSystemId()))) {
+            if (!domBuilder.startDTD(reader->dtdName().toString(),
+                                     reader->dtdPublicId().toString(),
+                                     reader->dtdSystemId().toString())) {
                 domBuilder.fatalError(
                         QDomParser::tr("Error occurred while processing document type declaration"));
                 return false;
@@ -550,13 +541,13 @@ bool QDomParser::parseBody()
 {
     Q_ASSERT(reader);
 
-    std::stack<QStringRef> tagStack;
+    std::stack<QString> tagStack;
     while (!reader->atEnd() && !reader->hasError()) {
         switch (reader->tokenType()) {
         case QXmlStreamReader::StartElement:
-            tagStack.push(reader->qualifiedName());
-            if (!domBuilder.startElement(stringRefToString(reader->namespaceUri()),
-                                         stringRefToString(reader->qualifiedName()),
+            tagStack.push(reader->qualifiedName().toString());
+            if (!domBuilder.startElement(reader->namespaceUri().toString(),
+                                         reader->qualifiedName().toString(),
                                          reader->attributes())) {
                 domBuilder.fatalError(
                         QDomParser::tr("Error occurred while processing a start element"));
@@ -641,10 +632,10 @@ bool QDomParser::parseMarkupDecl()
         // parsed result. So we don't need to do anything for the Internal Entities.
         if (!entityDecl.publicId().isEmpty() || !entityDecl.systemId().isEmpty()) {
             // External Entity
-            if (!domBuilder.unparsedEntityDecl(stringRefToString(entityDecl.name()),
-                                               stringRefToString(entityDecl.publicId()),
-                                               stringRefToString(entityDecl.systemId()),
-                                               stringRefToString(entityDecl.notationName()))) {
+            if (!domBuilder.unparsedEntityDecl(entityDecl.name().toString(),
+                                               entityDecl.publicId().toString(),
+                                               entityDecl.systemId().toString(),
+                                               entityDecl.notationName().toString())) {
                 domBuilder.fatalError(
                         QDomParser::tr("Error occurred while processing entity declaration"));
                 return false;
@@ -654,9 +645,9 @@ bool QDomParser::parseMarkupDecl()
 
     const auto notations = reader->notationDeclarations();
     for (const auto &notationDecl : notations) {
-        if (!domBuilder.notationDecl(stringRefToString(notationDecl.name()),
-                                     stringRefToString(notationDecl.publicId()),
-                                     stringRefToString(notationDecl.systemId()))) {
+        if (!domBuilder.notationDecl(notationDecl.name().toString(),
+                                     notationDecl.publicId().toString(),
+                                     notationDecl.systemId().toString())) {
             domBuilder.fatalError(
                     QDomParser::tr("Error occurred while processing notation declaration"));
             return false;

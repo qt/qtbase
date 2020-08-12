@@ -195,7 +195,7 @@ static QVariant mapFromXml(QXmlStreamReader &xml, Converter::Options options)
 
 static QVariant variantFromXml(QXmlStreamReader &xml, Converter::Options options)
 {
-    QStringRef name = xml.name();
+    QStringView name = xml.name();
     if (name == QLatin1String("list"))
         return listFromXml(xml, options);
     if (name == QLatin1String("map"))
@@ -207,7 +207,7 @@ static QVariant variantFromXml(QXmlStreamReader &xml, Converter::Options options
     }
 
     QXmlStreamAttributes attrs = xml.attributes();
-    QStringRef type = attrs.value(QLatin1String("type"));
+    QStringView type = attrs.value(QLatin1String("type"));
 
     forever {
         xml.readNext();
@@ -222,7 +222,7 @@ static QVariant variantFromXml(QXmlStreamReader &xml, Converter::Options options
         exit(EXIT_FAILURE);
     }
 
-    QStringRef text = xml.text();
+    QStringView text = xml.text();
     if (!xml.isCDATA())
         text = text.trimmed();
 
@@ -247,7 +247,7 @@ static QVariant variantFromXml(QXmlStreamReader &xml, Converter::Options options
         }
     } else if (type == QLatin1String("bytes")) {
         QByteArray data = text.toLatin1();
-        QStringRef encoding = attrs.value("encoding");
+        QStringView encoding = attrs.value("encoding");
         if (encoding == QLatin1String("base64url")) {
             result = QByteArray::fromBase64(data, QByteArray::Base64UrlEncoding);
         } else if (encoding == QLatin1String("hex")) {

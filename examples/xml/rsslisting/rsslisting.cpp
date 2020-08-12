@@ -214,11 +214,11 @@ void RSSListing::parseXml()
     while (!xml.atEnd()) {
         xml.readNext();
         if (xml.isStartElement()) {
-            if (xml.name() == "item")
+            if (xml.name() == u"item")
                 linkString = xml.attributes().value("rss:about").toString();
             currentTag = xml.name().toString();
         } else if (xml.isEndElement()) {
-            if (xml.name() == "item") {
+            if (xml.name() == u"item") {
 
                 QTreeWidgetItem *item = new QTreeWidgetItem;
                 item->setText(0, titleString);

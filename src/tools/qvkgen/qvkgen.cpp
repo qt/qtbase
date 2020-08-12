@@ -104,7 +104,7 @@ void VkSpecParser::parseCommands()
         m_reader.readNext();
         if (m_reader.isEndElement() && m_reader.name() == QStringLiteral("commands"))
             return;
-        if (m_reader.isStartElement() && m_reader.name() == "command")
+        if (m_reader.isStartElement() && m_reader.name() == u"command")
             m_commands.append(parseCommand());
     }
 }
@@ -162,7 +162,7 @@ VkSpecParser::TypedName VkSpecParser::parseParamOrProto(const QString &tag)
                 skip();
             }
         } else {
-            QStringRef text = m_reader.text().trimmed();
+            auto text = m_reader.text().trimmed();
             if (!text.isEmpty()) {
                 if (text.startsWith(QLatin1Char('['))) {
                     t.typeSuffix += text;

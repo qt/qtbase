@@ -384,13 +384,9 @@ QXmlStreamEntityResolver *QXmlStreamReader::entityResolver() const
   token at the time it is reported. In addition, QXmlStreamReader
   avoids the many small string allocations that it normally takes to
   map an XML document to a convenient and Qt-ish API. It does this by
-  reporting all string data as QStringRef rather than real QString
-  objects. QStringRef is a thin wrapper around QString substrings that
-  provides a subset of the QString API without the memory allocation
-  and reference-counting overhead. Calling
-  \l{QStringRef::toString()}{toString()} on any of those objects
-  returns an equivalent real QString object.
-
+  reporting all string data as QStringView rather than real QString
+  objects. Calling \l{QStringView::toString()}{toString()} on any of
+  those objects returns an equivalent real QString object.
 */
 
 
@@ -1928,7 +1924,7 @@ qint64 QXmlStreamReader::characterOffset() const
 /*!  Returns the text of \l Characters, \l Comment, \l DTD, or
   EntityReference.
  */
-QStringRef QXmlStreamReader::text() const
+QStringView QXmlStreamReader::text() const
 {
     Q_D(const QXmlStreamReader);
     return d->text;
@@ -1971,12 +1967,12 @@ QXmlStreamEntityDeclarations QXmlStreamReader::entityDeclarations() const
   name. Otherwise an empty string is returned.
 
  */
-QStringRef QXmlStreamReader::dtdName() const
+QStringView QXmlStreamReader::dtdName() const
 {
    Q_D(const QXmlStreamReader);
    if (d->type == QXmlStreamReader::DTD)
        return d->dtdName;
-   return QStringRef();
+   return QStringView();
 }
 
 /*!
@@ -1986,12 +1982,12 @@ QStringRef QXmlStreamReader::dtdName() const
   public identifier. Otherwise an empty string is returned.
 
  */
-QStringRef QXmlStreamReader::dtdPublicId() const
+QStringView QXmlStreamReader::dtdPublicId() const
 {
    Q_D(const QXmlStreamReader);
    if (d->type == QXmlStreamReader::DTD)
        return d->dtdPublicId;
-   return QStringRef();
+   return QStringView();
 }
 
 /*!
@@ -2001,12 +1997,12 @@ QStringRef QXmlStreamReader::dtdPublicId() const
   system identifier. Otherwise an empty string is returned.
 
  */
-QStringRef QXmlStreamReader::dtdSystemId() const
+QStringView QXmlStreamReader::dtdSystemId() const
 {
    Q_D(const QXmlStreamReader);
    if (d->type == QXmlStreamReader::DTD)
        return d->dtdSystemId;
-   return QStringRef();
+   return QStringView();
 }
 
 /*!
@@ -2187,7 +2183,7 @@ QXmlStreamReader::Error QXmlStreamReader::error() const
 /*!
   Returns the target of a ProcessingInstruction.
  */
-QStringRef QXmlStreamReader::processingInstructionTarget() const
+QStringView QXmlStreamReader::processingInstructionTarget() const
 {
     Q_D(const QXmlStreamReader);
     return d->processingInstructionTarget;
@@ -2196,7 +2192,7 @@ QStringRef QXmlStreamReader::processingInstructionTarget() const
 /*!
   Returns the data of a ProcessingInstruction.
  */
-QStringRef QXmlStreamReader::processingInstructionData() const
+QStringView QXmlStreamReader::processingInstructionData() const
 {
     Q_D(const QXmlStreamReader);
     return d->processingInstructionData;
@@ -2209,7 +2205,7 @@ QStringRef QXmlStreamReader::processingInstructionData() const
 
   \sa namespaceUri(), qualifiedName()
  */
-QStringRef QXmlStreamReader::name() const
+QStringView QXmlStreamReader::name() const
 {
     Q_D(const QXmlStreamReader);
     return d->name;
@@ -2220,7 +2216,7 @@ QStringRef QXmlStreamReader::name() const
 
   \sa name(), qualifiedName()
  */
-QStringRef QXmlStreamReader::namespaceUri() const
+QStringView QXmlStreamReader::namespaceUri() const
 {
     Q_D(const QXmlStreamReader);
     return d->namespaceUri;
@@ -2238,7 +2234,7 @@ QStringRef QXmlStreamReader::namespaceUri() const
 
    \sa name(), prefix(), namespaceUri()
  */
-QStringRef QXmlStreamReader::qualifiedName() const
+QStringView QXmlStreamReader::qualifiedName() const
 {
     Q_D(const QXmlStreamReader);
     return d->qualifiedName;
@@ -2253,7 +2249,7 @@ QStringRef QXmlStreamReader::qualifiedName() const
 
   \sa name(), qualifiedName()
 */
-QStringRef QXmlStreamReader::prefix() const
+QStringView QXmlStreamReader::prefix() const
 {
     Q_D(const QXmlStreamReader);
     return d->prefix;
@@ -2317,15 +2313,15 @@ QXmlStreamAttribute::QXmlStreamAttribute(const QString &qualifiedName, const QSt
     m_value = QXmlStreamStringRef(QStringRef(&value));
 }
 
-/*! \fn QStringRef QXmlStreamAttribute::namespaceUri() const
+/*! \fn QStringView QXmlStreamAttribute::namespaceUri() const
 
    Returns the attribute's resolved namespaceUri, or an empty string
    reference if the attribute does not have a defined namespace.
  */
-/*! \fn QStringRef QXmlStreamAttribute::name() const
+/*! \fn QStringView QXmlStreamAttribute::name() const
    Returns the attribute's local name.
  */
-/*! \fn QStringRef QXmlStreamAttribute::qualifiedName() const
+/*! \fn QStringView QXmlStreamAttribute::qualifiedName() const
    Returns the attribute's qualified name.
 
    A qualified name is the raw name of an attribute in the XML
@@ -2337,7 +2333,7 @@ QXmlStreamAttribute::QXmlStreamAttribute(const QString &qualifiedName, const QSt
    the attribute's local name().
  */
 /*!
-   \fn QStringRef QXmlStreamAttribute::prefix() const
+   \fn QStringView QXmlStreamAttribute::prefix() const
    \since 4.4
    Returns the attribute's namespace prefix.
 
@@ -2345,7 +2341,7 @@ QXmlStreamAttribute::QXmlStreamAttribute(const QString &qualifiedName, const QSt
 
 */
 
-/*! \fn QStringRef QXmlStreamAttribute::value() const
+/*! \fn QStringView QXmlStreamAttribute::value() const
    Returns the attribute's value.
  */
 
@@ -2421,15 +2417,15 @@ QXmlStreamNotationDeclaration::QXmlStreamNotationDeclaration()
 {
 }
 
-/*! \fn QStringRef QXmlStreamNotationDeclaration::name() const
+/*! \fn QStringView QXmlStreamNotationDeclaration::name() const
 
 Returns the notation name.
 */
-/*! \fn QStringRef QXmlStreamNotationDeclaration::systemId() const
+/*! \fn QStringView QXmlStreamNotationDeclaration::systemId() const
 
 Returns the system identifier.
 */
-/*! \fn QStringRef QXmlStreamNotationDeclaration::publicId() const
+/*! \fn QStringView QXmlStreamNotationDeclaration::publicId() const
 
 Returns the public identifier.
 */
@@ -2492,11 +2488,11 @@ QXmlStreamNamespaceDeclaration::QXmlStreamNamespaceDeclaration(const QString &pr
     m_namespaceUri = namespaceUri;
 }
 
-/*! \fn QStringRef QXmlStreamNamespaceDeclaration::prefix() const
+/*! \fn QStringView QXmlStreamNamespaceDeclaration::prefix() const
 
 Returns the prefix.
 */
-/*! \fn QStringRef QXmlStreamNamespaceDeclaration::namespaceUri() const
+/*! \fn QStringView QXmlStreamNamespaceDeclaration::namespaceUri() const
 
 Returns the namespaceUri.
 */
@@ -2545,23 +2541,23 @@ QXmlStreamEntityDeclaration::QXmlStreamEntityDeclaration()
     This function is very fast and never fails.
 */
 
-/*! \fn QStringRef QXmlStreamEntityDeclaration::name() const
+/*! \fn QStringView QXmlStreamEntityDeclaration::name() const
 
 Returns the entity name.
 */
-/*! \fn QStringRef QXmlStreamEntityDeclaration::notationName() const
+/*! \fn QStringView QXmlStreamEntityDeclaration::notationName() const
 
 Returns the notation name.
 */
-/*! \fn QStringRef QXmlStreamEntityDeclaration::systemId() const
+/*! \fn QStringView QXmlStreamEntityDeclaration::systemId() const
 
 Returns the system identifier.
 */
-/*! \fn QStringRef QXmlStreamEntityDeclaration::publicId() const
+/*! \fn QStringView QXmlStreamEntityDeclaration::publicId() const
 
 Returns the public identifier.
 */
-/*! \fn QStringRef QXmlStreamEntityDeclaration::value() const
+/*! \fn QStringView QXmlStreamEntityDeclaration::value() const
 
 Returns the entity's value.
 */
@@ -2581,13 +2577,13 @@ Returns the entity's value.
   described with \a namespaceUri, or an empty string reference if the
   attribute is not defined. The \a namespaceUri can be empty.
  */
-QStringRef QXmlStreamAttributes::value(const QString &namespaceUri, const QString &name) const
+QStringView QXmlStreamAttributes::value(const QString &namespaceUri, const QString &name) const
 {
     for (const QXmlStreamAttribute &attribute : *this) {
         if (attribute.name() == name && attribute.namespaceUri() == namespaceUri)
             return attribute.value();
     }
-    return QStringRef();
+    return QStringView();
 }
 
 /*!\overload
@@ -2595,13 +2591,13 @@ QStringRef QXmlStreamAttributes::value(const QString &namespaceUri, const QStrin
   described with \a namespaceUri, or an empty string reference if the
   attribute is not defined. The \a namespaceUri can be empty.
  */
-QStringRef QXmlStreamAttributes::value(const QString &namespaceUri, QLatin1String name) const
+QStringView QXmlStreamAttributes::value(const QString &namespaceUri, QLatin1String name) const
 {
     for (const QXmlStreamAttribute &attribute : *this) {
         if (attribute.name() == name && attribute.namespaceUri() == namespaceUri)
             return attribute.value();
     }
-    return QStringRef();
+    return QStringView();
 }
 
 /*!\overload
@@ -2609,13 +2605,13 @@ QStringRef QXmlStreamAttributes::value(const QString &namespaceUri, QLatin1Strin
   described with \a namespaceUri, or an empty string reference if the
   attribute is not defined. The \a namespaceUri can be empty.
  */
-QStringRef QXmlStreamAttributes::value(QLatin1String namespaceUri, QLatin1String name) const
+QStringView QXmlStreamAttributes::value(QLatin1String namespaceUri, QLatin1String name) const
 {
     for (const QXmlStreamAttribute &attribute : *this) {
         if (attribute.name() == name && attribute.namespaceUri() == namespaceUri)
             return attribute.value();
     }
-    return QStringRef();
+    return QStringView();
 }
 
 /*!\overload
@@ -2630,13 +2626,13 @@ QStringRef QXmlStreamAttributes::value(QLatin1String namespaceUri, QLatin1String
   use qualified names, but a resolved namespaceUri and the attribute's
   local name.
  */
-QStringRef QXmlStreamAttributes::value(const QString &qualifiedName) const
+QStringView QXmlStreamAttributes::value(const QString &qualifiedName) const
 {
     for (const QXmlStreamAttribute &attribute : *this) {
         if (attribute.qualifiedName() == qualifiedName)
             return attribute.value();
     }
-    return QStringRef();
+    return QStringView();
 }
 
 /*!\overload
@@ -2651,13 +2647,13 @@ QStringRef QXmlStreamAttributes::value(const QString &qualifiedName) const
   use qualified names, but a resolved namespaceUri and the attribute's
   local name.
  */
-QStringRef QXmlStreamAttributes::value(QLatin1String qualifiedName) const
+QStringView QXmlStreamAttributes::value(QLatin1String qualifiedName) const
 {
     for (const QXmlStreamAttribute &attribute : *this) {
         if (attribute.qualifiedName() == qualifiedName)
             return attribute.value();
     }
-    return QStringRef();
+    return QStringView();
 }
 
 /*!Appends a new attribute with \a name in the namespace
@@ -2754,12 +2750,12 @@ bool QXmlStreamReader::isStandaloneDocument() const
      version string as specified in the XML declaration.
      Otherwise an empty string is returned.
  */
-QStringRef QXmlStreamReader::documentVersion() const
+QStringView QXmlStreamReader::documentVersion() const
 {
    Q_D(const QXmlStreamReader);
    if (d->type == QXmlStreamReader::StartDocument)
        return d->documentVersion;
-   return QStringRef();
+   return QStringView();
 }
 
 /*!
@@ -2769,12 +2765,12 @@ QStringRef QXmlStreamReader::documentVersion() const
      encoding string as specified in the XML declaration.
      Otherwise an empty string is returned.
  */
-QStringRef QXmlStreamReader::documentEncoding() const
+QStringView QXmlStreamReader::documentEncoding() const
 {
    Q_D(const QXmlStreamReader);
    if (d->type == QXmlStreamReader::StartDocument)
        return d->documentEncoding;
-   return QStringRef();
+   return QStringView();
 }
 
 #endif // QT_NO_XMLSTREAMREADER

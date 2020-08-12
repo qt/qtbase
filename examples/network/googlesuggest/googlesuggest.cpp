@@ -217,8 +217,8 @@ void GSuggestCompletion::handleNetworkData(QNetworkReply *networkReply)
         while (!xml.atEnd()) {
             xml.readNext();
             if (xml.tokenType() == QXmlStreamReader::StartElement)
-                if (xml.name() == "suggestion") {
-                    QStringRef str = xml.attributes().value("data");
+                if (xml.name() == u"suggestion") {
+                    auto str = xml.attributes().value("data");
                     choices << str.toString();
                 }
         }

@@ -517,14 +517,14 @@ void QMimeBinaryProvider::loadMimeTypePrivate(QMimeTypePrivate &data)
             if (xml.name() != QLatin1String("mime-type")) {
                 continue;
             }
-            const QStringRef name = xml.attributes().value(QLatin1String("type"));
+            const auto name = xml.attributes().value(QLatin1String("type"));
             if (name.isEmpty())
                 continue;
             if (name.compare(data.name, Qt::CaseInsensitive))
                 qWarning() << "Got name" << name << "in file" << file << "expected" << data.name;
 
             while (xml.readNextStartElement()) {
-                const QStringRef tag = xml.name();
+                const auto tag = xml.name();
                 if (tag == QLatin1String("comment")) {
                     QString lang = xml.attributes().value(QLatin1String("xml:lang")).toString();
                     const QString text = xml.readElementText();

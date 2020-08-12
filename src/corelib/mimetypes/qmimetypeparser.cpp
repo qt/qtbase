@@ -107,7 +107,7 @@ static const char matchMaskAttributeC[] = "mask";
     Overwrite to process the sequence of parsed data
 */
 
-QMimeTypeParserBase::ParseState QMimeTypeParserBase::nextState(ParseState currentState, const QStringRef &startElement)
+QMimeTypeParserBase::ParseState QMimeTypeParserBase::nextState(ParseState currentState, QStringView startElement)
 {
     switch (currentState) {
     case ParseBeginning:
@@ -174,7 +174,7 @@ struct CreateMagicMatchRuleResult {
     QString errorMessage; // must be first
     QMimeMagicRule rule;
 
-    CreateMagicMatchRuleResult(const QStringRef &type, const QStringRef &value, const QStringRef &offsets, const QStringRef &mask)
+    CreateMagicMatchRuleResult(QStringView type, QStringView value, QStringView offsets, QStringView mask)
         : errorMessage(), rule(type.toString(), value.toUtf8(), offsets.toString(), mask.toLatin1(), &errorMessage)
     {
 
@@ -183,10 +183,10 @@ struct CreateMagicMatchRuleResult {
 
 static CreateMagicMatchRuleResult createMagicMatchRule(const QXmlStreamAttributes &atts)
 {
-    const QStringRef type = atts.value(QLatin1String(matchTypeAttributeC));
-    const QStringRef value = atts.value(QLatin1String(matchValueAttributeC));
-    const QStringRef offsets = atts.value(QLatin1String(matchOffsetAttributeC));
-    const QStringRef mask = atts.value(QLatin1String(matchMaskAttributeC));
+    const auto type = atts.value(QLatin1String(matchTypeAttributeC));
+    const auto value = atts.value(QLatin1String(matchValueAttributeC));
+    const auto offsets = atts.value(QLatin1String(matchOffsetAttributeC));
+    const auto mask = atts.value(QLatin1String(matchMaskAttributeC));
     return CreateMagicMatchRuleResult(type, value, offsets, mask);
 }
 #endif
@@ -265,7 +265,7 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
                 break;
             case ParseMagic: {
                 priority = 50;
-                const QStringRef priorityS = atts.value(QLatin1String(priorityAttributeC));
+                const auto priorityS = atts.value(QLatin1String(priorityAttributeC));
                 if (!priorityS.isEmpty()) {
                     if (!parseNumber(priorityS, &priority, errorMessage))
                         return false;
@@ -301,7 +301,7 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
         // continue switch QXmlStreamReader::Token...
         case QXmlStreamReader::EndElement: // Finished element
         {
-            const QStringRef elementName = reader.name();
+            const auto elementName = reader.name();
             if (elementName == QLatin1String(mimeTypeTagC)) {
                 if (!process(QMimeType(data), errorMessage))
                     return false;

@@ -265,20 +265,20 @@ private:
             xml.readNext();
 
             if (xml.tokenType() == QXmlStreamReader::StartElement) {
-                QStringRef className = xml.attributes().value("class");
-                inFlightName |= xml.name() == "h1";
-                inFlightStatus |= className == "FlightDetailHeaderStatus";
-                inFlightMap |= className == "flightMap";
-                if (xml.name() == "td" && !className.isEmpty()) {
-                    if (className.contains("fieldTitle")) {
+                auto className = xml.attributes().value("class");
+                inFlightName |= xml.name() == u"h1";
+                inFlightStatus |= className == u"FlightDetailHeaderStatus";
+                inFlightMap |= className == u"flightMap";
+                if (xml.name() == u"td" && !className.isEmpty()) {
+                    if (className.contains(u"fieldTitle")) {
                         inFieldName = true;
                         fieldNames += QString();
                         fieldValues += QString();
                     }
-                    if (className.contains("fieldValue"))
+                    if (className.contains(u"fieldValue"))
                         inFieldValue = true;
                 }
-                if (xml.name() == "img" && inFlightMap) {
+                if (xml.name() == u"img" && inFlightMap) {
                     const QByteArray encoded
                         = ("http://mobile.flightview.com/" % xml.attributes().value("src")).toLatin1();
                     QUrl url = QUrl::fromPercentEncoding(encoded);
@@ -287,11 +287,11 @@ private:
             }
 
             if (xml.tokenType() == QXmlStreamReader::EndElement) {
-                inFlightName &= xml.name() != "h1";
-                inFlightStatus &= xml.name() != "div";
-                inFlightMap &= xml.name() != "div";
-                inFieldName &= xml.name() != "td";
-                inFieldValue &= xml.name() != "td";
+                inFlightName &= xml.name() != u"h1";
+                inFlightStatus &= xml.name() != u"div";
+                inFlightMap &= xml.name() != u"div";
+                inFieldName &= xml.name() != u"td";
+                inFieldValue &= xml.name() != u"td";
             }
 
             if (xml.tokenType() == QXmlStreamReader::Characters) {

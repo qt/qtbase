@@ -172,7 +172,7 @@ static double versionFromUiAttribute(QXmlStreamReader &reader)
     const QString versionAttribute = QLatin1String("version");
     if (!attributes.hasAttribute(versionAttribute))
         return 4.0;
-    const QStringRef version = attributes.value(versionAttribute);
+    const QStringView version = attributes.value(versionAttribute);
     return version.toDouble();
 }
 
