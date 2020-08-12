@@ -2330,6 +2330,8 @@ static QByteArray createPropertyInfo()
     QList<int> blockMap;
     int used = 0;
 
+    // Group BMP data into blocks indexed by their 12 most significant bits
+    // (blockId = ucs >> 5):
     for (int block = 0; block < BMP_END/BMP_BLOCKSIZE; ++block) {
         UniqueBlock b;
         b.values.reserve(BMP_BLOCKSIZE);
@@ -2349,6 +2351,8 @@ static QByteArray createPropertyInfo()
     }
     int bmp_blocks = uniqueBlocks.size();
 
+    // Group SMP data into blocks indexed by their 9 most significant bits, plus
+    // an offset to put them after the BMP blocks (blockId = (ucs >> 8) + 0x880):
     for (int block = BMP_END/SMP_BLOCKSIZE; block < SMP_END/SMP_BLOCKSIZE; ++block) {
         UniqueBlock b;
         b.values.reserve(SMP_BLOCKSIZE);
@@ -2386,10 +2390,11 @@ static QByteArray createPropertyInfo()
     qDebug("\n        properties data uses : %d bytes", prop_data);
     qDebug("    memory usage: %d bytes", bmp_mem + smp_mem + prop_data);
 
+    Q_ASSERT(blockMap.size() == BMP_END/BMP_BLOCKSIZE +(SMP_END-BMP_END)/SMP_BLOCKSIZE); // 0x1870
     Q_ASSERT(blockMap.last() + blockMap.size() < (1<<(sizeof(unsigned short)*8)));
 
     QByteArray out = "static const unsigned short uc_property_trie[] = {\n";
-    // first write the map
+    // First write the map from blockId to indices of unique blocks:
     out += "    // [0x0..0x" + QByteArray::number(BMP_END, 16) + ")";
     for (int i = 0; i < BMP_END/BMP_BLOCKSIZE; ++i) {
         if (!(i % 8)) {
@@ -2419,7 +2424,9 @@ static QByteArray createPropertyInfo()
     if (out.endsWith(' '))
         out.chop(1);
     out += "\n";
-    // write the data
+    // Then write the contents of the unique blocks, at the anticipated indices.
+    // Each unique block is a list of UnicodeData::propertyIndex values, whch
+    // are indices into the uc_properties table.
     for (int i = 0; i < uniqueBlocks.size(); ++i) {
         if (out.endsWith(' '))
             out.chop(1);
