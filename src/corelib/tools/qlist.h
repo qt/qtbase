@@ -616,6 +616,8 @@ QList<T>::insert(qsizetype i, qsizetype n, parameter_type t)
     const bool shouldGrow = d->shouldGrowBeforeInsert(d.begin() + i, n);
     if (d->needsDetach() || newSize > d->allocatedCapacity() || shouldGrow) {
         typename Data::ArrayOptions flags = d->detachFlags() | Data::GrowsForward;
+        if (size_t(i) <= newSize / 4)
+            flags |= Data::GrowsBackwards;
 
         DataPointer detached(DataPointer::allocateGrow(d, d->detachCapacity(newSize), newSize,
                                                        flags));
@@ -647,25 +649,21 @@ QList<T>::emplace(qsizetype i, Args&&... args)
     const size_t newSize = size() + 1;
     if (d->needsDetach() || newSize > d->allocatedCapacity() || shouldGrow) {
         typename Data::ArrayOptions flags = d->detachFlags() | Data::GrowsForward;
+        if (size_t(i) <= newSize / 4)
+            flags |= Data::GrowsBackwards;
 
         DataPointer detached(DataPointer::allocateGrow(d, d->detachCapacity(newSize), newSize,
                                                        flags));
         const_iterator where = constBegin() + i;
+        // Create an element here to handle cases when a user moves the element
+        // from a container to the same container. This is a critical step for
+        // COW types (e.g. Qt types) since copyAppend() done before emplace()
+        // would shallow-copy the passed element and ruin the move
+        T tmp(std::forward<Args>(args)...);
 
-        // First, create an element to handle cases, when a user moves
-        // the element from a container to the same container
-        detached->createInPlace(detached.begin() + i, std::forward<Args>(args)...);
-
-        // Then, put the first part of the elements to the new location
         detached->copyAppend(constBegin(), where);
-
-        // After that, increase the actual size, because we created
-        // one extra element
-        ++detached.size;
-
-        // Finally, put the rest of the elements to the new location
+        detached->emplace(detached.end(), std::move(tmp));
         detached->copyAppend(where, constEnd());
-
         d.swap(detached);
     } else {
         d->emplace(d.begin() + i, std::forward<Args>(args)...);
