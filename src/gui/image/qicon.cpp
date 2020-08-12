@@ -180,9 +180,28 @@ void QPixmapIconEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode 
 
 static inline int area(const QSize &s) { return s.width() * s.height(); }
 
-// returns the smallest of the two that is still larger than or equal to size.
-static QPixmapIconEngineEntry *bestSizeMatch( const QSize &size, QPixmapIconEngineEntry *pa, QPixmapIconEngineEntry *pb)
+// Returns the smallest of the two that is still larger than or equal to size.
+// Pixmaps at the correct scale are preferred, pixmaps at lower scale are
+// used as fallbacks. We assume that the pixmap set is complete, in the sense
+// that no 2x pixmap is going to be a better match than a 3x pixmap for the the
+// target scale of 3 (It's OK if 3x pixmaps are missing - we'll fall back to
+// the 2x pixmaps then.)
+static QPixmapIconEngineEntry *bestSizeScaleMatch(const QSize &size, qreal scale, QPixmapIconEngineEntry *pa, QPixmapIconEngineEntry *pb)
 {
+
+    // scale: we can only differentiate on scale if the scale differs
+    if (pa->scale != pb->scale) {
+
+        // Score the pixmaps: 0 is an exact scale match, postive
+        // scores have more detail than requested, negative scores
+        // have less detail than rquested.
+        qreal ascore = pa->scale - scale;
+        qreal bscore = pb->scale - scale;
+
+        // Take the one closest to 0
+        return (qAbs(ascore) < qAbs(bscore)) ? pa : pb;
+    }
+
     int s = area(size);
     if (pa->size == QSize() && pa->pixmap.isNull()) {
         pa->pixmap = QPixmap(pa->fileName);
@@ -204,13 +223,13 @@ static QPixmapIconEngineEntry *bestSizeMatch( const QSize &size, QPixmapIconEngi
     return pb;
 }
 
-QPixmapIconEngineEntry *QPixmapIconEngine::tryMatch(const QSize &size, QIcon::Mode mode, QIcon::State state)
+QPixmapIconEngineEntry *QPixmapIconEngine::tryMatch(const QSize &size, qreal scale, QIcon::Mode mode, QIcon::State state)
 {
     QPixmapIconEngineEntry *pe = nullptr;
     for (int i = 0; i < pixmaps.count(); ++i)
         if (pixmaps.at(i).mode == mode && pixmaps.at(i).state == state) {
             if (pe)
-                pe = bestSizeMatch(size, &pixmaps[i], pe);
+                pe = bestSizeScaleMatch(size, scale, &pixmaps[i], pe);
             else
                 pe = &pixmaps[i];
         }
@@ -218,42 +237,42 @@ QPixmapIconEngineEntry *QPixmapIconEngine::tryMatch(const QSize &size, QIcon::Mo
 }
 
 
-QPixmapIconEngineEntry *QPixmapIconEngine::bestMatch(const QSize &size, QIcon::Mode mode, QIcon::State state, bool sizeOnly)
+QPixmapIconEngineEntry *QPixmapIconEngine::bestMatch(const QSize &size, qreal scale, QIcon::Mode mode, QIcon::State state, bool sizeOnly)
 {
-    QPixmapIconEngineEntry *pe = tryMatch(size, mode, state);
+    QPixmapIconEngineEntry *pe = tryMatch(size, scale, mode, state);
     while (!pe){
         QIcon::State oppositeState = (state == QIcon::On) ? QIcon::Off : QIcon::On;
         if (mode == QIcon::Disabled || mode == QIcon::Selected) {
             QIcon::Mode oppositeMode = (mode == QIcon::Disabled) ? QIcon::Selected : QIcon::Disabled;
-            if ((pe = tryMatch(size, QIcon::Normal, state)))
+            if ((pe = tryMatch(size, scale, QIcon::Normal, state)))
                 break;
-            if ((pe = tryMatch(size, QIcon::Active, state)))
+            if ((pe = tryMatch(size, scale, QIcon::Active, state)))
                 break;
-            if ((pe = tryMatch(size, mode, oppositeState)))
+            if ((pe = tryMatch(size, scale, mode, oppositeState)))
                 break;
-            if ((pe = tryMatch(size, QIcon::Normal, oppositeState)))
+            if ((pe = tryMatch(size, scale, QIcon::Normal, oppositeState)))
                 break;
-            if ((pe = tryMatch(size, QIcon::Active, oppositeState)))
+            if ((pe = tryMatch(size, scale, QIcon::Active, oppositeState)))
                 break;
-            if ((pe = tryMatch(size, oppositeMode, state)))
+            if ((pe = tryMatch(size, scale, oppositeMode, state)))
                 break;
-            if ((pe = tryMatch(size, oppositeMode, oppositeState)))
+            if ((pe = tryMatch(size, scale, oppositeMode, oppositeState)))
                 break;
         } else {
             QIcon::Mode oppositeMode = (mode == QIcon::Normal) ? QIcon::Active : QIcon::Normal;
-            if ((pe = tryMatch(size, oppositeMode, state)))
+            if ((pe = tryMatch(size, scale, oppositeMode, state)))
                 break;
-            if ((pe = tryMatch(size, mode, oppositeState)))
+            if ((pe = tryMatch(size, scale, mode, oppositeState)))
                 break;
-            if ((pe = tryMatch(size, oppositeMode, oppositeState)))
+            if ((pe = tryMatch(size, scale, oppositeMode, oppositeState)))
                 break;
-            if ((pe = tryMatch(size, QIcon::Disabled, state)))
+            if ((pe = tryMatch(size, scale, QIcon::Disabled, state)))
                 break;
-            if ((pe = tryMatch(size, QIcon::Selected, state)))
+            if ((pe = tryMatch(size, scale, QIcon::Selected, state)))
                 break;
-            if ((pe = tryMatch(size, QIcon::Disabled, oppositeState)))
+            if ((pe = tryMatch(size, scale, QIcon::Disabled, oppositeState)))
                 break;
-            if ((pe = tryMatch(size, QIcon::Selected, oppositeState)))
+            if ((pe = tryMatch(size, scale, QIcon::Selected, oppositeState)))
                 break;
         }
 
@@ -272,8 +291,14 @@ QPixmapIconEngineEntry *QPixmapIconEngine::bestMatch(const QSize &size, QIcon::M
 
 QPixmap QPixmapIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state)
 {
+    return scaledPixmap(size, mode, state, 1.0);
+}
+
+QPixmap QPixmapIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIcon::State state, qreal scale)
+{
+
     QPixmap pm;
-    QPixmapIconEngineEntry *pe = bestMatch(size, mode, state, false);
+    QPixmapIconEngineEntry *pe = bestMatch(size, scale, mode, state, false);
     if (pe)
         pm = pe->pixmap;
 
@@ -332,7 +357,13 @@ QPixmap QPixmapIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::St
 QSize QPixmapIconEngine::actualSize(const QSize &size, QIcon::Mode mode, QIcon::State state)
 {
     QSize actualSize;
-    if (QPixmapIconEngineEntry *pe = bestMatch(size, mode, state, true))
+
+    // The returned actiual size is the size in device independent pixels,
+    // so we limit the search to scale 1 and assume that e.g. @2x versions
+    // does not proviode extra actual sizes not also provided by the 1x versions.
+    qreal scale = 1;
+
+    if (QPixmapIconEngineEntry *pe = bestMatch(size, scale, mode, state, true))
         actualSize = pe->size;
 
     if (actualSize.isNull())
@@ -361,8 +392,8 @@ QList<QSize> QPixmapIconEngine::availableSizes(QIcon::Mode mode, QIcon::State st
 void QPixmapIconEngine::addPixmap(const QPixmap &pixmap, QIcon::Mode mode, QIcon::State state)
 {
     if (!pixmap.isNull()) {
-        QPixmapIconEngineEntry *pe = tryMatch(pixmap.size(), mode, state);
-        if(pe && pe->size == pixmap.size()) {
+        QPixmapIconEngineEntry *pe = tryMatch(pixmap.size(), pixmap.devicePixelRatio(), mode, state);
+        if (pe && pe->size == pixmap.size() && pe->scale == pixmap.devicePixelRatio()) {
             pe->pixmap = pixmap;
             pe->fileName.clear();
         } else {

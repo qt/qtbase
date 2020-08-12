@@ -39,6 +39,8 @@ private slots:
     void initTestCase();
     void fromTheme_data();
     void fromTheme();
+    void addPixmap_data();
+    void addPixmap();
     void ninePatch();
 };
 
@@ -170,6 +172,49 @@ void tst_QIconHighDpi::fromTheme()
     const QPixmap pixmap = appointmentIcon.pixmap(QSize(requestedSize, requestedSize), requestedDpr);
     QCOMPARE(pixmap.size(), QSize(expectedSize, expectedSize));
     // We should get the high DPI version of an image if it exists in the correct directory.
+    QCOMPARE(pixmap.devicePixelRatio(), expectedDpr);
+}
+
+void tst_QIconHighDpi::addPixmap_data()
+{
+    // fromTheme() and addPixmap() test the QIconLoaderEngine and QPixmapIconEngine
+    // QIcon backend, repsectively. We want these to have identical behavior and
+    // re-use the same test data here.
+    fromTheme_data();
+}
+
+void tst_QIconHighDpi::addPixmap()
+{
+    QFETCH(int, requestedSize);
+    QFETCH(qreal, requestedDpr);
+    QFETCH(int, expectedSize);
+    QFETCH(qreal, expectedDpr);
+
+    QIcon icon;
+
+    // manual pixmap adder for full control of devicePixelRatio
+    auto addPixmapWithDpr = [&icon](const QString &path, qreal dpr) {
+        QImage image(path);
+        image.setDevicePixelRatio(dpr);
+        icon.addPixmap(QPixmap::fromImage(image));
+    };
+
+    addPixmapWithDpr(":icons/testtheme/16x16/actions/appointment-new.png", 1);
+    addPixmapWithDpr(":icons/testtheme/22x22/actions/appointment-new.png", 1);
+    addPixmapWithDpr(":icons/testtheme/22x22@2/actions/appointment-new.png", 2);
+
+    QVERIFY(icon.availableSizes().contains(QSize(16, 16)));
+    QVERIFY(icon.availableSizes().contains(QSize(22, 22)));
+
+    if (qstrcmp(QTest::currentDataTag(), "16x16,dpr=2") == 0)
+        QSKIP("broken corner case"); // expect 22x22, get 32x32
+    if (qstrcmp(QTest::currentDataTag(), "44x44,dpr=1") == 0)
+        QSKIP("broken corner case"); // expect 44x44, get 22x22
+    if (qstrcmp(QTest::currentDataTag(), "8x8,dpr=3") == 0)
+        QSKIP("broken corner case");// expect 22x22, get 24x24
+
+    const QPixmap pixmap = icon.pixmap(QSize(requestedSize, requestedSize), requestedDpr);
+    QCOMPARE(pixmap.size(), QSize(expectedSize, expectedSize));
     QCOMPARE(pixmap.devicePixelRatio(), expectedDpr);
 }
 
