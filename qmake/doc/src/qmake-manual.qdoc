@@ -907,14 +907,6 @@
     to specify a list of libraries that each project needs to link against,
     and \c QMAKE_LIBS_X11 would be used to extend this list.
 
-    \target ANDROID_ABI
-    \section1 ANDROID_ABI
-
-    \note This variable applies only to Android targets.
-
-    Specifies the Android target ABI. Valid values are: armeabi-v7a, arm64-v8a,
-    x86, x86_64.
-
     \target ANDROID_ABIS
     \section1 ANDROID_ABIS
 
@@ -1081,6 +1073,14 @@
 
     Specifies the target Android API level for the project. By default, this
     variable is set to API level 28.
+
+    \target ANDROID_TARGET_ARCH
+    \section1 ANDROID_TARGET_ARCH
+
+    \note This variable applies only to Android targets.
+
+    Specifies the Android target ABI. Valid values are: armeabi-v7a, arm64-v8a,
+    x86, x86_64.
 
     \target ANDROID_VERSION_CODE
     \section1 ANDROID_VERSION_CODE
