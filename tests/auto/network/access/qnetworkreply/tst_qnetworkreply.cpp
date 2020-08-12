@@ -377,6 +377,7 @@ private Q_SLOTS:
     void authorizationError_data();
     void authorizationError();
 
+    void httpConnectionCount_data();
     void httpConnectionCount();
 
     void httpReUsingConnectionSequential_data();
@@ -5029,6 +5030,7 @@ public slots:
     {
         socket = (QSslSocket*) sender();
         emit newEncryptedConnection(socket);
+        addPendingConnection(socket);
     }
     void readyReadSlot()
     {
@@ -6110,16 +6112,48 @@ void tst_QNetworkReply::authorizationError()
     QCOMPARE(QString(reply->readAll()), httpBody);
 }
 
+void tst_QNetworkReply::httpConnectionCount_data()
+{
+    QTest::addColumn<bool>("http2Enabled");
+    QTest::addColumn<bool>("encrypted");
+    QTest::addRow("http/1.1") << false << false;
+    QTest::addRow("http/2") << true << false;
+#if QT_CONFIG(ssl)
+    QTest::addRow("https/1.1") << false << true;
+    QTest::addRow("https/2") << true << true;
+#endif
+}
+
 void tst_QNetworkReply::httpConnectionCount()
 {
-    QTcpServer server;
-    QVERIFY(server.listen());
+    QScopedPointer<QTcpServer> server;
+    QFETCH(bool, encrypted);
+#if QT_CONFIG(ssl)
+    if (encrypted) {
+        server.reset(new SslServer());
+    } else
+#endif
+    {
+        server.reset(new QTcpServer());
+    }
+
+    QVERIFY(server->listen());
     QCoreApplication::instance()->processEvents();
 
+    QUrl url("http://127.0.0.1:" + QString::number(server->serverPort()) + QLatin1Char('/'));
+    if (encrypted)
+        url.setScheme("https");
+
+    QFETCH(bool, http2Enabled);
     for (int i = 0; i < 10; i++) {
-        QNetworkRequest request (QUrl("http://127.0.0.1:" + QString::number(server.serverPort()) + QLatin1Char('/') +  QString::number(i)));
+        QUrl urlCopy = url;
+        urlCopy.setPath(u'/' + QString::number(i)); // Differentiate the requests a bit
+        QNetworkRequest request(urlCopy);
+        request.setAttribute(QNetworkRequest::Http2AllowedAttribute, http2Enabled);
         QNetworkReply* reply = manager.get(request);
-        reply->setParent(&server);
+        reply->setParent(server.data());
+        if (encrypted)
+            reply->ignoreSslErrors();
     }
 
     int pendingConnectionCount = 0;
@@ -6128,11 +6162,16 @@ void tst_QNetworkReply::httpConnectionCount()
 
     while(pendingConnectionCount <= 20) {
         QTestEventLoop::instance().enterLoop(1);
-        QTcpSocket *socket = server.nextPendingConnection();
+        QTcpSocket *socket = server->nextPendingConnection();
         while (socket != 0) {
+            if (pendingConnectionCount == 0) {
+                // respond to the first connection so we know to transition to HTTP/1.1 when using
+                // HTTP/2
+                socket->write(httpEmpty200Response);
+            }
             pendingConnectionCount++;
-            socket->setParent(&server);
-            socket = server.nextPendingConnection();
+            socket->setParent(server.data());
+            socket = server->nextPendingConnection();
         }
 
         // at max. wait 10 sec
