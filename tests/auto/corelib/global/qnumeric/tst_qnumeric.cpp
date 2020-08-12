@@ -400,119 +400,138 @@ template <typename Int> static void addOverflow_template()
 #if defined(Q_CC_MSVC) && Q_CC_MSVC < 2000
     QSKIP("Test disabled, this test generates an Internal Compiler Error compiling in release mode");
 #else
-    const Int max = std::numeric_limits<Int>::max();
-    const Int min = std::numeric_limits<Int>::min();
+    constexpr Int max = std::numeric_limits<Int>::max();
+    constexpr Int min = std::numeric_limits<Int>::min();
     Int r;
 
-    // basic values
-    QCOMPARE(add_overflow(Int(0), Int(0), &r), false);
-    QCOMPARE(r, Int(0));
-    QCOMPARE(add_overflow(Int(1), Int(0), &r), false);
-    QCOMPARE(r, Int(1));
-    QCOMPARE(add_overflow(Int(0), Int(1), &r), false);
-    QCOMPARE(r, Int(1));
+#define ADD_COMPARE_NONOVF(v1, v2, expected)    \
+    do { \
+        QCOMPARE(add_overflow(Int(v1), Int(v2), &r), false); \
+        QCOMPARE(r, Int(expected)); \
+        QCOMPARE(add_overflow(Int(v1), (std::integral_constant<Int, Int(v2)>()), &r), false); \
+        QCOMPARE(r, Int(expected)); \
+        QCOMPARE(add_overflow<v2>(Int(v1), &r), false); \
+        QCOMPARE(r, Int(expected)); \
+    } while (false)
+#define ADD_COMPARE_OVF(v1, v2)    \
+    do { \
+        QCOMPARE(add_overflow(Int(v1), Int(v2), &r), true); \
+        QCOMPARE(add_overflow(Int(v1), (std::integral_constant<Int, Int(v2)>()), &r), true); \
+        QCOMPARE(add_overflow<v2>(Int(v1), &r), true); \
+    } while (false)
+#define SUB_COMPARE_NONOVF(v1, v2, expected)    \
+    do { \
+        QCOMPARE(sub_overflow(Int(v1), Int(v2), &r), false); \
+        QCOMPARE(r, Int(expected)); \
+        QCOMPARE(sub_overflow(Int(v1), (std::integral_constant<Int, Int(v2)>()), &r), false); \
+        QCOMPARE(r, Int(expected)); \
+        QCOMPARE(sub_overflow<v2>(Int(v1), &r), false); \
+        QCOMPARE(r, Int(expected)); \
+    } while (false)
+#define SUB_COMPARE_OVF(v1, v2)    \
+    do { \
+        QCOMPARE(sub_overflow(Int(v1), Int(v2), &r), true); \
+        QCOMPARE(sub_overflow(Int(v1), (std::integral_constant<Int, Int(v2)>()), &r), true); \
+        QCOMPARE(sub_overflow<v2>(Int(v1), &r), true); \
+    } while (false)
 
-    QCOMPARE(sub_overflow(Int(0), Int(0), &r), false);
-    QCOMPARE(r, Int(0));
-    QCOMPARE(sub_overflow(Int(1), Int(0), &r), false);
-    QCOMPARE(r, Int(1));
-    QCOMPARE(sub_overflow(Int(1), Int(1), &r), false);
-    QCOMPARE(r, Int(0));
-    QCOMPARE(sub_overflow(Int(0), Int(1), &r), !min);
+    // basic values
+    ADD_COMPARE_NONOVF(0, 0, 0);
+    ADD_COMPARE_NONOVF(1, 0, 1);
+    ADD_COMPARE_NONOVF(0, 1, 1);
+
+    SUB_COMPARE_NONOVF(0, 0, 0);
+    SUB_COMPARE_NONOVF(1, 0, 1);
+    SUB_COMPARE_NONOVF(1, 1, 0);
     if (min)
-        QCOMPARE(r, Int(-1));
+        SUB_COMPARE_NONOVF(0, 1, -1);
+    else
+        SUB_COMPARE_OVF(0, 1);
 
     // half-way through max
-    QCOMPARE(add_overflow(Int(max/2), Int(max/2), &r), false);
-    QCOMPARE(r, Int(max / 2 * 2));
-    QCOMPARE(sub_overflow(Int(max/2), Int(max/2), &r), false);
-    QCOMPARE(r, Int(0));
-    QCOMPARE(add_overflow(Int(max/2 - 1), Int(max/2 + 1), &r), false);
-    QCOMPARE(r, Int(max / 2 * 2));
-    QCOMPARE(sub_overflow(Int(max/2 - 1), Int(max/2 + 1), &r), !min);
+    ADD_COMPARE_NONOVF(max/2, max/2, max / 2 * 2);
+    SUB_COMPARE_NONOVF(max/2, max/2, 0);
+    ADD_COMPARE_NONOVF(max/2 - 1, max/2 + 1, max / 2 * 2);
     if (min)
-        QCOMPARE(r, Int(-2));
-    QCOMPARE(add_overflow(Int(max/2 + 1), Int(max/2), &r), false);
-    QCOMPARE(r, max);
-    QCOMPARE(sub_overflow(Int(max/2 + 1), Int(max/2), &r), false);
-    QCOMPARE(r, Int(1));
-    QCOMPARE(add_overflow(Int(max/2), Int(max/2 + 1), &r), false);
-    QCOMPARE(r, max);
-    QCOMPARE(sub_overflow(Int(max/2), Int(max/2 + 1), &r), !min);
-    if (min)
-        QCOMPARE(r, Int(-1));
+        SUB_COMPARE_NONOVF(max/2 - 1, max/2 + 1, -2);
+    else
+        SUB_COMPARE_OVF(max/2 - 1, max/2 + 1);
 
-    QCOMPARE(add_overflow(Int(min/2), Int(min/2), &r), false);
-    QCOMPARE(r, Int(min / 2 * 2));
-    QCOMPARE(sub_overflow(Int(min/2), Int(min/2), &r), false);
-    QCOMPARE(r, Int(0));
-    QCOMPARE(add_overflow(Int(min/2 - 1), Int(min/2 + 1), &r), !min);
+    ADD_COMPARE_NONOVF(max/2 + 1, max/2, max);
+    SUB_COMPARE_NONOVF(max/2 + 1, max/2, 1);
+    ADD_COMPARE_NONOVF(max/2, max/2 + 1, max);
     if (min)
-        QCOMPARE(r, Int(min / 2 * 2));
-    QCOMPARE(sub_overflow(Int(min/2 - 1), Int(min/2 + 1), &r), false);
-    QCOMPARE(r, Int(-2));
-    QCOMPARE(sub_overflow(Int(min/2 + 1), Int(min/2), &r), false);
-    QCOMPARE(r, Int(1));
-    QCOMPARE(sub_overflow(Int(min/2), Int(min/2 + 1), &r), !min);
+        SUB_COMPARE_NONOVF(max/2, max/2 + 1, -1);
+    else
+        SUB_COMPARE_OVF(max/2, max/2 + 1);
+
+    ADD_COMPARE_NONOVF(min/2, min/2, min / 2 * 2);
+    SUB_COMPARE_NONOVF(min/2, min/2, 0);
     if (min)
-        QCOMPARE(r, Int(-1));
+        ADD_COMPARE_NONOVF(min/2 - 1, min/2 + 1,  min / 2 * 2);
+    else
+        ADD_COMPARE_OVF(min/2 - 1, min/2 + 1);
+    SUB_COMPARE_NONOVF(min/2 - 1, min/2 + 1, -2);
+    SUB_COMPARE_NONOVF(min/2 + 1, min/2, 1);
+    if (min)
+        SUB_COMPARE_NONOVF(min/2, min/2 + 1, -1);
+    else
+        SUB_COMPARE_OVF(min/2, min/2 + 1);
 
     // more than half
-    QCOMPARE(add_overflow(Int(max/4 * 3), Int(max/4), &r), false);
-    QCOMPARE(r, Int(max / 4 * 4));
+    ADD_COMPARE_NONOVF(max/4 * 3, max/4, max / 4 * 4);
 
     // max
-    QCOMPARE(add_overflow(max, Int(0), &r), false);
-    QCOMPARE(r, max);
-    QCOMPARE(sub_overflow(max, Int(0), &r), false);
-    QCOMPARE(r, max);
-    QCOMPARE(add_overflow(Int(0), max, &r), false);
-    QCOMPARE(r, max);
-    QCOMPARE(sub_overflow(Int(0), max, &r), !min);
+    ADD_COMPARE_NONOVF(max, 0, max);
+    SUB_COMPARE_NONOVF(max, 0, max);
+    ADD_COMPARE_NONOVF(0, max, max);
     if (min)
-        QCOMPARE(r, Int(-max));
+        SUB_COMPARE_NONOVF(0, max, -max);
+    else
+        SUB_COMPARE_OVF(0, max);
 
-    QCOMPARE(add_overflow(min, Int(0), &r), false);
-    QCOMPARE(r, min);
-    QCOMPARE(sub_overflow(min, Int(0), &r), false);
-    QCOMPARE(r, min);
-    QCOMPARE(add_overflow(Int(0), min, &r), false);
-    QCOMPARE(r, min);
-    QCOMPARE(sub_overflow(Int(0), Int(min+1), &r), !min);
+    ADD_COMPARE_NONOVF(min, 0, min);
+    SUB_COMPARE_NONOVF(min, 0, min);
+    ADD_COMPARE_NONOVF(0, min, min);
     if (min)
-        QCOMPARE(r, Int(-(min+1)));
+        SUB_COMPARE_NONOVF(0, min+1, -(min+1));
+    else
+        SUB_COMPARE_OVF(0, min+1);
 
     // 64-bit issues
-    if (max > std::numeric_limits<uint>::max()) {
-        QCOMPARE(add_overflow(Int(std::numeric_limits<uint>::max()), Int(std::numeric_limits<uint>::max()), &r), false);
-        QCOMPARE(r, Int(2 * Int(std::numeric_limits<uint>::max())));
-        QCOMPARE(sub_overflow(Int(std::numeric_limits<uint>::max()), Int(std::numeric_limits<uint>::max()), &r), false);
-        QCOMPARE(r, Int(0));
+    if constexpr (max > std::numeric_limits<uint>::max()) {
+        ADD_COMPARE_NONOVF(std::numeric_limits<uint>::max(), std::numeric_limits<uint>::max(), 2 * Int(std::numeric_limits<uint>::max()));
+        SUB_COMPARE_NONOVF(std::numeric_limits<uint>::max(), std::numeric_limits<uint>::max(), 0);
     }
-    if (min && min < -Int(std::numeric_limits<uint>::max())) {
-        QCOMPARE(add_overflow(Int(-Int(std::numeric_limits<uint>::max())), Int(-Int(std::numeric_limits<uint>::max())), &r), false);
-        QCOMPARE(r, Int(-2 * Int(std::numeric_limits<uint>::max())));
-        QCOMPARE(sub_overflow(Int(-Int(std::numeric_limits<uint>::max())), Int(-Int(std::numeric_limits<uint>::max())), &r), false);
-        QCOMPARE(r, Int(0));
+    if constexpr (min != 0) {
+        if (qint64(min) < qint64(-std::numeric_limits<uint>::max())) {
+            ADD_COMPARE_NONOVF(-Int(std::numeric_limits<uint>::max()), -Int(std::numeric_limits<uint>::max()), -2 * Int(std::numeric_limits<uint>::max()));
+            SUB_COMPARE_NONOVF(-Int(std::numeric_limits<uint>::max()), -Int(std::numeric_limits<uint>::max()), 0);
+        }
     }
 
     // overflows past max
-    QCOMPARE(add_overflow(max, Int(1), &r), true);
-    QCOMPARE(add_overflow(Int(1), max, &r), true);
-    QCOMPARE(add_overflow(Int(max/2 + 1), Int(max/2 + 1), &r), true);
-    if (!min) {
-        QCOMPARE(sub_overflow(Int(-max), Int(-2), &r), true);
-        QCOMPARE(sub_overflow(Int(max/2 - 1), Int(max/2 + 1), &r), true);
+    ADD_COMPARE_OVF(max, 1);
+    ADD_COMPARE_OVF(1, max);
+    ADD_COMPARE_OVF(max/2 + 1, max/2 + 1);
+
+    // overflows past min
+    if constexpr (min != 0) {
+        ADD_COMPARE_OVF(-max, -2);
+        SUB_COMPARE_OVF(-max, 2);
+        SUB_COMPARE_OVF(-max/2 - 1, max/2 + 2);
+
+        SUB_COMPARE_OVF(min, 1);
+        SUB_COMPARE_OVF(1, min);
+        SUB_COMPARE_OVF(min/2 - 1, -Int(min/2));
+        ADD_COMPARE_OVF(min, -1);
+        ADD_COMPARE_OVF(-1, min);
     }
 
-    // overflows past min (in case of min == 0, repeats some tests above)
-    if (min) {
-        QCOMPARE(sub_overflow(min, Int(1), &r), true);
-        QCOMPARE(sub_overflow(Int(1), min, &r), true);
-        QCOMPARE(sub_overflow(Int(min/2 - 1), Int(-Int(min/2)), &r), true);
-        QCOMPARE(add_overflow(min, Int(-1), &r), true);
-        QCOMPARE(add_overflow(Int(-1), min, &r), true);
-    }
+#undef ADD_COMPARE_NONOVF
+#undef ADD_COMPARE_OVF
+#undef SUB_COMPARE_NONOVF
+#undef SUB_COMPARE_OVF
 #endif
 }
 
@@ -552,77 +571,82 @@ template <typename Int> static void mulOverflow_template()
 #if defined(Q_CC_MSVC) && Q_CC_MSVC < 1900
     QSKIP("Test disabled, this test generates an Internal Compiler Error compiling");
 #else
-    const Int max = std::numeric_limits<Int>::max();
-    const Int min = std::numeric_limits<Int>::min();
+    constexpr Int max = std::numeric_limits<Int>::max();
+    constexpr Int min = std::numeric_limits<Int>::min();
 
     //  for unsigned (even number of significant bits):  mid2 = mid1 - 1
     //  for signed (odd number of significant bits):     mid2 = mid1 / 2 - 1
-    const Int mid1 = Int(Int(1) << sizeof(Int) * CHAR_BIT / 2);
-    const Int mid2 = (std::numeric_limits<Int>::digits % 2 ? mid1 / 2 : mid1) - 1;
+    constexpr Int mid1 = Int(Int(1) << (sizeof(Int) * CHAR_BIT / 2));
+    constexpr Int mid2 = (std::numeric_limits<Int>::digits % 2 ? mid1 / 2 : mid1) - 1;
 
     Int r;
 
-    // basic multiplications
-    QCOMPARE(mul_overflow(Int(0), Int(0), &r), false);
-    QCOMPARE(r, Int(0));
-    QCOMPARE(mul_overflow(Int(1), Int(0), &r), false);
-    QCOMPARE(r, Int(0));
-    QCOMPARE(mul_overflow(Int(0), Int(1), &r), false);
-    QCOMPARE(r, Int(0));
-    QCOMPARE(mul_overflow(max, Int(0), &r), false);
-    QCOMPARE(r, Int(0));
-    QCOMPARE(mul_overflow(Int(0), max, &r), false);
-    QCOMPARE(r, Int(0));
-    QCOMPARE(mul_overflow(min, Int(0), &r), false);
-    QCOMPARE(r, Int(0));
-    QCOMPARE(mul_overflow(Int(0), min, &r), false);
-    QCOMPARE(r, Int(0));
+#define MUL_COMPARE_NONOVF(v1, v2, expected)    \
+    do { \
+        QCOMPARE(mul_overflow(Int(v1), Int(v2), &r), false); \
+        QCOMPARE(r, Int(expected)); \
+        QCOMPARE(mul_overflow(Int(v1), (std::integral_constant<Int, v2>()), &r), false); \
+        QCOMPARE(r, Int(expected)); \
+        QCOMPARE(mul_overflow<v2>(Int(v1), &r), false); \
+        QCOMPARE(r, Int(expected)); \
+    } while (false);
+#define MUL_COMPARE_OVF(v1, v2)    \
+    do { \
+        QCOMPARE(mul_overflow(Int(v1), Int(v2), &r), true); \
+        QCOMPARE(mul_overflow(Int(v1), (std::integral_constant<Int, v2>()), &r), true); \
+        QCOMPARE(mul_overflow<v2>(Int(v1), &r), true); \
+    } while (false);
 
-    QCOMPARE(mul_overflow(Int(1), Int(1), &r), false);
-    QCOMPARE(r, Int(1));
-    QCOMPARE(mul_overflow(Int(1), max, &r), false);
-    QCOMPARE(r, max);
-    QCOMPARE(mul_overflow(max, Int(1), &r), false);
-    QCOMPARE(r, max);
-    QCOMPARE(mul_overflow(Int(1), min, &r), false);
-    QCOMPARE(r, min);
-    QCOMPARE(mul_overflow(min, Int(1), &r), false);
-    QCOMPARE(r, min);
+    // basic multiplications
+    MUL_COMPARE_NONOVF(0, 0, 0);
+    MUL_COMPARE_NONOVF(1, 0, 0);
+    MUL_COMPARE_NONOVF(0, 1, 0);
+    MUL_COMPARE_NONOVF(max, 0, 0);
+    MUL_COMPARE_NONOVF(0, max, 0);
+    MUL_COMPARE_NONOVF(min, 0, 0);
+    MUL_COMPARE_NONOVF(0, min, 0);
+    if constexpr (min != 0) {
+        MUL_COMPARE_NONOVF(0, -1, 0);
+        MUL_COMPARE_NONOVF(1, -1, -1);
+        MUL_COMPARE_NONOVF(max, -1, -max);
+    }
+
+    MUL_COMPARE_NONOVF(1, 1, 1);
+    MUL_COMPARE_NONOVF(1, max, max);
+    MUL_COMPARE_NONOVF(max, 1, max);
+    MUL_COMPARE_NONOVF(1, min, min);
+    MUL_COMPARE_NONOVF(min, 1, min);
 
     // almost max
-    QCOMPARE(mul_overflow(mid1, mid2, &r), false);
-    QCOMPARE(r, Int(max - mid1 + 1));
-    QCOMPARE(mul_overflow(Int(max / 2), Int(2), &r), false);
-    QCOMPARE(r, Int(max & ~Int(1)));
-    QCOMPARE(mul_overflow(Int(max / 4), Int(4), &r), false);
-    QCOMPARE(r, Int(max & ~Int(3)));
-    if (min) {
-        QCOMPARE(mul_overflow(Int(-mid1), mid2, &r), false);
-        QCOMPARE(r, Int(-max + mid1 - 1));
-        QCOMPARE(mul_overflow(Int(-max / 2), Int(2), &r), false);
-        QCOMPARE(r, Int(-max + 1));
-        QCOMPARE(mul_overflow(Int(-max / 4), Int(4), &r), false);
-        QCOMPARE(r, Int(-max + 3));
+    MUL_COMPARE_NONOVF(mid1, mid2, max - mid1 + 1);
+    MUL_COMPARE_NONOVF(max / 2, 2, max & ~Int(1));
+    MUL_COMPARE_NONOVF(max / 4, 4, max & ~Int(3));
+    if constexpr (min != 0) {
+        MUL_COMPARE_NONOVF(-mid1, mid2, -max + mid1 - 1);
+        MUL_COMPARE_NONOVF(-max / 2, 2, -max + 1);
+        MUL_COMPARE_NONOVF(-max / 4, 4, -max + 3);
 
-        QCOMPARE(mul_overflow(Int(-mid1), Int(mid2 + 1), &r), false);
-        QCOMPARE(r, min);
-        QCOMPARE(mul_overflow(mid1, Int(-mid2 - 1), &r), false);
-        QCOMPARE(r, min);
+        MUL_COMPARE_NONOVF(-mid1, mid2 + 1, min);
+        MUL_COMPARE_NONOVF(mid1, -mid2 - 1, min);
     }
 
     // overflows
-    QCOMPARE(mul_overflow(max, Int(2), &r), true);
-    QCOMPARE(mul_overflow(Int(max / 2), Int(3), &r), true);
-    QCOMPARE(mul_overflow(mid1, Int(mid2 + 1), &r), true);
-    QCOMPARE(mul_overflow(Int(max / 2 + 2), Int(2), &r), true);
-    QCOMPARE(mul_overflow(Int(max - max / 2), Int(2), &r), true);
-    QCOMPARE(mul_overflow(Int(1ULL << (std::numeric_limits<Int>::digits - 1)), Int(2), &r), true);
+    MUL_COMPARE_OVF(max, 2);
+    MUL_COMPARE_OVF(max / 2, 3);
+    MUL_COMPARE_OVF(mid1, mid2 + 1);
+    MUL_COMPARE_OVF(max / 2 + 2, 2);
+    MUL_COMPARE_OVF(max - max / 2, 2);
+    MUL_COMPARE_OVF(1ULL << (std::numeric_limits<Int>::digits - 1), 2);
 
-    if (min) {
-        QCOMPARE(mul_overflow(min, Int(2), &r), true);
-        QCOMPARE(mul_overflow(Int(min / 2), Int(3), &r), true);
-        QCOMPARE(mul_overflow(Int(min / 2 - 1), Int(2), &r), true);
+    if constexpr (min != 0) {
+        MUL_COMPARE_OVF(min, -1);
+        MUL_COMPARE_OVF(min, 2);
+        MUL_COMPARE_OVF(min / 2, 3);
+        MUL_COMPARE_OVF(min / 2 - 1, 2);
     }
+
+#undef MUL_COMPARE_NONOVF
+#undef MUL_COMPARE_OVF
 #endif
 }
 
@@ -657,7 +681,7 @@ void tst_QNumeric::mulOverflow()
     if (size == -32)
         MulOverflowDispatch<qint32>()();
     if (size == -64) {
-#if QT_POINTER_SIZE == 8
+#if QT_POINTER_SIZE == 8 || defined(Q_INTRINSIC_MUL_OVERFLOW64)
         MulOverflowDispatch<qint64>()();
 #else
         QFAIL("128-bit multiplication not supported on this platform");
