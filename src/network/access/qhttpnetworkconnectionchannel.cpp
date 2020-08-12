@@ -1133,7 +1133,8 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
 #ifndef QT_NO_NETWORKPROXY
 void QHttpNetworkConnectionChannel::_q_proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator* auth)
 {
-    if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2
+    if ((connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2
+         && (switchedToHttp2 || h2RequestsToSend.count() > 0))
         || connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2Direct) {
         if (h2RequestsToSend.count() > 0)
             connection->d_func()->emitProxyAuthenticationRequired(this, proxy, auth);

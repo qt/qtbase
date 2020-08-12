@@ -1514,7 +1514,8 @@ void QHttpNetworkConnectionPrivate::emitProxyAuthenticationRequired(const QHttpN
     // dialog is displaying
     pauseConnection();
     QHttpNetworkReply *reply;
-    if (connectionType == QHttpNetworkConnection::ConnectionTypeHTTP2
+    if ((connectionType == QHttpNetworkConnection::ConnectionTypeHTTP2
+         && (chan->switchedToHttp2 || chan->h2RequestsToSend.count() > 0))
         || connectionType == QHttpNetworkConnection::ConnectionTypeHTTP2Direct) {
         // we choose the reply to emit the proxyAuth signal from somewhat arbitrarily,
         // but that does not matter because the signal will ultimately be emitted
