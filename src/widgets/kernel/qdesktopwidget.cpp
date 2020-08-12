@@ -107,6 +107,17 @@ QDesktopWidget::QDesktopWidget()
 
 QDesktopWidget::~QDesktopWidget() = default;
 
+/*!
+    \internal
+    Returns the Qt::Desktop type widget for \a qScreen.
+*/
+QWidget *QDesktopWidget::widgetForScreen(QScreen *qScreen) const
+{
+    Q_D(const QDesktopWidget);
+    return d->screenWidgets.value(qScreen);
+}
+
+
 QT_END_NAMESPACE
 
 #include "moc_qdesktopwidget_p.cpp"

@@ -2556,8 +2556,7 @@ QWidget *QApplication::desktop(QScreen *screen)
     }
     if (!screen)
         return qt_desktopWidget;
-    QDesktopWidgetPrivate *dwp = static_cast<QDesktopWidgetPrivate*>(qt_widget_private(qt_desktopWidget));
-    return dwp->widgetForScreen(screen);
+    return qt_desktopWidget->widgetForScreen(screen);
 }
 
 /*

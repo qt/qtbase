@@ -68,25 +68,20 @@ public:
     QDesktopWidget();
     ~QDesktopWidget();
 
+    QWidget *widgetForScreen(QScreen *qScreen) const;
 
 private:
     Q_DISABLE_COPY(QDesktopWidget)
     Q_DECLARE_PRIVATE(QDesktopWidget)
-
-    friend class QApplication;
-    friend class QApplicationPrivate;
 };
 
-class QDesktopWidgetPrivate : public QWidgetPrivate {
+class QDesktopWidgetPrivate : public QWidgetPrivate
+{
     Q_DECLARE_PUBLIC(QDesktopWidget)
 
 public:
     ~QDesktopWidgetPrivate();
     void updateScreens();
-    QWidget *widgetForScreen(QScreen *qScreen) const
-    {
-        return screenWidgets.value(qScreen);
-    }
 
     QFlatMap<QScreen*, QWidget*> screenWidgets;
 };
