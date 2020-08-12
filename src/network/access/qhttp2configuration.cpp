@@ -141,12 +141,12 @@ QHttp2Configuration::QHttp2Configuration(QHttp2Configuration &&other) noexcept
 }
 
 /*!
-    Copy-assigns to this QHttp2Configuration.
+    Copy-assigns \a other to this QHttp2Configuration.
 */
 QHttp2Configuration &QHttp2Configuration::operator=(const QHttp2Configuration &) = default;
 
 /*!
-    Move-assigns to this QHttp2Configuration.
+    Move-assigns \a other to this QHttp2Configuration.
 */
 QHttp2Configuration &QHttp2Configuration::operator=(QHttp2Configuration &&) noexcept = default;
 
@@ -209,6 +209,8 @@ bool QHttp2Configuration::huffmanCompressionEnabled() const
     Sets the window size for connection-level flow control.
     \a size cannot be 0 and must not exceed 2147483647 octets.
 
+    Returns \c true on success, \c false otherwise.
+
     \sa sessionReceiveWindowSize
 */
 bool QHttp2Configuration::setSessionReceiveWindowSize(unsigned size)
@@ -235,6 +237,8 @@ unsigned QHttp2Configuration::sessionReceiveWindowSize() const
 /*!
     Sets the window size for stream-level flow control.
     \a size cannot be 0 and must not exceed 2147483647 octets.
+
+    Returns \c true on success, \c false otherwise.
 
     \sa streamReceiveWindowSize
  */
@@ -265,6 +269,8 @@ unsigned QHttp2Configuration::streamReceiveWindowSize() const
     \note While this \a size is required to be within a range between
     16384 and 16777215 inclusive, the actual payload size in frames
     that carry payload maybe be less than 16384.
+
+    Returns \c true on success, \c false otherwise.
 */
 bool QHttp2Configuration::setMaxFrameSize(unsigned size)
 {
@@ -278,7 +284,7 @@ bool QHttp2Configuration::setMaxFrameSize(unsigned size)
 }
 
 /*!
-    The maximum payload size that HTTP/2 frames can
+    Returns the maximum payload size that HTTP/2 frames can
     have. The default (initial) value is 16384 octets.
 */
 unsigned QHttp2Configuration::maxFrameSize() const
