@@ -59,8 +59,8 @@ struct ContentEncodingMapping
 };
 
 constexpr ContentEncodingMapping contentEncodingMapping[] {
-    { "deflate", QDecompressHelper::Deflate },
     { "gzip", QDecompressHelper::GZip },
+    { "deflate", QDecompressHelper::Deflate },
 #if QT_CONFIG(brotli)
     { "br", QDecompressHelper::Brotli },
 #endif

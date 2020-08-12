@@ -90,6 +90,8 @@ void tst_QDecompressHelper::encodingSupported()
     QVERIFY(accepted.contains("gzip"));
     int expected = 2;
 
+    QVERIFY(accepted.indexOf("gzip") < accepted.indexOf("deflate"));
+
 #if QT_CONFIG(brotli)
     QVERIFY(QDecompressHelper::isSupportedEncoding("br"));
     QVERIFY(accepted.contains("br"));
