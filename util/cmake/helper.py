@@ -279,6 +279,9 @@ _qt_library_map = [
     LibraryMapping(
         "quickcontrols2", "Qt6", "Qt::QuickControls2", extra=["COMPONENTS", "QuickControls2"]
     ),
+    LibraryMapping(
+        "quickcontrols2impl", "Qt6", "Qt::QuickControls2Impl", extra=["COMPONENTS", "QuickControls2Impl"]
+    ),
     LibraryMapping("quick", "Qt6", "Qt::Quick", extra=["COMPONENTS", "Quick"]),
     LibraryMapping("quickshapes", "Qt6", "Qt::QuickShapes", extra=["COMPONENTS", "QuickShapes"]),
     LibraryMapping(
