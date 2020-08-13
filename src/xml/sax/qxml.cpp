@@ -519,8 +519,6 @@ public:
     pushContext() to start a new namespace context, and popContext()
     to return to the previous namespace context. Use splitName() or
     processName() to split a name into its prefix and local name.
-
-    \sa {Namespace Support via Features}
 */
 
 /*!
@@ -803,8 +801,6 @@ QXmlAttributes::~QXmlAttributes()
     Looks up the index of an attribute by the qualified name \a qName.
 
     Returns the index of the attribute or -1 if it wasn't found.
-
-    \sa {Namespace Support via Features}
 */
 int QXmlAttributes::index(const QString& qName) const
 {
@@ -836,8 +832,6 @@ int QXmlAttributes::index(QLatin1String qName) const
     name.
 
     Returns the index of the attribute, or -1 if it wasn't found.
-
-    \sa {Namespace Support via Features}
 */
 int QXmlAttributes::index(const QString& uri, const QString& localPart) const
 {
@@ -870,8 +864,6 @@ int QXmlAttributes::length() const
     Looks up an attribute's local name for the attribute at position
     \a index. If no namespace processing is done, the local name is
     an empty string.
-
-    \sa {Namespace Support via Features}
 */
 QString QXmlAttributes::localName(int index) const
 {
@@ -881,8 +873,6 @@ QString QXmlAttributes::localName(int index) const
 /*!
     Looks up an attribute's XML 1.0 qualified name for the attribute
     at position \a index.
-
-    \sa {Namespace Support via Features}
 */
 QString QXmlAttributes::qName(int index) const
 {
@@ -893,8 +883,6 @@ QString QXmlAttributes::qName(int index) const
     Looks up an attribute's namespace URI for the attribute at
     position \a index. If no namespace processing is done or if the
     attribute has no namespace, the namespace URI is an empty string.
-
-    \sa {Namespace Support via Features}
 */
 QString QXmlAttributes::uri(int index) const
 {
@@ -955,8 +943,6 @@ QString QXmlAttributes::value(int index) const
 
     Returns an attribute's value for the qualified name \a qName, or an
     empty string if no attribute exists for the name given.
-
-    \sa {Namespace Support via Features}
 */
 QString QXmlAttributes::value(const QString& qName) const
 {
@@ -971,8 +957,6 @@ QString QXmlAttributes::value(const QString& qName) const
 
     Returns an attribute's value for the qualified name \a qName, or an
     empty string if no attribute exists for the name given.
-
-    \sa {Namespace Support via Features}
 */
 QString QXmlAttributes::value(QLatin1String qName) const
 {
@@ -1451,7 +1435,7 @@ QString QXmlInputSource::fromRawData(const QByteArray &data, bool beginning)
     startPrefixMapping() is called.
 
     \sa QXmlDTDHandler, QXmlDeclHandler, QXmlEntityResolver, QXmlErrorHandler,
-        QXmlLexicalHandler, {Introduction to SAX2}
+        QXmlLexicalHandler
 */
 
 /*!
@@ -1525,7 +1509,7 @@ QString QXmlInputSource::fromRawData(const QByteArray &data, bool beginning)
     reports an error. The reader uses the function errorString() to
     get the error message.
 
-    \sa endPrefixMapping(), {Namespace Support via Features}
+    \sa endPrefixMapping()
 */
 
 /*!
@@ -1538,7 +1522,7 @@ QString QXmlInputSource::fromRawData(const QByteArray &data, bool beginning)
     reports an error. The reader uses the function errorString() to
     get the error message.
 
-    \sa startPrefixMapping(), {Namespace Support via Features}
+    \sa startPrefixMapping()
 */
 
 /*!
@@ -1570,7 +1554,7 @@ QString QXmlInputSource::fromRawData(const QByteArray &data, bool beginning)
     reports an error. The reader uses the function errorString() to
     get the error message.
 
-    \sa endElement(), {Namespace Support via Features}
+    \sa endElement()
 */
 
 /*!
@@ -1584,7 +1568,7 @@ QString QXmlInputSource::fromRawData(const QByteArray &data, bool beginning)
     reports an error. The reader uses the function errorString() to
     get the error message.
 
-    \sa startElement(), {Namespace Support via Features}
+    \sa startElement()
 */
 
 /*!
@@ -1674,7 +1658,7 @@ QString QXmlInputSource::fromRawData(const QByteArray &data, bool beginning)
     with the error text being reported with errorString().
 
     \sa QXmlDTDHandler, QXmlDeclHandler, QXmlContentHandler, QXmlEntityResolver,
-        QXmlLexicalHandler, {Introduction to SAX2}
+        QXmlLexicalHandler
 */
 
 /*!
@@ -1751,7 +1735,7 @@ events are reported.
     unparsedEntityDecl() respectively.
 
     \sa QXmlDeclHandler, QXmlContentHandler, QXmlEntityResolver, QXmlErrorHandler,
-        QXmlLexicalHandler, {Introduction to SAX2}
+        QXmlLexicalHandler
 */
 
 /*!
@@ -1815,7 +1799,7 @@ events are reported.
     QXmlReader::setEntityResolver().
 
     \sa QXmlDTDHandler, QXmlDeclHandler, QXmlContentHandler, QXmlErrorHandler,
-        QXmlLexicalHandler, {Introduction to SAX2}
+        QXmlLexicalHandler
 */
 
 /*!
@@ -1881,7 +1865,7 @@ events are reported.
     endEntity(), startCDATA(), endCDATA() and comment() functions.
 
     \sa QXmlDTDHandler, QXmlDeclHandler, QXmlContentHandler, QXmlEntityResolver,
-        QXmlErrorHandler, {Introduction to SAX2}
+        QXmlErrorHandler
 */
 
 /*!
@@ -2027,7 +2011,7 @@ events are reported.
     externalEntityDecl() functions.
 
     \sa QXmlDTDHandler, QXmlContentHandler, QXmlEntityResolver, QXmlErrorHandler,
-        QXmlLexicalHandler, {Introduction to SAX2}
+        QXmlLexicalHandler
 */
 
 /*!
@@ -2155,7 +2139,7 @@ events are reported.
     document has been read completely.
 
     \sa QXmlDTDHandler, QXmlDeclHandler, QXmlContentHandler, QXmlEntityResolver,
-        QXmlErrorHandler, QXmlLexicalHandler, {Introduction to SAX2}
+        QXmlErrorHandler, QXmlLexicalHandler
 */
 
 /*!
@@ -2966,7 +2950,7 @@ bool QXmlSimpleReader::feature(const QString& name, bool *ok) const
             data in one chunk.
     \endtable
 
-    \sa feature(), hasFeature(), {SAX2 Features}
+    \sa feature(), hasFeature()
 */
 void QXmlSimpleReader::setFeature(const QString& name, bool enable)
 {
