@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2019 Intel Corporation.
 ** Copyright (C) 2019 Mail.ru Group.
 ** Copyright (C) 2020 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Marc Mutz <marc.mutz@kdab.com>
@@ -411,7 +411,7 @@ public:
 #endif
 
     Q_REQUIRED_RESULT qsizetype lastIndexOf(QStringView s, qsizetype from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
-    { return int(QtPrivate::lastIndexOf(*this, from, s, cs)); } // ### Qt6: qsizetype
+    { return QtPrivate::lastIndexOf(*this, from, s, cs); }
 
     inline bool contains(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 #if QT_STRINGVIEW_LEVEL < 2
