@@ -1079,14 +1079,14 @@ inline qsizetype QString::toWCharArray(wchar_t *array) const
     return qToStringViewIgnoringNull(*this).toWCharArray(array);
 }
 
-int QStringView::toWCharArray(wchar_t *array) const
+qsizetype QStringView::toWCharArray(wchar_t *array) const
 {
     if (sizeof(wchar_t) == sizeof(QChar)) {
         if (auto src = data())
             memcpy(array, src, sizeof(QChar) * size());
-        return int(size());     // ### q6sizetype
+        return size();
     } else {
-        return QString::toUcs4_helper(reinterpret_cast<const ushort *>(data()), int(size()),
+        return QString::toUcs4_helper(reinterpret_cast<const ushort *>(data()), size(),
                                       reinterpret_cast<uint *>(array));
     }
 }

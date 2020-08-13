@@ -358,7 +358,7 @@ public:
     Q_REQUIRED_RESULT Q_CORE_EXPORT float toFloat(bool *ok = nullptr) const;
     Q_REQUIRED_RESULT Q_CORE_EXPORT double toDouble(bool *ok = nullptr) const;
 
-    Q_REQUIRED_RESULT inline int toWCharArray(wchar_t *array) const; // defined in qstring.h
+    Q_REQUIRED_RESULT inline qsizetype toWCharArray(wchar_t *array) const; // defined in qstring.h
 
 
     Q_REQUIRED_RESULT Q_CORE_EXPORT
