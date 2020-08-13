@@ -7,6 +7,14 @@ if(NOT QT_BUILD_STANDALONE_TESTS)
     include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtAutoDetect.cmake)
 endif()
 
+include(".cmake.conf")
+project(QtBase
+    VERSION "${QT_REPO_MODULE_VERSION}"
+    DESCRIPTION "Qt Base Libraries"
+    HOMEPAGE_URL "https://qt.io/"
+    LANGUAGES CXX C ASM
+)
+
 if (CMAKE_CROSSCOMPILING AND CMAKE_SYSROOT)
     # When cross compiling with CMake any calls to pkg_check_modules() will
     # search into the host system instead of the target sysroot.
@@ -16,14 +24,6 @@ if (CMAKE_CROSSCOMPILING AND CMAKE_SYSROOT)
     set(ENV{PKG_CONFIG_LIBDIR} "${CMAKE_SYSROOT}/usr/lib/${CMAKE_LIBRARY_ARCHITECTURE}/pkgconfig")
     set(ENV{PKG_CONFIG_SYSROOT_DIR} ${CMAKE_SYSROOT})
 endif()
-
-include(".cmake.conf")
-project(QtBase
-    VERSION "${QT_REPO_MODULE_VERSION}"
-    DESCRIPTION "Qt Base Libraries"
-    HOMEPAGE_URL "https://qt.io/"
-    LANGUAGES CXX C ASM
-)
 
 if(NOT QT_BUILD_STANDALONE_TESTS)
     ## Add some paths to check for cmake modules:
