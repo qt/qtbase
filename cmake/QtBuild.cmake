@@ -1244,7 +1244,7 @@ QT_PATCH_VERSION = ${PROJECT_VERSION_PATCH}
 
     if(extra_statements)
         string(REPLACE ";" "\n" extra_statements "${extra_statements}")
-        string(APPEND content "\n${extra_statements}")
+        string(APPEND content "\n${extra_statements}\n")
     endif()
 
     file(GENERATE
