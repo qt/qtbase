@@ -1238,6 +1238,8 @@ QT_PATCH_VERSION = ${PROJECT_VERSION_PATCH}
 
     if(APPLE)
         list(APPEND extra_statements "QT_MAC_SDK_VERSION = ${QT_MAC_SDK_VERSION}")
+        list(APPEND extra_statements
+            "QMAKE_MACOSX_DEPLOYMENT_TARGET = ${CMAKE_OSX_DEPLOYMENT_TARGET}")
     endif()
 
     list(APPEND extra_statements "QT_EDITION = Open Source")
