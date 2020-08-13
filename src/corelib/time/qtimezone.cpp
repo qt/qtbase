@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 John Layt <jlayt@kde.org>
+** Copyright (C) 2020 John Layt <jlayt@kde.org>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -975,9 +975,15 @@ QList<QByteArray> QTimeZone::windowsIdToIanaIds(const QByteArray &windowsId,
 }
 
 #ifndef QT_NO_DATASTREAM
+// Invalid, as an IANA ID: too long, starts with - and has other invalid characters in it
+static inline QString invalidId() { return QStringLiteral("-No Time Zone Specified!"); }
+
 QDataStream &operator<<(QDataStream &ds, const QTimeZone &tz)
 {
-    tz.d->serialize(ds);
+    if (tz.isValid())
+        tz.d->serialize(ds);
+    else
+        ds << invalidId();
     return ds;
 }
 
@@ -985,7 +991,9 @@ QDataStream &operator>>(QDataStream &ds, QTimeZone &tz)
 {
     QString ianaId;
     ds >> ianaId;
-    if (ianaId == QLatin1String("OffsetFromUtc")) {
+    if (ianaId == invalidId()) {
+        tz = QTimeZone();
+    } else if (ianaId == QLatin1String("OffsetFromUtc")) {
         int utcOffset;
         QString name;
         QString abbreviation;

@@ -65,6 +65,7 @@ private slots:
     void isValidId_data();
     void isValidId();
     void malformed();
+    void serialize();
     // Backend tests
     void utcTest();
     void icuTest();
@@ -949,6 +950,33 @@ void tst_QTimeZone::malformed()
     barf = QTimeZone("QtC+09,,MA");
     if (barf.isValid())
         barf.offsetFromUtc(now);
+}
+
+void tst_QTimeZone::serialize()
+{
+    int parts = 0;
+#ifndef QT_NO_DEBUG_STREAM
+    qDebug() << QTimeZone(); // to verify no crash
+    parts++;
+#endif
+#ifndef QT_NO_DATASTREAM
+    QByteArray blob;
+    {
+        QDataStream stream(&blob, QIODevice::WriteOnly);
+        stream << QTimeZone("Europe/Oslo") << QTimeZone(420) << QTimeZone() << qint64(-1);
+    }
+    QDataStream stream(&blob, QIODevice::ReadOnly);
+    QTimeZone invalid, offset, oslo;
+    qint64 minusone;
+    stream >> oslo >> offset >> invalid >> minusone;
+    QCOMPARE(oslo, QTimeZone("Europe/Oslo"));
+    QCOMPARE(offset, QTimeZone(420));
+    QVERIFY(!invalid.isValid());
+    QCOMPARE(minusone, qint64(-1));
+    parts++;
+#endif
+    if (!parts)
+        QSKIP("No serialization enabled");
 }
 
 void tst_QTimeZone::utcTest()
