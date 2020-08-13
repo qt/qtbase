@@ -50,6 +50,7 @@ class LibraryMapping:
         self.packageName = packageName
         self.resultVariable = resultVariable
         self.appendFoundSuffix = appendFoundSuffix
+        # Allows passing addiitonal arguments to the generated find_package call.
         self.extra = extra
         self.targetName = targetName
 
