@@ -42,6 +42,7 @@ if (NOT ${PROJECT_NAME}-MultiAbiBuild)
 [=[{
   "_description": "This file is created by CMake to be read by androiddeployqt and should not be modified by hand.",
   "application-binary": "@QT_ANDROID_APPLICATION_BINARY@",
+  "application-arguments": "@QT_ANDROID_APPLICATION_ARGUMENTS@",
   "architectures": {
 @QT_ANDROID_ARCHITECTURES@
   },
@@ -99,6 +100,7 @@ if (NOT ${PROJECT_NAME}-MultiAbiBuild)
   generate_json_variable_list(ANDROID_DEPLOYMENT_DEPENDENCIES "deployment-dependencies")
   generate_json_variable_list(ANDROID_EXTRA_PLUGINS "android-extra-plugins")
   generate_json_variable(ANDROID_PACKAGE_SOURCE_DIR "android-package-source-directory")
+  generate_json_variable(ANDROID_APPLICATION_ARGUMENTS "android-application-arguments")
   generate_json_variable(ANDROID_VERSION_CODE "android-version-code")
   generate_json_variable(ANDROID_VERSION_NAME "android-version-name")
   generate_json_variable_list(ANDROID_EXTRA_LIBS "android-extra-libs")

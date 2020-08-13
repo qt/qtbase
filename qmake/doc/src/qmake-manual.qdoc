@@ -937,6 +937,19 @@
     Specifies the Android API level number. For more information, see
     \l{Android: Build Numbers}{Android Build Numbers}.
 
+    \target ANDROID_APPLICATION_ARGUMENTS
+    \section1 ANDROID_APPLICATION_ARGUMENTS
+
+    \note This variable applies only to Android targets.
+
+    Specifies extra command-line arguments to the Android app using the
+    \c AndroidManifest.xml with the tag "android.app.arguments". This takes
+    a string of arguments:
+
+    \badcode
+    ANDROID_APPLICATION_ARGUMENTS = "arg1 arg2 arg3"
+    \endcode
+
     \target ANDROID_BUNDLED_JAR_DEPENDENCIES
     \section1 ANDROID_BUNDLED_JAR_DEPENDENCIES
 

@@ -70,6 +70,9 @@ contains(TEMPLATE, ".*app"):!build_pass:!android-embedded {
     }
     unset(qml_import_paths)
 
+    !isEmpty(ANDROID_APPLICATION_ARGUMENTS): \
+        FILE_CONTENT += "   \"android-application-arguments\": $$emitString($$ANDROID_APPLICATION_ARGUMENTS),"
+
     isEmpty(QML_ROOT_PATH): \
         QML_ROOT_PATH = $$_PRO_FILE_PWD_
     FILE_CONTENT += "   \"qml-root-path\": $$emitString($$QML_ROOT_PATH),"

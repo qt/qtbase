@@ -167,6 +167,7 @@ struct Options
     QString outputDirectory;
     QString inputFileName;
     QString applicationBinary;
+    QString applicationArguments;
     QString rootPath;
     QStringList qmlImportPaths;
     QStringList qrcFiles;
@@ -885,6 +886,14 @@ bool readInputFile(Options *options)
     }
 
     {
+        const QJsonValue applicationArguments = jsonObject.value(QLatin1String("android-application-arguments"));
+        if (!applicationArguments.isUndefined())
+            options->applicationArguments = applicationArguments.toString();
+        else
+            options->applicationArguments = QStringLiteral("");
+    }
+
+    {
         const QJsonValue androidVersionName = jsonObject.value(QLatin1String("android-version-name"));
         if (!androidVersionName.isUndefined())
             options->versionName = androidVersionName.toString();
@@ -1430,6 +1439,7 @@ bool updateAndroidManifest(Options &options)
 
     QHash<QString, QString> replacements;
     replacements[QStringLiteral("-- %%INSERT_APP_NAME%% --")] = options.applicationBinary;
+    replacements[QStringLiteral("-- %%INSERT_APP_ARGUMENTS%% --")] = options.applicationArguments;
     replacements[QStringLiteral("-- %%INSERT_APP_LIB_NAME%% --")] = options.applicationBinary;
     replacements[QStringLiteral("-- %%INSERT_LOCAL_JARS%% --")] = options.localJars.join(QLatin1Char(':'));
     replacements[QStringLiteral("-- %%INSERT_INIT_CLASSES%% --")] = options.initClasses.join(QLatin1Char(':'));
