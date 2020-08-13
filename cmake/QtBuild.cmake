@@ -3318,7 +3318,12 @@ function(qt_internal_walk_libs target out_var dict_name operation)
 
                     get_property(is_imported TARGET ${lib_target_unaliased} PROPERTY IMPORTED)
                     get_property(is_global TARGET ${lib_target_unaliased} PROPERTY IMPORTED_GLOBAL)
-                    if(NOT is_global AND is_imported)
+
+                    # Allow opting out of promotion. This is useful in certain corner cases
+                    # like with WrapLibClang and Threads in qttools.
+                    qt_internal_should_not_promote_package_target_to_global(
+                        "${lib_target_unaliased}" should_not_promote)
+                    if(NOT is_global AND is_imported AND NOT should_not_promote)
                         set_property(TARGET ${lib_target_unaliased} PROPERTY IMPORTED_GLOBAL TRUE)
                     endif()
                 endif()
@@ -5649,7 +5654,9 @@ macro(qt_find_package)
 
                 get_property(is_global TARGET ${qt_find_package_target_name} PROPERTY
                                                                              IMPORTED_GLOBAL)
-                if(NOT is_global)
+                qt_internal_should_not_promote_package_target_to_global(
+                    "${qt_find_package_target_name}" should_not_promote)
+                if(NOT is_global AND NOT should_not_promote)
                     set_property(TARGET ${qt_find_package_target_name} PROPERTY
                                                                        IMPORTED_GLOBAL TRUE)
                     qt_find_package_promote_targets_to_global_scope(
@@ -6147,6 +6154,16 @@ function(qt_internal_strip_target_directory_scope_token target out_var)
     # Output: Threads::Threads
     string(REGEX REPLACE "::@<.+>$" "" target "${target}")
     set("${out_var}" "${target}" PARENT_SCOPE)
+endfunction()
+
+# Sets out_var to to TRUE if the target was marked to not be promoted to global scope.
+function(qt_internal_should_not_promote_package_target_to_global target out_var)
+    get_property(should_not_promote TARGET "${target}" PROPERTY _qt_no_promote_global)
+    set("${out_var}" "${should_not_promote}" PARENT_SCOPE)
+endfunction()
+
+function(qt_internal_disable_find_package_global_promotion target)
+    set_target_properties("${target}" PROPERTIES _qt_no_promote_global TRUE)
 endfunction()
 
 include(QtApp)
