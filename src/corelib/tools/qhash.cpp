@@ -527,6 +527,138 @@ lt16:
 }
 #endif
 
+#if defined(__ARM_FEATURE_CRYPTO)
+static size_t aeshash(const uchar *p, size_t len, size_t seed) noexcept
+{
+    uint8x16_t key;
+#  if QT_POINTER_SIZE == 8
+    quint64 seededlen = seed ^ len;
+    uint64x2_t vseed = vcombine_u64(vcreate_u64(seed), vcreate_u64(seededlen));
+    key = vreinterpretq_u8_u64(vseed);
+#  else
+    quint32 replicated_len = quint16(len) | (quint32(quint16(len)) << 16);
+    uint32x2_t vseed = vmov_n_u32(seed);
+    vseed = vset_lane_u32(replicated_len, vseed, 1);
+    key = vreinterpretq_u8_u32(vcombine_u32(vseed, vseed));
+#  endif
+
+    // Compared to x86 AES, ARM splits each round into two instructions
+    // and includes the pre-xor instead of the post-xor.
+    const auto hash16bytes = [](uint8x16_t &state0, uint8x16_t data) {
+        auto state1 = state0;
+        state0 = vaeseq_u8(state0, data);
+        state0 = vaesmcq_u8(state0);
+        auto state2 = state0;
+        state0 = vaeseq_u8(state0, state1);
+        state0 = vaesmcq_u8(state0);
+        auto state3 = state0;
+        state0 = vaeseq_u8(state0, state2);
+        state0 = vaesmcq_u8(state0);
+        state0 = veorq_u8(state0, state3);
+    };
+
+    uint8x16_t state0 = key;
+
+    if (len < 8)
+        goto lt8;
+    if (len < 16)
+        goto lt16;
+    if (len < 32)
+        goto lt32;
+
+    // rounds of 32 bytes
+    {
+        // Make state1 = ~state0:
+        uint8x16_t state1 = veorq_u8(state0, vdupq_n_u8(255));
+
+        // do simplified rounds of 32 bytes: unlike the Go code, we only
+        // scramble twice and we keep 256 bits of state
+        const auto *e = p + len - 31;
+        while (p < e) {
+            uint8x16_t data0 = vld1q_u8(p);
+            uint8x16_t data1 = vld1q_u8(p + 16);
+            auto oldstate0 = state0;
+            auto oldstate1 = state1;
+            state0 = vaeseq_u8(state0, data0);
+            state1 = vaeseq_u8(state1, data1);
+            state0 = vaesmcq_u8(state0);
+            state1 = vaesmcq_u8(state1);
+            auto laststate0 = state0;
+            auto laststate1 = state1;
+            state0 = vaeseq_u8(state0, oldstate0);
+            state1 = vaeseq_u8(state1, oldstate1);
+            state0 = vaesmcq_u8(state0);
+            state1 = vaesmcq_u8(state1);
+            state0 = veorq_u8(state0, laststate0);
+            state1 = veorq_u8(state1, laststate1);
+            p += 32;
+        }
+        state0 = veorq_u8(state0, state1);
+    }
+    len &= 0x1f;
+
+    // do we still have 16 or more bytes?
+    if (len & 0x10) {
+lt32:
+        uint8x16_t data = vld1q_u8(p);
+        hash16bytes(state0, data);
+        p += 16;
+    }
+    len &= 0xf;
+
+    if (len & 0x08) {
+lt16:
+        uint8x8_t data8 = vld1_u8(p);
+        uint8x16_t data = vcombine_u8(data8, vdup_n_u8(0));
+        hash16bytes(state0, data);
+        p += 8;
+    }
+    len &= 0x7;
+
+lt8:
+    if (len) {
+        // load the last chunk of data
+        // We're going to load 8 bytes and mask zero the part we don't care
+        // (the hash of a short string is different from the hash of a longer
+        // including NULLs at the end because the length is in the key)
+        // WARNING: this may produce valgrind warnings, but it's safe
+
+        uint8x8_t data8;
+
+        if (Q_LIKELY(quintptr(p + 8) & 0xff8)) {
+            // same page, we definitely can't fault:
+            // load all 8 bytes and mask off the bytes past the end of the source
+            static const qint8 maskarray[] = {
+                -1, -1, -1, -1, -1, -1, -1,
+                 0,  0,  0,  0,  0,  0,  0,
+            };
+            uint8x8_t mask = vld1_u8(reinterpret_cast<const quint8 *>(maskarray) + 7 - len);
+            data8 = vld1_u8(p);
+            data8 = vand_u8(data8, mask);
+        } else {
+            // too close to the end of the page, it could fault:
+            // load 8 bytes ending at the data end, then shuffle them to the beginning
+            static const qint8 shufflecontrol[] = {
+                 1,  2,  3,  4,  5,  6,  7,
+                -1, -1, -1, -1, -1, -1, -1,
+            };
+            uint8x8_t control = vld1_u8(reinterpret_cast<const quint8 *>(shufflecontrol) + 7 - len);
+            data8 = vld1_u8(p - 8 + len);
+            data8 = vtbl1_u8(data8, control);
+        }
+        uint8x16_t data = vcombine_u8(data8, vdup_n_u8(0));
+        hash16bytes(state0, data);
+    }
+
+    // extract state0
+#  if QT_POINTER_SIZE == 8
+    return vgetq_lane_u64(vreinterpretq_u64_u8(state0), 0);
+#  else
+    return vgetq_lane_u32(vreinterpretq_u32_u8(state0), 0);
+#  endif
+}
+#endif
+
 size_t qHashBits(const void *p, size_t size, size_t seed) noexcept
 {
 #ifdef QT_BOOTSTRAPPED
@@ -536,6 +668,9 @@ size_t qHashBits(const void *p, size_t size, size_t seed) noexcept
 #endif
 #ifdef AESHASH
     if (seed && qCpuHasFeature(AES) && qCpuHasFeature(SSE4_2))
+        return aeshash(reinterpret_cast<const uchar *>(p), size, seed);
+#elif defined(__ARM_FEATURE_CRYPTO)
+    if (seed)
         return aeshash(reinterpret_cast<const uchar *>(p), size, seed);
 #endif
     if (size <= QT_POINTER_SIZE)
