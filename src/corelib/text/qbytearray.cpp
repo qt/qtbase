@@ -4195,15 +4195,10 @@ QByteArray QByteArray::number(double n, char f, int prec)
 */
 QByteArray &QByteArray::setRawData(const char *data, qsizetype size)
 {
-    if (!data || !size) {
+    if (!data || !size)
         clear();
-    }
-//    else if (d->isShared() || (d->flags() & Data::RawDataType) == 0) {
+    else
         *this = fromRawData(data, size);
-//    } else {
-//        d.size = size;
-//        d.data() = const_cast<char *>(data);
-//    }
     return *this;
 }
 
