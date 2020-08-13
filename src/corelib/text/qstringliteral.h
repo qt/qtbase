@@ -55,15 +55,10 @@ QT_BEGIN_NAMESPACE
 // to lacking stdlib support. But QStringLiteral only needs the
 // core language feature, so just use u"" here unconditionally:
 
-typedef char16_t qunicodechar;
-
-static_assert(sizeof(qunicodechar) == 2,
-        "qunicodechar must typedef an integral type of size 2");
-
 #define QT_UNICODE_LITERAL(str) u"" str
 #define QStringLiteral(str) \
     (QString(QStringPrivate(nullptr,  \
-                            reinterpret_cast<char16_t *>(const_cast<qunicodechar *>(QT_UNICODE_LITERAL(str))), \
+                            const_cast<char16_t *>(QT_UNICODE_LITERAL(str)), \
                             sizeof(QT_UNICODE_LITERAL(str))/2 - 1))) \
     /**/
 
