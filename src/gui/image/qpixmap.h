@@ -77,6 +77,8 @@ public:
     { qSwap(data, other.data); return *this; }
     inline void swap(QPixmap &other) noexcept
     { qSwap(data, other.data); }
+    bool operator==(const QPixmap &) const = delete;
+    bool operator!=(const QPixmap &) const = delete;
 
     operator QVariant() const;
 

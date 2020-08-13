@@ -72,6 +72,8 @@ public:
     { swap(other); return *this; }
     inline void swap(QIcon &other) noexcept
     { qSwap(d, other.d); }
+    bool operator==(const QIcon &) const = delete;
+    bool operator!=(const QIcon &) const = delete;
 
     operator QVariant() const;
 

@@ -83,7 +83,7 @@ public:
     QCursor();
     QCursor(Qt::CursorShape shape);
     QCursor(const QBitmap &bitmap, const QBitmap &mask, int hotX=-1, int hotY=-1);
-    QCursor(const QPixmap &pixmap, int hotX=-1, int hotY=-1);
+    explicit QCursor(const QPixmap &pixmap, int hotX=-1, int hotY=-1);
     QCursor(const QCursor &cursor);
     ~QCursor();
     QCursor &operator=(const QCursor &cursor);
@@ -117,12 +117,10 @@ public:
 
 private:
     friend Q_GUI_EXPORT bool operator==(const QCursor &lhs, const QCursor &rhs) noexcept;
+    friend inline bool operator!=(const QCursor &lhs, const QCursor &rhs) noexcept { return !(lhs == rhs); }
     QCursorData *d;
 };
 Q_DECLARE_SHARED(QCursor)
-
-Q_GUI_EXPORT bool operator==(const QCursor &lhs, const QCursor &rhs) noexcept;
-inline bool operator!=(const QCursor &lhs, const QCursor &rhs) noexcept { return !(lhs == rhs); }
 
 /*****************************************************************************
   QCursor stream functions
