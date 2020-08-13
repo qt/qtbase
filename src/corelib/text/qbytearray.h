@@ -57,7 +57,7 @@
 #include <iterator>
 
 #ifndef QT5_NULL_STRINGS
-// ### Should default to 0 in Qt 6.0
+// Would ideally be off, but in practice breaks too much (Qt 6.0).
 #define QT5_NULL_STRINGS 1
 #endif
 
