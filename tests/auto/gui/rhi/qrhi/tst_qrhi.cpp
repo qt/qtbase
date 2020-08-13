@@ -1338,13 +1338,6 @@ void tst_QRhi::invalidPipeline()
     pipeline->setRenderPassDescriptor(rpDesc.data());
     QVERIFY(!pipeline->create());
 
-    // no vertex inputs
-    pipeline.reset(rhi->newGraphicsPipeline());
-    pipeline->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
-    pipeline->setRenderPassDescriptor(rpDesc.data());
-    pipeline->setShaderResourceBindings(srb.data());
-    QVERIFY(!pipeline->create());
-
     // no renderpass descriptor
     pipeline.reset(rhi->newGraphicsPipeline());
     pipeline->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });

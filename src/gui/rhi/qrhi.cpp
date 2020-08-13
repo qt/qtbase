@@ -4301,14 +4301,8 @@ bool QRhiImplementation::sanityCheckGraphicsPipeline(QRhiGraphicsPipeline *ps)
             qWarning("Empty shader passed to graphics pipeline");
             return false;
         }
-        if (it->type() == QRhiShaderStage::Vertex) {
+        if (it->type() == QRhiShaderStage::Vertex)
             hasVertexStage = true;
-            const QRhiVertexInputLayout inputLayout = ps->vertexInputLayout();
-            if (inputLayout.cbeginAttributes() == inputLayout.cendAttributes()) {
-                qWarning("Vertex stage present without any vertex inputs");
-                return false;
-            }
-        }
     }
     if (!hasVertexStage) {
         qWarning("Cannot build a graphics pipeline without a vertex stage");
