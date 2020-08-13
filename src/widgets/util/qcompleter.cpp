@@ -758,7 +758,10 @@ int QUnsortedModelEngine::buildIndices(const QString& str, const QModelIndex& pa
         case Qt::MatchExactly:
         case Qt::MatchFixedString:
         case Qt::MatchCaseSensitive:
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
         case Qt::MatchRegExp:
+QT_WARNING_POP
         case Qt::MatchWildcard:
         case Qt::MatchWrap:
         case Qt::MatchRecursive:

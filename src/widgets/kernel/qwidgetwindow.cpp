@@ -872,7 +872,10 @@ void QWidgetWindow::handleWheelEvent(QWheelEvent *event)
     QPoint mapped = widget->mapFrom(rootWidget, pos);
 
 #if QT_DEPRECATED_SINCE(5, 0)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     QWheelEvent translated(mapped, event->globalPos(), event->pixelDelta(), event->angleDelta(), event->delta(), event->orientation(), event->buttons(), event->modifiers(), event->phase(), event->source(), event->inverted());
+QT_WARNING_POP
 #else
     QWheelEvent translated(QPointF(mapped), event->globalPosition(), event->pixelDelta(), event->angleDelta(),
                            event->buttons(), event->modifiers(), event->phase(), event->inverted(), event->source());

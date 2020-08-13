@@ -1384,7 +1384,10 @@ QGradient::QGradient(Preset preset)
         static QJsonDocument jsonPresets = []() {
             QFile webGradients(QLatin1String(":/qgradient/webgradients.binaryjson"));
             webGradients.open(QFile::ReadOnly);
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
             return QJsonDocument::fromBinaryData(webGradients.readAll());
+QT_WARNING_POP
         }();
 
         const QJsonValue presetData = jsonPresets[preset - 1];

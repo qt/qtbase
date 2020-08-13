@@ -269,7 +269,7 @@ QDebug operator<<(QDebug d, const GUID &guid)
 
 static void formatBriefRectangle(QDebug &d, const QRect &r)
 {
-    d << r.width() << 'x' << r.height() << forcesign << r.x() << r.y() << noforcesign;
+    d << r.width() << 'x' << r.height() << Qt::forcesign << r.x() << r.y() << Qt::noforcesign;
 }
 
 static void formatBriefMargins(QDebug &d, const QMargins &m)
@@ -927,7 +927,7 @@ QMargins QWindowsGeometryHint::frameOnPrimaryScreen(DWORD style, DWORD exStyle)
     const QMargins result(qAbs(rect.left), qAbs(rect.top),
                           qAbs(rect.right), qAbs(rect.bottom));
     qCDebug(lcQpaWindows).nospace() << __FUNCTION__ << " style="
-        << showbase << hex << style << " exStyle=" << exStyle << dec << noshowbase
+        << Qt::showbase << Qt::hex << style << " exStyle=" << exStyle << Qt::dec << Qt::noshowbase
         << ' ' << rect << ' ' << result;
     return result;
 }

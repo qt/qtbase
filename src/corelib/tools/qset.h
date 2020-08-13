@@ -398,6 +398,10 @@ Q_OUTOFLINE_TEMPLATE QList<T> QSet<T>::values() const
 }
 
 #if QT_DEPRECATED_SINCE(5, 14) && QT_VERSION < QT_VERSION_CHECK(6,0,0)
+
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+
 template <typename T>
 Q_OUTOFLINE_TEMPLATE QSet<T> QList<T>::toSet() const
 {
@@ -419,6 +423,9 @@ QList<T> QList<T>::fromSet(const QSet<T> &set)
 {
     return set.toList();
 }
+
+QT_WARNING_POP
+
 #endif
 
 Q_DECLARE_SEQUENTIAL_ITERATOR(Set)

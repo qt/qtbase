@@ -2403,10 +2403,13 @@ QModelIndexList QAbstractItemModel::match(const QModelIndex &start, int role,
                 QString t = v.toString();
                 switch (matchType) {
 #if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
                 case Qt::MatchRegExp:
                     if (QRegExp(text, cs).exactMatch(t))
                         result.append(idx);
                     break;
+QT_WARNING_POP
 #endif
                 case Qt::MatchRegularExpression:
                     Q_FALLTHROUGH();
