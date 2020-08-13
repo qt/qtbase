@@ -456,7 +456,8 @@ static jboolean startQtAndroidPlugin(JNIEnv *env, jobject /*object*/, jstring pa
     QByteArray string = nativeString;
     env->ReleaseStringUTFChars(paramsString, nativeString);
 
-    m_applicationParams=string.split('\t');
+    for (auto str : string.split('\t'))
+        m_applicationParams.append(str.split(' '));
 
     // Go home
     QDir::setCurrent(QDir::homePath());
