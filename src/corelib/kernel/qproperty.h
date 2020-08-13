@@ -597,7 +597,7 @@ protected:
     }
 
 private:
-    void setSource(QtPrivate::QPropertyBase &property);
+    void setSource(const QtPrivate::QPropertyBase &property);
 
     QTaggedPointer<QPropertyObserver, ObserverTag> next;
     // prev is a pointer to the "next" element within the previous node, or to the "firstObserverPtr" if it is the

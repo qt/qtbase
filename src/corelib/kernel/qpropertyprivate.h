@@ -96,13 +96,13 @@ public:
                                        void *propertyDataPtr, void *staticObserver = nullptr,
                                        QPropertyObserverCallback staticObserverCallback = nullptr,
                                        QPropertyGuardFunction guardCallback = nullptr);
-    QPropertyBindingPrivate *binding();
+    QPropertyBindingPrivate *binding() const;
 
-    void evaluateIfDirty();
+    void evaluateIfDirty() const;
     void removeBinding();
 
     void registerWithCurrentlyEvaluatingBinding() const;
-    void notifyObservers(void *propertyDataPtr);
+    void notifyObservers(void *propertyDataPtr) const;
 
     void setExtraBit(bool b)
     {

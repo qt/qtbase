@@ -292,7 +292,7 @@ QUntypedPropertyBinding QPropertyBase::setBinding(const QUntypedPropertyBinding 
     return QUntypedPropertyBinding(oldBinding.data());
 }
 
-QPropertyBindingPrivate *QPropertyBase::binding()
+QPropertyBindingPrivate *QPropertyBase::binding() const
 {
     QPropertyBasePointer d{this};
     if (auto binding = d.bindingPtr())
@@ -323,7 +323,7 @@ QPropertyBindingPrivate *QPropertyBindingPrivate::currentlyEvaluatingBinding()
     return currentBindingEvaluationState ? currentBindingEvaluationState->binding : nullptr;
 }
 
-void QPropertyBase::evaluateIfDirty()
+void QPropertyBase::evaluateIfDirty() const
 {
     QPropertyBasePointer d{this};
     QPropertyBindingPrivate *binding = d.bindingPtr();
@@ -358,7 +358,7 @@ void QPropertyBase::registerWithCurrentlyEvaluatingBinding() const
     dependencyObserver.observeProperty(d);
 }
 
-void QPropertyBase::notifyObservers(void *propertyDataPtr)
+void QPropertyBase::notifyObservers(void *propertyDataPtr) const
 {
     QPropertyBasePointer d{this};
     if (QPropertyObserverPointer observer = d.firstObserver())
@@ -385,7 +385,7 @@ QPropertyObserver::QPropertyObserver(void *aliasedPropertyPtr)
     d.setAliasedProperty(aliasedPropertyPtr);
 }
 
-void QPropertyObserver::setSource(QPropertyBase &property)
+void QPropertyObserver::setSource(const QPropertyBase &property)
 {
     QPropertyObserverPointer d{this};
     QPropertyBasePointer propPrivate{&property};
