@@ -6678,11 +6678,6 @@ qulonglong QString::toIntegral_helper(QStringView string, bool *ok, uint base)
     \sa number(), toULong(), toInt(), QLocale::toInt()
 */
 
-long QString::toLong(bool *ok, int base) const
-{
-    return toIntegral_helper<long>(*this, ok, base);
-}
-
 /*!
     \fn ulong QString::toULong(bool *ok, int base) const
 
@@ -6709,13 +6704,8 @@ long QString::toLong(bool *ok, int base) const
     \sa number(), QLocale::toUInt()
 */
 
-ulong QString::toULong(bool *ok, int base) const
-{
-    return toIntegral_helper<ulong>(*this, ok, base);
-}
-
-
 /*!
+    \fn int QString::toInt(bool *ok, int base) const
     Returns the string converted to an \c int using base \a
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
@@ -6739,12 +6729,8 @@ ulong QString::toULong(bool *ok, int base) const
     \sa number(), toUInt(), toDouble(), QLocale::toInt()
 */
 
-int QString::toInt(bool *ok, int base) const
-{
-    return toIntegral_helper<int>(*this, ok, base);
-}
-
 /*!
+    \fn uint QString::toUInt(bool *ok, int base) const
     Returns the string converted to an \c{unsigned int} using base \a
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
@@ -6768,12 +6754,9 @@ int QString::toInt(bool *ok, int base) const
     \sa number(), toInt(), QLocale::toUInt()
 */
 
-uint QString::toUInt(bool *ok, int base) const
-{
-    return toIntegral_helper<uint>(*this, ok, base);
-}
-
 /*!
+    \fn short QString::toShort(bool *ok, int base) const
+
     Returns the string converted to a \c short using base \a
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
@@ -6797,12 +6780,9 @@ uint QString::toUInt(bool *ok, int base) const
     \sa number(), toUShort(), toInt(), QLocale::toShort()
 */
 
-short QString::toShort(bool *ok, int base) const
-{
-    return toIntegral_helper<short>(*this, ok, base);
-}
-
 /*!
+    \fn ushort QString::toUShort(bool *ok, int base) const
+
     Returns the string converted to an \c{unsigned short} using base \a
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
@@ -6825,12 +6805,6 @@ short QString::toShort(bool *ok, int base) const
 
     \sa number(), toShort(), QLocale::toUShort()
 */
-
-ushort QString::toUShort(bool *ok, int base) const
-{
-    return toIntegral_helper<ushort>(*this, ok, base);
-}
-
 
 /*!
     Returns the string converted to a \c double value.

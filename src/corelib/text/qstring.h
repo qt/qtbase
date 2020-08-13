@@ -712,13 +712,18 @@ public:
 
     static int localeAwareCompare(QStringView s1, QStringView s2);
 
-    // ### Qt6: make inline except for the long long versions
-    short  toShort(bool *ok=nullptr, int base=10) const;
-    ushort toUShort(bool *ok=nullptr, int base=10) const;
-    int toInt(bool *ok=nullptr, int base=10) const;
-    uint toUInt(bool *ok=nullptr, int base=10) const;
-    long toLong(bool *ok=nullptr, int base=10) const;
-    ulong toULong(bool *ok=nullptr, int base=10) const;
+    short toShort(bool *ok=nullptr, int base=10) const
+    { return toIntegral_helper<short>(*this, ok, base); }
+    ushort toUShort(bool *ok=nullptr, int base=10) const
+    { return toIntegral_helper<ushort>(*this, ok, base); }
+    int toInt(bool *ok=nullptr, int base=10) const
+    { return toIntegral_helper<int>(*this, ok, base); }
+    uint toUInt(bool *ok=nullptr, int base=10) const
+    { return toIntegral_helper<uint>(*this, ok, base); }
+    long toLong(bool *ok=nullptr, int base=10) const
+    { return toIntegral_helper<long>(*this, ok, base); }
+    ulong toULong(bool *ok=nullptr, int base=10) const
+    { return toIntegral_helper<ulong>(*this, ok, base); }
     qlonglong toLongLong(bool *ok=nullptr, int base=10) const;
     qulonglong toULongLong(bool *ok=nullptr, int base=10) const;
     float toFloat(bool *ok=nullptr) const;
