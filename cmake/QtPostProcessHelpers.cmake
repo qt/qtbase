@@ -515,6 +515,22 @@ endif()\n")
             string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
                 "set(QT_DISABLE_RPATH \"${QT_DISABLE_RPATH}\" CACHE STRING \"\")\n")
         endif()
+        if(DEFINED QT_EXTRA_DEFINES)
+            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
+                "set(QT_EXTRA_DEFINES \"${QT_EXTRA_DEFINES}\" CACHE STRING \"\")\n")
+        endif()
+        if(DEFINED QT_EXTRA_INCLUDEPATHS)
+            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
+                "set(QT_EXTRA_INCLUDEPATHS \"${QT_EXTRA_INCLUDEPATHS}\" CACHE STRING \"\")\n")
+        endif()
+        if(DEFINED QT_EXTRA_FRAMEWORKPATHS)
+            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
+                "set(QT_EXTRA_FRAMEWORKPATHS \"${QT_EXTRA_FRAMEWORKPATHS}\" CACHE STRING \"\")\n")
+        endif()
+        if(DEFINED QT_EXTRA_LIBDIRS)
+            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
+                "set(QT_EXTRA_LIBDIRS \"${QT_EXTRA_LIBDIRS}\" CACHE STRING \"\")\n")
+        endif()
         if(DEFINED QT_EXTRA_RPATHS)
             string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
                 "set(QT_EXTRA_RPATHS \"${QT_EXTRA_RPATHS}\" CACHE STRING \"\")\n")

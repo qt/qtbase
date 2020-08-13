@@ -599,6 +599,10 @@ elseif(nr_of_build_configs GREATER 1)
 endif()
 
 translate_list_input(device-option QT_QMAKE_DEVICE_OPTIONS)
+translate_list_input(defines QT_EXTRA_DEFINES)
+translate_list_input(fpaths QT_EXTRA_FRAMEWORKPATHS)
+translate_list_input(includes QT_EXTRA_INCLUDEPATHS)
+translate_list_input(lpaths QT_EXTRA_LIBDIRS)
 translate_list_input(rpaths QT_EXTRA_RPATHS)
 
 foreach(input ${config_inputs})

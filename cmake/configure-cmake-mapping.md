@@ -78,10 +78,10 @@ The effort of this is tracked in QTBUG-85373 and QTBUG-85349.
 |                                       |                                                   | passed via -DCMAKE_TOOLCHAIN_FILE=<filename>                    |
 | -no-gcc-sysroot                       |                                                   |                                                                 |
 | -no-pkg-config                        |                                                   |                                                                 |
-| -D <string>                           |                                                   |                                                                 |
-| -I <string>                           |                                                   |                                                                 |
-| -L <string>                           |                                                   |                                                                 |
-| -F <string>                           |                                                   |                                                                 |
+| -D <string>                           | -DQT_EXTRA_DEFINES=<string1>;<string2>            |                                                                 |
+| -I <string>                           | -DQT_EXTRA_INCLUDEPATHS=<string1>;<string2>       |                                                                 |
+| -L <string>                           | -DQT_EXTRA_LIBDIRS=<string1>;<string2>            |                                                                 |
+| -F <string>                           | -DQT_EXTRA_FRAMEWORKPATHS=<string1>;<string2>     |                                                                 |
 | -sdk <sdk>                            |                                                   |                                                                 |
 | -android-sdk path                     |                                                   |                                                                 |
 | -android-ndk path                     |                                                   |                                                                 |

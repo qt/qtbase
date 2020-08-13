@@ -1,3 +1,18 @@
+# Create a QMake list (values space-separated) containing paths.
+# Entries that contain whitespace characters are quoted.
+function(qt_to_qmake_path_list out_var)
+    set(quoted_paths "")
+    foreach(path ${ARGN})
+        if(path MATCHES "[ \t]")
+            list(APPEND quoted_paths "\"${path}\"")
+        else()
+            list(APPEND quoted_paths "${path}")
+        endif()
+    endforeach()
+    list(JOIN quoted_paths " " result)
+    set("${out_var}" "${result}" PARENT_SCOPE)
+endfunction()
+
 macro(qt_add_string_to_qconfig_cpp str)
     string(LENGTH "${str}" length)
     string(APPEND QT_CONFIG_STRS "    \"${str}\\0\"\n")

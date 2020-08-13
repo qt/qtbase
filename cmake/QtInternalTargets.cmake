@@ -187,6 +187,25 @@ if (GCC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "9.2")
     target_compile_options(PlatformCommonInternal INTERFACE $<$<COMPILE_LANGUAGE:CXX>:-Wsuggest-override>)
 endif()
 
+if(DEFINED QT_EXTRA_DEFINES)
+    target_compile_definitions(PlatformCommonInternal INTERFACE ${QT_EXTRA_DEFINES})
+endif()
+
+if(DEFINED QT_EXTRA_INCLUDEPATHS)
+    target_include_directories(PlatformCommonInternal INTERFACE ${QT_EXTRA_INCLUDEPATHS})
+endif()
+
+if(DEFINED QT_EXTRA_LIBDIRS)
+    target_link_directories(PlatformCommonInternal INTERFACE ${QT_EXTRA_LIBDIRS})
+endif()
+
+if(DEFINED QT_EXTRA_FRAMEWORKPATHS AND APPLE)
+    list(TRANSFORM QT_EXTRA_FRAMEWORKPATHS PREPEND "-F" OUTPUT_VARIABLE __qt_fw_flags)
+    target_compile_options(PlatformCommonInternal INTERFACE ${__qt_fw_flags})
+    target_link_options(PlatformCommonInternal INTERFACE ${__qt_fw_flags})
+    unset(__qt_fw_flags)
+endif()
+
 function(qt_get_implicit_sse2_genex_condition out_var)
     set(is_shared_lib "$<STREQUAL:$<TARGET_PROPERTY:TYPE>,SHARED_LIBRARY>")
     set(is_static_lib "$<STREQUAL:$<TARGET_PROPERTY:TYPE>,STATIC_LIBRARY>")
