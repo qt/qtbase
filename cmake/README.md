@@ -1,9 +1,6 @@
 # Status
 
 Port is still on-going.
-Most of qtbase and qtsvg is ported.
-Other repositories are ported, but not under CI control yet.
-Some libraries, tests and examples are still missing.
 
 Note:
 You need CMake 3.16.0 or later for most platforms (due to new AUTOMOC json feature).
