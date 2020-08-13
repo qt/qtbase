@@ -1807,12 +1807,15 @@ const QCharAttributes *QTextEngine::attributes() const
         scriptItems[i].script = QChar::Script(si.analysis.script);
     }
 
-    QUnicodeTools::initCharAttributes(reinterpret_cast<const ushort *>(layoutData->string.constData()),
-                                      layoutData->string.length(),
-                                      scriptItems.data(), scriptItems.size(),
-                                      (QCharAttributes *)layoutData->memory,
-                                      QUnicodeTools::CharAttributeOptions(QUnicodeTools::DefaultOptionsCompat
-                                                                          | QUnicodeTools::HangulLineBreakTailoring));
+    QUnicodeTools::initCharAttributes(
+        reinterpret_cast<const ushort *>(layoutData->string.constData()),
+        layoutData->string.length(),
+        scriptItems.data(), scriptItems.size(),
+        reinterpret_cast<QCharAttributes *>(layoutData->memory),
+        QUnicodeTools::CharAttributeOptions(QUnicodeTools::GraphemeBreaks
+                                            | QUnicodeTools::LineBreaks
+                                            | QUnicodeTools::WhiteSpaces
+                                            | QUnicodeTools::HangulLineBreakTailoring));
 
 
     layoutData->haveCharAttributes = true;
