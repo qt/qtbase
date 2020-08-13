@@ -144,7 +144,7 @@ namespace QtPrivate {
 [[nodiscard]] Q_CORE_EXPORT QByteArray convertToLatin1(QStringView str);
 [[nodiscard]] Q_CORE_EXPORT QByteArray convertToUtf8(QStringView str);
 [[nodiscard]] Q_CORE_EXPORT QByteArray convertToLocal8Bit(QStringView str);
-[[nodiscard]] Q_CORE_EXPORT QList<uint> convertToUcs4(QStringView str);
+[[nodiscard]] Q_CORE_EXPORT QList<uint> convertToUcs4(QStringView str); // ### Qt 7 char32_t
 
 [[nodiscard]] Q_CORE_EXPORT Q_DECL_PURE_FUNCTION bool isRightToLeft(QStringView string) noexcept;
 

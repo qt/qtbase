@@ -708,7 +708,7 @@ public:
 
     [[nodiscard]] QString repeated(qsizetype times) const;
 
-    const ushort *utf16() const;
+    const ushort *utf16() const; // ### Qt 7 char16_t
 
 #if !defined(Q_CLANG_QDOC)
     [[nodiscard]] QByteArray toLatin1() const &
@@ -728,7 +728,7 @@ public:
     [[nodiscard]] QByteArray toUtf8() const;
     [[nodiscard]] QByteArray toLocal8Bit() const;
 #endif
-    [[nodiscard]] QList<uint> toUcs4() const;
+    [[nodiscard]] QList<uint> toUcs4() const; // ### Qt 7 char32_t
 
     // note - this are all inline so we can benefit from strlen() compile time optimizations
     static QString fromLatin1(QByteArrayView ba);
@@ -775,7 +775,7 @@ public:
 
     QString &setRawData(const QChar *unicode, qsizetype size);
     QString &setUnicode(const QChar *unicode, qsizetype size);
-    inline QString &setUtf16(const ushort *utf16, qsizetype size);
+    inline QString &setUtf16(const ushort *utf16, qsizetype size); // ### Qt 7 char16_t
 
 #if QT_STRINGVIEW_LEVEL < 2
     int compare(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
@@ -1089,7 +1089,7 @@ private:
     static QByteArray toLatin1_helper_inplace(QString &);
     static QByteArray toUtf8_helper(const QString &);
     static QByteArray toLocal8Bit_helper(const QChar *data, qsizetype size);
-    static qsizetype toUcs4_helper(const ushort *uc, qsizetype length, uint *out);
+    static qsizetype toUcs4_helper(const ushort *uc, qsizetype length, uint *out); // ### Qt 7 char16_t
     static qlonglong toIntegral_helper(QStringView string, bool *ok, int base);
     static qulonglong toIntegral_helper(QStringView string, bool *ok, uint base);
     void replace_helper(size_t *indices, qsizetype nIndices, qsizetype blen, const QChar *after, qsizetype alen);

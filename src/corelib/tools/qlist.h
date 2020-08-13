@@ -933,6 +933,7 @@ qsizetype erase_if(QList<T> &list, Predicate pred)
     return QtPrivate::sequential_erase_if(list, pred);
 }
 
+// ### Qt 7 char32_t
 QList<uint> QStringView::toUcs4() const { return QtPrivate::convertToUcs4(*this); }
 
 QT_END_NAMESPACE

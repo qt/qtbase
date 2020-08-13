@@ -254,7 +254,7 @@ public:
     [[nodiscard]] QByteArray toLatin1() const { return QtPrivate::convertToLatin1(*this); }
     [[nodiscard]] QByteArray toUtf8() const { return QtPrivate::convertToUtf8(*this); }
     [[nodiscard]] QByteArray toLocal8Bit() const { return QtPrivate::convertToLocal8Bit(*this); }
-    [[nodiscard]] inline QList<uint> toUcs4() const; // defined in qlist.h
+    [[nodiscard]] inline QList<uint> toUcs4() const; // defined in qlist.h ### Qt 7 char32_t
 
     [[nodiscard]] constexpr QChar at(qsizetype n) const noexcept { return (*this)[n]; }
 
