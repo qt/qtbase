@@ -348,36 +348,65 @@ qt_internal_export_modern_cmake_config_targets_file(TARGETS ${__export_targets}
 qt_copy_or_install(FILES
                    cmake/ModuleDescription.json.in
                    cmake/Qt3rdPartyLibraryConfig.cmake.in
-                   cmake/QtApp.cmake
+                   cmake/Qt3rdPartyLibraryHelpers.cmake
+                   cmake/QtAppHelpers.cmake
+                   cmake/QtAutogenHelpers.cmake
                    cmake/QtBuild.cmake
                    cmake/QtBuildInformation.cmake
+                   cmake/QtCMakeHelpers.cmake
+                   cmake/QtCompatibilityHelpers.cmake
                    cmake/QtCompilerFlags.cmake
                    cmake/QtCompilerOptimization.cmake
                    cmake/QtConfigDependencies.cmake.in
+                   cmake/QtDbusHelpers.cmake
+                   cmake/QtDocsHelpers.cmake
+                   cmake/QtExecutableHelpers.cmake
                    cmake/QtFeature.cmake
                    cmake/QtFeatureCommon.cmake
-                   cmake/QtFinishPrlFile.cmake
-                   cmake/QtFindWrapHelper.cmake
-                   cmake/QtFindWrapConfigExtra.cmake.in
                    cmake/QtFileConfigure.txt.in
+                   cmake/QtFindPackageHelpers.cmake
+                   cmake/QtFindWrapConfigExtra.cmake.in
+                   cmake/QtFindWrapHelper.cmake
+                   cmake/QtFinishPrlFile.cmake
+                   cmake/QtFlagHandlingHelpers.cmake
+                   cmake/QtFrameworkHelpers.cmake
                    cmake/QtGenerateExtPri.cmake
-                   cmake/QtGenerateLibPri.cmake
                    cmake/QtGenerateLibHelpers.cmake
-                   cmake/QtPlatformSupport.cmake
+                   cmake/QtGenerateLibPri.cmake
+                   cmake/QtGlobalStateHelpers.cmake
+                   cmake/QtInstallHelpers.cmake
+                   cmake/QtLalrHelpers.cmake
+                   cmake/QtModuleConfig.cmake.in
+                   cmake/QtModuleDependencies.cmake.in
+                   cmake/QtModuleHelpers.cmake
+                   cmake/QtModuleToolsConfig.cmake.in
+                   cmake/QtModuleToolsDependencies.cmake.in
+                   cmake/QtModuleToolsVersionlessTargets.cmake.in
+                   cmake/QtNoLinkTargetHelpers.cmake
                    cmake/QtPlatformAndroid.cmake
+                   cmake/QtPlatformSupport.cmake
+                   cmake/QtPluginConfig.cmake.in
+                   cmake/QtPluginDependencies.cmake.in
+                   cmake/QtPluginHelpers.cmake
+                   cmake/QtPlugins.cmake.in
                    cmake/QtPostProcess.cmake
+                   cmake/QtPrecompiledHeadersHelpers.cmake
+                   cmake/QtPriHelpers.cmake
+                   cmake/QtPrlHelpers.cmake
+                   cmake/QtQmakeHelpers.cmake
+                   cmake/QtResourceHelpers.cmake
+                   cmake/QtRpathHelpers.cmake
+                   cmake/QtSanitizerHelpers.cmake
+                   cmake/QtScopeFinalizerHelpers.cmake
                    cmake/QtSeparateDebugInfo.Info.plist.in
                    cmake/QtSeparateDebugInfo.cmake
                    cmake/QtSetup.cmake
-                   cmake/QtModuleConfig.cmake.in
-                   cmake/QtModuleDependencies.cmake.in
-                   cmake/QtModuleToolsDependencies.cmake.in
-                   cmake/QtModuleToolsConfig.cmake.in
-                   cmake/QtModuleToolsVersionlessTargets.cmake.in
+                   cmake/QtSimdHelpers.cmake
                    cmake/QtStandaloneTestsConfig.cmake.in
-                   cmake/QtPlugins.cmake.in
-                   cmake/QtPluginConfig.cmake.in
-                   cmake/QtPluginDependencies.cmake.in
+                   cmake/QtSyncQtHelpers.cmake
+                   cmake/QtTargetHelpers.cmake
+                   cmake/QtTestHelpers.cmake
+                   cmake/QtToolHelpers.cmake
     DESTINATION "${__GlobalConfig_install_dir}"
 )
 
