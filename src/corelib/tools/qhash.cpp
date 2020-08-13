@@ -449,8 +449,8 @@ static size_t aeshash(const uchar *p, size_t len, size_t seed) noexcept
         while (src < srcend) {
             __m128i data0 = _mm_loadu_si128(src);
             __m128i data1 = _mm_loadu_si128(src + 1);
-            data0 = _mm_xor_si128(data0, state0);
-            data1 = _mm_xor_si128(data1, state1);
+            state0 = _mm_xor_si128(data0, state0);
+            state1 = _mm_xor_si128(data1, state1);
             state0 = _mm_aesenc_si128(state0, state0);
             state1 = _mm_aesenc_si128(state1, state1);
             state0 = _mm_aesenc_si128(state0, state0);
