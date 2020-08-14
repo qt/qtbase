@@ -63,7 +63,7 @@ macro(qt5_make_output_file infile prefix ext outfile )
     else()
         file(RELATIVE_PATH rel ${CMAKE_CURRENT_SOURCE_DIR} ${infile})
     endif()
-    if(WIN32 AND rel MATCHES "^([a-zA-Z]):(.*)$") # absolute path
+    if(CMAKE_HOST_WIN32 AND rel MATCHES "^([a-zA-Z]):(.*)$") # absolute path
         set(rel "${CMAKE_MATCH_1}_${CMAKE_MATCH_2}")
     endif()
     set(_outfile "${CMAKE_CURRENT_BINARY_DIR}/${rel}")
