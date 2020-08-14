@@ -483,7 +483,7 @@ inline QModelIndex QCommonListViewBase::modelIndex(int row) const
     { return dd->model->index(row, dd->column, dd->root); }
 inline int QCommonListViewBase::rowCount() const { return dd->model->rowCount(dd->root); }
 
-inline QStyleOptionViewItem QCommonListViewBase::viewOptions() const { return dd->viewOptionsV1(); }
+inline QStyleOptionViewItem QCommonListViewBase::viewOptions() const { return qq->viewOptions(); }
 inline QWidget *QCommonListViewBase::viewport() const { return dd->viewport; }
 inline QRect QCommonListViewBase::clipRect() const { return dd->clipRect(); }
 

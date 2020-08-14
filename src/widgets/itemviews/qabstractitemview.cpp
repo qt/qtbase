@@ -1718,7 +1718,7 @@ bool QAbstractItemView::viewportEvent(QEvent *event)
     case QEvent::WhatsThis: {
         QHelpEvent *he = static_cast<QHelpEvent*>(event);
         const QModelIndex index = indexAt(he->pos());
-        QStyleOptionViewItem option = d->viewOptionsV1();
+        QStyleOptionViewItem option = viewOptions();
         option.rect = visualRect(index);
         option.state |= (index == currentIndex() ? QStyle::State_HasFocus : QStyle::State_None);
 
@@ -1931,7 +1931,7 @@ void QAbstractItemView::mouseReleaseEvent(QMouseEvent *event)
             emit clicked(index);
         if (edited)
             return;
-        QStyleOptionViewItem option = d->viewOptionsV1();
+        QStyleOptionViewItem option = viewOptions();
         if (d->pressedAlreadySelected)
             option.state |= QStyle::State_Selected;
         if ((d->model->flags(index) & Qt::ItemIsEnabled)
@@ -2720,7 +2720,7 @@ void QAbstractItemView::updateEditorGeometries()
         d->executePostedLayout();
         return;
     }
-    QStyleOptionViewItem option = d->viewOptionsV1();
+    QStyleOptionViewItem option = viewOptions();
     QEditorIndexHash::iterator it = d->editorIndexHash.begin();
     QWidgetList editorsToRelease;
     QWidgetList editorsToHide;
@@ -3018,7 +3018,7 @@ QSize QAbstractItemView::sizeHintForIndex(const QModelIndex &index) const
     if (!d->isIndexValid(index))
         return QSize();
     const auto delegate = d->delegateForIndex(index);
-    return delegate ? delegate->sizeHint(d->viewOptionsV1(), index) : QSize();
+    return delegate ? delegate->sizeHint(viewOptions(), index) : QSize();
 }
 
 /*!
@@ -3046,7 +3046,7 @@ int QAbstractItemView::sizeHintForRow(int row) const
 
     ensurePolished();
 
-    QStyleOptionViewItem option = d->viewOptionsV1();
+    QStyleOptionViewItem option = viewOptions();
     int height = 0;
     int colCount = d->model->columnCount(d->root);
     for (int c = 0; c < colCount; ++c) {
@@ -3076,7 +3076,7 @@ int QAbstractItemView::sizeHintForColumn(int column) const
 
     ensurePolished();
 
-    QStyleOptionViewItem option = d->viewOptionsV1();
+    QStyleOptionViewItem option = viewOptions();
     int width = 0;
     int rows = d->model->rowCount(d->root);
     for (int r = 0; r < rows; ++r) {
@@ -3098,7 +3098,7 @@ int QAbstractItemView::sizeHintForColumn(int column) const
 void QAbstractItemView::openPersistentEditor(const QModelIndex &index)
 {
     Q_D(QAbstractItemView);
-    QStyleOptionViewItem options = d->viewOptionsV1();
+    QStyleOptionViewItem options = viewOptions();
     options.rect = visualRect(index);
     options.state |= (index == currentIndex() ? QStyle::State_HasFocus : QStyle::State_None);
 
@@ -3723,12 +3723,6 @@ QStyleOptionViewItem QAbstractItemView::viewOptions() const
     option.locale.setNumberOptions(QLocale::OmitGroupSeparator);
     option.widget = this;
     return option;
-}
-
-QStyleOptionViewItem QAbstractItemViewPrivate::viewOptionsV1() const
-{
-    Q_Q(const QAbstractItemView);
-    return q->viewOptions();
 }
 
 /*!
@@ -4358,7 +4352,7 @@ bool QAbstractItemViewPrivate::sendDelegateEvent(const QModelIndex &index, QEven
 {
     Q_Q(const QAbstractItemView);
     QModelIndex buddy = model->buddy(index);
-    QStyleOptionViewItem options = viewOptionsV1();
+    QStyleOptionViewItem options = q->viewOptions();
     options.rect = q->visualRect(buddy);
     options.state |= (buddy == q->currentIndex() ? QStyle::State_HasFocus : QStyle::State_None);
     QAbstractItemDelegate *delegate = delegateForIndex(index);
@@ -4370,7 +4364,7 @@ bool QAbstractItemViewPrivate::openEditor(const QModelIndex &index, QEvent *even
     Q_Q(QAbstractItemView);
 
     QModelIndex buddy = model->buddy(index);
-    QStyleOptionViewItem options = viewOptionsV1();
+    QStyleOptionViewItem options = q->viewOptions();
     options.rect = q->visualRect(buddy);
     options.state |= (buddy == q->currentIndex() ? QStyle::State_HasFocus : QStyle::State_None);
 
@@ -4416,6 +4410,7 @@ QItemViewPaintPairs QAbstractItemViewPrivate::draggablePaintPairs(const QModelIn
 
 QPixmap QAbstractItemViewPrivate::renderToPixmap(const QModelIndexList &indexes, QRect *r) const
 {
+    Q_Q(const QAbstractItemView);
     Q_ASSERT(r);
     QItemViewPaintPairs paintPairs = draggablePaintPairs(indexes, r);
     if (paintPairs.isEmpty())
@@ -4429,7 +4424,7 @@ QPixmap QAbstractItemViewPrivate::renderToPixmap(const QModelIndexList &indexes,
 
     pixmap.fill(Qt::transparent);
     QPainter painter(&pixmap);
-    QStyleOptionViewItem option = viewOptionsV1();
+    QStyleOptionViewItem option = q->viewOptions();
     option.state |= QStyle::State_Selected;
     for (int j = 0; j < paintPairs.count(); ++j) {
         option.rect = paintPairs.at(j).rect.translated(-r->topLeft());

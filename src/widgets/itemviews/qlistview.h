@@ -194,6 +194,7 @@ protected:
 
 private:
     int visualIndex(const QModelIndex &index) const;
+    friend class QCommonListViewBase;
 
     Q_DECLARE_PRIVATE(QListView)
     Q_DISABLE_COPY(QListView)

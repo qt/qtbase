@@ -353,8 +353,6 @@ public:
 
     QModelIndexList selectedDraggableIndexes() const;
 
-    QStyleOptionViewItem viewOptionsV1() const;
-
     void doDelayedReset()
     {
         //we delay the reset of the timer because some views (QTableView)
