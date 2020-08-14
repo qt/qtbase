@@ -63,7 +63,7 @@ debug_and_release:debug_and_release_target {
 # Allow for a custom test runner script
 
 android: isEmpty($(TESTRUNNER)) {
-    build_pass {
+    build_pass|single_android_abi {
         APK_PATH = $$shell_path($$OUT_PWD/android-build/$${TARGET}.apk)
         qtPrepareTool(ANDROIDTESTRUNNER, androidtestrunner)
         qtPrepareTool(ANDROIDDEPLOYQT, androiddeployqt)
