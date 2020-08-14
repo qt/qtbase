@@ -975,8 +975,9 @@ bool readInputFile(Options *options)
         options->applicationBinary = applicationBinary.toString();
         if (options->build) {
             for (auto it = options->architectures.constBegin(); it != options->architectures.constEnd(); ++it) {
-                if (!QFile::exists(QLatin1String("%1/libs/%2/lib%3_%2.so").arg(options->outputDirectory, it.key(), options->applicationBinary))) {
-                    fprintf(stderr, "Cannot find application binary %s.\n", qPrintable(options->applicationBinary));
+                auto appBinaryPath = QLatin1String("%1/libs/%2/lib%3_%2.so").arg(options->outputDirectory, it.key(), options->applicationBinary);
+                if (!QFile::exists(appBinaryPath)) {
+                    fprintf(stderr, "Cannot find application binary in build dir %s.\n", qPrintable(appBinaryPath));
                     return false;
                 }
             }
