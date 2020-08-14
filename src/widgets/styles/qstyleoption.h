@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -127,7 +127,7 @@ class Q_WIDGETS_EXPORT QStyleOptionFrame : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_Frame };
-    enum StyleOptionVersion { Version = 3 };
+    enum StyleOptionVersion { Version = 1 };
 
     int lineWidth;
     int midLineWidth;
@@ -155,7 +155,7 @@ class Q_WIDGETS_EXPORT QStyleOptionTabWidgetFrame : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_TabWidgetFrame };
-    enum StyleOptionVersion { Version = 2 };
+    enum StyleOptionVersion { Version = 1 };
 
     int lineWidth;
     int midLineWidth;
@@ -183,7 +183,7 @@ class Q_WIDGETS_EXPORT QStyleOptionTabBarBase : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_TabBarBase };
-    enum StyleOptionVersion { Version = 2 };
+    enum StyleOptionVersion { Version = 1 };
 
     QTabBar::Shape shape;
     QRect tabBarRect;
@@ -259,7 +259,7 @@ class Q_WIDGETS_EXPORT QStyleOptionTab : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_Tab };
-    enum StyleOptionVersion { Version = 4 };
+    enum StyleOptionVersion { Version = 1 };
 
     enum TabPosition { Beginning, Middle, End, OnlyOneTab };
     enum SelectedPosition { NotAdjacent, NextIsSelected, PreviousIsSelected };
@@ -328,7 +328,7 @@ class Q_WIDGETS_EXPORT QStyleOptionProgressBar : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_ProgressBar };
-    enum StyleOptionVersion { Version = 2 };
+    enum StyleOptionVersion { Version = 1 };
 
     int minimum;
     int maximum;
@@ -381,7 +381,7 @@ class Q_WIDGETS_EXPORT QStyleOptionDockWidget : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_DockWidget };
-    enum StyleOptionVersion { Version = 2 };
+    enum StyleOptionVersion { Version = 1 };
 
     QString title;
     bool closable;
@@ -403,7 +403,7 @@ class Q_WIDGETS_EXPORT QStyleOptionViewItem : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_ViewItem };
-    enum StyleOptionVersion { Version = 4 };
+    enum StyleOptionVersion { Version = 1 };
 
     enum Position { Left, Right, Top, Bottom };
 
@@ -455,7 +455,7 @@ class Q_WIDGETS_EXPORT QStyleOptionToolBox : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_ToolBox };
-    enum StyleOptionVersion { Version = 2 };
+    enum StyleOptionVersion { Version = 1 };
 
     QString text;
     QIcon icon;
@@ -591,7 +591,7 @@ class Q_WIDGETS_EXPORT QStyleOptionComboBox : public QStyleOptionComplex
 {
 public:
     enum StyleOptionType { Type = SO_ComboBox };
-    enum StyleOptionVersion { Version = 2 };
+    enum StyleOptionVersion { Version = 1 };
 
     bool editable;
     QRect popupRect;
