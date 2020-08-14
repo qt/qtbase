@@ -27,14 +27,14 @@ jobs:
             deps:  libgl-dev libglu-dev libpcre2-dev libz-dev libfreetype6-dev libpng-dev libjpeg-dev libsqlite3-dev
             tools: ninja-build ccache
             install_cmd: sudo apt-get -y install
-            cmake_flags: -DFEATURE_system_sqlite=ON
+            configure_flags: -system_sqlite
           - name: macos-10.15
             os:   macos-10.15
             deps:  jpeg sqlite
             tools: ninja ccache pkg-config
             install_cmd: brew install
             # Specifically on macOS pkg_config has to be manually turned on otherwise libraries under /usr/local are not detected.
-            cmake_flags: -DFEATURE_system_sqlite=ON -DFEATURE_pkg_config=ON
+            configure_flags: -system_sqlite -feature pkg_config
           - name: windows-2019
             os:   windows-2019
             install_cmd: choco install
@@ -43,7 +43,7 @@ jobs:
             #deps: sqlite
             tools: ninja ccache
             # Because of header conflicts we disable everything else besides sqlite driver
-            cmake_flags: -DFEATURE_system_sqlite=OFF -DFEATURE_sql_psql=OFF -DFEATURE_sql_mysql=OFF -DFEATURE_sql_odbc=OFF
+            configure_flags: -qt-sqlite -no-feature sql_psql -no-feature sql_mysql -no-feature sql_odbc
     runs-on: ${{ matrix.os }}
 
 
@@ -97,10 +97,9 @@ jobs:
       working-directory: build
       run:  ../configure -cmake -opensource -confirm-license -ccache -no-pch \
         \ -debug -nomake tests -nomake examples \
-        \ -no-harfbuzz -no-iconv \
+        \ -qt-harfbuzz -no-iconv \
         \ -system-pcre -system-zlib -system-freetype -system-libpng -system-libjpeg \
-        \ --  \
-        \ ${{ matrix.cmake_flags }}
+        \ ${{ matrix.configure_flags }}
     - name: ninja
       working-directory: build
       run: ninja
