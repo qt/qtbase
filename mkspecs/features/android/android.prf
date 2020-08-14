@@ -1,4 +1,6 @@
 APK_PATH = $$shell_path($$OUT_PWD/android-build/$${TARGET}.apk)
+TARGET_FOR_ANDROID_DEPLOYMENT_SETTINGS = $$TARGET
+
 !contains(TEMPLATE, subdirs): {
     apk_install_target.target = apk_install_target
     apk_install_target.depends = first
@@ -21,7 +23,12 @@ APK_PATH = $$shell_path($$OUT_PWD/android-build/$${TARGET}.apk)
     prepareRecursiveTarget(apk_install_target)
 }
 
-build_pass {
+# Apply Android arch specific settings in the following cases:
+# - build_pass == true aka Qt was configured with multi-ABI (2+ arches)
+# - single_android_abi == true aka Qt was configuring with a single ABI / arch
+#   modifications are omitted when building config.tests
+#   during Qt configuration, by checkking for the presence of single_arch
+build_pass|if(single_android_abi:!single_arch) {
     contains(TEMPLATE, ".*app") {
         !android_app {
             !contains(TARGET, ".so") {

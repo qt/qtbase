@@ -87,10 +87,10 @@ contains(TEMPLATE, ".*app"):!build_pass:!android-embedded {
         FILE_CONTENT += "   \"qrcFiles\": $$emitString($$join(rescopy, ",")),"
     }
     FILE_CONTENT += ""
-    FILE_CONTENT += "   \"application-binary\": $$emitString($$TARGET)"
+    FILE_CONTENT += "   \"application-binary\": $$emitString($$TARGET_FOR_ANDROID_DEPLOYMENT_SETTINGS)"
     FILE_CONTENT += "}"
 
-    isEmpty(ANDROID_DEPLOYMENT_SETTINGS_FILE): ANDROID_DEPLOYMENT_SETTINGS_FILE = $$OUT_PWD/android-$$TARGET-deployment-settings.json
+    isEmpty(ANDROID_DEPLOYMENT_SETTINGS_FILE): ANDROID_DEPLOYMENT_SETTINGS_FILE = $$OUT_PWD/android-$$TARGET_FOR_ANDROID_DEPLOYMENT_SETTINGS-deployment-settings.json
 
     write_file($$ANDROID_DEPLOYMENT_SETTINGS_FILE, FILE_CONTENT)|error()
 }
