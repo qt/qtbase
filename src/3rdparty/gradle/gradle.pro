@@ -2,14 +2,20 @@ TEMPLATE = aux
 TARGET = dummy # Avoid a conflict with the existing gradle directory
 CONFIG -= qt android_install
 
-gradle.files = \
+gradle_files.files = \
     $$PWD/gradlew \
-    $$PWD/gradlew.bat \
+    $$PWD/gradlew.bat
+gradle_dirs.files = \
     $$PWD/gradle
 
-gradle.path = $$[QT_INSTALL_PREFIX]/src/3rdparty/gradle
+gradle_files.path = $$[QT_INSTALL_PREFIX]/src/3rdparty/gradle
+gradle_dirs.path = $${gradle_files.path}
 
-INSTALLS += gradle
+INSTALLS += gradle_files gradle_dirs
+!prefix_build:!equals(OUT_PWD, $$PWD) {
+    # For COPIES to work, files and directory entries need to be separate objects.
+    COPIES += gradle_files gradle_dirs
+}
 
 !prefix_build:!equals(OUT_PWD, $$PWD) {
     RETURN = $$escape_expand(\\n\\t)
