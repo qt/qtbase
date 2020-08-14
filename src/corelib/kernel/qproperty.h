@@ -63,6 +63,32 @@
 
 QT_BEGIN_NAMESPACE
 
+template <typename T>
+class QPropertyData : public QUntypedPropertyData
+{
+protected:
+    T val = T();
+private:
+    class DisableRValueRefs {};
+protected:
+    static constexpr bool UseReferences = !(std::is_arithmetic_v<T> || std::is_enum_v<T> || std::is_pointer_v<T>);
+public:
+    using value_type = T;
+    using parameter_type = std::conditional_t<UseReferences, const T &, T>;
+    using rvalue_ref = typename std::conditional_t<UseReferences, T &&, DisableRValueRefs>;
+    using arrow_operator_result = std::conditional_t<std::is_pointer_v<T>, const T &,
+                                        std::conditional_t<QTypeTraits::is_dereferenceable_v<T>, const T &, void>>;
+
+    QPropertyData() = default;
+    QPropertyData(parameter_type t) : val(t) {}
+    QPropertyData(rvalue_ref t) : val(std::move(t)) {}
+    ~QPropertyData() = default;
+
+    parameter_type valueBypassingBindings() const { return val; }
+    void setValueBypassingBindings(parameter_type v) { val = v; }
+    void setValueBypassingBindings(rvalue_ref v) { val = std::move(v); }
+};
+
 struct Q_CORE_EXPORT QPropertyBindingSourceLocation
 {
     const char *fileName = nullptr;
@@ -146,15 +172,15 @@ class QPropertyBinding : public QUntypedPropertyBinding
     struct BindingAdaptor
     {
         Functor impl;
-        bool operator()(QMetaType /*metaType*/, void *dataPtr)
+        bool operator()(QMetaType /*metaType*/, QUntypedPropertyData *dataPtr)
         {
-            PropertyType *propertyPtr = static_cast<PropertyType *>(dataPtr);
+            QPropertyData<PropertyType> *propertyPtr = static_cast<QPropertyData<PropertyType> *>(dataPtr);
             PropertyType newValue = impl();
             if constexpr (QTypeTraits::has_operator_equal_v<PropertyType>) {
-                if (newValue == *propertyPtr)
+                if (newValue == propertyPtr->valueBypassingBindings())
                     return false;
             }
-            *propertyPtr = std::move(newValue);
+            propertyPtr->setValueBypassingBindings(std::move(newValue));
             return true;
         }
     };
@@ -167,7 +193,7 @@ public:
         : QUntypedPropertyBinding(QMetaType::fromType<PropertyType>(), BindingAdaptor<Functor>{std::forward<Functor>(f)}, location)
     {}
 
-    template<typename Property, typename = std::void_t<decltype(&Property::bindingData)>>
+    template<typename Property, typename = typename Property::InheritsQUntypedPropertyData>
     QPropertyBinding(const Property &property)
         : QUntypedPropertyBinding(property.bindingData().binding())
     {}
@@ -187,36 +213,30 @@ namespace Qt {
     }
 }
 
-struct QPropertyBindingDataPointer;
-
 template <typename T>
-class QProperty
+class QProperty : public QPropertyData<T>
 {
-    T val = T();
     QtPrivate::QPropertyBindingData d;
     bool is_equal(const T &v)
     {
         if constexpr (QTypeTraits::has_operator_equal_v<T>) {
-            if (v == val)
+            if (v == this->val)
                 return true;
         }
         return false;
     }
 
-    class DisableRValueRefs {};
-    static constexpr bool UseReferences = !(std::is_arithmetic_v<T> || std::is_enum_v<T> || std::is_pointer_v<T>);
 public:
-    using value_type = T;
-    using parameter_type = std::conditional_t<UseReferences, const T &, T>;
-    using rvalue_ref = typename std::conditional_t<UseReferences, T &&, DisableRValueRefs>;
-    using arrow_operator_result = std::conditional_t<std::is_pointer_v<T>, const T &,
-                                        std::conditional_t<QTypeTraits::is_dereferenceable_v<T>, const T &, void>>;
+    using value_type = typename QPropertyData<T>::value_type;
+    using parameter_type = typename QPropertyData<T>::parameter_type;
+    using rvalue_ref = typename QPropertyData<T>::rvalue_ref;
+    using arrow_operator_result = typename QPropertyData<T>::arrow_operator_result;
 
     QProperty() = default;
-    explicit QProperty(const T &initialValue) : val(initialValue) {}
-    explicit QProperty(T &&initialValue) : val(std::move(initialValue)) {}
-    QProperty(QProperty &&other) : val(std::move(other.val)), d(std::move(other.d), &val) { notify(); }
-    QProperty &operator=(QProperty &&other) { val = std::move(other.val); d.moveAssign(std::move(other.d), &val); notify(); return *this; }
+    explicit QProperty(parameter_type initialValue) : QPropertyData<T>(initialValue) {}
+    explicit QProperty(rvalue_ref initialValue) : QPropertyData<T>(std::move(initialValue)) {}
+    QProperty(QProperty &&other) : QPropertyData<T>(std::move(other.val)), d(std::move(other.d), this) { notify(); }
+    QProperty &operator=(QProperty &&other) { this->val = std::move(other.val); d.moveAssign(std::move(other.d), this); notify(); return *this; }
     QProperty(const QPropertyBinding<T> &binding)
         : QProperty()
     { operator=(binding); }
@@ -240,7 +260,7 @@ public:
         if (d.hasBinding())
             d.evaluateIfDirty();
         d.registerWithCurrentlyEvaluatingBinding();
-        return val;
+        return this->val;
     }
 
     arrow_operator_result operator->() const
@@ -270,7 +290,7 @@ public:
         d.removeBinding();
         if (is_equal(newValue))
             return;
-        val = std::move(newValue);
+        this->val = std::move(newValue);
         notify();
     }
 
@@ -279,7 +299,7 @@ public:
         d.removeBinding();
         if (is_equal(newValue))
             return;
-        val = newValue;
+        this->val = newValue;
         notify();
     }
 
@@ -303,7 +323,7 @@ public:
 
     QPropertyBinding<T> setBinding(const QPropertyBinding<T> &newBinding)
     {
-        QPropertyBinding<T> oldBinding(d.setBinding(newBinding, &val));
+        QPropertyBinding<T> oldBinding(d.setBinding(newBinding, this));
         notify();
         return oldBinding;
     }
@@ -338,7 +358,7 @@ public:
 
     QPropertyBinding<T> takeBinding()
     {
-        return QPropertyBinding<T>(d.setBinding(QUntypedPropertyBinding(), &d));
+        return QPropertyBinding<T>(d.setBinding(QUntypedPropertyBinding(), this));
     }
 
     template<typename Functor>
@@ -350,7 +370,7 @@ public:
 private:
     void notify()
     {
-        d.notifyObservers(&d);
+        d.notifyObservers(this);
     }
 
     Q_DISABLE_COPY(QProperty)
@@ -389,13 +409,14 @@ public:
     { setSource(property.bindingData()); }
 
 protected:
-    QPropertyObserver(void (*callback)(QPropertyObserver*, void *));
-    QPropertyObserver(void *aliasedPropertyPtr);
+    using ChangeHandler = void (*)(QPropertyObserver*, QUntypedPropertyData *);
+    QPropertyObserver(ChangeHandler changeHandler);
+    QPropertyObserver(QUntypedPropertyData *aliasedPropertyPtr);
 
     template<typename PropertyType>
     QProperty<PropertyType> *aliasedProperty() const
     {
-        return reinterpret_cast<QProperty<PropertyType> *>(aliasedPropertyPtr);
+        return static_cast<QProperty<PropertyType> *>(aliasedPropertyData);
     }
 
 private:
@@ -408,8 +429,8 @@ private:
 
     union {
         QPropertyBindingPrivate *bindingToMarkDirty = nullptr;
-        void (*changeHandler)(QPropertyObserver*, void *);
-        quintptr aliasedPropertyPtr;
+        ChangeHandler changeHandler;
+        QUntypedPropertyData *aliasedPropertyData;
     };
 
     QPropertyObserver(const QPropertyObserver &) = delete;
@@ -426,7 +447,7 @@ class QPropertyChangeHandler : public QPropertyObserver
     Functor m_handler;
 public:
     QPropertyChangeHandler(Functor handler)
-        : QPropertyObserver([](QPropertyObserver *self, void *) {
+        : QPropertyObserver([](QPropertyObserver *self, QUntypedPropertyData *) {
               auto This = static_cast<QPropertyChangeHandler<Functor>*>(self);
               This->m_handler();
           })
@@ -434,9 +455,9 @@ public:
     {
     }
 
-    template<typename Property, typename = std::void_t<decltype(&Property::bindingData)>>
+    template<typename Property, typename = typename Property::InheritsQUntypedPropertyData>
     QPropertyChangeHandler(const Property &property, Functor handler)
-        : QPropertyObserver([](QPropertyObserver *self, void *) {
+        : QPropertyObserver([](QPropertyObserver *self, QUntypedPropertyData *) {
               auto This = static_cast<QPropertyChangeHandler<Functor>*>(self);
               This->m_handler();
           })

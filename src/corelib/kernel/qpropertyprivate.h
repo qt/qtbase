@@ -65,14 +65,21 @@ class QPropertyBindingPrivate;
 using QPropertyBindingPrivatePtr = QExplicitlySharedDataPointer<QPropertyBindingPrivate>;
 struct QPropertyBindingDataPointer;
 
+class QUntypedPropertyData
+{
+public:
+    // sentinel to check whether a class inherits QUntypedPropertyData
+    struct InheritsQUntypedPropertyData {};
+};
+
 namespace QtPrivate {
 
 // writes binding result into dataPtr
-using QPropertyBindingFunction = std::function<bool(QMetaType metaType, void *dataPtr)>;
+using QPropertyBindingFunction = std::function<bool(QMetaType metaType, QUntypedPropertyData *dataPtr)>;
 
-using QPropertyGuardFunction = bool(*)(QMetaType, void *dataPtr,
-                                       QPropertyBindingFunction, void *owner);
-using QPropertyObserverCallback = void (*)(void *, void *);
+using QPropertyGuardFunction = bool(*)(QMetaType, QUntypedPropertyData *dataPtr,
+                                       QPropertyBindingFunction);
+using QPropertyObserverCallback = void (*)(QUntypedPropertyData *);
 
 class Q_CORE_EXPORT QPropertyBindingData
 {
@@ -84,16 +91,16 @@ public:
     QPropertyBindingData() = default;
     Q_DISABLE_COPY(QPropertyBindingData)
     QPropertyBindingData(QPropertyBindingData &&other) = delete;
-    QPropertyBindingData(QPropertyBindingData &&other, void *propertyDataPtr);
+    QPropertyBindingData(QPropertyBindingData &&other, QUntypedPropertyData *propertyDataPtr);
     QPropertyBindingData &operator=(QPropertyBindingData &&other) = delete;
     ~QPropertyBindingData();
 
-    void moveAssign(QPropertyBindingData &&other, void *propertyDataPtr);
+    void moveAssign(QPropertyBindingData &&other, QUntypedPropertyData *propertyDataPtr);
 
     bool hasBinding() const { return d_ptr & BindingBit; }
 
     QUntypedPropertyBinding setBinding(const QUntypedPropertyBinding &newBinding,
-                                       void *propertyDataPtr, void *staticObserver = nullptr,
+                                       QUntypedPropertyData *propertyDataPtr,
                                        QPropertyObserverCallback staticObserverCallback = nullptr,
                                        QPropertyGuardFunction guardCallback = nullptr);
     QPropertyBindingPrivate *binding() const;
@@ -102,7 +109,7 @@ public:
     void removeBinding();
 
     void registerWithCurrentlyEvaluatingBinding() const;
-    void notifyObservers(void *propertyDataPtr) const;
+    void notifyObservers(QUntypedPropertyData *propertyDataPtr) const;
 
     void setExtraBit(bool b)
     {
@@ -182,7 +189,7 @@ struct QPropertyGuardFunctionHelper
 template<typename T, typename Class, auto Guard>
 struct QPropertyGuardFunctionHelper<T, Class, Guard, false>
 {
-    static auto guard(const QMetaType metaType, void *dataPtr,
+    static auto guard(QMetaType metaType, QUntypedPropertyData *dataPtr,
                       QPropertyBindingFunction eval, void *owner) -> bool
     {
         T t = T();

@@ -87,7 +87,7 @@ void QPropertyBindingPrivate::markDirtyAndNotifyObservers()
     if (firstObserver)
         firstObserver.notify(this, propertyDataPtr);
     if (hasStaticObserver)
-        staticObserverCallback(staticObserver, propertyDataPtr);
+        staticObserverCallback(propertyDataPtr);
 }
 
 bool QPropertyBindingPrivate::evaluateIfDirtyAndReturnTrueIfValueChanged()
@@ -116,7 +116,7 @@ bool QPropertyBindingPrivate::evaluateIfDirtyAndReturnTrueIfValueChanged()
     bool changed = false;
 
     if (hasStaticObserver && staticGuardCallback) {
-        changed = staticGuardCallback(metaType, propertyDataPtr, evaluationFunction, staticObserver);
+        changed = staticGuardCallback(metaType, propertyDataPtr, evaluationFunction);
     } else {
         changed = evaluationFunction(metaType, propertyDataPtr);
     }
@@ -183,7 +183,7 @@ QMetaType QUntypedPropertyBinding::valueMetaType() const
     return d->valueMetaType();
 }
 
-QPropertyBindingData::QPropertyBindingData(QPropertyBindingData &&other, void *propertyDataPtr)
+QPropertyBindingData::QPropertyBindingData(QPropertyBindingData &&other, QUntypedPropertyData *propertyDataPtr)
 {
     std::swap(d_ptr, other.d_ptr);
     QPropertyBindingDataPointer d{this};
@@ -192,7 +192,7 @@ QPropertyBindingData::QPropertyBindingData(QPropertyBindingData &&other, void *p
         binding->setProperty(propertyDataPtr);
 }
 
-void QPropertyBindingData::moveAssign(QPropertyBindingData &&other, void *propertyDataPtr)
+void QPropertyBindingData::moveAssign(QPropertyBindingData &&other, QUntypedPropertyData *propertyDataPtr)
 {
     if (&other == this)
         return;
@@ -229,8 +229,7 @@ QPropertyBindingData::~QPropertyBindingData()
 }
 
 QUntypedPropertyBinding QPropertyBindingData::setBinding(const QUntypedPropertyBinding &binding,
-                                                  void *propertyDataPtr,
-                                                  void *staticObserver,
+                                                  QUntypedPropertyData *propertyDataPtr,
                                                   QPropertyObserverCallback staticObserverCallback,
                                                   QtPrivate::QPropertyGuardFunction guardCallback)
 {
@@ -259,7 +258,7 @@ QUntypedPropertyBinding QPropertyBindingData::setBinding(const QUntypedPropertyB
         newBinding->setProperty(propertyDataPtr);
         if (observer)
             newBinding->prependObserver(observer);
-        newBinding->setStaticObserver(staticObserver, staticObserverCallback, guardCallback);
+        newBinding->setStaticObserver(staticObserverCallback, guardCallback);
     } else if (observer) {
         d.setObservers(observer.ptr);
     } else {
@@ -335,7 +334,7 @@ void QPropertyBindingData::registerWithCurrentlyEvaluatingBinding() const
     dependencyObserver.observeProperty(d);
 }
 
-void QPropertyBindingData::notifyObservers(void *propertyDataPtr) const
+void QPropertyBindingData::notifyObservers(QUntypedPropertyData *propertyDataPtr) const
 {
     QPropertyBindingDataPointer d{this};
     if (QPropertyObserverPointer observer = d.firstObserver())
@@ -350,13 +349,13 @@ int QPropertyBindingDataPointer::observerCount() const
     return count;
 }
 
-QPropertyObserver::QPropertyObserver(void (*callback)(QPropertyObserver *, void *))
+QPropertyObserver::QPropertyObserver(ChangeHandler changeHandler)
 {
     QPropertyObserverPointer d{this};
-    d.setChangeHandler(callback);
+    d.setChangeHandler(changeHandler);
 }
 
-QPropertyObserver::QPropertyObserver(void *aliasedPropertyPtr)
+QPropertyObserver::QPropertyObserver(QUntypedPropertyData *aliasedPropertyPtr)
 {
     QPropertyObserverPointer d{this};
     d.setAliasedProperty(aliasedPropertyPtr);
@@ -410,7 +409,7 @@ QPropertyObserver &QPropertyObserver::operator=(QPropertyObserver &&other)
 void QPropertyObserverPointer::unlink()
 {
     if (ptr->next.tag() & QPropertyObserver::ObserverNotifiesAlias)
-        ptr->aliasedPropertyPtr = 0;
+        ptr->aliasedPropertyData = nullptr;
     if (ptr->next)
         ptr->next->prev = ptr->prev;
     if (ptr->prev)
@@ -419,15 +418,15 @@ void QPropertyObserverPointer::unlink()
     ptr->prev.clear();
 }
 
-void QPropertyObserverPointer::setChangeHandler(void (*changeHandler)(QPropertyObserver *, void *))
+void QPropertyObserverPointer::setChangeHandler(QPropertyObserver::ChangeHandler changeHandler)
 {
     ptr->changeHandler = changeHandler;
     ptr->next.setTag(QPropertyObserver::ObserverNotifiesChangeHandler);
 }
 
-void QPropertyObserverPointer::setAliasedProperty(void *propertyPtr)
+void QPropertyObserverPointer::setAliasedProperty(QUntypedPropertyData *property)
 {
-    ptr->aliasedPropertyPtr = quintptr(propertyPtr);
+    ptr->aliasedPropertyData = property;
     ptr->next.setTag(QPropertyObserver::ObserverNotifiesAlias);
 }
 
@@ -437,7 +436,7 @@ void QPropertyObserverPointer::setBindingToMarkDirty(QPropertyBindingPrivate *bi
     ptr->next.setTag(QPropertyObserver::ObserverNotifiesBinding);
 }
 
-void QPropertyObserverPointer::notify(QPropertyBindingPrivate *triggeringBinding, void *propertyDataPtr)
+void QPropertyObserverPointer::notify(QPropertyBindingPrivate *triggeringBinding, QUntypedPropertyData *propertyDataPtr)
 {
     bool knownIfPropertyChanged = false;
     bool propertyChanged = true;
@@ -532,9 +531,54 @@ QString QPropertyBindingError::description() const
 }
 
 /*!
+  \class QPropertyData
+  \inmodule QtCore
+  \brief The QPropertyData class is a helper class for properties with automatic property bindings.
+  \since 6.0
+
+  \ingroup tools
+
+  QPropertyData\<T\> is a common base class for classes that can hold properties with automatic
+  data bindings. It mainly wraps the stored data, and offers low level access to that data.
+
+  The low level access to the data provided by this class bypasses the binding mechanism, and should be
+  used with care, as updates to the values will not get propagated to any bindings that depend on this
+  property.
+
+  You should usually call value() and setValue() on QProperty<T> or QBindablePropertyData<T>, not use
+  the low level mechanisms provided in this class.
+*/
+
+/*! \fn QPropertyData<T>::parameter_type QPropertyData<T>::valueBypassingBindings() const
+
+    \returns the data stored in this property.
+
+    \note As this will bypass any binding evaluation it might return an outdated value if a
+    binding is set on this property. Using this method will also not register the property
+    access with any currently executing binding.
+*/
+
+/*! \fn void QPropertyData<T>::setValueBypassingBindings(parameter_type v)
+
+    Sets the data value stored in this property to \a v.
+
+    \note Using this method will bypass any potential binding registered for this property.
+*/
+
+/*! \fn void QPropertyData<T>::setValueBypassingBindings(rvalue_ref v)
+    \overload
+
+    Sets the data value stored in this property to \a v.
+
+    \note Using this method will bypass any potential binding registered for this property.
+*/
+
+
+/*!
   \class QProperty
   \inmodule QtCore
   \brief The QProperty class is a template class that enables automatic property bindings.
+  \since 6.0
 
   \ingroup tools
 

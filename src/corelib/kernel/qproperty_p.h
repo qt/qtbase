@@ -102,10 +102,10 @@ struct QPropertyObserverPointer
     void unlink();
 
     void setBindingToMarkDirty(QPropertyBindingPrivate *binding);
-    void setChangeHandler(void (*changeHandler)(QPropertyObserver *, void *));
-    void setAliasedProperty(void *propertyPtr);
+    void setChangeHandler(QPropertyObserver::ChangeHandler changeHandler);
+    void setAliasedProperty(QUntypedPropertyData *propertyPtr);
 
-    void notify(QPropertyBindingPrivate *triggeringBinding, void *propertyDataPtr);
+    void notify(QPropertyBindingPrivate *triggeringBinding, QUntypedPropertyData *propertyDataPtr);
     void observeProperty(QPropertyBindingDataPointer property);
 
     explicit operator bool() const { return ptr != nullptr; }
@@ -147,14 +147,13 @@ private:
     union {
         ObserverArray inlineDependencyObservers;
         struct {
-            void *staticObserver;
             QtPrivate::QPropertyObserverCallback staticObserverCallback;
             QtPrivate::QPropertyGuardFunction staticGuardCallback;
         };
     };
     QScopedPointer<std::vector<QPropertyObserver>> heapObservers;
 
-    void *propertyDataPtr = nullptr;
+    QUntypedPropertyData *propertyDataPtr = nullptr;
 
     QPropertyBindingSourceLocation location;
     QPropertyBindingError error;
@@ -175,11 +174,10 @@ public:
     virtual ~QPropertyBindingPrivate();
 
     void setDirty(bool d) { dirty = d; }
-    void setProperty(void *propertyPtr) { propertyDataPtr = propertyPtr; }
-    void setStaticObserver(void *observer, QtPrivate::QPropertyObserverCallback callback,
-                           QtPrivate::QPropertyGuardFunction guardCallback)
+    void setProperty(QUntypedPropertyData *propertyPtr) { propertyDataPtr = propertyPtr; }
+    void setStaticObserver(QtPrivate::QPropertyObserverCallback callback, QtPrivate::QPropertyGuardFunction guardCallback)
     {
-        if (observer) {
+        if (callback) {
             if (!hasStaticObserver) {
                 if (dependencyObserverCount > 0) {
                     if (!heapObservers)
@@ -191,7 +189,6 @@ public:
             }
 
             hasStaticObserver = true;
-            staticObserver = observer;
             staticObserverCallback = callback;
             staticGuardCallback = guardCallback;
         } else if (hasStaticObserver) {
