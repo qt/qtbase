@@ -1,21 +1,20 @@
 # special case begin
 # special case skip regeneration
 
-install(
+qt_path_join(destination ${QT_INSTALL_DIR} "src/3rdparty/gradle")
+qt_copy_or_install(
     FILES
         gradlew
         gradlew.bat
     DESTINATION
-        src/3rdparty/gradle
-    COMPONENT
-        Devel)
+        "${destination}"
+)
 
-install(
+qt_copy_or_install(
     DIRECTORY
         gradle
     DESTINATION
-        src/3rdparty/gradle
-    COMPONENT
-        Devel)
+        "${destination}"
+)
 
 # special case end
