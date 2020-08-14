@@ -41,7 +41,7 @@ qt_add_module(Network
         socket/qudpsocket.cpp socket/qudpsocket.h
         ssl/qasn1element.cpp ssl/qasn1element_p.h
         ssl/qpassworddigestor.cpp ssl/qpassworddigestor.h
-        ssl/qssl.cpp ssl/qssl.h ssl/qssl_p.h
+        ssl/qssl.cpp ssl/qssl.h ssl/qssl_p.h ssl/qtls_utils_p.h
         ssl/qsslcertificate.cpp ssl/qsslcertificate.h ssl/qsslcertificate_p.h
         ssl/qsslcertificateextension.cpp ssl/qsslcertificateextension.h ssl/qsslcertificateextension_p.h
     DEFINES

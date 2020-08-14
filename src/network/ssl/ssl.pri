@@ -1,12 +1,11 @@
-# OpenSSL support; compile in QSslSocket.
-
 HEADERS += ssl/qasn1element_p.h \
            ssl/qssl.h \
            ssl/qssl_p.h \
            ssl/qsslcertificate.h \
            ssl/qsslcertificate_p.h \
            ssl/qsslcertificateextension.h \
-           ssl/qsslcertificateextension_p.h
+           ssl/qsslcertificateextension_p.h \
+           ssl/qtls_utils_p.h
 
 SOURCES += ssl/qasn1element.cpp \
            ssl/qssl.cpp \
