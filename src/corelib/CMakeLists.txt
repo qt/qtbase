@@ -16,6 +16,10 @@ endif()
 file(RELATIVE_PATH QT_INVERSE_CONFIG_INSTALL_DIR
     "${_clean_prefix}" "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}")
 
+if(ANDROID)
+    set(corelib_extra_cmake_files
+        "${CMAKE_CURRENT_SOURCE_DIR}/${QT_CMAKE_EXPORT_NAMESPACE}AndroidMacros.cmake")
+endif()
 # special case end
 
 #####################################################################
@@ -257,7 +261,9 @@ qt_add_module(Core
         Qt::Platform # special case:
     # special case begin
     # Generated in QtBaseGlobalTargets
-    EXTRA_CMAKE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/Qt6CTestMacros.cmake"
+    EXTRA_CMAKE_FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/Qt6CTestMacros.cmake"
+    ${corelib_extra_cmake_files}
     # special case end
 )
 

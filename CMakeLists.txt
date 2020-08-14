@@ -76,6 +76,9 @@ if(NOT QT_BUILD_STANDALONE_TESTS)
     #include CoreMacros() for qt6_generate_meta_types()
     include(src/corelib/Qt6CoreMacros.cmake)
 
+    # Needed when building qtbase for android.
+    include(src/corelib/Qt6AndroidMacros.cmake)
+
     ## Setup documentation
     add_subdirectory(doc)
 
