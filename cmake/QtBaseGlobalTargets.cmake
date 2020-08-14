@@ -390,6 +390,7 @@ qt_copy_or_install(FILES
                    cmake/QtPluginHelpers.cmake
                    cmake/QtPlugins.cmake.in
                    cmake/QtPostProcess.cmake
+                   cmake/QtPostProcessHelpers.cmake
                    cmake/QtPrecompiledHeadersHelpers.cmake
                    cmake/QtPriHelpers.cmake
                    cmake/QtPrlHelpers.cmake
