@@ -126,13 +126,6 @@ struct Q_GUI_EXPORT QtFontStyle
         {
             return !operator==(other);
         }
-
-        bool operator<(const Key &o) const noexcept
-        {
-            int x = (style << 12) + (weight << 14) + stretch;
-            int y = (o.style << 12) + (o.weight << 14) + o.stretch;
-            return (x < y);
-        }
     };
 
     QtFontStyle(const Key &k)
