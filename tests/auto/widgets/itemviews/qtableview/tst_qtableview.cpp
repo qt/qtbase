@@ -257,7 +257,7 @@ public:
     using QTableView::setSelection;
     using QTableView::selectedIndexes;
     using QTableView::sizeHintForRow;
-    using QTableView::viewOptions;
+    using QTableView::initViewItemOption;
 
     bool checkSignalOrder = false;
 public slots:
@@ -4523,7 +4523,8 @@ void tst_QTableView::taskQTBUG_10169_sizeHintForRow()
 void tst_QTableView::viewOptions()
 {
     QtTestTableView view;
-    QStyleOptionViewItem options = view.viewOptions();
+    QStyleOptionViewItem options;
+    view.initViewItemOption(&options);
     QVERIFY(options.showDecorationSelected);
 }
 

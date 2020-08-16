@@ -297,7 +297,7 @@ protected:
     virtual void startDrag(Qt::DropActions supportedActions);
 #endif
 
-    virtual QStyleOptionViewItem viewOptions() const;
+    virtual void initViewItemOption(QStyleOptionViewItem *option) const;
 
     enum State {
         NoState,

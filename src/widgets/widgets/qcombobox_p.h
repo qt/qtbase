@@ -94,13 +94,12 @@ protected:
         QListView::resizeEvent(event);
     }
 
-    QStyleOptionViewItem viewOptions() const override
+    void initViewItemOption(QStyleOptionViewItem *option) const override
     {
-        QStyleOptionViewItem option = QListView::viewOptions();
-        option.showDecorationSelected = true;
+        QListView::initViewItemOption(option);
+        option->showDecorationSelected = true;
         if (combo)
-            option.font = combo->font();
-        return option;
+            option->font = combo->font();
     }
 
     void paintEvent(QPaintEvent *e) override

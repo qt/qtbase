@@ -1472,7 +1472,8 @@ void QTreeView::drawTree(QPainter *painter, const QRegion &region) const
     Q_D(const QTreeView);
     const QList<QTreeViewItem> viewItems = d->viewItems;
 
-    QStyleOptionViewItem option = viewOptions();
+    QStyleOptionViewItem option;
+    initViewItemOption(&option);
     const QStyle::State state = option.state;
     d->current = 0;
 
@@ -1834,7 +1835,8 @@ void QTreeView::drawBranches(QPainter *painter, const QRect &rect,
     QModelIndex current = parent;
     QModelIndex ancestor = current.parent();
 
-    QStyleOptionViewItem opt = viewOptions();
+    QStyleOptionViewItem opt;
+    initViewItemOption(&opt);
     QStyle::State extraFlags = QStyle::State_None;
     if (isEnabled())
         extraFlags |= QStyle::State_Enabled;
@@ -2868,7 +2870,8 @@ int QTreeView::sizeHintForColumn(int column) const
         return -1;
     ensurePolished();
     int w = 0;
-    QStyleOptionViewItem option = viewOptions();
+    QStyleOptionViewItem option;
+    initViewItemOption(&option);
     const QList<QTreeViewItem> viewItems = d->viewItems;
 
     const int maximumProcessRows = d->header->resizeContentsPrecision(); // To avoid this to take forever.
@@ -2980,8 +2983,9 @@ int QTreeView::indexRowSizeHint(const QModelIndex &index) const
         qSwap(end, start);
 
     int height = -1;
-    QStyleOptionViewItem option = viewOptions();
-    // ### If we want word wrapping in the items,
+    QStyleOptionViewItem option;
+    initViewItemOption(&option);
+   // ### If we want word wrapping in the items,
     // ### we need to go through all the columns
     // ### and set the width of the column
 
@@ -3252,7 +3256,8 @@ QPixmap QTreeViewPrivate::renderTreeToPixmapForAnimation(const QRect &rect) cons
     painter.end();
 
     //and now let's render the editors the editors
-    QStyleOptionViewItem option = q->viewOptions();
+    QStyleOptionViewItem option;
+    q->initViewItemOption(&option);
     for (QEditorIndexHash::const_iterator it = editorIndexHash.constBegin(); it != editorIndexHash.constEnd(); ++it) {
         QWidget *editor = it.key();
         const QModelIndex &index = it.value();

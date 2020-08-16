@@ -516,8 +516,8 @@ void tst_QAbstractItemView::basic_tests(QAbstractItemView *view)
 #if QT_CONFIG(draganddrop)
     if (!view->model())
         view->startDrag(Qt::CopyAction);
-
-    view->viewOptions();
+    QStyleOptionViewItem option;
+    view->initViewItemOption(&option);
 
     view->setState(QAbstractItemView::NoState);
     QCOMPARE(view->state(), QAbstractItemView::NoState);

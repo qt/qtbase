@@ -145,7 +145,7 @@ protected:
     QTableView(QTableViewPrivate &, QWidget *parent);
     void scrollContentsBy(int dx, int dy) override;
 
-    QStyleOptionViewItem viewOptions() const override;
+    void initViewItemOption(QStyleOptionViewItem *option) const override;
     void paintEvent(QPaintEvent *e) override;
 
     void timerEvent(QTimerEvent *event) override;

@@ -170,7 +170,7 @@ protected:
     void startDrag(Qt::DropActions supportedActions) override;
 #endif // QT_CONFIG(draganddrop)
 
-    QStyleOptionViewItem viewOptions() const override;
+    void initViewItemOption(QStyleOptionViewItem *option) const override;
     void paintEvent(QPaintEvent *e) override;
 
     int horizontalOffset() const override;

@@ -137,7 +137,9 @@ QModelIndex PieView::indexAt(const QPoint &point) const
             }
         }
     } else {
-        double itemHeight = QFontMetrics(viewOptions().font).height();
+        QStyleOptionViewItem option;
+        initViewItemOption(&option);
+        double itemHeight = QFontMetrics(option.font).height();
         int listItem = int((wy - margin) / itemHeight);
         int validRow = 0;
 
@@ -193,8 +195,9 @@ QRect PieView::itemRect(const QModelIndex &index) const
 
     switch (index.column()) {
     case 0: {
-        const qreal itemHeight = QFontMetricsF(viewOptions().font).height();
-
+        QStyleOptionViewItem option;
+        initViewItemOption(&option);
+        const qreal itemHeight = QFontMetricsF(option.font).height();
         return QRect(totalSize,
                      qRound(margin + listItem * itemHeight),
                      totalSize - margin, qRound(itemHeight));
@@ -306,7 +309,8 @@ QModelIndex PieView::moveCursor(QAbstractItemView::CursorAction cursorAction,
 void PieView::paintEvent(QPaintEvent *event)
 {
     QItemSelectionModel *selections = selectionModel();
-    QStyleOptionViewItem option = viewOptions();
+    QStyleOptionViewItem option;
+    initViewItemOption(&option);
 
     QBrush background = option.palette.base();
     QPen foreground(option.palette.color(QPalette::WindowText));
@@ -363,7 +367,9 @@ void PieView::paintEvent(QPaintEvent *event)
         if (value > 0.0) {
             QModelIndex labelIndex = model()->index(row, 0, rootIndex());
 
-            QStyleOptionViewItem option = viewOptions();
+            QStyleOptionViewItem option;
+            initViewItemOption(&option);
+
             option.rect = visualRect(labelIndex);
             if (selections->isSelected(labelIndex))
                 option.state |= QStyle::State_Selected;

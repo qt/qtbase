@@ -84,7 +84,7 @@ public:
     using QListView::setSelection;
     using QListView::setViewportMargins;
     using QListView::startDrag;
-    using QListView::viewOptions;
+    using QListView::initViewItemOption;
     QRegion getVisualRegionForSelection() const
     {
         return QListView::visualRegionForSelection(selectionModel()->selection());
@@ -2258,10 +2258,11 @@ void tst_QListView::testScrollToWithHidden()
 void tst_QListView::testViewOptions()
 {
     PublicListView view;
-    QStyleOptionViewItem options = view.viewOptions();
+    QStyleOptionViewItem options;
+    view.initViewItemOption(&options);
     QCOMPARE(options.decorationPosition, QStyleOptionViewItem::Left);
     view.setViewMode(QListView::IconMode);
-    options = view.viewOptions();
+    view.initViewItemOption(&options);
     QCOMPARE(options.decorationPosition, QStyleOptionViewItem::Top);
 }
 

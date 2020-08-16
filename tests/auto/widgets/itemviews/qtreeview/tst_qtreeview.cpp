@@ -2490,7 +2490,8 @@ void tst_QTreeView::spanningItems()
 
     // size hint
     // every second row is un-spanned
-    QStyleOptionViewItem option = view.viewOptions();
+    QStyleOptionViewItem option;
+    view.initViewItemOption(&option);
     int w = view.header()->sectionSizeHint(0);
     for (int i = 0; i < model.rowCount(QModelIndex()); ++i) {
         if (!view.isFirstColumnSpanned(i, QModelIndex())) {

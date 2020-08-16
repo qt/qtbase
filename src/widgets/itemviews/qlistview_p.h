@@ -172,7 +172,7 @@ public:
     inline QModelIndex modelIndex(int row) const;
     inline int rowCount() const;
 
-    inline QStyleOptionViewItem viewOptions() const;
+    inline void initViewItemOption(QStyleOptionViewItem *option) const;
     inline QWidget *viewport() const;
     inline QRect clipRect() const;
 
@@ -483,7 +483,7 @@ inline QModelIndex QCommonListViewBase::modelIndex(int row) const
     { return dd->model->index(row, dd->column, dd->root); }
 inline int QCommonListViewBase::rowCount() const { return dd->model->rowCount(dd->root); }
 
-inline QStyleOptionViewItem QCommonListViewBase::viewOptions() const { return qq->viewOptions(); }
+inline void QCommonListViewBase::initViewItemOption(QStyleOptionViewItem *option) const { qq->initViewItemOption(option); }
 inline QWidget *QCommonListViewBase::viewport() const { return dd->viewport; }
 inline QRect QCommonListViewBase::clipRect() const { return dd->clipRect(); }
 

@@ -971,29 +971,27 @@ void QListView::startDrag(Qt::DropActions supportedActions)
 /*!
   \reimp
 */
-QStyleOptionViewItem QListView::viewOptions() const
+void QListView::initViewItemOption(QStyleOptionViewItem *option) const
 {
     Q_D(const QListView);
-    QStyleOptionViewItem option = QAbstractItemView::viewOptions();
+    QAbstractItemView::initViewItemOption(option);
     if (!d->iconSize.isValid()) { // otherwise it was already set in abstractitemview
         int pm = (d->viewMode == QListView::ListMode
                   ? style()->pixelMetric(QStyle::PM_ListViewIconSize, nullptr, this)
                   : style()->pixelMetric(QStyle::PM_IconViewIconSize, nullptr, this));
-        option.decorationSize = QSize(pm, pm);
+        option->decorationSize = QSize(pm, pm);
     }
     if (d->viewMode == QListView::IconMode) {
-        option.showDecorationSelected = false;
-        option.decorationPosition = QStyleOptionViewItem::Top;
-        option.displayAlignment = Qt::AlignCenter;
+        option->showDecorationSelected = false;
+        option->decorationPosition = QStyleOptionViewItem::Top;
+        option->displayAlignment = Qt::AlignCenter;
     } else {
-        option.decorationPosition = QStyleOptionViewItem::Left;
+        option->decorationPosition = QStyleOptionViewItem::Left;
     }
 
     if (d->gridSize().isValid()) {
-        option.rect.setSize(d->gridSize());
+        option->rect.setSize(d->gridSize());
     }
-
-    return option;
 }
 
 
@@ -1005,7 +1003,8 @@ void QListView::paintEvent(QPaintEvent *e)
     Q_D(QListView);
     if (!d->itemDelegate)
         return;
-    QStyleOptionViewItem option = viewOptions();
+    QStyleOptionViewItem option;
+    initViewItemOption(&option);
     QPainter painter(d->viewport);
 
     const QList<QModelIndex> toBeRendered =
@@ -1555,7 +1554,8 @@ void QListView::updateGeometries()
         verticalScrollBar()->setRange(0, 0);
     } else {
         QModelIndex index = d->model->index(0, d->column, d->root);
-        QStyleOptionViewItem option = viewOptions();
+        QStyleOptionViewItem option;
+        initViewItemOption(&option);
         QSize step = d->itemSize(option, index);
         d->commonListView->updateHorizontalScrollBar(step);
         d->commonListView->updateVerticalScrollBar(step);
@@ -2457,7 +2457,8 @@ QListViewItem QListModeViewBase::indexToListViewItem(const QModelIndex &index) c
                                            0, segmentStartRows.count() - 1);
 
 
-    QStyleOptionViewItem options = viewOptions();
+    QStyleOptionViewItem options;
+    initViewItemOption(&options);
     options.rect.setSize(contentsSize);
     QSize size = (uniformItemSizes() && cachedItemSize().isValid())
                  ? cachedItemSize() : itemSize(options, index);
@@ -2533,7 +2534,8 @@ void QListModeViewBase::doStaticLayout(const QListViewLayoutInfo &info)
 {
     const bool useItemSize = !info.grid.isValid();
     const QPoint topLeft = initStaticLayout(info);
-    QStyleOptionViewItem option = viewOptions();
+    QStyleOptionViewItem option;
+    initViewItemOption(&option);
     option.rect = info.bounds;
     option.rect.adjust(info.spacing, info.spacing, -info.spacing, -info.spacing);
 
@@ -3007,7 +3009,8 @@ void QIconModeViewBase::scrollContentsBy(int dx, int dy, bool scrollElasticBand)
 void QIconModeViewBase::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight)
 {
     if (column() >= topLeft.column() && column() <= bottomRight.column())  {
-        const QStyleOptionViewItem option = viewOptions();
+        QStyleOptionViewItem option;
+        initViewItemOption(&option);
         const int bottom = qMin(items.count(), bottomRight.row() + 1);
         const bool useItemSize = !dd->grid.isValid();
         for (int row = topLeft.row(); row < bottom; ++row)
@@ -3027,7 +3030,8 @@ bool QIconModeViewBase::doBatchedItemLayout(const QListViewLayoutInfo &info, int
 {
     if (info.last >= items.count()) {
         //first we create the items
-        QStyleOptionViewItem option = viewOptions();
+        QStyleOptionViewItem option;
+        initViewItemOption(&option);
         for (int row = items.count(); row <= info.last; ++row) {
             QSize size = itemSize(option, modelIndex(row));
             QListViewItem item(QRect(0, 0, size.width(), size.height()), row); // default pos

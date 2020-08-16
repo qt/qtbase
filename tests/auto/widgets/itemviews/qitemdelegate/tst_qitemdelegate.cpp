@@ -843,7 +843,9 @@ class FastEditItemView : public QTableView
 public:
     QWidget* fastEdit(const QModelIndex &i) // Consider this as QAbstractItemView::edit( )
     {
-        QWidget *v = itemDelegate()->createEditor(viewport(), viewOptions(), i);
+        QStyleOptionViewItem option;
+        initViewItemOption(&option);
+        QWidget *v = itemDelegate()->createEditor(viewport(), option, i);
         if (v)
             itemDelegate()->setEditorData(v, i);
         return v;
