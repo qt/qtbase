@@ -1217,29 +1217,4 @@ struct QRandEngine
 };
 }
 
-#if defined(Q_OS_WIN)
-// On Windows srand() and rand() already use Thread-Local-Storage
-// to store the seed between calls
-static inline QRandEngine *randTLS()
-{
-    return nullptr;
-}
-#elif defined(Q_COMPILER_THREAD_LOCAL)
-static inline QRandEngine *randTLS()
-{
-    thread_local QRandEngine r;
-    return &r;
-}
-#else
-Q_GLOBAL_STATIC(QThreadStorage<QRandEngine>, g_randTLS)
-static inline QRandEngine *randTLS()
-{
-    auto tls = g_randTLS();
-    if (!tls)
-        return nullptr;
-    return &tls->localData();
-
-}
-#endif
-
 QT_END_NAMESPACE
