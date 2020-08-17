@@ -1249,22 +1249,29 @@ public:
 
     iterator find(const Key &key, const T &value)
     {
-        if (!d)
-            return iterator();
+        detach();
 
         auto range = d->m.equal_range(key);
         auto i = std::find_if(range.first, range.second,
                               MapData::valueIsEqualTo(value));
 
-        return iterator(i);
+        if (i != range.second)
+            return iterator(i);
+        return iterator(d->m.end());
     }
 
     const_iterator find(const Key &key, const T &value) const
     {
         if (!d)
             return const_iterator();
-        // a bit evil, but effective
-        return const_iterator(const_cast<QMultiMap *>(this)->find(key, value));
+
+        auto range = d->m.equal_range(key);
+        auto i = std::find_if(range.first, range.second,
+                              MapData::valueIsEqualTo(value));
+
+        if (i != range.second)
+            return const_iterator(i);
+        return const_iterator(d->m.end());
     }
 
     const_iterator constFind(const Key &key, const T &value) const
