@@ -652,16 +652,13 @@ qsizetype QDecompressHelper::readZstandard(char *data, const qsizetype maxSize)
 
     ZSTD_outBuffer outBuf { data, size_t(maxSize), 0 };
 
-    bool dataLeftover = false;
     qsizetype bytesDecoded = 0;
     while (outBuf.pos < outBuf.size && (inBuf.pos < inBuf.size || decoderHasData)) {
-
-        dataLeftover = false;
         size_t retValue = ZSTD_decompressStream(zstdStream, &outBuf, &inBuf);
         if (ZSTD_isError(retValue)) {
             qWarning("ZStandard error: %s", ZSTD_getErrorName(retValue));
             return -1;
-        } else if (retValue >= 0) {
+        } else {
             decoderHasData = false;
             bytesDecoded = outBuf.pos;
             // if pos == size then there may be data left over in internal buffers
