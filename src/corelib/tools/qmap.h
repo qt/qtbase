@@ -910,14 +910,20 @@ public:
         // TODO: improve. Copy over only the elements not to be removed.
         detach();
 
+        // key and value may belong to this map. As such, we need to copy
+        // them to ensure they stay valid througout the iteration below
+        // (which may destroy them)
+        const Key keyCopy = key;
+        const T valueCopy = value;
+
         size_type result = 0;
         const auto &keyCompare = d->m.key_comp();
 
-        auto i = d->m.find(key);
+        auto i = d->m.find(keyCopy);
         const auto e = d->m.end();
 
-        while (i != e && !keyCompare(key, i->first)) {
-            if (i->second == value) {
+        while (i != e && !keyCompare(keyCopy, i->first)) {
+            if (i->second == valueCopy) {
                 i = d->m.erase(i);
                 ++result;
             } else {

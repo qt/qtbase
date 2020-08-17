@@ -77,6 +77,7 @@ private slots:
     void testInsertWithHint();
     void testInsertMultiWithHint();
     void eraseValidIteratorOnSharedMap();
+    void removeElementsInMap();
 };
 
 struct IdentityTracker {
@@ -1647,6 +1648,176 @@ void tst_QMap::eraseValidIteratorOnSharedMap()
     QCOMPARE(ms1.size(), 2);
     QCOMPARE(ms2.size(), 2);
     QCOMPARE(ms3.size(), 3);
+}
+
+void tst_QMap::removeElementsInMap()
+{
+    // A class that causes an almost certain crash if its operator< is
+    // called on a destroyed object
+    struct SharedInt {
+        QSharedPointer<int> m_int;
+        explicit SharedInt(int i) : m_int(QSharedPointer<int>::create(i)) {}
+        bool operator<(const SharedInt &other) const { return *m_int < *other.m_int; }
+    };
+
+    {
+        QMap<SharedInt, int> map {
+            { SharedInt(1), 1 },
+            { SharedInt(2), 2 },
+            { SharedInt(3), 3 },
+            { SharedInt(4), 4 },
+            { SharedInt(5), 5 },
+        };
+        QCOMPARE(map.size(), 5);
+
+        map.remove(SharedInt(1));
+        QCOMPARE(map.size(), 4);
+
+        map.remove(SharedInt(-1));
+        QCOMPARE(map.size(), 4);
+
+        QMap<SharedInt, int> map2 = map;
+        QCOMPARE(map.size(), 4);
+        QCOMPARE(map2.size(), 4);
+
+        map.remove(SharedInt(3));
+        QCOMPARE(map.size(), 3);
+        QCOMPARE(map2.size(), 4);
+
+        map.remove(SharedInt(-1));
+        QCOMPARE(map.size(), 3);
+        QCOMPARE(map2.size(), 4);
+
+        map = map2;
+        QCOMPARE(map.size(), 4);
+        QCOMPARE(map2.size(), 4);
+
+        map.remove(SharedInt(-1));
+        QCOMPARE(map.size(), 4);
+        QCOMPARE(map2.size(), 4);
+
+        map.remove(map.firstKey());
+        QCOMPARE(map.size(), 3);
+        QCOMPARE(map2.size(), 4);
+
+        map.remove(map.lastKey());
+        QCOMPARE(map.size(), 2);
+        QCOMPARE(map2.size(), 4);
+
+        map = map2;
+        QCOMPARE(map.size(), 4);
+        QCOMPARE(map2.size(), 4);
+
+        auto size = map.size();
+        for (auto it = map.begin(); it != map.end(); ) {
+            const auto oldIt = it++;
+            size -= map.remove(oldIt.key());
+            QCOMPARE(map.size(), size);
+            QCOMPARE(map2.size(), 4);
+        }
+
+        QCOMPARE(map.size(), 0);
+        QCOMPARE(map2.size(), 4);
+    }
+
+    {
+        QMultiMap<SharedInt, int> multimap {
+            { SharedInt(1), 10 },
+            { SharedInt(1), 11 },
+            { SharedInt(2), 2 },
+            { SharedInt(3), 30 },
+            { SharedInt(3), 31 },
+            { SharedInt(3), 32 },
+            { SharedInt(4), 4 },
+            { SharedInt(5), 5 },
+            { SharedInt(6), 60 },
+            { SharedInt(6), 61 },
+            { SharedInt(6), 60 },
+            { SharedInt(6), 62 },
+            { SharedInt(6), 60 },
+            { SharedInt(7), 7 },
+        };
+
+        QCOMPARE(multimap.size(), 14);
+
+        multimap.remove(SharedInt(1));
+        QCOMPARE(multimap.size(), 12);
+
+        multimap.remove(SharedInt(-1));
+        QCOMPARE(multimap.size(), 12);
+
+        QMultiMap<SharedInt, int> multimap2 = multimap;
+        QCOMPARE(multimap.size(), 12);
+        QCOMPARE(multimap2.size(), 12);
+
+        multimap.remove(SharedInt(3));
+        QCOMPARE(multimap.size(), 9);
+        QCOMPARE(multimap2.size(), 12);
+
+        multimap.remove(SharedInt(4));
+        QCOMPARE(multimap.size(), 8);
+        QCOMPARE(multimap2.size(), 12);
+
+        multimap.remove(SharedInt(-1));
+        QCOMPARE(multimap.size(), 8);
+        QCOMPARE(multimap2.size(), 12);
+
+        multimap = multimap2;
+        QCOMPARE(multimap.size(), 12);
+        QCOMPARE(multimap2.size(), 12);
+
+        multimap.remove(SharedInt(-1));
+        QCOMPARE(multimap.size(), 12);
+        QCOMPARE(multimap2.size(), 12);
+
+        multimap.remove(SharedInt(6), 60);
+        QCOMPARE(multimap.size(), 9);
+        QCOMPARE(multimap2.size(), 12);
+
+        multimap = multimap2;
+        QCOMPARE(multimap.size(), 12);
+        QCOMPARE(multimap2.size(), 12);
+
+        multimap.remove(SharedInt(6), 62);
+        QCOMPARE(multimap.size(), 11);
+        QCOMPARE(multimap2.size(), 12);
+
+        multimap.remove(multimap.firstKey());
+        QCOMPARE(multimap.size(), 10);
+        QCOMPARE(multimap2.size(), 12);
+
+        multimap.remove(multimap.lastKey());
+        QCOMPARE(multimap.size(), 9);
+        QCOMPARE(multimap2.size(), 12);
+
+        multimap = multimap2;
+        QCOMPARE(multimap.size(), 12);
+        QCOMPARE(multimap2.size(), 12);
+
+        auto itFor6 = multimap.find(SharedInt(6));
+        QVERIFY(itFor6 != multimap.end());
+        QCOMPARE(itFor6.value(), 60);
+        multimap.remove(itFor6.key(), itFor6.value());
+        QCOMPARE(multimap.size(), 9);
+        QCOMPARE(multimap2.size(), 12);
+
+        multimap = multimap2;
+        QCOMPARE(multimap.size(), 12);
+        QCOMPARE(multimap2.size(), 12);
+
+        auto size = multimap.size();
+        for (auto it = multimap.begin(); it != multimap.end();) {
+            const auto range = multimap.equal_range(it.key());
+            const auto oldIt = it;
+            it = range.second;
+            size -= multimap.remove(oldIt.key());
+            QCOMPARE(multimap.size(), size);
+            QCOMPARE(multimap2.size(), 12);
+        }
+
+        QCOMPARE(multimap.size(), 0);
+        QCOMPARE(multimap2.size(), 12);
+    }
 }
 
 QTEST_APPLESS_MAIN(tst_QMap)
