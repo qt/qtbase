@@ -9,6 +9,7 @@ contains(QT_BUILD_PARTS, tests) {
         draganddrop \
         droparea \
         qfontdatabase \
+        textblock-formats \
         textdocument-blocks \
         textdocument-charformats \
         textdocument-css \

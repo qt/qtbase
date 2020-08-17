@@ -47,15 +47,15 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-#include <QtGui>
+#include <QApplication>
+#include <QTextEdit>
 
 QString tr(const char *text)
 {
     return QApplication::translate(text, text);
 }
 
-int main(int argc, char *argv[])
+int main_textblock_formats(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
