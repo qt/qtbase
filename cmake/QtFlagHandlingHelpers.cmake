@@ -241,3 +241,163 @@ function(qt_enable_utf8_sources target)
         target_compile_options("${target}" INTERFACE "${utf8_flags}")
     endif()
 endfunction()
+
+function(qt_internal_get_all_possible_optimization_flag_values out_var)
+    set(flag_values "")
+    set(vars QT_CFLAGS_OPTIMIZE QT_CFLAGS_OPTIMIZE_FULL
+             QT_CFLAGS_OPTIMIZE_DEBUG QT_CFLAGS_OPTIMIZE_SIZE)
+    foreach(optimize_var ${vars})
+        set(value "${${optimize_var}}")
+        if(value)
+            list(APPEND flag_values "${value}")
+        endif()
+    endforeach()
+
+    # Additional flag values which might not be used in qmake mkspecs, but might be set by CMake,
+    # aka flags that are recognized by the compile which we might want to remove.
+    if(QT_CFLAGS_OPTIMIZE_VALID_VALUES)
+        list(APPEND flag_values ${QT_CFLAGS_OPTIMIZE_VALID_VALUES})
+    endif()
+
+    set("${out_var}" "${flag_values}" PARENT_SCOPE)
+endfunction()
+
+function(qt_internal_print_optimization_flags_values languages configs target_link_types)
+    foreach(lang ${languages})
+        set(flag_var_name "CMAKE_${lang}_FLAGS")
+        message(STATUS "${flag_var_name}: ${${flag_var_name}}")
+
+        foreach(config ${configs})
+            set(flag_var_name "CMAKE_${lang}_FLAGS_${config}")
+            message(STATUS "${flag_var_name}: ${${flag_var_name}}")
+        endforeach()
+    endforeach()
+
+    foreach(t ${target_link_types})
+        set(flag_var_name "CMAKE_${t}_LINKER_FLAGS")
+        message(STATUS "${flag_var_name}: ${${flag_var_name}}")
+
+        foreach(config ${configs})
+            set(flag_var_name "CMAKE_${t}_LINKER_FLAGS_${config}")
+            message(STATUS "${flag_var_name}: ${${flag_var_name}}")
+        endforeach()
+    endforeach()
+endfunction()
+
+# This function finds the optimization flags set by the default CMake modules or toolchains, and
+# replaces them with ones that Qt qmake builds expect for all the default CMAKE_BUILD_TYPE
+# configurations.
+# This normalizes things like using -O2 for both Release and RelWithDebInfo, among other flags.
+# See QTBUG-85992 for details.
+function(qt_internal_set_up_config_optimizations_like_in_qmake)
+    # Allow opt out.
+    if(QT_USE_DEFAULT_CMAKE_OPTIMIZATION_FLAGS)
+        return()
+    endif()
+
+    # Limit flag modification to c-like code. We don't want to accidentally add incompatible
+    # flags to MSVC's RC or Swift.
+    set(languages_to_process C CXX OBJC OBJCXX)
+    get_property(globally_enabled_languages GLOBAL PROPERTY ENABLED_LANGUAGES)
+    set(enabled_languages "")
+    foreach(lang ${languages_to_process})
+        if(lang IN_LIST globally_enabled_languages)
+            list(APPEND enabled_languages "${lang}")
+        endif()
+    endforeach()
+
+    set(configs RELEASE RELWITHDEBINFO MINSIZEREL DEBUG)
+    set(target_link_types EXE SHARED MODULE STATIC)
+
+    # Opt into additional non-standard configs for flag removal only.
+    if(QT_ADDITIONAL_OPTIMIZATION_FLAG_CONFIGS)
+        list(APPEND configs ${QT_ADDITIONAL_OPTIMIZATION_FLAG_CONFIGS})
+    endif()
+
+    # You can set QT_DEBUG_OPTIMIZATION_FLAGS to see the before and after results.
+    if(QT_DEBUG_OPTIMIZATION_FLAGS)
+        message(STATUS "")
+        message(STATUS "DEBUG: Original CMake optimization flags.\n")
+        qt_internal_print_optimization_flags_values("${enabled_languages}" "${configs}"
+                                                    "${target_link_types}")
+    endif()
+
+    # Remove known optimization flags.
+    qt_internal_get_all_possible_optimization_flag_values(flag_values)
+    foreach(lang ${enabled_languages})
+        foreach(config ${configs})
+            set(flag_var_name "CMAKE_${lang}_FLAGS_${config}")
+            foreach(flag_value ${flag_values})
+                # Remove any existing optimization flags, they will be re-added later on.
+                string(REPLACE "${flag_value}" "" "${flag_var_name}" "${${flag_var_name}}")
+                string(STRIP "${${flag_var_name}}" "${flag_var_name}")
+            endforeach()
+        endforeach()
+    endforeach()
+
+    # Re-add optimization flags as per qmake mkspecs.
+    foreach(lang ${enabled_languages})
+        foreach(config ${configs})
+            set(flag_var_name "CMAKE_${lang}_FLAGS_${config}")
+
+            # Release and RelWithDebInfo should get the same base optimization flags.
+            if(config STREQUAL "RELEASE" AND QT_CFLAGS_OPTIMIZE)
+                string(APPEND "${flag_var_name}" " ${QT_CFLAGS_OPTIMIZE}")
+            elseif(config STREQUAL "RELWITHDEBINFO" AND QT_CFLAGS_OPTIMIZE)
+                string(APPEND "${flag_var_name}" " ${QT_CFLAGS_OPTIMIZE}")
+
+            # MinSizeRel should get the optimize size flag if available, otherwise the regular
+            # release flag.
+            elseif(config STREQUAL "MINSIZEREL")
+                if(QT_CFLAGS_OPTIMIZE_SIZE)
+                    string(APPEND "${flag_var_name}" " ${QT_CFLAGS_OPTIMIZE_SIZE}")
+                else()
+                    string(APPEND "${flag_var_name}" " ${QT_CFLAGS_OPTIMIZE}")
+                endif()
+            endif()
+
+            # Assign value to the cache entry.
+            get_property(help_text CACHE "${flag_var_name}" PROPERTY HELPSTRING)
+            set("${flag_var_name}" "${${flag_var_name}}" CACHE STRING "${help_text}" FORCE)
+        endforeach()
+    endforeach()
+
+    if(MSVC)
+        # Handle MSVC /INCREMENTAL flag which should not be enabled for Release configurations.
+        # First remove them from all configs, and re-add INCREMENTAL for Debug only.
+        set(flag_values "/INCREMENTAL:YES" "/INCREMENTAL:NO" "/INCREMENTAL")
+        foreach(config ${configs})
+            foreach(t ${target_link_types})
+                set(flag_var_name "CMAKE_${t}_LINKER_FLAGS_${config}")
+                foreach(flag_value ${flag_values})
+                    string(REPLACE "${flag_value}" "" "${flag_var_name}" "${${flag_var_name}}")
+                    string(STRIP "${${flag_var_name}}" "${flag_var_name}")
+                endforeach()
+            endforeach()
+        endforeach()
+
+        foreach(config ${configs})
+            foreach(t ${target_link_types})
+                set(flag_var_name "CMAKE_${t}_LINKER_FLAGS_${config}")
+
+                if(config STREQUAL "RELEASE" OR config STREQUAL "RELWITHDEBINFO"
+                   OR config STREQUAL "MINSIZEREL")
+                    string(APPEND "${flag_var_name}" " /INCREMENTAL:NO")
+                elseif(config STREQUAL "DEBUG")
+                    string(APPEND "${flag_var_name}" " /INCREMENTAL:YES")
+                endif()
+
+                # Assign value to the cache entry.
+                get_property(help_text CACHE "${flag_var_name}" PROPERTY HELPSTRING)
+                set("${flag_var_name}" "${${flag_var_name}}" CACHE STRING "${help_text}" FORCE)
+            endforeach()
+        endforeach()
+    endif()
+
+    if(QT_DEBUG_OPTIMIZATION_FLAGS)
+        message(STATUS "")
+        message(STATUS "DEBUG: Modified optimization flags to mirror qmake mkspecs.\n")
+        qt_internal_print_optimization_flags_values("${enabled_languages}" "${configs}"
+                                                    "${target_link_types}")
+    endif()
+endfunction()

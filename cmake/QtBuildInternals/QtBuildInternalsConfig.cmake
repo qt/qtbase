@@ -179,6 +179,8 @@ macro(qt_enable_cmake_languages)
             enable_language(${__qt_lang})
         endif()
     endforeach()
+
+    qt_internal_set_up_config_optimizations_like_in_qmake()
 endmacro()
 
 # Minimum setup required to have any CMakeList.txt build as as a standalone
