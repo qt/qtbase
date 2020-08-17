@@ -69,3 +69,7 @@ while (it.hasNext()) {
     qDebug() << f.fileName() << f.readAll().trimmed().toDouble() / 1000 << "MHz";
 }
 //! [1]
+
+//! [2]
+QDirIterator audioFileIt(audioPath, {"*.mp3", "*.wav"}, QDir::Files);
+//! [2]
