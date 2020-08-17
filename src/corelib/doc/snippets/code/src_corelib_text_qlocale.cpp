@@ -67,15 +67,15 @@ bool ok;
 double d;
 
 QLocale::setDefault(QLocale::C);
-d = QString("1234,56").toDouble(&ok);   // ok == false
-d = QString("1234.56").toDouble(&ok);   // ok == true, d == 1234.56
+d = QString("1234,56").toDouble(&ok);   // ok == false, d == 0
+d = QString("1234.56").toDouble(&ok);   // ok == true,  d == 1234.56
 
 QLocale::setDefault(QLocale::German);
-d = QString("1234,56").toDouble(&ok);   // ok == true, d == 1234.56
-d = QString("1234.56").toDouble(&ok);   // ok == true, d == 1234.56
+d = QString("1234,56").toDouble(&ok);   // ok == false, d == 0
+d = QString("1234.56").toDouble(&ok);   // ok == true,  d == 1234.56
 
 QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
-str = QString("%1 %L2 %L3")
+QString str = QString("%1 %L2 %L3")
       .arg(12345).arg(12345).arg(12345, 0, 16);
 // str == "12345 12,345 3039"
 //! [1]
@@ -92,16 +92,16 @@ bool ok;
 double d;
 
 QLocale c(QLocale::C);
-d = c.toDouble( "1234.56", &ok );  // ok == true, d == 1234.56
-d = c.toDouble( "1,234.56", &ok ); // ok == true, d == 1234.56
-d = c.toDouble( "1234,56", &ok );  // ok == false
+d = c.toDouble("1234.56", &ok);  // ok == true,  d == 1234.56
+d = c.toDouble("1,234.56", &ok); // ok == true,  d == 1234.56
+d = c.toDouble("1234,56", &ok);  // ok == false, d == 0
 
 QLocale german(QLocale::German);
-d = german.toDouble( "1234,56", &ok );  // ok == true, d == 1234.56
-d = german.toDouble( "1.234,56", &ok ); // ok == true, d == 1234.56
-d = german.toDouble( "1234.56", &ok );  // ok == false
+d = german.toDouble("1234,56", &ok);  // ok == true,  d == 1234.56
+d = german.toDouble("1.234,56", &ok); // ok == true,  d == 1234.56
+d = german.toDouble("1234.56", &ok);  // ok == false, d == 0
 
-d = german.toDouble( "1.234", &ok );    // ok == true, d == 1234.0
+d = german.toDouble("1.234", &ok);    // ok == true,  d == 1234.0
 //! [3]
 
 //! [3-qstringview]
@@ -109,14 +109,14 @@ bool ok;
 double d;
 
 QLocale c(QLocale::C);
-d = c.toDouble(u"1234.56", &ok);  // ok == true, d == 1234.56
-d = c.toDouble(u"1,234.56", &ok); // ok == true, d == 1234.56
-d = c.toDouble(u"1234,56", &ok);  // ok == false
+d = c.toDouble(u"1234.56", &ok);  // ok == true,  d == 1234.56
+d = c.toDouble(u"1,234.56", &ok); // ok == true,  d == 1234.56
+d = c.toDouble(u"1234,56", &ok);  // ok == false, d == 0
 
 QLocale german(QLocale::German);
-d = german.toDouble(u"1234,56", &ok);  // ok == true, d == 1234.56
-d = german.toDouble(u"1.234,56", &ok); // ok == true, d == 1234.56
-d = german.toDouble(u"1234.56", &ok);  // ok == false
+d = german.toDouble(u"1234,56", &ok);  // ok == true,  d == 1234.56
+d = german.toDouble(u"1.234,56", &ok); // ok == true,  d == 1234.56
+d = german.toDouble(u"1234.56", &ok);  // ok == false, d == 0
 
-d = german.toDouble(u"1.234", &ok);    // ok == true, d == 1234.0
+d = german.toDouble(u"1.234", &ok);    // ok == true,  d == 1234.0
 //! [3-qstringview]
