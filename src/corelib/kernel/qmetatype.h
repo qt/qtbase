@@ -1636,6 +1636,7 @@ struct QMetaTypeId : public QMetaTypeIdQObject<T>
 template <typename T>
 struct QMetaTypeId2
 {
+    using NameAsArrayType = void;
     enum { Defined = QMetaTypeId<T>::Defined, IsBuiltIn=false };
     static inline constexpr int qt_metatype_id() { return QMetaTypeId<T>::qt_metatype_id(); }
 };
@@ -1935,9 +1936,10 @@ inline int qRegisterMetaTypeStreamOperators()
     QT_BEGIN_NAMESPACE \
     template<> struct QMetaTypeId2<NAME> \
     { \
+        using NameAsArrayType = std::array<char, sizeof(#NAME)>; \
         enum { Defined = 1, IsBuiltIn = true, MetaType = METATYPEID };   \
         static inline constexpr int qt_metatype_id() { return METATYPEID; } \
-        static constexpr const char * const name = #NAME; \
+        static constexpr NameAsArrayType nameAsArray = { #NAME }; \
     }; \
     QT_END_NAMESPACE
 
@@ -2468,11 +2470,7 @@ public:
 
         if (skipToken(begin, end, "QPair")) {
             // replace QPair by std::pair
-#ifdef _LIBCPP_VERSION
-            appendStr("std::" QT_STRINGIFY(_LIBCPP_ABI_NAMESPACE) "::pair");
-#else
             appendStr("std::pair");
-#endif
         }
 
         if (!hasMiddleConst) {
@@ -2577,42 +2575,85 @@ constexpr int qNormalizeType(const char *begin, const char *end, char *output)
 }
 
 template<typename T>
+struct is_std_pair : std::false_type {};
+
+template <typename T1_, typename T2_>
+struct is_std_pair<std::pair<T1_, T2_>> : std::true_type {
+    using T1 = T1_;
+    using T2 = T2_;
+};
+
+template<typename T>
 constexpr auto typenameHelper()
 {
-    constexpr auto prefix = sizeof(
+    if constexpr (is_std_pair<T>::value) {
+        using T1 = typename is_std_pair<T>::T1;
+        using T2 = typename is_std_pair<T>::T2;
+        std::remove_const_t<std::conditional_t<bool (QMetaTypeId2<T1>::IsBuiltIn), typename QMetaTypeId2<T1>::NameAsArrayType, decltype(typenameHelper<T1>())>> t1Name {};
+        std::remove_const_t<std::conditional_t<bool (QMetaTypeId2<T2>::IsBuiltIn), typename QMetaTypeId2<T2>::NameAsArrayType, decltype(typenameHelper<T2>())>> t2Name {};
+        if constexpr (bool (QMetaTypeId2<T1>::IsBuiltIn) ) {
+            t1Name = QMetaTypeId2<T1>::nameAsArray;
+        } else {
+            t1Name = typenameHelper<T1>();
+        }
+        if constexpr (bool (QMetaTypeId2<T2>::IsBuiltIn) ) {
+            t2Name = QMetaTypeId2<T2>::nameAsArray;
+        } else {
+            t2Name = typenameHelper<T2>();
+        }
+        constexpr auto nonTypeDependentLen = sizeof("std::pair<,>");
+        constexpr auto t1Len = t1Name.size() - 1;
+        constexpr auto t2Len = t2Name.size() - 1;
+        constexpr auto length = nonTypeDependentLen + t1Len + t2Len;
+        std::array<char, length + 1> result {};
+        constexpr auto prefix = "std::pair<";
+        int currentLength = 0;
+        for (; currentLength < int(sizeof("std::pair<")-1); ++currentLength)
+            result[currentLength] = prefix[currentLength];
+        for (int i = 0; i < int(t1Len); ++currentLength, ++i)
+            result[currentLength] = t1Name[i];
+        result[currentLength++] = ',';
+        for (int i = 0; i < int(t2Len); ++currentLength, ++i)
+            result[currentLength] = t2Name[i];
+        result[currentLength++] = '>';
+        result[currentLength++] = '\0';
+        return result;
+    } else {
+        constexpr auto prefix = sizeof(
 #ifdef QT_NAMESPACE
-        QT_STRINGIFY(QT_NAMESPACE) "::"
+            QT_STRINGIFY(QT_NAMESPACE) "::"
 #endif
 #ifdef Q_CC_MSVC
-        "auto __cdecl QtPrivate::typenameHelper<"
+            "auto __cdecl QtPrivate::typenameHelper<"
 #elif defined(Q_CC_CLANG)
-        "auto QtPrivate::typenameHelper() [T = "
+            "auto QtPrivate::typenameHelper() [T = "
 #else
-        "constexpr auto QtPrivate::typenameHelper() [with T = "
+            "constexpr auto QtPrivate::typenameHelper() [with T = "
 #endif
-        ) - 1;
+            ) - 1;
 #ifdef Q_CC_MSVC
-    constexpr int suffix = sizeof(">(void)");
+        constexpr int suffix = sizeof(">(void)");
 #else
-    constexpr int suffix = sizeof("]");
+        constexpr int suffix = sizeof("]");
 #endif
 
 #if !(defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && !defined(Q_CC_CLANG))
-    constexpr auto func = Q_FUNC_INFO;
-    constexpr const char *begin = func + prefix;
-    constexpr const char *end = func + sizeof(Q_FUNC_INFO) - suffix;
-    constexpr int len = qNormalizeType(begin, end, nullptr);
+        constexpr auto func = Q_FUNC_INFO;
+        constexpr const char *begin = func + prefix;
+        constexpr const char *end = func + sizeof(Q_FUNC_INFO) - suffix;
+        constexpr int len = qNormalizeType(begin, end, nullptr);
 #else // GCC < 8.1 did not have Q_FUNC_INFO as constexpr, and GCC 9 has a precompiled header bug
-    auto func = Q_FUNC_INFO;
-    const char *begin = func + prefix;
-    const char *end = func + sizeof(Q_FUNC_INFO) - suffix;
-    // This is an upper bound of the size since the normalized signature should always be smaller
-    // (Unless there is a QList -> QVector change, but that should not happen)
-    constexpr int len = sizeof(Q_FUNC_INFO) - suffix - prefix;
+        auto func = Q_FUNC_INFO;
+        const char *begin = func + prefix;
+        const char *end = func + sizeof(Q_FUNC_INFO) - suffix;
+        // This is an upper bound of the size since the normalized signature should always be smaller
+        // (Unless there is a QList -> QVector change, but that should not happen)
+        constexpr int len = sizeof(Q_FUNC_INFO) - suffix - prefix;
 #endif
-    std::array<char, len + 1> result {};
-    qNormalizeType(begin, end, result.data());
-    return result;
+        std::array<char, len + 1> result {};
+        qNormalizeType(begin, end, result.data());
+        return result;
+    }
 }
 
 template<typename T, typename = void>
@@ -2712,7 +2753,7 @@ class QMetaTypeForType
     static constexpr const char *getName()
     {
         if constexpr (bool(QMetaTypeId2<S>::IsBuiltIn)) {
-            return QMetaTypeId2<S>::name;
+            return QMetaTypeId2<S>::nameAsArray.data();
         } else {
             return name.data();
         }
