@@ -167,7 +167,7 @@ When running cmake in qtbase, pass
 
 If you don't supply the configuration argument ``-DANDROID_ABI=...``, it will default to
 ``armeabi-v7a``. To target other architectures, use one of the following values:
-  * arm64: ``-DANDROID_ABI=arm64-v8``
+  * arm64: ``-DANDROID_ABI=arm64-v8a``
   * x86: ``-DANDROID_ABI=x86``
   * x86_64: ``-DANDROID_ABI=x86_64``
 
