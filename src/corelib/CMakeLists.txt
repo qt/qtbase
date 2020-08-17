@@ -436,7 +436,7 @@ qt_extend_target(Core CONDITION ANDROID
         kernel/qsharedmemory_android.cpp
         kernel/qsystemsemaphore_android.cpp
     DEFINES
-        LIBS_SUFFIX="_${CMAKE_SYSTEM_PROCESSOR}.so"
+        LIBS_SUFFIX="_${ANDROID_ABI}.so" # special case
 )
 
 qt_extend_target(Core CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
