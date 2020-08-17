@@ -78,7 +78,7 @@ void tst_QProperty::functorBinding()
 {
     QProperty<int> property([]() { return 42; });
     QCOMPARE(property.value(), int(42));
-    property = Qt::makePropertyBinding([]() { return 100; });
+    property.setBinding([]() { return 100; });
     QCOMPARE(property.value(), int(100));
     property.setBinding([]() { return 50; });
     QCOMPARE(property.value(), int(50));
@@ -88,7 +88,7 @@ void tst_QProperty::basicDependencies()
 {
     QProperty<int> right(100);
 
-    QProperty<int> left = Qt::makePropertyBinding(right);
+    QProperty<int> left(Qt::makePropertyBinding(right));
 
     QCOMPARE(left.value(), int(100));
 
@@ -103,7 +103,7 @@ void tst_QProperty::multipleDependencies()
     QProperty<int> secondDependency(2);
 
     QProperty<int> sum;
-    sum = Qt::makePropertyBinding([&]() { return firstDependency + secondDependency; });
+    sum.setBinding([&]() { return firstDependency + secondDependency; });
 
     QCOMPARE(QPropertyBindingDataPointer::get(firstDependency).observerCount(), 0);
     QCOMPARE(QPropertyBindingDataPointer::get(secondDependency).observerCount(), 0);
@@ -139,8 +139,7 @@ void tst_QProperty::bindingWithDeletedDependency()
 
     QProperty<bool> bindingReturnsDynamicProperty(false);
 
-    QProperty<int> propertySelector;
-    propertySelector = Qt::makePropertyBinding([&]() {
+    QProperty<int> propertySelector([&]() {
         if (bindingReturnsDynamicProperty && !dynamicProperty.isNull())
             return dynamicProperty->value();
         else
@@ -167,10 +166,10 @@ void tst_QProperty::recursiveDependency()
     QProperty<int> first(1);
 
     QProperty<int> second;
-    second = Qt::makePropertyBinding(first);
+    second.setBinding(Qt::makePropertyBinding(first));
 
     QProperty<int> third;
-    third = Qt::makePropertyBinding(second);
+    third.setBinding(Qt::makePropertyBinding(second));
 
     QCOMPARE(third.value(), int(1));
 
@@ -184,13 +183,13 @@ void tst_QProperty::bindingAfterUse()
     QProperty<int> propWithBindingLater(1);
 
     QProperty<int> propThatUsesFirstProp;
-    propThatUsesFirstProp = Qt::makePropertyBinding(propWithBindingLater);
+    propThatUsesFirstProp.setBinding(Qt::makePropertyBinding(propWithBindingLater));
 
     QCOMPARE(propThatUsesFirstProp.value(), int(1));
     QCOMPARE(QPropertyBindingDataPointer::get(propWithBindingLater).observerCount(), 1);
 
     QProperty<int> injectedValue(42);
-    propWithBindingLater = Qt::makePropertyBinding(injectedValue);
+    propWithBindingLater.setBinding(Qt::makePropertyBinding(injectedValue));
 
     QCOMPARE(propThatUsesFirstProp.value(), int(42));
     QCOMPARE(QPropertyBindingDataPointer::get(propWithBindingLater).observerCount(), 1);
@@ -201,16 +200,16 @@ void tst_QProperty::switchBinding()
     QProperty<int> first(1);
 
     QProperty<int> propWithChangingBinding;
-    propWithChangingBinding = Qt::makePropertyBinding(first);
+    propWithChangingBinding.setBinding(Qt::makePropertyBinding(first));
 
     QCOMPARE(propWithChangingBinding.value(), 1);
 
     QProperty<int> output;
-    output = Qt::makePropertyBinding(propWithChangingBinding);
+    output.setBinding(Qt::makePropertyBinding(propWithChangingBinding));
     QCOMPARE(output.value(), 1);
 
     QProperty<int> second(2);
-    propWithChangingBinding = Qt::makePropertyBinding(second);
+    propWithChangingBinding.setBinding(Qt::makePropertyBinding(second));
     QCOMPARE(output.value(), 2);
 }
 
@@ -219,8 +218,7 @@ void tst_QProperty::avoidDependencyAllocationAfterFirstEval()
     QProperty<int> firstDependency(1);
     QProperty<int> secondDependency(10);
 
-    QProperty<int> propWithBinding;
-    propWithBinding = Qt::makePropertyBinding([&]() { return firstDependency + secondDependency; });
+    QProperty<int> propWithBinding([&]() { return firstDependency + secondDependency; });
 
     QCOMPARE(propWithBinding.value(), int(11));
 
@@ -242,8 +240,7 @@ void tst_QProperty::propertyArrays()
         expectedSum += i;
     }
 
-    QProperty<int> sum;
-    sum = Qt::makePropertyBinding([&]() {
+    QProperty<int> sum([&]() {
         return std::accumulate(properties.begin(), properties.end(), 0);
     });
 
@@ -258,8 +255,7 @@ void tst_QProperty::boolProperty()
 {
     QProperty<bool> first(true);
     QProperty<bool> second(false);
-    QProperty<bool> all;
-    all = Qt::makePropertyBinding([&]() { return first && second; });
+    QProperty<bool> all([&]() { return first && second; });
 
     QCOMPARE(all.value(), false);
 
@@ -274,7 +270,7 @@ void tst_QProperty::takeBinding()
     QVERIFY(existingBinding.isNull());
 
     QProperty<int> first(100);
-    QProperty<int> second = Qt::makePropertyBinding(first);
+    QProperty<int> second(Qt::makePropertyBinding(first));
 
     QCOMPARE(second.value(), int(100));
 
@@ -287,7 +283,7 @@ void tst_QProperty::takeBinding()
     second = 25;
     QCOMPARE(second.value(), int(25));
 
-    second = existingBinding;
+    second.setBinding(existingBinding);
     QCOMPARE(second.value(), int(10));
     QVERIFY(!existingBinding.isNull());
 }
@@ -295,7 +291,7 @@ void tst_QProperty::takeBinding()
 void tst_QProperty::replaceBinding()
 {
     QProperty<int> first(100);
-    QProperty<int> second = Qt::makePropertyBinding(first);
+    QProperty<int> second(Qt::makePropertyBinding(first));
 
     QCOMPARE(second.value(), 100);
 
@@ -303,7 +299,7 @@ void tst_QProperty::replaceBinding()
     auto oldBinding = second.setBinding(constantBinding);
     QCOMPARE(second.value(), 42);
 
-    second = oldBinding;
+    second.setBinding(oldBinding);
     QCOMPARE(second.value(), 100);
 }
 
@@ -312,8 +308,8 @@ void tst_QProperty::swap()
     QProperty<int> firstDependency(1);
     QProperty<int> secondDependency(2);
 
-    QProperty<int> first = Qt::makePropertyBinding(firstDependency);
-    QProperty<int> second = Qt::makePropertyBinding(secondDependency);
+    QProperty<int> first(Qt::makePropertyBinding(firstDependency));
+    QProperty<int> second(Qt::makePropertyBinding(secondDependency));
 
     QCOMPARE(first.value(), 1);
     QCOMPARE(second.value(), 2);
@@ -337,20 +333,20 @@ void tst_QProperty::moveNotifies()
     QProperty<int> first(1);
     QProperty<int> second(2);
 
-    QProperty<int> propertyInTheMiddle = Qt::makePropertyBinding(first);
+    QProperty<int> propertyInTheMiddle(Qt::makePropertyBinding(first));
 
-    QProperty<int> finalProp1 = Qt::makePropertyBinding(propertyInTheMiddle);
-    QProperty<int> finalProp2 = Qt::makePropertyBinding(propertyInTheMiddle);
+    QProperty<int> finalProp1(Qt::makePropertyBinding(propertyInTheMiddle));
+    QProperty<int> finalProp2(Qt::makePropertyBinding(propertyInTheMiddle));
 
     QCOMPARE(finalProp1.value(), 1);
     QCOMPARE(finalProp2.value(), 1);
 
     QCOMPARE(QPropertyBindingDataPointer::get(propertyInTheMiddle).observerCount(), 2);
 
-    QProperty<int> other = Qt::makePropertyBinding(second);
+    QProperty<int> other(Qt::makePropertyBinding(second));
     QCOMPARE(other.value(), 2);
 
-    QProperty<int> otherDep = Qt::makePropertyBinding(other);
+    QProperty<int> otherDep(Qt::makePropertyBinding(other));
     QCOMPARE(otherDep.value(), 2);
     QCOMPARE(QPropertyBindingDataPointer::get(other).observerCount(), 1);
 
@@ -366,7 +362,7 @@ void tst_QProperty::moveCtor()
 {
     QProperty<int> first(1);
 
-    QProperty<int> intermediate = Qt::makePropertyBinding(first);
+    QProperty<int> intermediate(Qt::makePropertyBinding(first));
     QCOMPARE(intermediate.value(), 1);
     QCOMPARE(QPropertyBindingDataPointer::get(first).observerCount(), 1);
 
@@ -443,7 +439,7 @@ void tst_QProperty::changeHandlerThroughBindings()
 {
     QProperty<bool> trigger(false);
     QProperty<bool> blockTrigger(false);
-    QProperty<bool> condition = Qt::makePropertyBinding([&]() {
+    QProperty<bool> condition([&]() {
         bool triggerValue = trigger;
         bool blockTriggerValue = blockTrigger;
         return triggerValue && !blockTriggerValue;
@@ -479,7 +475,7 @@ void tst_QProperty::dontTriggerDependenciesIfUnchangedValue()
     QProperty<int> property(42);
 
     bool triggered = false;
-    QProperty<int> observer = Qt::makePropertyBinding([&]() { triggered = true; return property.value(); });
+    QProperty<int> observer([&]() { triggered = true; return property.value(); });
 
     QCOMPARE(observer.value(), 42);
     QVERIFY(triggered);
@@ -502,7 +498,7 @@ void tst_QProperty::bindingSourceLocation()
 
 void tst_QProperty::bindingError()
 {
-    QProperty<int> prop = Qt::makePropertyBinding([]() -> int {
+    QProperty<int> prop([]() -> int {
         QPropertyBindingError error(QPropertyBindingError::UnknownError, QLatin1String("my error"));
         QPropertyBindingPrivate::currentlyEvaluatingBinding()->setError(std::move(error));
         return 0;
@@ -515,16 +511,16 @@ void tst_QProperty::bindingLoop()
 {
     QScopedPointer<QProperty<int>> firstProp;
 
-    QProperty<int> secondProp = Qt::makePropertyBinding([&]() -> int {
+    QProperty<int> secondProp([&]() -> int {
         return firstProp ? firstProp->value() : 0;
     });
 
-    QProperty<int> thirdProp = Qt::makePropertyBinding([&]() -> int {
+    QProperty<int> thirdProp([&]() -> int {
         return secondProp.value();
     });
 
     firstProp.reset(new QProperty<int>());
-    *firstProp = Qt::makePropertyBinding([&]() -> int {
+    firstProp->setBinding([&]() -> int {
         return secondProp.value();
     });
 
@@ -558,7 +554,7 @@ void tst_QProperty::changePropertyFromWithinChangeHandler()
 void tst_QProperty::changePropertyFromWithinChangeHandlerThroughDependency()
 {
     QProperty<int> sourceProperty(100);
-    QProperty<int> property = Qt::makePropertyBinding(sourceProperty);
+    QProperty<int> property(Qt::makePropertyBinding(sourceProperty));
     bool resetPropertyOnChange = false;
     int changeHandlerCallCount = 0;
 
@@ -599,7 +595,7 @@ void tst_QProperty::settingPropertyValueDoesRemoveBinding()
 {
     QProperty<int> source(42);
 
-    QProperty<int> property = Qt::makePropertyBinding(source);
+    QProperty<int> property(Qt::makePropertyBinding(source));
 
     QCOMPARE(property.value(), 42);
     QVERIFY(!property.binding().isNull());
@@ -825,7 +821,7 @@ void tst_QProperty::typeNoOperatorEqual()
     Uncomparable u2 = { 27 };
 
     QProperty<Uncomparable> p1;
-    QProperty<Uncomparable> p2 = Qt::makePropertyBinding(p1);
+    QProperty<Uncomparable> p2(Qt::makePropertyBinding(p1));
 
     QCOMPARE(p1.value().data, p2.value().data);
     p1.setValue(u1);
@@ -835,7 +831,7 @@ void tst_QProperty::typeNoOperatorEqual()
     QCOMPARE(p1.value().data, u1.data);
     QCOMPARE(p2.value().data, u2.data);
 
-    QProperty<Uncomparable> p3 = Qt::makePropertyBinding(p1);
+    QProperty<Uncomparable> p3(Qt::makePropertyBinding(p1));
     p1.setValue(u1);
     QCOMPARE(p1.value().data, p3.value().data);
 

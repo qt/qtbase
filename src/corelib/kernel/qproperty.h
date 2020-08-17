@@ -316,13 +316,9 @@ public:
     explicit QProperty(parameter_type initialValue) : QPropertyData<T>(initialValue) {}
     explicit QProperty(rvalue_ref initialValue) : QPropertyData<T>(std::move(initialValue)) {}
     QProperty(QProperty &&other) : QPropertyData<T>(std::move(other.val)), d(std::move(other.d), this) { notify(); }
-    QProperty &operator=(QProperty &&other) { this->val = std::move(other.val); d.moveAssign(std::move(other.d), this); notify(); return *this; }
-    QProperty(const QPropertyBinding<T> &binding)
+    explicit QProperty(const QPropertyBinding<T> &binding)
         : QProperty()
-    { operator=(binding); }
-    QProperty(QPropertyBinding<T> &&binding)
-        : QProperty()
-    { operator=(std::move(binding)); }
+    { setBinding(binding); }
 #ifndef Q_CLANG_QDOC
     template <typename Functor>
     explicit QProperty(Functor &&f, const QPropertyBindingSourceLocation &location = QT_PROPERTY_DEFAULT_BINDING_LOCATION,
@@ -333,6 +329,13 @@ public:
     template <typename Functor>
     explicit QProperty(Functor &&f);
 #endif
+    QProperty &operator=(QProperty &&other)
+    {
+        this->val = std::move(other.val);
+        d.moveAssign(std::move(other.d), this);
+        notify();
+        return *this;
+    }
     ~QProperty() = default;
 
     parameter_type value() const
@@ -392,12 +395,6 @@ public:
     QProperty<T> &operator=(parameter_type newValue)
     {
         setValue(newValue);
-        return *this;
-    }
-
-    QProperty<T> &operator=(const QPropertyBinding<T> &newBinding)
-    {
-        setBinding(newBinding);
         return *this;
     }
 
@@ -529,18 +526,6 @@ public:
     {
         if (auto *p = aliasedProperty())
             *p = newValue;
-        return *this;
-    }
-
-    QPropertyAlias<T> &operator=(const QPropertyBinding<T> &newBinding)
-    {
-        setBinding(newBinding);
-        return *this;
-    }
-
-    QPropertyAlias<T> &operator=(QPropertyBinding<T> &&newBinding)
-    {
-        setBinding(std::move(newBinding));
         return *this;
     }
 
