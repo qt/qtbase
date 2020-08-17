@@ -1379,7 +1379,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                 int iconSpacing = 4;//### 4 is currently hardcoded in QPushButton::sizeHint()
                 if (!button->text.isEmpty()) {
                     int textWidth = button->fontMetrics.boundingRect(opt->rect, tf, button->text).width();
-                    labelWidth += (textWidth + iconSpacing * 2);
+                    labelWidth += (textWidth + iconSpacing);
                 }
 
                 QRect iconRect = QRect(textRect.x() + (textRect.width() - labelWidth) / 2,
@@ -1390,10 +1390,10 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
 
                 if (button->direction == Qt::RightToLeft) {
                     tf |= Qt::AlignRight;
-                    textRect.setRight(iconRect.left() - iconSpacing);
+                    textRect.setRight(iconRect.left() - iconSpacing / 2);
                 } else {
                     tf |= Qt::AlignLeft; //left align, we adjust the text-rect instead
-                    textRect.setLeft(iconRect.left() + iconRect.width() + iconSpacing);
+                    textRect.setLeft(iconRect.left() + iconRect.width() + iconSpacing / 2);
                 }
 
                 if (button->state & (State_On | State_Sunken))
