@@ -538,13 +538,7 @@ public:
     inline QString &prepend(QStringView v) { return prepend(v.data(), v.length()); }
     inline QString &prepend(QLatin1String s) { return insert(0, s); }
 
-    inline QString &operator+=(QChar c) {
-        if (d->needsDetach() || int(d.size + 1) > capacity())
-            reallocData(uint(d.size) + 2u, true);
-        d->data()[d.size++] = c.unicode();
-        d->data()[d.size] = '\0';
-        return *this;
-    }
+    inline QString &operator+=(QChar c) { return append(c); }
 
 #if QT_STRINGVIEW_LEVEL < 2
     inline QString &operator+=(const QString &s) { return append(s); }
@@ -913,7 +907,8 @@ private:
     friend inline bool operator< (QChar, QLatin1String) noexcept;
     friend inline bool operator> (QChar, QLatin1String) noexcept;
 
-    void reallocData(size_t alloc, bool grow = false);
+    void reallocData(size_t alloc, Data::ArrayOptions options);
+    void reallocGrowData(size_t alloc, Data::ArrayOptions options);
     static int compare_helper(const QChar *data1, qsizetype length1,
                               const QChar *data2, qsizetype length2,
                               Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
@@ -1031,7 +1026,7 @@ inline QChar *QString::data()
 inline const QChar *QString::constData() const
 { return data(); }
 inline void QString::detach()
-{ if (d->needsDetach()) reallocData(d.size + 1u); }
+{ if (d->needsDetach()) reallocData(d.size + 1u, d->detachFlags()); }
 inline bool QString::isDetached() const
 { return !d->isShared(); }
 inline void QString::clear()
@@ -1105,7 +1100,7 @@ inline QString::~QString() {}
 inline void QString::reserve(qsizetype asize)
 {
     if (d->needsDetach() || asize >= capacity())
-        reallocData(uint(qMax(asize, size())) + 1u);
+        reallocData(uint(qMax(asize, size())) + 1u, d->detachFlags());
 
     // we're not shared anymore, for sure
     d->setFlag(Data::CapacityReserved);
@@ -1116,7 +1111,7 @@ inline void QString::squeeze()
     if ((d->flags() & Data::CapacityReserved) == 0)
         return;
     if (d->needsDetach() || int(d.size) < capacity())
-        reallocData(uint(d.size) + 1u);
+        reallocData(uint(d.size) + 1u, d->detachFlags());
 
     // we're not shared anymore, for sure
     d->clearFlag(Data::CapacityReserved);

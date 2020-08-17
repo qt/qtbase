@@ -360,11 +360,14 @@ private slots:
     void replace_qchar_qstring();
     void replace_uint_uint_data();
     void replace_uint_uint();
+    void replace_uint_uint_extra();
     void replace_extra();
     void replace_string_data();
     void replace_string();
+    void replace_string_extra();
     void replace_regexp_data();
     void replace_regexp();
+    void replace_regexp_extra();
     void remove_uint_uint_data();
     void remove_uint_uint();
     void remove_string_data();
@@ -2367,6 +2370,15 @@ void tst_QString::insert_special_cases()
     QCOMPARE(a.insert(3, QLatin1String(0)), montreal);
     QCOMPARE(a.insert(3, static_cast<const char *>(0)), montreal);
     QCOMPARE(a.insert(0, QLatin1String("a")), QLatin1String("aMontreal"));
+
+    a = "Mont";
+    QCOMPARE(a.insert(a.size(), QLatin1String("real")), montreal);
+    QCOMPARE(a.insert(a.size() + 1, QLatin1String("ABC")), QString("Montreal ABC"));
+
+    a = "AEF";
+    QCOMPARE(a.insert(1, QLatin1String("BCD")), QString("ABCDEF"));
+    QCOMPARE(a.insert(3, QLatin1String("-")), QString("ABC-DEF"));
+    QCOMPARE(a.insert(a.size() + 1, QLatin1String("XYZ")), QString("ABC-DEF XYZ"));
 }
 
 void tst_QString::append_data(bool emptyIsNoop)
@@ -2416,6 +2428,14 @@ void tst_QString::append_special_cases()
         QCOMPARE(a, QLatin1String("Hello, World!\nHello, World!"));
         a.append(0, 1); // no-op
         QCOMPARE(a, QLatin1String("Hello, World!\nHello, World!"));
+    }
+
+    {
+        QString a;
+        a.insert(0, QChar(u'A'));
+        QVERIFY(a.capacity() >= 3);
+        a.append(QLatin1String("BC"));
+        QCOMPARE(a, QLatin1String("ABC"));
     }
 }
 
@@ -2670,6 +2690,29 @@ void tst_QString::replace_uint_uint()
     }
 }
 
+void tst_QString::replace_uint_uint_extra()
+{
+    {
+        QString s;
+        s.insert(0, QChar('A'));
+
+        auto bigReplacement = QString("B").repeated(s.capacity() * 3);
+
+        s.replace( 0, 1, bigReplacement );
+        QCOMPARE( s, bigReplacement );
+    }
+
+    {
+        QString s;
+        s.insert(0, QLatin1String("BBB"));
+
+        auto smallReplacement = QString("C");
+
+        s.replace( 0, 3, smallReplacement );
+        QCOMPARE( s, smallReplacement );
+    }
+}
+
 void tst_QString::replace_extra()
 {
     /*
@@ -2775,6 +2818,29 @@ void tst_QString::replace_string()
     QTEST( s3, "result" );
 }
 
+void tst_QString::replace_string_extra()
+{
+    {
+        QString s;
+        s.insert(0, QChar('A'));
+
+        auto bigReplacement = QString("B").repeated(s.capacity() * 3);
+
+        s.replace( QString("A"), bigReplacement );
+        QCOMPARE( s, bigReplacement );
+    }
+
+    {
+        QString s;
+        s.insert(0, QLatin1String("BBB"));
+
+        auto smallReplacement = QString("C");
+
+        s.replace( QString("BBB"), smallReplacement );
+        QCOMPARE( s, smallReplacement );
+    }
+}
+
 void tst_QString::replace_regexp()
 {
     QFETCH( QString, string );
@@ -2787,6 +2853,35 @@ void tst_QString::replace_regexp()
         QTest::ignoreMessage(QtWarningMsg, "QString::replace: invalid QRegularExpression object");
     s2.replace( regularExpression, after );
     QTEST( s2, "result" );
+}
+
+void tst_QString::replace_regexp_extra()
+{
+    {
+        QString s;
+        s.insert(0, QChar('A'));
+
+        auto bigReplacement = QString("B").repeated(s.capacity() * 3);
+
+        QRegularExpression regularExpression(QString("A"));
+        QVERIFY(regularExpression.isValid());
+
+        s.replace( regularExpression, bigReplacement );
+        QCOMPARE( s, bigReplacement );
+    }
+
+    {
+        QString s;
+        s.insert(0, QLatin1String("BBB"));
+
+        auto smallReplacement = QString("C");
+
+        QRegularExpression regularExpression(QString("BBB"));
+        QVERIFY(regularExpression.isValid());
+
+        s.replace( regularExpression, smallReplacement );
+        QCOMPARE( s, smallReplacement );
+    }
 }
 
 void tst_QString::remove_uint_uint()
@@ -2863,6 +2958,14 @@ void tst_QString::remove_extra()
         QString s = "The quick brown fox jumps over the lazy dog. "
                     "The lazy dog jumps over the quick brown fox.";
         s.remove(s);
+    }
+
+    {
+        QString s = "BCDEFGHJK";
+        QString s1 = s;
+        s1.insert(0, u'A');  // detaches
+        s1.remove(0, 1);
+        QCOMPARE(s1, s);
     }
 }
 

@@ -2316,8 +2316,9 @@ void QString::resize(qsizetype size)
     if (size < 0)
         size = 0;
 
-    if (d->needsDetach() || size > capacity())
-        reallocData(size_t(size) + 1u, true);
+    const auto capacityAtEnd = capacity() - d.freeSpaceAtBegin();
+    if (d->needsDetach() || size > capacityAtEnd)
+        reallocData(size_t(size) + 1u, d->detachFlags() | Data::GrowsForward);
     d.size = size;
     if (d->allocatedCapacity())
         d.data()[size] = 0;
@@ -2395,13 +2396,14 @@ void QString::resize(qsizetype size, QChar fillChar)
     \sa reserve(), capacity()
 */
 
-void QString::reallocData(size_t alloc, bool grow)
+void QString::reallocData(size_t alloc, Data::ArrayOptions allocOptions)
 {
-    auto allocOptions = d->detachFlags();
-    if (grow)
-        allocOptions |= QArrayData::GrowsForward;
+    // there's a case of slow reallocate path where we need to memmove the data
+    // before a call to ::realloc(), meaning that there's an extra "heavy"
+    // operation. just prefer ::malloc() branch in this case
+    const bool slowReallocatePath = d.freeSpaceAtBegin() > 0;
 
-    if (d->needsDetach()) {
+    if (d->needsDetach() || slowReallocatePath) {
         DataPointer dd(Data::allocate(alloc, allocOptions), qMin(qsizetype(alloc) - 1, d.size));
         if (dd.size > 0)
             ::memcpy(dd.data(), d.data(), dd.size * sizeof(QChar));
@@ -2409,6 +2411,19 @@ void QString::reallocData(size_t alloc, bool grow)
         d = dd;
     } else {
         d->reallocate(alloc, allocOptions);
+    }
+}
+
+void QString::reallocGrowData(size_t alloc, Data::ArrayOptions options)
+{
+    if (d->needsDetach()) {
+        const auto newSize = qMin(qsizetype(alloc) - 1, d.size);
+        DataPointer dd(DataPointer::allocateGrow(d, alloc, newSize, options));
+        dd->copyAppend(d.data(), d.data() + newSize);
+        dd.data()[dd.size] = 0;
+        d = dd;
+    } else {
+        d->reallocate(alloc, options);
     }
 }
 
@@ -2447,7 +2462,8 @@ QString &QString::operator=(const QString &other) noexcept
 */
 QString &QString::operator=(QLatin1String other)
 {
-    if (isDetached() && other.size() <= capacity()) { // assumes d->alloc == 0 -> !isDetached() (sharedNull)
+    const qsizetype capacityAtEnd = capacity() - d.freeSpaceAtBegin();
+    if (isDetached() && other.size() <= capacityAtEnd) { // assumes d->alloc == 0 -> !isDetached() (sharedNull)
         d.size = other.size();
         d.data()[other.size()] = 0;
         qt_from_latin1(d.data(), other.latin1(), other.size());
@@ -2495,7 +2511,8 @@ QString &QString::operator=(QLatin1String other)
 */
 QString &QString::operator=(QChar ch)
 {
-    if (isDetached() && capacity() >= 1) { // assumes d->alloc == 0 -> !isDetached() (sharedNull)
+    const qsizetype capacityAtEnd = capacity() - d.freeSpaceAtBegin();
+    if (isDetached() && capacityAtEnd >= 1) { // assumes d->alloc == 0 -> !isDetached() (sharedNull)
         // re-use existing capacity:
         d.data()[0] = ch.unicode();
         d.data()[1] = 0;
@@ -2516,8 +2533,7 @@ QString &QString::operator=(QChar ch)
 
     \snippet qstring/main.cpp 26
 
-    If the given \a position is greater than size(), the array is
-    first extended using resize().
+    If the given \a position is greater than size(), this string is extended.
 
     \sa append(), prepend(), replace(), remove()
 */
@@ -2530,8 +2546,7 @@ QString &QString::operator=(QChar ch)
     Inserts the string view \a str at the given index \a position and
     returns a reference to this string.
 
-    If the given \a position is greater than size(), the array is
-    first extended using resize().
+    If the given \a position is greater than size(), this string is extended.
 */
 
 
@@ -2543,8 +2558,7 @@ QString &QString::operator=(QChar ch)
     Inserts the C string \a str at the given index \a position and
     returns a reference to this string.
 
-    If the given \a position is greater than size(), the array is
-    first extended using resize().
+    If the given \a position is greater than size(), this string is extended.
 
     This function is not available when \c QT_NO_CAST_FROM_ASCII is
     defined.
@@ -2561,8 +2575,7 @@ QString &QString::operator=(QChar ch)
     Inserts the byte array \a str at the given index \a position and
     returns a reference to this string.
 
-    If the given \a position is greater than size(), the array is
-    first extended using resize().
+    If the given \a position is greater than size(), this string is extended.
 
     This function is not available when \c QT_NO_CAST_FROM_ASCII is
     defined.
@@ -2610,13 +2623,23 @@ QString& QString::insert(qsizetype i, const QChar *unicode, qsizetype size)
     if (points_into_range(s, d.data(), d.data() + d.size))
         return insert(i, QStringView{QVarLengthArray(s, s + size)});
 
-    if (Q_UNLIKELY(i > d.size))
-        resize(i + size, QLatin1Char(' '));
-    else
-        resize(d.size + size);
+    const auto oldSize = this->size();
+    const auto newSize = qMax(i, oldSize) + size;
+    const bool shouldGrow = d->shouldGrowBeforeInsert(d.begin() + qMin(i, oldSize), size);
 
-    ::memmove(d.data() + i + size, d.data() + i, (d.size - i - size) * sizeof(QChar));
-    memcpy(d.data() + i, s, size * sizeof(QChar));
+    auto flags = d->detachFlags() | Data::GrowsForward;
+    if (i <= newSize / 4)
+        flags |= Data::GrowsBackwards;
+
+    // ### optimize me
+    if (d->needsDetach() || newSize > capacity() || shouldGrow)
+        reallocGrowData(newSize + 1, flags);
+
+    if (i > oldSize)  // set spaces in the uninitialized gap
+        d->copyAppend(i - oldSize, u' ');
+
+    d->insert(d.begin() + i, s, s + size);
+    d.data()[d.size] = '\0';
     return *this;
 }
 
@@ -2633,12 +2656,24 @@ QString& QString::insert(qsizetype i, QChar ch)
         i += d.size;
     if (i < 0)
         return *this;
-    if (Q_UNLIKELY(i > size()))
-        resize(i + 1, QLatin1Char(' '));
-    else
-        resize(d.size + 1);
-    ::memmove(d.data() + i + 1, d.data() + i, (d.size - i - 1) * sizeof(QChar));
-    d.data()[i] = ch.unicode();
+
+    const auto oldSize = size();
+    const auto newSize = qMax(i, oldSize) + 1;
+    const bool shouldGrow = d->shouldGrowBeforeInsert(d.begin() + qMin(i, oldSize), 1);
+
+    auto flags = d->detachFlags() | Data::GrowsForward;
+    if (i <= newSize / 4)
+        flags |= Data::GrowsBackwards;
+
+    // ### optimize me
+    if (d->needsDetach() || newSize > capacity() || shouldGrow)
+        reallocGrowData(newSize + 1, flags);
+
+    if (i > oldSize)  // set spaces in the uninitialized gap
+        d->copyAppend(i - oldSize, u' ');
+
+    d->insert(d.begin() + i, 1, ch.unicode());
+    d.data()[d.size] = '\0';
     return *this;
 }
 
@@ -2666,10 +2701,11 @@ QString &QString::append(const QString &str)
         if (isNull()) {
             operator=(str);
         } else {
-            if (d->needsDetach() || size() + str.size() > capacity())
-                reallocData(size_t(size() + str.size()) + 1u, true);
-            memcpy(d.data() + d.size, str.d.data(), str.d.size * sizeof(QChar));
-            d.size += str.d.size;
+            const bool shouldGrow = d->shouldGrowBeforeInsert(d.end(), str.d.size);
+            if (d->needsDetach() || size() + str.size() > capacity() || shouldGrow)
+                reallocGrowData(uint(size() + str.size()) + 1u,
+                                d->detachFlags() | Data::GrowsForward);
+            d->copyAppend(str.d.data(), str.d.data() + str.d.size);
             d.data()[d.size] = '\0';
         }
     }
@@ -2685,10 +2721,13 @@ QString &QString::append(const QString &str)
 QString &QString::append(const QChar *str, qsizetype len)
 {
     if (str && len > 0) {
-        if (d->needsDetach() || size() + len > capacity())
-            reallocData(size_t(size() + len) + 1u, true);
-        memcpy(d.data() + d.size, str, len * sizeof(QChar));
-        d.size += len;
+        const bool shouldGrow = d->shouldGrowBeforeInsert(d.end(), len);
+        if (d->needsDetach() || size() + len > capacity() || shouldGrow)
+            reallocGrowData(uint(size() + len) + 1u, d->detachFlags() | Data::GrowsForward);
+        static_assert(sizeof(QChar) == sizeof(char16_t), "Unexpected difference in sizes");
+        // the following should be safe as QChar uses char16_t as underlying data
+        const char16_t *char16String = reinterpret_cast<const char16_t *>(str);
+        d->copyAppend(char16String, char16String + len);
         d.data()[d.size] = '\0';
     }
     return *this;
@@ -2704,12 +2743,18 @@ QString &QString::append(QLatin1String str)
     const char *s = str.latin1();
     if (s) {
         qsizetype len = str.size();
-        if (d->needsDetach() || size() + len > capacity())
-            reallocData(size_t(size() + len) + 1u, true);
-        char16_t *i = d.data() + d.size;
-        qt_from_latin1(i, s, size_t(len));
-        i[len] = '\0';
-        d.size += len;
+        const bool shouldGrow = d->shouldGrowBeforeInsert(d.end(), len);
+        if (d->needsDetach() || size() + len > capacity() || shouldGrow)
+            reallocGrowData(size_t(size() + len) + 1u, d->detachFlags() | Data::GrowsForward);
+
+        if (d.freeSpaceAtBegin() == 0) {  // fast path
+            char16_t *i = d.data() + d.size;
+            qt_from_latin1(i, s, size_t(len));
+            d.size += len;
+        } else {  // slow path
+            d->copyAppend(s, s + len);
+        }
+        d.data()[d.size] = '\0';
     }
     return *this;
 }
@@ -2751,9 +2796,10 @@ QString &QString::append(QLatin1String str)
 */
 QString &QString::append(QChar ch)
 {
-    if (d->needsDetach() || size() + 1 > capacity())
-        reallocData(d.size + 2u, true);
-    d.data()[d.size++] = ch.unicode();
+    const bool shouldGrow = d->shouldGrowBeforeInsert(d.end(), 1);
+    if (d->needsDetach() || size() + 1 > capacity() || shouldGrow)
+        reallocGrowData(d.size + 2u, d->detachFlags() | Data::GrowsForward);
+    d->copyAppend(1, ch.unicode());
     d.data()[d.size] = '\0';
     return *this;
 }
@@ -3890,7 +3936,7 @@ QString &QString::replace(const QRegularExpression &re, const QString &after)
     if (!iterator.hasNext()) // no matches at all
         return *this;
 
-    reallocData(size_t(d.size) + 1u);
+    reallocData(size_t(d.size) + 1u, d->detachFlags());
 
     qsizetype numCaptures = re.captureCount();
 
@@ -5966,7 +6012,7 @@ const ushort *QString::utf16() const
 {
     if (!d->isMutable()) {
         // ensure '\0'-termination for ::fromRawData strings
-        const_cast<QString*>(this)->reallocData(size_t(d.size) + 1u);
+        const_cast<QString*>(this)->reallocData(size_t(d.size) + 1u, d->detachFlags());
     }
     return reinterpret_cast<const ushort *>(d.data());
 }
