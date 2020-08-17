@@ -10,6 +10,7 @@ contains(QT_BUILD_PARTS, tests) {
         droparea \
         qfontdatabase \
         textblock-formats \
+        textblock-fragments \
         textdocument-blocks \
         textdocument-charformats \
         textdocument-css \

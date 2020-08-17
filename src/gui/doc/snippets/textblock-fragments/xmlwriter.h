@@ -52,6 +52,7 @@
 #define XMLWRITER_H
 
 #include <QDomDocument>
+#include <QTextBlock>
 
 class QTextDocument;
 

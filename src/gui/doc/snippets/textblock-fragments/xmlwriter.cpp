@@ -47,10 +47,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-#include <QtGui>
-
 #include "xmlwriter.h"
+
+#include <QTextDocument>
 
 QDomDocument *XmlWriter::toXml()
 {
@@ -120,8 +119,15 @@ void XmlWriter::readFragment(const QTextBlock &currentBlock,
 
 void XmlWriter::processBlock(const QTextBlock &currentBlock)
 {
+   // Dummy use of specified parameter currentBlock
+   QTextBlock localBlock;
+   localBlock = currentBlock;
+
 }
 
 void XmlWriter::processFragment(const QTextFragment &currentFragment)
 {
+   // Dummy use of specified parameter currentFragment
+   QTextFragment localFragment;
+   localFragment = currentFragment;
 }
