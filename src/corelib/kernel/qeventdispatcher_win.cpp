@@ -527,6 +527,7 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
     // QCoreApplication::sendPostedEvents() takes care about recursions.
     sendPostedEvents();
 
+    auto threadData = d->threadData.loadRelaxed();
     bool canWait;
     bool retVal = false;
     do {
@@ -617,7 +618,8 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
         // still nothing - wait for message or signalled objects
         canWait = (!retVal
                    && !d->interrupt.loadRelaxed()
-                   && (flags & QEventLoop::WaitForMoreEvents));
+                   && flags.testFlag(QEventLoop::WaitForMoreEvents)
+                   && threadData->canWaitLocked());
         if (canWait) {
             emit aboutToBlock();
             waitRet = MsgWaitForMultipleObjectsEx(nCount, pHandles, INFINITE, QS_ALLINPUT, MWMO_ALERTABLE | MWMO_INPUTAVAILABLE);
