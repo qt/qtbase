@@ -80,7 +80,7 @@ void QSqlField_snippets()
 #if 0
     {
 //! [2]
-    QSqlField field("age", QVariant::Int);
+    QSqlField field("age", QMetaType::fromType<int>());
     field.setValue(QPixmap());  // WRONG
 //! [2]
     }
@@ -88,7 +88,7 @@ void QSqlField_snippets()
 
     {
 //! [3]
-    QSqlField field("age", QVariant::Int);
+    QSqlField field("age", QMetaType::fromType<int>());
     field.setValue(QString("123"));  // casts QString to int
 //! [3]
     }
