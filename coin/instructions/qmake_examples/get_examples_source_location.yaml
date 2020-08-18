@@ -1,0 +1,16 @@
+type: Group
+instructions:
+  - type: EnvironmentVariable
+    variableName: COIN_EXAMPLES_SOURCE_LOCATION
+    variableValue: "{{.SourceDir}}\\examples"
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+  - type: EnvironmentVariable
+    variableName: COIN_EXAMPLES_SOURCE_LOCATION
+    variableValue: "{{.SourceDir}}/examples"
+    disable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows

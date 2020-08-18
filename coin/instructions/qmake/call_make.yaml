@@ -1,0 +1,55 @@
+type: Group
+instructions:
+  # Call jom when host os is Windows + MSVC
+  - type: Group
+    instructions:
+    # Clear the automatically set MAKEFLAGS variable
+    - type: EnvironmentVariable
+      variableName: MAKEFLAGS
+      variableValue: ""
+    # Call jom
+    - type: ExecuteCommand
+      command: "{{.Env.ENV_PREFIX}} {{.Env.CI_JOM_PATH}}\\jom.exe"
+      executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
+      maxTimeInSeconds: 6000
+      maxTimeBetweenOutput: 1200
+      userMessageOnFailure: >
+        Failed to call jom.
+    enable_if:
+      condition: and
+      conditions:
+        - condition: property
+          property: host.os
+          equals_value: Windows
+        - condition: property
+          property: host.compiler
+          not_contains_value: "Mingw"
+  # Call make when host os is not Windows (Linux, macOS)
+  - type: ExecuteCommand
+    command: "{{.Env.CALL_MAKE_ENV_PREFIX}} make"
+    executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
+    maxTimeInSeconds: 6000
+    maxTimeBetweenOutput: 1200
+    userMessageOnFailure: >
+      Failed to call make.
+    enable_if:
+      condition: property
+      property: target.os
+      not_equals_value: Windows
+  # Call mingw32-make when host os is Windows + MinGW (this includes building for Android)
+  - type: ExecuteCommand
+    command: "{{.Env.CALL_MAKE_ENV_PREFIX}} mingw32-make"
+    executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
+    maxTimeInSeconds: 6000
+    maxTimeBetweenOutput: 1200
+    userMessageOnFailure: >
+      Failed to call mingw32-make.
+    enable_if:
+      condition: and
+      conditions:
+        - condition: property
+          property: host.os
+          equals_value: Windows
+        - condition: property
+          property: host.compiler
+          contains_value: "Mingw"

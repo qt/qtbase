@@ -1,0 +1,71 @@
+type: Group
+instructions:
+  - type: Group
+    instructions:
+      # Prepare directories to build examples with qmake.
+      - type: ChangeDirectory
+        directory: "{{.SourceDir}}"
+      - type: MakeDirectory
+        directory: "{{.SourceDir}}_qmake/examples"
+      - type: SetBuildDirectory
+        directory: "{{.SourceDir}}_qmake/examples"
+      - type: ChangeDirectory
+        directory: "{{.BuildDir}}"
+      - !include "{{qt/qtbase}}/qmake_examples/get_examples_source_location.yaml"
+
+      # Setup qemu cross-compiled qmake to work.
+      - !include "{{qt/qtbase}}/coin_module_test_qemu_env_vars.yaml"
+
+      # Set either host or target env prefix for qmake and make depending on
+      # tested configuration.
+      - type: Group
+        instructions:
+          - type: EnvironmentVariable
+            variableName: CALL_MAKE_ENV_PREFIX
+            variableValue: "{{.Env.ENV_PREFIX}}"
+            enable_if:
+              condition: runtime
+              env_var: COIN_CONFIG_TYPE
+              equals_value: "Host"
+          - type: EnvironmentVariable
+            variableName: CALL_MAKE_ENV_PREFIX
+            variableValue: "{{.Env.TARGET_ENV_PREFIX}}"
+            enable_if:
+              condition: runtime
+              env_var: COIN_CONFIG_TYPE
+              equals_value: "Target"
+
+      # Ensure that we have an examples/examples.pro file.
+      # If it doesn't exist, write a dummy project file.
+      # The CMake that does this is installed to INSTALL_LIBEXEC, which defaults to "bin" on Windows.
+      - type: ExecuteCommand
+        enable_if:
+          condition: property
+          property: host.os
+          equals_value: Windows
+        command: "cmake --trace-expand -DPRO_FILE={{.SourceDir}}\\examples\\examples.pro -P {{.InstallDir}}\\bin\\ensure_pro_file.cmake"
+        maxTimeInSeconds: 20
+        maxTimeBetweenOutput: 20
+        userMessageOnFailure: >
+          Failed to run cmake -P ensure_pro_file.cmake
+      - type: ExecuteCommand
+        disable_if:
+          condition: property
+          property: host.os
+          equals_value: Windows
+        command: "cmake --trace-expand -DPRO_FILE={{.SourceDir}}/examples/examples.pro -P {{.InstallDir}}/libexec/ensure_pro_file.cmake"
+        maxTimeInSeconds: 20
+        maxTimeBetweenOutput: 20
+        userMessageOnFailure: >
+          Failed to run cmake -P ensure_pro_file.cmake
+
+      # Run qmake to configure the examples. The env prefix is important for qemu.
+      - type: ExecuteCommand
+        command: "{{.Env.CALL_MAKE_ENV_PREFIX}} {{.Env.COIN_QMAKE_LOCATION}} {{.Env.COIN_EXAMPLES_SOURCE_LOCATION}}"
+        maxTimeInSeconds: 6000
+        maxTimeBetweenOutput: 1200
+        userMessageOnFailure: >
+          Failed to run qmake to build examples.
+
+      # Run make to build the examples.
+      - !include "{{qt/qtbase}}/qmake/call_make.yaml"
