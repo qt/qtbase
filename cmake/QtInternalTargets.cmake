@@ -115,6 +115,13 @@ endif()
 
 target_compile_definitions(PlatformCommonInternal INTERFACE $<$<NOT:$<CONFIG:Debug>>:QT_NO_DEBUG>)
 
+if(MSVC)
+    # To mimic mkspecs/common/msvc-desktop.conf add optimization flag for non-debug configs.
+    # In qmake, the flag is added to any user project built with qmake. In CMake land, to be on the
+    # safe side, only add when building Qt itself.
+    target_link_options(PlatformCommonInternal INTERFACE "$<$<NOT:$<CONFIG:Debug>>:/OPT:REF>")
+endif()
+
 function(qt_internal_apply_bitcode_flags target)
     # See mkspecs/features/uikit/bitcode.prf
     set(release_flags "-fembed-bitcode")
