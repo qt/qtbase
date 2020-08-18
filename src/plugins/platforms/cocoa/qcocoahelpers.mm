@@ -392,11 +392,10 @@ QT_END_NAMESPACE
 {
     if ((self = [super initWithFrame:NSZeroRect])) {
         // create OK and Cancel buttons and add these as subviews
-        _okButton = [self createButtonWithTitle:"&OK"];
+        _okButton = [self createButtonWithTitle:QPlatformDialogHelper::Ok];
         _okButton.action = @selector(onOkClicked);
         _okButton.target = panelDelegate;
-
-        _cancelButton = [self createButtonWithTitle:"Cancel"];
+        _cancelButton = [self createButtonWithTitle:QPlatformDialogHelper::Cancel];
         _cancelButton.action = @selector(onCancelClicked);
         _cancelButton.target = panelDelegate;
 
@@ -420,12 +419,13 @@ QT_END_NAMESPACE
     [super dealloc];
 }
 
-- (NSButton *)createButtonWithTitle:(const char *)title
+- (NSButton *)createButtonWithTitle:(QPlatformDialogHelper::StandardButton)type
 {
     NSButton *button = [[NSButton alloc] initWithFrame:NSZeroRect];
     button.buttonType = NSButtonTypeMomentaryLight;
     button.bezelStyle = NSBezelStyleRounded;
-    const QString &cleanTitle = QPlatformTheme::removeMnemonics(QCoreApplication::translate("QDialogButtonBox", title));
+    const QString &cleanTitle =
+         QPlatformTheme::removeMnemonics(QGuiApplicationPrivate::platformTheme()->standardButtonText(type));
     // FIXME: Not obvious, from Cocoa's documentation, that QString::toNSString() makes a deep copy
     button.title = (NSString *)cleanTitle.toCFString();
     ((NSButtonCell *)button.cell).font =
