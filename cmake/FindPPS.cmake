@@ -1,6 +1,10 @@
 # Find the PPS library
 
 # Will make the target PPS::PPS available when found.
+if(TARGET PPS::PPS)
+    set(PPS_FOUND TRUE)
+    return()
+endif()
 
 find_library(PPS_LIBRARY NAMES "pps")
 find_path(PPS_INCLUDE_DIR NAMES "sys/pps.h" DOC "The PPS Include path")

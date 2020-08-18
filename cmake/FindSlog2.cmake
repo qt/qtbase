@@ -1,6 +1,10 @@
 # Find the Slog2 library
 
 # Will make the target Slog2::Slog2 available when found.
+if(TARGET Slog2::Slog2)
+    set(Slog2_FOUND TRUE)
+    return()
+endif()
 
 find_library(Slog2_LIBRARY NAMES "slog2")
 find_path(Slog2_INCLUDE_DIR NAMES "sys/slog2.h" DOC "The Slog2 Include path")
