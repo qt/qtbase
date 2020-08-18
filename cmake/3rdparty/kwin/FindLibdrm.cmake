@@ -78,6 +78,8 @@ if(NOT WIN32)
             xf86drm.h
         HINTS
             ${PKG_Libdrm_INCLUDE_DIRS}
+        PATH_SUFFIXES
+            libdrm
     )
     find_library(Libdrm_LIBRARY
         NAMES
@@ -103,14 +105,14 @@ if(NOT WIN32)
             IMPORTED_LOCATION "${Libdrm_LIBRARY}"
             INTERFACE_COMPILE_OPTIONS "${Libdrm_DEFINITIONS}"
             INTERFACE_INCLUDE_DIRECTORIES "${Libdrm_INCLUDE_DIR}"
-            INTERFACE_INCLUDE_DIRECTORIES "${Libdrm_INCLUDE_DIR}/libdrm"
         )
-        if(EXISTS "${Libdrm_INCLUDE_DIR}/drm")
-            set_property(TARGET Libdrm::Libdrm APPEND PROPERTY
-                INTERFACE_INCLUDE_DIRECTORIES "${Libdrm_INCLUDE_DIR}/drm"
-            )
-        endif()
-
+        foreach(suffix libdrm drm)
+            if(EXISTS "${Libdrm_INCLUDE_DIR}/${suffix}")
+                set_property(TARGET Libdrm::Libdrm APPEND PROPERTY
+                      INTERFACE_INCLUDE_DIRECTORIES "${Libdrm_INCLUDE_DIR}/${suffix}"
+                )
+            endif()
+        endforeach()
     endif()
 
     mark_as_advanced(Libdrm_LIBRARY Libdrm_INCLUDE_DIR)

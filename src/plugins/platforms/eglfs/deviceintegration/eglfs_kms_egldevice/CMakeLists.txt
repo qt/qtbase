@@ -30,3 +30,10 @@ qt_internal_add_plugin(QEglFSKmsEglDeviceIntegrationPlugin
 
 #### Keys ignored in scope 1:.:.:eglfs_kms_egldevice.pro:<TRUE>:
 # OTHER_FILES = "$$PWD/eglfs_kms_egldevice.json"
+
+# begin special case
+qt_extend_target(QEglFSKmsEglDeviceIntegrationPlugin
+      CONDITION QNX
+      COMPILE_OPTIONS -fpermissive
+)
+# end special case
