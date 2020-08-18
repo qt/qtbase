@@ -76,10 +76,8 @@ namespace QtPrivate {
 
 // writes binding result into dataPtr
 using QPropertyBindingFunction = std::function<bool(QMetaType metaType, QUntypedPropertyData *dataPtr)>;
-
-using QPropertyBindingWrapper = bool(*)(QMetaType, QUntypedPropertyData *dataPtr,
-                                       QPropertyBindingFunction);
 using QPropertyObserverCallback = void (*)(QUntypedPropertyData *);
+using QPropertyBindingWrapper = bool(*)(QMetaType, QUntypedPropertyData *dataPtr, QPropertyBindingFunction);
 
 class Q_CORE_EXPORT QPropertyBindingData
 {
@@ -101,7 +99,8 @@ public:
     QUntypedPropertyBinding setBinding(const QUntypedPropertyBinding &newBinding,
                                        QUntypedPropertyData *propertyDataPtr,
                                        QPropertyObserverCallback staticObserverCallback = nullptr,
-                                       QPropertyBindingWrapper guardCallback = nullptr);
+                                       QPropertyBindingWrapper bindingWrapper = nullptr);
+
     QPropertyBindingPrivate *binding() const;
 
     void evaluateIfDirty(const QUntypedPropertyData *property) const;
@@ -187,30 +186,6 @@ namespace detail {
         return offsetFn();
     }
 }
-
-// type erased guard functions, casts its arguments to the correct types
-template<typename T, typename Class, auto Guard, bool = std::is_same_v<decltype(Guard), std::nullptr_t>>
-struct QPropertyGuardFunctionHelper
-{
-    static constexpr QPropertyBindingWrapper guard = nullptr;
-};
-template<typename T, typename Class, auto Guard>
-struct QPropertyGuardFunctionHelper<T, Class, Guard, false>
-{
-    static auto guard(QMetaType metaType, QUntypedPropertyData *dataPtr,
-                      QPropertyBindingFunction eval, void *owner) -> bool
-    {
-        T t = T();
-        eval(metaType, &t);
-        if (!(static_cast<Class *>(owner)->*Guard)(t))
-            return false;
-        T *data = static_cast<T *>(dataPtr);
-        if (*data == t)
-            return false;
-        *data = std::move(t);
-        return true;
-    };
-};
 
 } // namespace QtPrivate
 

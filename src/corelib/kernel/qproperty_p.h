@@ -1,4 +1,4 @@
-/****************************************************************************
+/***************************************************************************
 **
 ** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
@@ -120,13 +120,39 @@ public:
     QString description;
 };
 
-struct QBindingEvaluationState
+namespace QtPrivate {
+
+struct BindingEvaluationState
 {
-    QBindingEvaluationState(QPropertyBindingPrivate *binding);
-    ~QBindingEvaluationState();
+    BindingEvaluationState(QPropertyBindingPrivate *binding);
+    ~BindingEvaluationState()
+    {
+        *currentState = previousState;
+    }
+
     QPropertyBindingPrivate *binding;
-    QBindingEvaluationState *previousState = nullptr;
-    QBindingEvaluationState **currentState = nullptr;
+    BindingEvaluationState *previousState = nullptr;
+    BindingEvaluationState **currentState = nullptr;
+};
+
+struct CurrentCompatProperty
+{
+    Q_CORE_EXPORT CurrentCompatProperty(QBindingStatus *status, QUntypedPropertyData *property);
+    ~CurrentCompatProperty()
+    {
+        *currentState = previousState;
+    }
+    QUntypedPropertyData *property;
+    CurrentCompatProperty *previousState = nullptr;
+    CurrentCompatProperty **currentState = nullptr;
+};
+
+}
+
+struct QBindingStatus
+{
+    QtPrivate::BindingEvaluationState *currentlyEvaluatingBinding = nullptr;
+    QtPrivate::CurrentCompatProperty *currentCompatProperty = nullptr;
 };
 
 class Q_CORE_EXPORT QPropertyBindingPrivate : public QSharedData
@@ -144,12 +170,13 @@ private:
 
     QUntypedPropertyBinding::BindingEvaluationFunction evaluationFunction;
 
-    QPropertyObserverPointer firstObserver;
     union {
         QtPrivate::QPropertyObserverCallback staticObserverCallback = nullptr;
         QtPrivate::QPropertyBindingWrapper staticBindingWrapper;
     };
     ObserverArray inlineDependencyObservers;
+
+    QPropertyObserverPointer firstObserver;
     QScopedPointer<std::vector<QPropertyObserver>> heapObservers;
 
     QUntypedPropertyData *propertyDataPtr = nullptr;
@@ -174,17 +201,17 @@ public:
 
     void setDirty(bool d) { dirty = d; }
     void setProperty(QUntypedPropertyData *propertyPtr) { propertyDataPtr = propertyPtr; }
-    void setStaticObserver(QtPrivate::QPropertyObserverCallback callback, QtPrivate::QPropertyBindingWrapper guardCallback)
+    void setStaticObserver(QtPrivate::QPropertyObserverCallback callback, QtPrivate::QPropertyBindingWrapper bindingWrapper)
     {
-        Q_ASSERT(!(callback && guardCallback));
+        Q_ASSERT(!(callback && bindingWrapper));
         if (callback) {
             hasStaticObserver = true;
             hasBindingWrapper = false;
             staticObserverCallback = callback;
-        } else if (guardCallback) {
+        } else if (bindingWrapper) {
             hasStaticObserver = false;
             hasBindingWrapper = true;
-            staticBindingWrapper = guardCallback;
+            staticBindingWrapper = bindingWrapper;
         } else {
             hasStaticObserver = false;
             hasBindingWrapper = false;
@@ -245,6 +272,8 @@ public:
         clearDependencyObservers();
     }
 
+    bool requiresEagerEvaluation() const { return hasBindingWrapper; }
+
     static QPropertyBindingPrivate *currentlyEvaluatingBinding();
 };
 
@@ -263,6 +292,181 @@ inline QPropertyObserverPointer QPropertyBindingDataPointer::firstObserver() con
         return binding->firstObserver;
     return {reinterpret_cast<QPropertyObserver*>(ptr->d_ptr & ~QtPrivate::QPropertyBindingData::FlagMask)};
 }
+
+
+template<typename Class, typename T, auto Offset, auto Setter>
+class QObjectCompatProperty : public QPropertyData<T>
+{
+    using ThisType = QObjectCompatProperty<Class, T, Offset, Setter>;
+    Class *owner()
+    {
+        char *that = reinterpret_cast<char *>(this);
+        return reinterpret_cast<Class *>(that - QtPrivate::detail::getOffset(Offset));
+    }
+    const Class *owner() const
+    {
+        char *that = const_cast<char *>(reinterpret_cast<const char *>(this));
+        return reinterpret_cast<Class *>(that - QtPrivate::detail::getOffset(Offset));
+    }
+    static bool bindingWrapper(QMetaType type, QUntypedPropertyData *dataPtr, QtPrivate::QPropertyBindingFunction binding)
+    {
+        auto *thisData = static_cast<ThisType *>(dataPtr);
+        QPropertyData<T> copy;
+        binding(type, &copy);
+        if constexpr (QTypeTraits::has_operator_equal_v<T>)
+            if (copy.valueBypassingBindings() == thisData->valueBypassingBindings())
+                return false;
+        // ensure value and setValue know we're currently evaluating our binding
+        QBindingStorage *storage = qGetBindingStorage(thisData->owner());
+        QtPrivate::CurrentCompatProperty guardThis(storage->bindingStatus, thisData);
+        (thisData->owner()->*Setter)(copy.valueBypassingBindings());
+        return true;
+    }
+    inline bool inBindingWrapper(const QBindingStorage *storage) const
+    {
+        return storage->bindingStatus->currentCompatProperty &&
+               storage->bindingStatus->currentCompatProperty->property == this;
+    }
+
+public:
+    using value_type = typename QPropertyData<T>::value_type;
+    using parameter_type = typename QPropertyData<T>::parameter_type;
+    using arrow_operator_result = typename QPropertyData<T>::arrow_operator_result;
+
+    QObjectCompatProperty() = default;
+    explicit QObjectCompatProperty(const T &initialValue) : QPropertyData<T>(initialValue) {}
+    explicit QObjectCompatProperty(T &&initialValue) : QPropertyData<T>(std::move(initialValue)) {}
+
+    parameter_type value() const {
+        const QBindingStorage *storage = qGetBindingStorage(owner());
+        // make sure we don't register this binding as a dependency to itself
+        if (!inBindingWrapper(storage))
+            storage->maybeUpdateBindingAndRegister(this);
+        return this->val;
+    }
+
+    arrow_operator_result operator->() const
+    {
+        if constexpr (QTypeTraits::is_dereferenceable_v<T>) {
+            return value();
+        } else if constexpr (std::is_pointer_v<T>) {
+            value();
+            return this->val;
+        } else {
+            return;
+        }
+    }
+
+    parameter_type operator*() const
+    {
+        return value();
+    }
+
+    operator parameter_type() const
+    {
+        return value();
+    }
+
+    void setValue(parameter_type t) {
+        QBindingStorage *storage = qGetBindingStorage(owner());
+        auto *bd = storage->bindingData(this);
+        // make sure we don't remove the binding if called from the bindingWrapper
+        if (bd && !inBindingWrapper(storage))
+            bd->removeBinding();
+        if constexpr (QTypeTraits::has_operator_equal_v<T>)
+            if (this->val == t)
+                return;
+        this->val = t;
+        notify(bd);
+    }
+
+    QObjectCompatProperty &operator=(parameter_type newValue)
+    {
+        setValue(newValue);
+        return *this;
+    }
+
+    QPropertyBinding<T> setBinding(const QPropertyBinding<T> &newBinding)
+    {
+        QtPrivate::QPropertyBindingData *bd = qGetBindingStorage(owner())->bindingData(this, true);
+        QUntypedPropertyBinding oldBinding(bd->setBinding(newBinding, this, nullptr, bindingWrapper));
+        notify(bd);
+        return static_cast<QPropertyBinding<T> &>(oldBinding);
+    }
+
+    bool setBinding(const QUntypedPropertyBinding &newBinding)
+    {
+        if (!newBinding.isNull() && newBinding.valueMetaType().id() != qMetaTypeId<T>())
+            return false;
+        setBinding(static_cast<const QPropertyBinding<T> &>(newBinding));
+        return true;
+    }
+
+#ifndef Q_CLANG_QDOC
+    template <typename Functor>
+    QPropertyBinding<T> setBinding(Functor &&f,
+                                   const QPropertyBindingSourceLocation &location = QT_PROPERTY_DEFAULT_BINDING_LOCATION,
+                                   std::enable_if_t<std::is_invocable_v<Functor>> * = nullptr)
+    {
+        return setBinding(Qt::makePropertyBinding(std::forward<Functor>(f), location));
+    }
+#else
+    template <typename Functor>
+    QPropertyBinding<T> setBinding(Functor f);
+#endif
+
+    bool hasBinding() const {
+        auto *bd = qGetBindingStorage(owner())->bindingData(this);
+        return bd && bd->binding() != nullptr;
+    }
+
+    QPropertyBinding<T> binding() const
+    {
+        auto *bd = qGetBindingStorage(owner())->bindingData(this);
+        return static_cast<QPropertyBinding<T> &&>(QUntypedPropertyBinding(bd ? bd->binding() : nullptr));
+    }
+
+    QPropertyBinding<T> takeBinding()
+    {
+        return setBinding(QPropertyBinding<T>());
+    }
+
+    template<typename Functor>
+    QPropertyChangeHandler<Functor> onValueChanged(Functor f)
+    {
+        static_assert(std::is_invocable_v<Functor>, "Functor callback must be callable without any parameters");
+        return QPropertyChangeHandler<Functor>(*this, f);
+    }
+
+    template<typename Functor>
+    QPropertyChangeHandler<Functor> subscribe(Functor f)
+    {
+        static_assert(std::is_invocable_v<Functor>, "Functor callback must be callable without any parameters");
+        f();
+        return onValueChanged(f);
+    }
+
+    QtPrivate::QPropertyBindingData &bindingData() const
+    {
+        auto *storage = const_cast<QBindingStorage *>(qGetBindingStorage(owner()));
+        return *storage->bindingData(const_cast<QObjectCompatProperty *>(this), true);
+    }
+private:
+    void notify(const QtPrivate::QPropertyBindingData *binding)
+    {
+        if (binding)
+            binding->notifyObservers(this);
+    }
+};
+
+#define Q_OBJECT_COMPAT_PROPERTY(Class, Type, name,  setter) \
+    static constexpr size_t _qt_property_##name##_offset() { \
+        QT_WARNING_PUSH QT_WARNING_DISABLE_INVALID_OFFSETOF \
+        return offsetof(Class, name); \
+        QT_WARNING_POP \
+    } \
+    QObjectCompatProperty<Class, Type, Class::_qt_property_##name##_offset, setter> name;
+
 
 QT_END_NAMESPACE
 

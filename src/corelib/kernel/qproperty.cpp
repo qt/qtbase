@@ -82,6 +82,10 @@ void QPropertyBindingPrivate::markDirtyAndNotifyObservers()
     if (dirty)
         return;
     dirty = true;
+    if (requiresEagerEvaluation()) {
+        // these are compat properties that we will need to evaluate eagerly
+        evaluateIfDirtyAndReturnTrueIfValueChanged(propertyDataPtr);
+    }
     if (firstObserver)
         firstObserver.notify(this, propertyDataPtr);
     if (hasStaticObserver)
@@ -109,7 +113,7 @@ bool QPropertyBindingPrivate::evaluateIfDirtyAndReturnTrueIfValueChanged(const Q
     QPropertyBindingPrivatePtr keepAlive {this};
     QScopedValueRollback<bool> updateGuard(updating, true);
 
-    QBindingEvaluationState evaluationFrame(this);
+    BindingEvaluationState evaluationFrame(this);
 
     bool changed = false;
 
@@ -117,7 +121,7 @@ bool QPropertyBindingPrivate::evaluateIfDirtyAndReturnTrueIfValueChanged(const Q
     QUntypedPropertyData *mutable_data = const_cast<QUntypedPropertyData *>(data);
 
     if (hasBindingWrapper) {
-        changed = staticBindingWrapper(metaType, propertyDataPtr, evaluationFunction);
+        changed = staticBindingWrapper(metaType, mutable_data, evaluationFunction);
     } else {
         changed = evaluationFunction(metaType, mutable_data);
     }
@@ -260,6 +264,8 @@ QUntypedPropertyBinding QPropertyBindingData::setBinding(const QUntypedPropertyB
         if (observer)
             newBinding->prependObserver(observer);
         newBinding->setStaticObserver(staticObserverCallback, guardCallback);
+        if (newBinding->requiresEagerEvaluation())
+            newBinding->evaluateIfDirtyAndReturnTrueIfValueChanged(propertyDataPtr);
     } else if (observer) {
         d.setObservers(observer.ptr);
     } else {
@@ -280,27 +286,33 @@ QPropertyBindingPrivate *QPropertyBindingData::binding() const
     return nullptr;
 }
 
-static thread_local QBindingEvaluationState *currentBindingEvaluationState = nullptr;
+static thread_local QBindingStatus bindingStatus;
 
-QBindingEvaluationState::QBindingEvaluationState(QPropertyBindingPrivate *binding)
+BindingEvaluationState::BindingEvaluationState(QPropertyBindingPrivate *binding)
     : binding(binding)
 {
     // store a pointer to the currentBindingEvaluationState to avoid a TLS lookup in
     // the destructor (as these come with a non zero cost)
-    currentState = &currentBindingEvaluationState;
+    currentState = &bindingStatus.currentlyEvaluatingBinding;
     previousState = *currentState;
     *currentState = this;
     binding->clearDependencyObservers();
 }
 
-QBindingEvaluationState::~QBindingEvaluationState()
+CurrentCompatProperty::CurrentCompatProperty(QBindingStatus *status, QUntypedPropertyData *property)
+    : property(property)
 {
-    *currentState = previousState;
+    // store a pointer to the currentBindingEvaluationState to avoid a TLS lookup in
+    // the destructor (as these come with a non zero cost)
+    currentState = &status->currentCompatProperty;
+    previousState = *currentState;
+    *currentState = this;
 }
 
 QPropertyBindingPrivate *QPropertyBindingPrivate::currentlyEvaluatingBinding()
 {
-    return currentBindingEvaluationState ? currentBindingEvaluationState->binding : nullptr;
+    auto currentState = bindingStatus.currentlyEvaluatingBinding ;
+    return currentState ? currentState->binding : nullptr;
 }
 
 void QPropertyBindingData::evaluateIfDirty(const QUntypedPropertyData *property) const
@@ -327,7 +339,7 @@ void QPropertyBindingData::removeBinding()
 
 void QPropertyBindingData::registerWithCurrentlyEvaluatingBinding() const
 {
-    auto currentState = currentBindingEvaluationState;
+    auto currentState = bindingStatus.currentlyEvaluatingBinding;
     if (!currentState)
         return;
 
@@ -1448,8 +1460,8 @@ struct QBindingStoragePrivate
 
 QBindingStorage::QBindingStorage()
 {
-    currentlyEvaluatingBinding = &currentBindingEvaluationState;
-    Q_ASSERT(currentlyEvaluatingBinding);
+    bindingStatus = &QT_PREPEND_NAMESPACE(bindingStatus);
+    Q_ASSERT(bindingStatus);
 }
 
 QBindingStorage::~QBindingStorage()
@@ -1459,9 +1471,9 @@ QBindingStorage::~QBindingStorage()
 
 void QBindingStorage::maybeUpdateBindingAndRegister(const QUntypedPropertyData *data) const
 {
-    Q_ASSERT(currentlyEvaluatingBinding);
+    Q_ASSERT(bindingStatus);
     QUntypedPropertyData *dd = const_cast<QUntypedPropertyData *>(data);
-    auto storage = *currentlyEvaluatingBinding ?
+    auto storage = bindingStatus->currentlyEvaluatingBinding ?
                 QBindingStoragePrivate(d).getAndCreate(dd) :
                 QBindingStoragePrivate(d).get(dd);
     if (!storage)

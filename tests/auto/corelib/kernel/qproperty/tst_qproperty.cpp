@@ -76,6 +76,7 @@ private slots:
 
     void testNewStuff();
     void qobjectObservers();
+    void compatBindings();
 };
 
 void tst_QProperty::functorBinding()
@@ -969,16 +970,19 @@ class MyQObject : public QObject
     Q_PROPERTY(int bar READ bar WRITE setBar NOTIFY barChanged)
     Q_PROPERTY(int read READ read NOTIFY readChanged)
     Q_PROPERTY(int computed READ computed STORED false)
+    Q_PROPERTY(int compat READ compat WRITE setCompat NOTIFY compatChanged)
 
 signals:
     void fooChanged();
     void barChanged();
     void readChanged();
+    void compatChanged();
 
 public slots:
     void fooHasChanged() { fooChangedCount++; }
     void barHasChanged() { barChangedCount++; }
     void readHasChanged() { readChangedCount++; }
+    void compatHasChanged() { compatChangedCount++; }
 
 public:
     int foo() const { return fooData.value(); }
@@ -987,21 +991,37 @@ public:
     void setBar(int i) { barData.setValue(i); }
     int read() const { return readData.value(); }
     int computed() const { return readData.value(); }
+    int compat() const { return compatData; }
+    void setCompat(int i)
+    {
+        if (compatData == i)
+            return;
+        // implement some side effect and clamping
+        ++setCompatCalled;
+        if (i < 0)
+            i = 0;
+        compatData = i;
+        emit compatChanged();
+    }
 
     QBindable<int> bindableFoo() { return QBindable<int>(&fooData); }
     QBindable<int> bindableBar() { return QBindable<int>(&barData); }
     QBindable<int> bindableRead() { return QBindable<int>(&readData); }
     QBindable<int> bindableComputed() { return QBindable<int>(&computedData); }
+    QBindable<int> bindableCompat() { return QBindable<int>(&compatData); }
 
 public:
     int fooChangedCount = 0;
     int barChangedCount = 0;
     int readChangedCount = 0;
+    int compatChangedCount = 0;
+    int setCompatCalled = 0;
 
     Q_OBJECT_BINDABLE_PROPERTY(MyQObject, int, fooData, &MyQObject::fooChanged);
     Q_OBJECT_BINDABLE_PROPERTY(MyQObject, int, barData, &MyQObject::barChanged);
     Q_OBJECT_BINDABLE_PROPERTY(MyQObject, int, readData, &MyQObject::readChanged);
     Q_OBJECT_COMPUTED_PROPERTY(MyQObject, int, computedData, &MyQObject::computed);
+    Q_OBJECT_COMPAT_PROPERTY(MyQObject, int, compatData, &MyQObject::setCompat)
 };
 
 void tst_QProperty::testNewStuff()
@@ -1084,6 +1104,62 @@ void tst_QProperty::qobjectObservers()
     }
     object.setBar(0);
     QCOMPARE(onValueChangedCalled, 3);
+}
+
+void tst_QProperty::compatBindings()
+{
+    MyQObject object;
+    QObject::connect(&object, &MyQObject::fooChanged, &object, &MyQObject::fooHasChanged);
+    QObject::connect(&object, &MyQObject::barChanged, &object, &MyQObject::barHasChanged);
+    QObject::connect(&object, &MyQObject::compatChanged, &object, &MyQObject::compatHasChanged);
+
+    QCOMPARE(object.compatData, 0);
+    // setting data through the private interface should not call the changed signal or the public setter
+    object.compatData = 10;
+    QCOMPARE(object.compatChangedCount, 0);
+    QCOMPARE(object.setCompatCalled, 0);
+    // going through the public API should emit the signal
+    object.setCompat(42);
+    QCOMPARE(object.compatChangedCount, 1);
+    QCOMPARE(object.setCompatCalled, 1);
+
+    // setting the same value again does nothing
+    object.setCompat(42);
+    QCOMPARE(object.compatChangedCount, 1);
+    QCOMPARE(object.setCompatCalled, 1);
+
+    object.setFoo(111);
+    // just setting the binding. For a compat property, this should already trigger evaluation
+    object.compatData.setBinding(object.bindableFoo().makeBinding());
+    QCOMPARE(object.compatData.valueBypassingBindings(), 111);
+    QCOMPARE(object.compatChangedCount, 2);
+    QCOMPARE(object.setCompatCalled, 2);
+
+    QCOMPARE(object.compat(), 111);
+    QCOMPARE(object.compatChangedCount, 2);
+    QCOMPARE(object.setCompatCalled, 2);
+
+    object.setFoo(666);
+    QCOMPARE(object.compatData.valueBypassingBindings(), 666);
+    QCOMPARE(object.compatChangedCount, 3);
+    QCOMPARE(object.setCompatCalled, 3);
+
+    QCOMPARE(object.compat(), 666);
+    QCOMPARE(object.compatChangedCount, 3);
+    QCOMPARE(object.setCompatCalled, 3);
+
+    object.setFoo(-42);
+    QCOMPARE(object.compatChangedCount, 4);
+    QCOMPARE(object.setCompatCalled, 4);
+
+    QCOMPARE(object.compat(), 0);
+    QCOMPARE(object.compatChangedCount, 4);
+    QCOMPARE(object.setCompatCalled, 4);
+
+    object.setCompat(0);
+    QCOMPARE(object.compat(), 0);
+    QCOMPARE(object.compatChangedCount, 4);
+    QCOMPARE(object.setCompatCalled, 4);
 }
 
 QTEST_MAIN(tst_QProperty);
