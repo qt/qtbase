@@ -1,0 +1,23 @@
+type: Group
+instructions:
+  # Only enable building examples if -DQT_BUILD_EXAMPLES=ON was passed to the CMake config in some
+  # form. The variable to check unfortunately depends on host vs target, and qtbase vs non-qtbase.
+  - type: Group
+    instructions:
+      - !include "{{qt/qtbase}}/qmake_examples/build_qmake_examples_inner_instructions.yaml"
+    enable_if:
+      condition: or
+      conditions:
+        # qtbase host case
+        - condition: runtime
+          env_var: CONFIGURE_ARGS
+          contains_value: "QT_BUILD_EXAMPLES=ON"
+        # qtbase target case
+        - condition: runtime
+          env_var: TARGET_CONFIGURE_ARGS
+          contains_value: "QT_BUILD_EXAMPLES=ON"
+        # non-qtbase host case
+        # non-qtbase target case
+        - condition: runtime
+          env_var: COIN_CMAKE_ARGS
+          contains_value: "QT_BUILD_EXAMPLES=ON"

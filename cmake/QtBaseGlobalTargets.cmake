@@ -237,3 +237,8 @@ if(MACOS)
         DESTINATION "${__GlobalConfig_install_dir}/macos"
     )
 endif()
+
+# Install CI support files to libexec.
+qt_path_join(__qt_libexec_install_dir "${QT_INSTALL_DIR}" "${INSTALL_LIBEXECDIR}")
+qt_copy_or_install(FILES coin/instructions/qmake/ensure_pro_file.cmake
+    DESTINATION "${__qt_libexec_install_dir}")
