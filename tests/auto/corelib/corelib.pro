@@ -11,7 +11,6 @@ SUBDIRS = \
    mimetypes \
    plugin \
    serialization \
-   statemachine \
    text \
    thread \
    time \

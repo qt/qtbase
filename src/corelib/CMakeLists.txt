@@ -150,14 +150,6 @@ qt_add_module(Core
         serialization/qxmlstreamgrammar.cpp serialization/qxmlstreamgrammar_p.h
         serialization/qxmlstreamparser_p.h
         serialization/qxmlutils.cpp serialization/qxmlutils_p.h
-        statemachine/qabstractstate.cpp statemachine/qabstractstate.h statemachine/qabstractstate_p.h
-        statemachine/qabstracttransition.cpp statemachine/qabstracttransition.h statemachine/qabstracttransition_p.h
-        statemachine/qfinalstate.cpp statemachine/qfinalstate.h statemachine/qfinalstate_p.h
-        statemachine/qhistorystate.cpp statemachine/qhistorystate.h statemachine/qhistorystate_p.h
-        statemachine/qsignaleventgenerator_p.h
-        statemachine/qsignaltransition.cpp statemachine/qsignaltransition.h statemachine/qsignaltransition_p.h
-        statemachine/qstate.cpp statemachine/qstate.h statemachine/qstate_p.h
-        statemachine/qstatemachine.cpp statemachine/qstatemachine.h statemachine/qstatemachine_p.h
         text/qbytearray.cpp text/qbytearray.h text/qbytearray_p.h
         text/qbytearrayalgorithms.h
         text/qbytearraylist.cpp text/qbytearraylist.h
@@ -1113,11 +1105,6 @@ qt_extend_target(Core CONDITION QT_FEATURE_cborstreamreader
 qt_extend_target(Core CONDITION QT_FEATURE_cborstreamwriter
     SOURCES
         serialization/qcborstreamwriter.cpp serialization/qcborstreamwriter.h
-)
-
-qt_extend_target(Core CONDITION QT_FEATURE_qeventtransition
-    SOURCES
-        statemachine/qeventtransition.cpp statemachine/qeventtransition.h statemachine/qeventtransition_p.h
 )
 
 qt_extend_target(Core CONDITION QT_FEATURE_mimetype

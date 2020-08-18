@@ -74,6 +74,10 @@ typedef QList<QTranslator*> QTranslatorList;
 
 class QAbstractEventDispatcher;
 
+#ifndef QT_NO_QOBJECT
+class QEvent;
+#endif
+
 class Q_CORE_EXPORT QCoreApplicationPrivate
 #ifndef QT_NO_QOBJECT
     : public QObjectPrivate
@@ -196,6 +200,10 @@ public:
 
 #ifdef QT_NO_QOBJECT
     QCoreApplication *q_ptr;
+#endif
+
+#ifndef QT_NO_QOBJECT
+    virtual QEvent *cloneEvent(QEvent *e);
 #endif
 };
 

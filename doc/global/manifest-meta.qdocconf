@@ -103,7 +103,6 @@ manifestmeta.android.names          =   "Qt3D/Qt 3D: Basic Shapes C++ Example" \
                                         "QtWidgets/Easing Curves Example" \
                                         "QtWidgets/Editable Tree Model Example" \
                                         "QtWidgets/Elided Label Example" \
-                                        "QtWidgets/Event Transitions Example" \
                                         "QtWidgets/Fade Message Effect Example" \
                                         "QtWidgets/Flow Layout Example" \
                                         "QtWidgets/Font Sampler Example" \
@@ -193,8 +192,6 @@ manifestmeta.ios.names              =  "QtCore/Contiguous Cache Example" \
                                        "QtWidgets/Order Form Example" \
                                        "QtWidgets/Syntax Highlighter Example" \
                                        "QtWidgets/Text Edit" \
-                                       "QtWidgets/Traffic Light Example" \
-                                       "QtWidgets/Two-way Button Example" \
                                        "QtWidgets/Completer Example" \
                                        "QtWidgets/Custom Completer Example" \
                                        "QtWidgets/Undo Framework" \
@@ -242,8 +239,6 @@ manifestmeta.thumbnail.names    =      "QtCore/Contiguous Cache Example" \
                                        "QtGui/Raster Window Example" \
                                        "QtNetwork/Network Download*" \
                                        "QtWidgets/Dynamic Layouts Example" \
-                                       "QtWidgets/Event Transitions Example" \
-                                       "QtWidgets/Two-way Button Example" \
                                        "QtWidgets/Validators Example" \
                                        "QtDbus/*" \
                                        "QtHelp/*" \

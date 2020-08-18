@@ -128,7 +128,8 @@ SOURCES += \
         kernel/qplatformgraphicsbufferhelper.cpp \
         kernel/qinputdevicemanager.cpp \
         kernel/qhighdpiscaling.cpp \
-        kernel/qtestsupport_gui.cpp
+        kernel/qtestsupport_gui.cpp \
+        kernel/qguistatemachine.cpp
 
 qtConfig(action) {
     HEADERS += \

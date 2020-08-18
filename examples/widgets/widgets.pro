@@ -18,7 +18,6 @@ SUBDIRS       = \
                 painting \
                 richtext \
                 scroller \
-                statemachine \
                 tools \
                 touch \
                 tutorials \

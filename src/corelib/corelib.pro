@@ -45,7 +45,6 @@ include(itemmodels/itemmodels.pri)
 include(plugin/plugin.pri)
 include(kernel/kernel.pri)
 include(serialization/serialization.pri)
-include(statemachine/statemachine.pri)
 include(mimetypes/mimetypes.pri)
 include(platform/platform.pri)
 

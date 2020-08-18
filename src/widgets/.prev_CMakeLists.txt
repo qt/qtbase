@@ -27,6 +27,7 @@ qt_add_module(Widgets
         kernel/qtwidgetsglobal.h kernel/qtwidgetsglobal_p.h
         kernel/qwidget.cpp kernel/qwidget.h kernel/qwidget_p.h
         kernel/qwidgetrepaintmanager.cpp kernel/qwidgetrepaintmanager_p.h
+        kernel/qwidgetstatemachine.cpp
         kernel/qwidgetsvariant.cpp
         kernel/qwidgetwindow.cpp kernel/qwidgetwindow_p.h
         kernel/qwindowcontainer.cpp kernel/qwindowcontainer_p.h
@@ -802,19 +803,6 @@ qt_extend_target(Widgets CONDITION QT_FEATURE_xcb
 qt_extend_target(Widgets CONDITION NOT QT_FEATURE_xcb
     SOURCES
         util/qsystemtrayicon_qpa.cpp
-)
-
-qt_extend_target(Widgets CONDITION QT_FEATURE_statemachine
-    SOURCES
-        statemachine/qguistatemachine.cpp
-)
-
-qt_extend_target(Widgets CONDITION QT_FEATURE_qeventtransition
-    SOURCES
-        statemachine/qbasickeyeventtransition.cpp statemachine/qbasickeyeventtransition_p.h
-        statemachine/qbasicmouseeventtransition.cpp statemachine/qbasicmouseeventtransition_p.h
-        statemachine/qkeyeventtransition.cpp statemachine/qkeyeventtransition.h
-        statemachine/qmouseeventtransition.cpp statemachine/qmouseeventtransition.h
 )
 
 

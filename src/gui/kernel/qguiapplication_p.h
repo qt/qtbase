@@ -331,6 +331,7 @@ public:
 #endif
 
     static void updatePalette();
+    QEvent *cloneEvent(QEvent *e) override;
 
 protected:
     virtual void notifyThemeChanged();

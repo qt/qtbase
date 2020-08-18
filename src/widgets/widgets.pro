@@ -24,7 +24,6 @@ include(accessible/accessible.pri)
 include(itemviews/itemviews.pri)
 include(graphicsview/graphicsview.pri)
 include(util/util.pri)
-include(statemachine/statemachine.pri)
 
 qtConfig(graphicseffect) {
     include(effects/effects.pri)

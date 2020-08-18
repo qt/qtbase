@@ -1,10 +1,5 @@
-"animation/animatedtiles Example", "examples/widgets/animation/animatedtiles", "animatedtiles", 0, -1
 "animation/appchooser Example", "examples/widgets/animation/appchooser", "appchooser", 10, -1
 "animation/easing Example", "examples/widgets/animation/easing", "easing", 10, -1
-"animation/moveblocks Example", "examples/widgets/animation/moveblocks", "moveblocks", 10, -1
-"animation/states Example", "examples/widgets/animation/states", "states", 10, -1
-"animation/stickman Example", "examples/widgets/animation/stickman", "stickman", 10, -1
-"animation/sub-attaq Example", "examples/widgets/animation/sub-attaq", "sub-attaq", 0, -1
 "designer/calculatorbuilder Example", "examples/widgets/designer/calculatorbuilder", "calculatorbuilder", 10, -1
 "dialogs/standarddialogs Example", "examples/widgets/dialogs/standarddialogs", "standarddialogs", 10, -1
 "draganddrop/dropsite Example", "examples/widgets/draganddrop/dropsite", "dropsite", 10, -1
@@ -23,7 +18,6 @@
 "graphicsview/elasticnodes Example", "examples/widgets/graphicsview/elasticnodes", "elasticnodes", 10, -1
 "graphicsview/embeddeddialogs Example", "examples/widgets/graphicsview/embeddeddialogs", "embeddeddialogs", 0, -1
 "graphicsview/flowlayout Example", "examples/widgets/graphicsview/flowlayout", "flowlayout", 10, -1
-"graphicsview/padnavigator Example", "examples/widgets/graphicsview/padnavigator", "padnavigator", 0, -1
 "graphicsview/portedasteroids Example", "examples/widgets/graphicsview/portedasteroids", "portedasteroids", 10, -1
 "graphicsview/portedcanvas Example", "examples/widgets/graphicsview/portedcanvas", "portedcanvas", 10, -1
 "graphicsview/weatheranchorlayout Example", "examples/widgets/graphicsview/weatheranchorlayout", "weatheranchorlayout", 10, -1
@@ -85,10 +79,6 @@
 "richtext/textedit Example", "examples/widgets/richtext/textedit", "textedit", 0, -1
 "richtext/textobject Example", "examples/widgets/richtext/textobject", "textobject", 10, -1
 "sql/books Example", "examples/sql/books", "books", 0, -1
-"statemachine/eventtransitions Example", "examples/widgets/statemachine/eventtransitions", "eventtransitions", 10, -1
-"statemachine/rogue Example", "examples/widgets/statemachine/rogue", "rogue", 10, -1
-"statemachine/trafficlight Example", "examples/widgets/statemachine/trafficlight", "trafficlight", 0, -1
-"statemachine/twowaybutton Example", "examples/widgets/statemachine/twowaybutton", "twowaybutton", 10, -1
 "tools/undo Example", "examples/widgets/tools/undo", "undo", 0, -1
 "tutorials/addressbook/part7 Example", "examples/widgets/tutorials/addressbook/part7", "part7", 0, -1
 "widgets/analogclock Example", "examples/widgets/widgets/analogclock", "analogclock", 6, -1

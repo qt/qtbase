@@ -258,6 +258,9 @@ public:
     static void translateTouchCancel(const QPointingDevice *device, ulong timestamp);
 
     QPixmap applyQIconStyleHelper(QIcon::Mode mode, const QPixmap& base) const override;
+
+    QEvent *cloneEvent(QEvent *e) override;
+
 private:
     static QApplicationPrivate *self;
     static bool tryCloseAllWidgetWindows(QWindowList *processedWindows);

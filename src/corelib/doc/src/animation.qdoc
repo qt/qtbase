@@ -326,47 +326,4 @@
     it to another group. This way, you can build a tree structure
     of animations which specifies when the animations are played
     in relation to each other.
-
-    \section1 Animations and States
-
-    When using a \l{The State Machine Framework}{state machine}, we
-    can associate one or more animations to a transition between states
-    using a QSignalTransition or QEventTransition class. These classes
-    are both derived from QAbstractTransition, which defines the
-    convenience function \l{QAbstractTransition::}{addAnimation()} that
-    enables the appending of one or more animations triggered when the
-    transition occurs.
-
-    We also have the possibility to associate properties with the
-    states rather than setting the start and end values ourselves.
-    Below is a complete code example that animates the geometry of a
-    QPushButton.
-
-    \code
-        QPushButton *button = new QPushButton("Animated Button");
-        button->show();
-
-        QStateMachine *machine = new QStateMachine;
-
-        QState *state1 = new QState(machine);
-        state1->assignProperty(button, "geometry", QRect(0, 0, 100, 30));
-        machine->setInitialState(state1);
-
-        QState *state2 = new QState(machine);
-        state2->assignProperty(button, "geometry", QRect(250, 250, 100, 30));
-
-        QSignalTransition *transition1 = state1->addTransition(button,
-            &QPushButton::clicked, state2);
-        transition1->addAnimation(new QPropertyAnimation(button, "geometry"));
-
-        QSignalTransition *transition2 = state2->addTransition(button,
-            &QPushButton::clicked, state1);
-        transition2->addAnimation(new QPropertyAnimation(button, "geometry"));
-
-        machine->start();
-    \endcode
-
-    For a more comprehensive example of how to use the state machine
-    framework for animations, see the states example (it lives in the
-    \c{examples/animation/states} directory).
 */

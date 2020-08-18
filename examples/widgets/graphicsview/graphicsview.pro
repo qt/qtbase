@@ -4,7 +4,6 @@ SUBDIRS       = \
               elasticnodes \
               embeddeddialogs \
               collidingmice \
-              padnavigator \
               basicgraphicslayouts \
               diagramscene \
               dragdroprobot \

@@ -37,19 +37,14 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qstatemachine.h>
-#include <private/qstatemachine_p.h>
 #include <QtGui/qevent.h>
-#include <QtWidgets/qtwidgetsglobal.h>
-#if QT_CONFIG(graphicsview)
-#include <QtWidgets/qgraphicssceneevent.h>
-#endif
+#include <QtGui/qtguiglobal.h>
+
+#include "private/qguiapplication_p.h"
 
 QT_BEGIN_NAMESPACE
 
-Q_CORE_EXPORT const QStateMachinePrivate::Handler *qcoreStateMachineHandler();
-
-static QEvent *cloneEvent(QEvent *e)
+QEvent *QGuiApplicationPrivate::cloneEvent(QEvent *e)
 {
     switch (e->type()) {
     case QEvent::MouseButtonPress:
@@ -226,10 +221,7 @@ static QEvent *cloneEvent(QEvent *e)
         return new QHelpEvent(*static_cast<QHelpEvent*>(e));
     case QEvent::WhatsThis:
         return new QHelpEvent(*static_cast<QHelpEvent*>(e));
-#if QT_CONFIG(statustip)
-    case QEvent::StatusTip:
-        return new QStatusTipEvent(*static_cast<QStatusTipEvent*>(e));
-#endif // QT_CONFIG(statustip)
+
 #ifndef QT_NO_ACTION
     case QEvent::ActionChanged:
     case QEvent::ActionAdded:
@@ -250,11 +242,6 @@ static QEvent *cloneEvent(QEvent *e)
     case QEvent::WhatsThisClicked:
         return new QWhatsThisClickedEvent(*static_cast<QWhatsThisClickedEvent*>(e));
 #endif // QT_CONFIG(whatsthis)
-
-#if QT_CONFIG(toolbar)
-    case QEvent::ToolBarChange:
-        return new QToolBarChangeEvent(*static_cast<QToolBarChangeEvent*>(e));
-#endif // QT_CONFIG(toolbar)
 
     case QEvent::ApplicationActivate:
         return new QEvent(*e);
@@ -288,87 +275,7 @@ static QEvent *cloneEvent(QEvent *e)
     case QEvent::ZeroTimerEvent:
         Q_ASSERT_X(false, "cloneEvent()", "not implemented");
         break;
-#if QT_CONFIG(graphicsview)
-    case QEvent::GraphicsSceneMouseMove:
-    case QEvent::GraphicsSceneMousePress:
-    case QEvent::GraphicsSceneMouseRelease:
-    case QEvent::GraphicsSceneMouseDoubleClick: {
-        QGraphicsSceneMouseEvent *me = static_cast<QGraphicsSceneMouseEvent*>(e);
-        QGraphicsSceneMouseEvent *me2 = new QGraphicsSceneMouseEvent(me->type());
-        me2->setWidget(me->widget());
-        me2->setPos(me->pos());
-        me2->setScenePos(me->scenePos());
-        me2->setScreenPos(me->screenPos());
-// ### for all buttons
-        me2->setButtonDownPos(Qt::LeftButton, me->buttonDownPos(Qt::LeftButton));
-        me2->setButtonDownPos(Qt::RightButton, me->buttonDownPos(Qt::RightButton));
-        me2->setButtonDownScreenPos(Qt::LeftButton, me->buttonDownScreenPos(Qt::LeftButton));
-        me2->setButtonDownScreenPos(Qt::RightButton, me->buttonDownScreenPos(Qt::RightButton));
-        me2->setLastPos(me->lastPos());
-        me2->setLastScenePos(me->lastScenePos());
-        me2->setLastScreenPos(me->lastScreenPos());
-        me2->setButtons(me->buttons());
-        me2->setButton(me->button());
-        me2->setModifiers(me->modifiers());
-        me2->setSource(me->source());
-        me2->setFlags(me->flags());
-        return me2;
-    }
 
-    case QEvent::GraphicsSceneContextMenu: {
-        QGraphicsSceneContextMenuEvent *me = static_cast<QGraphicsSceneContextMenuEvent*>(e);
-        QGraphicsSceneContextMenuEvent *me2 = new QGraphicsSceneContextMenuEvent(me->type());
-        me2->setWidget(me->widget());
-        me2->setPos(me->pos());
-        me2->setScenePos(me->scenePos());
-        me2->setScreenPos(me->screenPos());
-        me2->setModifiers(me->modifiers());
-        me2->setReason(me->reason());
-        return me2;
-    }
-
-    case QEvent::GraphicsSceneHoverEnter:
-    case QEvent::GraphicsSceneHoverMove:
-    case QEvent::GraphicsSceneHoverLeave: {
-        QGraphicsSceneHoverEvent *he = static_cast<QGraphicsSceneHoverEvent*>(e);
-        QGraphicsSceneHoverEvent *he2 = new QGraphicsSceneHoverEvent(he->type());
-        he2->setPos(he->pos());
-        he2->setScenePos(he->scenePos());
-        he2->setScreenPos(he->screenPos());
-        he2->setLastPos(he->lastPos());
-        he2->setLastScenePos(he->lastScenePos());
-        he2->setLastScreenPos(he->lastScreenPos());
-        he2->setModifiers(he->modifiers());
-        return he2;
-    }
-    case QEvent::GraphicsSceneHelp:
-        return new QHelpEvent(*static_cast<QHelpEvent*>(e));
-    case QEvent::GraphicsSceneDragEnter:
-    case QEvent::GraphicsSceneDragMove:
-    case QEvent::GraphicsSceneDragLeave:
-    case QEvent::GraphicsSceneDrop: {
-        QGraphicsSceneDragDropEvent *dde = static_cast<QGraphicsSceneDragDropEvent*>(e);
-        QGraphicsSceneDragDropEvent *dde2 = new QGraphicsSceneDragDropEvent(dde->type());
-        dde2->setPos(dde->pos());
-        dde2->setScenePos(dde->scenePos());
-        dde2->setScreenPos(dde->screenPos());
-        dde2->setButtons(dde->buttons());
-        dde2->setModifiers(dde->modifiers());
-        return dde2;
-    }
-    case QEvent::GraphicsSceneWheel: {
-        QGraphicsSceneWheelEvent *we = static_cast<QGraphicsSceneWheelEvent*>(e);
-        QGraphicsSceneWheelEvent *we2 = new QGraphicsSceneWheelEvent(we->type());
-        we2->setPos(we->pos());
-        we2->setScenePos(we->scenePos());
-        we2->setScreenPos(we->screenPos());
-        we2->setButtons(we->buttons());
-        we2->setModifiers(we->modifiers());
-        we2->setOrientation(we->orientation());
-        we2->setDelta(we->delta());
-        return we2;
-    }
-#endif
     case QEvent::KeyboardLayoutChange:
         return new QEvent(*e);
 
@@ -399,23 +306,6 @@ static QEvent *cloneEvent(QEvent *e)
     case QEvent::FutureCallOut:
         Q_ASSERT_X(false, "cloneEvent()", "not implemented");
         break;
-#if QT_CONFIG(graphicsview)
-    case QEvent::GraphicsSceneResize: {
-        QGraphicsSceneResizeEvent *re = static_cast<QGraphicsSceneResizeEvent*>(e);
-        QGraphicsSceneResizeEvent *re2 = new QGraphicsSceneResizeEvent();
-        re2->setOldSize(re->oldSize());
-        re2->setNewSize(re->newSize());
-        return re2;
-    }
-    case QEvent::GraphicsSceneMove: {
-        QGraphicsSceneMoveEvent *me = static_cast<QGraphicsSceneMoveEvent*>(e);
-        QGraphicsSceneMoveEvent *me2 = new QGraphicsSceneMoveEvent();
-        me2->setWidget(me->widget());
-        me2->setNewPos(me->newPos());
-        me2->setOldPos(me->oldPos());
-        return me2;
-    }
-#endif
     case QEvent::CursorChange:
         return new QEvent(*e);
     case QEvent::ToolTipChange:
@@ -449,25 +339,7 @@ static QEvent *cloneEvent(QEvent *e)
     default:
         ;
     }
-    return qcoreStateMachineHandler()->cloneEvent(e);
+    return QCoreApplicationPrivate::cloneEvent(e);
 }
-
-const QStateMachinePrivate::Handler qt_gui_statemachine_handler = {
-    cloneEvent
-};
-
-static const QStateMachinePrivate::Handler *qt_guistatemachine_last_handler = nullptr;
-void qRegisterGuiStateMachine()
-{
-    qt_guistatemachine_last_handler = QStateMachinePrivate::handler;
-    QStateMachinePrivate::handler = &qt_gui_statemachine_handler;
-}
-Q_CONSTRUCTOR_FUNCTION(qRegisterGuiStateMachine)
-
-void qUnregisterGuiStateMachine()
-{
-    QStateMachinePrivate::handler = qt_guistatemachine_last_handler;
-}
-Q_DESTRUCTOR_FUNCTION(qUnregisterGuiStateMachine)
 
 QT_END_NAMESPACE

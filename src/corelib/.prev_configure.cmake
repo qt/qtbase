@@ -872,17 +872,6 @@ qt_feature("animation" PUBLIC
     CONDITION QT_FEATURE_properties AND QT_FEATURE_easingcurve
 )
 qt_feature_definition("animation" "QT_NO_ANIMATION" NEGATE VALUE "1")
-qt_feature("statemachine" PUBLIC
-    SECTION "Utilities"
-    LABEL "State machine"
-    PURPOSE "Provides hierarchical finite state machines."
-    CONDITION QT_FEATURE_properties
-)
-qt_feature_definition("statemachine" "QT_NO_STATEMACHINE" NEGATE VALUE "1")
-qt_feature("qeventtransition" PUBLIC
-    LABEL "QEventTransition class"
-    CONDITION QT_FEATURE_statemachine
-)
 qt_feature("gestures" PUBLIC
     SECTION "Utilities"
     LABEL "Gesture"

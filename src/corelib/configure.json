@@ -947,18 +947,6 @@
             "condition": "features.properties && features.easingcurve",
             "output": [ "publicFeature", "feature" ]
         },
-        "statemachine": {
-            "label": "State machine",
-            "purpose": "Provides hierarchical finite state machines.",
-            "section": "Utilities",
-            "condition": "features.properties",
-            "output": [ "publicFeature", "feature" ]
-        },
-        "qeventtransition": {
-            "label": "QEventTransition class",
-            "condition": "features.statemachine",
-            "output": [ "publicFeature" ]
-        },
         "gestures": {
             "label": "Gesture",
             "purpose": "Provides a framework for gestures.",

@@ -525,10 +525,6 @@ void qt_init_tooltip_palette()
 #endif
 }
 
-#if QT_CONFIG(statemachine)
-void qRegisterGuiStateMachine();
-void qUnregisterGuiStateMachine();
-#endif
 extern void qRegisterWidgetsVariant();
 
 /*!
@@ -563,10 +559,6 @@ void QApplicationPrivate::initialize()
         // Trigger default style if none was set already
         Q_UNUSED(QApplication::style());
     }
-#if QT_CONFIG(statemachine)
-    // trigger registering of QStateMachine's GUI types
-    qRegisterGuiStateMachine();
-#endif
 
     if (qEnvironmentVariableIntValue("QT_USE_NATIVE_WINDOWS") > 0)
         QCoreApplication::setAttribute(Qt::AA_NativeWindows);
@@ -746,11 +738,6 @@ QApplication::~QApplication()
 
     QApplicationPrivate::enabledAnimations = QPlatformTheme::GeneralUiEffect;
     QApplicationPrivate::widgetCount = false;
-
-#if QT_CONFIG(statemachine)
-    // trigger unregistering of QStateMachine's GUI types
-    qUnregisterGuiStateMachine();
-#endif
 }
 
 void qt_cleanup()
