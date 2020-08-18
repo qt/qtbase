@@ -640,7 +640,7 @@ QCborValue QCborValue::fromJsonValue(const QJsonValue &v)
     case QJsonValue::Bool:
         return v.toBool();
     case QJsonValue::Double: {
-        if (v.t == Integer)
+        if (v.value.t == Integer)
             return v.toInteger();
         return v.toDouble();
     }

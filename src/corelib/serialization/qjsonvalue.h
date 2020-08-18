@@ -141,15 +141,7 @@ private:
     friend Q_CORE_EXPORT QDebug operator<<(QDebug, const QJsonValue &);
     friend Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QJsonValue &);
 
-    // ### Qt6: Remove this.
-    void stringDataFromQStringHelper(const QString &string);
-
-    void detach();
-
-    // ### Qt6: change to an actual QCborValue
-    qint64 n = 0;
-    QExplicitlySharedDataPointer<QCborContainerPrivate> d; // needed for Objects, Arrays, Strings
-    QCborValue::Type t;
+    QCborValue value;
 
     // Assert binary compatibility with pre-5.15 QJsonValue
     static_assert(sizeof(QExplicitlySharedDataPointer<QCborContainerPrivate>) == sizeof(void *));

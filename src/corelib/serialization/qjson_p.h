@@ -204,13 +204,12 @@ class Value
 {
 public:
     static QCborContainerPrivate *container(const QCborValue &v) { return v.container; }
+    static qint64 valueHelper(const QCborValue &v) { return v.n; }
 
     static QJsonValue fromTrustedCbor(const QCborValue &v)
     {
         QJsonValue result;
-        result.d = v.container;
-        result.n = v.n;
-        result.t = v.t;
+        result.value = v;
         return result;
     }
 };
