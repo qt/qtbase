@@ -558,6 +558,13 @@ while [ "$#" -gt 0 ]; do
     cmake)
         BUILD_WITH_CMAKE=yes
         ;;
+    redo)
+        if [ -f config.opt ]; then
+            if grep -e ^-cmake <config.opt; then
+                BUILD_WITH_CMAKE=yes
+            fi
+        fi
+        ;;
     *)
         ;;
     esac
@@ -915,8 +922,8 @@ handleHelp
 if [ "$BUILD_WITH_CMAKE" = "yes" ]; then
     checkTopLevelBuild "$@"
     getOptAndQMakeCmdLines "$@"
+    optfilename=config.opt
     if [ -z "$optfile" ]; then   # only write optfile if not currently redoing
-        optfilename=config.opt
         optfilepath=${outpathPrefix}${optfilename}
         if [ -f "$optfilepath" ]; then rm "$optfilepath"; fi
         for arg in "$@"; do
