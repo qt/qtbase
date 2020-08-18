@@ -150,7 +150,9 @@ private slots:
 #if QT_CONFIG(scrollbar)
     void updateAfterChangeCenterOnScroll();
 #endif
+#ifndef QT_NO_CLIPBOARD
     void updateCursorPositionAfterEdit();
+#endif
 
 private:
     void createSelection();
@@ -1756,6 +1758,7 @@ void tst_QPlainTextEdit::updateAfterChangeCenterOnScroll()
 
 #endif
 
+#ifndef QT_NO_CLIPBOARD
 void tst_QPlainTextEdit::updateCursorPositionAfterEdit()
 {
     QPlainTextEdit plaintextEdit;
@@ -1800,6 +1803,7 @@ void tst_QPlainTextEdit::updateCursorPositionAfterEdit()
     // The curser should move back to the end of the copied text
     QCOMPARE(plaintextEdit.textCursor().position(), initialPosition + txt.length());
 }
+#endif
 
 QTEST_MAIN(tst_QPlainTextEdit)
 #include "tst_qplaintextedit.moc"
