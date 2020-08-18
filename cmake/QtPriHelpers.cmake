@@ -652,7 +652,7 @@ CONFIG += ${private_config_joined}
         string(APPEND content "PKG_CONFIG_EXECUTABLE = ${PKG_CONFIG_EXECUTABLE}\n")
     endif()
 
-    # TODO: Write QT_COORD_TYPE once we support setting it.
+    string(APPEND content "QT_COORD_TYPE = ${QT_COORD_TYPE}\n")
 
     qt_get_build_parts(build_parts)
     string(REPLACE ";" " " build_parts "${build_parts}")

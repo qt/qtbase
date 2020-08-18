@@ -56,7 +56,7 @@ The effort of this is tracked in QTBUG-85373 and QTBUG-85349.
 | -c++std c++2a                         | -DFEATURE_cxx2a=ON                                |                                                                 |
 | -sse2/sse3/-ssse3/-sse4.1             |                                                   |                                                                 |
 | -mips_dsp/-mips_dspr2                 |                                                   |                                                                 |
-| -qreal <type>                         |                                                   |                                                                 |
+| -qreal <type>                         | -DQT_COORD_TYPE=<type>                            |                                                                 |
 | -R <string>                           | -DQT_EXTRA_RPATHS=path1;path2                     |                                                                 |
 | -rpath                                | negative CMAKE_SKIP_BUILD_RPATH                   |                                                                 |
 |                                       | negative CMAKE_SKIP_INSTALL_RPATH                 |                                                                 |

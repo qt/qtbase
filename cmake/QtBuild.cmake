@@ -142,6 +142,10 @@ else()
     set(QT_STAGING_PREFIX "${CMAKE_INSTALL_PREFIX}")
 endif()
 
+if(PROJECT_NAME STREQUAL "QtBase")
+    set(QT_COORD_TYPE double CACHE STRING "Type of qreal")
+endif()
+
 function(qt_internal_set_up_global_paths)
     # Compute the values of QT_BUILD_DIR, QT_INSTALL_DIR, QT_CONFIG_BUILD_DIR, QT_CONFIG_INSTALL_DIR
     # taking into account whether the current build is a prefix build or a non-prefix build,

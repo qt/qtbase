@@ -886,6 +886,21 @@ def get_feature_mapping():
         "profile": None,
         "qmakeargs": None,
         "qpa_default_platform": None,  # Not a bool!
+        "qreal" : {
+            "condition": "DEFINED QT_COORD_TYPE AND NOT QT_COORD_TYPE STREQUAL \"double\"",
+            "output": [
+                {
+                    "type": "define",
+                    "name": "QT_COORD_TYPE",
+                    "value": "${QT_COORD_TYPE}",
+                },
+                {
+                    "type": "define",
+                    "name": "QT_COORD_TYPE_STRING",
+                    "value": "\\\"${QT_COORD_TYPE}\\\"",
+                },
+            ],
+        },
         "release": None,
         "release_tools": None,
         "rpath": {

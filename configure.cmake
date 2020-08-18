@@ -797,6 +797,12 @@ qt_feature("dbus-linked" PRIVATE
     ENABLE INPUT_dbus STREQUAL 'linked'
     DISABLE INPUT_dbus STREQUAL 'runtime'
 )
+qt_feature("qreal"
+    LABEL "Type for qreal"
+    CONDITION DEFINED QT_COORD_TYPE AND NOT QT_COORD_TYPE STREQUAL "double"
+)
+qt_feature_definition("qreal" "QT_COORD_TYPE" VALUE "${QT_COORD_TYPE}")
+qt_feature_definition("qreal" "QT_COORD_TYPE_STRING" VALUE "\"${QT_COORD_TYPE}\"")
 qt_feature("gui" PRIVATE
     LABEL "Qt Gui"
 )
