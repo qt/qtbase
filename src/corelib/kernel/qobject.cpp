@@ -95,28 +95,29 @@ QAbstractDynamicMetaObject::~QAbstractDynamicMetaObject()
 {
 }
 
-static int *queuedConnectionTypes(const QList<QByteArray> &typeNames)
+static int *queuedConnectionTypes(const QMetaMethod& method)
 {
-    int *types = new int [typeNames.count() + 1];
-    Q_CHECK_PTR(types);
-    for (int i = 0; i < typeNames.count(); ++i) {
-        const QByteArray typeName = typeNames.at(i);
-        if (typeName.endsWith('*'))
-            types[i] = QMetaType::VoidStar;
+    const auto parameterCount = method.parameterCount();
+    int *typeIds = new int [parameterCount + 1];
+    Q_CHECK_PTR(typeIds);
+    for (int i = 0; i < parameterCount; ++i) {
+        const QMetaType metaType = method.parameterMetaType(i);
+        if (metaType.flags() & QMetaType::IsPointer)
+            typeIds[i] = QMetaType::VoidStar;
         else
-            types[i] = QMetaType::fromName(typeName).id();
-
-        if (!types[i]) {
+            typeIds[i] = metaType.id();
+        if (!typeIds[i]) {
+            const QByteArray typeName = method.parameterTypeName(i);
             qWarning("QObject::connect: Cannot queue arguments of type '%s'\n"
                      "(Make sure '%s' is registered using qRegisterMetaType().)",
                      typeName.constData(), typeName.constData());
-            delete [] types;
+            delete [] typeIds;
             return nullptr;
         }
     }
-    types[typeNames.count()] = 0;
+    typeIds[parameterCount] = 0;
 
-    return types;
+    return typeIds;
 }
 
 static int *queuedConnectionTypes(const QArgumentType *argumentTypes, int argc)
@@ -2871,7 +2872,7 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const QMetaMetho
 
     int *types = nullptr;
     if ((type == Qt::QueuedConnection)
-            && !(types = queuedConnectionTypes(signal.parameterTypes())))
+            && !(types = queuedConnectionTypes(signal)))
         return QMetaObject::Connection(nullptr);
 
 #ifndef QT_NO_DEBUG
@@ -3615,7 +3616,7 @@ static void queued_activate(QObject *sender, int signal, QObjectPrivate::Connect
     const int *argumentTypes = c->argumentTypes.loadRelaxed();
     if (!argumentTypes) {
         QMetaMethod m = QMetaObjectPrivate::signal(sender->metaObject(), signal);
-        argumentTypes = queuedConnectionTypes(m.parameterTypes());
+        argumentTypes = queuedConnectionTypes(m);
         if (!argumentTypes) // cannot queue arguments
             argumentTypes = &DIRECT_CONNECTION_ONLY;
         if (!c->argumentTypes.testAndSetOrdered(nullptr, argumentTypes)) {

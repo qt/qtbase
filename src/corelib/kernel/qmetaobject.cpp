@@ -207,6 +207,7 @@ public:
     inline uint parameterTypeInfo(int index) const;
     inline int parameterType(int index) const;
     inline void getParameterTypes(int *types) const;
+    inline QByteArray parameterTypeName(int index) const;
     inline QList<QByteArray> parameterTypes() const;
     inline QList<QByteArray> parameterNames() const;
     inline QByteArray tag() const;
@@ -1780,6 +1781,12 @@ void QMetaMethodPrivate::getParameterTypes(int *types) const
     }
 }
 
+QByteArray QMetaMethodPrivate::parameterTypeName(int index) const
+{
+    int paramsIndex = parametersDataIndex();
+    return typeNameFromTypeInfo(mobj, mobj->d.data[paramsIndex + index]);
+}
+
 QList<QByteArray> QMetaMethodPrivate::parameterTypes() const
 {
     Q_ASSERT(priv(mobj->d.data)->revision >= 7);
@@ -1958,6 +1965,20 @@ QList<QByteArray> QMetaMethod::parameterTypes() const
     if (!mobj)
         return QList<QByteArray>();
     return QMetaMethodPrivate::get(this)->parameterTypes();
+}
+
+/*!
+   \since 6.0
+   Returns the name of the type at position \a index
+   If there is no parameter at \a index, returns an empty QByteArray
+
+   \sa parameterNames()
+ */
+QByteArray QMetaMethod::parameterTypeName(int index) const
+{
+    if (!mobj || index < 0 || index >= parameterCount())
+        return {};
+    return QMetaMethodPrivate::get(this)->parameterTypeName(index);
 }
 
 /*!

@@ -63,6 +63,7 @@ public:
     QMetaType parameterMetaType(int index) const;
     void getParameterTypes(int *types) const;
     QList<QByteArray> parameterTypes() const;
+    QByteArray parameterTypeName(int index) const;
     QList<QByteArray> parameterNames() const;
     const char *tag() const;
     enum Access { Private, Protected, Public };
