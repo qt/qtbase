@@ -7,8 +7,12 @@ if(EMSCRIPTEN)
 else()
     find_library(GLESv2_LIBRARY NAMES GLESv2 OpenGLES)
     find_path(GLESv2_INCLUDE_DIR NAMES "GLES2/gl2.h" "OpenGLES/ES2/gl.h" DOC "The OpenGLES 2 include path")
+    find_package(EGL)
     set(_libraries "${CMAKE_REQUIRED_LIBRARIES}")
     list(APPEND CMAKE_REQUIRED_LIBRARIES "${GLESv2_LIBRARY}")
+    if(EGL_LIBRARY)
+        list(APPEND CMAKE_REQUIRED_LIBRARIES "${EGL_LIBRARY}")
+    endif()
     set(_includes "${CMAKE_REQUIRED_INCLUDES}")
     list(APPEND CMAKE_REQUIRED_INCLUDES "${GLESv2_INCLUDE_DIR}")
 
@@ -67,5 +71,9 @@ if(GLESv2_FOUND AND NOT TARGET GLESv2::GLESv2)
         set_target_properties(GLESv2::GLESv2 PROPERTIES
             IMPORTED_LOCATION "${GLESv2_LIBRARY}"
             INTERFACE_INCLUDE_DIRECTORIES "${GLESv2_INCLUDE_DIR}")
+
+        if(EGL_LIBRARY)
+            target_link_libraries(GLESv2::GLESv2 INTERFACE "${EGL_LIBRARY}")
+        endif()
     endif()
 endif()
