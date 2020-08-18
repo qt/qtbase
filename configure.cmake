@@ -981,11 +981,6 @@ qt_configure_add_report_entry(
     CONDITION NOT QT_FEATURE_shared
 )
 qt_configure_add_report_entry(
-    TYPE NOTE
-    MESSAGE "Qt is using double for qreal on this system. This is binary-incompatible against Qt 5.1.  Configure with '-qreal float' to create a build that is binary-compatible with 5.1."
-    CONDITION INPUT_qreal STREQUAL 'double' AND ( TEST_architecture_arch STREQUAL arm )
-)
-qt_configure_add_report_entry(
     TYPE ERROR
     MESSAGE "Debug build wihtout Release build is not currently supported on ios see QTBUG-71990. Use -debug-and-release."
     CONDITION IOS AND QT_FEATURE_debug AND NOT QT_FEATURE_debug_and_release

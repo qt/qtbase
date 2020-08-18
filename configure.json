@@ -1472,11 +1472,6 @@
             "message": "-optimized-tools is not useful in -release mode."
         },
         {
-            "type": "note",
-            "condition": "input.qreal == 'double' && arch.arm",
-            "message": "Qt is using double for qreal on this system. This is binary-incompatible against Qt 5.1.  Configure with '-qreal float' to create a build that is binary-compatible with 5.1."
-        },
-        {
             "type": "error",
             "condition": "!features.stl",
             "message": "Qt requires a compliant STL library."
