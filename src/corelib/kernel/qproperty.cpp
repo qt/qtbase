@@ -88,7 +88,7 @@ void QPropertyBindingPrivate::markDirtyAndNotifyObservers()
         staticObserverCallback(propertyDataPtr);
 }
 
-bool QPropertyBindingPrivate::evaluateIfDirtyAndReturnTrueIfValueChanged()
+bool QPropertyBindingPrivate::evaluateIfDirtyAndReturnTrueIfValueChanged(const QUntypedPropertyData *data)
 {
     if (!dirty)
         return false;
@@ -113,10 +113,13 @@ bool QPropertyBindingPrivate::evaluateIfDirtyAndReturnTrueIfValueChanged()
 
     bool changed = false;
 
+    Q_ASSERT(propertyDataPtr == data);
+    QUntypedPropertyData *mutable_data = const_cast<QUntypedPropertyData *>(data);
+
     if (hasBindingWrapper) {
         changed = staticBindingWrapper(metaType, propertyDataPtr, evaluationFunction);
     } else {
-        changed = evaluationFunction(metaType, propertyDataPtr);
+        changed = evaluationFunction(metaType, mutable_data);
     }
 
     dirty = false;
@@ -300,13 +303,13 @@ QPropertyBindingPrivate *QPropertyBindingPrivate::currentlyEvaluatingBinding()
     return currentBindingEvaluationState ? currentBindingEvaluationState->binding : nullptr;
 }
 
-void QPropertyBindingData::evaluateIfDirty() const
+void QPropertyBindingData::evaluateIfDirty(const QUntypedPropertyData *property) const
 {
     QPropertyBindingDataPointer d{this};
     QPropertyBindingPrivate *binding = d.bindingPtr();
     if (!binding)
         return;
-    binding->evaluateIfDirtyAndReturnTrueIfValueChanged();
+    binding->evaluateIfDirtyAndReturnTrueIfValueChanged(property);
 }
 
 void QPropertyBindingData::removeBinding()
@@ -452,7 +455,7 @@ void QPropertyObserverPointer::notify(QPropertyBindingPrivate *triggeringBinding
             if (!knownIfPropertyChanged && triggeringBinding) {
                 knownIfPropertyChanged = true;
 
-                propertyChanged = triggeringBinding->evaluateIfDirtyAndReturnTrueIfValueChanged();
+                propertyChanged = triggeringBinding->evaluateIfDirtyAndReturnTrueIfValueChanged(propertyDataPtr);
             }
             if (!propertyChanged)
                 return;
@@ -1446,6 +1449,7 @@ struct QBindingStoragePrivate
 QBindingStorage::QBindingStorage()
 {
     currentlyEvaluatingBinding = &currentBindingEvaluationState;
+    Q_ASSERT(currentlyEvaluatingBinding);
 }
 
 QBindingStorage::~QBindingStorage()
@@ -1455,6 +1459,7 @@ QBindingStorage::~QBindingStorage()
 
 void QBindingStorage::maybeUpdateBindingAndRegister(const QUntypedPropertyData *data) const
 {
+    Q_ASSERT(currentlyEvaluatingBinding);
     QUntypedPropertyData *dd = const_cast<QUntypedPropertyData *>(data);
     auto storage = *currentlyEvaluatingBinding ?
                 QBindingStoragePrivate(d).getAndCreate(dd) :
@@ -1462,7 +1467,7 @@ void QBindingStorage::maybeUpdateBindingAndRegister(const QUntypedPropertyData *
     if (!storage)
         return;
     if (auto *binding = storage->binding())
-        binding->evaluateIfDirtyAndReturnTrueIfValueChanged();
+        binding->evaluateIfDirtyAndReturnTrueIfValueChanged(const_cast<QUntypedPropertyData *>(data));
     storage->registerWithCurrentlyEvaluatingBinding();
 }
 

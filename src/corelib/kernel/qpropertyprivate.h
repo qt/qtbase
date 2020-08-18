@@ -87,10 +87,9 @@ class Q_CORE_EXPORT QPropertyBindingData
     // notification later when the value changes.
     mutable quintptr d_ptr = 0;
     friend struct QT_PREPEND_NAMESPACE(QPropertyBindingDataPointer);
+    Q_DISABLE_COPY(QPropertyBindingData)
 public:
     QPropertyBindingData() = default;
-    Q_DISABLE_COPY(QPropertyBindingData)
-    QPropertyBindingData(QPropertyBindingData &&other) = delete;
     QPropertyBindingData(QPropertyBindingData &&other, QUntypedPropertyData *propertyDataPtr);
     QPropertyBindingData &operator=(QPropertyBindingData &&other) = delete;
     ~QPropertyBindingData();
@@ -105,7 +104,7 @@ public:
                                        QPropertyBindingWrapper guardCallback = nullptr);
     QPropertyBindingPrivate *binding() const;
 
-    void evaluateIfDirty() const;
+    void evaluateIfDirty(const QUntypedPropertyData *property) const;
     void removeBinding();
 
     void registerWithCurrentlyEvaluatingBinding() const;

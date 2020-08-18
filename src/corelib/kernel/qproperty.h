@@ -67,7 +67,7 @@ template <typename T>
 class QPropertyData : public QUntypedPropertyData
 {
 protected:
-    T val = T();
+    mutable T val = T();
 private:
     class DisableRValueRefs {};
 protected:
@@ -341,7 +341,7 @@ public:
     parameter_type value() const
     {
         if (d.hasBinding())
-            d.evaluateIfDirty();
+            d.evaluateIfDirty(this);
         d.registerWithCurrentlyEvaluatingBinding();
         return this->val;
     }

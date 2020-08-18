@@ -230,7 +230,7 @@ public:
     void unlinkAndDeref();
 
     void markDirtyAndNotifyObservers();
-    bool evaluateIfDirtyAndReturnTrueIfValueChanged();
+    bool evaluateIfDirtyAndReturnTrueIfValueChanged(const QUntypedPropertyData *data);
 
     static QPropertyBindingPrivate *get(const QUntypedPropertyBinding &binding)
     { return binding.d.data(); }
