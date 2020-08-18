@@ -296,6 +296,21 @@ elseif(APPLE)
     set(QT_DEFAULT_MKSPEC macx-clang)
 elseif(EMSCRIPTEN)
     set(QT_DEFAULT_MKSPEC wasm-emscripten)
+elseif(QNX)
+    # Certain POSIX defines are not set if we don't compile with -std=gnuXX
+    set(QT_ENABLE_CXX_EXTENSIONS ON)
+
+    list(APPEND QT_DEFAULT_PLATFORM_DEFINITIONS _FORTIFY_SOURCE=2 _REENTRANT)
+
+    set(compiler_aarch64le aarch64le)
+    set(compiler_armle-v7 armv7le)
+    set(compiler_x86-64 x86_64)
+    set(compiler_x86 x86)
+    foreach(arch aarch64le armle-v7 x86-64 x86)
+        if (CMAKE_CXX_COMPILER_TARGET MATCHES "${compiler_${arch}}")
+            set(QT_DEFAULT_MKSPEC qnx-${arch}-qcc)
+        endif()
+    endforeach()
 endif()
 
 if(NOT QT_QMAKE_TARGET_MKSPEC)
