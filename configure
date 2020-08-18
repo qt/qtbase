@@ -405,7 +405,6 @@ OPT_HELP=
 CFG_SILENT=no
 CFG_DEV=no
 BUILD_WITH_CMAKE=no
-CMAKE_MAKEFILES=no
 
 #-------------------------------------------------------------------------------
 # parse command line arguments
@@ -558,10 +557,6 @@ while [ "$#" -gt 0 ]; do
         ;;
     cmake)
         BUILD_WITH_CMAKE=yes
-        ;;
-    cmake-makefiles)
-        BUILD_WITH_CMAKE=yes
-        CMAKE_MAKEFILES=yes
         ;;
     *)
         ;;
