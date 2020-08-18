@@ -427,3 +427,5 @@ qt_add_docs(Network
 )
 
 qt_extend_target(Network CONDITION WIN32 PUBLIC_LIBRARIES ws2_32) # special case: mkspecs/common/msvc-desktop.conf
+
+qt_extend_target(Network CONDITION QNX PUBLIC_LIBRARIES socket) # special case: mkspecs/common/qcc-base-qnx.conf
