@@ -55,6 +55,7 @@
 #include <QtCore/qoperatingsystemversion.h>
 #include <QtGui/qpalette.h>
 #include <QtGui/qscreen.h>
+#include <qpa/qplatformdialoghelper.h>
 
 #include <objc/runtime.h>
 #include <objc/message.h>
@@ -199,7 +200,7 @@ QT_END_NAMESPACE
 - (instancetype)initWithPanelDelegate:(id<QNSPanelDelegate>)panelDelegate;
 - (void)dealloc;
 
-- (NSButton *)createButtonWithTitle:(const char *)title;
+- (NSButton *)createButtonWithTitle:(QPlatformDialogHelper::StandardButton)type;
 - (void)layout;
 
 @end
