@@ -67,6 +67,7 @@ private slots:
     void sendPostedEvents_data();
     void sendPostedEvents();
     void processEventsOnlySendsQueuedEvents();
+    void postedEventsPingPong();
     void eventLoopExit();
 };
 
@@ -347,6 +348,31 @@ void tst_QEventDispatcher::processEventsOnlySendsQueuedEvents()
     QCOMPARE(object.eventsReceived, 3);
     QCoreApplication::processEvents();
     QCOMPARE(object.eventsReceived, 4);
+}
+
+void tst_QEventDispatcher::postedEventsPingPong()
+{
+    QEventLoop mainLoop;
+
+    // We need to have at least two levels of nested loops
+    // for the posted event to get stuck (QTBUG-85981).
+    QMetaObject::invokeMethod(this, [this, &mainLoop]() {
+        QMetaObject::invokeMethod(this, [&mainLoop]() {
+            // QEventLoop::quit() should be invoked on the next
+            // iteration of mainLoop.exec().
+            QMetaObject::invokeMethod(&mainLoop, &QEventLoop::quit,
+                                      Qt::QueuedConnection);
+        }, Qt::QueuedConnection);
+        mainLoop.processEvents();
+    }, Qt::QueuedConnection);
+
+    // We should use Qt::CoarseTimer on Windows, to prevent event
+    // dispatcher from sending a posted event.
+    QTimer::singleShot(500, Qt::CoarseTimer, [&mainLoop]() {
+        mainLoop.exit(1);
+    });
+
+    QCOMPARE(mainLoop.exec(), 0);
 }
 
 void tst_QEventDispatcher::eventLoopExit()
