@@ -3523,21 +3523,27 @@ static inline UINT8 toD3DColorWriteMask(QRhiGraphicsPipeline::ColorMask c)
     return f;
 }
 
-static inline D3D11_BLEND toD3DBlendFactor(QRhiGraphicsPipeline::BlendFactor f)
+static inline D3D11_BLEND toD3DBlendFactor(QRhiGraphicsPipeline::BlendFactor f, bool rgb)
 {
+    // SrcBlendAlpha and DstBlendAlpha do not accept *_COLOR. With other APIs
+    // this is handled internally (so that e.g. VK_BLEND_FACTOR_SRC_COLOR is
+    // accepted and is in effect equivalent to VK_BLEND_FACTOR_SRC_ALPHA when
+    // set as an alpha src/dest factor), but for D3D we have to take care of it
+    // ourselves. Hence the rgb argument.
+
     switch (f) {
     case QRhiGraphicsPipeline::Zero:
         return D3D11_BLEND_ZERO;
     case QRhiGraphicsPipeline::One:
         return D3D11_BLEND_ONE;
     case QRhiGraphicsPipeline::SrcColor:
-        return D3D11_BLEND_SRC_COLOR;
+        return rgb ? D3D11_BLEND_SRC_COLOR : D3D11_BLEND_SRC_ALPHA;
     case QRhiGraphicsPipeline::OneMinusSrcColor:
-        return D3D11_BLEND_INV_SRC_COLOR;
+        return rgb ? D3D11_BLEND_INV_SRC_COLOR : D3D11_BLEND_INV_SRC_ALPHA;
     case QRhiGraphicsPipeline::DstColor:
-        return D3D11_BLEND_DEST_COLOR;
+        return rgb ? D3D11_BLEND_DEST_COLOR : D3D11_BLEND_DEST_ALPHA;
     case QRhiGraphicsPipeline::OneMinusDstColor:
-        return D3D11_BLEND_INV_DEST_COLOR;
+        return rgb ? D3D11_BLEND_INV_DEST_COLOR : D3D11_BLEND_INV_DEST_ALPHA;
     case QRhiGraphicsPipeline::SrcAlpha:
         return D3D11_BLEND_SRC_ALPHA;
     case QRhiGraphicsPipeline::OneMinusSrcAlpha:
@@ -3555,9 +3561,9 @@ static inline D3D11_BLEND toD3DBlendFactor(QRhiGraphicsPipeline::BlendFactor f)
     case QRhiGraphicsPipeline::SrcAlphaSaturate:
         return D3D11_BLEND_SRC_ALPHA_SAT;
     case QRhiGraphicsPipeline::Src1Color:
-        return D3D11_BLEND_SRC1_COLOR;
+        return rgb ? D3D11_BLEND_SRC1_COLOR : D3D11_BLEND_SRC1_ALPHA;
     case QRhiGraphicsPipeline::OneMinusSrc1Color:
-        return D3D11_BLEND_INV_SRC1_COLOR;
+        return rgb ? D3D11_BLEND_INV_SRC1_COLOR : D3D11_BLEND_INV_SRC1_ALPHA;
     case QRhiGraphicsPipeline::Src1Alpha:
         return D3D11_BLEND_SRC1_ALPHA;
     case QRhiGraphicsPipeline::OneMinusSrc1Alpha:
@@ -3729,11 +3735,11 @@ bool QD3D11GraphicsPipeline::build()
         D3D11_RENDER_TARGET_BLEND_DESC blend;
         memset(&blend, 0, sizeof(blend));
         blend.BlendEnable = b.enable;
-        blend.SrcBlend = toD3DBlendFactor(b.srcColor);
-        blend.DestBlend = toD3DBlendFactor(b.dstColor);
+        blend.SrcBlend = toD3DBlendFactor(b.srcColor, true);
+        blend.DestBlend = toD3DBlendFactor(b.dstColor, true);
         blend.BlendOp = toD3DBlendOp(b.opColor);
-        blend.SrcBlendAlpha = toD3DBlendFactor(b.srcAlpha);
-        blend.DestBlendAlpha = toD3DBlendFactor(b.dstAlpha);
+        blend.SrcBlendAlpha = toD3DBlendFactor(b.srcAlpha, false);
+        blend.DestBlendAlpha = toD3DBlendFactor(b.dstAlpha, false);
         blend.BlendOpAlpha = toD3DBlendOp(b.opAlpha);
         blend.RenderTargetWriteMask = toD3DColorWriteMask(b.colorWrite);
         blendDesc.RenderTarget[i] = blend;
