@@ -93,7 +93,7 @@ QString result = future.result();
 //! [4]
 // call 'QList<QByteArray>  QByteArray::split(char sep) const' in a separate thread
 QByteArray bytearray = "hello world";
-QFuture<QList<QByteArray> > future = QtConcurrent::run(&QByteArray::split, bytearray, ',');
+QFuture<QList<QByteArray> > future = QtConcurrent::run(&QByteArray::split, bytearray, ' ');
 ...
 QList<QByteArray> result = future.result();
 //! [4]
