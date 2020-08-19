@@ -122,6 +122,11 @@
 
     \snippet code/doc_src_qtestlib.pro 2
 
+    To prevent the test from being installed to your target, add the
+    additional line:
+
+    \snippet code/doc_src_qtestlib.pro 3
+
     See the \l{Building a Testcase}{qmake manual} for
     more information about \c{make check}.
 
