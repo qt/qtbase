@@ -2076,6 +2076,8 @@ bool QVariant::convert(const int type, void *ptr) const
     \li If one type is numeric and the other one a QString, Qt will try to
     convert the QString to a matching numeric type and if successful compare
     those.
+    \i If both variants contain pointers to QObject derived types, QVariant
+    will check whether the types are related and point to the same object.
     \endlist
 */
 
@@ -2097,6 +2099,8 @@ bool QVariant::convert(const int type, void *ptr) const
     \li If one type is numeric and the other one a QString, Qt will try to
     convert the QString to a matching numeric type and if successful compare
     those.
+    \i If both variants contain pointers to QObject derived types, QVariant
+    will check whether the types are related and point to the same object.
     \endlist
 */
 
@@ -2251,6 +2255,23 @@ static bool numericEquals(const QVariant::Private *d1, const QVariant::Private *
     return false;
 }
 
+#ifndef QT_BOOTSTRAPPED
+static bool canConvertMetaObject(QMetaType fromType, QMetaType toType)
+{
+    if ((fromType.flags() & QMetaType::PointerToQObject) && (toType.flags() & QMetaType::PointerToQObject)) {
+        return fromType.metaObject()->inherits(toType.metaObject()) ||
+                toType.metaObject()->inherits(fromType.metaObject());
+    }
+    return false;
+}
+
+static bool pointerEquals(const QVariant::Private *d1, const QVariant::Private *d2)
+{
+    // simply check whether both types point to the same data
+    return d1->get<QObject *>() == d2->get<QObject *>();
+}
+#endif
+
 /*!
     \internal
  */
@@ -2262,6 +2283,11 @@ bool QVariant::equals(const QVariant &v) const
         // try numeric comparisons, with C++ type promotion rules (no conversion)
         if (qIsNumericType(metatype.id()) && qIsNumericType(v.d.typeId()))
             return numericEquals(&d, &v.d);
+#ifndef QT_BOOTSTRAPPED
+        // if both types are related pointers to QObjects, check if they point to the same object
+        if (canConvertMetaObject(metatype, v.metaType()))
+            return pointerEquals(&d, &v.d);
+#endif
         return false;
     }
 
