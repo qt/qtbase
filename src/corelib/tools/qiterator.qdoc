@@ -210,14 +210,6 @@
 */
 
 /*!
-    \class QVectorIterator
-    \inmodule QtCore
-    \brief QVectorIterator is an alias for QListIterator.
-
-    Please see the QListIterator documentation for details.
-*/
-
-/*!
     \class QSetIterator
     \inmodule QtCore
     \brief The QSetIterator class provides a Java-style const iterator for QSet.
@@ -328,14 +320,6 @@
     undefined behavior.
 
     \sa QListIterator, QList::iterator
-*/
-
-/*!
-    \class QMutableVectorIterator
-    \inmodule QtCore
-    \brief QMutableVectorIterator is an alias for QMutableListIterator.
-
-    Please see the QMutableListIterator documentation for details.
 */
 
 /*!

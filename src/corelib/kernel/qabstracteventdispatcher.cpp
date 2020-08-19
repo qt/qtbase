@@ -248,24 +248,6 @@ QAbstractEventDispatcher *QAbstractEventDispatcher::instance(QThread *thread)
 */
 
 /*!
-    \obsolete
-
-    \fn int QAbstractEventDispatcher::registerTimer(int interval, QObject *object)
-
-    Registers a timer with the specified \a interval for the given \a object
-    and returns the timer id.
-*/
-
-/*!
-    \obsolete
-
-    \fn void QAbstractEventDispatcher::registerTimer(int timerId, int interval, QObject *object)
-
-    Register a timer with the specified \a timerId and \a interval for the
-    given \a object.
-*/
-
-/*!
     Registers a timer with the specified \a interval and \a timerType for the
     given \a object and returns the timer id.
 */
@@ -494,15 +476,6 @@ bool QAbstractEventDispatcher::filterNativeEvent(const QByteArray &eventType, vo
     }
     return false;
 }
-
-/*! \fn bool QAbstractEventDispatcher::filterEvent(void *message)
-    \deprecated
-
-    Calls filterNativeEvent() with an empty eventType and \a message.
-    This function returns \c true as soon as an
-    event filter returns \c true, and false otherwise to indicate that
-    the processing of the event should continue.
-*/
 
 /*! \fn bool QAbstractEventDispatcher::registerEventNotifier(QWinEventNotifier *notifier)
 

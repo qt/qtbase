@@ -134,16 +134,7 @@ static void qt_polygon_isect_line(const QPointF &p1, const QPointF &p2, const QP
 */
 
 /*!
-    \fn QPolygon::QPolygon(int size)
-
-    Constructs a polygon of the given \a size. Creates an empty
-    polygon if \a size == 0.
-
-    \sa QList::isEmpty()
-*/
-
-/*!
-    \fn QPolygon::QPolygon(const QPolygon &polygon)
+    \fn QPolygon::QPolygon(const QPolygon &polygon) noexcept
 
     Constructs a copy of the given \a polygon.
 
@@ -196,14 +187,6 @@ QPolygon::QPolygon(int nPoints, const int *points)
 {
     setPoints(nPoints, points);
 }
-
-
-/*!
-    \fn QPolygon::~QPolygon()
-
-    Destroys the polygon.
-*/
-
 
 /*!
     Translates all points in the polygon by (\a{dx}, \a{dy}).
@@ -532,7 +515,7 @@ QDebug operator<<(QDebug dbg, const QPolygon &a)
 */
 
 /*!
-    \fn QPolygonF::QPolygonF(const QPolygonF &polygon)
+    \fn QPolygonF::QPolygonF(const QPolygonF &polygon) noexcept
 
     Constructs a copy of the given \a polygon.
 */
@@ -579,13 +562,6 @@ QPolygonF::QPolygonF(const QPolygon &a)
     for (int i=0; i<a.size(); ++i)
         append(a.at(i));
 }
-
-/*!
-    \fn QPolygonF::~QPolygonF()
-
-    Destroys the polygon.
-*/
-
 
 /*!
     Translate all points in the polygon by the given \a offset.

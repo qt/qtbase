@@ -2833,7 +2833,7 @@ bool QHeaderView::viewportEvent(QEvent *e)
 }
 
 /*!
-    \fn void QHeaderView::initStyleOptionForIndex(QStyleOptionHeader *option, int logicalIndex)
+    \fn void QHeaderView::initStyleOptionForIndex(QStyleOptionHeader *option, int logicalIndex) const
     \since 6.0
 
     Initializes the style \a option from the specified \a logicalIndex.

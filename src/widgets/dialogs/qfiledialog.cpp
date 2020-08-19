@@ -239,12 +239,6 @@ Q_GLOBAL_STATIC(QUrl, lastVisitedDir)
     \value HideNameFilterDetails Indicates if the file name filter details are
     hidden or not.
 
-    \value DontUseSheet In previous versions of Qt, the static
-    functions would create a sheet by default if the static function
-    was given a parent. This is no longer supported and does nothing in Qt 4.5, The
-    static functions will always be an application modal dialog. If
-    you want to use sheets, use QFileDialog::open() instead.
-
     \value DontUseCustomDirectoryIcons Always use the default directory icon.
     Some platforms allow the user to set a different icon. Custom icon lookup
     cause a big performance impact over network or removable drives.

@@ -3246,6 +3246,7 @@
     \l {QEvent::MouseButtonDblClick}{MouseButtonDblClick} event from this event. The flag is set in the causing
     \l {QEvent::MouseButtonPress}{MouseButtonPress}, and not in the resulting \l {QEvent::MouseButtonDblClick}{MouseButtonDblClick}.
 
+    \omitvalue NoMouseEventFlag
     \omitvalue MouseEventFlagMask
 */
 

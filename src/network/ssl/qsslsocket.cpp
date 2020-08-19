@@ -323,7 +323,7 @@
 */
 
 /*!
-    \fn void QSslSocket::alertSent(QAlertLevel level, QAlertType type, const QString &description)
+    \fn void QSslSocket::alertSent(QSsl::AlertLevel level, QSsl::AlertType type, const QString &description)
 
     QSslSocket emits this signal if an alert message was sent to a peer. \a level
     describes if it was a warning or a fatal error. \a type gives the code
@@ -334,11 +334,11 @@
     purposes, normally it does not require any actions from the application.
     \note Not all backends support this functionality.
 
-    \sa alertReceived(), QAlertLevel, QAlertType
+    \sa alertReceived(), QSsl::AlertLevel, QSsl::AlertType
 */
 
 /*!
-    \fn void QSslSocket::alertReceived(QAlertLevel level, QAlertType type, const QString &description)
+    \fn void QSslSocket::alertReceived(QSsl::AlertLevel level, QSsl::AlertType type, const QString &description)
 
     QSslSocket emits this signal if an alert message was received from a peer.
     \a level tells if the alert was fatal or it was a warning. \a type is the
@@ -350,7 +350,7 @@
     backend will handle it and close the connection.
     \note Not all backends support this functionality.
 
-    \sa alertSent(), QAlertLevel, QAlertType
+    \sa alertSent(), QSsl::AlertLevel, QSsl::AlertType
 */
 
 /*!

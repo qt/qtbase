@@ -3714,9 +3714,9 @@ bool QVariant::convert(const int type, void *ptr) const
     exceptions:
 
     \list
-    \i If both types are numeric types (integers and floatins point numbers)
+    \li If both types are numeric types (integers and floatins point numbers)
     Qt will compare those types using standard C++ type promotion rules.
-    \i If one type is numeric and the other one a QString, Qt will try to
+    \li If one type is numeric and the other one a QString, Qt will try to
     convert the QString to a matching numeric type and if successful compare
     those.
     \endlist
@@ -3735,9 +3735,9 @@ bool QVariant::convert(const int type, void *ptr) const
     exceptions:
 
     \list
-    \i If both types are numeric types (integers and floatins point numbers)
+    \li If both types are numeric types (integers and floatins point numbers)
     Qt will compare those types using standard C++ type promotion rules.
-    \i If one type is numeric and the other one a QString, Qt will try to
+    \li If one type is numeric and the other one a QString, Qt will try to
     convert the QString to a matching numeric type and if successful compare
     those.
     \endlist

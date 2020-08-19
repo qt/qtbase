@@ -1929,21 +1929,6 @@ bool QCoreApplication::event(QEvent *e)
     return QObject::event(e);
 }
 
-/*! \enum QCoreApplication::Encoding
-    \obsolete
-
-    This enum type used to define the 8-bit encoding of character string
-    arguments to translate(). This enum is now obsolete and UTF-8 will be
-    used in all cases.
-
-    \value UnicodeUTF8   UTF-8.
-    \omitvalue Latin1
-    \omitvalue DefaultCodec \omit UTF-8. \endomit
-    \omitvalue CodecForTr
-
-    \sa QObject::tr(), QString::fromUtf8()
-*/
-
 void QCoreApplicationPrivate::ref()
 {
     quitLockRef.ref();
@@ -2177,11 +2162,6 @@ QString QCoreApplication::translate(const char *context, const char *sourceText,
     replacePercentN(&result, n);
     return result;
 }
-
-/*! \fn static QString QCoreApplication::translate(const char *context, const char *key, const char *disambiguation, Encoding encoding, int n = -1)
-
-  \obsolete
-*/
 
 // Declared in qglobal.h
 QString qtTrId(const char *id, int n)

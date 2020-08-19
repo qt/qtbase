@@ -3013,27 +3013,6 @@ QByteArray QUrl::toPercentEncoding(const QString &input, const QByteArray &exclu
 }
 
 /*!
-    \fn QByteArray QUrl::toPunycode(const QString &uc)
-    \obsolete
-    Returns a \a uc in Punycode encoding.
-
-    Punycode is a Unicode encoding used for internationalized domain
-    names, as defined in RFC3492. If you want to convert a domain name from
-    Unicode to its ASCII-compatible representation, use toAce().
-*/
-
-/*!
-    \fn QString QUrl::fromPunycode(const QByteArray &pc)
-    \obsolete
-    Returns the Punycode decoded representation of \a pc.
-
-    Punycode is a Unicode encoding used for internationalized domain
-    names, as defined in RFC3492. If you want to convert a domain from
-    its ASCII-compatible encoding to the Unicode representation, use
-    fromAce().
-*/
-
-/*!
     \since 4.2
 
     Returns the Unicode form of the given domain name

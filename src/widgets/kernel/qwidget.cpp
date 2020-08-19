@@ -2506,10 +2506,10 @@ QScreen *QWidget::screen() const
     window will get recreated on \a screen.
 
     \note If the screen is part of a virtual desktop of multiple screens,
-    the window will not move automatically to \a newScreen. To place the
+    the window will not move automatically to \a screen. To place the
     window relative to the screen, use the screen's topLeft() position.
 
-    \sa QWindow::setScreen
+    \sa QWindow::setScreen()
 */
 void QWidget::setScreen(QScreen *screen)
 {

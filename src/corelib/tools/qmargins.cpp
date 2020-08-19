@@ -663,7 +663,7 @@ QDebug operator<<(QDebug dbg, const QMargins &m)
 */
 
 /*!
-    \fn QMargins operator|(const QMargins &m1, const QMargins &m2)
+    \fn QMarginsF operator|(const QMarginsF &m1, const QMarginsF &m2)
     \relates QMarginsF
     \overload
 

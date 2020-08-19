@@ -2544,7 +2544,7 @@ qsizetype QtPrivate::count(QByteArrayView haystack, QByteArrayView needle) noexc
     return num;
 }
 
-/*! \fn int QByteArray::count(QByteArrayView &bv) const
+/*! \fn int QByteArray::count(const QByteArrayView &bv) const
     \since 6.0
 
     Returns the number of (potentially overlapping) occurrences of the

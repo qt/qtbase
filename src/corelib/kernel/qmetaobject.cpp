@@ -3389,12 +3389,8 @@ bool QMetaProperty::isWritable() const
 
 
 /*!
-    Returns \c true if this property is designable;
-    otherwise returns \c false.
-
-    If no \a object is given, the function returns \c false if the
-    \c{Q_PROPERTY()}'s \c DESIGNABLE attribute is false; otherwise
-    returns \c true.
+    Returns \c false if the \c{Q_PROPERTY()}'s \c DESIGNABLE attribute
+    is false; otherwise returns \c true.
 
     \sa isScriptable(), isStored()
 */
@@ -3406,12 +3402,8 @@ bool QMetaProperty::isDesignable() const
 }
 
 /*!
-    Returns \c true if the property is scriptable;
-    otherwise returns \c false.
-
-    If no \a object is given, the function returns \c false if the
-    \c{Q_PROPERTY()}'s \c SCRIPTABLE attribute is false; otherwise returns
-    true.
+    Returns \c false if the \c{Q_PROPERTY()}'s \c SCRIPTABLE attribute
+    is false; otherwise returns true.
 
     \sa isDesignable(), isStored()
 */
@@ -3440,15 +3432,10 @@ bool QMetaProperty::isStored() const
 }
 
 /*!
-    Returns \c true if this property is designated as the \c USER
-    property, i.e., the one that the user can edit or
-    that is significant in some other way.  Otherwise it returns
-    false. e.g., the \c text property is the \c USER editable property
-    of a QLineEdit.
-
-    If \a object is \nullptr, the function returns \c false if the \c
-    {Q_PROPERTY()}'s \c USER attribute is false. Otherwise it returns
-    true.
+    Returns \c false if the \c {Q_PROPERTY()}'s \c USER attribute is false.
+    Otherwise it returns true, indicating the property is designated as the
+    \c USER property, i.e., the one that the user can edit or
+    that is significant in some other way.
 
     \sa QMetaObject::userProperty(), isDesignable(), isScriptable()
 */

@@ -2274,33 +2274,6 @@ void QObject::deleteLater()
     \sa QCoreApplication::translate(), {Internationalization with Qt}
 */
 
-/*!
-    \fn QString QObject::trUtf8(const char *sourceText, const char *disambiguation, int n)
-    \reentrant
-    \obsolete
-
-    Returns a translated version of \a sourceText, or
-    QString::fromUtf8(\a sourceText) if there is no appropriate
-    version. It is otherwise identical to tr(\a sourceText, \a
-    disambiguation, \a n).
-
-    \warning This method is reentrant only if all translators are
-    installed \e before calling this method. Installing or removing
-    translators while performing translations is not supported. Doing
-    so will probably result in crashes or other undesirable behavior.
-
-    \warning For portability reasons, we recommend that you use
-    escape sequences for specifying non-ASCII characters in string
-    literals to trUtf8(). For example:
-
-    \snippet code/src_corelib_kernel_qobject.cpp 20
-
-    \sa tr(), QCoreApplication::translate(), {Internationalization with Qt}
-*/
-
-
-
-
 /*****************************************************************************
   Signals and slots
  *****************************************************************************/

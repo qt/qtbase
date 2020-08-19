@@ -194,17 +194,6 @@ QBitmap &QBitmap::operator=(const QPixmap &pixmap)
     return *this;
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-
-/*!
-  Destroys the bitmap.
-*/
-QBitmap::~QBitmap()
-{
-}
-
-#endif
-
 /*!
     \fn void QBitmap::swap(QBitmap &other)
     \since 4.8

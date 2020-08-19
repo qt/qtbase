@@ -590,10 +590,6 @@ QString QStandardPaths::displayName(StandardLocation type)
 #endif
 
 /*!
-  \fn void QStandardPaths::enableTestMode(bool testMode)
-  \obsolete Use QStandardPaths::setTestModeEnabled
- */
-/*!
   \fn void QStandardPaths::setTestModeEnabled(bool testMode)
 
   \include standardpath/functiondocs.qdocinc setTestModeEnabled

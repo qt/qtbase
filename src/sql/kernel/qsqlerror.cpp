@@ -90,15 +90,6 @@ public:
     \value UnknownError  Unknown error.
 */
 
-/*!
-    \fn QSqlError::QSqlError(const QString &driverText, const QString &databaseText, ErrorType type, int number)
-    \obsolete
-
-    Constructs an error containing the driver error text \a
-    driverText, the database-specific error text \a databaseText, the
-    type \a type and the optional error number \a number.
-*/
-
 /*! \fn QSqlError::QSqlError(QSqlError &&other)
     Move-constructs a QSqlError instance, making it point at the same
     object that \a other was pointing to.

@@ -1362,15 +1362,6 @@ int QImage::depth() const
 }
 
 /*!
-    \obsolete
-    \fn int QImage::numColors() const
-
-    Returns the size of the color table for the image.
-
-    \sa setColorCount()
-*/
-
-/*!
     \since 4.6
     \fn int QImage::colorCount() const
 

@@ -358,56 +358,11 @@ QFile::setFileName(const QString &name)
 */
 
 /*!
-    \typedef QFile::EncoderFn
-    \obsolete
-
-    This is a typedef for a pointer to a function with the following
-    signature:
-
-    \snippet code/src_corelib_io_qfile.cpp 1
-
-    \sa setEncodingFunction(), encodeName()
-*/
-
-/*!
     \fn QString QFile::decodeName(const QByteArray &localFileName)
 
     This does the reverse of QFile::encodeName() using \a localFileName.
 
     \sa encodeName()
-*/
-
-/*!
-    \fn void QFile::setEncodingFunction(EncoderFn function)
-    \obsolete
-
-    This function does nothing. It is provided for compatibility with Qt 4 code
-    that attempted to set a different encoding function for file names. That
-    feature is flawed and no longer supported in Qt 5.
-
-    \sa encodeName(), setDecodingFunction()
-*/
-
-/*!
-    \typedef QFile::DecoderFn
-
-    This is a typedef for a pointer to a function with the following
-    signature:
-
-    \snippet code/src_corelib_io_qfile.cpp 2
-
-    \sa setDecodingFunction()
-*/
-
-/*!
-    \fn void QFile::setDecodingFunction(DecoderFn function)
-    \obsolete
-
-    This function does nothing. It is provided for compatibility with Qt 4 code
-    that attempted to set a different decoding function for file names. That
-    feature is flawed and no longer supported in Qt 5.
-
-    \sa setEncodingFunction(), decodeName()
 */
 
 /*!

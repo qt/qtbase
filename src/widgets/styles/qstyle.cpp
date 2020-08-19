@@ -637,8 +637,6 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     primitive element is a common GUI element, such as a checkbox
     indicator or button bevel.
 
-    \omitvalue PE_IndicatorViewItemCheck
-
     \value PE_PanelButtonCommand  Button used to initiate an action, for
         example, a QPushButton.
 
