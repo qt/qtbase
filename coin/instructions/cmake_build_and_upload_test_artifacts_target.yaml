@@ -19,6 +19,9 @@ instructions:
           condition: property
           property: host.os
           equals_value: Windows
+      - type: EnvironmentVariable
+        variableName: COIN_CMAKE_ARGS
+        variableValue: "{{.Env.TARGET_TEST_CONFIGURE_ARGS}}"
       - !include "{{qt/qtbase}}/cmake_build_and_upload_test_artifacts.yaml"
     disable_if:
       condition: property
