@@ -63,8 +63,6 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_SSL
 
-class QSslContextPrivate;
-
 class QSslContext
 {
 public:

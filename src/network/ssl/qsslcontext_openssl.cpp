@@ -437,16 +437,13 @@ init_context:
     auto filterCiphers = [](const QList<QSslCipher> &ciphers, bool selectTls13)
     {
         QByteArray cipherString;
-        bool first = true;
 
-        for (const QSslCipher &cipher : qAsConst(ciphers)) {
+        for (const QSslCipher &cipher : ciphers) {
             const bool isTls13Cipher = cipher.protocol() == QSsl::TlsV1_3 || cipher.protocol() == QSsl::TlsV1_3OrLater;
             if (selectTls13 != isTls13Cipher)
                 continue;
 
-            if (first)
-                first = false;
-            else
+            if (cipherString.size())
                 cipherString.append(':');
             cipherString.append(cipher.name().toLatin1());
         }
@@ -530,7 +527,7 @@ init_context:
     if (!sslContext->sslConfiguration.localCertificate().isNull()) {
         // Require a private key as well.
         if (sslContext->sslConfiguration.privateKey().isNull()) {
-            sslContext->errorStr = QSslSocket::tr("Cannot provide a certificate with no key, %1").arg(QSslSocketBackendPrivate::getErrorsFromOpenSsl());
+            sslContext->errorStr = QSslSocket::tr("Cannot provide a certificate with no key");
             sslContext->errorCode = QSslError::UnspecifiedError;
             return;
         }
@@ -559,14 +556,15 @@ init_context:
                 q_EVP_PKEY_set1_EC_KEY(sslContext->pkey, reinterpret_cast<EC_KEY *>(configuration.d->privateKey.handle()));
 #endif
         }
+        auto pkey = sslContext->pkey;
+        if (configuration.d->privateKey.algorithm() == QSsl::Opaque)
+            sslContext->pkey = nullptr; // Don't free the private key, it belongs to QSslKey
 
-        if (!q_SSL_CTX_use_PrivateKey(sslContext->ctx, sslContext->pkey)) {
+        if (!q_SSL_CTX_use_PrivateKey(sslContext->ctx, pkey)) {
             sslContext->errorStr = QSslSocket::tr("Error loading private key, %1").arg(QSslSocketBackendPrivate::getErrorsFromOpenSsl());
             sslContext->errorCode = QSslError::UnspecifiedError;
             return;
         }
-        if (configuration.d->privateKey.algorithm() == QSsl::Opaque)
-            sslContext->pkey = nullptr; // Don't free the private key, it belongs to QSslKey
 
         // Check if the certificate matches the private key.
         if (!q_SSL_CTX_check_private_key(sslContext->ctx)) {

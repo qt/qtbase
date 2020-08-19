@@ -747,6 +747,10 @@ bool QSslSocketBackendPrivate::initSslContext()
     if (!readBio || !writeBio) {
         setErrorAndEmit(QAbstractSocket::SslInternalError,
                         QSslSocket::tr("Error creating SSL session: %1").arg(getErrorsFromOpenSsl()));
+        if (readBio)
+            q_BIO_free(readBio);
+        if (writeBio)
+            q_BIO_free(writeBio);
         return false;
     }
 
