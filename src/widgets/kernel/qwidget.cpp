@@ -1831,14 +1831,14 @@ void QWidgetPrivate::propagatePaletteChange()
 #if QT_CONFIG(graphicsview)
     if (!q->parentWidget() && extra && extra->proxyWidget) {
         QGraphicsProxyWidget *p = extra->proxyWidget;
-        inheritedPaletteResolveMask = p->d_func()->inheritedPaletteResolveMask | p->palette().resolve();
+        inheritedPaletteResolveMask = p->d_func()->inheritedPaletteResolveMask | p->palette().resolveMask();
     } else
 #endif // QT_CONFIG(graphicsview)
         if (q->isWindow() && !q->testAttribute(Qt::WA_WindowPropagation)) {
         inheritedPaletteResolveMask = 0;
     }
 
-    directPaletteResolveMask = data.pal.resolve();
+    directPaletteResolveMask = data.pal.resolveMask();
     auto mask = directPaletteResolveMask | inheritedPaletteResolveMask;
 
     const bool useStyleSheetPropagationInWidgetStyles =
@@ -4376,7 +4376,7 @@ const QPalette &QWidget::palette() const
 void QWidget::setPalette(const QPalette &palette)
 {
     Q_D(QWidget);
-    setAttribute(Qt::WA_SetPalette, palette.resolve() != 0);
+    setAttribute(Qt::WA_SetPalette, palette.resolveMask() != 0);
 
     // Determine which palette is inherited from this widget's ancestors and
     // QApplication::palette, resolve this against \a palette (attributes from
@@ -4414,7 +4414,7 @@ QPalette QWidgetPrivate::naturalWidgetPalette(QPalette::ResolveMask inheritedMas
             if (!p->testAttribute(Qt::WA_StyleSheet) || useStyleSheetPropagationInWidgetStyles) {
                 if (!naturalPalette.isCopyOf(QGuiApplication::palette())) {
                     QPalette inheritedPalette = p->palette();
-                    inheritedPalette.resolve(inheritedMask);
+                    inheritedPalette.setResolveMask(inheritedMask);
                     naturalPalette = inheritedPalette.resolve(naturalPalette);
                 } else {
                     naturalPalette = p->palette();
@@ -4424,12 +4424,12 @@ QPalette QWidgetPrivate::naturalWidgetPalette(QPalette::ResolveMask inheritedMas
 #if QT_CONFIG(graphicsview)
         else if (extra && extra->proxyWidget) {
             QPalette inheritedPalette = extra->proxyWidget->palette();
-            inheritedPalette.resolve(inheritedMask);
+            inheritedPalette.setResolveMask(inheritedMask);
             naturalPalette = inheritedPalette.resolve(naturalPalette);
         }
 #endif // QT_CONFIG(graphicsview)
     }
-    naturalPalette.resolve(0);
+    naturalPalette.setResolveMask(0);
     return naturalPalette;
 }
 /*!
@@ -4450,7 +4450,7 @@ void QWidgetPrivate::resolvePalette()
 void QWidgetPrivate::setPalette_helper(const QPalette &palette)
 {
     Q_Q(QWidget);
-    if (data.pal == palette && data.pal.resolve() == palette.resolve())
+    if (data.pal == palette && data.pal.resolveMask() == palette.resolveMask())
         return;
     data.pal = palette;
     updateSystemBackground();
@@ -4520,7 +4520,7 @@ void QWidget::setFont(const QFont &font)
         style->saveWidgetFont(this, font);
 #endif
 
-    setAttribute(Qt::WA_SetFont, font.resolve() != 0);
+    setAttribute(Qt::WA_SetFont, font.resolveMask() != 0);
 
     // Determine which font is inherited from this widget's ancestors and
     // QApplication::font, resolve this against \a font (attributes from the
@@ -4562,7 +4562,7 @@ QFont QWidgetPrivate::naturalWidgetFont(uint inheritedMask) const
                 if (!naturalFont.isCopyOf(QApplication::font())) {
                     if (inheritedMask != 0) {
                         QFont inheritedFont = p->font();
-                        inheritedFont.resolve(inheritedMask);
+                        inheritedFont.setResolveMask(inheritedMask);
                         naturalFont = inheritedFont.resolve(naturalFont);
                     } // else nothing to do (naturalFont = naturalFont)
                 } else {
@@ -4574,13 +4574,13 @@ QFont QWidgetPrivate::naturalWidgetFont(uint inheritedMask) const
         else if (extra && extra->proxyWidget) {
             if (inheritedMask != 0) {
                 QFont inheritedFont = extra->proxyWidget->font();
-                inheritedFont.resolve(inheritedMask);
+                inheritedFont.setResolveMask(inheritedMask);
                 naturalFont = inheritedFont.resolve(naturalFont);
             } // else nothing to do (naturalFont = naturalFont)
         }
 #endif // QT_CONFIG(graphicsview)
     }
-    naturalFont.resolve(0);
+    naturalFont.setResolveMask(0);
     return naturalFont;
 }
 
@@ -4592,7 +4592,7 @@ QFont QWidgetPrivate::naturalWidgetFont(uint inheritedMask) const
 QFont QWidgetPrivate::localFont() const
 {
     QFont localfont = data.fnt;
-    localfont.resolve(directFontResolveMask);
+    localfont.setResolveMask(directFontResolveMask);
     return localfont;
 }
 
@@ -4636,18 +4636,18 @@ void QWidgetPrivate::updateFont(const QFont &font)
 #if QT_CONFIG(graphicsview)
     if (!q->parentWidget() && extra && extra->proxyWidget) {
         QGraphicsProxyWidget *p = extra->proxyWidget;
-        inheritedFontResolveMask = p->d_func()->inheritedFontResolveMask | p->font().resolve();
+        inheritedFontResolveMask = p->d_func()->inheritedFontResolveMask | p->font().resolveMask();
     } else
 #endif // QT_CONFIG(graphicsview)
     if (q->isWindow() && !q->testAttribute(Qt::WA_WindowPropagation)) {
         inheritedFontResolveMask = 0;
     }
-    uint newMask = data.fnt.resolve() | inheritedFontResolveMask;
+    uint newMask = data.fnt.resolveMask() | inheritedFontResolveMask;
     // Set the font as also having resolved inherited traits, so the result of reading QWidget::font()
     // isn't all weak information, but save the original mask to be able to let new changes on the
     // parent widget font propagate correctly.
-    directFontResolveMask = data.fnt.resolve();
-    data.fnt.resolve(newMask);
+    directFontResolveMask = data.fnt.resolveMask();
+    data.fnt.setResolveMask(newMask);
 
     for (int i = 0; i < children.size(); ++i) {
         QWidget *w = qobject_cast<QWidget*>(children.at(i));

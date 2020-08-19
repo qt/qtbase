@@ -132,7 +132,7 @@ static void compareAllPaletteData(const QPalette &firstPalette, const QPalette &
     // For historical reasons, operator== compares only brushes, but it's not enough for proper
     // comparison after move/copy, because some additional data can also be moved/copied.
     // Let's compare this data here.
-    QCOMPARE(firstPalette.resolve(), secondPalette.resolve());
+    QCOMPARE(firstPalette.resolveMask(), secondPalette.resolveMask());
     QCOMPARE(firstPalette.currentColorGroup(), secondPalette.currentColorGroup());
 }
 
@@ -233,7 +233,7 @@ void tst_QPalette::setAllPossibleBrushes()
 {
     QPalette p;
 
-    QCOMPARE(p.resolve(), QPalette::ResolveMask(0));
+    QCOMPARE(p.resolveMask(), QPalette::ResolveMask(0));
 
     for (int r = 0; r < QPalette::NColorRoles; ++r) {
         p.setBrush(QPalette::All, QPalette::ColorRole(r), Qt::red);
@@ -248,7 +248,7 @@ void tst_QPalette::setAllPossibleBrushes()
 
 void tst_QPalette::noBrushesSetForDefaultPalette()
 {
-    QCOMPARE(QPalette().resolve(), QPalette::ResolveMask(0));
+    QCOMPARE(QPalette().resolveMask(), QPalette::ResolveMask(0));
 }
 
 void tst_QPalette::cannotCheckIfInvalidBrushSet()

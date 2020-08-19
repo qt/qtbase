@@ -1761,12 +1761,12 @@ QFont QFont::resolve(const QFont &other) const
 }
 
 /*!
-    \fn uint QFont::resolve() const
+    \fn uint QFont::resolveMask() const
     \internal
 */
 
 /*!
-    \fn void QFont::resolve(uint mask)
+    \fn void QFont::setResolveMask(uint mask)
     \internal
 */
 

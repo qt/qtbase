@@ -535,19 +535,19 @@ void tst_QTextFormat::setFont()
     QCOMPARE((int)f.font().capitalization(), (int)f.fontCapitalization());
     QCOMPARE(f.font().kerning(), f.fontKerning());
 
-    if (overrideAll || (font2.resolve() & QFont::StyleHintResolved))
+    if (overrideAll || (font2.resolveMask() & QFont::StyleHintResolved))
         QCOMPARE((int)f.font().styleHint(), (int)font2.styleHint());
     else
         QCOMPARE((int)f.font().styleHint(), (int)font1.styleHint());
-    if (overrideAll || (font2.resolve() & QFont::StyleStrategyResolved))
+    if (overrideAll || (font2.resolveMask() & QFont::StyleStrategyResolved))
         QCOMPARE((int)f.font().styleStrategy(), (int)font2.styleStrategy());
     else
         QCOMPARE((int)f.font().styleStrategy(), (int)font1.styleStrategy());
-    if (overrideAll || (font2.resolve() & QFont::CapitalizationResolved))
+    if (overrideAll || (font2.resolveMask() & QFont::CapitalizationResolved))
         QCOMPARE((int)f.font().capitalization(), (int)font2.capitalization());
     else
         QCOMPARE((int)f.font().capitalization(), (int)font1.capitalization());
-    if (overrideAll || (font2.resolve() & QFont::KerningResolved))
+    if (overrideAll || (font2.resolveMask() & QFont::KerningResolved))
         QCOMPARE(f.font().kerning(), font2.kerning());
     else
         QCOMPARE(f.font().kerning(), font1.kerning());
@@ -639,19 +639,19 @@ void tst_QTextFormat::setFont_collection()
         int formatIndex = collection.indexForFormat(tmp);
         QTextCharFormat f = collection.charFormat(formatIndex);
 
-        if (overrideAll || (font2.resolve() & QFont::StyleHintResolved))
+        if (overrideAll || (font2.resolveMask() & QFont::StyleHintResolved))
             QCOMPARE((int)f.font().styleHint(), (int)font2.styleHint());
         else
             QCOMPARE((int)f.font().styleHint(), (int)font1.styleHint());
-        if (overrideAll || (font2.resolve() & QFont::StyleStrategyResolved))
+        if (overrideAll || (font2.resolveMask() & QFont::StyleStrategyResolved))
             QCOMPARE((int)f.font().styleStrategy(), (int)font2.styleStrategy());
         else
             QCOMPARE((int)f.font().styleStrategy(), (int)font1.styleStrategy());
-        if (overrideAll || (font2.resolve() & QFont::CapitalizationResolved))
+        if (overrideAll || (font2.resolveMask() & QFont::CapitalizationResolved))
             QCOMPARE((int)f.font().capitalization(), (int)font2.capitalization());
         else
             QCOMPARE((int)f.font().capitalization(), (int)font1.capitalization());
-        if (overrideAll || (font2.resolve() & QFont::KerningResolved))
+        if (overrideAll || (font2.resolveMask() & QFont::KerningResolved))
             QCOMPARE(f.font().kerning(), font2.kerning());
         else
             QCOMPARE(f.font().kerning(), font1.kerning());

@@ -1185,9 +1185,9 @@ void QApplication::setPalette(const QPalette &palette, const char* className)
     if (className) {
         QPalette polishedPalette = palette;
         if (QApplicationPrivate::app_style) {
-            auto originalResolveMask = palette.resolve();
+            auto originalResolveMask = palette.resolveMask();
             QApplicationPrivate::app_style->polish(polishedPalette);
-            polishedPalette.resolve(originalResolveMask);
+            polishedPalette.setResolveMask(originalResolveMask);
         }
 
         QApplicationPrivate::widgetPalettes.insert(className, polishedPalette);

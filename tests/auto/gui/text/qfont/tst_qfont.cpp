@@ -322,22 +322,22 @@ void tst_QFont::resetFont()
     QWidget secondChild(&parent);
     secondChild.setFont(childFont);
 
-    QVERIFY(parentFont.resolve() != 0);
-    QVERIFY(childFont.resolve() != 0);
+    QVERIFY(parentFont.resolveMask() != 0);
+    QVERIFY(childFont.resolveMask() != 0);
     QVERIFY(childFont != parentFont);
 
     // reset font on both children
     firstChild.setFont(QFont());
     secondChild.setFont(QFont());
 
-    QCOMPARE(firstChild.font().resolve(), QFont::SizeResolved);
-    QCOMPARE(secondChild.font().resolve(), QFont::SizeResolved);
+    QCOMPARE(firstChild.font().resolveMask(), QFont::SizeResolved);
+    QCOMPARE(secondChild.font().resolveMask(), QFont::SizeResolved);
 #ifdef Q_OS_ANDROID
     QEXPECT_FAIL("", "QTBUG-69214", Continue);
 #endif
     QCOMPARE(firstChild.font().pointSize(), parent.font().pointSize());
     QCOMPARE(secondChild.font().pointSize(), parent.font().pointSize());
-    QVERIFY(parent.font().resolve() != 0);
+    QVERIFY(parent.font().resolveMask() != 0);
 }
 #endif
 

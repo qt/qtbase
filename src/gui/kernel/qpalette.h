@@ -157,8 +157,8 @@ public:
     QPalette resolve(const QPalette &other) const;
 
     using ResolveMask = quint64;
-    inline ResolveMask resolve() const { return data.resolveMask; }
-    inline void resolve(ResolveMask mask) { data.resolveMask = mask; }
+    inline ResolveMask resolveMask() const { return data.resolveMask; }
+    inline void setResolveMask(ResolveMask mask) { data.resolveMask = mask; }
 
 private:
     void setColorGroup(ColorGroup cr, const QBrush &windowText, const QBrush &button,

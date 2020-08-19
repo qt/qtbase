@@ -510,7 +510,7 @@ void tst_QGuiApplication::keyboardModifiers()
 */
 static bool palettesMatch(const QPalette &actual, const QPalette &expected)
 {
-    if (actual.resolve() != expected.resolve())
+    if (actual.resolveMask() != expected.resolveMask())
         return false;
 
     for (int i = 0; i < QPalette::NColorGroups; i++) {
@@ -541,7 +541,7 @@ void tst_QGuiApplication::palette()
     QCOMPARE(QGuiApplication::palette(), QPalette());
 
     // The default application palette is not resolved
-    QVERIFY(!QGuiApplication::palette().resolve());
+    QVERIFY(!QGuiApplication::palette().resolveMask());
 
     QSignalSpy signalSpy(&app, SIGNAL(paletteChanged(QPalette)));
 

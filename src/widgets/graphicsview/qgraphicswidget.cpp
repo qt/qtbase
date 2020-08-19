@@ -977,13 +977,13 @@ QFont QGraphicsWidget::font() const
 {
     Q_D(const QGraphicsWidget);
     QFont fnt = d->font;
-    fnt.resolve(fnt.resolve() | d->inheritedFontResolveMask);
+    fnt.setResolveMask(fnt.resolveMask() | d->inheritedFontResolveMask);
     return fnt;
 }
 void QGraphicsWidget::setFont(const QFont &font)
 {
     Q_D(QGraphicsWidget);
-    setAttribute(Qt::WA_SetFont, font.resolve() != 0);
+    setAttribute(Qt::WA_SetFont, font.resolveMask() != 0);
 
     QFont naturalFont = d->naturalWidgetFont();
     QFont resolvedFont = font.resolve(naturalFont);
@@ -1023,7 +1023,7 @@ QPalette QGraphicsWidget::palette() const
 void QGraphicsWidget::setPalette(const QPalette &palette)
 {
     Q_D(QGraphicsWidget);
-    setAttribute(Qt::WA_SetPalette, palette.resolve() != 0);
+    setAttribute(Qt::WA_SetPalette, palette.resolveMask() != 0);
 
     QPalette naturalPalette = d->naturalWidgetPalette();
     QPalette resolvedPalette = palette.resolve(naturalPalette);

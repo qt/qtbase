@@ -313,7 +313,7 @@ public:
 
     void updateFont(const QFont &);
     inline void setFont_helper(const QFont &font) {
-        if (directFontResolveMask == font.resolve() && data.fnt == font)
+        if (directFontResolveMask == font.resolveMask() && data.fnt == font)
             return;
         updateFont(font);
     }
@@ -682,7 +682,7 @@ public:
     // Other variables.
     uint directFontResolveMask;
     uint inheritedFontResolveMask;
-    decltype(std::declval<QPalette>().resolve()) directPaletteResolveMask;
+    decltype(std::declval<QPalette>().resolveMask()) directPaletteResolveMask;
     QPalette::ResolveMask inheritedPaletteResolveMask;
     short leftmargin;
     short topmargin;

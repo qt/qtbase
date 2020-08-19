@@ -275,8 +275,8 @@ public:
     QString defaultFamily() const;
 
     QFont resolve(const QFont &) const;
-    inline uint resolve() const { return resolve_mask; }
-    inline void resolve(uint mask) { resolve_mask = mask; }
+    inline uint resolveMask() const { return resolve_mask; }
+    inline void setResolveMask(uint mask) { resolve_mask = mask; }
 
 private:
     explicit QFont(QFontPrivate *);

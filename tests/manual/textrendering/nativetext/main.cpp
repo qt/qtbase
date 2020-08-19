@@ -125,7 +125,7 @@ public:
         p.setPen(palette().text().color());
 
         QFont f = font();
-        f.resolve(-1);
+        f.setResolveMask(-1);
         p.setFont(f);
 
         p.drawText(QPoint(0, ascent), text());

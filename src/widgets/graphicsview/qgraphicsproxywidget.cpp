@@ -843,7 +843,7 @@ bool QGraphicsProxyWidget::event(QEvent *event)
     case QEvent::FontChange: {
         // Propagate to widget.
         QWidgetPrivate *wd = d->widget->d_func();
-        int mask = d->font.resolve() | d->inheritedFontResolveMask;
+        int mask = d->font.resolveMask() | d->inheritedFontResolveMask;
         wd->inheritedFontResolveMask = mask;
         wd->resolveFont();
         break;
@@ -851,7 +851,7 @@ bool QGraphicsProxyWidget::event(QEvent *event)
     case QEvent::PaletteChange: {
         // Propagate to widget.
         QWidgetPrivate *wd = d->widget->d_func();
-        int mask = d->palette.resolve() | d->inheritedPaletteResolveMask;
+        int mask = d->palette.resolveMask() | d->inheritedPaletteResolveMask;
         wd->inheritedPaletteResolveMask = mask;
         wd->resolvePalette();
         break;

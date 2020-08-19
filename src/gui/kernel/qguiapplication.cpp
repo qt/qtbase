@@ -3368,10 +3368,10 @@ bool QGuiApplicationPrivate::setPalette(const QPalette &palette)
     // Resolve the palette against the theme palette, filling in
     // any missing roles, while keeping the original resolve mask.
     QPalette basePalette = qGuiApp ? qGuiApp->d_func()->basePalette() : Qt::gray;
-    basePalette.resolve(0); // The base palette only contributes missing colors roles
+    basePalette.setResolveMask(0); // The base palette only contributes missing colors roles
     QPalette resolvedPalette = palette.resolve(basePalette);
 
-    if (app_pal && resolvedPalette == *app_pal && resolvedPalette.resolve() == app_pal->resolve())
+    if (app_pal && resolvedPalette == *app_pal && resolvedPalette.resolveMask() == app_pal->resolveMask())
         return false;
 
     if (!app_pal)
@@ -3379,7 +3379,7 @@ bool QGuiApplicationPrivate::setPalette(const QPalette &palette)
     else
         *app_pal = resolvedPalette;
 
-    QCoreApplication::setAttribute(Qt::AA_SetPalette, app_pal->resolve() != 0);
+    QCoreApplication::setAttribute(Qt::AA_SetPalette, app_pal->resolveMask() != 0);
 
     return true;
 }

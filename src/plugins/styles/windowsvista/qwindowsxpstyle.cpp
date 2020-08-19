@@ -370,14 +370,14 @@ bool QWindowsXPStylePrivate::isItemViewDelegateLineEdit(const QWidget *widget)
 // Returns whether base color is set for this widget
 bool QWindowsXPStylePrivate::isLineEditBaseColorSet(const QStyleOption *option, const QWidget *widget)
 {
-    uint resolveMask = option->palette.resolve();
+    uint resolveMask = option->palette.resolveMask();
     if (widget) {
         // Since spin box includes a line edit we need to resolve the palette mask also from
         // the parent, as while the color is always correct on the palette supplied by panel,
         // the mask can still be empty. If either mask specifies custom base color, use that.
 #if QT_CONFIG(spinbox)
         if (const QAbstractSpinBox *spinbox = qobject_cast<QAbstractSpinBox*>(widget->parentWidget()))
-            resolveMask |= spinbox->palette().resolve();
+            resolveMask |= spinbox->palette().resolveMask();
 #endif // QT_CONFIG(spinbox)
     }
     return (resolveMask & (1 << QPalette::Base)) != 0;

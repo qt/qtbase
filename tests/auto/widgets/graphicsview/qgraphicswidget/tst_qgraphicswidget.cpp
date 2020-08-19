@@ -640,11 +640,11 @@ void tst_QGraphicsWidget::fontPropagatesResolveToChildren()
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
-    QCOMPARE(font.resolve(), uint(QFont::StyleResolved));
-    QCOMPARE(root->font().resolve(), uint(QFont::StyleResolved));
-    QCOMPARE(child1->font().resolve(), uint(QFont::StyleResolved));
-    QCOMPARE(child2->font().resolve(), uint(QFont::StyleResolved));
-    QCOMPARE(child3->font().resolve(), uint(QFont::StyleResolved));
+    QCOMPARE(font.resolveMask(), uint(QFont::StyleResolved));
+    QCOMPARE(root->font().resolveMask(), uint(QFont::StyleResolved));
+    QCOMPARE(child1->font().resolveMask(), uint(QFont::StyleResolved));
+    QCOMPARE(child2->font().resolveMask(), uint(QFont::StyleResolved));
+    QCOMPARE(child3->font().resolveMask(), uint(QFont::StyleResolved));
 }
 
 void tst_QGraphicsWidget::fontPropagatesResolveToGrandChildren()
@@ -675,12 +675,12 @@ void tst_QGraphicsWidget::fontPropagatesResolveToGrandChildren()
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
-    QCOMPARE(font.resolve(), uint(QFont::StyleResolved));
-    QCOMPARE(grandChild1->font().resolve(), uint(QFont::StyleResolved));
-    QCOMPARE(grandChild2->font().resolve(), uint(QFont::StyleResolved));
-    QCOMPARE(grandChild3->font().resolve(), uint(QFont::StyleResolved));
-    QCOMPARE(grandChild4->font().resolve(), uint(QFont::StyleResolved));
-    QCOMPARE(grandChild5->font().resolve(), uint(QFont::StyleResolved));
+    QCOMPARE(font.resolveMask(), uint(QFont::StyleResolved));
+    QCOMPARE(grandChild1->font().resolveMask(), uint(QFont::StyleResolved));
+    QCOMPARE(grandChild2->font().resolveMask(), uint(QFont::StyleResolved));
+    QCOMPARE(grandChild3->font().resolveMask(), uint(QFont::StyleResolved));
+    QCOMPARE(grandChild4->font().resolveMask(), uint(QFont::StyleResolved));
+    QCOMPARE(grandChild5->font().resolveMask(), uint(QFont::StyleResolved));
 }
 
 void tst_QGraphicsWidget::fontPropagatesResolveViaNonWidget()
@@ -711,12 +711,12 @@ void tst_QGraphicsWidget::fontPropagatesResolveViaNonWidget()
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
-    QCOMPARE(font.resolve(), uint(QFont::StyleResolved));
-    QCOMPARE(grandChild1->font().resolve(), uint(QFont::StyleResolved));
-    QCOMPARE(grandChild2->font().resolve(), uint(QFont::StyleResolved));
-    QCOMPARE(grandChild3->font().resolve(), uint(QFont::StyleResolved));
-    QCOMPARE(grandChild4->font().resolve(), uint(QFont::StyleResolved));
-    QCOMPARE(grandChild5->font().resolve(), uint(QFont::StyleResolved));
+    QCOMPARE(font.resolveMask(), uint(QFont::StyleResolved));
+    QCOMPARE(grandChild1->font().resolveMask(), uint(QFont::StyleResolved));
+    QCOMPARE(grandChild2->font().resolveMask(), uint(QFont::StyleResolved));
+    QCOMPARE(grandChild3->font().resolveMask(), uint(QFont::StyleResolved));
+    QCOMPARE(grandChild4->font().resolveMask(), uint(QFont::StyleResolved));
+    QCOMPARE(grandChild5->font().resolveMask(), uint(QFont::StyleResolved));
 }
 
 void tst_QGraphicsWidget::fontPropagatesResolveFromScene()
@@ -747,16 +747,16 @@ void tst_QGraphicsWidget::fontPropagatesResolveFromScene()
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
-    QCOMPARE(font.resolve(), uint(QFont::StyleResolved));
-    QCOMPARE(root->font().resolve(), uint(QFont::StyleResolved));
-    QCOMPARE(child1->font().resolve(), uint(QFont::StyleResolved));
-    QCOMPARE(child2->font().resolve(), uint(QFont::StyleResolved));
-    QCOMPARE(child3->font().resolve(), uint(QFont::StyleResolved));
-    QCOMPARE(grandChild1->font().resolve(), uint(QFont::StyleResolved));
-    QCOMPARE(grandChild2->font().resolve(), uint(QFont::StyleResolved));
-    QCOMPARE(grandChild3->font().resolve(), uint(QFont::StyleResolved));
-    QCOMPARE(grandChild4->font().resolve(), uint(QFont::StyleResolved));
-    QCOMPARE(grandChild5->font().resolve(), uint(QFont::StyleResolved));
+    QCOMPARE(font.resolveMask(), uint(QFont::StyleResolved));
+    QCOMPARE(root->font().resolveMask(), uint(QFont::StyleResolved));
+    QCOMPARE(child1->font().resolveMask(), uint(QFont::StyleResolved));
+    QCOMPARE(child2->font().resolveMask(), uint(QFont::StyleResolved));
+    QCOMPARE(child3->font().resolveMask(), uint(QFont::StyleResolved));
+    QCOMPARE(grandChild1->font().resolveMask(), uint(QFont::StyleResolved));
+    QCOMPARE(grandChild2->font().resolveMask(), uint(QFont::StyleResolved));
+    QCOMPARE(grandChild3->font().resolveMask(), uint(QFont::StyleResolved));
+    QCOMPARE(grandChild4->font().resolveMask(), uint(QFont::StyleResolved));
+    QCOMPARE(grandChild5->font().resolveMask(), uint(QFont::StyleResolved));
 }
 
 void tst_QGraphicsWidget::fontPropagatesResolveInParentChange()
@@ -785,8 +785,8 @@ void tst_QGraphicsWidget::fontPropagatesResolveInParentChange()
     QVERIFY(!grandChild2->font().italic());
     QVERIFY(grandChild2->font().bold());
 
-    QCOMPARE(grandChild1->font().resolve(), uint(QFont::StyleResolved));
-    QCOMPARE(grandChild2->font().resolve(), uint(QFont::WeightResolved));
+    QCOMPARE(grandChild1->font().resolveMask(), uint(QFont::StyleResolved));
+    QCOMPARE(grandChild2->font().resolveMask(), uint(QFont::WeightResolved));
 
     grandChild2->setParentItem(child1);
 
@@ -800,8 +800,8 @@ void tst_QGraphicsWidget::fontPropagatesResolveInParentChange()
     QVERIFY(grandChild2->font().italic());
     QVERIFY(!grandChild2->font().bold());
 
-    QCOMPARE(grandChild1->font().resolve(), uint(QFont::StyleResolved));
-    QCOMPARE(grandChild2->font().resolve(), uint(QFont::StyleResolved));
+    QCOMPARE(grandChild1->font().resolveMask(), uint(QFont::StyleResolved));
+    QCOMPARE(grandChild2->font().resolveMask(), uint(QFont::StyleResolved));
 
 }
 
@@ -911,12 +911,12 @@ void tst_QGraphicsWidget::fontPropagationWidgetItemWidget()
     widget->setFont(font);
 
     QCOMPARE(widget2->font().pointSize(), 43);
-    QCOMPARE(widget2->font().resolve(), uint(QFont::SizeResolved));
+    QCOMPARE(widget2->font().resolveMask(), uint(QFont::SizeResolved));
 
     widget->setFont(QFont());
 
     QCOMPARE(widget2->font().pointSize(), qApp->font().pointSize());
-    QCOMPARE(widget2->font().resolve(), QFont().resolve());
+    QCOMPARE(widget2->font().resolveMask(), QFont().resolveMask());
 }
 
 void tst_QGraphicsWidget::fontPropagationSceneChange()

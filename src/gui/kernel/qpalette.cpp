@@ -961,20 +961,22 @@ QPalette QPalette::resolve(const QPalette &other) const
 }
 
 /*!
-    \fn uint QPalette::resolve() const
+    \fn QPalette::ResolveMask QPalette::resolveMask() const
     \internal
 */
 
 /*!
-    \typedef ResolveMaskType
-    \internal
- */
-
-/*!
-    \fn void QPalette::resolve(ResolveMaskType mask)
+    \typedef ResolveMask
     \internal
 */
 
+/*!
+    \fn void QPalette::setResolveMask(ResolveMask)
+    \internal
+
+    A bit mask that stores which colors the palette instance explicitly defines,
+    and which ones are inherited from a parent.
+*/
 
 /*****************************************************************************
   QPalette stream functions
@@ -1250,7 +1252,7 @@ QDebug operator<<(QDebug dbg, const QPalette &p)
     QDebugStateSaver saver(dbg);
     dbg.nospace();
 
-    dbg << "QPalette(resolve=" << Qt::hex << Qt::showbase << p.resolve();
+    dbg << "QPalette(resolve=" << Qt::hex << Qt::showbase << p.resolveMask();
 
     auto roleString = rolesToString(p);
     if (!roleString.isEmpty())

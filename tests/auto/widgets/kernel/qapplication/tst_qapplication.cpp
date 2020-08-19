@@ -1836,7 +1836,7 @@ void tst_QApplication::applicationPalettePolish()
         qputenv("QT_DESKTOP_STYLE_KEY", "customstyle");
         QApplication app(argc, &argv0);
         QVERIFY(CustomStyle::polished);
-        QVERIFY(!app.palette().resolve());
+        QVERIFY(!app.palette().resolveMask());
         QCOMPARE(app.palette().color(QPalette::Link), Qt::red);
         qunsetenv("QT_DESKTOP_STYLE_KEY");
     }
@@ -1846,7 +1846,7 @@ void tst_QApplication::applicationPalettePolish()
         QApplication::setStyle(new CustomStyle);
         QApplication app(argc, &argv0);
         QVERIFY(CustomStyle::polished);
-        QVERIFY(!app.palette().resolve());
+        QVERIFY(!app.palette().resolveMask());
         QCOMPARE(app.palette().color(QPalette::Link), Qt::red);
     }
 
@@ -1854,13 +1854,13 @@ void tst_QApplication::applicationPalettePolish()
         QApplication app(argc, &argv0);
         app.setStyle(new CustomStyle);
         QVERIFY(CustomStyle::polished);
-        QVERIFY(!app.palette().resolve());
+        QVERIFY(!app.palette().resolveMask());
         QCOMPARE(app.palette().color(QPalette::Link), Qt::red);
 
         CustomStyle::polished = 0;
         app.setPalette(QPalette());
         QVERIFY(CustomStyle::polished);
-        QVERIFY(!app.palette().resolve());
+        QVERIFY(!app.palette().resolveMask());
         QCOMPARE(app.palette().color(QPalette::Link), Qt::red);
 
         CustomStyle::polished = 0;
@@ -1868,7 +1868,7 @@ void tst_QApplication::applicationPalettePolish()
         palette.setColor(QPalette::Active, QPalette::Highlight, Qt::green);
         app.setPalette(palette);
         QVERIFY(CustomStyle::polished);
-        QVERIFY(app.palette().resolve());
+        QVERIFY(app.palette().resolveMask());
         QCOMPARE(app.palette().color(QPalette::Link), Qt::red);
         QCOMPARE(app.palette().color(QPalette::Highlight), Qt::green);
     }

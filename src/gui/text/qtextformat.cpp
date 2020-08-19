@@ -324,7 +324,7 @@ size_t QTextFormatPrivate::recalcHash() const
 void QTextFormatPrivate::resolveFont(const QFont &defaultFont)
 {
     recalcFont();
-    const uint oldMask = fnt.resolve();
+    const uint oldMask = fnt.resolveMask();
     fnt = fnt.resolve(defaultFont);
 
     if (hasProperty(QTextFormat::FontSizeAdjustment)) {
@@ -342,7 +342,7 @@ void QTextFormatPrivate::resolveFont(const QFont &defaultFont)
         }
     }
 
-    fnt.resolve(oldMask);
+    fnt.setResolveMask(oldMask);
 }
 
 void QTextFormatPrivate::recalcFont() const
@@ -1971,7 +1971,7 @@ QStringList QTextCharFormat::anchorNames() const
 void QTextCharFormat::setFont(const QFont &font, FontPropertiesInheritanceBehavior behavior)
 {
     const uint mask = behavior == FontPropertiesAll ? uint(QFont::AllPropertiesResolved)
-                                                    : font.resolve();
+                                                    : font.resolveMask();
 
     if (mask & QFont::FamilyResolved)
         setFontFamily(font.family());

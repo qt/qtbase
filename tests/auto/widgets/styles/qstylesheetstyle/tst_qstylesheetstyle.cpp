@@ -2111,13 +2111,13 @@ void tst_QStyleSheetStyle::widgetStylePropagation()
     QLabel childLabel(&parentLabel);
     childLabel.setObjectName("childLabel");
 
-    if (parentFont.resolve())
+    if (parentFont.resolveMask())
         parentLabel.setFont(parentFont);
-    if (childFont.resolve())
+    if (childFont.resolveMask())
         childLabel.setFont(childFont);
-    if (parentPalette.resolve())
+    if (parentPalette.resolveMask())
         parentLabel.setPalette(parentPalette);
-    if (childPalette.resolve())
+    if (childPalette.resolveMask())
         childLabel.setPalette(childPalette);
     if (!parentStyleSheet.isEmpty())
         parentLabel.setStyleSheet(parentStyleSheet);

@@ -1532,7 +1532,7 @@ void QGraphicsScenePrivate::ensureSequentialTopLevelSiblingIndexes()
 */
 void QGraphicsScenePrivate::setFont_helper(const QFont &font)
 {
-    if (this->font == font && this->font.resolve() == font.resolve())
+    if (this->font == font && this->font.resolveMask() == font.resolveMask())
         return;
     updateFont(font);
 }
@@ -1546,7 +1546,7 @@ void QGraphicsScenePrivate::setFont_helper(const QFont &font)
 void QGraphicsScenePrivate::resolveFont()
 {
     QFont naturalFont = QApplication::font();
-    naturalFont.resolve(0);
+    naturalFont.setResolveMask(0);
     QFont resolvedFont = font.resolve(naturalFont);
     updateFont(resolvedFont);
 }
@@ -1572,7 +1572,7 @@ void QGraphicsScenePrivate::updateFont(const QFont &font)
             // Resolvefont for an item is a noop operation, but
             // every item can be a widget, or can have a widget
             // childre.
-            item->d_ptr->resolveFont(font.resolve());
+            item->d_ptr->resolveFont(font.resolveMask());
         }
     }
 
@@ -1589,7 +1589,7 @@ void QGraphicsScenePrivate::updateFont(const QFont &font)
 */
 void QGraphicsScenePrivate::setPalette_helper(const QPalette &palette)
 {
-    if (this->palette == palette && this->palette.resolve() == palette.resolve())
+    if (this->palette == palette && this->palette.resolveMask() == palette.resolveMask())
         return;
     updatePalette(palette);
 }
@@ -1603,7 +1603,7 @@ void QGraphicsScenePrivate::setPalette_helper(const QPalette &palette)
 void QGraphicsScenePrivate::resolvePalette()
 {
     QPalette naturalPalette = QGuiApplication::palette();
-    naturalPalette.resolve(0);
+    naturalPalette.setResolveMask(0);
     QPalette resolvedPalette = palette.resolve(naturalPalette);
     updatePalette(resolvedPalette);
 }
@@ -1629,7 +1629,7 @@ void QGraphicsScenePrivate::updatePalette(const QPalette &palette)
             // ResolvePalette for an item is a noop operation, but
             // every item can be a widget, or can have a widget
             // children.
-            item->d_ptr->resolvePalette(palette.resolve());
+            item->d_ptr->resolvePalette(palette.resolveMask());
         }
     }
 
@@ -2548,8 +2548,8 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
         addItem(child);
 
     // Resolve font and palette.
-    item->d_ptr->resolveFont(d->font.resolve());
-    item->d_ptr->resolvePalette(d->palette.resolve());
+    item->d_ptr->resolveFont(d->font.resolveMask());
+    item->d_ptr->resolvePalette(d->palette.resolveMask());
 
 
     // Reenable selectionChanged() for individual items
@@ -5562,7 +5562,7 @@ void QGraphicsScene::setFont(const QFont &font)
 {
     Q_D(QGraphicsScene);
     QFont naturalFont = QApplication::font();
-    naturalFont.resolve(0);
+    naturalFont.setResolveMask(0);
     QFont resolvedFont = font.resolve(naturalFont);
     d->setFont_helper(resolvedFont);
 }
@@ -5599,7 +5599,7 @@ void QGraphicsScene::setPalette(const QPalette &palette)
 {
     Q_D(QGraphicsScene);
     QPalette naturalPalette = QGuiApplication::palette();
-    naturalPalette.resolve(0);
+    naturalPalette.setResolveMask(0);
     QPalette resolvedPalette = palette.resolve(naturalPalette);
     d->setPalette_helper(resolvedPalette);
 }

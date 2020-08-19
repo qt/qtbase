@@ -150,7 +150,7 @@ void QGraphicsWidgetPrivate::ensureWindowData()
 
 void QGraphicsWidgetPrivate::setPalette_helper(const QPalette &palette)
 {
-    if (this->palette == palette && this->palette.resolve() == palette.resolve())
+    if (this->palette == palette && this->palette.resolveMask() == palette.resolveMask())
         return;
     updatePalette(palette);
 }
@@ -172,7 +172,7 @@ void QGraphicsWidgetPrivate::updatePalette(const QPalette &palette)
     // Calculate new mask.
     if (q->isWindow() && !q->testAttribute(Qt::WA_WindowPropagation))
         inheritedPaletteResolveMask = 0;
-    int mask = palette.resolve() | inheritedPaletteResolveMask;
+    int mask = palette.resolveMask() | inheritedPaletteResolveMask;
 
     // Propagate to children.
     for (int i = 0; i < children.size(); ++i) {
@@ -239,13 +239,13 @@ QPalette QGraphicsWidgetPrivate::naturalWidgetPalette() const
     } else if (scene) {
         palette = scene->palette();
     }
-    palette.resolve(0);
+    palette.setResolveMask(0);
     return palette;
 }
 
 void QGraphicsWidgetPrivate::setFont_helper(const QFont &font)
 {
-    if (this->font == font && this->font.resolve() == font.resolve())
+    if (this->font == font && this->font.resolveMask() == font.resolveMask())
         return;
     updateFont(font);
 }
@@ -270,7 +270,7 @@ void QGraphicsWidgetPrivate::updateFont(const QFont &font)
     // Calculate new mask.
     if (q->isWindow() && !q->testAttribute(Qt::WA_WindowPropagation))
         inheritedFontResolveMask = 0;
-    int mask = font.resolve() | inheritedFontResolveMask;
+    int mask = font.resolveMask() | inheritedFontResolveMask;
 
     // Propagate to children.
     for (int i = 0; i < children.size(); ++i) {
@@ -300,7 +300,7 @@ QFont QGraphicsWidgetPrivate::naturalWidgetFont() const
     } else if (scene) {
         naturalFont = scene->font();
     }
-    naturalFont.resolve(0);
+    naturalFont.setResolveMask(0);
     return naturalFont;
 }
 
