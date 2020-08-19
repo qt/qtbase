@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -43,10 +43,6 @@
 #include <qmimedata.h>
 #include <qurl.h>
 #include <qdebug.h>
-#if QT_CONFIG(messagebox)
-#include <qmessagebox.h>
-#endif
-#include <qapplication.h>
 #include <QtCore/qcollator.h>
 #if QT_CONFIG(regularexpression)
 #  include <QtCore/qregularexpression.h>
@@ -853,20 +849,6 @@ QIcon QFileSystemModelPrivate::icon(const QModelIndex &index) const
     return node(index)->icon();
 }
 
-static void displayRenameFailedMessage(const QString &newName)
-{
-#if QT_CONFIG(messagebox)
-    const QString message =
-        QFileSystemModel::tr("<b>The name \"%1\" cannot be used.</b>"
-                             "<p>Try using another name, with fewer characters or no punctuation marks.")
-                             .arg(newName);
-    QMessageBox::information(nullptr, QFileSystemModel::tr("Invalid filename"),
-                             message, QMessageBox::Ok);
-#else
-    Q_UNUSED(newName);
-#endif // QT_CONFIG(messagebox)
-}
-
 /*!
     \reimp
 */
@@ -887,10 +869,8 @@ bool QFileSystemModel::setData(const QModelIndex &idx, const QVariant &value, in
 
     const QString parentPath = filePath(parent(idx));
 
-    if (newName.isEmpty() || QDir::toNativeSeparators(newName).contains(QDir::separator())) {
-        displayRenameFailedMessage(newName);
+    if (newName.isEmpty() || QDir::toNativeSeparators(newName).contains(QDir::separator()))
         return false;
-    }
 
 #if QT_CONFIG(filesystemwatcher) && defined(Q_OS_WIN)
     // QTBUG-65683: Remove file system watchers prior to renaming to prevent
@@ -901,7 +881,6 @@ bool QFileSystemModel::setData(const QModelIndex &idx, const QVariant &value, in
 #if QT_CONFIG(filesystemwatcher) && defined(Q_OS_WIN)
         d->watchPaths(watchedPaths);
 #endif
-        displayRenameFailedMessage(newName);
         return false;
     } else {
         /*
