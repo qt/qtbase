@@ -4,7 +4,11 @@
 
 load(qt_parts)
 
-SUBDIRS += qmake/qmake-aux.pro doc
+sub_qmake.file = qmake/qmake-aux.pro
+sub_doc.subdir = doc
+sub_src.depends += sub_qmake
+
+SUBDIRS += sub_qmake sub_doc
 
 cross_compile: CONFIG += nostrip
 
