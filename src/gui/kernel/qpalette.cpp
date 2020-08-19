@@ -66,11 +66,13 @@ static_assert(bitPosition(QPalette::ColorGroup(QPalette::NColorGroups - 1),
                   < sizeof(QPalette::ResolveMask) * CHAR_BIT,
                   "The resolve mask type is not wide enough to fit the entire bit mask.");
 
-class QPalettePrivate {
+class QPalettePrivate
+{
 public:
     QPalettePrivate() : ref(1), ser_no(qt_palette_count++), detach_no(0) { }
     QAtomicInt ref;
     QBrush br[QPalette::NColorGroups][QPalette::NColorRoles];
+    QPalette::ResolveMask resolveMask = {0};
     int ser_no;
     int detach_no;
 };
@@ -559,10 +561,11 @@ QPalette::QPalette()
     if (QGuiApplicationPrivate::app_pal) {
         d = QGuiApplicationPrivate::app_pal->d;
         d->ref.ref();
+        setResolveMask(0);
     } else {
         init();
         qt_palette_from_color(*this, Qt::black);
-        data.resolveMask = 0;
+        d->resolveMask = 0;
     }
 }
 
@@ -692,7 +695,8 @@ QPalette::~QPalette()
 }
 
 /*!\internal*/
-void QPalette::init() {
+void QPalette::init()
+{
     d = new QPalettePrivate;
 }
 
@@ -799,7 +803,7 @@ void QPalette::setBrush(ColorGroup cg, ColorRole cr, const QBrush &b)
         d->br[cg][cr] = b;
     }
 
-    data.resolveMask |= ResolveMask(1) << bitPosition(cg, cr);
+    d->resolveMask |= ResolveMask(1) << bitPosition(cg, cr);
 }
 
 /*!
@@ -831,7 +835,7 @@ bool QPalette::isBrushSet(ColorGroup cg, ColorRole cr) const
         return false;
     }
 
-    return data.resolveMask & (ResolveMask(1) << bitPosition(cg, cr));
+    return d->resolveMask & (ResolveMask(1) << bitPosition(cg, cr));
 }
 
 /*!
@@ -845,6 +849,7 @@ void QPalette::detach()
             for(int role = 0; role < (int)NColorRoles; role++)
                 x->br[grp][role] = d->br[grp][role];
         }
+        x->resolveMask = d->resolveMask;
         if(!d->ref.deref())
             delete d;
         d = x;
@@ -937,10 +942,10 @@ qint64 QPalette::cacheKey() const
 */
 QPalette QPalette::resolve(const QPalette &other) const
 {
-    if ((*this == other && data.resolveMask == other.data.resolveMask)
-        || data.resolveMask == 0) {
+    if ((*this == other && d->resolveMask == other.d->resolveMask)
+        || d->resolveMask == 0) {
         QPalette o = other;
-        o.data.resolveMask = data.resolveMask;
+        o.d->resolveMask = d->resolveMask;
         return o;
     }
 
@@ -949,29 +954,39 @@ QPalette QPalette::resolve(const QPalette &other) const
 
     for (int role = 0; role < int(NColorRoles); ++role) {
         for (int grp = 0; grp < int(NColorGroups); ++grp) {
-            if (!(data.resolveMask & (ResolveMask(1) << bitPosition(ColorGroup(grp), ColorRole(role))))) {
+            if (!(d->resolveMask & (ResolveMask(1) << bitPosition(ColorGroup(grp), ColorRole(role))))) {
                 palette.d->br[grp][role] = other.d->br[grp][role];
             }
         }
     }
 
-    palette.data.resolveMask |= other.data.resolveMask;
+    palette.d->resolveMask |= other.d->resolveMask;
 
     return palette;
 }
 
 /*!
-    \fn QPalette::ResolveMask QPalette::resolveMask() const
     \internal
 */
+QPalette::ResolveMask QPalette::resolveMask() const
+{
+    return d->resolveMask;
+}
+
+/*!
+    \internal
+*/
+void QPalette::setResolveMask(QPalette::ResolveMask mask)
+{
+    if (mask == d->resolveMask)
+        return;
+
+    detach();
+    d->resolveMask = mask;
+}
 
 /*!
     \typedef ResolveMask
-    \internal
-*/
-
-/*!
-    \fn void QPalette::setResolveMask(ResolveMask)
     \internal
 
     A bit mask that stores which colors the palette instance explicitly defines,
@@ -1110,10 +1125,10 @@ void QPalette::setColorGroup(ColorGroup cg, const QBrush &windowText, const QBru
     for (int cr = Highlight; cr <= LinkVisited; ++cr) {
         if (cg == All) {
             for (int group = Active; group < NColorGroups; ++group) {
-                data.resolveMask &= ~(ResolveMask(1) << bitPosition(ColorGroup(group), ColorRole(cr)));
+                d->resolveMask &= ~(ResolveMask(1) << bitPosition(ColorGroup(group), ColorRole(cr)));
             }
         } else {
-            data.resolveMask &= ~(ResolveMask(1) << bitPosition(ColorGroup(cg), ColorRole(cr)));
+            d->resolveMask &= ~(ResolveMask(1) << bitPosition(ColorGroup(cg), ColorRole(cr)));
         }
     }
 }
