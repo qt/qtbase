@@ -435,8 +435,9 @@ sub syncHeader {
     # If remove_stale option is on, make sure to overwrite the
     # forwarding header contents if the file already exists and its
     # content is different from what we will generate.
-    if ($remove_stale) {
+    if ($forwarding_header_exists && $remove_stale) {
         my $existing_forwarding_header_content = fileContents($header);
+        $existing_forwarding_header_content =~ s/\r//g; # remove \r's , so comparison is ok on all platforms
         my $header_content_is_different =
            $new_forwarding_header_content ne $existing_forwarding_header_content;
         $update_forwarding_header ||= $header_content_is_different;
