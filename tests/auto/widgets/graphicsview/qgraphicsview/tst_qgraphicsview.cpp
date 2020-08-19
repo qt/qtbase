@@ -2892,7 +2892,7 @@ void tst_QGraphicsView::scrollBarRanges()
     QFETCH(ExpectedValueDescription, vmax);
     QFETCH(bool, useStyledPanel);
 
-    if (useStyledPanel && style == "macintosh" && platformName == QStringLiteral("cocoa"))
+    if (useStyledPanel && style == "macos" && platformName == QStringLiteral("cocoa"))
         QSKIP("Insignificant on OSX");
 
     QScopedPointer<QStyle> stylePtr;

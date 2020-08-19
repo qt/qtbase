@@ -1066,7 +1066,7 @@ void QApplication::setStyle(QStyle *style)
     Requests a QStyle object for \a style from the QStyleFactory.
 
     The string must be one of the QStyleFactory::keys(), typically one of
-    "windows", "windowsvista", "fusion", or "macintosh". Style
+    "windows", "windowsvista", "fusion", or "macos". Style
     names are case insensitive.
 
     Returns \nullptr if an unknown \a style is passed, otherwise the QStyle object

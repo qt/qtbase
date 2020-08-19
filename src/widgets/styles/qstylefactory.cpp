@@ -69,7 +69,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
     The valid keys can be retrieved using the keys()
     function. Typically they include "windows" and "fusion".
     Depending on the platform, "windowsvista"
-    and "macintosh" may be available.
+    and "macos" may be available.
     Note that keys are case insensitive.
 
     \sa QStyle
@@ -99,6 +99,12 @@ QStyle *QStyleFactory::create(const QString& key)
     if (style == QLatin1String("fusion"))
         ret = new QFusionStyle;
     else
+#endif
+#if defined(Q_OS_MACOS) && QT_DEPRECATED_SINCE(6, 0)
+    if (style == QLatin1String("macintosh")) {
+        qWarning() << "The style key 'macintosh' is deprecated. Please use 'macos' instead.";
+        style = QStringLiteral("macos");
+    } else
 #endif
     { } // Keep these here - they make the #ifdefery above work
     if (!ret)

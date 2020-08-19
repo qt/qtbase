@@ -270,7 +270,7 @@ bool tst_QStyle::testAllFunctions(QStyle *style)
 
 bool tst_QStyle::testScrollBarSubControls(const QStyle *style)
 {
-    const bool isMacStyle = style->objectName().compare(QLatin1String("macintosh"),
+    const bool isMacStyle = style->objectName().compare(QLatin1String("macos"),
                                                         Qt::CaseInsensitive) == 0;
     QScrollBar scrollBar;
     setFrameless(&scrollBar);
@@ -328,7 +328,7 @@ void tst_QStyle::testWindowsVistaStyle()
 #ifdef Q_OS_MAC
 void tst_QStyle::testMacStyle()
 {
-    QStyle *mstyle = QStyleFactory::create("Macintosh");
+    QStyle *mstyle = QStyleFactory::create("macos");
     QVERIFY(testAllFunctions(mstyle));
     delete mstyle;
 }

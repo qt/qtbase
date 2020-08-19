@@ -631,7 +631,7 @@
     currently available GUI styles using
     QStyleFactory. QStyleFactory::keys() returns a list of valid keys,
     typically including "windows" and "fusion". Depending on the platform,
-    "windowsvista" and "macintosh" may be available.
+    "windowsvista" and "macos" may be available.
 
     We create one action for each key, and adds the action to the
     action group. Also, for each action, we call QAction::setData()
@@ -666,7 +666,7 @@
 
     For each action, we first extract the style name using
     QAction::data(). Since this is only a QStyleFactory key (e.g.,
-    "macintosh"), we cannot compare it directly to the current
+    "macos"), we cannot compare it directly to the current
     style's class name. We need to create a QStyle object using the
     static QStyleFactory::create() function and compare the class
     name of the created QStyle object with that of the current style.

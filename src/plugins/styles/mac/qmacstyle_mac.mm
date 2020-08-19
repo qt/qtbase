@@ -2572,7 +2572,7 @@ QPalette QMacStyle::standardPalette() const
 {
     auto platformTheme = QGuiApplicationPrivate::platformTheme();
     auto styleNames = platformTheme->themeHint(QPlatformTheme::StyleNames);
-    if (styleNames.toStringList().contains("macintosh"))
+    if (styleNames.toStringList().contains("macos"))
         return QPalette(); // Inherit everything from theme
     else
         return QStyle::standardPalette();

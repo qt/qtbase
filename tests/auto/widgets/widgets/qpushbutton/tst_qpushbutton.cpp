@@ -516,7 +516,7 @@ void tst_QPushButton::sizeHint_data()
     QTest::newRow("windows") << QString::fromLatin1("windows");
 #endif
 #if defined(Q_OS_MAC) && !defined(QT_NO_STYLE_MAC)
-    QTest::newRow("macintosh") << QString::fromLatin1("macintosh");
+    QTest::newRow("macos") << QString::fromLatin1("macos");
 #endif
 #if !defined(QT_NO_STYLE_FUSION)
     QTest::newRow("fusion") << QString::fromLatin1("fusion");

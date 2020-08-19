@@ -53,7 +53,7 @@ public:
 QStyle *QMacStylePlugin::create(const QString &key)
 {
     QMacAutoReleasePool pool;
-    if (key.compare(QLatin1String("macintosh"), Qt::CaseInsensitive) == 0)
+    if (key.compare(QLatin1String("macos"), Qt::CaseInsensitive) == 0)
         return new QMacStyle();
 
     return 0;

@@ -48,7 +48,7 @@
             \li The Windows Vista style ("windowsvista") is provided by
                 QWindowsVistaStyle.
         \row
-            \li The \macos style ("macintosh") is provided by QMacStyle.
+            \li The \macos style ("macos") is provided by QMacStyle.
             \li \image macos-style.png \macos Style
         \row
             \li \image fusion-style.png Fusion Style
