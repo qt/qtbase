@@ -236,7 +236,7 @@ void QXdgDesktopPortalFileDialog::openPortal()
             filterList << filter;
 
             if (!d->selectedMimeTypeFilter.isEmpty() && d->selectedMimeTypeFilter == mimeTypefilter)
-                selectedFilter = &filter;
+                selectedFilter = &filterList.last();
         }
     } else if (!d->nameFilters.isEmpty()) {
         for (const QString &nameFilter : d->nameFilters) {
@@ -265,7 +265,7 @@ void QXdgDesktopPortalFileDialog::openPortal()
                 d->userVisibleToNameFilter.insert(userVisibleName, nameFilter);
 
                 if (!d->selectedNameFilter.isEmpty() && d->selectedNameFilter == nameFilter)
-                    selectedFilter = &filter;
+                    selectedFilter = &filterList.last();
             }
         }
     }
