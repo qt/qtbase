@@ -59,7 +59,6 @@ QT_BEGIN_NAMESPACE
 
 QElapsedTimer QWindowSystemInterfacePrivate::eventTime;
 bool QWindowSystemInterfacePrivate::synchronousWindowSystemEvents = false;
-bool QWindowSystemInterfacePrivate::platformFiltersEvents = false;
 bool QWindowSystemInterfacePrivate::TabletEvent::platformSynthesizesMouse = true;
 QWaitCondition QWindowSystemInterfacePrivate::eventsFlushed;
 QMutex QWindowSystemInterfacePrivate::flushEventMutex;
@@ -1155,15 +1154,10 @@ bool QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::ProcessEventsFla
     int nevents = 0;
 
     while (QWindowSystemInterfacePrivate::windowSystemEventsQueued()) {
-        QWindowSystemInterfacePrivate::WindowSystemEvent *event = nullptr;
-
-        if (QWindowSystemInterfacePrivate::platformFiltersEvents) {
-            event = QWindowSystemInterfacePrivate::getWindowSystemEvent();
-        } else {
-            event = flags & QEventLoop::ExcludeUserInputEvents ?
+        QWindowSystemInterfacePrivate::WindowSystemEvent *event =
+                flags & QEventLoop::ExcludeUserInputEvents ?
                         QWindowSystemInterfacePrivate::getNonUserInputWindowSystemEvent() :
                         QWindowSystemInterfacePrivate::getWindowSystemEvent();
-        }
         if (!event)
             break;
 
@@ -1200,21 +1194,6 @@ int QWindowSystemInterface::windowSystemEventsQueued()
 bool QWindowSystemInterface::nonUserInputEventsQueued()
 {
     return QWindowSystemInterfacePrivate::nonUserInputEventsQueued();
-}
-
-/*!
-    Platforms that implement UserInputEvent filtering at native event level must
-    set this property to \c true. The default is \c false, which means that event
-    filtering logic is handled by QWindowSystemInterface. Doing the filtering in
-    platform plugins is necessary when supporting AbstractEventDispatcher::filterNativeEvent(),
-    which should respect flags that were passed to event dispatcher's processEvents()
-    call.
-
-    \since 5.12
-*/
-void QWindowSystemInterface::setPlatformFiltersEvents(bool enable)
-{
-    QWindowSystemInterfacePrivate::platformFiltersEvents = enable;
 }
 
 // --------------------- QtTestLib support ---------------------

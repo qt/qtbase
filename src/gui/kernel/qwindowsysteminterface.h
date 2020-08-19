@@ -304,7 +304,6 @@ public:
     static void deferredFlushWindowSystemEvents(QEventLoop::ProcessEventsFlags flags);
     static int windowSystemEventsQueued();
     static bool nonUserInputEventsQueued();
-    static void setPlatformFiltersEvents(bool enable);
 };
 
 #ifndef QT_NO_DEBUG_STREAM
