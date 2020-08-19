@@ -260,6 +260,7 @@ void QDecompressHelper::feed(const QByteArray &data)
 void QDecompressHelper::feed(QByteArray &&data)
 {
     Q_ASSERT(contentEncoding != None);
+    totalCompressedBytes += data.size();
     if (!countInternal(data))
         clear(); // If our counting brother failed then so will we :|
     else
@@ -273,6 +274,7 @@ void QDecompressHelper::feed(QByteArray &&data)
 void QDecompressHelper::feed(const QByteDataBuffer &buffer)
 {
     Q_ASSERT(contentEncoding != None);
+    totalCompressedBytes += buffer.byteAmount();
     if (!countInternal(buffer))
         clear(); // If our counting brother failed then so will we :|
     else
@@ -286,6 +288,7 @@ void QDecompressHelper::feed(const QByteDataBuffer &buffer)
 void QDecompressHelper::feed(QByteDataBuffer &&buffer)
 {
     Q_ASSERT(contentEncoding != None);
+    totalCompressedBytes += buffer.byteAmount();
     if (!countInternal(buffer))
         clear(); // If our counting brother failed then so will we :|
     else
@@ -325,6 +328,7 @@ bool QDecompressHelper::countInternal(const QByteArray &data)
     if (countDecompressed) {
         if (!countHelper) {
             countHelper = std::make_unique<QDecompressHelper>();
+            countHelper->setArchiveBombDetectionEnabled(archiveBombDetectionEnabled);
             countHelper->setEncoding(contentEncoding);
         }
         countHelper->feed(data);
@@ -342,6 +346,7 @@ bool QDecompressHelper::countInternal(const QByteDataBuffer &buffer)
     if (countDecompressed) {
         if (!countHelper) {
             countHelper = std::make_unique<QDecompressHelper>();
+            countHelper->setArchiveBombDetectionEnabled(archiveBombDetectionEnabled);
             countHelper->setEncoding(contentEncoding);
         }
         countHelper->feed(buffer);
@@ -378,7 +383,57 @@ qsizetype QDecompressHelper::read(char *data, qsizetype maxSize)
         clear();
     else if (countDecompressed)
         uncompressedBytes -= bytesRead;
+
+    totalUncompressedBytes += bytesRead;
+    if (isPotentialArchiveBomb())
+        return -1;
+
     return bytesRead;
+}
+
+/*!
+    \internal
+    Disables or enables checking the decompression ratio of archives
+    according to the value of \a enable.
+    Only for enabling us to test handling of large decompressed files
+    without needing to bundle large compressed files.
+*/
+void QDecompressHelper::setArchiveBombDetectionEnabled(bool enable)
+{
+    archiveBombDetectionEnabled = enable;
+    if (countHelper)
+        countHelper->setArchiveBombDetectionEnabled(enable);
+}
+
+bool QDecompressHelper::isPotentialArchiveBomb() const
+{
+    if (!archiveBombDetectionEnabled)
+        return false;
+
+    if (totalCompressedBytes == 0)
+        return false;
+
+    // Some protection against malicious or corrupted compressed files that expand far more than
+    // is reasonable.
+    double ratio = double(totalUncompressedBytes) / double(totalCompressedBytes);
+    switch (contentEncoding) {
+    case None:
+        Q_UNREACHABLE();
+        break;
+    case Deflate:
+    case GZip:
+        if (ratio > 40) {
+            return true;
+        }
+        break;
+    case Brotli:
+    case Zstandard:
+        if (ratio > 100) {
+            return true;
+        }
+        break;
+    }
+    return false;
 }
 
 /*!
@@ -443,6 +498,8 @@ void QDecompressHelper::clear()
     countDecompressed = false;
     countHelper.reset();
     uncompressedBytes = 0;
+    totalUncompressedBytes = 0;
+    totalCompressedBytes = 0;
 }
 
 qsizetype QDecompressHelper::readZLib(char *data, const qsizetype maxSize)

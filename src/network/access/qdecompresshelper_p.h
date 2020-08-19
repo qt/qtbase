@@ -91,10 +91,14 @@ public:
 
     void clear();
 
+    void setArchiveBombDetectionEnabled(bool enable);
+
     static bool isSupportedEncoding(const QByteArray &encoding);
     static QByteArrayList acceptedEncoding();
 
 private:
+    bool isPotentialArchiveBomb() const;
+
     bool countInternal();
     bool countInternal(const QByteArray &data);
     bool countInternal(const QByteDataBuffer &buffer);
@@ -112,6 +116,11 @@ private:
     bool countDecompressed = false;
     std::unique_ptr<QDecompressHelper> countHelper;
     qint64 uncompressedBytes = 0;
+
+    // Used for calculating the ratio
+    bool archiveBombDetectionEnabled = true;
+    qint64 totalUncompressedBytes = 0;
+    qint64 totalCompressedBytes = 0;
 
     ContentEncoding contentEncoding = None;
 

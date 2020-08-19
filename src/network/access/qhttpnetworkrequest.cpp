@@ -64,6 +64,7 @@ QHttpNetworkRequestPrivate::QHttpNetworkRequestPrivate(const QHttpNetworkRequest
       withCredentials(other.withCredentials),
       ssl(other.ssl),
       preConnect(other.preConnect),
+      ignoreDecompressionRatio(other.ignoreDecompressionRatio),
       redirectCount(other.redirectCount),
       redirectPolicy(other.redirectPolicy),
       peerVerifyName(other.peerVerifyName)
@@ -400,6 +401,16 @@ QString QHttpNetworkRequest::peerVerifyName() const
 void QHttpNetworkRequest::setPeerVerifyName(const QString &peerName)
 {
     d->peerVerifyName = peerName;
+}
+
+bool QHttpNetworkRequest::ignoreDecompressionRatio()
+{
+    return d->ignoreDecompressionRatio;
+}
+
+void QHttpNetworkRequest::setIgnoreDecompressionRatio(bool enabled)
+{
+    d->ignoreDecompressionRatio = enabled;
 }
 
 QT_END_NAMESPACE

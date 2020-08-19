@@ -149,6 +149,9 @@ public:
 
     QString peerVerifyName() const;
     void setPeerVerifyName(const QString &peerName);
+
+    bool ignoreDecompressionRatio();
+    void setIgnoreDecompressionRatio(bool enabled);
 private:
     QSharedDataPointer<QHttpNetworkRequestPrivate> d;
     friend class QHttpNetworkRequestPrivate;
@@ -181,6 +184,7 @@ public:
     bool withCredentials;
     bool ssl;
     bool preConnect;
+    bool ignoreDecompressionRatio = false;
     int redirectCount;
     QNetworkRequest::RedirectPolicy redirectPolicy;
     QString peerVerifyName;

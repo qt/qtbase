@@ -582,6 +582,8 @@ qint64 QHttpNetworkReplyPrivate::readHeader(QAbstractSocket *socket)
         if (autoDecompress && isCompressed()) {
             if (!decompressHelper.setEncoding(headerField("content-encoding")))
                 return -1; // Either the encoding was unsupported or the decoder could not be set up
+            if (request.ignoreDecompressionRatio())
+                decompressHelper.setArchiveBombDetectionEnabled(false);
         }
     }
     return bytes;
