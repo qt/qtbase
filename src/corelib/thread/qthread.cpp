@@ -248,7 +248,9 @@ QThreadPrivate::~QThreadPrivate()
     different threads. Check that it is safe to do so.
 
     \note Care must be taken when interacting with objects across different
-    threads. See \l{Synchronizing Threads} for details.
+    threads. As a general rule, functions can only be called from the thread
+    that created the QThread object itself (e.g. setPriority()), unless the
+    documentation says otherwise. See \l{Synchronizing Threads} for details.
 
     \section1 Managing Threads
 
@@ -456,6 +458,7 @@ QThread::~QThread()
 }
 
 /*!
+    \threadsafe
     Returns \c true if the thread is finished; otherwise returns \c false.
 
     \sa isRunning()
@@ -468,6 +471,7 @@ bool QThread::isFinished() const
 }
 
 /*!
+    \threadsafe
     Returns \c true if the thread is running; otherwise returns \c false.
 
     \sa isFinished()
@@ -521,6 +525,9 @@ uint QThread::stackSize() const
     This function is meant to be called from within run(). It is necessary to
     call this function to start event handling.
 
+    \note This can only be called within the thread itself, i.e. when
+    it is the current thread.
+
     \sa quit(), exit()
 */
 int QThread::exec()
@@ -544,6 +551,7 @@ int QThread::exec()
 }
 
 /*!
+    \threadsafe
     Tells the thread's event loop to exit with a return code.
 
     After calling this function, the thread leaves the event loop and
@@ -578,6 +586,7 @@ void QThread::exit(int returnCode)
 }
 
 /*!
+    \threadsafe
     Tells the thread's event loop to exit with return code 0 (success).
     Equivalent to calling QThread::exit(0).
 
@@ -706,6 +715,7 @@ QThread::Priority QThread::priority() const
 
 /*!
     \fn void QThread::terminate()
+    \threadsafe
 
     Terminates the execution of the thread. The thread may or may not
     be terminated immediately, depending on the operating system's
@@ -1003,6 +1013,7 @@ bool QThread::event(QEvent *event)
 
 /*!
     \since 5.2
+    \threadsafe
 
     Request the interruption of the thread.
     That request is advisory and it is up to code running on the thread to decide
@@ -1048,6 +1059,9 @@ void QThread::requestInterruption()
         }
     }
     \endcode
+
+    \note This can only be called within the thread itself, i.e. when
+    it is the current thread.
 
     \sa currentThread() requestInterruption()
 */
