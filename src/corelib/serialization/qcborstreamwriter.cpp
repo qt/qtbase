@@ -63,13 +63,13 @@ QT_WARNING_POP
 
 // silence compilers that complain about this being a static function declared
 // but never defined
-static CborError Q_DECL_UNUSED cbor_encoder_close_container_checked(CborEncoder*, const CborEncoder*)
+Q_DECL_UNUSED static CborError cbor_encoder_close_container_checked(CborEncoder*, const CborEncoder*)
 {
     Q_UNREACHABLE();
     return CborErrorInternalError;
 }
 
-static CborError Q_DECL_UNUSED cbor_encode_float_as_half_float(CborEncoder *, float)
+Q_DECL_UNUSED static CborError cbor_encode_float_as_half_float(CborEncoder *, float)
 {
     Q_UNREACHABLE();
     return CborErrorInternalError;

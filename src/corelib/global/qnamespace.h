@@ -1606,7 +1606,7 @@ namespace Qt {
     enum class Initialization {
         Uninitialized
     };
-    static constexpr Q_DECL_UNUSED Initialization Uninitialized = Initialization::Uninitialized;
+    Q_DECL_UNUSED static constexpr Initialization Uninitialized = Initialization::Uninitialized;
 #else
     enum Initialization {
         Uninitialized

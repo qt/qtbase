@@ -1135,6 +1135,11 @@
 #  define Q_REQUIRED_RESULT [[nodiscard]]
 #endif
 
+#if __has_cpp_attribute(maybe_unused)
+#  undef Q_DECL_UNUSED
+#  define Q_DECL_UNUSED [[maybe_unused]]
+#endif
+
 #if defined(__cpp_enumerator_attributes) && __cpp_enumerator_attributes >= 201411
 #if defined(Q_CC_MSVC)
 // Can't mark enum values as __declspec(deprecated) with MSVC, also can't move
