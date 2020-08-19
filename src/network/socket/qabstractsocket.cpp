@@ -1865,22 +1865,6 @@ QString QAbstractSocket::peerName() const
 }
 
 /*!
-    Returns \c true if a line of data can be read from the socket;
-    otherwise returns \c false.
-
-    \sa readLine()
-*/
-bool QAbstractSocket::canReadLine() const
-{
-    bool hasLine = QIODevice::canReadLine();
-#if defined (QABSTRACTSOCKET_DEBUG)
-    qDebug("QAbstractSocket::canReadLine() == %s, buffer size = %lld, size = %lld",
-           hasLine ? "true" : "false", d_func()->buffer.size(), d_func()->buffer.size());
-#endif
-    return hasLine;
-}
-
-/*!
     Returns the native socket descriptor of the QAbstractSocket object
     if this is available; otherwise returns -1.
 
@@ -2413,23 +2397,6 @@ bool QAbstractSocket::isSequential() const
     return true;
 }
 
-/*! \reimp
-
-     Returns \c true if no more data is currently
-     available for reading; otherwise returns \c false.
-
-     This function is most commonly used when reading data from the
-     socket in a loop. For example:
-
-     \snippet code/src_network_socket_qabstractsocket.cpp 2
-
-     \sa bytesAvailable(), readyRead()
- */
-bool QAbstractSocket::atEnd() const
-{
-    return QIODevice::atEnd();
-}
-
 /*!
     This function writes as much as possible from the internal write buffer to
     the underlying network socket, without blocking. If any data was written,
@@ -2882,7 +2849,7 @@ void QAbstractSocket::setSocketError(SocketError socketError)
     To disable the use of a proxy for this socket, use the
     QNetworkProxy::NoProxy proxy type:
 
-    \snippet code/src_network_socket_qabstractsocket.cpp 3
+    \snippet code/src_network_socket_qabstractsocket.cpp 2
 
     The default value for the proxy is QNetworkProxy::DefaultProxy,
     which means the socket will use the application settings: if a

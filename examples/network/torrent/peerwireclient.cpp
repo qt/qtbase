@@ -397,12 +397,11 @@ bool PeerWireClient::canTransferMore() const
         || !outgoingBuffer.isEmpty() || !pendingBlocks.isEmpty();
 }
 
-void PeerWireClient::connectToHost(const QHostAddress &address,
-                                   quint16 port, OpenMode openMode)
-
+void PeerWireClient::connectToHost(const QString &address, quint16 port, OpenMode openMode,
+                                   NetworkLayerProtocol protocol)
 {
     setOpenMode(openMode);
-    socket.connectToHost(address, port, openMode);
+    socket.connectToHost(address, port, openMode, protocol);
 }
 
 void PeerWireClient::diconnectFromHost()

@@ -65,17 +65,5 @@ if (socket->state() == QAbstractSocket::UnconnectedState
 
 
 //! [2]
- // This slot is connected to QAbstractSocket::readyRead()
- void SocketClass::readyReadSlot()
- {
-     while (!socket.atEnd()) {
-         QByteArray data = socket.read(100);
-         ....
-     }
- }
-//! [2]
-
-
-//! [3]
 socket->setProxy(QNetworkProxy::NoProxy);
-//! [3]
+//! [2]

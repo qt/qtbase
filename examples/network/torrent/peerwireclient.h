@@ -128,8 +128,9 @@ public:
 
     void setReadBufferSize(qint64 size) override;
 
-    void connectToHost(const QHostAddress &address,
-                       quint16 port, OpenMode openMode = ReadWrite) override;
+    using QTcpSocket::connectToHost;
+    void connectToHost(const QString &address, quint16 port, OpenMode openMode = ReadWrite,
+                       NetworkLayerProtocol protocol = AnyIPProtocol) override;
     void diconnectFromHost();
 
 signals:
