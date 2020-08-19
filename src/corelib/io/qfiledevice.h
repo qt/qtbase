@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -118,11 +118,11 @@ public:
     virtual Permissions permissions() const;
     virtual bool setPermissions(Permissions permissionSpec);
 
-    // ### Qt 6: rename to MemoryMapFlag & make it a QFlags
-    enum MemoryMapFlags {
+    enum MemoryMapFlag {
         NoOptions = 0,
         MapPrivateOption = 0x0001
     };
+    Q_DECLARE_FLAGS(MemoryMapFlags, MemoryMapFlag)
 
     uchar *map(qint64 offset, qint64 size, MemoryMapFlags flags = NoOptions);
     bool unmap(uchar *address);
@@ -148,6 +148,8 @@ private:
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QFileDevice::Permissions)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QFileDevice::FileHandleFlags)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QFileDevice::MemoryMapFlags)
 
 QT_END_NAMESPACE
 
