@@ -822,9 +822,13 @@ void tst_QSslSocket::ciphers()
     if (!ciphers.size())
         QSKIP("No proper ciphersuite was found to test 'setCiphers'");
 
+#if QT_CONFIG(schannel)
+    qWarning("Schannel doesn't support setting ciphers from a cipher-string.");
+#else
     sslConfig.setCiphers(ciphersAsString);
     socket.setSslConfiguration(sslConfig);
     QCOMPARE(ciphers, socket.sslConfiguration().ciphers());
+#endif
     sslConfig.setCiphers(ciphers);
     socket.setSslConfiguration(sslConfig);
     QCOMPARE(ciphers, socket.sslConfiguration().ciphers());

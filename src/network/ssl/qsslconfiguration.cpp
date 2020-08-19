@@ -624,6 +624,8 @@ void QSslConfiguration::setCiphers(const QList<QSslCipher> &ciphers)
     must be done before the handshake phase, where the session cipher
     is chosen.
 
+    \note This is not currently supported in the Schannel backend.
+
     \sa ciphers()
 */
 void QSslConfiguration::setCiphers(const QString &ciphers)
