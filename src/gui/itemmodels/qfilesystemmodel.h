@@ -40,7 +40,7 @@
 #ifndef QFILESYSTEMMODEL_H
 #define QFILESYSTEMMODEL_H
 
-#include <QtWidgets/qtwidgetsglobal.h>
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qabstractitemmodel.h>
 #include <QtCore/qpair.h>
 #include <QtCore/qdir.h>
@@ -53,9 +53,9 @@ QT_BEGIN_NAMESPACE
 
 class ExtendedInformation;
 class QFileSystemModelPrivate;
-class QFileIconProvider;
+class QAbstractFileIconProvider;
 
-class Q_WIDGETS_EXPORT QFileSystemModel : public QAbstractItemModel
+class Q_GUI_EXPORT QFileSystemModel : public QAbstractItemModel
 {
     Q_OBJECT
     Q_PROPERTY(bool resolveSymlinks READ resolveSymlinks WRITE setResolveSymlinks)
@@ -122,8 +122,8 @@ public:
     QString rootPath() const;
     QDir rootDirectory() const;
 
-    void setIconProvider(QFileIconProvider *provider);
-    QFileIconProvider *iconProvider() const;
+    void setIconProvider(QAbstractFileIconProvider *provider);
+    QAbstractFileIconProvider *iconProvider() const;
 
     void setFilter(QDir::Filters filters);
     QDir::Filters filter() const;

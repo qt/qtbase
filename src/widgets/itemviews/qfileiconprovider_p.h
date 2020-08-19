@@ -54,6 +54,7 @@
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "qfileiconprovider.h"
 
+#include <private/qabstractfileiconprovider_p.h>
 #include <QtCore/qstring.h>
 #include <QtGui/qicon.h>
 #include <QtWidgets/qstyle.h>
@@ -62,7 +63,7 @@ QT_BEGIN_NAMESPACE
 
 class QFileInfo;
 
-class QFileIconProviderPrivate
+class QFileIconProviderPrivate : public QAbstractFileIconProviderPrivate
 {
     Q_DECLARE_PUBLIC(QFileIconProvider)
 
@@ -71,9 +72,7 @@ public:
     QIcon getIcon(QStyle::StandardPixmap name) const;
     QIcon getIcon(const QFileInfo &fi) const;
 
-    QFileIconProvider *q_ptr;
     const QString homePath;
-    QFileIconProvider::Options options;
 
 private:
     mutable QIcon file;

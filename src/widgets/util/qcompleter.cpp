@@ -149,7 +149,7 @@
 #include "QtCore/qstringlistmodel.h"
 #endif
 #if QT_CONFIG(filesystemmodel)
-#include "QtWidgets/qfilesystemmodel.h"
+#include "QtGui/qfilesystemmodel.h"
 #endif
 #include "QtWidgets/qheaderview.h"
 #if QT_CONFIG(listview)

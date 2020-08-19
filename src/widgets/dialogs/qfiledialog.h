@@ -55,8 +55,8 @@ QT_BEGIN_NAMESPACE
 class QModelIndex;
 class QItemSelection;
 struct QFileDialogArgs;
-class QFileIconProvider;
 class QFileDialogPrivate;
+class QAbstractFileIconProvider;
 class QAbstractItemDelegate;
 class QAbstractProxyModel;
 
@@ -153,8 +153,8 @@ public:
     void setItemDelegate(QAbstractItemDelegate *delegate);
     QAbstractItemDelegate *itemDelegate() const;
 
-    void setIconProvider(QFileIconProvider *provider);
-    QFileIconProvider *iconProvider() const;
+    void setIconProvider(QAbstractFileIconProvider *provider);
+    QAbstractFileIconProvider *iconProvider() const;
 
     void setLabelText(DialogLabel label, const QString &text);
     QString labelText(DialogLabel label) const;

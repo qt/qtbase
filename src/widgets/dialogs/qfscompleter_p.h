@@ -53,7 +53,7 @@
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "qcompleter.h"
-#include <QtWidgets/qfilesystemmodel.h>
+#include <QtGui/qfilesystemmodel.h>
 
 QT_REQUIRE_CONFIG(fscompleter);
 

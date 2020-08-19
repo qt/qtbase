@@ -1952,7 +1952,7 @@ QAbstractItemDelegate *QFileDialog::itemDelegate() const
 /*!
     Sets the icon provider used by the filedialog to the specified \a provider.
 */
-void QFileDialog::setIconProvider(QFileIconProvider *provider)
+void QFileDialog::setIconProvider(QAbstractFileIconProvider *provider)
 {
     Q_D(QFileDialog);
     if (!d->usingWidgets())
@@ -1965,7 +1965,7 @@ void QFileDialog::setIconProvider(QFileIconProvider *provider)
 /*!
     Returns the icon provider used by the filedialog.
 */
-QFileIconProvider *QFileDialog::iconProvider() const
+QAbstractFileIconProvider *QFileDialog::iconProvider() const
 {
     Q_D(const QFileDialog);
     if (!d->model)
@@ -2977,6 +2977,7 @@ void QFileDialogPrivate::createWidgets()
     Qt::WindowStates preState = q->windowState();
 
     model = new QFileSystemModel(q);
+    model->setIconProvider(&defaultIconProvider);
     model->setFilter(options->filter());
     model->setObjectName(QLatin1String("qt_filesystem_model"));
     if (QPlatformFileDialogHelper *helper = platformFileDialogHelper())

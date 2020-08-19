@@ -54,7 +54,7 @@
 #include <QtCore/qstringconverter.h>
 #include <QtGui/qevent.h>
 #if QT_CONFIG(filesystemmodel)
-#include <QtWidgets/qfilesystemmodel.h>
+#include <QtGui/qfilesystemmodel.h>
 #endif
 #include <QtWidgets/qstyleditemdelegate.h>
 #include <QtWidgets/qformlayout.h>

@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtWidgets module of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,34 +37,48 @@
 **
 ****************************************************************************/
 
-#ifndef QFILEICONPROVIDER_H
-#define QFILEICONPROVIDER_H
+#ifndef QABSTRACTFILEICONPROVIDER_H
+#define QABSTRACTFILEICONPROVIDER_H
 
-#include <QtWidgets/qtwidgetsglobal.h>
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtGui/qicon.h>
-#include <QtGui/qabstractfileiconprovider.h>
 
 QT_BEGIN_NAMESPACE
 
+class QAbstractFileIconProviderPrivate;
 
-class QFileIconProviderPrivate;
-
-class Q_WIDGETS_EXPORT QFileIconProvider : public QAbstractFileIconProvider
+class Q_GUI_EXPORT QAbstractFileIconProvider
 {
 public:
-    QFileIconProvider();
-    ~QFileIconProvider();
+    enum IconType { Computer, Desktop, Trashcan, Network, Drive, Folder, File };
+    enum Option {
+        DontUseCustomDirectoryIcons = 0x00000001
+    };
+    Q_DECLARE_FLAGS(Options, Option)
 
-    QIcon icon(IconType type) const override;
-    QIcon icon(const QFileInfo &info) const override;
+    QAbstractFileIconProvider();
+    virtual ~QAbstractFileIconProvider();
+
+    virtual QIcon icon(IconType) const;
+    virtual QIcon icon(const QFileInfo &) const;
+    virtual QString type(const QFileInfo &) const;
+
+    virtual void setOptions(Options);
+    virtual Options options() const;
+
+protected:
+    QAbstractFileIconProvider(QAbstractFileIconProviderPrivate &dd);
+    QScopedPointer<QAbstractFileIconProviderPrivate> d_ptr;
 
 private:
-    Q_DECLARE_PRIVATE(QFileIconProvider)
-    Q_DISABLE_COPY(QFileIconProvider)
+    Q_DECLARE_PRIVATE(QAbstractFileIconProvider)
+    Q_DISABLE_COPY(QAbstractFileIconProvider)
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QAbstractFileIconProvider::Options)
 
 QT_END_NAMESPACE
 
-#endif // QFILEICONPROVIDER_H
+#endif // QABSTRACTFILEICONPROVIDER_H

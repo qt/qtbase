@@ -67,29 +67,8 @@ QT_BEGIN_NAMESPACE
   \brief The QFileIconProvider class provides file icons for the QFileSystemModel class.
 */
 
-/*!
-  \enum QFileIconProvider::IconType
-  \value Computer
-  \value Desktop
-  \value Trashcan
-  \value Network
-  \value Drive
-  \value Folder
-  \value File
-*/
-
-
-/*!
-    \enum QFileIconProvider::Option
-    \since 5.2
-
-    \value DontUseCustomDirectoryIcons Always use the default directory icon.
-    Some platforms allow the user to set a different icon. Custom icon lookup
-    cause a big performance impact over network or removable drives.
-*/
-
-QFileIconProviderPrivate::QFileIconProviderPrivate(QFileIconProvider *q) :
-    q_ptr(q), homePath(QDir::home().absolutePath())
+QFileIconProviderPrivate::QFileIconProviderPrivate(QFileIconProvider *q)
+    : QAbstractFileIconProviderPrivate(q), homePath(QDir::home().absolutePath())
 {
 }
 
@@ -155,46 +134,18 @@ QIcon QFileIconProviderPrivate::getIcon(QStyle::StandardPixmap name) const
 */
 
 QFileIconProvider::QFileIconProvider()
-    : d_ptr(new QFileIconProviderPrivate(this))
+    : QAbstractFileIconProvider(*new QFileIconProviderPrivate(this))
 {
 }
 
 /*!
   Destroys the file icon provider.
-
 */
 
-QFileIconProvider::~QFileIconProvider()
-{
-}
+QFileIconProvider::~QFileIconProvider() = default;
 
 /*!
-    \since 5.2
-    Sets \a options that affect the icon provider.
-    \sa options()
-*/
-
-void QFileIconProvider::setOptions(QFileIconProvider::Options options)
-{
-    Q_D(QFileIconProvider);
-    d->options = options;
-}
-
-/*!
-    \since 5.2
-    Returns all the options that affect the icon provider.
-    By default, all options are disabled.
-    \sa setOptions()
-*/
-
-QFileIconProvider::Options QFileIconProvider::options() const
-{
-    Q_D(const QFileIconProvider);
-    return d->options;
-}
-
-/*!
-  Returns an icon set for the given \a type.
+  \reimpl
 */
 
 QIcon QFileIconProvider::icon(IconType type) const
@@ -235,7 +186,7 @@ QIcon QFileIconProviderPrivate::getIcon(const QFileInfo &fi) const
 }
 
 /*!
-  Returns an icon for the file described by \a info.
+  \reimpl
 */
 
 QIcon QFileIconProvider::icon(const QFileInfo &info) const
@@ -290,47 +241,6 @@ QIcon QFileIconProvider::icon(const QFileInfo &info) const
     }
   }
   return QIcon();
-}
-
-/*!
-  Returns the type of the file described by \a info.
-*/
-
-QString QFileIconProvider::type(const QFileInfo &info) const
-{
-    if (QFileSystemEntry::isRootPath(info.absoluteFilePath()))
-        return QApplication::translate("QFileDialog", "Drive");
-    if (info.isFile()) {
-        if (!info.suffix().isEmpty()) {
-            //: %1 is a file name suffix, for example txt
-            return QApplication::translate("QFileDialog", "%1 File").arg(info.suffix());
-        }
-        return QApplication::translate("QFileDialog", "File");
-    }
-
-    if (info.isDir())
-#ifdef Q_OS_WIN
-        return QApplication::translate("QFileDialog", "File Folder", "Match Windows Explorer");
-#else
-        return QApplication::translate("QFileDialog", "Folder", "All other platforms");
-#endif
-    // Windows   - "File Folder"
-    // OS X      - "Folder"
-    // Konqueror - "Folder"
-    // Nautilus  - "folder"
-
-    if (info.isSymLink())
-#ifdef Q_OS_MAC
-        return QApplication::translate("QFileDialog", "Alias", "OS X Finder");
-#else
-        return QApplication::translate("QFileDialog", "Shortcut", "All other platforms");
-#endif
-    // OS X      - "Alias"
-    // Windows   - "Shortcut"
-    // Konqueror - "Folder" or "TXT File" i.e. what it is pointing to
-    // Nautilus  - "link to folder" or "link to object file", same as Konqueror
-
-    return QApplication::translate("QFileDialog", "Unknown");
 }
 
 QT_END_NAMESPACE

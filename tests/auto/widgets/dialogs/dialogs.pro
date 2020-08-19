@@ -5,7 +5,6 @@ SUBDIRS=\
    qerrormessage \
    qfiledialog \
    qfiledialog2 \
-   qfilesystemmodel \
    qfontdialog \
    qinputdialog \
    qmessagebox \
@@ -17,4 +16,4 @@ SUBDIRS=\
           qsidebar \
 
 mac:qinputdialog.CONFIG += no_check_target # QTBUG-25496
-mingw: SUBDIRS -= qfilesystemmodel # QTBUG-29403
+

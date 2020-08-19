@@ -60,6 +60,7 @@ qt_add_module(Gui
     QMAKE_MODULE_CONFIG "${qmake_module_config}" # special case
     SOURCES
         image/qabstractfileiconengine.cpp image/qabstractfileiconengine_p.h
+        image/qabstractfileiconprovider.cpp image/qabstractfileiconprovider.h image/qabstractfileiconprovider_p.h
         image/qbitmap.cpp image/qbitmap.h
         image/qbmphandler.cpp image/qbmphandler_p.h
         image/qicon.cpp image/qicon.h image/qicon_p.h
@@ -403,6 +404,7 @@ qt_extend_target(Gui CONDITION WIN32
         gdi32
         ole32
         user32
+        shell32
     PUBLIC_LIBRARIES
         d3d11
         dxgi
@@ -535,6 +537,12 @@ qt_extend_target(Gui CONDITION QT_FEATURE_draganddrop
         kernel/qplatformdrag.cpp kernel/qplatformdrag.h
         kernel/qshapedpixmapdndwindow.cpp kernel/qshapedpixmapdndwindow_p.h
         kernel/qsimpledrag.cpp kernel/qsimpledrag_p.h
+)
+
+qt_extend_target(Gui CONDITION QT_FEATURE_filesystemmodel
+    SOURCES
+        itemmodels/qfileinfogatherer.cpp itemmodels/qfileinfogatherer_p.h
+        itemmodels/qfilesystemmodel.cpp itemmodels/qfilesystemmodel.h itemmodels/qfilesystemmodel_p.h
 )
 
 qt_extend_target(Gui CONDITION QT_FEATURE_shortcut

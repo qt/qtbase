@@ -49,7 +49,7 @@
 #include <qmenu.h>
 #include <qrandom.h>
 #include "../../../../../src/widgets/dialogs/qsidebar_p.h"
-#include "../../../../../src/widgets/dialogs/qfilesystemmodel_p.h"
+#include "../../../../../src/gui/itemmodels/qfilesystemmodel_p.h"
 #include "../../../../../src/widgets/dialogs/qfiledialog_p.h"
 
 #include <private/qguiapplication_p.h>

@@ -624,12 +624,6 @@ qt_extend_target(Widgets CONDITION QT_FEATURE_filedialog
         uic
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_filesystemmodel
-    SOURCES
-        dialogs/qfileinfogatherer.cpp dialogs/qfileinfogatherer_p.h
-        dialogs/qfilesystemmodel.cpp dialogs/qfilesystemmodel.h dialogs/qfilesystemmodel_p.h
-)
-
 qt_extend_target(Widgets CONDITION QT_FEATURE_fontdialog
     SOURCES
         dialogs/qfontdialog.cpp dialogs/qfontdialog.h dialogs/qfontdialog_p.h

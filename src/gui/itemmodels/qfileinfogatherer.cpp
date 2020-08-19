@@ -129,12 +129,12 @@ bool QFileInfoGatherer::resolveSymlinks() const
 #endif
 }
 
-void QFileInfoGatherer::setIconProvider(QFileIconProvider *provider)
+void QFileInfoGatherer::setIconProvider(QAbstractFileIconProvider *provider)
 {
     m_iconProvider = provider;
 }
 
-QFileIconProvider *QFileInfoGatherer::iconProvider() const
+QAbstractFileIconProvider *QFileInfoGatherer::iconProvider() const
 {
     return m_iconProvider;
 }

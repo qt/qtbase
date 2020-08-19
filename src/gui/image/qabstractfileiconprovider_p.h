@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtWidgets module of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,34 +37,37 @@
 **
 ****************************************************************************/
 
-#ifndef QFILEICONPROVIDER_H
-#define QFILEICONPROVIDER_H
+#ifndef QABSTRACTFILEICONPROVIDER_P_H
+#define QABSTRACTFILEICONPROVIDER_P_H
 
-#include <QtWidgets/qtwidgetsglobal.h>
-#include <QtCore/qfileinfo.h>
-#include <QtCore/qscopedpointer.h>
-#include <QtGui/qicon.h>
-#include <QtGui/qabstractfileiconprovider.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtGui/private/qtguiglobal_p.h>
+#include "qabstractfileiconprovider.h"
 
 QT_BEGIN_NAMESPACE
 
-
-class QFileIconProviderPrivate;
-
-class Q_WIDGETS_EXPORT QFileIconProvider : public QAbstractFileIconProvider
+class Q_GUI_EXPORT QAbstractFileIconProviderPrivate
 {
+    Q_DECLARE_PUBLIC(QAbstractFileIconProvider)
+
 public:
-    QFileIconProvider();
-    ~QFileIconProvider();
+    QAbstractFileIconProviderPrivate(QAbstractFileIconProvider *q);
+    virtual ~QAbstractFileIconProviderPrivate();
 
-    QIcon icon(IconType type) const override;
-    QIcon icon(const QFileInfo &info) const override;
-
-private:
-    Q_DECLARE_PRIVATE(QFileIconProvider)
-    Q_DISABLE_COPY(QFileIconProvider)
+    QAbstractFileIconProvider *q_ptr = nullptr;
+    QAbstractFileIconProvider::Options options = {};
 };
 
 QT_END_NAMESPACE
 
-#endif // QFILEICONPROVIDER_H
+#endif // QABSTRACTFILEICONPROVIDER_P_H

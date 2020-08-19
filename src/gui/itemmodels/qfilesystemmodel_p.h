@@ -51,7 +51,7 @@
 // We mean it.
 //
 
-#include <QtWidgets/private/qtwidgetsglobal_p.h>
+#include <QtGui/private/qtguiglobal_p.h>
 #include "qfilesystemmodel.h"
 
 #include <private/qabstractitemmodel_p.h>
@@ -89,7 +89,7 @@ inline size_t qHash(const QFileSystemModelNodePathKey &key) { return qHash(key.t
 typedef QString QFileSystemModelNodePathKey;
 #endif
 
-class Q_AUTOTEST_EXPORT QFileSystemModelPrivate : public QAbstractItemModelPrivate
+class Q_GUI_EXPORT QFileSystemModelPrivate : public QAbstractItemModelPrivate
 {
     Q_DECLARE_PUBLIC(QFileSystemModel)
 
@@ -174,7 +174,7 @@ public:
         inline int visibleLocation(const QString &childName) {
             return visibleChildren.indexOf(childName);
         }
-        void updateIcon(QFileIconProvider *iconProvider, const QString &path) {
+        void updateIcon(QAbstractFileIconProvider *iconProvider, const QString &path) {
             if (info)
                 info->icon = iconProvider->icon(QFileInfo(path));
             for (QFileSystemNode *child : qAsConst(children)) {
@@ -189,7 +189,7 @@ public:
             }
         }
 
-        void retranslateStrings(QFileIconProvider *iconProvider, const QString &path) {
+        void retranslateStrings(QAbstractFileIconProvider *iconProvider, const QString &path) {
             if (info)
                 info->displayType = iconProvider->type(QFileInfo(path));
             for (QFileSystemNode *child : qAsConst(children)) {

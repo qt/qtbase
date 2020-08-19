@@ -51,7 +51,7 @@
 // We mean it.
 //
 
-#include <QtWidgets/private/qtwidgetsglobal_p.h>
+#include <QtGui/private/qtguiglobal_p.h>
 
 #include <qthread.h>
 #include <qmutex.h>
@@ -59,7 +59,7 @@
 #if QT_CONFIG(filesystemwatcher)
 #include <qfilesystemwatcher.h>
 #endif
-#include <qfileiconprovider.h>
+#include <qabstractfileiconprovider.h>
 #include <qpair.h>
 #include <qstack.h>
 #include <qdatetime.h>
@@ -155,7 +155,7 @@ private :
 
 class QFileIconProvider;
 
-class Q_AUTOTEST_EXPORT QFileInfoGatherer : public QThread
+class Q_GUI_EXPORT QFileInfoGatherer : public QThread
 {
 Q_OBJECT
 
@@ -181,7 +181,7 @@ public:
     void clear();
     void removePath(const QString &path);
     QExtendedInformation getInfo(const QFileInfo &info) const;
-    QFileIconProvider *iconProvider() const;
+    QAbstractFileIconProvider *iconProvider() const;
     bool resolveSymlinks() const;
 
 public Q_SLOTS:
@@ -189,7 +189,7 @@ public Q_SLOTS:
     void fetchExtendedInformation(const QString &path, const QStringList &files);
     void updateFile(const QString &path);
     void setResolveSymlinks(bool enable);
-    void setIconProvider(QFileIconProvider *provider);
+    void setIconProvider(QAbstractFileIconProvider *provider);
 
 private Q_SLOTS:
     void driveAdded();
@@ -216,8 +216,8 @@ private:
 #if QT_CONFIG(filesystemwatcher)
     QFileSystemWatcher *m_watcher = nullptr;
 #endif
-    QFileIconProvider *m_iconProvider; // not accessed by run()
-    QFileIconProvider defaultProvider;
+    QAbstractFileIconProvider *m_iconProvider; // not accessed by run()
+    QAbstractFileIconProvider defaultProvider;
 #ifdef Q_OS_WIN
     bool m_resolveSymlinks = true; // not accessed by run()
 #endif

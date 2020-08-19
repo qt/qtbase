@@ -34,17 +34,6 @@ qtConfig(filedialog) {
     FORMS += dialogs/qfiledialog.ui
 }
 
-qtConfig(filesystemmodel) {
-    HEADERS += \
-        dialogs/qfilesystemmodel.h \
-        dialogs/qfilesystemmodel_p.h \
-        dialogs/qfileinfogatherer_p.h
-
-    SOURCES += \
-        dialogs/qfilesystemmodel.cpp \
-        dialogs/qfileinfogatherer.cpp
-}
-
 qtConfig(fontdialog) {
     HEADERS += \
         dialogs/qfontdialog.h \

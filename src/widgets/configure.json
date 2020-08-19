@@ -69,13 +69,6 @@
             "section": "Kernel",
             "output": [ "privateFeature" ]
         },
-        "filesystemmodel": {
-            "label": "QFileSystemModel",
-            "purpose": "Provides a data model for the local filesystem.",
-            "section": "File I/O",
-            "condition": "features.itemmodel",
-            "output": [ "publicFeature", "feature" ]
-        },
         "itemviews": {
             "label": "The Model/View Framework",
             "purpose": "Provides the model/view architecture managing the relationship between data and the way it is presented to the user.",

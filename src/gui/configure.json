@@ -1548,6 +1548,13 @@
             "condition": "features.itemmodel",
             "output": [ "publicFeature", "feature" ]
         },
+        "filesystemmodel": {
+            "label": "QFileSystemModel",
+            "purpose": "Provides a data model for the local filesystem.",
+            "section": "File I/O",
+            "condition": "features.itemmodel",
+            "output": [ "publicFeature", "feature" ]
+        },
         "imageformatplugin": {
             "label": "QImageIOPlugin",
             "purpose": "Provides a base for writing a image format plugins.",

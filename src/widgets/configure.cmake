@@ -50,13 +50,6 @@ qt_feature("effects" PRIVATE
     LABEL "Effects"
     PURPOSE "Provides special widget effects (e.g. fading and scrolling)."
 )
-qt_feature("filesystemmodel" PUBLIC
-    SECTION "File I/O"
-    LABEL "QFileSystemModel"
-    PURPOSE "Provides a data model for the local filesystem."
-    CONDITION QT_FEATURE_itemmodel
-)
-qt_feature_definition("filesystemmodel" "QT_NO_FILESYSTEMMODEL" NEGATE VALUE "1")
 qt_feature("itemviews" PUBLIC
     SECTION "ItemViews"
     LABEL "The Model/View Framework"

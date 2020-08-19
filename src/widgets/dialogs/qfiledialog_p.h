@@ -57,7 +57,7 @@
 #include "private/qdialog_p.h"
 #include "qplatformdefs.h"
 
-#include "qfilesystemmodel_p.h"
+#include <QtGui/private/qfilesystemmodel_p.h>
 #include <qlistview.h>
 #include <qtreeview.h>
 #include <qcombobox.h>
@@ -69,6 +69,7 @@
 #include <qstackedwidget.h>
 #include <qdialogbuttonbox.h>
 #include <qabstractproxymodel.h>
+#include <qfileiconprovider.h>
 #if QT_CONFIG(completer)
 #include <qcompleter.h>
 #endif
@@ -285,6 +286,7 @@ public:
     QByteArray splitterState;
     QByteArray headerData;
     QList<QUrl> sidebarUrls;
+    QFileIconProvider defaultIconProvider;
 
     ~QFileDialogPrivate();
 

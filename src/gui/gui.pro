@@ -51,7 +51,10 @@ QMAKE_LIBS += $$QMAKE_LIBS_GUI
 load(qt_module)
 load(cmake_functions)
 
-win32: CMAKE_WINDOWS_BUILD = True
+win32: {
+    CMAKE_WINDOWS_BUILD = True
+    QMAKE_USE_PRIVATE += shell32
+}
 
 qtConfig(egl) {
     CMAKE_EGL_LIBS = $$cmakeProcessLibs($$QMAKE_LIBS_EGL)

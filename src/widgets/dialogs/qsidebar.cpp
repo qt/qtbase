@@ -38,7 +38,6 @@
 ****************************************************************************/
 
 #include "qsidebar_p.h"
-#include "qfilesystemmodel.h"
 
 #include <qaction.h>
 #include <qurl.h>
@@ -48,7 +47,8 @@
 #include <qmimedata.h>
 #include <qevent.h>
 #include <qdebug.h>
-#include <qfileiconprovider.h>
+#include <qfilesystemmodel.h>
+#include <qabstractfileiconprovider.h>
 #include <qfiledialog.h>
 
 QT_BEGIN_NAMESPACE
@@ -198,9 +198,9 @@ void QUrlModel::setUrl(const QModelIndex &index, const QUrl &url, const QModelIn
 
         QIcon newIcon = qvariant_cast<QIcon>(dirIndex.data(Qt::DecorationRole));
         if (!dirIndex.isValid()) {
-            const QFileIconProvider *provider = fileSystemModel->iconProvider();
+            const QAbstractFileIconProvider *provider = fileSystemModel->iconProvider();
             if (provider)
-                newIcon = provider->icon(QFileIconProvider::Folder);
+                newIcon = provider->icon(QAbstractFileIconProvider::Folder);
             newName = QFileInfo(url.toLocalFile()).fileName();
             if (!invalidUrls.contains(url))
                 invalidUrls.append(url);

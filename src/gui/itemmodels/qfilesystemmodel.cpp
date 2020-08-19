@@ -39,6 +39,7 @@
 
 #include "qfilesystemmodel_p.h"
 #include "qfilesystemmodel.h"
+#include <qabstractfileiconprovider.h>
 #include <qlocale.h>
 #include <qmimedata.h>
 #include <qurl.h>
@@ -697,7 +698,7 @@ QVariant QFileSystemModel::myComputer(int role) const
         return QFileSystemModelPrivate::myComputer();
 #if QT_CONFIG(filesystemwatcher)
     case Qt::DecorationRole:
-        return d->fileInfoGatherer.iconProvider()->icon(QFileIconProvider::Computer);
+        return d->fileInfoGatherer.iconProvider()->icon(QAbstractFileIconProvider::Computer);
 #endif
     }
     return QVariant();
@@ -735,9 +736,9 @@ QVariant QFileSystemModel::data(const QModelIndex &index, int role) const
 #if QT_CONFIG(filesystemwatcher)
             if (icon.isNull()) {
                 if (d->node(index)->isDir())
-                    icon = d->fileInfoGatherer.iconProvider()->icon(QFileIconProvider::Folder);
+                    icon = d->fileInfoGatherer.iconProvider()->icon(QAbstractFileIconProvider::Folder);
                 else
-                    icon = d->fileInfoGatherer.iconProvider()->icon(QFileIconProvider::File);
+                    icon = d->fileInfoGatherer.iconProvider()->icon(QAbstractFileIconProvider::File);
             }
 #endif // filesystemwatcher
             return icon;
@@ -1330,8 +1331,8 @@ void QFileSystemModel::setOptions(Options options)
 
     if (changed.testFlag(DontUseCustomDirectoryIcons)) {
         if (auto provider = iconProvider()) {
-            QFileIconProvider::Options providerOptions = provider->options();
-            providerOptions.setFlag(QFileIconProvider::DontUseCustomDirectoryIcons,
+            QAbstractFileIconProvider::Options providerOptions = provider->options();
+            providerOptions.setFlag(QAbstractFileIconProvider::DontUseCustomDirectoryIcons,
                                     options.testFlag(QFileSystemModel::DontUseCustomDirectoryIcons));
             provider->setOptions(providerOptions);
         } else {
@@ -1352,7 +1353,7 @@ QFileSystemModel::Options QFileSystemModel::options() const
 #endif
     if (auto provider = iconProvider()) {
         result.setFlag(DontUseCustomDirectoryIcons,
-                       provider->options().testFlag(QFileIconProvider::DontUseCustomDirectoryIcons));
+                       provider->options().testFlag(QAbstractFileIconProvider::DontUseCustomDirectoryIcons));
     }
     return result;
 }
@@ -1550,7 +1551,7 @@ QDir QFileSystemModel::rootDirectory() const
 /*!
     Sets the \a provider of file icons for the directory model.
 */
-void QFileSystemModel::setIconProvider(QFileIconProvider *provider)
+void QFileSystemModel::setIconProvider(QAbstractFileIconProvider *provider)
 {
     Q_D(QFileSystemModel);
 #if QT_CONFIG(filesystemwatcher)
@@ -1562,7 +1563,7 @@ void QFileSystemModel::setIconProvider(QFileIconProvider *provider)
 /*!
     Returns the file icon provider for this directory model.
 */
-QFileIconProvider *QFileSystemModel::iconProvider() const
+QAbstractFileIconProvider *QFileSystemModel::iconProvider() const
 {
 #if QT_CONFIG(filesystemwatcher)
     Q_D(const QFileSystemModel);

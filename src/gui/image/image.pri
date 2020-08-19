@@ -26,7 +26,9 @@ HEADERS += \
         image/qiconloader_p.h \
         image/qiconengine.h \
         image/qiconengineplugin.h \
-        image/qabstractfileiconengine_p.h
+        image/qabstractfileiconengine_p.h \
+        image/qabstractfileiconprovider.h \
+        image/qabstractfileiconprovider_p.h
 
 SOURCES += \
         image/qbitmap.cpp \
@@ -48,7 +50,8 @@ SOURCES += \
         image/qiconloader.cpp \
         image/qiconengine.cpp \
         image/qiconengineplugin.cpp \
-        image/qabstractfileiconengine.cpp
+        image/qabstractfileiconengine.cpp \
+        image/qabstractfileiconprovider.cpp
 
 qtConfig(movie) {
     HEADERS += image/qmovie.h
