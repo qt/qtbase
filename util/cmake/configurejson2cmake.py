@@ -768,6 +768,15 @@ def write_compile_test(
 #                "qmake": "unix:LIBS += -lpthread"
 #            }
 #        },
+
+def write_compiler_supports_flag_test(
+    ctx, name, details, data, cm_fh, manual_library_list=None, is_library_test=False
+):
+    cm_fh.write(f"qt_config_compiler_supports_flag_test({featureName(name)}\n")
+    cm_fh.write(lineify("LABEL", data.get("label", "")))
+    cm_fh.write(lineify("FLAG", data.get("flag", "")))
+    cm_fh.write(")\n\n")
+
 def parseTest(ctx, test, data, cm_fh):
     skip_tests = {
         "c11",
@@ -794,6 +803,16 @@ def parseTest(ctx, test, data, cm_fh):
             details = test
 
         write_compile_test(ctx, test, details, data, cm_fh)
+
+    if data["type"] == "compilerSupportsFlag":
+        knownTests.add(test)
+
+        if "test" in data:
+            details = data["test"]
+        else:
+            details = test
+
+        write_compiler_supports_flag_test(ctx, test, details, data, cm_fh)
 
     elif data["type"] == "libclang":
         knownTests.add(test)

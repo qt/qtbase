@@ -110,6 +110,26 @@ int main(int argc, char **argv)
 "# FIXME: qmake: ['CONFIG += precompile_header', 'PRECOMPILED_DIR = .pch', 'PRECOMPILED_HEADER = header.h']
 )
 
+qt_config_compiler_supports_flag_test(use_bfd_linker
+    LABEL "bfd linker"
+    FLAG "-fuse-ld=bfd"
+)
+
+qt_config_compiler_supports_flag_test(use_gold_linker
+    LABEL "gold linker"
+    FLAG "-fuse-ld=gold"
+)
+
+qt_config_compiler_supports_flag_test(use_lld_linker
+    LABEL "lld linker"
+    FLAG "-fuse-ld=lld"
+)
+
+qt_config_compiler_supports_flag_test(optimize_debug
+    LABEL "-Og support"
+    FLAG "-Og"
+)
+
 # reduce_relocations
 qt_config_compile_test(reduce_relocations
     LABEL "-Bsymbolic-functions support"
@@ -364,19 +384,19 @@ qt_feature("gc_binaries" PRIVATE
 qt_feature("use_bfd_linker"
     LABEL "bfd"
     AUTODETECT false
-    CONDITION NOT WIN32 AND NOT INTEGRITY AND NOT WASM AND tests.use_bfd_linker OR FIXME
+    CONDITION NOT WIN32 AND NOT INTEGRITY AND NOT WASM AND TEST_use_bfd_linker
     ENABLE INPUT_linker STREQUAL 'bfd'
     DISABLE INPUT_linker STREQUAL 'gold' OR INPUT_linker STREQUAL 'lld'
 )
 qt_feature_config("use_bfd_linker" QMAKE_PRIVATE_CONFIG)
 qt_feature("use_gold_linker_alias"
     AUTODETECT false
-    CONDITION NOT WIN32 AND NOT INTEGRITY AND NOT WASM AND tests.use_gold_linker OR FIXME
+    CONDITION NOT WIN32 AND NOT INTEGRITY AND NOT WASM AND TEST_use_gold_linker
 )
 qt_feature("use_lld_linker"
     LABEL "lld"
     AUTODETECT false
-    CONDITION NOT WIN32 AND NOT INTEGRITY AND NOT WASM AND tests.use_lld_linker OR FIXME
+    CONDITION NOT WIN32 AND NOT INTEGRITY AND NOT WASM AND TEST_use_lld_linker
     ENABLE INPUT_linker STREQUAL 'lld'
     DISABLE INPUT_linker STREQUAL 'bfd' OR INPUT_linker STREQUAL 'gold'
 )

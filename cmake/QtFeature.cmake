@@ -1,4 +1,5 @@
 include(QtFeatureCommon)
+include(CheckCXXCompilerFlag)
 
 function(qt_feature_module_begin)
     qt_parse_all_arguments(arg "qt_feature_module_begin"
@@ -868,6 +869,16 @@ function(qt_config_compile_test_machine_tuple label)
     endif()
     message(STATUS "Performing Test ${label} - ${status_label}")
     set(TEST_machine_tuple "${output}" CACHE INTERNAL "${label}")
+endfunction()
+
+function(qt_config_compiler_supports_flag_test name)
+    if(DEFINED "TEST_${name}")
+        return()
+    endif()
+
+    cmake_parse_arguments(arg "" "LABEL;FLAG" "" ${ARGN})
+    check_cxx_compiler_flag("${arg_FLAG}" TEST_${name})
+    set(TEST_${name} "${TEST_${name}}" CACHE INTERNAL "${label}")
 endfunction()
 
 function(qt_make_features_available target)
