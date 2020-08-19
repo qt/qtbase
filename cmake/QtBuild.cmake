@@ -467,6 +467,7 @@ include(QtSyncQtHelpers)
 include(QtTargetHelpers)
 include(QtTestHelpers)
 include(QtToolHelpers)
+include(QtHeadersClean)
 
 # This sets up the scope finalizer mechanism.
 variable_watch(CMAKE_CURRENT_LIST_DIR qt_watch_current_list_dir)

@@ -44,6 +44,7 @@
 
 #if 0
 #pragma qt_no_master_include
+#pragma qt_sync_skip_header_check
 #endif
 
 #if QT_CONFIG(vulkan) || defined(Q_CLANG_QDOC)

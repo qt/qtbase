@@ -559,6 +559,13 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
         endif()
     endif()
 
+    if(QT_FEATURE_headersclean AND NOT arg_NO_MODULE_HEADERS)
+        qt_internal_add_headers_clean_target(
+            ${target}
+            "${module_include_name}"
+            "${module_headers_clean}")
+    endif()
+
     if(NOT ${arg_NO_PRIVATE_MODULE})
         target_include_directories("${target_private}" INTERFACE ${interface_includes})
         target_link_libraries("${target_private}" INTERFACE "${target}")
