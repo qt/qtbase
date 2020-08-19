@@ -157,6 +157,7 @@ public:
     int id() const;
     QPointingDeviceUniqueId uniqueId() const;
     ulong timestamp() const;
+    ulong lastTimestamp() const;
     ulong pressTimestamp() const;
     qreal timeHeld() const;
     qreal pressure() const;

@@ -62,6 +62,7 @@
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcPointerGrab, "qt.pointer.grab")
+Q_LOGGING_CATEGORY(lcPointerVel, "qt.pointer.velocity")
 Q_LOGGING_CATEGORY(lcEPDetach, "qt.pointer.eventpoint.detach")
 
 /*!
@@ -336,6 +337,14 @@ bool QEventPoint::isAccepted() const
 { return d->accept; }
 
 /*!
+    Returns the time from the previous QPointerEvent that contained this point.
+
+    \sa globalLastPosition()
+*/
+ulong QEventPoint::lastTimestamp() const
+{ return d->lastTimestamp; }
+
+/*!
     Sets the accepted state of the point.
 
     In widget-based applications, this function is not used so far, because
@@ -487,14 +496,30 @@ void QMutableEventPoint::updateFrom(const QEventPoint &other)
 }
 
 /*! \internal
-    Set the timestamp from the event that updated this point's positions.
+    Set the timestamp from the event that updated this point's positions,
+    and calculate a new value for velocity().
+
+    The velocity calculation is done here because none of the QPointerEvent
+    subclass constructors take the timestamp directly, and because
+    QGuiApplication traditionally constructs an event first and then sets its
+    timestamp (see for example QGuiApplicationPrivate::processMouseEvent()).
+
+    This function looks up the corresponding instance in QPointingDevicePrivate::activePoints,
+    and assumes that its timestamp() still holds the previous time when this point
+    was updated, its velocity() holds this point's last-known velocity, and
+    its globalPosition() and globalLastPosition() hold this point's current
+    and previous positions, respectively.  We assume timestamps are in milliseconds.
+
+    The velocity calculation is skipped if the platform has promised to
+    provide velocities already by setting the QInputDevice::Velocity capability.
 */
 void QMutableEventPoint::setTimestamp(const ulong t)
 {
     // On mouse press, if the mouse has moved from its last-known location,
     // QGuiApplicationPrivate::processMouseEvent() sends first a mouse move and
     // then a press. Both events will get the same timestamp. So we need to set
-    // the press timestamp and position even when the timestamp isn't advancing.
+    // the press timestamp and position even when the timestamp isn't advancing,
+    // but skip setting lastTimestamp and velocity because those need a time delta.
     if (state() == QEventPoint::State::Pressed) {
         d->pressTimestamp = t;
         d->globalPressPos = d->globalPos;
@@ -502,6 +527,33 @@ void QMutableEventPoint::setTimestamp(const ulong t)
     if (d->timestamp == t)
         return;
     detach();
+    if (device()) {
+        // get the persistent instance out of QPointingDevicePrivate::activePoints
+        // (which sometimes might be the same as this instance)
+        QEventPointPrivate *pd = QPointingDevicePrivate::get(
+                    const_cast<QPointingDevice *>(d->device))->pointById(id())->eventPoint.d;
+        if (t > pd->timestamp) {
+            pd->lastTimestamp = pd->timestamp;
+            pd->timestamp = t;
+            if (state() == QEventPoint::State::Pressed)
+                pd->pressTimestamp = t;
+            if (pd->lastTimestamp > 0 && !device()->capabilities().testFlag(QInputDevice::Capability::Velocity)) {
+                // calculate instantaneous velocity according to time and distance moved since the previous point
+                QVector2D newVelocity = QVector2D(pd->globalPos - pd->globalLastPos) / (t - pd->lastTimestamp) * 1000;
+                // VERY simple kalman filter: does a weighted average
+                // where the older velocities get less and less significant
+                static const float KalmanGain = 0.7f;
+                pd->velocity = newVelocity * KalmanGain + pd->velocity * (1.0f - KalmanGain);
+                qCDebug(lcPointerVel) << "velocity" << newVelocity << "filtered" << pd->velocity <<
+                                         "based on movement" << pd->globalLastPos << "->" << pd->globalPos <<
+                                         "over time" << pd->lastTimestamp << "->" << pd->timestamp;
+            }
+            if (d != pd) {
+                d->lastTimestamp = pd->lastTimestamp;
+                d->velocity = pd->velocity;
+            }
+        }
+    }
     d->timestamp = t;
 }
 
@@ -4820,10 +4872,17 @@ bool QTouchEvent::isReleaseEvent() const
 
 /*!
     \fn QVector2D QEventPoint::velocity() const
-    Returns a velocity vector for this point.
-    The vector is in the screen's coordinate system, using pixels per seconds for the magnitude.
+    Returns a velocity vector, in units of pixels per second, in the coordinate
+    system of the screen or desktop.
 
-    \note The returned vector is only valid if the device's capabilities include QInputDevice::Velocity.
+    \note If the device's capabilities include QInputDevice::Velocity, it means
+    velocity comes from the operating system (perhaps the touch hardware or
+    driver provides it). But usually the \c Velocity capability is not set,
+    indicating that the velocity is calculated by Qt, using a simple Kalman
+    filter to provide a smoothed average velocity rather than an instantaneous
+    value. Effectively it tells how fast and in what direction the user has
+    been dragging this point over the last few events, with the most recent
+    event having the strongest influence.
 
     \sa QInputDevice::capabilities(), QInputEvent::device()
 */

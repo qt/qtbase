@@ -81,6 +81,7 @@ struct QEventPointPrivate {
     QSizeF ellipseDiameters = QSizeF(0, 0);
     QVector2D velocity;
     ulong timestamp = 0;
+    ulong lastTimestamp = 0;
     ulong pressTimestamp = 0;
     QPointingDeviceUniqueId uniqueId;
     int refCount = 1;

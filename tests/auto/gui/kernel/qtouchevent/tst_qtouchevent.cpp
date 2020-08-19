@@ -215,10 +215,16 @@ struct GrabberWindow : public QWindow
 {
     bool grabExclusive = false;
     bool grabPassive = false;
+    QVector2D velocity;
+    ulong timestamp;
+    ulong lastTimestamp;
 
     void touchEvent(QTouchEvent *ev) override {
         qCDebug(lcTests) << ev;
         const auto &firstPoint = ev->point(0);
+        velocity = firstPoint.velocity();
+        timestamp = firstPoint.timestamp();
+        lastTimestamp = firstPoint.lastTimestamp();
         switch (ev->type()) {
         case QEvent::TouchBegin: {
             QCOMPARE(ev->exclusiveGrabber(firstPoint), nullptr);
@@ -264,6 +270,7 @@ private slots:
     void testMultiDevice();
     void grabbers_data();
     void grabbers();
+    void velocity();
 
 private:
     QPointingDevice *touchScreenDevice;
@@ -1940,6 +1947,45 @@ void tst_QTouchEvent::grabbers()
     QWindowSystemInterface::handleTouchEvent(&w, touchScreenDevice, points); // TouchEnd
     QCoreApplication::processEvents();
     QTRY_COMPARE(devPriv->activePoints.count(), 0);
+}
+
+void tst_QTouchEvent::velocity()
+{
+    GrabberWindow w;
+    w.grabExclusive = true;
+    w.setGeometry(100, 100, 100, 100);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+
+    auto devPriv = QPointingDevicePrivate::get(touchScreenDevice);
+    devPriv->activePoints.clear();
+    QPoint pos(10, 10);
+    QTest::touchEvent(&w, touchScreenDevice).press(0, pos, &w);
+    QCOMPARE(devPriv->activePoints.count(), 1);
+    const auto &firstPoint = devPriv->pointById(0)->eventPoint;
+    qCDebug(lcTests) << "persistent active point after press" << firstPoint;
+    QCOMPARE(firstPoint.velocity(), QVector2D());
+
+    QCOMPARE(firstPoint.pressTimestamp(), firstPoint.timestamp());
+    QVERIFY(firstPoint.timestamp() > 0);
+    QCOMPARE(firstPoint.state(), QEventPoint::State::Pressed);
+
+    ulong timestamp = firstPoint.timestamp();
+    for (int i = 1; i < 4; ++i) {
+        qCDebug(lcTests) << "sending touch move event" << i;
+        pos += {10, 10};
+        QTest::touchEvent(&w, touchScreenDevice).move(0, pos, &w);
+        qCDebug(lcTests) << firstPoint;
+        QVERIFY(firstPoint.timestamp() > timestamp);
+        QVERIFY(w.timestamp > w.lastTimestamp);
+        QCOMPARE(w.timestamp, firstPoint.timestamp());
+        timestamp = firstPoint.timestamp();
+        QVERIFY(w.velocity.x() > 0);
+        QVERIFY(w.velocity.y() > 0);
+    }
+    QTest::touchEvent(&w, touchScreenDevice).release(0, pos, &w);
+    QVERIFY(w.velocity.x() > 0);
+    QVERIFY(w.velocity.y() > 0);
 }
 
 QTEST_MAIN(tst_QTouchEvent)

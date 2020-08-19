@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -51,11 +51,17 @@ public:
     int mouseReleaseButton;
     int mouseReleaseButtons;
     int mouseReleaseModifiers;
+    ulong timestamp;
     ulong pressTimestamp;
+    ulong lastTimestamp;
+    QVector2D velocity;
 protected:
     void mousePressEvent(QMouseEvent *e) override
     {
         const auto &firstPoint = e->point(0);
+        qCDebug(lcTests) << e << firstPoint;
+        timestamp = firstPoint.timestamp();
+        lastTimestamp = firstPoint.lastTimestamp();
         if (e->type() == QEvent::MouseButtonPress) {
             auto firstPoint = e->points().first();
             QCOMPARE(e->exclusiveGrabber(firstPoint), nullptr);
@@ -77,12 +83,23 @@ protected:
         if (grabPassive)
             e->addPassiveGrabber(firstPoint, this);
     }
+    void mouseMoveEvent(QMouseEvent *e) override
+    {
+        qCDebug(lcTests) << e << e->points().first();
+        timestamp = e->points().first().timestamp();
+        lastTimestamp = e->points().first().lastTimestamp();
+        velocity = e->points().first().velocity();
+    }
     void mouseReleaseEvent(QMouseEvent *e) override
     {
+        qCDebug(lcTests) << e << e->points().first();
         QWindow::mouseReleaseEvent(e);
         mouseReleaseButton = e->button();
         mouseReleaseButtons = e->buttons();
         mouseReleaseModifiers = e->modifiers();
+        timestamp = e->points().first().timestamp();
+        lastTimestamp = e->points().first().lastTimestamp();
+        velocity = e->points().first().velocity();
         mouseReleaseEventRecieved = true;
         e->accept();
     }
@@ -104,6 +121,7 @@ private slots:
     void checkMouseReleaseEvent();
     void grabbers_data();
     void grabbers();
+    void velocity();
 
 private:
     MouseEventWidget* testMouseWidget;
@@ -277,6 +295,42 @@ void tst_QMouseEvent::grabbers()
     QTest::mouseRelease(testMouseWidget, Qt::LeftButton, Qt::KeyboardModifiers(), {10, 10});
     QTRY_COMPARE(firstEPD->exclusiveGrabber, nullptr);
     QCOMPARE(firstEPD->passiveGrabbers.count(), 0);
+}
+
+void tst_QMouseEvent::velocity()
+{
+    testMouseWidget->grabExclusive = true;
+    auto devPriv = QPointingDevicePrivate::get(const_cast<QPointingDevice *>(QPointingDevice::primaryPointingDevice()));
+    devPriv->activePoints.clear();
+
+    qCDebug(lcTests) << "sending mouse press event";
+    QPoint pos(10, 10);
+    QTest::mousePress(testMouseWidget, Qt::LeftButton, Qt::KeyboardModifiers(), pos);
+    QCOMPARE(devPriv->activePoints.count(), 1);
+    QVERIFY(devPriv->activePoints.count() <= 2);
+    const auto &firstPoint = devPriv->pointById(0)->eventPoint;
+    QVERIFY(firstPoint.timestamp() > 0);
+    QCOMPARE(firstPoint.state(), QEventPoint::State::Pressed);
+
+    ulong timestamp = firstPoint.timestamp();
+    for (int i = 1; i < 4; ++i) {
+        qCDebug(lcTests) << "sending mouse move event" << i;
+        pos += {10, 10};
+        QTest::mouseMove(testMouseWidget, pos, 1);
+        qApp->processEvents();
+        qCDebug(lcTests) << firstPoint;
+        // currently we expect it to be updated in-place in devPriv->activePoints
+        QVERIFY(firstPoint.timestamp() > timestamp);
+        QVERIFY(testMouseWidget->timestamp > testMouseWidget->lastTimestamp);
+        QCOMPARE(testMouseWidget->timestamp, firstPoint.timestamp());
+        timestamp = firstPoint.timestamp();
+        QVERIFY(testMouseWidget->velocity.x() > 0);
+        QVERIFY(testMouseWidget->velocity.y() > 0);
+    }
+    QTest::mouseRelease(testMouseWidget, Qt::LeftButton, Qt::KeyboardModifiers(), pos, 1);
+    qCDebug(lcTests) << firstPoint;
+    QVERIFY(testMouseWidget->velocity.x() > 0);
+    QVERIFY(testMouseWidget->velocity.y() > 0);
 }
 
 QTEST_MAIN(tst_QMouseEvent)
