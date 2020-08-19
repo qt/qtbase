@@ -3473,7 +3473,7 @@ void QMenu::mouseMoveEvent(QMouseEvent *e)
         return;
 
     d->motions++;
-    if (d->motions == 0)
+    if (!d->hasMouseMoved(e->globalPosition().toPoint()))
         return;
 
     d->hasHadMouse = d->hasHadMouse || rect().contains(e->position().toPoint());
