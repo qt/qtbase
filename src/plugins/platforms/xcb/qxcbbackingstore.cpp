@@ -709,9 +709,10 @@ void QXcbBackingStoreImage::put(xcb_drawable_t dst, const QRegion &region, const
     Q_ASSERT(!m_clientSideScroll);
 
     ensureGC(dst);
-    setClip(region);
 
     if (hasShm()) {
+        setClip(region); // Clip in window local coordinates
+
         // Copy scrolled area on server-side from pixmap to window
         const QRegion scrolledRegion = m_scrolledRegion.translated(-offset);
         for (const QRect &rect : scrolledRegion) {
@@ -732,7 +733,15 @@ void QXcbBackingStoreImage::put(xcb_drawable_t dst, const QRegion &region, const
         const QRect bounds = region.boundingRect();
         const QPoint target = bounds.topLeft();
         const QRect source = bounds.translated(offset);
-        flushPixmap(region);
+
+        // First clip in backingstore-local coordinates, and upload
+        // the changed parts of the backingstore to the server.
+        setClip(source);
+        flushPixmap(source);
+
+        // Then clip in window local coordinates, and copy the updated
+        // parts of the backingstore image server-side to the window.
+        setClip(region);
         xcb_copy_area(xcb_connection(),
                       m_xcb_pixmap,
                       dst,
