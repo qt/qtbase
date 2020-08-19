@@ -183,7 +183,8 @@ arguments to the tool can be set after \c{OPTIONS}.
 \section1 Synopsis
 
 \badcode
-qt5_add_dbus_adaptor(<VAR> dbus_spec header parent_class
+qt5_add_dbus_adaptor(<VAR> dbus_spec header
+                     [parent_class]
                      [basename]
                      [classname])
 \endcode

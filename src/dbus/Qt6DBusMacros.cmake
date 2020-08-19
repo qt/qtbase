@@ -152,8 +152,14 @@ if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
 endif()
 
 
-function(qt6_add_dbus_adaptor _sources _xml_file _include _parentClass) # _optionalBasename _optionalClassName)
+function(qt6_add_dbus_adaptor _sources _xml_file _include) # _optionalParentClass _optionalBasename _optionalClassName)
     get_filename_component(_infile ${_xml_file} ABSOLUTE)
+
+    set(_optionalParentClass "${ARGV3}")
+    if(_optionalParentClass)
+        set(_parentClassOption "-l")
+        set(_parentClass "${_optionalParentClass}")
+    endif()
 
     set(_optionalBasename "${ARGV4}")
     if(_optionalBasename)
@@ -170,13 +176,13 @@ function(qt6_add_dbus_adaptor _sources _xml_file _include _parentClass) # _optio
 
     if(_optionalClassName)
         add_custom_command(OUTPUT "${_impl}" "${_header}"
-          COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::qdbusxml2cpp -m -a ${_basename} -c ${_optionalClassName} -i ${_include} -l ${_parentClass} ${_infile}
+          COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::qdbusxml2cpp -m -a ${_basename} -c ${_optionalClassName} -i ${_include} ${_parentClassOption} ${_parentClass} ${_infile}
           DEPENDS ${_infile} ${QT_CMAKE_EXPORT_NAMESPACE}::qdbuscpp2xml
           VERBATIM
         )
     else()
         add_custom_command(OUTPUT "${_impl}" "${_header}"
-          COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::qdbusxml2cpp -m -a ${_basename} -i ${_include} -l ${_parentClass} ${_infile}
+          COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::qdbusxml2cpp -m -a ${_basename} -i ${_include} ${_parentClassOption} ${_parentClass} ${_infile}
           DEPENDS ${_infile} ${QT_CMAKE_EXPORT_NAMESPACE}::qdbuscpp2xml
           VERBATIM
         )

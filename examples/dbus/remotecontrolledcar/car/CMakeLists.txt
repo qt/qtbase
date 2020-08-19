@@ -24,8 +24,8 @@ find_package(Qt6 COMPONENTS Widgets)
 set(car_SRCS)
 qt6_add_dbus_adaptor(car_SRCS
     car.xml
-    car.h
-    Car
+    qobject.h
+    "" # empty parent_class value on purpose to not pass -l flag
     car_adaptor
 )
 # special case end
