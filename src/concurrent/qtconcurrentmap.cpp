@@ -153,7 +153,7 @@
     sequence containing the modified content, and QtConcurrent::mappedReduced()
     returns a single result.
 
-    These functions are a part of the \l {Qt Concurrent} framework.
+    These functions are part of the \l {Qt Concurrent} framework.
 
     Each of the above functions has a blocking variant that returns
     the final result instead of a QFuture. You use them in the same

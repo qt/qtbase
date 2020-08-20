@@ -61,6 +61,12 @@ namespace QtConcurrent {
     template <typename T>
     QFuture<T> run(QThreadPool *pool, Function function, ...);
 
+    template <typename T>
+    QFuture<T> runWithPromise(Function function, ...);
+
+    template <typename T>
+    QFuture<T> runWithPromise(QThreadPool *pool, Function function, ...);
+
 } // namespace QtConcurrent
 
 #else

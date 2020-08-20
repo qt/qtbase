@@ -144,3 +144,89 @@ QtConcurrent::run(TestClass(), 42).waitForFinished();
 // Ill-formed
 QtConcurrent::run(&o, 42).waitForFinished(); // compilation error
 //! [8]
+
+//! [9]
+extern void aFunction(QPromise<void> &promise);
+QFuture<void> future = QtConcurrent::runWithPromise(aFunction);
+//! [9]
+
+//! [10]
+extern void aFunction(QPromise<void> &promise, int arg1, const QString &arg2);
+
+int integer = ...;
+QString string = ...;
+
+QFuture<void> future = QtConcurrent::runWithPromise(aFunction, integer, string);
+//! [10]
+
+//! [11]
+void helloWorldFunction(QPromise<QString> &promise)
+{
+    promise.addResult("Hello");
+    promise.addResult("world");
+}
+
+QFuture<QString> future = QtConcurrent::runWithPromise(helloWorldFunction);
+...
+QList<QString> results = future.results();
+//! [11]
+
+//! [12]
+void aFunction(QPromise<int> &promise)
+{
+    for (int i = 0; i < 100; ++i) {
+        promise.suspendIfRequested();
+        if (promise.isCanceled())
+            return;
+
+        // computes the next result, may be time consuming like 1 second
+        const int res = ... ;
+        promise.addResult(res);
+    }
+}
+
+QFuture<int> future = QtConcurrent::runWithPromise(aFunction);
+
+... // user pressed a pause button after 10 seconds
+future.suspend();
+
+... // user pressed a resume button after 10 seconds
+future.resume();
+
+... // user pressed a cancel button after 10 seconds
+future.cancel();
+//! [12]
+
+//! [13]
+void aFunction(QPromise<int> &promise)
+{
+    promise.setProgressRange(0, 100);
+    int result = 0;
+    for (int i = 0; i < 100; ++i) {
+        // computes some part of the task
+        const int part = ... ;
+        result += part;
+        promise.setProgressValue(i);
+    }
+    promise.addResult(result);
+}
+
+QFutureWatcher<int> watcher;
+QObject::connect(&watcher, &QFutureWatcher::progressValueChanged, [](int progress){
+    ... ; // update GUI with a progress
+    qDebug() << "current progress:" << progress;
+});
+watcher.setFuture(QtConcurrent::runWithPromise(aFunction));
+//! [13]
+
+//! [14]
+struct Functor {
+    void operator()(QPromise<int> &) { }
+    void operator()(QPromise<double> &) { }
+};
+
+Functor f;
+runWithPromise<double>(f); // this will select the 2nd overload
+// runWithPromise(f);      // error, both candidate overloads potentially match
+//! [14]
+

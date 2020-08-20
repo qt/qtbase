@@ -39,15 +39,27 @@
 
 /*!
     \page qtconcurrentrun.html
-    \title Concurrent Run
+    \title Concurrent Run and Run With Promise
     \ingroup thread
 
-    The QtConcurrent::run() function runs a function in a separate thread.
+    The QtConcurrent::run() and QtConcurrent::runWithPromise()
+    functions run a function in a separate thread.
     The return value of the function is made available through the QFuture API.
+    The function passed to QtConcurrent::run() is able to report merely
+    a single computation result to its caller, while the function passed to
+    QtConcurrent::runWithPromise() can make use of the additional
+    QPromise API, which enables multiple result reporting, progress reporting,
+    suspending the computation when requested by the caller, or stopping
+    the computation on the caller's demand.
 
-    This function is a part of the \l {Qt Concurrent} framework.
+    These functions are part of the Qt Concurrent framework.
 
-    \section1 Running a Function in a Separate Thread
+    \section1 Concurrent Run
+
+    The function passed to QtConcurrent::run() may report the result
+    through its return value.
+
+    \section2 Running a Function in a Separate Thread
 
     To run a function in another thread, use QtConcurrent::run():
 
@@ -62,7 +74,7 @@
 
     \snippet code/src_concurrent_qtconcurrentrun.cpp explicit-pool-0
 
-    \section1 Passing Arguments to the Function
+    \section2 Passing Arguments to the Function
 
     Passing arguments to the function is done by adding them to the
     QtConcurrent::run() call immediately after the function name. For example:
@@ -74,7 +86,7 @@
     the function. Changes made to the arguments after calling
     QtConcurrent::run() are \e not visible to the thread.
 
-    \section1 Returning Values from the Function
+    \section2 Returning Values from the Function
 
     Any return value from the function is available via QFuture:
 
@@ -88,9 +100,9 @@
     to become available. Use QFutureWatcher to get notification when the
     function has finished execution and the result is available.
 
-    \section1 Additional API Features
+    \section2 Additional API Features
 
-    \section2 Using Member Functions
+    \section3 Using Member Functions
 
     QtConcurrent::run() also accepts pointers to member functions. The first
     argument must be either a const reference or a pointer to an instance of
@@ -107,7 +119,7 @@
 
     \snippet code/src_concurrent_qtconcurrentrun.cpp 5
 
-    \section2 Using Lambda Functions
+    \section3 Using Lambda Functions
 
     Calling a lambda function is done like this:
 
@@ -120,6 +132,86 @@
     Using callable object is done like this:
 
     \snippet code/src_concurrent_qtconcurrentrun.cpp 8
+
+    \section1 Concurrent Run With Promise
+
+    The QtConcurrent::runWithPromise() enables more control
+    for the running task comparing to QtConcurrent::run().
+    It allows progress reporting of the running task,
+    reporting multiple results, suspending the execution
+    if it was requested, or canceling the task on caller's
+    demand.
+
+    \section2 The mandatory QPromise argument
+
+    The function passed to QtConcurrent::runWithPromise() is expected
+    to have an additional argument of \e {QPromise<T> &} type, where
+    T is the type of the computation result (it should match the type T
+    of QFuture<T> returned by the QtConcurrent::runWithPromise()), like e.g.:
+
+    \snippet code/src_concurrent_qtconcurrentrun.cpp 9
+
+    The \e promise argument is instantiated inside the
+    QtConcurrent::runWithPromise() function, and its reference
+    is passed to the invoked \e aFunction, so the user
+    doesn't need to instantiate it by himself, nor pass it explicitly
+    when calling QtConcurrent::runWithPromise().
+
+    The additional argument of QPromise type always needs to appear
+    as a first argument on function's arguments list, like:
+
+    \snippet code/src_concurrent_qtconcurrentrun.cpp 10
+
+    \section2 Reporting results
+
+    In contrast to QtConcurrent::run(), the function passed to
+    QtConcurrent::runWithPromise() is expected to always return void type.
+    Result reporting is done through the additional argument of QPromise type.
+    It also enables multiple result reporting, like:
+
+    \snippet code/src_concurrent_qtconcurrentrun.cpp 11
+
+    \section2 Suspending and canceling the execution
+
+    The QPromise API also enables suspending and canceling the computation, if requested:
+
+    \snippet code/src_concurrent_qtconcurrentrun.cpp 12
+
+    The call to \e future.suspend() requests the running task to
+    hold its execution. After calling this method, the running task
+    will suspend after the next call to \e promise.suspendIfRequested()
+    in its iteration loop. In this case the running task will
+    block on a call to \e promise.suspendIfRequested(). The blocked
+    call will unblock after the \e future.resume() is called.
+    Note, that internally suspendIfRequested() uses wait condition
+    in order to unblock, so the running thread goes into an idle state
+    instead of wasting its resources when blocked in order to periodically
+    check if the resume request came from the caller's thread.
+
+    The call to \e future.cancel() from the last line causes that the next
+    call to \e promise.isCanceled() will return \c true and
+    \e aFunction will return immediately without any further result reporting.
+
+    \section2 Progress reporting
+
+    It's also possible to report the progress of a task
+    independently of result reporting, like:
+
+    \snippet code/src_concurrent_qtconcurrentrun.cpp 13
+
+    The caller installs the \e QFutureWatcher for the \e QFuture
+    returned by QtConcurrent::runWithPromise() in order to
+    connect to its \e progressValueChanged() signal and update
+    e.g. the graphical user interface accordingly.
+
+    \section2 Invoking functions with overloaded operator()()
+
+    By default, QtConcurrent::runWithPromise() doesn't support functors with
+    overloaded operator()(). In case of overloaded functors the user
+    needs to explicitly specify the result type
+    as a template parameter passed to runWithPromise, like:
+
+    \snippet code/src_concurrent_qtconcurrentrun.cpp 14
 */
 
 /*!
@@ -171,4 +263,53 @@
     has not been started.
 
     \sa {Concurrent Run}
+*/
+
+/*!
+    \since 6.0
+    \fn QFuture<T> QtConcurrent::runWithPromise(Function function, ...);
+
+    Equivalent to
+    \code
+    QtConcurrent::runWithPromise(QThreadPool::globalInstance(), function, ...);
+    \endcode
+
+    Runs \a function in a separate thread. The thread is taken from the global
+    QThreadPool. Note that \a function may not run immediately; \a function
+    will only be run once a thread becomes available.
+
+    The \a function is expected to return void
+    and must take an additional argument of \e {QPromise<T> &} type,
+    placed as a first argument in function's argument list. T is the result type
+    and it is the same for the returned \e QFuture<T>.
+
+    Similar to QtConcurrent::run(), the QFuture returned can be used to query for the
+    running/finished status and the value reported by the function. In addition,
+    it may be used for suspending or canceling the running task, fetching
+    multiple results from the called /a function or monitoring progress
+    reported by the \a function.
+
+    \sa {Concurrent Run With Promise}
+*/
+
+/*!
+    \since 6.0
+    \fn QFuture<T> QtConcurrent::runWithPromise(QThreadPool *pool, Function function, ...);
+
+    Runs \a function in a separate thread. The thread is taken from the
+    QThreadPool \a pool. Note that \a function may not run immediately; \a function
+    will only be run once a thread becomes available.
+
+    The \a function is expected to return void
+    and must take an additional argument of \e {QPromise<T> &} type,
+    placed as a first argument in function's argument list. T is the result type
+    and it is the same for the returned \e QFuture<T>.
+
+    Similar to QtConcurrent::run(), the QFuture returned can be used to query for the
+    running/finished status and the value reported by the function. In addition,
+    it may be used for suspending or canceling the running task, fetching
+    multiple results from the called /a function or monitoring progress
+    reported by the \a function.
+
+    \sa {Concurrent Run With Promise}
 */
