@@ -1225,11 +1225,6 @@ qt_configure_add_report_entry(
 )
 qt_configure_add_report_entry(
     TYPE WARNING
-    MESSAGE "The [-no]-qpa-platform-guard argument is deprecated and has no effect."
-    CONDITION ( NOT INPUT_qpa_platform_guard STREQUAL '' )
-)
-qt_configure_add_report_entry(
-    TYPE WARNING
     MESSAGE "No QPA platform plugin enabled! This will produce a Qt that cannot run GUI applications.  See \"Platform backends\" in the output of --help."
     CONDITION QT_FEATURE_gui AND LINUX AND NOT ANDROID AND NOT QT_FEATURE_xcb AND NOT QT_FEATURE_eglfs AND NOT QT_FEATURE_directfb AND NOT QT_FEATURE_linuxfb
 )

@@ -35,7 +35,6 @@
             "opengles3": "boolean",
             "openvg": "boolean",
             "qpa": { "type": "string", "name": "qpa_default_platform" },
-            "qpa-platform-guard": "boolean",
             "sm": { "type": "boolean", "name": "sessionmanager" },
             "tslib": "boolean",
             "vulkan": "boolean",
@@ -1707,11 +1706,6 @@
             "type": "note",
             "condition": "features.accessibility && features.xcb && !features.accessibility-atspi-bridge",
             "message": "Disabling X11 Accessibility Bridge: D-Bus or AT-SPI is missing."
-        },
-        {
-            "type": "warning",
-            "condition": "input.qpa-platform-guard != ''",
-            "message": "The [-no]-qpa-platform-guard argument is deprecated and has no effect."
         },
         {
             "type": "warning",
