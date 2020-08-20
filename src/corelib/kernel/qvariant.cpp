@@ -2217,6 +2217,8 @@ int QVariant::userType() const
 }
 
 /*!
+    \since 6.0
+
     Returns the QMetaType of the value stored in the variant.
 */
 QMetaType QVariant::metaType() const
