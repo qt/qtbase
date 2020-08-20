@@ -49,18 +49,18 @@
 ****************************************************************************/
 
 #include <QtGui>
-#include <iostream.h>
+#include <iostream>
 
-int main(int argv, char **args)
+namespace textdocumentendsnippet {
+void wrapper()
 {
     QString contentString("One\nTwp\nThree");
-
     QTextDocument *doc = new QTextDocument(contentString);
 
 //! [0]
-    for (QTextBlock it = doc->begin(); it != doc->end(); it = it.next())
-        cout << it.text().toStdString() << Qt::endl;
+for (QTextBlock it = doc->begin(); it != doc->end(); it = it.next())
+    std::cout << it.text().toStdString() << "\n";
 //! [0]
 
-    return 0;
-}
+} // wrapper
+} //textdocumentendsnippet

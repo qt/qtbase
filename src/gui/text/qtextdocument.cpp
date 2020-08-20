@@ -1642,7 +1642,7 @@ QTextBlock QTextDocument::begin() const
     This function returns a block to test for the end of the document
     while iterating over it.
 
-    \snippet textdocumentendsnippet.cpp 0
+    \snippet textdocument-end/textdocumentendsnippet.cpp 0
 
     The block returned is invalid and represents the block after the
     last block in the document. You can use lastBlock() to retrieve the

@@ -3,6 +3,6 @@ SUBDIRS =
 
 contains(QT_BUILD_PARTS, tests) {
     SUBDIRS += \
-        qfontdatabase
+        qfontdatabase \
+        textdocument-end
 }
-
