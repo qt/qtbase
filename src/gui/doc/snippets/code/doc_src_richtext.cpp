@@ -47,7 +47,12 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QTextDocument>
+#include <QTextEdit>
 
+namespace doc_src_richtext {
+
+void wrapper() {
 //! [0]
 QTextDocument *newDocument = new QTextDocument;
 //! [0]
@@ -57,8 +62,13 @@ QTextDocument *newDocument = new QTextDocument;
 QTextEdit *editor = new QTextEdit;
 QTextDocument *editorDocument = editor->document();
 //! [1]
+Q_UNUSED(newDocument);
+Q_UNUSED(editorDocument);
+} // wrapper
 
-
+void wrapper2() {
+auto parent = new QTextEdit();
+QString aStringContainingHTMLtext;
 //! [2]
 QTextEdit *editor = new QTextEdit(parent);
 editor->setHtml(aStringContainingHTMLtext);
@@ -69,7 +79,7 @@ editor->show();
 //! [3]
 QTextDocument *document = editor->document();
 //! [3]
-
+Q_UNUSED(document);
 
 //! [4]
 QTextCursor cursor = editor->textCursor();
@@ -81,6 +91,9 @@ editor->setTextCursor(cursor);
 //! [5]
 
 
+QTextEdit textEdit;
+QTextCursor textCursor;
+QString paragraphText;
 //! [6]
 textEdit.show();
 
@@ -93,3 +106,6 @@ for (int i = 0; i < 1000; ++i) {
 
 textCursor.endEditBlock();
 //! [6]
+
+} // wrapper2
+} // doc_src_richtext
