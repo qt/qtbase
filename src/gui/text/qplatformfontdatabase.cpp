@@ -39,7 +39,6 @@
 
 #include "qplatformfontdatabase.h"
 #include <QtGui/private/qfontengine_p.h>
-#include <QtGui/private/qfontengine_qpf2_p.h>
 #include <QtGui/private/qfontdatabase_p.h>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QScreen>
@@ -47,6 +46,7 @@
 #include <QtCore/QLibraryInfo>
 #include <QtCore/QDir>
 #include <QtCore/QMetaEnum>
+#include <QtCore/qendian.h>
 
 #include <algorithm>
 #include <iterator>
@@ -64,48 +64,6 @@ void qt_registerFont(const QString &familyname, const QString &stylename,
 void qt_registerFontFamily(const QString &familyName);
 void qt_registerAliasToFontFamily(const QString &familyName, const QString &alias);
 bool qt_isFontFamilyPopulated(const QString &familyName);
-
-/*!
-    Registers the pre-rendered QPF2 font contained in the given \a dataArray.
-
-    \sa registerFont()
-*/
-void QPlatformFontDatabase::registerQPF2Font(const QByteArray &dataArray, void *handle)
-{
-    if (dataArray.size() == 0)
-        return;
-
-    const uchar *data = reinterpret_cast<const uchar *>(dataArray.constData());
-    if (QFontEngineQPF2::verifyHeader(data, dataArray.size())) {
-        QString fontName = QFontEngineQPF2::extractHeaderField(data, QFontEngineQPF2::Tag_FontName).toString();
-        int pixelSize = QFontEngineQPF2::extractHeaderField(data, QFontEngineQPF2::Tag_PixelSize).toInt();
-        QVariant weight = QFontEngineQPF2::extractHeaderField(data, QFontEngineQPF2::Tag_Weight);
-        QVariant style = QFontEngineQPF2::extractHeaderField(data, QFontEngineQPF2::Tag_Style);
-        QByteArray writingSystemBits = QFontEngineQPF2::extractHeaderField(data, QFontEngineQPF2::Tag_WritingSystems).toByteArray();
-
-        if (!fontName.isEmpty() && pixelSize) {
-            QFont::Weight fontWeight = QFont::Normal;
-            if (weight.userType() == QMetaType::Int || weight.userType() == QMetaType::UInt)
-                fontWeight = QFont::Weight(weight.toInt());
-
-            QFont::Style fontStyle = static_cast<QFont::Style>(style.toInt());
-
-            QSupportedWritingSystems writingSystems;
-            for (int i = 0; i < writingSystemBits.count(); ++i) {
-                uchar currentByte = writingSystemBits.at(i);
-                for (int j = 0; j < 8; ++j) {
-                    if (currentByte & 1)
-                        writingSystems.setSupported(QFontDatabase::WritingSystem(i * 8 + j));
-                    currentByte >>= 1;
-                }
-            }
-            QFont::Stretch stretch = QFont::Unstretched;
-            registerFont(fontName,QString(),QString(),fontWeight,fontStyle,stretch,true,false,pixelSize,false,writingSystems,handle);
-        }
-    } else {
-        qDebug("header verification of QPF2 font failed. maybe it is corrupt?");
-    }
-}
 
 /*!
     Registers a font with the given set of attributes describing the font's
@@ -126,7 +84,7 @@ void QPlatformFontDatabase::registerQPF2Font(const QByteArray &dataArray, void *
     The writing systems supported by the font are specified by the
     \a writingSystems argument.
 
-    \sa registerQPF2Font(), registerFontFamily()
+    \sa registerFontFamily()
 */
 void QPlatformFontDatabase::registerFont(const QString &familyname, const QString &stylename,
                                          const QString &foundryname, QFont::Weight weight,
@@ -294,30 +252,10 @@ QPlatformFontDatabase::~QPlatformFontDatabase()
   when the required family needs population. You then call registerFont() to
   finish population of the family.
 
-  The default implementation looks in the fontDir() location and registers all
-  QPF2 fonts.
+  The default implementation does nothing.
 */
 void QPlatformFontDatabase::populateFontDatabase()
 {
-    QString fontpath = fontDir();
-    if(!QFile::exists(fontpath)) {
-        qWarning("QFontDatabase: Cannot find font directory '%s' - is Qt installed correctly?",
-                 qPrintable(QDir::toNativeSeparators(fontpath)));
-        return;
-    }
-
-    QDir dir(fontpath);
-    dir.setNameFilters(QStringList() << QLatin1String("*.qpf2"));
-    dir.refresh();
-    for (int i = 0; i < int(dir.count()); ++i) {
-        const QByteArray fileName = QFile::encodeName(dir.absoluteFilePath(dir[i]));
-        QFile file(QString::fromLocal8Bit(fileName));
-        if (file.open(QFile::ReadOnly)) {
-            const QByteArray fileData = file.readAll();
-            QByteArray *fileDataPtr = new QByteArray(fileData);
-            registerQPF2Font(fileData, fileDataPtr);
-        }
-    }
 }
 
 /*!
@@ -358,10 +296,10 @@ QFontEngineMulti *QPlatformFontDatabase::fontEngineMulti(QFontEngine *fontEngine
 */
 QFontEngine *QPlatformFontDatabase::fontEngine(const QFontDef &fontDef, void *handle)
 {
-    QByteArray *fileDataPtr = static_cast<QByteArray *>(handle);
-    QFontEngineQPF2 *engine = new QFontEngineQPF2(fontDef,*fileDataPtr);
-    //qDebug() << fontDef.pixelSize << fontDef.weight << fontDef.style << fontDef.stretch << fontDef.styleHint << fontDef.styleStrategy << fontDef.family;
-    return engine;
+    Q_UNUSED(fontDef);
+    Q_UNUSED(handle);
+    qWarning("This plugin does not support loading system fonts.");
+    return nullptr;
 }
 
 QFontEngine *QPlatformFontDatabase::fontEngine(const QByteArray &fontData, qreal pixelSize,
@@ -487,8 +425,6 @@ bool QPlatformFontDatabase::fontsAlwaysScalable() const
     std::copy(standard, standard + num_standards, std::back_inserter(ret));
     return ret;
 }
-
-// ### copied to tools/makeqpf/qpf2.cpp
 
 // see the Unicode subset bitfields in the MSDN docs
 static const quint8 requiredUnicodeBits[QFontDatabase::WritingSystemsCount][2] = {

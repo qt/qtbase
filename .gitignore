@@ -75,7 +75,6 @@ qt*-config.pri
 /bin/linguist
 /bin/lrelease
 /bin/lupdate
-/bin/makeqpf
 /bin/moc
 /bin/patternist
 /bin/phonon

@@ -75,7 +75,6 @@ SOURCES += \
     text/qinputcontrol.cpp
 
 SOURCES += \
-    text/qfontengine_qpf2.cpp \
     text/qplatformfontdatabase.cpp
 
 HEADERS += \

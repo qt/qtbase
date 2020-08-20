@@ -134,7 +134,6 @@ public:
     static QFont::Weight weightFromInteger(int weight);
 
     //callback
-    static void registerQPF2Font(const QByteArray &dataArray, void *handle);
     static void registerFont(const QString &familyname, const QString &stylename,
                              const QString &foundryname, QFont::Weight weight,
                              QFont::Style style, QFont::Stretch stretch, bool antialiased,
