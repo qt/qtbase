@@ -225,9 +225,8 @@ public:
 
     void xi2SelectStateEvents();
     void xi2SelectDeviceEvents(xcb_window_t window);
-    void xi2SelectDeviceEventsCompatibility(xcb_window_t window);
     bool xi2SetMouseGrabEnabled(xcb_window_t w, bool grab);
-    bool xi2MouseEventsDisabled() const;
+
     Qt::MouseButton xiToQtMouseButton(uint32_t b);
     void xi2UpdateScrollingDevices();
     bool startSystemMoveResizeForTouch(xcb_window_t window, int edges);

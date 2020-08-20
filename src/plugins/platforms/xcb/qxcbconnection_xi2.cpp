@@ -500,108 +500,6 @@ void QXcbConnection::xi2SetupDevices()
         qCDebug(lcQpaXInputDevices) << "multi-pointer X detected";
 }
 
-/*! \internal
-
-    Notes on QT_XCB_NO_XI2_MOUSE Handling:
-
-    Here we don't select pointer button press/release and motion events on master devices, instead
-    we select these events directly on slave devices. This means that a master device will fallback
-    to sending core events for every XI_* event that is sent directly by a slave device. For more
-    details see "Event processing for attached slave devices" in XInput2 specification. To prevent
-    handling of the same event twice, we have checks for xi2MouseEventsDisabled() in XI2 event
-    handlers (but this is somewhat inconsistent in some situations). If the purpose for
-    QT_XCB_NO_XI2_MOUSE was so that an application using QAbstractNativeEventFilter would see core
-    mouse events before they are handled by Qt then QT_XCB_NO_XI2_MOUSE won't always work as
-    expected (e.g. we handle scroll event directly from a slave device event, before an application
-    has seen the fallback core event from a master device).
-
-    The commit introducing QT_XCB_NO_XI2_MOUSE also states that setting this envvar "restores the
-    old behavior with broken grabbing". It did not elaborate why grabbing was not fixed for this
-    code path. The issue that this envvar tries to solve seem to be less important than broken
-    grabbing (broken apparently only for touch events). Thus, if you really want core mouse events
-    in your application and do not care about broken touch, then use QT_XCB_NO_XI2 (more on this
-    below) to disable the extension all together. The reason why grabbing might have not been fixed
-    is that calling XIGrabDevice with this code path for some reason always returns AlreadyGrabbed
-    (by debugging X server's code it appears that when we call XIGrabDevice, an X server first grabs
-    pointer via core pointer and then fails to do XI2 grab with AlreadyGrabbed; disclaimer - I did
-    not debug this in great detail). When we try supporting odd setups like QT_XCB_NO_XI2_MOUSE, we
-    are asking for trouble anyways.
-
-    In conclusion, introduction of QT_XCB_NO_XI2_MOUSE causes more issues than solves - the above
-    mentioned inconsistencies, maintenance of this code path and that QT_XCB_NO_XI2_MOUSE replaces
-    less important issue with somewhat more important issue. It also makes us to use less optimal
-    code paths in certain situations (see xi2HandleHierarchyEvent). Using of QT_XCB_NO_XI2 has its
-    drawbacks too - no tablet and touch events. So the only real fix in this case is at an
-    application side (teach the application about xcb_ge_event_t events). Based on this,
-    QT_XCB_NO_XI2_MOUSE will be removed in ### Qt 6. It should not have existed in the first place,
-    native events seen by QAbstractNativeEventFilter is not really a public API, applications should
-    expect changes at this level and do ifdefs if something changes between Qt version.
-*/
-void QXcbConnection::xi2SelectDeviceEventsCompatibility(xcb_window_t window)
-{
-    if (window == rootWindow())
-        return;
-
-    uint32_t mask = 0;
-
-    if (isAtLeastXI22()) {
-        mask |= XCB_INPUT_XI_EVENT_MASK_TOUCH_BEGIN;
-        mask |= XCB_INPUT_XI_EVENT_MASK_TOUCH_UPDATE;
-        mask |= XCB_INPUT_XI_EVENT_MASK_TOUCH_END;
-
-        qt_xcb_input_event_mask_t xiMask;
-        xiMask.header.deviceid = XCB_INPUT_DEVICE_ALL_MASTER;
-        xiMask.header.mask_len = 1;
-        xiMask.mask = mask;
-
-        xcb_void_cookie_t cookie =
-                xcb_input_xi_select_events_checked(xcb_connection(), window, 1, &xiMask.header);
-        xcb_generic_error_t *error = xcb_request_check(xcb_connection(), cookie);
-        if (error) {
-            qCDebug(lcQpaXInput, "failed to select events, window %x, error code %d", window, error->error_code);
-            free(error);
-        } else {
-            QWindowSystemInterfacePrivate::TabletEvent::setPlatformSynthesizesMouse(false);
-        }
-    }
-
-    mask = XCB_INPUT_XI_EVENT_MASK_BUTTON_PRESS;
-    mask |= XCB_INPUT_XI_EVENT_MASK_BUTTON_RELEASE;
-    mask |= XCB_INPUT_XI_EVENT_MASK_MOTION;
-
-#if QT_CONFIG(tabletevent)
-    QSet<int> tabletDevices;
-    if (!m_tabletData.isEmpty()) {
-        const int nrTablets = m_tabletData.count();
-        QList<qt_xcb_input_event_mask_t> xiEventMask(nrTablets);
-        for (int i = 0; i < nrTablets; ++i) {
-            int deviceId = m_tabletData.at(i).deviceId;
-            tabletDevices.insert(deviceId);
-            xiEventMask[i].header.deviceid = deviceId;
-            xiEventMask[i].header.mask_len = 1;
-            xiEventMask[i].mask = mask;
-        }
-        xcb_input_xi_select_events(xcb_connection(), window, nrTablets, &(xiEventMask.data()->header));
-    }
-#endif
-
-    if (!m_scrollingDevices.isEmpty()) {
-        QList<qt_xcb_input_event_mask_t> xiEventMask(m_scrollingDevices.size());
-        int i = 0;
-        for (const ScrollingDevice& scrollingDevice : qAsConst(m_scrollingDevices)) {
-#if QT_CONFIG(tabletevent)
-            if (tabletDevices.contains(scrollingDevice.deviceId))
-                continue; // All necessary events are already captured.
-#endif
-            xiEventMask[i].header.deviceid = scrollingDevice.deviceId;
-            xiEventMask[i].header.mask_len = 1;
-            xiEventMask[i].mask = mask;
-            i++;
-        }
-        xcb_input_xi_select_events(xcb_connection(), window, i, &(xiEventMask.data()->header));
-    }
-}
-
 QXcbConnection::TouchDeviceData *QXcbConnection::touchDeviceForId(int id)
 {
     TouchDeviceData *dev = nullptr;
@@ -769,8 +667,7 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
         case XCB_INPUT_BUTTON_PRESS:
         case XCB_INPUT_BUTTON_RELEASE:
         case XCB_INPUT_MOTION:
-            if (!xi2MouseEventsDisabled() && eventListener &&
-                    !(xiDeviceEvent->flags & XCB_INPUT_POINTER_EVENT_FLAGS_POINTER_EMULATED))
+            if (eventListener && !(xiDeviceEvent->flags & XCB_INPUT_POINTER_EVENT_FLAGS_POINTER_EMULATED))
                 eventListener->handleXIMouseEvent(event);
             break;
 
@@ -786,7 +683,7 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
                 xi2ProcessTouch(xiDeviceEvent, platformWindow);
             break;
         }
-    } else if (xiEnterEvent && !xi2MouseEventsDisabled() && eventListener) {
+    } else if (xiEnterEvent && eventListener) {
         switch (xiEnterEvent->event_type) {
         case XCB_INPUT_ENTER:
         case XCB_INPUT_LEAVE:
@@ -794,14 +691,6 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
             break;
         }
     }
-}
-
-bool QXcbConnection::xi2MouseEventsDisabled() const
-{
-    static bool xi2MouseDisabled = qEnvironmentVariableIsSet("QT_XCB_NO_XI2_MOUSE");
-    // FIXME: Don't use XInput2 mouse events when Xinerama extension
-    // is enabled, because it causes problems with multi-monitor setup.
-    return xi2MouseDisabled || hasXinerama();
 }
 
 bool QXcbConnection::isTouchScreen(int id)
@@ -1064,15 +953,6 @@ void QXcbConnection::xi2HandleHierarchyEvent(void *event)
         return;
 
     xi2SetupDevices();
-
-    if (xi2MouseEventsDisabled()) {
-        // In compatibility mode (a.k.a xi2MouseEventsDisabled() mode) we select events for
-        // each device separately. When a new device appears, we have to select events from
-        // this device on all event-listening windows. This is not needed when events are
-        // selected via XIAllDevices/XIAllMasterDevices (as in xi2SelectDeviceEvents()).
-        for (auto it = m_mapper.cbegin(), end = m_mapper.cend(); it != end; ++it)
-            xi2SelectDeviceEventsCompatibility(it.key());
-    }
 }
 
 void QXcbConnection::xi2HandleDeviceChangedEvent(void *event)

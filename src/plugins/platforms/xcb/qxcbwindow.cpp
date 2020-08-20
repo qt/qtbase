@@ -480,12 +480,8 @@ void QXcbWindow::create()
                         atom(QXcbAtom::_XEMBED_INFO),
                         32, 2, (void *)data);
 
-    if (connection()->hasXInput2()) {
-        if (connection()->xi2MouseEventsDisabled())
-            connection()->xi2SelectDeviceEventsCompatibility(m_window);
-        else
-            connection()->xi2SelectDeviceEvents(m_window);
-    }
+    if (connection()->hasXInput2())
+        connection()->xi2SelectDeviceEvents(m_window);
 
     setWindowState(window()->windowStates());
     setWindowFlags(window()->flags());
@@ -1915,7 +1911,7 @@ static inline bool doCheckUnGrabAncestor(QXcbConnection *conn)
     */
     if (conn) {
         const bool mouseButtonsPressed = (conn->buttonState() != Qt::NoButton);
-        return mouseButtonsPressed || (conn->hasXInput2() && !conn->xi2MouseEventsDisabled());
+        return mouseButtonsPressed || conn->hasXInput2();
     }
     return true;
 }
@@ -2266,7 +2262,7 @@ bool QXcbWindow::setMouseGrabEnabled(bool grab)
     if (grab && !connection()->canGrab())
         return false;
 
-    if (connection()->hasXInput2() && !connection()->xi2MouseEventsDisabled()) {
+    if (connection()->hasXInput2()) {
         bool result = connection()->xi2SetMouseGrabEnabled(m_window, grab);
         if (grab && result)
             connection()->setMouseGrabber(this);
