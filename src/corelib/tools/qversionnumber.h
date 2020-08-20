@@ -387,7 +387,7 @@ public:
     }
 
 private:
-    enum { SegmentUnknown = quint8(~0U) };
+    enum { SegmentUnknown = static_cast<quint8>(~0U) };
 
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
     constexpr QTypeRevision(quint8 major, quint8 minor)
