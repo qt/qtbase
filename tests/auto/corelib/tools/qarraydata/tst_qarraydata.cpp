@@ -800,9 +800,12 @@ void tst_QArrayData::arrayOps()
     };
     const CountedObject objArray[5];
 
-    QVERIFY(!QTypeInfo<int>::isComplex && !QTypeInfo<int>::isStatic);
-    QVERIFY(QTypeInfo<QString>::isComplex && !QTypeInfo<QString>::isStatic);
-    QVERIFY(QTypeInfo<CountedObject>::isComplex && QTypeInfo<CountedObject>::isStatic);
+    static_assert(!QTypeInfo<int>::isComplex);
+    static_assert(QTypeInfo<int>::isRelocatable);
+    static_assert(QTypeInfo<QString>::isComplex);
+    static_assert(QTypeInfo<QString>::isRelocatable);
+    static_assert(QTypeInfo<CountedObject>::isComplex);
+    static_assert(!QTypeInfo<CountedObject>::isRelocatable);
 
     QCOMPARE(CountedObject::liveCount, size_t(5));
     for (size_t i = 0; i < 5; ++i)

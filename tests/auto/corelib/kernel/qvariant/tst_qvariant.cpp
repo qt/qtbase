@@ -3187,7 +3187,7 @@ template<class T> void playWithVariant(const T &orig, bool isNull, const QString
 
     {
         QVariant v2 = v;
-        if (!(QTypeInfo<T>::isStatic && QTypeInfo<T>::isComplex)) {
+        if (QTypeInfo<T>::isRelocatable) {
             // Type is movable so standard comparison algorithm in QVariant should work
             // In a custom type QVariant is not aware of ==operator so it won't be called,
             // which may cause problems especially visible when using a not-movable type
@@ -3204,7 +3204,7 @@ template<class T> void playWithVariant(const T &orig, bool isNull, const QString
         v = QVariant();
         QCOMPARE(v3, v);
         v = v2;
-        if (!(QTypeInfo<T>::isStatic && QTypeInfo<T>::isComplex)) {
+        if (QTypeInfo<T>::isRelocatable) {
             // Type is movable so standard comparison algorithm in QVariant should work
             // In a custom type QVariant is not aware of ==operator so it won't be called,
             // which may cause problems especially visible when using a not-movable type

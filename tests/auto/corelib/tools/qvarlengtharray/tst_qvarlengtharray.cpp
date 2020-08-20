@@ -528,11 +528,11 @@ void reallocTest()
 
     typedef QVarLengthArray<T, 16> Container;
     enum {
-        isStatic = QTypeInfo<T>::isStatic,
+        isRelocatable = QTypeInfo<T>::isRelocatable,
         isComplex = QTypeInfo<T>::isComplex,
 
-        isPrimitive = !isComplex && !isStatic,
-        isMovable = !isStatic
+        isPrimitive = !isComplex && isRelocatable,
+        isMovable = isRelocatable
     };
 
     // Constructors

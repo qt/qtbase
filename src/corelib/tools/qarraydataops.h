@@ -174,7 +174,7 @@ struct QArrayExceptionSafetyPrimitives
         T *const end;
         qsizetype displace;
 
-        static_assert(QTypeInfoQuery<T>::isRelocatable, "Type must be relocatable");
+        static_assert(QTypeInfo<T>::isRelocatable, "Type must be relocatable");
 
         Displacer(T *start, T *finish, qsizetype diff) noexcept
             : begin(start), end(finish), displace(diff)
@@ -201,7 +201,7 @@ struct QArrayExceptionSafetyPrimitives
         size_t n;
         qsizetype &size;
 
-        static_assert(QTypeInfoQuery<T>::isRelocatable, "Type must be relocatable");
+        static_assert(QTypeInfo<T>::isRelocatable, "Type must be relocatable");
 
         Mover(T *&start, size_t length, qsizetype &sz) noexcept
             : destination(start), source(start), n(length), size(sz)
@@ -1018,7 +1018,7 @@ struct QArrayOpsSelector
 template <class T>
 struct QArrayOpsSelector<T,
     typename std::enable_if<
-        !QTypeInfoQuery<T>::isComplex && QTypeInfoQuery<T>::isRelocatable
+        !QTypeInfo<T>::isComplex && QTypeInfo<T>::isRelocatable
     >::type>
 {
     typedef QPodArrayOps<T> Type;
@@ -1027,7 +1027,7 @@ struct QArrayOpsSelector<T,
 template <class T>
 struct QArrayOpsSelector<T,
     typename std::enable_if<
-        QTypeInfoQuery<T>::isComplex && QTypeInfoQuery<T>::isRelocatable
+        QTypeInfo<T>::isComplex && QTypeInfo<T>::isRelocatable
     >::type>
 {
     typedef QMovableArrayOps<T> Type;

@@ -1880,7 +1880,7 @@ void tst_QByteArray::movablity()
 {
     QFETCH(QByteArray, array);
 
-    static_assert(!QTypeInfo<QByteArray>::isStatic);
+    static_assert(QTypeInfo<QByteArray>::isRelocatable);
 
     const int size = array.size();
     const bool isEmpty = array.isEmpty();

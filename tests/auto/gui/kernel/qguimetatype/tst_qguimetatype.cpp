@@ -325,7 +325,7 @@ void tst_QGuiMetaType::flags_data()
     QTest::addColumn<bool>("isComplex");
 
 #define ADD_METATYPE_TEST_ROW(MetaTypeName, MetaTypeId, RealType) \
-    QTest::newRow(#RealType) << MetaTypeId << bool(QTypeInfoQuery<RealType>::isRelocatable) << bool(QTypeInfoQuery<RealType>::isComplex);
+    QTest::newRow(#RealType) << MetaTypeId << bool(QTypeInfo<RealType>::isRelocatable) << bool(QTypeInfo<RealType>::isComplex);
 QT_FOR_EACH_STATIC_GUI_CLASS(ADD_METATYPE_TEST_ROW)
 #undef ADD_METATYPE_TEST_ROW
 }

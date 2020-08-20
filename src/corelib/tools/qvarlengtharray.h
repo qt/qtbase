@@ -429,7 +429,7 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::realloc(qsizetype asize,
             a = Prealloc;
         }
         s = 0;
-        if (!QTypeInfoQuery<T>::isRelocatable) {
+        if (!QTypeInfo<T>::isRelocatable) {
             QT_TRY {
                 // move all the old elements
                 while (s < copySize) {
@@ -556,7 +556,7 @@ Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthA
     if (n != 0) {
         resize(s + n);
         const T copy(t);
-        if (!QTypeInfoQuery<T>::isRelocatable) {
+        if (!QTypeInfo<T>::isRelocatable) {
             T *b = ptr + offset;
             T *j = ptr + s;
             T *i = j - n;

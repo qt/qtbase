@@ -184,11 +184,11 @@ inline size_t qHash(const Custom &key, size_t seed = 0) { return qHash(key.i, se
 Q_DECLARE_METATYPE(Custom);
 
 // tests depends on the fact that:
-static_assert(!QTypeInfo<int>::isStatic);
+static_assert(QTypeInfo<int>::isRelocatable);
 static_assert(!QTypeInfo<int>::isComplex);
-static_assert(!QTypeInfo<Movable>::isStatic);
+static_assert(QTypeInfo<Movable>::isRelocatable);
 static_assert(QTypeInfo<Movable>::isComplex);
-static_assert(QTypeInfo<Custom>::isStatic);
+static_assert(!QTypeInfo<Custom>::isRelocatable);
 static_assert(QTypeInfo<Custom>::isComplex);
 
 
@@ -2144,7 +2144,7 @@ void tst_QList::resizePOD_data() const
     QTest::addColumn<int>("size");
 
     QVERIFY(!QTypeInfo<int>::isComplex);
-    QVERIFY(!QTypeInfo<int>::isStatic);
+    QVERIFY(QTypeInfo<int>::isRelocatable);
 
     QList<int> null;
     QList<int> empty(0, 5);
@@ -2192,7 +2192,7 @@ void tst_QList::resizeComplexMovable_data() const
     QTest::addColumn<int>("size");
 
     QVERIFY(QTypeInfo<Movable>::isComplex);
-    QVERIFY(!QTypeInfo<Movable>::isStatic);
+    QVERIFY(QTypeInfo<Movable>::isRelocatable);
 
     QList<Movable> null;
     QList<Movable> empty(0, 'Q');
@@ -2244,7 +2244,7 @@ void tst_QList::resizeComplex_data() const
     QTest::addColumn<int>("size");
 
     QVERIFY(QTypeInfo<Custom>::isComplex);
-    QVERIFY(QTypeInfo<Custom>::isStatic);
+    QVERIFY(!QTypeInfo<Custom>::isRelocatable);
 
     QList<Custom> null;
     QList<Custom> empty(0, '0');

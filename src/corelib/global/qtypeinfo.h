@@ -55,16 +55,7 @@ class QDebug;
 */
 
 template <typename T>
-static constexpr bool qIsRelocatable()
-{
-    return std::is_trivially_copyable<T>::value && std::is_trivially_destructible<T>::value;
-}
-
-template <typename T>
-static constexpr bool qIsTrivial()
-{
-    return std::is_trivial<T>::value;
-}
+static constexpr bool qIsRelocatable =  std::is_trivially_copyable_v<T> && std::is_trivially_destructible_v<T>;
 
 /*
   The catch-all template.
@@ -75,12 +66,10 @@ class QTypeInfo
 {
 public:
     enum {
-        isPointer = false,
-        isIntegral = std::is_integral<T>::value,
-        isComplex = !qIsTrivial<T>(),
-        isStatic = true,
-        isRelocatable = qIsRelocatable<T>(),
-        sizeOf = sizeof(T)
+        isPointer = std::is_pointer_v<T>,
+        isIntegral = std::is_integral_v<T>,
+        isComplex = !std::is_trivial_v<T>,
+        isRelocatable = qIsRelocatable<T>,
     };
 };
 
@@ -92,51 +81,9 @@ public:
         isPointer = false,
         isIntegral = false,
         isComplex = false,
-        isStatic = false,
         isRelocatable = false,
-        sizeOf = 0
     };
 };
-
-template <typename T>
-class QTypeInfo<T*>
-{
-public:
-    enum {
-        isPointer = true,
-        isIntegral = false,
-        isComplex = false,
-        isStatic = false,
-        isRelocatable = true,
-        sizeOf = sizeof(T*)
-    };
-};
-
-/*!
-    \class QTypeInfoQuery
-    \inmodule QtCore
-    \internal
-    \brief QTypeInfoQuery is used to query the values of a given QTypeInfo<T>
-
-    We use it because there may be some QTypeInfo<T> specializations in user
-    code that don't provide certain flags that we added after Qt 5.0. They are:
-    \list
-      \li isRelocatable: defaults to !isStatic
-    \endlist
-
-    DO NOT specialize this class elsewhere.
-*/
-// apply defaults for a generic QTypeInfo<T> that didn't provide the new values
-template <typename T, typename = void>
-struct QTypeInfoQuery : public QTypeInfo<T>
-{
-    enum { isRelocatable = !QTypeInfo<T>::isStatic };
-};
-
-// if QTypeInfo<T>::isRelocatable exists, use it
-template <typename T>
-struct QTypeInfoQuery<T, typename std::enable_if<QTypeInfo<T>::isRelocatable || true>::type> : public QTypeInfo<T>
-{};
 
 /*!
     \class QTypeInfoMerger
@@ -163,12 +110,10 @@ class QTypeInfoMerger
 {
     static_assert(sizeof...(Ts) > 0);
 public:
-    static constexpr bool isComplex = ((QTypeInfoQuery<Ts>::isComplex) || ...);
-    static constexpr bool isStatic =  ((QTypeInfoQuery<Ts>::isStatic) || ...);
-    static constexpr bool isRelocatable = ((QTypeInfoQuery<Ts>::isRelocatable) && ...);
+    static constexpr bool isComplex = ((QTypeInfo<Ts>::isComplex) || ...);
+    static constexpr bool isRelocatable = ((QTypeInfo<Ts>::isRelocatable) && ...);
     static constexpr bool isPointer = false;
     static constexpr bool isIntegral = false;
-    static constexpr std::size_t sizeOf = sizeof(T);
 };
 
 #define Q_DECLARE_MOVABLE_CONTAINER(CONTAINER) \
@@ -182,8 +127,6 @@ public: \
         isIntegral = false, \
         isComplex = true, \
         isRelocatable = true, \
-        isStatic = false, \
-        sizeOf = sizeof(CONTAINER<T>) \
     }; \
 }
 
@@ -204,9 +147,7 @@ public: \
         isPointer = false, \
         isIntegral = false, \
         isComplex = true, \
-        isStatic = false, \
         isRelocatable = true, \
-        sizeOf = sizeof(CONTAINER<K, V>) \
     }; \
 }
 
@@ -228,10 +169,9 @@ Q_DECLARE_MOVABLE_CONTAINER(QMultiHash);
 enum { /* TYPEINFO flags */
     Q_COMPLEX_TYPE = 0,
     Q_PRIMITIVE_TYPE = 0x1,
-    Q_STATIC_TYPE = 0,
-    Q_MOVABLE_TYPE = 0x2,               // ### Qt6: merge movable and relocatable once QList no longer depends on it
+    Q_RELOCATABLE_TYPE = 0x2,
+    Q_MOVABLE_TYPE = 0x2,
     Q_DUMMY_TYPE = 0x4,
-    Q_RELOCATABLE_TYPE = 0x8
 };
 
 #define Q_DECLARE_TYPEINFO_BODY(TYPE, FLAGS) \
@@ -239,14 +179,11 @@ class QTypeInfo<TYPE > \
 { \
 public: \
     enum { \
-        isComplex = (((FLAGS) & Q_PRIMITIVE_TYPE) == 0) && !qIsTrivial<TYPE>(), \
-        isStatic = (((FLAGS) & (Q_MOVABLE_TYPE | Q_PRIMITIVE_TYPE)) == 0), \
-        isRelocatable = !isStatic || ((FLAGS) & Q_RELOCATABLE_TYPE) || qIsRelocatable<TYPE>(), \
+        isComplex = (((FLAGS) & Q_PRIMITIVE_TYPE) == 0) && !std::is_trivial_v<TYPE>, \
+        isRelocatable = !isComplex || ((FLAGS) & Q_RELOCATABLE_TYPE) || qIsRelocatable<TYPE>, \
         isPointer = false, \
         isIntegral = std::is_integral< TYPE >::value, \
-        sizeOf = sizeof(TYPE) \
     }; \
-    static inline const char *name() { return #TYPE; } \
 }
 
 #define Q_DECLARE_TYPEINFO(TYPE, FLAGS) \
@@ -282,50 +219,6 @@ inline void swap(TYPE &value1, TYPE &value2) \
 #define Q_DECLARE_SHARED(TYPE) Q_DECLARE_SHARED_IMPL(TYPE, Q_MOVABLE_TYPE)
 #define Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(TYPE) \
                                Q_DECLARE_SHARED_IMPL(TYPE, QT_VERSION >= QT_VERSION_CHECK(6,0,0) ? Q_MOVABLE_TYPE : Q_RELOCATABLE_TYPE)
-
-/*
-   QTypeInfo primitive specializations
-*/
-Q_DECLARE_TYPEINFO(bool, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(char, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(signed char, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(uchar, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(short, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(ushort, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(int, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(uint, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(long, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(ulong, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(qint64, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(quint64, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(float, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(double, Q_PRIMITIVE_TYPE);
-
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-// ### Qt 6: remove the other branch
-// This was required so that QList<T> for these types allocates out of the array storage
-Q_DECLARE_TYPEINFO(long double, Q_PRIMITIVE_TYPE);
-#  ifdef Q_COMPILER_UNICODE_STRINGS
-Q_DECLARE_TYPEINFO(char16_t, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(char32_t, Q_PRIMITIVE_TYPE);
-#  endif
-#  if !defined(Q_CC_MSVC) || defined(_NATIVE_WCHAR_T_DEFINED)
-Q_DECLARE_TYPEINFO(wchar_t, Q_PRIMITIVE_TYPE);
-#  endif
-#else
-#  ifndef Q_OS_DARWIN
-Q_DECLARE_TYPEINFO(long double, Q_PRIMITIVE_TYPE);
-#  else
-Q_DECLARE_TYPEINFO(long double, Q_RELOCATABLE_TYPE);
-#  endif
-#  ifdef Q_COMPILER_UNICODE_STRINGS
-Q_DECLARE_TYPEINFO(char16_t, Q_RELOCATABLE_TYPE);
-Q_DECLARE_TYPEINFO(char32_t, Q_RELOCATABLE_TYPE);
-#  endif
-#  if !defined(Q_CC_MSVC) || defined(_NATIVE_WCHAR_T_DEFINED)
-Q_DECLARE_TYPEINFO(wchar_t, Q_RELOCATABLE_TYPE);
-#  endif
-#endif // Qt 6
 
 namespace QTypeTraits
 {

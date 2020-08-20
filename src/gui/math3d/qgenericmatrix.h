@@ -108,12 +108,6 @@ template <int N, int M, typename T>
 class QTypeInfo<QGenericMatrix<N, M, T> >
     : public QTypeInfoMerger<QGenericMatrix<N, M, T>, T>
 {
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-public:
-    enum {
-        isStatic = true,
-    }; // at least Q_RELOCATABLE_TYPE, for BC during Qt 5
-#endif
 };
 
 template <int N, int M, typename T>
@@ -350,7 +344,7 @@ QDebug operator<<(QDebug dbg, const QGenericMatrix<N, M, T> &m)
 {
     QDebugStateSaver saver(dbg);
     dbg.nospace() << "QGenericMatrix<" << N << ", " << M
-        << ", " << QTypeInfo<T>::name()
+        << ", " << QMetaType::fromType<T>().name()
         << ">(" << Qt::endl << qSetFieldWidth(10);
     for (int row = 0; row < M; ++row) {
         for (int col = 0; col < N; ++col)

@@ -919,6 +919,11 @@ FOR_EACH_CORE_METATYPE(RETURN_CREATE_COPY_FUNCTION)
     TypeTestFunctionGetter::get(type)();
 }
 
+template<typename T>
+constexpr size_t getSize = sizeof(T);
+template<>
+constexpr size_t getSize<void> = 0;
+
 void tst_QMetaType::sizeOf_data()
 {
     QTest::addColumn<int>("type");
@@ -926,7 +931,7 @@ void tst_QMetaType::sizeOf_data()
 
     QTest::newRow("QMetaType::UnknownType") << int(QMetaType::UnknownType) << size_t(0);
 #define ADD_METATYPE_TEST_ROW(MetaTypeName, MetaTypeId, RealType) \
-    QTest::newRow(#RealType) << int(QMetaType::MetaTypeName) << size_t(QTypeInfo<RealType>::sizeOf);
+    QTest::newRow(#RealType) << int(QMetaType::MetaTypeName) << getSize<RealType>;
 FOR_EACH_CORE_METATYPE(ADD_METATYPE_TEST_ROW)
 #undef ADD_METATYPE_TEST_ROW
 
@@ -1074,8 +1079,8 @@ void tst_QMetaType::flags_data()
 
 #define ADD_METATYPE_TEST_ROW(MetaTypeName, MetaTypeId, RealType) \
     QTest::newRow(#RealType) << MetaTypeId \
-        << bool(QTypeInfoQuery<RealType>::isRelocatable) \
-        << bool(QTypeInfoQuery<RealType>::isComplex) \
+        << bool(QTypeInfo<RealType>::isRelocatable) \
+        << bool(QTypeInfo<RealType>::isComplex) \
         << bool(QtPrivate::IsPointerToTypeDerivedFromQObject<RealType>::Value) \
         << bool(std::is_enum<RealType>::value);
 QT_FOR_EACH_STATIC_CORE_CLASS(ADD_METATYPE_TEST_ROW)

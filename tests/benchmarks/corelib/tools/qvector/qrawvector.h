@@ -361,7 +361,7 @@ void QRawVector<T>::realloc(int asize, int aalloc, bool ref)
     T *xbegin = m_begin;
     if (aalloc != xalloc || ref) {
         // (re)allocate memory
-        if (QTypeInfo<T>::isStatic) {
+        if (!QTypeInfo<T>::isRelocatable) {
             xbegin = allocate(aalloc);
             xsize = 0;
             changed = true;
@@ -462,7 +462,7 @@ typename QRawVector<T>::iterator QRawVector<T>::insert(iterator before, size_typ
         const T copy(t);
         if (m_size + n > m_alloc)
             realloc(m_size, QVectorData::grow(offsetOfTypedData(), m_size + n, sizeof(T)), false);
-        if (QTypeInfo<T>::isStatic) {
+        if (!QTypeInfo<T>::isRelocatable) {
             T *b = m_begin + m_size;
             T *i = m_begin + m_size + n;
             while (i != b)

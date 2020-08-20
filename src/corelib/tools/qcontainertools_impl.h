@@ -61,7 +61,7 @@ namespace QtPrivate
 template <typename T, typename N>
 void q_uninitialized_relocate_n(T* first, N n, T* out)
 {
-    if constexpr (QTypeInfoQuery<T>::isRelocatable) {
+    if constexpr (QTypeInfo<T>::isRelocatable) {
         if (n != N(0)) { // even if N == 0, out == nullptr or first == nullptr are UB for memmove()
             std::memmove(static_cast<void*>(out),
                          static_cast<const void*>(first),
@@ -69,7 +69,7 @@ void q_uninitialized_relocate_n(T* first, N n, T* out)
         }
     } else {
         std::uninitialized_move_n(first, n, out);
-        if constexpr (QTypeInfoQuery<T>::isComplex)
+        if constexpr (QTypeInfo<T>::isComplex)
             std::destroy_n(first, n);
     }
 }

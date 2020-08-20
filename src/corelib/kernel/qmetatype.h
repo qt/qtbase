@@ -1459,7 +1459,7 @@ namespace QtPrivate {
     template<typename T>
     struct QMetaTypeTypeFlags
     {
-        enum { Flags = (QTypeInfoQuery<T>::isRelocatable ? QMetaType::MovableType : 0)
+        enum { Flags = (QTypeInfo<T>::isRelocatable ? QMetaType::MovableType : 0)
                      | (QTypeInfo<T>::isComplex ? QMetaType::NeedsConstruction : 0)
                      | (QTypeInfo<T>::isComplex ? QMetaType::NeedsDestruction : 0)
                      | (IsPointerToTypeDerivedFromQObject<T>::Value ? QMetaType::PointerToQObject : 0)
