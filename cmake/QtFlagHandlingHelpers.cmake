@@ -356,6 +356,11 @@ function(qt_internal_set_up_config_optimizations_like_in_qmake)
                 endif()
             endif()
 
+            # Debug should get the OPTIMIZE_DEBUG flag if the respective feature is ON.
+            if(config STREQUAL "DEBUG" AND QT_FEATURE_optimize_debug)
+                string(APPEND "${flag_var_name}" " ${QT_CFLAGS_OPTIMIZE_DEBUG}")
+            endif()
+
             # Assign value to the cache entry.
             get_property(help_text CACHE "${flag_var_name}" PROPERTY HELPSTRING)
             set("${flag_var_name}" "${${flag_var_name}}" CACHE STRING "${help_text}" FORCE)

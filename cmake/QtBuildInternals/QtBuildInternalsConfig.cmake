@@ -180,7 +180,9 @@ macro(qt_enable_cmake_languages)
         endif()
     endforeach()
 
-    qt_internal_set_up_config_optimizations_like_in_qmake()
+    if(NOT PROJECT_NAME STREQUAL "QtBase")
+        qt_internal_set_up_config_optimizations_like_in_qmake()
+    endif()
 endmacro()
 
 # Minimum setup required to have any CMakeList.txt build as as a standalone

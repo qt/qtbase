@@ -118,6 +118,9 @@ endif()
 
 qt_build_repo_end()
 
+# This function must be called after the QT_FEATURE_xxx variables have been set up.
+qt_internal_set_up_config_optimizations_like_in_qmake()
+
 if(NOT QT_BUILD_STANDALONE_TESTS AND BUILD_EXAMPLES)
     add_subdirectory(examples)
     if(QT_NO_MAKE_EXAMPLES)
