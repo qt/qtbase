@@ -51,7 +51,6 @@
     \li  \l{network/network-chat}{Network Chat}
     \li  \l{network/fortuneclient}{Fortune Client}\raisedaster
     \li  \l{network/fortuneserver}{Fortune Server}\raisedaster
-    \li  \l{network/qftp}{FTP}\raisedaster
     \li  \l{network/http}{HTTP}
     \li  \l{network/loopback}{Loopback}
     \li  \l{network/threadedfortuneserver}{Threaded Fortune Server}\raisedaster

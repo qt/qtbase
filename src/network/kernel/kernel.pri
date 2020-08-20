@@ -33,11 +33,6 @@ qtConfig(topleveldomain) {
     SOURCES += kernel/qtldurl.cpp
 }
 
-qtConfig(ftp) {
-    HEADERS += kernel/qurlinfo_p.h
-    SOURCES += kernel/qurlinfo.cpp
-}
-
 qtConfig(dnslookup) {
     HEADERS += kernel/qdnslookup.h \
                kernel/qdnslookup_p.h

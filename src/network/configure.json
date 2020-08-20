@@ -354,14 +354,6 @@
             "label": "Use system proxies",
             "output": [ "privateFeature" ]
         },
-        "ftp": {
-            "label": "FTP",
-            "purpose": "Provides support for the File Transfer Protocol in QNetworkAccessManager.",
-            "section": "Networking",
-            "autoDetect": false,
-            "condition": "features.textdate && features.regularexpression",
-            "output": [ "publicFeature", "feature" ]
-        },
         "http": {
             "label": "HTTP",
             "purpose": "Provides support for the Hypertext Transfer Protocol in QNetworkAccessManager.",
@@ -498,7 +490,6 @@ For example:
                 "opensslv11",
                 "dtls",
                 "ocsp",
-                "ftp",
                 "sctp",
                 "system-proxies",
                 "gssapi",

@@ -319,14 +319,6 @@ qt_feature_definition("sctp" "QT_NO_SCTP" NEGATE VALUE "1")
 qt_feature("system-proxies" PRIVATE
     LABEL "Use system proxies"
 )
-qt_feature("ftp" PUBLIC
-    SECTION "Networking"
-    LABEL "FTP"
-    PURPOSE "Provides support for the File Transfer Protocol in QNetworkAccessManager."
-    AUTODETECT OFF
-    CONDITION QT_FEATURE_textdate AND QT_FEATURE_regularexpression
-)
-qt_feature_definition("ftp" "QT_NO_FTP" NEGATE VALUE "1")
 qt_feature("http" PUBLIC
     SECTION "Networking"
     LABEL "HTTP"

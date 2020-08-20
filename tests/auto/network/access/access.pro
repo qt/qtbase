@@ -24,5 +24,3 @@ SUBDIRS=\
           http2 \
           hsts \
           qdecompresshelper
-
-qtConfig(ftp): qtConfig(private_tests): SUBDIRS += qftp

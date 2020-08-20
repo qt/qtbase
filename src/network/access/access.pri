@@ -46,16 +46,6 @@ SOURCES += \
     access/qhsts.cpp \
     access/qhstspolicy.cpp
 
-qtConfig(ftp) {
-    HEADERS += \
-        access/qftp_p.h \
-        access/qnetworkaccessftpbackend_p.h
-
-    SOURCES += \
-        access/qftp.cpp \
-        access/qnetworkaccessftpbackend.cpp
-}
-
 qtConfig(networkdiskcache) {
     HEADERS += \
         access/qnetworkdiskcache_p.h \

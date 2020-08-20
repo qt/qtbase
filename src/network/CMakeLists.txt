@@ -70,13 +70,6 @@ qt_extend_target(Network CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i3
         "/BASE:0x64000000"
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_ftp
-    SOURCES
-        access/qftp.cpp access/qftp_p.h
-        access/qnetworkaccessftpbackend.cpp access/qnetworkaccessftpbackend_p.h
-        kernel/qurlinfo.cpp kernel/qurlinfo_p.h
-)
-
 qt_extend_target(Network CONDITION QT_FEATURE_networkdiskcache
     SOURCES
         access/qnetworkdiskcache.cpp access/qnetworkdiskcache.h access/qnetworkdiskcache_p.h

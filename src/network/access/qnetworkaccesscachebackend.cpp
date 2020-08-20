@@ -42,9 +42,6 @@
 #include "qnetworkaccesscachebackend_p.h"
 #include "qabstractnetworkcache.h"
 #include "qfileinfo.h"
-#if QT_CONFIG(ftp)
-#include "qurlinfo_p.h"
-#endif
 #include "qdir.h"
 #include "qcoreapplication.h"
 
