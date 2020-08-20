@@ -393,6 +393,14 @@ qt_feature("use_gold_linker_alias"
     AUTODETECT false
     CONDITION NOT WIN32 AND NOT INTEGRITY AND NOT WASM AND TEST_use_gold_linker
 )
+qt_feature("use_gold_linker"
+    LABEL "gold"
+    AUTODETECT false
+    CONDITION NOT WIN32 AND NOT INTEGRITY AND NOT WASM AND NOT rtems AND TEST_use_gold_linker
+    ENABLE INPUT_linker STREQUAL 'gold' OR QT_FEATURE_use_gold_linker_alias
+    DISABLE INPUT_linker STREQUAL 'bfd' OR INPUT_linker STREQUAL 'lld'
+)
+qt_feature_config("use_gold_linker" QMAKE_PRIVATE_CONFIG)
 qt_feature("use_lld_linker"
     LABEL "lld"
     AUTODETECT false
@@ -911,6 +919,12 @@ qt_configure_add_summary_entry(
 qt_configure_add_summary_entry(
     ARGS "ccache"
     CONDITION UNIX
+)
+qt_configure_add_summary_entry(
+    TYPE "firstAvailableFeature"
+    ARGS "use_bfd_linker use_gold_linker use_lld_linker"
+    MESSAGE "Linker"
+    CONDITION QT_FEATURE_use_bfd_linker OR QT_FEATURE_use_gold_linker OR QT_FEATURE_use_lld_linker
 )
 qt_configure_add_summary_entry(
     ARGS "enable_new_dtags"

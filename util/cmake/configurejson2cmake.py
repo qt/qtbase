@@ -945,7 +945,6 @@ def get_feature_mapping():
         "stl": None,  # Do we really need to test for this in 2018?!
         "strip": None,
         "tiff": {"condition": "QT_FEATURE_imageformatplugin AND TIFF_FOUND"},
-        "use_gold_linker": None,
         "verifyspec": None,  # qmake specific...
         "warnings_are_errors": None,  # FIXME: Do we need these?
         "webp": {"condition": "QT_FEATURE_imageformatplugin AND WrapWebP_FOUND"},
@@ -1007,7 +1006,8 @@ def parseFeature(ctx, feature, data, cm_fh):
         if isinstance(o, dict):
             outputType = o["type"]
 
-        if outputType in ["varAssign", "varAppend", "varRemove"]:
+        if outputType in ["varAssign", "varAppend", "varRemove",
+                          "useBFDLinker", "useGoldLinker", "useLLDLinker"]:
             continue
         elif outputType == "define":
             publicDefine = True

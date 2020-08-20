@@ -66,7 +66,8 @@ The effort of this is tracked in QTBUG-85373 and QTBUG-85349.
 | -static-runtime                       | -DFEATURE_static_runtime=ON                       |                                                                 |
 | -pch                                  | -DBUILD_WITH_PCH=ON                               |                                                                 |
 | -ltcg                                 |                                                   |                                                                 |
-| -linker [bfd,gold,lld]                |                                                   |                                                                 |
+| -linker [bfd,gold,lld]                | -DINPUT_linker=<name> or                          |                                                                 |
+|                                       | -DFEATURE_use_<name>_linker=ON                    |                                                                 |
 | -incredibuild-xge                     |                                                   |                                                                 |
 | -ccache                               | -DQT_USE_CCACHE=ON                                |                                                                 |
 | -make-tool <tool>                     | n/a                                               |                                                                 |
