@@ -27,9 +27,9 @@ The effort of this is tracked in QTBUG-85373 and QTBUG-85349.
 | -debug                                | -DCMAKE_BUILD_TYPE=Debug                          |                                                                 |
 | -debug-and-release                    | -G "Ninja Multi-Config"                           |                                                                 |
 |                                       | -DCMAKE_CONFIGURATION_TYPES=Release;Debug         |                                                                 |
-| -optimize-debug                       |                                                   |                                                                 |
+| -optimize-debug                       | -DFEATURE_optimize_debug=ON                       |                                                                 |
 | -optimize-size                        |                                                   |                                                                 |
-| -optimized-tools                      |                                                   |                                                                 |
+| -optimized-tools                      | n/a                                               | This affects only host tools.                                   |
 | -force-debug-info                     | Use the RelWithDebInfo build config.              |                                                                 |
 | -separate-debug-info                  | -DFEATURE_separate_debug_info=ON                  |                                                                 |
 | -gdb-index                            |                                                   |                                                                 |
@@ -143,7 +143,7 @@ The effort of this is tracked in QTBUG-85373 and QTBUG-85349.
 | -imf                                  |                                                   |                                                                 |
 | -libinput                             |                                                   |                                                                 |
 | -mtdev                                |                                                   |                                                                 |
-| -tslib                                |                                                   |                                                                 |
+| -tslib                                | -DFEATURE_tslib=ON                                |                                                                 |
 | -bundled-xcb-xinput                   |                                                   |                                                                 |
 | -xkbcommon                            |                                                   |                                                                 |
 | -gif                                  |                                                   |                                                                 |
