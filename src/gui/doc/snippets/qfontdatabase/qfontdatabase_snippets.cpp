@@ -50,38 +50,33 @@
 
 #include <QtWidgets>
 
-int main(int argc, char **argv)
+namespace qfontdatabase_snippets {
+void wrapper()
 {
-    QApplication app(argc, argv);
-
 //! [0]
-    QFontDatabase database;
-    QTreeWidget fontTree;
-    fontTree.setColumnCount(2);
-    fontTree.setHeaderLabels(QStringList() << "Font" << "Smooth Sizes");
+QFontDatabase database;
+QTreeWidget fontTree;
+fontTree.setColumnCount(2);
+fontTree.setHeaderLabels(QStringList() << "Font" << "Smooth Sizes");
 
-    const QStringList fontFamilies = database.families();
-    for (const QString &family : fontFamilies) {
-        QTreeWidgetItem *familyItem = new QTreeWidgetItem(&fontTree);
-        familyItem->setText(0, family);
+const QStringList fontFamilies = database.families();
+for (const QString &family : fontFamilies) {
+    QTreeWidgetItem *familyItem = new QTreeWidgetItem(&fontTree);
+    familyItem->setText(0, family);
 
-        const QStringList fontStyles = database.styles(family);
-        for (const QString &style : fontStyles) {
-            QTreeWidgetItem *styleItem = new QTreeWidgetItem(familyItem);
-            styleItem->setText(0, style);
+    const QStringList fontStyles = database.styles(family);
+    for (const QString &style : fontStyles) {
+        QTreeWidgetItem *styleItem = new QTreeWidgetItem(familyItem);
+        styleItem->setText(0, style);
 
-            QString sizes;
-            const QList<int> smoothSizes = database.smoothSizes(family, style)
-            for (int points : smoothSizes)
-                sizes += QString::number(points) + ' ';
+        QString sizes;
+        const QList<int> smoothSizes = database.smoothSizes(family, style);
+        for (const auto &points : smoothSizes)
+            sizes += QString::number(points) + ' ';
 
-            styleItem->setText(1, sizes.trimmed());
-        }
-//! [0] //! [1]
+        styleItem->setText(1, sizes.trimmed());
     }
-//! [1]
-
-    fontTree.resizeColumnToContents(0);
-    fontTree.show();
-    return app.exec();
 }
+//! [0]
+} // wrapper
+} // qfontdatabase_snippets
