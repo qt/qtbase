@@ -91,6 +91,7 @@ private slots:
     void noFakeDependencies();
 
     void bindablePropertyWithInitialization();
+    void markDirty();
 };
 
 void tst_QProperty::functorBinding()
@@ -1478,6 +1479,82 @@ void tst_QProperty::bindablePropertyWithInitialization()
     QCOMPARE(tester.prop2().value, 5);
     QCOMPARE(tester.prop3().value, 10);
     QCOMPARE(tester.prop3().anotherValue, 20);
+}
+
+class MarkDirtyTester : public QObject
+{
+    Q_OBJECT
+public:
+    Q_PROPERTY(int value1 READ value1 WRITE setValue1 BINDABLE bindableValue1)
+    Q_PROPERTY(int value2 READ value2 WRITE setValue1 BINDABLE bindableValue2)
+    Q_PROPERTY(int computed READ computed BINDABLE bindableComputed)
+
+    inline static int staticValue = 0;
+
+    int value1() const {return m_value1;}
+    void setValue1(int val) {m_value1 = val;}
+    QBindable<int> bindableValue1() {return { &m_value1 };}
+
+    int value2() const {return m_value2;}
+    void setValue2(int val) {m_value2 = val;}
+    QBindable<int> bindableValue2() {return { &m_value2 };}
+
+    int computed() const { return staticValue + m_value1; }
+    QBindable<int> bindableComputed() {return {&m_computed};}
+
+    void incrementStaticValue() {
+        ++staticValue;
+        m_computed.markDirty();
+    }
+
+    void markValue1Dirty() {
+        m_value1.markDirty();
+    }
+
+    void markValue2Dirty() {
+        m_value2.markDirty();
+    }
+private:
+    Q_OBJECT_BINDABLE_PROPERTY(MarkDirtyTester, int, m_value1, nullptr)
+    Q_OBJECT_COMPAT_PROPERTY(MarkDirtyTester, int, m_value2, &MarkDirtyTester::setValue2)
+    Q_OBJECT_COMPUTED_PROPERTY(MarkDirtyTester, int, m_computed, &MarkDirtyTester::computed)
+};
+
+void tst_QProperty::markDirty()
+{
+    {
+        QProperty<int> testProperty;
+        int changeCounter = 0;
+        auto handler = testProperty.onValueChanged([&](){++changeCounter;});
+        testProperty.markDirty();
+        QCOMPARE(changeCounter, 1);
+    }
+    {
+        MarkDirtyTester dirtyTester;
+        int computedChangeCounter = 0;
+        int value1ChangeCounter = 0;
+        auto handler = dirtyTester.bindableComputed().onValueChanged([&](){
+            computedChangeCounter++;
+        });
+        auto handler2 = dirtyTester.bindableValue1().onValueChanged([&](){
+            value1ChangeCounter++;
+        });
+        dirtyTester.incrementStaticValue();
+        QCOMPARE(computedChangeCounter, 1);
+        QCOMPARE(dirtyTester.computed(), 1);
+        dirtyTester.markValue1Dirty();
+        QCOMPARE(value1ChangeCounter, 1);
+        QCOMPARE(computedChangeCounter, 1);
+    }
+    {
+        MarkDirtyTester dirtyTester;
+        int changeCounter = 0;
+        auto handler = dirtyTester.bindableValue2().onValueChanged([&](){
+            changeCounter++;
+        });
+        dirtyTester.markValue2Dirty();
+        QCOMPARE(changeCounter, 1);
+    }
 }
 
 QTEST_MAIN(tst_QProperty);

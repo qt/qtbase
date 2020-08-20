@@ -498,6 +498,15 @@ public:
         return bd && bd->binding() != nullptr;
     }
 
+    void markDirty() {
+        QBindingStorage *storage = qGetBindingStorage(owner());
+        auto *bd = storage->bindingData(this, false);
+        if (bd) {
+            bd->markDirty();
+            notify(bd);
+        }
+    }
+
     QPropertyBinding<T> binding() const
     {
         auto *bd = qGetBindingStorage(owner())->bindingData(this);

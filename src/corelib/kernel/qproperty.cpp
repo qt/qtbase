@@ -381,6 +381,13 @@ void QPropertyBindingData::notifyObservers(QUntypedPropertyData *propertyDataPtr
         observer.notify(d.bindingPtr(), propertyDataPtr);
 }
 
+void QPropertyBindingData::markDirty()
+{
+    QPropertyBindingDataPointer d{this};
+    if (auto *binding = d.bindingPtr())
+        binding->setDirty(true);
+}
+
 int QPropertyBindingDataPointer::observerCount() const
 {
     int count = 0;
@@ -837,6 +844,31 @@ QString QPropertyBindingError::description() const
 */
 
 /*!
+  \fn template <typename T> void QProperty<T>::markDirty()
+
+  Programatically sets the property dirty. Any binding which depends on it will
+  be notified.
+  This can be useful for properties which do not only depend on bindable properties,
+  but also on non-bindable properties or some other state.
+
+  For example, assume we have a \c Circle class, with a non-bindable \c radius property
+  and a corresponding \c radiusChanged signal. We now want to create a property for a
+  cylinders volume, based on a height \c QProperty and an instance of Circle. To ensure
+  that the volume changes, we can call setDirty in a slot  connected to radiusChanged.
+  \code
+  Circle circle;
+  QProperty<double> height;
+
+  QProperty<double> volume;
+  volume.setBinding([&]() {return height * std::pi_v<double> * circle.radius() * circle.radius()};
+  QOBject::connect(&circle, &Circle::radiusChanged, [&](){volume.markDirty();});
+  \endcode
+
+  \note Binding to a QObjectBindableProperty's signal does not make sense in general. Bindings
+  across bindable properties get marked dirty automatically.
+*/
+
+/*!
   \fn template <typename T> QPropertyBinding<T> QProperty<T>::setBinding(const QPropertyBinding<T> &newBinding)
 
   Associates the value of this property with the provided \a newBinding
@@ -1033,6 +1065,17 @@ QString QPropertyBindingError::description() const
   Assigns \a newValue to this property and removes the property's associated
   binding, if present. If the property value changes as a result, calls the
   Callback function on \a owner.
+*/
+
+/*!
+  \fn template <typename Class, typename T, auto offset, auto Callback> void QObjectBindableProperty<Class, T, offset, Callback>::markDirty()
+
+  Programatically sets the property dirty. Any binding which depend on it will
+  be notified.
+  This can be useful for properties which do not only depend on bindable properties,
+  but also on non-bindable properties or some other state.
+
+  \sa QProperty<T>::markDirty
 */
 
 /*!

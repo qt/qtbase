@@ -406,6 +406,11 @@ public:
         return true;
     }
 
+    void markDirty() {
+        d.markDirty();
+        notify();
+    }
+
 #ifndef Q_CLANG_QDOC
     template <typename Functor>
     QPropertyBinding<T> setBinding(Functor &&f,
@@ -972,6 +977,15 @@ public:
         return bd && bd->binding() != nullptr;
     }
 
+    void markDirty() {
+        QBindingStorage *storage = qGetBindingStorage(owner());
+        auto bd = storage->bindingData(this, /*create=*/false);
+        if (bd) { // if we have no BindingData, nobody can listen anyway
+            bd->markDirty();
+            notify(bd);
+        }
+    }
+
     QPropertyBinding<T> binding() const
     {
         auto *bd = qGetBindingStorage(owner())->bindingData(this);
@@ -1119,6 +1133,14 @@ public:
     {
         auto *storage = const_cast<QBindingStorage *>(qGetBindingStorage(owner()));
         return *storage->bindingData(const_cast<QObjectComputedProperty *>(this), true);
+    }
+
+    void markDirty() {
+        // computed property can't store a binding, so there's nothing to mark
+        auto *storage = const_cast<QBindingStorage *>(qGetBindingStorage(owner()));
+        auto bd = storage->bindingData(const_cast<QObjectComputedProperty *>(this), false);
+        if (bd)
+            bindingData().notifyObservers(this);
     }
 
 private:
