@@ -571,7 +571,7 @@ def write_add_qt_resource_call(
 class QmlDirFileInfo:
     def __init__(self, file_path: str, type_name: str) -> None:
         self.file_path = file_path
-        self.version = ""
+        self.versions = ""
         self.type_name = type_name
         self.internal = False
         self.singleton = False
@@ -610,7 +610,7 @@ class QmlDir:
             file_info = self.type_names[key]
             string += (
                 f"    type:{file_info.type_name} "
-                f"version:{file_info.version} "
+                f"versions:{file_info.versions} "
                 f"path:{file_info.file_path} "
                 f"internal:{file_info.internal} "
                 f"singleton:{file_info.singleton}\n"
@@ -635,7 +635,11 @@ class QmlDir:
 
     def handle_file(self, type_name: str, version: str, path: str) -> QmlDirFileInfo:
         qmldir_file = self.get_or_create_file_info(path, type_name)
-        qmldir_file.version = version
+        # If this is not the first version we've found,
+        # append ';' to delineate the next version; e.g.: "2.0;2.6"
+        if qmldir_file.versions:
+            qmldir_file.versions += ";"
+        qmldir_file.versions += version
         qmldir_file.type_name = type_name
         qmldir_file.path = path
         return qmldir_file
@@ -3980,7 +3984,7 @@ def write_qml_plugin_epilogue(
             if qml_file in qmldir.type_names:
                 qmldir_file_info = qmldir.type_names[qml_file]
                 cm_fh.write(f"{indent_0}set_source_files_properties({qml_file} PROPERTIES\n")
-                cm_fh.write(f'{indent_1}QT_QML_SOURCE_VERSION "{qmldir_file_info.version}"\n')
+                cm_fh.write(f'{indent_1}QT_QML_SOURCE_VERSION "{qmldir_file_info.versions}"\n')
                 # Only write typename if they are different, CMake will infer
                 # the name by default
                 if (
