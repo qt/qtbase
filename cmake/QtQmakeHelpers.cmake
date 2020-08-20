@@ -159,7 +159,7 @@ HostSpec=${QT_QMAKE_HOST_MKSPEC}
     file(GENERATE OUTPUT "${qt_conf_path}" CONTENT "${content}")
 
     qt_path_join(qmake_wrapper_in_file "${CMAKE_CURRENT_SOURCE_DIR}/bin/qmake-wrapper-for-target")
-    qt_path_join(qmake_wrapper "preliminary" "qmake")
+    set(qmake_wrapper "qmake")
     if(QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
         # Avoid collisions with the cross-compiled qmake binary.
         string(PREPEND qmake_wrapper "host-")
@@ -171,6 +171,7 @@ HostSpec=${QT_QMAKE_HOST_MKSPEC}
     string(APPEND qmake_wrapper_in_file ".in")
 
     set(host_qt_bindir "${host_prefix}/${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_BINDIR}")
+    qt_path_join(qmake_wrapper "preliminary" "${qmake_wrapper}")
 
     configure_file("${qmake_wrapper_in_file}" "${qmake_wrapper}" @ONLY)
     qt_install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${qt_conf_path}"
