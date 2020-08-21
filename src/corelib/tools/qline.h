@@ -249,7 +249,7 @@ public:
     Q_REQUIRED_RESULT QLineF unitVector() const;
     Q_REQUIRED_RESULT constexpr inline QLineF normalVector() const;
 
-    IntersectionType intersects(const QLineF &l, QPointF *intersectionPoint) const;
+    IntersectionType intersects(const QLineF &l, QPointF *intersectionPoint = nullptr) const;
 
     constexpr inline QPointF pointAt(qreal t) const;
     inline void translate(const QPointF &p);
