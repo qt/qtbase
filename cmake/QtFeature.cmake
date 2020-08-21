@@ -253,9 +253,10 @@ function(qt_evaluate_feature feature)
 
     qt_evaluate_config_expression(disable_result ${arg_DISABLE})
     qt_evaluate_config_expression(enable_result ${arg_ENABLE})
+    qt_evaluate_config_expression(auto_detect ${arg_AUTODETECT})
     if(${disable_result})
         set(result OFF)
-    elseif((${enable_result}) OR (${arg_AUTODETECT}))
+    elseif((${enable_result}) OR (${auto_detect}))
         set(result ${condition})
     else()
         # feature not auto-detected and not explicitly enabled
