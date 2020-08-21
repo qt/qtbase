@@ -117,7 +117,7 @@ public:
                           "with the return type of the signal.");
 
         auto slotObj = new QtPrivate::QSlotObject<Func, typename SlotType::Arguments, void>(slot);
-        return lookupHostImpl(name, receiver, slotObj);
+        return lookupHostImpl(name, receiver, slotObj, nullptr);
     }
 
     // lookupHost to a callable (without context)
@@ -143,7 +143,7 @@ public:
         auto slotObj = new QtPrivate::QFunctorSlotObject<Func1, 1,
                                                          typename QtPrivate::List<QHostInfo>,
                                                          void>(std::move(slot));
-        return lookupHostImpl(name, context, slotObj);
+        return lookupHostImpl(name, context, slotObj, nullptr);
     }
 #endif // Q_QDOC
 
@@ -153,7 +153,11 @@ private:
 
     static int lookupHostImpl(const QString &name,
                               const QObject *receiver,
-                              QtPrivate::QSlotObjectBase *slotObj);
+                              QtPrivate::QSlotObjectBase *slotObj,
+                              const char *member);
+
+    friend QHostInfo Q_NETWORK_EXPORT qt_qhostinfo_lookup(const QString &name, QObject *receiver,
+                                                          const char *member, bool *valid, int *id);
 };
 
 Q_DECLARE_SHARED(QHostInfo)

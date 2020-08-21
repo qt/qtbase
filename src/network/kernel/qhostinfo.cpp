@@ -286,7 +286,7 @@ static int nextId()
 */
 int QHostInfo::lookupHost(const QString &name, QObject *receiver, const char *member)
 {
-    return QHostInfoPrivate::lookupHostImpl(name, receiver, nullptr, member);
+    return QHostInfo::lookupHostImpl(name, receiver, nullptr, member);
 }
 
 /*!
@@ -773,14 +773,8 @@ QString QHostInfo::localHostName()
     \sa hostName()
 */
 
-// ### Qt 6 merge with function below
-int QHostInfo::lookupHostImpl(const QString &name,
-                              const QObject *receiver,
-                              QtPrivate::QSlotObjectBase *slotObj)
-{
-    return QHostInfoPrivate::lookupHostImpl(name, receiver, slotObj, nullptr);
-}
-/*
+/*!
+    \internal
     Called by the various lookupHost overloads to perform the lookup.
 
     Signals either the functor encapuslated in the \a slotObj in the context
@@ -788,13 +782,13 @@ int QHostInfo::lookupHostImpl(const QString &name,
 
     \a receiver might be the nullptr, but only if a \a slotObj is provided.
 */
-int QHostInfoPrivate::lookupHostImpl(const QString &name,
-                                     const QObject *receiver,
-                                     QtPrivate::QSlotObjectBase *slotObj,
-                                     const char *member)
+int QHostInfo::lookupHostImpl(const QString &name,
+                              const QObject *receiver,
+                              QtPrivate::QSlotObjectBase *slotObj,
+                              const char *member)
 {
 #if defined QHOSTINFO_DEBUG
-    qDebug("QHostInfoPrivate::lookupHostImpl(\"%s\", %p, %p, %s)",
+    qDebug("QHostInfo::lookupHostImpl(\"%s\", %p, %p, %s)",
            name.toLatin1().constData(), receiver, slotObj, member ? member + 1 : 0);
 #endif
     Q_ASSERT(!member != !slotObj); // one of these must be set, but not both
@@ -1098,7 +1092,7 @@ QHostInfo qt_qhostinfo_lookup(const QString &name, QObject *receiver, const char
     }
 
     // was not in cache, trigger lookup
-    *id = QHostInfoPrivate::lookupHostImpl(name, receiver, nullptr, member);
+    *id = QHostInfo::lookupHostImpl(name, receiver, nullptr, member);
 
     // return empty response, valid==false
     return QHostInfo();
