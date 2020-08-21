@@ -881,6 +881,34 @@ function(qt_config_compiler_supports_flag_test name)
     set(TEST_${name} "${TEST_${name}}" CACHE INTERNAL "${label}")
 endfunction()
 
+function(qt_config_linker_supports_flag_test name)
+    if(DEFINED "TEST_${name}")
+        return()
+    endif()
+
+    cmake_parse_arguments(arg "" "LABEL;FLAG" "" ${ARGN})
+    set(flags "-Wl,${arg_FLAG}")
+
+    # Select the right linker.
+    if(GCC OR CLANG)
+        # TODO: This works for now but is... suboptimal. Once
+        # QTBUG-86186 is resolved, we should check the *features*
+        # QT_FEATURE_use_gold_linker etc. instead of trying to
+        # replicate the feature conditions.
+        if(QT_FEATURE_use_gold_linker_alias OR INPUT_linker STREQUAL "gold")
+            list(PREPEND flags "-fuse-ld=gold")
+        elseif(INPUT_linker STREQUAL "bfd")
+            list(PREPEND flags "-fuse-ld=bfd")
+        elseif(INPUT_linker STREQUAL "lld")
+            list(PREPEND flags "-fuse-ld=lld")
+        endif()
+    endif()
+
+    set(CMAKE_REQUIRED_LINK_OPTIONS ${flags})
+    check_cxx_source_compiles("int main() { return 0; }" TEST_${name})
+    set(TEST_${name} "${TEST_${name}}" CACHE INTERNAL "${label}")
+endfunction()
+
 function(qt_make_features_available target)
     if(NOT "${target}" MATCHES "^${QT_CMAKE_EXPORT_NAMESPACE}::[a-zA-Z0-9_-]*$")
         message(FATAL_ERROR "${target} does not match ${QT_CMAKE_EXPORT_NAMESPACE}::[a-zA-Z0-9_-]*. INVALID NAME.")

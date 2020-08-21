@@ -130,6 +130,16 @@ qt_config_compiler_supports_flag_test(optimize_debug
     FLAG "-Og"
 )
 
+qt_config_linker_supports_flag_test(enable_new_dtags
+    LABEL "new dtags support"
+    FLAG "--enable-new-dtags"
+)
+
+qt_config_linker_supports_flag_test(gdb_index
+    LABEL "gdb index support"
+    FLAG "--gdb-index"
+)
+
 # reduce_relocations
 qt_config_compile_test(reduce_relocations
     LABEL "-Bsymbolic-functions support"
