@@ -137,8 +137,6 @@ private:
 template <typename T>
 class QAutoPointer {
     QPointer<T> o;
-    struct internal { void func() {} };
-    typedef void (internal::*RestrictedBool)();
 public:
     explicit QAutoPointer(T *t) noexcept : o(t) {}
     ~QAutoPointer() { delete o; }
@@ -146,7 +144,7 @@ public:
     T *operator->() const noexcept { return get(); }
     T *get() const noexcept { return o; }
     T &operator*() const { return *get(); }
-    operator RestrictedBool() const noexcept { return o ? &internal::func : nullptr; }
+    explicit operator bool() const noexcept { return !o.isNull(); }
     bool operator!() const noexcept { return !o; }
 private:
     Q_DISABLE_COPY(QAutoPointer);
