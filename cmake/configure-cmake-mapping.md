@@ -32,7 +32,7 @@ The effort of this is tracked in QTBUG-85373 and QTBUG-85349.
 | -optimized-tools                      | n/a                                               | This affects only host tools.                                   |
 | -force-debug-info                     | Use the RelWithDebInfo build config.              |                                                                 |
 | -separate-debug-info                  | -DFEATURE_separate_debug_info=ON                  |                                                                 |
-| -gdb-index                            |                                                   |                                                                 |
+| -gdb-index                            | -DFEATURE_enable_gdb_index=ON                     |                                                                 |
 | -strip                                |                                                   |                                                                 |
 | -gc-binaries                          | -DFEATURE_gc_binaries=ON                          |                                                                 |
 | -force-asserts                        |                                                   |                                                                 |

@@ -221,6 +221,10 @@ elseif(QT_FEATURE_use_lld_linker)
     target_link_options(PlatformCommonInternal INTERFACE "-fuse-ld=lld")
 endif()
 
+if(QT_FEATURE_enable_gdb_index)
+    target_link_options(PlatformCommonInternal INTERFACE "-Wl,--gdb-index")
+endif()
+
 function(qt_get_implicit_sse2_genex_condition out_var)
     set(is_shared_lib "$<STREQUAL:$<TARGET_PROPERTY:TYPE>,SHARED_LIBRARY>")
     set(is_static_lib "$<STREQUAL:$<TARGET_PROPERTY:TYPE>,STATIC_LIBRARY>")

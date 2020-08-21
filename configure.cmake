@@ -622,6 +622,12 @@ qt_feature("ltcg"
     CONDITION CMAKE_INTERPROCEDURAL_OPTIMIZATION
 )
 qt_feature_config("ltcg" QMAKE_PRIVATE_CONFIG)
+qt_feature("enable_gdb_index"
+    LABEL "Generating GDB index"
+    AUTODETECT QT_FEATURE_developer_build
+    CONDITION GCC AND NOT CLANG AND ( QT_FEATURE_debug OR QT_FEATURE_force_debug_info OR QT_FEATURE_debug_and_release ) AND TEST_gdb_index
+)
+qt_feature_config("enable_gdb_index" QMAKE_PRIVATE_CONFIG)
 qt_feature("reduce_exports" PRIVATE
     LABEL "Reduce amount of exported symbols"
     CONDITION NOT WIN32 AND CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY
