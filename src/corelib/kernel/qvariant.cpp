@@ -2579,16 +2579,16 @@ QSequentialIterable::QSequentialIterable(const QtMetaTypePrivate::QSequentialIte
 {
 }
 
-QSequentialIterable::const_iterator::const_iterator(const QSequentialIterable &iter, QAtomicInt *ref_)
-  : m_impl(iter.m_impl), ref(ref_)
+QSequentialIterable::const_iterator::const_iterator(const QSequentialIterable &iter, QAtomicInt *ref)
+  : m_impl(iter.m_impl), m_ref(ref)
 {
-    ref->ref();
+    m_ref->ref();
 }
 
-QSequentialIterable::const_iterator::const_iterator(const QtMetaTypePrivate::QSequentialIterableImpl &impl, QAtomicInt *ref_)
-  : m_impl(impl), ref(ref_)
+QSequentialIterable::const_iterator::const_iterator(const QtMetaTypePrivate::QSequentialIterableImpl &impl, QAtomicInt *ref)
+  : m_impl(impl), m_ref(ref)
 {
-    ref->ref();
+    m_ref->ref();
 }
 
 /*! \fn QSequentialIterable::const_iterator QSequentialIterable::begin() const
@@ -2670,9 +2670,9 @@ bool QSequentialIterable::canReverseIterate() const
     Destroys the QSequentialIterable::const_iterator.
 */
 QSequentialIterable::const_iterator::~const_iterator() {
-    if (!ref->deref()) {
+    if (!m_ref->deref()) {
         m_impl.destroyIter();
-        delete ref;
+        delete m_ref;
     }
 }
 
@@ -2680,9 +2680,9 @@ QSequentialIterable::const_iterator::~const_iterator() {
     Creates a copy of \a other.
 */
 QSequentialIterable::const_iterator::const_iterator(const const_iterator &other)
-  : m_impl(other.m_impl), ref(other.ref)
+  : m_impl(other.m_impl), m_ref(other.m_ref)
 {
-    ref->ref();
+    m_ref->ref();
 }
 
 /*!
@@ -2691,13 +2691,13 @@ QSequentialIterable::const_iterator::const_iterator(const const_iterator &other)
 QSequentialIterable::const_iterator&
 QSequentialIterable::const_iterator::operator=(const const_iterator &other)
 {
-    other.ref->ref();
-    if (!ref->deref()) {
+    other.m_ref->ref();
+    if (!m_ref->deref()) {
         m_impl.destroyIter();
-        delete ref;
+        delete m_ref;
     }
     m_impl = other.m_impl;
-    ref = other.ref;
+    m_ref = other.m_ref;
     return *this;
 }
 

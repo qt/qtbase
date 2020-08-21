@@ -587,11 +587,11 @@ public:
     {
     private:
         QtMetaTypePrivate::QSequentialIterableImpl m_impl;
-        QAtomicInt *ref;
+        QAtomicInt *m_ref;
         friend class QSequentialIterable;
-        explicit const_iterator(const QSequentialIterable &iter, QAtomicInt *ref_);
+        explicit const_iterator(const QSequentialIterable &iter, QAtomicInt *ref);
 
-        explicit const_iterator(const QtMetaTypePrivate::QSequentialIterableImpl &impl, QAtomicInt *ref_);
+        explicit const_iterator(const QtMetaTypePrivate::QSequentialIterableImpl &impl, QAtomicInt *ref);
 
     public:
         ~const_iterator();
