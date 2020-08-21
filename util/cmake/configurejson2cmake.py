@@ -893,6 +893,7 @@ def get_feature_mapping():
             "condition": "QT_GENERATOR_IS_MULTI_CONFIG",
         },
         "debug": {
+            "autoDetect": "ON",
             "condition": "CMAKE_BUILD_TYPE STREQUAL Debug OR Debug IN_LIST CMAKE_CONFIGURATION_TYPES"
         },
         "dlopen": {"condition": "UNIX"},
