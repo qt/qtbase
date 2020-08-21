@@ -156,22 +156,6 @@ static void checkWarnMessage(const QIODevice *device, const char *function, cons
     \internal
  */
 QIODevicePrivate::QIODevicePrivate()
-    : openMode(QIODevice::NotOpen),
-      pos(0), devicePos(0),
-      transactionPos(0),
-      readChannelCount(0),
-      writeChannelCount(0),
-      currentReadChannel(0),
-      currentWriteChannel(0),
-      readBufferChunkSize(QIODEVICE_BUFFERSIZE),
-      writeBufferChunkSize(0),
-      currentWriteChunk(nullptr),
-      transactionStarted(false)
-       , baseReadLineDataCalled(false)
-       , accessMode(Unset)
-#ifdef QT_NO_QOBJECT
-       , q_ptr(nullptr)
-#endif
 {
 }
 

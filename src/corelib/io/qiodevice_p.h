@@ -80,11 +80,14 @@ public:
     QIODevicePrivate();
     virtual ~QIODevicePrivate();
 
-    QIODevice::OpenMode openMode;
-    QString errorString;
-
-    QList<QRingBuffer> readBuffers;
-    QList<QRingBuffer> writeBuffers;
+    // The size of this class is a subject of the library hook data.
+    // When adding a new member, do not make gaps and be aware
+    // about the padding. Accordingly, adjust offsets in
+    // tests/auto/other/toolsupport and bump the TypeInformationVersion
+    // field in src/corelib/global/qhooks.cpp, to notify the developers.
+    qint64 pos = 0;
+    qint64 devicePos = 0;
+    qint64 transactionPos = 0;
 
     class QRingBufferRef {
         QRingBuffer *m_buf;
@@ -122,27 +125,30 @@ public:
 
     QRingBufferRef buffer;
     QRingBufferRef writeBuffer;
-    qint64 pos;
-    qint64 devicePos;
-    qint64 transactionPos;
-    int readChannelCount;
-    int writeChannelCount;
-    int currentReadChannel;
-    int currentWriteChannel;
-    int readBufferChunkSize;
-    int writeBufferChunkSize;
-    const QByteArray *currentWriteChunk;
-    bool transactionStarted;
-    bool baseReadLineDataCalled;
+    const QByteArray *currentWriteChunk = nullptr;
+    int readChannelCount = 0;
+    int writeChannelCount = 0;
+    int currentReadChannel = 0;
+    int currentWriteChannel = 0;
+    int readBufferChunkSize = QIODEVICE_BUFFERSIZE;
+    int writeBufferChunkSize = 0;
+
+    QList<QRingBuffer> readBuffers;
+    QList<QRingBuffer> writeBuffers;
+    QString errorString;
+    QIODevice::OpenMode openMode = QIODevice::NotOpen;
+
+    bool transactionStarted = false;
+    bool baseReadLineDataCalled = false;
 
     virtual bool putCharHelper(char c);
 
-    enum AccessMode {
+    enum AccessMode : quint8 {
         Unset,
         Sequential,
         RandomAccess
     };
-    mutable AccessMode accessMode;
+    mutable AccessMode accessMode = Unset;
     inline bool isSequential() const
     {
         if (accessMode == Unset)
@@ -179,7 +185,7 @@ public:
     void write(const char *data, qint64 size);
 
 #ifdef QT_NO_QOBJECT
-    QIODevice *q_ptr;
+    QIODevice *q_ptr = nullptr;
 #endif
 };
 
