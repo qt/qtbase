@@ -49,6 +49,7 @@ class QWasmEventTranslator : public QObject
 public:
 
     explicit QWasmEventTranslator(QWasmScreen *screen);
+    ~QWasmEventTranslator();
 
     static int keyboard_cb(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData);
     static int mouse_cb(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData);
