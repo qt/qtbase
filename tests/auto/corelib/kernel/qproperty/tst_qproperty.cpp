@@ -70,9 +70,6 @@ private slots:
     void multipleObservers();
     void propertyAlias();
     void arrowAndStarOperator();
-    void notifiedProperty();
-    void notifiedPropertyWithOldValueCallback();
-    void notifiedPropertyWithGuard();
     void typeNoOperatorEqual();
     void bindingValueReplacement();
 };
@@ -780,240 +777,6 @@ void tst_QProperty::arrowAndStarOperator()
 
 }
 
-struct ClassWithNotifiedProperty
-{
-    QList<int> recordedValues;
-
-    void callback() { recordedValues << property.value(); }
-
-    QNotifiedProperty<int, &ClassWithNotifiedProperty::callback> property;
-};
-
-struct ClassWithNotifiedProperty2
-{
-    QList<int> recordedValues;
-
-    void callback(int oldValue) { recordedValues << oldValue; }
-
-    QNotifiedProperty<int, &ClassWithNotifiedProperty2::callback> property;
-};
-
-void tst_QProperty::notifiedProperty()
-{
-    ClassWithNotifiedProperty instance;
-    std::array<QProperty<int>, 5> otherProperties = {
-        QProperty<int>([&]() { return instance.property + 1; }),
-        QProperty<int>([&]() { return instance.property + 2; }),
-        QProperty<int>([&]() { return instance.property + 3; }),
-        QProperty<int>([&]() { return instance.property + 4; }),
-        QProperty<int>([&]() { return instance.property + 5; }),
-    };
-
-    auto check = [&] {
-        const int val = instance.property.value();
-        for (int i = 0; i < int(otherProperties.size()); ++i)
-            QCOMPARE(otherProperties[i].value(), val + i + 1);
-    };
-
-    QVERIFY(instance.recordedValues.isEmpty());
-    check();
-
-    instance.property.setValue(&instance, 42);
-    QCOMPARE(instance.recordedValues.count(), 1);
-    QCOMPARE(instance.recordedValues.at(0), 42);
-    instance.recordedValues.clear();
-    check();
-
-    instance.property.setValue(&instance, 42);
-    QVERIFY(instance.recordedValues.isEmpty());
-    check();
-
-    int subscribedCount = 0;
-    QProperty<int> injectedValue(100);
-    instance.property.setBinding(&instance, [&injectedValue]() { return injectedValue.value(); });
-    auto subscriber = [&] { ++subscribedCount; };
-    std::array<QPropertyChangeHandler<decltype (subscriber)>, 10> subscribers = {
-            instance.property.subscribe(subscriber),
-            instance.property.subscribe(subscriber),
-            instance.property.subscribe(subscriber),
-            instance.property.subscribe(subscriber),
-            instance.property.subscribe(subscriber),
-            instance.property.subscribe(subscriber),
-            instance.property.subscribe(subscriber),
-            instance.property.subscribe(subscriber),
-            instance.property.subscribe(subscriber),
-            instance.property.subscribe(subscriber)
-    };
-
-    QCOMPARE(subscribedCount, 10);
-    subscribedCount = 0;
-
-    QCOMPARE(instance.property.value(), 100);
-    QCOMPARE(instance.recordedValues.count(), 1);
-    QCOMPARE(instance.recordedValues.at(0), 100);
-    instance.recordedValues.clear();
-    check();
-    QCOMPARE(subscribedCount, 0);
-
-    injectedValue = 200;
-    QCOMPARE(instance.property.value(), 200);
-    QCOMPARE(instance.recordedValues.count(), 1);
-    QCOMPARE(instance.recordedValues.at(0), 200);
-    instance.recordedValues.clear();
-    check();
-    QCOMPARE(subscribedCount, 10);
-    subscribedCount = 0;
-
-    injectedValue = 400;
-    QCOMPARE(instance.property.value(), 400);
-    QCOMPARE(instance.recordedValues.count(), 1);
-    QCOMPARE(instance.recordedValues.at(0), 400);
-    instance.recordedValues.clear();
-    check();
-    QCOMPARE(subscribedCount, 10);
-}
-
-void tst_QProperty::notifiedPropertyWithOldValueCallback()
-{
-    ClassWithNotifiedProperty2 instance;
-    instance.property.setValue(&instance, 1);
-    instance.property.setBinding(&instance, [](){return 2;});
-    instance.property.setBinding(&instance, [](){return 3;});
-    instance.property.setValue(&instance, 4);
-    QList<int> expected {0, 1, 2, 3};
-    QCOMPARE(instance.recordedValues, expected);
-    QCOMPARE(instance.property.value(), 4);
-}
-
-struct ClassWithNotifiedPropertyWithGuard
-{
-    using This = ClassWithNotifiedPropertyWithGuard;
-    QList<int> recordedValues;
-
-    void callback() { recordedValues << property.value(); }
-    void callback2() { recordedValues << property2.value(); }
-    void callback3() {}
-    bool trivialGuard(int ) {return true;}
-    bool reject42(int newValue) {return newValue != 42;}
-    bool bound(int &newValue) { newValue = qBound<int>(0, newValue, 100); return true; }
-
-    QNotifiedProperty<int, &This::callback, &This::trivialGuard> property;
-    QNotifiedProperty<int, &This::callback2, &This::reject42> property2;
-    QNotifiedProperty<int, &This::callback3, &This::bound> property3;
-};
-
-void tst_QProperty::notifiedPropertyWithGuard()
-{
-    {
-        // property with guard that returns always true is the same as using no guard
-        ClassWithNotifiedPropertyWithGuard instance;
-
-        std::array<QProperty<int>, 5> otherProperties = {
-            QProperty<int>([&]() { return instance.property + 1; }),
-            QProperty<int>([&]() { return instance.property + 2; }),
-            QProperty<int>([&]() { return instance.property + 3; }),
-            QProperty<int>([&]() { return instance.property + 4; }),
-            QProperty<int>([&]() { return instance.property + 5; }),
-        };
-
-        auto check = [&] {
-            const int val = instance.property.value();
-            for (int i = 0; i < int(otherProperties.size()); ++i)
-                QCOMPARE(otherProperties[i].value(), val + i + 1);
-        };
-
-        QVERIFY(instance.recordedValues.isEmpty());
-        check();
-
-        instance.property.setValue(&instance, 42);
-        QCOMPARE(instance.recordedValues.count(), 1);
-        QCOMPARE(instance.recordedValues.at(0), 42);
-        instance.recordedValues.clear();
-        check();
-
-        instance.property.setValue(&instance, 42);
-        QVERIFY(instance.recordedValues.isEmpty());
-        check();
-
-        int subscribedCount = 0;
-        QProperty<int> injectedValue(100);
-        instance.property.setBinding(&instance, [&injectedValue]() { return injectedValue.value(); });
-        auto subscriber = [&] { ++subscribedCount; };
-        std::array<QPropertyChangeHandler<decltype (subscriber)>, 10> subscribers = {
-            instance.property.subscribe(subscriber),
-            instance.property.subscribe(subscriber),
-            instance.property.subscribe(subscriber),
-            instance.property.subscribe(subscriber),
-            instance.property.subscribe(subscriber),
-            instance.property.subscribe(subscriber),
-            instance.property.subscribe(subscriber),
-            instance.property.subscribe(subscriber),
-            instance.property.subscribe(subscriber),
-            instance.property.subscribe(subscriber)
-        };
-
-        QCOMPARE(subscribedCount, 10);
-        subscribedCount = 0;
-
-        QCOMPARE(instance.property.value(), 100);
-        QCOMPARE(instance.recordedValues.count(), 1);
-        QCOMPARE(instance.recordedValues.at(0), 100);
-        instance.recordedValues.clear();
-        check();
-        QCOMPARE(subscribedCount, 0);
-
-        injectedValue = 200;
-        QCOMPARE(instance.property.value(), 200);
-        QCOMPARE(instance.recordedValues.count(), 1);
-        QCOMPARE(instance.recordedValues.at(0), 200);
-        instance.recordedValues.clear();
-        check();
-        QCOMPARE(subscribedCount, 10);
-        subscribedCount = 0;
-
-        injectedValue = 400;
-        QCOMPARE(instance.property.value(), 400);
-        QCOMPARE(instance.recordedValues.count(), 1);
-        QCOMPARE(instance.recordedValues.at(0), 400);
-        instance.recordedValues.clear();
-        check();
-        QCOMPARE(subscribedCount, 10);
-    }
-
-    {
-        // Values can be rejected
-        ClassWithNotifiedPropertyWithGuard instance2;
-
-        instance2.property2.setValue(&instance2, 1);
-        instance2.property2.setBinding(&instance2, [](){return 42;});
-        instance2.property2.setValue(&instance2, 2);
-        instance2.property2.setBinding(&instance2, [](){return 3;});
-        instance2.property2.setValue(&instance2, 42);
-        // Note that we get 1 twice
-        // This is an unfortunate result of the lazyness used for bindings
-        // When we call setBinding, the binding does not get evaluated, but we
-        // call the callback in notify; the callback will in our case query the
-        // properties' value. At that point we then evaluate the binding, and
-        // notice that the value is in fact disallowed. Thus we return the old
-        // value.
-        QList<int> expected {1,  1, 2, 3};
-        QCOMPARE(instance2.recordedValues, expected);
-    }
-
-    {
-        // guard can modify incoming values
-        ClassWithNotifiedPropertyWithGuard instance3;
-        instance3.property3.setValue(&instance3, 5);
-        int i1 = 5;
-        QCOMPARE(instance3.property3.value(), i1);
-        instance3.property3.setBinding(&instance3, [](){return 255;});
-        QCOMPARE(instance3.property3.value(), 100);
-        const int i2 = -1;
-        instance3.property3.setValue(&instance3, i2);
-        QCOMPARE(instance3.property3.value(), 0);
-    }
-}
-
 void tst_QProperty::typeNoOperatorEqual()
 {
     struct Uncomparable
@@ -1076,42 +839,42 @@ void tst_QProperty::typeNoOperatorEqual()
     p1.setValue(u1);
     QCOMPARE(p1.value().data, p3.value().data);
 
-    QNotifiedProperty<Uncomparable, &Uncomparable::changed> np;
-    QVERIFY(np.value().data != u1.data);
-    np.setValue(&u1, u1);
-    QVERIFY(u1.changedCalled);
-    u1.changedCalled = false;
-    QCOMPARE(np.value().data, u1.data);
-    np.setValue(&u1, u1);
-    QVERIFY(u1.changedCalled);
+//    QNotifiedProperty<Uncomparable, &Uncomparable::changed> np;
+//    QVERIFY(np.value().data != u1.data);
+//    np.setValue(&u1, u1);
+//    QVERIFY(u1.changedCalled);
+//    u1.changedCalled = false;
+//    QCOMPARE(np.value().data, u1.data);
+//    np.setValue(&u1, u1);
+//    QVERIFY(u1.changedCalled);
 }
 
 
-struct Test {
-    void notify() {};
-    bool bindText(int);
-    bool bindIconText(int);
-    QProperty<int> text;
-    QNotifiedProperty<int, &Test::notify, &Test::bindIconText> iconText;
-};
+//struct Test {
+//    void notify() {};
+//    bool bindText(int);
+//    bool bindIconText(int);
+//    QProperty<int> text;
+//    QNotifiedProperty<int, &Test::notify, &Test::bindIconText> iconText;
+//};
 
-bool Test::bindIconText(int) {
-    Q_UNUSED(iconText.value()); // force read
-    if (!iconText.hasBinding()) {
-        iconText.setBinding(this, [=]() { return 0; });
-    }
-    return true;
-}
+//bool Test::bindIconText(int) {
+//    Q_UNUSED(iconText.value()); // force read
+//    if (!iconText.hasBinding()) {
+//        iconText.setBinding(this, [=]() { return 0; });
+//    }
+//    return true;
+//}
 
 void tst_QProperty::bindingValueReplacement()
 {
-    Test test;
-    test.text = 0;
-    test.bindIconText(0);
-    test.iconText.setValue(&test, 42); // should not crash
-    QCOMPARE(test.iconText.value(), 42);
-    test.text = 1;
-    QCOMPARE(test.iconText.value(), 42);
+//    Test test;
+//    test.text = 0;
+//    test.bindIconText(0);
+//    test.iconText.setValue(&test, 42); // should not crash
+//    QCOMPARE(test.iconText.value(), 42);
+//    test.text = 1;
+//    QCOMPARE(test.iconText.value(), 42);
 }
 
 QTEST_MAIN(tst_QProperty);

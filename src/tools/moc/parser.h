@@ -57,6 +57,7 @@ public:
 
     inline bool hasNext() const { return (index < symbols.size()); }
     inline Token next() { if (index >= symbols.size()) return NOTOKEN; return symbols.at(index++).token; }
+    inline Token peek() { if (index >= symbols.size()) return NOTOKEN; return symbols.at(index).token; }
     bool test(Token);
     void next(Token);
     void next(Token, const char *msg);
