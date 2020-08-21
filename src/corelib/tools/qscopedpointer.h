@@ -95,7 +95,6 @@ typedef QScopedPointerObjectDeleteLater<QObject> QScopedPointerDeleteLater;
 template <typename T, typename Cleanup = QScopedPointerDeleter<T> >
 class QScopedPointer
 {
-    typedef T *QScopedPointer:: *RestrictedBool;
 public:
     explicit QScopedPointer(T *p = nullptr) noexcept : d(p)
     {
@@ -123,17 +122,10 @@ public:
         return !d;
     }
 
-#if defined(Q_QDOC)
-    inline operator bool() const
+    explicit operator bool() const
     {
-        return isNull() ? nullptr : &QScopedPointer::d;
+        return !isNull();
     }
-#else
-    operator RestrictedBool() const noexcept
-    {
-        return isNull() ? nullptr : &QScopedPointer::d;
-    }
-#endif
 
     T *data() const noexcept
     {

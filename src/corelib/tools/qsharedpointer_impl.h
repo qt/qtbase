@@ -283,7 +283,6 @@ namespace QtSharedPointer {
 
 template <class T> class QSharedPointer
 {
-    typedef T *QSharedPointer:: *RestrictedBool;
     typedef QtSharedPointer::ExternalRefCountData Data;
     template <typename X>
     using IfCompatible = typename std::enable_if<std::is_convertible<X*, T*>::value, bool>::type;
@@ -301,7 +300,7 @@ public:
     T *data() const noexcept { return value; }
     T *get() const noexcept { return value; }
     bool isNull() const noexcept { return !data(); }
-    operator RestrictedBool() const noexcept { return isNull() ? nullptr : &QSharedPointer::value; }
+    explicit operator bool() const noexcept { return !isNull(); }
     bool operator !() const noexcept { return isNull(); }
     T &operator*() const { return *data(); }
     T *operator->() const noexcept { return data(); }
@@ -539,7 +538,6 @@ public:
 template <class T>
 class QWeakPointer
 {
-    typedef T *QWeakPointer:: *RestrictedBool;
     typedef QtSharedPointer::ExternalRefCountData Data;
     template <typename X>
     using IfCompatible = typename std::enable_if<std::is_convertible<X*, T*>::value, bool>::type;
@@ -554,7 +552,7 @@ public:
     typedef qptrdiff difference_type;
 
     bool isNull() const noexcept { return d == nullptr || d->strongref.loadRelaxed() == 0 || value == nullptr; }
-    operator RestrictedBool() const noexcept { return isNull() ? nullptr : &QWeakPointer::value; }
+    explicit operator bool() const noexcept { return !isNull(); }
     bool operator !() const noexcept { return isNull(); }
 
 #if QT_DEPRECATED_SINCE(5, 14)

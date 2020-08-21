@@ -440,7 +440,7 @@ bool QOpenGLTextureBlitter::create()
 bool QOpenGLTextureBlitter::isCreated() const
 {
     Q_D(const QOpenGLTextureBlitter);
-    return d->programs[QOpenGLTextureBlitterPrivate::TEXTURE_2D].glProgram;
+    return !d->programs[QOpenGLTextureBlitterPrivate::TEXTURE_2D].glProgram.isNull();
 }
 
 /*!
