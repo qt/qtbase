@@ -46,7 +46,7 @@
 #include <QtConcurrent/qtconcurrentrunbase.h>
 #include <type_traits>
 
-#include <qpromise.h>
+#include <QtCore/qpromise.h>
 
 QT_BEGIN_NAMESPACE
 
