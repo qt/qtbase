@@ -337,6 +337,27 @@ QWasmEventTranslator::QWasmEventTranslator(QWasmScreen *screen)
     initEventHandlers();
 }
 
+QWasmEventTranslator::~QWasmEventTranslator()
+{
+    // deregister event handlers
+    QByteArray canvasSelector = "#" + screen()->canvasId().toUtf8();
+    emscripten_set_keydown_callback(canvasSelector.constData(), 0, 0, NULL);
+    emscripten_set_keyup_callback(canvasSelector.constData(),  0, 0, NULL);
+
+    emscripten_set_mousedown_callback(canvasSelector.constData(), 0, 0, NULL);
+    emscripten_set_mouseup_callback(canvasSelector.constData(),  0, 0, NULL);
+    emscripten_set_mousemove_callback(canvasSelector.constData(),  0, 0, NULL);
+
+    emscripten_set_focus_callback(canvasSelector.constData(),  0, 0, NULL);
+
+    emscripten_set_wheel_callback(canvasSelector.constData(),  0, 0, NULL);
+
+    emscripten_set_touchstart_callback(canvasSelector.constData(),  0, 0, NULL);
+    emscripten_set_touchend_callback(canvasSelector.constData(),  0, 0, NULL);
+    emscripten_set_touchmove_callback(canvasSelector.constData(),  0, 0, NULL);
+    emscripten_set_touchcancel_callback(canvasSelector.constData(),  0, 0, NULL);
+}
+
 void QWasmEventTranslator::initEventHandlers()
 {
     QByteArray canvasSelector = "#" + screen()->canvasId().toUtf8();
