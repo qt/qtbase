@@ -1279,7 +1279,9 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
 
     Lists all the URL schemes supported by the access manager.
 
-    \sa supportedSchemesImplementation()
+    Reimplement this method to provide your own supported schemes
+    in a QNetworkAccessManager subclass. It is for instance necessary
+    when your subclass provides support for new protocols.
 */
 QStringList QNetworkAccessManager::supportedSchemes() const
 {
@@ -1293,19 +1295,16 @@ QStringList QNetworkAccessManager::supportedSchemes() const
 
 /*!
     \since 5.2
+    \obsolete
 
     Lists all the URL schemes supported by the access manager.
 
     You should not call this function directly; use
     QNetworkAccessManager::supportedSchemes() instead.
 
-    Reimplement this slot to provide your own supported schemes
-    in a QNetworkAccessManager subclass. It is for instance necessary
-    when your subclass provides support for new protocols.
-
     Because of binary compatibility constraints, the supportedSchemes()
-    method (introduced in Qt 5.2) is not virtual. Instead, supportedSchemes()
-    will dynamically detect and call this slot.
+    method (introduced in Qt 5.2) was not virtual in Qt 5, but now it
+    is. Override the supportedSchemes method rather than this one.
 
     \sa supportedSchemes()
 */

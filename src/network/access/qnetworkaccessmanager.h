@@ -88,8 +88,7 @@ public:
     explicit QNetworkAccessManager(QObject *parent = nullptr);
     ~QNetworkAccessManager();
 
-    // ### Qt 6: turn into virtual
-    QStringList supportedSchemes() const;
+    virtual QStringList supportedSchemes() const;
 
     void clearAccessCache();
 
