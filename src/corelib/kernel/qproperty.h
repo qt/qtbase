@@ -605,6 +605,122 @@ public:
         return aliasedProperty() != nullptr;
     }
 };
+
+namespace QtPrivate
+{
+
+struct QBindableInterface
+{
+    using BindingGetter = QUntypedPropertyBinding (*)(const QUntypedPropertyData *d);
+    using BindingSetter = QUntypedPropertyBinding (*)(QUntypedPropertyData *d, const QUntypedPropertyBinding &binding);
+    using MakeBinding = QUntypedPropertyBinding (*)(const QUntypedPropertyData *d, const QPropertyBindingSourceLocation &location);
+    using SetObserver = void (*)(const QUntypedPropertyData *d, QPropertyObserver *observer);
+    BindingGetter getBinding;
+    BindingSetter setBinding;
+    MakeBinding makeBinding;
+    SetObserver setObserver;
+};
+
+template<typename Property, typename = void>
+class QBindableInterfaceForProperty
+{
+    using T = typename Property::value_type;
+public:
+    // interface for read-only properties. Those do not have a binding()/setBinding() method, but one can
+    // install observers on them.
+    static constexpr QBindableInterface iface = {
+        nullptr,
+        nullptr,
+        [](const QUntypedPropertyData *d, const QPropertyBindingSourceLocation &location) -> QUntypedPropertyBinding
+        { return Qt::makePropertyBinding([d]() -> T { return static_cast<const Property *>(d)->value(); }, location); },
+        [](const QUntypedPropertyData *d, QPropertyObserver *observer) -> void
+        { observer->setSource(static_cast<const Property *>(d)->bindingData()); }
+    };
+};
+
+template<typename Property>
+class QBindableInterfaceForProperty<Property, std::void_t<decltype(std::declval<Property>().binding())>>
+{
+    using T = typename Property::value_type;
+public:
+    static constexpr QBindableInterface iface = {
+        [](const QUntypedPropertyData *d) -> QUntypedPropertyBinding
+        { return static_cast<const Property *>(d)->binding(); },
+        [](QUntypedPropertyData *d, const QUntypedPropertyBinding &binding) -> QUntypedPropertyBinding
+        { return static_cast<Property *>(d)->setBinding(static_cast<const QPropertyBinding<T> &>(binding)); },
+        [](const QUntypedPropertyData *d, const QPropertyBindingSourceLocation &location) -> QUntypedPropertyBinding
+        { return Qt::makePropertyBinding([d]() -> T { return static_cast<const Property *>(d)->value(); }, location); },
+        [](const QUntypedPropertyData *d, QPropertyObserver *observer) -> void
+        { observer->setSource(static_cast<const Property *>(d)->bindingData()); }
+    };
+};
+
+}
+
+template<typename T>
+class QBindable
+{
+protected:
+    QUntypedPropertyData *data;
+    const QtPrivate::QBindableInterface *iface;
+
+public:
+    template<typename Property>
+    QBindable(Property *p)
+        : data(const_cast<std::remove_cv_t<Property> *>(p)),
+          iface(&QtPrivate::QBindableInterfaceForProperty<Property>::iface)
+    {}
+
+    QPropertyBinding<T> makeBinding(const QPropertyBindingSourceLocation &location = QT_PROPERTY_DEFAULT_BINDING_LOCATION)
+    {
+        return static_cast<QPropertyBinding<T> &&>(iface->makeBinding(data, location));
+    }
+
+    template<typename Functor>
+    QPropertyChangeHandler<Functor> onValueChanged(Functor f)
+    {
+        QPropertyChangeHandler<Functor> handler(f);
+        iface->setObserver(data, &handler);
+        return handler;
+    }
+
+    template<typename Functor>
+    QPropertyChangeHandler<Functor> subscribe(Functor f)
+    {
+        f();
+        return onValueChanged(f);
+    }
+
+    QPropertyBinding<T> binding() const
+    {
+        if (!iface->getBinding)
+            return QPropertyBinding<T>();
+        return static_cast<QPropertyBinding<T> &&>(iface->getBinding(data));
+    }
+    QPropertyBinding<T> setBinding(const QPropertyBinding<T> &binding)
+    {
+        if (!iface->setBinding)
+            return QPropertyBinding<T>();
+        return static_cast<QPropertyBinding<T> &&>(iface->setBinding(data, binding));
+    }
+#ifndef Q_CLANG_QDOC
+    template <typename Functor>
+    QPropertyBinding<T> setBinding(Functor &&f,
+                                   const QPropertyBindingSourceLocation &location = QT_PROPERTY_DEFAULT_BINDING_LOCATION,
+                                   std::enable_if_t<std::is_invocable_v<Functor>> * = nullptr)
+    {
+        return setBinding(Qt::makePropertyBinding(std::forward<Functor>(f), location));
+    }
+#else
+    template <typename Functor>
+    QPropertyBinding<T> setBinding(Functor f);
+#endif
+    bool hasBinding() const
+    {
+        return !binding().isNull();
+    }
+};
+
 QT_END_NAMESPACE
 
 #endif // QPROPERTY_H

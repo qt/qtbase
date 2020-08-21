@@ -72,6 +72,9 @@ private slots:
     void arrowAndStarOperator();
     void typeNoOperatorEqual();
     void bindingValueReplacement();
+
+    void testNewStuff();
+    void qobjectObservers();
 };
 
 void tst_QProperty::functorBinding()
@@ -871,6 +874,115 @@ void tst_QProperty::bindingValueReplacement()
 //    QCOMPARE(test.iconText.value(), 42);
 //    test.text = 1;
 //    QCOMPARE(test.iconText.value(), 42);
+}
+
+class MyQObject : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(int foo READ foo WRITE setFoo NOTIFY fooChanged) // Use Q_BINDABLE_PROPERTY and generate iface API
+    Q_PROPERTY(int bar READ bar WRITE setBar NOTIFY barChanged)
+    Q_PROPERTY(int read READ read NOTIFY readChanged)
+
+signals:
+    void fooChanged();
+    void barChanged();
+    void readChanged();
+
+public slots:
+    void fooHasChanged() { fooChangedCount++; }
+    void barHasChanged() { barChangedCount++; }
+    void readHasChanged() { readChangedCount++; }
+
+public:
+    int foo() const { return fooData.value(); }
+    void setFoo(int i) { fooData.setValue(i); }
+    int bar() const { return barData.value(); }
+    void setBar(int i) { barData.setValue(i); }
+    int read() const { return readData.value(); }
+
+    QBindable<int> bindableFoo() { return QBindable<int>(&fooData); }
+    QBindable<int> bindableBar() { return QBindable<int>(&barData); }
+    QBindable<int> bindableRead() { return QBindable<int>(&readData); }
+
+public:
+    int fooChangedCount = 0;
+    int barChangedCount = 0;
+    int readChangedCount = 0;
+    QProperty<int> fooData;
+    QProperty<int> barData;
+    QProperty<int> readData;
+};
+
+void tst_QProperty::testNewStuff()
+{
+    MyQObject object;
+    QObject::connect(&object, &MyQObject::fooChanged, &object, &MyQObject::fooHasChanged);
+    QObject::connect(&object, &MyQObject::barChanged, &object, &MyQObject::barHasChanged);
+    QObject::connect(&object, &MyQObject::readChanged, &object, &MyQObject::readHasChanged);
+
+//    QCOMPARE(object.fooChangedCount, 0);
+    object.setFoo(10);
+//    QCOMPARE(object.fooChangedCount, 1);
+    QCOMPARE(object.foo(), 10);
+
+    auto f = [&object]() -> int {
+            return object.barData;
+    };
+//    QCOMPARE(object.barChangedCount, 0);
+    object.setBar(42);
+//    QCOMPARE(object.barChangedCount, 1);
+//    QCOMPARE(object.fooChangedCount, 1);
+    object.fooData.setBinding(f);
+//    QCOMPARE(object.fooChangedCount, 2);
+    QCOMPARE(object.fooData.value(), 42);
+    object.setBar(666);
+//    QCOMPARE(object.fooChangedCount, 3);
+//    QCOMPARE(object.barChangedCount, 2);
+    QCOMPARE(object.fooData.value(), 666);
+//    QCOMPARE(object.fooChangedCount, 3);
+
+    auto f2 = [&object]() -> int {
+            return object.barData / 2;
+    };
+
+    object.bindableFoo().setBinding(Qt::makePropertyBinding(f2));
+    QVERIFY(object.bindableFoo().hasBinding());
+    QCOMPARE(object.foo(), 333);
+    auto oldBinding = object.bindableFoo().setBinding(QPropertyBinding<int>());
+    QVERIFY(!object.bindableFoo().hasBinding());
+    QVERIFY(!oldBinding.isNull());
+    QCOMPARE(object.foo(), 333);
+    object.setBar(222);
+    QCOMPARE(object.foo(), 333);
+    object.bindableFoo().setBinding(oldBinding);
+    QCOMPARE(object.foo(), 111);
+
+    auto b = object.bindableRead().makeBinding();
+    object.bindableFoo().setBinding(b);
+    QCOMPARE(object.foo(), 0);
+    object.readData.setValue(10);
+    QCOMPARE(object.foo(), 10);
+}
+
+void tst_QProperty::qobjectObservers()
+{
+    MyQObject object;
+    int onValueChangedCalled = 0;
+    {
+        auto handler = object.bindableFoo().onValueChanged([&onValueChangedCalled]() { ++onValueChangedCalled;});
+        QCOMPARE(onValueChangedCalled, 0);
+
+        object.setFoo(10);
+        QCOMPARE(onValueChangedCalled, 1);
+
+        object.bindableFoo().setBinding(object.bindableBar().makeBinding());
+        QCOMPARE(onValueChangedCalled, 2);
+
+        object.setBar(42);
+        QCOMPARE(onValueChangedCalled, 3);
+    }
+    object.setBar(0);
+    QCOMPARE(onValueChangedCalled, 3);
 }
 
 QTEST_MAIN(tst_QProperty);
