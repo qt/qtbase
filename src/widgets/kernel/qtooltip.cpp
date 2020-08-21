@@ -361,7 +361,9 @@ bool QTipLabel::eventFilter(QObject *o, QEvent *e)
 
 QScreen *QTipLabel::getTipScreen(const QPoint &pos, QWidget *w)
 {
-    return w ? w->screen() : QGuiApplication::primaryScreen()->virtualSiblingAt(pos);
+    QScreen *guess = w ? w->screen() : QGuiApplication::primaryScreen();
+    QScreen *exact = guess->virtualSiblingAt(pos);
+    return exact ? exact : guess;
 }
 
 void QTipLabel::placeTip(const QPoint &pos, QWidget *w)
