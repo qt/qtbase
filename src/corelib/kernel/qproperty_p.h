@@ -140,17 +140,16 @@ private:
     bool dirty = false;
     bool updating = false;
     bool hasStaticObserver = false;
+    bool hasBindingWrapper = false;
 
     QUntypedPropertyBinding::BindingEvaluationFunction evaluationFunction;
 
     QPropertyObserverPointer firstObserver;
     union {
-        ObserverArray inlineDependencyObservers;
-        struct {
-            QtPrivate::QPropertyObserverCallback staticObserverCallback;
-            QtPrivate::QPropertyGuardFunction staticGuardCallback;
-        };
+        QtPrivate::QPropertyObserverCallback staticObserverCallback = nullptr;
+        QtPrivate::QPropertyBindingWrapper staticBindingWrapper;
     };
+    ObserverArray inlineDependencyObservers;
     QScopedPointer<std::vector<QPropertyObserver>> heapObservers;
 
     QUntypedPropertyData *propertyDataPtr = nullptr;
@@ -175,29 +174,21 @@ public:
 
     void setDirty(bool d) { dirty = d; }
     void setProperty(QUntypedPropertyData *propertyPtr) { propertyDataPtr = propertyPtr; }
-    void setStaticObserver(QtPrivate::QPropertyObserverCallback callback, QtPrivate::QPropertyGuardFunction guardCallback)
+    void setStaticObserver(QtPrivate::QPropertyObserverCallback callback, QtPrivate::QPropertyBindingWrapper guardCallback)
     {
+        Q_ASSERT(!(callback && guardCallback));
         if (callback) {
-            if (!hasStaticObserver) {
-                if (dependencyObserverCount > 0) {
-                    if (!heapObservers)
-                        heapObservers.reset(new std::vector<QPropertyObserver>());
-                    for (size_t i = 0, end = qMin(dependencyObserverCount, inlineDependencyObservers.size()); i < end; ++i)
-                        heapObservers->push_back(std::move(inlineDependencyObservers[i]));
-                }
-                inlineDependencyObservers.~ObserverArray();
-            }
-
             hasStaticObserver = true;
+            hasBindingWrapper = false;
             staticObserverCallback = callback;
-            staticGuardCallback = guardCallback;
-        } else if (hasStaticObserver) {
+        } else if (guardCallback) {
             hasStaticObserver = false;
-            new (&inlineDependencyObservers) ObserverArray();
-            for (size_t i = 0, end = qMin(dependencyObserverCount, inlineDependencyObservers.size()); i < end; ++i) {
-                inlineDependencyObservers[i] = std::move(heapObservers->back());
-                heapObservers->pop_back();
-            }
+            hasBindingWrapper = true;
+            staticBindingWrapper = guardCallback;
+        } else {
+            hasStaticObserver = false;
+            hasBindingWrapper = false;
+            staticObserverCallback = nullptr;
         }
     }
     void prependObserver(QPropertyObserverPointer observer) {
@@ -213,18 +204,16 @@ public:
     }
 
     void clearDependencyObservers() {
-        if (!hasStaticObserver) {
-            for (size_t i = 0; i < qMin(dependencyObserverCount, inlineDependencyObservers.size()); ++i) {
-                QPropertyObserverPointer p{&inlineDependencyObservers[i]};
-                p.unlink();
-            }
+        for (size_t i = 0; i < qMin(dependencyObserverCount, inlineDependencyObservers.size()); ++i) {
+            QPropertyObserverPointer p{&inlineDependencyObservers[i]};
+            p.unlink();
         }
         if (heapObservers)
             heapObservers->clear();
         dependencyObserverCount = 0;
     }
     QPropertyObserverPointer allocateDependencyObserver() {
-        if (!hasStaticObserver && dependencyObserverCount < inlineDependencyObservers.size()) {
+        if (dependencyObserverCount < inlineDependencyObservers.size()) {
             ++dependencyObserverCount;
             return {&inlineDependencyObservers[dependencyObserverCount - 1]};
         }
@@ -248,6 +237,13 @@ public:
 
     void setError(QPropertyBindingError &&e)
     { error = std::move(e); }
+
+    void detachFromProperty() {
+        hasStaticObserver = false;
+        hasBindingWrapper = false;
+        propertyDataPtr = nullptr;
+        clearDependencyObservers();
+    }
 
     static QPropertyBindingPrivate *currentlyEvaluatingBinding();
 };

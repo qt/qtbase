@@ -77,7 +77,7 @@ namespace QtPrivate {
 // writes binding result into dataPtr
 using QPropertyBindingFunction = std::function<bool(QMetaType metaType, QUntypedPropertyData *dataPtr)>;
 
-using QPropertyGuardFunction = bool(*)(QMetaType, QUntypedPropertyData *dataPtr,
+using QPropertyBindingWrapper = bool(*)(QMetaType, QUntypedPropertyData *dataPtr,
                                        QPropertyBindingFunction);
 using QPropertyObserverCallback = void (*)(QUntypedPropertyData *);
 
@@ -102,7 +102,7 @@ public:
     QUntypedPropertyBinding setBinding(const QUntypedPropertyBinding &newBinding,
                                        QUntypedPropertyData *propertyDataPtr,
                                        QPropertyObserverCallback staticObserverCallback = nullptr,
-                                       QPropertyGuardFunction guardCallback = nullptr);
+                                       QPropertyBindingWrapper guardCallback = nullptr);
     QPropertyBindingPrivate *binding() const;
 
     void evaluateIfDirty() const;
@@ -184,7 +184,7 @@ namespace detail {
 template<typename T, typename Class, auto Guard, bool = std::is_same_v<decltype(Guard), std::nullptr_t>>
 struct QPropertyGuardFunctionHelper
 {
-    static constexpr QPropertyGuardFunction guard = nullptr;
+    static constexpr QPropertyBindingWrapper guard = nullptr;
 };
 template<typename T, typename Class, auto Guard>
 struct QPropertyGuardFunctionHelper<T, Class, Guard, false>

@@ -68,8 +68,6 @@ QPropertyBindingPrivate::~QPropertyBindingPrivate()
 {
     if (firstObserver)
         firstObserver.unlink();
-    if (!hasStaticObserver)
-        inlineDependencyObservers.~ObserverArray(); // Explicit because of union.
 }
 
 void QPropertyBindingPrivate::unlinkAndDeref()
@@ -115,8 +113,8 @@ bool QPropertyBindingPrivate::evaluateIfDirtyAndReturnTrueIfValueChanged()
 
     bool changed = false;
 
-    if (hasStaticObserver && staticGuardCallback) {
-        changed = staticGuardCallback(metaType, propertyDataPtr, evaluationFunction);
+    if (hasBindingWrapper) {
+        changed = staticBindingWrapper(metaType, propertyDataPtr, evaluationFunction);
     } else {
         changed = evaluationFunction(metaType, propertyDataPtr);
     }
@@ -231,7 +229,7 @@ QPropertyBindingData::~QPropertyBindingData()
 QUntypedPropertyBinding QPropertyBindingData::setBinding(const QUntypedPropertyBinding &binding,
                                                   QUntypedPropertyData *propertyDataPtr,
                                                   QPropertyObserverCallback staticObserverCallback,
-                                                  QtPrivate::QPropertyGuardFunction guardCallback)
+                                                  QtPrivate::QPropertyBindingWrapper guardCallback)
 {
     QPropertyBindingPrivatePtr oldBinding;
     QPropertyBindingPrivatePtr newBinding = binding.d;
@@ -264,6 +262,9 @@ QUntypedPropertyBinding QPropertyBindingData::setBinding(const QUntypedPropertyB
     } else {
         d_ptr &= ~QPropertyBindingData::BindingBit;
     }
+
+    if (oldBinding)
+        oldBinding->detachFromProperty();
 
     return QUntypedPropertyBinding(oldBinding.data());
 }
