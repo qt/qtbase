@@ -593,8 +593,6 @@ public:
 
         explicit const_iterator(const QtMetaTypePrivate::QSequentialIterableImpl &impl, QAtomicInt *ref_);
 
-        void begin();
-        void end();
     public:
         ~const_iterator();
 

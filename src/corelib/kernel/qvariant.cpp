@@ -2591,16 +2591,6 @@ QSequentialIterable::const_iterator::const_iterator(const QtMetaTypePrivate::QSe
     ref->ref();
 }
 
-void QSequentialIterable::const_iterator::begin()
-{
-    m_impl.moveToBegin();
-}
-
-void QSequentialIterable::const_iterator::end()
-{
-    m_impl.moveToEnd();
-}
-
 /*! \fn QSequentialIterable::const_iterator QSequentialIterable::begin() const
 
     Returns a QSequentialIterable::const_iterator for the beginning of the container. This
@@ -2611,7 +2601,7 @@ void QSequentialIterable::const_iterator::end()
 QSequentialIterable::const_iterator QSequentialIterable::begin() const
 {
     const_iterator it(*this, new QAtomicInt(0));
-    it.begin();
+    it.m_impl.moveToBegin();
     return it;
 }
 
@@ -2624,7 +2614,7 @@ QSequentialIterable::const_iterator QSequentialIterable::begin() const
 QSequentialIterable::const_iterator QSequentialIterable::end() const
 {
     const_iterator it(*this, new QAtomicInt(0));
-    it.end();
+    it.m_impl.moveToEnd();
     return it;
 }
 
