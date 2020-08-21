@@ -1574,24 +1574,28 @@ void tst_QStringApiSymmetry::sliced_impl()
     const auto s = make<String>(unicode, latin1, utf8);
 
     {
-        const auto from = s.sliced(pos);
-        const auto sliced = s.sliced(pos, n);
+        const auto sliced = s.sliced(pos);
 
-        QCOMPARE(from, result);
-        QCOMPARE(from.isNull(), result.isNull());
-        QCOMPARE(from.isEmpty(), result.isEmpty());
+        QCOMPARE(sliced, result);
+        QCOMPARE(sliced.isNull(), result.isNull());
+        QCOMPARE(sliced.isEmpty(), result.isEmpty());
+    }
+    {
+        const auto sliced = s.sliced(pos, n);
 
         QCOMPARE(sliced, result2);
         QCOMPARE(sliced.isNull(), result2.isNull());
         QCOMPARE(sliced.isEmpty(), result2.isEmpty());
     }
     {
-        const auto from = detached(s).sliced(pos);
-        const auto sliced = detached(s).sliced(pos, n);
+        const auto sliced = detached(s).sliced(pos);
 
-        QCOMPARE(from, result);
-        QCOMPARE(from.isNull(), result.isNull());
-        QCOMPARE(from.isEmpty(), result.isEmpty());
+        QCOMPARE(sliced, result);
+        QCOMPARE(sliced.isNull(), result.isNull());
+        QCOMPARE(sliced.isEmpty(), result.isEmpty());
+    }
+    {
+        const auto sliced = detached(s).sliced(pos, n);
 
         QCOMPARE(sliced, result2);
         QCOMPARE(sliced.isNull(), result2.isNull());
