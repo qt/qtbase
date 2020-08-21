@@ -108,6 +108,10 @@
     \li QFutureSynchronizer is a convenience class that automatically
     synchronizes several QFutures.
 
+    \li QPromise provides a way to report progress and results of the asynchronous
+    computation to QFuture. Allows suspending or canceling the task when
+    requested by QFuture.
+
     \endlist
 
     Qt Concurrent supports several STL-compatible container and iterator types,
