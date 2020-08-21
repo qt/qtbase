@@ -65,21 +65,21 @@ QT_BEGIN_NAMESPACE
 // we need to allow the compiler to inline where it makes sense.
 
 // This is a helper "namespace"
-struct Q_AUTOTEST_EXPORT QPropertyBasePointer
+struct Q_AUTOTEST_EXPORT QPropertyBindingDataPointer
 {
-    const QtPrivate::QPropertyBase *ptr = nullptr;
+    const QtPrivate::QPropertyBindingData *ptr = nullptr;
 
     QPropertyBindingPrivate *bindingPtr() const
     {
-        if (ptr->d_ptr & QtPrivate::QPropertyBase::BindingBit)
-            return reinterpret_cast<QPropertyBindingPrivate*>(ptr->d_ptr & ~QtPrivate::QPropertyBase::FlagMask);
+        if (ptr->d_ptr & QtPrivate::QPropertyBindingData::BindingBit)
+            return reinterpret_cast<QPropertyBindingPrivate*>(ptr->d_ptr & ~QtPrivate::QPropertyBindingData::FlagMask);
         return nullptr;
     }
 
     void setObservers(QPropertyObserver *observer)
     {
         observer->prev = reinterpret_cast<QPropertyObserver**>(&(ptr->d_ptr));
-        ptr->d_ptr = (reinterpret_cast<quintptr>(observer) & ~QtPrivate::QPropertyBase::FlagMask);
+        ptr->d_ptr = (reinterpret_cast<quintptr>(observer) & ~QtPrivate::QPropertyBindingData::FlagMask);
     }
     void addObserver(QPropertyObserver *observer);
     void setFirstObserver(QPropertyObserver *observer);
@@ -88,9 +88,9 @@ struct Q_AUTOTEST_EXPORT QPropertyBasePointer
     int observerCount() const;
 
     template <typename T>
-    static QPropertyBasePointer get(QProperty<T> &property)
+    static QPropertyBindingDataPointer get(QProperty<T> &property)
     {
-        return QPropertyBasePointer{&property.propertyBase()};
+        return QPropertyBindingDataPointer{&property.bindingData()};
     }
 };
 
@@ -106,7 +106,7 @@ struct QPropertyObserverPointer
     void setAliasedProperty(void *propertyPtr);
 
     void notify(QPropertyBindingPrivate *triggeringBinding, void *propertyDataPtr);
-    void observeProperty(QPropertyBasePointer property);
+    void observeProperty(QPropertyBindingDataPointer property);
 
     explicit operator bool() const { return ptr != nullptr; }
 
@@ -132,7 +132,7 @@ struct BindingEvaluationState
 class Q_CORE_EXPORT QPropertyBindingPrivate : public QSharedData
 {
 private:
-    friend struct QPropertyBasePointer;
+    friend struct QPropertyBindingDataPointer;
 
     using ObserverArray = std::array<QPropertyObserver, 4>;
 
@@ -255,20 +255,20 @@ public:
     static QPropertyBindingPrivate *currentlyEvaluatingBinding();
 };
 
-inline void QPropertyBasePointer::setFirstObserver(QPropertyObserver *observer)
+inline void QPropertyBindingDataPointer::setFirstObserver(QPropertyObserver *observer)
 {
     if (auto *binding = bindingPtr()) {
         binding->firstObserver.ptr = observer;
         return;
     }
-    ptr->d_ptr = reinterpret_cast<quintptr>(observer) | (ptr->d_ptr & QtPrivate::QPropertyBase::FlagMask);
+    ptr->d_ptr = reinterpret_cast<quintptr>(observer) | (ptr->d_ptr & QtPrivate::QPropertyBindingData::FlagMask);
 }
 
-inline QPropertyObserverPointer QPropertyBasePointer::firstObserver() const
+inline QPropertyObserverPointer QPropertyBindingDataPointer::firstObserver() const
 {
     if (auto *binding = bindingPtr())
         return binding->firstObserver;
-    return {reinterpret_cast<QPropertyObserver*>(ptr->d_ptr & ~QtPrivate::QPropertyBase::FlagMask)};
+    return {reinterpret_cast<QPropertyObserver*>(ptr->d_ptr & ~QtPrivate::QPropertyBindingData::FlagMask)};
 }
 
 QT_END_NAMESPACE

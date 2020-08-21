@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
 class QUntypedPropertyBinding;
 class QPropertyBindingPrivate;
 using QPropertyBindingPrivatePtr = QExplicitlySharedDataPointer<QPropertyBindingPrivate>;
-struct QPropertyBasePointer;
+struct QPropertyBindingDataPointer;
 
 namespace QtPrivate {
 
@@ -74,21 +74,21 @@ using QPropertyGuardFunction = bool(*)(QMetaType, void *dataPtr,
                                        QPropertyBindingFunction, void *owner);
 using QPropertyObserverCallback = void (*)(void *, void *);
 
-class Q_CORE_EXPORT QPropertyBase
+class Q_CORE_EXPORT QPropertyBindingData
 {
     // Mutable because the address of the observer of the currently evaluating binding is stored here, for
     // notification later when the value changes.
     mutable quintptr d_ptr = 0;
-    friend struct QT_PREPEND_NAMESPACE(QPropertyBasePointer);
+    friend struct QT_PREPEND_NAMESPACE(QPropertyBindingDataPointer);
 public:
-    QPropertyBase() = default;
-    Q_DISABLE_COPY(QPropertyBase)
-    QPropertyBase(QPropertyBase &&other) = delete;
-    QPropertyBase(QPropertyBase &&other, void *propertyDataPtr);
-    QPropertyBase &operator=(QPropertyBase &&other) = delete;
-    ~QPropertyBase();
+    QPropertyBindingData() = default;
+    Q_DISABLE_COPY(QPropertyBindingData)
+    QPropertyBindingData(QPropertyBindingData &&other) = delete;
+    QPropertyBindingData(QPropertyBindingData &&other, void *propertyDataPtr);
+    QPropertyBindingData &operator=(QPropertyBindingData &&other) = delete;
+    ~QPropertyBindingData();
 
-    void moveAssign(QPropertyBase &&other, void *propertyDataPtr);
+    void moveAssign(QPropertyBindingData &&other, void *propertyDataPtr);
 
     bool hasBinding() const { return d_ptr & BindingBit; }
 

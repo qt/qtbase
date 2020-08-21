@@ -108,30 +108,30 @@ void tst_QProperty::multipleDependencies()
     QProperty<int> sum;
     sum = Qt::makePropertyBinding([&]() { return firstDependency + secondDependency; });
 
-    QCOMPARE(QPropertyBasePointer::get(firstDependency).observerCount(), 0);
-    QCOMPARE(QPropertyBasePointer::get(secondDependency).observerCount(), 0);
+    QCOMPARE(QPropertyBindingDataPointer::get(firstDependency).observerCount(), 0);
+    QCOMPARE(QPropertyBindingDataPointer::get(secondDependency).observerCount(), 0);
 
     QCOMPARE(sum.value(), int(3));
-    QCOMPARE(QPropertyBasePointer::get(firstDependency).observerCount(), 1);
-    QCOMPARE(QPropertyBasePointer::get(secondDependency).observerCount(), 1);
+    QCOMPARE(QPropertyBindingDataPointer::get(firstDependency).observerCount(), 1);
+    QCOMPARE(QPropertyBindingDataPointer::get(secondDependency).observerCount(), 1);
 
     firstDependency = 10;
 
     QCOMPARE(sum.value(), int(12));
-    QCOMPARE(QPropertyBasePointer::get(firstDependency).observerCount(), 1);
-    QCOMPARE(QPropertyBasePointer::get(secondDependency).observerCount(), 1);
+    QCOMPARE(QPropertyBindingDataPointer::get(firstDependency).observerCount(), 1);
+    QCOMPARE(QPropertyBindingDataPointer::get(secondDependency).observerCount(), 1);
 
     secondDependency = 20;
 
     QCOMPARE(sum.value(), int(30));
-    QCOMPARE(QPropertyBasePointer::get(firstDependency).observerCount(), 1);
-    QCOMPARE(QPropertyBasePointer::get(secondDependency).observerCount(), 1);
+    QCOMPARE(QPropertyBindingDataPointer::get(firstDependency).observerCount(), 1);
+    QCOMPARE(QPropertyBindingDataPointer::get(secondDependency).observerCount(), 1);
 
     firstDependency = 1;
     secondDependency = 1;
     QCOMPARE(sum.value(), int(2));
-    QCOMPARE(QPropertyBasePointer::get(firstDependency).observerCount(), 1);
-    QCOMPARE(QPropertyBasePointer::get(secondDependency).observerCount(), 1);
+    QCOMPARE(QPropertyBindingDataPointer::get(firstDependency).observerCount(), 1);
+    QCOMPARE(QPropertyBindingDataPointer::get(secondDependency).observerCount(), 1);
 }
 
 void tst_QProperty::bindingWithDeletedDependency()
@@ -190,13 +190,13 @@ void tst_QProperty::bindingAfterUse()
     propThatUsesFirstProp = Qt::makePropertyBinding(propWithBindingLater);
 
     QCOMPARE(propThatUsesFirstProp.value(), int(1));
-    QCOMPARE(QPropertyBasePointer::get(propWithBindingLater).observerCount(), 1);
+    QCOMPARE(QPropertyBindingDataPointer::get(propWithBindingLater).observerCount(), 1);
 
     QProperty<int> injectedValue(42);
     propWithBindingLater = Qt::makePropertyBinding(injectedValue);
 
     QCOMPARE(propThatUsesFirstProp.value(), int(42));
-    QCOMPARE(QPropertyBasePointer::get(propWithBindingLater).observerCount(), 1);
+    QCOMPARE(QPropertyBindingDataPointer::get(propWithBindingLater).observerCount(), 1);
 }
 
 void tst_QProperty::switchBinding()
@@ -227,12 +227,12 @@ void tst_QProperty::avoidDependencyAllocationAfterFirstEval()
 
     QCOMPARE(propWithBinding.value(), int(11));
 
-    QVERIFY(QPropertyBasePointer::get(propWithBinding).bindingPtr());
-    QCOMPARE(QPropertyBasePointer::get(propWithBinding).bindingPtr()->dependencyObserverCount, 2u);
+    QVERIFY(QPropertyBindingDataPointer::get(propWithBinding).bindingPtr());
+    QCOMPARE(QPropertyBindingDataPointer::get(propWithBinding).bindingPtr()->dependencyObserverCount, 2u);
 
     firstDependency = 100;
     QCOMPARE(propWithBinding.value(), int(110));
-    QCOMPARE(QPropertyBasePointer::get(propWithBinding).bindingPtr()->dependencyObserverCount, 2u);
+    QCOMPARE(QPropertyBindingDataPointer::get(propWithBinding).bindingPtr()->dependencyObserverCount, 2u);
 }
 
 void tst_QProperty::propertyArrays()
@@ -348,18 +348,18 @@ void tst_QProperty::moveNotifies()
     QCOMPARE(finalProp1.value(), 1);
     QCOMPARE(finalProp2.value(), 1);
 
-    QCOMPARE(QPropertyBasePointer::get(propertyInTheMiddle).observerCount(), 2);
+    QCOMPARE(QPropertyBindingDataPointer::get(propertyInTheMiddle).observerCount(), 2);
 
     QProperty<int> other = Qt::makePropertyBinding(second);
     QCOMPARE(other.value(), 2);
 
     QProperty<int> otherDep = Qt::makePropertyBinding(other);
     QCOMPARE(otherDep.value(), 2);
-    QCOMPARE(QPropertyBasePointer::get(other).observerCount(), 1);
+    QCOMPARE(QPropertyBindingDataPointer::get(other).observerCount(), 1);
 
     propertyInTheMiddle = std::move(other);
 
-    QCOMPARE(QPropertyBasePointer::get(other).observerCount(), 0);
+    QCOMPARE(QPropertyBindingDataPointer::get(other).observerCount(), 0);
 
     QCOMPARE(finalProp1.value(), 2);
     QCOMPARE(finalProp2.value(), 2);
@@ -371,11 +371,11 @@ void tst_QProperty::moveCtor()
 
     QProperty<int> intermediate = Qt::makePropertyBinding(first);
     QCOMPARE(intermediate.value(), 1);
-    QCOMPARE(QPropertyBasePointer::get(first).observerCount(), 1);
+    QCOMPARE(QPropertyBindingDataPointer::get(first).observerCount(), 1);
 
     QProperty<int> targetProp(std::move(first));
 
-    QCOMPARE(QPropertyBasePointer::get(targetProp).observerCount(), 0);
+    QCOMPARE(QPropertyBindingDataPointer::get(targetProp).observerCount(), 0);
 }
 
 void tst_QProperty::changeHandler()

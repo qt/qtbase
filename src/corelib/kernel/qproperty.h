@@ -133,7 +133,7 @@ public:
 
     explicit QUntypedPropertyBinding(QPropertyBindingPrivate *priv);
 private:
-    friend class QtPrivate::QPropertyBase;
+    friend class QtPrivate::QPropertyBindingData;
     friend class QPropertyBindingPrivate;
     template <typename> friend class QPropertyBinding;
     QPropertyBindingPrivatePtr d;
@@ -167,9 +167,9 @@ public:
         : QUntypedPropertyBinding(QMetaType::fromType<PropertyType>(), BindingAdaptor<Functor>{std::forward<Functor>(f)}, location)
     {}
 
-    template<typename Property, typename = std::void_t<decltype(&Property::propertyBase)>>
+    template<typename Property, typename = std::void_t<decltype(&Property::bindingData)>>
     QPropertyBinding(const Property &property)
-        : QUntypedPropertyBinding(property.propertyBase().binding())
+        : QUntypedPropertyBinding(property.bindingData().binding())
     {}
 
     // Internal
@@ -187,13 +187,13 @@ namespace Qt {
     }
 }
 
-struct QPropertyBasePointer;
+struct QPropertyBindingDataPointer;
 
 template <typename T>
 class QProperty
 {
     T val = T();
-    QtPrivate::QPropertyBase d;
+    QtPrivate::QPropertyBindingData d;
     bool is_equal(const T &v)
     {
         if constexpr (QTypeTraits::has_operator_equal_v<T>) {
@@ -346,7 +346,7 @@ public:
     template<typename Functor>
     QPropertyChangeHandler<Functor> subscribe(Functor f);
 
-    const QtPrivate::QPropertyBase &propertyBase() const { return d; }
+    const QtPrivate::QPropertyBindingData &bindingData() const { return d; }
 private:
     void notify()
     {
@@ -370,7 +370,7 @@ template <typename T, auto Callback, auto ValueGuard=nullptr>
 class QNotifiedProperty
 {
     T val = T();
-    QtPrivate::QPropertyBase d;
+    QtPrivate::QPropertyBindingData d;
     bool is_equal(const T &v)
     {
         if constexpr (QTypeTraits::has_operator_equal_v<T>) {
@@ -532,7 +532,7 @@ public:
     template<typename Functor>
     QPropertyChangeHandler<Functor> subscribe(Functor f);
 
-    const QtPrivate::QPropertyBase &propertyBase() const { return d; }
+    const QtPrivate::QPropertyBindingData &bindingData() const { return d; }
 private:
     void notify(Class *owner, T *oldValue=nullptr)
     {
@@ -566,9 +566,9 @@ public:
     QPropertyObserver &operator=(QPropertyObserver &&other);
     ~QPropertyObserver();
 
-    template<typename Property, typename = std::enable_if_t<std::is_same_v<decltype(std::declval<Property>().propertyBase()), QtPrivate::QPropertyBase &>>>
+    template<typename Property, typename = std::enable_if_t<std::is_same_v<decltype(std::declval<Property>().bindingData()), QtPrivate::QPropertyBindingData &>>>
     void setSource(const Property &property)
-    { setSource(property.propertyBase()); }
+    { setSource(property.bindingData()); }
 
 protected:
     QPropertyObserver(void (*callback)(QPropertyObserver*, void *));
@@ -581,7 +581,7 @@ protected:
     }
 
 private:
-    void setSource(const QtPrivate::QPropertyBase &property);
+    void setSource(const QtPrivate::QPropertyBindingData &property);
 
     QTaggedPointer<QPropertyObserver, ObserverTag> next;
     // prev is a pointer to the "next" element within the previous node, or to the "firstObserverPtr" if it is the
@@ -598,7 +598,7 @@ private:
     QPropertyObserver &operator=(const QPropertyObserver &) = delete;
 
     friend struct QPropertyObserverPointer;
-    friend struct QPropertyBasePointer;
+    friend struct QPropertyBindingDataPointer;
     friend class QPropertyBindingPrivate;
 };
 
@@ -616,7 +616,7 @@ public:
     {
     }
 
-    template<typename Property, typename = std::void_t<decltype(&Property::propertyBase)>>
+    template<typename Property, typename = std::void_t<decltype(&Property::bindingData)>>
     QPropertyChangeHandler(const Property &property, Functor handler)
         : QPropertyObserver([](QPropertyObserver *self, void *) {
               auto This = static_cast<QPropertyChangeHandler<Functor>*>(self);
