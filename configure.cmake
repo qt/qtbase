@@ -415,6 +415,12 @@ qt_feature("optimize_debug"
     CONDITION NOT MSVC AND NOT CLANG AND ( QT_FEATURE_debug OR QT_FEATURE_debug_and_release ) AND TEST_optimize_debug
 )
 qt_feature_config("optimize_debug" QMAKE_PRIVATE_CONFIG)
+qt_feature("optimize_size"
+    LABEL "Optimize release build for size"
+    AUTODETECT OFF
+    CONDITION NOT QT_FEATURE_debug OR QT_FEATURE_debug_and_release
+)
+qt_feature_config("optimize_size" QMAKE_PRIVATE_CONFIG)
 qt_feature("pkg-config" PUBLIC
     LABEL "Using pkg-config"
     AUTODETECT NOT APPLE AND NOT WIN32

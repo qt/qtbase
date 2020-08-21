@@ -361,6 +361,11 @@ function(qt_internal_set_up_config_optimizations_like_in_qmake)
                 string(APPEND "${flag_var_name}" " ${QT_CFLAGS_OPTIMIZE_DEBUG}")
             endif()
 
+            set(configs_for_optimize_size RELEASE RELWITHDEBINFO)
+            if(QT_FEATURE_optimize_size AND config IN_LIST configs_for_optimize_size)
+                string(APPEND "${flag_var_name}" " ${QT_CFLAGS_OPTIMIZE_SIZE}")
+            endif()
+
             # Assign value to the cache entry.
             get_property(help_text CACHE "${flag_var_name}" PROPERTY HELPSTRING)
             set("${flag_var_name}" "${${flag_var_name}}" CACHE STRING "${help_text}" FORCE)

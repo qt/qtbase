@@ -28,7 +28,7 @@ The effort of this is tracked in QTBUG-85373 and QTBUG-85349.
 | -debug-and-release                    | -G "Ninja Multi-Config"                           |                                                                 |
 |                                       | -DCMAKE_CONFIGURATION_TYPES=Release;Debug         |                                                                 |
 | -optimize-debug                       | -DFEATURE_optimize_debug=ON                       |                                                                 |
-| -optimize-size                        |                                                   |                                                                 |
+| -optimize-size                        | -DFEATURE_optimize_size=ON                        |                                                                 |
 | -optimized-tools                      | n/a                                               | This affects only host tools.                                   |
 | -force-debug-info                     | Use the RelWithDebInfo build config.              |                                                                 |
 | -separate-debug-info                  | -DFEATURE_separate_debug_info=ON                  |                                                                 |

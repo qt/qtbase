@@ -897,7 +897,6 @@ def get_feature_mapping():
         "incredibuild_xge": None,
         "ltcg": {"autoDetect": "1", "condition": "CMAKE_INTERPROCEDURAL_OPTIMIZATION"},
         "msvc_mp": None,
-        "optimize_size": None,
         "simulator_and_device": {"condition": "UIKIT AND NOT QT_UIKIT_SDK"},
         "pkg-config": {"condition": "PKG_CONFIG_FOUND"},
         "precompile_header": {"condition": "BUILD_WITH_PCH"},
