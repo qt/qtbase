@@ -153,9 +153,10 @@ public:
         ushort method_offset;
         ushort method_relative;
         signed int signal_index : 27; // In signal range (see QObjectPrivate::signalIndex())
-        ushort connectionType : 3; // 0 == auto, 1 == direct, 2 == queued, 4 == blocking
+        ushort connectionType : 2; // 0 == auto, 1 == direct, 2 == queued, 3 == blocking
         ushort isSlotObject : 1;
         ushort ownArgumentTypes : 1;
+        ushort isSingleShot : 1;
         Connection() : ref_(2), ownArgumentTypes(true) {
             //ref_ is 2 for the use in the internal lists, and for the use in QMetaObject::Connection
         }
@@ -348,10 +349,11 @@ public:
 
     static QMetaObject::Connection connectImpl(const QObject *sender, int signal_index,
                                                const QObject *receiver, void **slot,
-                                               QtPrivate::QSlotObjectBase *slotObj, Qt::ConnectionType type,
+                                               QtPrivate::QSlotObjectBase *slotObj, int type,
                                                const int *types, const QMetaObject *senderMetaObject);
     static QMetaObject::Connection connect(const QObject *sender, int signal_index, QtPrivate::QSlotObjectBase *slotObj, Qt::ConnectionType type);
     static bool disconnect(const QObject *sender, int signal_index, void **slot);
+    static bool disconnect(Connection *c);
 
     void ensureConnectionData()
     {

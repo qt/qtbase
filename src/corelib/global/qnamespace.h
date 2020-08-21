@@ -1301,7 +1301,8 @@ namespace Qt {
         DirectConnection,
         QueuedConnection,
         BlockingQueuedConnection,
-        UniqueConnection =  0x80
+        UniqueConnection =  0x80,
+        SingleShotConnection = 0x100,
     };
 
     enum ShortcutContext {

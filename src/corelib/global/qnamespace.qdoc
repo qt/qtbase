@@ -638,6 +638,13 @@
            (i.e. if the same signal is already connected to the same slot
            for the same pair of objects). This flag was introduced in Qt 4.6.
 
+    \value SingleShotConnection
+           This is a flag that can be combined with any one of the above
+           connection types, using a bitwise OR. When Qt::SingleShotConnection
+           is set, the slot is going to be called only once; the connection
+           will be automatically broken when the signal is emitted.
+           This flag was introduced in Qt 6.0.
+
     With queued connections, the parameters must be of types that are
     known to Qt's meta-object system, because Qt needs to copy the
     arguments to store them in an event behind the scenes. If you try

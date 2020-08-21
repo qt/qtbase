@@ -3325,8 +3325,14 @@ QObjectPrivate::Connection *QMetaObjectPrivate::connect(const QObject *sender,
                 c2 = c2->nextConnectionList.loadRelaxed();
             }
         }
-        type &= Qt::UniqueConnection - 1;
     }
+    type &= ~Qt::UniqueConnection;
+
+    const bool isSingleShot = type & Qt::SingleShotConnection;
+    type &= ~Qt::SingleShotConnection;
+
+    Q_ASSERT(type >= 0);
+    Q_ASSERT(type <= 3);
 
     std::unique_ptr<QObjectPrivate::Connection> c{new QObjectPrivate::Connection};
     c->sender = s;
@@ -3341,6 +3347,7 @@ QObjectPrivate::Connection *QMetaObjectPrivate::connect(const QObject *sender,
     c->isSlotObject = false;
     c->argumentTypes.storeRelaxed(types);
     c->callFunction = callFunction;
+    c->isSingleShot = isSingleShot;
 
     QObjectPrivate::get(s)->addConnection(signal_index, c.get());
 
@@ -3632,7 +3639,8 @@ static void queued_activate(QObject *sender, int signal, QObjectPrivate::Connect
         ++nargs;
 
     QBasicMutexLocker locker(signalSlotLock(c->receiver.loadRelaxed()));
-    if (!c->receiver.loadRelaxed()) {
+    QObject *receiver = c->receiver.loadRelaxed();
+    if (!receiver) {
         // the connection has been disconnected before we got the lock
         return;
     }
@@ -3658,17 +3666,22 @@ static void queued_activate(QObject *sender, int signal, QObjectPrivate::Connect
             args[n] = types[n].create(argv[n]);
     }
 
+    if (c->isSingleShot && !QObjectPrivate::disconnect(c)) {
+        delete ev;
+        return;
+    }
+
     locker.relock();
     if (c->isSlotObject)
         c->slotObj->destroyIfLastRef();
-    if (!c->receiver.loadRelaxed()) {
+    if (!c->isSingleShot && !c->receiver.loadRelaxed()) {
         // the connection has been disconnected while we were unlocked
         locker.unlock();
         delete ev;
         return;
     }
 
-    QCoreApplication::postEvent(c->receiver.loadRelaxed(), ev);
+    QCoreApplication::postEvent(receiver, ev);
 }
 
 template <bool callbacks_enabled>
@@ -3762,10 +3775,14 @@ void doActivate(QObject *sender, int signal_index, void **argv)
                     sender->metaObject()->className(), sender,
                     receiver->metaObject()->className(), receiver);
                 }
+
+                if (c->isSingleShot && !QObjectPrivate::disconnect(c))
+                    continue;
+
                 QSemaphore semaphore;
                 {
                     QBasicMutexLocker locker(signalSlotLock(receiver));
-                    if (!c->receiver.loadAcquire())
+                    if (!c->isSingleShot && !c->receiver.loadAcquire())
                         continue;
                     QMetaCallEvent *ev = c->isSlotObject ?
                         new QMetaCallEvent(c->slotObj, sender, signal_index, argv, &semaphore) :
@@ -3777,6 +3794,9 @@ void doActivate(QObject *sender, int signal_index, void **argv)
                 continue;
 #endif
             }
+
+            if (c->isSingleShot && !QObjectPrivate::disconnect(c))
+                continue;
 
             QObjectPrivate::Sender senderData(receiverInSameThread ? receiver : nullptr, sender, signal_index);
 
@@ -4855,7 +4875,7 @@ QMetaObject::Connection QObject::connectImpl(const QObject *sender, void **signa
  */
 QMetaObject::Connection QObjectPrivate::connectImpl(const QObject *sender, int signal_index,
                                              const QObject *receiver, void **slot,
-                                             QtPrivate::QSlotObjectBase *slotObj, Qt::ConnectionType type,
+                                             QtPrivate::QSlotObjectBase *slotObj, int type,
                                              const int *types, const QMetaObject *senderMetaObject)
 {
     if (!sender || !receiver || !slotObj || !senderMetaObject) {
@@ -4889,8 +4909,14 @@ QMetaObject::Connection QObjectPrivate::connectImpl(const QObject *sender, int s
                 c2 = c2->nextConnectionList.loadRelaxed();
             }
         }
-        type = static_cast<Qt::ConnectionType>(type ^ Qt::UniqueConnection);
     }
+    type &= ~Qt::UniqueConnection;
+
+    const bool isSingleShot = type & Qt::SingleShotConnection;
+    type &= ~Qt::SingleShotConnection;
+
+    Q_ASSERT(type >= 0);
+    Q_ASSERT(type <= 3);
 
     std::unique_ptr<QObjectPrivate::Connection> c{new QObjectPrivate::Connection};
     c->sender = s;
@@ -4906,6 +4932,7 @@ QMetaObject::Connection QObjectPrivate::connectImpl(const QObject *sender, int s
         c->argumentTypes.storeRelaxed(types);
         c->ownArgumentTypes = false;
     }
+    c->isSingleShot = isSingleShot;
 
     QObjectPrivate::get(s)->addConnection(signal_index, c.get());
     QMetaObject::Connection ret(c.release());
@@ -4929,39 +4956,12 @@ QMetaObject::Connection QObjectPrivate::connectImpl(const QObject *sender, int s
 bool QObject::disconnect(const QMetaObject::Connection &connection)
 {
     QObjectPrivate::Connection *c = static_cast<QObjectPrivate::Connection *>(connection.d_ptr);
-
-    if (!c)
-        return false;
-    QObject *receiver = c->receiver.loadRelaxed();
-    if (!receiver)
-        return false;
-
-    QBasicMutex *senderMutex = signalSlotLock(c->sender);
-    QBasicMutex *receiverMutex = signalSlotLock(receiver);
-
-    QObjectPrivate::ConnectionData *connections;
-    {
-        QOrderedMutexLocker locker(senderMutex, receiverMutex);
-
-        // load receiver once again and recheck to ensure nobody else has removed the connection in the meantime
-        receiver = c->receiver.loadRelaxed();
-        if (!receiver)
-            return false;
-
-        connections = QObjectPrivate::get(c->sender)->connections.loadRelaxed();
-        Q_ASSERT(connections);
-        connections->removeConnection(c);
+    const bool disconnected = QObjectPrivate::disconnect(c);
+    if (disconnected) {
+        const_cast<QMetaObject::Connection &>(connection).d_ptr = nullptr;
+        c->deref(); // has been removed from the QMetaObject::Connection object
     }
-
-    connections->cleanOrphanedConnections(c->sender);
-
-    c->sender->disconnectNotify(QMetaObjectPrivate::signal(c->sender->metaObject(),
-                                                           c->signal_index));
-
-    const_cast<QMetaObject::Connection &>(connection).d_ptr = nullptr;
-    c->deref(); // has been removed from the QMetaObject::Connection object
-
-    return true;
+    return disconnected;
 }
 
 /*! \fn template<typename PointerToMemberFunction> bool QObject::disconnect(const QObject *sender, PointerToMemberFunction signal, const QObject *receiver, PointerToMemberFunction method)
@@ -5082,6 +5082,43 @@ bool QObjectPrivate::disconnect(const QObject *sender, int signal_index, void **
     signal_index = methodIndexToSignalIndex(&senderMetaObject, signal_index);
 
     return QMetaObjectPrivate::disconnect(sender, signal_index, senderMetaObject, sender, -1, slot);
+}
+
+/*!
+    \internal
+    \threadsafe
+*/
+bool QObjectPrivate::disconnect(QObjectPrivate::Connection *c)
+{
+    if (!c)
+        return false;
+    QObject *receiver = c->receiver.loadRelaxed();
+    if (!receiver)
+        return false;
+
+    QBasicMutex *senderMutex = signalSlotLock(c->sender);
+    QBasicMutex *receiverMutex = signalSlotLock(receiver);
+
+    QObjectPrivate::ConnectionData *connections;
+    {
+        QOrderedMutexLocker locker(senderMutex, receiverMutex);
+
+        // load receiver once again and recheck to ensure nobody else has removed the connection in the meantime
+        receiver = c->receiver.loadRelaxed();
+        if (!receiver)
+            return false;
+
+        connections = QObjectPrivate::get(c->sender)->connections.loadRelaxed();
+        Q_ASSERT(connections);
+        connections->removeConnection(c);
+    }
+
+    connections->cleanOrphanedConnections(c->sender);
+
+    c->sender->disconnectNotify(QMetaObjectPrivate::signal(c->sender->metaObject(),
+                                                           c->signal_index));
+
+    return true;
 }
 
 /*! \class QMetaObject::Connection
