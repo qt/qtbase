@@ -302,6 +302,8 @@ void tst_QTouchEvent::state()
     QVERIFY(touchEvent.isPressEvent());
     QVERIFY(!touchEvent.isUpdateEvent());
     QVERIFY(!touchEvent.isReleaseEvent());
+    QVERIFY(touchEvent.isInputEvent());
+    QVERIFY(touchEvent.isPointerEvent());
 
     touchEvent = QTouchEvent(QEvent::TouchBegin, touchScreenDevice,
                              Qt::NoModifier, QList<QEventPoint>() <<

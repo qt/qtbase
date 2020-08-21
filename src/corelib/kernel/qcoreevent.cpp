@@ -295,7 +295,7 @@ QT_BEGIN_NAMESPACE
     Contructs an event object of type \a type.
 */
 QEvent::QEvent(Type type)
-    : d(nullptr), t(type), posted(false), spont(false), m_accept(true), m_inputEvent(false)
+    : d(nullptr), t(type), posted(false), spont(false), m_accept(true), m_inputEvent(false), m_pointerEvent(false)
 {
     Q_TRACE(QEvent_ctor, this, t);
 }
@@ -322,7 +322,16 @@ QEvent::QEvent(const QEvent &other)
     \since 6.0
     \fn QEvent::QEvent(Type type, QEvent::InputEventTag)
 
-    Constructs an event object of type \a type, setting the inputEvent flag to true.
+    Constructs an event object of type \a type, setting the inputEvent flag to \c true.
+*/
+
+/*!
+    \internal
+    \since 6.0
+    \fn QEvent::QEvent(Type type, QEvent::PointerEventTag)
+
+    Constructs an event object of type \a type, setting the pointerEvent and
+    inputEvent flags to \c true.
 */
 
 /*!
@@ -420,6 +429,14 @@ QEvent::~QEvent()
     \since 6.0
 
     Returns \c true if the event object is a QInputEvent or one of its
+    subclasses.
+*/
+
+/*!
+    \fn bool QEvent::isPointerEvent() const
+    \since 6.0
+
+    Returns \c true if the event object is a QPointerEvent or one of its
     subclasses.
 */
 

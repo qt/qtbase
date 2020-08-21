@@ -167,6 +167,13 @@ QInputEvent::QInputEvent(Type type, const QInputDevice *dev, Qt::KeyboardModifie
 /*!
   \internal
 */
+QInputEvent::QInputEvent(QEvent::Type type, QEvent::PointerEventTag, const QInputDevice *dev, Qt::KeyboardModifiers modifiers)
+    : QEvent(type, QEvent::PointerEventTag{}), m_dev(dev), m_modState(modifiers)
+{}
+
+/*!
+  \internal
+*/
 QInputEvent::~QInputEvent()
 {
 }
@@ -345,7 +352,7 @@ QPointF QEventPoint::lastNormalizedPos() const
 }
 
 QPointerEvent::QPointerEvent(QEvent::Type type, const QPointingDevice *dev, Qt::KeyboardModifiers modifiers)
-    : QInputEvent(type, dev, modifiers)
+    : QInputEvent(type, QEvent::PointerEventTag{}, dev, modifiers)
 {
 }
 

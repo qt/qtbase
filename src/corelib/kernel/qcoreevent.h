@@ -308,12 +308,15 @@ public:
     inline void ignore() { m_accept = false; }
 
     inline bool isInputEvent() const noexcept { return m_inputEvent; }
+    inline bool isPointerEvent() const noexcept { return m_pointerEvent; }
 
     static int registerEventType(int hint = -1) noexcept;
 
 protected:
     struct InputEventTag { explicit InputEventTag() = default; };
     QEvent(Type type, InputEventTag) : QEvent(type) { m_inputEvent = true; }
+    struct PointerEventTag { explicit PointerEventTag() = default; };
+    QEvent(Type type, PointerEventTag) : QEvent(type, InputEventTag{}) { m_pointerEvent = true; }
     QEventPrivate *d;
     ushort t;
 
@@ -322,7 +325,8 @@ private:
     ushort spont : 1;
     ushort m_accept : 1;
     ushort m_inputEvent : 1;
-    ushort reserved : 12;
+    ushort m_pointerEvent : 1;
+    ushort reserved : 11;
 
     friend class QCoreApplication;
     friend class QCoreApplicationPrivate;

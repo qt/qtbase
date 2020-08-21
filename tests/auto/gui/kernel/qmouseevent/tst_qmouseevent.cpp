@@ -115,6 +115,8 @@ void tst_QMouseEvent::mouseEventBasic()
     QPointF screen(300, 300);
     // Press left button
     QMouseEvent me(QEvent::MouseButtonPress, local, scene, screen, Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+    QVERIFY(me.isInputEvent());
+    QVERIFY(me.isPointerEvent());
     QCOMPARE(me.isAccepted(), true);
     QCOMPARE(me.button(), Qt::LeftButton);
     QCOMPARE(me.buttons(), Qt::LeftButton);
