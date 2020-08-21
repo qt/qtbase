@@ -74,6 +74,7 @@ if(NOT QT_BUILD_STANDALONE_TESTS)
     qt_set_language_standards()
 
     #include CoreMacros() for qt6_generate_meta_types()
+    set(QT_DEFAULT_MAJOR_VERSION 6)
     include(src/corelib/Qt6CoreMacros.cmake)
 
     # Needed when building qtbase for android.
