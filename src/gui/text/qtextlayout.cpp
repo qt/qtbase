@@ -1184,7 +1184,7 @@ void QTextLayout::draw(QPainter *p, const QPointF &pos, const QList<FormatRange>
 
         for (int line = firstLine; line < lastLine; ++line) {
             QTextLine l(line, d);
-            l.draw(p, position, &selection);
+            l.draw_internal(p, position, &selection);
         }
         p->restore();
 
@@ -1208,7 +1208,7 @@ void QTextLayout::draw(QPainter *p, const QPointF &pos, const QList<FormatRange>
         selection.format.setProperty(SuppressBackground, true);
         for (int line = firstLine; line < lastLine; ++line) {
             QTextLine l(line, d);
-            l.draw(p, position, &selection);
+            l.draw_internal(p, position, &selection);
         }
         p->restore();
     }
@@ -2473,12 +2473,17 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
 #endif // QT_NO_RAWFONT
 
 /*!
-    \fn void QTextLine::draw(QPainter *painter, const QPointF &position, const QTextLayout::FormatRange *selection) const
+    \fn void QTextLine::draw(QPainter *painter, const QPointF &position) const
 
     Draws a line on the given \a painter at the specified \a position.
-    The \a selection is reserved for internal use.
 */
-void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatRange *selection) const
+void QTextLine::draw(QPainter *painter, const QPointF &position) const
+{
+    draw_internal(painter, position, nullptr);
+}
+
+void QTextLine::draw_internal(QPainter *p, const QPointF &pos,
+                              const QTextLayout::FormatRange *selection) const
 {
 #ifndef QT_NO_RAWFONT
     // Not intended to work with rawfont
