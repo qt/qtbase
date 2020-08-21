@@ -319,12 +319,12 @@ void QComboBoxPrivate::trySetValidIndex()
         setCurrentIndex(QModelIndex());
 }
 
-QRect QComboBoxPrivate::popupGeometry() const
+QRect QComboBoxPrivate::popupGeometry(const QPoint &globalPosition) const
 {
     Q_Q(const QComboBox);
     return QStylePrivate::useFullScreenForPopup()
-        ? QWidgetPrivate::screenGeometry(q)
-        : QWidgetPrivate::availableScreenGeometry(q);
+        ? QWidgetPrivate::screenGeometry(q, globalPosition)
+        : QWidgetPrivate::availableScreenGeometry(q, globalPosition);
 }
 
 bool QComboBoxPrivate::updateHoverControl(const QPoint &pos)
@@ -2612,7 +2612,7 @@ void QComboBox::showPopup()
     QComboBoxPrivateContainer* container = d->viewContainer();
     QRect listRect(style->subControlRect(QStyle::CC_ComboBox, &opt,
                                          QStyle::SC_ComboBoxListBoxPopup, this));
-    QRect screen = d->popupGeometry();
+    QRect screen = d->popupGeometry(mapToGlobal(listRect.topLeft()));
 
     QPoint below = mapToGlobal(listRect.bottomLeft());
     int belowHeight = screen.bottom() - below.y();

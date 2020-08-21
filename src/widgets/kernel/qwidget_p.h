@@ -51,6 +51,8 @@
 // We mean it.
 //
 
+
+
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "QtWidgets/qwidget.h"
 #include "private/qobject_p.h"
@@ -498,19 +500,45 @@ public:
 #endif
         return rect;
     }
+
     static QRect screenGeometry(const QWidget *widget)
     {
-        QRect rect = graphicsViewParentRect(widget);
-        if (rect.isNull())
-            rect = widget->screen()->geometry();
-        return rect;
+        return screenGeometry(widget, QPoint(), false);
     }
+
     static QRect availableScreenGeometry(const QWidget *widget)
     {
+        return availableScreenGeometry(widget, QPoint(), false);
+    }
+
+    static QRect screenGeometry(const QWidget *widget, const QPoint &globalPosition, bool hasPosition = true)
+    {
         QRect rect = graphicsViewParentRect(widget);
-        if (rect.isNull())
-            rect = widget->screen()->availableGeometry();
-        return rect;
+        if (!rect.isNull())
+            return rect;
+
+        QScreen *screen = nullptr;
+        if (hasPosition)
+            screen = widget->screen()->virtualSiblingAt(globalPosition);
+        if (!screen)
+            screen = widget->screen();
+
+        return screen->geometry();
+    }
+
+    static QRect availableScreenGeometry(const QWidget *widget, const QPoint &globalPosition, bool hasPosition = true)
+    {
+        QRect rect = graphicsViewParentRect(widget);
+        if (!rect.isNull())
+            return rect;
+
+        QScreen *screen = nullptr;
+        if (hasPosition)
+            screen = widget->screen()->virtualSiblingAt(globalPosition);
+        if (!screen)
+            screen = widget->screen();
+
+        return screen->availableGeometry();
     }
 
     inline void setRedirected(QPaintDevice *replacement, const QPoint &offset)
