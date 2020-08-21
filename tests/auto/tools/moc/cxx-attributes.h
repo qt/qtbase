@@ -31,6 +31,9 @@
 
 #include <QtCore/QObject>
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wunknown-attributes")
+
 class CppAttribute : public QObject
 {
     Q_OBJECT
@@ -57,6 +60,8 @@ public slots:
 #endif
 };
 
+QT_WARNING_POP
+
 #ifdef Q_MOC_RUN
 #  define TEST_COMPILER_DEPRECATION [[deprecated]]
 #  define TEST_COMPILER_DEPRECATION_X(x) [[deprecated(x)]]
@@ -64,6 +69,9 @@ public slots:
 #  define TEST_COMPILER_DEPRECATION Q_DECL_ENUMERATOR_DEPRECATED
 #  define TEST_COMPILER_DEPRECATION_X(x) Q_DECL_ENUMERATOR_DEPRECATED_X(x)
 #endif
+
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 
 namespace TestQNamespaceDeprecated {
     Q_NAMESPACE
@@ -99,5 +107,7 @@ namespace TestQNamespaceDeprecated {
     };
     Q_FLAG_NS(TestFlag1)
 }
+
+QT_WARNING_POP
 
 #endif // CXXATTRIBUTE_H

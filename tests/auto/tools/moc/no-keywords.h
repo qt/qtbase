@@ -69,8 +69,8 @@ public Q_SLOTS:
     inline void mySlot() { mySignal(); }
 
 private:
-    int signals;
-    double slots;
+    Q_DECL_UNUSED_MEMBER int signals;
+    Q_DECL_UNUSED_MEMBER double slots;
 };
 
 #define signals Q_SIGNALS

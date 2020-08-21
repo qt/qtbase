@@ -327,8 +327,12 @@ void StructQObject::foo(struct ForwardDeclaredStruct *)
         bool field;
     };
 
-    struct Inner unusedVariable;
+    Q_DECL_UNUSED_MEMBER struct Inner unusedVariable;
 }
+
+
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wignored-qualifiers")
 
 class TestClass : public MyNamespace::TestSuperClass, public DONT_CONFUSE_MOC(MyStruct),
                   public DONT_CONFUSE_MOC_EVEN_MORE(MyStruct2, dummy, ignored)
@@ -550,6 +554,8 @@ private slots:
      inline virtual void blub1() {}
      virtual inline void blub2() {}
 };
+
+QT_WARNING_POP
 
 class PropertyTestClass : public QObject
 {
@@ -1757,6 +1763,8 @@ void tst_Moc::QTBUG5590_dummyProperty()
     QCOMPARE(o.value2(), 82);
 }
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wignored-qualifiers")
 class QTBUG7421_ReturnConstTemplate: public QObject
 { Q_OBJECT
 public slots:
@@ -1766,7 +1774,7 @@ public slots:
         const QString returnConstString(const QString s) { return s; }
         QString const returnConstString2( QString const s) { return s; }
 };
-
+QT_WARNING_POP
 
 struct science_constant {};
 struct science_const {};

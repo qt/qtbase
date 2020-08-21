@@ -53,4 +53,9 @@ public slots:
 
 #endif // BACKSLASH_NEWLINES_H
 
-// ends with \\\r should not make moc crash (QTBUG-53441) (no new lines on purpose!!) \
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wcomment")
+
+// ends with \\\r should not make moc crash (QTBUG-53441) (no new lines on purpose!!) \
+
+QT_WARNING_POP
