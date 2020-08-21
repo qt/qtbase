@@ -453,6 +453,8 @@ public:
 #ifdef Q_QDOC
     operator bool() const;
 #else
+    // still using the restricted bool trick here, in order to support
+    // code using copy-init (e.g. `bool ok = connect(...)`)
     typedef void *Connection::*RestrictedBool;
     operator RestrictedBool() const { return d_ptr && isConnected_helper() ? &Connection::d_ptr : nullptr; }
 #endif
