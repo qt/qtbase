@@ -1197,6 +1197,22 @@
     current item.
 */
 
+/*! \fn template <class Key, class T> QMultiMap<Key, T>::iterator operator+(QMultiMap<Key, T>::iterator, difference_type n)
+    \fn template <class Key, class T> QMultiMap<Key, T>::iterator operator+(difference_type n, QMultiMap<Key, T>::iterator)
+    \fn template <class Key, class T> QMultiMap<Key, T>::iterator operator-(QMultiMap<Key, T>::iterator, difference_type n)
+    \fn template <class Key, class T> QMultiMap<Key, T>::iterator operator-(difference_type n, QMultiMap<Key, T>::iterator)
+    \fn template <class Key, class T> QMultiMap<Key, T>::iterator QMultiMap<Key, T>::iterator::operator+=(difference_type n)
+    \fn template <class Key, class T> QMultiMap<Key, T>::iterator QMultiMap<Key, T>::iterator::operator-=(difference_type n)
+
+    \obsolete
+
+    Use \c{std::next}, \c{std::prev} or \c{std::advance} instead.
+
+    Move an iterator by \e{n} positions. These operations can be
+    expensive for large values of \e{n}; QMultiMap iterators are not
+    random access.
+*/
+
 /*! \class QMultiMap::const_iterator
     \inmodule QtCore
     \brief The QMultiMap::const_iterator class provides an STL-style const iterator for QMultiMap.
@@ -1351,6 +1367,22 @@
     The postfix -- operator (\c{i--}) makes the preceding item
     current and returns an iterator pointing to the previously
     current item.
+*/
+
+/*! \fn template <class Key, class T> QMultiMap<Key, T>::const_iterator operator+(QMultiMap<Key, T>::const_iterator, difference_type n)
+    \fn template <class Key, class T> QMultiMap<Key, T>::const_iterator operator+(difference_type n, QMultiMap<Key, T>::const_iterator)
+    \fn template <class Key, class T> QMultiMap<Key, T>::const_iterator operator-(QMultiMap<Key, T>::const_iterator, difference_type n)
+    \fn template <class Key, class T> QMultiMap<Key, T>::const_iterator operator-(difference_type n, QMultiMap<Key, T>::const_iterator)
+    \fn template <class Key, class T> QMultiMap<Key, T>::const_iterator QMultiMap<Key, T>::const_iterator::operator+=(difference_type n)
+    \fn template <class Key, class T> QMultiMap<Key, T>::const_iterator QMultiMap<Key, T>::const_iterator::operator-=(difference_type n)
+
+    \obsolete
+
+    Use \c{std::next}, \c{std::prev} or \c{std::advance} instead.
+
+    Move an iterator by \e{n} positions. These operations can be
+    expensive for large values of \e{n}. QMultiMap iterators are not
+    random access.
 */
 
 /*! \class QMultiMap::key_iterator

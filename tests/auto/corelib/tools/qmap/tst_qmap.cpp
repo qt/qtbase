@@ -1129,6 +1129,29 @@ void tst_QMap::iterators()
             QVERIFY(stlIt.value() == testString.arg(i));
     QCOMPARE(i, 100);
 
+    // Same but exercising deprecated APIs
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+    stlIt = map.begin();
+    QCOMPARE(stlIt.value(), QLatin1String("Teststring 1"));
+
+    stlIt += 5;
+    QCOMPARE(stlIt.value(), QLatin1String("Teststring 6"));
+
+    stlIt++;
+    QCOMPARE(stlIt.value(), QLatin1String("Teststring 7"));
+
+    stlIt = stlIt - 3;
+    QCOMPARE(stlIt.value(), QLatin1String("Teststring 4"));
+
+    stlIt--;
+    QCOMPARE(stlIt.value(), QLatin1String("Teststring 3"));
+
+    for(stlIt = map.begin(), i = 1; stlIt != map.end(); ++stlIt, ++i)
+            QVERIFY(stlIt.value() == testString.arg(i));
+    QCOMPARE(i, 100);
+QT_WARNING_POP
+
     //STL-Style const-iterators
 
     QMap<int, QString>::const_iterator cstlIt = map.constBegin();
@@ -1149,6 +1172,29 @@ void tst_QMap::iterators()
     for(cstlIt = map.constBegin(), i = 1; cstlIt != map.constEnd(); ++cstlIt, ++i)
             QVERIFY(cstlIt.value() == testString.arg(i));
     QCOMPARE(i, 100);
+
+    // Same but exercising deprecated APIs
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+    cstlIt = map.constBegin();
+    QCOMPARE(cstlIt.value(), QLatin1String("Teststring 1"));
+
+    cstlIt += 5;
+    QCOMPARE(cstlIt.value(), QLatin1String("Teststring 6"));
+
+    cstlIt++;
+    QCOMPARE(cstlIt.value(), QLatin1String("Teststring 7"));
+
+    cstlIt = cstlIt - 3;
+    QCOMPARE(cstlIt.value(), QLatin1String("Teststring 4"));
+
+    cstlIt--;
+    QCOMPARE(cstlIt.value(), QLatin1String("Teststring 3"));
+
+    for(cstlIt = map.constBegin(), i = 1; cstlIt != map.constEnd(); ++cstlIt, ++i)
+            QVERIFY(cstlIt.value() == testString.arg(i));
+    QCOMPARE(i, 100);
+QT_WARNING_POP
 
     //Java-Style iterators
 
