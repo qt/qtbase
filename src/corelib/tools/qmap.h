@@ -496,6 +496,26 @@ public:
             --i;
             return r;
         }
+
+#if QT_DEPRECATED_SINCE(6, 0)
+        QT_DEPRECATED_VERSION_X_6_0("Use std::next; QMap iterators are not random access")
+        friend iterator operator+(iterator it, difference_type j) { return std::next(it, j); }
+
+        QT_DEPRECATED_VERSION_X_6_0("Use std::prev; QMap iterators are not random access")
+        friend iterator operator-(iterator it, difference_type j) { return std::prev(it, j); }
+
+        QT_DEPRECATED_VERSION_X_6_0("Use std::next or std::advance; QMap iterators are not random access")
+        iterator &operator+=(difference_type j) { std::advance(*this, j); return *this; }
+
+        QT_DEPRECATED_VERSION_X_6_0("Use std::prev or std::advance; QMap iterators are not random access")
+        iterator &operator-=(difference_type j) { std::advance(*this, -j); return *this; }
+
+        QT_DEPRECATED_VERSION_X_6_0("Use std::next; QMap iterators are not random access")
+        friend iterator operator+(difference_type j, iterator it) { return std::next(it, j); }
+
+        QT_DEPRECATED_VERSION_X_6_0("Use std::prev; QMap iterators are not random access")
+        friend iterator operator-(difference_type j, iterator it) { return std::prev(it, j); }
+#endif
     };
 
     class const_iterator
@@ -543,6 +563,26 @@ public:
             --i;
             return r;
         }
+
+#if QT_DEPRECATED_SINCE(6, 0)
+        QT_DEPRECATED_VERSION_X_6_0("Use std::next; QMap iterators are not random access")
+        friend const_iterator operator+(const_iterator it, difference_type j) { return std::next(it, j); }
+
+        QT_DEPRECATED_VERSION_X_6_0("Use std::prev; QMap iterators are not random access")
+        friend const_iterator operator-(const_iterator it, difference_type j) { return std::prev(it, j); }
+
+        QT_DEPRECATED_VERSION_X_6_0("Use std::next or std::advance; QMap iterators are not random access")
+        const_iterator &operator+=(difference_type j) { std::advance(*this, j); return *this; }
+
+        QT_DEPRECATED_VERSION_X_6_0("Use std::prev or std::advance; QMap iterators are not random access")
+        const_iterator &operator-=(difference_type j) { std::advance(*this, -j); return *this; }
+
+        QT_DEPRECATED_VERSION_X_6_0("Use std::next; QMap iterators are not random access")
+        friend const_iterator operator+(difference_type j, const_iterator it) { return std::next(it, j); }
+
+        QT_DEPRECATED_VERSION_X_6_0("Use std::prev; QMap iterators are not random access")
+        friend const_iterator operator-(difference_type j, const_iterator it) { return std::prev(it, j); }
+#endif
     };
 
     class key_iterator
@@ -1130,6 +1170,26 @@ public:
             --i;
             return r;
         }
+
+#if QT_DEPRECATED_SINCE(6, 0)
+        QT_DEPRECATED_VERSION_X_6_0("Use std::next; QMultiMap iterators are not random access")
+        friend iterator operator+(iterator it, difference_type j) { return std::next(it, j); }
+
+        QT_DEPRECATED_VERSION_X_6_0("Use std::prev; QMultiMap iterators are not random access")
+        friend iterator operator-(iterator it, difference_type j) { return std::prev(it, j); }
+
+        QT_DEPRECATED_VERSION_X_6_0("Use std::next or std::advance; QMultiMap iterators are not random access")
+        iterator &operator+=(difference_type j) { std::advance(*this, j); return *this; }
+
+        QT_DEPRECATED_VERSION_X_6_0("Use std::prev or std::advance; QMultiMap iterators are not random access")
+        iterator &operator-=(difference_type j) { std::advance(*this, -j); return *this; }
+
+        QT_DEPRECATED_VERSION_X_6_0("Use std::next; QMultiMap iterators are not random access")
+        friend iterator operator+(difference_type j, iterator it) { return std::next(it, j); }
+
+        QT_DEPRECATED_VERSION_X_6_0("Use std::prev; QMultiMap iterators are not random access")
+        friend iterator operator-(difference_type j, iterator it) { return std::prev(it, j); }
+#endif
     };
 
     class const_iterator
@@ -1177,6 +1237,26 @@ public:
             --i;
             return r;
         }
+
+#if QT_DEPRECATED_SINCE(6, 0)
+        QT_DEPRECATED_VERSION_X_6_0("Use std::next; QMultiMap iterators are not random access")
+        friend const_iterator operator+(const_iterator it, difference_type j) { return std::next(it, j); }
+
+        QT_DEPRECATED_VERSION_X_6_0("Use std::prev; QMultiMap iterators are not random access")
+        friend const_iterator operator-(const_iterator it, difference_type j) { return std::prev(it, j); }
+
+        QT_DEPRECATED_VERSION_X_6_0("Use std::next or std::advance; QMultiMap iterators are not random access")
+        const_iterator &operator+=(difference_type j) { std::advance(*this, j); return *this; }
+
+        QT_DEPRECATED_VERSION_X_6_0("Use std::prev or std::advance; QMultiMap iterators are not random access")
+        const_iterator &operator-=(difference_type j) { std::advance(*this, -j); return *this; }
+
+        QT_DEPRECATED_VERSION_X_6_0("Use std::next; QMultiMap iterators are not random access")
+        friend const_iterator operator+(difference_type j, const_iterator it) { return std::next(it, j); }
+
+        QT_DEPRECATED_VERSION_X_6_0("Use std::prev; QMultiMap iterators are not random access")
+        friend const_iterator operator-(difference_type j, const_iterator it) { return std::prev(it, j); }
+#endif
     };
 
     class key_iterator
