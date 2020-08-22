@@ -205,9 +205,7 @@ public:
     };
     Q_DECLARE_FLAGS(UserInputResolutionOptions, UserInputResolutionOption)
 
-    static QUrl fromUserInput(const QString &userInput);
-    // ### Qt6 merge with fromUserInput(QString), by adding = QString()
-    static QUrl fromUserInput(const QString &userInput, const QString &workingDirectory,
+    static QUrl fromUserInput(const QString &userInput, const QString &workingDirectory = QString(),
                               UserInputResolutionOptions options = DefaultResolution);
 
     bool isValid() const;

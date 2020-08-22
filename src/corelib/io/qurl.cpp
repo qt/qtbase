@@ -3676,65 +3676,12 @@ static bool isIp6(const QString &text)
     Returns a valid URL from a user supplied \a userInput string if one can be
     deduced. In the case that is not possible, an invalid QUrl() is returned.
 
-    This overload takes a \a workingDirectory path, in order to be able to
-    handle relative paths. This is especially useful when handling command
-    line arguments.
-    If \a workingDirectory is empty, no handling of relative paths will be done,
-    so this method will behave like its one argument overload.
-
-    By default, an input string that looks like a relative path will only be treated
-    as such if the file actually exists in the given working directory.
-
-    If the application can handle files that don't exist yet, it should pass the
-    flag AssumeLocalFile in \a options.
-
-    \since 5.4
-*/
-QUrl QUrl::fromUserInput(const QString &userInput, const QString &workingDirectory,
-                         UserInputResolutionOptions options)
-{
-    QString trimmedString = userInput.trimmed();
-
-    if (trimmedString.isEmpty())
-        return QUrl();
-
-
-    // Check for IPv6 addresses, since a path starting with ":" is absolute (a resource)
-    // and IPv6 addresses can start with "c:" too
-    if (isIp6(trimmedString)) {
-        QUrl url;
-        url.setHost(trimmedString);
-        url.setScheme(QStringLiteral("http"));
-        return url;
-    }
-
-    const QFileInfo fileInfo(QDir(workingDirectory), userInput);
-    if (fileInfo.exists()) {
-        return QUrl::fromLocalFile(fileInfo.absoluteFilePath());
-    }
-
-    QUrl url = QUrl(userInput, QUrl::TolerantMode);
-    // Check both QUrl::isRelative (to detect full URLs) and QDir::isAbsolutePath (since on Windows drive letters can be interpreted as schemes)
-    if ((options & AssumeLocalFile) && url.isRelative() && !QDir::isAbsolutePath(userInput)) {
-        return QUrl::fromLocalFile(fileInfo.absoluteFilePath());
-    }
-
-    return fromUserInput(trimmedString);
-}
-
-/*!
-    Returns a valid URL from a user supplied \a userInput string if one can be
-    deducted. In the case that is not possible, an invalid QUrl() is returned.
-
-    \since 4.6
-
-    Most applications that can browse the web, allow the user to input a URL
-    in the form of a plain string. This string can be manually typed into
-    a location bar, obtained from the clipboard, or passed in via command
-    line arguments.
+    This allows the user to input a URL or a local file path in the form of a plain
+    string. This string can be manually typed into a location bar, obtained from
+    the clipboard, or passed in via command line arguments.
 
     When the string is not already a valid URL, a best guess is performed,
-    making various web related assumptions.
+    making various assumptions.
 
     In the case the string corresponds to a valid file path on the system,
     a file:// URL is constructed, using QUrl::fromLocalFile().
@@ -3752,10 +3699,26 @@ QUrl QUrl::fromUserInput(const QString &userInput, const QString &workingDirecto
     \li hostname becomes http://hostname
     \li /home/user/test.html becomes file:///home/user/test.html
     \endlist
+
+    In order to be able to handle relative paths, this method takes an optional
+    \a workingDirectory path. This is especially useful when handling command
+    line arguments.
+    If \a workingDirectory is empty, no handling of relative paths will be done.
+
+    By default, an input string that looks like a relative path will only be treated
+    as such if the file actually exists in the given working directory.
+    If the application can handle files that don't exist yet, it should pass the
+    flag AssumeLocalFile in \a options.
+
+    \since 5.4
 */
-QUrl QUrl::fromUserInput(const QString &userInput)
+QUrl QUrl::fromUserInput(const QString &userInput, const QString &workingDirectory,
+                         UserInputResolutionOptions options)
 {
     QString trimmedString = userInput.trimmed();
+
+    if (trimmedString.isEmpty())
+        return QUrl();
 
     // Check for IPv6 addresses, since a path starting with ":" is absolute (a resource)
     // and IPv6 addresses can start with "c:" too
@@ -3766,11 +3729,23 @@ QUrl QUrl::fromUserInput(const QString &userInput)
         return url;
     }
 
+    const QUrl url = QUrl(trimmedString, QUrl::TolerantMode);
+
+    // Check for a relative path
+    if (!workingDirectory.isEmpty()) {
+        const QFileInfo fileInfo(QDir(workingDirectory), userInput);
+        if (fileInfo.exists())
+            return QUrl::fromLocalFile(fileInfo.absoluteFilePath());
+
+        // Check both QUrl::isRelative (to detect full URLs) and QDir::isAbsolutePath (since on Windows drive letters can be interpreted as schemes)
+        if ((options & AssumeLocalFile) && url.isRelative() && !QDir::isAbsolutePath(userInput))
+            return QUrl::fromLocalFile(fileInfo.absoluteFilePath());
+    }
+
     // Check first for files, since on Windows drive letters can be interpretted as schemes
     if (QDir::isAbsolutePath(trimmedString))
         return QUrl::fromLocalFile(trimmedString);
 
-    QUrl url = QUrl(trimmedString, QUrl::TolerantMode);
     QUrl urlPrepended = QUrl(QLatin1String("http://") + trimmedString, QUrl::TolerantMode);
 
     // Check the most common case of a valid url with a scheme
@@ -3782,8 +3757,7 @@ QUrl QUrl::fromUserInput(const QString &userInput)
         return adjustFtpPath(url);
 
     // Else, try the prepended one and adjust the scheme from the host name
-    if (urlPrepended.isValid() && (!urlPrepended.host().isEmpty() || !urlPrepended.path().isEmpty()))
-    {
+    if (urlPrepended.isValid() && (!urlPrepended.host().isEmpty() || !urlPrepended.path().isEmpty())) {
         int dotIndex = trimmedString.indexOf(QLatin1Char('.'));
         const QStringView hostscheme = QStringView{trimmedString}.left(dotIndex);
         if (hostscheme.compare(ftpScheme(), Qt::CaseInsensitive) == 0)
