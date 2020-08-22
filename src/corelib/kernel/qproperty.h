@@ -213,6 +213,86 @@ namespace Qt {
     }
 }
 
+struct QPropertyObserverPrivate;
+struct QPropertyObserverPointer;
+
+class Q_CORE_EXPORT QPropertyObserver
+{
+public:
+    // Internal
+    enum ObserverTag {
+        ObserverNotifiesBinding,
+        ObserverNotifiesChangeHandler,
+        ObserverNotifiesAlias,
+    };
+
+    QPropertyObserver() = default;
+    QPropertyObserver(QPropertyObserver &&other);
+    QPropertyObserver &operator=(QPropertyObserver &&other);
+    ~QPropertyObserver();
+
+    template<typename Property, typename = typename Property::InheritsQUntypedPropertyData>
+    void setSource(const Property &property)
+    { setSource(property.bindingData()); }
+    void setSource(const QtPrivate::QPropertyBindingData &property);
+
+protected:
+    using ChangeHandler = void (*)(QPropertyObserver*, QUntypedPropertyData *);
+    QPropertyObserver(ChangeHandler changeHandler);
+    QPropertyObserver(QUntypedPropertyData *aliasedPropertyPtr);
+
+    QUntypedPropertyData *aliasedProperty() const
+    {
+        return aliasedPropertyData;
+    }
+
+private:
+
+    QTaggedPointer<QPropertyObserver, ObserverTag> next;
+    // prev is a pointer to the "next" element within the previous node, or to the "firstObserverPtr" if it is the
+    // first node.
+    QtPrivate::QTagPreservingPointerToPointer<QPropertyObserver, ObserverTag> prev;
+
+    union {
+        QPropertyBindingPrivate *bindingToMarkDirty = nullptr;
+        ChangeHandler changeHandler;
+        QUntypedPropertyData *aliasedPropertyData;
+    };
+
+    QPropertyObserver(const QPropertyObserver &) = delete;
+    QPropertyObserver &operator=(const QPropertyObserver &) = delete;
+
+    friend struct QPropertyObserverPointer;
+    friend struct QPropertyBindingDataPointer;
+    friend class QPropertyBindingPrivate;
+};
+
+template <typename Functor>
+class QPropertyChangeHandler : public QPropertyObserver
+{
+    Functor m_handler;
+public:
+    QPropertyChangeHandler(Functor handler)
+        : QPropertyObserver([](QPropertyObserver *self, QUntypedPropertyData *) {
+              auto This = static_cast<QPropertyChangeHandler<Functor>*>(self);
+              This->m_handler();
+          })
+        , m_handler(handler)
+    {
+    }
+
+    template<typename Property, typename = typename Property::InheritsQUntypedPropertyData>
+    QPropertyChangeHandler(const Property &property, Functor handler)
+        : QPropertyObserver([](QPropertyObserver *self, QUntypedPropertyData *) {
+              auto This = static_cast<QPropertyChangeHandler<Functor>*>(self);
+              This->m_handler();
+          })
+        , m_handler(handler)
+    {
+        setSource(property);
+    }
+};
+
 template <typename T>
 class QProperty : public QPropertyData<T>
 {
@@ -362,9 +442,19 @@ public:
     }
 
     template<typename Functor>
-    QPropertyChangeHandler<Functor> onValueChanged(Functor f);
+    QPropertyChangeHandler<Functor> onValueChanged(Functor f)
+    {
+        static_assert(std::is_invocable_v<Functor>, "Functor callback must be callable without any parameters");
+        return QPropertyChangeHandler<Functor>(*this, f);
+    }
+
     template<typename Functor>
-    QPropertyChangeHandler<Functor> subscribe(Functor f);
+    QPropertyChangeHandler<Functor> subscribe(Functor f)
+    {
+        static_assert(std::is_invocable_v<Functor>, "Functor callback must be callable without any parameters");
+        f();
+        return onValueChanged(f);
+    }
 
     const QtPrivate::QPropertyBindingData &bindingData() const { return d; }
 private:
@@ -386,112 +476,15 @@ namespace Qt {
     }
 }
 
-struct QPropertyObserverPrivate;
-struct QPropertyObserverPointer;
-
-class Q_CORE_EXPORT QPropertyObserver
-{
-public:
-    // Internal
-    enum ObserverTag {
-        ObserverNotifiesBinding,
-        ObserverNotifiesChangeHandler,
-        ObserverNotifiesAlias,
-    };
-
-    QPropertyObserver() = default;
-    QPropertyObserver(QPropertyObserver &&other);
-    QPropertyObserver &operator=(QPropertyObserver &&other);
-    ~QPropertyObserver();
-
-    template<typename Property, typename = std::enable_if_t<std::is_same_v<decltype(std::declval<Property>().bindingData()), QtPrivate::QPropertyBindingData &>>>
-    void setSource(const Property &property)
-    { setSource(property.bindingData()); }
-
-protected:
-    using ChangeHandler = void (*)(QPropertyObserver*, QUntypedPropertyData *);
-    QPropertyObserver(ChangeHandler changeHandler);
-    QPropertyObserver(QUntypedPropertyData *aliasedPropertyPtr);
-
-    template<typename PropertyType>
-    QProperty<PropertyType> *aliasedProperty() const
-    {
-        return static_cast<QProperty<PropertyType> *>(aliasedPropertyData);
-    }
-
-private:
-    void setSource(const QtPrivate::QPropertyBindingData &property);
-
-    QTaggedPointer<QPropertyObserver, ObserverTag> next;
-    // prev is a pointer to the "next" element within the previous node, or to the "firstObserverPtr" if it is the
-    // first node.
-    QtPrivate::QTagPreservingPointerToPointer<QPropertyObserver, ObserverTag> prev;
-
-    union {
-        QPropertyBindingPrivate *bindingToMarkDirty = nullptr;
-        ChangeHandler changeHandler;
-        QUntypedPropertyData *aliasedPropertyData;
-    };
-
-    QPropertyObserver(const QPropertyObserver &) = delete;
-    QPropertyObserver &operator=(const QPropertyObserver &) = delete;
-
-    friend struct QPropertyObserverPointer;
-    friend struct QPropertyBindingDataPointer;
-    friend class QPropertyBindingPrivate;
-};
-
-template <typename Functor>
-class QPropertyChangeHandler : public QPropertyObserver
-{
-    Functor m_handler;
-public:
-    QPropertyChangeHandler(Functor handler)
-        : QPropertyObserver([](QPropertyObserver *self, QUntypedPropertyData *) {
-              auto This = static_cast<QPropertyChangeHandler<Functor>*>(self);
-              This->m_handler();
-          })
-        , m_handler(handler)
-    {
-    }
-
-    template<typename Property, typename = typename Property::InheritsQUntypedPropertyData>
-    QPropertyChangeHandler(const Property &property, Functor handler)
-        : QPropertyObserver([](QPropertyObserver *self, QUntypedPropertyData *) {
-              auto This = static_cast<QPropertyChangeHandler<Functor>*>(self);
-              This->m_handler();
-          })
-        , m_handler(handler)
-    {
-        setSource(property);
-    }
-};
-
-template <typename T>
-template<typename Functor>
-QPropertyChangeHandler<Functor> QProperty<T>::onValueChanged(Functor f)
-{
-#if defined(__cpp_lib_is_invocable) && (__cpp_lib_is_invocable >= 201703L)
-    static_assert(std::is_invocable_v<Functor>, "Functor callback must be callable without any parameters");
-#endif
-    return QPropertyChangeHandler<Functor>(*this, f);
-}
-
-template <typename T>
-template<typename Functor>
-QPropertyChangeHandler<Functor> QProperty<T>::subscribe(Functor f)
-{
-#if defined(__cpp_lib_is_invocable) && (__cpp_lib_is_invocable >= 201703L)
-    static_assert(std::is_invocable_v<Functor>, "Functor callback must be callable without any parameters");
-#endif
-    f();
-    return onValueChanged(f);
-}
-
 template<typename T>
 class QPropertyAlias : public QPropertyObserver
 {
     Q_DISABLE_COPY_MOVE(QPropertyAlias)
+    QProperty<T> *aliasedProperty() const
+    {
+        return static_cast<QProperty<T> *>(QPropertyObserver::aliasedProperty());
+    }
+
 public:
     QPropertyAlias(QProperty<T> *property)
         : QPropertyObserver(property)
@@ -501,12 +494,12 @@ public:
     }
 
     QPropertyAlias(QPropertyAlias<T> *alias)
-        : QPropertyAlias(alias->aliasedProperty<T>())
+        : QPropertyAlias(alias->aliasedProperty())
     {}
 
     T value() const
     {
-        if (auto *p = aliasedProperty<T>())
+        if (auto *p = aliasedProperty())
             return p->value();
         return T();
     }
@@ -515,26 +508,26 @@ public:
 
     void setValue(T &&newValue)
     {
-        if (auto *p = aliasedProperty<T>())
+        if (auto *p = aliasedProperty())
             p->setValue(std::move(newValue));
     }
 
     void setValue(const T &newValue)
     {
-        if (auto *p = aliasedProperty<T>())
+        if (auto *p = aliasedProperty())
             p->setValue(newValue);
     }
 
     QPropertyAlias<T> &operator=(T &&newValue)
     {
-        if (auto *p = aliasedProperty<T>())
+        if (auto *p = aliasedProperty())
             *p = std::move(newValue);
         return *this;
     }
 
     QPropertyAlias<T> &operator=(const T &newValue)
     {
-        if (auto *p = aliasedProperty<T>())
+        if (auto *p = aliasedProperty())
             *p = newValue;
         return *this;
     }
@@ -553,21 +546,21 @@ public:
 
     QPropertyBinding<T> setBinding(const QPropertyBinding<T> &newBinding)
     {
-        if (auto *p = aliasedProperty<T>())
+        if (auto *p = aliasedProperty())
             return p->setBinding(newBinding);
         return QPropertyBinding<T>();
     }
 
     QPropertyBinding<T> setBinding(QPropertyBinding<T> &&newBinding)
     {
-        if (auto *p = aliasedProperty<T>())
+        if (auto *p = aliasedProperty())
             return p->setBinding(std::move(newBinding));
         return QPropertyBinding<T>();
     }
 
     bool setBinding(const QUntypedPropertyBinding &newBinding)
     {
-        if (auto *p = aliasedProperty<T>())
+        if (auto *p = aliasedProperty())
             return p->setBinding(newBinding);
         return false;
     }
@@ -587,21 +580,21 @@ public:
 
     bool hasBinding() const
     {
-        if (auto *p = aliasedProperty<T>())
+        if (auto *p = aliasedProperty())
             return p->hasBinding();
         return false;
     }
 
     QPropertyBinding<T> binding() const
     {
-        if (auto *p = aliasedProperty<T>())
+        if (auto *p = aliasedProperty())
             return p->binding();
         return QPropertyBinding<T>();
     }
 
     QPropertyBinding<T> takeBinding()
     {
-        if (auto *p = aliasedProperty<T>())
+        if (auto *p = aliasedProperty())
             return p->takeBinding();
         return QPropertyBinding<T>();
     }
@@ -609,7 +602,7 @@ public:
     template<typename Functor>
     QPropertyChangeHandler<Functor> onValueChanged(Functor f)
     {
-        if (auto *p = aliasedProperty<T>())
+        if (auto *p = aliasedProperty())
             return p->onValueChanged(f);
         return QPropertyChangeHandler<Functor>(f);
     }
@@ -617,14 +610,14 @@ public:
     template<typename Functor>
     QPropertyChangeHandler<Functor> subscribe(Functor f)
     {
-        if (auto *p = aliasedProperty<T>())
+        if (auto *p = aliasedProperty())
             return p->subscribe(f);
         return QPropertyChangeHandler<Functor>(f);
     }
 
     bool isValid() const
     {
-        return aliasedProperty<T>() != nullptr;
+        return aliasedProperty() != nullptr;
     }
 };
 QT_END_NAMESPACE

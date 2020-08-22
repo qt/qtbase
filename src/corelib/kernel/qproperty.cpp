@@ -361,6 +361,8 @@ QPropertyObserver::QPropertyObserver(QUntypedPropertyData *aliasedPropertyPtr)
     d.setAliasedProperty(aliasedPropertyPtr);
 }
 
+/*! \internal
+ */
 void QPropertyObserver::setSource(const QPropertyBindingData &property)
 {
     QPropertyObserverPointer d{this};
