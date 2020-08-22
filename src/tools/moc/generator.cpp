@@ -906,8 +906,8 @@ void Generator::generateProperties()
         if (p.required)
             flags |= Required;
 
-        if (p.isQProperty)
-            flags |= IsQProperty;
+        if (!p.bind.isEmpty())
+            flags |= Bindable;
 
         fprintf(out, "    %4d, ", stridx(p.name));
         generateTypeInfo(p.type);
@@ -1025,9 +1025,8 @@ void Generator::generateMetacall()
             fprintf(out, "else ");
         fprintf(out,
             "if (_c == QMetaObject::ReadProperty || _c == QMetaObject::WriteProperty\n"
-            "            || _c == QMetaObject::ResetProperty || _c == QMetaObject::RegisterPropertyMetaType\n"
-            "            || _c == QMetaObject::RegisterQPropertyObserver\n"
-            "            || _c == QMetaObject::SetQPropertyBinding) {\n"
+            "            || _c == QMetaObject::ResetProperty || _c == QMetaObject::BindableProperty\n"
+            "            || _c == QMetaObject::RegisterPropertyMetaType) {\n"
             "        qt_static_metacall(this, _c, _id, _a);\n"
             "        _id -= %d;\n    }", int(cdef->propertyList.count()));
         fprintf(out, "\n#endif // QT_NO_PROPERTIES");
@@ -1268,7 +1267,7 @@ void Generator::generateStaticMetacall()
         bool needTempVarForGet = false;
         bool needSet = false;
         bool needReset = false;
-        bool haveQProperties = false;
+        bool hasBindableProperties = false;
         for (int i = 0; i < cdef->propertyList.size(); ++i) {
             const PropertyDef &p = cdef->propertyList.at(i);
             needGet |= !p.read.isEmpty() || !p.member.isEmpty();
@@ -1278,7 +1277,7 @@ void Generator::generateStaticMetacall()
 
             needSet |= !p.write.isEmpty() || (!p.member.isEmpty() && !p.constant);
             needReset |= !p.reset.isEmpty();
-            haveQProperties |= p.isQProperty;
+            hasBindableProperties |= !p.bind.isEmpty();
         }
         fprintf(out, "\n#ifndef QT_NO_PROPERTIES\n    ");
 
@@ -1404,59 +1403,21 @@ void Generator::generateStaticMetacall()
         }
         fprintf(out, "    }");
 
-#if 0
         fprintf(out, " else ");
-        fprintf(out, "if (_c == QMetaObject::RegisterQPropertyObserver) {\n");
-        if (haveQProperties) {
+        fprintf(out, "if (_c == QMetaObject::BindableProperty) {\n");
+        if (hasBindableProperties) {
             setupMemberAccess();
-            fprintf(out, "        QPropertyObserver *observer = reinterpret_cast<QPropertyObserver *>(_a[0]);\n");
             fprintf(out, "        switch (_id) {\n");
             for (int propindex = 0; propindex < cdef->propertyList.size(); ++propindex) {
                 const PropertyDef &p = cdef->propertyList.at(propindex);
-                if (!p.isQProperty)
+                if (p.bind.isEmpty())
                     continue;
-                QByteArray prefix = "_t->";
-                if (p.qpropertyname.isEmpty() || p.stored == "true") {
-                    fprintf(out, "        case %d: observer->setSource(%s%s); break;\n",
-                            propindex, prefix.constData(), p.bindingAccessor.constData());
-                } else {
-                    fprintf(out, "        case %d: if (auto *source = %s%s) observer->setSource(*source); break; \n",
-                            propindex, prefix.constData(), p.bindingAccessor.constData());
-                }
+                fprintf(out, "        case %d: *static_cast<QUntypedBindable *>(_a[0]) = _t->%s(); break;\n", propindex, p.bind.constData());
             }
             fprintf(out, "        default: break;\n");
             fprintf(out, "        }\n");
         }
         fprintf(out, "    }");
-
-        fprintf(out, " else ");
-        fprintf(out, "if (_c == QMetaObject::SetQPropertyBinding) {\n");
-        if (haveQProperties) {
-            setupMemberAccess();
-            fprintf(out, "        switch (_id) {\n");
-            for (int propindex = 0; propindex < cdef->propertyList.size(); ++propindex) {
-                const PropertyDef &p = cdef->propertyList.at(propindex);
-                if (!p.isQProperty)
-                    continue;
-                QByteArray prefix = "_t->";
-
-                if (p.qpropertyname.isEmpty() || p.stored == "true") {
-                    fprintf(out, "        case %d: %s%s.setBinding(*reinterpret_cast<QPropertyBinding<%s> *>(_a[0])); break;\n",
-                            propindex, prefix.constData(),
-                            p.bindingAccessor.constData(),
-                            p.type.constData());
-                } else {
-                    fprintf(out, "        case %d: if (auto *source = %s%s) source->setBinding(*reinterpret_cast<QPropertyBinding<%s> *>(_a[0])); break;\n",
-                            propindex, prefix.constData(), p.bindingAccessor.constData(),
-                            p.type.constData());
-                }
-
-            }
-            fprintf(out, "        default: break;\n");
-            fprintf(out, "        }\n");
-        }
-        fprintf(out, "    }");
-#endif
         fprintf(out, "\n#endif // QT_NO_PROPERTIES");
         needElse = true;
     }

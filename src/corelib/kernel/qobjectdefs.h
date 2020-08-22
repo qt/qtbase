@@ -386,8 +386,7 @@ struct Q_CORE_EXPORT QMetaObject
         IndexOfMethod,
         RegisterPropertyMetaType,
         RegisterMethodArgumentMetaType,
-        RegisterQPropertyObserver,
-        SetQPropertyBinding
+        BindableProperty
     };
 
     int static_metacall(Call, int, void **) const;

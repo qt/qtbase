@@ -46,6 +46,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QUntypedBindable;
+
 #define Q_METAMETHOD_INVOKE_MAX_ARGS 10
 
 class Q_CORE_EXPORT QMetaMethod
@@ -294,7 +296,7 @@ public:
     bool isConstant() const;
     bool isFinal() const;
     bool isRequired() const;
-    bool isQProperty() const;
+    bool isBindable() const;
 
     bool isFlagType() const;
     bool isEnumType() const;
@@ -309,6 +311,8 @@ public:
     QVariant read(const QObject *obj) const;
     bool write(QObject *obj, const QVariant &value) const;
     bool reset(QObject *obj) const;
+
+    QUntypedBindable bindable(QObject *object) const;
 
     QVariant readOnGadget(const void *gadget) const;
     bool writeOnGadget(void *gadget, const QVariant &value) const;

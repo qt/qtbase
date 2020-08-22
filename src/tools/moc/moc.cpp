@@ -1022,7 +1022,7 @@ static QByteArrayList requiredQtContainers(const QList<ClassDef> &classes)
 
         for (const auto &c : classes) {
             for (const auto &p : c.propertyList)
-                needsQProperty |= p.isQProperty;
+                needsQProperty |= !p.bind.isEmpty();
             if (any_type_contains(c.propertyList, pattern) ||
                     any_arg_contains(c.slotList, pattern) ||
                     any_arg_contains(c.signalList, pattern) ||
@@ -1219,23 +1219,9 @@ void Moc::createPropertyDef(PropertyDef &propDef)
 {
     propDef.location = index;
 
-    const bool isPrivateProperty = !propDef.inPrivateClass.isEmpty();
-    bool typeWrappedInQProperty = false;
-    if (isPrivateProperty) {
-        const int rewind = index;
-        if (test(IDENTIFIER) && lexem() == "QProperty" && test(LANGLE)) {
-            typeWrappedInQProperty = true;
-            propDef.isQProperty = true;
-        } else {
-            index = rewind;
-        }
-    }
-
     QByteArray type = parseType().name;
     if (type.isEmpty())
         error();
-    if (typeWrappedInQProperty)
-        next(RANGLE);
     propDef.designable = propDef.scriptable = propDef.stored = "true";
     propDef.user = "false";
     /*
@@ -1346,6 +1332,9 @@ void Moc::parsePropertyAttributes(PropertyDef &propDef)
         case 'W': if (l != "WRITE") error(2);
             propDef.write = v;
             break;
+        case 'B': if (l != "BINDABLE") error(2);
+            propDef.bind = v;
+            break;
         case 'D': if (l != "DESIGNABLE") error(2);
             propDef.designable = v + v2;
             checkIsFunction(propDef.designable, "DESIGNABLE");
@@ -1370,6 +1359,12 @@ void Moc::parsePropertyAttributes(PropertyDef &propDef)
     if (propDef.constant && !propDef.notify.isNull()) {
         const QByteArray msg = "Property declaration " + propDef.name
                 + " is both NOTIFYable and CONSTANT. CONSTANT will be ignored.";
+        propDef.constant = false;
+        warning(msg.constData());
+    }
+    if (propDef.constant && !propDef.bind.isNull()) {
+        const QByteArray msg = "Property declaration " + propDef.name
+                + " is both BINDable and CONSTANT. CONSTANT will be ignored.";
         propDef.constant = false;
         warning(msg.constData());
     }
@@ -1808,7 +1803,7 @@ void Moc::checkProperties(ClassDef *cdef)
             warning(msg.constData());
         }
 
-        if (p.read.isEmpty() && p.member.isEmpty() && !p.isQProperty) {
+        if (p.read.isEmpty() && p.member.isEmpty() && p.bind.isEmpty()) {
             const int rewind = index;
             if (p.location >= 0)
                 index = p.location;
@@ -2012,6 +2007,7 @@ QJsonObject PropertyDef::toJson() const
     jsonify("member", member);
     jsonify("read", read);
     jsonify("write", write);
+    jsonify("bindable", bind);
     jsonify("reset", reset);
     jsonify("notify", notify);
     jsonify("privateClass", inPrivateClass);
@@ -2035,7 +2031,6 @@ QJsonObject PropertyDef::toJson() const
     prop[QLatin1String("constant")] = constant;
     prop[QLatin1String("final")] = final;
     prop[QLatin1String("required")] = required;
-    prop[QLatin1String("isQProperty")] = isQProperty;
 
     if (revision > 0)
         prop[QLatin1String("revision")] = revision;

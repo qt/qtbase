@@ -615,10 +615,12 @@ struct QBindableInterface
     using BindingSetter = QUntypedPropertyBinding (*)(QUntypedPropertyData *d, const QUntypedPropertyBinding &binding);
     using MakeBinding = QUntypedPropertyBinding (*)(const QUntypedPropertyData *d, const QPropertyBindingSourceLocation &location);
     using SetObserver = void (*)(const QUntypedPropertyData *d, QPropertyObserver *observer);
+    using GetMetaType = QMetaType (*)();
     BindingGetter getBinding;
     BindingSetter setBinding;
     MakeBinding makeBinding;
     SetObserver setObserver;
+    GetMetaType metaType;
 };
 
 template<typename Property, typename = void>
@@ -634,7 +636,8 @@ public:
         [](const QUntypedPropertyData *d, const QPropertyBindingSourceLocation &location) -> QUntypedPropertyBinding
         { return Qt::makePropertyBinding([d]() -> T { return static_cast<const Property *>(d)->value(); }, location); },
         [](const QUntypedPropertyData *d, QPropertyObserver *observer) -> void
-        { observer->setSource(static_cast<const Property *>(d)->bindingData()); }
+        { observer->setSource(static_cast<const Property *>(d)->bindingData()); },
+        []() { return QMetaType::fromType<T>(); }
     };
 };
 
@@ -651,36 +654,45 @@ public:
         [](const QUntypedPropertyData *d, const QPropertyBindingSourceLocation &location) -> QUntypedPropertyBinding
         { return Qt::makePropertyBinding([d]() -> T { return static_cast<const Property *>(d)->value(); }, location); },
         [](const QUntypedPropertyData *d, QPropertyObserver *observer) -> void
-        { observer->setSource(static_cast<const Property *>(d)->bindingData()); }
+        { observer->setSource(static_cast<const Property *>(d)->bindingData()); },
+        []() { return QMetaType::fromType<T>(); }
     };
 };
 
 }
 
-template<typename T>
-class QBindable
+class QUntypedBindable
 {
 protected:
-    QUntypedPropertyData *data;
-    const QtPrivate::QBindableInterface *iface;
+    QUntypedPropertyData *data = nullptr;
+    const QtPrivate::QBindableInterface *iface = nullptr;
 
 public:
+    constexpr QUntypedBindable() = default;
     template<typename Property>
-    QBindable(Property *p)
+    QUntypedBindable(Property *p)
         : data(const_cast<std::remove_cv_t<Property> *>(p)),
           iface(&QtPrivate::QBindableInterfaceForProperty<Property>::iface)
-    {}
+    { Q_ASSERT(data && iface); }
 
-    QPropertyBinding<T> makeBinding(const QPropertyBindingSourceLocation &location = QT_PROPERTY_DEFAULT_BINDING_LOCATION)
+    bool isValid() const { return data != nullptr; }
+    bool isBindable() const { return iface && iface->getBinding; }
+
+    QUntypedPropertyBinding makeBinding(const QPropertyBindingSourceLocation &location = QT_PROPERTY_DEFAULT_BINDING_LOCATION)
     {
-        return static_cast<QPropertyBinding<T> &&>(iface->makeBinding(data, location));
+        return iface ? iface->makeBinding(data, location) : QUntypedPropertyBinding();
+    }
+    void observe(QPropertyObserver *observer)
+    {
+        if (iface)
+            iface->setObserver(data, observer);
     }
 
     template<typename Functor>
     QPropertyChangeHandler<Functor> onValueChanged(Functor f)
     {
         QPropertyChangeHandler<Functor> handler(f);
-        iface->setObserver(data, &handler);
+        observe(&handler);
         return handler;
     }
 
@@ -691,17 +703,54 @@ public:
         return onValueChanged(f);
     }
 
-    QPropertyBinding<T> binding() const
+    QUntypedPropertyBinding binding() const
     {
         if (!iface->getBinding)
-            return QPropertyBinding<T>();
-        return static_cast<QPropertyBinding<T> &&>(iface->getBinding(data));
+            return QUntypedPropertyBinding();
+        return iface->getBinding(data);
     }
-    QPropertyBinding<T> setBinding(const QPropertyBinding<T> &binding)
+    bool setBinding(const QUntypedPropertyBinding &binding)
     {
         if (!iface->setBinding)
-            return QPropertyBinding<T>();
-        return static_cast<QPropertyBinding<T> &&>(iface->setBinding(data, binding));
+            return false;
+        if (!binding.isNull() && binding.valueMetaType() != iface->metaType())
+            return false;
+        iface->setBinding(data, binding);
+        return true;
+    }
+    bool hasBinding() const
+    {
+        return !binding().isNull();
+    }
+
+};
+
+template<typename T>
+class QBindable : public QUntypedBindable
+{
+public:
+    using QUntypedBindable::QUntypedBindable;
+    explicit QBindable(const QUntypedBindable &b) : QUntypedBindable(b)
+    {
+        if (iface && iface->metaType() != QMetaType::fromType<T>()) {
+            data = nullptr;
+            iface = nullptr;
+        }
+    }
+
+    QPropertyBinding<T> makeBinding(const QPropertyBindingSourceLocation &location = QT_PROPERTY_DEFAULT_BINDING_LOCATION)
+    {
+        return static_cast<QPropertyBinding<T> &&>(QUntypedBindable::makeBinding(location));
+    }
+    QPropertyBinding<T> binding() const
+    {
+        return static_cast<QPropertyBinding<T> &&>(QUntypedBindable::binding());
+    }
+    using QUntypedBindable::setBinding;
+    QPropertyBinding<T> setBinding(const QPropertyBinding<T> &binding)
+    {
+        Q_ASSERT(!iface || binding.isNull() || binding.valueMetaType() == iface->metaType());
+        return iface ? static_cast<QPropertyBinding<T> &&>(iface->setBinding(data, binding)) : QPropertyBinding<T>();
     }
 #ifndef Q_CLANG_QDOC
     template <typename Functor>
@@ -715,10 +764,6 @@ public:
     template <typename Functor>
     QPropertyBinding<T> setBinding(Functor f);
 #endif
-    bool hasBinding() const
-    {
-        return !binding().isNull();
-    }
 };
 
 struct QBindingStatus;

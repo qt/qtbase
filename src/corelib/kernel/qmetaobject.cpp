@@ -3251,6 +3251,23 @@ bool QMetaProperty::reset(QObject *object) const
         QMetaObject::metacall(object, QMetaObject::ResetProperty, data.index(mobj) + mobj->propertyOffset(), argv);
     return true;
 }
+
+/*!
+    \since 6.0
+    Returns the bindable interface for the property on a given \a object.
+
+    If the property doesn't support bindings, the returned interface will be
+    invalid.
+
+    \sa QUntypedBindable, QProperty, isBindable()
+*/
+QUntypedBindable QMetaProperty::bindable(QObject *object) const
+{
+    QUntypedBindable bindable;
+    void * argv[1] { &bindable };
+    mobj->metacall(object, QMetaObject::BindableProperty, data.index(mobj) + mobj->propertyOffset(), argv);
+    return bindable;
+}
 /*!
     \since 5.5
 
@@ -3509,16 +3526,18 @@ bool QMetaProperty::isRequired() const
 
 /*!
     \since 6.0
-    Returns \c true if the property is implemented using a QProperty member; otherwise returns \c false.
+    Returns \c true if the \c{Q_PROPERTY()} exposes binding functionality; otherwise returns false.
 
-    This can be used to detect the availability of QProperty related meta-call types ahead of
-    performing the call itself.
+    This implies that you can create bindings that use this property as a dependency or install QPropertyObserver
+    objects on this property. Unless the property is readonly, you can also set a binding on this property.
+
+    \sa QProperty, isReadOnly(), bindable()
 */
-bool QMetaProperty::isQProperty() const
+bool QMetaProperty::isBindable() const
 {
     if (!mobj)
         return false;
-    return data.flags() & IsQProperty;
+    return (data.flags() & Bindable);
 }
 
 /*!

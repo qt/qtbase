@@ -81,7 +81,7 @@ enum PropertyFlags  {
     Stored = 0x00010000,
     User = 0x00100000,
     Required = 0x01000000,
-    IsQProperty = 0x02000000
+    Bindable = 0x02000000
 };
 
 enum MethodFlags  {

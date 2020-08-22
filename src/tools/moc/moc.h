@@ -132,7 +132,7 @@ struct PropertyDef
         return (s == write);
     }
 
-    QByteArray name, type, member, read, write, reset, designable, scriptable, stored, user, notify, inPrivateClass;
+    QByteArray name, type, member, read, write, bind, reset, designable, scriptable, stored, user, notify, inPrivateClass;
     int notifyId = -1; // -1 means no notifyId, >= 0 means signal defined in this class, < -1 means signal not defined in this class
     enum Specification  { ValueSpec, ReferenceSpec, PointerSpec };
     Specification gspec = ValueSpec;
@@ -140,7 +140,6 @@ struct PropertyDef
     bool constant = false;
     bool final = false;
     bool required = false;
-    bool isQProperty = false;
 
     int location = -1; // token index, used for error reporting
 

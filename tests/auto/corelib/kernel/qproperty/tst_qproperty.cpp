@@ -77,6 +77,7 @@ private slots:
     void testNewStuff();
     void qobjectObservers();
     void compatBindings();
+    void metaProperty();
 };
 
 void tst_QProperty::functorBinding()
@@ -966,8 +967,8 @@ void tst_QProperty::bindingValueReplacement()
 class MyQObject : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int foo READ foo WRITE setFoo NOTIFY fooChanged) // Use Q_BINDABLE_PROPERTY and generate iface API
-    Q_PROPERTY(int bar READ bar WRITE setBar NOTIFY barChanged)
+    Q_PROPERTY(int foo READ foo WRITE setFoo BINDABLE bindableFoo NOTIFY fooChanged)
+    Q_PROPERTY(int bar READ bar WRITE setBar BINDABLE bindableBar NOTIFY barChanged)
     Q_PROPERTY(int read READ read NOTIFY readChanged)
     Q_PROPERTY(int computed READ computed STORED false)
     Q_PROPERTY(int compat READ compat WRITE setCompat NOTIFY compatChanged)
@@ -1160,6 +1161,53 @@ void tst_QProperty::compatBindings()
     QCOMPARE(object.compat(), 0);
     QCOMPARE(object.compatChangedCount, 4);
     QCOMPARE(object.setCompatCalled, 4);
+}
+
+void tst_QProperty::metaProperty()
+{
+    MyQObject object;
+    QObject::connect(&object, &MyQObject::fooChanged, &object, &MyQObject::fooHasChanged);
+    QObject::connect(&object, &MyQObject::barChanged, &object, &MyQObject::barHasChanged);
+    QObject::connect(&object, &MyQObject::compatChanged, &object, &MyQObject::compatHasChanged);
+
+    QCOMPARE(object.fooChangedCount, 0);
+    object.setFoo(10);
+    QCOMPARE(object.fooChangedCount, 1);
+    QCOMPARE(object.foo(), 10);
+
+    auto f = [&object]() -> int {
+            return object.barData;
+    };
+    QCOMPARE(object.barChangedCount, 0);
+    object.setBar(42);
+    QCOMPARE(object.barChangedCount, 1);
+    QCOMPARE(object.fooChangedCount, 1);
+    int fooIndex = object.metaObject()->indexOfProperty("foo");
+    QVERIFY(fooIndex >= 0);
+    QMetaProperty fooProp = object.metaObject()->property(fooIndex);
+    QVERIFY(fooProp.isValid());
+    auto fooBindable = fooProp.bindable(&object);
+    QVERIFY(fooBindable.isValid());
+    QVERIFY(fooBindable.isBindable());
+    QVERIFY(!fooBindable.hasBinding());
+    fooBindable.setBinding(Qt::makePropertyBinding(f));
+    QVERIFY(fooBindable.hasBinding());
+    QCOMPARE(object.fooChangedCount, 2);
+    QCOMPARE(object.fooData.value(), 42);
+    object.setBar(666);
+    QCOMPARE(object.fooChangedCount, 3);
+    QCOMPARE(object.barChangedCount, 2);
+    QCOMPARE(object.fooData.value(), 666);
+    QCOMPARE(object.fooChangedCount, 3);
+
+    fooBindable.setBinding(QUntypedPropertyBinding());
+    QVERIFY(!fooBindable.hasBinding());
+    QCOMPARE(object.fooData.value(), 666);
+
+    object.setBar(0);
+    QCOMPARE(object.fooData.value(), 666);
+    object.setFoo(1);
+    QCOMPARE(object.fooData.value(), 1);
 }
 
 QTEST_MAIN(tst_QProperty);
