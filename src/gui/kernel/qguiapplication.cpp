@@ -2153,6 +2153,11 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     bool mousePress = false;
     QPointF globalPoint = e->globalPos;
 
+    if (qIsNaN(e->globalPos.x()) || qIsNaN(e->globalPos.y())) {
+        qWarning("QGuiApplicationPrivate::processMouseEvent: Got NaN in mouse position");
+        return;
+    }
+
     if (e->enhancedMouseEvent()) {
         type = e->buttonType;
         button = e->button;
