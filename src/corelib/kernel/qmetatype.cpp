@@ -1968,9 +1968,10 @@ static bool convertToAssociativeIterable(QMetaType fromType, const void *from, v
 #ifndef QT_BOOTSTRAPPED
 static bool canConvertMetaObject(QMetaType fromType, QMetaType toType)
 {
-    if ((fromType.flags() & QMetaType::PointerToQObject) && (toType.flags() & QMetaType::PointerToQObject)) {
-        return fromType.metaObject()->inherits(toType.metaObject()) ||
-                toType.metaObject()->inherits(fromType.metaObject());
+    const QMetaObject *f = fromType.metaObject();
+    const QMetaObject *t = toType.metaObject();
+    if (f && t) {
+        return f->inherits(t) || (t->inherits(f));
     }
     return false;
 }
