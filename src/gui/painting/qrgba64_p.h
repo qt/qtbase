@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -64,15 +64,7 @@ inline QRgba64 combineAlpha256(QRgba64 rgba64, uint alpha256)
     return QRgba64::fromRgba64(rgba64.red(), rgba64.green(), rgba64.blue(), (rgba64.alpha() * alpha256) >> 8);
 }
 
-inline QRgba64 multiplyAlpha65535(QRgba64 rgba64, uint alpha65535)
-{
-    return QRgba64::fromRgba64(qt_div_65535(rgba64.red()   * alpha65535),
-                               qt_div_65535(rgba64.green() * alpha65535),
-                               qt_div_65535(rgba64.blue()  * alpha65535),
-                               qt_div_65535(rgba64.alpha() * alpha65535));
-}
-
-#ifdef __SSE2__
+#if defined(__SSE2__)
 static inline __m128i Q_DECL_VECTORCALL multiplyAlpha65535(__m128i rgba64, __m128i va)
 {
     __m128i vs = rgba64;
@@ -80,7 +72,7 @@ static inline __m128i Q_DECL_VECTORCALL multiplyAlpha65535(__m128i rgba64, __m12
     vs = _mm_add_epi32(vs, _mm_srli_epi32(vs, 16));
     vs = _mm_add_epi32(vs, _mm_set1_epi32(0x8000));
     vs = _mm_srai_epi32(vs, 16);
-    vs = _mm_packs_epi32(vs, _mm_setzero_si128());
+    vs = _mm_packs_epi32(vs, vs);
     return vs;
 }
 static inline __m128i Q_DECL_VECTORCALL multiplyAlpha65535(__m128i rgba64, uint alpha65535)
@@ -103,6 +95,28 @@ static inline uint16x4_t multiplyAlpha65535(uint16x4_t rgba64, uint alpha65535)
 }
 #endif
 
+static inline QRgba64 multiplyAlpha65535(QRgba64 rgba64, uint alpha65535)
+{
+#if defined(__SSE2__)
+    const __m128i v = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(&rgba64));
+    const __m128i vr = multiplyAlpha65535(v, alpha65535);
+    QRgba64 r;
+    _mm_storel_epi64(reinterpret_cast<__m128i *>(&r), vr);
+    return r;
+#elif defined(__ARM_NEON__)
+    const uint16x4_t v = vreinterpret_u16_u64(vld1_u64(reinterpret_cast<const uint64_t *>(&rgba64)));
+    const uint16x4_t vr = multiplyAlpha65535(v, alpha65535);
+    QRgba64 r;
+    vst1_u64(reinterpret_cast<uint64_t *>(&r), vreinterpret_u64_u16(vr));
+    return r;
+#else
+    return QRgba64::fromRgba64(qt_div_65535(rgba64.red()   * alpha65535),
+                               qt_div_65535(rgba64.green() * alpha65535),
+                               qt_div_65535(rgba64.blue()  * alpha65535),
+                               qt_div_65535(rgba64.alpha() * alpha65535));
+#endif
+}
+
 template<typename T>
 static inline T Q_DECL_VECTORCALL multiplyAlpha255(T rgba64, uint alpha255)
 {
@@ -116,15 +130,10 @@ static inline T Q_DECL_VECTORCALL multiplyAlpha255(T rgba64, uint alpha255)
 #endif
 }
 
-inline QRgba64 interpolate255(QRgba64 x, uint alpha1, QRgba64 y, uint alpha2)
-{
-    return QRgba64::fromRgba64(multiplyAlpha255(x, alpha1) + multiplyAlpha255(y, alpha2));
-}
-
 #if defined __SSE2__
 static inline __m128i Q_DECL_VECTORCALL interpolate255(__m128i x, uint alpha1, __m128i y, uint alpha2)
 {
-    return _mm_add_epi32(multiplyAlpha255(x, alpha1), multiplyAlpha255(y, alpha2));
+    return _mm_add_epi16(multiplyAlpha255(x, alpha1), multiplyAlpha255(y, alpha2));
 }
 #endif
 
@@ -135,20 +144,36 @@ inline uint16x4_t interpolate255(uint16x4_t x, uint alpha1, uint16x4_t y, uint a
 }
 #endif
 
-inline QRgba64 interpolate65535(QRgba64 x, uint alpha1, QRgba64 y, uint alpha2)
+static inline QRgba64 interpolate255(QRgba64 x, uint alpha1, QRgba64 y, uint alpha2)
 {
-    return QRgba64::fromRgba64(multiplyAlpha65535(x, alpha1) + multiplyAlpha65535(y, alpha2));
+#if defined(__SSE2__)
+    const __m128i vx = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(&x));
+    const __m128i vy = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(&y));
+    const __m128i vr = interpolate255(vx, alpha1, vy, alpha2);
+    QRgba64 r;
+    _mm_storel_epi64(reinterpret_cast<__m128i *>(&r), vr);
+    return r;
+#elif defined(__ARM_NEON__)
+    const uint16x4_t vx = vreinterpret_u16_u64(vld1_u64(reinterpret_cast<const uint64_t *>(&x)));
+    const uint16x4_t vy = vreinterpret_u16_u64(vld1_u64(reinterpret_cast<const uint64_t *>(&y)));
+    const uint16x4_t vr = interpolate255(vx, alpha1, vy, alpha2);
+    QRgba64 r;
+    vst1_u64(reinterpret_cast<uint64_t *>(&r), vreinterpret_u64_u16(vr));
+    return r;
+#else
+    return QRgba64::fromRgba64(multiplyAlpha255(x, alpha1) + multiplyAlpha255(y, alpha2));
+#endif
 }
 
 #if defined __SSE2__
 static inline __m128i Q_DECL_VECTORCALL interpolate65535(__m128i x, uint alpha1, __m128i y, uint alpha2)
 {
-    return _mm_add_epi32(multiplyAlpha65535(x, alpha1), multiplyAlpha65535(y, alpha2));
+    return _mm_add_epi16(multiplyAlpha65535(x, alpha1), multiplyAlpha65535(y, alpha2));
 }
-// alpha2 below is const-ref because otherwise MSVC2015 complains that it can't 16-byte align the argument.
-static inline __m128i Q_DECL_VECTORCALL interpolate65535(__m128i x, __m128i alpha1, __m128i y, const __m128i &alpha2)
+
+static inline __m128i Q_DECL_VECTORCALL interpolate65535(__m128i x, __m128i alpha1, __m128i y, __m128i alpha2)
 {
-    return _mm_add_epi32(multiplyAlpha65535(x, alpha1), multiplyAlpha65535(y, alpha2));
+    return _mm_add_epi16(multiplyAlpha65535(x, alpha1), multiplyAlpha65535(y, alpha2));
 }
 #endif
 
@@ -163,12 +188,42 @@ inline uint16x4_t interpolate65535(uint16x4_t x, uint16x4_t alpha1, uint16x4_t y
 }
 #endif
 
-inline QRgba64 addWithSaturation(QRgba64 a, QRgba64 b)
+static inline QRgba64 interpolate65535(QRgba64 x, uint alpha1, QRgba64 y, uint alpha2)
 {
+#if defined(__SSE2__)
+    const __m128i vx = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(&x));
+    const __m128i vy = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(&y));
+    const __m128i vr = interpolate65535(vx, alpha1, vy, alpha2);
+    QRgba64 r;
+    _mm_storel_epi64(reinterpret_cast<__m128i *>(&r), vr);
+    return r;
+#elif defined(__ARM_NEON__)
+    const uint16x4_t vx = vreinterpret_u16_u64(vld1_u64(reinterpret_cast<const uint64_t *>(&x)));
+    const uint16x4_t vy = vreinterpret_u16_u64(vld1_u64(reinterpret_cast<const uint64_t *>(&y)));
+    const uint16x4_t vr = interpolate65535(vx, alpha1, vy, alpha2);
+    QRgba64 r;
+    vst1_u64(reinterpret_cast<uint64_t *>(&r), vreinterpret_u64_u16(vr));
+    return r;
+#else
+    return QRgba64::fromRgba64(multiplyAlpha65535(x, alpha1) + multiplyAlpha65535(y, alpha2));
+#endif
+}
+
+static inline QRgba64 addWithSaturation(QRgba64 a, QRgba64 b)
+{
+#if defined(__SSE2__)
+    const __m128i va = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(&a));
+    const __m128i vb = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(&b));
+    const __m128i vr = _mm_adds_epu16(va, vb);
+    QRgba64 r;
+    _mm_storel_epi64(reinterpret_cast<__m128i *>(&r), vr);
+    return r;
+#else
     return QRgba64::fromRgba64(qMin(a.red() + b.red(), 65535),
                                qMin(a.green() + b.green(), 65535),
                                qMin(a.blue() + b.blue(), 65535),
                                qMin(a.alpha() + b.alpha(), 65535));
+#endif
 }
 
 #if QT_COMPILER_SUPPORTS_HERE(SSE2)
@@ -196,7 +251,7 @@ static inline uint toArgb32(uint16x4_t v)
 static inline uint toArgb32(QRgba64 rgba64)
 {
 #if defined __SSE2__
-    __m128i v = _mm_loadl_epi64((const __m128i *)&rgba64);
+    __m128i v = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(&rgba64));
     v = _mm_shufflelo_epi16(v, _MM_SHUFFLE(3, 0, 1, 2));
     return toArgb32(v);
 #elif defined __ARM_NEON__
@@ -216,7 +271,7 @@ static inline uint toArgb32(QRgba64 rgba64)
 static inline uint toRgba8888(QRgba64 rgba64)
 {
 #if defined __SSE2__
-    __m128i v = _mm_loadl_epi64((const __m128i *)&rgba64);
+    __m128i v = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(&rgba64));
     return toArgb32(v);
 #elif defined __ARM_NEON__
     uint16x4_t v = vreinterpret_u16_u64(vld1_u64(reinterpret_cast<const uint64_t *>(&rgba64)));
@@ -230,8 +285,8 @@ static inline QRgba64 rgbBlend(QRgba64 d, QRgba64 s, uint rgbAlpha)
 {
     QRgba64 blend;
 #if defined(__SSE2__)
-    __m128i vd = _mm_loadl_epi64((const __m128i *)&d);
-    __m128i vs = _mm_loadl_epi64((const __m128i *)&s);
+    __m128i vd = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(&d));
+    __m128i vs = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(&s));
     __m128i va =  _mm_cvtsi32_si128(rgbAlpha);
     va = _mm_unpacklo_epi8(va, va);
     va = _mm_shufflelo_epi16(va, _MM_SHUFFLE(3, 0, 1, 2));
@@ -243,9 +298,9 @@ static inline QRgba64 rgbBlend(QRgba64 d, QRgba64 s, uint rgbAlpha)
     vd = _mm_add_epi32(vd, _mm_srli_epi32(vd, 16));
     vd = _mm_add_epi32(vd, _mm_set1_epi32(0x8000));
     vd = _mm_srai_epi32(vd, 16);
-    vd = _mm_packs_epi32(vd, _mm_setzero_si128());
+    vd = _mm_packs_epi32(vd, vd);
 
-    _mm_storel_epi64((__m128i *)&blend, vd);
+    _mm_storel_epi64(reinterpret_cast<__m128i *>(&blend), vd);
 #elif defined(__ARM_NEON__)
     uint16x4_t vd = vreinterpret_u16_u64(vmov_n_u64(d));
     uint16x4_t vs = vreinterpret_u16_u64(vmov_n_u64(s));
@@ -276,8 +331,17 @@ static inline void blend_pixel(QRgba64 &dst, QRgba64 src)
 {
     if (src.isOpaque())
         dst = src;
-    else if (!src.isTransparent())
+    else if (!src.isTransparent()) {
+#if defined(__SSE2__)
+        const __m128i vd = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(&dst));
+        const __m128i vs = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(&src));
+        const __m128i via = _mm_xor_si128(_mm_set1_epi16(-1), _mm_shufflelo_epi16(vs, _MM_SHUFFLE(3, 3, 3, 3)));
+        const __m128i vr = _mm_add_epi16(vs, multiplyAlpha65535(vd, via));
+        _mm_storel_epi64(reinterpret_cast<__m128i *>(&dst), vr);
+#else
         dst = src + multiplyAlpha65535(dst, 65535 - src.alpha());
+#endif
+    }
 }
 
 static inline void blend_pixel(QRgba64 &dst, QRgba64 src, const int const_alpha)
@@ -285,8 +349,17 @@ static inline void blend_pixel(QRgba64 &dst, QRgba64 src, const int const_alpha)
     if (const_alpha == 255)
         return blend_pixel(dst, src);
     if (!src.isTransparent()) {
+#if defined(__SSE2__)
+        const __m128i vd = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(&dst));
+        __m128i vs = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(&src));
+        vs = multiplyAlpha255(vs, const_alpha);
+        const __m128i via = _mm_xor_si128(_mm_set1_epi16(-1), _mm_shufflelo_epi16(vs, _MM_SHUFFLE(3, 3, 3, 3)));
+        const __m128i vr = _mm_add_epi16(vs, multiplyAlpha65535(vd, via));
+        _mm_storel_epi64(reinterpret_cast<__m128i *>(&dst), vr);
+#else
         src = multiplyAlpha255(src, const_alpha);
         dst = src + multiplyAlpha65535(dst, 65535 - src.alpha());
+#endif
     }
 }
 
