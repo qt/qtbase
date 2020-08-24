@@ -145,30 +145,6 @@ QMatrix4x4::QMatrix4x4(const float *values)
 */
 
 /*!
-    \fn template <int N, int M> QMatrix4x4 qGenericMatrixToMatrix4x4(const QGenericMatrix<N, M, float>& matrix)
-    \relates QMatrix4x4
-    \obsolete
-
-    Returns a 4x4 matrix constructed from the left-most 4 columns and
-    top-most 4 rows of \a matrix.  If \a matrix has less than 4 columns
-    or rows, the remaining elements are filled with elements from the
-    identity matrix.
-*/
-
-/*!
-    \fn QGenericMatrix<N, M, float> qGenericMatrixFromMatrix4x4(const QMatrix4x4& matrix)
-    \relates QMatrix4x4
-    \obsolete
-
-    Returns a NxM generic matrix constructed from the left-most N columns
-    and top-most M rows of \a matrix.  If N or M is greater than 4,
-    then the remaining elements are filled with elements from the
-    identity matrix.
-
-    \sa QMatrix4x4::toGenericMatrix()
-*/
-
-/*!
     \internal
 */
 QMatrix4x4::QMatrix4x4(const float *values, int cols, int rows)

@@ -1109,33 +1109,6 @@ Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QMatrix4x4 &);
 Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QMatrix4x4 &);
 #endif
 
-#if QT_DEPRECATED_SINCE(5, 0)
-template <int N, int M>
-QT_DEPRECATED QMatrix4x4 qGenericMatrixToMatrix4x4(const QGenericMatrix<N, M, float>& matrix)
-{
-    return QMatrix4x4(matrix.constData(), N, M);
-}
-
-template <int N, int M>
-QT_DEPRECATED QGenericMatrix<N, M, float> qGenericMatrixFromMatrix4x4(const QMatrix4x4& matrix)
-{
-    QGenericMatrix<N, M, float> result;
-    const float *m = matrix.constData();
-    float *values = result.data();
-    for (int col = 0; col < N; ++col) {
-        for (int row = 0; row < M; ++row) {
-            if (col < 4 && row < 4)
-                values[col * M + row] = m[col * 4 + row];
-            else if (col == row)
-                values[col * M + row] = 1.0f;
-            else
-                values[col * M + row] = 0.0f;
-        }
-    }
-    return result;
-}
-#endif
-
 #endif
 
 QT_END_NAMESPACE
