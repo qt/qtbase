@@ -3764,7 +3764,7 @@ void doActivate(QObject *sender, int signal_index, void **argv)
                 }
                 QSemaphore semaphore;
                 {
-                    QBasicMutexLocker locker(signalSlotLock(sender));
+                    QBasicMutexLocker locker(signalSlotLock(receiver));
                     if (!c->receiver.loadAcquire())
                         continue;
                     QMetaCallEvent *ev = c->isSlotObject ?
