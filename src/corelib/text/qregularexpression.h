@@ -96,7 +96,7 @@ public:
     void setPattern(const QString &pattern);
 
     bool isValid() const;
-    int patternErrorOffset() const;
+    qsizetype patternErrorOffset() const;
     QString errorString() const;
 
     int captureCount() const;
@@ -119,22 +119,22 @@ public:
     Q_DECLARE_FLAGS(MatchOptions, MatchOption)
 
     QRegularExpressionMatch match(const QString &subject,
-                                  int offset                = 0,
+                                  qsizetype offset          = 0,
                                   MatchType matchType       = NormalMatch,
                                   MatchOptions matchOptions = NoMatchOption) const;
 
     QRegularExpressionMatch match(QStringView subjectView,
-                                  int offset                = 0,
+                                  qsizetype offset          = 0,
                                   MatchType matchType       = NormalMatch,
                                   MatchOptions matchOptions = NoMatchOption) const;
 
     QRegularExpressionMatchIterator globalMatch(const QString &subject,
-                                                int offset                = 0,
+                                                qsizetype offset          = 0,
                                                 MatchType matchType       = NormalMatch,
                                                 MatchOptions matchOptions = NoMatchOption) const;
 
     QRegularExpressionMatchIterator globalMatch(QStringView subjectView,
-                                                int offset                = 0,
+                                                qsizetype offset          = 0,
                                                 MatchType matchType       = NormalMatch,
                                                 MatchOptions matchOptions = NoMatchOption) const;
 
@@ -234,19 +234,19 @@ public:
 
     QStringList capturedTexts() const;
 
-    int capturedStart(int nth = 0) const;
-    int capturedLength(int nth = 0) const;
-    int capturedEnd(int nth = 0) const;
+    qsizetype capturedStart(int nth = 0) const;
+    qsizetype capturedLength(int nth = 0) const;
+    qsizetype capturedEnd(int nth = 0) const;
 
 #if QT_STRINGVIEW_LEVEL < 2
-    int capturedStart(const QString &name) const;
-    int capturedLength(const QString &name) const;
-    int capturedEnd(const QString &name) const;
+    qsizetype capturedStart(const QString &name) const;
+    qsizetype capturedLength(const QString &name) const;
+    qsizetype capturedEnd(const QString &name) const;
 #endif
 
-    int capturedStart(QStringView name) const;
-    int capturedLength(QStringView name) const;
-    int capturedEnd(QStringView name) const;
+    qsizetype capturedStart(QStringView name) const;
+    qsizetype capturedLength(QStringView name) const;
+    qsizetype capturedEnd(QStringView name) const;
 
 private:
     friend class QRegularExpression;

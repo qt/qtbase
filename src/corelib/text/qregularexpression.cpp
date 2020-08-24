@@ -738,7 +738,7 @@ struct QRegularExpressionPrivate : QSharedData
     };
 
     void doMatch(QRegularExpressionMatchPrivate *priv,
-                 int offset,
+                 qsizetype offset,
                  CheckSubjectStringOption checkSubjectStringOption = CheckSubjectString,
                  const QRegularExpressionMatchPrivate *previous = nullptr) const;
 
@@ -758,7 +758,7 @@ struct QRegularExpressionPrivate : QSharedData
     // it is set to nullptr
     pcre2_code_16 *compiledPattern;
     int errorCode;
-    int errorOffset;
+    qsizetype errorOffset;
     int capturingCount;
     bool usingCrLfNewlines;
     bool isDirty;
@@ -787,7 +787,7 @@ struct QRegularExpressionMatchPrivate : QSharedData
 
     // the capturedOffsets vector contains pairs of (start, end) positions
     // for each captured substring
-    QList<int> capturedOffsets;
+    QList<qsizetype> capturedOffsets;
 
     int capturedCount = 0;
 
@@ -904,7 +904,7 @@ void QRegularExpressionPrivate::compilePattern()
                                        nullptr);
 
     if (!compiledPattern) {
-        errorOffset = static_cast<int>(patternErrorOffset);
+        errorOffset = qsizetype(patternErrorOffset);
         return;
     } else {
         // ignore whatever PCRE2 wrote into errorCode -- leave it to 0 to mean "no error"
@@ -1070,8 +1070,8 @@ int QRegularExpressionPrivate::captureIndexForName(QStringView name) const
     and re-run pcre2_match_16.
 */
 static int safe_pcre2_match_16(const pcre2_code_16 *code,
-                               PCRE2_SPTR16 subject, int length,
-                               int startOffset, int options,
+                               PCRE2_SPTR16 subject, qsizetype length,
+                               qsizetype startOffset, int options,
                                pcre2_match_data_16 *matchData,
                                pcre2_match_context_16 *matchContext)
 {
@@ -1118,14 +1118,14 @@ static int safe_pcre2_match_16(const pcre2_code_16 *code,
     must advance over it.
 */
 void QRegularExpressionPrivate::doMatch(QRegularExpressionMatchPrivate *priv,
-                                        int offset,
+                                        qsizetype offset,
                                         CheckSubjectStringOption checkSubjectStringOption,
                                         const QRegularExpressionMatchPrivate *previous) const
 {
     Q_ASSERT(priv);
     Q_ASSUME(priv != previous);
 
-    const int subjectLength = priv->subject.length();
+    const qsizetype subjectLength = priv->subject.size();
 
     if (offset < 0)
         offset += subjectLength;
@@ -1235,10 +1235,10 @@ void QRegularExpressionPrivate::doMatch(QRegularExpressionMatchPrivate *priv,
     // copy the captured substrings offsets, if any
     if (priv->capturedCount) {
         PCRE2_SIZE *ovector = pcre2_get_ovector_pointer_16(matchData);
-        int * const capturedOffsets = priv->capturedOffsets.data();
+        qsizetype *const capturedOffsets = priv->capturedOffsets.data();
 
         for (int i = 0; i < priv->capturedCount * 2; ++i)
-            capturedOffsets[i] = static_cast<int>(ovector[i]);
+            capturedOffsets[i] = qsizetype(ovector[i]);
 
         // For partial matches, PCRE2 and PCRE1 differ in behavior when lookbehinds
         // are involved. PCRE2 reports the real begin of the match and the maximum
@@ -1555,7 +1555,7 @@ QString QRegularExpression::errorString() const
 
     \sa pattern(), isValid(), errorString()
 */
-int QRegularExpression::patternErrorOffset() const
+qsizetype QRegularExpression::patternErrorOffset() const
 {
     d.data()->compilePattern();
     return d->errorOffset;
@@ -1572,7 +1572,7 @@ int QRegularExpression::patternErrorOffset() const
     \sa QRegularExpressionMatch, {normal matching}
 */
 QRegularExpressionMatch QRegularExpression::match(const QString &subject,
-                                                  int offset,
+                                                  qsizetype offset,
                                                   MatchType matchType,
                                                   MatchOptions matchOptions) const
 {
@@ -1603,7 +1603,7 @@ QRegularExpressionMatch QRegularExpression::match(const QString &subject,
     \sa QRegularExpressionMatch, {normal matching}
 */
 QRegularExpressionMatch QRegularExpression::match(QStringView subjectView,
-                                                  int offset,
+                                                  qsizetype offset,
                                                   MatchType matchType,
                                                   MatchOptions matchOptions) const
 {
@@ -1629,7 +1629,7 @@ QRegularExpressionMatch QRegularExpression::match(QStringView subjectView,
     \sa QRegularExpressionMatchIterator, {global matching}
 */
 QRegularExpressionMatchIterator QRegularExpression::globalMatch(const QString &subject,
-                                                                int offset,
+                                                                qsizetype offset,
                                                                 MatchType matchType,
                                                                 MatchOptions matchOptions) const
 {
@@ -1661,7 +1661,7 @@ QRegularExpressionMatchIterator QRegularExpression::globalMatch(const QString &s
     \sa QRegularExpressionMatchIterator, {global matching}
 */
 QRegularExpressionMatchIterator QRegularExpression::globalMatch(QStringView subjectView,
-                                                                int offset,
+                                                                qsizetype offset,
                                                                 MatchType matchType,
                                                                 MatchOptions matchOptions) const
 {
@@ -1758,12 +1758,12 @@ size_t qHash(const QRegularExpression &key, size_t seed) noexcept
 QString QRegularExpression::escape(QStringView str)
 {
     QString result;
-    const int count = str.size();
+    const qsizetype count = str.size();
     result.reserve(count * 2);
 
     // everything but [a-zA-Z0-9_] gets escaped,
     // cf. perldoc -f quotemeta
-    for (int i = 0; i < count; ++i) {
+    for (qsizetype i = 0; i < count; ++i) {
         const QChar current = str.at(i);
 
         if (current == QChar::Null) {
@@ -1866,10 +1866,10 @@ QString QRegularExpression::escape(QStringView str)
 */
 QString QRegularExpression::wildcardToRegularExpression(QStringView pattern, WildcardConversionOptions options)
 {
-    const int wclen = pattern.length();
+    const qsizetype wclen = pattern.size();
     QString rx;
     rx.reserve(wclen + wclen / 16);
-    int i = 0;
+    qsizetype i = 0;
     const QChar *wc = pattern.data();
 
 #ifdef Q_OS_WIN
@@ -2147,7 +2147,7 @@ QStringView QRegularExpressionMatch::capturedView(int nth) const
     if (nth < 0 || nth > lastCapturedIndex())
         return QStringView();
 
-    int start = capturedStart(nth);
+    qsizetype start = capturedStart(nth);
 
     if (start == -1) // didn't capture
         return QStringView();
@@ -2239,7 +2239,7 @@ QStringList QRegularExpressionMatch::capturedTexts() const
 
     \sa capturedEnd(), capturedLength(), captured()
 */
-int QRegularExpressionMatch::capturedStart(int nth) const
+qsizetype QRegularExpressionMatch::capturedStart(int nth) const
 {
     if (nth < 0 || nth > lastCapturedIndex())
         return -1;
@@ -2255,7 +2255,7 @@ int QRegularExpressionMatch::capturedStart(int nth) const
 
     \sa capturedStart(), capturedEnd(), captured()
 */
-int QRegularExpressionMatch::capturedLength(int nth) const
+qsizetype QRegularExpressionMatch::capturedLength(int nth) const
 {
     // bound checking performed by these two functions
     return capturedEnd(nth) - capturedStart(nth);
@@ -2268,7 +2268,7 @@ int QRegularExpressionMatch::capturedLength(int nth) const
 
     \sa capturedStart(), capturedLength(), captured()
 */
-int QRegularExpressionMatch::capturedEnd(int nth) const
+qsizetype QRegularExpressionMatch::capturedEnd(int nth) const
 {
     if (nth < 0 || nth > lastCapturedIndex())
         return -1;
@@ -2285,7 +2285,7 @@ int QRegularExpressionMatch::capturedEnd(int nth) const
 
     \sa capturedEnd(), capturedLength(), captured()
 */
-int QRegularExpressionMatch::capturedStart(const QString &name) const
+qsizetype QRegularExpressionMatch::capturedStart(const QString &name) const
 {
     return capturedStart(qToStringViewIgnoringNull(name));
 }
@@ -2299,7 +2299,7 @@ int QRegularExpressionMatch::capturedStart(const QString &name) const
 
     \sa capturedStart(), capturedEnd(), captured()
 */
-int QRegularExpressionMatch::capturedLength(const QString &name) const
+qsizetype QRegularExpressionMatch::capturedLength(const QString &name) const
 {
     return capturedLength(qToStringViewIgnoringNull(name));
 }
@@ -2312,7 +2312,7 @@ int QRegularExpressionMatch::capturedLength(const QString &name) const
 
     \sa capturedStart(), capturedLength(), captured()
 */
-int QRegularExpressionMatch::capturedEnd(const QString &name) const
+qsizetype QRegularExpressionMatch::capturedEnd(const QString &name) const
 {
     return capturedEnd(qToStringViewIgnoringNull(name));
 }
@@ -2328,7 +2328,7 @@ int QRegularExpressionMatch::capturedEnd(const QString &name) const
 
     \sa capturedEnd(), capturedLength(), captured()
 */
-int QRegularExpressionMatch::capturedStart(QStringView name) const
+qsizetype QRegularExpressionMatch::capturedStart(QStringView name) const
 {
     if (name.isEmpty()) {
         qWarning("QRegularExpressionMatch::capturedStart: empty capturing group name passed");
@@ -2351,7 +2351,7 @@ int QRegularExpressionMatch::capturedStart(QStringView name) const
 
     \sa capturedStart(), capturedEnd(), captured()
 */
-int QRegularExpressionMatch::capturedLength(QStringView name) const
+qsizetype QRegularExpressionMatch::capturedLength(QStringView name) const
 {
     if (name.isEmpty()) {
         qWarning("QRegularExpressionMatch::capturedLength: empty capturing group name passed");
@@ -2373,7 +2373,7 @@ int QRegularExpressionMatch::capturedLength(QStringView name) const
 
     \sa capturedStart(), capturedLength(), captured()
 */
-int QRegularExpressionMatch::capturedEnd(QStringView name) const
+qsizetype QRegularExpressionMatch::capturedEnd(QStringView name) const
 {
     if (name.isEmpty()) {
         qWarning("QRegularExpressionMatch::capturedEnd: empty capturing group name passed");
