@@ -185,12 +185,6 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringList::QStringList()
-
-    Constructs an empty string list.
-*/
-
-/*!
     \fn QStringList::QStringList(const QString &str)
 
     Constructs a string list that contains the given string, \a
@@ -720,22 +714,5 @@ qsizetype QtPrivate::QStringList_removeDuplicates(QStringList *that)
         that->erase(that->begin() + j, that->end());
     return n - j;
 }
-
-/*! \fn QStringList::QStringList(std::initializer_list<QString> args)
-    \since 4.8
-
-    Construct a list from a std::initializer_list given by \a args.
-
-    This constructor is only enabled if the compiler supports C++11 initializer
-    lists.
-*/
-
- /*! \fn template<typename InputIterator> QStringList::QStringList(InputIterator first, InputIterator last)
-     \since 5.14
-
-     Constructs a QStringList with the contents in the iterator range [\a first, \a last).
-
-     The value type of \c InputIterator must be convertible to \c QString.
- */
 
 QT_END_NAMESPACE

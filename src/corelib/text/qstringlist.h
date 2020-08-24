@@ -105,14 +105,10 @@ class QStringList : public QList<QString>
 {
 #endif
 public:
-    inline QStringList() noexcept { }
+    using QList<QString>::QList;
     inline explicit QStringList(const QString &i) { append(i); }
     inline QStringList(const QList<QString> &l) : QList<QString>(l) { }
     inline QStringList(QList<QString> &&l) noexcept : QList<QString>(std::move(l)) { }
-    inline QStringList(std::initializer_list<QString> args) : QList<QString>(args) { }
-    template <typename InputIterator, QtPrivate::IfIsInputIterator<InputIterator> = true>
-    inline QStringList(InputIterator first, InputIterator last)
-        : QList<QString>(first, last) { }
 
     QStringList &operator=(const QList<QString> &other)
     { QList<QString>::operator=(other); return *this; }
