@@ -72,7 +72,7 @@ public:
     bool event(QEvent *event) override
     {
         m_received[event->type()]++;
-        return QWindow::event(event);
+        return QRasterWindow::event(event);
     }
 
     int received(QEvent::Type type)

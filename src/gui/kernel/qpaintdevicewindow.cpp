@@ -178,16 +178,7 @@ int QPaintDeviceWindow::metric(PaintDeviceMetric metric) const
  */
 void QPaintDeviceWindow::exposeEvent(QExposeEvent *exposeEvent)
 {
-    Q_UNUSED(exposeEvent);
-    Q_D(QPaintDeviceWindow);
-    if (isExposed()) {
-        d->markWindowAsDirty();
-        // Do not rely on exposeEvent->region() as it has some issues for the
-        // time being, namely that it is sometimes in local coordinates,
-        // sometimes relative to the parent, depending on the platform plugin.
-        // We require local coords here.
-        d->doFlush(QRect(QPoint(0, 0), size()));
-    }
+    QWindow::exposeEvent(exposeEvent);
 }
 
 /*!
@@ -200,6 +191,15 @@ bool QPaintDeviceWindow::event(QEvent *event)
     if (event->type() == QEvent::UpdateRequest) {
         if (handle()) // platform window may be gone when the window is closed during app exit
             d->handleUpdateEvent();
+        return true;
+    } else if (event->type() == QEvent::Paint) {
+        d->markWindowAsDirty();
+        // Do not rely on exposeEvent->region() as it has some issues for the
+        // time being, namely that it is sometimes in local coordinates,
+        // sometimes relative to the parent, depending on the platform plugin.
+        // We require local coords here.
+        auto region = QRect(QPoint(0, 0), size());
+        d->doFlush(region); // Will end up calling paintEvent
         return true;
     }
 

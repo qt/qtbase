@@ -101,7 +101,8 @@ public:
         FlushEvents = 0x20,
         WindowScreenChanged = 0x21,
         SafeAreaMarginsChanged = 0x22,
-        ApplicationTermination = 0x23
+        ApplicationTermination = 0x23,
+        Paint = 0x24
     };
 
     class WindowSystemEvent {
@@ -364,6 +365,14 @@ public:
         ExposeEvent(QWindow *window, const QRegion &region);
         QPointer<QWindow> window;
         bool isExposed;
+        QRegion region;
+    };
+
+    class PaintEvent : public WindowSystemEvent {
+    public:
+        PaintEvent(QWindow *window, const QRegion &region)
+            :  WindowSystemEvent(Paint), window(window), region(region) {}
+        QPointer<QWindow> window;
         QRegion region;
     };
 

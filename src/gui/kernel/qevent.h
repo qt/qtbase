@@ -551,7 +551,10 @@ public:
     explicit QExposeEvent(const QRegion &m_region);
     ~QExposeEvent();
 
+#if QT_DEPRECATED_SINCE(6, 0)
+    QT_DEPRECATED_VERSION_X_6_0("Handle QPaintEvent instead")
     inline const QRegion &region() const { return m_region; }
+#endif
 
 protected:
     QRegion m_region;

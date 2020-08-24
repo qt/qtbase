@@ -777,12 +777,6 @@ void QOpenGLContext::swapBuffers(QSurface *surface)
         return;
     }
 
-    if (surface->surfaceClass() == QSurface::Window
-        && !qt_window_private(static_cast<QWindow *>(surface))->receivedExpose)
-    {
-        qWarning("QOpenGLContext::swapBuffers() called with non-exposed window, behavior is undefined");
-    }
-
     QPlatformSurface *surfaceHandle = surface->surfaceHandle();
     if (!surfaceHandle)
         return;

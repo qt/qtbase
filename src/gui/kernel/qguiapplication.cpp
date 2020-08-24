@@ -2084,6 +2084,9 @@ void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePriv
     case QWindowSystemInterfacePrivate::Expose:
         QGuiApplicationPrivate::processExposeEvent(static_cast<QWindowSystemInterfacePrivate::ExposeEvent *>(e));
         break;
+    case QWindowSystemInterfacePrivate::Paint:
+        QGuiApplicationPrivate::processPaintEvent(static_cast<QWindowSystemInterfacePrivate::PaintEvent *>(e));
+        break;
     case QWindowSystemInterfacePrivate::Tablet:
         QGuiApplicationPrivate::processTabletEvent(
                     static_cast<QWindowSystemInterfacePrivate::TabletEvent *>(e));
@@ -3211,10 +3214,53 @@ void QGuiApplicationPrivate::processExposeEvent(QWindowSystemInterfacePrivate::E
         p->receivedExpose = true;
     }
 
+    // If the platform does not send paint events we need to synthesize them from expose events
+    const bool shouldSynthesizePaintEvents = !platformIntegration()->hasCapability(QPlatformIntegration::PaintEvents);
+
+    const bool wasExposed = p->exposed;
     p->exposed = e->isExposed && window->screen();
+
+    // We treat expose events for an already exposed window as paint events
+    if (wasExposed && p->exposed && shouldSynthesizePaintEvents) {
+        QPaintEvent paintEvent(e->region);
+        QCoreApplication::sendSpontaneousEvent(window, &paintEvent);
+        if (paintEvent.isAccepted())
+            return; // No need to send expose
+
+        // The paint event was not accepted, so we fall through and send an expose
+        // event instead, to maintain compatibility for clients that haven't adopted
+        // paint events yet.
+    }
 
     QExposeEvent exposeEvent(e->region);
     QCoreApplication::sendSpontaneousEvent(window, &exposeEvent);
+    e->eventAccepted = exposeEvent.isAccepted();
+
+    // If the window was just exposed we also need to send a paint event,
+    // so that clients that implement paint events will draw something.
+    // Note that we we can not skip this based on the expose event being
+    // accepted, as clients may implement exposeEvent to track the state
+    // change, but without drawing anything.
+    if (!wasExposed && p->exposed && shouldSynthesizePaintEvents) {
+        QPaintEvent paintEvent(e->region);
+        QCoreApplication::sendSpontaneousEvent(window, &paintEvent);
+    }
+}
+
+void QGuiApplicationPrivate::processPaintEvent(QWindowSystemInterfacePrivate::PaintEvent *e)
+{
+    Q_ASSERT_X(platformIntegration()->hasCapability(QPlatformIntegration::PaintEvents), "QGuiApplication",
+        "The platform sent paint events without claiming support for it in QPlatformIntegration::capabilities()");
+
+    if (!e->window)
+        return;
+
+    QPaintEvent paintEvent(e->region);
+    QCoreApplication::sendSpontaneousEvent(e->window, &paintEvent);
+
+    // We report back the accepted state to the platform, so that it can
+    // decide when the best time to send the fallback expose event is.
+    e->eventAccepted = paintEvent.isAccepted();
 }
 
 #if QT_CONFIG(draganddrop)

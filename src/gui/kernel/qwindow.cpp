@@ -1198,7 +1198,7 @@ void QWindow::requestActivate()
 
     When the window is not exposed, it is shown by the application
     but it is still not showing in the windowing system, so the application
-    should minimize rendering and other graphical activities.
+    should minimize animations and other graphical activities.
 
     An exposeEvent() is sent every time this value changes.
 
@@ -2246,26 +2246,43 @@ bool QWindow::close()
 }
 
 /*!
-    The expose event (\a ev) is sent by the window system whenever an area of
-    the window is invalidated, for example due to the exposure in the windowing
-    system changing.
+    The expose event (\a ev) is sent by the window system when a window moves
+    between the un-exposed and exposed states.
 
-    The application can start rendering into the window with QBackingStore
-    and QOpenGLContext as soon as it gets an exposeEvent() such that
-    isExposed() is true.
+    An exposed window is potentially visible to the user. If the window is moved
+    off screen, is made totally obscured by another window, is minimized, or
+    similar, this function might be called and the value of isExposed() might
+    change to false. You may use this event to limit expensive operations such
+    as animations to only run when the window is exposed.
 
-    If the window is moved off screen, is made totally obscured by another
-    window, iconified or similar, this function might be called and the
-    value of isExposed() might change to false. When this happens,
-    an application should stop its rendering as it is no longer visible
-    to the user.
+    This event should not be used to paint. To handle painting implement
+    paintEvent() instead.
 
     A resize event will always be sent before the expose event the first time
     a window is shown.
 
-    \sa isExposed()
+    \sa paintEvent(), isExposed()
 */
 void QWindow::exposeEvent(QExposeEvent *ev)
+{
+    ev->ignore();
+}
+
+/*!
+    The paint event (\a ev) is sent by the window system whenever an area of
+    the window needs a repaint, for example when initially showing the window,
+    or due to parts of the window being uncovered by moving another window.
+
+    The application is expected to render into the window in response to the
+    paint event, regardless of the exposed state of the window. For example,
+    a paint event may be sent before the window is exposed, to prepare it for
+    showing to the user.
+
+    \since 6.0
+
+    \sa exposeEvent()
+*/
+void QWindow::paintEvent(QPaintEvent *ev)
 {
     ev->ignore();
 }
@@ -2419,6 +2436,10 @@ bool QWindow::event(QEvent *ev)
 
     case QEvent::Expose:
         exposeEvent(static_cast<QExposeEvent *>(ev));
+        break;
+
+    case QEvent::Paint:
+        paintEvent(static_cast<QPaintEvent *>(ev));
         break;
 
     case QEvent::Show:

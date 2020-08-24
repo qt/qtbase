@@ -64,6 +64,7 @@ QT_BEGIN_NAMESPACE
 class QWindowPrivate;
 
 class QExposeEvent;
+class QPaintEvent;
 class QFocusEvent;
 class QMoveEvent;
 class QResizeEvent;
@@ -346,6 +347,7 @@ Q_SIGNALS:
 protected:
     virtual void exposeEvent(QExposeEvent *);
     virtual void resizeEvent(QResizeEvent *);
+    virtual void paintEvent(QPaintEvent *);
     virtual void moveEvent(QMoveEvent *);
     virtual void focusInEvent(QFocusEvent *);
     virtual void focusOutEvent(QFocusEvent *);

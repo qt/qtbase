@@ -240,13 +240,6 @@ void QBackingStore::flush(const QRegion &region, QWindow *window, const QPoint &
         return;
     }
 
-#ifdef QBACKINGSTORE_DEBUG
-    if (window && window->isTopLevel() && !qt_window_private(window)->receivedExpose) {
-        qWarning().nospace() << "QBackingStore::flush() called with non-exposed window "
-            << window << ", behavior is undefined";
-    }
-#endif
-
     Q_ASSERT(window == topLevelWindow || topLevelWindow->isAncestorOf(window, QWindow::ExcludeTransients));
 
     handle()->flush(window, QHighDpi::toNativeLocalRegion(region, window),

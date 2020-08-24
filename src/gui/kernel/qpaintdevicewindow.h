@@ -66,10 +66,10 @@ public Q_SLOTS:
     void update();
 
 protected:
-    virtual void paintEvent(QPaintEvent *event);
+    void exposeEvent(QExposeEvent *) override;
+    void paintEvent(QPaintEvent *event) override;
 
     int metric(PaintDeviceMetric metric) const override;
-    void exposeEvent(QExposeEvent *) override;
     bool event(QEvent *event) override;
 
     QPaintDeviceWindow(QPaintDeviceWindowPrivate &dd, QWindow *parent);

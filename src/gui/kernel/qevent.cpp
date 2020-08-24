@@ -1510,12 +1510,16 @@ QMoveEvent::~QMoveEvent()
 
     \ingroup events
 
-    Expose events are sent to windows when an area of the window is invalidated,
-    for example when window exposure in the windowing system changes.
+    Expose events are sent to windows when they move between the un-exposed and
+    exposed states.
 
-    A Window with a client area that is completely covered by another window, or
-    is otherwise not visible may be considered obscured by Qt and may in such
-    cases not receive expose events.
+    An exposed window is potentially visible to the user. If the window is moved
+    off screen, is made totally obscured by another window, is minimized, or
+    similar, an expose event is sent to the window, and isExposed() might
+    change to false.
+
+    Expose events should not be used to paint. Handle QPaintEvent
+    instead.
 
     The event handler QWindow::exposeEvent() receives expose events.
 */
@@ -3834,7 +3838,10 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
     const QEvent::Type type = e->type();
     switch (type) {
     case QEvent::Expose:
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
         dbg << "QExposeEvent(" << static_cast<const QExposeEvent *>(e)->region() << ')';
+QT_WARNING_POP
         break;
     case QEvent::Paint:
         dbg << "QPaintEvent(" << static_cast<const QPaintEvent *>(e)->region() << ')';

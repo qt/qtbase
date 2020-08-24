@@ -348,12 +348,20 @@ QWindowSystemInterfacePrivate::ExposeEvent::ExposeEvent(QWindow *window, const Q
     This is required behavior on platforms where OpenGL swapbuffers stops
     blocking for obscured windows (like macOS).
 */
-QT_DEFINE_QPA_EVENT_HANDLER(void, handleExposeEvent, QWindow *window, const QRegion &region)
+QT_DEFINE_QPA_EVENT_HANDLER(bool, handleExposeEvent, QWindow *window, const QRegion &region)
 {
     QWindowSystemInterfacePrivate::ExposeEvent *e =
         new QWindowSystemInterfacePrivate::ExposeEvent(window, QHighDpi::fromNativeLocalExposedRegion(region, window));
-    QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
+    return QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
 }
+
+QT_DEFINE_QPA_EVENT_HANDLER(bool, handlePaintEvent, QWindow *window, const QRegion &region)
+{
+    QWindowSystemInterfacePrivate::PaintEvent *e =
+        new QWindowSystemInterfacePrivate::PaintEvent(window, QHighDpi::fromNativeLocalExposedRegion(region, window));
+    return QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
+}
+
 
 QT_DEFINE_QPA_EVENT_HANDLER(bool, handleCloseEvent, QWindow *window)
 {

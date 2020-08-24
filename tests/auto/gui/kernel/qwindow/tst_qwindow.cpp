@@ -55,6 +55,7 @@ private slots:
     void setVisible();
     void setVisibleFalseDoesNotCreateWindow();
     void eventOrderOnShow();
+    void paintEvent();
     void resizeEventAfterResize();
     void exposeEventOnShrink_QTBUG54040();
     void mapGlobal();
@@ -307,7 +308,10 @@ public:
         m_order << event->type();
         switch (event->type()) {
         case QEvent::Expose:
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
             m_exposeRegion = static_cast<QExposeEvent *>(event)->region();
+QT_WARNING_POP
             break;
 
         case QEvent::PlatformSurface:
@@ -390,6 +394,44 @@ void tst_QWindow::eventOrderOnShow()
 
     QVERIFY(window.eventIndex(QEvent::Show) < window.eventIndex(QEvent::Resize));
     QVERIFY(window.eventIndex(QEvent::Resize) < window.eventIndex(QEvent::Expose));
+}
+
+class PaintWindow : public Window
+{
+public:
+    using Window::Window;
+
+protected:
+    void paintEvent(QPaintEvent *) {
+        // Handled, not calling base class
+    }
+};
+
+void tst_QWindow::paintEvent()
+{
+    PaintWindow window;
+    window.setTitle(QLatin1String(QTest::currentTestFunction()));
+    window.setGeometry(QRect(m_availableTopLeft, m_testWindowSize));
+    window.show();
+
+    QTRY_VERIFY(window.received(QEvent::Expose));
+    QTRY_VERIFY(window.received(QEvent::Paint));
+    QVERIFY(window.isExposed());
+
+    // There is no defined order between paint and expose, so we don't test that
+
+    window.reset();
+    window.resize(m_testWindowSize * 2);
+
+    QTRY_VERIFY(window.received(QEvent::Paint));
+    QVERIFY(!window.received(QEvent::Expose));
+
+    window.reset();
+    window.hide();
+
+    QTRY_VERIFY(window.received(QEvent::Expose));
+    QVERIFY(!window.received(QEvent::Paint));
+    QVERIFY(!window.isExposed());
 }
 
 void tst_QWindow::resizeEventAfterResize()

@@ -247,6 +247,10 @@ QPlatformServices *QPlatformIntegration::services() const
 
     \value OpenGLOnRasterSurface The platform supports making a QOpenGLContext current
     in combination with a QWindow of type RasterSurface.
+
+    \value PaintEvents The platform sends paint events instead of expose events when
+    the window needs repainting. Expose events are only sent when a window is toggled
+    from a non-exposed to exposed state or back.
  */
 
 /*!

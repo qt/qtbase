@@ -161,6 +161,7 @@ public:
     static void processThemeChanged(QWindowSystemInterfacePrivate::ThemeChangeEvent *tce);
 
     static void processExposeEvent(QWindowSystemInterfacePrivate::ExposeEvent *e);
+    static void processPaintEvent(QWindowSystemInterfacePrivate::PaintEvent *e);
 
     static void processFileOpenEvent(QWindowSystemInterfacePrivate::FileOpenEvent *e);
 

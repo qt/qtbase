@@ -420,8 +420,6 @@ QEvent::~QEvent()
 
     Returns \c true if the event originated outside the application (a
     system event); otherwise returns \c false.
-
-    The return value of this function is not defined for paint events.
 */
 
 /*!
