@@ -47,8 +47,7 @@
     meet a certain set of requirements.
 
     Different algorithms can have different requirements for the
-    iterators they accept. For example, qFill() accepts two
-    \l {forward iterators}. The iterator types required are specified
+    iterators they accept. The iterator types required are specified
     for each algorithm. If an iterator of the wrong type is passed (for
     example, if QList::ConstIterator is passed as an
     \l {Output Iterators}{output iterator}), you will always get a
@@ -63,21 +62,7 @@
     The generic algorithms can be used on other container classes
     than those provided by Qt and STL. The syntax of STL-style
     iterators is modeled after C++ pointers, so it's possible to use
-    plain arrays as containers and plain pointers as iterators. A
-    common idiom is to use qBinaryFind() together with two static
-    arrays: one that contains a list of keys, and another that
-    contains a list of associated values. For example, the following
-    code will look up an HTML entity (e.g., \c &amp;) in the \c
-    name_table array and return the corresponding Unicode value from
-    the \c value_table if the entity is recognized:
-
-    \snippet code/doc_src_qalgorithms.cpp 2
-
-    This kind of code is for advanced users only; for most
-    applications, a QMap- or QHash-based approach would work just as
-    well:
-
-    \snippet code/doc_src_qalgorithms.cpp 3
+    plain arrays as containers and plain pointers as iterators.
 
     \section1 Types of Iterators
 
@@ -156,7 +141,7 @@
     Exchanges the values of variables \a var1 and \a var2.
 
     Example:
-    \snippet code/doc_src_qalgorithms.cpp 10
+    \snippet code/doc_src_qalgorithms.cpp 0
 */
 
 /*!
@@ -168,7 +153,7 @@
     example, \c{QWidget *}).
 
     Example:
-    \snippet code/doc_src_qalgorithms.cpp 23
+    \snippet code/doc_src_qalgorithms.cpp 1
 
     Notice that qDeleteAll() doesn't remove the items from the
     container; it merely calls \c delete on them. In the example
