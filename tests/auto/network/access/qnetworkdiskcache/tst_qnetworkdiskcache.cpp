@@ -402,18 +402,23 @@ void tst_QNetworkDiskCache::setCookieHeader() // QTBUG-41514
     headers.append(QNetworkCacheMetaData::RawHeader("Set-Cookie", "aaa=bbb"));
     metaData.setRawHeaders(headers);
     metaData.setSaveToDisk(true);
+    QDateTime expirationDate = QDateTime::currentDateTime().addSecs(500);
+    metaData.setExpirationDate(expirationDate);
     cache->setupWithOne(tempDir.path(), url, metaData);
 
     manager = new QNetworkAccessManager();
     manager->setCache(cache);
 
     QNetworkRequest request(url);
+    request.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
     QNetworkReply  *reply = manager->get(request);
     connect(reply, SIGNAL(metaDataChanged()), this, SLOT(setCookieHeaderMetaDataChangedSlot()));
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
 
     QTestEventLoop::instance().enterLoop(5);
     QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
 
     reply->deleteLater();
     manager->deleteLater();
