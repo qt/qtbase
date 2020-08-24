@@ -35,7 +35,7 @@ The effort of this is tracked in QTBUG-85373 and QTBUG-85349.
 | -gdb-index                            | -DFEATURE_enable_gdb_index=ON                     |                                                                 |
 | -strip                                |                                                   |                                                                 |
 | -gc-binaries                          | -DFEATURE_gc_binaries=ON                          |                                                                 |
-| -force-asserts                        |                                                   |                                                                 |
+| -force-asserts                        | -DFEATURE_force_asserts=ON                        |                                                                 |
 | -developer-build                      | -DFEATURE_developer_build=ON                      |                                                                 |
 | -shared                               | -DBUILD_SHARED_LIBS=ON                            |                                                                 |
 | -static                               | -DBUILD_SHARED_LIBS=OFF                           |                                                                 |

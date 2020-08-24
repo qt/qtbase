@@ -194,6 +194,10 @@ if (GCC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "9.2")
     target_compile_options(PlatformCommonInternal INTERFACE $<$<COMPILE_LANGUAGE:CXX>:-Wsuggest-override>)
 endif()
 
+if(QT_FEATURE_force_asserts)
+    target_compile_definitions(PlatformCommonInternal INTERFACE QT_FORCE_ASSERTS)
+endif()
+
 if(DEFINED QT_EXTRA_DEFINES)
     target_compile_definitions(PlatformCommonInternal INTERFACE ${QT_EXTRA_DEFINES})
 endif()
