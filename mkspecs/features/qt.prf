@@ -13,7 +13,6 @@ win32 {
    }
 }
 CONFIG(release, debug|release):DEFINES += QT_NO_DEBUG
-qtConfig(force_asserts): DEFINES += QT_FORCE_ASSERTS
 no_keywords:DEFINES += QT_NO_KEYWORDS
 plugin { #Qt plugins
    static:DEFINES += QT_STATICPLUGIN

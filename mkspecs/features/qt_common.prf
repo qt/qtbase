@@ -69,6 +69,8 @@ contains(TEMPLATE, .*lib)|darwin {
 macos: DEFINES += GL_SILENCE_DEPRECATION
 uikit: DEFINES += GLES_SILENCE_DEPRECATION
 
+qtConfig(force_asserts): DEFINES += QT_FORCE_ASSERTS
+
 # The remainder of this file must not apply to host tools/libraries,
 # as the host compiler's version and capabilities are not checked.
 host_build:cross_compile: return()
