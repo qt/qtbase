@@ -69,6 +69,7 @@ private slots:
     void captureCount();
     void captureNames_data();
     void captureNames();
+    void captureNamesNul();
     void pcreJitStackUsage_data();
     void pcreJitStackUsage();
     void regularExpressionMatch_data();
@@ -1621,6 +1622,36 @@ void tst_QRegularExpression::captureNames()
         }
     }
 
+}
+
+void tst_QRegularExpression::captureNamesNul()
+{
+    QRegularExpression re("a(\\d+)b(?<name>\\d+)c(?<anotherName>\\d+)d(\\d+)e$");
+    QVERIFY(re.isValid());
+
+    QCOMPARE(re.captureCount(), 4);
+
+    QStringList namedCaptureGroups = re.namedCaptureGroups();
+    QCOMPARE(namedCaptureGroups[0], QString());
+    QCOMPARE(namedCaptureGroups[1], QString());
+    QCOMPARE(namedCaptureGroups[2], "name");
+    QCOMPARE(namedCaptureGroups[3], "anotherName");
+    QCOMPARE(namedCaptureGroups[4], QString());
+
+    QRegularExpressionMatch m = re.match("a12b456c789d0e");
+    QVERIFY(m.hasMatch());
+
+    QString captureName("name");
+    QCOMPARE(m.captured(captureName), "456");
+    QCOMPARE(m.captured(QStringView(captureName)), "456");
+    QCOMPARE(m.captured(qToStringViewIgnoringNull(captureName)), "456");
+    QCOMPARE(m.captured(u"name"), "456");
+
+    captureName = "anotherName";
+    QCOMPARE(m.captured(captureName), "789");
+    QCOMPARE(m.captured(QStringView(captureName)), "789");
+    QCOMPARE(m.captured(qToStringViewIgnoringNull(captureName)), "789");
+    QCOMPARE(m.captured(u"anotherName"), "789");
 }
 
 void tst_QRegularExpression::pcreJitStackUsage_data()

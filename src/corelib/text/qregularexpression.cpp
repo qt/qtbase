@@ -1161,9 +1161,24 @@ int QRegularExpressionPrivate::captureIndexForName(QStringView name) const
     if (!compiledPattern)
         return -1;
 
-    int index = pcre2_substring_number_from_name_16(compiledPattern, reinterpret_cast<PCRE2_SPTR16>(name.utf16()));
-    if (index >= 0)
-        return index;
+    // See the other usages of pcre2_pattern_info_16 for more details about this
+    PCRE2_SPTR16 *namedCapturingTable;
+    unsigned int namedCapturingTableEntryCount;
+    unsigned int namedCapturingTableEntrySize;
+
+    pcre2_pattern_info_16(compiledPattern, PCRE2_INFO_NAMETABLE, &namedCapturingTable);
+    pcre2_pattern_info_16(compiledPattern, PCRE2_INFO_NAMECOUNT, &namedCapturingTableEntryCount);
+    pcre2_pattern_info_16(compiledPattern, PCRE2_INFO_NAMEENTRYSIZE, &namedCapturingTableEntrySize);
+
+    for (unsigned int i = 0; i < namedCapturingTableEntryCount; ++i) {
+        const auto currentNamedCapturingTableRow =
+                reinterpret_cast<const char16_t *>(namedCapturingTable) + namedCapturingTableEntrySize * i;
+
+        if (name == (currentNamedCapturingTableRow + 1)) {
+            const int index = *currentNamedCapturingTableRow;
+            return index;
+        }
+    }
 
     return -1;
 }
