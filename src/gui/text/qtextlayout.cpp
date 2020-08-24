@@ -516,16 +516,6 @@ QString QTextLayout::preeditAreaText() const
     return d->preeditAreaText();
 }
 
-#if QT_DEPRECATED_SINCE(5, 6)
-/*!
-    \obsolete Use setFormats() instead.
-*/
-void QTextLayout::setAdditionalFormats(const QList<FormatRange> &formatList)
-{
-    setFormats(formatList.toVector());
-}
-#endif // deprecated since 5.6
-
 /*!
     \since 5.6
 
@@ -542,18 +532,6 @@ void QTextLayout::setFormats(const QList<FormatRange> &formats)
         QTextDocumentPrivate::get(d->block)->documentChange(d->block.position(), d->block.length());
 }
 
-#if QT_DEPRECATED_SINCE(5, 6)
-/*!
-    \obsolete Use formats() instead.
-
-    \sa setAdditionalFormats(), clearAdditionalFormats()
-*/
-QList<QTextLayout::FormatRange> QTextLayout::additionalFormats() const
-{
-    return formats().toList();
-}
-#endif // deprecated since 5.6
-
 /*!
     \since 5.6
 
@@ -565,16 +543,6 @@ QList<QTextLayout::FormatRange> QTextLayout::formats() const
 {
     return d->formats();
 }
-
-#if QT_DEPRECATED_SINCE(5, 6)
-/*!
-    \obsolete Use clearFormats() instead.
-*/
-void QTextLayout::clearAdditionalFormats()
-{
-    clearFormats();
-}
-#endif // deprecated since 5.6
 
 /*!
     \since 5.6
