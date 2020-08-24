@@ -80,7 +80,7 @@ static void qRegisterNotificationCallbacks()
 
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
 
-    const QMetaObject *metaObject = QMetaType::metaObjectForType(qRegisterMetaType<QCocoaWindow*>());
+    const QMetaObject *metaObject = QMetaType(qRegisterMetaType<QCocoaWindow*>()).metaObject();
     Q_ASSERT(metaObject);
 
     for (int i = 0; i < metaObject->methodCount(); ++i) {
