@@ -83,11 +83,6 @@ public:
     QPageSize minimumPhysicalPageSize() const;
     QPageSize maximumPhysicalPageSize() const;
 
-#if QT_DEPRECATED_SINCE(5,3)
-    QT_DEPRECATED QList<QPrinter::PaperSize> supportedPaperSizes() const;
-    QT_DEPRECATED QList<QPair<QString, QSizeF> > supportedSizesWithNames() const;
-#endif // QT_DEPRECATED_SINCE(5,3)
-
     QList<int> supportedResolutions() const;
 
     QPrinter::DuplexMode defaultDuplexMode() const;

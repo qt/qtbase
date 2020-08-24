@@ -313,51 +313,6 @@ QPageSize QPrinterInfo::maximumPhysicalPageSize() const
     return QPageSize(d->m_printDevice.maximumPhysicalPageSize(), QString(), QPageSize::ExactMatch);
 }
 
-#if QT_DEPRECATED_SINCE(5,3)
-/*!
-    \obsolete Use supportedPageSizes() instead.
-
-    Returns a list of supported paper sizes by the printer.
-
-    Not all printer drivers support this query, so the list may be empty.
-
-    \since 4.4
-*/
-
-QList<QPrinter::PaperSize> QPrinterInfo::supportedPaperSizes() const
-{
-    Q_D(const QPrinterInfo);
-    QList<QPrinter::PaperSize> list;
-    const QList<QPageSize> supportedPageSizes = d->m_printDevice.supportedPageSizes();
-    list.reserve(supportedPageSizes.size());
-    for (const QPageSize &pageSize : supportedPageSizes)
-        list.append(QPrinter::PaperSize(pageSize.id()));
-    return list;
-}
-
-/*!
-    \obsolete Use supportedPageSizes() instead.
-
-    Returns a list of all the paper names supported by the driver with the
-    corresponding size in millimeters.
-
-    Not all printer drivers support this query, so the list may be empty.
-
-    \since 5.1
-*/
-
-QList<QPair<QString, QSizeF> > QPrinterInfo::supportedSizesWithNames() const
-{
-    Q_D(const QPrinterInfo);
-    QList<QPair<QString, QSizeF> > list;
-    const QList<QPageSize> supportedPageSizes = d->m_printDevice.supportedPageSizes();
-    list.reserve(supportedPageSizes.size());
-    for (const QPageSize &pageSize : supportedPageSizes)
-        list.append(qMakePair(pageSize.name(), pageSize.size(QPageSize::Millimeter)));
-    return list;
-}
-#endif // QT_DEPRECATED_SINCE(5,3)
-
 /*!
     Returns a list of resolutions supported by this printer.
 
