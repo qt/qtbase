@@ -2723,6 +2723,7 @@ QFontEngine *QFontDatabase::findFont(const QFontDef &request, int script)
 
             for (int i = 0; !engine && i < fallbacks.size(); i++) {
                 QFontDef def = request;
+                def.families.clear();
                 def.family = fallbacks.at(i);
                 QFontCache::Key key(def, script, multi ? 1 : 0);
                 engine = fontCache->findEngine(key);
