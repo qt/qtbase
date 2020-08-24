@@ -326,10 +326,36 @@ function(qt_internal_export_modern_cmake_config_targets_file)
     qt_install(EXPORT ${export_name} NAMESPACE Qt:: DESTINATION "${__arg_CONFIG_INSTALL_DIR}")
 endfunction()
 
-function(qt_create_tracepoints name tracePointsFile)
-    #### TODO
-    string(TOLOWER "${name}" name)
+function(qt_create_tracepoints name tracepoints_file)
+    string(TOLOWER "${name}" provider_name)
+    string(PREPEND provider_name "qt")
+    set(header_filename "${provider_name}_tracepoints_p.h")
+    set(header_path "${CMAKE_CURRENT_BINARY_DIR}/${header_filename}")
 
-    file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/qt${name}_tracepoints_p.h" CONTENT
-        "#include <private/qtrace_p.h>")
+    if(QT_FEATURE_lttng OR QT_FEATURE_etw)
+        set(source_path "${CMAKE_CURRENT_BINARY_DIR}/${provider_name}_tracepoints.cpp")
+        qt_configure_file(OUTPUT "${source_path}"
+            CONTENT "#define TRACEPOINT_CREATE_PROBES
+#define TRACEPOINT_DEFINE
+#define include \"${header_filename}\"")
+        target_sources(${name} PRIVATE "${source_path}")
+        target_compile_definitions(${name} PRIVATE Q_TRACEPOINT)
+
+        if(QT_FEATURE_lttng)
+            set(tracegen_arg "lttng")
+            target_link_libraries(${name} PRIVATE LTTng::UST)
+        elseif(QT_FEATURE_etw)
+            set(tracegen_arg "etw")
+        endif()
+
+        qt_get_tool_target_name(tracegen_target tracegen)
+        get_filename_component(tracepoints_filepath "${tracepoints_file}" ABSOLUTE)
+        add_custom_command(OUTPUT "${header_path}"
+            COMMAND ${tracegen_target} ${tracegen_arg} "${tracepoints_filepath}" "${header_path}"
+            VERBATIM)
+        add_custom_target(${name}_tracepoints_header DEPENDS "${header_path}")
+        add_dependencies(${name} ${name}_tracepoints_header)
+    else()
+        qt_configure_file(OUTPUT "${header_path}" CONTENT "#include <private/qtrace_p.h>\n")
+    endif()
 endfunction()

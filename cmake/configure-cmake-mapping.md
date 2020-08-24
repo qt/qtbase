@@ -50,7 +50,8 @@ The effort of this is tracked in QTBUG-85373 and QTBUG-85349.
 | -qtlibinfix <infix>                   |                                                   |                                                                 |
 | -testcocoon                           |                                                   |                                                                 |
 | -gcov                                 |                                                   |                                                                 |
-| -trace [backend]                      |                                                   |                                                                 |
+| -trace [backend]                      | -DINPUT_trace=yes or -DINPUT_trace=<backend>      |                                                                 |
+|                                       | or -DFEATURE_<backend>                            |                                                                 |
 | -sanitize <arg>                       | -DFEATURE_sanitize_<arg>                          |                                                                 |
 | -coverage <arg>                       |                                                   |                                                                 |
 | -c++std c++2a                         | -DFEATURE_cxx2a=ON                                |                                                                 |
