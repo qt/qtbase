@@ -196,9 +196,6 @@ void tst_languageChange::retranslatability_data()
                     << "QFileDialog::Back"
                     << "QFileDialog::Create New Folder"
                     << "QFileDialog::Detail View"
-#if !defined(Q_OS_MAC)
-                    << "QFileDialog::File"
-#endif
                     << "QFileDialog::Files of type:"
                     << "QFileDialog::Forward"
                     << "QFileDialog::List View"

@@ -40,6 +40,10 @@
 #include "qabstractfileiconprovider.h"
 
 #include <qguiapplication.h>
+#include <qicon.h>
+#include <qmimedatabase.h>
+
+
 #include <private/qabstractfileiconprovider_p.h>
 #include <private/qfilesystementry_p.h>
 
@@ -127,23 +131,50 @@ QAbstractFileIconProvider::Options QAbstractFileIconProvider::options() const
 }
 
 /*!
-  Returns an icon set for the given \a type.
+  Returns an icon set for the given \a type, using the current
+  icon theme.
+
+  \sa QIcon::fromTheme
 */
 
 QIcon QAbstractFileIconProvider::icon(IconType type) const
 {
     Q_UNUSED(type);
-    return {};
+    switch (type) {
+        case Computer:
+            return QIcon::fromTheme(QLatin1String("computer"));
+        case Desktop:
+            return QIcon::fromTheme(QLatin1String("user-desktop"));
+        case Trashcan:
+            return QIcon::fromTheme(QLatin1String("user-trash"));
+        case Network:
+            return QIcon::fromTheme(QLatin1String("network-workgroup"));
+        case Drive:
+            return QIcon::fromTheme(QLatin1String("drive-harddisk"));
+        case Folder:
+            return QIcon::fromTheme(QLatin1String("folder"));
+        case File:
+            return QIcon::fromTheme(QLatin1String("text-x-generic"));
+        // no default on purpose; we want warnings when the type enum is extended
+    }
+    return QIcon::fromTheme(QLatin1String("text-x-generic"));
 }
 
 /*!
-  Returns an icon for the file described by \a info.
+  Returns an icon for the file described by \a info, using the
+  current icon theme.
+
+  \sa QIcon::fromTheme
 */
 
 QIcon QAbstractFileIconProvider::icon(const QFileInfo &info) const
 {
-    Q_UNUSED(info);
-    return {};
+    Q_D(const QAbstractFileIconProvider);
+    if (info.isRoot())
+        return icon(Drive);
+    if (info.isDir())
+        return icon(Folder);
+    return QIcon::fromTheme(d->mimeDatabase.mimeTypeForFile(info).iconName());
 }
 
 /*!
@@ -152,6 +183,7 @@ QIcon QAbstractFileIconProvider::icon(const QFileInfo &info) const
 
 QString QAbstractFileIconProvider::type(const QFileInfo &info) const
 {
+    Q_D(const QAbstractFileIconProvider);
     /* ### Qt 6 These string translations being in the QFileDialog context is not ideal,
        but translating them in QFileDialog context only in the QFileIconProvider subclass
        isn't either (it basically requires a duplication of the entire function).
@@ -162,12 +194,8 @@ QString QAbstractFileIconProvider::type(const QFileInfo &info) const
     if (QFileSystemEntry::isRootPath(info.absoluteFilePath()))
         return QGuiApplication::translate("QFileDialog", "Drive");
     if (info.isFile()) {
-        // ### could use QMimeDatabase::mimeTypeForFile(const QFileInfo&) here
-        if (!info.suffix().isEmpty()) {
-            //: %1 is a file name suffix, for example txt
-            return QGuiApplication::translate("QFileDialog", "%1 File").arg(info.suffix());
-        }
-        return QGuiApplication::translate("QFileDialog", "File");
+        const QMimeType mimeType = d->mimeDatabase.mimeTypeForFile(info);
+        return mimeType.comment().isEmpty() ? mimeType.name() : mimeType.comment();
     }
 
     if (info.isDir())
