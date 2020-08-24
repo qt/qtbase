@@ -17,3 +17,4 @@ qt_add_test(tst_qobject
 ## Scopes:
 #####################################################################
 add_subdirectory(signalbug)
+add_dependencies(tst_qobject signalbug_helper) # special case

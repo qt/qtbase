@@ -24,7 +24,7 @@ if(TARGET Qt::Gui)
     add_subdirectory(qmimedata)
 endif()
 if(TARGET Qt::Network AND NOT ANDROID AND NOT UIKIT)
-    # add_subdirectory(qobject) # special case
+    add_subdirectory(qobject)
 endif()
 if(QT_FEATURE_private_tests AND NOT ANDROID AND NOT UIKIT)
     add_subdirectory(qsharedmemory)
