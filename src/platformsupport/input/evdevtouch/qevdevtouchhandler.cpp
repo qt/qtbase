@@ -255,6 +255,7 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const 
     if (mtdeverr) {
         qWarning("evdevtouch: mtdev_open failed: %d", mtdeverr);
         QT_CLOSE(m_fd);
+        free(m_mtdev);
         return;
     }
 #endif
