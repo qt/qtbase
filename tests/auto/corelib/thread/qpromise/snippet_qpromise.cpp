@@ -75,11 +75,8 @@ void snippet_QPromise::basicExample()
     QPromise<int> promise;
     QFuture<int> future = promise.future();
 
-    // Note: calling reportStarted() prior to thread creation to enforce order
-    // of calls: first promise.reportStarted() then future.waitForFinished()
-    promise.reportStarted();  // notifies QFuture that the computation is started
-
     QScopedPointer<QThread> thread(QThread::create([] (QPromise<int> promise) {
+        promise.reportStarted();   // notifies QFuture that the computation is started
         promise.addResult(42);
         promise.reportFinished();  // notifies QFuture that the computation is finished
     }, std::move(promise)));

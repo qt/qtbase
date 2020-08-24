@@ -404,7 +404,7 @@
 /*! \fn template <typename T> void QFuture<T>::waitForFinished()
 
     Waits for the asynchronous computation to finish (including cancel()ed
-    computations).
+    computations), i.e. until isFinished() returns \c true.
 */
 
 /*! \fn template <typename T> T QFuture<T>::result() const

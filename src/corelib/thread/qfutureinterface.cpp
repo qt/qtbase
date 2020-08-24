@@ -422,7 +422,7 @@ void QFutureInterfaceBase::waitForResult(int resultIndex)
 void QFutureInterfaceBase::waitForFinished()
 {
     QMutexLocker lock(&d->m_mutex);
-    const bool alreadyFinished = !isRunningOrPending();
+    const bool alreadyFinished = isFinished();
     lock.unlock();
 
     if (!alreadyFinished) {
@@ -430,7 +430,7 @@ void QFutureInterfaceBase::waitForFinished()
 
         lock.relock();
 
-        while (isRunningOrPending())
+        while (!isFinished())
             d->waitCondition.wait(&d->m_mutex);
     }
 

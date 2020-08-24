@@ -144,6 +144,7 @@ private slots:
     void takeResultWorksForTypesWithoutDefaultCtor();
     void canceledFutureIsNotValid();
     void signalConnect();
+    void waitForFinished();
 
 private:
     using size_type = std::vector<int>::size_type;
@@ -3074,6 +3075,30 @@ void tst_QFuture::signalConnect()
         QVERIFY(future.isCanceled());
         QVERIFY(!future.isValid());
     }
+}
+
+void tst_QFuture::waitForFinished()
+{
+    QFutureInterface<void> fi;
+    auto future = fi.future();
+
+    QScopedPointer<QThread> waitingThread (QThread::create([&] {
+        future.waitForFinished();
+    }));
+
+    waitingThread->start();
+
+    QVERIFY(!waitingThread->wait(200));
+    QVERIFY(!waitingThread->isFinished());
+
+    fi.reportStarted();
+    QVERIFY(!waitingThread->wait(200));
+    QVERIFY(!waitingThread->isFinished());
+
+    fi.reportFinished();
+
+    QVERIFY(waitingThread->wait());
+    QVERIFY(waitingThread->isFinished());
 }
 
 QTEST_MAIN(tst_QFuture)

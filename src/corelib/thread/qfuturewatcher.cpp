@@ -417,7 +417,7 @@ bool QFutureWatcherBase::isSuspended() const
 /*! \fn template <typename T> void QFutureWatcher<T>::waitForFinished()
 
     Waits for the asynchronous computation to finish (including cancel()ed
-    computations).
+    computations), i.e. until isFinished() returns \c true.
 */
 void QFutureWatcherBase::waitForFinished()
 {
