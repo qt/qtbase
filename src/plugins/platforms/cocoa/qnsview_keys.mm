@@ -218,14 +218,20 @@
 - (void)flagsChanged:(NSEvent *)nsevent
 {
     ulong timestamp = [nsevent timestamp] * 1000;
-    ulong modifiers = [nsevent modifierFlags];
-    Qt::KeyboardModifiers qmodifiers = [QNSView convertKeyModifiers:modifiers];
+    ulong nativeModifiers = [nsevent modifierFlags];
+    Qt::KeyboardModifiers modifiers = [QNSView convertKeyModifiers:nativeModifiers];
+
+    // There is no way to get the scan code from carbon/cocoa. But we cannot
+    // use the value 0, since it indicates that the event originates from somewhere
+    // else than the keyboard.
+    quint32 nativeScanCode = 1;
+    quint32 nativeVirtualKey = [nsevent keyCode];
 
     // calculate the delta and remember the current modifiers for next time
     static ulong m_lastKnownModifiers;
     ulong lastKnownModifiers = m_lastKnownModifiers;
-    ulong delta = lastKnownModifiers ^ modifiers;
-    m_lastKnownModifiers = modifiers;
+    ulong delta = lastKnownModifiers ^ nativeModifiers;
+    m_lastKnownModifiers = nativeModifiers;
 
     struct qt_mac_enum_mapper
     {
@@ -251,11 +257,14 @@
             else if (qtCode == Qt::Key_Control)
                 qtCode = Qt::Key_Meta;
         }
-        QWindowSystemInterface::handleKeyEvent(m_platformWindow->window(),
-                                               timestamp,
-                                               (lastKnownModifiers & mac_mask) ? QEvent::KeyRelease : QEvent::KeyPress,
-                                               qtCode,
-                                               qmodifiers ^ [QNSView convertKeyModifiers:mac_mask]);
+        QWindowSystemInterface::handleExtendedKeyEvent(m_platformWindow->window(),
+                                                       timestamp,
+                                                       (lastKnownModifiers & mac_mask) ? QEvent::KeyRelease
+                                                                                       : QEvent::KeyPress,
+                                                       qtCode,
+                                                       modifiers ^ [QNSView convertKeyModifiers:mac_mask],
+                                                       nativeScanCode, nativeVirtualKey,
+                                                       nativeModifiers ^ mac_mask);
     }
 }
 
