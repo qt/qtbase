@@ -61,11 +61,3 @@ void MyWidget::setFocus(Qt::FocusReason reason)
 }
 //! [2]
 
-//! [3]
-void *QAccessibleLineEdit::interface_cast(QAccessible::InterfaceType t)
-{
-    if (t == QAccessible::TextInterface)
-        return static_cast<QAccessibleTextInterface*>(this);
-    return QAccessibleWidget::interface_cast(t);
-}
-//! [3]
