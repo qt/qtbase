@@ -1,0 +1,177 @@
+Qt 5.15.1 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.15.0.
+
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
+
+https://doc.qt.io/qt-5/index.html
+
+The Qt version 5.15 series is binary compatible with the 5.14.x series.
+Applications compiled for 5.14 will continue to run with 5.15.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                        Important Behavior Changes                        *
+****************************************************************************
+
+ - QSharedPointer objects will now call custom deleters even when the
+   pointer being tracked was null. This behavior is the same as
+   std::shared_ptr.
+ - Restored pre-5.15.0 behavior when converting from QVariant* to QJson*
+   types. Unforeseen consequences of changes in 5.15.0 caused QByteArray
+   data to be base64url-encoded; the handling of QRegularExpression was
+   also unintentionally changed. These conversions are now reverted to the
+   prior behavior. Additionally fixed QJsonValue::fromVariant conversions
+   for NaN and infinities: they should always convert to QJsonValue::Null.
+
+****************************************************************************
+*                                  QtCore                                  *
+****************************************************************************
+
+ - JSON
+   * Fixed a regression from 5.14 that caused values of default-constructed
+     QVariants in QVariantLists, QVariantMaps and QVariantHashes to
+     disappear when converting to JSON via fromVariant{,List,Map,Hash}.
+
+ - QCborMap
+   * Fixed a bug that could cause the iterator returned from a failing key
+     search with find() not to match end(). Now, every call to find() will
+     detach in shared QCborMaps; to avoid this, use constFind() and
+     constEnd().
+
+ - QFile:
+   * moveToTrash now creates the trash folder on Linux as
+     $XDG_DATA_HOME/Trash, as required by the freedesktop.org spec.
+   * moveToTrash supports relative file paths on Windows.
+
+ - QImage:
+   * Fixed buffer overflow in XBM parser.
+   * [oss-fuzz-23988] Fixed buffer overflow in XPM parser.
+
+ - QJsonDocument:
+   * Fixed a bug that caused QJsonDocument's equality operator to crash if
+     one of the operands was default-constructed and the other wasn't.
+
+ - QString:
+   * Fixed quadratic worst-case complexity of remove(QString). The function
+     now has linear complexity in all cases.
+
+ - QTimeLine:
+   * Deprecated QTimeLine's curveShape property in favor of the easingCurve
+     property.
+
+ - QXmlStreamReader:
+   * [oss-fuzz-24347] Reduced memory consumption when handling huge input data.
+
+ - mkspecs:
+   * Explicitly enable float-divide-by-zero when configuring Qt with
+     "-sanitize undefined". Before clang 9, it was implicitly enabled when
+     -fsanitize=undefined was set.
+
+****************************************************************************
+*                                  QtGui                                   *
+****************************************************************************
+
+ - QIcon:
+   * [QTBUG-74252] If you call QIcon::setFallbackThemeName(), you should
+     do it before the creation of the QGuiApplication; this now avoids
+     a bug that resulted in the first loaded icons being empty.
+
+ - HTML:
+   * QTextDocument::toHtml() now exports letter and word spacing from the
+     default format, if set, into the body tag. Such formatting can also
+     be read back in.
+   * [QTBUG-84981] Vertical alignment of images is now more compliant with
+     the HTML standard: AlignBottom is the bottom of the line; AlignMiddle
+     is between AlignTop and AlignBottom
+
+ - Markdown:
+   * [QTBUG-81306] QTextMarkdownImporter now correctly reads nested span
+     formatting such as *italic ~~strikeout **bold `code` end**~~*
+     including in link text and image alt text. The effects are mostly
+     cumulative; however `code` blocks still completely override formatting.
+   * [QTBUG-80603] QMarkdownWriter no longer tries to word-wrap code blocks;
+     and code blocks nested in list items are formatted correctly.
+
+ - Text:
+   * Fixed a bug where glyphs would be clipped at very large sizes.
+
+****************************************************************************
+*                                QtTestLib                                 *
+****************************************************************************
+
+ - QCOMPARE:
+   * QCOMPARE() now treats its values as equal when qFuzzyIsNull() is true
+     for both of them.
+
+****************************************************************************
+*                                QtWidgets                                 *
+****************************************************************************
+
+ - QApplication:
+   * Wheel events from a device that creates an event stream are correctly
+     delivered to the widget that accepts the first wheel event in the
+     stream.
+
+ - QListView:
+   * Moving selected items within a list view by drag'n'drop will maintain
+     the selection of those items.
+
+ - QMenu:
+   * [QTBUG-84926] Fixed a regression that prevented pressing the mouse
+     to open a menu, dragging over a menu item, and releasing to select it.
+   * [QTBUG-76162] A submenu is always shown on its parent menu's screen.
+     A text control's context menu is now always shown on the same screen.
+     A menu on a QMenuBar can only be shown on the screen(s) where the
+     menubar is visible.
+
+ - QWidget:
+   * setFocusProxy no longer moves focus away from a previously set focus
+     proxy, restoring pre-Qt 5.13.1 behavior.
+
+****************************************************************************
+*                        Platform-specific changes                         *
+****************************************************************************
+
+ - Android
+   * [QTBUG-83089] Support setting mimetypes and and namefilters for Android
+     native file dialog.
+
+ - iOS
+   * [QTBUG-83811] When text is selected using handles in a read-only
+     control, it's now possible for the edit menu popover to be configured
+     to have a Copy action instead of Paste. So far this is used in QtPDF.
+
+ - Linux
+   * QFileDialog will open directories through the portal if required
+     version of xdg-desktop-portal is running on the system.
+
+ - X11
+   * [QTBUG-83446] Fixed a drag-and-drop crash due to an invalid reply in
+     QXcbDrag.
+   * [QTBUG-56218] When keyboard modifiers change during drag-and-drop,
+     a QDragMoveEvent is sent even if the mouse doesn't actually move, to
+     allow updating the drop action and cursor.
+   * [QTBUG-85275] Window geometry coordinates are now allowed to be up to
+     32767.
+   * [QTBUG-25351] The new QT_QPA_SYSTEM_ICON_THEME variable can override
+     the icon theme name.
+
+****************************************************************************
+*                             Third-Party Code                             *
+****************************************************************************
+
+ - sqlite:
+   * Upgraded to v3.32.1
+   * Upgraded to v3.32.3
+ - PCRE2 was updated to version 10.35.
+ - libjpeg-turbo was updated to version 2.0.5
+ - Documented the use of Khronos headers under MIT license in Qt GUI
+   (ANGLE).
