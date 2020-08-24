@@ -1488,12 +1488,8 @@ QStringList QRegularExpression::namedCaptureGroups() const
     pcre2_pattern_info_16(d->compiledPattern, PCRE2_INFO_NAMECOUNT, &namedCapturingTableEntryCount);
     pcre2_pattern_info_16(d->compiledPattern, PCRE2_INFO_NAMEENTRYSIZE, &namedCapturingTableEntrySize);
 
-    QStringList result;
-
-    // no QList::resize nor fill is available. The +1 is for the implicit group #0
-    result.reserve(d->capturingCount + 1);
-    for (int i = 0; i < d->capturingCount + 1; ++i)
-        result.append(QString());
+    // The +1 is for the implicit group #0
+    QStringList result(d->capturingCount + 1);
 
     for (unsigned int i = 0; i < namedCapturingTableEntryCount; ++i) {
         const auto currentNamedCapturingTableRow =
