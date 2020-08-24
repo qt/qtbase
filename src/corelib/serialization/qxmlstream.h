@@ -67,7 +67,7 @@ public:
     }
 
     inline operator QStringView() const { return QStringView(m_string.data(), m_string.size); }
-    inline int size() const { return m_string.size; }
+    inline qsizetype size() const { return m_string.size; }
 };
 
 }
