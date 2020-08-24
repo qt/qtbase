@@ -3202,6 +3202,12 @@ void QGuiApplicationPrivate::processExposeEvent(QWindowSystemInterfacePrivate::E
             p->resizeEventPending = false;
         }
 
+        // FIXME: It would logically make sense to set this _after_ we've sent the
+        // expose event to the window, to mark that it now has received an expose.
+        // But some parts of Qt (mis)use this private member to check whether the
+        // window has been mapped yet, which they do in code that is triggered
+        // by the very same expose event we send below. To keep the code working
+        // we need to set the variable up front, until the code has been fixed.
         p->receivedExpose = true;
     }
 
