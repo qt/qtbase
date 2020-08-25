@@ -63,13 +63,14 @@ QAbstractFileIconProviderPrivate::~QAbstractFileIconProviderPrivate() = default;
 /*!
   \enum QAbstractFileIconProvider::IconType
 
-  \value Computer
-  \value Desktop
-  \value Trashcan
-  \value Network
-  \value Drive
-  \value Folder
-  \value File
+  \value Computer   The icon used for the computing device as a whole
+  \value Desktop    The icon for the special "Desktop" directory of the user
+  \value Trashcan   The icon for the user's "Trash" place in the desktop's file manager
+  \value Network    The icon for the “Network Servers” place in the desktop's file manager,
+                    and workgroups within the network
+  \value Drive      The icon used for disk drives
+  \value Folder     The standard folder icon used to represent directories on local filesystems
+  \value File       The icon used for generic text file types
 */
 
 /*!
