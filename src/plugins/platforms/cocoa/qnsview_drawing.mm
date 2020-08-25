@@ -213,6 +213,7 @@
 */
 - (void)drawRect:(NSRect)dirtyBoundingRect
 {
+    Q_UNUSED(dirtyBoundingRect);
     Q_ASSERT_X(!self.layer, "QNSView",
         "The drawRect code path should not be hit when we are layer backed");
 }
