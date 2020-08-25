@@ -47,11 +47,29 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QQuaternion>
+#include <QVector3D>
+
+
+namespace src_gui_math3d_qquaternion {
+QQuaternion q;
+QVector3D vector;
+void wrapper0() {
 
 //! [0]
-    QVector3D result = q.rotatedVector(vector);
+QVector3D result = q.rotatedVector(vector);
 //! [0]
 
+Q_UNUSED(result);
+} // wrapper0
+
+
+void wrapper1() {
+
 //! [1]
-    QVector3D result = (q * QQuaternion(0, vector) * q.conjugated()).vector();
+QVector3D result = (q * QQuaternion(0, vector) * q.conjugated()).vector();
 //! [1]
+
+Q_UNUSED(result);
+} // wrapper1
+} // src_gui_math3d_qquaternion
