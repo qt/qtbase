@@ -1,0 +1,1 @@
+SOURCES += $$PWD/qandroidplatforminterface.cpp

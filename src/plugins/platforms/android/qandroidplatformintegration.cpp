@@ -44,6 +44,7 @@
 #include <QGuiApplication>
 #include <QOpenGLContext>
 #include <QOffscreenSurface>
+#include <QtGui/private/qoffscreensurface_p.h>
 #include <QThread>
 
 #include <QtGui/private/qeglpbuffer_p.h>
@@ -67,6 +68,8 @@
 #include "qandroidplatformtheme.h"
 #include "qandroidsystemlocale.h"
 #include "qandroidplatformoffscreensurface.h"
+
+#include <jni.h>
 
 #if QT_CONFIG(vulkan)
 #include "qandroidplatformvulkanwindow.h"
@@ -322,14 +325,18 @@ QPlatformOffscreenSurface *QAndroidPlatformIntegration::createPlatformOffscreenS
     format.setGreenBufferSize(8);
     format.setBlueBufferSize(8);
 
-    if (surface->nativeHandle()) {
-        // Adopt existing offscreen Surface
-        // The expectation is that nativeHandle is an ANativeWindow* representing
-        // an android.view.Surface
-        return new QAndroidPlatformOffscreenSurface(m_eglDisplay, format, surface);
-    }
-
     return new QEGLPbuffer(m_eglDisplay, format, surface);
+}
+
+QOffscreenSurface *QAndroidPlatformIntegration::createOffscreenSurface(ANativeWindow *nativeSurface) const
+{
+    if (!QtAndroid::activity() || !nativeSurface)
+        return nullptr;
+
+    auto *surface = new QOffscreenSurface;
+    auto *surfacePrivate = QOffscreenSurfacePrivate::get(surface);
+    surfacePrivate->platformOffscreenSurface = new QAndroidPlatformOffscreenSurface(nativeSurface, m_eglDisplay, surface);
+    return surface;
 }
 
 QPlatformWindow *QAndroidPlatformIntegration::createPlatformWindow(QWindow *window) const

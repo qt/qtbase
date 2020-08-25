@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -41,21 +41,26 @@
 #define QANDROIDPLATFORMOFFSCREENSURFACETEXTURE_H
 
 #include <qpa/qplatformoffscreensurface.h>
-#include <QtGui/private/qeglplatformcontext_p.h>
+#include <QtGui/qoffscreensurface_platform.h>
+
+#include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
 class QOffscreenSurface;
-class QAndroidPlatformOffscreenSurface : public QPlatformOffscreenSurface
+class QAndroidPlatformOffscreenSurface : public QPlatformOffscreenSurface,
+                                         public QPlatformInterface::QAndroidPlatformOffscreenSurface
 {
 public:
-    QAndroidPlatformOffscreenSurface(EGLDisplay display, const QSurfaceFormat &format,
-                                            QOffscreenSurface *offscreenSurface);
+    QAndroidPlatformOffscreenSurface(ANativeWindow *nativeSurface, EGLDisplay display, QOffscreenSurface *offscreenSurface);
     ~QAndroidPlatformOffscreenSurface();
 
     QSurfaceFormat format() const override { return m_format; }
     bool isValid() const override { return m_surface != EGL_NO_SURFACE; }
 
     EGLSurface surface() const { return m_surface; }
+
+    ANativeWindow *nativeSurface() const override { return (ANativeWindow *)surface(); };
+
 private:
     QSurfaceFormat m_format;
     EGLDisplay m_display;

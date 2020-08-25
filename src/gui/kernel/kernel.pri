@@ -6,6 +6,8 @@ PRECOMPILED_HEADER = kernel/qt_gui_pch.h
 
 KERNEL_P= kernel
 HEADERS += \
+        kernel/qoffscreensurface_p.h \
+        kernel/qoffscreensurface_platform.h \
         kernel/qtguiglobal.h \
         kernel/qtguiglobal_p.h \
         kernel/qgenericpluginfactory.h \

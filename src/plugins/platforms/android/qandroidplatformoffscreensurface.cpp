@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -39,28 +39,23 @@
 
 #include "qandroidplatformoffscreensurface.h"
 
-#include <QtGui/QOffscreenSurface>
 #include <QtGui/private/qeglconvenience_p.h>
-
-#include <android/native_window.h>
 
 QT_BEGIN_NAMESPACE
 
-QAndroidPlatformOffscreenSurface::QAndroidPlatformOffscreenSurface(EGLDisplay display, const QSurfaceFormat &format, QOffscreenSurface *offscreenSurface)
-    : QPlatformOffscreenSurface(offscreenSurface)
-    , m_format(format)
-    , m_display(display)
-    , m_surface(EGL_NO_SURFACE)
+QAndroidPlatformOffscreenSurface::QAndroidPlatformOffscreenSurface(
+        ANativeWindow *nativeSurface, EGLDisplay display, QOffscreenSurface *offscreenSurface)
+    : QPlatformOffscreenSurface(offscreenSurface), m_display(display), m_surface(EGL_NO_SURFACE)
 {
-    // Get native handle
-    ANativeWindow *surfaceTexture = (ANativeWindow*)offscreenSurface->nativeHandle();
+    // FIXME: Read surface format properties from native surface using ANativeWindow_getFormat
+    m_format.setAlphaBufferSize(8);
+    m_format.setRedBufferSize(8);
+    m_format.setGreenBufferSize(8);
+    m_format.setBlueBufferSize(8);
 
-    EGLConfig config = q_configFromGLFormat(m_display, m_format, false);
-    if (config) {
-        const EGLint attributes[] = {
-            EGL_NONE
-        };
-        m_surface = eglCreateWindowSurface(m_display, config, surfaceTexture, attributes);
+    if (EGLConfig config = q_configFromGLFormat(m_display, m_format, false)) {
+        const EGLint attributes[] = { EGL_NONE };
+        m_surface = eglCreateWindowSurface(m_display, config, nativeSurface, attributes);
     }
 }
 

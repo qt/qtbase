@@ -40,19 +40,17 @@
 #ifndef QANDROIDPLATFORMINTERATION_H
 #define QANDROIDPLATFORMINTERATION_H
 
-#include <QtGui/qtguiglobal.h>
+#include "qandroidinputcontext.h"
+#include "qandroidplatformscreen.h"
 
+#include <QtGui/qtguiglobal.h>
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformmenu.h>
 #include <qpa/qplatformnativeinterface.h>
 #include <qpa/qplatformopenglcontext.h>
+#include <qpa/qplatformoffscreensurface.h>
 
 #include <EGL/egl.h>
-#include <jni.h>
-#include "qandroidinputcontext.h"
-
-#include "qandroidplatformscreen.h"
-
 #include <memory>
 
 QT_BEGIN_NAMESPACE
@@ -75,6 +73,7 @@ protected:
 
 class QAndroidPlatformIntegration : public QPlatformIntegration
                                   , QPlatformInterface::Private::QEGLIntegration
+                                  , QPlatformInterface::Private::QAndroidOffScreenIntegration
 {
     friend class QAndroidPlatformScreen;
 
@@ -94,6 +93,7 @@ public:
     QAbstractEventDispatcher *createEventDispatcher() const override;
     QAndroidPlatformScreen *screen() { return m_primaryScreen; }
     QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const override;
+    QOffscreenSurface *createOffscreenSurface(ANativeWindow *nativeSurface) const override;
 
     void setAvailableGeometry(const QRect &availableGeometry);
     void setPhysicalSize(int width, int height);

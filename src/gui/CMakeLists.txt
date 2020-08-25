@@ -100,7 +100,7 @@ qt_add_module(Gui
         kernel/qinputmethod.cpp kernel/qinputmethod.h kernel/qinputmethod_p.h
         kernel/qinternalmimedata.cpp kernel/qinternalmimedata_p.h
         kernel/qkeymapper.cpp kernel/qkeymapper_p.h
-        kernel/qoffscreensurface.cpp kernel/qoffscreensurface.h
+        kernel/qoffscreensurface.cpp kernel/qoffscreensurface.h kernel/qoffscreensurface_p.h kernel/qoffscreensurface_platform.h
         kernel/qpaintdevicewindow.cpp kernel/qpaintdevicewindow.h kernel/qpaintdevicewindow_p.h
         kernel/qpalette.cpp kernel/qpalette.h
         kernel/qpixelformat.cpp kernel/qpixelformat.h
@@ -350,6 +350,11 @@ qt_extend_target(Gui CONDITION QT_FEATURE_opengl
         opengl/qopenglprogrambinarycache.cpp opengl/qopenglprogrambinarycache_p.h
         rhi/qrhigles2.cpp rhi/qrhigles2_p.h
         rhi/qrhigles2_p_p.h
+)
+
+qt_extend_target(Gui CONDITION ANDROID
+    SOURCES
+        platform/android/qandroidplatforminterface.cpp
 )
 
 #### Keys ignored in scope 2:.:.:gui.pro:QT_FEATURE_opengl:

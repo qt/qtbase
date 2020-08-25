@@ -37,69 +37,59 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMOFFSCREENSURFACE_H
-#define QPLATFORMOFFSCREENSURFACE_H
+#ifndef QOFFSCREENSURFACE_P_H
+#define QOFFSCREENSURFACE_P_H
 
 //
 //  W A R N I N G
 //  -------------
 //
-// This file is part of the QPA API and is not meant to be used
-// in applications. Usage of this API may make your code
-// source and binary incompatible with future versions of Qt.
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
 //
 
-#include "qplatformsurface.h"
+#include "qplatformoffscreensurface.h"
 
-#include <QtGui/qoffscreensurface.h>
-#include <QtCore/qscopedpointer.h>
+#include <private/qwindow_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QOffscreenSurface;
-class QPlatformScreen;
-class QPlatformOffscreenSurfacePrivate;
-
-class Q_GUI_EXPORT QPlatformOffscreenSurface : public QPlatformSurface
+class Q_GUI_EXPORT QOffscreenSurfacePrivate : public QObjectPrivate
 {
-    Q_DECLARE_PRIVATE(QPlatformOffscreenSurface)
+    Q_DECLARE_PUBLIC(QOffscreenSurface)
+
 public:
-    explicit QPlatformOffscreenSurface(QOffscreenSurface *offscreenSurface);
-    ~QPlatformOffscreenSurface() override;
+    QOffscreenSurfacePrivate()
+        : QObjectPrivate()
+          , surfaceType(QSurface::OpenGLSurface)
+          , platformOffscreenSurface(nullptr)
+          , offscreenWindow(nullptr)
+          , requestedFormat(QSurfaceFormat::defaultFormat())
+          , screen(nullptr)
+          , size(1, 1)
+    {
+    }
 
-    QOffscreenSurface *offscreenSurface() const;
+    ~QOffscreenSurfacePrivate()
+    {
+    }
 
-    QPlatformScreen *screen() const override;
+    static QOffscreenSurfacePrivate *get(QOffscreenSurface *surface)
+    {
+        return surface ? surface->d_func() : nullptr;
+    }
 
-    virtual QSurfaceFormat format() const override;
-    virtual bool isValid() const;
-
-protected:
-    QScopedPointer<QPlatformOffscreenSurfacePrivate> d_ptr;
-    friend class QOffscreenSurfacePrivate;
-private:
-    Q_DISABLE_COPY(QPlatformOffscreenSurface)
+    QSurface::SurfaceType surfaceType;
+    QPlatformOffscreenSurface *platformOffscreenSurface;
+    QWindow *offscreenWindow;
+    QSurfaceFormat requestedFormat;
+    QScreen *screen;
+    QSize size;
 };
-
-template <typename T>
-T *QOffscreenSurface::platformInterface() const
-{
-    return dynamic_cast<T*>(surfaceHandle());
-}
-
-namespace QPlatformInterface::Private {
-
-#if defined(Q_OS_ANDROID)
-struct Q_GUI_EXPORT QAndroidOffScreenIntegration
-{
-    QT_DECLARE_PLATFORM_INTERFACE(QAndroidOffScreenIntegration)
-    virtual QOffscreenSurface *createOffscreenSurface(ANativeWindow *nativeSurface) const = 0;
-};
-#endif
-
-} // QPlatformInterface::Private
-
 
 QT_END_NAMESPACE
 
-#endif // QPLATFORMOFFSCREENSURFACE_H
+#endif // QOFFSCREENSURFACE_P_H
