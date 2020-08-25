@@ -54,13 +54,6 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 # Do not relink dependent libraries when no header has changed:
 set(CMAKE_LINK_DEPENDS_NO_SHARED ON)
 
-# Default to hidden visibility for symbols:
-set(CMAKE_C_VISIBILITY_PRESET hidden)
-set(CMAKE_CXX_VISIBILITY_PRESET hidden)
-set(CMAKE_OBJC_VISIBILITY_PRESET hidden)
-set(CMAKE_OBJCXX_VISIBILITY_PRESET hidden)
-set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
-
 # Detect non-prefix builds: either when the qtbase install prefix is set to the binary dir
 # or when a developer build is explicitly enabled and no install prefix is specified.
 # This detection only happens when building qtbase, and later is propagated via the generated

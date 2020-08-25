@@ -61,7 +61,7 @@ The effort of this is tracked in QTBUG-85373 and QTBUG-85349.
 | -R <string>                           | -DQT_EXTRA_RPATHS=path1;path2                     |                                                                 |
 | -rpath                                | negative CMAKE_SKIP_BUILD_RPATH                   |                                                                 |
 |                                       | negative CMAKE_SKIP_INSTALL_RPATH                 |                                                                 |
-| -reduce-exports                       |                                                   |                                                                 |
+| -reduce-exports                       | -DFEATURE_reduce_exports=ON                       |                                                                 |
 | -reduce-relocations                   | -DFEATURE_reduce_relocations=ON                   |                                                                 |
 | -plugin-manifests                     |                                                   |                                                                 |
 | -static-runtime                       | -DFEATURE_static_runtime=ON                       |                                                                 |

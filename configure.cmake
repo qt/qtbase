@@ -642,7 +642,7 @@ qt_feature("enable_gdb_index"
 qt_feature_config("enable_gdb_index" QMAKE_PRIVATE_CONFIG)
 qt_feature("reduce_exports" PRIVATE
     LABEL "Reduce amount of exported symbols"
-    CONDITION NOT WIN32 AND CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY
+    CONDITION NOT MSVC
 )
 qt_feature_definition("reduce_exports" "QT_VISIBILITY_AVAILABLE")
 qt_feature_config("reduce_exports" QMAKE_PUBLIC_QT_CONFIG)

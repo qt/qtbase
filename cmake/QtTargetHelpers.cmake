@@ -175,6 +175,14 @@ endfunction()
 # Set target properties that are the same for all modules, plugins, executables
 # and 3rdparty libraries.
 function(qt_set_common_target_properties target)
+    if(QT_FEATURE_reduce_exports)
+        set_target_properties(${target} PROPERTIES
+            C_VISIBILITY_PRESET hidden
+            CXX_VISIBILITY_PRESET hidden
+            OBJC_VISIBILITY_PRESET hidden
+            OBJCXX_VISIBILITY_PRESET hidden
+            VISIBILITY_INLINES_HIDDEN 1)
+    endif()
    if(FEATURE_static_runtime)
        if(MSVC)
            set_property(TARGET ${target} PROPERTY
