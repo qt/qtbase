@@ -47,9 +47,17 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QAccessible>
+
+namespace src_gui_accessible_qaccessible {
+class MyWidget
+{
+    void setFocus(Qt::FocusReason reason);
+};
+QAccessibleInterface *f = nullptr;
 
 //! [1]
-typedef QAccessibleInterface* myFactoryFunction(const QString &key, QObject *);
+typedef QAccessibleInterface *myFactoryFunction(const QString &key, QObject *);
 //! [1]
 
 //! [2]
@@ -61,3 +69,4 @@ void MyWidget::setFocus(Qt::FocusReason reason)
 }
 //! [2]
 
+} // src_gui_accessible_qaccessible

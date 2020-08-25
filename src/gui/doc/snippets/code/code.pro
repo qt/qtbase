@@ -4,3 +4,4 @@ QT += core gui widgets
 
 SOURCES = \
     doc_src_richtext.cpp
+    src_gui_accessible_qaccessible.cpp
