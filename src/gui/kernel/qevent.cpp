@@ -2384,7 +2384,7 @@ QTabletEvent::QTabletEvent(Type type, const QPointingDevice *dev, const QPointF 
     : QSinglePointEvent(type, dev, pos, pos, globalPos, button, buttons, keyState),
       m_xTilt(xTilt),
       m_yTilt(yTilt),
-      m_zTilt(z),
+      m_z(z),
       m_tangential(tangentialPressure)
 {
     QMutableEventPoint &mut = QMutableEventPoint::from(m_point);

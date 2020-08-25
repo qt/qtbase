@@ -418,14 +418,14 @@ public:
 #endif
     inline qreal pressure() const { return point(0).pressure(); }
     inline qreal rotation() const { return point(0).rotation(); }
-    inline int z() const { return m_zTilt; }
+    inline int z() const { return m_z; }
     inline qreal tangentialPressure() const { return m_tangential; }
     inline int xTilt() const { return m_xTilt; }
     inline int yTilt() const { return m_yTilt; }
 
 protected:
     quint32 m_reserved : 16;
-    int m_xTilt, m_yTilt, m_zTilt;
+    int m_xTilt, m_yTilt, m_z;
     qreal m_tangential;
 };
 #endif // QT_CONFIG(tabletevent)
