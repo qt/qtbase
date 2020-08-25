@@ -78,12 +78,12 @@ public:
     QTypeTraits::compare_eq_result<U> operator!=(const QSet<T> &other) const
     { return q_hash != other.q_hash; }
 
-    inline int size() const { return q_hash.size(); }
+    inline qsizetype size() const { return q_hash.size(); }
 
     inline bool isEmpty() const { return q_hash.isEmpty(); }
 
-    inline int capacity() const { return q_hash.capacity(); }
-    inline void reserve(int size);
+    inline qsizetype capacity() const { return q_hash.capacity(); }
+    inline void reserve(qsizetype size);
     inline void squeeze() { q_hash.squeeze(); }
 
     inline void detach() { q_hash.detach(); }
@@ -176,7 +176,7 @@ public:
     // more Qt
     typedef iterator Iterator;
     typedef const_iterator ConstIterator;
-    inline int count() const { return q_hash.count(); }
+    inline qsizetype count() const { return q_hash.count(); }
     inline iterator insert(const T &value)
         { return static_cast<typename Hash::iterator>(q_hash.insert(value, QHashDummyValue())); }
     iterator find(const T &value) { return q_hash.find(value); }
@@ -195,7 +195,7 @@ public:
     typedef value_type &reference;
     typedef const value_type &const_reference;
     typedef qptrdiff difference_type;
-    typedef int size_type;
+    typedef qsizetype size_type;
 
     inline bool empty() const { return isEmpty(); }
     // comfort
@@ -241,7 +241,7 @@ noexcept(noexcept(qHashRangeCommutative(key.begin(), key.end(), seed)))
 // inline function implementations
 
 template <class T>
-Q_INLINE_TEMPLATE void QSet<T>::reserve(int asize) { q_hash.reserve(asize); }
+Q_INLINE_TEMPLATE void QSet<T>::reserve(qsizetype asize) { q_hash.reserve(asize); }
 
 template <class T>
 Q_INLINE_TEMPLATE QSet<T> &QSet<T>::unite(const QSet<T> &other)

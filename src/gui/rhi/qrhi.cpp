@@ -4074,7 +4074,7 @@ QRhiImplementation::~QRhiImplementation()
 #ifndef QT_NO_DEBUG
     if (!resources.isEmpty()) {
         qWarning("QRhi %p going down with %d unreleased resources that own native graphics objects. This is not nice.",
-                 q, resources.count());
+                 q, int(resources.count()));
         for (QRhiResource *res : qAsConst(resources)) {
             qWarning("  %s resource %p (%s)", resourceTypeStr(res), res, res->m_objectName.constData());
             res->m_rhi = nullptr;
