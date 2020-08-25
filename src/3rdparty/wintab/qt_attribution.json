@@ -6,8 +6,8 @@
 
     "Description": "Wintab is a de facto API for pointing devices on Windows.",
     "PackageComment": "Upstream http://www.pointing.com/Wintab.html no longer offers updates; treat as final",
-    "License": "Custom License",
+    "License": "LCS-Telegraphics License",
     "LicenseFile": "LICENSE.txt",
-    "LicenseId": "NONE",
+    "LicenseId": "urn:dje:license:lcs-telegraphics",
     "Copyright": "Copyright 1991-1998 by LCS/Telegraphics."
 }
