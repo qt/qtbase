@@ -70,6 +70,7 @@ private slots:
     void multipleObservers();
     void propertyAlias();
     void arrowAndStarOperator();
+    void notifiedProperty();
     void typeNoOperatorEqual();
     void bindingValueReplacement();
 
@@ -776,6 +777,91 @@ void tst_QProperty::arrowAndStarOperator()
 
 }
 
+struct ClassWithNotifiedProperty : public QObject
+{
+    QList<int> recordedValues;
+
+    void callback() { recordedValues << property.value(); }
+    int getProp() { return 0; }
+
+    Q_OBJECT_BINDABLE_PROPERTY(ClassWithNotifiedProperty, int, property, &ClassWithNotifiedProperty::callback);
+};
+
+void tst_QProperty::notifiedProperty()
+{
+    ClassWithNotifiedProperty instance;
+    std::array<QProperty<int>, 5> otherProperties = {
+        QProperty<int>([&]() { return instance.property + 1; }),
+        QProperty<int>([&]() { return instance.property + 2; }),
+        QProperty<int>([&]() { return instance.property + 3; }),
+        QProperty<int>([&]() { return instance.property + 4; }),
+        QProperty<int>([&]() { return instance.property + 5; }),
+    };
+
+    auto check = [&] {
+        const int val = instance.property.value();
+        for (int i = 0; i < int(otherProperties.size()); ++i)
+            QCOMPARE(otherProperties[i].value(), val + i + 1);
+    };
+
+    QVERIFY(instance.recordedValues.isEmpty());
+    check();
+
+    instance.property.setValue(42);
+    QCOMPARE(instance.recordedValues.count(), 1);
+    QCOMPARE(instance.recordedValues.at(0), 42);
+    instance.recordedValues.clear();
+    check();
+
+    instance.property.setValue(42);
+    QVERIFY(instance.recordedValues.isEmpty());
+    check();
+
+    int subscribedCount = 0;
+    QProperty<int> injectedValue(100);
+    instance.property.setBinding([&injectedValue]() { return injectedValue.value(); });
+    auto subscriber = [&] { ++subscribedCount; };
+    std::array<QPropertyChangeHandler<decltype (subscriber)>, 10> subscribers = {
+            instance.property.subscribe(subscriber),
+            instance.property.subscribe(subscriber),
+            instance.property.subscribe(subscriber),
+            instance.property.subscribe(subscriber),
+            instance.property.subscribe(subscriber),
+            instance.property.subscribe(subscriber),
+            instance.property.subscribe(subscriber),
+            instance.property.subscribe(subscriber),
+            instance.property.subscribe(subscriber),
+            instance.property.subscribe(subscriber)
+    };
+
+    QCOMPARE(subscribedCount, 10);
+    subscribedCount = 0;
+
+    QCOMPARE(instance.property.value(), 100);
+    QCOMPARE(instance.recordedValues.count(), 1);
+    QCOMPARE(instance.recordedValues.at(0), 100);
+    instance.recordedValues.clear();
+    check();
+    QCOMPARE(subscribedCount, 0);
+
+    injectedValue = 200;
+    QCOMPARE(instance.property.value(), 200);
+    QCOMPARE(instance.recordedValues.count(), 1);
+    QCOMPARE(instance.recordedValues.at(0), 200);
+    instance.recordedValues.clear();
+    check();
+    QCOMPARE(subscribedCount, 10);
+    subscribedCount = 0;
+
+    injectedValue = 400;
+    QCOMPARE(instance.property.value(), 400);
+    QCOMPARE(instance.recordedValues.count(), 1);
+    QCOMPARE(instance.recordedValues.at(0), 400);
+    instance.recordedValues.clear();
+    check();
+    QCOMPARE(subscribedCount, 10);
+}
+
 void tst_QProperty::typeNoOperatorEqual()
 {
     struct Uncomparable
@@ -908,9 +994,10 @@ public:
     int fooChangedCount = 0;
     int barChangedCount = 0;
     int readChangedCount = 0;
-    QProperty<int> fooData;
-    QProperty<int> barData;
-    QProperty<int> readData;
+
+    Q_OBJECT_BINDABLE_PROPERTY(MyQObject, int, fooData, &MyQObject::fooChanged);
+    Q_OBJECT_BINDABLE_PROPERTY(MyQObject, int, barData, &MyQObject::barChanged);
+    Q_OBJECT_BINDABLE_PROPERTY(MyQObject, int, readData, &MyQObject::readChanged);
 };
 
 void tst_QProperty::testNewStuff()
@@ -920,26 +1007,26 @@ void tst_QProperty::testNewStuff()
     QObject::connect(&object, &MyQObject::barChanged, &object, &MyQObject::barHasChanged);
     QObject::connect(&object, &MyQObject::readChanged, &object, &MyQObject::readHasChanged);
 
-//    QCOMPARE(object.fooChangedCount, 0);
+    QCOMPARE(object.fooChangedCount, 0);
     object.setFoo(10);
-//    QCOMPARE(object.fooChangedCount, 1);
+    QCOMPARE(object.fooChangedCount, 1);
     QCOMPARE(object.foo(), 10);
 
     auto f = [&object]() -> int {
             return object.barData;
     };
-//    QCOMPARE(object.barChangedCount, 0);
+    QCOMPARE(object.barChangedCount, 0);
     object.setBar(42);
-//    QCOMPARE(object.barChangedCount, 1);
-//    QCOMPARE(object.fooChangedCount, 1);
+    QCOMPARE(object.barChangedCount, 1);
+    QCOMPARE(object.fooChangedCount, 1);
     object.fooData.setBinding(f);
-//    QCOMPARE(object.fooChangedCount, 2);
+    QCOMPARE(object.fooChangedCount, 2);
     QCOMPARE(object.fooData.value(), 42);
     object.setBar(666);
-//    QCOMPARE(object.fooChangedCount, 3);
-//    QCOMPARE(object.barChangedCount, 2);
+    QCOMPARE(object.fooChangedCount, 3);
+    QCOMPARE(object.barChangedCount, 2);
     QCOMPARE(object.fooData.value(), 666);
-//    QCOMPARE(object.fooChangedCount, 3);
+    QCOMPARE(object.fooChangedCount, 3);
 
     auto f2 = [&object]() -> int {
             return object.barData / 2;

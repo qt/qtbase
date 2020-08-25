@@ -178,6 +178,15 @@ namespace detail {
 
     template<typename T, typename C>
     struct ExtractClassFromFunctionPointer<T C::*> { using Class = C; };
+
+    constexpr size_t getOffset(size_t o)
+    {
+        return o;
+    }
+    constexpr size_t getOffset(size_t (*offsetFn)())
+    {
+        return offsetFn();
+    }
 }
 
 // type erased guard functions, casts its arguments to the correct types

@@ -742,6 +742,193 @@ public:
     QtPrivate::QPropertyBindingData *bindingData(QUntypedPropertyData *data, bool create);
 };
 
+
+template<typename Class, typename T, auto Offset, auto Signal = nullptr>
+class QObjectBindableProperty : public QPropertyData<T>
+{
+    using ThisType = QObjectBindableProperty<Class, T, Offset, Signal>;
+    static bool constexpr HasSignal = !std::is_same_v<decltype(Signal), std::nullptr_t>;
+    Class *owner()
+    {
+        char *that = reinterpret_cast<char *>(this);
+        return reinterpret_cast<Class *>(that - QtPrivate::detail::getOffset(Offset));
+    }
+    const Class *owner() const
+    {
+        char *that = const_cast<char *>(reinterpret_cast<const char *>(this));
+        return reinterpret_cast<Class *>(that - QtPrivate::detail::getOffset(Offset));
+    }
+    static void signalCallBack(QUntypedPropertyData *o)
+    {
+        QObjectBindableProperty *that = static_cast<QObjectBindableProperty *>(o);
+        if constexpr (HasSignal)
+            (that->owner()->*Signal)();
+    }
+public:
+    using value_type = typename QPropertyData<T>::value_type;
+    using parameter_type = typename QPropertyData<T>::parameter_type;
+    using rvalue_ref = typename QPropertyData<T>::rvalue_ref;
+    using arrow_operator_result = typename QPropertyData<T>::arrow_operator_result;
+
+    QObjectBindableProperty() = default;
+    explicit QObjectBindableProperty(const T &initialValue) : QPropertyData<T>(initialValue) {}
+    explicit QObjectBindableProperty(T &&initialValue) : QPropertyData<T>(std::move(initialValue)) {}
+    explicit QObjectBindableProperty(const QPropertyBinding<T> &binding)
+        : QObjectBindableProperty()
+    { setBinding(binding); }
+#ifndef Q_CLANG_QDOC
+    template <typename Functor>
+    explicit QObjectBindableProperty(Functor &&f, const QPropertyBindingSourceLocation &location = QT_PROPERTY_DEFAULT_BINDING_LOCATION,
+                       typename std::enable_if_t<std::is_invocable_r_v<T, Functor&>> * = 0)
+        : QObjectBindableProperty(QPropertyBinding<T>(std::forward<Functor>(f), location))
+    {}
+#else
+    template <typename Functor>
+    explicit QProperty(Functor &&f);
+#endif
+
+    parameter_type value() const {
+        qGetBindingStorage(owner())->maybeUpdateBindingAndRegister(this);
+        return this->val;
+    }
+
+    arrow_operator_result operator->() const
+    {
+        if constexpr (QTypeTraits::is_dereferenceable_v<T>) {
+            return value();
+        } else if constexpr (std::is_pointer_v<T>) {
+            value();
+            return this->val;
+        } else {
+            return;
+        }
+    }
+
+    parameter_type operator*() const
+    {
+        return value();
+    }
+
+    operator parameter_type() const
+    {
+        return value();
+    }
+
+    void setValue(parameter_type t) {
+        auto *bd = qGetBindingStorage(owner())->bindingData(this);
+        if (bd)
+            bd->removeBinding();
+        if (this->val == t)
+            return;
+        this->val = t;
+        notify(bd);
+    }
+
+    void setValue(rvalue_ref t) {
+        auto *bd = qGetBindingStorage(owner())->bindingData(this);
+        if (bd)
+            bd->removeBinding();
+        if (this->val == t)
+            return;
+        this->val = std::move(t);
+        notify(bd);
+    }
+
+    QObjectBindableProperty &operator=(rvalue_ref newValue)
+    {
+        setValue(std::move(newValue));
+        return *this;
+    }
+
+    QObjectBindableProperty &operator=(parameter_type newValue)
+    {
+        setValue(newValue);
+        return *this;
+    }
+
+    QPropertyBinding<T> setBinding(const QPropertyBinding<T> &newBinding)
+    {
+        QtPrivate::QPropertyBindingData *bd = qGetBindingStorage(owner())->bindingData(this, true);
+        QUntypedPropertyBinding oldBinding(bd->setBinding(newBinding, this, HasSignal ? &signalCallBack : nullptr));
+        notify(bd);
+        return static_cast<QPropertyBinding<T> &>(oldBinding);
+    }
+
+    bool setBinding(const QUntypedPropertyBinding &newBinding)
+    {
+        if (!newBinding.isNull() && newBinding.valueMetaType().id() != qMetaTypeId<T>())
+            return false;
+        setBinding(static_cast<const QPropertyBinding<T> &>(newBinding));
+        return true;
+    }
+
+#ifndef Q_CLANG_QDOC
+    template <typename Functor>
+    QPropertyBinding<T> setBinding(Functor &&f,
+                                   const QPropertyBindingSourceLocation &location = QT_PROPERTY_DEFAULT_BINDING_LOCATION,
+                                   std::enable_if_t<std::is_invocable_v<Functor>> * = nullptr)
+    {
+        return setBinding(Qt::makePropertyBinding(std::forward<Functor>(f), location));
+    }
+#else
+    template <typename Functor>
+    QPropertyBinding<T> setBinding(Functor f);
+#endif
+
+    bool hasBinding() const {
+        auto *bd = qGetBindingStorage(owner())->bindingData(this);
+        return bd && bd->binding() != nullptr;
+    }
+
+    QPropertyBinding<T> binding() const
+    {
+        auto *bd = qGetBindingStorage(owner())->bindingData(this);
+        return static_cast<QPropertyBinding<T> &&>(QUntypedPropertyBinding(bd ? bd->binding() : nullptr));
+    }
+
+    QPropertyBinding<T> takeBinding()
+    {
+        return setBinding(QPropertyBinding<T>());
+    }
+
+    template<typename Functor>
+    QPropertyChangeHandler<Functor> onValueChanged(Functor f)
+    {
+        static_assert(std::is_invocable_v<Functor>, "Functor callback must be callable without any parameters");
+        return QPropertyChangeHandler<Functor>(*this, f);
+    }
+
+    template<typename Functor>
+    QPropertyChangeHandler<Functor> subscribe(Functor f)
+    {
+        static_assert(std::is_invocable_v<Functor>, "Functor callback must be callable without any parameters");
+        f();
+        return onValueChanged(f);
+    }
+
+    const QtPrivate::QPropertyBindingData &bindingData() const
+    {
+        auto *storage = const_cast<QBindingStorage *>(qGetBindingStorage(owner()));
+        return *storage->bindingData(const_cast<ThisType *>(this), true);
+    }
+private:
+    void notify(const QtPrivate::QPropertyBindingData *binding)
+    {
+        if (binding)
+            binding->notifyObservers(this);
+        if constexpr (HasSignal)
+            (owner()->*Signal)();
+    }
+};
+
+#define Q_OBJECT_BINDABLE_PROPERTY(Class, Type, name,  ...) \
+    static constexpr size_t _qt_property_##name##_offset() { \
+        QT_WARNING_PUSH QT_WARNING_DISABLE_INVALID_OFFSETOF \
+        return offsetof(Class, name); \
+        QT_WARNING_POP \
+    } \
+    QObjectBindableProperty<Class, Type, Class::_qt_property_##name##_offset, __VA_ARGS__> name;
+
 QT_END_NAMESPACE
 
 #endif // QPROPERTY_H
