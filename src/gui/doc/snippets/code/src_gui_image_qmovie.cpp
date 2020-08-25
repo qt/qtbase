@@ -47,6 +47,13 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QLabel>
+#include <QMovie>
+
+namespace src_gui_image_qmovie {
+
+void wrapper0() {
+
 
 //! [0]
 QLabel label;
@@ -56,8 +63,15 @@ label.setMovie(movie);
 movie->start();
 //! [0]
 
+} // wrapper0
+
+
+void wrapper1() {
 
 //! [1]
 QMovie movie("racecar.gif");
 movie.setSpeed(200); // 2x speed
 //! [1]
+
+} // wrapper1
+} // src_gui_image_qmovie

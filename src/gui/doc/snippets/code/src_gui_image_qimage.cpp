@@ -47,7 +47,11 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QImage>
+#include <QRgb>
 
+namespace src_gui_image_qimage {
+void wrapper0() {
 //! [0]
 QImage image(3, 3, QImage::Format_RGB32);
 QRgb value;
@@ -62,6 +66,9 @@ image.setPixel(1, 0, value);
 value = qRgb(237, 187, 51); // 0xffedba31
 image.setPixel(2, 1, value);
 //! [0]
+
+} // wrapper0
+void wrapper1() {
 
 
 //! [1]
@@ -88,5 +95,10 @@ image.setPixel(2, 1, 1);
 static const char * const start_xpm[] = {
     "16 15 8 1",
     "a c #cec6bd",
-....
+    // etc.
+};
 //! [2]
+
+Q_UNUSED(start_xpm);
+} // wrapper1
+} // src_gui_image_qimage

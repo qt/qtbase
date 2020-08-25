@@ -53,9 +53,7 @@
 
 namespace src_gui_image_qpixmapcache {
 
-void wrapper0() {
-QPainter *painter = nullptr;
-
+void wrapper0(QPainter *painter) {
 //! [1]
 QPixmap pm;
 if (!QPixmapCache::find("my_big_image", &pm)) {

@@ -47,22 +47,28 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QBitmap>
+#include <QPixmap>
 
-//! [0]
-static const char * const start_xpm[]={
-    "16 15 8 1",
-    "a c #cec6bd",
-....
-//! [0]
+namespace src_gui_image_qpixmap {
 
+void wrapper0() {
 
 //! [1]
 QPixmap myPixmap;
 myPixmap.setMask(myPixmap.createHeuristicMask());
 //! [1]
 
+} // wrapper0
+
+
+void wrapper1() {
+
 //! [2]
 QPixmap pixmap("background.png");
 QRegion exposed;
 pixmap.scroll(10, 10, pixmap.rect(), &exposed);
 //! [2]
+
+} // wrapper1
+} // src_gui_image_qpixmap
