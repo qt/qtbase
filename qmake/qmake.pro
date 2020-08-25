@@ -137,6 +137,7 @@ SOURCES += \
     qgregoriancalendar.cpp \
     qhash.cpp \
     qiodevice.cpp \
+    qiterable.cpp \
     qjsonarray.cpp \
     qjsoncbor.cpp \
     qjsondocument.cpp \
@@ -195,6 +196,7 @@ HEADERS += \
     qgregoriancalendar_p.h \
     qhash.h \
     qiodevice.h \
+    qiterable.h \
     qjson_p.h \
     qjsonarray.h \
     qjsondocument.h \

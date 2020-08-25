@@ -581,55 +581,6 @@ inline bool operator!=(const QVariant &v1, const QVariantComparisonHelper &v2)
 #endif
 Q_DECLARE_SHARED(QVariant)
 
-class Q_CORE_EXPORT QSequentialIterable
-{
-    QtMetaTypePrivate::QSequentialIterableImpl m_impl;
-public:
-    struct Q_CORE_EXPORT const_iterator
-    {
-    private:
-        QtMetaTypePrivate::QSequentialIterableImpl m_impl;
-        QAtomicInt *m_ref;
-        friend class QSequentialIterable;
-        explicit const_iterator(const QSequentialIterable &iter, QAtomicInt *ref);
-
-        explicit const_iterator(const QtMetaTypePrivate::QSequentialIterableImpl &impl, QAtomicInt *ref);
-
-    public:
-        ~const_iterator();
-
-        const_iterator(const const_iterator &other);
-
-        const_iterator& operator=(const const_iterator &other);
-
-        const QVariant operator*() const;
-        bool operator==(const const_iterator &o) const;
-        bool operator!=(const const_iterator &o) const;
-        const_iterator &operator++();
-        const_iterator operator++(int);
-        const_iterator &operator--();
-        const_iterator operator--(int);
-        const_iterator &operator+=(int j);
-        const_iterator &operator-=(int j);
-        const_iterator operator+(int j) const;
-        const_iterator operator-(int j) const;
-        friend inline const_iterator operator+(int j, const const_iterator &k) { return k + j; }
-    };
-
-    friend struct const_iterator;
-
-    explicit QSequentialIterable(const QtMetaTypePrivate::QSequentialIterableImpl &impl);
-    QSequentialIterable() {}
-
-    const_iterator begin() const;
-    const_iterator end() const;
-
-    QVariant at(int idx) const;
-    int size() const;
-
-    bool canReverseIterate() const;
-};
-
 class Q_CORE_EXPORT QAssociativeIterable
 {
     QtMetaTypePrivate::QAssociativeIterableImpl m_impl;

@@ -58,6 +58,7 @@ qt_add_tool(${target_name}
         ../src/corelib/io/qiodevice.cpp ../src/corelib/io/qiodevice.h
         ../src/corelib/io/qsettings.cpp
         ../src/corelib/io/qtemporaryfile.cpp ../src/corelib/io/qtemporaryfile.h
+        ../src/corelib/kernel/qiterable.cpp ../src/corelib/kernel/qiterable.h
         ../src/corelib/kernel/qmetacontainer.cpp ../src/corelib/kernel/qmetacontainer.h
         ../src/corelib/kernel/qmetatype.cpp ../src/corelib/kernel/qmetatype.h
         ../src/corelib/kernel/qsystemerror.cpp ../src/corelib/kernel/qsystemerror_p.h

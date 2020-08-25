@@ -114,6 +114,8 @@ QTOBJS= \
 	qsettings.obj \
 	qvariant.obj \
 	qsettings_win.obj \
+	qiterable.obj \
+	qmetacontainer.obj \
 	qmetatype.obj \
 	qnumeric.obj \
 	qlogging.obj \

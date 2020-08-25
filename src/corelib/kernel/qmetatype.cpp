@@ -54,6 +54,7 @@
 #include "quuid.h"
 #include "qvariant.h"
 #include "qdatastream.h"
+#include "qiterable.h"
 
 #if QT_CONFIG(regularexpression)
 #  include "qregularexpression.h"
@@ -1832,13 +1833,12 @@ static bool convertIterableToVariantList(QMetaType fromType, const void *from, v
 {
     const QMetaType::ConverterFunction * const f =
         customTypesConversionRegistry()->function(qMakePair(fromType.id(),
-                                                            qMetaTypeId<QtMetaTypePrivate::QSequentialIterableImpl>()));
+                                                            qMetaTypeId<QSequentialIterable>()));
     if (!f)
         return false;
 
-    QtMetaTypePrivate::QSequentialIterableImpl iter;
-    (*f)(from, &iter);
-    QSequentialIterable list(iter);
+    QSequentialIterable list;
+    (*f)(from, &list);
     QVariantList &l = *static_cast<QVariantList *>(to);
     l.clear();
     l.reserve(list.size());
@@ -1924,20 +1924,15 @@ static bool convertToSequentialIterable(QMetaType fromType, const void *from, vo
 
     QSequentialIterable &i = *static_cast<QSequentialIterable *>(to);
     if (fromTypeId == QMetaType::QVariantList) {
-        i = QSequentialIterable(QSequentialIterableImpl(reinterpret_cast<const QVariantList *>(from)));
+        i = QSequentialIterable(reinterpret_cast<const QVariantList *>(from));
         return true;
     }
     if (fromTypeId == QMetaType::QStringList) {
-        i = QSequentialIterable(QSequentialIterableImpl(reinterpret_cast<const QStringList *>(from)));
+        i = QSequentialIterable(reinterpret_cast<const QStringList *>(from));
         return true;
     }
     else if (fromTypeId == QMetaType::QByteArrayList) {
-        i = QSequentialIterable(QSequentialIterableImpl(reinterpret_cast<const QByteArrayList *>(from)));
-        return true;
-    }
-    QSequentialIterableImpl impl;
-    if (QMetaType::convert(fromType, from, QMetaType::fromType<QtMetaTypePrivate::QSequentialIterableImpl>(), &impl)) {
-        i = QSequentialIterable(impl);
+        i = QSequentialIterable(reinterpret_cast<const QByteArrayList *>(from));
         return true;
     }
     return false;
@@ -2159,7 +2154,7 @@ bool QMetaType::canConvert(QMetaType fromType, QMetaType toType)
         return true;
 
     if (toTypeId == QVariantList && hasRegisteredConverterFunction(
-                    fromTypeId, qMetaTypeId<QtMetaTypePrivate::QSequentialIterableImpl>()))
+                    fromTypeId, qMetaTypeId<QSequentialIterable>()))
         return true;
 
     if ((toTypeId == QVariantHash || toTypeId == QVariantMap) && hasRegisteredConverterFunction(

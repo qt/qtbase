@@ -1000,6 +1000,11 @@ void tst_QMetaType::alignOf()
 }
 
 struct CustomMovable { CustomMovable() {} };
+
+// needed for QSet<CustomMovable>. We actually check that it makes sense.
+bool operator==(const CustomMovable &, const CustomMovable &) { return true; }
+qsizetype qHash(const CustomMovable &, qsizetype seed = 0) { return seed; }
+
 #if !defined(Q_CC_CLANG) && defined(Q_CC_GNU) && Q_CC_GNU < 501
 QT_BEGIN_NAMESPACE
 Q_DECLARE_TYPEINFO(CustomMovable, Q_MOVABLE_TYPE);

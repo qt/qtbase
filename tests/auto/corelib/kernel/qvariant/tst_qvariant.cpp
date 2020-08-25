@@ -4528,28 +4528,37 @@ void tst_QVariant::shouldDeleteVariantDataWorksForSequential()
 {
     QCOMPARE(instanceCount, 0);
     {
-        QtMetaTypePrivate::QSequentialIterableImpl iterator {};
-        iterator._iteratorCapabilities = QtMetaTypePrivate::RandomAccessCapability |
-                                         QtMetaTypePrivate::BiDirectionalCapability |
-                                         QtMetaTypePrivate::ForwardCapability;
+        QtMetaContainerPrivate::QMetaSequenceInterface metaSequence {};
+        metaSequence.iteratorCapabilities = QtMetaContainerPrivate::RandomAccessCapability
+                | QtMetaContainerPrivate::BiDirectionalCapability
+                | QtMetaContainerPrivate::ForwardCapability;
 
-        iterator._size = [](const void *) {return 1;};
-        iterator._metaType = QMetaType::fromType<MyType>();
-        iterator._moveTo = [](const void *, void **, QtMetaTypePrivate::QSequentialIterableImpl::Position) {};
-        iterator._append = [](const void *, const void *) {};
-        iterator._advance = [](void **, int) {};
-        iterator._destroyIter = [](void **){};
-        iterator._equalIter = [](void * const *, void * const *){return true; /*all iterators are nullptr*/};
-        iterator._destroyIter = [](void **){};
-        iterator._at = [](const void *, int, void *dataPtr) -> void {
+        metaSequence.sizeFn = [](const void *) { return qsizetype(1); };
+        metaSequence.createConstIteratorFn =
+                [](const void *, QtMetaContainerPrivate::QMetaSequenceInterface::Position) -> void* {
+            return nullptr;
+        };
+        metaSequence.addElementFn = [](void *, const void *) {};
+        metaSequence.advanceConstIteratorFn = [](void *, qsizetype) {};
+        metaSequence.destroyConstIteratorFn = [](const void *){};
+        metaSequence.compareConstIteratorFn = [](const void *, const void *) {
+            return true; // all iterators are nullptr
+        };
+        metaSequence.copyConstIteratorFn = [](void *, const void *){};
+        metaSequence.diffConstIteratorFn = [](const void *, const void *) -> qsizetype  {
+            return 0;
+        };
+        metaSequence.elementAtIndexFn = [](const void *, qsizetype, void *dataPtr) -> void {
             MyType mytype {1, "eins"};
             *static_cast<MyType *>(dataPtr) = mytype;
         };
-        iterator._get = [](void * const *, void *dataPtr) -> void {
+        metaSequence.elementAtConstIteratorFn = [](const void *, void *dataPtr) -> void {
             MyType mytype {2, "zwei"};
             *static_cast<MyType *>(dataPtr) = mytype;
         };
-        QSequentialIterable iterable {iterator};
+        metaSequence.valueMetaType = QMetaType::fromType<MyType>();
+
+        QSequentialIterable iterable(QMetaSequence(&metaSequence), nullptr);
         QVariant value1 = iterable.at(0);
         QVERIFY(value1.canConvert<MyType>());
         QCOMPARE(value1.value<MyType>().number, 1);
@@ -4669,12 +4678,13 @@ void tst_QVariant::qt4UuidDataStream()
 
 void tst_QVariant::sequentialIterableEndianessSanityCheck()
 {
-    namespace QMTP = QtMetaTypePrivate;
-    uint oldIteratorCaps = QMTP::ForwardCapability | QMTP::BiDirectionalCapability | QMTP::RandomAccessCapability;
-    QMTP::QSequentialIterableImpl seqImpl {};
-    QCOMPARE(seqImpl.revision(), 0u);
-    memcpy(&seqImpl._iteratorCapabilities, &oldIteratorCaps, sizeof(oldIteratorCaps));
-    QCOMPARE(seqImpl.revision(), 0u);
+    namespace QMTP = QtMetaContainerPrivate;
+    QMTP::IteratorCapabilities oldIteratorCaps
+            = QMTP::ForwardCapability | QMTP::BiDirectionalCapability | QMTP::RandomAccessCapability;
+    QMTP::QMetaSequenceInterface seqImpl {};
+    QCOMPARE(seqImpl.revision, 0u);
+    memcpy(&seqImpl.iteratorCapabilities, &oldIteratorCaps, sizeof(oldIteratorCaps));
+    QCOMPARE(seqImpl.revision, 0u);
 }
 
 void tst_QVariant::sequentialIterableAppend()
@@ -4682,22 +4692,24 @@ void tst_QVariant::sequentialIterableAppend()
     {
         QList<int> container { 1, 2 };
         auto variant = QVariant::fromValue(container);
-        QVERIFY(variant.canConvert<QtMetaTypePrivate::QSequentialIterableImpl>());
-        auto asIterable = variant.value<QtMetaTypePrivate::QSequentialIterableImpl>();
+        QVERIFY(variant.canConvert<QSequentialIterable>());
+        auto asIterable = variant.value<QSequentialIterable>();
         const int i = 3, j = 4;
-        asIterable.append(&i);
-        asIterable.append(&j);
+        void *mutableIterable = const_cast<void *>(asIterable.constIterable());
+        asIterable.metaSequence().addElement(mutableIterable, &i);
+        asIterable.metaSequence().addElement(mutableIterable, &j);
         QCOMPARE(variant.value<QList<int>>(), QList<int> ({ 1, 2, 3, 4 }));
     }
     {
         QSet<QByteArray> container { QByteArray{"hello"}, QByteArray{"world"} };
         auto variant = QVariant::fromValue(std::move(container));
-        QVERIFY(variant.canConvert<QtMetaTypePrivate::QSequentialIterableImpl>());
-        auto asIterable = variant.value<QtMetaTypePrivate::QSequentialIterableImpl>();
+        QVERIFY(variant.canConvert<QSequentialIterable>());
+        auto asIterable = variant.value<QSequentialIterable>();
         QByteArray qba1 {"goodbye"};
         QByteArray qba2 { "moon" };
-        asIterable.append( &qba1 );
-        asIterable.append( &qba2);
+        void *mutableIterable = const_cast<void *>(asIterable.constIterable());
+        asIterable.metaSequence().addElement(mutableIterable, &qba1);
+        asIterable.metaSequence().addElement(mutableIterable, &qba2);
         QSet<QByteArray> reference { "hello", "world", "goodbye", "moon" };
         QCOMPARE(variant.value<QSet<QByteArray>>(), reference);
     }
@@ -4707,8 +4719,8 @@ void tst_QVariant::preferDirectConversionOverInterfaces()
 {
     using namespace QtMetaTypePrivate;
     bool calledCorrectConverter = false;
-    QMetaType::registerConverter<MyType, QSequentialIterableImpl>([](const MyType &) {
-        return QSequentialIterableImpl {};
+    QMetaType::registerConverter<MyType, QSequentialIterable>([](const MyType &) {
+        return QSequentialIterable {};
     });
     QMetaType::registerConverter<MyType, QVariantList>([&calledCorrectConverter](const MyType &) {
         calledCorrectConverter = true;
@@ -4727,7 +4739,7 @@ void tst_QVariant::preferDirectConversionOverInterfaces()
     });
     auto holder = QVariant::fromValue(MyType {});
 
-    QVERIFY(holder.canConvert<QSequentialIterableImpl>());
+    QVERIFY(holder.canConvert<QSequentialIterable>());
     QVERIFY(holder.canConvert<QVariantList>());
     QVERIFY(holder.canConvert<QAssociativeIterableImpl>());
     QVERIFY(holder.canConvert<QVariantHash>());

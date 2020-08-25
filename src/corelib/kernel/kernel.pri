@@ -35,6 +35,7 @@ HEADERS += \
         kernel/qmetaobjectbuilder_p.h \
         kernel/qobject_p.h \
         kernel/qcoreglobaldata_p.h \
+        kernel/qiterable.h \
         kernel/qsharedmemory.h \
         kernel/qsharedmemory_p.h \
         kernel/qsystemsemaphore.h \
@@ -70,6 +71,7 @@ SOURCES += \
         kernel/qtranslator.cpp \
         kernel/qvariant.cpp \
         kernel/qcoreglobaldata.cpp \
+        kernel/qiterable.cpp \
         kernel/qsharedmemory.cpp \
         kernel/qsystemsemaphore.cpp \
         kernel/qpointer.cpp \
