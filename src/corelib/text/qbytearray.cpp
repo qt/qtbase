@@ -3334,8 +3334,6 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
 /*! \fn bool QByteArray::operator==(const QString &str) const
 
-    \obsolete
-
     Returns \c true if this byte array is equal to string \a str;
     otherwise returns \c false.
 
@@ -3352,8 +3350,6 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 */
 
 /*! \fn bool QByteArray::operator!=(const QString &str) const
-
-    \obsolete
 
     Returns \c true if this byte array is not equal to string \a str;
     otherwise returns \c false.
@@ -3372,8 +3368,6 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
 /*! \fn bool QByteArray::operator<(const QString &str) const
 
-    \obsolete
-
     Returns \c true if this byte array is lexically less than string \a
     str; otherwise returns \c false.
 
@@ -3390,8 +3384,6 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 */
 
 /*! \fn bool QByteArray::operator>(const QString &str) const
-
-    \obsolete
 
     Returns \c true if this byte array is lexically greater than string
     \a str; otherwise returns \c false.
@@ -3410,8 +3402,6 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
 /*! \fn bool QByteArray::operator<=(const QString &str) const
 
-    \obsolete
-
     Returns \c true if this byte array is lexically less than or equal
     to string \a str; otherwise returns \c false.
 
@@ -3428,8 +3418,6 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 */
 
 /*! \fn bool QByteArray::operator>=(const QString &str) const
-
-    \obsolete
 
     Returns \c true if this byte array is greater than or equal to string
     \a str; otherwise returns \c false.
