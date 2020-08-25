@@ -99,14 +99,9 @@ function(qt_internal_add_headers_clean_target
         endforeach()
 
     elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-        # 4180: qualifier applied to function type has no meaning; ignored
-        # 4458: declaration of 'identifier' hides class member
-        # 4577: 'noexcept' used with no exception handling mode specified; termination on
-        #       exception is not guaranteed. Specify /EHsc
-        #
         # -Za would enable strict standards behavior, but we can't add it because
         # <windows.h> and <GL.h> violate the standards.
-        set(hcleanFLAGS -std:c++17 -WX -W3 -wd4180 -wd4458 -wd4577)
+        set(hcleanFLAGS -std:c++17 -WX -W3)
 
         # cl.exe needs a source path
         get_filename_component(source_path "${QT_MKSPECS_DIR}/features/data/dummy.cpp" REALPATH)

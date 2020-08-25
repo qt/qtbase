@@ -273,15 +273,9 @@ headersclean:!internal_module {
 
         hcleanCOMMAND = $(CXX) -c $(CXXFLAGS) $$hcleanFLAGS $(INCPATH) $$hcleanDEFS -xc++ ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
     } else: msvc:!intel_icl {
-        # 4180: qualifier applied to function type has no meaning; ignored
-        # 4458: declaration of 'identifier' hides class member
         # -Za enables strict standards behavior, but we can't add it because
         # <windows.h> and <GL.h> violate the standards.
-        hcleanFLAGS = -WX -W3 -wd4180 -wd4458
-
-        # MSVC 2015 (compiler version 19.0):
-        # 4577: 'noexcept' used with no exception handling mode specified; termination on exception is not guaranteed. Specify /EHsc
-        greaterThan(QMAKE_MSC_VER, 18): hcleanFLAGS += -wd4577
+        hcleanFLAGS = -WX -W3
 
         hcleanCOMMAND = $(CXX) -c $(CXXFLAGS) $$hcleanFLAGS $(INCPATH) $$hcleanDEFS -FI${QMAKE_FILE_IN} -Fo${QMAKE_FILE_OUT} \
                         $$[QT_INSTALL_DATA/src]/mkspecs/features/data/dummy.cpp
