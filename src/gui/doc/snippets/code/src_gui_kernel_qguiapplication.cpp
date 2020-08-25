@@ -47,13 +47,30 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QApplication>
+#include <QMessageBox>
+#include <QSessionManager>
+#include <QWidget>
+
+namespace src_gui_kernel_qguiapplication {
+struct MyMainWidget : public QWidget
+{
+    MyMainWidget(QWidget *parent);
+    void commitData(QSessionManager& manager);
+    bool saveDocument() { return true; };
+    QStringList restartCommand() { return QStringList(); };
+    QStringList discardCommand() { return QStringList(); };
+};
+MyMainWidget *mainWindow = nullptr;
+void do_something(QString command) { Q_UNUSED(command); };
+MyMainWidget mySession(nullptr);
 
 //! [0]
 int main(int argc, char *argv[])
 {
     QApplication::setDesktopSettingsAware(false);
     QApplication app(argc, argv);
-    ...
+    // ...
     return app.exec();
 }
 //! [0]
@@ -61,7 +78,7 @@ int main(int argc, char *argv[])
 
 //! [1]
 MyMainWidget::MyMainWidget(QWidget *parent)
-    :QWidget(parent)
+    : QWidget(parent)
 {
     QGuiApplication::setFallbackSessionManagementEnabled(false);
     connect(qApp, &QGuiApplication::commitDataRequest,
@@ -97,9 +114,16 @@ void MyMainWidget::commitData(QSessionManager& manager)
 //! [1]
 
 
+/* wrap snippet 2
+
 //! [2]
 appname -session id
 //! [2]
+
+*/ // wrap snippet 2
+
+
+void wrapper0() {
 
 
 //! [3]
@@ -108,9 +132,16 @@ for (const QString &command : commands)
     do_something(command);
 //! [3]
 
+} // wrapper0
 
+
+void wrapper1() {
 //! [4]
 const QStringList commands = mySession.discardCommand();
 for (const QString &command : mySession.discardCommand())
     do_something(command);
 //! [4]
+
+
+} // wrapper1
+} // src_gui_kernel_qguiapplication

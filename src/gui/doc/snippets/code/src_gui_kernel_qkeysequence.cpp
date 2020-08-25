@@ -47,6 +47,16 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QKeySequence>
+#include <QMenu>
+#include <QTranslator>
+
+
+namespace src_gui_kernel_qkeysequence {
+struct Wrapper : public QWidget
+{ void wrapper(); };
+
+/* Wrap non-compilable code snippet
 
 //! [0]
 QKeySequence(QKeySequence::Print);
@@ -61,9 +71,14 @@ QKeySequence(tr("Ctrl+X, Ctrl+C"));
 QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_C);
 //! [1]
 
+*/ // Wrap non-compilable code snippet
 
+void Wrapper::wrapper() {
 //! [2]
 QMenu *file = new QMenu(this);
 file->addAction(tr("&Open..."), this, SLOT(open()),
                   QKeySequence(tr("Ctrl+O", "File|Open")));
 //! [2]
+
+} // Wrapper::wrapper
+} // src_gui_kernel_qkeysequence

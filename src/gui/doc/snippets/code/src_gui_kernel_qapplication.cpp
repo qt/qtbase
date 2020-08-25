@@ -47,9 +47,28 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QApplication>
+#include <QStyleFactory>
+#include <QWidget>
+
+
+namespace src_gui_kernel_qapplication {
+struct MyWidget
+{
+    QSize sizeHint() const;
+
+    int foo = 0;
+    MyWidget operator- (MyWidget& other)
+    {
+        MyWidget tmp = other;
+        return tmp;
+    };
+    int manhattanLength() { return 0; }
+};
+
 
 //! [0]
-QCoreApplication* createApplication(int &argc, char *argv[])
+QCoreApplication *createApplication(int &argc, char *argv[])
 {
     for (int i = 1; i < argc; ++i)
         if (!qstrcmp(argv[i], "-no-gui"))
@@ -57,7 +76,7 @@ QCoreApplication* createApplication(int &argc, char *argv[])
     return new QApplication(argc, argv);
 }
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
     QScopedPointer<QCoreApplication> app(createApplication(argc, argv));
 
@@ -72,10 +91,13 @@ int main(int argc, char* argv[])
 //! [0]
 
 
+void wrapper0() {
+
 //! [1]
 QApplication::setStyle(QStyleFactory::create("fusion"));
 //! [1]
 
+} // wrapper0
 
 
 //! [3]
@@ -108,11 +130,19 @@ void updateAllWidgets()
 //! [5]
 
 
+void startTheDrag() {};
+void wrapper1() {
+MyWidget startPos;
+MyWidget currentPos;
+int x = 0;
+int y = 0;
+
 //! [6]
 if ((startPos - currentPos).manhattanLength() >=
         QApplication::startDragDistance())
     startTheDrag();
 //! [6]
+
 
 //! [7]
 QWidget *widget = qApp->widgetAt(x, y);
@@ -120,9 +150,18 @@ if (widget)
     widget = widget->window();
 //! [7]
 
+} // wrapper1
+
+
+void wrapper2() {
+QPoint point;
 
 //! [8]
 QWidget *widget = qApp->widgetAt(point);
 if (widget)
     widget = widget->window();
 //! [8]
+
+
+} // wrapper2
+} // src_gui_kernel_qapplication

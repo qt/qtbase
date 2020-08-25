@@ -13,4 +13,11 @@ SOURCES = \
     src_gui_image_qmovie.cpp \
     src_gui_image_qpixmapcache.cpp \
     src_gui_image_qpixmap.cpp \
-    src_gui_itemviews_qstandarditemmodel.cpp
+    src_gui_itemviews_qstandarditemmodel.cpp \
+    src_gui_kernel_qapplication.cpp \
+    src_gui_kernel_qclipboard.cpp \
+    src_gui_kernel_qevent.cpp \
+    src_gui_kernel_qguiapplication.cpp \
+    src_gui_kernel_qguiapplication_x11.cpp \
+    src_gui_kernel_qkeysequence.cpp \
+    src_gui_kernel_qshortcutmap.cpp

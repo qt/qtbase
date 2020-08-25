@@ -47,6 +47,16 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QWheelEvent>
+
+namespace src_gui_kernel_qevent {
+class MyWidget //: public QWidget
+{
+    void wheelEvent(QWheelEvent *event);
+    void scrollWithPixels(QPoint point);
+    void scrollWithDegrees(QPoint point);
+};
+
 
 //! [0]
 void MyWidget::wheelEvent(QWheelEvent *event)
@@ -64,3 +74,6 @@ void MyWidget::wheelEvent(QWheelEvent *event)
     event->accept();
 }
 //! [0]
+
+
+} // src_gui_kernel_qevent
