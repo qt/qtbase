@@ -47,7 +47,6 @@
 #include <xcb/xcb.h>
 #include <xcb/randr.h>
 #include <xcb/xfixes.h>
-#include <xcb/xinerama.h>
 
 #include "qxcbobject.h"
 
@@ -142,8 +141,7 @@ class Q_XCB_EXPORT QXcbScreen : public QXcbObject, public QPlatformScreen
 {
 public:
     QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDesktop,
-               xcb_randr_output_t outputId, xcb_randr_get_output_info_reply_t *outputInfo,
-               const xcb_xinerama_screen_info_t *xineramaScreenInfo = nullptr, int xineramaScreenIdx = -1);
+               xcb_randr_output_t outputId, xcb_randr_get_output_info_reply_t *outputInfo);
     ~QXcbScreen();
 
     QString getOutputName(xcb_randr_get_output_info_reply_t *outputInfo);

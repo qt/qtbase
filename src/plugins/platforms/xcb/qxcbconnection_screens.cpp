@@ -46,8 +46,6 @@
 
 #include <qpa/qwindowsysteminterface.h>
 
-#include <xcb/xinerama.h>
-
 void QXcbConnection::xrandrSelectEvents()
 {
     xcb_screen_iterator_t rootIter = xcb_setup_roots_iterator(setup());
@@ -356,21 +354,6 @@ void QXcbConnection::initializeScreens()
                             }
                         }
                     }
-                }
-            }
-        } else if (hasXinerama()) {
-            // Xinerama is available
-            auto screens = Q_XCB_REPLY(xcb_xinerama_query_screens, xcb_connection());
-            if (screens) {
-                xcb_xinerama_screen_info_iterator_t it = xcb_xinerama_query_screens_screen_info_iterator(screens.get());
-                while (it.rem) {
-                    xcb_xinerama_screen_info_t *screen_info = it.data;
-                    QXcbScreen *screen = new QXcbScreen(this, virtualDesktop,
-                                                        XCB_NONE, nullptr,
-                                                        screen_info, it.index);
-                    siblings << screen;
-                    m_screens << screen;
-                    xcb_xinerama_screen_info_next(&it);
                 }
             }
         }

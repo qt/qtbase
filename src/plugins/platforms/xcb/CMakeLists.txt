@@ -53,7 +53,6 @@ qt_add_module(XcbQpa
         XCB::SYNC
         XCB::XCB
         XCB::XFIXES
-        XCB::XINERAMA
         XCB::XKB
         XKB::XKB
 )

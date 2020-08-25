@@ -85,7 +85,7 @@ qtConfig(vulkan) {
 
 QMAKE_USE += \
     xcb xcb_icccm xcb_image xcb_keysyms xcb_randr xcb_render xcb_renderutil \
-    xcb_shape xcb_shm xcb_sync xcb_xfixes xcb_xinerama xcb_xkb xkbcommon xkbcommon_x11
+    xcb_shape xcb_shm xcb_sync xcb_xfixes xcb_xkb xkbcommon xkbcommon_x11
 
 qtConfig(system-xcb-xinput) {
     QMAKE_USE += xcb_xinput

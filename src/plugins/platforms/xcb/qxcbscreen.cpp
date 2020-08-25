@@ -494,8 +494,7 @@ quint8 QXcbVirtualDesktop::depthOfVisual(xcb_visualid_t visualid) const
 }
 
 QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDesktop,
-                       xcb_randr_output_t outputId, xcb_randr_get_output_info_reply_t *output,
-                       const xcb_xinerama_screen_info_t *xineramaScreenInfo, int xineramaScreenIdx)
+                       xcb_randr_output_t outputId, xcb_randr_get_output_info_reply_t *output)
     : QXcbObject(connection)
     , m_virtualDesktop(virtualDesktop)
     , m_output(outputId)
@@ -511,13 +510,6 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
             updateGeometry(QRect(crtc->x, crtc->y, crtc->width, crtc->height), crtc->rotation);
             updateRefreshRate(crtc->mode);
         }
-    } else if (xineramaScreenInfo) {
-        m_geometry = QRect(xineramaScreenInfo->x_org, xineramaScreenInfo->y_org,
-                           xineramaScreenInfo->width, xineramaScreenInfo->height);
-        m_availableGeometry = m_geometry & m_virtualDesktop->workArea();
-        m_sizeMillimeters = sizeInMillimeters(m_geometry.size(), m_virtualDesktop->dpi());
-        if (xineramaScreenIdx > -1)
-            m_outputName += QLatin1Char('-') + QString::number(xineramaScreenIdx);
     }
 
     if (m_geometry.isEmpty())

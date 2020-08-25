@@ -14,8 +14,7 @@ the two monitors connected to the outputs are combined into a single virtual
 "screen", but each screen has multiple outputs. In that case there will be a
 unique QScreen for each output, and they will be virtual siblings. The virtual
 geometry depends on how you arrange the monitors (second one is to the right,
-or above the first one, for example). It should be about the same if you are
-using two graphics cards but using Xinerama to combine them. This test app will
+or above the first one, for example). This test app will
 create two windows, and will center one each screen, by setting the geometry.
 
 Alternatively you can configure xorg.conf to create separate screens for each

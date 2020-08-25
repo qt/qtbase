@@ -96,7 +96,6 @@ public:
     bool hasShm() const { return m_hasShm; }
     bool hasShmFd() const { return m_hasShmFd; }
     bool hasXSync() const { return m_hasXSync; }
-    bool hasXinerama() const { return m_hasXinerama; }
     bool hasBigRequest() const;
 
     bool isAtLeastXI21() const { return m_xi2Enabled && m_xi2Minor >= 1; }
@@ -113,7 +112,6 @@ protected:
     void initializeXFixes();
     void initializeXRender();
     void initializeXRandr();
-    void initializeXinerama();
     void initializeXShape();
     void initializeXKB();
     void initializeXSync();
@@ -130,7 +128,6 @@ private:
     QXcbAtom m_xcbAtom;
 
     bool m_hasXFixes = false;
-    bool m_hasXinerama = false;
     bool m_hasXhape = false;
     bool m_hasInputShape;
     bool m_hasXRandr = false;

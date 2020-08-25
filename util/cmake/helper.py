@@ -538,13 +538,6 @@ _library_map = [
         resultVariable="XCB_XFIXES",
     ),
     LibraryMapping(
-        "xcb_xinerama",
-        "XCB",
-        "XCB::XINERAMA",
-        extra=["COMPONENTS", "XINERAMA"],
-        resultVariable="XCB_XINERAMA",
-    ),
-    LibraryMapping(
         "xcb_xinput",
         "XCB",
         "XCB::XINPUT",
