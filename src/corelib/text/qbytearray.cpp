@@ -2991,6 +2991,90 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 }
 #endif // QT_NO_DATASTREAM
 
+/*! \fn bool QByteArray::operator==(const QString &str) const
+
+    Returns \c true if this byte array is equal to the UTF-8 encoding of \a str;
+    otherwise returns \c false.
+
+    The comparison is case sensitive.
+
+    You can disable this operator by defining \c
+    QT_NO_CAST_FROM_ASCII when you compile your applications. You
+    then need to call QString::fromUtf8(), QString::fromLatin1(),
+    or QString::fromLocal8Bit() explicitly if you want to convert the byte
+    array to a QString before doing the comparison.
+*/
+
+/*! \fn bool QByteArray::operator!=(const QString &str) const
+
+    Returns \c true if this byte array is not equal to the UTF-8 encoding of \a
+    str; otherwise returns \c false.
+
+    The comparison is case sensitive.
+
+    You can disable this operator by defining \c
+    QT_NO_CAST_FROM_ASCII when you compile your applications. You
+    then need to call QString::fromUtf8(), QString::fromLatin1(),
+    or QString::fromLocal8Bit() explicitly if you want to convert the byte
+    array to a QString before doing the comparison.
+*/
+
+/*! \fn bool QByteArray::operator<(const QString &str) const
+
+    Returns \c true if this byte array is lexically less than the UTF-8 encoding
+    of \a str; otherwise returns \c false.
+
+    The comparison is case sensitive.
+
+    You can disable this operator by defining \c
+    QT_NO_CAST_FROM_ASCII when you compile your applications. You
+    then need to call QString::fromUtf8(), QString::fromLatin1(),
+    or QString::fromLocal8Bit() explicitly if you want to convert the byte
+    array to a QString before doing the comparison.
+*/
+
+/*! \fn bool QByteArray::operator>(const QString &str) const
+
+    Returns \c true if this byte array is lexically greater than the UTF-8
+    encoding of \a str; otherwise returns \c false.
+
+    The comparison is case sensitive.
+
+    You can disable this operator by defining \c
+    QT_NO_CAST_FROM_ASCII when you compile your applications. You
+    then need to call QString::fromUtf8(), QString::fromLatin1(),
+    or QString::fromLocal8Bit() explicitly if you want to convert the byte
+    array to a QString before doing the comparison.
+*/
+
+/*! \fn bool QByteArray::operator<=(const QString &str) const
+
+    Returns \c true if this byte array is lexically less than or equal to the
+    UTF-8 encoding of \a str; otherwise returns \c false.
+
+    The comparison is case sensitive.
+
+    You can disable this operator by defining \c
+    QT_NO_CAST_FROM_ASCII when you compile your applications. You
+    then need to call QString::fromUtf8(), QString::fromLatin1(),
+    or QString::fromLocal8Bit() explicitly if you want to convert the byte
+    array to a QString before doing the comparison.
+*/
+
+/*! \fn bool QByteArray::operator>=(const QString &str) const
+
+    Returns \c true if this byte array is greater than or equal to the UTF-8
+    encoding of \a str; otherwise returns \c false.
+
+    The comparison is case sensitive.
+
+    You can disable this operator by defining \c
+    QT_NO_CAST_FROM_ASCII when you compile your applications. You
+    then need to call QString::fromUtf8(), QString::fromLatin1(),
+    or QString::fromLocal8Bit() explicitly if you want to convert the byte
+    array to a QString before doing the comparison.
+*/
+
 /*! \fn bool operator==(const QByteArray &a1, const QByteArray &a2)
     \relates QByteArray
 
