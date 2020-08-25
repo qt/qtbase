@@ -968,6 +968,7 @@ class MyQObject : public QObject
     Q_PROPERTY(int foo READ foo WRITE setFoo NOTIFY fooChanged) // Use Q_BINDABLE_PROPERTY and generate iface API
     Q_PROPERTY(int bar READ bar WRITE setBar NOTIFY barChanged)
     Q_PROPERTY(int read READ read NOTIFY readChanged)
+    Q_PROPERTY(int computed READ computed STORED false)
 
 signals:
     void fooChanged();
@@ -985,10 +986,12 @@ public:
     int bar() const { return barData.value(); }
     void setBar(int i) { barData.setValue(i); }
     int read() const { return readData.value(); }
+    int computed() const { return readData.value(); }
 
     QBindable<int> bindableFoo() { return QBindable<int>(&fooData); }
     QBindable<int> bindableBar() { return QBindable<int>(&barData); }
     QBindable<int> bindableRead() { return QBindable<int>(&readData); }
+    QBindable<int> bindableComputed() { return QBindable<int>(&computedData); }
 
 public:
     int fooChangedCount = 0;
@@ -998,6 +1001,7 @@ public:
     Q_OBJECT_BINDABLE_PROPERTY(MyQObject, int, fooData, &MyQObject::fooChanged);
     Q_OBJECT_BINDABLE_PROPERTY(MyQObject, int, barData, &MyQObject::barChanged);
     Q_OBJECT_BINDABLE_PROPERTY(MyQObject, int, readData, &MyQObject::readChanged);
+    Q_OBJECT_COMPUTED_PROPERTY(MyQObject, int, computedData, &MyQObject::computed);
 };
 
 void tst_QProperty::testNewStuff()
@@ -1049,6 +1053,16 @@ void tst_QProperty::testNewStuff()
     QCOMPARE(object.foo(), 0);
     object.readData.setValue(10);
     QCOMPARE(object.foo(), 10);
+
+    QCOMPARE(object.computed(), 10);
+    object.readData.setValue(42);
+    QCOMPARE(object.computed(), 42);
+
+    object.bindableBar().setBinding(object.bindableComputed().makeBinding());
+    QCOMPARE(object.computed(), 42);
+    object.readData.setValue(111);
+    QCOMPARE(object.computed(), 111);
+
 }
 
 void tst_QProperty::qobjectObservers()

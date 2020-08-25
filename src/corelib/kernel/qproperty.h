@@ -929,6 +929,82 @@ private:
     } \
     QObjectBindableProperty<Class, Type, Class::_qt_property_##name##_offset, __VA_ARGS__> name;
 
+template<typename Class, typename T, auto Offset, auto Getter>
+class QObjectComputedProperty : public QUntypedPropertyData
+{
+    Class *owner()
+    {
+        char *that = reinterpret_cast<char *>(this);
+        return reinterpret_cast<Class *>(that - QtPrivate::detail::getOffset(Offset));
+    }
+    const Class *owner() const
+    {
+        char *that = const_cast<char *>(reinterpret_cast<const char *>(this));
+        return reinterpret_cast<Class *>(that - QtPrivate::detail::getOffset(Offset));
+    }
+public:
+    using value_type = T;
+    using parameter_type = T;
+
+    QObjectComputedProperty() = default;
+
+    parameter_type value() const {
+        qGetBindingStorage(owner())->maybeUpdateBindingAndRegister(this);
+        return (owner()->*Getter)();
+    }
+
+    std::conditional_t<QTypeTraits::is_dereferenceable_v<T>, parameter_type, void>
+    operator->() const
+    {
+        if constexpr (QTypeTraits::is_dereferenceable_v<T>)
+            return value();
+        else
+            return;
+    }
+
+    parameter_type operator*() const
+    {
+        return value();
+    }
+
+    operator parameter_type() const
+    {
+        return value();
+    }
+
+    constexpr bool hasBinding() const { return false; }
+
+    template<typename Functor>
+    QPropertyChangeHandler<Functor> onValueChanged(Functor f)
+    {
+        static_assert(std::is_invocable_v<Functor>, "Functor callback must be callable without any parameters");
+        return QPropertyChangeHandler<Functor>(*this, f);
+    }
+
+    template<typename Functor>
+    QPropertyChangeHandler<Functor> subscribe(Functor f)
+    {
+        static_assert(std::is_invocable_v<Functor>, "Functor callback must be callable without any parameters");
+        f();
+        return onValueChanged(f);
+    }
+
+    QtPrivate::QPropertyBindingData &bindingData() const
+    {
+        auto *storage = const_cast<QBindingStorage *>(qGetBindingStorage(owner()));
+        return *storage->bindingData(const_cast<QObjectComputedProperty *>(this), true);
+    }
+private:
+};
+
+#define Q_OBJECT_COMPUTED_PROPERTY(Class, Type, name,  ...) \
+    static constexpr size_t _qt_property_##name##_offset() { \
+        QT_WARNING_PUSH QT_WARNING_DISABLE_INVALID_OFFSETOF \
+        return offsetof(Class, name); \
+        QT_WARNING_POP \
+    } \
+    QObjectComputedProperty<Class, Type, Class::_qt_property_##name##_offset, __VA_ARGS__> name;
+
 QT_END_NAMESPACE
 
 #endif // QPROPERTY_H
