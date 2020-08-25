@@ -270,7 +270,7 @@ To convertImplicit(const From& from)
 }
 
     template<typename T, bool>
-    struct ValueTypeIsMetaType;
+    struct SequentialValueTypeIsMetaType;
     template<typename T, bool>
     struct AssociativeValueTypeIsMetaType;
     template<typename T, bool>
@@ -575,7 +575,7 @@ public:
     static bool hasRegisteredConverterFunction(int fromTypeId, int toTypeId);
 
 #ifndef Q_CLANG_QDOC
-    template<typename, bool> friend struct QtPrivate::ValueTypeIsMetaType;
+    template<typename, bool> friend struct QtPrivate::SequentialValueTypeIsMetaType;
     template<typename, bool> friend struct QtPrivate::AssociativeValueTypeIsMetaType;
     template<typename, bool> friend struct QtPrivate::IsMetaTypePair;
     template<typename, typename> friend struct QtPrivate::MetaTypeSmartPointerHelper;
@@ -1316,7 +1316,7 @@ namespace QtPrivate
     };
 
     template<typename T, bool = QMetaTypeId2<typename T::value_type>::Defined>
-    struct ValueTypeIsMetaType
+    struct SequentialValueTypeIsMetaType
     {
         static bool registerConverter(int)
         {
@@ -1325,7 +1325,7 @@ namespace QtPrivate
     };
 
     template<typename T>
-    struct SequentialContainerConverterHelper<T, true> : ValueTypeIsMetaType<T>
+    struct SequentialContainerConverterHelper<T, true> : SequentialValueTypeIsMetaType<T>
     {
     };
 
@@ -1909,7 +1909,7 @@ inline bool QtPrivate::IsMetaTypePair<T, true>::registerConverter(int id)
 
 namespace QtPrivate {
     template<typename T>
-    struct ValueTypeIsMetaType<T, true>
+    struct SequentialValueTypeIsMetaType<T, true>
     {
         static bool registerConverter(int id)
         {
