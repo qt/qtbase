@@ -77,16 +77,6 @@ QApplication::setStyle(QStyleFactory::create("fusion"));
 //! [1]
 
 
-//! [2]
-int main(int argc, char *argv[])
-{
-    QApplication::setColorSpec(QApplication::ManyColor);
-    QApplication app(argc, argv);
-    ...
-    return app.exec();
-}
-//! [2]
-
 
 //! [3]
 QSize MyWidget::sizeHint() const
