@@ -12,4 +12,5 @@ SOURCES = \
     src_gui_image_qimagewriter.cpp \
     src_gui_image_qmovie.cpp \
     src_gui_image_qpixmapcache.cpp \
-    src_gui_image_qpixmap.cpp
+    src_gui_image_qpixmap.cpp \
+    src_gui_itemviews_qstandarditemmodel.cpp
