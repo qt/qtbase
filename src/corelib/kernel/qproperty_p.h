@@ -120,13 +120,13 @@ public:
     QString description;
 };
 
-struct BindingEvaluationState
+struct QBindingEvaluationState
 {
-    BindingEvaluationState(QPropertyBindingPrivate *binding);
-    ~BindingEvaluationState();
+    QBindingEvaluationState(QPropertyBindingPrivate *binding);
+    ~QBindingEvaluationState();
     QPropertyBindingPrivate *binding;
-    BindingEvaluationState *previousState = nullptr;
-    BindingEvaluationState **currentState = nullptr;
+    QBindingEvaluationState *previousState = nullptr;
+    QBindingEvaluationState **currentState = nullptr;
 };
 
 class Q_CORE_EXPORT QPropertyBindingPrivate : public QSharedData

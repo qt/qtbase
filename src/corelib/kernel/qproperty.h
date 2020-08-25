@@ -721,6 +721,27 @@ public:
     }
 };
 
+struct QBindingStatus;
+
+struct QBindingStorageData;
+class Q_CORE_EXPORT QBindingStorage
+{
+    mutable QBindingStorageData *d = nullptr;
+    QBindingStatus *bindingStatus = nullptr;
+
+    template<typename Class, typename T, auto Offset, auto Setter>
+    friend class QObjectCompatProperty;
+public:
+    QBindingStorage();
+    ~QBindingStorage();
+
+    bool isEmpty() { return !d; }
+
+    void maybeUpdateBindingAndRegister(const QUntypedPropertyData *data) const;
+    QtPrivate::QPropertyBindingData *bindingData(const QUntypedPropertyData *data) const;
+    QtPrivate::QPropertyBindingData *bindingData(QUntypedPropertyData *data, bool create);
+};
+
 QT_END_NAMESPACE
 
 #endif // QPROPERTY_H

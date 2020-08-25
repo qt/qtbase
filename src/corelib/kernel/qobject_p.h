@@ -60,6 +60,7 @@
 #include "QtCore/qreadwritelock.h"
 #include "QtCore/qsharedpointer.h"
 #include "QtCore/qvariant.h"
+#include "QtCore/qproperty.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -383,6 +384,7 @@ public:
     // these objects are all used to indicate that a QObject was deleted
     // plus QPointer, which keeps a separate list
     QAtomicPointer<QtSharedPointer::ExternalRefCountData> sharedRefcount;
+    QBindingStorage bindingStorage;
 };
 
 Q_DECLARE_TYPEINFO(QObjectPrivate::ConnectionList, Q_MOVABLE_TYPE);
@@ -603,6 +605,16 @@ struct Q_CORE_EXPORT QAbstractDynamicMetaObject : public QDynamicMetaObjectData,
     { return metaCall(c, _id, a); }
     virtual int metaCall(QMetaObject::Call, int _id, void **) { return _id; } // Compat overload
 };
+
+inline const QBindingStorage *qGetBindingStorage(const QObjectPrivate *o)
+{
+    return &o->bindingStorage;
+}
+inline QBindingStorage *qGetBindingStorage(QObjectPrivate *o)
+{
+    return &o->bindingStorage;
+}
+
 
 QT_END_NAMESPACE
 

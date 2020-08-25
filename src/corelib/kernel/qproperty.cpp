@@ -111,7 +111,7 @@ bool QPropertyBindingPrivate::evaluateIfDirtyAndReturnTrueIfValueChanged()
     QPropertyBindingPrivatePtr keepAlive {this};
     QScopedValueRollback<bool> updateGuard(updating, true);
 
-    BindingEvaluationState evaluationFrame(this);
+    QBindingEvaluationState evaluationFrame(this);
 
     bool changed = false;
 
@@ -276,9 +276,9 @@ QPropertyBindingPrivate *QPropertyBindingData::binding() const
     return nullptr;
 }
 
-static thread_local BindingEvaluationState *currentBindingEvaluationState = nullptr;
+static thread_local QBindingEvaluationState *currentBindingEvaluationState = nullptr;
 
-BindingEvaluationState::BindingEvaluationState(QPropertyBindingPrivate *binding)
+QBindingEvaluationState::QBindingEvaluationState(QPropertyBindingPrivate *binding)
     : binding(binding)
 {
     // store a pointer to the currentBindingEvaluationState to avoid a TLS lookup in
@@ -289,7 +289,7 @@ BindingEvaluationState::BindingEvaluationState(QPropertyBindingPrivate *binding)
     binding->clearDependencyObservers();
 }
 
-BindingEvaluationState::~BindingEvaluationState()
+QBindingEvaluationState::~QBindingEvaluationState()
 {
     *currentState = previousState;
 }
@@ -1082,5 +1082,164 @@ QString QPropertyBindingError::description() const
 
   If the aliased property doesn't exist, all other method calls are ignored.
 */
+
+struct QBindingStorageData
+{
+    size_t size = 0;
+    size_t used = 0;
+    // Pair[] pairs;
+};
+
+struct QBindingStoragePrivate
+{
+    // This class basically implements a simple and fast hash map to store bindings for a QObject
+    // The reason that we're not using QHash is that QPropertyBindingData can not be copied, only
+    // moved. That doesn't work well together with an implicitly shared class.
+    struct Pair
+    {
+        QUntypedPropertyData *data;
+        QPropertyBindingData bindingData;
+    };
+    static_assert(alignof(Pair) == alignof(void *));
+    static_assert(alignof(size_t) == alignof(void *));
+
+    QBindingStorageData *&d;
+
+    static inline Pair *pairs(QBindingStorageData *dd)
+    {
+        Q_ASSERT(dd);
+        return reinterpret_cast<Pair *>(dd + 1);
+    }
+    void reallocate(size_t newSize)
+    {
+        Q_ASSERT(!d || newSize > d->size);
+        size_t allocSize = sizeof(QBindingStorageData) + newSize*sizeof(Pair);
+        void *nd = malloc(allocSize);
+        memset(nd, 0, allocSize);
+        QBindingStorageData *newData = new (nd) QBindingStorageData;
+        newData->size = newSize;
+        if (!d) {
+            d = newData;
+            return;
+        }
+        newData->used = d->used;
+        Pair *p = pairs(d);
+        for (size_t i = 0; i < d->size; ++i, ++p) {
+            if (p->data) {
+                Pair *pp = pairs(newData);
+                size_t index = qHash(p->data);
+                while (pp[index].data) {
+                    ++index;
+                    if (index == newData->size)
+                        index = 0;
+                }
+                new (pp + index) Pair{p->data, QPropertyBindingData(std::move(p->bindingData), p->data)};
+            }
+        }
+        // data has been moved, no need to call destructors on old Pairs
+        free(d);
+        d = newData;
+    }
+
+    QBindingStoragePrivate(QBindingStorageData *&_d) : d(_d) {}
+
+    QPropertyBindingData *get(const QUntypedPropertyData *data)
+    {
+        if (!d)
+            return nullptr;
+        Q_ASSERT(d->size && (d->size & (d->size - 1)) == 0); // size is a power of two
+        size_t index = qHash(data) & (d->size - 1);
+        Pair *p = pairs(d);
+        while (p[index].data) {
+            if (p[index].data == data)
+                return &p[index].bindingData;
+            ++index;
+            if (index == d->size)
+                index = 0;
+        }
+        return nullptr;
+    }
+    QPropertyBindingData *getAndCreate(QUntypedPropertyData *data)
+    {
+        if (!d)
+            reallocate(8);
+        else if (d->used*2 >= d->size)
+            reallocate(d->size*2);
+        Q_ASSERT(d->size && (d->size & (d->size - 1)) == 0); // size is a power of two
+        size_t index = qHash(data) & (d->size - 1);
+        Pair *p = pairs(d);
+        while (p[index].data) {
+            if (p[index].data == data)
+                return &p[index].bindingData;
+            ++index;
+            if (index == d->size)
+                index = 0;
+        }
+        ++d->used;
+        new (p + index) Pair{data, QPropertyBindingData()};
+        return &p[index].bindingData;
+    }
+
+    void destroy()
+    {
+        if (!d)
+            return;
+        Pair *p = pairs(d);
+        for (size_t i = 0; i < d->size; ++i) {
+            if (p->data)
+                p->~Pair();
+            ++p;
+        }
+        free(d);
+    }
+};
+
+/*!
+    \class QBindingStorage
+    \internal
+
+    QBindingStorage acts as a storage for property binding related data in QObject.
+    Any property in a QObject can be made bindable, by using the Q_BINDABLE_PROPERTY_DATA
+    macro to declare the data storage. Then implement a setter and getter for the property
+    and declare it as a Q_PROPERTY as usual. Finally make it bindable, but using
+    the Q_BINDABLE_PROPERTY macro after the declaration of the setter and getter.
+*/
+
+QBindingStorage::QBindingStorage()
+{
+    currentlyEvaluatingBinding = &currentBindingEvaluationState;
+}
+
+QBindingStorage::~QBindingStorage()
+{
+    QBindingStoragePrivate(d).destroy();
+}
+
+void QBindingStorage::maybeUpdateBindingAndRegister(const QUntypedPropertyData *data) const
+{
+    QUntypedPropertyData *dd = const_cast<QUntypedPropertyData *>(data);
+    auto storage = *currentlyEvaluatingBinding ?
+                QBindingStoragePrivate(d).getAndCreate(dd) :
+                QBindingStoragePrivate(d).get(dd);
+    if (!storage)
+        return;
+    if (auto *binding = storage->binding())
+        binding->evaluateIfDirtyAndReturnTrueIfValueChanged();
+    storage->registerWithCurrentlyEvaluatingBinding();
+}
+
+QPropertyBindingData *QBindingStorage::bindingData(const QUntypedPropertyData *data) const
+{
+    return QBindingStoragePrivate(d).get(data);
+}
+
+QPropertyBindingData *QBindingStorage::bindingData(QUntypedPropertyData *data, bool create)
+{
+    auto storage = create ?
+                QBindingStoragePrivate(d).getAndCreate(data) :
+                QBindingStoragePrivate(d).get(data);
+    return storage;
+}
+
 
 QT_END_NAMESPACE

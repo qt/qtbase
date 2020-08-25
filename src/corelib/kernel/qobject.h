@@ -62,6 +62,7 @@
 QT_BEGIN_NAMESPACE
 
 
+class QBindingStorage;
 class QEvent;
 class QTimerEvent;
 class QChildEvent;
@@ -371,6 +372,8 @@ public:
     bool setProperty(const char *name, const QVariant &value);
     QVariant property(const char *name) const;
     QList<QByteArray> dynamicPropertyNames() const;
+    QBindingStorage *bindingStorage();
+    const QBindingStorage *bindingStorage() const;
 #endif // QT_NO_PROPERTIES
 
 Q_SIGNALS:
@@ -457,6 +460,14 @@ inline T qobject_cast(const QObject *object)
 template <class T> inline const char * qobject_interface_iid()
 { return nullptr; }
 
+inline const QBindingStorage *qGetBindingStorage(const QObject *o)
+{
+    return o->bindingStorage();
+}
+inline QBindingStorage *qGetBindingStorage(QObject *o)
+{
+    return o->bindingStorage();
+}
 
 #if defined(Q_CLANG_QDOC)
 #  define Q_DECLARE_INTERFACE(IFace, IId)

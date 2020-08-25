@@ -1532,6 +1532,10 @@ void QObject::moveToThread(QThread *targetThread)
         qWarning("QObject::moveToThread: Widgets cannot be moved to a new thread");
         return;
     }
+    if (!d->bindingStorage.isEmpty()) {
+        qWarning("QObject::moveToThread: Can not move objects that contain bindings or are used in bindings to a new thread.");
+        return;
+    }
 
     QThreadData *currentData = QThreadData::current();
     QThreadData *targetData = targetThread ? QThreadData::get2(targetThread) : nullptr;
@@ -4044,6 +4048,24 @@ QList<QByteArray> QObject::dynamicPropertyNames() const
     if (d->extraData)
         return d->extraData->propertyNames;
     return QList<QByteArray>();
+}
+
+/*!
+    \internal
+*/
+QBindingStorage *QObject::bindingStorage()
+{
+    Q_D(QObject);
+    return &d->bindingStorage;
+}
+
+/*!
+    \internal
+*/
+const QBindingStorage *QObject::bindingStorage() const
+{
+    Q_D(const QObject);
+    return &d->bindingStorage;
 }
 
 #endif // QT_NO_PROPERTIES
