@@ -256,9 +256,6 @@ void tst_languageChange::retranslatability()
 #endif
         break;
     case FileDialog: {
-#ifdef Q_OS_MAC
-        QSKIP("The native file dialog is used on Mac OS");
-#endif
         QFileDialog dlg;
         dlg.setOption(QFileDialog::DontUseNativeDialog);
         QString tempDirPattern = QDir::tempPath();
