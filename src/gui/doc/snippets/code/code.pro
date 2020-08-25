@@ -21,4 +21,7 @@ SOURCES = \
     src_gui_kernel_qguiapplication_x11.cpp \
     src_gui_kernel_qkeysequence.cpp \
     src_gui_kernel_qshortcutmap.cpp \
-    src_gui_math3d_qquaternion.cpp
+    src_gui_math3d_qquaternion.cpp \
+    src_gui_opengl_qopenglbuffer.cpp \
+    src_gui_opengl_qopengldebug.cpp \
+    src_gui_opengl_qopenglfunctions.cpp

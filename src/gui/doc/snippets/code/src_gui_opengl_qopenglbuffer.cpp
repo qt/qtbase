@@ -47,14 +47,22 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QtOpenGL/QOpenGLBuffer>
+
+namespace src_gui_opengl_qopenglbuffer {
+void wrapper() {
 
 //! [0]
-    QOpenGLBuffer buffer1(QOpenGLBuffer::IndexBuffer);
-    buffer1.create();
+QOpenGLBuffer buffer1(QOpenGLBuffer::IndexBuffer);
+buffer1.create();
 
-    QOpenGLBuffer buffer2 = buffer1;
+QOpenGLBuffer buffer2 = buffer1;
 //! [0]
 
+
 //! [1]
-    QOpenGLBuffer::release(QOpenGLBuffer::VertexBuffer);
+QOpenGLBuffer::release(QOpenGLBuffer::VertexBuffer);
 //! [1]
+
+} // wrapper
+} // src_gui_opengl_qopenglbuffer
