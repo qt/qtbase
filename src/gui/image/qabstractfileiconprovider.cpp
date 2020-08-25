@@ -184,15 +184,8 @@ QIcon QAbstractFileIconProvider::icon(const QFileInfo &info) const
 QString QAbstractFileIconProvider::type(const QFileInfo &info) const
 {
     Q_D(const QAbstractFileIconProvider);
-    /* ### Qt 6 These string translations being in the QFileDialog context is not ideal,
-       but translating them in QFileDialog context only in the QFileIconProvider subclass
-       isn't either (it basically requires a duplication of the entire function).
-       Either we change it to QAbstractFileIconProvider context (invalidates existing
-       translations, but that's probably ok), or make a runtime lookup and use QFileDIalog
-       context only if QGuiApplication is a QApplication.
-    */
     if (QFileSystemEntry::isRootPath(info.absoluteFilePath()))
-        return QGuiApplication::translate("QFileDialog", "Drive");
+        return QGuiApplication::translate("QAbstractFileIconProvider", "Drive");
     if (info.isFile()) {
         const QMimeType mimeType = d->mimeDatabase.mimeTypeForFile(info);
         return mimeType.comment().isEmpty() ? mimeType.name() : mimeType.comment();
@@ -200,9 +193,9 @@ QString QAbstractFileIconProvider::type(const QFileInfo &info) const
 
     if (info.isDir())
 #ifdef Q_OS_WIN
-        return QGuiApplication::translate("QFileDialog", "File Folder", "Match Windows Explorer");
+        return QGuiApplication::translate("QAbstractFileIconProvider", "File Folder", "Match Windows Explorer");
 #else
-        return QGuiApplication::translate("QFileDialog", "Folder", "All other platforms");
+        return QGuiApplication::translate("QAbstractFileIconProvider", "Folder", "All other platforms");
 #endif
     // Windows   - "File Folder"
     // macOS     - "Folder"
@@ -211,16 +204,16 @@ QString QAbstractFileIconProvider::type(const QFileInfo &info) const
 
     if (info.isSymLink())
 #ifdef Q_OS_MACOS
-        return QGuiApplication::translate("QFileDialog", "Alias", "macOS Finder");
+        return QGuiApplication::translate("QAbstractFileIconProvider", "Alias", "macOS Finder");
 #else
-        return QGuiApplication::translate("QFileDialog", "Shortcut", "All other platforms");
+        return QGuiApplication::translate("QAbstractFileIconProvider", "Shortcut", "All other platforms");
 #endif
     // macOS     - "Alias"
     // Windows   - "Shortcut"
     // Konqueror - "Folder" or "TXT File" i.e. what it is pointing to
     // Nautilus  - "link to folder" or "link to object file", same as Konqueror
 
-    return QGuiApplication::translate("QFileDialog", "Unknown");
+    return QGuiApplication::translate("QAbstractFileIconProvider", "Unknown");
 }
 
 QT_END_NAMESPACE
