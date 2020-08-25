@@ -353,18 +353,12 @@ public:
     QT_DEPRECATED_VERSION_X_5_15("Use QString's toUtf8(), toLatin1() or toLocal8Bit()")
     int lastIndexOf(const QString &s, int from = -1) const;
 #endif
-#if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII) && QT_DEPRECATED_SINCE(5, 15)
-    QT_DEPRECATED_VERSION_X_5_15("Use QString's toUtf8(), toLatin1() or toLocal8Bit()")
+#if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
     inline bool operator==(const QString &s2) const;
-    QT_DEPRECATED_VERSION_X_5_15("Use QString's toUtf8(), toLatin1() or toLocal8Bit()")
     inline bool operator!=(const QString &s2) const;
-    QT_DEPRECATED_VERSION_X_5_15("Use QString's toUtf8(), toLatin1() or toLocal8Bit()")
     inline bool operator<(const QString &s2) const;
-    QT_DEPRECATED_VERSION_X_5_15("Use QString's toUtf8(), toLatin1() or toLocal8Bit()")
     inline bool operator>(const QString &s2) const;
-    QT_DEPRECATED_VERSION_X_5_15("Use QString's toUtf8(), toLatin1() or toLocal8Bit()")
     inline bool operator<=(const QString &s2) const;
-    QT_DEPRECATED_VERSION_X_5_15("Use QString's toUtf8(), toLatin1() or toLocal8Bit()")
     inline bool operator>=(const QString &s2) const;
 #endif
 
