@@ -76,6 +76,7 @@ qt_extend_target(Bootstrap
         ../../corelib/io/qurlrecode.cpp
         ../../corelib/kernel/qcoreapplication.cpp
         ../../corelib/kernel/qcoreglobaldata.cpp
+        ../../corelib/kernel/qmetacontainer.cpp
         ../../corelib/kernel/qmetatype.cpp
         ../../corelib/kernel/qsharedmemory.cpp
         ../../corelib/kernel/qsystemerror.cpp

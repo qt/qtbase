@@ -6,6 +6,7 @@ SUBDIRS=\
     qeventdispatcher \
     qeventloop \
     qmath \
+    qmetacontainer \
     qmetaobject \
     qmetaobjectbuilder \
     qmetamethod \

@@ -6,6 +6,7 @@ HEADERS +=  \
         global/qoperatingsystemversion_p.h \
         global/qsystemdetection.h \
         global/qcompilerdetection.h \
+        global/qcontainerinfo.h \
         global/qprocessordetection.h \
         global/qmemory_p.h \
 	global/qnamespace.h \

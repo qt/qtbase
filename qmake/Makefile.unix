@@ -25,7 +25,7 @@ QOBJS = \
 	qiodevice.o qsettings.o qtemporaryfile.o qtextstream.o \
 	qcborstreamwriter.o qcborvalue.o \
 	qjsoncbor.o qjsonarray.o qjsondocument.o qjsonobject.o qjsonparser.o qjsonvalue.o \
-	qmetatype.o qsystemerror.o qvariant.o \
+	qmetacontainer.o qmetatype.o qsystemerror.o qvariant.o \
 	quuid.o \
 	qarraydata.o qbitarray.o qbytearray.o qbytearraylist.o qbytearraymatcher.o \
 	qcalendar.o qgregoriancalendar.o qromancalendar.o \
@@ -96,6 +96,7 @@ DEPEND_SRC = \
 	   $(SOURCE_PATH)/src/corelib/io/qiodevice.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qsettings.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qtemporaryfile.cpp \
+	   $(SOURCE_PATH)/src/corelib/kernel/qmetacontainer.cpp \
 	   $(SOURCE_PATH)/src/corelib/kernel/qmetatype.cpp \
 	   $(SOURCE_PATH)/src/corelib/kernel/qsystemerror.cpp \
 	   $(SOURCE_PATH)/src/corelib/kernel/qvariant.cpp \
@@ -352,6 +353,9 @@ qvsnprintf.o: $(SOURCE_PATH)/src/corelib/text/qvsnprintf.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qbytearraymatcher.o: $(SOURCE_PATH)/src/corelib/text/qbytearraymatcher.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+qmetacontainer.o: $(SOURCE_PATH)/src/corelib/kernel/qmetacontainer.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qmetatype.o: $(SOURCE_PATH)/src/corelib/kernel/qmetatype.cpp

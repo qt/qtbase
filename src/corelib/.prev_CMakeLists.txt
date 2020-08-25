@@ -11,6 +11,7 @@ qt_add_module(Core
     SOURCES
         global/archdetect.cpp
         global/qcompilerdetection.h
+        global/qcontainerinfo.h
         global/qendian.cpp global/qendian.h global/qendian_p.h
         global/qflags.h
         global/qfloat16.cpp global/qfloat16.h
@@ -80,6 +81,7 @@ qt_add_module(Core
         kernel/qeventloop.cpp kernel/qeventloop.h
         kernel/qfunctions_p.h
         kernel/qmath.cpp kernel/qmath.h
+        kernel/qmetacontainer.cpp kernel/qmetacontainer.h
         kernel/qmetaobject.cpp kernel/qmetaobject.h kernel/qmetaobject_p.h
         kernel/qmetaobject_moc_p.h
         kernel/qmetaobjectbuilder.cpp kernel/qmetaobjectbuilder_p.h

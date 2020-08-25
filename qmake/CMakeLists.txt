@@ -41,6 +41,7 @@ qt_add_tool(${target_name}
         ../src/3rdparty/pcre2/src/pcre2_ucp.h
         ../src/3rdparty/pcre2/src/pcre2_valid_utf.c
         ../src/3rdparty/pcre2/src/pcre2_xclass.c
+        ../src/corelib/global/qcontainerinfo.h
         ../src/corelib/global/qendian.cpp # special case
         ../src/corelib/global/qglobal.cpp ../src/corelib/global/qglobal.h
         ../src/corelib/global/qlibraryinfo.cpp
@@ -65,6 +66,7 @@ qt_add_tool(${target_name}
         ../src/corelib/io/qiodevice.cpp ../src/corelib/io/qiodevice.h
         ../src/corelib/io/qsettings.cpp
         ../src/corelib/io/qtemporaryfile.cpp ../src/corelib/io/qtemporaryfile.h
+        ../src/corelib/kernel/qmetacontainer.cpp ../src/corelib/kernel/qmetacontainer.h
         ../src/corelib/kernel/qmetatype.cpp ../src/corelib/kernel/qmetatype.h
         ../src/corelib/kernel/qsystemerror.cpp ../src/corelib/kernel/qsystemerror_p.h
         ../src/corelib/kernel/qvariant.cpp
