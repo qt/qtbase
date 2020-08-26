@@ -52,11 +52,14 @@ endif()
 include(QtPlatformSupport)
 
 function(qt_build_internals_disable_pkg_config_if_needed)
-    # pkg-config should not be used by default on Darwin and Windows platforms, as defined in
-    # the qtbase/configure.json. Unfortunately by the time the feature is evaluated there are
-    # already a few find_package() calls.
-    # So we have to duplicate the condition logic here and disable pkg-config for those platforms by
-    # default.
+    # pkg-config should not be used by default on Darwin and Windows platforms (and QNX), as defined
+    # in the qtbase/configure.json. Unfortunately by the time the feature is evaluated there are
+    # already a few find_package() calls that try to use the FindPkgConfig module.
+    # Thus, we have to duplicate the condition logic here and disable pkg-config for those platforms
+    # by default.
+    # We also need to check if the pkg-config executable exists, to mirror the condition test in
+    # configure.json. We do that by trying to find the executable ourselves, and not delegating to
+    # the FindPkgConfig module because that has more unwanted side-effects.
     #
     # Note that on macOS, if the pkg-config feature is enabled by the user explicitly, we will also
     # tell CMake to consider paths like /usr/local (Homebrew) as system paths when looking for
@@ -65,10 +68,16 @@ function(qt_build_internals_disable_pkg_config_if_needed)
     # enabled won't enable finding all system libraries via pkg-config alone, many libraries can
     # only be found via FooConfig.cmake files which means /usr/local should be in the system prefix
     # path.
+
     set(pkg_config_enabled ON)
-    if(APPLE OR WIN32 OR QNX)
+    qt_build_internals_find_pkg_config_executable()
+
+    if(APPLE OR WIN32 OR QNX OR (NOT PKG_CONFIG_EXECUTABLE))
         set(pkg_config_enabled OFF)
     endif()
+
+    # If user explicitly specified a value for the feature, honor it, even if it might break
+    # the build.
     if(DEFINED FEATURE_pkg_config)
         if(FEATURE_pkg_config)
             set(pkg_config_enabled ON)
@@ -76,6 +85,7 @@ function(qt_build_internals_disable_pkg_config_if_needed)
             set(pkg_config_enabled OFF)
         endif()
     endif()
+
     set(FEATURE_pkg_config "${pkg_config_enabled}" CACHE STRING "Using pkg-config")
     if(NOT pkg_config_enabled)
         qt_build_internals_disable_pkg_config()
@@ -84,9 +94,20 @@ function(qt_build_internals_disable_pkg_config_if_needed)
     endif()
 endfunction()
 
+# This is a copy of the first few lines in FindPkgConfig.cmake.
+function(qt_build_internals_find_pkg_config_executable)
+    # find pkg-config, use PKG_CONFIG if set
+    if((NOT PKG_CONFIG_EXECUTABLE) AND (NOT "$ENV{PKG_CONFIG}" STREQUAL ""))
+      set(PKG_CONFIG_EXECUTABLE "$ENV{PKG_CONFIG}" CACHE FILEPATH "pkg-config executable")
+    endif()
+    find_program(PKG_CONFIG_EXECUTABLE NAMES pkg-config DOC "pkg-config executable")
+    mark_as_advanced(PKG_CONFIG_EXECUTABLE)
+endfunction()
+
 function(qt_build_internals_disable_pkg_config)
     # Disable pkg-config by setting an empty executable path. There's no documented way to
-    # mark the package as found, but force all pkg_check_modules calls to do nothing.
+    # mark the package as not found, but we can force all pkg_check_modules calls to do nothing
+    # by setting the variable to an empty value.
     set(PKG_CONFIG_EXECUTABLE "" CACHE STRING "Disabled pkg-config usage." FORCE)
 endfunction()
 
