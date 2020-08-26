@@ -148,19 +148,6 @@ QOffscreenSurface::QOffscreenSurface(QScreen *targetScreen, QObject *parent)
 }
 
 /*!
-    Creates an offscreen surface for the \a targetScreen.
-
-    The underlying platform surface is not created until create() is called.
-
-    \sa setScreen(), create()
-*/
-QOffscreenSurface::QOffscreenSurface(QScreen *targetScreen)
-    : QOffscreenSurface(targetScreen, nullptr)
-{
-}
-
-
-/*!
     Destroys the offscreen surface.
 */
 QOffscreenSurface::~QOffscreenSurface()
