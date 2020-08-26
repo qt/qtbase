@@ -374,6 +374,7 @@ qt_copy_or_install(FILES
                    cmake/QtGenerateLibHelpers.cmake
                    cmake/QtGenerateLibPri.cmake
                    cmake/QtGlobalStateHelpers.cmake
+                   cmake/QtHeadersClean.cmake
                    cmake/QtInstallHelpers.cmake
                    cmake/QtLalrHelpers.cmake
                    cmake/QtModuleConfig.cmake.in
