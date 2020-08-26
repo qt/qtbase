@@ -157,13 +157,22 @@ endif()
         "   \"application-binary\": \"${target_output_name}\",\n")
 
     # Override qmlimportscanner binary path
-    set(qml_importscanner_binary_path "${QT_HOST_PATH}/bin/qmlimportscanner")
+    set(qml_importscanner_binary_path "${QT_HOST_PATH}/${QT6_HOST_INFO_BINDIR}/qmlimportscanner")
     if (WIN32)
         string(APPEND qml_importscanner_binary_path ".exe")
     endif()
     file(TO_NATIVE_PATH "${qml_importscanner_binary_path}" qml_importscanner_binary_path_native)
     string(APPEND file_contents
         "   \"qml-importscanner-binary\" : \"${qml_importscanner_binary_path_native}\",\n")
+
+    # Override rcc binary path
+    set(rcc_binary_path "${QT_HOST_PATH}/${QT6_HOST_INFO_BINDIR}/rcc")
+    if (WIN32)
+        string(APPEND rcc_binary_path ".exe")
+    endif()
+    file(TO_NATIVE_PATH "${rcc_binary_path}" rcc_binary_path_native)
+    string(APPEND file_contents
+        "   \"rcc-binary\" : \"${rcc_binary_path_native}\",\n")
 
     # Last item in json file
 
@@ -226,7 +235,7 @@ function(qt6_android_add_apk_target target)
         set(should_add_to_global_apk TRUE)
     endif()
 
-    set(deployment_tool "${QT_HOST_PATH}/bin/androiddeployqt")
+    set(deployment_tool "${QT_HOST_PATH}/${QT6_HOST_INFO_BINDIR}/androiddeployqt")
     set(apk_dir "$<TARGET_PROPERTY:${target},BINARY_DIR>/android-build")
     add_custom_target(${target}_prepare_apk_dir
         DEPENDS ${target}

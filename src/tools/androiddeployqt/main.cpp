@@ -169,6 +169,7 @@ struct Options
     QString applicationBinary;
     QString applicationArguments;
     QString rootPath;
+    QString rccBinaryPath;
     QStringList qmlImportPaths;
     QStringList qrcFiles;
 
@@ -1002,6 +1003,12 @@ bool readInputFile(Options *options)
         const QJsonValue qmlImportScannerBinaryPath = jsonObject.value(QLatin1String("qml-importscanner-binary"));
         if (!qmlImportScannerBinaryPath.isUndefined())
             options->qmlImportScannerBinaryPath = qmlImportScannerBinaryPath.toString();
+    }
+
+    {
+        const QJsonValue rccBinaryPath = jsonObject.value(QLatin1String("rcc-binary"));
+        if (!rccBinaryPath.isUndefined())
+            options->rccBinaryPath = rccBinaryPath.toString();
     }
 
     {
@@ -1963,7 +1970,14 @@ bool createRcc(const Options &options)
     if (options.verbose)
         fprintf(stdout, "Create rcc bundle.\n");
 
-    QString rcc = options.qtInstallDirectory + QLatin1String("/bin/rcc");
+
+    QString rcc;
+    if (!options.rccBinaryPath.isEmpty()) {
+        rcc = options.rccBinaryPath;
+    } else {
+        rcc = options.qtInstallDirectory + QLatin1String("/bin/rcc");
+    }
+
 #if defined(Q_OS_WIN32)
     rcc += QLatin1String(".exe");
 #endif
