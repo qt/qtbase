@@ -92,7 +92,7 @@ QNetworkInterface getInterfaceFromHostAddress(const QHostAddress &local)
                                    });
             });
     if (it == interfaces.cend()) {
-        qCWarning(lcNetMon, "Could not find the interface for the local address.");
+        qCDebug(lcNetMon, "Could not find the interface for the local address.");
         return {};
     }
     return *it;
