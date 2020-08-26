@@ -291,27 +291,31 @@ public:
 
         static BufferOp dynamicUpdate(QRhiBuffer *buf, int offset, int size, const void *data)
         {
-            BufferOp op = {};
+            BufferOp op;
             op.type = DynamicUpdate;
             op.buf = buf;
             op.offset = offset;
             op.data = QByteArray(reinterpret_cast<const char *>(data), size ? size : buf->size());
+            op.readSize = 0;
+            op.result = nullptr;
             return op;
         }
 
         static BufferOp staticUpload(QRhiBuffer *buf, int offset, int size, const void *data)
         {
-            BufferOp op = {};
+            BufferOp op;
             op.type = StaticUpload;
             op.buf = buf;
             op.offset = offset;
             op.data = QByteArray(reinterpret_cast<const char *>(data), size ? size : buf->size());
+            op.readSize = 0;
+            op.result = nullptr;
             return op;
         }
 
         static BufferOp read(QRhiBuffer *buf, int offset, int size, QRhiBufferReadbackResult *result)
         {
-            BufferOp op = {};
+            BufferOp op;
             op.type = Read;
             op.buf = buf;
             op.offset = offset;
@@ -343,38 +347,48 @@ public:
 
         static TextureOp upload(QRhiTexture *tex, const QRhiTextureUploadDescription &desc)
         {
-            TextureOp op = {};
+            TextureOp op;
             op.type = Upload;
             op.dst = tex;
             for (auto it = desc.cbeginEntries(), itEnd = desc.cendEntries(); it != itEnd; ++it)
                 op.subresDesc[it->layer()][it->level()].append(it->description());
+            op.src = nullptr;
+            op.result = nullptr;
+            op.layer = 0;
             return op;
         }
 
         static TextureOp copy(QRhiTexture *dst, QRhiTexture *src, const QRhiTextureCopyDescription &desc)
         {
-            TextureOp op = {};
+            TextureOp op;
             op.type = Copy;
             op.dst = dst;
             op.src = src;
             op.desc = desc;
+            op.result = nullptr;
+            op.layer = 0;
             return op;
         }
 
         static TextureOp read(const QRhiReadbackDescription &rb, QRhiReadbackResult *result)
         {
-            TextureOp op = {};
+            TextureOp op;
             op.type = Read;
+            op.dst = nullptr;
+            op.src = nullptr;
             op.rb = rb;
             op.result = result;
+            op.layer = 0;
             return op;
         }
 
         static TextureOp genMips(QRhiTexture *tex, int layer)
         {
-            TextureOp op = {};
+            TextureOp op;
             op.type = GenMips;
             op.dst = tex;
+            op.src = nullptr;
+            op.result = nullptr;
             op.layer = layer;
             return op;
         }
