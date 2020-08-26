@@ -295,7 +295,6 @@ Q_SIGNALS:
 
     void itemActivated(QTableWidgetItem *item);
     void itemEntered(QTableWidgetItem *item);
-    // ### Qt 6: add changed roles
     void itemChanged(QTableWidgetItem *item);
 
     void currentItemChanged(QTableWidgetItem *current, QTableWidgetItem *previous);

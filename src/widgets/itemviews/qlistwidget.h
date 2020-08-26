@@ -258,7 +258,6 @@ Q_SIGNALS:
     void itemDoubleClicked(QListWidgetItem *item);
     void itemActivated(QListWidgetItem *item);
     void itemEntered(QListWidgetItem *item);
-    // ### Qt 6: add changed roles
     void itemChanged(QListWidgetItem *item);
 
     void currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous);
