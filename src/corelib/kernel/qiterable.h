@@ -44,13 +44,66 @@
 #include <QtCore/qtypeinfo.h>
 #include <QtCore/qmetacontainer.h>
 #include <QtCore/qmetatype.h>
+#include <QtCore/qtaggedpointer.h>
 
 QT_BEGIN_NAMESPACE
+
+namespace QtPrivate {
+    template<typename Type, typename Storage = Type>
+    class QConstPreservingPointer
+    {
+        enum Tag : bool { Const, Mutable };
+        QTaggedPointer<Storage, Tag> m_pointer;
+
+    public:
+        QConstPreservingPointer(std::nullptr_t) : m_pointer(nullptr, Const) {}
+
+        QConstPreservingPointer(const void *pointer, qsizetype alignment)
+            : m_pointer(reinterpret_cast<Storage *>(const_cast<void *>(pointer)), Const)
+        {
+            Q_UNUSED(alignment);
+            Q_ASSERT(alignment > qsizetype(alignof(Storage)));
+        }
+
+        QConstPreservingPointer(void *pointer, qsizetype alignment)
+            : m_pointer(reinterpret_cast<Storage *>(pointer), Mutable)
+        {
+            Q_UNUSED(alignment);
+            Q_ASSERT(alignment > qsizetype(alignof(Storage)));
+        }
+
+        template<typename InputType>
+        QConstPreservingPointer(const InputType *pointer)
+            : m_pointer(reinterpret_cast<Storage *>(const_cast<InputType *>(pointer)), Const)
+        {
+            static_assert(alignof(InputType) >= alignof(Storage));
+        }
+
+        template<typename InputType>
+        QConstPreservingPointer(InputType *pointer)
+            : m_pointer(reinterpret_cast<Storage *>(pointer), Mutable)
+        {
+            static_assert(alignof(InputType) >= alignof(Storage));
+        }
+
+        QConstPreservingPointer() = default;
+
+        const Type *constPointer() const
+        {
+            return reinterpret_cast<const Type *>(m_pointer.data());
+        }
+
+        Type *mutablePointer() const
+        {
+            return m_pointer.tag() == Mutable ? reinterpret_cast<Type *>(m_pointer.data()) : nullptr;
+        }
+    };
+}
 
 class Q_CORE_EXPORT QSequentialIterable
 {
     uint m_revision = 0;
-    const void *m_iterable = nullptr;
+    QtPrivate::QConstPreservingPointer<void, quint16> m_iterable;
     QMetaSequence m_metaSequence;
 
 public:
@@ -97,7 +150,8 @@ public:
 
     QSequentialIterable() = default;
 
-    QSequentialIterable(const QMetaSequence &metaSequence, const void *iterable)
+    template<typename Pointer>
+    QSequentialIterable(const QMetaSequence &metaSequence, Pointer iterable)
         : m_iterable(iterable)
         , m_metaSequence(metaSequence)
     {
@@ -111,7 +165,7 @@ public:
 
     bool canReverseIterate() const;
 
-    const void *constIterable() const { return m_iterable; }
+    const void *constIterable() const { return m_iterable.constPointer(); }
     QMetaSequence metaSequence() const { return m_metaSequence; }
 };
 

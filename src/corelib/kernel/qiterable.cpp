@@ -74,7 +74,7 @@ QSequentialIterable::const_iterator::const_iterator(const QSequentialIterable *i
 */
 QSequentialIterable::const_iterator QSequentialIterable::begin() const
 {
-    return const_iterator(this, m_metaSequence.constBegin(m_iterable));
+    return const_iterator(this, m_metaSequence.constBegin(m_iterable.constPointer()));
 }
 
 /*!
@@ -85,7 +85,7 @@ QSequentialIterable::const_iterator QSequentialIterable::begin() const
 */
 QSequentialIterable::const_iterator QSequentialIterable::end() const
 {
-    return const_iterator(this, m_metaSequence.constEnd(m_iterable));
+    return const_iterator(this, m_metaSequence.constEnd(m_iterable.constPointer()));
 }
 
 /*!
@@ -102,9 +102,9 @@ QVariant QSequentialIterable::at(qsizetype idx) const
 
     const QMetaSequence metaSequence = m_metaSequence;
     if (metaSequence.canGetElementAtIndex()) {
-        metaSequence.elementAtIndex(m_iterable, idx, dataPtr);
+        metaSequence.elementAtIndex(m_iterable.constPointer(), idx, dataPtr);
     } else if (metaSequence.canGetElementAtConstIterator()) {
-        void *iterator = metaSequence.constBegin(m_iterable);
+        void *iterator = metaSequence.constBegin(m_iterable.constPointer());
         metaSequence.advanceConstIterator(iterator, idx);
         metaSequence.elementAtConstIterator(iterator, dataPtr);
         metaSequence.destroyConstIterator(iterator);
@@ -119,7 +119,7 @@ QVariant QSequentialIterable::at(qsizetype idx) const
 qsizetype QSequentialIterable::size() const
 {
     const QMetaSequence metaSequence = m_metaSequence;
-    const void *container = m_iterable;
+    const void *container = m_iterable.constPointer();
     if (metaSequence.hasSize())
         return metaSequence.size(container);
     if (!metaSequence.hasConstIterator())
@@ -261,7 +261,7 @@ QSequentialIterable::const_iterator QSequentialIterable::const_iterator::operato
 {
     const_iterator result(
                 m_iterable,
-                m_iterable->m_metaSequence.constBegin(m_iterable->m_iterable));
+                m_iterable->m_metaSequence.constBegin(m_iterable->m_iterable.constPointer()));
     m_iterable->m_metaSequence.copyConstIterator(result.m_iterator, m_iterator);
     m_iterable->m_metaSequence.advanceConstIterator(m_iterator, 1);
     return result;
@@ -299,7 +299,7 @@ QSequentialIterable::const_iterator QSequentialIterable::const_iterator::operato
 {
     const_iterator result(
                 m_iterable,
-                m_iterable->m_metaSequence.constBegin(m_iterable->m_iterable));
+                m_iterable->m_metaSequence.constBegin(m_iterable->m_iterable.constPointer()));
     m_iterable->m_metaSequence.copyConstIterator(result.m_iterator, m_iterator);
     m_iterable->m_metaSequence.advanceConstIterator(m_iterator, -1);
     return result;
@@ -340,7 +340,7 @@ QSequentialIterable::const_iterator QSequentialIterable::const_iterator::operato
 {
     const_iterator result(
                 m_iterable,
-                m_iterable->m_metaSequence.constBegin(m_iterable->m_iterable));
+                m_iterable->m_metaSequence.constBegin(m_iterable->m_iterable.constPointer()));
     m_iterable->m_metaSequence.copyConstIterator(result.m_iterator, m_iterator);
     m_iterable->m_metaSequence.advanceConstIterator(result.m_iterator, j);
     return result;
@@ -359,7 +359,7 @@ QSequentialIterable::const_iterator QSequentialIterable::const_iterator::operato
 {
     const_iterator result(
                 m_iterable,
-                m_iterable->m_metaSequence.constBegin(m_iterable->m_iterable));
+                m_iterable->m_metaSequence.constBegin(m_iterable->m_iterable.constPointer()));
     m_iterable->m_metaSequence.copyConstIterator(result.m_iterator, m_iterator);
     m_iterable->m_metaSequence.advanceConstIterator(result.m_iterator, -j);
     return result;
