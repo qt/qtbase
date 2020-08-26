@@ -547,6 +547,9 @@ QDebug operator<<(QDebug debug, QLocalSocket::LocalSocketError error)
     case QLocalSocket::UnknownSocketError:
         debug << "QLocalSocket::UnknownSocketError";
         break;
+    case QLocalSocket::OperationError:
+        debug << "QLocalSocket::OperationError";
+        break;
     default:
         debug << "QLocalSocket::SocketError(" << int(error) << ')';
         break;
