@@ -47,6 +47,18 @@
 
 QT_BEGIN_NAMESPACE
 
+static constexpr int INV_TIMER = -1;                // invalid timer id
+
+class QTimerPrivate : public QObjectPrivate
+{
+public:
+    int id = INV_TIMER;
+    int inter = 0;
+    bool single = false;
+    bool nulltimer = false;
+    Qt::TimerType type = Qt::CoarseTimer;
+};
+
 /*!
     \class QTimer
     \inmodule QtCore
@@ -141,16 +153,13 @@ QT_BEGIN_NAMESPACE
         {Analog Clock Example}, {Wiggly Example}
 */
 
-static const int INV_TIMER = -1;                // invalid timer id
-
 /*!
     Constructs a timer with the given \a parent.
 */
 
 QTimer::QTimer(QObject *parent)
-    : QObject(parent), id(INV_TIMER), inter(0), del(0), single(0), nulltimer(0), type(Qt::CoarseTimer)
+    : QObject(*new QTimerPrivate, parent)
 {
-    Q_UNUSED(del);  // ### Qt 6: remove field
 }
 
 
@@ -160,7 +169,7 @@ QTimer::QTimer(QObject *parent)
 
 QTimer::~QTimer()
 {
-    if (id != INV_TIMER)                        // stop running timer
+    if (d_func()->id != INV_TIMER)                        // stop running timer
         stop();
 }
 
@@ -187,6 +196,10 @@ QTimer::~QTimer()
     Returns \c true if the timer is running (pending); otherwise returns
     false.
 */
+bool QTimer::isActive() const
+{
+    return d_func()->id >= 0;
+}
 
 /*!
     \fn int QTimer::timerId() const
@@ -194,6 +207,10 @@ QTimer::~QTimer()
     Returns the ID of the timer if the timer is running; otherwise returns
     -1.
 */
+int QTimer::timerId() const
+{
+    return d_func()->id;
+}
 
 
 /*! \overload start()
@@ -207,10 +224,11 @@ QTimer::~QTimer()
 */
 void QTimer::start()
 {
-    if (id != INV_TIMER)                        // stop running timer
+    Q_D(QTimer);
+    if (d->id != INV_TIMER)                        // stop running timer
         stop();
-    nulltimer = (!inter && single);
-    id = QObject::startTimer(inter, Qt::TimerType(type));
+    d->nulltimer = (!d->inter && d->single);
+    d->id = QObject::startTimer(d->inter, d->type);
 }
 
 /*!
@@ -225,7 +243,8 @@ void QTimer::start()
 */
 void QTimer::start(int msec)
 {
-    inter = msec;
+    Q_D(QTimer);
+    d->inter = msec;
     start();
 }
 
@@ -239,9 +258,10 @@ void QTimer::start(int msec)
 
 void QTimer::stop()
 {
-    if (id != INV_TIMER) {
-        QObject::killTimer(id);
-        id = INV_TIMER;
+    Q_D(QTimer);
+    if (d->id != INV_TIMER) {
+        QObject::killTimer(d->id);
+        d->id = INV_TIMER;
     }
 }
 
@@ -251,8 +271,9 @@ void QTimer::stop()
 */
 void QTimer::timerEvent(QTimerEvent *e)
 {
-    if (e->timerId() == id) {
-        if (single)
+    Q_D(QTimer);
+    if (e->timerId() == d->id) {
+        if (d->single)
             stop();
         emit timeout(QPrivateSignal());
     }
@@ -687,6 +708,15 @@ void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiv
 
     \sa interval, singleShot()
 */
+void QTimer::setSingleShot(bool singleShot)
+{
+    d_func()->single = singleShot;
+}
+
+bool QTimer::isSingleShot() const
+{
+    return d_func()->single;
+}
 
 /*!
     \property QTimer::interval
@@ -702,11 +732,17 @@ void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiv
 */
 void QTimer::setInterval(int msec)
 {
-    inter = msec;
-    if (id != INV_TIMER) {                        // create new timer
-        QObject::killTimer(id);                        // restart timer
-        id = QObject::startTimer(msec, Qt::TimerType(type));
+    Q_D(QTimer);
+    d->inter = msec;
+    if (d->id != INV_TIMER) {                        // create new timer
+        QObject::killTimer(d->id);                        // restart timer
+        d->id = QObject::startTimer(msec, d->type);
     }
+}
+
+int QTimer::interval() const
+{
+    return d_func()->inter;
 }
 
 /*!
@@ -722,8 +758,9 @@ void QTimer::setInterval(int msec)
 */
 int QTimer::remainingTime() const
 {
-    if (id != INV_TIMER) {
-        return QAbstractEventDispatcher::instance()->remainingTime(id);
+    Q_D(const QTimer);
+    if (d->id != INV_TIMER) {
+        return QAbstractEventDispatcher::instance()->remainingTime(d->id);
     }
 
     return -1;
@@ -737,6 +774,15 @@ int QTimer::remainingTime() const
 
     \sa Qt::TimerType
 */
+void QTimer::setTimerType(Qt::TimerType atype)
+{
+    d_func()->type = atype;
+}
+
+Qt::TimerType QTimer::timerType() const
+{
+    return d_func()->type;
+}
 
 QT_END_NAMESPACE
 

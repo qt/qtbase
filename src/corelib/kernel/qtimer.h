@@ -53,7 +53,7 @@
 
 QT_BEGIN_NAMESPACE
 
-
+class QTimerPrivate;
 class Q_CORE_EXPORT QTimer : public QObject
 {
     Q_OBJECT
@@ -66,19 +66,19 @@ public:
     explicit QTimer(QObject *parent = nullptr);
     ~QTimer();
 
-    inline bool isActive() const { return id >= 0; }
-    int timerId() const { return id; }
+    bool isActive() const;
+    int timerId() const;
 
     void setInterval(int msec);
-    int interval() const { return inter; }
+    int interval() const;
 
     int remainingTime() const;
 
-    void setTimerType(Qt::TimerType atype) { this->type = atype; }
-    Qt::TimerType timerType() const { return Qt::TimerType(type); }
+    void setTimerType(Qt::TimerType atype);
+    Qt::TimerType timerType() const;
 
-    inline void setSingleShot(bool singleShot);
-    inline bool isSingleShot() const { return single; }
+    void setSingleShot(bool singleShot);
+    bool isSingleShot() const;
 
     static void singleShot(int msec, const QObject *receiver, const char *member);
     static void singleShot(int msec, Qt::TimerType timerType, const QObject *receiver, const char *member);
@@ -214,6 +214,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QTimer)
+    Q_DECLARE_PRIVATE(QTimer)
 
     inline int startTimer(int){ return -1;}
     inline void killTimer(int){}
@@ -234,15 +235,7 @@ private:
                        timerType, receiver, slotObj);
     }
 #endif
-
-    int id, inter, del;
-    uint single : 1;
-    uint nulltimer : 1;
-    uint type : 2;
-    // reserved : 28
 };
-
-inline void QTimer::setSingleShot(bool asingleShot) { single = asingleShot; }
 
 QT_END_NAMESPACE
 
