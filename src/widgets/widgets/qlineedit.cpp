@@ -1436,23 +1436,29 @@ void QLineEdit::paste()
 
 #endif // !QT_NO_CLIPBOARD
 
+/*!
+    \reimp
+*/
+void QLineEdit::timerEvent(QTimerEvent *e)
+{
+    Q_D(QLineEdit);
+    int timerId = ((QTimerEvent*)e)->timerId();
+    if (false) {
+#if QT_CONFIG(draganddrop)
+    } else if (timerId == d->dndTimer.timerId()) {
+        d->drag();
+#endif
+    }
+    else if (timerId == d->tripleClickTimer.timerId())
+        d->tripleClickTimer.stop();
+}
+
 /*! \reimp
 */
 bool QLineEdit::event(QEvent * e)
 {
     Q_D(QLineEdit);
-    if (e->type() == QEvent::Timer) {
-        // ### Qt6: move to timerEvent, is here for binary compatibility
-        int timerId = ((QTimerEvent*)e)->timerId();
-        if (false) {
-#if QT_CONFIG(draganddrop)
-        } else if (timerId == d->dndTimer.timerId()) {
-            d->drag();
-#endif
-        }
-        else if (timerId == d->tripleClickTimer.timerId())
-            d->tripleClickTimer.stop();
-    } else if (e->type() == QEvent::ContextMenu) {
+    if (e->type() == QEvent::ContextMenu) {
 #ifndef QT_NO_IM
         if (d->control->composeMode())
             return true;
@@ -1465,8 +1471,6 @@ bool QLineEdit::event(QEvent * e)
         QKeyEvent *ke = static_cast<QKeyEvent*>(e);
         d->control->processShortcutOverrideEvent(ke);
 #endif
-    } else if (e->type() == QEvent::KeyRelease) {
-        d->control->updateCursorBlinking();
     } else if (e->type() == QEvent::Show) {
         //In order to get the cursor blinking if QComboBox::setEditable is called when the combobox has focus
         if (hasFocus()) {
@@ -1772,6 +1776,15 @@ void QLineEdit::keyPressEvent(QKeyEvent *event)
             setLayoutDirection(d->control->layoutDirection());
         d->control->updateCursorBlinking();
     }
+}
+
+/*!
+    \reimp
+*/
+void QLineEdit::keyReleaseEvent(QKeyEvent *)
+{
+    Q_D(QLineEdit);
+    d->control->updateCursorBlinking();
 }
 
 /*!

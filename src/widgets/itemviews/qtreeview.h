@@ -185,6 +185,7 @@ protected:
     QRegion visualRegionForSelection(const QItemSelection &selection) const override;
     QModelIndexList selectedIndexes() const override;
 
+    void changeEvent(QEvent *event) override;
     void timerEvent(QTimerEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
 

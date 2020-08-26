@@ -1240,6 +1240,22 @@ void QTreeView::scrollTo(const QModelIndex &index, ScrollHint hint)
 /*!
   \reimp
 */
+void QTreeView::changeEvent(QEvent *event)
+{
+    Q_D(QTreeView);
+    if (event->type() == QEvent::StyleChange) {
+        if (!d->customIndent) {
+            // QAbstractItemView calls this method in case of a style change,
+            // so update the indentation here if it wasn't set manually.
+            d->updateIndentationFromStyle();
+        }
+    }
+    QAbstractItemView::changeEvent(event);
+}
+
+/*!
+  \reimp
+*/
 void QTreeView::timerEvent(QTimerEvent *event)
 {
     Q_D(QTreeView);
@@ -2097,12 +2113,6 @@ QModelIndex QTreeView::indexBelow(const QModelIndex &index) const
 void QTreeView::doItemsLayout()
 {
     Q_D(QTreeView);
-    if (!d->customIndent) {
-        // ### Qt 6: move to event()
-        // QAbstractItemView calls this method in case of a style change,
-        // so update the indentation here if it wasn't set manually.
-        d->updateIndentationFromStyle();
-    }
     if (d->hasRemovedItems) {
         //clean the QSet that may contains old (and this invalid) indexes
         d->hasRemovedItems = false;
