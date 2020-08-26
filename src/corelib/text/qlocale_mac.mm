@@ -81,7 +81,7 @@ static QString getMacLocaleName()
     return result;
 }
 
-static QString macMonthName(int month, bool short_format)
+static QString macMonthName(int month, QSystemLocale::QueryType type)
 {
     month -= 1;
     if (month < 0 || month > 11)
@@ -90,10 +90,28 @@ static QString macMonthName(int month, bool short_format)
     QCFType<CFDateFormatterRef> formatter
         = CFDateFormatterCreate(0, QCFType<CFLocaleRef>(CFLocaleCopyCurrent()),
                                 kCFDateFormatterNoStyle,  kCFDateFormatterNoStyle);
+
+    CFDateFormatterKey formatterType;
+    switch (type) {
+        case QSystemLocale::MonthNameLong:
+            formatterType = kCFDateFormatterMonthSymbols;
+            break;
+        case QSystemLocale::MonthNameShort:
+            formatterType = kCFDateFormatterShortMonthSymbols;
+            break;
+        case QSystemLocale::StandaloneMonthNameLong:
+            formatterType = kCFDateFormatterStandaloneMonthSymbols;
+            break;
+        case QSystemLocale::StandaloneMonthNameShort:
+            formatterType = kCFDateFormatterShortStandaloneMonthSymbols;
+            break;
+        default:
+            qWarning("macMonthName: Unsupported query type %d", type);
+            return QString();
+    }
     QCFType<CFArrayRef> values
-        = static_cast<CFArrayRef>(CFDateFormatterCopyProperty(formatter,
-                                  short_format ? kCFDateFormatterShortMonthSymbols
-                                               : kCFDateFormatterMonthSymbols));
+        = static_cast<CFArrayRef>(CFDateFormatterCopyProperty(formatter, formatterType));
+
     if (values != 0) {
         CFStringRef cfstring = static_cast<CFStringRef>(CFArrayGetValueAtIndex(values, month));
         return QString::fromCFString(cfstring);
@@ -434,7 +452,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
     case MonthNameShort:
     case StandaloneMonthNameLong:
     case StandaloneMonthNameShort:
-        return macMonthName(in.toInt(), (type == MonthNameShort || type == StandaloneMonthNameShort));
+        return macMonthName(in.toInt(), type);
     case DateToStringShort:
     case DateToStringLong:
         return macDateToString(in.toDate(), (type == DateToStringShort));
