@@ -47,6 +47,14 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QPaintEvent>
+#include <QPainter>
+
+namespace src_gui_painting_qregion {
+struct MyWidget : public QPaintDevice
+{
+    void paintEvent(QPaintEvent *);
+};
 
 //! [0]
 void MyWidget::paintEvent(QPaintEvent *)
@@ -58,6 +66,8 @@ void MyWidget::paintEvent(QPaintEvent *)
 
     QPainter painter(this);
     painter.setClipRegion(r3);
-    ...                                     // paint clipped graphics
+    // ...                                  // paint clipped graphics
 }
 //! [0]
+
+} // src_gui_painting_qregion

@@ -24,4 +24,12 @@ SOURCES = \
     src_gui_math3d_qquaternion.cpp \
     src_gui_opengl_qopenglbuffer.cpp \
     src_gui_opengl_qopengldebug.cpp \
-    src_gui_opengl_qopenglfunctions.cpp
+    src_gui_opengl_qopenglfunctions.cpp \
+    src_gui_painting_qbrush.cpp \
+    src_gui_painting_qcolor.cpp \
+    src_gui_painting_qpainter.cpp \
+    src_gui_painting_qpainterpath.cpp \
+    src_gui_painting_qpen.cpp \
+    src_gui_painting_qregion.cpp \
+    src_gui_painting_qregion_unix.cpp \
+    src_gui_painting_qtransform.cpp

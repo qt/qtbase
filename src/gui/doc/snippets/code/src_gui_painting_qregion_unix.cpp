@@ -47,7 +47,11 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QRegion>
 
+namespace src_gui_painting_qregion_unix {
+
+void wrapper() {
 //! [0]
 QRegion r1(10, 10, 20, 20);
 r1.isEmpty();               // false
@@ -62,3 +66,6 @@ r3.isEmpty();               // true
 r3 = r1.united(r2);         // r3: union of r1 and r2
 r3.isEmpty();               // false
 //! [0]
+
+} // wrapper
+} // src_gui_painting_qregion_unix

@@ -47,13 +47,25 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QPainter>
+
+namespace src_gui_painting_qcolor {
+int width() { return 1; };
+int height() { return 1; };
+QPainter painter;
+void wrapper() {
+
 
 //! [0]
 // Specify semi-transparent red
 painter.setBrush(QColor(255, 0, 0, 127));
-painter.drawRect(0, 0, width()/2, height());
+painter.drawRect(0, 0, width() / 2, height());
 
 // Specify semi-transparent blue
 painter.setBrush(QColor(0, 0, 255, 127));
-painter.drawRect(0, 0, width(), height()/2);
+painter.drawRect(0, 0, width(), height() / 2);
 //! [0]
+
+
+} // wrapper
+} // src_gui_painting_qcolor

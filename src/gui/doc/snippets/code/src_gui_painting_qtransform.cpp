@@ -48,6 +48,9 @@
 **
 ****************************************************************************/
 
+namespace src_gui_painting_qtransform {
+/* wrap non-code snippets
+
 //! [0]
 x' = m11*x + m21*y + dx
 y' = m22*y + m12*x + dy
@@ -90,3 +93,6 @@ if (is not affine) {
     y' /= w'
 }
 //! [3]
+
+*/ // wrap non-code snippets
+} // src_gui_painting_qtransform

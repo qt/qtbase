@@ -47,6 +47,27 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QLinearGradient>
+#include <QPainter>
+#include <QPainterPath>
+#include <QPen>
+
+namespace src_gui_painting_qpainterpath {
+struct Wrapper : QPaintDevice
+{
+    Q_OBJECT
+
+    void wrapper0();
+    void wrapper1();
+    void wrapper2();
+    void wrapper3();
+    void wrapper4();
+    void wrapper5();
+    void wrapper6();
+    void wrapper7();
+};
+
+void Wrapper::wrapper0() {
 
 //! [0]
 QPainterPath path;
@@ -65,6 +86,13 @@ painter.setBrush(QColor(122, 163, 39));
 painter.drawPath(path);
 //! [0]
 
+} // Wrapper::wrapper0
+
+
+void Wrapper::wrapper1() {
+const QPointF c1;
+const QPointF c2;
+const QPointF endPoint;
 
 //! [1]
 QLinearGradient myGradient;
@@ -79,13 +107,17 @@ painter.setPen(myPen);
 painter.drawPath(myPath);
 //! [1]
 
+} // Wrapper::wrapper1
 
-//! [2]
+
+void Wrapper::wrapper2() {
+const QRectF boundingRect;
+qreal startAngle = 0;
+qreal sweepLength = 0;
+QPointF center;
 QLinearGradient myGradient;
 QPen myPen;
-
-QPointF center, startPoint;
-
+//! [2]
 QPainterPath myPath;
 myPath.moveTo(center);
 myPath.arcTo(boundingRect, startAngle,
@@ -97,6 +129,10 @@ painter.setPen(myPen);
 painter.drawPath(myPath);
 //! [2]
 
+} // Wrapper::wrapper2
+
+
+void Wrapper::wrapper3() {
 
 //! [3]
 QLinearGradient myGradient;
@@ -112,6 +148,10 @@ painter.setPen(myPen);
 painter.drawPath(myPath);
 //! [3]
 
+} // Wrapper::wrapper3
+
+
+void Wrapper::wrapper4() {
 
 //! [4]
 QLinearGradient myGradient;
@@ -127,6 +167,10 @@ painter.setPen(myPen);
 painter.drawPath(myPath);
 //! [4]
 
+} // Wrapper::wrapper4
+
+
+void Wrapper::wrapper5() {
 
 //! [5]
 QLinearGradient myGradient;
@@ -142,6 +186,12 @@ painter.setPen(myPen);
 painter.drawPath(myPath);
 //! [5]
 
+} // Wrapper::wrapper5
+
+
+void Wrapper::wrapper6() {
+qreal x = 0;
+qreal y = 0;
 
 //! [6]
 QLinearGradient myGradient;
@@ -157,3 +207,7 @@ painter.setBrush(myGradient);
 painter.setPen(myPen);
 painter.drawPath(myPath);
 //! [6]
+
+
+} // Wrapper::wrapper6
+} // src_gui_painting_qpainterpath
