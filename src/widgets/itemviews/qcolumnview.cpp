@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -1126,14 +1126,12 @@ void QColumnViewPrivate::doLayout()
 
     Draws a delegate with a > if an object has children.
 
-    \sa {Model/View Programming}, QItemDelegate
+    \sa {Model/View Programming}, QStyledItemDelegate
 */
 void QColumnViewDelegate::paint(QPainter *painter,
                           const QStyleOptionViewItem &option,
                           const QModelIndex &index) const
 {
-    drawBackground(painter, option, index );
-
     bool reverse = (option.direction == Qt::RightToLeft);
     int width = ((option.rect.height() * 2) / 3);
     // Modify the options to give us room to add an arrow
@@ -1148,7 +1146,7 @@ void QColumnViewDelegate::paint(QPainter *painter,
         opt.state |= QStyle::State_Selected;
     }
 
-    QItemDelegate::paint(painter, opt, index);
+    QStyledItemDelegate::paint(painter, opt, index);
 
     if (reverse)
         opt.rect = QRect(option.rect.x(), option.rect.y(), width, option.rect.height());

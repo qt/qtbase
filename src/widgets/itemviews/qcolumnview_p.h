@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -62,7 +62,7 @@
 #endif
 #include <QtWidgets/qabstractitemdelegate.h>
 #include <QtWidgets/qabstractitemview.h>
-#include <QtWidgets/qitemdelegate.h>
+#include <QtWidgets/qstyleditemdelegate.h>
 #include <qlistview.h>
 #include <qevent.h>
 #include <qscrollbar.h>
@@ -181,12 +181,11 @@ public:
 /*!
  * This is a delegate that will paint the triangle
  */
-// ### Qt6: QStyledItemDelegate
-class QColumnViewDelegate : public QItemDelegate
+class QColumnViewDelegate : public QStyledItemDelegate
 {
 
 public:
-    explicit QColumnViewDelegate(QObject *parent = nullptr) : QItemDelegate(parent) {}
+    explicit QColumnViewDelegate(QObject *parent = nullptr) : QStyledItemDelegate(parent) {}
     ~QColumnViewDelegate() {}
 
     void paint(QPainter *painter,
