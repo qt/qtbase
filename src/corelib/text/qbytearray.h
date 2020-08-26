@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -513,19 +513,18 @@ inline const char *QByteArray::data() const
 inline const char *QByteArray::constData() const
 { return data(); }
 inline void QByteArray::detach()
-{ if (d->needsDetach()) reallocData(size_t(size()) + 1u, d->detachFlags()); }
+{ if (d->needsDetach()) reallocData(size_t(size()), d->detachFlags()); }
 inline bool QByteArray::isDetached() const
 { return !d->isShared(); }
 inline QByteArray::QByteArray(const QByteArray &a) noexcept : d(a.d)
 {}
 
-inline qsizetype QByteArray::capacity() const
-{ const auto realCapacity = d->constAllocatedCapacity(); return realCapacity ? realCapacity - 1 : 0; }
+inline qsizetype QByteArray::capacity() const { return qsizetype(d->constAllocatedCapacity()); }
 
 inline void QByteArray::reserve(qsizetype asize)
 {
     if (d->needsDetach() || asize > capacity() - d->freeSpaceAtBegin()) {
-        reallocData(qMax(size_t(size()), size_t(asize)) + 1u, d->detachFlags() | Data::CapacityReserved);
+        reallocData(qMax(size_t(size()), size_t(asize)), d->detachFlags() | Data::CapacityReserved);
     } else {
         d->setFlag(Data::CapacityReserved);
     }
@@ -536,7 +535,7 @@ inline void QByteArray::squeeze()
     if ((d->flags() & Data::CapacityReserved) == 0)
         return;
     if (d->needsDetach() || size() < capacity()) {
-        reallocData(size_t(size()) + 1u, d->detachFlags() & ~Data::CapacityReserved);
+        reallocData(size_t(size()), d->detachFlags() & ~Data::CapacityReserved);
     } else {
         d->clearFlag(Data::CapacityReserved);
     }

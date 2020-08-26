@@ -642,7 +642,7 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
         return invalidCompressedData();
     }
 
-    QByteArray::DataPointer d(QByteArray::Data::allocate(expectedSize + 1));
+    QByteArray::DataPointer d(QByteArray::Data::allocate(len));
     if (Q_UNLIKELY(d.data() == nullptr))
         return invalidCompressedData();
 
@@ -1149,12 +1149,11 @@ QByteArray &QByteArray::operator=(const char *str)
         d = DataPointer::fromRawData(&_empty, 0);
     } else {
         const qsizetype len = qsizetype(strlen(str));
-        const size_t fullLen = size_t(len) + 1;
         const auto capacityAtEnd = d->allocatedCapacity() - d.freeSpaceAtBegin();
-        if (d->needsDetach() || fullLen > capacityAtEnd
-                || (len < size() && fullLen < (capacityAtEnd >> 1)))
-            reallocData(fullLen, d->detachFlags());
-        memcpy(d.data(), str, fullLen); // include null terminator
+        if (d->needsDetach() || size_t(len) > capacityAtEnd
+                || (len < size() && size_t(len) < (capacityAtEnd >> 1)))
+            reallocData(len, d->detachFlags());
+        memcpy(d.data(), str, len + 1); // include null terminator
         d.size = len;
     }
     return *this;
@@ -1582,10 +1581,14 @@ QByteArray::QByteArray(const char *data, qsizetype size)
         d = DataPointer();
     } else {
         if (size < 0)
-            size = int(strlen(data));
-        d = DataPointer(Data::allocate(size + 1u), size);
-        memcpy(d.data(), data, size);
-        d.data()[size] = '\0';
+            size = qstrlen(data);
+        if (!size) {
+            d = DataPointer::fromRawData(&_empty, 0);
+        } else {
+            d = DataPointer(Data::allocate(size), size);
+            memcpy(d.data(), data, size);
+            d.data()[size] = '\0';
+        }
     }
 }
 
@@ -1600,7 +1603,7 @@ QByteArray::QByteArray(qsizetype size, char ch)
     if (size <= 0) {
         d = DataPointer::fromRawData(&_empty, 0);
     } else {
-        d = DataPointer(Data::allocate(size + 1u), size);
+        d = DataPointer(Data::allocate(size), size);
         memset(d.data(), ch, size);
         d.data()[size] = '\0';
     }
@@ -1614,8 +1617,12 @@ QByteArray::QByteArray(qsizetype size, char ch)
 
 QByteArray::QByteArray(qsizetype size, Qt::Initialization)
 {
-    d = DataPointer(Data::allocate(size + 1u), size);
-    d.data()[size] = '\0';
+    if (size <= 0) {
+        d = DataPointer::fromRawData(&_empty, 0);
+    } else {
+        d = DataPointer(Data::allocate(size), size);
+        d.data()[size] = '\0';
+    }
 }
 
 /*!
@@ -1637,7 +1644,7 @@ void QByteArray::resize(qsizetype size)
 
     const auto capacityAtEnd = capacity() - d.freeSpaceAtBegin();
     if (d->needsDetach() || size > capacityAtEnd)
-        reallocData(size_t(size) + 1u, d->detachFlags() | Data::GrowsForward);
+        reallocData(size_t(size), d->detachFlags() | Data::GrowsForward);
     d.size = size;
     if (d->allocatedCapacity())
         d.data()[size] = 0;
@@ -1663,13 +1670,18 @@ QByteArray &QByteArray::fill(char ch, qsizetype size)
 
 void QByteArray::reallocData(size_t alloc, Data::ArrayOptions options)
 {
+    if (!alloc) {
+        d = DataPointer::fromRawData(&_empty, 0);
+        return;
+    }
+
     // there's a case of slow reallocate path where we need to memmove the data
     // before a call to ::realloc(), meaning that there's an extra "heavy"
     // operation. just prefer ::malloc() branch in this case
     const bool slowReallocatePath = d.freeSpaceAtBegin() > 0;
 
     if (d->needsDetach() || slowReallocatePath) {
-        DataPointer dd(Data::allocate(alloc, options), qMin(qsizetype(alloc) - 1, d.size));
+        DataPointer dd(Data::allocate(alloc, options), qMin(qsizetype(alloc), d.size));
         if (dd.size > 0)
             ::memcpy(dd.data(), d.data(), dd.size);
         dd.data()[dd.size] = 0;
@@ -1681,8 +1693,11 @@ void QByteArray::reallocData(size_t alloc, Data::ArrayOptions options)
 
 void QByteArray::reallocGrowData(size_t alloc, Data::ArrayOptions options)
 {
+    if (!alloc)  // expected to always allocate
+        alloc = 1;
+
     if (d->needsDetach()) {
-        const auto newSize = qMin(qsizetype(alloc) - 1, d.size);
+        const auto newSize = qMin(qsizetype(alloc), d.size);
         DataPointer dd(DataPointer::allocateGrow(d, alloc, newSize, options));
         dd->copyAppend(d.data(), d.data() + newSize);
         dd.data()[dd.size] = 0;
@@ -1851,7 +1866,7 @@ QByteArray& QByteArray::append(char ch)
 {
     const bool shouldGrow = d->shouldGrowBeforeInsert(d.end(), 1);
     if (d->needsDetach() || size() + 1 > capacity() || shouldGrow)
-        reallocGrowData(size_t(size()) + 2u, d->detachFlags() | Data::GrowsForward);
+        reallocGrowData(size_t(size()) + 1u, d->detachFlags() | Data::GrowsForward);
     d->copyAppend(1, ch);
     d.data()[d.size] = '\0';
     return *this;
@@ -1888,7 +1903,7 @@ QByteArray &QByteArray::insert(qsizetype i, QByteArrayView data)
         auto flags = d->detachFlags() | Data::GrowsForward;
         if (oldSize != 0 && i <= oldSize / 4)  // using QList's policy
             flags |= Data::GrowsBackwards;
-        reallocGrowData(newSize + 1, flags);
+        reallocGrowData(newSize, flags);
     }
 
     if (i > oldSize)  // set spaces in the uninitialized gap
@@ -1944,7 +1959,7 @@ QByteArray &QByteArray::insert(qsizetype i, qsizetype count, char ch)
         auto flags = d->detachFlags() | Data::GrowsForward;
         if (oldSize != 0 && i <= oldSize / 4)  // using QList's policy
             flags |= Data::GrowsBackwards;
-        reallocGrowData(newSize + 1, flags);
+        reallocGrowData(newSize, flags);
     }
 
     if (i > oldSize)  // set spaces in the uninitialized gap
