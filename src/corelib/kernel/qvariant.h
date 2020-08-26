@@ -426,10 +426,11 @@ class Q_CORE_EXPORT QVariant
     {
         static constexpr size_t MaxInternalSize = 3*sizeof(void *);
         template<typename T>
-        static constexpr bool CanUseInternalSpace = (sizeof(T) <= MaxInternalSize);
-        static constexpr bool canUseInternalSpace(size_t s) { return s <= MaxInternalSize; }
+        static constexpr bool CanUseInternalSpace = (sizeof(T) <= MaxInternalSize && alignof(T) <= alignof(void *));
+        static constexpr bool canUseInternalSpace(size_t s, size_t align)
+        { return s <= MaxInternalSize && align <= alignof(void *); }
 
-        alignas(std::max_align_t) union
+        union
         {
             uchar data[MaxInternalSize] = {};
             PrivateShared *shared;

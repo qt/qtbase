@@ -255,7 +255,7 @@ static void customConstruct(QVariant::Private *d, const void *copy)
         return;
     }
 
-    if (QVariant::Private::canUseInternalSpace(size)) {
+    if (QVariant::Private::canUseInternalSpace(size, type.alignOf())) {
         type.construct(&d->data, copy);
         d->is_shared = false;
     } else {
