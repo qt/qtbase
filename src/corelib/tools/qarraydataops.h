@@ -460,8 +460,7 @@ public:
         const bool grows = options & (Data::GrowsForward | Data::GrowsBackwards);
 
         // ### optimize me: there may be cases when moving is not obligatory
-        if (this->d && !grows) {
-            const auto gap = this->freeSpaceAtBegin();
+        if (const auto gap = this->freeSpaceAtBegin(); this->d && !grows && gap) {
             auto oldBegin = this->begin();
             this->ptr -= gap;
             ::memmove(static_cast<void *>(this->begin()), static_cast<void *>(oldBegin),

@@ -209,6 +209,12 @@ public:
         return d->constAllocatedCapacity() - freeSpaceAtBegin() - this->size;
     }
 
+    static QArrayDataPointer allocateGrow(const QArrayDataPointer &from,
+                                          qsizetype newSize, QArrayData::ArrayOptions options)
+    {
+        return allocateGrow(from, from.detachCapacity(newSize), newSize, options);
+    }
+
     static QArrayDataPointer allocateGrow(const QArrayDataPointer &from, qsizetype capacity,
                                           qsizetype newSize, QArrayData::ArrayOptions options)
     {

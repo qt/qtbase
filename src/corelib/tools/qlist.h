@@ -564,7 +564,7 @@ inline void QList<T>::append(const_iterator i1, const_iterator i2)
     const size_t newSize = size() + distance;
     const bool shouldGrow = d->shouldGrowBeforeInsert(d.end(), qsizetype(distance));
     if (d->needsDetach() || newSize > d->allocatedCapacity() || shouldGrow) {
-        DataPointer detached(DataPointer::allocateGrow(d, d->detachCapacity(newSize), newSize,
+        DataPointer detached(DataPointer::allocateGrow(d, newSize,
                                                        d->detachFlags() | Data::GrowsForward));
         detached->copyAppend(constBegin(), constEnd());
         detached->copyAppend(i1, i2);
@@ -586,7 +586,7 @@ inline void QList<T>::append(QList<T> &&other)
     const size_t newSize = size() + other.size();
     const bool shouldGrow = d->shouldGrowBeforeInsert(d.end(), other.size());
     if (d->needsDetach() || newSize > d->allocatedCapacity() || shouldGrow) {
-        DataPointer detached(DataPointer::allocateGrow(d, d->detachCapacity(newSize), newSize,
+        DataPointer detached(DataPointer::allocateGrow(d, newSize,
                                                        d->detachFlags() | Data::GrowsForward));
 
         if (!d->needsDetach())
@@ -619,8 +619,7 @@ QList<T>::insert(qsizetype i, qsizetype n, parameter_type t)
         if (size_t(i) <= newSize / 4)
             flags |= Data::GrowsBackwards;
 
-        DataPointer detached(DataPointer::allocateGrow(d, d->detachCapacity(newSize), newSize,
-                                                       flags));
+        DataPointer detached(DataPointer::allocateGrow(d, newSize, flags));
         const_iterator where = constBegin() + i;
         detached->copyAppend(constBegin(), where);
         detached->copyAppend(n, t);
@@ -652,8 +651,7 @@ QList<T>::emplace(qsizetype i, Args&&... args)
         if (size_t(i) <= newSize / 4)
             flags |= Data::GrowsBackwards;
 
-        DataPointer detached(DataPointer::allocateGrow(d, d->detachCapacity(newSize), newSize,
-                                                       flags));
+        DataPointer detached(DataPointer::allocateGrow(d, newSize, flags));
         const_iterator where = constBegin() + i;
         // Create an element here to handle cases when a user moves the element
         // from a container to the same container. This is a critical step for
