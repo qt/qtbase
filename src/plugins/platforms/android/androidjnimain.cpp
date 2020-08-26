@@ -92,8 +92,6 @@ static jmethodID m_createBitmapMethodID = nullptr;
 static jobject m_ARGB_8888_BitmapConfigValue = nullptr;
 static jobject m_RGB_565_BitmapConfigValue = nullptr;
 
-static bool m_statusBarShowing = true;
-
 static jclass m_bitmapDrawableClass = nullptr;
 static jmethodID m_bitmapDrawableConstructorMethodID = nullptr;
 
