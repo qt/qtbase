@@ -68,7 +68,7 @@ function(qt_add_docs)
         DEPENDS ${qattributionsscanner_bin}
         COMMAND ${qtattributionsscanner_bin}
         ${PROJECT_SOURCE_DIR}
-        --filter "QDocModule=${qdoc_target}"
+        --filter "QDocModule=${doc_target}"
         -o "${target_bin_dir}/codeattributions.qdoc"
     )
 
