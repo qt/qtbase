@@ -3789,7 +3789,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
 
                 QRect textRect = subRule.contentsRect(opt->rect);
                 textRect.setLeft(textRect.left() + textRectOffset);
-                textRect.setWidth(textRect.width() - mi.tabWidth);
+                textRect.setWidth(textRect.width() - mi.reservedShortcutWidth);
                 const QRect vTextRect = visualRect(opt->direction, m->rect, textRect);
 
                 QStringView s(mi.text);

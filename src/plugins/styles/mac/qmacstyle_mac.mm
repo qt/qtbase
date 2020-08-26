@@ -4279,7 +4279,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 yPos += 1;
 
             const bool isSubMenu = mi->menuItemType == QStyleOptionMenuItem::SubMenu;
-            const int tabwidth = isSubMenu ? 9 : mi->tabWidth;
+            const int tabwidth = isSubMenu ? 9 : mi->reservedShortcutWidth;
 
             QString rightMarginText;
             if (isSubMenu)

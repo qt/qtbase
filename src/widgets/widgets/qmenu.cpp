@@ -961,7 +961,7 @@ void QMenuPrivate::drawScroller(QPainter *painter, QMenuPrivate::ScrollerTearOff
     menuOpt.state = QStyle::State_None;
     menuOpt.checkType = QStyleOptionMenuItem::NotCheckable;
     menuOpt.maxIconWidth = 0;
-    menuOpt.tabWidth = 0;
+    menuOpt.reservedShortcutWidth = 0;
     menuOpt.rect = rect;
     menuOpt.menuItemType = QStyleOptionMenuItem::Scroller;
     menuOpt.state |= QStyle::State_Enabled;
@@ -986,7 +986,7 @@ void QMenuPrivate::drawTearOff(QPainter *painter, const QRect &rect)
     menuOpt.state = QStyle::State_None;
     menuOpt.checkType = QStyleOptionMenuItem::NotCheckable;
     menuOpt.maxIconWidth = 0;
-    menuOpt.tabWidth = 0;
+    menuOpt.reservedShortcutWidth = 0;
     menuOpt.rect = rect;
     menuOpt.menuItemType = QStyleOptionMenuItem::TearOff;
     if (tearoffHighlighted)
@@ -1613,7 +1613,7 @@ void QMenu::initStyleOption(QStyleOptionMenuItem *option, const QAction *action)
     }
 #endif
     option->text = textAndAccel;
-    option->tabWidth = d->tabWidth;
+    option->reservedShortcutWidth = d->tabWidth;
     option->maxIconWidth = d->maxIconWidth;
     option->menuRect = rect();
 }
@@ -2784,7 +2784,7 @@ void QMenu::paintEvent(QPaintEvent *e)
     menuOpt.state = QStyle::State_None;
     menuOpt.checkType = QStyleOptionMenuItem::NotCheckable;
     menuOpt.maxIconWidth = 0;
-    menuOpt.tabWidth = 0;
+    menuOpt.reservedShortcutWidth = 0;
     style()->drawPrimitive(QStyle::PE_PanelMenu, &menuOpt, &p, this);
 
     //calculate the scroll up / down rect

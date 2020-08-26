@@ -1668,7 +1668,8 @@ QStyleOptionProgressBar::QStyleOptionProgressBar(int version)
 
 QStyleOptionMenuItem::QStyleOptionMenuItem()
     : QStyleOption(QStyleOptionMenuItem::Version, SO_MenuItem), menuItemType(Normal),
-      checkType(NotCheckable), checked(false), menuHasCheckableItems(true), maxIconWidth(0), tabWidth(0)
+      checkType(NotCheckable), checked(false), menuHasCheckableItems(true), maxIconWidth(0),
+      reservedShortcutWidth(0)
 {
 }
 
@@ -1677,7 +1678,8 @@ QStyleOptionMenuItem::QStyleOptionMenuItem()
 */
 QStyleOptionMenuItem::QStyleOptionMenuItem(int version)
     : QStyleOption(version, SO_MenuItem), menuItemType(Normal),
-      checkType(NotCheckable), checked(false), menuHasCheckableItems(true), maxIconWidth(0), tabWidth(0)
+      checkType(NotCheckable), checked(false), menuHasCheckableItems(true), maxIconWidth(0),
+      reservedShortcutWidth(0)
 {
 }
 
@@ -1821,7 +1823,7 @@ QStyleOptionMenuItem::QStyleOptionMenuItem(int version)
 */
 
 /*!
-    \variable QStyleOptionMenuItem::tabWidth
+    \variable QStyleOptionMenuItem::reservedShortcutWidth
     \brief the reserved width for the menu item's shortcut
 
     QMenu sets it to the width occupied by the widest shortcut among

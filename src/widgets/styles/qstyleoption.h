@@ -366,7 +366,7 @@ public:
     QString text;
     QIcon icon;
     int maxIconWidth;
-    int tabWidth; // ### Qt 6: rename to reservedShortcutWidth
+    int reservedShortcutWidth;
     QFont font;
 
     QStyleOptionMenuItem();
