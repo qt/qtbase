@@ -1032,8 +1032,6 @@ QPixmapColorizeFilter::QPixmapColorizeFilter(QObject *parent)
 */
 QPixmapColorizeFilter::~QPixmapColorizeFilter()
 {
-    // was inline until Qt 5.6, so essentially
-    // must stay empty until ### Qt 6
 }
 
 /*!
