@@ -480,7 +480,7 @@ void QLineEditPrivate::_q_clearButtonClicked()
     Q_Q(QLineEdit);
     if (!q->text().isEmpty()) {
         q->clear();
-        emit q->textEdited(QString());
+        _q_textEdited(QString());
     }
 }
 
