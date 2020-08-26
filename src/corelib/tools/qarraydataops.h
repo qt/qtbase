@@ -239,8 +239,12 @@ template <class T>
 struct QPodArrayOps
         : public QArrayDataPointer<T>
 {
-private:
+protected:
     typedef QTypedArrayData<T> Data;
+
+    template <typename ...Args>
+    void createInPlace(T *where, Args&&... args) { new (where) T(std::forward<Args>(args)...); }
+
 public:
     typedef typename QArrayDataPointer<T>::parameter_type parameter_type;
 
@@ -344,8 +348,6 @@ public:
             *where++ = t;
     }
 
-    template <typename ...Args>
-    void createInPlace(T *where, Args&&... args) { new (where) T(std::forward<Args>(args)...); }
 
     template <typename ...Args>
     void emplace(T *where, Args&&... args)
@@ -477,6 +479,13 @@ template <class T>
 struct QGenericArrayOps
         : public QArrayDataPointer<T>
 {
+protected:
+    typedef QTypedArrayData<T> Data;
+
+    template <typename ...Args>
+    void createInPlace(T *where, Args&&... args) { new (where) T(std::forward<Args>(args)...); }
+
+public:
     typedef typename QArrayDataPointer<T>::parameter_type parameter_type;
 
     void appendInitialize(size_t newSize)
@@ -728,8 +737,6 @@ struct QGenericArrayOps
         }
     }
 
-    template <typename ...Args>
-    void createInPlace(T *where, Args&&... args) { new (where) T(std::forward<Args>(args)...); }
 
     template <typename iterator, typename ...Args>
     void emplace(iterator where, Args&&... args)
