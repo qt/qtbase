@@ -43,6 +43,9 @@
 #include <QtCore/private/qtools_p.h>
 #include <QtCore/qmath.h>
 
+#include <QtCore/qbytearray.h>  // QBA::value_type
+#include <QtCore/qstring.h>  // QString::value_type
+
 #include <stdlib.h>
 
 QT_BEGIN_NAMESPACE
@@ -140,6 +143,22 @@ qCalculateGrowingBlockSize(qsizetype elementCount, qsizetype elementSize, qsizet
     return result;
 }
 
+/*!
+    \internal
+
+    Returns \a allocSize plus extra reserved bytes necessary to store '\0'.
+ */
+static inline qsizetype reserveExtraBytes(qsizetype allocSize)
+{
+    // We deal with QByteArray and QString only
+    constexpr qsizetype extra = qMax(sizeof(QByteArray::value_type), sizeof(QString::value_type));
+    if (Q_UNLIKELY(allocSize < 0))
+        return -1;
+    if (Q_UNLIKELY(add_overflow(allocSize, extra, &allocSize)))
+        return -1;
+    return allocSize;
+}
+
 static inline qsizetype calculateBlockSize(qsizetype &capacity, qsizetype objectSize, qsizetype headerSize, uint options)
 {
     // Calculate the byte size
@@ -190,6 +209,12 @@ void *QArrayData::allocate(QArrayData **dptr, qsizetype objectSize, qsizetype al
     Q_ASSERT(headerSize > 0);
 
     qsizetype allocSize = calculateBlockSize(capacity, objectSize, headerSize, options);
+    allocSize = reserveExtraBytes(allocSize);
+    if (Q_UNLIKELY(allocSize < 0)) {  // handle overflow. cannot allocate reliably
+        *dptr = nullptr;
+        return nullptr;
+    }
+
     QArrayData *header = allocateData(allocSize, options);
     void *data = nullptr;
     if (header) {
@@ -211,6 +236,11 @@ QArrayData::reallocateUnaligned(QArrayData *data, void *dataPointer,
     qsizetype headerSize = sizeof(QArrayData);
     qsizetype allocSize = calculateBlockSize(capacity, objectSize, headerSize, options);
     qptrdiff offset = dataPointer ? reinterpret_cast<char *>(dataPointer) - reinterpret_cast<char *>(data) : headerSize;
+
+    allocSize = reserveExtraBytes(allocSize);
+    if (Q_UNLIKELY(allocSize < 0))  // handle overflow. cannot reallocate reliably
+        return qMakePair(data, dataPointer);
+
     QArrayData *header = static_cast<QArrayData *>(::realloc(data, size_t(allocSize)));
     if (header) {
         header->flags = options;
