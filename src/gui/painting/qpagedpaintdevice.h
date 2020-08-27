@@ -230,16 +230,8 @@ public:
     virtual void setPageSizeMM(const QSizeF &size);
     QSizeF pageSizeMM() const;
 
-    // ### Qt6 Remove in favor of QMarginsF
-    struct Margins {
-        qreal left;
-        qreal right;
-        qreal top;
-        qreal bottom;
-    };
-
-    virtual void setMargins(const Margins &margins);
-    Margins margins() const;
+    virtual void setMargins(const QMarginsF &margins);
+    QMarginsF margins() const;
 
 protected:
     QPagedPaintDevice(QPagedPaintDevicePrivate *dd);

@@ -1816,16 +1816,12 @@ void tst_QPrinter::testPageMetrics()
 
     if (setMargins) {
         // Setup the given margins
-        QPrinter::Margins margins;
-        margins.left = leftMMf;
-        margins.right = rightMMf;
-        margins.top = topMMf;
-        margins.bottom = bottomMMf;
+        QMarginsF margins(leftMMf, topMMf, rightMMf, bottomMMf);
         printer.setMargins(margins);
-        QCOMPARE(printer.margins().left, leftMMf);
-        QCOMPARE(printer.margins().right, rightMMf);
-        QCOMPARE(printer.margins().top, topMMf);
-        QCOMPARE(printer.margins().bottom, bottomMMf);
+        QCOMPARE(printer.margins().left(), leftMMf);
+        QCOMPARE(printer.margins().right(), rightMMf);
+        QCOMPARE(printer.margins().top(), topMMf);
+        QCOMPARE(printer.margins().bottom(), bottomMMf);
     }
 
 
@@ -1840,17 +1836,17 @@ void tst_QPrinter::testPageMetrics()
     QCOMPARE(printer.orientation(), QPrinter::Portrait);
     if (setMargins) {
         // Check margins unchanged from page size change
-        QCOMPARE(printer.margins().left, leftMMf);
-        QCOMPARE(printer.margins().right, rightMMf);
-        QCOMPARE(printer.margins().top, topMMf);
-        QCOMPARE(printer.margins().bottom, bottomMMf);
+        QCOMPARE(printer.margins().left(), leftMMf);
+        QCOMPARE(printer.margins().right(), rightMMf);
+        QCOMPARE(printer.margins().top(), topMMf);
+        QCOMPARE(printer.margins().bottom(), bottomMMf);
     } else {
         // Fetch the default margins for the printer and page size
         // TODO Check against margins from print device when api added
-        leftMMf = printer.margins().left;
-        rightMMf = printer.margins().right;
-        topMMf = printer.margins().top;
-        bottomMMf = printer.margins().bottom;
+        leftMMf = printer.margins().left();
+        rightMMf = printer.margins().right();
+        topMMf = printer.margins().top();
+        bottomMMf = printer.margins().bottom();
     }
 
     // QPagedPaintDevice::pageSizeMM() always returns Portrait
@@ -1880,17 +1876,17 @@ void tst_QPrinter::testPageMetrics()
     QCOMPARE(printer.orientation(), QPrinter::Landscape);
     if (setMargins) {
         // Check margins unchanged from page size change
-        QCOMPARE(printer.margins().left, leftMMf);
-        QCOMPARE(printer.margins().right, rightMMf);
-        QCOMPARE(printer.margins().top, topMMf);
-        QCOMPARE(printer.margins().bottom, bottomMMf);
+        QCOMPARE(printer.margins().left(), leftMMf);
+        QCOMPARE(printer.margins().right(), rightMMf);
+        QCOMPARE(printer.margins().top(), topMMf);
+        QCOMPARE(printer.margins().bottom(), bottomMMf);
     } else {
         // Fetch the default margins for the printer and page size
         // TODO Check against margins from print device when api added
-        leftMMf = printer.margins().left;
-        rightMMf = printer.margins().right;
-        topMMf = printer.margins().top;
-        bottomMMf = printer.margins().bottom;
+        leftMMf = printer.margins().left();
+        rightMMf = printer.margins().right();
+        topMMf = printer.margins().top();
+        bottomMMf = printer.margins().bottom();
     }
 
     // QPagedPaintDevice::pageSizeMM() always returns Portrait
@@ -1921,17 +1917,17 @@ void tst_QPrinter::testPageMetrics()
     QCOMPARE(printer.orientation(), QPrinter::Landscape);
     if (setMargins) {
         // Check margins unchanged from page size change
-        QCOMPARE(printer.margins().left, leftMMf);
-        QCOMPARE(printer.margins().right, rightMMf);
-        QCOMPARE(printer.margins().top, topMMf);
-        QCOMPARE(printer.margins().bottom, bottomMMf);
+        QCOMPARE(printer.margins().left(), leftMMf);
+        QCOMPARE(printer.margins().right(), rightMMf);
+        QCOMPARE(printer.margins().top(), topMMf);
+        QCOMPARE(printer.margins().bottom(), bottomMMf);
     } else {
         // Fetch the default margins for the printer and page size
         // TODO Check against margins from print device when api added
-        leftMMf = printer.margins().left;
-        rightMMf = printer.margins().right;
-        topMMf = printer.margins().top;
-        bottomMMf = printer.margins().bottom;
+        leftMMf = printer.margins().left();
+        rightMMf = printer.margins().right();
+        topMMf = printer.margins().top();
+        bottomMMf = printer.margins().bottom();
     }
 
     // QPagedPaintDevice::pageSizeMM() always returns Portrait

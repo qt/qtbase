@@ -97,7 +97,7 @@ public:
     QT_DEPRECATED_X("Use setPageSize(QPageSize(size, QPageSize::Millimeter)) instead")
     void setPageSizeMM(const QSizeF &size) override;
     QT_DEPRECATED_X("Use setPageMargins(QMarginsF(l, t, r, b), QPageLayout::Millimeter) instead")
-    void setMargins(const Margins &m) override;
+    void setMargins(const QMarginsF &m) override;
 #endif
 
 protected:

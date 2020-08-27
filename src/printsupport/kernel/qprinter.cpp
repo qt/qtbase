@@ -1740,9 +1740,9 @@ void QPrinter::setPageMargins(qreal left, qreal top, qreal right, qreal bottom, 
 
     \sa setPageMargins()
   */
-void QPrinter::setMargins(const Margins &m)
+void QPrinter::setMargins(const QMarginsF &m)
 {
-    setPageMargins(QMarginsF(m.left, m.top, m.right, m.bottom), QPageLayout::Millimeter);
+    setPageMargins(m, QPageLayout::Millimeter);
 }
 
 /*!

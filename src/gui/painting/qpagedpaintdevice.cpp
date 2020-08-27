@@ -343,9 +343,9 @@ QSizeF QPagedPaintDevice::pageSizeMM() const
 
   \sa margins()
   */
-void QPagedPaintDevice::setMargins(const Margins &margins)
+void QPagedPaintDevice::setMargins(const QMarginsF &margins)
 {
-    d->setPageMargins(QMarginsF(margins.left, margins.top, margins.right, margins.bottom), QPageLayout::Millimeter);
+    d->setPageMargins(margins, QPageLayout::Millimeter);
 }
 
 /*!
@@ -355,15 +355,9 @@ void QPagedPaintDevice::setMargins(const Margins &margins)
 
   \sa setMargins()
   */
-QPagedPaintDevice::Margins QPagedPaintDevice::margins() const
+QMarginsF QPagedPaintDevice::margins() const
 {
-    QMarginsF margins = d->pageLayout().margins(QPageLayout::Millimeter);
-    Margins result;
-    result.left = margins.left();
-    result.top = margins.top();
-    result.right = margins.right();
-    result.bottom = margins.bottom();
-    return result;
+    return d->pageLayout().margins(QPageLayout::Millimeter);
 }
 
 /*!

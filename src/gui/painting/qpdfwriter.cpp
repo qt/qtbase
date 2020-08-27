@@ -480,9 +480,9 @@ QT_WARNING_DISABLE_DEPRECATED
 
     \sa setPageMargins()
   */
-void QPdfWriter::setMargins(const Margins &m)
+void QPdfWriter::setMargins(const QMarginsF &m)
 {
-    setPageMargins(QMarginsF(m.left, m.top, m.right, m.bottom), QPageLayout::Millimeter);
+    setPageMargins(m, QPageLayout::Millimeter);
 }
 QT_WARNING_POP
 #endif

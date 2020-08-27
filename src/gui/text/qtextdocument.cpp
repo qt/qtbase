@@ -1918,9 +1918,12 @@ void QTextDocument::print(QPagedPaintDevice *printer) const
     QPagedPaintDevicePrivate *pd = QPagedPaintDevicePrivate::get(printer);
 
     // ### set page size to paginated size?
-    QPagedPaintDevice::Margins m = printer->margins();
-    if (!documentPaginated && m.left == 0. && m.right == 0. && m.top == 0. && m.bottom == 0.) {
-        m.left = m.right = m.top = m.bottom = 2.;
+    QMarginsF m = printer->margins();
+    if (!documentPaginated && m.left() == 0. && m.right() == 0. && m.top() == 0. && m.bottom() == 0.) {
+        m.setLeft(2);
+        m.setRight(2);
+        m.setTop(2);
+        m.setBottom(2);
         printer->setMargins(m);
     }
     // ### use the margins correctly
