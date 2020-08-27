@@ -307,7 +307,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         {
             bool vertical = false;
             if (const QStyleOptionProgressBar *pb = qstyleoption_cast<const QStyleOptionProgressBar *>(opt))
-                vertical = pb->orientation == Qt::Vertical;
+                vertical = !(pb->state & QStyle::State_Horizontal);
             if (!vertical) {
                 p->fillRect(opt->rect.x(), opt->rect.y() + 3, opt->rect.width() -2, opt->rect.height() - 6,
                             opt->palette.brush(QPalette::Highlight));
@@ -1526,7 +1526,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
         break;
     case CE_ProgressBarLabel:
         if (const QStyleOptionProgressBar *pb = qstyleoption_cast<const QStyleOptionProgressBar *>(opt)) {
-            const bool vertical = pb->orientation == Qt::Vertical;
+            const bool vertical = !(pb->state & QStyle::State_Horizontal);
             if (!vertical) {
                 QPalette::ColorRole textRole = QPalette::NoRole;
                 if ((pb->textAlignment & Qt::AlignCenter) && pb->textVisible
@@ -1551,7 +1551,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
         if (const QStyleOptionProgressBar *pb = qstyleoption_cast<const QStyleOptionProgressBar *>(opt)) {
 
             QRect rect = pb->rect;
-            const bool vertical = pb->orientation == Qt::Vertical;
+            const bool vertical = !(pb->state & QStyle::State_Horizontal);
             const bool inverted = pb->invertedAppearance;
             qint64 minimum = qint64(pb->minimum);
             qint64 maximum = qint64(pb->maximum);
@@ -2591,7 +2591,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
     case SE_ProgressBarLabel:
         if (const QStyleOptionProgressBar *pb = qstyleoption_cast<const QStyleOptionProgressBar *>(opt)) {
             int textw = 0;
-            const bool vertical = pb->orientation == Qt::Vertical;
+            const bool vertical = !(pb->state & QStyle::State_Horizontal);
             if (!vertical) {
                 if (pb->textVisible)
                     textw = qMax(pb->fontMetrics.horizontalAdvance(pb->text), pb->fontMetrics.horizontalAdvance(QLatin1String("100%"))) + 6;

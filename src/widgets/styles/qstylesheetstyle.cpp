@@ -3993,7 +3993,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 qint64 minimum = qint64(pb->minimum);
                 qint64 maximum = qint64(pb->maximum);
                 qint64 progress = qint64(pb->progress);
-                bool vertical = (pb->orientation == Qt::Vertical);
+                bool vertical = !(pb->state & QStyle::State_Horizontal);
                 bool inverted = pb->invertedAppearance;
 
                 QTransform m;

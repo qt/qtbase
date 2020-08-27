@@ -383,6 +383,13 @@ bool QWindowsXPStylePrivate::isLineEditBaseColorSet(const QStyleOption *option, 
     return (resolveMask & (1 << QPalette::Base)) != 0;
 }
 
+static inline Qt::Orientation progressBarOrientation(const QStyleOption *option = nullptr)
+{
+    if (const QStyleOptionProgressBar *pb = qstyleoption_cast<const QStyleOptionProgressBar *>(option))
+        return pb->state & QStyle::State_Horizontal ? Qt::Horizontal : Qt::Vertical;
+    return Qt::Horizontal;
+}
+
 /*! \internal
     This function will always return a valid window handle, and might
     create a limbo widget to do so.
@@ -1739,10 +1746,10 @@ case PE_Frame:
         Qt::Orientation orient = Qt::Horizontal;
         bool inverted = false;
         if (const QStyleOptionProgressBar *pb = qstyleoption_cast<const QStyleOptionProgressBar *>(option)) {
-            orient = pb->orientation;
+            orient = pb->state & QStyle::State_Horizontal ? Qt::Horizontal : Qt::Vertical;
             inverted = pb->invertedAppearance;
         }
-        if (orient == Qt::Horizontal) {
+        if (orient & Qt::Horizontal) {
             partId = PP_CHUNK;
             rect = QRect(option->rect.x(), option->rect.y(), option->rect.width(), option->rect.height() );
             if (inverted && option->direction == Qt::LeftToRight)
@@ -2117,9 +2124,7 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
 
     case CE_ProgressBarGroove:
         {
-        Qt::Orientation orient = Qt::Horizontal;
-        if (const QStyleOptionProgressBar *pb = qstyleoption_cast<const QStyleOptionProgressBar *>(option))
-            orient = pb->orientation;
+        Qt::Orientation orient = progressBarOrientation(option);
         partId = (orient == Qt::Horizontal) ? PP_BAR : PP_BARVERT;
         themeNumber = QWindowsXPStylePrivate::ProgressTheme;
         stateId = 1;
@@ -3153,13 +3158,6 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
         QWindowsStyle::drawComplexControl(cc, option, p, widget);
         break;
     }
-}
-
-static inline Qt::Orientation progressBarOrientation(const QStyleOption *option = nullptr)
-{
-    if (const QStyleOptionProgressBar *pb = qstyleoption_cast<const QStyleOptionProgressBar *>(option))
-        return pb->orientation;
-    return Qt::Horizontal;
 }
 
 int QWindowsXPStylePrivate::pixelMetricFromSystemDp(QStyle::PixelMetric pm, const QStyleOption *option, const QWidget *widget)

@@ -1006,7 +1006,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
         if (const QStyleOptionProgressBar *bar
                 = qstyleoption_cast<const QStyleOptionProgressBar *>(option)) {
             bool isIndeterminate = (bar->minimum == 0 && bar->maximum == 0);
-            const bool vertical = bar->orientation == Qt::Vertical;
+            const bool vertical = !(bar->state & QStyle::State_Horizontal);
             const bool inverted = bar->invertedAppearance;
 
             if (isIndeterminate || (bar->progress > 0 && (bar->progress < bar->maximum) && d->transitionsEnabled())) {

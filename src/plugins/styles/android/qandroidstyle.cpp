@@ -1619,10 +1619,11 @@ void QAndroidStyle::AndroidProgressBarControl::drawControl(const QStyleOption *o
         if (m_progressDrawable->type() == QAndroidStyle::Layer) {
             const double fraction = double(qint64(pb->progress) - pb->minimum) / (qint64(pb->maximum) - pb->minimum);
             QAndroidStyle::AndroidDrawable *clipDrawable = static_cast<QAndroidStyle::AndroidLayerDrawable *>(m_progressDrawable)->layer(m_progressId);
+            const Qt::Orientation orientation = pb->state & QStyle::State_Horizontal ? Qt::Horizontal : Qt::Vertical;
             if (clipDrawable->type() == QAndroidStyle::Clip)
-                static_cast<AndroidClipDrawable *>(clipDrawable)->setFactor(fraction, pb->orientation);
+                static_cast<AndroidClipDrawable *>(clipDrawable)->setFactor(fraction, orientation);
             else
-                static_cast<AndroidLayerDrawable *>(m_progressDrawable)->setFactor(m_progressId, fraction, pb->orientation);
+                static_cast<AndroidLayerDrawable *>(m_progressDrawable)->setFactor(m_progressId, fraction, orientation);
         }
         m_progressDrawable->draw(p, option);
     }
@@ -1634,7 +1635,7 @@ QRect QAndroidStyle::AndroidProgressBarControl::subElementRect(QStyle::SubElemen
 {
     if (const QStyleOptionProgressBar *progressBarOption =
            qstyleoption_cast<const QStyleOptionProgressBar *>(option)) {
-        const bool horizontal = progressBarOption->orientation == Qt::Vertical;
+        const bool horizontal = progressBarOption->state & QStyle::State_Horizontal;
         if (!m_background)
             return option->rect;
 
@@ -1676,12 +1677,12 @@ QSize QAndroidStyle::AndroidProgressBarControl::sizeFromContents(const QStyleOpt
 
     if (const QStyleOptionProgressBar *progressBarOption =
            qstyleoption_cast<const QStyleOptionProgressBar *>(opt)) {
-        if (progressBarOption->orientation == Qt::Vertical) {
-            if (sz.height() > m_maxSize.height())
-                sz.setHeight(m_maxSize.height());
-        } else {
+        if (progressBarOption->state & QStyle::State_Horizontal) {
             if (sz.width() > m_maxSize.width())
                 sz.setWidth(m_maxSize.width());
+        } else {
+            if (sz.height() > m_maxSize.height())
+                sz.setHeight(m_maxSize.height());
         }
     }
     return contentsSize;

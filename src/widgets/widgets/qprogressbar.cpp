@@ -135,7 +135,6 @@ void QProgressBar::initStyleOption(QStyleOptionProgressBar *option) const
     option->textAlignment = d->alignment;
     option->textVisible = d->textVisible;
     option->text = text();
-    option->orientation = d->orientation;  // ### Qt 6: remove this member from QStyleOptionProgressBar
     option->invertedAppearance = d->invertedAppearance;
     option->bottomToTop = d->textDirection == QProgressBar::BottomToTop;
 }
@@ -424,7 +423,7 @@ QSize QProgressBar::sizeHint() const
     initStyleOption(&opt);
     int cw = style()->pixelMetric(QStyle::PM_ProgressBarChunkWidth, &opt, this);
     QSize size = QSize(qMax(9, cw) * 7 + fm.horizontalAdvance(QLatin1Char('0')) * 4, fm.height() + 8);
-    if (opt.orientation == Qt::Vertical)
+    if (!(opt.state & QStyle::State_Horizontal))
         size = size.transposed();
     return style()->sizeFromContents(QStyle::CT_ProgressBar, &opt, size, this);
 }

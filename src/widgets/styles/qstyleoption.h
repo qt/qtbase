@@ -336,7 +336,6 @@ public:
     QString text;
     Qt::Alignment textAlignment;
     bool textVisible;
-    Qt::Orientation orientation; // ### Qt 6: remove
     bool invertedAppearance;
     bool bottomToTop;
 

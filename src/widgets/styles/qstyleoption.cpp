@@ -1496,7 +1496,7 @@ QStyleOptionTab::QStyleOptionTab(int version)
 QStyleOptionProgressBar::QStyleOptionProgressBar()
     : QStyleOption(QStyleOptionProgressBar::Version, SO_ProgressBar),
       minimum(0), maximum(0), progress(0), textAlignment(Qt::AlignLeft), textVisible(false),
-      orientation(Qt::Horizontal), invertedAppearance(false), bottomToTop(false)
+      invertedAppearance(false), bottomToTop(false)
 {
 }
 
@@ -1506,7 +1506,7 @@ QStyleOptionProgressBar::QStyleOptionProgressBar()
 QStyleOptionProgressBar::QStyleOptionProgressBar(int version)
     : QStyleOption(version, SO_ProgressBar),
       minimum(0), maximum(0), progress(0), textAlignment(Qt::AlignLeft), textVisible(false),
-      orientation(Qt::Horizontal), invertedAppearance(false), bottomToTop(false)
+      invertedAppearance(false), bottomToTop(false)
 {
 }
 
@@ -1606,17 +1606,6 @@ QStyleOptionProgressBar::QStyleOptionProgressBar(int version)
     value is 0.
 
     \sa QProgressBar::value
-*/
-
-/*!
-    \variable QStyleOptionProgressBar::orientation
-    \brief the progress bar's orientation (horizontal or vertical);
-    the default orentation is Qt::Horizontal
-
-    \deprecated
-    Use the QStyle::State_Horizontal flag instead (in the QStyleOption::state member).
-
-    \sa QProgressBar::orientation
 */
 
 /*!

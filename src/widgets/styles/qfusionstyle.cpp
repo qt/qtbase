@@ -1364,8 +1364,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
             bool indeterminate = (bar->minimum == 0 && bar->maximum == 0);
             bool complete = bar->progress == bar->maximum;
 
-            // Get extra style options if version 2
-            vertical = (bar->orientation == Qt::Vertical);
+            vertical = !(bar->state & QStyle::State_Horizontal);
             inverted = bar->invertedAppearance;
 
             // If the orientation is vertical, we use a transform to rotate
@@ -1474,7 +1473,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
 
             painter->save();
             bool vertical = false, inverted = false;
-            vertical = (bar->orientation == Qt::Vertical);
+            vertical = !(bar->state & QStyle::State_Horizontal);
             inverted = bar->invertedAppearance;
             if (vertical)
                 rect = QRect(rect.left(), rect.top(), rect.height(), rect.width()); // flip width and height

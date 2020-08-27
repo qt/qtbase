@@ -4382,7 +4382,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
     case CE_ProgressBarContents:
         if (const QStyleOptionProgressBar *pb = qstyleoption_cast<const QStyleOptionProgressBar *>(opt)) {
             const bool isIndeterminate = (pb->minimum == 0 && pb->maximum == 0);
-            const bool vertical = pb->orientation == Qt::Vertical;
+            const bool vertical = !(pb->state & QStyle::State_Horizontal);
             const bool inverted = pb->invertedAppearance;
             bool reverse = (!vertical && (pb->direction == Qt::RightToLeft));
             if (inverted)
