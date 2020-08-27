@@ -58,7 +58,7 @@
 #include "QtWidgets/qabstractitemview.h"
 #include "QtCore/qabstractproxymodel.h"
 #include "qcompleter.h"
-#include "QtWidgets/qitemdelegate.h"
+#include "qstyleditemdelegate.h"
 #include "QtGui/qpainter.h"
 #include "private/qabstractproxymodel_p.h"
 
@@ -194,18 +194,17 @@ private:
                      const QIndexMapper& iv, QMatchData* m);
 };
 
-// ### Qt6: QStyledItemDelegate
-class QCompleterItemDelegate : public QItemDelegate
+class QCompleterItemDelegate : public QStyledItemDelegate
 {
 public:
     QCompleterItemDelegate(QAbstractItemView *view)
-        : QItemDelegate(view), view(view) { }
+        : QStyledItemDelegate(view), view(view) { }
     void paint(QPainter *p, const QStyleOptionViewItem& opt, const QModelIndex& idx) const override {
         QStyleOptionViewItem optCopy = opt;
         optCopy.showDecorationSelected = true;
         if (view->currentIndex() == idx)
             optCopy.state |= QStyle::State_HasFocus;
-        QItemDelegate::paint(p, optCopy, idx);
+        QStyledItemDelegate::paint(p, optCopy, idx);
     }
 
 private:
