@@ -589,7 +589,7 @@ void QTableModel::ensureSorted(int column, Qt::SortOrder order,
         int oldRow = sorting.at(i).second;
         QTableWidgetItem *item = colItems.at(oldRow);
         colItems.remove(oldRow);
-        vit = sortedInsertionIterator(vit, colItems.end(), order, item);
+        vit = sortedInsertionIterator(colItems.begin(), colItems.end(), order, item);
         int newRow = qMax((int)(vit - colItems.begin()), 0);
         if ((newRow < oldRow) && !(*item < *colItems.at(oldRow - 1)) && !(*colItems.at(oldRow - 1) < *item))
             newRow = oldRow;
