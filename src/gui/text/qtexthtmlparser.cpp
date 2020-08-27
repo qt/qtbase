@@ -1340,6 +1340,8 @@ void QTextHtmlParserNode::applyCssDeclarations(const QVector<QCss::Declaration> 
     QFont f;
     int adjustment = -255;
     extractor.extractFont(&f, &adjustment);
+    if (f.pixelSize() > INT32_MAX / 2)
+        f.setPixelSize(INT32_MAX / 2);   // avoid even more extreme values
     charFormat.setFont(f, QTextCharFormat::FontPropertiesSpecifiedOnly);
 
     if (adjustment >= -1)
