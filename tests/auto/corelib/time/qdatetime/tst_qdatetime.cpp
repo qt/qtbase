@@ -892,8 +892,8 @@ void tst_QDateTime::toString_textDate_data()
     QTest::addColumn<QDateTime>("datetime");
     QTest::addColumn<QString>("expected");
 
-    QString wednesdayJanuary = QLocale::system().dayName(3, QLocale::ShortFormat)
-        + ' ' + QLocale::system().monthName(1, QLocale::ShortFormat);
+    const QString wednesdayJanuary = QLocale::c().dayName(3, QLocale::ShortFormat)
+        + ' ' + QLocale::c().monthName(1, QLocale::ShortFormat);
 
     QTest::newRow("localtime")  << QDateTime(QDate(2013, 1, 2), QTime(1, 2, 3), Qt::LocalTime)
                                 << wednesdayJanuary + QString(" 2 01:02:03 2013");

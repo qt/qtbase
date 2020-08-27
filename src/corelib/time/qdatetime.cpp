@@ -4019,8 +4019,7 @@ QString QDateTime::toString(Qt::DateFormat format) const
     If the datetime is invalid, an empty string will be returned.
 
     \note If localized month and day names are desired, please switch to using
-    QLocale::system().toString() as QDateTime methods shall change to use
-    English (C locale) names at Qt 6.
+    QLocale::system().toString() as QDateTime methods use English (C locale) names.
 
     \sa fromString(), QDate::toString(), QTime::toString(), QLocale::toString()
 */
