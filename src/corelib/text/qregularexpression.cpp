@@ -2156,7 +2156,8 @@ QStringView QRegularExpressionMatch::capturedView(int nth) const
 }
 
 #if QT_STRINGVIEW_LEVEL < 2
-/*!
+/*! \fn QString QRegularExpressionMatch::captured(const QString &name) const
+
     Returns the substring captured by the capturing group named \a name.
 
     If the named capturing group \a name did not capture a string, or if
@@ -2165,10 +2166,6 @@ QStringView QRegularExpressionMatch::capturedView(int nth) const
     \sa capturedView(), capturedStart(), capturedEnd(), capturedLength(),
     QString::isNull()
 */
-QString QRegularExpressionMatch::captured(const QString &name) const
-{
-    return captured(qToStringViewIgnoringNull(name));
-}
 #endif // QT_STRINGVIEW_LEVEL < 2
 
 /*!
@@ -2277,7 +2274,8 @@ qsizetype QRegularExpressionMatch::capturedEnd(int nth) const
 }
 
 #if QT_STRINGVIEW_LEVEL < 2
-/*!
+/*! \fn qsizetype QRegularExpressionMatch::capturedStart(const QString &name) const
+
     Returns the offset inside the subject string corresponding to the starting
     position of the substring captured by the capturing group named \a name.
     If the capturing group named \a name did not capture a string or doesn't
@@ -2285,12 +2283,9 @@ qsizetype QRegularExpressionMatch::capturedEnd(int nth) const
 
     \sa capturedEnd(), capturedLength(), captured()
 */
-qsizetype QRegularExpressionMatch::capturedStart(const QString &name) const
-{
-    return capturedStart(qToStringViewIgnoringNull(name));
-}
 
-/*!
+/*! \fn qsizetype QRegularExpressionMatch::capturedLength(const QString &name) const
+
     Returns the length of the substring captured by the capturing group named
     \a name.
 
@@ -2299,12 +2294,9 @@ qsizetype QRegularExpressionMatch::capturedStart(const QString &name) const
 
     \sa capturedStart(), capturedEnd(), captured()
 */
-qsizetype QRegularExpressionMatch::capturedLength(const QString &name) const
-{
-    return capturedLength(qToStringViewIgnoringNull(name));
-}
 
-/*!
+/*! \fn qsizetype QRegularExpressionMatch::capturedEnd(const QString &name) const
+
     Returns the offset inside the subject string immediately after the ending
     position of the substring captured by the capturing group named \a name. If
     the capturing group named \a name did not capture a string or doesn't
@@ -2312,10 +2304,6 @@ qsizetype QRegularExpressionMatch::capturedLength(const QString &name) const
 
     \sa capturedStart(), capturedLength(), captured()
 */
-qsizetype QRegularExpressionMatch::capturedEnd(const QString &name) const
-{
-    return capturedEnd(qToStringViewIgnoringNull(name));
-}
 #endif // QT_STRINGVIEW_LEVEL < 2
 
 /*!

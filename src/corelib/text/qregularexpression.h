@@ -226,7 +226,8 @@ public:
     QStringView capturedView(int nth = 0) const;
 
 #if QT_STRINGVIEW_LEVEL < 2
-    QString captured(const QString &name) const;
+    QString captured(const QString &name) const
+    { return captured(QStringView(name)); }
 #endif
 
     QString captured(QStringView name) const;
@@ -239,9 +240,12 @@ public:
     qsizetype capturedEnd(int nth = 0) const;
 
 #if QT_STRINGVIEW_LEVEL < 2
-    qsizetype capturedStart(const QString &name) const;
-    qsizetype capturedLength(const QString &name) const;
-    qsizetype capturedEnd(const QString &name) const;
+    qsizetype capturedStart(const QString &name) const
+    { return capturedStart(QStringView(name)); }
+    qsizetype capturedLength(const QString &name) const
+    { return capturedLength(QStringView(name)); }
+    qsizetype capturedEnd(const QString &name) const
+    { return capturedEnd(QStringView(name)); }
 #endif
 
     qsizetype capturedStart(QStringView name) const;
