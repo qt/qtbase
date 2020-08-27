@@ -616,11 +616,23 @@ qt_feature("precompile_header"
     CONDITION BUILD_WITH_PCH
 )
 qt_feature_config("precompile_header" QMAKE_PRIVATE_CONFIG)
+set(__qt_ltcg_detected FALSE)
+if(CMAKE_INTERPROCEDURAL_OPTIMIZATION)
+    set(__qt_ltcg_detected TRUE)
+else()
+    foreach(config ${CMAKE_BUILD_TYPE} ${CMAKE_CONFIGURATION_TYPES})
+        if(CMAKE_INTERPROCEDURAL_OPTIMIZATION_${config})
+            set(__qt_ltcg_detected TRUE)
+            break()
+        endif()
+    endforeach()
+endif()
 qt_feature("ltcg"
     LABEL "Using LTCG"
-    AUTODETECT 1
-    CONDITION CMAKE_INTERPROCEDURAL_OPTIMIZATION
+    AUTODETECT ON
+    CONDITION __qt_ltcg_detected
 )
+unset(__qt_ltcg_detected)
 qt_feature_config("ltcg" QMAKE_PRIVATE_CONFIG)
 qt_feature("enable_gdb_index"
     LABEL "Generating GDB index"

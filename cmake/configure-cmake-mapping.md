@@ -66,7 +66,8 @@ The effort of this is tracked in QTBUG-85373 and QTBUG-85349.
 | -plugin-manifests                     |                                                   |                                                                 |
 | -static-runtime                       | -DFEATURE_static_runtime=ON                       |                                                                 |
 | -pch                                  | -DBUILD_WITH_PCH=ON                               |                                                                 |
-| -ltcg                                 |                                                   |                                                                 |
+| -ltcg                                 | -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON or        |                                                                 |
+|                                       | -DCMAKE_INTERPROCEDURAL_OPTIMIZATION_<CONFIG>=ON  |                                                                 |
 | -linker [bfd,gold,lld]                | -DINPUT_linker=<name> or                          |                                                                 |
 |                                       | -DFEATURE_use_<name>_linker=ON                    |                                                                 |
 | -incredibuild-xge                     | n/a                                               | This option enables remote distribution of Visual Studio        |
