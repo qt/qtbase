@@ -48,9 +48,6 @@ class tst_QOpenGLWidget : public QObject
 {
     Q_OBJECT
 
-public:
-    static void initMain() { QCoreApplication::setAttribute(Qt::AA_DisableHighDpiScaling); }
-
 private slots:
     void initTestCase();
     void create();

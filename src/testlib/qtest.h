@@ -64,6 +64,10 @@
 #include <QtCore/qurl.h>
 #include <QtCore/quuid.h>
 
+#if defined(TESTCASE_LOWDPI)
+#include <QtCore/qcoreapplication.h>
+#endif
+
 #include <QtCore/qpoint.h>
 #include <QtCore/qsize.h>
 #include <QtCore/qrect.h>
@@ -461,6 +465,7 @@ bool compareSequence(ActualIterator actualIt, ActualIterator actualEnd,
 #if defined(TESTCASE_LOWDPI)
 void disableHighDpi()
 {
+    QCoreApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
     QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps, false);
 }
 Q_CONSTRUCTOR_FUNCTION(disableHighDpi);

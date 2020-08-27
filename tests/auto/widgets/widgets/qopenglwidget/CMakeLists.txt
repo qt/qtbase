@@ -5,6 +5,7 @@
 #####################################################################
 
 qt_add_test(tst_qopenglwidget
+    LOWDPI
     SOURCES
         tst_qopenglwidget.cpp
     PUBLIC_LIBRARIES

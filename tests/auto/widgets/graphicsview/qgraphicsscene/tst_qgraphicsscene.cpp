@@ -185,7 +185,6 @@ class tst_QGraphicsScene : public QObject
     Q_OBJECT
 public:
     tst_QGraphicsScene();
-    static void initMain() { QCoreApplication::setAttribute(Qt::AA_DisableHighDpiScaling); }
 
 public slots:
     void cleanup();

@@ -104,7 +104,6 @@ class tst_QHeaderView : public QObject
 
 public:
     tst_QHeaderView();
-    static void initMain();
 
 private slots:
     void initTestCase();
@@ -264,10 +263,6 @@ protected:
     bool m_special_prepare = false;
     QElapsedTimer timer;
 };
-
-void tst_QHeaderView::initMain()
-{
-}
 
 class QtTestModel: public QAbstractTableModel
 {

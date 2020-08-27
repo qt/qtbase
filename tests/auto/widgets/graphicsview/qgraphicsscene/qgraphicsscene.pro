@@ -1,4 +1,4 @@
-CONFIG += testcase
+CONFIG += testcase testcase_lowdpi
 TARGET = tst_qgraphicsscene
 QT += widgets widgets-private testlib
 QT += core-private gui-private

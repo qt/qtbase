@@ -286,9 +286,6 @@ class tst_QGraphicsItem : public QObject
 {
     Q_OBJECT
 
-public:
-    static void initMain();
-
 private slots:
     void cleanup();
     void construction();
@@ -493,10 +490,6 @@ private:
     GraphicsItems paintedItems;
     QPointingDevice *m_touchDevice = QTest::createTouchDevice();
 };
-
-void tst_QGraphicsItem::initMain()
-{
-}
 
 void tst_QGraphicsItem::cleanup()
 {

@@ -5,6 +5,7 @@
 #####################################################################
 
 qt_add_test(tst_qgraphicsscene
+    LOWDPI
     SOURCES
         tst_qgraphicsscene.cpp
     DEFINES
