@@ -198,7 +198,7 @@ public:
         }
 #else
         void startAnimation(QTabBarPrivate *priv, int duration)
-        { Q_UNUSED(duration); priv->moveTabFinished(priv->tabList.indexOf(*this)); }
+        { Q_UNUSED(duration); priv->moveTabFinished(priv->tabList.indexOf(this)); }
 #endif // animation
     };
     QList<Tab*> tabList;
