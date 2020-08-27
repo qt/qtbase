@@ -290,13 +290,13 @@ static inline uint variantHash(const QVariant &variant)
     switch (variant.userType()) { // sorted by occurrence frequency
     case QMetaType::QString: return qHash(variant.toString());
     case QMetaType::Double: return qHash(variant.toDouble());
-    case QMetaType::Int: return 0x811890 + variant.toInt();
+    case QMetaType::Int: return 0x811890U + variant.toInt();
     case QMetaType::QBrush:
         return 0x01010101 + hash(qvariant_cast<QBrush>(variant));
     case QMetaType::Bool: return 0x371818 + variant.toBool();
     case QMetaType::QPen: return 0x02020202 + hash(qvariant_cast<QPen>(variant));
     case QMetaType::QVariantList:
-        return 0x8377 + qvariant_cast<QVariantList>(variant).count();
+        return 0x8377U + qvariant_cast<QVariantList>(variant).count();
     case QMetaType::QColor: return hash(qvariant_cast<QColor>(variant));
       case QMetaType::QTextLength:
         return 0x377 + hash(qvariant_cast<QTextLength>(variant).rawValue());
