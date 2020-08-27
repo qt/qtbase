@@ -1094,15 +1094,14 @@ inline QChar *QString::data()
 inline const QChar *QString::constData() const
 { return data(); }
 inline void QString::detach()
-{ if (d->needsDetach()) reallocData(d.size + 1u, d->detachFlags()); }
+{ if (d->needsDetach()) reallocData(d.size, d->detachFlags()); }
 inline bool QString::isDetached() const
 { return !d->isShared(); }
 inline void QString::clear()
 { if (!isNull()) *this = QString(); }
 inline QString::QString(const QString &other) noexcept : d(other.d)
 { }
-inline qsizetype QString::capacity() const
-{ const auto realCapacity = d->constAllocatedCapacity(); return realCapacity ? int(realCapacity) - 1 : 0; }
+inline qsizetype QString::capacity() const { return qsizetype(d->constAllocatedCapacity()); }
 inline QString &QString::setNum(short n, int base)
 { return setNum(qlonglong(n), base); }
 inline QString &QString::setNum(ushort n, int base)
@@ -1167,22 +1166,22 @@ inline QString::~QString() {}
 
 inline void QString::reserve(qsizetype asize)
 {
-    if (d->needsDetach() || asize >= capacity() - d.freeSpaceAtBegin())
-        reallocData(uint(qMax(asize, size())) + 1u, d->detachFlags());
-
-    // we're not shared anymore, for sure
-    d->setFlag(Data::CapacityReserved);
+    if (d->needsDetach() || asize >= capacity() - d.freeSpaceAtBegin()) {
+        reallocData(size_t(qMax(asize, size())), d->detachFlags() | Data::CapacityReserved);
+    } else {
+        d->setFlag(Data::CapacityReserved);
+    }
 }
 
 inline void QString::squeeze()
 {
     if ((d->flags() & Data::CapacityReserved) == 0)
         return;
-    if (d->needsDetach() || int(d.size) < capacity())
-        reallocData(uint(d.size) + 1u, d->detachFlags());
-
-    // we're not shared anymore, for sure
-    d->clearFlag(Data::CapacityReserved);
+    if (d->needsDetach() || int(d.size) < capacity()) {
+        reallocData(size_t(d.size), d->detachFlags() & ~Data::CapacityReserved);
+    } else {
+        d->clearFlag(Data::CapacityReserved);
+    }
 }
 
 inline QString &QString::setUtf16(const ushort *autf16, qsizetype asize)

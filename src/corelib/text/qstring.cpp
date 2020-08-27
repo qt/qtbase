@@ -2232,7 +2232,7 @@ QString::QString(const QChar *unicode, qsizetype size)
         if (!size) {
             d = DataPointer::fromRawData(&_empty, 0);
         } else {
-            d = DataPointer(Data::allocate(size + 1), size);
+            d = DataPointer(Data::allocate(size), size);
             memcpy(d.data(), unicode, size * sizeof(QChar));
             d.data()[size] = '\0';
         }
@@ -2250,7 +2250,7 @@ QString::QString(qsizetype size, QChar ch)
     if (size <= 0) {
         d = DataPointer::fromRawData(&_empty, 0);
     } else {
-        d = DataPointer(Data::allocate(size + 1), size);
+        d = DataPointer(Data::allocate(size), size);
         d.data()[size] = '\0';
         char16_t *i = d.data() + size;
         char16_t *b = d.data();
@@ -2268,8 +2268,12 @@ QString::QString(qsizetype size, QChar ch)
 */
 QString::QString(qsizetype size, Qt::Initialization)
 {
-    d = DataPointer(Data::allocate(size + 1), size);
-    d.data()[size] = '\0';
+    if (size <= 0) {
+        d = DataPointer::fromRawData(&_empty, 0);
+    } else {
+        d = DataPointer(Data::allocate(size), size);
+        d.data()[size] = '\0';
+    }
 }
 
 /*! \fn QString::QString(QLatin1String str)
@@ -2284,7 +2288,7 @@ QString::QString(qsizetype size, Qt::Initialization)
 */
 QString::QString(QChar ch)
 {
-    d = DataPointer(Data::allocate(2), 1);
+    d = DataPointer(Data::allocate(1), 1);
     d.data()[0] = ch.unicode();
     d.data()[1] = '\0';
 }
@@ -2380,7 +2384,7 @@ void QString::resize(qsizetype size)
 
     const auto capacityAtEnd = capacity() - d.freeSpaceAtBegin();
     if (d->needsDetach() || size > capacityAtEnd)
-        reallocData(size_t(size) + 1u, d->detachFlags() | Data::GrowsForward);
+        reallocData(size_t(size), d->detachFlags() | Data::GrowsForward);
     d.size = size;
     if (d->allocatedCapacity())
         d.data()[size] = 0;
@@ -2460,13 +2464,18 @@ void QString::resize(qsizetype size, QChar fillChar)
 
 void QString::reallocData(size_t alloc, Data::ArrayOptions allocOptions)
 {
+    if (!alloc) {
+        d = DataPointer::fromRawData(&_empty, 0);
+        return;
+    }
+
     // there's a case of slow reallocate path where we need to memmove the data
     // before a call to ::realloc(), meaning that there's an extra "heavy"
     // operation. just prefer ::malloc() branch in this case
     const bool slowReallocatePath = d.freeSpaceAtBegin() > 0;
 
     if (d->needsDetach() || slowReallocatePath) {
-        DataPointer dd(Data::allocate(alloc, allocOptions), qMin(qsizetype(alloc) - 1, d.size));
+        DataPointer dd(Data::allocate(alloc, allocOptions), qMin(qsizetype(alloc), d.size));
         if (dd.size > 0)
             ::memcpy(dd.data(), d.data(), dd.size * sizeof(QChar));
         dd.data()[dd.size] = 0;
@@ -2478,8 +2487,11 @@ void QString::reallocData(size_t alloc, Data::ArrayOptions allocOptions)
 
 void QString::reallocGrowData(size_t alloc, Data::ArrayOptions options)
 {
+    if (!alloc)  // expected to always allocate
+        alloc = 1;
+
     if (d->needsDetach()) {
-        const auto newSize = qMin(qsizetype(alloc) - 1, d.size);
+        const auto newSize = qMin(qsizetype(alloc), d.size);
         DataPointer dd(DataPointer::allocateGrow(d, alloc, newSize, options));
         dd->copyAppend(d.data(), d.data() + newSize);
         dd.data()[dd.size] = 0;
@@ -2695,7 +2707,7 @@ QString& QString::insert(qsizetype i, const QChar *unicode, qsizetype size)
 
     // ### optimize me
     if (d->needsDetach() || newSize > capacity() || shouldGrow)
-        reallocGrowData(newSize + 1, flags);
+        reallocGrowData(newSize, flags);
 
     if (i > oldSize)  // set spaces in the uninitialized gap
         d->copyAppend(i - oldSize, u' ');
@@ -2729,7 +2741,7 @@ QString& QString::insert(qsizetype i, QChar ch)
 
     // ### optimize me
     if (d->needsDetach() || newSize > capacity() || shouldGrow)
-        reallocGrowData(newSize + 1, flags);
+        reallocGrowData(newSize, flags);
 
     if (i > oldSize)  // set spaces in the uninitialized gap
         d->copyAppend(i - oldSize, u' ');
@@ -2765,7 +2777,7 @@ QString &QString::append(const QString &str)
         } else {
             const bool shouldGrow = d->shouldGrowBeforeInsert(d.end(), str.d.size);
             if (d->needsDetach() || size() + str.size() > capacity() || shouldGrow)
-                reallocGrowData(uint(size() + str.size()) + 1u,
+                reallocGrowData(uint(size() + str.size()),
                                 d->detachFlags() | Data::GrowsForward);
             d->copyAppend(str.d.data(), str.d.data() + str.d.size);
             d.data()[d.size] = '\0';
@@ -2785,7 +2797,7 @@ QString &QString::append(const QChar *str, qsizetype len)
     if (str && len > 0) {
         const bool shouldGrow = d->shouldGrowBeforeInsert(d.end(), len);
         if (d->needsDetach() || size() + len > capacity() || shouldGrow)
-            reallocGrowData(uint(size() + len) + 1u, d->detachFlags() | Data::GrowsForward);
+            reallocGrowData(uint(size() + len), d->detachFlags() | Data::GrowsForward);
         static_assert(sizeof(QChar) == sizeof(char16_t), "Unexpected difference in sizes");
         // the following should be safe as QChar uses char16_t as underlying data
         const char16_t *char16String = reinterpret_cast<const char16_t *>(str);
@@ -2807,7 +2819,7 @@ QString &QString::append(QLatin1String str)
         qsizetype len = str.size();
         const bool shouldGrow = d->shouldGrowBeforeInsert(d.end(), len);
         if (d->needsDetach() || size() + len > capacity() || shouldGrow)
-            reallocGrowData(size_t(size() + len) + 1u, d->detachFlags() | Data::GrowsForward);
+            reallocGrowData(size_t(size() + len), d->detachFlags() | Data::GrowsForward);
 
         if (d.freeSpaceAtBegin() == 0) {  // fast path
             char16_t *i = d.data() + d.size;
@@ -2860,7 +2872,7 @@ QString &QString::append(QChar ch)
 {
     const bool shouldGrow = d->shouldGrowBeforeInsert(d.end(), 1);
     if (d->needsDetach() || size() + 1 > capacity() || shouldGrow)
-        reallocGrowData(d.size + 2u, d->detachFlags() | Data::GrowsForward);
+        reallocGrowData(d.size + 1u, d->detachFlags() | Data::GrowsForward);
     d->copyAppend(1, ch.unicode());
     d.data()[d.size] = '\0';
     return *this;
@@ -2963,8 +2975,9 @@ QString &QString::remove(qsizetype pos, qsizetype len)
     } else if (len > 0) {
         detach();
         memmove(d.data() + pos, d.data() + pos + len,
-                (d.size - pos - len + 1) * sizeof(QChar));
+                (d.size - pos - len) * sizeof(QChar));
         d.size -= len;
+        d.data()[d.size] = '\0';
     }
     return *this;
 }
@@ -3998,7 +4011,7 @@ QString &QString::replace(const QRegularExpression &re, const QString &after)
     if (!iterator.hasNext()) // no matches at all
         return *this;
 
-    reallocData(size_t(d.size) + 1u, d->detachFlags());
+    reallocData(size_t(d.size), d->detachFlags());
 
     qsizetype numCaptures = re.captureCount();
 
@@ -5105,10 +5118,9 @@ QString::DataPointer QString::fromLatin1_helper(const char *str, qsizetype size)
     } else {
         if (size < 0)
             size = qstrlen(str);
-        d = DataPointer(Data::allocate(size + 1), size);
+        d = DataPointer(Data::allocate(size), size);
         d.data()[size] = '\0';
         char16_t *dst = d.data();
-
         qt_from_latin1(dst, str, size_t(size));
     }
     return d;
@@ -6089,7 +6101,7 @@ const ushort *QString::utf16() const
 {
     if (!d->isMutable()) {
         // ensure '\0'-termination for ::fromRawData strings
-        const_cast<QString*>(this)->reallocData(size_t(d.size) + 1u, d->detachFlags());
+        const_cast<QString*>(this)->reallocData(size_t(d.size), d->detachFlags());
     }
     return reinterpret_cast<const ushort *>(d.data());
 }

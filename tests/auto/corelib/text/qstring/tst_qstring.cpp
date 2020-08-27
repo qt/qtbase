@@ -4822,7 +4822,8 @@ void tst_QString::capacity()
     s2 = s1;    // share again
     s2.reserve( res * 2 );
     QVERIFY( (int)s2.capacity() >=  res * 2 );
-    QVERIFY(s2.constData() != s1.constData());
+    if (res != 0)  // can both point to QString::_empty when empty
+        QVERIFY(s2.constData() != s1.constData());
     QCOMPARE( s2, s1 );
 
     // don't share again -- s2 must be detached for squeeze() to do anything
