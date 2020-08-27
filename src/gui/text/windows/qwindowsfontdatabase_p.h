@@ -80,6 +80,7 @@ public:
 
     void populateFontDatabase() override;
     void populateFamily(const QString &familyName) override;
+    bool populateFamilyAliases(const QString &missingFamily) override;
     QFontEngine *fontEngine(const QFontDef &fontDef, void *handle) override;
     QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference) override;
     QStringList fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const override;
@@ -126,6 +127,7 @@ private:
 
     static unsigned m_fontOptions;
     QStringList m_eudcFonts;
+    bool m_hasPopulatedAliases = false;
 };
 
 #ifndef QT_NO_DEBUG_STREAM
