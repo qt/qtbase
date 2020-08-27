@@ -47,7 +47,16 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QColor>
+#include <QString>
+#include <QtOpenGL/QOpenGLShader>
 
+namespace src_gui_qopenglshaderprogram {
+QString code;
+QObject *context = nullptr;
+QRectF rect() { return QRectF(); }
+
+void wrapper() {
 //! [0]
 QOpenGLShader shader(QOpenGLShader::Vertex);
 shader.compileSourceCode(code);
@@ -102,3 +111,6 @@ glDrawArrays(GL_TRIANGLES, 0, 3);
 
 program.disableAttributeArray(vertexLocation);
 //! [2]
+
+} // wrapper
+} // src_gui_qopenglshaderprogram

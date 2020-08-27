@@ -32,4 +32,5 @@ SOURCES = \
     src_gui_painting_qpen.cpp \
     src_gui_painting_qregion.cpp \
     src_gui_painting_qregion_unix.cpp \
-    src_gui_painting_qtransform.cpp
+    src_gui_painting_qtransform.cpp \
+    src_gui_qopenglshaderprogram.cpp
