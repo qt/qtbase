@@ -97,12 +97,12 @@ static const State breakTable[QUnicodeTables::NumGraphemeBreakClasses][QUnicodeT
 
 } // namespace GB
 
-static void getGraphemeBreaks(const ushort *string, quint32 len, QCharAttributes *attributes)
+static void getGraphemeBreaks(const char16_t *string, qsizetype len, QCharAttributes *attributes)
 {
     QUnicodeTables::GraphemeBreakClass lcls = QUnicodeTables::GraphemeBreak_LF; // to meet GB1
     GB::State state = GB::Break; // only required to track some of the rules
-    for (quint32 i = 0; i != len; ++i) {
-        quint32 pos = i;
+    for (qsizetype i = 0; i != len; ++i) {
+        qsizetype pos = i;
         char32_t ucs4 = string[i];
         if (QChar::isHighSurrogate(ucs4) && i + 1 != len) {
             ushort low = string[i + 1];
@@ -191,15 +191,15 @@ static const uchar breakTable[QUnicodeTables::NumWordBreakClasses][QUnicodeTable
 
 } // namespace WB
 
-static void getWordBreaks(const ushort *string, quint32 len, QCharAttributes *attributes)
+static void getWordBreaks(const char16_t *string, qsizetype len, QCharAttributes *attributes)
 {
     enum WordType {
         WordTypeNone, WordTypeAlphaNumeric, WordTypeHiraganaKatakana
     } currentWordType = WordTypeNone;
 
     QUnicodeTables::WordBreakClass cls = QUnicodeTables::WordBreak_LF; // to meet WB1
-    for (quint32 i = 0; i != len; ++i) {
-        quint32 pos = i;
+    for (qsizetype i = 0; i != len; ++i) {
+        qsizetype pos = i;
         char32_t ucs4 = string[i];
         if (QChar::isHighSurrogate(ucs4) && i + 1 != len) {
             ushort low = string[i + 1];
@@ -241,7 +241,7 @@ static void getWordBreaks(const ushort *string, quint32 len, QCharAttributes *at
             break;
         case WB::Lookup:
         case WB::LookupW:
-            for (quint32 lookahead = i + 1; lookahead < len; ++lookahead) {
+            for (qsizetype lookahead = i + 1; lookahead < len; ++lookahead) {
                 ucs4 = string[lookahead];
                 if (QChar::isHighSurrogate(ucs4) && lookahead + 1 != len) {
                     ushort low = string[lookahead + 1];
@@ -343,11 +343,11 @@ static const uchar breakTable[BAfter + 1][QUnicodeTables::NumSentenceBreakClasse
 
 } // namespace SB
 
-static void getSentenceBreaks(const ushort *string, quint32 len, QCharAttributes *attributes)
+static void getSentenceBreaks(const char16_t *string, qsizetype len, QCharAttributes *attributes)
 {
     uchar state = SB::BAfter; // to meet SB1
-    for (quint32 i = 0; i != len; ++i) {
-        quint32 pos = i;
+    for (qsizetype i = 0; i != len; ++i) {
+        qsizetype pos = i;
         char32_t ucs4 = string[i];
         if (QChar::isHighSurrogate(ucs4) && i + 1 != len) {
             ushort low = string[i + 1];
@@ -364,7 +364,7 @@ static void getSentenceBreaks(const ushort *string, quint32 len, QCharAttributes
         state = SB::breakTable[state][ncls];
         if (Q_UNLIKELY(state == SB::Lookup)) { // SB8
             state = SB::Break;
-            for (quint32 lookahead = i + 1; lookahead < len; ++lookahead) {
+            for (qsizetype lookahead = i + 1; lookahead < len; ++lookahead) {
                 ucs4 = string[lookahead];
                 if (QChar::isHighSurrogate(ucs4) && lookahead + 1 != len) {
                     ushort low = string[lookahead + 1];
@@ -542,15 +542,15 @@ static const uchar breakTable[QUnicodeTables::LineBreak_SA][QUnicodeTables::Line
 
 } // namespace LB
 
-static void getLineBreaks(const ushort *string, quint32 len, QCharAttributes *attributes, QUnicodeTools::CharAttributeOptions options)
+static void getLineBreaks(const char16_t *string, qsizetype len, QCharAttributes *attributes, QUnicodeTools::CharAttributeOptions options)
 {
-    quint32 nestart = 0;
+    qsizetype nestart = 0;
     LB::NS::Class nelast = LB::NS::XX;
 
     QUnicodeTables::LineBreakClass lcls = QUnicodeTables::LineBreak_LF; // to meet LB10
     QUnicodeTables::LineBreakClass cls = lcls;
-    for (quint32 i = 0; i != len; ++i) {
-        quint32 pos = i;
+    for (qsizetype i = 0; i != len; ++i) {
+        qsizetype pos = i;
         char32_t ucs4 = string[i];
         if (QChar::isHighSurrogate(ucs4) && i + 1 != len) {
             ushort low = string[i + 1];
@@ -632,7 +632,7 @@ static void getLineBreaks(const ushort *string, quint32 len, QCharAttributes *at
             switch (LB::NS::actionTable[nelast][necur]) {
             case LB::NS::Break:
                 // do not change breaks before and after the expression
-                for (quint32 j = nestart + 1; j < pos; ++j)
+                for (qsizetype j = nestart + 1; j < pos; ++j)
                     attributes[j].lineBreak = false;
                 Q_FALLTHROUGH();
             case LB::NS::None:
@@ -697,7 +697,7 @@ static void getLineBreaks(const ushort *string, quint32 len, QCharAttributes *at
 
     if (Q_UNLIKELY(LB::NS::actionTable[nelast][LB::NS::XX] == LB::NS::Break)) {
         // LB25: do not break lines inside numbers
-        for (quint32 j = nestart + 1; j < len; ++j)
+        for (qsizetype j = nestart + 1; j < len; ++j)
             attributes[j].lineBreak = false;
     }
 
@@ -706,9 +706,9 @@ static void getLineBreaks(const ushort *string, quint32 len, QCharAttributes *at
 }
 
 
-static void getWhiteSpaces(const ushort *string, quint32 len, QCharAttributes *attributes)
+static void getWhiteSpaces(const char16_t *string, qsizetype len, QCharAttributes *attributes)
 {
-    for (quint32 i = 0; i != len; ++i) {
+    for (qsizetype i = 0; i != len; ++i) {
         uint ucs4 = string[i];
         if (QChar::isHighSurrogate(ucs4) && i + 1 != len) {
             ushort low = string[i + 1];
@@ -725,7 +725,7 @@ static void getWhiteSpaces(const ushort *string, quint32 len, QCharAttributes *a
 
 namespace Tailored {
 
-using CharAttributeFunction = void (*)(QChar::Script script, const ushort *text, uint from, uint len, QCharAttributes *attributes);
+using CharAttributeFunction = void (*)(QChar::Script script, const char16_t *text, qsizetype from, qsizetype len, QCharAttributes *attributes);
 
 
 enum Form {
@@ -1181,15 +1181,15 @@ static inline Form form(unsigned short uc) {
 
    We return syllable boundaries on invalid combinations aswell
 */
-static int indic_nextSyllableBoundary(QChar::Script script, const ushort *s, int start, int end, bool *invalid)
+static qsizetype indic_nextSyllableBoundary(QChar::Script script, const char16_t *s, qsizetype start, qsizetype end, bool *invalid)
 {
     *invalid = false;
-    IDEBUG("indic_nextSyllableBoundary: start=%d, end=%d", start, end);
-    const ushort *uc = s+start;
+    IDEBUG("indic_nextSyllableBoundary: start=%d, end=%d", int(start), int(end));
+    const char16_t *uc = s+start;
 
-    int pos = 0;
+    qsizetype pos = 0;
     Form state = form(uc[pos]);
-    IDEBUG("state[%d]=%d (uc=%4x)", pos, state, uc[pos]);
+    IDEBUG("state[%d]=%d (uc=%4x)", int(pos), state, uc[pos]);
     pos++;
 
     if (state != Consonant && state != IndependentVowel) {
@@ -1200,7 +1200,7 @@ static int indic_nextSyllableBoundary(QChar::Script script, const ushort *s, int
 
     while (pos < end - start) {
         Form newState = form(uc[pos]);
-        IDEBUG("state[%d]=%d (uc=%4x)", pos, newState, uc[pos]);
+        IDEBUG("state[%d]=%d (uc=%4x)", int(pos), newState, uc[pos]);
         switch (newState) {
         case Control:
             newState = state;
@@ -1285,15 +1285,15 @@ static int indic_nextSyllableBoundary(QChar::Script script, const ushort *s, int
     return pos+start;
 }
 
-static void indicAttributes(QChar::Script script, const ushort *text, uint from, uint len, QCharAttributes *attributes)
+static void indicAttributes(QChar::Script script, const char16_t *text, qsizetype from, qsizetype len, QCharAttributes *attributes)
 {
-    int end = from + len;
-    const ushort *uc = text + from;
+    qsizetype end = from + len;
+    const char16_t *uc = text + from;
     attributes += from;
-    uint i = 0;
+    qsizetype i = 0;
     while (i < len) {
         bool invalid;
-        uint boundary = indic_nextSyllableBoundary(script, text, from+i, end, &invalid) - from;
+        qsizetype boundary = indic_nextSyllableBoundary(script, text, from+i, end, &invalid) - from;
          attributes[i].graphemeBoundary = true;
 
         if (boundary > len-1) boundary = len;
@@ -1339,9 +1339,9 @@ static int init_libthai() {
         return 0;
 }
 
-static void to_tis620(const ushort *string, uint len, char *cstr)
+static void to_tis620(const char16_t *string, qsizetype len, char *cstr)
 {
-    uint i;
+    qsizetype i;
     unsigned char *result = (unsigned char *)cstr;
 
     for (i = 0; i < len; ++i) {
@@ -1359,14 +1359,14 @@ static void to_tis620(const ushort *string, uint len, char *cstr)
 /*
  * Thai Attributes: computes Word Break, Word Boundary and Char stop for THAI.
  */
-static void thaiAssignAttributes(const ushort *string, uint len, QCharAttributes *attributes)
+static void thaiAssignAttributes(const char16_t *string, qsizetype len, QCharAttributes *attributes)
 {
     char s[128];
     char *cstr = s;
     int *break_positions = nullptr;
     int brp[128];
     int brp_size = 0;
-    uint numbreaks, i, j, cell_length;
+    qsizetype numbreaks, i, j, cell_length;
     struct thcell_t tis_cell;
 
     if (!init_libthai())
@@ -1432,10 +1432,10 @@ static void thaiAssignAttributes(const ushort *string, uint len, QCharAttributes
         free(cstr);
 }
 
-static void thaiAttributes(QChar::Script script, const ushort *text, uint from, uint len, QCharAttributes *attributes)
+static void thaiAttributes(QChar::Script script, const char16_t *text, qsizetype from, qsizetype len, QCharAttributes *attributes)
 {
     assert(script == QChar::Script_Thai);
-    const ushort *uc = text + from;
+    const char16_t *uc = text + from;
     attributes += from;
     Q_UNUSED(script);
     thaiAssignAttributes(uc, len, attributes);
@@ -1505,11 +1505,11 @@ static const unsigned char tibetanForm[0x80] = {
 #define tibetan_form(c) \
     ((c) >= 0x0f40 && (c) < 0x0fc0 ? (TibetanForm)tibetanForm[(c) - 0x0f40] : TibetanOther)
 
-static int tibetan_nextSyllableBoundary(const ushort *s, int start, int end, bool *invalid)
+static qsizetype tibetan_nextSyllableBoundary(const char16_t *s, qsizetype start, qsizetype end, bool *invalid)
 {
-    const ushort *uc = s + start;
+    const char16_t *uc = s + start;
 
-    int pos = 0;
+    qsizetype pos = 0;
     TibetanForm state = tibetan_form(*uc);
 
 /*     qDebug("state[%d]=%d (uc=%4x)", pos, state, uc[pos]);*/
@@ -1549,16 +1549,16 @@ finish:
     return start+pos;
 }
 
-static void tibetanAttributes(QChar::Script script, const ushort *text, uint from, uint len, QCharAttributes *attributes)
+static void tibetanAttributes(QChar::Script script, const char16_t *text, qsizetype from, qsizetype len, QCharAttributes *attributes)
 {
-    int end = from + len;
-    const ushort *uc = text + from;
-    uint i = 0;
+    qsizetype end = from + len;
+    const char16_t *uc = text + from;
+    qsizetype i = 0;
     Q_UNUSED(script);
     attributes += from;
     while (i < len) {
         bool invalid;
-        uint boundary = tibetan_nextSyllableBoundary(text, from+i, end, &invalid) - from;
+        qsizetype boundary = tibetan_nextSyllableBoundary(text, from+i, end, &invalid) - from;
 
         attributes[i].graphemeBoundary = true;
 
@@ -1736,11 +1736,11 @@ static const signed char mymrStateTable[][Mymr_CC_COUNT] =
 //  calculate, using the state table, which one is the last character of the syllable
 //  that starts in the starting position.
 */
-static int myanmar_nextSyllableBoundary(const ushort *s, int start, int end, bool *invalid)
+static qsizetype myanmar_nextSyllableBoundary(const char16_t *s, qsizetype start, qsizetype end, bool *invalid)
 {
-    const ushort *uc = s + start;
+    const char16_t *uc = s + start;
     int state = 0;
-    int pos = start;
+    qsizetype pos = start;
     *invalid = false;
 
     while (pos < end) {
@@ -1749,7 +1749,7 @@ static int myanmar_nextSyllableBoundary(const ushort *s, int start, int end, boo
         if (pos == start)
             *invalid = (bool)(charClass & Mymr_CF_DOTTED_CIRCLE);
 
-        MMDEBUG("state[%d]=%d class=%8x (uc=%4x)", pos - start, state, charClass, *uc);
+        MMDEBUG("state[%d]=%d class=%8x (uc=%4x)", int(pos - start), state, charClass, *uc);
 
         if (state < 0) {
             if (state < -1)
@@ -1762,16 +1762,16 @@ static int myanmar_nextSyllableBoundary(const ushort *s, int start, int end, boo
     return pos;
 }
 
-static void myanmarAttributes(QChar::Script script, const ushort *text, uint from, uint len, QCharAttributes *attributes)
+static void myanmarAttributes(QChar::Script script, const char16_t *text, qsizetype from, qsizetype len, QCharAttributes *attributes)
 {
-    int end = from + len;
-    const ushort *uc = text + from;
-    uint i = 0;
+    qsizetype end = from + len;
+    const char16_t *uc = text + from;
+    qsizetype i = 0;
     Q_UNUSED(script);
     attributes += from;
     while (i < len) {
     bool invalid;
-    uint boundary = myanmar_nextSyllableBoundary(text, from+i, end, &invalid) - from;
+    qsizetype boundary = myanmar_nextSyllableBoundary(text, from+i, end, &invalid) - from;
 
     attributes[i].graphemeBoundary = true;
     attributes[i].lineBreak = true;
@@ -2071,11 +2071,11 @@ static const signed char khmerStateTable[][CC_COUNT] =
 //  calculate, using the state table, which one is the last character of the syllable
 //  that starts in the starting position.
 */
-static int khmer_nextSyllableBoundary(const ushort *s, int start, int end, bool *invalid)
+static qsizetype khmer_nextSyllableBoundary(const char16_t *s, qsizetype start, qsizetype end, bool *invalid)
 {
-    const ushort *uc = s + start;
+    const char16_t *uc = s + start;
     int state = 0;
-    int pos = start;
+    qsizetype pos = start;
     *invalid = false;
 
     while (pos < end) {
@@ -2085,7 +2085,7 @@ static int khmer_nextSyllableBoundary(const ushort *s, int start, int end, bool 
         }
         state = khmerStateTable[state][charClass & CF_CLASS_MASK];
 
-        KHDEBUG("state[%d]=%d class=%8lx (uc=%4x)", pos - start, state,
+        KHDEBUG("state[%d]=%d class=%8lx (uc=%4x)", int(pos - start), state,
                 charClass, *uc );
 
         if (state < 0) {
@@ -2097,16 +2097,16 @@ static int khmer_nextSyllableBoundary(const ushort *s, int start, int end, bool 
     return pos;
 }
 
-static void khmerAttributes(QChar::Script script, const ushort *text, uint from, uint len, QCharAttributes *attributes)
+static void khmerAttributes(QChar::Script script, const char16_t *text, qsizetype from, qsizetype len, QCharAttributes *attributes)
 {
-    int end = from + len;
-    const ushort *uc = text + from;
-    uint i = 0;
+    qsizetype end = from + len;
+    const char16_t *uc = text + from;
+    qsizetype i = 0;
     Q_UNUSED(script);
     attributes += from;
     while ( i < len ) {
     bool invalid;
-    uint boundary = khmer_nextSyllableBoundary( text, from+i, end, &invalid ) - from;
+    qsizetype boundary = khmer_nextSyllableBoundary( text, from+i, end, &invalid ) - from;
 
     attributes[i].graphemeBoundary = true;
 
@@ -2191,52 +2191,52 @@ const CharAttributeFunction charAttributeFunction[] = {
     khmerAttributes
 };
 
-static void getCharAttributes(const ushort *string, uint stringLength,
-                                  const QUnicodeTools::ScriptItem *items, uint numItems,
+static void getCharAttributes(const char16_t *string, qsizetype stringLength,
+                                  const QUnicodeTools::ScriptItem *items, qsizetype numItems,
                                   QCharAttributes *attributes)
 {
     if (stringLength == 0)
         return;
-    for (uint i = 0; i < numItems; ++i) {
+    for (qsizetype i = 0; i < numItems; ++i) {
         QChar::Script script = items[i].script;
         if (script > QChar::Script_Khmer)
             script = QChar::Script_Common;
         CharAttributeFunction attributeFunction = charAttributeFunction[script];
         if (!attributeFunction)
             continue;
-        int end = i < numItems - 1 ? items[i + 1].position : stringLength;
+        qsizetype end = i < numItems - 1 ? items[i + 1].position : stringLength;
         attributeFunction(script, string, items[i].position, end - items[i].position, attributes);
     }
 }
 
 }
 
-Q_CORE_EXPORT void initCharAttributes(const ushort *string, int length,
-                                      const ScriptItem *items, int numItems,
+Q_CORE_EXPORT void initCharAttributes(QStringView string,
+                                      const ScriptItem *items, qsizetype numItems,
                                       QCharAttributes *attributes, CharAttributeOptions options)
 {
-    if (length <= 0)
+    if (string.size() <= 0)
         return;
 
     if (!(options & DontClearAttributes))
-        ::memset(attributes, 0, (length + 1) * sizeof(QCharAttributes));
+        ::memset(attributes, 0, (string.size() + 1) * sizeof(QCharAttributes));
 
     if (options & GraphemeBreaks)
-        getGraphemeBreaks(string, length, attributes);
+        getGraphemeBreaks(string.utf16(), string.size(), attributes);
     if (options & WordBreaks)
-        getWordBreaks(string, length, attributes);
+        getWordBreaks(string.utf16(), string.size(), attributes);
     if (options & SentenceBreaks)
-        getSentenceBreaks(string, length, attributes);
+        getSentenceBreaks(string.utf16(), string.size(), attributes);
     if (options & LineBreaks)
-        getLineBreaks(string, length, attributes, options);
+        getLineBreaks(string.utf16(), string.size(), attributes, options);
     if (options & WhiteSpaces)
-        getWhiteSpaces(string, length, attributes);
+        getWhiteSpaces(string.utf16(), string.size(), attributes);
 
     if (!qt_initcharattributes_default_algorithm_only) {
         if (!items || numItems <= 0)
             return;
 
-        Tailored::getCharAttributes(string, length, items, numItems, attributes);
+        Tailored::getCharAttributes(string.utf16(), string.size(), items, numItems, attributes);
     }
 }
 
@@ -2247,16 +2247,16 @@ Q_CORE_EXPORT void initCharAttributes(const ushort *string, int length,
 //
 // ----------------------------------------------------------------------------
 
-Q_CORE_EXPORT void initScripts(const ushort *string, int length, ScriptItemArray *scripts)
+Q_CORE_EXPORT void initScripts(QStringView string, ScriptItemArray *scripts)
 {
-    int sor = 0;
-    int eor = 0;
+    qsizetype sor = 0;
+    qsizetype eor = 0;
     QChar::Script script = QChar::Script_Common;
 
-    for (int i = 0; i < length; ++i, eor = i) {
-        char32_t ucs4 = string[i];
-        if (QChar::isHighSurrogate(ucs4) && i + 1 < length) {
-            ushort low = string[i + 1];
+    for (qsizetype i = 0; i < string.size(); ++i, eor = i) {
+        char32_t ucs4 = string[i].unicode();
+        if (QChar::isHighSurrogate(ucs4) && i + 1 < string.size()) {
+            ushort low = string[i + 1].unicode();
             if (QChar::isLowSurrogate(low)) {
                 ucs4 = QChar::surrogateToUcs4(ucs4, low);
                 ++i;
@@ -2294,7 +2294,7 @@ Q_CORE_EXPORT void initScripts(const ushort *string, int length, ScriptItemArray
     }
 
     Q_ASSERT(script >= QChar::Script_Common);
-    Q_ASSERT(eor == length);
+    Q_ASSERT(eor == string.size());
     scripts->append(ScriptItem{sor, script});
 }
 

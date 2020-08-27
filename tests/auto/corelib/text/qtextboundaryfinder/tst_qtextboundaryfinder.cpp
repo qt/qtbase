@@ -664,8 +664,6 @@ void tst_QTextBoundaryFinder::emptyText_data()
     QTest::newRow("empty3") << finder;
     QTest::newRow("empty4") << QTextBoundaryFinder(QTextBoundaryFinder::Word, notEmpty.constData(), 0, 0, 0);
     QTest::newRow("empty5") << QTextBoundaryFinder(QTextBoundaryFinder::Word, notEmpty.constData(), 0, attrs, 11);
-    QTest::newRow("invalid1") << QTextBoundaryFinder(QTextBoundaryFinder::Word, 0, 10, 0, 0);
-    QTest::newRow("invalid2") << QTextBoundaryFinder(QTextBoundaryFinder::Word, 0, 10, attrs, 11);
 }
 
 void tst_QTextBoundaryFinder::emptyText()

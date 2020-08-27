@@ -1808,8 +1808,7 @@ const QCharAttributes *QTextEngine::attributes() const
     }
 
     QUnicodeTools::initCharAttributes(
-        reinterpret_cast<const ushort *>(layoutData->string.constData()),
-        layoutData->string.length(),
+        layoutData->string,
         scriptItems.data(), scriptItems.size(),
         reinterpret_cast<QCharAttributes *>(layoutData->memory),
         QUnicodeTools::CharAttributeOptions(QUnicodeTools::GraphemeBreaks
@@ -1921,7 +1920,7 @@ void QTextEngine::itemize() const
 
     {
         QUnicodeTools::ScriptItemArray scriptItems;
-        QUnicodeTools::initScripts(string, length, &scriptItems);
+        QUnicodeTools::initScripts(layoutData->string, &scriptItems);
         for (int i = 0; i < scriptItems.length(); ++i) {
             const auto &item = scriptItems.at(i);
             int end = i < scriptItems.length() - 1 ? scriptItems.at(i + 1).position : length;

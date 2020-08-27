@@ -74,7 +74,7 @@ namespace QUnicodeTools {
 
 struct ScriptItem
 {
-    int position;
+    qsizetype position;
     QChar::Script script;
 };
 
@@ -97,12 +97,12 @@ enum CharAttributeOption {
 Q_DECLARE_FLAGS(CharAttributeOptions, CharAttributeOption)
 
 // attributes buffer has to have a length of string length + 1
-Q_CORE_EXPORT void initCharAttributes(const ushort *string, int length,
-                                      const ScriptItem *items, int numItems,
+Q_CORE_EXPORT void initCharAttributes(QStringView str,
+                                      const ScriptItem *items, qsizetype numItems,
                                       QCharAttributes *attributes, CharAttributeOptions options);
 
 
-Q_CORE_EXPORT void initScripts(const ushort *string, int length, ScriptItemArray *scripts);
+Q_CORE_EXPORT void initScripts(QStringView str, ScriptItemArray *scripts);
 
 } // namespace QUnicodeTools
 

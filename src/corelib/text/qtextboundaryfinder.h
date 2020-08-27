@@ -46,7 +46,7 @@
 QT_BEGIN_NAMESPACE
 
 
-class QTextBoundaryFinderPrivate;
+struct QCharAttributes;
 
 class Q_CORE_EXPORT QTextBoundaryFinder
 {
@@ -74,33 +74,35 @@ public:
     Q_DECLARE_FLAGS( BoundaryReasons, BoundaryReason )
 
     QTextBoundaryFinder(BoundaryType type, const QString &string);
-    QTextBoundaryFinder(BoundaryType type, const QChar *chars, int length, unsigned char *buffer = nullptr, int bufferSize = 0);
+    QTextBoundaryFinder(BoundaryType type, const QChar *chars, qsizetype length, unsigned char *buffer = nullptr, qsizetype bufferSize = 0)
+        : QTextBoundaryFinder(type, QStringView(chars, length), buffer, bufferSize)
+    {}
+    QTextBoundaryFinder(BoundaryType type, QStringView str, unsigned char *buffer = nullptr, qsizetype bufferSize = 0);
 
-    inline bool isValid() const { return d; }
+    inline bool isValid() const { return attributes; }
 
     inline BoundaryType type() const { return t; }
     QString string() const;
 
     void toStart();
     void toEnd();
-    int position() const;
-    void setPosition(int position);
+    qsizetype position() const;
+    void setPosition(qsizetype position);
 
-    int toNextBoundary();
-    int toPreviousBoundary();
+    qsizetype toNextBoundary();
+    qsizetype toPreviousBoundary();
 
     bool isAtBoundary() const;
     BoundaryReasons boundaryReasons() const;
 
 private:
-    BoundaryType t;
+    BoundaryType t = Grapheme;
     QString s;
-    const QChar *chars;
-    int length;
-    int pos;
-    uint freePrivate : 1;
+    QStringView sv;
+    qsizetype pos;
+    uint freeBuffer : 1;
     uint unused : 31;
-    QTextBoundaryFinderPrivate *d;
+    QCharAttributes *attributes = nullptr;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QTextBoundaryFinder::BoundaryReasons)
