@@ -21,6 +21,14 @@ qt_internal_add_plugin(QIosOptionalPlugin_NSPhotoLibrary
         Qt::GuiPrivate
 )
 
+# special case begin
+set_target_properties(QIosOptionalPlugin_NSPhotoLibrary
+    PROPERTIES
+        DISABLE_PRECOMPILE_HEADERS ON
+)
+# special case end
+
+
 #### Keys ignored in scope 1:.:.:nsphotolibrarysupport.pro:<TRUE>:
 # OTHER_FILES = "plugin.json"
 # PLUGIN_EXTENDS = "-"
