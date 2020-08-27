@@ -47,6 +47,24 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QFont>
+#include <QFontMetrics>
+#include <QPainter>
+#include <QTextLayout>
+#include <QTextLine>
+
+namespace src_gui_text_qtextlayout {
+struct Wrapper : public QPaintDevice
+{
+    void wrapper1();
+};
+QTextLayout textLayout;
+
+
+void wrapper0() {
+qreal lineWidth = 0;
+QFont aFont;
+QFontMetrics fontMetrics(aFont);
 
 //! [0]
 int leading = fontMetrics.leading();
@@ -66,8 +84,16 @@ while (1) {
 textLayout.endLayout();
 //! [0]
 
+} // wrapper0
+
+
+void Wrapper::wrapper1() {
 
 //! [1]
 QPainter painter(this);
 textLayout.draw(&painter, QPoint(0, 0));
 //! [1]
+
+} // Wrapper::wrapper1
+
+} // src_gui_text_qtextlayout

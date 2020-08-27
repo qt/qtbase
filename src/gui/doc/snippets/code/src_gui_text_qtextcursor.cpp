@@ -47,6 +47,16 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QImage>
+#include <QTextCursor>
+#include <QTextDocument>
+
+namespace src_gui_text_qtextcursor {
+QTextDocument *textDocument = nullptr;
+
+void wrapper0() {
+QTextCursor cursor;
+
 
 //! [0]
 cursor.clearSelection();
@@ -56,12 +66,15 @@ cursor.insertText("Hello World");
 
 
 //! [1]
-QImage img = ...
+QImage img;
 textDocument->addResource(QTextDocument::ImageResource, QUrl("myimage"), img);
 cursor.insertImage("myimage");
 //! [1]
 
+} // wrapper0
 
+
+void wrapper1() {
 //! [2]
 QTextCursor cursor(textDocument);
 cursor.beginEditBlock();
@@ -71,8 +84,10 @@ cursor.endEditBlock();
 
 textDocument->undo();
 //! [2]
+} // wrapper1
 
 
+void wrapper2() {
 //! [3]
 QTextCursor cursor(textDocument);
 cursor.beginEditBlock();
@@ -80,7 +95,7 @@ cursor.insertText("Hello");
 cursor.insertText("World");
 cursor.endEditBlock();
 
-...
+// ...
 
 cursor.joinPreviousEditBlock();
 cursor.insertText("Hey");
@@ -88,3 +103,6 @@ cursor.endEditBlock();
 
 textDocument->undo();
 //! [3]
+} // wrapper2
+
+} // src_gui_text_qtextcursor

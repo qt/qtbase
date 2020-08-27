@@ -47,9 +47,15 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QTextDocumentWriter>
 
+namespace src_gui_text_qtextdocumentwriter {
+
+void wrapper() {
 //! [0]
         QTextDocumentWriter writer;
         writer.setFormat("odf"); // same as writer.setFormat("ODF");
 //! [0]
+} // wrapper
 
+} // src_gui_text_qtextdocumentwriter
