@@ -37,7 +37,7 @@
     \include module-use.qdocinc using qt module
     \snippet doc/snippets/CMakeLists.txt 0
 
-    See also the \l{Build with CMake} overview.
+    See also the \l[QtDoc]{Build with CMake} overview.
 
     \section2 Building with qmake
 

@@ -262,10 +262,10 @@
            on disk. By default Qt Quick, QPainter's OpenGL backend, and any
            application using QOpenGLShaderProgram with one of its
            \e addCacheableShaderFromSource overloads will employ a disk-based
-           \l{Caching Program Binaries}{program binary cache} in either the shared
-           or per-process cache storage location, on systems that support
-           \e glProgramBinary(). In the unlikely event of this being problematic,
-           set this attribute to disable all disk-based caching of shaders.
+           program binary cache in either the shared or per-process cache storage
+           location, on systems that support \e glProgramBinary(). In the unlikely
+           event of this being problematic, set this attribute to disable all
+           disk-based caching of shaders.
 
     \value AA_DisableSessionManager Disables the QSessionManager.
            By default Qt will connect to a running session manager for a GUI
