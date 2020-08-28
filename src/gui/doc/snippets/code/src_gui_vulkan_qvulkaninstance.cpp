@@ -48,6 +48,20 @@
 **
 ****************************************************************************/
 
+#include <QGuiApplication>
+#include <QVulkanFunctions>
+#include <QVulkanInstance>
+#include <QWindow>
+
+namespace src_gui_vulkan_qvulkaninstance {
+
+struct Window {
+    void setVulkanInstance(QVulkanInstance *instance) { Q_UNUSED(instance); }
+    void show();
+};
+Window *window = nullptr;
+
+
 //! [0]
     int main(int argc, char **argv)
     {
@@ -57,7 +71,7 @@
         if (!inst.create())
             return 1;
 
-        ...
+        // ...
         window->setVulkanInstance(&inst);
         window->show();
 
@@ -65,6 +79,8 @@
     }
 //! [0]
 
+
+void wrapper0() {
 //! [1]
     QVulkanInstance inst;
 
@@ -72,75 +88,91 @@
     inst.setLayers(QByteArrayList() << "VK_LAYER_LUNARG_standard_validation");
 
     bool ok = inst.create();
-    if (!ok)
-        ... // Vulkan not available
-    if (!inst.layers().contains("VK_LAYER_LUNARG_standard_validation"))
-        ... // validation layer not available
-//! [1]
+    if (!ok) {
+        // ... Vulkan not available
+    }
 
+    if (!inst.layers().contains("VK_LAYER_LUNARG_standard_validation")) {
+        // ... validation layer not available
+    }
+//! [1]
+}
+
+
+void wrapper1() {
 //! [2]
     QVulkanInstance inst;
 
-    if (inst.supportedLayers().contains("VK_LAYER_LUNARG_standard_validation"))
-        ...
-
+    if (inst.supportedLayers().contains("VK_LAYER_LUNARG_standard_validation")) {
+        // ...
+    }
     bool ok = inst.create();
-    ...
+    // ...
 //! [2]
 
-//! [3]
-    class VulkanWindow : public QWindow
-    {
-    public:
-        VulkanWindow() {
-            setSurfaceType(VulkanSurface);
-        }
+Q_UNUSED(ok);
+} // wrapper1
+} // src_gui_vulkan_qvulkaninstance
 
-        void exposeEvent(QExposeEvent *) {
-            if (isExposed()) {
-                if (!m_initialized) {
-                    m_initialized = true;
-                    // initialize device, swapchain, etc.
-                    QVulkanInstance *inst = vulkanInstance();
-                    QVulkanFunctions *f = inst->functions();
-                    uint32_t devCount = 0;
-                    f->vkEnumeratePhysicalDevices(inst->vkInstance(), &devCount, nullptr);
-                    ...
-                    // build the first frame
-                    render();
-                }
+
+namespace src_gui_vulkan_qvulkaninstance2 {
+
+//! [3]
+class VulkanWindow : public QWindow
+{
+public:
+    VulkanWindow() {
+        setSurfaceType(VulkanSurface);
+    }
+
+    void exposeEvent(QExposeEvent *) {
+        if (isExposed()) {
+            if (!m_initialized) {
+                m_initialized = true;
+                // initialize device, swapchain, etc.
+                QVulkanInstance *inst = vulkanInstance();
+                QVulkanFunctions *f = inst->functions();
+                uint32_t devCount = 0;
+                f->vkEnumeratePhysicalDevices(inst->vkInstance(), &devCount, nullptr);
+                // ...
+                // build the first frame
+                render();
             }
         }
-
-        bool event(QEvent *e) {
-            if (e->type() == QEvent::UpdateRequest)
-                render();
-            return QWindow::event(e);
-        }
-
-        void render() {
-           ...
-           requestUpdate(); // render continuously
-        }
-
-    private:
-        bool m_initialized = false;
-    };
-
-    int main(int argc, char **argv)
-    {
-        QGuiApplication app(argc, argv);
-
-        QVulkanInstance inst;
-        if (!inst.create()) {
-            qWarning("Vulkan not available");
-            return 1;
-        }
-
-        VulkanWindow window;
-        window.showMaximized();
-
-        return app.exec();
-
     }
+
+    bool event(QEvent *e) {
+        if (e->type() == QEvent::UpdateRequest)
+            render();
+        return QWindow::event(e);
+    }
+
+    void render() {
+       // ...
+       requestUpdate(); // render continuously
+    }
+
+private:
+    bool m_initialized = false;
+};
+
+int main(int argc, char **argv)
+{
+    QGuiApplication app(argc, argv);
+
+    QVulkanInstance inst;
+    if (!inst.create()) {
+        qWarning("Vulkan not available");
+        return 1;
+    }
+
+    VulkanWindow window;
+    window.showMaximized();
+
+    return app.exec();
+
+}
 //! [3]
+
+
+} // src_gui_vulkan_qvulkaninstance2
