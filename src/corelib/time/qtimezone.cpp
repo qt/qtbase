@@ -79,6 +79,7 @@ static QTimeZonePrivate *newBackendTimeZone()
 // Create named time zone using appropriate backend
 static QTimeZonePrivate *newBackendTimeZone(const QByteArray &ianaId)
 {
+    Q_ASSERT(!ianaId.isEmpty());
 #ifdef QT_NO_SYSTEMLOCALE
 #if QT_CONFIG(icu)
     return new QIcuTimeZonePrivate(ianaId);
@@ -339,7 +340,7 @@ QTimeZone::QTimeZone(const QByteArray &ianaId)
     // If not a CLDR UTC offset ID then try creating it with the system backend.
     // Relies on backend not creating valid TZ with invalid name.
     if (!d->isValid())
-        d = newBackendTimeZone(ianaId);
+        d = ianaId.isEmpty() ? newBackendTimeZone() : newBackendTimeZone(ianaId);
     // Can also handle UTC with arbitrary (valid) offset, but only do so as
     // fall-back, since either of the above may handle it more informatively.
     if (!d->isValid()) {
@@ -795,7 +796,15 @@ QTimeZone::OffsetDataList QTimeZone::transitions(const QDateTime &fromDateTime,
 
 QByteArray QTimeZone::systemTimeZoneId()
 {
-    return global_tz->backend->systemTimeZoneId();
+    const QByteArray sys = global_tz->backend->systemTimeZoneId();
+    if (!sys.isEmpty())
+        return sys;
+    // The system zone, despite the empty ID, may know its real ID anyway:
+    auto zone = systemTimeZone();
+    if (zone.isValid() && !zone.id().isEmpty())
+        return zone.id();
+    // If all else fails, guess UTC.
+    return QTimeZonePrivate::utcQByteArray();
 }
 
 /*!
@@ -807,7 +816,7 @@ QByteArray QTimeZone::systemTimeZoneId()
 */
 QTimeZone QTimeZone::systemTimeZone()
 {
-    return QTimeZone(QTimeZone::systemTimeZoneId());
+    return QTimeZone(global_tz->backend->systemTimeZoneId());
 }
 
 /*!

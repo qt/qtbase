@@ -641,7 +641,7 @@ QTzTimeZonePrivate::QTzTimeZonePrivate()
 // Create a named time zone
 QTzTimeZonePrivate::QTzTimeZonePrivate(const QByteArray &ianaId)
 {
-    init(ianaId.isEmpty() ? systemTimeZoneId() : ianaId);
+    init(ianaId);
 }
 
 QTzTimeZonePrivate::~QTzTimeZonePrivate()
@@ -854,9 +854,6 @@ QTzTimeZoneCacheEntry QTzTimeZoneCache::fetchEntry(const QByteArray &ianaId)
 
 void QTzTimeZonePrivate::init(const QByteArray &ianaId)
 {
-    // System ID defaults to UTC, so is never empty; and our callers default to
-    // the system ID if what they're given is empty.
-    Q_ASSERT(!ianaId.isEmpty());
     static QTzTimeZoneCache tzCache;
     const auto &entry = tzCache.fetchEntry(ianaId);
     if (entry.m_tranTimes.isEmpty() && entry.m_posixRule.isEmpty())
@@ -864,6 +861,15 @@ void QTzTimeZonePrivate::init(const QByteArray &ianaId)
 
     cached_data = std::move(entry);
     m_id = ianaId;
+    // Avoid empty ID, if we have an abbreviation to use instead
+    if (m_id.isEmpty()) { // We've read /etc/localtime's contents
+        for (const auto &abbr : cached_data.m_abbreviations) {
+            if (!abbr.isEmpty()) {
+                m_id = abbr;
+                break;
+            }
+        }
+    }
 }
 
 QLocale::Country QTzTimeZonePrivate::country() const
@@ -1260,10 +1266,6 @@ QByteArray QTzTimeZonePrivate::systemTimeZoneId() const
         thread_local static ZoneNameReader reader;
         ianaId = reader.name();
     }
-
-    // Give up for now and return UTC
-    if (ianaId.isEmpty())
-        ianaId = utcQByteArray();
 
     return ianaId;
 }
