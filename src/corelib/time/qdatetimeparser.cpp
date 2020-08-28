@@ -816,7 +816,7 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex,
             result = ParsedSection(Intermediate);
         } else {
             for (int i = 0; i < sectiontextSize; ++i) {
-                if (sectionTextRef.at(i).isSpace())
+                if (!sectionTextRef.at(i).isDigit())
                     sectiontextSize = i; // which exits the loop
             }
 
