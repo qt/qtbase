@@ -284,6 +284,8 @@ def map_condition(condition):
 
     # Turn foo != "bar" into (NOT foo STREQUAL 'bar')
     condition = re.sub(r"([^ ]+)\s*!=\s*('.*?')", "(! \\1 == \\2)", condition)
+    # Turn foo != 156 into (NOT foo EQUAL 156)
+    condition = re.sub(r"([^ ]+)\s*!=\s*([0-9]?)", "(! \\1 EQUAL \\2)", condition)
 
     condition = condition.replace("!", "NOT ")
     condition = condition.replace("&&", " AND ")
