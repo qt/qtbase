@@ -584,12 +584,15 @@ void QTableModel::ensureSorted(int column, Qt::SortOrder order,
     QList<QTableWidgetItem *> newVertical = verticalHeaderItems;
     QList<QTableWidgetItem *> colItems = columnItems(column);
     QList<QTableWidgetItem *>::iterator vit = colItems.begin();
+    qsizetype distanceFromBegin = 0;
     bool changed = false;
     for (int i = 0; i < sorting.count(); ++i) {
+        distanceFromBegin = std::distance(colItems.begin(), vit);
         int oldRow = sorting.at(i).second;
         QTableWidgetItem *item = colItems.at(oldRow);
         colItems.remove(oldRow);
-        vit = sortedInsertionIterator(colItems.begin(), colItems.end(), order, item);
+        vit = sortedInsertionIterator(colItems.begin() + distanceFromBegin, colItems.end(), order,
+                                      item);
         int newRow = qMax((int)(vit - colItems.begin()), 0);
         if ((newRow < oldRow) && !(*item < *colItems.at(oldRow - 1)) && !(*colItems.at(oldRow - 1) < *item))
             newRow = oldRow;
