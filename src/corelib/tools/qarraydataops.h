@@ -441,16 +441,20 @@ public:
         // only use memcmp for fundamental types or pointers.
         // Other types could have padding in the data structure or custom comparison
         // operators that would break the comparison using memcmp
-        if (QArrayDataPointer<T>::pass_parameter_by_value)
+        if constexpr (QArrayDataPointer<T>::pass_parameter_by_value) {
             return ::memcmp(begin1, begin2, n * sizeof(T)) == 0;
-        const T *end1 = begin1 + n;
-        while (begin1 != end1) {
-            if (*begin1 == *begin2)
-                ++begin1, ++begin2;
-            else
-                return false;
+        } else {
+            const T *end1 = begin1 + n;
+            while (begin1 != end1) {
+                if (*begin1 == *begin2) {
+                    ++begin1;
+                    ++begin2;
+                } else {
+                    return false;
+                }
+            }
+            return true;
         }
-        return true;
     }
 
     void reallocate(qsizetype alloc, typename Data::ArrayOptions options)
@@ -587,12 +591,14 @@ public:
 
         // Copy assign over existing elements
         while (readIter != where) {
-            --readIter, --writeIter;
+            --readIter;
+            --writeIter;
             *writeIter = *readIter;
         }
 
         while (writeIter != where) {
-            --e, --writeIter;
+            --e;
+            --writeIter;
             *writeIter = *e;
         }
     }
@@ -619,12 +625,14 @@ public:
         // Construct new elements in array
         while (writeIter != step1End) {
             new (writeIter) T(*readIter);
-            ++readIter, ++writeIter;
+            ++readIter;
+            ++writeIter;
         }
 
         while (writeIter != begin) {
             new (writeIter) T(*b);
-            ++b, ++writeIter;
+            ++b;
+            ++writeIter;
         }
 
         destroyer.commit();
@@ -634,12 +642,14 @@ public:
         // Copy assign over existing elements
         while (readIter != where) {
             *writeIter = *readIter;
-            ++readIter, ++writeIter;
+            ++readIter;
+            ++writeIter;
         }
 
         while (writeIter != where) {
             *writeIter = *b;
-            ++b, ++writeIter;
+            ++b;
+            ++writeIter;
         }
     }
 
@@ -683,12 +693,14 @@ public:
 
         // Copy assign over existing elements
         while (readIter != where) {
-            --readIter, --writeIter;
+            --readIter;
+            --writeIter;
             *writeIter = *readIter;
         }
 
         while (writeIter != where) {
-            --n, --writeIter;
+            --n;
+            --writeIter;
             *writeIter = t;
         }
     }
@@ -712,7 +724,8 @@ public:
         // Construct new elements in array
         while (writeIter != step1End) {
             new (writeIter) T(*readIter);
-            ++readIter, ++writeIter;
+            ++readIter;
+            ++writeIter;
         }
 
         while (writeIter != begin) {
@@ -727,7 +740,8 @@ public:
         // Copy assign over existing elements
         while (readIter != where) {
             *writeIter = *readIter;
-            ++readIter, ++writeIter;
+            ++readIter;
+            ++writeIter;
         }
 
         while (writeIter != where) {
@@ -784,7 +798,8 @@ public:
         // onto b to the new end
         while (e != end) {
             *b = *e;
-            ++b, ++e;
+            ++b;
+            ++e;
         }
 
         // destroy the final elements at the end
@@ -808,7 +823,8 @@ public:
         // move (by assignment) the elements from begin to b
         // onto the new begin to e
         while (b != begin) {
-            --b, --e;
+            --b;
+            --e;
             *e = *b;
         }
 
@@ -835,10 +851,12 @@ public:
     {
         const T *end1 = begin1 + n;
         while (begin1 != end1) {
-            if (*begin1 == *begin2)
-                ++begin1, ++begin2;
-            else
+            if (*begin1 == *begin2) {
+                ++begin1;
+                ++begin2;
+            } else {
                 return false;
+            }
         }
         return true;
     }
@@ -1101,7 +1119,8 @@ private:
             // step 2. move assign over existing elements in the overlapping
             //         region (if there's an overlap)
             while (e != begin) {
-                --start, --e;
+                --start;
+                --e;
                 *start = std::move_if_noexcept(*e);
             }
 
@@ -1205,8 +1224,9 @@ private:
                 || std::is_same_v<RemovedConstVolatileIt, const volatile T *>;
             if constexpr (selfIterator) {
                 return (first >= this->begin() && last <= this->end());
+            } else {
+                return false;
             }
-            return false;
         };
 
         const bool inRange = iteratorsInRange(b, e);
