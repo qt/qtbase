@@ -3698,7 +3698,8 @@ static pD3DCompile resolveD3DCompile()
     return nullptr;
 }
 
-static QByteArray compileHlslShaderSource(const QShader &shader, QShader::Variant shaderVariant, QString *error, QShaderKey *usedShaderKey)
+static QByteArray compileHlslShaderSource(const QShader &shader, QShader::Variant shaderVariant, UINT flags,
+                                          QString *error, QShaderKey *usedShaderKey)
 {
     QShaderKey key = { QShader::DxbcShader, 50, shaderVariant };
     QShaderCode dxbc = shader.shader(key);
@@ -3750,7 +3751,7 @@ static QByteArray compileHlslShaderSource(const QShader &shader, QShader::Varian
     ID3DBlob *errors = nullptr;
     HRESULT hr = d3dCompile(hlslSource.shader().constData(), SIZE_T(hlslSource.shader().size()),
                             nullptr, nullptr, nullptr,
-                            hlslSource.entryPoint().constData(), target, 0, 0, &bytecode, &errors);
+                            hlslSource.entryPoint().constData(), target, flags, 0, &bytecode, &errors);
     if (FAILED(hr) || !bytecode) {
         qWarning("HLSL shader compilation failed: 0x%x", uint(hr));
         if (errors) {
@@ -3871,7 +3872,12 @@ bool QD3D11GraphicsPipeline::create()
         } else {
             QString error;
             QShaderKey shaderKey;
-            const QByteArray bytecode = compileHlslShaderSource(shaderStage.shader(), shaderStage.shaderVariant(), &error, &shaderKey);
+            UINT compileFlags = 0;
+            if (m_flags.testFlag(CompileShadersWithDebugInfo))
+                compileFlags |= D3DCOMPILE_DEBUG;
+
+            const QByteArray bytecode = compileHlslShaderSource(shaderStage.shader(), shaderStage.shaderVariant(), compileFlags,
+                                                                &error, &shaderKey);
             if (bytecode.isEmpty()) {
                 qWarning("HLSL shader compilation failed: %s", qPrintable(error));
                 return false;
@@ -3987,7 +3993,12 @@ bool QD3D11ComputePipeline::create()
     } else {
         QString error;
         QShaderKey shaderKey;
-        const QByteArray bytecode = compileHlslShaderSource(m_shaderStage.shader(), m_shaderStage.shaderVariant(), &error, &shaderKey);
+        UINT compileFlags = 0;
+        if (m_flags.testFlag(CompileShadersWithDebugInfo))
+            compileFlags |= D3DCOMPILE_DEBUG;
+
+        const QByteArray bytecode = compileHlslShaderSource(m_shaderStage.shader(), m_shaderStage.shaderVariant(), compileFlags,
+                                                            &error, &shaderKey);
         if (bytecode.isEmpty()) {
             qWarning("HLSL compute shader compilation failed: %s", qPrintable(error));
             return false;

@@ -3463,7 +3463,8 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBindings &srb)
 /*!
     \enum QRhiGraphicsPipeline::Flag
 
-    Flag values for describing the dynamic state of the pipeline. The viewport is always dynamic.
+    Flag values for describing the dynamic state of the pipeline, and other
+    options. The viewport is always dynamic.
 
     \value UsesBlendConstants Indicates that a blend color constant will be set
     via QRhiCommandBuffer::setBlendConstants()
@@ -3473,6 +3474,22 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBindings &srb)
 
     \value UsesScissor Indicates that a scissor rectangle will be set via
     QRhiCommandBuffer::setScissor()
+
+    \value CompileShadersWithDebugInfo Requests compiling shaders with debug
+    information enabled. This is relevant only when runtime shader compilation
+    from source code is involved, and only when the underlying infrastructure
+    supports this. With concrete examples, this is not relevant with Vulkan and
+    SPIR-V, because the GLSL-to-SPIR-V compilation does not happen at run
+    time. On the other hand, consider Direct3D and HLSL, where there are
+    multiple options: when the QShader packages ship with pre-compiled bytecode
+    (\c DXBC), debug information is to be requested through the tool that
+    generates the \c{.qsb} file, similarly to the case of Vulkan and
+    SPIR-V. However, when having HLSL source code in the pre- or
+    runtime-generated QShader packages, the first phase of compilation (HLSL
+    source to intermediate format) happens at run time too, with this flag taken
+    into account. Debug information is relevant in particular with tools like
+    RenderDoc since it allows seeing the original source code when investigating
+    the pipeline and when performing vertex or fragment shader debugging.
  */
 
 /*!
@@ -3960,6 +3977,16 @@ QRhiResource::Type QRhiSwapChain::resourceType() const
     time create() is called.
 
     \note Setting the shader is mandatory.
+ */
+
+/*!
+    \enum QRhiComputePipeline::Flag
+
+    Flag values for describing pipeline options.
+
+    \value CompileShadersWithDebugInfo Requests compiling shaders with debug
+    information enabled, when applicable. See
+    QRhiGraphicsPipeline::CompileShadersWithDebugInfo for more information.
  */
 
 /*!

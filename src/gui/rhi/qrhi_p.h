@@ -1024,7 +1024,8 @@ public:
     enum Flag {
         UsesBlendConstants = 1 << 0,
         UsesStencilRef = 1 << 1,
-        UsesScissor = 1 << 2
+        UsesScissor = 1 << 2,
+        CompileShadersWithDebugInfo = 1 << 3
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 
@@ -1289,8 +1290,16 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QRhiSwapChain::Flags)
 class Q_GUI_EXPORT QRhiComputePipeline : public QRhiResource
 {
 public:
+    enum Flag {
+        CompileShadersWithDebugInfo = 1 << 0
+    };
+    Q_DECLARE_FLAGS(Flags, Flag)
+
     QRhiResource::Type resourceType() const override;
     virtual bool create() = 0;
+
+    Flags flags() const { return m_flags; }
+    void setFlags(Flags f) { m_flags = f; }
 
     QRhiShaderStage shaderStage() const { return m_shaderStage; }
     void setShaderStage(const QRhiShaderStage &stage) { m_shaderStage = stage; }
@@ -1300,9 +1309,12 @@ public:
 
 protected:
     QRhiComputePipeline(QRhiImplementation *rhi);
+    Flags m_flags;
     QRhiShaderStage m_shaderStage;
     QRhiShaderResourceBindings *m_shaderResourceBindings = nullptr;
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QRhiComputePipeline::Flags)
 
 class Q_GUI_EXPORT QRhiCommandBuffer : public QRhiResource
 {
