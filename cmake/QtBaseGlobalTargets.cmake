@@ -197,7 +197,7 @@ unset(qt_path_from_cmake_config_dir_to_prefix)
 qt_install(FILES "${__GlobalConfig_build_dir}/qt.toolchain.cmake" DESTINATION "${__GlobalConfig_install_dir}" COMPONENT Devel)
 
 # Also provide a convenience cmake wrapper
-if(UNIX)
+if(CMAKE_HOST_UNIX)
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-cmake.in" "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake" @ONLY)
     qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake" DESTINATION "${INSTALL_BINDIR}")
 else()
@@ -214,7 +214,7 @@ endif()
 # The private wrapper is more conveient for building Qt itself, because a developer doesn't need
 # to specify the same options for each qt module built.
 set(__qt_cmake_extra "-G\"${CMAKE_GENERATOR}\"")
-if(UNIX)
+if(CMAKE_HOST_UNIX)
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-cmake.in"
         "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake-private" @ONLY)
 qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake-private" DESTINATION "${INSTALL_BINDIR}")
@@ -243,7 +243,7 @@ if(QT_WILL_INSTALL)
                  "${QT_STAGING_PREFIX}"
                  "${__qt_cmake_standalone_test_path}")
 endif()
-if(UNIX)
+if(CMAKE_HOST_UNIX)
     set(__qt_cmake_standalone_test_os_prelude "#!/bin/sh")
     string(PREPEND __qt_cmake_private_path "exec ")
     set(__qt_cmake_standalone_passed_args "\"$@\" -DPWD=\"$PWD\"")
