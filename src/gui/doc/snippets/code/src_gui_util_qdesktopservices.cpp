@@ -88,9 +88,6 @@ QDesktopServices::openUrl(QUrl("file:///C:/Documents and Settings/All Users/Desk
 </array>
 //! [4]
 
-//! [5]
-QDesktopServices::storageLocation(QDesktopServices::DataLocation)
-//! [5]
 
 //! [6]
 QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) +
