@@ -215,15 +215,6 @@
     \value AA_SetPalette Indicates whether a palette was explicitly set on the
            QGuiApplication. This value was added in Qt 5.5.
 
-    \value AA_EnableHighDpiScaling Enables high-DPI scaling in Qt on supported
-           platforms (see also \l{High DPI Displays}). Supported platforms are
-           X11, Windows and Android. Enabling makes Qt scale the main (device
-           independent) coordinate system according to display scale factors
-           provided by the operating system. This corresponds to setting the
-           QT_AUTO_SCREEN\unicode{0x200b}_SCALE_FACTOR environment variable to
-           1. This attribute must be set before QGuiApplication is constructed.
-           This value was added in Qt 5.6.
-
     \value AA_DisableHighDpiScaling Disables high-DPI scaling in Qt, exposing window
            system coordinates. Note that the window system may do its own scaling,
            so this does not guarantee that QPaintDevice::devicePixelRatio() will
@@ -305,6 +296,7 @@
            This value was added in 5.15
 
     \omitvalue AA_AttributeCount
+    \omitvalue AA_EnableHighDpiScaling
 */
 
 /*!
@@ -3270,7 +3262,6 @@
   environment variable.
 
   \sa QGuiApplication::setHighDpiScaleFactorRoundingPolicy()
-  \sa AA_EnableHighDpiScaling.
 
   \omitvalue Unset
   \value Round Round up for .5 and above.

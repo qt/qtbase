@@ -440,7 +440,6 @@ void Window::render()
 
 int main(int argc, char **argv)
 {
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QGuiApplication app(argc, argv);
 
     QLoggingCategory::setFilterRules(QLatin1String("qt.rhi.*=true"));

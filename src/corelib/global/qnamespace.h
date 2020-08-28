@@ -487,7 +487,9 @@ namespace Qt {
         AA_UseSoftwareOpenGL = 17,
         AA_ShareOpenGLContexts = 18,
         AA_SetPalette = 19,
-        AA_EnableHighDpiScaling = 20,
+#if QT_DEPRECATED_SINCE(6, 0)
+        AA_EnableHighDpiScaling Q_DECL_ENUMERATOR_DEPRECATED = 20,
+#endif
         AA_DisableHighDpiScaling = 21,
         AA_UseStyleSheetPropagationInWidgetStyles = 22,
         AA_DontUseNativeDialogs = 23,

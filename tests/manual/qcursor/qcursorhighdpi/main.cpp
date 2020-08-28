@@ -339,9 +339,7 @@ int main(int argc, char *argv[])
     std::copy(argv + 1, argv + argc, std::back_inserter(arguments));
 
 #if QT_VERSION > 0x050000
-    if (arguments.contains("-s"))
-        QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    else if (arguments.contains("-n"))
+    if (arguments.contains("-n"))
         QCoreApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
 #endif // Qt 5
 

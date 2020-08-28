@@ -1458,7 +1458,6 @@ void MetricsTest::logScreenChangeSignal(const QObject *o, const char *name, cons
 int main(int argc, char **argv)
 {
 #define NOSCALINGOPTION "noscaling"
-#define SCALINGOPTION "scaling"
 
     qInfo("High DPI tester %s", QT_VERSION_STR);
 
@@ -1468,10 +1467,6 @@ int main(int argc, char **argv)
             QCoreApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
             preAppOptionCount++;
             qInfo("AA_DisableHighDpiScaling");
-        } else if (qstrcmp(argv[a], "--" SCALINGOPTION) == 0) {
-            QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-            preAppOptionCount++;
-            qInfo("AA_EnableHighDpiScaling");
         }
     }
 
@@ -1489,7 +1484,6 @@ int main(int argc, char **argv)
     QCommandLineOption controllerOption("interactive", "Show configuration window.");
     parser.addOption(controllerOption);
     parser.addOption(QCommandLineOption(NOSCALINGOPTION, "Set AA_DisableHighDpiScaling"));
-    parser.addOption(QCommandLineOption(SCALINGOPTION, "Set AA_EnableHighDpiScaling"));
 
     DemoContainerList demoList;
     demoList << new DemoContainer<PixmapPainter>("pixmap", "Test pixmap painter");

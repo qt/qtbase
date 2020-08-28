@@ -496,10 +496,6 @@ private:
 
 void tst_QGraphicsItem::initMain()
 {
-#ifdef Q_OS_WIN
-    // Ensure minimum size constraints of framed windows on High DPI screens
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-#endif
 }
 
 void tst_QGraphicsItem::cleanup()
