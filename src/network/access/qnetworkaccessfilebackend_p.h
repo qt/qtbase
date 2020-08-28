@@ -69,8 +69,8 @@ public:
     void open() override;
     void close() override;
 
-    qint64 bytesAvailable() const;
-    qint64 read(char *data, qint64 maxlen);
+    qint64 bytesAvailable() const override;
+    qint64 read(char *data, qint64 maxlen) override;
 
 public slots:
     void uploadReadyReadSlot();
