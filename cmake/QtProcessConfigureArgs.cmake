@@ -553,6 +553,7 @@ if(NOT "${INPUT_device}" STREQUAL "")
 endif()
 translate_string_input(platform QT_QMAKE_TARGET_MKSPEC)
 translate_string_input(xplatform QT_QMAKE_TARGET_MKSPEC)
+translate_string_input(qpa_default_platform QT_QPA_DEFAULT_PLATFORM)
 
 drop_input(make)
 drop_input(nomake)

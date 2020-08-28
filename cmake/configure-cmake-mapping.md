@@ -138,7 +138,7 @@ The effort of this is tracked in QTBUG-85373 and QTBUG-85349.
 | -opengl <api>                         |                                                   |                                                                 |
 | -opengles3                            |                                                   |                                                                 |
 | -egl                                  |                                                   |                                                                 |
-| -qpa <name>                           |                                                   |                                                                 |
+| -qpa <name>                           | -DQT_QPA_DEFAULT_PLATFORM=<name>                  |                                                                 |
 | -xcb-xlib                             | -DFEATURE_xcb_xlib=ON                             |                                                                 |
 | -direct2d                             | -DFEATURE_direct2d=ON                             |                                                                 |
 | -directfb                             | -DFEATURE_directfb=ON                             |                                                                 |
