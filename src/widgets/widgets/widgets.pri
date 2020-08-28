@@ -357,14 +357,6 @@ qtConfig(widgettextcontrol) {
 }
 
 macx {
-    HEADERS += \
-        widgets/qmacnativewidget_mac.h \
-        widgets/qmaccocoaviewcontainer_mac.h
-
-    OBJECTIVE_SOURCES += \
-        widgets/qmacnativewidget_mac.mm \
-        widgets/qmaccocoaviewcontainer_mac.mm
-
     qtConfig(menu)|qtConfig(menubar) {
         SOURCES += widgets/qmenu_mac.mm
     }

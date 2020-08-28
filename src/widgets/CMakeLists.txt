@@ -302,8 +302,6 @@ qt_extend_target(Widgets CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i3
 qt_extend_target(Widgets CONDITION MACOS
     SOURCES
         kernel/qmacgesturerecognizer.cpp kernel/qmacgesturerecognizer_p.h
-        widgets/qmaccocoaviewcontainer_mac.h widgets/qmaccocoaviewcontainer_mac.mm
-        widgets/qmacnativewidget_mac.h widgets/qmacnativewidget_mac.mm
     LIBRARIES
         ${FWAppKit}
         z

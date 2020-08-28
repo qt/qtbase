@@ -50,9 +50,6 @@
 #include "qlayout.h"
 #include "qpainter.h"
 #include <qpa/qplatformtheme.h>
-#ifdef Q_OS_MACOS
-#include "qmacnativewidget_mac.h"
-#endif
 #include "qapplication.h"
 #ifndef QT_NO_ACCESSIBILITY
 # include "qaccessible.h"
@@ -3592,8 +3589,8 @@ void QMenu::actionEvent(QActionEvent *e)
             if (QWidget *widget = d->widgetItems.value(wa)) {
 #ifdef Q_OS_MACOS
                 QWidget *p = widget->parentWidget();
-                if (p != this && QT_IGNORE_DEPRECATIONS(qobject_cast<QMacNativeWidget *>(p))) {
-                    // This widget was reparented into a native Mac view
+                if (p != this) {
+                    // This widget was reparented into a container widget
                     // (see QMenuPrivate::moveWidgetToPlatformItem).
                     // Reset the parent and delete the native widget.
                     widget->setParent(this);
