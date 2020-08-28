@@ -47,27 +47,49 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QDesktopServices>
+#include <QObject>
+#include <QStandardPaths>
+#include <QUrl>
+
+namespace src_gui_util_qdesktopservices {
 
 //! [0]
 class MyHelpHandler : public QObject
 {
     Q_OBJECT
 public:
-    ...
+    // ...
 public slots:
     void showHelp(const QUrl &url);
 };
-
-QDesktopServices::setUrlHandler("help", helpInstance, "showHelp");
 //! [0]
+
+void wrapper0() {
+MyHelpHandler *helpInstance = nullptr;
+//! [setUrlHandler]
+QDesktopServices::setUrlHandler("help", helpInstance, "showHelp");
+//! [setUrlHandler]
+} // wrapper
+
+
+/* comment wrapper 1
 
 //! [1]
 mailto:user@foo.com?subject=Test&body=Just a test
 //! [1]
 
+*/ // comment wrapper 1
+
+
+void wrapper1() {
 //! [2]
 QDesktopServices::openUrl(QUrl("file:///C:/Documents and Settings/All Users/Desktop", QUrl::TolerantMode));
 //! [2]
+}
+
+
+/* comment wrapper 2
 
 //! [3]
 <key>LSApplicationQueriesSchemes</key>
@@ -88,12 +110,18 @@ QDesktopServices::openUrl(QUrl("file:///C:/Documents and Settings/All Users/Desk
 </array>
 //! [4]
 
+*/ // comment wrapper 2
 
+
+void wrapper3() {
 //! [6]
 QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) +
-    "/data/organization/application"
+    "/data/organization/application";
 //! [6]
+} // wrapper3
 
+
+/* comment wrapper 3
 //! [7]
 <key>com.apple.developer.associated-domains</key>
 <array>
@@ -115,3 +143,8 @@ QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) +
     }
 }
 //! [8]
+
+*/ // comment wrapper 3
+
+
+} // src_gui_util_qdesktopservices

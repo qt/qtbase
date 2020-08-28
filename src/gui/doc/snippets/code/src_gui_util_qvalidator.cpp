@@ -47,7 +47,19 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QLineEdit>
+#include <QValidator>
+#include <QWidget>
 
+namespace src_gui_util_qvalidator {
+
+struct Wrapper : public QWidget {
+    void wrapper0();
+    void wrapper1();
+    void wrapper2();
+};
+
+void Wrapper::wrapper0() {
 //! [0]
 QValidator *validator = new QIntValidator(100, 999, this);
 QLineEdit *edit = new QLineEdit(this);
@@ -84,7 +96,11 @@ v.validate(str, pos);     // returns Invalid
 str = "12cm";
 v.validate(str, pos);     // returns Invalid
 //! [1]
+} // Wrapper::wrapper0
 
+void Wrapper::wrapper1() {
+QString s;
+QIntValidator v(100, 900, this);
 
 //! [2]
 int pos = 0;
@@ -98,6 +114,10 @@ v.validate(s, pos);    // returns Intermediate
 s = "50";
 v.validate(s, pos);    // returns Acceptable
 //! [2]
+} // Wrapper::wrapper1
+
+
+void Wrapper::wrapper2() {
 
 //! [5]
 // regexp: optional '-' followed by between 1 and 3 digits
@@ -133,7 +153,7 @@ s = "A12345Z"; v.validate(s, pos);        // Returns Acceptable
 s = "B12";     v.validate(s, pos);        // Returns Intermediate
 
 // match most 'readme' files
-re.setPattern("read\\S?me(\.(txt|asc|1st))?");
+re.setPattern("read\\S?me(\\.(txt|asc|1st))?");
 re.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
 v.setRegularExpression(re);
 s = "readme";      v.validate(s, pos); // Returns Acceptable
@@ -141,3 +161,7 @@ s = "README.1ST";  v.validate(s, pos); // Returns Acceptable
 s = "read me.txt"; v.validate(s, pos); // Returns Invalid
 s = "readm";       v.validate(s, pos); // Returns Intermediate
 //! [6]
+
+} // Wrapper::wrapper2
+
+} // src_gui_util_qvalidator

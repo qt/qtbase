@@ -135,6 +135,7 @@ void QOpenUrlHandlerRegistry::handlerDestroyed(QObject *handler)
     inside the application:
 
     \snippet code/src_gui_util_qdesktopservices.cpp 0
+    \snippet code/src_gui_util_qdesktopservices.cpp setUrlHandler
 
     If inside the handler you decide that you can't open the requested
     URL, you can just call QDesktopServices::openUrl() again with the
