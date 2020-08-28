@@ -47,6 +47,8 @@ public:
     QRect geometry() const override { return QRect(3840, 0, 3840, 1920); }
     QRect availableGeometry() const override { return geometry(); }
 
+    QDpi logicalDpi() const override { return logicalBaseDpi(); }
+
     int depth() const override { return 32; }
     QImage::Format format() const override { return QImage::Format_ARGB32_Premultiplied; }
 };
