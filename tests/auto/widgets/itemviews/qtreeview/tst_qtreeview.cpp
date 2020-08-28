@@ -2852,6 +2852,14 @@ void tst_QTreeView::sortByColumn()
     QCOMPARE(view.model()->data(view.model()->index(1, 0)).toString(), QString::fromLatin1("d"));
     QCOMPARE(view.model()->data(view.model()->index(0, 1)).toString(), QString::fromLatin1("e"));
     QCOMPARE(view.model()->data(view.model()->index(1, 1)).toString(), QString::fromLatin1("g"));
+
+    // a new 'sortByColumn()' should do a re-sort (e.g. due to the data changed), QTBUG-86268
+    view.setModel(&model);
+    view.sortByColumn(0, Qt::AscendingOrder);
+    QCOMPARE(view.model()->data(view.model()->index(0, 0)).toString(), QString::fromLatin1("a"));
+    model.setItem(0, 0, new QStandardItem("x"));
+    view.sortByColumn(0, Qt::AscendingOrder);
+    QCOMPARE(view.model()->data(view.model()->index(0, 0)).toString(), QString::fromLatin1("b"));
 }
 
 /*
