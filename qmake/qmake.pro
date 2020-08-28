@@ -144,7 +144,6 @@ SOURCES += \
     qjsonparser.cpp \
     qjsonvalue.cpp \
     qlibraryinfo.cpp \
-    qlist.cpp \
     qlocale.cpp \
     qlocale_tools.cpp \
     qlogging.cpp \

@@ -111,7 +111,7 @@ qt_add_tool(${target_name}
         ../src/corelib/time/qromancalendar.cpp ../src/corelib/time/qromancalendar_p.h # special case
         ../src/corelib/time/qdatetime.cpp ../src/corelib/time/qdatetime.h ../src/corelib/time/qdatetime_p.h # special case
         ../src/corelib/tools/qhash.cpp ../src/corelib/tools/qhash.h
-        ../src/corelib/tools/qlist.cpp ../src/corelib/tools/qlist.h
+        ../src/corelib/tools/qlist.h
         ../src/corelib/text/qlocale.cpp ../src/corelib/text/qlocale.h
         ../src/corelib/text/qlocale_tools.cpp ../src/corelib/text/qlocale_tools_p.h
         ../src/corelib/tools/qmap.h

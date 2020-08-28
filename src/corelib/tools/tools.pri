@@ -56,7 +56,6 @@ SOURCES += \
         tools/qfreelist.cpp \
         tools/qhash.cpp \
         tools/qline.cpp \
-        tools/qlist.cpp \
         tools/qpoint.cpp \
         tools/qmargins.cpp \
         tools/qmessageauthenticationcode.cpp \
