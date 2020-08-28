@@ -4009,20 +4009,23 @@ void tst_QDateTimeEdit::dateEditCorrectSectionSize_data()
     KeyPairList shortAndLongNameIssueKeypresses;
     shortAndLongNameIssueKeypresses << key(Qt::Key_Tab) << key(Qt::Key_3) << key(Qt::Key_1) << key(Qt::Key_Up);
 
+    // When day-of-week is specified, rather than day-of-month, changing month
+    // cares more about preserving day-of-week than day-of-month, so Jan/31 ->
+    // Feb picks 28th even in a leap year, as that's exactly four weeks later.
     QTest::newRow("no fixday, leap, yy/M/dddd")
         << ozzy << y2kStart << QString::fromLatin1("yy/M/dddd")
         << threeDigitDayIssueKeypresses_DayName
-        << QDate(2000, 2, 29) << QString::fromLatin1("00/2/Tuesday");
+        << QDate(2000, 2, 28) << QString::fromLatin1("00/2/Monday");
 
     QTest::newRow("no fixday, leap, yy/M/ddd")
         << ozzy << y2kStart << QString::fromLatin1("yy/M/ddd")
         << threeDigitDayIssueKeypresses_DayName
-        << QDate(2000, 2, 29) << QString::fromLatin1("00/2/Tue");
+        << QDate(2000, 2, 28) << QString::fromLatin1("00/2/Mon");
 
     QTest::newRow("no fixday, leap, yy/MM/dddd")
         << ozzy << y2kStart << QString::fromLatin1("yy/MM/dddd")
         << threeDigitDayIssueKeypresses_DayName
-        << QDate(2000, 2, 29) << QString::fromLatin1("00/02/Tuesday");
+        << QDate(2000, 2, 28) << QString::fromLatin1("00/02/Monday");
 
     QTest::newRow("fixday, leap, yy/MM/dd")
         << ozzy << y2kStart << QString::fromLatin1("yy/MM/dd")
@@ -4072,12 +4075,12 @@ void tst_QDateTimeEdit::dateEditCorrectSectionSize_data()
     QTest::newRow("no fixday, leap, yyyy/M/dddd")
         << ozzy << y2kStart << QString::fromLatin1("yyyy/M/dddd")
         << threeDigitDayIssueKeypresses_DayName
-        << QDate(2000, 2, 29) << QString::fromLatin1("2000/2/Tuesday");
+        << QDate(2000, 2, 28) << QString::fromLatin1("2000/2/Monday");
 
     QTest::newRow("no fixday, leap, yyyy/MM/dddd")
         << ozzy << y2kStart << QString::fromLatin1("yyyy/MM/dddd")
         << threeDigitDayIssueKeypresses_DayName
-        << QDate(2000, 2, 29) << QString::fromLatin1("2000/02/Tuesday");
+        << QDate(2000, 2, 28) << QString::fromLatin1("2000/02/Monday");
 
     QTest::newRow("fixday, leap, yyyy/dd/MM")
         << ozzy << y2kStart << QString::fromLatin1("yyyy/dd/MM")
@@ -4112,12 +4115,12 @@ void tst_QDateTimeEdit::dateEditCorrectSectionSize_data()
     QTest::newRow("fixday, leap, yyyy/dddd/M")
         << ozzy << y2kStart << QString::fromLatin1("yyyy/dddd/M")
         << threeDigitDayIssueKeypresses_DayName_YearDayMonth
-        << QDate(2000, 2, 29) << QString::fromLatin1("2000/Tuesday/2");
+        << QDate(2000, 2, 28) << QString::fromLatin1("2000/Monday/2");
 
     QTest::newRow("fixday, leap, yyyy/dddd/MM")
         << ozzy << y2kStart << QString::fromLatin1("yyyy/dddd/MM")
         << threeDigitDayIssueKeypresses_DayName_YearDayMonth
-        << QDate(2000, 2, 29) << QString::fromLatin1("2000/Tuesday/02");
+        << QDate(2000, 2, 28) << QString::fromLatin1("2000/Monday/02");
 
     QTest::newRow("fixday, leap, d/M/yyyy")
         << ozzy << y2kStart << QString::fromLatin1("d/M/yyyy")
@@ -4137,7 +4140,7 @@ void tst_QDateTimeEdit::dateEditCorrectSectionSize_data()
     QTest::newRow("fixday, leap, dddd/MM/yyyy")
         << ozzy << y2kStart << QString::fromLatin1("dddd/MM/yyyy")
         << threeDigitDayIssueKeypresses_DayName_DayMonthYear
-        << QDate(2000, 2, 29) << QString::fromLatin1("Tuesday/02/2000");
+        << QDate(2000, 2, 28) << QString::fromLatin1("Monday/02/2000");
 
     QTest::newRow("fixday, leap, d/yy/M")
         << ozzy << y2kStart << QString::fromLatin1("d/yy/M")
@@ -4172,12 +4175,12 @@ void tst_QDateTimeEdit::dateEditCorrectSectionSize_data()
     QTest::newRow("fixday, leap, dddd/yy/M")
         << ozzy << y2kStart << QString::fromLatin1("dddd/yy/M")
         << threeDigitDayIssueKeypresses_DayName_DayYearMonth
-        << QDate(2000, 2, 29) << QString::fromLatin1("Tuesday/00/2");
+        << QDate(2000, 2, 28) << QString::fromLatin1("Monday/00/2");
 
     QTest::newRow("fixday, leap, dddd/yy/MM")
         << ozzy << y2kStart << QString::fromLatin1("dddd/yy/MM")
         << threeDigitDayIssueKeypresses_DayName_DayYearMonth
-        << QDate(2000, 2, 29) << QString::fromLatin1("Tuesday/00/02");
+        << QDate(2000, 2, 28) << QString::fromLatin1("Monday/00/02");
 
     QTest::newRow("fixday, leap, M/d/yy")
         << ozzy << y2kStart << QString::fromLatin1("M/d/yy")
@@ -4197,7 +4200,7 @@ void tst_QDateTimeEdit::dateEditCorrectSectionSize_data()
     QTest::newRow("fixday, leap, M/dddd/yyyy")
         << ozzy << y2kStart << QString::fromLatin1("M/dddd/yyyy")
         << threeDigitDayIssueKeypresses_DayName_MonthDayYear
-        << QDate(2000, 2, 29) << QString::fromLatin1("2/Tuesday/2000");
+        << QDate(2000, 2, 28) << QString::fromLatin1("2/Monday/2000");
 
     QTest::newRow("fixday, leap, MM/dd/yyyy")
         << ozzy << y2kStart << QString::fromLatin1("MM/dd/yyyy")
@@ -4207,7 +4210,7 @@ void tst_QDateTimeEdit::dateEditCorrectSectionSize_data()
     QTest::newRow("fixday, leap, MM/dddd/yyyy")
         << ozzy << y2kStart << QString::fromLatin1("MM/dddd/yyyy")
         << threeDigitDayIssueKeypresses_DayName_MonthDayYear
-        << QDate(2000, 2, 29) << QString::fromLatin1("02/Tuesday/2000");
+        << QDate(2000, 2, 28) << QString::fromLatin1("02/Monday/2000");
 
     QTest::newRow("fixday, leap, M/yyyy/dd")
         << ozzy << y2kStart << QString::fromLatin1("M/yyyy/dd")
@@ -4275,6 +4278,9 @@ void tst_QDateTimeEdit::dateEditCorrectSectionSize()
     edit.setDisplayFormat(displayFormat);
     edit.show();
     edit.setFocus();
+    // Day-of-week tests rely on advance through week advancing the
+    // day-of-month, so not stopping at the locale's first day of the week:
+    edit.setWrapping(true);
     // For some reason, we need to set the selected section for the dd/MM/yyyy tests,
     // otherwise the 3 is inserted at the front of 01/01/2000 (301/01/2000), instead of the
     // selected text being replaced. This is not an issue for the yyyy/MM/dd format though...
