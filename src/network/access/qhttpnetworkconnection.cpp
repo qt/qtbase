@@ -1066,8 +1066,18 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
             channels[0].networkLayerPreference = QAbstractSocket::IPv6Protocol;
         channels[0].ensureConnection();
         if (channels[0].socket && channels[0].socket->state() == QAbstractSocket::ConnectedState
-                && !channels[0].pendingEncrypt && channels[0].h2RequestsToSend.size())
-            channels[0].sendRequest();
+            && !channels[0].pendingEncrypt) {
+            if (channels[0].h2RequestsToSend.size()) {
+                channels[0].sendRequest();
+            } else if (!channels[0].reply && !channels[0].switchedToHttp2) {
+                // This covers an edge-case where we're already connected and the "connected"
+                // signal was already sent, but we didn't have any request available at the time,
+                // so it was missed. As such we need to dequeue a request and send it now that we
+                // have one.
+                dequeueRequest(channels[0].socket);
+                channels[0].sendRequest();
+            }
+        }
         break;
     }
     }
