@@ -373,6 +373,9 @@ private slots:
     void sortingEnabled_data();
     void sortingEnabled();
 
+    void sortByColumn_data();
+    void sortByColumn();
+
     void scrollTo_data();
     void scrollTo();
 
@@ -2676,6 +2679,64 @@ void tst_QTableView::sortingEnabled_data()
 void tst_QTableView::sortingEnabled()
 {
 //    QFETCH(int, columnCount);
+}
+
+void tst_QTableView::sortByColumn_data()
+{
+    QTest::addColumn<bool>("sortingEnabled");
+    QTest::newRow("sorting enabled") << true;
+    QTest::newRow("sorting disabled") << false;
+}
+
+// Checks sorting and that sortByColumn also sets the sortIndicator
+void tst_QTableView::sortByColumn()
+{
+    QFETCH(bool, sortingEnabled);
+    QTableView view;
+    QStandardItemModel model(4, 2);
+    QSortFilterProxyModel sfpm; // default QStandardItemModel does not support 'unsorted' state
+    sfpm.setSourceModel(&model);
+    model.setItem(0, 0, new QStandardItem("b"));
+    model.setItem(1, 0, new QStandardItem("d"));
+    model.setItem(2, 0, new QStandardItem("c"));
+    model.setItem(3, 0, new QStandardItem("a"));
+    model.setItem(0, 1, new QStandardItem("e"));
+    model.setItem(1, 1, new QStandardItem("g"));
+    model.setItem(2, 1, new QStandardItem("h"));
+    model.setItem(3, 1, new QStandardItem("f"));
+
+    view.setSortingEnabled(sortingEnabled);
+    view.setModel(&sfpm);
+    view.show();
+
+    view.sortByColumn(1, Qt::DescendingOrder);
+    QCOMPARE(view.horizontalHeader()->sortIndicatorSection(), 1);
+    QCOMPARE(view.model()->data(view.model()->index(0, 0)).toString(), QString::fromLatin1("c"));
+    QCOMPARE(view.model()->data(view.model()->index(1, 0)).toString(), QString::fromLatin1("d"));
+    QCOMPARE(view.model()->data(view.model()->index(0, 1)).toString(), QString::fromLatin1("h"));
+    QCOMPARE(view.model()->data(view.model()->index(1, 1)).toString(), QString::fromLatin1("g"));
+
+    view.sortByColumn(0, Qt::AscendingOrder);
+    QCOMPARE(view.horizontalHeader()->sortIndicatorSection(), 0);
+    QCOMPARE(view.model()->data(view.model()->index(0, 0)).toString(), QString::fromLatin1("a"));
+    QCOMPARE(view.model()->data(view.model()->index(1, 0)).toString(), QString::fromLatin1("b"));
+    QCOMPARE(view.model()->data(view.model()->index(0, 1)).toString(), QString::fromLatin1("f"));
+    QCOMPARE(view.model()->data(view.model()->index(1, 1)).toString(), QString::fromLatin1("e"));
+
+    view.sortByColumn(-1, Qt::AscendingOrder);
+    QCOMPARE(view.horizontalHeader()->sortIndicatorSection(), -1);
+    QCOMPARE(view.model()->data(view.model()->index(0, 0)).toString(), QString::fromLatin1("b"));
+    QCOMPARE(view.model()->data(view.model()->index(1, 0)).toString(), QString::fromLatin1("d"));
+    QCOMPARE(view.model()->data(view.model()->index(0, 1)).toString(), QString::fromLatin1("e"));
+    QCOMPARE(view.model()->data(view.model()->index(1, 1)).toString(), QString::fromLatin1("g"));
+
+    // a new 'sortByColumn()' should do a re-sort (e.g. due to the data changed), QTBUG-86268
+    view.setModel(&model);
+    view.sortByColumn(0, Qt::AscendingOrder);
+    QCOMPARE(view.model()->data(view.model()->index(0, 0)).toString(), QString::fromLatin1("a"));
+    model.setItem(0, 0, new QStandardItem("x"));
+    view.sortByColumn(0, Qt::AscendingOrder);
+    QCOMPARE(view.model()->data(view.model()->index(0, 0)).toString(), QString::fromLatin1("b"));
 }
 
 void tst_QTableView::scrollTo_data()
