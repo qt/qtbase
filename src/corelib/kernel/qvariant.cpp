@@ -1138,6 +1138,18 @@ static const ushort mapIdFromQt3ToCurrent[MapFromThreeCount] =
 #endif
 };
 
+// enum values needed to map Qt5 based type id's to Qt6 based ones
+enum Qt5Types {
+    Qt5UserType = 1024,
+    Qt5LastCoreType = QMetaType::QCborMap,
+    Qt5FirstGuiType = 64,
+    Qt5LastGuiType = 87,
+    Qt5SizePolicy = 121,
+    Qt5RegExp = 27,
+    Qt5KeySequence = 75,
+    Qt5QQuaternion = 85
+};
+
 /*!
     Internal function for loading a variant from stream \a s. Use the
     stream operators instead.
@@ -1151,32 +1163,43 @@ void QVariant::load(QDataStream &s)
     quint32 typeId;
     s >> typeId;
     if (s.version() < QDataStream::Qt_4_0) {
+        // map to Qt 5 ids
         if (typeId >= MapFromThreeCount)
             return;
         typeId = mapIdFromQt3ToCurrent[typeId];
     } else if (s.version() < QDataStream::Qt_5_0) {
+        // map to Qt 5 type ids
         if (typeId == 127 /* QVariant::UserType */) {
-            typeId = QMetaType::User;
-        } else if (typeId >= 128 && typeId != QVariant::UserType) {
+            typeId = Qt5UserType;
+        } else if (typeId >= 128 && typeId != Qt5UserType) {
             // In Qt4 id == 128 was FirstExtCoreType. In Qt5 ExtCoreTypes set was merged to CoreTypes
             // by moving all ids down by 97.
             typeId -= 97;
         } else if (typeId == 75 /* QSizePolicy */) {
-            typeId = QMetaType::QSizePolicy;
+            typeId = Qt5SizePolicy;
         } else if (typeId > 75 && typeId <= 86) {
             // and as a result these types received lower ids too
             // QKeySequence QPen QTextLength QTextFormat QTransform QMatrix4x4 QVector2D QVector3D QVector4D QQuaternion
             typeId -=1;
         }
     }
+    if (s.version() < QDataStream::Qt_6_0) {
+        // map from Qt 5 to Qt 6 values
+        if (typeId == Qt5UserType) {
+            typeId = QMetaType::User;
+        } else if (typeId >= Qt5FirstGuiType && typeId <= Qt5LastGuiType) {
+            typeId += QMetaType::FirstGuiType - Qt5FirstGuiType;
+        } else if (typeId == Qt5SizePolicy) {
+            typeId = QMetaType::QSizePolicy;
+        } else if (typeId == Qt5RegExp) {
+            typeId = QMetaType::fromName("QRegExp").id();
+        }
+    }
 
     qint8 is_null = false;
     if (s.version() >= QDataStream::Qt_4_2)
         s >> is_null;
-    if (typeId == 27) {
-        // used to be QRegExp in Qt 4/5
-        typeId = QMetaType::fromName("QRegExp").id();
-    } else if (typeId == QVariant::UserType) {
+    if (typeId == QVariant::UserType) {
         QByteArray name;
         s >> name;
         typeId = QMetaType::fromName(name).id();
@@ -1221,6 +1244,28 @@ void QVariant::save(QDataStream &s) const
         typeId = QMetaType::User;
         saveAsUserType = true;
     }
+    if (s.version() < QDataStream::Qt_6_0) {
+        // map to Qt 5 values
+        if (typeId == QMetaType::User) {
+            typeId = Qt5UserType;
+        } else if (typeId > Qt5LastCoreType && typeId <= QMetaType::LastCoreType) {
+            // the type didn't exist in Qt 5
+            typeId = Qt5UserType;
+            saveAsUserType = true;
+        } else if (typeId >= QMetaType::FirstGuiType && typeId <= QMetaType::LastGuiType) {
+            typeId -= QMetaType::FirstGuiType - Qt5FirstGuiType;
+            if (typeId > Qt5LastGuiType) {
+                typeId = Qt5UserType;
+                saveAsUserType = true;
+            }
+        } else if (typeId == QMetaType::QSizePolicy) {
+            typeId = Qt5SizePolicy;
+        } else if (saveAsUserType) {
+            if (!strcmp(d.type().name(), "QRegExp")) {
+                typeId = 27; // QRegExp in Qt 4/5
+            }
+        }
+    }
     if (s.version() < QDataStream::Qt_4_0) {
         int i;
         for (i = 0; i <= MapFromThreeCount - 1; ++i) {
@@ -1234,36 +1279,27 @@ void QVariant::save(QDataStream &s) const
             return;
         }
     } else if (s.version() < QDataStream::Qt_5_0) {
-        if (typeId == QMetaType::User) {
+        if (typeId == Qt5UserType) {
             typeId = 127; // QVariant::UserType had this value in Qt4
             saveAsUserType = true;
-        } else if (typeId >= 128 - 97 && typeId <= LastCoreType) {
+        } else if (typeId >= 128 - 97 && typeId <= Qt5LastCoreType) {
             // In Qt4 id == 128 was FirstExtCoreType. In Qt5 ExtCoreTypes set was merged to CoreTypes
             // by moving all ids down by 97.
             typeId += 97;
-        } else if (typeId == QMetaType::QSizePolicy) {
+        } else if (typeId == Qt5SizePolicy) {
             typeId = 75;
-#if QT_CONFIG(shortcut)
-        } else if (typeId >= QMetaType::QKeySequence && typeId <= QMetaType::QQuaternion) {
-#else
-        } else if (typeId >= QMetaType::QPen && typeId <= QMetaType::QQuaternion) {
-#endif
+        } else if (typeId >= Qt5KeySequence && typeId <= Qt5QQuaternion) {
             // and as a result these types received lower ids too
             typeId +=1;
-        } else if (typeId == QMetaType::QPolygonF || typeId == QMetaType::QUuid) {
+        } else if (typeId > Qt5QQuaternion || typeId == QMetaType::QUuid) {
             // These existed in Qt 4 only as a custom type
             typeId = 127;
             saveAsUserType = true;
         }
     }
     const char *typeName = nullptr;
-    if (saveAsUserType) {
+    if (saveAsUserType)
         typeName = d.type().name();
-        if (!strcmp(typeName, "QRegExp")) {
-            typeId = 27; // QRegExp in Qt 4/5
-            typeName = nullptr;
-        }
-    }
     s << typeId;
     if (s.version() >= QDataStream::Qt_4_2)
         s << qint8(d.is_null);

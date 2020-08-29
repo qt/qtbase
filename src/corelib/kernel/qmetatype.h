@@ -166,39 +166,39 @@ inline constexpr int qMetaTypeId();
 
 #if QT_CONFIG(shortcut)
 #define QT_FOR_EACH_STATIC_KEYSEQUENCE_CLASS(F)\
-    F(QKeySequence, 75, QKeySequence)
+    F(QKeySequence, 0x100b, QKeySequence)
 #else
 #define QT_FOR_EACH_STATIC_KEYSEQUENCE_CLASS(F)
 #endif
 
 #define QT_FOR_EACH_STATIC_GUI_CLASS(F)\
-    F(QFont, 64, QFont) \
-    F(QPixmap, 65, QPixmap) \
-    F(QBrush, 66, QBrush) \
-    F(QColor, 67, QColor) \
-    F(QPalette, 68, QPalette) \
-    F(QIcon, 69, QIcon) \
-    F(QImage, 70, QImage) \
-    F(QPolygon, 71, QPolygon) \
-    F(QRegion, 72, QRegion) \
-    F(QBitmap, 73, QBitmap) \
-    F(QCursor, 74, QCursor) \
+    F(QFont, 0x1000, QFont) \
+    F(QPixmap, 0x1001, QPixmap) \
+    F(QBrush, 0x1002, QBrush) \
+    F(QColor, 0x1003, QColor) \
+    F(QPalette, 0x1004, QPalette) \
+    F(QIcon, 0x1005, QIcon) \
+    F(QImage, 0x1006, QImage) \
+    F(QPolygon, 0x1007, QPolygon) \
+    F(QRegion, 0x1008, QRegion) \
+    F(QBitmap, 0x1009, QBitmap) \
+    F(QCursor, 0x100a, QCursor) \
     QT_FOR_EACH_STATIC_KEYSEQUENCE_CLASS(F) \
-    F(QPen, 76, QPen) \
-    F(QTextLength, 77, QTextLength) \
-    F(QTextFormat, 78, QTextFormat) \
-    F(QTransform, 80, QTransform) \
-    F(QMatrix4x4, 81, QMatrix4x4) \
-    F(QVector2D, 82, QVector2D) \
-    F(QVector3D, 83, QVector3D) \
-    F(QVector4D, 84, QVector4D) \
-    F(QQuaternion, 85, QQuaternion) \
-    F(QPolygonF, 86, QPolygonF) \
-    F(QColorSpace, 87, QColorSpace) \
+    F(QPen, 0x100c, QPen) \
+    F(QTextLength, 0x100d, QTextLength) \
+    F(QTextFormat, 0x100e, QTextFormat) \
+    F(QTransform, 0x1010, QTransform) \
+    F(QMatrix4x4, 0x1011, QMatrix4x4) \
+    F(QVector2D, 0x1012, QVector2D) \
+    F(QVector3D, 0x1013, QVector3D) \
+    F(QVector4D, 0x1014, QVector4D) \
+    F(QQuaternion, 0x1015, QQuaternion) \
+    F(QPolygonF, 0x1016, QPolygonF) \
+    F(QColorSpace, 0x1017, QColorSpace) \
 
 
 #define QT_FOR_EACH_STATIC_WIDGETS_CLASS(F)\
-    F(QSizePolicy, 121, QSizePolicy) \
+    F(QSizePolicy, 0x2000, QSizePolicy) \
 
 // F is a tuple: (QMetaType::TypeName, QMetaType::TypeNameID, AliasingType, "RealType")
 #define QT_FOR_EACH_STATIC_ALIAS_TYPE(F)\
@@ -306,7 +306,7 @@ public:
         QReal = sizeof(qreal) == sizeof(double) ? Double : Float,
 
         UnknownType = 0,
-        User = 1024
+        User = 65536
     };
 #else
     // If we are using QDoc it fakes the Type enum looks like this.
@@ -330,17 +330,17 @@ public:
         Char16 = 56, Char32 = 57,
 
         // Gui types
-        QFont = 64, QPixmap = 65, QBrush = 66, QColor = 67, QPalette = 68,
-        QIcon = 69, QImage = 70, QPolygon = 71, QRegion = 72, QBitmap = 73,
-        QCursor = 74, QKeySequence = 75, QPen = 76, QTextLength = 77, QTextFormat = 78,
-        QTransform = 80, QMatrix4x4 = 81, QVector2D = 82,
-        QVector3D = 83, QVector4D = 84, QQuaternion = 85, QPolygonF = 86, QColorSpace = 87,
+        QFont = 0x1000, QPixmap = 0x1001, QBrush = 0x1002, QColor = 0x1003, QPalette = 0x1004,
+        QIcon = 0x1005, QImage = 0x1006, QPolygon = 0x1007, QRegion = 0x1008, QBitmap = 0x1009,
+        QCursor = 0x100a, QKeySequence = 0x100b, QPen = 0x100c, QTextLength = 0x100d, QTextFormat = 0x100e,
+        QTransform = 0x1010, QMatrix4x4 = 0x1011, QVector2D = 0x1012,
+        QVector3D = 0x1013, QVector4D = 0x1014, QQuaternion = 0x1015, QPolygonF = 0x1016, QColorSpace = 0x1017,
 
         // Widget types
-        QSizePolicy = 121,
+        QSizePolicy = 0x2000,
         LastCoreType = Char32,
         LastGuiType = QColorSpace,
-        User = 1024
+        User = 65536
     };
 #endif
 
