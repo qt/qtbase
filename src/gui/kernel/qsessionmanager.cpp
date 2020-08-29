@@ -76,9 +76,6 @@ QT_BEGIN_NAMESPACE
     QSessionManager object as argument. The session manager can only be
     accessed in slots invoked by these signals.
 
-    \warning If you use QSessionManager, you should disable fallback session
-    management: QGuiApplication::setFallbackSessionManagementEnabled().
-
     No user interaction is possible \e unless the application gets explicit
     permission from the session manager. You ask for permission by calling
     allowsInteraction() or, if it is really urgent, allowsErrorInteraction().

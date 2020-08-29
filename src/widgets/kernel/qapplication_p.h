@@ -107,7 +107,6 @@ public:
     virtual void notifyActiveWindowChange(QWindow *) override;
 
     virtual bool shouldQuit() override;
-    bool tryCloseAllWindows() override;
 
     static bool autoSipEnabled;
     static QString desktopStyleKey();

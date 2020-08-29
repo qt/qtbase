@@ -1602,13 +1602,6 @@ retry:
     return true;
 }
 
-bool QApplicationPrivate::tryCloseAllWindows()
-{
-    QWindowList processedWindows;
-    return QApplicationPrivate::tryCloseAllWidgetWindows(&processedWindows)
-        && QGuiApplicationPrivate::tryCloseRemainingWindows(processedWindows);
-}
-
 /*!
     Closes all top-level windows.
 

@@ -80,7 +80,6 @@ int main(int argc, char *argv[])
 MyMainWidget::MyMainWidget(QWidget *parent)
     : QWidget(parent)
 {
-    QGuiApplication::setFallbackSessionManagementEnabled(false);
     connect(qApp, &QGuiApplication::commitDataRequest,
             this, &MyMainWidget::commitData);
 }

@@ -70,7 +70,6 @@ MainWindow::MainWindow()
             this, &MainWindow::documentWasModified);
 
 #ifndef QT_NO_SESSIONMANAGER
-    QGuiApplication::setFallbackSessionManagementEnabled(false);
     connect(qApp, &QGuiApplication::commitDataRequest,
             this, &MainWindow::commitData);
 #endif
