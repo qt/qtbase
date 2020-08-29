@@ -78,6 +78,7 @@ private slots:
     void qobjectObservers();
     void compatBindings();
     void metaProperty();
+    void aliasOnMetaProperty();
 };
 
 void tst_QProperty::functorBinding()
@@ -1208,6 +1209,42 @@ void tst_QProperty::metaProperty()
     QCOMPARE(object.fooData.value(), 666);
     object.setFoo(1);
     QCOMPARE(object.fooData.value(), 1);
+}
+
+void tst_QProperty::aliasOnMetaProperty()
+{
+    MyQObject object;
+    QPropertyAlias<int> alias(object.bindableFoo());
+
+    QVERIFY(alias.isValid());
+    QCOMPARE(alias.value(), object.foo());
+    QVERIFY(!alias.hasBinding());
+
+    object.setFoo(42);
+    QCOMPARE(alias.value(), 42);
+
+    auto f = [&object]() -> int {
+        return object.barData;
+    };
+    object.bindableFoo().setBinding(f);
+    QVERIFY(alias.hasBinding());
+    QCOMPARE(alias.value(), object.bar());
+
+    object.setBar(111);
+    QCOMPARE(alias.value(), 111);
+
+    int changedCount = 0;
+    auto observer = alias.onValueChanged([&changedCount]() { ++changedCount; });
+    QCOMPARE(changedCount, 0);
+    object.setBar(666);
+    QCOMPARE(changedCount, 1);
+
+    alias.setBinding([&object]() { return object.read(); });
+    QCOMPARE(changedCount, 2);
+    QCOMPARE(alias.value(), 0);
+    object.readData = 100;
+    QCOMPARE(changedCount, 3);
+    QCOMPARE(alias.value(), 100);
 }
 
 QTEST_MAIN(tst_QProperty);

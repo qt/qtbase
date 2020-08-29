@@ -473,138 +473,6 @@ namespace Qt {
     }
 }
 
-template<typename T>
-class QPropertyAlias : public QPropertyObserver
-{
-    Q_DISABLE_COPY_MOVE(QPropertyAlias)
-    QProperty<T> *aliasedProperty() const
-    {
-        return static_cast<QProperty<T> *>(QPropertyObserver::aliasedProperty());
-    }
-
-public:
-    QPropertyAlias(QProperty<T> *property)
-        : QPropertyObserver(property)
-    {
-        if (property)
-            setSource(*property);
-    }
-
-    QPropertyAlias(QPropertyAlias<T> *alias)
-        : QPropertyAlias(alias->aliasedProperty())
-    {}
-
-    T value() const
-    {
-        if (auto *p = aliasedProperty())
-            return p->value();
-        return T();
-    }
-
-    operator T() const { return value(); }
-
-    void setValue(T &&newValue)
-    {
-        if (auto *p = aliasedProperty())
-            p->setValue(std::move(newValue));
-    }
-
-    void setValue(const T &newValue)
-    {
-        if (auto *p = aliasedProperty())
-            p->setValue(newValue);
-    }
-
-    QPropertyAlias<T> &operator=(T &&newValue)
-    {
-        if (auto *p = aliasedProperty())
-            *p = std::move(newValue);
-        return *this;
-    }
-
-    QPropertyAlias<T> &operator=(const T &newValue)
-    {
-        if (auto *p = aliasedProperty())
-            *p = newValue;
-        return *this;
-    }
-
-    QPropertyBinding<T> setBinding(const QPropertyBinding<T> &newBinding)
-    {
-        if (auto *p = aliasedProperty())
-            return p->setBinding(newBinding);
-        return QPropertyBinding<T>();
-    }
-
-    QPropertyBinding<T> setBinding(QPropertyBinding<T> &&newBinding)
-    {
-        if (auto *p = aliasedProperty())
-            return p->setBinding(std::move(newBinding));
-        return QPropertyBinding<T>();
-    }
-
-    bool setBinding(const QUntypedPropertyBinding &newBinding)
-    {
-        if (auto *p = aliasedProperty())
-            return p->setBinding(newBinding);
-        return false;
-    }
-
-#ifndef Q_CLANG_QDOC
-    template <typename Functor>
-    QPropertyBinding<T> setBinding(Functor &&f,
-                                   const QPropertyBindingSourceLocation &location = QT_PROPERTY_DEFAULT_BINDING_LOCATION,
-                                   std::enable_if_t<std::is_invocable_v<Functor>> * = nullptr)
-    {
-        return setBinding(Qt::makePropertyBinding(std::forward<Functor>(f), location));
-    }
-#else
-    template <typename Functor>
-    QPropertyBinding<T> setBinding(Functor f);
-#endif
-
-    bool hasBinding() const
-    {
-        if (auto *p = aliasedProperty())
-            return p->hasBinding();
-        return false;
-    }
-
-    QPropertyBinding<T> binding() const
-    {
-        if (auto *p = aliasedProperty())
-            return p->binding();
-        return QPropertyBinding<T>();
-    }
-
-    QPropertyBinding<T> takeBinding()
-    {
-        if (auto *p = aliasedProperty())
-            return p->takeBinding();
-        return QPropertyBinding<T>();
-    }
-
-    template<typename Functor>
-    QPropertyChangeHandler<Functor> onValueChanged(Functor f)
-    {
-        if (auto *p = aliasedProperty())
-            return p->onValueChanged(f);
-        return QPropertyChangeHandler<Functor>(f);
-    }
-
-    template<typename Functor>
-    QPropertyChangeHandler<Functor> subscribe(Functor f)
-    {
-        if (auto *p = aliasedProperty())
-            return p->subscribe(f);
-        return QPropertyChangeHandler<Functor>(f);
-    }
-
-    bool isValid() const
-    {
-        return aliasedProperty() != nullptr;
-    }
-};
 
 namespace QtPrivate
 {
@@ -677,6 +545,9 @@ class QUntypedBindable
 protected:
     QUntypedPropertyData *data = nullptr;
     const QtPrivate::QBindableInterface *iface = nullptr;
+    constexpr QUntypedBindable(QUntypedPropertyData *d, const QtPrivate::QBindableInterface *i)
+        : data(d), iface(i)
+    {}
 
 public:
     constexpr QUntypedBindable() = default;
@@ -739,6 +610,11 @@ public:
 template<typename T>
 class QBindable : public QUntypedBindable
 {
+    template<typename U>
+    friend class QPropertyAlias;
+    constexpr QBindable(QUntypedPropertyData *d, const QtPrivate::QBindableInterface *i)
+        : QUntypedBindable(d, i)
+    {}
 public:
     using QUntypedBindable::QUntypedBindable;
     explicit QBindable(const QUntypedBindable &b) : QUntypedBindable(b)
@@ -775,6 +651,124 @@ public:
     template <typename Functor>
     QPropertyBinding<T> setBinding(Functor f);
 #endif
+};
+
+template<typename T>
+class QPropertyAlias : public QPropertyObserver
+{
+    Q_DISABLE_COPY_MOVE(QPropertyAlias)
+    const QtPrivate::QBindableInterface *iface = nullptr;
+
+public:
+    QPropertyAlias(QProperty<T> *property)
+        : QPropertyObserver(property),
+          iface(&QtPrivate::QBindableInterfaceForProperty<QProperty<T>>::iface)
+    {
+        if (iface)
+            iface->setObserver(aliasedProperty(), this);
+    }
+
+    template<typename Property, typename = typename Property::InheritsQUntypedPropertyData>
+    QPropertyAlias(Property *property)
+        : QPropertyObserver(property),
+          iface(&QtPrivate::QBindableInterfaceForProperty<Property>::iface)
+    {
+        if (iface)
+            iface->setObserver(aliasedProperty(), this);
+    }
+
+    QPropertyAlias(QPropertyAlias<T> *alias)
+        : QPropertyObserver(alias->aliasedProperty()),
+          iface(alias->iface)
+    {
+        if (iface)
+            iface->setObserver(aliasedProperty(), this);
+    }
+
+    QPropertyAlias(const QBindable<T> &property)
+        : QPropertyObserver(property.data),
+          iface(property.iface)
+    {
+        if (iface)
+            iface->setObserver(aliasedProperty(), this);
+    }
+
+    T value() const
+    {
+        T t = T();
+        if (auto *p = aliasedProperty())
+            iface->getter(p, &t);
+        return t;
+    }
+
+    operator T() const { return value(); }
+
+    void setValue(const T &newValue)
+    {
+        if (auto *p = aliasedProperty())
+            iface->setter(p, &newValue);
+    }
+
+    QPropertyAlias<T> &operator=(const T &newValue)
+    {
+        setValue(newValue);
+        return *this;
+    }
+
+    QPropertyBinding<T> setBinding(const QPropertyBinding<T> &newBinding)
+    {
+        return QBindable<T>(aliasedProperty(), iface).setBinding(newBinding);
+    }
+
+    bool setBinding(const QUntypedPropertyBinding &newBinding)
+    {
+        return QBindable<T>(aliasedProperty(), iface).setBinding(newBinding);
+    }
+
+#ifndef Q_CLANG_QDOC
+    template <typename Functor>
+    QPropertyBinding<T> setBinding(Functor &&f,
+                                   const QPropertyBindingSourceLocation &location = QT_PROPERTY_DEFAULT_BINDING_LOCATION,
+                                   std::enable_if_t<std::is_invocable_v<Functor>> * = nullptr)
+    {
+        return setBinding(Qt::makePropertyBinding(std::forward<Functor>(f), location));
+    }
+#else
+    template <typename Functor>
+    QPropertyBinding<T> setBinding(Functor f);
+#endif
+
+    bool hasBinding() const
+    {
+        return QBindable<T>(aliasedProperty(), iface).hasBinding();
+    }
+
+    QPropertyBinding<T> binding() const
+    {
+        return QBindable<T>(aliasedProperty(), iface).binding();
+    }
+
+    QPropertyBinding<T> takeBinding()
+    {
+        return QBindable<T>(aliasedProperty(), iface).takeBinding();
+    }
+
+    template<typename Functor>
+    QPropertyChangeHandler<Functor> onValueChanged(Functor f)
+    {
+        return QBindable<T>(aliasedProperty(), iface).onValueChanged(f);
+    }
+
+    template<typename Functor>
+    QPropertyChangeHandler<Functor> subscribe(Functor f)
+    {
+        return QBindable<T>(aliasedProperty(), iface).subscribe(f);
+    }
+
+    bool isValid() const
+    {
+        return aliasedProperty() != nullptr;
+    }
 };
 
 struct QBindingStatus;
