@@ -426,14 +426,15 @@ class Q_CORE_EXPORT QVariant
     {
         static constexpr size_t MaxInternalSize = 3*sizeof(void *);
         template<typename T>
-        static constexpr bool CanUseInternalSpace = (sizeof(T) <= MaxInternalSize && alignof(T) <= alignof(void *));
+        static constexpr bool CanUseInternalSpace = (sizeof(T) <= MaxInternalSize && alignof(T) <= alignof(double));
         static constexpr bool canUseInternalSpace(size_t s, size_t align)
-        { return s <= MaxInternalSize && align <= alignof(void *); }
+        { return s <= MaxInternalSize && align <= alignof(double); }
 
         union
         {
             uchar data[MaxInternalSize] = {};
             PrivateShared *shared;
+            double _forAlignment; // we want an 8byte alignment on 32bit systems as well
         } data;
         quintptr is_shared : 1;
         quintptr is_null : 1;
