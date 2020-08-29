@@ -606,6 +606,44 @@ QPointerEvent::~QPointerEvent()
 }
 
 /*!
+    Returns the point whose \l {QEventPoint::id()}{id} matches the given \a id,
+    or \c nullptr if no such point is found.
+*/
+QEventPoint *QPointerEvent::pointById(int id)
+{
+    for (auto &p : m_points) {
+        if (p.id() == id)
+            return &p;
+    }
+    return nullptr;
+}
+
+/*!
+    Returns \c true if every point in points() has an exclusiveGrabber().
+*/
+bool QPointerEvent::allPointsGrabbed() const
+{
+    for (const auto &p : points()) {
+        if (exclusiveGrabber(p) && passiveGrabbers(p).isEmpty())
+            return false;
+    }
+    return true;
+}
+
+/*!
+    Returns \c true if isPointAccepted() is \c true for every point in
+    points(); otherwise \c false.
+*/
+bool QPointerEvent::allPointsAccepted() const
+{
+    for (const auto &p : points()) {
+        if (!p.isAccepted())
+            return false;
+    }
+    return true;
+}
+
+/*!
     Returns the source device from which this event originates.
 
     This is the same as QInputEvent::device() but typecast for convenience.
@@ -842,6 +880,27 @@ QSinglePointEvent::QSinglePointEvent(QEvent::Type type, const QPointingDevice *d
     mut.detach();
     mut.setPosition(localPos);
     m_points.append(mut);
+}
+
+/*! \internal
+    Constructs a single-point event with the given \a point, which must be an instance
+    (or copy of one) that already exists in QPointingDevicePrivate::activePoints.
+    Unlike the other constructor, it does not modify the given \a point in any way.
+    This is useful when synthesizing a QMouseEvent from one point taken from a QTouchEvent, for example.
+
+    \sa QMutableSinglePointEvent()
+*/
+QSinglePointEvent::QSinglePointEvent(QEvent::Type type, const QPointingDevice *dev, const QEventPoint &point,
+                                     Qt::MouseButton button, Qt::MouseButtons buttons,
+                                     Qt::KeyboardModifiers modifiers, Qt::MouseEventSource source)
+    : QPointerEvent(type, dev, modifiers),
+      m_button(button),
+      m_mouseState(buttons),
+      m_source(source),
+      m_doubleClick(false),
+      m_reserved(0)
+{
+    m_points << point;
 }
 
 /*!

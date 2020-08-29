@@ -50,6 +50,7 @@ class QDebug;
 class QEventPoint;
 class QPointerEvent;
 class QPointingDevicePrivate;
+class QPointerEvent;
 class QScreen;
 
 class Q_GUI_EXPORT QPointingDeviceUniqueId

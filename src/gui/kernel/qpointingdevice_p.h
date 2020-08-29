@@ -77,6 +77,8 @@ public:
         activePoints.reserve(maxPoints);
     }
 
+    void sendTouchCancelEvent(QTouchEvent *cancelEvent);
+
     /*! \internal
         This struct (stored in activePoints) holds persistent state between event deliveries.
     */
@@ -91,10 +93,13 @@ public:
     QObject *firstActiveTarget() const;
     QWindow *firstActiveWindow() const;
 
+    QObject *firstPointExclusiveGrabber() const;
     void setExclusiveGrabber(const QPointerEvent *event, const QEventPoint &point, QObject *exclusiveGrabber);
+    bool removeExclusiveGrabber(const QPointerEvent *event, const QObject *grabber);
     bool addPassiveGrabber(const QPointerEvent *event, const QEventPoint &point, QObject *grabber);
     bool removePassiveGrabber(const QPointerEvent *event, const QEventPoint &point, QObject *grabber);
     void clearPassiveGrabbers(const QPointerEvent *event, const QEventPoint &point);
+    void removeGrabber(QObject *grabber, bool cancel = false);
 
     using EventPointMap = QFlatMap<int, EventPointData>;
     mutable EventPointMap activePoints;

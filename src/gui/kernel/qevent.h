@@ -63,8 +63,11 @@ QT_BEGIN_NAMESPACE
 
 class QFile;
 class QAction;
+class QMouseEvent;
 class QPointerEvent;
 class QScreen;
+class QTabletEvent;
+class QTouchEvent;
 #if QT_CONFIG(gestures)
 class QGesture;
 #endif
@@ -94,6 +97,19 @@ struct QEventPointPrivate;
 class Q_GUI_EXPORT QEventPoint
 {
     Q_GADGET
+    Q_PROPERTY(const QPointingDevice *device READ device)
+    Q_PROPERTY(int id READ id)
+    Q_PROPERTY(QPointingDeviceUniqueId uniqueId READ uniqueId)
+    Q_PROPERTY(State state READ state)
+    Q_PROPERTY(ulong timestamp READ timestamp)
+    Q_PROPERTY(qreal timeHeld READ timeHeld)
+    Q_PROPERTY(qreal pressure READ pressure)
+    Q_PROPERTY(qreal rotation READ rotation)
+    Q_PROPERTY(QSizeF ellipseDiameters READ ellipseDiameters)
+    Q_PROPERTY(QVector2D velocity READ velocity)
+    Q_PROPERTY(QPointF position READ position)
+    Q_PROPERTY(QPointF scenePosition READ scenePosition)
+    Q_PROPERTY(QPointF globalPosition READ globalPosition)
 public:
     enum State : quint8 {
         Unknown     = Qt::TouchPointUnknownState,
@@ -192,9 +208,12 @@ public:
     qsizetype pointCount() const { return m_points.count(); }
     QEventPoint &point(qsizetype i) { return m_points[i]; }
     const QList<QEventPoint> &points() const { return m_points; }
+    QEventPoint *pointById(int id);
+    bool allPointsGrabbed() const;
     virtual bool isPressEvent() const { return false; }
     virtual bool isUpdateEvent() const { return false; }
     virtual bool isReleaseEvent() const { return false; }
+    bool allPointsAccepted() const;
     QObject *exclusiveGrabber(const QEventPoint &point) const;
     void setExclusiveGrabber(const QEventPoint &point, QObject *exclusiveGrabber);
     QList<QPointer <QObject>> passiveGrabbers(const QEventPoint &point) const;
@@ -229,6 +248,10 @@ public:
     bool isReleaseEvent() const override;
 
 protected:
+    QSinglePointEvent(Type type, const QPointingDevice *dev, const QEventPoint &point,
+                      Qt::MouseButton button, Qt::MouseButtons buttons,
+                      Qt::KeyboardModifiers modifiers, Qt::MouseEventSource source);
+
     Qt::MouseButton m_button = Qt::NoButton;
     Qt::MouseButtons m_mouseState = Qt::NoButton;
     quint32 m_source : 8; // actually Qt::MouseEventSource
@@ -346,6 +369,12 @@ protected:
 #if QT_CONFIG(wheelevent)
 class Q_GUI_EXPORT QWheelEvent : public QSinglePointEvent
 {
+    Q_GADGET
+    Q_PROPERTY(const QPointingDevice *device READ pointingDevice)
+    Q_PROPERTY(QPoint pixelDelta READ pixelDelta)
+    Q_PROPERTY(QPoint angleDelta READ angleDelta)
+    Q_PROPERTY(Qt::ScrollPhase phase READ phase)
+    Q_PROPERTY(bool inverted READ inverted)
 public:
     enum { DefaultDeltasPerStep = 120 };
 
@@ -360,6 +389,8 @@ public:
 
     inline Qt::ScrollPhase phase() const { return Qt::ScrollPhase(m_phase); }
     inline bool inverted() const { return m_invertedScrolling; }
+    inline bool isInverted() const { return m_invertedScrolling; }
+    inline bool hasPixelDelta() const { return !m_pixelDelta.isNull(); }
 
     Qt::MouseEventSource source() const { return Qt::MouseEventSource(m_source); }
 

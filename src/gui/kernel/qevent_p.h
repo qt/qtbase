@@ -199,6 +199,12 @@ static_assert(sizeof(QMutableTouchEvent) == sizeof(QTouchEvent));
 class Q_GUI_EXPORT QMutableSinglePointEvent : public QSinglePointEvent
 {
 public:
+    QMutableSinglePointEvent(Type type, const QPointingDevice *device, const QEventPoint &point,
+                             Qt::MouseButton button = Qt::NoButton, Qt::MouseButtons buttons = Qt::NoButton,
+                             Qt::KeyboardModifiers modifiers = Qt::NoModifier,
+                             Qt::MouseEventSource source = Qt::MouseEventSynthesizedByQt) :
+        QSinglePointEvent(type, device, point, button, buttons, modifiers, source) { }
+
     static QMutableSinglePointEvent *from(QSinglePointEvent *e) { return static_cast<QMutableSinglePointEvent *>(e); }
 
     static QMutableSinglePointEvent &from(QSinglePointEvent &e) { return static_cast<QMutableSinglePointEvent &>(e); }
