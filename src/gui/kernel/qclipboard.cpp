@@ -83,7 +83,7 @@ QT_BEGIN_NAMESPACE
 
     A typical example of the use of these functions follows:
 
-    \snippet droparea.cpp 0
+    \snippet droparea/droparea.cpp 0
 
     \section1 Notes for X11 Users
 
