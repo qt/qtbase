@@ -611,11 +611,15 @@ namespace QtPrivate
 
 struct QBindableInterface
 {
+    using Getter = void (*)(const QUntypedPropertyData *d, void *value);
+    using Setter = void (*)(QUntypedPropertyData *d, const void *value);
     using BindingGetter = QUntypedPropertyBinding (*)(const QUntypedPropertyData *d);
     using BindingSetter = QUntypedPropertyBinding (*)(QUntypedPropertyData *d, const QUntypedPropertyBinding &binding);
     using MakeBinding = QUntypedPropertyBinding (*)(const QUntypedPropertyData *d, const QPropertyBindingSourceLocation &location);
     using SetObserver = void (*)(const QUntypedPropertyData *d, QPropertyObserver *observer);
     using GetMetaType = QMetaType (*)();
+    Getter getter;
+    Setter setter;
     BindingGetter getBinding;
     BindingSetter setBinding;
     MakeBinding makeBinding;
@@ -631,6 +635,9 @@ public:
     // interface for read-only properties. Those do not have a binding()/setBinding() method, but one can
     // install observers on them.
     static constexpr QBindableInterface iface = {
+        [](const QUntypedPropertyData *d, void *value) -> void
+        { *static_cast<T*>(value) = static_cast<const Property *>(d)->value(); },
+        nullptr,
         nullptr,
         nullptr,
         [](const QUntypedPropertyData *d, const QPropertyBindingSourceLocation &location) -> QUntypedPropertyBinding
@@ -647,6 +654,10 @@ class QBindableInterfaceForProperty<Property, std::void_t<decltype(std::declval<
     using T = typename Property::value_type;
 public:
     static constexpr QBindableInterface iface = {
+        [](const QUntypedPropertyData *d, void *value) -> void
+        { *static_cast<T*>(value) = static_cast<const Property *>(d)->value(); },
+        [](QUntypedPropertyData *d, const void *value) -> void
+        { static_cast<Property *>(d)->setValue(*static_cast<const T*>(value)); },
         [](const QUntypedPropertyData *d) -> QUntypedPropertyBinding
         { return static_cast<const Property *>(d)->binding(); },
         [](QUntypedPropertyData *d, const QUntypedPropertyBinding &binding) -> QUntypedPropertyBinding
