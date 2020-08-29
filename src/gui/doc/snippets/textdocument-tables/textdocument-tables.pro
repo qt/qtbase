@@ -1,6 +1,3 @@
 SOURCES     = main.cpp \
-              mainwindow.cpp \
-              xmlwriter.cpp
-HEADERS     = mainwindow.h \
-              xmlwriter.h
-QT          += xml
+              mainwindow.cpp
+HEADERS     = mainwindow.h
