@@ -68,7 +68,7 @@ public slots:
 private:
     bool writeXml(const QString &fileName);
 
-    QTextEdit *editor;
+    QTextEdit *editor = nullptr;
 };
 
 #endif
