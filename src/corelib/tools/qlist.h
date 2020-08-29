@@ -312,7 +312,14 @@ public:
     const_reference operator[](qsizetype i) const noexcept { return at(i); }
     void append(parameter_type t) { emplaceBack(t); }
     void append(const_iterator i1, const_iterator i2);
-    void append(rvalue_ref t) { emplaceBack(std::move(t)); }
+    void append(rvalue_ref t)
+    {
+        if constexpr (DataPointer::pass_parameter_by_value) {
+            Q_UNUSED(t);
+        } else {
+            emplaceBack(std::move(t));
+        }
+    }
     void append(const QList<T> &l)
     {
         // protect against l == *this
@@ -320,7 +327,13 @@ public:
         append(list.constBegin(), list.constEnd());
     }
     void append(QList<T> &&l);
-    void prepend(rvalue_ref t) { emplaceFront(std::move(t)); }
+    void prepend(rvalue_ref t) {
+        if constexpr (DataPointer::pass_parameter_by_value) {
+            Q_UNUSED(t);
+        } else {
+            emplaceFront(std::move(t));
+        }
+    }
     void prepend(parameter_type t) { emplaceFront(t); }
 
     template<typename... Args>
@@ -347,7 +360,15 @@ public:
         Q_ASSERT_X(isValidIterator(before),  "QList::insert", "The specified iterator argument 'before' is invalid");
         return insert(std::distance(constBegin(), before), std::move(t));
     }
-    iterator insert(qsizetype i, rvalue_ref t) { return emplace(i, std::move(t)); }
+    iterator insert(qsizetype i, rvalue_ref t) {
+        if constexpr (DataPointer::pass_parameter_by_value) {
+            Q_UNUSED(i);
+            Q_UNUSED(t);
+            return end();
+        } else {
+            return emplace(i, std::move(t));
+        }
+    }
 
     template <typename ...Args>
     iterator emplace(const_iterator before, Args&&... args)
@@ -371,9 +392,14 @@ public:
     }
     void replace(qsizetype i, rvalue_ref t)
     {
-        Q_ASSERT_X(i >= 0 && i < d->size, "QList<T>::replace", "index out of range");
-        const T copy(std::move(t));
-        data()[i] = std::move(copy);
+        if constexpr (DataPointer::pass_parameter_by_value) {
+            Q_UNUSED(i);
+            Q_UNUSED(t);
+        } else {
+            Q_ASSERT_X(i >= 0 && i < d->size, "QList<T>::replace", "index out of range");
+            const T copy(std::move(t));
+            data()[i] = std::move(copy);
+        }
     }
 
     void remove(qsizetype i, qsizetype n = 1);
