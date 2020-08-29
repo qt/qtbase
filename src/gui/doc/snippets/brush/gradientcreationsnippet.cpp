@@ -48,11 +48,11 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QBrush>
 
-int main(int argv, char **args)
-{
-    QApplication app(argv, args);
+namespace gradientcreationsnippet {
+
+void wrapper() {
 
 //! [0]
     QRadialGradient gradient(50, 50, 50, 50, 50);
@@ -62,11 +62,6 @@ int main(int argv, char **args)
     QBrush brush(gradient);
 //! [0]
 
-    QWidget widget;
-    QPalette palette;
-    palette.setBrush(widget.backgroundRole(), brush);
-    widget.setPalette(palette);
-    widget.show();
+} // wrapper
 
-    return app.exec();
-}
+} // gradientcreationsnippet
