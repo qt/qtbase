@@ -749,9 +749,6 @@ public:
         int maxSize = 64;
         int sizeIncrement = 5;
 
-        // Disable high-dpi icons
-        QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps, false);
-
         // normal icon
         for (int size = minSize; size < maxSize; size += sizeIncrement) {
             QPainter p(this);
@@ -771,36 +768,6 @@ public:
                 y+=dy;
             x = ((x + dx) % maxX);
         }
-
-        x = 10;
-        y+=dy;
-
-        // Enable high-dpi icons
-        QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps, true);
-
-        // normal icon
-        for (int size = minSize; size < maxSize; size += sizeIncrement) {
-            QPainter p(this);
-            p.drawPixmap(x, y, iconNormalDpi->pixmap(size, size));
-            if (x + dx > maxX)
-                y+=dy;
-            x = ((x + dx) % maxX);
-        }
-        x = 10;
-        y+=dy;
-
-        // high-dpi icon (draw point)
-        for (int size = minSize; size < maxSize; size += sizeIncrement) {
-            QPainter p(this);
-            p.drawPixmap(x, y, iconHighDPI->pixmap(size, size));
-            if (x + dx > maxX)
-                y+=dy;
-            x = ((x + dx) % maxX);
-        }
-
-        x = 10;
-        y+=dy;
-
     }
 
 private:
@@ -1471,7 +1438,6 @@ int main(int argc, char **argv)
     }
 
     QApplication app(argc, argv);
-    QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     QCoreApplication::setApplicationVersion(QT_VERSION_STR);
 
     QCommandLineParser parser;

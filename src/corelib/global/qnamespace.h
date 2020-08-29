@@ -458,7 +458,11 @@ namespace Qt {
         // AA_X11InitThreads = 10,
         AA_SynthesizeTouchForUnhandledMouseEvents = 11,
         AA_SynthesizeMouseForUnhandledTouchEvents = 12,
-        AA_UseHighDpiPixmaps = 13,
+#if QT_DEPRECATED_SINCE(6, 0)
+        AA_UseHighDpiPixmaps Q_DECL_ENUMERATOR_DEPRECATED_X(
+            "High-DPI pixmaps are always enabled. " \
+            "This attribute no longer has any effect.") = 13,
+#endif
         AA_ForceRasterWidgets = 14,
         AA_UseDesktopOpenGL = 15,
         AA_UseOpenGLES = 16,
