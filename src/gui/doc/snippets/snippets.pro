@@ -23,5 +23,6 @@ contains(QT_BUILD_PARTS, tests) {
         textdocument-lists \
         textdocument-printing \
         textdocument-resources \
-        textdocument-selections
+        textdocument-selections \
+        textdocument-tables
 }

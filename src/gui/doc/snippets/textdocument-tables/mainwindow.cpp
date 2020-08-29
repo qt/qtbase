@@ -131,9 +131,9 @@ MainWindow::MainWindow()
     }
 //! [8]
 
-    connect(saveAction, &QAction:triggered, this, &MainWindow::saveFile);
-    connect(quitAction, &QAction:triggered, this, &MainWindow::close);
-    connect(showTableAction, &QAction:triggered, this, &MainWindow::showTable);
+    connect(saveAction, &QAction::triggered, this, &MainWindow::saveFile);
+    connect(quitAction, &QAction::triggered, this, &MainWindow::close);
+    connect(showTableAction, &QAction::triggered, this, &MainWindow::showTable);
 
     setCentralWidget(editor);
     setWindowTitle(tr("Text Document Tables"));

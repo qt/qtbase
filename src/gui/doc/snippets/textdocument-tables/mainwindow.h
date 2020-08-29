@@ -47,7 +47,6 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 #ifndef WINDOW_H
 #define WINDOW_H
 
@@ -69,7 +68,7 @@ public slots:
 private:
     bool writeXml(const QString &fileName);
 
-    QTextEdit *editor;
+    QTextEdit *editor = nullptr;
 };
 
 #endif
