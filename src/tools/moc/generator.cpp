@@ -572,7 +572,7 @@ void Generator::generateCode()
         fprintf(out, "    nullptr,\n");
     } else {
         bool needsComma = false;
-        if (!requireCompleteTypes) {
+        if (!(requireCompleteTypes || cdef->requireCompleteMethodTypes)) {
             fprintf(out, "qt_incomplete_metaTypeArray<qt_meta_stringdata_%s_t\n", qualifiedClassNameIdentifier.constData());
             needsComma = true;
         } else {

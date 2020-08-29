@@ -204,6 +204,7 @@ struct ClassDef : BaseDef {
     bool hasQObject = false;
     bool hasQGadget = false;
     bool hasQNamespace = false;
+    bool requireCompleteMethodTypes = false;
 
     QJsonObject toJson() const;
 };
@@ -266,7 +267,9 @@ public:
     void parsePropertyAttributes(PropertyDef &propDef);
     void parseEnumOrFlag(BaseDef *def, bool isFlag);
     void parseFlag(BaseDef *def);
-    void parseClassInfo(BaseDef *def);
+    enum class EncounteredQmlMacro {Yes, No};
+    EncounteredQmlMacro parseClassInfo(BaseDef *def);
+    void parseClassInfo(ClassDef *def);
     void parseInterfaces(ClassDef *def);
     void parseDeclareInterface();
     void parseDeclareMetatype();

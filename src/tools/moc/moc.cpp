@@ -1512,12 +1512,15 @@ void Moc::parseFlag(BaseDef *def)
     next(RPAREN);
 }
 
-void Moc::parseClassInfo(BaseDef *def)
+Moc::EncounteredQmlMacro Moc::parseClassInfo(BaseDef *def)
 {
+    bool encounteredQmlMacro = false;
     next(LPAREN);
     ClassInfoDef infoDef;
     next(STRING_LITERAL);
     infoDef.name = symbol().unquotedLexem();
+    if (infoDef.name.startsWith("QML."))
+        encounteredQmlMacro = true;
     next(COMMA);
     if (test(STRING_LITERAL)) {
         infoDef.value = symbol().unquotedLexem();
@@ -1533,6 +1536,13 @@ void Moc::parseClassInfo(BaseDef *def)
     }
     next(RPAREN);
     def->classInfoList += infoDef;
+    return encounteredQmlMacro ? EncounteredQmlMacro::Yes : EncounteredQmlMacro::No;
+}
+
+void Moc::parseClassInfo(ClassDef *def)
+{
+    if (parseClassInfo(static_cast<BaseDef *>(def)) == EncounteredQmlMacro::Yes)
+        def->requireCompleteMethodTypes = true;
 }
 
 void Moc::parseInterfaces(ClassDef *def)
