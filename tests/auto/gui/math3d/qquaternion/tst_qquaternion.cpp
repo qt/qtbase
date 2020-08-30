@@ -121,8 +121,8 @@ private slots:
     void negate_data();
     void negate();
 
-    void conjugate_data();
-    void conjugate();
+    void conjugated_data();
+    void conjugated();
 
     void fromAxisAndAngle_data();
     void fromAxisAndAngle();
@@ -763,12 +763,12 @@ void tst_QQuaternion::negate()
 }
 
 // Test quaternion conjugate calculations.
-void tst_QQuaternion::conjugate_data()
+void tst_QQuaternion::conjugated_data()
 {
     // Use the same test data as the add test.
     add_data();
 }
-void tst_QQuaternion::conjugate()
+void tst_QQuaternion::conjugated()
 {
     QFETCH(float, x1);
     QFETCH(float, y1);
@@ -778,9 +778,6 @@ void tst_QQuaternion::conjugate()
     QQuaternion v1(w1, x1, y1, z1);
     QQuaternion v2(w1, -x1, -y1, -z1);
 
-#if QT_DEPRECATED_SINCE(5, 5)
-    QCOMPARE(v1.conjugate(), v2);
-#endif
     QCOMPARE(v1.conjugated(), v2);
 }
 

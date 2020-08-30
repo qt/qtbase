@@ -315,13 +315,6 @@ void QQuaternion::normalize()
 */
 
 /*!
-    \fn QQuaternion QQuaternion::conjugate() const
-    \obsolete
-
-    Use conjugated() instead.
-*/
-
-/*!
     Rotates \a vector with this quaternion to produce a new vector
     in 3D space.  The following code:
 

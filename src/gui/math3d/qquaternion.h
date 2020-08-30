@@ -96,9 +96,6 @@ public:
     inline QQuaternion inverted() const;
 
     Q_REQUIRED_RESULT QQuaternion conjugated() const;
-#if QT_DEPRECATED_SINCE(5, 5)
-    Q_REQUIRED_RESULT QT_DEPRECATED QQuaternion conjugate() const;
-#endif
 
     QVector3D rotatedVector(const QVector3D& vector) const;
 
@@ -219,13 +216,6 @@ inline QQuaternion QQuaternion::conjugated() const
 {
     return QQuaternion(wp, -xp, -yp, -zp);
 }
-
-#if QT_DEPRECATED_SINCE(5, 5)
-inline QQuaternion QQuaternion::conjugate() const
-{
-    return conjugated();
-}
-#endif
 
 inline QQuaternion &QQuaternion::operator+=(const QQuaternion &quaternion)
 {
