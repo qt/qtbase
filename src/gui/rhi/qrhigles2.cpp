@@ -887,7 +887,7 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::Compute:
         return caps.compute;
     case QRhi::WideLines:
-        return true;
+        return !caps.coreProfile;
     case QRhi::VertexShaderPointSize:
         return true;
     case QRhi::BaseVertex:

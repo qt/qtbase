@@ -544,7 +544,8 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     supported. When reported as not supported, the line width set on the
     graphics pipeline state is ignored. This can always be false with some
     backends (D3D11, Metal). With Vulkan, the value depends on the
-    implementation.
+    implementation. With OpenGL, wide lines are not supported in core profile
+    contexts.
 
     \value VertexShaderPointSize Indicates that the size of rasterized points
     set via \c{gl_PointSize} in the vertex shader is taken into account. When
