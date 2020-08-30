@@ -442,6 +442,7 @@ bool QRhiVulkan::create(QRhi::Flags flags)
             return false;
         }
         physDev = physDevs[physDevIndex];
+        f->vkGetPhysicalDeviceProperties(physDev, &physDevProperties);
     } else {
         f->vkGetPhysicalDeviceProperties(physDev, &physDevProperties);
         qCDebug(QRHI_LOG_INFO, "Using imported physical device '%s' %d.%d.%d (api %d.%d.%d vendor 0x%X device 0x%X type %d)",
@@ -456,6 +457,8 @@ bool QRhiVulkan::create(QRhi::Flags flags)
                 physDevProperties.deviceID,
                 physDevProperties.deviceType);
     }
+
+    f->vkGetPhysicalDeviceFeatures(physDev, &physDevFeatures);
 
     // Choose queue and create device, unless the device was specified in importParams.
     if (!importedDevice) {
@@ -562,6 +565,20 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         devInfo.enabledExtensionCount = uint32_t(requestedDevExts.count());
         devInfo.ppEnabledExtensionNames = requestedDevExts.constData();
 
+        VkPhysicalDeviceFeatures features;
+        memset(&features, 0, sizeof(features));
+        if (physDevFeatures.wideLines)
+            features.wideLines = VK_TRUE;
+        if (physDevFeatures.largePoints)
+            features.largePoints = VK_TRUE;
+        if (physDevFeatures.textureCompressionETC2)
+            features.textureCompressionETC2 = VK_TRUE;
+        if (physDevFeatures.textureCompressionASTC_LDR)
+            features.textureCompressionASTC_LDR = VK_TRUE;
+        if (physDevFeatures.textureCompressionBC)
+            features.textureCompressionBC = VK_TRUE;
+        devInfo.pEnabledFeatures = &features;
+
         VkResult err = f->vkCreateDevice(physDev, &devInfo, nullptr, &dev);
         if (err != VK_SUCCESS) {
             qWarning("Failed to create device: %d", err);
@@ -599,13 +616,11 @@ bool QRhiVulkan::create(QRhi::Flags flags)
     hasCompute = (queueFamilyProps[gfxQueueFamilyIdx].queueFlags & VK_QUEUE_COMPUTE_BIT) != 0;
     timestampValidBits = queueFamilyProps[gfxQueueFamilyIdx].timestampValidBits;
 
-    f->vkGetPhysicalDeviceProperties(physDev, &physDevProperties);
     ubufAlign = physDevProperties.limits.minUniformBufferOffsetAlignment;
     // helps little with an optimal offset of 1 (on some drivers) when the spec
     // elsewhere states that the minimum bufferOffset is 4...
     texbufAlign = qMax<VkDeviceSize>(4, physDevProperties.limits.optimalBufferCopyOffsetAlignment);
 
-    f->vkGetPhysicalDeviceFeatures(physDev, &physDevFeatures);
     hasWideLines = physDevFeatures.wideLines;
 
     if (!importedAllocator) {
