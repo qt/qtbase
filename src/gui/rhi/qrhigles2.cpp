@@ -3329,23 +3329,27 @@ QByteArray QRhiGles2::shaderSource(const QRhiShaderStage &shaderStage, int *glsl
         }
     } else {
         if (caps.ctxMajor > 4 || (caps.ctxMajor == 4 && caps.ctxMinor >= 6)) {
-            versionsToTry << 460 << 450 << 440 << 430 << 420 << 410 << 400 << 330 << 150;
+            versionsToTry << 460 << 450 << 440 << 430 << 420 << 410 << 400 << 330 << 150 << 140 << 130;
         } else if (caps.ctxMajor == 4 && caps.ctxMinor == 5) {
-            versionsToTry << 450 << 440 << 430 << 420 << 410 << 400 << 330 << 150;
+            versionsToTry << 450 << 440 << 430 << 420 << 410 << 400 << 330 << 150 << 140 << 130;
         } else if (caps.ctxMajor == 4 && caps.ctxMinor == 4) {
-            versionsToTry << 440 << 430 << 420 << 410 << 400 << 330 << 150;
+            versionsToTry << 440 << 430 << 420 << 410 << 400 << 330 << 150 << 140 << 130;
         } else if (caps.ctxMajor == 4 && caps.ctxMinor == 3) {
-            versionsToTry << 430 << 420 << 410 << 400 << 330 << 150;
+            versionsToTry << 430 << 420 << 410 << 400 << 330 << 150 << 140 << 130;
         } else if (caps.ctxMajor == 4 && caps.ctxMinor == 2) {
-            versionsToTry << 420 << 410 << 400 << 330 << 150;
+            versionsToTry << 420 << 410 << 400 << 330 << 150 << 140 << 130;
         } else if (caps.ctxMajor == 4 && caps.ctxMinor == 1) {
-            versionsToTry << 410 << 400 << 330 << 150;
+            versionsToTry << 410 << 400 << 330 << 150 << 140 << 130;
         } else if (caps.ctxMajor == 4 && caps.ctxMinor == 0) {
-            versionsToTry << 400 << 330 << 150;
+            versionsToTry << 400 << 330 << 150 << 140 << 130;
         } else if (caps.ctxMajor == 3 && caps.ctxMinor == 3) {
-            versionsToTry << 330 << 150;
+            versionsToTry << 330 << 150 << 140 << 130;
         } else if (caps.ctxMajor == 3 && caps.ctxMinor == 2) {
-            versionsToTry << 150;
+            versionsToTry << 150 << 140 << 130;
+        } else if (caps.ctxMajor == 3 && caps.ctxMinor == 1) {
+            versionsToTry << 140 << 130;
+        } else if (caps.ctxMajor == 3 && caps.ctxMinor == 0) {
+            versionsToTry << 130;
         }
         if (!caps.coreProfile)
             versionsToTry << 120;
