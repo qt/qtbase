@@ -6054,13 +6054,41 @@ void tst_QObject::connectFunctorWithContext()
     connect(context, &QObject::destroyed, &obj, &SenderObject::signal1, Qt::QueuedConnection);
     context->deleteLater();
 
-    QCOMPARE(status, 1);
+    obj.emitSignal1();
+    QCOMPARE(status, 2);
     e.exec();
-    QCOMPARE(status, 1);
+    QCOMPARE(status, 2);
+
+    // Check disconnect with the context object as "receiver" argument, all signals
+    context = new ContextObject;
+    status = 1;
+    connect(&obj, &SenderObject::signal1, context, SlotArgFunctor(&status));
+
+    obj.emitSignal1();
+    QCOMPARE(status, 2);
+    QObject::disconnect(&obj, nullptr, context, nullptr);
+    obj.emitSignal1();
+    QCOMPARE(status, 2);
+
+    delete context;
+
+    // Check disconnect with the context object as "receiver" argument, specific signal
+    context = new ContextObject;
+    status = 1;
+    connect(&obj, &SenderObject::signal1, context, SlotArgFunctor(&status));
+
+    obj.emitSignal1();
+    QCOMPARE(status, 2);
+    QObject::disconnect(&obj, &SenderObject::signal1, context, nullptr);
+    obj.emitSignal1();
+    QCOMPARE(status, 2);
+
+    delete context;
 
     // Check the sender arg is set correctly in the context
     context = new ContextObject;
 
+    status = 1;
     connect(&obj, &SenderObject::signal1, context,
             SlotArgFunctor(context, &obj, &status), Qt::QueuedConnection);
 
@@ -6077,8 +6105,7 @@ void tst_QObject::connectFunctorWithContext()
     e.exec();
     QCOMPARE(status, 2);
 
-    // Free
-    context->deleteLater();
+    delete context;
 }
 
 class StatusChanger : public QObject

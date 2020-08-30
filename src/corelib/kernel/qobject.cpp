@@ -5009,8 +5009,9 @@ bool QObject::disconnect(const QMetaObject::Connection &connection)
     any signal. If not, only the specified signal is disconnected.
 
     If \a receiver is \nullptr, it disconnects anything connected to \a
-    signal. If not, slots in objects other than \a receiver are not
-    disconnected.
+    signal. If not, only slots in the specified receiver are disconnected.
+    disconnect() with a non-null \a receiver also disconnects slot functions
+    that were connected with \a receiver as their context object.
 
     If \a method is \nullptr, it disconnects anything that is connected to \a
     receiver. If not, only slots named \a method will be disconnected,
