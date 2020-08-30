@@ -1746,13 +1746,148 @@ private:
             *output++ = x;
     }
 
+    constexpr void replaceLast(char x)
+    {
+        last = x;
+        if (output)
+            *(output-1) = x;
+    }
+
     constexpr void appendStr(const char *x)
     {
         while (*x)
             append(*x++);
     };
 
+    constexpr void normalizeIntegerTypes(const char *&begin, const char *end)
+    {
+        int numLong = 0;
+        int numSigned = 0;
+        int numUnsigned = 0;
+        int numInt = 0;
+        int numShort = 0;
+        int numChar = 0;
+        while (begin < end) {
+            if (skipToken(begin, end, "long")) {
+                numLong++;
+                continue;
+            }
+            if (skipToken(begin, end, "int")) {
+                numInt++;
+                continue;
+            }
+            if (skipToken(begin, end, "short")) {
+                numShort++;
+                continue;
+            }
+            if (skipToken(begin, end, "unsigned")) {
+                numUnsigned++;
+                continue;
+            }
+            if (skipToken(begin, end, "signed")) {
+                numSigned++;
+                continue;
+            }
+            if (skipToken(begin, end, "char")) {
+                numChar++;
+                continue;
+            }
+#ifdef Q_CC_MSVC
+            if (skipToken(begin, end, "__int64")) {
+                numLong = 2;
+                continue;
+            }
+#endif
+            break;
+        }
+        if (numLong == 2)
+            append('q'); // q(u)longlong
+        if (numSigned && numChar)
+            appendStr("signed ");
+        else if (numUnsigned)
+            appendStr("u");
+        if (numChar)
+            appendStr("char");
+        else if (numShort)
+            appendStr("short");
+        else if (numLong == 1)
+            appendStr("long");
+        else if (numLong == 2)
+            appendStr("longlong");
+        else if (numUnsigned || numSigned || numInt)
+            appendStr("int");
+    }
+
+    constexpr void skipStructClassOrEnum(const char *&begin, const char *end)
+    {
+        // discard 'struct', 'class', and 'enum'; they are optional
+        // and we don't want them in the normalized signature
+        skipToken(begin, end, "struct", true) || skipToken(begin, end, "class", true)
+                || skipToken(begin, end, "enum", true);
+    }
+
+    constexpr void skipQtNamespace(const char *&begin, const char *end)
+    {
+#ifdef QT_NAMESPACE
+        const char *nsbeg = begin;
+        if (skipToken(nsbeg, end, QT_STRINGIFY(QT_NAMESPACE)) && nsbeg + 2 < end && nsbeg[0] == ':'
+            && nsbeg[1] == ':') {
+            begin = nsbeg + 2;
+            while (begin != end && is_space(*begin))
+                begin++;
+        }
+#else
+        Q_UNUSED(begin);
+        Q_UNUSED(end);
+#endif
+    }
+
 public:
+#ifndef Q_CC_MSVC
+    // this is much simpler than the full type normalization below
+    // the reason is that the signature returned by Q_FUNC_INFO is already
+    // normalized to the largest degree, and we need to do only small adjustments
+    constexpr int normalizeTypeFromSignature(const char *begin, const char *end)
+    {
+        while (begin < end) {
+            if (*begin == ' ') {
+                if (last == ',' || last == '>' || last == '<' || last == '*' || last == '&') {
+                    ++begin;
+                    continue;
+                }
+            }
+            if (last == ' ') {
+                if (*begin == '*' || *begin == '&') {
+                    replaceLast(*begin);
+                    ++begin;
+                    continue;
+                }
+            }
+            if (!is_ident_char(last)) {
+                skipStructClassOrEnum(begin, end);
+                if (begin == end)
+                    break;
+
+                skipQtNamespace(begin, end);
+                if (begin == end)
+                    break;
+
+                normalizeIntegerTypes(begin, end);
+                if (begin == end)
+                    break;
+            }
+            append(*begin);
+            ++begin;
+        }
+        return len;
+    }
+#else
+    // MSVC needs the full normalization, as it puts the const in a different
+    // place than we expect
+    constexpr int normalizeTypeFromSignature(const char *begin, const char *end)
+    { return normalizeType(begin, end); }
+#endif
+
     constexpr int normalizeType(const char *begin, const char *end, bool adjustConst = true)
     {
         // Trim spaces
@@ -1835,20 +1970,8 @@ public:
             }
         }
 
-        // discard 'struct', 'class', and 'enum'; they are optional
-        // and we don't want them in the normalized signature
-        skipToken(begin, end, "struct", true) || skipToken(begin, end, "class", true)
-                || skipToken(begin, end, "enum", true);
-
-#ifdef QT_NAMESPACE
-        const char *nsbeg = begin;
-        if (skipToken(nsbeg, end, QT_STRINGIFY(QT_NAMESPACE)) && nsbeg + 2 < end && nsbeg[0] == ':'
-            && nsbeg[1] == ':') {
-            begin = nsbeg + 2;
-            while (begin != end && is_space(*begin))
-                begin++;
-        }
-#endif
+        skipStructClassOrEnum(begin, end);
+        skipQtNamespace(begin, end);
 
         if (skipToken(begin, end, "QVector")) {
             // Replace QVector by QList
@@ -1860,66 +1983,9 @@ public:
             appendStr("std::pair");
         }
 
-        if (!hasMiddleConst) {
+        if (!hasMiddleConst)
             // Normalize the integer types
-            int numLong = 0;
-            int numSigned = 0;
-            int numUnsigned = 0;
-            int numInt = 0;
-            int numShort = 0;
-            int numChar = 0;
-            while (begin < end) {
-                if (skipToken(begin, end, "long")) {
-                    numLong++;
-                    continue;
-                }
-                if (skipToken(begin, end, "int")) {
-                    numInt++;
-                    continue;
-                }
-                if (skipToken(begin, end, "short")) {
-                    numShort++;
-                    continue;
-                }
-                if (skipToken(begin, end, "unsigned")) {
-                    numUnsigned++;
-                    continue;
-                }
-                if (skipToken(begin, end, "signed")) {
-                    numSigned++;
-                    continue;
-                }
-                if (skipToken(begin, end, "char")) {
-                    numChar++;
-                    continue;
-                }
-                break;
-            }
-            if (numChar || numShort) {
-                if (numSigned && numChar)
-                    appendStr("signed ");
-                if (numUnsigned)
-                    appendStr("unsigned ");
-                if (numChar)
-                    appendStr("char");
-                else
-                    appendStr("short");
-            } else if (numLong) {
-                if (numLong == 1) {
-                    if (numUnsigned)
-                        append('u');
-                    appendStr("long");
-                } else {
-                    if (numUnsigned)
-                        appendStr("unsigned ");
-                    appendStr("long long");
-                }
-            } else if (numUnsigned || numSigned || numInt) {
-                if (numUnsigned)
-                    append('u');
-                appendStr("int");
-            }
-        }
+            normalizeIntegerTypes(begin, end);
 
         bool spaceSkiped = true;
         while (begin != end) {
@@ -2024,21 +2090,20 @@ constexpr auto typenameHelper()
         constexpr int suffix = sizeof("]");
 #endif
 
-#if !(defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && !defined(Q_CC_CLANG))
-        constexpr auto func = Q_FUNC_INFO;
-        constexpr const char *begin = func + prefix;
-        constexpr const char *end = func + sizeof(Q_FUNC_INFO) - suffix;
-        constexpr int len = qNormalizeType(begin, end, nullptr);
-#else // GCC < 8.1 did not have Q_FUNC_INFO as constexpr, and GCC 9 has a precompiled header bug
+#if (defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && !defined(Q_CC_CLANG) && Q_CC_GNU < 804)
         auto func = Q_FUNC_INFO;
         const char *begin = func + prefix;
         const char *end = func + sizeof(Q_FUNC_INFO) - suffix;
         // This is an upper bound of the size since the normalized signature should always be smaller
-        // (Unless there is a QList -> QVector change, but that should not happen)
         constexpr int len = sizeof(Q_FUNC_INFO) - suffix - prefix;
+#else
+        constexpr auto func = Q_FUNC_INFO;
+        constexpr const char *begin = func + prefix;
+        constexpr const char *end = func + sizeof(Q_FUNC_INFO) - suffix;
+        constexpr int len = QTypeNormalizer{ nullptr }.normalizeTypeFromSignature(begin, end);
 #endif
         std::array<char, len + 1> result {};
-        qNormalizeType(begin, end, result.data());
+        QTypeNormalizer{ result.data() }.normalizeTypeFromSignature(begin, end);
         return result;
     }
 }

@@ -872,7 +872,9 @@ void tst_Moc::uLongLong()
     QVERIFY(idx != -1);
     idx = mobj->indexOfSlot("slotWithULongLong(unsigned long long)");
     QVERIFY(idx != -1);
-    idx = mobj->indexOfSlot("slotWithULongLongP(unsigned long long*)");
+    idx = mobj->indexOfSlot("slotWithULongLong(qulonglong)");
+    QVERIFY(idx != -1);
+    idx = mobj->indexOfSlot("slotWithULongLongP(qulonglong*)");
     QVERIFY(idx != -1);
 
     idx = mobj->indexOfSlot("slotWithLong(long)");

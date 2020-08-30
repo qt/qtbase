@@ -235,6 +235,7 @@ private slots:
     void operatorEq();
     void typesWithInaccessibleDTors();
     void voidIsNotUnknown();
+    void typeNameNormalization();
 };
 
 struct BaseGenericType
@@ -2713,6 +2714,43 @@ void tst_QMetaType::voidIsNotUnknown()
     QMetaType voidType2 = QMetaType(QMetaType::Void);
     QCOMPARE(voidType, voidType2);
     QVERIFY(voidType != QMetaType(QMetaType::UnknownType));
+}
+
+void tst_QMetaType::typeNameNormalization()
+{
+    // check the we normalize types the right way
+
+#define CHECK_TYPE_NORMALIZATION(Normalized, ...) \
+    do { \
+        /*QCOMPARE(QtPrivate::typenameHelper<Type>(), Normalized);*/ \
+        QByteArray typeName = QMetaObject::normalizedType(#__VA_ARGS__); \
+        QCOMPARE(typeName, Normalized); \
+        typeName = QMetaType::fromType<__VA_ARGS__>().name(); \
+        QCOMPARE(typeName, Normalized); \
+    } while (0)
+
+    CHECK_TYPE_NORMALIZATION("QList<QString*const>", QList<QString * const>);
+    CHECK_TYPE_NORMALIZATION("QList<const QString*>", QList<const QString * >);
+    CHECK_TYPE_NORMALIZATION("QList<const QString*const>", QList<const QString * const>);
+    CHECK_TYPE_NORMALIZATION("QList<const QString*>", QList<QString const *>);
+    CHECK_TYPE_NORMALIZATION("QList<signed char>", QList<signed char>);
+    CHECK_TYPE_NORMALIZATION("QList<uint>", QList<unsigned>);
+    CHECK_TYPE_NORMALIZATION("uint", uint);
+    CHECK_TYPE_NORMALIZATION("QList<QHash<uint,QString*>>", QList<QHash<unsigned, QString *>>);
+    CHECK_TYPE_NORMALIZATION("QList<qlonglong>", QList<qlonglong>);
+    CHECK_TYPE_NORMALIZATION("QList<qulonglong>", QList<qulonglong>);
+    CHECK_TYPE_NORMALIZATION("QList<qlonglong>", QList<long long>);
+    CHECK_TYPE_NORMALIZATION("QList<qulonglong>", QList<unsigned long long>);
+    CHECK_TYPE_NORMALIZATION("QList<qulonglong*>", QList<unsigned long long *>);
+    CHECK_TYPE_NORMALIZATION("QList<ulong>", QList<long unsigned >);
+#ifdef Q_CC_MSVC
+    CHECK_TYPE_NORMALIZATION("qulonglong", __int64 unsigned);
+#endif
+    CHECK_TYPE_NORMALIZATION("std::pair<const QString&&,short>", QPair<const QString &&, signed short>);
+
+    // The string based normalization doesn't handle aliases, QMetaType::fromType() does
+//    CHECK_TYPE_NORMALIZATION("qulonglong", quint64);
+    QCOMPARE(QMetaType::fromType<quint64>().name(), "qulonglong");
 }
 
 // Compile-time test, it should be possible to register function pointer types
