@@ -68,7 +68,7 @@ class FinalWidget : public QFrame
 public:
     FinalWidget(QWidget *parent, const QString &name, const QSize &labelSize);
     void setPixmap(const QPixmap &pixmap);
-    const QPixmap *pixmap() const;
+    QPixmap pixmap() const;
 
 protected:
     void mouseMoveEvent(QMouseEvent *event) override;

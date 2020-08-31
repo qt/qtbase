@@ -145,7 +145,6 @@ QFrame* Viewer::createCentralWidget()
     QFrame* frame = new QFrame(this);
     grid = new QGridLayout(frame);
     grid->setSpacing(8);
-    grid->setMargin(4);
 
     layout()->setSizeConstraint(QLayout::SetFixedSize);
 
@@ -324,7 +323,7 @@ void Viewer::saveImage()
         QString newImageFile = QFileInfo(info.absoluteDir(),
             info.baseName() + ".png").absoluteFilePath();
 
-        if (!finalWidget->pixmap()->save(newImageFile, "PNG"))
+        if (!finalWidget->pixmap().save(newImageFile, "PNG"))
             (void) QMessageBox::warning(this, tr("Cannot save file"),
                 tr("The file could not be saved."),
                 QMessageBox::Cancel, QMessageBox::NoButton,

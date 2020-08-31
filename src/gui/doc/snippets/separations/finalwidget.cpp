@@ -54,8 +54,15 @@ finalwidget.cpp
 A widget to display an image and a label containing a description.
 */
 
-#include <QtGui>
 #include "finalwidget.h"
+
+#include <QApplication>
+#include <QBuffer>
+#include <QDrag>
+#include <QLabel>
+#include <QMimeData>
+#include <QMouseEvent>
+#include <QVBoxLayout>
 
 FinalWidget::FinalWidget(QWidget *parent, const QString &name,
                          const QSize &labelSize)
@@ -96,7 +103,7 @@ void FinalWidget::mouseMoveEvent(QMouseEvent *event)
     QByteArray output;
     QBuffer outputBuffer(&output);
     outputBuffer.open(QIODevice::WriteOnly);
-    imageLabel->pixmap()->toImage().save(&outputBuffer, "PNG");
+    imageLabel->pixmap().toImage().save(&outputBuffer, "PNG");
     mimeData->setData("image/png", output);
 //! [0]
 /*
@@ -105,13 +112,11 @@ void FinalWidget::mouseMoveEvent(QMouseEvent *event)
 //! [1]
 */
     drag->setMimeData(mimeData);
-    drag->setPixmap(imageLabel->pixmap()->scaled(64, 64, Qt::KeepAspectRatio));
+    drag->setPixmap(imageLabel->pixmap().scaled(64, 64, Qt::KeepAspectRatio));
 //! [2]
     drag->setHotSpot(QPoint(drag->pixmap().width()/2,
                             drag->pixmap().height()));
 //! [2]
-
-    drag->start();
 }
 
 /*!
@@ -124,7 +129,7 @@ void FinalWidget::mousePressEvent(QMouseEvent *event)
         dragStartPosition = event->pos();
 }
 
-const QPixmap* FinalWidget::pixmap() const
+QPixmap FinalWidget::pixmap() const
 {
     return imageLabel->pixmap();
 }

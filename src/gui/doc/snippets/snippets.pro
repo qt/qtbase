@@ -20,6 +20,7 @@ contains(QT_BUILD_PARTS, tests) {
         qstatustipevent \
         qtextobject \
         scribe-overview \
+        separations \
         textblock-formats \
         textblock-fragments \
         textdocument-blocks \
