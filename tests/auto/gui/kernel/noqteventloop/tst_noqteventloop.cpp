@@ -223,7 +223,8 @@ void tst_NoQtEventLoop::consumeMouseEvents()
     int argc = 1;
     char *argv[] = {const_cast<char*>("test")};
     // ensure scaling is off since the child window is positioned using QWindow API.
-    QCoreApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
+    // FIXME: Position by taking the screen DPR into account instead
+    qputenv("QT_ENABLE_HIGHDPI_SCALING", "0");
     QGuiApplication app(argc, argv);
     QString clsName(QStringLiteral("tst_NoQtEventLoop_WINDOW"));
     const HINSTANCE appInstance = (HINSTANCE)GetModuleHandle(0);

@@ -470,9 +470,13 @@ namespace Qt {
         AA_ShareOpenGLContexts = 18,
         AA_SetPalette = 19,
 #if QT_DEPRECATED_SINCE(6, 0)
-        AA_EnableHighDpiScaling Q_DECL_ENUMERATOR_DEPRECATED = 20,
+        AA_EnableHighDpiScaling Q_DECL_ENUMERATOR_DEPRECATED_X(
+            "High-DPI scaling is always enabled. " \
+            "This attribute no longer has any effect.") = 20,
+        AA_DisableHighDpiScaling Q_DECL_ENUMERATOR_DEPRECATED_X(
+            "High-DPI scaling is always enabled. " \
+            "This attribute no longer has any effect.") = 21,
 #endif
-        AA_DisableHighDpiScaling = 21,
         AA_UseStyleSheetPropagationInWidgetStyles = 22,
         AA_DontUseNativeDialogs = 23,
         AA_SynthesizeMouseForUnhandledTabletEvents = 24,

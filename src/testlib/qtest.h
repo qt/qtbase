@@ -465,7 +465,7 @@ bool compareSequence(ActualIterator actualIt, ActualIterator actualEnd,
 #if defined(TESTCASE_LOWDPI)
 void disableHighDpi()
 {
-    QCoreApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
+    qputenv("QT_ENABLE_HIGHDPI_SCALING", "0");
 }
 Q_CONSTRUCTOR_FUNCTION(disableHighDpi);
 #endif

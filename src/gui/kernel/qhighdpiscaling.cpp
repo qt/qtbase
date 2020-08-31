@@ -208,10 +208,8 @@ static inline qreal initialGlobalScaleFactor()
         factor based on display density information. These platforms
         include X11, Windows, and Android.
 
-        There are two APIs for enabling or disabling this behavior:
+        There is one API for enabling or disabling this behavior:
             - The QT_AUTO_SCREEN_SCALE_FACTOR environment variable.
-            - The AA_EnableHighDpiScaling and AA_DisableHighDpiScaling
-              application attributes
 
         Enabling either will make QHighDpiScaling call QPlatformScreen::pixelDensity()
         and use the value provided as the scale factor for the screen in
@@ -265,9 +263,6 @@ static inline bool usePixelDensity()
     // reported by the platform plugin. There are several enablers and several
     // disablers. A single disable may veto all other enablers.
 
-    // Check if there is an explicit disable
-    if (QCoreApplication::testAttribute(Qt::AA_DisableHighDpiScaling))
-        return false;
     bool screenEnvValueOk;
     const int screenEnvValue = qEnvironmentVariableIntValue(legacyAutoScreenEnvVar, &screenEnvValueOk);
     if (screenEnvValueOk && screenEnvValue < 1)
@@ -488,9 +483,6 @@ void QHighDpiScaling::initHighDpiScaling()
 
 void QHighDpiScaling::updateHighDpiScaling()
 {
-    if (QCoreApplication::testAttribute(Qt::AA_DisableHighDpiScaling))
-        return;
-
     m_usePixelDensity = usePixelDensity();
 
     if (m_usePixelDensity && !m_pixelDensityScalingActive) {

@@ -54,16 +54,6 @@
 
 int main(int argc, char *argv[])
 {
-    bool useHighDpiScaling = true;
-
-    for (int i = 1; i < argc; ++i) {
-        if (qstrcmp(argv[i], "--no-scaling") == 0)
-            useHighDpiScaling = false;
-    }
-
-    if (!useHighDpiScaling)
-        QCoreApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
-
     QApplication app(argc, argv);
     WidgetGallery gallery;
     gallery.show();

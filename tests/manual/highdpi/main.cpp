@@ -1424,18 +1424,7 @@ void MetricsTest::logScreenChangeSignal(const QObject *o, const char *name, cons
 
 int main(int argc, char **argv)
 {
-#define NOSCALINGOPTION "noscaling"
-
     qInfo("High DPI tester %s", QT_VERSION_STR);
-
-    int preAppOptionCount = 0;
-    for (int a = 1; a < argc; ++a) {
-        if (qstrcmp(argv[a], "--" NOSCALINGOPTION) == 0) {
-            QCoreApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
-            preAppOptionCount++;
-            qInfo("AA_DisableHighDpiScaling");
-        }
-    }
 
     QApplication app(argc, argv);
     QCoreApplication::setApplicationVersion(QT_VERSION_STR);
@@ -1449,7 +1438,6 @@ int main(int argc, char **argv)
     parser.addVersionOption();
     QCommandLineOption controllerOption("interactive", "Show configuration window.");
     parser.addOption(controllerOption);
-    parser.addOption(QCommandLineOption(NOSCALINGOPTION, "Set AA_DisableHighDpiScaling"));
 
     DemoContainerList demoList;
     demoList << new DemoContainer<PixmapPainter>("pixmap", "Test pixmap painter");
@@ -1478,7 +1466,7 @@ int main(int argc, char **argv)
     //controller takes ownership of all demos
     DemoController controller(demoList, &parser);
 
-    if (parser.isSet(controllerOption) || (QCoreApplication::arguments().count() - preAppOptionCount) <= 1)
+    if (parser.isSet(controllerOption) || (QCoreApplication::arguments().count()) <= 1)
         controller.show();
 
     if (QApplication::topLevelWidgets().isEmpty())

@@ -951,7 +951,6 @@ void QCoreApplication::setAttribute(Qt::ApplicationAttribute attribute, bool on)
     if (Q_UNLIKELY(QCoreApplicationPrivate::is_app_running)) {
 #endif
         switch (attribute) {
-            case Qt::AA_DisableHighDpiScaling:
             case Qt::AA_PluginApplication:
             case Qt::AA_UseDesktopOpenGL:
             case Qt::AA_UseOpenGLES:

@@ -208,15 +208,6 @@
     \value AA_SetPalette Indicates whether a palette was explicitly set on the
            QGuiApplication. This value was added in Qt 5.5.
 
-    \value AA_DisableHighDpiScaling Disables high-DPI scaling in Qt, exposing window
-           system coordinates. Note that the window system may do its own scaling,
-           so this does not guarantee that QPaintDevice::devicePixelRatio() will
-           be equal to 1. In addition, scale factors set by QT_SCALE_FACTOR will not
-           be affected. This corresponds to setting the
-           QT_AUTO_SCREEN\unicode{0x200b}_SCALE_FACTOR environment variable to 0.
-           This attribute must be set before QGuiApplication is constructed.
-           This value was added in Qt 5.6.
-
     \value AA_UseStyleSheetPropagationInWidgetStyles By default, Qt Style Sheets
            disable regular QWidget palette and font propagation. When this flag
            is enabled, font and palette changes propagate as though the user had
@@ -291,6 +282,7 @@
     \omitvalue AA_AttributeCount
     \omitvalue AA_EnableHighDpiScaling
     \omitvalue AA_UseHighDpiPixmaps
+    \omitvalue AA_DisableHighDpiScaling
 */
 
 /*!

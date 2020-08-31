@@ -72,8 +72,6 @@ class tst_QStyleSheetStyle : public QObject
 public:
     tst_QStyleSheetStyle();
 
-    static void initMain();
-
 private slots:
     void init();
     void cleanup();
@@ -172,12 +170,6 @@ private:
     const QRect m_availableGeometry = QGuiApplication::primaryScreen()->availableGeometry();
     QSize m_testSize;
 };
-
-// highdpiImages() tests HighDPI scaling; disable initially.
-void tst_QStyleSheetStyle::initMain()
-{
-    QCoreApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
-}
 
 tst_QStyleSheetStyle::tst_QStyleSheetStyle()
 {
@@ -2215,8 +2207,9 @@ void tst_QStyleSheetStyle::highdpiImages()
     w.setWindowTitle(QLatin1String(QTest::currentTestFunction()) + QLatin1String("::")
                      + QLatin1String(QTest::currentDataTag()));
     QScreen *screen = QGuiApplication::primaryScreen();
+    auto inverseDpr = 1 / screen->devicePixelRatio();
     w.move(screen->availableGeometry().topLeft());
-    QHighDpiScaling::setScreenFactor(screen, screenFactor);
+    QHighDpiScaling::setScreenFactor(screen, inverseDpr * screenFactor);
     w.setStyleSheet("QWidget { background-image: url(\":/images/testimage.png\"); }");
     w.show();
 
