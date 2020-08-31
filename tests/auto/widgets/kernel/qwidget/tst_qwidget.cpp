@@ -8134,7 +8134,8 @@ void tst_QWidget::updateWhileMinimized()
         const QString desktop = qgetenv("XDG_CURRENT_DESKTOP");
         qDebug() << "xcb: XDG_CURRENT_DESKTOP=" << desktop;
         if (desktop == QStringLiteral("ubuntu:GNOME")
-            || desktop == QStringLiteral("GNOME-Classic:GNOME"))
+            || desktop == QStringLiteral("GNOME-Classic:GNOME")
+            || desktop == QStringLiteral("GNOME"))
             count = 1;
     }
     QCOMPARE(widget.numPaintEvents, count);
