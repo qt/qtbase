@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -124,12 +124,11 @@
     many times a particular value occurs in the list, use count().
 
     QList provides these basic functions to add, move, and remove
-    items: insert(), replace(), remove(), prepend(), append(). With
-    the exception of append() and replace(), these functions can be slow
-    (\l{linear time}) for large lists, because they require moving many
-    items in the list by one position in memory. If you want a container
-    class that provides fast insertion/removal in the middle, use
-    std::list instead.
+    items: insert(), replace(), remove(), prepend(), append(). With the
+    exception of append(), prepend() and replace(), these functions can be slow
+    (\l{linear time}) for large lists, because they require moving many items in
+    the list by one position in memory. If you want a container class that
+    provides fast insertion/removal in the middle, use std::list instead.
 
     Unlike plain C++ arrays, QLists can be resized at any time by
     calling resize(). If the new size is larger than the old size,
@@ -491,6 +490,10 @@
     \note a statically allocated list will report a capacity of 0,
     even if it's not empty.
 
+    \note The free space position in the allocated memory block is undefined. In
+    other words, one should not assume that the free memory is always located
+    after the initialized elements.
+
     \sa reserve(), squeeze()
 */
 
@@ -558,8 +561,8 @@
     Example:
     \snippet code/src_corelib_tools_qlist.cpp 6
 
-    The pointer remains valid as long as the list isn't
-    reallocated.
+    \warning The pointer is invalidated on detachment or when the QList is
+    modified.
 
     This function is mostly useful to pass a list to a function
     that accepts a plain C++ array.
@@ -576,8 +579,9 @@
 
     Returns a const pointer to the data stored in the list. The
     pointer can be used to access the items in the list.
-    The pointer remains valid as long as the list isn't
-    reallocated.
+
+    \warning The pointer is invalidated on detachment or when the QList is
+    modified.
 
     This function is mostly useful to pass a list to a function
     that accepts a plain C++ array.
@@ -800,21 +804,20 @@
     \sa operator[](), remove()
 */
 
-/*! \fn template <typename T> void QList<T>::remove(qsizetype i)
+/*! \fn template <typename T> void QList<T>::remove(qsizetype i, qsizetype n = 1)
 
-    \overload
+    Removes \a n elements from the list, starting at index position \a i.
 
-    Removes the element at index position \a i.
+    If too many elements are removed from the list, the list may shrink the
+    capacity to reduce the allocated memory size. To make sure this does not
+    happen, use reserve() to give a hint to the list that the capacity should be
+    preserved.
 
-    \sa insert(), replace(), fill()
-*/
-
-/*! \fn template <typename T> void QList<T>::remove(qsizetype i, qsizetype count)
-
-    \overload
-
-    Removes \a count elements from the middle of the list, starting at
-    index position \a i.
+//! [iterator-invalidation-erase]
+    \note When QList is not \l{implicitly shared} and the capacity is reserved
+    with a call to reserve(), this function only invalidates iterators at or
+    after the specified position.
+//! [iterator-invalidation-erase]
 
     \sa insert(), replace(), fill()
 */
@@ -828,7 +831,7 @@
     remove(i);
     \endcode
 
-    Provided for compatibility with QList.
+    \include qlist.qdoc iterator-invalidation-erase
 
     \sa remove(), QList::removeAt()
 */
@@ -1042,6 +1045,11 @@
     Returns an \l{STL-style iterators}{STL-style iterator} pointing to the
     first item in the list.
 
+//! [iterator-invalidation-func-desc]
+    \warning The returned iterator is invalidated on detachment or when the
+    QList is modified.
+//! [iterator-invalidation-func-desc]
+
     \sa constBegin(), end()
 */
 
@@ -1056,6 +1064,8 @@
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first item
     in the list.
 
+    \include qlist.qdoc iterator-invalidation-func-desc
+
     \sa begin(), cend()
 */
 
@@ -1064,6 +1074,8 @@
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first item
     in the list.
 
+    \include qlist.qdoc iterator-invalidation-func-desc
+
     \sa begin(), constEnd()
 */
 
@@ -1071,6 +1083,8 @@
 
     Returns an \l{STL-style iterators}{STL-style iterator} pointing to the imaginary item
     after the last item in the list.
+
+    \include qlist.qdoc iterator-invalidation-func-desc
 
     \sa begin(), constEnd()
 */
@@ -1086,6 +1100,8 @@
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     item after the last item in the list.
 
+    \include qlist.qdoc iterator-invalidation-func-desc
+
     \sa cbegin(), end()
 */
 
@@ -1093,6 +1109,8 @@
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     item after the last item in the list.
+
+    \include qlist.qdoc iterator-invalidation-func-desc
 
     \sa constBegin(), end()
 */
@@ -1102,6 +1120,8 @@
 
     Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
     item in the list, in reverse order.
+
+    \include qlist.qdoc iterator-invalidation-func-desc
 
     \sa begin(), crbegin(), rend()
 */
@@ -1117,6 +1137,8 @@
     Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
     item in the list, in reverse order.
 
+    \include qlist.qdoc iterator-invalidation-func-desc
+
     \sa begin(), rbegin(), rend()
 */
 
@@ -1125,6 +1147,8 @@
 
     Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to one past
     the last item in the list, in reverse order.
+
+    \include qlist.qdoc iterator-invalidation-func-desc
 
     \sa end(), crend(), rbegin()
 */
@@ -1140,25 +1164,31 @@
     Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to one
     past the last item in the list, in reverse order.
 
+    \include qlist.qdoc iterator-invalidation-func-desc
+
     \sa end(), rend(), rbegin()
 */
 
-/*! \fn template <typename T> QList<T>::iterator QList<T>::erase(iterator pos)
+/*! \fn template <typename T> QList<T>::iterator QList<T>::erase(const_iterator pos)
 
     Removes the item pointed to by the iterator \a pos from the
     list, and returns an iterator to the next item in the list
     (which may be end()).
 
+    \include qlist.qdoc iterator-invalidation-erase
+
     \sa insert(), remove()
 */
 
-/*! \fn template <typename T> QList<T>::iterator QList<T>::erase(iterator begin, iterator end)
+/*! \fn template <typename T> QList<T>::iterator QList<T>::erase(const_iterator begin, const_iterator end)
 
     \overload
 
     Removes all the items from \a begin up to (but not including) \a
     end. Returns an iterator to the same item that \a end referred to
     before the call.
+
+    \include qlist.qdoc iterator-invalidation-erase
 */
 
 /*! \fn template <typename T> T& QList<T>::first()
@@ -1375,10 +1405,16 @@
     iterators}. The STL-style non-const iterator is simply a typedef
     for "T *" (pointer to T).
 
+//! [iterator-invalidation-class-desc]
     \warning Iterators on implicitly shared containers do not work
     exactly like STL-iterators. You should avoid copying a container
     while iterators are active on that container. For more information,
     read \l{Implicit sharing iterator problem}.
+
+    \warning Iterators are invalidated when QList is modified. Consider that all
+    iterators are invalidated by default. Exceptions to this rule are explicitly
+    documented.
+//! [iterator-invalidation-class-desc]
 
     \sa QList::begin(), QList::end(), QList::const_iterator, QMutableListIterator
 */
@@ -1392,10 +1428,7 @@
     iterators}. The STL-style const iterator is simply a typedef for
     "const T *" (pointer to const T).
 
-    \warning Iterators on implicitly shared containers do not work
-    exactly like STL-iterators. You should avoid copying a container
-    while iterators are active on that container. For more information,
-    read \l{Implicit sharing iterator problem}.
+    \include qlist.qdoc iterator-invalidation-class-desc
 
     \sa QList::constBegin(), QList::constEnd(), QList::iterator, QListIterator
 */
@@ -1408,10 +1441,7 @@
 
     It is simply a typedef for \c{std::reverse_iterator<T*>}.
 
-    \warning Iterators on implicitly shared containers do not work
-    exactly like STL-iterators. You should avoid copying a container
-    while iterators are active on that container. For more information,
-    read \l{Implicit sharing iterator problem}.
+    \include qlist.qdoc iterator-invalidation-class-desc
 
     \sa QList::rbegin(), QList::rend(), QList::const_reverse_iterator, QList::iterator
 */
@@ -1424,10 +1454,7 @@
 
     It is simply a typedef for \c{std::reverse_iterator<const T*>}.
 
-    \warning Iterators on implicitly shared containers do not work
-    exactly like STL-iterators. You should avoid copying a container
-    while iterators are active on that container. For more information,
-    read \l{Implicit sharing iterator problem}.
+    \include qlist.qdoc iterator-invalidation-class-desc
 
     \sa QList::rbegin(), QList::rend(), QList::reverse_iterator, QList::const_iterator
 */
