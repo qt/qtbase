@@ -12,6 +12,7 @@ contains(QT_BUILD_PARTS, tests) {
         droprectangle \
         image \
         picture \
+        plaintextlayout \
         qfontdatabase \
         textblock-formats \
         textblock-fragments \
