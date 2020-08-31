@@ -158,11 +158,6 @@ public class QtActivityLoader extends QtLoader {
                 ENVIRONMENT_VARIABLES += "QT_BLOCK_EVENT_LOOPS_WHEN_SUSPENDED=1\t";
             }
 
-            if (m_contextInfo.metaData.containsKey("android.app.auto_screen_scale_factor")
-                    && m_contextInfo.metaData.getBoolean("android.app.auto_screen_scale_factor")) {
-                ENVIRONMENT_VARIABLES += "QT_AUTO_SCREEN_SCALE_FACTOR=1\t";
-            }
-
             startApp(true);
         }
     }

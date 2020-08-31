@@ -55,11 +55,6 @@ QT_BEGIN_NAMESPACE
 Q_LOGGING_CATEGORY(lcScaling, "qt.scaling");
 
 #ifndef QT_NO_HIGHDPISCALING
-static const char legacyDevicePixelEnvVar[] = "QT_DEVICE_PIXEL_RATIO";
-
-// Note: QT_AUTO_SCREEN_SCALE_FACTOR is Done on X11, and should be kept
-// working as-is. It's Deprecated on all other platforms.
-static const char legacyAutoScreenEnvVar[] = "QT_AUTO_SCREEN_SCALE_FACTOR";
 
 static const char enableHighDpiScalingEnvVar[] = "QT_ENABLE_HIGHDPI_SCALING";
 static const char scaleFactorEnvVar[] = "QT_SCALE_FACTOR";
@@ -94,20 +89,8 @@ static inline qreal initialGlobalScaleFactor()
             qCDebug(lcScaling) << "Apply " << scaleFactorEnvVar << f;
             result = f;
         }
-    } else {
-        // Check for deprecated environment variables.
-        if (qEnvironmentVariableIsSet(legacyDevicePixelEnvVar)) {
-            qWarning("Warning: %s is deprecated. Instead use:\n"
-                     "   %s to enable platform plugin controlled per-screen factors.\n"
-                     "   %s to set per-screen DPI.\n"
-                     "   %s to set the application global scale factor.",
-                     legacyDevicePixelEnvVar, legacyAutoScreenEnvVar, screenFactorsEnvVar, scaleFactorEnvVar);
-
-            int dpr = qEnvironmentVariableIntValue(legacyDevicePixelEnvVar);
-            if (dpr > 0)
-                result = dpr;
-        }
     }
+
     return result;
 }
 
@@ -208,17 +191,6 @@ static inline qreal initialGlobalScaleFactor()
         factor based on display density information. These platforms
         include X11, Windows, and Android.
 
-        There is one API for enabling or disabling this behavior:
-            - The QT_AUTO_SCREEN_SCALE_FACTOR environment variable.
-
-        Enabling either will make QHighDpiScaling call QPlatformScreen::pixelDensity()
-        and use the value provided as the scale factor for the screen in
-        question. Disabling is done on a 'veto' basis where either the
-        environment or the application can disable the scaling. The intended use
-        cases are 'My system is not providing correct display density
-        information' and 'My application needs to work in display pixels',
-        respectively.
-
         The QT_SCREEN_SCALE_FACTORS environment variable can be used to set the screen
         scale factors manually. Set this to a semicolon-separated
         list of scale factors (matching the order of QGuiApplications::screens()),
@@ -260,13 +232,8 @@ bool QHighDpiScaling::m_screenFactorSet = false; // QHighDpiScaling::setScreenFa
 static inline bool usePixelDensity()
 {
     // Determine if we should set a scale factor based on the pixel density
-    // reported by the platform plugin. There are several enablers and several
-    // disablers. A single disable may veto all other enablers.
+    // reported by the platform plugin.
 
-    bool screenEnvValueOk;
-    const int screenEnvValue = qEnvironmentVariableIntValue(legacyAutoScreenEnvVar, &screenEnvValueOk);
-    if (screenEnvValueOk && screenEnvValue < 1)
-        return false;
     bool enableEnvValueOk;
     const int enableEnvValue = qEnvironmentVariableIntValue(enableHighDpiScalingEnvVar, &enableEnvValueOk);
     if (enableEnvValueOk && enableEnvValue < 1)
