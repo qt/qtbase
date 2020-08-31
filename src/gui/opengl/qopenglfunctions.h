@@ -269,10 +269,6 @@ public:
 
     void initializeOpenGLFunctions();
 
-#if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED void initializeGLFunctions() { initializeOpenGLFunctions(); }
-#endif
-
     // GLES2 + OpenGL1 common subset
     void glBindTexture(GLenum target, GLuint texture);
     void glBlendFunc(GLenum sfactor, GLenum dfactor);

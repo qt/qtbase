@@ -563,13 +563,6 @@ bool QOpenGLExtensions::hasOpenGLExtension(QOpenGLExtensions::OpenGLExtension ex
 }
 
 /*!
-    \fn void QOpenGLFunctions::initializeGLFunctions()
-    \obsolete
-
-    Use initializeOpenGLFunctions() instead.
-*/
-
-/*!
     Initializes OpenGL function resolution for the current context.
 
     After calling this function, the QOpenGLFunctions object can only be
