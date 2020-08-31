@@ -47,9 +47,10 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-#include <QtGui>
 #include <QApplication>
+#include <QMainWindow>
+#include <QMenuBar>
+#include <QStatusBar>
 
 class MainWindow : public QMainWindow
 {

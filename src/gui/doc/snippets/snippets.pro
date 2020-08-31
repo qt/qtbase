@@ -17,6 +17,7 @@ contains(QT_BUILD_PARTS, tests) {
         qfileopenevent \
         qfontdatabase \
         qimagewriter \
+        qstatustipevent \
         textblock-formats \
         textblock-fragments \
         textdocument-blocks \
