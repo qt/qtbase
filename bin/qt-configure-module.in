@@ -1,0 +1,30 @@
+#!/bin/sh
+script_dir_path=`dirname $0`
+script_dir_path=`(cd "$script_dir_path"; /bin/pwd)`
+
+printUsage()
+{
+    echo 'Usage: qt-configure-module <module-source-dir> [options]'
+}
+
+if [ "$#" -lt 1 ]; then
+    printUsage
+    exit 1
+fi
+module_root=$1
+shift
+
+if [ ! -f "$module_root/CMakeLists.txt" ]; then
+    echo >&2 "Error: $module_root is not a valid Qt module source directory."
+    printUsage
+    exit 1
+fi
+
+optfile=config.opt
+if [ -f "$optfile" ]; then rm "$optfile"; fi
+for arg in "$@"; do
+echo $arg >> "$optfile"
+done
+
+cmake_script_path="$script_dir_path/@__relative_path_to_processconfigureargs_script@"
+"$script_dir_path/qt-cmake-private" -DOPTFILE=$optfile -DMODULE_ROOT="$module_root" -DCMAKE_COMMAND="$script_dir_path/qt-cmake-private" -P "$cmake_script_path"

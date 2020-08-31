@@ -239,6 +239,30 @@ qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake-private.bat" DES
 endif()
 unset(__qt_cmake_extra)
 
+# Provide a script to configure Qt modules.
+if(QT_WILL_INSTALL)
+    set(__relative_path_to_processconfigureargs_script
+        "${__GlobalConfig_relative_path_from_bin_dir_to_cmake_config_dir}")
+else()
+    file(RELATIVE_PATH __relative_path_to_processconfigureargs_script
+        "${__qt_bin_dir_absolute}" "${CMAKE_CURRENT_LIST_DIR}")
+endif()
+string(APPEND __relative_path_to_processconfigureargs_script "/QtProcessConfigureArgs.cmake")
+file(TO_NATIVE_PATH "${__relative_path_to_processconfigureargs_script}"
+    __relative_path_to_processconfigureargs_script)
+if(CMAKE_HOST_UNIX)
+    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-configure-module.in"
+        "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-configure-module" @ONLY)
+    qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-configure-module"
+        DESTINATION "${INSTALL_BINDIR}")
+else()
+    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-configure-module.bat.in"
+        "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-configure-module.bat" @ONLY)
+    qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-configure-module.bat"
+        DESTINATION "${INSTALL_BINDIR}")
+endif()
+unset(__relative_path_to_processconfigureargs_script)
+
 # Provide a private convenience wrapper to configure and build one or more standalone tests.
 # Calling CMake directly on a Qt test project won't work because the project does not call
 # find_package(Qt...) to get all dependencies like examples do.
@@ -409,6 +433,7 @@ qt_copy_or_install(FILES
                    cmake/QtPrecompiledHeadersHelpers.cmake
                    cmake/QtPriHelpers.cmake
                    cmake/QtPrlHelpers.cmake
+                   cmake/QtProcessConfigureArgs.cmake
                    cmake/QtQmakeHelpers.cmake
                    cmake/QtResourceHelpers.cmake
                    cmake/QtRpathHelpers.cmake

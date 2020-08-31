@@ -1,0 +1,38 @@
+@echo off
+setlocal ENABLEDELAYEDEXPANSION ENABLEEXTENSIONS
+set script_dir_path=%~dp0
+set script_dir_path=%script_dir_path:~0,-1%
+
+if "%1" == "" (
+    call :print_usage
+    exit /b 1
+)
+
+set module_root=%1
+shift
+if not exist "%module_root%\CMakeLists.txt" (
+    echo Error: %module_root% is not a valid Qt module source directory. >&2
+    call :print_usage
+    exit /b 1
+)
+
+if exist "config.opt" del "config.opt"
+set first_iteration=indeed
+for %%a in (%*) do (
+    if defined first_iteration (
+        :: Drop the first argument, which is the module root.
+        set first_iteration=
+    ) else (
+        echo %%a >> "config.opt"
+    )
+)
+
+set cmake_script_path=%script_dir_path%\@__relative_path_to_processconfigureargs_script@
+call "%script_dir_path%"\qt-cmake-private.bat -DOPTFILE=config.opt -DMODULE_ROOT="%module_root%" ^
+    -DCMAKE_COMMAND="%script_dir_path%\qt-cmake-private.bat" ^
+    -P "%cmake_script_path%"
+goto :eof
+
+:print_usage
+echo Usage: qt-configure-module ^<module-source-dir^> [options]
+goto :eof
