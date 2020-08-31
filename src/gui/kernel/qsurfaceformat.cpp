@@ -346,44 +346,6 @@ void QSurfaceFormat::setSamples(int numSamples)
     }
 }
 
-#if QT_DEPRECATED_SINCE(5, 2)
-/*!
-    \obsolete
-    \overload
-
-    Use setOption(QSurfaceFormat::FormatOption, bool) or setOptions() instead.
-
-    Sets the format options to the OR combination of \a opt and the
-    current format options.
-
-    \sa options(), testOption()
-*/
-void QSurfaceFormat::setOption(QSurfaceFormat::FormatOptions opt)
-{
-    const QSurfaceFormat::FormatOptions newOptions = d->opts | opt;
-    if (int(newOptions) != int(d->opts)) {
-        detach();
-        d->opts = newOptions;
-    }
-}
-
-/*!
-    \obsolete
-    \overload
-
-    Use testOption(QSurfaceFormat::FormatOption) instead.
-
-    Returns \c true if any of the options in \a opt is currently set
-    on this object; otherwise returns false.
-
-    \sa setOption()
-*/
-bool QSurfaceFormat::testOption(QSurfaceFormat::FormatOptions opt) const
-{
-    return d->opts & opt;
-}
-#endif // QT_DEPRECATED_SINCE(5, 2)
-
 /*!
     \since 5.3
 
