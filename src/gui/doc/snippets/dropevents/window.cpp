@@ -47,10 +47,31 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QComboBox>
+#include <QDragEnterEvent>
+#include <QLabel>
+#include <QMimeData>
+#include <QTextBrowser>
+#include <QVBoxLayout>
+#include <QWidget>
 
-#include <QtGui>
+namespace dropevents {
+class Window : public QWidget
+{
 
-#include "window.h"
+public:
+    explicit Window(QWidget *parent = nullptr);
+
+protected:
+    void dragEnterEvent(QDragEnterEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
+
+private:
+    QComboBox *mimeTypeCombo = nullptr;
+    QTextBrowser *textBrowser = nullptr;
+    QString oldText;
+    QStringList oldMimeTypes;
+};
 
 //! [0]
 Window::Window(QWidget *parent)
@@ -95,3 +116,5 @@ void Window::dropEvent(QDropEvent *event)
     event->acceptProposedAction();
 }
 //! [4]
+
+} // dropevents

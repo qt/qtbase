@@ -8,6 +8,7 @@ contains(QT_BUILD_PARTS, tests) {
         code \
         draganddrop \
         droparea \
+        dropevents \
         qfontdatabase \
         textblock-formats \
         textblock-fragments \
