@@ -221,6 +221,7 @@ private slots:
     void compareCustomTypes() const;
     void timeToDateTime() const;
     void copyingUserTypes() const;
+    void valueClassHierarchyConversion() const;
     void convertBoolToByteArray() const;
     void convertBoolToByteArray_data() const;
     void convertByteArrayToBool() const;
@@ -2892,6 +2893,43 @@ void tst_QVariant::copyingUserTypes() const
     const CustomComparable copiedType = qvariant_cast<CustomComparable>(varCopy);
     QCOMPARE(copiedType, userType);
     QCOMPARE(copiedType.myValue, 42);
+}
+
+
+struct NonQObjectBase {};
+struct NonQObjectDerived : NonQObjectBase {};
+
+void tst_QVariant::valueClassHierarchyConversion() const
+{
+
+   {
+      // QVariant allows downcasting
+      QScopedPointer<CustomQObjectDerived> derived {new CustomQObjectDerived};
+      QVariant var = QVariant::fromValue(derived.get());
+      CustomQObject *object = var.value<CustomQObject *>();
+      QVERIFY(object);
+   }
+   {
+      // QVariant supports upcasting to the correct dynamic type for QObjects
+      QScopedPointer<CustomQObjectDerived> derived {new CustomQObjectDerived};
+      QVariant var = QVariant::fromValue<CustomQObject *>(derived.get());
+      CustomQObjectDerived *object = var.value<CustomQObjectDerived *>();
+      QVERIFY(object);
+   }
+   {
+      // QVariant forbids unsafe upcasting
+      QScopedPointer<CustomQObject> base {new CustomQObject};
+      QVariant var = QVariant::fromValue(base.get());
+      CustomQObjectDerived *object = var.value<CustomQObjectDerived *>();
+      QVERIFY(!object);
+   }
+   {
+      // QVariant does not support upcastingfor non-QObjects
+      QScopedPointer<NonQObjectDerived> derived {new NonQObjectDerived};
+      QVariant var = QVariant::fromValue<NonQObjectBase *>(derived.get());
+      NonQObjectDerived *object = var.value<NonQObjectDerived *>();
+      QVERIFY(!object);
+   }
 }
 
 void tst_QVariant::convertBoolToByteArray() const

@@ -2050,8 +2050,17 @@ bool QMetaType::convert(QMetaType fromType, const void *from, QMetaType toType, 
     // handle QObject conversion
     if ((fromType.flags() & QMetaType::PointerToQObject) && (toType.flags() & QMetaType::PointerToQObject)) {
         QObject *fromObject = *static_cast<QObject * const *>(from);
-        *static_cast<QObject **>(to) = fromObject ? fromObject->metaObject()->cast(fromObject) : nullptr;
-        return true;
+        // use dynamic metatype of from if possible
+        if (fromObject && fromObject->metaObject()->inherits(toType.metaObject()))  {
+            *static_cast<QObject **>(to) = toType.metaObject()->cast(fromObject);
+            return true;
+        } else if (!fromObject) {
+            // if fromObject is null, use static fromType to check if conversion works
+            *static_cast<void **>(to) = nullptr;
+            return fromType.metaObject()->inherits(toType.metaObject());
+        } else {
+            return false;
+        }
     }
 #endif
 
