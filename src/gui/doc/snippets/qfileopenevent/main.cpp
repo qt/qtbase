@@ -50,8 +50,9 @@
 
 //! [QApplication subclass]
 #include <QApplication>
+#include <QDebug>
 #include <QFileOpenEvent>
-#include <QtDebug>
+#include <QPushButton>
 
 class MyApplication : public QApplication
 {

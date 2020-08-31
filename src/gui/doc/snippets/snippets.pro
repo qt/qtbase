@@ -14,6 +14,7 @@ contains(QT_BUILD_PARTS, tests) {
         picture \
         plaintextlayout \
         polygon \
+        qfileopenevent \
         qfontdatabase \
         textblock-formats \
         textblock-fragments \
