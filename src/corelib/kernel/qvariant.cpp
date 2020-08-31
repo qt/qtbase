@@ -2023,11 +2023,11 @@ bool QVariant::convert(QMetaType targetType)
 }
 
 /*!
-  \fn bool QVariant::convert(const int type, void *ptr) const
+  \fn bool QVariant::convert(int type, void *ptr) const
   \internal
   Created for qvariant_cast() usage
 */
-bool QVariant::convert(const int type, void *ptr) const
+bool QVariant::convert(int type, void *ptr) const
 {
     return QMetaType::convert(d.type(), constData(), QMetaType(type), ptr);
 }

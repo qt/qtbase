@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -489,7 +489,7 @@ protected:
     Private d;
     void create(int type, const void *copy);
     bool equals(const QVariant &other) const;
-    bool convert(const int t, void *ptr) const; // ### Qt6: drop const
+    bool convert(int t, void *ptr) const;
 
 private:
     // force compile error, prevent QVariant(bool) to be called
