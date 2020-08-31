@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2020 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -421,6 +421,10 @@
     also occur multiple times in the list.
 
     The order is guaranteed to be the same as that used by values().
+
+    This function creates a new list, in \l {linear time}. The time and memory
+    use that entails can be avoided by iterating from \l keyBegin() to
+    \l keyEnd().
 
     \sa values(), key()
 */

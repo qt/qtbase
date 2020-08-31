@@ -355,8 +355,6 @@ public:
         return i != d->m.end();
     }
 
-    // ### Qt 6: deprecate value->key lookup.
-    //Q_DECL_DEPRECATED_X("This function is inefficient; don't use it")
     Key key(const T &value, const Key &defaultKey = Key()) const
     {
         if (!d)
@@ -390,7 +388,6 @@ public:
         return value(key);
     }
 
-    // ### Qt 6: this stuff should be deprecated as well
     QList<Key> keys() const
     {
         if (!d)
@@ -965,8 +962,6 @@ public:
         return find(key, value) != end();
     }
 
-    // ### Qt 6: deprecate value->key lookup.
-    //Q_DECL_DEPRECATED_X("This function is inefficient; don't use it")
     Key key(const T &value, const Key &defaultKey = Key()) const
     {
         if (!d)
@@ -985,7 +980,6 @@ public:
         return defaultValue;
     }
 
-    // ### Qt 6: deprecate value->key lookup.
     QList<Key> keys() const
     {
         if (!d)
