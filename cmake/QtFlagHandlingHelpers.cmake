@@ -393,8 +393,6 @@ function(qt_internal_set_up_config_optimizations_like_in_qmake)
                 if(config STREQUAL "RELEASE" OR config STREQUAL "RELWITHDEBINFO"
                    OR config STREQUAL "MINSIZEREL")
                     string(APPEND "${flag_var_name}" " /INCREMENTAL:NO")
-                elseif(config STREQUAL "DEBUG")
-                    string(APPEND "${flag_var_name}" " /INCREMENTAL:YES")
                 endif()
 
                 # Assign value to the cache entry.
