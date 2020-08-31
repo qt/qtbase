@@ -30,6 +30,7 @@
 #include "qwasmeventdispatcher.h"
 
 #include <QtCore/qcoreapplication.h>
+#include <QtGui/qpa/qwindowsysteminterface.h>
 
 #include <emscripten.h>
 
@@ -144,7 +145,8 @@ void QWasmEventDispatcher::doMaintainTimers()
     // native timer.
 
     // Schedule a zero-timer to continue processing any pending events.
-    if (!m_hasZeroTimer && hasPendingEvents()) {
+    extern uint qGlobalPostedEventsCount(); // from qapplication.cpp
+    if (!m_hasZeroTimer && (qGlobalPostedEventsCount() || QWindowSystemInterface::windowSystemEventsQueued())) {
         auto callback = [](void *eventDispatcher) {
             QWasmEventDispatcher *that = static_cast<QWasmEventDispatcher *>(eventDispatcher);
             that->m_hasZeroTimer = false;

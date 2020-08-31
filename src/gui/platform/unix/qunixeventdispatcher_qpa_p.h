@@ -65,9 +65,6 @@ public:
     ~QUnixEventDispatcherQPA();
 
     bool processEvents(QEventLoop::ProcessEventsFlags flags) override;
-    bool hasPendingEvents() override;
-
-    void flush() override;
 };
 
 QT_END_NAMESPACE

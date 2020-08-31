@@ -214,7 +214,6 @@ public:
     ~QEventDispatcherCoreFoundation();
 
     bool processEvents(QEventLoop::ProcessEventsFlags flags) override;
-    bool hasPendingEvents() override;
 
     void registerSocketNotifier(QSocketNotifier *notifier) override;
     void unregisterSocketNotifier(QSocketNotifier *notifier) override;
@@ -228,7 +227,6 @@ public:
 
     void wakeUp() override;
     void interrupt() override;
-    void flush() override;
 
 protected:
     QEventLoop *currentEventLoop() const;

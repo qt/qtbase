@@ -60,12 +60,6 @@ public:
     ~QXcbUnixEventDispatcher();
     bool processEvents(QEventLoop::ProcessEventsFlags flags) override;
 
-    // Maybe some user code depends on deprecated QUnixEventDispatcherQPA::
-    // hasPendingEvents() / flush() implementation, so keep it around until
-    // Qt 6. These methods are deprecated in QAbstractEventDispatcher.
-    bool hasPendingEvents() override; // ### Qt 6 remove
-    void flush() override;            // ### Qt 6 remove
-
 private:
     QXcbConnection *m_connection;
 };

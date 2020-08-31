@@ -519,12 +519,6 @@ bool QEventDispatcherUNIX::processEvents(QEventLoop::ProcessEventsFlags flags)
     return (nevents > 0);
 }
 
-bool QEventDispatcherUNIX::hasPendingEvents()
-{
-    extern uint qGlobalPostedEventsCount(); // from qapplication.cpp
-    return qGlobalPostedEventsCount();
-}
-
 int QEventDispatcherUNIX::remainingTime(int timerId)
 {
 #ifndef QT_NO_DEBUG
@@ -550,9 +544,6 @@ void QEventDispatcherUNIX::interrupt()
     d->interrupt.storeRelaxed(1);
     wakeUp();
 }
-
-void QEventDispatcherUNIX::flush()
-{ }
 
 QT_END_NAMESPACE
 

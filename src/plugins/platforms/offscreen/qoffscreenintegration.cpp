@@ -86,19 +86,6 @@ public:
 
         return QWindowSystemInterface::sendWindowSystemEvents(flags) || didSendEvents;
     }
-
-    bool hasPendingEvents() override
-    {
-        return BaseEventDispatcher::hasPendingEvents()
-            || QWindowSystemInterface::windowSystemEventsQueued();
-    }
-
-    void flush() override
-    {
-        if (qApp)
-            qApp->sendPostedEvents();
-        BaseEventDispatcher::flush();
-    }
 };
 
 QOffscreenIntegration::QOffscreenIntegration()

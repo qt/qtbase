@@ -71,7 +71,6 @@ public:
     ~QEventDispatcherGlib();
 
     bool processEvents(QEventLoop::ProcessEventsFlags flags) override;
-    bool hasPendingEvents() override;
 
     void registerSocketNotifier(QSocketNotifier *socketNotifier) final;
     void unregisterSocketNotifier(QSocketNotifier *socketNotifier) final;
@@ -85,7 +84,6 @@ public:
 
     void wakeUp() final;
     void interrupt() final;
-    void flush() final;
 
     static bool versionSupported();
 

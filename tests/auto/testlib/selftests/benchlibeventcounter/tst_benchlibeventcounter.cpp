@@ -39,8 +39,6 @@ public:
     TestEventDispatcher(QObject* parent =0)
         : QAbstractEventDispatcher(parent)
     {}
-    void flush() {}
-    bool hasPendingEvents() { return false; }
     void interrupt() {}
     bool processEvents(QEventLoop::ProcessEventsFlags) { return false; }
     void registerSocketNotifier(QSocketNotifier*) {}

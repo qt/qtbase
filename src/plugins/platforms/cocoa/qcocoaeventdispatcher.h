@@ -115,7 +115,6 @@ public:
     ~QCocoaEventDispatcher();
 
     bool processEvents(QEventLoop::ProcessEventsFlags flags);
-    bool hasPendingEvents();
 
     void registerSocketNotifier(QSocketNotifier *notifier);
     void unregisterSocketNotifier(QSocketNotifier *notifier);
@@ -129,7 +128,6 @@ public:
 
     void wakeUp();
     void interrupt();
-    void flush();
 
     static void clearCurrentThreadCocoaEventDispatcherInterruptFlag();
 

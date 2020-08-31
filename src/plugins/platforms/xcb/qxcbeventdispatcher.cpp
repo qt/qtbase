@@ -63,18 +63,6 @@ bool QXcbUnixEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags
     return QWindowSystemInterface::sendWindowSystemEvents(flags) || didSendEvents;
 }
 
-bool QXcbUnixEventDispatcher::hasPendingEvents()
-{
-    extern uint qGlobalPostedEventsCount();
-    return qGlobalPostedEventsCount() || QWindowSystemInterface::windowSystemEventsQueued();
-}
-
-void QXcbUnixEventDispatcher::flush()
-{
-    if (qApp)
-        qApp->sendPostedEvents();
-}
-
 #if QT_CONFIG(glib)
 struct XcbEventSource
 {

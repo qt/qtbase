@@ -1219,9 +1219,6 @@ public:
         QCoreApplication::sendPostedEvents();
         return false;
     }
-    bool hasPendingEvents() {
-        return qGlobalPostedEventsCount();
-    }
     void registerSocketNotifier(QSocketNotifier *) {}
     void unregisterSocketNotifier(QSocketNotifier *) {}
     void registerTimer(int, int, Qt::TimerType, QObject *) {}
@@ -1231,7 +1228,6 @@ public:
     int remainingTime(int) { return 0; }
     void wakeUp() {}
     void interrupt() {}
-    void flush() {}
 
 #ifdef Q_OS_WIN
     bool registerEventNotifier(QWinEventNotifier *) { return false; }

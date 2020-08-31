@@ -464,7 +464,6 @@ static QWindowGeometrySpecification windowGeometrySpecification = Q_WINDOW_GEOME
             postEvent(),
             sendPostedEvents(),
             removePostedEvents(),
-            hasPendingEvents(),
             notify().
 
         \row

@@ -267,7 +267,6 @@ void QApplicationPrivate::createEventDispatcher()
             postEvent(),
             sendPostedEvents(),
             removePostedEvents(),
-            hasPendingEvents(),
             notify().
 
         \row

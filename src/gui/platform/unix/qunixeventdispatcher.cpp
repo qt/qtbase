@@ -64,16 +64,4 @@ bool QUnixEventDispatcherQPA::processEvents(QEventLoop::ProcessEventsFlags flags
     return QWindowSystemInterface::sendWindowSystemEvents(flags) || didSendEvents;
 }
 
-bool QUnixEventDispatcherQPA::hasPendingEvents()
-{
-    extern uint qGlobalPostedEventsCount(); // from qapplication.cpp
-    return qGlobalPostedEventsCount() || QWindowSystemInterface::windowSystemEventsQueued();
-}
-
-void QUnixEventDispatcherQPA::flush()
-{
-    if(qApp)
-        qApp->sendPostedEvents();
-}
-
 QT_END_NAMESPACE

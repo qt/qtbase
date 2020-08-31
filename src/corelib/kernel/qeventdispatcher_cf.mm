@@ -259,8 +259,7 @@ QEventLoop *QEventDispatcherCoreFoundation::currentEventLoop() const
         function should wait only if there were no events ready,
         and _then_ process all newly queued/available events.
 
-    These notes apply to other function in this class as well, such as
-    hasPendingEvents().
+    These notes apply to other function in this class as well.
 */
 bool QEventDispatcherCoreFoundation::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
@@ -499,21 +498,6 @@ void QEventDispatcherCoreFoundation::handleRunLoopActivity(CFRunLoopActivity act
     }
 }
 
-bool QEventDispatcherCoreFoundation::hasPendingEvents()
-{
-    // There doesn't seem to be any API on iOS to peek into the other sources
-    // to figure out if there are pending non-Qt events. As a workaround, we
-    // assume that if the run-loop is currently blocking and waiting for a
-    // source to signal then there are no system-events pending. If this
-    // function is called from the main thread then the second clause
-    // of the condition will always be true, as the run loop is
-    // never waiting in that case. The function would be more aptly named
-    // 'maybeHasPendingEvents' in our case.
-
-    extern uint qGlobalPostedEventsCount();
-    return qGlobalPostedEventsCount() || !CFRunLoopIsWaiting(m_runLoop);
-}
-
 void QEventDispatcherCoreFoundation::wakeUp()
 {
     if (m_processEvents.processedPostedEvents && !(m_processEvents.flags & QEventLoop::EventLoopExec)) {
@@ -542,11 +526,6 @@ void QEventDispatcherCoreFoundation::interrupt()
     qCDebug(lcEventDispatcher) << "Marking current processEvent as interrupted";
     m_processEvents.wasInterrupted = true;
     CFRunLoopStop(m_runLoop);
-}
-
-void QEventDispatcherCoreFoundation::flush()
-{
-    // X11 only.
 }
 
 #pragma mark - Socket notifiers

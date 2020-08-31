@@ -432,12 +432,6 @@ bool QEventDispatcherGlib::processEvents(QEventLoop::ProcessEventsFlags flags)
     return result;
 }
 
-bool QEventDispatcherGlib::hasPendingEvents()
-{
-    Q_D(QEventDispatcherGlib);
-    return g_main_context_pending(d->mainContext);
-}
-
 void QEventDispatcherGlib::registerSocketNotifier(QSocketNotifier *notifier)
 {
     Q_ASSERT(notifier);
@@ -590,10 +584,6 @@ void QEventDispatcherGlib::wakeUp()
     Q_D(QEventDispatcherGlib);
     d->postEventSource->serialNumber.ref();
     g_main_context_wakeup(d->mainContext);
-}
-
-void QEventDispatcherGlib::flush()
-{
 }
 
 bool QEventDispatcherGlib::versionSupported()

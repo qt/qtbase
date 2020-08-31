@@ -612,12 +612,6 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
     return retVal;
 }
 
-bool QEventDispatcherWin32::hasPendingEvents()
-{
-    MSG msg;
-    return qGlobalPostedEventsCount() || PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE);
-}
-
 void QEventDispatcherWin32::registerSocketNotifier(QSocketNotifier *notifier)
 {
     Q_ASSERT(notifier);
@@ -969,9 +963,6 @@ void QEventDispatcherWin32::interrupt()
     d->interrupt.storeRelaxed(true);
     wakeUp();
 }
-
-void QEventDispatcherWin32::flush()
-{ }
 
 void QEventDispatcherWin32::startingUp()
 { }

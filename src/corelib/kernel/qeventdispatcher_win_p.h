@@ -80,7 +80,6 @@ public:
     ~QEventDispatcherWin32();
 
     bool QT_ENSURE_STACK_ALIGNED_FOR_SSE processEvents(QEventLoop::ProcessEventsFlags flags) override;
-    bool hasPendingEvents() override;
 
     void registerSocketNotifier(QSocketNotifier *notifier) override;
     void unregisterSocketNotifier(QSocketNotifier *notifier) override;
@@ -98,7 +97,6 @@ public:
 
     void wakeUp() override;
     void interrupt() override;
-    void flush() override;
 
     void startingUp() override;
     void closingDown() override;

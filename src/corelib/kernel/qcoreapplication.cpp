@@ -1251,7 +1251,7 @@ bool QCoreApplication::closingDown()
 
     \threadsafe
 
-    \sa exec(), QTimer, QEventLoop::processEvents(), flush(), sendPostedEvents()
+    \sa exec(), QTimer, QEventLoop::processEvents(), sendPostedEvents()
 */
 void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
@@ -1641,7 +1641,7 @@ bool QCoreApplication::compressEvent(QEvent *event, QObject *receiver, QPostEven
   \note This method must be called from the thread in which its QObject
   parameter, \a receiver, lives.
 
-  \sa flush(), postEvent()
+  \sa postEvent()
 */
 void QCoreApplication::sendPostedEvents(QObject *receiver, int event_type)
 {

@@ -210,8 +210,6 @@ QAbstractEventDispatcher *QAbstractEventDispatcher::instance(QThread *thread)
 
     \b{Note:} This function does not process events continuously; it
     returns after all available events are processed.
-
-    \sa hasPendingEvents()
 */
 
 /*!
@@ -221,14 +219,6 @@ QAbstractEventDispatcher *QAbstractEventDispatcher::instance(QThread *thread)
     is called. Events that are posted while the function runs will be queued
     until a later round of event processing. This only applies to posted Qt
     events. For timers and system level events, the situation is unknown.
-*/
-
-/*! \fn bool QAbstractEventDispatcher::hasPendingEvents()
-    \deprecated
-
-    Returns \c true if there is an event waiting; otherwise returns false. This
-    function is an implementation detail for
-    QCoreApplication::hasPendingEvents() and must not be called directly.
 */
 
 /*!
@@ -324,13 +314,6 @@ int QAbstractEventDispatcher::registerTimer(int interval, Qt::TimerType timerTyp
 
     Interrupts event dispatching.  The event dispatcher will
     return from processEvents() as soon as possible.
-*/
-
-/*! \fn void QAbstractEventDispatcher::flush()
-    \deprecated
-
-    Depending from the event dispatcher implementation does nothing or
-    calls QApplication::sendPostedEvents().
 */
 
 // ### DOC: Are these called when the _application_ starts/stops or just
