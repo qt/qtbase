@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2017 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Marc Mutz <marc.mutz@kdab.com>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -569,49 +569,6 @@ QUuid QUuid::fromRfc4122(const QByteArray &bytes)
 */
 
 /*!
-    Returns the string representation of this QUuid. The string is
-    formatted as five hex fields separated by '-' and enclosed in
-    curly braces, i.e., "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}" where
-    'x' is a hex digit.  From left to right, the five hex fields are
-    obtained from the four public data members in QUuid as follows:
-
-    \table
-    \header
-    \li Field #
-    \li Source
-
-    \row
-    \li 1
-    \li data1
-
-    \row
-    \li 2
-    \li data2
-
-    \row
-    \li 3
-    \li data3
-
-    \row
-    \li 4
-    \li data4[0] .. data4[1]
-
-    \row
-    \li 5
-    \li data4[2] .. data4[7]
-
-    \endtable
-*/
-QString QUuid::toString() const
-{
-    char latin1[MaxStringUuidLength];
-    const auto end = _q_uuidToHex(*this, latin1);
-    Q_ASSERT(end - latin1 == MaxStringUuidLength);
-    Q_UNUSED(end);
-    return QString::fromLatin1(latin1, MaxStringUuidLength);
-}
-
-/*!
     \since 5.11
 
     Returns the string representation of this QUuid, with the formattiong
@@ -650,51 +607,6 @@ QString QUuid::toString(QUuid::StringFormat mode) const
     char latin1[MaxStringUuidLength];
     const auto end = _q_uuidToHex(*this, latin1, mode);
     return QString::fromLatin1(latin1, end - latin1);
-}
-
-/*!
-    Returns the binary representation of this QUuid. The byte array is
-    formatted as five hex fields separated by '-' and enclosed in
-    curly braces, i.e., "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}" where
-    'x' is a hex digit.  From left to right, the five hex fields are
-    obtained from the four public data members in QUuid as follows:
-
-    \table
-    \header
-    \li Field #
-    \li Source
-
-    \row
-    \li 1
-    \li data1
-
-    \row
-    \li 2
-    \li data2
-
-    \row
-    \li 3
-    \li data3
-
-    \row
-    \li 4
-    \li data4[0] .. data4[1]
-
-    \row
-    \li 5
-    \li data4[2] .. data4[7]
-
-    \endtable
-
-    \since 4.8
-*/
-QByteArray QUuid::toByteArray() const
-{
-    QByteArray result(MaxStringUuidLength, Qt::Uninitialized);
-    const auto end = _q_uuidToHex(*this, const_cast<char*>(result.constData()));
-    Q_ASSERT(end - result.constData() == MaxStringUuidLength);
-    Q_UNUSED(end);
-    return result;
 }
 
 /*!

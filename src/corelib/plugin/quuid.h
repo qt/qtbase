@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -127,11 +127,9 @@ public:
     static QUuid fromString(QStringView string) noexcept;
     static QUuid fromString(QLatin1String string) noexcept;
     explicit QUuid(const char *);
-    QString toString() const;
-    QString toString(StringFormat mode) const; // ### Qt6: merge with previous
+    QString toString(StringFormat mode = WithBraces) const;
     explicit QUuid(const QByteArray &);
-    QByteArray toByteArray() const;
-    QByteArray toByteArray(StringFormat mode) const; // ### Qt6: merge with previous
+    QByteArray toByteArray(StringFormat mode = WithBraces) const;
     QByteArray toRfc4122() const;
     static QUuid fromRfc4122(const QByteArray &);
     bool isNull() const noexcept;
