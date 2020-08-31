@@ -282,7 +282,7 @@ public:
 
         PlatformSurface = 217,                  // Platform surface created or about to be destroyed
 
-        Pointer = 218,                          // QQuickPointerEvent; ### Qt 6: QPointerEvent
+        Pointer = 218,                          // Qt 5: QQuickPointerEvent; Qt 6: unused so far
 
         TabletTrackingChange = 219,             // tablet tracking state has changed
 
