@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2019 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -165,7 +165,8 @@ struct Q_CORE_EXPORT QMetaObject
     const QMetaObject *superClass() const;
 
     bool inherits(const QMetaObject *metaObject) const noexcept;
-    QObject *cast(QObject *obj) const;
+    QObject *cast(QObject *obj) const
+    { return const_cast<QObject *>(cast(const_cast<const QObject *>(obj))); }
     const QObject *cast(const QObject *obj) const;
 
 #if !defined(QT_NO_TRANSLATION) || defined(Q_CLANG_QDOC)

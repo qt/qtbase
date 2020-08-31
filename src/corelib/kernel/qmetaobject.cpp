@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2015 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -358,16 +358,12 @@ bool QMetaObject::inherits(const QMetaObject *metaObject) const noexcept
 }
 
 /*!
+    \fn QObject *QMetaObject::cast(QObject *obj) const
     \internal
 
     Returns \a obj if object \a obj inherits from this
     meta-object; otherwise returns \nullptr.
 */
-QObject *QMetaObject::cast(QObject *obj) const
-{
-    // ### Qt 6: inline
-    return const_cast<QObject*>(cast(const_cast<const QObject*>(obj)));
-}
 
 /*!
     \internal
