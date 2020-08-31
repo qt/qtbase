@@ -175,11 +175,13 @@
 
     \section1 Maximum size and out-of-memory conditions
 
-    The current version of QList is limited to just under 2 GB (2^31 bytes)
-    in size. The exact value is architecture-dependent, since it depends on the
-    overhead required for managing the data block, but is no more than 32
-    bytes. The number of elements that can be stored in a QList is that size
-    divided by the size of each element.
+    The maximum size of QList depends on the architecture. You should be able to
+    use more than 2 GB of memory and you can typically expect 2^63 bytes
+    limitation in size on 64-bit systems. The actual value also depends on the
+    overhead required for managing the data block, which is no more than 32
+    bytes, and extra reserved space, which is 2 bytes. The number of elements
+    that can be stored in a QList is this possible size divided by the size of a
+    stored element.
 
     In case memory allocation fails, QList will use the \l Q_CHECK_PTR macro,
     which will throw a \c std::bad_alloc exception if the application is being
@@ -193,7 +195,7 @@
 */
 
 /*!
-    \fn template <typename T> QList<T> QList<T>::mid(int pos, int length = -1) const
+    \fn template <typename T> QList<T> QList<T>::mid(qsizetype pos, qsizetype length = -1) const
 
     Returns a sub-list which contains elements from this list,
     starting at position \a pos. If \a length is -1 (the default), all
@@ -268,7 +270,7 @@
     \since 5.2
 */
 
-/*! \fn template <typename T> QList<T>::QList(int size)
+/*! \fn template <typename T> QList<T>::QList(qsizetype size)
 
     Constructs a list with an initial size of \a size elements.
 
@@ -278,7 +280,7 @@
     \sa resize()
 */
 
-/*! \fn template <typename T> QList<T>::QList(int size, const T &value)
+/*! \fn template <typename T> QList<T>::QList(qsizetype size, const T &value)
 
     Constructs a list with an initial size of \a size elements.
     Each element is initialized with \a value.
@@ -353,8 +355,7 @@
     never fails.
 */
 
-/*! \fn template <typename T> void QList<T>::swapItemsAt(int i, int j)
-    \since 5.14
+/*! \fn template <typename T> void QList<T>::swapItemsAt(qsizetype i, qsizetype j)
 
     Exchange the item at index position \a i with the item at index
     position \a j. This function assumes that both \a i and \a j are
@@ -450,7 +451,7 @@
     This function requires qHash() to be overloaded for the value type \c T.
 */
 
-/*! \fn template <typename T> int QList<T>::size() const
+/*! \fn template <typename T> qsizetype QList<T>::size() const
 
     Returns the number of items in the list.
 
@@ -464,7 +465,7 @@
     \sa size(), resize()
 */
 
-/*! \fn template <typename T> void QList<T>::resize(int size)
+/*! \fn template <typename T> void QList<T>::resize(qsizetype size)
 
     Sets the size of the list to \a size. If \a size is greater than the
     current size, elements are added to the end; the new elements are
@@ -477,7 +478,7 @@
     \sa size()
 */
 
-/*! \fn template <typename T> int QList<T>::capacity() const
+/*! \fn template <typename T> qsizetype QList<T>::capacity() const
 
     Returns the maximum number of items that can be stored in the
     list without forcing a reallocation.
@@ -493,7 +494,7 @@
     \sa reserve(), squeeze()
 */
 
-/*! \fn template <typename T> void QList<T>::reserve(int size)
+/*! \fn template <typename T> void QList<T>::reserve(qsizetype size)
 
     Attempts to allocate memory for at least \a size elements. If you
     know in advance how large the list will be, you should call this
@@ -601,7 +602,7 @@
     \sa squeeze()
 */
 
-/*! \fn template <typename T> const T &QList<T>::at(int i) const
+/*! \fn template <typename T> const T &QList<T>::at(qsizetype i) const
 
     Returns the item at index position \a i in the list.
 
@@ -611,7 +612,7 @@
     \sa value(), operator[]()
 */
 
-/*! \fn template <typename T> T &QList<T>::operator[](int i)
+/*! \fn template <typename T> T &QList<T>::operator[](qsizetype i)
 
     Returns the item at index position \a i as a modifiable reference.
 
@@ -624,7 +625,7 @@
     \sa at(), value()
 */
 
-/*! \fn template <typename T> const T &QList<T>::operator[](int i) const
+/*! \fn template <typename T> const T &QList<T>::operator[](qsizetype i) const
 
     \overload
 
@@ -722,8 +723,8 @@
     \sa emplace
 */
 
-/*! \fn template <typename T> void QList<T>::insert(int i, const T &value)
-    \fn template <typename T> void QList<T>::insert(int i, T &&value)
+/*! \fn template <typename T> void QList<T>::insert(qsizetype i, const T &value)
+    \fn template <typename T> void QList<T>::insert(qsizetype i, T &&value)
 
     Inserts \a value at index position \a i in the list. If \a i is
     0, the value is prepended to the list. If \a i is size(), the
@@ -741,7 +742,7 @@
     \sa append(), prepend(), remove()
 */
 
-/*! \fn template <typename T> void QList<T>::insert(int i, int count, const T &value)
+/*! \fn template <typename T> void QList<T>::insert(qsizetype i, qsizetype count, const T &value)
 
     \overload
 
@@ -762,7 +763,7 @@
     \a before. Returns an iterator pointing at the inserted item.
 */
 
-/*! \fn template <typename T> QList<T>::iterator QList<T>::insert(iterator before, int count, const T &value)
+/*! \fn template <typename T> QList<T>::iterator QList<T>::insert(iterator before, qsizetype count, const T &value)
 
     Inserts \a count copies of \a value in front of the item pointed to
     by the iterator \a before. Returns an iterator pointing at the
@@ -770,7 +771,7 @@
 */
 
 /*!
-    \fn template <typename T> template <typename ...Args> QList<T>::iterator QList<T>::emplace(int i, Args&&... args)
+    \fn template <typename T> template <typename ...Args> QList<T>::iterator QList<T>::emplace(qsizetype i, Args&&... args)
 
     Extends the container by inserting a new element at position \a i.
     This new element is constructed in-place using \a args as the
@@ -789,7 +790,7 @@
 */
 
 
-/*! \fn template <typename T> void QList<T>::replace(int i, const T &value)
+/*! \fn template <typename T> void QList<T>::replace(qsizetype i, const T &value)
 
     Replaces the item at index position \a i with \a value.
 
@@ -799,7 +800,7 @@
     \sa operator[](), remove()
 */
 
-/*! \fn template <typename T> void QList<T>::remove(int i)
+/*! \fn template <typename T> void QList<T>::remove(qsizetype i)
 
     \overload
 
@@ -808,7 +809,7 @@
     \sa insert(), replace(), fill()
 */
 
-/*! \fn template <typename T> void QList<T>::remove(int i, int count)
+/*! \fn template <typename T> void QList<T>::remove(qsizetype i, qsizetype count)
 
     \overload
 
@@ -818,7 +819,7 @@
     \sa insert(), replace(), fill()
 */
 
-/*! \fn template <typename T> void QList<T>::removeAt(int i)
+/*! \fn template <typename T> void QList<T>::removeAt(qsizetype i)
     \since 5.2
 
     Removes the element at index position \a i.
@@ -832,7 +833,7 @@
     \sa remove(), QList::removeAt()
 */
 
-/*! \fn template <typename T> int QList<T>::removeAll(const T &t)
+/*! \fn template <typename T> qsizetype QList<T>::removeAll(const T &t)
     \since 5.4
 
     Removes all elements that compare equal to \a t from the
@@ -854,7 +855,7 @@
     \sa removeAll(), QList::removeOne()
 */
 
-/*! \fn template <typename T> int QList<T>::length() const
+/*! \fn template <typename T> qsizetype QList<T>::length() const
     \since 5.2
 
     Same as size() and count().
@@ -864,7 +865,7 @@
     \sa size(), count(), QList::length()
 */
 
-/*! \fn template <typename T> T QList<T>::takeAt(int i)
+/*! \fn template <typename T> T QList<T>::takeAt(qsizetype i)
     \since 5.2
 
     Removes the element at index position \a i and returns it.
@@ -881,7 +882,7 @@
     \sa takeFirst(), takeLast(), QList::takeAt()
 */
 
-/*! \fn template <typename T> void QList<T>::move(int from, int to)
+/*! \fn template <typename T> void QList<T>::move(qsizetype from, qsizetype to)
     \since 5.6
 
     Moves the item at index position \a from to index position \a to.
@@ -946,7 +947,7 @@
     Returns an iterator to the new element.
 */
 
-/*! \fn template <typename T> QList<T> &QList<T>::fill(const T &value, int size = -1)
+/*! \fn template <typename T> QList<T> &QList<T>::fill(const T &value, qsizetype size = -1)
 
     Assigns \a value to all items in the list. If \a size is
     different from -1 (the default), the list is resized to size \a
@@ -958,7 +959,7 @@
     \sa resize()
 */
 
-/*! \fn template <typename T> int QList<T>::indexOf(const T &value, int from = 0) const
+/*! \fn template <typename T> qsizetype QList<T>::indexOf(const T &value, qsizetype from = 0) const
 
     Returns the index position of the first occurrence of \a value in
     the list, searching forward from index position \a from.
@@ -973,7 +974,7 @@
     \sa lastIndexOf(), contains()
 */
 
-/*! \fn template <typename T> int QList<T>::lastIndexOf(const T &value, int from = -1) const
+/*! \fn template <typename T> qsizetype QList<T>::lastIndexOf(const T &value, qsizetype from = -1) const
 
     Returns the index position of the last occurrence of the value \a
     value in the list, searching backward from index position \a
@@ -1019,7 +1020,7 @@
 */
 
 
-/*! \fn template <typename T> int QList<T>::count(const T &value) const
+/*! \fn template <typename T> qsizetype QList<T>::count(const T &value) const
 
     Returns the number of occurrences of \a value in the list.
 
@@ -1029,7 +1030,7 @@
     \sa contains(), indexOf()
 */
 
-/*! \fn template <typename T> int QList<T>::count() const
+/*! \fn template <typename T> qsizetype QList<T>::count() const
 
     \overload
 
@@ -1204,24 +1205,22 @@
     \sa constFirst(), isEmpty(), last()
 */
 
-/*! \fn template <typename T> T QList<T>::value(int i) const
+/*! \fn template <typename T> T QList<T>::value(qsizetype i) const
 
     Returns the value at index position \a i in the list.
 
-    If the index \a i is out of bounds, the function returns
-    a \l{default-constructed value}. If you are certain that
-    \a i is within bounds, you can use at() instead, which is slightly
-    faster.
+    If the index \a i is out of bounds, the function returns a
+    \l{default-constructed value}. If you are certain that \a i is within
+    bounds, you can use at() instead, which is slightly faster.
 
     \sa at(), operator[]()
 */
 
-/*! \fn template <typename T> T QList<T>::value(int i, const T &defaultValue) const
+/*! \fn template <typename T> T QList<T>::value(qsizetype i, const T &defaultValue) const
 
     \overload
 
-    If the index \a i is out of bounds, the function returns
-    \a defaultValue.
+    If the index \a i is out of bounds, the function returns \a defaultValue.
 */
 
 /*! \fn template <typename T> void QList<T>::push_back(const T &value)
@@ -1493,7 +1492,7 @@
     \obsolete
 
     A no-op in Qt 6. Provided for backwards compatibility with
-    Qt 5, where QList and QVector where two different types.
+    Qt 5, where QList and QVector were two different types.
 
     Returns this list.
 */
