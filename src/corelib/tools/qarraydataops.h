@@ -1039,7 +1039,7 @@ struct QCommonArrayOps : QArrayOpsSelector<T>::Type
     using iterator = typename Base::iterator;
     using const_iterator = typename Base::const_iterator;
 
-private:
+protected:
     using Self = QCommonArrayOps<T>;
 
     // Tag dispatched helper functions
@@ -1116,6 +1116,11 @@ private:
                 --start;
             }
 
+            // re-created the range. now there is an initialized memory region
+            // somewhere in the allocated area. if something goes wrong, we must
+            // clean it up, so "freeze" the position for now (cannot commit yet)
+            destroyer.freeze();
+
             // step 2. move assign over existing elements in the overlapping
             //         region (if there's an overlap)
             while (e != begin) {
@@ -1124,18 +1129,15 @@ private:
                 *start = std::move_if_noexcept(*e);
             }
 
-            // re-created the range. now there is an initialized memory region
-            // somewhere in the allocated area. if something goes wrong, we must
-            // clean it up, so "freeze" the position for now (cannot commit yet)
-            destroyer.freeze();
-
             // step 3. destroy elements in the old range
             const qsizetype originalSize = this_->size;
-            start = oldRangeEnd;  // mind the possible gap, have to re-assign
-            while (start != begin) {
+            start = begin; // delete elements in reverse order to prevent any gaps
+            while (start != oldRangeEnd) {
                 // Exceptions or not, dtor called once per instance
+                if constexpr (std::is_same_v<std::decay_t<GrowthTag>, GrowsForwardTag>)
+                    ++this_->ptr;
                 --this_->size;
-                (--start)->~T();
+                (start++)->~T();
             }
 
             destroyer.commit();
