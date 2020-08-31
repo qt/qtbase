@@ -100,20 +100,6 @@ public:
     \sa QTextBlock, QTextListFormat, QTextCursor
 */
 
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \fn bool QTextList::isEmpty() const
-    \obsolete
-
-    Returns \c true if the list has no items; otherwise returns \c false.
-
-    \b{Note:} Empty lists are automatically deleted by the QTextDocument that owns
-    them.
-
-    \sa count()
-*/
-#endif
-
 /*! \internal
  */
 QTextList::QTextList(QTextDocument *doc)
