@@ -13,6 +13,7 @@ contains(QT_BUILD_PARTS, tests) {
         image \
         picture \
         plaintextlayout \
+        polygon \
         qfontdatabase \
         textblock-formats \
         textblock-fragments \
