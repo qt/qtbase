@@ -489,6 +489,7 @@
                 "features.combobox",
                 "features.dialog",
                 "features.dialogbuttonbox",
+                "features.filesystemmodel",
                 "features.label",
                 "features.proxymodel",
                 "features.splitter",
