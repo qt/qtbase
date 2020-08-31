@@ -233,6 +233,7 @@ public:
 #endif
     void _q_textChanged(const QString &);
     void _q_clearButtonClicked();
+    void _q_controlEditingFinished();
 
     QMargins textMargins; // use effectiveTextMargins() in case of icon.
 

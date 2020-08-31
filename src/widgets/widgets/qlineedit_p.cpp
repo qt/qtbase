@@ -193,10 +193,8 @@ void QLineEditPrivate::init(const QString& txt)
             q, SLOT(_q_cursorPositionChanged(int,int)));
     QObject::connect(control, SIGNAL(selectionChanged()),
             q, SLOT(_q_selectionChanged()));
-    QObject::connect(control, SIGNAL(accepted()),
-            q, SIGNAL(returnPressed()));
     QObject::connect(control, SIGNAL(editingFinished()),
-            q, SIGNAL(editingFinished()));
+            q, SLOT(_q_controlEditingFinished()));
 #ifdef QT_KEYPAD_NAVIGATION
     QObject::connect(control, SIGNAL(editFocusChange(bool)),
             q, SLOT(_q_editFocusChange(bool)));
@@ -483,6 +481,14 @@ void QLineEditPrivate::_q_clearButtonClicked()
         q->clear();
         emit q->textEdited(QString());
     }
+}
+
+void QLineEditPrivate::_q_controlEditingFinished()
+{
+    Q_Q(QLineEdit);
+    edited = false;
+    emit q->returnPressed();
+    emit q->editingFinished();
 }
 
 QLineEditPrivate::SideWidgetParameters QLineEditPrivate::sideWidgetParameters() const

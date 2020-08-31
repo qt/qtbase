@@ -250,6 +250,8 @@ private slots:
     void textMargin_data();
     void textMargin();
 
+    void returnKeyClearsEditedFlag();
+
     // task-specific tests:
     void task180999_focus();
     void task174640_editingFinished();
@@ -3584,6 +3586,72 @@ void tst_QLineEdit::textMargin()
 
     QTest::mouseClick(&testWidget, Qt::LeftButton, {}, mousePressPos);
     QTRY_COMPARE(testWidget.cursorPosition(), cursorPosition);
+}
+
+void tst_QLineEdit::returnKeyClearsEditedFlag()
+{
+    /* Tests that pressing enter within the line edit correctly clears
+       the "edited" flag, preventing a redundant emission of
+       editingFinished() when its focus is dropped after no further
+       edits */
+    QLineEdit testWidget;
+    QSignalSpy leSpy(&testWidget, &QLineEdit::editingFinished);
+    QVERIFY(leSpy.isValid());
+
+    // Prepare widget for testing
+    testWidget.setFocus();
+    centerOnScreen(&testWidget);
+    testWidget.show();
+    testWidget.raise();
+    QVERIFY(QTest::qWaitForWindowExposed(&testWidget));
+    QTRY_VERIFY(testWidget.hasFocus());
+
+    // Focus drop with no edits shouldn't emit signal, edited flag == false
+    testWidget.clearFocus(); // Signal not emitted
+    QVERIFY(!testWidget.hasFocus());
+    QCOMPARE(leSpy.count(), 0);
+
+    // Focus drop after edits should emit signal, edited flag == true
+    testWidget.setFocus();
+    QTRY_VERIFY(testWidget.hasFocus());
+    QTest::keyClicks(&testWidget, "edit1 "); // edited flag set
+    testWidget.clearFocus(); // edited flag cleared, signal emitted
+    QVERIFY(!testWidget.hasFocus());
+    QCOMPARE(leSpy.count(), 1);
+
+    // Only text related keys should set edited flag
+    testWidget.setFocus();
+    QTRY_VERIFY(testWidget.hasFocus());
+    QTest::keyClick(&testWidget, Qt::Key_Left);
+    QTest::keyClick(&testWidget, Qt::Key_Alt);
+    QTest::keyClick(&testWidget, Qt::Key_PageUp);
+    testWidget.clearFocus(); // Signal not emitted
+    QVERIFY(!testWidget.hasFocus());
+    QCOMPARE(leSpy.count(), 1); // No change
+
+    // Return should always emit signal
+    testWidget.setFocus();
+    QTRY_VERIFY(testWidget.hasFocus());
+    QTest::keyClick(&testWidget, Qt::Key_Return); /* Without edits,
+                                                     signal emitted,
+                                                     edited flag cleared */
+    QCOMPARE(leSpy.count(), 2);
+    QTest::keyClicks(&testWidget, "edit2 "); // edited flag set
+    QTest::keyClick(&testWidget, Qt::Key_Return); /* With edits,
+                                                     signal emitted,
+                                                     edited flag cleared */
+    QCOMPARE(leSpy.count(), 3);
+
+    /* After editing the line edit following a Return key press with a
+       focus drop should not emit signal a second time since Return now
+       clears the edited flag */
+    QTest::keyClicks(&testWidget, "edit3 "); // edited flag set
+    QTest::keyClick(&testWidget, Qt::Key_Return); /* signal emitted,
+                                                     edited flag cleared */
+    QCOMPARE(leSpy.count(), 4);
+    testWidget.clearFocus(); // Signal not emitted since edited == false
+    QVERIFY(!testWidget.hasFocus());
+    QCOMPARE(leSpy.count(), 4); // No change
 }
 
 #ifndef QT_NO_CURSOR

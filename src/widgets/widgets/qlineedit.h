@@ -263,6 +263,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_updateNeeded(const QRect &))
     Q_PRIVATE_SLOT(d_func(), void _q_textChanged(const QString &))
     Q_PRIVATE_SLOT(d_func(), void _q_clearButtonClicked())
+    Q_PRIVATE_SLOT(d_func(), void _q_controlEditingFinished())
 };
 
 QT_END_NAMESPACE

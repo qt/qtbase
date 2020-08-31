@@ -1691,8 +1691,11 @@ void QLineEdit::mouseDoubleClickEvent(QMouseEvent* e)
 /*!
     \fn void  QLineEdit::editingFinished()
 
-    This signal is emitted when the Return or Enter key is pressed or
-    the line edit loses focus. Note that if there is a validator() or
+    This signal is emitted when the Return or Enter key is pressed, or
+    if the line edit loses focus and its contents have changed since the
+    last time this signal was emitted.
+
+    Note that if there is a validator() or
     inputMask() set on the line edit and enter/return is pressed, the
     editingFinished() signal will only be emitted if the input follows
     the inputMask() and the validator() returns QValidator::Acceptable.
