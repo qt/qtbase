@@ -94,8 +94,6 @@ public:
 
     // Lockable concept
     bool try_lock() noexcept { return tryLock(); }
-
-    bool isRecursive() noexcept; //### Qt6: remove me
     bool isRecursive() const noexcept;
 
 private:

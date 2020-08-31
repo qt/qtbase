@@ -349,19 +349,6 @@ void QMutex::unlock() noexcept
         unlockInternal();
 }
 
-
-/*!
-    \fn bool QMutex::isRecursive() const
-    \since 5.7
-
-    Returns \c true if the mutex is recursive.
-*/
-
-bool QBasicMutex::isRecursive() noexcept
-{
-    return QT_PREPEND_NAMESPACE(isRecursive)(d_ptr.loadAcquire());
-}
-
 /*!
     \since 5.7
 
