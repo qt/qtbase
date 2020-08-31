@@ -1981,6 +1981,11 @@ inline char qToLower(char ch)
     Returns an \l{STL-style iterators}{STL-style iterator} pointing to the first character in
     the string.
 
+//! [iterator-invalidation-func-desc]
+    \warning The returned iterator is invalidated on detachment or when the
+    QString is modified.
+//! [iterator-invalidation-func-desc]
+
     \sa constBegin(), end()
 */
 
@@ -1995,6 +2000,8 @@ inline char qToLower(char ch)
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first character
     in the string.
 
+    \include qstring.cpp iterator-invalidation-func-desc
+
     \sa begin(), cend()
 */
 
@@ -2003,6 +2010,8 @@ inline char qToLower(char ch)
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first character
     in the string.
 
+    \include qstring.cpp iterator-invalidation-func-desc
+
     \sa begin(), constEnd()
 */
 
@@ -2010,6 +2019,8 @@ inline char qToLower(char ch)
 
     Returns an \l{STL-style iterators}{STL-style iterator} pointing to the imaginary character
     after the last character in the string.
+
+    \include qstring.cpp iterator-invalidation-func-desc
 
     \sa begin(), constEnd()
 */
@@ -2025,6 +2036,8 @@ inline char qToLower(char ch)
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     character after the last character in the list.
 
+    \include qstring.cpp iterator-invalidation-func-desc
+
     \sa cbegin(), end()
 */
 
@@ -2032,6 +2045,8 @@ inline char qToLower(char ch)
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     character after the last character in the list.
+
+    \include qstring.cpp iterator-invalidation-func-desc
 
     \sa constBegin(), end()
 */
@@ -2041,6 +2056,8 @@ inline char qToLower(char ch)
 
     Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
     character in the string, in reverse order.
+
+    \include qstring.cpp iterator-invalidation-func-desc
 
     \sa begin(), crbegin(), rend()
 */
@@ -2056,6 +2073,8 @@ inline char qToLower(char ch)
     Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
     character in the string, in reverse order.
 
+    \include qstring.cpp iterator-invalidation-func-desc
+
     \sa begin(), rbegin(), rend()
 */
 
@@ -2064,6 +2083,8 @@ inline char qToLower(char ch)
 
     Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to one past
     the last character in the string, in reverse order.
+
+    \include qstring.cpp iterator-invalidation-func-desc
 
     \sa end(), crend(), rbegin()
 */
@@ -2078,6 +2099,8 @@ inline char qToLower(char ch)
 
     Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to one
     past the last character in the string, in reverse order.
+
+    \include qstring.cpp iterator-invalidation-func-desc
 
     \sa end(), rend(), rbegin()
 */
@@ -2421,6 +2444,10 @@ void QString::resize(qsizetype size, QChar fillChar)
 
     \note a statically allocated string will report a capacity of 0,
     even if it's not empty.
+
+    \note The free space position in the allocated memory block is undefined. In
+    other words, one should not assume that the free memory is always located
+    after the initialized elements.
 
     \sa reserve(), squeeze()
 */
