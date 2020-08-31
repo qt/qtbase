@@ -4,6 +4,8 @@
 # This file is to be used in CMake script mode with the following variables set:
 # OPTFILE: A text file containing the options that were passed to configure
 #          with one option per line.
+# MODULE_ROOT: The source directory of the module to be built.
+#              If empty, qtbase/top-level is assumed.
 
 include(${CMAKE_CURRENT_LIST_DIR}/QtFeatureCommon.cmake)
 
@@ -21,10 +23,15 @@ macro(pop_path_argument)
     file(TO_CMAKE_PATH "${path}" path)
 endmacro()
 
-get_filename_component(qtbase_source_dir ".." ABSOLUTE BASE_DIR "${CMAKE_CURRENT_LIST_DIR}")
+if("${MODULE_ROOT}" STREQUAL "")
+    # If MODULE_ROOT is not set, assume that we want to build qtbase or top-level.
+    get_filename_component(MODULE_ROOT ".." ABSOLUTE BASE_DIR "${CMAKE_CURRENT_LIST_DIR}")
+else()
+    file(TO_CMAKE_PATH "${MODULE_ROOT}" MODULE_ROOT)
+endif()
 set(configure_filename "configure.cmake")
 set(commandline_filename "qt_cmdline.cmake")
-set(source_dir "${qtbase_source_dir}")
+set(commandline_files "${MODULE_ROOT}/${commandline_filename}")
 file(STRINGS "${OPTFILE}" configure_args)
 list(FILTER configure_args EXCLUDE REGEX "^[ \t]*$")
 list(TRANSFORM configure_args STRIP)
@@ -41,10 +48,10 @@ while(configure_args)
     elseif(arg STREQUAL "-cmake-use-default-generator")
         set(auto_detect_generator FALSE)
     elseif(arg STREQUAL "-top-level")
-        get_filename_component(source_dir "../.." ABSOLUTE BASE_DIR "${CMAKE_CURRENT_LIST_DIR}")
-        file(GLOB commandline_files "${source_dir}/*/${commandline_filename}")
-        if(EXISTS "${source_dir}/${commandline_filename}")
-            list(PREPEND commandline_files "${source_dir}/${commandline_filename}")
+        get_filename_component(MODULE_ROOT "../.." ABSOLUTE BASE_DIR "${CMAKE_CURRENT_LIST_DIR}")
+        file(GLOB commandline_files "${MODULE_ROOT}/*/${commandline_filename}")
+        if(EXISTS "${MODULE_ROOT}/${commandline_filename}")
+            list(PREPEND commandline_files "${MODULE_ROOT}/${commandline_filename}")
         endif()
     elseif(arg STREQUAL "-skip")
         list(POP_FRONT configure_args qtrepo)
@@ -68,10 +75,6 @@ while(configure_args)
         set_property(GLOBAL APPEND PROPERTY UNHANDLED_ARGS "${arg}")
     endif()
 endwhile()
-
-if(NOT commandline_files)
-    set(commandline_files "${qtbase_source_dir}/${commandline_filename}")
-endif()
 
 
 ####################################################################################################
@@ -110,6 +113,7 @@ defstub(qt_feature_config)
 defstub(qt_feature_definition)
 defstub(qt_find_package)
 defstub(set_package_properties)
+defstub(qt_qml_find_python)
 
 
 ####################################################################################################
@@ -172,7 +176,9 @@ while(commandline_files)
     get_filename_component(commandline_file_directory "${commandline_file}" DIRECTORY)
     set(configure_file "${commandline_file_directory}/${configure_filename}")
     unset(commandline_subconfigs)
-    include(${configure_file})
+    if(EXISTS "${configure_file}")
+        include(${configure_file})
+    endif()
     include(${commandline_file})
 
     if(commandline_subconfigs)
@@ -642,7 +648,7 @@ if(generator)
     push(-G "${generator}")
 endif()
 
-push("${source_dir}")
+push("${MODULE_ROOT}")
 
 execute_process(COMMAND "${CMAKE_COMMAND}" ${cmake_args}
     COMMAND_ECHO STDOUT
