@@ -114,7 +114,6 @@ QT_BEGIN_NAMESPACE
 
 QException::~QException() noexcept
 {
-    // must stay empty until ### Qt 6
 }
 
 void QException::raise() const
@@ -130,7 +129,6 @@ QException *QException::clone() const
 
 QUnhandledException::~QUnhandledException() noexcept
 {
-    // must stay empty until ### Qt 6
 }
 
 void QUnhandledException::raise() const

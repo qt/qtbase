@@ -6320,7 +6320,6 @@ QString QString::toUpper_helper(QString &str)
     return QUnicodeTables::convertCase(str, QUnicodeTables::UpperCase);
 }
 
-// ### Qt 6: Consider whether this function shouldn't be removed See task 202871.
 /*!
     \since 5.5
 
@@ -9763,7 +9762,7 @@ template <typename Haystack, typename Needle>
 bool qt_starts_with_impl(Haystack haystack, Needle needle, Qt::CaseSensitivity cs) noexcept
 {
     if (haystack.isNull())
-        return needle.isNull(); // historical behavior, consider changing in ### Qt 6.
+        return needle.isNull();
     const auto haystackLen = haystack.size();
     const auto needleLen = needle.size();
     if (haystackLen == 0)
@@ -9836,7 +9835,7 @@ template <typename Haystack, typename Needle>
 bool qt_ends_with_impl(Haystack haystack, Needle needle, Qt::CaseSensitivity cs) noexcept
 {
     if (haystack.isNull())
-        return needle.isNull(); // historical behavior, consider changing in ### Qt 6.
+        return needle.isNull();
     const auto haystackLen = haystack.size();
     const auto needleLen = needle.size();
     if (haystackLen == 0)
