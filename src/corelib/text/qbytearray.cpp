@@ -930,6 +930,11 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
     Returns an \l{STL-style iterators}{STL-style iterator} pointing to the first
     byte in the byte-array.
 
+//! [iterator-invalidation-func-desc]
+    \warning The returned iterator is invalidated on detachment or when the
+    QByteArray is modified.
+//! [iterator-invalidation-func-desc]
+
     \sa constBegin(), end()
 */
 
@@ -944,6 +949,8 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the
     first byte in the byte-array.
 
+    \include qbytearray.cpp iterator-invalidation-func-desc
+
     \sa begin(), cend()
 */
 
@@ -952,6 +959,8 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the
     first byte in the byte-array.
 
+    \include qbytearray.cpp iterator-invalidation-func-desc
+
     \sa begin(), constEnd()
 */
 
@@ -959,6 +968,8 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
 
     Returns an \l{STL-style iterators}{STL-style iterator} pointing just after
     the last byte in the byte-array.
+
+    \include qbytearray.cpp iterator-invalidation-func-desc
 
     \sa begin(), constEnd()
 */
@@ -974,6 +985,8 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing just
     after the last byte in the byte-array.
 
+    \include qbytearray.cpp iterator-invalidation-func-desc
+
     \sa cbegin(), end()
 */
 
@@ -981,6 +994,8 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing just
     after the last byte in the byte-array.
+
+    \include qbytearray.cpp iterator-invalidation-func-desc
 
     \sa constBegin(), end()
 */
@@ -990,6 +1005,8 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
 
     Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
     byte in the byte-array, in reverse order.
+
+    \include qbytearray.cpp iterator-invalidation-func-desc
 
     \sa begin(), crbegin(), rend()
 */
@@ -1005,6 +1022,8 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
     Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
     byte in the byte-array, in reverse order.
 
+    \include qbytearray.cpp iterator-invalidation-func-desc
+
     \sa begin(), rbegin(), rend()
 */
 
@@ -1013,6 +1032,8 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
 
     Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to one past
     the last byte in the byte-array, in reverse order.
+
+    \include qbytearray.cpp iterator-invalidation-func-desc
 
     \sa end(), crend(), rbegin()
 */
@@ -1027,6 +1048,8 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
 
     Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to one
     past the last byte in the byte-array, in reverse order.
+
+    \include qbytearray.cpp iterator-invalidation-func-desc
 
     \sa end(), rend(), rbegin()
 */
@@ -1215,6 +1238,10 @@ QByteArray &QByteArray::operator=(const char *str)
     \note a statically allocated byte array will report a capacity of 0,
     even if it's not empty.
 
+    \note The free space position in the allocated memory block is undefined. In
+    other words, one should not assume that the free memory is always located
+    after the initialized elements.
+
     \sa reserve(), squeeze()
 */
 
@@ -1252,8 +1279,12 @@ QByteArray &QByteArray::operator=(const char *str)
 
     Returns a pointer to the data stored in the byte array. The
     pointer can be used to access the bytes that compose the array.
-    The data is '\\0'-terminated. The pointer remains valid as long
-    as the array isn't reallocated or destroyed.
+    The data is '\\0'-terminated.
+
+//! [pointer-invalidation-desc]
+    The pointer remains valid as long as no detach happens and the QByteArray
+    is not modified.
+//! [pointer-invalidation-desc]
 
     This operator is mostly useful to pass a byte array to a function
     that accepts a \c{const char *}.
@@ -1288,9 +1319,10 @@ QByteArray &QByteArray::operator=(const char *str)
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 8
 
-    The pointer remains valid as long as the byte array isn't
-    reallocated or destroyed. For read-only access, constData() is
-    faster because it never causes a \l{deep copy} to occur.
+    \include qbytearray.cpp pointer-invalidation-desc
+
+    For read-only access, constData() is faster because it never
+    causes a \l{deep copy} to occur.
 
     This function is mostly useful to pass a byte array to a function
     that accepts a \c{const char *}.
@@ -1322,8 +1354,8 @@ QByteArray &QByteArray::operator=(const char *str)
     Returns a pointer to the data stored in the byte array. The pointer can be
     used to access the bytes that compose the array. The data is
     '\\0'-terminated unless the QByteArray object was created from raw data.
-    The pointer remains valid as long as the byte array isn't reallocated or
-    destroyed.
+
+    \include qbytearray.cpp pointer-invalidation-desc
 
     This function is mostly useful to pass a byte array to a function
     that accepts a \c{const char *}.
