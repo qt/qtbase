@@ -47,6 +47,8 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QObject>
+#include <QTextObjectInterface>
 
 //! [0]
 class SvgTextObject : public QObject, public QTextObjectInterface
@@ -54,3 +56,4 @@ class SvgTextObject : public QObject, public QTextObjectInterface
     Q_OBJECT
     Q_INTERFACES(QTextObjectInterface)
 //! [0]
+};
