@@ -16,6 +16,7 @@ contains(QT_BUILD_PARTS, tests) {
         polygon \
         qfileopenevent \
         qfontdatabase \
+        qimagewriter \
         textblock-formats \
         textblock-fragments \
         textdocument-blocks \

@@ -47,25 +47,20 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 #include <QtGui>
 
-int main(int argc, char **argv)
+void wrapper() {
+//! [0]
+QString imagePath(QStringLiteral("path/image.jpeg"));
+QImage image(64, 64, QImage::Format_RGB32);
+image.fill(Qt::red);
 {
-    QApplication app(argc, argv);
-
-//! [0]
-    QString imagePath(QStringLiteral("path/image.jpeg"));
-    QImage image(64, 64, QImage::Format_RGB32);
-    image.fill(Qt::red);
-    {
-        QImageWriter writer(imagePath);
-        writer.write(image);
-    }
-
-    QFile::rename(imagePath,
-                  QStringLiteral("path/other_image.jpeg"));
-//! [0]
-
-    return 0;
+    QImageWriter writer(imagePath);
+    writer.write(image);
 }
+
+QFile::rename(imagePath,
+              QStringLiteral("path/other_image.jpeg"));
+//! [0]
+
+} // wrapper
