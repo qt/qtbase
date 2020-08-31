@@ -1,3 +1,6 @@
-HEADERS     = window.h
-SOURCES     = main.cpp \
-              window.cpp
+TEMPLATE = lib
+TARGET = droprectangle_snippets
+QT += core gui widgets
+
+SOURCES = \
+    window.cpp
