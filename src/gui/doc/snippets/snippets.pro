@@ -19,6 +19,7 @@ contains(QT_BUILD_PARTS, tests) {
         qimagewriter \
         qstatustipevent \
         qtextobject \
+        scribe-overview \
         textblock-formats \
         textblock-fragments \
         textdocument-blocks \

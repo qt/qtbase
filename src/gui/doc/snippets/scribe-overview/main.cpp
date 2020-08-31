@@ -47,37 +47,37 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-#include <QtGui>
+#include <QApplication>
+#include <QTextEdit>
 
 void mergeFormat(QTextEdit *edit)
 {
 //! [0]
-    QTextDocument *document = edit->document();
-    QTextCursor cursor(document);
+QTextDocument *document = edit->document();
+QTextCursor cursor(document);
 
-    cursor.movePosition(QTextCursor::Start);
-    cursor.movePosition(QTextCursor::EndOfLine, QTextCursor::KeepAnchor);
+cursor.movePosition(QTextCursor::Start);
+cursor.movePosition(QTextCursor::EndOfLine, QTextCursor::KeepAnchor);
 
-    QTextCharFormat format;
-    format.setFontWeight(QFont::Bold);
+QTextCharFormat format;
+format.setFontWeight(QFont::Bold);
 
-    cursor.mergeCharFormat(format);
+cursor.mergeCharFormat(format);
 //! [0]
 }
 
 int main(int argc, char *argv[])
 {
-    QWidget *parent = nullptr;
-    QString aStringContainingHTMLtext("<h1>Scribe Overview</h1>");
+QWidget *parent = nullptr;
+QString aStringContainingHTMLtext("<h1>Scribe Overview</h1>");
 
-    QApplication app(argc, argv);
+QApplication app(argc, argv);
 
 //! [1]
-    QTextEdit *editor = new QTextEdit(parent);
-    editor->setHtml(aStringContainingHTMLtext);
-    editor->show();
+QTextEdit *editor = new QTextEdit(parent);
+editor->setHtml(aStringContainingHTMLtext);
+editor->show();
 //! [1]
 
-    return app.exec();
+return app.exec();
 }
