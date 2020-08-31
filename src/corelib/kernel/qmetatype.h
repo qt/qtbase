@@ -437,7 +437,7 @@ public:
     static QMetaType fromType();
     static QMetaType fromName(QByteArrayView name);
 
-    friend bool operator==(QMetaType a, QMetaType b) { return a.id() == b.id(); }
+    friend bool operator==(QMetaType a, QMetaType b) { return a.d_ptr == b.d_ptr || a.id() == b.id(); }
     friend bool operator!=(QMetaType a, QMetaType b) { return !(a == b); }
 
 public:
