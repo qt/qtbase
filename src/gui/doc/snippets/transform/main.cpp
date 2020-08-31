@@ -47,9 +47,11 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QApplication>
+#include <QPainter>
+#include <QVBoxLayout>
+#include <QWidget>
 
-#include <QtGui>
-#include <cmath>
 
 class SimpleTransformation : public QWidget
 {

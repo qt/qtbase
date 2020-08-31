@@ -40,5 +40,6 @@ contains(QT_BUILD_PARTS, tests) {
         textdocument-resources \
         textdocument-selections \
         textdocument-tables \
-        textdocument-texttable
+        textdocument-texttable \
+        transform
 }
