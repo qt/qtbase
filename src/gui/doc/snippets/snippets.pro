@@ -11,6 +11,7 @@ contains(QT_BUILD_PARTS, tests) {
         dropevents \
         droprectangle \
         image \
+        picture \
         qfontdatabase \
         textblock-formats \
         textblock-fragments \
