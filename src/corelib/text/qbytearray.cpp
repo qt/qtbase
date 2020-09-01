@@ -1962,7 +1962,7 @@ QByteArray &QByteArray::insert(qsizetype i, const char *str, qsizetype len)
     // ### optimize me
     if (d->needsDetach() || newSize > capacity() || shouldGrow) {
         auto flags = d->detachFlags() | Data::GrowsForward;
-        if (i <= newSize / 4)  // using QList's policy
+        if (i <= oldSize / 4)  // using QList's policy
             flags |= Data::GrowsBackwards;
         reallocGrowData(newSize + 1, flags);
     }
@@ -2010,7 +2010,7 @@ QByteArray &QByteArray::insert(qsizetype i, qsizetype count, char ch)
     // ### optimize me
     if (d->needsDetach() || newSize > capacity() || shouldGrow) {
         auto flags = d->detachFlags() | Data::GrowsForward;
-        if (i <= newSize / 4)  // using QList's policy
+        if (i <= oldSize / 4)  // using QList's policy
             flags |= Data::GrowsBackwards;
         reallocGrowData(newSize + 1, flags);
     }

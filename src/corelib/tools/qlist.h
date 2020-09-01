@@ -616,7 +616,7 @@ QList<T>::insert(qsizetype i, qsizetype n, parameter_type t)
     const bool shouldGrow = d->shouldGrowBeforeInsert(d.begin() + i, n);
     if (d->needsDetach() || newSize > d->allocatedCapacity() || shouldGrow) {
         typename Data::ArrayOptions flags = d->detachFlags() | Data::GrowsForward;
-        if (size_t(i) <= newSize / 4)
+        if (i <= d.size / 4)
             flags |= Data::GrowsBackwards;
 
         DataPointer detached(DataPointer::allocateGrow(d, newSize, flags));
@@ -648,7 +648,7 @@ QList<T>::emplace(qsizetype i, Args&&... args)
     const size_t newSize = size() + 1;
     if (d->needsDetach() || newSize > d->allocatedCapacity() || shouldGrow) {
         typename Data::ArrayOptions flags = d->detachFlags() | Data::GrowsForward;
-        if (size_t(i) <= newSize / 4)
+        if (i <= d.size / 4)
             flags |= Data::GrowsBackwards;
 
         DataPointer detached(DataPointer::allocateGrow(d, newSize, flags));
