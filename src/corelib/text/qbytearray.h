@@ -489,7 +489,7 @@ inline qsizetype QByteArray::capacity() const
 
 inline void QByteArray::reserve(qsizetype asize)
 {
-    if (d->needsDetach() || asize > capacity()) {
+    if (d->needsDetach() || asize > capacity() - d->freeSpaceAtBegin()) {
         reallocData(qMax(size_t(size()), size_t(asize)) + 1u, d->detachFlags() | Data::CapacityReserved);
     } else {
         d->setFlag(Data::CapacityReserved);
