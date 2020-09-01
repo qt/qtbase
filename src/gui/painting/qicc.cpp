@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -48,6 +48,8 @@
 
 #include "qcolorspace_p.h"
 #include "qcolortrc_p.h"
+
+#include <array>
 
 QT_BEGIN_NAMESPACE
 Q_LOGGING_CATEGORY(lcIcc, "qt.gui.icc")
@@ -448,14 +450,14 @@ bool parseXyzData(const QByteArray &data, const TagEntry &tagEntry, QColorVector
         qCWarning(lcIcc) << "Undersized XYZ tag";
         return false;
     }
-    const XYZTagData *xyz = reinterpret_cast<const XYZTagData *>(data.constData() + tagEntry.offset);
-    if (xyz->type != quint32(Tag::XYZ_)) {
+    const XYZTagData xyz = qFromUnaligned<XYZTagData>(data.constData() + tagEntry.offset);
+    if (xyz.type != quint32(Tag::XYZ_)) {
         qCWarning(lcIcc) << "Bad XYZ content type";
         return false;
     }
-    const float x = fromFixedS1516(xyz->fixedX);
-    const float y = fromFixedS1516(xyz->fixedY);
-    const float z = fromFixedS1516(xyz->fixedZ);
+    const float x = fromFixedS1516(xyz.fixedX);
+    const float y = fromFixedS1516(xyz.fixedY);
+    const float z = fromFixedS1516(xyz.fixedZ);
 
     colorVector = QColorVector(x, y, z);
     return true;
@@ -463,26 +465,29 @@ bool parseXyzData(const QByteArray &data, const TagEntry &tagEntry, QColorVector
 
 bool parseTRC(const QByteArray &data, const TagEntry &tagEntry, QColorTrc &gamma)
 {
-    const GenericTagData *trcData = reinterpret_cast<const GenericTagData *>(data.constData() + tagEntry.offset);
-    if (trcData->type == quint32(Tag::curv)) {
-        const CurvTagData *curv = static_cast<const CurvTagData *>(trcData);
-        if (curv->valueCount > (1 << 16))
+    const GenericTagData trcData = qFromUnaligned<GenericTagData>(data.constData()
+                                                                  + tagEntry.offset);
+    if (trcData.type == quint32(Tag::curv)) {
+        const CurvTagData curv = qFromUnaligned<CurvTagData>(data.constData() + tagEntry.offset);
+        if (curv.valueCount > (1 << 16))
             return false;
-        if (tagEntry.size - 12 < 2 * curv->valueCount)
+        if (tagEntry.size - 12 < 2 * curv.valueCount)
             return false;
-        if (curv->valueCount == 0) {
+        if (curv.valueCount == 0) {
             gamma.m_type = QColorTrc::Type::Function;
             gamma.m_fun = QColorTransferFunction(); // Linear
-        } else if (curv->valueCount == 1) {
-            float g = curv->value[0] * (1.0f / 256.0f);
+        } else if (curv.valueCount == 1) {
+            float g = curv.value[0] * (1.0f / 256.0f);
             gamma.m_type = QColorTrc::Type::Function;
             gamma.m_fun = QColorTransferFunction::fromGamma(g);
         } else {
             QVector<quint16> tabl;
-            tabl.resize(curv->valueCount);
-            for (uint i = 0; i < curv->valueCount; ++i)
-                tabl[i] = curv->value[i];
-            QColorTransferTable table = QColorTransferTable(curv->valueCount, std::move(tabl));
+            tabl.resize(curv.valueCount);
+            static_assert(sizeof(GenericTagData) == 2 * sizeof(quint32_be),
+                          "GenericTagData has padding. The following code is a subject to UB.");
+            const auto offset = tagEntry.offset + sizeof(GenericTagData) + sizeof(quint32_be);
+            qFromBigEndian<quint16>(data.constData() + offset, curv.valueCount, tabl.data());
+            QColorTransferTable table = QColorTransferTable(curv.valueCount, std::move(tabl));
             QColorTransferFunction curve;
             if (!table.asColorTransferFunction(&curve)) {
                 gamma.m_type = QColorTrc::Type::Table;
@@ -495,13 +500,18 @@ bool parseTRC(const QByteArray &data, const TagEntry &tagEntry, QColorTrc &gamma
         }
         return true;
     }
-    if (trcData->type == quint32(Tag::para)) {
+    if (trcData.type == quint32(Tag::para)) {
         if (tagEntry.size < sizeof(ParaTagData))
             return false;
-        const ParaTagData *para = static_cast<const ParaTagData *>(trcData);
-        switch (para->curveType) {
+        static_assert(sizeof(GenericTagData) == 2 * sizeof(quint32_be),
+                      "GenericTagData has padding. The following code is a subject to UB.");
+        const ParaTagData para = qFromUnaligned<ParaTagData>(data.constData() + tagEntry.offset);
+        // re-read first parameter for consistency:
+        const auto parametersOffset = tagEntry.offset + sizeof(GenericTagData)
+                                      + 2 * sizeof(quint16_be);
+        switch (para.curveType) {
         case 0: {
-            float g = fromFixedS1516(para->parameter[0]);
+            float g = fromFixedS1516(para.parameter[0]);
             gamma.m_type = QColorTrc::Type::Function;
             gamma.m_fun = QColorTransferFunction::fromGamma(g);
             break;
@@ -509,9 +519,11 @@ bool parseTRC(const QByteArray &data, const TagEntry &tagEntry, QColorTrc &gamma
         case 1: {
             if (tagEntry.size < sizeof(ParaTagData) + 2 * 4)
                 return false;
-            float g = fromFixedS1516(para->parameter[0]);
-            float a = fromFixedS1516(para->parameter[1]);
-            float b = fromFixedS1516(para->parameter[2]);
+            std::array<quint32_be, 3> parameters =
+                qFromUnaligned<decltype(parameters)>(data.constData() + parametersOffset);
+            float g = fromFixedS1516(parameters[0]);
+            float a = fromFixedS1516(parameters[1]);
+            float b = fromFixedS1516(parameters[2]);
             float d = -b / a;
             gamma.m_type = QColorTrc::Type::Function;
             gamma.m_fun = QColorTransferFunction(a, b, 0.0f, d, 0.0f, 0.0f, g);
@@ -520,10 +532,12 @@ bool parseTRC(const QByteArray &data, const TagEntry &tagEntry, QColorTrc &gamma
         case 2: {
             if (tagEntry.size < sizeof(ParaTagData) + 3 * 4)
                 return false;
-            float g = fromFixedS1516(para->parameter[0]);
-            float a = fromFixedS1516(para->parameter[1]);
-            float b = fromFixedS1516(para->parameter[2]);
-            float c = fromFixedS1516(para->parameter[3]);
+            std::array<quint32_be, 4> parameters =
+                qFromUnaligned<decltype(parameters)>(data.constData() + parametersOffset);
+            float g = fromFixedS1516(parameters[0]);
+            float a = fromFixedS1516(parameters[1]);
+            float b = fromFixedS1516(parameters[2]);
+            float c = fromFixedS1516(parameters[3]);
             float d = -b / a;
             gamma.m_type = QColorTrc::Type::Function;
             gamma.m_fun = QColorTransferFunction(a, b, 0.0f, d, c, c, g);
@@ -532,11 +546,13 @@ bool parseTRC(const QByteArray &data, const TagEntry &tagEntry, QColorTrc &gamma
         case 3: {
             if (tagEntry.size < sizeof(ParaTagData) + 4 * 4)
                 return false;
-            float g = fromFixedS1516(para->parameter[0]);
-            float a = fromFixedS1516(para->parameter[1]);
-            float b = fromFixedS1516(para->parameter[2]);
-            float c = fromFixedS1516(para->parameter[3]);
-            float d = fromFixedS1516(para->parameter[4]);
+            std::array<quint32_be, 5> parameters =
+                qFromUnaligned<decltype(parameters)>(data.constData() + parametersOffset);
+            float g = fromFixedS1516(parameters[0]);
+            float a = fromFixedS1516(parameters[1]);
+            float b = fromFixedS1516(parameters[2]);
+            float c = fromFixedS1516(parameters[3]);
+            float d = fromFixedS1516(parameters[4]);
             gamma.m_type = QColorTrc::Type::Function;
             gamma.m_fun = QColorTransferFunction(a, b, c, d, 0.0f, 0.0f, g);
             break;
@@ -544,19 +560,21 @@ bool parseTRC(const QByteArray &data, const TagEntry &tagEntry, QColorTrc &gamma
         case 4: {
             if (tagEntry.size < sizeof(ParaTagData) + 6 * 4)
                 return false;
-            float g = fromFixedS1516(para->parameter[0]);
-            float a = fromFixedS1516(para->parameter[1]);
-            float b = fromFixedS1516(para->parameter[2]);
-            float c = fromFixedS1516(para->parameter[3]);
-            float d = fromFixedS1516(para->parameter[4]);
-            float e = fromFixedS1516(para->parameter[5]);
-            float f = fromFixedS1516(para->parameter[6]);
+            std::array<quint32_be, 7> parameters =
+                qFromUnaligned<decltype(parameters)>(data.constData() + parametersOffset);
+            float g = fromFixedS1516(parameters[0]);
+            float a = fromFixedS1516(parameters[1]);
+            float b = fromFixedS1516(parameters[2]);
+            float c = fromFixedS1516(parameters[3]);
+            float d = fromFixedS1516(parameters[4]);
+            float e = fromFixedS1516(parameters[5]);
+            float f = fromFixedS1516(parameters[6]);
             gamma.m_type = QColorTrc::Type::Function;
             gamma.m_fun = QColorTransferFunction(a, b, c, d, e, f, g);
             break;
         }
         default:
-            qCWarning(lcIcc)  << "Unknown para type" << uint(para->curveType);
+            qCWarning(lcIcc)  << "Unknown para type" << uint(para.curveType);
             return false;
         }
         return true;
@@ -567,73 +585,70 @@ bool parseTRC(const QByteArray &data, const TagEntry &tagEntry, QColorTrc &gamma
 
 bool parseDesc(const QByteArray &data, const TagEntry &tagEntry, QString &descName)
 {
-    const GenericTagData *tag = (const GenericTagData *)(data.constData() + tagEntry.offset);
+    const GenericTagData tag = qFromUnaligned<GenericTagData>(data.constData() + tagEntry.offset);
 
     // Either 'desc' (ICCv2) or 'mluc' (ICCv4)
-    if (tag->type == quint32(Tag::desc)) {
+    if (tag.type == quint32(Tag::desc)) {
         if (tagEntry.size < sizeof(DescTagData))
             return false;
-        const DescTagData *desc = (const DescTagData *)(data.constData() + tagEntry.offset);
-        const quint32 len = desc->asciiDescriptionLength;
+        const DescTagData desc = qFromUnaligned<DescTagData>(data.constData() + tagEntry.offset);
+        const quint32 len = desc.asciiDescriptionLength;
         if (len < 1)
             return false;
         if (tagEntry.size - 12 < len)
             return false;
-        if (desc->asciiDescription[len - 1] != '\0')
+        static_assert(sizeof(GenericTagData) == 2 * sizeof(quint32_be),
+                      "GenericTagData has padding. The following code is a subject to UB.");
+        const char *asciiDescription = data.constData() + tagEntry.offset + sizeof(GenericTagData)
+                                       + sizeof(quint32_be);
+        if (asciiDescription[len - 1] != '\0')
             return false;
-        descName = QString::fromLatin1(desc->asciiDescription, len - 1);
+        descName = QString::fromLatin1(asciiDescription, len - 1);
         return true;
     }
-    if (tag->type != quint32(Tag::mluc))
+    if (tag.type != quint32(Tag::mluc))
         return false;
 
     if (tagEntry.size < sizeof(MlucTagData))
         return false;
-    const MlucTagData *mluc = (const MlucTagData *)(data.constData() + tagEntry.offset);
-    if (mluc->recordCount < 1)
+    const MlucTagData mluc = qFromUnaligned<MlucTagData>(data.constData() + tagEntry.offset);
+    if (mluc.recordCount < 1)
         return false;
-    if (mluc->recordSize < 12)
+    if (mluc.recordSize < 12)
         return false;
     // We just use the primary record regardless of language or country.
-    const quint32 stringOffset = mluc->records[0].offset;
-    const quint32 stringSize = mluc->records[0].size;
+    const quint32 stringOffset = mluc.records[0].offset;
+    const quint32 stringSize = mluc.records[0].size;
     if (tagEntry.size < stringOffset || tagEntry.size - stringOffset < stringSize )
         return false;
     if ((stringSize | stringOffset) & 1)
         return false;
     quint32 stringLen = stringSize / 2;
-    const ushort *unicodeString = (const ushort *)(data.constData() + tagEntry.offset + stringOffset);
+    QVarLengthArray<ushort> utf16hostendian(stringLen);
+    qFromBigEndian<ushort>(data.constData() + tagEntry.offset + stringOffset, stringLen,
+                             utf16hostendian.data());
     // The given length shouldn't include 0-termination, but might.
-    if (stringLen > 1 && unicodeString[stringLen - 1] == 0)
+    if (stringLen > 1 && utf16hostendian[stringLen - 1] == 0)
         --stringLen;
-    QVarLengthArray<quint16> utf16hostendian(stringLen);
-    qFromBigEndian<ushort>(unicodeString, stringLen, utf16hostendian.data());
     descName = QString::fromUtf16(utf16hostendian.data(), stringLen);
     return true;
 }
 
 bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
 {
-    Q_ASSERT((reinterpret_cast<qintptr>(data.constData()) & 0x3) == 0);
-    if (reinterpret_cast<qintptr>(data.constData()) & 0x3) {
-        qCWarning(lcIcc) << "fromIccProfile: Unaligned profile data";
-        return false;
-    }
     if (data.size() < qsizetype(sizeof(ICCProfileHeader))) {
         qCWarning(lcIcc) << "fromIccProfile: failed size sanity 1";
         return false;
     }
-    const ICCProfileHeader *header = (const ICCProfileHeader *)data.constData();
-    if (!isValidIccProfile(*header))
+    const ICCProfileHeader header = qFromUnaligned<ICCProfileHeader>(data.constData());
+    if (!isValidIccProfile(header))
         return false; // if failed we already printing a warning
-    if (qsizetype(header->profileSize) > data.size()) {
+    if (qsizetype(header.profileSize) > data.size()) {
         qCWarning(lcIcc) << "fromIccProfile: failed size sanity 2";
         return false;
     }
 
-    // Read tag index
-    const TagTableEntry *tagTable = (const TagTableEntry *)(data.constData() + sizeof(ICCProfileHeader));
-    const qsizetype offsetToData = sizeof(ICCProfileHeader) + header->tagCount * sizeof(TagTableEntry);
+    const qsizetype offsetToData = sizeof(ICCProfileHeader) + header.tagCount * sizeof(TagTableEntry);
     Q_ASSERT(offsetToData > 0);
     if (offsetToData > data.size()) {
         qCWarning(lcIcc) << "fromIccProfile: failed index size sanity";
@@ -641,37 +656,42 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
     }
 
     QHash<Tag, TagEntry> tagIndex;
-    for (uint i = 0; i < header->tagCount; ++i) {
+    for (uint i = 0; i < header.tagCount; ++i) {
+        // Read tag index
+        const qsizetype tableOffset = sizeof(ICCProfileHeader) + i * sizeof(TagTableEntry);
+        const TagTableEntry tagTable = qFromUnaligned<TagTableEntry>(data.constData()
+                                                                     + tableOffset);
+
         // Sanity check tag sizes and offsets:
-        if (qsizetype(tagTable[i].offset) < offsetToData) {
+        if (qsizetype(tagTable.offset) < offsetToData) {
             qCWarning(lcIcc) << "fromIccProfile: failed tag offset sanity 1";
             return false;
         }
         // Checked separately from (+ size) to handle overflow.
-        if (tagTable[i].offset > header->profileSize) {
+        if (tagTable.offset > header.profileSize) {
             qCWarning(lcIcc) << "fromIccProfile: failed tag offset sanity 2";
             return false;
         }
-        if (tagTable[i].size < 12) {
+        if (tagTable.size < 12) {
             qCWarning(lcIcc) << "fromIccProfile: failed minimal tag size sanity";
             return false;
         }
-        if (tagTable[i].size > header->profileSize - tagTable[i].offset) {
+        if (tagTable.size > header.profileSize - tagTable.offset) {
             qCWarning(lcIcc) << "fromIccProfile: failed tag offset + size sanity";
             return false;
         }
-        if (tagTable[i].offset & 0x03) {
+        if (tagTable.offset & 0x03) {
             qCWarning(lcIcc) << "fromIccProfile: invalid tag offset alignment";
             return false;
         }
-//        printf("'%4s' %d %d\n", (const char *)&tagTable[i].signature,
-//                                quint32(tagTable[i].offset),
-//                                quint32(tagTable[i].size));
-        tagIndex.insert(Tag(quint32(tagTable[i].signature)), { tagTable[i].offset, tagTable[i].size });
+//        printf("'%4s' %d %d\n", (const char *)&tagTable.signature,
+//                                quint32(tagTable.offset),
+//                                quint32(tagTable.size));
+        tagIndex.insert(Tag(quint32(tagTable.signature)), { tagTable.offset, tagTable.size });
     }
 
     // Check the profile is three-component matrix based (what we currently support):
-    if (header->inputColorSpace == uint(ColorSpaceType::Rgb)) {
+    if (header.inputColorSpace == uint(ColorSpaceType::Rgb)) {
         if (!tagIndex.contains(Tag::rXYZ) || !tagIndex.contains(Tag::gXYZ) || !tagIndex.contains(Tag::bXYZ) ||
             !tagIndex.contains(Tag::rTRC) || !tagIndex.contains(Tag::gTRC) || !tagIndex.contains(Tag::bTRC) ||
             !tagIndex.contains(Tag::wtpt)) {
@@ -679,7 +699,7 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
             return false;
         }
     } else {
-        Q_ASSERT(header->inputColorSpace == uint(ColorSpaceType::Gray));
+        Q_ASSERT(header.inputColorSpace == uint(ColorSpaceType::Gray));
         if (!tagIndex.contains(Tag::kTRC) || !tagIndex.contains(Tag::wtpt)) {
             qCWarning(lcIcc) << "fromIccProfile: Invalid ICC profile - not valid gray scale based";
             return false;
@@ -688,7 +708,7 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
 
     QColorSpacePrivate *colorspaceDPtr = QColorSpacePrivate::getWritable(*colorSpace);
 
-    if (header->inputColorSpace == uint(ColorSpaceType::Rgb)) {
+    if (header.inputColorSpace == uint(ColorSpaceType::Rgb)) {
         // Parse XYZ tags
         if (!parseXyzData(data, tagIndex[Tag::rXYZ], colorspaceDPtr->toXyz.r))
             return false;
@@ -748,7 +768,7 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
     TagEntry rTrc;
     TagEntry gTrc;
     TagEntry bTrc;
-    if (header->inputColorSpace == uint(ColorSpaceType::Gray)) {
+    if (header.inputColorSpace == uint(ColorSpaceType::Gray)) {
         rTrc = tagIndex[Tag::kTRC];
         gTrc = tagIndex[Tag::kTRC];
         bTrc = tagIndex[Tag::kTRC];
