@@ -104,7 +104,8 @@ bool canAnimate(const QStyleOption *option) {
 
 static inline QImage createAnimationBuffer(const QStyleOption *option, const QWidget *widget)
 {
-    const int devicePixelRatio = widget ? widget->devicePixelRatio() : 1;
+    const qreal devicePixelRatio = widget
+        ? widget->devicePixelRatioF() : qApp->devicePixelRatio();
     QImage result(option->rect.size() * devicePixelRatio, QImage::Format_ARGB32_Premultiplied);
     result.setDevicePixelRatio(devicePixelRatio);
     result.fill(0);
