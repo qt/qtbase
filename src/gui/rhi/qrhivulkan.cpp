@@ -6155,6 +6155,10 @@ bool QVkShaderResourceBindings::create()
     if (layout)
         destroy();
 
+    QRHI_RES_RHI(QRhiVulkan);
+    if (!rhiD->sanityCheckShaderResourceBindings(this))
+        return false;
+
     for (int i = 0; i < QVK_FRAMES_IN_FLIGHT; ++i)
         descSets[i] = VK_NULL_HANDLE;
 
@@ -6187,7 +6191,6 @@ bool QVkShaderResourceBindings::create()
     layoutInfo.bindingCount = uint32_t(vkbindings.count());
     layoutInfo.pBindings = vkbindings.constData();
 
-    QRHI_RES_RHI(QRhiVulkan);
     VkResult err = rhiD->df->vkCreateDescriptorSetLayout(rhiD->dev, &layoutInfo, nullptr, &layout);
     if (err != VK_SUCCESS) {
         qWarning("Failed to create descriptor set layout: %d", err);

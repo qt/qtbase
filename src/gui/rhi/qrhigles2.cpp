@@ -4192,6 +4192,10 @@ void QGles2ShaderResourceBindings::destroy()
 
 bool QGles2ShaderResourceBindings::create()
 {
+    QRHI_RES_RHI(QRhiGles2);
+    if (!rhiD->sanityCheckShaderResourceBindings(this))
+        return false;
+
     generation += 1;
     return true;
 }

@@ -3400,7 +3400,7 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBinding &b)
                       << ')';
         break;
     default:
-        Q_UNREACHABLE();
+        dbg.nospace() << " UNKNOWN()";
         break;
     }
     dbg.nospace() << ')';
@@ -4347,6 +4347,79 @@ bool QRhiImplementation::sanityCheckGraphicsPipeline(QRhiGraphicsPipeline *ps)
         return false;
     }
 
+    return true;
+}
+
+bool QRhiImplementation::sanityCheckShaderResourceBindings(QRhiShaderResourceBindings *srb)
+{
+#ifndef QT_NO_DEBUG
+    bool bindingsOk = true;
+    const int CHECKED_BINDINGS_COUNT = 64;
+    bool bindingSeen[CHECKED_BINDINGS_COUNT] = {};
+    for (auto it = srb->cbeginBindings(), end = srb->cendBindings(); it != end; ++it) {
+        const int binding = it->data()->binding;
+        if (binding >= CHECKED_BINDINGS_COUNT)
+            continue;
+        if (binding < 0) {
+            qWarning("Invalid binding number %d", binding);
+            bindingsOk = false;
+            continue;
+        }
+        switch (it->data()->type) {
+        case QRhiShaderResourceBinding::UniformBuffer:
+            if (!bindingSeen[binding]) {
+                bindingSeen[binding] = true;
+            } else {
+                qWarning("Uniform buffer duplicates an existing binding number %d", binding);
+                bindingsOk = false;
+            }
+            break;
+        case QRhiShaderResourceBinding::SampledTexture:
+            if (!bindingSeen[binding]) {
+                bindingSeen[binding] = true;
+            } else {
+                qWarning("Combined image sampler duplicates an existing binding number %d", binding);
+                bindingsOk = false;
+            }
+            break;
+        case QRhiShaderResourceBinding::ImageLoad:
+            Q_FALLTHROUGH();
+        case QRhiShaderResourceBinding::ImageStore:
+            Q_FALLTHROUGH();
+        case QRhiShaderResourceBinding::ImageLoadStore:
+            if (!bindingSeen[binding]) {
+                bindingSeen[binding] = true;
+            } else {
+                qWarning("Image duplicates an existing binding number %d", binding);
+                bindingsOk = false;
+            }
+            break;
+        case QRhiShaderResourceBinding::BufferLoad:
+            Q_FALLTHROUGH();
+        case QRhiShaderResourceBinding::BufferStore:
+            Q_FALLTHROUGH();
+        case QRhiShaderResourceBinding::BufferLoadStore:
+            if (!bindingSeen[binding]) {
+                bindingSeen[binding] = true;
+            } else {
+                qWarning("Buffer duplicates an existing binding number %d", binding);
+                bindingsOk = false;
+            }
+            break;
+        default:
+            qWarning("Unknown binding type %d", int(it->data()->type));
+            bindingsOk = false;
+            break;
+        }
+    }
+
+    if (!bindingsOk) {
+        qWarning() << *srb;
+        return false;
+    }
+#else
+    Q_UNUSED(srb);
+#endif
     return true;
 }
 

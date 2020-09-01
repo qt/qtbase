@@ -2993,6 +2993,10 @@ bool QMetalShaderResourceBindings::create()
     if (!sortedBindings.isEmpty())
         destroy();
 
+    QRHI_RES_RHI(QRhiMetal);
+    if (!rhiD->sanityCheckShaderResourceBindings(this))
+        return false;
+
     std::copy(m_bindings.cbegin(), m_bindings.cend(), std::back_inserter(sortedBindings));
     std::sort(sortedBindings.begin(), sortedBindings.end(),
               [](const QRhiShaderResourceBinding &a, const QRhiShaderResourceBinding &b)

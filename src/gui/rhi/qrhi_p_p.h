@@ -210,6 +210,7 @@ public:
     }
 
     bool sanityCheckGraphicsPipeline(QRhiGraphicsPipeline *ps);
+    bool sanityCheckShaderResourceBindings(QRhiShaderResourceBindings *srb);
 
     QRhi *q;
 
