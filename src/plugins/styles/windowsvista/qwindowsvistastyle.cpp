@@ -2472,7 +2472,7 @@ QIcon QWindowsVistaStyle::standardIcon(StandardPixmap standardIcon,
                               QWindowsXPStylePrivate::ButtonTheme,
                               BP_COMMANDLINKGLYPH, CMDLGS_NORMAL);
             if (theme.isValid()) {
-                const QSize size = (theme.size() * QWindowsStylePrivate::nativeMetricScaleFactor(widget)).toSize();
+                const QSize size = theme.size().toSize();
                 QIcon linkGlyph;
                 QPixmap pm(size);
                 pm.fill(Qt::transparent);
