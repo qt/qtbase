@@ -3449,7 +3449,7 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
         // Recreate the background pixmap, and flag the whole background as
         // exposed.
         if (d->mustResizeBackgroundPixmap) {
-            const qreal dpr = d->viewport->devicePixelRatioF();
+            const qreal dpr = d->viewport->devicePixelRatio();
             d->backgroundPixmap = QPixmap(viewport()->size() * dpr);
             d->backgroundPixmap.setDevicePixelRatio(dpr);
             QBrush bgBrush = viewport()->palette().brush(viewport()->backgroundRole());

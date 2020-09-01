@@ -400,13 +400,13 @@ void tst_QPixmapFilter::blurIndexed8()
     QImage original = img;
     qt_blurImage(img, 10, true, false);
     QCOMPARE(original.size(), img.size());
-    QVERIFY2(qFuzzyCompare(img.devicePixelRatioF(), qreal(2)),
-             QByteArray::number(img.devicePixelRatioF()).constData());
+    QVERIFY2(qFuzzyCompare(img.devicePixelRatio(), qreal(2)),
+             QByteArray::number(img.devicePixelRatio()).constData());
 
     original = img;
     qt_blurImage(img, 10, true, true);
-    QVERIFY2(qFuzzyCompare(img.devicePixelRatioF(), qreal(2)),
-             QByteArray::number(img.devicePixelRatioF()).constData());
+    QVERIFY2(qFuzzyCompare(img.devicePixelRatio(), qreal(2)),
+             QByteArray::number(img.devicePixelRatio()).constData());
     QCOMPARE(original.size(), QSize(img.height(), img.width()));
 }
 

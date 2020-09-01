@@ -100,7 +100,7 @@ static void dumpWidgetRecursion(QTextStream &str, const QWidget *w,
     if (w->isWindow()) {
         str << ' ' << w->logicalDpiX() << "DPI";
 #if QT_VERSION > 0x050600
-        const qreal dpr = w->devicePixelRatioF();
+        const qreal dpr = w->devicePixelRatio();
         if (!qFuzzyCompare(dpr, qreal(1)))
             str << " dpr=" << dpr;
 #endif // Qt 5.6

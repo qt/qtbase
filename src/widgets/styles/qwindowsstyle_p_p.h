@@ -72,7 +72,7 @@ public:
     static int pixelMetricFromSystemDp(QStyle::PixelMetric pm, const QStyleOption *option = nullptr, const QWidget *widget = nullptr);
     static int fixedPixelMetric(QStyle::PixelMetric pm);
     static qreal devicePixelRatio(const QWidget *widget = nullptr)
-        { return widget ? widget->devicePixelRatioF() : QWindowsStylePrivate::appDevicePixelRatio(); }
+        { return widget ? widget->devicePixelRatio() : QWindowsStylePrivate::appDevicePixelRatio(); }
     static qreal nativeMetricScaleFactor(const QWidget *widget = nullptr);
     static bool isDarkMode();
 

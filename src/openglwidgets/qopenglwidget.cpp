@@ -695,7 +695,7 @@ void QOpenGLWidgetPrivate::recreateFbo()
     if (textureFormat)
         format.setInternalTextureFormat(textureFormat);
 
-    const QSize deviceSize = q->size() * q->devicePixelRatioF();
+    const QSize deviceSize = q->size() * q->devicePixelRatio();
     fbo = new QOpenGLFramebufferObject(deviceSize, format);
     if (samples > 0)
         resolvedFbo = new QOpenGLFramebufferObject(deviceSize);
@@ -707,7 +707,7 @@ void QOpenGLWidgetPrivate::recreateFbo()
     flushPending = true; // Make sure the FBO is initialized before use
 
     paintDevice->setSize(deviceSize);
-    paintDevice->setDevicePixelRatio(q->devicePixelRatioF());
+    paintDevice->setDevicePixelRatio(q->devicePixelRatio());
 
     emit q->resized();
 }
@@ -794,8 +794,8 @@ void QOpenGLWidgetPrivate::initialize()
     }
 
     paintDevice = new QOpenGLWidgetPaintDevice(q);
-    paintDevice->setSize(q->size() * q->devicePixelRatioF());
-    paintDevice->setDevicePixelRatio(q->devicePixelRatioF());
+    paintDevice->setSize(q->size() * q->devicePixelRatio());
+    paintDevice->setDevicePixelRatio(q->devicePixelRatio());
 
     context = ctx.take();
     initialized = true;
@@ -824,7 +824,7 @@ void QOpenGLWidgetPrivate::invokeUserPaint()
     QOpenGLFunctions *f = ctx->functions();
     QOpenGLContextPrivate::get(ctx)->defaultFboRedirect = fbo->handle();
 
-    f->glViewport(0, 0, q->width() * q->devicePixelRatioF(), q->height() * q->devicePixelRatioF());
+    f->glViewport(0, 0, q->width() * q->devicePixelRatio(), q->height() * q->devicePixelRatio());
     inPaintGL = true;
     q->paintGL();
     inPaintGL = false;
@@ -898,8 +898,8 @@ QImage QOpenGLWidgetPrivate::grabFramebuffer()
     }
 
     const bool hasAlpha = q->format().hasAlpha();
-    QImage res = qt_gl_read_framebuffer(q->size() * q->devicePixelRatioF(), hasAlpha, hasAlpha);
-    res.setDevicePixelRatio(q->devicePixelRatioF());
+    QImage res = qt_gl_read_framebuffer(q->size() * q->devicePixelRatio(), hasAlpha, hasAlpha);
+    res.setDevicePixelRatio(q->devicePixelRatio());
 
     // While we give no guarantees of what is going to be left bound, prefer the
     // multisample fbo instead of the resolved one. Clients may continue to
@@ -924,7 +924,7 @@ void QOpenGLWidgetPrivate::resizeViewportFramebuffer()
     if (!initialized)
         return;
 
-    if (!fbo || q->size() * q->devicePixelRatioF() != fbo->size()) {
+    if (!fbo || q->size() * q->devicePixelRatio() != fbo->size()) {
         recreateFbo();
         q->update();
     }
@@ -1403,7 +1403,7 @@ bool QOpenGLWidget::event(QEvent *e)
         }
         break;
     case QEvent::ScreenChangeInternal:
-        if (d->initialized && d->paintDevice->devicePixelRatioF() != devicePixelRatioF())
+        if (d->initialized && d->paintDevice->devicePixelRatio() != devicePixelRatio())
             d->recreateFbo();
         break;
     default:

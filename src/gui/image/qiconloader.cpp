@@ -641,7 +641,7 @@ void QIconLoaderEngine::ensureLoaded()
 void QIconLoaderEngine::paint(QPainter *painter, const QRect &rect,
                              QIcon::Mode mode, QIcon::State state)
 {
-    QSize pixmapSize = rect.size() * painter->device()->devicePixelRatioF();
+    QSize pixmapSize = rect.size() * painter->device()->devicePixelRatio();
     painter->drawPixmap(rect, pixmap(pixmapSize, mode, state));
 }
 

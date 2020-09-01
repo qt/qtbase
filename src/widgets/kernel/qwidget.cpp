@@ -5072,7 +5072,7 @@ QPixmap QWidget::grab(const QRect &rectangle)
     if (!r.intersects(rect()))
         return QPixmap();
 
-    const qreal dpr = devicePixelRatioF();
+    const qreal dpr = devicePixelRatio();
     QPixmap res((QSizeF(r.size()) * dpr).toSize());
     res.setDevicePixelRatio(dpr);
     if (!d->isOpaque)
@@ -5237,7 +5237,7 @@ void QWidgetPrivate::render_helper(QPainter *painter, const QPoint &targetOffset
         if (size.isNull())
             return;
 
-        const qreal pixmapDevicePixelRatio = painter->device()->devicePixelRatioF();
+        const qreal pixmapDevicePixelRatio = painter->device()->devicePixelRatio();
         QPixmap pixmap(size * pixmapDevicePixelRatio);
         pixmap.setDevicePixelRatio(pixmapDevicePixelRatio);
 
@@ -5308,7 +5308,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
             QWidgetPaintContext context(pdev, rgn, offset, flags, sharedPainter, repaintManager);
             sourced->context = &context;
             if (!sharedPainter) {
-                setSystemClip(pdev->paintEngine(), pdev->devicePixelRatioF(), rgn.translated(offset));
+                setSystemClip(pdev->paintEngine(), pdev->devicePixelRatio(), rgn.translated(offset));
                 QPainter p(pdev);
                 p.translate(offset);
                 context.painter = &p;
@@ -5322,7 +5322,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                 }
                 sharedPainter->save();
                 sharedPainter->translate(offset);
-                setSystemClip(sharedPainter->paintEngine(), sharedPainter->device()->devicePixelRatioF(), rgn.translated(offset));
+                setSystemClip(sharedPainter->paintEngine(), sharedPainter->device()->devicePixelRatio(), rgn.translated(offset));
                 graphicsEffect->draw(sharedPainter);
                 setSystemClip(sharedPainter->paintEngine(), 1, QRegion());
                 sharedPainter->restore();
@@ -5362,7 +5362,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                 setRedirected(pdev, -offset);
 
                 if (sharedPainter)
-                    setSystemClip(pdev->paintEngine(), pdev->devicePixelRatioF(), toBePainted);
+                    setSystemClip(pdev->paintEngine(), pdev->devicePixelRatio(), toBePainted);
                 else
                     paintEngine->d_func()->systemRect = q->data->crect;
 
@@ -5380,7 +5380,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                 }
 
                 if (!sharedPainter)
-                    setSystemClip(pdev->paintEngine(), pdev->devicePixelRatioF(), toBePainted.translated(offset));
+                    setSystemClip(pdev->paintEngine(), pdev->devicePixelRatio(), toBePainted.translated(offset));
 
                 if (!onScreen && !asRoot && !isOpaque && q->testAttribute(Qt::WA_TintedBackground)) {
 #ifndef QT_NO_OPENGL
@@ -5687,7 +5687,7 @@ QPixmap QWidgetEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *
 
     qreal dpr(1.0);
     if (const auto *paintDevice = context->painter->device())
-        dpr = paintDevice->devicePixelRatioF();
+        dpr = paintDevice->devicePixelRatio();
     else
         qWarning("QWidgetEffectSourcePrivate::pixmap: Painter not active");
     QPixmap pixmap(effectRect.size() * dpr);
@@ -12842,7 +12842,7 @@ QDebug operator<<(QDebug debug, const QWidget *widget)
                                        frameGeometry.bottom() - geometry.bottom());
                 debug << ", margins=" << margins;
             }
-            debug << ", devicePixelRatio=" << widget->devicePixelRatioF();
+            debug << ", devicePixelRatio=" << widget->devicePixelRatio();
             if (const WId wid = widget->internalWinId())
                 debug << ", winId=0x" << Qt::hex << wid << Qt::dec;
         }

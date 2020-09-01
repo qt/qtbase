@@ -3977,7 +3977,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
 
             if (needsInactiveHack) {
                 // First, render tab as non-selected tab on a pixamp
-                const qreal pixelRatio = p->device()->devicePixelRatioF();
+                const qreal pixelRatio = p->device()->devicePixelRatio();
                 QImage tabPixmap(opt->rect.size() * pixelRatio, QImage::Format_ARGB32_Premultiplied);
                 tabPixmap.setDevicePixelRatio(pixelRatio);
                 tabPixmap.fill(Qt::transparent);
@@ -5570,7 +5570,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
             QPainterPath outerFramePath = d->windowPanelPath(outerFrameRect);
             p->fillPath(outerFramePath, opt->palette.dark());
 
-            const auto frameAdjust = 1.0 / p->device()->devicePixelRatioF();
+            const auto frameAdjust = 1.0 / p->device()->devicePixelRatio();
             const auto innerFrameRect = outerFrameRect.adjusted(frameAdjust, frameAdjust, -frameAdjust, 0);
             QPainterPath innerFramePath = d->windowPanelPath(innerFrameRect);
             if (isActive) {

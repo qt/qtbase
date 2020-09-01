@@ -255,7 +255,7 @@ void tst_QScreen::grabWindow()
         void resizeEvent(QResizeEvent *e) override
         {
             const QSize sz = e->size();
-            image = image.scaled(sz * image.devicePixelRatioF());
+            image = image.scaled(sz * image.devicePixelRatio());
             QPainter painter(&image);
             painter.fillRect(0, 0, sz.width(), sz.height(), Qt::black);
             painter.setPen(QPen(Qt::red, 2));

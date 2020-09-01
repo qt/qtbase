@@ -419,7 +419,7 @@ QWidget *MainWindow::createIconSizeGroupBox()
 
 void MainWindow::screenChanged()
 {
-    devicePixelRatioLabel->setText(QString::number(devicePixelRatioF()));
+    devicePixelRatioLabel->setText(QString::number(devicePixelRatio()));
     if (const QWindow *window = windowHandle()) {
         const QScreen *screen = window->screen();
         const QString screenDescription =

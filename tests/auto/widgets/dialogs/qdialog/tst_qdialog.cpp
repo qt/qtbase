@@ -321,7 +321,7 @@ void tst_QDialog::toolDialogPosition()
     dialog.move(QPoint(100,100));
     const QPoint beforeShowPosition = dialog.pos();
     dialog.show();
-    const int fuzz = int(dialog.devicePixelRatioF());
+    const int fuzz = int(dialog.devicePixelRatio());
     const QPoint afterShowPosition = dialog.pos();
     QVERIFY2(HighDpi::fuzzyCompare(afterShowPosition, beforeShowPosition, fuzz),
              HighDpi::msgPointMismatch(afterShowPosition, beforeShowPosition).constData());

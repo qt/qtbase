@@ -103,7 +103,7 @@ void QEmulationPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
             return;
         }
     } else if (style == Qt::TexturePattern) {
-        qreal dpr = qHasPixmapTexture(brush) ? brush.texture().devicePixelRatioF() : brush.textureImage().devicePixelRatioF();
+        qreal dpr = qHasPixmapTexture(brush) ? brush.texture().devicePixelRatio() : brush.textureImage().devicePixelRatio();
         if (!qFuzzyCompare(dpr, qreal(1.0))) {
             QBrush copy = brush;
             combineXForm(&copy, QRectF(0, 0, 1.0/dpr, 1.0/dpr));

@@ -133,7 +133,7 @@ void TabletCanvas::tabletEvent(QTabletEvent *event)
 //! [4]
 void TabletCanvas::initPixmap()
 {
-    qreal dpr = devicePixelRatioF();
+    qreal dpr = devicePixelRatio();
     QPixmap newPixmap = QPixmap(qRound(width() * dpr), qRound(height() * dpr));
     newPixmap.setDevicePixelRatio(dpr);
     newPixmap.fill(Qt::white);
@@ -149,8 +149,8 @@ void TabletCanvas::paintEvent(QPaintEvent *event)
     if (m_pixmap.isNull())
         initPixmap();
     QPainter painter(this);
-    QRect pixmapPortion = QRect(event->rect().topLeft() * devicePixelRatioF(),
-                                event->rect().size() * devicePixelRatioF());
+    QRect pixmapPortion = QRect(event->rect().topLeft() * devicePixelRatio(),
+                                event->rect().size() * devicePixelRatio());
     painter.drawPixmap(event->rect().topLeft(), m_pixmap, pixmapPortion);
 }
 //! [4]

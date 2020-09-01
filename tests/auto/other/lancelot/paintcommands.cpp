@@ -2295,7 +2295,7 @@ void PaintCommands::command_pixmap_setDevicePixelRatio(QRegularExpressionMatch r
 
     if (m_verboseMode)
         printf(" -(lance) pixmap_setDevicePixelRatio(%s), %.1f -> %.1f\n",
-               qPrintable(name), m_pixmapMap[name].devicePixelRatioF(), dpr);
+               qPrintable(name), m_pixmapMap[name].devicePixelRatio(), dpr);
 
     m_pixmapMap[name].setDevicePixelRatio(dpr);
 }
@@ -2374,7 +2374,7 @@ void PaintCommands::command_image_setDevicePixelRatio(QRegularExpressionMatch re
 
     if (m_verboseMode)
         printf(" -(lance) image_setDevicePixelRatio(%s), %.1f -> %.1f\n",
-               qPrintable(name), m_imageMap[name].devicePixelRatioF(), dpr);
+               qPrintable(name), m_imageMap[name].devicePixelRatio(), dpr);
 
     m_imageMap[name].setDevicePixelRatio(dpr);
 }

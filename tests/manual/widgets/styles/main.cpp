@@ -286,7 +286,7 @@ void MainWindow::updateDescription()
     QString text;
     QTextStream str(&text);
     str << "Qt " << QT_VERSION_STR << ", platform: " << QGuiApplication::platformName()
-        << ", Style: \"" << style()->objectName() << "\", DPR=" << devicePixelRatioF()
+        << ", Style: \"" << style()->objectName() << "\", DPR=" << devicePixelRatio()
         << ' ' << logicalDpiX() << ',' << logicalDpiY() << "DPI";
     if (const QWindow *w = windowHandle())
         str << ", Screen: \"" << w->screen()->name() << '"';

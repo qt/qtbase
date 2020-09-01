@@ -94,7 +94,7 @@ ToolBar::ToolBar(const QString &title, QWidget *parent)
 
     setIconSize(QSize(32, 32));
 
-    qreal dpr = devicePixelRatioF();
+    qreal dpr = devicePixelRatio();
     menu = new QMenu("One", this);
     menu->setIcon(genIcon(iconSize(), 1, Qt::black, dpr));
     menu->addAction(genIcon(iconSize(), "A", Qt::blue, dpr), "A");

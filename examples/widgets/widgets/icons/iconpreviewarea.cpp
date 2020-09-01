@@ -170,7 +170,7 @@ void IconPreviewArea::updatePixmapLabels()
                     tr("Size: %1x%2\nActual size: %3x%4\nDevice pixel ratio: %5")
                         .arg(size.width()).arg(size.height())
                         .arg(actualSize.width()).arg(actualSize.height())
-                        .arg(pixmap.devicePixelRatioF());
+                        .arg(pixmap.devicePixelRatio());
             }
             pixmapLabel->setToolTip(toolTip);
         }

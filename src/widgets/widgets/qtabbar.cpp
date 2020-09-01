@@ -2226,8 +2226,8 @@ void QTabBarPrivate::setupMovableTab()
     else
         grabRect.adjust(-taboverlap, 0, taboverlap, 0);
 
-    QPixmap grabImage(grabRect.size() * q->devicePixelRatioF());
-    grabImage.setDevicePixelRatio(q->devicePixelRatioF());
+    QPixmap grabImage(grabRect.size() * q->devicePixelRatio());
+    grabImage.setDevicePixelRatio(q->devicePixelRatio());
     grabImage.fill(Qt::transparent);
     QStylePainter p(&grabImage, q);
 

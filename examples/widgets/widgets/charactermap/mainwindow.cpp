@@ -290,8 +290,8 @@ QString FontInfoDialog::text() const
 
     str << "Qt " << QT_VERSION_STR << " on " << QGuiApplication::platformName()
         << ", " << logicalDpiX() << "DPI";
-    if (!qFuzzyCompare(devicePixelRatioF(), qreal(1)))
-        str  << ", device pixel ratio: " << devicePixelRatioF();
+    if (!qFuzzyCompare(devicePixelRatio(), qreal(1)))
+        str  << ", device pixel ratio: " << devicePixelRatio();
     str << "\n\nDefault font : " << defaultFont.family() << ", " << defaultFont.pointSizeF() << "pt\n"
         << "Fixed font   : " << fixedFont.family() << ", " << fixedFont.pointSizeF() << "pt\n"
         << "Title font   : " << titleFont.family() << ", " << titleFont.pointSizeF() << "pt\n"

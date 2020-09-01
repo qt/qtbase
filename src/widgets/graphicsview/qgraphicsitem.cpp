@@ -11194,7 +11194,7 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
     if (effectRect.isEmpty())
         return QPixmap();
 
-    const auto dpr = info ? info->painter->device()->devicePixelRatioF() : 1.0;
+    const auto dpr = info ? info->painter->device()->devicePixelRatio() : 1.0;
     QPixmap pixmap(QRectF(effectRectF.topLeft(), effectRectF.size() * dpr).toAlignedRect().size());
     pixmap.setDevicePixelRatio(dpr);
     pixmap.fill(Qt::transparent);

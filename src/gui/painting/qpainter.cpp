@@ -197,9 +197,9 @@ void QPainterPrivate::checkEmulation()
 
     if (state->brush.style() == Qt::TexturePattern) {
         if (qHasPixmapTexture(state->brush))
-            doEmulation |= !qFuzzyCompare(state->brush.texture().devicePixelRatioF(), qreal(1.0));
+            doEmulation |= !qFuzzyCompare(state->brush.texture().devicePixelRatio(), qreal(1.0));
         else
-            doEmulation |= !qFuzzyCompare(state->brush.textureImage().devicePixelRatioF(), qreal(1.0));
+            doEmulation |= !qFuzzyCompare(state->brush.textureImage().devicePixelRatio(), qreal(1.0));
     }
 
     if (doEmulation && extended->flags() & QPaintEngineEx::DoNotEmulate)
@@ -242,7 +242,7 @@ qreal QPainterPrivate::effectiveDevicePixelRatio() const
     if (device->devType() == QInternal::Printer)
         return qreal(1);
 
-    return qMax(qreal(1), device->devicePixelRatioF());
+    return qMax(qreal(1), device->devicePixelRatio());
 }
 
 QTransform QPainterPrivate::hidpiScaleTransform() const

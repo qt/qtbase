@@ -749,7 +749,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
                                                           % QLatin1String(metaObject()->className()), opt, QSize(size, size))
                                  % HexString<uint>(pe);
             if (!QPixmapCache::find(pixmapName, &pixmap)) {
-                qreal pixelRatio = p->device()->devicePixelRatioF();
+                qreal pixelRatio = p->device()->devicePixelRatio();
                 int border = qRound(pixelRatio*(size/5));
                 int sqsize = qRound(pixelRatio*(2*(size/2)));
                 QImage image(sqsize, sqsize, QImage::Format_ARGB32_Premultiplied);

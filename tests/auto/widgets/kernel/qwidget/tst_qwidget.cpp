@@ -3602,7 +3602,7 @@ protected:
 static QPixmap grabFromWidget(QWidget *w, const QRect &rect)
 {
     QPixmap pixmap = w->grab(rect);
-    const qreal devicePixelRatio = pixmap.devicePixelRatioF();
+    const qreal devicePixelRatio = pixmap.devicePixelRatio();
     if (!qFuzzyCompare(devicePixelRatio, qreal(1))) {
         pixmap = pixmap.scaled((QSizeF(pixmap.size()) / devicePixelRatio).toSize(),
                                Qt::KeepAspectRatio, Qt::SmoothTransformation);
@@ -5638,7 +5638,7 @@ bool verifyColor(QWidget &child, const QRegion &region, const QColor &color, int
             const QPixmap pixmap = grabBackingStore
                 ? child.grab(rect)
                 : grabWindow(window, rect.left(), rect.top(), rect.width(), rect.height());
-            const QSize actualSize = pixmap.size() / pixmap.devicePixelRatioF();
+            const QSize actualSize = pixmap.size() / pixmap.devicePixelRatio();
             if (!QTest::qCompare(actualSize, rect.size(), "pixmap.size()", "rect.size()", __FILE__, callerLine))
                 return false;
             QPixmap expectedPixmap(pixmap); /* ensure equal formats */
@@ -9270,8 +9270,8 @@ void tst_QWidget::translucentWidget()
     widgetSnapshot = label.grab(QRect(QPoint(0, 0), label.size()));
 #endif
     const QImage actual = widgetSnapshot.toImage().convertToFormat(QImage::Format_RGB32);
-    QImage expected = pm.toImage().scaled(label.devicePixelRatioF() * pm.size());
-    expected.setDevicePixelRatio(label.devicePixelRatioF());
+    QImage expected = pm.toImage().scaled(label.devicePixelRatio() * pm.size());
+    expected.setDevicePixelRatio(label.devicePixelRatio());
     QCOMPARE(actual.size(),expected.size());
     QCOMPARE(actual,expected);
 

@@ -240,10 +240,10 @@ void QTextImageHandler::drawObject(QPainter *p, const QRectF &rect, QTextDocumen
         const QTextImageFormat imageFormat = format.toImageFormat();
 
     if (QCoreApplication::instance()->thread() != QThread::currentThread()) {
-        const QImage image = getImage(doc, imageFormat, p->device()->devicePixelRatioF());
+        const QImage image = getImage(doc, imageFormat, p->device()->devicePixelRatio());
         p->drawImage(rect, image, image.rect());
     } else {
-        const QPixmap pixmap = getPixmap(doc, imageFormat, p->device()->devicePixelRatioF());
+        const QPixmap pixmap = getPixmap(doc, imageFormat, p->device()->devicePixelRatio());
         p->drawPixmap(rect, pixmap, pixmap.rect());
     }
 }

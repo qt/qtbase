@@ -679,7 +679,7 @@ bool QWindowsXPStylePrivate::drawBackground(XPThemeData &themeData, qreal correc
 
     bool translucentToplevel = false;
     const QPaintDevice *paintDevice = painter->device();
-    const qreal aditionalDevicePixelRatio = themeData.widget ? themeData.widget->devicePixelRatioF() : qreal(1);
+    const qreal aditionalDevicePixelRatio = themeData.widget ? themeData.widget->devicePixelRatio() : qreal(1);
     if (paintDevice->devType() == QInternal::Widget) {
         const QWidget *window = static_cast<const QWidget *>(paintDevice)->window();
         translucentToplevel = window->testAttribute(Qt::WA_TranslucentBackground);
@@ -2495,7 +2495,7 @@ static void populateMdiButtonTheme(const QStyle *proxy, const QWidget *widget,
 // small on High DPI screens (QTBUG-75927).
 qreal mdiButtonCorrectionFactor(XPThemeData &theme, const QPaintDevice *pd = nullptr)
 {
-    const auto dpr = pd ? pd->devicePixelRatioF() : qApp->devicePixelRatio();
+    const auto dpr = pd ? pd->devicePixelRatio() : qApp->devicePixelRatio();
     const QSizeF nativeSize = QSizeF(theme.size()) / dpr;
     const QSizeF requestedSize(theme.rect.size());
     const auto rawFactor = qMin(requestedSize.width() / nativeSize.width(),

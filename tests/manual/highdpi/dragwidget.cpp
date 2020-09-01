@@ -162,8 +162,8 @@ void DragWidget::mousePressEvent(QMouseEvent *event)
     mimeData->setData("application/x-hotspot",
                       QByteArray::number(hotSpot.x()) + ' ' + QByteArray::number(hotSpot.y()));
 
-    const qreal dpr = devicePixelRatioF() > 1 && !(QGuiApplication::keyboardModifiers() & Qt::ShiftModifier)
-        ? devicePixelRatioF() : 1;
+    const qreal dpr = devicePixelRatio() > 1 && !(QGuiApplication::keyboardModifiers() & Qt::ShiftModifier)
+        ? devicePixelRatio() : 1;
 
     QPixmap pixmap(child->size() * dpr);
     pixmap.setDevicePixelRatio(dpr);

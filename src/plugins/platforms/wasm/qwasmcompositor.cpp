@@ -456,7 +456,7 @@ void QWasmCompositor::drawFrameWindow(QWasmFrameOptions options, QPainter *paint
     const QColor &c4 = options.palette.dark().color();
     const QBrush *fill = 0;
 
-    const qreal devicePixelRatio = painter->device()->devicePixelRatioF();
+    const qreal devicePixelRatio = painter->device()->devicePixelRatio();
     if (!qFuzzyCompare(devicePixelRatio, qreal(1))) {
         const qreal inverseScale = qreal(1) / devicePixelRatio;
         painter->scale(inverseScale, inverseScale);
@@ -599,7 +599,7 @@ void QWasmCompositor::drawShadePanel(QWasmTitleBarOptions options, QPainter *pai
     int w = options.rect.width();
     int h = options.rect.height();
 
-    const qreal devicePixelRatio = painter->device()->devicePixelRatioF();
+    const qreal devicePixelRatio = painter->device()->devicePixelRatio();
     if (!qFuzzyCompare(devicePixelRatio, qreal(1))) {
         const qreal inverseScale = qreal(1) / devicePixelRatio;
         painter->scale(inverseScale, inverseScale);

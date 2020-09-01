@@ -1293,7 +1293,7 @@ QT_DPI_ADJUSTMENT_POLICY=AdjustDpi|DontAdjustDpi|AdjustUpOnly)";
                 << "\n\n";
         }
 
-        str << "widget devicePixelRatio: " << this->devicePixelRatioF()
+        str << "widget devicePixelRatio: " << this->devicePixelRatio()
             << "\nwidget logicalDpi: " << this->logicalDpiX()
             << "\n\nQT_FONT_DPI: " << qgetenv("QT_FONT_DPI")
             << "\nQT_SCALE_FACTOR: " << qgetenv("QT_SCALE_FACTOR")

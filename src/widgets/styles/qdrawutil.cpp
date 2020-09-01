@@ -244,7 +244,7 @@ void qDrawShadeRect(QPainter *p, int x, int y, int w, int h,
     }
 
     PainterStateGuard painterGuard(p);
-    const qreal devicePixelRatio = p->device()->devicePixelRatioF();
+    const qreal devicePixelRatio = p->device()->devicePixelRatio();
     if (!qFuzzyCompare(devicePixelRatio, qreal(1))) {
         painterGuard.save();
         const qreal inverseScale = qreal(1) / devicePixelRatio;
@@ -358,7 +358,7 @@ void qDrawShadePanel(QPainter *p, int x, int y, int w, int h,
     }
 
     PainterStateGuard painterGuard(p);
-    const qreal devicePixelRatio = p->device()->devicePixelRatioF();
+    const qreal devicePixelRatio = p->device()->devicePixelRatio();
     if (!qFuzzyCompare(devicePixelRatio, qreal(1))) {
         painterGuard.save();
         const qreal inverseScale = qreal(1) / devicePixelRatio;
@@ -449,7 +449,7 @@ static void qDrawWinShades(QPainter *p,
         return;
 
     PainterStateGuard painterGuard(p);
-    const qreal devicePixelRatio = p->device()->devicePixelRatioF();
+    const qreal devicePixelRatio = p->device()->devicePixelRatio();
     if (!qFuzzyCompare(devicePixelRatio, qreal(1))) {
         painterGuard.save();
         const qreal inverseScale = qreal(1) / devicePixelRatio;
@@ -591,7 +591,7 @@ void qDrawPlainRect(QPainter *p, int x, int y, int w, int h, const QColor &c,
     }
 
     PainterStateGuard painterGuard(p);
-    const qreal devicePixelRatio = p->device()->devicePixelRatioF();
+    const qreal devicePixelRatio = p->device()->devicePixelRatio();
     if (!qFuzzyCompare(devicePixelRatio, qreal(1))) {
         painterGuard.save();
         const qreal inverseScale = qreal(1) / devicePixelRatio;

@@ -102,7 +102,7 @@ QWindowsPixmapCursorCacheKey::QWindowsPixmapCursorCacheKey(const QCursor &c)
 HCURSOR QWindowsCursor::createPixmapCursor(QPixmap pixmap, const QPoint &hotSpot, qreal scaleFactor)
 {
     HCURSOR cur = nullptr;
-    const qreal pixmapScaleFactor = scaleFactor / pixmap.devicePixelRatioF();
+    const qreal pixmapScaleFactor = scaleFactor / pixmap.devicePixelRatio();
     if (!qFuzzyCompare(pixmapScaleFactor, 1)) {
         pixmap = pixmap.scaled((pixmapScaleFactor * QSizeF(pixmap.size())).toSize(),
                                Qt::KeepAspectRatio, Qt::SmoothTransformation);
@@ -170,7 +170,7 @@ static HCURSOR createBitmapCursor(const QCursor &cursor, qreal scaleFactor = 1)
     Q_ASSERT(cursor.shape() == Qt::BitmapCursor && !cursor.bitmap(Qt::ReturnByValue).isNull());
     QImage bbits = cursor.bitmap(Qt::ReturnByValue).toImage();
     QImage mbits = cursor.mask(Qt::ReturnByValue).toImage();
-    scaleFactor /= bbits.devicePixelRatioF();
+    scaleFactor /= bbits.devicePixelRatio();
     if (!qFuzzyCompare(scaleFactor, 1)) {
         const QSize scaledSize = (QSizeF(bbits.size()) * scaleFactor).toSize();
         bbits = bbits.scaled(scaledSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
