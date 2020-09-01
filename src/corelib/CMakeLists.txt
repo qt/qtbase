@@ -297,7 +297,7 @@ qt_manual_moc(qobject_moc_files OUTPUT_MOC_JSON_FILES core_qobject_metatypes_jso
 set_source_files_properties(${qobject_moc_files} PROPERTIES HEADER_FILE_ONLY ON)
 target_sources(Core_qobject PRIVATE
     global/qnamespace.h
-    kernel/qobject.cpp kernel/qobject.h kernel/qobject_p.h ${qobject_moc_files})
+    kernel/qobject.cpp kernel/qproperty.cpp kernel/qproperty.h kernel/qproperty_p.h kernel/qobject.h kernel/qobject_p.h ${qobject_moc_files})
 set_target_properties(Core_qobject PROPERTIES
     COMPILE_OPTIONS $<TARGET_PROPERTY:Core,COMPILE_OPTIONS>
     COMPILE_DEFINITIONS $<TARGET_PROPERTY:Core,COMPILE_DEFINITIONS>
