@@ -195,7 +195,6 @@ public:
         Windows,
         QuickDraw, CoreGraphics, MacPrinter,
         QWindowSystem,
-        PostScript,   // ### Qt 6: Remove, update documentation
         OpenGL,
         Picture,
         SVG,
