@@ -407,7 +407,7 @@ public:
 
     bool setBinding(const QUntypedPropertyBinding &newBinding)
     {
-        if (newBinding.valueMetaType().id() != qMetaTypeId<T>())
+        if (!newBinding.isNull() && newBinding.valueMetaType().id() != qMetaTypeId<T>())
             return false;
         setBinding(static_cast<const QPropertyBinding<T> &>(newBinding));
         return true;
