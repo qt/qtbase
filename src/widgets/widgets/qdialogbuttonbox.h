@@ -113,8 +113,7 @@ public:
         MacLayout,
         KdeLayout,
         GnomeLayout,
-        // MacModelessLayout,
-        AndroidLayout = GnomeLayout + 2 // ### Qt 6: reorder
+        AndroidLayout
     };
 
     QDialogButtonBox(QWidget *parent = nullptr);

@@ -150,7 +150,6 @@ public:
         MacLayout,
         KdeLayout,
         GnomeLayout,
-        MacModelessLayout,
         AndroidLayout
     };
     Q_ENUM(ButtonLayout)
