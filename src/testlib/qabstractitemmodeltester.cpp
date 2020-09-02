@@ -822,7 +822,9 @@ bool QAbstractItemModelTesterPrivate::compare(const T1 &t1, const T2 &t2,
         if (!result) {
             auto t1string = QTest::toString(t1);
             auto t2string = QTest::toString(t2);
-            qCWarning(lcModelTest, formatString, actual, t1string, expected, t2string, file, line);
+            qCWarning(lcModelTest, formatString, actual, t1string ? t1string : "(nullptr)",
+                                                 expected, t2string ? t2string : "(nullptr)",
+                                                 file, line);
             delete [] t1string;
             delete [] t2string;
         }
@@ -832,7 +834,9 @@ bool QAbstractItemModelTesterPrivate::compare(const T1 &t1, const T2 &t2,
         if (!result) {
             auto t1string = QTest::toString(t1);
             auto t2string = QTest::toString(t2);
-            qFatal(formatString, actual, t1string, expected, t2string, file, line);
+            qFatal(formatString, actual, t1string ? t1string : "(nullptr)",
+                                 expected, t2string ? t2string : "(nullptr)",
+                                 file, line);
             delete [] t1string;
             delete [] t2string;
         }
