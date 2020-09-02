@@ -54,6 +54,7 @@ def fixup_comments(contents: str) -> str:
     # Get rid of completely commented out lines.
     # So any line which starts with a '#' char and ends with a new line
     # will be replaced by a single new line.
+    # The # may be preceded by any number of spaces or tabs.
     #
     # This is needed because qmake syntax is weird. In a multi line
     # assignment (separated by backslashes and newlines aka
@@ -67,7 +68,7 @@ def fixup_comments(contents: str) -> str:
     # care of it as well, as if the commented line didn't exist in the
     # first place.
 
-    contents = re.sub(r"\n#[^\n]*?\n", "\n", contents, re.DOTALL)
+    contents = re.sub(r"\n[ \t]*#[^\n]*?\n", "\n", contents, re.DOTALL)
     return contents
 
 
