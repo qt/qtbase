@@ -154,7 +154,7 @@ protected:
         fast = false;
     }
 
-    void enterEvent(QEvent *) override {
+    void enterEvent(QEnterEvent *) override {
         startTimer();
     }
 

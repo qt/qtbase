@@ -61,7 +61,7 @@ public:
         update();
     }
 
-    void enterEvent(QEvent *)
+    void enterEvent(QEnterEvent *)
     {
         s = 200;
         v = 200;

@@ -112,7 +112,7 @@ protected:
     void paintEvent(QPaintEvent *) override;
     void actionEvent(QActionEvent *) override;
 
-    void enterEvent(QEvent *) override;
+    void enterEvent(QEnterEvent *) override;
     void leaveEvent(QEvent *) override;
     void timerEvent(QTimerEvent *) override;
     void changeEvent(QEvent *) override;

@@ -249,7 +249,7 @@ protected:
 #if QT_CONFIG(wheelevent)
     void wheelEvent(QWheelEvent *) override;
 #endif
-    void enterEvent(QEvent *) override;
+    void enterEvent(QEnterEvent *) override;
     void leaveEvent(QEvent *) override;
     void hideEvent(QHideEvent *) override;
     void paintEvent(QPaintEvent *) override;

@@ -8756,7 +8756,7 @@ bool QWidget::event(QEvent *event)
             QCoreApplication::sendEvent(const_cast<QWidget *>(this), &tip);
         }
 #endif
-        enterEvent(event);
+        enterEvent(static_cast<QEnterEvent*>(event));
         break;
 
     case QEvent::Leave:
@@ -9402,7 +9402,7 @@ void QWidget::focusOutEvent(QFocusEvent *)
 }
 
 /*!
-    \fn void QWidget::enterEvent(QEvent *event)
+    \fn void QWidget::enterEvent(QEnterEvent *event)
 
     This event handler can be reimplemented in a subclass to receive
     widget enter events which are passed in the \a event parameter.
@@ -9413,11 +9413,9 @@ void QWidget::focusOutEvent(QFocusEvent *)
     \sa leaveEvent(), mouseMoveEvent(), event()
 */
 
-void QWidget::enterEvent(QEvent *)
+void QWidget::enterEvent(QEnterEvent *)
 {
 }
-
-// ### Qt 6: void QWidget::enterEvent(QEnterEvent *).
 
 /*!
     \fn void QWidget::leaveEvent(QEvent *event)

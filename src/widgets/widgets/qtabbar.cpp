@@ -83,7 +83,7 @@ public:
     QSize sizeHint() const override;
     QSize minimumSizeHint() const override
         { return sizeHint(); }
-    void enterEvent(QEvent *event) override;
+    void enterEvent(QEnterEvent *event) override;
     void leaveEvent(QEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
 };
@@ -2814,7 +2814,7 @@ QSize CloseButton::sizeHint() const
     return QSize(width, height);
 }
 
-void CloseButton::enterEvent(QEvent *event)
+void CloseButton::enterEvent(QEnterEvent *event)
 {
     if (isEnabled())
         update();

@@ -527,7 +527,7 @@ void QToolButtonPrivate::_q_actionTriggered()
 /*!
     \reimp
  */
-void QToolButton::enterEvent(QEvent * e)
+void QToolButton::enterEvent(QEnterEvent * e)
 {
     Q_D(QToolButton);
     if (d->autoRaise)

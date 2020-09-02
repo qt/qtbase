@@ -3502,7 +3502,7 @@ void QMenu::mouseMoveEvent(QMouseEvent *e)
 /*!
   \reimp
 */
-void QMenu::enterEvent(QEvent *)
+void QMenu::enterEvent(QEnterEvent *)
 {
     Q_D(QMenu);
     d->hasReceievedEnter = true;

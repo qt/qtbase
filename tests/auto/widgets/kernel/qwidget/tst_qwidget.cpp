@@ -5596,7 +5596,7 @@ public:
         r = QRegion();
     }
 
-    void enterEvent(QEvent *) override { ++enters; }
+    void enterEvent(QEnterEvent *) override { ++enters; }
     void leaveEvent(QEvent *) override { ++leaves; }
 
     void resetCounts()
@@ -9627,7 +9627,7 @@ void tst_QWidget::syntheticEnterLeave()
     {
     public:
         using QWidget::QWidget;
-        void enterEvent(QEvent *) override { ++numEnterEvents; }
+        void enterEvent(QEnterEvent *) override { ++numEnterEvents; }
         void leaveEvent(QEvent *) override { ++numLeaveEvents; }
         int numEnterEvents = 0;
         int numLeaveEvents = 0;
@@ -9742,7 +9742,7 @@ void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
     {
     public:
         using QWidget::QWidget;
-        void enterEvent(QEvent *) override { ++numEnterEvents; }
+        void enterEvent(QEnterEvent *) override { ++numEnterEvents; }
         void mouseMoveEvent(QMouseEvent *event) override
         {
             QCOMPARE(event->button(), Qt::NoButton);

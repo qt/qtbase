@@ -94,7 +94,7 @@ QSize QVistaBackButton::sizeHint() const
     return QSize(width, height);
 }
 
-void QVistaBackButton::enterEvent(QEvent *event)
+void QVistaBackButton::enterEvent(QEnterEvent *event)
 {
     if (isEnabled())
         update();

@@ -943,7 +943,7 @@ public:
         installEventFilter(this);
     }
 
-    void enterEvent(QEvent *event)
+    void enterEvent(QEnterEvent *event)
     {
         enterCount++;
         QWidget::enterEvent(event);
