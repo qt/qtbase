@@ -40,7 +40,7 @@
 #ifndef QLINE_H
 #define QLINE_H
 
-#include "qmath.h"
+#include <QtCore/qmath.h>
 
 #include <QtCore/qpoint.h>
 
