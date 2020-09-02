@@ -394,7 +394,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
                      << "xTilt" << qBound(-60.0, altitudeAngle * azimuth.dx, 60.0) << "yTilt" << qBound(-60.0, altitudeAngle * azimuth.dy, 60.0);
             QWindowSystemInterface::handleTabletEvent(self.platformWindow->window(), timeStamp, localViewPosition, globalScreenPosition,
                     // device, pointerType, buttons
-                    int(QInputDevice::DeviceType::Stylus), int(QPointingDevice::PointerType::Pen), state == Qt::TouchPointReleased ? Qt::NoButton : Qt::LeftButton,
+                    int(QInputDevice::DeviceType::Stylus), int(QPointingDevice::PointerType::Pen), state == QEventPoint::State::Released ? Qt::NoButton : Qt::LeftButton,
                     // pressure, xTilt, yTilt
                     pressure, qBound(-60.0, altitudeAngle * azimuth.dx, 60.0), qBound(-60.0, altitudeAngle * azimuth.dy, 60.0),
                     // tangentialPressure, rotation, z, uid, modifiers
