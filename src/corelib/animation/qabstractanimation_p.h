@@ -185,7 +185,7 @@ public:
 
     void restart();
     void maybeUpdateAnimationsToCurrentTime();
-    void updateAnimationTimers(qint64 = -1); // ### Qt 6 - remove parameter once qtdeclarative is fixed
+    void updateAnimationTimers();
 
     //useful for profiling/debugging
     int runningAnimationCount();

@@ -290,7 +290,7 @@ void QUnifiedTimer::stopAnimationDriver()
     driver->stop();
 }
 
-void QUnifiedTimer::updateAnimationTimers(qint64)
+void QUnifiedTimer::updateAnimationTimers()
 {
     //setCurrentTime can get this called again while we're the for loop. At least with pauseAnimations
     if(insideTick)
