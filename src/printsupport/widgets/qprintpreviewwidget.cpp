@@ -357,7 +357,7 @@ void QPrintPreviewWidgetPrivate::layoutPages()
     int numPagePlaces = numPages;
     int cols = 1; // singleMode and default
     if (viewMode == QPrintPreviewWidget::AllPagesView) {
-        if (printer->orientation() == QPrinter::Portrait)
+        if (printer->pageLayout().orientation() == QPageLayout::Portrait)
             cols = qCeil(qSqrt((float) numPages));
         else
             cols = qFloor(qSqrt((float) numPages));
@@ -593,7 +593,8 @@ void QPrintPreviewWidget::setViewMode(ViewMode mode)
 QPrinter::Orientation QPrintPreviewWidget::orientation() const
 {
     Q_D(const QPrintPreviewWidget);
-    return d->printer->orientation();
+    return d->printer->pageLayout().orientation() == QPageLayout::Portrait
+           ? QPrinter::Portrait : QPrinter::Landscape;
 }
 
 /*!
@@ -603,7 +604,8 @@ QPrinter::Orientation QPrintPreviewWidget::orientation() const
 void QPrintPreviewWidget::setOrientation(QPrinter::Orientation orientation)
 {
     Q_D(QPrintPreviewWidget);
-    d->printer->setOrientation(orientation);
+    d->printer->setPageOrientation(orientation == QPrinter::Portrait
+                                   ? QPageLayout::Portrait : QPageLayout::Landscape);
     d->generatePreview();
 }
 
