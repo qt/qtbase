@@ -1497,11 +1497,11 @@ public:
         Q_ASSERT(b >= this->begin() && b < this->end());
         Q_ASSERT(e > this->begin() && e <= this->end());
 
-        // Qt5 QList in erase: try to move less data around
-        // Now:
-        const T *begin = this->begin();
-        const T *end = this->end();
-        if (b - begin < end - e) {
+        // Comply with std::vector::erase(): erased elements and all after them
+        // are invalidated. However, erasing from the beginning effectively
+        // means that all iterators are invalidated. We can use this freedom to
+        // erase by moving towards the end.
+        if (b == this->begin()) {
             Base::erase(GrowsBackwardsTag{}, b, e);
         } else {
             Base::erase(GrowsForwardTag{}, b, e);

@@ -1090,12 +1090,10 @@ void tst_QArrayData::arrayOps2()
         QVERIFY(vs[i].isNull());
 
         QCOMPARE(vo[i].id, i);
-
-        // Erasing closer to begin causes smaller region [begin, begin + 2) to
-        // be moved. Thus, to-be-erased region gets reassigned with the elements
-        // at the beginning
+        // Erasing not from begin always shifts left - consistency with
+        // std::vector::erase. Elements before erase position are not affected.
         QCOMPARE(int(vo[i].flags), CountedObject::DefaultConstructed
-                | CountedObject::CopyConstructed | CountedObject::CopyAssigned);
+                | CountedObject::CopyConstructed);
     }
 
     for (size_t i = 2; i < 4; ++i) {
@@ -1103,9 +1101,8 @@ void tst_QArrayData::arrayOps2()
         QVERIFY(vs[i].isNull());
 
         QCOMPARE(vo[i].id, i + 8);
-
-        // Erasing closer to begin does not affect [begin + 2, begin + 4) region
-        QCOMPARE(int(vo[i].flags), CountedObject::DefaultConstructed);
+        QCOMPARE(int(vo[i].flags), int(CountedObject::DefaultConstructed)
+                | CountedObject::CopyAssigned);
     }
 
     for (size_t i = 4; i < 7; ++i) {
@@ -1113,9 +1110,8 @@ void tst_QArrayData::arrayOps2()
         QCOMPARE(vs[i], QString::number(i + 3));
 
         QCOMPARE(vo[i].id, i + 3);
-
-        // Erasing closer to begin does not affect [begin + 2, begin + 4) region
-        QCOMPARE(int(vo[i].flags), CountedObject::DefaultConstructed);
+        QCOMPARE(int(vo[i].flags), CountedObject::DefaultConstructed
+                | CountedObject::CopyAssigned);
     }
 }
 
