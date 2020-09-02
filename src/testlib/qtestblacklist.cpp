@@ -87,9 +87,27 @@ QT_BEGIN_NAMESPACE
         [testfunction2:testData]
         msvc-2010
 
+  QML test functions are identified using the following format:
+
+        <TestCase name>::<function name>:<data tag>
+
+  For example, to blacklist a QML test on RHEL 7.6:
+
+        # QTBUG-12345
+        [Button::test_display:TextOnly]
+        ci rhel-7.6
+
   Keys are lower-case.  Distribution name and version are supported if
-  QSysInfo's productType() and productVersion() return them. Keys can be
-  added via the space-separated QTEST_ENVIRONMENT environment variable.
+  QSysInfo's productType() and productVersion() return them.
+
+  Keys can be added via the space-separated QTEST_ENVIRONMENT
+  environment variable:
+
+        QTEST_ENVIRONMENT=ci ./tst_stuff
+
+  This can be used to "mock" a test environment. In the example above,
+  we add "ci" to the list of keys for the test environment, making it
+  possible to test BLACKLIST files that blacklist tests in a CI environment.
 
   The other known keys are listed below:
 */
