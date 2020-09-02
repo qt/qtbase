@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Olivier Goffart <ogoffart@woboq.com>
+** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2019 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -46,8 +46,7 @@ QT_BEGIN_NAMESPACE
 // only moc needs this function
 static QByteArray normalizeType(const QByteArray &ba)
 {
-    QByteArray result = normalizeTypeInternal(ba.constBegin(), ba.constEnd());
-    return result;
+    return ba.size() ? normalizeTypeInternal(ba.constBegin(), ba.constEnd()) : ba;
 }
 
 bool Moc::parseClassHead(ClassDef *def)

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2013 Olivier Goffart <ogoffart@woboq.com>
+** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2019 Olivier Goffart <ogoffart@woboq.com>
 ** Copyright (C) 2018 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -283,7 +283,7 @@ void Generator::generateCode()
             if (i != strings.size() - 1)
                 fputc(',', out);
             const QByteArray comment = str.length() > 32 ? str.left(29) + "..." : str;
-            fprintf(out, " // \"%s\"\n", comment.constData());
+            fprintf(out, " // \"%s\"\n", comment.size() ? comment.constData() : "");
             idx += str.length() + 1;
             for (int j = 0; j < str.length(); ++j) {
                 if (str.at(j) == '\\') {
@@ -1466,8 +1466,12 @@ void Generator::generateSignal(FunctionDef *def,int index)
     for (int j = 0; j < def->arguments.count(); ++j) {
         const ArgumentDef &a = def->arguments.at(j);
         if (j)
-            fprintf(out, ", ");
-        fprintf(out, "%s _t%d%s", a.type.name.constData(), offset++, a.rightType.constData());
+            fputs(", ", out);
+        if (a.type.name.size())
+            fputs(a.type.name.constData(), out);
+        fprintf(out, " _t%d", offset++);
+        if (a.rightType.size())
+            fputs(a.rightType.constData(), out);
     }
     if (def->isPrivateSignal) {
         if (!def->arguments.isEmpty())
