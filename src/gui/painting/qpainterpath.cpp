@@ -92,10 +92,8 @@ struct QPainterPathPrivateDeleter
 {
     static inline void cleanup(QPainterPathPrivate *d)
     {
-        // note - we must downcast to QPainterPathData since QPainterPathPrivate
-        // has a non-virtual destructor!
         if (d && !d->ref.deref())
-            delete static_cast<QPainterPathData *>(d);
+            delete d;
     }
 };
 
@@ -569,7 +567,7 @@ QPainterPath::QPainterPath(const QPainterPath &other)
 */
 
 QPainterPath::QPainterPath(const QPointF &startPoint)
-    : d_ptr(new QPainterPathData)
+    : d_ptr(new QPainterPathPrivate)
 {
     Element e = { startPoint.x(), startPoint.y(), MoveToElement };
     d_func()->elements << e;
@@ -587,7 +585,7 @@ void QPainterPath::detach()
 */
 void QPainterPath::detach_helper()
 {
-    QPainterPathPrivate *data = new QPainterPathData(*d_func());
+    QPainterPathPrivate *data = new QPainterPathPrivate(*d_func());
     d_ptr.reset(data);
 }
 
@@ -596,7 +594,7 @@ void QPainterPath::detach_helper()
 */
 void QPainterPath::ensureData_helper()
 {
-    QPainterPathPrivate *data = new QPainterPathData;
+    QPainterPathPrivate *data = new QPainterPathPrivate;
     data->elements.reserve(16);
     QPainterPath::Element e = { 0, 0, QPainterPath::MoveToElement };
     data->elements << e;
@@ -753,7 +751,7 @@ void QPainterPath::moveTo(const QPointF &p)
     ensureData();
     detach();
 
-    QPainterPathData *d = d_func();
+    QPainterPathPrivate *d = d_func();
     Q_ASSERT(!d->elements.isEmpty());
 
     d->require_moveTo = false;
@@ -803,7 +801,7 @@ void QPainterPath::lineTo(const QPointF &p)
     ensureData();
     detach();
 
-    QPainterPathData *d = d_func();
+    QPainterPathPrivate *d = d_func();
     Q_ASSERT(!d->elements.isEmpty());
     d->maybeMoveTo();
     if (p == QPointF(d->elements.constLast()))
@@ -862,7 +860,7 @@ void QPainterPath::cubicTo(const QPointF &c1, const QPointF &c2, const QPointF &
     ensureData();
     detach();
 
-    QPainterPathData *d = d_func();
+    QPainterPathPrivate *d = d_func();
     Q_ASSERT(!d->elements.isEmpty());
 
 
@@ -1288,7 +1286,7 @@ void QPainterPath::addPath(const QPainterPath &other)
     ensureData();
     detach();
 
-    QPainterPathData *d = reinterpret_cast<QPainterPathData *>(d_func());
+    QPainterPathPrivate *d = d_func();
     // Remove last moveto so we don't get multiple moveto's
     if (d->elements.constLast().type == MoveToElement)
         d->elements.remove(d->elements.size()-1);
@@ -1319,7 +1317,7 @@ void QPainterPath::connectPath(const QPainterPath &other)
     ensureData();
     detach();
 
-    QPainterPathData *d = reinterpret_cast<QPainterPathData *>(d_func());
+    QPainterPathPrivate *d = d_func();
     // Remove last moveto so we don't get multiple moveto's
     if (d->elements.constLast().type == MoveToElement)
         d->elements.remove(d->elements.size()-1);
@@ -1509,7 +1507,7 @@ QRectF QPainterPath::boundingRect() const
 {
     if (!d_ptr)
         return QRectF();
-    QPainterPathData *d = d_func();
+    QPainterPathPrivate *d = d_func();
 
     if (d->dirtyBounds)
         computeBoundingRect();
@@ -1530,7 +1528,7 @@ QRectF QPainterPath::controlPointRect() const
 {
     if (!d_ptr)
         return QRectF();
-    QPainterPathData *d = d_func();
+    QPainterPathPrivate *d = d_func();
 
     if (d->dirtyControlBounds)
         computeControlPointRect();
@@ -1857,7 +1855,7 @@ bool QPainterPath::contains(const QPointF &pt) const
     if (isEmpty() || !controlPointRect().contains(pt))
         return false;
 
-    QPainterPathData *d = d_func();
+    QPainterPathPrivate *d = d_func();
 
     int winding_number = 0;
 
@@ -2316,8 +2314,8 @@ static inline bool epsilonCompare(const QPointF &a, const QPointF &b, const QSiz
 
 bool QPainterPath::operator==(const QPainterPath &path) const
 {
-    QPainterPathData *d = reinterpret_cast<QPainterPathData *>(d_func());
-    QPainterPathData *other_d = path.d_func();
+    QPainterPathPrivate *d = d_func();
+    QPainterPathPrivate *other_d = path.d_func();
     if (other_d == d) {
         return true;
     } else if (!d || !other_d) {
@@ -3356,7 +3354,7 @@ void QPainterPath::setDirty(bool dirty)
 
 void QPainterPath::computeBoundingRect() const
 {
-    QPainterPathData *d = d_func();
+    QPainterPathPrivate *d = d_func();
     d->dirtyBounds = false;
     if (!d_ptr) {
         d->bounds = QRect();
@@ -3403,7 +3401,7 @@ void QPainterPath::computeBoundingRect() const
 
 void QPainterPath::computeControlPointRect() const
 {
-    QPainterPathData *d = d_func();
+    QPainterPathPrivate *d = d_func();
     d->dirtyControlBounds = false;
     if (!d_ptr) {
         d->controlBounds = QRect();

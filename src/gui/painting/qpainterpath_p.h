@@ -66,51 +66,6 @@
 
 QT_BEGIN_NAMESPACE
 
-// ### Qt 6: merge with QPainterPathData
-class QPainterPathPrivate
-{
-public:
-    friend class QPainterPath;
-    friend class QPainterPathData;
-    friend class QPainterPathStroker;
-    friend class QPainterPathStrokerPrivate;
-    friend class QTransform;
-    friend class QVectorPath;
-    friend struct QPainterPathPrivateDeleter;
-#ifndef QT_NO_DATASTREAM
-    friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QPainterPath &);
-    friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QPainterPath &);
-#endif
-
-    QPainterPathPrivate() noexcept
-        : ref(1)
-    {
-    }
-
-    QPainterPathPrivate(const QPainterPathPrivate &other) noexcept
-        : ref(1),
-          elements(other.elements)
-    {
-    }
-
-    QPainterPathPrivate &operator=(const QPainterPathPrivate &) = delete;
-    ~QPainterPathPrivate() = default;
-
-private:
-    QAtomicInt ref;
-    QList<QPainterPath::Element> elements;
-};
-
-class QPainterPathStrokerPrivate
-{
-public:
-    QPainterPathStrokerPrivate();
-
-    QStroker stroker;
-    QList<qfixed> dashPattern;
-    qreal dashOffset;
-};
-
 class QPolygonF;
 class QVectorPathConverter;
 
@@ -173,36 +128,49 @@ private:
     Q_DISABLE_COPY_MOVE(QVectorPathConverter)
 };
 
-class QPainterPathData : public QPainterPathPrivate
+class QPainterPathPrivate
 {
 public:
-    QPainterPathData() :
-        cStart(0),
-        fillRule(Qt::OddEvenFill),
-        require_moveTo(false),
-        dirtyBounds(false),
-        dirtyControlBounds(false),
-        convex(false),
-        pathConverter(nullptr)
+    friend class QPainterPath;
+    friend class QPainterPathStroker;
+    friend class QPainterPathStrokerPrivate;
+    friend class QTransform;
+    friend class QVectorPath;
+    friend struct QPainterPathPrivateDeleter;
+#ifndef QT_NO_DATASTREAM
+    friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QPainterPath &);
+    friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QPainterPath &);
+#endif
+
+    QPainterPathPrivate() noexcept
+        : ref(1),
+          cStart(0),
+          fillRule(Qt::OddEvenFill),
+          require_moveTo(false),
+          dirtyBounds(false),
+          dirtyControlBounds(false),
+          convex(false),
+          pathConverter(nullptr)
     {
     }
 
-    QPainterPathData(const QPainterPathData &other) :
-        QPainterPathPrivate(other),
-        cStart(other.cStart),
-        fillRule(other.fillRule),
-        bounds(other.bounds),
-        controlBounds(other.controlBounds),
-        require_moveTo(false),
-        dirtyBounds(other.dirtyBounds),
-        dirtyControlBounds(other.dirtyControlBounds),
-        convex(other.convex),
-        pathConverter(nullptr)
+    QPainterPathPrivate(const QPainterPathPrivate &other) noexcept
+        : ref(1),
+          elements(other.elements),
+          cStart(other.cStart),
+          fillRule(other.fillRule),
+          bounds(other.bounds),
+          controlBounds(other.controlBounds),
+          require_moveTo(false),
+          dirtyBounds(other.dirtyBounds),
+          dirtyControlBounds(other.dirtyControlBounds),
+          convex(other.convex),
+          pathConverter(nullptr)
     {
     }
 
-    QPainterPathData &operator=(const QPainterPathData &) = delete;
-    ~QPainterPathData() = default;
+    QPainterPathPrivate &operator=(const QPainterPathPrivate &) = delete;
+    ~QPainterPathPrivate() = default;
 
     inline bool isClosed() const;
     inline void close();
@@ -214,6 +182,10 @@ public:
             pathConverter.reset(new QVectorPathConverter(elements, fillRule, convex));
         return pathConverter->path;
     }
+
+private:
+    QAtomicInt ref;
+    QList<QPainterPath::Element> elements;
 
     int cStart;
     Qt::FillRule fillRule;
@@ -229,12 +201,21 @@ public:
     std::unique_ptr<QVectorPathConverter> pathConverter;
 };
 
+class QPainterPathStrokerPrivate
+{
+public:
+    QPainterPathStrokerPrivate();
+
+    QStroker stroker;
+    QList<qfixed> dashPattern;
+    qreal dashOffset;
+};
 
 inline const QPainterPath QVectorPath::convertToPainterPath() const
 {
         QPainterPath path;
         path.ensureData();
-        QPainterPathData *data = path.d_func();
+        QPainterPathPrivate *data = path.d_func();
         data->elements.reserve(m_count);
         int index = 0;
         data->elements[0].x = m_points[index++];
@@ -270,14 +251,14 @@ inline const QPainterPath QVectorPath::convertToPainterPath() const
 void Q_GUI_EXPORT qt_find_ellipse_coords(const QRectF &r, qreal angle, qreal length,
                                          QPointF* startPoint, QPointF *endPoint);
 
-inline bool QPainterPathData::isClosed() const
+inline bool QPainterPathPrivate::isClosed() const
 {
     const QPainterPath::Element &first = elements.at(cStart);
     const QPainterPath::Element &last = elements.last();
     return first.x == last.x && first.y == last.y;
 }
 
-inline void QPainterPathData::close()
+inline void QPainterPathPrivate::close()
 {
     Q_ASSERT(ref.loadRelaxed() == 1);
     require_moveTo = true;
@@ -294,7 +275,7 @@ inline void QPainterPathData::close()
     }
 }
 
-inline void QPainterPathData::maybeMoveTo()
+inline void QPainterPathPrivate::maybeMoveTo()
 {
     if (require_moveTo) {
         QPainterPath::Element e = elements.last();
@@ -304,7 +285,7 @@ inline void QPainterPathData::maybeMoveTo()
     }
 }
 
-inline void QPainterPathData::clear()
+inline void QPainterPathPrivate::clear()
 {
     Q_ASSERT(ref.loadRelaxed() == 1);
 

@@ -54,7 +54,6 @@ QT_BEGIN_NAMESPACE
 class QFont;
 class QPainterPathPrivate;
 struct QPainterPathPrivateDeleter;
-class QPainterPathData;
 class QPainterPathStrokerPrivate;
 class QPen;
 class QPolygonF;
@@ -209,9 +208,8 @@ private:
     void computeBoundingRect() const;
     void computeControlPointRect() const;
 
-    QPainterPathData *d_func() const { return reinterpret_cast<QPainterPathData *>(d_ptr.data()); }
+    QPainterPathPrivate *d_func() const { return d_ptr.data(); }
 
-    friend class QPainterPathData;
     friend class QPainterPathStroker;
     friend class QPainterPathStrokerPrivate;
     friend class QTransform;
