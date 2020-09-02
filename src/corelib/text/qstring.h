@@ -1167,7 +1167,7 @@ inline QString::~QString() {}
 
 inline void QString::reserve(qsizetype asize)
 {
-    if (d->needsDetach() || asize >= capacity())
+    if (d->needsDetach() || asize >= capacity() - d.freeSpaceAtBegin())
         reallocData(uint(qMax(asize, size())) + 1u, d->detachFlags());
 
     // we're not shared anymore, for sure

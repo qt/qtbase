@@ -467,7 +467,7 @@ inline void QList<T>::resize_internal(qsizetype newSize, Qt::Initialization)
 {
     Q_ASSERT(newSize >= 0);
 
-    if (d->needsDetach() || newSize > capacity()) {
+    if (d->needsDetach() || newSize > capacity() - d.freeSpaceAtBegin()) {
         // must allocate memory
         DataPointer detached(Data::allocate(d->detachCapacity(newSize),
                                             d->detachFlags()));
@@ -485,7 +485,7 @@ template <typename T>
 void QList<T>::reserve(qsizetype asize)
 {
     // capacity() == 0 for immutable data, so this will force a detaching below
-    if (asize <= capacity()) {
+    if (asize <= capacity() - d.freeSpaceAtBegin()) {
         if (d->flags() & Data::CapacityReserved)
             return;  // already reserved, don't shrink
         if (!d->isShared()) {
