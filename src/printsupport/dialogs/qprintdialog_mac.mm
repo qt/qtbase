@@ -202,7 +202,7 @@ QT_USE_NAMESPACE
     }
     if (pageSize.isValid() && !pageSize.isEquivalentTo(printer->pageLayout().pageSize()))
         printer->setPageSize(pageSize);
-    printer->setOrientation(orientation == kPMLandscape ? QPrinter::Landscape : QPrinter::Portrait);
+    printer->setPageOrientation(orientation == kPMLandscape ? QPageLayout::Landscape : QPageLayout::Portrait);
 
     dialog->done((returnCode == NSModalResponseOK) ? QDialog::Accepted : QDialog::Rejected);
 }
