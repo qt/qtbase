@@ -1320,7 +1320,7 @@ public:
         const qsizetype freeAtEnd = this->freeSpaceAtEnd();
         const qsizetype capacity = this->constAllocatedCapacity();
 
-        if (where == this->begin()) {  // prepend
+        if (this->size > 0 && where == this->begin()) {  // prepend
             // Qt5 QList in prepend: not enough space at begin && 33% full
             // Now (below):
             return freeAtBegin < n && (this->size >= (capacity / 3));
@@ -1420,7 +1420,7 @@ public:
         Q_ASSERT(e <= where || b > this->end() || where == this->end()); // No overlap or append
         Q_ASSERT(size_t(e - b) <= this->allocatedCapacity() - this->size);
 
-        if (where == this->begin()) {  // prepend case - special space arrangement
+        if (this->size > 0 && where == this->begin()) {  // prepend case - special space arrangement
             prepareSpaceForPrepend(b, e, e - b);  // ### perf. loss
             Base::insert(GrowsBackwardsTag{}, this->begin(), b, e);
             return;
@@ -1445,7 +1445,7 @@ public:
         Q_ASSERT(where >= this->begin() && where <= this->end());
         Q_ASSERT(this->allocatedCapacity() - size_t(this->size) >= n);
 
-        if (where == this->begin()) {  // prepend case - special space arrangement
+        if (this->size > 0 && where == this->begin()) {  // prepend case - special space arrangement
             // Preserve the value, because it might be a reference to some part of the moved chunk
             T tmp(t);
             prepareSpaceForPrepend(n);  // ### perf. loss
