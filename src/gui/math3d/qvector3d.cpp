@@ -54,38 +54,6 @@ QT_BEGIN_NAMESPACE
 static_assert(std::is_standard_layout<QVector3D>::value, "QVector3D is supposed to be standard layout");
 static_assert(sizeof(QVector3D) == sizeof(float) * 3, "QVector3D is not supposed to have padding at the end");
 
-// QVector3D used to be defined as class QVector3D { float x, y, z; };,
-// now instead it is defined as classs QVector3D { float v[3]; };.
-// Check that binary compatibility is preserved.
-// ### Qt 6: remove all of these checks.
-
-namespace {
-
-struct QVector3DOld
-{
-    float x, y, z;
-};
-
-struct QVector3DNew
-{
-    float v[3];
-};
-
-static_assert(std::is_standard_layout<QVector3DOld>::value, "Binary compatibility break in QVector3D");
-static_assert(std::is_standard_layout<QVector3DNew>::value, "Binary compatibility break in QVector3D");
-
-static_assert(sizeof(QVector3DOld) == sizeof(QVector3DNew), "Binary compatibility break in QVector3D");
-
-// requires a constexpr offsetof
-#if !defined(Q_CC_MSVC) || (_MSC_VER >= 1910)
-static_assert(offsetof(QVector3DOld, x) == offsetof(QVector3DNew, v) + sizeof(QVector3DNew::v[0]) * 0, "Binary compatibility break in QVector3D");
-static_assert(offsetof(QVector3DOld, y) == offsetof(QVector3DNew, v) + sizeof(QVector3DNew::v[0]) * 1, "Binary compatibility break in QVector3D");
-static_assert(offsetof(QVector3DOld, z) == offsetof(QVector3DNew, v) + sizeof(QVector3DNew::v[0]) * 2, "Binary compatibility break in QVector3D");
-#endif
-
-
-} // anonymous namespace
-
 /*!
     \class QVector3D
     \brief The QVector3D class represents a vector or vertex in 3D space.
