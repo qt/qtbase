@@ -348,10 +348,18 @@ function(qt_create_tracepoints name tracepoints_file)
             set(tracegen_arg "etw")
         endif()
 
-        qt_get_tool_target_name(tracegen_target tracegen)
+        if(QT_HOST_PATH)
+            qt_path_join(tracegen
+                "${QT_HOST_PATH}"
+                "${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_BINDIR}"
+                "tracegen")
+        else()
+            set(tracegen "${QT_CMAKE_EXPORT_NAMESPACE}::tracegen")
+        endif()
+
         get_filename_component(tracepoints_filepath "${tracepoints_file}" ABSOLUTE)
         add_custom_command(OUTPUT "${header_path}"
-            COMMAND ${tracegen_target} ${tracegen_arg} "${tracepoints_filepath}" "${header_path}"
+            COMMAND ${tracegen} ${tracegen_arg} "${tracepoints_filepath}" "${header_path}"
             VERBATIM)
         add_custom_target(${name}_tracepoints_header DEPENDS "${header_path}")
         add_dependencies(${name} ${name}_tracepoints_header)
