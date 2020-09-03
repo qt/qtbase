@@ -693,13 +693,6 @@ qt_extend_target(Core CONDITION ICC
         strict
 )
 
-qt_extend_target(Core CONDITION MSVC
-    SOURCES
-        tools/qvector_msvc.cpp
-    NO_PCH_SOURCES
-        "tools/qvector_msvc.cpp"
-)
-
 qt_extend_target(Core CONDITION QT_FEATURE_system_zlib
     LIBRARIES
         ZLIB::ZLIB
