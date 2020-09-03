@@ -54,9 +54,9 @@ QT_BEGIN_NAMESPACE
     a Variant without knowing its type.
 
     The void* arguments to the various methods are typically created by using
-    a \l QVariant of the respective container or element type, and calling
+    a \l QVariant of the respective container or value type, and calling
     its \l QVariant::data() or \l QVariant::constData() methods. However, you
-    can also pass plain pointers to objects of the container or element type.
+    can also pass plain pointers to objects of the container or value type.
 
     Iterator invalidation follows the rules given by the underlying containers
     and is not expressed in the API. Therefore, for a truly generic container,
@@ -128,14 +128,14 @@ QMetaType QMetaSequence::valueMetaType() const
 
 /*!
     Returns \c true if the underlying container is ordered, otherwise returns
-    \c false. A container is considered ordered if elements added to it are
+    \c false. A container is considered ordered if values added to it are
     placed in a defined location. Inserting into or adding to an ordered
     container will always succeed. Inserting into or adding to an unordered
     container may not succeed, for example if the container is a QSet that
     already contains the value being inserted.
 
-    \sa addElement(), insertElementAtIterator(), addsAndRemovesElementsAtBegin(),
-        addsAndRemovesElementsAtEnd()
+    \sa addValue(), insertValueAtIterator(), addsAndRemovesValuesAtBegin(),
+        addsAndRemovesValuesAtEnd()
  */
 bool QMetaSequence::isOrdered() const
 {
@@ -145,14 +145,14 @@ bool QMetaSequence::isOrdered() const
 }
 
 /*!
-    Returns \c true if elements added using \l addElement() are placed at the
+    Returns \c true if values added using \l addValue() are placed at the
     beginning of the container, otherwise returns \c false. Likewise
-    \l removeElement() removes an element from the beginning of the container
+    \l removeValue() removes an value from the beginning of the container
     if this method returns \c true.
 
-    \sa addElement(), removeElement(), addsAndRemovesElementsAtEnd()
+    \sa addValue(), removeValue(), addsAndRemovesValuesAtEnd()
  */
-bool QMetaSequence::addsAndRemovesElementsAtBegin() const
+bool QMetaSequence::addsAndRemovesValuesAtBegin() const
 {
     if (!d_ptr)
         return false;
@@ -160,14 +160,14 @@ bool QMetaSequence::addsAndRemovesElementsAtBegin() const
 }
 
 /*!
-    Returns \c true if elements added using \l addElement() are placed at the
+    Returns \c true if values added using \l addValue() are placed at the
     end of the container, otherwise returns \c false. Likewise
-    \l removeElement() removes an element from the end of the container
+    \l removeValue() removes an value from the end of the container
     if this method returns \c true.
 
-    \sa addElement(), removeElement(), addsAndRemovesElementsAtBegin()
+    \sa addValue(), removeValue(), addsAndRemovesValuesAtBegin()
  */
-bool QMetaSequence::addsAndRemovesElementsAtEnd() const
+bool QMetaSequence::addsAndRemovesValuesAtEnd() const
 {
     if (!d_ptr)
         return false;
@@ -186,7 +186,7 @@ bool QMetaSequence::hasSize() const
 }
 
 /*!
-    Returns the number of elements in the given \a container if it can be
+    Returns the number of values in the given \a container if it can be
     queried for its size. Otherwise returns \c -1.
 
     \sa hasSize()
@@ -218,107 +218,107 @@ void QMetaSequence::clear(void *container) const
 }
 
 /*!
-    Returns \c true if elements can be retrieved from the container by index,
+    Returns \c true if values can be retrieved from the container by index,
     otherwise \c false.
 
-    \sa elementAtIndex()
+    \sa valueAtIndex()
  */
-bool QMetaSequence::canGetElementAtIndex() const
+bool QMetaSequence::canGetValueAtIndex() const
 {
-    return d_ptr && d_ptr->elementAtIndexFn;
+    return d_ptr && d_ptr->valueAtIndexFn;
 }
 
 /*!
-    Retrieves the element at \a index in the \a container and places it in the
+    Retrieves the value at \a index in the \a container and places it in the
     memory location pointed to by \a result, if that is possible.
 
-    \sa canGetElementAtIndex()
+    \sa canGetValueAtIndex()
  */
-void QMetaSequence::elementAtIndex(const void *container, qsizetype index, void *result) const
+void QMetaSequence::valueAtIndex(const void *container, qsizetype index, void *result) const
 {
-    if (canGetElementAtIndex())
-        d_ptr->elementAtIndexFn(container, index, result);
+    if (canGetValueAtIndex())
+        d_ptr->valueAtIndexFn(container, index, result);
 }
 
 /*!
-    Returns \c true if an element can be written to the container by index,
+    Returns \c true if an value can be written to the container by index,
     otherwise \c false.
 
-    \sa setElementAtIndex()
+    \sa setValueAtIndex()
 */
-bool QMetaSequence::canSetElementAtIndex() const
+bool QMetaSequence::canSetValueAtIndex() const
 {
-    return d_ptr && d_ptr->setElementAtIndexFn;
+    return d_ptr && d_ptr->setValueAtIndexFn;
 }
 
 /*!
-    Overwrites the element at \a index in the \a container using the \a element
+    Overwrites the value at \a index in the \a container using the \a value
     passed as parameter if that is possible.
 
-    \sa canSetElementAtIndex()
+    \sa canSetValueAtIndex()
  */
-void QMetaSequence::setElementAtIndex(void *container, qsizetype index, const void *element) const
+void QMetaSequence::setValueAtIndex(void *container, qsizetype index, const void *value) const
 {
-    if (canSetElementAtIndex())
-        d_ptr->setElementAtIndexFn(container, index, element);
+    if (canSetValueAtIndex())
+        d_ptr->setValueAtIndexFn(container, index, value);
 }
 
 /*!
-    Returns \c true if elements can be added to the container, \c false
+    Returns \c true if values can be added to the container, \c false
     otherwise.
 
-    \sa addElement(), isOrdered()
+    \sa addValue(), isOrdered()
  */
-bool QMetaSequence::canAddElement() const
+bool QMetaSequence::canAddValue() const
 {
-    return d_ptr && d_ptr->addElementFn;
+    return d_ptr && d_ptr->addValueFn;
 }
 
 /*!
-    Adds \a element to the \a container if possible. If \l canAddElement()
-    returns \c false, the \a element is not added. Else, if
-    \l addsAndRemovesElementsAtBegin() returns \c true, the \a element is added
+    Adds \a value to the \a container if possible. If \l canAddValue()
+    returns \c false, the \a value is not added. Else, if
+    \l addsAndRemovesValuesAtBegin() returns \c true, the \a value is added
     to the beginning of the \a container. Else, if
-    \l addsAndRemovesElementsAtEnd() returns \c true, the \a element is added to
-    the end of the container. Else, the element is added in an unspecified
-    place or not at all. The latter is the case for adding elements to an
+    \l addsAndRemovesValuesAtEnd() returns \c true, the \a value is added to
+    the end of the container. Else, the value is added in an unspecified
+    place or not at all. The latter is the case for adding values to an
     unordered container, for example \l QSet.
 
-    \sa canAddElement(), addsAndRemovesElementsAtBegin(),
-        addsAndRemovesElementsAtEnd(), isOrdered(), removeElement()
+    \sa canAddValue(), addsAndRemovesValuesAtBegin(),
+        addsAndRemovesValuesAtEnd(), isOrdered(), removeValue()
  */
-void QMetaSequence::addElement(void *container, const void *element) const
+void QMetaSequence::addValue(void *container, const void *value) const
 {
-    if (canAddElement())
-        d_ptr->addElementFn(container, element);
+    if (canAddValue())
+        d_ptr->addValueFn(container, value);
 }
 
 /*!
-    Returns \c true if elements can be removed from the container, \c false
+    Returns \c true if values can be removed from the container, \c false
     otherwise.
 
-    \sa removeElement(), isOrdered()
+    \sa removeValue(), isOrdered()
  */
-bool QMetaSequence::canRemoveElement() const
+bool QMetaSequence::canRemoveValue() const
 {
-    return d_ptr && d_ptr->removeElementFn;
+    return d_ptr && d_ptr->removeValueFn;
 }
 
 /*!
-    Removes an element from the \a container if possible. If
-    \l canRemoveElement() returns \c false, no element is removed. Else, if
-    \l addsAndRemovesElementsAtBegin() returns \c true, the first element in
-    the \a container is removed. Else, if \l addsAndRemovesElementsAtEnd()
-    returns \c true, the last element in the \a container is removed. Else,
-    an unspecified element or nothing is removed.
+    Removes an value from the \a container if possible. If
+    \l canRemoveValue() returns \c false, no value is removed. Else, if
+    \l addsAndRemovesValuesAtBegin() returns \c true, the first value in
+    the \a container is removed. Else, if \l addsAndRemovesValuesAtEnd()
+    returns \c true, the last value in the \a container is removed. Else,
+    an unspecified value or nothing is removed.
 
-    \sa canRemoveElement(), addsAndRemovesElementsAtBegin(),
-        addsAndRemovesElementsAtEnd(), isOrdered(), addElement()
+    \sa canRemoveValue(), addsAndRemovesValuesAtBegin(),
+        addsAndRemovesValuesAtEnd(), isOrdered(), addValue()
  */
-void QMetaSequence::removeElement(void *container) const
+void QMetaSequence::removeValue(void *container) const
 {
-    if (canRemoveElement())
-        d_ptr->removeElementFn(container);
+    if (canRemoveValue())
+        d_ptr->removeValueFn(container);
 }
 
 /*!
@@ -388,7 +388,7 @@ void QMetaSequence::destroyIterator(const void *iterator) const
 
 /*!
     Returns \c true if the non-const iterators \a i and \a j point to the same
-    element in the container they are iterating over, otherwise returns \c
+    value in the container they are iterating over, otherwise returns \c
     false.
 
     \sa begin(), end()
@@ -441,99 +441,99 @@ qsizetype QMetaSequence::diffIterator(const void *i, const void *j) const
     Returns \c true if the underlying container can retrieve the value pointed
     to by a non-const iterator, \c false otherwise.
 
-    \sa hasIterator(), elementAtIterator()
+    \sa hasIterator(), valueAtIterator()
  */
-bool QMetaSequence::canGetElementAtIterator() const
+bool QMetaSequence::canGetValueAtIterator() const
 {
-    return d_ptr && d_ptr->elementAtIteratorFn;
+    return d_ptr && d_ptr->valueAtIteratorFn;
 }
 
 /*!
-    Retrieves the element pointed to by the non-const \a iterator and stores it
+    Retrieves the value pointed to by the non-const \a iterator and stores it
     in the memory location pointed to by \a result, if possible.
 
-    \sa canGetElementAtIterator(), begin(), end()
+    \sa canGetValueAtIterator(), begin(), end()
  */
-void QMetaSequence::elementAtIterator(const void *iterator, void *result) const
+void QMetaSequence::valueAtIterator(const void *iterator, void *result) const
 {
-    if (canGetElementAtIterator())
-        d_ptr->elementAtIteratorFn(iterator, result);
+    if (canGetValueAtIterator())
+        d_ptr->valueAtIteratorFn(iterator, result);
 }
 
 /*!
     Returns \c true if the underlying container can write to the value pointed
     to by a non-const iterator, \c false otherwise.
 
-    \sa hasIterator(), setElementAtIterator()
+    \sa hasIterator(), setValueAtIterator()
  */
-bool QMetaSequence::canSetElementAtIterator() const
+bool QMetaSequence::canSetValueAtIterator() const
 {
-    return d_ptr && d_ptr->setElementAtIteratorFn;
+    return d_ptr && d_ptr->setValueAtIteratorFn;
 }
 
 /*!
-    Writes \a element to the value pointed to by the non-const \a iterator, if
+    Writes \a value to the value pointed to by the non-const \a iterator, if
     possible.
 
-    \sa canSetElementAtIterator(), begin(), end()
+    \sa canSetValueAtIterator(), begin(), end()
  */
-void QMetaSequence::setElementAtIterator(const void *iterator, const void *element) const
+void QMetaSequence::setValueAtIterator(const void *iterator, const void *value) const
 {
-    if (canSetElementAtIterator())
-        d_ptr->setElementAtIteratorFn(iterator, element);
+    if (canSetValueAtIterator())
+        d_ptr->setValueAtIteratorFn(iterator, value);
 }
 
 /*!
-    Returns \c true if the underlying container can insert a new element, taking
+    Returns \c true if the underlying container can insert a new value, taking
     the location pointed to by a non-const iterator into account.
 
-    \sa hasIterator(), insertElementAtIterator()
+    \sa hasIterator(), insertValueAtIterator()
  */
-bool QMetaSequence::canInsertElementAtIterator() const
+bool QMetaSequence::canInsertValueAtIterator() const
 {
-    return d_ptr && d_ptr->insertElementAtIteratorFn;
+    return d_ptr && d_ptr->insertValueAtIteratorFn;
 }
 
 /*!
-    Inserts \a element into the \a container, if possible, taking the non-const
-    \a iterator into account. If \l canInsertElementAtIterator() returns
-    \c false, the \a element is not inserted. Else if \l isOrdered() returns
-    \c true, the element is inserted before the element pointed to by
-    \a iterator. Else, the \a element is inserted at an unspecified place or not
+    Inserts \a value into the \a container, if possible, taking the non-const
+    \a iterator into account. If \l canInsertValueAtIterator() returns
+    \c false, the \a value is not inserted. Else if \l isOrdered() returns
+    \c true, the value is inserted before the value pointed to by
+    \a iterator. Else, the \a value is inserted at an unspecified place or not
     at all. In the latter case, the \a iterator is taken as a hint. If it points
-    to the correct place for the \a element, the operation may be faster than a
-    \l addElement() without iterator.
+    to the correct place for the \a value, the operation may be faster than a
+    \l addValue() without iterator.
 
-    \sa canInsertElementAtIterator(), isOrdered(), begin(), end()
+    \sa canInsertValueAtIterator(), isOrdered(), begin(), end()
  */
-void QMetaSequence::insertElementAtIterator(void *container, const void *iterator,
-                                            const void *element) const
+void QMetaSequence::insertValueAtIterator(void *container, const void *iterator,
+                                            const void *value) const
 {
-    if (canInsertElementAtIterator())
-        d_ptr->insertElementAtIteratorFn(container, iterator, element);
+    if (canInsertValueAtIterator())
+        d_ptr->insertValueAtIteratorFn(container, iterator, value);
 }
 
 /*!
-    Returns \c true if the element pointed to by a non-const iterator can be
+    Returns \c true if the value pointed to by a non-const iterator can be
     erased, \c false otherwise.
 
-    \sa hasIterator(), eraseElementAtIterator()
+    \sa hasIterator(), eraseValueAtIterator()
  */
-bool QMetaSequence::canEraseElementAtIterator() const
+bool QMetaSequence::canEraseValueAtIterator() const
 {
-    return d_ptr && d_ptr->eraseElementAtIteratorFn;
+    return d_ptr && d_ptr->eraseValueAtIteratorFn;
 }
 
 /*!
-    Erases the element pointed to by the non-const \a iterator from the
+    Erases the value pointed to by the non-const \a iterator from the
     \a container, if possible.
 
-    \sa canEraseElementAtIterator(), begin(), end()
+    \sa canEraseValueAtIterator(), begin(), end()
  */
-void QMetaSequence::eraseElementAtIterator(void *container, const void *iterator) const
+void QMetaSequence::eraseValueAtIterator(void *container, const void *iterator) const
 {
-    if (canEraseElementAtIterator())
-        d_ptr->eraseElementAtIteratorFn(container, iterator);
+    if (canEraseValueAtIterator())
+        d_ptr->eraseValueAtIteratorFn(container, iterator);
 }
 
 /*!
@@ -604,7 +604,7 @@ void QMetaSequence::destroyConstIterator(const void *iterator) const
 
 /*!
     Returns \c true if the const iterators \a i and \a j point to the same
-    element in the container they are iterating over, otherwise returns \c
+    value in the container they are iterating over, otherwise returns \c
     false.
 
     \sa constBegin(), constEnd()
@@ -657,23 +657,23 @@ qsizetype QMetaSequence::diffConstIterator(const void *i, const void *j) const
     Returns \c true if the underlying container can retrieve the value pointed
     to by a const iterator, \c false otherwise.
 
-    \sa hasConstIterator(), elementAtConstIterator()
+    \sa hasConstIterator(), valueAtConstIterator()
  */
-bool QMetaSequence::canGetElementAtConstIterator() const
+bool QMetaSequence::canGetValueAtConstIterator() const
 {
-    return d_ptr && d_ptr->elementAtConstIteratorFn;
+    return d_ptr && d_ptr->valueAtConstIteratorFn;
 }
 
 /*!
-    Retrieves the element pointed to by the const \a iterator and stores it
+    Retrieves the value pointed to by the const \a iterator and stores it
     in the memory location pointed to by \a result, if possible.
 
-    \sa canGetElementAtConstIterator(), constBegin(), constEnd()
+    \sa canGetValueAtConstIterator(), constBegin(), constEnd()
  */
-void QMetaSequence::elementAtConstIterator(const void *iterator, void *result) const
+void QMetaSequence::valueAtConstIterator(const void *iterator, void *result) const
 {
-    if (canGetElementAtConstIterator())
-        d_ptr->elementAtConstIteratorFn(iterator, result);
+    if (canGetValueAtConstIterator())
+        d_ptr->valueAtConstIteratorFn(iterator, result);
 }
 
 /*!

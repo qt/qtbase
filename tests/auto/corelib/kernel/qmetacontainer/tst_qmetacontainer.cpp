@@ -258,15 +258,15 @@ void tst_QMetaContainer::testSequence()
     QFETCH(bool, canEraseAtIterator);
     QFETCH(bool, isOrdered);
 
-    QVERIFY(metaSequence.canAddElement());
+    QVERIFY(metaSequence.canAddValue());
     QCOMPARE(metaSequence.hasSize(), hasSize);
-    QCOMPARE(metaSequence.canGetElementAtIndex(), isIndexed);
-    QCOMPARE(metaSequence.canSetElementAtIndex(), isIndexed);
-    QCOMPARE(metaSequence.canRemoveElement(), canRemove);
+    QCOMPARE(metaSequence.canGetValueAtIndex(), isIndexed);
+    QCOMPARE(metaSequence.canSetValueAtIndex(), isIndexed);
+    QCOMPARE(metaSequence.canRemoveValue(), canRemove);
     QCOMPARE(metaSequence.hasBidirectionalIterator(), hasBidirectionalIterator);
     QCOMPARE(metaSequence.hasRandomAccessIterator(), hasRandomAccessIterator);
-    QCOMPARE(metaSequence.canInsertElementAtIterator(), canInsertAtIterator);
-    QCOMPARE(metaSequence.canEraseElementAtIterator(), canEraseAtIterator);
+    QCOMPARE(metaSequence.canInsertValueAtIterator(), canInsertAtIterator);
+    QCOMPARE(metaSequence.canEraseValueAtIterator(), canEraseAtIterator);
     QCOMPARE(metaSequence.isOrdered(), isOrdered);
 
     QVariant var1(metaType);
@@ -277,40 +277,40 @@ void tst_QMetaContainer::testSequence()
         const qsizetype size = metaSequence.size(container);
 
         // var1 is invalid, and our sets do not contain an invalid value so far.
-        metaSequence.addElement(container, var1.constData());
+        metaSequence.addValue(container, var1.constData());
         QCOMPARE(metaSequence.size(container), size + 1);
         if (canRemove) {
-            metaSequence.removeElement(container);
+            metaSequence.removeValue(container);
             QCOMPARE(metaSequence.size(container), size);
         }
     } else {
-        metaSequence.addElement(container, var1.constData());
+        metaSequence.addValue(container, var1.constData());
         if (canRemove)
-            metaSequence.removeElement(container);
+            metaSequence.removeValue(container);
     }
 
     if (isIndexed) {
         QVERIFY(hasSize);
         const qsizetype size = metaSequence.size(container);
         for (qsizetype i = 0; i < size; ++i) {
-            metaSequence.elementAtIndex(container, i, var1.data());
-            metaSequence.elementAtIndex(container, size - i - 1, var2.data());
+            metaSequence.valueAtIndex(container, i, var1.data());
+            metaSequence.valueAtIndex(container, size - i - 1, var2.data());
 
-            metaSequence.setElementAtIndex(container, i, var2.constData());
-            metaSequence.setElementAtIndex(container, size - i - 1, var1.constData());
+            metaSequence.setValueAtIndex(container, i, var2.constData());
+            metaSequence.setValueAtIndex(container, size - i - 1, var1.constData());
 
-            metaSequence.elementAtIndex(container, i, var3.data());
+            metaSequence.valueAtIndex(container, i, var3.data());
             QCOMPARE(var3, var2);
 
-            metaSequence.elementAtIndex(container, size - i - 1, var3.data());
+            metaSequence.valueAtIndex(container, size - i - 1, var3.data());
             QCOMPARE(var3, var1);
         }
     }
 
     QVERIFY(metaSequence.hasIterator());
     QVERIFY(metaSequence.hasConstIterator());
-    QVERIFY(metaSequence.canGetElementAtIterator());
-    QVERIFY(metaSequence.canGetElementAtConstIterator());
+    QVERIFY(metaSequence.canGetValueAtIterator());
+    QVERIFY(metaSequence.canGetValueAtConstIterator());
 
     void *it = metaSequence.begin(container);
     void *end = metaSequence.end(container);
@@ -330,12 +330,12 @@ void tst_QMetaContainer::testSequence()
     qsizetype count = 0;
     for (; !metaSequence.compareIterator(it, end);
          metaSequence.advanceIterator(it, 1), metaSequence.advanceConstIterator(constIt, 1)) {
-        metaSequence.elementAtIterator(it, var1.data());
+        metaSequence.valueAtIterator(it, var1.data());
         if (isIndexed) {
-            metaSequence.elementAtIndex(container, count, var2.data());
+            metaSequence.valueAtIndex(container, count, var2.data());
             QCOMPARE(var1, var2);
         }
-        metaSequence.elementAtConstIterator(constIt, var3.data());
+        metaSequence.valueAtConstIterator(constIt, var3.data());
         QCOMPARE(var3, var1);
         ++count;
     }
@@ -348,16 +348,16 @@ void tst_QMetaContainer::testSequence()
     metaSequence.destroyConstIterator(constIt);
     metaSequence.destroyConstIterator(constEnd);
 
-    if (metaSequence.canSetElementAtIterator()) {
+    if (metaSequence.canSetValueAtIterator()) {
         void *it = metaSequence.begin(container);
         void *end = metaSequence.end(container);
         QVERIFY(it);
         QVERIFY(end);
 
         for (; !metaSequence.compareIterator(it, end); metaSequence.advanceIterator(it, 1)) {
-            metaSequence.elementAtIterator(it, var1.data());
-            metaSequence.setElementAtIterator(it, var2.constData());
-            metaSequence.elementAtIterator(it, var3.data());
+            metaSequence.valueAtIterator(it, var1.data());
+            metaSequence.setValueAtIterator(it, var2.constData());
+            metaSequence.valueAtIterator(it, var3.data());
             QCOMPARE(var2, var3);
             var2 = var1;
         }
@@ -394,12 +394,12 @@ void tst_QMetaContainer::testSequence()
             metaSequence.advanceConstIterator(constIt, -1);
             --count;
 
-            metaSequence.elementAtIterator(it, var1.data());
+            metaSequence.valueAtIterator(it, var1.data());
             if (isIndexed) {
-                metaSequence.elementAtIndex(container, count - size, var2.data());
+                metaSequence.valueAtIndex(container, count - size, var2.data());
                 QCOMPARE(var1, var2);
             }
-            metaSequence.elementAtConstIterator(constIt, var3.data());
+            metaSequence.valueAtConstIterator(constIt, var3.data());
             QCOMPARE(var3, var1);
         } while (!metaSequence.compareIterator(it, end));
 
@@ -419,13 +419,13 @@ void tst_QMetaContainer::testSequence()
         const qsizetype size = metaSequence.diffIterator(end, it);
         metaSequence.destroyIterator(end);
 
-        metaSequence.insertElementAtIterator(container, it, var1.constData());
+        metaSequence.insertValueAtIterator(container, it, var1.constData());
         metaSequence.destroyIterator(it);
         it = metaSequence.begin(container);
-        metaSequence.insertElementAtIterator(container, it, var2.constData());
+        metaSequence.insertValueAtIterator(container, it, var2.constData());
         metaSequence.destroyIterator(it);
         it = metaSequence.begin(container);
-        metaSequence.insertElementAtIterator(container, it, var3.constData());
+        metaSequence.insertValueAtIterator(container, it, var3.constData());
 
         metaSequence.destroyIterator(it);
 
@@ -437,13 +437,13 @@ void tst_QMetaContainer::testSequence()
         if (metaSequence.isOrdered()) {
             QCOMPARE(newSize, size + 3);
             QVariant var4(metaType);
-            metaSequence.elementAtIterator(it, var4.data());
+            metaSequence.valueAtIterator(it, var4.data());
             QCOMPARE(var4, var3);
             metaSequence.advanceIterator(it, 1);
-            metaSequence.elementAtIterator(it, var4.data());
+            metaSequence.valueAtIterator(it, var4.data());
             QCOMPARE(var4, var2);
             metaSequence.advanceIterator(it, 1);
-            metaSequence.elementAtIterator(it, var4.data());
+            metaSequence.valueAtIterator(it, var4.data());
             QCOMPARE(var4, var1);
         } else {
             QVERIFY(newSize >= size);
@@ -453,7 +453,7 @@ void tst_QMetaContainer::testSequence()
             for (int i = 0; i < newSize; ++i) {
                 metaSequence.destroyIterator(it);
                 it = metaSequence.begin(container);
-                metaSequence.eraseElementAtIterator(container, it);
+                metaSequence.eraseValueAtIterator(container, it);
             }
 
             metaSequence.destroyIterator(it);
@@ -462,9 +462,9 @@ void tst_QMetaContainer::testSequence()
             end = metaSequence.end(container);
             QVERIFY(metaSequence.compareIterator(it, end));
 
-            metaSequence.addElement(container, var1.constData());
-            metaSequence.addElement(container, var2.constData());
-            metaSequence.addElement(container, var3.constData());
+            metaSequence.addValue(container, var1.constData());
+            metaSequence.addValue(container, var2.constData());
+            metaSequence.addValue(container, var3.constData());
         }
 
         metaSequence.destroyIterator(end);

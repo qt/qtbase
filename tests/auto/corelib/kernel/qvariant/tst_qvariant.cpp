@@ -4538,7 +4538,7 @@ void tst_QVariant::shouldDeleteVariantDataWorksForSequential()
                 [](const void *, QtMetaContainerPrivate::QMetaSequenceInterface::Position) -> void* {
             return nullptr;
         };
-        metaSequence.addElementFn = [](void *, const void *) {};
+        metaSequence.addValueFn = [](void *, const void *) {};
         metaSequence.advanceConstIteratorFn = [](void *, qsizetype) {};
         metaSequence.destroyConstIteratorFn = [](const void *){};
         metaSequence.compareConstIteratorFn = [](const void *, const void *) {
@@ -4548,11 +4548,11 @@ void tst_QVariant::shouldDeleteVariantDataWorksForSequential()
         metaSequence.diffConstIteratorFn = [](const void *, const void *) -> qsizetype  {
             return 0;
         };
-        metaSequence.elementAtIndexFn = [](const void *, qsizetype, void *dataPtr) -> void {
+        metaSequence.valueAtIndexFn = [](const void *, qsizetype, void *dataPtr) -> void {
             MyType mytype {1, "eins"};
             *static_cast<MyType *>(dataPtr) = mytype;
         };
-        metaSequence.elementAtConstIteratorFn = [](const void *, void *dataPtr) -> void {
+        metaSequence.valueAtConstIteratorFn = [](const void *, void *dataPtr) -> void {
             MyType mytype {2, "zwei"};
             *static_cast<MyType *>(dataPtr) = mytype;
         };
@@ -4696,8 +4696,8 @@ void tst_QVariant::sequentialIterableAppend()
         auto asIterable = variant.value<QSequentialIterable>();
         const int i = 3, j = 4;
         void *mutableIterable = const_cast<void *>(asIterable.constIterable());
-        asIterable.metaSequence().addElement(mutableIterable, &i);
-        asIterable.metaSequence().addElement(mutableIterable, &j);
+        asIterable.metaSequence().addValue(mutableIterable, &i);
+        asIterable.metaSequence().addValue(mutableIterable, &j);
         QCOMPARE(variant.value<QList<int>>(), QList<int> ({ 1, 2, 3, 4 }));
     }
     {
@@ -4708,8 +4708,8 @@ void tst_QVariant::sequentialIterableAppend()
         QByteArray qba1 {"goodbye"};
         QByteArray qba2 { "moon" };
         void *mutableIterable = const_cast<void *>(asIterable.constIterable());
-        asIterable.metaSequence().addElement(mutableIterable, &qba1);
-        asIterable.metaSequence().addElement(mutableIterable, &qba2);
+        asIterable.metaSequence().addValue(mutableIterable, &qba1);
+        asIterable.metaSequence().addValue(mutableIterable, &qba2);
         QSet<QByteArray> reference { "hello", "world", "goodbye", "moon" };
         QCOMPARE(variant.value<QSet<QByteArray>>(), reference);
     }

@@ -48,7 +48,7 @@ QT_BEGIN_NAMESPACE
     \inmodule QtCore
     \brief The QSequentialIterable class is an iterable interface for a container in a QVariant.
 
-    This class allows several methods of accessing the elements of a container held within
+    This class allows several methods of accessing the values of a container held within
     a QVariant. An instance of QSequentialIterable can be extracted from a QVariant if it can
     be converted to a QVariantList.
 
@@ -89,7 +89,7 @@ QSequentialIterable::const_iterator QSequentialIterable::end() const
 }
 
 /*!
-    Returns the element at position \a idx in the container.
+    Returns the value at position \a idx in the container.
 */
 QVariant QSequentialIterable::at(qsizetype idx) const
 {
@@ -101,12 +101,12 @@ QVariant QSequentialIterable::at(qsizetype idx) const
         dataPtr = v.data();
 
     const QMetaSequence metaSequence = m_metaSequence;
-    if (metaSequence.canGetElementAtIndex()) {
-        metaSequence.elementAtIndex(m_iterable.constPointer(), idx, dataPtr);
-    } else if (metaSequence.canGetElementAtConstIterator()) {
+    if (metaSequence.canGetValueAtIndex()) {
+        metaSequence.valueAtIndex(m_iterable.constPointer(), idx, dataPtr);
+    } else if (metaSequence.canGetValueAtConstIterator()) {
         void *iterator = metaSequence.constBegin(m_iterable.constPointer());
         metaSequence.advanceConstIterator(iterator, idx);
-        metaSequence.elementAtConstIterator(iterator, dataPtr);
+        metaSequence.valueAtConstIterator(iterator, dataPtr);
         metaSequence.destroyConstIterator(iterator);
     }
 
@@ -114,7 +114,7 @@ QVariant QSequentialIterable::at(qsizetype idx) const
 }
 
 /*!
-    Returns the number of elements in the container.
+    Returns the number of values in the container.
 */
 qsizetype QSequentialIterable::size() const
 {
@@ -207,7 +207,7 @@ const QVariant QSequentialIterable::const_iterator::operator*() const
         dataPtr = &v;
     else
         dataPtr = v.data();
-    m_iterable->m_metaSequence.elementAtConstIterator(m_iterator, dataPtr);
+    m_iterable->m_metaSequence.valueAtConstIterator(m_iterator, dataPtr);
     return v;
 }
 

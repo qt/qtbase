@@ -73,15 +73,15 @@ public:
     using ClearFn = void(*)(void *);
     ClearFn clearFn;
 
-    using ElementAtIndexFn = void(*)(const void *, qsizetype, void *);
-    ElementAtIndexFn elementAtIndexFn;
-    using SetElementAtIndexFn = void(*)(void *, qsizetype, const void *);
-    SetElementAtIndexFn setElementAtIndexFn;
+    using ValueAtIndexFn = void(*)(const void *, qsizetype, void *);
+    ValueAtIndexFn valueAtIndexFn;
+    using SetValueAtIndexFn = void(*)(void *, qsizetype, const void *);
+    SetValueAtIndexFn setValueAtIndexFn;
 
-    using AddElementFn = void(*)(void *, const void *);
-    AddElementFn addElementFn;
-    using RemoveElementFn = void(*)(void *);
-    RemoveElementFn removeElementFn;
+    using AddValueFn = void(*)(void *, const void *);
+    AddValueFn addValueFn;
+    using RemoveValueFn = void(*)(void *);
+    RemoveValueFn removeValueFn;
 
     using CreateIteratorFn = void *(*)(void *, Position);
     CreateIteratorFn createIteratorFn;
@@ -95,14 +95,14 @@ public:
     AdvanceIteratorFn advanceIteratorFn;
     using DiffIteratorFn = qsizetype(*)(const void *, const void *);
     DiffIteratorFn diffIteratorFn;
-    using ElementAtIteratorFn = void(*)(const void *, void *);
-    ElementAtIteratorFn elementAtIteratorFn;
-    using SetElementAtIteratorFn = void(*)(const void *, const void *);
-    SetElementAtIteratorFn setElementAtIteratorFn;
-    using InsertElementAtIteratorFn = void(*)(void *, const void *, const void *);
-    InsertElementAtIteratorFn insertElementAtIteratorFn;
-    using EraseElementAtIteratorFn = void(*)(void *, const void *);
-    EraseElementAtIteratorFn eraseElementAtIteratorFn;
+    using ValueAtIteratorFn = void(*)(const void *, void *);
+    ValueAtIteratorFn valueAtIteratorFn;
+    using SetValueAtIteratorFn = void(*)(const void *, const void *);
+    SetValueAtIteratorFn setValueAtIteratorFn;
+    using InsertValueAtIteratorFn = void(*)(void *, const void *, const void *);
+    InsertValueAtIteratorFn insertValueAtIteratorFn;
+    using EraseValueAtIteratorFn = void(*)(void *, const void *);
+    EraseValueAtIteratorFn eraseValueAtIteratorFn;
 
     using CreateConstIteratorFn = void *(*)(const void *, Position);
     CreateConstIteratorFn createConstIteratorFn;
@@ -111,7 +111,7 @@ public:
     CopyIteratorFn copyConstIteratorFn;
     AdvanceIteratorFn advanceConstIteratorFn;
     DiffIteratorFn diffConstIteratorFn;
-    ElementAtIteratorFn elementAtConstIteratorFn;
+    ValueAtIteratorFn valueAtConstIteratorFn;
 };
 
 template<typename C>
@@ -173,7 +173,7 @@ class QMetaSequenceForContainer
         }
     }
 
-    static constexpr QMetaSequenceInterface::ElementAtIndexFn getElementAtIndexFn()
+    static constexpr QMetaSequenceInterface::ValueAtIndexFn getValueAtIndexFn()
     {
         if constexpr (QContainerTraits::has_at_v<C>) {
             return [](const void *c, qsizetype i, void *r) {
@@ -190,7 +190,7 @@ class QMetaSequenceForContainer
         }
     }
 
-    static constexpr QMetaSequenceInterface::SetElementAtIndexFn getSetElementAtIndexFn()
+    static constexpr QMetaSequenceInterface::SetValueAtIndexFn getSetValueAtIndexFn()
     {
         if constexpr (QContainerTraits::can_set_at_index_v<C>) {
             return [](void *c, qsizetype i, const void *e) {
@@ -202,7 +202,7 @@ class QMetaSequenceForContainer
         }
     }
 
-    static constexpr QMetaSequenceInterface::AddElementFn getAddElementFn()
+    static constexpr QMetaSequenceInterface::AddValueFn getAddValueFn()
     {
         if constexpr (QContainerTraits::has_push_back_v<C>) {
             return [](void *c, const void *v) {
@@ -224,7 +224,7 @@ class QMetaSequenceForContainer
         }
     }
 
-    static constexpr QMetaSequenceInterface::RemoveElementFn getRemoveElementFn()
+    static constexpr QMetaSequenceInterface::RemoveValueFn getRemoveValueFn()
     {
         if constexpr (QContainerTraits::has_pop_back_v<C>) {
             return [](void *c) { static_cast<C *>(c)->pop_back(); };
@@ -315,7 +315,7 @@ class QMetaSequenceForContainer
         }
     }
 
-    static constexpr QMetaSequenceInterface::ElementAtIteratorFn getElementAtIteratorFn()
+    static constexpr QMetaSequenceInterface::ValueAtIteratorFn getValueAtIteratorFn()
     {
         if constexpr (QContainerTraits::has_iterator_v<C>
                 && QContainerTraits::can_get_at_iterator_v<C> && !std::is_const_v<C>) {
@@ -328,7 +328,7 @@ class QMetaSequenceForContainer
         }
     }
 
-    static constexpr QMetaSequenceInterface::SetElementAtIteratorFn getSetElementAtIteratorFn()
+    static constexpr QMetaSequenceInterface::SetValueAtIteratorFn getSetValueAtIteratorFn()
     {
         if constexpr (QContainerTraits::has_iterator_v<C>
                 && QContainerTraits::can_set_at_iterator_v<C> && !std::is_const_v<C>) {
@@ -341,7 +341,7 @@ class QMetaSequenceForContainer
         }
     }
 
-    static constexpr QMetaSequenceInterface::InsertElementAtIteratorFn getInsertElementAtIteratorFn()
+    static constexpr QMetaSequenceInterface::InsertValueAtIteratorFn getInsertValueAtIteratorFn()
     {
         if constexpr (QContainerTraits::has_iterator_v<C>
                 && QContainerTraits::can_insert_at_iterator_v<C> && !std::is_const_v<C>) {
@@ -355,7 +355,7 @@ class QMetaSequenceForContainer
         }
     }
 
-    static constexpr QMetaSequenceInterface::EraseElementAtIteratorFn getEraseElementAtIteratorFn()
+    static constexpr QMetaSequenceInterface::EraseValueAtIteratorFn getEraseValueAtIteratorFn()
     {
         if constexpr (QContainerTraits::has_iterator_v<C>
                 && QContainerTraits::can_erase_at_iterator_v<C> && !std::is_const_v<C>) {
@@ -447,7 +447,7 @@ class QMetaSequenceForContainer
         }
     }
 
-    static constexpr QMetaSequenceInterface::ElementAtIteratorFn getElementAtConstIteratorFn()
+    static constexpr QMetaSequenceInterface::ValueAtIteratorFn getValueAtConstIteratorFn()
     {
         if constexpr (QContainerTraits::has_const_iterator_v<C>
                 && QContainerTraits::can_get_at_iterator_v<C>) {
@@ -472,27 +472,27 @@ QMetaSequenceInterface QMetaSequenceForContainer<C>::metaSequence = {
     /*.valueMetaType=*/             getValueMetaType(),
     /*.sizeFn=*/                    getSizeFn(),
     /*.clearFn=*/                   getClearFn(),
-    /*.elementAtIndexFn=*/          getElementAtIndexFn(),
-    /*.setElementAtIndexFn=*/       getSetElementAtIndexFn(),
-    /*.addElementFn=*/              getAddElementFn(),
-    /*.removeLastElementFn=*/       getRemoveElementFn(),
+    /*.valueAtIndexFn=*/            getValueAtIndexFn(),
+    /*.setValueAtIndexFn=*/         getSetValueAtIndexFn(),
+    /*.addValueFn=*/                getAddValueFn(),
+    /*.removeLastValueFn=*/         getRemoveValueFn(),
     /*.createIteratorFn=*/          getCreateIteratorFn(),
     /*.destroyIteratorFn=*/         getDestroyIteratorFn(),
     /*.equalIteratorFn=*/           getCompareIteratorFn(),
     /*.copyIteratorFn=*/            getCopyIteratorFn(),
     /*.advanceIteratorFn=*/         getAdvanceIteratorFn(),
     /*.diffIteratorFn=*/            getDiffIteratorFn(),
-    /*.elementAtIteratorFn=*/       getElementAtIteratorFn(),
-    /*.setElementAtIteratorFn=*/    getSetElementAtIteratorFn(),
-    /*.insertElementAtIteratorFn=*/ getInsertElementAtIteratorFn(),
-    /*.eraseElementAtIteratorFn=*/  getEraseElementAtIteratorFn(),
+    /*.valueAtIteratorFn=*/         getValueAtIteratorFn(),
+    /*.setValueAtIteratorFn=*/      getSetValueAtIteratorFn(),
+    /*.insertValueAtIteratorFn=*/   getInsertValueAtIteratorFn(),
+    /*.eraseValueAtIteratorFn=*/    getEraseValueAtIteratorFn(),
     /*.createConstIteratorFn=*/     getCreateConstIteratorFn(),
     /*.destroyConstIteratorFn=*/    getDestroyConstIteratorFn(),
     /*.equalConstIteratorFn=*/      getCompareConstIteratorFn(),
     /*.copyConstIteratorFn=*/       getCopyConstIteratorFn(),
     /*.advanceConstIteratorFn=*/    getAdvanceConstIteratorFn(),
     /*.diffConstIteratorFn=*/       getDiffConstIteratorFn(),
-    /*.elementAtConstIteratorFn=*/  getElementAtConstIteratorFn(),
+    /*.valueAtConstIteratorFn=*/    getValueAtConstIteratorFn(),
 };
 
 template<typename C>
@@ -522,8 +522,8 @@ public:
     QMetaType valueMetaType() const;
 
     bool isOrdered() const;
-    bool addsAndRemovesElementsAtBegin() const;
-    bool addsAndRemovesElementsAtEnd() const;
+    bool addsAndRemovesValuesAtBegin() const;
+    bool addsAndRemovesValuesAtEnd() const;
 
     bool hasSize() const;
     qsizetype size(const void *container) const;
@@ -531,17 +531,17 @@ public:
     bool canClear() const;
     void clear(void *container) const;
 
-    bool canGetElementAtIndex() const;
-    void elementAtIndex(const void *container, qsizetype index, void *result) const;
+    bool canGetValueAtIndex() const;
+    void valueAtIndex(const void *container, qsizetype index, void *result) const;
 
-    bool canSetElementAtIndex() const;
-    void setElementAtIndex(void *container, qsizetype index, const void *element) const;
+    bool canSetValueAtIndex() const;
+    void setValueAtIndex(void *container, qsizetype index, const void *value) const;
 
-    bool canAddElement() const;
-    void addElement(void *container, const void *element) const;
+    bool canAddValue() const;
+    void addValue(void *container, const void *value) const;
 
-    bool canRemoveElement() const;
-    void removeElement(void *container) const;
+    bool canRemoveValue() const;
+    void removeValue(void *container) const;
 
     bool hasIterator() const;
     void *begin(void *container) const;
@@ -552,17 +552,17 @@ public:
     void advanceIterator(void *iterator, qsizetype step) const;
     qsizetype diffIterator(const void *i, const void *j) const;
 
-    bool canGetElementAtIterator() const;
-    void elementAtIterator(const void *iterator, void *result) const;
+    bool canGetValueAtIterator() const;
+    void valueAtIterator(const void *iterator, void *result) const;
 
-    bool canSetElementAtIterator() const;
-    void setElementAtIterator(const void *iterator, const void *element) const;
+    bool canSetValueAtIterator() const;
+    void setValueAtIterator(const void *iterator, const void *value) const;
 
-    bool canInsertElementAtIterator() const;
-    void insertElementAtIterator(void *container, const void *iterator, const void *element) const;
+    bool canInsertValueAtIterator() const;
+    void insertValueAtIterator(void *container, const void *iterator, const void *value) const;
 
-    bool canEraseElementAtIterator() const;
-    void eraseElementAtIterator(void *container, const void *iterator) const;
+    bool canEraseValueAtIterator() const;
+    void eraseValueAtIterator(void *container, const void *iterator) const;
 
     bool hasConstIterator() const;
     void *constBegin(const void *container) const;
@@ -573,8 +573,8 @@ public:
     void advanceConstIterator(void *iterator, qsizetype step) const;
     qsizetype diffConstIterator(const void *i, const void *j) const;
 
-    bool canGetElementAtConstIterator() const;
-    void elementAtConstIterator(const void *iterator, void *result) const;
+    bool canGetValueAtConstIterator() const;
+    void valueAtConstIterator(const void *iterator, void *result) const;
 
     friend bool operator==(const QMetaSequence &a, const QMetaSequence &b)
     {
