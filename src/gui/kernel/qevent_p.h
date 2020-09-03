@@ -54,9 +54,11 @@
 #include <QtGui/private/qtguiglobal_p.h>
 #include <QtCore/qurl.h>
 #include <QtGui/qevent.h>
-#include <QtGui/private/qpointingdevice_p.h>
+#include <QtGui/qwindow.h>
 
 QT_BEGIN_NAMESPACE
+
+class QPointingDevice;
 
 struct QEventPointPrivate {
     QEventPointPrivate(int id, const QPointingDevice *device)
@@ -70,14 +72,14 @@ struct QEventPointPrivate {
     }
 
     const QPointingDevice *device = nullptr;
+    QPointer<QWindow> window;
+    QPointer<QObject> target;
     QPointF pos, scenePos, globalPos,
             globalPressPos, globalGrabPos, globalLastPos;
     qreal pressure = 1;
     qreal rotation = 0;
     QSizeF ellipseDiameters = QSizeF(0, 0);
     QVector2D velocity;
-    QPointer<QObject> exclusiveGrabber;
-    QList<QPointer <QObject> > passiveGrabbers;
     ulong timestamp = 0;
     ulong pressTimestamp = 0;
     QPointingDeviceUniqueId uniqueId;
@@ -106,9 +108,13 @@ public:
         d->pos = position;
     }
 
+    void updateFrom(const QEventPoint &other);
+
     static QMutableEventPoint *from(QEventPoint *me) { return static_cast<QMutableEventPoint *>(me); }
 
     static QMutableEventPoint &from(QEventPoint &me) { return static_cast<QMutableEventPoint &>(me); }
+
+    static const QMutableEventPoint &constFrom(const QEventPoint &me) { return static_cast<const QMutableEventPoint &>(me); }
 
     void detach();
 
@@ -118,7 +124,7 @@ public:
 
     void setDevice(const QPointingDevice *device) { d->device = device; }
 
-    void setTimestamp(const ulong t) { d->timestamp = t; }
+    void setTimestamp(const ulong t);
 
     void setPressTimestamp(const ulong t) { d->pressTimestamp = t; }
 
@@ -157,6 +163,14 @@ public:
     void setVelocity(const QVector2D &v) { d->velocity = v; }
 
     void setStationaryWithModifiedProperty(bool s = true) { d->stationaryWithModifiedProperty = s; }
+
+    QWindow *window() const { return d->window.data(); }
+
+    void setWindow(const QPointer<QWindow> &w) { d->window = w; }
+
+    QObject *target() const { return d->target.data(); }
+
+    void setTarget(const QPointer<QObject> &t) { d->target = t; }
 };
 
 static_assert(sizeof(QMutableEventPoint) == sizeof(QEventPoint));
@@ -164,7 +178,7 @@ static_assert(sizeof(QMutableEventPoint) == sizeof(QEventPoint));
 class Q_GUI_EXPORT QMutableTouchEvent : public QTouchEvent
 {
 public:
-    QMutableTouchEvent(QEvent::Type eventType,
+    QMutableTouchEvent(QEvent::Type eventType = QEvent::TouchBegin,
                        const QPointingDevice *device = nullptr,
                        Qt::KeyboardModifiers modifiers = Qt::NoModifier,
                        const QList<QEventPoint> &touchPoints = QList<QEventPoint>()) :
@@ -176,7 +190,7 @@ public:
 
     void setTarget(QObject *target) { m_target = target; }
 
-    QList<QEventPoint> &touchPoints() { return m_touchPoints; }
+    void addPoint(const QEventPoint &point);
 };
 
 static_assert(sizeof(QMutableTouchEvent) == sizeof(QTouchEvent));
@@ -188,7 +202,7 @@ public:
 
     static QMutableSinglePointEvent &from(QSinglePointEvent &e) { return static_cast<QMutableSinglePointEvent &>(e); }
 
-    QMutableEventPoint &mutablePoint() { return QMutableEventPoint::from(m_point); }
+    QMutableEventPoint &mutablePoint() { return QMutableEventPoint::from(point(0)); }
 
     void setSource(Qt::MouseEventSource s) { m_source = s; }
 

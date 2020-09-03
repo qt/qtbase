@@ -252,7 +252,7 @@ public:
     void activateImplicitTouchGrab(QWidget *widget, QTouchEvent *touchBeginEvent);
     static bool translateRawTouchEvent(QWidget *widget,
                                        const QPointingDevice *device,
-                                       const QList<QEventPoint> &touchPoints,
+                                       QList<QEventPoint> &touchPoints,
                                        ulong timestamp);
     static void translateTouchCancel(const QPointingDevice *device, ulong timestamp);
 

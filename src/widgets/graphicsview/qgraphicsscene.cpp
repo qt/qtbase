@@ -5829,8 +5829,10 @@ void QGraphicsScenePrivate::updateTouchPointsForItem(QGraphicsItem *item, QTouch
     const QTransform mapFromScene =
         item->d_ptr->genericMapFromSceneTransform(static_cast<const QWidget *>(touchEvent->target()));
 
-    for (QEventPoint &pt : QMutableTouchEvent::from(touchEvent)->touchPoints())
+    for (int i = 0; i < touchEvent->pointCount(); ++i) {
+        auto &pt = QMutableEventPoint::from(touchEvent->point(i));
         QMutableEventPoint::from(pt).setPosition(mapFromScene.map(pt.scenePosition()));
+    }
 }
 
 int QGraphicsScenePrivate::findClosestTouchPointId(const QPointF &scenePos)

@@ -155,6 +155,8 @@ public:
                                  Qt::MouseEventSource source = Qt::MouseEventNotSynthesized,
                                  bool inverted = false);
 
+    // A very-temporary QPA touchpoint which gets converted to a QEventPoint as early as possible
+    // in QWindowSystemInterfacePrivate::fromNativeTouchPoints()
     struct TouchPoint {
         TouchPoint() : id(0), uniqueId(-1), pressure(0), rotation(0), state(QEventPoint::State::Stationary) { }
         int id;                 // for application use

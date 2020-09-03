@@ -310,7 +310,8 @@ inline int q_round_bound(qreal d) //### (int)(qreal) INT_MAX != INT_MAX for sing
 
 void QGraphicsViewPrivate::translateTouchEvent(QGraphicsViewPrivate *d, QTouchEvent *touchEvent)
 {
-    for (QEventPoint &pt : QMutableTouchEvent::from(touchEvent)->touchPoints()) {
+    for (int i = 0; i < touchEvent->pointCount(); ++i) {
+        auto &pt = touchEvent->point(i);
         // the scene will set the item local pos, startPos, lastPos, and rect before delivering to
         // an item, but for now those functions are returning the view's local coordinates
         QMutableEventPoint::from(pt).setScenePosition(d->mapToScene(pt.position()));

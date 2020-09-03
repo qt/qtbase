@@ -630,6 +630,33 @@ void QWindowSystemInterface::registerInputDevice(const QInputDevice *device)
     QInputDevicePrivate::registerDevice(device);
 }
 
+/*!
+    \internal
+    Convert a list of \l QWindowSystemInterface::TouchPoint \a points to a list
+    of \em temporary QEventPoint instances, scaled (but not localized)
+    for delivery to the given \a window.
+
+    This is called from QWindowSystemInterface::handleTouchEvent():
+    that is too early to update the QEventPoint instances in QPointingDevice,
+    because we want those to hold "current" state from the applcation's
+    point of view.  The QWindowSystemInterfacePrivate::TouchEvent, to which
+    the returned touchpoints will "belong", might go through the queue before
+    being processed; the application doesn't see the equivalent QTouchEvent
+    until later on.  Therefore the responsibility to update the QEventPoint
+    instances in QPointingDevice is in QGuiApplication, not here.
+
+    QGuiApplicationPrivate::processMouseEvent() also calls this function
+    when it synthesizes a touch event from a mouse event.  But that's outside
+    the normal use case.
+
+    It might be better if we change all the platform plugins to create
+    temporary instances of QEventPoint directly, and remove
+    QWindowSystemInterface::TouchPoint completely. Then we will no longer need
+    this function either. But that's only possible as long as QEventPoint
+    remains a Q_GADGET, not a QObject, so that it continues to be small and
+    suitable for temporary stack allocation.  QEventPoint is a little bigger
+    than QWindowSystemInterface::TouchPoint, though.
+*/
 QList<QEventPoint>
     QWindowSystemInterfacePrivate::fromNativeTouchPoints(const QList<QWindowSystemInterface::TouchPoint> &points,
                                                          const QWindow *window, QEvent::Type *type)

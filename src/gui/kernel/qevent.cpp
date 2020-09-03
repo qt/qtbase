@@ -62,14 +62,7 @@
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcPointerGrab, "qt.pointer.grab")
-
-static const QString pointDeviceName(const QEventPoint &point)
-{
-    const auto device = point.device();
-    QString deviceName = (device ? device->name() : QLatin1String("null device"));
-    deviceName.resize(16, u' '); // shorten, and align in case of sequential output
-    return deviceName;
-}
+Q_LOGGING_CATEGORY(lcEPDetach, "qt.pointer.eventpoint.detach")
 
 /*!
     \class QEnterEvent
@@ -321,6 +314,9 @@ int QEventPoint::id() const
 QPointingDeviceUniqueId QEventPoint::uniqueId() const
 { return d->uniqueId; }
 
+ulong QEventPoint::timestamp() const
+{ return d->timestamp; }
+
 ulong QEventPoint::pressTimestamp() const
 { return d->pressTimestamp; }
 
@@ -396,8 +392,8 @@ QPointF QEventPoint::startNormalizedPos() const
     \obsolete
     Deprecated since Qt 6.0. Use globalLastPosition() instead.
 
-    Returns the normalized position of this touch point from the
-    previous touch event.
+    Returns the normalized position of this point from the previous press or
+    move event.
 
     The coordinates are normalized to QInputDevice::availableVirtualGeometry(),
     i.e. (0, 0) is the top-left corner and (1, 1) is the bottom-right corner.
@@ -429,7 +425,84 @@ void QMutableEventPoint::detach()
 {
     if (d->refCount == 1)
         return; // no need: there is only one QEventPoint using it
+    qCDebug(lcEPDetach) << "detaching: refCount" << d->refCount << this;
     d = new QEventPointPrivate(*d);
+    d->refCount = 1;
+}
+
+/*! \internal
+    Update current state from the given \a other point, assuming that this
+    instance contains state from the previous event and \a other contains new
+    values that came in from a device.
+
+    That is: global position and other valuators will be updated, but
+    the following properties will not be updated:
+    \li other properties that are not likely to be set after a fresh touchpoint
+    has been received from a device
+    \li properties that should be persistent between events (such as grabbers)
+*/
+void QMutableEventPoint::updateFrom(const QEventPoint &other)
+{
+    detach();
+    setPressure(other.pressure());
+
+    switch (other.state()) {
+    case QEventPoint::State::Pressed:
+        setGlobalPressPosition(other.globalPosition());
+        setGlobalLastPosition(other.globalPosition());
+        if (pressure() < 0)
+            setPressure(1);
+        break;
+
+    case QEventPoint::State::Released:
+        if (globalPosition() != other.globalPosition())
+            setGlobalLastPosition(globalPosition());
+        setPressure(0);
+        break;
+
+    case QEventPoint::State::Stationary:
+        // Stationary points might not be delivered down to the receiving item
+        // and get their position transformed, keep the old values instead.
+        if (other.velocity() != velocity() ||
+                !qFuzzyCompare(other.pressure(), pressure())) {
+            setStationaryWithModifiedProperty();
+        }
+        Q_FALLTHROUGH();
+
+    default: // update or stationary
+        if (globalPosition() != other.globalPosition())
+            setGlobalLastPosition(globalPosition());
+        if (pressure() < 0)
+            setPressure(1);
+        break;
+    }
+
+    setState(other.state());
+    setPosition(other.position());
+    setScenePosition(other.scenePosition());
+    setGlobalPosition(other.globalPosition());
+    setEllipseDiameters(other.ellipseDiameters());
+    setRotation(other.rotation());
+    setVelocity(other.velocity());
+}
+
+/*! \internal
+    Set the timestamp from the event that updated this point's positions.
+*/
+void QMutableEventPoint::setTimestamp(const ulong t)
+{
+    // On mouse press, if the mouse has moved from its last-known location,
+    // QGuiApplicationPrivate::processMouseEvent() sends first a mouse move and
+    // then a press. Both events will get the same timestamp. So we need to set
+    // the press timestamp and position even when the timestamp isn't advancing.
+    if (state() == QEventPoint::State::Pressed) {
+        d->pressTimestamp = t;
+        d->globalPressPos = d->globalPos;
+    }
+    if (d->timestamp == t)
+        return;
+    detach();
+    d->timestamp = t;
 }
 
 /*! \internal
@@ -470,8 +543,9 @@ void QMutableEventPoint::detach()
 /*!
     \internal
 */
-QPointerEvent::QPointerEvent(QEvent::Type type, const QPointingDevice *dev, Qt::KeyboardModifiers modifiers)
-    : QInputEvent(type, QEvent::PointerEventTag{}, dev, modifiers)
+QPointerEvent::QPointerEvent(QEvent::Type type, const QPointingDevice *dev,
+                             Qt::KeyboardModifiers modifiers, const QList<QEventPoint> &points)
+    : QInputEvent(type, QEvent::PointerEventTag{}, dev, modifiers), m_points(points)
 {
 }
 
@@ -489,6 +563,16 @@ const QPointingDevice *QPointerEvent::pointingDevice() const
     return static_cast<const QPointingDevice *>(m_dev);
 }
 
+/*! \internal
+    Sets the timestamp for this event and its points().
+*/
+void QPointerEvent::setTimestamp(ulong timestamp)
+{
+    QInputEvent::setTimestamp(timestamp);
+    for (auto &p : m_points)
+        QMutableEventPoint::from(p).setTimestamp(timestamp);
+}
+
 /*!
     Returns the object which has been set to receive all future update events
     and the release event containing the given \a point.
@@ -497,7 +581,13 @@ const QPointingDevice *QPointerEvent::pointingDevice() const
 */
 QObject *QPointerEvent::exclusiveGrabber(const QEventPoint &point) const
 {
-    return point.d->exclusiveGrabber.data();
+    Q_ASSERT(pointingDevice());
+    auto persistentPoint = QPointingDevicePrivate::get(pointingDevice())->queryPointById(point.id());
+    if (Q_UNLIKELY(!persistentPoint)) {
+        qWarning() << "point is not in activePoints" << point;
+        return nullptr;
+    }
+    return persistentPoint->exclusiveGrabber;
 }
 
 /*!
@@ -509,15 +599,9 @@ QObject *QPointerEvent::exclusiveGrabber(const QEventPoint &point) const
 */
 void QPointerEvent::setExclusiveGrabber(const QEventPoint &point, QObject *exclusiveGrabber)
 {
-    if (point.d->exclusiveGrabber == exclusiveGrabber)
-        return;
-    if (Q_UNLIKELY(lcPointerGrab().isDebugEnabled())) {
-        qCDebug(lcPointerGrab) << pointDeviceName(point) << "point" << point.id() << point.state()
-                               << "@" << point.scenePosition()
-                               << ": grab" << point.d->exclusiveGrabber << "->" << exclusiveGrabber;
-    }
-    point.d->exclusiveGrabber = exclusiveGrabber;
-    point.d->globalGrabPos = point.d->globalPos;
+    Q_ASSERT(pointingDevice());
+    auto devPriv = QPointingDevicePrivate::get(const_cast<QPointingDevice *>(pointingDevice()));
+    devPriv->setExclusiveGrabber(this, point, exclusiveGrabber);
 }
 
 /*!
@@ -530,7 +614,13 @@ void QPointerEvent::setExclusiveGrabber(const QEventPoint &point, QObject *exclu
 */
 QList<QPointer<QObject> > QPointerEvent::passiveGrabbers(const QEventPoint &point) const
 {
-    return point.d->passiveGrabbers;
+    Q_ASSERT(pointingDevice());
+    auto persistentPoint = QPointingDevicePrivate::get(pointingDevice())->queryPointById(point.id());
+    if (Q_UNLIKELY(!persistentPoint)) {
+        qWarning() << "point is not in activePoints" << point;
+        return {};
+    }
+    return persistentPoint->passiveGrabbers;
 }
 
 /*!
@@ -544,14 +634,9 @@ QList<QPointer<QObject> > QPointerEvent::passiveGrabbers(const QEventPoint &poin
 */
 bool QPointerEvent::addPassiveGrabber(const QEventPoint &point, QObject *grabber)
 {
-    if (point.d->passiveGrabbers.contains(grabber))
-        return false;
-    if (Q_UNLIKELY(lcPointerGrab().isDebugEnabled())) {
-        qCDebug(lcPointerGrab) << pointDeviceName(point) << "point" << point.id() << point.state()
-                               << ": grab (passive)" << grabber;
-    }
-    point.d->passiveGrabbers << grabber;
-    return true;
+    Q_ASSERT(pointingDevice());
+    auto devPriv = QPointingDevicePrivate::get(const_cast<QPointingDevice *>(pointingDevice()));
+    return devPriv->addPassiveGrabber(this, point, grabber);
 }
 
 /*!
@@ -564,12 +649,9 @@ bool QPointerEvent::addPassiveGrabber(const QEventPoint &point, QObject *grabber
 */
 bool QPointerEvent::removePassiveGrabber(const QEventPoint &point, QObject *grabber)
 {
-    if (Q_UNLIKELY(lcPointerGrab().isDebugEnabled())) {
-        qCDebug(lcPointerGrab) << pointDeviceName(point) << "point" << point.id() << point.state()
-                               << ": removing passive grabber" << grabber;
-    }
-    point.d->passiveGrabbers.removeOne(grabber);
-    return false;
+    Q_ASSERT(pointingDevice());
+    auto devPriv = QPointingDevicePrivate::get(const_cast<QPointingDevice *>(pointingDevice()));
+    return devPriv->removePassiveGrabber(this, point, grabber);
 }
 
 /*!
@@ -581,11 +663,9 @@ bool QPointerEvent::removePassiveGrabber(const QEventPoint &point, QObject *grab
 */
 void QPointerEvent::clearPassiveGrabbers(const QEventPoint &point)
 {
-    if (Q_UNLIKELY(lcPointerGrab().isDebugEnabled())) {
-        qCDebug(lcPointerGrab) << pointDeviceName(point) << "point" << point.id() << point.state()
-                               << ": clearing" << point.d->passiveGrabbers;
-    }
-    point.d->passiveGrabbers.clear();
+    Q_ASSERT(pointingDevice());
+    auto devPriv = QPointingDevicePrivate::get(const_cast<QPointingDevice *>(pointingDevice()));
+    devPriv->clearPassiveGrabbers(this, point);
 }
 
 /*!
@@ -678,23 +758,38 @@ void QPointerEvent::clearPassiveGrabbers(const QEventPoint &point)
 QSinglePointEvent::QSinglePointEvent(QEvent::Type type, const QPointingDevice *dev, const QPointF &localPos, const QPointF &scenePos,
                                      const QPointF &globalPos, Qt::MouseButton button, Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers)
     : QPointerEvent(type, dev, modifiers),
-      m_point(0, dev),
       m_button(button),
       m_mouseState(buttons),
       m_source(Qt::MouseEventNotSynthesized),
       m_doubleClick(false),
       m_reserved(0)
 {
-    QMutableEventPoint &mut = QMutableEventPoint::from(m_point);
-    if (button == Qt::NoButton)
+    bool isPress = (button != Qt::NoButton && (button | buttons) == buttons);
+    bool isWheel = (type == QEvent::Type::Wheel);
+    auto devPriv = QPointingDevicePrivate::get(const_cast<QPointingDevice *>(pointingDevice()));
+    auto epd = devPriv->pointById(0);
+    QMutableEventPoint &mut = QMutableEventPoint::from(epd->eventPoint);
+    Q_ASSERT(mut.device() == dev);
+    // mut is now a reference to a non-detached instance that lives in QPointingDevicePrivate::activePoints.
+    // Update persistent info in that instance.
+    if (isPress || isWheel)
+        mut.setGlobalLastPosition(globalPos);
+    else
+        mut.setGlobalLastPosition(mut.globalPosition());
+    mut.setGlobalPosition(globalPos);
+    if (isWheel && mut.state() != QEventPoint::State::Updated)
+        mut.setGlobalPressPosition(globalPos);
+    if (button == Qt::NoButton || isWheel)
         mut.setState(QEventPoint::State::Updated); // stationary only happens with touch events, not single-point events
-    else if ((button | buttons) == buttons)
+    else if (isPress)
         mut.setState(QEventPoint::State::Pressed);
     else
         mut.setState(QEventPoint::State::Released);
-    mut.setPosition(localPos);
     mut.setScenePosition(scenePos);
-    mut.setGlobalPosition(globalPos);
+    // Now detach, and update the detached instance with ephemeral state.
+    mut.detach();
+    mut.setPosition(localPos);
+    m_points.append(mut);
 }
 
 /*!
@@ -2653,7 +2748,7 @@ QTabletEvent::QTabletEvent(Type type, const QPointingDevice *dev, const QPointF 
       m_z(z),
       m_tangential(tangentialPressure)
 {
-    QMutableEventPoint &mut = QMutableEventPoint::from(m_point);
+    QMutableEventPoint &mut = QMutableEventPoint::from(point(0));
     mut.setPressure(pressure);
     mut.setRotation(rotation);
 }
@@ -3795,7 +3890,7 @@ static inline void formatTouchEvent(QDebug d, const QTouchEvent &t)
     d << " device: " << t.device()->name();
     d << " states: ";
     QtDebugUtils::formatQFlags(d, t.touchPointStates());
-    d << ", " << t.touchPoints().size() << " points: " << t.touchPoints() << ')';
+    d << ", " << t.points().size() << " points: " << t.points() << ')';
 }
 
 static void formatUnicodeString(QDebug d, const QString &s)
@@ -4033,12 +4128,23 @@ static void formatTabletEvent(QDebug d, const QTabletEvent *e)
 
 #  endif // QT_CONFIG(tabletevent)
 
+QDebug operator<<(QDebug dbg, const QEventPoint *tp)
+{
+    if (!tp) {
+        dbg << "QEventPoint(0x0)";
+        return dbg;
+    }
+    return operator<<(dbg, *tp);
+}
+
 QDebug operator<<(QDebug dbg, const QEventPoint &tp)
 {
     QDebugStateSaver saver(dbg);
     dbg.nospace();
-    dbg << "QEventPoint(" << tp.id() << " (";
+    dbg << "QEventPoint(" << tp.id() << " ts " << tp.timestamp() << " (";
     QtDebugUtils::formatQPoint(dbg, tp.position());
+    dbg << " scene ";
+    QtDebugUtils::formatQPoint(dbg, tp.scenePosition());
     dbg << " global ";
     QtDebugUtils::formatQPoint(dbg, tp.globalPosition());
     dbg << ") ";
@@ -4387,15 +4493,15 @@ QWindowStateChangeEvent::~QWindowStateChangeEvent()
     The pointCount() and point() functions can be used to access and iterate individual
     touch points.
 
-    The touchPoints() function returns a list of all touch points contained in the event.
+    The points() function returns a list of all touch points contained in the event.
     Note that this list may be empty, for example in case of a QEvent::TouchCancel event.
     Each point is an instance of the QEventPoint class. The QEventPoint::State enum
     describes the different states that a touch point may have.
 
-    \note The list of touchPoints() will never be partial: A touch event will always contain a touch
+    \note The list of points() will never be partial: A touch event will always contain a touch
     point for each existing physical touch contacts targetting the window or widget to which the
     event is sent. For instance, assuming that all touches target the same window or widget, an
-    event with a condition of touchPoints().count()==2 is guaranteed to imply that the number of
+    event with a condition of points().count()==2 is guaranteed to imply that the number of
     fingers touching the touchscreen or touchpad is exactly two.
 
     \section1 Event Delivery and Propagation
@@ -4481,11 +4587,10 @@ QTouchEvent::QTouchEvent(QEvent::Type eventType,
                          const QPointingDevice *device,
                          Qt::KeyboardModifiers modifiers,
                          const QList<QEventPoint> &touchPoints)
-    : QPointerEvent(eventType, device, modifiers),
-      m_target(nullptr),
-      m_touchPoints(touchPoints)
+    : QPointerEvent(eventType, device, modifiers, touchPoints),
+      m_target(nullptr)
 {
-    for (QEventPoint &point : m_touchPoints) {
+    for (QEventPoint &point : m_points) {
         m_touchPointStates |= point.state();
         QMutableEventPoint::from(point).setDevice(device);
     }
@@ -4505,12 +4610,11 @@ QTouchEvent::QTouchEvent(QEvent::Type eventType,
                          Qt::KeyboardModifiers modifiers,
                          QEventPoint::States touchPointStates,
                          const QList<QEventPoint> &touchPoints)
-    : QPointerEvent(eventType, device, modifiers),
+    : QPointerEvent(eventType, device, modifiers, touchPoints),
       m_target(nullptr),
-      m_touchPointStates(touchPointStates),
-      m_touchPoints(touchPoints)
+      m_touchPointStates(touchPointStates)
 {
-    for (QEventPoint &point : m_touchPoints)
+    for (QEventPoint &point : m_points)
         QMutableEventPoint::from(point).setDevice(device);
 }
 
@@ -4558,6 +4662,8 @@ bool QTouchEvent::isReleaseEvent() const
 */
 
 /*! \fn const QList<QEventPoint> &QTouchEvent::touchPoints() const
+    \obsolete
+    Deprecated since Qt 6.0. Use points() instead.
 
     Returns a reference to the list of touch points contained in the touch event.
 
@@ -4672,14 +4778,14 @@ bool QTouchEvent::isReleaseEvent() const
 */
 
 /*! \fn QPointF QEventPoint::lastPosition() const
-    Returns the position of this point from the previous event,
+    Returns the position of this point from the previous press or move event,
     relative to the widget or QGraphicsItem that received the event.
 
     \sa position(), pressPosition()
 */
 
 /*! \fn QPointF QEventPoint::sceneLastPosition() const
-    Returns the scene position of this point from the previous event.
+    Returns the scene position of this point from the previous press or move event.
 
     The scene position is the position in QGraphicsScene coordinates
     if the QTouchEvent is handled by a QGraphicsItem::touchEvent()
@@ -4720,6 +4826,12 @@ bool QTouchEvent::isReleaseEvent() const
     \note The returned vector is only valid if the device's capabilities include QInputDevice::Velocity.
 
     \sa QInputDevice::capabilities(), QInputEvent::device()
+*/
+
+/*! \fn ulong QEventPoint::timestamp() const
+    Returns the most recent time at which this point was included in a QPointerEvent.
+
+    \sa QPointerEvent::timestamp()
 */
 
 /*!
@@ -4950,6 +5062,18 @@ QApplicationStateChangeEvent::QApplicationStateChangeEvent(Qt::ApplicationState 
 Qt::ApplicationState QApplicationStateChangeEvent::applicationState() const
 {
     return m_applicationState;
+}
+
+/*! \internal
+    Add the given \a point.
+*/
+void QMutableTouchEvent::addPoint(const QEventPoint &point)
+{
+    m_points.append(point);
+    auto &added = m_points.last();
+    if (!added.device())
+        QMutableEventPoint::from(added).setDevice(pointingDevice());
+    m_touchPointStates |= point.state();
 }
 
 /*!

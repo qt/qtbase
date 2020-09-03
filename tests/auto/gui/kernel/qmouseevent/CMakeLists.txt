@@ -9,4 +9,5 @@ qt_add_test(tst_qmouseevent
         tst_qmouseevent.cpp
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::GuiPrivate
 )

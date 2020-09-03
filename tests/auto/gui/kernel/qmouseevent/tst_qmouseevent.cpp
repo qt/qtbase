@@ -30,13 +30,19 @@
 #include <QtTest/QtTest>
 #include <qevent.h>
 #include <qwindow.h>
+#include <QtGui/private/qpointingdevice_p.h>
+
+Q_LOGGING_CATEGORY(lcTests, "qt.gui.tests")
 
 class MouseEventWidget : public QWindow
 {
 public:
-    MouseEventWidget(QWindow *parent = 0) : QWindow(parent)
+    MouseEventWidget(QWindow *parent = nullptr) : QWindow(parent)
     {
+        setGeometry(100, 100, 100, 100);
     }
+    bool grabExclusive = false;
+    bool grabPassive = false;
     bool mousePressEventRecieved;
     bool mouseReleaseEventRecieved;
     int mousePressButton;
@@ -45,15 +51,31 @@ public:
     int mouseReleaseButton;
     int mouseReleaseButtons;
     int mouseReleaseModifiers;
+    ulong pressTimestamp;
 protected:
     void mousePressEvent(QMouseEvent *e) override
     {
+        const auto &firstPoint = e->point(0);
+        if (e->type() == QEvent::MouseButtonPress) {
+            auto firstPoint = e->points().first();
+            QCOMPARE(e->exclusiveGrabber(firstPoint), nullptr);
+            QVERIFY(e->passiveGrabbers(firstPoint).isEmpty());
+            QCOMPARE(firstPoint.timeHeld(), 0);
+            QCOMPARE(firstPoint.pressTimestamp(), e->timestamp());
+            pressTimestamp = e->timestamp();
+        }
         QWindow::mousePressEvent(e);
         mousePressButton = e->button();
         mousePressButtons = e->buttons();
         mousePressModifiers = e->modifiers();
         mousePressEventRecieved = true;
         e->accept();
+        // It's not normal for QWindow to be the grabber, but that's easier to test
+        // without needing to create child ojects.
+        if (grabExclusive)
+            e->setExclusiveGrabber(firstPoint, this);
+        if (grabPassive)
+            e->addPassiveGrabber(firstPoint, this);
     }
     void mouseReleaseEvent(QMouseEvent *e) override
     {
@@ -80,6 +102,8 @@ private slots:
     void checkMousePressEvent();
     void checkMouseReleaseEvent_data();
     void checkMouseReleaseEvent();
+    void grabbers_data();
+    void grabbers();
 
 private:
     MouseEventWidget* testMouseWidget;
@@ -87,7 +111,7 @@ private:
 
 void tst_QMouseEvent::initTestCase()
 {
-    testMouseWidget = new MouseEventWidget(0);
+    testMouseWidget = new MouseEventWidget;
     testMouseWidget->show();
 }
 
@@ -216,6 +240,43 @@ void tst_QMouseEvent::checkMouseReleaseEvent()
     QCOMPARE(testMouseWidget->mouseReleaseButton, button);
     QCOMPARE(testMouseWidget->mouseReleaseButtons, buttons);
     QCOMPARE(testMouseWidget->mouseReleaseModifiers, modifiers);
+}
+
+void tst_QMouseEvent::grabbers_data()
+{
+    QTest::addColumn<bool>("grabExclusive");
+    QTest::addColumn<bool>("grabPassive");
+
+    QTest::newRow("no grab") << false << false;
+    QTest::newRow("exclusive") << true << false;
+    QTest::newRow("passive") << false << true;
+}
+
+void tst_QMouseEvent::grabbers()
+{
+    QFETCH(bool, grabExclusive);
+    QFETCH(bool, grabPassive);
+
+    testMouseWidget->grabExclusive = grabExclusive;
+    testMouseWidget->grabPassive = grabPassive;
+
+    QTest::mousePress(testMouseWidget, Qt::LeftButton, Qt::KeyboardModifiers(), {10, 10});
+
+    auto devPriv = QPointingDevicePrivate::get(QPointingDevice::primaryPointingDevice());
+    QCOMPARE(devPriv->activePoints.count(), 1);
+
+    // Ensure that grabbers are persistent between events, within the stored touchpoints
+    auto firstEPD = devPriv->pointById(0);
+    QCOMPARE(firstEPD->eventPoint.pressTimestamp(), testMouseWidget->pressTimestamp);
+    QCOMPARE(firstEPD->exclusiveGrabber, grabExclusive ? testMouseWidget : nullptr);
+    QCOMPARE(firstEPD->passiveGrabbers.count(), grabPassive ? 1 : 0);
+    if (grabPassive)
+        QCOMPARE(firstEPD->passiveGrabbers.first(), testMouseWidget);
+
+    // Ensure that grabbers are forgotten after release delivery
+    QTest::mouseRelease(testMouseWidget, Qt::LeftButton, Qt::KeyboardModifiers(), {10, 10});
+    QTRY_COMPARE(firstEPD->exclusiveGrabber, nullptr);
+    QCOMPARE(firstEPD->passiveGrabbers.count(), 0);
 }
 
 QTEST_MAIN(tst_QMouseEvent)

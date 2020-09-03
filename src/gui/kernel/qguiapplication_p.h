@@ -227,10 +227,7 @@ public:
     virtual bool isWindowBlocked(QWindow *window, QWindow **blockingWindow = nullptr) const;
     virtual bool popupActive() { return false; }
 
-    static ulong mousePressTime;
     static Qt::MouseButton mousePressButton;
-    static int mousePressX;
-    static int mousePressY;
     static QPointF lastCursorPosition;
     static QWindow *currentMouseWindow;
     static QWindow *currentMousePressWindow;
@@ -286,17 +283,6 @@ public:
     void saveState();
 #endif
 
-    struct ActiveTouchPointsKey {
-        ActiveTouchPointsKey(const QPointingDevice *dev, int id) : device(dev), touchPointId(id) { }
-        const QPointingDevice *device;
-        int touchPointId;
-    };
-    struct ActiveTouchPointsValue {
-        QPointer<QWindow> window;
-        QPointer<QObject> target;
-        QMutableEventPoint touchPoint;
-    };
-    QHash<ActiveTouchPointsKey, ActiveTouchPointsValue> activeTouchPoints;
     QEvent::Type lastTouchType;
     struct SynthesizedMouseData {
         SynthesizedMouseData(const QPointF &p, const QPointF &sp, QWindow *w)
@@ -363,11 +349,6 @@ private:
     // only the first time it's required, or when devices are added or removed.
     static qreal m_maxDevicePixelRatio;
 };
-
-Q_GUI_EXPORT size_t qHash(const QGuiApplicationPrivate::ActiveTouchPointsKey &k, size_t seed = 0);
-
-Q_GUI_EXPORT bool operator==(const QGuiApplicationPrivate::ActiveTouchPointsKey &a,
-                             const QGuiApplicationPrivate::ActiveTouchPointsKey &b);
 
 // ----------------- QPlatformInterface -----------------
 

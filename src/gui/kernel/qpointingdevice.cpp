@@ -49,6 +49,7 @@
 QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(lcQpaInputDevices)
+Q_DECLARE_LOGGING_CATEGORY(lcPointerGrab)
 
 /*!
     \class QPointingDevice
@@ -351,6 +352,157 @@ const QPointingDevice *QPointingDevicePrivate::queryTabletDevice(QInputDevice::D
         }
     }
     return nullptr;
+}
+
+/*! \internal
+    Returns the active EventPointData instance with the given \a id, if available,
+    or \c nullptr if not.
+*/
+QPointingDevicePrivate::EventPointData *QPointingDevicePrivate::queryPointById(int id) const
+{
+    auto it = activePoints.find(id);
+    if (it == activePoints.end())
+        return nullptr;
+    return &it.value();
+}
+
+/*! \internal
+    Returns the active EventPointData instance with the given \a id, if available;
+    if not, appends a new instance and returns it.
+*/
+QPointingDevicePrivate::EventPointData *QPointingDevicePrivate::pointById(int id) const
+{
+    auto it = activePoints.find(id);
+    if (it == activePoints.end()) {
+        Q_Q(const QPointingDevice);
+        QPointingDevicePrivate::EventPointData epd;
+        QMutableEventPoint::from(epd.eventPoint).setId(id);
+        QMutableEventPoint::from(epd.eventPoint).setDevice(q);
+        return &activePoints.insert(id, epd).first.value();
+    }
+    return &it.value();
+}
+
+/*! \internal
+    Remove the active EventPointData instance with the given \a id.
+*/
+void QPointingDevicePrivate::removePointById(int id)
+{
+    activePoints.remove(id);
+}
+
+/*!
+    \internal
+    Find the first non-null target (widget) via QMutableEventPoint::target()
+    in the active points. This is the widget that will receive any event that
+    comes from a touchpad, even if some of the touchpoints fall spatially on
+    other windows.
+*/
+QObject *QPointingDevicePrivate::firstActiveTarget() const
+{
+    for (auto &pt : activePoints.values()) {
+        if (auto target = QMutableEventPoint::constFrom(pt.eventPoint).target())
+            return target;
+    }
+    return nullptr;
+}
+
+/*! \internal
+    Find the first non-null QWindow instance via QMutableEventPoint::window()
+    in the active points. This is the window that will receive any event that
+    comes from a touchpad, even if some of the touchpoints fall spatially on
+    other windows.
+*/
+QWindow *QPointingDevicePrivate::firstActiveWindow() const
+{
+    for (auto &pt : activePoints.values()) {
+        if (auto window = QMutableEventPoint::constFrom(pt.eventPoint).window())
+            return window;
+    }
+    return nullptr;
+}
+
+void QPointingDevicePrivate::setExclusiveGrabber(const QPointerEvent *event, const QEventPoint &point, QObject *exclusiveGrabber)
+{
+    Q_Q(QPointingDevice);
+    auto persistentPoint = queryPointById(point.id());
+    if (!persistentPoint) {
+        qWarning() << "point is not in activePoints" << point;
+        return;
+    }
+    if (persistentPoint->exclusiveGrabber == exclusiveGrabber)
+        return;
+    auto oldGrabber = persistentPoint->exclusiveGrabber;
+    persistentPoint->exclusiveGrabber = exclusiveGrabber;
+    if (oldGrabber)
+        emit q->grabChanged(oldGrabber, QPointingDevice::UngrabExclusive, event, point);
+    if (Q_UNLIKELY(lcPointerGrab().isDebugEnabled())) {
+        qCDebug(lcPointerGrab) << name << "point" << point.id() << point.state()
+                               << "@" << point.scenePosition()
+                               << ": grab" << oldGrabber << "->" << exclusiveGrabber;
+    }
+    QMutableEventPoint::from(persistentPoint->eventPoint).setGlobalGrabPosition(point.globalPosition());
+    if (exclusiveGrabber)
+        emit q->grabChanged(exclusiveGrabber, QPointingDevice::GrabExclusive, event, point);
+}
+
+bool QPointingDevicePrivate::addPassiveGrabber(const QPointerEvent *event, const QEventPoint &point, QObject *grabber)
+{
+    Q_Q(QPointingDevice);
+    auto persistentPoint = queryPointById(point.id());
+    if (!persistentPoint) {
+        qWarning() << "point is not in activePoints" << point;
+        return false;
+    }
+    if (persistentPoint->passiveGrabbers.contains(grabber))
+        return false;
+    if (Q_UNLIKELY(lcPointerGrab().isDebugEnabled())) {
+        qCDebug(lcPointerGrab) << name << "point" << point.id() << point.state()
+                               << ": grab (passive)" << grabber;
+    }
+    persistentPoint->passiveGrabbers << grabber;
+    emit q->grabChanged(grabber, QPointingDevice::GrabPassive, event, point);
+    return true;
+}
+
+bool QPointingDevicePrivate::removePassiveGrabber(const QPointerEvent *event, const QEventPoint &point, QObject *grabber)
+{
+    Q_Q(QPointingDevice);
+    auto persistentPoint = queryPointById(point.id());
+    if (!persistentPoint) {
+        qWarning() << "point is not in activePoints" << point;
+        return false;
+    }
+    int i = persistentPoint->passiveGrabbers.indexOf(grabber);
+    if (i >= 0) {
+        if (Q_UNLIKELY(lcPointerGrab().isDebugEnabled())) {
+            qCDebug(lcPointerGrab) << name << "point" << point.id() << point.state()
+                                   << ": removing passive grabber" << grabber;
+        }
+        emit q->grabChanged(grabber, QPointingDevice::UngrabPassive, event, point);
+        persistentPoint->passiveGrabbers.removeAt(i);
+        return true;
+    }
+    return false;
+}
+
+void QPointingDevicePrivate::clearPassiveGrabbers(const QPointerEvent *event, const QEventPoint &point)
+{
+    Q_Q(QPointingDevice);
+    auto persistentPoint = queryPointById(point.id());
+    if (!persistentPoint) {
+        qWarning() << "point is not in activePoints" << point;
+        return;
+    }
+    if (persistentPoint->passiveGrabbers.isEmpty())
+        return;
+    if (Q_UNLIKELY(lcPointerGrab().isDebugEnabled())) {
+        qCDebug(lcPointerGrab) << name << "point" << point.id() << point.state()
+                               << ": clearing" << persistentPoint->passiveGrabbers;
+    }
+    for (auto g : persistentPoint->passiveGrabbers)
+        emit q->grabChanged(g, QPointingDevice::UngrabPassive, event, point);
+    persistentPoint->passiveGrabbers.clear();
 }
 
 /*!

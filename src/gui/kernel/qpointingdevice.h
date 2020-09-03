@@ -47,6 +47,8 @@
 QT_BEGIN_NAMESPACE
 
 class QDebug;
+class QEventPoint;
+class QPointerEvent;
 class QPointingDevicePrivate;
 class QScreen;
 
@@ -100,6 +102,17 @@ public:
     Q_DECLARE_FLAGS(PointerTypes, PointerType)
     Q_FLAG(PointerTypes)
 
+    enum GrabTransition : quint8 {
+        GrabPassive = 0x01,
+        UngrabPassive = 0x02,
+        CancelGrabPassive = 0x03,
+        OverrideGrabPassive = 0x04,
+        GrabExclusive = 0x10,
+        UngrabExclusive = 0x20,
+        CancelGrabExclusive = 0x30,
+    };
+    Q_ENUM(GrabTransition)
+
     QPointingDevice();
     ~QPointingDevice();
     QPointingDevice(const QString &name, qint64 systemId, QInputDevice::DeviceType devType,
@@ -125,6 +138,9 @@ public:
     static const QPointingDevice *primaryPointingDevice(const QString& seatName = QString());
 
     bool operator==(const QPointingDevice &other) const;
+
+Q_SIGNALS:
+    void grabChanged(QObject *grabber, GrabTransition transition, const QPointerEvent *event, const QEventPoint &point) const;
 
 protected:
     QPointingDevice(QPointingDevicePrivate &d, QObject *parent = nullptr);

@@ -59,6 +59,7 @@
 #include <QtCore/qmutex.h>
 #include <QtCore/private/qthread_p.h>
 #include <QtCore/private/qlocking_p.h>
+#include <QtCore/private/qflatmap_p.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qlibraryinfo.h>
 #include <QtCore/qnumeric.h>
@@ -155,7 +156,7 @@ bool QGuiApplicationPrivate::highDpiScalingUpdated = false;
 
 QPointer<QWindow> QGuiApplicationPrivate::currentDragWindow;
 
-QList<QGuiApplicationPrivate::TabletPointData> QGuiApplicationPrivate::tabletDevicePoints;
+QList<QGuiApplicationPrivate::TabletPointData> QGuiApplicationPrivate::tabletDevicePoints; // TODO remove
 
 QPlatformIntegration *QGuiApplicationPrivate::platform_integration = nullptr;
 QPlatformTheme *QGuiApplicationPrivate::platform_theme = nullptr;
@@ -177,10 +178,7 @@ QString *QGuiApplicationPrivate::desktopFileName = nullptr;
 
 QPalette *QGuiApplicationPrivate::app_pal = nullptr;        // default application palette
 
-ulong QGuiApplicationPrivate::mousePressTime = 0;
 Qt::MouseButton QGuiApplicationPrivate::mousePressButton = Qt::NoButton;
-int QGuiApplicationPrivate::mousePressX = 0; // TODO use QPointF and store it in QPointingDevicePrivate
-int QGuiApplicationPrivate::mousePressY = 0;
 
 static int mouseDoubleClickDistance = -1;
 static int touchDoubleTapDistance = -1;
@@ -716,8 +714,6 @@ QGuiApplication::~QGuiApplication()
     QGuiApplicationPrivate::highDpiScalingUpdated = false;
     QGuiApplicationPrivate::currentDragWindow = nullptr;
     QGuiApplicationPrivate::tabletDevicePoints.clear();
-    QGuiApplicationPrivate::mousePressTime = 0;
-    QGuiApplicationPrivate::mousePressX = QGuiApplicationPrivate::mousePressY = 0;
 }
 
 QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv, int flags)
@@ -1195,6 +1191,7 @@ QString QGuiApplication::platformName()
 }
 
 Q_LOGGING_CATEGORY(lcQpaPluginLoading, "qt.qpa.plugin");
+Q_LOGGING_CATEGORY(lcPtrDispatch, "qt.pointer.dispatch");
 
 static void init_platform(const QString &pluginNamesWithArguments, const QString &platformPluginPath, const QString &platformThemeName, int &argc, char **argv)
 {
@@ -2132,9 +2129,13 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     QEvent::Type type = QEvent::None;
     Qt::MouseButton button = Qt::NoButton;
     QWindow *window = e->window.data();
+    const QPointingDevice *device = static_cast<const QPointingDevice *>(e->device);
+    Q_ASSERT(device);
+    QPointingDevicePrivate *devPriv = QPointingDevicePrivate::get(const_cast<QPointingDevice*>(device));
     bool positionChanged = QGuiApplicationPrivate::lastCursorPosition != e->globalPos;
     bool mouseMove = false;
     bool mousePress = false;
+    QPointF globalPoint = e->globalPos;
 
     if (e->enhancedMouseEvent()) {
         type = e->buttonType;
@@ -2207,27 +2208,24 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
 
     modifier_buttons = e->modifiers;
     QPointF localPoint = e->localPos;
-    QPointF globalPoint = e->globalPos;
-    const QPointF lastGlobalPosition = QGuiApplicationPrivate::lastCursorPosition;
     bool doubleClick = false;
+    auto persistentEPD = devPriv->pointById(0);
+    const auto &persistentPoint = QMutableEventPoint::from(persistentEPD->eventPoint);
 
     if (mouseMove) {
         QGuiApplicationPrivate::lastCursorPosition = globalPoint;
         const auto doubleClickDistance = (e->device && e->device->type() == QInputDevice::DeviceType::Mouse ?
                     mouseDoubleClickDistance : touchDoubleTapDistance);
-        if (qAbs(globalPoint.x() - mousePressX) > doubleClickDistance ||
-            qAbs(globalPoint.y() - mousePressY) > doubleClickDistance)
+        const auto pressPos = persistentPoint.globalPressPosition();
+        if (qAbs(globalPoint.x() - pressPos.x()) > doubleClickDistance ||
+            qAbs(globalPoint.y() - pressPos.y()) > doubleClickDistance)
             mousePressButton = Qt::NoButton;
     } else {
         mouse_buttons = e->buttons;
         if (mousePress) {
             ulong doubleClickInterval = static_cast<ulong>(QGuiApplication::styleHints()->mouseDoubleClickInterval());
-            doubleClick = e->timestamp - mousePressTime < doubleClickInterval && button == mousePressButton;
-            mousePressTime = e->timestamp;
+            doubleClick = e->timestamp - persistentPoint.pressTimestamp() < doubleClickInterval && button == mousePressButton;
             mousePressButton = button;
-            const QPoint point = QGuiApplicationPrivate::lastCursorPosition.toPoint();
-            mousePressX = point.x();
-            mousePressY = point.y();
         }
     }
 
@@ -2252,7 +2250,6 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     if (!window)
         return;
 
-    const QPointingDevice *device = static_cast<const QPointingDevice *>(e->device);
 #ifndef QT_NO_CURSOR
     if (!e->synthetic()) {
         if (const QScreen *screen = window->screen())
@@ -2268,11 +2265,8 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
 #endif
 
     QMouseEvent ev(type, localPoint, localPoint, globalPoint, button, e->buttons, e->modifiers, e->source, device);
+    // ev now contains a detached copy of the QEventPoint from QPointingDevicePrivate::activePoints
     ev.setTimestamp(e->timestamp);
-    QMutableEventPoint &mutPt = QMutableSinglePointEvent::from(ev).mutablePoint();
-    mutPt.setGlobalLastPosition(lastGlobalPosition);
-    mutPt.setGlobalPressPosition(QPointF(mousePressX, mousePressY));
-
     if (window->d_func()->blockedByModalWindow && !qApp->d_func()->popupActive()) {
         // a modal window is blocking this window, don't allow mouse events through
         return;
@@ -2329,6 +2323,10 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
             dblClickEvent.setTimestamp(e->timestamp);
             QGuiApplication::sendSpontaneousEvent(window, &dblClickEvent);
         }
+    }
+    if (type == QEvent::MouseButtonRelease && e->buttons == Qt::NoButton) {
+        ev.setExclusiveGrabber(persistentPoint, nullptr);
+        ev.clearPassiveGrabbers(persistentPoint);
     }
 }
 
@@ -2806,38 +2804,28 @@ void QGuiApplicationPrivate::processContextMenuEvent(QWindowSystemInterfacePriva
 }
 #endif
 
-Q_GUI_EXPORT size_t qHash(const QGuiApplicationPrivate::ActiveTouchPointsKey &k, size_t seed)
-{
-    return (qHash(k.device) + k.touchPointId) ^ seed;
-}
-
-Q_GUI_EXPORT bool operator==(const QGuiApplicationPrivate::ActiveTouchPointsKey &a,
-                             const QGuiApplicationPrivate::ActiveTouchPointsKey &b)
-{
-    return a.device == b.device
-            && a.touchPointId == b.touchPointId;
-}
-
 void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::TouchEvent *e)
 {
-    QGuiApplicationPrivate *d = self;
     modifier_buttons = e->modifiers;
-    const QPointingDevice *device = static_cast<const QPointingDevice *>(e->device);
+    QPointingDevice *device = const_cast<QPointingDevice *>(static_cast<const QPointingDevice *>(e->device));
+    QPointingDevicePrivate *devPriv = QPointingDevicePrivate::get(device);
 
     if (e->touchType == QEvent::TouchCancel) {
         // The touch sequence has been canceled (e.g. by the compositor).
         // Send the TouchCancel to all windows with active touches and clean up.
         QTouchEvent touchEvent(QEvent::TouchCancel, device, e->modifiers);
         touchEvent.setTimestamp(e->timestamp);
-        QHash<ActiveTouchPointsKey, ActiveTouchPointsValue>::const_iterator it
-                = self->activeTouchPoints.constBegin(), ite = self->activeTouchPoints.constEnd();
         QSet<QWindow *> windowsNeedingCancel;
-        while (it != ite) {
-            QWindow *w = it->window.data();
+
+        for (auto &epd : devPriv->activePoints.values()) {
+            auto &mut = QMutableEventPoint::from(const_cast<QEventPoint &>(epd.eventPoint));
+            QWindow *w = mut.window();
             if (w)
                 windowsNeedingCancel.insert(w);
-            ++it;
+            mut.setWindow(nullptr);
+            mut.setTarget(nullptr);
         }
+
         for (QSet<QWindow *>::const_iterator winIt = windowsNeedingCancel.constBegin(),
             winItEnd = windowsNeedingCancel.constEnd(); winIt != winItEnd; ++winIt) {
             QGuiApplication::sendSpontaneousEvent(*winIt, &touchEvent);
@@ -2863,7 +2851,6 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             }
             self->synthesizedMousePoints.clear();
         }
-        self->activeTouchPoints.clear();
         self->lastTouchType = e->touchType;
         return;
     }
@@ -2874,110 +2861,88 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
 
     self->lastTouchType = e->touchType;
 
-    QWindow *window = e->window.data();
-    // TODO get rid of this QPair; we don't need to accumulate combined states here anymore
-    typedef QPair<QEventPoint::States, QList<QEventPoint> > StatesAndTouchPoints;
-    QHash<QWindow *, StatesAndTouchPoints> windowsNeedingEvents;
     bool stationaryTouchPointChangedProperty = false;
+    QPointer<QWindow> window = e->window;  // the platform hopefully tells us which window received the event
+    QVarLengthArray<QMutableTouchEvent, 2> touchEvents;
 
-    for (int i = 0; i < e->points.count(); ++i) {
-        QMutableEventPoint touchPoint = QMutableEventPoint::from(e->points[i]);
-
+    // For each temporary QEventPoint from the QPA TouchEvent:
+    // - update the persistent QEventPoint in QPointingDevicePrivate::activePoints with current values
+    // - determine which window to deliver it to
+    // - add it to the QTouchEvent instance for that window (QMutableTouchEvent::target() will be QWindow*, for now)
+    for (auto &tempPt : e->points) {
         // update state
-        QPointer<QWindow> w;
-        QEventPoint previousTouchPoint;
-        ActiveTouchPointsKey touchInfoKey(device, touchPoint.id());
-        ActiveTouchPointsValue &touchInfo = d->activeTouchPoints[touchInfoKey];
-        switch (touchPoint.state()) {
+        auto epd = devPriv->pointById(tempPt.id());
+        auto &mut = QMutableEventPoint::from(const_cast<QEventPoint &>(epd->eventPoint));
+        epd->eventPoint.setAccepted(false);
+        switch (tempPt.state()) {
         case QEventPoint::State::Pressed:
-            if (e->device && e->device->type() == QInputDevice::DeviceType::TouchPad) {
-                // on touch-pads, send all touch points to the same widget
-                w = d->activeTouchPoints.isEmpty()
-                    ? QPointer<QWindow>()
-                    : d->activeTouchPoints.constBegin().value().window;
-            }
-
-            if (!w) {
-                // determine which window this event will go to
-                if (!window)
-                    window = QGuiApplication::topLevelAt(touchPoint.globalPosition().toPoint());
-                if (!window)
-                    continue;
-                w = window;
-            }
-
-            touchInfo.window = w;
-            touchPoint.setGlobalPressPosition(touchPoint.globalPosition());
-            touchPoint.setGlobalLastPosition(touchPoint.globalPosition());
-            if (touchPoint.pressure() < 0)
-                touchPoint.setPressure(1);
-
-            touchInfo.touchPoint = touchPoint;
+            // On touchpads, send all touch points to the same window.
+            if (!window && e->device && e->device->type() == QInputDevice::DeviceType::TouchPad)
+                window = devPriv->firstActiveWindow();
+            // If the QPA event didn't tell us which window, find the one under the touchpoint position.
+            if (!window)
+                window = QGuiApplication::topLevelAt(tempPt.globalPosition().toPoint());
+            mut.setWindow(window);
             break;
 
         case QEventPoint::State::Released:
-            w = touchInfo.window;
-            if (!w)
-                continue;
-
-            previousTouchPoint = touchInfo.touchPoint;
-            touchPoint.setGlobalPressPosition(previousTouchPoint.globalPressPosition());
-            touchPoint.setGlobalLastPosition(previousTouchPoint.globalPosition());
-            touchPoint.setPressure(0);
-
+            if (Q_UNLIKELY(window != mut.window())) {
+                qCWarning(lcPtrDispatch) << "delivering touch release to same window" << mut.window() << "not" << window.data();
+                window = mut.window();
+            }
             break;
 
-        default:
-            w = touchInfo.window;
-            if (!w)
-                continue;
-
-            previousTouchPoint = touchInfo.touchPoint;
-            touchPoint.setGlobalPressPosition(previousTouchPoint.globalPressPosition());
-            touchPoint.setGlobalLastPosition(previousTouchPoint.globalPosition());
-            if (touchPoint.pressure() < 0)
-                touchPoint.setPressure(1);
-
-            // Stationary points might not be delivered down to the receiving item
-            // and get their position transformed, keep the old values instead.
-            if (touchPoint.state() == QEventPoint::State::Stationary) {
-                if (touchInfo.touchPoint.velocity() != touchPoint.velocity()) {
-                    touchInfo.touchPoint.setVelocity(touchPoint.velocity());
-                    touchPoint.setStationaryWithModifiedProperty();
-                    stationaryTouchPointChangedProperty = true;
-                }
-                if (!qFuzzyCompare(touchInfo.touchPoint.pressure(), touchPoint.pressure())) {
-                    touchInfo.touchPoint.setPressure(touchPoint.pressure());
-                    touchPoint.setStationaryWithModifiedProperty();
-                    stationaryTouchPointChangedProperty = true;
-                }
-            } else {
-                touchInfo.touchPoint = touchPoint;
+        default: // update or stationary
+            if (Q_UNLIKELY(window != mut.window())) {
+                qCWarning(lcPtrDispatch) << "delivering touch update to same window" << mut.window() << "not" << window.data();
+                window = mut.window();
             }
             break;
         }
+        // If we somehow still don't have a window, we can't deliver this touchpoint.  (should never happen)
+        if (Q_UNLIKELY(!window)) {
+            qCWarning(lcPtrDispatch) << "skipping" << &tempPt << ": no target window";
+            continue;
+        }
+        mut.updateFrom(tempPt);
 
-        Q_ASSERT(w.data() != nullptr);
+        Q_ASSERT(window.data() != nullptr);
 
         // make the *scene* position the same as the *global* position
-        // Note: touchPoint is a reference to the one from activeTouchPoints, so we can modify it.
-        touchPoint.setScenePosition(touchPoint.globalPosition());
+        mut.setScenePosition(tempPt.globalPosition());
 
-        StatesAndTouchPoints &maskAndPoints = windowsNeedingEvents[w.data()];
-        maskAndPoints.first |= touchPoint.state();
-        maskAndPoints.second.append(touchPoint);
+        // store the scene position as local position, for now
+        mut.setPosition(window->mapFromGlobal(tempPt.globalPosition()));
+
+        // setTimeStamp has side effects, so we do it last
+        mut.setTimestamp(e->timestamp);
+
+        // add the touchpoint to the event that will be delivered to the window
+        bool added = false;
+        for (QMutableTouchEvent &ev : touchEvents) {
+            if (ev.target() == window.data()) {
+                ev.addPoint(mut);
+                added = true;
+                break;
+            }
+        }
+        if (!added) {
+            QMutableTouchEvent mte(e->touchType, device, e->modifiers, {mut});
+            mte.setTimestamp(e->timestamp);
+            mte.setTarget(window.data());
+            touchEvents.append(mte);
+        }
     }
 
-    if (windowsNeedingEvents.isEmpty())
+    if (touchEvents.isEmpty())
         return;
 
-    QHash<QWindow *, StatesAndTouchPoints>::ConstIterator it = windowsNeedingEvents.constBegin();
-    const QHash<QWindow *, StatesAndTouchPoints>::ConstIterator end = windowsNeedingEvents.constEnd();
-    for (; it != end; ++it) {
-        QWindow *w = it.key();
+    for (QMutableTouchEvent &touchEvent : touchEvents) {
+        QWindow *window = static_cast<QWindow *>(touchEvent.target());
+        auto &points = touchEvent.points();
 
         QEvent::Type eventType;
-        switch (it.value().first) {
+        switch (touchEvent.touchPointStates()) {
         case QEventPoint::State::Pressed:
             eventType = QEvent::TouchBegin;
             break;
@@ -2994,32 +2959,22 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             break;
         }
 
-        if (w->d_func()->blockedByModalWindow && !qApp->d_func()->popupActive()) {
+        if (window->d_func()->blockedByModalWindow && !qApp->d_func()->popupActive()) {
             // a modal window is blocking this window, don't allow touch events through
 
-            // QTBUG-37371 temporary fix; TODO: revisit in 5.4 when we have a forwarding solution
-            if (eventType == QEvent::TouchEnd) {
+            // QTBUG-37371 temporary fix; TODO: revisit when we have a forwarding solution
+            if (touchEvent.type() == QEvent::TouchEnd) {
                 // but don't leave dangling state: e.g.
                 // QQuickWindowPrivate::itemForTouchPointId needs to be cleared.
-                QTouchEvent touchEvent(QEvent::TouchCancel,
-                                       device,
-                                       e->modifiers);
+                QTouchEvent touchEvent(QEvent::TouchCancel, device, e->modifiers);
                 touchEvent.setTimestamp(e->timestamp);
-                QGuiApplication::sendSpontaneousEvent(w, &touchEvent);
+                QGuiApplication::sendSpontaneousEvent(window, &touchEvent);
             }
             continue;
         }
 
-        const auto &touchpoints = it.value().second;
-        QMutableTouchEvent touchEvent(eventType, device, e->modifiers, touchpoints);
-        touchEvent.setTimestamp(e->timestamp);
+        QGuiApplication::sendSpontaneousEvent(window, &touchEvent);
 
-        for (QEventPoint &pt : touchEvent.touchPoints()) {
-            auto &touchPoint = QMutableEventPoint::from(pt);
-            touchPoint.setPosition(w->mapFromGlobal(touchPoint.globalPosition()));
-        }
-
-        QGuiApplication::sendSpontaneousEvent(w, &touchEvent);
         if (!e->synthetic() && !touchEvent.isAccepted() && qApp->testAttribute(Qt::AA_SynthesizeMouseForUnhandledTouchEvents)) {
             // exclude devices which generate their own mouse events
             if (!(touchEvent.device()->capabilities().testFlag(QInputDevice::Capability::MouseEmulation))) {
@@ -3042,15 +2997,15 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                 Qt::MouseButton button = mouseType == QEvent::MouseMove ? Qt::NoButton : Qt::LeftButton;
                 Qt::MouseButtons buttons = mouseType == QEvent::MouseButtonRelease ? Qt::NoButton : Qt::LeftButton;
 
-                const auto &points = touchEvent.touchPoints();
                 for (const QEventPoint &touchPoint : points) {
                     if (touchPoint.id() == m_fakeMouseSourcePointId) {
                         if (eventType != QEvent::TouchEnd)
-                            self->synthesizedMousePoints.insert(w, SynthesizedMouseData(
-                                                                    touchPoint.position(), touchPoint.globalPosition(), w));
+                            self->synthesizedMousePoints.insert(window, SynthesizedMouseData(
+                                                                    touchPoint.position(), touchPoint.globalPosition(), window));
                         // All touch events that are not accepted by the application will be translated to
                         // left mouse button events instead (see AA_SynthesizeMouseForUnhandledTouchEvents docs).
-                        QWindowSystemInterfacePrivate::MouseEvent fake(w, e->timestamp,
+                        // TODO why go through QPA?  Why not just send a QMouseEvent right from here?
+                        QWindowSystemInterfacePrivate::MouseEvent fake(window, e->timestamp,
                                                                        touchPoint.position(),
                                                                        touchPoint.globalPosition(),
                                                                        buttons,
@@ -3069,13 +3024,11 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
         }
     }
 
-    // Remove released points from the hash table only after the event is
-    // delivered. When the receiver is a widget, QApplication will access
-    // activeTouchPoints during delivery and therefore nothing can be removed
-    // before sending the event.
+    // Remove released points from QPointingDevicePrivate::activePoints only after the event is
+    // delivered.  Widgets and Qt Quick are allowed to access them at any time before this.
     for (const QEventPoint &touchPoint : e->points) {
         if (touchPoint.state() == QEventPoint::State::Released)
-            d->activeTouchPoints.remove(ActiveTouchPointsKey(device, touchPoint.id()));
+            devPriv->removePointById(touchPoint.id());
     }
 }
 
