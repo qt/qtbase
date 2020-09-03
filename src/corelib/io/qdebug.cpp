@@ -304,7 +304,7 @@ static inline void putEscapedString(QTextStreamPrivate *d, const Char *begin, in
 */
 void QDebug::putString(const QChar *begin, size_t length)
 {
-    if (stream->testFlag(Stream::NoQuotes)) {
+    if (stream->noQuotes) {
         // no quotes, write the string directly too (no pretty-printing)
         // this respects the QTextStream state, though
         stream->ts.d_ptr->putString(begin, int(length));
@@ -322,7 +322,7 @@ void QDebug::putString(const QChar *begin, size_t length)
 */
 void QDebug::putByteArray(const char *begin, size_t length, Latin1Content content)
 {
-    if (stream->testFlag(Stream::NoQuotes)) {
+    if (stream->noQuotes) {
         // no quotes, write the string directly too (no pretty-printing)
         // this respects the QTextStream state, though
         QString string = content == ContainsLatin1 ? QString::fromLatin1(begin, int(length)) : QString::fromUtf8(begin, int(length));
@@ -354,9 +354,8 @@ QDebug &QDebug::resetFormat()
 {
     stream->ts.reset();
     stream->space = true;
-    if (stream->context.version > 1)
-        stream->flags = 0;
-    stream->setVerbosity(DefaultVerbosity);
+    stream->noQuotes = false;
+    stream->verbosity = DefaultVerbosity;
     return *this;
 }
 
@@ -853,7 +852,8 @@ public:
     QDebugStateSaverPrivate(QDebug::Stream *stream)
         : m_stream(stream),
           m_spaces(stream->space),
-          m_flags(stream->context.version > 1 ? stream->flags : 0),
+          m_noQuotes(stream->noQuotes),
+          m_verbosity(stream->verbosity),
           m_streamParams(stream->ts.d_ptr->params)
     {
     }
@@ -865,9 +865,9 @@ public:
                 m_stream->buffer.chop(1);
 
         m_stream->space = m_spaces;
+        m_stream->noQuotes = m_noQuotes;
         m_stream->ts.d_ptr->params = m_streamParams;
-        if (m_stream->context.version > 1)
-            m_stream->flags = m_flags;
+        m_stream->verbosity = m_verbosity;
 
         if (!currentSpaces && m_spaces)
             m_stream->ts << ' ';
@@ -877,7 +877,8 @@ public:
 
     // QDebug state
     const bool m_spaces;
-    const int m_flags;
+    const bool m_noQuotes;
+    const int m_verbosity;
 
     // QTextStream state
     const QTextStreamPrivate::Params m_streamParams;
