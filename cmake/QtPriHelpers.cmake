@@ -563,7 +563,6 @@ QT_PATCH_VERSION = ${PROJECT_VERSION_PATCH}
         list(APPEND extra_statements "QT_LIBINFIX = ${QT_LIBINFIX}")
     endif()
 
-    # TODO: Add QT_EMCC_VERSION when WASM is ported over.
     if(APPLECLANG)
         set(compiler_version_major_var_name "QT_APPLE_CLANG_MAJOR_VERSION")
         set(compiler_version_minor_var_name "QT_APPLE_CLANG_MINOR_VERSION")
@@ -603,6 +602,10 @@ QT_PATCH_VERSION = ${PROJECT_VERSION_PATCH}
 
     list(APPEND extra_statements "QT_EDITION = Open Source")
 
+    if(WASM)
+        list(APPEND extra_statements
+            "QT_EMCC_VERSION = ${EMCC_VERSION}")
+    endif()
     if(extra_statements)
         string(REPLACE ";" "\n" extra_statements "${extra_statements}")
         string(APPEND content "\n${extra_statements}\n")

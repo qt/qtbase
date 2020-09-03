@@ -302,7 +302,7 @@ elseif(IOS)
     set(QT_DEFAULT_MKSPEC macx-ios-clang)
 elseif(APPLE)
     set(QT_DEFAULT_MKSPEC macx-clang)
-elseif(EMSCRIPTEN)
+elseif(WASM)
     set(QT_DEFAULT_MKSPEC wasm-emscripten)
 elseif(QNX)
     # Certain POSIX defines are not set if we don't compile with -std=gnuXX

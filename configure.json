@@ -677,7 +677,7 @@
         },
         "shared": {
             "label": "Building shared libraries",
-            "autoDetect": "!config.uikit",
+            "autoDetect": "!config.uikit && !config.wasm",
             "condition": "!config.integrity && !config.wasm && !config.rtems",
             "output": [
                 "shared",
@@ -1010,6 +1010,7 @@
         "precompile_header": {
             "label": "Using precompiled headers",
             "condition": "tests.precompile_header",
+            "autodetect": "!config.wasm",
             "output": [
                 "privateConfig",
                 { "type": "varRemove", "negative": true, "name": "CONFIG", "value": "'precompile_header'" }
@@ -1337,7 +1338,7 @@
         "dbus": {
             "label": "Qt D-Bus",
             "autoDetect": "!config.uikit && !config.android",
-            "condition": "features.thread",
+            "condition": "features.thread && !config.wasm",
             "output": [ "privateFeature", "feature" ]
         },
         "dbus-linked": {
@@ -1378,7 +1379,7 @@
         },
         "sql": {
             "label": "Qt Sql",
-            "condition": "features.thread",
+            "condition": "features.thread && !config.wasm",
             "output": [ "privateFeature" ]
         },
         "testlib": {
@@ -1512,8 +1513,9 @@
             "message": "Qt requires a compliant STL library."
         },
         {
-            "type": "emccVersion",
-            "condition": "config.wasm"
+            "type": "note",
+            "condition": "features.thread",
+            "message": "Using pthreads"
         },
         {
             "type": "error",
@@ -1673,7 +1675,8 @@
                 "pkg-config",
                 "libudev",
                 "system-zlib",
-                "zstd"
+                "zstd",
+                "thread"
             ]
         }
     ]

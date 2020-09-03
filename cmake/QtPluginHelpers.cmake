@@ -338,7 +338,9 @@ function(qt_internal_add_plugin target)
                    NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE}::
                    DESTINATION "${config_install_dir}"
         )
-        qt_apply_rpaths(TARGET "${target}" INSTALL_PATH "${install_directory}" RELATIVE_RPATH)
+        if(BUILD_SHARED_LIBS)
+            qt_apply_rpaths(TARGET "${target}" INSTALL_PATH "${install_directory}" RELATIVE_RPATH)
+        endif()
     endif()
 
     if (NOT arg_ALLOW_UNDEFINED_SYMBOLS)

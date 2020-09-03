@@ -33,6 +33,9 @@ function(qt_internal_add_executable name)
             PROPERTY EXCLUDE_FROM_ALL "$<NOT:$<CONFIG:${QT_MULTI_CONFIG_FIRST_CONFIG}>>")
     endif()
 
+    if(WASM)
+        qt6_wasm_add_target_helpers("${name}")
+    endif()
     if (arg_VERSION)
         if(arg_VERSION MATCHES "[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+")
             # nothing to do

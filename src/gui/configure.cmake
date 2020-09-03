@@ -389,10 +389,19 @@ ioctl(fd, FBIOGET_VSCREENINFO, &vinfo);
 ")
 
 # opengles3
+# special case begin
+if(WASM)
+    set(extra_compiler_options "-s FULL_ES3=1")
+endif()
+# special case end
+
 qt_config_compile_test(opengles3
     LABEL "OpenGL ES 3.0"
     LIBRARIES
         GLESv2::GLESv2
+# special case begin
+    COMPILE_OPTIONS ${extra_compiler_options}
+# special case end
     CODE
 "#ifdef __APPLE__
 #  include <OpenGLES/ES3/gl.h>
