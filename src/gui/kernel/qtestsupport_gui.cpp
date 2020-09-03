@@ -45,6 +45,7 @@
 #include "qwindow.h"
 
 #include <QtCore/qtestsupport_core.h>
+#include <QtCore/qthread.h>
 #include <QtCore/QDebug>
 
 QT_BEGIN_NAMESPACE
@@ -90,5 +91,85 @@ Q_GUI_EXPORT bool QTest::qWaitForWindowExposed(QWindow *window, int timeout)
 {
     return QTest::qWaitFor([&]() { return window->isExposed(); }, timeout);
 }
+
+namespace QTest {
+
+QTouchEventSequence::~QTouchEventSequence()
+{
+    if (commitWhenDestroyed)
+        commit();
+}
+QTouchEventSequence& QTouchEventSequence::press(int touchId, const QPoint &pt, QWindow *window)
+{
+    auto &p = QMutableEventPoint::from(point(touchId));
+    p.setGlobalPosition(mapToScreen(window, pt));
+    p.setState(QEventPoint::State::Pressed);
+    return *this;
+}
+QTouchEventSequence& QTouchEventSequence::move(int touchId, const QPoint &pt, QWindow *window)
+{
+    auto &p = QMutableEventPoint::from(point(touchId));
+    p.setGlobalPosition(mapToScreen(window, pt));
+    p.setState(QEventPoint::State::Updated);
+    return *this;
+}
+QTouchEventSequence& QTouchEventSequence::release(int touchId, const QPoint &pt, QWindow *window)
+{
+    auto &p = QMutableEventPoint::from(point(touchId));
+    p.setGlobalPosition(mapToScreen(window, pt));
+    p.setState(QEventPoint::State::Released);
+    return *this;
+}
+QTouchEventSequence& QTouchEventSequence::stationary(int touchId)
+{
+    auto &p = QMutableEventPoint::from(pointOrPreviousPoint(touchId));
+    p.setState(QEventPoint::State::Stationary);
+    return *this;
+}
+
+void QTouchEventSequence::commit(bool processEvents)
+{
+    if (points.isEmpty())
+        return;
+    QThread::msleep(1);
+    if (targetWindow)
+        qt_handleTouchEvent(targetWindow, device, points.values());
+    if (processEvents)
+        QCoreApplication::processEvents();
+    previousPoints = points;
+    points.clear();
+}
+
+QTouchEventSequence::QTouchEventSequence(QWindow *window, QPointingDevice *aDevice, bool autoCommit)
+    : targetWindow(window), device(aDevice), commitWhenDestroyed(autoCommit)
+{
+}
+
+QPoint QTouchEventSequence::mapToScreen(QWindow *window, const QPoint &pt)
+{
+    if (window)
+        return window->mapToGlobal(pt);
+    return targetWindow ? targetWindow->mapToGlobal(pt) : pt;
+}
+
+QEventPoint &QTouchEventSequence::point(int touchId)
+{
+    if (!points.contains(touchId))
+        points[touchId] = QEventPoint(touchId);
+    return points[touchId];
+}
+
+QEventPoint &QTouchEventSequence::pointOrPreviousPoint(int touchId)
+{
+    if (!points.contains(touchId)) {
+        if (previousPoints.contains(touchId))
+            points[touchId] = previousPoints.value(touchId);
+        else
+            points[touchId] = QEventPoint(touchId);
+    }
+    return points[touchId];
+}
+
+} // namespace QTest
 
 QT_END_NAMESPACE

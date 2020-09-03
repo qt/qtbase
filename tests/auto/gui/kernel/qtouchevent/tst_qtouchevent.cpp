@@ -32,7 +32,7 @@
 #include <QtWidgets/QGraphicsView>
 #include <QtWidgets/QGraphicsWidget>
 #include <QtWidgets/QWidget>
-#include <QtTest>
+#include <QtTest/QtTest>
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qwindowsysteminterface_p.h>
 #include <private/qevent_p.h>
@@ -1655,11 +1655,11 @@ void tst_QTouchEvent::crashInQGraphicsSceneAfterNotHandlingTouchBegin()
 
     QPoint centerPos = view.mapFromScene(rect->boundingRect().center());
     // Touch the button
-    QTest::touchEvent(view.viewport(), touchScreenDevice).press(0, centerPos, static_cast<QWindow *>(0));
-    QTest::touchEvent(view.viewport(), touchScreenDevice).release(0, centerPos, static_cast<QWindow *>(0));
+    QTest::touchEvent(view.viewport(), touchScreenDevice).press(0, centerPos, nullptr);
+    QTest::touchEvent(view.viewport(), touchScreenDevice).release(0, centerPos, nullptr);
     // Touch outside of the button
-    QTest::touchEvent(view.viewport(), touchScreenDevice).press(0, view.mapFromScene(QPoint(10, 10)), static_cast<QWindow *>(0));
-    QTest::touchEvent(view.viewport(), touchScreenDevice).release(0, view.mapFromScene(QPoint(10, 10)), static_cast<QWindow *>(0));
+    QTest::touchEvent(view.viewport(), touchScreenDevice).press(0, view.mapFromScene(QPoint(10, 10)), nullptr);
+    QTest::touchEvent(view.viewport(), touchScreenDevice).release(0, view.mapFromScene(QPoint(10, 10)), nullptr);
 }
 
 void tst_QTouchEvent::touchBeginWithGraphicsWidget()
