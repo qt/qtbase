@@ -45,18 +45,6 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_CORE_EXPORT void QTestPrivate::qSleep(int ms)
-{
-    Q_ASSERT(ms > 0);
-
-#if defined(Q_OS_WIN)
-    Sleep(uint(ms));
-#else
-    struct timespec ts = { time_t(ms / 1000), (ms % 1000) * 1000 * 1000 };
-    nanosleep(&ts, nullptr);
-#endif
-}
-
 /*! \fn template <typename Functor> bool QTest::qWaitFor(Functor predicate, int timeout)
 
     Waits for \a timeout milliseconds or until the \a predicate returns true.
@@ -88,25 +76,5 @@ Q_CORE_EXPORT void QTestPrivate::qSleep(int ms)
 
     \sa QTest::qSleep(), QSignalSpy::wait()
 */
-Q_CORE_EXPORT void QTest::qWait(int ms)
-{
-    // Ideally this method would be implemented in terms of qWaitFor, with
-    // a predicate that always returns false, but due to a compiler bug in
-    // GCC 6 we can't do that.
-
-    Q_ASSERT(QCoreApplication::instance());
-
-    QDeadlineTimer timer(ms, Qt::PreciseTimer);
-    int remaining = ms;
-    do {
-        QCoreApplication::processEvents(QEventLoop::AllEvents, remaining);
-        QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
-        remaining = timer.remainingTime();
-        if (remaining <= 0)
-            break;
-        QTestPrivate::qSleep(qMin(10, remaining));
-        remaining = timer.remainingTime();
-    } while (remaining > 0);
-}
 
 QT_END_NAMESPACE

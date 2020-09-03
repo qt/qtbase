@@ -2491,12 +2491,6 @@ bool QTest::currentTestFailed()
 
     \sa {QTest::qWait()}
 */
-void QTest::qSleep(int ms)
-{
-    // ### Qt 6, move to QtCore or remove altogether
-    QTEST_ASSERT(ms > 0);
-    QTestPrivate::qSleep(ms);
-}
 
 /*! \internal
  */

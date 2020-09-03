@@ -42,12 +42,9 @@
 
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qdeadlinetimer.h>
+#include <QtCore/qthread.h>
 
 QT_BEGIN_NAMESPACE
-
-namespace QTestPrivate {
-Q_CORE_EXPORT void qSleep(int ms);
-}
 
 namespace QTest {
 
@@ -78,7 +75,7 @@ Q_REQUIRED_RESULT static bool qWaitFor(Functor predicate, int timeout = 5000)
 
         remaining = int(deadline.remainingTime());
         if (remaining > 0)
-            QTestPrivate::qSleep(qMin(10, remaining));
+            QThread::msleep(qMin(10, remaining));
 
         if (predicate())
             return true;
@@ -89,7 +86,10 @@ Q_REQUIRED_RESULT static bool qWaitFor(Functor predicate, int timeout = 5000)
     return predicate(); // Last chance
 }
 
-Q_CORE_EXPORT void qWait(int ms);
+inline void qWait(int ms)
+{
+    (void)qWaitFor([]() { return false; }, ms);
+}
 
 } // namespace QTest
 
