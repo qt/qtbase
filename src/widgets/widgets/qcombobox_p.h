@@ -56,7 +56,7 @@
 
 #include "QtWidgets/qabstractslider.h"
 #include "QtWidgets/qapplication.h"
-#include "QtWidgets/qitemdelegate.h"
+#include "QtWidgets/qstyleditemdelegate.h"
 #include "QtGui/qstandarditemmodel.h"
 #include "QtWidgets/qlineedit.h"
 #include "QtWidgets/qlistview.h"
@@ -293,14 +293,13 @@ private:
     int pressedIndex;
 };
 
-// ### Qt6: QStyledItemDelegate ?
-// Note that this class is intentionally not using QStyledItemDelegate
-// Vista does not use the new theme for combo boxes and there might
-// be other side effects from using the new class
-class Q_AUTOTEST_EXPORT QComboBoxDelegate : public QItemDelegate
-{ Q_OBJECT
+class Q_AUTOTEST_EXPORT QComboBoxDelegate : public QStyledItemDelegate
+{
+    Q_OBJECT
 public:
-    QComboBoxDelegate(QObject *parent, QComboBox *cmb) : QItemDelegate(parent), mCombo(cmb) {}
+    QComboBoxDelegate(QObject *parent, QComboBox *cmb)
+        : QStyledItemDelegate(parent), mCombo(cmb)
+    {}
 
     static bool isSeparator(const QModelIndex &index) {
         return index.data(Qt::AccessibleDescriptionRole).toString() == QLatin1String("separator");
@@ -324,7 +323,7 @@ protected:
             opt.rect = rect;
             mCombo->style()->drawPrimitive(QStyle::PE_IndicatorToolBarSeparator, &opt, painter, mCombo);
         } else {
-            QItemDelegate::paint(painter, option, index);
+            QStyledItemDelegate::paint(painter, option, index);
         }
     }
 
@@ -334,7 +333,7 @@ protected:
             int pm = mCombo->style()->pixelMetric(QStyle::PM_DefaultFrameWidth, nullptr, mCombo);
             return QSize(pm, pm);
         }
-        return QItemDelegate::sizeHint(option, index);
+        return QStyledItemDelegate::sizeHint(option, index);
     }
 private:
     QComboBox *mCombo;

@@ -43,6 +43,7 @@
 #include "qitemdelegate.h"
 #include "qmetaobject.h"
 #include "qwidget.h"
+#include "qstyleditemdelegate.h"
 #include "private/qobject_p.h"
 #include "private/qabstractitemmodel_p.h"
 
@@ -326,8 +327,7 @@ void QDataWidgetMapperPrivate::_q_modelDestroyed()
 QDataWidgetMapper::QDataWidgetMapper(QObject *parent)
     : QObject(*new QDataWidgetMapperPrivate, parent)
 {
-    // ### Qt6: QStyledItemDelegate
-    setItemDelegate(new QItemDelegate(this));
+    setItemDelegate(new QStyledItemDelegate(this));
 }
 
 /*!
