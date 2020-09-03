@@ -630,11 +630,6 @@ int main(int argc, char *argv[]) \
 
 #include <QtTest/qtestsystem.h>
 
-// Two backwards-compatibility defines for an obsolete feature:
-#define QTEST_ADD_GPU_BLACKLIST_SUPPORT_DEFS
-#define QTEST_ADD_GPU_BLACKLIST_SUPPORT
-// ### Qt 6: fully remove these.
-
 #if defined(QT_NETWORK_LIB)
 #  include <QtTest/qtest_network.h>
 #endif
