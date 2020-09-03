@@ -82,20 +82,31 @@ void tst_QFutureWatcher::startFinish()
 {
     QFutureWatcher<void> futureWatcher;
 
-    QSignalSpy startedSpy(&futureWatcher, &QFutureWatcher<void>::started);
-    QSignalSpy finishedSpy(&futureWatcher, &QFutureWatcher<void>::finished);
-
-    QVERIFY(startedSpy.isValid());
-    QVERIFY(finishedSpy.isValid());
+    int startedCount = 0;
+    int finishedCount = 0;
+    QObject::connect(&futureWatcher, &QFutureWatcher<void>::started,
+                     [&startedCount, &finishedCount](){
+        ++startedCount;
+        QCOMPARE(startedCount, 1);
+        QCOMPARE(finishedCount, 0);
+    });
+    QObject::connect(&futureWatcher, &QFutureWatcher<void>::finished,
+                     [&startedCount, &finishedCount](){
+        ++finishedCount;
+        QCOMPARE(startedCount, 1);
+        QCOMPARE(finishedCount, 1);
+    });
 
     futureWatcher.setFuture(QtConcurrent::run(sleeper));
-    QVERIFY(startedSpy.wait());
-    QCOMPARE(startedSpy.count(), 1);
-    QCOMPARE(finishedSpy.count(), 0);
     futureWatcher.future().waitForFinished();
-    QVERIFY(finishedSpy.wait());
-    QCOMPARE(startedSpy.count(), 1);
-    QCOMPARE(finishedSpy.count(), 1);
+
+    // waitForFinished() may unblock before asynchronous
+    // started() and finished() signals are delivered to the main thread.
+    // prosessEvents() should empty the pending queue.
+    qApp->processEvents();
+
+    QCOMPARE(startedCount, 1);
+    QCOMPARE(finishedCount, 1);
 }
 
 void mapSleeper(int &)
