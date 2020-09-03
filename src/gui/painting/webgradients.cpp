@@ -568,11 +568,3 @@ static constexpr QGradient::QGradientData qt_preset_gradient_data[] = {
     { { 0, 0, 1, 1 } },
     { { 0, 0, 1, 1 } },
 };
-
-static void *qt_preset_gradient_dummy()
-{
-    union {void *p; uint i;};
-    p = nullptr;
-    i |= uint(QGradient::ObjectMode);
-    return p;
-}

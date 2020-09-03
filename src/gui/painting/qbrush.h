@@ -400,7 +400,7 @@ public:
             qreal x1, y1, x2, y2;
         } linear;
         struct {
-            qreal cx, cy, fx, fy, cradius;
+            qreal cx, cy, fx, fy, cradius, fradius;
         } radial;
         struct {
             qreal cx, cy, angle;
@@ -413,11 +413,12 @@ private:
     friend class QConicalGradient;
     friend class QBrush;
 
-    Type m_type;
-    Spread m_spread;
+    Type m_type = NoGradient;
+    Spread m_spread = PadSpread;
     QGradientStops m_stops;
     QGradientData m_data;
-    void *dummy; // ### Qt 6: replace with actual content (CoordinateMode, InterpolationMode, ...)
+    CoordinateMode m_coordinateMode = LogicalMode;
+    InterpolationMode m_interpolationMode = ColorInterpolation;
 };
 
 inline void QGradient::setSpread(Spread aspread)
