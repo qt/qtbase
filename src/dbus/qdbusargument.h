@@ -156,15 +156,14 @@ QT_END_NAMESPACE
 Q_DECLARE_METATYPE(QDBusArgument)
 QT_BEGIN_NAMESPACE
 
-// ### Qt6: remove the defaulted T * = nullptr from these two (MSVC6 work-around):
-template<typename T> inline T qdbus_cast(const QDBusArgument &arg, T * = nullptr)
+template<typename T> inline T qdbus_cast(const QDBusArgument &arg)
 {
     T item;
     arg >> item;
     return item;
 }
 
-template<typename T> inline T qdbus_cast(const QVariant &v, T * = nullptr)
+template<typename T> inline T qdbus_cast(const QVariant &v)
 {
     int id = v.userType();
     if (id == qMetaTypeId<QDBusArgument>())
@@ -174,13 +173,13 @@ template<typename T> inline T qdbus_cast(const QVariant &v, T * = nullptr)
 }
 
 // specialize for QVariant, allowing it to be used in place of QDBusVariant
-template<> inline QVariant qdbus_cast<QVariant>(const QDBusArgument &arg, QVariant *)
+template<> inline QVariant qdbus_cast<QVariant>(const QDBusArgument &arg)
 {
     QDBusVariant item;
     arg >> item;
     return item.variant();
 }
-template<> inline QVariant qdbus_cast<QVariant>(const QVariant &v, QVariant *)
+template<> inline QVariant qdbus_cast<QVariant>(const QVariant &v)
 {
     return qdbus_cast<QDBusVariant>(v).variant();
 }

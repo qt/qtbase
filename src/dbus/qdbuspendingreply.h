@@ -156,7 +156,7 @@ public:
     {
         static_assert(Index >= 0 && Index < Count, "Index out of bounds");
         typedef typename Select<Index>::Type ResultType;
-        return qdbus_cast<ResultType>(argumentAt(Index), nullptr);
+        return qdbus_cast<ResultType>(argumentAt(Index));
     }
 #endif
 
