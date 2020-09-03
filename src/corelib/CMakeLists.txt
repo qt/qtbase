@@ -1249,6 +1249,11 @@ endif()
 # special case end
 
 qt_create_tracepoints(Core qtcore.tracepoints)
+# special case begin
+if(TARGET Core_tracepoints_header)
+    add_dependencies(Core_qobject Core_tracepoints_header)
+endif()
+# special case end
 qt_add_docs(Core
     doc/qtcore.qdocconf
 )
