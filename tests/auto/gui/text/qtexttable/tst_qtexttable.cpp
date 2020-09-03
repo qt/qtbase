@@ -1161,7 +1161,7 @@ void tst_QTextTable::QTBUG31330_renderBackground()
     }
     QTBUG31330_PaintDevice::PaintEngine engine;
     QTBUG31330_PaintDevice paintDevice(&engine);
-    paintDevice.setPageSize(QPagedPaintDevice::A4);
+    paintDevice.setPageSize(QPageSize(QPageSize::A4));
     doc.print(&paintDevice);
 
     QVERIFY(paintDevice.pages >= 2);

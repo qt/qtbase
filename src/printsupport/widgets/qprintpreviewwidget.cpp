@@ -590,22 +590,20 @@ void QPrintPreviewWidget::setViewMode(ViewMode mode)
     Returns the current orientation of the preview. This value is
     obtained from the QPrinter object associated with the preview.
 */
-QPrinter::Orientation QPrintPreviewWidget::orientation() const
+QPageLayout::Orientation QPrintPreviewWidget::orientation() const
 {
     Q_D(const QPrintPreviewWidget);
-    return d->printer->pageLayout().orientation() == QPageLayout::Portrait
-           ? QPrinter::Portrait : QPrinter::Landscape;
+    return d->printer->pageLayout().orientation();
 }
 
 /*!
     Sets the current orientation to \a orientation. This value will be
     set on the QPrinter object associated with the preview.
 */
-void QPrintPreviewWidget::setOrientation(QPrinter::Orientation orientation)
+void QPrintPreviewWidget::setOrientation(QPageLayout::Orientation orientation)
 {
     Q_D(QPrintPreviewWidget);
-    d->printer->setPageOrientation(orientation == QPrinter::Portrait
-                                   ? QPageLayout::Portrait : QPageLayout::Landscape);
+    d->printer->setPageOrientation(orientation);
     d->generatePreview();
 }
 
@@ -744,20 +742,20 @@ QPrintPreviewWidget::ZoomMode QPrintPreviewWidget::zoomMode() const
 
 /*!
     This is a convenience function and is the same as calling \c
-    {setOrientation(QPrinter::Landscape)}.
+    {setOrientation(QPageLayout::Landscape)}.
 */
 void QPrintPreviewWidget::setLandscapeOrientation()
 {
-    setOrientation(QPrinter::Landscape);
+    setOrientation(QPageLayout::Landscape);
 }
 
 /*!
     This is a convenience function and is the same as calling \c
-    {setOrientation(QPrinter::Portrait)}.
+    {setOrientation(QPageLayout::Portrait)}.
 */
 void QPrintPreviewWidget::setPortraitOrientation()
 {
-    setOrientation(QPrinter::Portrait);
+    setOrientation(QPageLayout::Portrait);
 }
 
 /*!

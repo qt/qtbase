@@ -61,7 +61,6 @@ class QPaintEngine;
 class QPrintEngine;
 class QPrinterInfo;
 class QPageSize;
-class QPageMargins;
 
 class Q_PRINTSUPPORT_EXPORT QPrinter : public QPagedPaintDevice
 {
@@ -74,11 +73,6 @@ public:
     ~QPrinter();
 
     int devType() const override;
-
-    enum Orientation { Portrait, Landscape };
-
-    // ### Qt6 Remove in favor of QPage::PageSize
-    typedef PageSize PaperSize;
 
     enum PageOrder   { FirstPageFirst,
                        LastPageFirst };
@@ -155,49 +149,6 @@ public:
     void setCreator(const QString &);
     QString creator() const;
 
-#ifdef Q_CLANG_QDOC
-    // ### Qt6 Remove when these are made virtual in QPagedPaintDevice
-    bool setPageLayout(const QPageLayout &pageLayout);
-    bool setPageSize(const QPageSize &pageSize);
-    bool setPageOrientation(QPageLayout::Orientation orientation);
-    bool setPageMargins(const QMarginsF &margins);
-    bool setPageMargins(const QMarginsF &margins, QPageLayout::Unit units);
-    QPageLayout pageLayout() const;
-#else
-    using QPagedPaintDevice::setPageSize;
-    using QPagedPaintDevice::setPageMargins;
-#endif
-
-#if QT_DEPRECATED_SINCE(5,15)
-    QT_DEPRECATED_VERSION_X_5_15("Use setPageOrientation() instead.")
-    void setOrientation(Orientation);
-    QT_DEPRECATED_VERSION_X_5_15("Use pageLayout().pageOrientation() instead.")
-    Orientation orientation() const;
-
-    QT_DEPRECATED_VERSION_X_5_15("Use setPageSize(QPageSize) instead.")
-    void setPageSize(PageSize) override;
-    QT_DEPRECATED_VERSION_X_5_15("Use pageLayout().pageSize().id() instead.")
-    PageSize pageSize() const;
-
-    QT_DEPRECATED_VERSION_X_5_15("Use setPageSize(QPageSize) instead.")
-    void setPageSizeMM(const QSizeF &size) override;
-
-    QT_DEPRECATED_VERSION_X_5_15("Use setPageSize(QPageSize) instead.")
-    void setPaperSize(PaperSize);
-    QT_DEPRECATED_VERSION_X_5_15("pageLayout().pageSize().id()")
-    PaperSize paperSize() const;
-
-    QT_DEPRECATED_VERSION_X_5_15("Use setPageSize(QPageSize) instead.")
-    void setPaperSize(const QSizeF &paperSize, Unit unit);
-    QT_DEPRECATED_VERSION_X_5_15("Use pageLayout().pageSize().size() or pageLayout().fullPageSize() instead.")
-    QSizeF paperSize(Unit unit) const;
-
-    QT_DEPRECATED_VERSION_X_5_15("Use setPageSize(QPageSize) instead.")
-    void setPaperName(const QString &paperName);
-    QT_DEPRECATED_VERSION_X_5_15("Use pageLayout().pageSize().name() instead.")
-    QString paperName() const;
-#endif
-
     void setPageOrder(PageOrder);
     PageOrder pageOrder() const;
 
@@ -212,15 +163,6 @@ public:
 
     void setFullPage(bool);
     bool fullPage() const;
-
-#if QT_DEPRECATED_SINCE(5,15)
-    QT_DEPRECATED_VERSION_X_5_15("Use setCopyCount() instead.")
-    void setNumCopies(int);
-    QT_DEPRECATED_VERSION_X_5_15("Use copyCount() instead.")
-    int numCopies() const;
-    QT_DEPRECATED_VERSION_X_5_15("Use copyCount() instead.")
-    int actualNumCopies() const;
-#endif
 
     void setCopyCount(int);
     int copyCount() const;
@@ -241,24 +183,6 @@ public:
     void setFontEmbeddingEnabled(bool enable);
     bool fontEmbeddingEnabled() const;
 
-#if QT_DEPRECATED_SINCE(5,15)
-    QT_DEPRECATED_VERSION_X_5_15("Use setDuplex() instead.")
-    void setDoubleSidedPrinting(bool enable);
-    QT_DEPRECATED_VERSION_X_5_15("Use duplex() instead.")
-    bool doubleSidedPrinting() const;
-#endif
-
-#if QT_DEPRECATED_SINCE(5,15)
-    QT_DEPRECATED_VERSION_X_5_15("Use QPageSize::id(windowsId) and setPageLayout(QPageSize) instead.")
-    void setWinPageSize(int winPageSize);
-    QT_DEPRECATED_VERSION_X_5_15("Use pageLayout.pageSize().windowsId() instead.")
-    int winPageSize() const;
-
-    QT_DEPRECATED_VERSION_X_5_15("Use pageLayout().fullRectPixels(resolution()) instead.")
-    QRect paperRect() const;
-    QT_DEPRECATED_VERSION_X_5_15("Use pageLayout().paintRectPixels(resolution()) instead.")
-    QRect pageRect() const;
-#endif
     QRectF paperRect(Unit) const;
     QRectF pageRect(Unit) const;
 
@@ -281,16 +205,6 @@ public:
 
     void setPrintRange(PrintRange range);
     PrintRange printRange() const;
-
-#if QT_DEPRECATED_SINCE(5,15)
-    QT_DEPRECATED_VERSION_X_5_15("Use setPageMargins(QMarginsF, QPageLayout::Unit) instead.")
-    void setMargins(const QMarginsF &m) override;
-
-    QT_DEPRECATED_VERSION_X_5_15("Use setPageMargins(QMarginsF, QPageLayout::Unit) instead.")
-    void setPageMargins(qreal left, qreal top, qreal right, qreal bottom, Unit unit);
-    QT_DEPRECATED_VERSION_X_5_15("Use pageLayout().pageMargins() instead.")
-    void getPageMargins(qreal *left, qreal *top, qreal *right, qreal *bottom, Unit unit) const;
-#endif
 
 protected:
     int metric(PaintDeviceMetric) const override;

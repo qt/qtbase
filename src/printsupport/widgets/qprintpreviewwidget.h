@@ -75,7 +75,7 @@ public:
     ~QPrintPreviewWidget();
 
     qreal zoomFactor() const;
-    QPrinter::Orientation orientation() const;
+    QPageLayout::Orientation orientation() const;
     ViewMode viewMode() const;
     ZoomMode zoomMode() const;
     int currentPage() const;
@@ -88,7 +88,7 @@ public Q_SLOTS:
     void zoomIn(qreal zoom = 1.1);
     void zoomOut(qreal zoom = 1.1);
     void setZoomFactor(qreal zoomFactor);
-    void setOrientation(QPrinter::Orientation orientation);
+    void setOrientation(QPageLayout::Orientation orientation);
     void setViewMode(ViewMode viewMode);
     void setZoomMode(ZoomMode zoomMode);
     void setCurrentPage(int pageNumber);

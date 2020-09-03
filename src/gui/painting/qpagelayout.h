@@ -66,7 +66,6 @@ public:
         Cicero
     };
 
-    // NOTE: Must keep in sync with QPrinter::Orientation
     enum Orientation {
         Portrait,
         Landscape

@@ -42,42 +42,6 @@
 
 QT_BEGIN_NAMESPACE
 
-// ### Qt 6: remove when the deprecated constructor is removed
-class QDummyPagedPaintDevicePrivate : public QPagedPaintDevicePrivate
-{
-    bool setPageLayout(const QPageLayout &newPageLayout) override
-    {
-        m_pageLayout = newPageLayout;
-        return m_pageLayout.isEquivalentTo(newPageLayout);
-    }
-
-    bool setPageSize(const QPageSize &pageSize) override
-    {
-        m_pageLayout.setPageSize(pageSize);
-        return m_pageLayout.pageSize().isEquivalentTo(pageSize);
-    }
-
-    bool setPageOrientation(QPageLayout::Orientation orientation) override
-    {
-        m_pageLayout.setOrientation(orientation);
-        return m_pageLayout.orientation() == orientation;
-    }
-
-    bool setPageMargins(const QMarginsF &margins, QPageLayout::Unit units) override
-    {
-        m_pageLayout.setUnits(units);
-        m_pageLayout.setMargins(margins);
-        return m_pageLayout.margins() == margins && m_pageLayout.units() == units;
-    }
-
-    QPageLayout pageLayout() const override
-    {
-        return m_pageLayout;
-    }
-
-    QPageLayout m_pageLayout;
-};
-
 QPagedPaintDevicePrivate::~QPagedPaintDevicePrivate()
 {
     delete rangeCollection;
@@ -96,15 +60,6 @@ QPagedPaintDevicePrivate::~QPagedPaintDevicePrivate()
     QPdfWriter and QPrinter inherit from it.
   */
 
-/*!
-  Constructs a new paged paint device.
-
-  \deprecated
-  */
-QPagedPaintDevice::QPagedPaintDevice()
-    : d(new QDummyPagedPaintDevicePrivate)
-{
-}
 
 /*!
     \internal
@@ -298,75 +253,6 @@ QPagedPaintDevicePrivate *QPagedPaintDevice::dd()
 */
 
 /*!
-  Sets the size of the a page to \a size.
-
-  \sa setPageSizeMM()
-  */
-void QPagedPaintDevice::setPageSize(PageSize size)
-{
-    d->setPageSize(QPageSize(QPageSize::PageSizeId(size)));
-}
-
-/*!
-  Returns the currently used page size.
-  */
-QPagedPaintDevice::PageSize QPagedPaintDevice::pageSize() const
-{
-    return PageSize(d->pageLayout().pageSize().id());
-}
-
-/*!
-    \obsolete Use setPageSize(QPageSize) instead.
-    Sets the page size to \a size. \a size is specified in millimeters.
-
-    If the size matches a standard QPagedPaintDevice::PageSize then that page
-    size will be used, otherwise QPagedPaintDevice::Custom will be set.
-*/
-void QPagedPaintDevice::setPageSizeMM(const QSizeF &size)
-{
-    d->setPageSize(QPageSize(size, QPageSize::Millimeter));
-}
-
-/*!
-  \obsolete Use pageLayout().pageSize() instead.
-
-  Returns the page size in millimeters.
-  */
-QSizeF QPagedPaintDevice::pageSizeMM() const
-{
-    return d->pageLayout().pageSize().size(QPageSize::Millimeter);
-}
-
-/*!
-  \obsolete Use setPageMargins(QMarginsF, QPageLayout::Unit) instead.
-  Sets the margins to be used to \a margins.
-
-  Margins are specified in millimeters.
-
-  The margins are purely a hint to the drawing method. They don't affect the
-  coordinate system or clipping.
-
-  \sa margins()
-  */
-void QPagedPaintDevice::setMargins(const QMarginsF &margins)
-{
-    d->setPageMargins(margins, QPageLayout::Millimeter);
-}
-
-/*!
-  \obsolete Use pageLayout().margins() instead.
-  Returns the current margins of the paint device. The default is 0.
-
-  Margins are specified in millimeters.
-
-  \sa setMargins()
-  */
-QMarginsF QPagedPaintDevice::margins() const
-{
-    return d->pageLayout().margins(QPageLayout::Millimeter);
-}
-
-/*!
     \since 5.3
 
     Sets the page layout to \a newPageLayout.
@@ -436,28 +322,6 @@ bool QPagedPaintDevice::setPageOrientation(QPageLayout::Orientation orientation)
 /*!
     \since 5.3
 
-    Set the page \a margins in the current page layout units.
-
-    You should call this before calling QPainter::begin(), or immediately
-    before calling newPage() to apply the new margins to a new page.
-    You should not call any painting methods between a call to setPageMargins()
-    and newPage() as the wrong paint metrics may be used.
-
-    To get the current page margins use pageLayout().pageMargins().
-
-    Returns true if the page margins were successfully set to \a margins.
-
-    \sa pageLayout()
-*/
-
-bool QPagedPaintDevice::setPageMargins(const QMarginsF &margins)
-{
-    return setPageMargins(margins, pageLayout().units());
-}
-
-/*!
-    \since 5.3
-
     Set the page \a margins defined in the given \a units.
 
     You should call this before calling QPainter::begin(), or immediately
@@ -492,35 +356,6 @@ bool QPagedPaintDevice::setPageMargins(const QMarginsF &margins, QPageLayout::Un
 QPageLayout QPagedPaintDevice::pageLayout() const
 {
     return d->pageLayout();
-}
-
-/*!
-    \internal
-
-    \deprecated
-
-    Returns the internal device page layout.
-*/
-
-QPageLayout QPagedPaintDevice::devicePageLayout() const
-{
-    qWarning("QPagedPaintDevice::devicePageLayout() is deprecated, just use QPagedPaintDevice::pageLayout()");
-    return d->pageLayout();
-}
-
-/*!
-    \internal
-
-    \deprecated
-
-    Returns the internal device page layout.
-*/
-
-QPageLayout &QPagedPaintDevice::devicePageLayout()
-{
-    qWarning("QPagedPaintDevice::devicePageLayout() is deprecated, you shouldn't be using this at all.");
-    static QPageLayout dummy;
-    return dummy;
 }
 
 QT_END_NAMESPACE

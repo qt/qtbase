@@ -417,37 +417,6 @@ void QPdfWriter::addFileAttachment(const QString &fileName, const QByteArray &da
 */
 #endif
 
-#if QT_DEPRECATED_SINCE(5, 14)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-/*!
-    \reimp
-
-    \obsolete Use setPageSize(QPageSize(id)) instead
-
-    \sa setPageSize()
-*/
-
-void QPdfWriter::setPageSize(PageSize size)
-{
-    setPageSize(QPageSize(QPageSize::PageSizeId(size)));
-}
-
-/*!
-    \reimp
-
-    \obsolete Use setPageSize(QPageSize(size, QPageSize::Millimeter)) instead
-
-    \sa setPageSize()
-*/
-
-void QPdfWriter::setPageSizeMM(const QSizeF &size)
-{
-    setPageSize(QPageSize(size, QPageSize::Millimeter));
-}
-QT_WARNING_POP
-#endif
-
 /*!
     \internal
 
@@ -468,24 +437,6 @@ bool QPdfWriter::newPage()
 
     return d->engine->newPage();
 }
-
-
-#if QT_DEPRECATED_SINCE(5, 14)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-/*!
-    \reimp
-
-    \obsolete Use setPageMargins(QMarginsF(l, t, r, b), QPageLayout::Millimeter) instead
-
-    \sa setPageMargins()
-  */
-void QPdfWriter::setMargins(const QMarginsF &m)
-{
-    setPageMargins(m, QPageLayout::Millimeter);
-}
-QT_WARNING_POP
-#endif
 
 QT_END_NAMESPACE
 

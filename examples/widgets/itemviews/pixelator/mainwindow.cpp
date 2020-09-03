@@ -197,12 +197,12 @@ void MainWindow::printImage()
 
     painter.save();
 
-    double xscale = printer.pageRect().width() / double(sourceWidth);
-    double yscale = printer.pageRect().height() / double(sourceHeight);
+    double xscale = printer.pageRect(QPrinter::DevicePixel).width() / double(sourceWidth);
+    double yscale = printer.pageRect(QPrinter::DevicePixel).height() / double(sourceHeight);
     double scale = qMin(xscale, yscale);
 
-    painter.translate(printer.paperRect().x() + printer.pageRect().width() / 2,
-                      printer.paperRect().y() + printer.pageRect().height() / 2);
+    painter.translate(printer.paperRect(QPrinter::DevicePixel).x() + printer.pageRect(QPrinter::DevicePixel).width() / 2,
+                      printer.paperRect(QPrinter::DevicePixel).y() + printer.pageRect(QPrinter::DevicePixel).height() / 2);
     painter.scale(scale, scale);
     painter.translate(-sourceWidth / 2, -sourceHeight / 2);
 

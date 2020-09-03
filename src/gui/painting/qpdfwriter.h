@@ -80,26 +80,6 @@ public:
 
     void addFileAttachment(const QString &fileName, const QByteArray &data, const QString &mimeType = QString());
 
-#ifdef Q_QDOC
-    bool setPageLayout(const QPageLayout &pageLayout);
-    bool setPageSize(const QPageSize &pageSize);
-    bool setPageOrientation(QPageLayout::Orientation orientation);
-    bool setPageMargins(const QMarginsF &margins);
-    bool setPageMargins(const QMarginsF &margins, QPageLayout::Unit units);
-    QPageLayout pageLayout() const;
-#else
-    using QPagedPaintDevice::setPageSize;
-#endif
-
-#if QT_DEPRECATED_SINCE(5, 14)
-    QT_DEPRECATED_X("Use setPageSize(QPageSize(id)) instead")
-    void setPageSize(PageSize size) override;
-    QT_DEPRECATED_X("Use setPageSize(QPageSize(size, QPageSize::Millimeter)) instead")
-    void setPageSizeMM(const QSizeF &size) override;
-    QT_DEPRECATED_X("Use setPageMargins(QMarginsF(l, t, r, b), QPageLayout::Millimeter) instead")
-    void setMargins(const QMarginsF &m) override;
-#endif
-
 protected:
     QPaintEngine *paintEngine() const override;
     int metric(PaintDeviceMetric id) const override;

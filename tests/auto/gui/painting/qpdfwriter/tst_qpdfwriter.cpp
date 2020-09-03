@@ -65,50 +65,49 @@ void tst_QPdfWriter::basics()
     QCOMPARE(writer.resolution(), 600);
 
     QCOMPARE(writer.pageLayout().pageSize().id(), QPageSize::A4);
-    QCOMPARE(writer.pageSize(), QPdfWriter::A4);
-    QCOMPARE(writer.pageSizeMM(), QSizeF(210, 297));
+    QCOMPARE(writer.pageLayout().pageSize().id(), QPageSize::A4);
+    QCOMPARE(writer.pageLayout().pageSize().size(QPageSize::Millimeter), QSizeF(210, 297));
 
     writer.setPageSize(QPageSize(QPageSize::A5));
     QCOMPARE(writer.pageLayout().pageSize().id(), QPageSize::A5);
-    QCOMPARE(writer.pageSize(), QPdfWriter::A5);
-    QCOMPARE(writer.pageSizeMM(), QSizeF(148, 210));
+    QCOMPARE(writer.pageLayout().pageSize().size(QPageSize::Millimeter), QSizeF(148, 210));
 
     writer.setPageSize(QPageSize(QPageSize::A3));
     QCOMPARE(writer.pageLayout().pageSize().id(), QPageSize::A3);
-    QCOMPARE(writer.pageSize(), QPdfWriter::A3);
-    QCOMPARE(writer.pageSizeMM(), QSizeF(297, 420));
+    QCOMPARE(writer.pageLayout().pageSize().id(), QPageSize::A3);
+    QCOMPARE(writer.pageLayout().pageSize().size(QPageSize::Millimeter), QSizeF(297, 420));
 
     writer.setPageSize(QPageSize(QSize(210, 297), QPageSize::Millimeter));
     QCOMPARE(writer.pageLayout().pageSize().id(), QPageSize::A4);
-    QCOMPARE(writer.pageSize(), QPdfWriter::A4);
-    QCOMPARE(writer.pageSizeMM(), QSizeF(210, 297));
+    QCOMPARE(writer.pageLayout().pageSize().id(), QPageSize::A4);
+    QCOMPARE(writer.pageLayout().pageSize().size(QPageSize::Millimeter), QSizeF(210, 297));
 
     QCOMPARE(writer.pageLayout().orientation(), QPageLayout::Portrait);
     writer.setPageOrientation(QPageLayout::Landscape);
     QCOMPARE(writer.pageLayout().orientation(), QPageLayout::Landscape);
-    QCOMPARE(writer.pageSizeMM(), QSizeF(210, 297));
+    QCOMPARE(writer.pageLayout().pageSize().size(QPageSize::Millimeter), QSizeF(210, 297));
 
     QCOMPARE(writer.pageLayout().margins(), QMarginsF(10, 10, 10, 10));
     QCOMPARE(writer.pageLayout().units(), QPageLayout::Point);
-    QCOMPARE(writer.margins().left(), 3.53);  // mm
-    QCOMPARE(writer.margins().right(), 3.53);
-    QCOMPARE(writer.margins().top(), 3.53);
-    QCOMPARE(writer.margins().bottom(), 3.53);
+    QCOMPARE(writer.pageLayout().margins(QPageLayout::Millimeter).left(), 3.53);  // mm
+    QCOMPARE(writer.pageLayout().margins(QPageLayout::Millimeter).right(), 3.53);
+    QCOMPARE(writer.pageLayout().margins(QPageLayout::Millimeter).top(), 3.53);
+    QCOMPARE(writer.pageLayout().margins(QPageLayout::Millimeter).bottom(), 3.53);
     writer.setPageMargins(QMarginsF(20, 20, 20, 20), QPageLayout::Millimeter);
     QCOMPARE(writer.pageLayout().margins(), QMarginsF(20, 20, 20, 20));
     QCOMPARE(writer.pageLayout().units(), QPageLayout::Millimeter);
-    QCOMPARE(writer.margins().left(), 20.0);
-    QCOMPARE(writer.margins().right(), 20.0);
-    QCOMPARE(writer.margins().top(), 20.0);
-    QCOMPARE(writer.margins().bottom(), 20.0);
+    QCOMPARE(writer.pageLayout().margins().left(), 20.0);
+    QCOMPARE(writer.pageLayout().margins().right(), 20.0);
+    QCOMPARE(writer.pageLayout().margins().top(), 20.0);
+    QCOMPARE(writer.pageLayout().margins().bottom(), 20.0);
     const QMarginsF margins = {50, 50, 50, 50};
     writer.setPageMargins(margins, QPageLayout::Millimeter);
     QCOMPARE(writer.pageLayout().margins(), margins);
     QCOMPARE(writer.pageLayout().units(), QPageLayout::Millimeter);
-    QCOMPARE(writer.margins().left(), 50.0);
-    QCOMPARE(writer.margins().right(), 50.0);
-    QCOMPARE(writer.margins().top(), 50.0);
-    QCOMPARE(writer.margins().bottom(), 50.0);
+    QCOMPARE(writer.pageLayout().margins().left(), 50.0);
+    QCOMPARE(writer.pageLayout().margins().right(), 50.0);
+    QCOMPARE(writer.pageLayout().margins().top(), 50.0);
+    QCOMPARE(writer.pageLayout().margins().bottom(), 50.0);
 
     QCOMPARE(writer.pageLayout().fullRect(QPageLayout::Millimeter), QRectF(0, 0, 297, 210));
     QCOMPARE(writer.pageLayout().paintRect(QPageLayout::Millimeter), QRectF(50, 50, 197, 110));
@@ -185,10 +184,10 @@ void tst_QPdfWriter::testPageMetrics()
     if (setMargins) {
         // Setup the given margins
         writer.setPageMargins({leftMMf, topMMf, rightMMf, bottomMMf}, QPageLayout::Millimeter);
-        QCOMPARE(writer.margins().left(), leftMMf);
-        QCOMPARE(writer.margins().right(), rightMMf);
-        QCOMPARE(writer.margins().top(), topMMf);
-        QCOMPARE(writer.margins().bottom(), bottomMMf);
+        QCOMPARE(writer.pageLayout().margins().left(), leftMMf);
+        QCOMPARE(writer.pageLayout().margins().right(), rightMMf);
+        QCOMPARE(writer.pageLayout().margins().top(), topMMf);
+        QCOMPARE(writer.pageLayout().margins().bottom(), bottomMMf);
     }
 
     // Set the given size, in Portrait mode
@@ -196,16 +195,16 @@ void tst_QPdfWriter::testPageMetrics()
         ? QPageSize(sizeMMf, QPageSize::Millimeter) : QPageSize(pageSizeId);
     writer.setPageSize(pageSize);
     QCOMPARE(writer.pageLayout().pageSize().id(), pageSizeId);
-    QCOMPARE(int(writer.pageSize()), int(pageSizeId));
+    QCOMPARE(int(writer.pageLayout().pageSize().id()), int(pageSizeId));
 
     QCOMPARE(writer.pageLayout().orientation(), QPageLayout::Portrait);
-    QCOMPARE(writer.margins().left(), leftMMf);
-    QCOMPARE(writer.margins().right(), rightMMf);
-    QCOMPARE(writer.margins().top(), topMMf);
-    QCOMPARE(writer.margins().bottom(), bottomMMf);
+    QCOMPARE(writer.pageLayout().margins(QPageLayout::Millimeter).left(), leftMMf);
+    QCOMPARE(writer.pageLayout().margins(QPageLayout::Millimeter).right(), rightMMf);
+    QCOMPARE(writer.pageLayout().margins(QPageLayout::Millimeter).top(), topMMf);
+    QCOMPARE(writer.pageLayout().margins(QPageLayout::Millimeter).bottom(), bottomMMf);
 
-    // QPagedPaintDevice::pageSizeMM() always returns Portrait
-    QCOMPARE(writer.pageSizeMM(), sizeMMf);
+    // QPagedPaintDevice::pageLayout().pageSize().size(QPageSize::Millimeter) always returns Portrait
+    QCOMPARE(writer.pageLayout().pageSize().size(QPageSize::Millimeter), sizeMMf);
 
     // QPagedPaintDevice::widthMM() and heightMM() are paint metrics and always return set orientation
     QCOMPARE(writer.widthMM(), qRound(widthMMf - leftMMf - rightMMf));
@@ -214,15 +213,15 @@ void tst_QPdfWriter::testPageMetrics()
     // Now switch to Landscape mode, size should be unchanged, but rect and metrics should change
     writer.setPageOrientation(QPageLayout::Landscape);
     QCOMPARE(writer.pageLayout().pageSize().id(), pageSizeId);
-    QCOMPARE(int(writer.pageSize()), int(pageSizeId));
+    QCOMPARE(int(writer.pageLayout().pageSize().id()), int(pageSizeId));
     QCOMPARE(writer.pageLayout().orientation(), QPageLayout::Landscape);
-    QCOMPARE(writer.margins().left(), leftMMf);
-    QCOMPARE(writer.margins().right(), rightMMf);
-    QCOMPARE(writer.margins().top(), topMMf);
-    QCOMPARE(writer.margins().bottom(), bottomMMf);
+    QCOMPARE(writer.pageLayout().margins(QPageLayout::Millimeter).left(), leftMMf);
+    QCOMPARE(writer.pageLayout().margins(QPageLayout::Millimeter).right(), rightMMf);
+    QCOMPARE(writer.pageLayout().margins(QPageLayout::Millimeter).top(), topMMf);
+    QCOMPARE(writer.pageLayout().margins(QPageLayout::Millimeter).bottom(), bottomMMf);
 
-    // QPagedPaintDevice::pageSizeMM() always returns Portrait
-    QCOMPARE(writer.pageSizeMM(), sizeMMf);
+    // QPagedPaintDevice::pageLayout().pageSize().size(QPageSize::Millimeter) always returns Portrait
+    QCOMPARE(writer.pageLayout().pageSize().size(QPageSize::Millimeter), sizeMMf);
 
     // QPagedPaintDevice::widthMM() and heightMM() are paint metrics and always return set orientation
     QCOMPARE(writer.widthMM(), qRound(heightMMf - leftMMf - rightMMf));
@@ -238,15 +237,15 @@ void tst_QPdfWriter::testPageMetrics()
     // Now while in Landscape mode, set the size again, results should be the same
     writer.setPageSize(pageSize);
     QCOMPARE(writer.pageLayout().pageSize().id(), pageSizeId);
-    QCOMPARE(int(writer.pageSize()), int(pageSizeId));
+    QCOMPARE(int(writer.pageLayout().pageSize().id()), int(pageSizeId));
     QCOMPARE(writer.pageLayout().orientation(), QPageLayout::Landscape);
-    QCOMPARE(writer.margins().left(), leftMMf);
-    QCOMPARE(writer.margins().right(), rightMMf);
-    QCOMPARE(writer.margins().top(), topMMf);
-    QCOMPARE(writer.margins().bottom(), bottomMMf);
+    QCOMPARE(writer.pageLayout().margins(QPageLayout::Millimeter).left(), leftMMf);
+    QCOMPARE(writer.pageLayout().margins(QPageLayout::Millimeter).right(), rightMMf);
+    QCOMPARE(writer.pageLayout().margins(QPageLayout::Millimeter).top(), topMMf);
+    QCOMPARE(writer.pageLayout().margins(QPageLayout::Millimeter).bottom(), bottomMMf);
 
-    // QPagedPaintDevice::pageSizeMM() always returns Portrait
-    QCOMPARE(writer.pageSizeMM(), sizeMMf);
+    // QPagedPaintDevice::pageLayout().pageSize().size(QPageSize::Millimeter) always returns Portrait
+    QCOMPARE(writer.pageLayout().pageSize().size(QPageSize::Millimeter), sizeMMf);
 
     // QPagedPaintDevice::widthMM() and heightMM() are paint metrics and always return set orientation
     QCOMPARE(writer.widthMM(), qRound(heightMMf - leftMMf - rightMMf));

@@ -320,16 +320,16 @@ void MainWindow::printPage(int index, QPainter *painter, QPrinter *printer)
         }
     }
 
-    qreal xScale = printer->pageRect().width() / width;
-    qreal yScale = printer->pageRect().height() / height;
+    qreal xScale = printer->pageRect(QPrinter::DevicePixel).width() / width;
+    qreal yScale = printer->pageRect(QPrinter::DevicePixel).height() / height;
     qreal scale = qMin(xScale, yScale);
 
-    qreal remainingHeight = printer->pageRect().height()/scale - height;
+    qreal remainingHeight = printer->pageRect(QPrinter::DevicePixel).height()/scale - height;
     qreal spaceHeight = (remainingHeight / 4.0) / (items.count() + 1);
     qreal interLineHeight = (remainingHeight / 4.0) / (sampleSizes.count() * items.count());
 
     painter->save();
-    painter->translate(printer->pageRect().width() / 2.0, printer->pageRect().height() / 2.0);
+    painter->translate(printer->pageRect(QPrinter::DevicePixel).width() / 2.0, printer->pageRect(QPrinter::DevicePixel).height() / 2.0);
     painter->scale(scale, scale);
     painter->setBrush(QBrush(Qt::black));
 
