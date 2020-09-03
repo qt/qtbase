@@ -164,15 +164,11 @@ public:
 
     bool isAccepted() const;
     void setAccepted(bool accepted = true);
-    QObject *exclusiveGrabber() const;
-    void setExclusiveGrabber(QObject *exclusiveGrabber);
-    const QList<QPointer <QObject>> &passiveGrabbers() const;
-    void setPassiveGrabbers(const QList<QPointer <QObject>> &grabbers);
-    void clearPassiveGrabbers();
 
 private:
     QEventPointPrivate *d;
     friend class QMutableEventPoint;
+    friend class QPointerEvent;
 };
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -182,18 +178,25 @@ Q_GUI_EXPORT QDebug operator<<(QDebug, const QEventPoint &);
 class Q_GUI_EXPORT QPointerEvent : public QInputEvent
 {
 public:
+    explicit QPointerEvent(Type type, const QPointingDevice *dev, Qt::KeyboardModifiers modifiers = Qt::NoModifier);
     virtual ~QPointerEvent();
+    const QPointingDevice *pointingDevice() const;
+    QPointingDevice::PointerType pointerType() const {
+        return pointingDevice() ? pointingDevice()->pointerType() : QPointingDevice::PointerType::Unknown;
+    }
     virtual int pointCount() const = 0;
     virtual const QEventPoint &point(int i) const = 0;
     virtual bool isPressEvent() const { return false; }
     virtual bool isUpdateEvent() const { return false; }
     virtual bool isReleaseEvent() const { return false; }
-
-    explicit QPointerEvent(Type type, const QPointingDevice *dev, Qt::KeyboardModifiers modifiers = Qt::NoModifier);
-    const QPointingDevice *pointingDevice() const;
-    QPointingDevice::PointerType pointerType() const {
-        return pointingDevice() ? pointingDevice()->pointerType() : QPointingDevice::PointerType::Unknown;
-    }
+    bool isPointAccepted(const QEventPoint &point) const;
+    void setPointAccepted(const QEventPoint &point, bool accepted = true);
+    QObject *exclusiveGrabber(const QEventPoint &point) const;
+    void setExclusiveGrabber(const QEventPoint &point, QObject *exclusiveGrabber);
+    QList<QPointer <QObject>> passiveGrabbers(const QEventPoint &point) const;
+    void clearPassiveGrabbers(const QEventPoint &point);
+    bool addPassiveGrabber(const QEventPoint &point, QObject *grabber);
+    bool removePassiveGrabber(const QEventPoint &point, QObject *grabber);
 };
 
 class Q_GUI_EXPORT QSinglePointEvent : public QPointerEvent

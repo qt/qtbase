@@ -63,9 +63,9 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcPointerGrab, "qt.pointer.grab")
 
-static const QString pointDeviceName(const QEventPoint *point)
+static const QString pointDeviceName(const QEventPoint &point)
 {
-    const auto device = point->device();
+    const auto device = point.device();
     QString deviceName = (device ? device->name() : QLatin1String("null device"));
     deviceName.resize(16, u' '); // shorten, and align in case of sequential output
     return deviceName;
@@ -359,56 +359,6 @@ void QEventPoint::setAccepted(bool accepted)
     d->accept = accepted;
 }
 
-QObject *QEventPoint::exclusiveGrabber() const
-{ return d->exclusiveGrabber.data(); }
-
-/*
-    Informs the delivery logic that the given \a exclusiveGrabber is to
-    receive all future update events and the release event containing
-    this point, and that delivery to other items can be skipped.
-
-    It's mainly for use in Qt Quick at this time.
-*/
-void QEventPoint::setExclusiveGrabber(QObject *exclusiveGrabber)
-{
-    if (d->exclusiveGrabber == exclusiveGrabber)
-        return;
-    if (Q_UNLIKELY(lcPointerGrab().isDebugEnabled())) {
-        qCDebug(lcPointerGrab) << pointDeviceName(this) << "point" << Qt::hex << d->pointId << d->state << "@" << d->scenePos
-                               << ": grab" << d->exclusiveGrabber << "->" << exclusiveGrabber;
-    }
-    d->exclusiveGrabber = exclusiveGrabber;
-    d->globalGrabPos = d->globalPos;
-}
-
-const QList<QPointer<QObject> > &QEventPoint::passiveGrabbers() const
-{ return d->passiveGrabbers; }
-
-/*
-    Informs the delivery logic that the given \a grabbers are to receive all
-    future update events and the release event containing this point,
-    regardless where else those events may be delivered.
-
-    It's mainly for use in Qt Quick at this time.
-*/
-void QEventPoint::setPassiveGrabbers(const QList<QPointer<QObject> > &grabbers)
-{
-    d->passiveGrabbers = grabbers;
-    if (Q_UNLIKELY(lcPointerGrab().isDebugEnabled())) {
-        qCDebug(lcPointerGrab) << pointDeviceName(this) << "point" << Qt::hex << d->pointId << d->state
-                               << ": grab (passive)" << grabbers;
-    }
-}
-
-void QEventPoint::clearPassiveGrabbers()
-{
-    if (Q_UNLIKELY(lcPointerGrab().isDebugEnabled())) {
-        qCDebug(lcPointerGrab) << pointDeviceName(this) << "point" << Qt::hex << d->pointId << d->state
-                               << ": clearing" << d->passiveGrabbers;
-    }
-    d->passiveGrabbers.clear();
-}
-
 /*! \internal
     void QMutableEventPoint::setPosition(const QPointF &pos)
 
@@ -484,6 +434,104 @@ const QPointingDevice *QPointerEvent::pointingDevice() const
     return static_cast<const QPointingDevice *>(m_dev);
 }
 
+/*!
+    Returns the object which has been set to receive all future update events
+    and the release event containing the given \a point.
+
+    It's mainly for use in Qt Quick at this time.
+*/
+QObject *QPointerEvent::exclusiveGrabber(const QEventPoint &point) const
+{
+    return point.d->exclusiveGrabber.data();
+}
+
+/*!
+    Informs the delivery logic that the given \a exclusiveGrabber is to
+    receive all future update events and the release event containing
+    the given \a point, and that delivery to other items can be skipped.
+
+    It's mainly for use in Qt Quick at this time.
+*/
+void QPointerEvent::setExclusiveGrabber(const QEventPoint &point, QObject *exclusiveGrabber)
+{
+    if (point.d->exclusiveGrabber == exclusiveGrabber)
+        return;
+    if (Q_UNLIKELY(lcPointerGrab().isDebugEnabled())) {
+        qCDebug(lcPointerGrab) << pointDeviceName(point) << "point" << point.id() << point.state()
+                               << "@" << point.scenePosition()
+                               << ": grab" << point.d->exclusiveGrabber << "->" << exclusiveGrabber;
+    }
+    point.d->exclusiveGrabber = exclusiveGrabber;
+    point.d->globalGrabPos = point.d->globalPos;
+}
+
+/*!
+    Returns the list of objects that have been requested to receive all
+    future update events and the release event containing the given \a point.
+
+    It's mainly for use in Qt Quick at this time.
+
+    \sa QPointerEvent::addPassiveGrabber()
+*/
+QList<QPointer<QObject> > QPointerEvent::passiveGrabbers(const QEventPoint &point) const
+{
+    return point.d->passiveGrabbers;
+}
+
+/*!
+    Informs the delivery logic that the given \a grabber is to receive all
+    future update events and the release event containing the given \a point,
+    regardless where else those events may be delivered.
+
+    It's mainly for use in Qt Quick at this time.
+
+    Returns \c false if \a grabber was already added, \c true otherwise.
+*/
+bool QPointerEvent::addPassiveGrabber(const QEventPoint &point, QObject *grabber)
+{
+    if (point.d->passiveGrabbers.contains(grabber))
+        return false;
+    if (Q_UNLIKELY(lcPointerGrab().isDebugEnabled())) {
+        qCDebug(lcPointerGrab) << pointDeviceName(point) << "point" << point.id() << point.state()
+                               << ": grab (passive)" << grabber;
+    }
+    point.d->passiveGrabbers << grabber;
+    return true;
+}
+
+/*!
+    Removes the passive \a grabber from the given \a point if it was previously added.
+    Returns \c true if it had been a passive grabber before, \c false if not.
+
+    It's mainly for use in Qt Quick at this time.
+
+    \sa QPointerEvent::addPassiveGrabber()
+*/
+bool QPointerEvent::removePassiveGrabber(const QEventPoint &point, QObject *grabber)
+{
+    if (Q_UNLIKELY(lcPointerGrab().isDebugEnabled())) {
+        qCDebug(lcPointerGrab) << pointDeviceName(point) << "point" << point.id() << point.state()
+                               << ": removing passive grabber" << grabber;
+    }
+    point.d->passiveGrabbers.removeOne(grabber);
+    return false;
+}
+
+/*!
+    Removes all passive grabbers from the given \a point.
+
+    It's mainly for use in Qt Quick at this time.
+
+    \sa QPointerEvent::addPassiveGrabber()
+*/
+void QPointerEvent::clearPassiveGrabbers(const QEventPoint &point)
+{
+    if (Q_UNLIKELY(lcPointerGrab().isDebugEnabled())) {
+        qCDebug(lcPointerGrab) << pointDeviceName(point) << "point" << point.id() << point.state()
+                               << ": clearing" << point.d->passiveGrabbers;
+    }
+    point.d->passiveGrabbers.clear();
+}
 
 QSinglePointEvent::QSinglePointEvent(QEvent::Type type, const QPointingDevice *dev, const QPointF &localPos, const QPointF &scenePos,
                                      const QPointF &globalPos, Qt::MouseButton button, Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers)
@@ -3928,7 +3976,7 @@ QDebug operator<<(QDebug dbg, const QEventPoint &tp)
 {
     QDebugStateSaver saver(dbg);
     dbg.nospace();
-    dbg << "QEventPoint(" << Qt::hex << tp.id() << Qt::dec << " (";
+    dbg << "QEventPoint(" << tp.id() << " (";
     QtDebugUtils::formatQPoint(dbg, tp.position());
     dbg << " global ";
     QtDebugUtils::formatQPoint(dbg, tp.globalPosition());
