@@ -111,7 +111,7 @@ void runSandboxed(const QString &name, const QStringList &arguments)
 
 //! [5]
 QProcess process;
-process.start("del /s *.txt");
+process.startCommand("del /s *.txt");
 // same as process.start("del", QStringList() << "/s" << "*.txt");
 ...
 //! [5]
@@ -119,13 +119,13 @@ process.start("del /s *.txt");
 
 //! [6]
 QProcess process;
-process.start("dir \"My Documents\"");
+process.startCommand("dir \"My Documents\"");
 //! [6]
 
 
 //! [7]
 QProcess process;
-process.start("dir \"Epic 12\"\"\" Singles\"");
+process.startCommand("dir \"Epic 12\"\"\" Singles\"");
 //! [7]
 
 

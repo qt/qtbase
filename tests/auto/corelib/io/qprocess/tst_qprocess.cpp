@@ -64,6 +64,7 @@ private slots:
     void constructing();
     void simpleStart();
     void setChildProcessModifier();
+    void startCommand();
     void startWithOpen();
     void startWithOldOpen();
     void execute();
@@ -301,6 +302,20 @@ void tst_QProcess::setChildProcessModifier()
 #else
     QSKIP("Unix-only test");
 #endif
+}
+
+void tst_QProcess::startCommand()
+{
+    QProcess process;
+    process.startCommand("testProcessSpacesArgs/nospace foo \"b a r\" baz");
+    QVERIFY2(process.waitForStarted(), qPrintable(process.errorString()));
+    QVERIFY2(process.waitForFinished(), qPrintable(process.errorString()));
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(process.exitCode(), 0);
+    QByteArray actual = process.readAll();
+    actual.remove(0, actual.indexOf('|') + 1);
+    QByteArray expected = "foo|b a r|baz";
+    QCOMPARE(actual, expected);
 }
 
 void tst_QProcess::startWithOpen()

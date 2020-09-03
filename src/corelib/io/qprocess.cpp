@@ -2063,6 +2063,47 @@ void QProcess::start(OpenMode mode)
 }
 
 /*!
+    \since 6.0
+
+    Starts the command \a command in a new process.
+    The OpenMode is set to \a mode.
+
+    \a command is a single string of text containing both the program name
+    and its arguments. The arguments are separated by one or more spaces.
+    For example:
+
+    \snippet code/src_corelib_io_qprocess.cpp 5
+
+    Arguments containing spaces must be quoted to be correctly supplied to
+    the new process. For example:
+
+    \snippet code/src_corelib_io_qprocess.cpp 6
+
+    Literal quotes in the \a command string are represented by triple quotes.
+    For example:
+
+    \snippet code/src_corelib_io_qprocess.cpp 7
+
+    After the \a command string has been split and unquoted, this function
+    behaves like start().
+
+    On operating systems where the system API for passing command line
+    arguments to a subprocess natively uses a single string (Windows), one can
+    conceive command lines which cannot be passed via QProcess's portable
+    list-based API. In these rare cases you need to use setProgram() and
+    setNativeArguments() instead of this function.
+
+    \sa splitCommand()
+    \sa start()
+ */
+void QProcess::startCommand(const QString &command, OpenMode mode)
+{
+    QStringList args = splitCommand(command);
+    const QString program = args.takeFirst();
+    start(program, args, mode);
+}
+
+/*!
     \since 5.10
 
     Starts the program set by setProgram() with arguments set by setArguments()
