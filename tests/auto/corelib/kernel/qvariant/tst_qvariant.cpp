@@ -4539,7 +4539,8 @@ void tst_QVariant::shouldDeleteVariantDataWorksForSequential()
                 [](const void *, QtMetaContainerPrivate::QMetaSequenceInterface::Position) -> void* {
             return nullptr;
         };
-        metaSequence.addValueFn = [](void *, const void *) {};
+        metaSequence.addValueFn = [](void *, const void *,
+                QtMetaContainerPrivate::QMetaSequenceInterface::Position) {};
         metaSequence.advanceConstIteratorFn = [](void *, qsizetype) {};
         metaSequence.destroyConstIteratorFn = [](const void *){};
         metaSequence.compareConstIteratorFn = [](const void *, const void *) {
@@ -4697,10 +4698,19 @@ void tst_QVariant::sequentialIterableAppend()
         QVERIFY(variant.canConvert<QSequentialIterable>());
         auto asIterable = variant.value<QSequentialIterable>();
         const int i = 3, j = 4;
-        void *mutableIterable = const_cast<void *>(asIterable.constIterable());
-        asIterable.metaSequence().addValue(mutableIterable, &i);
-        asIterable.metaSequence().addValue(mutableIterable, &j);
+        void *mutableIterable = asIterable.mutableIterable();
+        asIterable.metaSequence().addValueAtEnd(mutableIterable, &i);
+        asIterable.metaSequence().addValueAtEnd(mutableIterable, &j);
         QCOMPARE(variant.value<QList<int>>(), QList<int> ({ 1, 2, 3, 4 }));
+
+        asIterable.metaSequence().addValueAtBegin(mutableIterable, &i);
+        asIterable.metaSequence().addValueAtBegin(mutableIterable, &j);
+        QCOMPARE(variant.value<QList<int>>(), QList<int> ({ 4, 3, 1, 2, 3, 4 }));
+
+        asIterable.metaSequence().removeValueAtBegin(mutableIterable);
+        QCOMPARE(variant.value<QList<int>>(), QList<int> ({ 3, 1, 2, 3, 4 }));
+        asIterable.metaSequence().removeValueAtEnd(mutableIterable);
+        QCOMPARE(variant.value<QList<int>>(), QList<int> ({ 3, 1, 2, 3 }));
     }
     {
         QSet<QByteArray> container { QByteArray{"hello"}, QByteArray{"world"} };
@@ -4709,10 +4719,13 @@ void tst_QVariant::sequentialIterableAppend()
         auto asIterable = variant.value<QSequentialIterable>();
         QByteArray qba1 {"goodbye"};
         QByteArray qba2 { "moon" };
-        void *mutableIterable = const_cast<void *>(asIterable.constIterable());
+        void *mutableIterable = asIterable.mutableIterable();
         asIterable.metaSequence().addValue(mutableIterable, &qba1);
         asIterable.metaSequence().addValue(mutableIterable, &qba2);
         QSet<QByteArray> reference { "hello", "world", "goodbye", "moon" };
+        QCOMPARE(variant.value<QSet<QByteArray>>(), reference);
+        asIterable.metaSequence().addValue(mutableIterable, &qba1);
+        asIterable.metaSequence().addValue(mutableIterable, &qba2);
         QCOMPARE(variant.value<QSet<QByteArray>>(), reference);
     }
 }

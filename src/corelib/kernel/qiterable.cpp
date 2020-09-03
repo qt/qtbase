@@ -134,6 +134,73 @@ qsizetype QSequentialIterable::size() const
 }
 
 /*!
+ * Adds \a value to the container, at \a position, if possible.
+ */
+void QSequentialIterable::addValue(const QVariant &value, Position position)
+{
+    QVariant converted;
+    const void *valuePtr;
+    if (valueMetaType() == QMetaType::fromType<QVariant>()) {
+        valuePtr = &value;
+    } else if (valueMetaType() == value.metaType()) {
+        valuePtr = value.constData();
+    } else if (value.canConvert(valueMetaType())) {
+        converted = value;
+        converted.convert(valueMetaType());
+        valuePtr = converted.constData();
+    } else {
+        converted = QVariant(valueMetaType());
+        valuePtr = converted.constData();
+    }
+
+    switch (position) {
+    case AtBegin:
+        if (metaSequence().canAddValueAtBegin())
+            metaSequence().addValueAtBegin(mutableIterable(), valuePtr);
+        break;
+    case AtEnd:
+        if (metaSequence().canAddValueAtEnd())
+            metaSequence().addValueAtEnd(mutableIterable(), valuePtr);
+        break;
+    case Unspecified:
+        if (metaSequence().canAddValue())
+            metaSequence().addValue(mutableIterable(), valuePtr);
+        break;
+    }
+}
+
+/*!
+ * Removes a value from the container, at \a position, if possible.
+ */
+void QSequentialIterable::removeValue(Position position)
+{
+    switch (position) {
+    case AtBegin:
+        if (metaSequence().canRemoveValueAtBegin())
+            metaSequence().removeValueAtBegin(mutableIterable());
+        break;
+    case AtEnd:
+        if (metaSequence().canRemoveValueAtEnd())
+            metaSequence().removeValueAtEnd(mutableIterable());
+        break;
+    case Unspecified:
+        if (metaSequence().canRemoveValue())
+            metaSequence().removeValue(mutableIterable());
+        break;
+    }
+}
+
+/*!
+    Returns whether it is possible to iterate over the container in forward
+    direction. This corresponds to the std::forward_iterator_tag iterator trait
+    of the iterator and const_iterator of the container.
+*/
+bool QSequentialIterable::canForwardIterate() const
+{
+    return m_metaSequence.hasForwardIterator();
+}
+
+/*!
     Returns whether it is possible to iterate over the container in reverse. This
     corresponds to the std::bidirectional_iterator_tag iterator trait of the
     const_iterator of the container.

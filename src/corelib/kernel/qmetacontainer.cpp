@@ -144,51 +144,134 @@ QMetaType QMetaSequence::valueMetaType() const
 }
 
 /*!
-    Returns \c true if the underlying container is ordered, otherwise returns
-    \c false. A container is considered ordered if values added to it are
-    placed in a defined location. Inserting into or adding to an ordered
-    container will always succeed. Inserting into or adding to an unordered
+    Returns \c true if the underlying container is sortable, otherwise returns
+    \c false. A container is considered sortable if values added to it are
+    placed in a defined location. Inserting into or adding to a sortable
+    container will always succeed. Inserting into or adding to an unsortable
     container may not succeed, for example if the container is a QSet that
     already contains the value being inserted.
 
-    \sa addValue(), insertValueAtIterator(), addsAndRemovesValuesAtBegin(),
-        addsAndRemovesValuesAtEnd()
+    \sa addValue(), insertValueAtIterator(), canAddValueAtBegin(),
+        canAddValueAtEnd(), canRemoveValueAtBegin(), canRemoveValueAtEnd()
  */
-bool QMetaSequence::isOrdered() const
+bool QMetaSequence::isSortable() const
 {
-    if (!d_ptr)
-        return false;
-    return d_ptr->addRemovePosition != QtMetaContainerPrivate::QMetaSequenceInterface::Random;
+    if (d_ptr) {
+        return (d_ptr->addRemoveCapabilities
+                    & (QtMetaContainerPrivate::CanAddAtBegin | QtMetaContainerPrivate::CanAddAtEnd))
+                && (d_ptr->addRemoveCapabilities
+                    & (QtMetaContainerPrivate::CanRemoveAtBegin
+                       | QtMetaContainerPrivate::CanRemoveAtEnd));
+    }
+    return false;
 }
 
 /*!
-    Returns \c true if values added using \l addValue() are placed at the
-    beginning of the container, otherwise returns \c false. Likewise
-    \l removeValue() removes an value from the beginning of the container
-    if this method returns \c true.
+    Returns \c true if values added using \l addValue() can be placed at the
+    beginning of the container, otherwise returns \c false.
 
-    \sa addValue(), removeValue(), addsAndRemovesValuesAtEnd()
+    \sa addValueAtBegin(), canAddValueAtEnd()
  */
-bool QMetaSequence::addsAndRemovesValuesAtBegin() const
+bool QMetaSequence::canAddValueAtBegin() const
 {
-    if (!d_ptr)
-        return false;
-    return d_ptr->addRemovePosition == QtMetaContainerPrivate::QMetaSequenceInterface::AtBegin;
+    if (d_ptr) {
+        return d_ptr->addValueFn
+                && d_ptr->addRemoveCapabilities & QtMetaContainerPrivate::CanAddAtBegin;
+    }
+    return false;
 }
 
 /*!
-    Returns \c true if values added using \l addValue() are placed at the
-    end of the container, otherwise returns \c false. Likewise
-    \l removeValue() removes an value from the end of the container
-    if this method returns \c true.
+    Adds \a value to the beginning of \a container if possible. If
+    \l canAddValueAtBegin() returns \c false, the \a value is not added.
 
-    \sa addValue(), removeValue(), addsAndRemovesValuesAtBegin()
+    \sa canAddValueAtBegin(), isSortable(), removeValueAtBegin()
  */
-bool QMetaSequence::addsAndRemovesValuesAtEnd() const
+void QMetaSequence::addValueAtBegin(void *container, const void *value) const
 {
-    if (!d_ptr)
-        return false;
-    return d_ptr->addRemovePosition == QtMetaContainerPrivate::QMetaSequenceInterface::AtEnd;
+    if (canAddValueAtBegin())
+        d_ptr->addValueFn(container, value, QtMetaContainerPrivate::QMetaSequenceInterface::AtBegin);
+}
+
+/*!
+    Returns \c true if values can be removed from the beginning of the container
+    using \l removeValue() can be placed at the, otherwise returns \c false.
+
+    \sa removeValueAtBegin(), canRemoveValueAtEnd()
+ */
+bool QMetaSequence::canRemoveValueAtBegin() const
+{
+    if (d_ptr) {
+        return d_ptr->removeValueFn
+                && d_ptr->addRemoveCapabilities & QtMetaContainerPrivate::CanRemoveAtBegin;
+    }
+    return false;
+}
+
+/*!
+    Removes a value from the beginning of \a container if possible. If
+    \l canRemoveValueAtBegin() returns \c false, the \a value is not removeed.
+
+    \sa canRemoveValueAtBegin(), isSortable(), addValueAtBegin()
+ */
+void QMetaSequence::removeValueAtBegin(void *container) const
+{
+    if (canRemoveValueAtBegin())
+        d_ptr->removeValueFn(container, QtMetaContainerPrivate::QMetaSequenceInterface::AtBegin);
+}
+
+/*!
+    Returns \c true if values added using \l addValue() can be placed at the
+    end of the container, otherwise returns \c false.
+
+    \sa addValueAtEnd(), canAddValueAtBegin()
+ */
+bool QMetaSequence::canAddValueAtEnd() const
+{
+    if (d_ptr) {
+        return d_ptr->addValueFn
+                && d_ptr->addRemoveCapabilities & QtMetaContainerPrivate::CanAddAtEnd;
+    }
+    return false;
+}
+
+/*!
+    Adds \a value to the end of \a container if possible. If
+    \l canAddValueAtEnd() returns \c false, the \a value is not added.
+
+    \sa canAddValueAtEnd(), isSortable(), removeValueAtEnd()
+ */
+void QMetaSequence::addValueAtEnd(void *container, const void *value) const
+{
+    if (canAddValueAtEnd())
+        d_ptr->addValueFn(container, value, QtMetaContainerPrivate::QMetaSequenceInterface::AtEnd);
+}
+
+/*!
+    Returns \c true if values can be removed from the end of the container
+    using \l removeValue() can be placed at the, otherwise returns \c false.
+
+    \sa removeValueAtEnd(), canRemoveValueAtBegin()
+ */
+bool QMetaSequence::canRemoveValueAtEnd() const
+{
+    if (d_ptr) {
+        return d_ptr->removeValueFn
+                && d_ptr->addRemoveCapabilities & QtMetaContainerPrivate::CanRemoveAtEnd;
+    }
+    return false;
+}
+
+/*!
+    Removes a value from the end of \a container if possible. If
+    \l canRemoveValueAtEnd() returns \c false, the \a value is not removeed.
+
+    \sa canRemoveValueAtEnd(), isSortable(), addValueAtEnd()
+ */
+void QMetaSequence::removeValueAtEnd(void *container) const
+{
+    if (canRemoveValueAtEnd())
+        d_ptr->removeValueFn(container, QtMetaContainerPrivate::QMetaSequenceInterface::AtEnd);
 }
 
 /*!
@@ -284,7 +367,7 @@ void QMetaSequence::setValueAtIndex(void *container, qsizetype index, const void
     Returns \c true if values can be added to the container, \c false
     otherwise.
 
-    \sa addValue(), isOrdered()
+    \sa addValue(), isSortable()
  */
 bool QMetaSequence::canAddValue() const
 {
@@ -294,27 +377,29 @@ bool QMetaSequence::canAddValue() const
 /*!
     Adds \a value to the \a container if possible. If \l canAddValue()
     returns \c false, the \a value is not added. Else, if
-    \l addsAndRemovesValuesAtBegin() returns \c true, the \a value is added
-    to the beginning of the \a container. Else, if
-    \l addsAndRemovesValuesAtEnd() returns \c true, the \a value is added to
-    the end of the container. Else, the value is added in an unspecified
+    \l canAddValueAtEnd() returns \c true, the \a value is added
+    to the end of the \a container. Else, if
+    \l canAddValueAtBegin() returns \c true, the \a value is added to
+    the beginning of the container. Else, the value is added in an unspecified
     place or not at all. The latter is the case for adding values to an
     unordered container, for example \l QSet.
 
-    \sa canAddValue(), addsAndRemovesValuesAtBegin(),
-        addsAndRemovesValuesAtEnd(), isOrdered(), removeValue()
+    \sa canAddValue(), canAddValueAtBegin(),
+        canAddValueAtEnd(), isSortable(), removeValue()
  */
 void QMetaSequence::addValue(void *container, const void *value) const
 {
-    if (canAddValue())
-        d_ptr->addValueFn(container, value);
+    if (canAddValue()) {
+        d_ptr->addValueFn(container, value,
+                        QtMetaContainerPrivate::QMetaSequenceInterface::Unspecified);
+    }
 }
 
 /*!
     Returns \c true if values can be removed from the container, \c false
     otherwise.
 
-    \sa removeValue(), isOrdered()
+    \sa removeValue(), isSortable()
  */
 bool QMetaSequence::canRemoveValue() const
 {
@@ -324,18 +409,20 @@ bool QMetaSequence::canRemoveValue() const
 /*!
     Removes an value from the \a container if possible. If
     \l canRemoveValue() returns \c false, no value is removed. Else, if
-    \l addsAndRemovesValuesAtBegin() returns \c true, the first value in
-    the \a container is removed. Else, if \l addsAndRemovesValuesAtEnd()
-    returns \c true, the last value in the \a container is removed. Else,
+    \l canRemoveValueAtEnd() returns \c true, the last value in
+    the \a container is removed. Else, if \l canRemoveValueAtBegin()
+    returns \c true, the first value in the \a container is removed. Else,
     an unspecified value or nothing is removed.
 
-    \sa canRemoveValue(), addsAndRemovesValuesAtBegin(),
-        addsAndRemovesValuesAtEnd(), isOrdered(), addValue()
+    \sa canRemoveValue(), canRemoveValueAtBegin(),
+        canRemoveValueAtEnd(), isSortable(), addValue()
  */
 void QMetaSequence::removeValue(void *container) const
 {
-    if (canRemoveValue())
-        d_ptr->removeValueFn(container);
+    if (canRemoveValue()) {
+        d_ptr->removeValueFn(container,
+                           QtMetaContainerPrivate::QMetaSequenceInterface::Unspecified);
+    }
 }
 
 /*!
@@ -514,14 +601,14 @@ bool QMetaSequence::canInsertValueAtIterator() const
 /*!
     Inserts \a value into the \a container, if possible, taking the non-const
     \a iterator into account. If \l canInsertValueAtIterator() returns
-    \c false, the \a value is not inserted. Else if \l isOrdered() returns
+    \c false, the \a value is not inserted. Else if \l isSortable() returns
     \c true, the value is inserted before the value pointed to by
     \a iterator. Else, the \a value is inserted at an unspecified place or not
     at all. In the latter case, the \a iterator is taken as a hint. If it points
     to the correct place for the \a value, the operation may be faster than a
     \l addValue() without iterator.
 
-    \sa canInsertValueAtIterator(), isOrdered(), begin(), end()
+    \sa canInsertValueAtIterator(), isSortable(), begin(), end()
  */
 void QMetaSequence::insertValueAtIterator(void *container, const void *iterator,
                                             const void *value) const

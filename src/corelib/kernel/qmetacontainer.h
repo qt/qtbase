@@ -59,15 +59,24 @@ enum IteratorCapability : quint8 {
 Q_DECLARE_FLAGS(IteratorCapabilities, IteratorCapability)
 Q_DECLARE_OPERATORS_FOR_FLAGS(IteratorCapabilities)
 
+enum AddRemoveCapability : quint8 {
+    CanAddAtBegin    = 1 << 0,
+    CanRemoveAtBegin = 1 << 1,
+    CanAddAtEnd      = 1 << 2,
+    CanRemoveAtEnd   = 1 << 3
+};
+Q_DECLARE_FLAGS(AddRemoveCapabilities, AddRemoveCapability)
+Q_DECLARE_OPERATORS_FOR_FLAGS(AddRemoveCapabilities)
+
 class QMetaSequenceInterface
 {
 public:
-    enum Position : quint8 { AtBegin, AtEnd, Random };
+    enum Position : quint8 { AtBegin, AtEnd, Unspecified };
 
     ushort revision;
     IteratorCapabilities iteratorCapabilities;
-    Position addRemovePosition;
     QMetaType valueMetaType;
+    AddRemoveCapabilities addRemoveCapabilities;
 
     using SizeFn = qsizetype(*)(const void *);
     SizeFn sizeFn;
@@ -79,9 +88,9 @@ public:
     using SetValueAtIndexFn = void(*)(void *, qsizetype, const void *);
     SetValueAtIndexFn setValueAtIndexFn;
 
-    using AddValueFn = void(*)(void *, const void *);
+    using AddValueFn = void(*)(void *, const void *, Position);
     AddValueFn addValueFn;
-    using RemoveValueFn = void(*)(void *);
+    using RemoveValueFn = void(*)(void *, Position);
     RemoveValueFn removeValueFn;
 
     using CreateIteratorFn = void *(*)(void *, Position);
@@ -144,13 +153,18 @@ class QMetaSequenceForContainer
             return {};
     }
 
-    static constexpr QMetaSequenceInterface::Position getAddRemovePosition()
+    static constexpr AddRemoveCapabilities getAddRemoveCapabilities()
     {
-        if constexpr (QContainerTraits::has_push_back_v<C> && QContainerTraits::has_pop_back_v<C>)
-            return QMetaSequenceInterface::AtEnd;
-        if constexpr (QContainerTraits::has_push_front_v<C> && QContainerTraits::has_pop_front_v<C>)
-            return QMetaSequenceInterface::AtBegin;
-        return QMetaSequenceInterface::Random;
+        AddRemoveCapabilities caps;
+        if constexpr (QContainerTraits::has_push_back_v<C>)
+            caps |= CanAddAtEnd;
+        if constexpr (QContainerTraits::has_pop_back_v<C>)
+            caps |= CanRemoveAtEnd;
+        if constexpr (QContainerTraits::has_push_front_v<C>)
+            caps |= CanAddAtBegin;
+        if constexpr (QContainerTraits::has_pop_front_v<C>)
+            caps |= CanRemoveAtBegin;
+        return caps;
     }
 
     static constexpr QMetaType getValueMetaType()
@@ -208,19 +222,49 @@ class QMetaSequenceForContainer
     static constexpr QMetaSequenceInterface::AddValueFn getAddValueFn()
     {
         if constexpr (QContainerTraits::has_push_back_v<C>) {
-            return [](void *c, const void *v) {
-                static_cast<C *>(c)->push_back(
-                            *static_cast<const QContainerTraits::value_type<C> *>(v));
-            };
+            if constexpr (QContainerTraits::has_push_front_v<C>) {
+                return [](void *c, const void *v, QMetaSequenceInterface::Position position) {
+                    const auto &value = *static_cast<const QContainerTraits::value_type<C> *>(v);
+                    switch (position) {
+                    case QMetaSequenceInterface::AtBegin:
+                        static_cast<C *>(c)->push_front(value);
+                        break;
+                    case QMetaSequenceInterface::AtEnd:
+                    case QMetaSequenceInterface::Unspecified:
+                        static_cast<C *>(c)->push_back(value);
+                        break;
+                    }
+                };
+            } else {
+                return [](void *c, const void *v, QMetaSequenceInterface::Position position) {
+                    const auto &value = *static_cast<const QContainerTraits::value_type<C> *>(v);
+                    switch (position) {
+                    case QMetaSequenceInterface::AtBegin:
+                        break;
+                    case QMetaSequenceInterface::AtEnd:
+                    case QMetaSequenceInterface::Unspecified:
+                        static_cast<C *>(c)->push_back(value);
+                        break;
+                    }
+                };
+            }
         } else if constexpr (QContainerTraits::has_push_front_v<C>) {
-            return [](void *c, const void *v) {
-                static_cast<C *>(c)->push_front(
-                            *static_cast<const QContainerTraits::value_type<C> *>(v));
+            return [](void *c, const void *v, QMetaSequenceInterface::Position position) {
+                const auto &value = *static_cast<const QContainerTraits::value_type<C> *>(v);
+                switch (position) {
+                case QMetaSequenceInterface::Unspecified:
+                case QMetaSequenceInterface::AtBegin:
+                    static_cast<C *>(c)->push_front(value);
+                case QMetaSequenceInterface::AtEnd:
+                    break;
+                }
             };
         } else if constexpr (QContainerTraits::has_insert_v<C>) {
-            return [](void *c, const void *v) {
-                static_cast<C *>(c)->insert(
-                            *static_cast<const QContainerTraits::value_type<C> *>(v));
+            return [](void *c, const void *v, QMetaSequenceInterface::Position position) {
+                if (position == QMetaSequenceInterface::Unspecified) {
+                    static_cast<C *>(c)->insert(
+                                *static_cast<const QContainerTraits::value_type<C> *>(v));
+                }
             };
         } else {
             return nullptr;
@@ -230,9 +274,41 @@ class QMetaSequenceForContainer
     static constexpr QMetaSequenceInterface::RemoveValueFn getRemoveValueFn()
     {
         if constexpr (QContainerTraits::has_pop_back_v<C>) {
-            return [](void *c) { static_cast<C *>(c)->pop_back(); };
+            if constexpr (QContainerTraits::has_pop_front_v<C>) {
+                return [](void *c, QMetaSequenceInterface::Position position) {
+                    switch (position) {
+                    case QMetaSequenceInterface::AtBegin:
+                        static_cast<C *>(c)->pop_front();
+                        break;
+                    case QMetaSequenceInterface::AtEnd:
+                    case QMetaSequenceInterface::Unspecified:
+                        static_cast<C *>(c)->pop_back();
+                        break;
+                    }
+                };
+            } else {
+                return [](void *c, QMetaSequenceInterface::Position position) {
+                    switch (position) {
+                    case QMetaSequenceInterface::AtBegin:
+                        break;
+                    case QMetaSequenceInterface::Unspecified:
+                    case QMetaSequenceInterface::AtEnd:
+                        static_cast<C *>(c)->pop_back();
+                        break;
+                    }
+                };
+            }
         } else if constexpr (QContainerTraits::has_pop_front_v<C>) {
-            return [](void *c) { static_cast<C *>(c)->pop_front(); };
+            return [](void *c, QMetaSequenceInterface::Position position) {
+                switch (position) {
+                case QMetaSequenceInterface::Unspecified:
+                case QMetaSequenceInterface::AtBegin:
+                    static_cast<C *>(c)->pop_front();
+                    break;
+                case QMetaSequenceInterface::AtEnd:
+                    break;
+                }
+            };
         } else {
             return nullptr;
         }
@@ -245,7 +321,7 @@ class QMetaSequenceForContainer
                 using Iterator = QContainerTraits::iterator<C>;
                 switch (p) {
                 case QMetaSequenceInterface::AtBegin:
-                case QMetaSequenceInterface::Random:
+                case QMetaSequenceInterface::Unspecified:
                     return new Iterator(static_cast<C *>(c)->begin());
                     break;
                 case QMetaSequenceInterface::AtEnd:
@@ -377,7 +453,7 @@ class QMetaSequenceForContainer
                 using Iterator = QContainerTraits::const_iterator<C>;
                 switch (p) {
                 case QMetaSequenceInterface::AtBegin:
-                case QMetaSequenceInterface::Random:
+                case QMetaSequenceInterface::Unspecified:
                     return new Iterator(static_cast<const C *>(c)->begin());
                     break;
                 case QMetaSequenceInterface::AtEnd:
@@ -471,8 +547,8 @@ template<typename C>
 QMetaSequenceInterface QMetaSequenceForContainer<C>::metaSequence = {
     /*.revision=*/                  0,
     /*.iteratorCapabilities=*/      getIteratorCapabilities(),
-    /*.addRemovePosition=*/         getAddRemovePosition(),
     /*.valueMetaType=*/             getValueMetaType(),
+    /*.addRemoveCapabilities=*/     getAddRemoveCapabilities(),
     /*.sizeFn=*/                    getSizeFn(),
     /*.clearFn=*/                   getClearFn(),
     /*.valueAtIndexFn=*/            getValueAtIndexFn(),
@@ -525,9 +601,15 @@ public:
 
     QMetaType valueMetaType() const;
 
-    bool isOrdered() const;
-    bool addsAndRemovesValuesAtBegin() const;
-    bool addsAndRemovesValuesAtEnd() const;
+    bool isSortable() const;
+    bool canAddValueAtBegin() const;
+    void addValueAtBegin(void *container, const void *value) const;
+    bool canAddValueAtEnd() const;
+    void addValueAtEnd(void *container, const void *value) const;
+    bool canRemoveValueAtBegin() const;
+    void removeValueAtBegin(void *container) const;
+    bool canRemoveValueAtEnd() const;
+    void removeValueAtEnd(void *container) const;
 
     bool hasSize() const;
     qsizetype size(const void *container) const;

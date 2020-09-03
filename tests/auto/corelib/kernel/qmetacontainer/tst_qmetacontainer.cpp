@@ -215,7 +215,7 @@ void tst_QMetaContainer::testSequence_data()
     QTest::addColumn<bool>("hasRandomAccessIterator");
     QTest::addColumn<bool>("canInsertAtIterator");
     QTest::addColumn<bool>("canEraseAtIterator");
-    QTest::addColumn<bool>("isOrdered");
+    QTest::addColumn<bool>("isSortable");
 
     QTest::addRow("QVector")
             << static_cast<void *>(&qvector)
@@ -256,7 +256,7 @@ void tst_QMetaContainer::testSequence()
     QFETCH(bool, hasRandomAccessIterator);
     QFETCH(bool, canInsertAtIterator);
     QFETCH(bool, canEraseAtIterator);
-    QFETCH(bool, isOrdered);
+    QFETCH(bool, isSortable);
 
     QVERIFY(metaSequence.canAddValue());
     QCOMPARE(metaSequence.hasSize(), hasSize);
@@ -267,7 +267,7 @@ void tst_QMetaContainer::testSequence()
     QCOMPARE(metaSequence.hasRandomAccessIterator(), hasRandomAccessIterator);
     QCOMPARE(metaSequence.canInsertValueAtIterator(), canInsertAtIterator);
     QCOMPARE(metaSequence.canEraseValueAtIterator(), canEraseAtIterator);
-    QCOMPARE(metaSequence.isOrdered(), isOrdered);
+    QCOMPARE(metaSequence.isSortable(), isSortable);
 
     QVariant var1(metaType);
     QVariant var2(metaType);
@@ -434,7 +434,7 @@ void tst_QMetaContainer::testSequence()
 
         const qsizetype newSize = metaSequence.diffIterator(end, it);
 
-        if (metaSequence.isOrdered()) {
+        if (metaSequence.isSortable()) {
             QCOMPARE(newSize, size + 3);
             QVariant var4(metaType);
             metaSequence.valueAtIterator(it, var4.data());

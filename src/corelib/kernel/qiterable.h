@@ -163,10 +163,20 @@ public:
     QVariant at(qsizetype idx) const;
     qsizetype size() const;
 
+    enum Position { Unspecified, AtBegin, AtEnd };
+    void addValue(const QVariant &value, Position position = Unspecified);
+    void removeValue(Position position = Unspecified);
+
+    bool canForwardIterate() const;
     bool canReverseIterate() const;
 
     const void *constIterable() const { return m_iterable.constPointer(); }
+
+    // TODO: fix this when introducing mutable iterables
+    void *mutableIterable() { return const_cast<void *>(m_iterable.constPointer()); }
+
     QMetaSequence metaSequence() const { return m_metaSequence; }
+    QMetaType valueMetaType() const { return m_metaSequence.valueMetaType(); }
 };
 
 namespace QtPrivate {
