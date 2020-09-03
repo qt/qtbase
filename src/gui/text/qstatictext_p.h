@@ -59,7 +59,6 @@
 
 QT_BEGIN_NAMESPACE
 
-// ### Qt 6: Unexport again, if QOpenGLStaticTextUserData (the one from QtOpenGL) is gone by then
 class Q_GUI_EXPORT QStaticTextUserData
 {
 public:
