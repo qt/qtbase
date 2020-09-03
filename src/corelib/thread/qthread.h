@@ -115,8 +115,12 @@ public Q_SLOTS:
 
 public:
     bool wait(QDeadlineTimer deadline = QDeadlineTimer(QDeadlineTimer::Forever));
-    // ### Qt6 inline this function
-    bool wait(unsigned long time);
+    bool wait(unsigned long time)
+    {
+        if (time == std::numeric_limits<unsigned long>::max())
+            return wait(QDeadlineTimer(QDeadlineTimer::Forever));
+        return wait(QDeadlineTimer(time));
+    }
 
     static void sleep(unsigned long);
     static void msleep(unsigned long);

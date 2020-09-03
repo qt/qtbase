@@ -989,12 +989,6 @@ void QThread::setEventDispatcher(QAbstractEventDispatcher *eventDispatcher)
     \fn bool QThread::wait(unsigned long time)
     \overload
 */
-bool QThread::wait(unsigned long time)
-{
-    if (time == std::numeric_limits<unsigned long>::max())
-        return wait(QDeadlineTimer(QDeadlineTimer::Forever));
-    return wait(QDeadlineTimer(time));
-}
 
 #if QT_CONFIG(thread)
 
