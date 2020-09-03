@@ -514,7 +514,7 @@ QList<int> QCocoaKeyMapper::possibleKeys(const QKeyEvent *event) const
 
     // The base key, with the complete set of modifiers,
     // is always valid, and the first priority.
-    ret << int(unmodifiedKey + eventModifiers);
+    ret << int(unmodifiedKey) + int(eventModifiers);
 
     // FIXME: We only compute the first 8 combinations. Why?
     for (int i = 1; i < 8; ++i) {
@@ -526,7 +526,7 @@ QList<int> QCocoaKeyMapper::possibleKeys(const QKeyEvent *event) const
         // perfectly, the current candidate modifiers.
         auto candidateModifiers = modifierCombinations[i];
         if ((eventModifiers & candidateModifiers) == candidateModifiers)
-            ret << int(keyAfterApplyingModifiers + (eventModifiers & ~candidateModifiers));
+            ret << int(keyAfterApplyingModifiers) + int(eventModifiers & ~candidateModifiers);
     }
 
     return ret;
