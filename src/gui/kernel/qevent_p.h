@@ -58,6 +58,36 @@
 
 QT_BEGIN_NAMESPACE
 
+struct QEventPointPrivate {
+    QEventPointPrivate(int id, const QPointingDevice *device)
+      : device(device), pointId(id) { }
+
+    QEventPointPrivate(int pointId, QEventPoint::State state, const QPointF &scenePosition, const QPointF &globalPosition)
+        : scenePos(scenePosition), globalPos(globalPosition), pointId(pointId), state(state)
+    {
+        if (state == QEventPoint::State::Released)
+            pressure = 0;
+    }
+
+    const QPointingDevice *device = nullptr;
+    QPointF pos, scenePos, globalPos,
+            globalPressPos, globalGrabPos, globalLastPos;
+    qreal pressure = 1;
+    qreal rotation = 0;
+    QSizeF ellipseDiameters = QSizeF(0, 0);
+    QVector2D velocity;
+    QPointer<QObject> exclusiveGrabber;
+    QList<QPointer <QObject> > passiveGrabbers;
+    ulong timestamp = 0;
+    ulong pressTimestamp = 0;
+    QPointingDeviceUniqueId uniqueId;
+    int refCount = 1;
+    int pointId = -1;
+    QEventPoint::State state = QEventPoint::State::Unknown;
+    bool accept = false;
+    bool stationaryWithModifiedProperty = false;
+};
+
 // Private subclasses to allow accessing and modifying protected variables.
 // These should NOT hold any extra state.
 
@@ -72,59 +102,61 @@ public:
                        const QPointF &position, const QPointF &scenePosition, const QPointF &globalPosition) :
         QEventPoint(pointId, state, scenePosition, globalPosition)
     {
-        m_timestamp = timestamp;
-        m_pos = position;
+        d->timestamp = timestamp;
+        d->pos = position;
     }
 
     static QMutableEventPoint *from(QEventPoint *me) { return static_cast<QMutableEventPoint *>(me); }
 
     static QMutableEventPoint &from(QEventPoint &me) { return static_cast<QMutableEventPoint &>(me); }
 
-    bool stationaryWithModifiedProperty() const { return m_stationaryWithModifiedProperty; }
+    void detach();
 
-    void setId(int pointId) { m_pointId = pointId; }
+    bool stationaryWithModifiedProperty() const { return d->stationaryWithModifiedProperty; }
 
-    void setDevice(const QPointingDevice *device) { m_device = device; }
+    void setId(int pointId) { d->pointId = pointId; }
 
-    void setTimestamp(const ulong t) { m_timestamp = t; }
+    void setDevice(const QPointingDevice *device) { d->device = device; }
 
-    void setPressTimestamp(const ulong t) { m_pressTimestamp = t; }
+    void setTimestamp(const ulong t) { d->timestamp = t; }
 
-    void setState(QEventPoint::State state) { m_state = state; }
+    void setPressTimestamp(const ulong t) { d->pressTimestamp = t; }
 
-    void setUniqueId(const QPointingDeviceUniqueId &uid) { m_uniqueId = uid; }
+    void setState(QEventPoint::State state) { d->state = state; }
 
-    void setPosition(const QPointF &pos) { m_pos = pos; }
+    void setUniqueId(const QPointingDeviceUniqueId &uid) { d->uniqueId = uid; }
 
-    void setScenePosition(const QPointF &pos) { m_scenePos = pos; }
+    void setPosition(const QPointF &pos) { d->pos = pos; }
 
-    void setGlobalPosition(const QPointF &pos) { m_globalPos = pos; }
+    void setScenePosition(const QPointF &pos) { d->scenePos = pos; }
+
+    void setGlobalPosition(const QPointF &pos) { d->globalPos = pos; }
 
 #if QT_DEPRECATED_SINCE(6, 0)
     // temporary replacements for QTouchEvent::TouchPoint setters, mainly to make porting easier
     QT_DEPRECATED_VERSION_X_6_0("Use setPosition()")
-    void setPos(const QPointF &pos) { m_pos = pos; }
+    void setPos(const QPointF &pos) { d->pos = pos; }
     QT_DEPRECATED_VERSION_X_6_0("Use setScenePosition()")
-    void setScenePos(const QPointF &pos) { m_scenePos = pos; }
+    void setScenePos(const QPointF &pos) { d->scenePos = pos; }
     QT_DEPRECATED_VERSION_X_6_0("Use setGlobalPosition()")
-    void setScreenPos(const QPointF &pos) { m_globalPos = pos; }
+    void setScreenPos(const QPointF &pos) { d->globalPos = pos; }
 #endif
 
-    void setGlobalPressPosition(const QPointF &pos) { m_globalPressPos = pos; }
+    void setGlobalPressPosition(const QPointF &pos) { d->globalPressPos = pos; }
 
-    void setGlobalGrabPosition(const QPointF &pos) { m_globalGrabPos = pos; }
+    void setGlobalGrabPosition(const QPointF &pos) { d->globalGrabPos = pos; }
 
-    void setGlobalLastPosition(const QPointF &pos) { m_globalLastPos = pos; }
+    void setGlobalLastPosition(const QPointF &pos) { d->globalLastPos = pos; }
 
-    void setEllipseDiameters(const QSizeF &d) { m_ellipseDiameters = d; }
+    void setEllipseDiameters(const QSizeF &diams) { d->ellipseDiameters = diams; }
 
-    void setPressure(qreal v) { m_pressure = v; }
+    void setPressure(qreal v) { d->pressure = v; }
 
-    void setRotation(qreal v) { m_rotation = v; }
+    void setRotation(qreal v) { d->rotation = v; }
 
-    void setVelocity(const QVector2D &v) { m_velocity = v; }
+    void setVelocity(const QVector2D &v) { d->velocity = v; }
 
-    void setStationaryWithModifiedProperty(bool s = true) { m_stationaryWithModifiedProperty = s; }
+    void setStationaryWithModifiedProperty(bool s = true) { d->stationaryWithModifiedProperty = s; }
 };
 
 static_assert(sizeof(QMutableEventPoint) == sizeof(QEventPoint));

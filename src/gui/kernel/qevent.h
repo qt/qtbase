@@ -90,10 +90,7 @@ protected:
     qint64 m_extra = 0; // reserved, unused for now
 };
 
-namespace QTest {
-    class QTouchEventSequence; // just for the friend declaration below
-}
-
+struct QEventPointPrivate;
 class Q_GUI_EXPORT QEventPoint
 {
     Q_GADGET
@@ -110,19 +107,22 @@ public:
 
     QEventPoint(int id = -1, const QPointingDevice *device = nullptr);
     QEventPoint(int pointId, State state, const QPointF &scenePosition, const QPointF &globalPosition);
+    QEventPoint(const QEventPoint &other);
+    QEventPoint &operator=(const QEventPoint &other);
+    ~QEventPoint();
 
-    QPointF position() const { return m_pos; }
-    QPointF pressPosition() const { return m_globalPressPos - m_globalPos + m_pos; }
-    QPointF grabPosition() const { return m_globalGrabPos - m_globalPos + m_pos; }
-    QPointF lastPosition() const { return m_globalLastPos - m_globalPos + m_pos; }
-    QPointF scenePosition() const { return m_scenePos; }
-    QPointF scenePressPosition() const { return m_globalPressPos - m_globalPos + m_scenePos; }
-    QPointF sceneGrabPosition() const { return m_globalGrabPos - m_globalPos + m_scenePos; }
-    QPointF sceneLastPosition() const { return m_globalLastPos - m_globalPos + m_scenePos; }
-    QPointF globalPosition() const { return m_globalPos; }
-    QPointF globalPressPosition() const { return m_globalPressPos; }
-    QPointF globalGrabPosition() const { return m_globalGrabPos; }
-    QPointF globalLastPosition() const { return m_globalLastPos; }
+    QPointF position() const;
+    QPointF pressPosition() const;
+    QPointF grabPosition() const;
+    QPointF lastPosition() const;
+    QPointF scenePosition() const;
+    QPointF scenePressPosition() const;
+    QPointF sceneGrabPosition() const;
+    QPointF sceneLastPosition() const;
+    QPointF globalPosition() const;
+    QPointF globalPressPosition() const;
+    QPointF globalGrabPosition() const;
+    QPointF globalLastPosition() const;
 
 #if QT_DEPRECATED_SINCE(6, 0)
     // QEventPoint replaces QTouchEvent::TouchPoint, so we need all its old accessors, for now
@@ -151,45 +151,28 @@ public:
     QT_DEPRECATED_VERSION_X_6_0("Use globalLastPosition()")
     QPointF lastNormalizedPos() const;
 #endif // QT_DEPRECATED_SINCE(6, 0)
-    QVector2D velocity() const { return m_velocity; }
-    State state() const { return m_state; }
-    const QPointingDevice *device() const { return m_device; }
-    int id() const { return m_pointId; }
-    QPointingDeviceUniqueId uniqueId() const { return m_uniqueId; }
-    ulong pressTimestamp() const { return m_pressTimestamp; }
-    qreal timeHeld() const { return (m_timestamp - m_pressTimestamp) / qreal(1000); }
-    qreal pressure() const { return m_pressure; }
-    qreal rotation() const { return m_rotation; }
-    QSizeF ellipseDiameters() const { return m_ellipseDiameters; }
+    QVector2D velocity() const;
+    State state() const;
+    const QPointingDevice *device() const;
+    int id() const;
+    QPointingDeviceUniqueId uniqueId() const;
+    ulong pressTimestamp() const;
+    qreal timeHeld() const;
+    qreal pressure() const;
+    qreal rotation() const;
+    QSizeF ellipseDiameters() const;
 
-    bool isAccepted() const { return m_accept; }
+    bool isAccepted() const;
     void setAccepted(bool accepted = true);
-    QObject *exclusiveGrabber() const { return m_exclusiveGrabber.data(); }
+    QObject *exclusiveGrabber() const;
     void setExclusiveGrabber(QObject *exclusiveGrabber);
-    const QList<QPointer <QObject>> &passiveGrabbers() const { return m_passiveGrabbers; }
+    const QList<QPointer <QObject>> &passiveGrabbers() const;
     void setPassiveGrabbers(const QList<QPointer <QObject>> &grabbers);
     void clearPassiveGrabbers();
 
-protected:
-    const QPointingDevice *m_device = nullptr;
-    QPointF m_pos, m_scenePos, m_globalPos,
-            m_globalPressPos, m_globalGrabPos, m_globalLastPos;
-    qreal m_pressure = 1;
-    qreal m_rotation = 0;
-    QSizeF m_ellipseDiameters = QSizeF(0, 0);
-    QVector2D m_velocity;
-    QPointer<QObject> m_exclusiveGrabber;
-    QList<QPointer <QObject> > m_passiveGrabbers;
-    ulong m_timestamp = 0;
-    ulong m_pressTimestamp = 0;
-    QPointingDeviceUniqueId m_uniqueId;
-    int m_pointId = -1;
-    State m_state : 8;
-    quint32 m_accept : 1;
-    quint32 m_stationaryWithModifiedProperty : 1;
-    quint32 m_reserved : 22;
-
-    friend class QTest::QTouchEventSequence;
+private:
+    QEventPointPrivate *d;
+    friend class QMutableEventPoint;
 };
 
 #ifndef QT_NO_DEBUG_STREAM

@@ -240,17 +240,104 @@ QInputEvent::~QInputEvent()
     as in qgraphicsscene_p.h.
 */
 QEventPoint::QEventPoint(int id, const QPointingDevice *device)
-    : m_device(device), m_pointId(id), m_state(State::Unknown), m_accept(false), m_stationaryWithModifiedProperty(false), m_reserved(0)
+    : d(new QEventPointPrivate(id, device)) {}
+
+/*!
+    Constructs an event point with the given \a pointId, \a state,
+    \a scenePosition and \a globalPosition.
+*/
+QEventPoint::QEventPoint(int pointId, State state, const QPointF &scenePosition, const QPointF &globalPosition)
+    : d(new QEventPointPrivate(pointId, state, scenePosition, globalPosition)) {}
+
+QEventPoint::QEventPoint(const QEventPoint &other)
+    : d(other.d)
 {
+    d->refCount++;
 }
 
-QEventPoint::QEventPoint(int pointId, State state, const QPointF &scenePosition, const QPointF &globalPosition)
-    : m_scenePos(scenePosition), m_globalPos(globalPosition), m_pointId(pointId), m_state(state),
-      m_accept(false), m_stationaryWithModifiedProperty(false), m_reserved(0)
+QEventPoint &QEventPoint::operator=(const QEventPoint &other)
 {
-    if (state == QEventPoint::State::Released)
-        m_pressure = 0;
+    other.d->refCount++;
+    if (!(--d->refCount))
+        delete d;
+    d = other.d;
+    return *this;
 }
+
+QEventPoint::~QEventPoint()
+{
+    if (!(--d->refCount))
+        delete d;
+}
+
+QPointF QEventPoint::position() const
+{ return d->pos; }
+
+QPointF QEventPoint::pressPosition() const
+{ return d->globalPressPos - d->globalPos + d->pos; }
+
+QPointF QEventPoint::grabPosition() const
+{ return d->globalGrabPos - d->globalPos + d->pos; }
+
+QPointF QEventPoint::lastPosition() const
+{ return d->globalLastPos - d->globalPos + d->pos; }
+
+QPointF QEventPoint::scenePosition() const
+{ return d->scenePos; }
+
+QPointF QEventPoint::scenePressPosition() const
+{ return d->globalPressPos - d->globalPos + d->scenePos; }
+
+QPointF QEventPoint::sceneGrabPosition() const
+{ return d->globalGrabPos - d->globalPos + d->scenePos; }
+
+QPointF QEventPoint::sceneLastPosition() const
+{ return d->globalLastPos - d->globalPos + d->scenePos; }
+
+QPointF QEventPoint::globalPosition() const
+{ return d->globalPos; }
+
+QPointF QEventPoint::globalPressPosition() const
+{ return d->globalPressPos; }
+
+QPointF QEventPoint::globalGrabPosition() const
+{ return d->globalGrabPos; }
+
+QPointF QEventPoint::globalLastPosition() const
+{ return d->globalLastPos; }
+
+QVector2D QEventPoint::velocity() const
+{ return d->velocity; }
+
+QEventPoint::State QEventPoint::state() const
+{ return d->state; }
+
+const QPointingDevice *QEventPoint::device() const
+{ return d->device; }
+
+int QEventPoint::id() const
+{ return d->pointId; }
+
+QPointingDeviceUniqueId QEventPoint::uniqueId() const
+{ return d->uniqueId; }
+
+ulong QEventPoint::pressTimestamp() const
+{ return d->pressTimestamp; }
+
+qreal QEventPoint::timeHeld() const
+{ return (d->timestamp - d->pressTimestamp) / qreal(1000); }
+
+qreal QEventPoint::pressure() const
+{ return d->pressure; }
+
+qreal QEventPoint::rotation() const
+{ return d->rotation; }
+
+QSizeF QEventPoint::ellipseDiameters() const
+{ return d->ellipseDiameters; }
+
+bool QEventPoint::isAccepted() const
+{ return d->accept; }
 
 /*
     Sets the accepted state of the point.
@@ -269,8 +356,11 @@ QEventPoint::QEventPoint(int pointId, State state, const QPointF &scenePosition,
 */
 void QEventPoint::setAccepted(bool accepted)
 {
-    m_accept = accepted;
+    d->accept = accepted;
 }
+
+QObject *QEventPoint::exclusiveGrabber() const
+{ return d->exclusiveGrabber.data(); }
 
 /*
     Informs the delivery logic that the given \a exclusiveGrabber is to
@@ -281,15 +371,18 @@ void QEventPoint::setAccepted(bool accepted)
 */
 void QEventPoint::setExclusiveGrabber(QObject *exclusiveGrabber)
 {
-    if (m_exclusiveGrabber == exclusiveGrabber)
+    if (d->exclusiveGrabber == exclusiveGrabber)
         return;
     if (Q_UNLIKELY(lcPointerGrab().isDebugEnabled())) {
-        qCDebug(lcPointerGrab) << pointDeviceName(this) << "point" << Qt::hex << m_pointId << m_state << "@" << m_scenePos
-                               << ": grab" << m_exclusiveGrabber << "->" << exclusiveGrabber;
+        qCDebug(lcPointerGrab) << pointDeviceName(this) << "point" << Qt::hex << d->pointId << d->state << "@" << d->scenePos
+                               << ": grab" << d->exclusiveGrabber << "->" << exclusiveGrabber;
     }
-    m_exclusiveGrabber = exclusiveGrabber;
-    m_globalGrabPos = m_globalPos;
+    d->exclusiveGrabber = exclusiveGrabber;
+    d->globalGrabPos = d->globalPos;
 }
+
+const QList<QPointer<QObject> > &QEventPoint::passiveGrabbers() const
+{ return d->passiveGrabbers; }
 
 /*
     Informs the delivery logic that the given \a grabbers are to receive all
@@ -300,9 +393,9 @@ void QEventPoint::setExclusiveGrabber(QObject *exclusiveGrabber)
 */
 void QEventPoint::setPassiveGrabbers(const QList<QPointer<QObject> > &grabbers)
 {
-    m_passiveGrabbers = grabbers;
+    d->passiveGrabbers = grabbers;
     if (Q_UNLIKELY(lcPointerGrab().isDebugEnabled())) {
-        qCDebug(lcPointerGrab) << pointDeviceName(this) << "point" << Qt::hex << m_pointId << m_state
+        qCDebug(lcPointerGrab) << pointDeviceName(this) << "point" << Qt::hex << d->pointId << d->state
                                << ": grab (passive)" << grabbers;
     }
 }
@@ -310,10 +403,10 @@ void QEventPoint::setPassiveGrabbers(const QList<QPointer<QObject> > &grabbers)
 void QEventPoint::clearPassiveGrabbers()
 {
     if (Q_UNLIKELY(lcPointerGrab().isDebugEnabled())) {
-        qCDebug(lcPointerGrab) << pointDeviceName(this) << "point" << Qt::hex << m_pointId << m_state
-                               << ": clearing" << m_passiveGrabbers;
+        qCDebug(lcPointerGrab) << pointDeviceName(this) << "point" << Qt::hex << d->pointId << d->state
+                               << ": clearing" << d->passiveGrabbers;
     }
-    m_passiveGrabbers.clear();
+    d->passiveGrabbers.clear();
 }
 
 /*! \internal
@@ -329,7 +422,7 @@ void QEventPoint::clearPassiveGrabbers()
 
 QPointF QEventPoint::normalizedPos() const
 {
-    auto geom = m_device->availableVirtualGeometry();
+    auto geom = d->device->availableVirtualGeometry();
     if (geom.isNull())
         return QPointF();
     return (globalPosition() - geom.topLeft()) / geom.width();
@@ -337,7 +430,7 @@ QPointF QEventPoint::normalizedPos() const
 
 QPointF QEventPoint::startNormalizedPos() const
 {
-    auto geom = m_device->availableVirtualGeometry();
+    auto geom = d->device->availableVirtualGeometry();
     if (geom.isNull())
         return QPointF();
     return (globalPressPosition() - geom.topLeft()) / geom.width();
@@ -345,10 +438,30 @@ QPointF QEventPoint::startNormalizedPos() const
 
 QPointF QEventPoint::lastNormalizedPos() const
 {
-    auto geom = m_device->availableVirtualGeometry();
+    auto geom = d->device->availableVirtualGeometry();
     if (geom.isNull())
         return QPointF();
     return (globalLastPosition() - geom.topLeft()) / geom.width();
+}
+
+
+/*! \internal
+    This class is explicitly shared, which means if you construct an event and
+    then the point(s) that it holds are modified before the event is delivered,
+    the event will be seen to hold the modified points. The workaround is that
+    any code which modifies an eventpoint that could already be included in an
+    event, or code that wants to save an eventpoint for later, has
+    responsibility to detach before calling any setters, so as to hold and
+    modify an independent copy. (The independent copy can then be used in a
+    subsequent event.) If detaching is unnecessary, because refCount shows that
+    there is only one QEventPoint referring to the QEventPointPrivate instance,
+    this function does nothing.
+*/
+void QMutableEventPoint::detach()
+{
+    if (d->refCount == 1)
+        return; // no need: there is only one QEventPoint using it
+    d = new QEventPointPrivate(*d);
 }
 
 QPointerEvent::QPointerEvent(QEvent::Type type, const QPointingDevice *dev, Qt::KeyboardModifiers modifiers)

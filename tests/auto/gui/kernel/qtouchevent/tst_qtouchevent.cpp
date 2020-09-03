@@ -1508,11 +1508,13 @@ void tst_QTouchEvent::deleteInEventHandler()
                                     touchScreenDevice,
                                     Qt::NoModifier,
                                     {touchPoint});
+        touchPoint.detach();
         touchPoint.setState(QEventPoint::State::Updated);
         QTouchEvent touchUpdateEvent(QEvent::TouchUpdate,
                                touchScreenDevice,
                                Qt::NoModifier,
                                 {touchPoint});
+        touchPoint.detach();
         touchPoint.setState(QEventPoint::State::Released);
         QTouchEvent touchEndEvent(QEvent::TouchEnd,
                                touchScreenDevice,
