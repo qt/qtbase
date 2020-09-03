@@ -74,7 +74,6 @@ class QLine;
 class QLineF;
 class QLocale;
 class QTransform;
-class QStringList;
 class QTime;
 class QPoint;
 class QPointF;

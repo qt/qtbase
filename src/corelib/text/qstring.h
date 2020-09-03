@@ -75,7 +75,6 @@ QT_BEGIN_NAMESPACE
 class QRegularExpression;
 class QRegularExpressionMatch;
 class QString;
-class QStringList;
 
 namespace QtPrivate {
 template <bool...B> class BoolList;

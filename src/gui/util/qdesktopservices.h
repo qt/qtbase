@@ -48,7 +48,6 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_DESKTOPSERVICES
 
-class QStringList;
 class QUrl;
 class QObject;
 

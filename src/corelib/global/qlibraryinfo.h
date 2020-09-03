@@ -46,8 +46,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class QStringList;
-
 class Q_CORE_EXPORT QLibraryInfo
 {
 public:

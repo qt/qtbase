@@ -61,7 +61,6 @@ QT_BEGIN_NAMESPACE
 class QColorSpace;
 class QColorTransform;
 class QIODevice;
-class QStringList;
 class QTransform;
 class QVariant;
 

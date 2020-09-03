@@ -54,7 +54,6 @@ typedef QMutableListIterator<QByteArray> QMutableByteArrayListIterator;
 #endif
 
 #ifndef Q_CLANG_QDOC
-typedef QList<QByteArray> QByteArrayList;
 
 namespace QtPrivate {
     QByteArray Q_CORE_EXPORT QByteArrayList_join(const QByteArrayList *that, const char *separator, int separatorLength);
@@ -73,6 +72,13 @@ protected:
     ~QListSpecialMethods() = default;
 #endif
 public:
+    qsizetype indexOf(const QByteArray &ba, qsizetype from = 0) const noexcept
+    { return QtPrivate::indexOf(*self(), ba, from); }
+    qsizetype lastIndexOf(const QByteArray &ba, qsizetype from = -1) const noexcept
+    { return QtPrivate::lastIndexOf(*self(), ba, from); }
+    bool contains(const QByteArray &ba) const noexcept
+    { return indexOf(ba) != -1; }
+
     inline QByteArray join() const
     { return QtPrivate::QByteArrayList_join(self(), nullptr, 0); }
     inline QByteArray join(const QByteArray &sep) const

@@ -60,7 +60,6 @@
 QT_BEGIN_NAMESPACE
 
 class QRunnable;
-class QStringList;
 
 namespace QtAndroidPrivate
 {

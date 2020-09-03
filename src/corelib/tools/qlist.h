@@ -54,14 +54,22 @@
 QT_BEGIN_NAMESPACE
 
 namespace QtPrivate {
-   template <typename V, typename U> qsizetype indexOf(const QList<V> &list, const U &u, qsizetype from);
-   template <typename V, typename U> qsizetype lastIndexOf(const QList<V> &list, const U &u, qsizetype from);
+   template <typename V, typename U> qsizetype indexOf(const QList<V> &list, const U &u, qsizetype from) noexcept;
+   template <typename V, typename U> qsizetype lastIndexOf(const QList<V> &list, const U &u, qsizetype from) noexcept;
 }
 
 template <typename T> struct QListSpecialMethods
 {
 protected:
     ~QListSpecialMethods() = default;
+public:
+    qsizetype indexOf(const T &t, qsizetype from = 0) const noexcept;
+    qsizetype lastIndexOf(const T &t, qsizetype from = -1) const noexcept;
+
+    bool contains(const T &t) const noexcept
+    {
+        return indexOf(t) != -1;
+    }
 };
 template <> struct QListSpecialMethods<QByteArray>;
 template <> struct QListSpecialMethods<QString>;
@@ -79,8 +87,8 @@ class QList
 
     DataPointer d;
 
-    template <typename V, typename U> friend qsizetype QtPrivate::indexOf(const QList<V> &list, const U &u, qsizetype from);
-    template <typename V, typename U> friend qsizetype QtPrivate::lastIndexOf(const QList<V> &list, const U &u, qsizetype from);
+    template <typename V, typename U> friend qsizetype QtPrivate::indexOf(const QList<V> &list, const U &u, qsizetype from) noexcept;
+    template <typename V, typename U> friend qsizetype QtPrivate::lastIndexOf(const QList<V> &list, const U &u, qsizetype from) noexcept;
 
 public:
     typedef T Type;
@@ -157,6 +165,11 @@ public:
     {
         std::copy(i1, i2, std::back_inserter(*this));
     }
+
+    // This constructor is here for compatibility with QStringList in Qt 5, that has a QStringList(const QString &) constructor
+    template<typename String, typename = std::enable_if_t<std::is_same_v<T, QString> && std::is_convertible_v<String, QString>>>
+    inline explicit QList(const String &str)
+    { append(str); }
 
     // compiler-generated special member functions are fine!
 
@@ -289,12 +302,10 @@ public:
 
     QList<T> &fill(parameter_type t, qsizetype size = -1);
 
-    qsizetype indexOf(const T &t, qsizetype from = 0) const noexcept;
-    qsizetype lastIndexOf(const T &t, qsizetype from = -1) const noexcept;
-    bool contains(const T &t) const noexcept
-    {
-        return indexOf(t) != -1;
-    }
+    using QListSpecialMethods<T>::contains;
+    using QListSpecialMethods<T>::indexOf;
+    using QListSpecialMethods<T>::lastIndexOf;
+
     qsizetype count(const T &t) const noexcept
     {
         return qsizetype(std::count(&*cbegin(), &*cend(), t));
@@ -705,7 +716,7 @@ inline QList<T> &QList<T>::fill(parameter_type t, qsizetype newSize)
 
 namespace QtPrivate {
 template <typename T, typename U>
-qsizetype indexOf(const QList<T> &vector, const U &u, qsizetype from)
+qsizetype indexOf(const QList<T> &vector, const U &u, qsizetype from) noexcept
 {
     if (from < 0)
         from = qMax(from + vector.size(), qsizetype(0));
@@ -720,7 +731,7 @@ qsizetype indexOf(const QList<T> &vector, const U &u, qsizetype from)
 }
 
 template <typename T, typename U>
-qsizetype lastIndexOf(const QList<T> &vector, const U &u, qsizetype from)
+qsizetype lastIndexOf(const QList<T> &vector, const U &u, qsizetype from) noexcept
 {
     if (from < 0)
         from += vector.d->size;
@@ -739,15 +750,15 @@ qsizetype lastIndexOf(const QList<T> &vector, const U &u, qsizetype from)
 }
 
 template <typename T>
-qsizetype QList<T>::indexOf(const T &t, qsizetype from) const noexcept
+qsizetype QListSpecialMethods<T>::indexOf(const T &t, qsizetype from) const noexcept
 {
-    return QtPrivate::indexOf<T, T>(*this, t, from);
+    return QtPrivate::indexOf(*static_cast<const QList<T> *>(this), t, from);
 }
 
 template <typename T>
-qsizetype QList<T>::lastIndexOf(const T &t, qsizetype from) const noexcept
+qsizetype QListSpecialMethods<T>::lastIndexOf(const T &t, qsizetype from) const noexcept
 {
-    return QtPrivate::lastIndexOf(*this, t, from);
+    return QtPrivate::lastIndexOf(*static_cast<const QList<T> *>(this), t, from);
 }
 
 template <typename T>

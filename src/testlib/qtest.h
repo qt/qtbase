@@ -499,13 +499,6 @@ bool qCompare(QList<T> const &t1, const T (& t2)[N],
                                      actual, expected, file, line);
 }
 
-template <>
-inline bool qCompare(QStringList const &t1, QStringList const &t2, const char *actual, const char *expected,
-                            const char *file, int line)
-{
-    return qCompare<QString>(t1, t2, actual, expected, file, line);
-}
-
 template <typename T>
 inline bool qCompare(QFlags<T> const &t1, T const &t2, const char *actual, const char *expected,
                     const char *file, int line)

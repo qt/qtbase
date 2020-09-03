@@ -55,7 +55,6 @@
 
 class QSignalMapper;
 class QString;
-class QStringList;
 
 //! [0]
 class ButtonWidget : public QWidget

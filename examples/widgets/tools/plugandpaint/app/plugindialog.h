@@ -57,7 +57,6 @@
 QT_BEGIN_NAMESPACE
 class QLabel;
 class QPushButton;
-class QStringList;
 class QTreeWidget;
 class QTreeWidgetItem;
 QT_END_NAMESPACE

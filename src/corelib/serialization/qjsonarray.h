@@ -48,7 +48,6 @@
 QT_BEGIN_NAMESPACE
 
 class QDebug;
-class QStringList;
 typedef QList<QVariant> QVariantList;
 
 class Q_CORE_EXPORT QJsonArray

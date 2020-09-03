@@ -49,7 +49,6 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_ACCESSIBILITY
 
-class QStringList;
 class QAccessibleInterface;
 
 #define QAccessibleFactoryInterface_iid "org.qt-project.Qt.QAccessibleFactoryInterface"

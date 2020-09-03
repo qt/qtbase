@@ -61,7 +61,7 @@ template <class T> class QStack;
 template<class T, qsizetype Prealloc = 256> class QVarLengthArray;
 template <class T> class QList;
 template<typename T> using QVector = QList<T>;
-class QStringList;
+using QStringList = QList<QString>;
 using QByteArrayList = QList<QByteArray>;
 class QMetaType;
 class QVariant;

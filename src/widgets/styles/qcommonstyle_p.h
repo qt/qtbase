@@ -61,7 +61,6 @@ QT_BEGIN_NAMESPACE
 // We mean it.
 //
 
-class QStringList;
 class QTextOption;
 
 // Private class

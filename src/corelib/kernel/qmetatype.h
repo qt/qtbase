@@ -125,7 +125,6 @@ inline constexpr int qMetaTypeId();
 #define QT_FOR_EACH_STATIC_CORE_CLASS(F)\
     F(QChar, 7, QChar) \
     F(QString, 10, QString) \
-    F(QStringList, 11, QStringList) \
     F(QByteArray, 12, QByteArray) \
     F(QBitArray, 13, QBitArray) \
     F(QDate, 14, QDate) \
@@ -163,6 +162,7 @@ inline constexpr int qMetaTypeId();
     F(QVariantHash, 28, QVariantHash) \
     F(QVariantPair, 58, QVariantPair) \
     F(QByteArrayList, 49, QByteArrayList) \
+    F(QStringList, 11, QStringList) \
 
 #if QT_CONFIG(shortcut)
 #define QT_FOR_EACH_STATIC_KEYSEQUENCE_CLASS(F)\
@@ -221,6 +221,7 @@ inline constexpr int qMetaTypeId();
     F(QVariantHash, -1, QVariantHash, "QHash<QString,QVariant>") \
     F(QVariantPair, -1, QVariantPair, "QPair<QVariant,QVariant>") \
     F(QByteArrayList, -1, QByteArrayList, "QList<QByteArray>") \
+    F(QStringList, -1, QStringList, "QList<QString>") \
 
 #define QT_FOR_EACH_STATIC_TYPE(F)\
     QT_FOR_EACH_STATIC_PRIMITIVE_TYPE(F)\

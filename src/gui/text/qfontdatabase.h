@@ -48,7 +48,6 @@
 QT_BEGIN_NAMESPACE
 
 
-class QStringList;
 struct QFontDef;
 class QFontEngine;
 

@@ -56,8 +56,6 @@
 #include <QtCore/qmap.h>
 #include <QtCore/qstring.h>
 
-class QStringList;
-
 QT_REQUIRE_CONFIG(valgrind);
 
 QT_BEGIN_NAMESPACE

@@ -61,7 +61,6 @@ class QIODevice;
 class QSslError;
 class QSslKey;
 class QSslCertificateExtension;
-class QStringList;
 
 class QSslCertificate;
 // qHash is a friend, but we can't use default arguments for friends (§8.3.6.4)

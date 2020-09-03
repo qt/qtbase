@@ -62,7 +62,6 @@ QT_BEGIN_NAMESPACE
 class QCoreApplicationPrivate;
 class QTranslator;
 class QPostEventList;
-class QStringList;
 class QAbstractEventDispatcher;
 class QAbstractNativeEventFilter;
 

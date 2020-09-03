@@ -61,7 +61,6 @@ class QPainterPath;
 class QPoint;
 class QRect;
 class QString;
-class QStringList;
 QT_END_NAMESPACE
 
 //! [0]

@@ -50,7 +50,6 @@ QT_BEGIN_NAMESPACE
 
 
 class QFontPrivate;                                     /* don't touch */
-class QStringList;
 class QVariant;
 
 class Q_GUI_EXPORT QFont
