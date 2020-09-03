@@ -28,7 +28,9 @@ SUBDIRS=\
     qproperty
 
 !qtHaveModule(gui): SUBDIRS -= \
-    qmimedata
+    qmimedata \
+    qvariant \
+    qmetatype
 
 !qtHaveModule(network): SUBDIRS -= \
     qeventloop \

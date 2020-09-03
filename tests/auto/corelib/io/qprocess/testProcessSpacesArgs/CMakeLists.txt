@@ -10,8 +10,8 @@ qt_add_executable(nospace
         main.cpp
     DEFINES
         QT_DISABLE_DEPRECATED_BEFORE=0
-    PUBLIC_LIBRARIES
-        Qt::Gui
+    #PUBLIC_LIBRARIES # special case remove
+        #Qt::Gui # special case remove
 )
 
 # special case begin
@@ -21,8 +21,8 @@ qt_add_executable(onespace
         main.cpp
     DEFINES
         QT_DISABLE_DEPRECATED_BEFORE=0
-    PUBLIC_LIBRARIES
-        Qt::Gui
+    #PUBLIC_LIBRARIES # special case remove
+        #Qt::Gui # special case remove
 )
 set_target_properties(onespace PROPERTIES OUTPUT_NAME "one space")
 
@@ -32,8 +32,8 @@ qt_add_executable(twospaces
         main.cpp
     DEFINES
         QT_DISABLE_DEPRECATED_BEFORE=0
-    PUBLIC_LIBRARIES
-        Qt::Gui
+    #PUBLIC_LIBRARIES # special case remove
+        #Qt::Gui # special case remove
 )
 set_target_properties(twospaces PROPERTIES OUTPUT_NAME "two space s")
 # special case end

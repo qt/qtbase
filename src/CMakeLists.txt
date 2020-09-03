@@ -5,8 +5,12 @@
 # should be built.
 # The order of evaluation matters.
 qt_feature_evaluate_features("${CMAKE_CURRENT_SOURCE_DIR}/corelib/configure.cmake")
-qt_feature_evaluate_features("${CMAKE_CURRENT_SOURCE_DIR}/network/configure.cmake")
-qt_feature_evaluate_features("${CMAKE_CURRENT_SOURCE_DIR}/gui/configure.cmake")
+if(QT_FEATURE_network)
+    qt_feature_evaluate_features("${CMAKE_CURRENT_SOURCE_DIR}/network/configure.cmake")
+endif()
+if(QT_FEATURE_gui)
+    qt_feature_evaluate_features("${CMAKE_CURRENT_SOURCE_DIR}/gui/configure.cmake")
+endif()
 
 add_subdirectory(3rdparty)
 

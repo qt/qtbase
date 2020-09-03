@@ -17,7 +17,11 @@ if (NOT CMAKE_CROSSCOMPILE AND QT_FEATURE_process)
      add_subdirectory(tools)
 endif()
 add_subdirectory(corelib)
-add_subdirectory(cmake)
+# special case begin
+if (TARGET Qt::Xml AND TARGET Qt::Sql AND TARGET Qt::Network)
+    add_subdirectory(cmake)
+endif()
+# special case end
 if (TARGET Qt::Concurrent)
      add_subdirectory(concurrent)
 endif()

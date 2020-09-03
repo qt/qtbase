@@ -1,13 +1,13 @@
-# Generated from testForwardingHelper.pro.
+# Generated from testProcessHang.pro.
 
 #####################################################################
-## testForwardingHelper Binary:
+## testProcessHang Binary:
 #####################################################################
 
-qt_add_executable(testForwardingHelper
+qt_add_executable(testProcessHang
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
     SOURCES
         main.cpp
-    #PUBLIC_LIBRARIES # special case remove
-        #Qt::Gui # special case remove
+    PUBLIC_LIBRARIES
+        Qt::Gui
 )
