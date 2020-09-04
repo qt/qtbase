@@ -800,7 +800,7 @@ void QWidgetWindow::handleMoveEvent(QMoveEvent *event)
     auto oldPosition = m_widget->data->crect.topLeft();
     auto newPosition = geometry().topLeft();
 
-    if (!m_widget->isTopLevel()) {
+    if (!m_widget->isWindow()) {
         if (auto *nativeParent = m_widget->nativeParentWidget())
             newPosition = m_widget->parentWidget()->mapFrom(nativeParent, newPosition);
     }

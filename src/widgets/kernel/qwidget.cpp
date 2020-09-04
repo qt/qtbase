@@ -1328,7 +1328,7 @@ void QWidgetPrivate::create()
 
     if (!store) {
         if (q->windowType() != Qt::Desktop) {
-            if (q->isTopLevel())
+            if (q->isWindow())
                 q->setBackingStore(new QBackingStore(win));
         } else {
             q->setAttribute(Qt::WA_PaintOnScreen, true);
@@ -11855,7 +11855,7 @@ void QWidget::setBackingStore(QBackingStore *store)
 {
     // ### createWinId() ??
 
-    if (!isTopLevel())
+    if (!isWindow())
         return;
 
     Q_D(QWidget);
@@ -11872,7 +11872,7 @@ void QWidget::setBackingStore(QBackingStore *store)
     if (!repaintManager)
         return;
 
-    if (isTopLevel()) {
+    if (isWindow()) {
         if (repaintManager->backingStore() != oldStore && repaintManager->backingStore() != store)
             delete repaintManager->backingStore();
         repaintManager->setBackingStore(store);

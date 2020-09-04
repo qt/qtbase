@@ -1091,7 +1091,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
             QColor dimHighlight(qMin(highlight.red()/2 + 110, 255),
                                 qMin(highlight.green()/2 + 110, 255),
                                 qMin(highlight.blue()/2 + 110, 255));
-            dimHighlight.setAlpha(widget && widget->isTopLevel() ? 255 : 80);
+            dimHighlight.setAlpha(widget && widget->isWindow() ? 255 : 80);
             QLinearGradient gradient(rect.topLeft(), QPoint(rect.bottomLeft().x(), rect.bottomLeft().y()));
             gradient.setColorAt(0, dimHighlight.lighter(120));
             gradient.setColorAt(1, dimHighlight);
