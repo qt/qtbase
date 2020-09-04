@@ -250,9 +250,11 @@ QString QAuthenticator::user() const
 */
 void QAuthenticator::setUser(const QString &user)
 {
-    detach();
-    d->user = user;
-    d->updateCredentials();
+    if (!d || d->user != user) {
+        detach();
+        d->user = user;
+        d->updateCredentials();
+    }
 }
 
 /*!
@@ -270,8 +272,10 @@ QString QAuthenticator::password() const
 */
 void QAuthenticator::setPassword(const QString &password)
 {
-    detach();
-    d->password = password;
+    if (!d || d->password != password) {
+        detach();
+        d->password = password;
+    }
 }
 
 /*!
@@ -301,8 +305,10 @@ QString QAuthenticator::realm() const
 */
 void QAuthenticator::setRealm(const QString &realm)
 {
-    detach();
-    d->realm = realm;
+    if (!d || d->realm != realm) {
+        detach();
+        d->realm = realm;
+    }
 }
 
 /*!
@@ -342,8 +348,10 @@ QVariantHash QAuthenticator::options() const
 */
 void QAuthenticator::setOption(const QString &opt, const QVariant &value)
 {
-    detach();
-    d->options.insert(opt, value);
+    if (option(opt) != value) {
+        detach();
+        d->options.insert(opt, value);
+    }
 }
 
 
@@ -464,9 +472,20 @@ void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByt
     challenge = headerVal.trimmed();
     QHash<QByteArray, QByteArray> options = parseDigestAuthenticationChallenge(challenge);
 
+    // Sets phase to Start if this updates our realm and sets the two locations where we store
+    // realm
+    auto privSetRealm = [this](QString newRealm) {
+        if (newRealm != realm) {
+            if (phase == Done)
+                phase = Start;
+            realm = newRealm;
+            this->options[QLatin1String("realm")] = realm;
+        }
+    };
+
     switch(method) {
     case Basic:
-        this->options[QLatin1String("realm")] = realm = QString::fromLatin1(options.value("realm"));
+        privSetRealm(QString::fromLatin1(options.value("realm")));
         if (user.isEmpty() && password.isEmpty())
             phase = Done;
         break;
@@ -475,7 +494,7 @@ void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByt
         // work is done in calculateResponse()
         break;
     case DigestMd5: {
-        this->options[QLatin1String("realm")] = realm = QString::fromLatin1(options.value("realm"));
+        privSetRealm(QString::fromLatin1(options.value("realm")));
         if (options.value("stale").compare("true", Qt::CaseInsensitive) == 0) {
             phase = Start;
             nonceCount = 0;
