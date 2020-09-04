@@ -129,7 +129,7 @@ void tst_qdbuscpp2xml::qdbuscpp2xml()
     }
 
     // Launch
-    const QString binpath = QLibraryInfo::location(QLibraryInfo::BinariesPath);
+    const QString binpath = QLibraryInfo::path(QLibraryInfo::BinariesPath);
     const QString command = binpath + QLatin1String("/qdbuscpp2xml");
     QProcess process;
     process.start(command, QStringList() << options << (QFINDTESTDATA(inputfile + QStringLiteral(".h"))));

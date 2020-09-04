@@ -992,11 +992,11 @@ static std::unique_lock<QBasicMutex> initDefaultPaths(std::unique_lock<QBasicMut
     locker.unlock();
 
     /*
-       QLibraryInfo::location() uses QSettings, so in order to
+       QLibraryInfo::path() uses QSettings, so in order to
        avoid a dead-lock, we can't hold the global mutex while
        calling it.
     */
-    QString systemPath = QLibraryInfo::location(QLibraryInfo::SettingsPath) + QLatin1Char('/');
+    QString systemPath = QLibraryInfo::path(QLibraryInfo::SettingsPath) + QLatin1Char('/');
 
     locker.lock();
     if (pathHash->isEmpty()) {

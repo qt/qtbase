@@ -39,7 +39,7 @@ QT_BEGIN_NAMESPACE
 
 static const struct {
     const char *name;
-    QLibraryInfo::LibraryLocation loc;
+    QLibraryInfo::LibraryPath loc;
     bool raw;
     bool singular;
 } propList[] = {
@@ -84,7 +84,7 @@ void QMakeProperty::reload()
         QString val = QLibraryInfo::rawLocation(propList[i].loc, QLibraryInfo::FinalPaths);
         if (!propList[i].raw) {
             m_values[ProKey(name + "/dev")] = QLibraryInfo::rawLocation(propList[i].loc, QLibraryInfo::DevicePaths);
-            m_values[ProKey(name)] = QLibraryInfo::location(propList[i].loc);
+            m_values[ProKey(name)] = QLibraryInfo::path(propList[i].loc);
             name += "/raw";
         }
         m_values[ProKey(name)] = val;

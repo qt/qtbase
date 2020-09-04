@@ -590,7 +590,7 @@ namespace QTest {
              << QLatin1String("project.pro");
         qmake.setWorkingDirectory(temporaryDirPath);
 
-        QString cmd = QLibraryInfo::location(QLibraryInfo::BinariesPath) + "/qmake";
+        QString cmd = QLibraryInfo::path(QLibraryInfo::BinariesPath) + "/qmake";
 #ifdef Q_OS_WIN
         cmd.append(".exe");
 #endif

@@ -218,7 +218,7 @@ Option::parseCommandLine(QStringList &args, QMakeCmdLineParserState &state)
                             "QMake version %s\n"
                             "Using Qt version %s in %s\n",
                             QMAKE_VERSION_STR, QT_VERSION_STR,
-                            QLibraryInfo::location(QLibraryInfo::LibrariesPath).toLatin1().constData());
+                            QLibraryInfo::path(QLibraryInfo::LibrariesPath).toLatin1().constData());
 #ifdef QMAKE_OPENSOURCE_VERSION
                     fprintf(stdout, "QMake is Open Source software from The Qt Company Ltd and/or its subsidiary(-ies).\n");
 #endif

@@ -592,7 +592,7 @@ void tst_QUndoGroup::commandTextFormat()
 #if !QT_CONFIG(process)
     QSKIP("No QProcess available");
 #else
-    QString binDir = QLibraryInfo::location(QLibraryInfo::BinariesPath);
+    QString binDir = QLibraryInfo::path(QLibraryInfo::BinariesPath);
 
     if (QProcess::execute(binDir + "/lrelease -version") != 0)
         QSKIP("lrelease is missing or broken");

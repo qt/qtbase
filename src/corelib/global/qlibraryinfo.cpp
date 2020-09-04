@@ -356,7 +356,7 @@ QVersionNumber QLibraryInfo::version() noexcept
 #endif // QT_BUILD_QMAKE
 
 /*
- * To add a new entry in QLibrary::LibraryLocation, add it to the enum above the bootstrapped values and:
+ * To add a new entry in QLibrary::LibraryPath, add it to the enum above the bootstrapped values and:
  * - add its relative path in the qtConfEntries[] array below
  *   (the key is what appears in a qt.conf file)
  * - add a property name in qmake/property.cpp propList[] array
@@ -636,12 +636,19 @@ static QString getPrefix(
 }
 #endif // QT_BUILD_QMAKE_BOOTSTRAP
 
-/*!
-  Returns the location specified by \a loc.
+/*! \fn QString QLibraryInfo::path(LibraryPath loc)
+    \obsolete Use path() instead.
+
+    Returns the path specified by \a loc.
+    \sa path()
 */
-QString
-QLibraryInfo::location(LibraryLocation loc)
+
+/*!
+  Returns the path specified by \a p.
+*/
+QString QLibraryInfo::path(LibraryPath p)
 {
+    const LibraryPath loc = p;
 #ifdef QT_BUILD_QMAKE // ends inside rawLocation !
     QString ret = rawLocation(loc, FinalPaths);
 
@@ -653,7 +660,7 @@ QLibraryInfo::location(LibraryLocation loc)
 }
 
 QString
-QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
+QLibraryInfo::rawLocation(LibraryPath loc, PathGroup group)
 {
 #endif // QT_BUILD_QMAKE, started inside location !
     QString ret;
@@ -803,7 +810,7 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
             baseDir = prefixFromAppDirHelper();
         } else {
             // we make any other path absolute to the prefix directory
-            baseDir = location(PrefixPath);
+            baseDir = path(PrefixPath);
         }
 #endif // QT_BUILD_QMAKE
         ret = QDir::cleanPath(baseDir + QLatin1Char('/') + ret);
@@ -842,7 +849,7 @@ QStringList QLibraryInfo::platformPluginArguments(const QString &platformName)
 }
 
 /*!
-    \enum QLibraryInfo::LibraryLocation
+    \enum QLibraryInfo::LibraryPath
 
     \keyword library location
 

@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
     QString translatorFileName = QLatin1String("qtbase_");
     translatorFileName += QLocale::system().name();
     QTranslator *translator = new QTranslator(&app);
-    if (translator->load(translatorFileName, QLibraryInfo::location(QLibraryInfo::TranslationsPath)))
+    if (translator->load(translatorFileName, QLibraryInfo::path(QLibraryInfo::TranslationsPath)))
         app.installTranslator(translator);
 #endif
 

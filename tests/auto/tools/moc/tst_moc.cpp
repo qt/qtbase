@@ -772,7 +772,7 @@ private:
 
 void tst_Moc::initTestCase()
 {
-    QString binpath = QLibraryInfo::location(QLibraryInfo::BinariesPath);
+    QString binpath = QLibraryInfo::path(QLibraryInfo::BinariesPath);
     QString qmake = QString("%1/qmake").arg(binpath);
     m_moc = QString("%1/moc").arg(binpath);
 

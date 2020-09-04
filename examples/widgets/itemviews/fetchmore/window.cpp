@@ -57,7 +57,7 @@ Window::Window(QWidget *parent)
     : QWidget(parent)
 {
     FileListModel *model = new FileListModel(this);
-    model->setDirPath(QLibraryInfo::location(QLibraryInfo::PrefixPath));
+    model->setDirPath(QLibraryInfo::path(QLibraryInfo::PrefixPath));
 
     QLabel *label = new QLabel(tr("&Directory:"));
     QLineEdit *lineEdit = new QLineEdit;

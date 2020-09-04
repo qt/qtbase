@@ -324,7 +324,7 @@ void QLoggingRegistry::initializeRules()
 #if !defined(QT_BOOTSTRAPPED)
     // get rules from Qt data configuration path
     const QString qtConfigPath
-            = QDir(QLibraryInfo::location(QLibraryInfo::DataPath)).absoluteFilePath(configFileName);
+            = QDir(QLibraryInfo::path(QLibraryInfo::DataPath)).absoluteFilePath(configFileName);
     qr = loadRulesFromFile(qtConfigPath);
 #endif
 

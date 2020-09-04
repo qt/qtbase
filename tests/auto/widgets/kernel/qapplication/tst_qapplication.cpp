@@ -911,7 +911,7 @@ void tst_QApplication::libraryPaths()
         int argc = 1;
         QApplication app(argc, &argv0);
         QString appDirPath = QCoreApplication::applicationDirPath();
-        QString installPathPlugins =  QLibraryInfo::location(QLibraryInfo::PluginsPath);
+        QString installPathPlugins =  QLibraryInfo::path(QLibraryInfo::PluginsPath);
 
         QStringList actual = QApplication::libraryPaths();
         actual.sort();
@@ -939,7 +939,7 @@ void tst_QApplication::libraryPaths()
         // this test doesn't work if KDE 4 is installed
         QCOMPARE(count, 1); // before creating QApplication, only the PluginsPath is in the libraryPaths()
 #endif
-        QString installPathPlugins =  QLibraryInfo::location(QLibraryInfo::PluginsPath);
+        QString installPathPlugins =  QLibraryInfo::path(QLibraryInfo::PluginsPath);
         QApplication::addLibraryPath(installPathPlugins);
         qCDebug(lcTests) << "installPathPlugins" << installPathPlugins;
         qCDebug(lcTests) << "After adding plugins path:" << QApplication::libraryPaths();
@@ -963,7 +963,7 @@ void tst_QApplication::libraryPaths()
 
         qCDebug(lcTests) << "Initial library path:" << QCoreApplication::libraryPaths();
         int count = QCoreApplication::libraryPaths().count();
-        QString installPathPlugins =  QLibraryInfo::location(QLibraryInfo::PluginsPath);
+        QString installPathPlugins =  QLibraryInfo::path(QLibraryInfo::PluginsPath);
         QCoreApplication::addLibraryPath(installPathPlugins);
         qCDebug(lcTests) << "installPathPlugins" << installPathPlugins;
         qCDebug(lcTests) << "After adding plugins path:" << QCoreApplication::libraryPaths();
@@ -1024,7 +1024,7 @@ void tst_QApplication::libraryPaths_qt_plugin_path_2()
         // library path list should contain the default plus the one valid path
         QStringList expected =
             QStringList()
-            << QLibraryInfo::location(QLibraryInfo::PluginsPath)
+            << QLibraryInfo::path(QLibraryInfo::PluginsPath)
             << QDir(QCoreApplication::applicationDirPath()).canonicalPath()
             << QDir(QDir::fromNativeSeparators(QString::fromLatin1(validPath))).canonicalPath();
 
@@ -1045,7 +1045,7 @@ void tst_QApplication::libraryPaths_qt_plugin_path_2()
         // library path list should contain the default
         QStringList expected =
             QStringList()
-            << QLibraryInfo::location(QLibraryInfo::PluginsPath)
+            << QLibraryInfo::path(QLibraryInfo::PluginsPath)
             << QCoreApplication::applicationDirPath();
         QVERIFY(isPathListIncluded(QCoreApplication::libraryPaths(), expected));
 

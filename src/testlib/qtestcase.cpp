@@ -2193,7 +2193,7 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
     if (found.isEmpty()) {
         const char *testObjectName = QTestResult::currentTestObjectName();
         if (testObjectName) {
-            const QString testsPath = QLibraryInfo::location(QLibraryInfo::TestsPath);
+            const QString testsPath = QLibraryInfo::path(QLibraryInfo::TestsPath);
             const QString candidate = QString::fromLatin1("%1/%2/%3")
                 .arg(testsPath, QFile::decodeName(testObjectName).toLower(), base);
             if (QFileInfo::exists(candidate)) {
