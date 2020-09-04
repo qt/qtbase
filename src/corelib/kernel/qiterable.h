@@ -92,6 +92,7 @@ public:
       : m_iterable(p)
       , m_metaSequence(QMetaSequence::fromContainer<T>())
     {
+        Q_UNUSED(m_revision);
     }
 
     QSequentialIterable() = default;
