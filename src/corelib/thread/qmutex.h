@@ -132,8 +132,16 @@ public:
 #else
     QMutex() { d_ptr.storeRelaxed(nullptr); }
 #endif
+#if QT_DEPRECATED_SINCE(5,15)
     enum RecursionMode { NonRecursive, Recursive };
+    QT_DEPRECATED_VERSION_X(5, 15, "Use QRecursiveMutex instead of a recursive QMutex")
     explicit QMutex(RecursionMode mode);
+
+    QT_DEPRECATED_VERSION_X(5, 15, "Use QRecursiveMutex instead of a recursive QMutex")
+    bool isRecursive() const noexcept
+    { return QBasicMutex::isRecursive(); }
+#endif
+
     ~QMutex();
 
     // BasicLockable concept
@@ -163,9 +171,6 @@ public:
         return try_lock_for(timePoint - Clock::now());
     }
 #endif
-
-    bool isRecursive() const noexcept
-    { return QBasicMutex::isRecursive(); }
 
 private:
     Q_DISABLE_COPY(QMutex)

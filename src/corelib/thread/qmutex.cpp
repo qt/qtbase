@@ -152,6 +152,7 @@ public:
 
 /*!
     \enum QMutex::RecursionMode
+    \obsolete Use QRecursiveMutex to create a recursive mutex.
 
     \value Recursive  In this mode, a thread can lock the same mutex
                       multiple times and the mutex won't be unlocked
@@ -173,6 +174,7 @@ public:
 
 /*!
     Constructs a new mutex. The mutex is created in an unlocked state.
+    \obsolete Use QRecursiveMutex to create a recursive mutex.
 
     If \a mode is QMutex::Recursive, a thread can lock the same mutex
     multiple times and the mutex won't be unlocked until a
@@ -197,7 +199,7 @@ QMutex::QMutex(RecursionMode mode)
 QMutex::~QMutex()
 {
     QMutexData *d = d_ptr.loadRelaxed();
-    if (isRecursive()) {
+    if (QBasicMutex::isRecursive()) {
         delete static_cast<QRecursiveMutexPrivate *>(d);
     } else if (d) {
 #ifndef QT_LINUX_FUTEX

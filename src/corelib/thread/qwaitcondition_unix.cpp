@@ -213,7 +213,7 @@ bool QWaitCondition::wait(QMutex *mutex, QDeadlineTimer deadline)
 {
     if (! mutex)
         return false;
-    if (mutex->isRecursive()) {
+    if (static_cast<QBasicMutex *>(mutex)->isRecursive()) {
         qWarning("QWaitCondition: cannot wait on recursive mutexes");
         return false;
     }
