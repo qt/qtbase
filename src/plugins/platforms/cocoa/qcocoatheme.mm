@@ -575,14 +575,14 @@ QList<QKeySequence> QCocoaTheme::keyBindings(QKeySequence::StandardKey key) cons
     auto bindings = QPlatformTheme::keyBindings(key);
 
     if (qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) {
-        static auto swapCtrlMeta = [](int keySequence) {
-            auto originalKeySequence = keySequence;
-            keySequence &= ~(Qt::ControlModifier | Qt::MetaModifier);
-            if (originalKeySequence & Qt::ControlModifier)
-                keySequence |= Qt::MetaModifier;
-            if (originalKeySequence & Qt::MetaModifier)
-                keySequence |= Qt::ControlModifier;
-            return keySequence;
+        static auto swapCtrlMeta = [](QKeyCombination keyCombination) {
+            const auto originalKeyModifiers = keyCombination.keyboardModifiers();
+            auto newKeyboardModifiers = originalKeyModifiers & ~(Qt::ControlModifier | Qt::MetaModifier);
+            if (originalKeyModifiers & Qt::ControlModifier)
+                newKeyboardModifiers |= Qt::MetaModifier;
+            if (originalKeyModifiers & Qt::MetaModifier)
+                newKeyboardModifiers |= Qt::ControlModifier;
+            return QKeyCombination(newKeyboardModifiers, keyCombination.key());
         };
 
         QList<QKeySequence> swappedBindings;

@@ -353,9 +353,8 @@ NSMenuItem *QCocoaMenuItem::sync()
 
 #ifndef QT_NO_SHORTCUT
     if (accel.count() == 1) {
-        auto shortcut = accel[0];
-        auto key = Qt::Key(shortcut & ~Qt::KeyboardModifierMask);
-        auto modifiers = Qt::KeyboardModifiers(shortcut & Qt::KeyboardModifierMask);
+        auto key = accel[0].key();
+        auto modifiers = accel[0].keyboardModifiers();
 
         QChar cocoaKey = QCocoaKeyMapper::toCocoaKey(key);
         if (cocoaKey.isNull())
