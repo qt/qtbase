@@ -162,7 +162,7 @@ public:
     static bool relock(QBasicMutex *, QBasicMutex *) { return false; }
 };
 
-using QBasicMutexLocker = QMutexLocker;
+using QBasicMutexLocker = QMutexLocker<QBasicMutex>;
 
 #endif
 

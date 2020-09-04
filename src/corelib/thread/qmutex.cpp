@@ -423,7 +423,7 @@ QRecursiveMutex::~QRecursiveMutex()
 
     \ingroup thread
 
-    Locking and unlocking a QMutex in complex functions and
+    Locking and unlocking a QMutex or QRecursiveMutex in complex functions and
     statements or in exception handling code is error-prone and
     difficult to debug. QMutexLocker can be used in such situations
     to ensure that the state of the mutex is always well-defined.

@@ -110,7 +110,7 @@ void tst_QWaitCondition::oscillate_mutex_data()
 void tst_QWaitCondition::oscillate_mutex()
 {
     QFETCH(unsigned long, timeout);
-    oscillate<QMutex, QMutexLocker>(timeout);
+    oscillate<QMutex, QMutexLocker<QMutex>>(timeout);
 }
 
 void tst_QWaitCondition::oscillate_writelock_data()

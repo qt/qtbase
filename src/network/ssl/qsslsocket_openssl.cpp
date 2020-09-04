@@ -2233,7 +2233,7 @@ bool QSslSocketPrivate::ensureLibraryLoaded()
     if (!q_resolveOpenSslSymbols())
         return false;
 
-    const QMutexLocker locker(qt_opensslInitMutex);
+    const QMutexLocker locker(qt_opensslInitMutex());
 
     if (!s_libraryLoaded) {
         // Initialize OpenSSL.
@@ -2265,7 +2265,7 @@ bool QSslSocketPrivate::ensureLibraryLoaded()
 
 void QSslSocketPrivate::ensureCiphersAndCertsLoaded()
 {
-    const QMutexLocker locker(qt_opensslInitMutex);
+    const QMutexLocker locker(qt_opensslInitMutex());
 
     if (s_loadedCiphersAndCerts)
         return;

@@ -174,6 +174,7 @@ public:
 
 private:
     Q_DISABLE_COPY(QMutex)
+    template<typename Mutex>
     friend class QMutexLocker;
     friend class QRecursiveMutex;
     friend class ::tst_QMutex;
@@ -207,6 +208,7 @@ private:
 class QRecursiveMutex : private QMutex
 {
     // ### Qt 6: make it independent of QMutex
+    template<typename Mutex>
     friend class QMutexLocker;
 public:
     Q_CORE_EXPORT QRecursiveMutex();
@@ -222,65 +224,49 @@ public:
 #endif
 };
 
-class Q_CORE_EXPORT QMutexLocker
+template <typename Mutex>
+class QMutexLocker
 {
 public:
-#ifndef Q_CLANG_QDOC
-    inline explicit QMutexLocker(QBasicMutex *m) QT_MUTEX_LOCK_NOEXCEPT
+    inline explicit QMutexLocker(Mutex *mutex) QT_MUTEX_LOCK_NOEXCEPT
     {
-        Q_ASSERT_X((reinterpret_cast<quintptr>(m) & quintptr(1u)) == quintptr(0),
-                   "QMutexLocker", "QMutex pointer is misaligned");
-        val = quintptr(m);
-        if (Q_LIKELY(m)) {
-            // call QMutex::lock() instead of QBasicMutex::lock()
-            static_cast<QMutex *>(m)->lock();
-            val |= 1;
+        m = mutex;
+        if (Q_LIKELY(mutex)) {
+            mutex->lock();
+            isLocked = true;
         }
     }
-    explicit QMutexLocker(QRecursiveMutex *m) QT_MUTEX_LOCK_NOEXCEPT
-        : QMutexLocker{static_cast<QBasicMutex*>(m)} {}
-#else
-    QMutexLocker(QMutex *) { }
-    QMutexLocker(QRecursiveMutex *) {}
-#endif
-    inline ~QMutexLocker() { unlock(); }
+    inline ~QMutexLocker() {
+        unlock();
+    }
 
     inline void unlock() noexcept
     {
-        if ((val & quintptr(1u)) == quintptr(1u)) {
-            val &= ~quintptr(1u);
-            mutex()->unlock();
-        }
+        if (!isLocked)
+            return;
+        m->unlock();
+        isLocked = false;
     }
 
     inline void relock() QT_MUTEX_LOCK_NOEXCEPT
     {
-        if (val) {
-            if ((val & quintptr(1u)) == quintptr(0u)) {
-                mutex()->lock();
-                val |= quintptr(1u);
-            }
+        if (isLocked)
+            return;
+        if (m) {
+            m->lock();
+            isLocked = true;
         }
     }
 
-#if defined(Q_CC_MSVC)
-#pragma warning( push )
-#pragma warning( disable : 4312 ) // ignoring the warning from /Wp64
-#endif
-
-    inline QMutex *mutex() const
+    Mutex *mutex() const
     {
-        return reinterpret_cast<QMutex *>(val & ~quintptr(1u));
+        return m;
     }
-
-#if defined(Q_CC_MSVC)
-#pragma warning( pop )
-#endif
-
 private:
     Q_DISABLE_COPY(QMutexLocker)
 
-    quintptr val;
+    Mutex *m;
+    bool isLocked = false;
 };
 
 #else // !QT_CONFIG(thread) && !Q_CLANG_QDOC
@@ -320,15 +306,16 @@ private:
 
 class QRecursiveMutex : public QMutex {};
 
-class Q_CORE_EXPORT QMutexLocker
+template<typename Mutex>
+class QMutexLocker
 {
 public:
-    inline explicit QMutexLocker(QMutex *) noexcept {}
+    inline explicit QMutexLocker(Mutex *) noexcept {}
     inline ~QMutexLocker() noexcept {}
 
     inline void unlock() noexcept {}
     void relock() noexcept {}
-    inline QMutex *mutex() const noexcept { return nullptr; }
+    inline Mutex *mutex() const noexcept { return nullptr; }
 
 private:
     Q_DISABLE_COPY(QMutexLocker)

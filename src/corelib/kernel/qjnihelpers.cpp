@@ -601,7 +601,7 @@ int QtAndroidPrivate::acuqireServiceSetup(int flags)
 
 void QtAndroidPrivate::setOnBindListener(QtAndroidPrivate::OnBindListener *listener)
 {
-    QMutexLocker lock(g_onBindListenerMutex);
+    QMutexLocker lock(g_onBindListenerMutex());
     *g_onBindListener = listener;
     if (!g_serviceSetupLockers->deref())
         g_waitForServiceSetupSemaphore->release();
@@ -609,7 +609,7 @@ void QtAndroidPrivate::setOnBindListener(QtAndroidPrivate::OnBindListener *liste
 
 jobject QtAndroidPrivate::callOnBindListener(jobject intent)
 {
-    QMutexLocker lock(g_onBindListenerMutex);
+    QMutexLocker lock(g_onBindListenerMutex());
     if (*g_onBindListener)
         return (*g_onBindListener)->onBind(intent);
     return nullptr;

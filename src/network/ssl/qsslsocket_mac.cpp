@@ -314,7 +314,7 @@ OSStatus QSslSocketBackendPrivate::WriteCallback(QSslSocketBackendPrivate *socke
 
 void QSslSocketPrivate::ensureInitialized()
 {
-    const QMutexLocker locker(qt_securetransport_mutex);
+    const QMutexLocker locker(qt_securetransport_mutex());
     if (s_loadedCiphersAndCerts)
         return;
 

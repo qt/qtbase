@@ -179,10 +179,10 @@ int QEventLoop::exec(ProcessEventsFlags flags)
 
     struct LoopReference {
         QEventLoopPrivate *d;
-        QMutexLocker &locker;
+        QMutexLocker<QMutex> &locker;
 
         bool exceptionCaught;
-        LoopReference(QEventLoopPrivate *d, QMutexLocker &locker) : d(d), locker(locker), exceptionCaught(true)
+        LoopReference(QEventLoopPrivate *d, QMutexLocker<QMutex> &locker) : d(d), locker(locker), exceptionCaught(true)
         {
             d->inExec = true;
             d->exit.storeRelease(false);

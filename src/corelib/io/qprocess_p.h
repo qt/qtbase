@@ -147,7 +147,7 @@ public:
     inline Value prepareValue(const QString &value) const { return value; }
     inline QString valueToString(const Value &value) const { return value; }
 #else
-    struct NameMapMutexLocker : public QMutexLocker
+    struct NameMapMutexLocker : public QMutexLocker<QMutex>
     {
         NameMapMutexLocker(const QProcessEnvironmentPrivate *d) : QMutexLocker(&d->nameMapMutex) {}
     };

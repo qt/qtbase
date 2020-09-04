@@ -103,7 +103,7 @@ void tst_QReadWriteLock::uncontended_data()
     QTest::addColumn<FunctionPtrHolder>("holder");
 
     QTest::newRow("nothing") << FunctionPtrHolder(testUncontended<int, FakeLock>);
-    QTest::newRow("QMutex") << FunctionPtrHolder(testUncontended<QMutex, QMutexLocker>);
+    QTest::newRow("QMutex") << FunctionPtrHolder(testUncontended<QMutex, QMutexLocker<QMutex>>);
     QTest::newRow("QReadWriteLock, read")
         << FunctionPtrHolder(testUncontended<QReadWriteLock, QReadLocker>);
     QTest::newRow("QReadWriteLock, write")
@@ -173,7 +173,7 @@ void tst_QReadWriteLock::readOnly_data()
     QTest::addColumn<FunctionPtrHolder>("holder");
 
     QTest::newRow("nothing") << FunctionPtrHolder(testReadOnly<int, FakeLock>);
-    QTest::newRow("QMutex") << FunctionPtrHolder(testReadOnly<QMutex, QMutexLocker>);
+    QTest::newRow("QMutex") << FunctionPtrHolder(testReadOnly<QMutex, QMutexLocker<QMutex>>);
     QTest::newRow("QReadWriteLock") << FunctionPtrHolder(testReadOnly<QReadWriteLock, QReadLocker>);
     QTest::newRow("std::mutex") << FunctionPtrHolder(
         testReadOnly<std::mutex, LockerWrapper<std::unique_lock<std::mutex>>>);
@@ -234,7 +234,7 @@ void tst_QReadWriteLock::writeOnly_data()
     QTest::addColumn<FunctionPtrHolder>("holder");
 
     // QTest::newRow("nothing") << FunctionPtrHolder(testWriteOnly<int, FakeLock>);
-    QTest::newRow("QMutex") << FunctionPtrHolder(testWriteOnly<QMutex, QMutexLocker>);
+    QTest::newRow("QMutex") << FunctionPtrHolder(testWriteOnly<QMutex, QMutexLocker<QMutex>>);
     QTest::newRow("QReadWriteLock") << FunctionPtrHolder(testWriteOnly<QReadWriteLock, QWriteLocker>);
     QTest::newRow("std::mutex") << FunctionPtrHolder(
         testWriteOnly<std::mutex, LockerWrapper<std::unique_lock<std::mutex>>>);
