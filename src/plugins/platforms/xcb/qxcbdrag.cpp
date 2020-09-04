@@ -1066,7 +1066,7 @@ void QXcbDrag::handleDrop(QPlatformWindow *, const xcb_client_message_event_t *e
 
     setExecutedDropAction(response.acceptedAction());
 
-    xcb_client_message_event_t finished;
+    xcb_client_message_event_t finished = {};
     finished.response_type = XCB_CLIENT_MESSAGE;
     finished.sequence = 0;
     finished.window = xdnd_dragsource;
