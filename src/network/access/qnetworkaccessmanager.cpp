@@ -1519,7 +1519,8 @@ void QNetworkAccessManagerPrivate::authenticationRequired(QAuthenticator *authen
         }
 
         QNetworkAuthenticationCredential cred = authenticationManager->fetchCachedCredentials(url, authenticator);
-        if (!cred.isNull()) {
+        if (!cred.isNull()
+            && (cred.user != authenticator->user() || cred.password != authenticator->password())) {
             authenticator->setUser(cred.user);
             authenticator->setPassword(cred.password);
             *urlForLastAuthentication = url;
