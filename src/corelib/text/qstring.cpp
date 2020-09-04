@@ -2690,7 +2690,7 @@ QString& QString::insert(qsizetype i, const QChar *unicode, qsizetype size)
     const bool shouldGrow = d->shouldGrowBeforeInsert(d.begin() + qMin(i, oldSize), size);
 
     auto flags = d->detachFlags() | Data::GrowsForward;
-    if (i <= oldSize / 4)
+    if (oldSize != 0 && i <= oldSize / 4)
         flags |= Data::GrowsBackwards;
 
     // ### optimize me
@@ -2724,7 +2724,7 @@ QString& QString::insert(qsizetype i, QChar ch)
     const bool shouldGrow = d->shouldGrowBeforeInsert(d.begin() + qMin(i, oldSize), 1);
 
     auto flags = d->detachFlags() | Data::GrowsForward;
-    if (i <= oldSize / 4)
+    if (oldSize != 0 && i <= oldSize / 4)
         flags |= Data::GrowsBackwards;
 
     // ### optimize me

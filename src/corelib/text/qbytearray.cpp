@@ -1942,7 +1942,7 @@ QByteArray &QByteArray::insert(qsizetype i, qsizetype count, char ch)
     // ### optimize me
     if (d->needsDetach() || newSize > capacity() || shouldGrow) {
         auto flags = d->detachFlags() | Data::GrowsForward;
-        if (i <= oldSize / 4)  // using QList's policy
+        if (oldSize != 0 && i <= oldSize / 4)  // using QList's policy
             flags |= Data::GrowsBackwards;
         reallocGrowData(newSize + 1, flags);
     }
