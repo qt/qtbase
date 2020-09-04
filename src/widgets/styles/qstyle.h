@@ -684,7 +684,6 @@ public:
         SH_ComboBox_PopupFrameStyle,
         SH_MessageBox_TextInteractionFlags,
         SH_DialogButtonBox_ButtonsHaveIcons,
-        SH_SpellCheckUnderlineStyle,
         SH_MessageBox_CenterButtons,
         SH_Menu_SelectionWrap,
         SH_ItemView_MovementWithoutUpdatingSelection,

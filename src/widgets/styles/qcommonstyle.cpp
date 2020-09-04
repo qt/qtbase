@@ -5272,9 +5272,6 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
         if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
             ret = theme->themeHint(QPlatformTheme::DialogButtonBoxButtonsHaveIcons).toBool() ? 1 : 0;
         break;
-    case SH_SpellCheckUnderlineStyle:
-        ret = QTextCharFormat::WaveUnderline;
-        break;
     case SH_MessageBox_CenterButtons:
         ret = true;
         break;
