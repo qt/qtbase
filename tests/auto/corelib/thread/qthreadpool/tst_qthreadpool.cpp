@@ -799,7 +799,7 @@ void tst_QThreadPool::tryStartPeakThreadCount()
     CounterTask task;
     QThreadPool threadPool;
 
-    for (int i = 0; i < 20; ++i) {
+    for (int i = 0; i < 4*QThread::idealThreadCount(); ++i) {
         if (threadPool.tryStart(&task) == false)
             QTest::qWait(10);
     }
