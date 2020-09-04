@@ -258,7 +258,7 @@
         },
         "linux-netlink": {
             "label": "Linux AF_NETLINK",
-            "condition": "config.linux && tests.linux-netlink",
+            "condition": "config.linux && !config.android && tests.linux-netlink",
             "output": [ "privateFeature" ]
         },
         "openssl": {
