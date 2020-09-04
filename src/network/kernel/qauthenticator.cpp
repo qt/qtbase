@@ -441,8 +441,10 @@ void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByt
             method = DigestMd5;
             headerVal = current.second.mid(7);
         } else if (method < Negotiate && str.startsWith("negotiate")) {
+#if QT_CONFIG(sspi) || QT_CONFIG(gssapi) // if it's not supported then we shouldn't try to use it
             method = Negotiate;
             headerVal = current.second.mid(10);
+#endif
         }
     }
 
