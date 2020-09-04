@@ -235,7 +235,7 @@ public:
 
     using QPlatformWindow::screenForGeometry;
 
-    QSurfaceFormat format() const override { return m_format; }
+    QSurfaceFormat format() const override;
     void setGeometry(const QRect &rect) override;
     QRect geometry() const override { return m_data.geometry; }
     QRect normalGeometry() const override;
@@ -388,7 +388,6 @@ private:
     QWindowsOleDropTarget *m_dropTarget = nullptr;
     unsigned m_savedStyle = 0;
     QRect m_savedFrameGeometry;
-    const QSurfaceFormat m_format;
     HICON m_iconSmall = nullptr;
     HICON m_iconBig = nullptr;
     void *m_surface = nullptr;

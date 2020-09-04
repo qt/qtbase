@@ -1321,8 +1321,7 @@ bool QWindowsWindow::m_borderInFullScreenDefault = false;
 QWindowsWindow::QWindowsWindow(QWindow *aWindow, const QWindowsWindowData &data) :
     QWindowsBaseWindow(aWindow),
     m_data(data),
-    m_cursor(new CursorHandle),
-    m_format(aWindow->requestedFormat())
+    m_cursor(new CursorHandle)
 #if QT_CONFIG(vulkan)
   , m_vkSurface(VK_NULL_HANDLE)
 #endif
@@ -1390,6 +1389,11 @@ void QWindowsWindow::initialize()
         if (obtainedScreen && screen() != obtainedScreen)
             QWindowSystemInterface::handleWindowScreenChanged<QWindowSystemInterface::SynchronousDelivery>(w, obtainedScreen->screen());
     }
+}
+
+QSurfaceFormat QWindowsWindow::format() const
+{
+    return window()->requestedFormat();
 }
 
 void QWindowsWindow::fireExpose(const QRegion &region, bool force)
