@@ -2797,6 +2797,11 @@ void tst_QDateTime::fromStringStringFormat_data()
     QTest::newRow("unicode handling") << QString(u8"2005🤣06🤣28T07🤣57🤣30.001Z")
         << QString(u8"yyyy🤣MM🤣ddThh🤣mm🤣ss.zt")
         << QDateTime(QDate(2005, 06, 28), QTime(07, 57, 30, 1), Qt::UTC);
+
+    // QTBUG-84349
+    QTest::newRow("QTBUG-84349: positive sign in month")
+            << QStringLiteral("9922+221102233Z") << QStringLiteral("yyyyMMddHHmmsst")
+            << QDateTime();
 }
 
 void tst_QDateTime::fromStringStringFormat()

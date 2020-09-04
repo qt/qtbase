@@ -1297,6 +1297,78 @@ void tst_QDate::fromStringFormat_data()
         << QString(u8"2020🤣09🤣21") << QString(u8"yyyy🤣MM🤣dd") << QDate(2020, 9, 21);
     QTest::newRow("Unicode in quoted format string")
         << QString(u8"🤣🤣2020👍09🤣21") << QString(u8"'🤣🤣'yyyy👍MM🤣dd") << QDate(2020, 9, 21);
+
+    // QTBUG-84334
+    QTest::newRow("-ve year: front, nosep")
+            << QString("-20060521") << QString("yyyyMMdd") << QDate(-2006, 5, 21);
+    QTest::newRow("-ve year: mid, nosep")
+            << QString("05-200621") << QString("MMyyyydd") << QDate(-2006, 5, 21);
+    QTest::newRow("-ve year: back, nosep")
+            << QString("0521-2006") << QString("MMddyyyy") << QDate(-2006, 5, 21);
+    // - as separator should not interfere with negative year numbers:
+    QTest::newRow("-ve year: front, dash")
+            << QString("-2006-05-21") << QString("yyyy-MM-dd") << QDate(-2006, 5, 21);
+    QTest::newRow("positive year: front, dash")
+            << QString("-2006-05-21") << QString("-yyyy-MM-dd") << QDate(2006, 5, 21);
+    QTest::newRow("-ve year: mid, dash")
+            << QString("05--2006-21") << QString("MM-yyyy-dd") << QDate(-2006, 5, 21);
+    QTest::newRow("-ve year: back, dash")
+            << QString("05-21--2006") << QString("MM-dd-yyyy") << QDate(-2006, 5, 21);
+    // negative three digit year numbers should be rejected:
+    QTest::newRow("-ve 3digit year: front")
+            << QString("-206-05-21") << QString("yyyy-MM-dd") << QDate();
+    QTest::newRow("-ve 3digit year: mid")
+            << QString("05--206-21") << QString("MM-yyyy-dd") << QDate();
+    QTest::newRow("-ve 3digit year: back")
+            << QString("05-21--206") << QString("MM-dd-yyyy") << QDate();
+    // negative month numbers should be rejected:
+    QTest::newRow("-ve 2digit month: mid")
+            << QString("2060--05-21") << QString("yyyy-MM-dd") << QDate();
+    QTest::newRow("-ve 2digit month: front")
+            << QString("-05-2060-21") << QString("MM-yyyy-dd") << QDate();
+    QTest::newRow("-ve 2digit month: back")
+            << QString("21-2060--05") << QString("dd-yyyy-MM") << QDate();
+    // negative single digit month numbers should be rejected:
+    QTest::newRow("-ve 1digit month: mid")
+            << QString("2060--5-21") << QString("yyyy-MM-dd") << QDate();
+    QTest::newRow("-ve 1digit month: front")
+            << QString("-5-2060-21") << QString("MM-yyyy-dd") << QDate();
+    QTest::newRow("-ve 1digit month: back")
+            << QString("21-2060--5") << QString("dd-yyyy-MM") << QDate();
+    // negative day numbers should be rejected:
+    QTest::newRow("-ve 2digit day: front")
+            << QString("-21-2060-05") << QString("dd-yyyy-MM") << QDate();
+    QTest::newRow("-ve 2digit day: mid")
+            << QString("2060--21-05") << QString("yyyy-dd-MM") << QDate();
+    QTest::newRow("-ve 2digit day: back")
+            << QString("05-2060--21") << QString("MM-yyyy-dd") << QDate();
+    // negative single digit day numbers should be rejected:
+    QTest::newRow("-ve 1digit day: front")
+            << QString("-2-2060-05") << QString("dd-yyyy-MM") << QDate();
+    QTest::newRow("-ve 1digit day: mid")
+            << QString("05--2-2060") << QString("MM-dd-yyyy") << QDate();
+    QTest::newRow("-ve 1digit day: back")
+            << QString("2060-05--2") << QString("yyyy-MM-dd") << QDate();
+    // positive three digit year numbers should be rejected:
+    QTest::newRow("3digit year, front") << QString("206-05-21") << QString("yyyy-MM-dd") << QDate();
+    QTest::newRow("3digit year, mid") << QString("05-206-21") << QString("MM-yyyy-dd") << QDate();
+    QTest::newRow("3digit year, back") << QString("05-21-206") << QString("MM-dd-yyyy") << QDate();
+    // positive five digit year numbers should be rejected:
+    QTest::newRow("5digit year, front")
+            << QString("00206-05-21") << QString("yyyy-MM-dd") << QDate();
+    QTest::newRow("5digit year, mid") << QString("05-00206-21") << QString("MM-yyyy-dd") << QDate();
+    QTest::newRow("5digit year, back")
+            << QString("05-21-00206") << QString("MM-dd-yyyy") << QDate();
+
+    QTest::newRow("dash separator, no year at end")
+            << QString("05-21-") << QString("dd-MM-yyyy") << QDate();
+    QTest::newRow("slash separator, no year at end")
+            << QString("11/05/") << QString("d/MM/yyyy") << QDate();
+
+    // QTBUG-84349
+    QTest::newRow("+ sign in year field") << QString("+0200322") << QString("yyyyMMdd") << QDate();
+    QTest::newRow("+ sign in month field") << QString("2020+322") << QString("yyyyMMdd") << QDate();
+    QTest::newRow("+ sign in day field") << QString("202003+1") << QString("yyyyMMdd") << QDate();
 }
 
 
@@ -1345,7 +1417,7 @@ void tst_QDate::toStringDateFormat_data()
     QTest::newRow("data2") << QDate(111,1,1) << Qt::ISODate << QString("0111-01-01");
     QTest::newRow("data3") << QDate(1974,12,1) << Qt::ISODate << QString("1974-12-01");
     QTest::newRow("year < 0") << QDate(-1,1,1) << Qt::ISODate << QString();
-    QTest::newRow("year > 9999") << QDate(-1,1,1) << Qt::ISODate << QString();
+    QTest::newRow("year > 9999") << QDate(10000, 1, 1) << Qt::ISODate << QString();
     QTest::newRow("RFC2822Date") << QDate(1974,12,1) << Qt::RFC2822Date << QString("01 Dec 1974");
     QTest::newRow("ISODateWithMs") << QDate(1974,12,1) << Qt::ISODateWithMs << QString("1974-12-01");
 }

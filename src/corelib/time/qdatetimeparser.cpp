@@ -39,6 +39,7 @@
 
 #include "qplatformdefs.h"
 #include "private/qdatetimeparser_p.h"
+#include "private/qstringiterator_p.h"
 
 #include "qdatastream.h"
 #include "qset.h"
@@ -265,7 +266,9 @@ int QDateTimeParser::absoluteMin(int s) const
     case SecondSection:
     case MSecSection:
     case YearSection2Digits:
-    case YearSection: return 0;
+        return 0;
+    case YearSection:
+        return -9999;
     case MonthSection:
     case DaySection:
     case DayOfWeekSectionShort:
@@ -335,6 +338,22 @@ int QDateTimeParser::sectionPos(const SectionNode &sn) const
     return sn.pos;
 }
 
+/*!
+  \internal
+
+  Helper function for parseSection.
+*/
+
+static qsizetype digitCount(QStringView str)
+{
+    qsizetype digits = 0;
+    for (QStringIterator it(str); it.hasNext();) {
+        if (!QChar::isDigit(it.next()))
+            break;
+        digits++;
+    }
+    return digits;
+}
 
 /*!
   \internal
@@ -739,7 +758,12 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex, i
                "QDateTimeParser::parseSection", "Internal error");
 
     const int sectionmaxsize = sectionMaxSize(sectionIndex);
-    QStringView sectionTextRef = QStringView{m_text}.mid(offset, sectionmaxsize);
+    const bool negate = (sn.type == YearSection && m_text.size() > offset
+                         && m_text.at(offset) == QLatin1Char('-'));
+    const int negativeYearOffset = negate ? 1 : 0;
+
+    QStringView sectionTextRef =
+            QStringView { m_text }.mid(offset + negativeYearOffset, sectionmaxsize);
 
     QDTPDEBUG << "sectionValue for" << sn.name()
               << "with text" << m_text << "and (at" << offset
@@ -810,63 +834,75 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex, i
     case MinuteSection:
     case SecondSection:
     case MSecSection: {
-        int sectiontextSize = sectionTextRef.size();
-        if (sectiontextSize == 0) {
-            result = ParsedSection(Intermediate);
+        int used = negativeYearOffset;
+        // We already sliced off the - sign if it was legitimately present.
+        if (sectionTextRef.startsWith(QLatin1Char('-'))
+            || sectionTextRef.startsWith(QLatin1Char('+'))) {
+            if (separators.at(sectionIndex + 1).startsWith(sectionTextRef[0]))
+                result = ParsedSection(Intermediate, 0, used);
+            break;
+        }
+        QStringView digitsStr = sectionTextRef.left(digitCount(sectionTextRef));
+
+        if (digitsStr.isEmpty()) {
+            result = ParsedSection(Intermediate, 0, used);
         } else {
-            for (int i = 0; i < sectiontextSize; ++i) {
-                if (!sectionTextRef.at(i).isDigit())
-                    sectiontextSize = i; // which exits the loop
-            }
-
-            const int absMax = absoluteMax(sectionIndex);
             const QLocale loc = locale();
-            bool ok = true;
-            int last = -1, used = -1;
+            const int absMax = absoluteMax(sectionIndex);
+            const int absMin = absoluteMin(sectionIndex);
 
-            Q_ASSERT(sectiontextSize <= sectionmaxsize);
-            QStringView digitsStr = sectionTextRef.first(sectiontextSize);
-            for (int digits = sectiontextSize; digits >= 1; --digits) {
-                digitsStr.truncate(digits);
-                int tmp = int(loc.toUInt(digitsStr, &ok));
-                if (ok && sn.type == Hour12Section) {
-                    if (tmp > 12) {
-                        tmp = -1;
-                        ok = false;
-                    } else if (tmp == 12) {
-                        tmp = 0;
-                    }
+            int last = -1;
+
+            for (; digitsStr.size(); digitsStr.chop(1)) {
+                bool ok = false;
+                int value = int(loc.toUInt(digitsStr, &ok));
+                if (!ok || (negate ? -value < absMin : value > absMax))
+                    continue;
+
+                if (sn.type == Hour12Section) {
+                    if (value > 12)
+                        continue;
+                    if (value == 12)
+                        value = 0;
                 }
-                if (ok && tmp <= absMax) {
-                    QDTPDEBUG << sectionTextRef.first(digits) << tmp << digits;
-                    last = tmp;
-                    used = digits;
-                    break;
-                }
+
+                QDTPDEBUG << digitsStr << value << digitsStr.size();
+                last = value;
+                used += digitsStr.size();
+                break;
             }
 
             if (last == -1) {
-                QChar first(sectionTextRef.at(0));
-                if (separators.at(sectionIndex + 1).startsWith(first))
-                    result = ParsedSection(Intermediate, 0, used);
+                const auto &sep = separators.at(sectionIndex + 1);
+                if (sep.startsWith(sectionTextRef[0])
+                    || (negate && sep.startsWith(m_text.at(offset))))
+                    result = ParsedSection(Intermediate, 0, 0);
                 else
-                    QDTPDEBUG << "invalid because" << sectionTextRef << "can't become a uint" << last << ok;
+                    QDTPDEBUG << "invalid because" << sectionTextRef << "can't become a uint"
+                              << last;
             } else {
+                if (negate)
+                    last = -last;
                 const FieldInfo fi = fieldInfo(sectionIndex);
-                const bool unfilled = used < sectionmaxsize;
+                const bool unfilled = used - negativeYearOffset < sectionmaxsize;
                 if (unfilled && fi & Fraction) { // typing 2 in a zzz field should be .200, not .002
                     for (int i = used; i < sectionmaxsize; ++i)
                         last *= 10;
                 }
                 // Even those *= 10s can't take last above absMax:
-                Q_ASSERT(last <= absMax);
-                const int absMin = absoluteMin(sectionIndex);
-                if (last < absMin) {
-                    if (unfilled)
+                Q_ASSERT(negate ? last >= absMin : last <= absMax);
+                if (negate ? last > absMax : last < absMin) {
+                    if (unfilled) {
                         result = ParsedSection(Intermediate, last, used);
-                    else
-                        QDTPDEBUG << "invalid because" << last << "is less than absoluteMin" << absMin;
-                } else if (unfilled && (fi & (FixedWidth|Numeric)) == (FixedWidth|Numeric)) {
+                    } else if (negate) {
+                        QDTPDEBUG << "invalid because" << last << "is greater than absoluteMax"
+                                  << absMax;
+                    } else {
+                        QDTPDEBUG << "invalid because" << last << "is less than absoluteMin"
+                                  << absMin;
+                    }
+
+                } else if (unfilled && (fi & (FixedWidth | Numeric)) == (FixedWidth | Numeric)) {
                     if (skipToNextSection(sectionIndex, currentValue, digitsStr)) {
                         const int missingZeroes = sectionmaxsize - digitsStr.size();
                         result = ParsedSection(Acceptable, last, sectionmaxsize, missingZeroes);
