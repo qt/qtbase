@@ -1,6 +1,6 @@
 # Generated from kernel.pro.
 
-# add_subdirectory(qcoreapplication) # special case
+add_subdirectory(qcoreapplication)
 add_subdirectory(qdeadlinetimer)
 add_subdirectory(qelapsedtimer)
 add_subdirectory(qeventdispatcher)
@@ -15,7 +15,7 @@ add_subdirectory(qmetaenum)
 add_subdirectory(qpointer)
 add_subdirectory(qsignalblocker)
 add_subdirectory(qsignalmapper)
-# add_subdirectory(qtimer) # special case
+add_subdirectory(qtimer)
 add_subdirectory(qtranslator)
 add_subdirectory(qvariant)
 if(TARGET Qt::Network)
