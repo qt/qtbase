@@ -140,8 +140,8 @@ bool QPicturePaintEngine::end()
     }
     d->s << (quint32) d->pic_d->trecs;                        // write number of records
     d->pic_d->pictb.seek(cs_start);
-    QByteArray buf = d->pic_d->pictb.buffer();
-    quint16 cs = (quint16) qChecksum(buf.constData() + data_start, pos - data_start);
+    const QByteArray buf = d->pic_d->pictb.buffer();
+    quint16 cs = (quint16) qChecksum(QByteArrayView(buf.constData() + data_start, pos - data_start));
     d->s << cs;                                // write checksum
     d->pic_d->pictb.close();
     setActive(false);

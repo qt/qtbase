@@ -1038,10 +1038,10 @@ bool QPicturePrivate::checkFormat()
     int cs_start = sizeof(quint32);                // pos of checksum word
     int data_start = cs_start + sizeof(quint16);
     quint16 cs,ccs;
-    QByteArray buf = pictb.buffer();        // pointer to data
+    const QByteArray buf = pictb.buffer();        // pointer to data
 
     s >> cs;                                // read checksum
-    ccs = (quint16) qChecksum(buf.constData() + data_start, buf.size() - data_start);
+    ccs = (quint16) qChecksum(QByteArrayView(buf.constData() + data_start, buf.size() - data_start));
     if (ccs != cs) {
         qWarning("QPicturePaintEngine::checkFormat: Invalid checksum %x, %x expected",
                   ccs, cs);
