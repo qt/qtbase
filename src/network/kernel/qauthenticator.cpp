@@ -1532,12 +1532,25 @@ static QByteArray qSspiStartup(QAuthenticatorPrivate *ctx, QAuthenticatorPrivate
         ctx->sspiWindowsHandles.reset(new QSSPIWindowsHandles);
     memset(&ctx->sspiWindowsHandles->credHandle, 0, sizeof(CredHandle));
 
+    SEC_WINNT_AUTH_IDENTITY auth;
+    auth.Flags = SEC_WINNT_AUTH_IDENTITY_UNICODE;
+    bool useAuth = false;
+    if (method == QAuthenticatorPrivate::Negotiate && !ctx->user.isEmpty()) {
+        auth.Domain = const_cast<ushort *>(ctx->userDomain.utf16());
+        auth.DomainLength = ctx->userDomain.size();
+        auth.User = const_cast<ushort *>(ctx->user.utf16());
+        auth.UserLength = ctx->user.size();
+        auth.Password = const_cast<ushort *>(ctx->password.utf16());
+        auth.PasswordLength = ctx->password.size();
+        useAuth = true;
+    }
+
     // Acquire our credentials handle
     SECURITY_STATUS secStatus = pSecurityFunctionTable->AcquireCredentialsHandle(
-                nullptr,
-                (SEC_WCHAR*)(method == QAuthenticatorPrivate::Negotiate ? L"Negotiate" : L"NTLM"),
-                SECPKG_CRED_OUTBOUND, nullptr, nullptr, nullptr, nullptr,
-                &ctx->sspiWindowsHandles->credHandle, &expiry
+            nullptr,
+            (SEC_WCHAR *)(method == QAuthenticatorPrivate::Negotiate ? L"Negotiate" : L"NTLM"),
+            SECPKG_CRED_OUTBOUND, nullptr, useAuth ? &auth : nullptr, nullptr, nullptr,
+            &ctx->sspiWindowsHandles->credHandle, &expiry
     );
     if (secStatus != SEC_E_OK) {
         ctx->sspiWindowsHandles.reset(nullptr);
