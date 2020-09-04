@@ -76,16 +76,8 @@ struct timespec;
 
 QT_BEGIN_NAMESPACE
 
-class QMutexData
-{
-public:
-    bool recursive;
-    QMutexData(QMutex::RecursionMode mode = QMutex::NonRecursive)
-        : recursive(mode == QMutex::Recursive) {}
-};
-
 #if !defined(QT_LINUX_FUTEX)
-class QMutexPrivate : public QMutexData
+class QMutexPrivate
 {
 public:
     ~QMutexPrivate();

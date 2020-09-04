@@ -186,7 +186,7 @@ void tst_QMutex::convertToMilliseconds()
 #define DO(Rep, Period, val) \
     do { \
         const std::chrono::duration<Rep, Period> wait((val)); \
-        QCOMPARE(QMutex::convertToMilliseconds(wait), expected); \
+        QCOMPARE(QtPrivate::convertToMilliseconds(wait), expected); \
     } while (0)
 
     CASE(Nanoseconds,  std::nano);

@@ -49,7 +49,7 @@ QMutexPrivate::QMutexPrivate()
     event = CreateEvent(0, FALSE, FALSE, 0);
 
     if (!event)
-        qWarning("QMutexData::QMutexData: Cannot create event");
+        qWarning("QMutexPrivate::QMutexPrivate: Cannot create event");
 }
 
 QMutexPrivate::~QMutexPrivate()

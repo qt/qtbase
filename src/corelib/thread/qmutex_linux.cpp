@@ -100,13 +100,13 @@ using namespace QtFutex;
  * waiting in the past. We then set the mutex to 0x0 and perform a FUTEX_WAKE.
  */
 
-static inline QMutexData *dummyFutexValue()
+static inline QMutexPrivate *dummyFutexValue()
 {
-    return reinterpret_cast<QMutexData *>(quintptr(3));
+    return reinterpret_cast<QMutexPrivate *>(quintptr(3));
 }
 
 template <bool IsTimed> static inline
-bool lockInternal_helper(QBasicAtomicPointer<QMutexData> &d_ptr, int timeout = -1, QElapsedTimer *elapsedTimer = nullptr) noexcept
+bool lockInternal_helper(QBasicAtomicPointer<QMutexPrivate> &d_ptr, int timeout = -1, QElapsedTimer *elapsedTimer = nullptr) noexcept
 {
     if (!IsTimed)
         timeout = -1;
@@ -155,13 +155,11 @@ bool lockInternal_helper(QBasicAtomicPointer<QMutexData> &d_ptr, int timeout = -
 
 void QBasicMutex::lockInternal() noexcept
 {
-    Q_ASSERT(!isRecursive());
     lockInternal_helper<false>(d_ptr);
 }
 
 bool QBasicMutex::lockInternal(int timeout) noexcept
 {
-    Q_ASSERT(!isRecursive());
     QElapsedTimer elapsedTimer;
     elapsedTimer.start();
     return lockInternal_helper<true>(d_ptr, timeout, &elapsedTimer);
@@ -169,11 +167,10 @@ bool QBasicMutex::lockInternal(int timeout) noexcept
 
 void QBasicMutex::unlockInternal() noexcept
 {
-    QMutexData *d = d_ptr.loadRelaxed();
+    QMutexPrivate *d = d_ptr.loadRelaxed();
     Q_ASSERT(d); //we must be locked
     Q_ASSERT(d != dummyLocked()); // testAndSetRelease(dummyLocked(), 0) failed
     Q_UNUSED(d);
-    Q_ASSERT(!isRecursive());
 
     d_ptr.storeRelease(nullptr);
     futexWakeOne(d_ptr);
