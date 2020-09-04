@@ -61,8 +61,9 @@ void Chip::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     if (option->state & QStyle::State_MouseOver)
         fillColor = fillColor.light(125);
 
-    if (option->levelOfDetail < 0.2) {
-        if (option->levelOfDetail < 0.125) {
+    const qreal lod = option->levelOfDetailFromTransform(painter->worldTransform());
+    if (lod < 0.2) {
+        if (lod < 0.125) {
             painter->fillRect(QRectF(0, 0, 110, 70), fillColor);
             return;
         }
@@ -83,7 +84,7 @@ void Chip::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     painter->setBrush(QBrush(fillColor.dark(option->state & QStyle::State_Sunken ? 120 : 100)));
 
     painter->drawRect(QRect(14, 14, 79, 39));
-    if (option->levelOfDetail >= 1) {
+    if (lod >= 1) {
         painter->setPen(QPen(Qt::gray, 1));
         painter->drawLine(15, 54, 94, 54);
         painter->drawLine(94, 53, 94, 15);
@@ -91,7 +92,7 @@ void Chip::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     }
 
     // Draw text
-    if (option->levelOfDetail >= 2) {
+    if (lod >= 2) {
         QFont font("Times", 10);
         font.setStyleStrategy(QFont::ForceOutline);
         painter->setFont(font);
@@ -105,17 +106,17 @@ void Chip::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 
     // Draw lines
     QVarLengthArray<QLineF, 36> lines;
-    if (option->levelOfDetail >= 0.5) {
-        for (int i = 0; i <= 10; i += (option->levelOfDetail > 0.5 ? 1 : 2)) {
+    if (lod >= 0.5) {
+        for (int i = 0; i <= 10; i += (lod > 0.5 ? 1 : 2)) {
             lines.append(QLineF(18 + 7 * i, 13, 18 + 7 * i, 5));
             lines.append(QLineF(18 + 7 * i, 54, 18 + 7 * i, 62));
         }
-        for (int i = 0; i <= 6; i += (option->levelOfDetail > 0.5 ? 1 : 2)) {
+        for (int i = 0; i <= 6; i += (lod > 0.5 ? 1 : 2)) {
             lines.append(QLineF(5, 18 + i * 5, 13, 18 + i * 5));
             lines.append(QLineF(94, 18 + i * 5, 102, 18 + i * 5));
         }
     }
-    if (option->levelOfDetail >= 0.4) {
+    if (lod >= 0.4) {
         const QLineF lineData[] = {
             QLineF(25, 35, 35, 35),
             QLineF(35, 30, 35, 40),

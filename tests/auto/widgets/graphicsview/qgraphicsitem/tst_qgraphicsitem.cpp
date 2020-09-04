@@ -7968,7 +7968,6 @@ public:
             } else {
                 QVERIFY(option->exposedRect != QRect());
                 QVERIFY(option->exposedRect != boundingRect());
-                QCOMPARE(option->matrix, sceneTransform());
             }
         }
         QGraphicsRectItem::paint(painter, option, widget);

@@ -669,8 +669,6 @@ public:
     enum StyleOptionVersion { Version = 1 };
 
     QRectF exposedRect;
-    QTransform matrix;
-    qreal levelOfDetail;
 
     QStyleOptionGraphicsItem();
     QStyleOptionGraphicsItem(const QStyleOptionGraphicsItem &other) : QStyleOption(Version, Type) { *this = other; }
