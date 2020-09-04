@@ -135,24 +135,50 @@ void tst_QTimer::timeout()
 
 void tst_QTimer::remainingTime()
 {
-    QTimer timer;
-    QSignalSpy timeoutSpy(&timer, &QTimer::timeout);
-    timer.setTimerType(Qt::PreciseTimer);
-    timer.start(200);
+    QTimer tested;
+    tested.setTimerType(Qt::PreciseTimer);
 
-    QCOMPARE(timeoutSpy.count(), 0);
-    QTest::qWait(50);
-    QCOMPARE(timeoutSpy.count(), 0);
+    QTimer tester;
+    tester.setTimerType(Qt::PreciseTimer);
+    tester.setSingleShot(true);
 
-    int remainingTime = timer.remainingTime();
-    QVERIFY2(remainingTime >= 50 && remainingTime <= 200, qPrintable(QString::number(remainingTime)));
+    const int testedInterval = 200;
+    const int testerInterval = 50;
+    const int expectedRemainingTime = testedInterval - testerInterval;
 
-    QVERIFY(timeoutSpy.wait());
-    QCOMPARE(timeoutSpy.count(), 1);
+    int testIteration = 0;
+    const int desiredTestCount = 2;
 
-    // the timer is still active, so it should have a non-zero remaining time
-    remainingTime = timer.remainingTime();
-    QVERIFY2(remainingTime >= 50, qPrintable(QString::number(remainingTime)));
+    auto connection = QObject::connect(&tested, &QTimer::timeout, [&tester]() {
+        // We let tested (which isn't a single-shot) run repeatedly, to verify
+        // it *does* repeat, and check that the single-shot tester, starting
+        // at the same time, does finish first each time, by about the right duration.
+        tester.start(); // start tester again
+    });
+
+    QObject::connect(&tester, &QTimer::timeout, [&]() {
+        // we expect that remainingTime is at most 150
+        const int remainingTime = tested.remainingTime();
+        const bool remainingTimeInRange = remainingTime > 0
+                                       && remainingTime <= expectedRemainingTime;
+        if (QTest::currentTestFailed() || !remainingTimeInRange)
+            testIteration = desiredTestCount; // to exit the QTRY_...() on failure
+        else
+            ++testIteration;
+        if (testIteration == desiredTestCount)
+            QObject::disconnect(connection); // don't start tester again
+        QVERIFY2(remainingTimeInRange, qPrintable("Remaining time "
+                 + QByteArray::number(remainingTime) + "ms outside expected range (0ms, "
+                 + QByteArray::number(expectedRemainingTime) + "ms]"));
+    });
+
+    tested.start(testedInterval);
+    tester.start(testerInterval); // start tester for the 1st time
+
+    // Test it desiredTestCount times, give it reasonable amount of time
+    // (twice as much as needed)
+    QTRY_COMPARE_WITH_TIMEOUT(testIteration, desiredTestCount,
+                              testedInterval * desiredTestCount * 2);
 }
 
 void tst_QTimer::remainingTimeInitial_data()
