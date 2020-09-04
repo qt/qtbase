@@ -907,7 +907,7 @@ bool QWindowsKeyMapper::translateMultimediaKeyEventInternal(QWindow *window, con
     // QTBUG-43343: Make sure to return false if Qt does not handle the key, otherwise,
     // the keys are not passed to the active media player.
 # if QT_CONFIG(shortcut)
-    const QKeySequence sequence(Qt::Modifier(state) + qtKey);
+    const QKeySequence sequence(Qt::Modifier(state) | Qt::Key(qtKey));
     return QGuiApplicationPrivate::instance()->shortcutMap.hasShortcutForKeySequence(sequence);
 # else
     return false;
@@ -1379,14 +1379,14 @@ QList<int> QWindowsKeyMapper::possibleKeys(const QKeyEvent *e) const
         result << int(Qt::Key_Enter + keyMods);
         return result;
     }
-    result << int(baseKey + keyMods); // The base key is _always_ valid, of course
+    result << int(baseKey) + int(keyMods); // The base key is _always_ valid, of course
 
     for (size_t i = 1; i < NumMods; ++i) {
         Qt::KeyboardModifiers neededMods = ModsTbl[i];
         quint32 key = kbItem.qtKey[i];
         if (key && key != baseKey && ((keyMods & neededMods) == neededMods)) {
             const Qt::KeyboardModifiers missingMods = keyMods & ~neededMods;
-            const int matchedKey = int(key) + missingMods;
+            const int matchedKey = int(key) + int(missingMods);
             const auto it =
                 std::find_if(result.begin(), result.end(),
                              [key] (int k) { return (k & ~Qt::KeyboardModifierMask) == key; });
