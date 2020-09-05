@@ -78,7 +78,7 @@ void tst_qdbuscpp2xml::qdbuscpp2xml_data()
     QTest::addColumn<QString>("inputfile");
     QTest::addColumn<int>("flags");
 
-    QBitArray doneFlags(QDBusConnection::ExportAllContents + 1);
+    QBitArray doneFlags(int(QDBusConnection::ExportAllContents) + 1);
     for (int flag = 0x10; flag < QDBusConnection::ExportScriptableContents; flag += 0x10) {
         QTest::newRow("xmlgenerator-" + QByteArray::number(flag)) << "test1" << flag;
         doneFlags.setBit(flag);
