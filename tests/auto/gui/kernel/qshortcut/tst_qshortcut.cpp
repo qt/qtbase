@@ -71,7 +71,7 @@ void tst_QShortcut::trigger()
     ColoredWindow w(Qt::yellow);
     w.setTitle(QTest::currentTestFunction());
     w.resize(QGuiApplication::primaryScreen()->size() / 4);
-    new QShortcut(Qt::CTRL + Qt::Key_Q, &w, SLOT(close()));
+    new QShortcut(Qt::CTRL | Qt::Key_Q, &w, SLOT(close()));
     w.show();
     QVERIFY(QTest::qWaitForWindowExposed(&w));
     sendKey(&w, Qt::Key_Q, 'q', Qt::ControlModifier);
