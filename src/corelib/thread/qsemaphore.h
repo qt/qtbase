@@ -67,7 +67,7 @@ private:
 
     union {
         QSemaphorePrivate *d;
-        QBasicAtomicInteger<quint64> u;
+        QBasicAtomicInteger<quintptr> u;        // ### Qt6: make 64-bit
     };
 };
 
