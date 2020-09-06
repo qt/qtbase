@@ -290,7 +290,7 @@ QAction *tst_QMenuBar::createCharacterAction(QMenu *menu, char lowerAscii)
     action->setObjectName(text);
     action->setData(QVariant(int(lowerAscii)));
 #if QT_CONFIG(shortcut)
-    action->setShortcut(Qt::CTRL + (lowerAscii - 'a' + Qt::Key_A));
+    action->setShortcut(Qt::CTRL + Qt::Key(lowerAscii - 'a' + int(Qt::Key_A)));
 #endif
     connect(action, SIGNAL(triggered()), this, SLOT(onComplexActionTriggered()));
     return action;
