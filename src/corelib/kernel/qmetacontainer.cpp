@@ -71,6 +71,23 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    Returns \c true if the underlying container provides at least an input
+    iterator as defined by std::input_iterator_tag, otherwise returns
+    \c false. Forward, Bi-directional, and random access iterators are
+    specializations of input iterators. This method will also return
+    \c true if the container provides one of those.
+
+    QMetaSequence assumes that const and non-const iterators for the same
+    container have the same iterator traits.
+ */
+bool QMetaSequence::hasInputIterator() const
+{
+    if (!d_ptr)
+        return false;
+    return d_ptr->iteratorCapabilities & QtMetaContainerPrivate::InputCapability;
+}
+
+/*!
     Returns \c true if the underlying container provides at least a forward
     iterator as defined by std::forward_iterator_tag, otherwise returns
     \c false. Bi-directional iterators and random access iterators are

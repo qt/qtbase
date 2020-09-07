@@ -50,9 +50,10 @@ QT_BEGIN_NAMESPACE
 namespace QtMetaContainerPrivate {
 
 enum IteratorCapability : quint8 {
-    ForwardCapability       = 1 << 0,
-    BiDirectionalCapability = 1 << 1,
-    RandomAccessCapability  = 1 << 2,
+    InputCapability         = 1 << 0,
+    ForwardCapability       = 1 << 1,
+    BiDirectionalCapability = 1 << 2,
+    RandomAccessCapability  = 1 << 3,
 };
 
 Q_DECLARE_FLAGS(IteratorCapabilities, IteratorCapability)
@@ -122,6 +123,8 @@ class QMetaSequenceForContainer
     {
        using Tag = typename std::iterator_traits<Iterator>::iterator_category;
        IteratorCapabilities caps {};
+       if constexpr (std::is_base_of_v<std::input_iterator_tag, Tag>)
+           caps |= InputCapability;
        if constexpr (std::is_base_of_v<std::forward_iterator_tag, Tag>)
            caps |= ForwardCapability;
        if constexpr (std::is_base_of_v<std::bidirectional_iterator_tag, Tag>)
@@ -515,6 +518,7 @@ public:
         return QMetaSequence(QtMetaContainerPrivate::qMetaSequenceInterfaceForContainer<T>());
     }
 
+    bool hasInputIterator() const;
     bool hasForwardIterator() const;
     bool hasBidirectionalIterator() const;
     bool hasRandomAccessIterator() const;

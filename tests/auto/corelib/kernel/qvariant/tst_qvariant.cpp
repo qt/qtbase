@@ -4531,7 +4531,8 @@ void tst_QVariant::shouldDeleteVariantDataWorksForSequential()
         QtMetaContainerPrivate::QMetaSequenceInterface metaSequence {};
         metaSequence.iteratorCapabilities = QtMetaContainerPrivate::RandomAccessCapability
                 | QtMetaContainerPrivate::BiDirectionalCapability
-                | QtMetaContainerPrivate::ForwardCapability;
+                | QtMetaContainerPrivate::ForwardCapability
+                | QtMetaContainerPrivate::InputCapability;
 
         metaSequence.sizeFn = [](const void *) { return qsizetype(1); };
         metaSequence.createConstIteratorFn =
@@ -4680,7 +4681,8 @@ void tst_QVariant::sequentialIterableEndianessSanityCheck()
 {
     namespace QMTP = QtMetaContainerPrivate;
     QMTP::IteratorCapabilities oldIteratorCaps
-            = QMTP::ForwardCapability | QMTP::BiDirectionalCapability | QMTP::RandomAccessCapability;
+            = QMTP::InputCapability | QMTP::ForwardCapability
+            | QMTP::BiDirectionalCapability | QMTP::RandomAccessCapability;
     QMTP::QMetaSequenceInterface seqImpl {};
     QCOMPARE(seqImpl.revision, 0u);
     memcpy(&seqImpl.iteratorCapabilities, &oldIteratorCaps, sizeof(oldIteratorCaps));
