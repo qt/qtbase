@@ -1218,86 +1218,106 @@ void tst_QDateTime::addYears()
 void tst_QDateTime::addSecs_data()
 {
     QTest::addColumn<QDateTime>("dt");
-    QTest::addColumn<int>("nsecs");
+    QTest::addColumn<qint64>("nsecs");
     QTest::addColumn<QDateTime>("result");
 
-    QTime standardTime(12, 34, 56);
-    QTime daylightTime(13, 34, 56);
+    const QTime standardTime(12, 34, 56);
+    const QTime daylightTime(13, 34, 56);
+    const qint64 daySecs(86400);
 
-    QTest::newRow("utc0") << QDateTime(QDate(2004, 1, 1), standardTime, Qt::UTC) << 86400
-                       << QDateTime(QDate(2004, 1, 2), standardTime, Qt::UTC);
-    QTest::newRow("utc1") << QDateTime(QDate(2004, 1, 1), standardTime, Qt::UTC) << (86400 * 185)
-                       << QDateTime(QDate(2004, 7, 4), standardTime, Qt::UTC);
-    QTest::newRow("utc2") << QDateTime(QDate(2004, 1, 1), standardTime, Qt::UTC) << (86400 * 366)
-                       << QDateTime(QDate(2005, 1, 1), standardTime, Qt::UTC);
-    QTest::newRow("utc3") << QDateTime(QDate(1760, 1, 1), standardTime, Qt::UTC) << 86400
-                       << QDateTime(QDate(1760, 1, 2), standardTime, Qt::UTC);
-    QTest::newRow("utc4") << QDateTime(QDate(1760, 1, 1), standardTime, Qt::UTC) << (86400 * 185)
-                       << QDateTime(QDate(1760, 7, 4), standardTime, Qt::UTC);
-    QTest::newRow("utc5") << QDateTime(QDate(1760, 1, 1), standardTime, Qt::UTC) << (86400 * 366)
-                       << QDateTime(QDate(1761, 1, 1), standardTime, Qt::UTC);
-    QTest::newRow("utc6") << QDateTime(QDate(4000, 1, 1), standardTime, Qt::UTC) << 86400
-                       << QDateTime(QDate(4000, 1, 2), standardTime, Qt::UTC);
-    QTest::newRow("utc7") << QDateTime(QDate(4000, 1, 1), standardTime, Qt::UTC) << (86400 * 185)
-                       << QDateTime(QDate(4000, 7, 4), standardTime, Qt::UTC);
-    QTest::newRow("utc8") << QDateTime(QDate(4000, 1, 1), standardTime, Qt::UTC) << (86400 * 366)
-                       << QDateTime(QDate(4001, 1, 1), standardTime, Qt::UTC);
-    QTest::newRow("utc9") << QDateTime(QDate(4000, 1, 1), standardTime, Qt::UTC) << 0
-                       << QDateTime(QDate(4000, 1, 1), standardTime, Qt::UTC);
+    QTest::newRow("utc0")
+        << QDateTime(QDate(2004, 1, 1), standardTime, Qt::UTC) << daySecs
+        << QDateTime(QDate(2004, 1, 2), standardTime, Qt::UTC);
+    QTest::newRow("utc1")
+        << QDateTime(QDate(2004, 1, 1), standardTime, Qt::UTC) << (daySecs * 185)
+        << QDateTime(QDate(2004, 7, 4), standardTime, Qt::UTC);
+    QTest::newRow("utc2")
+        << QDateTime(QDate(2004, 1, 1), standardTime, Qt::UTC) << (daySecs * 366)
+        << QDateTime(QDate(2005, 1, 1), standardTime, Qt::UTC);
+    QTest::newRow("utc3")
+        << QDateTime(QDate(1760, 1, 1), standardTime, Qt::UTC) << daySecs
+        << QDateTime(QDate(1760, 1, 2), standardTime, Qt::UTC);
+    QTest::newRow("utc4")
+        << QDateTime(QDate(1760, 1, 1), standardTime, Qt::UTC) << (daySecs * 185)
+        << QDateTime(QDate(1760, 7, 4), standardTime, Qt::UTC);
+    QTest::newRow("utc5")
+        << QDateTime(QDate(1760, 1, 1), standardTime, Qt::UTC) << (daySecs * 366)
+        << QDateTime(QDate(1761, 1, 1), standardTime, Qt::UTC);
+    QTest::newRow("utc6")
+        << QDateTime(QDate(4000, 1, 1), standardTime, Qt::UTC) << daySecs
+        << QDateTime(QDate(4000, 1, 2), standardTime, Qt::UTC);
+    QTest::newRow("utc7")
+        << QDateTime(QDate(4000, 1, 1), standardTime, Qt::UTC) << (daySecs * 185)
+        << QDateTime(QDate(4000, 7, 4), standardTime, Qt::UTC);
+    QTest::newRow("utc8")
+        << QDateTime(QDate(4000, 1, 1), standardTime, Qt::UTC) << (daySecs * 366)
+        << QDateTime(QDate(4001, 1, 1), standardTime, Qt::UTC);
+    QTest::newRow("utc9")
+        << QDateTime(QDate(4000, 1, 1), standardTime, Qt::UTC) << qint64(0)
+        << QDateTime(QDate(4000, 1, 1), standardTime, Qt::UTC);
 
     if (zoneIsCET) {
-        QTest::newRow("cet0") << QDateTime(QDate(2004, 1, 1), standardTime, Qt::LocalTime) << 86400
-                           << QDateTime(QDate(2004, 1, 2), standardTime, Qt::LocalTime);
-        QTest::newRow("cet1") << QDateTime(QDate(2004, 1, 1), standardTime, Qt::LocalTime) << (86400 * 185)
-                           << QDateTime(QDate(2004, 7, 4), daylightTime, Qt::LocalTime);
-        QTest::newRow("cet2") << QDateTime(QDate(2004, 1, 1), standardTime, Qt::LocalTime) << (86400 * 366)
-                           << QDateTime(QDate(2005, 1, 1), standardTime, Qt::LocalTime);
-        QTest::newRow("cet3") << QDateTime(QDate(1760, 1, 1), standardTime, Qt::LocalTime) << 86400
-                           << QDateTime(QDate(1760, 1, 2), standardTime, Qt::LocalTime);
-        QTest::newRow("cet4") << QDateTime(QDate(1760, 1, 1), standardTime, Qt::LocalTime) << (86400 * 185)
-                           << QDateTime(QDate(1760, 7, 4), standardTime, Qt::LocalTime);
-        QTest::newRow("cet5") << QDateTime(QDate(1760, 1, 1), standardTime, Qt::LocalTime) << (86400 * 366)
-                           << QDateTime(QDate(1761, 1, 1), standardTime, Qt::LocalTime);
-        QTest::newRow("cet6") << QDateTime(QDate(4000, 1, 1), standardTime, Qt::LocalTime) << 86400
-                           << QDateTime(QDate(4000, 1, 2), standardTime, Qt::LocalTime);
-        QTest::newRow("cet7") << QDateTime(QDate(4000, 1, 1), standardTime, Qt::LocalTime) << (86400 * 185)
-                           << QDateTime(QDate(4000, 7, 4), daylightTime, Qt::LocalTime);
-        QTest::newRow("cet8") << QDateTime(QDate(4000, 1, 1), standardTime, Qt::LocalTime) << (86400 * 366)
-                           << QDateTime(QDate(4001, 1, 1), standardTime, Qt::LocalTime);
-        QTest::newRow("cet9") << QDateTime(QDate(4000, 1, 1), standardTime, Qt::LocalTime) << 0
-                           << QDateTime(QDate(4000, 1, 1), standardTime, Qt::LocalTime);
+        QTest::newRow("cet0")
+            << QDateTime(QDate(2004, 1, 1), standardTime, Qt::LocalTime) << daySecs
+            << QDateTime(QDate(2004, 1, 2), standardTime, Qt::LocalTime);
+        QTest::newRow("cet1")
+            << QDateTime(QDate(2004, 1, 1), standardTime, Qt::LocalTime) << (daySecs * 185)
+            << QDateTime(QDate(2004, 7, 4), daylightTime, Qt::LocalTime);
+        QTest::newRow("cet2")
+            << QDateTime(QDate(2004, 1, 1), standardTime, Qt::LocalTime) << (daySecs * 366)
+            << QDateTime(QDate(2005, 1, 1), standardTime, Qt::LocalTime);
+        QTest::newRow("cet3")
+            << QDateTime(QDate(1760, 1, 1), standardTime, Qt::LocalTime) << daySecs
+            << QDateTime(QDate(1760, 1, 2), standardTime, Qt::LocalTime);
+        QTest::newRow("cet4")
+            << QDateTime(QDate(1760, 1, 1), standardTime, Qt::LocalTime) << (daySecs * 185)
+            << QDateTime(QDate(1760, 7, 4), standardTime, Qt::LocalTime);
+        QTest::newRow("cet5")
+            << QDateTime(QDate(1760, 1, 1), standardTime, Qt::LocalTime) << (daySecs * 366)
+            << QDateTime(QDate(1761, 1, 1), standardTime, Qt::LocalTime);
+        QTest::newRow("cet6")
+            << QDateTime(QDate(4000, 1, 1), standardTime, Qt::LocalTime) << daySecs
+            << QDateTime(QDate(4000, 1, 2), standardTime, Qt::LocalTime);
+        QTest::newRow("cet7")
+            << QDateTime(QDate(4000, 1, 1), standardTime, Qt::LocalTime) << (daySecs * 185)
+            << QDateTime(QDate(4000, 7, 4), daylightTime, Qt::LocalTime);
+        QTest::newRow("cet8")
+            << QDateTime(QDate(4000, 1, 1), standardTime, Qt::LocalTime) << (daySecs * 366)
+            << QDateTime(QDate(4001, 1, 1), standardTime, Qt::LocalTime);
+        QTest::newRow("cet9")
+            << QDateTime(QDate(4000, 1, 1), standardTime, Qt::LocalTime) << qint64(0)
+            << QDateTime(QDate(4000, 1, 1), standardTime, Qt::LocalTime);
     }
 
     // Year sign change
-    QTest::newRow("toNegative") << QDateTime(QDate(1, 1, 1), QTime(0, 0), Qt::UTC)
-                                << -1
-                                << QDateTime(QDate(-1, 12, 31), QTime(23, 59, 59), Qt::UTC);
-    QTest::newRow("toPositive") << QDateTime(QDate(-1, 12, 31), QTime(23, 59, 59), Qt::UTC)
-                                << 1
+    QTest::newRow("toNegative")
+        << QDateTime(QDate(1, 1, 1), QTime(0, 0), Qt::UTC) << qint64(-1)
+        << QDateTime(QDate(-1, 12, 31), QTime(23, 59, 59), Qt::UTC);
+    QTest::newRow("toPositive")
+        << QDateTime(QDate(-1, 12, 31), QTime(23, 59, 59), Qt::UTC) << qint64(1)
                                 << QDateTime(QDate(1, 1, 1), QTime(0, 0), Qt::UTC);
 
-    QTest::newRow("invalid") << QDateTime() << 1 << QDateTime();
+    QTest::newRow("invalid") << QDateTime() << qint64(1) << QDateTime();
 
     // Check Offset details are preserved
-    QTest::newRow("offset0") << QDateTime(QDate(2013, 1, 1), QTime(1, 2, 3),
-                                          Qt::OffsetFromUTC, 60 * 60)
-                             << 60 * 60
-                             << QDateTime(QDate(2013, 1, 1), QTime(2, 2, 3),
-                                          Qt::OffsetFromUTC, 60 * 60);
+    QTest::newRow("offset0")
+        << QDateTime(QDate(2013, 1, 1), QTime(1, 2, 3), Qt::OffsetFromUTC, 60 * 60)
+        << qint64(60 * 60)
+        << QDateTime(QDate(2013, 1, 1), QTime(2, 2, 3), Qt::OffsetFromUTC, 60 * 60);
     // Check last second of 1969
     QTest::newRow("epoch-1s-utc")
-        << QDateTime(QDate(1970, 1, 1), QTime(0, 0), Qt::UTC) << -1
+        << QDateTime(QDate(1970, 1, 1), QTime(0, 0), Qt::UTC) << qint64(-1)
         << QDateTime(QDate(1969, 12, 31), QTime(23, 59, 59), Qt::UTC);
     QTest::newRow("epoch-1s-local")
-        << QDateTime(QDate(1970, 1, 1), QTime(0, 0)) << -1
+        << QDateTime(QDate(1970, 1, 1), QTime(0, 0)) << qint64(-1)
         << QDateTime(QDate(1969, 12, 31), QTime(23, 59, 59));
 }
 
 void tst_QDateTime::addSecs()
 {
-    QFETCH(QDateTime, dt);
-    QFETCH(int, nsecs);
-    QFETCH(QDateTime, result);
+    QFETCH(const QDateTime, dt);
+    QFETCH(const qint64, nsecs);
+    QFETCH(const QDateTime, result);
     QDateTime test = dt.addSecs(nsecs);
     QCOMPARE(test, result);
     QCOMPARE(test.timeSpec(), dt.timeSpec());
@@ -1313,9 +1333,9 @@ void tst_QDateTime::addMSecs_data()
 
 void tst_QDateTime::addMSecs()
 {
-    QFETCH(QDateTime, dt);
-    QFETCH(int, nsecs);
-    QFETCH(QDateTime, result);
+    QFETCH(const QDateTime, dt);
+    QFETCH(const qint64, nsecs);
+    QFETCH(const QDateTime, result);
 
     QDateTime test = dt.addMSecs(qint64(nsecs) * 1000);
     QCOMPARE(test, result);
@@ -1517,19 +1537,19 @@ void tst_QDateTime::secsTo_data()
     addSecs_data();
 
     QTest::newRow("disregard milliseconds #1")
-        << QDateTime(QDate(2012, 3, 7), QTime(0, 58, 0, 0)) << 60
+        << QDateTime(QDate(2012, 3, 7), QTime(0, 58, 0, 0)) << qint64(60)
         << QDateTime(QDate(2012, 3, 7), QTime(0, 59, 0, 400));
 
     QTest::newRow("disregard milliseconds #2")
-        << QDateTime(QDate(2012, 3, 7), QTime(0, 59, 0, 0)) << 60
+        << QDateTime(QDate(2012, 3, 7), QTime(0, 59, 0, 0)) << qint64(60)
         << QDateTime(QDate(2012, 3, 7), QTime(1, 0, 0, 400));
 }
 
 void tst_QDateTime::secsTo()
 {
-    QFETCH(QDateTime, dt);
-    QFETCH(int, nsecs);
-    QFETCH(QDateTime, result);
+    QFETCH(const QDateTime, dt);
+    QFETCH(const qint64, nsecs);
+    QFETCH(const QDateTime, result);
 
     if (dt.isValid()) {
         QCOMPARE(dt.secsTo(result), (qint64)nsecs);
@@ -1553,9 +1573,9 @@ void tst_QDateTime::msecsTo_data()
 
 void tst_QDateTime::msecsTo()
 {
-    QFETCH(QDateTime, dt);
-    QFETCH(int, nsecs);
-    QFETCH(QDateTime, result);
+    QFETCH(const QDateTime, dt);
+    QFETCH(const qint64, nsecs);
+    QFETCH(const QDateTime, result);
 
     if (dt.isValid()) {
         QCOMPARE(dt.msecsTo(result), qint64(nsecs) * 1000);
