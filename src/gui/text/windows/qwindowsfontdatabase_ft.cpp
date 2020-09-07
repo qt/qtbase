@@ -119,7 +119,7 @@ static FontKeys &fontKeys()
     if (result.isEmpty()) {
         const QStringList keys = { QStringLiteral("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts"),
                                    QStringLiteral("HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts") };
-        for (const auto key : keys) {
+        for (const auto &key : keys) {
             const QSettings fontRegistry(key, QSettings::NativeFormat);
             const QStringList allKeys = fontRegistry.allKeys();
             const QString trueType = QStringLiteral("(TrueType)");
