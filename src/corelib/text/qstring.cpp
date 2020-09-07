@@ -2384,7 +2384,7 @@ void QString::resize(qsizetype size)
 
     const auto capacityAtEnd = capacity() - d.freeSpaceAtBegin();
     if (d->needsDetach() || size > capacityAtEnd)
-        reallocData(size_t(size), d->detachFlags() | Data::GrowsForward);
+        reallocData(size, d->detachFlags() | Data::GrowsForward);
     d.size = size;
     if (d->allocatedCapacity())
         d.data()[size] = 0;
@@ -2462,7 +2462,7 @@ void QString::resize(qsizetype size, QChar fillChar)
     \sa reserve(), capacity()
 */
 
-void QString::reallocData(size_t alloc, Data::ArrayOptions allocOptions)
+void QString::reallocData(qsizetype alloc, Data::ArrayOptions allocOptions)
 {
     if (!alloc) {
         d = DataPointer::fromRawData(&_empty, 0);
@@ -2475,7 +2475,7 @@ void QString::reallocData(size_t alloc, Data::ArrayOptions allocOptions)
     const bool slowReallocatePath = d.freeSpaceAtBegin() > 0;
 
     if (d->needsDetach() || slowReallocatePath) {
-        DataPointer dd(Data::allocate(alloc, allocOptions), qMin(qsizetype(alloc), d.size));
+        DataPointer dd(Data::allocate(alloc, allocOptions), qMin(alloc, d.size));
         if (dd.size > 0)
             ::memcpy(dd.data(), d.data(), dd.size * sizeof(QChar));
         dd.data()[dd.size] = 0;
@@ -2485,13 +2485,13 @@ void QString::reallocData(size_t alloc, Data::ArrayOptions allocOptions)
     }
 }
 
-void QString::reallocGrowData(size_t alloc, Data::ArrayOptions options)
+void QString::reallocGrowData(qsizetype alloc, Data::ArrayOptions options)
 {
     if (!alloc)  // expected to always allocate
         alloc = 1;
 
     if (d->needsDetach()) {
-        const auto newSize = qMin(qsizetype(alloc), d.size);
+        const auto newSize = qMin(alloc, d.size);
         DataPointer dd(DataPointer::allocateGrow(d, alloc, newSize, options));
         dd->copyAppend(d.data(), d.data() + newSize);
         dd.data()[dd.size] = 0;
@@ -2777,7 +2777,7 @@ QString &QString::append(const QString &str)
         } else {
             const bool shouldGrow = d->shouldGrowBeforeInsert(d.end(), str.d.size);
             if (d->needsDetach() || size() + str.size() > capacity() || shouldGrow)
-                reallocGrowData(uint(size() + str.size()),
+                reallocGrowData(size() + str.size(),
                                 d->detachFlags() | Data::GrowsForward);
             d->copyAppend(str.d.data(), str.d.data() + str.d.size);
             d.data()[d.size] = '\0';
@@ -2797,7 +2797,7 @@ QString &QString::append(const QChar *str, qsizetype len)
     if (str && len > 0) {
         const bool shouldGrow = d->shouldGrowBeforeInsert(d.end(), len);
         if (d->needsDetach() || size() + len > capacity() || shouldGrow)
-            reallocGrowData(uint(size() + len), d->detachFlags() | Data::GrowsForward);
+            reallocGrowData(size() + len, d->detachFlags() | Data::GrowsForward);
         static_assert(sizeof(QChar) == sizeof(char16_t), "Unexpected difference in sizes");
         // the following should be safe as QChar uses char16_t as underlying data
         const char16_t *char16String = reinterpret_cast<const char16_t *>(str);
@@ -2819,7 +2819,7 @@ QString &QString::append(QLatin1String str)
         qsizetype len = str.size();
         const bool shouldGrow = d->shouldGrowBeforeInsert(d.end(), len);
         if (d->needsDetach() || size() + len > capacity() || shouldGrow)
-            reallocGrowData(size_t(size() + len), d->detachFlags() | Data::GrowsForward);
+            reallocGrowData(size() + len, d->detachFlags() | Data::GrowsForward);
 
         if (d.freeSpaceAtBegin() == 0) {  // fast path
             char16_t *i = d.data() + d.size;
@@ -4011,7 +4011,7 @@ QString &QString::replace(const QRegularExpression &re, const QString &after)
     if (!iterator.hasNext()) // no matches at all
         return *this;
 
-    reallocData(size_t(d.size), d->detachFlags());
+    reallocData(d.size, d->detachFlags());
 
     qsizetype numCaptures = re.captureCount();
 
@@ -6101,7 +6101,7 @@ const ushort *QString::utf16() const
 {
     if (!d->isMutable()) {
         // ensure '\0'-termination for ::fromRawData strings
-        const_cast<QString*>(this)->reallocData(size_t(d.size), d->detachFlags());
+        const_cast<QString*>(this)->reallocData(d.size, d->detachFlags());
     }
     return reinterpret_cast<const ushort *>(d.data());
 }

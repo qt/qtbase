@@ -1644,7 +1644,7 @@ void QByteArray::resize(qsizetype size)
 
     const auto capacityAtEnd = capacity() - d.freeSpaceAtBegin();
     if (d->needsDetach() || size > capacityAtEnd)
-        reallocData(size_t(size), d->detachFlags() | Data::GrowsForward);
+        reallocData(size, d->detachFlags() | Data::GrowsForward);
     d.size = size;
     if (d->allocatedCapacity())
         d.data()[size] = 0;
@@ -1668,7 +1668,7 @@ QByteArray &QByteArray::fill(char ch, qsizetype size)
     return *this;
 }
 
-void QByteArray::reallocData(size_t alloc, Data::ArrayOptions options)
+void QByteArray::reallocData(qsizetype alloc, Data::ArrayOptions options)
 {
     if (!alloc) {
         d = DataPointer::fromRawData(&_empty, 0);
@@ -1681,7 +1681,7 @@ void QByteArray::reallocData(size_t alloc, Data::ArrayOptions options)
     const bool slowReallocatePath = d.freeSpaceAtBegin() > 0;
 
     if (d->needsDetach() || slowReallocatePath) {
-        DataPointer dd(Data::allocate(alloc, options), qMin(qsizetype(alloc), d.size));
+        DataPointer dd(Data::allocate(alloc, options), qMin(alloc, d.size));
         if (dd.size > 0)
             ::memcpy(dd.data(), d.data(), dd.size);
         dd.data()[dd.size] = 0;
@@ -1691,13 +1691,13 @@ void QByteArray::reallocData(size_t alloc, Data::ArrayOptions options)
     }
 }
 
-void QByteArray::reallocGrowData(size_t alloc, Data::ArrayOptions options)
+void QByteArray::reallocGrowData(qsizetype alloc, Data::ArrayOptions options)
 {
     if (!alloc)  // expected to always allocate
         alloc = 1;
 
     if (d->needsDetach()) {
-        const auto newSize = qMin(qsizetype(alloc), d.size);
+        const auto newSize = qMin(alloc, d.size);
         DataPointer dd(DataPointer::allocateGrow(d, alloc, newSize, options));
         dd->copyAppend(d.data(), d.data() + newSize);
         dd.data()[dd.size] = 0;
@@ -1866,7 +1866,7 @@ QByteArray& QByteArray::append(char ch)
 {
     const bool shouldGrow = d->shouldGrowBeforeInsert(d.end(), 1);
     if (d->needsDetach() || size() + 1 > capacity() || shouldGrow)
-        reallocGrowData(size_t(size()) + 1u, d->detachFlags() | Data::GrowsForward);
+        reallocGrowData(size() + 1, d->detachFlags() | Data::GrowsForward);
     d->copyAppend(1, ch);
     d.data()[d.size] = '\0';
     return *this;

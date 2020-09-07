@@ -460,8 +460,8 @@ public:
     }
 
 private:
-    void reallocData(size_t alloc, Data::ArrayOptions options);
-    void reallocGrowData(size_t alloc, Data::ArrayOptions options);
+    void reallocData(qsizetype alloc, Data::ArrayOptions options);
+    void reallocGrowData(qsizetype alloc, Data::ArrayOptions options);
     void expand(qsizetype i);
     QByteArray nulTerminated() const;
 
@@ -513,7 +513,7 @@ inline const char *QByteArray::data() const
 inline const char *QByteArray::constData() const
 { return data(); }
 inline void QByteArray::detach()
-{ if (d->needsDetach()) reallocData(size_t(size()), d->detachFlags()); }
+{ if (d->needsDetach()) reallocData(size(), d->detachFlags()); }
 inline bool QByteArray::isDetached() const
 { return !d->isShared(); }
 inline QByteArray::QByteArray(const QByteArray &a) noexcept : d(a.d)
@@ -524,7 +524,7 @@ inline qsizetype QByteArray::capacity() const { return qsizetype(d->constAllocat
 inline void QByteArray::reserve(qsizetype asize)
 {
     if (d->needsDetach() || asize > capacity() - d->freeSpaceAtBegin()) {
-        reallocData(qMax(size_t(size()), size_t(asize)), d->detachFlags() | Data::CapacityReserved);
+        reallocData(qMax(size(), asize), d->detachFlags() | Data::CapacityReserved);
     } else {
         d->setFlag(Data::CapacityReserved);
     }
@@ -535,7 +535,7 @@ inline void QByteArray::squeeze()
     if ((d->flags() & Data::CapacityReserved) == 0)
         return;
     if (d->needsDetach() || size() < capacity()) {
-        reallocData(size_t(size()), d->detachFlags() & ~Data::CapacityReserved);
+        reallocData(size(), d->detachFlags() & ~Data::CapacityReserved);
     } else {
         d->clearFlag(Data::CapacityReserved);
     }

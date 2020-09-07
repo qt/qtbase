@@ -951,8 +951,8 @@ private:
     friend inline bool operator< (QChar, QLatin1String) noexcept;
     friend inline bool operator> (QChar, QLatin1String) noexcept;
 
-    void reallocData(size_t alloc, Data::ArrayOptions options);
-    void reallocGrowData(size_t alloc, Data::ArrayOptions options);
+    void reallocData(qsizetype alloc, Data::ArrayOptions options);
+    void reallocGrowData(qsizetype alloc, Data::ArrayOptions options);
     static int compare_helper(const QChar *data1, qsizetype length1,
                               const QChar *data2, qsizetype length2,
                               Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
@@ -1167,7 +1167,7 @@ inline QString::~QString() {}
 inline void QString::reserve(qsizetype asize)
 {
     if (d->needsDetach() || asize >= capacity() - d.freeSpaceAtBegin()) {
-        reallocData(size_t(qMax(asize, size())), d->detachFlags() | Data::CapacityReserved);
+        reallocData(qMax(asize, size()), d->detachFlags() | Data::CapacityReserved);
     } else {
         d->setFlag(Data::CapacityReserved);
     }
@@ -1177,8 +1177,8 @@ inline void QString::squeeze()
 {
     if ((d->flags() & Data::CapacityReserved) == 0)
         return;
-    if (d->needsDetach() || int(d.size) < capacity()) {
-        reallocData(size_t(d.size), d->detachFlags() & ~Data::CapacityReserved);
+    if (d->needsDetach() || d.size < capacity()) {
+        reallocData(d.size, d->detachFlags() & ~Data::CapacityReserved);
     } else {
         d->clearFlag(Data::CapacityReserved);
     }
