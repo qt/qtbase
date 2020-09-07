@@ -672,7 +672,7 @@ public:
     }
 
 private:
-    QtMetaContainerPrivate::QMetaSequenceInterface *d_ptr = nullptr;
+    const QtMetaContainerPrivate::QMetaSequenceInterface *d_ptr = nullptr;
 };
 
 QT_END_NAMESPACE
