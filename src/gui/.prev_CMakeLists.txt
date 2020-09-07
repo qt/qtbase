@@ -698,7 +698,7 @@ qt_extend_target(Gui CONDITION QT_FEATURE_undogroup
 qt_extend_target(Gui CONDITION QT_FEATURE_opengl AND QT_FEATURE_xlib AND NOT QT_FEATURE_opengles2
     SOURCES
         opengl/platform/unix/qglxconvenience.cpp opengl/platform/unix/qglxconvenience_p.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         X11::X11
 )
 

@@ -4,4 +4,4 @@ HEADERS += \
 SOURCES += \
    opengl/platform/unix/qglxconvenience.cpp
 
-QMAKE_USE += xlib
+QMAKE_USE_PRIVATE += xlib
