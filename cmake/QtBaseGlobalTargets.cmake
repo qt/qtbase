@@ -94,11 +94,19 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
 if(QT_HOST_PATH)
     get_filename_component(init_qt_host_path "${QT_HOST_PATH}" ABSOLUTE)
     # TODO: Figure out how to make these relocatable.
-    set(init_qt_host_path "set(QT_HOST_PATH \"${init_qt_host_path}\" CACHE PATH \"\" FORCE)")
+    set(init_qt_host_path "
+set(__qt_initial_qt_host_path \"${QT_HOST_PATH}\")
+if(NOT DEFINED QT_HOST_PATH AND EXISTS \"\${__qt_initial_qt_host_path}\")
+    set(QT_HOST_PATH \"\${__qt_initial_qt_host_path}\" CACHE PATH \"\" FORCE)
+endif()")
     get_filename_component(QT_HOST_PATH_CMAKE_DIR
         "${Qt${PROJECT_VERSION_MAJOR}HostInfo_DIR}/.." ABSOLUTE)
     set(init_qt_host_path_cmake_dir
-        "set(QT_HOST_PATH_CMAKE_DIR \"${QT_HOST_PATH_CMAKE_DIR}\" CACHE PATH \"\" FORCE)")
+        "
+set(__qt_initial_qt_host_path_cmake_dir \"${QT_HOST_PATH}\")
+if(NOT DEFINED QT_HOST_PATH_CMAKE_DIR AND EXISTS \"\${__qt_initial_qt_host_path_cmake_dir}\")
+    set(QT_HOST_PATH_CMAKE_DIR \"\${__qt_initial_qt_host_path_cmake_dir}\" CACHE PATH \"\" FORCE)
+endif()")
 endif()
 
 if(CMAKE_TOOLCHAIN_FILE)
@@ -160,7 +168,11 @@ if(APPLE)
     # For simulator_and_device build, we should not explicitly set the sysroot.
     list(LENGTH CMAKE_OSX_ARCHITECTURES _qt_osx_architectures_count)
     if(CMAKE_OSX_SYSROOT AND NOT _qt_osx_architectures_count GREATER 1 AND UIKIT)
-        list(APPEND init_platform "set(CMAKE_OSX_SYSROOT \"${CMAKE_OSX_SYSROOT}\" CACHE PATH \"\")")
+        list(APPEND init_platform "
+set(__qt_initial_cmake_osx_sysroot \"${CMAKE_OSX_SYSROOT}\")
+if(NOT DEFINED CMAKE_OSX_SYSROOT AND EXISTS \"\${__qt_initial_cmake_osx_sysroot}\")
+    set(CMAKE_OSX_SYSROOT \"\${__qt_initial_cmake_osx_sysroot}\" CACHE PATH \"\")
+endif()")
     endif()
     unset(_qt_osx_architectures_count)
 

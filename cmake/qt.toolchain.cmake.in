@@ -2,11 +2,8 @@
 
 @init_qt_host_path@
 @init_qt_host_path_cmake_dir@
-
 @init_original_toolchain_file@
-
 @init_vcpkg@
-
 if(__qt_chainload_toolchain_file)
     get_filename_component(__qt_chainload_toolchain_file_real_path
                           "${__qt_chainload_toolchain_file}" REALPATH)
@@ -40,4 +37,3 @@ get_filename_component(QT_TOOLCHAIN_RELOCATABLE_CMAKE_DIR "${CMAKE_CURRENT_LIST_
 # Qt install prefix, and the prefix path to the lib/cmake subdir.
 list(PREPEND CMAKE_PREFIX_PATH "${QT_TOOLCHAIN_RELOCATABLE_CMAKE_DIR}")
 list(PREPEND CMAKE_FIND_ROOT_PATH "${QT_TOOLCHAIN_RELOCATABLE_INSTALL_PREFIX}")
-
