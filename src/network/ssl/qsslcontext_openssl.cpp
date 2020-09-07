@@ -710,7 +710,7 @@ void QSslContext::applyBackendConfig(QSslContext *sslContext)
             if (i.key() == "Qt-OCSP-response") // This never goes to SSL_CONF_cmd().
                 continue;
 
-            if (!i.value().canConvert(QMetaType::QByteArray)) {
+            if (!i.value().canConvert(QMetaType(QMetaType::QByteArray))) {
                 sslContext->errorCode = QSslError::UnspecifiedError;
                 sslContext->errorStr = msgErrorSettingBackendConfig(
                 QSslSocket::tr("Expecting QByteArray for %1").arg(
