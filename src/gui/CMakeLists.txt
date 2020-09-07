@@ -84,7 +84,6 @@ qt_add_module(Gui
         image/qppmhandler.cpp image/qppmhandler_p.h
         image/qxbmhandler.cpp image/qxbmhandler_p.h
         image/qxpmhandler.cpp image/qxpmhandler_p.h
-        # itemmodels/qstandarditemmodel.cpp itemmodels/qstandarditemmodel.h itemmodels/qstandarditemmodel_p.h # special case
         kernel/qclipboard.cpp kernel/qclipboard.h
         kernel/qcursor.cpp kernel/qcursor.h kernel/qcursor_p.h
         kernel/qevent.cpp kernel/qevent.h kernel/qevent_p.h
@@ -100,7 +99,8 @@ qt_add_module(Gui
         kernel/qinputmethod.cpp kernel/qinputmethod.h kernel/qinputmethod_p.h
         kernel/qinternalmimedata.cpp kernel/qinternalmimedata_p.h
         kernel/qkeymapper.cpp kernel/qkeymapper_p.h
-        kernel/qoffscreensurface.cpp kernel/qoffscreensurface.h kernel/qoffscreensurface_p.h kernel/qoffscreensurface_platform.h
+        kernel/qoffscreensurface.cpp kernel/qoffscreensurface.h kernel/qoffscreensurface_p.h
+        kernel/qoffscreensurface_platform.h
         kernel/qpaintdevicewindow.cpp kernel/qpaintdevicewindow.h kernel/qpaintdevicewindow_p.h
         kernel/qpalette.cpp kernel/qpalette.h
         kernel/qpixelformat.cpp kernel/qpixelformat.h
@@ -408,8 +408,8 @@ qt_extend_target(Gui CONDITION WIN32
         advapi32
         gdi32
         ole32
-        user32
         shell32
+        user32
     PUBLIC_LIBRARIES
         d3d11
         dxgi
@@ -544,12 +544,6 @@ qt_extend_target(Gui CONDITION QT_FEATURE_draganddrop
         kernel/qsimpledrag.cpp kernel/qsimpledrag_p.h
 )
 
-qt_extend_target(Gui CONDITION QT_FEATURE_filesystemmodel
-    SOURCES
-        itemmodels/qfileinfogatherer.cpp itemmodels/qfileinfogatherer_p.h
-        itemmodels/qfilesystemmodel.cpp itemmodels/qfilesystemmodel.h itemmodels/qfilesystemmodel_p.h
-)
-
 qt_extend_target(Gui CONDITION QT_FEATURE_shortcut
     SOURCES
         kernel/qkeysequence.cpp kernel/qkeysequence.h kernel/qkeysequence_p.h
@@ -621,6 +615,11 @@ if(NOT ANDROID)
             painting/qdrawhelper_avx2.cpp
     )
 endif()
+
+qt_extend_target(Gui CONDITION ANDROID
+    SOURCES
+        platform/android/qandroidplatforminterface.cpp
+)
 
 qt_extend_target(Gui CONDITION ANDROID AND (TEST_architecture_arch STREQUAL arm64 OR TEST_architecture_arch STREQUAL arm) # special case
     SOURCES
@@ -848,6 +847,17 @@ qt_extend_target(Gui CONDITION QT_FEATURE_dlopen AND QT_FEATURE_egl
         ${CMAKE_DL_LIBS}
 )
 
+qt_extend_target(Gui CONDITION QT_FEATURE_standarditemmodel
+    SOURCES
+        itemmodels/qstandarditemmodel.cpp itemmodels/qstandarditemmodel.h itemmodels/qstandarditemmodel_p.h
+)
+
+qt_extend_target(Gui CONDITION QT_FEATURE_filesystemmodel
+    SOURCES
+        itemmodels/qfileinfogatherer.cpp itemmodels/qfileinfogatherer_p.h
+        itemmodels/qfilesystemmodel.cpp itemmodels/qfilesystemmodel.h itemmodels/qfilesystemmodel_p.h
+)
+
 qt_extend_target(Gui CONDITION QT_FEATURE_vulkan
     SOURCES
         rhi/qrhivulkan.cpp rhi/qrhivulkan_p.h
@@ -861,7 +871,7 @@ qt_extend_target(Gui CONDITION QT_FEATURE_vulkan
         Vulkan::Vulkan_nolink
 )
 
-#### Keys ignored in scope 110:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vkgen:
+#### Keys ignored in scope 111:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vkgen:
 # special case begin
 # We must always generate syncqt-injected header files,
 # because we added a custom command earlier for those for framework builds.
@@ -926,10 +936,10 @@ add_custom_command(
 # qvkgen_pimpl.input = "QMAKE_QVKGEN_INPUT"
 # qvkgen_pimpl.output = "$$OUT_PWD/vulkan/qvulkanfunctions_p.cpp"
 
-#### Keys ignored in scope 111:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
+#### Keys ignored in scope 112:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
 # qvkgen_h.variable_out = "HEADERS"
 
-#### Keys ignored in scope 112:.:vulkan:vulkan/vulkan.pri:else:
+#### Keys ignored in scope 113:.:vulkan:vulkan/vulkan.pri:else:
 # qvkgen_h.CONFIG = "target_predeps" "no_link"
 
 qt_extend_target(Gui CONDITION WASM
