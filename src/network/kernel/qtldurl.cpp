@@ -102,7 +102,7 @@ static bool containsTLDEntry(QStringView entry, TLDMatchType match)
         const auto utf8 = tldData[chunk] + chunkIndex;
         if ((symbol.isEmpty() || QLatin1Char(*utf8) == symbol) && entry == QString::fromUtf8(utf8 + symbol.size()))
             return true;
-        chunkIndex += qstrlen(utf8) + 1; // +1 for the ending \0
+        chunkIndex += uint(qstrlen(utf8)) + 1; // +1 for the ending \0
     }
     return false;
 }

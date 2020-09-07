@@ -2342,7 +2342,7 @@ static inline int qMetaTypeTypeImpl(const char *typeName, int length)
 */
 Q_CORE_EXPORT int qMetaTypeTypeInternal(const char *typeName)
 {
-    return qMetaTypeTypeImpl</*tryNormalizedType=*/false>(typeName, qstrlen(typeName));
+    return qMetaTypeTypeImpl</*tryNormalizedType=*/false>(typeName, int(qstrlen(typeName)));
 }
 
 /*!

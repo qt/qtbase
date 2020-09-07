@@ -3574,7 +3574,7 @@ void QMetaObject::connectSlotsByName(QObject *o)
                 // chosen 'at random' (order of declaration in source file)
                 QList<QByteArray> compatibleSignals;
                 const QMetaObject *smo = co->metaObject();
-                int sigLen = qstrlen(signal) - 1; // ignore the trailing ')'
+                int sigLen = int(qstrlen(signal)) - 1; // ignore the trailing ')'
                 for (int k = QMetaObjectPrivate::absoluteSignalCount(smo)-1; k >= 0; --k) {
                     const QMetaMethod method = QMetaObjectPrivate::signal(smo, k);
                     if (!qstrncmp(method.methodSignature().constData(), signal, sigLen)) {

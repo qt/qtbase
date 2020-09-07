@@ -1361,7 +1361,7 @@ QDataStream &QDataStream::operator<<(const char *s)
         *this << (quint32)0;
         return *this;
     }
-    uint len = qstrlen(s) + 1;                        // also write null terminator
+    int len = int(qstrlen(s)) + 1;                        // also write null terminator
     *this << (quint32)len;                        // write length specifier
     writeRawData(s, len);
     return *this;

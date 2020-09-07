@@ -263,7 +263,7 @@ QObject *QMetaObject::newInstance(QGenericArgument val0,
 
     int paramCount;
     for (paramCount = 0; paramCount < MaximumParamCount; ++paramCount) {
-        int len = qstrlen(typeNames[paramCount]);
+        int len = int(qstrlen(typeNames[paramCount]));
         if (len <= 0)
             break;
         sig.append(typeNames[paramCount], len);
@@ -1184,8 +1184,8 @@ bool QMetaObject::checkConnectArgs(const char *signal, const char *method)
     while (*s2++ != '(') { }
     if (*s2 == ')' || qstrcmp(s1,s2) == 0)        // method has no args or
         return true;                                //   exact match
-    int s1len = qstrlen(s1);
-    int s2len = qstrlen(s2);
+    const auto s1len = qstrlen(s1);
+    const auto s2len = qstrlen(s2);
     if (s2len < s1len && strncmp(s1,s2,s2len-1)==0 && s1[s2len-1]==',')
         return true;                                // method has less args
     return false;
@@ -1414,7 +1414,7 @@ bool QMetaObject::invokeMethod(QObject *obj,
         return false;
 
     QVarLengthArray<char, 512> sig;
-    int len = qstrlen(member);
+    int len = int(qstrlen(member));
     if (len <= 0)
         return false;
     sig.append(member, len);
@@ -1426,7 +1426,7 @@ bool QMetaObject::invokeMethod(QObject *obj,
 
     int paramCount;
     for (paramCount = 1; paramCount < MaximumParamCount; ++paramCount) {
-        len = qstrlen(typeNames[paramCount]);
+        len = int(qstrlen(typeNames[paramCount]));
         if (len <= 0)
             break;
         sig.append(typeNames[paramCount], len);

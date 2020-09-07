@@ -233,7 +233,7 @@ static QStringList childKeysOrGroups(HKEY parentHandle, QSettingsPrivate::ChildS
     QByteArray buff(m * sizeof(wchar_t), 0);
     for (int i = 0; i < n; ++i) {
         QString item;
-        DWORD l = buff.size() / sizeof(wchar_t);
+        DWORD l = DWORD(buff.size()) / DWORD(sizeof(wchar_t));
         if (spec == QSettingsPrivate::ChildKeys) {
             res = RegEnumValue(parentHandle, i, reinterpret_cast<wchar_t *>(buff.data()), &l, 0, 0, 0, 0);
         } else {

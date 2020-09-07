@@ -678,7 +678,7 @@ QVariant QWindowsMimeText::convertToMime(const QString &mime, LPDATAOBJECT pData
             data = getData(CF_TEXT, pDataObj);
             if (!data.isEmpty()) {
                 const char* d = data.data();
-                const unsigned s = qstrlen(d);
+                const unsigned s = unsigned(qstrlen(d));
                 QByteArray r(data.size()+1, '\0');
                 char* o = r.data();
                 int j=0;
