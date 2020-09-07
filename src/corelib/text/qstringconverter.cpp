@@ -852,7 +852,7 @@ int QUtf8::compareUtf8(const char *utf8, qsizetype u8len, const QChar *utf16, qs
 
 int QUtf8::compareUtf8(const char *utf8, qsizetype u8len, QLatin1String s)
 {
-    uint uc1;
+    uint uc1 = QChar::Null;
     auto src1 = reinterpret_cast<const uchar *>(utf8);
     auto end1 = src1 + u8len;
     auto src2 = reinterpret_cast<const uchar *>(s.latin1());
