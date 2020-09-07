@@ -51,7 +51,6 @@ QT_BEGIN_NAMESPACE
 class QAbstractPrintDialogPrivate;
 class QPrinter;
 
-// ### QtPrintNG: merge this class with QPrintDialog
 class Q_PRINTSUPPORT_EXPORT QAbstractPrintDialog : public QDialog
 {
     Q_DECLARE_PRIVATE(QAbstractPrintDialog)
@@ -67,15 +66,11 @@ public:
     };
 
     enum PrintDialogOption {
-        None                    = 0x0000, // obsolete
         PrintToFile             = 0x0001,
         PrintSelection          = 0x0002,
         PrintPageRange          = 0x0004,
         PrintShowPageSize       = 0x0008,
         PrintCollateCopies      = 0x0010,
-#if QT_DEPRECATED_SINCE(5, 14)
-        DontUseSheet Q_DECL_ENUMERATOR_DEPRECATED = 0x0020,
-#endif
         PrintCurrentPage        = 0x0040
     };
     Q_ENUM(PrintDialogOption)
@@ -85,12 +80,6 @@ public:
 
     explicit QAbstractPrintDialog(QPrinter *printer, QWidget *parent = nullptr);
     ~QAbstractPrintDialog();
-
-    // obsolete
-    void addEnabledOption(PrintDialogOption option);
-    void setEnabledOptions(PrintDialogOptions options);
-    PrintDialogOptions enabledOptions() const;
-    bool isOptionEnabled(PrintDialogOption option) const;
 
     void setOptionTabs(const QList<QWidget*> &tabs);
 

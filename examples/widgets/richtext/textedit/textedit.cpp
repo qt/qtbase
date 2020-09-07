@@ -547,7 +547,7 @@ void TextEdit::filePrint()
     QPrinter printer(QPrinter::HighResolution);
     QPrintDialog *dlg = new QPrintDialog(&printer, this);
     if (textEdit->textCursor().hasSelection())
-        dlg->addEnabledOption(QAbstractPrintDialog::PrintSelection);
+        dlg->setOption(QAbstractPrintDialog::PrintSelection);
     dlg->setWindowTitle(tr("Print Document"));
     if (dlg->exec() == QDialog::Accepted)
         textEdit->print(&printer);

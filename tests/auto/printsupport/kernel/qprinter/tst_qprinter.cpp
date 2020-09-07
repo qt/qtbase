@@ -65,7 +65,6 @@ private slots:
 #if QT_CONFIG(printer)
     void testPageRectAndPaperRect();
     void testPageRectAndPaperRect_data();
-    void testSetOptions();
     void testMargins_data();
     void testMargins();
     void testPageSetupDialog();
@@ -134,8 +133,6 @@ void tst_QPrinter::initTestCase()
 }
 
 #if QT_CONFIG(printer)
-
-#define MYCOMPARE(a, b) QCOMPARE(QVariant((int)a), QVariant((int)b))
 
 void tst_QPrinter::testPageSetupDialog()
 {
@@ -257,33 +254,6 @@ void tst_QPrinter::testPageRectAndPaperRect()
 
     QVERIFY(printer->pageLayout().orientation() == QPageLayout::Portrait || pageRect.width() > pageRect.height());
     QVERIFY(printer->pageLayout().orientation() != QPageLayout::Portrait || pageRect.width() < pageRect.height());
-}
-
-void tst_QPrinter::testSetOptions()
-{
-    QPrinter prn;
-    QPrintDialog dlg(&prn);
-
-    // Verify default values
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintToFile), true);
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintSelection), false);
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintPageRange), true);
-
-    dlg.setEnabledOptions(QAbstractPrintDialog::PrintPageRange);
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintToFile), false);
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintSelection), false);
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintPageRange), true);
-
-    dlg.setEnabledOptions((QAbstractPrintDialog::PrintDialogOptions(QAbstractPrintDialog::PrintSelection
-                                                                    | QAbstractPrintDialog::PrintPageRange)));
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintToFile), false);
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintSelection), true);
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintPageRange), true);
-
-    dlg.setEnabledOptions(QAbstractPrintDialog::PrintSelection);
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintToFile), false);
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintSelection), true);
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintPageRange), false);
 }
 
 void tst_QPrinter::testMargins_data()
@@ -556,7 +526,7 @@ void tst_QPrinter::printDialogCompleter()
     if (dialog.printer()->outputFormat() != QPrinter::NativeFormat)
         QSKIP("Dialog cannot be used with non-native formats");
 #endif
-    dialog.setEnabledOptions(QAbstractPrintDialog::PrintToFile);
+    dialog.setOption(QAbstractPrintDialog::PrintToFile);
     dialog.show();
 
     QVERIFY(QTest::qWaitForWindowActive(&dialog));
@@ -625,11 +595,11 @@ void tst_QPrinter::testCurrentPage()
     QPrintDialog dialog(&printer);
 
     // Test default Current Page option to off
-    QCOMPARE(dialog.isOptionEnabled(QPrintDialog::PrintCurrentPage), false);
+    QVERIFY(!dialog.testOption(QPrintDialog::PrintCurrentPage));
 
     // Test enable Current Page option
     dialog.setOption(QPrintDialog::PrintCurrentPage);
-    QCOMPARE(dialog.isOptionEnabled(QPrintDialog::PrintCurrentPage), true);
+    QVERIFY(dialog.testOption(QPrintDialog::PrintCurrentPage));
 
 }
 

@@ -98,21 +98,21 @@ static void qt_win_setup_PRINTDLGEX(PRINTDLGEX *pd, QWidget *parent,
     pd->Flags = PD_RETURNDC;
     pd->Flags |= PD_USEDEVMODECOPIESANDCOLLATE;
 
-    if (!pdlg->isOptionEnabled(QPrintDialog::PrintSelection))
+    if (!pdlg->testOption(QPrintDialog::PrintSelection))
         pd->Flags |= PD_NOSELECTION;
-    if (pdlg->isOptionEnabled(QPrintDialog::PrintPageRange)) {
+    if (pdlg->testOption(QPrintDialog::PrintPageRange)) {
         pd->nMinPage = pdlg->minPage();
         pd->nMaxPage = pdlg->maxPage();
     }
 
-    if(!pdlg->isOptionEnabled(QPrintDialog::PrintToFile))
+    if (!pdlg->testOption(QPrintDialog::PrintToFile))
         pd->Flags |= PD_DISABLEPRINTTOFILE;
 
-    if (pdlg->isOptionEnabled(QPrintDialog::PrintSelection) && pdlg->printRange() == QPrintDialog::Selection)
+    if (pdlg->testOption(QPrintDialog::PrintSelection) && pdlg->printRange() == QPrintDialog::Selection)
         pd->Flags |= PD_SELECTION;
-    else if (pdlg->isOptionEnabled(QPrintDialog::PrintPageRange) && pdlg->printRange() == QPrintDialog::PageRange)
+    else if (pdlg->testOption(QPrintDialog::PrintPageRange) && pdlg->printRange() == QPrintDialog::PageRange)
         pd->Flags |= PD_PAGENUMS;
-    else if (pdlg->isOptionEnabled(QPrintDialog::PrintCurrentPage) && pdlg->printRange() == QPrintDialog::CurrentPage)
+    else if (pdlg->testOption(QPrintDialog::PrintCurrentPage) && pdlg->printRange() == QPrintDialog::CurrentPage)
         pd->Flags |= PD_CURRENTPAGE;
     else
         pd->Flags |= PD_ALLPAGES;
@@ -123,7 +123,7 @@ static void qt_win_setup_PRINTDLGEX(PRINTDLGEX *pd, QWidget *parent,
         pd->Flags |= PD_NOPAGENUMS;
 
     // Disable Current Page option if not required as default is Enabled
-    if (!pdlg->isOptionEnabled(QPrintDialog::PrintCurrentPage))
+    if (!pdlg->testOption(QPrintDialog::PrintCurrentPage))
         pd->Flags |= PD_NOCURRENTPAGE;
 
     // Default to showing the General tab first

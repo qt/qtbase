@@ -78,20 +78,12 @@ QT_BEGIN_NAMESPACE
 
     Used to specify which parts of the print dialog should be visible.
 
-    \value None None of the options are enabled.
     \value PrintToFile The print to file option is enabled.
     \value PrintSelection The print selection option is enabled.
     \value PrintPageRange The page range selection option is enabled.
     \value PrintShowPageSize  Show the page size + margins page only if this is enabled.
     \value PrintCollateCopies The collate copies option is enabled
     \value PrintCurrentPage The print current page option is enabled
-
-    This value is obsolete and does nothing since Qt 4.5:
-
-    \value DontUseSheet In previous versions of Qt, exec() the print dialog
-    would create a sheet by default the dialog was given a parent.
-    This is no longer supported in Qt 4.5.  If you want to use sheets, use
-    QPrintDialog::open() instead.
 */
 
 /*!
@@ -185,50 +177,6 @@ QPrintDialog::PrintDialogOptions QPrintDialog::options() const
 {
     auto *d = static_cast<const QAbstractPrintDialogPrivate *>(d_ptr.data());
     return d->options;
-}
-
-/*!
-    \obsolete
-
-    Use QPrintDialog::setOptions() instead.
-*/
-void QAbstractPrintDialog::setEnabledOptions(PrintDialogOptions options)
-{
-    Q_D(QAbstractPrintDialog);
-    d->options = options;
-}
-
-/*!
-    \obsolete
-
-    Use QPrintDialog::setOption(\a option, true) instead.
-*/
-void QAbstractPrintDialog::addEnabledOption(PrintDialogOption option)
-{
-    Q_D(QAbstractPrintDialog);
-    d->options |= option;
-}
-
-/*!
-    \obsolete
-
-    Use QPrintDialog::options() instead.
-*/
-QAbstractPrintDialog::PrintDialogOptions QAbstractPrintDialog::enabledOptions() const
-{
-    Q_D(const QAbstractPrintDialog);
-    return d->options;
-}
-
-/*!
-    \obsolete
-
-    Use QPrintDialog::testOption(\a option) instead.
-*/
-bool QAbstractPrintDialog::isOptionEnabled(PrintDialogOption option) const
-{
-    Q_D(const QAbstractPrintDialog);
-    return d->options & option;
 }
 
 /*!
