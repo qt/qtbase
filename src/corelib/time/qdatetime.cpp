@@ -3839,23 +3839,17 @@ qint64 QDateTime::toSecsSinceEpoch() const
 */
 void QDateTime::setMSecsSinceEpoch(qint64 msecs)
 {
-    const auto spec = getSpec(d);
     auto status = getStatus(d);
+    const auto spec = extractSpec(status);
 
     status &= ~QDateTimePrivate::ValidityMask;
     switch (spec) {
     case Qt::UTC:
-        status = status
-                    | QDateTimePrivate::ValidDate
-                    | QDateTimePrivate::ValidTime
-                    | QDateTimePrivate::ValidDateTime;
+        status |= QDateTimePrivate::ValidWhenMask;
         break;
     case Qt::OffsetFromUTC:
         msecs = msecs + (d->m_offsetFromUtc * 1000);
-        status = status
-                    | QDateTimePrivate::ValidDate
-                    | QDateTimePrivate::ValidTime
-                    | QDateTimePrivate::ValidDateTime;
+        status |= QDateTimePrivate::ValidWhenMask;
         break;
     case Qt::TimeZone:
         Q_ASSERT(!d.isShort());
@@ -3876,10 +3870,7 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
             d->m_offsetFromUtc = d->m_timeZone.d->standardTimeOffset(msecs);
         }
         msecs = msecs + (d->m_offsetFromUtc * 1000);
-        status = status
-                    | QDateTimePrivate::ValidDate
-                    | QDateTimePrivate::ValidTime
-                    | QDateTimePrivate::ValidDateTime;
+        status |= QDateTimePrivate::ValidWhenMask;
 #endif // timezone
         break;
     case Qt::LocalTime: {
