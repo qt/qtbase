@@ -214,6 +214,7 @@ constexpr inline const QPoint operator/(const QPoint &p, qreal c)
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QPoint &);
 #endif
 
+Q_CORE_EXPORT size_t qHash(QPoint key, size_t seed = 0) noexcept;
 
 
 

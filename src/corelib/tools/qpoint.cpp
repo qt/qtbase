@@ -41,6 +41,7 @@
 #include "qdatastream.h"
 
 #include <private/qdebug_p.h>
+#include <QtCore/qhashfunctions.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -482,6 +483,19 @@ QDebug operator<<(QDebug dbg, const QPointF &p)
     return dbg;
 }
 #endif
+
+/*!
+    \fn size_t qHash(QPoint key, size_t seed = 0)
+    \relates QHash
+    \since 6.0
+
+    Returns the hash value for the \a key, using \a seed to seed the
+    calculation.
+*/
+size_t qHash(QPoint key, size_t seed) noexcept
+{
+    return qHashMulti(seed, key.x(), key.y());
+}
 
 /*!
     \class QPointF

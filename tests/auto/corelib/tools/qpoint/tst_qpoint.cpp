@@ -346,6 +346,9 @@ void tst_QPoint::operator_eq()
     QCOMPARE(equal, expectEqual);
     bool notEqual = point1 != point2;
     QCOMPARE(notEqual, !expectEqual);
+
+    if (equal)
+        QCOMPARE(qHash(point1), qHash(point2));
 }
 
 #ifndef QT_NO_DATASTREAM

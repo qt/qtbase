@@ -53,19 +53,6 @@
 #include "slippymap.h"
 #include "qmath.h"
 
-#ifdef QT_NAMESPACE
-QT_BEGIN_NAMESPACE
-size_t qHash(const QT_NAMESPACE::QPoint& p)
-#else
-size_t qHash(const QPoint& p)
-#endif
-{
-    return p.x() * 17 ^ p.y();
-}
-#ifdef QT_NAMESPACE
-QT_END_NAMESPACE
-#endif
-
 // tile size in pixels
 const int tdim = 256;
 
