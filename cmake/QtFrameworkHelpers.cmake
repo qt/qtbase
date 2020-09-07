@@ -1,32 +1,51 @@
 macro(qt_find_apple_system_frameworks)
     if(APPLE)
-        find_library(FWAppKit AppKit)
-        find_library(FWAssetsLibrary AssetsLibrary)
-        find_library(FWAudioToolbox AudioToolbox)
-        find_library(FWApplicationServices ApplicationServices)
-        find_library(FWCarbon Carbon)
-        find_library(FWCoreFoundation CoreFoundation)
-        find_library(FWCoreServices CoreServices)
-        find_library(FWCoreGraphics CoreGraphics)
-        find_library(FWCoreText CoreText)
-        find_library(FWCoreVideo CoreVideo)
-        find_library(FWcups cups)
-        find_library(FWDiskArbitration DiskArbitration)
-        find_library(FWFoundation Foundation)
-        find_library(FWIOBluetooth IOBluetooth)
-        find_library(FWIOKit IOKit)
-        find_library(FWIOSurface IOSurface)
-        find_library(FWImageIO ImageIO)
-        find_library(FWMetal Metal)
-        find_library(FWMobileCoreServices MobileCoreServices)
-        find_library(FWQuartzCore QuartzCore)
-        find_library(FWSecurity Security)
-        find_library(FWSystemConfiguration SystemConfiguration)
-        find_library(FWUIKit UIKit)
-        find_library(FWWatchKit WatchKit)
-        find_library(FWGameController GameController)
+        qt_internal_find_apple_system_framework(FWAppKit AppKit)
+        qt_internal_find_apple_system_framework(FWAssetsLibrary AssetsLibrary)
+        qt_internal_find_apple_system_framework(FWAudioToolbox AudioToolbox)
+        qt_internal_find_apple_system_framework(FWApplicationServices ApplicationServices)
+        qt_internal_find_apple_system_framework(FWCarbon Carbon)
+        qt_internal_find_apple_system_framework(FWCoreFoundation CoreFoundation)
+        qt_internal_find_apple_system_framework(FWCoreServices CoreServices)
+        qt_internal_find_apple_system_framework(FWCoreGraphics CoreGraphics)
+        qt_internal_find_apple_system_framework(FWCoreText CoreText)
+        qt_internal_find_apple_system_framework(FWCoreVideo CoreVideo)
+        qt_internal_find_apple_system_framework(FWDiskArbitration DiskArbitration)
+        qt_internal_find_apple_system_framework(FWFoundation Foundation)
+        qt_internal_find_apple_system_framework(FWIOBluetooth IOBluetooth)
+        qt_internal_find_apple_system_framework(FWIOKit IOKit)
+        qt_internal_find_apple_system_framework(FWIOSurface IOSurface)
+        qt_internal_find_apple_system_framework(FWImageIO ImageIO)
+        qt_internal_find_apple_system_framework(FWMetal Metal)
+        qt_internal_find_apple_system_framework(FWMobileCoreServices MobileCoreServices)
+        qt_internal_find_apple_system_framework(FWQuartzCore QuartzCore)
+        qt_internal_find_apple_system_framework(FWSecurity Security)
+        qt_internal_find_apple_system_framework(FWSystemConfiguration SystemConfiguration)
+        qt_internal_find_apple_system_framework(FWUIKit UIKit)
+
+        qt_internal_find_apple_system_framework(FWWatchKit WatchKit)
+        qt_internal_find_apple_system_framework(FWGameController GameController)
     endif()
 endmacro()
+
+# Given framework_name == 'IOKit', sets non-cache variable 'FWIOKit' to '-framework IOKit' in
+# the calling directory scope if the framework is found, or 'IOKit-NOTFOUND'.
+function(qt_internal_find_apple_system_framework out_var framework_name)
+    # To avoid creating many FindFoo.cmake files for each apple system framework, populate each
+    # FWFoo variable with '-framework Foo' instead of an absolute path to the framework. This makes
+    # the generated CMake target files relocatable, so that Xcode SDK absolute paths are not
+    # hardcoded, like with Xcode11.app on the CI.
+    # We might revisit this later.
+    set(cache_var_name "${out_var}Internal")
+
+    find_library(${cache_var_name} "${framework_name}")
+
+    if(${cache_var_name} AND ${cache_var_name} MATCHES ".framework$")
+        set(${out_var} "-framework ${framework_name}" PARENT_SCOPE)
+    else()
+        set(${out_var} "${out_var}-NOTFOUND" PARENT_SCOPE)
+    endif()
+endfunction()
 
 # Copy header files to QtXYZ.framework/Versions/6/Headers/
 # Use this function for header files that
