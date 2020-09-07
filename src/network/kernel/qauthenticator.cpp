@@ -40,6 +40,7 @@
 #include <qauthenticator.h>
 #include <qauthenticator_p.h>
 #include <qdebug.h>
+#include <qloggingcategory.h>
 #include <qhash.h>
 #include <qbytearray.h>
 #include <qcryptographichash.h>
@@ -67,6 +68,9 @@
 #endif // Q_CONFIG(sspi)
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcAuthenticator);
+Q_LOGGING_CATEGORY(lcAuthenticator, "qt.network.authenticator");
 
 static QByteArray qNtlmPhase1();
 static QByteArray qNtlmPhase3(QAuthenticatorPrivate *ctx, const QByteArray& phase2data);
@@ -1673,7 +1677,7 @@ static void q_GSSAPI_error_int(const char *message, OM_uint32 stat, int type)
 
     do {
         gss_display_status(&minStat, stat, type, GSS_C_NO_OID, &msgCtx, &msg);
-        qDebug() << message << ": " << reinterpret_cast<const char*>(msg.value);
+        qCDebug(lcAuthenticator) << message << ": " << reinterpret_cast<const char*>(msg.value);
         gss_release_buffer(&minStat, &msg);
     } while (msgCtx);
 }
