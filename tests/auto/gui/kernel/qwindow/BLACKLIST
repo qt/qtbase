@@ -23,7 +23,6 @@ rhel-7.4
 [exposeEventOnShrink_QTBUG54040]
 # QTBUG-69155
 android
-opensuse
 [initialSize]
 # QTBUG-69159
 android
