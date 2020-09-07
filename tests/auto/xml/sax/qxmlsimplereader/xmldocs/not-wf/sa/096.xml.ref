@@ -1,3 +1,0 @@
-setDocumentLocator(locator={columnNumber=1, lineNumber=1})
-startDocument()
-   fatalError(exception={columnNumber=20, lineNumber=1, publicId="", systemId="", message="unexpected character"})

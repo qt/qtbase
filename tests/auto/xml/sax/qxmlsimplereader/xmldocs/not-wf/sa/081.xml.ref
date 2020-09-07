@@ -1,6 +1,0 @@
-setDocumentLocator(locator={columnNumber=1, lineNumber=1})
-startDocument()
-   startDTD(name="doc", publicId="", systemId="")
-      externalEntityDecl(name="e", publicId="", systemId="nul")
-   endDTD()
-   fatalError(exception={columnNumber=11, lineNumber=4, publicId="", systemId="", message="external parsed general entity reference not allowed in attribute value"})

@@ -41,7 +41,6 @@
 
 #include <qcoreapplication.h>
 #include <qglobal.h>
-#include <qxml.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -93,29 +92,6 @@ private:
     QXmlStreamReader *reader;
 };
 
-#if QT_DEPRECATED_SINCE(5, 15)
-
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-
-class QSAXDocumentLocator : public QXmlDocumentLocator
-{
-public:
-    ~QSAXDocumentLocator() override = default;
-
-    int column() const override;
-    int line() const override;
-
-    void setLocator(QXmlLocator *l);
-
-private:
-    QXmlLocator *locator = nullptr;
-};
-
-QT_WARNING_POP
-
-#endif
-
 /**************************************************************
  *
  * QDomBuilder
@@ -129,12 +105,6 @@ public:
     ~QDomBuilder();
 
     bool endDocument();
-#if QT_DEPRECATED_SINCE(5, 15)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    bool startElement(const QString &nsURI, const QString &qName, const QXmlAttributes &atts);
-QT_WARNING_POP
-#endif
     bool startElement(const QString &nsURI, const QString &qName, const QXmlStreamAttributes &atts);
     bool endElement();
     bool characters(const QString &characters, bool cdata = false);
@@ -165,68 +135,6 @@ private:
     QString entityName;
     bool nsProcessing;
 };
-
-#if QT_DEPRECATED_SINCE(5, 15)
-
-/**************************************************************
- *
- * QDomHandler
- *
- **************************************************************/
-
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-
-class QDomHandler : public QXmlDefaultHandler
-{
-public:
-    QDomHandler(QDomDocumentPrivate *d, QXmlSimpleReader *reader, bool namespaceProcessing);
-    ~QDomHandler() override;
-
-    // content handler
-    bool endDocument() override;
-    bool startElement(const QString &nsURI, const QString &localName, const QString &qName,
-                      const QXmlAttributes &atts) override;
-    bool endElement(const QString &nsURI, const QString &localName, const QString &qName) override;
-    bool characters(const QString &ch) override;
-    bool processingInstruction(const QString &target, const QString &data) override;
-    bool skippedEntity(const QString &name) override;
-
-    // error handler
-    bool fatalError(const QXmlParseException &exception) override;
-
-    // lexical handler
-    bool startCDATA() override;
-    bool endCDATA() override;
-    bool startEntity(const QString &) override;
-    bool endEntity(const QString &) override;
-    bool startDTD(const QString &name, const QString &publicId, const QString &systemId) override;
-    bool comment(const QString &ch) override;
-
-    // decl handler
-    bool externalEntityDecl(const QString &name, const QString &publicId,
-                            const QString &systemId) override;
-
-    // DTD handler
-    bool notationDecl(const QString &name, const QString &publicId,
-                      const QString &systemId) override;
-    bool unparsedEntityDecl(const QString &name, const QString &publicId, const QString &systemId,
-                            const QString &notationName) override;
-
-    void setDocumentLocator(QXmlLocator *locator) override;
-
-    QDomBuilder::ErrorInfo errorInfo() const;
-
-private:
-    bool cdata;
-    QXmlSimpleReader *reader;
-    QSAXDocumentLocator locator;
-    QDomBuilder domBuilder;
-};
-
-QT_WARNING_POP
-
-#endif // QT_DEPRECATED_SINCE(5, 15)
 
 /**************************************************************
  *

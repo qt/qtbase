@@ -1,8 +1,0 @@
-setDocumentLocator(locator={columnNumber=1, lineNumber=1})
-startDocument()
-   startDTD(name="doc", publicId="", systemId="")
-      attributeDecl(eName="doc", aName="a", type="", valueDefault="", value="")
-   endDTD()
-   startElement(namespaceURI="", localName="doc", qName="doc", atts=[{localName="a", qName="a", uri="", type="CDATA", value="x\ny"}])
-   endElement(namespaceURI="", localName="doc", qName="doc")
-endDocument()

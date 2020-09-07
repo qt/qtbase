@@ -1,8 +1,0 @@
-encodings/doc_euc-jp.xml     -crlf
-encodings/doc_utf-8.xml      -crlf
-xmldocs/*                    -crlf
-xmldocs/*/*                  -crlf
-xmldocs/*/*/*                -crlf
-xmldocs/*/*/*/*              -crlf
-xmldocs/*/*/*/*/*            -crlf
-xmldocs/*/*/*/*/*/*          -crlf

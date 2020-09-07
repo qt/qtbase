@@ -1,7 +1,0 @@
-setDocumentLocator(locator={columnNumber=1, lineNumber=1})
-startDocument()
-   startDTD(name="doc", publicId="", systemId="")
-      internatlEntityDecl(name="e1", value="&e2;")
-      internatlEntityDecl(name="e2", value="&e3;")
-      internatlEntityDecl(name="e3", value="&e1;")
-      fatalError(exception={columnNumber=34, lineNumber=6, publicId="", systemId="", message="recursive entities"})

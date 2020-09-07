@@ -112,8 +112,7 @@ SOURCES += \
            ../../corelib/tools/qsize.cpp \
            ../../corelib/tools/qline.cpp \
            ../../corelib/tools/qversionnumber.cpp \
-           ../../xml/dom/qdom.cpp \
-           ../../xml/sax/qxml.cpp
+           ../../xml/dom/qdom.cpp
 
 unix:SOURCES += ../../corelib/kernel/qcore_unix.cpp \
                 ../../corelib/kernel/qsharedmemory_posix.cpp \

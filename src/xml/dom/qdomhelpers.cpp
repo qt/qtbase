@@ -44,132 +44,10 @@
 #include "qdomhelpers_p.h"
 #include "qdom_p.h"
 #include "qxmlstream.h"
-#include "private/qxml_p.h"
+
+#include <stack>
 
 QT_BEGIN_NAMESPACE
-
-#if QT_DEPRECATED_SINCE(5, 15)
-
-/**************************************************************
- *
- * QDomHandler
- *
- **************************************************************/
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-QDomHandler::QDomHandler(QDomDocumentPrivate *adoc, QXmlSimpleReader *areader,
-                         bool namespaceProcessing)
-    : cdata(false), reader(areader), domBuilder(adoc, &locator, namespaceProcessing)
-{
-}
-
-QDomHandler::~QDomHandler() {}
-
-bool QDomHandler::endDocument()
-{
-    return domBuilder.endDocument();
-}
-
-bool QDomHandler::startDTD(const QString &name, const QString &publicId, const QString &systemId)
-{
-    return domBuilder.startDTD(name, publicId, systemId);
-}
-
-bool QDomHandler::startElement(const QString &nsURI, const QString &, const QString &qName,
-                               const QXmlAttributes &atts)
-{
-    return domBuilder.startElement(nsURI, qName, atts);
-}
-
-bool QDomHandler::endElement(const QString &, const QString &, const QString &)
-{
-    return domBuilder.endElement();
-}
-
-bool QDomHandler::characters(const QString &ch)
-{
-    return domBuilder.characters(ch, cdata);
-}
-
-bool QDomHandler::processingInstruction(const QString &target, const QString &data)
-{
-    return domBuilder.processingInstruction(target, data);
-}
-
-bool QDomHandler::skippedEntity(const QString &name)
-{
-    // we can only handle inserting entity references into content
-    if (reader && !reader->d_ptr->skipped_entity_in_content)
-        return true;
-
-    return domBuilder.skippedEntity(name);
-}
-
-bool QDomHandler::fatalError(const QXmlParseException &exception)
-{
-    domBuilder.errorMsg = exception.message();
-    domBuilder.errorLine = exception.lineNumber();
-    domBuilder.errorColumn = exception.columnNumber();
-    return QXmlDefaultHandler::fatalError(exception);
-}
-
-bool QDomHandler::startCDATA()
-{
-    cdata = true;
-    return true;
-}
-
-bool QDomHandler::endCDATA()
-{
-    cdata = false;
-    return true;
-}
-
-bool QDomHandler::startEntity(const QString &name)
-{
-    return domBuilder.startEntity(name);
-}
-
-bool QDomHandler::endEntity(const QString &)
-{
-    return domBuilder.endEntity();
-}
-
-bool QDomHandler::comment(const QString &ch)
-{
-    return domBuilder.comment(ch);
-}
-
-bool QDomHandler::unparsedEntityDecl(const QString &name, const QString &publicId,
-                                     const QString &systemId, const QString &notationName)
-{
-    return domBuilder.unparsedEntityDecl(name, publicId, systemId, notationName);
-}
-
-bool QDomHandler::externalEntityDecl(const QString &name, const QString &publicId,
-                                     const QString &systemId)
-{
-    return unparsedEntityDecl(name, publicId, systemId, QString());
-}
-
-bool QDomHandler::notationDecl(const QString &name, const QString &publicId,
-                               const QString &systemId)
-{
-    return domBuilder.notationDecl(name, publicId, systemId);
-}
-
-void QDomHandler::setDocumentLocator(QXmlLocator *locator)
-{
-    this->locator.setLocator(locator);
-}
-
-QDomBuilder::ErrorInfo QDomHandler::errorInfo() const
-{
-    return domBuilder.error();
-}
-QT_WARNING_POP
-
-#endif // QT_DEPRECATED_SINCE(5, 15)
 
 /**************************************************************
  *
@@ -188,36 +66,6 @@ int QDomDocumentLocator::line() const
     Q_ASSERT(reader);
     return static_cast<int>(reader->lineNumber());
 }
-
-#if QT_DEPRECATED_SINCE(5, 15)
-
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-
-void QSAXDocumentLocator::setLocator(QXmlLocator *l)
-{
-    locator = l;
-}
-
-int QSAXDocumentLocator::column() const
-{
-    if (!locator)
-        return 0;
-
-    return static_cast<int>(locator->columnNumber());
-}
-
-int QSAXDocumentLocator::line() const
-{
-    if (!locator)
-        return 0;
-
-    return static_cast<int>(locator->lineNumber());
-}
-
-QT_WARNING_POP
-
-#endif // QT_DEPRECATED_SINCE(5, 15)
 
 /**************************************************************
  *
@@ -252,44 +100,6 @@ bool QDomBuilder::startDTD(const QString &name, const QString &publicId, const Q
     doc->doctype()->systemId = systemId;
     return true;
 }
-
-#if QT_DEPRECATED_SINCE(5, 15)
-
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-bool QDomBuilder::startElement(const QString &nsURI, const QString &qName,
-                               const QXmlAttributes &atts)
-{
-    // tag name
-    QDomNodePrivate *n;
-    if (nsProcessing) {
-        n = doc->createElementNS(nsURI, qName);
-    } else {
-        n = doc->createElement(qName);
-    }
-
-    if (!n)
-        return false;
-
-    n->setLocation(locator->line(), locator->column());
-
-    node->appendChild(n);
-    node = n;
-
-    // attributes
-    for (int i = 0; i < atts.length(); i++) {
-        auto domElement = static_cast<QDomElementPrivate *>(node);
-        if (nsProcessing)
-            domElement->setAttributeNS(atts.uri(i), atts.qName(i), atts.value(i));
-        else
-            domElement->setAttribute(atts.qName(i), atts.value(i));
-    }
-
-    return true;
-}
-QT_WARNING_POP
-
-#endif // QT_DEPRECATED_SINCE(5, 15)
 
 bool QDomBuilder::startElement(const QString &nsURI, const QString &qName,
                                const QXmlStreamAttributes &atts)

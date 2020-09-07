@@ -53,7 +53,6 @@
 #include <qregularexpression.h>
 #endif
 #include <qtextstream.h>
-#include <qxml.h>
 #include <qvariant.h>
 #include <qshareddata.h>
 #include <qdebug.h>
@@ -5683,57 +5682,6 @@ void QDomDocumentPrivate::clear()
     QDomNodePrivate::clear();
 }
 
-#if QT_DEPRECATED_SINCE(5, 15)
-
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-static void initializeReader(QXmlSimpleReader &reader, bool namespaceProcessing)
-{
-    reader.setFeature(QLatin1String("http://xml.org/sax/features/namespaces"), namespaceProcessing);
-    reader.setFeature(QLatin1String("http://xml.org/sax/features/namespace-prefixes"), !namespaceProcessing);
-    reader.setFeature(QLatin1String("http://trolltech.com/xml/features/report-whitespace-only-CharData"), false); // Shouldn't change in Qt 4
-}
-
-bool QDomDocumentPrivate::setContent(QXmlInputSource *source, bool namespaceProcessing, QString *errorMsg, int *errorLine, int *errorColumn)
-{
-    QXmlSimpleReader reader;
-    initializeReader(reader, namespaceProcessing);
-    return setContent(source, &reader, &reader, errorMsg, errorLine, errorColumn);
-}
-
-bool QDomDocumentPrivate::setContent(QXmlInputSource *source, QXmlReader *reader, QXmlSimpleReader *simpleReader, QString *errorMsg, int *errorLine, int *errorColumn)
-{
-    clear();
-    impl = new QDomImplementationPrivate;
-    type = new QDomDocumentTypePrivate(this, this);
-    type->ref.deref();
-
-    bool namespaceProcessing = reader->feature(QLatin1String("http://xml.org/sax/features/namespaces"))
-        && !reader->feature(QLatin1String("http://xml.org/sax/features/namespace-prefixes"));
-
-    QDomHandler hnd(this, simpleReader, namespaceProcessing);
-    reader->setContentHandler(&hnd);
-    reader->setErrorHandler(&hnd);
-    reader->setLexicalHandler(&hnd);
-    reader->setDeclHandler(&hnd);
-    reader->setDTDHandler(&hnd);
-
-    if (!reader->parse(source)) {
-        if (errorMsg)
-            *errorMsg = std::get<0>(hnd.errorInfo());
-        if (errorLine)
-            *errorLine = std::get<1>(hnd.errorInfo());
-        if (errorColumn)
-            *errorColumn = std::get<2>(hnd.errorInfo());
-        return false;
-    }
-
-    return true;
-}
-QT_WARNING_POP
-
-#endif // QT_DEPRECATED_SINCE(5, 15)
-
 bool QDomDocumentPrivate::setContent(QXmlStreamReader *reader, bool namespaceProcessing,
                                      QString *errorMsg, int *errorLine, int *errorColumn)
 {
@@ -6273,42 +6221,10 @@ bool QDomDocument::setContent(QIODevice* dev, bool namespaceProcessing, QString 
     if (!impl)
         impl = new QDomDocumentPrivate();
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0) && QT_DEPRECATED_SINCE(5, 15)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    QXmlInputSource source(dev);
-QT_WARNING_POP
-    return IMPL->setContent(&source, namespaceProcessing, errorMsg, errorLine, errorColumn);
-#else
     QXmlStreamReader streamReader(dev);
     streamReader.setNamespaceProcessing(namespaceProcessing);
     return IMPL->setContent(&streamReader, namespaceProcessing, errorMsg, errorLine, errorColumn);
-#endif
 }
-
-#if QT_DEPRECATED_SINCE(5, 15)
-/*!
-    \overload
-    \obsolete
-    \since 4.5
-
-    This function reads the XML document from the QXmlInputSource \a source,
-    returning true if the content was successfully parsed; otherwise returns \c false.
-
-*/
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-bool QDomDocument::setContent(QXmlInputSource *source, bool namespaceProcessing, QString *errorMsg, int *errorLine, int *errorColumn )
-{
-    if (!impl)
-        impl = new QDomDocumentPrivate();
-    QXmlSimpleReader reader;
-    initializeReader(reader, namespaceProcessing);
-    return IMPL->setContent(source, &reader, &reader, errorMsg, errorLine, errorColumn);
-}
-QT_WARNING_POP
-
-#endif
 
 /*!
     \overload
@@ -6352,33 +6268,6 @@ bool QDomDocument::setContent(QIODevice* dev, QString *errorMsg, int *errorLine,
 {
     return setContent(dev, false, errorMsg, errorLine, errorColumn);
 }
-
-#if QT_DEPRECATED_SINCE(5, 15)
-/*!
-    \overload
-    \obsolete
-
-    This function reads the XML document from the QXmlInputSource \a source and
-    parses it with the QXmlReader \a reader, returning true if the content was
-    successfully parsed; otherwise returns \c false.
-
-    This function doesn't change the features of the \a reader. If you want to
-    use certain features for parsing you can use this function to set up the
-    reader appropriately.
-
-    \sa QXmlSimpleReader
-*/
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-bool QDomDocument::setContent(QXmlInputSource *source, QXmlReader *reader, QString *errorMsg, int *errorLine, int *errorColumn )
-{
-    if (!impl)
-        impl = new QDomDocumentPrivate();
-    return IMPL->setContent(source, reader, nullptr, errorMsg, errorLine, errorColumn);
-}
-QT_WARNING_POP
-
-#endif
 
 /*!
     \overload

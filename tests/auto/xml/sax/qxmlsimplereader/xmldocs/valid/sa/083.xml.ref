@@ -1,8 +1,0 @@
-setDocumentLocator(locator={columnNumber=1, lineNumber=1})
-startDocument()
-   startDTD(name="doc", publicId="", systemId="")
-      externalEntityDecl(name="%e", publicId="whatever", systemId="e.dtd")
-   endDTD()
-   startElement(namespaceURI="", localName="doc", qName="doc", atts=[])
-   endElement(namespaceURI="", localName="doc", qName="doc")
-endDocument()

@@ -1,5 +1,0 @@
-setDocumentLocator(locator={columnNumber=1, lineNumber=1})
-startDocument()
-   startDTD(name="doc", publicId="", systemId="")
-      internatlEntityDecl(name="%e", value="")
-      fatalError(exception={columnNumber=3, lineNumber=4, publicId="", systemId="", message="error occurred while parsing document type definition"})

@@ -1,7 +1,0 @@
-setDocumentLocator(locator={columnNumber=1, lineNumber=1})
-startDocument()
-   startElement(namespaceURI="", localName="doc", qName="doc", atts=[])
-      characters(ch="\r\n")
-      startElement(namespaceURI="", localName="a", qName="a", atts=[])
-      endElement(namespaceURI="", localName="a", qName="a")
-      fatalError(exception={columnNumber=4, lineNumber=2, publicId="", systemId="", message="error occurred while parsing element"})

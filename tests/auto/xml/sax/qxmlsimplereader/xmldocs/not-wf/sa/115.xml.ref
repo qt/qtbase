@@ -1,6 +1,0 @@
-setDocumentLocator(locator={columnNumber=1, lineNumber=1})
-startDocument()
-   startDTD(name="doc", publicId="", systemId="")
-      internatlEntityDecl(name="e", value="&")
-   endDTD()
-   fatalError(exception={columnNumber=12, lineNumber=4, publicId="", systemId="", message="letter is expected"})

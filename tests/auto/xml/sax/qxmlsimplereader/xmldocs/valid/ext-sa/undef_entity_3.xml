@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<!DOCTYPE foo SYSTEM "foo.dtd" [
-    <!ENTITY a1 "&a2;">
-    <!ENTITY a2 "&a3;">
-    <!ENTITY def "foo">
-]>
-<foo>
-    <a attr="foo&a1;bar&def;ding"/>
-</foo>

@@ -12,6 +12,5 @@ HEADERS += qtxmlglobal.h
 PRECOMPILED_HEADER =
 
 include(dom/dom.pri)
-include(sax/sax.pri)
 
 load(qt_module)

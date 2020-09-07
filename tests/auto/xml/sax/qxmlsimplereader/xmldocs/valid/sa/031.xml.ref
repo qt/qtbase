@@ -1,8 +1,0 @@
-setDocumentLocator(locator={columnNumber=1, lineNumber=1})
-startDocument()
-   processingInstruction(target="xml", data="version='1.0' encoding='UTF-8'")
-   startDTD(name="doc", publicId="", systemId="")
-   endDTD()
-   startElement(namespaceURI="", localName="doc", qName="doc", atts=[])
-   endElement(namespaceURI="", localName="doc", qName="doc")
-endDocument()

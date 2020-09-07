@@ -34,7 +34,6 @@
 #include <QNetworkRequest>
 #include <QtTest/QtTest>
 #include <QUrl>
-#include <QXmlDefaultHandler>
 #include <QXmlStreamReader>
 
 #include "qc14n.h"

@@ -1,7 +1,0 @@
-setDocumentLocator(locator={columnNumber=1, lineNumber=1})
-startDocument()
-   startDTD(name="doc", publicId="", systemId="004-1.ent")
-   endDTD()
-   startElement(namespaceURI="", localName="doc", qName="doc", atts=[])
-   endElement(namespaceURI="", localName="doc", qName="doc")
-endDocument()

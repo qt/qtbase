@@ -127,7 +127,6 @@ qt_extend_target(Bootstrap
         ../../corelib/tools/qsize.cpp
         ../../corelib/tools/qversionnumber.cpp
         ../../xml/dom/qdom.cpp
-        ../../xml/sax/qxml.cpp
     DEFINES
         HAVE_CONFIG_H
         PCRE2_CODE_UNIT_WIDTH=16

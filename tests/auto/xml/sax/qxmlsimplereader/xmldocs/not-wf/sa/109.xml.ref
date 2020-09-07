@@ -1,6 +1,0 @@
-setDocumentLocator(locator={columnNumber=1, lineNumber=1})
-startDocument()
-   startDTD(name="doc", publicId="", systemId="")
-      internatlEntityDecl(name="e", value="<doc></doc>")
-   endDTD()
-   fatalError(exception={columnNumber=1, lineNumber=4, publicId="", systemId="", message="error occurred while parsing element"})

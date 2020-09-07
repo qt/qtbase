@@ -45,7 +45,6 @@
 #include <qhash.h>
 #include <qstring.h>
 #include <qlist.h>
-#include <qxml.h>
 #include <qshareddata.h>
 
 QT_BEGIN_NAMESPACE
@@ -462,15 +461,6 @@ public:
     QDomDocumentPrivate(QDomDocumentPrivate *n, bool deep);
     ~QDomDocumentPrivate();
 
-#if QT_DEPRECATED_SINCE(5, 15)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    bool setContent(QXmlInputSource *source, bool namespaceProcessing, QString *errorMsg,
-                    int *errorLine, int *errorColumn);
-    bool setContent(QXmlInputSource *source, QXmlReader *reader, QXmlSimpleReader *simpleReader,
-                    QString *errorMsg, int *errorLine, int *errorColumn);
-QT_WARNING_POP
-#endif
     bool setContent(QXmlStreamReader *reader, bool namespaceProcessing, QString *errorMsg,
                     int *errorLine, int *errorColumn);
 

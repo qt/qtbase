@@ -1,5 +1,0 @@
-setDocumentLocator(locator={columnNumber=1, lineNumber=1})
-startDocument()
-   startDTD(name="doc", publicId="", systemId="")
-      notationDecl(name="gif", publicId="image/gif", systemId="")
-      fatalError(exception={columnNumber=11, lineNumber=4, publicId="", systemId="", message="letter is expected"})
