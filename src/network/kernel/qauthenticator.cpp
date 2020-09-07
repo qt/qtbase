@@ -30,6 +30,7 @@
 #include <GSS/GSS.h>
 #else
 #include <gssapi/gssapi.h>
+#include <gssapi/gssapi_ext.h>
 #endif // Q_OS_DARWIN
 #endif // Q_CONFIG(sspi)
 
@@ -49,7 +50,6 @@ static QByteArray qSspiStartup(QAuthenticatorPrivate *ctx, QAuthenticatorPrivate
 static QByteArray qSspiContinue(QAuthenticatorPrivate *ctx, QAuthenticatorPrivate::Method method,
                                 QStringView host, QByteArrayView challenge = {});
 #elif QT_CONFIG(gssapi) // GSSAPI
-static bool qGssapiTestGetCredentials(QStringView host);
 static QByteArray qGssapiStartup(QAuthenticatorPrivate *ctx, QStringView host);
 static QByteArray qGssapiContinue(QAuthenticatorPrivate *ctx, QByteArrayView challenge = {});
 #endif // gssapi
@@ -533,9 +533,7 @@ static const char *methodName(QAuthenticatorPrivate::Method method)
 void QAuthenticatorPrivate::parseHttpResponse(const QHttpHeaders &headers,
                                               bool isProxy, QStringView host)
 {
-#if !QT_CONFIG(gssapi)
     Q_UNUSED(host);
-#endif
     const auto search = isProxy ? QHttpHeaders::WellKnownHeader::ProxyAuthenticate
                                 : QHttpHeaders::WellKnownHeader::WWWAuthenticate;
 
@@ -570,13 +568,6 @@ void QAuthenticatorPrivate::parseHttpResponse(const QHttpHeaders &headers,
             headerVal = QByteArrayView(current).mid(7);
         } else if (method < Negotiate && str.startsWith("negotiate"_L1, Qt::CaseInsensitive)) {
 #if QT_CONFIG(sspi) || QT_CONFIG(gssapi) // if it's not supported then we shouldn't try to use it
-#if QT_CONFIG(gssapi)
-            // For GSSAPI there needs to be a KDC set up for the host (afaict).
-            // So let's only conditionally use it if we can fetch the credentials.
-            // Sadly it's a bit slow because it requires a DNS lookup.
-            if (!qGssapiTestGetCredentials(host))
-                continue;
-#endif
             method = Negotiate;
             headerVal = QByteArrayView(current).mid(10);
 #endif
@@ -1836,6 +1827,46 @@ static QByteArray qGssapiStartup(QAuthenticatorPrivate *ctx, QStringView host)
     return qGssapiContinue(ctx);
 }
 
+static gss_cred_id_t qGssapiCreateCredentials(const QByteArray &realm,
+                                              const QByteArray &username,
+                                              const QByteArray &password)
+{
+    OM_uint32 minStat;
+
+    QByteArray qualified = username;
+    if (!realm.isEmpty())
+        qualified += '@' + realm;
+    gss_buffer_desc nameBuffer {
+        size_t(qualified.size()),
+        qualified.data()
+    };
+    gss_name_t importedName;
+    OM_uint32 majStat = gss_import_name(&minStat, &nameBuffer, GSS_C_NT_USER_NAME, &importedName);
+    if (majStat != GSS_S_COMPLETE) {
+        q_GSSAPI_error("gss_import_name error", majStat, minStat);
+        return nullptr;
+    }
+
+    gss_buffer_desc passwordBuffer {
+        size_t(password.size()),
+        const_cast<char *>(password.data())
+    };
+    gss_cred_id_t credHandle;
+    majStat = gss_acquire_cred_with_password(&minStat, importedName, &passwordBuffer,
+                                                       GSS_C_INDEFINITE, GSS_C_NO_OID_SET,
+                                                       GSS_C_INITIATE, &credHandle,
+                                                       nullptr, nullptr);
+
+    OM_uint32 ignored;
+    gss_release_name(&ignored, &importedName);
+
+    if (majStat != GSS_S_COMPLETE) {
+        q_GSSAPI_error("gss_acquire_cred_with_password error", majStat, minStat);
+        return nullptr;
+    }
+    return credHandle;
+}
+
 // Continue GSS authentication with next token as needed
 static QByteArray qGssapiContinue(QAuthenticatorPrivate *ctx, QByteArrayView challenge)
 {
@@ -1849,8 +1880,19 @@ static QByteArray qGssapiContinue(QAuthenticatorPrivate *ctx, QByteArrayView cha
         inBuf.length = challenge.size();
     }
 
+    gss_cred_id_t credHandle = GSS_C_NO_CREDENTIAL;
+    if (!ctx->user.isEmpty()) {
+        credHandle = qGssapiCreateCredentials(ctx->userDomain.toLocal8Bit(),
+                                              ctx->user.toLocal8Bit(),
+                                              ctx->password.toLocal8Bit());
+        if (credHandle == nullptr) {
+            ctx->gssApiHandles.reset(nullptr);
+            return result;
+        }
+    }
+
     majStat = gss_init_sec_context(&minStat,
-                                   GSS_C_NO_CREDENTIAL,
+                                   credHandle,
                                    &ctx->gssApiHandles->gssCtx,
                                    ctx->gssApiHandles->targetName,
                                    GSS_C_NO_OID,
@@ -1862,6 +1904,7 @@ static QByteArray qGssapiContinue(QAuthenticatorPrivate *ctx, QByteArrayView cha
                                    &outBuf,
                                    nullptr,
                                    nullptr);
+    gss_release_cred(&ignored, &credHandle);
 
     if (outBuf.length != 0)
         result = QByteArray(reinterpret_cast<const char*>(outBuf.value), outBuf.length);
@@ -1874,28 +1917,6 @@ static QByteArray qGssapiContinue(QAuthenticatorPrivate *ctx, QByteArrayView cha
     }
 
     return result;
-}
-
-static bool qGssapiTestGetCredentials(QStringView host)
-{
-    gss_name_t serviceName = qGSsapiGetServiceName(host);
-    if (!serviceName)
-        return false; // Something was wrong with the service name, so skip this
-    OM_uint32 minStat;
-    gss_cred_id_t cred;
-    OM_uint32 majStat = gss_acquire_cred(&minStat, serviceName, GSS_C_INDEFINITE,
-                                         GSS_C_NO_OID_SET, GSS_C_INITIATE, &cred, nullptr,
-                                         nullptr);
-
-    OM_uint32 ignored;
-    gss_release_name(&ignored, &serviceName);
-    gss_release_cred(&ignored, &cred);
-
-    if (majStat != GSS_S_COMPLETE) {
-        q_GSSAPI_error("gss_acquire_cred", majStat, minStat);
-        return false;
-    }
-    return true;
 }
 
 // ---------------------------- End of GSSAPI code ----------------------------------------------
