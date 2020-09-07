@@ -198,18 +198,18 @@ tst_QDateTime::tst_QDateTime()
     const uint day = 24 * 3600; // in seconds
     zoneIsCET = (QDateTime(QDate(2038, 1, 19), QTime(4, 14, 7)).toSecsSinceEpoch() == 0x7fffffff
                  // Entries a year apart robustly differ by multiples of day.
-                 && QDateTime(QDate(2015, 7, 1), QTime()).toSecsSinceEpoch() == 1435701600
-                 && QDateTime(QDate(2015, 1, 1), QTime()).toSecsSinceEpoch() == 1420066800
-                 && QDateTime(QDate(2013, 7, 1), QTime()).toSecsSinceEpoch() == 1372629600
-                 && QDateTime(QDate(2013, 1, 1), QTime()).toSecsSinceEpoch() == 1356994800
-                 && QDateTime(QDate(2012, 7, 1), QTime()).toSecsSinceEpoch() == 1341093600
-                 && QDateTime(QDate(2012, 1, 1), QTime()).toSecsSinceEpoch() == 1325372400
-                 && QDateTime(QDate(2008, 7, 1), QTime()).toSecsSinceEpoch() == 1214863200
-                 && QDateTime(QDate(2004, 1, 1), QTime()).toSecsSinceEpoch() == 1072911600
-                 && QDateTime(QDate(2000, 1, 1), QTime()).toSecsSinceEpoch() == 946681200
-                 && QDateTime(QDate(1990, 7, 1), QTime()).toSecsSinceEpoch() == 646783200
-                 && QDateTime(QDate(1990, 1, 1), QTime()).toSecsSinceEpoch() == 631148400
-                 && QDateTime(QDate(1979, 1, 1), QTime()).toSecsSinceEpoch() == 283993200
+                 && QDate(2015, 7, 1).startOfDay().toSecsSinceEpoch() == 1435701600
+                 && QDate(2015, 1, 1).startOfDay().toSecsSinceEpoch() == 1420066800
+                 && QDate(2013, 7, 1).startOfDay().toSecsSinceEpoch() == 1372629600
+                 && QDate(2013, 1, 1).startOfDay().toSecsSinceEpoch() == 1356994800
+                 && QDate(2012, 7, 1).startOfDay().toSecsSinceEpoch() == 1341093600
+                 && QDate(2012, 1, 1).startOfDay().toSecsSinceEpoch() == 1325372400
+                 && QDate(2008, 7, 1).startOfDay().toSecsSinceEpoch() == 1214863200
+                 && QDate(2004, 1, 1).startOfDay().toSecsSinceEpoch() == 1072911600
+                 && QDate(2000, 1, 1).startOfDay().toSecsSinceEpoch() == 946681200
+                 && QDate(1990, 7, 1).startOfDay().toSecsSinceEpoch() == 646783200
+                 && QDate(1990, 1, 1).startOfDay().toSecsSinceEpoch() == 631148400
+                 && QDate(1979, 1, 1).startOfDay().toSecsSinceEpoch() == 283993200
                  // .toSecsSinceEpoch() returns -1 for everything before this:
                  && QDateTime(QDate(1970, 1, 1), QTime(1, 0, 0)).toSecsSinceEpoch() == 0);
     // Use .toMSecsSinceEpoch() if you really need to test anything earlier.
@@ -325,7 +325,7 @@ void tst_QDateTime::ctor()
     QCOMPARE(offset3.date(), offsetDate);
     QCOMPARE(offset3.time(), offsetTime);
 
-    QDateTime offset4(offsetDate, QTime(), Qt::OffsetFromUTC, 60 * 60);
+    QDateTime offset4(offsetDate, QTime(0, 0), Qt::OffsetFromUTC, 60 * 60);
     QCOMPARE(offset4.timeSpec(), Qt::OffsetFromUTC);
     QCOMPARE(offset4.offsetFromUtc(), 60 * 60);
     QCOMPARE(offset4.date(), offsetDate);
@@ -336,7 +336,7 @@ void tst_QDateTime::operator_eq()
 {
     QVERIFY(QDateTime() != QDateTime(QDate(1970, 1, 1), QTime(0, 0))); // QTBUG-79006
     QDateTime dt1(QDate(2004, 3, 24), QTime(23, 45, 57), Qt::UTC);
-    QDateTime dt2(QDate(2005, 3, 11), QTime(), Qt::UTC);
+    QDateTime dt2(QDate(2005, 3, 11), QTime(0, 0), Qt::UTC);
     dt2 = dt1;
     QVERIFY(dt1 == dt2);
 }
@@ -535,12 +535,12 @@ void tst_QDateTime::setSecsSinceEpoch()
 {
     QDateTime dt1;
     dt1.setSecsSinceEpoch(0);
-    QCOMPARE(dt1.toUTC(), QDateTime(QDate(1970, 1, 1), QTime(), Qt::UTC));
+    QCOMPARE(dt1.toUTC(), QDate(1970, 1, 1).startOfDay(Qt::UTC));
     QCOMPARE(dt1.timeSpec(), Qt::LocalTime);
 
     dt1.setTimeSpec(Qt::UTC);
     dt1.setSecsSinceEpoch(0);
-    QCOMPARE(dt1, QDateTime(QDate(1970, 1, 1), QTime(), Qt::UTC));
+    QCOMPARE(dt1, QDate(1970, 1, 1).startOfDay(Qt::UTC));
     QCOMPARE(dt1.timeSpec(), Qt::UTC);
 
     dt1.setSecsSinceEpoch(123456);
@@ -590,7 +590,7 @@ void tst_QDateTime::setMSecsSinceEpoch_data()
 
     QTest::newRow("zero")
             << Q_INT64_C(0)
-            << QDateTime(QDate(1970, 1, 1), QTime(), Qt::UTC)
+            << QDateTime(QDate(1970, 1, 1), QTime(0, 0), Qt::UTC)
             << QDateTime(QDate(1970, 1, 1), QTime(1, 0));
     QTest::newRow("-1")
             << Q_INT64_C(-1)
@@ -614,7 +614,7 @@ void tst_QDateTime::setMSecsSinceEpoch_data()
             << QDateTime(QDate(18772, 8, 15), QTime(3, 8, 14, 976));
     QTest::newRow("old min (Tue Nov 25 00:00:00 -4714)")
             << Q_INT64_C(-210866716800000)
-            << QDateTime(QDate::fromJulianDay(1), QTime(), Qt::UTC)
+            << QDateTime(QDate::fromJulianDay(1), QTime(0, 0), Qt::UTC)
             << QDateTime(QDate::fromJulianDay(1), QTime(1, 0));
     QTest::newRow("old max (Tue Jun 3 21:59:59 5874898)")
             << Q_INT64_C(185331720376799999)
@@ -707,7 +707,7 @@ void tst_QDateTime::setMSecsSinceEpoch()
         QCOMPARE(qint64(dt.toSecsSinceEpoch()), msecs / 1000);
     }
 
-    QDateTime reference(QDate(1970, 1, 1), QTime(), Qt::UTC);
+    QDateTime reference(QDate(1970, 1, 1), QTime(0, 0), Qt::UTC);
     QCOMPARE(dt, reference.addMSecs(msecs));
 }
 
@@ -761,7 +761,7 @@ void tst_QDateTime::fromMSecsSinceEpoch()
         QCOMPARE(qint64(dtOffset.toSecsSinceEpoch()), msecs / 1000);
     }
 
-    QDateTime reference(QDate(1970, 1, 1), QTime(), Qt::UTC);
+    QDateTime reference(QDate(1970, 1, 1), QTime(0, 0), Qt::UTC);
     if (!localOverflow)
         QCOMPARE(dtLocal, reference.addMSecs(msecs));
     QCOMPARE(dtUtc, reference.addMSecs(msecs));
@@ -1489,9 +1489,9 @@ void tst_QDateTime::toUTC()
 
 void tst_QDateTime::daysTo()
 {
-    QDateTime dt1(QDate(1760, 1, 2), QTime());
-    QDateTime dt2(QDate(1760, 2, 2), QTime());
-    QDateTime dt3(QDate(1760, 3, 2), QTime());
+    QDateTime dt1(QDate(1760, 1, 2).startOfDay());
+    QDateTime dt2(QDate(1760, 2, 2).startOfDay());
+    QDateTime dt3(QDate(1760, 3, 2).startOfDay());
 
     QCOMPARE(dt1.daysTo(dt2), (qint64) 31);
     QCOMPARE(dt1.addDays(31), dt2);
@@ -1851,8 +1851,8 @@ void tst_QDateTime::springForward_data()
       test.
      */
 
-    uint winter = QDateTime(QDate(2015, 1, 1), QTime()).toSecsSinceEpoch();
-    uint summer = QDateTime(QDate(2015, 7, 1), QTime()).toSecsSinceEpoch();
+    uint winter = QDate(2015, 1, 1).startOfDay().toSecsSinceEpoch();
+    uint summer = QDate(2015, 7, 1).startOfDay().toSecsSinceEpoch();
 
     if (winter == 1420066800 && summer == 1435701600) {
         QTest::newRow("CET from day before") << QDate(2015, 3, 29) << QTime(2, 30, 0) << 1 << 60;
@@ -2471,7 +2471,8 @@ void tst_QDateTime::fromStringStringFormat_data()
     QTest::addColumn<QDateTime>("expected");
 
     const QDate defDate(1900, 1, 1);
-    QTest::newRow("data0") << QString("101010") << QString("dMyy") << QDateTime(QDate(1910, 10, 10), QTime());
+    QTest::newRow("data0")
+        << QString("101010") << QString("dMyy") << QDate(1910, 10, 10).startOfDay();
     QTest::newRow("data1") << QString("1020") << QString("sss") << QDateTime();
     QTest::newRow("data2")
         << QString("1010") << QString("sss") << QDateTime(defDate, QTime(0, 0, 10));
@@ -2484,13 +2485,20 @@ void tst_QDateTime::fromStringStringFormat_data()
     // Friday; asking for Thursday moves this, without conflict, to the 7th):
     QTest::newRow("data8")
         << QString("77 03 1963 Thu") << QString("yy MM yyyy ddd") << QDateTime();
-    QTest::newRow("data9") << QString("101010") << QString("dMyy") << QDateTime(QDate(1910, 10, 10), QTime());
-    QTest::newRow("data10") << QString("101010") << QString("dMyy") << QDateTime(QDate(1910, 10, 10), QTime());
-    QTest::newRow("data11") << QString("10 Oct 10") << QString("dd MMM yy") << QDateTime(QDate(1910, 10, 10), QTime());
-    QTest::newRow("data12") << QString("Fri December 3 2004") << QString("ddd MMMM d yyyy") << QDateTime(QDate(2004, 12, 3), QTime());
+    QTest::newRow("data9")
+        << QString("101010") << QString("dMyy") << QDate(1910, 10, 10).startOfDay();
+    QTest::newRow("data10")
+        << QString("101010") << QString("dMyy") << QDate(1910, 10, 10).startOfDay();
+    QTest::newRow("data11")
+        << QString("10 Oct 10") << QString("dd MMM yy") << QDate(1910, 10, 10).startOfDay();
+    QTest::newRow("data12")
+        << QString("Fri December 3 2004") << QString("ddd MMMM d yyyy")
+        << QDate(2004, 12, 3).startOfDay();
     QTest::newRow("data13") << QString("30.02.2004") << QString("dd.MM.yyyy") << QDateTime();
     QTest::newRow("data14") << QString("32.01.2004") << QString("dd.MM.yyyy") << QDateTime();
-    QTest::newRow("data15") << QString("Thu January 2004") << QString("ddd MMMM yyyy") << QDateTime(QDate(2004, 1, 1), QTime());
+    QTest::newRow("data15")
+        << QString("Thu January 2004") << QString("ddd MMMM yyyy")
+        << QDate(2004, 1, 1).startOfDay();
     QTest::newRow("data16") << QString("2005-06-28T07:57:30.001Z")
                             << QString("yyyy-MM-ddThh:mm:ss.zt")
                             << QDateTime(QDate(2005, 06, 28), QTime(07, 57, 30, 1), Qt::UTC);
@@ -2981,16 +2989,16 @@ void tst_QDateTime::getDate()
 
 void tst_QDateTime::fewDigitsInYear() const
 {
-    const QDateTime three(QDate(300, 10, 11), QTime());
+    const QDateTime three(QDate(300, 10, 11).startOfDay());
     QCOMPARE(three.toString(QLatin1String("yyyy-MM-dd")), QString::fromLatin1("0300-10-11"));
 
-    const QDateTime two(QDate(20, 10, 11), QTime());
+    const QDateTime two(QDate(20, 10, 11).startOfDay());
     QCOMPARE(two.toString(QLatin1String("yyyy-MM-dd")), QString::fromLatin1("0020-10-11"));
 
-    const QDateTime yyTwo(QDate(30, 10, 11), QTime());
+    const QDateTime yyTwo(QDate(30, 10, 11).startOfDay());
     QCOMPARE(yyTwo.toString(QLatin1String("yy-MM-dd")), QString::fromLatin1("30-10-11"));
 
-    const QDateTime yyOne(QDate(4, 10, 11), QTime());
+    const QDateTime yyOne(QDate(4, 10, 11).startOfDay());
     QCOMPARE(yyOne.toString(QLatin1String("yy-MM-dd")), QString::fromLatin1("04-10-11"));
 }
 
