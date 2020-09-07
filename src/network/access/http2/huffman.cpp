@@ -392,8 +392,10 @@ quint64 huffman_encoded_bit_length(const QByteArray &inputData)
 
 void huffman_encode_string(const QByteArray &inputData, BitOStream &outputStream)
 {
-    for (int i = 0, e = inputData.size(); i < e; ++i)
-        write_huffman_code(outputStream, staticHuffmanCodeTable[int(inputData[i])]);
+    for (int i = 0, e = inputData.size(); i < e; ++i) {
+        const auto value = uchar(inputData[i]);
+        write_huffman_code(outputStream, staticHuffmanCodeTable[value]);
+    }
 
     // Pad bits ...
     if (outputStream.bitLength() % 8)
