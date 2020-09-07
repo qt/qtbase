@@ -109,6 +109,7 @@ private:
 
 // Clang does not consider __declspec(nothrow) as nothrow
 QT_WARNING_DISABLE_CLANG("-Wmicrosoft-exception-spec")
+QT_WARNING_DISABLE_CLANG("-Wmissing-exception-spec")
 
 QT_END_NAMESPACE
 
