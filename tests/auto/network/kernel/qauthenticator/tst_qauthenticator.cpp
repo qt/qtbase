@@ -83,7 +83,7 @@ void tst_QAuthenticator::basicAuth()
 
     QList<QPair<QByteArray, QByteArray> > headers;
     headers << qMakePair<QByteArray, QByteArray>(QByteArray("WWW-Authenticate"), "Basic " + data.toUtf8());
-    priv->parseHttpResponse(headers, /*isProxy = */ false);
+    priv->parseHttpResponse(headers, /*isProxy = */ false, {});
 
     QCOMPARE(auth.realm(), realm);
     QCOMPARE(auth.option("realm").toString(), realm);
@@ -131,7 +131,7 @@ void tst_QAuthenticator::ntlmAuth()
     // Current implementation uses flags:
     //  NTLMSSP_NEGOTIATE_UNICODE | NTLMSSP_NEGOTIATE_NTLM | NTLMSSP_REQUEST_TARGET
     headers << qMakePair<QByteArray, QByteArray>("WWW-Authenticate", "NTLM");
-    priv->parseHttpResponse(headers, /*isProxy = */ false);
+    priv->parseHttpResponse(headers, /*isProxy = */ false, {});
     if (sso)
         QVERIFY(priv->calculateResponse("GET", "/", "").startsWith("NTLM "));
     else
@@ -140,7 +140,7 @@ void tst_QAuthenticator::ntlmAuth()
     // NTLM phase 2: challenge
     headers.clear();
     headers << qMakePair<QByteArray, QByteArray>(QByteArray("WWW-Authenticate"), "NTLM " + data.toUtf8());
-    priv->parseHttpResponse(headers, /*isProxy = */ false);
+    priv->parseHttpResponse(headers, /*isProxy = */ false, {});
 
     QEXPECT_FAIL("with-realm", "NTLM authentication code doesn't extract the realm", Continue);
     QEXPECT_FAIL("with-realm-sso", "NTLM authentication code doesn't extract the realm", Continue);

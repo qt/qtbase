@@ -77,6 +77,7 @@ static QByteArray qSspiStartup(QAuthenticatorPrivate *ctx, QAuthenticatorPrivate
 static QByteArray qSspiContinue(QAuthenticatorPrivate *ctx, QAuthenticatorPrivate::Method method,
                                 const QString& host, const QByteArray& challenge = QByteArray());
 #elif QT_CONFIG(gssapi) // GSSAPI
+static bool qGssapiTestGetCredentials(const QString &host);
 static QByteArray qGssapiStartup(QAuthenticatorPrivate *ctx, const QString& host);
 static QByteArray qGssapiContinue(QAuthenticatorPrivate *ctx,
                                   const QByteArray& challenge = QByteArray());
@@ -410,8 +411,11 @@ void QAuthenticatorPrivate::updateCredentials()
     }
 }
 
-void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByteArray> > &values, bool isProxy)
+void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByteArray> > &values, bool isProxy, const QString &host)
 {
+#if !QT_CONFIG(gssapi)
+    Q_UNUSED(host);
+#endif
     const char *search = isProxy ? "proxy-authenticate" : "www-authenticate";
 
     method = None;
@@ -442,6 +446,13 @@ void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByt
             headerVal = current.second.mid(7);
         } else if (method < Negotiate && str.startsWith("negotiate")) {
 #if QT_CONFIG(sspi) || QT_CONFIG(gssapi) // if it's not supported then we shouldn't try to use it
+#if QT_CONFIG(gssapi)
+            // For GSSAPI there needs to be a KDC set up for the host (afaict).
+            // So let's only conditionally use it if we can fetch the credentials.
+            // Sadly it's a bit slow because it requires a DNS lookup.
+            if (!qGssapiTestGetCredentials(host))
+                continue;
+#endif
             method = Negotiate;
             headerVal = current.second.mid(10);
 #endif
@@ -560,6 +571,7 @@ QByteArray QAuthenticatorPrivate::calculateResponse(const QByteArray &requestMet
                 phase = Phase2;
             } else {
                 phase = Done;
+                return "";
             }
         } else {
             QByteArray phase3Token;
@@ -572,6 +584,9 @@ QByteArray QAuthenticatorPrivate::calculateResponse(const QByteArray &requestMet
                 response = phase3Token.toBase64();
                 phase = Done;
                 challenge = "";
+            } else {
+                phase = Done;
+                return "";
             }
         }
 
@@ -1654,26 +1669,36 @@ static void q_GSSAPI_error(const char *message, OM_uint32 majStat, OM_uint32 min
     q_GSSAPI_error_int(message, minStat, GSS_C_MECH_CODE);
 }
 
+static gss_name_t qGSsapiGetServiceName(const QString &host)
+{
+    QByteArray serviceName = "HTTPS@" + host.toLocal8Bit();
+    gss_buffer_desc nameDesc = {static_cast<std::size_t>(serviceName.size()), serviceName.data()};
+
+    gss_name_t importedName;
+    OM_uint32 minStat;
+    OM_uint32 majStat = gss_import_name(&minStat, &nameDesc,
+                              GSS_C_NT_HOSTBASED_SERVICE, &importedName);
+
+    if (majStat != GSS_S_COMPLETE) {
+        q_GSSAPI_error("gss_import_name error", majStat, minStat);
+        return nullptr;
+    }
+    return importedName;
+}
+
 // Send initial GSS authentication token
 static QByteArray qGssapiStartup(QAuthenticatorPrivate *ctx, const QString &host)
 {
-    OM_uint32 majStat, minStat;
-
     if (!ctx->gssApiHandles)
         ctx->gssApiHandles.reset(new QGssApiHandles);
 
     // Convert target name to internal form
-    QByteArray serviceName = QStringLiteral("HTTPS@%1").arg(host).toLocal8Bit();
-    gss_buffer_desc nameDesc = {static_cast<std::size_t>(serviceName.size()), serviceName.data()};
-
-    majStat = gss_import_name(&minStat, &nameDesc,
-                              GSS_C_NT_HOSTBASED_SERVICE, &ctx->gssApiHandles->targetName);
-
-    if (majStat != GSS_S_COMPLETE) {
-        q_GSSAPI_error("gss_import_name error", majStat, minStat);
+    gss_name_t name = qGSsapiGetServiceName(host);
+    if (name == nullptr) {
         ctx->gssApiHandles.reset(nullptr);
         return QByteArray();
     }
+    ctx->gssApiHandles->targetName = name;
 
     // Call qGssapiContinue with GSS_C_NO_CONTEXT to get initial packet
     ctx->gssApiHandles->gssCtx = GSS_C_NO_CONTEXT;
@@ -1725,6 +1750,28 @@ static QByteArray qGssapiContinue(QAuthenticatorPrivate *ctx, const QByteArray& 
     }
 
     return result;
+}
+
+static bool qGssapiTestGetCredentials(const QString &host)
+{
+    gss_name_t serviceName = qGSsapiGetServiceName(host);
+    if (!serviceName)
+        return false; // Something was wrong with the service name, so skip this
+    OM_uint32 minStat;
+    gss_cred_id_t cred;
+    OM_uint32 majStat = gss_acquire_cred(&minStat, serviceName, GSS_C_INDEFINITE,
+                                         GSS_C_NO_OID_SET, GSS_C_INITIATE, &cred, nullptr,
+                                         nullptr);
+
+    OM_uint32 ignored;
+    gss_release_name(&ignored, &serviceName);
+    gss_release_cred(&ignored, &cred);
+
+    if (majStat != GSS_S_COMPLETE) {
+        q_GSSAPI_error("gss_acquire_cred", majStat, minStat);
+        return false;
+    }
+    return true;
 }
 
 // ---------------------------- End of GSSAPI code ----------------------------------------------

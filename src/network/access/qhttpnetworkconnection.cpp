@@ -453,7 +453,14 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
         if (auth->isNull())
             auth->detach();
         QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(*auth);
-        priv->parseHttpResponse(fields, isProxy);
+        priv->parseHttpResponse(fields, isProxy, reply->url().host());
+        // Update method in case it changed
+        if (priv->method == QAuthenticatorPrivate::None)
+            return false;
+        if (isProxy)
+            channels[i].proxyAuthMethod = priv->method;
+        else
+            channels[i].authMethod = priv->method;
 
         if (priv->phase == QAuthenticatorPrivate::Done) {
             pauseConnection();
