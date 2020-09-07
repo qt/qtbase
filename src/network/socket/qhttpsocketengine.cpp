@@ -607,7 +607,7 @@ void QHttpSocketEngine::slotSocketReadNotification()
             priv->hasFailed = true;
         }
 
-        priv->parseHttpResponse(d->reply->header(), true);
+        priv->parseHttpResponse(d->reply->header(), true, d->proxy.hostName());
 
         if (priv->phase == QAuthenticatorPrivate::Invalid) {
             // problem parsing the reply
