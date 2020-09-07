@@ -306,6 +306,9 @@ bool QCocoaWindow::startSystemMove()
     case NSEventTypeRightMouseDown:
     case NSEventTypeOtherMouseDown:
     case NSEventTypeMouseMoved:
+    case NSEventTypeLeftMouseDragged:
+    case NSEventTypeRightMouseDragged:
+    case NSEventTypeOtherMouseDragged:
         // The documentation only describes starting a system move
         // based on mouse down events, but move events also work.
         [m_view.window performWindowDragWithEvent:NSApp.currentEvent];
