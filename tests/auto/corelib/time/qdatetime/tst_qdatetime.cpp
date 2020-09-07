@@ -564,6 +564,19 @@ void tst_QDateTime::setSecsSinceEpoch()
     QCOMPARE(dt1, QDateTime(QDate(1970, 1, 2), QTime(10, 17, 36), Qt::UTC));
     QCOMPARE(dt1.timeSpec(), Qt::OffsetFromUTC);
     QCOMPARE(dt1.offsetFromUtc(), 60 * 60);
+
+    // Only testing UTC; see fromSecsSinceEpoch() for fuller test.
+    const qint64 maxSeconds = std::numeric_limits<qint64>::max() / 1000;
+    dt1.setSecsSinceEpoch(maxSeconds);
+    QVERIFY(dt1.isValid());
+    dt1.setSecsSinceEpoch(-maxSeconds);
+    QVERIFY(dt1.isValid());
+    dt1.setSecsSinceEpoch(maxSeconds + 1);
+    QVERIFY(!dt1.isValid());
+    dt1.setSecsSinceEpoch(0);
+    QVERIFY(dt1.isValid());
+    dt1.setSecsSinceEpoch(-maxSeconds - 1);
+    QVERIFY(!dt1.isValid());
 }
 
 void tst_QDateTime::setMSecsSinceEpoch_data()
@@ -754,6 +767,7 @@ void tst_QDateTime::fromMSecsSinceEpoch()
 
 void tst_QDateTime::fromSecsSinceEpoch()
 {
+    // Compare setSecsSinceEpoch()
     const qint64 maxSeconds = std::numeric_limits<qint64>::max() / 1000;
     const QDateTime early = QDateTime::fromSecsSinceEpoch(-maxSeconds, Qt::UTC);
     const QDateTime late = QDateTime::fromSecsSinceEpoch(maxSeconds, Qt::UTC);
@@ -1204,7 +1218,7 @@ void tst_QDateTime::addYears()
     QCOMPARE(end.offsetFromUtc(), 60 * 60);
 }
 
-void tst_QDateTime::addSecs_data()
+void tst_QDateTime::addMSecs_data()
 {
     QTest::addColumn<QDateTime>("dt");
     QTest::addColumn<qint64>("nsecs");
@@ -1300,6 +1314,31 @@ void tst_QDateTime::addSecs_data()
     QTest::newRow("epoch-1s-local")
         << QDateTime(QDate(1970, 1, 1), QTime(0, 0)) << qint64(-1)
         << QDateTime(QDate(1969, 12, 31), QTime(23, 59, 59));
+
+    // Overflow and Underflow
+    const qint64 maxSeconds = std::numeric_limits<qint64>::max() / 1000;
+    QTest::newRow("after-last")
+        << QDateTime::fromSecsSinceEpoch(maxSeconds, Qt::UTC) << qint64(1) << QDateTime();
+    QTest::newRow("to-last")
+        << QDateTime::fromSecsSinceEpoch(maxSeconds - 1, Qt::UTC) << qint64(1)
+        << QDateTime::fromSecsSinceEpoch(maxSeconds, Qt::UTC);
+    QTest::newRow("before-first")
+        << QDateTime::fromSecsSinceEpoch(-maxSeconds, Qt::UTC) << qint64(-1) << QDateTime();
+    QTest::newRow("to-first")
+        << QDateTime::fromSecsSinceEpoch(1 - maxSeconds, Qt::UTC) << qint64(-1)
+        << QDateTime::fromSecsSinceEpoch(-maxSeconds, Qt::UTC);
+}
+
+void tst_QDateTime::addSecs_data()
+{
+    addMSecs_data();
+
+    const qint64 maxSeconds = std::numeric_limits<qint64>::max() / 1000;
+    // Results would be representable, but the step isn't
+    QTest::newRow("leap-up")
+        << QDateTime::fromSecsSinceEpoch(-1, Qt::UTC) << 1 + maxSeconds << QDateTime();
+    QTest::newRow("leap-down")
+        << QDateTime::fromSecsSinceEpoch(1, Qt::UTC) << -1 - maxSeconds << QDateTime();
 }
 
 void tst_QDateTime::addSecs()
@@ -1308,16 +1347,15 @@ void tst_QDateTime::addSecs()
     QFETCH(const qint64, nsecs);
     QFETCH(const QDateTime, result);
     QDateTime test = dt.addSecs(nsecs);
-    QCOMPARE(test, result);
-    QCOMPARE(test.timeSpec(), dt.timeSpec());
-    if (test.timeSpec() == Qt::OffsetFromUTC)
-        QCOMPARE(test.offsetFromUtc(), dt.offsetFromUtc());
-    QCOMPARE(result.addSecs(-nsecs), dt);
-}
-
-void tst_QDateTime::addMSecs_data()
-{
-    addSecs_data();
+    if (!result.isValid()) {
+        QVERIFY(!test.isValid());
+    } else {
+        QCOMPARE(test, result);
+        QCOMPARE(test.timeSpec(), dt.timeSpec());
+        if (test.timeSpec() == Qt::OffsetFromUTC)
+            QCOMPARE(test.offsetFromUtc(), dt.offsetFromUtc());
+        QCOMPARE(result.addSecs(-nsecs), dt);
+    }
 }
 
 void tst_QDateTime::addMSecs()
@@ -1327,11 +1365,15 @@ void tst_QDateTime::addMSecs()
     QFETCH(const QDateTime, result);
 
     QDateTime test = dt.addMSecs(qint64(nsecs) * 1000);
-    QCOMPARE(test, result);
-    QCOMPARE(test.timeSpec(), dt.timeSpec());
-    if (test.timeSpec() == Qt::OffsetFromUTC)
-        QCOMPARE(test.offsetFromUtc(), dt.offsetFromUtc());
-    QCOMPARE(result.addMSecs(qint64(-nsecs) * 1000), dt);
+    if (!result.isValid()) {
+        QVERIFY(!test.isValid());
+    } else {
+        QCOMPARE(test, result);
+        QCOMPARE(test.timeSpec(), dt.timeSpec());
+        if (test.timeSpec() == Qt::OffsetFromUTC)
+            QCOMPARE(test.offsetFromUtc(), dt.offsetFromUtc());
+        QCOMPARE(result.addMSecs(qint64(-nsecs) * 1000), dt);
+    }
 }
 
 void tst_QDateTime::toTimeSpec_data()
@@ -1540,7 +1582,7 @@ void tst_QDateTime::secsTo()
     QFETCH(const qint64, nsecs);
     QFETCH(const QDateTime, result);
 
-    if (dt.isValid()) {
+    if (result.isValid()) {
         QCOMPARE(dt.secsTo(result), (qint64)nsecs);
         QCOMPARE(result.secsTo(dt), (qint64)-nsecs);
         QVERIFY((dt == result) == (0 == nsecs));
@@ -1566,7 +1608,7 @@ void tst_QDateTime::msecsTo()
     QFETCH(const qint64, nsecs);
     QFETCH(const QDateTime, result);
 
-    if (dt.isValid()) {
+    if (result.isValid()) {
         QCOMPARE(dt.msecsTo(result), qint64(nsecs) * 1000);
         QCOMPARE(result.msecsTo(dt), -qint64(nsecs) * 1000);
         QVERIFY((dt == result) == (0 == (qint64(nsecs) * 1000)));

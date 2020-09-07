@@ -3959,7 +3959,15 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
 */
 void QDateTime::setSecsSinceEpoch(qint64 secs)
 {
-    setMSecsSinceEpoch(secs * 1000);
+    qint64 msecs;
+    if (!mul_overflow(secs, std::integral_constant<qint64, 1000>(), &msecs)) {
+        setMSecsSinceEpoch(msecs);
+    } else if (d.isShort()) {
+        d.data.status &= ~QDateTimePrivate::ValidWhenMask;
+    } else {
+        d.detach();
+        d->m_status &= ~QDateTimePrivate::ValidWhenMask;
+    }
 }
 
 #if QT_CONFIG(datestring) // depends on, so implies, textdate
@@ -4208,7 +4216,10 @@ QDateTime QDateTime::addYears(int nyears) const
 
 QDateTime QDateTime::addSecs(qint64 s) const
 {
-    return addMSecs(s * 1000);
+    qint64 msecs;
+    if (mul_overflow(s, std::integral_constant<qint64, 1000>(), &msecs))
+        return QDateTime();
+    return addMSecs(msecs);
 }
 
 /*!
@@ -4226,15 +4237,31 @@ QDateTime QDateTime::addMSecs(qint64 msecs) const
         return QDateTime();
 
     QDateTime dt(*this);
-    auto spec = getSpec(d);
-    if (spec == Qt::LocalTime || spec == Qt::TimeZone) {
-        // Convert to real UTC first in case crosses DST transition
-        dt.setMSecsSinceEpoch(toMSecsSinceEpoch() + msecs);
-    } else {
+    switch (getSpec(d)) {
+    case Qt::LocalTime:
+    case Qt::TimeZone:
+        // Convert to real UTC first in case this crosses a DST transition:
+        if (!add_overflow(toMSecsSinceEpoch(), msecs, &msecs)) {
+            dt.setMSecsSinceEpoch(msecs);
+        } else if (dt.d.isShort()) {
+            dt.d.data.status &= ~QDateTimePrivate::ValidWhenMask;
+        } else {
+            dt.d.detach();
+            dt.d->m_status &= ~QDateTimePrivate::ValidWhenMask;
+        }
+        break;
+    case Qt::UTC:
+    case Qt::OffsetFromUTC:
         // No need to convert, just add on
-        if (d.isShort()) {
+        if (add_overflow(getMSecs(d), msecs, &msecs)) {
+            if (dt.d.isShort()) {
+                dt.d.data.status &= ~QDateTimePrivate::ValidWhenMask;
+            } else {
+                dt.d.detach();
+                dt.d->m_status &= ~QDateTimePrivate::ValidWhenMask;
+            }
+        } else if (d.isShort()) {
             // need to check if we need to enlarge first
-            msecs += dt.d.data.msecs;
             if (msecsCanBeSmall(msecs)) {
                 dt.d.data.msecs = qintptr(msecs);
             } else {
@@ -4243,8 +4270,9 @@ QDateTime QDateTime::addMSecs(qint64 msecs) const
             }
         } else {
             dt.d.detach();
-            dt.d->m_msecs += msecs;
+            dt.d->m_msecs = msecs;
         }
+        break;
     }
     return dt;
 }
@@ -4289,7 +4317,7 @@ qint64 QDateTime::daysTo(const QDateTime &other) const
 
 qint64 QDateTime::secsTo(const QDateTime &other) const
 {
-    return (msecsTo(other) / 1000);
+    return msecsTo(other) / 1000;
 }
 
 /*!
