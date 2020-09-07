@@ -7,7 +7,7 @@ if(QT_FEATURE_private_tests)
     add_subdirectory(platformsocketengine)
 endif()
 add_subdirectory(qudpsocket)
-### add_subdirectory(qlocalsocket) # special case
+add_subdirectory(qlocalsocket)
 add_subdirectory(qtcpserver)
 add_subdirectory(qabstractsocket)
 if(QT_FEATURE_sctp)
