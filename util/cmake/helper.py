@@ -491,6 +491,9 @@ _library_map = [
         "xcb_image", "XCB", "XCB::IMAGE", extra=["0.3.9", "COMPONENTS", "IMAGE"], resultVariable="XCB_IMAGE"
     ),
     LibraryMapping(
+        "xcb_util", "XCB", "XCB::UTIL", extra=["0.3.9", "COMPONENTS", "UTIL"], resultVariable="XCB_UTIL"
+    ),
+    LibraryMapping(
         "xcb_keysyms",
         "XCB",
         "XCB::KEYSYMS",
