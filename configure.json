@@ -1098,7 +1098,7 @@
         },
         "avx": {
             "label": "AVX",
-            "condition": "features.sse4_2 && tests.avx",
+            "condition": "features.sse4_2 && tests.avx && (!config.android || !arch.x86_64)",
             "output": [
                 "privateConfig",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_AVX", "value": 1 }
@@ -1114,7 +1114,7 @@
         },
         "avx2": {
             "label": "AVX2",
-            "condition": "features.avx && tests.avx2",
+            "condition": "features.avx && tests.avx2 && (!config.android || !arch.x86_64)",
             "output": [
                 "privateConfig",
                 "privateFeature",
