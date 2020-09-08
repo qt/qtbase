@@ -1,9 +1,6 @@
 include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 include($QT_INSTALL_DOCS/config/exampleurl-qtbase.qdocconf)
 
-includepaths += .
-moduleheader = QtGuiDoc
-
 project                 = QtGui
 description             = Qt GUI Reference Documentation
 version                 = $QT_VERSION

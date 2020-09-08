@@ -1,5 +1,15 @@
 #include <QtGui/QtGui>
 
+// vulkan
+#include <QtGui/QVulkanDeviceFunctions>
+#include <QtGui/QVulkanExtension>
+#include <QtGui/QVulkanFunctions>
+#include <QtGui/QVulkanInfoVector>
+#include <QtGui/QVulkanInstance>
+#include <QtGui/QVulkanLayer>
+#include <QtGui/QVulkanWindow>
+#include <QtGui/QVulkanWindowRenderer>
+
 // native platform interfaces
 #include <QtGui/qpa/qplatformmenu_p.h>
 #include <QtGui/qpa/qplatformwindow_p.h>
