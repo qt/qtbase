@@ -24,4 +24,4 @@ SOURCES += \
     accessible/linux/qspiapplicationadaptor.cpp \
     accessible/linux/qspidbuscache.cpp
 
-QMAKE_USE += atspi/nolink
+QMAKE_USE_PRIVATE += atspi/nolink

@@ -422,7 +422,7 @@ qt_extend_target(Gui CONDITION QT_FEATURE_accessibility AND QT_FEATURE_accessibi
         accessibility_adaptors
     DBUS_INTERFACE_SOURCES
         accessibility_interfaces
-    PUBLIC_LIBRARIES
+    LIBRARIES
         PkgConfig::ATSPI2_nolink
 )
 

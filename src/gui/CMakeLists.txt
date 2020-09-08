@@ -525,7 +525,7 @@ qt_extend_target(Gui CONDITION QT_FEATURE_accessibility AND QT_FEATURE_accessibi
     DBUS_INTERFACE_FLAGS
         "-i" "QtGui/private/qspi_struct_marshallers_p.h"
 # special case end
-    PUBLIC_LIBRARIES
+    LIBRARIES
         PkgConfig::ATSPI2_nolink
 )
 
