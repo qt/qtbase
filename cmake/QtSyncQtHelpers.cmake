@@ -29,7 +29,7 @@ function(qt_ensure_sync_qt)
                            DESTINATION "${syncqt_install_dir}")
     elseif(QT_HOST_PATH)
         get_filename_component(syncqt_absolute_path
-                               "${QT_HOST_PATH}/${INSTALL_LIBEXECDIR}/syncqt.pl"
+                               "${QT_HOST_PATH}/${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_LIBEXECDIR}/syncqt.pl"
                                ABSOLUTE)
         set(QT_SYNCQT "${syncqt_absolute_path}" CACHE FILEPATH "syncqt script")
         message(STATUS "Using host syncqt found at: ${QT_SYNCQT}")
