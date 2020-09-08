@@ -105,7 +105,7 @@ private:
     };
 
     HANDLE handle;
-    Overlapped *overlapped;
+    Overlapped overlapped;
     qint64 readBufferMaxSize;
     QRingBuffer readBuffer;
     qint64 actualReadBufferSize;
