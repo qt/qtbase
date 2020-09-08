@@ -141,6 +141,11 @@ constexpr bool can_erase_at_iterator_v = false;
 template<typename C>
 constexpr bool can_erase_at_iterator_v<C, std::void_t<decltype(C().erase(C().begin()))>> = true;
 
+template<typename, typename = void>
+constexpr bool can_erase_range_at_iterator_v = false;
+template<typename C>
+constexpr bool can_erase_range_at_iterator_v<C, std::void_t<decltype(C().erase(C().begin(), C().end()))>> = true;
+
 QT_WARNING_POP
 
 }

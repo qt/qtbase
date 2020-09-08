@@ -113,6 +113,8 @@ public:
     InsertValueAtIteratorFn insertValueAtIteratorFn;
     using EraseValueAtIteratorFn = void(*)(void *, const void *);
     EraseValueAtIteratorFn eraseValueAtIteratorFn;
+    using EraseRangeAtIteratorFn = void(*)(void *, const void *, const void *);
+    EraseRangeAtIteratorFn eraseRangeAtIteratorFn;
 
     using CreateConstIteratorFn = void *(*)(const void *, Position);
     CreateConstIteratorFn createConstIteratorFn;
@@ -446,6 +448,19 @@ class QMetaSequenceForContainer
         }
     }
 
+    static constexpr QMetaSequenceInterface::EraseRangeAtIteratorFn getEraseRangeAtIteratorFn()
+    {
+        if constexpr (QContainerTraits::has_iterator_v<C>
+                && QContainerTraits::can_erase_range_at_iterator_v<C> && !std::is_const_v<C>) {
+            return [](void *c, const void *i, const void *j) {
+                static_cast<C *>(c)->erase(*static_cast<const QContainerTraits::iterator<C> *>(i),
+                                           *static_cast<const QContainerTraits::iterator<C> *>(j));
+            };
+        } else {
+            return nullptr;
+        }
+    }
+
     static constexpr QMetaSequenceInterface::CreateConstIteratorFn getCreateConstIteratorFn()
     {
         if constexpr (QContainerTraits::has_const_iterator_v<C>) {
@@ -565,6 +580,7 @@ QMetaSequenceInterface QMetaSequenceForContainer<C>::metaSequence = {
     /*.setValueAtIteratorFn=*/      getSetValueAtIteratorFn(),
     /*.insertValueAtIteratorFn=*/   getInsertValueAtIteratorFn(),
     /*.eraseValueAtIteratorFn=*/    getEraseValueAtIteratorFn(),
+    /*.eraseRangeAtIteratorFn=*/    getEraseRangeAtIteratorFn(),
     /*.createConstIteratorFn=*/     getCreateConstIteratorFn(),
     /*.destroyConstIteratorFn=*/    getDestroyConstIteratorFn(),
     /*.equalConstIteratorFn=*/      getCompareConstIteratorFn(),
@@ -658,6 +674,9 @@ public:
     void copyConstIterator(void *target, const void *source) const;
     void advanceConstIterator(void *iterator, qsizetype step) const;
     qsizetype diffConstIterator(const void *i, const void *j) const;
+
+    bool canEraseRangeAtIterator() const;
+    void eraseRangeAtIterator(void *container, const void *iterator1, const void *iterator2) const;
 
     bool canGetValueAtConstIterator() const;
     void valueAtConstIterator(const void *iterator, void *result) const;

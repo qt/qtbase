@@ -641,6 +641,30 @@ void QMetaSequence::eraseValueAtIterator(void *container, const void *iterator) 
 }
 
 /*!
+    Returns \c true if a range between two iterators can be erased from the
+    container, \c false otherwise.
+ */
+bool QMetaSequence::canEraseRangeAtIterator() const
+{
+    if (d_ptr)
+        return d_ptr->eraseRangeAtIteratorFn;
+    return false;
+}
+
+/*!
+    Erases the range of values between the iterators \a iterator1 and
+    \a iterator2 from the \a container, if possible.
+
+    \sa canEraseValueAtIterator(), begin(), end()
+ */
+void QMetaSequence::eraseRangeAtIterator(void *container, const void *iterator1,
+                                         const void *iterator2) const
+{
+    if (canEraseRangeAtIterator())
+        d_ptr->eraseRangeAtIteratorFn(container, iterator1, iterator2);
+}
+
+/*!
     Returns \c true if the underlying container offers a const iterator,
     \c false otherwise.
 
