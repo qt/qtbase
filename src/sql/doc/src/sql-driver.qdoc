@@ -79,6 +79,8 @@
 
     \target building
     \section1 Building the Drivers
+    \target DriverWithQt
+    \section2 Compile Qt with a specific driver
 
     The Qt \c configure script tries to
     automatically detect the available client libraries on your
@@ -103,9 +105,15 @@
     search for the available drivers again. If you encounter an error during
     the qmake stage, open \e{config.log} to see what went wrong.
 
+    \target DriverStandalone
+    \section2 Compile only a specific sql driver
+
     A typical qmake run (in this case to configure for MySQL) looks like this:
 
     \snippet code/doc_src_sql-driver.qdoc 41
+    \note As mentioned in \l{#DriverWithQt}{Compile Qt with a specific driver},
+    take a look at \e{config.log} if the driver could not be found and
+    start over by removing \e{config.cache}.
 
     Due to the practicalities of dealing with external dependencies,
     only the SQLite3 plugin is shipped with binary builds of Qt.
