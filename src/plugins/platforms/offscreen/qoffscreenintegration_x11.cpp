@@ -119,13 +119,15 @@ void *QOffscreenX11Integration::nativeResourceForContext(const QByteArray &resou
     if (resource.toLower() == QByteArrayLiteral("glxconfig") ) {
         if (context) {
             QOffscreenX11GLXContext *glxPlatformContext = static_cast<QOffscreenX11GLXContext *>(context->handle());
-            return glxPlatformContext->glxConfig();
+            if (glxPlatformContext)
+                return glxPlatformContext->glxConfig();
         }
     }
     if (resource.toLower() == QByteArrayLiteral("glxcontext") ) {
         if (context) {
             QOffscreenX11GLXContext *glxPlatformContext = static_cast<QOffscreenX11GLXContext *>(context->handle());
-            return glxPlatformContext->glxContext();
+            if (glxPlatformContext)
+                return glxPlatformContext->glxContext();
         }
     }
     return nullptr;
