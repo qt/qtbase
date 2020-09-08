@@ -501,7 +501,7 @@ QVariant QCocoaTheme::themeHint(ThemeHint hint) const
 {
     switch (hint) {
     case QPlatformTheme::StyleNames:
-        return QStringList(QStringLiteral("macos"));
+        return QStringList(QStringLiteral("macOS"));
     case QPlatformTheme::DialogButtonBoxLayout:
         return QVariant(QPlatformDialogHelper::MacLayout);
     case KeyboardScheme:
