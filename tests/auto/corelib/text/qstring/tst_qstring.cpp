@@ -3963,8 +3963,16 @@ void tst_QString::check_QTextIOStream()
     {
         a="";
         QTextStream ts(&a);
+        // invalid Utf8
         ts << "pi \261= " << 3.125;
-        QCOMPARE(a, QString::fromLatin1("pi \261= 3.125"));
+        QCOMPARE(a, QString::fromUtf16(u"pi \xfffd= 3.125"));
+    }
+    {
+        a="";
+        QTextStream ts(&a);
+        // valid Utf8
+        ts << "pi ø= " << 3.125;
+        QCOMPARE(a, QString::fromUtf16(u"pi ø= 3.125"));
     }
     {
         a="123 456";

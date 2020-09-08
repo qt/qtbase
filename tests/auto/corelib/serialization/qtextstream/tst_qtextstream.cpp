@@ -2125,9 +2125,9 @@ void tst_QTextStream::generateStringData(bool for_QString)
 
     if (!for_QString) {
         QTest::newRow("utf16-BE (empty)") << QByteArray("\xff\xfe", 2) << QByteArray() << QString();
-        QTest::newRow("utf16-BE (corrupt)") << QByteArray("\xff", 1) << QByteArray("\xff") << QString::fromLatin1("\xff");
+        QTest::newRow("utf16-BE (corrupt)") << QByteArray("\xff", 1) << QByteArray("\xc3\xbf") << QString::fromUtf8("\xc3\xbf");
         QTest::newRow("utf16-LE (empty)") << QByteArray("\xfe\xff", 2) << QByteArray() << QString();
-        QTest::newRow("utf16-LE (corrupt)") << QByteArray("\xfe", 1) << QByteArray("\xfe") << QString::fromLatin1("\xfe");
+        QTest::newRow("utf16-LE (corrupt)") << QByteArray("\xfe", 1) << QByteArray("\xc3\xbe") << QString::fromUtf8("\xc3\xbe");
     }
 }
 
