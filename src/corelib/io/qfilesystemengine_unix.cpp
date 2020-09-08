@@ -194,7 +194,7 @@ namespace {
 namespace GetFileTimes {
 #if !QT_CONFIG(futimens) && (QT_CONFIG(futimes))
 template <typename T>
-static inline typename QtPrivate::QEnableIf<(&T::st_atim, &T::st_mtim, true)>::Type get(const T *p, struct timeval *access, struct timeval *modification)
+static inline typename std::enable_if_t<(&T::st_atim, &T::st_mtim, true)> get(const T *p, struct timeval *access, struct timeval *modification)
 {
     access->tv_sec = p->st_atim.tv_sec;
     access->tv_usec = p->st_atim.tv_nsec / 1000;
@@ -204,7 +204,7 @@ static inline typename QtPrivate::QEnableIf<(&T::st_atim, &T::st_mtim, true)>::T
 }
 
 template <typename T>
-static inline typename QtPrivate::QEnableIf<(&T::st_atimespec, &T::st_mtimespec, true)>::Type get(const T *p, struct timeval *access, struct timeval *modification)
+static inline typename std::enable_if_t<(&T::st_atimespec, &T::st_mtimespec, true)> get(const T *p, struct timeval *access, struct timeval *modification)
 {
     access->tv_sec = p->st_atimespec.tv_sec;
     access->tv_usec = p->st_atimespec.tv_nsec / 1000;
@@ -216,7 +216,7 @@ static inline typename QtPrivate::QEnableIf<(&T::st_atimespec, &T::st_mtimespec,
 #  ifndef st_atimensec
 // if "st_atimensec" is defined, this would expand to invalid C++
 template <typename T>
-static inline typename QtPrivate::QEnableIf<(&T::st_atimensec, &T::st_mtimensec, true)>::Type get(const T *p, struct timeval *access, struct timeval *modification)
+static inline typename std::enable_if_t<(&T::st_atimensec, &T::st_mtimensec, true)> get(const T *p, struct timeval *access, struct timeval *modification)
 {
     access->tv_sec = p->st_atime;
     access->tv_usec = p->st_atimensec / 1000;

@@ -1233,12 +1233,6 @@ inline int qIntCast(float f) { return int(f); }
          "Compile your code with -fPIC (and not with -fPIE)."
 #endif
 
-namespace QtPrivate {
-//like std::enable_if
-template <bool B, typename T = void> struct QEnableIf;
-template <typename T> struct QEnableIf<true, T> { typedef T Type; };
-}
-
 #define QT_VA_ARGS_CHOOSE(_1, _2, _3, _4, _5, _6, _7, _8, _9, N, ...) N
 #define QT_VA_ARGS_EXPAND(...) __VA_ARGS__ // Needed for MSVC
 #define QT_VA_ARGS_COUNT(...) QT_VA_ARGS_EXPAND(QT_VA_ARGS_CHOOSE(__VA_ARGS__, 9, 8, 7, 6, 5, 4, 3, 2, 1))
