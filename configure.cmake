@@ -676,7 +676,7 @@ qt_feature_definition("sse4_2" "QT_COMPILER_SUPPORTS_SSE4_2" VALUE "1")
 qt_feature_config("sse4_2" QMAKE_PRIVATE_CONFIG)
 qt_feature("avx"
     LABEL "AVX"
-    CONDITION QT_FEATURE_sse4_2 AND TEST_subarch_avx
+    CONDITION QT_FEATURE_sse4_2 AND TEST_subarch_avx AND (NOT ANDROID OR NOT TEST_architecture_arch STREQUAL x86_64)
 )
 qt_feature_definition("avx" "QT_COMPILER_SUPPORTS_AVX" VALUE "1")
 qt_feature_config("avx" QMAKE_PRIVATE_CONFIG)
@@ -688,7 +688,7 @@ qt_feature_definition("f16c" "QT_COMPILER_SUPPORTS_F16C" VALUE "1")
 qt_feature_config("f16c" QMAKE_PRIVATE_CONFIG)
 qt_feature("avx2" PRIVATE
     LABEL "AVX2"
-    CONDITION QT_FEATURE_avx AND TEST_subarch_avx2
+    CONDITION QT_FEATURE_avx AND TEST_subarch_avx2 AND (NOT ANDROID OR NOT TEST_architecture_arch STREQUAL x86_64)
 )
 qt_feature_definition("avx2" "QT_COMPILER_SUPPORTS_AVX2" VALUE "1")
 qt_feature_config("avx2" QMAKE_PRIVATE_CONFIG)
