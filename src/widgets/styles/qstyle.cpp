@@ -372,7 +372,7 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
     We include a small example where we customize the drawing of item
     backgrounds.
 
-    \snippet customviewstyle.cpp 0
+    \snippet customviewstyle/customviewstyle.cpp 0
 
     The primitive element PE_PanelItemViewItem is responsible for
     painting the background of items, and is called from

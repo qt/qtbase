@@ -5362,7 +5362,7 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
 
     Example:
 
-    \snippet graphicssceneadditemsnippet.cpp 0
+    \snippet graphicssceneadditem/graphicssceneadditemsnippet.cpp 0
 
     Since Qt 4.6, this function is not called anymore unless
     the QGraphicsView::IndirectPainting flag is given as an Optimization

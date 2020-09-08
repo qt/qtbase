@@ -4,11 +4,11 @@ TARGET = widgets_snippets
 
 QT += widgets printsupport
 
-SOURCES += customviewstyle.cpp \
-           filedialogurls.cpp \
-           graphicssceneadditemsnippet.cpp \
-           graphicsview.cpp \
-           mdiareasnippets.cpp \
-           myscrollarea.cpp
+SOURCES += customviewstyle/customviewstyle.cpp \
+           filedialogurls/filedialogurls.cpp \
+           graphicssceneadditem/graphicssceneadditemsnippet.cpp \
+           graphicsview/graphicsview.cpp \
+           mdiarea/mdiareasnippets.cpp \
+           myscrollarea/myscrollarea.cpp
 
 load(qt_common)

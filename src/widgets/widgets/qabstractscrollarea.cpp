@@ -127,13 +127,13 @@ QT_BEGIN_NAMESPACE
     QWidget::move(). When the area contents or the viewport size
     changes, we do the following:
 
-    \snippet myscrollarea.cpp 1
+    \snippet myscrollarea/myscrollarea.cpp 1
 
     When the scroll bars change value, we need to update the widget
     position, i.e., find the part of the widget that is to be drawn in
     the viewport:
 
-    \snippet myscrollarea.cpp 0
+    \snippet myscrollarea/myscrollarea.cpp 0
 
     In order to track scroll bar movements, reimplement the virtual
     function scrollContentsBy(). In order to fine-tune scrolling

@@ -410,7 +410,7 @@ QFileDialog::~QFileDialog()
 
     For instance:
 
-    \snippet filedialogurls.cpp 0
+    \snippet filedialogurls/filedialogurls.cpp 0
 
     The file dialog will then look like this:
 
