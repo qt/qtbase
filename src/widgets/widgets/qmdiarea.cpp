@@ -51,7 +51,7 @@
     applications, but can also be placed in any layout. The following
     code adds an area to a main window:
 
-    \snippet mdiareasnippets.cpp 0
+    \snippet mdiarea/mdiareasnippets.cpp 0
 
     Unlike the window managers for top-level windows, all window flags
     (Qt::WindowFlags) are supported by QMdiArea as long as the flags
@@ -1948,7 +1948,7 @@ void QMdiArea::activatePreviousSubWindow()
     \note Once the subwindow has been added, its parent will be the
     \e{viewport widget} of the QMdiArea.
 
-    \snippet mdiareasnippets.cpp 1
+    \snippet mdiarea/mdiareasnippets.cpp 1
 
     When you create your own subwindow, you must set the
     Qt::WA_DeleteOnClose widget attribute if you want the window to be

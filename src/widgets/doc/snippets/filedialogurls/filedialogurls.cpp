@@ -48,8 +48,8 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
 #include <QFileDialog>
+#include <QtGui>
 
 int loadFileDialog()
 {

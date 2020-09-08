@@ -89,7 +89,7 @@
         descending stacking order (i.e., the first returned item is topmost,
         and the last item is bottom-most).
 
-        \snippet graphicsview.cpp 0
+        \snippet graphicsview/graphicsview.cpp 0
 
         QGraphicsScene's event propagation architecture schedules scene events
         for delivery to items, and also manages propagation between items. If
@@ -120,7 +120,7 @@
         enable OpenGL support, you can set a QOpenGLWidget as the viewport by
         calling QGraphicsView::setViewport().
 
-        \snippet graphicsview.cpp 1
+        \snippet graphicsview/graphicsview.cpp 1
 
         The view receives input events from the keyboard and mouse, and
         translates these to scene events (converting the coordinates used
@@ -327,7 +327,7 @@
         Here is an example of how to implement zoom and rotate slots in a
         subclass of QGraphicsView:
 
-        \snippet graphicsview_snippet.cpp 2
+        \snippet graphicsview/graphicsview_snippet.cpp 2
 
         The slots could be connected to \l{QToolButton}{QToolButtons} with
         \l{QAbstractButton::autoRepeat}{autoRepeat} enabled.
@@ -347,7 +347,7 @@
         a QPainter to either of the rendering functions. This example shows
         how to print the whole scene into a full page, using QPrinter.
 
-        \snippet graphicsview.cpp 3
+        \snippet graphicsview/graphicsview.cpp 3
 
         The difference between the scene and view rendering functions is that
         one operates in scene coordinates, and the other in view coordinates.
@@ -358,7 +358,7 @@
         is to render the exact contents of the viewport using the provided
         painter.
 
-        \snippet graphicsview.cpp 4
+        \snippet graphicsview/graphicsview.cpp 4
 
         When the source and target areas' sizes do not match, the source
         contents are stretched to fit into the target area. By passing a
@@ -384,7 +384,7 @@
         so in mousePressEvent() or mouseMoveEvent(), you can get the
         originating widget pointer from the event. For example:
 
-        \snippet graphicsview.cpp 5
+        \snippet graphicsview/graphicsview.cpp 5
 
         To intercept drag and drop events for the scene, you reimplement
         QGraphicsScene::dragEnterEvent() and whichever event handlers your
@@ -443,7 +443,7 @@
 
         Example:
 
-        \snippet graphicsview.cpp 6
+        \snippet graphicsview/graphicsview.cpp 6
 
       \section2 Item Groups
 
