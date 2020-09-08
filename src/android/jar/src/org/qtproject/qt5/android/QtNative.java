@@ -191,6 +191,10 @@ public class QtNative
                     return iterUri;
             }
 
+            // Android 6 and earlier could still manage to open the file so we can return the
+            // parsed uri here
+            if (Build.VERSION.SDK_INT < 24)
+                return parsedUri;
             return null;
         } catch (SecurityException e) {
             e.printStackTrace();
