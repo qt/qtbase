@@ -1,14 +1,10 @@
-TEMPLATE = app
-TARGET = sqldatabase_cppsnippet
-QT = core sql sql-private
+TEMPLATE = subdirs
+TARGET = sqldatabase_snippets
+SUBDIRS =
 
-SOURCES += sqldatabase/sqldatabase.cpp \
-           code/doc_src_qtsql.cpp \
-           code/doc_src_sql-driver.cpp \
-           code/src_sql_kernel_qsqldatabase.cpp \
-           code/src_sql_kernel_qsqlerror.cpp \
-           code/src_sql_kernel_qsqlresult.cpp \
-           code/src_sql_kernel_qsqldriver.cpp \
-           code/src_sql_models_qsqlquerymodel.cpp
+contains(QT_BUILD_PARTS, tests) {
+    SUBDIRS += \
+        code \
+        sqldatabase
+}
 
-load(qt_common)

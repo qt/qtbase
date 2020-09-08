@@ -248,7 +248,6 @@ qtConfig(private_tests) {
         src_network_doc_snippets.subdir = network/doc/snippets
         src_network_doc_snippets.target = sub-network-doc-snippets
         src_network_doc_snippets.depends = src_network src_gui
-        uikit: src_network_doc_snippets.depends += src_plugins
         SUBDIRS += src_network_doc_snippets
     }
 
@@ -256,7 +255,6 @@ qtConfig(private_tests) {
         src_sql_doc_snippets.subdir = sql/doc/snippets
         src_sql_doc_snippets.target = sub-sql-doc-snippets
         src_sql_doc_snippets.depends = src_sql
-        uikit: src_network_doc_snippets.depends += src_plugins
         SUBDIRS += src_sql_doc_snippets
     }
 
@@ -264,7 +262,6 @@ qtConfig(private_tests) {
         src_testlib_doc_snippets.subdir = testlib/doc/snippets
         src_testlib_doc_snippets.target = sub-testlib-doc-snippets
         src_testlib_doc_snippets.depends = src_testlib src_widgets src_sql
-        uikit: src_network_doc_snippets.depends += src_plugins
         SUBDIRS += src_testlib_doc_snippets
     }
 
@@ -272,7 +269,6 @@ qtConfig(private_tests) {
         src_widgets_doc_snippets.subdir = widgets/doc/snippets
         src_widgets_doc_snippets.target = sub-widgets-doc-snippets
         src_widgets_doc_snippets.depends = src_widgets src_printsupport src_opengl
-        uikit: src_network_doc_snippets.depends += src_plugins
         SUBDIRS += src_widgets_doc_snippets
     }
 }
