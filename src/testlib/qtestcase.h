@@ -129,7 +129,7 @@ do {\
 
 #endif // !QT_NO_EXCEPTIONS
 
-
+// NB: not do {...} while (0) wrapped, as qt_test_i is accessed after it
 #define QTRY_LOOP_IMPL(expr, timeoutValue, step) \
     if (!(expr)) { \
         QTest::qWait(0); \
@@ -154,8 +154,8 @@ do {\
 #define QTRY_IMPL(expr, timeout)\
     const int qt_test_step = timeout < 350 ? timeout / 7 + 1 : 50; \
     const int qt_test_timeoutValue = timeout; \
-    { QTRY_LOOP_IMPL((expr), qt_test_timeoutValue, qt_test_step); } \
-    QTRY_TIMEOUT_DEBUG_IMPL((expr), qt_test_timeoutValue, qt_test_step)\
+    { QTRY_LOOP_IMPL(QTest::currentTestFailed() || (expr), qt_test_timeoutValue, qt_test_step); } \
+    QTRY_TIMEOUT_DEBUG_IMPL(QTest::currentTestFailed() || (expr), qt_test_timeoutValue, qt_test_step)
 
 // Will try to wait for the expression to become true while allowing event processing
 #define QTRY_VERIFY_WITH_TIMEOUT(expr, timeout) \
