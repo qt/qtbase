@@ -189,7 +189,6 @@ static Qt::LayoutDirection layout_direction = Qt::LayoutDirectionAuto;
 static bool force_reverse = false;
 
 QGuiApplicationPrivate *QGuiApplicationPrivate::self = nullptr;
-QPointingDevice *QGuiApplicationPrivate::m_fakeTouchDevice = nullptr;
 int QGuiApplicationPrivate::m_fakeMouseSourcePointId = 0;
 
 #ifndef QT_NO_CLIPBOARD
@@ -2282,10 +2281,6 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     if (!e->synthetic() && !ev.isAccepted()
         && !e->nonClientArea
         && qApp->testAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents)) {
-        if (!m_fakeTouchDevice) {
-            m_fakeTouchDevice = new QPointingDevice;
-            QWindowSystemInterface::registerInputDevice(m_fakeTouchDevice);
-        }
         QList<QWindowSystemInterface::TouchPoint> points;
         QWindowSystemInterface::TouchPoint point;
         point.id = 1;
@@ -2310,7 +2305,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         const QList<QEventPoint> &touchPoints =
                 QWindowSystemInterfacePrivate::fromNativeTouchPoints(points, window, &type);
 
-        QWindowSystemInterfacePrivate::TouchEvent fake(window, e->timestamp, type, m_fakeTouchDevice, touchPoints, e->modifiers);
+        QWindowSystemInterfacePrivate::TouchEvent fake(window, e->timestamp, type, device, touchPoints, e->modifiers);
         fake.flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
         processTouchEvent(&fake);
     }

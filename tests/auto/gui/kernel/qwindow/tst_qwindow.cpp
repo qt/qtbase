@@ -45,6 +45,8 @@
 #  include <QtCore/qt_windows.h>
 #endif
 
+Q_LOGGING_CATEGORY(lcTests, "qt.gui.tests")
+
 class tst_QWindow: public QObject
 {
     Q_OBJECT
@@ -957,6 +959,8 @@ public:
     }
     void mousePressEvent(QMouseEvent *event) override
     {
+        qCDebug(lcTests) << event;
+        mouseDevice = event->pointingDevice();
         if (ignoreMouse) {
             event->ignore();
         } else {
@@ -971,6 +975,7 @@ public:
     }
     void mouseReleaseEvent(QMouseEvent *event) override
     {
+        qCDebug(lcTests) << event;
         if (ignoreMouse) {
             event->ignore();
         } else {
@@ -981,6 +986,7 @@ public:
     }
     void mouseMoveEvent(QMouseEvent *event) override
     {
+        qCDebug(lcTests) << event;
         buttonStateInGeneratedMove = event->buttons();
         if (ignoreMouse) {
             event->ignore();
@@ -992,6 +998,7 @@ public:
     }
     void mouseDoubleClickEvent(QMouseEvent *event) override
     {
+        qCDebug(lcTests) << event;
         if (ignoreMouse) {
             event->ignore();
         } else {
@@ -1001,12 +1008,14 @@ public:
     }
     void touchEvent(QTouchEvent *event) override
     {
+        qCDebug(lcTests) << event;
+        touchDevice = event->pointingDevice();
         if (ignoreTouch) {
             event->ignore();
             return;
         }
         touchEventType = event->type();
-        QList<QTouchEvent::TouchPoint> points = event->touchPoints();
+        QList<QTouchEvent::TouchPoint> points = event->points();
         for (int i = 0; i < points.count(); ++i) {
             switch (points.at(i).state()) {
             case QEventPoint::State::Pressed:
@@ -1029,9 +1038,11 @@ public:
     {
         switch (e->type()) {
         case QEvent::Enter:
+            qCDebug(lcTests) << e;
             ++enterEventCount;
             break;
         case QEvent::Leave:
+            qCDebug(lcTests) << e;
             ++leaveEventCount;
             break;
         default:
@@ -1063,6 +1074,9 @@ public:
 
     bool spinLoopWhenPressed = false;
     Qt::MouseButtons buttonStateInGeneratedMove;
+
+    const QPointingDevice *mouseDevice = nullptr;
+    const QPointingDevice *touchDevice = nullptr;
 };
 
 static void simulateMouseClick(QWindow *target, const QPointF &local, const QPointF &global)
@@ -1176,6 +1190,8 @@ void tst_QWindow::touchToMouseTranslation()
     QTRY_COMPARE(window.mouseReleaseButton, int(Qt::LeftButton));
     QTRY_COMPARE(window.mousePressScreenPos, pressArea.center());
     QTRY_COMPARE(window.mouseMoveScreenPos, moveArea.center());
+    QCOMPARE(window.mouseDevice, window.touchDevice);
+    QCOMPARE(window.mouseDevice->type(), QInputDevice::DeviceType::TouchScreen);
 
     window.mousePressButton = 0;
     window.mouseReleaseButton = 0;
@@ -1258,6 +1274,8 @@ void tst_QWindow::mouseToTouchTranslation()
 
     QTRY_COMPARE(window.touchPressedCount, 1);
     QTRY_COMPARE(window.touchReleasedCount, 1);
+    QCOMPARE(window.mouseDevice, window.touchDevice);
+    QCOMPARE(window.touchDevice->type(), QInputDevice::DeviceType::Mouse);
 
     QCoreApplication::setAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents, true);
 
