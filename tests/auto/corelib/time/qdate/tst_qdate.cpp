@@ -1223,20 +1223,19 @@ void tst_QDate::fromStringFormat_data()
     QTest::addColumn<QString>("format");
     QTest::addColumn<QDate>("expected");
 
-    // Undo this (inline the C-locale versions) for ### Qt 6
-    // Get localized names:
-    QString january = QLocale::system().monthName(1, QLocale::LongFormat);
-    QString february = QLocale::system().monthName(2, QLocale::LongFormat);
-    QString march = QLocale::system().monthName(3, QLocale::LongFormat);
-    QString august = QLocale::system().monthName(8, QLocale::LongFormat);
-    QString mon = QLocale::system().dayName(1, QLocale::ShortFormat);
-    QString monday = QLocale::system().dayName(1, QLocale::LongFormat);
-    QString tuesday = QLocale::system().dayName(2, QLocale::LongFormat);
-    QString wednesday = QLocale::system().dayName(3, QLocale::LongFormat);
-    QString thursday = QLocale::system().dayName(4, QLocale::LongFormat);
-    QString friday = QLocale::system().dayName(5, QLocale::LongFormat);
-    QString saturday = QLocale::system().dayName(6, QLocale::LongFormat);
-    QString sunday = QLocale::system().dayName(7, QLocale::LongFormat);
+    // Get names:
+    const QString january = QStringLiteral("January");
+    const QString february = QStringLiteral("February");
+    const QString march = QStringLiteral("March");
+    const QString august = QStringLiteral("August");
+    const QString mon = QStringLiteral("Mon");
+    const QString monday = QStringLiteral("Monday");
+    const QString tuesday = QStringLiteral("Tuesday");
+    const QString wednesday = QStringLiteral("Wednesday");
+    const QString thursday = QStringLiteral("Thursday");
+    const QString friday = QStringLiteral("Friday");
+    const QString saturday = QStringLiteral("Saturday");
+    const QString sunday = QStringLiteral("Sunday");
 
     QTest::newRow("data0") << QString("") << QString("") << defDate();
     QTest::newRow("data1") << QString(" ") << QString("") << invalidDate();
