@@ -27,14 +27,14 @@ jobs:
             deps:  libgl-dev libglu-dev libpcre2-dev libz-dev libfreetype6-dev libpng-dev libjpeg-dev libsqlite3-dev
             tools: ninja-build ccache
             install_cmd: sudo apt-get -y install
-            configure_flags: -system_sqlite
+            configure_flags: -system-sqlite -system-pcre -system-zlib -system-freetype -system-libpng -system-libjpeg
           - name: macos-10.15
             os:   macos-10.15
             deps:  jpeg sqlite
             tools: ninja ccache pkg-config
             install_cmd: brew install
             # Specifically on macOS pkg_config has to be manually turned on otherwise libraries under /usr/local are not detected.
-            configure_flags: -system_sqlite -feature pkg_config
+            configure_flags: -feature-pkg-config -system-sqlite -system-libjpeg
           - name: windows-2019
             os:   windows-2019
             install_cmd: choco install
@@ -42,8 +42,8 @@ jobs:
             # Chocolatey sqlite package does not come with headers, so we build with bundled sqlite.
             #deps: sqlite
             tools: ninja ccache
-            # Because of header conflicts we disable everything else besides sqlite driver
-            configure_flags: -qt-sqlite -no-feature sql_psql -no-feature sql_mysql -no-feature sql_odbc
+            # We don't want the system headers / libraries from Strawberry Perl while compiling with MinGW 8.1.0
+            configure_flags: -qt-sqlite -qt-pcre -qt-zlib -qt-freetype -qt-libpng -qt-libjpeg -no-feature-sql-psql -no-feature-sql-mysql -no-feature-sql-odbc
     runs-on: ${{ matrix.os }}
 
 
@@ -97,8 +97,7 @@ jobs:
       working-directory: build
       run:  ../configure -cmake -opensource -confirm-license -ccache -no-pch \
         \ -debug -nomake tests -nomake examples \
-        \ -qt-harfbuzz -no-iconv \
-        \ -system-pcre -system-zlib -system-freetype -system-libpng -system-libjpeg \
+        \ -qt-harfbuzz \
         \ ${{ matrix.configure_flags }}
     - name: ninja
       working-directory: build
