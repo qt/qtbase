@@ -517,12 +517,13 @@ QDataStream &operator>>(QDataStream &stream, QLine &line)
     \fn void QLineF::setLength(qreal length)
 
     Sets the length of the line to the given \a length. QLineF will
-    move the end point - p2() - of the line to give the line its new length.
+    move the end point - p2() - of the line to give the line its new
+    length, unless length() was previously zero, in which case no
+    scaling is attempted. For lines with very short lengths
+    (represented by denormal floating-point values), results may be
+    imprecise.
 
-    A null line will not be rescaled. For non-null lines with very short lengths
-    (represented by denormal floating-point values), results may be imprecise.
-
-    \sa length(), isNull(), unitVector()
+    \sa length(), unitVector()
 */
 
 /*!

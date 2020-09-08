@@ -372,12 +372,11 @@ constexpr inline QPointF QLineF::center() const
 
 inline void QLineF::setLength(qreal len)
 {
-    if (isNull())
-        return;
-    Q_ASSERT(length() > 0);
-    const QLineF v = unitVector();
-    len /= v.length(); // In case it's not quite exactly 1.
-    pt2 = QPointF(pt1.x() + len * v.dx(), pt1.y() + len * v.dy());
+    const qreal oldLength = length();
+    // Scale len by dx() / length() and dy() / length(), two O(1) quantities,
+    // rather than scaling dx() and dy() by len / length(), which might overflow.
+    if (oldLength > 0)
+        pt2 = QPointF(pt1.x() + len * (dx() / oldLength), pt1.y() + len * (dy() / oldLength));
 }
 
 constexpr inline QPointF QLineF::pointAt(qreal t) const
