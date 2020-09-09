@@ -60,6 +60,8 @@ template <class T> class QSet;
 template <class T> class QStack;
 template<class T, int Prealloc = 256> class QVarLengthArray;
 template <class T> class QVector;
+using QByteArrayList = QList<QByteArray>;
+class QStringList;
 
 QT_END_NAMESPACE
 
