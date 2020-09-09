@@ -104,6 +104,12 @@ Q_DECLARE_METATYPE(QNetworkProxyQuery)
 
 typedef QSharedPointer<QNetworkReply> QNetworkReplyPtr;
 
+#ifndef QT_NO_OPENSSL
+QT_BEGIN_NAMESPACE
+void qt_ForceTlsSecurityLevel();
+QT_END_NAMESPACE
+#endif
+
 class MyCookieJar;
 class tst_QNetworkReply: public QObject
 {
@@ -1584,6 +1590,10 @@ void tst_QNetworkReply::initTestCase()
         QString::fromLatin1("Couldn't find echo dir starting from %1.").arg(QDir::currentPath())));
 
     cleanupTestData();
+#ifndef QT_NO_OPENSSL
+    QT_PREPEND_NAMESPACE(qt_ForceTlsSecurityLevel)();
+#endif // QT_NO_OPENSSL
+
 }
 
 void tst_QNetworkReply::cleanupTestCase()

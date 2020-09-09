@@ -748,6 +748,9 @@ int q_OCSP_id_cmp(OCSP_CERTID *a, OCSP_CERTID *b);
 void *q_CRYPTO_malloc(size_t num, const char *file, int line);
 #define q_OPENSSL_malloc(num) q_CRYPTO_malloc(num, "", 0)
 
+int q_SSL_CTX_get_security_level(const SSL_CTX *ctx);
+void q_SSL_CTX_set_security_level(SSL_CTX *ctx, int level);
+
 QT_END_NAMESPACE
 
 #endif

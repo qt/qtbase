@@ -54,6 +54,13 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_GLOBAL_STATIC(bool, forceSecurityLevel)
+
+Q_NETWORK_EXPORT void qt_ForceTlsSecurityLevel()
+{
+    *forceSecurityLevel() = true;
+}
+
 // defined in qsslsocket_openssl.cpp:
 extern int q_X509Callback(int ok, X509_STORE_CTX *ctx);
 extern QString getErrorsFromOpenSsl();
@@ -343,6 +350,10 @@ init_context:
         sslContext->errorCode = QSslError::UnspecifiedError;
         return;
     }
+
+    // A nasty hacked OpenSSL using a level that will make our auto-tests fail:
+    if (q_SSL_CTX_get_security_level(sslContext->ctx) > 1 && *forceSecurityLevel())
+        q_SSL_CTX_set_security_level(sslContext->ctx, 1);
 
     const long anyVersion =
 #if QT_CONFIG(dtls)

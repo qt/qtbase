@@ -189,6 +189,9 @@ void tst_QDtls::initTestCase()
     defaultServerConfig.setDtlsCookieVerificationEnabled(false);
 
     hostName = QStringLiteral("bob.org");
+
+    void qt_ForceTlsSecurityLevel();
+    qt_ForceTlsSecurityLevel();
 }
 
 void tst_QDtls::init()
