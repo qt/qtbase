@@ -979,7 +979,7 @@ void QPrinter::setCreator(const QString &creator)
     On Windows and Mac, this option can be changed while printing and will
     take effect from the next call to newPage().
 
-    To obtain the current QPageLayout::Orientation use pageLayout().pageOrientation().
+    To obtain the current QPageLayout::Orientation use pageLayout().orientation().
 
     Returns true if the page orientation was successfully set to \a orientation.
 
@@ -1027,7 +1027,7 @@ void QPrinter::setCreator(const QString &creator)
 #endif
 
 /*!
-  \obsolete Use pageLayout().pageOrientation() instead.
+  \obsolete Use pageLayout().orientation() instead.
 
   Returns the orientation setting. This is driver-dependent, but is usually
   QPrinter::Portrait.
