@@ -1458,19 +1458,6 @@ QImage QOpenGLFramebufferObject::toImage(bool flipped) const
     return toImage(flipped, 0);
 }
 
-/*!
-    \fn QImage QOpenGLFramebufferObject::toImage() const
-    \overload
-
-    Returns the contents of this framebuffer object as a QImage. This method flips
-    the image from OpenGL coordinates to raster coordinates.
-*/
-// ### Qt 6: Remove this method and make it a default argument instead.
-QImage QOpenGLFramebufferObject::toImage() const
-{
-    return toImage(true, 0);
-}
-
 /*! \overload
 
     Returns the contents of the color attachment of index \a

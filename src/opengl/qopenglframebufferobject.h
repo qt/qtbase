@@ -108,8 +108,7 @@ public:
     QSize size() const;
     QList<QSize> sizes() const;
 
-    QImage toImage() const;
-    QImage toImage(bool flipped) const;
+    QImage toImage(bool flipped = true) const;
     QImage toImage(bool flipped, int colorAttachmentIndex) const;
 
     Attachment attachment() const;
