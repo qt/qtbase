@@ -243,8 +243,6 @@ struct StandardPageSize {
 static const StandardPageSize qt_pageSizes[] = {
 
     // Existing Qt sizes including ISO, US, ANSI and other standards
-    {QPageSize::A4                ,   DMPAPER_A4                   ,   QPageSize::Millimeter,    595,  842,      210  ,  297  ,       8.27,  11.69,    "A4"},
-    {QPageSize::B5                ,   DMPAPER_NONE                 ,   QPageSize::Millimeter,    499,  709,      176  ,  250  ,       6.9 ,   9.8 ,    "ISOB5"},
     {QPageSize::Letter            ,   DMPAPER_LETTER               ,   QPageSize::Inch      ,    612,  792,      215.9,  279.4,       8.5 ,  11   ,    "Letter"},
     {QPageSize::Legal             ,   DMPAPER_LEGAL                ,   QPageSize::Inch      ,    612, 1008,      215.9,  355.6,       8.5 ,  14   ,    "Legal"},
     {QPageSize::Executive         ,   DMPAPER_NONE                 ,   QPageSize::Inch      ,    540,  720,      190.5,  254  ,       7.5 ,  10   ,    "Executive.7.5x10in"}, // Qt size differs from Postscript / Windows
@@ -252,6 +250,7 @@ static const StandardPageSize qt_pageSizes[] = {
     {QPageSize::A1                ,   DMPAPER_NONE                 ,   QPageSize::Millimeter,   1684, 2384,      594  ,  841  ,      23.39,  33.11,    "A1"},
     {QPageSize::A2                ,   DMPAPER_A2                   ,   QPageSize::Millimeter,   1191, 1684,      420  ,  594  ,      16.54,  23.39,    "A2"},
     {QPageSize::A3                ,   DMPAPER_A3                   ,   QPageSize::Millimeter,    842, 1191,      297  ,  420  ,      11.69,  16.54,    "A3"},
+    {QPageSize::A4                ,   DMPAPER_A4                   ,   QPageSize::Millimeter,    595,  842,      210  ,  297  ,       8.27,  11.69,    "A4"},
     {QPageSize::A5                ,   DMPAPER_A5                   ,   QPageSize::Millimeter,    420,  595,      148  ,  210  ,       5.83,   8.27,    "A5"},
     {QPageSize::A6                ,   DMPAPER_A6                   ,   QPageSize::Millimeter,    297,  420,      105  ,  148  ,       4.13,   5.83,    "A6"},
     {QPageSize::A7                ,   DMPAPER_NONE                 ,   QPageSize::Millimeter,    210,  297,       74  ,  105  ,       2.91,   4.13,    "A7"},
@@ -263,6 +262,7 @@ static const StandardPageSize qt_pageSizes[] = {
     {QPageSize::B2                ,   DMPAPER_NONE                 ,   QPageSize::Millimeter,   1417, 2004,      500  ,  707  ,      19.68,  27.83,    "ISOB2"},
     {QPageSize::B3                ,   DMPAPER_NONE                 ,   QPageSize::Millimeter,   1001, 1417,      353  ,  500  ,      13.9 ,  19.68,    "ISOB3"},
     {QPageSize::B4                ,   DMPAPER_ISO_B4               ,   QPageSize::Millimeter,    709, 1001,      250  ,  353  ,       9.84,  13.9 ,    "ISOB4"},
+    {QPageSize::B5                ,   DMPAPER_NONE                 ,   QPageSize::Millimeter,    499,  709,      176  ,  250  ,       6.9 ,   9.8 ,    "ISOB5"},
     {QPageSize::B6                ,   DMPAPER_NONE                 ,   QPageSize::Millimeter,    354,  499,      125  ,  176  ,       4.92,   6.93,    "ISOB6"},
     {QPageSize::B7                ,   DMPAPER_NONE                 ,   QPageSize::Millimeter,    249,  354,       88  ,  125  ,       3.46,   4.92,    "ISOB7"},
     {QPageSize::B8                ,   DMPAPER_NONE                 ,   QPageSize::Millimeter,    176,  249,       62  ,   88  ,       2.44,   3.46,    "ISOB8"},

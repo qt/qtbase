@@ -58,12 +58,8 @@ class Q_GUI_EXPORT QPageSize
 {
 public:
 
-    // ### Qt6 Re-order and remove duplicates
-    // NOTE: Must keep in sync with QPagedPrintEngine and QPrinter
     enum PageSizeId {
         // Existing Qt sizes
-        A4,
-        B5,
         Letter,
         Legal,
         Executive,
@@ -71,6 +67,7 @@ public:
         A1,
         A2,
         A3,
+        A4,
         A5,
         A6,
         A7,
@@ -83,6 +80,7 @@ public:
         B3,
         B4,
         B6,
+        B5,
         B7,
         B8,
         B9,
@@ -198,7 +196,7 @@ public:
         EnvelopePrc10,
         EnvelopeYou4,
 
-        // Last item, with commonly used synynoms from QPagedPrintEngine / QPrinter
+        // Last item, with commonly used synynoms
         LastPageSize = EnvelopeYou4,
         NPageSize = LastPageSize,
         NPaperSize = LastPageSize,
