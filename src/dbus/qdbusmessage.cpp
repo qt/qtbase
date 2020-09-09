@@ -774,7 +774,6 @@ bool QDBusMessage::isInteractiveAuthorizationAllowed() const
 */
 void QDBusMessage::setArguments(const QList<QVariant> &arguments)
 {
-    // FIXME: should we detach?
     d_ptr->arguments = arguments;
 }
 
@@ -794,7 +793,6 @@ QList<QVariant> QDBusMessage::arguments() const
 
 QDBusMessage &QDBusMessage::operator<<(const QVariant &arg)
 {
-    // FIXME: should we detach?
     d_ptr->arguments.append(arg);
     return *this;
 }
