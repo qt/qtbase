@@ -2018,13 +2018,13 @@ void tst_QDateTime::operator_insert_extract_data()
         const QDataStream::Version dataStreamVersion = static_cast<QDataStream::Version>(version);
         const QByteArray vN = QByteArray::number(dataStreamVersion);
         const QByteArray pY = positiveYear.toString().toLatin1();
-        QTest::newRow(('v' + vN + " WA => HAWAII " + pY).constData())
+        QTest::addRow("v%d WA => HAWAII %d", version, 2012)
             << positiveYear << westernAustralia << hawaii << dataStreamVersion;
-        QTest::newRow(('v' + vN + " WA => WA " + pY).constData())
+        QTest::addRow("v%d WA => WA %d", version, 2012)
             << positiveYear << westernAustralia << westernAustralia << dataStreamVersion;
-        QTest::newRow(('v' + vN + " HAWAII => WA " + negativeYear.toString().toLatin1()).constData())
+        QTest::addRow("v%d HAWAII => WA %d", version, -2012)
             << negativeYear << hawaii << westernAustralia << dataStreamVersion;
-        QTest::newRow(('v' + vN + " HAWAII => HAWAII " + pY).constData())
+        QTest::addRow("v%d HAWAII => HAWAII %d", version, 2012)
             << positiveYear << hawaii << hawaii << dataStreamVersion;
     }
 }
