@@ -55,37 +55,23 @@ public:
     typedef void (*MarshallFunction)(QDBusArgument &, const void *);
     typedef void (*DemarshallFunction)(const QDBusArgument &, void *);
 
-    static void registerMarshallOperators(int typeId, MarshallFunction, DemarshallFunction);
-    static bool marshall(QDBusArgument &, int id, const void *data);
-    static bool demarshall(const QDBusArgument &, int id, void *data);
+    static void registerMarshallOperators(QMetaType typeId, MarshallFunction, DemarshallFunction);
+    static bool marshall(QDBusArgument &, QMetaType id, const void *data);
+    static bool demarshall(const QDBusArgument &, QMetaType id, void *data);
 
     static int signatureToType(const char *signature);
     static const char *typeToSignature(int type);
 };
 
 template<typename T>
-void qDBusMarshallHelper(QDBusArgument &arg, const T *t)
-{ arg << *t; }
-
-template<typename T>
-void qDBusDemarshallHelper(const QDBusArgument &arg, T *t)
-{ arg >> *t; }
-
-template<typename T>
-int qDBusRegisterMetaType(
-#ifndef Q_QDOC
-    T * /* dummy */ = nullptr
-#endif
-)
+QMetaType qDBusRegisterMetaType()
 {
-    void (*mf)(QDBusArgument &, const T *) = qDBusMarshallHelper<T>;
-    void (*df)(const QDBusArgument &, T *) = qDBusDemarshallHelper<T>;
+    auto mf = [](QDBusArgument &arg, const void *t) { arg << *static_cast<const T *>(t); };
+    auto df = [](const QDBusArgument &arg, void *t) { arg >> *static_cast<T *>(t); };
 
-    int id = qMetaTypeId<T>(); // make sure it's registered
-    QDBusMetaType::registerMarshallOperators(id,
-        reinterpret_cast<QDBusMetaType::MarshallFunction>(mf),
-        reinterpret_cast<QDBusMetaType::DemarshallFunction>(df));
-    return id;
+    QMetaType metaType = QMetaType::fromType<T>();
+    QDBusMetaType::registerMarshallOperators(metaType, mf, df);
+    return metaType;
 }
 
 QT_END_NAMESPACE

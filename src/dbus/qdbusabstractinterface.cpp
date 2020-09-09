@@ -212,7 +212,7 @@ bool QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, void *retu
         foundSignature = arg.currentSignature().toLatin1();
         if (foundSignature == expectedSignature) {
             // signatures match, we can demarshall
-            return QDBusMetaType::demarshall(arg, type, returnValuePtr);
+            return QDBusMetaType::demarshall(arg, QMetaType(type), returnValuePtr);
         }
     } else {
         foundType = value.typeName();

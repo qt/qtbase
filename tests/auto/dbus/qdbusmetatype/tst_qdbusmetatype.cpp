@@ -282,9 +282,9 @@ void tst_QDBusMetaType::initTestCase()
 
     qDBusRegisterMetaType<QList<Invalid0> >();
 
-    intStringMap = qDBusRegisterMetaType<QMap<int, QString> >();
-    stringStringMap = qDBusRegisterMetaType<QMap<QString, QString> >();
-    stringStruct1Map = qDBusRegisterMetaType<QMap<QString, Struct1> >();
+    intStringMap = qDBusRegisterMetaType<QMap<int, QString> >().id();
+    stringStringMap = qDBusRegisterMetaType<QMap<QString, QString> >().id();
+    stringStruct1Map = qDBusRegisterMetaType<QMap<QString, Struct1> >().id();
 }
 
 void tst_QDBusMetaType::staticTypes_data()

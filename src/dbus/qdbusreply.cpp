@@ -219,7 +219,7 @@ void qDBusReplyFill(const QDBusMessage &reply, QDBusError &error, QVariant &data
             receivedSignature = arg.currentSignature().toLatin1();
             if (receivedSignature == expectedSignature) {
                 // matched. Demarshall it
-                QDBusMetaType::demarshall(arg, data.userType(), data.data());
+                QDBusMetaType::demarshall(arg, data.metaType(), data.data());
                 return;
             }
         } else {

@@ -144,7 +144,7 @@ static void copyArgument(void *to, int id, const QVariant &arg)
     }
 
     // we can demarshall
-    QDBusMetaType::demarshall(dbarg, id, to);
+    QDBusMetaType::demarshall(dbarg, QMetaType(id), to);
 }
 
 QDBusInterfacePrivate::QDBusInterfacePrivate(const QString &serv, const QString &p,

@@ -528,7 +528,7 @@ bool QDBusMarshaller::appendRegisteredType(const QVariant &arg)
 {
     ref.ref();                  // reference up
     QDBusArgument self(QDBusArgumentPrivate::create(this));
-    return QDBusMetaType::marshall(self, arg.userType(), arg.constData());
+    return QDBusMetaType::marshall(self, arg.metaType(), arg.constData());
 }
 
 bool QDBusMarshaller::appendCrossMarshalling(QDBusDemarshaller *demarshaller)

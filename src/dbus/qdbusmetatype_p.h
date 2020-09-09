@@ -78,11 +78,7 @@ struct QDBusMetaTypeId
 };
 
 inline int QDBusMetaTypeId::message()
-#ifdef QT_BOOTSTRAPPED
-{ return qDBusRegisterMetaType<QList<QDBusUnixFileDescriptor> >() + 1; }
-#else
 { return qMetaTypeId<QDBusMessage>(); }
-#endif
 
 inline int QDBusMetaTypeId::argument()
 { return qMetaTypeId<QDBusArgument>(); }
@@ -97,11 +93,7 @@ inline int QDBusMetaTypeId::signature()
 { return qMetaTypeId<QDBusSignature>(); }
 
 inline int QDBusMetaTypeId::error()
-#ifdef QT_BOOTSTRAPPED
-{ return qDBusRegisterMetaType<QList<QDBusUnixFileDescriptor> >() + 2; }
-#else
 { return qMetaTypeId<QDBusError>(); }
-#endif
 
 inline int QDBusMetaTypeId::unixfd()
 { return qMetaTypeId<QDBusUnixFileDescriptor>(); }

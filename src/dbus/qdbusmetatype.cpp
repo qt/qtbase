@@ -47,6 +47,11 @@
 #include <qglobal.h>
 #include <qlist.h>
 #include <qreadwritelock.h>
+#include <qdatetime.h>
+#include <qrect.h>
+#include <qsize.h>
+#include <qpoint.h>
+#include <qline.h>
 
 #include "qdbusargument_p.h"
 #include "qdbusutil_p.h"
@@ -77,16 +82,6 @@ public:
     QDBusMetaType::DemarshallFunction demarshall;
 };
 
-template<typename T>
-inline static void registerHelper(T * = nullptr)
-{
-    void (*mf)(QDBusArgument &, const T *) = qDBusMarshallHelper<T>;
-    void (*df)(const QDBusArgument &, T *) = qDBusDemarshallHelper<T>;
-    QDBusMetaType::registerMarshallOperators(qMetaTypeId<T>(),
-        reinterpret_cast<QDBusMetaType::MarshallFunction>(mf),
-        reinterpret_cast<QDBusMetaType::DemarshallFunction>(df));
-}
-
 void QDBusMetaTypeId::init()
 {
     static QBasicAtomicInt initialized = Q_BASIC_ATOMIC_INITIALIZER(false);
@@ -105,20 +100,20 @@ void QDBusMetaTypeId::init()
 
 #ifndef QDBUS_NO_SPECIALTYPES
         // and register Qt Core's with us
-        registerHelper<QDate>();
-        registerHelper<QTime>();
-        registerHelper<QDateTime>();
-        registerHelper<QRect>();
-        registerHelper<QRectF>();
-        registerHelper<QSize>();
-        registerHelper<QSizeF>();
-        registerHelper<QPoint>();
-        registerHelper<QPointF>();
-        registerHelper<QLine>();
-        registerHelper<QLineF>();
-        registerHelper<QVariantList>();
-        registerHelper<QVariantMap>();
-        registerHelper<QVariantHash>();
+        qDBusRegisterMetaType<QDate>();
+        qDBusRegisterMetaType<QTime>();
+        qDBusRegisterMetaType<QDateTime>();
+        qDBusRegisterMetaType<QRect>();
+        qDBusRegisterMetaType<QRectF>();
+        qDBusRegisterMetaType<QSize>();
+        qDBusRegisterMetaType<QSizeF>();
+        qDBusRegisterMetaType<QPoint>();
+        qDBusRegisterMetaType<QPointF>();
+        qDBusRegisterMetaType<QLine>();
+        qDBusRegisterMetaType<QLineF>();
+        qDBusRegisterMetaType<QVariantList>();
+        qDBusRegisterMetaType<QVariantMap>();
+        qDBusRegisterMetaType<QVariantHash>();
 
         qDBusRegisterMetaType<QList<bool> >();
         qDBusRegisterMetaType<QList<short> >();
@@ -213,11 +208,12 @@ Q_GLOBAL_STATIC(QReadWriteLock, customTypesLock)
 /*!
     \internal
     Registers the marshalling and demarshalling functions for meta
-    type \a id.
+    type \a metaType.
 */
-void QDBusMetaType::registerMarshallOperators(int id, MarshallFunction mf,
+void QDBusMetaType::registerMarshallOperators(QMetaType metaType, MarshallFunction mf,
                                               DemarshallFunction df)
 {
+    int id = metaType.id();
     QList<QDBusCustomTypeInfo> *ct = customTypes();
     if (id < 0 || !mf || !df || !ct)
         return;                 // error!
@@ -232,12 +228,13 @@ void QDBusMetaType::registerMarshallOperators(int id, MarshallFunction mf,
 
 /*!
     \internal
-    Executes the marshalling of type \a id (whose data is contained in
+    Executes the marshalling of type \a metaType (whose data is contained in
     \a data) to the D-Bus marshalling argument \a arg. Returns \c true if
     the marshalling succeeded, or false if an error occurred.
 */
-bool QDBusMetaType::marshall(QDBusArgument &arg, int id, const void *data)
+bool QDBusMetaType::marshall(QDBusArgument &arg, QMetaType metaType, const void *data)
 {
+    int id = metaType.id();
     QDBusMetaTypeId::init();
 
     MarshallFunction mf;
@@ -261,12 +258,13 @@ bool QDBusMetaType::marshall(QDBusArgument &arg, int id, const void *data)
 
 /*!
     \internal
-    Executes the demarshalling of type \a id (whose data will be placed in
+    Executes the demarshalling of type \a metaType (whose data will be placed in
     \a data) from the D-Bus marshalling argument \a arg. Returns \c true if
     the demarshalling succeeded, or false if an error occurred.
 */
-bool QDBusMetaType::demarshall(const QDBusArgument &arg, int id, void *data)
+bool QDBusMetaType::demarshall(const QDBusArgument &arg, QMetaType metaType, void *data)
 {
+    int id = metaType.id();
     QDBusMetaTypeId::init();
 
     DemarshallFunction df;
