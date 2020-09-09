@@ -2002,15 +2002,15 @@ Q_DECLARE_METATYPE(QDataStream::Version)
 void tst_QDateTime::operator_insert_extract_data()
 {
     QTest::addColumn<QDateTime>("dateTime");
-    QTest::addColumn<QString>("serialiseAs");
-    QTest::addColumn<QString>("deserialiseAs");
+    QTest::addColumn<QByteArray>("serialiseAs");
+    QTest::addColumn<QByteArray>("deserialiseAs");
     QTest::addColumn<QDataStream::Version>("dataStreamVersion");
 
     const QDateTime positiveYear(QDateTime(QDate(2012, 8, 14), QTime(8, 0, 0), Qt::LocalTime));
     const QDateTime negativeYear(QDateTime(QDate(-2012, 8, 14), QTime(8, 0, 0), Qt::LocalTime));
 
-    const QString westernAustralia(QString::fromLatin1("AWST-8AWDT-9,M10.5.0,M3.5.0/03:00:00"));
-    const QString hawaii(QString::fromLatin1("HAW10"));
+    const QByteArray westernAustralia("AWST-8AWDT-9,M10.5.0,M3.5.0/03:00:00");
+    const QByteArray hawaii("HAW10");
 
     const QDataStream tmpDataStream;
     const int thisVersion = tmpDataStream.version();
@@ -2032,12 +2032,12 @@ void tst_QDateTime::operator_insert_extract_data()
 void tst_QDateTime::operator_insert_extract()
 {
     QFETCH(QDateTime, dateTime);
-    QFETCH(QString, serialiseAs);
-    QFETCH(QString, deserialiseAs);
+    QFETCH(QByteArray, serialiseAs);
+    QFETCH(QByteArray, deserialiseAs);
     QFETCH(QDataStream::Version, dataStreamVersion);
 
     // Start off in a certain timezone.
-    TimeZoneRollback useZone(serialiseAs.toLocal8Bit());
+    TimeZoneRollback useZone(serialiseAs);
     QDateTime dateTimeAsUTC(dateTime.toUTC());
 
     QByteArray byteArray;
@@ -2062,7 +2062,7 @@ void tst_QDateTime::operator_insert_extract()
 
     // Ensure that a change in timezone between serialisation and deserialisation
     // still results in identical UTC-converted datetimes.
-    useZone.reset(deserialiseAs.toLocal8Bit());
+    useZone.reset(deserialiseAs);
     QDateTime expectedLocalTime(dateTimeAsUTC.toLocalTime());
     {
         // Deserialise whole QDateTime at once.
