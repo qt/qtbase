@@ -2001,13 +2001,10 @@ Q_DECLARE_METATYPE(QDataStream::Version)
 
 void tst_QDateTime::operator_insert_extract_data()
 {
-    QTest::addColumn<QDateTime>("dateTime");
+    QTest::addColumn<int>("yearNumber");
     QTest::addColumn<QByteArray>("serialiseAs");
     QTest::addColumn<QByteArray>("deserialiseAs");
     QTest::addColumn<QDataStream::Version>("dataStreamVersion");
-
-    const QDateTime positiveYear(QDateTime(QDate(2012, 8, 14), QTime(8, 0, 0), Qt::LocalTime));
-    const QDateTime negativeYear(QDateTime(QDate(-2012, 8, 14), QTime(8, 0, 0), Qt::LocalTime));
 
     const QByteArray westernAustralia("AWST-8AWDT-9,M10.5.0,M3.5.0/03:00:00");
     const QByteArray hawaii("HAW10");
@@ -2017,27 +2014,29 @@ void tst_QDateTime::operator_insert_extract_data()
     for (int version = QDataStream::Qt_1_0; version <= thisVersion; ++version) {
         const QDataStream::Version dataStreamVersion = static_cast<QDataStream::Version>(version);
         const QByteArray vN = QByteArray::number(dataStreamVersion);
-        const QByteArray pY = positiveYear.toString().toLatin1();
         QTest::addRow("v%d WA => HAWAII %d", version, 2012)
-            << positiveYear << westernAustralia << hawaii << dataStreamVersion;
+            << 2012 << westernAustralia << hawaii << dataStreamVersion;
         QTest::addRow("v%d WA => WA %d", version, 2012)
-            << positiveYear << westernAustralia << westernAustralia << dataStreamVersion;
+            << 2012 << westernAustralia << westernAustralia << dataStreamVersion;
         QTest::addRow("v%d HAWAII => WA %d", version, -2012)
-            << negativeYear << hawaii << westernAustralia << dataStreamVersion;
+            << -2012 << hawaii << westernAustralia << dataStreamVersion;
         QTest::addRow("v%d HAWAII => HAWAII %d", version, 2012)
-            << positiveYear << hawaii << hawaii << dataStreamVersion;
+            << 2012 << hawaii << hawaii << dataStreamVersion;
     }
 }
 
 void tst_QDateTime::operator_insert_extract()
 {
-    QFETCH(QDateTime, dateTime);
+    QFETCH(int, yearNumber);
     QFETCH(QByteArray, serialiseAs);
     QFETCH(QByteArray, deserialiseAs);
     QFETCH(QDataStream::Version, dataStreamVersion);
 
     // Start off in a certain timezone.
     TimeZoneRollback useZone(serialiseAs);
+
+    // It is important that dateTime is created after the time zone shift
+    QDateTime dateTime(QDate(yearNumber, 8, 14), QTime(8, 0), Qt::LocalTime);
     QDateTime dateTimeAsUTC(dateTime.toUTC());
 
     QByteArray byteArray;
