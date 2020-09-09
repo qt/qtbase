@@ -132,7 +132,8 @@ void QDBusMetaTypeId::init()
     }
 }
 
-Q_GLOBAL_STATIC(QList<QDBusCustomTypeInfo>, customTypes)
+using QDBusCustomTypeHash = QHash<int, QDBusCustomTypeInfo>;
+Q_GLOBAL_STATIC(QDBusCustomTypeHash, customTypes)
 Q_GLOBAL_STATIC(QReadWriteLock, customTypesLock)
 
 /*!
@@ -214,13 +215,11 @@ void QDBusMetaType::registerMarshallOperators(QMetaType metaType, MarshallFuncti
                                               DemarshallFunction df)
 {
     int id = metaType.id();
-    QList<QDBusCustomTypeInfo> *ct = customTypes();
+    auto *ct = customTypes();
     if (id < 0 || !mf || !df || !ct)
         return;                 // error!
 
     QWriteLocker locker(customTypesLock());
-    if (id >= ct->size())
-        ct->resize(id + 1);
     QDBusCustomTypeInfo &info = (*ct)[id];
     info.marshall = mf;
     info.demarshall = df;
@@ -240,11 +239,12 @@ bool QDBusMetaType::marshall(QDBusArgument &arg, QMetaType metaType, const void 
     MarshallFunction mf;
     {
         QReadLocker locker(customTypesLock());
-        QList<QDBusCustomTypeInfo> *ct = customTypes();
-        if (id >= ct->size())
+        auto *ct = customTypes();
+        auto it = ct->constFind(id);
+        if (it == ct->cend())
             return false;       // non-existent
 
-        const QDBusCustomTypeInfo &info = (*ct).at(id);
+        const QDBusCustomTypeInfo &info = *it;
         if (!info.marshall) {
             mf = nullptr;       // make gcc happy
             return false;
@@ -270,11 +270,12 @@ bool QDBusMetaType::demarshall(const QDBusArgument &arg, QMetaType metaType, voi
     DemarshallFunction df;
     {
         QReadLocker locker(customTypesLock());
-        QList<QDBusCustomTypeInfo> *ct = customTypes();
-        if (id >= ct->size())
+        auto *ct = customTypes();
+        auto it = ct->constFind(id);
+        if (it == ct->cend())
             return false;       // non-existent
 
-        const QDBusCustomTypeInfo &info = (*ct).at(id);
+        const QDBusCustomTypeInfo &info = *it;
         if (!info.demarshall) {
             df = nullptr;       // make gcc happy
             return false;
@@ -304,43 +305,43 @@ bool QDBusMetaType::demarshall(const QDBusArgument &arg, QMetaType metaType, voi
     \sa QDBusUtil::isValidSingleSignature(), typeToSignature(),
         QVariant::type(), QVariant::userType()
 */
-int QDBusMetaType::signatureToType(const char *signature)
+QMetaType QDBusMetaType::signatureToMetaType(const char *signature)
 {
     if (!signature)
-        return QMetaType::UnknownType;
+        return QMetaType(QMetaType::UnknownType);
 
     QDBusMetaTypeId::init();
     switch (signature[0])
     {
     case DBUS_TYPE_BOOLEAN:
-        return QMetaType::Bool;
+        return QMetaType(QMetaType::Bool);
 
     case DBUS_TYPE_BYTE:
-        return QMetaType::UChar;
+        return QMetaType(QMetaType::UChar);
 
     case DBUS_TYPE_INT16:
-        return QMetaType::Short;
+        return QMetaType(QMetaType::Short);
 
     case DBUS_TYPE_UINT16:
-        return QMetaType::UShort;
+        return QMetaType(QMetaType::UShort);
 
     case DBUS_TYPE_INT32:
-        return QMetaType::Int;
+        return QMetaType(QMetaType::Int);
 
     case DBUS_TYPE_UINT32:
-        return QMetaType::UInt;
+        return QMetaType(QMetaType::UInt);
 
     case DBUS_TYPE_INT64:
-        return QMetaType::LongLong;
+        return QMetaType(QMetaType::LongLong);
 
     case DBUS_TYPE_UINT64:
-        return QMetaType::ULongLong;
+        return QMetaType(QMetaType::ULongLong);
 
     case DBUS_TYPE_DOUBLE:
-        return QMetaType::Double;
+        return QMetaType(QMetaType::Double);
 
     case DBUS_TYPE_STRING:
-        return QMetaType::QString;
+        return QMetaType(QMetaType::QString);
 
     case DBUS_TYPE_OBJECT_PATH:
         return QDBusMetaTypeId::objectpath();
@@ -357,24 +358,24 @@ int QDBusMetaType::signatureToType(const char *signature)
     case DBUS_TYPE_ARRAY:       // special case
         switch (signature[1]) {
         case DBUS_TYPE_BYTE:
-            return QMetaType::QByteArray;
+            return QMetaType(QMetaType::QByteArray);
 
         case DBUS_TYPE_STRING:
-            return QMetaType::QStringList;
+            return QMetaType(QMetaType::QStringList);
 
         case DBUS_TYPE_VARIANT:
-            return QMetaType::QVariantList;
+            return QMetaType(QMetaType::QVariantList);
 
         case DBUS_TYPE_OBJECT_PATH:
-            return qMetaTypeId<QList<QDBusObjectPath> >();
+            return QMetaType::fromType<QList<QDBusObjectPath> >();
 
         case DBUS_TYPE_SIGNATURE:
-            return qMetaTypeId<QList<QDBusSignature> >();
+            return QMetaType::fromType<QList<QDBusSignature> >();
 
         }
         Q_FALLTHROUGH();
     default:
-        return QMetaType::UnknownType;
+        return QMetaType(QMetaType::UnknownType);
     }
 }
 
@@ -389,10 +390,10 @@ int QDBusMetaType::signatureToType(const char *signature)
     \sa QDBusUtil::isValidSingleSignature(), signatureToType(),
         QVariant::type(), QVariant::userType()
 */
-const char *QDBusMetaType::typeToSignature(int type)
+const char *QDBusMetaType::typeToSignature(QMetaType type)
 {
     // check if it's a static type
-    switch (type)
+    switch (type.id())
     {
     case QMetaType::UChar:
         return DBUS_TYPE_BYTE_AS_STRING;
@@ -444,13 +445,14 @@ const char *QDBusMetaType::typeToSignature(int type)
         return DBUS_TYPE_UNIX_FD_AS_STRING;
 
     // try the database
-    QList<QDBusCustomTypeInfo> *ct = customTypes();
+    auto *ct = customTypes();
     {
         QReadLocker locker(customTypesLock());
-        if (type >= ct->size())
-            return nullptr;           // type not registered with us
+        auto it = ct->constFind(type.id());
+        if (it == ct->end())
+            return nullptr;
 
-        const QDBusCustomTypeInfo &info = (*ct).at(type);
+        const QDBusCustomTypeInfo &info = *it;
 
         if (!info.signature.isNull())
             return info.signature;
@@ -464,11 +466,11 @@ const char *QDBusMetaType::typeToSignature(int type)
     {
         // createSignature will never return a null QByteArray
         // if there was an error, it'll return ""
-        QByteArray signature = QDBusArgumentPrivate::createSignature(type);
+        QByteArray signature = QDBusArgumentPrivate::createSignature(type.id());
 
         // re-acquire lock
         QWriteLocker locker(customTypesLock());
-        info = &(*ct)[type];
+        info = &(*ct)[type.id()];
         info->signature = signature;
     }
     return info->signature;
