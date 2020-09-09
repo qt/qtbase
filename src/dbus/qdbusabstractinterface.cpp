@@ -718,27 +718,6 @@ void QDBusAbstractInterface::internalPropSet(const char *propname, const QVarian
     \sa callWithArgumentList()
 */
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-/*!
-    \internal
-
-    This function exists for binary compatibility with Qt versions < 5.14.
-    Programs recompiled against Qt 5.14 will use the variadic template function
-    instead.
-*/
-QDBusMessage QDBusAbstractInterface::call(const QString &method, const QVariant &arg1,
-                                          const QVariant &arg2,
-                                          const QVariant &arg3,
-                                          const QVariant &arg4,
-                                          const QVariant &arg5,
-                                          const QVariant &arg6,
-                                          const QVariant &arg7,
-                                          const QVariant &arg8)
-{
-    return call(QDBus::AutoDetect, method, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
-}
-#endif
-
 /*!
     \fn QDBusAbstractInterface::call(QDBus::CallMode mode, const QString &message)
     \internal
@@ -768,59 +747,6 @@ QDBusMessage QDBusAbstractInterface::call(const QString &method, const QVariant 
     \sa callWithArgumentList()
 */
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-/*!
-    \internal
-
-    This function exists for binary compatibility with Qt versions < 5.14.
-    Programs recompiled against Qt 5.14 will use the variadic template function
-    instead.
-*/
-QDBusMessage QDBusAbstractInterface::call(QDBus::CallMode mode, const QString &method,
-                                          const QVariant &arg1,
-                                          const QVariant &arg2,
-                                          const QVariant &arg3,
-                                          const QVariant &arg4,
-                                          const QVariant &arg5,
-                                          const QVariant &arg6,
-                                          const QVariant &arg7,
-                                          const QVariant &arg8)
-{
-    QList<QVariant> argList;
-    int count = 0 + arg1.isValid() + arg2.isValid() + arg3.isValid() + arg4.isValid() +
-                arg5.isValid() + arg6.isValid() + arg7.isValid() + arg8.isValid();
-
-    switch (count) {
-    case 8:
-        argList.prepend(arg8);
-        Q_FALLTHROUGH();
-    case 7:
-        argList.prepend(arg7);
-        Q_FALLTHROUGH();
-    case 6:
-        argList.prepend(arg6);
-        Q_FALLTHROUGH();
-    case 5:
-        argList.prepend(arg5);
-        Q_FALLTHROUGH();
-    case 4:
-        argList.prepend(arg4);
-        Q_FALLTHROUGH();
-    case 3:
-        argList.prepend(arg3);
-        Q_FALLTHROUGH();
-    case 2:
-        argList.prepend(arg2);
-        Q_FALLTHROUGH();
-    case 1:
-        argList.prepend(arg1);
-        break;
-    }
-
-    return callWithArgumentList(mode, method, argList);
-}
-#endif // Qt 5
-
 /*!
     \fn QDBusAbstractInterface::asyncCall(const QString &message)
     \internal
@@ -849,57 +775,6 @@ QDBusMessage QDBusAbstractInterface::call(QDBus::CallMode mode, const QString &m
     \sa asyncCallWithArgumentList()
 */
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-/*!
-    \internal
-
-    This function exists for binary compatibility with Qt versions < 5.14.
-    Programs recompiled against Qt 5.14 will use the variadic template function
-    instead.
-*/
-QDBusPendingCall QDBusAbstractInterface::asyncCall(const QString &method, const QVariant &arg1,
-                                                   const QVariant &arg2,
-                                                   const QVariant &arg3,
-                                                   const QVariant &arg4,
-                                                   const QVariant &arg5,
-                                                   const QVariant &arg6,
-                                                   const QVariant &arg7,
-                                                   const QVariant &arg8)
-{
-    QList<QVariant> argList;
-    int count = 0 + arg1.isValid() + arg2.isValid() + arg3.isValid() + arg4.isValid() +
-                arg5.isValid() + arg6.isValid() + arg7.isValid() + arg8.isValid();
-
-    switch (count) {
-    case 8:
-        argList.prepend(arg8);
-        Q_FALLTHROUGH();
-    case 7:
-        argList.prepend(arg7);
-        Q_FALLTHROUGH();
-    case 6:
-        argList.prepend(arg6);
-        Q_FALLTHROUGH();
-    case 5:
-        argList.prepend(arg5);
-        Q_FALLTHROUGH();
-    case 4:
-        argList.prepend(arg4);
-        Q_FALLTHROUGH();
-    case 3:
-        argList.prepend(arg3);
-        Q_FALLTHROUGH();
-    case 2:
-        argList.prepend(arg2);
-        Q_FALLTHROUGH();
-    case 1:
-        argList.prepend(arg1);
-        break;
-    }
-
-    return asyncCallWithArgumentList(method, argList);
-}
-#endif // Qt 5
 
 /*!
     \internal

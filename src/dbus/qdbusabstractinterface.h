@@ -123,29 +123,6 @@ public:
         return doCall(mode, method, variants, sizeof...(args));
     }
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    QDBusMessage call(const QString &method,
-                      const QVariant &arg1,
-                      const QVariant &arg2,
-                      const QVariant &arg3,
-                      const QVariant &arg4,
-                      const QVariant &arg5,
-                      const QVariant &arg6,
-                      const QVariant &arg7,
-                      const QVariant &arg8);
-
-    QDBusMessage call(QDBus::CallMode mode,
-                      const QString &method,
-                      const QVariant &arg1,
-                      const QVariant &arg2,
-                      const QVariant &arg3,
-                      const QVariant &arg4,
-                      const QVariant &arg5,
-                      const QVariant &arg6,
-                      const QVariant &arg7,
-                      const QVariant &arg8);
-#endif // Qt 5
-
     QDBusMessage callWithArgumentList(QDBus::CallMode mode,
                                       const QString &method,
                                       const QList<QVariant> &args);
@@ -168,18 +145,6 @@ public:
         const QVariant variants[] = { QVariant(std::forward<Args>(args))... };
         return doAsyncCall(method, variants, sizeof...(args));
     }
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    QDBusPendingCall asyncCall(const QString &method,
-                               const QVariant &arg1,
-                               const QVariant &arg2,
-                               const QVariant &arg3,
-                               const QVariant &arg4,
-                               const QVariant &arg5,
-                               const QVariant &arg6,
-                               const QVariant &arg7,
-                               const QVariant &arg8);
-#endif // Qt 5
 
     QDBusPendingCall asyncCallWithArgumentList(const QString &method,
                                                const QList<QVariant> &args);
