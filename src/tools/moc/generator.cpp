@@ -572,7 +572,8 @@ void Generator::generateCode()
         fprintf(out, "    nullptr,\n");
     } else {
         bool needsComma = false;
-        if (!(requireCompleteTypes || cdef->requireCompleteMethodTypes)) {
+        const bool requireCompleteness = requireCompleteTypes || cdef->requireCompleteMethodTypes;
+        if (!requireCompleteness) {
             fprintf(out, "qt_incomplete_metaTypeArray<qt_meta_stringdata_%s_t\n", qualifiedClassNameIdentifier.constData());
             needsComma = true;
         } else {
@@ -580,7 +581,7 @@ void Generator::generateCode()
         }
         for (int i = 0; i < cdef->propertyList.count(); ++i) {
             const PropertyDef &p = cdef->propertyList.at(i);
-            if (requireCompleteTypes)
+            if (requireCompleteness)
                 fprintf(out, "%s%s", needsComma ? ", " : "", p.type.data());
             else
                 fprintf(out, "%sQtPrivate::TypeAndForceComplete<%s, std::true_type>", needsComma ? ", " : "", p.type.data());
@@ -590,13 +591,13 @@ void Generator::generateCode()
              { cdef->signalList, cdef->slotList, cdef->methodList }) {
             for (int i = 0; i< methodContainer.count(); ++i) {
                 const FunctionDef& fdef = methodContainer.at(i);
-                if (requireCompleteTypes)
+                if (requireCompleteness)
                     fprintf(out, "%s%s", needsComma ? ", " : "", fdef.type.name.data());
                 else
                     fprintf(out, "%sQtPrivate::TypeAndForceComplete<%s, std::false_type>", needsComma ? ", " : "", fdef.type.name.data());
                 needsComma = true;
                 for (const auto &argument: fdef.arguments) {
-                    if (requireCompleteTypes)
+                    if (requireCompleteness)
                         fprintf(out, ", %s", argument.type.name.data());
                     else
                         fprintf(out, ", QtPrivate::TypeAndForceComplete<%s, std::false_type>", argument.type.name.data());
@@ -607,7 +608,7 @@ void Generator::generateCode()
         for (int i = 0; i< cdef->constructorList.count(); ++i) {
             const FunctionDef& fdef = cdef->constructorList.at(i);
             for (const auto &argument: fdef.arguments) {
-                if (requireCompleteTypes)
+                if (requireCompleteness)
                     fprintf(out, "%s%s", needsComma ? ", " : "", argument.type.name.data());
                 else
                     fprintf(out, "%sQtPrivate::TypeAndForceComplete<%s, std::false_type>", needsComma ? ", " : "", argument.type.name.data());
