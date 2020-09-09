@@ -31,9 +31,15 @@
 #include <qsslkey.h>
 #include <qsslsocket.h>
 #include <QScopeGuard>
+#include <qsslconfiguration.h>
+#include <qsslellipticcurve.h>
 
 #include <QtNetwork/qhostaddress.h>
 #include <QtNetwork/qnetworkproxy.h>
+
+#include <QtCore/qstring.h>
+#include <QtCore/qdebug.h>
+#include <QtCore/qlist.h>
 
 #ifdef QT_BUILD_INTERNAL
     #ifndef QT_NO_SSL
@@ -44,6 +50,8 @@
         #include "private/qsslsocket_openssl_symbols_p.h"
     #endif
 #endif
+
+#include <algorithm>
 
 class tst_QSslKey : public QObject
 {
@@ -65,6 +73,8 @@ class tst_QSslKey : public QObject
     QList<KeyInfo> keyInfoList;
 
     void createPlainTestRows(bool pemOnly = false);
+public:
+    tst_QSslKey();
 
 public slots:
     void initTestCase();
@@ -100,7 +110,45 @@ private slots:
 #endif
 private:
     QString testDataDir;
+
+    bool fileContainsUnsupportedEllipticCurve(const QString &fileName) const;
+    QVector<QString> unsupportedCurves;
 };
+
+tst_QSslKey::tst_QSslKey()
+{
+    const QString expectedCurves[] = {
+        // See how we generate them in keys/genkey.sh.
+        QStringLiteral("secp224r1"),
+        QStringLiteral("prime256v1"),
+        QStringLiteral("secp384r1"),
+        QStringLiteral("brainpoolP256r1"),
+        QStringLiteral("brainpoolP384r1"),
+        QStringLiteral("brainpoolP512r1")
+    };
+    const auto supportedCurves = QSslConfiguration::supportedEllipticCurves();
+
+    for (const auto &requestedEc : expectedCurves) {
+        auto pos = std::find_if(supportedCurves.begin(), supportedCurves.end(),
+                     [&requestedEc](const QSslEllipticCurve &supported) {
+            return requestedEc == supported.shortName();
+        });
+        if (pos == supportedCurves.end()) {
+            qWarning() << "EC with the name:" << requestedEc
+                       << "is not supported by your build of OpenSSL and will not be tested.";
+            unsupportedCurves.push_back(requestedEc);
+        }
+    }
+}
+
+bool tst_QSslKey::fileContainsUnsupportedEllipticCurve(const QString &fileName) const
+{
+    for (const auto &name : unsupportedCurves) {
+        if (fileName.contains(name))
+            return true;
+    }
+    return false;
+}
 
 void tst_QSslKey::initTestCase()
 {
@@ -114,6 +162,9 @@ void tst_QSslKey::initTestCase()
     const QFileInfoList fileInfoList = dir.entryInfoList(QDir::Files | QDir::Readable);
     QRegExp rx(QLatin1String("^(rsa|dsa|dh|ec)-(pub|pri)-(\\d+)-?[\\w-]*\\.(pem|der)$"));
     for (const QFileInfo &fileInfo : fileInfoList) {
+        if (fileContainsUnsupportedEllipticCurve(fileInfo.fileName()))
+            continue;
+
         if (rx.indexIn(fileInfo.fileName()) >= 0) {
             keyInfoList << KeyInfo(
                 fileInfo,
@@ -238,14 +289,9 @@ void tst_QSslKey::constructorHandle()
     BIO* bio = q_BIO_new(q_BIO_s_mem());
     q_BIO_write(bio, pem.constData(), pem.length());
     EVP_PKEY *origin = func(bio, nullptr, nullptr, static_cast<void *>(passphrase.data()));
-#if QT_CONFIG(opensslv11)
+    Q_ASSERT(origin);
     q_EVP_PKEY_up_ref(origin);
-#endif
     QSslKey key(origin, type);
-#if !QT_CONFIG(opensslv11)
-    q_BIO_write(bio, pem.constData(), pem.length());
-    origin = func(bio, nullptr, nullptr, static_cast<void *>(passphrase.data()));
-#endif
     q_BIO_free(bio);
 
     EVP_PKEY *handle = q_EVP_PKEY_new();
