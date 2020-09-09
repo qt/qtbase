@@ -154,10 +154,10 @@ bool QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, void *retu
     if (!isValid || !canMakeCalls())   // can't make calls
         return false;
 
-    const int type = mp.userType();
+    QMetaType type = mp.metaType();
     // is this metatype registered?
     const char *expectedSignature = "";
-    if (int(mp.userType()) != QMetaType::QVariant) {
+    if (type.id() != QMetaType::QVariant) {
         expectedSignature = QDBusMetaType::typeToSignature(type);
         if (expectedSignature == nullptr) {
             qWarning("QDBusAbstractInterface: type %s must be registered with Qt D-Bus before it can be "
@@ -193,10 +193,10 @@ bool QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, void *retu
     const char *foundType = nullptr;
     QVariant value = qvariant_cast<QDBusVariant>(reply.arguments().at(0)).variant();
 
-    if (value.userType() == type || type == QMetaType::QVariant
+    if (value.metaType() == type || type.id() == QMetaType::QVariant
         || (expectedSignature[0] == 'v' && expectedSignature[1] == '\0')) {
         // simple match
-        if (type == QMetaType::QVariant) {
+        if (type.id() == QMetaType::QVariant) {
             *reinterpret_cast<QVariant*>(returnValuePtr) = value;
         } else {
             QMetaType(type).destruct(returnValuePtr);
@@ -205,7 +205,7 @@ bool QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, void *retu
         return true;
     }
 
-    if (value.userType() == qMetaTypeId<QDBusArgument>()) {
+    if (value.metaType() == QMetaType::fromType<QDBusArgument>()) {
         QDBusArgument arg = qvariant_cast<QDBusArgument>(value);
 
         foundType = "user type";
@@ -216,7 +216,7 @@ bool QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, void *retu
         }
     } else {
         foundType = value.typeName();
-        foundSignature = QDBusMetaType::typeToSignature(value.userType());
+        foundSignature = QDBusMetaType::typeToSignature(value.metaType());
     }
 
     // there was an error...
@@ -281,7 +281,7 @@ int QDBusAbstractInterfaceBase::qt_metacall(QMetaObject::Call _c, int _id, void 
 
         if (_c == QMetaObject::WriteProperty) {
             QVariant value;
-            if (mp.userType() == qMetaTypeId<QDBusVariant>())
+            if (mp.metaType() == QMetaType::fromType<QDBusVariant>())
                 value = reinterpret_cast<const QDBusVariant*>(_a[0])->variant();
             else
                 value = QVariant(mp.metaType(), _a[0]);

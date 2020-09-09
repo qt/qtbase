@@ -203,17 +203,17 @@ void qDBusReplyFill(const QDBusMessage &reply, QDBusError &error, QVariant &data
         return;
     }
 
-    if (reply.arguments().count() >= 1 && reply.arguments().at(0).userType() == data.userType()) {
+    if (reply.arguments().count() >= 1 && reply.arguments().at(0).metaType() == data.metaType()) {
         data = reply.arguments().at(0);
         return;
     }
 
-    const char *expectedSignature = QDBusMetaType::typeToSignature(data.userType());
+    const char *expectedSignature = QDBusMetaType::typeToSignature(data.metaType());
     const char *receivedType = nullptr;
     QByteArray receivedSignature;
 
     if (reply.arguments().count() >= 1) {
-        if (reply.arguments().at(0).userType() == QDBusMetaTypeId::argument()) {
+        if (reply.arguments().at(0).metaType() == QDBusMetaTypeId::argument()) {
             // compare signatures instead
             QDBusArgument arg = qvariant_cast<QDBusArgument>(reply.arguments().at(0));
             receivedSignature = arg.currentSignature().toLatin1();
@@ -224,8 +224,8 @@ void qDBusReplyFill(const QDBusMessage &reply, QDBusError &error, QVariant &data
             }
         } else {
             // not an argument and doesn't match?
-            int type = reply.arguments().at(0).userType();
-            receivedType = QMetaType(type).name();
+            QMetaType type = reply.arguments().at(0).metaType();
+            receivedType = type.name();
             receivedSignature = QDBusMetaType::typeToSignature(type);
         }
     }

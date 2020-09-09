@@ -348,28 +348,28 @@ static int writeProperty(QObject *obj, const QByteArray &property_name, QVariant
 
     // we found our property
     // do we have the right type?
-    int id = mp.userType();
-    if (!id){
+    QMetaType id = mp.metaType();
+    if (!id.isValid()){
         // type not registered or invalid / void?
         qWarning("QDBusConnection: Unable to handle unregistered datatype '%s' for property '%s::%s'",
                  mp.typeName(), mo->className(), property_name.constData());
         return PropertyWriteFailed;
     }
 
-    if (id != QMetaType::QVariant && value.userType() == QDBusMetaTypeId::argument()) {
+    if (id.id() != QMetaType::QVariant && value.metaType() == QDBusMetaTypeId::argument()) {
         // we have to demarshall before writing
         QVariant other{QMetaType(id)};
         if (!QDBusMetaType::demarshall(qvariant_cast<QDBusArgument>(value), other.metaType(), other.data())) {
             qWarning("QDBusConnection: type `%s' (%d) is not registered with QtDBus. "
                      "Use qDBusRegisterMetaType to register it",
-                     mp.typeName(), id);
+                     mp.typeName(), id.id());
             return PropertyWriteFailed;
         }
 
         value = other;
     }
 
-    if (mp.userType() == qMetaTypeId<QDBusVariant>())
+    if (mp.metaType() == QMetaType::fromType<QDBusVariant>())
         value = QVariant::fromValue(QDBusVariant(value));
 
     // the property type here should match
@@ -456,10 +456,10 @@ static QVariantMap readAllProperties(QObject *object, int flags)
             continue;
 
         // is it a registered property?
-        int typeId = mp.userType();
-        if (!typeId)
+        QMetaType type = mp.metaType();
+        if (!type.isValid())
             continue;
-        const char *signature = QDBusMetaType::typeToSignature(typeId);
+        const char *signature = QDBusMetaType::typeToSignature(type);
         if (!signature)
             continue;
 

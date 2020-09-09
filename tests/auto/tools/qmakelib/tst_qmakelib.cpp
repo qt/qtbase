@@ -81,6 +81,7 @@ void tst_qmakelib::proString()
 
     ProString s3("this is a longish string with bells and whistles");
     s3 = s3.mid(18, 17);
+    QCOMPARE(s3.toQString(), QStringLiteral("string with bells"));
     // Prepend to detached string with lots of spare space in it.
     s3.prepend(ProString("another "));
     QCOMPARE(s3.toQString(), QStringLiteral("another string with bells"));

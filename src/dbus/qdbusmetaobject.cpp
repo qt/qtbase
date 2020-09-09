@@ -170,7 +170,7 @@ QDBusMetaObjectGenerator::findType(const QByteArray &signature,
     Type result;
     result.id = QMetaType::UnknownType;
 
-    int type = QDBusMetaType::signatureToType(signature);
+    int type = QDBusMetaType::signatureToMetaType(signature).id();
     if (type == QMetaType::UnknownType && !qt_dbus_metaobject_skip_annotations) {
         // it's not a type normally handled by our meta type system
         // it must contain an annotation
@@ -199,7 +199,7 @@ QDBusMetaObjectGenerator::findType(const QByteArray &signature,
             type = QMetaType::fromName(typeName).id();
         }
 
-        if (type == QMetaType::UnknownType || signature != QDBusMetaType::typeToSignature(type)) {
+        if (type == QMetaType::UnknownType || signature != QDBusMetaType::typeToSignature(QMetaType(type))) {
             // type is still unknown or doesn't match back to the signature that it
             // was expected to, so synthesize a fake type
             typeName = "QDBusRawType<0x" + signature.toHex() + ">*";

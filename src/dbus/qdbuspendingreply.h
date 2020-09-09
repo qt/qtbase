@@ -58,7 +58,7 @@ protected:
     void assign(const QDBusMessage &message);
 
     QVariant argumentAt(int index) const;
-    void setMetaTypes(int count, const int *metaTypes);
+    void setMetaTypes(int count, const QMetaType *metaTypes);
 };
 
 namespace QDBusPendingReplyTypes {
@@ -144,7 +144,7 @@ private:
         if constexpr (Count == 0) {
                 setMetaTypes(0, nullptr);
         } else {
-            std::array<int, Count> typeIds = { QDBusPendingReplyTypes::metaTypeFor<Types>().id()... };
+            std::array<QMetaType, Count> typeIds = { QDBusPendingReplyTypes::metaTypeFor<Types>()... };
             setMetaTypes(Count, typeIds.data());
         }
     }

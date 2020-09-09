@@ -103,9 +103,13 @@ public:
 
     void beginStructure();
     void endStructure();
-    void beginArray(int elementMetaTypeId);
+    void beginArray(int elementMetaTypeId)
+    { beginArray(QMetaType(elementMetaTypeId)); }
+    void beginArray(QMetaType elementMetaType);
     void endArray();
-    void beginMap(int keyMetaTypeId, int valueMetaTypeId);
+    void beginMap(int keyMetaTypeId, int valueMetaTypeId)
+    { beginMap(QMetaType(keyMetaTypeId), QMetaType(valueMetaTypeId)); }
+    void beginMap(QMetaType keyMetaType, QMetaType valueMetaType);
     void endMap();
     void beginMapEntry();
     void endMapEntry();
@@ -165,8 +169,7 @@ template<typename T> inline T qdbus_cast(const QDBusArgument &arg)
 
 template<typename T> inline T qdbus_cast(const QVariant &v)
 {
-    int id = v.userType();
-    if (id == qMetaTypeId<QDBusArgument>())
+    if (v.metaType() == QMetaType::fromType<QDBusArgument>())
         return qdbus_cast<T>(qvariant_cast<QDBusArgument>(v));
     else
         return qvariant_cast<T>(v);
@@ -227,8 +230,7 @@ template<template <typename> class Container, typename T,
          typename = typename Container<T>::iterator>
 inline QDBusArgument &operator<<(QDBusArgument &arg, const Container<T> &list)
 {
-    int id = qMetaTypeId<T>();
-    arg.beginArray(id);
+    arg.beginArray(QMetaType::fromType<T>());
     typename Container<T>::const_iterator it = list.begin();
     typename Container<T>::const_iterator end = list.end();
     for ( ; it != end; ++it)
@@ -255,8 +257,7 @@ inline const QDBusArgument &operator>>(const QDBusArgument &arg, Container<T> &l
 
 inline QDBusArgument &operator<<(QDBusArgument &arg, const QVariantList &list)
 {
-    int id = qMetaTypeId<QDBusVariant>();
-    arg.beginArray(id);
+    arg.beginArray(QMetaType::fromType<QDBusVariant>());
     QVariantList::ConstIterator it = list.constBegin();
     QVariantList::ConstIterator end = list.constEnd();
     for ( ; it != end; ++it)
@@ -270,9 +271,7 @@ template <template <typename, typename> class Container, typename Key, typename 
          QtPrivate::IfAssociativeIteratorHasKeyAndValue<typename Container<Key, T>::iterator> = true>
 inline QDBusArgument &operator<<(QDBusArgument &arg, const Container<Key, T> &map)
 {
-    int kid = qMetaTypeId<Key>();
-    int vid = qMetaTypeId<T>();
-    arg.beginMap(kid, vid);
+    arg.beginMap(QMetaType::fromType<Key>(), QMetaType::fromType<T>());
     auto it = map.begin();
     auto end = map.end();
     for ( ; it != end; ++it) {
@@ -288,9 +287,7 @@ template <template <typename, typename> class Container, typename Key, typename 
          QtPrivate::IfAssociativeIteratorHasFirstAndSecond<typename Container<Key, T>::iterator> = true>
 inline QDBusArgument &operator<<(QDBusArgument &arg, const Container<Key, T> &map)
 {
-    int kid = qMetaTypeId<Key>();
-    int vid = qMetaTypeId<T>();
-    arg.beginMap(kid, vid);
+    arg.beginMap(QMetaType::fromType<Key>(), QMetaType::fromType<T>());
     auto it = map.begin();
     auto end = map.end();
     for ( ; it != end; ++it) {
@@ -322,7 +319,7 @@ inline const QDBusArgument &operator>>(const QDBusArgument &arg, Container<Key, 
 
 inline QDBusArgument &operator<<(QDBusArgument &arg, const QVariantMap &map)
 {
-    arg.beginMap(QMetaType::QString, qMetaTypeId<QDBusVariant>());
+    arg.beginMap(QMetaType::fromType<QString>(), QMetaType::fromType<QDBusVariant>());
     QVariantMap::ConstIterator it = map.constBegin();
     QVariantMap::ConstIterator end = map.constEnd();
     for ( ; it != end; ++it) {
@@ -336,7 +333,7 @@ inline QDBusArgument &operator<<(QDBusArgument &arg, const QVariantMap &map)
 
 inline QDBusArgument &operator<<(QDBusArgument &arg, const QVariantHash &map)
 {
-    arg.beginMap(QMetaType::QString, qMetaTypeId<QDBusVariant>());
+    arg.beginMap(QMetaType::fromType<QString>(), QMetaType::fromType<QDBusVariant>());
     QVariantHash::ConstIterator it = map.constBegin();
     QVariantHash::ConstIterator end = map.constEnd();
     for ( ; it != end; ++it) {

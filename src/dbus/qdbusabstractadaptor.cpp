@@ -305,7 +305,7 @@ void QDBusAdaptorConnector::relay(QObject *senderObj, int lastSignalIdx, void **
         realObject = realObject->parent();
 
     // break down the parameter list
-    QList<int> types;
+    QList<QMetaType> types;
     QString errorMsg;
     int inputCount = qDBusParametersForMethod(mm, types, errorMsg);
     if (inputCount == -1) {

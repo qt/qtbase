@@ -274,10 +274,10 @@ QDBusMessage QDBusMessagePrivate::makeLocal(const QDBusConnectionPrivate &conn,
     QVariantList::ConstIterator it = asSent.d_ptr->arguments.constBegin();
     QVariantList::ConstIterator end = asSent.d_ptr->arguments.constEnd();
     for ( ; it != end; ++it) {
-        int id = it->userType();
+        QMetaType id = it->metaType();
         const char *signature = QDBusMetaType::typeToSignature(id);
-        if ((id != QMetaType::QStringList && id != QMetaType::QByteArray &&
-             qstrlen(signature) != 1) || id == qMetaTypeId<QDBusVariant>()) {
+        if ((id.id() != QMetaType::QStringList && id.id() != QMetaType::QByteArray &&
+             qstrlen(signature) != 1) || id == QMetaType::fromType<QDBusVariant>()) {
             // yes, we are
             // we must marshall and demarshall again so as to create QDBusArgument
             // entries for the complex types

@@ -96,7 +96,7 @@ QByteArray QDBusArgumentPrivate::createSignature(int id)
                  "(Did you forget to call beginStructure() ?)",
                  QMetaType(id).name(),
                  signature.constData(),
-                 QMetaType(QDBusMetaType::signatureToType(signature)).name());
+                 QDBusMetaType::signatureToMetaType(signature).name());
         return "";
     }
     return signature;
@@ -879,7 +879,7 @@ void QDBusArgument::endStructure()
 
     \sa endArray(), beginStructure(), beginMap()
 */
-void QDBusArgument::beginArray(int id)
+void QDBusArgument::beginArray(QMetaType id)
 {
     if (QDBusArgumentPrivate::checkWrite(d))
         d = d->marshaller()->beginArray(id);
@@ -916,10 +916,10 @@ void QDBusArgument::endArray()
 
     \sa endMap(), beginStructure(), beginArray(), beginMapEntry()
 */
-void QDBusArgument::beginMap(int kid, int vid)
+void QDBusArgument::beginMap(QMetaType keyMetaType, QMetaType valueMetaType)
 {
     if (QDBusArgumentPrivate::checkWrite(d))
-        d = d->marshaller()->beginMap(kid, vid);
+        d = d->marshaller()->beginMap(keyMetaType, valueMetaType);
 }
 
 /*!

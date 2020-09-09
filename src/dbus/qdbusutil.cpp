@@ -80,7 +80,7 @@ static bool argToString(const QDBusArgument &arg, QString &out);
 
 static bool variantToString(const QVariant &arg, QString &out)
 {
-    int argType = arg.userType();
+    int argType = arg.metaType().id();
 
     if (argType == QMetaType::QStringList) {
         out += QLatin1Char('{');
@@ -138,11 +138,11 @@ static bool variantToString(const QVariant &arg, QString &out)
     } else if (argType == qMetaTypeId<QDBusVariant>()) {
         const QVariant v = qvariant_cast<QDBusVariant>(arg).variant();
         out += QLatin1String("[Variant");
-        int vUserType = v.userType();
-        if (vUserType != qMetaTypeId<QDBusVariant>()
-                && vUserType != qMetaTypeId<QDBusSignature>()
-                && vUserType != qMetaTypeId<QDBusObjectPath>()
-                && vUserType != qMetaTypeId<QDBusArgument>())
+        QMetaType vUserType = v.metaType();
+        if (vUserType != QMetaType::fromType<QDBusVariant>()
+                && vUserType != QMetaType::fromType<QDBusSignature>()
+                && vUserType != QMetaType::fromType<QDBusObjectPath>()
+                && vUserType != QMetaType::fromType<QDBusArgument>())
             out += QLatin1Char('(') + QLatin1String(v.typeName()) + QLatin1Char(')');
         out += QLatin1String(": ");
         if (!variantToString(v, out))

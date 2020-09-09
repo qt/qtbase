@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 
 static void copyArgument(void *to, int id, const QVariant &arg)
 {
-    if (id == arg.userType()) {
+    if (id == arg.metaType().id()) {
         switch (id) {
         case QMetaType::Bool:
             *reinterpret_cast<bool *>(to) = arg.toBool();
@@ -104,13 +104,13 @@ static void copyArgument(void *to, int id, const QVariant &arg)
             return;
         }
 
-        if (id == QDBusMetaTypeId::variant()) {
+        if (id == QDBusMetaTypeId::variant().id()) {
             *reinterpret_cast<QDBusVariant *>(to) = qvariant_cast<QDBusVariant>(arg);
             return;
-        } else if (id == QDBusMetaTypeId::objectpath()) {
+        } else if (id == QDBusMetaTypeId::objectpath().id()) {
             *reinterpret_cast<QDBusObjectPath *>(to) = qvariant_cast<QDBusObjectPath>(arg);
             return;
-        } else if (id == QDBusMetaTypeId::signature()) {
+        } else if (id == QDBusMetaTypeId::signature().id()) {
             *reinterpret_cast<QDBusSignature *>(to) = qvariant_cast<QDBusSignature>(arg);
             return;
         }
@@ -121,14 +121,14 @@ static void copyArgument(void *to, int id, const QVariant &arg)
     }
 
     // if we got here, it's either an un-dermarshalled type or a mismatch
-    if (arg.userType() != QDBusMetaTypeId::argument()) {
+    if (arg.metaType() != QDBusMetaTypeId::argument()) {
         // it's a mismatch
         //qWarning?
         return;
     }
 
     // is this type registered?
-    const char *userSignature = QDBusMetaType::typeToSignature(id);
+    const char *userSignature = QDBusMetaType::typeToSignature(QMetaType(id));
     if (!userSignature || !*userSignature) {
         // type not registered
         //qWarning?

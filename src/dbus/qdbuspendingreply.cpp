@@ -275,7 +275,7 @@ QVariant QDBusPendingReplyBase::argumentAt(int index) const
     return d->replyMessage.arguments().value(index);
 }
 
-void QDBusPendingReplyBase::setMetaTypes(int count, const int *types)
+void QDBusPendingReplyBase::setMetaTypes(int count, const QMetaType *types)
 {
     Q_ASSERT(d);
     const auto locker = qt_scoped_lock(d->mutex);

@@ -45,14 +45,13 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qvariant.h>
 
-#ifndef QT_NO_DBUS
+#if !defined(QT_NO_DBUS) && !defined(QT_BOOTSTRAPPED)
 
 #if defined(Q_OS_WIN) && defined(interface)
 #  undef interface
 #endif
 
 QT_BEGIN_NAMESPACE
-
 
 class QDBusMessagePrivate;
 class Q_DBUS_EXPORT QDBusMessage

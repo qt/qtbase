@@ -80,7 +80,7 @@ static const char help[] =
     "  -V             Show the program version and quit.\n"
     "\n";
 
-int qDBusParametersForMethod(const FunctionDef &mm, QList<int> &metaTypes, QString &errorMsg)
+int qDBusParametersForMethod(const FunctionDef &mm, QList<QMetaType> &metaTypes, QString &errorMsg)
 {
     QList<QByteArray> parameterTypes;
     parameterTypes.reserve(mm.arguments.size());
@@ -107,13 +107,13 @@ static QString addFunction(const FunctionDef &mm, bool isSignal = false) {
     int typeId = QMetaType::fromName(mm.normalizedType).id();
     if (typeId != QMetaType::Void) {
         if (typeId) {
-            const char *typeName = QDBusMetaType::typeToSignature(typeId);
+            const char *typeName = QDBusMetaType::typeToSignature(QMetaType(typeId));
             if (typeName) {
                 xml += QString::fromLatin1("      <arg type=\"%1\" direction=\"out\"/>\n")
                         .arg(typeNameToXml(typeName));
 
                     // do we need to describe this argument?
-                    if (QDBusMetaType::signatureToType(typeName) == QMetaType::UnknownType)
+                    if (!QDBusMetaType::signatureToMetaType(typeName).isValid())
                         xml += QString::fromLatin1("      <annotation name=\"org.qtproject.QtDBus.QtTypeName.Out0\" value=\"%1\"/>\n")
                             .arg(typeNameToXml(mm.normalizedType.constData()));
             } else {
@@ -124,7 +124,7 @@ static QString addFunction(const FunctionDef &mm, bool isSignal = false) {
         }
     }
     QList<ArgumentDef> names = mm.arguments;
-    QList<int> types;
+    QList<QMetaType> types;
     QString errorMsg;
     int inputCount = qDBusParametersForMethod(mm, types, errorMsg);
     if (inputCount == -1) {
@@ -150,14 +150,14 @@ static QString addFunction(const FunctionDef &mm, bool isSignal = false) {
 
         bool isOutput = isSignal || j > inputCount;
 
-        const char *signature = QDBusMetaType::typeToSignature(types.at(j));
+        const char *signature = QDBusMetaType::typeToSignature(QMetaType(types.at(j)));
         xml += QString::fromLatin1("      <arg %1type=\"%2\" direction=\"%3\"/>\n")
                 .arg(name,
                      QLatin1String(signature),
                      isOutput ? QLatin1String("out") : QLatin1String("in"));
 
         // do we need to describe this argument?
-        if (QDBusMetaType::signatureToType(signature) == QMetaType::UnknownType) {
+        if (!QDBusMetaType::signatureToMetaType(signature).isValid()) {
             const char *typeName = QMetaType(types.at(j)).name();
             xml += QString::fromLatin1("      <annotation name=\"org.qtproject.QtDBus.QtTypeName.%1%2\" value=\"%3\"/>\n")
                     .arg(isOutput ? QLatin1String("Out") : QLatin1String("In"))
@@ -214,7 +214,7 @@ static QString generateInterfaceXml(const ClassDef *mo)
                         mp.type.constData());
                 continue;
             }
-            const char *signature = QDBusMetaType::typeToSignature(typeId);
+            const char *signature = QDBusMetaType::typeToSignature(QMetaType(typeId));
             if (!signature)
                 continue;
 
@@ -223,7 +223,7 @@ static QString generateInterfaceXml(const ClassDef *mo)
                            QLatin1String(signature),
                            QLatin1String(accessvalues[access]));
 
-            if (QDBusMetaType::signatureToType(signature) == QMetaType::UnknownType) {
+            if (!QDBusMetaType::signatureToMetaType(signature).isValid()) {
                 retval += QString::fromLatin1(">\n      <annotation name=\"org.qtproject.QtDBus.QtTypeName\" value=\"%3\"/>\n    </property>\n")
                           .arg(typeNameToXml(mp.type.constData()));
             } else {

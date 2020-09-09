@@ -129,9 +129,9 @@ public:
 
     QDBusMarshaller *beginStructure();
     QDBusMarshaller *endStructure();
-    QDBusMarshaller *beginArray(int id);
+    QDBusMarshaller *beginArray(QMetaType id);
     QDBusMarshaller *endArray();
-    QDBusMarshaller *beginMap(int kid, int vid);
+    QDBusMarshaller *beginMap(QMetaType kid, QMetaType vid);
     QDBusMarshaller *endMap();
     QDBusMarshaller *beginMapEntry();
     QDBusMarshaller *endMapEntry();

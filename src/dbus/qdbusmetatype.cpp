@@ -303,7 +303,7 @@ bool QDBusMetaType::demarshall(const QDBusArgument &arg, QMetaType metaType, voi
     Note: this function only handles the basic D-Bus types.
 
     \sa QDBusUtil::isValidSingleSignature(), typeToSignature(),
-        QVariant::type(), QVariant::userType()
+        QVariant::metaType()
 */
 QMetaType QDBusMetaType::signatureToMetaType(const char *signature)
 {
@@ -388,7 +388,7 @@ QMetaType QDBusMetaType::signatureToMetaType(const char *signature)
     More types can be registered with the qDBusRegisterMetaType() function.
 
     \sa QDBusUtil::isValidSingleSignature(), signatureToType(),
-        QVariant::type(), QVariant::userType()
+        QVariant::metaType()
 */
 const char *QDBusMetaType::typeToSignature(QMetaType type)
 {

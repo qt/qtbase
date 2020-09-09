@@ -82,7 +82,7 @@ public:
 
     // for the callback mechanism (see setReplyCallback and QDBusConnectionPrivate::sendWithReplyAsync)
     QPointer<QObject> receiver;
-    QList<int> metaTypes;
+    QList<QMetaType> metaTypes;
     int methodIdx;
 
     // }
@@ -104,7 +104,7 @@ public:
     ~QDBusPendingCallPrivate();
     bool setReplyCallback(QObject *target, const char *member);
     void waitForFinished();
-    void setMetaTypes(int count, const int *types);
+    void setMetaTypes(int count, const QMetaType *types);
     void checkReceivedSignature();
 
     static QDBusPendingCall fromMessage(const QDBusMessage &msg);

@@ -185,7 +185,7 @@ bool QDBusPendingCallPrivate::setReplyCallback(QObject *target, const char *memb
     return true;
 }
 
-void QDBusPendingCallPrivate::setMetaTypes(int count, const int *types)
+void QDBusPendingCallPrivate::setMetaTypes(int count, const QMetaType *types)
 {
     if (count == 0) {
         expectedReplySignature = QLatin1String(""); // not null
@@ -196,10 +196,8 @@ void QDBusPendingCallPrivate::setMetaTypes(int count, const int *types)
     sig.reserve(count + count / 2);
     for (int i = 0; i < count; ++i) {
         const char *typeSig = QDBusMetaType::typeToSignature(types[i]);
-        if (Q_UNLIKELY(!typeSig)) {
-            qFatal("QDBusPendingReply: type %s is not registered with QtDBus",
-                   QMetaType(types[i]).name());
-        }
+        if (Q_UNLIKELY(!typeSig))
+            qFatal("QDBusPendingReply: type %s is not registered with QtDBus", types[i].name());
         sig += typeSig;
     }
 

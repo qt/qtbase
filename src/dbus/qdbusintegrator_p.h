@@ -84,7 +84,7 @@ struct QDBusSlotCache
     {
         int flags;
         int slotIdx;
-        QList<int> metaTypes;
+        QList<QMetaType> metaTypes;
 
         void swap(Data &other) noexcept
         {
@@ -105,7 +105,7 @@ class QDBusCallDeliveryEvent: public QAbstractMetaCallEvent
 {
 public:
     QDBusCallDeliveryEvent(const QDBusConnection &c, int id, QObject *sender,
-                           const QDBusMessage &msg, const QList<int> &types, int f = 0)
+                           const QDBusMessage &msg, const QList<QMetaType> &types, int f = 0)
         : QAbstractMetaCallEvent(sender, -1),
           connection(c),
           message(msg),
@@ -123,7 +123,7 @@ public:
 private:
     QDBusConnection connection; // just for refcounting
     QDBusMessage message;
-    QList<int> metaTypes;
+    QList<QMetaType> metaTypes;
     int id;
     int flags;
 };

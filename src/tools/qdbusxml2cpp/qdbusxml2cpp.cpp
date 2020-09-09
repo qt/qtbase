@@ -205,7 +205,7 @@ static QString classNameForInterface(const QString &interface, ClassType classTy
 // we first search for "Out" and if not found we search for "In"
 static QByteArray qtTypeName(const QString &signature, const QDBusIntrospection::Annotations &annotations, int paramId = -1, const char *direction = "Out", bool isSignal = false)
 {
-    int type = QDBusMetaType::signatureToType(signature.toLatin1());
+    int type = QDBusMetaType::signatureToMetaType(signature.toLatin1()).id();
     if (type == QMetaType::UnknownType) {
         QString annotationName = QString::fromLatin1("org.qtproject.QtDBus.QtTypeName");
         if (paramId >= 0)

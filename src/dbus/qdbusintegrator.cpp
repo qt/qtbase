@@ -668,7 +668,7 @@ static void huntAndEmit(DBusConnection *connection, DBusMessage *msg,
 }
 
 static int findSlot(const QMetaObject *mo, const QByteArray &name, int flags,
-                    const QString &signature_, QList<int> &metaTypes)
+                    const QString &signature_, QList<QMetaType> &metaTypes)
 {
     QByteArray msgSignature = signature_.toLatin1();
 
@@ -687,12 +687,12 @@ static int findSlot(const QMetaObject *mo, const QByteArray &name, int flags,
         if (mm.name() != name)
             continue;
 
-        int returnType = mm.returnType();
+        QMetaType returnType = mm.returnMetaType();
         bool isAsync = qDBusCheckAsyncTag(mm.tag());
         bool isScriptable = mm.attributes() & QMetaMethod::Scriptable;
 
         // consistency check:
-        if (isAsync && returnType != QMetaType::Void)
+        if (isAsync && returnType.id() != QMetaType::Void)
             continue;
 
         QString errorMsg;
@@ -729,7 +729,7 @@ static int findSlot(const QMetaObject *mo, const QByteArray &name, int flags,
             ++i;
 
         // make sure that the output parameters have signatures too
-        if (returnType != QMetaType::UnknownType && returnType != QMetaType::Void && QDBusMetaType::typeToSignature(returnType) == nullptr)
+        if (returnType.isValid() && returnType.id() != QMetaType::Void && QDBusMetaType::typeToSignature(returnType) == nullptr)
             continue;
 
         bool ok = true;
@@ -781,7 +781,7 @@ static QDBusCallDeliveryEvent * const DIRECT_DELIVERY = (QDBusCallDeliveryEvent 
 
 QDBusCallDeliveryEvent *QDBusConnectionPrivate::prepareReply(QDBusConnectionPrivate *target,
                                                              QObject *object, int idx,
-                                                             const QList<int> &metaTypes,
+                                                             const QList<QMetaType> &metaTypes,
                                                              const QDBusMessage &msg)
 {
     Q_ASSERT(object);
@@ -796,8 +796,8 @@ QDBusCallDeliveryEvent *QDBusConnectionPrivate::prepareReply(QDBusConnectionPriv
 
     // check that types match
     for (int i = 0; i < n; ++i)
-        if (metaTypes.at(i + 1) != msg.arguments().at(i).userType() &&
-            msg.arguments().at(i).userType() != qMetaTypeId<QDBusArgument>())
+        if (metaTypes.at(i + 1) != msg.arguments().at(i).metaType() &&
+            msg.arguments().at(i).metaType() != QMetaType::fromType<QDBusArgument>())
             return nullptr;           // no match
 
     // we can deliver
@@ -917,7 +917,7 @@ bool QDBusConnectionPrivate::activateCall(QObject* object, int flags, const QDBu
 }
 
 void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const QDBusMessage &msg,
-                                         const QList<int> &metaTypes, int slotIdx)
+                                         const QList<QMetaType> &metaTypes, int slotIdx)
 {
     Q_ASSERT_X(!object || QThread::currentThread() == object->thread(),
                "QDBusConnection: internal threading error",
@@ -936,15 +936,15 @@ void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const Q
     int i;
     int pCount = qMin(msg.arguments().count(), metaTypes.count() - 1);
     for (i = 1; i <= pCount; ++i) {
-        int id = metaTypes[i];
+        auto id = metaTypes[i];
         if (id == QDBusMetaTypeId::message())
             break;
 
         const QVariant &arg = msg.arguments().at(i - 1);
-        if (arg.userType() == id)
+        if (arg.metaType() == id)
             // no conversion needed
             params.append(const_cast<void *>(arg.constData()));
-        else if (arg.userType() == qMetaTypeId<QDBusArgument>()) {
+        else if (arg.metaType() == QMetaType::fromType<QDBusArgument>()) {
             // convert to what the function expects
             auxParameters.append(QVariant(QMetaType(id)));
 
@@ -954,14 +954,14 @@ void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const Q
 
             if (Q_UNLIKELY(!QDBusMetaType::demarshall(in, out.metaType(), out.data())))
                 qFatal("Internal error: demarshalling function for type '%s' (%d) failed!",
-                       out.typeName(), out.userType());
+                       out.typeName(), out.metaType().id());
 
             params.append(const_cast<void *>(out.constData()));
         } else {
             qFatal("Internal error: got invalid meta type %d (%s) "
                    "when trying to convert to meta type %d (%s)",
-                   arg.userType(), arg.metaType().name(),
-                   id, QMetaType(id).name());
+                   arg.metaType().id(), arg.metaType().name(),
+                   id.id(), id.name());
         }
     }
 
@@ -973,7 +973,7 @@ void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const Q
     // output arguments
     const int numMetaTypes = metaTypes.count();
     QVariantList outputArgs;
-    if (metaTypes[0] != QMetaType::Void && metaTypes[0] != QMetaType::UnknownType) {
+    if (metaTypes[0].id() != QMetaType::Void && metaTypes[0].isValid()) {
         outputArgs.reserve(numMetaTypes - i + 1);
         QVariant arg{QMetaType(metaTypes[0])};
         outputArgs.append( arg );
@@ -1315,7 +1315,7 @@ void QDBusConnectionPrivate::serviceOwnerChangedNoLock(const QString &name,
 }
 
 int QDBusConnectionPrivate::findSlot(QObject *obj, const QByteArray &normalizedName,
-                                     QList<int> &params)
+                                     QList<QMetaType> &params)
 {
     int midx = obj->metaObject()->indexOfMethod(normalizedName);
     if (midx == -1)
@@ -1703,7 +1703,7 @@ void QDBusConnectionPrivate::watchForDBusDisconnection()
     hook.service.clear(); // org.freedesktop.DBus.Local.Disconnected uses empty service name
     hook.path = QDBusUtil::dbusPathLocal();
     hook.obj = this;
-    hook.params << QMetaType::Void;
+    hook.params << QMetaType(QMetaType::Void);
     hook.midx = staticMetaObject.indexOfSlot("handleDBusDisconnection()");
     Q_ASSERT(hook.midx != -1);
     signalHooks.insert(QLatin1String("Disconnected:" DBUS_INTERFACE_LOCAL), hook);
@@ -1840,7 +1840,7 @@ void QDBusConnectionPrivate::setConnection(DBusConnection *dbc, const QDBusError
     hook.service = QDBusUtil::dbusService();
     hook.path.clear(); // no matching
     hook.obj = this;
-    hook.params << QMetaType::Void << QMetaType::QString; // both functions take a QString as parameter and return void
+    hook.params << QMetaType(QMetaType::Void) << QMetaType(QMetaType::QString); // both functions take a QString as parameter and return void
 
     hook.midx = staticMetaObject.indexOfSlot("registerServiceNoLock(QString)");
     Q_ASSERT(hook.midx != -1);
@@ -1854,7 +1854,7 @@ void QDBusConnectionPrivate::setConnection(DBusConnection *dbc, const QDBusError
     // we don't use connectSignal here because the rules are added by connectSignal on a per-need basis
     hook.params.clear();
     hook.params.reserve(4);
-    hook.params << QMetaType::Void << QMetaType::QString << QMetaType::QString << QMetaType::QString;
+    hook.params << QMetaType(QMetaType::Void) << QMetaType(QMetaType::QString) << QMetaType(QMetaType::QString) << QMetaType(QMetaType::QString);
     hook.midx = staticMetaObject.indexOfSlot("serviceOwnerChangedNoLock(QString,QString,QString)");
     Q_ASSERT(hook.midx != -1);
     signalHooks.insert(QLatin1String("NameOwnerChanged:" DBUS_INTERFACE_DBUS), hook);

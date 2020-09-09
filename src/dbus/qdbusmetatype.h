@@ -60,10 +60,6 @@ public:
     static bool demarshall(const QDBusArgument &, QMetaType id, void *data);
 
     static QMetaType signatureToMetaType(const char *signature);
-    static int signatureToType(const char *signature)
-    { return signatureToMetaType(signature).id(); }
-    static const char *typeToSignature(int type)
-    { return typeToSignature(QMetaType(type)); }
     static const char *typeToSignature(QMetaType type);
 };
 

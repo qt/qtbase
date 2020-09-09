@@ -354,7 +354,7 @@ void tst_QDBusMetaType::staticTypes()
 {
     QFETCH(QVariant::Type, typeId);
 
-    QString result = QDBusMetaType::typeToSignature(typeId);
+    QString result = QDBusMetaType::typeToSignature(QMetaType(typeId));
     QTEST(result, "signature");
 }
 

@@ -137,7 +137,7 @@ public:
         QString service, path, signature;
         QObject* obj;
         int midx;
-        QList<int> params;
+        QList<QMetaType> params;
         ArgMatchRules argumentMatch;
         QByteArray matchRule;
     };
@@ -264,7 +264,7 @@ private:
     void sendInternal(QDBusPendingCallPrivate *pcall, void *msg, int timeout);
     void sendError(const QDBusMessage &msg, QDBusError::ErrorType code);
     void deliverCall(QObject *object, int flags, const QDBusMessage &msg,
-                     const QList<int> &metaTypes, int slotIdx);
+                     const QList<QMetaType> &metaTypes, int slotIdx);
 
     SignalHookHash::Iterator removeSignalHookNoLock(SignalHookHash::Iterator it);
     void collectAllObjects(ObjectTreeNode &node, QSet<QObject *> &set);
@@ -352,7 +352,7 @@ public:
 
 public:
     // static methods
-    static int findSlot(QObject *obj, const QByteArray &normalizedName, QList<int> &params);
+    static int findSlot(QObject *obj, const QByteArray &normalizedName, QList<QMetaType> &params);
     static bool prepareHook(QDBusConnectionPrivate::SignalHook &hook, QString &key,
                             const QString &service,
                             const QString &path, const QString &interface, const QString &name,
@@ -361,7 +361,7 @@ public:
                             bool buildSignature);
     static DBusHandlerResult messageFilter(DBusConnection *, DBusMessage *, void *);
     static QDBusCallDeliveryEvent *prepareReply(QDBusConnectionPrivate *target, QObject *object,
-                                                int idx, const QList<int> &metaTypes,
+                                                int idx, const QList<QMetaType> &metaTypes,
                                                 const QDBusMessage &msg);
     static void processFinishedCall(QDBusPendingCallPrivate *call);
 
@@ -374,11 +374,10 @@ public:
 };
 
 // in qdbusmisc.cpp
-extern int qDBusParametersForMethod(const QMetaMethod &mm, QList<int> &metaTypes,
-                                    QString &errorMsg);
+extern int qDBusParametersForMethod(const QMetaMethod &mm, QList<QMetaType> &metaTypes, QString &errorMsg);
 #    endif // QT_BOOTSTRAPPED
 extern Q_DBUS_EXPORT int qDBusParametersForMethod(const QList<QByteArray> &parameters,
-                                                  QList<int> &metaTypes, QString &errorMsg);
+                                                  QList<QMetaType> &metaTypes, QString &errorMsg);
 extern Q_DBUS_EXPORT bool qDBusCheckAsyncTag(const char *tag);
 #ifndef QT_BOOTSTRAPPED
 extern bool qDBusInterfaceInObject(QObject *obj, const QString &interface_name);

@@ -386,7 +386,7 @@ inline bool compare(const QDBusArgument &arg, const QVariant &v2, T * = 0)
 
 bool compareToArgument(const QDBusArgument &arg, const QVariant &v2)
 {
-    if (arg.currentSignature() != QDBusMetaType::typeToSignature(v2.userType()))
+    if (arg.currentSignature() != QDBusMetaType::typeToSignature(v2.metaType()))
         return false;
 
     // try to demarshall the arg according to v2
@@ -521,7 +521,7 @@ bool compareToArgument(const QDBusArgument &arg, const QVariant &v2)
     }
 
     qWarning() << "Unexpected QVariant type" << v2.userType()
-               << QByteArray(QDBusMetaType::typeToSignature(v2.userType()))
+               << QByteArray(QDBusMetaType::typeToSignature(v2.metaType()))
                << v2.metaType().name();
     return false;
 }
