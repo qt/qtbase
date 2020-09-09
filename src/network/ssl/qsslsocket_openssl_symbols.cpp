@@ -164,6 +164,8 @@ using info_callback = void (*) (const SSL *ssl, int type, int val);
 DEFINEFUNC2(void, SSL_set_info_callback, SSL *ssl, ssl, info_callback cb, cb, return, return)
 DEFINEFUNC(const char *, SSL_alert_type_string, int value, value, return nullptr, return)
 DEFINEFUNC(const char *, SSL_alert_desc_string_long, int value, value, return nullptr, return)
+DEFINEFUNC(int, SSL_CTX_get_security_level, const SSL_CTX *ctx, ctx, return -1, return)
+DEFINEFUNC2(void, SSL_CTX_set_security_level, SSL_CTX *ctx, ctx, int level, level, return, return)
 #ifdef TLS1_3_VERSION
 DEFINEFUNC2(int, SSL_CTX_set_ciphersuites, SSL_CTX *ctx, ctx, const char *str, str, return 0, return)
 DEFINEFUNC2(void, SSL_set_psk_use_session_callback, SSL *ssl, ssl, q_SSL_psk_use_session_cb_func_t callback, callback, return, DUMMYARG)
@@ -865,6 +867,8 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(SSL_set_info_callback)
     RESOLVEFUNC(SSL_alert_type_string)
     RESOLVEFUNC(SSL_alert_desc_string_long)
+    RESOLVEFUNC(SSL_CTX_get_security_level)
+    RESOLVEFUNC(SSL_CTX_set_security_level)
 #ifdef TLS1_3_VERSION
     RESOLVEFUNC(SSL_CTX_set_ciphersuites)
     RESOLVEFUNC(SSL_set_psk_use_session_callback)

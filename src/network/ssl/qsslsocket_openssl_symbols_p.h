@@ -753,6 +753,9 @@ void q_SSL_set_info_callback(SSL *ssl, void (*cb) (const SSL *ssl, int type, int
 const char *q_SSL_alert_type_string(int value);
 const char *q_SSL_alert_desc_string_long(int value);
 
+int q_SSL_CTX_get_security_level(const SSL_CTX *ctx);
+void q_SSL_CTX_set_security_level(SSL_CTX *ctx, int level);
+
 QT_END_NAMESPACE
 
 #endif

@@ -43,6 +43,11 @@
 
 #ifndef QT_NO_OPENSSL
 typedef QSharedPointer<QSslSocket> QSslSocketPtr;
+
+QT_BEGIN_NAMESPACE
+void qt_ForceTlsSecurityLevel();
+QT_END_NAMESPACE
+
 #endif
 
 class tst_QSslSocket_onDemandCertificates_member : public QObject
@@ -54,6 +59,10 @@ class tst_QSslSocket_onDemandCertificates_member : public QObject
 public:
 
 #ifndef QT_NO_OPENSSL
+    tst_QSslSocket_onDemandCertificates_member()
+    {
+        QT_PREPEND_NAMESPACE(qt_ForceTlsSecurityLevel)();
+    }
     QSslSocketPtr newSocket();
 #endif
 
@@ -69,7 +78,7 @@ private slots:
     void onDemandRootCertLoadingMemberMethods();
 
 private:
-    QSslSocket *socket;
+    QSslSocket *socket = nullptr;
 #endif // QT_NO_OPENSSL
 };
 

@@ -101,6 +101,11 @@ static const quint16 PSK_SERVER_PORT = 4433;
 static const QByteArray PSK_CLIENT_PRESHAREDKEY = QByteArrayLiteral("\x1a\x2b\x3c\x4d\x5e\x6f");
 static const QByteArray PSK_SERVER_IDENTITY_HINT = QByteArrayLiteral("QtTestServerHint");
 static const QByteArray PSK_CLIENT_IDENTITY = QByteArrayLiteral("Client_identity");
+
+QT_BEGIN_NAMESPACE
+void qt_ForceTlsSecurityLevel();
+QT_END_NAMESPACE
+
 #endif  // !QT_NO_OPENSSL
 
 class tst_QSslSocket : public QObject
@@ -439,6 +444,10 @@ void tst_QSslSocket::init()
         QSKIP("No proxy support");
 #endif // QT_NO_NETWORKPROXY
     }
+
+#ifndef QT_NO_OPENSSL
+    QT_PREPEND_NAMESPACE(qt_ForceTlsSecurityLevel)();
+#endif // QT_NO_OPENSSL
 
     qt_qhostinfo_clear_cache();
 }
