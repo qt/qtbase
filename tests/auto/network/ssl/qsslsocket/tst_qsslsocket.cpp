@@ -3391,14 +3391,6 @@ void tst_QSslSocket::verifyClientCertificate()
     // check server socket
     QVERIFY(server.socket);
 
-#if QT_CONFIG(schannel)
-    // As additional info to the QEXPECT_FAIL below:
-    // This is because schannel treats it as an error (client side) if you don't have a certificate
-    // when asked for one.
-    QEXPECT_FAIL("NoCert:VerifyPeer",
-                 "The client disconnects first, which causes the event "
-                 "loop to quit before the server disconnects.", Continue);
-#endif
     QCOMPARE(server.socket->state(), expectedState);
     QCOMPARE(server.socket->isEncrypted(), works);
 
