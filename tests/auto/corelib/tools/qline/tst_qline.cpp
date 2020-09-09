@@ -230,10 +230,12 @@ void tst_QLine::testLength_data()
     QTest::addColumn<double>("vx");
     QTest::addColumn<double>("vy");
 
-    QTest::newRow("[1,0]*2") << 0.0 << 0.0 << 1.0 << 0.0 << 1.0 << 2.0 << 2.0 << 0.0;
-    QTest::newRow("[0,1]*2") << 0.0 << 0.0 << 0.0 << 1.0 << 1.0 << 2.0 << 0.0 << 2.0;
-    QTest::newRow("[-1,0]*2") << 0.0 << 0.0 << -1.0 << 0.0 << 1.0 << 2.0 << -2.0 << 0.0;
-    QTest::newRow("[0,-1]*2") << 0.0 << 0.0 << 0.0 << -1.0 << 1.0 << 2.0 << 0.0 << -2.0;
+    // Test name: [dx,dy]->|lenToSet| (x1,x2)
+    // with the last part omitted if (0,0)
+    QTest::newRow("[1,0]->|2|") << 0.0 << 0.0 << 1.0 << 0.0 << 1.0 << 2.0 << 2.0 << 0.0;
+    QTest::newRow("[0,1]->|2|") << 0.0 << 0.0 << 0.0 << 1.0 << 1.0 << 2.0 << 0.0 << 2.0;
+    QTest::newRow("[-1,0]->|2|") << 0.0 << 0.0 << -1.0 << 0.0 << 1.0 << 2.0 << -2.0 << 0.0;
+    QTest::newRow("[0,-1]->|2|") << 0.0 << 0.0 << 0.0 << -1.0 << 1.0 << 2.0 << 0.0 << -2.0;
     QTest::newRow("[1,1]->|1|") << 0.0 << 0.0 << 1.0 << 1.0
                              << double(SQRT2) << 1.0 << double(UNITX_45) << double(UNITX_45);
     QTest::newRow("[-1,1]->|1|") << 0.0 << 0.0 << -1.0 << 1.0
@@ -242,10 +244,10 @@ void tst_QLine::testLength_data()
                              << double(SQRT2) << 1.0 << double(UNITX_45) << double(-UNITX_45);
     QTest::newRow("[-1,-1]->|1|") << 0.0 << 0.0 << -1.0 << -1.0
                              << double(SQRT2) << 1.0 << double(-UNITX_45) << double(-UNITX_45);
-    QTest::newRow("[1,0]*2 (2,2)") << 2.0 << 2.0 << 3.0 << 2.0 << 1.0 << 2.0 << 2.0 << 0.0;
-    QTest::newRow("[0,1]*2 (2,2)") << 2.0 << 2.0 << 2.0 << 3.0 << 1.0 << 2.0 << 0.0 << 2.0;
-    QTest::newRow("[-1,0]*2 (2,2)") << 2.0 << 2.0 << 1.0 << 2.0 << 1.0 << 2.0 << -2.0 << 0.0;
-    QTest::newRow("[0,-1]*2 (2,2)") << 2.0 << 2.0 << 2.0 << 1.0 << 1.0 << 2.0 << 0.0 << -2.0;
+    QTest::newRow("[1,0]->|2| (2,2)") << 2.0 << 2.0 << 3.0 << 2.0 << 1.0 << 2.0 << 2.0 << 0.0;
+    QTest::newRow("[0,1]->|2| (2,2)") << 2.0 << 2.0 << 2.0 << 3.0 << 1.0 << 2.0 << 0.0 << 2.0;
+    QTest::newRow("[-1,0]->|2| (2,2)") << 2.0 << 2.0 << 1.0 << 2.0 << 1.0 << 2.0 << -2.0 << 0.0;
+    QTest::newRow("[0,-1]->|2| (2,2)") << 2.0 << 2.0 << 2.0 << 1.0 << 1.0 << 2.0 << 0.0 << -2.0;
     QTest::newRow("[1,1]->|1| (2,2)") << 2.0 << 2.0 << 3.0 << 3.0
                                    << double(SQRT2) << 1.0 << double(UNITX_45) << double(UNITX_45);
     QTest::newRow("[-1,1]->|1| (2,2)") << 2.0 << 2.0 << 1.0 << 3.0
@@ -254,6 +256,20 @@ void tst_QLine::testLength_data()
                                     << double(SQRT2) << 1.0 << double(UNITX_45) << double(-UNITX_45);
     QTest::newRow("[-1,-1]->|1| (2,2)") << 2.0 << 2.0 << 1.0 << 1.0
                                      << double(SQRT2) << 1.0 << double(-UNITX_45) << double(-UNITX_45);
+    const double small = qSqrt(std::numeric_limits<qreal>::denorm_min()) / 8;
+    QTest::newRow("[small,small]->|2| (-small/2,-small/2)")
+        << -(small * .5) << -(small * .5) << (small * .5) << (small * .5)
+        << (small * M_SQRT2) << (2 * M_SQRT2) << 2.0 << 2.0;
+    const double tiny = std::numeric_limits<qreal>::min() / 2;
+    QTest::newRow("[tiny,tiny]->|2| (-tiny/2,-tiny/2)")
+        << -(tiny * .5) << -(tiny * .5) << (tiny * .5) << (tiny * .5)
+        << (tiny * M_SQRT2) << (2 * M_SQRT2) << 2.0 << 2.0;
+    QTest::newRow("[1+3e-13,1+4e-13]|1895| (1, 1)")
+        << 1.0 << 1.0 << (1 + 3e-13) << (1 + 4e-13) // isNull(), so ignores setLength()
+        << 5e-13 << 1895.0 << 3e-13 << 4e-13;
+    QTest::newRow("[4e-323,5e-324]|1892|") // Unavoidable underflow: denormals
+        << 0.0 << 0.0 << 4e-323 << 5e-324
+        << 4e-323 << 1892.0 << 4e-323 << 5e-324; // vx, vy values ignored
 }
 
 void tst_QLine::testLength()
@@ -268,12 +284,17 @@ void tst_QLine::testLength()
     QFETCH(double, vy);
 
     QLineF l(x1, y1, x2, y2);
-    QCOMPARE(l.length(), qreal(length));
+    const bool wasNull = l.isNull();
+    if (!wasNull)
+        QCOMPARE(l.length(), qreal(length));
 
     l.setLength(lengthToSet);
-    QCOMPARE(l.length(), qreal(lengthToSet));
-    QCOMPARE(l.dx(), qreal(vx));
-    QCOMPARE(l.dy(), qreal(vy));
+    QCOMPARE(l.length(), wasNull ? qreal(length) : qreal(lengthToSet));
+    // Scaling tiny values up to big can be imprecise: don't try to test vx, vy
+    if (wasNull || !qFuzzyIsNull(length)) {
+        QCOMPARE(l.dx(), qreal(vx));
+        QCOMPARE(l.dy(), qreal(vy));
+    }
 }
 
 void tst_QLine::testCenter()

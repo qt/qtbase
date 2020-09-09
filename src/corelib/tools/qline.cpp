@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include "qline.h"
+
 #include "qdebug.h"
 #include "qdatastream.h"
 #include "qmath.h"
@@ -99,7 +100,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn bool QLine::isNull() const
 
-    Returns \c true if the line is not set up with valid start and end point;
+    Returns \c true if the line does not have distinct start and end points;
     otherwise returns \c false.
 */
 
@@ -440,8 +441,14 @@ QDataStream &operator>>(QDataStream &stream, QLine &line)
 /*!
     \fn bool QLineF::isNull() const
 
-    Returns \c true if the line is not set up with valid start and end point;
-    otherwise returns \c false.
+    Returns \c true if the line does not have distinct start and end points;
+    otherwise returns \c false. The start and end points are considered distinct
+    if qFuzzyCompare() can distinguish them in at least one coordinate.
+
+    \note Due to the use of fuzzy comparison, isNull() may return \c true for
+    lines whose length() is not zero.
+
+    \sa qFuzzyCompare(), length()
 */
 
 /*!
@@ -524,10 +531,10 @@ QDataStream &operator>>(QDataStream &stream, QLine &line)
     Sets the length of the line to the given \a length. QLineF will
     move the end point - p2() - of the line to give the line its new length.
 
-    If the line is a null line, the length will remain zero regardless
-    of the length specified.
+    A null line will not be rescaled. For non-null lines with very short lengths
+    (represented by denormal floating-point values), results may be imprecise.
 
-    \sa length(), isNull()
+    \sa length(), isNull(), unitVector()
 */
 
 /*!
@@ -572,13 +579,12 @@ QDataStream &operator>>(QDataStream &stream, QLine &line)
 /*!
     Returns the length of the line.
 
-    \sa setLength()
+    \sa setLength(), isNull()
 */
 qreal QLineF::length() const
 {
-    qreal x = pt2.x() - pt1.x();
-    qreal y = pt2.y() - pt1.y();
-    return qSqrt(x*x + y*y);
+    using std::hypot;
+    return hypot(dx(), dy());
 }
 
 /*!
@@ -649,16 +655,18 @@ QLineF QLineF::fromPolar(qreal length, qreal angle)
 
 /*!
     Returns the unit vector for this line, i.e a line starting at the
-    same point as \e this line with a length of 1.0.
+    same point as \e this line with a length of 1.0, provided the line
+    is non-null.
 
-    \sa normalVector()
+    \sa normalVector(), setLength()
 */
 QLineF QLineF::unitVector() const
 {
-    qreal x = pt2.x() - pt1.x();
-    qreal y = pt2.y() - pt1.y();
+    qreal x = dx();
+    qreal y = dy();
+    using std::hypot;
+    qreal len = hypot(x, y);
 
-    qreal len = qSqrt(x*x + y*y);
     QLineF f(p1(), QPointF(pt1.x() + x/len, pt1.y() + y/len));
 
 #ifndef QT_NO_DEBUG

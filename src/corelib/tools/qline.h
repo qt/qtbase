@@ -380,8 +380,10 @@ inline void QLineF::setLength(qreal len)
 {
     if (isNull())
         return;
-    QLineF v = unitVector();
-    pt2 = QPointF(pt1.x() + v.dx() * len, pt1.y() + v.dy() * len);
+    Q_ASSERT(length() > 0);
+    const QLineF v = unitVector();
+    len /= v.length(); // In case it's not quite exactly 1.
+    pt2 = QPointF(pt1.x() + len * v.dx(), pt1.y() + len * v.dy());
 }
 
 Q_DECL_CONSTEXPR inline QPointF QLineF::pointAt(qreal t) const
