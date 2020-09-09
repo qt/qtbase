@@ -2049,7 +2049,7 @@ bool QMetaType::convert(QMetaType fromType, const void *from, QMetaType toType, 
         if (fromObject && fromObject->metaObject()->inherits(toType.metaObject()))  {
             *static_cast<QObject **>(to) = toType.metaObject()->cast(fromObject);
             return true;
-        } else if (!fromObject) {
+        } else if (!fromObject && fromType.metaObject()) {
             // if fromObject is null, use static fromType to check if conversion works
             *static_cast<void **>(to) = nullptr;
             return fromType.metaObject()->inherits(toType.metaObject());
