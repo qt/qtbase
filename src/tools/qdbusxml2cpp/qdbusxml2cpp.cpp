@@ -71,13 +71,7 @@ static const char includeList[] =
     "#include <QtCore/QVariant>\n";
 
 static const char forwardDeclarations[] =
-    "QT_BEGIN_NAMESPACE\n"
-    "#include <QtCore/qcontainerfwd.h>\n"
-    "class QByteArray;\n"
-    "class QString;\n"
-    "class QStringList;\n"
-    "class QVariant;\n"
-    "QT_END_NAMESPACE\n";
+    "#include <QtCore/qcontainerfwd.h>\n";
 
 static QDBusIntrospection::Interfaces readInput()
 {
