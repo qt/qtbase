@@ -21,20 +21,10 @@ instructions:
         instructions:
           - !include "{{qt/qtbase}}/cmake_build_and_upload_test_artifacts_target.yaml"
         enable_if:
-          condition: and
-          conditions:
-            - condition: property
-              property: host.os
-              equals_property: target.os
-            - condition: property
+              condition: property
               property: target.osVersion
-              equals_value: QEMU
-    disable_if:
-      condition: and
-      conditions:
-        - condition: property
-          property: host.os
-          equals_property: target.os
-        - condition: property
+              in_values: [Android_ANY, QEMU]
+    enable_if:
+          condition: property
           property: target.osVersion
-          not_equals_value: QEMU
+          in_values: [IOS_ANY, Android_ANY, QEMU]

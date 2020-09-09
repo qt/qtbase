@@ -1,0 +1,24 @@
+type: Group
+instructions:
+  - type: Group
+    instructions:
+      - type: ExecuteCommand
+        command: ["{{.Env.ANDROID_SDK_HOME}}/tools/emulator", "@x86emulator","-no-audio","-no-window","-gpu","swiftshader_indirect","-partition-size","4000"]
+        maxTimeInSeconds: 1800
+        maxTimeBetweenOutput: 600
+        userMessageOnFailure: "Failed to run emulator, check logs."
+        startInBackground: True
+      - type: ExecuteCommand
+        command: ["{{.Env.ANDROID_SDK_HOME}}/platform-tools/adb","devices"]
+        maxTimeInSeconds: 1800
+        maxTimeBetweenOutput: 600
+        userMessageOnFailure: "Failed to run adb, check logs."
+      - type: ExecuteCommand
+        command: ["{{.Env.ANDROID_SDK_HOME}}/platform-tools/adb","wait-for-device"]
+        maxTimeInSeconds: 1800
+        maxTimeBetweenOutput: 1800
+        userMessageOnFailure: "Failed to run adb, check logs."
+    enable_if:
+      condition: property
+      property: features
+      contains_value: AndroidTestRun
