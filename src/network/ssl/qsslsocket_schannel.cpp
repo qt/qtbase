@@ -929,56 +929,71 @@ bool QSslSocketBackendPrivate::performHandshake()
     if (intermediateBuffer.isEmpty())
         return true; // no data, will fail
 
-    SecBuffer inputBuffers[2];
-    inputBuffers[0] = createSecBuffer(intermediateBuffer, SECBUFFER_TOKEN);
-    inputBuffers[1] = createSecBuffer(nullptr, 0, SECBUFFER_EMPTY);
-    SecBufferDesc inputBufferDesc{
-        SECBUFFER_VERSION,
-        ARRAYSIZE(inputBuffers),
-        inputBuffers
-    };
-
-    SecBuffer outBuffers[3];
-    outBuffers[0] = createSecBuffer(nullptr, 0, SECBUFFER_TOKEN);
-    outBuffers[1] = createSecBuffer(nullptr, 0, SECBUFFER_ALERT);
-    outBuffers[2] = createSecBuffer(nullptr, 0, SECBUFFER_EMPTY);
-    auto freeBuffers = qScopeGuard([&outBuffers]() {
+    SecBuffer outBuffers[3] = {};
+    const auto freeOutBuffers = [&outBuffers]() {
         for (auto i = 0ull; i < ARRAYSIZE(outBuffers); i++) {
             if (outBuffers[i].pvBuffer)
                 FreeContextBuffer(outBuffers[i].pvBuffer);
         }
-    });
-    SecBufferDesc outputBufferDesc{
-        SECBUFFER_VERSION,
-        ARRAYSIZE(outBuffers),
-        outBuffers
     };
+    const auto outBuffersGuard = qScopeGuard(freeOutBuffers);
+    // For this call to InitializeSecurityContext we may need to call it twice.
+    // In some cases us not having a certificate isn't actually an error, but just a request.
+    // With Schannel, to ignore this warning, we need to call InitializeSecurityContext again
+    // when we get SEC_I_INCOMPLETE_CREDENTIALS! As far as I can tell it's not documented anywhere.
+    // https://stackoverflow.com/a/47479968/2493610
+    SECURITY_STATUS status;
+    short attempts = 2;
+    do {
+        SecBuffer inputBuffers[2];
+        inputBuffers[0] = createSecBuffer(intermediateBuffer, SECBUFFER_TOKEN);
+        inputBuffers[1] = createSecBuffer(nullptr, 0, SECBUFFER_EMPTY);
+        SecBufferDesc inputBufferDesc{
+            SECBUFFER_VERSION,
+            ARRAYSIZE(inputBuffers),
+            inputBuffers
+        };
 
-    ULONG contextReq = getContextRequirements();
-    TimeStamp expiry;
-    auto status = InitializeSecurityContext(&credentialHandle, // phCredential
-                                            &contextHandle, // phContext
-                                            const_reinterpret_cast<SEC_WCHAR *>(targetName().utf16()), // pszTargetName
-                                            contextReq, // fContextReq
-                                            0, // Reserved1
-                                            0, // TargetDataRep (unused)
-                                            &inputBufferDesc, // pInput
-                                            0, // Reserved2
-                                            nullptr, // phNewContext (we already have one)
-                                            &outputBufferDesc, // pOutput
-                                            &contextAttributes, // pfContextAttr
-                                            &expiry // ptsExpiry
-    );
+        freeOutBuffers(); // free buffers from any previous attempt
+        outBuffers[0] = createSecBuffer(nullptr, 0, SECBUFFER_TOKEN);
+        outBuffers[1] = createSecBuffer(nullptr, 0, SECBUFFER_ALERT);
+        outBuffers[2] = createSecBuffer(nullptr, 0, SECBUFFER_EMPTY);
+        SecBufferDesc outputBufferDesc{
+            SECBUFFER_VERSION,
+            ARRAYSIZE(outBuffers),
+            outBuffers
+        };
 
-    if (inputBuffers[1].BufferType == SECBUFFER_EXTRA) {
-        // https://docs.microsoft.com/en-us/windows/desktop/secauthn/extra-buffers-returned-by-schannel
-        // inputBuffers[1].cbBuffer indicates the amount of bytes _NOT_ processed, the rest need to
-        // be stored.
-        retainExtraData(intermediateBuffer, inputBuffers[1]);
-    } else if (status != SEC_E_INCOMPLETE_MESSAGE) {
-        // Clear the buffer if we weren't asked for more data
-        intermediateBuffer.resize(0);
-    }
+        ULONG contextReq = getContextRequirements();
+        TimeStamp expiry;
+        status = InitializeSecurityContext(
+                &credentialHandle, // phCredential
+                &contextHandle, // phContext
+                const_reinterpret_cast<SEC_WCHAR *>(targetName().utf16()), // pszTargetName
+                contextReq, // fContextReq
+                0, // Reserved1
+                0, // TargetDataRep (unused)
+                &inputBufferDesc, // pInput
+                0, // Reserved2
+                nullptr, // phNewContext (we already have one)
+                &outputBufferDesc, // pOutput
+                &contextAttributes, // pfContextAttr
+                &expiry // ptsExpiry
+        );
+
+        if (inputBuffers[1].BufferType == SECBUFFER_EXTRA) {
+            // https://docs.microsoft.com/en-us/windows/desktop/secauthn/extra-buffers-returned-by-schannel
+            // inputBuffers[1].cbBuffer indicates the amount of bytes _NOT_ processed, the rest need
+            // to be stored.
+            retainExtraData(intermediateBuffer, inputBuffers[1]);
+        } else if (status != SEC_E_INCOMPLETE_MESSAGE) {
+            // Clear the buffer if we weren't asked for more data
+            intermediateBuffer.resize(0);
+        }
+
+        --attempts;
+    } while (status == SEC_I_INCOMPLETE_CREDENTIALS && attempts > 0);
+
     switch (status) {
     case SEC_E_OK:
         // Need to transmit a final token in the handshake if 'cbBuffer' is non-zero.
