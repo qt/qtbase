@@ -60,7 +60,7 @@ function(qt_apply_rpaths)
 
     qt_parse_all_arguments(arg "qt_apply_rpaths" "RELATIVE_RPATH" "TARGET;INSTALL_PATH" "" ${ARGN})
     if(NOT arg_TARGET)
-        message(FATAL_ERRO "No target given to qt_apply_rpaths.")
+        message(FATAL_ERROR "No target given to qt_apply_rpaths.")
     else()
         set(target "${arg_TARGET}")
     endif()
