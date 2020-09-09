@@ -223,7 +223,12 @@ public:
     void setItemDelegateForColumn(int column, QAbstractItemDelegate *delegate);
     QAbstractItemDelegate *itemDelegateForColumn(int column) const;
 
-    QAbstractItemDelegate *itemDelegate(const QModelIndex &index) const;
+#if QT_DEPRECATED_SINCE(6, 0)
+    QT_DEPRECATED_VERSION_X_6_0("Use itemDelegateForIndex instead")
+    QAbstractItemDelegate *itemDelegate(const QModelIndex &index) const
+    { return itemDelegateForIndex(index); }
+#endif
+    virtual QAbstractItemDelegate *itemDelegateForIndex(const QModelIndex &index) const;
 
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const override;
 

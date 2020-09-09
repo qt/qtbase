@@ -493,7 +493,7 @@ inline QSize QCommonListViewBase::itemSize(const QStyleOptionViewItem &opt, cons
     { return dd->itemSize(opt, idx); }
 
 inline QAbstractItemDelegate *QCommonListViewBase::delegate(const QModelIndex &idx) const
-    { return dd->delegateForIndex(idx); }
+    { return qq->itemDelegateForIndex(idx); }
 
 inline bool QCommonListViewBase::isHidden(int row) const { return dd->isHidden(row); }
 inline int QCommonListViewBase::hiddenCount() const { return dd->hiddenRows.count(); }

@@ -211,11 +211,12 @@ public:
 
     inline void releaseEditor(QWidget *editor, const QModelIndex &index = QModelIndex()) const {
         if (editor) {
+            Q_Q(const QAbstractItemView);
             QObject::disconnect(editor, SIGNAL(destroyed(QObject*)),
                                 q_func(), SLOT(editorDestroyed(QObject*)));
             editor->removeEventFilter(itemDelegate);
             editor->hide();
-            QAbstractItemDelegate *delegate = delegateForIndex(index);
+            QAbstractItemDelegate *delegate = q->itemDelegateForIndex(index);
 
             if (delegate)
                 delegate->destroyEditor(editor, index);
@@ -274,20 +275,6 @@ public:
 
     inline bool isAnimating() const {
         return state == QAbstractItemView::AnimatingState;
-    }
-
-    inline QAbstractItemDelegate *delegateForIndex(const QModelIndex &index) const {
-        QMap<int, QPointer<QAbstractItemDelegate> >::ConstIterator it;
-
-        it = rowDelegates.find(index.row());
-        if (it != rowDelegates.end())
-            return it.value();
-
-        it = columnDelegates.find(index.column());
-        if (it != columnDelegates.end())
-            return it.value();
-
-        return itemDelegate;
     }
 
     inline bool isIndexValid(const QModelIndex &index) const {
@@ -452,6 +439,20 @@ public:
     bool horizontalScrollModeSet;
 
 private:
+    inline QAbstractItemDelegate *delegateForIndex(const QModelIndex &index) const {
+        QMap<int, QPointer<QAbstractItemDelegate> >::ConstIterator it;
+
+        it = rowDelegates.find(index.row());
+        if (it != rowDelegates.end())
+            return it.value();
+
+        it = columnDelegates.find(index.column());
+        if (it != columnDelegates.end())
+            return it.value();
+
+        return itemDelegate;
+    }
+
     mutable QBasicTimer delayedLayout;
     mutable QBasicTimer fetchMoreTimer;
 };

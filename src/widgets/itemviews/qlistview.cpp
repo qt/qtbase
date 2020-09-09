@@ -1083,7 +1083,7 @@ void QListView::paintEvent(QPaintEvent *e)
             previousRow = row;
         }
 
-        d->delegateForIndex(*it)->paint(&painter, option, *it);
+        itemDelegateForIndex(*it)->paint(&painter, option, *it);
     }
 
 #if QT_CONFIG(draganddrop)
@@ -1883,14 +1883,15 @@ QModelIndex QListViewPrivate::closestIndex(const QRect &target,
 
 QSize QListViewPrivate::itemSize(const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
+    Q_Q(const QListView);
     if (!uniformItemSizes) {
-        const QAbstractItemDelegate *delegate = delegateForIndex(index);
+        const QAbstractItemDelegate *delegate = q->itemDelegateForIndex(index);
         return delegate ? delegate->sizeHint(option, index) : QSize();
     }
     if (!cachedItemSize.isValid()) { // the last item is probaly the largest, so we use its size
         int row = model->rowCount(root) - 1;
         QModelIndex sample = model->index(row, column, root);
-        const QAbstractItemDelegate *delegate = delegateForIndex(sample);
+        const QAbstractItemDelegate *delegate = q->itemDelegateForIndex(sample);
         cachedItemSize = delegate ? delegate->sizeHint(option, sample) : QSize();
     }
     return cachedItemSize;
