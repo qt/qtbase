@@ -172,6 +172,9 @@ endmacro()
 # main_target_name = qtwaylandscanner
 # dep_package_name = WaylandScanner
 function(qt_record_extra_package_dependency main_target_name dep_package_name dep_package_version)
+    if(NOT TARGET "${main_target_name}")
+        qt_get_tool_target_name(main_target_name "${main_target_name}")
+    endif()
     if (TARGET "${main_target_name}")
         get_target_property(extra_packages "${main_target_name}" QT_EXTRA_PACKAGE_DEPENDENCIES)
         if(NOT extra_packages)
