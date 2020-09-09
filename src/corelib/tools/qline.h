@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -375,7 +375,9 @@ inline void QLineF::setLength(qreal len)
 {
     if (isNull())
         return;
-    QLineF v = unitVector();
+    Q_ASSERT(length() > 0);
+    const QLineF v = unitVector();
+    len /= v.length(); // In case it's not quite exactly 1.
     pt2 = QPointF(pt1.x() + v.dx() * len, pt1.y() + v.dy() * len);
 }
 
