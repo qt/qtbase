@@ -49,7 +49,7 @@ endfunction()
 function(qt_apply_rpaths)
     # No rpath support for win32 and android. Also no need to apply rpaths when doing a non-prefix
     # build.
-    if(NOT QT_WILL_INSTALL OR WIN32 OR ANDROID)
+    if(WIN32 OR ANDROID)
         return()
     endif()
 
@@ -128,6 +128,11 @@ function(qt_apply_rpaths)
 
     if(rpaths)
         list(REMOVE_DUPLICATES rpaths)
-        set_property(TARGET "${target}" APPEND PROPERTY INSTALL_RPATH ${rpaths})
+        if(QT_WILL_INSTALL)
+            set(prop_name "INSTALL_RPATH")
+        else()
+            set(prop_name "BUILD_RPATH")
+        endif()
+        set_property(TARGET "${target}" APPEND PROPERTY "${prop_name}" ${rpaths})
     endif()
 endfunction()
