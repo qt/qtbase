@@ -11,3 +11,13 @@ instructions:
       Failed to install tests archive.
   - type: ChangeDirectory
     directory: "{{.SourceDir}}_standalone_tests"
+  - type: ExecuteCommand
+    command: "ln -s {{.InstallDir}}/target fake_prefix"
+    maxTimeInSeconds: 6000
+    maxTimeBetweenOutput: 1200
+    userMessageOnFailure: >
+      Failed to run android hack. See QTBUG-88579 to check if this can be removed
+    enable_if:
+      condition: property
+      property: features
+      contains_value: AndroidTestRun
