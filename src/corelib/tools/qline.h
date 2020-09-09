@@ -40,8 +40,6 @@
 #ifndef QLINE_H
 #define QLINE_H
 
-#include <QtCore/qmath.h>
-
 #include <QtCore/qpoint.h>
 
 QT_BEGIN_NAMESPACE
@@ -372,15 +370,14 @@ constexpr inline QPointF QLineF::center() const
     return QPointF(0.5 * pt1.x() + 0.5 * pt2.x(), 0.5 * pt1.y() + 0.5 * pt2.y());
 }
 
-QT_WARNING_DISABLE_FLOAT_COMPARE
-
 inline void QLineF::setLength(qreal len)
 {
-    const qreal oldlength = qSqrt(dx() * dx() + dy() * dy());
-    if (!oldlength)
+    if (isNull())
         return;
-    const qreal factor = len / oldlength;
-    pt2 = QPointF(pt1.x() + dx() * factor, pt1.y() + dy() * factor);
+    Q_ASSERT(length() > 0);
+    const QLineF v = unitVector();
+    len /= v.length(); // In case it's not quite exactly 1.
+    pt2 = QPointF(pt1.x() + len * v.dx(), pt1.y() + len * v.dy());
 }
 
 constexpr inline QPointF QLineF::pointAt(qreal t) const
