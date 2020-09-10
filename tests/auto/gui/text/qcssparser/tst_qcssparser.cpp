@@ -860,9 +860,8 @@ void tst_QCssParser::colorValue_data()
     QTest::newRow("role2") << "color: palette( window-text ) " << qApp->palette().color(QPalette::WindowText);
     QTest::newRow("transparent") << "color: transparent" << QColor(Qt::transparent);
 
-    // ### Qt6: no longer valid
-    QTest::newRow("rgb-invalid") << "color: rgb(10, 20, 30, 40)" << QColor(10, 20, 30, 40);
-    QTest::newRow("rgba-invalid") << "color: rgba(10, 20, 30)" << QColor(10, 20, 30, 255);
+    QTest::newRow("rgb-invalid") << "color: rgb(10, 20, 30, 40)" << QColor();
+    QTest::newRow("rgba-invalid") << "color: rgba(10, 20, 30)" << QColor();
 }
 
 void tst_QCssParser::colorValue()
