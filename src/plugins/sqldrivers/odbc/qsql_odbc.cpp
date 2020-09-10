@@ -554,7 +554,7 @@ static QVariant qGetBinaryData(SQLHANDLE hStmt, int column)
         if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO)
             break;
         if (lengthIndicator == SQL_NULL_DATA)
-            return QVariant(QMetaType(QVariant::ByteArray));
+            return QVariant(QMetaType(QMetaType::QByteArray));
         if (lengthIndicator > SQLLEN(colSize) || lengthIndicator == SQL_NO_TOTAL) {
             read += colSize;
             colSize = 65536;
@@ -1213,19 +1213,19 @@ QVariant QODBCResult::data(int field)
         // fetched column n+1, so cache all previous columns here
         const QSqlField info = d->rInf.field(i);
         switch (info.metaType().id()) {
-        case QVariant::LongLong:
+        case QMetaType::LongLong:
             d->fieldCache[i] = qGetBigIntData(d->hStmt, i);
         break;
-        case QVariant::ULongLong:
+        case QMetaType::ULongLong:
             d->fieldCache[i] = qGetBigIntData(d->hStmt, i, false);
             break;
-        case QVariant::Int:
+        case QMetaType::Int:
             d->fieldCache[i] = qGetIntData(d->hStmt, i);
         break;
-        case QVariant::UInt:
+        case QMetaType::UInt:
             d->fieldCache[i] = qGetIntData(d->hStmt, i, false);
             break;
-        case QVariant::Date:
+        case QMetaType::QDate:
             DATE_STRUCT dbuf;
             r = SQLGetData(d->hStmt,
                             i + 1,
@@ -1238,7 +1238,7 @@ QVariant QODBCResult::data(int field)
             else
                 d->fieldCache[i] = QVariant(QMetaType::fromType<QDate>());
         break;
-        case QVariant::Time:
+        case QMetaType::QTime:
             TIME_STRUCT tbuf;
             r = SQLGetData(d->hStmt,
                             i + 1,
@@ -1251,7 +1251,7 @@ QVariant QODBCResult::data(int field)
             else
                 d->fieldCache[i] = QVariant(QMetaType::fromType<QTime>());
         break;
-        case QVariant::DateTime:
+        case QMetaType::QDateTime:
             TIMESTAMP_STRUCT dtbuf;
             r = SQLGetData(d->hStmt,
                             i + 1,
@@ -1265,13 +1265,13 @@ QVariant QODBCResult::data(int field)
             else
                 d->fieldCache[i] = QVariant(QMetaType::fromType<QDateTime>());
             break;
-        case QVariant::ByteArray:
+        case QMetaType::QByteArray:
             d->fieldCache[i] = qGetBinaryData(d->hStmt, i);
             break;
-        case QVariant::String:
+        case QMetaType::QString:
             d->fieldCache[i] = qGetStringData(d->hStmt, i, info.length(), d->unicode);
             break;
-        case QVariant::Double:
+        case QMetaType::Double:
             switch(numericalPrecisionPolicy()) {
                 case QSql::LowPrecisionInt32:
                     d->fieldCache[i] = qGetIntData(d->hStmt, i);
@@ -1414,8 +1414,8 @@ bool QODBCResult::exec()
         SQLLEN *ind = &indicators[i];
         if (val.isNull())
             *ind = SQL_NULL_DATA;
-        switch (val.userType()) {
-            case QVariant::Date: {
+        switch (val.typeId()) {
+            case QMetaType::QDate: {
                 QByteArray &ba = tmpStorage[i];
                 ba.resize(sizeof(DATE_STRUCT));
                 DATE_STRUCT *dt = (DATE_STRUCT *)const_cast<char *>(ba.constData());
@@ -1434,7 +1434,7 @@ bool QODBCResult::exec()
                                       0,
                                       *ind == SQL_NULL_DATA ? ind : NULL);
                 break; }
-            case QVariant::Time: {
+            case QMetaType::QTime: {
                 QByteArray &ba = tmpStorage[i];
                 ba.resize(sizeof(TIME_STRUCT));
                 TIME_STRUCT *dt = (TIME_STRUCT *)const_cast<char *>(ba.constData());
@@ -1453,7 +1453,7 @@ bool QODBCResult::exec()
                                       0,
                                       *ind == SQL_NULL_DATA ? ind : NULL);
                 break; }
-            case QVariant::DateTime: {
+            case QMetaType::QDateTime: {
                 QByteArray &ba = tmpStorage[i];
                 ba.resize(sizeof(TIMESTAMP_STRUCT));
                 TIMESTAMP_STRUCT *dt = reinterpret_cast<TIMESTAMP_STRUCT *>(const_cast<char *>(ba.constData()));
@@ -1489,7 +1489,7 @@ bool QODBCResult::exec()
                                       0,
                                       *ind == SQL_NULL_DATA ? ind : NULL);
                 break; }
-            case QVariant::Int:
+            case QMetaType::Int:
                 r = SQLBindParameter(d->hStmt,
                                       i + 1,
                                       qParamType[bindValueType(i) & QSql::InOut],
@@ -1501,7 +1501,7 @@ bool QODBCResult::exec()
                                       0,
                                       *ind == SQL_NULL_DATA ? ind : NULL);
                 break;
-            case QVariant::UInt:
+            case QMetaType::UInt:
                 r = SQLBindParameter(d->hStmt,
                                       i + 1,
                                       qParamType[bindValueType(i) & QSql::InOut],
@@ -1513,7 +1513,7 @@ bool QODBCResult::exec()
                                       0,
                                       *ind == SQL_NULL_DATA ? ind : NULL);
                 break;
-            case QVariant::Double:
+            case QMetaType::Double:
                 r = SQLBindParameter(d->hStmt,
                                       i + 1,
                                       qParamType[bindValueType(i) & QSql::InOut],
@@ -1525,7 +1525,7 @@ bool QODBCResult::exec()
                                       0,
                                       *ind == SQL_NULL_DATA ? ind : NULL);
                 break;
-            case QVariant::LongLong:
+            case QMetaType::LongLong:
                 r = SQLBindParameter(d->hStmt,
                                       i + 1,
                                       qParamType[bindValueType(i) & QSql::InOut],
@@ -1537,7 +1537,7 @@ bool QODBCResult::exec()
                                       0,
                                       *ind == SQL_NULL_DATA ? ind : NULL);
                 break;
-            case QVariant::ULongLong:
+            case QMetaType::ULongLong:
                 r = SQLBindParameter(d->hStmt,
                                       i + 1,
                                       qParamType[bindValueType(i) & QSql::InOut],
@@ -1549,7 +1549,7 @@ bool QODBCResult::exec()
                                       0,
                                       *ind == SQL_NULL_DATA ? ind : NULL);
                 break;
-            case QVariant::ByteArray:
+            case QMetaType::QByteArray:
                 if (*ind != SQL_NULL_DATA) {
                     *ind = val.toByteArray().size();
                 }
@@ -1564,7 +1564,7 @@ bool QODBCResult::exec()
                                       val.toByteArray().size(),
                                       ind);
                 break;
-            case QVariant::Bool:
+            case QMetaType::Bool:
                 r = SQLBindParameter(d->hStmt,
                                       i + 1,
                                       qParamType[bindValueType(i) & QSql::InOut],
@@ -1576,7 +1576,7 @@ bool QODBCResult::exec()
                                       0,
                                       *ind == SQL_NULL_DATA ? ind : NULL);
                 break;
-            case QVariant::String:
+            case QMetaType::QString:
                 if (d->unicode) {
                     QByteArray &ba = tmpStorage[i];
                     QString str = val.toString();
@@ -1689,31 +1689,31 @@ bool QODBCResult::exec()
         return true;
 
     for (i = 0; i < values.count(); ++i) {
-        switch (values.at(i).userType()) {
-            case QVariant::Date: {
+        switch (values.at(i).typeId()) {
+            case QMetaType::QDate: {
                 DATE_STRUCT ds = *((DATE_STRUCT *)const_cast<char *>(tmpStorage.at(i).constData()));
                 values[i] = QVariant(QDate(ds.year, ds.month, ds.day));
                 break; }
-            case QVariant::Time: {
+            case QMetaType::QTime: {
                 TIME_STRUCT dt = *((TIME_STRUCT *)const_cast<char *>(tmpStorage.at(i).constData()));
                 values[i] = QVariant(QTime(dt.hour, dt.minute, dt.second));
                 break; }
-            case QVariant::DateTime: {
+            case QMetaType::QDateTime: {
                 TIMESTAMP_STRUCT dt = *((TIMESTAMP_STRUCT*)
                                         const_cast<char *>(tmpStorage.at(i).constData()));
                 values[i] = QVariant(QDateTime(QDate(dt.year, dt.month, dt.day),
                                QTime(dt.hour, dt.minute, dt.second, dt.fraction / 1000000)));
                 break; }
-            case QVariant::Bool:
-            case QVariant::Int:
-            case QVariant::UInt:
-            case QVariant::Double:
-            case QVariant::ByteArray:
-            case QVariant::LongLong:
-            case QVariant::ULongLong:
+            case QMetaType::Bool:
+            case QMetaType::Int:
+            case QMetaType::UInt:
+            case QMetaType::Double:
+            case QMetaType::QByteArray:
+            case QMetaType::LongLong:
+            case QMetaType::ULongLong:
                 //nothing to do
                 break;
-            case QVariant::String:
+            case QMetaType::QString:
                 if (d->unicode) {
                     if (bindValueType(i) & QSql::Out) {
                         const QByteArray &first = tmpStorage.at(i);
@@ -2583,7 +2583,7 @@ QString QODBCDriver::formatValue(const QSqlField &field,
     QString r;
     if (field.isNull()) {
         r = QLatin1String("NULL");
-    } else if (field.metaType().id() == QVariant::DateTime) {
+    } else if (field.metaType().id() == QMetaType::QDateTime) {
         // Use an escape sequence for the datetime fields
         if (field.value().toDateTime().isValid()){
             QDate dt = field.value().toDateTime().date();
@@ -2599,7 +2599,7 @@ QString QODBCDriver::formatValue(const QSqlField &field,
                 QLatin1String("' }");
         } else
             r = QLatin1String("NULL");
-    } else if (field.metaType().id() == QVariant::ByteArray) {
+    } else if (field.metaType().id() == QMetaType::QByteArray) {
         QByteArray ba = field.value().toByteArray();
         QString res;
         static const char hexchars[] = "0123456789abcdef";

@@ -108,8 +108,6 @@ typedef QMap<int, QString> IntStringMap;
 typedef QMap<QString, QString> StringStringMap;
 typedef QMap<QString, Struct1> StringStruct1Map;
 
-Q_DECLARE_METATYPE(QVariant::Type)
-
 QT_BEGIN_NAMESPACE
 QDBusArgument &operator<<(QDBusArgument &arg, const Struct1 &)
 {
@@ -289,70 +287,70 @@ void tst_QDBusMetaType::initTestCase()
 
 void tst_QDBusMetaType::staticTypes_data()
 {
-    QTest::addColumn<QVariant::Type>("typeId");
+    QTest::addColumn<int>("typeId");
     QTest::addColumn<QString>("signature");
 
-    QTest::newRow("uchar") << QVariant::Type(QMetaType::UChar) << "y";
-    QTest::newRow("bool") << QVariant::Bool << "b";
-    QTest::newRow("short") << QVariant::Type(QMetaType::Short) << "n";
-    QTest::newRow("ushort") << QVariant::Type(QMetaType::UShort) << "q";
-    QTest::newRow("int") << QVariant::Int << "i";
-    QTest::newRow("uint") << QVariant::UInt << "u";
-    QTest::newRow("qlonglong") << QVariant::LongLong << "x";
-    QTest::newRow("qulonglong") << QVariant::ULongLong << "t";
-    QTest::newRow("double") << QVariant::Double << "d";
-    QTest::newRow("QString") << QVariant::String << "s";
-    QTest::newRow("QDBusObjectPath") << QVariant::Type(qMetaTypeId<QDBusObjectPath>()) << "o";
-    QTest::newRow("QDBusSignature") << QVariant::Type(qMetaTypeId<QDBusSignature>()) << "g";
-    QTest::newRow("QDBusVariant") << QVariant::Type(qMetaTypeId<QDBusVariant>()) << "v";
+    QTest::newRow("uchar") << int(QMetaType::UChar) << "y";
+    QTest::newRow("bool") << int(QMetaType::Bool) << "b";
+    QTest::newRow("short") << int(QMetaType::Short) << "n";
+    QTest::newRow("ushort") << int(QMetaType::UShort) << "q";
+    QTest::newRow("int") << int(QMetaType::Int) << "i";
+    QTest::newRow("uint") << int(QMetaType::UInt) << "u";
+    QTest::newRow("qlonglong") << int(QMetaType::LongLong) << "x";
+    QTest::newRow("qulonglong") << int(QMetaType::ULongLong) << "t";
+    QTest::newRow("double") << int(QMetaType::Double) << "d";
+    QTest::newRow("QString") << int(QMetaType::QString) << "s";
+    QTest::newRow("QDBusObjectPath") << qMetaTypeId<QDBusObjectPath>() << "o";
+    QTest::newRow("QDBusSignature") << qMetaTypeId<QDBusSignature>() << "g";
+    QTest::newRow("QDBusVariant") << qMetaTypeId<QDBusVariant>() << "v";
 
-    QTest::newRow("QByteArray") << QVariant::ByteArray << "ay";
-    QTest::newRow("QStringList") << QVariant::StringList << "as";
+    QTest::newRow("QByteArray") << int(QMetaType::QByteArray) << "ay";
+    QTest::newRow("QStringList") << int(QMetaType::QStringList) << "as";
 }
 
 void tst_QDBusMetaType::dynamicTypes_data()
 {
-    QTest::addColumn<QVariant::Type>("typeId");
+    QTest::addColumn<int>("typeId");
     QTest::addColumn<QString>("signature");
 
-    QTest::newRow("QVariantList") << QVariant::List << "av";
-    QTest::newRow("QVariantMap") << QVariant::Map << "a{sv}";
-    QTest::newRow("QDate") << QVariant::Date << "(iii)";
-    QTest::newRow("QTime") << QVariant::Time << "(iiii)";
-    QTest::newRow("QDateTime") << QVariant::DateTime << "((iii)(iiii)i)";
-    QTest::newRow("QRect") << QVariant::Rect << "(iiii)";
-    QTest::newRow("QRectF") << QVariant::RectF << "(dddd)";
-    QTest::newRow("QSize") << QVariant::Size << "(ii)";
-    QTest::newRow("QSizeF") << QVariant::SizeF << "(dd)";
-    QTest::newRow("QPoint") << QVariant::Point << "(ii)";
-    QTest::newRow("QPointF") << QVariant::PointF << "(dd)";
-    QTest::newRow("QLine") << QVariant::Line << "((ii)(ii))";
-    QTest::newRow("QLineF") << QVariant::LineF << "((dd)(dd))";
+    QTest::newRow("QVariantList") << int(QMetaType::QVariantList) << "av";
+    QTest::newRow("QVariantMap") << int(QMetaType::QVariantMap) << "a{sv}";
+    QTest::newRow("QDate") << int(QMetaType::QDate) << "(iii)";
+    QTest::newRow("QTime") << int(QMetaType::QTime) << "(iiii)";
+    QTest::newRow("QDateTime") << int(QMetaType::QDateTime) << "((iii)(iiii)i)";
+    QTest::newRow("QRect") << int(QMetaType::QRect) << "(iiii)";
+    QTest::newRow("QRectF") << int(QMetaType::QRectF) << "(dddd)";
+    QTest::newRow("QSize") << int(QMetaType::QSize) << "(ii)";
+    QTest::newRow("QSizeF") << int(QMetaType::QSizeF) << "(dd)";
+    QTest::newRow("QPoint") << int(QMetaType::QPoint) << "(ii)";
+    QTest::newRow("QPointF") << int(QMetaType::QPointF) << "(dd)";
+    QTest::newRow("QLine") << int(QMetaType::QLine) << "((ii)(ii))";
+    QTest::newRow("QLineF") << int(QMetaType::QLineF) << "((dd)(dd))";
 
-    QTest::newRow("Struct1") << QVariant::Type(qMetaTypeId<Struct1>()) << "(s)";
-    QTest::newRow("QList<Struct1>") << QVariant::Type(qMetaTypeId<QList<Struct1> >()) << "a(s)";
+    QTest::newRow("Struct1") << qMetaTypeId<Struct1>() << "(s)";
+    QTest::newRow("QList<Struct1>") << qMetaTypeId<QList<Struct1> >() << "a(s)";
 
-    QTest::newRow("Struct2") << QVariant::Type(qMetaTypeId<Struct2>()) << "(sos)";
-    QTest::newRow("QList<Struct2>") << QVariant::Type(qMetaTypeId<QList<Struct2> >()) << "a(sos)";
+    QTest::newRow("Struct2") << qMetaTypeId<Struct2>() << "(sos)";
+    QTest::newRow("QList<Struct2>") << qMetaTypeId<QList<Struct2>>() << "a(sos)";
 
-    QTest::newRow("QList<Struct3>") << QVariant::Type(qMetaTypeId<QList<Struct3> >()) << "a(sas)";
-    QTest::newRow("Struct3") << QVariant::Type(qMetaTypeId<Struct3>()) << "(sas)";
+    QTest::newRow("QList<Struct3>") << qMetaTypeId<QList<Struct3>>() << "a(sas)";
+    QTest::newRow("Struct3") << qMetaTypeId<Struct3>() << "(sas)";
 
-    QTest::newRow("Struct4") << QVariant::Type(qMetaTypeId<Struct4>()) << "(ssa(ss)sayasx)";
-    QTest::newRow("QList<Struct4>") << QVariant::Type(qMetaTypeId<QList<Struct4> >()) << "a(ssa(ss)sayasx)";
+    QTest::newRow("Struct4") << qMetaTypeId<Struct4>() << "(ssa(ss)sayasx)";
+    QTest::newRow("QList<Struct4>") << qMetaTypeId<QList<Struct4>>() << "a(ssa(ss)sayasx)";
 
-    QTest::newRow("Struct5") << QVariant::Type(qMetaTypeId<Struct5>()) << "a{sa{sv}}";
+    QTest::newRow("Struct5") << qMetaTypeId<Struct5>() << "a{sa{sv}}";
 
-    QTest::newRow("Struct6") << QVariant::Type(qMetaTypeId<Struct6>()) << "av";
+    QTest::newRow("Struct6") << qMetaTypeId<Struct6>() << "av";
 
-    QTest::newRow("QMap<int,QString>") << QVariant::Type(intStringMap) << "a{is}";
-    QTest::newRow("QMap<QString,QString>") << QVariant::Type(stringStringMap) << "a{ss}";
-    QTest::newRow("QMap<QString,Struct1>") << QVariant::Type(stringStruct1Map) << "a{s(s)}";
+    QTest::newRow("QMap<int,QString>") << intStringMap << "a{is}";
+    QTest::newRow("QMap<QString,QString>") << stringStringMap << "a{ss}";
+    QTest::newRow("QMap<QString,Struct1>") << stringStruct1Map << "a{s(s)}";
 }
 
 void tst_QDBusMetaType::staticTypes()
 {
-    QFETCH(QVariant::Type, typeId);
+    QFETCH(int, typeId);
 
     QString result = QDBusMetaType::typeToSignature(QMetaType(typeId));
     QTEST(result, "signature");
@@ -366,22 +364,22 @@ void tst_QDBusMetaType::dynamicTypes()
 
 void tst_QDBusMetaType::invalidTypes_data()
 {
-    QTest::addColumn<QVariant::Type>("typeId");
+    QTest::addColumn<int>("typeId");
     QTest::addColumn<QString>("signature");
 
-    QTest::newRow("Invalid0") << QVariant::Type(qMetaTypeId<Invalid0>()) << "";
-    QTest::newRow("Invalid1") << QVariant::Type(qMetaTypeId<Invalid1>()) << "";
-    QTest::newRow("Invalid2") << QVariant::Type(qMetaTypeId<Invalid2>()) << "";
-    QTest::newRow("Invalid3") << QVariant::Type(qMetaTypeId<Invalid3>()) << "";
-    QTest::newRow("Invalid4") << QVariant::Type(qMetaTypeId<Invalid4>()) << "";
-    QTest::newRow("Invalid5") << QVariant::Type(qMetaTypeId<Invalid5>()) << "";
-    QTest::newRow("Invalid6") << QVariant::Type(qMetaTypeId<Invalid6>()) << "";
-    QTest::newRow("Invalid7") << QVariant::Type(qMetaTypeId<Invalid7>()) << "";
+    QTest::newRow("Invalid0") << qMetaTypeId<Invalid0>() << "";
+    QTest::newRow("Invalid1") << qMetaTypeId<Invalid1>() << "";
+    QTest::newRow("Invalid2") << qMetaTypeId<Invalid2>() << "";
+    QTest::newRow("Invalid3") << qMetaTypeId<Invalid3>() << "";
+    QTest::newRow("Invalid4") << qMetaTypeId<Invalid4>() << "";
+    QTest::newRow("Invalid5") << qMetaTypeId<Invalid5>() << "";
+    QTest::newRow("Invalid6") << qMetaTypeId<Invalid6>() << "";
+    QTest::newRow("Invalid7") << qMetaTypeId<Invalid7>() << "";
 
-    QTest::newRow("QList<Invalid0>") << QVariant::Type(qMetaTypeId<QList<Invalid0> >()) << "";
+    QTest::newRow("QList<Invalid0>") << qMetaTypeId<QList<Invalid0>>() << "";
 
-    QTest::newRow("long") << QVariant::Type(QMetaType::Long) << "";
-    QTest::newRow("void*") << QVariant::Type(QMetaType::VoidStar) << "";
+    QTest::newRow("long") << int(QMetaType::Long) << "";
+    QTest::newRow("void*") << int(QMetaType::VoidStar) << "";
 }
 
 void tst_QDBusMetaType::invalidTypes()

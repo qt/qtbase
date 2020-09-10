@@ -104,7 +104,7 @@ QVariant QWindowsInternalMimeData::retrieveData_sys(const QString &mimeType, QMe
     if (QWindowsContext::verbose) {
         qCDebug(lcQpaMime) <<__FUNCTION__ << ' '  << mimeType << ' ' << type.name()
             << " returns " << result.metaType().name()
-            << (result.userType() != QVariant::ByteArray ? result.toString() : QStringLiteral("<data>"));
+            << (result.metaType().id() != QMetaType::QByteArray ? result.toString() : QStringLiteral("<data>"));
     }
     return result;
 }

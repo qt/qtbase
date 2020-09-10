@@ -1107,7 +1107,7 @@ bool QDBusArgument::atEnd() const
     argument (for example, by calling asVariant() in it).
 
     For example, if the current argument is an INT32, this function
-    will return a QVariant with an argument of type QVariant::Int. For
+    will return a QVariant with an argument of type QMetaType::Int. For
     an array of INT32, it will return a QVariant containing a
     QDBusArgument.
 

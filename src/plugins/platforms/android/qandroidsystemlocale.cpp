@@ -140,15 +140,15 @@ QVariant QAndroidSystemLocale::query(QueryType type, QVariant in) const
         return m_locale .currencySymbol(QLocale::CurrencySymbolFormat(in.toUInt()));
     case CurrencyToString: {
         switch (in.type()) {
-        case QVariant::Int:
+        case QMetaType::Int:
             return m_locale .toCurrencyString(in.toInt());
-        case QVariant::UInt:
+        case QMetaType::UInt:
             return m_locale .toCurrencyString(in.toUInt());
-        case QVariant::Double:
+        case QMetaType::Double:
             return m_locale .toCurrencyString(in.toDouble());
-        case QVariant::LongLong:
+        case QMetaType::LongLong:
             return m_locale .toCurrencyString(in.toLongLong());
-        case QVariant::ULongLong:
+        case QMetaType::ULongLong:
             return m_locale .toCurrencyString(in.toULongLong());
         default:
             break;

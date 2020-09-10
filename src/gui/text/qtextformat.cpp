@@ -1036,7 +1036,7 @@ int QTextFormat::intProperty(int propertyId) const
 
 /*!
     Returns the value of the property specified by \a propertyId. If the
-    property isn't of QVariant::Double or QMetaType::Float type, 0 is
+    property isn't of QMetaType::Double or QMetaType::Float type, 0 is
     returned instead.
 
     \sa setProperty(), boolProperty(), intProperty(), stringProperty(), colorProperty(),
@@ -1054,7 +1054,7 @@ qreal QTextFormat::doubleProperty(int propertyId) const
 
 /*!
     Returns the value of the property given by \a propertyId; if the
-    property isn't of QVariant::String type, an empty string is
+    property isn't of QMetaType::QString type, an empty string is
     returned instead.
 
     \sa setProperty(), boolProperty(), intProperty(), doubleProperty(), colorProperty(),
@@ -1072,7 +1072,7 @@ QString QTextFormat::stringProperty(int propertyId) const
 
 /*!
     Returns the value of the property given by \a propertyId; if the
-    property isn't of QVariant::Color type, an invalid color is
+    property isn't of QMetaType::QColor type, an invalid color is
     returned instead.
 
     \sa setProperty(), boolProperty(), intProperty(), doubleProperty(),
@@ -1090,7 +1090,7 @@ QColor QTextFormat::colorProperty(int propertyId) const
 
 /*!
     Returns the value of the property given by \a propertyId; if the
-    property isn't of QVariant::Pen type, Qt::NoPen is
+    property isn't of QMetaType::QPen type, Qt::NoPen is
     returned instead.
 
     \sa setProperty(), boolProperty(), intProperty(), doubleProperty(), stringProperty(),
@@ -1108,7 +1108,7 @@ QPen QTextFormat::penProperty(int propertyId) const
 
 /*!
     Returns the value of the property given by \a propertyId; if the
-    property isn't of QVariant::Brush type, Qt::NoBrush is
+    property isn't of QMetaType::QBrush type, Qt::NoBrush is
     returned instead.
 
     \sa setProperty(), boolProperty(), intProperty(), doubleProperty(), stringProperty(),

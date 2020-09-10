@@ -463,7 +463,7 @@ void QJsonValue::swap(QJsonValue &other) noexcept
  */
 QJsonValue QJsonValue::fromVariant(const QVariant &variant)
 {
-    switch (variant.userType()) {
+    switch (variant.metaType().id()) {
     case QMetaType::Nullptr:
         return QJsonValue(Null);
     case QMetaType::Bool:

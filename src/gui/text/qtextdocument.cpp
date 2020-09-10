@@ -2052,10 +2052,10 @@ void QTextDocument::print(QPagedPaintDevice *printer) const
     \value UnknownResource No resource is loaded, or the resource type is not known.
     \value HtmlResource  The resource contains HTML.
     \value ImageResource The resource contains image data.
-                         Currently supported data types are QVariant::Pixmap and
-                         QVariant::Image. If the corresponding variant is of type
-                         QVariant::ByteArray then Qt attempts to load the image using
-                         QImage::loadFromData. QVariant::Icon is currently not supported.
+                         Currently supported data types are QMetaType::QPixmap and
+                         QMetaType::QImage. If the corresponding variant is of type
+                         QMetaType::QByteArray then Qt attempts to load the image using
+                         QImage::loadFromData. QMetaType::QIcon is currently not supported.
                          The icon needs to be converted to one of the supported types first,
                          for example using QIcon::pixmap.
     \value StyleSheetResource The resource contains CSS.

@@ -432,7 +432,7 @@ QItemEditorCreatorBase::~QItemEditorCreatorBase()
     the creator is registered for. For example, a creator which constructs
     QCheckBox widgets to edit boolean values would return the
     \l{QCheckBox::checkable}{checkable} property name from this function,
-    and must be registered in the item editor factory for the QVariant::Bool
+    and must be registered in the item editor factory for the QMetaType::Bool
     type.
 
     Note: Since Qt 4.2 the item delegates query the user property of widgets,
@@ -513,7 +513,7 @@ QItemEditorCreatorBase::~QItemEditorCreatorBase()
 
     Setting the \c editorFactory created above in an item delegate via
     QStyledItemDelegate::setItemEditorFactory() makes sure that all values of type
-    QVariant::DateTime will be edited in \c{MyFancyDateTimeEdit}.
+    QMetaType::QDateTime will be edited in \c{MyFancyDateTimeEdit}.
 
     The editor must provide a user property that will contain the
     editing data. The property is used by \l{QStyledItemDelegate}s to set

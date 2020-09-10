@@ -242,7 +242,7 @@ QDBusArgument &operator<<(QDBusArgument &argument, const MyArray &myArray)
 // Append a dictionary that associates ints to MyValue types
 QDBusArgument &operator<<(QDBusArgument &argument, const MyDictionary &myDict)
 {
-    argument.beginMap(QVariant::Int, qMetaTypeId<MyValue>());
+    argument.beginMap(QMetaType::fromType<int>(), QMetaType::fromType<MyValue>());
     MyDictionary::const_iterator i;
     for (i = myDict.cbegin(); i != myDict.cend(); ++i) {
         argument.beginMapEntry();

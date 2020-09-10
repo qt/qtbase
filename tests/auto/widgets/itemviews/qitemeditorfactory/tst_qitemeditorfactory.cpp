@@ -46,7 +46,7 @@ void tst_QItemEditorFactory::createEditor()
 
     QWidget parent;
 
-    QWidget *w = factory->createEditor(QVariant::String, &parent);
+    QWidget *w = factory->createEditor(QMetaType::QString, &parent);
     QCOMPARE(w->metaObject()->className(), "QExpandingLineEdit");
 }
 
@@ -63,23 +63,23 @@ void tst_QItemEditorFactory::createCustomEditor()
     {
         QItemEditorFactory editorFactory;
 
-        editorFactory.registerEditor(QVariant::Rect, creator);
-        editorFactory.registerEditor(QVariant::RectF, creator);
+        editorFactory.registerEditor(QMetaType::QRect, creator);
+        editorFactory.registerEditor(QMetaType::QRectF, creator);
 
         //creator should not be deleted as a result of calling the next line
-        editorFactory.registerEditor(QVariant::Rect, creator2);
+        editorFactory.registerEditor(QMetaType::QRect, creator2);
         QVERIFY(creator);
 
         //this should erase creator2
-        editorFactory.registerEditor(QVariant::Rect, creator);
+        editorFactory.registerEditor(QMetaType::QRect, creator);
         QVERIFY(creator2.isNull());
 
 
         QWidget parent;
 
-        QWidget *w = editorFactory.createEditor(QVariant::Rect, &parent);
+        QWidget *w = editorFactory.createEditor(QMetaType::QRect, &parent);
         QCOMPARE(w->metaObject()->className(), "QDoubleSpinBox");
-        QCOMPARE(w->metaObject()->userProperty().type(), QVariant::Double);
+        QCOMPARE(w->metaObject()->userProperty().userType(), QMetaType::Double);
     }
 
     //editorFactory has been deleted, so should be creator
@@ -99,12 +99,12 @@ void tst_QItemEditorFactory::uintValues()
     {
         QWidget *editor = editorFactory.createEditor(QMetaType::UInt, &parent);
         QCOMPARE(editor->metaObject()->className(), "QUIntSpinBox");
-        QCOMPARE(editor->metaObject()->userProperty().type(), QVariant::UInt);
+        QCOMPARE(editor->metaObject()->userProperty().userType(), QMetaType::UInt);
     }
     {
         QWidget *editor = editorFactory.createEditor(QMetaType::Int, &parent);
         QCOMPARE(editor->metaObject()->className(), "QSpinBox");
-        QCOMPARE(editor->metaObject()->userProperty().type(), QVariant::Int);
+        QCOMPARE(editor->metaObject()->userProperty().userType(), QMetaType::Int);
     }
 }
 

@@ -1938,13 +1938,13 @@ void tst_QTreeWidget::setData()
         // ### add more data types here
 
         item->setData(0, Qt::DisplayRole, 5);
-        QCOMPARE(item->data(0, Qt::DisplayRole).type(), QVariant::Int);
+        QCOMPARE(item->data(0, Qt::DisplayRole).userType(), QMetaType::Int);
 
         item->setData(0, Qt::DisplayRole, "test");
-        QCOMPARE(item->data(0, Qt::DisplayRole).type(), QVariant::String);
+        QCOMPARE(item->data(0, Qt::DisplayRole).userType(), QMetaType::QString);
 
         item->setData(0, Qt::DisplayRole, 0.4);
-        QCOMPARE(item->data(0, Qt::DisplayRole).type(), QVariant::Double);
+        QCOMPARE(item->data(0, Qt::DisplayRole).userType(), QMetaType::Double);
 
         delete item;
     }

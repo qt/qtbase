@@ -451,7 +451,7 @@ void tst_QUuid::qvariant()
     QUuid uuid = QUuid::createUuid();
     QVariant v = QVariant::fromValue(uuid);
     QVERIFY(!v.isNull());
-    QCOMPARE(v.type(), QVariant::Uuid);
+    QCOMPARE(v.metaType(), QMetaType(QMetaType::QUuid));
 
     QUuid uuid2 = v.value<QUuid>();
     QVERIFY(!uuid2.isNull());
@@ -478,14 +478,14 @@ void tst_QUuid::qvariant_conversion()
 
     // try reverse conversion QString -> QUuid
     QVariant sv = QVariant::fromValue(uuid.toString());
-    QCOMPARE(sv.type(), QVariant::String);
+    QCOMPARE(sv.metaType(), QMetaType(QMetaType::QString));
     QVERIFY(sv.canConvert<QUuid>());
     QCOMPARE(sv.value<QUuid>(), uuid);
 
     // QString -> QUuid
     {
         QVariant sv = QVariant::fromValue(uuid.toByteArray());
-        QCOMPARE(sv.type(), QVariant::ByteArray);
+        QCOMPARE(sv.metaType(), QMetaType(QMetaType::QByteArray));
         QVERIFY(sv.canConvert<QUuid>());
         QCOMPARE(sv.value<QUuid>(), uuid);
     }

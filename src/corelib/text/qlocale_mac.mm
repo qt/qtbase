@@ -366,19 +366,19 @@ static QString macFormatCurrency(const QSystemLocale::CurrencyToStringArgument &
 {
     QCFType<CFNumberRef> value;
     switch (arg.value.type()) {
-    case QVariant::Int:
-    case QVariant::UInt: {
+    case QMetaType::Int:
+    case QMetaType::UInt: {
         int v = arg.value.toInt();
         value = CFNumberCreate(NULL, kCFNumberIntType, &v);
         break;
     }
-    case QVariant::Double: {
+    case QMetaType::Double: {
         double v = arg.value.toDouble();
         value = CFNumberCreate(NULL, kCFNumberDoubleType, &v);
         break;
     }
-    case QVariant::LongLong:
-    case QVariant::ULongLong: {
+    case QMetaType::LongLong:
+    case QMetaType::ULongLong: {
         qint64 v = arg.value.toLongLong();
         value = CFNumberCreate(NULL, kCFNumberLongLongType, &v);
         break;

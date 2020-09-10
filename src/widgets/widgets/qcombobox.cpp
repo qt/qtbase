@@ -2232,7 +2232,7 @@ QIcon QComboBox::itemIcon(int index) const
 
 /*!
    Returns the data for the given \a role in the given \a index in the
-   combobox, or QVariant::Invalid if there is no data for this role.
+   combobox, or an invalid QVariant if there is no data for this role.
 */
 QVariant QComboBox::itemData(int index, int role) const
 {

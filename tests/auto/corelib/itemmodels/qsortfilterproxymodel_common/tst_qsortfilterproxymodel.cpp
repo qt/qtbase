@@ -1609,16 +1609,16 @@ void tst_QSortFilterProxyModel::removeSourceRows()
     QCOMPARE(aboutToRemoveSpy.count(), expectedRemovedProxyIntervals.count());
     for (int i = 0; i < aboutToRemoveSpy.count(); ++i) {
         const auto &args = aboutToRemoveSpy.at(i);
-        QCOMPARE(args.at(1).type(), QVariant::Int);
-        QCOMPARE(args.at(2).type(), QVariant::Int);
+        QCOMPARE(args.at(1).userType(), QMetaType::Int);
+        QCOMPARE(args.at(2).userType(), QMetaType::Int);
         QCOMPARE(args.at(1).toInt(), expectedRemovedProxyIntervals.at(i).first);
         QCOMPARE(args.at(2).toInt(), expectedRemovedProxyIntervals.at(i).second);
     }
     QCOMPARE(removeSpy.count(), expectedRemovedProxyIntervals.count());
     for (int i = 0; i < removeSpy.count(); ++i) {
         const auto &args = removeSpy.at(i);
-        QCOMPARE(args.at(1).type(), QVariant::Int);
-        QCOMPARE(args.at(2).type(), QVariant::Int);
+        QCOMPARE(args.at(1).userType(), QMetaType::Int);
+        QCOMPARE(args.at(2).userType(), QMetaType::Int);
         QCOMPARE(args.at(1).toInt(), expectedRemovedProxyIntervals.at(i).first);
         QCOMPARE(args.at(2).toInt(), expectedRemovedProxyIntervals.at(i).second);
     }
@@ -1787,8 +1787,8 @@ void tst_QSortFilterProxyModel::changeFilter()
     QCOMPARE(initialInsertSpy.count(), 0);
     for (int i = 0; i < initialRemoveSpy.count(); ++i) {
         const auto &args = initialRemoveSpy.at(i);
-        QCOMPARE(args.at(1).type(), QVariant::Int);
-        QCOMPARE(args.at(2).type(), QVariant::Int);
+        QCOMPARE(args.at(1).userType(), QMetaType::Int);
+        QCOMPARE(args.at(2).userType(), QMetaType::Int);
         QCOMPARE(args.at(1).toInt(), initialRemoveIntervals.at(i).first);
         QCOMPARE(args.at(2).toInt(), initialRemoveIntervals.at(i).second);
     }
@@ -1810,8 +1810,8 @@ void tst_QSortFilterProxyModel::changeFilter()
     QCOMPARE(finalRemoveSpy.count(), finalRemoveIntervals.count());
     for (int i = 0; i < finalRemoveSpy.count(); ++i) {
         const auto &args = finalRemoveSpy.at(i);
-        QCOMPARE(args.at(1).type(), QVariant::Int);
-        QCOMPARE(args.at(2).type(), QVariant::Int);
+        QCOMPARE(args.at(1).userType(), QMetaType::Int);
+        QCOMPARE(args.at(2).userType(), QMetaType::Int);
         QCOMPARE(args.at(1).toInt(), finalRemoveIntervals.at(i).first);
         QCOMPARE(args.at(2).toInt(), finalRemoveIntervals.at(i).second);
     }
@@ -1819,8 +1819,8 @@ void tst_QSortFilterProxyModel::changeFilter()
     QCOMPARE(finalInsertSpy.count(), insertIntervals.count());
     for (int i = 0; i < finalInsertSpy.count(); ++i) {
         const auto &args = finalInsertSpy.at(i);
-        QCOMPARE(args.at(1).type(), QVariant::Int);
-        QCOMPARE(args.at(2).type(), QVariant::Int);
+        QCOMPARE(args.at(1).userType(), QMetaType::Int);
+        QCOMPARE(args.at(2).userType(), QMetaType::Int);
         QCOMPARE(args.at(1).toInt(), insertIntervals.at(i).first);
         QCOMPARE(args.at(2).toInt(), insertIntervals.at(i).second);
     }
@@ -2025,8 +2025,8 @@ void tst_QSortFilterProxyModel::changeSourceData()
     QCOMPARE(removeSpy.count(), removeIntervals.count());
     for (int i = 0; i < removeSpy.count(); ++i) {
         const auto &args = removeSpy.at(i);
-        QCOMPARE(args.at(1).type(), QVariant::Int);
-        QCOMPARE(args.at(2).type(), QVariant::Int);
+        QCOMPARE(args.at(1).userType(), QMetaType::Int);
+        QCOMPARE(args.at(2).userType(), QMetaType::Int);
         QCOMPARE(args.at(1).toInt(), removeIntervals.at(i).first);
         QCOMPARE(args.at(2).toInt(), removeIntervals.at(i).second);
     }
@@ -2034,8 +2034,8 @@ void tst_QSortFilterProxyModel::changeSourceData()
     QCOMPARE(insertSpy.count(), insertIntervals.count());
     for (int i = 0; i < insertSpy.count(); ++i) {
         const auto &args = insertSpy.at(i);
-        QCOMPARE(args.at(1).type(), QVariant::Int);
-        QCOMPARE(args.at(2).type(), QVariant::Int);
+        QCOMPARE(args.at(1).userType(), QMetaType::Int);
+        QCOMPARE(args.at(2).userType(), QMetaType::Int);
         QCOMPARE(args.at(1).toInt(), insertIntervals.at(i).first);
         QCOMPARE(args.at(2).toInt(), insertIntervals.at(i).second);
     }
@@ -4606,16 +4606,16 @@ void tst_QSortFilterProxyModel::removeIntervals()
     QCOMPARE(aboutToRemoveSpy.count(), expectedRemovedProxyIntervals.count());
     for (int i = 0; i < aboutToRemoveSpy.count(); ++i) {
         const auto &args = aboutToRemoveSpy.at(i);
-        QCOMPARE(args.at(1).type(), QVariant::Int);
-        QCOMPARE(args.at(2).type(), QVariant::Int);
+        QCOMPARE(args.at(1).userType(), QMetaType::Int);
+        QCOMPARE(args.at(2).userType(), QMetaType::Int);
         QCOMPARE(args.at(1).toInt(), expectedRemovedProxyIntervals.at(i).first);
         QCOMPARE(args.at(2).toInt(), expectedRemovedProxyIntervals.at(i).second);
     }
     QCOMPARE(removeSpy.count(), expectedRemovedProxyIntervals.count());
     for (int i = 0; i < removeSpy.count(); ++i) {
         const auto &args = removeSpy.at(i);
-        QCOMPARE(args.at(1).type(), QVariant::Int);
-        QCOMPARE(args.at(2).type(), QVariant::Int);
+        QCOMPARE(args.at(1).userType(), QMetaType::Int);
+        QCOMPARE(args.at(2).userType(), QMetaType::Int);
         QCOMPARE(args.at(1).toInt(), expectedRemovedProxyIntervals.at(i).first);
         QCOMPARE(args.at(2).toInt(), expectedRemovedProxyIntervals.at(i).second);
     }

@@ -721,11 +721,11 @@ void tst_QSettings::embeddedZeroByte()
         QSettings settings("QtProject", "tst_qsettings");
         QVariant outValue = settings.value(QTest::currentDataTag());
 
-        switch (value.type()) {
-        case QVariant::ByteArray:
+        switch (value.typeId()) {
+        case QMetaType::QByteArray:
             QCOMPARE(outValue.toByteArray(), value.toByteArray());
             break;
-        case QVariant::String:
+        case QMetaType::QString:
             QCOMPARE(outValue.toString(), value.toString());
             break;
         default:
@@ -932,9 +932,9 @@ void tst_QSettings::testIniParsing()
         if (expect.isValid())
             QVERIFY(v.canConvert(expect.type()));
         // check some types so as to give prettier error messages
-        if ( v.type() == QVariant::String ) {
+        if ( v.typeId() == QMetaType::QString ) {
             QCOMPARE(v.toString(), expect.toString());
-        } else if ( v.type() == QVariant::Int ) {
+        } else if ( v.typeId() == QMetaType::Int ) {
             QCOMPARE(v.toInt(), expect.toInt());
         } else {
             QCOMPARE(v, expect);

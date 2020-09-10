@@ -192,7 +192,7 @@ inline bool QDBusMarshaller::append(const QDBusVariant &arg)
     QMetaType id = value.metaType();
     if (!id.isValid()) {
         qWarning("QDBusMarshaller: cannot add a null QDBusVariant");
-        error(QLatin1String("Variant containing QVariant::Invalid passed in arguments"));
+        error(QLatin1String("Invalid QVariant passed in arguments"));
         return false;
     }
 
@@ -386,7 +386,7 @@ bool QDBusMarshaller::appendVariantInternal(const QVariant &arg)
     QMetaType id = arg.metaType();
     if (!id.isValid()) {
         qWarning("QDBusMarshaller: cannot add an invalid QVariant");
-        error(QLatin1String("Variant containing QVariant::Invalid passed in arguments"));
+        error(QLatin1String("Invalid QVariant passed in arguments"));
         return false;
     }
 

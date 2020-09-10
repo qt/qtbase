@@ -1159,7 +1159,7 @@
     \variable QSystemLocale::CurrencyToStringArgument::value
 
     An input value that should be converted to its string representation.
-    Contains one of QVariant::LongLong, QVariant::ULongLong or QVariant::Double
+    Contains one of QMetaType::LongLong, QMetaType::ULongLong or QMetaType::Double
     types.
 */
 /*!

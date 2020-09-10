@@ -228,7 +228,7 @@ QJsonDocument QJsonDocument::fromVariant(const QVariant &variant)
 {
     QJsonDocument doc;
 
-    switch (variant.userType()) {
+    switch (variant.metaType().id()) {
     case QMetaType::QVariantMap:
         doc.setObject(QJsonObject::fromVariantMap(variant.toMap()));
         break;

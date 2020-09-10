@@ -765,15 +765,15 @@ QVariant::QVariant(const QVariant &p)
   Constructs a new variant with the regular expression value \a re.
 */
 
-/*!
+/*! \fn QVariant::QVariant(Type type)
+    \deprecated
+
     Constructs an uninitialized variant of type \a type. This will create a
     variant in a special null state that if accessed will return a default
     constructed value of the \a type.
 
     \sa isNull()
 */
-QVariant::QVariant(Type type)
-{ create(type, nullptr); }
 
 /*!
     Constructs variant of type \a type, and initializes with
@@ -793,110 +793,110 @@ QVariant::QVariant(QMetaType type, const void *copy) : d(type)
 }
 
 QVariant::QVariant(int val)
-    : d(Int)
+    : d(QMetaType::Int)
 { d.set(val); }
 QVariant::QVariant(uint val)
-    : d(UInt)
+    : d(QMetaType::UInt)
 { d.set(val); }
 QVariant::QVariant(qlonglong val)
-    : d(LongLong)
+    : d(QMetaType::LongLong)
 { d.set(val); }
 QVariant::QVariant(qulonglong val)
-    : d(ULongLong)
+    : d(QMetaType::ULongLong)
 { d.set(val); }
 QVariant::QVariant(bool val)
-    : d(Bool)
+    : d(QMetaType::Bool)
 { d.set(val); }
 QVariant::QVariant(double val)
-    : d(Double)
+    : d(QMetaType::Double)
 { d.set(val); }
 QVariant::QVariant(float val)
     : d(QMetaType::Float)
 { d.set(val); }
 
 QVariant::QVariant(const QByteArray &val)
-    : d(ByteArray)
+    : d(QMetaType::QByteArray)
 { v_construct<QByteArray>(&d, val); }
 QVariant::QVariant(const QBitArray &val)
-    : d(BitArray)
+    : d(QMetaType::QBitArray)
 { v_construct<QBitArray>(&d, val);  }
 QVariant::QVariant(const QString &val)
-    : d(String)
+    : d(QMetaType::QString)
 { v_construct<QString>(&d, val);  }
 QVariant::QVariant(QChar val)
-    : d(Char)
+    : d(QMetaType::QChar)
 { v_construct<QChar>(&d, val);  }
 QVariant::QVariant(QLatin1String val)
-    : d(String)
+    : d(QMetaType::QString)
 { v_construct<QString>(&d, val); }
 QVariant::QVariant(const QStringList &val)
-    : d(StringList)
+    : d(QMetaType::QStringList)
 { v_construct<QStringList>(&d, val); }
 
 QVariant::QVariant(QDate val)
-    : d(Date)
+    : d(QMetaType::QDate)
 { v_construct<QDate>(&d, val); }
 QVariant::QVariant(QTime val)
-    : d(Time)
+    : d(QMetaType::QTime)
 { v_construct<QTime>(&d, val); }
 QVariant::QVariant(const QDateTime &val)
-    : d(DateTime)
+    : d(QMetaType::QDateTime)
 { v_construct<QDateTime>(&d, val); }
 #if QT_CONFIG(easingcurve)
 QVariant::QVariant(const QEasingCurve &val)
-    : d(EasingCurve)
+    : d(QMetaType::QEasingCurve)
 { v_construct<QEasingCurve>(&d, val); }
 #endif
 QVariant::QVariant(const QList<QVariant> &list)
-    : d(List)
+    : d(QMetaType::QVariantList)
 { v_construct<QVariantList>(&d, list); }
 QVariant::QVariant(const QMap<QString, QVariant> &map)
-    : d(Map)
+    : d(QMetaType::QVariantMap)
 { v_construct<QVariantMap>(&d, map); }
 QVariant::QVariant(const QHash<QString, QVariant> &hash)
-    : d(Hash)
+    : d(QMetaType::QVariantHash)
 { v_construct<QVariantHash>(&d, hash); }
 #ifndef QT_NO_GEOM_VARIANT
 QVariant::QVariant(const QPoint &pt)
-    : d(Point)
+    : d(QMetaType::QPoint)
 { v_construct<QPoint>(&d, pt); }
 QVariant::QVariant(const QPointF &pt)
-    : d(PointF)
+    : d(QMetaType::QPointF)
 { v_construct<QPointF>(&d, pt); }
 QVariant::QVariant(const QRectF &r)
-    : d(RectF)
+    : d(QMetaType::QRectF)
 { v_construct<QRectF>(&d, r); }
 QVariant::QVariant(const QLineF &l)
-    : d(LineF)
+    : d(QMetaType::QLineF)
 { v_construct<QLineF>(&d, l); }
 QVariant::QVariant(const QLine &l)
-    : d(Line)
+    : d(QMetaType::QLine)
 { v_construct<QLine>(&d, l); }
 QVariant::QVariant(const QRect &r)
-    : d(Rect)
+    : d(QMetaType::QRect)
 { v_construct<QRect>(&d, r); }
 QVariant::QVariant(const QSize &s)
-    : d(Size)
+    : d(QMetaType::QSize)
 { v_construct<QSize>(&d, s); }
 QVariant::QVariant(const QSizeF &s)
-    : d(SizeF)
+    : d(QMetaType::QSizeF)
 { v_construct<QSizeF>(&d, s); }
 #endif
 #ifndef QT_BOOTSTRAPPED
 QVariant::QVariant(const QUrl &u)
-    : d(Url)
+    : d(QMetaType::QUrl)
 { v_construct<QUrl>(&d, u); }
 #endif
 QVariant::QVariant(const QLocale &l)
-    : d(Locale)
+    : d(QMetaType::QLocale)
 { v_construct<QLocale>(&d, l); }
 #if QT_CONFIG(regularexpression)
 QVariant::QVariant(const QRegularExpression &re)
-    : d(RegularExpression)
+    : d(QMetaType::QRegularExpression)
 { v_construct<QRegularExpression>(&d, re); }
 #endif // QT_CONFIG(regularexpression)
 QVariant::QVariant(const QUuid &uuid)
-    : d(Uuid)
+    : d(QMetaType::QUuid)
 { v_construct<QUuid>(&d, uuid); }
 #ifndef QT_BOOTSTRAPPED
 QVariant::QVariant(const QJsonValue &jsonValue)
@@ -914,14 +914,16 @@ QVariant::QVariant(const QJsonDocument &jsonDocument)
 #endif // QT_BOOTSTRAPPED
 #if QT_CONFIG(itemmodel)
 QVariant::QVariant(const QModelIndex &modelIndex)
-    : d(ModelIndex)
+    : d(QMetaType::QModelIndex)
 { v_construct<QModelIndex>(&d, modelIndex); }
 QVariant::QVariant(const QPersistentModelIndex &modelIndex)
-    : d(PersistentModelIndex)
+    : d(QMetaType::QPersistentModelIndex)
 { v_construct<QPersistentModelIndex>(&d, modelIndex); }
 #endif
 
-/*!
+/*! \fn QVariant::Type QVariant::type() const
+    \deprecated
+
     Returns the storage type of the value stored in the variant.
     Although this function is declared as returning QVariant::Type,
     the return value should be interpreted as QMetaType::Type. In
@@ -954,21 +956,15 @@ QVariant::QVariant(const QPersistentModelIndex &modelIndex)
 
     \sa userType(), metaType()
 */
-QVariant::Type QVariant::type() const
-{
-    int type = d.typeId();
-    return type >= QMetaType::User ? UserType : static_cast<Type>(type);
-}
-/*!
-    Returns the storage type of the value stored in the variant. For
-    non-user types, this is the same as type().
+
+/*! \fn int QVariant::userType() const
+    \fn int QVariant::typeId() const
+
+    Returns the storage type of the value stored in the variant. This is
+    the same as metaType().id().
 
     \sa type(), metaType()
 */
-int QVariant::userType() const
-{
-    return d.typeId();
-}
 
 /*!
     \since 6.0
@@ -1187,7 +1183,7 @@ void QVariant::load(QDataStream &s)
     qint8 is_null = false;
     if (s.version() >= QDataStream::Qt_4_2)
         s >> is_null;
-    if (typeId == QVariant::UserType) {
+    if (typeId == QMetaType::User) {
         QByteArray name;
         s >> name;
         typeId = QMetaType::fromName(name).id();
@@ -1330,28 +1326,17 @@ QDataStream& operator<<(QDataStream &s, const QVariant &p)
     return s;
 }
 
-/*!
+/*! \fn QDataStream& operator>>(QDataStream &s, QVariant::Type &p)
+    \deprecated
+
     Reads a variant type \a p in enum representation from the stream \a s.
 */
-QDataStream& operator>>(QDataStream &s, QVariant::Type &p)
-{
-    quint32 u;
-    s >> u;
-    p = (QVariant::Type)u;
 
-    return s;
-}
+/*! \fn QDataStream& operator<<(QDataStream &s, const QVariant::Type p)
+    \deprecated
 
-/*!
     Writes a variant type \a p to the stream \a s.
 */
-QDataStream& operator<<(QDataStream &s, const QVariant::Type p)
-{
-    s << static_cast<quint32>(p);
-
-    return s;
-}
-
 #endif //QT_NO_DATASTREAM
 
 /*!
@@ -2461,6 +2446,10 @@ QDebug QVariant::qdebugHelper(QDebug dbg) const
     return dbg;
 }
 
+#if QT_DEPRECATED_SINCE(6, 0)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+
 QDebug operator<<(QDebug dbg, const QVariant::Type p)
 {
     QDebugStateSaver saver(dbg);
@@ -2470,8 +2459,11 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
                      : "Invalid");
     return dbg;
 }
+
+QT_WARNING_POP
 #endif
 
+#endif
 
 /*! \fn template<typename T> void QVariant::setValue(T &&value)
 

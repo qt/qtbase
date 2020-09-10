@@ -128,7 +128,7 @@ void tst_QGuiVariant::constructor_invalid()
     QFETCH(uint, typeId);
     {
         QTest::ignoreMessage(QtWarningMsg, QRegularExpression("^Trying to construct an instance of an invalid type, type id:"));
-        QVariant variant(static_cast<QVariant::Type>(typeId));
+        QVariant variant{QMetaType(typeId)};
         QVERIFY(!variant.isValid());
         QCOMPARE(variant.userType(), int(QMetaType::UnknownType));
     }
@@ -655,7 +655,7 @@ void tst_QGuiVariant::debugStream_data()
         const char *tagName = QMetaType(id).name();
         if (!tagName)
             continue;
-        QTest::newRow(tagName) << QVariant(static_cast<QVariant::Type>(id)) << id;
+        QTest::newRow(tagName) << QVariant(QMetaType(id)) << id;
     }
 }
 

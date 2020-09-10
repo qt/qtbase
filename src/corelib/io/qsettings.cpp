@@ -381,7 +381,7 @@ QString QSettingsPrivate::variantToString(const QVariant &v)
 {
     QString result;
 
-    switch (v.userType()) {
+    switch (v.metaType().id()) {
         case QMetaType::UnknownType:
             result = QLatin1String("@Invalid()");
             break;
@@ -1815,8 +1815,8 @@ bool QConfFileSettingsPrivate::writeIniFile(QIODevice &device, const ParsedSetti
                 QVariant(QString("foo")).toList() returns an empty
                 list, not a list containing "foo".
             */
-            if (value.userType() == QMetaType::QStringList
-                    || (value.userType() == QMetaType::QVariantList && value.toList().size() != 1)) {
+            if (value.metaType().id() == QMetaType::QStringList
+                    || (value.metaType().id() == QMetaType::QVariantList && value.toList().size() != 1)) {
                 iniEscapedStringList(variantListToStringList(value.toList()), block);
             } else {
                 iniEscapedString(variantToString(value), block);

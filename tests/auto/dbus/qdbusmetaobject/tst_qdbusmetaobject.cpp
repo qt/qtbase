@@ -418,7 +418,7 @@ void tst_QDBusMetaObject::types()
         QCOMPARE(constructed.isUser(), expected.isUser());
         QCOMPARE(constructed.isWritable(), expected.isWritable());
         QCOMPARE(constructed.typeName(), expected.typeName());
-        QCOMPARE(constructed.type(), expected.type());
+        QCOMPARE(constructed.metaType(), expected.metaType());
         QCOMPARE(constructed.userType(), expected.userType());
     }
 }

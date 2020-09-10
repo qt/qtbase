@@ -2941,21 +2941,16 @@ const char *QMetaProperty::typeName() const
     return rawTypeNameFromTypeInfo(mobj, data.type());
 }
 
-/*!
+/*! \fn QVariant::Type QMetaProperty::type() const
+    \deprecated
+
     Returns this property's type. The return value is one
     of the values of the QVariant::Type enumeration.
 
-    \sa userType(), typeName(), name(), metaType()
+    \sa metaType().id(), typeName(), name(), metaType()
 */
-QVariant::Type QMetaProperty::type() const
-{
-    uint type = userType();
-    if (type >= QMetaType::User)
-        return QVariant::UserType;
-    return QVariant::Type(type);
-}
 
-/*!
+/*! \fn int QMetaProperty::userType() const
     \since 4.2
 
     Returns this property's user type. The return value is one
@@ -2965,12 +2960,6 @@ QVariant::Type QMetaProperty::type() const
 
     \sa type(), QMetaType, typeName(), metaType()
  */
-int QMetaProperty::userType() const
-{
-    if (!mobj)
-        return QMetaType::UnknownType;
-    return QMetaType(mobj->d.metaTypes[data.index(mobj)]).id();
-}
 
 /*!
     \since 6.0
@@ -3197,7 +3186,7 @@ bool QMetaProperty::write(QObject *object, const QVariant &value) const
     QVariant v = value;
     QMetaType t(mobj->d.metaTypes[data.index(mobj)]);
     if (t != QMetaType::fromType<QVariant>() && t != v.metaType()) {
-        if (isEnumType() && !t.metaObject() && v.userType() == QMetaType::QString) {
+        if (isEnumType() && !t.metaObject() && v.metaType().id() == QMetaType::QString) {
             // Assigning a string to a property of type Q_ENUMS (instead of Q_ENUM)
             bool ok;
             if (isFlagType())

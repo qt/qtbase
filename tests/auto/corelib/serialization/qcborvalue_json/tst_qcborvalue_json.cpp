@@ -224,7 +224,7 @@ void tst_QCborValue_Json::fromVariant()
     QCOMPARE(QCborArray::fromVariantList({variant}), QCborArray{v});
     QCOMPARE(QCborArray::fromVariantList({variant, variant}), QCborArray({v, v}));
 
-    if (variant.type() == QVariant::String) {
+    if (variant.metaType() == QMetaType(QMetaType::QString)) {
         QString s = variant.toString();
         QCOMPARE(QCborArray::fromStringList({s}), QCborArray{v});
         QCOMPARE(QCborArray::fromStringList({s, s}), QCborArray({v, v}));

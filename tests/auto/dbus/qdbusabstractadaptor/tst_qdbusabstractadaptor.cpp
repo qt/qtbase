@@ -953,7 +953,7 @@ void tst_QDBusAbstractAdaptor::readPropertiesEmptyInterface()
             continue;
         }
 
-        QCOMPARE(int(reply.value().type()), int(QVariant::String));
+        QCOMPARE(reply.value().userType(), int(QMetaType::QString));
         if (it.value().isValid())
             QCOMPARE(reply.value().toString(), it.value().toString());
     }
@@ -1479,7 +1479,7 @@ void tst_QDBusAbstractAdaptor::readPropertiesEmptyInterfacePeer()
             continue;
         }
 
-        QCOMPARE(int(reply.value().type()), int(QVariant::String));
+        QCOMPARE(int(reply.value().userType()), int(QMetaType::QString));
         if (it.value().isValid())
             QCOMPARE(reply.value().toString(), it.value().toString());
     }

@@ -64,7 +64,7 @@ QItemEditorFactory *factory = new QItemEditorFactory;
 //! [2]
 QItemEditorFactory *editorFactory = new QItemEditorFactory;
 QItemEditorCreatorBase *creator = new QStandardItemEditorCreator<MyFancyDateTimeEdit>();
-editorFactory->registerEditor(QVariant::DateType, creator);
+editorFactory->registerEditor(QMetaType::QDateTime, creator);
 //! [2]
 
 

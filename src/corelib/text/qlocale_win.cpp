@@ -519,23 +519,23 @@ QVariant QSystemLocalePrivate::toCurrencyString(const QSystemLocale::CurrencyToS
 {
     QString value;
     switch (arg.value.type()) {
-    case QVariant::Int:
+    case QMetaType::Int:
         value = QLocaleData::c()->longLongToString(
             arg.value.toInt(), -1, 10, -1, QLocale::OmitGroupSeparator);
         break;
-    case QVariant::UInt:
+    case QMetaType::UInt:
         value = QLocaleData::c()->unsLongLongToString(
             arg.value.toUInt(), -1, 10, -1, QLocale::OmitGroupSeparator);
         break;
-    case QVariant::Double:
+    case QMetaType::Double:
         value = QLocaleData::c()->doubleToString(
             arg.value.toDouble(), -1, QLocaleData::DFDecimal, -1, QLocale::OmitGroupSeparator);
         break;
-    case QVariant::LongLong:
+    case QMetaType::LongLong:
         value = QLocaleData::c()->longLongToString(
             arg.value.toLongLong(), -1, 10, -1, QLocale::OmitGroupSeparator);
         break;
-    case QVariant::ULongLong:
+    case QMetaType::ULongLong:
         value = QLocaleData::c()->unsLongLongToString(
             arg.value.toULongLong(), -1, 10, -1, QLocale::OmitGroupSeparator);
         break;

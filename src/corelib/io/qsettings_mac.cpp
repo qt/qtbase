@@ -106,8 +106,8 @@ static QCFType<CFPropertyListRef> macValue(const QVariant &value)
 {
     CFPropertyListRef result = 0;
 
-    switch (value.type()) {
-    case QVariant::ByteArray:
+    switch (value.metaType().id()) {
+    case QMetaType::QByteArray:
         {
             QByteArray ba = value.toByteArray();
             result = CFDataCreate(kCFAllocatorDefault, reinterpret_cast<const UInt8 *>(ba.data()),
@@ -115,12 +115,12 @@ static QCFType<CFPropertyListRef> macValue(const QVariant &value)
         }
         break;
     // should be same as below (look for LIST)
-    case QVariant::List:
-    case QVariant::StringList:
-    case QVariant::Polygon:
+    case QMetaType::QVariantList:
+    case QMetaType::QStringList:
+    case QMetaType::QPolygon:
         result = macList(value.toList());
         break;
-    case QVariant::Map:
+    case QMetaType::QVariantMap:
         {
             const QVariantMap &map = value.toMap();
             const int mapSize = map.size();
@@ -145,7 +145,7 @@ static QCFType<CFPropertyListRef> macValue(const QVariant &value)
                                         &kCFTypeDictionaryValueCallBacks);
         }
         break;
-    case QVariant::DateTime:
+    case QMetaType::QDateTime:
         {
             QDateTime dateTime = value.toDateTime();
             // CFDate, unlike QDateTime, doesn't store timezone information
@@ -155,30 +155,30 @@ static QCFType<CFPropertyListRef> macValue(const QVariant &value)
                 goto string_case;
         }
         break;
-    case QVariant::Bool:
+    case QMetaType::Bool:
         result = value.toBool() ? kCFBooleanTrue : kCFBooleanFalse;
         break;
-    case QVariant::Int:
-    case QVariant::UInt:
+    case QMetaType::Int:
+    case QMetaType::UInt:
         {
             int n = value.toInt();
             result = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &n);
         }
         break;
-    case QVariant::Double:
+    case QMetaType::Double:
         {
             double n = value.toDouble();
             result = CFNumberCreate(kCFAllocatorDefault, kCFNumberDoubleType, &n);
         }
         break;
-    case QVariant::LongLong:
-    case QVariant::ULongLong:
+    case QMetaType::LongLong:
+    case QMetaType::ULongLong:
         {
             qint64 n = value.toLongLong();
             result = CFNumberCreate(0, kCFNumberLongLongType, &n);
         }
         break;
-    case QVariant::String:
+    case QMetaType::QString:
     string_case:
     default:
         QString string = QSettingsPrivate::variantToString(value);
@@ -226,7 +226,7 @@ static QVariant qtValue(CFPropertyListRef cfvalue)
         bool metNonString = false;
         for (CFIndex i = 0; i < size; ++i) {
             QVariant value = qtValue(CFArrayGetValueAtIndex(cfarray, i));
-            if (value.type() != QVariant::String)
+            if (value.typeId() != QMetaType::QString)
                 metNonString = true;
             list << value;
         }

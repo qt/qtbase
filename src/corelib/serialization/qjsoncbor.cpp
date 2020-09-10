@@ -662,7 +662,7 @@ static void appendVariant(QCborContainerPrivate *d, const QVariant &variant)
 {
     // Handle strings and byte arrays directly, to avoid creating a temporary
     // dummy container to hold their data.
-    int type = variant.userType();
+    int type = variant.metaType().id();
     if (type == QMetaType::QString) {
         d->append(variant.toString());
     } else if (type == QMetaType::QByteArray) {
@@ -728,7 +728,7 @@ static void appendVariant(QCborContainerPrivate *d, const QVariant &variant)
  */
 QCborValue QCborValue::fromVariant(const QVariant &variant)
 {
-    switch (variant.userType()) {
+    switch (variant.metaType().id()) {
     case QMetaType::UnknownType:
         return {};
     case QMetaType::Nullptr:

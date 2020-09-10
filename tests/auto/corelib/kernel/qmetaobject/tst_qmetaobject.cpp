@@ -1447,7 +1447,15 @@ void tst_QMetaObject::customPropertyType()
 {
     QMetaProperty prop = metaObject()->property(metaObject()->indexOfProperty("value3"));
 
+#if QT_DEPRECATED_SINCE(6, 0)
+    QT_WARNING_PUSH
+    QT_WARNING_DISABLE_DEPRECATED
+
     QCOMPARE(prop.type(), QVariant::UserType);
+
+    QT_WARNING_POP
+#endif
+
     QCOMPARE(prop.userType(), QMetaType::fromType<MyStruct>().id());
     QCOMPARE(prop.metaType(), QMetaType::fromType<MyStruct>());
 
@@ -1455,11 +1463,11 @@ void tst_QMetaObject::customPropertyType()
     QCOMPARE(prop.userType(), QMetaType::fromName("MyStruct").id());
 
     prop = metaObject()->property(metaObject()->indexOfProperty("value4"));
-    QCOMPARE(prop.type(), QVariant::List);
+    QCOMPARE(prop.metaType().id(), QMetaType::QVariantList);
     QCOMPARE(prop.metaType(), QMetaType::fromType<QList<QVariant>>());
 
     prop = metaObject()->property(metaObject()->indexOfProperty("value5"));
-    QCOMPARE(prop.type(), QVariant::List);
+    QCOMPARE(prop.metaType().id(), QMetaType::QVariantList);
 }
 
 void tst_QMetaObject::checkScope_data()

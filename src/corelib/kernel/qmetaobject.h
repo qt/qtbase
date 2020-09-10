@@ -280,8 +280,15 @@ public:
 
     const char *name() const;
     const char *typeName() const;
-    QVariant::Type type() const;
-    int userType() const;
+#if QT_DEPRECATED_SINCE(6, 0)
+    QT_WARNING_PUSH
+    QT_WARNING_DISABLE_DEPRECATED
+    QT_DEPRECATED_VERSION_6_0
+    QVariant::Type type() const
+    { int t = userType(); return t >= QMetaType::User ? QVariant::UserType : QVariant::Type(t); }
+    QT_WARNING_POP
+#endif
+    int userType() const { return metaType().id(); }
     QMetaType metaType() const;
     int propertyIndex() const;
     int relativePropertyIndex() const;

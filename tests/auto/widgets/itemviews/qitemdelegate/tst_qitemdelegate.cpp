@@ -881,7 +881,7 @@ void tst_QItemDelegate::dateAndTimeEditorTest2()
     QCOMPARE(w.fastEdit(i1), timeEdit.data());
     timeEdit->setTime(time1);
     d->setModelData(timeEdit, &s, i1);
-    QCOMPARE(s.data(i1).type(), QVariant::Time); // ensure that we wrote a time variant.
+    QCOMPARE(s.data(i1).metaType().id(), QMetaType::QTime); // ensure that we wrote a time variant.
     QCOMPARE(s.data(i1).toTime(), time1);        // ensure that it is the correct time.
     w.doCloseEditor(timeEdit);
     QVERIFY(d->currentEditor() == 0); // should happen at doCloseEditor. We only test this once.
@@ -910,7 +910,7 @@ void tst_QItemDelegate::dateAndTimeEditorTest2()
     QCOMPARE(dateTimeEdit->dateTime(), datetime2);
     dateTimeEdit->setDateTime(datetime1);
     d->setModelData(dateTimeEdit, &s, i1);
-    QCOMPARE(s.data(i1).type(), QVariant::DateTime); // ensure that we wrote a datetime variant.
+    QCOMPARE(s.data(i1).metaType().id(), QMetaType::QDateTime); // ensure that we wrote a datetime variant.
     QCOMPARE(s.data(i1).toDateTime(), datetime1);
     w.doCloseEditor(dateTimeEdit);
 
@@ -921,7 +921,7 @@ void tst_QItemDelegate::dateAndTimeEditorTest2()
     QCOMPARE(w.fastEdit(i2), dateEdit.data());
     dateEdit->setDate(date1);
     d->setModelData(dateEdit, &s, i2);
-    QCOMPARE(s.data(i2).type(), QVariant::Date); // ensure that we wrote a time variant.
+    QCOMPARE(s.data(i2).metaType().id(), QMetaType::QDate); // ensure that we wrote a time variant.
     QCOMPARE(s.data(i2).toDate(), date1);        // ensure that it is the correct date.
     w.doCloseEditor(dateEdit);
 
@@ -1002,30 +1002,30 @@ void tst_QItemDelegate::decoration_data()
     int pm = QApplication::style()->pixelMetric(QStyle::PM_SmallIconSize);
 
     QTest::newRow("pixmap 30x30")
-        << (int)QVariant::Pixmap
+        << (int)QMetaType::QPixmap
         << QSize(30, 30)
         << QSize(30, 30);
 
     QTest::newRow("image 30x30")
-        << (int)QVariant::Image
+        << (int)QMetaType::QImage
         << QSize(30, 30)
         << QSize(30, 30);
 
 //The default engine scales pixmaps down if required, but never up. For WinCE we need bigger IconSize than 30
     QTest::newRow("icon 30x30")
-        << (int)QVariant::Icon
+        << (int)QMetaType::QIcon
         << QSize(60, 60)
         << QSize(pm, pm);
 
     QTest::newRow("color 30x30")
-        << (int)QVariant::Color
+        << (int)QMetaType::QColor
         << QSize(30, 30)
         << QSize(pm, pm);
 
     // This demands too much memory and potentially hangs. Feel free to uncomment
     // for your own testing.
 //    QTest::newRow("pixmap 30x30 big")
-//        << (int)QVariant::Pixmap
+//        << (int)QMetaType::QPixmap
 //        << QSize(1024, 1024)        // Over 1M
 //        << QSize(1024, 1024);
 }
@@ -1049,26 +1049,26 @@ void tst_QItemDelegate::decoration()
     QVERIFY(QTest::qWaitForWindowActive(&table));
 
     QVariant value;
-    switch ((QVariant::Type)type) {
-    case QVariant::Pixmap: {
+    switch (type) {
+    case QMetaType::QPixmap: {
         QPixmap pm(size);
         pm.fill(Qt::black);
         value = pm;
         break;
     }
-    case QVariant::Image: {
+    case QMetaType::QImage: {
         QImage img(size, QImage::Format_Mono);
         memset(img.bits(), 0, img.sizeInBytes());
         value = img;
         break;
     }
-    case QVariant::Icon: {
+    case QMetaType::QIcon: {
         QPixmap pm(size);
         pm.fill(Qt::black);
         value = QIcon(pm);
         break;
     }
-    case QVariant::Color:
+    case QMetaType::QColor:
         value = QColor(Qt::green);
         break;
     default:

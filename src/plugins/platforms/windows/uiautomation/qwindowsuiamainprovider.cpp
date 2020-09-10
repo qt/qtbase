@@ -164,7 +164,7 @@ void QWindowsUiaMainProvider::notifyValueChange(QAccessibleValueChangeEvent *eve
                 }
             }
         }
-        if (event->value().type() == QVariant::String) {
+        if (event->value().typeId() == QMetaType::QString) {
             if (QWindowsUiaMainProvider *provider = providerForAccessible(accessible)) {
 
                 // Tries to notify the change using UiaRaiseNotificationEvent(), which is only available on

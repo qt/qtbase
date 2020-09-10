@@ -749,7 +749,7 @@ void tst_QMetaObjectBuilder::variantProperty()
     QMetaObject *meta = builder.toMetaObject();
 
     QMetaProperty prop = meta->property(meta->propertyOffset());
-    QCOMPARE(QMetaType::Type(prop.type()), QMetaType::QVariant);
+    QCOMPARE(QMetaType::Type(prop.userType()), QMetaType::QVariant);
     QCOMPARE(QMetaType::Type(prop.userType()), QMetaType::QVariant);
     QCOMPARE(QByteArray(prop.typeName()), QByteArray("QVariant"));
 
@@ -1582,7 +1582,7 @@ void tst_QMetaObjectBuilder::usage_property()
     QScopedPointer<TestObject> testObject(new TestObject);
 
     QVariant prop = testObject->property("intProp");
-    QCOMPARE(prop.type(), QVariant::Int);
+    QCOMPARE(prop.metaType(), QMetaType(QMetaType::Int));
     QCOMPARE(prop.toInt(), testObject->intProp());
 
     QSignalSpy propChangedSpy(testObject.data(), &TestObject::intPropChanged);
@@ -1590,7 +1590,7 @@ void tst_QMetaObjectBuilder::usage_property()
     testObject->setProperty("intProp", 123);
     QCOMPARE(propChangedSpy.count(), 1);
     prop = testObject->property("intProp");
-    QCOMPARE(prop.type(), QVariant::Int);
+    QCOMPARE(prop.metaType(), QMetaType(QMetaType::Int));
     QCOMPARE(prop.toInt(), 123);
 }
 
@@ -1618,9 +1618,9 @@ void tst_QMetaObjectBuilder::usage_method()
     QVERIFY(listInvokableQRealQString.invoke(testObject.data(), Q_RETURN_ARG(QVariantList, list),
                                              Q_ARG(qreal, 123.0), Q_ARG(QString, "ciao")));
     QCOMPARE(list.size(), 2);
-    QCOMPARE(list.at(0).type(), QVariant::Type(QMetaType::QReal));
+    QCOMPARE(list.at(0).metaType(), QMetaType(QMetaType::QReal));
     QCOMPARE(list.at(0).toDouble(), double(123));
-    QCOMPARE(list.at(1).type(), QVariant::String);
+    QCOMPARE(list.at(1).metaType(), QMetaType(QMetaType::QString));
     QCOMPARE(list.at(1).toString(), QString::fromLatin1("ciao"));
 }
 

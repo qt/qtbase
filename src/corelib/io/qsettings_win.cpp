@@ -670,9 +670,9 @@ void QWinSettingsPrivate::set(const QString &uKey, const QVariant &value)
     QByteArray regValueBuff;
 
     // Determine the type
-    switch (value.type()) {
-        case QVariant::List:
-        case QVariant::StringList: {
+    switch (value.typeId()) {
+        case QMetaType::QVariantList:
+        case QMetaType::QStringList: {
             // If none of the elements contains '\0', we can use REG_MULTI_SZ, the
             // native registry string list type. Otherwise we use REG_BINARY.
             type = REG_MULTI_SZ;
@@ -700,23 +700,23 @@ void QWinSettingsPrivate::set(const QString &uKey, const QVariant &value)
             break;
         }
 
-        case QVariant::Int:
-        case QVariant::UInt: {
+        case QMetaType::Int:
+        case QMetaType::UInt: {
             type = REG_DWORD;
             qint32 i = value.toInt();
             regValueBuff = QByteArray(reinterpret_cast<const char*>(&i), sizeof(qint32));
             break;
         }
 
-        case QVariant::LongLong:
-        case QVariant::ULongLong: {
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong: {
             type = REG_QWORD;
             qint64 i = value.toLongLong();
             regValueBuff = QByteArray(reinterpret_cast<const char*>(&i), sizeof(qint64));
             break;
         }
 
-        case QVariant::ByteArray:
+        case QMetaType::QByteArray:
             Q_FALLTHROUGH();
 
         default: {

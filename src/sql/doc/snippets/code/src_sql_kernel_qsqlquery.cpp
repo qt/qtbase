@@ -73,7 +73,7 @@ ints << 1 << 2 << 3 << 4;
 q.addBindValue(ints);
 
 QVariantList names;
-names << "Harald" << "Boris" << "Trond" << QVariant(QVariant::String);
+names << "Harald" << "Boris" << "Trond" << QVariant(QMetaType::QString);
 q.addBindValue(names);
 
 if (!q.execBatch())

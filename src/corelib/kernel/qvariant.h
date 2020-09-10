@@ -99,7 +99,9 @@ inline T qvariant_cast(const QVariant &);
 class Q_CORE_EXPORT QVariant
 {
  public:
-    enum Type {
+#if QT_DEPRECATED_SINCE(6, 0)
+    enum QT_DEPRECATED_VERSION_X_6_0("Use QMetaType::Type instead.") Type
+    {
         Invalid = QMetaType::UnknownType,
         Bool = QMetaType::Bool,
         Int = QMetaType::Int,
@@ -172,10 +174,9 @@ class Q_CORE_EXPORT QVariant
         UserType = QMetaType::User,
         LastType = 0xffffffff // need this so that gcc >= 3.4 allocates 32 bits for Type
     };
-
+#endif
     QVariant() noexcept : d() {}
     ~QVariant();
-    explicit QVariant(Type type);
     explicit QVariant(QMetaType type, const void *copy = nullptr);
     QVariant(const QVariant &other);
 
@@ -241,8 +242,8 @@ class Q_CORE_EXPORT QVariant
 
     inline void swap(QVariant &other) noexcept { qSwap(d, other.d); }
 
-    Type type() const;
-    int userType() const;
+    int typeId() const { return d.typeId(); }
+    int userType() const { return d.typeId(); }
     const char *typeName() const;
     QMetaType metaType() const;
 
@@ -325,6 +326,18 @@ class Q_CORE_EXPORT QVariant
     void save(QDataStream &ds) const;
 #endif
 #if QT_DEPRECATED_SINCE(6, 0)
+    QT_WARNING_PUSH
+    QT_WARNING_DISABLE_DEPRECATED
+    QT_DEPRECATED_VERSION_X_6_0("Use the constructor taking a QMetaType instead.")
+    explicit QVariant(Type type)
+        : QVariant(QMetaType(int(type)))
+    {}
+    QT_DEPRECATED_VERSION_X_6_0("Use metaType().")
+    Type type() const
+    {
+        int type = d.typeId();
+        return type >= QMetaType::User ? UserType : static_cast<Type>(type);
+    }
     QT_DEPRECATED_VERSION_6_0
     static const char *typeToName(int typeId)
     { return QMetaType(typeId).name(); }
@@ -334,6 +347,7 @@ class Q_CORE_EXPORT QVariant
         int metaType = QMetaType::fromName(name).id();
         return metaType <= int(UserType) ? QVariant::Type(metaType) : UserType;
     }
+    QT_WARNING_POP
 #endif
 
     void *data();
@@ -567,8 +581,27 @@ inline bool QVariant::isValid() const
 #ifndef QT_NO_DATASTREAM
 Q_CORE_EXPORT QDataStream& operator>> (QDataStream& s, QVariant& p);
 Q_CORE_EXPORT QDataStream& operator<< (QDataStream& s, const QVariant& p);
-Q_CORE_EXPORT QDataStream& operator>> (QDataStream& s, QVariant::Type& p);
-Q_CORE_EXPORT QDataStream& operator<< (QDataStream& s, const QVariant::Type p);
+
+#if QT_DEPRECATED_SINCE(6, 0)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+QT_DEPRECATED_VERSION_6_0
+inline QDataStream& operator>> (QDataStream& s, QVariant::Type &p)
+{
+    quint32 u;
+    s >> u;
+    p = static_cast<QVariant::Type>(u);
+    return s;
+}
+QT_DEPRECATED_VERSION_6_0
+inline QDataStream& operator<< (QDataStream& s, const QVariant::Type p)
+{
+    s << static_cast<quint32>(p);
+    return s;
+}
+QT_WARNING_POP
+#endif
+
 #endif
 
 inline bool QVariant::isDetached() const
@@ -597,7 +630,7 @@ template<typename T> inline T qvariant_cast(const QVariant &v)
 
 template<> inline QVariant qvariant_cast<QVariant>(const QVariant &v)
 {
-    if (v.userType() == QMetaType::QVariant)
+    if (v.metaType().id() == QMetaType::QVariant)
         return *reinterpret_cast<const QVariant *>(v.constData());
     return v;
 }
@@ -605,7 +638,13 @@ template<> inline QVariant qvariant_cast<QVariant>(const QVariant &v)
 #endif
 
 #ifndef QT_NO_DEBUG_STREAM
+#if QT_DEPRECATED_SINCE(6, 0)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+QT_DEPRECATED_VERSION_6_0
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QVariant::Type);
+QT_WARNING_POP
+#endif
 #endif
 
 namespace QtPrivate {

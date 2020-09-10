@@ -71,7 +71,7 @@ v = QVariant(QStringList());
 
 //! [1]
 QVariant x, y(QString()), z(QString(""));
-x.convert(QVariant::Int);
+x.convert(QMetaType::Int);
 // x.isNull() == true
 // y.isNull() == true, z.isNull() == false
 //! [1]

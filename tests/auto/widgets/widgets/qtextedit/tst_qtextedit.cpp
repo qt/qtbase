@@ -2545,7 +2545,7 @@ void tst_QTextEdit::inputMethodCursorRect()
     ed->moveCursor(QTextCursor::End);
     const QRectF cursorRect = ed->cursorRect();
     const QVariant cursorRectV = ed->inputMethodQuery(Qt::ImCursorRectangle);
-    QCOMPARE(cursorRectV.type(), QVariant::RectF);
+    QCOMPARE(cursorRectV.userType(), QMetaType::QRectF);
     QCOMPARE(cursorRectV.toRect(), cursorRect.toRect());
 }
 

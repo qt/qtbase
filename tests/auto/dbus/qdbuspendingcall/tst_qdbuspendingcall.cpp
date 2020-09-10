@@ -179,7 +179,7 @@ void tst_QDBusPendingCall::waitForFinished()
     QCOMPARE(args.count(), 1);
 
     const QVariant &arg = args.at(0);
-    QCOMPARE(arg.type(), QVariant::StringList);
+    QCOMPARE(arg.userType(), QMetaType::QStringList);
     QVERIFY(arg.toStringList().contains(conn.baseService()));
 }
 

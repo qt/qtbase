@@ -1790,7 +1790,7 @@ void tst_QDoubleSpinBox::stepModifierPressAndHold()
     QTest::mouseRelease(&spin, Qt::LeftButton, modifiers, buttonRect.center());
 
     const auto value = spy.last().at(0);
-    QVERIFY(value.type() == QVariant::Double);
+    QVERIFY(value.userType() == QMetaType::Double);
     QCOMPARE(value.toDouble(), spy.length() * expectedStepModifier);
 }
 

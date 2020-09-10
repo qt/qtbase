@@ -311,7 +311,7 @@ void tst_Cmptest::compare_tostring_data()
     ;
 
     QTest::newRow("null hash, invalid")
-        << QVariant(QVariant::Hash)
+        << QVariant(QMetaType(QMetaType::QVariantHash))
         << QVariant()
     ;
 

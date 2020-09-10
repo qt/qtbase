@@ -364,15 +364,15 @@ bool QPSQLResultPrivate::processResults()
     return false;
 }
 
-static QVariant::Type qDecodePSQLType(int t)
+static QMetaType qDecodePSQLType(int t)
 {
-    QVariant::Type type = QVariant::Invalid;
+    int type = QMetaType::UnknownType;
     switch (t) {
     case QBOOLOID:
-        type = QVariant::Bool;
+        type = QMetaType::Bool;
         break;
     case QINT8OID:
-        type = QVariant::LongLong;
+        type = QMetaType::LongLong;
         break;
     case QINT2OID:
     case QINT4OID:
@@ -380,34 +380,34 @@ static QVariant::Type qDecodePSQLType(int t)
     case QREGPROCOID:
     case QXIDOID:
     case QCIDOID:
-        type = QVariant::Int;
+        type = QMetaType::Int;
         break;
     case QNUMERICOID:
     case QFLOAT4OID:
     case QFLOAT8OID:
-        type = QVariant::Double;
+        type = QMetaType::Double;
         break;
     case QABSTIMEOID:
     case QRELTIMEOID:
     case QDATEOID:
-        type = QVariant::Date;
+        type = QMetaType::QDate;
         break;
     case QTIMEOID:
     case QTIMETZOID:
-        type = QVariant::Time;
+        type = QMetaType::QTime;
         break;
     case QTIMESTAMPOID:
     case QTIMESTAMPTZOID:
-        type = QVariant::DateTime;
+        type = QMetaType::QDateTime;
         break;
     case QBYTEAOID:
-        type = QVariant::ByteArray;
+        type = QMetaType::QByteArray;
         break;
     default:
-        type = QVariant::String;
+        type = QMetaType::QString;
         break;
     }
-    return type;
+    return QMetaType(type);
 }
 
 void QPSQLResultPrivate::deallocatePreparedStmt()
@@ -632,23 +632,23 @@ QVariant QPSQLResult::data(int i)
     }
     const int currentRow = isForwardOnly() ? 0 : at();
     int ptype = PQftype(d->result, i);
-    QVariant::Type type = qDecodePSQLType(ptype);
+    QMetaType type = qDecodePSQLType(ptype);
     if (PQgetisnull(d->result, currentRow, i))
-        return QVariant(QMetaType(type), nullptr);
+        return QVariant(type, nullptr);
     const char *val = PQgetvalue(d->result, currentRow, i);
-    switch (type) {
-    case QVariant::Bool:
+    switch (type.id()) {
+    case QMetaType::Bool:
         return QVariant((bool)(val[0] == 't'));
-    case QVariant::String:
+    case QMetaType::QString:
         return d->drv_d_func()->isUtf8 ? QString::fromUtf8(val) : QString::fromLatin1(val);
-    case QVariant::LongLong:
+    case QMetaType::LongLong:
         if (val[0] == '-')
             return QByteArray::fromRawData(val, qstrlen(val)).toLongLong();
         else
             return QByteArray::fromRawData(val, qstrlen(val)).toULongLong();
-    case QVariant::Int:
+    case QMetaType::Int:
         return atoi(val);
-    case QVariant::Double: {
+    case QMetaType::Double: {
         if (ptype == QNUMERICOID) {
             if (numericalPrecisionPolicy() == QSql::HighPrecision)
                 return QString::fromLatin1(val);
@@ -675,26 +675,26 @@ QVariant QPSQLResult::data(int i)
         }
         return dbl;
     }
-    case QVariant::Date:
+    case QMetaType::QDate:
 #if QT_CONFIG(datestring)
         return QVariant(QDate::fromString(QString::fromLatin1(val), Qt::ISODate));
 #else
         return QVariant(QString::fromLatin1(val));
 #endif
-    case QVariant::Time:
+    case QMetaType::QTime:
 #if QT_CONFIG(datestring)
         return QVariant(QTime::fromString(QString::fromLatin1(val), Qt::ISODate));
 #else
         return QVariant(QString::fromLatin1(val));
 #endif
-    case QVariant::DateTime:
+    case QMetaType::QDateTime:
 #if QT_CONFIG(datestring)
         return QVariant(QDateTime::fromString(QString::fromLatin1(val),
                                               Qt::ISODate).toLocalTime());
 #else
         return QVariant(QString::fromLatin1(val));
 #endif
-    case QVariant::ByteArray: {
+    case QMetaType::QByteArray: {
         size_t len;
         unsigned char *data = PQunescapeBytea((const unsigned char*)val, &len);
         QByteArray ba(reinterpret_cast<const char *>(data), int(len));
@@ -702,7 +702,6 @@ QVariant QPSQLResult::data(int i)
         return QVariant(ba);
     }
     default:
-    case QVariant::Invalid:
         qWarning("QPSQLResult::data: unknown data type");
     }
     return QVariant();
@@ -805,7 +804,7 @@ QSqlRecord QPSQLResult::record() const
             f.setTableName(QString());
         }
         int ptype = PQftype(d->result, i);
-        f.setMetaType(QMetaType(qDecodePSQLType(ptype)));
+        f.setMetaType(qDecodePSQLType(ptype));
         f.setValue(QVariant(f.metaType())); // only set in setType() when it's invalid before
         int len = PQfsize(d->result, i);
         int precision = PQfmod(d->result, i);
@@ -1477,7 +1476,7 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
         r = nullStr();
     } else {
         switch (field.metaType().id()) {
-        case QVariant::DateTime:
+        case QMetaType::QDateTime:
 #if QT_CONFIG(datestring)
             if (field.value().toDateTime().isValid()) {
                 // we force the value to be considered with a timezone information, and we force it to be UTC
@@ -1493,7 +1492,7 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
             r = nullStr();
 #endif // datestring
             break;
-        case QVariant::Time:
+        case QMetaType::QTime:
 #if QT_CONFIG(datestring)
             if (field.value().toTime().isValid()) {
                 r = QLatin1Char('\'') + field.value().toTime().toString(u"hh:mm:ss.zzz") + QLatin1Char('\'');
@@ -1503,18 +1502,18 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
                 r = nullStr();
             }
             break;
-        case QVariant::String:
+        case QMetaType::QString:
             r = QSqlDriver::formatValue(field, trimStrings);
             if (d->hasBackslashEscape)
                 r.replace(QLatin1Char('\\'), QLatin1String("\\\\"));
             break;
-        case QVariant::Bool:
+        case QMetaType::Bool:
             if (field.value().toBool())
                 r = QStringLiteral("TRUE");
             else
                 r = QStringLiteral("FALSE");
             break;
-        case QVariant::ByteArray: {
+        case QMetaType::QByteArray: {
             QByteArray ba(field.value().toByteArray());
             size_t len;
 #if defined PG_VERSION_NUM && PG_VERSION_NUM-0 >= 80200
@@ -1533,12 +1532,12 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
             if (r.isEmpty())
                 r = QSqlDriver::formatValue(field, trimStrings);
             break;
-        case QVariant::Double:
+        case QMetaType::Double:
             assignSpecialPsqlFloatValue(field.value().toDouble(), &r);
             if (r.isEmpty())
                 r = QSqlDriver::formatValue(field, trimStrings);
             break;
-        case QVariant::Uuid:
+        case QMetaType::QUuid:
             r = QLatin1Char('\'') + field.value().toString() + QLatin1Char('\'');
             break;
         default:

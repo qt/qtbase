@@ -498,7 +498,7 @@ void tst_QNetworkRequest::rawHeaderParsing()
     QCOMPARE(QString(request.rawHeader(rawHeader.toLatin1())), rawValue);
 
     QCOMPARE(request.header(cookedHeader).isNull(), !success);
-    if (cookedValue.type() != QVariant::UserType)
+    if (cookedValue.metaType().id() < QMetaType::User)
         QCOMPARE(request.header(cookedHeader), cookedValue);
     else if (cookedValue.userType() == qMetaTypeId<QList<QNetworkCookie> >())
         QCOMPARE(qvariant_cast<QList<QNetworkCookie> >(request.header(cookedHeader)),

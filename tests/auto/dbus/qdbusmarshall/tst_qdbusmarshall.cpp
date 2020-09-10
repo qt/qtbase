@@ -861,8 +861,7 @@ void tst_QDBusMarshall::sendArgument()
     QVERIFY(arg.atEnd());
     QCOMPARE(arg.currentType(), QDBusArgument::UnknownType);
 
-    if (value.type() != QVariant::UserType)
-        QCOMPARE(extracted, value);
+    QCOMPARE(extracted, value);
 }
 
 void tst_QDBusMarshall::sendSignalErrors()
@@ -1272,7 +1271,7 @@ void tst_QDBusMarshall::demarshallPrimitives()
         QCOMPARE(receiveArg.currentSignature(), sig);
 
         const QVariant receiveValue = demarshallPrimitiveAs(typeIndex, receiveArg);
-        if (receiveValue.type() == value.type()) {
+        if (receiveValue.metaType() == value.metaType()) {
             // Value type is the same, compare the values
             QCOMPARE(receiveValue, value);
             QVERIFY(receiveArg.atEnd());

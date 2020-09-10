@@ -154,7 +154,7 @@ static void dumpConfiguration(QTextStream &str)
     // On Windows, this will provide addition GPU info similar to the output of dxdiag.
     if (QGuiApplication::platformNativeInterface()) {
         const QVariant gpuInfoV = QGuiApplication::platformNativeInterface()->property("gpu");
-        if (gpuInfoV.type() == QVariant::Map) {
+        if (gpuInfoV.userType() == QMetaType::QVariantMap) {
             const QString description = gpuInfoV.toMap().value(QStringLiteral("printable")).toString();
             if (!description.isEmpty())
                 str << "\nGPU:\n" << description << "\n\n";

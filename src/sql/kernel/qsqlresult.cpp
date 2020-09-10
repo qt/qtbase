@@ -935,7 +935,7 @@ void QSqlResult::virtual_hook(int, void *)
     contain equal amount of values (rows).
 
     NULL values are passed in as typed QVariants, for example
-    \c {QVariant(QVariant::Int)} for an integer NULL value.
+    \c {QVariant(QMetaType::Int)} for an integer NULL value.
 
     Example:
 

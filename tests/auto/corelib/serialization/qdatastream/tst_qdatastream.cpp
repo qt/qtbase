@@ -578,7 +578,7 @@ void tst_QDataStream::readQRegularExpression(QDataStream *s)
     *s >> R;
     QCOMPARE(R, test);
     *s >> V;
-    QCOMPARE(V.type(), QVariant::RegularExpression);
+    QCOMPARE(V.userType(), QMetaType::QRegularExpression);
     QCOMPARE(V.toRegularExpression(), test);
 }
 #endif //QT_CONFIG(regularexpression)

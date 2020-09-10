@@ -4601,7 +4601,7 @@ void tst_QDateTimeEdit::stepModifierPressAndHold()
     QTest::mouseRelease(&edit, Qt::LeftButton, modifiers, buttonRect.center());
 
     const auto value = spy.last().at(0);
-    QVERIFY(value.type() == QVariant::Date);
+    QVERIFY(value.userType() == QMetaType::QDate);
     const QDate expectedDate = startDate.addYears(spy.length() *
                                                   expectedStepModifier);
     QCOMPARE(value.toDate(), expectedDate);
