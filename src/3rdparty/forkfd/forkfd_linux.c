@@ -147,7 +147,7 @@ int system_forkfd(int flags, pid_t *ppid, int *system)
     }
 
     *system = 1;
-    unsigned long cloneflags = CLONE_PIDFD;
+    unsigned long cloneflags = CLONE_PIDFD | SIGCHLD;
     pid = sys_clone(cloneflags, &pidfd);
     if (ppid)
         *ppid = pid;
@@ -171,7 +171,7 @@ int system_forkfd_wait(int ffd, struct forkfd_info *info, int ffdoptions, struct
 {
     siginfo_t si;
     int ret;
-    int options = __WALL | convertForkfdWaitFlagsToWaitFlags(ffdoptions);
+    int options = convertForkfdWaitFlagsToWaitFlags(ffdoptions);
 
     if ((options & WNOHANG) == 0) {
         /* check if the file descriptor is non-blocking */
