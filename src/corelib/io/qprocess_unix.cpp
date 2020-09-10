@@ -504,6 +504,7 @@ void QProcessPrivate::startProcess()
     }
 
     pid = qint64(childPid);
+    Q_ASSERT(pid > 0);
 
     // parent
     // close the ends we don't use and make all pipes non-blocking
@@ -691,18 +692,18 @@ bool QProcessPrivate::writeToStdin()
 void QProcessPrivate::terminateProcess()
 {
 #if defined (QPROCESS_DEBUG)
-    qDebug("QProcessPrivate::terminateProcess()");
+    qDebug("QProcessPrivate::terminateProcess() pid=%jd", intmax_t(pid));
 #endif
-    if (pid)
+    if (pid > 0)
         ::kill(pid_t(pid), SIGTERM);
 }
 
 void QProcessPrivate::killProcess()
 {
 #if defined (QPROCESS_DEBUG)
-    qDebug("QProcessPrivate::killProcess()");
+    qDebug("QProcessPrivate::killProcess() pid=%jd", intmax_t(pid));
 #endif
-    if (pid)
+    if (pid > 0)
         ::kill(pid_t(pid), SIGKILL);
 }
 
