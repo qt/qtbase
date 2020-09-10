@@ -50,7 +50,7 @@ QWasmTheme::~QWasmTheme()
 QVariant QWasmTheme::themeHint(ThemeHint hint) const
 {
     if (hint == QPlatformTheme::StyleNames)
-        return QVariant(QStringList() << QLatin1String("fusion"));
+        return QVariant(QStringList() << QLatin1String("Fusion"));
     return QPlatformTheme::themeHint(hint);
 }
 

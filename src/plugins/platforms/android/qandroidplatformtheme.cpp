@@ -464,7 +464,7 @@ QVariant QAndroidPlatformTheme::themeHint(ThemeHint hint) const
                 && m_androidStyleData) {
             return QStringList(QLatin1String("android"));
         }
-        return QStringList(QLatin1String("fusion"));
+        return QStringList(QLatin1String("Fusion"));
     case DialogButtonBoxLayout:
         return QVariant(QPlatformDialogHelper::AndroidLayout);
     case MouseDoubleClickDistance:

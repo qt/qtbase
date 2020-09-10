@@ -309,7 +309,7 @@ void QKdeThemePrivate::refresh()
     styleNames.clear();
     if (kdeVersion >= 5)
         styleNames << QStringLiteral("breeze");
-    styleNames << QStringLiteral("Oxygen") << QStringLiteral("fusion") << QStringLiteral("windows");
+    styleNames << QStringLiteral("Oxygen") << QStringLiteral("Fusion") << QStringLiteral("windows");
     if (kdeVersion >= 5)
         iconFallbackThemeName = iconThemeName = QStringLiteral("breeze");
     else
@@ -746,7 +746,7 @@ QVariant QGnomeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
         return QVariant::fromValue(availableXdgFileIconSizes());
     case QPlatformTheme::StyleNames: {
         QStringList styleNames;
-        styleNames << QStringLiteral("fusion") << QStringLiteral("windows");
+        styleNames << QStringLiteral("Fusion") << QStringLiteral("windows");
         return QVariant(styleNames);
     }
     case QPlatformTheme::KeyboardScheme:

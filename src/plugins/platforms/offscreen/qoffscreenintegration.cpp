@@ -173,7 +173,7 @@ public:
     {
         switch (h) {
         case StyleNames:
-            return QVariant(QStringList(QStringLiteral("fusion")));
+            return QVariant(QStringList(QStringLiteral("Fusion")));
         default:
             break;
         }

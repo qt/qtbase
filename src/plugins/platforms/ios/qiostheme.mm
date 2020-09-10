@@ -160,7 +160,7 @@ QVariant QIOSTheme::themeHint(ThemeHint hint) const
 {
     switch (hint) {
     case QPlatformTheme::StyleNames:
-        return QStringList(QStringLiteral("fusion"));
+        return QStringList(QStringLiteral("Fusion"));
     case KeyboardScheme:
         return QVariant(int(MacKeyboardScheme));
     default:
