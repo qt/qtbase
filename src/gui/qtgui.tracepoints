@@ -27,7 +27,7 @@ QImage_scaledToHeight_entry(int h, Qt::TransformationMode mode)
 QImage_scaledToHeight_exit()
 QImage_rgbSwapped_helper_entry()
 QImage_rgbSwapped_helper_exit()
-QImage_transformed_entry(const QTransform &matrix, Qt::TransformationMode mode )
+QImage_transformed_entry(const QTransform &matrix, Qt::TransformationMode mode)
 QImage_transformed_exit()
 
 QPixmap_scaled_entry(const QSize& s, Qt::AspectRatioMode aspectMode, Qt::TransformationMode mode)
