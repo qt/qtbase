@@ -59,7 +59,7 @@ class Q_GUI_EXPORT QPageSize
 public:
 
     enum PageSizeId {
-        // Existing Qt sizes
+        // Old Qt sizes
         Letter,
         Legal,
         Executive,
@@ -73,17 +73,18 @@ public:
         A7,
         A8,
         A9,
+        A10,
         B0,
         B1,
-        B10,
         B2,
         B3,
         B4,
-        B6,
         B5,
+        B6,
         B7,
         B8,
         B9,
+        B10,
         C5E,
         Comm10E,
         DLE,
@@ -93,7 +94,6 @@ public:
         Custom,
 
         // New values derived from PPD standard
-        A10,
         A3Extra,
         A4Extra,
         A4Plus,
@@ -196,10 +196,8 @@ public:
         EnvelopePrc10,
         EnvelopeYou4,
 
-        // Last item, with commonly used synynoms
+        // Last item
         LastPageSize = EnvelopeYou4,
-        NPageSize = LastPageSize,
-        NPaperSize = LastPageSize,
 
         // Convenience overloads for naming consistency
         AnsiA = Letter,
