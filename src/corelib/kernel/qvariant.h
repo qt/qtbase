@@ -662,6 +662,55 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, const QVariant &);
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QVariant::Type);
 #endif
 
+template<typename Pointer>
+class Q_CORE_EXPORT QVariantRef
+{
+private:
+    const Pointer *m_pointer = nullptr;
+
+public:
+    explicit QVariantRef(const Pointer *reference) : m_pointer(reference) {}
+    QVariantRef(const QVariantRef &) = default;
+    QVariantRef(QVariantRef &&) = default;
+    ~QVariantRef() = default;
+
+    operator QVariant() const;
+    QVariantRef &operator=(const QVariant &value);
+    QVariantRef &operator=(const QVariantRef &value) { return operator=(QVariant(value)); }
+    QVariantRef &operator=(QVariantRef &&value) { return operator=(QVariant(value)); }
+
+    friend void swap(QVariantRef a,  QVariantRef b)
+    {
+        QVariant tmp = a;
+        a = b;
+        b = std::move(tmp);
+    }
+};
+
+class Q_CORE_EXPORT QVariantConstPointer
+{
+private:
+    QVariant m_variant;
+
+public:
+    explicit QVariantConstPointer(QVariant variant);
+
+    QVariant operator*() const;
+    const QVariant *operator->() const;
+};
+
+template<typename Pointer>
+class Q_CORE_EXPORT QVariantPointer
+{
+private:
+    const Pointer *m_pointer = nullptr;
+
+public:
+    explicit QVariantPointer(const Pointer *pointer) : m_pointer(pointer) {}
+    QVariantRef<Pointer> operator*() const { return QVariantRef<Pointer>(m_pointer); }
+    Pointer operator->() const { return *m_pointer; }
+};
+
 QT_END_NAMESPACE
 
 #endif // QVARIANT_H

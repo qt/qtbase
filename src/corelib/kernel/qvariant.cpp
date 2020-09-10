@@ -2958,4 +2958,113 @@ QAssociativeIterable::const_iterator QAssociativeIterable::const_iterator::opera
     return const_iterator(impl, new QAtomicInt(0));
 }
 
+/*!
+    \class QVariantRef
+    \since 6.0
+    \inmodule QtCore
+    \brief The QVariantRef acts as a non-const reference to a QVariant.
+
+    As the generic iterators don't actually instantiate a QVariant on each
+    step, they cannot return a reference to one from operator*(). QVariantRef
+    provides the same functionality as an actual reference to a QVariant would,
+    but is backed by a pointer given as template parameter. The template is
+    implemented for pointers of type QSequentialIterator and
+    QAssociativeIterator.
+*/
+
+/*!
+    \fn QVariantRef::QVariantRef(const Pointer *pointer)
+
+    Creates a QVariantRef from an \a pointer.
+ */
+
+/*!
+    \fn QVariantRef &QVariantRef::operator=(const QVariantRef &value)
+
+    Assigns a new \a value to the value pointed to by the pointer this
+    QVariantRef refers to.
+ */
+
+/*!
+    \fn QVariantRef &QVariantRef::operator=(QVariantRef &&value)
+
+    Assigns a new \a value to the value pointed to by the pointer this
+    QVariantRef refers to.
+*/
+
+/*!
+    \fn void swap(QVariantRef a, QVariantRef b)
+
+    Swaps the values pointed to by the pointers the QVariantRefs
+    \a a and \a b refer to.
+*/
+
+/*!
+    \class QVariantConstPointer
+    \since 6.0
+    \inmodule QtCore
+    \brief Emulated const pointer to QVariant based on a pointer
+
+    QVariantConstPointer wraps a QVariant and returns it from its operator*().
+    This makes it suitable as replacement for an actual const pointer. We cannot
+    return an actual const pointer from generic iterators as the iterators don't
+    hold an actual QVariant.
+*/
+
+/*!
+    Constructs a QVariantConstPointer from a \a variant.
+ */
+QVariantConstPointer::QVariantConstPointer(QVariant variant)
+    : m_variant(std::move(variant))
+{
+}
+
+/*!
+    Dereferences the QVariantConstPointer to retrieve its internal QVariant.
+ */
+QVariant QVariantConstPointer::operator*() const
+{
+    return m_variant;
+}
+
+/*!
+    Returns a const pointer to the QVariant, conforming to the
+    conventions for operator->().
+ */
+const QVariant *QVariantConstPointer::operator->() const
+{
+    return &m_variant;
+}
+
+/*!
+    \class QVariantPointer
+    \since 6.0
+    \inmodule QtCore
+    \brief Emulated pointer to QVariant based on a pointer
+
+    QVariantConstPointer wraps a pointer and returns QVariantRef to it from its
+    operator*(). This makes it suitable as replacement for an actual pointer. We
+    cannot return an actual pointer from generic iterators as the iterators don't
+    hold an actual QVariant.
+*/
+
+/*!
+    \fn QVariantPointer::QVariantPointer(const Pointer *pointer)
+
+    Constructs a QVariantPointer from the given \a pointer.
+ */
+
+/*!
+    \fn QVariantRef QVariantPointer::operator*() const
+
+    Dereferences the QVariantPointer to a QVariantRef.
+ */
+
+/*!
+    \fn Pointer QVariantPointer::operator->() const
+
+    Dereferences and returns the pointer. The pointer is expected to also
+    implement operator->().
+ */
+
 QT_END_NAMESPACE
