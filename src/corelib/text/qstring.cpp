@@ -2974,10 +2974,8 @@ QString &QString::remove(qsizetype pos, qsizetype len)
         resize(pos); // truncate
     } else if (len > 0) {
         detach();
-        memmove(d.data() + pos, d.data() + pos + len,
-                (d.size - pos - len) * sizeof(QChar));
-        d.size -= len;
-        d.data()[d.size] = '\0';
+        d->erase(d.begin() + pos, d.begin() + pos + len);
+        d.data()[d.size] = u'\0';
     }
     return *this;
 }
