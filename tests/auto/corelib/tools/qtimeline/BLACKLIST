@@ -1,5 +1,5 @@
 [interpolation]
-windows-10 msvc-2015
+windows
 osx
 [frameRate]
 macos
