@@ -1144,7 +1144,7 @@ void QTextBrowser::paintEvent(QPaintEvent *e)
     depending on the resource type:
 
     \table
-    \header \li ResourceType  \li QVariant::Type
+    \header \li ResourceType  \li QMetaType::Type
     \row    \li QTextDocument::HtmlResource  \li QString or QByteArray
     \row    \li QTextDocument::ImageResource \li QImage, QPixmap or QByteArray
     \row    \li QTextDocument::StyleSheetResource \li QString or QByteArray
