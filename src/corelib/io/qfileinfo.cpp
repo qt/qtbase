@@ -1512,6 +1512,7 @@ void QFileInfo::setCaching(bool enable)
 
 /*!
     Reads all attributes from the file system.
+    \since 6.0
 
     This is useful when information about the file system is collected in a
     worker thread, and then passed to the UI in the form of caching QFileInfo
