@@ -105,28 +105,40 @@ void tst_QElapsedTimer::basics()
 
 void tst_QElapsedTimer::elapsed()
 {
+    qint64 nsecs = 0;
+    qint64 msecs = 0;
+    bool expired1 = false;
+    bool expired8 = false;
+    bool expiredInf = false;
+    qint64 elapsed = 0;
+    bool timerExecuted = false;
+
     QElapsedTimer t1;
     t1.start();
 
-    QTest::qSleep(2*minResolution);
+    QTimer::singleShot(2 * minResolution, Qt::PreciseTimer, [&](){
+        nsecs = t1.nsecsElapsed();
+        msecs = t1.elapsed();
+        expired1 = t1.hasExpired(minResolution);
+        expired8 = t1.hasExpired(8 * minResolution);
+        expiredInf = t1.hasExpired(-1);
+        elapsed = t1.restart();
+        timerExecuted = true;
+    });
 
-    auto nsecs = t1.nsecsElapsed();
-    auto msecs = t1.elapsed();
+    QTRY_VERIFY_WITH_TIMEOUT(timerExecuted, 4 * minResolution);
+
     QVERIFY(nsecs > 0);
     QVERIFY(msecs > 0);
     // the number of elapsed nanoseconds and milliseconds should match
     QVERIFY(nsecs - msecs * 1000000 < 1000000);
 
-    if (msecs > 8 * minResolution)
-        QSKIP("Sampling timer took too long, aborting test");
+    QVERIFY(expired1);
+    QVERIFY(!expired8);
+    QVERIFY(!expiredInf);
 
-    QVERIFY(t1.hasExpired(minResolution));
-    QVERIFY(!t1.hasExpired(8*minResolution));
-    QVERIFY(!t1.hasExpired(-1));
-
-    qint64 elapsed = t1.restart();
     QVERIFY(elapsed >= msecs);
-    QVERIFY(elapsed < msecs + 3*minResolution);
+    QVERIFY(elapsed < msecs + 3 * minResolution);
 }
 
 void tst_QElapsedTimer::msecsTo()
