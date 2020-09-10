@@ -3499,7 +3499,11 @@ void tst_QNetworkReply::ioGetFromHttpWithAuth()
     QNetworkRequest request(url);
     {
         QNetworkReplyPtr reply1(manager.get(request));
-        QNetworkReplyPtr reply2(manager.get(request));
+        QUrl copy = url;
+        copy.setUserName(QString());
+        copy.setPassword(QString());
+        QNetworkRequest request2(copy);
+        QNetworkReplyPtr reply2(manager.get(request2));
         DataReader reader1(reply1);
         DataReader reader2(reply2);
         QSignalSpy finishedspy(reply1.data(), SIGNAL(finished()));
