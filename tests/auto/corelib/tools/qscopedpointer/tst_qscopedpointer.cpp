@@ -160,7 +160,7 @@ public:
 class SubClass : public AbstractClass
 {
 public:
-    virtual int member() const
+    virtual int member() const override
     {
         return 5;
     }

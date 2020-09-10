@@ -72,13 +72,13 @@ public:
         { return QRectF(); }
 
     // QGraphicsLayoutItem::setGeometry is a pure virtual function
-    void setGeometry(QRectF const&) {}
+    void setGeometry(QRectF const&) override {}
 
     // QGraphicsLayoutItem::sizeHint is a pure virtual function
-    QSizeF sizeHint(Qt::SizeHint, QSizeF const& = QSizeF()) const
+    QSizeF sizeHint(Qt::SizeHint, QSizeF const& = QSizeF()) const override
         { return QSizeF(); }
 
-    void updateGeometry()
+    void updateGeometry() override
         { updateGeometryCalled++; QGraphicsLayoutItem::updateGeometry(); }
     int updateGeometryCalled;
 

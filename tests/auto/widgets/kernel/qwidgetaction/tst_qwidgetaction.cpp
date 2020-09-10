@@ -212,7 +212,7 @@ public:
     QList<QWidget *> createdWidgets() const { return QWidgetAction::createdWidgets(); }
 
 protected:
-    virtual QWidget *createWidget(QWidget *parent);
+    virtual QWidget *createWidget(QWidget *parent) override;
 };
 
 QWidget *ComboAction::createWidget(QWidget *parent)
@@ -396,7 +396,7 @@ class CrashedAction : public QWidgetAction
 public:
     inline CrashedAction(QObject *parent) : QWidgetAction(parent) { }
 
-    virtual QWidget *createWidget(QWidget *parent) {
+    virtual QWidget *createWidget(QWidget *parent) override {
         return new QWidget(parent);
     }
 };

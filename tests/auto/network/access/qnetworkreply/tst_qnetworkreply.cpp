@@ -616,7 +616,7 @@ public:
     }
 
 protected:
-    void incomingConnection(qintptr socketDescriptor)
+    void incomingConnection(qintptr socketDescriptor) override
     {
         //qDebug() << "incomingConnection" << socketDescriptor << "doSsl:" << doSsl << "ipv6:" << ipv6;
 #ifndef QT_NO_SSL
@@ -767,7 +767,7 @@ public:
         lastQuery = QNetworkProxyQuery();
     }
 
-    virtual QList<QNetworkProxy> queryProxy(const QNetworkProxyQuery &query)
+    virtual QList<QNetworkProxy> queryProxy(const QNetworkProxyQuery &query) override
     {
         lastQuery = query;
         ++callCount;
@@ -785,17 +785,17 @@ public:
 
     MyMemoryCache(QObject *parent) : QAbstractNetworkCache(parent) {}
 
-    QNetworkCacheMetaData metaData(const QUrl &url)
+    QNetworkCacheMetaData metaData(const QUrl &url) override
     {
         return cache.value(url.toEncoded()).first;
     }
 
-    void updateMetaData(const QNetworkCacheMetaData &metaData)
+    void updateMetaData(const QNetworkCacheMetaData &metaData) override
     {
         cache[metaData.url().toEncoded()].first = metaData;
     }
 
-    QIODevice *data(const QUrl &url)
+    QIODevice *data(const QUrl &url) override
     {
         CacheData::ConstIterator it = cache.find(url.toEncoded());
         if (it == cache.constEnd())
@@ -807,13 +807,13 @@ public:
         return io;
     }
 
-    bool remove(const QUrl &url)
+    bool remove(const QUrl &url) override
     {
         cache.remove(url.toEncoded());
         return true;
     }
 
-    qint64 cacheSize() const
+    qint64 cacheSize() const override
     {
         qint64 total = 0;
         foreach (const CachedContent &entry, cache)
@@ -821,17 +821,17 @@ public:
         return total;
     }
 
-    QIODevice *prepare(const QNetworkCacheMetaData &)
+    QIODevice *prepare(const QNetworkCacheMetaData &) override
     {
         qFatal("%s: Should not have tried to add to the cache", Q_FUNC_INFO);
         return 0;
     }
-    void insert(QIODevice *)
+    void insert(QIODevice *) override
     {
         qFatal("%s: Should not have tried to add to the cache", Q_FUNC_INFO);
     }
 
-    void clear() { cache.clear(); }
+    void clear() override { cache.clear(); }
 };
 Q_DECLARE_METATYPE(MyMemoryCache::CachedContent)
 Q_DECLARE_METATYPE(MyMemoryCache::CacheData)
@@ -849,32 +849,32 @@ public:
     QHash<QUrl, QIODevice*> m_buffers;
     QList<QUrl> m_insertedUrls;
 
-    QNetworkCacheMetaData metaData(const QUrl &)
+    QNetworkCacheMetaData metaData(const QUrl &) override
     {
         return QNetworkCacheMetaData();
     }
 
-    void updateMetaData(const QNetworkCacheMetaData &)
+    void updateMetaData(const QNetworkCacheMetaData &) override
     {
     }
 
-    QIODevice *data(const QUrl &)
+    QIODevice *data(const QUrl &) override
     {
         return 0;
     }
 
-    bool remove(const QUrl &url)
+    bool remove(const QUrl &url) override
     {
         delete m_buffers.take(url);
         return m_insertedUrls.removeAll(url) > 0;
     }
 
-    qint64 cacheSize() const
+    qint64 cacheSize() const override
     {
         return 0;
     }
 
-    QIODevice *prepare(const QNetworkCacheMetaData &metaData)
+    QIODevice *prepare(const QNetworkCacheMetaData &metaData) override
     {
         QBuffer* buffer = new QBuffer;
         buffer->open(QIODevice::ReadWrite);
@@ -883,14 +883,14 @@ public:
         return buffer;
     }
 
-    void insert(QIODevice *buffer)
+    void insert(QIODevice *buffer) override
     {
         QUrl url = buffer->property("url").toUrl();
         m_insertedUrls << url;
         delete m_buffers.take(url);
     }
 
-    void clear() { m_insertedUrls.clear(); }
+    void clear() override { m_insertedUrls.clear(); }
 };
 
 class DataReader: public QObject
@@ -985,7 +985,7 @@ public:
             return nextPendingConnection();
         }
     }
-    virtual void incomingConnection(qintptr socketDescriptor)
+    virtual void incomingConnection(qintptr socketDescriptor) override
     {
 #ifndef QT_NO_SSL
         if (doSsl) {
@@ -1090,7 +1090,7 @@ public:
     }
 
 protected:
-    void run()
+    void run() override
     {
         BlockingTcpServer server(doSsl);
         server.listen();
@@ -1234,7 +1234,7 @@ private slots:
     }
 
 protected:
-    void timerEvent(QTimerEvent *)
+    void timerEvent(QTimerEvent *) override
     {
         //qDebug() << "RateControlledReader: timerEvent bytesAvailable=" << device->bytesAvailable();
         if (readBufferSize > 0 && device->bytesAvailable() > readBufferSize) {
@@ -5011,7 +5011,7 @@ class SslServer : public QTcpServer
     Q_OBJECT
 public:
     SslServer() : socket(0), m_ssl(true) {}
-    void incomingConnection(qintptr socketDescriptor)
+    void incomingConnection(qintptr socketDescriptor) override
     {
         QSslSocket *serverSocket = new QSslSocket;
         serverSocket->setParent(this);
@@ -7921,7 +7921,7 @@ void tst_QNetworkReply::synchronousAuthenticationCache()
     {
     public:
         MiniAuthServer(QThread *thread) : MiniHttpServer(QByteArray(), false, thread) {}
-        virtual void reply()
+        virtual void reply() override
         {
 
             dataToTransmit =
@@ -8139,13 +8139,13 @@ public:
         timer.start();
     }
 
-    virtual qint64 writeData(const char* , qint64 )
+    virtual qint64 writeData(const char* , qint64 ) override
     {
         Q_ASSERT(false);
         return 0;
     }
 
-    virtual qint64 readData(char* data, qint64 maxlen)
+    virtual qint64 readData(char* data, qint64 maxlen) override
     {
         //qDebug() << Q_FUNC_INFO << maxlen << bandwidthQuota;
         maxlen = qMin(maxlen, buffer.bytesAvailable());
@@ -8163,14 +8163,14 @@ public:
         //qDebug() << Q_FUNC_INFO << maxlen << bandwidthQuota << read << ret << buffer.bytesAvailable();
         return ret;
     }
-    virtual bool atEnd() const { return buffer.atEnd(); }
-    virtual qint64 size() const { return data.length(); }
-    qint64 bytesAvailable() const
+    virtual bool atEnd() const override { return buffer.atEnd(); }
+    virtual qint64 size() const override { return data.length(); }
+    qint64 bytesAvailable() const override
     {
         return buffer.bytesAvailable() + QIODevice::bytesAvailable();
     }
-    virtual bool isSequential() const { return false; } // random access, we can seek
-    virtual bool seek (qint64 pos) { return buffer.seek(pos); }
+    virtual bool isSequential() const override { return false; } // random access, we can seek
+    virtual bool seek (qint64 pos) override { return buffer.seek(pos); }
 protected slots:
     void timeoutSlot()
     {

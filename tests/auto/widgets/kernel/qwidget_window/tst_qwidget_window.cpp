@@ -523,10 +523,10 @@ public:
         : QWidget(w), m_log(log), m_ignoreDragMove(ignoreDragMove)
     {}
 protected:
-    void dragEnterEvent(QDragEnterEvent *);
-    void dragMoveEvent(QDragMoveEvent *);
-    void dragLeaveEvent(QDragLeaveEvent *);
-    void dropEvent(QDropEvent *);
+    void dragEnterEvent(QDragEnterEvent *) override;
+    void dragMoveEvent(QDragMoveEvent *) override;
+    void dragLeaveEvent(QDragLeaveEvent *) override;
+    void dropEvent(QDropEvent *) override;
 
 private:
     void formatDropEvent(const char *function, const QDropEvent *e, QTextStream &str) const;
@@ -700,7 +700,7 @@ public:
     DnDEventRecorder() { setAcceptDrops(true); }
 
 protected:
-    void mousePressEvent(QMouseEvent *)
+    void mousePressEvent(QMouseEvent *) override
     {
         QMimeData *mimeData = new QMimeData;
         mimeData->setData("application/x-dnditemdata", "some data");
@@ -709,23 +709,23 @@ protected:
         drag->exec();
     }
 
-    void dragEnterEvent(QDragEnterEvent *e)
+    void dragEnterEvent(QDragEnterEvent *e) override
     {
         e->accept();
         _dndEvents.append(QStringLiteral("DragEnter "));
     }
-    void dragMoveEvent(QDragMoveEvent *e)
+    void dragMoveEvent(QDragMoveEvent *e) override
     {
         e->accept();
         _dndEvents.append(QStringLiteral("DragMove "));
         emit dragMoveReceived();
     }
-    void dragLeaveEvent(QDragLeaveEvent *e)
+    void dragLeaveEvent(QDragLeaveEvent *e) override
     {
         e->accept();
         _dndEvents.append(QStringLiteral("DragLeave "));
     }
-    void dropEvent(QDropEvent *e)
+    void dropEvent(QDropEvent *e) override
     {
         e->accept();
         _dndEvents.append(QStringLiteral("DropEvent "));
@@ -1055,7 +1055,7 @@ void tst_QWidget_window::tst_showhide_count()
             return count;
         }
     protected:
-        bool eventFilter(QObject *receiver, QEvent *event)
+        bool eventFilter(QObject *receiver, QEvent *event) override
         {
             if (QWidget *widget = qobject_cast<QWidget*>(receiver)) {
                 const auto entry = Entry(widget, event->type());
@@ -1341,7 +1341,7 @@ void tst_QWidget_window::mouseMoveWithPopup()
         : QWidget(parent, flags|Qt::CustomizeWindowHint|Qt::FramelessWindowHint)
         {}
 
-        QSize sizeHint() const
+        QSize sizeHint() const override
         {
             if (parent())
                 return QSize(150, 100);
@@ -1360,7 +1360,7 @@ void tst_QWidget_window::mouseMoveWithPopup()
             mouseReleaseCount = 0;
         }
     protected:
-        void mousePressEvent(QMouseEvent *event)
+        void mousePressEvent(QMouseEvent *event) override
         {
             ++mousePressCount;
 
@@ -1378,12 +1378,12 @@ void tst_QWidget_window::mouseMoveWithPopup()
                 QWidget::mousePressEvent(event);
             }
         }
-        void mouseReleaseEvent(QMouseEvent *event)
+        void mouseReleaseEvent(QMouseEvent *event) override
         {
             ++mouseReleaseCount;
             QWidget::mouseReleaseEvent(event);
         }
-        void mouseMoveEvent(QMouseEvent *event)
+        void mouseMoveEvent(QMouseEvent *event) override
         {
             ++mouseMoveCount;
             QWidget::mouseMoveEvent(event);

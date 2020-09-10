@@ -48,7 +48,7 @@ class tst_QInputDialog : public QObject
     static void testFuncGetText(QInputDialog *dialog);
     static void testFuncGetItem(QInputDialog *dialog);
     static void testFuncSingleStepDouble(QInputDialog *dialog);
-    void timerEvent(QTimerEvent *event);
+    void timerEvent(QTimerEvent *event) override;
 private slots:
     void getInt_data();
     void getInt();

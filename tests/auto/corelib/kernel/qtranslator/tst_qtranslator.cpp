@@ -37,7 +37,7 @@ class tst_QTranslator : public QObject
 public:
     tst_QTranslator();
 protected:
-    bool eventFilter(QObject *obj, QEvent *event);
+    bool eventFilter(QObject *obj, QEvent *event) override;
 private slots:
     void initTestCase();
 
@@ -157,7 +157,7 @@ void tst_QTranslator::load()
 
 class TranslatorThread : public QThread
 {
-    void run() {
+    void run() override {
         QTranslator tor( 0 );
         tor.load("hellotr_la");
 
@@ -316,7 +316,7 @@ struct TranslateThread : public QThread
     QMutex startupLock;
     QWaitCondition runningCondition;
 
-    void run() {
+    void run() override {
         bool startSignalled = false;
 
         while (terminate.loadRelaxed() == 0) {

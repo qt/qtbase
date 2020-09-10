@@ -53,8 +53,8 @@ class MyGraphicsObject : public QGraphicsObject
 {
 public:
     MyGraphicsObject() : QGraphicsObject() {}
-    virtual QRectF boundingRect() const { return QRectF(); }
-    virtual void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *) {}
+    virtual QRectF boundingRect() const override { return QRectF(); }
+    virtual void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *) override {}
 };
 
 void tst_QGraphicsObject::pos()
@@ -223,9 +223,9 @@ public:
         }
     }
 
-    void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget * = 0)
+    void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget * = 0) override
     { }
-    QRectF boundingRect() const
+    QRectF boundingRect() const override
     { return QRectF(); }
 
     bool *wasDeleted;

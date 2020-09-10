@@ -776,9 +776,9 @@ public:
         disconnectedSignals.clear();
     }
 protected:
-    void connectNotify(const QMetaMethod &signal)
+    void connectNotify(const QMetaMethod &signal) override
     { connectedSignals.append(signal); }
-    void disconnectNotify(const QMetaMethod &signal)
+    void disconnectNotify(const QMetaMethod &signal) override
     { disconnectedSignals.append(signal); }
 };
 
@@ -1003,9 +1003,9 @@ public:
         disconnectedSignals.clear();
     }
 protected:
-    void connectNotify(const QMetaMethod &signal)
+    void connectNotify(const QMetaMethod &signal) override
     { connectedSignals.append(signal); }
-    void disconnectNotify(const QMetaMethod &signal)
+    void disconnectNotify(const QMetaMethod &signal) override
     { disconnectedSignals.append(signal); }
 Q_SIGNALS:
     void signal1();
@@ -1606,7 +1606,7 @@ class TestThread : public QThread
 {
     Q_OBJECT
 public:
-    inline void run()
+    inline void run() override
     {
         *object = new QObject;
         *child = new QObject(*object);
@@ -1689,7 +1689,7 @@ public:
         : QObject(parent), timerEventThread(0), customEventThread(0), slotThread(0)
     { }
 
-    void customEvent(QEvent *)
+    void customEvent(QEvent *) override
     {
         if (customEventThread)
             qFatal("%s: customEventThread should be null", Q_FUNC_INFO);
@@ -1697,7 +1697,7 @@ public:
         emit theSignal();
     }
 
-    void timerEvent(QTimerEvent *)
+    void timerEvent(QTimerEvent *) override
     {
         if (timerEventThread)
             qFatal("%s: timerEventThread should be null", Q_FUNC_INFO);
@@ -1736,7 +1736,7 @@ public:
         // wait for thread to start
         (void) eventLoop.exec();
     }
-    void run()
+    void run() override
     { (void) exec(); }
 };
 
@@ -2311,7 +2311,7 @@ class FooObject: public QObject, public Foo::Bar
     Q_OBJECT
     Q_INTERFACES(Foo::Bar)
 public:
-    int rtti() const { return 42; }
+    int rtti() const override { return 42; }
 };
 
 class BlehObject : public QObject, public Foo::Bleh
@@ -2319,7 +2319,7 @@ class BlehObject : public QObject, public Foo::Bleh
     Q_OBJECT
     Q_INTERFACES(Foo::Bleh)
 public:
-    int rtti() const { return 43; }
+    int rtti() const override { return 43; }
 };
 
 void tst_QObject::declareInterface()
@@ -2913,7 +2913,7 @@ class DynamicPropertyObject : public PropertyObject
 public:
     inline DynamicPropertyObject() {}
 
-    inline virtual bool event(QEvent *e) {
+    inline virtual bool event(QEvent *e) override {
         if (e->type() == QEvent::DynamicPropertyChange) {
             changedDynamicProperties.append(static_cast<QDynamicPropertyChangeEvent *>(e)->propertyName());
         }
@@ -3060,7 +3060,7 @@ public:
         events.clear();
     }
 
-    bool eventFilter(QObject *object, QEvent *event)
+    bool eventFilter(QObject *object, QEvent *event) override
     {
         events.append(qMakePair(object, event->type()));
         return false;
@@ -3198,7 +3198,7 @@ void tst_QObject::installEventFilter()
 class EmitThread : public QThread
 {   Q_OBJECT
 public:
-    void run(void) {
+    void run(void) override {
         emit work();
     }
 signals:
@@ -4292,7 +4292,7 @@ public:
     ThreadAffinityThread(SenderObject *sender)
         : sender(sender)
     { }
-    void run()
+    void run() override
     {
         sender->emitSignal1();
     }
@@ -5655,7 +5655,7 @@ signals:
 class VirtualSlotsObject : public VirtualSlotsObjectBase {
     Q_OBJECT
 public slots:
-    virtual void slot1() {
+    virtual void slot1() override {
         derived_counter1++;
     }
 public:
@@ -5704,8 +5704,8 @@ public:
 
 public slots:
     void regularSlot() { ++regular_call_count; }
-    virtual void slot1() { ++derived_counter2; }
-    virtual void slot2() { ++virtual_base_count; }
+    virtual void slot1() override { ++derived_counter2; }
+    virtual void slot2() override { ++virtual_base_count; }
 };
 
 struct NormalBase
@@ -6804,6 +6804,7 @@ public:
     explicit CountedExceptionThrower(bool throwException, QObject *parent = nullptr)
         : QObject(parent)
     {
+        Q_UNUSED(throwException);
 #ifndef QT_NO_EXCEPTIONS
         if (throwException)
             throw ObjectException();

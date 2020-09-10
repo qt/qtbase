@@ -847,7 +847,7 @@ public:
     TestPixmap(int w, int h) : QPixmap(w, h), testPaintEngine(new TestPaintEngine) {}
     ~TestPixmap() { delete testPaintEngine; }
 
-    QPaintEngine *paintEngine() const
+    QPaintEngine *paintEngine() const override
     {
         return testPaintEngine;
     }

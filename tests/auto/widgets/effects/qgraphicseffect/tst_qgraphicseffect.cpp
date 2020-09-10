@@ -73,7 +73,7 @@ public:
           m_painter(0), m_styleOption(0)
     {}
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override
     {
         m_painter = painter;
         m_styleOption = option;
@@ -101,7 +101,7 @@ public:
           doNothingInDraw(false), m_painter(0), m_styleOption(0), m_source(0), m_opacity(1.0)
     {}
 
-    QRectF boundingRectFor(const QRectF &rect) const
+    QRectF boundingRectFor(const QRectF &rect) const override
     { return rect.adjusted(-m_margin, -m_margin, m_margin, m_margin); }
 
     void reset()
@@ -123,7 +123,7 @@ public:
     int margin() const
     { return m_margin; }
 
-    void draw(QPainter *painter)
+    void draw(QPainter *painter) override
     {
         ++numRepaints;
         if (doNothingInDraw)
@@ -135,7 +135,7 @@ public:
         drawSource(painter);
     }
 
-    void sourceChanged(QGraphicsEffect::ChangeFlags flags)
+    void sourceChanged(QGraphicsEffect::ChangeFlags flags) override
     { m_sourceChangedFlags |= flags; }
 
     int numRepaints;
@@ -509,10 +509,10 @@ public:
         , repaints(0)
     {}
 
-    QRectF boundingRectFor(const QRectF &rect) const
+    QRectF boundingRectFor(const QRectF &rect) const override
     { return rect; }
 
-    void draw(QPainter *painter)
+    void draw(QPainter *painter) override
     {
         QCOMPARE(sourcePixmap(Qt::LogicalCoordinates).handle(), pixmap.handle());
         QVERIFY((painter->worldTransform().type() <= QTransform::TxTranslate) == (sourcePixmap(Qt::DeviceCoordinates).handle() == pixmap.handle()));
@@ -551,10 +551,10 @@ void tst_QGraphicsEffect::drawPixmapItem()
 class DeviceEffect : public QGraphicsEffect
 {
 public:
-    QRectF boundingRectFor(const QRectF &rect) const
+    QRectF boundingRectFor(const QRectF &rect) const override
     { return rect; }
 
-    void draw(QPainter *painter)
+    void draw(QPainter *painter) override
     {
         QPoint offset;
         QPixmap pixmap = sourcePixmap(Qt::DeviceCoordinates, &offset, QGraphicsEffect::NoPad);
@@ -648,7 +648,7 @@ public:
     MyGraphicsItem(QGraphicsItem *parent = 0) :
             QGraphicsWidget(parent), nbPaint(0)
     {}
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override
     {
         nbPaint++;
         QGraphicsWidget::paint(painter, option, widget);

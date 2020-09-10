@@ -46,10 +46,11 @@ public:
         m_setFocusObjectCallCount(0)
     {}
 
-    virtual QRectF keyboardRect() const { return m_keyboardRect; }
-    virtual bool isAnimating() const { return m_animating; }
-    virtual void reset() { m_resetCallCount++; }
-    virtual void commit() {
+    virtual QRectF keyboardRect() const override { return m_keyboardRect; }
+    virtual bool isAnimating() const override { return m_animating; }
+    virtual void reset() override { m_resetCallCount++; }
+    virtual void commit() override
+    {
         m_commitCallCount++;
         if (m_commitString.isEmpty())
             return;
@@ -65,43 +66,43 @@ public:
         m_commitString = commitString;
     }
 
-    virtual void update(Qt::InputMethodQueries queries)
+    virtual void update(Qt::InputMethodQueries queries) override
     {
         m_updateCallCount++;
         m_lastQueries = queries;
     }
-    virtual void invokeAction(QInputMethod::Action action, int cursorPosition)
+    virtual void invokeAction(QInputMethod::Action action, int cursorPosition) override
     {
         m_action = action;
         m_cursorPosition = cursorPosition;
     }
-    virtual bool filterEvent(const QEvent *event)
+    virtual bool filterEvent(const QEvent *event) override
     {
         m_lastEventType = event->type(); return false;
     }
-    virtual void showInputPanel()
+    virtual void showInputPanel() override
     {
         m_visible = true;
     }
-    virtual void hideInputPanel()
+    virtual void hideInputPanel() override
     {
         m_visible = false;
     }
-    virtual bool isInputPanelVisible() const
+    virtual bool isInputPanelVisible() const override
     {
         return m_visible;
     }
-    virtual QLocale locale() const
+    virtual QLocale locale() const override
     {
         m_localeCallCount++;
         return QLocale::c();
     }
-    virtual Qt::LayoutDirection inputDirection() const
+    virtual Qt::LayoutDirection inputDirection() const override
     {
         m_inputDirectionCallCount++;
         return Qt::LeftToRight;
     }
-    virtual void setFocusObject(QObject *object)
+    virtual void setFocusObject(QObject *object) override
     {
         Q_UNUSED(object);
         m_setFocusObjectCallCount++;

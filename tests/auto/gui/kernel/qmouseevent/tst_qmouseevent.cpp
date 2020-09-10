@@ -46,7 +46,7 @@ public:
     int mouseReleaseButtons;
     int mouseReleaseModifiers;
 protected:
-    void mousePressEvent(QMouseEvent *e)
+    void mousePressEvent(QMouseEvent *e) override
     {
         QWindow::mousePressEvent(e);
         mousePressButton = e->button();
@@ -55,7 +55,7 @@ protected:
         mousePressEventRecieved = true;
         e->accept();
     }
-    void mouseReleaseEvent(QMouseEvent *e)
+    void mouseReleaseEvent(QMouseEvent *e) override
     {
         QWindow::mouseReleaseEvent(e);
         mouseReleaseButton = e->button();

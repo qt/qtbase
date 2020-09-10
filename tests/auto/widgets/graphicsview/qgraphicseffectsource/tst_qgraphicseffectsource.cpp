@@ -43,7 +43,7 @@ public:
           m_painter(0)
     {}
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override
     {
         m_painter = painter;
         ++numRepaints;
@@ -70,7 +70,7 @@ public:
           m_painter(0), m_source(0)
     {}
 
-    QRectF boundingRectFor(const QRectF &rect) const
+    QRectF boundingRectFor(const QRectF &rect) const override
     { return rect.adjusted(-m_margin, -m_margin, m_margin, m_margin); }
 
     void reset()
@@ -94,7 +94,7 @@ public:
     int margin() const
     { return m_margin; }
 
-    void draw(QPainter *painter)
+    void draw(QPainter *painter) override
     {
         ++numRepaints;
         if (storeDeviceDependentStuff) {
@@ -109,7 +109,7 @@ public:
         source()->draw(painter);
     }
 
-    void sourceChanged(ChangeFlags)
+    void sourceChanged(ChangeFlags) override
     { m_sourceChanged = true; }
 
     void sourceBoundingRectChanged()
@@ -310,11 +310,13 @@ public:
     {
     }
 
-    QRectF boundingRectFor(const QRectF &src) const {
+    QRectF boundingRectFor(const QRectF &src) const override
+    {
         return src.adjusted(-10, -10, 10, 10);
     }
 
-    void draw(QPainter *) {
+    void draw(QPainter *) override
+    {
         pix = source()->pixmap(coordinateMode, &offset, padMode);
     }
 

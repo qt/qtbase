@@ -792,7 +792,7 @@ class MyChild : public QWidget
 {
 public:
     MyChild(QWidget *parent = 0) : QWidget(parent) {}
-    QSize sizeHint() const { return QSize(234, 123); }
+    QSize sizeHint() const override { return QSize(234, 123); }
 };
 
 void tst_QMdiArea::childSize()
@@ -866,8 +866,8 @@ class LargeWidget : public QWidget
 {
 public:
     LargeWidget(QWidget *parent = 0) : QWidget(parent) {}
-    QSize sizeHint() const { return QSize(1280, 1024); }
-    QSize minimumSizeHint() const { return QSize(300, 300); }
+    QSize sizeHint() const override { return QSize(1280, 1024); }
+    QSize minimumSizeHint() const override { return QSize(300, 300); }
 };
 
 // New tests
@@ -2051,7 +2051,7 @@ public:
     void clear() { _count = 0; }
 
 protected:
-    bool eventFilter(QObject *object, QEvent *event)
+    bool eventFilter(QObject *object, QEvent *event) override
     {
         if (event->type() == eventToSpy)
             ++_count;

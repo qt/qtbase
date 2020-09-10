@@ -115,7 +115,8 @@ public:
 
     virtual ~QSequentialFile() {}
 
-    virtual bool isSequential() const {
+    virtual bool isSequential() const override
+    {
         return true;
     }
 

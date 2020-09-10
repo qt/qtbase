@@ -73,14 +73,14 @@ private slots:
     void incomplete();
 
 protected slots:
-    void proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *auth);
+    void proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *auth) override;
 
 private:
-    void readNotification() { }
-    void writeNotification() { }
-    void closeNotification() { }
-    void exceptionNotification() { }
-    void connectionNotification() { }
+    void readNotification() override { }
+    void writeNotification() override { }
+    void closeNotification() override { }
+    void exceptionNotification() override { }
+    void connectionNotification() override { }
 };
 
 class MiniSocks5ResponseHandler : public QObject

@@ -523,17 +523,17 @@ public:
     }
 
 protected:
-    void mousePressEvent(QMouseEvent*)
+    void mousePressEvent(QMouseEvent*) override
     {
         mousePressed = true;
     }
 
-    void mouseReleaseEvent(QMouseEvent*)
+    void mouseReleaseEvent(QMouseEvent*) override
     {
         mouseReleased = true;
     }
 
-    void mouseMoveEvent(QMouseEvent*)
+    void mouseMoveEvent(QMouseEvent*) override
     {
         mouseMoved = true;
     }

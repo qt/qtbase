@@ -107,7 +107,7 @@ public:
         layoutDirectionChange(0)
         { }
 
-    void widgetEvent(QEvent *e)
+    void widgetEvent(QEvent *e) override
     {
         switch (e->type()) {
         case QEvent::GraphicsSceneResize:
@@ -145,7 +145,7 @@ class RectWidget : public QGraphicsWidget
 public:
     RectWidget(QGraphicsItem *parent = 0, const QBrush &brush = QBrush()) : QGraphicsWidget(parent){ m_brush = brush;}
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override
     {
         Q_UNUSED(option);
         Q_UNUSED(widget);
@@ -158,7 +158,8 @@ public:
         updateGeometry();
     }
 
-    virtual QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const {
+    virtual QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const override
+    {
         if (m_sizeHints[which].isValid()) {
             return m_sizeHints[which];
         }

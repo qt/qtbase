@@ -41,7 +41,7 @@ class Thread : public QThread
     static int counter;
 public:
     Thread(bool automatic = true);
-    void run();
+    void run() override;
 
     using QThread::exec;
 };

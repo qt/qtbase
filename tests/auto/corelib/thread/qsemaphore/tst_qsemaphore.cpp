@@ -57,7 +57,7 @@ public:
     ThreadOne() {}
 
 protected:
-    void run()
+    void run() override
     {
         int i = 0;
         while ( i < 100 ) {
@@ -76,7 +76,7 @@ public:
     ThreadN(int n) :N(n) { }
 
 protected:
-    void run()
+    void run() override
     {
         int i = 0;
         while ( i < 100 ) {
@@ -400,7 +400,7 @@ void tst_QSemaphore::tryAcquireWithTimeoutStarvation()
         QSemaphore *semaphore;
         int amountToConsume, timeout;
 
-        void run()
+        void run() override
         {
             startup.release();
             forever {
@@ -497,7 +497,7 @@ QSemaphore usedSpace;
 class Producer : public QThread
 {
 public:
-    void run();
+    void run() override;
 };
 
 static const int Timeout = 60 * 1000; // 1min
@@ -521,7 +521,7 @@ void Producer::run()
 class Consumer : public QThread
 {
 public:
-    void run();
+    void run() override;
 };
 
 void Consumer::run()

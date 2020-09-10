@@ -49,7 +49,8 @@ public:
     {
     }
 
-    void exposeEvent(QExposeEvent *) {
+    void exposeEvent(QExposeEvent *) override
+    {
         if (isExposed())
             ++numberOfExposes;
         else

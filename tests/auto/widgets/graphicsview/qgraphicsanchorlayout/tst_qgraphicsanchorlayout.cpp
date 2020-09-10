@@ -87,7 +87,7 @@ class RectWidget : public QGraphicsWidget
 public:
     RectWidget(QGraphicsItem *parent = 0) : QGraphicsWidget(parent){}
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override
     {
         Q_UNUSED(option);
         Q_UNUSED(widget);
@@ -1113,7 +1113,7 @@ public:
     }
 
     virtual int pixelMetric(PixelMetric metric, const QStyleOption * option = 0,
-                            const QWidget * widget = 0 ) const;
+                            const QWidget * widget = 0 ) const override;
 
     int hspacing;
     int vspacing;
@@ -1122,7 +1122,7 @@ public:
                       QSizePolicy::ControlType control2,
                       Qt::Orientation orientation,
                       const QStyleOption *option = 0,
-                      const QWidget *widget = 0) const;
+                      const QWidget *widget = 0) const override;
 
 };
 

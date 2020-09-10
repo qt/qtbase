@@ -120,7 +120,7 @@ class FreeListThread : public QThread
 
 public:
     inline FreeListThread() : QThread() { }
-    inline void run()
+    inline void run() override
     {
         QElapsedTimer t;
         t.start();

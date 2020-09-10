@@ -37,8 +37,8 @@ class Window : public QWindow
 public:
     ~Window() { reset(); }
 
-    void keyPressEvent(QKeyEvent *event) { recordEvent(event); }
-    void keyReleaseEvent(QKeyEvent *event) { recordEvent(event); }
+    void keyPressEvent(QKeyEvent *event) override { recordEvent(event); }
+    void keyReleaseEvent(QKeyEvent *event) override { recordEvent(event); }
 
     void reset() {
         qDeleteAll(keyEvents.begin(), keyEvents.end());

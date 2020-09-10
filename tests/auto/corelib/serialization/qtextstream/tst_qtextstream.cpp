@@ -2795,7 +2795,7 @@ void tst_QTextStream::status_word_read()
 class FakeBuffer : public QBuffer
 {
 protected:
-    qint64 writeData(const char *c, qint64 i) { return m_lock ? 0 : QBuffer::writeData(c, i); }
+    qint64 writeData(const char *c, qint64 i) override { return m_lock ? 0 : QBuffer::writeData(c, i); }
 public:
     FakeBuffer(bool locked = false) : m_lock(locked) {}
     void setLocked(bool locked) { m_lock = locked; }

@@ -79,8 +79,8 @@ public:
 class Derived : public Base
 {
 public:
-    virtual Base *clone() { return new Derived(*this); }
-    virtual bool isBase() const { return false; }
+    virtual Base *clone() override { return new Derived(*this); }
+    virtual bool isBase() const override { return false; }
 };
 
 QT_BEGIN_NAMESPACE

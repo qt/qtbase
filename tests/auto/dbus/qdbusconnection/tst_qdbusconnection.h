@@ -270,12 +270,12 @@ class VirtualObject: public QDBusVirtualObject
 public:
     VirtualObject() :success(true) {}
 
-    QString introspect(const QString & /* path */) const
+    QString introspect(const QString & /* path */) const override
     {
         return QString();
     }
 
-    bool handleMessage(const QDBusMessage &message, const QDBusConnection &connection) {
+    bool handleMessage(const QDBusMessage &message, const QDBusConnection &connection) override {
         ++callCount;
         lastMessage = message;
 

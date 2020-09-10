@@ -134,26 +134,26 @@ class QtTestModel: public QAbstractItemModel
 public:
     QtTestModel(int rows, int columns, QObject *parent = 0);
     QtTestModel(const QList<QList<QString> > tbl, QObject *parent = 0);
-    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
-    QModelIndex parent(const QModelIndex &) const;
-    int rowCount(const QModelIndex &parent) const;
-    int columnCount(const QModelIndex &parent) const;
-    bool hasChildren(const QModelIndex &) const;
-    QVariant data(const QModelIndex &idx, int) const;
-    bool setData(const QModelIndex &idx, const QVariant &value, int);
-    bool insertRows(int row, int count, const QModelIndex &parent= QModelIndex());
-    bool insertColumns(int column, int count, const QModelIndex &parent= QModelIndex());
+    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
+    QModelIndex parent(const QModelIndex &) const override;
+    int rowCount(const QModelIndex &parent) const override;
+    int columnCount(const QModelIndex &parent) const override;
+    bool hasChildren(const QModelIndex &) const override;
+    QVariant data(const QModelIndex &idx, int) const override;
+    bool setData(const QModelIndex &idx, const QVariant &value, int) override;
+    bool insertRows(int row, int count, const QModelIndex &parent= QModelIndex()) override;
+    bool insertColumns(int column, int count, const QModelIndex &parent= QModelIndex()) override;
     void setPersistent(const QModelIndex &from, const QModelIndex &to);
-    bool removeRows ( int row, int count, const QModelIndex & parent = QModelIndex() );
-    bool removeColumns( int column, int count, const QModelIndex & parent = QModelIndex());
+    bool removeRows ( int row, int count, const QModelIndex & parent = QModelIndex()) override;
+    bool removeColumns( int column, int count, const QModelIndex & parent = QModelIndex()) override;
     bool moveRows (const QModelIndex &sourceParent, int sourceRow, int count,
-                   const QModelIndex &destinationParent, int destinationChild);
+                   const QModelIndex &destinationParent, int destinationChild) override;
     bool moveColumns(const QModelIndex &sourceParent, int sourceColumn, int count,
-                     const QModelIndex &destinationParent, int destinationChild);
+                     const QModelIndex &destinationParent, int destinationChild) override;
     void reset();
 
     bool canDropMimeData(const QMimeData *data, Qt::DropAction action,
-                                 int row, int column, const QModelIndex &parent) const;
+                                 int row, int column, const QModelIndex &parent) const override;
 
     int cCount, rCount;
     mutable bool wrongIndex;
@@ -2171,14 +2171,14 @@ public:
 
     }
 
-    QHash<int, QByteArray> roleNames() const
+    QHash<int, QByteArray> roleNames() const override
     {
         QHash<int, QByteArray> roles = QStringListModel::roleNames();
         roles.insert(Qt::UserRole + 2, "custom");
         return roles;
     }
 
-    Qt::DropActions supportedDragActions() const
+    Qt::DropActions supportedDragActions() const override
     {
         return QStringListModel::supportedDragActions() | Qt::MoveAction;
     }

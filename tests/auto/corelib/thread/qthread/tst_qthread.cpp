@@ -142,7 +142,7 @@ public:
     Qt::HANDLE id;
     QThread *thread;
 
-    void run()
+    void run() override
     {
         id = QThread::currentThreadId();
         thread = QThread::currentThread();
@@ -155,7 +155,7 @@ public:
     QMutex mutex;
     QWaitCondition cond;
 
-    void run()
+    void run() override
     {
         QMutexLocker locker(&mutex);
         cond.wakeOne();
@@ -180,7 +180,7 @@ public:
     int code;
     int result;
 
-    void run()
+    void run() override
     {
         Simple_Thread::run();
         if (object) {
@@ -195,7 +195,7 @@ public:
 class Terminate_Thread : public Simple_Thread
 {
 public:
-    void run()
+    void run() override
     {
         setTerminationEnabled(false);
         {
@@ -224,7 +224,7 @@ public:
     Quit_Object *object;
     int result;
 
-    void run()
+    void run() override
     {
         Simple_Thread::run();
         if (object) {
@@ -245,7 +245,7 @@ public:
 
     int elapsed; // result, in *MILLISECONDS*
 
-    void run()
+    void run() override
     {
         QMutexLocker locker(&mutex);
 
@@ -563,7 +563,7 @@ void tst_QThread::exec()
 
         MultipleExecThread() : res1(-2), res2(-2) { }
 
-        void run()
+        void run() override
         {
             {
                 Exit_Object o;
@@ -1002,7 +1002,8 @@ void tst_QThread::exitAndExec()
         QSemaphore sem1;
         QSemaphore sem2;
         volatile int value;
-        void run() {
+        void run() override
+        {
             sem1.acquire();
             value = exec();  //First entrence
             sem2.release();
@@ -1053,7 +1054,7 @@ public:
     QWaitCondition cond1;
     QWaitCondition cond2;
 
-    void run()
+    void run() override
     {
         QMutexLocker locker(&mutex);
         cond1.wait(&mutex);
@@ -1118,7 +1119,7 @@ void tst_QThread::wait3_slowDestructor()
 
 void tst_QThread::destroyFinishRace()
 {
-    class Thread : public QThread { void run() {} };
+    class Thread : public QThread { void run() override {} };
     for (int i = 0; i < 15; i++) {
         Thread *thr = new Thread;
         connect(thr, SIGNAL(finished()), thr, SLOT(deleteLater()));
@@ -1138,7 +1139,8 @@ void tst_QThread::startFinishRace()
     class Thread : public QThread {
     public:
         Thread() : i (50) {}
-        void run() {
+        void run() override
+        {
             i--;
             if (!i) disconnect(this, SIGNAL(finished()), 0, 0);
         }
@@ -1161,7 +1163,7 @@ void tst_QThread::startFinishRace()
 void tst_QThread::startAndQuitCustomEventLoop()
 {
     struct Thread : QThread {
-        void run() { QEventLoop().exec(); }
+        void run() override { QEventLoop().exec(); }
     };
 
    for (int i = 0; i < 5; i++) {
@@ -1213,21 +1215,21 @@ QT_END_NAMESPACE
 class DummyEventDispatcher : public QAbstractEventDispatcher {
 public:
     DummyEventDispatcher() : QAbstractEventDispatcher() {}
-    bool processEvents(QEventLoop::ProcessEventsFlags) {
+    bool processEvents(QEventLoop::ProcessEventsFlags) override {
         visited.storeRelaxed(true);
         emit awake();
         QCoreApplication::sendPostedEvents();
         return false;
     }
-    void registerSocketNotifier(QSocketNotifier *) {}
-    void unregisterSocketNotifier(QSocketNotifier *) {}
-    void registerTimer(int, int, Qt::TimerType, QObject *) {}
-    bool unregisterTimer(int ) { return false; }
-    bool unregisterTimers(QObject *) { return false; }
-    QList<TimerInfo> registeredTimers(QObject *) const { return QList<TimerInfo>(); }
-    int remainingTime(int) { return 0; }
-    void wakeUp() {}
-    void interrupt() {}
+    void registerSocketNotifier(QSocketNotifier *) override {}
+    void unregisterSocketNotifier(QSocketNotifier *) override {}
+    void registerTimer(int, int, Qt::TimerType, QObject *) override {}
+    bool unregisterTimer(int) override { return false; }
+    bool unregisterTimers(QObject *) override { return false; }
+    QList<TimerInfo> registeredTimers(QObject *) const override { return QList<TimerInfo>(); }
+    int remainingTime(int) override { return 0; }
+    void wakeUp() override {}
+    void interrupt() override {}
 
 #ifdef Q_OS_WIN
     bool registerEventNotifier(QWinEventNotifier *) { return false; }

@@ -72,13 +72,14 @@ public:
     {
     }
 
-    void draw(QPainter *, const PaintContext &) {}
-    int hitTest(const QPointF &, Qt::HitTestAccuracy) const { return 0; }
-    int pageCount() const { return 0; }
-    QSizeF documentSize() const { return QSizeF(); }
-    QRectF frameBoundingRect(QTextFrame *) const { return QRectF(); }
-    QRectF blockBoundingRect(const QTextBlock &) const { return QRectF(); }
-    void documentChanged(int from, int /* oldLength */, int length) {
+    void draw(QPainter *, const PaintContext &) override {}
+    int hitTest(const QPointF &, Qt::HitTestAccuracy) const override { return 0; }
+    int pageCount() const override { return 0; }
+    QSizeF documentSize() const override { return QSizeF(); }
+    QRectF frameBoundingRect(QTextFrame *) const override { return QRectF(); }
+    QRectF blockBoundingRect(const QTextBlock &) const override { return QRectF(); }
+    void documentChanged(int from, int /* oldLength */, int length) override
+    {
         ++changeEvents;
 
         QTextBlock last = document()->lastBlock();

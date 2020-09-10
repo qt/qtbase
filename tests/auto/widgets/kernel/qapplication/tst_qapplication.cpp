@@ -1807,7 +1807,7 @@ class CustomStyle : public QProxyStyle
 public:
     CustomStyle() : QProxyStyle("Windows") { Q_ASSERT(!polished); }
     ~CustomStyle() { polished = 0; }
-    void polish(QPalette &palette)
+    void polish(QPalette &palette) override
     {
         polished++;
         palette.setColor(QPalette::Active, QPalette::Link, Qt::red);
@@ -1822,7 +1822,7 @@ class CustomStylePlugin : public QStylePlugin
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QStyleFactoryInterface" FILE "customstyle.json")
 public:
-    QStyle *create(const QString &) { return new CustomStyle; }
+    QStyle *create(const QString &) override { return new CustomStyle; }
 };
 
 Q_IMPORT_PLUGIN(CustomStylePlugin)

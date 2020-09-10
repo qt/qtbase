@@ -64,7 +64,7 @@ public:
 
     int m_updateCurrentTimeCount;
 protected:
-    void updateCurrentTime(int currentTime)
+    void updateCurrentTime(int currentTime) override
     {
         QPauseAnimation::updateCurrentTime(currentTime);
         ++m_updateCurrentTimeCount;

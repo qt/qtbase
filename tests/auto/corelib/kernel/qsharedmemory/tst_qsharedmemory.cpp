@@ -593,7 +593,7 @@ class Consumer : public QThread
 {
 
 public:
-    void run()
+    void run() override
     {
         QSharedMemory consumer(QLatin1String("market"));
         while (!consumer.attach()) {
@@ -641,7 +641,7 @@ public:
         }
     }
 
-    void run()
+    void run() override
     {
 
         char *memory = (char*)producer.data();

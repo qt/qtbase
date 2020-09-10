@@ -87,14 +87,14 @@ private:
 class QMakeTestHandler : public QMakeHandler {
 public:
     QMakeTestHandler() : QMakeHandler(), printed(false) {}
-    virtual void message(int type, const QString &msg, const QString &fileName, int lineNo)
+    virtual void message(int type, const QString &msg, const QString &fileName, int lineNo) override
         { print(fileName, lineNo, type, msg); }
 
-    virtual void fileMessage(int type, const QString &msg)
+    virtual void fileMessage(int type, const QString &msg) override
         { Q_UNUSED(type); doPrint(msg); }
 
-    virtual void aboutToEval(ProFile *, ProFile *, EvalFileType) {}
-    virtual void doneWithEval(ProFile *) {}
+    virtual void aboutToEval(ProFile *, ProFile *, EvalFileType) override {}
+    virtual void doneWithEval(ProFile *) override {}
 
     void setExpectedMessages(const QStringList &msgs) { expected = msgs; }
     QStringList expectedMessages() const { return expected; }

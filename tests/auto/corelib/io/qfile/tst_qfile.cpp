@@ -2181,33 +2181,33 @@ public:
     MyEngine(int n) { number = n; }
     virtual ~MyEngine() {}
 
-    void setFileName(const QString &) {}
-    bool open(QIODevice::OpenMode) { return false; }
-    bool close() { return false; }
-    bool flush() { return false; }
-    qint64 size() const { return 123 + number; }
+    void setFileName(const QString &) override {}
+    bool open(QIODevice::OpenMode) override { return false; }
+    bool close() override { return false; }
+    bool flush() override { return false; }
+    qint64 size() const override { return 123 + number; }
     qint64 at() const { return -1; }
-    bool seek(qint64) { return false; }
-    bool isSequential() const { return false; }
-    qint64 read(char *, qint64) { return -1; }
-    qint64 write(const char *, qint64) { return -1; }
-    bool remove() { return false; }
-    bool copy(const QString &) { return false; }
-    bool rename(const QString &) { return false; }
-    bool link(const QString &) { return false; }
-    bool mkdir(const QString &, bool) const { return false; }
-    bool rmdir(const QString &, bool) const { return false; }
-    bool setSize(qint64) { return false; }
-    QStringList entryList(QDir::Filters, const QStringList &) const { return QStringList(); }
-    bool caseSensitive() const { return false; }
-    bool isRelativePath() const { return false; }
-    FileFlags fileFlags(FileFlags) const { return { }; }
+    bool seek(qint64) override { return false; }
+    bool isSequential() const override { return false; }
+    qint64 read(char *, qint64) override { return -1; }
+    qint64 write(const char *, qint64) override { return -1; }
+    bool remove() override { return false; }
+    bool copy(const QString &) override { return false; }
+    bool rename(const QString &) override { return false; }
+    bool link(const QString &) override { return false; }
+    bool mkdir(const QString &, bool) const override { return false; }
+    bool rmdir(const QString &, bool) const override { return false; }
+    bool setSize(qint64) override { return false; }
+    QStringList entryList(QDir::Filters, const QStringList &) const override { return QStringList(); }
+    bool caseSensitive() const override { return false; }
+    bool isRelativePath() const override { return false; }
+    FileFlags fileFlags(FileFlags) const override { return { }; }
     bool chmod(uint) { return false; }
-    QString fileName(FileName) const { return name; }
-    uint ownerId(FileOwner) const { return 0; }
-    QString owner(FileOwner) const { return QString(); }
-    QDateTime fileTime(FileTime) const { return QDateTime(); }
-    bool setFileTime(const QDateTime &, FileTime) { return false; }
+    QString fileName(FileName) const override { return name; }
+    uint ownerId(FileOwner) const override { return 0; }
+    QString owner(FileOwner) const override { return QString(); }
+    QDateTime fileTime(FileTime) const override { return QDateTime(); }
+    bool setFileTime(const QDateTime &, FileTime) override { return false; }
 
 private:
     int number;
@@ -2217,7 +2217,7 @@ private:
 class MyHandler : public QAbstractFileEngineHandler
 {
 public:
-    inline QAbstractFileEngine *create(const QString &) const
+    inline QAbstractFileEngine *create(const QString &) const override
     {
         return new MyEngine(1);
     }
@@ -2226,7 +2226,7 @@ public:
 class MyHandler2 : public QAbstractFileEngineHandler
 {
 public:
-    inline QAbstractFileEngine *create(const QString &) const
+    inline QAbstractFileEngine *create(const QString &) const override
     {
         return new MyEngine(2);
     }
@@ -2257,7 +2257,7 @@ void tst_QFile::fileEngineHandler()
 class MyRecursiveHandler : public QAbstractFileEngineHandler
 {
 public:
-    inline QAbstractFileEngine *create(const QString &fileName) const
+    inline QAbstractFileEngine *create(const QString &fileName) const override
     {
         if (fileName.startsWith(":!")) {
             QDir dir;
@@ -2671,7 +2671,7 @@ void tst_QFile::renameWithAtEndSpecialFile() const
     class PeculiarAtEnd : public QFile
     {
     public:
-        virtual bool atEnd() const
+        virtual bool atEnd() const override
         {
             return true;
         }

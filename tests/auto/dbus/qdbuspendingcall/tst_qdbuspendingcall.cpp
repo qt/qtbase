@@ -323,7 +323,7 @@ void tst_QDBusPendingCall::watcher_waitForFinished_threaded()
     public:
         tst_QDBusPendingCall *tst;
         WorkerThread(tst_QDBusPendingCall *tst) : tst(tst) {}
-        void run()
+        void run() override
         {
             QDBusPendingCall ac = tst->sendMessage();
 //            QVERIFY(!ac.isFinished());

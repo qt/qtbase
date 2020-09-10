@@ -45,7 +45,7 @@ class PureVirtualSignalsImpl : public PureVirtualSignalsTest
     Q_OBJECT
 public:
 signals:
-    void mySignal();
-    void mySignal2(int foo);
+    void mySignal() override;
+    void mySignal2(int foo) override;
 };
 #endif // PURE_VIRTUAL_SIGNALS_H

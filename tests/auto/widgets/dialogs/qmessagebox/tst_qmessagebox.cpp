@@ -80,7 +80,8 @@ public:
     bool resized;
 
 protected:
-    void resizeEvent ( QResizeEvent * event ) {
+    void resizeEvent ( QResizeEvent * event ) override
+    {
         resized = true;
         QMessageBox::resizeEvent(event);
     }

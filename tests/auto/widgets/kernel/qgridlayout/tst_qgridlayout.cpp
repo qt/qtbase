@@ -386,7 +386,7 @@ public:
     SizeHinter(int w, int h, QWidget *parent = 0)
         : QWidget(parent), sh(QSize(w,h)) {}
     void setSizeHint(QSize s) { sh = s; }
-    QSize sizeHint() const { return sh; }
+    QSize sizeHint() const override { return sh; }
 private:
     QSize sh;
 };
@@ -452,7 +452,7 @@ public:
     }
 
     virtual int pixelMetric(PixelMetric metric, const QStyleOption * option = nullptr,
-                            const QWidget * widget = nullptr ) const;
+                            const QWidget * widget = nullptr ) const override;
 
     int spacing = 6;
     int margin = 9;
@@ -508,11 +508,11 @@ public:
     }
 
     void setSizeHint(const QSize &s) { sh = s; }
-    QSize sizeHint() const { return sh; }
+    QSize sizeHint() const override { return sh; }
     void setMinimumSizeHint(const QSize &s) { msh = s; }
-    QSize minimumSizeHint() const { return msh; }
+    QSize minimumSizeHint() const override { return msh; }
 
-    virtual int heightForWidth(int width) const;
+    virtual int heightForWidth(int width) const override;
 
     void setNumberOfPixels(int numPixels) {
         m_numPixels = numPixels;
@@ -901,9 +901,9 @@ public:
     }
 
     virtual int pixelMetric(PixelMetric metric, const QStyleOption * option = 0,
-                            const QWidget * widget = 0 ) const;
+                            const QWidget * widget = 0 ) const override;
     virtual QRect subElementRect(SubElement sr, const QStyleOption *opt,
-                                const QWidget *widget) const;
+                                const QWidget *widget) const override;
 
     int hspacing;
     int vspacing;
@@ -913,7 +913,7 @@ public:
                       QSizePolicy::ControlType control2,
                       Qt::Orientation orientation,
                       const QStyleOption *option = 0,
-                      const QWidget *widget = 0) const;
+                      const QWidget *widget = 0) const override;
 
 };
 

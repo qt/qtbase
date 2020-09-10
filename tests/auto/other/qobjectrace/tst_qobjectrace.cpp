@@ -104,7 +104,8 @@ public:
         QThread::start();
     }
 
-    void run() {
+    void run() override
+    {
         QTimer zeroTimer;
         connect(&zeroTimer, SIGNAL(timeout()), object, SLOT(theSlot()));
         connect(&zeroTimer, SIGNAL(timeout()), this, SLOT(checkStopWatch()), Qt::DirectConnection);
@@ -219,7 +220,8 @@ public:
             objects[i]->moveToThread(this);
     }
 
-    void run() {
+    void run() override
+    {
         for (int i = number-1; i >= 0; --i) {
             /* Do some more connection and disconnection between object in this thread that have not been destroyed yet */
 
@@ -417,7 +419,7 @@ public:
     {
     }
 
-    void run()
+    void run() override
     {
         while (!isInterruptionRequested()) {
             QMetaObject::Connection conn = connect(sender, &DisconnectRaceSenderObject::theSignal,
@@ -441,7 +443,7 @@ public:
     {
     }
 
-    void run()
+    void run() override
     {
         while (!isInterruptionRequested()) {
             emit sender->theSignal();
@@ -490,7 +492,7 @@ public:
     {
     }
 
-    void run()
+    void run() override
     {
         QScopedPointer<DeleteReceiverRaceReceiver> receiver(new DeleteReceiverRaceReceiver(sender));
         exec();

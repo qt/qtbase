@@ -68,7 +68,7 @@ public:
         : className("tst_BadXml"), mo(0) {}
     ~tst_BadXmlSub() { free(mo); }
 
-    const QMetaObject* metaObject() const;
+    const QMetaObject* metaObject() const override;
 
     QByteArray className;
 private:

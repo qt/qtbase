@@ -150,14 +150,14 @@ struct SharedResource : public QOpenGLSharedResource
             tracker->destructorCalls++;
     }
 
-    void invalidateResource()
+    void invalidateResource() override
     {
         resource = 0;
         if (tracker)
             tracker->invalidateResourceCalls++;
     }
 
-    void freeResource(QOpenGLContext *context)
+    void freeResource(QOpenGLContext *context) override
     {
         Q_ASSERT(context == QOpenGLContext::currentContext());
         Q_UNUSED(context);

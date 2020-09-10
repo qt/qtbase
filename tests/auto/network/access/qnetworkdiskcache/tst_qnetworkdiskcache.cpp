@@ -668,7 +668,7 @@ public:
         , cachePath(cachePath)
     {}
 
-    void run()
+    void run() override
     {
         QByteArray longString = "Hello World, this is some long string, well not really that long";
         for (int j = 0; j < 10; ++j)

@@ -133,7 +133,7 @@ public:
         : _logtext(logtext), _configuration(configuration)
     {}
 protected:
-    void run()
+    void run() override
     {
         for (int i = 0; i < 2000; i++) {
             _configuration->addKey("Digia*", true);

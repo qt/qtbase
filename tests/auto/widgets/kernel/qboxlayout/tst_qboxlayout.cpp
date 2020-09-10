@@ -71,7 +71,7 @@ public:
     }
 
     virtual int pixelMetric(PixelMetric metric, const QStyleOption * option = 0,
-                            const QWidget * widget = 0 ) const;
+                            const QWidget * widget = 0 ) const override;
 
     int hspacing;
     int vspacing;
@@ -245,7 +245,7 @@ public:
     }
 
     virtual QRect subElementRect(SubElement sr, const QStyleOption *opt,
-                                const QWidget *widget) const
+                                const QWidget *widget) const override
     {
         QRect rect = opt->rect;
         switch (sr) {
@@ -411,14 +411,14 @@ class LayoutItem : public QLayoutItem
 public:
     LayoutItem(const Descr &descr) :m_descr(descr) {}
 
-    QSize sizeHint() const { return QSize(m_descr.sizeHint, 100); }
-    QSize minimumSize() const { return QSize(m_descr.minimumSize, 0); }
-    QSize maximumSize() const { return QSize(m_descr.maximumSize, QLAYOUTSIZE_MAX); }
-    Qt::Orientations expandingDirections() const
+    QSize sizeHint() const override { return QSize(m_descr.sizeHint, 100); }
+    QSize minimumSize() const override { return QSize(m_descr.minimumSize, 0); }
+    QSize maximumSize() const override { return QSize(m_descr.maximumSize, QLAYOUTSIZE_MAX); }
+    Qt::Orientations expandingDirections() const override
     { return m_descr.expanding ? Qt::Horizontal :  Qt::Orientations{}; }
-    void setGeometry(const QRect &r) { m_pos = r.x(); m_size = r.width();}
-    QRect geometry() const { return QRect(m_pos, 0, m_size, 100); }
-    bool isEmpty() const { return m_descr.empty; }
+    void setGeometry(const QRect &r) override { m_pos = r.x(); m_size = r.width();}
+    QRect geometry() const override { return QRect(m_pos, 0, m_size, 100); }
+    bool isEmpty() const override { return m_descr.empty; }
 
 private:
     Descr m_descr;

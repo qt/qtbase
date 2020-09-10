@@ -39,7 +39,7 @@ class InputItem : public QObject
 public:
     InputItem() : cursorRectangle(1, 2, 3, 4), m_enabled(true) {}
 
-    bool event(QEvent *event)
+    bool event(QEvent *event) override
     {
         if (event->type() == QEvent::InputMethodQuery) {
             QInputMethodQueryEvent *query = static_cast<QInputMethodQueryEvent *>(event);
@@ -74,7 +74,7 @@ class DummyWindow : public QWindow
 public:
     DummyWindow() : m_focusObject(0) {}
 
-    virtual QObject *focusObject() const
+    virtual QObject *focusObject() const override
     {
         return m_focusObject;
     }

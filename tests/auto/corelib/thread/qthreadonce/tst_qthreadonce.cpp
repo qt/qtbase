@@ -77,7 +77,7 @@ public:
     ~IncrementThread() { wait(); }
 
 protected:
-    void run()
+    void run() override
         {
             sem2.release();
             sem1.acquire();             // synchronize

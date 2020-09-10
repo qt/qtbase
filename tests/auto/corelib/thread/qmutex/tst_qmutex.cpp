@@ -204,7 +204,7 @@ void tst_QMutex::tryLock_non_recursive()
     class Thread : public QThread
     {
     public:
-        void run()
+        void run() override
         {
             testsTurn.release();
 
@@ -331,7 +331,7 @@ void tst_QMutex::try_lock_for_non_recursive() {
     class Thread : public QThread
     {
     public:
-        void run()
+        void run() override
         {
             testsTurn.release();
 
@@ -460,7 +460,7 @@ void tst_QMutex::try_lock_until_non_recursive()
     class Thread : public QThread
     {
     public:
-        void run()
+        void run() override
         {
             const std::chrono::milliseconds systemTimersResolutionAsDuration(systemTimersResolution);
             testsTurn.release();
@@ -586,7 +586,7 @@ void tst_QMutex::tryLock_recursive()
     class Thread : public QThread
     {
     public:
-        void run()
+        void run() override
         {
             testsTurn.release();
 
@@ -713,7 +713,7 @@ void tst_QMutex::try_lock_for_recursive()
     class Thread : public QThread
     {
     public:
-        void run()
+        void run() override
         {
             testsTurn.release();
 
@@ -841,7 +841,7 @@ void tst_QMutex::try_lock_until_recursive()
     class Thread : public QThread
     {
     public:
-        void run()
+        void run() override
         {
             const std::chrono::milliseconds systemTimersResolutionAsDuration(systemTimersResolution);
             testsTurn.release();
@@ -972,7 +972,7 @@ public:
 
     inline mutex_Thread(QMutex &m) : test_mutex(m) { }
 
-    void run()
+    void run() override
     {
         test_mutex.lock();
 
@@ -997,7 +997,7 @@ public:
 
     inline rmutex_Thread(QRecursiveMutex &m) : test_mutex(m) { }
 
-    void run()
+    void run() override
     {
         test_mutex.lock();
         test_mutex.lock();
@@ -1101,7 +1101,7 @@ public:
         t.start();
         QThread::start();
     }
-    void run()
+    void run() override
     {
         while (t.elapsed() < one_minute) {
             mutex.lock();
@@ -1140,7 +1140,7 @@ class TryLockRaceThread : public QThread
 public:
     static QMutex mutex;
 
-    void run()
+    void run() override
     {
         QElapsedTimer t;
         t.start();
@@ -1186,7 +1186,8 @@ void tst_QMutex::tryLockDeadlock()
     struct TrylockThread : QThread {
         TrylockThread(QMutex &mut) : mut(mut) {}
         QMutex &mut;
-        void run() {
+        void run() override
+        {
             for (int i = 0; i < 100000; ++i) {
                 if (mut.tryLock(0)) {
                     if ((++tryLockDeadlockCounter) != 1)
@@ -1239,7 +1240,8 @@ void tst_QMutex::tryLockNegative()
         QMutex &mut;
         int timeout;
         int tryLockResult;
-        void run() {
+        void run() override
+        {
             tryLockResult = mut.tryLock(timeout);
             mut.unlock();
         }
@@ -1281,7 +1283,7 @@ public:
         t.start();
         QThread::start();
     }
-    void run()
+    void run() override
     {
         quint64 i = 0;
         while (t.elapsed() < one_minute) {

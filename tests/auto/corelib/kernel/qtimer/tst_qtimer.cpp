@@ -335,7 +335,8 @@ public:
         secondTimerId = -1; // started later
     }
 
-    bool event(QEvent *e) {
+    bool event(QEvent *e) override
+    {
         if (e->type() == 4002) {
             // got the posted event
             if (timeoutsForFirst == 1 && timeoutsForSecond == 0)
@@ -345,7 +346,8 @@ public:
         return QObject::event(e);
     }
 
-    void timerEvent(QTimerEvent *te) {
+    void timerEvent(QTimerEvent *te) override
+    {
         if (te->timerId() == firstTimerId) {
             if (++timeoutsForFirst == 1) {
                 killTimer(extraTimerId);
@@ -403,7 +405,7 @@ public:
         : inTimerEvent(false), timerEventRecursed(false), interval(interval)
     { }
 
-    void timerEvent(QTimerEvent *timerEvent)
+    void timerEvent(QTimerEvent *timerEvent) override
     {
         timerEventRecursed = inTimerEvent;
         if (timerEventRecursed) {
@@ -460,7 +462,7 @@ public:
         : times(0), target(target), recurse(false)
     { }
 
-    void timerEvent(QTimerEvent *timerEvent)
+    void timerEvent(QTimerEvent *timerEvent) override
     {
         if (++times == target) {
             killTimer(timerEvent->timerId());
@@ -579,7 +581,7 @@ public:
         interval = interval ? 0 : 1000;
     }
 
-    void timerEvent(QTimerEvent* ev)
+    void timerEvent(QTimerEvent* ev) override
     {
         if (ev->timerId() != m_timer.timerId())
             return;
@@ -677,7 +679,7 @@ public:
         delete timer;
     }
 
-    void run()
+    void run() override
     {
         QEventLoop eventLoop;
         timer = new QTimer;
@@ -947,7 +949,7 @@ class DontBlockEvents : public QObject
     Q_OBJECT
 public:
     DontBlockEvents();
-    void timerEvent(QTimerEvent*);
+    void timerEvent(QTimerEvent*) override;
 
     int count;
     int total;

@@ -887,7 +887,7 @@ void tst_QAtomicInt::fetchAndAdd_loop()
 class FetchAndAddThread : public QThread
 {
 public:
-    void run()
+    void run() override
     {
 
         for (int i = 0; i < iterations; ++i)

@@ -284,13 +284,13 @@ protected:
         return true;
     }
 
-    void focusInEvent(QFocusEvent *event)
+    void focusInEvent(QFocusEvent *event) override
     {
         QLineEdit::focusInEvent(event);
         hasFakeEditFocus = isSingleFocusWidget();
     }
 
-    void focusOutEvent(QFocusEvent *event)
+    void focusOutEvent(QFocusEvent *event) override
     {
         hasFakeEditFocus = false;
         QLineEdit::focusOutEvent(event);

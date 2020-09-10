@@ -380,7 +380,7 @@ class UuidThread : public QThread
 public:
     QUuid uuid;
 
-    void run()
+    void run() override
     {
         uuid = QUuid::createUuid();
     }

@@ -110,7 +110,7 @@ public:
         q.clear();
     }
 
-    void run()
+    void run() override
     {
         QString dbName = QString("QThreadDb%1").arg((size_t)currentThreadId());
         runHelper(dbName);
@@ -148,7 +148,7 @@ public:
         }
     }
 
-    void run()
+    void run() override
     {
         QString dbName = QString("Producer%1").arg((size_t)currentThreadId());
         runHelper(dbName);
@@ -184,7 +184,7 @@ public:
         }
     }
 
-    void run()
+    void run() override
     {
         QString dbName = QString("Consumer%1").arg((size_t)currentThreadId());
         runHelper(dbName);
@@ -206,7 +206,7 @@ public:
     SqlThread(Mode m, const QSqlDatabase &db, QObject *parent = 0)
         : QThread(parent), sourceDb(db), mode(m) {}
 
-    void run()
+    void run() override
     {
         QSqlDatabase &db = sourceDb;
         switch (mode) {

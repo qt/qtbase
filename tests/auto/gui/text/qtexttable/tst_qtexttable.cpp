@@ -1043,30 +1043,30 @@ public:
         PaintEngine()
             : QPaintEngine(QPaintEngine::PaintEngineFeatures{ })
         {}
-        virtual Type type() const
+        virtual Type type() const override
         {
             return User;
         }
-        virtual bool begin(QPaintDevice *)
+        virtual bool begin(QPaintDevice *) override
         {
             return true;
         }
-        virtual bool end()
+        virtual bool end() override
         {
             return true;
         }
-        virtual void updateState(const QPaintEngineState &)
+        virtual void updateState(const QPaintEngineState &) override
         {}
-        virtual void drawRects(const QRect *, int)
+        virtual void drawRects(const QRect *, int) override
         {}
-        virtual void drawRects(const QRectF *r, int)
+        virtual void drawRects(const QRectF *r, int) override
         {
             if (painter()->brush() == QBrush(Qt::green))
             {
                 rects.append(*r);
             }
         }
-        virtual void drawPixmap(const QRectF &, const QPixmap &, const QRectF &)
+        virtual void drawPixmap(const QRectF &, const QPixmap &, const QRectF &) override
         {}
     };
 
@@ -1115,7 +1115,7 @@ public:
         layout.setUnits(QPageLayout::Point);
         setPageLayout(layout);
     }
-    virtual int metric(PaintDeviceMetric metric) const
+    virtual int metric(PaintDeviceMetric metric) const override
     {
         if (PdmDevicePixelRatio == metric)
             return 1;
@@ -1131,11 +1131,11 @@ public:
             return 700;
         return 900;
     }
-    virtual QPaintEngine *paintEngine() const
+    virtual QPaintEngine *paintEngine() const override
     {
         return engine;
     }
-    bool newPage()
+    bool newPage() override
     {
         ++pages;
         return true;

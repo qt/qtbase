@@ -1683,8 +1683,8 @@ QT_END_NAMESPACE
 void tst_QTextLayout::testTabDPIScale()
 {
     class MyPaintDevice : public QPaintDevice {
-        QPaintEngine *paintEngine () const { return 0; }
-        int metric (QPaintDevice::PaintDeviceMetric metric) const {
+        QPaintEngine *paintEngine () const override { return 0; }
+        int metric (QPaintDevice::PaintDeviceMetric metric) const override {
             switch(metric) {
             case QPaintDevice::PdmWidth:
             case QPaintDevice::PdmHeight:

@@ -1192,7 +1192,7 @@ public:
     }
 
 protected:
-    inline void run()
+    inline void run() override
     {
         exitCode = 90210;
 

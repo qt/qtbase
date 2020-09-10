@@ -298,7 +298,7 @@ public:
     }
 
     virtual int pixelMetric(PixelMetric metric, const QStyleOption * option = 0,
-                            const QWidget * widget = 0 ) const;
+                            const QWidget * widget = 0 ) const override;
 
     int hspacing;
     int vspacing;
@@ -391,7 +391,7 @@ void tst_QFormLayout::contentsRect()
 class DummyMacStyle : public QCommonStyle
 {
 public:
-    virtual int styleHint ( StyleHint hint, const QStyleOption * option = 0, const QWidget * widget = 0, QStyleHintReturn * returnData = 0 ) const
+    virtual int styleHint ( StyleHint hint, const QStyleOption * option = 0, const QWidget * widget = 0, QStyleHintReturn * returnData = 0 ) const override
     {
         switch(hint) {
             case SH_FormLayoutFormAlignment:
@@ -411,7 +411,7 @@ public:
 class DummyQtopiaStyle : public QCommonStyle
 {
 public:
-    virtual int styleHint ( StyleHint hint, const QStyleOption * option = 0, const QWidget * widget = 0, QStyleHintReturn * returnData = 0 ) const
+    virtual int styleHint ( StyleHint hint, const QStyleOption * option = 0, const QWidget * widget = 0, QStyleHintReturn * returnData = 0 ) const override
     {
         switch(hint) {
             case SH_FormLayoutFormAlignment:

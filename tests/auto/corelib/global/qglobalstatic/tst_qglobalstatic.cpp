@@ -182,7 +182,7 @@ void tst_QGlobalStatic::threadStressTest()
     {
     public:
         QReadWriteLock *lock;
-        void run()
+        void run() override
         {
             QReadLocker l(lock);
             //usleep(QRandomGenerator::global()->generate(200));

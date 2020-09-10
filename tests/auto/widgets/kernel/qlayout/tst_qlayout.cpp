@@ -104,8 +104,8 @@ public:
 
 
     void setSizeHint(const QSize &s) { sh = s; }
-    QSize sizeHint() const { return sh; }
-    QSize minimumSizeHint() const { return msh; }
+    QSize sizeHint() const override { return sh; }
+    QSize minimumSizeHint() const override { return msh; }
 
 private:
     QSize sh;
@@ -221,13 +221,13 @@ class MyLayout : public QLayout
 {
     public:
         MyLayout() : invalidated(false) {}
-        virtual void invalidate() {invalidated = true;}
+        virtual void invalidate() override {invalidated = true;}
         bool invalidated;
-        QSize sizeHint() const {return QSize();}
-        void addItem(QLayoutItem*) {}
-        QLayoutItem* itemAt(int) const {return 0;}
-        QLayoutItem* takeAt(int) {return 0;}
-        int count() const {return 0;}
+        QSize sizeHint() const override {return QSize();}
+        void addItem(QLayoutItem*) override {}
+        QLayoutItem* itemAt(int) const override {return 0;}
+        QLayoutItem* takeAt(int) override {return 0;}
+        int count() const override {return 0;}
 };
 
 void tst_QLayout::setContentsMargins()
@@ -253,7 +253,7 @@ void tst_QLayout::setContentsMargins()
 class EventReceiver : public QObject
 {
 public:
-    bool eventFilter(QObject *watched, QEvent *event)
+    bool eventFilter(QObject *watched, QEvent *event) override
     {
         if (event->type() == QEvent::Show) {
             geom = static_cast<QWidget*>(watched)->geometry();

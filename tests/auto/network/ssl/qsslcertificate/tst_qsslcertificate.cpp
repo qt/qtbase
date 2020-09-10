@@ -1221,7 +1221,7 @@ void tst_QSslCertificate::extensionsCritical()
 class TestThread : public QThread
 {
 public:
-    void run()
+    void run() override
     {
         effectiveDate = cert.effectiveDate();
         expiryDate = cert.expiryDate();

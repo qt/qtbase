@@ -482,7 +482,7 @@ public:
       {};
 
 protected:
-      bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const
+      bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override
       {
             QModelIndex parentIndex;
             parentIndex = source_parent;
@@ -515,7 +515,7 @@ public:
         {
         }
 protected:
-        virtual bool lessThan(const QModelIndex &left, const QModelIndex &right) const
+        virtual bool lessThan(const QModelIndex &left, const QModelIndex &right) const override
         {
             QFileSystemModel * const model = qobject_cast<QFileSystemModel *>(sourceModel());
             const QFileInfo leftInfo(model->fileInfo(left));

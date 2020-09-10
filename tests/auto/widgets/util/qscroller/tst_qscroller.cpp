@@ -52,7 +52,7 @@ public:
         receivedOvershoot = false;
     }
 
-    bool event(QEvent *e)
+    bool event(QEvent *e) override
     {
         switch (e->type()) {
         case QEvent::Gesture:

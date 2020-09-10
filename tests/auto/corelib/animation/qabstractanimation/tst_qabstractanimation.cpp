@@ -58,8 +58,8 @@ public:
     TestableQAbstractAnimation() : m_duration(10) {}
     virtual ~TestableQAbstractAnimation() {};
 
-    int duration() const { return m_duration; }
-    virtual void updateCurrentTime(int) {}
+    int duration() const override { return m_duration; }
+    virtual void updateCurrentTime(int) override {}
 
     void setDuration(int duration) { m_duration = duration; }
 private:
@@ -70,8 +70,8 @@ class DummyQAnimationGroup : public QAnimationGroup
 {
     Q_OBJECT
 public:
-    int duration() const { return 10; }
-    virtual void updateCurrentTime(int) {}
+    int duration() const override { return 10; }
+    virtual void updateCurrentTime(int) override {}
 };
 
 void tst_QAbstractAnimation::construction()

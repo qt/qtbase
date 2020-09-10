@@ -145,7 +145,7 @@ void tst_QProgressBar::text()
 
 class ProgressBar : public QProgressBar
 {
-    void paintEvent(QPaintEvent *event)
+    void paintEvent(QPaintEvent *event) override
     {
         repainted = true;
         QProgressBar::paintEvent(event);

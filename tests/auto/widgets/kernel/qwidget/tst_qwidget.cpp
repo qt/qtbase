@@ -6986,7 +6986,7 @@ public:
     }
 
 protected:
-    void paintEvent(QPaintEvent *)
+    void paintEvent(QPaintEvent *) override
     {
         if (ellipse) {
             QPainter painter(this);
@@ -10142,7 +10142,7 @@ void tst_QWidget::focusProxy()
         int focusOutCount = 0;
 
     protected:
-        bool eventFilter(QObject *receiver, QEvent *event)
+        bool eventFilter(QObject *receiver, QEvent *event) override
         {
             if (receiver == edit) {
                 switch (event->type()) {

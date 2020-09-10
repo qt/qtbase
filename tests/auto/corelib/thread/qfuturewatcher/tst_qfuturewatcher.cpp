@@ -232,7 +232,7 @@ void tst_QFutureWatcher::canceled()
 class IntTask : public RunFunctionTask<int>
 {
 public:
-    void runFunctor()
+    void runFunctor() override
     {
         result = 10;
     }
@@ -466,7 +466,7 @@ const int maxProgress = 100000;
 class ProgressEmitterTask : public RunFunctionTask<void>
 {
 public:
-    void runFunctor()
+    void runFunctor() override
     {
         promise.setProgressRange(0, maxProgress);
         for (int p = 0; p <= maxProgress; ++p)
@@ -496,7 +496,7 @@ template <typename T>
 class ProgressTextTask : public RunFunctionTask<T>
 {
 public:
-    void runFunctor()
+    void runFunctor() override
     {
         this->promise.setProgressValueAndText(1, QLatin1String("Foo 1"));
 

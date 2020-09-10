@@ -477,7 +477,7 @@ class MetaTypeTorturer: public QThread
 {
     Q_OBJECT
 protected:
-    void run()
+    void run() override
     {
         Bar space[1];
         space[0].~Bar();

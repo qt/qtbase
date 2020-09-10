@@ -51,7 +51,7 @@ class tst_QEventDispatcher : public QObject
     bool doubleTimer = false;
 
 protected:
-    bool event(QEvent *e);
+    bool event(QEvent *e) override;
 
 public:
     inline tst_QEventDispatcher()
@@ -314,7 +314,7 @@ public:
 
     inline ProcessEventsOnlySendsQueuedEvents() : eventsReceived(0) {}
 
-    bool event(QEvent *event)
+    bool event(QEvent *event) override
     {
         ++eventsReceived;
 

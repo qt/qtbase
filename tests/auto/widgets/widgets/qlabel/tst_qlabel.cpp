@@ -391,7 +391,7 @@ void tst_QLabel::task226479_movieResize()
 {
     class Label : public QLabel {
         protected:
-            void paintEvent(QPaintEvent *e)
+            void paintEvent(QPaintEvent *e) override
             {
                 paintedRegion += e->region();
                 QLabel::paintEvent(e);

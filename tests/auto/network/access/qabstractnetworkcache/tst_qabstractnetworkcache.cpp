@@ -86,7 +86,7 @@ public:
         clear();
     }
 
-    QIODevice *data(const QUrl &url)
+    QIODevice *data(const QUrl &url) override
     {
         gotData = true;
         return QNetworkDiskCache::data(url);

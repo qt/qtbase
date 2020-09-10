@@ -186,7 +186,7 @@ class DummyWindow : public QWindow
 public:
     DummyWindow() : m_focusObject(nullptr) {}
 
-    virtual QObject *focusObject() const
+    virtual QObject *focusObject() const override
     {
         return m_focusObject;
     }
@@ -353,14 +353,14 @@ void tst_QGuiApplication::abortQuitOnShow()
 class FocusChangeWindow: public QWindow
 {
 protected:
-    virtual bool event(QEvent *ev)
+    virtual bool event(QEvent *ev) override
     {
         if (ev->type() == QEvent::FocusAboutToChange)
             windowDuringFocusAboutToChange = qGuiApp->focusWindow();
         return QWindow::event(ev);
     }
 
-    virtual void focusOutEvent(QFocusEvent *)
+    virtual void focusOutEvent(QFocusEvent *) override
     {
         windowDuringFocusOut = qGuiApp->focusWindow();
     }
@@ -602,7 +602,7 @@ public:
     inline explicit BlockableWindow(QWindow *parent = nullptr)
         : QWindow(parent), blocked(false), leaves(0), enters(0) {}
 
-    bool event(QEvent *e)
+    bool event(QEvent *e) override
     {
         switch (e->type()) {
         case QEvent::WindowBlocked:
@@ -985,7 +985,7 @@ class TestPluginFactory : public QGenericPlugin
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QGenericPluginFactoryInterface" FILE "testplugin.json")
 public:
-    QObject* create(const QString &key, const QString &)
+    QObject* create(const QString &key, const QString &) override
     {
         if (key == "testplugin")
             return new TestPlugin;
@@ -1003,7 +1003,7 @@ public:
         : customEvents(0)
     {}
 
-    virtual void customEvent(QEvent *)
+    virtual void customEvent(QEvent *) override
     {
         customEvents++;
     }

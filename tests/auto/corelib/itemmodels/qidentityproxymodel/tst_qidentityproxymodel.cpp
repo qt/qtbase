@@ -43,9 +43,9 @@ Q_LOGGING_CATEGORY(lcItemModels, "qt.corelib.tests.itemmodels")
 class DataChangedModel : public QAbstractListModel
 {
 public:
-    int rowCount(const QModelIndex &parent) const { return parent.isValid() ? 0 : 1; }
-    QVariant data(const QModelIndex&, int) const { return QVariant(); }
-    QModelIndex index(int row, int column, const QModelIndex &) const { return createIndex(row, column); }
+    int rowCount(const QModelIndex &parent) const override { return parent.isValid() ? 0 : 1; }
+    QVariant data(const QModelIndex&, int) const override { return QVariant(); }
+    QModelIndex index(int row, int column, const QModelIndex &) const override { return createIndex(row, column); }
 
     void changeData()
     {
@@ -399,7 +399,7 @@ void tst_QIdentityProxyModel::dataChanged()
 class AppendStringProxy : public QIdentityProxyModel
 {
 public:
-    QVariant data(const QModelIndex &index, int role) const
+    QVariant data(const QModelIndex &index, int role) const override
     {
         const QVariant result = QIdentityProxyModel::data(index, role);
         if (role != Qt::DisplayRole)

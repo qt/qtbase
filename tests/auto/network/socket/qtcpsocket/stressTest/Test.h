@@ -56,7 +56,7 @@ public:
     My4Server(QObject *parent = 0);
 
 protected:
-    void incomingConnection(qintptr socket);
+    void incomingConnection(qintptr socket) override;
 
 private slots:
     void stopServer();

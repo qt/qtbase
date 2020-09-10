@@ -51,7 +51,7 @@ public:
     { }
 
 protected:
-    void focusInEvent(QFocusEvent *)
+    void focusInEvent(QFocusEvent *) override
     {
         QCoreApplication::postEvent(this, new QKeyEvent(QEvent::KeyPress,
                                                         Qt::Key_Down, Qt::NoModifier));

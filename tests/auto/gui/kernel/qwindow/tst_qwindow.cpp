@@ -402,7 +402,8 @@ public:
     using Window::Window;
 
 protected:
-    void paintEvent(QPaintEvent *) {
+    void paintEvent(QPaintEvent *) override
+    {
         // Handled, not calling base class
     }
 };

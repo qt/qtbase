@@ -1828,7 +1828,7 @@ public:
     QStringEncoder encode;
     QStringDecoder decode;
     QString *target;
-    void run()
+    void run() override
     {
         QString str = QString::fromLatin1("abcdefghijklmonpqrstufvxyz");
         for (int i = 0; i < 10000; ++i) {

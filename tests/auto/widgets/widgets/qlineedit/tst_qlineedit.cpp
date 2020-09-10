@@ -906,7 +906,7 @@ public:
         : QValidator(parent)
     {}
 
-    QValidator::State validate(QString &str, int &) const
+    QValidator::State validate(QString &str, int &) const override
     {
         const int s = str.size();
         if (s < chars) {
@@ -917,7 +917,7 @@ public:
         return Acceptable;
     }
 
-    void fixup(QString &str) const
+    void fixup(QString &str) const override
     {
         str = str.leftJustified(chars, 'X', true);
     }
@@ -1930,7 +1930,7 @@ void tst_QLineEdit::isReadOnly()
 class BlinkTestLineEdit : public QLineEdit
 {
 public:
-    void paintEvent(QPaintEvent *e)
+    void paintEvent(QPaintEvent *e) override
     {
         ++updates;
         QLineEdit::paintEvent(e);
@@ -2431,7 +2431,7 @@ void tst_QLineEdit::returnPressed()
 class QIntFixValidator : public QIntValidator {
 public:
     QIntFixValidator(int min, int max, QObject *parent) : QIntValidator(min, max, parent) {}
-    void fixup (QString &input) const {
+    void fixup (QString &input) const override {
         for (int i=0; i<input.length(); ++i)
             if (!input.at(i).isNumber()) {
                 input[(int)i] = QChar('0');
@@ -3149,7 +3149,7 @@ class InputMaskValidator : public QValidator
 {
 public:
     InputMaskValidator(QObject *parent, const char *name = 0) : QValidator(parent) { setObjectName(name); }
-    State validate(QString &text, int &pos) const
+    State validate(QString &text, int &pos) const override
     {
         InputMaskValidator *that = (InputMaskValidator *)this;
         that->validateText = text;
@@ -3219,7 +3219,7 @@ class LineEdit : public QLineEdit
 public:
     LineEdit() { state = Other; }
 
-    void keyPressEvent(QKeyEvent *e)
+    void keyPressEvent(QKeyEvent *e) override
     {
         QLineEdit::keyPressEvent(e);
         if (e->key() == Qt::Key_Enter) {
@@ -4048,7 +4048,7 @@ class UpdateRegionLineEdit : public QLineEdit
 public:
     QRegion updateRegion;
 protected:
-    void paintEvent(QPaintEvent *event)
+    void paintEvent(QPaintEvent *event) override
     {
         updateRegion = event->region();
     }

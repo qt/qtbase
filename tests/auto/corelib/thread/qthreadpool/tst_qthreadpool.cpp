@@ -43,7 +43,7 @@ class FunctionPointerTask : public QRunnable
 public:
     FunctionPointerTask(FunctionPointer function)
     :function(function) {}
-    void run() { function(); }
+    void run() override { function(); }
 private:
     FunctionPointer function;
 };
@@ -228,7 +228,7 @@ QAtomicInt ran; // bool
 class TestTask : public QRunnable
 {
 public:
-    void run()
+    void run() override
     {
         ran.storeRelaxed(true);
     }
@@ -256,7 +256,7 @@ QAtomicInt *value = 0;
 class IntAccessor : public QRunnable
 {
 public:
-    void run()
+    void run() override
     {
         for (int i = 0; i < 100; ++i) {
             value->ref();
@@ -286,7 +286,7 @@ QThread *recycledThread = 0;
 class ThreadRecorderTask : public QRunnable
 {
 public:
-    void run()
+    void run() override
     {
         recycledThread = QThread::currentThread();
         threadRecyclingSemaphore.release();
@@ -332,7 +332,7 @@ public:
         setAutoDelete(false);
     }
 
-    void run()
+    void run() override
     {
         thread = QThread::currentThread();
         runCount.ref();
@@ -474,7 +474,7 @@ void tst_QThreadPool::setMaxThreadCountStartsAndStopsThreads()
 
         WaitingTask() { setAutoDelete(false); }
 
-        void run()
+        void run() override
         {
             waitForStarted.release();
             waitToFinish.acquire();
@@ -671,7 +671,7 @@ void tst_QThreadPool::reserveAndStart() // QTBUG-21051
 
         WaitingTask() { setAutoDelete(false); }
 
-        void run()
+        void run() override
         {
             count.ref();
             waitForStarted.release();
@@ -722,7 +722,8 @@ void tst_QThreadPool::reserveAndStart() // QTBUG-21051
 QAtomicInt count;
 class CountingRunnable : public QRunnable
 {
-    public: void run()
+public:
+    void run() override
     {
         count.ref();
     }
@@ -750,7 +751,7 @@ void tst_QThreadPool::tryStart()
 
         WaitingTask() { setAutoDelete(false); }
 
-        void run()
+        void run() override
         {
             semaphore.acquire();
             count.ref();
@@ -780,7 +781,7 @@ void tst_QThreadPool::tryStartPeakThreadCount()
     public:
         CounterTask() { setAutoDelete(false); }
 
-        void run()
+        void run() override
         {
             {
                 QMutexLocker lock(&mutex);
@@ -819,7 +820,7 @@ void tst_QThreadPool::tryStartCount()
     public:
         SleeperTask() { setAutoDelete(false); }
 
-        void run()
+        void run() override
         {
             QTest::qWait(50);
         }
@@ -854,7 +855,7 @@ void tst_QThreadPool::priorityStart()
     public:
         QSemaphore &sem;
         Holder(QSemaphore &sem) : sem(sem) {}
-        void run()
+        void run() override
         {
             sem.acquire();
         }
@@ -864,7 +865,7 @@ void tst_QThreadPool::priorityStart()
     public:
         QAtomicPointer<QRunnable> &ptr;
         Runner(QAtomicPointer<QRunnable> &ptr) : ptr(ptr) {}
-        void run()
+        void run() override
         {
             ptr.testAndSetRelaxed(0, this);
         }
@@ -928,7 +929,7 @@ void tst_QThreadPool::waitForDoneTimeout()
       QMutex &mutex;
       explicit BlockedTask(QMutex &m) : mutex(m) {}
 
-      void run()
+      void run() override
         {
           mutex.lock();
           mutex.unlock();
@@ -953,7 +954,7 @@ void tst_QThreadPool::clear()
         public:
             QSemaphore & sem;
             BlockingRunnable(QSemaphore & sem) : sem(sem){}
-            void run()
+            void run() override
             {
                 sem.acquire();
                 count.ref();
@@ -1105,7 +1106,7 @@ void tst_QThreadPool::stackSize()
 
         }
 
-        void run()
+        void run() override
         {
             *stackSize = QThread::currentThread()->stackSize();
         }
@@ -1136,7 +1137,7 @@ void tst_QThreadPool::stressTest()
             semaphore.acquire();
         }
 
-        void run()
+        void run() override
         {
             semaphore.release();
         }
@@ -1162,7 +1163,8 @@ void tst_QThreadPool::takeAllAndIncreaseMaxThreadCount() {
             setAutoDelete(false);
         }
 
-        void run() {
+        void run() override
+        {
             m_mainBarrier->release();
             m_threadBarrier->acquire();
         }
@@ -1224,7 +1226,7 @@ void tst_QThreadPool::waitForDoneAfterTake()
             , m_threadBarrier(threadBarrier)
         {}
 
-        void run()
+        void run() override
         {
             m_mainBarrier->release();
             m_threadBarrier->acquire();

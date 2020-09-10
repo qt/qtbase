@@ -39,7 +39,7 @@ class Plugin1 : public QObject, public PluginInterface1
     Q_INTERFACES(PluginInterface1)
 
 public:
-    virtual QString pluginName() const;
+    virtual QString pluginName() const override;
 };
 
 #endif // THEPLUGIN_H

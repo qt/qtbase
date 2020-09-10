@@ -1063,7 +1063,7 @@ void tst_QPixmap::onlyNullPixmapsOutsideGuiThread()
     class Thread : public QThread
     {
     public:
-        void run()
+        void run() override
         {
             QTest::ignoreMessage(QtWarningMsg,
                                  "QPixmap: It is not safe to use pixmaps outside the GUI thread");

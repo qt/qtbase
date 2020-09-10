@@ -40,8 +40,8 @@ public:
     InsertCommand(QString *str, int idx, const QString &text,
                     QUndoCommand *parent = 0);
 
-    virtual void undo();
-    virtual void redo();
+    virtual void undo() override;
+    virtual void redo() override;
 
 private:
     QString *m_str;
@@ -54,8 +54,8 @@ class RemoveCommand : public QUndoCommand
 public:
     RemoveCommand(QString *str, int idx, int len, QUndoCommand *parent = 0);
 
-    virtual void undo();
-    virtual void redo();
+    virtual void undo() override;
+    virtual void redo() override;
 
 private:
     QString *m_str;
@@ -68,10 +68,10 @@ class AppendCommand : public QUndoCommand
 public:
     AppendCommand(QString *str, const QString &text, QUndoCommand *parent = 0);
 
-    virtual void undo();
-    virtual void redo();
-    virtual int id() const;
-    virtual bool mergeWith(const QUndoCommand *other);
+    virtual void undo() override;
+    virtual void redo() override;
+    virtual int id() const override;
+    virtual bool mergeWith(const QUndoCommand *other) override;
 
     bool merged;
 

@@ -228,9 +228,9 @@ class CustomShapeItem : public QGraphicsItem
 public:
     CustomShapeItem(const QPainterPath &shape) : QGraphicsItem(0), mShape(shape) {}
 
-    QPainterPath shape() const { return mShape; }
-    QRectF boundingRect() const { return mShape.boundingRect(); }
-    void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*) {}
+    QPainterPath shape() const override { return mShape; }
+    QRectF boundingRect() const override { return mShape.boundingRect(); }
+    void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*) override {}
 private:
     QPainterPath mShape;
 };
@@ -281,7 +281,7 @@ public:
     {
     }
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem * /* option */, QWidget * /* widget */)
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem * /* option */, QWidget * /* widget */) override
     {
         painter->setBrush(brush);
         painter->drawRect(boundingRect());
@@ -336,8 +336,8 @@ void tst_QGraphicsSceneIndex::clear()
         MyItem(QGraphicsItem *parent = 0) : QGraphicsItem(parent), numPaints(0) {}
         int numPaints;
     protected:
-        QRectF boundingRect() const { return QRectF(0, 0, 10, 10); }
-        void paint(QPainter * /* painter */, const QStyleOptionGraphicsItem *, QWidget *)
+        QRectF boundingRect() const override { return QRectF(0, 0, 10, 10); }
+        void paint(QPainter * /* painter */, const QStyleOptionGraphicsItem *, QWidget *) override
         { ++numPaints; }
     };
 

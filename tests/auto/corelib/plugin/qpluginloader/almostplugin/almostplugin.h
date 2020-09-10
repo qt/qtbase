@@ -39,7 +39,7 @@ class AlmostPlugin : public QObject, public PluginInterface
     Q_INTERFACES(PluginInterface)
 
 public:
-    QString pluginName() const;
+    QString pluginName() const override;
     void unresolvedSymbol() const;
 };
 

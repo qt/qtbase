@@ -327,7 +327,8 @@ void tst_QPointer::castDuringDestruction()
 }
 
 class TestRunnable : public QObject, public QRunnable {
-    void run() {
+    void run() override
+    {
         QPointer<QObject> obj1 = new QObject;
         QPointer<QObject> obj2 = new QObject;
         obj1->moveToThread(thread()); // this is the owner thread

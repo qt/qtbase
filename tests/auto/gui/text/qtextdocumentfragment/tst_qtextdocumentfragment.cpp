@@ -3134,7 +3134,8 @@ public:
 
     QPixmap testPixmap;
 
-    virtual QVariant loadResource(int type, const QUrl &name) {
+    virtual QVariant loadResource(int type, const QUrl &name) override
+    {
         if (name.toString() == QLatin1String("testPixmap")) {
             return testPixmap;
         }

@@ -260,7 +260,7 @@ void tst_QMdiSubWindow::minimumSizeHint()
     public:
         Widget() = default;
 
-        QSize minimumSizeHint() const
+        QSize minimumSizeHint() const override
         {
             return QSize(100, 100);
         }

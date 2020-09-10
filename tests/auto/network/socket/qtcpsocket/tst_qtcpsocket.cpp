@@ -1375,7 +1375,7 @@ public:
     }
 
 protected:
-    void run()
+    void run() override
     {
         bool timedOut = false;
         while (!quit) {
@@ -1865,7 +1865,7 @@ public:
     }
 
 protected:
-    inline void run()
+    inline void run() override
     {
 #ifndef QT_NO_SSL
         QFETCH_GLOBAL(bool, ssl);
@@ -2265,7 +2265,7 @@ class TestThread2 : public QThread
 {
     Q_OBJECT
 public:
-    void run()
+    void run() override
     {
         QFile fileWriter("fifo");
         QVERIFY(fileWriter.open(QFile::WriteOnly));
@@ -2880,7 +2880,7 @@ public:
         lastQuery = QNetworkProxyQuery();
     }
 
-    virtual QList<QNetworkProxy> queryProxy(const QNetworkProxyQuery &query)
+    virtual QList<QNetworkProxy> queryProxy(const QNetworkProxyQuery &query) override
     {
         lastQuery = query;
         ++callCount;

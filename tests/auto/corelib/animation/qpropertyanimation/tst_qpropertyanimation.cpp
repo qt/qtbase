@@ -39,10 +39,10 @@ class UncontrolledAnimation : public QPropertyAnimation
 {
     Q_OBJECT
 public:
-    int duration() const { return -1; /* not time driven */ }
+    int duration() const override { return -1; /* not time driven */ }
 
 protected:
-    void updateCurrentTime(int currentTime)
+    void updateCurrentTime(int currentTime) override
     {
         QPropertyAnimation::updateCurrentTime(currentTime);
         if (currentTime >= QPropertyAnimation::duration() || currentLoop() >= 1)
@@ -1283,7 +1283,7 @@ public:
         innerAnim->start();
     }
 
-    void updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState)
+    void updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState) override
     {
         QPropertyAnimation::updateState(newState, oldState);
         if (newState == QAbstractAnimation::Stopped)

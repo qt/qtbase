@@ -45,18 +45,18 @@ public:
     inline QTestDocumentLayout(QTextDocument *doc)
         : QAbstractTextDocumentLayout(doc), documentChangedCalled(false) {}
 
-        virtual void draw(QPainter *, const QAbstractTextDocumentLayout::PaintContext &)  {}
+        virtual void draw(QPainter *, const QAbstractTextDocumentLayout::PaintContext &) override {}
 
-        virtual int hitTest(const QPointF &, Qt::HitTestAccuracy ) const { return 0; }
+        virtual int hitTest(const QPointF &, Qt::HitTestAccuracy ) const override { return 0; }
 
-        virtual void documentChanged(int, int, int) { documentChangedCalled = true; }
+        virtual void documentChanged(int, int, int) override { documentChangedCalled = true; }
 
-        virtual int pageCount() const { return 1; }
+        virtual int pageCount() const override { return 1; }
 
-        virtual QSizeF documentSize() const { return QSize(); }
+        virtual QSizeF documentSize() const override { return QSize(); }
 
-        virtual QRectF frameBoundingRect(QTextFrame *) const { return QRectF(); }
-        virtual QRectF blockBoundingRect(const QTextBlock &) const { return QRectF(); }
+        virtual QRectF frameBoundingRect(QTextFrame *) const override { return QRectF(); }
+        virtual QRectF blockBoundingRect(const QTextBlock &) const override { return QRectF(); }
 
         bool documentChangedCalled;
 };
@@ -122,7 +122,7 @@ public:
         inline TestHighlighter(QTextDocument *parent)
             : QSyntaxHighlighter(parent), highlighted(false), callCount(0) {}
 
-            virtual void highlightBlock(const QString &text)
+            virtual void highlightBlock(const QString &text) override
             {
                 for (int i = 0; i < formats.count(); ++i) {
                     const QTextLayout::FormatRange &range = formats.at(i);
@@ -179,7 +179,7 @@ public:
             highlighted = false;
         }
 
-        virtual void highlightBlock(const QString &text)
+        virtual void highlightBlock(const QString &text) override
         {
             QTextCharFormat commentFormat;
             commentFormat.setForeground(Qt::darkGreen);
@@ -294,7 +294,7 @@ public:
             state = 0;
         }
 
-        virtual void highlightBlock(const QString &text)
+        virtual void highlightBlock(const QString &text) override
         {
             highlighted = true;
             if (text == QLatin1String("changestate"))

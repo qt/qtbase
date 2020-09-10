@@ -44,7 +44,7 @@ class EventSpy : public QObject
 
 public:
     QList<int> recordedEvents;
-    bool eventFilter(QObject *, QEvent *event)
+    bool eventFilter(QObject *, QEvent *event) override
     {
         recordedEvents.append(event->type());
         return false;
@@ -234,7 +234,7 @@ class EventGenerator : public QObject
 public:
     QObject *other;
 
-    bool event(QEvent *e)
+    bool event(QEvent *e) override
     {
         if (e->type() == QEvent::MaxUser) {
             QCoreApplication::sendPostedEvents(other, 0);
@@ -424,7 +424,7 @@ signals:
     void progress(int);
 
 protected:
-    void run()
+    void run() override
     {
         emit progress(1);
         emit progress(2);
@@ -492,7 +492,7 @@ public slots:
     }
 
 public:
-    bool event(QEvent *event)
+    bool event(QEvent *event) override
     {
         switch (event->type()) {
         case QEvent::User:
@@ -545,7 +545,7 @@ class GlobalPostedEventsCountObject : public QObject
 public:
     QList<int> globalPostedEventsCount;
 
-    bool event(QEvent *event)
+    bool event(QEvent *event) override
     {
         if (event->type() == QEvent::User)
             globalPostedEventsCount.append(qGlobalPostedEventsCount());
@@ -591,7 +591,7 @@ public:
         : counter(0)
     { }
 
-    bool event(QEvent *event)
+    bool event(QEvent *event) override
     {
         if (event->type() == QEvent::User)
             ++counter;
@@ -622,7 +622,7 @@ class QuitBlocker : public QObject
    Q_OBJECT
 
 public:
-    bool eventFilter(QObject *, QEvent *event)
+    bool eventFilter(QObject *, QEvent *event) override
     {
         if (event->type() == QEvent::Quit) {
             event->ignore();
@@ -728,21 +728,21 @@ void tst_QCoreApplication::eventLoopExecAfterExit()
 class DummyEventDispatcher : public QAbstractEventDispatcher {
 public:
     DummyEventDispatcher() : QAbstractEventDispatcher(), visited(false) {}
-    bool processEvents(QEventLoop::ProcessEventsFlags) {
+    bool processEvents(QEventLoop::ProcessEventsFlags) override {
         visited = true;
         emit awake();
         QCoreApplication::sendPostedEvents();
         return false;
     }
-    void registerSocketNotifier(QSocketNotifier *) {}
-    void unregisterSocketNotifier(QSocketNotifier *) {}
-    void registerTimer(int , int , Qt::TimerType, QObject *) {}
-    bool unregisterTimer(int ) { return false; }
-    bool unregisterTimers(QObject *) { return false; }
-    QList<TimerInfo> registeredTimers(QObject *) const { return QList<TimerInfo>(); }
-    int remainingTime(int) { return 0; }
-    void wakeUp() {}
-    void interrupt() {}
+    void registerSocketNotifier(QSocketNotifier *) override {}
+    void unregisterSocketNotifier(QSocketNotifier *) override {}
+    void registerTimer(int , int , Qt::TimerType, QObject *) override {}
+    bool unregisterTimer(int ) override { return false; }
+    bool unregisterTimers(QObject *) override { return false; }
+    QList<TimerInfo> registeredTimers(QObject *) const override { return QList<TimerInfo>(); }
+    int remainingTime(int) override { return 0; }
+    void wakeUp() override {}
+    void interrupt() override {}
 
 #ifdef Q_OS_WIN
     bool registerEventNotifier(QWinEventNotifier *) { return false; }

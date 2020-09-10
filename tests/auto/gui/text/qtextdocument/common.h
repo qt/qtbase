@@ -36,10 +36,10 @@ class QTestDocumentLayout : public QAbstractTextDocumentLayout
     Q_OBJECT
 public:
     QTestDocumentLayout(QTextDocument *doc) : QAbstractTextDocumentLayout(doc), f(-1), called(false) {}
-    virtual void draw(QPainter *, const PaintContext &)  {}
-    virtual int hitTest(const QPointF &, Qt::HitTestAccuracy ) const { return 0; }
+    virtual void draw(QPainter *, const PaintContext &) override {}
+    virtual int hitTest(const QPointF &, Qt::HitTestAccuracy ) const override { return 0; }
 
-    virtual void documentChanged(int from, int oldLength, int length)
+    virtual void documentChanged(int from, int oldLength, int length) override
     {
         called = true;
         lastDocumentLengths.append(QTextDocumentPrivate::get(document())->length());
@@ -55,11 +55,11 @@ public:
         }
     }
 
-    virtual int pageCount() const { return 1; }
-    virtual QSizeF documentSize() const { return QSizeF(); }
+    virtual int pageCount() const override { return 1; }
+    virtual QSizeF documentSize() const override { return QSizeF(); }
 
-    virtual QRectF frameBoundingRect(QTextFrame *) const { return QRectF(); }
-    virtual QRectF blockBoundingRect(const QTextBlock &) const { return QRectF(); }
+    virtual QRectF frameBoundingRect(QTextFrame *) const override { return QRectF(); }
+    virtual QRectF blockBoundingRect(const QTextBlock &) const override { return QRectF(); }
 
     int f;
     int o;

@@ -50,7 +50,7 @@ class TestableQVariantAnimation : public QVariantAnimation
 {
     Q_OBJECT
 public:
-    void updateCurrentValue(const QVariant&) {}
+    void updateCurrentValue(const QVariant&) override {}
 };
 
 void tst_QVariantAnimation::construction()

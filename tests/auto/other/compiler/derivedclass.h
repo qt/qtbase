@@ -33,7 +33,7 @@
 class DerivedClass : public BaseClass
 {
 public:
-    void wasAPureVirtualFunction();
+    void wasAPureVirtualFunction() override;
 };
 
 #endif

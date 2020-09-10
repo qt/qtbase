@@ -59,7 +59,8 @@ public:
 
     CustomFilter() : QPixmapFilter((QPixmapFilter::FilterType) Type, 0) { };
 
-    void draw(QPainter *p, const QPointF &pt, const QPixmap &src, const QRectF &srcRect = QRectF()) const {
+    void draw(QPainter *p, const QPointF &pt, const QPixmap &src, const QRectF &srcRect = QRectF()) const override
+    {
         p->drawPixmap(QRectF(pt, srcRect.size()), src, srcRect);
     }
 };

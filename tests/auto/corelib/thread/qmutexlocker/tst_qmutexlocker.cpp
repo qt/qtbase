@@ -74,7 +74,7 @@ void tst_QMutexLocker::scopeTest()
     class ScopeTestThread : public tst_QMutexLockerThread
     {
     public:
-        void run()
+        void run() override
         {
             waitForTest();
 
@@ -119,7 +119,7 @@ void tst_QMutexLocker::unlockAndRelockTest()
     class UnlockAndRelockThread : public tst_QMutexLockerThread
     {
     public:
-        void run()
+        void run() override
         {
             QMutexLocker locker(&mutex);
 
@@ -165,7 +165,7 @@ void tst_QMutexLocker::lockerStateTest()
     class LockerStateThread : public tst_QMutexLockerThread
     {
     public:
-        void run()
+        void run() override
         {
             {
                 QMutexLocker locker(&mutex);

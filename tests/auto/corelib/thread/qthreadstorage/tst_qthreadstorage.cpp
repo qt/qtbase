@@ -129,7 +129,7 @@ public:
         : pointers(p)
     { }
 
-    void run()
+    void run() override
     {
         pointers.setLocalData(new Pointer);
 
@@ -249,7 +249,7 @@ void tst_QThreadStorage::ensureCleanupOrder()
             : first(first), second(second)
         { }
 
-        void run()
+        void run() override
         {
             // set in reverse order, but shouldn't matter, the data
             // will be deleted in the order the thread storage objects
@@ -340,7 +340,7 @@ void tst_QThreadStorage::leakInDestructor()
 
         Thread(QThreadStorage<ThreadStorageLocalDataTester *> &t) : tls(t) { }
 
-        void run()
+        void run() override
         {
             QVERIFY(!tls.hasLocalData());
             tls.setLocalData(new ThreadStorageLocalDataTester);
@@ -392,7 +392,7 @@ void tst_QThreadStorage::resetInDestructor()
     class Thread : public QThread
     {
     public:
-        void run()
+        void run() override
         {
             QVERIFY(!ThreadStorageResetLocalDataTesterTls()->hasLocalData());
             ThreadStorageResetLocalDataTesterTls()->setLocalData(new ThreadStorageResetLocalDataTester);
@@ -428,7 +428,8 @@ void tst_QThreadStorage::valueBased()
         Thread(QThreadStorage<SPointer> &t1, QThreadStorage<QString> &t2, QThreadStorage<int> &t3)
         : tlsSPointer(t1), tlsString(t2), tlsInt(t3) { }
 
-        void run() {
+        void run()  override
+        {
             /*QVERIFY(!tlsSPointer.hasLocalData());
             QVERIFY(!tlsString.hasLocalData());
             QVERIFY(!tlsInt.hasLocalData());*/

@@ -1342,9 +1342,9 @@ class TestObject : public QObject
     // Manually expanded from Q_OBJECT macro
 public:
     static QMetaObject staticMetaObject;
-    virtual const QMetaObject *metaObject() const;
-    virtual void *qt_metacast(const char *);
-    virtual int qt_metacall(QMetaObject::Call, int, void **);
+    virtual const QMetaObject *metaObject() const override;
+    virtual void *qt_metacast(const char *) override;
+    virtual int qt_metacall(QMetaObject::Call, int, void **) override;
 private:
     Q_DECL_HIDDEN static void qt_static_metacall(QObject *, QMetaObject::Call, int, void **);
 

@@ -979,7 +979,7 @@ class Menu258920 : public QMenu
 {
     Q_OBJECT
 public slots:
-    void paintEvent(QPaintEvent *e)
+    void paintEvent(QPaintEvent *e) override
     {
         QMenu::paintEvent(e);
         painted = true;
@@ -1410,7 +1410,7 @@ void tst_QMenu::widgetActionTriggerClosesMenu()
         }
 
     protected:
-        QWidget *createWidget(QWidget *parent)
+        QWidget *createWidget(QWidget *parent) override
         {
             QPushButton *button = new QPushButton(QLatin1String("Button"), parent);
             connect(button, &QPushButton::clicked, this, &QAction::trigger);

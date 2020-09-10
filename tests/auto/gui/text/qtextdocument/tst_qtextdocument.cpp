@@ -209,13 +209,13 @@ class MyAbstractTextDocumentLayout : public QAbstractTextDocumentLayout
 {
 public:
     MyAbstractTextDocumentLayout(QTextDocument *doc) : QAbstractTextDocumentLayout(doc) {}
-    void draw(QPainter *, const PaintContext &) {}
-    int hitTest(const QPointF &, Qt::HitTestAccuracy) const { return 0; }
-    int pageCount() const { return 0; }
-    QSizeF documentSize() const { return QSizeF(); }
-    QRectF frameBoundingRect(QTextFrame *) const { return QRectF(); }
-    QRectF blockBoundingRect(const QTextBlock &) const { return QRectF(); }
-    void documentChanged(int, int, int) {}
+    void draw(QPainter *, const PaintContext &) override {}
+    int hitTest(const QPointF &, Qt::HitTestAccuracy) const override { return 0; }
+    int pageCount() const override { return 0; }
+    QSizeF documentSize() const override { return QSizeF(); }
+    QRectF frameBoundingRect(QTextFrame *) const override { return QRectF(); }
+    QRectF blockBoundingRect(const QTextBlock &) const override { return QRectF(); }
+    void documentChanged(int, int, int) override {}
 };
 
 QString tst_QTextDocument::cssFontSizeString(const QFont &font)
@@ -2384,7 +2384,7 @@ public:
     bool hasResourceCached();
 
 protected:
-    virtual QVariant loadResource(int type, const QUrl &name);
+    virtual QVariant loadResource(int type, const QUrl &name) override;
 
 private:
     QUrl url;
@@ -3185,7 +3185,7 @@ class BaseDocument : public QTextDocument
 public:
     QUrl loadedResource() const { return resourceUrl; }
 
-    QVariant loadResource(int type, const QUrl &name)
+    QVariant loadResource(int type, const QUrl &name) override
     {
         resourceUrl = name;
         return QTextDocument::loadResource(type, name);

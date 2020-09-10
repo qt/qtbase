@@ -77,7 +77,7 @@ public:
     inline wait_QMutex_Thread_1()
     { }
 
-    void run()
+    void run() override
     {
         mutex.lock();
         cond.wakeOne();
@@ -98,7 +98,7 @@ public:
     : mutex(0), cond(0)
     { }
 
-    void run()
+    void run() override
     {
         mutex->lock();
         started.wakeOne();
@@ -116,7 +116,7 @@ public:
     inline wait_QReadWriteLock_Thread_1()
     { }
 
-    void run()
+    void run() override
     {
         readWriteLock.lockForWrite();
         cond.wakeOne();
@@ -137,7 +137,7 @@ public:
     : readWriteLock(0), cond(0)
     { }
 
-    void run()
+    void run() override
     {
         readWriteLock->lockForRead();
         started.wakeOne();
@@ -398,7 +398,7 @@ public:
     static inline void sleep(ulong s)
     { QThread::sleep(s); }
 
-    void run()
+    void run() override
     {
         Q_ASSERT(count);
         Q_ASSERT(mutex);
@@ -430,7 +430,7 @@ public:
     static inline void sleep(ulong s)
     { QThread::sleep(s); }
 
-    void run()
+    void run() override
     {
         Q_ASSERT(count);
         Q_ASSERT(readWriteLock);
@@ -764,7 +764,8 @@ public:
     QWaitCondition *startup;
     QWaitCondition *waitCondition;
 
-    void run() {
+    void run() override
+    {
         mutex->lock();
 
         ready = true;
@@ -796,7 +797,8 @@ public:
     QWaitCondition *startup;
     QWaitCondition *waitCondition;
 
-    void run() {
+    void run() override
+    {
         readWriteLock->lockForWrite();
 
         ready = true;

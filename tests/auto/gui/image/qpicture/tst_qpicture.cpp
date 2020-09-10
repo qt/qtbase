@@ -152,11 +152,11 @@ class PaintEngine : public QPaintEngine
 {
 public:
     PaintEngine() : QPaintEngine() {}
-    bool begin(QPaintDevice *) { return true; }
-    bool end() { return true; }
-    void updateState(const QPaintEngineState &) {}
-    void drawPixmap(const QRectF &, const QPixmap &, const QRectF &) {}
-    Type type() const { return Raster; }
+    bool begin(QPaintDevice *) override { return true; }
+    bool end() override { return true; }
+    void updateState(const QPaintEngineState &) override {}
+    void drawPixmap(const QRectF &, const QPixmap &, const QRectF &) override {}
+    Type type() const override { return Raster; }
 
     QFont font() { return state->font(); }
 };
@@ -165,7 +165,7 @@ class Picture : public QPicture
 {
 public:
     Picture() : QPicture() {}
-    QPaintEngine *paintEngine() const { return (QPaintEngine*)&mPaintEngine; }
+    QPaintEngine *paintEngine() const override { return (QPaintEngine*)&mPaintEngine; }
 private:
     PaintEngine mPaintEngine;
 };

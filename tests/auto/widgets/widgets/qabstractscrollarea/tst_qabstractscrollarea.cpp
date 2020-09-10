@@ -291,7 +291,7 @@ public:
         startTimer(2000);
     }
 
-    void timerEvent(QTimerEvent * /* event */)
+    void timerEvent(QTimerEvent * /* event */) override
     {
         // should not crash.
         (void)new QScrollArea(this);

@@ -53,12 +53,12 @@ public:
     {
     }
 
-    void resizeEvent(QResizeEvent *)
+    void resizeEvent(QResizeEvent *) override
     {
         backingStore.resize(size());
     }
 
-    void exposeEvent(QExposeEvent *event)
+    void exposeEvent(QExposeEvent *event) override
     {
         QRect rect(QPoint(), size());
 

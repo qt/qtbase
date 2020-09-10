@@ -474,7 +474,7 @@ public:
     }
 
 protected:
-    void run()
+    void run() override
     {
         sleep(2);
 
@@ -575,7 +575,7 @@ public:
     bool ok;
 
 protected:
-    void incomingConnection(qintptr socketDescriptor)
+    void incomingConnection(qintptr socketDescriptor) override
     {
         // how a user woulddo it (qabstractsocketengine is not public)
         unsigned long arg = 0;
@@ -713,7 +713,7 @@ public:
         lastQuery = QNetworkProxyQuery();
     }
 
-    virtual QList<QNetworkProxy> queryProxy(const QNetworkProxyQuery &query)
+    virtual QList<QNetworkProxy> queryProxy(const QNetworkProxyQuery &query) override
     {
         lastQuery = query;
         ++callCount;

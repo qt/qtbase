@@ -214,7 +214,7 @@ void tst_QReadWriteLock::tryReadLock()
         class Thread : public QThread
         {
         public:
-            void run()
+            void run() override
             {
                 testsTurn.release();
 
@@ -331,7 +331,7 @@ void tst_QReadWriteLock::tryWriteLock()
         {
         public:
             Thread() : failureCount(0) { }
-            void run()
+            void run() override
             {
                 testsTurn.release();
 
@@ -416,7 +416,7 @@ class WriteLockThread : public QThread
 public:
     QReadWriteLock &testRwlock;
     inline WriteLockThread(QReadWriteLock &l) : testRwlock(l) { }
-    void run()
+    void run() override
     {
         testRwlock.lockForWrite();
         testRwlock.unlock();
@@ -434,7 +434,7 @@ class ReadLockThread : public QThread
 public:
     QReadWriteLock &testRwlock;
     inline ReadLockThread(QReadWriteLock &l) : testRwlock(l) { }
-    void run()
+    void run() override
     {
         testRwlock.lockForRead();
         testRwlock.unlock();
@@ -451,7 +451,7 @@ class WriteLockReleasableThread : public QThread
 public:
     QReadWriteLock &testRwlock;
     inline WriteLockReleasableThread(QReadWriteLock &l) : testRwlock(l) { }
-    void run()
+    void run() override
     {
         testRwlock.lockForWrite();
         while (release.loadRelaxed() == false) {
@@ -471,7 +471,7 @@ class ReadLockReleasableThread : public QThread
 public:
     QReadWriteLock &testRwlock;
     inline ReadLockReleasableThread(QReadWriteLock &l) : testRwlock(l) { }
-    void run()
+    void run() override
     {
         testRwlock.lockForRead();
         while (release.loadRelaxed() == false) {
@@ -505,7 +505,7 @@ public:
     ,waitTime(waitTime)
     ,print(print)
     { }
-    void run()
+    void run() override
     {
         t.start();
         while (t.elapsed()<runTime)  {
@@ -541,7 +541,7 @@ public:
     ,waitTime(waitTime)
     ,print(print)
     { }
-    void run()
+    void run() override
     {
         t.start();
         while (t.elapsed() < runTime)  {
@@ -578,7 +578,7 @@ public:
     ,waitTime(waitTime)
     ,maxval(maxval)
     { }
-    void run()
+    void run() override
     {
         t.start();
         while (t.elapsed() < runTime)  {
@@ -618,7 +618,7 @@ public:
     ,runTime(runTime)
     ,waitTime(waitTime)
     { }
-    void run()
+    void run() override
     {
         t.start();
         while (t.elapsed() < runTime)  {
@@ -845,7 +845,7 @@ class DeleteOnUnlockThread : public QThread
 public:
     DeleteOnUnlockThread(QReadWriteLock **lock, QWaitCondition *startup, QMutex *waitMutex)
     :m_lock(lock), m_startup(startup), m_waitMutex(waitMutex) {}
-    void run()
+    void run() override
     {
         m_waitMutex->lock();
         m_startup->wakeAll();
@@ -943,7 +943,7 @@ void tst_QReadWriteLock::recursiveReadLock()
         QReadWriteLock *lock;
         bool tryLockForWriteResult;
 
-        void run()
+        void run() override
         {
             testsTurn.release();
 
@@ -1038,7 +1038,7 @@ void tst_QReadWriteLock::recursiveWriteLock()
         QReadWriteLock *lock;
         bool tryLockForReadResult;
 
-        void run()
+        void run() override
         {
             testsTurn.release();
 

@@ -163,7 +163,7 @@ public:
         }
 
 protected:
-    QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const;
+    QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const override;
 };
 
 QSizeF TestWidget::sizeHint(Qt::SizeHint which, const QSizeF &constraint) const

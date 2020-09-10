@@ -122,7 +122,7 @@ public:
     bool isHovered = false;
 
 protected:
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *) override
     {
         isHovered = (option->state & QStyle::State_MouseOver);
 
@@ -2190,7 +2190,7 @@ public:
     bool ignoresDragMove = false;
 
 protected:
-    void dragEnterEvent(QGraphicsSceneDragDropEvent *event)
+    void dragEnterEvent(QGraphicsSceneDragDropEvent *event) override
     {
         storeLastEvent(event);
         event->setAccepted(!ignoresDragEnter);
@@ -2199,20 +2199,20 @@ protected:
         eventList << event->type();
     }
 
-    void dragMoveEvent(QGraphicsSceneDragDropEvent *event)
+    void dragMoveEvent(QGraphicsSceneDragDropEvent *event) override
     {
         storeLastEvent(event);
         event->setAccepted(!ignoresDragMove);
         eventList << event->type();
     }
 
-    void dragLeaveEvent(QGraphicsSceneDragDropEvent *event)
+    void dragLeaveEvent(QGraphicsSceneDragDropEvent *event) override
     {
         storeLastEvent(event);
         eventList << event->type();
     }
 
-    void dropEvent(QGraphicsSceneDragDropEvent *event)
+    void dropEvent(QGraphicsSceneDragDropEvent *event) override
     {
         storeLastEvent(event);
         eventList << event->type();

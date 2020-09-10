@@ -56,7 +56,7 @@ class PrintUser : public ThreadEngine<void>
 {
 public:
     PrintUser() : ThreadEngine(QThreadPool::globalInstance()) {}
-    ThreadFunctionResult threadFunction()
+    ThreadFunctionResult threadFunction() override
     {
         QTest::qSleep(50);
         QTest::qSleep(100);
@@ -86,18 +86,18 @@ public:
     : ThreadEngine(QThreadPool::globalInstance())
     , done(false) { }
 
-    bool shouldStartThread()
+    bool shouldStartThread() override
     {
         return !done;
     }
 
-    ThreadFunctionResult threadFunction()
+    ThreadFunctionResult threadFunction() override
     {
         done = true;
         return ThreadFinished;
     }
 
-    QString *result()
+    QString *result() override
     {
         foo = "Foo";
         return &foo;
@@ -117,18 +117,18 @@ class VoidResultUser : public ThreadEngine<void>
 public:
     VoidResultUser() : ThreadEngine(QThreadPool::globalInstance()) {}
 
-    bool shouldStartThread()
+    bool shouldStartThread() override
     {
         return !done;
     }
 
-    ThreadFunctionResult threadFunction()
+    ThreadFunctionResult threadFunction() override
     {
         done = true;
         return ThreadFinished;
     }
 
-    void *result()
+    void *result() override
     {
         return 0;
     }
@@ -155,12 +155,12 @@ class CancelUser : public ThreadEngine<void>
 public:
     CancelUser() : ThreadEngine(QThreadPool::globalInstance()) {}
 
-    void *result()
+    void *result() override
     {
         return 0;
     }
 
-    ThreadFunctionResult threadFunction()
+    ThreadFunctionResult threadFunction() override
     {
         while (this->isCanceled() == false)
         {
@@ -198,12 +198,12 @@ public:
         finishing = false;
     }
 
-    bool shouldStartThread()
+    bool shouldStartThread() override
     {
         return !finishing;
     }
 
-    ThreadFunctionResult threadFunction()
+    ThreadFunctionResult threadFunction() override
     {
         forever {
             const int local = count.loadRelaxed();
@@ -253,12 +253,12 @@ public:
         finishing = finishImmediately;
     }
 
-    bool shouldStartThread()
+    bool shouldStartThread() override
     {
         return !finishing;
     }
 
-    ThreadFunctionResult threadFunction()
+    ThreadFunctionResult threadFunction() override
     {
         {
             QMutexLocker lock(&mutex);
@@ -315,12 +315,12 @@ class MultipleResultsUser : public ThreadEngine<int>
 {
 public:
     MultipleResultsUser() : ThreadEngine(QThreadPool::globalInstance()) {}
-    bool shouldStartThread()
+    bool shouldStartThread() override
     {
         return false;
     }
 
-    ThreadFunctionResult threadFunction()
+    ThreadFunctionResult threadFunction() override
     {
         for (int i = 0; i < 10; ++i)
             this->reportResult(&i);
@@ -344,17 +344,17 @@ void tst_QtConcurrentThreadEngine::multipleResults()
 class NoThreadsUser : public ThreadEngine<void>
 {
 public:
-    bool shouldStartThread()
+    bool shouldStartThread() override
     {
         return false;
     }
 
-    ThreadFunctionResult threadFunction()
+    ThreadFunctionResult threadFunction() override
     {
         return ThreadFinished;
     }
 
-    void *result()
+    void *result() override
     {
         return 0;
     }
@@ -385,8 +385,8 @@ class SlowUser : public ThreadEngine<void>
 {
 public:
     SlowUser() : ThreadEngine(QThreadPool::globalInstance()) {}
-    bool shouldStartThread() { return false; }
-    ThreadFunctionResult threadFunction() { QTest::qSleep(sleepTime); return ThreadFinished; }
+    bool shouldStartThread() override { return false; }
+    ThreadFunctionResult threadFunction() override { QTest::qSleep(sleepTime); return ThreadFinished; }
 };
 
 void tst_QtConcurrentThreadEngine::cancelQueuedSlowUser()

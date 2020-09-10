@@ -1228,7 +1228,7 @@ signals:
     void alertSent(QSsl::AlertLevel level, QSsl::AlertType type, const QString &message);
 
 protected:
-    void incomingConnection(qintptr socketDescriptor)
+    void incomingConnection(qintptr socketDescriptor) override
     {
         QSslConfiguration configuration = config;
         socket = new QSslSocket(this);
@@ -1881,7 +1881,7 @@ void tst_QSslSocket::wildcard()
 class SslServer2 : public QTcpServer
 {
 protected:
-    void incomingConnection(qintptr socketDescriptor)
+    void incomingConnection(qintptr socketDescriptor) override
     {
         QSslSocket *socket = new QSslSocket(this);
         socket->ignoreSslErrors();
@@ -2111,7 +2111,7 @@ public:
     QSslSocket *socket;
 
 protected:
-    void incomingConnection(qintptr socketDescriptor)
+    void incomingConnection(qintptr socketDescriptor) override
     {
         socket = new QSslSocket(this);
         connect(socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(ignoreErrorSlot()));
@@ -2163,7 +2163,7 @@ signals:
     void listening();
 
 protected:
-    void run()
+    void run() override
     {
         // if all goes well (no timeouts), this thread will sleep for a total of 500 ms
         // (i.e., 5 times 100 ms, one sleep for each operation)
@@ -2292,7 +2292,7 @@ public:
     QSslSocket *socket;
 
 protected:
-    void incomingConnection(qintptr socketDescriptor)
+    void incomingConnection(qintptr socketDescriptor) override
     {
         socket = new QSslSocket(this);
 
@@ -3010,7 +3010,7 @@ public:
     QSslSocket *socket;
 
 protected:
-    void incomingConnection(qintptr socketDescriptor)
+    void incomingConnection(qintptr socketDescriptor) override
     {
         socket =  new QSslSocket;
         socket->setSocketDescriptor(socketDescriptor);
@@ -3612,7 +3612,7 @@ public:
     PskProvider m_pskProvider;
 
 protected:
-    void incomingConnection(qintptr socketDescriptor)
+    void incomingConnection(qintptr socketDescriptor) override
     {
         socket = new QSslSocket(this);
         socket->setSslConfiguration(config);

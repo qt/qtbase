@@ -487,7 +487,7 @@ public:
         wait();
     }
 
-    void run()
+    void run() override
     {
         QDBusConnection con = QDBusConnection::connectToBus(QDBusConnection::SessionBus, "ThreadConnection");
         if (!con.isConnected())

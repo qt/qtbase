@@ -111,7 +111,7 @@ public:
         open(QIODevice::ReadOnly | QIODevice::Unbuffered);
     }
 
-    qint64 readData(char *data, qint64 maxlen) { return inputBuffer.read(data, maxlen); }
+    qint64 readData(char *data, qint64 maxlen) override { return inputBuffer.read(data, maxlen); }
 
     QBuffer inputBuffer;
 };

@@ -79,9 +79,9 @@ class TestAnimation : public QVariantAnimation
 {
     Q_OBJECT
 public:
-    virtual void updateCurrentValue(const QVariant &value) { Q_UNUSED(value)};
+    virtual void updateCurrentValue(const QVariant &value) override { Q_UNUSED(value)};
     virtual void updateState(QAbstractAnimation::State oldState,
-                             QAbstractAnimation::State newState)
+                             QAbstractAnimation::State newState) override
     {
         Q_UNUSED(oldState);
         Q_UNUSED(newState);
@@ -98,10 +98,10 @@ public:
         setDuration(250);
     }
 
-    int duration() const { return -1; /* not time driven */ }
+    int duration() const override { return -1; /* not time driven */ }
 
 protected:
-    void timerEvent(QTimerEvent *event)
+    void timerEvent(QTimerEvent *event) override
     {
         if (event->timerId() == id)
             stop();

@@ -61,25 +61,25 @@ public:
     ulong lastTimeStamp = 0;
 
 protected:
-    void mousePressEvent(QMouseEvent *e)
+    void mousePressEvent(QMouseEvent *e) override
     {
         pressCount++;
         processEvent(e);
     }
 
-    void mouseMoveEvent(QMouseEvent *e)
+    void mouseMoveEvent(QMouseEvent *e) override
     {
         moveCount++;
         stateInMouseMove = e->buttons();
         processEvent(e);
     }
 
-    void mouseReleaseEvent(QMouseEvent *e)
+    void mouseReleaseEvent(QMouseEvent *e) override
     {
         processEvent(e);
     }
 
-    void mouseDoubleClickEvent(QMouseEvent *e)
+    void mouseDoubleClickEvent(QMouseEvent *e) override
     {
         doubleClickCount++;
         processEvent(e);

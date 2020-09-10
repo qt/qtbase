@@ -853,7 +853,7 @@ void tst_QXmlStream::addExtraNamespaceDeclarations()
 
 class EntityResolver : public QXmlStreamEntityResolver {
 public:
-    QString resolveUndeclaredEntity(const QString &name) {
+    QString resolveUndeclaredEntity(const QString &name) override {
         static int count = 0;
         return name.toUpper() + QString::number(++count);
     }
@@ -1467,7 +1467,7 @@ void tst_QXmlStream::crashInXmlStreamReader() const
 class FakeBuffer : public QBuffer
 {
 protected:
-    qint64 writeData(const char *c, qint64 i)
+    qint64 writeData(const char *c, qint64 i) override
     {
         qint64 ai = qMin(m_capacity, i);
         m_capacity -= ai;

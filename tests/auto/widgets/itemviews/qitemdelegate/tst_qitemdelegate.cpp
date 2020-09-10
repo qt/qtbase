@@ -77,7 +77,7 @@ public:
 
     void drawDisplay(QPainter *painter,
                      const QStyleOptionViewItem &option,
-                     const QRect &rect, const QString &text) const
+                     const QRect &rect, const QString &text) const override
     {
         displayText = text;
         displayFont = option.font;
@@ -86,7 +86,7 @@ public:
 
     void drawDecoration(QPainter *painter,
                         const QStyleOptionViewItem &option,
-                        const QRect &rect, const QPixmap &pixmap) const
+                        const QRect &rect, const QPixmap &pixmap) const override
     {
         decorationPixmap = pixmap;
         decorationRect = rect;
@@ -113,7 +113,7 @@ public:
         return QItemDelegate::rect(option, index, role);
     }
 
-    inline bool eventFilter(QObject *object, QEvent *event)
+    inline bool eventFilter(QObject *object, QEvent *event) override
     {
         return QItemDelegate::eventFilter(object, event);
     }
@@ -121,7 +121,7 @@ public:
     inline bool editorEvent(QEvent *event,
                             QAbstractItemModel *model,
                             const QStyleOptionViewItem &option,
-                            const QModelIndex &index)
+                            const QModelIndex &index) override
     {
         return QItemDelegate::editorEvent(event, model, option, index);
     }
@@ -149,19 +149,19 @@ public:
 
     ~TestItemModel() {}
 
-    int rowCount(const QModelIndex &parent) const
+    int rowCount(const QModelIndex &parent) const override
     {
         Q_UNUSED(parent);
         return 1;
     }
 
-    int columnCount(const QModelIndex &parent) const
+    int columnCount(const QModelIndex &parent) const override
     {
         Q_UNUSED(parent);
         return 1;
     }
 
-    QVariant data(const QModelIndex& index, int role) const
+    QVariant data(const QModelIndex& index, int role) const override
     {
         Q_UNUSED(index);
         static QPixmap pixmap(size);
@@ -812,7 +812,7 @@ void tst_QItemDelegate::dateTimeEditor()
 class ChooseEditorDelegate : public QItemDelegate
 {
 public:
-    virtual QWidget* createEditor(QWidget *parent, const QStyleOptionViewItem &o, const QModelIndex &i) const
+    virtual QWidget* createEditor(QWidget *parent, const QStyleOptionViewItem &o, const QModelIndex &i) const override
     {
         if (m_editor) {
             m_editor->setParent(parent);
@@ -822,7 +822,7 @@ public:
         return m_editor;
     }
 
-    virtual void destroyEditor(QWidget *editor, const QModelIndex &i) const
+    virtual void destroyEditor(QWidget *editor, const QModelIndex &i) const override
     {   // This is a reimplementation of QAbstractItemDelegate::destroyEditor just set the variable m_editor to 0
         // The only reason we do this is to avoid the not recommended direct delete of editor (destroyEditor uses deleteLater)
         QItemDelegate::destroyEditor(editor, i); // Allow destroy
@@ -1307,7 +1307,7 @@ void tst_QItemDelegate::enterKey()
     struct TestDelegate : public QItemDelegate
     {
         WidgetType widgetType;
-        virtual QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const
+        virtual QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const override
         {
             QWidget *editor = 0;
             switch(widgetType) {
@@ -1456,7 +1456,7 @@ void tst_QItemDelegate::testLineEditValidation()
 
     struct TestDelegate : public QItemDelegate
     {
-        virtual QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
+        virtual QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const override
         {
             Q_UNUSED(option);
             Q_UNUSED(index);

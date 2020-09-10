@@ -73,7 +73,7 @@ void tst_QReadLocker::scopeTest()
     class ScopeTestThread : public tst_QReadLockerThread
     {
     public:
-        void run()
+        void run() override
         {
             waitForTest();
 
@@ -118,7 +118,7 @@ void tst_QReadLocker::unlockAndRelockTest()
     class UnlockAndRelockThread : public tst_QReadLockerThread
     {
     public:
-        void run()
+        void run() override
         {
             QReadLocker locker(&lock);
 
@@ -164,7 +164,7 @@ void tst_QReadLocker::lockerStateTest()
     class LockerStateThread : public tst_QReadLockerThread
     {
     public:
-        void run()
+        void run() override
         {
             {
                 QReadLocker locker(&lock);

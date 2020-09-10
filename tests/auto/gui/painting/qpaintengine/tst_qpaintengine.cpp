@@ -58,11 +58,11 @@ class MyPaintEngine : public QPaintEngine
 {
 public:
     MyPaintEngine() : QPaintEngine() {}
-    bool begin(QPaintDevice *) { return true; }
-    bool end() { return true; }
-    void updateState(const QPaintEngineState &) {}
-    void drawPixmap(const QRectF &, const QPixmap &, const QRectF &) {}
-    Type type() const { return Raster; }
+    bool begin(QPaintDevice *) override { return true; }
+    bool end() override { return true; }
+    void updateState(const QPaintEngineState &) override {}
+    void drawPixmap(const QRectF &, const QPixmap &, const QRectF &) override {}
+    Type type() const override { return Raster; }
 };
 
 // Testing get/set functions

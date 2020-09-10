@@ -61,7 +61,7 @@ class taskQTBUG_25691Page2 : public QWizardPage
 public:
     taskQTBUG_25691Page2( QWidget * parent = 0 );
 
-    virtual void initializePage(void);
+    virtual void initializePage(void) override;
 
     ~taskQTBUG_25691Page2(void);
 

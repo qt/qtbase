@@ -127,17 +127,17 @@ public:
         return helper.QAbstractItemModel::createIndex(row, column, data);
     }
 
-    QModelIndex index(int, int, const QModelIndex&) const
+    QModelIndex index(int, int, const QModelIndex&) const override
         { return QModelIndex(); }
-    QModelIndex parent(const QModelIndex&) const
+    QModelIndex parent(const QModelIndex&) const override
         { return QModelIndex(); }
-    int rowCount(const QModelIndex & = QModelIndex()) const
+    int rowCount(const QModelIndex & = QModelIndex()) const override
         { return 0; }
-    int columnCount(const QModelIndex & = QModelIndex()) const
+    int columnCount(const QModelIndex & = QModelIndex()) const override
         { return 0; }
-    QVariant data(const QModelIndex &, int = Qt::DisplayRole) const
+    QVariant data(const QModelIndex &, int = Qt::DisplayRole) const override
         { return QVariant(); }
-    bool hasChildren(const QModelIndex &) const
+    bool hasChildren(const QModelIndex &) const override
         { return false; }
 };
 
@@ -2099,11 +2099,11 @@ public:
     {
     }
 
-    int rowCount(const QModelIndex& = QModelIndex()) const { return row_count; }
-    int columnCount(const QModelIndex& = QModelIndex()) const { return column_count; }
+    int rowCount(const QModelIndex& = QModelIndex()) const override { return row_count; }
+    int columnCount(const QModelIndex& = QModelIndex()) const override { return column_count; }
     bool isEditable(const QModelIndex &) const { return true; }
 
-    QVariant data(const QModelIndex &idx, int role) const
+    QVariant data(const QModelIndex &idx, int role) const override
     {
         if (role == Qt::DisplayRole || role == Qt::EditRole)
             return QLatin1Char('[') + QString::number(idx.row()) + QLatin1Char(',')
@@ -2305,7 +2305,7 @@ void tst_QItemSelectionModel::layoutChangedWithAllSelected2()
     struct MyFilterModel : public QSortFilterProxyModel
     {     // Override sort filter proxy to remove even numbered rows.
         bool filtering;
-        virtual bool filterAcceptsRow( int source_row, const QModelIndex& /* source_parent */) const
+        virtual bool filterAcceptsRow( int source_row, const QModelIndex& /* source_parent */) const override
         {
             return !filtering || !( source_row & 1 );
         }
@@ -2693,7 +2693,7 @@ public:
     {
     }
 
-    void select(const QItemSelection &selection, QItemSelectionModel::SelectionFlags command)
+    void select(const QItemSelection &selection, QItemSelectionModel::SelectionFlags command) override
     {
         QItemSelectionModel::select(selection, command);
         m_target->select(selection, command);
@@ -2701,13 +2701,13 @@ public:
 
     using QItemSelectionModel::select;
 
-    void setCurrentIndex(const QModelIndex &index, QItemSelectionModel::SelectionFlags command)
+    void setCurrentIndex(const QModelIndex &index, QItemSelectionModel::SelectionFlags command) override
     {
         QItemSelectionModel::setCurrentIndex(index, command);
         m_target->setCurrentIndex(index, command);
     }
 
-    void clearCurrentIndex()
+    void clearCurrentIndex() override
     {
         QItemSelectionModel::clearCurrentIndex();
         m_target->clearCurrentIndex();

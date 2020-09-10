@@ -115,7 +115,7 @@ public:
 class SubClass : public AbstractClass
 {
 public:
-    int member() const { return 5; }
+    int member() const override { return 5; }
 };
 
 void tst_QTaggedPointer::dereferenceOperator()
