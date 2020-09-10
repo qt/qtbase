@@ -135,15 +135,4 @@ equals(TEMPLATE, app)|equals(TEMPLATE, lib) {
     }
 }
 
-!equals(TEMPLATE, subdirs):!compile_examples {
-    TEMPLATE = aux
-    CONFIG -= have_target qt staticlib dll
-    SOURCES =
-    OBJECTIVE_SOURCES =
-    INSTALLS -= target
-    QMAKE_SUBSTITUTES =
-    QMAKE_EXTRA_COMPILERS =
-    COPIES =
-} else {
-    CONFIG += relative_qt_rpath  # Examples built as part of Qt should be relocatable
-}
+CONFIG += relative_qt_rpath  # Examples built as part of Qt should be relocatable

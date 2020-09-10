@@ -100,7 +100,6 @@ The effort of this is tracked in QTBUG-85373 and QTBUG-85349.
 |                                       | -DBUILD_EXAMPLES=ON                               |                                                                 |
 | -nomake <part>                        | -DBUILD_TESTING=OFF                               | A way to turn off tools explicitly is missing.                  |
 |                                       | -DBUILD_EXAMPLES=OFF                              |                                                                 |
-| -compile-examples                     |                                                   |                                                                 |
 | -no-gui                               |                                                   |                                                                 |
 | -no-widgets                           | -DFEATURE_widgets=OFF                             |                                                                 |
 | -no-dbus                              | -DFEATURE_dbus=OFF                                |                                                                 |

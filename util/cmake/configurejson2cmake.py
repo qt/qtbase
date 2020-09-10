@@ -422,7 +422,6 @@ def parseInput(ctx, sinput, data, cm_fh):
         "c++std",
         "ccache",
         "commercial",
-        "compile-examples",
         "confirm-license",
         "dbus",
         "dbus-runtime",

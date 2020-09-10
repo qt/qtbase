@@ -64,7 +64,6 @@
             "c++std": "cxxstd",
             "ccache": { "type": "boolean", "name": "ccache" },
             "commercial": "void",
-            "compile-examples": { "type": "boolean", "name": "compile_examples" },
             "confirm-license": "void",
             "coverage": "coverage",
             "dbus": { "type": "optionalString", "values": [ "no", "yes", "linked", "runtime" ] },
@@ -1363,11 +1362,6 @@
             "label": "udev",
             "condition": "libs.libudev",
             "output": [ "privateFeature" ]
-        },
-        "compile_examples": {
-            "label": "Compile examples",
-            "autoDetect": "!config.wasm",
-            "output": [ "privateConfig" ]
         },
         "incredibuild_xge": {
             "label": "IncrediBuild",

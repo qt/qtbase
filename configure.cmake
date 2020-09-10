@@ -889,11 +889,6 @@ qt_feature("libudev" PRIVATE
     LABEL "udev"
     CONDITION Libudev_FOUND
 )
-qt_feature("compile_examples"
-    LABEL "Compile examples"
-    AUTODETECT NOT WASM
-)
-qt_feature_config("compile_examples" QMAKE_PRIVATE_CONFIG)
 qt_feature("ccache"
     LABEL "Using ccache"
     AUTODETECT 1

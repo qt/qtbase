@@ -223,8 +223,6 @@ Component selection:
                          [libs and examples, also tools if not cross-building,
                          also tests if -developer-build]
   -nomake <part> ....... Exclude <part> from the list of parts to be built.
-  -compile-examples .... When unset, install only the sources of examples
-                         [no on WebAssembly, otherwise yes]
   -gui ................. Build the Qt GUI module and dependencies [yes]
   -widgets ............. Build the Qt Widgets module and dependencies [yes]
   -no-dbus ............. Do not build the Qt D-Bus module
