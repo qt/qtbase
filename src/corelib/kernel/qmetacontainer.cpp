@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include "qmetacontainer.h"
+#include "qmetatype.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -80,7 +81,7 @@ QT_BEGIN_NAMESPACE
     QMetaSequence assumes that const and non-const iterators for the same
     container have the same iterator traits.
  */
-bool QMetaSequence::hasInputIterator() const
+bool QMetaContainer::hasInputIterator() const
 {
     if (!d_ptr)
         return false;
@@ -97,7 +98,7 @@ bool QMetaSequence::hasInputIterator() const
     QMetaSequence assumes that const and non-const iterators for the same
     container have the same iterator traits.
  */
-bool QMetaSequence::hasForwardIterator() const
+bool QMetaContainer::hasForwardIterator() const
 {
     if (!d_ptr)
         return false;
@@ -113,7 +114,7 @@ bool QMetaSequence::hasForwardIterator() const
     QMetaSequence assumes that const and non-const iterators for the same
     container have the same iterator traits.
  */
-bool QMetaSequence::hasBidirectionalIterator() const
+bool QMetaContainer::hasBidirectionalIterator() const
 {
     if (!d_ptr)
         return false;
@@ -128,7 +129,7 @@ bool QMetaSequence::hasBidirectionalIterator() const
     QMetaSequence assumes that const and non-const iterators for the same
     container have the same iterator traits.
  */
-bool QMetaSequence::hasRandomAccessIterator() const
+bool QMetaContainer::hasRandomAccessIterator() const
 {
     if (!d_ptr)
         return false;
@@ -140,7 +141,9 @@ bool QMetaSequence::hasRandomAccessIterator() const
  */
 QMetaType QMetaSequence::valueMetaType() const
 {
-    return d_ptr ? d_ptr->valueMetaType : QMetaType();
+    if (auto iface = d())
+        return QMetaType(iface->valueMetaType);
+    return QMetaType();
 }
 
 /*!
@@ -156,10 +159,10 @@ QMetaType QMetaSequence::valueMetaType() const
  */
 bool QMetaSequence::isSortable() const
 {
-    if (d_ptr) {
-        return (d_ptr->addRemoveCapabilities
+    if (auto iface = d()) {
+        return (iface->addRemoveCapabilities
                     & (QtMetaContainerPrivate::CanAddAtBegin | QtMetaContainerPrivate::CanAddAtEnd))
-                && (d_ptr->addRemoveCapabilities
+                && (iface->addRemoveCapabilities
                     & (QtMetaContainerPrivate::CanRemoveAtBegin
                        | QtMetaContainerPrivate::CanRemoveAtEnd));
     }
@@ -174,9 +177,9 @@ bool QMetaSequence::isSortable() const
  */
 bool QMetaSequence::canAddValueAtBegin() const
 {
-    if (d_ptr) {
-        return d_ptr->addValueFn
-                && d_ptr->addRemoveCapabilities & QtMetaContainerPrivate::CanAddAtBegin;
+    if (auto iface = d()) {
+        return iface->addValueFn
+                && iface->addRemoveCapabilities & QtMetaContainerPrivate::CanAddAtBegin;
     }
     return false;
 }
@@ -190,7 +193,7 @@ bool QMetaSequence::canAddValueAtBegin() const
 void QMetaSequence::addValueAtBegin(void *container, const void *value) const
 {
     if (canAddValueAtBegin())
-        d_ptr->addValueFn(container, value, QtMetaContainerPrivate::QMetaSequenceInterface::AtBegin);
+        d()->addValueFn(container, value, QtMetaContainerPrivate::QMetaSequenceInterface::AtBegin);
 }
 
 /*!
@@ -201,9 +204,9 @@ void QMetaSequence::addValueAtBegin(void *container, const void *value) const
  */
 bool QMetaSequence::canRemoveValueAtBegin() const
 {
-    if (d_ptr) {
-        return d_ptr->removeValueFn
-                && d_ptr->addRemoveCapabilities & QtMetaContainerPrivate::CanRemoveAtBegin;
+    if (auto iface = d()) {
+        return iface->removeValueFn
+                && iface->addRemoveCapabilities & QtMetaContainerPrivate::CanRemoveAtBegin;
     }
     return false;
 }
@@ -217,7 +220,7 @@ bool QMetaSequence::canRemoveValueAtBegin() const
 void QMetaSequence::removeValueAtBegin(void *container) const
 {
     if (canRemoveValueAtBegin())
-        d_ptr->removeValueFn(container, QtMetaContainerPrivate::QMetaSequenceInterface::AtBegin);
+        d()->removeValueFn(container, QtMetaContainerPrivate::QMetaSequenceInterface::AtBegin);
 }
 
 /*!
@@ -228,9 +231,9 @@ void QMetaSequence::removeValueAtBegin(void *container) const
  */
 bool QMetaSequence::canAddValueAtEnd() const
 {
-    if (d_ptr) {
-        return d_ptr->addValueFn
-                && d_ptr->addRemoveCapabilities & QtMetaContainerPrivate::CanAddAtEnd;
+    if (auto iface = d()) {
+        return iface->addValueFn
+                && iface->addRemoveCapabilities & QtMetaContainerPrivate::CanAddAtEnd;
     }
     return false;
 }
@@ -244,7 +247,7 @@ bool QMetaSequence::canAddValueAtEnd() const
 void QMetaSequence::addValueAtEnd(void *container, const void *value) const
 {
     if (canAddValueAtEnd())
-        d_ptr->addValueFn(container, value, QtMetaContainerPrivate::QMetaSequenceInterface::AtEnd);
+        d()->addValueFn(container, value, QtMetaContainerPrivate::QMetaSequenceInterface::AtEnd);
 }
 
 /*!
@@ -255,9 +258,9 @@ void QMetaSequence::addValueAtEnd(void *container, const void *value) const
  */
 bool QMetaSequence::canRemoveValueAtEnd() const
 {
-    if (d_ptr) {
-        return d_ptr->removeValueFn
-                && d_ptr->addRemoveCapabilities & QtMetaContainerPrivate::CanRemoveAtEnd;
+    if (auto iface = d()) {
+        return iface->removeValueFn
+                && iface->addRemoveCapabilities & QtMetaContainerPrivate::CanRemoveAtEnd;
     }
     return false;
 }
@@ -271,7 +274,7 @@ bool QMetaSequence::canRemoveValueAtEnd() const
 void QMetaSequence::removeValueAtEnd(void *container) const
 {
     if (canRemoveValueAtEnd())
-        d_ptr->removeValueFn(container, QtMetaContainerPrivate::QMetaSequenceInterface::AtEnd);
+        d()->removeValueFn(container, QtMetaContainerPrivate::QMetaSequenceInterface::AtEnd);
 }
 
 /*!
@@ -280,7 +283,7 @@ void QMetaSequence::removeValueAtEnd(void *container) const
 
     \sa size()
  */
-bool QMetaSequence::hasSize() const
+bool QMetaContainer::hasSize() const
 {
     return d_ptr && d_ptr->sizeFn;
 }
@@ -291,7 +294,7 @@ bool QMetaSequence::hasSize() const
 
     \sa hasSize()
  */
-qsizetype QMetaSequence::size(const void *container) const
+qsizetype QMetaContainer::size(const void *container) const
 {
     return hasSize() ? d_ptr->sizeFn(container) : -1;
 }
@@ -301,7 +304,7 @@ qsizetype QMetaSequence::size(const void *container) const
 
     \sa clear()
  */
-bool QMetaSequence::canClear() const
+bool QMetaContainer::canClear() const
 {
     return d_ptr && d_ptr->clearFn;
 }
@@ -311,7 +314,7 @@ bool QMetaSequence::canClear() const
 
     \sa canClear()
  */
-void QMetaSequence::clear(void *container) const
+void QMetaContainer::clear(void *container) const
 {
     if (canClear())
         d_ptr->clearFn(container);
@@ -325,7 +328,9 @@ void QMetaSequence::clear(void *container) const
  */
 bool QMetaSequence::canGetValueAtIndex() const
 {
-    return d_ptr && d_ptr->valueAtIndexFn;
+    if (auto iface = d())
+        return iface->valueAtIndexFn;
+    return false;
 }
 
 /*!
@@ -337,7 +342,7 @@ bool QMetaSequence::canGetValueAtIndex() const
 void QMetaSequence::valueAtIndex(const void *container, qsizetype index, void *result) const
 {
     if (canGetValueAtIndex())
-        d_ptr->valueAtIndexFn(container, index, result);
+        d()->valueAtIndexFn(container, index, result);
 }
 
 /*!
@@ -348,7 +353,9 @@ void QMetaSequence::valueAtIndex(const void *container, qsizetype index, void *r
 */
 bool QMetaSequence::canSetValueAtIndex() const
 {
-    return d_ptr && d_ptr->setValueAtIndexFn;
+    if (auto iface = d())
+        return iface->setValueAtIndexFn;
+    return false;
 }
 
 /*!
@@ -360,7 +367,7 @@ bool QMetaSequence::canSetValueAtIndex() const
 void QMetaSequence::setValueAtIndex(void *container, qsizetype index, const void *value) const
 {
     if (canSetValueAtIndex())
-        d_ptr->setValueAtIndexFn(container, index, value);
+        d()->setValueAtIndexFn(container, index, value);
 }
 
 /*!
@@ -371,7 +378,9 @@ void QMetaSequence::setValueAtIndex(void *container, qsizetype index, const void
  */
 bool QMetaSequence::canAddValue() const
 {
-    return d_ptr && d_ptr->addValueFn;
+    if (auto iface = d())
+        return iface->addValueFn;
+    return false;
 }
 
 /*!
@@ -390,7 +399,7 @@ bool QMetaSequence::canAddValue() const
 void QMetaSequence::addValue(void *container, const void *value) const
 {
     if (canAddValue()) {
-        d_ptr->addValueFn(container, value,
+        d()->addValueFn(container, value,
                         QtMetaContainerPrivate::QMetaSequenceInterface::Unspecified);
     }
 }
@@ -403,7 +412,9 @@ void QMetaSequence::addValue(void *container, const void *value) const
  */
 bool QMetaSequence::canRemoveValue() const
 {
-    return d_ptr && d_ptr->removeValueFn;
+    if (auto iface = d())
+        return iface->removeValueFn;
+    return false;
 }
 
 /*!
@@ -420,7 +431,7 @@ bool QMetaSequence::canRemoveValue() const
 void QMetaSequence::removeValue(void *container) const
 {
     if (canRemoveValue()) {
-        d_ptr->removeValueFn(container,
+        d()->removeValueFn(container,
                            QtMetaContainerPrivate::QMetaSequenceInterface::Unspecified);
     }
 }
@@ -432,7 +443,7 @@ void QMetaSequence::removeValue(void *container) const
     \sa begin(), end(), destroyIterator(), compareIterator(), diffIterator(),
         advanceIterator(), copyIterator()
  */
-bool QMetaSequence::hasIterator() const
+bool QMetaContainer::hasIterator() const
 {
     if (!d_ptr || !d_ptr->createIteratorFn)
         return false;
@@ -453,7 +464,7 @@ bool QMetaSequence::hasIterator() const
 
     \sa end(), constBegin(), constEnd(), destroyIterator()
  */
-void *QMetaSequence::begin(void *container) const
+void *QMetaContainer::begin(void *container) const
 {
     return hasIterator()
             ? d_ptr->createIteratorFn(
@@ -470,7 +481,7 @@ void *QMetaSequence::begin(void *container) const
 
     \sa hasIterator(), end(), constBegin(), constEnd(), destroyIterator()
  */
-void *QMetaSequence::end(void *container) const
+void *QMetaContainer::end(void *container) const
 {
     return hasIterator()
             ? d_ptr->createIteratorFn(
@@ -484,7 +495,7 @@ void *QMetaSequence::end(void *container) const
 
     \sa begin(), end(), destroyConstIterator()
  */
-void QMetaSequence::destroyIterator(const void *iterator) const
+void QMetaContainer::destroyIterator(const void *iterator) const
 {
     if (hasIterator())
         d_ptr->destroyIteratorFn(iterator);
@@ -497,7 +508,7 @@ void QMetaSequence::destroyIterator(const void *iterator) const
 
     \sa begin(), end()
  */
-bool QMetaSequence::compareIterator(const void *i, const void *j) const
+bool QMetaContainer::compareIterator(const void *i, const void *j) const
 {
     return hasIterator() ? d_ptr->compareIteratorFn(i, j) : false;
 }
@@ -508,7 +519,7 @@ bool QMetaSequence::compareIterator(const void *i, const void *j) const
 
     \sa begin(), end()
  */
-void QMetaSequence::copyIterator(void *target, const void *source) const
+void QMetaContainer::copyIterator(void *target, const void *source) const
 {
     if (hasIterator())
         d_ptr->copyIteratorFn(target, source);
@@ -522,7 +533,7 @@ void QMetaSequence::copyIterator(void *target, const void *source) const
 
     \sa begin(), end()
  */
-void QMetaSequence::advanceIterator(void *iterator, qsizetype step) const
+void QMetaContainer::advanceIterator(void *iterator, qsizetype step) const
 {
     if (hasIterator())
         d_ptr->advanceIteratorFn(iterator, step);
@@ -536,7 +547,7 @@ void QMetaSequence::advanceIterator(void *iterator, qsizetype step) const
 
     \sa begin(), end()
  */
-qsizetype QMetaSequence::diffIterator(const void *i, const void *j) const
+qsizetype QMetaContainer::diffIterator(const void *i, const void *j) const
 {
     return hasIterator() ? d_ptr->diffIteratorFn(i, j) : 0;
 }
@@ -549,7 +560,9 @@ qsizetype QMetaSequence::diffIterator(const void *i, const void *j) const
  */
 bool QMetaSequence::canGetValueAtIterator() const
 {
-    return d_ptr && d_ptr->valueAtIteratorFn;
+    if (auto iface = d())
+        return iface->valueAtIteratorFn;
+    return false;
 }
 
 /*!
@@ -561,7 +574,7 @@ bool QMetaSequence::canGetValueAtIterator() const
 void QMetaSequence::valueAtIterator(const void *iterator, void *result) const
 {
     if (canGetValueAtIterator())
-        d_ptr->valueAtIteratorFn(iterator, result);
+        d()->valueAtIteratorFn(iterator, result);
 }
 
 /*!
@@ -572,7 +585,9 @@ void QMetaSequence::valueAtIterator(const void *iterator, void *result) const
  */
 bool QMetaSequence::canSetValueAtIterator() const
 {
-    return d_ptr && d_ptr->setValueAtIteratorFn;
+    if (auto iface = d())
+        return iface->setValueAtIteratorFn;
+    return false;
 }
 
 /*!
@@ -584,7 +599,7 @@ bool QMetaSequence::canSetValueAtIterator() const
 void QMetaSequence::setValueAtIterator(const void *iterator, const void *value) const
 {
     if (canSetValueAtIterator())
-        d_ptr->setValueAtIteratorFn(iterator, value);
+        d()->setValueAtIteratorFn(iterator, value);
 }
 
 /*!
@@ -595,7 +610,9 @@ void QMetaSequence::setValueAtIterator(const void *iterator, const void *value) 
  */
 bool QMetaSequence::canInsertValueAtIterator() const
 {
-    return d_ptr && d_ptr->insertValueAtIteratorFn;
+    if (auto iface = d())
+        return iface->insertValueAtIteratorFn;
+    return false;
 }
 
 /*!
@@ -614,7 +631,7 @@ void QMetaSequence::insertValueAtIterator(void *container, const void *iterator,
                                             const void *value) const
 {
     if (canInsertValueAtIterator())
-        d_ptr->insertValueAtIteratorFn(container, iterator, value);
+        d()->insertValueAtIteratorFn(container, iterator, value);
 }
 
 /*!
@@ -625,7 +642,9 @@ void QMetaSequence::insertValueAtIterator(void *container, const void *iterator,
  */
 bool QMetaSequence::canEraseValueAtIterator() const
 {
-    return d_ptr && d_ptr->eraseValueAtIteratorFn;
+    if (auto iface = d())
+        return iface->eraseValueAtIteratorFn;
+    return false;
 }
 
 /*!
@@ -637,7 +656,7 @@ bool QMetaSequence::canEraseValueAtIterator() const
 void QMetaSequence::eraseValueAtIterator(void *container, const void *iterator) const
 {
     if (canEraseValueAtIterator())
-        d_ptr->eraseValueAtIteratorFn(container, iterator);
+        d()->eraseValueAtIteratorFn(container, iterator);
 }
 
 /*!
@@ -646,8 +665,8 @@ void QMetaSequence::eraseValueAtIterator(void *container, const void *iterator) 
  */
 bool QMetaSequence::canEraseRangeAtIterator() const
 {
-    if (d_ptr)
-        return d_ptr->eraseRangeAtIteratorFn;
+    if (auto iface = d())
+        return iface->eraseRangeAtIteratorFn;
     return false;
 }
 
@@ -661,7 +680,7 @@ void QMetaSequence::eraseRangeAtIterator(void *container, const void *iterator1,
                                          const void *iterator2) const
 {
     if (canEraseRangeAtIterator())
-        d_ptr->eraseRangeAtIteratorFn(container, iterator1, iterator2);
+        d()->eraseRangeAtIteratorFn(container, iterator1, iterator2);
 }
 
 /*!
@@ -672,7 +691,7 @@ void QMetaSequence::eraseRangeAtIterator(void *container, const void *iterator1,
         compareConstIterator(), diffConstIterator(), advanceConstIterator(),
         copyConstIterator()
  */
-bool QMetaSequence::hasConstIterator() const
+bool QMetaContainer::hasConstIterator() const
 {
     if (!d_ptr || !d_ptr->createConstIteratorFn)
         return false;
@@ -693,7 +712,7 @@ bool QMetaSequence::hasConstIterator() const
 
     \sa constEnd(), begin(), end(), destroyConstIterator()
  */
-void *QMetaSequence::constBegin(const void *container) const
+void *QMetaContainer::constBegin(const void *container) const
 {
     return hasConstIterator()
             ? d_ptr->createConstIteratorFn(
@@ -710,7 +729,7 @@ void *QMetaSequence::constBegin(const void *container) const
 
     \sa constBegin(), begin(), end(), destroyConstIterator()
  */
-void *QMetaSequence::constEnd(const void *container) const
+void *QMetaContainer::constEnd(const void *container) const
 {
     return hasConstIterator()
             ? d_ptr->createConstIteratorFn(
@@ -724,7 +743,7 @@ void *QMetaSequence::constEnd(const void *container) const
 
     \sa constBegin(), constEnd(), destroyIterator()
  */
-void QMetaSequence::destroyConstIterator(const void *iterator) const
+void QMetaContainer::destroyConstIterator(const void *iterator) const
 {
     if (hasConstIterator())
         d_ptr->destroyConstIteratorFn(iterator);
@@ -737,7 +756,7 @@ void QMetaSequence::destroyConstIterator(const void *iterator) const
 
     \sa constBegin(), constEnd()
  */
-bool QMetaSequence::compareConstIterator(const void *i, const void *j) const
+bool QMetaContainer::compareConstIterator(const void *i, const void *j) const
 {
     return hasConstIterator() ? d_ptr->compareConstIteratorFn(i, j) : false;
 }
@@ -748,7 +767,7 @@ bool QMetaSequence::compareConstIterator(const void *i, const void *j) const
 
     \sa constBegin(), constEnd()
  */
-void QMetaSequence::copyConstIterator(void *target, const void *source) const
+void QMetaContainer::copyConstIterator(void *target, const void *source) const
 {
     if (hasConstIterator())
         d_ptr->copyConstIteratorFn(target, source);
@@ -762,7 +781,7 @@ void QMetaSequence::copyConstIterator(void *target, const void *source) const
 
     \sa constBegin(), constEnd()
  */
-void QMetaSequence::advanceConstIterator(void *iterator, qsizetype step) const
+void QMetaContainer::advanceConstIterator(void *iterator, qsizetype step) const
 {
     if (hasConstIterator())
         d_ptr->advanceConstIteratorFn(iterator, step);
@@ -776,7 +795,7 @@ void QMetaSequence::advanceConstIterator(void *iterator, qsizetype step) const
 
     \sa constBegin(), constEnd()
  */
-qsizetype QMetaSequence::diffConstIterator(const void *i, const void *j) const
+qsizetype QMetaContainer::diffConstIterator(const void *i, const void *j) const
 {
     return hasConstIterator() ?  d_ptr->diffConstIteratorFn(i, j) : 0;
 }
@@ -789,7 +808,9 @@ qsizetype QMetaSequence::diffConstIterator(const void *i, const void *j) const
  */
 bool QMetaSequence::canGetValueAtConstIterator() const
 {
-    return d_ptr && d_ptr->valueAtConstIteratorFn;
+    if (auto iface = d())
+        return iface->valueAtConstIteratorFn;
+    return false;
 }
 
 /*!
@@ -801,7 +822,7 @@ bool QMetaSequence::canGetValueAtConstIterator() const
 void QMetaSequence::valueAtConstIterator(const void *iterator, void *result) const
 {
     if (canGetValueAtConstIterator())
-        d_ptr->valueAtConstIteratorFn(iterator, result);
+        d()->valueAtConstIteratorFn(iterator, result);
 }
 
 /*!
@@ -821,5 +842,26 @@ void QMetaSequence::valueAtConstIterator(const void *iterator, void *result) con
     Returns \c true if the QMetaSequence \a a represents a different container
     type than the QMetaSequence \a b, otherwise returns \c false.
 */
+
+
+/*!
+    Returns the meta type for keys in the container.
+ */
+QMetaType QMetaAssociation::keyMetaType() const
+{
+    if (auto iface = d())
+        return QMetaType(iface->keyMetaType);
+    return QMetaType();
+}
+
+/*!
+    Returns the meta type for mapped values in the container.
+ */
+QMetaType QMetaAssociation::mappedMetaType() const
+{
+    if (auto iface = d())
+        return QMetaType(iface->mappedMetaType);
+    return QMetaType();
+}
 
 QT_END_NAMESPACE

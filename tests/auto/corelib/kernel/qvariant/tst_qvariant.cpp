@@ -4558,7 +4558,7 @@ void tst_QVariant::shouldDeleteVariantDataWorksForSequential()
             MyType mytype {2, "zwei"};
             *static_cast<MyType *>(dataPtr) = mytype;
         };
-        metaSequence.valueMetaType = QMetaType::fromType<MyType>();
+        metaSequence.valueMetaType = QtPrivate::qMetaTypeInterfaceForType<MyType>();
 
         QSequentialIterable iterable(QMetaSequence(&metaSequence), nullptr);
         QVariant value1 = iterable.at(0);

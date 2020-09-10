@@ -38,6 +38,7 @@
 #include <vector>
 #include <set>
 #include <forward_list>
+#include <unordered_map>
 
 namespace CheckContainerTraits
 {
@@ -57,12 +58,12 @@ static_assert(QContainerTraits::has_clear_v<std::vector<int>>);
 static_assert(QContainerTraits::has_clear_v<std::set<int>>);
 static_assert(QContainerTraits::has_clear_v<std::forward_list<int>>);
 
-static_assert(QContainerTraits::has_at_v<QVector<int>>);
-static_assert(!QContainerTraits::has_at_v<QSet<int>>);
-static_assert(!QContainerTraits::has_at_v<NotAContainer>);
-static_assert(QContainerTraits::has_at_v<std::vector<int>>);
-static_assert(!QContainerTraits::has_at_v<std::set<int>>);
-static_assert(!QContainerTraits::has_at_v<std::forward_list<int>>);
+static_assert(QContainerTraits::has_at_index_v<QVector<int>>);
+static_assert(!QContainerTraits::has_at_index_v<QSet<int>>);
+static_assert(!QContainerTraits::has_at_index_v<NotAContainer>);
+static_assert(QContainerTraits::has_at_index_v<std::vector<int>>);
+static_assert(!QContainerTraits::has_at_index_v<std::set<int>>);
+static_assert(!QContainerTraits::has_at_index_v<std::forward_list<int>>);
 
 static_assert(QContainerTraits::can_get_at_index_v<QVector<int>>);
 static_assert(!QContainerTraits::can_get_at_index_v<QSet<int>>);
@@ -127,30 +128,30 @@ static_assert(QContainerTraits::has_const_iterator_v<std::vector<int>>);
 static_assert(QContainerTraits::has_const_iterator_v<std::set<int>>);
 static_assert(QContainerTraits::has_const_iterator_v<std::forward_list<int>>);
 
-static_assert(QContainerTraits::can_get_at_iterator_v<QVector<int>>);
-static_assert(QContainerTraits::can_get_at_iterator_v<QSet<int>>);
-static_assert(!QContainerTraits::can_get_at_iterator_v<NotAContainer>);
-static_assert(QContainerTraits::can_get_at_iterator_v<std::vector<int>>);
-static_assert(QContainerTraits::can_get_at_iterator_v<std::set<int>>);
-static_assert(QContainerTraits::can_get_at_iterator_v<std::forward_list<int>>);
+static_assert(QContainerTraits::iterator_dereferences_to_value_v<QVector<int>>);
+static_assert(QContainerTraits::iterator_dereferences_to_value_v<QSet<int>>);
+static_assert(!QContainerTraits::iterator_dereferences_to_value_v<NotAContainer>);
+static_assert(QContainerTraits::iterator_dereferences_to_value_v<std::vector<int>>);
+static_assert(QContainerTraits::iterator_dereferences_to_value_v<std::set<int>>);
+static_assert(QContainerTraits::iterator_dereferences_to_value_v<std::forward_list<int>>);
 
-static_assert(QContainerTraits::can_set_at_iterator_v<QVector<int>>);
-static_assert(!QContainerTraits::can_set_at_iterator_v<QSet<int>>);
-static_assert(!QContainerTraits::can_get_at_iterator_v<NotAContainer>);
-static_assert(QContainerTraits::can_set_at_iterator_v<std::vector<int>>);
-static_assert(!QContainerTraits::can_set_at_iterator_v<std::set<int>>);
-static_assert(QContainerTraits::can_set_at_iterator_v<std::forward_list<int>>);
+static_assert(QContainerTraits::can_set_value_at_iterator_v<QVector<int>>);
+static_assert(!QContainerTraits::can_set_value_at_iterator_v<QSet<int>>);
+static_assert(!QContainerTraits::can_set_value_at_iterator_v<NotAContainer>);
+static_assert(QContainerTraits::can_set_value_at_iterator_v<std::vector<int>>);
+static_assert(!QContainerTraits::can_set_value_at_iterator_v<std::set<int>>);
+static_assert(QContainerTraits::can_set_value_at_iterator_v<std::forward_list<int>>);
 
-static_assert(QContainerTraits::can_insert_at_iterator_v<QVector<int>>);
-static_assert(!QContainerTraits::can_insert_at_iterator_v<QSet<int>>);
-static_assert(!QContainerTraits::can_insert_at_iterator_v<NotAContainer>);
-static_assert(QContainerTraits::can_insert_at_iterator_v<std::vector<int>>);
-static_assert(!QContainerTraits::can_insert_at_iterator_v<std::forward_list<int>>);
+static_assert(QContainerTraits::can_insert_value_at_iterator_v<QVector<int>>);
+static_assert(!QContainerTraits::can_insert_value_at_iterator_v<QSet<int>>);
+static_assert(!QContainerTraits::can_insert_value_at_iterator_v<NotAContainer>);
+static_assert(QContainerTraits::can_insert_value_at_iterator_v<std::vector<int>>);
+static_assert(!QContainerTraits::can_insert_value_at_iterator_v<std::forward_list<int>>);
 
 // The iterator is only a hint, but syntactically indistinguishable from others.
 // It's explicitly there to be signature compatible with std::vector::insert, though.
 // Also, inserting into a set is not guaranteed to actually do anything.
-static_assert(QContainerTraits::can_insert_at_iterator_v<std::set<int>>);
+static_assert(QContainerTraits::can_insert_value_at_iterator_v<std::set<int>>);
 
 static_assert(QContainerTraits::can_erase_at_iterator_v<QVector<int>>);
 static_assert(QContainerTraits::can_erase_at_iterator_v<QSet<int>>);
@@ -172,10 +173,19 @@ private:
     std::set<int> stdset;
     std::forward_list<QMetaSequence> forwardList;
 
+    QHash<int, QMetaType> qhash;
+    QMap<QByteArray, bool> qmap;
+    std::map<QString, int> stdmap;
+    std::unordered_map<int, QMetaAssociation> stdunorderedmap;
+
 private slots:
     void init();
     void testSequence_data();
     void testSequence();
+
+    void testAssociation_data();
+    void testAssociation();
+
     void cleanup();
 };
 
@@ -192,6 +202,28 @@ void tst_QMetaContainer::init()
         QMetaSequence::fromContainer<std::set<int>>(),
         QMetaSequence::fromContainer<std::forward_list<QMetaSequence>>()
     };
+    qhash = {
+        { 233, QMetaType() },
+        { 11, QMetaType::fromType<QByteArray>() },
+        { 6626, QMetaType::fromType<bool>() }
+    };
+    qmap = {
+        { "eins", true },
+        { "zwei", false },
+        { "elfundvierzig", true }
+    };
+
+    stdmap = {
+        { QStringLiteral("dkdkdkd"), 58583 },
+        { QStringLiteral("ooo30393"), 12 },
+        { QStringLiteral("2dddd30393"), 999999 },
+    };
+    stdunorderedmap = {
+        { 11, QMetaAssociation::fromContainer<QHash<int, QMetaType>>() },
+        { 12, QMetaAssociation::fromContainer<QMap<QByteArray, bool>>() },
+        { 393, QMetaAssociation::fromContainer<std::map<QString, int>>() },
+        { 293, QMetaAssociation::fromContainer<std::unordered_map<int, QMetaAssociation>>() }
+    };
 }
 
 void tst_QMetaContainer::cleanup()
@@ -201,6 +233,10 @@ void tst_QMetaContainer::cleanup()
     qset.clear();
     stdset.clear();
     forwardList.clear();
+    qhash.clear();
+    qmap.clear();
+    stdmap.clear();
+    stdunorderedmap.clear();
 }
 
 void tst_QMetaContainer::testSequence_data()
@@ -484,6 +520,231 @@ void tst_QMetaContainer::testSequence()
     QVERIFY(metaSequence.compareConstIterator(constIt, constEnd));
     metaSequence.destroyConstIterator(constIt);
     metaSequence.destroyConstIterator(constEnd);
+}
+
+void tst_QMetaContainer::testAssociation_data()
+{
+    QTest::addColumn<void *>("container");
+    QTest::addColumn<QMetaAssociation>("metaAssociation");
+    QTest::addColumn<QMetaType>("keyType");
+    QTest::addColumn<QMetaType>("mappedType");
+    QTest::addColumn<bool>("hasSize");
+    QTest::addColumn<bool>("canRemove");
+    QTest::addColumn<bool>("canSetMapped");
+    QTest::addColumn<bool>("hasBidirectionalIterator");
+    QTest::addColumn<bool>("hasRandomAccessIterator");
+
+    QTest::addRow("QHash")
+            << static_cast<void *>(&qhash)
+            << QMetaAssociation::fromContainer<QHash<int, QMetaType>>()
+            << QMetaType::fromType<int>()
+            << QMetaType::fromType<QMetaType>()
+            << true << true << true << false << false;
+    QTest::addRow("QMap")
+            << static_cast<void *>(&qmap)
+            << QMetaAssociation::fromContainer<QMap<QByteArray, bool>>()
+            << QMetaType::fromType<QByteArray>()
+            << QMetaType::fromType<bool>()
+            << true << true << true << true << false;
+    QTest::addRow("std::map")
+            << static_cast<void *>(&stdmap)
+            << QMetaAssociation::fromContainer<std::map<QString, int>>()
+            << QMetaType::fromType<QString>()
+            << QMetaType::fromType<int>()
+            << true << true << true << true << false;
+    QTest::addRow("std::unorderedmap")
+            << static_cast<void *>(&stdunorderedmap)
+            << QMetaAssociation::fromContainer<std::unordered_map<int, QMetaAssociation>>()
+            << QMetaType::fromType<int>()
+            << QMetaType::fromType<QMetaAssociation>()
+            << true << true << true << false << false;
+    QTest::addRow("QSet")
+            << static_cast<void *>(&qset)
+            << QMetaAssociation::fromContainer<QSet<QByteArray>>()
+            << QMetaType::fromType<QByteArray>()
+            << QMetaType()
+            << true << true << false << false << false;
+    QTest::addRow("std::set")
+            << static_cast<void *>(&stdset)
+            << QMetaAssociation::fromContainer<std::set<int>>()
+            << QMetaType::fromType<int>()
+            << QMetaType()
+            << true << true << false << true << false;
+}
+
+void tst_QMetaContainer::testAssociation()
+{
+    QFETCH(void *, container);
+    QFETCH(QMetaAssociation, metaAssociation);
+    QFETCH(QMetaType, keyType);
+    QFETCH(QMetaType, mappedType);
+    QFETCH(bool, hasSize);
+    QFETCH(bool, canRemove);
+    QFETCH(bool, canSetMapped);
+    QFETCH(bool, hasBidirectionalIterator);
+    QFETCH(bool, hasRandomAccessIterator);
+
+    QCOMPARE(metaAssociation.hasSize(), hasSize);
+    QCOMPARE(metaAssociation.canRemoveKey(), canRemove);
+    QCOMPARE(metaAssociation.canSetMappedAtKey(), canSetMapped);
+    QCOMPARE(metaAssociation.canSetMappedAtIterator(), canSetMapped);
+
+    // Apparently implementations can choose to provide "better" iterators than required by the std.
+    if (hasBidirectionalIterator)
+        QCOMPARE(metaAssociation.hasBidirectionalIterator(), hasBidirectionalIterator);
+    if (hasRandomAccessIterator)
+        QCOMPARE(metaAssociation.hasRandomAccessIterator(), hasRandomAccessIterator);
+
+    QVariant key1(keyType);
+    QVariant key2(keyType);
+    QVariant key3(keyType);
+
+    QVariant mapped1(mappedType);
+    QVariant mapped2(mappedType);
+    QVariant mapped3(mappedType);
+
+    if (hasSize) {
+        const qsizetype size = metaAssociation.size(container);
+
+        QVERIFY(metaAssociation.canInsertKey());
+
+        // var1 is invalid, and our containers do not contain an invalid key so far.
+        metaAssociation.insertKey(container, key1.constData());
+        QCOMPARE(metaAssociation.size(container), size + 1);
+        metaAssociation.removeKey(container, key1.constData());
+        QCOMPARE(metaAssociation.size(container), size);
+    } else {
+        metaAssociation.insertKey(container, key1.constData());
+        metaAssociation.removeKey(container, key1.constData());
+    }
+
+    QVERIFY(metaAssociation.hasIterator());
+    QVERIFY(metaAssociation.hasConstIterator());
+    QVERIFY(metaAssociation.canGetKeyAtIterator());
+    QVERIFY(metaAssociation.canGetKeyAtConstIterator());
+
+    void *it = metaAssociation.begin(container);
+    void *end = metaAssociation.end(container);
+    QVERIFY(it);
+    QVERIFY(end);
+
+    void *constIt = metaAssociation.constBegin(container);
+    void *constEnd = metaAssociation.constEnd(container);
+    QVERIFY(constIt);
+    QVERIFY(constEnd);
+
+    const qsizetype size = metaAssociation.diffIterator(end, it);
+    QCOMPARE(size, metaAssociation.diffConstIterator(constEnd, constIt));
+    if (hasSize)
+        QCOMPARE(size, metaAssociation.size(container));
+
+    qsizetype count = 0;
+    for (; !metaAssociation.compareIterator(it, end);
+         metaAssociation.advanceIterator(it, 1), metaAssociation.advanceConstIterator(constIt, 1)) {
+        metaAssociation.keyAtIterator(it, key1.data());
+        metaAssociation.keyAtConstIterator(constIt, key3.data());
+        QCOMPARE(key3, key1);
+        ++count;
+    }
+
+    QCOMPARE(count, size);
+    QVERIFY(metaAssociation.compareConstIterator(constIt, constEnd));
+
+    metaAssociation.destroyIterator(it);
+    metaAssociation.destroyIterator(end);
+    metaAssociation.destroyConstIterator(constIt);
+    metaAssociation.destroyConstIterator(constEnd);
+
+    if (metaAssociation.canSetMappedAtIterator()) {
+        void *it = metaAssociation.begin(container);
+        void *end = metaAssociation.end(container);
+        QVERIFY(it);
+        QVERIFY(end);
+
+        for (; !metaAssociation.compareIterator(it, end); metaAssociation.advanceIterator(it, 1)) {
+            metaAssociation.mappedAtIterator(it, mapped1.data());
+            metaAssociation.setMappedAtIterator(it, mapped2.constData());
+            metaAssociation.mappedAtIterator(it, mapped3.data());
+            QCOMPARE(mapped2, mapped3);
+            mapped2 = mapped1;
+        }
+
+        metaAssociation.destroyIterator(it);
+        metaAssociation.destroyIterator(end);
+
+        it = metaAssociation.constBegin(container);
+        end = metaAssociation.constEnd(container);
+        QVERIFY(it);
+        QVERIFY(end);
+
+        for (; !metaAssociation.compareConstIterator(it, end); metaAssociation.advanceConstIterator(it, 1)) {
+            metaAssociation.mappedAtConstIterator(it, mapped1.data());
+            metaAssociation.keyAtConstIterator(it, key1.data());
+            metaAssociation.setMappedAtKey(container, key1.constData(), mapped2.constData());
+            metaAssociation.mappedAtConstIterator(it, mapped3.data());
+            QCOMPARE(mapped2, mapped3);
+            mapped2 = mapped1;
+        }
+
+        metaAssociation.destroyConstIterator(it);
+        metaAssociation.destroyConstIterator(end);
+    }
+
+    if (metaAssociation.hasBidirectionalIterator()) {
+        void *it = metaAssociation.end(container);
+        void *end = metaAssociation.begin(container);
+        QVERIFY(it);
+        QVERIFY(end);
+
+        void *constIt = metaAssociation.constEnd(container);
+        void *constEnd = metaAssociation.constBegin(container);
+        QVERIFY(constIt);
+        QVERIFY(constEnd);
+
+        qsizetype size = 0;
+        if (metaAssociation.hasRandomAccessIterator()) {
+            size = metaAssociation.diffIterator(end, it);
+            QCOMPARE(size, metaAssociation.diffConstIterator(constEnd, constIt));
+        } else {
+            size = -metaAssociation.diffIterator(it, end);
+        }
+
+        if (hasSize)
+            QCOMPARE(size, -metaAssociation.size(container));
+
+        qsizetype count = 0;
+        do {
+            metaAssociation.advanceIterator(it, -1);
+            metaAssociation.advanceConstIterator(constIt, -1);
+            --count;
+
+            metaAssociation.keyAtIterator(it, key1.data());
+            metaAssociation.keyAtConstIterator(constIt, key3.data());
+            QCOMPARE(key3, key1);
+        } while (!metaAssociation.compareIterator(it, end));
+
+        QCOMPARE(count, size);
+        QVERIFY(metaAssociation.compareConstIterator(constIt, constEnd));
+
+        metaAssociation.destroyIterator(it);
+        metaAssociation.destroyIterator(end);
+        metaAssociation.destroyConstIterator(constIt);
+        metaAssociation.destroyConstIterator(constEnd);
+    }
+
+    QVERIFY(metaAssociation.canClear());
+    constIt = metaAssociation.constBegin(container);
+    constEnd = metaAssociation.constEnd(container);
+    QVERIFY(!metaAssociation.compareConstIterator(constIt, constEnd));
+    metaAssociation.destroyConstIterator(constIt);
+    metaAssociation.destroyConstIterator(constEnd);
+
+    metaAssociation.clear(container);
+    constIt = metaAssociation.constBegin(container);
+    constEnd = metaAssociation.constEnd(container);
+    QVERIFY(metaAssociation.compareConstIterator(constIt, constEnd));
+    metaAssociation.destroyConstIterator(constIt);
+    metaAssociation.destroyConstIterator(constEnd);
 }
 
 QTEST_MAIN(tst_QMetaContainer)

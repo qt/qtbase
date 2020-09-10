@@ -43,9 +43,15 @@
 #include <QtCore/qcontainerinfo.h>
 #include <QtCore/qflags.h>
 #include <QtCore/qglobal.h>
-#include <QtCore/qmetatype.h>
 
 QT_BEGIN_NAMESPACE
+
+class QMetaType;
+namespace QtPrivate {
+class QMetaTypeInterface;
+template<typename T>
+constexpr QMetaTypeInterface *qMetaTypeInterfaceForType();
+}
 
 namespace QtMetaContainerPrivate {
 
@@ -68,30 +74,17 @@ enum AddRemoveCapability : quint8 {
 Q_DECLARE_FLAGS(AddRemoveCapabilities, AddRemoveCapability)
 Q_DECLARE_OPERATORS_FOR_FLAGS(AddRemoveCapabilities)
 
-class QMetaSequenceInterface
+class QMetaContainerInterface
 {
 public:
     enum Position : quint8 { AtBegin, AtEnd, Unspecified };
-
-    ushort revision;
+    ushort revision = 0;
     IteratorCapabilities iteratorCapabilities;
-    QMetaType valueMetaType;
-    AddRemoveCapabilities addRemoveCapabilities;
 
     using SizeFn = qsizetype(*)(const void *);
     SizeFn sizeFn;
     using ClearFn = void(*)(void *);
     ClearFn clearFn;
-
-    using ValueAtIndexFn = void(*)(const void *, qsizetype, void *);
-    ValueAtIndexFn valueAtIndexFn;
-    using SetValueAtIndexFn = void(*)(void *, qsizetype, const void *);
-    SetValueAtIndexFn setValueAtIndexFn;
-
-    using AddValueFn = void(*)(void *, const void *, Position);
-    AddValueFn addValueFn;
-    using RemoveValueFn = void(*)(void *, Position);
-    RemoveValueFn removeValueFn;
 
     using CreateIteratorFn = void *(*)(void *, Position);
     CreateIteratorFn createIteratorFn;
@@ -105,16 +98,6 @@ public:
     AdvanceIteratorFn advanceIteratorFn;
     using DiffIteratorFn = qsizetype(*)(const void *, const void *);
     DiffIteratorFn diffIteratorFn;
-    using ValueAtIteratorFn = void(*)(const void *, void *);
-    ValueAtIteratorFn valueAtIteratorFn;
-    using SetValueAtIteratorFn = void(*)(const void *, const void *);
-    SetValueAtIteratorFn setValueAtIteratorFn;
-    using InsertValueAtIteratorFn = void(*)(void *, const void *, const void *);
-    InsertValueAtIteratorFn insertValueAtIteratorFn;
-    using EraseValueAtIteratorFn = void(*)(void *, const void *);
-    EraseValueAtIteratorFn eraseValueAtIteratorFn;
-    using EraseRangeAtIteratorFn = void(*)(void *, const void *, const void *);
-    EraseRangeAtIteratorFn eraseRangeAtIteratorFn;
 
     using CreateConstIteratorFn = void *(*)(const void *, Position);
     CreateConstIteratorFn createConstIteratorFn;
@@ -123,12 +106,145 @@ public:
     CopyIteratorFn copyConstIteratorFn;
     AdvanceIteratorFn advanceConstIteratorFn;
     DiffIteratorFn diffConstIteratorFn;
+
+    QMetaContainerInterface() = default;
+
+    template<typename MetaContainer>
+    QMetaContainerInterface(const MetaContainer &)
+        : iteratorCapabilities(MetaContainer::getIteratorCapabilities())
+        , sizeFn(MetaContainer::getSizeFn())
+        , clearFn(MetaContainer::getClearFn())
+        , createIteratorFn(MetaContainer::getCreateIteratorFn())
+        , destroyIteratorFn(MetaContainer::getDestroyIteratorFn())
+        , compareIteratorFn(MetaContainer::getCompareIteratorFn())
+        , copyIteratorFn(MetaContainer::getCopyIteratorFn())
+        , advanceIteratorFn(MetaContainer::getAdvanceIteratorFn())
+        , diffIteratorFn(MetaContainer::getDiffIteratorFn())
+        , createConstIteratorFn(MetaContainer::getCreateConstIteratorFn())
+        , destroyConstIteratorFn(MetaContainer::getDestroyConstIteratorFn())
+        , compareConstIteratorFn(MetaContainer::getCompareConstIteratorFn())
+        , copyConstIteratorFn(MetaContainer::getCopyConstIteratorFn())
+        , advanceConstIteratorFn(MetaContainer::getAdvanceConstIteratorFn())
+        , diffConstIteratorFn(MetaContainer::getDiffConstIteratorFn())
+    {}
+};
+
+class QMetaSequenceInterface : public QMetaContainerInterface
+{
+public:
+    QtPrivate::QMetaTypeInterface *valueMetaType;
+    AddRemoveCapabilities addRemoveCapabilities;
+
+    using ValueAtIndexFn = void(*)(const void *, qsizetype, void *);
+    ValueAtIndexFn valueAtIndexFn;
+    using SetValueAtIndexFn = void(*)(void *, qsizetype, const void *);
+    SetValueAtIndexFn setValueAtIndexFn;
+
+    using AddValueFn = void(*)(void *, const void *, Position);
+    AddValueFn addValueFn;
+    using RemoveValueFn = void(*)(void *, Position);
+    RemoveValueFn removeValueFn;
+
+    using ValueAtIteratorFn = void(*)(const void *, void *);
+    ValueAtIteratorFn valueAtIteratorFn;
+    using SetValueAtIteratorFn = void(*)(const void *, const void *);
+    SetValueAtIteratorFn setValueAtIteratorFn;
+    using InsertValueAtIteratorFn = void(*)(void *, const void *, const void *);
+    InsertValueAtIteratorFn insertValueAtIteratorFn;
+
     ValueAtIteratorFn valueAtConstIteratorFn;
+
+    using EraseValueAtIteratorFn = void(*)(void *, const void *);
+    EraseValueAtIteratorFn eraseValueAtIteratorFn;
+
+    using EraseRangeAtIteratorFn = void(*)(void *, const void *, const void *);
+    EraseRangeAtIteratorFn eraseRangeAtIteratorFn;
+
+    QMetaSequenceInterface() = default;
+
+    template<typename MetaSequence>
+    QMetaSequenceInterface(const MetaSequence &m)
+        : QMetaContainerInterface(m)
+        , valueMetaType(MetaSequence::getValueMetaType())
+        , addRemoveCapabilities(MetaSequence::getAddRemoveCapabilities())
+        , valueAtIndexFn(MetaSequence::getValueAtIndexFn())
+        , setValueAtIndexFn(MetaSequence::getSetValueAtIndexFn())
+        , addValueFn(MetaSequence::getAddValueFn())
+        , removeValueFn(MetaSequence::getRemoveValueFn())
+        , valueAtIteratorFn(MetaSequence::getValueAtIteratorFn())
+        , setValueAtIteratorFn(MetaSequence::getSetValueAtIteratorFn())
+        , insertValueAtIteratorFn(MetaSequence::getInsertValueAtIteratorFn())
+        , valueAtConstIteratorFn(MetaSequence::getValueAtConstIteratorFn())
+        , eraseValueAtIteratorFn(MetaSequence::getEraseValueAtIteratorFn())
+        , eraseRangeAtIteratorFn(MetaSequence::getEraseRangeAtIteratorFn())
+    {}
+};
+
+class QMetaAssociationInterface : public QMetaContainerInterface
+{
+public:
+    QtPrivate::QMetaTypeInterface *keyMetaType;
+    QtPrivate::QMetaTypeInterface *mappedMetaType;
+
+    using InsertKeyFn = void(*)(void *, const void *);
+    InsertKeyFn insertKeyFn;
+    using RemoveKeyFn = void(*)(void *, const void *);
+    RemoveKeyFn removeKeyFn;
+    using ContainsKeyFn = bool(*)(const void *, const void *);
+    ContainsKeyFn containsKeyFn;
+
+    using MappedAtKeyFn = void(*)(const void *, const void *, void *);
+    MappedAtKeyFn mappedAtKeyFn;
+    using SetMappedAtKeyFn = void(*)(void *, const void *, const void *);
+    SetMappedAtKeyFn setMappedAtKeyFn;
+
+    using CreateIteratorAtKeyFn = void *(*)(void *, const void *);
+    CreateIteratorAtKeyFn createIteratorAtKeyFn;
+    using CreateConstIteratorAtKeyFn = void *(*)(const void *, const void *);
+    CreateConstIteratorAtKeyFn createConstIteratorAtKeyFn;
+
+    using KeyAtIteratorFn = void(*)(const void *, void *);
+    KeyAtIteratorFn keyAtIteratorFn;
+    KeyAtIteratorFn keyAtConstIteratorFn;
+
+    using MappedAtIteratorFn = void(*)(const void *, void *);
+    MappedAtIteratorFn mappedAtIteratorFn;
+    MappedAtIteratorFn mappedAtConstIteratorFn;
+
+    using SetMappedAtIteratorFn = void(*)(const void *, const void *);
+    SetMappedAtIteratorFn setMappedAtIteratorFn;
+
+    using EraseKeyAtIteratorFn = void(*)(void *, const void *);
+    EraseKeyAtIteratorFn eraseKeyAtIteratorFn;
+
+    QMetaAssociationInterface() = default;
+
+    template<typename MetaAssociation>
+    QMetaAssociationInterface(const MetaAssociation &m)
+        : QMetaContainerInterface(m)
+        , keyMetaType(MetaAssociation::getKeyMetaType())
+        , mappedMetaType(MetaAssociation::getMappedMetaType())
+        , insertKeyFn(MetaAssociation::getInsertKeyFn())
+        , removeKeyFn(MetaAssociation::getRemoveKeyFn())
+        , containsKeyFn(MetaAssociation::getContainsKeyFn())
+        , mappedAtKeyFn(MetaAssociation::getMappedAtKeyFn())
+        , setMappedAtKeyFn(MetaAssociation::getSetMappedAtKeyFn())
+        , createIteratorAtKeyFn(MetaAssociation::createIteratorAtKeyFn())
+        , createConstIteratorAtKeyFn(MetaAssociation::createConstIteratorAtKeyFn())
+        , keyAtIteratorFn(MetaAssociation::getKeyAtIteratorFn())
+        , keyAtConstIteratorFn(MetaAssociation::getKeyAtConstIteratorFn())
+        , mappedAtIteratorFn(MetaAssociation::getMappedAtIteratorFn())
+        , mappedAtConstIteratorFn(MetaAssociation::getMappedAtConstIteratorFn())
+        , setMappedAtIteratorFn(MetaAssociation::getSetMappedAtIteratorFn())
+        , eraseKeyAtIteratorFn(MetaAssociation::getEraseKeyAtIteratorFn())
+    {}
 };
 
 template<typename C>
-class QMetaSequenceForContainer
+class QMetaContainerForContainer
 {
+    friend QMetaContainerInterface;
+
     template <typename Iterator>
     static constexpr IteratorCapabilities capabilitiesForIterator()
     {
@@ -155,6 +271,213 @@ class QMetaSequenceForContainer
             return {};
     }
 
+    static constexpr QMetaContainerInterface::SizeFn getSizeFn()
+    {
+        if constexpr (QContainerTraits::has_size_v<C>) {
+            return [](const void *c) -> qsizetype { return static_cast<const C *>(c)->size(); };
+        } else {
+            return nullptr;
+        }
+    }
+
+    static constexpr QMetaContainerInterface::ClearFn getClearFn()
+    {
+        if constexpr (QContainerTraits::has_clear_v<C>) {
+            return [](void *c) { return static_cast<C *>(c)->clear(); };
+        } else {
+            return nullptr;
+        }
+    }
+
+    static constexpr QMetaContainerInterface::CreateIteratorFn getCreateIteratorFn()
+    {
+        if constexpr (QContainerTraits::has_iterator_v<C> && !std::is_const_v<C>) {
+            return [](void *c, QMetaContainerInterface::Position p) -> void* {
+                using Iterator = QContainerTraits::iterator<C>;
+                switch (p) {
+                case QMetaContainerInterface::Unspecified:
+                    return new Iterator;
+                case QMetaContainerInterface::AtBegin:
+                    return new Iterator(static_cast<C *>(c)->begin());
+                    break;
+                case QMetaContainerInterface::AtEnd:
+                    return new Iterator(static_cast<C *>(c)->end());
+                    break;
+                }
+                return nullptr;
+            };
+        } else {
+            return nullptr;
+        }
+    }
+
+    static constexpr QMetaContainerInterface::DestroyIteratorFn getDestroyIteratorFn()
+    {
+        if constexpr (QContainerTraits::has_iterator_v<C> && !std::is_const_v<C>) {
+            return [](const void *i) {
+                using Iterator = QContainerTraits::iterator<C>;
+                delete static_cast<const Iterator *>(i);
+            };
+        } else {
+            return nullptr;
+        }
+    }
+
+    static constexpr QMetaContainerInterface::CompareIteratorFn getCompareIteratorFn()
+    {
+        if constexpr (QContainerTraits::has_iterator_v<C> && !std::is_const_v<C>) {
+            return [](const void *i, const void *j) {
+                using Iterator = QContainerTraits::iterator<C>;
+                return *static_cast<const Iterator *>(i) == *static_cast<const Iterator *>(j);
+            };
+        } else {
+            return nullptr;
+        }
+    }
+
+    static constexpr QMetaContainerInterface::CopyIteratorFn getCopyIteratorFn()
+    {
+        if constexpr (QContainerTraits::has_iterator_v<C> && !std::is_const_v<C>) {
+            return [](void *i, const void *j) {
+                using Iterator = QContainerTraits::iterator<C>;
+                *static_cast<Iterator *>(i) = *static_cast<const Iterator *>(j);
+            };
+        } else {
+            return nullptr;
+        }
+    }
+
+    static constexpr QMetaContainerInterface::AdvanceIteratorFn getAdvanceIteratorFn()
+    {
+        if constexpr (QContainerTraits::has_iterator_v<C> && !std::is_const_v<C>) {
+            return [](void *i, qsizetype step) {
+                std::advance(*static_cast<QContainerTraits::iterator<C> *>(i), step);
+            };
+        } else {
+            return nullptr;
+        }
+    }
+
+    static constexpr QMetaContainerInterface::DiffIteratorFn getDiffIteratorFn()
+    {
+        if constexpr (QContainerTraits::has_iterator_v<C> && !std::is_const_v<C>) {
+            return [](const void *i, const void *j) -> qsizetype {
+                return std::distance(*static_cast<const QContainerTraits::iterator<C> *>(j),
+                                     *static_cast<const QContainerTraits::iterator<C> *>(i));
+            };
+        } else {
+            return nullptr;
+        }
+    }
+
+    static constexpr QMetaContainerInterface::CreateConstIteratorFn getCreateConstIteratorFn()
+    {
+        if constexpr (QContainerTraits::has_const_iterator_v<C>) {
+            return [](const void *c, QMetaContainerInterface::Position p) -> void* {
+                using Iterator = QContainerTraits::const_iterator<C>;
+                switch (p) {
+                case QMetaContainerInterface::Unspecified:
+                    return new Iterator;
+                case QMetaContainerInterface::AtBegin:
+                    return new Iterator(static_cast<const C *>(c)->begin());
+                case QMetaContainerInterface::AtEnd:
+                    return new Iterator(static_cast<const C *>(c)->end());
+                }
+                return nullptr;
+            };
+        } else {
+            return nullptr;
+        }
+    }
+
+    static constexpr QMetaContainerInterface::DestroyIteratorFn getDestroyConstIteratorFn()
+    {
+        if constexpr (QContainerTraits::has_const_iterator_v<C>) {
+            return [](const void *i) {
+                using Iterator = QContainerTraits::const_iterator<C>;
+                delete static_cast<const Iterator *>(i);
+            };
+        } else {
+            return nullptr;
+        }
+    }
+
+    static constexpr QMetaContainerInterface::CompareIteratorFn getCompareConstIteratorFn()
+    {
+        if constexpr (QContainerTraits::has_const_iterator_v<C>) {
+            return [](const void *i, const void *j) {
+                using Iterator = QContainerTraits::const_iterator<C>;
+                return *static_cast<const Iterator *>(i) == *static_cast<const Iterator *>(j);
+            };
+        } else {
+            return nullptr;
+        }
+    }
+
+    static constexpr QMetaContainerInterface::CopyIteratorFn getCopyConstIteratorFn()
+    {
+        if constexpr (QContainerTraits::has_const_iterator_v<C>) {
+            return [](void *i, const void *j) {
+                using Iterator = QContainerTraits::const_iterator<C>;
+                *static_cast<Iterator *>(i) = *static_cast<const Iterator *>(j);
+            };
+        } else {
+            return nullptr;
+        }
+    }
+
+    static constexpr QMetaContainerInterface::AdvanceIteratorFn getAdvanceConstIteratorFn()
+    {
+        if constexpr (QContainerTraits::has_const_iterator_v<C>) {
+            return [](void *i, qsizetype step) {
+                std::advance(*static_cast<QContainerTraits::const_iterator<C> *>(i), step);
+            };
+        } else {
+            return nullptr;
+        }
+    }
+
+    static constexpr QMetaContainerInterface::DiffIteratorFn getDiffConstIteratorFn()
+    {
+        if constexpr (QContainerTraits::has_const_iterator_v<C>) {
+            return [](const void *i, const void *j) -> qsizetype {
+                return std::distance(*static_cast<const QContainerTraits::const_iterator<C> *>(j),
+                                     *static_cast<const QContainerTraits::const_iterator<C> *>(i));
+            };
+        } else {
+            return nullptr;
+        }
+    }
+
+protected:
+
+    template<typename EraseFn>
+    static constexpr EraseFn getEraseAtIteratorFn()
+    {
+        if constexpr (QContainerTraits::has_iterator_v<C>
+                && QContainerTraits::can_erase_at_iterator_v<C> && !std::is_const_v<C>) {
+            return [](void *c, const void *i) {
+                static_cast<C *>(c)->erase(*static_cast<const QContainerTraits::iterator<C> *>(i));
+            };
+        } else {
+            return nullptr;
+        }
+    }
+};
+
+template<typename C>
+class QMetaSequenceForContainer : public QMetaContainerForContainer<C>
+{
+    friend QMetaSequenceInterface;
+
+    static constexpr QtPrivate::QMetaTypeInterface *getValueMetaType()
+    {
+        if constexpr (QContainerTraits::has_value_type_v<C>)
+            return QtPrivate::qMetaTypeInterfaceForType<typename C::value_type>();
+        else
+            return nullptr;
+    }
+
     static constexpr AddRemoveCapabilities getAddRemoveCapabilities()
     {
         AddRemoveCapabilities caps;
@@ -169,32 +492,9 @@ class QMetaSequenceForContainer
         return caps;
     }
 
-    static constexpr QMetaType getValueMetaType()
-    {
-        return QMetaType::fromType<typename C::value_type>();
-    }
-
-    static constexpr QMetaSequenceInterface::SizeFn getSizeFn()
-    {
-        if constexpr (QContainerTraits::has_size_v<C>) {
-            return [](const void *c) -> qsizetype { return static_cast<const C *>(c)->size(); };
-        } else {
-            return nullptr;
-        }
-    }
-
-    static constexpr QMetaSequenceInterface::ClearFn getClearFn()
-    {
-        if constexpr (QContainerTraits::has_clear_v<C>) {
-            return [](void *c) { return static_cast<C *>(c)->clear(); };
-        } else {
-            return nullptr;
-        }
-    }
-
     static constexpr QMetaSequenceInterface::ValueAtIndexFn getValueAtIndexFn()
     {
-        if constexpr (QContainerTraits::has_at_v<C>) {
+        if constexpr (QContainerTraits::has_at_index_v<C>) {
             return [](const void *c, qsizetype i, void *r) {
                 *static_cast<QContainerTraits::value_type<C> *>(r)
                         = static_cast<const C *>(c)->at(i);
@@ -316,90 +616,10 @@ class QMetaSequenceForContainer
         }
     }
 
-    static constexpr QMetaSequenceInterface::CreateIteratorFn getCreateIteratorFn()
-    {
-        if constexpr (QContainerTraits::has_iterator_v<C> && !std::is_const_v<C>) {
-            return [](void *c, QMetaSequenceInterface::Position p) -> void* {
-                using Iterator = QContainerTraits::iterator<C>;
-                switch (p) {
-                case QMetaSequenceInterface::AtBegin:
-                case QMetaSequenceInterface::Unspecified:
-                    return new Iterator(static_cast<C *>(c)->begin());
-                    break;
-                case QMetaSequenceInterface::AtEnd:
-                    return new Iterator(static_cast<C *>(c)->end());
-                    break;
-                }
-                return nullptr;
-            };
-        } else {
-            return nullptr;
-        }
-    }
-
-    static constexpr QMetaSequenceInterface::DestroyIteratorFn getDestroyIteratorFn()
-    {
-        if constexpr (QContainerTraits::has_iterator_v<C> && !std::is_const_v<C>) {
-            return [](const void *i) {
-                using Iterator = QContainerTraits::iterator<C>;
-                delete static_cast<const Iterator *>(i);
-            };
-        } else {
-            return nullptr;
-        }
-    }
-
-    static constexpr QMetaSequenceInterface::CompareIteratorFn getCompareIteratorFn()
-    {
-        if constexpr (QContainerTraits::has_iterator_v<C> && !std::is_const_v<C>) {
-            return [](const void *i, const void *j) {
-                using Iterator = QContainerTraits::iterator<C>;
-                return *static_cast<const Iterator *>(i) == *static_cast<const Iterator *>(j);
-            };
-        } else {
-            return nullptr;
-        }
-    }
-
-    static constexpr QMetaSequenceInterface::CopyIteratorFn getCopyIteratorFn()
-    {
-        if constexpr (QContainerTraits::has_iterator_v<C> && !std::is_const_v<C>) {
-            return [](void *i, const void *j) {
-                using Iterator = QContainerTraits::iterator<C>;
-                *static_cast<Iterator *>(i) = *static_cast<const Iterator *>(j);
-            };
-        } else {
-            return nullptr;
-        }
-    }
-
-    static constexpr QMetaSequenceInterface::AdvanceIteratorFn getAdvanceIteratorFn()
-    {
-        if constexpr (QContainerTraits::has_iterator_v<C> && !std::is_const_v<C>) {
-            return [](void *i, qsizetype step) {
-                std::advance(*static_cast<QContainerTraits::iterator<C> *>(i), step);
-            };
-        } else {
-            return nullptr;
-        }
-    }
-
-    static constexpr QMetaSequenceInterface::DiffIteratorFn getDiffIteratorFn()
-    {
-        if constexpr (QContainerTraits::has_iterator_v<C> && !std::is_const_v<C>) {
-            return [](const void *i, const void *j) -> qsizetype {
-                return std::distance(*static_cast<const QContainerTraits::iterator<C> *>(j),
-                                     *static_cast<const QContainerTraits::iterator<C> *>(i));
-            };
-        } else {
-            return nullptr;
-        }
-    }
-
     static constexpr QMetaSequenceInterface::ValueAtIteratorFn getValueAtIteratorFn()
     {
         if constexpr (QContainerTraits::has_iterator_v<C>
-                && QContainerTraits::can_get_at_iterator_v<C> && !std::is_const_v<C>) {
+                && QContainerTraits::iterator_dereferences_to_value_v<C> && !std::is_const_v<C>) {
             return [](const void *i, void *r) {
                 *static_cast<QContainerTraits::value_type<C> *>(r) =
                         *(*static_cast<const QContainerTraits::iterator<C> *>(i));
@@ -412,7 +632,7 @@ class QMetaSequenceForContainer
     static constexpr QMetaSequenceInterface::SetValueAtIteratorFn getSetValueAtIteratorFn()
     {
         if constexpr (QContainerTraits::has_iterator_v<C>
-                && QContainerTraits::can_set_at_iterator_v<C> && !std::is_const_v<C>) {
+                && QContainerTraits::can_set_value_at_iterator_v<C> && !std::is_const_v<C>) {
             return [](const void *i, const void *e) {
                 *(*static_cast<const QContainerTraits::iterator<C> *>(i))
                         = *static_cast<const QContainerTraits::value_type<C> *>(e);
@@ -425,7 +645,7 @@ class QMetaSequenceForContainer
     static constexpr QMetaSequenceInterface::InsertValueAtIteratorFn getInsertValueAtIteratorFn()
     {
         if constexpr (QContainerTraits::has_iterator_v<C>
-                && QContainerTraits::can_insert_at_iterator_v<C> && !std::is_const_v<C>) {
+                && QContainerTraits::can_insert_value_at_iterator_v<C> && !std::is_const_v<C>) {
             return [](void *c, const void *i, const void *e) {
                 static_cast<C *>(c)->insert(
                             *static_cast<const QContainerTraits::iterator<C> *>(i),
@@ -436,16 +656,23 @@ class QMetaSequenceForContainer
         }
     }
 
-    static constexpr QMetaSequenceInterface::EraseValueAtIteratorFn getEraseValueAtIteratorFn()
+    static constexpr QMetaSequenceInterface::ValueAtIteratorFn getValueAtConstIteratorFn()
     {
-        if constexpr (QContainerTraits::has_iterator_v<C>
-                && QContainerTraits::can_erase_at_iterator_v<C> && !std::is_const_v<C>) {
-            return [](void *c, const void *i) {
-                static_cast<C *>(c)->erase(*static_cast<const QContainerTraits::iterator<C> *>(i));
+        if constexpr (QContainerTraits::has_const_iterator_v<C>
+                && QContainerTraits::iterator_dereferences_to_value_v<C>) {
+            return [](const void *i, void *r) {
+                *static_cast<QContainerTraits::value_type<C> *>(r) =
+                        *(*static_cast<const QContainerTraits::const_iterator<C> *>(i));
             };
         } else {
             return nullptr;
         }
+    }
+
+    static constexpr QMetaSequenceInterface::EraseValueAtIteratorFn getEraseValueAtIteratorFn()
+    {
+        return QMetaContainerForContainer<C>::template getEraseAtIteratorFn<
+                QMetaSequenceInterface::EraseValueAtIteratorFn>();
     }
 
     static constexpr QMetaSequenceInterface::EraseRangeAtIteratorFn getEraseRangeAtIteratorFn()
@@ -461,134 +688,247 @@ class QMetaSequenceForContainer
         }
     }
 
-    static constexpr QMetaSequenceInterface::CreateConstIteratorFn getCreateConstIteratorFn()
-    {
-        if constexpr (QContainerTraits::has_const_iterator_v<C>) {
-            return [](const void *c, QMetaSequenceInterface::Position p) -> void* {
-                using Iterator = QContainerTraits::const_iterator<C>;
-                switch (p) {
-                case QMetaSequenceInterface::AtBegin:
-                case QMetaSequenceInterface::Unspecified:
-                    return new Iterator(static_cast<const C *>(c)->begin());
-                    break;
-                case QMetaSequenceInterface::AtEnd:
-                    return new Iterator(static_cast<const C *>(c)->end());
-                    break;
-                }
-                return nullptr;
-            };
-        } else {
-            return nullptr;
-        }
-    }
-
-    static constexpr QMetaSequenceInterface::DestroyIteratorFn getDestroyConstIteratorFn()
-    {
-        if constexpr (QContainerTraits::has_const_iterator_v<C>) {
-            return [](const void *i) {
-                using Iterator = QContainerTraits::const_iterator<C>;
-                delete static_cast<const Iterator *>(i);
-            };
-        } else {
-            return nullptr;
-        }
-    }
-
-    static constexpr QMetaSequenceInterface::CompareIteratorFn getCompareConstIteratorFn()
-    {
-        if constexpr (QContainerTraits::has_const_iterator_v<C>) {
-            return [](const void *i, const void *j) {
-                using Iterator = QContainerTraits::const_iterator<C>;
-                return *static_cast<const Iterator *>(i) == *static_cast<const Iterator *>(j);
-            };
-        } else {
-            return nullptr;
-        }
-    }
-
-    static constexpr QMetaSequenceInterface::CopyIteratorFn getCopyConstIteratorFn()
-    {
-        if constexpr (QContainerTraits::has_const_iterator_v<C>) {
-            return [](void *i, const void *j) {
-                using Iterator = QContainerTraits::const_iterator<C>;
-                *static_cast<Iterator *>(i) = *static_cast<const Iterator *>(j);
-            };
-        } else {
-            return nullptr;
-        }
-    }
-
-    static constexpr QMetaSequenceInterface::AdvanceIteratorFn getAdvanceConstIteratorFn()
-    {
-        if constexpr (QContainerTraits::has_const_iterator_v<C>) {
-            return [](void *i, qsizetype step) {
-                std::advance(*static_cast<QContainerTraits::const_iterator<C> *>(i), step);
-            };
-        } else {
-            return nullptr;
-        }
-    }
-
-    static constexpr QMetaSequenceInterface::DiffIteratorFn getDiffConstIteratorFn()
-    {
-        if constexpr (QContainerTraits::has_const_iterator_v<C>) {
-            return [](const void *i, const void *j) -> qsizetype {
-                return std::distance(*static_cast<const QContainerTraits::const_iterator<C> *>(j),
-                                     *static_cast<const QContainerTraits::const_iterator<C> *>(i));
-            };
-        } else {
-            return nullptr;
-        }
-    }
-
-    static constexpr QMetaSequenceInterface::ValueAtIteratorFn getValueAtConstIteratorFn()
-    {
-        if constexpr (QContainerTraits::has_const_iterator_v<C>
-                && QContainerTraits::can_get_at_iterator_v<C>) {
-            return [](const void *i, void *r) {
-                *static_cast<QContainerTraits::value_type<C> *>(r) =
-                        *(*static_cast<const QContainerTraits::const_iterator<C> *>(i));
-            };
-        } else {
-            return nullptr;
-        }
-    }
-
 public:
     static QMetaSequenceInterface metaSequence;
 };
 
 template<typename C>
-QMetaSequenceInterface QMetaSequenceForContainer<C>::metaSequence = {
-    /*.revision=*/                  0,
-    /*.iteratorCapabilities=*/      getIteratorCapabilities(),
-    /*.valueMetaType=*/             getValueMetaType(),
-    /*.addRemoveCapabilities=*/     getAddRemoveCapabilities(),
-    /*.sizeFn=*/                    getSizeFn(),
-    /*.clearFn=*/                   getClearFn(),
-    /*.valueAtIndexFn=*/            getValueAtIndexFn(),
-    /*.setValueAtIndexFn=*/         getSetValueAtIndexFn(),
-    /*.addValueFn=*/                getAddValueFn(),
-    /*.removeLastValueFn=*/         getRemoveValueFn(),
-    /*.createIteratorFn=*/          getCreateIteratorFn(),
-    /*.destroyIteratorFn=*/         getDestroyIteratorFn(),
-    /*.equalIteratorFn=*/           getCompareIteratorFn(),
-    /*.copyIteratorFn=*/            getCopyIteratorFn(),
-    /*.advanceIteratorFn=*/         getAdvanceIteratorFn(),
-    /*.diffIteratorFn=*/            getDiffIteratorFn(),
-    /*.valueAtIteratorFn=*/         getValueAtIteratorFn(),
-    /*.setValueAtIteratorFn=*/      getSetValueAtIteratorFn(),
-    /*.insertValueAtIteratorFn=*/   getInsertValueAtIteratorFn(),
-    /*.eraseValueAtIteratorFn=*/    getEraseValueAtIteratorFn(),
-    /*.eraseRangeAtIteratorFn=*/    getEraseRangeAtIteratorFn(),
-    /*.createConstIteratorFn=*/     getCreateConstIteratorFn(),
-    /*.destroyConstIteratorFn=*/    getDestroyConstIteratorFn(),
-    /*.equalConstIteratorFn=*/      getCompareConstIteratorFn(),
-    /*.copyConstIteratorFn=*/       getCopyConstIteratorFn(),
-    /*.advanceConstIteratorFn=*/    getAdvanceConstIteratorFn(),
-    /*.diffConstIteratorFn=*/       getDiffConstIteratorFn(),
-    /*.valueAtConstIteratorFn=*/    getValueAtConstIteratorFn(),
+class QMetaAssociationForContainer : public QMetaContainerForContainer<C>
+{
+    friend QMetaAssociationInterface;
+
+    static constexpr QtPrivate::QMetaTypeInterface *getKeyMetaType()
+    {
+        if constexpr (QContainerTraits::has_key_type_v<C>)
+            return QtPrivate::qMetaTypeInterfaceForType<typename C::key_type>();
+        else
+            return nullptr;
+    }
+
+    static constexpr QtPrivate::QMetaTypeInterface *getMappedMetaType()
+    {
+        if constexpr (QContainerTraits::has_mapped_type_v<C>)
+            return QtPrivate::qMetaTypeInterfaceForType<typename C::mapped_type>();
+        else
+            return nullptr;
+    }
+
+    static constexpr QMetaAssociationInterface::InsertKeyFn getInsertKeyFn()
+    {
+        if constexpr (QContainerTraits::can_insert_key_v<C>) {
+            return [](void *c, const void *k) {
+                static_cast<C *>(c)->insert(
+                            *static_cast<const QContainerTraits::key_type<C> *>(k));
+            };
+        } else if constexpr (QContainerTraits::can_insert_pair_v<C>) {
+            return [](void *c, const void *k) {
+                static_cast<C *>(c)->insert(
+                            {*static_cast<const QContainerTraits::key_type<C> *>(k), {}});
+            };
+        } else if constexpr (QContainerTraits::can_insert_key_mapped_v<C>) {
+            return [](void *c, const void *k) {
+                static_cast<C *>(c)->insert(
+                            *static_cast<const QContainerTraits::key_type<C> *>(k), {});
+            };
+        } else {
+            return nullptr;
+        }
+    }
+
+    static constexpr QMetaAssociationInterface::RemoveKeyFn getRemoveKeyFn()
+    {
+        if constexpr (QContainerTraits::can_erase_at_key_v<C>) {
+            return [](void *c, const void *k) {
+                static_cast<C *>(c)->erase(*static_cast<const QContainerTraits::key_type<C> *>(k));
+            };
+        } else if constexpr (QContainerTraits::can_remove_at_key_v<C>) {
+            return [](void *c, const void *k) {
+                static_cast<C *>(c)->remove(*static_cast<const QContainerTraits::key_type<C> *>(k));
+            };
+        } else {
+            return nullptr;
+        }
+    }
+
+    static constexpr QMetaAssociationInterface::ContainsKeyFn getContainsKeyFn()
+    {
+        if constexpr (QContainerTraits::has_contains_v<C>) {
+            return [](const void *c, const void *k) {
+                return static_cast<const C *>(c)->contains(
+                            *static_cast<const QContainerTraits::key_type<C> *>(k));
+            };
+        } else if (QContainerTraits::has_find_v<C>) {
+            return [](const void *c, const void *k) {
+                const C *container = static_cast<const C *>(c);
+                return container->find(
+                            *static_cast<const QContainerTraits::key_type<C> *>(k))
+                        != container->end();
+            };
+        } else {
+            return nullptr;
+        }
+    }
+
+    static constexpr QMetaAssociationInterface::MappedAtKeyFn getMappedAtKeyFn()
+    {
+        if constexpr (QContainerTraits::has_at_key_v<C>) {
+            return [](const void *c, const void *k, void *r) {
+                *static_cast<QContainerTraits::mapped_type<C> *>(r)
+                        = static_cast<const C *>(c)->at(
+                                *static_cast<const QContainerTraits::key_type<C> *>(k));
+            };
+        } else if constexpr (QContainerTraits::can_get_at_key_v<C>) {
+            return [](const void *c, const void *k, void *r) {
+                *static_cast<QContainerTraits::mapped_type<C> *>(r)
+                        = (*static_cast<const C *>(c))[
+                                *static_cast<const QContainerTraits::key_type<C> *>(k)];
+            };
+        } else {
+            return nullptr;
+        }
+    }
+
+    static constexpr QMetaAssociationInterface::SetMappedAtKeyFn getSetMappedAtKeyFn()
+    {
+        if constexpr (QContainerTraits::can_set_at_key_v<C>) {
+            return [](void *c, const void *k, const void *m) {
+                (*static_cast<C *>(c))[*static_cast<const QContainerTraits::key_type<C> *>(k)] =
+                        *static_cast<const QContainerTraits::mapped_type<C> *>(m);
+            };
+        } else {
+            return nullptr;
+        }
+    }
+
+    static constexpr QMetaAssociationInterface::CreateIteratorAtKeyFn createIteratorAtKeyFn()
+    {
+        if constexpr (QContainerTraits::has_find_v<C>) {
+            return [](void *c, const void *k) -> void* {
+                using Iterator = QContainerTraits::iterator<C>;
+                return new Iterator(static_cast<C *>(c)->find(
+                            *static_cast<const QContainerTraits::key_type<C> *>(k)));
+            };
+        } else {
+            return nullptr;
+        }
+    }
+
+    static constexpr QMetaAssociationInterface::CreateConstIteratorAtKeyFn createConstIteratorAtKeyFn()
+    {
+        if constexpr (QContainerTraits::has_find_v<C>) {
+            return [](const void *c, const void *k) -> void* {
+                using Iterator = QContainerTraits::const_iterator<C>;
+                return new Iterator(static_cast<const C *>(c)->find(
+                            *static_cast<const QContainerTraits::key_type<C> *>(k)));
+            };
+        } else {
+            return nullptr;
+        }
+    }
+
+    template<typename Iterator>
+    static constexpr QMetaAssociationInterface::KeyAtIteratorFn keyAtIteratorFn()
+    {
+        if constexpr (QContainerTraits::iterator_has_key_v<C>) {
+            return [](const void *i, void *k) {
+                *static_cast<QContainerTraits::key_type<C> *>(k)
+                        = static_cast<const Iterator *>(i)->key();
+            };
+        } else if constexpr (QContainerTraits::iterator_dereferences_to_value_v<C>
+                && QContainerTraits::value_type_has_first_v<C>) {
+            return [](const void *i, void *k) {
+                *static_cast<QContainerTraits::key_type<C> *>(k)
+                        = (*static_cast<const Iterator *>(i))->first;
+            };
+        } else if constexpr (QContainerTraits::iterator_dereferences_to_key_v<C>) {
+            return [](const void *i, void *k) {
+                *static_cast<QContainerTraits::key_type<C> *>(k)
+                        = *(*static_cast<const Iterator *>(i));
+            };
+        } else {
+            return nullptr;
+        }
+    }
+
+    static constexpr QMetaAssociationInterface::KeyAtIteratorFn getKeyAtIteratorFn()
+    {
+        return keyAtIteratorFn<QContainerTraits::iterator<C>>();
+    }
+
+    static constexpr QMetaAssociationInterface::KeyAtIteratorFn getKeyAtConstIteratorFn()
+    {
+        return keyAtIteratorFn<QContainerTraits::const_iterator<C>>();
+    }
+
+    template<typename Iterator>
+    static constexpr QMetaAssociationInterface::MappedAtIteratorFn mappedAtIteratorFn()
+    {
+        if constexpr (QContainerTraits::iterator_has_value_v<C>) {
+            return [](const void *i, void *k) {
+                *static_cast<QContainerTraits::mapped_type<C> *>(k)
+                        = static_cast<const Iterator *>(i)->value();
+            };
+        } else if constexpr (QContainerTraits::iterator_dereferences_to_value_v<C>
+                && QContainerTraits::value_type_has_second_v<C>) {
+            return [](const void *i, void *k) {
+                *static_cast<QContainerTraits::mapped_type<C> *>(k)
+                        = (*static_cast<const Iterator *>(i))->second;
+            };
+        } else if constexpr (QContainerTraits::iterator_dereferences_to_mapped_v<C>) {
+            return [](const void *i, void *k) {
+                *static_cast<QContainerTraits::mapped_type<C> *>(k)
+                        = *static_cast<const Iterator *>(i);
+            };
+        } else {
+            return nullptr;
+        }
+    }
+
+    static constexpr QMetaAssociationInterface::MappedAtIteratorFn getMappedAtIteratorFn()
+    {
+        return mappedAtIteratorFn<QContainerTraits::iterator<C>>();
+    }
+
+    static constexpr QMetaAssociationInterface::MappedAtIteratorFn getMappedAtConstIteratorFn()
+    {
+        return mappedAtIteratorFn<QContainerTraits::const_iterator<C>>();
+    }
+
+    static constexpr QMetaAssociationInterface::SetMappedAtIteratorFn getSetMappedAtIteratorFn()
+    {
+        if constexpr (QContainerTraits::can_set_mapped_at_iterator_v<C> && !std::is_const_v<C>) {
+            return [](const void *i, const void *m) {
+                *(*static_cast<const QContainerTraits::iterator<C> *>(i))
+                        = *static_cast<const QContainerTraits::mapped_type<C> *>(m);
+            };
+        } else if constexpr (QContainerTraits::iterator_dereferences_to_value_v<C>
+                && QContainerTraits::value_type_has_second_v<C>) {
+            return [](const void *i, const void *m) {
+                (*static_cast<const QContainerTraits::iterator<C> *>(i))->second
+                        = *static_cast<const QContainerTraits::mapped_type<C> *>(m);
+            };
+        } else {
+            return nullptr;
+        }
+    }
+
+    static constexpr QMetaAssociationInterface::EraseKeyAtIteratorFn getEraseKeyAtIteratorFn()
+    {
+        return QMetaContainerForContainer<C>::template getEraseAtIteratorFn<
+                QMetaAssociationInterface::EraseKeyAtIteratorFn>();
+    }
+
+public:
+    static QMetaAssociationInterface metaAssociation;
 };
+
+template<typename C>
+QMetaSequenceInterface QMetaSequenceForContainer<C>::metaSequence
+    = QMetaSequenceInterface(QMetaSequenceForContainer<C>());
+
+template<typename C>
+QMetaAssociationInterface QMetaAssociationForContainer<C>::metaAssociation
+    = QMetaAssociationInterface(QMetaAssociationForContainer<C>());
 
 template<typename C>
 constexpr QMetaSequenceInterface *qMetaSequenceInterfaceForContainer()
@@ -596,24 +936,64 @@ constexpr QMetaSequenceInterface *qMetaSequenceInterfaceForContainer()
     return &QMetaSequenceForContainer<C>::metaSequence;
 }
 
+template<typename C>
+constexpr QMetaAssociationInterface *qMetaAssociationInterfaceForContainer()
+{
+    return &QMetaAssociationForContainer<C>::metaAssociation;
+}
+
 } // namespace QtMetaContainerPrivate
 
-class Q_CORE_EXPORT QMetaSequence
+class Q_CORE_EXPORT QMetaContainer
+{
+public:
+    QMetaContainer() = default;
+    explicit QMetaContainer(const QtMetaContainerPrivate::QMetaContainerInterface *d) : d_ptr(d) {}
+
+    bool hasInputIterator() const;
+    bool hasForwardIterator() const;
+    bool hasBidirectionalIterator() const;
+    bool hasRandomAccessIterator() const;
+
+    bool hasSize() const;
+    qsizetype size(const void *container) const;
+
+    bool canClear() const;
+    void clear(void *container) const;
+
+    bool hasIterator() const;
+    void *begin(void *container) const;
+    void *end(void *container) const;
+    void destroyIterator(const void *iterator) const;
+    bool compareIterator(const void *i, const void *j) const;
+    void copyIterator(void *target, const void *source) const;
+    void advanceIterator(void *iterator, qsizetype step) const;
+    qsizetype diffIterator(const void *i, const void *j) const;
+
+    bool hasConstIterator() const;
+    void *constBegin(const void *container) const;
+    void *constEnd(const void *container) const;
+    void destroyConstIterator(const void *iterator) const;
+    bool compareConstIterator(const void *i, const void *j) const;
+    void copyConstIterator(void *target, const void *source) const;
+    void advanceConstIterator(void *iterator, qsizetype step) const;
+    qsizetype diffConstIterator(const void *i, const void *j) const;
+
+protected:
+    const QtMetaContainerPrivate::QMetaContainerInterface *d_ptr = nullptr;
+};
+
+class Q_CORE_EXPORT QMetaSequence : public QMetaContainer
 {
 public:
     QMetaSequence() = default;
-    explicit QMetaSequence(QtMetaContainerPrivate::QMetaSequenceInterface *d) : d_ptr(d) {}
+    explicit QMetaSequence(QtMetaContainerPrivate::QMetaSequenceInterface *d) : QMetaContainer(d) {}
 
     template<typename T>
     static constexpr QMetaSequence fromContainer()
     {
         return QMetaSequence(QtMetaContainerPrivate::qMetaSequenceInterfaceForContainer<T>());
     }
-
-    bool hasInputIterator() const;
-    bool hasForwardIterator() const;
-    bool hasBidirectionalIterator() const;
-    bool hasRandomAccessIterator() const;
 
     QMetaType valueMetaType() const;
 
@@ -627,12 +1007,6 @@ public:
     bool canRemoveValueAtEnd() const;
     void removeValueAtEnd(void *container) const;
 
-    bool hasSize() const;
-    qsizetype size(const void *container) const;
-
-    bool canClear() const;
-    void clear(void *container) const;
-
     bool canGetValueAtIndex() const;
     void valueAtIndex(const void *container, qsizetype index, void *result) const;
 
@@ -644,15 +1018,6 @@ public:
 
     bool canRemoveValue() const;
     void removeValue(void *container) const;
-
-    bool hasIterator() const;
-    void *begin(void *container) const;
-    void *end(void *container) const;
-    void destroyIterator(const void *iterator) const;
-    bool compareIterator(const void *i, const void *j) const;
-    void copyIterator(void *target, const void *source) const;
-    void advanceIterator(void *iterator, qsizetype step) const;
-    qsizetype diffIterator(const void *i, const void *j) const;
 
     bool canGetValueAtIterator() const;
     void valueAtIterator(const void *iterator, void *result) const;
@@ -666,15 +1031,6 @@ public:
     bool canEraseValueAtIterator() const;
     void eraseValueAtIterator(void *container, const void *iterator) const;
 
-    bool hasConstIterator() const;
-    void *constBegin(const void *container) const;
-    void *constEnd(const void *container) const;
-    void destroyConstIterator(const void *iterator) const;
-    bool compareConstIterator(const void *i, const void *j) const;
-    void copyConstIterator(void *target, const void *source) const;
-    void advanceConstIterator(void *iterator, qsizetype step) const;
-    qsizetype diffConstIterator(const void *i, const void *j) const;
-
     bool canEraseRangeAtIterator() const;
     void eraseRangeAtIterator(void *container, const void *iterator1, const void *iterator2) const;
 
@@ -683,15 +1039,204 @@ public:
 
     friend bool operator==(const QMetaSequence &a, const QMetaSequence &b)
     {
-        return a.d_ptr == b.d_ptr;
+        return a.d() == b.d();
     }
     friend bool operator!=(const QMetaSequence &a, const QMetaSequence &b)
     {
-        return a.d_ptr != b.d_ptr;
+        return a.d() != b.d();
     }
 
 private:
-    const QtMetaContainerPrivate::QMetaSequenceInterface *d_ptr = nullptr;
+    const QtMetaContainerPrivate::QMetaSequenceInterface *d() const
+    {
+        return static_cast<const QtMetaContainerPrivate::QMetaSequenceInterface *>(d_ptr);
+    }
+};
+
+class Q_CORE_EXPORT QMetaAssociation : public QMetaContainer
+{
+public:
+    QMetaAssociation() = default;
+    explicit QMetaAssociation(QtMetaContainerPrivate::QMetaAssociationInterface *d) : QMetaContainer(d) {}
+
+    template<typename T>
+    static constexpr QMetaAssociation fromContainer()
+    {
+        return QMetaAssociation(QtMetaContainerPrivate::qMetaAssociationInterfaceForContainer<T>());
+    }
+
+    QMetaType keyMetaType() const;
+    QMetaType mappedMetaType() const;
+
+    bool canInsertKey() const
+    {
+        if (auto iface = d())
+            return iface->insertKeyFn;
+        return false;
+    }
+    void insertKey(void *container, const void *key) const
+    {
+        if (canInsertKey())
+            d()->insertKeyFn(container, key);
+    }
+
+    bool canRemoveKey() const
+    {
+        if (auto iface = d())
+            return iface->removeKeyFn;
+        return false;
+    }
+    void removeKey(void *container, const void *key) const
+    {
+        if (canRemoveKey())
+            d()->removeKeyFn(container, key);
+    }
+
+    bool canContainsKey() const
+    {
+        if (auto iface = d())
+            return iface->containsKeyFn;
+        return false;
+    }
+    bool containsKey(const void *container, const void *key) const
+    {
+        if (canContainsKey())
+            return d()->containsKeyFn(container, key);
+        return false;
+    }
+
+
+    bool canGetMappedAtKey() const
+    {
+        if (auto iface = d())
+            return iface->mappedAtKeyFn;
+        return false;
+    }
+    void mappedAtKey(const void *container, const void *key, void *mapped) const
+    {
+        if (canGetMappedAtKey())
+            d()->mappedAtKeyFn(container, key, mapped);
+    }
+
+    bool canSetMappedAtKey() const
+    {
+        if (auto iface = d())
+            return iface->setMappedAtKeyFn;
+        return false;
+    }
+    void setMappedAtKey(void *container, const void *key, const void *mapped) const
+    {
+        if (canSetMappedAtKey())
+            d()->setMappedAtKeyFn(container, key, mapped);
+    }
+
+    bool canGetKeyAtIterator() const
+    {
+        if (auto iface = d())
+            return iface->keyAtIteratorFn;
+        return false;
+    }
+
+    void keyAtIterator(const void *iterator, void *key) const
+    {
+        if (canGetKeyAtIterator())
+            d()->keyAtIteratorFn(iterator, key);
+    }
+
+    bool canGetKeyAtConstIterator() const
+    {
+        if (auto iface = d())
+            return iface->keyAtConstIteratorFn;
+        return false;
+    }
+
+    void keyAtConstIterator(const void *iterator, void *key) const
+    {
+        if (canGetKeyAtConstIterator())
+            d()->keyAtConstIteratorFn(iterator, key);
+    }
+
+    bool canGetMappedAtIterator() const
+    {
+        if (auto iface = d())
+            return iface->mappedAtIteratorFn;
+        return false;
+    }
+
+    void mappedAtIterator(const void *iterator, void *mapped) const
+    {
+        if (canGetMappedAtIterator())
+            d()->mappedAtIteratorFn(iterator, mapped);
+    }
+
+    bool canGetMappedAtConstIterator() const
+    {
+        if (auto iface = d())
+            return iface->mappedAtConstIteratorFn;
+        return false;
+    }
+
+    void mappedAtConstIterator(const void *iterator, void *mapped) const
+    {
+        if (canGetMappedAtConstIterator())
+            d()->mappedAtConstIteratorFn(iterator, mapped);
+    }
+
+    bool canSetMappedAtIterator() const
+    {
+        if (auto iface = d())
+            return iface->setMappedAtIteratorFn;
+        return false;
+    }
+
+    void setMappedAtIterator(const void *iterator, const void *mapped) const
+    {
+        if (canSetMappedAtIterator())
+            d()->setMappedAtIteratorFn(iterator, mapped);
+    }
+
+    bool canCreateIteratorAtKey() const
+    {
+        if (auto iface = d())
+            return iface->createIteratorAtKeyFn;
+        return false;
+    }
+
+    void *createIteratorAtKey(void *container, const void *key) const
+    {
+        if (canCreateIteratorAtKey())
+            return d()->createIteratorAtKeyFn(container, key);
+        return nullptr;
+    }
+
+    bool canCreateConstIteratorAtKey() const
+    {
+        if (auto iface = d())
+            return iface->createConstIteratorAtKeyFn;
+        return false;
+    }
+
+    void *createConstIteratorAtKey(const void *container, const void *key) const
+    {
+        if (canCreateConstIteratorAtKey())
+            return d()->createConstIteratorAtKeyFn(container, key);
+        return nullptr;
+    }
+
+    friend bool operator==(const QMetaAssociation &a, const QMetaAssociation &b)
+    {
+        return a.d() == b.d();
+    }
+    friend bool operator!=(const QMetaAssociation &a, const QMetaAssociation &b)
+    {
+        return a.d() != b.d();
+    }
+
+private:
+    const QtMetaContainerPrivate::QMetaAssociationInterface *d() const
+    {
+        return static_cast<const QtMetaContainerPrivate::QMetaAssociationInterface *>(d_ptr);
+    }
 };
 
 QT_END_NAMESPACE
