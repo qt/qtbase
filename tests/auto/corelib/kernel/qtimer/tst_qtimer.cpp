@@ -153,30 +153,33 @@ void tst_QTimer::remainingTime()
         // We let tested (which isn't a single-shot) run repeatedly, to verify
         // it *does* repeat, and check that the single-shot tester, starting
         // at the same time, does finish first each time, by about the right duration.
-        tester.start(); // start tester again
+        tester.start(); // Start tester again.
     });
 
     QObject::connect(&tester, &QTimer::timeout, [&]() {
-        // we expect that remainingTime is at most 150
         const int remainingTime = tested.remainingTime();
+        // We expect that remainingTime is at most 150 and not overdue.
         const bool remainingTimeInRange = remainingTime > 0
                                        && remainingTime <= expectedRemainingTime;
-        if (QTest::currentTestFailed() || !remainingTimeInRange)
-            testIteration = desiredTestCount; // to exit the QTRY_...() on failure
-        else
+        if (remainingTimeInRange)
             ++testIteration;
+        else
+            testIteration = desiredTestCount; // We are going to fail on QVERIFY2()
+                                              // below, so we don't want to iterate
+                                              // anymore and quickly exit the QTRY_...()
+                                              // with this failure.
         if (testIteration == desiredTestCount)
-            QObject::disconnect(connection); // don't start tester again
+            QObject::disconnect(connection); // Last iteration, don't start tester again.
         QVERIFY2(remainingTimeInRange, qPrintable("Remaining time "
                  + QByteArray::number(remainingTime) + "ms outside expected range (0ms, "
                  + QByteArray::number(expectedRemainingTime) + "ms]"));
     });
 
     tested.start(testedInterval);
-    tester.start(testerInterval); // start tester for the 1st time
+    tester.start(testerInterval); // Start tester for the 1st time.
 
     // Test it desiredTestCount times, give it reasonable amount of time
-    // (twice as much as needed)
+    // (twice as much as needed).
     QTRY_COMPARE_WITH_TIMEOUT(testIteration, desiredTestCount,
                               testedInterval * desiredTestCount * 2);
 }
