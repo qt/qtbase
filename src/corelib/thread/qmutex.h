@@ -173,7 +173,6 @@ public:
         return lockInternal(timeout);
     }
 
-#if __has_include(<chrono>) || defined(Q_CLANG_QDOC)
     // TimedLockable concept
     template <class Rep, class Period>
     bool try_lock_for(std::chrono::duration<Rep, Period> duration)
@@ -190,7 +189,6 @@ public:
 
         return try_lock_for(timePoint - Clock::now());
     }
-#endif
 };
 
 class QRecursiveMutexPrivate;
@@ -213,7 +211,6 @@ public:
     // Lockable concept
     bool try_lock() QT_MUTEX_LOCK_NOEXCEPT { return tryLock(); }
 
-#if __has_include(<chrono>) || defined(Q_CLANG_QDOC)
     // TimedLockable concept
     template <class Rep, class Period>
     bool try_lock_for(std::chrono::duration<Rep, Period> duration)
@@ -230,7 +227,6 @@ public:
 
         return try_lock_for(timePoint - Clock::now());
     }
-#endif
 };
 
 template <typename Mutex>
@@ -291,7 +287,6 @@ public:
     inline bool try_lock() noexcept { return true; }
     inline void unlock() noexcept {}
 
-#if __has_include(<chrono>)
     template <class Rep, class Period>
     inline bool try_lock_for(std::chrono::duration<Rep, Period> duration) noexcept
     {
@@ -305,7 +300,6 @@ public:
         Q_UNUSED(timePoint);
         return true;
     }
-#endif
 
 private:
     Q_DISABLE_COPY(QMutex)
