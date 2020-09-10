@@ -225,6 +225,9 @@ public:
     void syncState();
     inline bool isExtended() const { return extended; }
 
+    virtual QPixmap createPixmap(QSize size);
+    virtual QPixmap createPixmapFromImage(QImage image, Qt::ImageConversionFlags flags = Qt::AutoColor);
+
 protected:
     QPaintEngine(QPaintEnginePrivate &data, PaintEngineFeatures devcaps=PaintEngineFeatures());
 
