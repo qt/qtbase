@@ -165,7 +165,7 @@ macro(qt_find_package)
     endif()
 endmacro()
 
-# This function records a dependency between ${target_name} and ${dep_package_name}.
+# This function records a dependency between ${main_target_name} and ${dep_package_name}.
 # at the CMake package level.
 # E.g. The Tools package that provides the qtwaylandscanner target
 # needs to call find_package(WaylandScanner) (non-qt-package).
@@ -200,6 +200,44 @@ function(qt_record_extra_qt_package_dependency main_target_name dep_target_name
     qt_internal_module_info(qtfied_target_name "${dep_target_name}")
     qt_record_extra_package_dependency("${main_target_name}" "${qtfied_target_name_versioned}"
                                                              "${dep_package_version}")
+endfunction()
+
+# This function records a 'QtFooTools' package dependency for the ${main_target_name} target
+# onto the ${dep_package_name} tools package.
+# E.g. The QtWaylandCompositor package needs to call find_package(QtWaylandScannerTools).
+# main_target_name = WaylandCompositor
+# dep_package_name = Qt6WaylandScannerTools
+function(qt_record_extra_main_tools_package_dependency
+         main_target_name dep_package_name dep_package_version)
+    if(NOT TARGET "${main_target_name}")
+        qt_get_tool_target_name(main_target_name "${main_target_name}")
+    endif()
+    if (TARGET "${main_target_name}")
+        get_target_property(extra_packages "${main_target_name}"
+                            QT_EXTRA_TOOLS_PACKAGE_DEPENDENCIES)
+        if(NOT extra_packages)
+            set(extra_packages "")
+        endif()
+
+        list(APPEND extra_packages "${dep_package_name}\;${dep_package_version}")
+        set_target_properties("${main_target_name}" PROPERTIES QT_EXTRA_TOOLS_PACKAGE_DEPENDENCIES
+                                                               "${extra_packages}")
+    endif()
+endfunction()
+
+# This function records a 'QtFooTools' package dependency for the ${main_target_name} target
+# onto the ${dep_non_versioned_package_name} Tools package.
+# main_target_name = WaylandCompositor
+# dep_non_versioned_package_name = WaylandScannerTools
+# This is just a convenience function to avoid hardcoding the qtified version in the dep package
+# name.
+function(qt_record_extra_qt_main_tools_package_dependency main_target_name
+                                                          dep_non_versioned_package_name
+                                                          dep_package_version)
+    # WaylandScannerTools -> Qt6WaylandScannerTools.
+    qt_internal_module_info(qtfied_package_name "${dep_non_versioned_package_name}")
+    qt_record_extra_main_tools_package_dependency(
+        "${main_target_name}" "${qtfied_package_name_versioned}" "${dep_package_version}")
 endfunction()
 
 # This function stores the list of Qt modules a library depend on,
