@@ -465,6 +465,9 @@ public:
     // type erased converter function
     using ConverterFunction = std::function<bool(const void *src, void *target)>;
 
+    // type erased mutable view, primarily for containers
+    using MutableViewFunction = std::function<bool(void *src, void *target)>;
+
     // implicit conversion supported like double -> float
     template<typename From, typename To>
     static bool registerConverter()
@@ -479,6 +482,13 @@ public:
     static bool registerConverter(MemberFunctionOk function);
     template<typename UnaryFunction>
     static bool registerConverter(UnaryFunction function);
+
+    template<typename MemberFunction, int>
+    static bool registerMutableView(MemberFunction function);
+    template<typename MemberFunctionOk, char>
+    static bool registerMutableView(MemberFunctionOk function);
+    template<typename UnaryFunction>
+    static bool registerMutableView(UnaryFunction function);
 #else
     // member function as in "QString QFont::toString() const"
     template<typename From, typename To>
@@ -487,15 +497,33 @@ public:
         static_assert((!QMetaTypeId2<To>::IsBuiltIn || !QMetaTypeId2<From>::IsBuiltIn),
             "QMetaType::registerConverter: At least one of the types must be a custom type.");
 
-        const int fromTypeId = qMetaTypeId<From>();
-        const int toTypeId = qMetaTypeId<To>();
+        const QMetaType fromType = QMetaType::fromType<From>();
+        const QMetaType toType = QMetaType::fromType<To>();
         auto converter = [function](const void *from, void *to) -> bool {
             const From *f = static_cast<const From *>(from);
             To *t = static_cast<To *>(to);
             *t = (f->*function)();
             return true;
         };
-        return registerConverterFunction(converter, fromTypeId, toTypeId);
+        return registerConverterFunction(converter, fromType, toType);
+    }
+
+    // member function
+    template<typename From, typename To>
+    static bool registerMutableView(To(From::*function)())
+    {
+        static_assert((!QMetaTypeId2<To>::IsBuiltIn || !QMetaTypeId2<From>::IsBuiltIn),
+            "QMetaType::registerMutableView: At least one of the types must be a custom type.");
+
+        const QMetaType fromType = QMetaType::fromType<From>();
+        const QMetaType toType = QMetaType::fromType<To>();
+        auto view = [function](void *from, void *to) -> bool {
+            From *f = static_cast<From *>(from);
+            To *t = static_cast<To *>(to);
+            *t = (f->*function)();
+            return true;
+        };
+        return registerMutableViewFunction(view, fromType, toType);
     }
 
     // member function as in "double QString::toDouble(bool *ok = nullptr) const"
@@ -505,8 +533,8 @@ public:
         static_assert((!QMetaTypeId2<To>::IsBuiltIn || !QMetaTypeId2<From>::IsBuiltIn),
             "QMetaType::registerConverter: At least one of the types must be a custom type.");
 
-        const int fromTypeId = qMetaTypeId<From>();
-        const int toTypeId = qMetaTypeId<To>();
+        const QMetaType fromType = QMetaType::fromType<From>();
+        const QMetaType toType = QMetaType::fromType<To>();
         auto converter = [function](const void *from, void *to) -> bool {
             const From *f = static_cast<const From *>(from);
             To *t = static_cast<To *>(to);
@@ -516,7 +544,7 @@ public:
                 *t = To();
             return result;
         };
-        return registerConverterFunction(converter, fromTypeId, toTypeId);
+        return registerConverterFunction(converter, fromType, toType);
     }
 
     // functor or function pointer
@@ -526,20 +554,41 @@ public:
         static_assert((!QMetaTypeId2<To>::IsBuiltIn || !QMetaTypeId2<From>::IsBuiltIn),
             "QMetaType::registerConverter: At least one of the types must be a custom type.");
 
-        const int fromTypeId = qMetaTypeId<From>();
-        const int toTypeId = qMetaTypeId<To>();
+        const QMetaType fromType = QMetaType::fromType<From>();
+        const QMetaType toType = QMetaType::fromType<To>();
         auto converter = [function](const void *from, void *to) -> bool {
             const From *f = static_cast<const From *>(from);
             To *t = static_cast<To *>(to);
             *t = function(*f);
             return true;
         };
-        return registerConverterFunction(converter, fromTypeId, toTypeId);
+        return registerConverterFunction(converter, fromType, toType);
+    }
+
+    // functor or function pointer
+    template<typename From, typename To, typename UnaryFunction>
+    static bool registerMutableView(UnaryFunction function)
+    {
+        static_assert((!QMetaTypeId2<To>::IsBuiltIn || !QMetaTypeId2<From>::IsBuiltIn),
+            "QMetaType::registerMutableView: At least one of the types must be a custom type.");
+
+        const QMetaType fromType = QMetaType::fromType<From>();
+        const QMetaType toType = QMetaType::fromType<To>();
+        auto view = [function](void *from, void *to) -> bool {
+            From *f = static_cast<From *>(from);
+            To *t = static_cast<To *>(to);
+            *t = function(*f);
+            return true;
+        };
+        return registerMutableViewFunction(view, fromType, toType);
     }
 #endif
 
     static bool convert(QMetaType fromType, const void *from, QMetaType toType, void *to);
     static bool canConvert(QMetaType fromType, QMetaType toType);
+
+    static bool view(QMetaType fromType, void *from, QMetaType toType, void *to);
+    static bool canView(QMetaType fromType, QMetaType toType);
 #if QT_DEPRECATED_SINCE(6, 0)
     QT_DEPRECATED_VERSION_6_0
     static bool convert(const void *from, int fromTypeId, void *to, int toTypeId)
@@ -570,10 +619,20 @@ public:
     template<typename From, typename To>
     static bool hasRegisteredConverterFunction()
     {
-        return hasRegisteredConverterFunction(qMetaTypeId<From>(), qMetaTypeId<To>());
+        return hasRegisteredConverterFunction(
+                    QMetaType::fromType<From>(), QMetaType::fromType<To>());
     }
 
-    static bool hasRegisteredConverterFunction(int fromTypeId, int toTypeId);
+    static bool hasRegisteredConverterFunction(QMetaType fromType, QMetaType toType);
+
+    template<typename From, typename To>
+    static bool hasRegisteredMutableViewFunction()
+    {
+        return hasRegisteredMutableViewFunction(
+                    QMetaType::fromType<From>(), QMetaType::fromType<To>());
+    }
+
+    static bool hasRegisteredMutableViewFunction(QMetaType fromType, QMetaType toType);
 
 #ifndef Q_CLANG_QDOC
     template<typename, bool> friend struct QtPrivate::SequentialValueTypeIsMetaType;
@@ -581,8 +640,11 @@ public:
     template<typename, bool> friend struct QtPrivate::IsMetaTypePair;
     template<typename, typename> friend struct QtPrivate::MetaTypeSmartPointerHelper;
 #endif
-    static bool registerConverterFunction(const ConverterFunction &f, int from, int to);
-    static void unregisterConverterFunction(int from, int to);
+    static bool registerConverterFunction(const ConverterFunction &f, QMetaType from, QMetaType to);
+    static void unregisterConverterFunction(QMetaType from, QMetaType to);
+
+    static bool registerMutableViewFunction(const MutableViewFunction &f, QMetaType from, QMetaType to);
+    static void unregisterMutableViewFunction(QMetaType from, QMetaType to);
 
     static void unregisterMetaType(QMetaType type);
     QtPrivate::QMetaTypeInterface *iface() { return d_ptr; }
@@ -833,9 +895,14 @@ namespace QtPrivate
     };
 
     template<typename T, bool = QtPrivate::IsSequentialContainer<T>::Value>
-    struct SequentialContainerConverterHelper
+    struct SequentialContainerTransformationHelper
     {
-        static bool registerConverter(int)
+        static bool registerConverter()
+        {
+            return false;
+        }
+
+        static bool registerMutableView()
         {
             return false;
         }
@@ -844,51 +911,66 @@ namespace QtPrivate
     template<typename T, bool = QMetaTypeId2<typename T::value_type>::Defined>
     struct SequentialValueTypeIsMetaType
     {
-        static bool registerConverter(int)
+        static bool registerConverter()
+        {
+            return false;
+        }
+
+        static bool registerMutableView()
         {
             return false;
         }
     };
 
     template<typename T>
-    struct SequentialContainerConverterHelper<T, true> : SequentialValueTypeIsMetaType<T>
+    struct SequentialContainerTransformationHelper<T, true> : SequentialValueTypeIsMetaType<T>
     {
     };
 
     template<typename T, bool = QtPrivate::IsAssociativeContainer<T>::Value>
-    struct AssociativeContainerConverterHelper
+    struct AssociativeContainerTransformationHelper
     {
-        static bool registerConverter(int)
+        static bool registerConverter()
         {
             return false;
         }
-    };
 
-    template<typename T, bool = QMetaTypeId2<typename T::mapped_type>::Defined>
-    struct AssociativeValueTypeIsMetaType
-    {
-        static bool registerConverter(int)
+        static bool registerMutableView()
         {
             return false;
         }
     };
 
     template<typename T, bool = QMetaTypeId2<typename T::key_type>::Defined>
-    struct KeyAndValueTypeIsMetaType
+    struct AssociativeKeyTypeIsMetaType
     {
-        static bool registerConverter(int)
+        static bool registerConverter()
+        {
+            return false;
+        }
+
+        static bool registerMutableView()
+        {
+            return false;
+        }
+    };
+
+    template<typename T, bool = QMetaTypeId2<typename T::mapped_type>::Defined>
+    struct AssociativeMappedTypeIsMetaType
+    {
+        static bool registerConverter()
+        {
+            return false;
+        }
+
+        static bool registerMutableView()
         {
             return false;
         }
     };
 
     template<typename T>
-    struct KeyAndValueTypeIsMetaType<T, true> : AssociativeValueTypeIsMetaType<T>
-    {
-    };
-
-    template<typename T>
-    struct AssociativeContainerConverterHelper<T, true> : KeyAndValueTypeIsMetaType<T>
+    struct AssociativeContainerTransformationHelper<T, true> : AssociativeKeyTypeIsMetaType<T>
     {
     };
 
@@ -896,7 +978,7 @@ namespace QtPrivate
                                 && QMetaTypeId2<typename T::second_type>::Defined>
     struct IsMetaTypePair
     {
-        static bool registerConverter(int)
+        static bool registerConverter()
         {
             return false;
         }
@@ -905,13 +987,13 @@ namespace QtPrivate
     template<typename T>
     struct IsMetaTypePair<T, true>
     {
-        inline static bool registerConverter(int id);
+        inline static bool registerConverter();
     };
 
     template<typename T>
     struct IsPair
     {
-        static bool registerConverter(int)
+        static bool registerConverter()
         {
             return false;
         }
@@ -925,7 +1007,7 @@ namespace QtPrivate
     template<typename T, typename = void>
     struct MetaTypeSmartPointerHelper
     {
-        static bool registerConverter(int) { return false; }
+        static bool registerConverter() { return false; }
     };
 
     Q_CORE_EXPORT bool isBuiltinType(const QByteArray &type);
@@ -1042,10 +1124,12 @@ int qRegisterNormalizedMetaType(const QT_PREPEND_NAMESPACE(QByteArray) &normaliz
 
     if (id > 0) {
         QMetaType::registerNormalizedTypedef(normalizedTypeName, metaType);
-        QtPrivate::SequentialContainerConverterHelper<T>::registerConverter(id);
-        QtPrivate::AssociativeContainerConverterHelper<T>::registerConverter(id);
-        QtPrivate::MetaTypePairHelper<T>::registerConverter(id);
-        QtPrivate::MetaTypeSmartPointerHelper<T>::registerConverter(id);
+        QtPrivate::SequentialContainerTransformationHelper<T>::registerConverter();
+        QtPrivate::SequentialContainerTransformationHelper<T>::registerMutableView();
+        QtPrivate::AssociativeContainerTransformationHelper<T>::registerConverter();
+        QtPrivate::AssociativeContainerTransformationHelper<T>::registerMutableView();
+        QtPrivate::MetaTypePairHelper<T>::registerConverter();
+        QtPrivate::MetaTypeSmartPointerHelper<T>::registerConverter();
     }
 
     return id;
@@ -1338,10 +1422,10 @@ template<typename T> \
 struct MetaTypeSmartPointerHelper<SMART_POINTER<T> , \
         typename std::enable_if<IsPointerToTypeDerivedFromQObject<T*>::Value>::type> \
 { \
-    static bool registerConverter(int id) \
+    static bool registerConverter() \
     { \
-        const int toId = QMetaType::QObjectStar; \
-        if (!QMetaType::hasRegisteredConverterFunction(id, toId)) { \
+        const QMetaType to = QMetaType(QMetaType::QObjectStar); \
+        if (!QMetaType::hasRegisteredConverterFunction(QMetaType::fromType<SMART_POINTER<T>>(), to)) { \
             QtPrivate::QSmartPointerConvertFunctor<SMART_POINTER<T> > o; \
             return QMetaType::registerConverter<SMART_POINTER<T>, QObject*>(o); \
         } \
@@ -1421,10 +1505,10 @@ Q_DECLARE_METATYPE(QtMetaTypePrivate::QPairVariantInterfaceImpl)
 QT_BEGIN_NAMESPACE
 
 template <typename T>
-inline bool QtPrivate::IsMetaTypePair<T, true>::registerConverter(int id)
+inline bool QtPrivate::IsMetaTypePair<T, true>::registerConverter()
 {
-    const int toId = qMetaTypeId<QtMetaTypePrivate::QPairVariantInterfaceImpl>();
-    if (!QMetaType::hasRegisteredConverterFunction(id, toId)) {
+    const QMetaType to = QMetaType::fromType<QtMetaTypePrivate::QPairVariantInterfaceImpl>();
+    if (!QMetaType::hasRegisteredConverterFunction(QMetaType::fromType<T>(), to)) {
         QtMetaTypePrivate::QPairVariantInterfaceConvertFunctor<T> o;
         return QMetaType::registerConverter<T, QtMetaTypePrivate::QPairVariantInterfaceImpl>(o);
     }
@@ -1442,18 +1526,37 @@ struct QSequentialIterableConvertFunctor
     }
 };
 
+template<typename From>
+struct QSequentialIterableMutableViewFunctor
+{
+    QIterable<QMetaSequence> operator()(From &f) const
+    {
+        return QIterable<QMetaSequence>(QMetaSequence::fromContainer<From>(), &f);
+    }
+};
+
 template<typename T>
 struct SequentialValueTypeIsMetaType<T, true>
 {
-    static bool registerConverter(int id)
+    static bool registerConverter()
     {
-        const int toId = qMetaTypeId<QIterable<QMetaSequence>>();
-        if (!QMetaType::hasRegisteredConverterFunction(id, toId)) {
+        const QMetaType to = QMetaType::fromType<QIterable<QMetaSequence>>();
+        if (!QMetaType::hasRegisteredConverterFunction(QMetaType::fromType<T>(), to)) {
             QSequentialIterableConvertFunctor<T> o;
             return QMetaType::registerConverter<T, QIterable<QMetaSequence>>(o);
         }
         return true;
-     }
+    }
+
+    static bool registerMutableView()
+    {
+        const QMetaType to = QMetaType::fromType<QIterable<QMetaSequence>>();
+        if (!QMetaType::hasRegisteredMutableViewFunction(QMetaType::fromType<T>(), to)) {
+            QSequentialIterableMutableViewFunctor<T> o;
+            return QMetaType::registerMutableView<T, QIterable<QMetaSequence>>(o);
+        }
+        return true;
+    }
 };
 
 template<typename From>
@@ -1465,23 +1568,40 @@ struct QAssociativeIterableConvertFunctor
     }
 };
 
-template<typename T>
-struct AssociativeValueTypeIsMetaType<T, true>
+template<typename From>
+struct QAssociativeIterableMutableViewFunctor
 {
-    static bool registerConverter(int id)
+    QIterable<QMetaAssociation> operator()(From &f) const
     {
-        const int toId = qMetaTypeId<QIterable<QMetaAssociation>>();
-        if (!QMetaType::hasRegisteredConverterFunction(id, toId)) {
+        return QIterable<QMetaAssociation>(QMetaAssociation::fromContainer<From>(), &f);
+    }
+};
+
+// Mapped type can be omitted, for example in case of a set.
+// However, if it is available, we want to instantiate the metatype here.
+template<typename T>
+struct AssociativeKeyTypeIsMetaType<T, true> : AssociativeMappedTypeIsMetaType<T>
+{
+    static bool registerConverter()
+    {
+        const QMetaType to = QMetaType::fromType<QIterable<QMetaAssociation>>();
+        if (!QMetaType::hasRegisteredConverterFunction(QMetaType::fromType<T>(), to)) {
             QAssociativeIterableConvertFunctor<T> o;
             return QMetaType::registerConverter<T, QIterable<QMetaAssociation>>(o);
         }
         return true;
     }
+
+    static bool registerMutableView()
+    {
+        const QMetaType to = QMetaType::fromType<QIterable<QMetaAssociation>>();
+        if (!QMetaType::hasRegisteredMutableViewFunction(QMetaType::fromType<T>(), to)) {
+            QAssociativeIterableMutableViewFunctor<T> o;
+            return QMetaType::registerMutableView<T, QIterable<QMetaAssociation>>(o);
+        }
+        return true;
+    }
 };
-
-}
-
-namespace QtPrivate {
 
 class QMetaTypeInterface
 {

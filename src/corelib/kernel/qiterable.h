@@ -501,9 +501,7 @@ public:
     }
 
     const void *constIterable() const { return m_iterable.constPointer(); }
-
-    // TODO: fix this when introducing mutable iterables
-    void *mutableIterable() { return const_cast<void *>(m_iterable.constPointer()); }
+    void *mutableIterable() { return m_iterable.mutablePointer(); }
 
     QConstIterator<Container> constBegin() const
     {

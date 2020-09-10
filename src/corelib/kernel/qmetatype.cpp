@@ -1580,6 +1580,10 @@ QMetaTypeConverterRegistry;
 
 Q_GLOBAL_STATIC(QMetaTypeConverterRegistry, customTypesConversionRegistry)
 
+using QMetaTypeMutableViewRegistry
+        = QMetaTypeFunctionRegistry<QMetaType::MutableViewFunction, QPair<int,int>>;
+Q_GLOBAL_STATIC(QMetaTypeMutableViewRegistry, customTypesMutableViewRegistry)
+
 /*!
     \fn bool QMetaType::registerConverter()
     \since 5.2
@@ -1618,11 +1622,53 @@ Q_GLOBAL_STATIC(QMetaTypeConverterRegistry, customTypesConversionRegistry)
     \since 5.2
     \internal
 */
-bool QMetaType::registerConverterFunction(const ConverterFunction &f, int from, int to)
+bool QMetaType::registerConverterFunction(const ConverterFunction &f, QMetaType from, QMetaType to)
 {
-    if (!customTypesConversionRegistry()->insertIfNotContains(qMakePair(from, to), f)) {
+    if (!customTypesConversionRegistry()->insertIfNotContains(qMakePair(from.id(), to.id()), f)) {
         qWarning("Type conversion already registered from type %s to type %s",
-                 QMetaType(from).name(), QMetaType(to).name());
+                 from.name(), to.name());
+        return false;
+    }
+    return true;
+}
+
+/*!
+    \fn  template<typename MemberFunction, int> bool QMetaType::registerMutableView(MemberFunction function)
+    \since 6.0
+    \overload
+    Registers a method \a function like \c {To From::function()} as mutable view of type \c {To} on
+    type \c {From} in the meta type system. Returns \c true if the registration succeeded, otherwise
+    \c false.
+*/
+
+/*!
+    \fn template<typename MemberFunctionOk, char> bool QMetaType::registerMutableView(MemberFunctionOk function)
+    \since 6.0
+    \overload
+    Registers a method \a function like To From::function(bool *ok) as mutable view of type To on
+    type From in the meta type system. Returns \c true if the registration succeeded, otherwise
+    \c false.
+*/
+
+/*!
+    \fn template<typename UnaryFunction> bool QMetaType::registerMutableView(UnaryFunction function)
+    \since 6.0
+    \overload
+    Registers a unary function object \a function as mutable view of type To on type From
+    in the meta type system. Returns \c true if the registration succeeded, otherwise \c false.
+*/
+
+/*!
+    Registers function \a f as mutable view of type id \a to on type id \a from.
+    Returns \c true if the registration succeeded, otherwise \c false.
+    \since 6.0
+    \internal
+*/
+bool QMetaType::registerMutableViewFunction(const MutableViewFunction &f, QMetaType from, QMetaType to)
+{
+    if (!customTypesMutableViewRegistry()->insertIfNotContains(qMakePair(from.id(), to.id()), f)) {
+        qWarning("Mutable view on type already registered from type %s to type %s",
+                 from.name(), to.name());
         return false;
     }
     return true;
@@ -1630,14 +1676,24 @@ bool QMetaType::registerConverterFunction(const ConverterFunction &f, int from, 
 
 /*!
     \internal
+ */
+void QMetaType::unregisterMutableViewFunction(QMetaType from, QMetaType to)
+{
+    if (customTypesMutableViewRegistry.isDestroyed())
+        return;
+    customTypesMutableViewRegistry()->remove(from.id(), to.id());
+}
+
+/*!
+    \internal
 
     Invoked automatically when a converter function object is destroyed.
  */
-void QMetaType::unregisterConverterFunction(int from, int to)
+void QMetaType::unregisterConverterFunction(QMetaType from, QMetaType to)
 {
     if (customTypesConversionRegistry.isDestroyed())
         return;
-    customTypesConversionRegistry()->remove(from, to);
+    customTypesConversionRegistry()->remove(from.id(), to.id());
 }
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -1833,14 +1889,10 @@ static bool convertToEnum(QMetaType fromType, const void *from, QMetaType toType
 #ifndef QT_BOOTSTRAPPED
 static bool convertIterableToVariantList(QMetaType fromType, const void *from, void *to)
 {
-    const QMetaType::ConverterFunction * const f =
-        customTypesConversionRegistry()->function(
-                qMakePair(fromType.id(), qMetaTypeId<QIterable<QMetaSequence>>()));
-    if (!f)
+    QSequentialIterable list;
+    if (!QMetaType::convert(fromType, from, QMetaType::fromType<QSequentialIterable>(), &list))
         return false;
 
-    QSequentialIterable list;
-    (*f)(from, &list);
     QVariantList &l = *static_cast<QVariantList *>(to);
     l.clear();
     l.reserve(list.size());
@@ -1852,14 +1904,10 @@ static bool convertIterableToVariantList(QMetaType fromType, const void *from, v
 
 static bool convertIterableToVariantMap(QMetaType fromType, const void *from, void *to)
 {
-    const QMetaType::ConverterFunction * const f =
-        customTypesConversionRegistry()->function(
-                qMakePair(fromType.id(), qMetaTypeId<QIterable<QMetaAssociation>>()));
-    if (!f)
+    QAssociativeIterable map;
+    if (!QMetaType::convert(fromType, from, QMetaType::fromType<QAssociativeIterable>(), &map))
         return false;
 
-    QAssociativeIterable map;
-    (*f)(from, &map);
     QVariantMap &h = *static_cast<QVariantMap *>(to);
     h.clear();
     auto end = map.end();
@@ -1870,14 +1918,10 @@ static bool convertIterableToVariantMap(QMetaType fromType, const void *from, vo
 
 static bool convertIterableToVariantHash(QMetaType fromType, const void *from, void *to)
 {
-    const QMetaType::ConverterFunction * const f =
-        customTypesConversionRegistry()->function(
-                qMakePair(fromType.id(), qMetaTypeId<QIterable<QMetaAssociation>>()));
-    if (!f)
+    QAssociativeIterable map;
+    if (!QMetaType::convert(fromType, from, QMetaType::fromType<QAssociativeIterable>(), &map))
         return false;
 
-    QAssociativeIterable map;
-    (*f)(from, &map);
     QVariantHash &h = *static_cast<QVariantHash *>(to);
     h.clear();
     h.reserve(map.size());
@@ -1948,6 +1992,60 @@ static bool convertToSequentialIterable(QMetaType fromType, const void *from, vo
     return false;
 }
 
+static bool canConvertToSequentialIterable(QMetaType fromType)
+{
+    switch (fromType.id()) {
+    case QMetaType::QVariantList:
+    case QMetaType::QStringList:
+    case QMetaType::QByteArrayList:
+        return true;
+    default:
+        return QMetaType::canConvert(fromType, QMetaType::fromType<QIterable<QMetaSequence>>());
+    }
+}
+
+static bool canImplicitlyViewAsSequentialIterable(QMetaType fromType)
+{
+    switch (fromType.id()) {
+    case QMetaType::QVariantList:
+    case QMetaType::QStringList:
+    case QMetaType::QByteArrayList:
+        return true;
+    default:
+        return QMetaType::canView(
+                    fromType, QMetaType::fromType<QIterable<QMetaSequence>>());
+    }
+}
+
+static bool viewAsSequentialIterable(QMetaType fromType, void *from, void *to)
+{
+    using namespace QtMetaTypePrivate;
+    int fromTypeId = fromType.id();
+
+    QSequentialIterable &i = *static_cast<QSequentialIterable *>(to);
+    if (fromTypeId == QMetaType::QVariantList) {
+        i = QSequentialIterable(reinterpret_cast<QVariantList *>(from));
+        return true;
+    }
+    if (fromTypeId == QMetaType::QStringList) {
+        i = QSequentialIterable(reinterpret_cast<QStringList *>(from));
+        return true;
+    }
+    else if (fromTypeId == QMetaType::QByteArrayList) {
+        i = QSequentialIterable(reinterpret_cast<QByteArrayList *>(from));
+        return true;
+    }
+
+    QIterable<QMetaSequence> j;
+    if (QMetaType::view(
+                fromType, from, QMetaType::fromType<QIterable<QMetaSequence>>(), &j)) {
+        i = std::move(j);
+        return true;
+    }
+
+    return false;
+}
+
 static bool convertToAssociativeIterable(QMetaType fromType, const void *from, void *to)
 {
     using namespace QtMetaTypePrivate;
@@ -1978,6 +2076,74 @@ static bool canConvertMetaObject(QMetaType fromType, QMetaType toType)
     const QMetaObject *t = toType.metaObject();
     if (f && t) {
         return f->inherits(t) || (t->inherits(f));
+    }
+    return false;
+}
+
+static bool canConvertToAssociativeIterable(QMetaType fromType)
+{
+    switch (fromType.id()) {
+    case QMetaType::QVariantMap:
+    case QMetaType::QVariantHash:
+        return true;
+    default:
+        return QMetaType::canConvert(fromType, QMetaType::fromType<QIterable<QMetaAssociation>>());
+    }
+}
+
+static bool canImplicitlyViewAsAssociativeIterable(QMetaType fromType)
+{
+    switch (fromType.id()) {
+    case QMetaType::QVariantMap:
+    case QMetaType::QVariantHash:
+        return true;
+    default:
+        return QMetaType::canView(
+                    fromType, QMetaType::fromType<QIterable<QMetaAssociation>>());
+    }
+}
+
+static bool viewAsAssociativeIterable(QMetaType fromType, void *from, void *to)
+{
+    using namespace QtMetaTypePrivate;
+    int fromTypeId = fromType.id();
+
+    QAssociativeIterable &i = *static_cast<QAssociativeIterable *>(to);
+    if (fromTypeId == QMetaType::QVariantMap) {
+        i = QAssociativeIterable(reinterpret_cast<QVariantMap *>(from));
+        return true;
+    }
+    if (fromTypeId == QMetaType::QVariantHash) {
+        i = QAssociativeIterable(reinterpret_cast<QVariantHash *>(from));
+        return true;
+    }
+
+    QIterable<QMetaAssociation> j;
+    if (QMetaType::view(
+                fromType, from, QMetaType::fromType<QIterable<QMetaAssociation>>(), &j)) {
+        i = std::move(j);
+        return true;
+    }
+
+    return false;
+}
+
+static bool convertQObject(QMetaType fromType, const void *from, QMetaType toType, void *to)
+{
+    // handle QObject conversion
+    if ((fromType.flags() & QMetaType::PointerToQObject) && (toType.flags() & QMetaType::PointerToQObject)) {
+        QObject *fromObject = *static_cast<QObject * const *>(from);
+        // use dynamic metatype of from if possible
+        if (fromObject && fromObject->metaObject()->inherits(toType.metaObject()))  {
+            *static_cast<QObject **>(to) = toType.metaObject()->cast(fromObject);
+            return true;
+        } else if (!fromObject && fromType.metaObject()) {
+            // if fromObject is null, use static fromType to check if conversion works
+            *static_cast<void **>(to) = nullptr;
+            return fromType.metaObject()->inherits(toType.metaObject());
+        } else {
+            return false;
+        }
     }
     return false;
 }
@@ -2053,21 +2219,82 @@ bool QMetaType::convert(QMetaType fromType, const void *from, QMetaType toType, 
     if (toTypeId == qMetaTypeId<QAssociativeIterable>())
         return convertToAssociativeIterable(fromType, from, to);
 
-    // handle QObject conversion
-    if ((fromType.flags() & QMetaType::PointerToQObject) && (toType.flags() & QMetaType::PointerToQObject)) {
-        QObject *fromObject = *static_cast<QObject * const *>(from);
-        // use dynamic metatype of from if possible
-        if (fromObject && fromObject->metaObject()->inherits(toType.metaObject()))  {
-            *static_cast<QObject **>(to) = toType.metaObject()->cast(fromObject);
-            return true;
-        } else if (!fromObject && fromType.metaObject()) {
-            // if fromObject is null, use static fromType to check if conversion works
-            *static_cast<void **>(to) = nullptr;
-            return fromType.metaObject()->inherits(toType.metaObject());
-        } else {
-            return false;
-        }
-    }
+    return convertQObject(fromType, from, toType, to);
+#else
+    return false;
+#endif
+}
+
+/*!
+    Creates a mutable view on the object at \a from of \a fromType in the preallocated space at
+    \a to typed \a toType. Returns \c true if the conversion succeeded, otherwise false.
+    \since 6.0
+*/
+bool QMetaType::view(QMetaType fromType, void *from, QMetaType toType, void *to)
+{
+    if (!fromType.isValid() || !toType.isValid())
+        return false;
+
+    int fromTypeId = fromType.id();
+    int toTypeId = toType.id();
+
+    const QMetaType::MutableViewFunction * const f =
+        customTypesMutableViewRegistry()->function(qMakePair(fromTypeId, toTypeId));
+    if (f)
+        return (*f)(from, to);
+
+#ifndef QT_BOOTSTRAPPED
+    if (toTypeId == qMetaTypeId<QSequentialIterable>())
+        return viewAsSequentialIterable(fromType, from, to);
+
+    if (toTypeId == qMetaTypeId<QAssociativeIterable>())
+        return viewAsAssociativeIterable(fromType, from, to);
+
+    return convertQObject(fromType, from, toType, to);
+#else
+    return false;
+#endif
+}
+
+/*!
+    Returns \c true if QMetaType::view can create a mutable view of type \a toType
+    on type \a fromType.
+
+    Converting between pointers of types derived from QObject will return true for this
+    function if a qobject_cast from the type described by \a fromType to the type described
+    by \a toType would succeed.
+
+    You can create a mutable view of type QSequentialIterable on any container registered with
+    Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE().
+
+    Similarly you can create a mutable view of type QAssociativeIterable on any container
+    registered with Q_DECLARE_ASSOCIATIVE_CONTAINER_METATYPE().
+
+    \sa convert(), QSequentialIterable, Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE(),
+        QAssociativeIterable, Q_DECLARE_ASSOCIATIVE_CONTAINER_METATYPE()
+*/
+bool QMetaType::canView(QMetaType fromType, QMetaType toType)
+{
+    int fromTypeId = fromType.id();
+    int toTypeId = toType.id();
+
+    if (fromTypeId == UnknownType || toTypeId == UnknownType)
+        return false;
+
+    const MutableViewFunction * const f =
+        customTypesMutableViewRegistry()->function(qMakePair(fromTypeId, toTypeId));
+    if (f)
+        return true;
+
+#ifndef QT_BOOTSTRAPPED
+    if (toTypeId == qMetaTypeId<QSequentialIterable>())
+        return canImplicitlyViewAsSequentialIterable(fromType);
+
+    if (toTypeId == qMetaTypeId<QAssociativeIterable>())
+        return canImplicitlyViewAsAssociativeIterable(fromType);
+
+    if (canConvertMetaObject(fromType, toType))
+        return true;
 #endif
 
     return false;
@@ -2165,17 +2392,25 @@ bool QMetaType::canConvert(QMetaType fromType, QMetaType toType)
         return true;
 
 #ifndef QT_BOOTSTRAPPED
-    if (toTypeId == QVariantList && hasRegisteredConverterFunction(
-                    fromTypeId, qMetaTypeId<QIterable<QMetaSequence>>()))
-        return true;
+    if (toTypeId == qMetaTypeId<QSequentialIterable>())
+        return canConvertToSequentialIterable(fromType);
 
-    if ((toTypeId == QVariantHash || toTypeId == QVariantMap) && hasRegisteredConverterFunction(
-                    fromTypeId, qMetaTypeId<QIterable<QMetaAssociation>>()))
+    if (toTypeId == qMetaTypeId<QAssociativeIterable>())
+        return canConvertToAssociativeIterable(fromType);
+
+    if (toTypeId == QVariantList
+            && canConvert(fromType, QMetaType::fromType<QSequentialIterable>())) {
         return true;
+    }
+
+    if ((toTypeId == QVariantHash || toTypeId == QVariantMap)
+            && canConvert(fromType, QMetaType::fromType<QAssociativeIterable>())) {
+        return true;
+    }
 #endif
 
     if (toTypeId == QVariantPair && hasRegisteredConverterFunction(
-                    fromTypeId, qMetaTypeId<QtMetaTypePrivate::QPairVariantInterfaceImpl>()))
+                    fromType, QMetaType::fromType<QtMetaTypePrivate::QPairVariantInterfaceImpl>()))
         return true;
 
     if (fromType.flags() & IsEnumeration) {
@@ -2219,9 +2454,26 @@ bool QMetaType::canConvert(QMetaType fromType, QMetaType toType)
     to \a toTypeId
     \since 5.2
 */
-bool QMetaType::hasRegisteredConverterFunction(int fromTypeId, int toTypeId)
+bool QMetaType::hasRegisteredConverterFunction(QMetaType fromType, QMetaType toType)
 {
-    return customTypesConversionRegistry()->contains(qMakePair(fromTypeId, toTypeId));
+    return customTypesConversionRegistry()->contains(qMakePair(fromType.id(), toType.id()));
+}
+
+/*!
+    \fn bool QMetaType::hasRegisteredMutableViewFunction()
+    Returns \c true, if the meta type system has a registered mutable view on type From of type To.
+    \since 6.0
+    \overload
+*/
+
+/*!
+    Returns \c true, if the meta type system has a registered mutable view on meta type id
+    \a fromTypeId of meta type id \a toTypeId.
+    \since 5.2
+*/
+bool QMetaType::hasRegisteredMutableViewFunction(QMetaType fromType, QMetaType toType)
+{
+    return customTypesMutableViewRegistry()->contains(qMakePair(fromType.id(), toType.id()));
 }
 
 /*!

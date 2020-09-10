@@ -278,6 +278,7 @@ private slots:
     void sequentialIterableAppend();
 
     void preferDirectConversionOverInterfaces();
+    void mutableView();
 
 private:
     void dataStream_data(QDataStream::Version version);
@@ -4173,7 +4174,7 @@ void testSequentialIteration()
     QVERIFY(listVariant.canConvert<QVariantList>());
     QVariantList varList = listVariant.value<QVariantList>();
     QCOMPARE(varList.size(), (int)std::distance(sequence.begin(), sequence.end()));
-    QSequentialIterable listIter = listVariant.value<QSequentialIterable>();
+    QSequentialIterable listIter = listVariant.view<QSequentialIterable>();
     QCOMPARE(varList.size(), listIter.size());
 
     typename Container::iterator containerIter = sequence.begin();
@@ -4758,7 +4759,7 @@ void tst_QVariant::sequentialIterableAppend()
         QList<int> container { 1, 2 };
         auto variant = QVariant::fromValue(container);
         QVERIFY(variant.canConvert<QIterable<QMetaSequence>>());
-        QSequentialIterable asIterable = variant.value<QIterable<QMetaSequence>>();
+        QSequentialIterable asIterable = variant.view<QIterable<QMetaSequence>>();
         const int i = 3, j = 4;
         void *mutableIterable = asIterable.mutableIterable();
         asIterable.metaContainer().addValueAtEnd(mutableIterable, &i);
@@ -4778,7 +4779,7 @@ void tst_QVariant::sequentialIterableAppend()
         QSet<QByteArray> container { QByteArray{"hello"}, QByteArray{"world"} };
         auto variant = QVariant::fromValue(std::move(container));
         QVERIFY(variant.canConvert<QIterable<QMetaSequence>>());
-        QSequentialIterable asIterable = variant.value<QIterable<QMetaSequence>>();
+        QSequentialIterable asIterable = variant.view<QIterable<QMetaSequence>>();
         QByteArray qba1 {"goodbye"};
         QByteArray qba2 { "moon" };
         void *mutableIterable = asIterable.mutableIterable();
@@ -4832,6 +4833,44 @@ void tst_QVariant::preferDirectConversionOverInterfaces()
 
     holder.value<QVariantMap>();
     QVERIFY(calledCorrectConverter);
+}
+
+struct MyTypeView
+{
+    MyType *data;
+};
+
+void tst_QVariant::mutableView()
+{
+    bool calledView = false;
+    const bool success = QMetaType::registerMutableView<MyType, MyTypeView>([&](MyType &data) {
+        calledView = true;
+        return MyTypeView { &data };
+    });
+    QVERIFY(success);
+
+    QTest::ignoreMessage(
+                QtWarningMsg,
+                "Mutable view on type already registered from type MyType to type MyTypeView");
+    const bool shouldFail = QMetaType::registerMutableView<MyType, MyTypeView>([&](MyType &) {
+        return MyTypeView { nullptr };
+    });
+    QVERIFY(!shouldFail);
+
+    auto original = QVariant::fromValue(MyType {});
+
+    QVERIFY(original.canView<MyTypeView>());
+    QVERIFY(!original.canConvert<MyTypeView>());
+
+    MyTypeView view = original.view<MyTypeView>();
+    QVERIFY(calledView);
+    const char *txt = "lll";
+    view.data->number = 113;
+    view.data->text = txt;
+
+    MyType extracted = original.view<MyType>();
+    QCOMPARE(extracted.number, 0);
+    QCOMPARE(extracted.text, nullptr);
 }
 
 QTEST_MAIN(tst_QVariant)

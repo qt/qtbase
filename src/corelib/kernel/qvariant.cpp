@@ -2068,6 +2068,13 @@ bool QVariant::convert(int type, void *ptr) const
     return QMetaType::convert(d.type(), constData(), QMetaType(type), ptr);
 }
 
+/*!
+  \internal
+*/
+bool QVariant::view(int type, void *ptr)
+{
+    return QMetaType::view(d.type(), data(), QMetaType(type), ptr);
+}
 
 /*!
     \fn bool operator==(const QVariant &v1, const QVariant &v2)
@@ -2457,6 +2464,18 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
     \sa setValue(), fromValue(), canConvert(), Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE()
 */
 
+/*! \fn template<typename T> T QVariant::view()
+
+    Returns a mutable view of template type \c{T} on the stored value.
+    Call canView() to find out whether such a view is supported.
+    If no such view can be created, returns the stored value converted to the
+    template type \c{T}. Call canConvert() to find out whether a type can be
+    converted. If the value can neither be viewed nor converted, a
+    \l{default-constructed value} will be returned.
+
+    \sa canView(), Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE()
+*/
+
 /*! \fn bool QVariant::canConvert() const
 
     Returns \c true if the variant can be converted to the template type \c{T},
@@ -2471,6 +2490,14 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
     for QObject subclasses which use the Q_OBJECT macro.
 
     \sa convert()
+*/
+
+/*! \fn bool QVariant::canView() const
+
+    Returns \c true if a mutable view of the template type \c{T} can be created on this variant,
+    otherwise \c false.
+
+    \sa value()
 */
 
 /*! \fn template<typename T> static QVariant QVariant::fromValue(const T &value)

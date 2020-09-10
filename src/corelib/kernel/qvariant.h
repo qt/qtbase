@@ -248,6 +248,9 @@ class Q_CORE_EXPORT QVariant
     { return QMetaType::canConvert(d.type(), targetType); }
     bool convert(QMetaType type);
 
+    bool canView(QMetaType targetType) const
+    { return QMetaType::canView(d.type(), targetType); }
+
 #if QT_DEPRECATED_SINCE(6, 0)
     QT_DEPRECATED_VERSION_6_0
     bool canConvert(int targetTypeId) const
@@ -364,6 +367,14 @@ class Q_CORE_EXPORT QVariant
     { return qvariant_cast<T>(*this); }
 
     template<typename T>
+    inline T view()
+    {
+        T t{};
+        QMetaType::view(metaType(), data(), QMetaType::fromType<T>(), &t);
+        return t;
+    }
+
+    template<typename T>
     static inline QVariant fromValue(const T &value)
     {
         return QVariant(QMetaType::fromType<T>(), std::addressof(value));
@@ -382,6 +393,10 @@ class Q_CORE_EXPORT QVariant
     template<typename T>
     bool canConvert() const
     { return canConvert(QMetaType::fromType<T>()); }
+
+    template<typename T>
+    bool canView() const
+    { return canView(QMetaType::fromType<T>()); }
 
  public:
     struct PrivateShared
@@ -488,7 +503,8 @@ protected:
     Private d;
     void create(int type, const void *copy);
     bool equals(const QVariant &other) const;
-    bool convert(int t, void *ptr) const;
+    bool convert(int type, void *ptr) const;
+    bool view(int type, void *ptr);
 
 private:
     // force compile error, prevent QVariant(bool) to be called
