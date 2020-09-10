@@ -825,8 +825,11 @@ public:
         DiskCacheMiss,
         DiskCacheError
     };
-    DiskCacheResult tryLoadFromDiskCache(const QRhiShaderStage *stages, int stageCount,
-                                         GLuint program, QByteArray *cacheKey);
+    DiskCacheResult tryLoadFromDiskCache(const QRhiShaderStage *stages,
+                                         int stageCount,
+                                         GLuint program,
+                                         const QVector<QShaderDescription::InOutVariable> &inputVars,
+                                         QByteArray *cacheKey);
     void trySaveToDiskCache(GLuint program, const QByteArray &cacheKey);
 
     QOpenGLContext *ctx = nullptr;

@@ -3534,8 +3534,11 @@ static inline QShader::Stage toShaderStage(QRhiShaderStage::Type type)
     }
 }
 
-QRhiGles2::DiskCacheResult QRhiGles2::tryLoadFromDiskCache(const QRhiShaderStage *stages, int stageCount,
-                                                           GLuint program, QByteArray *cacheKey)
+QRhiGles2::DiskCacheResult QRhiGles2::tryLoadFromDiskCache(const QRhiShaderStage *stages,
+                                                           int stageCount,
+                                                           GLuint program,
+                                                           const QVector<QShaderDescription::InOutVariable> &inputVars,
+                                                           QByteArray *cacheKey)
 {
     QRhiGles2::DiskCacheResult result = QRhiGles2::DiskCacheMiss;
     QByteArray diskCacheKey;
@@ -3544,13 +3547,43 @@ QRhiGles2::DiskCacheResult QRhiGles2::tryLoadFromDiskCache(const QRhiShaderStage
         QOpenGLProgramBinaryCache::ProgramDesc binaryProgram;
         for (int i = 0; i < stageCount; ++i) {
             const QRhiShaderStage &stage(stages[i]);
-            const QByteArray source = shaderSource(stage, nullptr);
+            QByteArray source = shaderSource(stage, nullptr);
             if (source.isEmpty())
                 return QRhiGles2::DiskCacheError;
+
+            if (stage.type() == QRhiShaderStage::Vertex) {
+                // Now add something to the key that indicates the vertex input locations.
+                // A GLSL shader lower than 330 (150, 140, ...) will not have location
+                // qualifiers. This means that the shader source code is the same
+                // regardless of what locations inputVars contains. This becomes a problem
+                // because we'll glBindAttribLocation the shader based on inputVars, but
+                // that's only when compiling/linking when there was no cache hit. Picking
+                // from the cache afterwards should take the input locations into account
+                // since if inputVars has now different locations for the attributes, then
+                // it is not ok to reuse a program binary that used different attribute
+                // locations. For a lot of clients this would not be an issue since they
+                // typically hardcode and use the same vertex locations on every run. Some
+                // systems that dynamically generate shaders may end up with a non-stable
+                // order (and so location numbers), however. This is sub-optimal because
+                // it makes caching inefficient, and said clients should be fixed, but in
+                // any case this should not break rendering. Hence including the locations
+                // in the cache key.
+                QMap<QByteArray, int> inputLocations; // sorted by key when iterating
+                for (const QShaderDescription::InOutVariable &var : inputVars)
+                    inputLocations.insert(var.name, var.location);
+                source += QByteArrayLiteral("\n // "); // just to be nice; treated as an arbitrary string regardless
+                for (auto it = inputLocations.cbegin(), end = inputLocations.cend(); it != end; ++it) {
+                    source += it.key();
+                    source += QByteArray::number(it.value());
+                }
+                source += QByteArrayLiteral("\n");
+            }
+
             binaryProgram.shaders.append(QOpenGLProgramBinaryCache::ShaderDesc(toShaderStage(stage.type()), source));
         }
 
         diskCacheKey = binaryProgram.cacheKey();
+
         if (qrhi_programBinaryCache()->load(diskCacheKey, program)) {
             qCDebug(lcOpenGLProgramDiskCache, "Program binary received from cache, program %u, key %s",
                     program, diskCacheKey.constData());
@@ -4247,41 +4280,44 @@ bool QGles2GraphicsPipeline::create()
 
     program = rhiD->f->glCreateProgram();
 
+    QShaderDescription vsDesc;
+    QShaderDescription fsDesc;
+    for (const QRhiShaderStage &shaderStage : qAsConst(m_shaderStages)) {
+        if (shaderStage.type() == QRhiShaderStage::Vertex)
+            vsDesc = shaderStage.shader().description();
+        else if (shaderStage.type() == QRhiShaderStage::Fragment)
+            fsDesc = shaderStage.shader().description();
+    }
+
     QByteArray diskCacheKey;
     QRhiGles2::DiskCacheResult diskCacheResult = rhiD->tryLoadFromDiskCache(m_shaderStages.constData(),
                                                                             m_shaderStages.count(),
                                                                             program,
+                                                                            vsDesc.inputVariables(),
                                                                             &diskCacheKey);
     if (diskCacheResult == QRhiGles2::DiskCacheError)
         return false;
 
-    const bool needsCompile = diskCacheResult == QRhiGles2::DiskCacheMiss;
-
-    QShaderDescription vsDesc;
-    QShaderDescription fsDesc;
-    for (const QRhiShaderStage &shaderStage : qAsConst(m_shaderStages)) {
-        const bool isVertex = shaderStage.type() == QRhiShaderStage::Vertex;
-        const bool isFragment = shaderStage.type() == QRhiShaderStage::Fragment;
-        if (isVertex) {
-            if (needsCompile && !rhiD->compileShader(program, shaderStage, nullptr))
-                return false;
-            vsDesc = shaderStage.shader().description();
-        } else if (isFragment) {
-            if (needsCompile && !rhiD->compileShader(program, shaderStage, nullptr))
-                return false;
-            fsDesc = shaderStage.shader().description();
+    if (diskCacheResult == QRhiGles2::DiskCacheMiss) {
+        for (const QRhiShaderStage &shaderStage : qAsConst(m_shaderStages)) {
+            if (shaderStage.type() == QRhiShaderStage::Vertex) {
+                if (!rhiD->compileShader(program, shaderStage, nullptr))
+                    return false;
+            } else if (shaderStage.type() == QRhiShaderStage::Fragment) {
+                if (!rhiD->compileShader(program, shaderStage, nullptr))
+                    return false;
+            }
         }
-    }
 
-    for (auto inVar : vsDesc.inputVariables()) {
-        rhiD->f->glBindAttribLocation(program, GLuint(inVar.location), inVar.name);
-    }
+        // important when GLSL <= 150 is used that does not have location qualifiers
+        for (const QShaderDescription::InOutVariable &inVar : vsDesc.inputVariables())
+            rhiD->f->glBindAttribLocation(program, GLuint(inVar.location), inVar.name);
 
-    if (needsCompile && !rhiD->linkProgram(program))
-        return false;
+        if (!rhiD->linkProgram(program))
+            return false;
 
-    if (needsCompile)
         rhiD->trySaveToDiskCache(program, diskCacheKey);
+    }
 
     for (const QShaderDescription::UniformBlock &ub : vsDesc.uniformBlocks())
         rhiD->gatherUniforms(program, ub, &uniforms);
@@ -4340,26 +4376,23 @@ bool QGles2ComputePipeline::create()
     if (!rhiD->ensureContext())
         return false;
 
+    const QShaderDescription csDesc = m_shaderStage.shader().description();
     program = rhiD->f->glCreateProgram();
-    QShaderDescription csDesc;
 
     QByteArray diskCacheKey;
-    QRhiGles2::DiskCacheResult diskCacheResult = rhiD->tryLoadFromDiskCache(&m_shaderStage, 1, program, &diskCacheKey);
+    QRhiGles2::DiskCacheResult diskCacheResult = rhiD->tryLoadFromDiskCache(&m_shaderStage, 1, program, {}, &diskCacheKey);
     if (diskCacheResult == QRhiGles2::DiskCacheError)
         return false;
 
-    const bool needsCompile = diskCacheResult == QRhiGles2::DiskCacheMiss;
+    if (diskCacheResult == QRhiGles2::DiskCacheMiss) {
+        if (!rhiD->compileShader(program, m_shaderStage, nullptr))
+            return false;
 
-    if (needsCompile && !rhiD->compileShader(program, m_shaderStage, nullptr))
-        return false;
+        if (!rhiD->linkProgram(program))
+            return false;
 
-    csDesc = m_shaderStage.shader().description();
-
-    if (needsCompile && !rhiD->linkProgram(program))
-        return false;
-
-    if (needsCompile)
         rhiD->trySaveToDiskCache(program, diskCacheKey);
+    }
 
     for (const QShaderDescription::UniformBlock &ub : csDesc.uniformBlocks())
         rhiD->gatherUniforms(program, ub, &uniforms);
