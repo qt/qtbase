@@ -329,7 +329,8 @@ void QPlainTestLogger::startLogging()
         qsnprintf(buf, sizeof(buf),
                   "********* Start testing of %s *********\n"
                   "Config: Using QtTest library " QTEST_VERSION_STR
-                  ", %s\n", QTestResult::currentTestObjectName(), QLibraryInfo::build());
+                  ", %s, %s %s\n", QTestResult::currentTestObjectName(), QLibraryInfo::build(),
+                  qPrintable(QSysInfo::productType()), qPrintable(QSysInfo::productVersion()));
     }
     outputMessage(buf);
 }
