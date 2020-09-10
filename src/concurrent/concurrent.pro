@@ -20,7 +20,6 @@ SOURCES += \
 HEADERS += \
         qtconcurrent_global.h \
         qtconcurrentcompilertest.h \
-        qtconcurrentexception.h \
         qtconcurrentfilter.h \
         qtconcurrentfilterkernel.h \
         qtconcurrentfunctionwrappers.h \

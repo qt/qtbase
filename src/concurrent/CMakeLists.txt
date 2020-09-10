@@ -10,7 +10,6 @@ qt_add_module(Concurrent
         qtaskbuilder.h
         qtconcurrent_global.h
         qtconcurrentcompilertest.h
-        qtconcurrentexception.h
         qtconcurrentfilter.cpp qtconcurrentfilter.h
         qtconcurrentfilterkernel.h
         qtconcurrentfunctionwrappers.h
