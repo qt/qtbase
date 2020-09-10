@@ -191,19 +191,24 @@ public:
     }
 };
 
-class QRecursiveMutexPrivate;
 class Q_CORE_EXPORT QRecursiveMutex
 {
     Q_DISABLE_COPY_MOVE(QRecursiveMutex)
-    QRecursiveMutexPrivate *d;
-public:
+    // written to by the thread that first owns 'mutex';
+    // read during attempts to acquire ownership of 'mutex' from any other thread:
+    QAtomicPointer<void> owner = nullptr;
+    // only ever accessed from the thread that owns 'mutex':
+    uint count = 0;
+    QMutex mutex;
 
-    QRecursiveMutex();
+public:
+    constexpr QRecursiveMutex() = default;
     ~QRecursiveMutex();
 
 
     // BasicLockable concept
-    void lock() QT_MUTEX_LOCK_NOEXCEPT;
+    void lock() QT_MUTEX_LOCK_NOEXCEPT
+    { tryLock(-1); }
     bool tryLock(int timeout = 0) QT_MUTEX_LOCK_NOEXCEPT;
     // BasicLockable concept
     void unlock() noexcept;

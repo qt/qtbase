@@ -53,25 +53,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class QRecursiveMutexPrivate
-{
-public:
-    QRecursiveMutexPrivate()
-        : owner(nullptr), count(0) {}
-
-    // written to by the thread that first owns 'mutex';
-    // read during attempts to acquire ownership of 'mutex' from any other thread:
-    QAtomicPointer<std::remove_pointer<Qt::HANDLE>::type> owner;
-
-    // only ever accessed from the thread that owns 'mutex':
-    uint count;
-
-    QMutex mutex;
-
-    bool lock(int timeout) QT_MUTEX_LOCK_NOEXCEPT;
-    void unlock() noexcept;
-};
-
 /*
     \class QBasicMutex
     \inmodule QtCore
@@ -298,15 +279,12 @@ void QBasicMutex::destroyInternal(QMutexPrivate *d)
     \sa QMutex, QMutexLocker, QReadWriteLock, QSemaphore, QWaitCondition
 */
 
-/*!
+/*! \fn QRecursiveMutex::QRecursiveMutex()
+
     Constructs a new recursive mutex. The mutex is created in an unlocked state.
 
     \sa lock(), unlock()
 */
-QRecursiveMutex::QRecursiveMutex()
-{
-    d = new QRecursiveMutexPrivate;
-}
 
 /*!
     Destroys the mutex.
@@ -315,7 +293,6 @@ QRecursiveMutex::QRecursiveMutex()
 */
 QRecursiveMutex::~QRecursiveMutex()
 {
-    delete d;
 }
 
 /*! \fn void QRecursiveMutex::lock()
@@ -328,10 +305,6 @@ QRecursiveMutex::~QRecursiveMutex()
 
     \sa unlock()
 */
-void QRecursiveMutex::lock() QT_MUTEX_LOCK_NOEXCEPT
-{
-    d->lock(-1);
-}
 
 /*! \fn bool QMutex::tryLock(int timeout)
 
@@ -354,7 +327,22 @@ void QRecursiveMutex::lock() QT_MUTEX_LOCK_NOEXCEPT
 */
 bool QRecursiveMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 {
-    return d->lock(timeout);
+    Qt::HANDLE self = QThread::currentThreadId();
+    if (owner.loadRelaxed() == self) {
+        ++count;
+        Q_ASSERT_X(count != 0, "QMutex::lock", "Overflow in recursion counter");
+        return true;
+    }
+    bool success = true;
+    if (timeout == -1) {
+        mutex.lock();
+    } else {
+        success = mutex.tryLock(timeout);
+    }
+
+    if (success)
+        owner.storeRelaxed(self);
+    return success;
 }
 
 /*! \fn bool QRecursiveMutex::try_lock()
@@ -417,7 +405,14 @@ bool QRecursiveMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 */
 void QRecursiveMutex::unlock() noexcept
 {
-    d->unlock();
+    Q_ASSERT(owner.loadRelaxed() == QThread::currentThreadId());
+
+    if (count > 0) {
+        count--;
+    } else {
+        owner.storeRelaxed(nullptr);
+        mutex.unlock();
+    }
 }
 
 
@@ -753,42 +748,6 @@ void QMutexPrivate::derefWaiters(int value) noexcept
     } while (!waiters.testAndSetRelaxed(old_waiters, new_waiters));
 }
 #endif
-
-/*!
-   \internal
- */
-inline bool QRecursiveMutexPrivate::lock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
-{
-    Qt::HANDLE self = QThread::currentThreadId();
-    if (owner.loadRelaxed() == self) {
-        ++count;
-        Q_ASSERT_X(count != 0, "QMutex::lock", "Overflow in recursion counter");
-        return true;
-    }
-    bool success = true;
-    if (timeout == -1) {
-        mutex.lock();
-    } else {
-        success = mutex.tryLock(timeout);
-    }
-
-    if (success)
-        owner.storeRelaxed(self);
-    return success;
-}
-
-/*!
-   \internal
- */
-inline void QRecursiveMutexPrivate::unlock() noexcept
-{
-    if (count > 0) {
-        count--;
-    } else {
-        owner.storeRelaxed(nullptr);
-        mutex.unlock();
-    }
-}
 
 QT_END_NAMESPACE
 
