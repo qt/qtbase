@@ -337,7 +337,7 @@ function(qt_create_tracepoints name tracepoints_file)
         qt_configure_file(OUTPUT "${source_path}"
             CONTENT "#define TRACEPOINT_CREATE_PROBES
 #define TRACEPOINT_DEFINE
-#define include \"${header_filename}\"")
+#include \"${header_filename}\"")
         target_sources(${name} PRIVATE "${source_path}")
         target_compile_definitions(${name} PRIVATE Q_TRACEPOINT)
 
