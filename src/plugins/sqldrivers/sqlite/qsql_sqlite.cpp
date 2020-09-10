@@ -85,24 +85,24 @@ static QString _q_escapeIdentifier(const QString &identifier)
     return res;
 }
 
-static QVariant::Type qGetColumnType(const QString &tpName)
+static int qGetColumnType(const QString &tpName)
 {
     const QString typeName = tpName.toLower();
 
     if (typeName == QLatin1String("integer")
         || typeName == QLatin1String("int"))
-        return QVariant::Int;
+        return QMetaType::Int;
     if (typeName == QLatin1String("double")
         || typeName == QLatin1String("float")
         || typeName == QLatin1String("real")
         || typeName.startsWith(QLatin1String("numeric")))
-        return QVariant::Double;
+        return QMetaType::Double;
     if (typeName == QLatin1String("blob"))
-        return QVariant::ByteArray;
+        return QMetaType::QByteArray;
     if (typeName == QLatin1String("boolean")
         || typeName == QLatin1String("bool"))
-        return QVariant::Bool;
-    return QVariant::String;
+        return QMetaType::Bool;
+    return QMetaType::QString;
 }
 
 static QSqlError qMakeError(sqlite3 *access, const QString &descr, QSqlError::ErrorType type,
@@ -214,7 +214,7 @@ void QSQLiteResultPrivate::initColumns(bool emptyResultset)
         // sqlite3_column_type is documented to have undefined behavior if the result set is empty
         int stp = emptyResultset ? -1 : sqlite3_column_type(stmt, i);
 
-        QVariant::Type fieldType;
+        int fieldType;
 
         if (!typeName.isEmpty()) {
             fieldType = qGetColumnType(typeName);
@@ -222,25 +222,25 @@ void QSQLiteResultPrivate::initColumns(bool emptyResultset)
             // Get the proper type for the field based on stp value
             switch (stp) {
             case SQLITE_INTEGER:
-                fieldType = QVariant::Int;
+                fieldType = QMetaType::Int;
                 break;
             case SQLITE_FLOAT:
-                fieldType = QVariant::Double;
+                fieldType = QMetaType::Double;
                 break;
             case SQLITE_BLOB:
-                fieldType = QVariant::ByteArray;
+                fieldType = QMetaType::QByteArray;
                 break;
             case SQLITE_TEXT:
-                fieldType = QVariant::String;
+                fieldType = QMetaType::QString;
                 break;
             case SQLITE_NULL:
             default:
-                fieldType = QVariant::Invalid;
+                fieldType = QMetaType::UnknownType;
                 break;
             }
         }
 
-        QSqlField fld(colName, fieldType, tableName);
+        QSqlField fld(colName, QMetaType(fieldType), tableName);
         fld.setSqlType(stp);
         rInf.append(fld);
     }
@@ -502,37 +502,37 @@ bool QSQLiteResult::exec()
                 res = sqlite3_bind_null(d->stmt, i + 1);
             } else {
                 switch (value.userType()) {
-                case QVariant::ByteArray: {
+                case QMetaType::QByteArray: {
                     const QByteArray *ba = static_cast<const QByteArray*>(value.constData());
                     res = sqlite3_bind_blob(d->stmt, i + 1, ba->constData(),
                                             ba->size(), SQLITE_STATIC);
                     break; }
-                case QVariant::Int:
-                case QVariant::Bool:
+                case QMetaType::Int:
+                case QMetaType::Bool:
                     res = sqlite3_bind_int(d->stmt, i + 1, value.toInt());
                     break;
-                case QVariant::Double:
+                case QMetaType::Double:
                     res = sqlite3_bind_double(d->stmt, i + 1, value.toDouble());
                     break;
-                case QVariant::UInt:
-                case QVariant::LongLong:
+                case QMetaType::UInt:
+                case QMetaType::LongLong:
                     res = sqlite3_bind_int64(d->stmt, i + 1, value.toLongLong());
                     break;
-                case QVariant::DateTime: {
+                case QMetaType::QDateTime: {
                     const QDateTime dateTime = value.toDateTime();
                     const QString str = dateTime.toString(Qt::ISODateWithMs);
                     res = sqlite3_bind_text16(d->stmt, i + 1, str.utf16(),
                                               str.size() * sizeof(ushort), SQLITE_TRANSIENT);
                     break;
                 }
-                case QVariant::Time: {
+                case QMetaType::QTime: {
                     const QTime time = value.toTime();
                     const QString str = time.toString(u"hh:mm:ss.zzz");
                     res = sqlite3_bind_text16(d->stmt, i + 1, str.utf16(),
                                               str.size() * sizeof(ushort), SQLITE_TRANSIENT);
                     break;
                 }
-                case QVariant::String: {
+                case QMetaType::QString: {
                     // lifetime of string == lifetime of its qvariant
                     const QString *str = static_cast<const QString*>(value.constData());
                     res = sqlite3_bind_text16(d->stmt, i + 1, str->utf16(),
@@ -925,7 +925,7 @@ static QSqlIndex qGetTableInfo(QSqlQuery &q, const QString &tableName, bool only
                 defVal = defVal.mid(1, end - 1);
         }
 
-        QSqlField fld(q.value(1).toString(), qGetColumnType(typeName), tableName);
+        QSqlField fld(q.value(1).toString(), QMetaType(qGetColumnType(typeName)), tableName);
         if (isPk && (typeName == QLatin1String("integer")))
             // INTEGER PRIMARY KEY fields are auto-generated in sqlite
             // INT PRIMARY KEY is not the same as INTEGER PRIMARY KEY!

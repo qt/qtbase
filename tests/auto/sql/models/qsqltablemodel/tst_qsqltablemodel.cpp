@@ -402,7 +402,7 @@ class SelectRowOverrideTestModel: public QSqlTableModel
     Q_OBJECT
 public:
     SelectRowOverrideTestModel(QObject *parent, QSqlDatabase db):QSqlTableModel(parent, db) { }
-    bool selectRow(int row)
+    bool selectRow(int row) override
     {
         Q_UNUSED(row);
         return select();
@@ -551,9 +551,9 @@ void tst_QSqlTableModel::setData()
 
     // change 0 to NULL
     idx = model.index(0, 0);
-    QVERIFY_SQL(model, setData(idx, QVariant(QVariant::Int)));
+    QVERIFY_SQL(model, setData(idx, QVariant(QMetaType(QMetaType::Int))));
     val = model.data(idx);
-    QCOMPARE(val, QVariant(QVariant::Int));
+    QCOMPARE(val, QVariant(QMetaType(QMetaType::Int)));
     QVERIFY(val.isNull());
     QVERIFY_SQL(model, isDirty(idx));
     QVERIFY_SQL(model, submitAll());
@@ -580,13 +580,13 @@ void tst_QSqlTableModel::setData()
     // initial state
     idx = model.index(0, 0);
     QSqlRecord rec = model.record(0);
-    QCOMPARE(rec.value(0), QVariant(QVariant::Int));
+    QCOMPARE(rec.value(0), QVariant(QMetaType(QMetaType::Int)));
     QVERIFY(rec.isNull(0));
     QVERIFY(!rec.isGenerated(0));
     // unchanged value, but causes column to be included in INSERT
-    QVERIFY_SQL(model, setData(idx, QVariant(QVariant::Int)));
+    QVERIFY_SQL(model, setData(idx, QVariant(QMetaType(QMetaType::Int))));
     rec = model.record(0);
-    QCOMPARE(rec.value(0), QVariant(QVariant::Int));
+    QCOMPARE(rec.value(0), QVariant(QMetaType(QMetaType::Int)));
     QVERIFY(rec.isNull(0));
     QVERIFY(rec.isGenerated(0));
     QVERIFY_SQL(model, submitAll());
@@ -657,7 +657,7 @@ class SetRecordReimplModel: public QSqlTableModel
     Q_OBJECT
 public:
     SetRecordReimplModel(QObject *parent, QSqlDatabase db):QSqlTableModel(parent, db) {}
-    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole)
+    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override
     {
         Q_UNUSED(value);
         return QSqlTableModel::setData(index, QString("Qt"), role);
@@ -693,7 +693,7 @@ class RecordReimplModel: public QSqlTableModel
     Q_OBJECT
 public:
     RecordReimplModel(QObject *parent, QSqlDatabase db):QSqlTableModel(parent, db) {}
-    QVariant data(const QModelIndex &index, int role = Qt::EditRole) const
+    QVariant data(const QModelIndex &index, int role = Qt::EditRole) const override
     {
         if (role == Qt::EditRole)
             return QString("Qt");
@@ -2139,7 +2139,7 @@ class SqlThread : public QThread
 {
 public:
     SqlThread() : QThread() {}
-    void run()
+    void run() override
     {
         QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "non-default-connection");
         QSqlTableModel stm(nullptr, db);

@@ -41,7 +41,7 @@ public:
         : QSqlResult(driver) {}
     ~TestSqlDriverResult() {}
 
-    bool savePrepare(const QString& sqlquery)
+    bool savePrepare(const QString& sqlquery) override
     {
         return QSqlResult::savePrepare(sqlquery);
     }
@@ -49,15 +49,15 @@ public:
     QList<QVariant> boundValues() const { return QSqlResult::boundValues(); }
 
 protected:
-    QVariant data(int /* index */) { return QVariant(); }
-    bool isNull(int /* index */) { return false; }
-    bool reset(const QString & /* query */) { return false; }
-    bool fetch(int /* index */) { return false; }
-    bool fetchFirst() { return false; }
-    bool fetchLast() { return false; }
-    int size() { return 0; }
-    int numRowsAffected() { return 0; }
-    QSqlRecord record() const { return QSqlRecord(); }
+    QVariant data(int /* index */) override { return QVariant(); }
+    bool isNull(int /* index */) override { return false; }
+    bool reset(const QString & /* query */) override { return false; }
+    bool fetch(int /* index */) override { return false; }
+    bool fetchFirst() override { return false; }
+    bool fetchLast() override { return false; }
+    int size() override { return 0; }
+    int numRowsAffected() override { return 0; }
+    QSqlRecord record() const override { return QSqlRecord(); }
 };
 
 class TestSqlDriver : public QSqlDriver
@@ -68,7 +68,7 @@ public:
     TestSqlDriver() {}
     ~TestSqlDriver() {}
 
-    bool hasFeature(DriverFeature f) const {
+    bool hasFeature(DriverFeature f) const override {
         switch (f) {
         case QSqlDriver::PreparedQueries:
         case QSqlDriver::NamedPlaceholders:
@@ -80,11 +80,11 @@ public:
     }
     bool open(const QString & /* db */, const QString & /* user */,
               const QString & /* password */, const QString & /* host */,
-              int /* port */, const QString & /* options */)
+              int /* port */, const QString & /* options */) override
         { return false; }
-    void close() {}
+    void close() override {}
 
-    QSqlResult *createResult() const { return new TestSqlDriverResult(this); }
+    QSqlResult *createResult() const override { return new TestSqlDriverResult(this); }
 };
 
 #endif // TESTSQLDRIVER_H
