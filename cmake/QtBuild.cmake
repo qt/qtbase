@@ -247,6 +247,15 @@ set(CMAKE_INSTALL_RPATH "" CACHE STRING "RPATH for installed binaries")
 
 # add the automatically determined parts of the RPATH
 # which point to directories outside the build tree to the install RPATH
+#
+# TODO: Do we really want to use this option for official packages? Perhaps make it configurable
+# or remove it? This causes final installed binaries to contain an absolute path RPATH pointing
+# to ${CMAKE_INSTALL_PREFIX}/lib, which on the CI would be something like
+# /Users/qt/work/install/lib.
+# It doesn't seem necessary to me, given that qt_apply_rpaths already applies $ORIGIN-style
+# relocatable paths, but maybe i'm missing something, because the original commit that added the
+# option mentions it's needed in some cross-compilation scenario for program binaries that
+# link against QtCore.
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 function(qt_setup_tool_path_command)

@@ -40,10 +40,6 @@ function(qt_internal_add_app target)
     qt_internal_add_target_aliases("${target}")
     _qt_internal_apply_strict_cpp("${target}")
 
-    if(NOT arg_NO_INSTALL)
-        qt_apply_rpaths(TARGET "${target}" INSTALL_PATH "${INSTALL_BINDIR}" RELATIVE_RPATH)
-    endif()
-
     # To mimic the default behaviors of qt_app.prf, we by default enable GUI Windows applications,
     # but don't enable macOS bundles.
     # Bundles are enabled in a separate set_target_properties call if an Info.plist file
@@ -99,4 +95,8 @@ function(qt_internal_finalize_app target)
     if(WIN32)
         qt6_generate_win32_rc_file("${target}")
     endif()
+
+    # Rpaths need to be applied in the finalizer, because the MACOSX_BUNDLE property might be
+    # set after a qt_internal_add_app call.
+    qt_apply_rpaths(TARGET "${target}" INSTALL_PATH "${INSTALL_BINDIR}" RELATIVE_RPATH)
 endfunction()
