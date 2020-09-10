@@ -37,7 +37,7 @@ years.
 You may use brew to install dependencies needed to build QtBase.
 
   * Install homebrew:
-    ```/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"```
+    `/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"`
   * Build Qt dependencies:  ``brew install pcre2 harfbuzz freetype``
   * Install cmake:  ``brew install cmake``
   * When running cmake in qtbase, pass ``-DCMAKE_PREFIX_PATH=/usr/local``
