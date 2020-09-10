@@ -74,7 +74,7 @@ public:
 
     // for converting to Qt
     virtual bool canConvertToMime(const QString &mimeType, IDataObject *pDataObj) const = 0;
-    virtual QVariant convertToMime(const QString &mimeType, IDataObject *pDataObj, QVariant::Type preferredType) const = 0;
+    virtual QVariant convertToMime(const QString &mimeType, IDataObject *pDataObj, QMetaType preferredType) const = 0;
     virtual QString mimeForFormat(const FORMATETC &formatetc) const = 0;
 };
 

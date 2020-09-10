@@ -54,7 +54,7 @@ class QWindowsInternalMimeData : public QInternalMimeData {
 public:
     bool hasFormat_sys(const QString &mimetype) const override;
     QStringList formats_sys() const override;
-    QVariant retrieveData_sys(const QString &mimetype, QVariant::Type preferredType) const override;
+    QVariant retrieveData_sys(const QString &mimetype, QMetaType preferredType) const override;
 
 protected:
     virtual IDataObject *retrieveDataObject() const = 0;

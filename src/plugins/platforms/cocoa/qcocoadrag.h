@@ -95,7 +95,7 @@ public:
 protected:
     bool hasFormat_sys(const QString &mimeType) const;
     QStringList formats_sys() const;
-    QVariant retrieveData_sys(const QString &mimeType, QVariant::Type type) const;
+    QVariant retrieveData_sys(const QString &mimeType, QMetaType type) const;
 public:
     CFStringRef dropPasteboard;
 };

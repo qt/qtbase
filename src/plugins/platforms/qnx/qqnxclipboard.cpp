@@ -141,9 +141,9 @@ public:
     }
 
 protected:
-    QVariant retrieveData(const QString &mimetype, QVariant::Type preferredType) const override
+    QVariant retrieveData(const QString &mimetype, QMetaType preferredType) const override
     {
-        qClipboardDebug() << "mimetype=" << mimetype << "preferredType=" << preferredType;
+        qClipboardDebug() << "mimetype=" << mimetype << "preferredType=" << preferredType.name();
         if (is_clipboard_format_present(mimetype.toUtf8().constData()) != 0)
             return QMimeData::retrieveData(mimetype, preferredType);
 

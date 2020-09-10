@@ -3417,7 +3417,7 @@ QStringList QTextEditMimeData::formats() const
         return QMimeData::formats();
 }
 
-QVariant QTextEditMimeData::retrieveData(const QString &mimeType, QVariant::Type type) const
+QVariant QTextEditMimeData::retrieveData(const QString &mimeType, QMetaType type) const
 {
     if (!fragment.isEmpty())
         setup();

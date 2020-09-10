@@ -138,7 +138,7 @@ public:
     ~QIOSMimeData() { }
 
     QStringList formats() const override;
-    QVariant retrieveData(const QString &mimeType, QVariant::Type type) const override;
+    QVariant retrieveData(const QString &mimeType, QMetaType type) const override;
 
 private:
     const QClipboard::Mode m_mode;
@@ -160,7 +160,7 @@ QStringList QIOSMimeData::formats() const
     return foundMimeTypes;
 }
 
-QVariant QIOSMimeData::retrieveData(const QString &mimeType, QVariant::Type) const
+QVariant QIOSMimeData::retrieveData(const QString &mimeType, QMetaType) const
 {
     UIPasteboard *pb = [UIPasteboard pasteboardWithQClipboardMode:m_mode];
     NSArray<NSString *> *pasteboardTypes = [pb pasteboardTypes];

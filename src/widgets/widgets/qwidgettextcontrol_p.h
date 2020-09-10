@@ -308,7 +308,7 @@ public:
 
     virtual QStringList formats() const override;
 protected:
-    virtual QVariant retrieveData(const QString &mimeType, QVariant::Type type) const override;
+    virtual QVariant retrieveData(const QString &mimeType, QMetaType type) const override;
 private:
     void setup() const;
 

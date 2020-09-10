@@ -60,8 +60,8 @@ public:
     static bool mimeDataForAtom(QXcbConnection *connection, xcb_atom_t a, QMimeData *mimeData, QByteArray *data,
                                 xcb_atom_t *atomFormat, int *dataFormat);
     static QVariant mimeConvertToFormat(QXcbConnection *connection, xcb_atom_t a, const QByteArray &data, const QString &format,
-                                        QMetaType::Type requestedType, bool hasUtf8);
-    static xcb_atom_t mimeAtomForFormat(QXcbConnection *connection, const QString &format, QMetaType::Type requestedType,
+                                        QMetaType requestedType, bool hasUtf8);
+    static xcb_atom_t mimeAtomForFormat(QXcbConnection *connection, const QString &format, QMetaType requestedType,
                                         const QList<xcb_atom_t> &atoms, bool *hasUtf8);
 };
 

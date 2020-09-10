@@ -332,7 +332,7 @@ QStringList QCocoaDropData::formats_sys() const
     return formats;
 }
 
-QVariant QCocoaDropData::retrieveData_sys(const QString &mimeType, QVariant::Type type) const
+QVariant QCocoaDropData::retrieveData_sys(const QString &mimeType, QMetaType type) const
 {
     QVariant data;
     PasteboardRef board;

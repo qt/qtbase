@@ -90,8 +90,7 @@ QStringList QWindowsInternalMimeData::formats_sys() const
     return fmts;
 }
 
-QVariant QWindowsInternalMimeData::retrieveData_sys(const QString &mimeType,
-                                                        QVariant::Type type) const
+QVariant QWindowsInternalMimeData::retrieveData_sys(const QString &mimeType, QMetaType type) const
 {
     IDataObject *pDataObj = retrieveDataObject();
     if (!pDataObj)
@@ -103,9 +102,9 @@ QVariant QWindowsInternalMimeData::retrieveData_sys(const QString &mimeType,
         result = converter->convertToMime(mimeType, pDataObj, type);
     releaseDataObject(pDataObj);
     if (QWindowsContext::verbose) {
-        qCDebug(lcQpaMime) <<__FUNCTION__ << ' '  << mimeType << ' ' << type
-            << " returns " << result.type()
-            << (result.type() != QVariant::ByteArray ? result.toString() : QStringLiteral("<data>"));
+        qCDebug(lcQpaMime) <<__FUNCTION__ << ' '  << mimeType << ' ' << type.name()
+            << " returns " << result.metaType().name()
+            << (result.userType() != QVariant::ByteArray ? result.toString() : QStringLiteral("<data>"));
     }
     return result;
 }

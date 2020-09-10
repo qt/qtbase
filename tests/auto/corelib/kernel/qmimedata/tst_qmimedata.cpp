@@ -325,9 +325,9 @@ void tst_QMimeData::setUrls() const
 
     // test and verify that setData doesn't corrupt url content
     foreach (const QString &format, mimeData.formats()) {
-         QVariant before = mimeData.retrieveData(format, QVariant::ByteArray);
+         QVariant before = mimeData.retrieveData(format, QMetaType(QMetaType::QByteArray));
          mimeData.setData(format, mimeData.data(format));
-         QVariant after = mimeData.retrieveData(format, QVariant::ByteArray);
+         QVariant after = mimeData.retrieveData(format, QMetaType(QMetaType::QByteArray));
          QCOMPARE(after, before);
      }
 

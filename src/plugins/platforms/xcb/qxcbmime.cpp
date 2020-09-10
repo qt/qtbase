@@ -158,14 +158,14 @@ QList<xcb_atom_t> QXcbMime::mimeAtomsForFormat(QXcbConnection *connection, const
 }
 
 QVariant QXcbMime::mimeConvertToFormat(QXcbConnection *connection, xcb_atom_t a, const QByteArray &d, const QString &format,
-                                       QMetaType::Type requestedType, bool hasUtf8)
+                                       QMetaType requestedType, bool hasUtf8)
 {
     QByteArray data = d;
     QString atomName = mimeAtomToString(connection, a);
 //    qDebug() << "mimeConvertDataToFormat" << format << atomName << data;
 
     if (hasUtf8 && atomName == format + QLatin1String(";charset=utf-8")) {
-        if (requestedType == QMetaType::QString)
+        if (requestedType.id() == QMetaType::QString)
             return QString::fromUtf8(data);
         return data;
     }
@@ -255,7 +255,7 @@ QVariant QXcbMime::mimeConvertToFormat(QXcbConnection *connection, xcb_atom_t a,
     return QVariant();
 }
 
-xcb_atom_t QXcbMime::mimeAtomForFormat(QXcbConnection *connection, const QString &format, QMetaType::Type requestedType,
+xcb_atom_t QXcbMime::mimeAtomForFormat(QXcbConnection *connection, const QString &format, QMetaType requestedType,
                                  const QList<xcb_atom_t> &atoms, bool *hasUtf8)
 {
     *hasUtf8 = false;
@@ -288,7 +288,7 @@ xcb_atom_t QXcbMime::mimeAtomForFormat(QXcbConnection *connection, const QString
 
     // for string/text requests try to use a format with a well-defined charset
     // first to avoid encoding problems
-    if (requestedType == QMetaType::QString
+    if (requestedType.id() == QMetaType::QString
         && format.startsWith(QLatin1String("text/"))
         && !format.contains(QLatin1String("charset="))) {
 

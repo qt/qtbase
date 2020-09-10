@@ -84,7 +84,7 @@ OSStatus PasteboardGetItemCountSafe(PasteboardRef paste, ItemCount *cnt)
 class QMacMimeData : public QMimeData
 {
 public:
-    QVariant variantData(const QString &mime) { return retrieveData(mime, QVariant::Invalid); }
+    QVariant variantData(const QString &mime) { return retrieveData(mime, QMetaType()); }
 private:
     QMacMimeData();
 };
@@ -313,7 +313,7 @@ public:
     QMacPasteboardMimeSource(const QMacPasteboard *p) : QMimeData(), paste(p) { }
     ~QMacPasteboardMimeSource() { }
     virtual QStringList formats() const { return paste->formats(); }
-    virtual QVariant retrieveData(const QString &format, QVariant::Type type) const { return paste->retrieveData(format, type); }
+    virtual QVariant retrieveData(const QString &format, QMetaType type) const { return paste->retrieveData(format, type); }
 };
 
 QMimeData
@@ -476,7 +476,7 @@ QMacPasteboard::hasFormat(const QString &format) const
 }
 
 QVariant
-QMacPasteboard::retrieveData(const QString &format, QVariant::Type) const
+QMacPasteboard::retrieveData(const QString &format, QMetaType) const
 {
     if (!paste)
         return QVariant();

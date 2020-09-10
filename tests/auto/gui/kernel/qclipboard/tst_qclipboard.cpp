@@ -473,7 +473,7 @@ public:
         return false;
     }
 
-    QVariant convertToMime(const QString &, IDataObject *, QVariant::Type) const override
+    QVariant convertToMime(const QString &, IDataObject *, QMetaType) const override
     {
         return QVariant();
     }

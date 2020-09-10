@@ -81,11 +81,11 @@ public:
     static QByteArray renderDataHelper(const QString &mimeType, const QMimeData *data);
 
 protected:
-    QVariant retrieveData(const QString &mimeType, QVariant::Type type) const override;
+    QVariant retrieveData(const QString &mimeType, QMetaType type) const override;
 
     virtual bool hasFormat_sys(const QString &mimeType) const = 0;
     virtual QStringList formats_sys() const = 0;
-    virtual QVariant retrieveData_sys(const QString &mimeType, QVariant::Type type) const = 0;
+    virtual QVariant retrieveData_sys(const QString &mimeType, QMetaType type) const = 0;
 };
 
 QT_END_NAMESPACE

@@ -112,9 +112,9 @@ public:
 protected:
     bool hasFormat_sys(const QString &mimeType) const override;
     QStringList formats_sys() const override;
-    QVariant retrieveData_sys(const QString &mimeType, QVariant::Type type) const override;
+    QVariant retrieveData_sys(const QString &mimeType, QMetaType type) const override;
 
-    QVariant xdndObtainData(const QByteArray &format, QMetaType::Type requestedType) const;
+    QVariant xdndObtainData(const QByteArray &format, QMetaType requestedType) const;
 
     QXcbDrag *drag;
 };
@@ -1342,14 +1342,14 @@ QXcbDropData::~QXcbDropData()
 {
 }
 
-QVariant QXcbDropData::retrieveData_sys(const QString &mimetype, QVariant::Type requestedType) const
+QVariant QXcbDropData::retrieveData_sys(const QString &mimetype, QMetaType requestedType) const
 {
     QByteArray mime = mimetype.toLatin1();
-    QVariant data = xdndObtainData(mime, QMetaType::Type(requestedType));
+    QVariant data = xdndObtainData(mime, requestedType);
     return data;
 }
 
-QVariant QXcbDropData::xdndObtainData(const QByteArray &format, QMetaType::Type requestedType) const
+QVariant QXcbDropData::xdndObtainData(const QByteArray &format, QMetaType requestedType) const
 {
     QByteArray result;
 

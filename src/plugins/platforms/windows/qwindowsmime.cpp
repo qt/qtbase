@@ -525,7 +525,7 @@ QDebug operator<<(QDebug d, IDataObject *dataObj)
 
 /*!
     \fn QVariant QWindowsMime::convertToMime(const QString &mimeType, IDataObject *pDataObj,
-                                             QVariant::Type preferredType) const
+                                             QMetaType preferredType) const
 
     Returns a QVariant containing the converted data for \a mimeType from \a pDataObj.
     If possible the QVariant should be of the \a preferredType to avoid needless conversions.
@@ -548,7 +548,7 @@ class QWindowsMimeText : public QPlatformInterface::Private::QWindowsMime
 {
 public:
     bool canConvertToMime(const QString &mimeType, IDataObject *pDataObj) const override;
-    QVariant convertToMime(const QString &mime, LPDATAOBJECT pDataObj, QVariant::Type preferredType) const override;
+    QVariant convertToMime(const QString &mime, LPDATAOBJECT pDataObj, QMetaType preferredType) const override;
     QString mimeForFormat(const FORMATETC &formatetc) const override;
     bool canConvertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData) const override;
     bool convertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData, STGMEDIUM *pmedium) const override;
@@ -664,7 +664,7 @@ QList<FORMATETC> QWindowsMimeText::formatsForMime(const QString &mimeType, const
     return formatics;
 }
 
-QVariant QWindowsMimeText::convertToMime(const QString &mime, LPDATAOBJECT pDataObj, QVariant::Type preferredType) const
+QVariant QWindowsMimeText::convertToMime(const QString &mime, LPDATAOBJECT pDataObj, QMetaType preferredType) const
 {
     QVariant ret;
 
@@ -691,7 +691,7 @@ QVariant QWindowsMimeText::convertToMime(const QString &mime, LPDATAOBJECT pData
                 str = QString::fromLocal8Bit(r);
             }
         }
-        if (preferredType == QVariant::String)
+        if (preferredType.id() == QMetaType::QString)
             ret = str;
         else
             ret = std::move(str).toUtf8();
@@ -705,7 +705,7 @@ class QWindowsMimeURI : public QPlatformInterface::Private::QWindowsMime
 public:
     QWindowsMimeURI();
     bool canConvertToMime(const QString &mimeType, IDataObject *pDataObj) const override;
-    QVariant convertToMime(const QString &mime, LPDATAOBJECT pDataObj, QVariant::Type preferredType) const override;
+    QVariant convertToMime(const QString &mime, LPDATAOBJECT pDataObj, QMetaType preferredType) const override;
     QString mimeForFormat(const FORMATETC &formatetc) const override;
     bool canConvertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData) const override;
     bool convertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData, STGMEDIUM *pmedium) const override;
@@ -819,7 +819,7 @@ QList<FORMATETC> QWindowsMimeURI::formatsForMime(const QString &mimeType, const 
     return formatics;
 }
 
-QVariant QWindowsMimeURI::convertToMime(const QString &mimeType, LPDATAOBJECT pDataObj, QVariant::Type preferredType) const
+QVariant QWindowsMimeURI::convertToMime(const QString &mimeType, LPDATAOBJECT pDataObj, QMetaType preferredType) const
 {
     if (mimeType == u"text/uri-list") {
         if (canGetData(CF_HDROP, pDataObj)) {
@@ -847,7 +847,7 @@ QVariant QWindowsMimeURI::convertToMime(const QString &mimeType, LPDATAOBJECT pD
                 }
             }
 
-            if (preferredType == QVariant::Url && urls.size() == 1)
+            if (preferredType.id() == QMetaType::QUrl && urls.size() == 1)
                 return urls.at(0);
             if (!urls.isEmpty())
                 return urls;
@@ -878,7 +878,7 @@ public:
 
     // for converting to Qt
     bool canConvertToMime(const QString &mimeType, IDataObject *pDataObj) const override;
-    QVariant convertToMime(const QString &mime, IDataObject *pDataObj, QVariant::Type preferredType) const override;
+    QVariant convertToMime(const QString &mime, IDataObject *pDataObj, QMetaType preferredType) const override;
     QString mimeForFormat(const FORMATETC &formatetc) const override;
 
 private:
@@ -928,7 +928,7 @@ in bytes). Charset used is mostly utf8, but can be different, ie. we have to loo
   ...html...
 
 */
-QVariant QWindowsMimeHtml::convertToMime(const QString &mime, IDataObject *pDataObj, QVariant::Type preferredType) const
+QVariant QWindowsMimeHtml::convertToMime(const QString &mime, IDataObject *pDataObj, QMetaType preferredType) const
 {
     Q_UNUSED(preferredType);
     QVariant result;
@@ -1015,7 +1015,7 @@ public:
 
     // for converting to Qt
     bool canConvertToMime(const QString &mimeType, IDataObject *pDataObj) const override;
-    QVariant convertToMime(const QString &mime, IDataObject *pDataObj, QVariant::Type preferredType) const override;
+    QVariant convertToMime(const QString &mime, IDataObject *pDataObj, QMetaType preferredType) const override;
     QString mimeForFormat(const FORMATETC &formatetc) const override;
 private:
     bool hasOriginalDIBV5(IDataObject *pDataObj) const;
@@ -1122,7 +1122,7 @@ bool QWindowsMimeImage::hasOriginalDIBV5(IDataObject *pDataObj) const
     return !isSynthesized;
 }
 
-QVariant QWindowsMimeImage::convertToMime(const QString &mimeType, IDataObject *pDataObj, QVariant::Type preferredType) const
+QVariant QWindowsMimeImage::convertToMime(const QString &mimeType, IDataObject *pDataObj, QMetaType preferredType) const
 {
     Q_UNUSED(preferredType);
     QVariant result;
@@ -1170,7 +1170,7 @@ public:
 
     // for converting to Qt
     bool canConvertToMime(const QString &mimeType, IDataObject *pDataObj) const override;
-    QVariant convertToMime(const QString &mime, IDataObject *pDataObj, QVariant::Type preferredType) const override;
+    QVariant convertToMime(const QString &mime, IDataObject *pDataObj, QMetaType preferredType) const override;
     QString mimeForFormat(const FORMATETC &formatetc) const override;
 
 private:
@@ -1255,14 +1255,14 @@ bool QBuiltInMimes::canConvertToMime(const QString &mimeType, IDataObject *pData
     return mit != inFormats.cend() && canGetData(mit.key(), pDataObj);
 }
 
-QVariant QBuiltInMimes::convertToMime(const QString &mimeType, IDataObject *pDataObj, QVariant::Type preferredType) const
+QVariant QBuiltInMimes::convertToMime(const QString &mimeType, IDataObject *pDataObj, QMetaType preferredType) const
 {
     QVariant val;
     if (canConvertToMime(mimeType, pDataObj)) {
         QByteArray data = getData(inFormats.key(mimeType), pDataObj);
         if (!data.isEmpty()) {
             qCDebug(lcQpaMime) << __FUNCTION__;
-            if (mimeType == u"text/html" && preferredType == QVariant::String) {
+            if (mimeType == u"text/html" && preferredType == QMetaType(QMetaType::QString)) {
                 // text/html is in wide chars on windows (compatible with Mozilla)
                 val = QString::fromWCharArray(reinterpret_cast<const wchar_t *>(data.constData()));
             } else {
@@ -1291,7 +1291,7 @@ public:
 
     // for converting to Qt
     bool canConvertToMime(const QString &mimeType, IDataObject *pDataObj) const override;
-    QVariant convertToMime(const QString &mime, IDataObject *pDataObj, QVariant::Type preferredType) const override;
+    QVariant convertToMime(const QString &mime, IDataObject *pDataObj, QMetaType preferredType) const override;
     QString mimeForFormat(const FORMATETC &formatetc) const override;
 
 private:
@@ -1411,7 +1411,7 @@ bool QLastResortMimes::canConvertToMime(const QString &mimeType, IDataObject *pD
     return canGetData(cf, pDataObj);
 }
 
-QVariant QLastResortMimes::convertToMime(const QString &mimeType, IDataObject *pDataObj, QVariant::Type preferredType) const
+QVariant QLastResortMimes::convertToMime(const QString &mimeType, IDataObject *pDataObj, QMetaType preferredType) const
 {
     Q_UNUSED(preferredType);
     QVariant val;
@@ -1572,7 +1572,7 @@ QString QWindowsMimeConverter::clipboardFormatName(int cf)
 
 QVariant QWindowsMimeConverter::convertToMime(const QStringList &mimeTypes,
                                               IDataObject *pDataObj,
-                                              QVariant::Type preferredType,
+                                              QMetaType preferredType,
                                               QString *formatIn /* = 0 */) const
 {
     for (const QString &format : mimeTypes) {
@@ -1589,7 +1589,7 @@ QVariant QWindowsMimeConverter::convertToMime(const QStringList &mimeTypes,
             }
         }
     }
-    qCDebug(lcQpaMime) << __FUNCTION__ << "fails" << mimeTypes << pDataObj << preferredType;
+    qCDebug(lcQpaMime) << __FUNCTION__ << "fails" << mimeTypes << pDataObj << preferredType.id();
     return QVariant();
 }
 

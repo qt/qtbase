@@ -33,6 +33,11 @@ qt_add_resource(tst_qvariant "qvariant"
 ## Scopes:
 #####################################################################
 
+qt_extend_target(tst_qmetatype CONDITION MSVC
+    COMPILE_OPTIONS
+        /bigobj
+)
+
 qt_extend_target(tst_qvariant CONDITION NOT QT_FEATURE_doubleconversion AND NOT QT_FEATURE_system_doubleconversion
     DEFINES
         QT_NO_DOUBLECONVERSION

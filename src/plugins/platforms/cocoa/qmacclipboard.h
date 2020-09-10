@@ -92,7 +92,7 @@ public:
 
     QStringList formats() const;
     bool hasFormat(const QString &format) const;
-    QVariant retrieveData(const QString &format, QVariant::Type) const;
+    QVariant retrieveData(const QString &format, QMetaType) const;
 
     void clear();
     bool sync() const;
