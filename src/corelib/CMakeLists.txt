@@ -93,6 +93,7 @@ qt_add_module(Core
         itemmodels/qitemselectionmodel.cpp itemmodels/qitemselectionmodel.h itemmodels/qitemselectionmodel_p.h
         kernel/qabstracteventdispatcher.cpp kernel/qabstracteventdispatcher.h kernel/qabstracteventdispatcher_p.h
         kernel/qabstractnativeeventfilter.cpp kernel/qabstractnativeeventfilter.h
+        kernel/qassociativeiterable.cpp kernel/qassociativeiterable.h
         kernel/qbasictimer.cpp kernel/qbasictimer.h
         kernel/qcoreapplication.cpp kernel/qcoreapplication.h kernel/qcoreapplication_p.h
         kernel/qcorecmdlineargs_p.h
@@ -102,7 +103,7 @@ qt_add_module(Core
         kernel/qelapsedtimer.cpp kernel/qelapsedtimer.h
         kernel/qeventloop.cpp kernel/qeventloop.h
         kernel/qfunctions_p.h
-        kernel/qiterable.cpp kernel/qiterable.h
+        kernel/qiterable.cpp kernel/qiterable.h kernel/qiterable_p.cpp kernel/qiterable_p.h
         kernel/qmath.cpp kernel/qmath.h
         kernel/qmetacontainer.cpp kernel/qmetacontainer.h
         kernel/qmetaobject.cpp kernel/qmetaobject.h kernel/qmetaobject_p.h
@@ -118,6 +119,7 @@ qt_add_module(Core
         kernel/qpointer.cpp kernel/qpointer.h
         kernel/qproperty.cpp kernel/qproperty.h kernel/qproperty_p.h
         kernel/qpropertyprivate.h
+        kernel/qsequentialiterable.cpp kernel/qsequentialiterable.h
         kernel/qsharedmemory.cpp kernel/qsharedmemory.h kernel/qsharedmemory_p.h
         kernel/qsignalmapper.cpp kernel/qsignalmapper.h
         kernel/qsocketnotifier.cpp kernel/qsocketnotifier.h

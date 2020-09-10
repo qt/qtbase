@@ -580,61 +580,6 @@ inline bool operator!=(const QVariant &v1, const QVariantComparisonHelper &v2)
 #endif
 Q_DECLARE_SHARED(QVariant)
 
-class Q_CORE_EXPORT QAssociativeIterable
-{
-    QtMetaTypePrivate::QAssociativeIterableImpl m_impl;
-public:
-    struct Q_CORE_EXPORT const_iterator
-    {
-    private:
-        QtMetaTypePrivate::QAssociativeIterableImpl m_impl;
-        QAtomicInt *ref;
-        friend class QAssociativeIterable;
-        explicit const_iterator(const QAssociativeIterable &iter, QAtomicInt *ref_);
-
-        explicit const_iterator(const QtMetaTypePrivate::QAssociativeIterableImpl &impl, QAtomicInt *ref_);
-
-        void begin();
-        void end();
-        void find(const QVariant &key);
-    public:
-        ~const_iterator();
-        const_iterator(const const_iterator &other);
-
-        const_iterator& operator=(const const_iterator &other);
-
-        const QVariant key() const;
-
-        const QVariant value() const;
-
-        const QVariant operator*() const;
-        bool operator==(const const_iterator &o) const;
-        bool operator!=(const const_iterator &o) const;
-        const_iterator &operator++();
-        const_iterator operator++(int);
-        const_iterator &operator--();
-        const_iterator operator--(int);
-        const_iterator &operator+=(int j);
-        const_iterator &operator-=(int j);
-        const_iterator operator+(int j) const;
-        const_iterator operator-(int j) const;
-        friend inline const_iterator operator+(int j, const const_iterator &k) { return k + j; }
-    };
-
-    friend struct const_iterator;
-
-    explicit QAssociativeIterable(const QtMetaTypePrivate::QAssociativeIterableImpl &impl);
-    QAssociativeIterable() {}
-
-    const_iterator begin() const;
-    const_iterator end() const;
-    const_iterator find(const QVariant &key) const;
-
-    QVariant value(const QVariant &key) const;
-
-    int size() const;
-};
-
 #ifndef QT_MOC
 
 template<typename T> inline T qvariant_cast(const QVariant &v)

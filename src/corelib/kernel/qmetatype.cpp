@@ -54,7 +54,6 @@
 #include "quuid.h"
 #include "qvariant.h"
 #include "qdatastream.h"
-#include "qiterable.h"
 
 #if QT_CONFIG(regularexpression)
 #  include "qregularexpression.h"
@@ -73,6 +72,8 @@
 #  include "qcbormap.h"
 #  include "qbytearraylist.h"
 #  include "qmetaobject.h"
+#  include "qsequentialiterable.h"
+#  include "qassociativeiterable.h"
 #endif
 
 #if QT_CONFIG(itemmodel)
@@ -1829,11 +1830,12 @@ static bool convertToEnum(QMetaType fromType, const void *from, QMetaType toType
     }
 }
 
+#ifndef QT_BOOTSTRAPPED
 static bool convertIterableToVariantList(QMetaType fromType, const void *from, void *to)
 {
     const QMetaType::ConverterFunction * const f =
-        customTypesConversionRegistry()->function(qMakePair(fromType.id(),
-                                                            qMetaTypeId<QSequentialIterable>()));
+        customTypesConversionRegistry()->function(
+                qMakePair(fromType.id(), qMetaTypeId<QIterable<QMetaSequence>>()));
     if (!f)
         return false;
 
@@ -1851,14 +1853,13 @@ static bool convertIterableToVariantList(QMetaType fromType, const void *from, v
 static bool convertIterableToVariantMap(QMetaType fromType, const void *from, void *to)
 {
     const QMetaType::ConverterFunction * const f =
-        customTypesConversionRegistry()->function(qMakePair(fromType.id(),
-                                                            qMetaTypeId<QtMetaTypePrivate::QAssociativeIterableImpl>()));
+        customTypesConversionRegistry()->function(
+                qMakePair(fromType.id(), qMetaTypeId<QIterable<QMetaAssociation>>()));
     if (!f)
         return false;
 
-    QtMetaTypePrivate::QAssociativeIterableImpl iter;
-    (*f)(from, &iter);
-    QAssociativeIterable map(iter);
+    QAssociativeIterable map;
+    (*f)(from, &map);
     QVariantMap &h = *static_cast<QVariantMap *>(to);
     h.clear();
     auto end = map.end();
@@ -1870,14 +1871,13 @@ static bool convertIterableToVariantMap(QMetaType fromType, const void *from, vo
 static bool convertIterableToVariantHash(QMetaType fromType, const void *from, void *to)
 {
     const QMetaType::ConverterFunction * const f =
-        customTypesConversionRegistry()->function(qMakePair(fromType.id(),
-                                                            qMetaTypeId<QtMetaTypePrivate::QAssociativeIterableImpl>()));
+        customTypesConversionRegistry()->function(
+                qMakePair(fromType.id(), qMetaTypeId<QIterable<QMetaAssociation>>()));
     if (!f)
         return false;
 
-    QtMetaTypePrivate::QAssociativeIterableImpl iter;
-    (*f)(from, &iter);
-    QAssociativeIterable map(iter);
+    QAssociativeIterable map;
+    (*f)(from, &map);
     QVariantHash &h = *static_cast<QVariantHash *>(to);
     h.clear();
     h.reserve(map.size());
@@ -1886,6 +1886,7 @@ static bool convertIterableToVariantHash(QMetaType fromType, const void *from, v
         h.insert(it.key().toString(), it.value());
     return true;
 }
+#endif
 
 static bool convertIterableToVariantPair(QMetaType fromType, const void *from, void *to)
 {
@@ -1917,6 +1918,7 @@ static bool convertIterableToVariantPair(QMetaType fromType, const void *from, v
     return true;
 }
 
+#ifndef QT_BOOTSTRAPPED
 static bool convertToSequentialIterable(QMetaType fromType, const void *from, void *to)
 {
     using namespace QtMetaTypePrivate;
@@ -1935,6 +1937,14 @@ static bool convertToSequentialIterable(QMetaType fromType, const void *from, vo
         i = QSequentialIterable(reinterpret_cast<const QByteArrayList *>(from));
         return true;
     }
+
+    QSequentialIterable impl;
+    if (QMetaType::convert(
+                fromType, from, QMetaType::fromType<QIterable<QMetaSequence>>(), &impl)) {
+        i = std::move(impl);
+        return true;
+    }
+
     return false;
 }
 
@@ -1944,23 +1954,24 @@ static bool convertToAssociativeIterable(QMetaType fromType, const void *from, v
 
     QAssociativeIterable &i = *static_cast<QAssociativeIterable *>(to);
     if (fromType.id() == QMetaType::QVariantMap) {
-        i = QAssociativeIterable(QAssociativeIterableImpl(reinterpret_cast<const QVariantMap *>(from)));
+        i = QAssociativeIterable(reinterpret_cast<const QVariantMap *>(from));
         return true;
     }
     if (fromType.id() == QMetaType::QVariantHash) {
-        i = QAssociativeIterable(QAssociativeIterableImpl(reinterpret_cast<const QVariantHash *>(from)));
+        i = QAssociativeIterable(reinterpret_cast<const QVariantHash *>(from));
         return true;
     }
-    QAssociativeIterableImpl impl;
-    if (QMetaType::convert(fromType, from, QMetaType::fromType<QtMetaTypePrivate::QAssociativeIterableImpl>(), &impl)) {
-        i = QAssociativeIterable(impl);
+
+    QAssociativeIterable impl;
+    if (QMetaType::convert(
+                fromType, from, QMetaType::fromType<QIterable<QMetaAssociation>>(), &impl)) {
+        i = std::move(impl);
         return true;
     }
+
     return false;
 }
 
-
-#ifndef QT_BOOTSTRAPPED
 static bool canConvertMetaObject(QMetaType fromType, QMetaType toType)
 {
     const QMetaObject *f = fromType.metaObject();
@@ -2022,6 +2033,10 @@ bool QMetaType::convert(QMetaType fromType, const void *from, QMetaType toType, 
         }
     }
 
+    if (toTypeId == QVariantPair && convertIterableToVariantPair(fromType, from, to))
+        return true;
+
+#ifndef QT_BOOTSTRAPPED
     // handle iterables
     if (toTypeId == QVariantList && convertIterableToVariantList(fromType, from, to))
         return true;
@@ -2032,16 +2047,12 @@ bool QMetaType::convert(QMetaType fromType, const void *from, QMetaType toType, 
     if (toTypeId == QVariantHash && convertIterableToVariantHash(fromType, from, to))
         return true;
 
-    if (toTypeId == QVariantPair && convertIterableToVariantPair(fromType, from, to))
-        return true;
-
     if (toTypeId == qMetaTypeId<QSequentialIterable>())
         return convertToSequentialIterable(fromType, from, to);
 
     if (toTypeId == qMetaTypeId<QAssociativeIterable>())
         return convertToAssociativeIterable(fromType, from, to);
 
-#ifndef QT_BOOTSTRAPPED
     // handle QObject conversion
     if ((fromType.flags() & QMetaType::PointerToQObject) && (toType.flags() & QMetaType::PointerToQObject)) {
         QObject *fromObject = *static_cast<QObject * const *>(from);
@@ -2153,13 +2164,15 @@ bool QMetaType::canConvert(QMetaType fromType, QMetaType toType)
     if (f)
         return true;
 
+#ifndef QT_BOOTSTRAPPED
     if (toTypeId == QVariantList && hasRegisteredConverterFunction(
-                    fromTypeId, qMetaTypeId<QSequentialIterable>()))
+                    fromTypeId, qMetaTypeId<QIterable<QMetaSequence>>()))
         return true;
 
     if ((toTypeId == QVariantHash || toTypeId == QVariantMap) && hasRegisteredConverterFunction(
-                    fromTypeId, qMetaTypeId<QtMetaTypePrivate::QAssociativeIterableImpl>()))
+                    fromTypeId, qMetaTypeId<QIterable<QMetaAssociation>>()))
         return true;
+#endif
 
     if (toTypeId == QVariantPair && hasRegisteredConverterFunction(
                     fromTypeId, qMetaTypeId<QtMetaTypePrivate::QPairVariantInterfaceImpl>()))

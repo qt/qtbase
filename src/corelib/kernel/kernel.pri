@@ -36,6 +36,9 @@ HEADERS += \
         kernel/qobject_p.h \
         kernel/qcoreglobaldata_p.h \
         kernel/qiterable.h \
+        kernel/qiterable_p.h \
+        kernel/qsequentialiterable.h \
+        kernel/qassociativeiterable.h \
         kernel/qsharedmemory.h \
         kernel/qsharedmemory_p.h \
         kernel/qsystemsemaphore.h \
@@ -72,6 +75,9 @@ SOURCES += \
         kernel/qvariant.cpp \
         kernel/qcoreglobaldata.cpp \
         kernel/qiterable.cpp \
+        kernel/qiterable_p.cpp \
+        kernel/qsequentialiterable.cpp \
+        kernel/qassociativeiterable.cpp \
         kernel/qsharedmemory.cpp \
         kernel/qsystemsemaphore.cpp \
         kernel/qpointer.cpp \

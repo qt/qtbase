@@ -38,6 +38,8 @@ struct ForwardDeclaredParam;
 template <typename T> class ForwardDeclaredContainer;
 
 struct FullyDefined {};
+inline size_t qHash(const FullyDefined &, size_t seed = 0) { return seed; }
+inline bool operator==(const FullyDefined &, const FullyDefined &) { return true; }
 Q_DECLARE_METATYPE(FullyDefined)
 
 class ForwardDeclaredParamClass : public QObject
