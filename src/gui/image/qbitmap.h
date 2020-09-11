@@ -56,14 +56,6 @@ public:
     QBitmap(int w, int h);
     explicit QBitmap(const QSize &);
     explicit QBitmap(const QString &fileName, const char *format = nullptr);
-    // ### Qt 6: don't inherit QPixmap
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    QBitmap(const QBitmap &other) : QPixmap(other) {}
-    // QBitmap(QBitmap &&other) : QPixmap(std::move(other)) {} // QPixmap doesn't, yet, have a move ctor
-    QBitmap &operator=(const QBitmap &other) { QPixmap::operator=(other); return *this; }
-    QBitmap &operator=(QBitmap &&other) noexcept { QPixmap::operator=(std::move(other)); return *this; }
-    ~QBitmap();
-#endif
 
     QBitmap &operator=(const QPixmap &);
     inline void swap(QBitmap &other) { QPixmap::swap(other); } // prevent QBitmap<->QPixmap swaps
