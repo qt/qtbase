@@ -20,7 +20,16 @@ CONFIG += plugin no_plugin_name_prefix
 javac.input = JAVASOURCES
 javac.output = $$CLASS_DIR
 javac.CONFIG += combine
-javac.commands = javac -source 7 -target 7 -Xlint:unchecked -bootclasspath $$ANDROID_JAR_FILE -cp $$shell_quote($$system_path($$join(JAVACLASSPATH, $$DIRLIST_SEPARATOR))) -d $$shell_quote($$CLASS_DIR) ${QMAKE_FILE_IN}
+
+# Check for user defined javac build version
+javac_target_version = $$ANDROID_JAVAC_TARGET_VERSION
+isEmpty(javac_target_version): javac_target_version = 7
+
+javac_source_version = $$ANDROID_JAVAC_SOURCE_VERSION
+isEmpty(javac_source_version): javac_source_version = 7
+
+javac.commands = javac -source $$javac_source_version -target $$javac_target_version -Xlint:unchecked -bootclasspath $$ANDROID_JAR_FILE -cp $$shell_quote($$system_path($$join(JAVACLASSPATH, $$DIRLIST_SEPARATOR))) -d $$shell_quote($$CLASS_DIR) ${QMAKE_FILE_IN}
+
 # Force rebuild every time, because we don't know the paths of the destination files
 # as they depend on the code.
 javac.depends = FORCE
