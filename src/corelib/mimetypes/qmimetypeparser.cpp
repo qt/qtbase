@@ -63,6 +63,7 @@ static const char genericIconTagC[] = "generic-icon";
 static const char iconTagC[] = "icon";
 static const char nameAttributeC[] = "name";
 static const char globTagC[] = "glob";
+static const char globDeleteAllTagC[] = "glob-deleteall";
 static const char aliasTagC[] = "alias";
 static const char patternAttributeC[] = "pattern";
 static const char weightAttributeC[] = "weight";
@@ -123,6 +124,7 @@ QMimeTypeParserBase::ParseState QMimeTypeParserBase::nextState(ParseState curren
     case ParseGenericIcon:
     case ParseIcon:
     case ParseGlobPattern:
+    case ParseGlobDeleteAll:
     case ParseSubClass:
     case ParseAlias:
     case ParseOtherMimeTypeSubTag:
@@ -137,6 +139,8 @@ QMimeTypeParserBase::ParseState QMimeTypeParserBase::nextState(ParseState curren
             return ParseIcon;
         if (startElement == QLatin1String(globTagC))
             return ParseGlobPattern;
+        if (startElement == QLatin1String(globDeleteAllTagC))
+            return ParseGlobDeleteAll;
         if (startElement == QLatin1String(subClassTagC))
             return ParseSubClass;
         if (startElement == QLatin1String(aliasTagC))
@@ -241,6 +245,9 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
                     return false;
                 data.addGlobPattern(pattern); // just for QMimeType::globPatterns()
             }
+                break;
+            case ParseGlobDeleteAll:
+                data.globPatterns.clear();
                 break;
             case ParseSubClass: {
                 const QString inheritsFrom = atts.value(QLatin1String(mimeTypeAttributeC)).toString();
