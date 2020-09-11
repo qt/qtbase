@@ -419,6 +419,9 @@ static void getAddresses(int sock, char *buf, QList<QNetworkInterfacePrivate *> 
             }
         }
 
+        if (ifa->ifa_family == AF_INET6 && (ifa->ifa_flags & IFA_F_DADFAILED))
+            return;
+
         // now handle flags
         QNetworkInterfacePrivate::calculateDnsEligibility(&entry,
                                                           flags & IFA_F_TEMPORARY,
