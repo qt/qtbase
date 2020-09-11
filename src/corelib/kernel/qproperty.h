@@ -834,7 +834,7 @@ public:
     {}
 #else
     template <typename Functor>
-    explicit QProperty(Functor &&f);
+    explicit QObjectBindableProperty(Functor &&f);
 #endif
 
     parameter_type value() const {
