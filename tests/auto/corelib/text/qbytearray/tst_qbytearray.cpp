@@ -235,9 +235,9 @@ void tst_QByteArray::qChecksum()
 
     QCOMPARE(data.length(), int(len));
     if (standard == Qt::ChecksumIso3309) {
-        QCOMPARE(::qChecksum(data.constData(), len), static_cast<quint16>(checksum));
+        QCOMPARE(::qChecksum(QByteArrayView(data.constData(), len)), static_cast<quint16>(checksum));
     }
-    QCOMPARE(::qChecksum(data.constData(), len, standard), static_cast<quint16>(checksum));
+    QCOMPARE(::qChecksum(QByteArrayView(data.constData(), len), standard), static_cast<quint16>(checksum));
 }
 
 void tst_QByteArray::qCompress_data()

@@ -130,7 +130,7 @@ void tst_Lancelot::initTestCase()
         file.open(QFile::ReadOnly);
         QByteArray cont = file.readAll();
         scripts.insert(fileName, QString::fromUtf8(cont).split(QLatin1Char('\n'), Qt::SkipEmptyParts));
-        scriptChecksums.insert(fileName, qChecksum(cont.constData(), cont.size()));
+        scriptChecksums.insert(fileName, qChecksum(cont));
     }
 }
 
