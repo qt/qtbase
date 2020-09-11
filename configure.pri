@@ -629,12 +629,17 @@ defineTest(qtConfOutput_prepareOptions) {
         isEmpty(platform): \
             platform = android-21
 
+        android_javac_target = $$eval(config.input.android-javac-target)
+        android_javac_source = $$eval(config.input.android-javac-source)
+
         $${currentConfig}.output.devicePro += \
             "DEFAULT_ANDROID_SDK_ROOT = $$val_escape(sdk_root)" \
             "DEFAULT_ANDROID_NDK_ROOT = $$val_escape(ndk_root)" \
             "DEFAULT_ANDROID_PLATFORM = $$platform" \
             "DEFAULT_ANDROID_NDK_HOST = $$ndk_host" \
-            "DEFAULT_ANDROID_ABIS = $$split(android_abis, ',')"
+            "DEFAULT_ANDROID_ABIS = $$split(android_abis, ',')" \
+            "ANDROID_JAVAC_TARGET_VERSION = $$android_javac_target" \
+            "ANDROID_JAVAC_SOURCE_VERSION = $$android_javac_source"
     }
 
     export($${currentConfig}.output.devicePro)

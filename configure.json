@@ -56,6 +56,8 @@
             "android-ndk-host": "string",
             "android-ndk-platform": "string",
             "android-sdk": "string",
+            "android-javac-target": "string",
+            "android-javac-source": "string",
 
             "android-style-assets": "boolean",
             "appstore-compliant": "boolean",
