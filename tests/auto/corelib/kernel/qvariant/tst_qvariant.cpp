@@ -169,6 +169,7 @@ private slots:
     void qvariant_cast_QObject_derived();
     void qvariant_cast_QObject_wrapper();
     void qvariant_cast_QSharedPointerQObject();
+    void qvariant_cast_const();
 
     void toLocale();
 
@@ -2577,6 +2578,17 @@ void tst_QVariant::qvariant_cast_QSharedPointerQObject()
     // compile test:
     // QVariant::fromValue has already called this function
     qRegisterMetaType<QSharedPointer<QObject> >();
+}
+
+void tst_QVariant::qvariant_cast_const()
+{
+    int i = 42;
+    QVariant v = QVariant::fromValue(&i);
+    QVariant vConst = QVariant::fromValue(const_cast<const int*>(&i));
+    QCOMPARE(v.value<int *>(), &i);
+    QCOMPARE(v.value<const int *>(), &i);
+    QCOMPARE(vConst.value<int *>(), nullptr);
+    QCOMPARE(vConst.value<const int *>(), &i);
 }
 
 void tst_QVariant::convertToQUint8() const

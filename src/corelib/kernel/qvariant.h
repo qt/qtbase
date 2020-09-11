@@ -53,6 +53,7 @@
 #include <QtCore/qbytearraylist.h>
 #endif
 #include <memory>
+#include <type_traits>
 
 #if __has_include(<variant>) && __cplusplus >= 201703L
 #include <variant>
@@ -572,6 +573,12 @@ template<typename T> inline T qvariant_cast(const QVariant &v)
     QMetaType targetType = QMetaType::fromType<T>();
     if (v.d.type() == targetType)
         return v.d.get<T>();
+    if constexpr (std::is_same_v<T,std::remove_const_t<std::remove_pointer_t<T>> const *>) {
+        using nonConstT = std::remove_const_t<std::remove_pointer_t<T>> *;
+        QMetaType nonConstTargetType = QMetaType::fromType<nonConstT>();
+        if (v.d.type() == nonConstTargetType)
+            return v.d.get<nonConstT>();
+    }
 
     T t{};
     QMetaType::convert(v.metaType(), v.constData(), targetType, &t);
