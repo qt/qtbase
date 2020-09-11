@@ -426,7 +426,7 @@ bool QPagedPaintDevice::setPageSize(const QPageSize &pageSize)
     You should not call any painting methods between a call to setPageOrientation()
     and newPage() as the wrong paint metrics may be used.
 
-    To get the current QPageLayout::Orientation use pageLayout().pageOrientation().
+    To get the current QPageLayout::Orientation use pageLayout().orientation().
 
     Returns true if the page orientation was successfully set to \a orientation.
 
