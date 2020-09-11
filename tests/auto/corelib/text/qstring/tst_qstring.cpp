@@ -6010,10 +6010,10 @@ void tst_QString::compare()
     QCOMPARE(sign(s1.compare(s2, Qt::CaseInsensitive)), cir);
     QCOMPARE(sign(s1.compare(v2, Qt::CaseSensitive)), csr);
     QCOMPARE(sign(s1.compare(v2, Qt::CaseInsensitive)), cir);
-    QCOMPARE(sign(QtPrivate::compareStringsUtf8(s1_8, s1_8.size(), v2, Qt::CaseSensitive)), csr);
-    QCOMPARE(sign(QtPrivate::compareStringsUtf8(s1_8, s1_8.size(), v2, Qt::CaseInsensitive)), cir);
-    QCOMPARE(sign(QtPrivate::compareStringsUtf8(s2_8, s2_8.size(), v1, Qt::CaseSensitive)), -csr);
-    QCOMPARE(sign(QtPrivate::compareStringsUtf8(s2_8, s2_8.size(), v1, Qt::CaseInsensitive)), -cir);
+    QCOMPARE(sign(QtPrivate::compareStrings(QUtf8StringView(s1_8), v2, Qt::CaseSensitive)), csr);
+    QCOMPARE(sign(QtPrivate::compareStrings(QUtf8StringView(s1_8), v2, Qt::CaseInsensitive)), cir);
+    QCOMPARE(sign(QtPrivate::compareStrings(QUtf8StringView(s2_8), v1, Qt::CaseSensitive)), -csr);
+    QCOMPARE(sign(QtPrivate::compareStrings(QUtf8StringView(s2_8), v1, Qt::CaseInsensitive)), -cir);
 
     QCOMPARE(sign(QString::compare(s1, s2, Qt::CaseSensitive)), csr);
     QCOMPARE(sign(QString::compare(s1, s2, Qt::CaseInsensitive)), cir);

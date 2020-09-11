@@ -80,12 +80,6 @@ namespace QtPrivate {
 template <bool...B> class BoolList;
 }
 
-// QStringAlgorithms inline functions:
-
-int QtPrivate::compareStringsUtf8(const char *lhs, qsizetype lhss, QStringView rhs, Qt::CaseSensitivity cs) noexcept
-{ return compareStrings(QUtf8StringView(lhs, lhss), rhs, cs); }
-
-
 class QLatin1String
 {
 public:
