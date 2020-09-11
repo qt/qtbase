@@ -57,6 +57,7 @@ class QImageReader;
 class QColor;
 class QVariant;
 class QPlatformPixmap;
+template<> Q_GUI_EXPORT QExplicitlySharedDataPointer<QPlatformPixmap>::~QExplicitlySharedDataPointer();
 
 class Q_GUI_EXPORT QPixmap : public QPaintDevice
 {
@@ -70,6 +71,7 @@ public:
     explicit QPixmap(const char * const xpm[]);
 #endif
     QPixmap(const QPixmap &);
+    QPixmap(QPixmap &&other) noexcept : QPaintDevice(), data(std::move(other.data)) {}
     ~QPixmap();
 
     QPixmap &operator=(const QPixmap &);

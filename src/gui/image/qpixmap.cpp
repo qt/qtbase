@@ -224,6 +224,15 @@ QPixmap::QPixmap(const QPixmap &pixmap)
     }
 }
 
+/*! \fn QPixmap::QPixmap(QPixmap &&other)
+    Move-constructs a QPixmap instance from \a other.
+
+    \sa swap() operator=(QPixmap&&)
+*/
+template<>
+QExplicitlySharedDataPointer<QPlatformPixmap>::~QExplicitlySharedDataPointer()
+{ if (d && !d->ref.deref()) delete d; }
+
 /*!
     Constructs a pixmap from the given \a xpm data, which must be a
     valid XPM image.
