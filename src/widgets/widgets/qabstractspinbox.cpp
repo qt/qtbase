@@ -1678,12 +1678,12 @@ void QAbstractSpinBoxPrivate::updateState(bool up, bool fromKeyboard /* = false 
     reset();
     if (q && (q->stepEnabled() & (up ? QAbstractSpinBox::StepUpEnabled
                                   : QAbstractSpinBox::StepDownEnabled))) {
-        spinClickThresholdTimerId = q->startTimer(spinClickThresholdTimerInterval);
         buttonState = (up ? Up : Down) | (fromKeyboard ? Keyboard : Mouse);
         int steps = up ? 1 : -1;
         if (QGuiApplication::keyboardModifiers() & stepModifier)
             steps *= 10;
         q->stepBy(steps);
+        spinClickThresholdTimerId = q->startTimer(spinClickThresholdTimerInterval);
 #ifndef QT_NO_ACCESSIBILITY
         QAccessibleValueChangeEvent event(q, value);
         QAccessible::updateAccessibility(&event);
