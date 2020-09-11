@@ -556,6 +556,8 @@ endif()
 translate_string_input(platform QT_QMAKE_TARGET_MKSPEC)
 translate_string_input(xplatform QT_QMAKE_TARGET_MKSPEC)
 translate_string_input(qpa_default_platform QT_QPA_DEFAULT_PLATFORM)
+translate_string_input(android-javac-source QT_ANDROID_JAVAC_SOURCE)
+translate_string_input(android-javac-target QT_ANDROID_JAVAC_TARGET)
 
 drop_input(make)
 drop_input(nomake)

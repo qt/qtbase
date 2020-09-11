@@ -3532,7 +3532,7 @@ def write_jar(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
         cm_fh, scope, "", ["JAVASOURCES"], indent=indent, header=f"set(java_sources\n", footer=")\n"
     )
 
-    cm_fh.write(f"{spaces(indent)}add_jar({target}\n")
+    cm_fh.write(f"{spaces(indent)}qt_internal_add_jar({target}\n")
     cm_fh.write(f"{spaces(indent+1)}INCLUDE_JARS {android_sdk_jar}\n")
     cm_fh.write(f"{spaces(indent+1)}SOURCES ${{java_sources}}\n")
     cm_fh.write(f'{spaces(indent+1)}OUTPUT_DIR "${{QT_BUILD_DIR}}/{install_dir}"\n')

@@ -18,7 +18,7 @@ set(java_sources
     src/org/qtproject/qt5/android//QtThread.java
 )
 
-add_jar(QtAndroid
+qt_internal_add_jar(QtAndroid
     INCLUDE_JARS ${QT_ANDROID_JAR}
     SOURCES ${java_sources}
     OUTPUT_DIR "${QT_BUILD_DIR}/jar"

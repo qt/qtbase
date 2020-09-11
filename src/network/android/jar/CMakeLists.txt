@@ -4,7 +4,7 @@ set(java_sources
     src/org/qtproject/qt5/android/network/QtNetwork.java
 )
 
-add_jar(QtAndroidNetwork
+qt_internal_add_jar(QtAndroidNetwork
     INCLUDE_JARS ${QT_ANDROID_JAR}
     SOURCES ${java_sources}
     OUTPUT_DIR "${QT_BUILD_DIR}/jar"

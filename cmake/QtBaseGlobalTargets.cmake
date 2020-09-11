@@ -465,6 +465,7 @@ qt_copy_or_install(FILES
                    cmake/QtTargetHelpers.cmake
                    cmake/QtTestHelpers.cmake
                    cmake/QtToolHelpers.cmake
+                   cmake/QtJavaHelpers.cmake
     DESTINATION "${__GlobalConfig_install_dir}"
 )
 
