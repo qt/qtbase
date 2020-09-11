@@ -505,8 +505,8 @@ void QFileSystemMetaData::fillFromStatBuf(const QT_STATBUF &statBuffer)
 void QFileSystemMetaData::fillFromDirEnt(const QT_DIRENT &entry)
 {
 #if defined(_DEXTRA_FIRST)
-    knownFlagsMask = 0;
-    entryFlags = 0;
+    knownFlagsMask = {};
+    entryFlags = {};
     for (dirent_extra *extra = _DEXTRA_FIRST(&entry); _DEXTRA_VALID(extra, &entry);
          extra = _DEXTRA_NEXT(extra)) {
         if (extra->d_type == _DTYPE_STAT || extra->d_type == _DTYPE_LSTAT) {
