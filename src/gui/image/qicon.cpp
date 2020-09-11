@@ -124,19 +124,6 @@ static void qt_cleanup_icon_cache()
     qtIconCache()->clear();
 }
 
-/*! \internal
-
-    Returns the effective device pixel ratio, using
-    the provided window pointer if possible.
-*/
-static qreal qt_effective_device_pixel_ratio(QWindow *window = nullptr)
-{
-    if (window)
-        return window->devicePixelRatio();
-
-    return qApp->devicePixelRatio(); // Don't know which window to target.
-}
-
 QIconPrivate::QIconPrivate(QIconEngine *e)
     : engine(e), ref(1),
       serialNum(nextSerialNumCounter()),
@@ -855,6 +842,7 @@ QPixmap QIcon::pixmap(const QSize &size, qreal devicePixelRatio, Mode mode, Stat
     return pixmap;
 }
 
+#if QT_DEPRECATED_SINCE(6, 0)
 /*!
   \since 5.1
   \deprecated
@@ -871,13 +859,12 @@ QPixmap QIcon::pixmap(const QSize &size, qreal devicePixelRatio, Mode mode, Stat
   \sa  actualSize(), paint()
 */
 
-#if QT_DEPRECATED_SINCE(6, 0)
 QPixmap QIcon::pixmap(QWindow *window, const QSize &size, Mode mode, State state) const
 {
     if (!d)
         return QPixmap();
 
-    qreal devicePixelRatio = qt_effective_device_pixel_ratio(window);
+    qreal devicePixelRatio = window ? window->devicePixelRatio() : qApp->devicePixelRatio();
     return pixmap(size, devicePixelRatio, mode, state);
 }
 #endif
@@ -905,6 +892,7 @@ QSize QIcon::actualSize(const QSize &size, Mode mode, State state) const
     return actualSize / d->pixmapDevicePixelRatio(devicePixelRatio, size, actualSize);
 }
 
+#if QT_DEPRECATED_SINCE(6, 0)
 /*!
   \since 5.1
 
@@ -917,13 +905,12 @@ QSize QIcon::actualSize(const QSize &size, Mode mode, State state) const
   \sa actualSize(), pixmap(), paint()
 */
 
-#if QT_DEPRECATED_SINCE(6, 0)
 QSize QIcon::actualSize(QWindow *window, const QSize &size, Mode mode, State state) const
 {
     if (!d)
         return QSize();
 
-    qreal devicePixelRatio = qt_effective_device_pixel_ratio(window);
+    qreal devicePixelRatio = window ? window->devicePixelRatio() : qApp->devicePixelRatio();
 
     // Handle the simple normal-dpi case:
     if (!(devicePixelRatio > 1.0))
