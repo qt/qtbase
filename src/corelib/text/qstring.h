@@ -1166,9 +1166,9 @@ inline void QString::reserve(qsizetype asize)
 
 inline void QString::squeeze()
 {
-    if ((d->flags() & Data::CapacityReserved) == 0)
+    if (!d.isMutable())
         return;
-    if (d->needsDetach() || d.size < capacity()) {
+    if (d->needsDetach() || size() < capacity()) {
         reallocData(d.size, d->detachFlags() & ~Data::CapacityReserved);
     } else {
         d->clearFlag(Data::CapacityReserved);

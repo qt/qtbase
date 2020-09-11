@@ -532,7 +532,7 @@ inline void QByteArray::reserve(qsizetype asize)
 
 inline void QByteArray::squeeze()
 {
-    if ((d->flags() & Data::CapacityReserved) == 0)
+    if (!d.isMutable())
         return;
     if (d->needsDetach() || size() < capacity()) {
         reallocData(size(), d->detachFlags() & ~Data::CapacityReserved);
