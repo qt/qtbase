@@ -425,6 +425,9 @@ void QAuthenticatorPrivate::updateCredentials()
 
 void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByteArray> > &values, bool isProxy, const QString &host)
 {
+#if !QT_CONFIG(gssapi)
+    Q_UNUSED(host);
+#endif
     const char *search = isProxy ? "proxy-authenticate" : "www-authenticate";
 
     method = None;
