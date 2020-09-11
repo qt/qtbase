@@ -13,7 +13,7 @@ include(CMakePushCheckState)
 find_library(LIBRT rt)
 
 cmake_push_check_state()
-if(LIBRT_FOUND)
+if(LIBRT)
     list(APPEND CMAKE_REQUIRED_LIBRARIES "${LIBRT}")
 endif()
 
