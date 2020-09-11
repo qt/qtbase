@@ -11,6 +11,10 @@ foreach(_target_dep ${_third_party_deps})
     if(version)
         list(APPEND find_package_args "${version}")
     endif()
+    if(components)
+        string(REPLACE " " ";" components "${components}")
+        list(APPEND find_package_args COMPONENTS ${components})
+    endif()
 
     # Already build an error message, because find_dependency calls return() on failure.
     set(__@INSTALL_CMAKE_NAMESPACE@_message "\nPackage: ${pkg}")
@@ -23,12 +27,7 @@ foreach(_target_dep ${_third_party_deps})
     set(@INSTALL_CMAKE_NAMESPACE@_DEPENDENCY_NOT_FOUND_MESSAGE
         "${__@INSTALL_CMAKE_NAMESPACE@_message}")
 
-    if(components)
-        string(REPLACE " " ";" components "${components}")
-        find_dependency(${find_package_args} COMPONENTS ${components})
-    else()
-        find_dependency(${find_package_args})
-    endif()
+    find_dependency(${find_package_args})
 endforeach()
 
 set(@INSTALL_CMAKE_NAMESPACE@_DEPENDENCIES_FOUND TRUE)
