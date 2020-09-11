@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2015 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -894,7 +894,15 @@ QSize QIcon::actualSize(const QSize &size, Mode mode, State state) const
 {
     if (!d)
         return QSize();
-    return actualSize(nullptr, size, mode, state);
+
+    const qreal devicePixelRatio = qApp->devicePixelRatio();
+
+    // Handle the simple normal-dpi case:
+    if (!(devicePixelRatio > 1.0))
+        return d->engine->actualSize(size, mode, state);
+
+    const QSize actualSize = d->engine->actualSize(size * devicePixelRatio, mode, state);
+    return actualSize / d->pixmapDevicePixelRatio(devicePixelRatio, size, actualSize);
 }
 
 /*!
