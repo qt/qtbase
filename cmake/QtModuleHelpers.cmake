@@ -150,15 +150,16 @@ function(qt_add_module target)
         endif()
     endif()
 
+    if(arg_MODULE_INCLUDE_NAME)
+        set(module_include_name ${arg_MODULE_INCLUDE_NAME})
+    else()
+        set(module_include_name ${module})
+    endif()
+
     # Module headers:
     if(${arg_NO_MODULE_HEADERS} OR ${arg_NO_SYNC_QT})
         set_target_properties("${target}" PROPERTIES INTERFACE_MODULE_HAS_HEADERS OFF)
     else()
-        if(arg_MODULE_INCLUDE_NAME)
-            set(module_include_name ${arg_MODULE_INCLUDE_NAME})
-        else()
-            set(module_include_name ${module})
-        endif()
         set_target_properties("${target}" PROPERTIES INTERFACE_MODULE_INCLUDE_NAME "${module_include_name}")
 
         # Use QT_BUILD_DIR for the syncqt call.
@@ -181,7 +182,7 @@ function(qt_add_module target)
         ### FIXME: Can we replace headers.pri?
         set(module_include_dir "${QT_BUILD_DIR}/include/${module_include_name}")
         qt_read_headers_pri("${module_include_dir}" "module_headers")
-        set(module_depends_header "${module_include_dir}/${module}Depends")
+        set(module_depends_header "${module_include_dir}/${module_include_name}Depends")
         if(is_framework)
             if(NOT is_interface_lib)
                 set(public_headers_to_copy "${module_headers_public}" "${module_depends_header}")
@@ -493,8 +494,8 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
         LIBRARY DESTINATION ${INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${INSTALL_LIBDIR}
         FRAMEWORK DESTINATION ${INSTALL_LIBDIR}
-        PUBLIC_HEADER DESTINATION ${INSTALL_INCLUDEDIR}/${module}
-        PRIVATE_HEADER DESTINATION ${INSTALL_INCLUDEDIR}/${module}/${PROJECT_VERSION}/${module}/private
+        PUBLIC_HEADER DESTINATION ${INSTALL_INCLUDEDIR}/${module_include_name}
+        PRIVATE_HEADER DESTINATION ${INSTALL_INCLUDEDIR}/${module_include_name}/${PROJECT_VERSION}/${module}/private
         )
 
     qt_apply_rpaths(TARGET "${target}" INSTALL_PATH "${INSTALL_LIBDIR}" RELATIVE_RPATH)
