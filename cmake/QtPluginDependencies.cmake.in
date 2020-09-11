@@ -1,3 +1,5 @@
+set(@target@_FOUND FALSE)
+
 # note: _third_party_deps example: "ICU\\;1.0\\;i18n uc data;ZLIB\\;\\;"
 set(_third_party_deps "@third_party_deps@")
 
@@ -10,16 +12,11 @@ foreach(_target_dep ${_third_party_deps})
         list(APPEND find_package_args "${version}")
     endif()
 
-        if(components)
-            string(REPLACE " " ";" components "${components}")
-            find_dependency(${find_package_args} COMPONENTS ${components})
-        else()
-            find_dependency(${find_package_args})
-        endif()
-
-    if (NOT ${pkg}_FOUND)
-        set(@target@_FOUND FALSE)
-        return()
+    if(components)
+        string(REPLACE " " ";" components "${components}")
+        find_dependency(${find_package_args} COMPONENTS ${components})
+    else()
+        find_dependency(${find_package_args})
     endif()
 endforeach()
 
@@ -34,9 +31,6 @@ foreach(_target_dep ${_target_deps})
             PATHS @find_dependency_paths@ ${QT_EXAMPLES_CMAKE_PREFIX_PATH} NO_DEFAULT_PATH
         )
     endif()
-
-    if (NOT ${pkg}_FOUND)
-        set(@target@_FOUND FALSE)
-        return()
-    endif()
 endforeach()
+
+set(@target@_FOUND TRUE)

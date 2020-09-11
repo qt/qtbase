@@ -51,7 +51,7 @@ endif()
 
 # Find required dependencies, if any.
 include(CMakeFindDependencyMacro)
-set(@INSTALL_CMAKE_NAMESPACE@_DEPENDENCIES_FOUND TRUE)
+set(@INSTALL_CMAKE_NAMESPACE@_DEPENDENCIES_FOUND FALSE)
 if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@Dependencies.cmake")
     include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@Dependencies.cmake")
 endif()
