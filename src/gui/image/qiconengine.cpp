@@ -154,16 +154,6 @@ void QIconEngine::addFile(const QString &/*fileName*/, const QSize &/*size*/, QI
     These enum values are used for virtual_hook() to allow additional
     queries to icon engine without breaking binary compatibility.
 
-    \value AvailableSizesHook Allows to query the sizes of the
-    contained pixmaps for pixmap-based engines. The \a data argument
-    of the virtual_hook() function is a AvailableSizesArgument pointer
-    that should be filled with icon sizes. Engines that work in terms
-    of a scalable, vectorial format normally return an empty list.
-
-    \value IconNameHook Allows to query the name used to create the
-    icon, for example when instantiating an icon using
-    QIcon::fromTheme().
-
     \value IsNullHook Allow to query if this engine represents a null
     icon. The \a data argument of the virtual_hook() is a pointer to a
     bool that can be set to true if the icon is null. This enum value
@@ -177,41 +167,6 @@ void QIconEngine::addFile(const QString &/*fileName*/, const QSize &/*size*/, QI
 
     \sa virtual_hook()
  */
-
-/*!
-    \class QIconEngine::AvailableSizesArgument
-    \since 4.5
-
-    \inmodule QtGui
-
-    This struct represents arguments to virtual_hook() function when
-    \a id parameter is QIconEngine::AvailableSizesHook.
-
-    \sa virtual_hook(), QIconEngine::IconEngineHook
- */
-
-/*!
-    \variable QIconEngine::AvailableSizesArgument::mode
-    \brief the requested mode of an image.
-
-    \sa QIcon::Mode
-*/
-
-/*!
-    \variable QIconEngine::AvailableSizesArgument::state
-    \brief the requested state of an image.
-
-    \sa QIcon::State
-*/
-
-/*!
-    \variable QIconEngine::AvailableSizesArgument::sizes
-
-    \brief image sizes that are available with specified \a mode and
-    \a state. This is an output parameter and is filled after call to
-    virtual_hook(). Engines that work in terms of a scalable,
-    vectorial format normally return an empty list.
-*/
 
 /*!
     \class QIconEngine::ScaledPixmapArgument
@@ -316,12 +271,6 @@ bool QIconEngine::write(QDataStream &) const
 void QIconEngine::virtual_hook(int id, void *data)
 {
     switch (id) {
-    case QIconEngine::AvailableSizesHook: {
-        QIconEngine::AvailableSizesArgument &arg =
-            *reinterpret_cast<QIconEngine::AvailableSizesArgument*>(data);
-        arg.sizes.clear();
-        break;
-    }
     case QIconEngine::ScaledPixmapHook: {
         // We don't have any notion of scale besides "@nx", so just call pixmap() here.
         QIconEngine::ScaledPixmapArgument &arg =
@@ -339,30 +288,20 @@ void QIconEngine::virtual_hook(int id, void *data)
 
     Returns sizes of all images that are contained in the engine for the
     specific \a mode and \a state.
-
-    \include qiconengine-virtualhookhelper.qdocinc
  */
-QList<QSize> QIconEngine::availableSizes(QIcon::Mode mode, QIcon::State state)
+QList<QSize> QIconEngine::availableSizes(QIcon::Mode /*mode*/, QIcon::State /*state*/)
 {
-    AvailableSizesArgument arg;
-    arg.mode = mode;
-    arg.state = state;
-    this->virtual_hook(QIconEngine::AvailableSizesHook, reinterpret_cast<void*>(&arg));
-    return arg.sizes;
+    return {};
 }
 
 /*!
     \since 4.7
 
     Returns the name used to create the engine, if available.
-
-    \include qiconengine-virtualhookhelper.qdocinc
  */
 QString QIconEngine::iconName()
 {
-    QString name;
-    virtual_hook(QIconEngine::IconNameHook, reinterpret_cast<void*>(&name));
-    return name;
+    return QString();
 }
 
 /*!

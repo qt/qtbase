@@ -64,21 +64,14 @@ public:
     virtual bool read(QDataStream &in);
     virtual bool write(QDataStream &out) const;
 
-    enum IconEngineHook { AvailableSizesHook = 1, IconNameHook, IsNullHook, ScaledPixmapHook };
-
-    struct AvailableSizesArgument
-    {
-        QIcon::Mode mode;
-        QIcon::State state;
-        QList<QSize> sizes;
-    };
-
     virtual QList<QSize> availableSizes(QIcon::Mode mode = QIcon::Normal,
                                     QIcon::State state = QIcon::Off);
 
     virtual QString iconName();
     virtual bool isNull();
     virtual QPixmap scaledPixmap(const QSize &size, QIcon::Mode mode, QIcon::State state, qreal scale);
+
+    enum IconEngineHook { IsNullHook = 3, ScaledPixmapHook };
 
     struct ScaledPixmapArgument
     {
