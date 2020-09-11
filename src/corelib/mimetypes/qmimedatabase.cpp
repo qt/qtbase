@@ -101,27 +101,13 @@ void QMimeDatabasePrivate::loadProviders()
     const auto fdoIterator = std::find_if(mimeDirs.constBegin(), mimeDirs.constEnd(), [](const QString &mimeDir) -> bool {
         return QFileInfo::exists(mimeDir + QStringLiteral("/packages/freedesktop.org.xml")); }
     );
+    const bool needInternalDB = QMimeXMLProvider::InternalDatabaseAvailable && fdoIterator == mimeDirs.constEnd();
     //qDebug() << "mime dirs:" << mimeDirs;
 
     Providers currentProviders;
     std::swap(m_providers, currentProviders);
 
-    if (QMimeXMLProvider::InternalDatabaseAvailable && fdoIterator == mimeDirs.constEnd()) {
-        m_providers.reserve(mimeDirs.size() + 1);
-        // Check if we already have a provider for the InternalDatabase
-        const auto isInternal = [](const std::unique_ptr<QMimeProviderBase> &prov)
-        {
-            return prov && prov->isInternalDatabase();
-        };
-        const auto it = std::find_if(currentProviders.begin(), currentProviders.end(), isInternal);
-        if (it == currentProviders.end()) {
-            m_providers.push_back(Providers::value_type(new QMimeXMLProvider(this, QMimeXMLProvider::InternalDatabase)));
-        } else {
-            m_providers.push_back(std::move(*it));
-        }
-    } else {
-        m_providers.reserve(mimeDirs.size());
-    }
+    m_providers.reserve(mimeDirs.size() + (needInternalDB ? 1 : 0));
 
     for (const QString &mimeDir : mimeDirs) {
         const QString cacheFile = mimeDir + QStringLiteral("/mime.cache");
@@ -156,6 +142,21 @@ void QMimeDatabasePrivate::loadProviders()
                 //qDebug() << "Created XML provider to replace binary provider for" << mimeDir;
             }
             m_providers.push_back(std::move(provider));
+        }
+    }
+    // mimeDirs is sorted "most local first, most global last"
+    // so the internal XML DB goes at the end
+    if (needInternalDB) {
+        // Check if we already have a provider for the InternalDatabase
+        const auto isInternal = [](const std::unique_ptr<QMimeProviderBase> &prov)
+        {
+            return prov && prov->isInternalDatabase();
+        };
+        const auto it = std::find_if(currentProviders.begin(), currentProviders.end(), isInternal);
+        if (it == currentProviders.end()) {
+            m_providers.push_back(Providers::value_type(new QMimeXMLProvider(this, QMimeXMLProvider::InternalDatabase)));
+        } else {
+            m_providers.push_back(std::move(*it));
         }
     }
 }
@@ -215,7 +216,6 @@ QStringList QMimeDatabasePrivate::mimeTypeForFileName(const QString &fileName)
 QMimeGlobMatchResult QMimeDatabasePrivate::findByFileName(const QString &fileName)
 {
     QMimeGlobMatchResult result;
-    // TODO this parses in the order (local, global). Check that it handles "NOGLOBS" correctly.
     for (const auto &provider : providers())
         provider->addFileNameMatches(fileName, result);
     return result;

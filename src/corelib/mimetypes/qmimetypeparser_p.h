@@ -90,6 +90,7 @@ private:
         ParseGenericIcon,
         ParseIcon,
         ParseGlobPattern,
+        ParseGlobDeleteAll,
         ParseSubClass,
         ParseAlias,
         ParseMagic,

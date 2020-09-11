@@ -985,11 +985,10 @@ void tst_QMimeDatabase::installNewGlobalMimeType()
     QCOMPARE(db.mimeTypeForFile(qmlTestFile).name(),
              QString::fromLatin1("text/x-qml"));
 
-    // ensure we can access the empty glob list
     {
         QMimeType objcsrc = db.mimeTypeForName(QStringLiteral("text/x-objcsrc"));
         QVERIFY(objcsrc.isValid());
-        qDebug() << objcsrc.globPatterns();
+        QCOMPARE(objcsrc.globPatterns(), QStringList());
     }
 
     const QString fooTestFile = QLatin1String(RESOURCE_PREFIX "magic-and-hierarchy.foo");
@@ -1065,6 +1064,12 @@ void tst_QMimeDatabase::installNewLocalMimeType()
     QVERIFY(db.mimeTypeForName(QLatin1String("text/x-suse-ymp")).isValid());
     QCOMPARE(db.mimeTypeForName(QLatin1String("text/x-SuSE-ymu")).comment(), QString("URL of a YaST Meta Package"));
     checkHasMimeType("text/x-suse-ymp");
+
+    { // QTBUG-85436
+        QMimeType objcsrc = db.mimeTypeForName(QStringLiteral("text/x-objcsrc"));
+        QVERIFY(objcsrc.isValid());
+        QCOMPARE(objcsrc.globPatterns(), QStringList());
+    }
 
     // Test that a double-definition of a mimetype doesn't lead to sniffing ("conflicting globs").
     const QString qmlTestFile = QLatin1String(RESOURCE_PREFIX "test.qml");
