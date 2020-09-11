@@ -52,25 +52,25 @@ public:
     DoubleSpinBox(QWidget *parent = 0)
         : QDoubleSpinBox(parent)
     { /*connect(this, SIGNAL(valueChanged(double)), this, SLOT(foo(double)));*/ }
-    QString textFromValue(double v) const
+    QString textFromValue(double v) const override
     {
         return QDoubleSpinBox::textFromValue(v);
     }
-    QValidator::State validate(QString &text, int &pos) const
+    QValidator::State validate(QString &text, int &pos) const override
     {
         return QDoubleSpinBox::validate(text, pos);
     }
-    double valueFromText(const QString &text) const
+    double valueFromText(const QString &text) const override
     {
         return QDoubleSpinBox::valueFromText(text);
     }
 #if QT_CONFIG(wheelevent)
-    void wheelEvent(QWheelEvent *event)
+    void wheelEvent(QWheelEvent *event) override
     {
         QDoubleSpinBox::wheelEvent(event);
     }
 #endif
-    void initStyleOption(QStyleOptionSpinBox *option) const
+    void initStyleOption(QStyleOptionSpinBox *option) const override
     {
         QDoubleSpinBox::initStyleOption(option);
     }
@@ -1172,7 +1172,7 @@ void tst_QDoubleSpinBox::taskQTBUG_5008_textFromValueAndValidate()
         }
 
         //we use the French delimiters here
-        QString textFromValue (double value) const
+        QString textFromValue (double value) const override
         {
             return locale().toString(value);
         }

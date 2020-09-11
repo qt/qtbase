@@ -101,8 +101,8 @@ void tst_QScrollBar::task_209492()
         int scrollCount;
         MyScrollArea(QWidget *parent = 0) : QScrollArea(parent), scrollCount(0) {}
     protected:
-        void paintEvent(QPaintEvent *) { QTest::qSleep(600); }
-        void scrollContentsBy(int, int) { ++scrollCount; viewport()->update(); }
+        void paintEvent(QPaintEvent *) override { QTest::qSleep(600); }
+        void scrollContentsBy(int, int) override { ++scrollCount; viewport()->update(); }
     };
 
     MyScrollArea scrollArea;

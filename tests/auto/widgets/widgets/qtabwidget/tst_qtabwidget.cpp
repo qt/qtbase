@@ -60,10 +60,12 @@ class QTabWidgetChild:public QTabWidget {
     };
 
   protected:
-    virtual void tabInserted(int /*index */ ) {
+    virtual void tabInserted(int /*index */ ) override
+    {
         tabCount++;
     };
-    virtual void tabRemoved(int /*index */ ) {
+    virtual void tabRemoved(int /*index */ ) override
+    {
         tabCount--;
     };
     int tabCount;
@@ -553,7 +555,8 @@ public:
     PaintCounter() :count(0) { setAttribute(Qt::WA_OpaquePaintEvent); }
     int count;
 protected:
-    void paintEvent(QPaintEvent*) {
+    void paintEvent(QPaintEvent*) override
+    {
         ++count;
     }
 };

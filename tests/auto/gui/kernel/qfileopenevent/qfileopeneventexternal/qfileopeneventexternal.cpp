@@ -35,7 +35,7 @@ struct MyApplication : public QGuiApplication
     : QGuiApplication(argc, argv)
     {}
 
-    bool event(QEvent * event)
+    bool event(QEvent * event) override
     {
         if (event->type() == QEvent::FileOpen) {
             QFileOpenEvent* ev = static_cast<QFileOpenEvent *>(event);

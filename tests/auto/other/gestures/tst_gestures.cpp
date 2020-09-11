@@ -98,12 +98,12 @@ public:
             CustomEvent::EventType = QEvent::registerEventType();
     }
 
-    QGesture* create(QObject *)
+    QGesture* create(QObject *) override
     {
         return new CustomGesture;
     }
 
-    QGestureRecognizer::Result recognize(QGesture *state, QObject*, QEvent *event)
+    QGestureRecognizer::Result recognize(QGesture *state, QObject*, QEvent *event) override
     {
         if (event->type() == CustomEvent::EventType) {
             QGestureRecognizer::Result result;
@@ -127,7 +127,7 @@ public:
         return QGestureRecognizer::Ignore;
     }
 
-    void reset(QGesture *state)
+    void reset(QGesture *state) override
     {
         CustomGesture *g = static_cast<CustomGesture *>(state);
         g->serial = 0;
@@ -146,12 +146,12 @@ public:
             CustomEvent::EventType = QEvent::registerEventType();
     }
 
-    QGesture* create(QObject *)
+    QGesture* create(QObject *) override
     {
         return new CustomGesture;
     }
 
-    QGestureRecognizer::Result recognize(QGesture *state, QObject*, QEvent *event)
+    QGestureRecognizer::Result recognize(QGesture *state, QObject*, QEvent *event) override
     {
         if (event->type() == CustomEvent::EventType) {
             QGestureRecognizer::Result result = QGestureRecognizer::ConsumeEventHint;
@@ -171,7 +171,7 @@ public:
         return QGestureRecognizer::Ignore;
     }
 
-    void reset(QGesture *state)
+    void reset(QGesture *state) override
     {
         CustomGesture *g = static_cast<CustomGesture *>(state);
         g->serial = 0;
@@ -226,7 +226,7 @@ public:
     QSet<Qt::GestureType> ignoredGestures;
 
 protected:
-    bool event(QEvent *event)
+    bool event(QEvent *event) override
     {
         Events *eventsPtr = 0;
         if (event->type() == QEvent::Gesture) {
@@ -720,17 +720,17 @@ public:
         ignoredFinishedGestures.clear();
     }
 
-    QRectF boundingRect() const
+    QRectF boundingRect() const override
     {
         return size;
     }
-    void paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
+    void paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *) override
     {
         QColor color = InstanceColors[instanceNumber % (sizeof(InstanceColors)/sizeof(InstanceColors[0]))];
         p->fillRect(boundingRect(), color);
     }
 
-    bool event(QEvent *event)
+    bool event(QEvent *event) override
     {
         Events *eventsPtr = 0;
         if (event->type() == QEvent::Gesture) {
@@ -1483,7 +1483,7 @@ void tst_Gestures::autoCancelGestures()
       public:
         MockWidget(const char *name) : GestureWidget(name), badGestureEvents(0) { }
 
-        bool event(QEvent *event)
+        bool event(QEvent *event) override
         {
             if (event->type() == QEvent::Gesture) {
                 QGestureEvent *ge = static_cast<QGestureEvent*>(event);
@@ -1538,7 +1538,8 @@ void tst_Gestures::autoCancelGestures2()
       public:
         MockItem(const char *name) : GestureItem(name), badGestureEvents(0) { }
 
-        bool event(QEvent *event) {
+        bool event(QEvent *event) override
+        {
             if (event->type() == QEvent::Gesture) {
                 QGestureEvent *ge = static_cast<QGestureEvent*>(event);
                 if (ge->gestures().count() != 1)
@@ -2029,7 +2030,8 @@ public:
     enum PanType { Platform, Default, Custom };
 
     PanRecognizer(int id) : m_id(id) {}
-    QGesture *create(QObject *) {
+    QGesture *create(QObject *) override
+    {
         switch(m_id) {
         case Platform: return new WinNativePan();
         case Default:  return new Pan();
@@ -2037,7 +2039,7 @@ public:
         }
     }
 
-    Result recognize(QGesture *, QObject *, QEvent *) { return QGestureRecognizer::Ignore; }
+    Result recognize(QGesture *, QObject *, QEvent *) override { return QGestureRecognizer::Ignore; }
 
     const int m_id;
 };
@@ -2087,12 +2089,14 @@ public:
 
     ReuseCanceledGesturesRecognizer(Type type) : m_type(type) {}
 
-    QGesture *create(QObject *) {
+    QGesture *create(QObject *) override
+    {
         QGesture *g = new QGesture;
         return g;
     }
 
-    Result recognize(QGesture *gesture, QObject *, QEvent *event) {
+    Result recognize(QGesture *gesture, QObject *, QEvent *event) override
+    {
         QMouseEvent *me = static_cast<QMouseEvent *>(event);
         Qt::MouseButton mouseButton(m_type == LmbType ? Qt::LeftButton : Qt::RightButton);
 
@@ -2127,7 +2131,8 @@ class ReuseCanceledGesturesWidget : public QGraphicsWidget
     {
     }
 
-    bool event(QEvent *event) {
+    bool event(QEvent *event) override
+    {
         if (event->type() == QEvent::Gesture) {
             QGesture *gesture = static_cast<QGestureEvent*>(event)->gesture(m_gestureType);
             if (gesture) {
@@ -2310,7 +2315,8 @@ class NoConsumeWidgetBug13501 :public QWidget
 {
     Q_OBJECT
 protected:
-    bool event(QEvent *e) {
+    bool event(QEvent *e) override
+    {
         if(e->type() == QEvent::Gesture) {
             return false;
         }

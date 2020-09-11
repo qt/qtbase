@@ -54,19 +54,19 @@ public:
     bool focusOutEventRecieved;
     bool focusOutEventLostFocus;
 protected:
-    virtual void keyPressEvent( QKeyEvent *e )
+    virtual void keyPressEvent( QKeyEvent *e ) override
     {
 //        qDebug( QString("keyPressEvent: %1").arg(e->key()) );
         QLineEdit::keyPressEvent( e );
     }
-    void focusInEvent( QFocusEvent* e )
+    void focusInEvent( QFocusEvent* e ) override
     {
         QLineEdit::focusInEvent( e );
         focusInEventReason = e->reason();
         focusInEventGotFocus = e->gotFocus();
         focusInEventRecieved = true;
     }
-    void focusOutEvent( QFocusEvent* e )
+    void focusOutEvent( QFocusEvent* e ) override
     {
         QLineEdit::focusOutEvent( e );
         focusOutEventReason = e->reason();

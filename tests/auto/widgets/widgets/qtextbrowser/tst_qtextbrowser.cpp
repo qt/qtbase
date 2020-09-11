@@ -483,7 +483,8 @@ void tst_QTextBrowser::anchorsWithSelfBuiltHtml()
 class HelpBrowser : public QTextBrowser
 {
 public:
-    virtual QVariant loadResource(int /*type*/, const QUrl &name) {
+    virtual QVariant loadResource(int /*type*/, const QUrl &name) override
+    {
         QString url = name.toString();
         if(url == "qhelp://docs/index.html") {
             return "index";

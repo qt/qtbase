@@ -84,7 +84,7 @@ public:
     TransformTranslator() : QTranslator() {}
     TransformTranslator(QObject *parent) : QTranslator(parent) {}
     QString translate(const char *context, const char *sourceText,
-                              const char *disambiguation = 0, int = -1) const
+                              const char *disambiguation = 0, int = -1) const override
     {
         QByteArray total(context);
         total.append("::");
@@ -108,7 +108,7 @@ public:
         return res;
     }
 
-    virtual bool isEmpty() const { return false; }
+    virtual bool isEmpty() const override { return false; }
 
 public:
     mutable QSet<QByteArray> m_translations;

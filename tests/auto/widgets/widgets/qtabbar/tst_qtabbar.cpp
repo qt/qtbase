@@ -702,7 +702,7 @@ public:
     Widget10052(QWidget *parent) : QWidget(parent), moved(false)
     { }
 
-    void moveEvent(QMoveEvent *e)
+    void moveEvent(QMoveEvent *e) override
     {
         moved = e->oldPos() != e->pos();
         QWidget::moveEvent(e);

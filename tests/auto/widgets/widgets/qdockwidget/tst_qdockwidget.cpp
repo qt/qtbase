@@ -864,18 +864,18 @@ void tst_QDockWidget::task169808_setFloating()
     class MyWidget : public QWidget
     {
     public:
-        QSize sizeHint() const
+        QSize sizeHint() const override
         {
             const QRect& deskRect = QGuiApplication::primaryScreen()->availableGeometry();
             return QSize(qMin(300, deskRect.width() / 2), qMin(300, deskRect.height() / 2));
         }
 
-        QSize minimumSizeHint() const
+        QSize minimumSizeHint() const override
         {
             return QSize(20,20);
         }
 
-        void paintEvent(QPaintEvent *)
+        void paintEvent(QPaintEvent *) override
         {
             QPainter p(this);
             p.fillRect(rect(), Qt::red);

@@ -70,7 +70,7 @@ public:
     }
 
 protected:
-    void timerEvent(QTimerEvent *event)
+    void timerEvent(QTimerEvent *event) override
     {
         static int n = 0;
         switch (type) {

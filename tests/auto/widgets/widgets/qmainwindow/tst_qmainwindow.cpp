@@ -65,7 +65,7 @@ public:
     {
         m_timerId = startTimer(200);
     }
-    void timerEvent(QTimerEvent*)
+    void timerEvent(QTimerEvent*) override
     {
         QCoreApplication::postEvent(m_tb, new QMouseEvent(QEvent::MouseButtonPress, QPoint(6, 7), Qt::LeftButton, {}, {}));
         QCoreApplication::postEvent(m_tb, new QMouseEvent(QEvent::MouseMove, QPoint(7, 8), Qt::LeftButton, Qt::LeftButton, {}));
@@ -89,7 +89,7 @@ public:
         m_timerId = startTimer(100);
     }
 
-    void timerEvent(QTimerEvent*)
+    void timerEvent(QTimerEvent*) override
     {
         QCoreApplication::postEvent(m_w, new QMouseEvent(QEvent::MouseButtonPress, QPoint(230, 370), Qt::LeftButton, {}, {}));
         QCoreApplication::postEvent(m_w, new QMouseEvent(QEvent::MouseButtonRelease, QPoint(230, 370), Qt::LeftButton, {}, {}));
@@ -1468,7 +1468,7 @@ public:
     {
     }
 
-    QSize sizeHint() const
+    QSize sizeHint() const override
     {
         return QSize(200, 200);
     }

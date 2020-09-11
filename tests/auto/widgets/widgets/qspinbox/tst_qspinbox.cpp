@@ -64,25 +64,25 @@ public:
     SpinBox(QWidget *parent = 0)
         : QSpinBox(parent)
     {}
-    QString textFromValue(int v) const
+    QString textFromValue(int v) const override
     {
         return QSpinBox::textFromValue(v);
     }
-    QValidator::State validate(QString &text, int &pos) const
+    QValidator::State validate(QString &text, int &pos) const override
     {
         return QSpinBox::validate(text, pos);
     }
-    int valueFromText(const QString &text) const
+    int valueFromText(const QString &text) const override
     {
         return QSpinBox::valueFromText(text);
     }
 #if QT_CONFIG(wheelevent)
-    void wheelEvent(QWheelEvent *event)
+    void wheelEvent(QWheelEvent *event) override
     {
         QSpinBox::wheelEvent(event);
     }
 #endif
-    void initStyleOption(QStyleOptionSpinBox *option) const
+    void initStyleOption(QStyleOptionSpinBox *option) const override
     {
         QSpinBox::initStyleOption(option);
     }
@@ -510,7 +510,8 @@ class ReadOnlyChangeTracker: public QSpinBox
 public:
     ReadOnlyChangeTracker(QWidget *parent = 0) : QSpinBox(parent) {}
 
-    void changeEvent(QEvent *ev) {
+    void changeEvent(QEvent *ev) override
+    {
         if (ev->type() == QEvent::ReadOnlyChange)
             ++readOnlyChangeEventCount;
     }
@@ -1138,7 +1139,7 @@ void tst_QSpinBox::textFromValue()
 class sizeHint_SpinBox : public QSpinBox
 {
 public:
-    QSize sizeHint() const
+    QSize sizeHint() const override
     {
         ++sizeHintRequests;
         return QSpinBox::sizeHint();
@@ -1198,7 +1199,7 @@ void tst_QSpinBox::taskQTBUG_5008_textFromValueAndValidate()
         }
 
         //we use the French delimiters here
-        QString textFromValue (int value) const
+        QString textFromValue (int value) const override
         {
             return locale().toString(value);
         }

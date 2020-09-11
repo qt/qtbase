@@ -128,13 +128,13 @@ public:
             createWidgets();
     }
 
-    virtual void showEvent (QShowEvent *)
+    virtual void showEvent (QShowEvent *) override
     {
         if (!m_staticWidgets)
             createWidgets();
     }
 
-    virtual void hideEvent (QHideEvent *)
+    virtual void hideEvent (QHideEvent *) override
     {
         if (!m_staticWidgets)
             destroyWidgets();

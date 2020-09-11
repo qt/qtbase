@@ -2030,7 +2030,7 @@ int numThreadSafetyFailures;
 class SettingsThread : public QThread
 {
 public:
-    void run();
+    void run() override;
     void start(int n) { param = n; QThread::start(); }
 
 private:

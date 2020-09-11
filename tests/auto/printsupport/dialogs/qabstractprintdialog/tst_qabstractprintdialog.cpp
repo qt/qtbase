@@ -67,7 +67,7 @@ public:
         : QPrintDialog(p)
     {
     }
-    int exec() { return 0; }
+    int exec() override { return 0; }
 
     void resetAllOptions()
     {

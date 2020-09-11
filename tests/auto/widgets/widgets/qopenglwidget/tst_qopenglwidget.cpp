@@ -705,7 +705,7 @@ public:
     {
     }
 
-    void paintEvent(QPaintEvent *)
+    void paintEvent(QPaintEvent *) override
     {
         QPainter p(this);
         text.setText(QStringLiteral("test"));

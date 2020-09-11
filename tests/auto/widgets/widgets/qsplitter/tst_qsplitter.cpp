@@ -952,11 +952,11 @@ class MyTextEdit : public QTextEdit
         {
             setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
         }
-        virtual QSize minimumSizeHint () const
+        virtual QSize minimumSizeHint () const override
         {
             return QSize(200, 200) * m_iFactor;
         }
-        virtual QSize sizeHint() const
+        virtual QSize sizeHint() const override
         {
             return QSize(390, 390) * m_iFactor;
         }
