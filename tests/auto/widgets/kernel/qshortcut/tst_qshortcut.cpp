@@ -129,6 +129,8 @@ protected:
 
     static void sendKeyEvents(QWidget *w, int k1, QChar c1 = {}, int k2 = 0, QChar c2 = {},
                               int k3 = 0, QChar c3 = {}, int k4 = 0, QChar c4 = {});
+    void sendKeyEvents(QWidget *w, QKeyCombination k1, QChar c1 = {})
+    { sendKeyEvents(w, k1.toCombined(), c1); }
 
     void testElement();
 
@@ -287,6 +289,10 @@ void tst_QShortcut::text()
 {
     testElement();
 }
+
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+
 // ------------------------------------------------------------------
 // Number Elements --------------------------------------------------
 // ------------------------------------------------------------------
@@ -619,6 +625,8 @@ void tst_QShortcut::text_data()
     QTest::newRow("T:end") << TestEnd << NoWidget << QString() << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
 }
 
+QT_WARNING_POP
+
 class ButtonWidget : public QWidget
 {
 public:
@@ -671,7 +679,7 @@ void tst_QShortcut::disabledItems()
     // Setup two identical shortcuts on different pushbuttons
     auto pb1 = mainW.pushButton1();
     auto pb2 = mainW.pushButton2();
-    const int shiftM = Qt::SHIFT | Qt::Key_M;
+    const QKeyCombination shiftM = Qt::SHIFT | Qt::Key_M;
     QShortcut *cut1 = setupShortcut(pb1, "shortcut1-pb1", TriggerSlot1,
                                     QKeySequence(Qt::Key_M));
     QShortcut *cut2 = setupShortcut(pb1, "shortcut2-pb1", TriggerSlot1,
@@ -715,7 +723,7 @@ void tst_QShortcut::disabledItems()
        Shift + Qt::Key_F5  on slot2 (disabled)
     */
     qDeleteAll(mainW.findChildren<QShortcut *>());
-    const int shiftF5 = Qt::SHIFT | Qt::Key_F5;
+    const QKeyCombination shiftF5 = Qt::SHIFT | Qt::Key_F5;
     cut1 = setupShortcut(pb1, "shortcut1-pb1", TriggerSlot1, QKeySequence(Qt::Key_F5));
     cut4 = setupShortcut(pb2, "shortcut4-pb2", TriggerSlot2, QKeySequence(shiftF5));
 
@@ -754,7 +762,7 @@ void tst_QShortcut::ambiguousRotation()
        Ctrl + Qt::Key_A   on slot6
        Ctrl + Qt::Key_A   on slot7 (disabled)
     */
-    const int ctrlA = Qt::CTRL | Qt::Key_A;
+    const QKeyCombination ctrlA = Qt::CTRL | Qt::Key_A;
     QKeySequence ctrlA_Sequence(ctrlA);
     QShortcut *cut1 = setupShortcut(&mainW, name, TriggerSlot1, ctrlA_Sequence);
     QShortcut *cut2 = setupShortcut(&mainW, name, TriggerSlot2, ctrlA_Sequence);
@@ -968,9 +976,9 @@ void tst_QShortcut::keypressConsumption()
     QVERIFY(QTest::qWaitForWindowActive(&mainW));
     auto edit = mainW.testEdit();
 
-    const int ctrlI = Qt::CTRL | Qt::Key_I;
-    QShortcut *cut1 = setupShortcut(edit, "shortcut1-line", TriggerSlot1, QKeySequence(ctrlI, Qt::Key_A));
-    QShortcut *cut2 = setupShortcut(edit, "shortcut1-line", TriggerSlot2, QKeySequence(ctrlI, Qt::Key_B));
+    QKeyCombination ctrlI = Qt::CTRL | Qt::Key_I;
+    QShortcut *cut1 = setupShortcut(edit, "shortcut1-line", TriggerSlot1, QKeySequence(ctrlI, QKeyCombination(Qt::Key_A)));
+    QShortcut *cut2 = setupShortcut(edit, "shortcut1-line", TriggerSlot2, QKeySequence(ctrlI, QKeyCombination(Qt::Key_B)));
 
     currentResult = NoResult;
     ambigResult = NoResult;

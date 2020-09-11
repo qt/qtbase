@@ -341,7 +341,7 @@ void tst_QCommandLinkButton::toggled()
 void tst_QCommandLinkButton::setAccel()
 {
     testWidget->setText("&AccelTest");
-    QKeySequence seq( Qt::ALT + Qt::Key_A );
+    QKeySequence seq( Qt::ALT | Qt::Key_A );
     testWidget->setShortcut( seq );
 
     // The shortcut will not be activated unless the button is in a active

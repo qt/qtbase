@@ -1047,7 +1047,7 @@ void tst_QDoubleSpinBox::undoRedo()
     QVERIFY(spin.lineEdit()->isUndoAvailable());
 
     //testing CTRL+Z (undo)
-    int val = QKeySequence(QKeySequence::Undo)[0];
+    int val = QKeySequence(QKeySequence::Undo)[0].toCombined();
     if (val != 0) {
         Qt::KeyboardModifiers mods = (Qt::KeyboardModifiers)(val & Qt::KeyboardModifierMask);
         QTest::keyClick(&spin, val & ~mods, mods);
@@ -1060,7 +1060,7 @@ void tst_QDoubleSpinBox::undoRedo()
 
 
     //testing CTRL+Y (redo)
-    val = QKeySequence(QKeySequence::Redo)[0];
+    val = QKeySequence(QKeySequence::Redo)[0].toCombined();
     if (val != 0) {
         Qt::KeyboardModifiers mods = (Qt::KeyboardModifiers)(val & Qt::KeyboardModifierMask);
         QTest::keyClick(&spin, val & ~mods, mods);

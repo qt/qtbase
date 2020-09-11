@@ -299,7 +299,7 @@ void tst_QMenu::addActionsConnect()
     menu.addAction(icon, text, testFunction);
     menu.addAction(icon, text, &menu, testFunction);
 #ifndef QT_NO_SHORTCUT
-    const QKeySequence keySequence(Qt::CTRL + Qt::Key_C);
+    const QKeySequence keySequence(Qt::CTRL | Qt::Key_C);
     menu.addAction(text, &menu, SLOT(deleteLater()), keySequence);
     menu.addAction(text, &menu, &QMenu::deleteLater, keySequence);
     menu.addAction(text, testFunction, keySequence);

@@ -233,8 +233,8 @@ TestMenu tst_QMenuBar::initSimpleMenuBar(QMenuBar *mb, bool forceNonNative) {
     QMenu *menu = mb->addMenu(QStringLiteral("&accel"));
     QAction *action = menu->addAction(QStringLiteral("menu1") );
 #if QT_CONFIG(shortcut)
-    action->setShortcut(QKeySequence(Qt::ALT + Qt::Key_A));
-    action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_A));
+    action->setShortcut(QKeySequence(Qt::ALT | Qt::Key_A));
+    action->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_A));
 #endif
     connect(menu, SIGNAL(triggered(QAction*)), this, SLOT(onSimpleActivated(QAction*)));
     result.menus << menu;
@@ -249,7 +249,7 @@ TestMenu tst_QMenuBar::initSimpleMenuBar(QMenuBar *mb, bool forceNonNative) {
 
     action = menu->addAction(QStringLiteral("action"));
 #if QT_CONFIG(shortcut)
-    action->setShortcut(QKeySequence(Qt::ALT + Qt::Key_Z));
+    action->setShortcut(QKeySequence(Qt::ALT | Qt::Key_Z));
 #endif
     result.actions << action;
 
@@ -290,7 +290,7 @@ QAction *tst_QMenuBar::createCharacterAction(QMenu *menu, char lowerAscii)
     action->setObjectName(text);
     action->setData(QVariant(int(lowerAscii)));
 #if QT_CONFIG(shortcut)
-    action->setShortcut(Qt::CTRL + Qt::Key(lowerAscii - 'a' + int(Qt::Key_A)));
+    action->setShortcut(Qt::CTRL | Qt::Key(lowerAscii - 'a' + int(Qt::Key_A)));
 #endif
     connect(action, SIGNAL(triggered()), this, SLOT(onComplexActionTriggered()));
     return action;
@@ -327,7 +327,7 @@ TestMenu tst_QMenuBar::initComplexMenuBar(QMenuBar *mb)
     QAction *action = mb->addAction(QStringLiteral("M&enu 3"));
     action->setData(QVariant(3));
 #if QT_CONFIG(shortcut)
-    action->setShortcut(Qt::ALT + Qt::Key_J);
+    action->setShortcut(Qt::ALT | Qt::Key_J);
 #endif
     connect(action, SIGNAL(triggered()), this, SLOT(onComplexActionTriggered()));
     result.actions << action;

@@ -1955,8 +1955,8 @@ void QTest__keySequence(QWidget* widget, const QKeySequence &ks)
 {
     for (int i = 0; i < ks.count(); ++i)
     {
-        Qt::Key key = Qt::Key(ks[i] & ~Qt::KeyboardModifierMask);
-        Qt::KeyboardModifiers modifiers = Qt::KeyboardModifiers(ks[i] & Qt::KeyboardModifierMask);
+        Qt::Key key = ks[i].key();
+        Qt::KeyboardModifiers modifiers = ks[i].keyboardModifiers();
         QTest::keyClick(widget, key, modifiers);
     }
 }

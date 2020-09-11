@@ -353,12 +353,12 @@ void tst_QGuiVariant::toKeySequence_data()
     QTest::addColumn<QKeySequence>("result");
 
 
-    QTest::newRow( "int" ) << QVariant( 67108929 ) << QKeySequence( Qt::CTRL + Qt::Key_A );
+    QTest::newRow( "int" ) << QVariant( 67108929 ) << QKeySequence( Qt::CTRL | Qt::Key_A );
 
 
     QTest::newRow( "qstring" )
         << QVariant( QString( "Ctrl+A" ) )
-        << QKeySequence( Qt::CTRL + Qt::Key_A );
+        << QKeySequence( Qt::CTRL | Qt::Key_A );
 }
 
 void tst_QGuiVariant::toKeySequence()
@@ -376,7 +376,7 @@ void tst_QGuiVariant::toString_data()
     QTest::addColumn<QVariant>("value");
     QTest::addColumn<QString>("result");
 
-    QTest::newRow( "qkeysequence" ) << QVariant::fromValue( QKeySequence( Qt::CTRL + Qt::Key_A ) )
+    QTest::newRow( "qkeysequence" ) << QVariant::fromValue( QKeySequence( Qt::CTRL | Qt::Key_A ) )
 #ifndef Q_OS_MAC
         << QString( "Ctrl+A" );
 #else
@@ -499,7 +499,7 @@ void tst_QGuiVariant::writeToReadFromDataStream_data()
     pixmap.fill( Qt::red );
     QTest::newRow( "pixmap_valid" ) << QVariant::fromValue( pixmap ) << false;
     QTest::newRow( "image_invalid" ) << QVariant::fromValue( QImage() ) << false;
-    QTest::newRow( "keysequence_valid" ) << QVariant::fromValue( QKeySequence( Qt::CTRL + Qt::Key_A ) ) << false;
+    QTest::newRow( "keysequence_valid" ) << QVariant::fromValue( QKeySequence( Qt::CTRL | Qt::Key_A ) ) << false;
     QTest::newRow( "palette_valid" ) << QVariant::fromValue(QPalette(QColor("turquoise"))) << false;
     QTest::newRow( "pen_valid" ) << QVariant::fromValue( QPen( Qt::red ) ) << false;
     QTest::newRow( "pointarray_invalid" ) << QVariant::fromValue( QPolygon() ) << false;

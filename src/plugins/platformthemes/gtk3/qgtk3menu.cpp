@@ -56,7 +56,7 @@ static guint qt_gdkKey(const QKeySequence &shortcut)
 
     // TODO: proper mapping
     Qt::KeyboardModifiers mods = Qt::ShiftModifier | Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier;
-    return (shortcut[0] ^ mods) & shortcut[0];
+    return (shortcut[0].toCombined() ^ mods) & shortcut[0].toCombined();
 }
 
 static GdkModifierType qt_gdkModifiers(const QKeySequence &shortcut)
@@ -65,7 +65,7 @@ static GdkModifierType qt_gdkModifiers(const QKeySequence &shortcut)
         return GdkModifierType(0);
 
     guint mods = 0;
-    int m = shortcut[0];
+    Qt::KeyboardModifiers m = shortcut[0].keyboardModifiers();
     if (m & Qt::ShiftModifier)
         mods |= GDK_SHIFT_MASK;
     if (m & Qt::ControlModifier)

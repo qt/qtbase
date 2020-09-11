@@ -338,7 +338,7 @@ void tst_QPushButton::setAccel()
         QSKIP("Wayland: This fails. Figure out why.");
 
     testWidget->setText("&AccelTest");
-    QKeySequence seq( Qt::ALT + Qt::Key_A );
+    QKeySequence seq( Qt::ALT | Qt::Key_A );
     testWidget->setShortcut( seq );
 
     // The shortcut will not be activated unless the button is in a active
@@ -610,7 +610,7 @@ void tst_QPushButton::taskQTBUG_20191_shortcutWithKeypadModifer()
     // add shortcut 'keypad 5' to button2
     spy1.clear();
     QSignalSpy spy2(button2, SIGNAL(clicked()));
-    button2->setShortcut(Qt::Key_5 + Qt::KeypadModifier);
+    button2->setShortcut(Qt::Key_5 | Qt::KeypadModifier);
     QTest::keyClick(&dialog, Qt::Key_5);
     QTest::qWait(300);
     QTest::keyClick(&dialog, Qt::Key_5, Qt::KeypadModifier);

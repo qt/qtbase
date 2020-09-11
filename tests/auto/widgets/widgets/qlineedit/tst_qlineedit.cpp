@@ -2009,7 +2009,8 @@ void tst_QLineEdit::addKeySequenceStandardKey(QTestEventList &keys, QKeySequence
 {
     QKeySequence keyseq = QKeySequence(key);
     for (int i = 0; i < keyseq.count(); ++i)
-        keys.addKeyClick( Qt::Key( keyseq[i] & ~Qt::KeyboardModifierMask), Qt::KeyboardModifier(keyseq[i] & Qt::KeyboardModifierMask) );
+        keys.addKeyClick( Qt::Key( keyseq[i].toCombined() & ~Qt::KeyboardModifierMask),
+                          Qt::KeyboardModifier(keyseq[i].toCombined() & Qt::KeyboardModifierMask) );
 }
 
 #endif // QT_CONFIG(shortcut)
@@ -4806,9 +4807,9 @@ void tst_QLineEdit::shortcutOverrideOnReadonlyLineEdit_data()
     QTest::newRow("b") << QKeySequence(Qt::Key_B) << false;
     QTest::newRow("c") << QKeySequence(Qt::Key_C) << false;
     QTest::newRow("x") << QKeySequence(Qt::Key_X) << false;
-    QTest::newRow("X") << QKeySequence(Qt::ShiftModifier + Qt::Key_X) << false;
+    QTest::newRow("X") << QKeySequence(Qt::ShiftModifier | Qt::Key_X) << false;
 
-    QTest::newRow("Alt+Home") << QKeySequence(Qt::AltModifier + Qt::Key_Home) << false;
+    QTest::newRow("Alt+Home") << QKeySequence(Qt::AltModifier | Qt::Key_Home) << false;
 }
 
 void tst_QLineEdit::shortcutOverrideOnReadonlyLineEdit()
@@ -4835,7 +4836,7 @@ void tst_QLineEdit::shortcutOverrideOnReadonlyLineEdit()
 
     const int keySequenceCount = keySequence.count();
     for (int i = 0; i < keySequenceCount; ++i) {
-        const uint key = keySequence[i];
+        const uint key = keySequence[i].toCombined();
         QTest::keyClick(lineEdit,
                         Qt::Key(key & ~Qt::KeyboardModifierMask),
                         Qt::KeyboardModifier(key & Qt::KeyboardModifierMask));
