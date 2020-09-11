@@ -139,20 +139,6 @@ QBitmap::QBitmap(const QSize &size)
 */
 
 /*!
-    Constructs a bitmap that is a copy of the given \a pixmap.
-
-    If the pixmap has a depth greater than 1, the resulting bitmap
-    will be dithered automatically.
-
-    \sa QPixmap::depth(), fromImage(), fromData()
-*/
-
-QBitmap::QBitmap(const QPixmap &pixmap)
-{
-    QBitmap::operator=(pixmap);
-}
-
-/*!
     Constructs a bitmap from the file specified by the given \a
     fileName. If the file does not exist, or has an unknown format,
     the bitmap becomes a null bitmap.
@@ -168,30 +154,6 @@ QBitmap::QBitmap(const QString& fileName, const char *format)
     : QPixmap(QSize(0, 0), QPlatformPixmap::BitmapType)
 {
     load(fileName, format, Qt::MonoOnly);
-}
-
-/*!
-    \overload
-
-    Assigns the given \a pixmap to this bitmap and returns a reference
-    to this bitmap.
-
-    If the pixmap has a depth greater than 1, the resulting bitmap
-    will be dithered automatically.
-
-    \sa QPixmap::depth()
- */
-
-QBitmap &QBitmap::operator=(const QPixmap &pixmap)
-{
-    if (pixmap.isNull()) {                        // a null pixmap
-        QBitmap(0, 0).swap(*this);
-    } else if (pixmap.depth() == 1) {                // 1-bit pixmap
-        QPixmap::operator=(pixmap);                // shallow assignment
-    } else {                                        // n-bit depth pixmap
-        *this = fromImage(pixmap.toImage());        // will dither image
-    }
-    return *this;
 }
 
 /*!
@@ -225,7 +187,7 @@ static QBitmap makeBitmap(QImage &&image, Qt::ImageConversionFlags flags)
     QScopedPointer<QPlatformPixmap> data(QGuiApplicationPrivate::platformIntegration()->createPlatformPixmap(QPlatformPixmap::BitmapType));
 
     data->fromImageInPlace(image, flags | Qt::MonoOnly);
-    return QPixmap(data.take());
+    return QBitmap::fromPixmap(QPixmap(data.take()));
 }
 
 /*!
@@ -288,6 +250,68 @@ QBitmap QBitmap::fromData(const QSize &size, const uchar *bits, QImage::Format m
 }
 
 /*!
+    Returns a copy of the given \a pixmap converted to a bitmap.
+
+    If the pixmap has a depth greater than 1, the resulting bitmap
+    will be dithered automatically.
+
+    \sa QPixmap::depth()
+*/
+
+QBitmap QBitmap::fromPixmap(const QPixmap &pixmap)
+{
+    if (pixmap.isNull()) {                        // a null pixmap
+        return QBitmap(0, 0);
+    } else if (pixmap.depth() == 1) {             // 1-bit pixmap
+        QBitmap bm;
+        if (pixmap.paintingActive()) {            // make a deep copy
+            pixmap.copy().swap(bm);
+        } else {
+            bm.data = pixmap.data;                // shallow assignment
+        }
+        return bm;
+    }
+    // n-bit depth pixmap, will dither image
+    return fromImage(pixmap.toImage());
+}
+
+#if QT_DEPRECATED_SINCE(6, 0)
+/*!
+    \obsolete Use fromPixmap instead.
+    Constructs a bitmap that is a copy of the given \a pixmap.
+
+    If the pixmap has a depth greater than 1, the resulting bitmap
+    will be dithered automatically.
+
+    \sa QPixmap::depth(), fromImage(), fromData()
+*/
+
+QBitmap::QBitmap(const QPixmap &pixmap)
+{
+    *this = QBitmap::fromPixmap(pixmap);
+}
+
+/*!
+    \obsolete Use fromPixmap instead.
+    \overload
+
+    Assigns the given \a pixmap to this bitmap and returns a reference
+    to this bitmap.
+
+    If the pixmap has a depth greater than 1, the resulting bitmap
+    will be dithered automatically.
+
+    \sa QPixmap::depth()
+ */
+
+QBitmap &QBitmap::operator=(const QPixmap &pixmap)
+{
+    *this = QBitmap::fromPixmap(pixmap);
+    return *this;
+}
+#endif
+
+/*!
     Returns a copy of this bitmap, transformed according to the given
     \a matrix.
 
@@ -295,8 +319,7 @@ QBitmap QBitmap::fromData(const QSize &size, const uchar *bits, QImage::Format m
  */
 QBitmap QBitmap::transformed(const QTransform &matrix) const
 {
-    QBitmap bm = QPixmap::transformed(matrix);
-    return bm;
+    return QBitmap::fromPixmap(QPixmap::transformed(matrix));
 }
 
 QT_END_NAMESPACE

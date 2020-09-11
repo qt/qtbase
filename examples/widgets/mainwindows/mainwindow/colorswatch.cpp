@@ -680,7 +680,7 @@ void BlueTitleBar::updateMask()
     Q_ASSERT(dw);
 
     QRect rect = dw->rect();
-    QPixmap bitmap(dw->size());
+    QBitmap bitmap(dw->size());
 
     {
         QPainter painter(&bitmap);

@@ -155,7 +155,7 @@ static const struct : QMetaTypeModuleHelper
         QMETATYPE_CONVERTER(QPixmap, QImage, result = QPixmap::fromImage(source); return true;);
         QMETATYPE_CONVERTER(QImage, QPixmap, result = source.toImage(); return true;);
         QMETATYPE_CONVERTER(QPixmap, QBitmap, result = source; return true;);
-        QMETATYPE_CONVERTER(QBitmap, QPixmap, result = source; return true;);
+        QMETATYPE_CONVERTER(QBitmap, QPixmap, result = QBitmap::fromPixmap(source); return true;);
         QMETATYPE_CONVERTER(QImage, QBitmap, result = source.toImage(); return true;);
         QMETATYPE_CONVERTER(QBitmap, QImage, result = QBitmap::fromImage(source); return true;);
         QMETATYPE_CONVERTER(QPixmap, QBrush, result = source.texture(); return true;);

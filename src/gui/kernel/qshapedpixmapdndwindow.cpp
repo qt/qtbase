@@ -76,7 +76,7 @@ void QShapedPixmapWindow::setPixmap(const QPixmap &pixmap)
                 const auto pixmapDpr = m_pixmap.devicePixelRatio();
                 const auto winDpr = devicePixelRatio();
                 const auto maskSize = (QSizeF(m_pixmap.size()) * winDpr / pixmapDpr).toSize();
-                platformWindow->setMask(QBitmap(mask.scaled(maskSize)));
+                platformWindow->setMask(QBitmap::fromPixmap(mask.scaled(maskSize)));
             }
         }
     }

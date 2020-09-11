@@ -382,7 +382,7 @@ void tst_QRegion::bitmapRegion()
         QVERIFY(region.isEmpty());
     }
     {
-        circle = QPixmap(circle_xpm);
+        circle = QBitmap::fromPixmap(QPixmap(circle_xpm));
         QRegion region(circle);
 
         //// These should not be inside the circe

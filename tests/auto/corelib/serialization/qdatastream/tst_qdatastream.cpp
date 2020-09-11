@@ -1176,7 +1176,7 @@ static QCursor qCursorData(int index)
     case 3: return QCursor(Qt::BlankCursor);
     case 4: return QCursor(Qt::BlankCursor);
     case 5: return QCursor(QPixmap(open_xpm), 1, 1);
-    case 6: { QPixmap pm(open_xpm); return QCursor(QBitmap(pm), pm.mask(), 3, 4); }
+    case 6: { QPixmap pm(open_xpm); return QCursor(QBitmap::fromPixmap(pm), pm.mask(), 3, 4); }
     case 7: return QCursor(QPixmap(open_xpm), -1, 5);
     case 8: return QCursor(QPixmap(open_xpm), 5, -1);
     }
