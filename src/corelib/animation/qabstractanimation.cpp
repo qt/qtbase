@@ -248,7 +248,7 @@ QUnifiedTimer *QUnifiedTimer::instance()
 void QUnifiedTimer::maybeUpdateAnimationsToCurrentTime()
 {
     if (elapsed() - lastTick > 50)
-        updateAnimationTimers();
+        updateAnimationTimers(-1);
 }
 
 qint64 QUnifiedTimer::elapsed() const
@@ -290,13 +290,13 @@ void QUnifiedTimer::stopAnimationDriver()
     driver->stop();
 }
 
-void QUnifiedTimer::updateAnimationTimers(qint64)
+void QUnifiedTimer::updateAnimationTimers(qint64 currentTick)
 {
     //setCurrentTime can get this called again while we're the for loop. At least with pauseAnimations
     if(insideTick)
         return;
 
-    const qint64 totalElapsed = elapsed();
+    qint64 totalElapsed = currentTick > 0 ? currentTick : elapsed();
 
     // ignore consistentTiming in case the pause timer is active
     qint64 delta = (consistentTiming && !pauseTimer.isActive()) ?
@@ -423,7 +423,7 @@ void QUnifiedTimer::timerEvent(QTimerEvent *event)
 
     if (event->timerId() == pauseTimer.timerId()) {
         // update current time on all timers
-        updateAnimationTimers();
+        updateAnimationTimers(-1);
         restart();
     }
 }
@@ -585,7 +585,7 @@ void QAnimationTimer::ensureTimerUpdate()
     QAnimationTimer *inst = QAnimationTimer::instance(false);
     QUnifiedTimer *instU = QUnifiedTimer::instance(false);
     if (instU && inst && inst->isPaused)
-        instU->updateAnimationTimers();
+        instU->updateAnimationTimers(-1);
 }
 
 void QAnimationTimer::updateAnimationsTime(qint64 delta)
@@ -773,19 +773,23 @@ QAnimationDriver::~QAnimationDriver()
 }
 
 /*!
-    Advances the animation. This function should be continuously called by
-    the driver subclasses while the animation is running.
+    Advances the animation based to the specified \a timeStep. This function should
+    be continuously called by the driver subclasses while the animation is running.
 
-    The calculation of the new current time will use elapsed() in combination
-    with the internal time offsets of the animation system.
+    If \a timeStep is positive, it will be used as the current time in the
+    calculations; otherwise, the current clock time will be used.
+
+    Since 5.4, the timeStep argument is ignored and elapsed() will be
+    used instead in combination with the internal time offsets of the
+    animation system.
  */
 
-void QAnimationDriver::advanceAnimation()
+void QAnimationDriver::advanceAnimation(qint64 timeStep)
 {
     QUnifiedTimer *instance = QUnifiedTimer::instance();
 
     // update current time on all top level animations
-    instance->updateAnimationTimers();
+    instance->updateAnimationTimers(timeStep);
     instance->restart();
 }
 
@@ -798,7 +802,7 @@ void QAnimationDriver::advanceAnimation()
 
 void QAnimationDriver::advance()
 {
-    advanceAnimation();
+    advanceAnimation(-1);
 }
 
 
