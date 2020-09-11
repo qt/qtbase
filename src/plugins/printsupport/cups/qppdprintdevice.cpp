@@ -52,6 +52,10 @@
 
 QT_BEGIN_NAMESPACE
 
+// avoid all the warnings about using deprecated API from CUPS (as there is no real replacement)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+
 QPpdPrintDevice::QPpdPrintDevice(const QString &id)
     : QPlatformPrintDevice(id),
       m_cupsDest(0),
@@ -507,5 +511,7 @@ cups_ptype_e QPpdPrintDevice::printerTypeFlags() const
 {
     return static_cast<cups_ptype_e>(printerOption("printer-type").toUInt());
 }
+
+QT_WARNING_POP
 
 QT_END_NAMESPACE
