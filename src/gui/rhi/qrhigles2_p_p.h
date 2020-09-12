@@ -813,9 +813,11 @@ public:
     bool linkProgram(GLuint program);
     void registerUniformIfActive(const QShaderDescription::BlockVariable &var,
                                  const QByteArray &namePrefix, int binding, int baseOffset,
-                                 GLuint program, QGles2UniformDescriptionVector *dst);
+                                 GLuint program,
+                                 QSet<int> *activeUniformLocations,
+                                 QGles2UniformDescriptionVector *dst);
     void gatherUniforms(GLuint program, const QShaderDescription::UniformBlock &ub,
-                        QGles2UniformDescriptionVector *dst);
+                        QSet<int> *activeUniformLocations, QGles2UniformDescriptionVector *dst);
     void gatherSamplers(GLuint program, const QShaderDescription::InOutVariable &v,
                         QGles2SamplerDescriptionVector *dst);
     bool isProgramBinaryDiskCacheEnabled() const;

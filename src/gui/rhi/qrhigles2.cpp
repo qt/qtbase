@@ -3447,6 +3447,7 @@ void QRhiGles2::registerUniformIfActive(const QShaderDescription::BlockVariable 
                                         int binding,
                                         int baseOffset,
                                         GLuint program,
+                                        QSet<int> *activeUniformLocations,
                                         QGles2UniformDescriptionVector *dst)
 {
     if (var.type == QShaderDescription::Struct) {
@@ -3457,8 +3458,14 @@ void QRhiGles2::registerUniformIfActive(const QShaderDescription::BlockVariable 
     QGles2UniformDescription uniform;
     uniform.type = var.type;
     const QByteArray name = namePrefix + var.name;
+    // Here we expect that the OpenGL implementation has proper active uniform
+    // handling, meaning that a uniform that is declared but not accessed
+    // elsewhere in the code is reported as -1 when querying the location. If
+    // that is not the case, it won't break anything, but we'll generate
+    // unnecessary glUniform* calls then.
     uniform.glslLocation = f->glGetUniformLocation(program, name.constData());
-    if (uniform.glslLocation >= 0) {
+    if (uniform.glslLocation >= 0 && !activeUniformLocations->contains(uniform.glslLocation)) {
+        activeUniformLocations->insert(uniform.glslLocation);
         if (var.arrayDims.count() > 1) {
             qWarning("Array '%s' has more than one dimension. This is not supported.",
                      var.name.constData());
@@ -3474,6 +3481,7 @@ void QRhiGles2::registerUniformIfActive(const QShaderDescription::BlockVariable 
 
 void QRhiGles2::gatherUniforms(GLuint program,
                                const QShaderDescription::UniformBlock &ub,
+                               QSet<int> *activeUniformLocations,
                                QGles2UniformDescriptionVector *dst)
 {
     QByteArray prefix = ub.structName + '.';
@@ -3485,7 +3493,7 @@ void QRhiGles2::gatherUniforms(GLuint program,
             if (blockMember.arrayDims.isEmpty()) {
                 for (const QShaderDescription::BlockVariable &structMember : blockMember.structMembers)
                     registerUniformIfActive(structMember, structPrefix + ".", ub.binding,
-                                            baseOffset, program, dst);
+                                            baseOffset, program, activeUniformLocations, dst);
             } else {
                 if (blockMember.arrayDims.count() > 1) {
                     qWarning("Array of struct '%s' has more than one dimension. Only the first "
@@ -3498,12 +3506,12 @@ void QRhiGles2::gatherUniforms(GLuint program,
                 for (int di = 0; di < dim; ++di) {
                     const QByteArray arrayPrefix = structPrefix + '[' + QByteArray::number(di) + ']' + '.';
                     for (const QShaderDescription::BlockVariable &structMember : blockMember.structMembers)
-                        registerUniformIfActive(structMember, arrayPrefix, ub.binding, elemOffset, program, dst);
+                        registerUniformIfActive(structMember, arrayPrefix, ub.binding, elemOffset, program, activeUniformLocations, dst);
                     elemOffset += elemSize;
                 }
             }
         } else {
-            registerUniformIfActive(blockMember, prefix, ub.binding, 0, program, dst);
+            registerUniformIfActive(blockMember, prefix, ub.binding, 0, program, activeUniformLocations, dst);
         }
     }
 }
@@ -4328,11 +4336,16 @@ bool QGles2GraphicsPipeline::create()
         rhiD->trySaveToDiskCache(program, diskCacheKey);
     }
 
+    // Use the same work area for the vertex & fragment stages, thus ensuring
+    // that we will not do superfluous glUniform calls for uniforms that are
+    // present in both shaders.
+    QSet<int> activeUniformLocations;
+
     for (const QShaderDescription::UniformBlock &ub : vsDesc.uniformBlocks())
-        rhiD->gatherUniforms(program, ub, &uniforms);
+        rhiD->gatherUniforms(program, ub, &activeUniformLocations, &uniforms);
 
     for (const QShaderDescription::UniformBlock &ub : fsDesc.uniformBlocks())
-        rhiD->gatherUniforms(program, ub, &uniforms);
+        rhiD->gatherUniforms(program, ub, &activeUniformLocations, &uniforms);
 
     for (const QShaderDescription::InOutVariable &v : vsDesc.combinedImageSamplers())
         rhiD->gatherSamplers(program, v, &samplers);
@@ -4403,8 +4416,9 @@ bool QGles2ComputePipeline::create()
         rhiD->trySaveToDiskCache(program, diskCacheKey);
     }
 
+    QSet<int> activeUniformLocations;
     for (const QShaderDescription::UniformBlock &ub : csDesc.uniformBlocks())
-        rhiD->gatherUniforms(program, ub, &uniforms);
+        rhiD->gatherUniforms(program, ub, &activeUniformLocations, &uniforms);
     for (const QShaderDescription::InOutVariable &v : csDesc.combinedImageSamplers())
         rhiD->gatherSamplers(program, v, &samplers);
 
