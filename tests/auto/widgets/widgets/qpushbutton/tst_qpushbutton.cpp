@@ -672,7 +672,12 @@ void tst_QPushButton::hitButton()
     QVBoxLayout *layout = new QVBoxLayout;
     PushButton *button1 = new PushButton("Ok");
     PushButton *button2 = new PushButton("Cancel");
-    button2->setStyleSheet("QPushButton { margin: 10px; border-radius: 4px; border: 1px solid black; }");
+    button2->setStyleSheet("QPushButton {"
+        "padding: 5px;"
+        "margin: 5px;"
+        "border-radius: 4px;"
+        "border: 1px solid black; }"
+    );
 
     layout->addWidget(button1);
     layout->addWidget(button2);
@@ -686,7 +691,8 @@ void tst_QPushButton::hitButton()
 
     const QPoint button2Center = button2->rect().center();
     QVERIFY(button2->hitButton(button2Center));
-    QVERIFY(!button2->hitButton(QPoint(0, 0)));
+    QVERIFY(button2->hitButton(QPoint(6, 6)));
+    QVERIFY(!button2->hitButton(QPoint(2, 2)));
 }
 
 QTEST_MAIN(tst_QPushButton)

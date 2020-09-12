@@ -5824,8 +5824,11 @@ QRect QStyleSheetStyle::subElementRect(SubElement se, const QStyleOption *opt, c
     case SE_PushButtonBevel:
     case SE_PushButtonFocusRect:
         if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
-            if (rule.hasBox() || !rule.hasNativeBorder())
-                return visualRect(opt->direction, opt->rect, rule.contentsRect(opt->rect));
+            if (rule.hasBox() || !rule.hasNativeBorder()) {
+                return visualRect(opt->direction, opt->rect, se == SE_PushButtonBevel
+                                                                ? rule.borderRect(opt->rect)
+                                                                : rule.contentsRect(opt->rect));
+            }
             return rule.baseStyleCanDraw() ? baseStyle()->subElementRect(se, btn, w)
                                            : QWindowsStyle::subElementRect(se, btn, w);
         }
