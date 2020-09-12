@@ -336,7 +336,6 @@ namespace QTest
                                          char *val1, char *val2,
                                          const char *actual, const char *expected,
                                          const char *file, int line);
-    inline void qSleep(int ms) { QThread::msleep(ms); }
     Q_TESTLIB_EXPORT void addColumnInternal(int id, const char *name);
 
     template <typename T>

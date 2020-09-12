@@ -48,6 +48,8 @@ QT_BEGIN_NAMESPACE
 
 namespace QTest {
 
+Q_CORE_EXPORT void qSleep(int ms);
+
 template <typename Functor>
 Q_REQUIRED_RESULT static bool qWaitFor(Functor predicate, int timeout = 5000)
 {
@@ -75,7 +77,7 @@ Q_REQUIRED_RESULT static bool qWaitFor(Functor predicate, int timeout = 5000)
 
         remaining = int(deadline.remainingTime());
         if (remaining > 0)
-            QThread::msleep(qMin(10, remaining));
+            qSleep(qMin(10, remaining));
 
         if (predicate())
             return true;
