@@ -15,8 +15,7 @@ endfunction()
 
 macro(qt_find_package)
     # Get the target names we expect to be provided by the package.
-    set(find_package_options CONFIG NO_MODULE MODULE REQUIRED)
-    set(options ${find_package_options} MARK_OPTIONAL)
+    set(options CONFIG NO_MODULE MODULE REQUIRED)
     set(oneValueArgs MODULE_NAME QMAKE_LIB)
     set(multiValueArgs PROVIDED_TARGETS COMPONENTS)
     cmake_parse_arguments(arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -91,7 +90,7 @@ macro(qt_find_package)
     endif()
 
     # Ensure the options are back in the original unparsed arguments
-    foreach(opt IN LISTS find_package_options)
+    foreach(opt IN LISTS options)
         if(arg_${opt})
             list(APPEND arg_UNPARSED_ARGUMENTS ${opt})
         endif()
@@ -130,9 +129,8 @@ macro(qt_find_package)
                     set(qt_find_package_target_name ${aliased_target})
                 endif()
 
-                set_target_properties(${qt_find_package_target_name} PROPERTIES
-                    INTERFACE_QT_PACKAGE_NAME ${ARGV0}
-                    INTERFACE_QT_PACKAGE_IS_OPTIONAL ${arg_MARK_OPTIONAL})
+                set_target_properties(${qt_find_package_target_name}
+                                      PROPERTIES INTERFACE_QT_PACKAGE_NAME ${ARGV0})
                 if(package_version)
                     set_target_properties(${qt_find_package_target_name}
                                           PROPERTIES INTERFACE_QT_PACKAGE_VERSION ${ARGV1})

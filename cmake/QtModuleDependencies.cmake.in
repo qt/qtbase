@@ -4,14 +4,13 @@ find_dependency(@INSTALL_CMAKE_NAMESPACE@ @PROJECT_VERSION@
     PATHS "${CMAKE_CURRENT_LIST_DIR}/.." ${QT_EXAMPLES_CMAKE_PREFIX_PATH} NO_DEFAULT_PATH
 )
 
-# note: _third_party_deps example: "ICU\\;FALSE\\;1.0\\;i18n uc data;ZLIB\\;FALSE\\;\\;"
+# note: _third_party_deps example: "ICU\\;1.0\\;i18n uc data;ZLIB\\;\\;"
 set(_third_party_deps "@third_party_deps@")
 
 foreach(_target_dep ${_third_party_deps})
     list(GET _target_dep 0 pkg)
-    list(GET _target_dep 1 is_optional)
-    list(GET _target_dep 2 version)
-    list(GET _target_dep 3 components)
+    list(GET _target_dep 1 version)
+    list(GET _target_dep 2 components)
     set(find_package_args "${pkg}")
     if(version)
         list(APPEND find_package_args "${version}")
@@ -21,14 +20,7 @@ foreach(_target_dep ${_third_party_deps})
         list(APPEND find_package_args COMPONENTS ${components})
     endif()
 
-    if(is_optional)
-        if(${CMAKE_FIND_PACKAGE_NAME}_FIND_QUIETLY)
-            list(APPEND find_package_args QUIET)
-        endif()
-        find_package(${find_package_args})
-    else()
-        find_dependency(${find_package_args})
-    endif()
+    find_dependency(${find_package_args})
 endforeach()
 
 # Find Qt tool package.
