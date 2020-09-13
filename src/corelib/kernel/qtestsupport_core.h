@@ -88,10 +88,7 @@ Q_REQUIRED_RESULT static bool qWaitFor(Functor predicate, int timeout = 5000)
     return predicate(); // Last chance
 }
 
-inline void qWait(int ms)
-{
-    (void)qWaitFor([]() { return false; }, ms);
-}
+Q_CORE_EXPORT void qWait(int ms);
 
 } // namespace QTest
 
