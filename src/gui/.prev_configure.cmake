@@ -99,10 +99,6 @@ if((LINUX) OR QT_FIND_ALL_PACKAGES_ALWAYS)
 endif()
 qt_add_qmake_lib_dependency(xcb_xfixes xcb)
 if((LINUX) OR QT_FIND_ALL_PACKAGES_ALWAYS)
-    qt_find_package(XCB COMPONENTS XINERAMA PROVIDED_TARGETS XCB::XINERAMA MODULE_NAME gui QMAKE_LIB xcb_xinerama)
-endif()
-qt_add_qmake_lib_dependency(xcb_xinerama xcb)
-if((LINUX) OR QT_FIND_ALL_PACKAGES_ALWAYS)
     qt_find_package(X11_XCB PROVIDED_TARGETS X11::XCB MODULE_NAME gui QMAKE_LIB xcb_xlib)
 endif()
 qt_add_qmake_lib_dependency(xcb_xlib xcb xlib)
@@ -491,7 +487,6 @@ qt_config_compile_test(xcb_syslibs
         XCB::SHM
         XCB::SYNC
         XCB::XFIXES
-        XCB::XINERAMA
         XCB::XKB
         XCB::XCB
     CODE
@@ -506,7 +501,6 @@ qt_config_compile_test(xcb_syslibs
 #include <xcb/shm.h>
 #include <xcb/sync.h>
 #include <xcb/xfixes.h>
-#include <xcb/xinerama.h>
 #include <xcb/xcb_icccm.h>
 #include <xcb/xcb_renderutil.h>
 #include <xcb/xkb.h>

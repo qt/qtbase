@@ -255,7 +255,7 @@ qt_feature("libproxy" PRIVATE
 )
 qt_feature("linux-netlink" PRIVATE
     LABEL "Linux AF_NETLINK"
-    CONDITION LINUX AND TEST_linux_netlink
+    CONDITION LINUX AND NOT ANDROID AND TEST_linux_netlink
 )
 qt_feature("openssl" PRIVATE
     LABEL "OpenSSL"

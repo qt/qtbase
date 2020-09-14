@@ -433,7 +433,7 @@ qt_feature("filedialog" PUBLIC
     SECTION "Dialogs"
     LABEL "QFileDialog"
     PURPOSE "Provides a dialog widget for selecting files or directories."
-    CONDITION ( QT_FEATURE_buttongroup ) AND ( QT_FEATURE_combobox ) AND ( QT_FEATURE_dialog ) AND ( QT_FEATURE_dialogbuttonbox ) AND ( QT_FEATURE_label ) AND ( QT_FEATURE_proxymodel ) AND ( QT_FEATURE_splitter ) AND ( QT_FEATURE_stackedwidget ) AND ( QT_FEATURE_treeview ) AND ( QT_FEATURE_toolbutton )
+    CONDITION ( QT_FEATURE_buttongroup ) AND ( QT_FEATURE_combobox ) AND ( QT_FEATURE_dialog ) AND ( QT_FEATURE_dialogbuttonbox ) AND ( QT_FEATURE_filesystemmodel ) AND ( QT_FEATURE_label ) AND ( QT_FEATURE_proxymodel ) AND ( QT_FEATURE_splitter ) AND ( QT_FEATURE_stackedwidget ) AND ( QT_FEATURE_treeview ) AND ( QT_FEATURE_toolbutton )
 )
 qt_feature_definition("filedialog" "QT_NO_FILEDIALOG" NEGATE VALUE "1")
 qt_feature("fontdialog" PUBLIC
