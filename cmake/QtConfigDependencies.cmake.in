@@ -1,14 +1,15 @@
 set(@INSTALL_CMAKE_NAMESPACE@_DEPENDENCIES_FOUND FALSE)
 
-# note: _third_party_deps example: "ICU\\;1.0\\;i18n uc data;ZLIB\\;\\;"
+# note: _third_party_deps example: "ICU\\;FALSE\\;1.0\\;i18n uc data;ZLIB\\;FALSE\\;\\;"
 set(_third_party_deps "@third_party_deps@")
 
 @third_party_extra@
 
 foreach(_target_dep ${_third_party_deps})
     list(GET _target_dep 0 pkg)
-    list(GET _target_dep 1 version)
-    list(GET _target_dep 2 components)
+    list(GET _target_dep 1 is_optional)
+    list(GET _target_dep 2 version)
+    list(GET _target_dep 3 components)
     set(find_package_args "${pkg}")
     if(version)
         list(APPEND find_package_args "${version}")
@@ -29,7 +30,14 @@ foreach(_target_dep ${_third_party_deps})
     set(@INSTALL_CMAKE_NAMESPACE@_DEPENDENCY_NOT_FOUND_MESSAGE
         "${__@INSTALL_CMAKE_NAMESPACE@_message}")
 
-    find_dependency(${find_package_args})
+    if(is_optional)
+        if(${CMAKE_FIND_PACKAGE_NAME}_FIND_QUIETLY)
+            list(APPEND find_package_args QUIET)
+        endif()
+        find_package(${find_package_args})
+    else()
+        find_dependency(${find_package_args})
+    endif()
 endforeach()
 
 set(@INSTALL_CMAKE_NAMESPACE@_DEPENDENCIES_FOUND TRUE)
