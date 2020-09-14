@@ -244,7 +244,7 @@ class Q_CORE_EXPORT QDateTime
             CanBeSmall = sizeof(ShortData) * 8 > 50
         };
 
-        Data();
+        Data() noexcept;
         Data(Qt::TimeSpec);
         Data(const Data &other);
         Data(Data &&other);
@@ -262,7 +262,7 @@ class Q_CORE_EXPORT QDateTime
     };
 
 public:
-    QDateTime() noexcept(Data::CanBeSmall);
+    QDateTime() noexcept;
     QDateTime(QDate date, QTime time, Qt::TimeSpec spec = Qt::LocalTime, int offsetSeconds = 0);
 #if QT_CONFIG(timezone)
     QDateTime(QDate date, QTime time, const QTimeZone &timeZone);

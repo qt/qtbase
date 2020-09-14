@@ -2984,7 +2984,7 @@ static QPair<QDate, QTime> getDateTime(const QDateTimeData &d)
   QDateTime::Data member functions
  *****************************************************************************/
 
-inline QDateTime::Data::Data()
+inline QDateTime::Data::Data() noexcept
 {
     // default-constructed data has a special exception:
     // it can be small even if CanBeSmall == false
@@ -3327,12 +3327,13 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
 */
 
 /*!
-    Constructs a null datetime (i.e. null date and null time). A null
-    datetime is invalid, since the date is invalid.
+    Constructs a null datetime.
+
+    A null datetime is invalid, since its date and time are invalid.
 
     \sa isValid()
 */
-QDateTime::QDateTime() noexcept(Data::CanBeSmall)
+QDateTime::QDateTime() noexcept
 {
 }
 
