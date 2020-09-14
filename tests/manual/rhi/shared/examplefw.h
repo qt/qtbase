@@ -520,7 +520,7 @@ int main(int argc, char **argv)
     if (scFlags.testFlag(QRhiSwapChain::NoVSync))
         fmt.setSwapInterval(0);
     if (scFlags.testFlag(QRhiSwapChain::sRGB))
-        fmt.setColorSpace(QSurfaceFormat::sRGBColorSpace);
+        fmt.setColorSpace(QColorSpace::SRgb);
     // Exception: The alpha size is not necessarily OpenGL specific.
     if (transparentBackground)
         fmt.setAlphaBufferSize(8);

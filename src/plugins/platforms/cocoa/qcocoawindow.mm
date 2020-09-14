@@ -1663,7 +1663,7 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
 
     applyContentBorderThickness(nsWindow);
 
-    if (format().colorSpace() == QSurfaceFormat::sRGBColorSpace)
+    if (format().colorSpace() == QColorSpace::SRgb)
         nsWindow.colorSpace = NSColorSpace.sRGBColorSpace;
 
     return nsWindow;

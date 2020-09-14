@@ -50,6 +50,7 @@
 
 #include <QApplication>
 #include <QMainWindow>
+#include <QColorSpace>
 #include <QSurfaceFormat>
 #include <QCommandLineParser>
 #include <QCommandLineOption>
@@ -77,7 +78,7 @@ int main( int argc, char ** argv )
     format.setDepthBufferSize(24);
     format.setStencilBufferSize(8);
     if (parser.isSet(srgbOption))
-        format.setColorSpace(QSurfaceFormat::sRGBColorSpace);
+        format.setColorSpace(QColorSpace::SRgb);
     if (parser.isSet(multipleSampleOption))
         format.setSamples(4);
     QSurfaceFormat::setDefaultFormat(format);

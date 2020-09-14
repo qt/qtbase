@@ -40,14 +40,15 @@
 // We have to include this before the X11 headers dragged in by
 // qglxconvenience_p.h.
 #include <QtCore/qbytearray.h>
-#include <QtCore/qscopedpointer.h>
-
 #include <QtCore/qmetatype.h>
+#include <QtCore/qscopedpointer.h>
 #include <QtCore/qtextstream.h>
+#include <QtGui/qcolorspace.h>
 #include "qglxconvenience_p.h"
 
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qvarlengtharray.h>
+
 
 #include <GL/glxext.h>
 
@@ -126,7 +127,7 @@ QList<int> qglx_buildSpec(const QSurfaceFormat &format, int drawableBit, int fla
              << GLX_SAMPLES_ARB
              << format.samples();
 
-    if ((flags & QGLX_SUPPORTS_SRGB) && format.colorSpace() == QSurfaceFormat::sRGBColorSpace)
+    if ((flags & QGLX_SUPPORTS_SRGB) && format.colorSpace() == QColorSpace::SRgb)
         spec << GLX_FRAMEBUFFER_SRGB_CAPABLE_ARB
              << True;
 
@@ -217,7 +218,7 @@ GLXFBConfig qglx_findConfig(Display *display, int screen , QSurfaceFormat format
         for (int i = 0; i < confcount; i++) {
             GLXFBConfig candidate = configs[i];
 
-            if ((flags & QGLX_SUPPORTS_SRGB) && format.colorSpace() == QSurfaceFormat::sRGBColorSpace) {
+            if ((flags & QGLX_SUPPORTS_SRGB) && format.colorSpace() == QColorSpace::SRgb) {
                 int srgbCapable = 0;
                 glXGetFBConfigAttrib(display, candidate, GLX_FRAMEBUFFER_SRGB_CAPABLE_ARB, &srgbCapable);
                 if (!srgbCapable)
@@ -335,7 +336,10 @@ void qglx_surfaceFormatFromGLXFBConfig(QSurfaceFormat *format, Display *display,
         glXGetFBConfigAttrib(display, config, GLX_SAMPLES_ARB, &sampleCount);
         format->setSamples(sampleCount);
     }
-    format->setColorSpace(srgbCapable ? QSurfaceFormat::sRGBColorSpace : QSurfaceFormat::DefaultColorSpace);
+    if (srgbCapable)
+        format->setColorSpace(QColorSpace::SRgb);
+    else
+        format->setColorSpace(QColorSpace());
 
     format->setStereo(stereo);
 }
@@ -374,7 +378,10 @@ void qglx_surfaceFormatFromVisualInfo(QSurfaceFormat *format, Display *display, 
         glXGetConfig(display, visualInfo, GLX_SAMPLES_ARB, &sampleCount);
         format->setSamples(sampleCount);
     }
-    format->setColorSpace(srgbCapable ? QSurfaceFormat::sRGBColorSpace : QSurfaceFormat::DefaultColorSpace);
+    if (srgbCapable)
+        format->setColorSpace(QColorSpace::SRgb);
+    else
+        format->setColorSpace(QColorSpace());
 
     format->setStereo(stereo);
 }
@@ -455,8 +462,8 @@ bool qglx_reduceFormat(QSurfaceFormat *format)
         return true;
     }
 
-    if (format->colorSpace() == QSurfaceFormat::sRGBColorSpace) {
-        format->setColorSpace(QSurfaceFormat::DefaultColorSpace);
+    if (format->colorSpace() == QColorSpace::SRgb) {
+        format->setColorSpace(QColorSpace());
         return true;
     }
 

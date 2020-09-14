@@ -45,7 +45,7 @@
 
 QT_BEGIN_NAMESPACE
 
-
+class QColorSpace;
 class QOpenGLContext;
 class QSurfaceFormatPrivate;
 
@@ -85,11 +85,13 @@ public:
     };
     Q_ENUM(OpenGLContextProfile)
 
+#if QT_DEPRECATED_SINCE(6,0)
     enum ColorSpace {
         DefaultColorSpace,
         sRGBColorSpace
     };
     Q_ENUM(ColorSpace)
+#endif
 
     QSurfaceFormat();
     /*implicit*/ QSurfaceFormat(FormatOptions options);
@@ -146,8 +148,12 @@ public:
     int swapInterval() const;
     void setSwapInterval(int interval);
 
-    ColorSpace colorSpace() const;
+    const QColorSpace &colorSpace() const;
+    void setColorSpace(const QColorSpace &colorSpace);
+#if QT_DEPRECATED_SINCE(6,0)
+    Q_DECL_DEPRECATED_X("Use setColorSpace(QColorSpace) instead.")
     void setColorSpace(ColorSpace colorSpace);
+#endif
 
     static void setDefaultFormat(const QSurfaceFormat &format);
     static QSurfaceFormat defaultFormat();

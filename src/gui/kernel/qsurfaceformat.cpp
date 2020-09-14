@@ -42,6 +42,7 @@
 #include <QtCore/qatomic.h>
 #include <QtCore/QDebug>
 #include <QOpenGLContext>
+#include <QtGui/qcolorspace.h>
 #include <QtGui/qguiapplication.h>
 
 #ifdef major
@@ -73,7 +74,6 @@ public:
         , major(2)
         , minor(0)
         , swapInterval(1) // default to vsync
-        , colorSpace(QSurfaceFormat::DefaultColorSpace)
     {
     }
 
@@ -112,7 +112,7 @@ public:
     int major;
     int minor;
     int swapInterval;
-    QSurfaceFormat::ColorSpace colorSpace;
+    QColorSpace colorSpace;
 };
 
 /*!
@@ -732,15 +732,36 @@ int QSurfaceFormat::swapInterval() const
     blending to be performed in the given color space instead of using the
     standard linear operations.
 
+    \since 6.0
+
+    \sa colorSpace()
+ */
+void QSurfaceFormat::setColorSpace(const QColorSpace &colorSpace)
+{
+    if (d->colorSpace != colorSpace) {
+        detach();
+        d->colorSpace = colorSpace;
+    }
+}
+
+/*!
+    \overload
+
+    Sets the colorspace to one of the predefined values.
+
     \since 5.10
 
     \sa colorSpace()
  */
 void QSurfaceFormat::setColorSpace(ColorSpace colorSpace)
 {
-    if (d->colorSpace != colorSpace) {
-        detach();
-        d->colorSpace = colorSpace;
+    switch (colorSpace) {
+    case DefaultColorSpace:
+        setColorSpace(QColorSpace());
+        break;
+    case sRGBColorSpace:
+        setColorSpace(QColorSpace::SRgb);
+        break;
     }
 }
 
@@ -751,7 +772,7 @@ void QSurfaceFormat::setColorSpace(ColorSpace colorSpace)
 
     \sa setColorSpace()
 */
-QSurfaceFormat::ColorSpace QSurfaceFormat::colorSpace() const
+const QColorSpace &QSurfaceFormat::colorSpace() const
 {
     return d->colorSpace;
 }

@@ -44,6 +44,7 @@
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qsysinfo.h>
+#include <QtGui/qcolorspace.h>
 #include <QtGui/qguiapplication.h>
 #include <qpa/qplatformnativeinterface.h>
 
@@ -588,7 +589,7 @@ static int choosePixelFormat(HDC hdc,
         iAttributes[i++] = FALSE;
     }
     // must be the last
-    bool srgbRequested = format.colorSpace() == QSurfaceFormat::sRGBColorSpace;
+    bool srgbRequested = format.colorSpace() == QColorSpace::SRgb;
     int srgbValuePosition = 0;
     if (srgbRequested) {
         srgbValuePosition = i;
@@ -710,10 +711,10 @@ static QSurfaceFormat
     if (hasSampleBuffers) {
         result.setSamples(iValues[13]);
         if (hasSrgbSupport && iValues[14])
-            result.setColorSpace(QSurfaceFormat::sRGBColorSpace);
+            result.setColorSpace(QColorSpace::SRgb);
     } else {
         if (hasSrgbSupport && iValues[12])
-            result.setColorSpace(QSurfaceFormat::sRGBColorSpace);
+            result.setColorSpace(QColorSpace::SRgb);
     }
     if (additionalIn) {
         if (iValues[7])
