@@ -985,14 +985,15 @@ public:
 
     QString toString(qlonglong i) const;
     QString toString(qulonglong i) const;
-    inline QString toString(long i) const;
-    inline QString toString(ulong i) const;
-    inline QString toString(short i) const;
-    inline QString toString(ushort i) const;
-    inline QString toString(int i) const;
-    inline QString toString(uint i) const;
+    QString toString(long i) const { return toString(qlonglong(i)); }
+    QString toString(ulong i) const { return toString(qulonglong(i)); }
+    QString toString(short i) const { return toString(qlonglong(i)); }
+    QString toString(ushort i) const { return toString(qulonglong(i)); }
+    QString toString(int i) const { return toString(qlonglong(i)); }
+    QString toString(uint i) const { return toString(qulonglong(i)); }
     QString toString(double i, char f = 'g', int prec = 6) const;
-    inline QString toString(float i, char f = 'g', int prec = 6) const;
+    QString toString(float i, char f = 'g', int prec = 6) const
+    { return toString(double(i), f, prec); }
 
 #if QT_STRINGVIEW_LEVEL < 2
     QString toString(QDate date, const QString &formatStr) const;
@@ -1060,12 +1061,16 @@ public:
     QString currencySymbol(CurrencySymbolFormat = CurrencySymbol) const;
     QString toCurrencyString(qlonglong, const QString &symbol = QString()) const;
     QString toCurrencyString(qulonglong, const QString &symbol = QString()) const;
-    inline QString toCurrencyString(short, const QString &symbol = QString()) const;
-    inline QString toCurrencyString(ushort, const QString &symbol = QString()) const;
-    inline QString toCurrencyString(int, const QString &symbol = QString()) const;
-    inline QString toCurrencyString(uint, const QString &symbol = QString()) const;
+    QString toCurrencyString(short i, const QString &symbol = QString()) const
+    { return toCurrencyString(qlonglong(i), symbol); }
+    QString toCurrencyString(ushort i, const QString &symbol = QString()) const
+    { return toCurrencyString(qulonglong(i), symbol); }
+    QString toCurrencyString(int i, const QString &symbol = QString()) const
+    { return toCurrencyString(qlonglong(i), symbol); }
+    QString toCurrencyString(uint i, const QString &symbol = QString()) const
+    { return toCurrencyString(qulonglong(i), symbol); }
     QString toCurrencyString(double, const QString &symbol = QString(), int precision = -1) const;
-    inline QString toCurrencyString(float i, const QString &symbol = QString(), int precision = -1) const
+    QString toCurrencyString(float i, const QString &symbol = QString(), int precision = -1) const
     { return toCurrencyString(double(i), symbol, precision); }
 
     QString formattedDataSize(qint64 bytes, int precision = 2, DataSizeFormats format = DataSizeIecFormat) const;
@@ -1108,30 +1113,6 @@ private:
 };
 Q_DECLARE_SHARED(QLocale)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QLocale::NumberOptions)
-
-inline QString QLocale::toString(long i) const
-    { return toString(qlonglong(i)); }
-inline QString QLocale::toString(ulong i) const
-    { return toString(qulonglong(i)); }
-inline QString QLocale::toString(short i) const
-    { return toString(qlonglong(i)); }
-inline QString QLocale::toString(ushort i) const
-    { return toString(qulonglong(i)); }
-inline QString QLocale::toString(int i) const
-    { return toString(qlonglong(i)); }
-inline QString QLocale::toString(uint i) const
-    { return toString(qulonglong(i)); }
-inline QString QLocale::toString(float i, char f, int prec) const
-    { return toString(double(i), f, prec); }
-
-inline QString QLocale::toCurrencyString(short i, const QString &symbol) const
-    { return toCurrencyString(qlonglong(i), symbol); }
-inline QString QLocale::toCurrencyString(ushort i, const QString &symbol) const
-    { return toCurrencyString(qulonglong(i), symbol); }
-inline QString QLocale::toCurrencyString(int i, const QString &symbol) const
-{ return toCurrencyString(qlonglong(i), symbol); }
-inline QString QLocale::toCurrencyString(uint i, const QString &symbol) const
-{ return toCurrencyString(qulonglong(i), symbol); }
 
 #ifndef QT_NO_DATASTREAM
 Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QLocale &);
