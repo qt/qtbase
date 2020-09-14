@@ -1138,14 +1138,6 @@ QString QDate::toString(QStringView format, QCalendar cal) const
 {
     return QLocale::c().toString(*this, format, cal);
 }
-
-#if QT_STRINGVIEW_LEVEL < 2
-QString QDate::toString(const QString &format, QCalendar cal) const
-{
-    return toString(qToStringViewIgnoringNull(format), cal);
-}
-#endif
-
 #endif // datestring
 
 /*!
@@ -1916,14 +1908,6 @@ QString QTime::toString(QStringView format) const
 {
     return QLocale::c().toString(*this, format);
 }
-
-#if QT_STRINGVIEW_VERSION < 2
-QString QTime::toString(const QString &format) const
-{
-    return toString(qToStringViewIgnoringNull(format));
-}
-#endif
-
 #endif // datestring
 
 /*!
@@ -4034,13 +4018,6 @@ QString QDateTime::toString(QStringView format, QCalendar cal) const
 {
     return QLocale::c().toString(*this, format, cal);
 }
-
-# if QT_STRINGVIEW_LEVEL < 2
-QString QDateTime::toString(const QString &format, QCalendar cal) const
-{
-    return toString(qToStringViewIgnoringNull(format), cal);
-}
-# endif
 #endif // datestring
 
 static inline void massageAdjustedDateTime(QDateTimeData &d, QDate date, QTime time)

@@ -99,7 +99,8 @@ public:
 #if QT_CONFIG(datestring)
     QString toString(Qt::DateFormat format = Qt::TextDate) const;
 # if QT_STRINGVIEW_LEVEL < 2
-    QString toString(const QString &format, QCalendar cal = QCalendar()) const;
+    QString toString(const QString &format, QCalendar cal = QCalendar()) const
+    { return toString(qToStringViewIgnoringNull(format), cal); }
 # endif
     QString toString(QStringView format, QCalendar cal = QCalendar()) const;
 #endif
@@ -175,7 +176,8 @@ public:
 #if QT_CONFIG(datestring)
     QString toString(Qt::DateFormat f = Qt::TextDate) const;
 #if QT_STRINGVIEW_LEVEL < 2
-    QString toString(const QString &format) const;
+    QString toString(const QString &format) const
+    { return toString(qToStringViewIgnoringNull(format)); }
 #endif
     QString toString(QStringView format) const;
 #endif
@@ -303,7 +305,8 @@ public:
 #if QT_CONFIG(datestring)
     QString toString(Qt::DateFormat format = Qt::TextDate) const;
 # if QT_STRINGVIEW_LEVEL < 2
-    QString toString(const QString &format, QCalendar cal = QCalendar()) const;
+    QString toString(const QString &format, QCalendar cal = QCalendar()) const
+    { return toString(qToStringViewIgnoringNull(format), cal); }
 # endif
     QString toString(QStringView format, QCalendar cal = QCalendar()) const;
 #endif
