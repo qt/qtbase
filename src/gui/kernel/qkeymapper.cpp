@@ -83,9 +83,6 @@ static QList<int> extractKeyFromEvent(QKeyEvent *e)
 
 QList<int> QKeyMapper::possibleKeys(QKeyEvent *e)
 {
-    if (!e->nativeScanCode())
-        return extractKeyFromEvent(e);
-
     return instance()->d_func()->possibleKeys(e);
 }
 

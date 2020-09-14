@@ -621,6 +621,9 @@ QList<int> QXkbCommon::possibleKeys(xkb_state *state, const QKeyEvent *event,
 {
     QList<int> result;
     quint32 keycode = event->nativeScanCode();
+    if (!keycode)
+        return result;
+
     Qt::KeyboardModifiers modifiers = event->modifiers();
     xkb_keymap *keymap = xkb_state_get_keymap(state);
     // turn off the modifier bits which doesn't participate in shortcuts

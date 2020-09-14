@@ -513,7 +513,11 @@ QList<int> QCocoaKeyMapper::possibleKeys(const QKeyEvent *event) const
 {
     QList<int> ret;
 
-    auto keyMap = keyMapForKey(event->nativeVirtualKey(), QChar(event->key()));
+    const auto nativeVirtualKey = event->nativeVirtualKey();
+    if (!nativeVirtualKey)
+        return ret;
+
+    auto keyMap = keyMapForKey(nativeVirtualKey, QChar(event->key()));
 
     auto unmodifiedKey = keyMap[Qt::NoModifier];
     Q_ASSERT(unmodifiedKey != Qt::Key_unknown);

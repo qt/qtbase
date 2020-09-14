@@ -53,11 +53,12 @@
         m_inputSource = [characters retain];
     }
 
-    // There is no way to get the scan code from carbon/cocoa. But we cannot
-    // use the value 0, since it indicates that the event originates from somewhere
-    // else than the keyboard.
-    quint32 nativeScanCode = 1;
-    quint32 nativeVirtualKey = [nsevent keyCode];
+    // Scan codes are hardware dependent codes for each key. There is no way to get these
+    // from Carbon or Cocoa, so leave it 0, as documented in QKeyEvent::nativeScanCode().
+    const quint32 nativeScanCode = 0;
+
+    // Virtual keys on the other hand are mapped to be the same keys on any system
+    const quint32 nativeVirtualKey = nsevent.keyCode;
 
     QChar ch = QChar::ReplacementCharacter;
     int keyCode = Qt::Key_unknown;
@@ -195,11 +196,12 @@
     ulong nativeModifiers = [nsevent modifierFlags];
     Qt::KeyboardModifiers modifiers = QCocoaKeyMapper::fromCocoaModifiers(nativeModifiers);
 
-    // There is no way to get the scan code from carbon/cocoa. But we cannot
-    // use the value 0, since it indicates that the event originates from somewhere
-    // else than the keyboard.
-    quint32 nativeScanCode = 1;
-    quint32 nativeVirtualKey = [nsevent keyCode];
+    // Scan codes are hardware dependent codes for each key. There is no way to get these
+    // from Carbon or Cocoa, so leave it 0, as documented in QKeyEvent::nativeScanCode().
+    const quint32 nativeScanCode = 0;
+
+    // Virtual keys on the other hand are mapped to be the same keys on any system
+    const quint32 nativeVirtualKey = nsevent.keyCode;
 
     // calculate the delta and remember the current modifiers for next time
     static ulong m_lastKnownModifiers;
