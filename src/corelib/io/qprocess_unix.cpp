@@ -461,6 +461,12 @@ void QProcessPrivate::startProcess()
     int ffdflags = FFD_CLOEXEC;
     if (childProcessModifier)
         ffdflags |= FFD_USE_FORK;
+
+    // QTBUG-86285
+#if !QT_CONFIG(forkfd_pidfd)
+    ffdflags |= FFD_USE_FORK;
+#endif
+
     pid_t childPid;
     forkfd = ::forkfd(ffdflags , &childPid);
     int lastForkErrno = errno;

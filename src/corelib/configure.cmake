@@ -935,6 +935,10 @@ qt_feature("etw" PRIVATE
     ENABLE INPUT_trace STREQUAL 'etw' OR ( INPUT_trace STREQUAL 'yes' AND WIN32 )
     DISABLE INPUT_trace STREQUAL 'lttng' OR INPUT_trace STREQUAL 'no'
 )
+qt_feature("forkfd_pidfd" PRIVATE
+    LABEL "CLONE_PIDFD support in forkfd"
+    CONDITION LINUX
+)
 qt_feature("win32_system_libs"
     LABEL "Windows System Libraries"
     CONDITION WIN32 AND libs.advapi32 AND libs.gdi32 AND libs.kernel32 AND libs.netapi32 AND libs.ole32 AND libs.shell32 AND libs.uuid AND libs.user32 AND libs.winmm AND libs.ws2_32 OR FIXME
@@ -972,6 +976,10 @@ qt_configure_add_summary_entry(
 )
 qt_configure_add_summary_entry(ARGS "pcre2")
 qt_configure_add_summary_entry(ARGS "system-pcre2")
+qt_configure_add_summary_entry(
+    ARGS "forkfd_pidfd"
+    CONDITION LINUX
+)
 qt_configure_end_summary_section() # end of "Qt Core" section
 qt_configure_add_report_entry(
     TYPE NOTE

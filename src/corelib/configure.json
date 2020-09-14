@@ -1013,6 +1013,11 @@
             "condition": "config.win32",
             "output": [ "privateFeature" ]
         },
+        "forkfd_pidfd": {
+            "label": "CLONE_PIDFD support in forkfd",
+            "condition": "config.linux",
+            "output": [ "privateFeature" ]
+        },
         "win32_system_libs": {
             "label": "Windows System Libraries",
             "condition": "config.win32 && libs.advapi32 && libs.gdi32 && libs.kernel32 && libs.netapi32 && libs.ole32 && libs.shell32 && libs.uuid && libs.user32 && libs.winmm && libs.ws2_32"
@@ -1094,7 +1099,12 @@ Note that this is required for plugin loading. Qt GUI needs QPA plugins for basi
                     "condition": "config.qnx"
                 },
                 "pcre2",
-                "system-pcre2"
+                "system-pcre2",
+                {
+                    "type": "feature",
+                    "args": "forkfd_pidfd",
+                    "condition": "config.linux"
+                }
             ]
         }
     ]
