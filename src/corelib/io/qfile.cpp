@@ -1082,11 +1082,6 @@ bool QFile::open(FILE *fh, OpenMode mode, FileHandleFlags handleFlags)
     then calling close() closes the adopted handle.
     Otherwise, close() does not actually close the file, but only flushes it.
 
-    The QFile that is opened using this function is automatically set
-    to be in raw mode; this means that the file input/output functions
-    are slow. If you run into performance issues, you should try to
-    use one of the other open functions.
-
     \warning If \a fd is not a regular file, e.g, it is 0 (\c stdin),
     1 (\c stdout), or 2 (\c stderr), you may not be able to seek(). In
     those cases, size() returns \c 0.  See QIODevice::isSequential()
