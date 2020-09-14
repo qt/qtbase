@@ -11,13 +11,12 @@ foreach(_target_dep ${_third_party_deps})
     if(version)
         list(APPEND find_package_args "${version}")
     endif()
-
     if(components)
         string(REPLACE " " ";" components "${components}")
-        find_dependency(${find_package_args} COMPONENTS ${components})
-    else()
-        find_dependency(${find_package_args})
+        list(APPEND find_package_args COMPONENTS ${components})
     endif()
+
+    find_dependency(${find_package_args})
 endforeach()
 
 # note: target_deps example: "Qt6Core\;5.12.0;Qt6Gui\;5.12.0"
