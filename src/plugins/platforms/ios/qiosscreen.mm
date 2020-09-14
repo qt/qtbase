@@ -212,10 +212,12 @@ static QIOSScreen* qtPlatformScreenFor(UIScreen *uiScreen)
 {
     [super traitCollectionDidChange:previousTraitCollection];
 
-    if (self.screen == UIScreen.mainScreen) {
-        if (previousTraitCollection.userInterfaceStyle != self.traitCollection.userInterfaceStyle) {
-            QIOSTheme::initializeSystemPalette();
-            QWindowSystemInterface::handleThemeChange<QWindowSystemInterface::SynchronousDelivery>(nullptr);
+    if (@available(iOS 12, *)) {
+        if (self.screen == UIScreen.mainScreen) {
+            if (previousTraitCollection.userInterfaceStyle != self.traitCollection.userInterfaceStyle) {
+                QIOSTheme::initializeSystemPalette();
+                QWindowSystemInterface::handleThemeChange<QWindowSystemInterface::SynchronousDelivery>(nullptr);
+            }
         }
     }
 }
