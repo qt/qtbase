@@ -94,6 +94,9 @@ struct IsContainerCompatibleWithQByteArrayView<T, std::enable_if_t<
                 // This needs to be treated specially due to the empty vs null distinction
                 std::negation<std::is_same<std::decay_t<T>, QByteArray>>,
 
+                // We handle array literals specially for source compat reasons
+                std::negation<std::is_array<T>>,
+
                 // Don't make an accidental copy constructor
                 std::negation<std::is_same<std::decay_t<T>, QByteArrayView>>>>> : std::true_type {};
 
@@ -147,10 +150,11 @@ private:
         return qsizetype(std::size(c));
     }
 
-    template <typename Char, size_t N>
-    static constexpr qsizetype lengthHelperContainer(const Char (&)[N]) noexcept
+    static constexpr qsizetype lengthHelperCharArray(const char *data, size_t size) noexcept
     {
-        return qsizetype(N - 1);
+        const auto it = std::char_traits<char>::find(data, size, '\0');
+        const auto end = it ? it : std::next(data, size);
+        return qsizetype(std::distance(data, end));
     }
 
     template <typename Byte>
@@ -175,9 +179,6 @@ public:
         : QByteArrayView(first, last - first) {}
 
 #ifdef Q_QDOC
-    template <typename Byte, size_t N>
-    constexpr QByteArrayView(const Byte (&array)[N]) noexcept;
-
     template <typename Byte>
     constexpr QByteArrayView(const Byte *data) noexcept;
 #else
@@ -198,6 +199,13 @@ public:
     template <typename Container, if_compatible_container<Container> = true>
     constexpr QByteArrayView(const Container &c) noexcept
         : QByteArrayView(std::data(c), lengthHelperContainer(c)) {}
+    template <size_t Size>
+    constexpr QByteArrayView(const char (&data)[Size]) noexcept
+        : QByteArrayView(data, lengthHelperCharArray(data, Size)) {}
+
+    template <typename Byte, size_t Size, if_compatible_byte<Byte> = true>
+    [[nodiscard]] constexpr static QByteArrayView fromArray(const Byte (&data)[Size]) noexcept
+    { return QByteArrayView(data, Size); }
 
     [[nodiscard]] inline QByteArray toByteArray() const; // defined in qbytearray.h
 

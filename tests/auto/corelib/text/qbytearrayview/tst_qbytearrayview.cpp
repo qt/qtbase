@@ -48,20 +48,20 @@ static_assert(CanConvert<char*>);
 static_assert(CanConvert<const char*>);
 
 static_assert(!CanConvert<uchar>);
-static_assert(CanConvert<uchar[1]>);
-static_assert(CanConvert<const uchar[1]>);
+static_assert(!CanConvert<uchar[1]>);
+static_assert(!CanConvert<const uchar[1]>);
 static_assert(CanConvert<uchar*>);
 static_assert(CanConvert<const uchar*>);
 
 static_assert(!CanConvert<signed char>);
-static_assert(CanConvert<signed char[1]>);
-static_assert(CanConvert<const signed char[1]>);
+static_assert(!CanConvert<signed char[1]>);
+static_assert(!CanConvert<const signed char[1]>);
 static_assert(CanConvert<signed char*>);
 static_assert(CanConvert<const signed char*>);
 
 static_assert(!CanConvert<std::byte>);
-static_assert(CanConvert<std::byte[1]>);
-static_assert(CanConvert<const std::byte[1]>);
+static_assert(!CanConvert<std::byte[1]>);
+static_assert(!CanConvert<const std::byte[1]>);
 static_assert(CanConvert<std::byte*>);
 static_assert(CanConvert<const std::byte*>);
 
@@ -110,6 +110,7 @@ private slots:
     void constExpr() const;
     void basics() const;
     void literals() const;
+    void fromArray() const;
     void literalsWithInternalNulls() const;
     void at() const;
 
@@ -324,9 +325,11 @@ void tst_QByteArrayView::basics() const
     QVERIFY(!(bv2 != bv1));
 }
 
+// Note: initially the size would be deduced from the array literal,
+// but it caused source compatibility issues so this is currently not the case.
 void tst_QByteArrayView::literals() const
 {
-    const char hello[] = "Hello";
+    const char hello[] = "Hello\0This shouldn't be found";
 
     QCOMPARE(QByteArrayView(hello).size(), 5);
     QCOMPARE(QByteArrayView(hello + 0).size(), 5); // forces decay to pointer
@@ -349,6 +352,44 @@ void tst_QByteArrayView::literals() const
     QVERIFY(!bv2.isNull());
     QVERIFY(!bv2.empty());
     QCOMPARE(bv2.size(), 5);
+
+    const char abc[] = "abc";
+    bv = abc;
+    QCOMPARE(bv.size(), 3);
+
+    const char def[3] = {'d', 'e', 'f'};
+    bv = def;
+    QCOMPARE(bv.size(), 3);
+}
+
+void tst_QByteArrayView::fromArray() const
+{
+    static constexpr char hello[] = "Hello\0abc\0\0.";
+
+    constexpr QByteArrayView bv = QByteArrayView::fromArray(hello);
+    QCOMPARE(bv.size(), 13);
+    QVERIFY(!bv.empty());
+    QVERIFY(!bv.isEmpty());
+    QVERIFY(!bv.isNull());
+    QCOMPARE(*bv.data(), 'H');
+    QCOMPARE(bv[0],      'H');
+    QCOMPARE(bv.at(0),   'H');
+    QCOMPARE(bv.front(), 'H');
+    QCOMPARE(bv.first(), 'H');
+    QCOMPARE(bv[4],      'o');
+    QCOMPARE(bv.at(4),   'o');
+    QCOMPARE(bv[5],      '\0');
+    QCOMPARE(bv.at(5),   '\0');
+    QCOMPARE(*(bv.data() + bv.size() - 2),  '.');
+    QCOMPARE(bv.back(),  '\0');
+    QCOMPARE(bv.last(),  '\0');
+
+    const std::byte bytes[] = {std::byte(0x0), std::byte(0x1), std::byte(0x2)};
+    QByteArrayView bbv = QByteArrayView::fromArray(bytes);
+    QCOMPARE(bbv.data(), reinterpret_cast<const char *>(bytes + 0));
+    QCOMPARE(bbv.size(), 3);
+    QCOMPARE(bbv.first(), 0x0);
+    QCOMPARE(bbv.last(), 0x2);
 }
 
 void tst_QByteArrayView::literalsWithInternalNulls() const
@@ -356,36 +397,39 @@ void tst_QByteArrayView::literalsWithInternalNulls() const
     const char withnull[] = "a\0zzz";
 
     // these are different results
-    QCOMPARE(size_t(QByteArrayView(withnull).size()), sizeof(withnull)/sizeof(withnull[0]) - 1);
+    QCOMPARE(size_t(QByteArrayView::fromArray(withnull).size()), std::size(withnull));
     QCOMPARE(QByteArrayView(withnull + 0).size(), 1);
 
-    QByteArrayView nulled(withnull);
+    QByteArrayView nulled = QByteArrayView::fromArray(withnull);
+    QCOMPARE(nulled.last(), '\0');
+    nulled.chop(1); // cut off trailing \0
     QCOMPARE(nulled[1], '\0');
     QCOMPARE(nulled.indexOf('\0'), 1);
     QCOMPARE(nulled.indexOf('z'), 2);
     QCOMPARE(nulled.lastIndexOf('z'), 4);
     QCOMPARE(nulled.lastIndexOf('a'), 0);
     QVERIFY(nulled.startsWith("a\0z"));
-    QVERIFY(!nulled.startsWith("a\0y"));
+    QVERIFY(nulled.startsWith("a\0y"));
+    QVERIFY(!nulled.startsWith(QByteArrayView("a\0y", 3)));
     QVERIFY(nulled.endsWith("zz"));
     QVERIFY(nulled.contains("z"));
-    QVERIFY(nulled.contains("\0z"));
-    QVERIFY(!nulled.contains("\0y"));
-    QCOMPARE(nulled.first(5), withnull);
-    QCOMPARE(nulled.last(5), withnull);
-    QCOMPARE(nulled.sliced(0), withnull);
+    QVERIFY(nulled.contains(QByteArrayView("\0z", 2)));
+    QVERIFY(!nulled.contains(QByteArrayView("\0y", 2)));
+    QCOMPARE(nulled.first(5), QByteArrayView(withnull, 5));
+    QCOMPARE(nulled.last(5), QByteArrayView(withnull, 5));
+    QCOMPARE(nulled.sliced(0), QByteArrayView(withnull, 5));
     QCOMPARE(nulled.sliced(2, 2), "zz");
-    QCOMPARE(nulled.chopped(2), "a\0z");
-    QVERIFY(nulled.chopped(2) != "a\0y");
+    QCOMPARE(nulled.chopped(2), QByteArrayView("a\0z", 3));
+    QVERIFY(nulled.chopped(2) != QByteArrayView("a\0y", 3));
     QCOMPARE(nulled.count('z'), 3);
 
     const char nullfirst[] = "\0buzz";
-    QByteArrayView fromnull(nullfirst);
+    QByteArrayView fromnull = QByteArrayView::fromArray(nullfirst);
     QVERIFY(!fromnull.isEmpty());
 
     const char nullNotEnd[] = { 'b', 'o', 'w', '\0', 'a', 'f', 't', 'z' };
-    QByteArrayView midNull(nullNotEnd);
-    QCOMPARE(midNull.back(), 't');
+    QByteArrayView midNull = QByteArrayView::fromArray(nullNotEnd);
+    QCOMPARE(midNull.back(), 'z');
 }
 
 void tst_QByteArrayView::at() const
@@ -522,14 +566,14 @@ void tst_QByteArrayView::fromEmptyLiteral() const
 
     QCOMPARE(QByteArrayView(null).size(), 0);
     QCOMPARE(QByteArrayView(null).data(), nullptr);
-    QCOMPARE(QByteArrayView(empty).size(), 0);
-    QCOMPARE(static_cast<const void*>(QByteArrayView(empty).data()),
+    QCOMPARE(QByteArrayView::fromArray(empty).size(), 1);
+    QCOMPARE(static_cast<const void*>(QByteArrayView::fromArray(empty).data()),
              static_cast<const void*>(empty));
 
     QVERIFY(QByteArrayView(null).isNull());
     QVERIFY(QByteArrayView(null).isEmpty());
-    QVERIFY(QByteArrayView(empty).isEmpty());
-    QVERIFY(!QByteArrayView(empty).isNull());
+    QVERIFY(!QByteArrayView::fromArray(empty).isEmpty());
+    QVERIFY(!QByteArrayView::fromArray(empty).isNull());
 }
 
 template <typename Char>

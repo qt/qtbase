@@ -58,10 +58,3 @@
     void fun(QByteArrayView bv);
     void fun(char ch) { fun(QByteArrayView(&ch, 1)); }
 //! [1]
-
-void wrapper() {
-    const char array[1] = { 0 };
-//! [2]
-    auto bv = QByteArrayView(array, std::size(array)); // using C++17 std::size()
-//! [2]
-}

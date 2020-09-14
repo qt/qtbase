@@ -256,23 +256,25 @@
 */
 
 /*!
-    \fn template <typename Byte, size_t N> QByteArrayView::QByteArrayView(const Byte (&data)[N])
+    \fn template <size_t Size> QByteArrayView(const char (&data)[Size])
 
-    Constructs a byte array view on the array of bytes \a data.
-    The length is set to \c{N-1}, excluding the trailing \{Byte(0)}.
-    If you need the full array, use the constructor from pointer and
-    size instead:
-
-    \snippet code/src_corelib_text_qbytearrayview.cpp 2
+    Constructs a byte array view on the char array \a data.
+    The view covers the array until the first \c{'\0'} is encountered,
+    or \c Size, whichever comes first.
+    If you need the full array, use fromArray() instead.
 
     \a data must remain valid for the lifetime of this byte array view
     object.
 
-    This constructor only participates in overload resolution if \a
-    data is an actual array and \c Byte is a compatible byte
-    type.
+    \note This constructor is only available for char array literals.
+    The reasoning behind that is for compatibility with C-libraries
+    which predefine "large-enough" arrays, but only use some of the
+    preallocated space. To support this in an intuitive way in an
+    implicit constructor overload, we need to stop at the first
+    \c{char(0)}. This is logical for a char array, but not
+    for a \c{std::byte} array.
 
-    \sa {Compatible Byte Types}
+    \sa fromArray
 */
 
 /*!
@@ -297,6 +299,21 @@
     container container with elements of a compatible byte type.
 
     \sa {Compatible Byte Types}
+*/
+
+/*!
+    \fn template <typename Byte, size_t Size> static QByteArrayView QByteArrayView::fromArray(Byte (&data)[Size])
+
+    Constructs a byte array view on the array literal \a data. The view covers the full
+    array. That includes the trailing null-terminator of \c{char} array literals.
+    If you don't want the null-terminator included in the view, you can chop() it off
+    when you are certain it is at the end. Alternatively you can use the constructor
+    overload taking a char array literal which will create a view up to, but not including,
+    the first null-terminator in the data.
+
+    This function will work with any array literal of a compatible byte type.
+
+    \sa {Compatible Byte Types}, QByteArrayView
 */
 
 /*!
