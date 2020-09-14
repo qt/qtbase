@@ -64,6 +64,7 @@ class Q_WIDGETS_EXPORT QLayout : public QObject, public QLayoutItem
     Q_DECLARE_PRIVATE(QLayout)
 
     Q_PROPERTY(int spacing READ spacing WRITE setSpacing)
+    Q_PROPERTY(QMargins contentsMargins READ contentsMargins WRITE setContentsMargins)
     Q_PROPERTY(SizeConstraint sizeConstraint READ sizeConstraint WRITE setSizeConstraint)
 public:
     enum SizeConstraint {
