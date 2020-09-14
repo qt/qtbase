@@ -189,8 +189,6 @@ public:
     virtual bool isPressEvent() const { return false; }
     virtual bool isUpdateEvent() const { return false; }
     virtual bool isReleaseEvent() const { return false; }
-    bool isPointAccepted(const QEventPoint &point) const;
-    void setPointAccepted(const QEventPoint &point, bool accepted = true);
     QObject *exclusiveGrabber(const QEventPoint &point) const;
     void setExclusiveGrabber(const QEventPoint &point, QObject *exclusiveGrabber);
     QList<QPointer <QObject>> passiveGrabbers(const QEventPoint &point) const;
