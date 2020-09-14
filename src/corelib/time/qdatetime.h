@@ -342,7 +342,7 @@ public:
 
     static QDateTime fromMSecsSinceEpoch(qint64 msecs, Qt::TimeSpec spec = Qt::LocalTime,
                                          int offsetFromUtc = 0);
-    static QDateTime fromSecsSinceEpoch(qint64 secs, Qt::TimeSpec spe = Qt::LocalTime,
+    static QDateTime fromSecsSinceEpoch(qint64 secs, Qt::TimeSpec spec = Qt::LocalTime,
                                         int offsetFromUtc = 0);
 
 #if QT_CONFIG(timezone)
