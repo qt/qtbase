@@ -1,3 +1,5 @@
+set(@INSTALL_CMAKE_NAMESPACE@_DEPENDENCIES_FOUND FALSE)
+
 # note: _third_party_deps example: "ICU\\;1.0\\;i18n uc data;ZLIB\\;\\;"
 set(_third_party_deps "@third_party_deps@")
 
@@ -12,24 +14,24 @@ foreach(_target_dep ${_third_party_deps})
         list(APPEND find_package_args "${version}")
     endif()
 
+    # Already build an error message, because find_dependency calls return() on failure.
+    set(__@INSTALL_CMAKE_NAMESPACE@_message "\nPackage: ${pkg}")
+    if(version)
+        string(APPEND __@INSTALL_CMAKE_NAMESPACE@_message "\nVersion: ${version}")
+    endif()
+    if(components)
+        string(APPEND __@INSTALL_CMAKE_NAMESPACE@_message "\nComponents: ${components}")
+    endif()
+    set(@INSTALL_CMAKE_NAMESPACE@_DEPENDENCY_NOT_FOUND_MESSAGE
+        "${__@INSTALL_CMAKE_NAMESPACE@_message}")
+
     if(components)
         string(REPLACE " " ";" components "${components}")
         find_dependency(${find_package_args} COMPONENTS ${components})
     else()
         find_dependency(${find_package_args})
     endif()
-
-    if (NOT ${pkg}_FOUND)
-        set(@INSTALL_CMAKE_NAMESPACE@_DEPENDENCIES_FOUND FALSE)
-        set(__@INSTALL_CMAKE_NAMESPACE@_message "\nPackage: ${pkg}")
-        if(version)
-            string(APPEND __@INSTALL_CMAKE_NAMESPACE@_message "\nVersion: ${version}")
-        endif()
-        if(components)
-            string(APPEND __@INSTALL_CMAKE_NAMESPACE@_message "\nComponents: ${components}")
-        endif()
-        set(@INSTALL_CMAKE_NAMESPACE@_DEPENDENCY_NOT_FOUND_MESSAGE
-            "${__@INSTALL_CMAKE_NAMESPACE@_message}")
-        return()
-    endif()
 endforeach()
+
+set(@INSTALL_CMAKE_NAMESPACE@_DEPENDENCIES_FOUND TRUE)
+unset(@INSTALL_CMAKE_NAMESPACE@_DEPENDENCY_NOT_FOUND_MESSAGE)

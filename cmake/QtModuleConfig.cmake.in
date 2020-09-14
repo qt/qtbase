@@ -14,6 +14,12 @@ if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@Dependenci
     include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@Dependencies.cmake")
 endif()
 
+# If *ConfigDependencies.cmake exists, the variable value will be defined there.
+# Don't override it in that case.
+if(NOT DEFINED "@INSTALL_CMAKE_NAMESPACE@@target@_FOUND")
+    set("@INSTALL_CMAKE_NAMESPACE@@target@_FOUND" TRUE)
+endif()
+
 if (NOT QT_NO_CREATE_TARGETS)
     include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@Targets.cmake")
     if(NOT QT_NO_CREATE_VERSIONLESS_TARGETS)
@@ -85,7 +91,6 @@ include(${_qt_@PROJECT_VERSION_MAJOR@_config_cmake_dir}/QtFeature.cmake)
 
 qt_make_features_available(@QT_CMAKE_EXPORT_NAMESPACE@::@target@)
 
-set("@INSTALL_CMAKE_NAMESPACE@@target@_FOUND" TRUE)
 if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@Plugins.cmake")
     include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@Plugins.cmake")
 endif()
