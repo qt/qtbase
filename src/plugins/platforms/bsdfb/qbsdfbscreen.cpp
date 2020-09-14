@@ -41,6 +41,7 @@
 #include "qbsdfbscreen.h"
 #include <QtFbSupport/private/qfbcursor_p.h>
 #include <QtFbSupport/private/qfbwindow_p.h>
+#include <QtCore/QFile>
 #include <QtCore/QRegularExpression>
 #include <QtGui/QPainter>
 

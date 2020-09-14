@@ -39,6 +39,7 @@
 
 #include "qbsdmouse.h"
 
+#include <QFile>
 #include <QSocketNotifier>
 #include <QStringList>
 #include <QPoint>
