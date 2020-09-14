@@ -14,6 +14,12 @@ qt_add_module(WinMain
       $<TARGET_PROPERTY:Qt::Core,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
+if (MSVC)
+    # Store debug information inside the static lib
+    string(REPLACE "/Zi" "/Z7" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+    string(REPLACE "/Zi" "/Z7" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+endif()
+
 set_property(TARGET WinMain PROPERTY OUTPUT_NAME qtmain)
 
 qt_extend_target(WinMain CONDITION
