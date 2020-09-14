@@ -162,23 +162,23 @@ void tst_QMouseEvent::mouseEventBasic()
     QCOMPARE(me.isAccepted(), true);
     QCOMPARE(me.button(), Qt::LeftButton);
     QCOMPARE(me.buttons(), Qt::LeftButton);
-    QVERIFY(me.isPressEvent());
-    QVERIFY(!me.isReleaseEvent());
+    QVERIFY(me.isBeginEvent());
+    QVERIFY(!me.isEndEvent());
     QCOMPARE(me.position(), local);
     QCOMPARE(me.scenePosition(), scene);
     QCOMPARE(me.globalPosition(), screen);
     // Press right button while left is already pressed
     me = QMouseEvent(QEvent::MouseButtonPress, local, scene, screen, Qt::RightButton, Qt::LeftButton | Qt::RightButton, Qt::NoModifier);
-    QVERIFY(me.isPressEvent());
-    QVERIFY(!me.isReleaseEvent());
+    QVERIFY(me.isBeginEvent());
+    QVERIFY(!me.isEndEvent());
     // Release right button while left is still pressed
     me = QMouseEvent(QEvent::MouseButtonRelease, local, scene, screen, Qt::RightButton, Qt::LeftButton, Qt::NoModifier);
-    QVERIFY(!me.isPressEvent());
-    QVERIFY(me.isReleaseEvent());
+    QVERIFY(!me.isBeginEvent());
+    QVERIFY(me.isEndEvent());
     // Release left button in the usual way
     me = QMouseEvent(QEvent::MouseButtonRelease, local, scene, screen, Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
-    QVERIFY(!me.isPressEvent());
-    QVERIFY(me.isReleaseEvent());
+    QVERIFY(!me.isBeginEvent());
+    QVERIFY(me.isEndEvent());
 }
 
 void tst_QMouseEvent::checkMousePressEvent_data()

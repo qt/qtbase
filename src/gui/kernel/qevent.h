@@ -210,9 +210,9 @@ public:
     const QList<QEventPoint> &points() const { return m_points; }
     QEventPoint *pointById(int id);
     bool allPointsGrabbed() const;
-    virtual bool isPressEvent() const { return false; }
+    virtual bool isBeginEvent() const { return false; }
     virtual bool isUpdateEvent() const { return false; }
-    virtual bool isReleaseEvent() const { return false; }
+    virtual bool isEndEvent() const { return false; }
     bool allPointsAccepted() const;
     QObject *exclusiveGrabber(const QEventPoint &point) const;
     void setExclusiveGrabber(const QEventPoint &point, QObject *exclusiveGrabber);
@@ -243,9 +243,9 @@ public:
     inline QPointF globalPosition() const
     { Q_ASSERT(!m_points.isEmpty()); return m_points.first().globalPosition(); }
 
-    bool isPressEvent() const override;
+    bool isBeginEvent() const override;
     bool isUpdateEvent() const override;
-    bool isReleaseEvent() const override;
+    bool isEndEvent() const override;
 
 protected:
     QSinglePointEvent(Type type, const QPointingDevice *dev, const QEventPoint &point,
@@ -392,6 +392,9 @@ public:
     inline bool isInverted() const { return m_invertedScrolling; }
     inline bool hasPixelDelta() const { return !m_pixelDelta.isNull(); }
 
+    bool isBeginEvent() const override;
+    bool isUpdateEvent() const override;
+    bool isEndEvent() const override;
     Qt::MouseEventSource source() const { return Qt::MouseEventSource(m_source); }
 
 protected:
@@ -996,9 +999,9 @@ public:
     QT_DEPRECATED_VERSION_X_6_0("Use points()")
     const QList<QEventPoint> &touchPoints() const { return points(); }
 #endif
-    bool isPressEvent() const override;
+    bool isBeginEvent() const override;
     bool isUpdateEvent() const override;
-    bool isReleaseEvent() const override;
+    bool isEndEvent() const override;
 
 protected:
     QObject *m_target = nullptr;

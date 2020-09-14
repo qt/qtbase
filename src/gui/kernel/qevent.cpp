@@ -906,7 +906,7 @@ QSinglePointEvent::QSinglePointEvent(QEvent::Type type, const QPointingDevice *d
 /*!
     Returns \c true if this event represents a \l {button()}{button} being pressed.
 */
-bool QSinglePointEvent::isPressEvent() const
+bool QSinglePointEvent::isBeginEvent() const
 {
     return m_button != Qt::NoButton && m_mouseState.testFlag(m_button);
 }
@@ -922,7 +922,7 @@ bool QSinglePointEvent::isUpdateEvent() const
 /*!
     Returns \c true if this event represents a \l {button()}{button} being released.
 */
-bool QSinglePointEvent::isReleaseEvent() const
+bool QSinglePointEvent::isEndEvent() const
 {
     return m_button != Qt::NoButton && !m_mouseState.testFlag(m_button);
 }
@@ -1503,6 +1503,31 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF &globalPos, QPoint pi
 QWheelEvent::~QWheelEvent()
 {
 }
+
+/*!
+    Returns \c true if this event's phase() is Qt::ScrollBegin.
+*/
+bool QWheelEvent::isBeginEvent() const
+{
+    return m_phase == Qt::ScrollBegin;
+}
+
+/*!
+    Returns \c true if this event's phase() is Qt::ScrollUpdate or Qt::ScrollMomentum.
+*/
+bool QWheelEvent::isUpdateEvent() const
+{
+    return m_phase == Qt::ScrollUpdate || m_phase == Qt::ScrollMomentum;
+}
+
+/*!
+    Returns \c true if this event's phase() is Qt::ScrollEnd.
+*/
+bool QWheelEvent::isEndEvent() const
+{
+    return m_phase == Qt::ScrollEnd;
+}
+
 #endif // QT_CONFIG(wheelevent)
 
 /*!
@@ -4738,7 +4763,7 @@ QTouchEvent::~QTouchEvent()
 /*!
     Returns true if this event includes at least one newly-pressed touchpoint.
 */
-bool QTouchEvent::isPressEvent() const
+bool QTouchEvent::isBeginEvent() const
 {
     return m_touchPointStates.testFlag(QEventPoint::State::Pressed);
 }
@@ -4756,7 +4781,7 @@ bool QTouchEvent::isUpdateEvent() const
 /*!
     Returns true if this event includes at least one newly-released touchpoint.
 */
-bool QTouchEvent::isReleaseEvent() const
+bool QTouchEvent::isEndEvent() const
 {
     return m_touchPointStates.testFlag(QEventPoint::State::Released);
 }

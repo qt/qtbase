@@ -338,9 +338,9 @@ void tst_QTouchEvent::state()
                            QEventPoint(1, QEventPoint::State::Pressed, {}, {}));
     QCOMPARE(touchEvent.touchPointStates(), QEventPoint::State::Stationary | QEventPoint::State::Pressed);
     QCOMPARE(touchEvent.pointCount(), 2);
-    QVERIFY(touchEvent.isPressEvent());
+    QVERIFY(touchEvent.isBeginEvent());
     QVERIFY(!touchEvent.isUpdateEvent());
-    QVERIFY(!touchEvent.isReleaseEvent());
+    QVERIFY(!touchEvent.isEndEvent());
     QVERIFY(touchEvent.isInputEvent());
     QVERIFY(touchEvent.isPointerEvent());
 
@@ -350,9 +350,9 @@ void tst_QTouchEvent::state()
                              QEventPoint(1, QEventPoint::State::Pressed, {}, {}));
     QCOMPARE(touchEvent.touchPointStates(), QEventPoint::State::Updated | QEventPoint::State::Pressed);
     QCOMPARE(touchEvent.pointCount(), 2);
-    QVERIFY(touchEvent.isPressEvent());
+    QVERIFY(touchEvent.isBeginEvent());
     QVERIFY(!touchEvent.isUpdateEvent());
-    QVERIFY(!touchEvent.isReleaseEvent());
+    QVERIFY(!touchEvent.isEndEvent());
 
     touchEvent = QTouchEvent(QEvent::TouchBegin, touchScreenDevice,
                              Qt::NoModifier, QList<QEventPoint>() <<
@@ -360,9 +360,9 @@ void tst_QTouchEvent::state()
                              QEventPoint(1, QEventPoint::State::Released, {}, {}));
     QCOMPARE(touchEvent.touchPointStates(), QEventPoint::State::Updated | QEventPoint::State::Released);
     QCOMPARE(touchEvent.pointCount(), 2);
-    QVERIFY(!touchEvent.isPressEvent());
+    QVERIFY(!touchEvent.isBeginEvent());
     QVERIFY(!touchEvent.isUpdateEvent());
-    QVERIFY(touchEvent.isReleaseEvent());
+    QVERIFY(touchEvent.isEndEvent());
 }
 
 void tst_QTouchEvent::touchDisabledByDefault()
