@@ -92,18 +92,20 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
 
 # Generate toolchain file for convenience
 if(QT_HOST_PATH)
-    get_filename_component(init_qt_host_path "${QT_HOST_PATH}" ABSOLUTE)
     # TODO: Figure out how to make these relocatable.
+
+    get_filename_component(__qt_host_path_absolute "${QT_HOST_PATH}" ABSOLUTE)
     set(init_qt_host_path "
-set(__qt_initial_qt_host_path \"${QT_HOST_PATH}\")
+set(__qt_initial_qt_host_path \"${__qt_host_path_absolute}\")
 if(NOT DEFINED QT_HOST_PATH AND EXISTS \"\${__qt_initial_qt_host_path}\")
     set(QT_HOST_PATH \"\${__qt_initial_qt_host_path}\" CACHE PATH \"\" FORCE)
 endif()")
-    get_filename_component(QT_HOST_PATH_CMAKE_DIR
+
+    get_filename_component(__qt_host_path_cmake_dir_absolute
         "${Qt${PROJECT_VERSION_MAJOR}HostInfo_DIR}/.." ABSOLUTE)
     set(init_qt_host_path_cmake_dir
         "
-set(__qt_initial_qt_host_path_cmake_dir \"${QT_HOST_PATH}\")
+set(__qt_initial_qt_host_path_cmake_dir \"${__qt_host_path_cmake_dir_absolute}\")
 if(NOT DEFINED QT_HOST_PATH_CMAKE_DIR AND EXISTS \"\${__qt_initial_qt_host_path_cmake_dir}\")
     set(QT_HOST_PATH_CMAKE_DIR \"\${__qt_initial_qt_host_path_cmake_dir}\" CACHE PATH \"\" FORCE)
 endif()")
