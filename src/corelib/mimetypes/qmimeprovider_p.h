@@ -71,6 +71,7 @@ public:
     virtual ~QMimeProviderBase() {}
 
     virtual bool isValid() = 0;
+    virtual bool isInternalDatabase() const = 0;
     virtual QMimeType mimeTypeForName(const QString &name) = 0;
     virtual void addFileNameMatches(const QString &fileName, QMimeGlobMatchResult &result) = 0;
     virtual void addParents(const QString &mime, QStringList &result) = 0;
@@ -98,6 +99,7 @@ public:
     virtual ~QMimeBinaryProvider();
 
     bool isValid() override;
+    bool isInternalDatabase() const override;
     QMimeType mimeTypeForName(const QString &name) override;
     void addFileNameMatches(const QString &fileName, QMimeGlobMatchResult &result) override;
     void addParents(const QString &mime, QStringList &result) override;
@@ -143,6 +145,7 @@ public:
     ~QMimeXMLProvider();
 
     bool isValid() override;
+    bool isInternalDatabase() const override;
     QMimeType mimeTypeForName(const QString &name) override;
     void addFileNameMatches(const QString &fileName, QMimeGlobMatchResult &result) override;
     void addParents(const QString &mime, QStringList &result) override;

@@ -97,7 +97,7 @@ bool QMimeDatabasePrivate::shouldCheck()
 void QMimeDatabasePrivate::loadProviders()
 {
     // We use QStandardPaths every time to check if new files appeared
-    QStringList mimeDirs = QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QLatin1String("mime"), QStandardPaths::LocateDirectory);
+    const QStringList mimeDirs = QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QLatin1String("mime"), QStandardPaths::LocateDirectory);
     const auto fdoIterator = std::find_if(mimeDirs.constBegin(), mimeDirs.constEnd(), [](const QString &mimeDir) -> bool {
         return QFileInfo::exists(mimeDir + QStringLiteral("/packages/freedesktop.org.xml")); }
     );
@@ -108,12 +108,22 @@ void QMimeDatabasePrivate::loadProviders()
 
     if (QMimeXMLProvider::InternalDatabaseAvailable && fdoIterator == mimeDirs.constEnd()) {
         m_providers.reserve(mimeDirs.size() + 1);
-        m_providers.push_back(Providers::value_type(new QMimeXMLProvider(this, QMimeXMLProvider::InternalDatabase)));
+        // Check if we already have a provider for the InternalDatabase
+        const auto isInternal = [](const std::unique_ptr<QMimeProviderBase> &prov)
+        {
+            return prov && prov->isInternalDatabase();
+        };
+        const auto it = std::find_if(currentProviders.begin(), currentProviders.end(), isInternal);
+        if (it == currentProviders.end()) {
+            m_providers.push_back(Providers::value_type(new QMimeXMLProvider(this, QMimeXMLProvider::InternalDatabase)));
+        } else {
+            m_providers.push_back(std::move(*it));
+        }
     } else {
         m_providers.reserve(mimeDirs.size());
     }
 
-    for (const QString &mimeDir : qAsConst(mimeDirs)) {
+    for (const QString &mimeDir : mimeDirs) {
         const QString cacheFile = mimeDir + QStringLiteral("/mime.cache");
         QFileInfo fileInfo(cacheFile);
         // Check if we already have a provider for this dir
