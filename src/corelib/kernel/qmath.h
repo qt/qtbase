@@ -47,7 +47,7 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qalgorithms.h>
 
-#if __has_include(<bit>)
+#if __has_include(<bit>) && __cplusplus > 201703L
 #include <bit>
 #endif
 

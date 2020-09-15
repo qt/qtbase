@@ -50,7 +50,7 @@
 #include <qt_windows.h>
 #endif
 
-#if __has_include(<bit>)
+#if __has_include(<bit>) && __cplusplus > 201703L
 #include <bit>
 #endif
 
