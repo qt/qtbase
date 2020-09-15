@@ -6,6 +6,7 @@ qt_copy_or_install(
     FILES
         gradlew
         gradlew.bat
+        gradle.properties
     DESTINATION
         "${destination}"
 )
