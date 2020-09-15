@@ -72,9 +72,6 @@ class Q_CORE_EXPORT QEventDispatcherWin32 : public QAbstractEventDispatcher
     Q_OBJECT
     Q_DECLARE_PRIVATE(QEventDispatcherWin32)
 
-protected:
-    void createInternalHwnd();
-
 public:
     explicit QEventDispatcherWin32(QObject *parent = 0);
     ~QEventDispatcherWin32();

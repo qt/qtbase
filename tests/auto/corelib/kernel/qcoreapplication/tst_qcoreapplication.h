@@ -49,6 +49,9 @@ private slots:
     void applicationPid();
     void globalPostedEventsCount();
     void processEventsAlwaysSendsPostedEvents();
+#ifdef Q_OS_WIN
+    void sendPostedEventsInNativeLoop();
+#endif
     void quit();
     void reexec();
     void execAfterExit();

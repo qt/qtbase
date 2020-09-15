@@ -411,7 +411,7 @@ void QEventDispatcherWin32Private::unregisterTimer(WinTimerInfo *t)
     } else if (t->fastTimerId != 0) {
         timeKillEvent(t->fastTimerId);
         QCoreApplicationPrivate::removePostedTimerEvent(t->dispatcher, t->timerId);
-    } else if (internalHwnd) {
+    } else {
         KillTimer(internalHwnd, t->timerId);
     }
     t->timerId = -1;
@@ -463,12 +463,16 @@ void QEventDispatcherWin32Private::postActivateEventNotifiers()
         QCoreApplication::postEvent(q, new QEvent(QEvent::WinEventAct));
 }
 
-void QEventDispatcherWin32::createInternalHwnd()
+QEventDispatcherWin32::QEventDispatcherWin32(QObject *parent)
+    : QEventDispatcherWin32(*new QEventDispatcherWin32Private, parent)
+{
+}
+
+QEventDispatcherWin32::QEventDispatcherWin32(QEventDispatcherWin32Private &dd, QObject *parent)
+    : QAbstractEventDispatcher(dd, parent)
 {
     Q_D(QEventDispatcherWin32);
 
-    if (d->internalHwnd)
-        return;
     d->internalHwnd = qt_create_internal_window(this);
 
     // setup GetMessage hook needed to drive our posted events
@@ -478,20 +482,7 @@ void QEventDispatcherWin32::createInternalHwnd()
         qFatal("Qt: INTERNAL ERROR: failed to install GetMessage hook: %d, %ls",
                errorCode, qUtf16Printable(qt_error_string(errorCode)));
     }
-
-    // start all normal timers
-    for (int i = 0; i < d->timerVec.count(); ++i)
-        d->registerTimer(d->timerVec.at(i));
 }
-
-QEventDispatcherWin32::QEventDispatcherWin32(QObject *parent)
-    : QAbstractEventDispatcher(*new QEventDispatcherWin32Private, parent)
-{
-}
-
-QEventDispatcherWin32::QEventDispatcherWin32(QEventDispatcherWin32Private &dd, QObject *parent)
-    : QAbstractEventDispatcher(dd, parent)
-{ }
 
 QEventDispatcherWin32::~QEventDispatcherWin32()
 {
@@ -516,11 +507,6 @@ static bool isUserInputMessage(UINT message)
 bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
     Q_D(QEventDispatcherWin32);
-
-    if (!d->internalHwnd) {
-        createInternalHwnd();
-        wakeUp(); // trigger a call to sendPostedEvents()
-    }
 
     d->interrupt.storeRelaxed(false);
     emit awake();
@@ -642,8 +628,6 @@ void QEventDispatcherWin32::registerSocketNotifier(QSocketNotifier *notifier)
                  "same socket %d and type %s", sockfd, t[type]);
     }
 
-    createInternalHwnd();
-
     QSockNot *sn = new QSockNot;
     sn->obj = notifier;
     sn->fd  = sockfd;
@@ -752,8 +736,7 @@ void QEventDispatcherWin32::registerTimer(int timerId, int interval, Qt::TimerTy
     t->inTimerEvent = false;
     t->fastTimerId = 0;
 
-    if (d->internalHwnd)
-        d->registerTimer(t);
+    d->registerTimer(t);
 
     d->timerVec.append(t);                      // store in timer vector
     d->timerDict.insert(t->timerId, t);          // store timers in dict
@@ -849,8 +832,6 @@ bool QEventDispatcherWin32::registerEventNotifier(QWinEventNotifier *notifier)
     if (d->winEventNotifierList.contains(notifier))
         return true;
 
-    createInternalHwnd();
-
     d->winEventNotifierList.append(notifier);
     d->winEventNotifierListModified = true;
 
@@ -933,10 +914,7 @@ int QEventDispatcherWin32::remainingTime(int timerId)
         if (t && t->timerId == timerId) {
             // timer found, return time to wait
 
-            if (d->internalHwnd)
-                return t->timeout > currentTime ? t->timeout - currentTime : 0;
-            else
-                return t->interval;
+            return t->timeout > currentTime ? t->timeout - currentTime : 0;
         }
     }
 
@@ -950,7 +928,7 @@ int QEventDispatcherWin32::remainingTime(int timerId)
 void QEventDispatcherWin32::wakeUp()
 {
     Q_D(QEventDispatcherWin32);
-    if (d->internalHwnd && d->wakeUps.testAndSetRelaxed(0, 1)) {
+    if (d->wakeUps.testAndSetRelaxed(0, 1)) {
         // post a WM_QT_SENDPOSTEDEVENTS to this thread if there isn't one already pending
         if (!PostMessage(d->internalHwnd, WM_QT_SENDPOSTEDEVENTS, 0, 0))
             qErrnoWarning("QEventDispatcherWin32::wakeUp: Failed to post a message");
@@ -1056,9 +1034,7 @@ void QEventDispatcherWin32::sendPostedEvents()
 
 HWND QEventDispatcherWin32::internalHwnd()
 {
-    Q_D(QEventDispatcherWin32);
-    createInternalHwnd();
-    return d->internalHwnd;
+    return d_func()->internalHwnd;
 }
 
 QT_END_NAMESPACE

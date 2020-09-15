@@ -36,6 +36,10 @@
 #include <private/qeventloop_p.h>
 #include <private/qthread_p.h>
 
+#ifdef Q_OS_WIN
+#include <QtCore/qt_windows.h>
+#endif
+
 typedef QCoreApplication TestApplication;
 
 class EventSpy : public QObject
@@ -616,6 +620,42 @@ void tst_QCoreApplication::processEventsAlwaysSendsPostedEvents()
         ++i;
     } while (t.elapsed() < 1000);
 }
+
+#ifdef Q_OS_WIN
+void tst_QCoreApplication::sendPostedEventsInNativeLoop()
+{
+    int argc = 1;
+    char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
+    TestApplication app(argc, argv);
+
+    bool signalReceived = false;
+
+    // Post a message to the queue
+    QMetaObject::invokeMethod(this, [&signalReceived]() {
+        signalReceived = true;
+    }, Qt::QueuedConnection);
+
+    QElapsedTimer elapsedTimer;
+    elapsedTimer.start();
+
+    // Exec own message loop
+    MSG msg;
+    forever {
+        if (elapsedTimer.hasExpired(3000) || signalReceived)
+            break;
+
+        if (!::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+            QThread::msleep(100);
+            continue;
+        }
+
+        ::TranslateMessage(&msg);
+        ::DispatchMessage(&msg);
+    }
+
+    QVERIFY(signalReceived);
+}
+#endif // Q_OS_WIN
 
 class QuitBlocker : public QObject
 {
