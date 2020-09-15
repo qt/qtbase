@@ -999,7 +999,7 @@ qt_extend_target(Gui CONDITION QT_FEATURE_xkbcommon AND UNIX
     SOURCES
         platform/unix/qxkbcommon.cpp platform/unix/qxkbcommon_p.h
         platform/unix/qxkbcommon_3rdparty.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         XKB::XKB
 )
 

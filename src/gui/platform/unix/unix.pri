@@ -41,5 +41,5 @@ qtConfig(xkbcommon) {
         platform/unix/qxkbcommon.cpp
     HEADERS += \
         platform/unix/qxkbcommon_p.h
-    QMAKE_USE += xkbcommon
+    QMAKE_USE_PRIVATE += xkbcommon
 }

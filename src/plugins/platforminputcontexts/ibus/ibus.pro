@@ -1,6 +1,7 @@
 TARGET = ibusplatforminputcontextplugin
 
 QT += dbus gui-private
+QMAKE_USE_PRIVATE += xkbcommon
 SOURCES += $$PWD/qibusplatforminputcontext.cpp \
            $$PWD/qibusproxy.cpp \
            $$PWD/qibusproxyportal.cpp \

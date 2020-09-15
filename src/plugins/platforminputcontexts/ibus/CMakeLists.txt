@@ -14,6 +14,8 @@ qt_internal_add_plugin(QIbusPlatformInputContextPlugin
         qibusproxy.cpp qibusproxy.h
         qibusproxyportal.cpp qibusproxyportal.h
         qibustypes.cpp qibustypes.h
+    LIBRARIES
+        XKB::XKB
     PUBLIC_LIBRARIES
         Qt::Core
         Qt::DBus

@@ -11,5 +11,6 @@ SOURCES += \
     $$PWD/qlibinputtouch.cpp
 
 QMAKE_USE_PRIVATE += libudev libinput
+qtConfig(xkbcommon): QMAKE_USE_PRIVATE += xkbcommon
 
 INCLUDEPATH += $$PWD/../shared

@@ -82,6 +82,11 @@ qt_extend_target(InputSupport CONDITION QT_FEATURE_libinput
         PkgConfig::Libudev
 )
 
+qt_extend_target(InputSupport CONDITION QT_FEATURE_libinput AND QT_FEATURE_xkbcommon
+    LIBRARIES
+        XKB::XKB
+)
+
 qt_extend_target(InputSupport CONDITION QT_FEATURE_evdev OR QT_FEATURE_libinput
     SOURCES
         shared/devicehandlerlist_p.h
