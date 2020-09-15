@@ -6,5 +6,8 @@ SUBDIRS= \
 
 mingw: SUBDIRS -= qfilesystemmodel # QTBUG-29403
 
-!qtHaveModule(widgets): SUBDIRS -= \
-    qstandarditemmodel
+!qtHaveModule(widgets) {
+    SUBDIRS -= \
+        qfilesystemmodel \
+        qstandarditemmodel
+}
