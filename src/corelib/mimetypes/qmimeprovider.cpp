@@ -167,6 +167,11 @@ bool QMimeBinaryProvider::isValid()
     return m_cacheFile != nullptr;
 }
 
+bool QMimeBinaryProvider::isInternalDatabase() const
+{
+    return false;
+}
+
 // Position of the "list offsets" values, at the beginning of the mime.cache file
 enum {
     PosAliasListOffset = 4,
@@ -689,6 +694,11 @@ bool QMimeXMLProvider::isValid()
     // If you change this method, adjust the logic in QMimeDatabasePrivate::loadProviders,
     // which assumes isValid==false is only possible in QMimeBinaryProvider.
     return true;
+}
+
+bool QMimeXMLProvider::isInternalDatabase() const
+{
+    return m_directory == internalMimeFileName();
 }
 
 QMimeType QMimeXMLProvider::mimeTypeForName(const QString &name)
