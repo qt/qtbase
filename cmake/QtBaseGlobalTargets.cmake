@@ -109,6 +109,14 @@ set(__qt_initial_qt_host_path_cmake_dir \"${__qt_host_path_cmake_dir_absolute}\"
 if(NOT DEFINED QT_HOST_PATH_CMAKE_DIR AND EXISTS \"\${__qt_initial_qt_host_path_cmake_dir}\")
     set(QT_HOST_PATH_CMAKE_DIR \"\${__qt_initial_qt_host_path_cmake_dir}\" CACHE PATH \"\" FORCE)
 endif()")
+
+    set(init_qt_host_path_checks "
+if(NOT QT_HOST_PATH OR NOT EXISTS \"\${QT_HOST_PATH}\")
+    message(FATAL_ERROR \"To use a cross-compiled Qt, please specify a path to a host Qt installation by setting the QT_HOST_PATH cache variable.\")
+endif()
+if(NOT QT_HOST_PATH_CMAKE_DIR OR NOT EXISTS \"\${QT_HOST_PATH_CMAKE_DIR}\")
+    message(FATAL_ERROR \"To use a cross-compiled Qt, please specify a path to a host Qt installation CMake directory by setting the QT_HOST_PATH_CMAKE_DIR cache variable.\")
+endif()")
 endif()
 
 if(CMAKE_TOOLCHAIN_FILE)
