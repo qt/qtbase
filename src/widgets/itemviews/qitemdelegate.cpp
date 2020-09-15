@@ -1017,7 +1017,7 @@ QPixmap QItemDelegate::selectedPixmap(const QPixmap &pixmap, const QPalette &pal
 
         QColor color = palette.color(enabled ? QPalette::Normal : QPalette::Disabled,
                                      QPalette::Highlight);
-        color.setAlphaF((qreal)0.3);
+        color.setAlphaF(0.3f);
 
         QPainter painter(&img);
         painter.setCompositionMode(QPainter::CompositionMode_SourceAtop);

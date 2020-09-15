@@ -5388,7 +5388,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
 #endif
                     QPainter p(q);
                     QColor tint = q->palette().window().color();
-                    tint.setAlphaF(qreal(.6));
+                    tint.setAlphaF(.6f);
                     p.fillRect(toBePainted.boundingRect(), tint);
 #ifndef QT_NO_OPENGL
                     endBackingStorePainting();

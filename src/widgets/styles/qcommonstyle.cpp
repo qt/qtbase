@@ -6435,7 +6435,7 @@ QPixmap QCommonStyle::generatedIconPixmap(QIcon::Mode iconMode, const QPixmap &p
     case QIcon::Selected: {
         QImage img = pixmap.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied);
         QColor color = opt->palette.color(QPalette::Normal, QPalette::Highlight);
-        color.setAlphaF(qreal(0.3));
+        color.setAlphaF(0.3f);
         QPainter painter(&img);
         painter.setCompositionMode(QPainter::CompositionMode_SourceAtop);
         painter.fillRect(0, 0, img.width(), img.height(), color);
