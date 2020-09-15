@@ -4,7 +4,8 @@ CONFIG -= qt android_install
 
 gradle_files.files = \
     $$PWD/gradlew \
-    $$PWD/gradlew.bat
+    $$PWD/gradlew.bat \
+    $$PWD/gradle.properties
 gradle_dirs.files = \
     $$PWD/gradle
 
