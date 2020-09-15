@@ -56,6 +56,26 @@ QT_BEGIN_NAMESPACE
 
 enum { debug = 0 };
 
+class QWindowsShellExecuteThread : public QThread
+{
+public:
+    explicit QWindowsShellExecuteThread(const wchar_t *path) : m_path(path) { }
+
+    void run() override
+    {
+        if (SUCCEEDED(CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE))) {
+            m_result = ShellExecute(nullptr, nullptr, m_path, nullptr, nullptr, SW_SHOWNORMAL);
+            CoUninitialize();
+        }
+    }
+
+    HINSTANCE result() const { return m_result; }
+
+private:
+    HINSTANCE m_result = nullptr;
+    const wchar_t *m_path;
+};
+
 static quintptr runShellExecute(const wchar_t *path)
 {
     HINSTANCE result = nullptr;
@@ -75,13 +95,11 @@ static inline bool shellExecute(const QUrl &url)
 
     // Run ShellExecute() in a thread since it may spin the event loop.
     // Prevent it from interfering with processing of posted events (QTBUG-85676).
-    quintptr result = 0;
-    quintptr *resultPtr = &result;
-    const auto path = reinterpret_cast<const wchar_t *>(nativeFilePath.utf16());
-    QScopedPointer<QThread> thread(QThread::create([path, resultPtr]
-                                                   () { *resultPtr = runShellExecute(path); }));
-    thread->start();
-    thread->wait();
+    QWindowsShellExecuteThread thread(reinterpret_cast<const wchar_t *>(nativeFilePath.utf16()));
+    thread.start();
+    thread.wait();
+
+    const auto result = reinterpret_cast<quintptr>(thread.result());
 
     // ShellExecute returns a value greater than 32 if successful
     if (result <= 32) {
