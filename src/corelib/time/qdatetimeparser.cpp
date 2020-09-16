@@ -817,7 +817,7 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex, i
             }
 
             const int absMax = absoluteMax(sectionIndex);
-            QLocale loc;
+            const QLocale loc = locale();
             bool ok = true;
             int last = -1, used = -1;
 
@@ -825,7 +825,7 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex, i
             QStringView digitsStr = sectionTextRef.left(sectiontextSize);
             for (int digits = sectiontextSize; digits >= 1; --digits) {
                 digitsStr.truncate(digits);
-                int tmp = (int)loc.toUInt(digitsStr, &ok);
+                int tmp = int(loc.toUInt(digitsStr, &ok));
                 if (ok && sn.type == Hour12Section) {
                     if (tmp > 12) {
                         tmp = -1;
