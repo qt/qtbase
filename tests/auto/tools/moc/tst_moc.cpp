@@ -3425,12 +3425,12 @@ void tst_Moc::autoSignalSpyMetaTypeRegistration()
 
     QVERIFY(i > 0);
 
-    QCOMPARE(QMetaType::type("CustomObject12"), (int)QMetaType::UnknownType);
+    QCOMPARE(QMetaType::fromName("CustomObject12").id(), (int)QMetaType::UnknownType);
 
     QSignalSpy spy(&aro, SIGNAL(someSignal(CustomObject12)));
 
-    QVERIFY(QMetaType::type("CustomObject12") != QMetaType::UnknownType);
-    QCOMPARE(QMetaType::type("CustomObject12"), qMetaTypeId<CustomObject12>());
+    QVERIFY(QMetaType::fromName("CustomObject12").id() != QMetaType::UnknownType);
+    QCOMPARE(QMetaType::fromName("CustomObject12").id(), qMetaTypeId<CustomObject12>());
 }
 
 void tst_Moc::parseDefines()

@@ -458,7 +458,7 @@ void tst_QIcon::pixmap()
     QVERIFY(icon.pixmap(16, 16).size().width() >= 16);
     QVERIFY(icon.pixmap(QSize(16, 16)).size().width() >= 16);
     QVERIFY(icon.pixmap(QSize(16, 16), 1).size().width() == 16);
-    QVERIFY(icon.pixmap(nullptr, QSize(16, 16)).size().width() >= 16);
+    QVERIFY(icon.pixmap(QSize(16, 16), -1).size().width() >= 16);
 }
 
 static bool sizeLess(const QSize &a, const QSize &b)

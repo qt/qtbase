@@ -1069,7 +1069,7 @@ void tst_QTreeView::itemDelegateForColumnOrRow()
 
     QVERIFY(!view.itemDelegateForRow(0));
     QVERIFY(!view.itemDelegateForColumn(0));
-    QCOMPARE(view.itemDelegate(QModelIndex()), defaultDelegate);
+    QCOMPARE(view.itemDelegateForIndex(QModelIndex()), defaultDelegate);
 
     QStandardItemModel model;
     for (int i = 0; i < 100; ++i) {
@@ -1085,26 +1085,26 @@ void tst_QTreeView::itemDelegateForColumnOrRow()
 
     QVERIFY(!view.itemDelegateForRow(0));
     QVERIFY(!view.itemDelegateForColumn(0));
-    QCOMPARE(view.itemDelegate(QModelIndex()), defaultDelegate);
-    QCOMPARE(view.itemDelegate(view.model()->index(0, 0)), defaultDelegate);
+    QCOMPARE(view.itemDelegateForIndex(QModelIndex()), defaultDelegate);
+    QCOMPARE(view.itemDelegateForIndex(view.model()->index(0, 0)), defaultDelegate);
 
     QPointer<QAbstractItemDelegate> rowDelegate = new QStyledItemDelegate;
     view.setItemDelegateForRow(0, rowDelegate);
     QVERIFY(!rowDelegate->parent());
     QCOMPARE(view.itemDelegateForRow(0), rowDelegate);
-    QCOMPARE(view.itemDelegate(view.model()->index(0, 0)), rowDelegate);
-    QCOMPARE(view.itemDelegate(view.model()->index(0, 1)), rowDelegate);
-    QCOMPARE(view.itemDelegate(view.model()->index(1, 0)), defaultDelegate);
-    QCOMPARE(view.itemDelegate(view.model()->index(1, 1)), defaultDelegate);
+    QCOMPARE(view.itemDelegateForIndex(view.model()->index(0, 0)), rowDelegate);
+    QCOMPARE(view.itemDelegateForIndex(view.model()->index(0, 1)), rowDelegate);
+    QCOMPARE(view.itemDelegateForIndex(view.model()->index(1, 0)), defaultDelegate);
+    QCOMPARE(view.itemDelegateForIndex(view.model()->index(1, 1)), defaultDelegate);
 
     QPointer<QAbstractItemDelegate> columnDelegate = new QStyledItemDelegate;
     view.setItemDelegateForColumn(1, columnDelegate);
     QVERIFY(!columnDelegate->parent());
     QCOMPARE(view.itemDelegateForColumn(1), columnDelegate);
-    QCOMPARE(view.itemDelegate(view.model()->index(0, 0)), rowDelegate);
-    QCOMPARE(view.itemDelegate(view.model()->index(0, 1)), rowDelegate); // row wins
-    QCOMPARE(view.itemDelegate(view.model()->index(1, 0)), defaultDelegate);
-    QCOMPARE(view.itemDelegate(view.model()->index(1, 1)), columnDelegate);
+    QCOMPARE(view.itemDelegateForIndex(view.model()->index(0, 0)), rowDelegate);
+    QCOMPARE(view.itemDelegateForIndex(view.model()->index(0, 1)), rowDelegate); // row wins
+    QCOMPARE(view.itemDelegateForIndex(view.model()->index(1, 0)), defaultDelegate);
+    QCOMPARE(view.itemDelegateForIndex(view.model()->index(1, 1)), columnDelegate);
 
     view.setItemDelegateForRow(0, nullptr);
     QVERIFY(!view.itemDelegateForRow(0));
@@ -2496,7 +2496,7 @@ void tst_QTreeView::spanningItems()
     for (int i = 0; i < model.rowCount(QModelIndex()); ++i) {
         if (!view.isFirstColumnSpanned(i, QModelIndex())) {
             QModelIndex index = model.index(i, 0, QModelIndex());
-            w = qMax(w, view.itemDelegate(index)->sizeHint(option, index).width() + view.indentation());
+            w = qMax(w, view.itemDelegateForIndex(index)->sizeHint(option, index).width() + view.indentation());
         }
     }
     QCOMPARE(view.sizeHintForColumn(0), w);
