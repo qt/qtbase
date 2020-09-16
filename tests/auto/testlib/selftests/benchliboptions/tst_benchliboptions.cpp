@@ -42,7 +42,7 @@ public:
     void interrupt() override {}
     bool processEvents(QEventLoop::ProcessEventsFlags) override { return false; }
     void registerSocketNotifier(QSocketNotifier*) override {}
-    void registerTimer(int,int,Qt::TimerType,QObject*) override {}
+    void registerTimer(int,qint64,Qt::TimerType,QObject*) override {}
     QList<TimerInfo> registeredTimers(QObject*) const override { return QList<TimerInfo>(); }
     void unregisterSocketNotifier(QSocketNotifier*) override {}
     bool unregisterTimer(int) override { return false; }

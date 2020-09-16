@@ -542,7 +542,7 @@ void QEventDispatcherCoreFoundation::unregisterSocketNotifier(QSocketNotifier *n
 
 #pragma mark - Timers
 
-void QEventDispatcherCoreFoundation::registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object)
+void QEventDispatcherCoreFoundation::registerTimer(int timerId, qint64 interval, Qt::TimerType timerType, QObject *object)
 {
     qCDebug(lcEventDispatcherTimers) << "Registering timer with id =" << timerId << "interval =" << interval
         << "type =" << timerType << "object =" << object;

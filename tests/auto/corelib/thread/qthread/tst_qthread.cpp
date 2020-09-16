@@ -1223,7 +1223,7 @@ public:
     }
     void registerSocketNotifier(QSocketNotifier *) override {}
     void unregisterSocketNotifier(QSocketNotifier *) override {}
-    void registerTimer(int, int, Qt::TimerType, QObject *) override {}
+    void registerTimer(int, qint64, Qt::TimerType, QObject *) override {}
     bool unregisterTimer(int) override { return false; }
     bool unregisterTimers(QObject *) override { return false; }
     QList<TimerInfo> registeredTimers(QObject *) const override { return QList<TimerInfo>(); }

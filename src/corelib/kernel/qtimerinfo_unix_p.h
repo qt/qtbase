@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
 // internal timer info
 struct QTimerInfo {
     int id;           // - timer identifier
-    int interval;     // - timer interval in milliseconds
+    qint64 interval;     // - timer interval in milliseconds
     Qt::TimerType timerType; // - timer type
     timespec timeout;  // - when to actually fire
     QObject *obj;     // - object to receive event
@@ -106,7 +106,7 @@ public:
 
     int timerRemainingTime(int timerId);
 
-    void registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object);
+    void registerTimer(int timerId, qint64 interval, Qt::TimerType timerType, QObject *object);
     bool unregisterTimer(int timerId);
     bool unregisterTimers(QObject *object);
     QList<QAbstractEventDispatcher::TimerInfo> registeredTimers(QObject *object) const;

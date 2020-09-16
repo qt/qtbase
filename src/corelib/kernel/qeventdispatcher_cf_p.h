@@ -218,7 +218,7 @@ public:
     void registerSocketNotifier(QSocketNotifier *notifier) override;
     void unregisterSocketNotifier(QSocketNotifier *notifier) override;
 
-    void registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object) override;
+    void registerTimer(int timerId, qint64 interval, Qt::TimerType timerType, QObject *object) override;
     bool unregisterTimer(int timerId) override;
     bool unregisterTimers(QObject *object) override;
     QList<QAbstractEventDispatcher::TimerInfo> registeredTimers(QObject *object) const override;

@@ -110,7 +110,7 @@ public:
     void registerSocketNotifier(QSocketNotifier *notifier) final;
     void unregisterSocketNotifier(QSocketNotifier *notifier) final;
 
-    void registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object) final;
+    void registerTimer(int timerId, qint64 interval, Qt::TimerType timerType, QObject *object) final;
     bool unregisterTimer(int timerId) final;
     bool unregisterTimers(QObject *object) final;
     QList<TimerInfo> registeredTimers(QObject *object) const final;

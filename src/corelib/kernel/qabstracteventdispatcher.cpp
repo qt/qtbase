@@ -241,7 +241,7 @@ QAbstractEventDispatcher *QAbstractEventDispatcher::instance(QThread *thread)
     Registers a timer with the specified \a interval and \a timerType for the
     given \a object and returns the timer id.
 */
-int QAbstractEventDispatcher::registerTimer(int interval, Qt::TimerType timerType, QObject *object)
+int QAbstractEventDispatcher::registerTimer(qint64 interval, Qt::TimerType timerType, QObject *object)
 {
     int id = QAbstractEventDispatcherPrivate::allocateTimerId();
     registerTimer(id, interval, timerType, object);

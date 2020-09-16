@@ -80,9 +80,8 @@ public:
     virtual void registerSocketNotifier(QSocketNotifier *notifier) = 0;
     virtual void unregisterSocketNotifier(QSocketNotifier *notifier) = 0;
 
-    // ### Qt6: change interval range to qint64 (or use QDeadlineTimer)
-    int registerTimer(int interval, Qt::TimerType timerType, QObject *object);
-    virtual void registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object) = 0;
+    int registerTimer(qint64 interval, Qt::TimerType timerType, QObject *object);
+    virtual void registerTimer(int timerId, qint64 interval, Qt::TimerType timerType, QObject *object) = 0;
     virtual bool unregisterTimer(int timerId) = 0;
     virtual bool unregisterTimers(QObject *object) = 0;
     virtual QList<TimerInfo> registeredTimers(QObject *object) const = 0;

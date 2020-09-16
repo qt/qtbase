@@ -196,7 +196,7 @@ void QCocoaEventDispatcherPrivate::maybeStopCFRunLoopTimer()
     runLoopTimerRef = nullptr;
 }
 
-void QCocoaEventDispatcher::registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *obj)
+void QCocoaEventDispatcher::registerTimer(int timerId, qint64 interval, Qt::TimerType timerType, QObject *obj)
 {
 #ifndef QT_NO_DEBUG
     if (timerId < 1 || interval < 0 || !obj) {

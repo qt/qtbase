@@ -502,7 +502,7 @@ void QEventDispatcherGlib::unregisterSocketNotifier(QSocketNotifier *notifier)
     }
 }
 
-void QEventDispatcherGlib::registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object)
+void QEventDispatcherGlib::registerTimer(int timerId, qint64 interval, Qt::TimerType timerType, QObject *object)
 {
 #ifndef QT_NO_DEBUG
     if (timerId < 1 || interval < 0 || !object) {

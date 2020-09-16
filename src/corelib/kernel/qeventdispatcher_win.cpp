@@ -707,7 +707,7 @@ void QEventDispatcherWin32::doUnregisterSocketNotifier(QSocketNotifier *notifier
     delete sn;
 }
 
-void QEventDispatcherWin32::registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object)
+void QEventDispatcherWin32::registerTimer(int timerId, qint64 interval, Qt::TimerType timerType, QObject *object)
 {
 #ifndef QT_NO_DEBUG
     if (timerId < 1 || interval < 0 || !object) {

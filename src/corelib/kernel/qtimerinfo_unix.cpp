@@ -439,7 +439,7 @@ int QTimerInfoList::timerRemainingTime(int timerId)
     return -1;
 }
 
-void QTimerInfoList::registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object)
+void QTimerInfoList::registerTimer(int timerId, qint64 interval, Qt::TimerType timerType, QObject *object)
 {
     QTimerInfo *t = new QTimerInfo;
     t->id = timerId;

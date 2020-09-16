@@ -81,7 +81,7 @@ public:
     void registerSocketNotifier(QSocketNotifier *notifier) override;
     void unregisterSocketNotifier(QSocketNotifier *notifier) override;
 
-    void registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object) override;
+    void registerTimer(int timerId, qint64 interval, Qt::TimerType timerType, QObject *object) override;
     bool unregisterTimer(int timerId) override;
     bool unregisterTimers(QObject *object) override;
     QList<TimerInfo> registeredTimers(QObject *object) const override;
@@ -131,7 +131,7 @@ typedef QHash<int, QSockFd> QSFDict;
 struct WinTimerInfo {                           // internal timer info
     QObject *dispatcher;
     int timerId;
-    int interval;
+    qint64 interval;
     Qt::TimerType timerType;
     quint64 timeout;                            // - when to actually fire
     QObject *obj;                               // - object to receive events
