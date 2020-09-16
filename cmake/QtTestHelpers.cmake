@@ -72,13 +72,80 @@ function(qt_add_manual_test target)
 
 endfunction()
 
+# This function will configure the fixture for the network tests that require docker network services
+# qmake counterpart: qtbase/mkspecs/features/unsupported/testserver.prf
+function(qt_internal_setup_docker_test_fixture name)
+    # Only Linux is provisioned with docker at this time
+    if (NOT CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
+      return()
+    endif()
+
+    set(QT_TEST_SERVER_LIST ${ARGN})
+    set(DNSDOMAIN test-net.qt.local)
+
+    find_program(QT_DOCKER_COMPOSE docker-compose)
+    if (NOT QT_DOCKER_COMPOSE)
+        message(WARNING "docker-compose was not found. Docker network tests will not be run.")
+        return()
+    endif()
+    if (NOT DEFINED QT_DOCKER_COMPOSE_VERSION)
+      execute_process(COMMAND "${QT_DOCKER_COMPOSE}" --version OUTPUT_VARIABLE QT_DOCKER_COMPOSE_VERSION)
+      string(REPLACE "\n" "" QT_DOCKER_COMPOSE_VERSION "${QT_DOCKER_COMPOSE_VERSION}")
+      set(QT_DOCKER_COMPOSE_VERSION "${QT_DOCKER_COMPOSE_VERSION}" CACHE STRING "docker compose version")
+    endif()
+
+    find_program(QT_DOCKER docker)
+    if (NOT QT_DOCKER)
+        message(WARNING "docker was not found. Docker network tests will not be run.")
+        return()
+    endif()
+    if (NOT DEFINED QT_DOCKER_TEST_SERVER)
+        execute_process(COMMAND "${QT_DOCKER}" images -aq "qt-test-server-*" OUTPUT_VARIABLE QT_DOCKER_TEST_SERVER)
+        if (NOT QT_DOCKER_TEST_SERVER)
+            message(WARNING
+                "Docker image qt-test-server-* not found.\n"
+                "Run the provisioning script (coin/provisioning/.../testserver/docker_testserver.sh) in advance\n"
+                "Docker network tests will not be run.")
+            return()
+        endif()
+        set(QT_DOCKER_TEST_SERVER "ON" CACHE BOOL "docker qt-test-server-* present")
+    endif()
+
+    target_compile_definitions("${name}"
+        PRIVATE
+            QT_TEST_SERVER QT_TEST_SERVER_NAME QT_TEST_SERVER_DOMAIN=\"${DNSDOMAIN}\"
+    )
+
+    set(TESTSERVER_COMPOSE_FILE "${QT_SOURCE_TREE}/tests/testserver/docker-compose-bridge-network.yml")
+
+    # Bring up test servers and make sure the services are ready.
+    add_test(NAME ${name}-setup COMMAND
+        "${QT_DOCKER_COMPOSE}" -f ${TESTSERVER_COMPOSE_FILE} up --build -d --force-recreate --timeout 1 ${QT_TEST_SERVER_LIST}
+    )
+    # Stop and remove test servers after testing.
+    add_test(NAME ${name}-cleanup COMMAND
+        "${QT_DOCKER_COMPOSE}" -f ${TESTSERVER_COMPOSE_FILE} down --timeout 1
+    )
+
+    set_tests_properties(${name}-setup PROPERTIES FIXTURES_SETUP ${name}-docker)
+    set_tests_properties(${name}-cleanup PROPERTIES FIXTURES_CLEANUP ${name}-docker)
+    set_tests_properties(${name} PROPERTIES FIXTURES_REQUIRED ${name}-docker)
+
+    foreach(test_name ${name} ${name}-setup ${name}-cleanup)
+        set_property(TEST "${test_name}" APPEND PROPERTY ENVIRONMENT "testserver=${QT_DOCKER_COMPOSE_VERSION}")
+        set_property(TEST "${test_name}" APPEND PROPERTY ENVIRONMENT TEST_DOMAIN=${DNSDOMAIN})
+        set_property(TEST "${test_name}" APPEND PROPERTY ENVIRONMENT "SHARED_DATA=${QT_SOURCE_TREE}/mkspecs/features/data/testserver")
+        set_property(TEST "${test_name}" APPEND PROPERTY ENVIRONMENT SHARED_SERVICE=bridge-network)
+    endforeach()
+
+endfunction()
 
 # This function creates a CMake test target with the specified name for use with CTest.
 function(qt_add_test name)
     qt_parse_all_arguments(arg "qt_add_test"
         "RUN_SERIAL;EXCEPTIONS;GUI;QMLTEST;CATCH;LOWDPI"
         "OUTPUT_DIRECTORY;WORKING_DIRECTORY;TIMEOUT;VERSION"
-        "QML_IMPORTPATH;TESTDATA;${__default_private_args};${__default_public_args}" ${ARGN}
+        "QML_IMPORTPATH;TESTDATA;QT_TEST_SERVER_LIST;${__default_private_args};${__default_public_args}" ${ARGN}
     )
 
     if (NOT arg_OUTPUT_DIRECTORY)
@@ -191,6 +258,10 @@ function(qt_add_test name)
         endif()
 
         add_test(NAME "${name}" COMMAND ${test_executable} ${extra_test_args} ${test_outputs} WORKING_DIRECTORY "${test_working_dir}")
+
+        if (arg_QT_TEST_SERVER_LIST)
+            qt_internal_setup_docker_test_fixture(${name} ${arg_QT_TEST_SERVER_LIST})
+        endif()
     endif()
     set_tests_properties("${name}" PROPERTIES RUN_SERIAL "${arg_RUN_SERIAL}" LABELS "${label}")
     if (arg_TIMEOUT)

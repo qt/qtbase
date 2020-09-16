@@ -16,6 +16,7 @@ qt_add_test(tst_qabstractnetworkcache
     PUBLIC_LIBRARIES
         Qt::Network
     TESTDATA ${test_data}
+    QT_TEST_SERVER_LIST "apache2" # special case
 )
 
 #### Keys ignored in scope 1:.:.:qabstractnetworkcache.pro:<TRUE>:

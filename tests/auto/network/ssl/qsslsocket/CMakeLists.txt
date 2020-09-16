@@ -20,6 +20,7 @@ qt_add_test(tst_qsslsocket
         Qt::CorePrivate
         Qt::NetworkPrivate
     TESTDATA ${test_data}
+    QT_TEST_SERVER_LIST "squid" "danted" "cyrus" "apache2" "echo" # special case
 )
 
 #### Keys ignored in scope 1:.:.:qsslsocket.pro:<TRUE>:

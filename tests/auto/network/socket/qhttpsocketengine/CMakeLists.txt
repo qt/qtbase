@@ -16,6 +16,7 @@ qt_add_test(tst_qhttpsocketengine
     PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate
+    QT_TEST_SERVER_LIST "squid" "danted" "cyrus" "apache2" # special case
 )
 
 #### Keys ignored in scope 1:.:.:qhttpsocketengine.pro:<TRUE>:

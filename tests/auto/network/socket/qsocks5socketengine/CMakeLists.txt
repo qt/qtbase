@@ -16,6 +16,7 @@ qt_add_test(tst_qsocks5socketengine
     PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate
+    QT_TEST_SERVER_LIST "danted" "apache2" "cyrus" # special case
 )
 
 #### Keys ignored in scope 1:.:.:qsocks5socketengine.pro:<TRUE>:

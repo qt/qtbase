@@ -28,6 +28,7 @@ qt_add_test(tst_qnetworkreply
         Qt::CorePrivate
         Qt::NetworkPrivate
     TESTDATA ${test_data}
+    QT_TEST_SERVER_LIST "vsftpd" "apache2" "ftp-proxy" "danted" "squid" # special case
 )
 
 # Resources:

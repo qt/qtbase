@@ -11,6 +11,7 @@ qt_add_test(tst_qtcpsocket
     PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate
+    QT_TEST_SERVER_LIST "danted" "squid" "apache2" "ftp-proxy" "vsftpd" "iptables" "cyrus" # special case
 )
 
 ## Scopes:

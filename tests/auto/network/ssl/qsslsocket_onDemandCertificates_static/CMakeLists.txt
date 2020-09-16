@@ -16,6 +16,7 @@ qt_add_test(tst_qsslsocket_onDemandCertificates_static
     PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate
+    QT_TEST_SERVER_LIST "squid" "danted" # special case
 )
 
 #### Keys ignored in scope 1:.:.:qsslsocket_onDemandCertificates_static.pro:<TRUE>:

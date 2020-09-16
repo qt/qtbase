@@ -12,6 +12,7 @@ qt_add_test(tst_qudpsocket
         ../../../../../shared
     PUBLIC_LIBRARIES
         Qt::Network
+    QT_TEST_SERVER_LIST "danted" "echo" # special case
 )
 
 #### Keys ignored in scope 1:.:.:test.pro:<TRUE>:
