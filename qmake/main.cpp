@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -446,6 +446,8 @@ bool qmake_setpwd(const QString &p)
 
 int runQMake(int argc, char **argv)
 {
+    qSetGlobalQHashSeed(0);
+
     // stderr is unbuffered by default, but stdout buffering depends on whether
     // there is a terminal attached. Buffering can make output from stderr and stdout
     // appear out of sync, so force stdout to be unbuffered as well.
