@@ -76,16 +76,6 @@ private:
     const wchar_t *m_path;
 };
 
-static quintptr runShellExecute(const wchar_t *path)
-{
-    HINSTANCE result = nullptr;
-    if (SUCCEEDED(CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE))) {
-        result = ShellExecute(nullptr, nullptr, path, nullptr, nullptr, SW_SHOWNORMAL);
-        CoUninitialize();
-    }
-    return reinterpret_cast<quintptr>(result);
-}
-
 static inline bool shellExecute(const QUrl &url)
 {
     const QString nativeFilePath = url.isLocalFile() && !url.hasFragment() && !url.hasQuery()
