@@ -23,10 +23,10 @@ javac.CONFIG += combine
 
 # Check for user defined javac build version
 javac_target_version = $$ANDROID_JAVAC_TARGET_VERSION
-isEmpty(javac_target_version): javac_target_version = 7
+isEmpty(javac_target_version): javac_target_version = 8
 
 javac_source_version = $$ANDROID_JAVAC_SOURCE_VERSION
-isEmpty(javac_source_version): javac_source_version = 7
+isEmpty(javac_source_version): javac_source_version = 8
 
 javac.commands = javac -source $$javac_source_version -target $$javac_target_version -Xlint:unchecked -bootclasspath $$ANDROID_JAR_FILE -cp $$shell_quote($$system_path($$join(JAVACLASSPATH, $$DIRLIST_SEPARATOR))) -d $$shell_quote($$CLASS_DIR) ${QMAKE_FILE_IN}
 
