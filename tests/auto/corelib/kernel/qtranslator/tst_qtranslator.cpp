@@ -159,7 +159,7 @@ class TranslatorThread : public QThread
 {
     void run() override {
         QTranslator tor( 0 );
-        tor.load("hellotr_la");
+        (void)tor.load("hellotr_la");
 
         if (tor.isEmpty())
             qFatal("Could not load translation");
@@ -181,17 +181,17 @@ void tst_QTranslator::testLanguageChange()
     languageChangeEventCounter = 0;
 
     QTranslator *tor = new QTranslator;
-    tor->load("hellotr_la.qm");
+    QVERIFY(tor->load("hellotr_la.qm"));
     qApp->sendPostedEvents();
     qApp->sendPostedEvents();
     QCOMPARE(languageChangeEventCounter, 0);
 
-    tor->load("doesn't exist, same as clearing");
+    QVERIFY(!tor->load("doesn't exist, same as clearing"));
     qApp->sendPostedEvents();
     qApp->sendPostedEvents();
     QCOMPARE(languageChangeEventCounter, 0);
 
-    tor->load("hellotr_la.qm");
+    QVERIFY(tor->load("hellotr_la.qm"));
     qApp->sendPostedEvents();
     qApp->sendPostedEvents();
     QCOMPARE(languageChangeEventCounter, 0);
@@ -201,12 +201,12 @@ void tst_QTranslator::testLanguageChange()
     qApp->sendPostedEvents();
     QCOMPARE(languageChangeEventCounter, 1);
 
-    tor->load("doesn't exist, same as clearing");
+    QVERIFY(!tor->load("doesn't exist, same as clearing"));
     qApp->sendPostedEvents();
     qApp->sendPostedEvents();
     QCOMPARE(languageChangeEventCounter, 2);
 
-    tor->load("hellotr_la.qm");
+    QVERIFY(tor->load("hellotr_la.qm"));
     qApp->sendPostedEvents();
     qApp->sendPostedEvents();
     QCOMPARE(languageChangeEventCounter, 3);
@@ -216,7 +216,7 @@ void tst_QTranslator::testLanguageChange()
     qApp->sendPostedEvents();
     QCOMPARE(languageChangeEventCounter, 4);
 
-    tor->load("doesn't exist, same as clearing");
+    QVERIFY(!tor->load("doesn't exist, same as clearing"));
     qApp->sendPostedEvents();
     qApp->sendPostedEvents();
     QCOMPARE(languageChangeEventCounter, 4);
@@ -226,7 +226,7 @@ void tst_QTranslator::testLanguageChange()
     qApp->sendPostedEvents();
     QCOMPARE(languageChangeEventCounter, 4);
 
-    tor->load("hellotr_la.qm");
+    QVERIFY(tor->load("hellotr_la.qm"));
     qApp->sendPostedEvents();
     qApp->sendPostedEvents();
     QCOMPARE(languageChangeEventCounter, 5);
@@ -243,7 +243,7 @@ void tst_QTranslator::plural()
 {
 
     QTranslator tor( 0 );
-    tor.load("hellotr_la");
+    QVERIFY(tor.load("hellotr_la"));
     QVERIFY(!tor.isEmpty());
     QCoreApplication::installTranslator(&tor);
     QCOMPARE(QCoreApplication::translate("QPushButton", "Hello %n world(s)!", 0, 0), QLatin1String("Hallo 0 Welten!"));
@@ -254,7 +254,7 @@ void tst_QTranslator::plural()
 void tst_QTranslator::translate_qm_file_generated_with_msgfmt()
 {
     QTranslator translator;
-    translator.load("msgfmt_from_po");
+    QVERIFY(translator.load("msgfmt_from_po"));
     qApp->installTranslator(&translator);
 
     QCOMPARE(QCoreApplication::translate("", "Intro"), QLatin1String("Einleitung"));
@@ -275,7 +275,7 @@ void tst_QTranslator::loadDirectory()
     QVERIFY(QFileInfo("../" + current_base).isDir());
 
     QTranslator tor;
-    tor.load(current_base, "..");
+    QVERIFY(!tor.load(current_base, ".."));
     QVERIFY(tor.isEmpty());
 }
 
@@ -303,7 +303,7 @@ void tst_QTranslator::dependencies()
         QFile file("dependencies_la.qm");
         file.open(QFile::ReadOnly);
         QByteArray data = file.readAll();
-        tor.load((const uchar *)data.constData(), data.length());
+        QVERIFY(tor.load((const uchar *)data.constData(), data.length()));
         QVERIFY(!tor.isEmpty());
         QCOMPARE(tor.translate("QPushButton", "Hello world!"), QLatin1String("Hallo Welt!"));
     }
@@ -347,7 +347,7 @@ void tst_QTranslator::translationInThreadWhileInstallingTranslator()
     thread.runningCondition.wait(&thread.startupLock);
 
     QTranslator *tor = new QTranslator;
-    tor->load("hellotr_la");
+    QVERIFY(tor->load("hellotr_la"));
     QCoreApplication::installTranslator(tor);
 
     ++thread.terminate;
