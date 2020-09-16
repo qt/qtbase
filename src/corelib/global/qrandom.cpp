@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 Intel Corporation.
+** Copyright (C) 2020 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -1177,22 +1177,32 @@ bool operator==(const QRandomGenerator &rng1, const QRandomGenerator &rng2)
 /*!
     \internal
 
-    Fills the range pointed by \a buffer and \a bufferEnd with 32-bit random
-    values. The buffer must be correctly aligned.
+    Fills the range pointed by \a buffer with \a count 32-bit random values.
+    The buffer must be correctly aligned.
+
+    Returns the value of the first two 32-bit entries as a \c{quint64}.
  */
-void QRandomGenerator::_fillRange(void *buffer, void *bufferEnd)
+quint64 QRandomGenerator::_fillRange(void *buffer, qptrdiff count)
 {
     // Verify that the pointers are properly aligned for 32-bit
     Q_ASSERT(quintptr(buffer) % sizeof(quint32) == 0);
-    Q_ASSERT(quintptr(bufferEnd) % sizeof(quint32) == 0);
-    quint32 *begin = static_cast<quint32 *>(buffer);
-    quint32 *end = static_cast<quint32 *>(bufferEnd);
+    Q_ASSERT(count >= 0);
+    Q_ASSERT(buffer || count <= 2);
 
-    if (type == SystemRNG || Q_UNLIKELY(uint(qt_randomdevice_control.loadAcquire()) & (UseSystemRNG|SetRandomData)))
-        return SystemGenerator::self().generate(begin, end);
+    quint64 dummy;
+    quint32 *begin = static_cast<quint32 *>(buffer ? buffer : &dummy);
+    quint32 *end = begin + count;
 
-    SystemAndGlobalGenerators::PRNGLocker lock(this);
-    std::generate(begin, end, [this]() { return storage.engine()(); });
+    if (type == SystemRNG || Q_UNLIKELY(uint(qt_randomdevice_control.loadAcquire()) & (UseSystemRNG|SetRandomData))) {
+        SystemGenerator::self().generate(begin, end);
+    } else {
+        SystemAndGlobalGenerators::PRNGLocker lock(this);
+        std::generate(begin, end, [this]() { return storage.engine()(); });
+    }
+
+    if (end - begin == 1)
+        return *begin;
+    return begin[0] | (quint64(begin[1]) << 32);
 }
 
 namespace {

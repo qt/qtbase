@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 Intel Corporation.
+** Copyright (C) 2020 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -83,16 +83,12 @@ public:
 
     quint32 generate()
     {
-        quint32 ret;
-        fillRange(&ret, 1);
-        return ret;
+        return _fillRange(nullptr, 1);
     }
 
     quint64 generate64()
     {
-        quint32 buf[2];
-        fillRange(buf);
-        return buf[0] | (quint64(buf[1]) << 32);
+        return _fillRange(nullptr, sizeof(quint64) / sizeof(quint32));
     }
 
     double generateDouble()
@@ -142,13 +138,13 @@ public:
     template <typename UInt, IfValidUInt<UInt> = true>
     void fillRange(UInt *buffer, qsizetype count)
     {
-        _fillRange(buffer, buffer + count);
+        _fillRange(buffer, count * sizeof(UInt) / sizeof(quint32));
     }
 
     template <typename UInt, size_t N, IfValidUInt<UInt> = true>
     void fillRange(UInt (&buffer)[N])
     {
-        _fillRange(buffer, buffer + N);
+        _fillRange(buffer, N * sizeof(UInt) / sizeof(quint32));
     }
 
     // API like std::seed_seq
@@ -160,7 +156,7 @@ public:
 
     void generate(quint32 *begin, quint32 *end)
     {
-        _fillRange(begin, end);
+        _fillRange(begin, end - begin);
     }
 
     // API like std:: random engines
@@ -181,7 +177,7 @@ protected:
     QRandomGenerator(System);
 
 private:
-    Q_CORE_EXPORT void _fillRange(void *buffer, void *bufferEnd);
+    Q_CORE_EXPORT quint64 _fillRange(void *buffer, qptrdiff count);
 
     friend class QRandomGenerator64;
     struct SystemGenerator;
