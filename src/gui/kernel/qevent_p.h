@@ -88,7 +88,6 @@ struct QEventPointPrivate {
     int pointId = -1;
     QEventPoint::State state = QEventPoint::State::Unknown;
     bool accept = false;
-    bool stationaryWithModifiedProperty = false;
 };
 
 // Private subclasses to allow accessing and modifying protected variables.
@@ -118,8 +117,6 @@ public:
     static const QMutableEventPoint &constFrom(const QEventPoint &me) { return static_cast<const QMutableEventPoint &>(me); }
 
     void detach();
-
-    bool stationaryWithModifiedProperty() const { return d->stationaryWithModifiedProperty; }
 
     void setId(int pointId) { d->pointId = pointId; }
 
@@ -162,8 +159,6 @@ public:
     void setRotation(qreal v) { d->rotation = v; }
 
     void setVelocity(const QVector2D &v) { d->velocity = v; }
-
-    void setStationaryWithModifiedProperty(bool s = true) { d->stationaryWithModifiedProperty = s; }
 
     QWindow *window() const { return d->window.data(); }
 

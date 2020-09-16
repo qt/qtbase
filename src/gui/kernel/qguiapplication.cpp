@@ -2856,7 +2856,6 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
 
     self->lastTouchType = e->touchType;
 
-    bool stationaryTouchPointChangedProperty = false;
     QPointer<QWindow> window = e->window;  // the platform hopefully tells us which window received the event
     QVarLengthArray<QMutableTouchEvent, 2> touchEvents;
 
@@ -2944,11 +2943,6 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
         case QEventPoint::State::Released:
             eventType = QEvent::TouchEnd;
             break;
-        case QEventPoint::State::Stationary:
-            // don't send the event if nothing changed
-            if (!stationaryTouchPointChangedProperty)
-                continue;
-            Q_FALLTHROUGH();
         default:
             eventType = QEvent::TouchUpdate;
             break;

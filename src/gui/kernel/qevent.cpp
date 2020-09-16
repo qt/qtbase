@@ -472,15 +472,6 @@ void QMutableEventPoint::updateFrom(const QEventPoint &other)
         setPressure(0);
         break;
 
-    case QEventPoint::State::Stationary:
-        // Stationary points might not be delivered down to the receiving item
-        // and get their position transformed, keep the old values instead.
-        if (other.velocity() != velocity() ||
-                !qFuzzyCompare(other.pressure(), pressure())) {
-            setStationaryWithModifiedProperty();
-        }
-        Q_FALLTHROUGH();
-
     default: // update or stationary
         if (globalPosition() != other.globalPosition())
             setGlobalLastPosition(globalPosition());
