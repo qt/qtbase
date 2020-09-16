@@ -26,10 +26,10 @@
 ****************************************************************************/
 
 /*!
-    \page qtsql-changes-qt6.html
-    \title Porting to Qt 6 - Qt Sql
+    \page testlib-changes-qt6.html
+    \title Porting to Qt 6 - Qt Test
     \ingroup porting-guides-5-to-6
-    \brief Migrate Qt Sql to Qt 6.
+    \brief Migrate Qt Test to Qt 6.
 
     Qt 6 is a result of the conscious effort to make the framework more
     efficient and easy to use.
@@ -38,31 +38,9 @@
     APIs in each release. But some changes were inevitable in an effort to
     make Qt a better framework.
 
-    In this topic we summarize those changes in Qt Sql, and provide guidance
-    to handle them.
+    In this topic we summarize those changes in Qt Test, and provide
+    guidance to handle them.
 
-    \section1 QSqlQuery
+    \section1 ADD STUFF HERE
 
-    \section2 boundValues() Signature
-
-    The return type for boundValues() has been changed from QMap<QString, QVariant>
-    to a QVariantList. The order can be relied upon so it will be in the order of the
-    binding in the prepared query. Change code like the following:
-
-    \code
-    QMap<QString, QVariant> values = boundValues();
-    int id = values[":id"].value().toInt();
-    \endcode
-
-    \code
-    QList<QVariant> values = boundValues().values();
-    int id = values.at(0).toInt();
-    \endcode
-
-    to:
-
-    \code
-    QList<QVariant> values = boundValues().values();
-    int id = values.at(0).toInt();
-    \endcode
 */
