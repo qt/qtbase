@@ -68,11 +68,8 @@ inline QString fromFilesystemPath(const std::filesystem::path &path)
 
 inline std::filesystem::path toFilesystemPath(const QString &path)
 {
-#ifdef Q_OS_WIN
-    return std::filesystem::path(path.toStdU16String());
-#else
-    return std::filesystem::path(path.toStdString());
-#endif
+    return std::filesystem::path(reinterpret_cast<const char16_t *>(path.cbegin()),
+                                 reinterpret_cast<const char16_t *>(path.cend()));
 }
 
 // Both std::filesystem::path and QString (without QT_NO_CAST_FROM_ASCII) can be implicitly
