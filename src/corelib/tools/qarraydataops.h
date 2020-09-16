@@ -1277,9 +1277,9 @@ protected:
 
     // Tells how much of the given size to insert at the beginning of the
     // container. This is insert-specific helper function
-    qsizetype sizeToInsertAtBegin(const T *const where, qsizetype size)
+    qsizetype sizeToInsertAtBegin(const T *const where, qsizetype maxSize)
     {
-        Q_ASSERT(size_t(size) <= this->allocatedCapacity() - this->size);
+        Q_ASSERT(size_t(maxSize) <= this->allocatedCapacity() - this->size);
         Q_ASSERT(where >= this->begin() && where <= this->end());  // in range
 
         const auto freeAtBegin = this->freeSpaceAtBegin();
@@ -1288,18 +1288,18 @@ protected:
         // Idea: * if enough space on both sides, try to affect less elements
         //       * if enough space on one of the sides, use only that side
         //       * otherwise, split between front and back (worst case)
-        if (freeAtBegin >= size && freeAtEnd >= size) {
+        if (freeAtBegin >= maxSize && freeAtEnd >= maxSize) {
             if (where - this->begin() < this->end() - where) {
-                return size;
+                return maxSize;
             } else {
                 return 0;
             }
-        } else if (freeAtBegin >= size) {
-            return size;
-        } else if (freeAtEnd >= size) {
+        } else if (freeAtBegin >= maxSize) {
+            return maxSize;
+        } else if (freeAtEnd >= maxSize) {
             return 0;
         } else {
-            return size - freeAtEnd;
+            return maxSize - freeAtEnd;
         }
     }
 
