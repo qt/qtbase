@@ -278,11 +278,9 @@ QT_BEGIN_NAMESPACE
     \fn template <typename Char, size_t N> QStringView::QStringView(const Char (&string)[N])
 
     Constructs a string view on the character string literal \a string.
-    The length is set to \c{N-1}, excluding the trailing \{Char(0)}.
-    If you need the full array, use the constructor from pointer and
-    size instead:
-
-    \snippet code/src_corelib_text_qstringview.cpp 2
+    The view covers the array until the first \c{Char(0)} is encountered,
+    or \c N, whichever comes first.
+    If you need the full array, use fromArray() instead.
 
     \a string must remain valid for the lifetime of this string view
     object.
@@ -292,6 +290,8 @@ QT_BEGIN_NAMESPACE
     type. The compatible character types are: \c QChar, \c ushort, \c
     char16_t and (on platforms, such as Windows, where it is a 16-bit
     type) \c wchar_t.
+
+    \sa fromArray
 */
 
 /*!
@@ -321,6 +321,25 @@ QT_BEGIN_NAMESPACE
     have to return \nullptr for this).
 
     \sa isNull(), isEmpty()
+*/
+
+/*!
+    \fn template <typename Char, size_t Size> static QStringView fromArray(const Char (&string)[Size]) noexcept
+
+    Constructs a string view on the full character string literal \a string,
+    including any trailing \c{Char(0)}. If you don't want the
+    null-terminator included in the view then you can chop() it off
+    when you are certain it is at the end. Alternatively you can use
+    the constructor overload taking an array literal which will create
+    a view up to, but not including, the first null-terminator in the data.
+
+    \a string must remain valid for the lifetime of this string view
+    object.
+
+    This function will work with any array literal if \c Char is a
+    compatible character type. The compatible character types are: \c QChar, \c ushort, \c
+    char16_t and (on platforms, such as Windows, where it is a 16-bit
+    type) \c wchar_t.
 */
 
 /*!

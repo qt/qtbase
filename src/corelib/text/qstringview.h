@@ -172,9 +172,11 @@ private:
     }
 
     template <typename Char, size_t N>
-    static constexpr qsizetype lengthHelperContainer(const Char (&)[N]) noexcept
+    static constexpr qsizetype lengthHelperContainer(const Char (&str)[N]) noexcept
     {
-        return qsizetype(N - 1);
+        const auto it = std::char_traits<Char>::find(str, N, Char(0));
+        const auto end = it ? it : std::next(str, N);
+        return qsizetype(std::distance(str, end));
     }
 
     template <typename Char>
@@ -222,6 +224,10 @@ public:
     template <typename Container, if_compatible_container<Container> = true>
     constexpr QStringView(const Container &c) noexcept
         : QStringView(std::data(c), lengthHelperContainer(c)) {}
+
+    template <typename Char, size_t Size, if_compatible_char<Char> = true>
+    [[nodiscard]] constexpr static QStringView fromArray(const Char (&string)[Size]) noexcept
+    { return QStringView(string, Size); }
 
     Q_REQUIRED_RESULT inline QString toString() const; // defined in qstring.h
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)

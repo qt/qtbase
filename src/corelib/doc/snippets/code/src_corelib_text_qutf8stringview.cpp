@@ -52,8 +52,3 @@
     void myfun1(QUtf8StringView sv);        // preferred
     void myfun2(const QUtf8StringView &sv); // compiles and works, but slower
 //! [0]
-
-//! [2]
-    auto sv1 = QUtf8StringView{std::begin(array), std::end(array)}; // using C++11 std::begin()/std::end()
-    auto sv2 = QUtf8StringView(array, std::size(array)); // using C++17 std::size()
-//! [2]

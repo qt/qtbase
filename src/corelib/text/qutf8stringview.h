@@ -160,9 +160,11 @@ private:
     // Note: Do not replace with std::size(const Char (&)[N]), cause the result
     // will be of by one.
     template <typename Char, size_t N>
-    static constexpr qsizetype lengthHelperContainer(const Char (&)[N]) noexcept
+    static constexpr qsizetype lengthHelperContainer(const Char (&str)[N]) noexcept
     {
-        return qsizetype(N - 1);
+        const auto it = std::char_traits<Char>::find(str, N, Char(0));
+        const auto end = it ? it : std::next(str, N);
+        return qsizetype(std::distance(str, end));
     }
 
     template <typename Char>
@@ -215,6 +217,10 @@ public:
     constexpr QBasicUtf8StringView(QBasicUtf8StringView<!UseChar8T> other)
         : QBasicUtf8StringView(other.data(), other.size()) {}
 #endif
+
+    template <typename Char, size_t Size, if_compatible_char<Char> = true>
+    [[nodiscard]] constexpr static QBasicUtf8StringView fromArray(const Char (&string)[Size]) noexcept
+    { return QBasicUtf8StringView(string, Size); }
 
     [[nodiscard]] inline QString toString() const; // defined in qstring.h
 

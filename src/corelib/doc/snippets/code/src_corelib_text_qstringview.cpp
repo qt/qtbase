@@ -56,7 +56,3 @@
 //! [1]
     void fun(QChar ch) { fun(QStringView(&ch, 1)); }
 //! [1]
-
-//! [2]
-    auto sv = QStringView(array, std::size(array)); // using C++17 std::size()
-//! [2]

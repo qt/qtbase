@@ -109,9 +109,11 @@ private:
     }
 
     template <typename Char, size_t N>
-    static constexpr qsizetype lengthHelperContainer(const Char (&)[N]) noexcept
+    static constexpr qsizetype lengthHelperContainer(const Char (&str)[N]) noexcept
     {
-        return qsizetype(N - 1);
+        const auto it = std::char_traits<Char>::find(str, N, Char(0));
+        const auto end = it ? it : std::next(str, N);
+        return qsizetype(std::distance(str, end));
     }
 
     static QChar toQChar(char ch) noexcept { return toQChar(QLatin1Char{ch}); } // we don't handle UTF-8 multibytes
@@ -179,6 +181,10 @@ public:
     template <bool UseChar8T>
     constexpr QAnyStringView(QBasicUtf8StringView<UseChar8T> v) noexcept
         : QAnyStringView(std::data(v), lengthHelperContainer(v)) {}
+
+    template <typename Char, size_t Size, if_compatible_char<Char> = true>
+    [[nodiscard]] constexpr static QAnyStringView fromArray(const Char (&string)[Size]) noexcept
+    { return QAnyStringView(string, Size); }
 
     // defined in qstring.h:
     template <typename Visitor>

@@ -157,6 +157,7 @@ private Q_SLOTS:
     void constExpr() const;
     void basics() const;
     void literals() const;
+    void fromArray() const;
     void at() const;
 
     void arg() const;
@@ -425,8 +426,39 @@ void tst_QStringView::literals() const
     }
 
     // these are different results
-    QCOMPARE(size_t(QStringView(withnull).size()), sizeof(withnull)/sizeof(withnull[0]) - 1);
+    QCOMPARE(size_t(QStringView(withnull).size()), 1);
+    QCOMPARE(size_t(QStringView::fromArray(withnull).size()), sizeof(withnull)/sizeof(withnull[0]));
     QCOMPARE(QStringView(withnull + 0).size(), 1);
+}
+
+void tst_QStringView::fromArray() const
+{
+    static constexpr char16_t hello[] = u"Hello\0abc\0\0.";
+
+    constexpr QStringView sv = QStringView::fromArray(hello);
+    QCOMPARE(sv.size(), 13);
+    QVERIFY(!sv.empty());
+    QVERIFY(!sv.isEmpty());
+    QVERIFY(!sv.isNull());
+    QCOMPARE(*sv.data(), 'H');
+    QCOMPARE(sv[0],      'H');
+    QCOMPARE(sv.at(0),   'H');
+    QCOMPARE(sv.front(), 'H');
+    QCOMPARE(sv.first(), 'H');
+    QCOMPARE(sv[4],      'o');
+    QCOMPARE(sv.at(4),   'o');
+    QCOMPARE(sv[5],      '\0');
+    QCOMPARE(sv.at(5),   '\0');
+    QCOMPARE(*(sv.data() + sv.size() - 2),  '.');
+    QCOMPARE(sv.back(),  '\0');
+    QCOMPARE(sv.last(),  '\0');
+
+    const char16_t bytes[] = {u'a', u'b', u'c'};
+    QStringView sv2 = QStringView::fromArray(bytes);
+    QCOMPARE(sv2.data(), reinterpret_cast<const QChar *>(bytes + 0));
+    QCOMPARE(sv2.size(), 3);
+    QCOMPARE(sv2.first(), u'a');
+    QCOMPARE(sv2.last(), u'c');
 }
 
 void tst_QStringView::at() const

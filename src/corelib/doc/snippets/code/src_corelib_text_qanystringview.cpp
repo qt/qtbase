@@ -54,6 +54,6 @@
 //! [0]
 
 //! [2]
-    auto sv1 = QAnyStringView{std::begin(array), std::end(array)}; // using C++11 std::begin()/std::end()
-    auto sv2 = QAnyStringView(array, std::size(array)); // using C++17 std::size()
+    auto sv1 = QAnyStringView{std::begin(array), std::end(array) - 1}; // using C++11 std::begin()/std::end()
+    auto sv2 = QAnyStringView(array, std::size(array) - 1); // using C++17 std::size()
 //! [2]
