@@ -346,9 +346,9 @@ int QDateTimeParser::sectionPos(const SectionNode &sn) const
 
 static QString unquote(QStringView str)
 {
-    const QChar quote(QLatin1Char('\''));
-    const QChar slash(QLatin1Char('\\'));
-    const QChar zero(QLatin1Char('0'));
+    const QLatin1Char quote('\'');
+    const QLatin1Char slash('\\');
+    const QLatin1Char zero('0');
     QString ret;
     QChar status(zero);
     const int max = str.size();
@@ -405,7 +405,7 @@ bool QDateTimeParser::parseFormat(const QString &newFormat)
     QStringList newSeparators;
     int i, index = 0;
     int add = 0;
-    QChar status(zero);
+    QLatin1Char status(zero);
     const int max = newFormat.size();
     int lastQuote = -1;
     for (i = 0; i<max; ++i) {
