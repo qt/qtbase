@@ -475,7 +475,7 @@ void QPointingDevicePrivate::setExclusiveGrabber(const QPointerEvent *event, con
     auto oldGrabber = persistentPoint->exclusiveGrabber;
     persistentPoint->exclusiveGrabber = exclusiveGrabber;
     if (oldGrabber)
-        emit q->grabChanged(oldGrabber, QPointingDevice::UngrabExclusive, event, point);
+        emit q->grabChanged(oldGrabber, QPointingDevice::UngrabExclusive, event, persistentPoint->eventPoint);
     if (Q_UNLIKELY(lcPointerGrab().isDebugEnabled())) {
         qCDebug(lcPointerGrab) << name << "point" << point.id() << point.state()
                                << "@" << point.scenePosition()
