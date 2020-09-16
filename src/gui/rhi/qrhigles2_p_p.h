@@ -880,7 +880,7 @@ public:
               properMapBuffer(false),
               nonBaseLevelFramebufferTexture(false),
               texelFetch(false),
-              uintAttributes(true),
+              intAttributes(true),
               screenSpaceDerivatives(false)
         { }
         int ctxMajor;
@@ -921,7 +921,7 @@ public:
         uint properMapBuffer : 1;
         uint nonBaseLevelFramebufferTexture : 1;
         uint texelFetch : 1;
-        uint uintAttributes : 1;
+        uint intAttributes : 1;
         uint screenSpaceDerivatives : 1;
     } caps;
     QGles2SwapChain *currentSwapChain = nullptr;

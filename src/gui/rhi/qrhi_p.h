@@ -204,7 +204,11 @@ public:
         UInt4,
         UInt3,
         UInt2,
-        UInt
+        UInt,
+        SInt4,
+        SInt3,
+        SInt2,
+        SInt
     };
 
     QRhiVertexInputAttribute() = default;
@@ -1470,7 +1474,7 @@ public:
         ReadBackNonBaseMipLevel,
         TexelFetch,
         RenderToNonBaseMipLevel,
-        UIntAttributes,
+        IntAttributes,
         ScreenSpaceDerivatives,
         ReadBackAnyTextureFormat
     };

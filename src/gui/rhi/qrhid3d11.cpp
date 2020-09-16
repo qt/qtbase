@@ -525,7 +525,7 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::RenderToNonBaseMipLevel:
         return true;
-    case QRhi::UIntAttributes:
+    case QRhi::IntAttributes:
         return true;
     case QRhi::ScreenSpaceDerivatives:
         return true;
@@ -3591,6 +3591,14 @@ static inline DXGI_FORMAT toD3DAttributeFormat(QRhiVertexInputAttribute::Format 
         return DXGI_FORMAT_R32G32_UINT;
     case QRhiVertexInputAttribute::UInt:
         return DXGI_FORMAT_R32_UINT;
+     case QRhiVertexInputAttribute::SInt4:
+        return DXGI_FORMAT_R32G32B32A32_SINT;
+    case QRhiVertexInputAttribute::SInt3:
+        return DXGI_FORMAT_R32G32B32_SINT;
+    case QRhiVertexInputAttribute::SInt2:
+        return DXGI_FORMAT_R32G32_SINT;
+    case QRhiVertexInputAttribute::SInt:
+        return DXGI_FORMAT_R32_SINT;
     default:
         Q_UNREACHABLE();
         return DXGI_FORMAT_R32G32B32A32_FLOAT;

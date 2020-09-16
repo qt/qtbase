@@ -591,12 +591,12 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     unsupported with OpenGL ES 2.0, while it will likely be supported everywhere
     else.
 
-    \value UIntAttributes Indicates that specifying input attributes with an unsigned
-    integer type for a shader pipeline is supported. When not supported, build()
-    will succeed but just show a warning message and the values of unsigned int
-    type attributes will be broken. In practice this feature will be unsupported
-    with OpenGL ES 2.0 and OpenGL 2.x, while it will likely be supported
-    everywhere else.
+    \value IntAttributes Indicates that specifying input attributes with
+    signed and unsigned integer types for a shader pipeline is supported. When
+    not supported, build() will succeed but just show a warning message and the
+    values of the target attributes will be broken. In practice this feature
+    will be unsupported with OpenGL ES 2.0 and OpenGL 2.x, while it will likely
+    be supported everywhere else.
 
     \value ScreenSpaceDerivatives Indicates that functions such as dFdx(),
     dFdy(), and fwidth() are supported in shaders.
@@ -1188,6 +1188,14 @@ QDebug operator<<(QDebug dbg, const QRhiVertexInputBinding &b)
     \value UNormByte4 Four component normalized unsigned byte vector
     \value UNormByte2 Two component normalized unsigned byte vector
     \value UNormByte Normalized unsigned byte
+    \value UInt4 Four component unsigned integer vector
+    \value UInt3 Three component unsigned integer vector
+    \value UInt2 Two component unsigned integer vector
+    \value UInt Unsigned integer
+    \value SInt4 Four component signed integer vector
+    \value SInt3 Three component signed integer vector
+    \value SInt2 Two component signed integer vector
+    \value SInt Signed integer
  */
 
 /*!

@@ -4099,7 +4099,7 @@ bool QRhiVulkan::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::RenderToNonBaseMipLevel:
         return true;
-    case QRhi::UIntAttributes:
+    case QRhi::IntAttributes:
         return true;
     case QRhi::ScreenSpaceDerivatives:
         return true;
@@ -4958,6 +4958,14 @@ static inline VkFormat toVkAttributeFormat(QRhiVertexInputAttribute::Format form
         return VK_FORMAT_R32G32_UINT;
     case QRhiVertexInputAttribute::UInt:
         return VK_FORMAT_R32_UINT;
+    case QRhiVertexInputAttribute::SInt4:
+        return VK_FORMAT_R32G32B32A32_SINT;
+    case QRhiVertexInputAttribute::SInt3:
+        return VK_FORMAT_R32G32B32_SINT;
+    case QRhiVertexInputAttribute::SInt2:
+        return VK_FORMAT_R32G32_SINT;
+    case QRhiVertexInputAttribute::SInt:
+        return VK_FORMAT_R32_SINT;
     default:
         Q_UNREACHABLE();
         return VK_FORMAT_R32G32B32A32_SFLOAT;
