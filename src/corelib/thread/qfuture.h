@@ -80,7 +80,6 @@ public:
     {
     }
 
-#if !defined(Q_CC_XLC)
     template<typename U, typename V = T, typename = QtPrivate::EnableForVoid<V>>
     QFuture(const QFuture<U> &other) : d(other.d)
     {
@@ -92,7 +91,6 @@ public:
         d = other.d;
         return *this;
     }
-#endif
 
 #if defined(Q_CLANG_QDOC)
     ~QFuture() { }
