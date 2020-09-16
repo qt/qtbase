@@ -637,25 +637,30 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                     QDir dir(file.filePath());
                     if (!alias.endsWith(slash))
                         alias += slash;
+
+                    QStringList filePaths;
                     QDirIterator it(dir, QDirIterator::FollowSymlinks|QDirIterator::Subdirectories);
                     while (it.hasNext()) {
                         it.next();
-                        QFileInfo child(it.fileInfo());
-                        if (child.fileName() != QLatin1String(".") && child.fileName() != QLatin1String("..")) {
-                            const bool arc =
-                                addFile(alias + child.fileName(),
-                                        RCCFileInfo(child.fileName(),
-                                                    child,
-                                                    language,
-                                                    country,
-                                                    child.isDir() ? RCCFileInfo::Directory : RCCFileInfo::NoFlags,
-                                                    compressAlgo,
-                                                    compressLevel,
-                                                    compressThreshold)
-                                        );
-                            if (!arc)
-                                m_failedResources.push_back(child.fileName());
-                        }
+                        if (it.fileName() == QLatin1String(".")
+                            || it.fileName() == QLatin1String(".."))
+                            continue;
+                        filePaths.append(it.filePath());
+                    }
+
+                    // make rcc output deterministic
+                    std::sort(filePaths.begin(), filePaths.end());
+
+                    for (const QString &filePath : filePaths) {
+                        QFileInfo child(filePath);
+                        const bool arc = addFile(
+                                alias + child.fileName(),
+                                RCCFileInfo(child.fileName(), child, language, country,
+                                            child.isDir() ? RCCFileInfo::Directory
+                                                          : RCCFileInfo::NoFlags,
+                                            compressAlgo, compressLevel, compressThreshold));
+                        if (!arc)
+                            m_failedResources.push_back(child.fileName());
                     }
                 } else if (listMode || file.isFile()) {
                     const bool arc =
