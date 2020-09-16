@@ -354,13 +354,12 @@ static QString unquote(QStringView str)
     const int max = str.size();
     for (int i=0; i<max; ++i) {
         if (str.at(i) == quote) {
-            if (status != quote) {
+            if (status != quote)
                 status = quote;
-            } else if (!ret.isEmpty() && str.at(i - 1) == slash) {
+            else if (!ret.isEmpty() && str.at(i - 1) == slash)
                 ret[ret.size() - 1] = quote;
-            } else {
+            else
                 status = zero;
-            }
         } else {
             ret += str.at(i);
         }
@@ -396,9 +395,8 @@ bool QDateTimeParser::parseFormat(const QString &newFormat)
     const QLatin1Char quote('\'');
     const QLatin1Char slash('\\');
     const QLatin1Char zero('0');
-    if (newFormat == displayFormat && !newFormat.isEmpty()) {
+    if (newFormat == displayFormat && !newFormat.isEmpty())
         return true;
-    }
 
     QDTPDEBUGN("parseFormat: %s", newFormat.toLatin1().constData());
 
@@ -414,11 +412,10 @@ bool QDateTimeParser::parseFormat(const QString &newFormat)
         if (newFormat.at(i) == quote) {
             lastQuote = i;
             ++add;
-            if (status != quote) {
+            if (status != quote)
                 status = quote;
-            } else if (i > 0 && newFormat.at(i - 1) != slash) {
+            else if (i > 0 && newFormat.at(i - 1) != slash)
                 status = zero;
-            }
         } else if (status != quote) {
             const char sect = newFormat.at(i).toLatin1();
             switch (sect) {
@@ -532,9 +529,8 @@ bool QDateTimeParser::parseFormat(const QString &newFormat)
             }
         }
     }
-    if (newSectionNodes.isEmpty() && context == DateTimeEdit) {
+    if (newSectionNodes.isEmpty() && context == DateTimeEdit)
         return false;
-    }
 
     if ((newDisplay & (AmPmSection|Hour12Section)) == Hour12Section) {
         const int count = newSectionNodes.size();
@@ -1306,9 +1302,8 @@ QDateTimeParser::scanString(const QDateTime &defaultValue,
                 needfixday = true;
         }
         if (needfixday) {
-            if (context == FromString) {
+            if (context == FromString)
                 return StateNode();
-            }
             if (state == Acceptable && fixday) {
                 day = qMin<int>(day, calendar.daysInMonth(month, year));
 
@@ -1335,25 +1330,18 @@ QDateTimeParser::scanString(const QDateTime &defaultValue,
     if (parserType != QMetaType::QDate) {
         if (isSet & Hour12Section) {
             const bool hasHour = isSet & Hour24Section;
-            if (ampm == -1) {
-                if (hasHour) {
-                    ampm = (hour < 12 ? 0 : 1);
-                } else {
-                    ampm = 0; // no way to tell if this is am or pm so I assume am
-                }
-            }
-            hour12 = (ampm == 0 ? hour12 % 12 : (hour12 % 12) + 12);
-            if (!hasHour) {
+            if (ampm == -1) // If we don't know from hour, assume am:
+                ampm = !hasHour || hour < 12 ? 0 : 1;
+            hour12 = hour12 % 12 + ampm * 12;
+            if (!hasHour)
                 hour = hour12;
-            } else if (hour != hour12) {
+            else if (hour != hour12)
                 conflicts = true;
-            }
         } else if (ampm != -1) {
-            if (!(isSet & (Hour24Section))) {
-                hour = (12 * ampm); // special case. Only ap section
-            } else if ((ampm == 0) != (hour < 12)) {
+            if (!(isSet & (Hour24Section)))
+                hour = 12 * ampm; // Special case: only ap section
+            else if ((ampm == 0) != (hour < 12))
                 conflicts = true;
-            }
         }
     }
 
@@ -1469,9 +1457,9 @@ QDateTimeParser::parse(QString input, int position, const QDateTime &defaultValu
                         int toMax;
 
                         if (sn.type & TimeSectionMask) {
-                            if (scan.value.daysTo(minimum) != 0) {
+                            if (scan.value.daysTo(minimum) != 0)
                                 break;
-                            }
+
                             const QTime time = scan.value.time();
                             toMin = time.msecsTo(minimum.time());
                             if (scan.value.daysTo(maximum) > 0)
@@ -1525,9 +1513,8 @@ QDateTimeParser::parse(QString input, int position, const QDateTime &defaultValu
                 Q_ASSERT(maximum.date().toJulianDay() == 5373484);
                 if (scan.value.date().toJulianDay() > 5373484)
                     scan.state = Invalid;
-            } else {
-                if (scan.value > maximum)
-                    scan.state = Invalid;
+            } else if (scan.value > maximum) {
+                scan.state = Invalid;
             }
 
             QDTPDEBUG << "not checking intermediate because scanned value is" << scan.value << minimum << maximum;
@@ -1785,9 +1772,9 @@ QDateTimeParser::AmPmFinder QDateTimeParser::findAmPm(QString &str, int sectionI
     }
     if (used)
         *used = str.size();
-    if (QStringView(str).trimmed().isEmpty()) {
+    if (QStringView(str).trimmed().isEmpty())
         return PossibleBoth;
-    }
+
     const QLatin1Char space(' ');
     int size = sectionMaxSize(sectionIndex);
 
@@ -1970,9 +1957,9 @@ QString QDateTimeParser::SectionNode::format() const
 bool QDateTimeParser::potentialValue(QStringView str, int min, int max, int index,
                                      const QDateTime &currentValue, int insert) const
 {
-    if (str.isEmpty()) {
+    if (str.isEmpty())
         return true;
-    }
+
     const int size = sectionMaxSize(index);
     int val = (int)locale().toUInt(str);
     const SectionNode &sn = sectionNode(index);
@@ -1980,13 +1967,10 @@ bool QDateTimeParser::potentialValue(QStringView str, int min, int max, int inde
         const int year = currentValue.date().year(calendar);
         val += year - (year % 100);
     }
-    if (val >= min && val <= max && str.size() == size) {
+    if (val >= min && val <= max && str.size() == size)
         return true;
-    } else if (val > max) {
+    if (val > max || (str.size() == size && val < min))
         return false;
-    } else if (str.size() == size && val < min) {
-        return false;
-    }
 
     const int len = size - str.size();
     for (int i=0; i<len; ++i) {
@@ -2090,17 +2074,15 @@ bool QDateTimeParser::fromString(const QString &t, QDate *date, QTime *time) con
 
     if (time) {
         const QTime t = datetime.time();
-        if (!t.isValid()) {
+        if (!t.isValid())
             return false;
-        }
         *time = t;
     }
 
     if (date) {
         const QDate d = datetime.date();
-        if (!d.isValid()) {
+        if (!d.isValid())
             return false;
-        }
         *date = d;
     }
     return true;
