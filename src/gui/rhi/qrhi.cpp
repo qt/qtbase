@@ -5369,6 +5369,18 @@ void QRhiCommandBuffer::setComputePipeline(QRhiComputePipeline *ps)
 
     \note This function can only be called inside a compute pass, meaning
     between a beginComputePass() and endComputePass() call.
+
+    \note \a x, \a y, and \a z must fit the limits from the underlying graphics
+    API implementation at run time. The maximum values are typically 65535.
+
+    \note Watch out for possible limits on the local workgroup size as well.
+    This is specified in the shader, for example: \c{layout(local_size_x = 16,
+    local_size_y = 16) in;}. For example, with OpenGL the minimum value mandated
+    by the specification for the number of invocations in a single local work
+    group (the product of \c local_size_x, \c local_size_y, and \c local_size_z)
+    is 1024, while with OpenGL ES (3.1) the value may be as low as 128. This
+    means that the example given above may be rejected by some OpenGL ES
+    implementations as the number of invocations is 256.
  */
 void QRhiCommandBuffer::dispatch(int x, int y, int z)
 {
