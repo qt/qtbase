@@ -192,7 +192,7 @@ public:
     inline void append(const T &t) {
         if (s == a) {   // i.e. s != 0
             T copy(t);
-            realloc(s, s<<1);
+            reallocate(s, s << 1);
             const qsizetype idx = s++;
             if (QTypeInfo<T>::isComplex) {
                 new (ptr + idx) T(std::move(copy));
@@ -211,7 +211,7 @@ public:
 
     void append(T &&t) {
         if (s == a)
-            realloc(s, s << 1);
+            reallocate(s, s << 1);
         const qsizetype idx = s++;
         if (QTypeInfo<T>::isComplex)
             new (ptr + idx) T(std::move(t));
@@ -288,7 +288,7 @@ public:
     void shrink_to_fit() { squeeze(); }
 
 private:
-    void realloc(qsizetype size, qsizetype alloc);
+    void reallocate(qsizetype size, qsizetype alloc);
 
     qsizetype a;      // capacity
     qsizetype s;      // size
@@ -331,11 +331,11 @@ Q_INLINE_TEMPLATE QVarLengthArray<T, Prealloc>::QVarLengthArray(qsizetype asize)
 
 template <class T, qsizetype Prealloc>
 Q_INLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::resize(qsizetype asize)
-{ realloc(asize, qMax(asize, a)); }
+{ reallocate(asize, qMax(asize, a)); }
 
 template <class T, qsizetype Prealloc>
 Q_INLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::reserve(qsizetype asize)
-{ if (asize > a) realloc(s, asize); }
+{ if (asize > a) reallocate(s, asize); }
 
 template <class T, qsizetype Prealloc>
 Q_INLINE_TEMPLATE qsizetype QVarLengthArray<T, Prealloc>::indexOf(const T &t, qsizetype from) const
@@ -392,7 +392,7 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::append(const T *abuf, qs
     const qsizetype asize = s + increment;
 
     if (asize >= a)
-        realloc(s, qMax(s*2, asize));
+        reallocate(s, qMax(s * 2, asize));
 
     if (QTypeInfo<T>::isComplex) {
         // call constructor for new objects (which can throw)
@@ -406,10 +406,10 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::append(const T *abuf, qs
 
 template <class T, qsizetype Prealloc>
 Q_INLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::squeeze()
-{ realloc(s, s); }
+{ reallocate(s, s); }
 
 template <class T, qsizetype Prealloc>
-Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::realloc(qsizetype asize, qsizetype aalloc)
+Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::reallocate(qsizetype asize, qsizetype aalloc)
 {
     Q_ASSERT(aalloc >= asize);
     T *oldPtr = ptr;
