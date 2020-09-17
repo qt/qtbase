@@ -4124,6 +4124,18 @@ int QRhiVulkan::resourceLimit(QRhi::ResourceLimit limit) const
         return QVK_FRAMES_IN_FLIGHT;
     case QRhi::MaxAsyncReadbackFrames:
         return QVK_FRAMES_IN_FLIGHT;
+    case QRhi::MaxThreadGroupsPerDimension:
+        return int(qMin(physDevProperties.limits.maxComputeWorkGroupCount[0],
+                   qMin(physDevProperties.limits.maxComputeWorkGroupCount[1],
+                        physDevProperties.limits.maxComputeWorkGroupCount[2])));
+    case QRhi::MaxThreadsPerThreadGroup:
+        return int(physDevProperties.limits.maxComputeWorkGroupInvocations);
+    case QRhi::MaxThreadGroupX:
+        return int(physDevProperties.limits.maxComputeWorkGroupSize[0]);
+    case QRhi::MaxThreadGroupY:
+        return int(physDevProperties.limits.maxComputeWorkGroupSize[1]);
+    case QRhi::MaxThreadGroupZ:
+        return int(physDevProperties.limits.maxComputeWorkGroupSize[2]);
     default:
         Q_UNREACHABLE();
         return 0;

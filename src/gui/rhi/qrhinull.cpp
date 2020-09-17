@@ -149,6 +149,16 @@ int QRhiNull::resourceLimit(QRhi::ResourceLimit limit) const
         return 1;
     case QRhi::MaxAsyncReadbackFrames:
         return 1;
+    case QRhi::MaxThreadGroupsPerDimension:
+        return 0;
+    case QRhi::MaxThreadsPerThreadGroup:
+        return 0;
+    case QRhi::MaxThreadGroupX:
+        return 0;
+    case QRhi::MaxThreadGroupY:
+        return 0;
+    case QRhi::MaxThreadGroupZ:
+        return 0;
     default:
         Q_UNREACHABLE();
         return 0;

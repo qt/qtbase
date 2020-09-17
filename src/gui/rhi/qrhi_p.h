@@ -1490,7 +1490,12 @@ public:
         TextureSizeMax,
         MaxColorAttachments,
         FramesInFlight,
-        MaxAsyncReadbackFrames
+        MaxAsyncReadbackFrames,
+        MaxThreadGroupsPerDimension,
+        MaxThreadsPerThreadGroup,
+        MaxThreadGroupX,
+        MaxThreadGroupY,
+        MaxThreadGroupZ
     };
 
     ~QRhi();

@@ -587,6 +587,20 @@ int QRhiMetal::resourceLimit(QRhi::ResourceLimit limit) const
         return QMTL_FRAMES_IN_FLIGHT;
     case QRhi::MaxAsyncReadbackFrames:
         return QMTL_FRAMES_IN_FLIGHT;
+    case QRhi::MaxThreadGroupsPerDimension:
+        return 65535;
+    case QRhi::MaxThreadsPerThreadGroup:
+        Q_FALLTHROUGH();
+    case QRhi::MaxThreadGroupX:
+        Q_FALLTHROUGH();
+    case QRhi::MaxThreadGroupY:
+        Q_FALLTHROUGH();
+    case QRhi::MaxThreadGroupZ:
+#if defined(Q_OS_MACOS)
+        return 1024;
+#else
+        return 512;
+#endif
     default:
         Q_UNREACHABLE();
         return 0;

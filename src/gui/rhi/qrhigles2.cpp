@@ -301,6 +301,18 @@ QT_BEGIN_NAMESPACE
 #define GL_TEXTURE_2D_MULTISAMPLE         0x9100
 #endif
 
+#ifndef GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS
+#define GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS 0x90EB
+#endif
+
+#ifndef GL_MAX_COMPUTE_WORK_GROUP_COUNT
+#define GL_MAX_COMPUTE_WORK_GROUP_COUNT   0x91BE
+#endif
+
+#ifndef GL_MAX_COMPUTE_WORK_GROUP_SIZE
+#define GL_MAX_COMPUTE_WORK_GROUP_SIZE    0x91BF
+#endif
+
 /*!
     Constructs a new QRhiGles2InitParams.
 
@@ -513,6 +525,18 @@ bool QRhiGles2::create(QRhi::Flags flags)
         caps.compute = caps.ctxMajor > 3 || (caps.ctxMajor == 3 && caps.ctxMinor >= 1); // ES 3.1
     else
         caps.compute = caps.ctxMajor > 4 || (caps.ctxMajor == 4 && caps.ctxMinor >= 3); // 4.3
+
+    if (caps.compute) {
+        f->glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &caps.maxThreadsPerThreadGroup);
+        GLint tgPerDim[3];
+        f->glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &tgPerDim[0]);
+        f->glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &tgPerDim[1]);
+        f->glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &tgPerDim[2]);
+        caps.maxThreadGroupsPerDimension = qMin(tgPerDim[0], qMin(tgPerDim[1], tgPerDim[2]));
+        f->glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &caps.maxThreadGroupsX);
+        f->glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, &caps.maxThreadGroupsY);
+        f->glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &caps.maxThreadGroupsZ);
+    }
 
     if (caps.gles)
         caps.textureCompareMode = caps.ctxMajor >= 3; // ES 3.0
@@ -931,6 +955,16 @@ int QRhiGles2::resourceLimit(QRhi::ResourceLimit limit) const
         return 1;
     case QRhi::MaxAsyncReadbackFrames:
         return 1;
+    case QRhi::MaxThreadGroupsPerDimension:
+        return caps.maxThreadGroupsPerDimension;
+    case QRhi::MaxThreadsPerThreadGroup:
+        return caps.maxThreadsPerThreadGroup;
+    case QRhi::MaxThreadGroupX:
+        return caps.maxThreadGroupsX;
+    case QRhi::MaxThreadGroupY:
+        return caps.maxThreadGroupsY;
+    case QRhi::MaxThreadGroupZ:
+        return caps.maxThreadGroupsZ;
     default:
         Q_UNREACHABLE();
         return 0;

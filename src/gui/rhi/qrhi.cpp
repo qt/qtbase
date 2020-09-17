@@ -675,6 +675,32 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     frames (including the one that contains the readback) after which an
     asynchronous texture or buffer readback is guaranteed to complete upon
     \l{QRhi::beginFrame()}{starting a new frame}.
+
+    \value MaxThreadGroupsPerDimension The maximum number of compute
+    work/thread groups that can be dispatched. Effectively the maximum value
+    for the arguments of QRhiCommandBuffer::dispatch(). Typically 65535.
+
+    \value MaxThreadsPerThreadGroup The maximum number of invocations in a
+    single local work group, or in other terminology, the maximum number of
+    threads in a thread group. Effectively the maximum value for the product of
+    \c local_size_x, \c local_size_y, and \c local_size_z in the compute
+    shader. Typical values are 128, 256, 512, 1024, or 1536. Watch out that
+    both OpenGL ES and Vulkan specify only 128 as the minimum required limit
+    for implementations. While uncommon for Vulkan, some OpenGL ES 3.1
+    implementations for mobile/embedded devices only support the spec-mandated
+    minimum value.
+
+    \value MaxThreadGroupX The maximum size of a work/thread group in the X
+    dimension. Effectively the maximum value of \c local_size_x in the compute
+    shader. Typically 256 or 1024.
+
+    \value MaxThreadGroupY The maximum size of a work/thread group in the Y
+    dimension. Effectively the maximum value of \c local_size_y in the compute
+    shader. Typically 256 or 1024.
+
+    \value MaxThreadGroupZ The maximum size of a work/thread group in the Z
+    dimension. Effectively the maximum value of \c local_size_z in the compute
+    shader. Typically 64 or 256.
  */
 
 /*!

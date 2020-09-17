@@ -554,6 +554,16 @@ int QRhiD3D11::resourceLimit(QRhi::ResourceLimit limit) const
         return 1;
     case QRhi::MaxAsyncReadbackFrames:
         return 1;
+    case QRhi::MaxThreadGroupsPerDimension:
+        return D3D11_CS_DISPATCH_MAX_THREAD_GROUPS_PER_DIMENSION;
+    case QRhi::MaxThreadsPerThreadGroup:
+        return D3D11_CS_THREAD_GROUP_MAX_THREADS_PER_GROUP;
+    case QRhi::MaxThreadGroupX:
+        return D3D11_CS_THREAD_GROUP_MAX_X;
+    case QRhi::MaxThreadGroupY:
+        return D3D11_CS_THREAD_GROUP_MAX_Y;
+    case QRhi::MaxThreadGroupZ:
+        return D3D11_CS_THREAD_GROUP_MAX_Z;
     default:
         Q_UNREACHABLE();
         return 0;

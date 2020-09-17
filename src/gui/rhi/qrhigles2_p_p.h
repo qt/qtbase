@@ -848,6 +848,12 @@ public:
               ctxMinor(0),
               maxTextureSize(2048),
               maxDrawBuffers(4),
+              maxSamples(16),
+              maxThreadGroupsPerDimension(0),
+              maxThreadsPerThreadGroup(0),
+              maxThreadGroupsX(0),
+              maxThreadGroupsY(0),
+              maxThreadGroupsZ(0),
               msaaRenderBuffer(false),
               multisampledTexture(false),
               npotTextureFull(true),
@@ -882,6 +888,11 @@ public:
         int maxTextureSize;
         int maxDrawBuffers;
         int maxSamples;
+        int maxThreadGroupsPerDimension;
+        int maxThreadsPerThreadGroup;
+        int maxThreadGroupsX;
+        int maxThreadGroupsY;
+        int maxThreadGroupsZ;
         // Multisample fb and blit are supported (GLES 3.0 or OpenGL 3.x). Not
         // the same as multisample textures!
         uint msaaRenderBuffer : 1;
