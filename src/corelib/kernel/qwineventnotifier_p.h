@@ -74,7 +74,7 @@ public:
 
     HANDLE handleToEvent;
     HANDLE waitHandle = NULL;
-    QAtomicInt signaledCount;
+    QAtomicInt signaled;
     bool enabled;
 };
 

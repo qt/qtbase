@@ -202,7 +202,7 @@ void QWinEventNotifier::setEnabled(bool enable)
     }
 
     if (enable) {
-        d->signaledCount = 0;
+        d->signaled.storeRelaxed(false);
         eventDispatcher->registerEventNotifier(this);
     } else {
         eventDispatcher->unregisterEventNotifier(this);
@@ -245,7 +245,7 @@ static void CALLBACK wfsoCallback(void *context, BOOLEAN /*ignore*/)
 
     QEventDispatcherWin32Private *edp = QEventDispatcherWin32Private::get(
                 static_cast<QEventDispatcherWin32 *>(eventDispatcher));
-    ++nd->signaledCount;
+    nd->signaled.storeRelaxed(true);
     edp->postActivateEventNotifiers();
 }
 
