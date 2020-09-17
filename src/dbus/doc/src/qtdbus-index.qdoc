@@ -208,6 +208,10 @@
     Information about the messages will be written to the console the application
     was launched from.
 
+    \section1 Module Evolution
+    \l{Porting to Qt 6 - Qt DBus} lists important changes in the module API
+    and functionality that were done for the Qt 6 series of Qt.
+
     \section1 Licenses and Attributions
 
     The Qt D-Bus module is available under commercial licenses from \l{The Qt Company}.

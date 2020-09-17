@@ -49,6 +49,10 @@
     \include module-use.qdocinc building with qmake
     \snippet snippets/snippets.pro qmake_use
 
+    \section1 Module Evolution
+    \l{Porting to Qt 6 - Qt SQL} lists important changes in the module API
+    and functionality that were done for the Qt 6 series of Qt.
+
     \section1 Licenses and Attributions
 
     Qt SQL is available under commercial licenses from \l{The Qt Company}.
