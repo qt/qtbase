@@ -184,7 +184,7 @@ bool QPagedPaintDevice::setPageOrientation(QPageLayout::Orientation orientation)
     You should not call any painting methods between a call to setPageMargins()
     and newPage() as the wrong paint metrics may be used.
 
-    To get the current page margins use pageLayout().pageMargins().
+    To get the current page margins use pageLayout().margins().
 
     Returns true if the page margins were successfully set to \a margins.
 
