@@ -1249,38 +1249,40 @@ void tst_QUrl::toLocalFile_data()
     QTest::addColumn<QString>("theUrl");
     QTest::addColumn<QString>("theFile");
 
-    QTest::newRow("data0") << QString::fromLatin1("file:/a.txt") << QString::fromLatin1("/a.txt");
-    QTest::newRow("data4") << QString::fromLatin1("file:///a.txt") << QString::fromLatin1("/a.txt");
-    QTest::newRow("data4a") << QString::fromLatin1("webdavs://somewebdavhost/somedir/somefile")
+    QTest::newRow("file:/") << QString::fromLatin1("file:/a.txt") << QString::fromLatin1("/a.txt");
+    QTest::newRow("file:///") << QString::fromLatin1("file:///a.txt") << QString::fromLatin1("/a.txt");
+    QTest::newRow("file:////") << QString::fromLatin1("file:////somehost/somedir/somefile") << QString::fromLatin1("//somehost/somedir/somefile");
+    QTest::newRow("FILE:/") << QString::fromLatin1("FILE:/a.txt") << QString::fromLatin1("/a.txt");
+
+    QTest::newRow("path-delimiter") << QString::fromLatin1("file:///Mambo <%235>.mp3") << QString::fromLatin1("/Mambo <#5>.mp3");
+    QTest::newRow("path-percent") << QString::fromLatin1("file:///a%25.txt") << QString::fromLatin1("/a%.txt");
+    QTest::newRow("path-percent-percent") << QString::fromLatin1("file:///a%25%25.txt") << QString::fromLatin1("/a%%.txt");
+    QTest::newRow("path-percent-a-percent") << QString::fromLatin1("file:///a%25a%25.txt") << QString::fromLatin1("/a%a%.txt");
+    QTest::newRow("path-control-char") << QString::fromLatin1("file:///a%1f.txt") << QString::fromLatin1("/a\x1f.txt");
+    QTest::newRow("path-percent-hex-hex") << QString::fromLatin1("file:///%2580.txt") << QString::fromLatin1("/%80.txt");
+
+    QTest::newRow("webdavs") << QString::fromLatin1("webdavs://somewebdavhost/somedir/somefile")
 #ifdef Q_OS_WIN // QTBUG-42346, WebDAV is visible as local file on Windows only.
-                            << QString::fromLatin1("//somewebdavhost@SSL/somedir/somefile");
+                             << QString::fromLatin1("//somewebdavhost@SSL/somedir/somefile");
 #else
-                            << QString();
+                             << QString();
 #endif
 #ifdef Q_OS_WIN
-    QTest::newRow("data5") << QString::fromLatin1("file:///c:/a.txt") << QString::fromLatin1("c:/a.txt");
+    QTest::newRow("windows-drive-absolute") << QString::fromLatin1("file:///c:/a.txt") << QString::fromLatin1("c:/a.txt");
 #else
-    QTest::newRow("data5") << QString::fromLatin1("file:///c:/a.txt") << QString::fromLatin1("/c:/a.txt");
+    QTest::newRow("windows-drive-absolute") << QString::fromLatin1("file:///c:/a.txt") << QString::fromLatin1("/c:/a.txt");
 #endif
-    QTest::newRow("data6") << QString::fromLatin1("file://somehost/somedir/somefile") << QString::fromLatin1("//somehost/somedir/somefile");
-    QTest::newRow("data7") << QString::fromLatin1("file://somehost/") << QString::fromLatin1("//somehost/");
-    QTest::newRow("data8") << QString::fromLatin1("file://somehost") << QString::fromLatin1("//somehost");
-    QTest::newRow("data9") << QString::fromLatin1("file:////somehost/somedir/somefile") << QString::fromLatin1("//somehost/somedir/somefile");
-    QTest::newRow("data10") << QString::fromLatin1("FILE:/a.txt") << QString::fromLatin1("/a.txt");
-    QTest::newRow("data11") << QString::fromLatin1("file:///Mambo <%235>.mp3") << QString::fromLatin1("/Mambo <#5>.mp3");
-    QTest::newRow("data12") << QString::fromLatin1("file:///a%25.txt") << QString::fromLatin1("/a%.txt");
-    QTest::newRow("data13") << QString::fromLatin1("file:///a%25%25.txt") << QString::fromLatin1("/a%%.txt");
-    QTest::newRow("data14") << QString::fromLatin1("file:///a%25a%25.txt") << QString::fromLatin1("/a%a%.txt");
-    QTest::newRow("data15") << QString::fromLatin1("file:///a%1f.txt") << QString::fromLatin1("/a\x1f.txt");
-    QTest::newRow("data16") << QString::fromLatin1("file:///%2580.txt") << QString::fromLatin1("/%80.txt");
+    QTest::newRow("windows-unc-path") << QString::fromLatin1("file://somehost/somedir/somefile") << QString::fromLatin1("//somehost/somedir/somefile");
+    QTest::newRow("windows-unc-root") << QString::fromLatin1("file://somehost/") << QString::fromLatin1("//somehost/");
+    QTest::newRow("windows-unc-nopath") << QString::fromLatin1("file://somehost") << QString::fromLatin1("//somehost");
 
     // and some that result in empty (i.e., not local)
-    QTest::newRow("xdata0") << QString::fromLatin1("/a.txt") << QString();
-    QTest::newRow("xdata1") << QString::fromLatin1("//a.txt") << QString();
-    QTest::newRow("xdata2") << QString::fromLatin1("///a.txt") << QString();
-    QTest::newRow("xdata3") << QString::fromLatin1("foo:/a.txt") << QString();
-    QTest::newRow("xdata4") << QString::fromLatin1("foo://a.txt") << QString();
-    QTest::newRow("xdata5") << QString::fromLatin1("foo:///a.txt") << QString();
+    QTest::newRow("noscheme-absolute") << QString::fromLatin1("/a.txt") << QString();
+    QTest::newRow("noscheme-host") << QString::fromLatin1("//a.txt") << QString();
+    QTest::newRow("noscheme-host-path") << QString::fromLatin1("///a.txt") << QString();
+    QTest::newRow("fooscheme-absolute") << QString::fromLatin1("foo:/a.txt") << QString();
+    QTest::newRow("fooscheme-host") << QString::fromLatin1("foo://a.txt") << QString();
+    QTest::newRow("fooscheme-host-path") << QString::fromLatin1("foo:///a.txt") << QString();
 }
 
 void tst_QUrl::toLocalFile()
@@ -1299,21 +1301,27 @@ void tst_QUrl::fromLocalFile_data()
     QTest::addColumn<QString>("theUrl");
     QTest::addColumn<QString>("thePath");
 
-    QTest::newRow("data0") << QString::fromLatin1("/a.txt") << QString::fromLatin1("file:///a.txt") << QString::fromLatin1("/a.txt");
-    QTest::newRow("data1") << QString::fromLatin1("a.txt") << QString::fromLatin1("file:a.txt") << QString::fromLatin1("a.txt");
-    QTest::newRow("data2") << QString::fromLatin1("/a/b.txt") << QString::fromLatin1("file:///a/b.txt") << QString::fromLatin1("/a/b.txt");
-    QTest::newRow("data3") << QString::fromLatin1("c:/a.txt") << QString::fromLatin1("file:///c:/a.txt") << QString::fromLatin1("/c:/a.txt");
-    QTest::newRow("data4") << QString::fromLatin1("//somehost/somedir/somefile") << QString::fromLatin1("file://somehost/somedir/somefile")
-                        << QString::fromLatin1("/somedir/somefile");
-    QTest::newRow("data4a") << QString::fromLatin1("//somewebdavhost@SSL/somedir/somefile")
-                        << QString::fromLatin1("webdavs://somewebdavhost/somedir/somefile")
-                        << QString::fromLatin1("/somedir/somefile");
-    QTest::newRow("data5") << QString::fromLatin1("//somehost") << QString::fromLatin1("file://somehost")
-                        << QString::fromLatin1("");
-    QTest::newRow("data6") << QString::fromLatin1("//somehost/") << QString::fromLatin1("file://somehost/")
-                        << QString::fromLatin1("/");
-    QTest::newRow("data7") << QString::fromLatin1("/Mambo <#5>.mp3") << QString::fromLatin1("file:///Mambo <%235>.mp3")
-                           << QString::fromLatin1("/Mambo <#5>.mp3");
+    QTest::newRow("absolute-path") << QString::fromLatin1("/a.txt") << QString::fromLatin1("file:///a.txt") << QString::fromLatin1("/a.txt");
+    QTest::newRow("relative-path") << QString::fromLatin1("a.txt") << QString::fromLatin1("file:a.txt") << QString::fromLatin1("a.txt");
+    QTest::newRow("absolute-two-path") << QString::fromLatin1("/a/b.txt") << QString::fromLatin1("file:///a/b.txt") << QString::fromLatin1("/a/b.txt");
+    QTest::newRow("path-delimiters") << QString::fromLatin1("/Mambo <#5>.mp3") << QString::fromLatin1("file:///Mambo <%235>.mp3")
+                                     << QString::fromLatin1("/Mambo <#5>.mp3");
+
+    // Windows absolute details
+    QTest::newRow("windows-drive") << QString::fromLatin1("c:/a.txt") << QString::fromLatin1("file:///c:/a.txt") << QString::fromLatin1("/c:/a.txt");
+
+    // Windows UNC paths
+    QTest::addRow("windows-unc-path") << QString::fromLatin1("//somehost/somedir/somefile") << QString::fromLatin1("file://somehost/somedir/somefile")
+                                      << QString::fromLatin1("/somedir/somefile");
+    QTest::newRow("windows-unc-nopath") << QString::fromLatin1("//somehost") << QString::fromLatin1("file://somehost")
+                                        << QString::fromLatin1("");
+    QTest::newRow("windows-unc-root") << QString::fromLatin1("//somehost/") << QString::fromLatin1("file://somehost/")
+                                      << QString::fromLatin1("/");
+
+    QTest::newRow("windows-webdav")
+            << QString::fromLatin1("//somewebdavhost@SSL/somedir/somefile")
+            << QString::fromLatin1("webdavs://somewebdavhost/somedir/somefile")
+            << QString::fromLatin1("/somedir/somefile");
 }
 
 void tst_QUrl::fromLocalFile()
@@ -1334,19 +1342,19 @@ void tst_QUrl::fromLocalFileNormalize_data()
     QTest::addColumn<QString>("theUrl");
     QTest::addColumn<QString>("urlWithNormalizedPath");
 
-    QTest::newRow("data0") << QString::fromLatin1("/a.txt") << QString::fromLatin1("file:///a.txt") << QString::fromLatin1("file:///a.txt");
-    QTest::newRow("data1") << QString::fromLatin1("a.txt") << QString::fromLatin1("file:a.txt") << QString::fromLatin1("file:a.txt");
-    QTest::newRow("data8") << QString::fromLatin1("/a%.txt") << QString::fromLatin1("file:///a%25.txt")
-                           << QString::fromLatin1("file:///a%25.txt");
-    QTest::newRow("data9") << QString::fromLatin1("/a%25.txt") << QString::fromLatin1("file:///a%2525.txt")
-                           << QString::fromLatin1("file:///a%2525.txt");
-    QTest::newRow("data10") << QString::fromLatin1("/%80.txt") << QString::fromLatin1("file:///%2580.txt")
-                            << QString::fromLatin1("file:///%2580.txt");
-    QTest::newRow("data11") << QString::fromLatin1("./a.txt") << QString::fromLatin1("file:./a.txt") << QString::fromLatin1("file:a.txt");
-    QTest::newRow("data12") << QString::fromLatin1("././a.txt") << QString::fromLatin1("file:././a.txt") << QString::fromLatin1("file:a.txt");
-    QTest::newRow("data13") << QString::fromLatin1("b/../a.txt") << QString::fromLatin1("file:b/../a.txt") << QString::fromLatin1("file:a.txt");
-    QTest::newRow("data14") << QString::fromLatin1("/b/../a.txt") << QString::fromLatin1("file:///b/../a.txt") << QString::fromLatin1("file:///a.txt");
-    QTest::newRow("data15") << QString::fromLatin1("/b/.") << QString::fromLatin1("file:///b/.") << QString::fromLatin1("file:///b");
+    QTest::newRow("absolute-path") << QString::fromLatin1("/a.txt") << QString::fromLatin1("file:///a.txt") << QString::fromLatin1("file:///a.txt");
+    QTest::newRow("relative-path") << QString::fromLatin1("a.txt") << QString::fromLatin1("file:a.txt") << QString::fromLatin1("file:a.txt");
+    QTest::newRow("percent") << QString::fromLatin1("/a%.txt") << QString::fromLatin1("file:///a%25.txt")
+                             << QString::fromLatin1("file:///a%25.txt");
+    QTest::newRow("percent25") << QString::fromLatin1("/a%25.txt") << QString::fromLatin1("file:///a%2525.txt")
+                               << QString::fromLatin1("file:///a%2525.txt");
+    QTest::newRow("percent80") << QString::fromLatin1("/%80.txt") << QString::fromLatin1("file:///%2580.txt")
+                               << QString::fromLatin1("file:///%2580.txt");
+    QTest::newRow("relative-dot") << QString::fromLatin1("./a.txt") << QString::fromLatin1("file:./a.txt") << QString::fromLatin1("file:a.txt");
+    QTest::newRow("relative-dot-dot") << QString::fromLatin1("././a.txt") << QString::fromLatin1("file:././a.txt") << QString::fromLatin1("file:a.txt");
+    QTest::newRow("relative-path-dotdot") << QString::fromLatin1("b/../a.txt") << QString::fromLatin1("file:b/../a.txt") << QString::fromLatin1("file:a.txt");
+    QTest::newRow("absolute-path-dotdot") << QString::fromLatin1("/b/../a.txt") << QString::fromLatin1("file:///b/../a.txt") << QString::fromLatin1("file:///a.txt");
+    QTest::newRow("absolute-path-dot") << QString::fromLatin1("/b/.") << QString::fromLatin1("file:///b/.") << QString::fromLatin1("file:///b");
 }
 
 void tst_QUrl::fromLocalFileNormalize()
