@@ -316,4 +316,6 @@ if "%rargs%" == "" (
 
 rem Launch CMake-based configure
 cd "%TOPQTDIR%"
-cmake -DOPTFILE=config.opt -P "%QTSRC%\cmake\QtProcessConfigureArgs.cmake"
+set TOP_LEVEL_ARG=
+if %TOPLEVEL% == true set TOP_LEVEL_ARG=-DTOP_LEVEL=TRUE
+cmake -DOPTFILE=config.opt %TOP_LEVEL_ARG% -P "%QTSRC%\cmake\QtProcessConfigureArgs.cmake"

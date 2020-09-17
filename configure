@@ -559,8 +559,8 @@ while [ "$#" -gt 0 ]; do
         BUILD_WITH_CMAKE=yes
         ;;
     redo)
-        if [ -f config.opt ]; then
-            if grep -e ^-cmake <config.opt; then
+        if [ -f ${outpathPrefix}config.opt ]; then
+            if grep -e ^-cmake <${outpathPrefix}config.opt >/dev/null 2>&1; then
                 BUILD_WITH_CMAKE=yes
             fi
         fi
@@ -917,31 +917,35 @@ else
 fi
 }
 
+checkTopLevelBuild "$@"
 parseCommandline "$@"
 handleHelp
 if [ "$BUILD_WITH_CMAKE" = "yes" ]; then
-    checkTopLevelBuild "$@"
     getOptAndQMakeCmdLines "$@"
     optfilename=config.opt
     if [ -z "$optfile" ]; then   # only write optfile if not currently redoing
         optfilepath=${outpathPrefix}${optfilename}
         if [ -f "$optfilepath" ]; then rm "$optfilepath"; fi
         for arg in "$@"; do
+            if [ "$arg" = "-top-level" ]; then
+               continue
+            fi
             echo $arg >> "$optfilepath"
         done
     fi
 
+    top_level_arg=
     if [ -n "$CFG_TOPLEVEL" ]; then
+        top_level_arg=-DTOP_LEVEL=TRUE
         cd ..
     fi
 
-    cmake "-DOPTFILE=$optfilename" -P "$relpath/cmake/QtProcessConfigureArgs.cmake"
+    cmake "-DOPTFILE=$optfilename" $top_level_arg -P "$relpath/cmake/QtProcessConfigureArgs.cmake"
 else
     findPerl
     findAwk
     findMake
     checkQMakeEnv
-    checkTopLevelBuild "$@"
     getOptAndQMakeCmdLines "$@"
     detectOperatingSystem
     maybeVerifyXcode
