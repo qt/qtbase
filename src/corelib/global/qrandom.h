@@ -40,7 +40,7 @@
 #ifndef QRANDOM_H
 #define QRANDOM_H
 
-#include <QtCore/qglobal.h>
+#include <QtCore/qalgorithms.h>
 #include <algorithm>    // for std::generate
 #include <random>       // for std::mt19937
 
@@ -133,6 +133,44 @@ public:
     int bounded(int lowest, int highest)
     {
         return bounded(highest - lowest) + lowest;
+    }
+
+    quint64 bounded(quint64 highest);
+
+    quint64 bounded(quint64 lowest, quint64 highest)
+    {
+        Q_ASSERT(highest > lowest);
+        return bounded(highest - lowest) + lowest;
+    }
+
+    qint64 bounded(qint64 highest)
+    {
+        Q_ASSERT(highest > 0);
+        return qint64(bounded(quint64(0), quint64(highest)));
+    }
+
+    qint64 bounded(qint64 lowest, qint64 highest)
+    {
+        return bounded(highest - lowest) + lowest;
+    }
+
+    // these functions here only to help with ambiguous overloads
+    qint64 bounded(int lowest, qint64 highest)
+    {
+        return bounded(qint64(lowest), qint64(highest));
+    }
+    qint64 bounded(qint64 lowest, int highest)
+    {
+        return bounded(qint64(lowest), qint64(highest));
+    }
+
+    quint64 bounded(unsigned lowest, quint64 highest)
+    {
+        return bounded(quint64(lowest), quint64(highest));
+    }
+    quint64 bounded(quint64 lowest, unsigned highest)
+    {
+        return bounded(quint64(lowest), quint64(highest));
     }
 
     template <typename UInt, IfValidUInt<UInt> = true>
@@ -248,6 +286,24 @@ public:
     static Q_CORE_EXPORT QRandomGenerator64 securelySeeded();
 #endif // Q_QDOC
 };
+
+inline quint64 QRandomGenerator::bounded(quint64 highest)
+{
+    // Implement an algorithm similar to libc++'s uniform_int_distribution:
+    // loop around getting a random number, mask off any bits that "highest"
+    // will never need, then check if it's higher than "highest". The number of
+    // times the loop will run is unbounded but the probability of terminating
+    // is better than 1/2 on each iteration. Therefore, the average loop count
+    // should be less than 2.
+
+    const int width = qCountLeadingZeroBits(highest - 1);
+    const quint64 mask = (quint64(1) << (std::numeric_limits<quint64>::digits - width)) - 1;
+    quint64 v;
+    do {
+        v = generate64() & mask;
+    } while (v >= highest);
+    return v;
+}
 
 inline QRandomGenerator *QRandomGenerator::system()
 {

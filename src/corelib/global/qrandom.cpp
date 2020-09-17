@@ -876,7 +876,8 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
     \a highest (exclusive). The same result may also be obtained by using
     \l{http://en.cppreference.com/w/cpp/numeric/random/uniform_int_distribution}{\c std::uniform_int_distribution}
     with parameters 0 and \c{highest - 1}. That class can also be used to obtain
-    quantities larger than 32 bits.
+    quantities larger than 32 bits; for 64 bits, the 64-bit bounded() overload
+    can be used too.
 
     For example, to obtain a value between 0 and 255 (inclusive), one would write:
 
@@ -900,6 +901,45 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
 
     Note that this function cannot be used to obtain values in the full 32-bit
     range of int. Instead, use generate() and cast to int.
+
+    \sa generate(), generate64(), generateDouble()
+ */
+
+/*!
+    \fn quint64 QRandomGenerator::bounded(quint64 highest)
+    \overload
+
+    Generates one random 64-bit quantity in the range between 0 (inclusive) and
+    \a highest (exclusive). The same result may also be obtained by using
+    \l{http://en.cppreference.com/w/cpp/numeric/random/uniform_int_distribution}{\c std::uniform_int_distribution<quint64>}
+    with parameters 0 and \c{highest - 1}.
+
+    Note that this function cannot be used to obtain values in the full 64-bit
+    range of \c{quint64}. Instead, use generate64().
+
+    \note This function is implemented as a loop, which depends on the random
+    value obtained. On the long run, on average it should loop just under 2
+    times, but if the random generator is defective, this function may take
+    considerably longer to execute.
+
+    \sa generate(), generate64(), generateDouble()
+ */
+
+/*!
+    \fn qint64 QRandomGenerator::bounded(qint64 highest)
+    \overload
+
+    Generates one random 64-bit quantity in the range between 0 (inclusive) and
+    \a highest (exclusive). \a highest must be positive.
+
+    Note that this function cannot be used to obtain values in the full 64-bit
+    range of \c{qint64}. Instead, use generate64() and cast to qint64 or instead
+    use the unsigned version of this function.
+
+    \note This function is implemented as a loop, which depends on the random
+    value obtained. On the long run, on average it should loop just under 2
+    times, but if the random generator is defective, this function may take
+    considerably longer to execute.
 
     \sa generate(), generate64(), generateDouble()
  */
@@ -940,6 +980,60 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
     range of int. Instead, use generate() and cast to int.
 
     \sa generate(), generate64(), generateDouble()
+ */
+
+/*!
+    \fn quint64 QRandomGenerator::bounded(quint64 lowest, quint64 highest)
+    \overload
+
+    Generates one random 64-bit quantity in the range between \a lowest
+    (inclusive) and \a highest (exclusive). The \a highest parameter must be
+    greater than \a lowest.
+
+    The same result may also be obtained by using
+    \l{http://en.cppreference.com/w/cpp/numeric/random/uniform_int_distribution}{\c std::uniform_int_distribution<quint64>}
+    with parameters \a lowest and \c{\a highest - 1}.
+
+    Note that this function cannot be used to obtain values in the full 64-bit
+    range of \c{quint64}. Instead, use generate64().
+
+    \note This function is implemented as a loop, which depends on the random
+    value obtained. On the long run, on average it should loop just under 2
+    times, but if the random generator is defective, this function may take
+    considerably longer to execute.
+
+    \sa generate(), generate64(), generateDouble()
+ */
+
+/*!
+    \fn qint64 QRandomGenerator::bounded(qint64 lowest, qint64 highest)
+    \overload
+
+    Generates one random 64-bit quantity in the range between \a lowest
+    (inclusive) and \a highest (exclusive), both of which may be negative, but
+    \a highest must be greater than \a lowest.
+
+    Note that this function cannot be used to obtain values in the full 64-bit
+    range of \c{qint64}. Instead, use generate64() and cast to qint64.
+
+    \note This function is implemented as a loop, which depends on the random
+    value obtained. On the long run, on average it should loop just under 2
+    times, but if the random generator is defective, this function may take
+    considerably longer to execute.
+
+    \sa generate(), generate64(), generateDouble()
+ */
+
+/*!
+    \fn qint64 QRandomGenerator::bounded(int lowest, qint64 highest)
+    \fn qint64 QRandomGenerator::bounded(qint64 lowest, int highest)
+    \fn quint64 QRandomGenerator::bounded(unsigned lowest, quint64 highest)
+    \fn quint64 QRandomGenerator::bounded(quint64 lowest, unsigned highest)
+    \overload
+
+    This function exists to help with overload resolution when the types of the
+    parameters don't exactly match. They will promote the smaller type to the
+    type of the larger one and call the correct overload.
  */
 
 /*!
