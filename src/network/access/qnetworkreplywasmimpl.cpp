@@ -283,6 +283,7 @@ void QNetworkReplyWasmImplPrivate::emitReplyError(QNetworkReply::NetworkError er
 
     q->setError(errorCode, errorString);
     emit q->errorOccurred(errorCode);
+    emit q->finished();
 }
 
 void QNetworkReplyWasmImplPrivate::emitDataReadProgress(qint64 bytesReceived, qint64 bytesTotal)
@@ -315,12 +316,6 @@ void QNetworkReplyWasmImplPrivate::dataReceived(const QByteArray &buffer, int bu
     downloadBuffer.append(buffer, bufferSize);
 
     emit q->readyRead();
-
-    if (downloadBufferCurrentSize == totalDownloadSize) {
-        q->setFinished(true);
-        emit q->readChannelFinished();
-        emit q->finished();
-    }
 }
 
 //taken from qnetworkrequest.cpp
@@ -457,6 +452,10 @@ void QNetworkReplyWasmImplPrivate::downloadSucceeded(emscripten_fetch_t *fetch)
     if (reply) {
         QByteArray buffer(fetch->data, fetch->numBytes);
         reply->dataReceived(buffer, buffer.size());
+
+        QByteArray statusText(fetch->statusText);
+        reply->setStatusCode(fetch->status, statusText);
+        reply->setReplyFinished();
     }
 }
 
@@ -465,6 +464,14 @@ void QNetworkReplyWasmImplPrivate::setStatusCode(int status, const QByteArray &s
     Q_Q(QNetworkReplyWasmImpl);
     q->setAttribute(QNetworkRequest::HttpStatusCodeAttribute, status);
     q->setAttribute(QNetworkRequest::HttpReasonPhraseAttribute, statusText);
+}
+
+void QNetworkReplyWasmImplPrivate::setReplyFinished()
+{
+    Q_Q(QNetworkReplyWasmImpl);
+    q->setFinished(true);
+    emit q->readChannelFinished();
+    emit q->finished();
 }
 
 void QNetworkReplyWasmImplPrivate::stateChange(emscripten_fetch_t *fetch)
