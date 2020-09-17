@@ -1248,6 +1248,9 @@ void QVariant::save(QDataStream &s) const
         // map to Qt 5 values
         if (typeId == QMetaType::User) {
             typeId = Qt5UserType;
+            if (!strcmp(d.type().name(), "QRegExp")) {
+                typeId = 27; // QRegExp in Qt 4/5
+            }
         } else if (typeId > Qt5LastCoreType && typeId <= QMetaType::LastCoreType) {
             // the type didn't exist in Qt 5
             typeId = Qt5UserType;
@@ -1260,10 +1263,6 @@ void QVariant::save(QDataStream &s) const
             }
         } else if (typeId == QMetaType::QSizePolicy) {
             typeId = Qt5SizePolicy;
-        } else if (saveAsUserType) {
-            if (!strcmp(d.type().name(), "QRegExp")) {
-                typeId = 27; // QRegExp in Qt 4/5
-            }
         }
     }
     if (s.version() < QDataStream::Qt_4_0) {
