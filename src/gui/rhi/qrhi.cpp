@@ -2829,8 +2829,6 @@ bool QRhiShaderResourceBindings::isLayoutCompatible(const QRhiShaderResourceBind
  */
 QRhiShaderResourceBinding::QRhiShaderResourceBinding()
 {
-    // Zero out everything, including possible padding, because will use
-    // qHashBits on it.
     memset(&d.u, 0, sizeof(d.u));
 }
 
@@ -3330,8 +3328,33 @@ bool operator!=(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBind
 size_t qHash(const QRhiShaderResourceBinding &b, size_t seed) noexcept
 {
     const QRhiShaderResourceBinding::Data *d = b.data();
-    return seed + uint(d->binding) + 10 * uint(d->stage) + 100 * uint(d->type)
-            + qHashBits(&d->u, sizeof(d->u), seed);
+    size_t h = uint(d->binding) ^ uint(d->stage) ^ uint(d->type) ^ seed;
+    switch (d->type) {
+    case QRhiShaderResourceBinding::UniformBuffer:
+        h ^= qHash(reinterpret_cast<quintptr>(d->u.ubuf.buf));
+        break;
+    case QRhiShaderResourceBinding::SampledTexture:
+        h ^= qHash(reinterpret_cast<quintptr>(d->u.stex.texSamplers[0].tex));
+        h ^= qHash(reinterpret_cast<quintptr>(d->u.stex.texSamplers[0].sampler));
+        break;
+    case QRhiShaderResourceBinding::ImageLoad:
+        Q_FALLTHROUGH();
+    case QRhiShaderResourceBinding::ImageStore:
+        Q_FALLTHROUGH();
+    case QRhiShaderResourceBinding::ImageLoadStore:
+        h ^= qHash(reinterpret_cast<quintptr>(d->u.simage.tex));
+        break;
+    case QRhiShaderResourceBinding::BufferLoad:
+        Q_FALLTHROUGH();
+    case QRhiShaderResourceBinding::BufferStore:
+        Q_FALLTHROUGH();
+    case QRhiShaderResourceBinding::BufferLoadStore:
+        h ^= qHash(reinterpret_cast<quintptr>(d->u.sbuf.buf));
+        break;
+    default:
+        break;
+    }
+    return h;
 }
 
 #ifndef QT_NO_DEBUG_STREAM
