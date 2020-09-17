@@ -158,8 +158,6 @@ public:
     ~QEventDispatcherWin32Private();
     static QEventDispatcherWin32Private *get(QEventDispatcherWin32 *q) { return q->d_func(); }
 
-    DWORD threadId;
-
     QAtomicInt interrupt;
 
     // internal window handle used for socketnotifiers/timers/etc

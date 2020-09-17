@@ -97,7 +97,7 @@ class QEventDispatcherWin32Private;
 LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp);
 
 QEventDispatcherWin32Private::QEventDispatcherWin32Private()
-    : threadId(GetCurrentThreadId()), interrupt(false), internalHwnd(0),
+    : interrupt(false), internalHwnd(0),
       getMessageHook(0), sendPostedEventsTimerId(0), wakeUps(0),
       activateNotifiersPosted(false), activateEventNotifiersPosted(false)
 {
