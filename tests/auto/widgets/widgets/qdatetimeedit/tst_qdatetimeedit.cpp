@@ -4658,27 +4658,28 @@ void tst_QDateTimeEdit::springForward_data()
     const QDate springDate = springTransition.date();
     const int gapWidth = timeZone.daylightTimeOffset(springTransition.addDays(1));
     const QTime springGap = springTransition.time().addSecs(-gapWidth);
+    const QByteArray springTime = springGap.toString("hh:mm").toLocal8Bit();
     const QTime springGapMiddle = springTransition.time().addSecs(-gapWidth/2);
 
-    QTest::addRow("forward to %s, correct to previous", qPrintable(springGap.toString("hh:mm")))
+    QTest::addRow("forward to %s, correct to previous", springTime.data())
         << QDateTime(springDate, springGap.addSecs(-gapWidth))
         << QAbstractSpinBox::CorrectToPreviousValue
         << springGap
         << QDateTime(springDate, springGap.addSecs(-gapWidth));
 
-    QTest::addRow("back to %s, correct to previous", qPrintable(springGap.toString("hh:mm")))
+    QTest::addRow("back to %s, correct to previous", springTime.data())
         << springTransition
         << QAbstractSpinBox::CorrectToPreviousValue
         << springGap
         << springTransition;
 
-    QTest::addRow("forward to %s, correct to nearest", qPrintable(springGap.toString("hh:mm")))
+    QTest::addRow("forward to %s, correct to nearest", springTime.data())
         << QDateTime(springDate, springGap.addSecs(-gapWidth))
         << QAbstractSpinBox::CorrectToNearestValue
         << springGapMiddle
         << springTransition;
 
-    QTest::addRow("back to %s, correct to nearest", qPrintable(springGap.toString("hh:mm")))
+    QTest::addRow("back to %s, correct to nearest", springTime.data())
         << springTransition
         << QAbstractSpinBox::CorrectToNearestValue
         << springGapMiddle
@@ -4754,17 +4755,18 @@ void tst_QDateTimeEdit::stepIntoDSTGap_data()
     const QDate spring = springTransition.date();
     const int gapWidth = timeZone.daylightTimeOffset(springTransition.addDays(1));
     const QTime springGap = springTransition.time().addSecs(-gapWidth);
+    const QByteArray springTime = springGap.toString("hh:mm").toLocal8Bit();
 
     // change hour
     if (springGap.hour() != 0) {
-        QTest::addRow("hour up into %s gap", qPrintable(springGap.toString("hh:mm")))
+        QTest::addRow("hour up into %s gap", springTime.data())
             << QDateTime(spring, springGap.addSecs(-3600))
             << QDateTimeEdit::HourSection
             << +1
             << springTransition;
 
         // 3:00:10 into 2:00:10 should get us to 1:00:10
-        QTest::addRow("hour down into %s gap", qPrintable(springGap.toString("hh:mm")))
+        QTest::addRow("hour down into %s gap", springTime.data())
             << QDateTime(spring, springGap.addSecs(3610))
             << QDateTimeEdit::HourSection
             << -1
@@ -4774,7 +4776,7 @@ void tst_QDateTimeEdit::stepIntoDSTGap_data()
     // change day
     if (spring.day() != 1) {
         // today's 2:05 is tomorrow's 3:05
-        QTest::addRow("day up into %s gap", qPrintable(springGap.toString("hh:mm")))
+        QTest::addRow("day up into %s gap", springTime.data())
             << QDateTime(spring.addDays(-1), springGap.addSecs(300))
             << QDateTimeEdit::DaySection
             << +1
@@ -4782,32 +4784,32 @@ void tst_QDateTimeEdit::stepIntoDSTGap_data()
     }
 
     if (spring.day() != spring.daysInMonth()) {
-        QTest::addRow("day down into %s gap", qPrintable(springGap.toString("hh:mm")))
+        QTest::addRow("day down into %s gap", springTime.data())
             << QDateTime(spring.addDays(1), springGap)
             << QDateTimeEdit::DaySection
             << -1
             << springTransition;
     }
 
-    // 2018-03-25 - change month
-    QTest::addRow("month up into %s gap", qPrintable(springGap.toString("hh:mm")))
+    // change month
+    QTest::addRow("month up into %s gap", springTime.data())
         << QDateTime(spring.addMonths(-1), springGap)
         << QDateTimeEdit::MonthSection
         << +1
         << springTransition;
-    QTest::addRow("month down into %s gap", qPrintable(springGap.toString("hh:mm")))
+    QTest::addRow("month down into %s gap", springTime.data())
         << QDateTime(spring.addMonths(1), springGap)
         << QDateTimeEdit::MonthSection
         << -1
         << springTransition;
 
-    // 2018-03-25 - change year
-    QTest::addRow("year up into %s gap", qPrintable(springGap.toString("hh:mm")))
+    // change year
+    QTest::addRow("year up into %s gap", springTime.data())
         << QDateTime(spring.addYears(-1), springGap)
         << QDateTimeEdit::YearSection
         << +1
         << springTransition;
-    QTest::addRow("year down into %s gap", qPrintable(springGap.toString("hh:mm")))
+    QTest::addRow("year down into %s gap", springTime.data())
         << QDateTime(spring.addYears(1), springGap)
         << QDateTimeEdit::YearSection
         << -1
