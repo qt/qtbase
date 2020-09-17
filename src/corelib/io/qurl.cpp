@@ -3862,12 +3862,20 @@ QUrl QUrl::fromLocalFile(const QString &localFile)
             hostSpec.truncate(hostSpec.size() - 4);
             scheme = webDavScheme();
         }
-        url.setHost(hostSpec.toString());
 
-        if (indexOfPath > 2)
+        // hosts can't be IPv6 addresses without [], so we can use QUrlPrivate::setHost
+        url.detach();
+        if (!url.d->setHost(hostSpec.toString(), 0, hostSpec.size(), StrictMode)) {
+            if (url.d->error->code != QUrlPrivate::InvalidRegNameError)
+                return url;
+
+            // Path hostname is not a valid URL host, so set it entirely in the path
+            // (by leaving deslashified unchanged)
+        } else if (indexOfPath > 2) {
             deslashified = deslashified.right(deslashified.length() - indexOfPath);
-        else
+        } else {
             deslashified.clear();
+        }
     }
 
     url.setScheme(scheme);

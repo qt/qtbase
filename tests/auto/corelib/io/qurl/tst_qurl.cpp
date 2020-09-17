@@ -1280,6 +1280,9 @@ void tst_QUrl::toLocalFile_data()
     QTest::newRow("windows-unc-path") << QString::fromLatin1("file://somehost/somedir/somefile") << QString::fromLatin1("//somehost/somedir/somefile");
     QTest::newRow("windows-unc-root") << QString::fromLatin1("file://somehost/") << QString::fromLatin1("//somehost/");
     QTest::newRow("windows-unc-nopath") << QString::fromLatin1("file://somehost") << QString::fromLatin1("//somehost");
+    QTest::newRow("windows-extlen-path") << QString::fromLatin1("file:////%3F/somedir/somefile") << QString::fromLatin1("//?/somedir/somefile");
+    QTest::newRow("windows-wsl-path") << QString::fromLatin1("file:////wsl$/somedir/somefile") << QString::fromLatin1("//wsl$/somedir/somefile");
+    QTest::newRow("windows-device-path") << QString::fromLatin1("file:////./somedir/somefile") << QString::fromLatin1("//./somedir/somefile");
 
     // and some that result in empty (i.e., not local)
     QTest::newRow("noscheme-absolute") << QString::fromLatin1("/a.txt") << QString();
@@ -1332,6 +1335,18 @@ void tst_QUrl::fromLocalFile_data()
                 << QString("file://somehost") + suffix
                 << QString(suffix);
 #endif
+        QTest::addRow("windows-extlen-%s", pathDescription)
+                << QString("//?") + suffix
+                << QString("file:////%3F") + suffix
+                << QString("//?") + suffix;
+        QTest::addRow("windows-wsl-%s", pathDescription)
+                << QString("//wsl$") + suffix
+                << QString("file:////wsl$") + suffix
+                << QString("//wsl$") + suffix;
+        QTest::addRow("windows-device--%s", pathDescription)
+                << QString("//.") + suffix
+                << QString("file:////.") + suffix
+                << QString("//.") + suffix;
     }
 
     QTest::newRow("windows-webdav")
