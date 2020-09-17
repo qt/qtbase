@@ -203,7 +203,7 @@ QMacPanGestureRecognizer::recognize(QGesture *gesture, QObject *target, QEvent *
     switch (event->type()) {
     case QEvent::TouchBegin: {
         const QTouchEvent *ev = static_cast<const QTouchEvent*>(event);
-        if (ev->touchPoints().size() == 1) {
+        if (ev->points().size() == 1) {
             reset(gesture);
             _startPos = QCursor::pos();
             _target = target;
@@ -217,7 +217,7 @@ QMacPanGestureRecognizer::recognize(QGesture *gesture, QObject *target, QEvent *
             break;
 
         const QTouchEvent *ev = static_cast<const QTouchEvent*>(event);
-        if (ev->touchPoints().size() == 1)
+        if (ev->points().size() == 1)
             return QGestureRecognizer::FinishGesture;
         break;}
     case QEvent::TouchUpdate: {
@@ -225,7 +225,7 @@ QMacPanGestureRecognizer::recognize(QGesture *gesture, QObject *target, QEvent *
             break;
 
         const QTouchEvent *ev = static_cast<const QTouchEvent*>(event);
-        if (ev->touchPoints().size() == 1) {
+        if (ev->points().size() == 1) {
             if (_panTimer.isActive()) {
                 // INVARIANT: Still in maybeGesture. Check if the user
                 // moved his finger so much that it makes sense to cancel the pan:

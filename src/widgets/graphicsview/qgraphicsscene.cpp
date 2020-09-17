@@ -5858,7 +5858,7 @@ void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
     typedef QPair<QEventPoint::States, QList<QEventPoint> > StatesAndTouchPoints;
     QHash<QGraphicsItem *, StatesAndTouchPoints> itemsNeedingEvents;
 
-    const auto touchPoints = sceneTouchEvent->touchPoints();
+    const auto &touchPoints = sceneTouchEvent->points();
     for (const auto &touchPoint : touchPoints) {
         // update state
         QGraphicsItem *item = nullptr;
@@ -5956,7 +5956,7 @@ void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
             bool res = sendTouchBeginEvent(item, &touchEvent) && touchEvent.isAccepted();
             if (!res) {
                 // forget about these touch points, we didn't handle them
-                const auto unhandledTouchPoints = touchEvent.touchPoints();
+                const auto &unhandledTouchPoints = touchEvent.points();
                 for (const auto &touchPoint : unhandledTouchPoints) {
                     itemForTouchPointId.remove(touchPoint.id());
                     sceneCurrentTouchPoints.remove(touchPoint.id());
@@ -5983,7 +5983,7 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
 
     if (focusOnTouch) {
         if (cachedItemsUnderMouse.isEmpty() || cachedItemsUnderMouse.constFirst() != origin) {
-            const QEventPoint &firstTouchPoint = touchEvent->touchPoints().first();
+            const QEventPoint &firstTouchPoint = touchEvent->points().first();
             cachedItemsUnderMouse = itemsAtPosition(firstTouchPoint.globalPosition().toPoint(),
                                                     firstTouchPoint.scenePosition(),
                                                     static_cast<QWidget *>(touchEvent->target()));
@@ -6026,7 +6026,7 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
         touchEvent->setAccepted(acceptTouchEvents);
         res = acceptTouchEvents && sendEvent(item, touchEvent);
         eventAccepted = touchEvent->isAccepted();
-        if (itemForTouchPointId.value(touchEvent->touchPoints().first().id()) == 0) {
+        if (itemForTouchPointId.value(touchEvent->points().first().id()) == 0) {
             // item was deleted
             item = nullptr;
         } else {
@@ -6035,7 +6035,7 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
         touchEvent->spont = false;
         if (res && eventAccepted) {
             // the first item to accept the TouchBegin gets an implicit grab.
-            const auto touchPoints = touchEvent->touchPoints();
+            const auto &touchPoints = touchEvent->points();
             for (const auto &touchPoint : touchPoints)
                 itemForTouchPointId[touchPoint.id()] = item; // can be zero
             break;

@@ -90,9 +90,7 @@ QGestureRecognizer::Result QPanGestureRecognizer::recognize(QGesture *state,
     QGestureRecognizer::Result result = QGestureRecognizer::Ignore;
     switch (event->type()) {
     case QEvent::TouchBegin: {
-        const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
         result = QGestureRecognizer::MayBeGesture;
-        QEventPoint p = ev->touchPoints().at(0);
         d->lastOffset = d->offset = QPointF();
         d->pointCount = m_pointCount;
         break;
@@ -100,9 +98,9 @@ QGestureRecognizer::Result QPanGestureRecognizer::recognize(QGesture *state,
     case QEvent::TouchEnd: {
         if (q->state() != Qt::NoGesture) {
             const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
-            if (ev->touchPoints().size() == d->pointCount) {
+            if (ev->points().size() == d->pointCount) {
                 d->lastOffset = d->offset;
-                d->offset = panOffset(ev->touchPoints(), d->pointCount);
+                d->offset = panOffset(ev->points(), d->pointCount);
             }
             result = QGestureRecognizer::FinishGesture;
         } else {
@@ -112,12 +110,12 @@ QGestureRecognizer::Result QPanGestureRecognizer::recognize(QGesture *state,
     }
     case QEvent::TouchUpdate: {
         const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
-        if (ev->touchPoints().size() >= d->pointCount) {
+        if (ev->points().size() >= d->pointCount) {
             d->lastOffset = d->offset;
-            d->offset = panOffset(ev->touchPoints(), d->pointCount);
+            d->offset = panOffset(ev->points(), d->pointCount);
             if (d->offset.x() > 10  || d->offset.y() > 10 ||
                 d->offset.x() < -10 || d->offset.y() < -10) {
-                q->setHotSpot(ev->touchPoints().first().globalPressPosition());
+                q->setHotSpot(ev->points().first().globalPressPosition());
                 result = QGestureRecognizer::TriggerGesture;
             } else {
                 result = QGestureRecognizer::MayBeGesture;
@@ -184,9 +182,9 @@ QGestureRecognizer::Result QPinchGestureRecognizer::recognize(QGesture *state,
     case QEvent::TouchUpdate: {
         const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
         d->changeFlags = { };
-        if (ev->touchPoints().size() == 2) {
-            QEventPoint p1 = ev->touchPoints().at(0);
-            QEventPoint p2 = ev->touchPoints().at(1);
+        if (ev->points().size() == 2) {
+            const QEventPoint &p1 = ev->points().at(0);
+            const QEventPoint &p2 = ev->points().at(1);
 
             d->hotSpot = p1.globalPosition();
             d->isHotSpotSet = true;
@@ -313,11 +311,11 @@ QGestureRecognizer::Result QSwipeGestureRecognizer::recognize(QGesture *state,
         const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
         if (d->state == QSwipeGesturePrivate::NoGesture)
             result = QGestureRecognizer::CancelGesture;
-        else if (ev->touchPoints().size() == 3) {
+        else if (ev->points().size() == 3) {
             d->state = QSwipeGesturePrivate::ThreePointsReached;
-            QEventPoint p1 = ev->touchPoints().at(0);
-            QEventPoint p2 = ev->touchPoints().at(1);
-            QEventPoint p3 = ev->touchPoints().at(2);
+            const QEventPoint &p1 = ev->points().at(0);
+            const QEventPoint &p2 = ev->points().at(1);
+            const QEventPoint &p3 = ev->points().at(2);
 
             if (d->lastPositions[0].isNull()) {
                 d->lastPositions[0] = p1.globalPressPosition().toPoint();
@@ -370,7 +368,7 @@ QGestureRecognizer::Result QSwipeGestureRecognizer::recognize(QGesture *state,
                 else
                     result = QGestureRecognizer::MayBeGesture;
             }
-        } else if (ev->touchPoints().size() > 3) {
+        } else if (ev->points().size() > 3) {
             result = QGestureRecognizer::CancelGesture;
         } else { // less than 3 touch points
             switch (d->state) {
@@ -439,15 +437,15 @@ QGestureRecognizer::Result QTapGestureRecognizer::recognize(QGesture *state,
 
     switch (event->type()) {
     case QEvent::TouchBegin: {
-        d->position = ev->touchPoints().at(0).position();
-        q->setHotSpot(ev->touchPoints().at(0).globalPosition());
+        d->position = ev->points().at(0).position();
+        q->setHotSpot(ev->points().at(0).globalPosition());
         result = QGestureRecognizer::TriggerGesture;
         break;
     }
     case QEvent::TouchUpdate:
     case QEvent::TouchEnd: {
-        if (q->state() != Qt::NoGesture && ev->touchPoints().size() == 1) {
-            QEventPoint p = ev->touchPoints().at(0);
+        if (q->state() != Qt::NoGesture && ev->points().size() == 1) {
+            const QEventPoint &p = ev->points().at(0);
             QPoint delta = p.position().toPoint() - p.pressPosition().toPoint();
             enum { TapRadius = 40 };
             if (delta.manhattanLength() <= TapRadius) {
@@ -535,7 +533,7 @@ QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
     }
     case QEvent::TouchBegin: {
         const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
-        d->position = ev->touchPoints().at(0).globalPressPosition();
+        d->position = ev->points().at(0).globalPressPosition();
         q->setHotSpot(d->position);
         if (d->timerId)
             q->killTimer(d->timerId);
@@ -550,8 +548,8 @@ QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
         return QGestureRecognizer::CancelGesture; // get out of the MayBeGesture state
     case QEvent::TouchUpdate: {
         const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
-        if (d->timerId && ev->touchPoints().size() == 1) {
-            QEventPoint p = ev->touchPoints().at(0);
+        if (d->timerId && ev->points().size() == 1) {
+            const QEventPoint &p = ev->points().at(0);
             QPoint delta = p.position().toPoint() - p.pressPosition().toPoint();
             if (delta.manhattanLength() <= TapRadius)
                 return QGestureRecognizer::MayBeGesture;

@@ -464,8 +464,8 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
         if (button == Qt::NoButton) {
             te = static_cast<const QTouchEvent *>(event);
             keyboardModifiers = te->modifiers();
-            if (!te->touchPoints().isEmpty())
-                globalPos = te->touchPoints().at(0).globalPosition().toPoint();
+            if (!te->points().isEmpty())
+                globalPos = te->points().at(0).globalPosition().toPoint();
         }
         break;
 
@@ -555,17 +555,17 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
             inputType = QScroller::InputMove;
 
         if (te->pointingDevice()->type() == QInputDevice::DeviceType::TouchPad) {
-            if (te->touchPoints().count() != 2)  // 2 fingers on pad
+            if (te->points().count() != 2)  // 2 fingers on pad
                 return Ignore;
 
-            point = te->touchPoints().at(0).scenePressPosition() +
-                    ((te->touchPoints().at(0).scenePosition() - te->touchPoints().at(0).scenePressPosition()) +
-                     (te->touchPoints().at(1).scenePosition() - te->touchPoints().at(1).scenePressPosition())) / 2;
+            point = te->points().at(0).scenePressPosition() +
+                    ((te->points().at(0).scenePosition() - te->points().at(0).scenePressPosition()) +
+                     (te->points().at(1).scenePosition() - te->points().at(1).scenePressPosition())) / 2;
         } else { // TouchScreen
-            if (te->touchPoints().count() != 1) // 1 finger on screen
+            if (te->points().count() != 1) // 1 finger on screen
                 return Ignore;
 
-            point = te->touchPoints().at(0).scenePosition();
+            point = te->points().at(0).scenePosition();
         }
         break;
 
