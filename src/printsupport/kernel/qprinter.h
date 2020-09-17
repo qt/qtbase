@@ -170,7 +170,7 @@ public:
 #if QT_DEPRECATED_SINCE(5,15)
     QT_DEPRECATED_VERSION_X_5_15("Use setPageOrientation() instead.")
     void setOrientation(Orientation);
-    QT_DEPRECATED_VERSION_X_5_15("Use pageLayout().pageOrientation() instead.")
+    QT_DEPRECATED_VERSION_X_5_15("Use pageLayout().orientation() instead.")
     Orientation orientation() const;
 
     QT_DEPRECATED_VERSION_X_5_15("Use setPageSize(QPageSize) instead.")
@@ -285,7 +285,7 @@ public:
 
     QT_DEPRECATED_VERSION_X_5_15("Use setPageMargins(QMarginsF, QPageLayout::Unit) instead.")
     void setPageMargins(qreal left, qreal top, qreal right, qreal bottom, Unit unit);
-    QT_DEPRECATED_VERSION_X_5_15("Use pageLayout().pageMargins() instead.")
+    QT_DEPRECATED_VERSION_X_5_15("Use pageLayout().margins() instead.")
     void getPageMargins(qreal *left, qreal *top, qreal *right, qreal *bottom, Unit unit) const;
 #endif
 
