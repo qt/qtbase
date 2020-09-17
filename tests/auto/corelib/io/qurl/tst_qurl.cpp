@@ -1311,12 +1311,23 @@ void tst_QUrl::fromLocalFile_data()
     QTest::newRow("windows-drive") << QString::fromLatin1("c:/a.txt") << QString::fromLatin1("file:///c:/a.txt") << QString::fromLatin1("/c:/a.txt");
 
     // Windows UNC paths
-    QTest::addRow("windows-unc-path") << QString::fromLatin1("//somehost/somedir/somefile") << QString::fromLatin1("file://somehost/somedir/somefile")
-                                      << QString::fromLatin1("/somedir/somefile");
-    QTest::newRow("windows-unc-nopath") << QString::fromLatin1("//somehost") << QString::fromLatin1("file://somehost")
-                                        << QString::fromLatin1("");
-    QTest::newRow("windows-unc-root") << QString::fromLatin1("//somehost/") << QString::fromLatin1("file://somehost/")
-                                      << QString::fromLatin1("/");
+    for (const char *suffix : { "", "/", "/somedir/somefile" }) {
+        const char *pathDescription =
+                strlen(suffix) == 0 ? "nopath" :
+                strlen(suffix) > 1 ? "path" : "root";
+
+        QTest::addRow("windows-unc-%s", pathDescription)
+                << QString("//somehost") + suffix
+                << QString("file://somehost") + suffix
+                << QString(suffix);
+#ifdef Q_OS_WIN32
+        // debackslashification only happens on Windows
+        QTest::addRow("windows-backslash-unc-%s", pathDescription)
+                << QString(QString("//somehost") + suffix).replace('/', '\\')
+                << QString("file://somehost") + suffix
+                << QString(suffix);
+#endif
+    }
 
     QTest::newRow("windows-webdav")
             << QString::fromLatin1("//somewebdavhost@SSL/somedir/somefile")
