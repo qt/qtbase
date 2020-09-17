@@ -974,7 +974,7 @@ static bool read_xpm_body(
             } else {
                 char b[16];
                 b[cpp] = '\0';
-                for (x=0; x<w && d+cpp<end; x++) {
+                for (x = 0; x < w && d + cpp <= end; x++) {
                     memcpy(b, (char *)d, cpp);
                     *p++ = (uchar)colorMap[xpmHash(b)];
                     d += cpp;
@@ -992,7 +992,7 @@ static bool read_xpm_body(
             int x;
             char b[16];
             b[cpp] = '\0';
-            for (x=0; x<w && d<end; x++) {
+            for (x = 0; x < w && d + cpp <= end; x++) {
                 memcpy(b, (char *)d, cpp);
                 *p++ = (QRgb)colorMap[xpmHash(b)];
                 d += cpp;
