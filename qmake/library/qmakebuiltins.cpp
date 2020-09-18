@@ -1697,7 +1697,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
                           == args.at(1).toQStringView());
     case T_VERSION_AT_LEAST:
     case T_VERSION_AT_MOST: {
-        const QVersionNumber lvn = QVersionNumber::fromString(values(args.at(0).toKey()).join('.'));
+        const QVersionNumber lvn = QVersionNumber::fromString(values(args.at(0).toKey()).join(QLatin1Char('.')));
         const QVersionNumber rvn = QVersionNumber::fromString(args.at(1).toQStringView());
         if (func_t == T_VERSION_AT_LEAST)
             return returnBool(lvn >= rvn);
