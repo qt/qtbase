@@ -733,11 +733,8 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex,
 {
     ParsedSection result; // initially Invalid
     const SectionNode &sn = sectionNode(sectionIndex);
-    if (sn.type & Internal) {
-        qWarning("QDateTimeParser::parseSection Internal error (%ls %d)",
-                 qUtf16Printable(sn.name()), sectionIndex);
-        return result;
-    }
+    Q_ASSERT_X(!(sn.type & Internal),
+               "QDateTimeParser::parseSection", "Internal error");
 
     const int sectionmaxsize = sectionMaxSize(sectionIndex);
     QStringView sectionTextRef = QStringView{*text}.mid(offset, sectionmaxsize);
@@ -1226,27 +1223,23 @@ QDateTimeParser::scanString(const QDateTime &defaultValue,
         default:
             qWarning("QDateTimeParser::parse Internal error (%ls)",
                      qUtf16Printable(sn.name()));
-            break;
+            return StateNode();
         }
+        Q_ASSERT(current);
+        Q_ASSERT(sect.state != Invalid);
 
         if (sect.used > 0)
             pos += sect.used;
         QDTPDEBUG << index << sn.name() << "is set to"
                   << pos << "state is" << stateName(state);
 
-        if (!current) {
-            qWarning("QDateTimeParser::parse Internal error 2");
-            return StateNode();
-        }
         if (isSet & sn.type && *current != sect.value) {
             QDTPDEBUG << "CONFLICT " << sn.name() << *current << sect.value;
             conflicts = true;
-            if (index != currentSectionIndex || sect.state == Invalid) {
+            if (index != currentSectionIndex)
                 continue;
-            }
         }
-        if (sect.state != Invalid)
-            *current = sect.value;
+        *current = sect.value;
 
         // Record the present section:
         isSet |= sn.type;
