@@ -146,17 +146,16 @@ static int shortDayFromName(QStringView name)
     return 0;
 }
 
-static ParsedRfcDateTime rfcDateImpl(const QString &s)
+static ParsedRfcDateTime rfcDateImpl(QStringView s)
 {
     // Matches "[ddd,] dd MMM yyyy[ hh:mm[:ss]] [±hhmm]" - correct RFC 822, 2822, 5322 format -
     // or           "ddd MMM dd[ hh:mm:ss] yyyy [±hhmm]" - permissive RFC 850, 1036 (read only)
     ParsedRfcDateTime result;
 
-    auto words = QStringView{s}.split(QLatin1Char(' '), Qt::SkipEmptyParts);
+    auto words = QStringView{s}.split(u' ', Qt::SkipEmptyParts);
     if (words.size() < 3 || words.size() > 6)
         return result;
-    const QChar colon(QLatin1Char(':'));
-    const QLocale C = QLocale::c();
+    const QChar colon(u':');
     bool ok = true;
     QDate date;
 
@@ -172,7 +171,7 @@ static ParsedRfcDateTime rfcDateImpl(const QString &s)
     do { // "loop" so that we can use break on merely invalid, but "right shape" date.
         QStringView dayName;
         bool rfcX22 = true;
-        if (words.at(0).endsWith(QLatin1Char(','))) {
+        if (words.at(0).endsWith(u',')) {
             dayName = words.takeFirst().chopped(1);
         } else if (!words.at(0).at(0).isDigit()) {
             dayName = words.takeFirst();
@@ -230,13 +229,13 @@ static ParsedRfcDateTime rfcDateImpl(const QString &s)
         const QStringView when = words.takeFirst();
         if (when.at(2) != colon || (when.size() == 8 ? when.at(5) != colon : when.size() > 5))
             return result;
-        const int hour = C.toInt(when.left(2), &ok);
+        const int hour = when.left(2).toInt(&ok);
         if (!ok)
             return result;
-        const int minute = C.toInt(when.mid(3, 2), &ok);
+        const int minute = when.mid(3, 2).toInt(&ok);
         if (!ok)
             return result;
-        const auto secs = when.size() == 8 ? C.toInt(when.right(2), &ok) : 0;
+        const auto secs = when.size() == 8 ? when.right(2).toInt(&ok) : 0;
         if (!ok)
             return result;
         time = QTime(hour, minute, secs);
@@ -249,14 +248,14 @@ static ParsedRfcDateTime rfcDateImpl(const QString &s)
         if (words.size() || !(zone.size() == 3 || zone.size() == 5))
             return result;
         bool negate = false;
-        if (zone.at(0) == QLatin1Char('-'))
+        if (zone.at(0) == u'-')
             negate = true;
-        else if (zone.at(0) != QLatin1Char('+'))
+        else if (zone.at(0) != u'+')
             return result;
-        const int hour = C.toInt(zone.mid(1, 2), &ok);
+        const int hour = zone.mid(1, 2).toInt(&ok);
         if (!ok)
             return result;
-        const auto minute = zone.size() > 3 ? C.toInt(zone.mid(3, 2), &ok) : 0;
+        const auto minute = zone.size() > 3 ? zone.mid(3, 2).toInt(&ok) : 0;
         if (!ok)
             return result;
         offset = (hour * 60 + minute) * 60;
@@ -297,31 +296,30 @@ static int fromOffsetString(QStringView offsetString, bool *valid) noexcept
 
     // First char must be + or -
     const QChar signChar = offsetString.at(0);
-    if (signChar == QLatin1Char('+'))
+    if (signChar == u'+')
         sign = 1;
-    else if (signChar == QLatin1Char('-'))
+    else if (signChar == u'-')
         sign = -1;
     else
         return 0;
 
     // Split the hour and minute parts
     const QStringView time = offsetString.mid(1);
-    qsizetype hhLen = time.indexOf(QLatin1Char(':'));
+    qsizetype hhLen = time.indexOf(u':');
     qsizetype mmIndex;
     if (hhLen == -1)
         mmIndex = hhLen = 2; // [+-]HHmm or [+-]HH format
     else
         mmIndex = hhLen + 1;
 
-    const QLocale C = QLocale::c();
     const QStringView hhRef = time.left(qMin(hhLen, time.size()));
     bool ok = false;
-    const int hour = C.toInt(hhRef, &ok);
+    const int hour = hhRef.toInt(&ok);
     if (!ok)
         return 0;
 
     const QStringView mmRef = time.mid(qMin(mmIndex, time.size()));
-    const int minute = mmRef.isEmpty() ? 0 : C.toInt(mmRef, &ok);
+    const int minute = mmRef.isEmpty() ? 0 : mmRef.toInt(&ok);
     if (!ok || minute < 0 || minute > 59)
         return 0;
 
@@ -1472,7 +1470,7 @@ QDate QDate::fromString(const QString &string, Qt::DateFormat format)
         return rfcDateImpl(string).date;
     default:
     case Qt::TextDate: {
-        auto parts = QStringView{string}.split(QLatin1Char(' '), Qt::SkipEmptyParts);
+        auto parts = QStringView{string}.split(u' ', Qt::SkipEmptyParts);
 
         if (parts.count() != 4)
             return QDate();
@@ -3948,15 +3946,15 @@ QString QDateTime::toString(Qt::DateFormat format) const
         const QPair<QDate, QTime> p = getDateTime(d);
         buf = toStringTextDate(p.first);
         // Insert time between date's day and year:
-        buf.insert(buf.lastIndexOf(QLatin1Char(' ')),
-                   QLatin1Char(' ') + p.second.toString(Qt::TextDate));
+        buf.insert(buf.lastIndexOf(u' '),
+                   u' ' + p.second.toString(Qt::TextDate));
         // Append zone/offset indicator, as appropriate:
         switch (timeSpec()) {
         case Qt::LocalTime:
             break;
 #if QT_CONFIG(timezone)
         case Qt::TimeZone:
-            buf += QLatin1Char(' ') + d->m_timeZone.abbreviation(*this);
+            buf += u' ' + d->m_timeZone.abbreviation(*this);
             break;
 #endif
         default:
@@ -3972,10 +3970,10 @@ QString QDateTime::toString(Qt::DateFormat format) const
         buf = toStringIsoDate(p.first);
         if (buf.isEmpty())
             return QString();   // failed to convert
-        buf += QLatin1Char('T') + p.second.toString(format);
+        buf += u'T' + p.second.toString(format);
         switch (getSpec(d)) {
         case Qt::UTC:
-            buf += QLatin1Char('Z');
+            buf += u'Z';
             break;
         case Qt::OffsetFromUTC:
 #if QT_CONFIG(timezone)
@@ -4694,18 +4692,18 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
 
         // Must be left with T (or space) and at least one digit for the hour:
         if (isoString.size() < 2
-            || !(isoString.startsWith(QLatin1Char('T'), Qt::CaseInsensitive)
+            || !(isoString.startsWith(u'T', Qt::CaseInsensitive)
                  // RFC 3339 (section 5.6) allows a space here.  (It actually
                  // allows any separator one considers more readable, merely
                  // giving space as an example - but let's not go wild !)
-                 || isoString.startsWith(QLatin1Char(' ')))) {
+                 || isoString.startsWith(u' '))) {
             return QDateTime();
         }
         isoString = isoString.mid(1); // trim 'T' (or space)
 
         int offset = 0;
         // Check end of string for Time Zone definition, either Z for UTC or [+-]HH:mm for Offset
-        if (isoString.endsWith(QLatin1Char('Z'), Qt::CaseInsensitive)) {
+        if (isoString.endsWith(u'Z', Qt::CaseInsensitive)) {
             spec = Qt::UTC;
             isoString.chop(1); // trim 'Z'
         } else {
@@ -4714,14 +4712,10 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
             int signIndex = isoString.size() - 1;
             Q_ASSERT(signIndex >= 0);
             bool found = false;
-            {
-                const QChar plus = QLatin1Char('+');
-                const QChar minus = QLatin1Char('-');
-                do {
-                    QChar character(isoString.at(signIndex));
-                    found = character == plus || character == minus;
-                } while (!found && --signIndex >= 0);
-            }
+            do {
+                QChar character(isoString[signIndex]);
+                found = character == u'+' || character == u'-';
+            } while (!found && --signIndex >= 0);
 
             if (found) {
                 bool ok;
@@ -4744,7 +4738,7 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
         return QDateTime(date, time, spec, offset);
     }
     case Qt::TextDate: {
-        QList<QStringView> parts = QStringView { string }.split(QLatin1Char(' '), Qt::SkipEmptyParts);
+        QList<QStringView> parts = QStringView { string }.split(u' ', Qt::SkipEmptyParts);
 
         if ((parts.count() < 5) || (parts.count() > 6))
             return QDateTime();
@@ -4755,9 +4749,9 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
         // Guess which by looking for ':' in the time
         int yearPart = 3;
         int timePart = 3;
-        if (parts.at(3).contains(QLatin1Char(':')))
+        if (parts.at(3).contains(u':'))
             yearPart = 4;
-        else if (parts.at(4).contains(QLatin1Char(':')))
+        else if (parts.at(4).contains(u':'))
             timePart = 4;
         else
             return QDateTime();
@@ -4780,7 +4774,7 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
             month = fromShortMonthName(parts.at(2));
             if (month) {
                 QStringView  dayStr = parts.at(1);
-                if (dayStr.endsWith(QLatin1Char('.'))) {
+                if (dayStr.endsWith(u'.')) {
                     dayStr = dayStr.left(dayStr.size() - 1);
                     day = dayStr.toInt(&ok);
                 }

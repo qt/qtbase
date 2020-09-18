@@ -367,20 +367,24 @@ static QString unquote(QStringView str)
     return ret;
 }
 
-static inline int countRepeat(const QString &str, int index, int maxCount)
+static inline int countRepeat(QStringView str, int index, int maxCount)
 {
+    str = str.sliced(index);
+    if (maxCount > str.size())
+        maxCount = str.size();
+
+    const QChar ch(str[0]);
     int count = 1;
-    const QChar ch(str.at(index));
-    const int max = qMin(index + maxCount, str.size());
-    while (index + count < max && str.at(index + count) == ch) {
+    while (count < maxCount && str[count] == ch)
         ++count;
-    }
     return count;
 }
 
-static inline void appendSeparator(QStringList *list, const QString &string, int from, int size, int lastQuote)
+static inline void appendSeparator(QStringList *list, QStringView string,
+                                   int from, int size, int lastQuote)
 {
-    const QStringView separator = QStringView(string).mid(from, size);
+    Q_ASSERT(size >= 0 && from + size <= string.size());
+    const QStringView separator = string.sliced(from, size);
     list->append(lastQuote >= from ? unquote(separator) : separator.toString());
 }
 
@@ -390,7 +394,7 @@ static inline void appendSeparator(QStringList *list, const QString &string, int
     Parses the format \a newFormat. If successful, returns \c true and sets up
     the format. Else keeps the old format and returns \c false.
 */
-bool QDateTimeParser::parseFormat(const QString &newFormat)
+bool QDateTimeParser::parseFormat(QStringView newFormat)
 {
     const QLatin1Char quote('\'');
     const QLatin1Char slash('\\');
@@ -495,7 +499,7 @@ bool QDateTimeParser::parseFormat(const QString &newFormat)
                 if (parserType != QMetaType::QTime) {
                     const SectionNode sn = { MonthSection, i - add, countRepeat(newFormat, i, 4), 0 };
                     newSectionNodes.append(sn);
-                    newSeparators.append(unquote(QStringView{newFormat}.mid(index, i - index)));
+                    newSeparators.append(unquote(newFormat.mid(index, i - index)));
                     i += sn.count - 1;
                     index = i + 1;
                     newDisplay |= MonthSection;
@@ -541,13 +545,12 @@ bool QDateTimeParser::parseFormat(const QString &newFormat)
         }
     }
 
-    if (index < max) {
-        appendSeparator(&newSeparators, newFormat, index, index - max, lastQuote);
-    } else {
+    if (index < max)
+        appendSeparator(&newSeparators, newFormat, index, max - index, lastQuote);
+    else
         newSeparators.append(QString());
-    }
 
-    displayFormat = newFormat;
+    displayFormat = newFormat.toString();
     separators = newSeparators;
     sectionNodes = newSectionNodes;
     display = newDisplay;

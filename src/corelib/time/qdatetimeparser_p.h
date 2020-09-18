@@ -180,7 +180,7 @@ public:
                     const QDateTime &defaultValue, bool fixup) const;
     bool fromString(const QString &text, QDate *date, QTime *time) const;
     bool fromString(const QString &text, QDateTime* datetime) const;
-    bool parseFormat(const QString &format);
+    bool parseFormat(QStringView format);
 
     enum FieldInfoFlag {
         Numeric = 0x01,
