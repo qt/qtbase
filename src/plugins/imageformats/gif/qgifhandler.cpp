@@ -490,12 +490,14 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
             break;
           case ImageDataBlock:
             count++;
-            if (bitcount < 0 || bitcount > 31) {
-                state = Error;
-                return -1;
+            if (bitcount != -32768) {
+                if (bitcount < 0 || bitcount > 31) {
+                    state = Error;
+                    return -1;
+                }
+                accum |= (ch << bitcount);
+                bitcount += 8;
             }
-            accum|=(ch<<bitcount);
-            bitcount+=8;
             while (bitcount>=code_size && state==ImageDataBlock) {
                 int code=accum&((1<<code_size)-1);
                 bitcount-=code_size;
