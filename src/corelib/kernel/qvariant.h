@@ -663,7 +663,7 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, const QVariant::Type);
 #endif
 
 template<typename Pointer>
-class Q_CORE_EXPORT QVariantRef
+class QVariantRef
 {
 private:
     const Pointer *m_pointer = nullptr;
@@ -700,7 +700,7 @@ public:
 };
 
 template<typename Pointer>
-class Q_CORE_EXPORT QVariantPointer
+class QVariantPointer
 {
 private:
     const Pointer *m_pointer = nullptr;
