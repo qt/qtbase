@@ -4117,7 +4117,9 @@ void QDomAttrPrivate::setNodeValue(const QString& v)
     // keep the refcount balanced: appendChild() does a ref anyway.
     t->ref.deref();
     if (first) {
-        delete removeChild(first);
+        auto removed = removeChild(first);
+        if (removed && !removed->ref)
+            delete removed;
     }
     appendChild(t);
 }
