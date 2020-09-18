@@ -1,5 +1,5 @@
 TEMPLATE = app
-TARGET = highdpi
+TARGET = kitchensink
 INCLUDEPATH += .
 QT += widgets gui-private
 CONFIG += cmdline
@@ -13,6 +13,6 @@ HEADERS += \
         dragwidget.h
 
 RESOURCES += \
-    highdpi.qrc
+    kitchensink.qrc
 
 DEFINES += HAVE_SCREEN_BASE_DPI

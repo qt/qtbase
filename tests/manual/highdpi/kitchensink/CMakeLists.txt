@@ -1,10 +1,10 @@
-# Generated from highdpi.pro.
+# Generated from kitchensink.pro.
 
 #####################################################################
-## highdpi Binary:
+## kitchensink Binary:
 #####################################################################
 
-qt_internal_add_manual_test(highdpi
+qt_internal_add_manual_test(kitchensink
     SOURCES
         dragwidget.cpp dragwidget.h
         main.cpp
@@ -19,7 +19,7 @@ qt_internal_add_manual_test(highdpi
 )
 
 # Resources:
-set(highdpi_resource_files
+set(kitchensink_resource_files
     "qticon16.png"
     "qticon16@2x.png"
     "qticon16@3x.png"
@@ -28,13 +28,13 @@ set(highdpi_resource_files
     "qticon64.png"
 )
 
-qt_internal_add_resource(highdpi "highdpi"
+qt_internal_add_resource(kitchensink "kitchensink"
     PREFIX
         "/"
     FILES
-        ${highdpi_resource_files}
+        ${kitchensink_resource_files}
 )
 
 
-#### Keys ignored in scope 1:.:.:highdpi.pro:<TRUE>:
+#### Keys ignored in scope 1:.:.:kitchensink.pro:<TRUE>:
 # TEMPLATE = "app"

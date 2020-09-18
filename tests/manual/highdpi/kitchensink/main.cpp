@@ -949,7 +949,7 @@ public:
     {
         if (!moving)
             return;
-        QPoint pos = useCursorPos ? QCursor::pos() : e->globalPos();
+        QPoint pos = useCursorPos ? QCursor::pos() : e->globalPosition().toPoint();
         pos -= moveLabel->rect().center();
         moveLabel->move(pos);
         mousePos = e->pos();
