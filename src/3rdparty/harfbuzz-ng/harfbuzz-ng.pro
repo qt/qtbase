@@ -7,7 +7,6 @@ CONFIG += \
 
 MODULE_INCLUDEPATH += $$PWD/include/harfbuzz
 
-load(qt_helper_lib)
 
 # built-in shapers list configuration:
 SHAPERS += opentype       # HB's main shaper; enabling it should be enough most of the time
@@ -176,9 +175,13 @@ contains(SHAPERS, opentype) {
         $$PWD/src/hb-ot-var.h
 }
 
+MODULE_EXT_HEADERS = $$HEADERS
+
 contains(SHAPERS, fallback)|isEmpty(SHAPERS) {
     DEFINES += HAVE_FALLBACK
 
     SOURCES += \
         $$PWD/src/hb-fallback-shape.cc
 }
+
+load(qt_helper_lib)

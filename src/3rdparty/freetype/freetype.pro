@@ -7,6 +7,7 @@ CONFIG += \
     installed
 
 MODULE_INCLUDEPATH += $$PWD/include
+MODULE_EXT_HEADERS_DIR = $$PWD/include
 
 load(qt_helper_lib)
 
