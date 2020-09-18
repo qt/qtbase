@@ -499,7 +499,7 @@ bool QDateTimeParser::parseFormat(QStringView newFormat)
                 if (parserType != QMetaType::QTime) {
                     const SectionNode sn = { MonthSection, i - add, countRepeat(newFormat, i, 4), 0 };
                     newSectionNodes.append(sn);
-                    newSeparators.append(unquote(newFormat.mid(index, i - index)));
+                    newSeparators.append(unquote(newFormat.first(i).sliced(index)));
                     i += sn.count - 1;
                     index = i + 1;
                     newDisplay |= MonthSection;
@@ -825,7 +825,7 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex, i
             int last = -1, used = -1;
 
             Q_ASSERT(sectiontextSize <= sectionmaxsize);
-            QStringView digitsStr = sectionTextRef.left(sectiontextSize);
+            QStringView digitsStr = sectionTextRef.first(sectiontextSize);
             for (int digits = sectiontextSize; digits >= 1; --digits) {
                 digitsStr.truncate(digits);
                 int tmp = int(loc.toUInt(digitsStr, &ok));
@@ -838,7 +838,7 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex, i
                     }
                 }
                 if (ok && tmp <= absMax) {
-                    QDTPDEBUG << sectionTextRef.left(digits) << tmp << digits;
+                    QDTPDEBUG << sectionTextRef.first(digits) << tmp << digits;
                     last = tmp;
                     used = digits;
                     break;
@@ -1185,11 +1185,11 @@ QDateTimeParser::scanString(const QDateTime &defaultValue, bool fixup) const
             current = &zoneOffset;
             if (sect.used > 0) {
                 // Synchronize with what findTimeZone() found:
-                QStringView zoneName = QStringView{m_text}.mid(pos, sect.used);
+                QStringView zoneName = QStringView{m_text}.sliced(pos, sect.used);
                 Q_ASSERT(!zoneName.isEmpty()); // sect.used > 0
 
                 const QStringView offsetStr = zoneName.startsWith(QLatin1String("UTC"))
-                                             ? zoneName.mid(3) : zoneName;
+                                             ? zoneName.sliced(3) : zoneName;
                 const bool isUtcOffset = offsetStr.startsWith(QLatin1Char('+'))
                                          || offsetStr.startsWith(QLatin1Char('-'));
                 const bool isUtc = zoneName == QLatin1String("Z")
@@ -1246,8 +1246,8 @@ QDateTimeParser::scanString(const QDateTime &defaultValue, bool fixup) const
         isSet |= sn.type;
     }
 
-    if (QStringView{m_text}.mid(pos) != separators.last()) {
-        QDTPDEBUG << "invalid because" << QStringView{m_text}.mid(pos)
+    if (QStringView{m_text}.sliced(pos) != separators.last()) {
+        QDTPDEBUG << "invalid because" << QStringView{m_text}.sliced(pos)
                   << "!=" << separators.last() << pos;
         return StateNode();
     }
@@ -1625,13 +1625,13 @@ QDateTimeParser::ParsedSection QDateTimeParser::findUtcOffset(QStringView str) c
     const bool startsWithUtc = str.startsWith(QLatin1String("UTC"));
     // Get rid of UTC prefix if it exists
     if (startsWithUtc)
-        str = str.mid(3);
+        str = str.sliced(3);
 
     const bool negativeSign = str.startsWith(QLatin1Char('-'));
     // Must start with a sign:
     if (!negativeSign && !str.startsWith(QLatin1Char('+')))
         return ParsedSection();
-    str = str.mid(1);  // drop sign
+    str = str.sliced(1);  // drop sign
 
     const int colonPosition = str.indexOf(QLatin1Char(':'));
     // Colon that belongs to offset is at most at position 2 (hh:mm)
@@ -1658,7 +1658,7 @@ QDateTimeParser::ParsedSection QDateTimeParser::findUtcOffset(QStringView str) c
     str.truncate(i);  // The rest of the string is not part of the UTC offset
 
     bool isInt = false;
-    const int hours = str.mid(0, hoursLength).toInt(&isInt);
+    const int hours = str.first(hoursLength).toInt(&isInt);
     if (!isInt)
         return ParsedSection();
     const QStringView minutesStr = str.mid(hasColon ? colonPosition + 1 : 2, 2);

@@ -233,19 +233,19 @@ static ParsedRfcDateTime rfcDateImpl(QStringView s)
             || (when.size() == 8 ? when[5] != colon : when.size() > 5)) {
             return result;
         }
-        const int hour = when.left(2).toInt(&ok);
+        const int hour = when.first(2).toInt(&ok);
         if (!ok)
             return result;
-        const int minute = when.mid(3, 2).toInt(&ok);
+        const int minute = when.sliced(3, 2).toInt(&ok);
         if (!ok)
             return result;
-        const auto secs = when.size() == 8 ? when.right(2).toInt(&ok) : 0;
+        const auto secs = when.size() == 8 ? when.last(2).toInt(&ok) : 0;
         if (!ok)
             return result;
         time = QTime(hour, minute, secs);
     }
 
-    // Offset: [±hhmm]
+    // Offset: [±hh[mm]]
     int offset = 0;
     if (words.size()) {
         const QStringView zone = words.takeFirst();
@@ -256,10 +256,10 @@ static ParsedRfcDateTime rfcDateImpl(QStringView s)
             negate = true;
         else if (zone[0] != u'+')
             return result;
-        const int hour = zone.mid(1, 2).toInt(&ok);
+        const int hour = zone.sliced(1, 2).toInt(&ok);
         if (!ok)
             return result;
-        const auto minute = zone.size() > 3 ? zone.mid(3, 2).toInt(&ok) : 0;
+        const auto minute = zone.size() == 5 ? zone.last(2).toInt(&ok) : 0;
         if (!ok)
             return result;
         offset = (hour * 60 + minute) * 60;
@@ -308,7 +308,7 @@ static int fromOffsetString(QStringView offsetString, bool *valid) noexcept
         return 0;
 
     // Split the hour and minute parts
-    const QStringView time = offsetString.mid(1);
+    const QStringView time = offsetString.sliced(1);
     qsizetype hhLen = time.indexOf(u':');
     qsizetype mmIndex;
     if (hhLen == -1)
@@ -316,13 +316,13 @@ static int fromOffsetString(QStringView offsetString, bool *valid) noexcept
     else
         mmIndex = hhLen + 1;
 
-    const QStringView hhRef = time.left(qMin(hhLen, time.size()));
+    const QStringView hhRef = time.first(qMin(hhLen, time.size()));
     bool ok = false;
     const int hour = hhRef.toInt(&ok);
     if (!ok)
         return 0;
 
-    const QStringView mmRef = time.mid(qMin(mmIndex, time.size()));
+    const QStringView mmRef = time.sliced(qMin(mmIndex, time.size()));
     const int minute = mmRef.isEmpty() ? 0 : mmRef.toInt(&ok);
     if (!ok || minute < 0 || minute > 59)
         return 0;
@@ -1503,9 +1503,9 @@ QDate QDate::fromString(QStringView string, Qt::DateFormat format)
         // Semi-strict parsing, must be long enough and have punctuators as separators
         if (string.size() >= 10 && string.at(4).isPunct() && string.at(7).isPunct()
                 && (string.size() == 10 || !string.at(10).isDigit())) {
-            const ParsedInt year = readInt(string.mid(0, 4));
-            const ParsedInt month = readInt(string.mid(5, 2));
-            const ParsedInt day = readInt(string.mid(8, 2));
+            const ParsedInt year = readInt(string.first(4));
+            const ParsedInt month = readInt(string.sliced(5, 2));
+            const ParsedInt day = readInt(string.sliced(8, 2));
             if (year.ok && year.value > 0 && year.value <= 9999 && month.ok && day.ok)
                 return QDate(year.value, month.value, day.value);
         }
@@ -4791,14 +4791,14 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
         if (size < 10)
             return QDateTime();
 
-        QDate date = QDate::fromString(string.left(10), Qt::ISODate);
+        QDate date = QDate::fromString(string.first(10), Qt::ISODate);
         if (!date.isValid())
             return QDateTime();
         if (size == 10)
             return date.startOfDay();
 
         Qt::TimeSpec spec = Qt::LocalTime;
-        QStringView isoString = string.mid(10); // trim "yyyy-MM-dd"
+        QStringView isoString = string.sliced(10); // trim "yyyy-MM-dd"
 
         // Must be left with T (or space) and at least one digit for the hour:
         if (isoString.size() < 2
@@ -4809,7 +4809,7 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
                  || isoString.startsWith(u' '))) {
             return QDateTime();
         }
-        isoString = isoString.mid(1); // trim 'T' (or space)
+        isoString = isoString.sliced(1); // trim 'T' (or space)
 
         int offset = 0;
         // Check end of string for Time Zone definition, either Z for UTC or [+-]HH:mm for Offset
@@ -4829,10 +4829,10 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
 
             if (found) {
                 bool ok;
-                offset = fromOffsetString(isoString.mid(signIndex), &ok);
+                offset = fromOffsetString(isoString.sliced(signIndex), &ok);
                 if (!ok)
                     return QDateTime();
-                isoString = isoString.left(signIndex);
+                isoString = isoString.first(signIndex);
                 spec = Qt::OffsetFromUTC;
             }
         }
@@ -4883,11 +4883,9 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
         if (!ok || !month || !day) {
             month = fromShortMonthName(parts.at(2));
             if (month) {
-                QStringView  dayStr = parts.at(1);
-                if (dayStr.endsWith(u'.')) {
-                    dayStr = dayStr.left(dayStr.size() - 1);
-                    day = dayStr.toInt(&ok);
-                }
+                QStringView dayPart = parts.at(1);
+                if (dayPart.endsWith(u'.'))
+                    day = dayPart.chopped(1).toInt(&ok);
             }
         }
 
@@ -4909,7 +4907,7 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
         QStringView tz = parts.at(5);
         if (!tz.startsWith(QLatin1String("GMT"), Qt::CaseInsensitive))
             return QDateTime();
-        tz = tz.mid(3);
+        tz = tz.sliced(3);
         if (!tz.isEmpty()) {
             int offset = fromOffsetString(tz, &ok);
             if (!ok)
