@@ -313,12 +313,11 @@ bool QHttpProtocolHandler::sendRequest()
         if (m_channel->request.withCredentials())
             m_connection->d_func()->createAuthorization(m_socket, m_channel->request);
 #ifndef QT_NO_NETWORKPROXY
-        QByteArray header = QHttpNetworkRequestPrivate::header(m_channel->request,
+        m_header = QHttpNetworkRequestPrivate::header(m_channel->request,
             (m_connection->d_func()->networkProxy.type() != QNetworkProxy::NoProxy));
 #else
-        QByteArray header = QHttpNetworkRequestPrivate::header(m_channel->request, false);
+        m_header = QHttpNetworkRequestPrivate::header(m_channel->request, false);
 #endif
-        m_socket->write(header);
         // flushing is dangerous (QSslSocket calls transmit which might read or error)
 //        m_socket->flush();
         QNonContiguousByteDevice* uploadByteDevice = m_channel->request.uploadByteDevice();
@@ -331,6 +330,8 @@ bool QHttpProtocolHandler::sendRequest()
             m_channel->state = QHttpNetworkConnectionChannel::WritingState; // start writing data
             sendRequest(); //recurse
         } else {
+            // no data to send: just send the HTTP headers
+            m_socket->write(qExchange(m_header, {}));
             m_channel->state = QHttpNetworkConnectionChannel::WaitingState; // now wait for response
             sendRequest(); //recurse
         }
@@ -342,6 +343,10 @@ bool QHttpProtocolHandler::sendRequest()
         // write the data
         QNonContiguousByteDevice* uploadByteDevice = m_channel->request.uploadByteDevice();
         if (!uploadByteDevice || m_channel->bytesTotal == m_channel->written) {
+            // the upload device might have no data to send, but we still have to send the headers,
+            // do it now.
+            if (!m_header.isEmpty())
+                m_socket->write(qExchange(m_header, {}));
             if (uploadByteDevice)
                 emit m_reply->dataSendProgress(m_channel->written, m_channel->bytesTotal);
             m_channel->state = QHttpNetworkConnectionChannel::WaitingState; // now wait for response
@@ -349,24 +354,31 @@ bool QHttpProtocolHandler::sendRequest()
             break;
         }
 
-        // only feed the QTcpSocket buffer when there is less than 32 kB in it
+        // only feed the QTcpSocket buffer when there is less than 32 kB in it;
+        // note that the headers do not count towards these limits.
         const qint64 socketBufferFill = 32*1024;
         const qint64 socketWriteMaxSize = 16*1024;
 
-
+        // if it is really an ssl socket, check more than just bytesToWrite()
 #ifndef QT_NO_SSL
         QSslSocket *sslSocket = qobject_cast<QSslSocket*>(m_socket);
-        // if it is really an ssl socket, check more than just bytesToWrite()
-        while ((m_socket->bytesToWrite() + (sslSocket ? sslSocket->encryptedBytesToWrite() : 0))
-                <= socketBufferFill && m_channel->bytesTotal != m_channel->written)
+        const auto encryptedBytesToWrite = [sslSocket]() -> qint64
+        {
+            return sslSocket ? sslSocket->encryptedBytesToWrite() : 0;
+        };
 #else
-        while (m_socket->bytesToWrite() <= socketBufferFill
-               && m_channel->bytesTotal != m_channel->written)
+        const auto encryptedBytesToWrite = [](){ return qint64(0); };
 #endif
+
+        // throughout this loop, we want to send the data coming from uploadByteDevice.
+        // we also need to send the headers, as we try to coalesce their write with the data.
+        // we won't send more than the limits above, excluding the headers
+        while ((m_socket->bytesToWrite() + encryptedBytesToWrite()) <= socketBufferFill
+               && m_channel->bytesTotal != m_channel->written)
         {
             // get pointer to upload data
             qint64 currentReadSize = 0;
-            qint64 desiredReadSize = qMin(socketWriteMaxSize, m_channel->bytesTotal - m_channel->written);
+            const qint64 desiredReadSize = qMin(socketWriteMaxSize, m_channel->bytesTotal - m_channel->written);
             const char *readPointer = uploadByteDevice->readPointer(desiredReadSize, currentReadSize);
 
             if (currentReadSize == -1) {
@@ -384,7 +396,17 @@ bool QHttpProtocolHandler::sendRequest()
                     m_connection->d_func()->emitReplyError(m_socket, m_reply, QNetworkReply::ProtocolFailure);
                     return false;
                 }
-                qint64 currentWriteSize = m_socket->write(readPointer, currentReadSize);
+                qint64 currentWriteSize;
+                if (m_header.isEmpty()) {
+                    currentWriteSize = m_socket->write(readPointer, currentReadSize);
+                } else {
+                    // assemble header and data and send them together
+                    const qint64 headerSize = m_header.size();
+                    m_header.append(readPointer, currentReadSize);
+                    currentWriteSize = m_socket->write(qExchange(m_header, {}));
+                    if (currentWriteSize != -1)
+                        currentWriteSize -= headerSize;
+                }
                 if (currentWriteSize == -1 || currentWriteSize != currentReadSize) {
                     // socket broke down
                     m_connection->d_func()->emitReplyError(m_socket, m_reply, QNetworkReply::UnknownNetworkError);

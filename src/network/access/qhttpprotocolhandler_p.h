@@ -55,6 +55,8 @@
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 #include <private/qabstractprotocolhandler_p.h>
 
+#include <QtCore/qbytearray.h>
+
 QT_REQUIRE_CONFIG(http);
 
 QT_BEGIN_NAMESPACE
@@ -67,6 +69,8 @@ private:
     virtual void _q_receiveReply() override;
     virtual void _q_readyRead() override;
     virtual bool sendRequest() override;
+
+    QByteArray m_header;
 };
 
 QT_END_NAMESPACE
