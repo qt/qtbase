@@ -583,7 +583,7 @@ QDir::QDir(const QString &path) : d_ptr(new QDirPrivate(path))
     directory). If \a nameFilter is an empty string, QDir uses the
     name filter "*" (all files).
 
-    Note that \a path need not exist.
+    \note \a path need not exist.
 
     \sa exists(), setPath(), setNameFilters(), setFilter(), setSorting()
 */
@@ -1578,7 +1578,7 @@ bool QDir::rmpath(const QString &dirPath) const
     If the directory was already removed, the method returns \c true
     (expected result already reached).
 
-    Note: this function is meant for removing a small application-internal
+    \note This function is meant for removing a small application-internal
     directory (such as a temporary directory), but not user-visible
     directories. For user-visible operations, it is rather recommended
     to report errors more precisely to the user, to offer solutions
@@ -1668,7 +1668,7 @@ bool QDir::exists() const
     Returns \c true if the directory is the root directory; otherwise
     returns \c false.
 
-    Note: If the directory is a symbolic link to the root directory
+    \note If the directory is a symbolic link to the root directory
     this function returns \c false. If you want to test for this use
     canonicalPath(), e.g.
 
@@ -2402,7 +2402,7 @@ QStringList QDir::nameFiltersFromString(const QString &nameFilter)
     If the file name contains characters that cannot be part of a valid C++ function name
     (such as '-'), they have to be replaced by the underscore character ('_').
 
-    Note: This macro cannot be used in a namespace. It should be called from
+    \note This macro cannot be used in a namespace. It should be called from
     main(). If that is not possible, the following workaround can be used
     to init the resource \c myapp from the function \c{MyNamespace::myFunction}:
 
@@ -2424,7 +2424,7 @@ QStringList QDir::nameFiltersFromString(const QString &nameFilter)
     plugin that is being unloaded, call Q_CLEANUP_RESOURCE() to force
     removal of your resources.
 
-    Note: This macro cannot be used in a namespace. Please see the
+    \note This macro cannot be used in a namespace. Please see the
     Q_INIT_RESOURCE documentation for a workaround.
 
     Example:
@@ -2531,7 +2531,7 @@ QDebug operator<<(QDebug debug, const QDir &dir)
     directory). If \a nameFilter is an empty string, QDir uses the
     name filter "*" (all files).
 
-    Note that \a path need not exist.
+    \note \a path need not exist.
 
     \sa exists(), setPath(), setNameFilters(), setFilter(), setSorting()
 */
