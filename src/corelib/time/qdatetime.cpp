@@ -1453,6 +1453,8 @@ ParsedInt readInt(QStringView text)
 }
 
 /*!
+    \fn QDate QDate::fromString(const QString &string, Qt::DateFormat format)
+
     Returns the QDate represented by the \a string, using the
     \a format given, or an invalid date if the string cannot be
     parsed.
@@ -1463,7 +1465,11 @@ ParsedInt readInt(QStringView text)
     \sa toString(), QLocale::toDate()
 */
 
-QDate QDate::fromString(const QString &string, Qt::DateFormat format)
+/*!
+    \overload
+    \since 6.0
+*/
+QDate QDate::fromString(QStringView string, Qt::DateFormat format)
 {
     if (string.isEmpty())
         return QDate();
@@ -1473,7 +1479,7 @@ QDate QDate::fromString(const QString &string, Qt::DateFormat format)
         return rfcDateImpl(string).date;
     default:
     case Qt::TextDate: {
-        auto parts = QStringView{string}.split(u' ', Qt::SkipEmptyParts);
+        auto parts = string.split(u' ', Qt::SkipEmptyParts);
 
         if (parts.count() != 4)
             return QDate();
@@ -1494,10 +1500,9 @@ QDate QDate::fromString(const QString &string, Qt::DateFormat format)
         // Semi-strict parsing, must be long enough and have punctuators as separators
         if (string.size() >= 10 && string.at(4).isPunct() && string.at(7).isPunct()
                 && (string.size() == 10 || !string.at(10).isDigit())) {
-            QStringView view(string);
-            const ParsedInt year = readInt(view.mid(0, 4));
-            const ParsedInt month = readInt(view.mid(5, 2));
-            const ParsedInt day = readInt(view.mid(8, 2));
+            const ParsedInt year = readInt(string.mid(0, 4));
+            const ParsedInt month = readInt(string.mid(5, 2));
+            const ParsedInt day = readInt(string.mid(8, 2));
             if (year.ok && year.value > 0 && year.value <= 9999 && month.ok && day.ok)
                 return QDate(year.value, month.value, day.value);
         }
@@ -1571,7 +1576,17 @@ QDate QDate::fromString(const QString &string, Qt::DateFormat format)
         QLocale::toDate()
 */
 
-QDate QDate::fromString(const QString &string, const QString &format, QCalendar cal)
+/*!
+    \fn QDate QDate::fromString(QStringView string, QStringView format, QCalendar cal)
+    \overload
+    \since 6.0
+*/
+
+/*!
+    \overload
+    \since 6.0
+*/
+QDate QDate::fromString(const QString &string, QStringView format, QCalendar cal)
 {
     QDate date;
 #if QT_CONFIG(datetimeparser)
@@ -2180,12 +2195,19 @@ static QTime fromIsoTimeString(QStringView string, Qt::DateFormat format, bool *
 }
 
 /*!
+    \fn QTime QTime::fromString(const QString &string, Qt::DateFormat format)
+
     Returns the time represented in the \a string as a QTime using the
     \a format given, or an invalid time if this is not possible.
 
     \sa toString(), QLocale::toTime()
 */
-QTime QTime::fromString(const QString &string, Qt::DateFormat format)
+
+/*!
+    \overload
+    \since 6.0
+*/
+QTime QTime::fromString(QStringView string, Qt::DateFormat format)
 {
     if (string.isEmpty())
         return QTime();
@@ -2197,11 +2219,13 @@ QTime QTime::fromString(const QString &string, Qt::DateFormat format)
     case Qt::ISODateWithMs:
     case Qt::TextDate:
     default:
-        return fromIsoTimeString(QStringView(string), format, nullptr);
+        return fromIsoTimeString(string, format, nullptr);
     }
 }
 
 /*!
+    \fn QTime QTime::fromString(const QString &string, const QString &format)
+
     Returns the QTime represented by the \a string, using the \a
     format given, or an invalid time if the string cannot be parsed.
 
@@ -2261,7 +2285,17 @@ QTime QTime::fromString(const QString &string, Qt::DateFormat format)
     QLocale::toTime()
 */
 
-QTime QTime::fromString(const QString &string, const QString &format)
+/*!
+    \fn QTime QTime::fromString(QStringView string, QStringView format)
+    \overload
+    \since 6.0
+*/
+
+/*!
+    \overload
+    \since 6.0
+*/
+QTime QTime::fromString(const QString &string, QStringView format)
 {
     QTime time;
 #if QT_CONFIG(datetimeparser)
@@ -2275,7 +2309,6 @@ QTime QTime::fromString(const QString &string, const QString &format)
 #endif
     return time;
 }
-
 #endif // datestring
 
 
@@ -4651,6 +4684,8 @@ QDateTime QDateTime::fromSecsSinceEpoch(qint64 secs, const QTimeZone &timeZone)
 #if QT_CONFIG(datestring) // depends on, so implies, textdate
 
 /*!
+    \fn QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
+
     Returns the QDateTime represented by the \a string, using the
     \a format given, or an invalid datetime if this is not possible.
 
@@ -4659,7 +4694,12 @@ QDateTime QDateTime::fromSecsSinceEpoch(qint64 secs, const QTimeZone &timeZone)
 
     \sa toString(), QLocale::toDateTime()
 */
-QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
+
+/*!
+    \overload
+    \since 6.0
+*/
+QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
 {
     if (string.isEmpty())
         return QDateTime();
@@ -4688,7 +4728,7 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
             return date.startOfDay();
 
         Qt::TimeSpec spec = Qt::LocalTime;
-        QStringView isoString = QStringView(string).mid(10); // trim "yyyy-MM-dd"
+        QStringView isoString = string.mid(10); // trim "yyyy-MM-dd"
 
         // Must be left with T (or space) and at least one digit for the hour:
         if (isoString.size() < 2
@@ -4738,7 +4778,7 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
         return QDateTime(date, time, spec, offset);
     }
     case Qt::TextDate: {
-        QList<QStringView> parts = QStringView { string }.split(u' ', Qt::SkipEmptyParts);
+        QList<QStringView> parts = string.split(u' ', Qt::SkipEmptyParts);
 
         if ((parts.count() < 5) || (parts.count() > 6))
             return QDateTime();
@@ -4850,6 +4890,8 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
 }
 
 /*!
+    \fn QDateTime QDateTime::fromString(const QString &string, const QString &format, QCalendar cal)
+
     Returns the QDateTime represented by the \a string, using the \a
     format given, or an invalid datetime if the string cannot be parsed.
 
@@ -4908,7 +4950,17 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
     QLocale::toDateTime()
 */
 
-QDateTime QDateTime::fromString(const QString &string, const QString &format, QCalendar cal)
+/*!
+    \fn QDateTime QDateTime::fromString(QStringView string, QStringView format, QCalendar cal)
+    \overload
+    \since 6.0
+*/
+
+/*!
+    \overload
+    \since 6.0
+*/
+QDateTime QDateTime::fromString(const QString &string, QStringView format, QCalendar cal)
 {
 #if QT_CONFIG(datetimeparser)
     QDateTime datetime;

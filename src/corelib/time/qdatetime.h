@@ -126,11 +126,16 @@ public:
 
     static QDate currentDate();
 #if QT_CONFIG(datestring)
-    static QDate fromString(QStringView s, Qt::DateFormat f = Qt::TextDate);
-    static QDate fromString(QStringView s, QStringView format, QCalendar cal = QCalendar());
+    static QDate fromString(QStringView string, Qt::DateFormat format = Qt::TextDate);
+    static QDate fromString(QStringView string, QStringView format, QCalendar cal = QCalendar())
+    { return fromString(string.toString(), format, cal); }
+    static QDate fromString(const QString &string, QStringView format, QCalendar cal = QCalendar());
 # if QT_STRINGVIEW_LEVEL < 2
-    static QDate fromString(const QString &s, Qt::DateFormat f = Qt::TextDate);
-    static QDate fromString(const QString &s, const QString &format, QCalendar cal = QCalendar());
+    static QDate fromString(const QString &string, Qt::DateFormat format = Qt::TextDate)
+    { return fromString(qToStringViewIgnoringNull(string), format); }
+    static QDate fromString(const QString &string, const QString &format,
+                            QCalendar cal = QCalendar())
+    { return fromString(string, qToStringViewIgnoringNull(format), cal); }
 # endif
 #endif
     static bool isValid(int y, int m, int d);
@@ -200,8 +205,16 @@ public:
 
     static QTime currentTime();
 #if QT_CONFIG(datestring)
-    static QTime fromString(const QString &s, Qt::DateFormat f = Qt::TextDate);
-    static QTime fromString(const QString &s, const QString &format);
+    static QTime fromString(QStringView string, Qt::DateFormat format = Qt::TextDate);
+    static QTime fromString(QStringView string, QStringView format)
+    { return fromString(string.toString(), format); }
+    static QTime fromString(const QString &string, QStringView format);
+# if QT_STRINGVIEW_LEVEL < 2
+    static QTime fromString(const QString &string, Qt::DateFormat format = Qt::TextDate)
+    { return fromString(qToStringViewIgnoringNull(string), format); }
+    static QTime fromString(const QString &string, const QString &format)
+    { return fromString(string, qToStringViewIgnoringNull(format)); }
+# endif
 #endif
     static bool isValid(int h, int m, int s, int ms = 0);
 
@@ -338,9 +351,19 @@ public:
     static QDateTime currentDateTime();
     static QDateTime currentDateTimeUtc();
 #if QT_CONFIG(datestring)
-    static QDateTime fromString(const QString &s, Qt::DateFormat f = Qt::TextDate);
-    static QDateTime fromString(const QString &s, const QString &format,
+    static QDateTime fromString(QStringView string, Qt::DateFormat format = Qt::TextDate);
+    static QDateTime fromString(QStringView string, QStringView format,
+                                QCalendar cal = QCalendar())
+    { return fromString(string.toString(), format, cal); }
+    static QDateTime fromString(const QString &string, QStringView format,
                                 QCalendar cal = QCalendar());
+# if QT_STRINGVIEW_LEVEL < 2
+    static QDateTime fromString(const QString &string, Qt::DateFormat format = Qt::TextDate)
+    { return fromString(qToStringViewIgnoringNull(string), format); }
+    static QDateTime fromString(const QString &string, const QString &format,
+                                QCalendar cal = QCalendar())
+    { return fromString(string, qToStringViewIgnoringNull(format), cal); }
+# endif
 #endif
 
     static QDateTime fromMSecsSinceEpoch(qint64 msecs, Qt::TimeSpec spec = Qt::LocalTime,
