@@ -6,8 +6,12 @@ SUBDIRS = \
         qobject \
         qvariant \
         qcoreapplication \
-        qtimer_vs_qmetaobject
+        qtimer_vs_qmetaobject \
+        qwineventnotifier
 
 !qtHaveModule(widgets): SUBDIRS -= \
     qmetaobject \
     qobject
+
+# This test is only applicable on Windows
+!win32: SUBDIRS -= qwineventnotifier

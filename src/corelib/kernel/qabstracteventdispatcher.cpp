@@ -460,30 +460,6 @@ bool QAbstractEventDispatcher::filterNativeEvent(const QByteArray &eventType, vo
     return false;
 }
 
-/*! \fn bool QAbstractEventDispatcher::registerEventNotifier(QWinEventNotifier *notifier)
-
-  This pure virtual method exists on windows only and has to be reimplemented by a Windows specific
-  event dispatcher implementation. \a notifier is the QWinEventNotifier instance to be registered.
-
-  The method should return true if the registration of \a notifier was successful, otherwise false.
-
-  QWinEventNotifier calls this method in it's constructor and there should never be a need to call this
-  method directly.
-
-  \sa QWinEventNotifier, unregisterEventNotifier()
-*/
-
-/*! \fn bool QAbstractEventDispatcher::unregisterEventNotifier(QWinEventNotifier *notifier)
-
-  This pure virtual method exists on windows only and has to be reimplemented by a Windows specific
-  event dispatcher implementation. \a notifier is the QWinEventNotifier instance to be unregistered.
-
-  QWinEventNotifier calls this method in it's destructor and there should never be a need to call this
-  method directly.
-
-  \sa QWinEventNotifier, registerEventNotifier()
-*/
-
 /*! \fn void QAbstractEventDispatcher::awake()
 
     This signal is emitted after the event loop returns from a

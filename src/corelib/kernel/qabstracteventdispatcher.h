@@ -49,10 +49,6 @@ class QAbstractNativeEventFilter;
 class QAbstractEventDispatcherPrivate;
 class QSocketNotifier;
 
-#if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
-class QWinEventNotifier;
-#endif
-
 class Q_CORE_EXPORT QAbstractEventDispatcher : public QObject
 {
     Q_OBJECT
@@ -87,11 +83,6 @@ public:
     virtual QList<TimerInfo> registeredTimers(QObject *object) const = 0;
 
     virtual int remainingTime(int timerId) = 0;
-
-#if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
-    virtual bool registerEventNotifier(QWinEventNotifier *notifier) = 0;
-    virtual void unregisterEventNotifier(QWinEventNotifier *notifier) = 0;
-#endif
 
     virtual void wakeUp() = 0;
     virtual void interrupt() = 0;

@@ -47,12 +47,10 @@
 #include "qset.h"
 #include "qsocketnotifier.h"
 #include "qvarlengtharray.h"
-#include "qwineventnotifier.h"
 
 #include "qelapsedtimer.h"
 #include "qcoreapplication_p.h"
 #include <private/qthread_p.h>
-#include <private/qwineventnotifier_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -99,7 +97,7 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
 QEventDispatcherWin32Private::QEventDispatcherWin32Private()
     : interrupt(false), internalHwnd(0),
       getMessageHook(0), sendPostedEventsTimerId(0), wakeUps(0),
-      activateNotifiersPosted(false), activateEventNotifiersPosted(false)
+      activateNotifiersPosted(false)
 {
 }
 
@@ -107,12 +105,6 @@ QEventDispatcherWin32Private::~QEventDispatcherWin32Private()
 {
     if (internalHwnd)
         DestroyWindow(internalHwnd);
-}
-
-void QEventDispatcherWin32Private::activateEventNotifier(QWinEventNotifier * wen)
-{
-    QEvent event(QEvent::WinEventAct);
-    QCoreApplication::sendEvent(wen, &event);
 }
 
 // This function is called by a workerthread
@@ -453,14 +445,6 @@ void QEventDispatcherWin32Private::postActivateSocketNotifiers()
 {
     if (!activateNotifiersPosted)
         activateNotifiersPosted = PostMessage(internalHwnd, WM_QT_ACTIVATENOTIFIERS, 0, 0);
-}
-
-void QEventDispatcherWin32Private::postActivateEventNotifiers()
-{
-    Q_Q(QEventDispatcherWin32);
-
-    if (!activateEventNotifiersPosted.fetchAndStoreRelease(true))
-        QCoreApplication::postEvent(q, new QEvent(QEvent::WinEventAct));
 }
 
 QEventDispatcherWin32::QEventDispatcherWin32(QObject *parent)
@@ -817,83 +801,6 @@ QEventDispatcherWin32::registeredTimers(QObject *object) const
     return list;
 }
 
-bool QEventDispatcherWin32::registerEventNotifier(QWinEventNotifier *notifier)
-{
-    Q_ASSERT(notifier);
-#ifndef QT_NO_DEBUG
-    if (notifier->thread() != thread() || thread() != QThread::currentThread()) {
-        qWarning("QEventDispatcherWin32: event notifiers cannot be enabled from another thread");
-        return false;
-    }
-#endif
-
-    Q_D(QEventDispatcherWin32);
-
-    if (d->winEventNotifierList.contains(notifier))
-        return true;
-
-    d->winEventNotifierList.append(notifier);
-    d->winEventNotifierListModified = true;
-
-    return QWinEventNotifierPrivate::get(notifier)->registerWaitObject();
-}
-
-void QEventDispatcherWin32::unregisterEventNotifier(QWinEventNotifier *notifier)
-{
-    Q_ASSERT(notifier);
-#ifndef QT_NO_DEBUG
-    if (notifier->thread() != thread() || thread() != QThread::currentThread()) {
-        qWarning("QEventDispatcherWin32: event notifiers cannot be disabled from another thread");
-        return;
-    }
-#endif
-    doUnregisterEventNotifier(notifier);
-}
-
-void QEventDispatcherWin32::doUnregisterEventNotifier(QWinEventNotifier *notifier)
-{
-    Q_D(QEventDispatcherWin32);
-
-    int i = d->winEventNotifierList.indexOf(notifier);
-    if (i == -1)
-        return;
-    d->winEventNotifierList.takeAt(i);
-    d->winEventNotifierListModified = true;
-    QWinEventNotifierPrivate *nd = QWinEventNotifierPrivate::get(notifier);
-    if (nd->waitHandle)
-        nd->unregisterWaitObject();
-}
-
-void QEventDispatcherWin32::activateEventNotifiers()
-{
-    Q_D(QEventDispatcherWin32);
-
-    // Enable WM_QT_ACTIVATEWINEVENTS posting.
-    d->activateEventNotifiersPosted.fetchAndStoreAcquire(false);
-
-    // Activate signaled notifiers. Our winEventNotifierList can be modified in activation slots.
-    do {
-        d->winEventNotifierListModified = false;
-        for (int i = 0; i < d->winEventNotifierList.count(); ++i) {
-            QWinEventNotifier *notifier = d->winEventNotifierList.at(i);
-            QWinEventNotifierPrivate *nd = QWinEventNotifierPrivate::get(notifier);
-            if (nd->signaled.loadRelaxed()) {
-                nd->signaled.storeRelaxed(false);
-                nd->unregisterWaitObject();
-                d->activateEventNotifier(notifier);
-            }
-        }
-    } while (d->winEventNotifierListModified);
-
-    // Re-register the remaining activated notifiers.
-    for (int i = 0; i < d->winEventNotifierList.count(); ++i) {
-        QWinEventNotifier *notifier = d->winEventNotifierList.at(i);
-        QWinEventNotifierPrivate *nd = QWinEventNotifierPrivate::get(notifier);
-        if (!nd->waitHandle)
-            nd->registerWaitObject();
-    }
-}
-
 int QEventDispatcherWin32::remainingTime(int timerId)
 {
 #ifndef QT_NO_DEBUG
@@ -958,10 +865,6 @@ void QEventDispatcherWin32::closingDown()
         doUnregisterSocketNotifier((*(d->sn_except.begin()))->obj);
     Q_ASSERT(d->active_fd.isEmpty());
 
-    // clean up any eventnotifiers
-    while (!d->winEventNotifierList.isEmpty())
-        doUnregisterEventNotifier(d->winEventNotifierList.first());
-
     // clean up any timers
     for (int i = 0; i < d->timerVec.count(); ++i)
         d->unregisterTimer(d->timerVec.at(i));
@@ -1008,9 +911,6 @@ bool QEventDispatcherWin32::event(QEvent *e)
     }
     case QEvent::Timer:
         d->sendTimerEvent(static_cast<const QTimerEvent*>(e)->timerId());
-        break;
-    case QEvent::WinEventAct:
-        activateEventNotifiers();
         break;
     default:
         break;

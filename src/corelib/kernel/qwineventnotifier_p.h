@@ -68,13 +68,15 @@ public:
     QWinEventNotifierPrivate(HANDLE h, bool e)
     : handleToEvent(h), enabled(e) {}
 
-    static QWinEventNotifierPrivate *get(QWinEventNotifier *q) { return q->d_func(); }
+    static void CALLBACK wfsoCallback(void *context, BOOLEAN /*ignore*/);
     bool registerWaitObject();
     void unregisterWaitObject();
 
     HANDLE handleToEvent;
     HANDLE waitHandle = NULL;
-    QAtomicInt signaled;
+
+    enum PostingState { NotPosted = 0, Posted, IgnorePosted };
+    QAtomicInt winEventActPosted;
     bool enabled;
 };
 

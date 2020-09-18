@@ -60,7 +60,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class QWinEventNotifier;
 class QEventDispatcherWin32Private;
 
 // forward declaration
@@ -86,10 +85,6 @@ public:
     bool unregisterTimers(QObject *object) override;
     QList<TimerInfo> registeredTimers(QObject *object) const override;
 
-    bool registerEventNotifier(QWinEventNotifier *notifier) override;
-    void unregisterEventNotifier(QWinEventNotifier *notifier) override;
-    void activateEventNotifiers();
-
     int remainingTime(int timerId) override;
 
     void wakeUp() override;
@@ -106,7 +101,6 @@ protected:
     QEventDispatcherWin32(QEventDispatcherWin32Private &dd, QObject *parent = nullptr);
     virtual void sendPostedEvents();
     void doUnregisterSocketNotifier(QSocketNotifier *notifier);
-    void doUnregisterEventNotifier(QWinEventNotifier *notifier);
 
 private:
     friend LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp);
@@ -156,7 +150,6 @@ class Q_CORE_EXPORT QEventDispatcherWin32Private : public QAbstractEventDispatch
 public:
     QEventDispatcherWin32Private();
     ~QEventDispatcherWin32Private();
-    static QEventDispatcherWin32Private *get(QEventDispatcherWin32 *q) { return q->d_func(); }
 
     QAtomicInt interrupt;
 
@@ -185,12 +178,6 @@ public:
     void doWsaAsyncSelect(int socket, long event);
 
     bool closingDown = false;
-
-    bool winEventNotifierListModified = false;
-    QAtomicInt activateEventNotifiersPosted;
-    QList<QWinEventNotifier *> winEventNotifierList;
-    void postActivateEventNotifiers();
-    void activateEventNotifier(QWinEventNotifier * wen);
 
     QList<MSG> queuedUserInputEvents;
     QList<MSG> queuedSocketEvents;

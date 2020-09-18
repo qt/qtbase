@@ -39,10 +39,8 @@
 
 #include "qwineventnotifier_p.h"
 
-#include "qeventdispatcher_win_p.h"
 #include "qcoreapplication.h"
-
-#include <private/qthread_p.h>
+#include "qthread.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -120,12 +118,8 @@ QWinEventNotifier::QWinEventNotifier(HANDLE hEvent, QObject *parent)
  : QObject(*new QWinEventNotifierPrivate(hEvent, false), parent)
 {
     Q_D(QWinEventNotifier);
-    QAbstractEventDispatcher *eventDispatcher = d->threadData.loadRelaxed()->eventDispatcher.loadRelaxed();
-    if (Q_UNLIKELY(!eventDispatcher)) {
-        qWarning("QWinEventNotifier: Can only be used with threads started with QThread");
-        return;
-    }
-    eventDispatcher->registerEventNotifier(this);
+
+    d->registerWaitObject();
     d->enabled = true;
 }
 
@@ -193,19 +187,20 @@ void QWinEventNotifier::setEnabled(bool enable)
         return;
     d->enabled = enable;
 
-    QAbstractEventDispatcher *eventDispatcher = d->threadData.loadRelaxed()->eventDispatcher.loadRelaxed();
-    if (!eventDispatcher) // perhaps application is shutting down
-        return;
     if (Q_UNLIKELY(thread() != QThread::currentThread())) {
         qWarning("QWinEventNotifier: Event notifiers cannot be enabled or disabled from another thread");
         return;
     }
 
     if (enable) {
-        d->signaled.storeRelaxed(false);
-        eventDispatcher->registerEventNotifier(this);
-    } else {
-        eventDispatcher->unregisterEventNotifier(this);
+        // It is possible that the notifier was disabled after an event was already
+        // posted. In that case we set a state that indicates that such an obsolete
+        // event shall be ignored.
+        d->winEventActPosted.testAndSetRelaxed(QWinEventNotifierPrivate::Posted,
+                                               QWinEventNotifierPrivate::IgnorePosted);
+        d->registerWaitObject();
+    } else if (d->waitHandle != NULL) {
+        d->unregisterWaitObject();
     }
 }
 
@@ -225,28 +220,33 @@ bool QWinEventNotifier::event(QEvent * e)
     }
     QObject::event(e);                        // will activate filters
     if (e->type() == QEvent::WinEventAct) {
-        emit activated(d->handleToEvent, QPrivateSignal());
+        // Emit notification, but only if the event has not been invalidated
+        // since by the notifier being disabled, even if it was re-enabled
+        // again.
+        if (d->winEventActPosted.fetchAndStoreRelaxed(QWinEventNotifierPrivate::NotPosted)
+            == QWinEventNotifierPrivate::Posted && d->enabled) {
+            d->unregisterWaitObject();
+
+            emit activated(d->handleToEvent, QPrivateSignal());
+
+            if (d->enabled && d->waitHandle == NULL)
+                d->registerWaitObject();
+        }
         return true;
     }
     return false;
 }
 
-static void CALLBACK wfsoCallback(void *context, BOOLEAN /*ignore*/)
+void CALLBACK QWinEventNotifierPrivate::wfsoCallback(void *context, BOOLEAN /*ignore*/)
 {
     QWinEventNotifierPrivate *nd = reinterpret_cast<QWinEventNotifierPrivate *>(context);
-    QAbstractEventDispatcher *eventDispatcher = nd->threadData.loadRelaxed()->eventDispatcher.loadRelaxed();
 
-    // Happens when Q(Core)Application is destroyed before QWinEventNotifier.
-    // https://bugreports.qt.io/browse/QTBUG-70214
-    if (!eventDispatcher) { // perhaps application is shutting down
-        qWarning("QWinEventNotifier: no event dispatcher, application shutting down? Cannot deliver event.");
-        return;
+    // Do not post an event, if an event is already in the message queue. Note
+    // that an event that was previously invalidated will be reactivated.
+    if (nd->winEventActPosted.fetchAndStoreRelaxed(QWinEventNotifierPrivate::Posted)
+        == QWinEventNotifierPrivate::NotPosted) {
+        QCoreApplication::postEvent(nd->q_func(), new QEvent(QEvent::WinEventAct));
     }
-
-    QEventDispatcherWin32Private *edp = QEventDispatcherWin32Private::get(
-                static_cast<QEventDispatcherWin32 *>(eventDispatcher));
-    nd->signaled.storeRelaxed(true);
-    edp->postActivateEventNotifiers();
 }
 
 bool QWinEventNotifierPrivate::registerWaitObject()
