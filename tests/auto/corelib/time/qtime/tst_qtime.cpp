@@ -651,6 +651,8 @@ void tst_QTime::fromStringDateFormat_data()
         << Qt::RFC2822Date << invalidTime();
     QTest::newRow("RFC 2822 with day date only") << QString::fromLatin1("Fri, 01 Nov 2002")
         << Qt::RFC2822Date << invalidTime();
+    QTest::newRow("RFC 2822 malformed time")
+        << QString::fromLatin1("01 Nov 2002 0:") << Qt::RFC2822Date << QTime();
     // Test invalid month, day, year are ignored:
     QTest::newRow("RFC 2822 invalid month name") << QString::fromLatin1("13 Fev 1987 13:24:51 +0100")
         << Qt::RFC2822Date << QTime(13, 24, 51);
@@ -678,7 +680,7 @@ void tst_QTime::fromStringDateFormat_data()
         << Qt::RFC2822Date << invalidTime();
     // The common date text used by the "invalid character" tests, just to be
     // sure *it's* not what's invalid:
-    QTest::newRow("RFC 2822 invalid character at end")
+    QTest::newRow("RFC 2822 (not invalid)")
         << QString::fromLatin1("01 Jan 2012 08:00:00 +0100")
         << Qt::RFC2822Date << QTime(8, 0, 0);
 

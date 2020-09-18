@@ -229,8 +229,10 @@ static ParsedRfcDateTime rfcDateImpl(QStringView s)
     QTime time;
     if (words.size() && words.at(0).contains(colon)) {
         const QStringView when = words.takeFirst();
-        if (when[2] != colon || (when.size() == 8 ? when[5] != colon : when.size() > 5))
+        if (when.size() < 5 || when[2] != colon
+            || (when.size() == 8 ? when[5] != colon : when.size() > 5)) {
             return result;
+        }
         const int hour = when.left(2).toInt(&ok);
         if (!ok)
             return result;
