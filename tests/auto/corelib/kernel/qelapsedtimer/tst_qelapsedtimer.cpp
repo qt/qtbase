@@ -126,7 +126,8 @@ void tst_QElapsedTimer::elapsed()
         timerExecuted = true;
     });
 
-    QTRY_VERIFY_WITH_TIMEOUT(timerExecuted, 4 * minResolution);
+    QTRY_VERIFY2_WITH_TIMEOUT(timerExecuted,
+        "Looks like timer didn't fire on time.", 4 * minResolution);
 
     QVERIFY(nsecs > 0);
     QVERIFY(msecs > 0);
