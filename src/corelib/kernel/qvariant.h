@@ -492,6 +492,8 @@ class Q_CORE_EXPORT QVariant
     inline bool operator!=(const QVariant &v) const
     { return !equals(v); }
 
+    static std::optional<int> compare(const QVariant &lhs, const QVariant &rhs);
+
 protected:
     friend inline bool operator==(const QVariant &, const QVariantComparisonHelper &);
 #ifndef QT_NO_DEBUG_STREAM

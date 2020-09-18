@@ -2329,6 +2329,33 @@ bool QVariant::equals(const QVariant &v) const
 }
 
 /*!
+    Compares the objects at \a lhs and \a rhs for ordering.
+
+    Returns an std::nullopt if comparison is not supported or the values are unordered.
+    Otherwise, returns -1, 0 or +1 according as \a lhs is less than, equal to or greater
+    than \a rhs.
+
+    If the variants contain data with a different metatype, the values are considered
+    unordered unless they are both of numeric or pointer types, where regular numeric or
+    pointer comparison rules will be used.
+
+    If both variants contain data of the same metatype, the method will use the
+    QMetaType::compare method to determine the ordering of the two variants, which can
+    also indicate that it can't establish an ordering between the two values.
+
+    \since 6.0
+    \sa QMetaType::compare(), QMetaType::isOrdered()
+*/
+std::optional<int> QVariant::compare(const QVariant &lhs, const QVariant &rhs)
+{
+    QMetaType t = lhs.d.type();
+    if (t != rhs.d.type())
+        return std::nullopt;
+    return t.compare(lhs.constData(), rhs.constData());
+}
+
+
+/*!
     \fn const void *QVariant::constData() const
     \fn const void* QVariant::data() const
     \internal
