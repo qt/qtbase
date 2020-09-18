@@ -18,10 +18,12 @@ qtHaveModule(dbus):!cross_compile:!boot2qt {
     system("dbus-send --session --type=signal / local.AutotestCheck.Hello >$$QMAKE_SYSTEM_NULL_DEVICE 2>&1") {
         SUBDIRS += dbus
     } else {
-        qtConfig(dbus-linked): \
-            error("QtDBus is enabled but session bus is not available. Please check the installation.")
-        else: \
+        qtConfig(dbus-linked) {
+            warning("QtDBus is enabled but session bus is not available. QtDBus tests will fail.")
+            SUBDIRS += dbus
+        } else: {
             warning("QtDBus is enabled with runtime support, but session bus is not available. Skipping QtDBus tests.")
+        }
     }
 }
 qtHaveModule(gui): SUBDIRS += gui
