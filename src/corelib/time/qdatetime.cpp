@@ -161,8 +161,8 @@ static ParsedRfcDateTime rfcDateImpl(QStringView s)
     QDate date;
 
     const auto isShortName = [](QStringView name) {
-        return (name.length() == 3 && name.at(0).isUpper()
-                && name.at(1).isLower() && name.at(2).isLower());
+        return (name.length() == 3 && name[0].isUpper()
+                && name[1].isLower() && name[2].isLower());
     };
 
     /* Reject entirely (return) if the string is malformed; however, if the date
@@ -174,7 +174,7 @@ static ParsedRfcDateTime rfcDateImpl(QStringView s)
         bool rfcX22 = true;
         if (words.at(0).endsWith(u',')) {
             dayName = words.takeFirst().chopped(1);
-        } else if (!words.at(0).at(0).isDigit()) {
+        } else if (!words.at(0)[0].isDigit()) {
             dayName = words.takeFirst();
             rfcX22 = false;
         } // else: dayName is not specified (so we can only be RFC *22)
@@ -228,7 +228,7 @@ static ParsedRfcDateTime rfcDateImpl(QStringView s)
     QTime time;
     if (words.size() && words.at(0).contains(colon)) {
         const QStringView when = words.takeFirst();
-        if (when.at(2) != colon || (when.size() == 8 ? when.at(5) != colon : when.size() > 5))
+        if (when[2] != colon || (when.size() == 8 ? when[5] != colon : when.size() > 5))
             return result;
         const int hour = when.left(2).toInt(&ok);
         if (!ok)
@@ -249,9 +249,9 @@ static ParsedRfcDateTime rfcDateImpl(QStringView s)
         if (words.size() || !(zone.size() == 3 || zone.size() == 5))
             return result;
         bool negate = false;
-        if (zone.at(0) == u'-')
+        if (zone[0] == u'-')
             negate = true;
-        else if (zone.at(0) != u'+')
+        else if (zone[0] != u'+')
             return result;
         const int hour = zone.mid(1, 2).toInt(&ok);
         if (!ok)
@@ -296,7 +296,7 @@ static int fromOffsetString(QStringView offsetString, bool *valid) noexcept
     int sign;
 
     // First char must be + or -
-    const QChar signChar = offsetString.at(0);
+    const QChar signChar = offsetString[0];
     if (signChar == u'+')
         sign = 1;
     else if (signChar == u'-')
