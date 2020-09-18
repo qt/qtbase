@@ -7,6 +7,7 @@ CONFIG += \
     installed
 
 MODULE_INCLUDEPATH = $$PWD
+MODULE_EXT_HEADERS = png.h pngconf.h
 
 load(qt_helper_lib)
 

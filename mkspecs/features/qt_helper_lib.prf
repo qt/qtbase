@@ -89,4 +89,32 @@ TARGET = $$THE_TARGET
 
 # In static builds of Qt, convenience libraries must be installed,
 # as in this case they are not linked to the final library/plugin.
-installed|if(!not_installed:qtConfig(static)): load(qt_installs)
+installed|if(!not_installed:qtConfig(static)) {
+    !isEmpty(MODULE_EXT_HEADERS) {
+        headers.files = $${MODULE_EXT_HEADERS}
+        headers.path = $$[QT_INSTALL_HEADERS]/$$TARGET
+        INSTALLS += headers
+    } else {
+        !isEmpty(MODULE_EXT_HEADERS_DIR) {
+            headers.files = $$MODULE_EXT_HEADERS_DIR/*
+            headers.path = $$[QT_INSTALL_HEADERS]/$$TARGET
+            INSTALLS += headers
+        }
+    }
+
+    CONFIG += qt_install_module
+    rpl_header_base = $$MODULE_INCLUDEPATH
+    rpl_lib_base = $${MODULE_LIBS}
+    qqt_dir = \$\$\$\$[QT_INSTALL_HEADERS]
+    pri_header_replace.match = $$rpl_header_base
+    pri_header_replace.replace = $$qqt_dir/$$TARGET
+    pri_header_replace.CONFIG = path
+    pri_header_replace.filename = qt_ext_$${MODULE}.pri
+    qqt_dir = \$\$\$\$[QT_INSTALL_LIBS]
+    pri_lib_replace.match = $$rpl_lib_base
+    pri_lib_replace.replace = $$qqt_dir/$$prefix$${THE_TARGET}.$$suffix
+    pri_lib_replace.CONFIG = path
+    pri_lib_replace.filename = qt_ext_$${MODULE}.pri
+    QMAKE_INSTALL_REPLACE += pri_header_replace pri_lib_replace
+    load(qt_installs)
+}
