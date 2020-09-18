@@ -251,8 +251,9 @@ public:
 protected:
     QString fileFixify(const QString &file, FileFixifyTypes fix = FileFixifyDefault, bool canon = true) const;
     QStringList fileFixify(const QStringList &files, FileFixifyTypes fix = FileFixifyDefault, bool canon = true) const;
-
-    QString installMetaFile(const ProKey &replace_rule, const QString &src, const QString &dst);
+    QString createSedArgs(const ProKey &replace_rule) const;
+    QString installMetaFile(const ProKey &replace_rule, const QString &src,
+                            const QString &dst) const;
 
     virtual bool processPrlFileBase(QString &origFile, const QStringRef &origName,
                                     const QStringRef &fixedBase, int slashOff);
@@ -278,7 +279,7 @@ public:
     virtual bool mergeBuildProject(MakefileGenerator * /*other*/) { return false; }
     virtual bool openOutput(QFile &, const QString &build) const;
     bool isWindowsShell() const { return Option::dir_sep == QLatin1String("\\"); }
-    QString shellQuote(const QString &str);
+    QString shellQuote(const QString &str) const;
     virtual ProKey fullTargetVariable() const;
 };
 Q_DECLARE_TYPEINFO(MakefileGenerator::Compiler, Q_MOVABLE_TYPE);
