@@ -902,7 +902,9 @@
   Represents execution policies for running a QFuture continuation.
 
   \value Sync           The continuation will be launched in the same thread in
-                        which the parent has been executing.
+                        which the parent has been executing, or in the thread where
+                        the parent lives if the continuation is attached after the
+                        parent has already finished.
 
   \value Async          The continuation will be launched in in a separate thread taken from
                         the global QThreadPool.
@@ -961,8 +963,9 @@
     Attaches a continuation to this future, allowing to chain multiple asynchronous
     computations if desired. When the asynchronous computation represented by this
     future finishes, \a function will be invoked in the same thread in which this
-    future has been running. A new QFuture representing the result of the continuation
-    is returned.
+    future has been running. If the continuation is attached after the parent has
+    already finished, it will be invoked in the thread where the parent lives. This
+    method returns a new QFuture representing the result of the continuation.
 
     \note Use other overloads of this method if you need to launch the continuation in
     a separate thread.
@@ -1058,8 +1061,10 @@
     Attaches a failure handler to this future, to handle any exceptions that may
     have been generated. Returns a QFuture of the parent type. The handler will
     be invoked only in case of an exception, in the same thread as the parent
-    future has been running. \a handler is a callable which takes either no argument
-    or one argument, to filter by specific error types similar to
+    future has been running. If the continuation is attached after the parent has
+    already finished, it will be invoked in the thread where the parent lives.
+    \a handler is a callable which takes either no argument or one argument, to
+    filter by specific error types similar to
     \l {https://en.cppreference.com/w/cpp/language/try_catch} {catch} statement.
 
     For example:
@@ -1088,7 +1093,9 @@
 
     Attaches a cancellation \a handler to this future, to be called when the future is
     canceled. The \a handler is a callable which doesn't take any arguments. It will be
-    invoked in the same thread in which this future has been running.
+    invoked in the same thread in which this future has been running. If the continuation
+    is attached after the parent has already finished, it will be invoked in the thread
+    where the parent lives.
 
     \sa then(), onFailed()
 */
