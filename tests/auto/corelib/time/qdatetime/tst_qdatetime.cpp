@@ -2211,8 +2211,7 @@ void tst_QDateTime::fromStringDateFormat_data()
 
     // Test Qt::ISODate format.
     QTest::newRow("trailing space") // QTBUG-80445
-        << QString("2000-01-02 03:04:05.678 ")
-        << Qt::ISODate << QDateTime(QDate(2000, 1, 2), QTime(3, 4, 5, 678));
+        << QString("2000-01-02 03:04:05.678 ") << Qt::ISODate << QDateTime();
 
     // Invalid spaces (but keeping field widths correct):
     QTest::newRow("space before millis")
@@ -2327,8 +2326,8 @@ void tst_QDateTime::fromStringDateFormat_data()
         << Qt::ISODate << QDateTime(QDate(2012, 1, 1), QTime(8, 0, 0, 333), Qt::LocalTime);
     QTest::newRow("ISO .00009 of a second (period)") << QString::fromLatin1("2012-01-01T08:00:00.00009")
         << Qt::ISODate << QDateTime(QDate(2012, 1, 1), QTime(8, 0, 0, 0), Qt::LocalTime);
-    QTest::newRow("ISO no fract specified") << QString::fromLatin1("2012-01-01T08:00:00.")
-        << Qt::ISODate << QDateTime(QDate(2012, 1, 1), QTime(8, 0, 0, 0), Qt::LocalTime);
+    QTest::newRow("ISO no fraction specified")
+        << QString::fromLatin1("2012-01-01T08:00:00.") << Qt::ISODate << QDateTime();
     // Test invalid characters (should ignore invalid characters at end of string).
     QTest::newRow("ISO invalid character at end") << QString::fromLatin1("2012-01-01T08:00:00!")
         << Qt::ISODate << QDateTime();

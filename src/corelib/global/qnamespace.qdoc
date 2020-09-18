@@ -664,40 +664,66 @@
 /*!
     \enum Qt::DateFormat
 
-    \value TextDate The default Qt format, which includes the day and month name,
-    the day number in the month, and the year in full. The day and month names will
-    be short names in English. This is basically equivalent to using the date format
-    string, "ddd MMM d yyyy". See QDate::toString() for more information.
+    \value TextDate The default Qt format, which includes the day and month
+    name, the day number in the month, and the year in full. The day and month
+    names will be short names in English (C locale). This effectively uses, for
+    a date, format \c{ddd MMM d yyyy}, for a time \c{HH:mm:ss} and combines
+    these as \c{ddd MMM d HH:mm:ss yyyy} for a date-time, with an optional
+    suffix indicating time-zone or offset from UTC, where relevant. A fractional
+    part is also recognized on the seconds of a time part, as \c{HH:mm:ss.zzz},
+    when reading from a string.
 
-    \value ISODate \l{ISO 8601} extended format: either \c{yyyy-MM-dd} for dates or
-    \c{yyyy-MM-ddTHH:mm:ss} (e.g. 2017-07-24T15:46:29), or with a time-zone
-    suffix (Z for UTC otherwise an offset as [+|-]HH:mm) where appropriate
-    for combined dates and times.
+    \value ISODateWithMs \l{ISO 8601} extended format: uses \c{yyyy-MM-dd} for
+    dates, \c{HH:mm:ss.zzz} for times or \c{yyyy-MM-ddTHH:mm:ss.zzz}
+    (e.g. 2017-07-24T15:46:29.739) for combined dates and times, optionally with
+    a time-zone suffix (Z for UTC otherwise an offset as ±HH:mm) where
+    appropriate. When parsed, a single space, \c{' '}, may be used in place of
+    the \c{'T'} separator between date and time; no other spacing characters are
+    permitted. This format also accepts \c{HH:mm} and plain \c{HH} formats for
+    the time part, either of which may include a fractional part, \c{HH:mm.zzz}
+    or \c{HH.zzz}, applied to the last field present (hour or minute).
 
-    \value ISODateWithMs \l{ISO 8601} extended format, including milliseconds if applicable.
+    \value ISODate \l{ISO 8601} extended format, as for \c ISODateWithMs, but
+    omitting the milliseconds (\c{.zzz}) part when converting to a string. There
+    is no difference when reading from a string: if a fractional part is present
+    on the last time field, either format will accept it.
 
-    \value RFC2822Date \l{RFC 2822}, \l{RFC 850} and \l{RFC 1036} format:
-    either \c{[ddd,] dd MMM yyyy [HH:mm[:ss]][ ±tzoff]}
-    or \c{ddd MMM dd[ HH:mm:ss] yyyy[ ±tzoff]} are recognized for combined dates
-    and times, where \c{tzoff} is a timezone offset in \c{HHmm} format. For
-    dates and times separately, the same formats are matched and the unwanted
-    parts are ignored. In particular, note that a time is not recognized without
-    an accompanying date. When converting dates to string form,
-    format \c{dd MMM yyyy} is used, for times the format is \c{HH:mm:ss}. For
-    combined date and time, these are combined
+    \value RFC2822Date \l{RFC 2822}, \l{RFC 850} and \l{RFC 1036} format: when
+    converting dates to string form, format \c{dd MMM yyyy} is used, for times
+    the format is \c{HH:mm:ss}. For combined date and time, these are combined
     as \c{dd MMM yyyy HH:mm:ss ±tzoff} (omitting the optional leading day of the
-    week from the first format recognized).
+    week from the first format recognized). When reading from a string either
+    \c{[ddd,] dd MMM yyyy [HH:mm[:ss]][ ±tzoff]} or \c{ddd MMM dd[ HH:mm:ss]
+    yyyy[ ±tzoff]} will be recognized for combined dates and times, where
+    \c{tzoff} is a timezone offset in \c{HHmm} format. Arbitrary spacing may
+    appear before or after the text and any non-empty spacing may replace the
+    spaces in this format. For dates and times separately, the same formats are
+    matched and the unwanted parts are ignored. In particular, note that a time
+    is not recognized without an accompanying date.
 
     \note For \c ISODate formats, each \c y, \c M and \c d represents a single
     digit of the year, month, and day used to specify the date. Each \c H, \c m,
     and \c s represents a single digit of the hour (up to 24), minute and second
-    used to specify the time. The presence of a literal \c T character is used
-    to separate the date and time when both are specified. For the \c
-    RFC2822Date format, MMM stands for the first three letters of the month name
-    in English, the other format characters have the same meaning as for the
-    ISODate format.
-*/
+    used to specify the time. A \c{.zzz} stands for a fractional part suffix on
+    the preceding field, which may be separated from that field either by a
+    comma \c{','} or the dot \c{'.'} shown. Precision beyond milliseconds is
+    accepted but discarded, rounding to the nearest millisecond or, when
+    rounding fractional seconds up would change the second field, rounded
+    down. The presence of a literal \c T character is used to separate the date
+    and time when both are specified. For the \c TextDate and \c RFC2822Date
+    formats, \c{ddd} stands for the first three letters of the name of the day
+    of the week and \c{MMM} stands for the first three letters of the month
+    name. The names of days and months are always in English (C locale)
+    regardless of user preferences or system settings. The other format
+    characters have the same meaning as for the ISODate format. Parts of the
+    format enclosed in square brackets \c{[...]} are optional; the square
+    brackets do not form part of the format. The plus-or-minus character \c{'±'}
+    here stands for either sign character, \c{'-'} for minus or \c{'+'} for
+    plus.
 
+    \sa QDate::toString(), QTime::toString(), QDateTime::toString(),
+        QDate::fromString(), QTime::fromString(), QDateTime::fromString()
+*/
 
 /*!
     \enum Qt::TimeSpec
