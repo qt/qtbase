@@ -258,7 +258,7 @@ public:
 protected:
     QString fileFixify(const QString &file, FileFixifyTypes fix = FileFixifyDefault, bool canon = true) const;
     QStringList fileFixify(const QStringList &files, FileFixifyTypes fix = FileFixifyDefault, bool canon = true) const;
-    QString createSedArgs(const ProKey &replace_rule) const;
+    QString createSedArgs(const ProKey &replace_rule, const QString &file_type = QString()) const;
     QString installMetaFile(const ProKey &replace_rule, const QString &src,
                             const QString &dst) const;
 
