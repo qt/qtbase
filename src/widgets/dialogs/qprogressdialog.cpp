@@ -51,6 +51,7 @@
 #include "qpushbutton.h"
 #include "qtimer.h"
 #include "qelapsedtimer.h"
+#include "qscopedvaluerollback.h"
 #include <private/qdialog_p.h>
 #include <limits.h>
 
@@ -71,6 +72,7 @@ public:
         shown_once(false),
         cancellation_flag(false),
         setValue_called(false),
+        processingEvents(false),
         showTime(defaultShowTime),
 #ifndef QT_NO_SHORTCUT
         escapeShortcut(nullptr),
@@ -94,6 +96,7 @@ public:
     bool shown_once;
     bool cancellation_flag;
     bool setValue_called;
+    bool processingEvents;
     QElapsedTimer starttime;
     int showTime;
     bool autoClose;
@@ -660,8 +663,10 @@ void QProgressDialog::setValue(int progress)
     d->bar->setValue(progress);
 
     if (d->shown_once) {
-        if (isModal())
+        if (isModal() && !d->processingEvents) {
+            const QScopedValueRollback guard(d->processingEvents, true);
             QCoreApplication::processEvents();
+        }
     } else {
         if ((!d->setValue_called && progress == 0 /* for compat with Qt < 5.4 */) || progress == minimum()) {
             d->starttime.start();
