@@ -221,7 +221,7 @@ public:
     void move(int from, int to);
     void swapItemsAt(int i, int j);
 #if QT_DEPRECATED_SINCE(5, 13) && QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    QT_DEPRECATED_X("Use QList<T>::swapItemsAt()")
+    QT_DEPRECATED_VERSION_X_5_13("Use QList<T>::swapItemsAt()")
     void swap(int i, int j) { swapItemsAt(i, j); }
 #endif
     int indexOf(const T &t, int from = 0) const;
@@ -407,15 +407,15 @@ public:
     QVector<T> toVector() const;
 
 #if QT_DEPRECATED_SINCE(5, 14) && QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    QT_DEPRECATED_X("Use QList<T>(set.begin(), set.end()) instead.")
+    QT_DEPRECATED_VERSION_X_5_14("Use QList<T>(set.begin(), set.end()) instead.")
     static QList<T> fromSet(const QSet<T> &set);
-    QT_DEPRECATED_X("Use QSet<T>(list.begin(), list.end()) instead.")
+    QT_DEPRECATED_VERSION_X_5_14("Use QSet<T>(list.begin(), list.end()) instead.")
     QSet<T> toSet() const;
 
-    QT_DEPRECATED_X("Use QList<T>(list.begin(), list.end()) instead.")
+    QT_DEPRECATED_VERSION_X_5_14("Use QList<T>(list.begin(), list.end()) instead.")
     static inline QList<T> fromStdList(const std::list<T> &list)
     { return QList<T>(list.begin(), list.end()); }
-    QT_DEPRECATED_X("Use std::list<T>(list.begin(), list.end()) instead.")
+    QT_DEPRECATED_VERSION_X_5_14("Use std::list<T>(list.begin(), list.end()) instead.")
     inline std::list<T> toStdList() const
     { return std::list<T>(begin(), end()); }
 #endif
