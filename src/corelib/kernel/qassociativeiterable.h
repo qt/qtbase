@@ -111,7 +111,10 @@ public:
     {
     }
 
-    QAssociativeIterable() = default;
+    QAssociativeIterable()
+        : QIterable(QMetaAssociation(), nullptr)
+    {
+    }
 
     template<typename Pointer>
     QAssociativeIterable(const QMetaAssociation &metaAssociation, Pointer iterable)

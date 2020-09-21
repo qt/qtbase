@@ -4758,8 +4758,8 @@ void tst_QVariant::sequentialIterableAppend()
     {
         QList<int> container { 1, 2 };
         auto variant = QVariant::fromValue(container);
-        QVERIFY(variant.canConvert<QIterable<QMetaSequence>>());
-        QSequentialIterable asIterable = variant.view<QIterable<QMetaSequence>>();
+        QVERIFY(variant.canConvert<QSequentialIterable>());
+        QSequentialIterable asIterable = variant.view<QSequentialIterable>();
         const int i = 3, j = 4;
         void *mutableIterable = asIterable.mutableIterable();
         asIterable.metaContainer().addValueAtEnd(mutableIterable, &i);
@@ -4778,8 +4778,8 @@ void tst_QVariant::sequentialIterableAppend()
     {
         QSet<QByteArray> container { QByteArray{"hello"}, QByteArray{"world"} };
         auto variant = QVariant::fromValue(std::move(container));
-        QVERIFY(variant.canConvert<QIterable<QMetaSequence>>());
-        QSequentialIterable asIterable = variant.view<QIterable<QMetaSequence>>();
+        QVERIFY(variant.canConvert<QSequentialIterable>());
+        QSequentialIterable asIterable = variant.view<QSequentialIterable>();
         QByteArray qba1 {"goodbye"};
         QByteArray qba2 { "moon" };
         void *mutableIterable = asIterable.mutableIterable();

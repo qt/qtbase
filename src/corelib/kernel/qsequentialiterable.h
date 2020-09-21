@@ -104,7 +104,10 @@ public:
     {
     }
 
-    QSequentialIterable() = default;
+    QSequentialIterable()
+        : QIterable(QMetaSequence(), nullptr)
+    {
+    }
 
     template<typename Pointer>
     QSequentialIterable(const QMetaSequence &metaSequence, Pointer iterable)

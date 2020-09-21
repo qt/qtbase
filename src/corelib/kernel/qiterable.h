@@ -450,8 +450,6 @@ protected:
     Container m_metaContainer;
 
 public:
-    QIterable() = default;
-
     template<class T>
     QIterable(const Container &metaContainer, const T *p)
       : m_iterable(p), m_metaContainer(metaContainer)

@@ -2036,7 +2036,7 @@ static bool viewAsSequentialIterable(QMetaType fromType, void *from, void *to)
         return true;
     }
 
-    QIterable<QMetaSequence> j;
+    QIterable<QMetaSequence> j(QMetaSequence(), nullptr);
     if (QMetaType::view(
                 fromType, from, QMetaType::fromType<QIterable<QMetaSequence>>(), &j)) {
         i = std::move(j);
@@ -2118,7 +2118,7 @@ static bool viewAsAssociativeIterable(QMetaType fromType, void *from, void *to)
         return true;
     }
 
-    QIterable<QMetaAssociation> j;
+    QIterable<QMetaAssociation> j(QMetaAssociation(), nullptr);
     if (QMetaType::view(
                 fromType, from, QMetaType::fromType<QIterable<QMetaAssociation>>(), &j)) {
         i = std::move(j);
