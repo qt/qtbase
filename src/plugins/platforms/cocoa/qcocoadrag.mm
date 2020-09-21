@@ -130,6 +130,10 @@ Qt::DropAction QCocoaDrag::drag(QDrag *o)
     m_drag = o;
     m_executed_drop_action = Qt::IgnoreAction;
 
+    QMacPasteboard dragBoard(CFStringRef(NSPasteboardNameDrag), QMacInternalPasteboardMime::MIME_DND);
+    m_drag->mimeData()->setData(QLatin1String("application/x-qt-mime-type-name"), QByteArray("dummy"));
+    dragBoard.setMimeData(m_drag->mimeData(), QMacPasteboard::LazyRequest);
+
     if (maybeDragMultipleItems())
         return m_executed_drop_action;
 
@@ -137,10 +141,6 @@ Qt::DropAction QCocoaDrag::drag(QDrag *o)
     QPixmap pm = dragPixmap(m_drag, hotSpot);
     NSImage *dragImage = [NSImage imageFromQImage:pm.toImage()];
     Q_ASSERT(dragImage);
-
-    QMacPasteboard dragBoard(CFStringRef(NSPasteboardNameDrag), QMacInternalPasteboardMime::MIME_DND);
-    m_drag->mimeData()->setData(QLatin1String("application/x-qt-mime-type-name"), QByteArray("dummy"));
-    dragBoard.setMimeData(m_drag->mimeData(), QMacPasteboard::LazyRequest);
 
     NSPoint event_location = [m_lastEvent locationInWindow];
     NSWindow *theWindow = [m_lastEvent window];
