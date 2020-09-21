@@ -528,8 +528,6 @@ void qt_init_tooltip_palette()
 extern void qRegisterWidgetsVariant();
 
 /*!
-  \fn void QApplicationPrivate::initialize()
-
   Initializes the QApplication object, called from the constructors.
 */
 void QApplicationPrivate::initialize()

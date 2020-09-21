@@ -315,7 +315,7 @@ QT_BEGIN_NAMESPACE
     \relates QMargins
 
     Returns a QMargins object that is formed from the maximum of each
-    component of \a m2 and a m1.
+    component of \a m2 and \a m1.
 
     \sa QMargins::operator+=(), QMargins::operator-=()
 
@@ -668,7 +668,7 @@ QDebug operator<<(QDebug dbg, const QMargins &m)
     \overload
 
     Returns a QMarginsF object that is formed from the maximum of each
-    component of \a m2 and a m1.
+    component of \a m2 and \a m1.
 
     \sa QMarginsF::operator+=(), QMarginsF::operator-=()
 

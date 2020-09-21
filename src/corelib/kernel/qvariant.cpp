@@ -2118,7 +2118,7 @@ bool QVariant::view(int type, void *ptr)
     \li If one type is numeric and the other one a QString, Qt will try to
     convert the QString to a matching numeric type and if successful compare
     those.
-    \i If both variants contain pointers to QObject derived types, QVariant
+    \li If both variants contain pointers to QObject derived types, QVariant
     will check whether the types are related and point to the same object.
     \endlist
 */
@@ -2700,7 +2700,7 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
     \class QVariantConstPointer
     \since 6.0
     \inmodule QtCore
-    \brief Emulated const pointer to QVariant based on a pointer
+    \brief Emulated const pointer to QVariant based on a pointer.
 
     QVariantConstPointer wraps a QVariant and returns it from its operator*().
     This makes it suitable as replacement for an actual const pointer. We cannot
@@ -2737,7 +2737,7 @@ const QVariant *QVariantConstPointer::operator->() const
     \class QVariantPointer
     \since 6.0
     \inmodule QtCore
-    \brief Emulated pointer to QVariant based on a pointer
+    \brief Emulated pointer to QVariant based on a pointer.
 
     QVariantConstPointer wraps a pointer and returns QVariantRef to it from its
     operator*(). This makes it suitable as replacement for an actual pointer. We

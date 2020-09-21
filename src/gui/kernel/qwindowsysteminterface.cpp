@@ -633,7 +633,7 @@ void QWindowSystemInterface::registerInputDevice(const QInputDevice *device)
 /*!
     \internal
     Convert a list of \l QWindowSystemInterface::TouchPoint \a points to a list
-    of \em temporary QEventPoint instances, scaled (but not localized)
+    of \e temporary QEventPoint instances, scaled (but not localized)
     for delivery to the given \a window.
 
     This is called from QWindowSystemInterface::handleTouchEvent():
