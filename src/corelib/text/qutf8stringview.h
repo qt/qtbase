@@ -304,7 +304,30 @@ public:
     constexpr int length() const /* not nothrow! */
     { return Q_ASSERT(int(size()) == size()), int(size()); }
 #endif
+
 private:
+    [[nodiscard]] static inline int compare(QBasicUtf8StringView lhs, QBasicUtf8StringView rhs,
+                                            Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
+
+    [[nodiscard]] friend inline bool operator==(QBasicUtf8StringView lhs, QBasicUtf8StringView rhs) noexcept
+    { return QBasicUtf8StringView::compare(lhs, rhs) == 0; }
+    [[nodiscard]] friend inline bool operator!=(QBasicUtf8StringView lhs, QBasicUtf8StringView rhs) noexcept
+    { return !operator==(lhs, rhs); }
+
+#ifdef __cpp_impl_three_way_comparison
+    [[nodiscard]] friend inline auto operator<=>(QBasicUtf8StringView lhs, QBasicUtf8StringView rhs) noexcept
+    { return QBasicUtf8StringView::compare(lhs, rhs) <=> 0; }
+#else
+    [[nodiscard]] friend inline bool operator<=(QBasicUtf8StringView lhs, QBasicUtf8StringView rhs) noexcept
+    { return QBasicUtf8StringView::compare(lhs, rhs) <= 0; }
+    [[nodiscard]] friend inline bool operator>=(QBasicUtf8StringView lhs, QBasicUtf8StringView rhs) noexcept
+    { return QBasicUtf8StringView::compare(lhs, rhs) >= 0; }
+    [[nodiscard]] friend inline bool operator<(QBasicUtf8StringView lhs, QBasicUtf8StringView rhs) noexcept
+    { return QBasicUtf8StringView::compare(lhs, rhs) < 0; }
+    [[nodiscard]] friend inline bool operator>(QBasicUtf8StringView lhs, QBasicUtf8StringView rhs) noexcept
+    { return QBasicUtf8StringView::compare(lhs, rhs) > 0; }
+#endif
+
     Q_ALWAYS_INLINE constexpr void verify(qsizetype pos, qsizetype n = 0) const
     {
         Q_ASSERT(pos >= 0);

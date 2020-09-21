@@ -49,6 +49,7 @@ struct QAnyStringViewUsingU16 : QAnyStringView {};  // QAnyStringView with Utf-1
 template <typename T>
 QString toQString(const T &t) { return QString(t); }
 QString toQString(QStringView view) { return view.toString(); }
+QString toQString(QUtf8StringView view) { return view.toString(); }
 
 template <typename Iterable>
 QStringList toQStringList(const Iterable &i) {
@@ -82,6 +83,19 @@ MAKE_ALL(QByteArray, char16_t)
 MAKE_ALL(char16_t, QByteArray)
 
 MAKE_ALL(const char*, QChar)
+
+MAKE_ALL(QChar, QByteArray)
+MAKE_ALL(QChar, const char*)
+MAKE_ALL(QChar, QUtf8StringView)
+
+MAKE_ALL(QString, QUtf8StringView)
+MAKE_ALL(QByteArray, QUtf8StringView)
+MAKE_ALL(const char*, QUtf8StringView)
+
+MAKE_ALL(QUtf8StringView, QChar)
+MAKE_ALL(QUtf8StringView, char16_t)
+MAKE_ALL(QUtf8StringView, QStringView)
+MAKE_ALL(QUtf8StringView, QLatin1String)
 
 #undef MAKE_ALL
 #undef MAKE_RELOP
@@ -1383,7 +1397,7 @@ void tst_QStringApiSymmetry::mid_data()
 
     // mid() has a wider contract compared to sliced(), so test those cases here:
 #define ROW(base, p, n, r1, r2) \
-    QTest::addRow("%s %d %d", #base, p, n) << QStringView(base) << QLatin1String(#base) << p << n << QStringView(r1) << QStringView(r2)
+    QTest::addRow("%s %d %d", #base, p, n) << QStringView(base) << QLatin1String(#base) << p << n << QAnyStringView(r1) << QAnyStringView(r2)
 
     ROW(a, -1, 0, a, null);
     ROW(a, -1, 2, a, a);
@@ -1420,8 +1434,8 @@ void tst_QStringApiSymmetry::mid_impl()
     QFETCH(const QLatin1String, latin1);
     QFETCH(const int, pos);
     QFETCH(const int, n);
-    QFETCH(const QStringView, result);
-    QFETCH(const QStringView, result2);
+    QFETCH(const QAnyStringView, result);
+    QFETCH(const QAnyStringView, result2);
 
     const auto utf8 = unicode.toUtf8();
 
@@ -1459,7 +1473,7 @@ void tst_QStringApiSymmetry::left_data()
 
     // specific data testing out of bounds cases
 #define ROW(base, n, res) \
-    QTest::addRow("%s%d", #base, n) << QStringView(base) << QLatin1String(#base) << n << QStringView(res);
+    QTest::addRow("%s%d", #base, n) << QStringView(base) << QLatin1String(#base) << n << QAnyStringView(res);
 
     ROW(a, -1, a);
     ROW(a, 2, a);
@@ -1477,7 +1491,7 @@ void tst_QStringApiSymmetry::left_QByteArray_data()
 
     // specific data testing out of bounds cases
 #define ROW(base, n, res) \
-    QTest::addRow("%s%d", #base, n) << QStringView(base) << QLatin1String(#base) << n << QStringView(res);
+    QTest::addRow("%s%d", #base, n) << QStringView(base) << QLatin1String(#base) << n << QAnyStringView(res);
 
     ROW(a, -1, empty);
     ROW(a, 2, a);
@@ -1493,7 +1507,7 @@ void tst_QStringApiSymmetry::left_impl()
     QFETCH(const QStringView, unicode);
     QFETCH(const QLatin1String, latin1);
     QFETCH(const int, n);
-    QFETCH(const QStringView, result);
+    QFETCH(const QAnyStringView, result);
 
     const auto utf8 = unicode.toUtf8();
 
@@ -1521,7 +1535,7 @@ void tst_QStringApiSymmetry::right_data()
 
     // specific data testing out of bounds cases
 #define ROW(base, n, res) \
-    QTest::addRow("%s%d", #base, n) << QStringView(base) << QLatin1String(#base) << n << QStringView(res);
+    QTest::addRow("%s%d", #base, n) << QStringView(base) << QLatin1String(#base) << n << QAnyStringView(res);
 
     ROW(a, -1, a);
     ROW(a, 2, a);
@@ -1539,7 +1553,7 @@ void tst_QStringApiSymmetry::right_QByteArray_data()
 
     // specific data testing out of bounds cases
 #define ROW(base, n, res) \
-    QTest::addRow("%s%d", #base, n) << QStringView(base) << QLatin1String(#base) << n << QStringView(res);
+    QTest::addRow("%s%d", #base, n) << QStringView(base) << QLatin1String(#base) << n << QAnyStringView(res);
 
     ROW(a, -1, empty);
     ROW(a, 2, a);
@@ -1555,7 +1569,7 @@ void tst_QStringApiSymmetry::right_impl()
     QFETCH(const QStringView, unicode);
     QFETCH(const QLatin1String, latin1);
     QFETCH(const int, n);
-    QFETCH(const QStringView, result);
+    QFETCH(const QAnyStringView, result);
 
     const auto utf8 = unicode.toUtf8();
 
@@ -1583,14 +1597,14 @@ void tst_QStringApiSymmetry::sliced_data()
     QTest::addColumn<QLatin1String>("latin1");
     QTest::addColumn<int>("pos");
     QTest::addColumn<int>("n");
-    QTest::addColumn<QStringView>("result");
-    QTest::addColumn<QStringView>("result2");
+    QTest::addColumn<QAnyStringView>("result");
+    QTest::addColumn<QAnyStringView>("result2");
 
 //    QTest::addRow("null") << QStringView() << QLatin1String() << 0 << 0 << QStringView() << QStringView();
-    QTest::addRow("empty") << QStringView(empty) << QLatin1String("") << 0 << 0 << QStringView(empty) << QStringView(empty);
+    QTest::addRow("empty") << QStringView(empty) << QLatin1String("") << 0 << 0 << QAnyStringView(empty) << QAnyStringView(empty);
 
 #define ROW(base, p, n, r1, r2) \
-    QTest::addRow("%s%d%d", #base, p, n) << QStringView(base) << QLatin1String(#base) << p << n << QStringView(r1) << QStringView(r2)
+    QTest::addRow("%s%d%d", #base, p, n) << QStringView(base) << QLatin1String(#base) << p << n << QAnyStringView(r1) << QAnyStringView(r2)
 
     ROW(a, 0, 0, a, empty);
     ROW(a, 0, 1, a, a);
@@ -1623,8 +1637,8 @@ void tst_QStringApiSymmetry::sliced_impl()
     QFETCH(const QLatin1String, latin1);
     QFETCH(const int, pos);
     QFETCH(const int, n);
-    QFETCH(const QStringView, result);
-    QFETCH(const QStringView, result2);
+    QFETCH(const QAnyStringView, result);
+    QFETCH(const QAnyStringView, result2);
 
     const auto utf8 = unicode.toUtf8();
 
@@ -1665,15 +1679,15 @@ void tst_QStringApiSymmetry::first_data()
     QTest::addColumn<QStringView>("unicode");
     QTest::addColumn<QLatin1String>("latin1");
     QTest::addColumn<int>("n");
-    QTest::addColumn<QStringView>("result");
+    QTest::addColumn<QAnyStringView>("result");
 
 //    QTest::addRow("null") << QStringView() << QLatin1String() << 0 << QStringView();
-    QTest::addRow("empty") << QStringView(empty) << QLatin1String("") << 0 << QStringView(empty);
+    QTest::addRow("empty") << QStringView(empty) << QLatin1String("") << 0 << QAnyStringView(empty);
 
     // Some classes' left() implementations have a wide contract, others a narrow one
     // so only test valid arguments here:
 #define ROW(base, n, res) \
-    QTest::addRow("%s%d", #base, n) << QStringView(base) << QLatin1String(#base) << n << QStringView(res);
+    QTest::addRow("%s%d", #base, n) << QStringView(base) << QLatin1String(#base) << n << QAnyStringView(res);
 
     ROW(a, 0, empty);
     ROW(a, 1, a);
@@ -1695,7 +1709,7 @@ void tst_QStringApiSymmetry::first_impl()
     QFETCH(const QStringView, unicode);
     QFETCH(const QLatin1String, latin1);
     QFETCH(const int, n);
-    QFETCH(const QStringView, result);
+    QFETCH(const QAnyStringView, result);
 
     const auto utf8 = unicode.toUtf8();
 
@@ -1730,15 +1744,15 @@ void tst_QStringApiSymmetry::last_data()
     QTest::addColumn<QStringView>("unicode");
     QTest::addColumn<QLatin1String>("latin1");
     QTest::addColumn<int>("n");
-    QTest::addColumn<QStringView>("result");
+    QTest::addColumn<QAnyStringView>("result");
 
 //    QTest::addRow("null") << QStringView() << QLatin1String() << 0 << QStringView();
-    QTest::addRow("empty") << QStringView(empty) << QLatin1String("") << 0 << QStringView(empty);
+    QTest::addRow("empty") << QStringView(empty) << QLatin1String("") << 0 << QAnyStringView(empty);
 
     // Some classes' last() implementations have a wide contract, others a narrow one
-    // so only test valid arguents here:
+    // so only test valid arguments here:
 #define ROW(base, n, res) \
-    QTest::addRow("%s%d", #base, n) << QStringView(base) << QLatin1String(#base) << n << QStringView(res);
+    QTest::addRow("%s%d", #base, n) << QStringView(base) << QLatin1String(#base) << n << QAnyStringView(res);
 
     ROW(a, 0, empty);
     ROW(a, 1, a);
@@ -1760,7 +1774,7 @@ void tst_QStringApiSymmetry::last_impl()
     QFETCH(const QStringView, unicode);
     QFETCH(const QLatin1String, latin1);
     QFETCH(const int, n);
-    QFETCH(const QStringView, result);
+    QFETCH(const QAnyStringView, result);
 
     const auto utf8 = unicode.toUtf8();
 
@@ -1787,15 +1801,15 @@ void tst_QStringApiSymmetry::chop_data()
     QTest::addColumn<QStringView>("unicode");
     QTest::addColumn<QLatin1String>("latin1");
     QTest::addColumn<int>("n");
-    QTest::addColumn<QStringView>("result");
+    QTest::addColumn<QAnyStringView>("result");
 
 //    QTest::addRow("null") << QStringView() << QLatin1String() << 0 << QStringView();
-    QTest::addRow("empty") << QStringView(empty) << QLatin1String("") << 0 << QStringView(empty);
+    QTest::addRow("empty") << QStringView(empty) << QLatin1String("") << 0 << QAnyStringView(empty);
 
     // Some classes' truncate() implementations have a wide contract, others a narrow one
     // so only test valid arguents here:
 #define ROW(base, n, res) \
-    QTest::addRow("%s%d", #base, n) << QStringView(base) << QLatin1String(#base) << n << QStringView(res);
+    QTest::addRow("%s%d", #base, n) << QStringView(base) << QLatin1String(#base) << n << QAnyStringView(res);
 
     ROW(a, 0, a);
     ROW(a, 1, empty);
@@ -1817,7 +1831,7 @@ void tst_QStringApiSymmetry::chop_impl()
     QFETCH(const QStringView, unicode);
     QFETCH(const QLatin1String, latin1);
     QFETCH(const int, n);
-    QFETCH(const QStringView, result);
+    QFETCH(const QAnyStringView, result);
 
     const auto utf8 = unicode.toUtf8();
 
@@ -1850,11 +1864,11 @@ void tst_QStringApiSymmetry::chop_impl()
 void tst_QStringApiSymmetry::trimmed_data()
 {
     QTest::addColumn<QString>("unicode");
-    QTest::addColumn<QStringView>("result");
+    QTest::addColumn<QAnyStringView>("result");
 
     const auto latin1Whitespace = QLatin1String(" \r\n\t\f\v");
 
-    QTest::addRow("null") << QString() << QStringView();
+    QTest::addRow("null") << QString() << QAnyStringView();
 
     auto add = [latin1Whitespace](const QString &str) {
         // run through all substrings of latin1Whitespace
@@ -1862,7 +1876,7 @@ void tst_QStringApiSymmetry::trimmed_data()
             for (int pos = 0; pos < latin1Whitespace.size() - len; ++pos) {
                 const QString unicode = latin1Whitespace.mid(pos, len) + str + latin1Whitespace.mid(pos, len);
                 const QScopedArrayPointer<const char> escaped(QTest::toString(unicode));
-                QTest::addRow("%s", escaped.data()) << unicode << QStringView(str);
+                QTest::addRow("%s", escaped.data()) << unicode << QAnyStringView(str);
             }
         }
     };
@@ -1876,7 +1890,7 @@ template <typename String>
 void tst_QStringApiSymmetry::trimmed_impl()
 {
     QFETCH(const QString, unicode);
-    QFETCH(const QStringView, result);
+    QFETCH(const QAnyStringView, result);
 
     const auto utf8 = unicode.toUtf8();
     const auto l1s  = unicode.toLatin1();

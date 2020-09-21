@@ -42,6 +42,10 @@
 #include <QtCore/qstringview.h>
 #include <QtCore/qutf8stringview.h>
 
+#ifdef __cpp_impl_three_way_comparison
+#include <compare>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 template <typename, typename> class QStringBuilder;
@@ -217,7 +221,27 @@ public:
     constexpr int length() const /* not nothrow! */
     { return Q_ASSERT(int(size()) == size()), int(size()); }
 #endif
+
 private:
+    [[nodiscard]] friend inline bool operator==(QAnyStringView lhs, QAnyStringView rhs) noexcept
+    { return QAnyStringView::compare(lhs, rhs) == 0; }
+    [[nodiscard]] friend inline bool operator!=(QAnyStringView lhs, QAnyStringView rhs) noexcept
+    { return !operator==(lhs, rhs); }
+
+#ifdef __cpp_impl_three_way_comparison
+    [[nodiscard]] friend inline auto operator<=>(QAnyStringView lhs, QAnyStringView rhs) noexcept
+    { return QAnyStringView::compare(lhs, rhs) <=> 0; }
+#else
+    [[nodiscard]] friend inline bool operator<=(QAnyStringView lhs, QAnyStringView rhs) noexcept
+    { return QAnyStringView::compare(lhs, rhs) <= 0; }
+    [[nodiscard]] friend inline bool operator>=(QAnyStringView lhs, QAnyStringView rhs) noexcept
+    { return QAnyStringView::compare(lhs, rhs) >= 0; }
+    [[nodiscard]] friend inline bool operator<(QAnyStringView lhs, QAnyStringView rhs) noexcept
+    { return QAnyStringView::compare(lhs, rhs) < 0; }
+    [[nodiscard]] friend inline bool operator>(QAnyStringView lhs, QAnyStringView rhs) noexcept
+    { return QAnyStringView::compare(lhs, rhs) > 0; }
+#endif
+
     // TODO: Optimize by inverting and storing the flags in the low bits and
     //       the size in the high.
     static_assert(std::is_same_v<std::size_t, size_t>);
@@ -272,26 +296,6 @@ template <typename QStringLike, std::enable_if_t<std::disjunction_v<
     >, bool> = true>
 [[nodiscard]] inline QAnyStringView qToAnyStringViewIgnoringNull(const QStringLike &s) noexcept
 { return QAnyStringView(s.data(), s.size()); }
-
-
-#define Q_ANY_SV_MAKE_RELOP(op) \
-    [[nodiscard]] Q_ALWAYS_INLINE auto operator op (QAnyStringView lhs, QAnyStringView rhs) noexcept \
-    { return QAnyStringView::compare(lhs, rhs) op 0; } \
-    /* end */
-
-Q_ANY_SV_MAKE_RELOP(==) // size() shortcut doesn't apply for UTF-8 vs. {L1, UTF-16}
-Q_ANY_SV_MAKE_RELOP(!=)
-
-#ifdef __cpp_impl_three_way_comparison
-Q_ANY_SV_MAKE_RELOP(<=>)
-#else
-Q_ANY_SV_MAKE_RELOP(<=)
-Q_ANY_SV_MAKE_RELOP(>=)
-Q_ANY_SV_MAKE_RELOP(<)
-Q_ANY_SV_MAKE_RELOP(>)
-#endif
-
-#undef Q_ANY_SV_MAKE_RELOP
 
 QT_END_NAMESPACE
 
