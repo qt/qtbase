@@ -91,7 +91,8 @@ function(qt_internal_add_headers_clean_target
                 OUTPUT "${artifact_path}"
                 COMMENT "headersclean: Checking header ${header}"
                 COMMAND "${CMAKE_CXX_COMPILER}" -c ${CMAKE_CXX_FLAGS} ${hcleanFLAGS}
-                -I "${QT_BUILD_DIR}/include" ${hcleanDEFS} -xc++ "${input_path}"
+                -I "${QT_BUILD_DIR}/include" -I "${CMAKE_INSTALL_PREFIX}/include"
+                ${hcleanDEFS} -xc++ "${input_path}"
                 -o${artifact_path}
                 IMPLICIT_DEPENDS CXX
                 VERBATIM)
@@ -115,7 +116,8 @@ function(qt_internal_add_headers_clean_target
                 OUTPUT "${artifact_path}"
                 COMMENT "headersclean: Checking header ${header}"
                 COMMAND "${CMAKE_CXX_COMPILER}" -nologo -c ${CMAKE_CXX_FLAGS} ${hcleanFLAGS}
-                        -I "${QT_BUILD_DIR}/include" ${hcleanDEFS} -FI "${input_path}"
+                        -I "${QT_BUILD_DIR}/include" -I "${CMAKE_INSTALL_PREFIX}/include"
+                        ${hcleanDEFS} -FI "${input_path}"
                         -Fo${artifact_path} "${source_path}"
                 IMPLICIT_DEPENDS CXX
                 VERBATIM)
