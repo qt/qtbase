@@ -302,9 +302,15 @@ public:
 
     QList<T> &fill(parameter_type t, qsizetype size = -1);
 
+#ifndef Q_QDOC
     using QListSpecialMethods<T>::contains;
     using QListSpecialMethods<T>::indexOf;
     using QListSpecialMethods<T>::lastIndexOf;
+#else
+    qsizetype indexOf(const T &t, qsizetype from = 0) const noexcept;
+    qsizetype lastIndexOf(const T &t, qsizetype from = -1) const noexcept;
+    bool contains(const T &t) const noexcept;
+#endif
 
     qsizetype count(const T &t) const noexcept
     {
