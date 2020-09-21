@@ -437,9 +437,10 @@ QSize QStyledItemDelegate::sizeHint(const QStyleOptionViewItem &option,
     \sa QAbstractItemDelegate::createEditor()
 */
 QWidget *QStyledItemDelegate::createEditor(QWidget *parent,
-                                     const QStyleOptionViewItem &,
+                                     const QStyleOptionViewItem &option,
                                      const QModelIndex &index) const
 {
+    Q_UNUSED(option);
     Q_D(const QStyledItemDelegate);
     if (!index.isValid())
         return nullptr;

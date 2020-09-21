@@ -3050,8 +3050,9 @@ void QTableView::timerEvent(QTimerEvent *event)
 
     \sa columnMoved()
 */
-void QTableView::rowMoved(int, int oldIndex, int newIndex)
+void QTableView::rowMoved(int row, int oldIndex, int newIndex)
 {
+    Q_UNUSED(row);
     Q_D(QTableView);
 
     updateGeometries();
@@ -3078,8 +3079,9 @@ void QTableView::rowMoved(int, int oldIndex, int newIndex)
 
     \sa rowMoved()
 */
-void QTableView::columnMoved(int, int oldIndex, int newIndex)
+void QTableView::columnMoved(int column, int oldIndex, int newIndex)
 {
+    Q_UNUSED(column);
     Q_D(QTableView);
 
     updateGeometries();
