@@ -125,7 +125,7 @@ Build options:
                          iOS, tvOS, and watchOS. [auto]
 
   -qtnamespace <name> .. Wrap all Qt library code in 'namespace <name> {...}'.
-  -qtlibinfix <infix> .. Rename all libQt5*.so to libQt5*<infix>.so.
+  -qtlibinfix <infix> .. Rename all libQt6*.so to libQt6*<infix>.so.
 
   -testcocoon .......... Instrument with the TestCocoon code coverage tool [no]
   -gcov ................ Instrument with the GCov code coverage tool [no]

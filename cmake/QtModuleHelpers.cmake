@@ -139,7 +139,7 @@ function(qt_internal_add_module target)
             )
         else()
             set_target_properties(${target} PROPERTIES
-                OUTPUT_NAME "${INSTALL_CMAKE_NAMESPACE}${target}"
+                OUTPUT_NAME "${INSTALL_CMAKE_NAMESPACE}${target}${QT_LIBINFIX}"
             )
         endif()
 

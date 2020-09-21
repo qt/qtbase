@@ -67,7 +67,7 @@ function(qt_internal_add_plugin target)
     if(arg_OUTPUT_NAME)
         set(output_name "${arg_OUTPUT_NAME}")
     endif()
-    set_property(TARGET "${target}" PROPERTY OUTPUT_NAME "${output_name}")
+    set_property(TARGET "${target}" PROPERTY OUTPUT_NAME "${output_name}${QT_LIBINFIX}")
 
     # Add a custom target with the Qt5 qmake name for a more user friendly ninja experience.
     if(arg_OUTPUT_NAME AND NOT TARGET "${output_name}")

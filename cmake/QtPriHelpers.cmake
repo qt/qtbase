@@ -233,7 +233,7 @@ function(qt_generate_module_pri_file target)
             CONTENT
         "QT.${config_module_name}.VERSION = ${PROJECT_VERSION}
 QT.${config_module_name}.name = ${module}
-QT.${config_module_name}.module = ${module_name_in_pri}
+QT.${config_module_name}.module = ${module_name_in_pri}${QT_LIBINFIX}
 QT.${config_module_name}.libs = $$QT_MODULE_LIB_BASE
 QT.${config_module_name}.includes = ${public_module_includes}
 QT.${config_module_name}.frameworks = ${public_module_frameworks}
@@ -479,7 +479,10 @@ QT_PATCH_VERSION = ${PROJECT_VERSION_PATCH}
     if(QT_NAMESPACE)
         list(APPEND extra_statements "QT_NAMESPACE = ${QT_NAMESPACE}")
     endif()
-    # TODO: Add libinfix support.
+
+    if(QT_LIBINFIX)
+        list(APPEND extra_statements "QT_LIBINFIX = ${QT_LIBINFIX}")
+    endif()
 
     # TODO: Add QT_EMCC_VERSION when WASM is ported over.
     if(APPLECLANG)

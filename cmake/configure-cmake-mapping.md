@@ -47,7 +47,7 @@ The effort of this is tracked in QTBUG-85373 and QTBUG-85349.
 |                                       |                                                   | The device options are written into mkspecs/qdevice.pri.        |
 | -appstore-compliant                   | -DFEATURE_appstore_compliant=ON                   |                                                                 |
 | -qtnamespace <name>                   | -DQT_NAMESPACE=<name>                             |                                                                 |
-| -qtlibinfix <infix>                   |                                                   |                                                                 |
+| -qtlibinfix <infix>                   | -DQT_LIBINFIX=<infix>                             |                                                                 |
 | -testcocoon                           |                                                   |                                                                 |
 | -gcov                                 |                                                   |                                                                 |
 | -trace [backend]                      | -DINPUT_trace=yes or -DINPUT_trace=<backend>      |                                                                 |
