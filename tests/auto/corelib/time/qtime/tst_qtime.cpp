@@ -754,6 +754,7 @@ void tst_QTime::toStringFormat_data()
     QTest::newRow( "am-pm" ) << QTime(10,12,34,45) << QString("hh:ss ap") << QString("10:34 am");
     QTest::newRow( "AM-PM" ) << QTime(22,12,34,45) << QString("hh:zzz AP") << QString("10:045 PM");
     QTest::newRow( "invalid" ) << QTime(230,230,230,230) << QString("hh:mm:ss") << QString();
+    QTest::newRow( "empty format" ) << QTime(4,5,6,6) << QString("") << QString("");
 }
 
 void tst_QTime::toStringFormat()

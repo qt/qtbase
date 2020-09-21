@@ -1133,9 +1133,9 @@ QString QDate::toString(Qt::DateFormat format) const
 
     If the datetime is invalid, an empty string will be returned.
 
-    \note If localized month and day names are desired, please switch to using
-    QLocale::system().toString() as QDate methods shall change to use English (C
-    locale) names at Qt 6.
+    \note Day and month names are given in English (C locale).
+    If localized month and day names are desired, use
+    QLocale::system().toString().
 
     \sa fromString(), QDateTime::toString(), QTime::toString(), QLocale::toString()
 
@@ -1536,9 +1536,9 @@ QDate QDate::fromString(const QString &string, Qt::DateFormat format)
              minus sign for negative years.
     \endtable
 
-    \note Unlike the other version of this function, day and month names must
-    be given in the user's local language. It is only possible to use the English
-    names if the user's language is English.
+    \note Day and month names must be given in English (C locale).
+    If localized month and day names are used, use
+    QLocale::system().toDate().
 
     All other input characters will be treated as text. Any non-empty sequence
     of characters enclosed in single quotes will also be treated (stripped of
@@ -1562,17 +1562,13 @@ QDate QDate::fromString(const QString &string, Qt::DateFormat format)
     \table
     \header \li Field  \li Default value
     \row    \li Year   \li 1900
-    \row    \li Month  \li 1
+    \row    \li Month  \li 1 (January)
     \row    \li Day    \li 1
     \endtable
 
     The following examples demonstrate the default values:
 
     \snippet code/src_corelib_time_qdatetime.cpp 3
-
-    \note If localized month and day names are used, please switch to using
-    QLocale::system().toDate() as QDate methods shall change to only recognize
-    English (C locale) names at Qt 6.
 
     \sa toString(), QDateTime::fromString(), QTime::fromString(),
         QLocale::toDate()
@@ -1872,11 +1868,9 @@ QString QTime::toString(Qt::DateFormat format) const
     \row \li zzz \li The fractional part of the second, to millisecond
                 precision, including trailing zeroes where applicable (000 to 999).
     \row \li AP or A
-         \li Use AM/PM display. \e A/AP will be replaced by an upper-case
-             version of either QLocale::amText() or QLocale::pmText().
+         \li Use AM/PM display. \e A/AP will be replaced by 'AM' or 'PM'
     \row \li ap or a
-         \li Use am/pm display. \e a/ap will be replaced by a lower-case version
-             of either QLocale::amText() or QLocale::pmText().
+         \li Use am/pm display. \e a/ap will be replaced by 'am' or 'pm'
     \row \li t \li The timezone (for example "CEST")
     \endtable
 
@@ -1902,11 +1896,9 @@ QString QTime::toString(Qt::DateFormat format) const
     \endtable
 
     If the time is invalid, an empty string will be returned.
-    If \a format is empty, the default format "hh:mm:ss" is used.
 
     \note If localized forms of am or pm (the AP, ap, A or a formats) are
-    desired, please switch to using QLocale::system().toString() as QTime
-    methods shall change to use English (C locale) at Qt 6.
+    desired, please use QLocale::system().toString().
 
     \sa fromString(), QDate::toString(), QDateTime::toString(), QLocale::toString()
 */
@@ -2242,11 +2234,9 @@ QTime QTime::fromString(const QString &string, Qt::DateFormat format)
     \row \li zzz \li The fractional part of the second, to millisecond
                 precision, including trailing zeroes where applicable (000 to 999).
     \row \li AP or A
-         \li Interpret as an AM/PM time. \e A/AP will match an upper-case
-             version of either QLocale::amText() or QLocale::pmText().
+         \li Interpret as an AM/PM time. \e A/AP will match 'AM' or 'PM'.
     \row \li ap or a
-         \li Interpret as an am/pm time. \e a/ap will match a lower-case version
-             of either QLocale::amText() or QLocale::pmText().
+         \li Interpret as an am/pm time. \e a/ap will match 'am' or 'pm'.
     \endtable
 
     All other input characters will be treated as text. Any non-empty sequence
@@ -2257,7 +2247,7 @@ QTime QTime::fromString(const QString &string, Qt::DateFormat format)
 
     If the format is not satisfied, an invalid QTime is returned.
     Expressions that do not expect leading zeroes to be given (h, m, s
-    and z) are greedy. This means that they will use two digits even if
+    and z) are greedy. This means that they will use two digits (or three, for z) even if
     this puts them outside the range of accepted values and leaves too
     few digits for other sections. For example, the following string
     could have meant 00:07:10, but the m will grab two digits, resulting
@@ -2271,8 +2261,7 @@ QTime QTime::fromString(const QString &string, Qt::DateFormat format)
     \snippet code/src_corelib_time_qdatetime.cpp 8
 
     \note If localized forms of am or pm (the AP, ap, A or a formats) are used,
-    please switch to using QLocale::system().toTime() as QTime methods shall
-    change to only recognize English (C locale) at Qt 6.
+    please use QLocale::system().toTime().
 
     \sa toString(), QDateTime::fromString(), QDate::fromString(),
     QLocale::toTime()
@@ -4041,8 +4030,9 @@ QString QDateTime::toString(Qt::DateFormat format) const
 
     If the datetime is invalid, an empty string will be returned.
 
-    \note If localized month and day names are desired, please switch to using
-    QLocale::system().toString() as QDateTime methods use English (C locale) names.
+    \note Day and month names as well as AM/PM indication are given in English (C locale).
+    If localized month and day names and localized forms of AM/PM are used, use
+    QLocale::system().toDateTime().
 
     \sa fromString(), QDate::toString(), QTime::toString(), QLocale::toString()
 */
@@ -4884,6 +4874,13 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
     \row \li t \li the timezone (for example "CEST")
     \endtable
 
+    If no 't' format specifier is present, the system's local time-zone is used.
+    For the defaults of all other fields, see QDate::fromString() and QTime::fromString().
+
+    For example:
+
+    \snippet code/src_corelib_time_qdatetime.cpp 14
+
     All other input characters will be treated as text. Any non-empty sequence
     of characters enclosed in single quotes will also be treated (stripped of
     the quotes) as text and not be interpreted as expressions.
@@ -4892,7 +4889,7 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
 
     If the format is not satisfied, an invalid QDateTime is returned.
     The expressions that don't have leading zeroes (d, M, h, m, s, z) will be
-    greedy. This means that they will use two digits even if this will
+    greedy. This means that they will use two digits (or three, for z) even if this will
     put them outside the range and/or leave too few digits for other
     sections.
 
@@ -4913,26 +4910,9 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
 
     \snippet code/src_corelib_time_qdatetime.cpp 21
 
-    For any field that is not represented in the format, the following
-    defaults are used:
-
-    \table
-    \header \li Field  \li Default value
-    \row    \li Year   \li 1900
-    \row    \li Month  \li 1 (January)
-    \row    \li Day    \li 1
-    \row    \li Hour   \li 0
-    \row    \li Minute \li 0
-    \row    \li Second \li 0
-    \endtable
-
-    For example:
-
-    \snippet code/src_corelib_time_qdatetime.cpp 14
-
-    \note If localized month and day names are used, please switch to using
-    QLocale::system().toDateTime() as QDateTime methods shall change to only
-    recognize English (C locale) names at Qt 6.
+    \note Day and month names as well as AM/PM indication must be given in English (C locale).
+    If localized month and day names and localized forms of AM/PM are used, use
+    QLocale::system().toDateTime().
 
     \sa toString(), QDate::fromString(), QTime::fromString(),
     QLocale::toDateTime()
