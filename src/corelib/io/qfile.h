@@ -47,6 +47,13 @@
 
 #if QT_CONFIG(cxx17_filesystem)
 #include <filesystem>
+#elif defined(Q_CLANG_QDOC)
+namespace std {
+    namespace filesystem {
+        class path {
+        };
+    };
+};
 #endif
 
 #ifdef open
