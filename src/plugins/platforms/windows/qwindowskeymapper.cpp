@@ -1255,7 +1255,7 @@ bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, MSG msg,
 #ifndef QT_NO_SHORTCUT
             // Is Qt interested in the context menu key?
             if (modifiers == Qt::SHIFT && code == Qt::Key_F10
-                && !QGuiApplicationPrivate::instance()->shortcutMap.hasShortcutForKeySequence(QKeySequence(Qt::SHIFT + Qt::Key_F10))) {
+                && !QGuiApplicationPrivate::instance()->shortcutMap.hasShortcutForKeySequence(QKeySequence(Qt::SHIFT | Qt::Key_F10))) {
                 return false;
             }
 #endif // !QT_NO_SHORTCUT
@@ -1376,7 +1376,7 @@ QList<int> QWindowsKeyMapper::possibleKeys(const QKeyEvent *e) const
     quint32 baseKey = kbItem.qtKey[0];
     Qt::KeyboardModifiers keyMods = e->modifiers();
     if (baseKey == Qt::Key_Return && (e->nativeModifiers() & ExtendedKey)) {
-        result << int(Qt::Key_Enter + keyMods);
+        result << int(Qt::Key_Enter | keyMods);
         return result;
     }
     result << int(baseKey) + int(keyMods); // The base key is _always_ valid, of course
