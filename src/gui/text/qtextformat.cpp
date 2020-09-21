@@ -1803,7 +1803,8 @@ void QTextCharFormat::setUnderlineStyle(UnderlineStyle style)
     \fn void QTextCharFormat::setSuperScriptBaseline(qreal baseline)
     \since 6.0
 
-    Sets the superscript's base line as a % of font height. The default value is 50% (1/2 of height)
+    Sets the superscript's base line as a % of font height to \a baseline.
+    The default value is 50% (1/2 of height).
 
     \sa superScriptBaseline(), setSubScriptBaseline(), subScriptBaseline(), setBaselineOffset(), baselineOffset()
 */
@@ -1821,7 +1822,8 @@ void QTextCharFormat::setUnderlineStyle(UnderlineStyle style)
     \fn void QTextCharFormat::setSubScriptBaseline(qreal baseline)
     \since 6.0
 
-    Sets the subscript's base line as a % of font height. The default value is 16.67% (1/6 of height)
+    Sets the subscript's base line as a % of font height to \a baseline.
+    The default value is 16.67% (1/6 of height)
 
     \sa subScriptBaseline(), setSuperScriptBaseline(), superScriptBaseline(), setBaselineOffset(), baselineOffset()
 */
@@ -1839,8 +1841,8 @@ void QTextCharFormat::setUnderlineStyle(UnderlineStyle style)
     \fn void QTextCharFormat::setBaselineOffset(qreal baseline)
     \since 6.0
 
-    Sets the baseline (in % of height) of text. A positive value moves up the text, by the corresponding %;
-    a negative value moves it down. The default value is 0.
+    Sets the base line (in % of height) of text to \a baseline. A positive value moves the text
+    up, by the corresponding %; a negative value moves it down. The default value is 0.
 
     \sa baselineOffset(), setSubScriptBaseline(), subScriptBaseline(), setSuperScriptBaseline(), superScriptBaseline()
 */

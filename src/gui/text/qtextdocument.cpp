@@ -1736,8 +1736,8 @@ QFont QTextDocument::defaultFont() const
     \fn void QTextDocument::setSuperScriptBaseline(qreal baseline)
     \since 6.0
 
-    Sets the default superscript's base line as a % of font height to use in the document layout.
-    The default value is 50% (1/2 of height)
+    Sets the default superscript's base line as a % of font height to use in the document
+    layout to \a baseline. The default value is 50% (1/2 of height).
 
     \sa superScriptBaseline(), setSubScriptBaseline(), subScriptBaseline(), setBaselineOffset(), baselineOffset()
 */
@@ -1765,8 +1765,8 @@ qreal QTextDocument::superScriptBaseline() const
     \fn void QTextDocument::setSubScriptBaseline(qreal baseline)
     \since 6.0
 
-    Sets the default subscript's base line as a % of font height to use in the document layout.
-    The default value is 16.67% (1/6 of height)
+    Sets the default subscript's base line as a % of font height to use in the document layout
+    to \a baseline. The default value is 16.67% (1/6 of height).
 
     \sa subScriptBaseline(), setSuperScriptBaseline(), superScriptBaseline(), setBaselineOffset(), baselineOffset()
 */
@@ -1794,7 +1794,8 @@ qreal QTextDocument::subScriptBaseline() const
     \fn void QTextDocument::setBaselineOffset(qreal baseline)
     \since 6.0
 
-    Sets the baseline (in % of height) to use in the document layout. The default value is 0.
+    Sets the base line as a% of font height to use in the document layout to \a baseline.
+    The default value is 0.
     A positive value moves up the text, by the corresponding %; a negative value moves it down.
 
     \sa baselineOffset(), setSubScriptBaseline(), subScriptBaseline(), setSuperScriptBaseline(), superScriptBaseline()

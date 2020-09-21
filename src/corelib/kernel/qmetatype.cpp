@@ -2450,8 +2450,8 @@ bool QMetaType::canConvert(QMetaType fromType, QMetaType toType)
     */
 
 /*!
-    Returns \c true, if the meta type system has a registered conversion from meta type id \a fromTypeId
-    to \a toTypeId
+    Returns \c true, if the meta type system has a registered conversion from meta type id \a fromType
+    to \a toType
     \since 5.2
 */
 bool QMetaType::hasRegisteredConverterFunction(QMetaType fromType, QMetaType toType)
@@ -2468,7 +2468,7 @@ bool QMetaType::hasRegisteredConverterFunction(QMetaType fromType, QMetaType toT
 
 /*!
     Returns \c true, if the meta type system has a registered mutable view on meta type id
-    \a fromTypeId of meta type id \a toTypeId.
+    \a fromType of meta type id \a toType.
     \since 5.2
 */
 bool QMetaType::hasRegisteredMutableViewFunction(QMetaType fromType, QMetaType toType)

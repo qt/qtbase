@@ -1727,7 +1727,7 @@ qint64 QIODevice::write(const char *data)
 /*!
     \overload
 
-    Writes the content of \a byteArray to the device. Returns the number of
+    Writes the content of \a data to the device. Returns the number of
     bytes that were actually written, or -1 if an error occurred.
 
     \sa read(), writeData()
