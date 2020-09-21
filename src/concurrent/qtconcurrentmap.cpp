@@ -407,7 +407,7 @@
     \fn template <typename ResultType, typename Sequence, typename MapFunctor, typename ReduceFunctor> QFuture<ResultType> QtConcurrent::mappedReduced(QThreadPool *pool, const Sequence &sequence, MapFunctor mapFunction, ReduceFunctor reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
 
     Calls \a mapFunction once for each item in \a sequence.
-    All calls to \a function are invoked from the threads taken from the QThreadPool \a pool.
+    All calls to \a mapFunction are invoked from the threads taken from the QThreadPool \a pool.
     The return value of each \a mapFunction is passed to \a reduceFunction.
 
     Note that while \a mapFunction is called concurrently, only one thread at a
@@ -434,7 +434,7 @@
     \fn template <typename ResultType, typename Sequence, typename MapFunctor, typename ReduceFunctor, typename InitialValueType> QFuture<ResultType> QtConcurrent::mappedReduced(QThreadPool *pool, const Sequence &sequence, MapFunctor mapFunction, ReduceFunctor reduceFunction, InitialValueType &&initialValue, QtConcurrent::ReduceOptions reduceOptions)
 
     Calls \a mapFunction once for each item in \a sequence.
-    All calls to \a function are invoked from the threads taken from the QThreadPool \a pool.
+    All calls to \a mapFunction are invoked from the threads taken from the QThreadPool \a pool.
     The return value of each \a mapFunction is passed to \a reduceFunction.
     The result value is initialized to \a initialValue when the function is
     called, and the first call to \a reduceFunction will operate on
@@ -467,7 +467,7 @@
     \fn template <typename ResultType, typename Iterator, typename MapFunctor, typename ReduceFunctor> QFuture<ResultType> QtConcurrent::mappedReduced(QThreadPool *pool, Iterator begin, Iterator end, MapFunctor mapFunction, ReduceFunctor reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
 
     Calls \a mapFunction once for each item from \a begin to \a end.
-    All calls to \a function are invoked from the threads taken from the QThreadPool \a pool.
+    All calls to \a mapFunction are invoked from the threads taken from the QThreadPool \a pool.
     The return value of each \a mapFunction is passed to \a reduceFunction.
 
     Note that while \a mapFunction is called concurrently, only one thread at a
@@ -498,7 +498,7 @@
     \fn template <typename ResultType, typename Iterator, typename MapFunctor, typename ReduceFunctor, typename InitialValueType> QFuture<ResultType> QtConcurrent::mappedReduced(QThreadPool *pool, Iterator begin, Iterator end, MapFunctor mapFunction, ReduceFunctor reduceFunction, InitialValueType &&initialValue, QtConcurrent::ReduceOptions reduceOptions)
 
     Calls \a mapFunction once for each item from \a begin to \a end.
-    All calls to \a function are invoked from the threads taken from the QThreadPool \a pool.
+    All calls to \a mapFunction are invoked from the threads taken from the QThreadPool \a pool.
     The return value of each \a mapFunction is passed to \a reduceFunction.
     The result value is initialized to \a initialValue when the function is
     called, and the first call to \a reduceFunction will operate on
