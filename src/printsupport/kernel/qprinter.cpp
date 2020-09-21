@@ -1017,12 +1017,12 @@ void QPrinter::setCollateCopies(bool collate)
   coordinate system coincides with the top-left corner of the paper
   itself. In this case, the
   \l{QPaintDevice::PaintDeviceMetric}{device metrics} will report
-  the exact same dimensions as indicated by \l{PaperSize}. It may not
+  the exact same dimensions as indicated by \{QPageSize}. It may not
   be possible to print on the entire physical page because of the
   printer's margins, so the application must account for the margins
   itself.
 
-  \sa fullPage(), pageLayout(), setPageSize(), width(), height()
+  \sa fullPage(), QPagedPaintDevice::pageLayout(), QPagedPaintDevice::setPageSize()
 */
 
 void QPrinter::setFullPage(bool fp)
@@ -1040,7 +1040,7 @@ void QPrinter::setFullPage(bool fp)
 
   See setFullPage() for details and caveats.
 
-  \sa setFullPage(), pageLayout()
+  \sa setFullPage(), QPagedPaintDevice::pageLayout()
 */
 
 bool QPrinter::fullPage() const
@@ -1060,7 +1060,7 @@ bool QPrinter::fullPage() const
   This function must be called before QPainter::begin() to have an effect on
   all platforms.
 
-  \sa resolution(), setPaperSize()
+  \sa resolution(), QPagedPaintDevice::setPageSize()
 */
 
 void QPrinter::setResolution(int dpi)
@@ -1187,7 +1187,7 @@ QPrinter::DuplexMode QPrinter::duplex() const
     than the paperRect() since the page normally has margins between
     its borders and the paper.
 
-    \sa paperSize()
+    \sa QPagedPaintDevice::pageLayout()
 */
 QRectF QPrinter::pageRect(Unit unit) const
 {
